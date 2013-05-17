@@ -359,7 +359,9 @@ Other output files may be written by specific methods applied to the colvars (e.
 Like the colvar trajectory file, they are needed only for analyzing, not continuing a simulation.
 All such files' names also begin with the prefix \outputName\texttt{}.
 
-
+\ifdefined\NAMD
+Finally, the total energy of all biases or restraints applied to the colvars appears under the NAMD standard output, under the MISC column.
+\fi
 
 
 \ifdefined\NAMDCONF
@@ -3221,7 +3223,6 @@ $\displaystyle V(\bm{x}) = \frac{1}{2} k (\bm{x} - \bm{x_0})^2$.
 Note that this differs from harmonic bond and angle potentials in common
 force fields, where the factor of one half is typically omitted,
 resulting in a non-standard definition of the force constant.
-The restraint energy is reported by NAMD under the MISC title.
 A harmonic restraint is set up by a \texttt{harmonic~\{...\}}
 block, which may contain (in addition to the standard option
 \texttt{colvars}) the following keywords:
