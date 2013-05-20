@@ -55,7 +55,7 @@ echo Beginning update...
 condcopy () {
   if [ -d $(dirname "$2") ]
   then
-    cmp -s "$1" "$2" || echo cp "$1" "$2"
+    cmp -s "$1" "$2" || cp "$1" "$2"
   fi
 }
 
