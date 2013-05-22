@@ -62,30 +62,33 @@ condcopy () {
 # update LAMMPS tree
 if [ ${code} = LAMMPS ]
 then
-  # update colvars library headers
+
+  # update code-independent headers
   for src in ${source}/src/*.h
   do \
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/lib/colvars/${tgt}"
   done
-  # update colvars library code
-  for src in ${source}/src/*.C
+  # update code-independent sources
+  for src in ${source}/src/*.cpp
   do \
-    tgt=$(basename ${src%.C})
+    tgt=$(basename ${src%.cpp})
     condcopy "${src}" "${target}/lib/colvars/${tgt}.cpp"
   done
-  # update LAMMPS infrastructure for colvars library
+
+  # update LAMMPS interface files (library part)
   for src in ${source}/lammps/lib/colvars/*
   do \
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/lib/colvars/${tgt}"
   done
-  # update LAMMPS interface code for colvars
+  # update LAMMPS interface files (package part)
   for src in ${source}/lammps/src/USER-COLVARS/*
   do \
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/src/USER-COLVARS/${tgt}"
   done
+
   echo Update complete.
   exit 0
 fi
@@ -93,18 +96,29 @@ fi
 # update NAMD tree
 if [ ${code} = NAMD ]
 then
-  # update colvars library
-  for src in ${source}/src/*.h ${source}/src/*.C
+
+  # update code-independent headers
+  for src in ${source}/src/*.h
   do \
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/src/${tgt}"
   done
+  # update code-independent sources
+  for src in ${source}/src/*.cpp
+  do \
+    tgt=$(basename ${src%.cpp})
+    condcopy "${src}" "${target}/src/${tgt}.C"
+  done
+
   # update NAMD interface files
   for src in ${source}/namd/src/*
   do \
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/src/${tgt}"
   done
+
+  condcopy "doc/ug_colvars.tex" "${target}/ug/ug_colvars.tex"
+
   echo Update complete.
   exit 0
 fi
