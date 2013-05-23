@@ -1,4 +1,4 @@
-colvars
+Collective variables module
 =======
 
 A software module for molecular simulation programs, which provides a flexible and high-performance platform for present and future algorithms.
