@@ -300,13 +300,14 @@ FixColvars::FixColvars(LAMMPS *lmp, int narg, char **arg) :
     error->all(FLERR,"Cannot use fix colvars for atoms with rmass attribute");
 
   if (instances > 0)
-    error->all(FLERR,"Only one fix colvars can be active at a time");
+    error->all(FLERR,"Only one colvars fix can be active at a time");
   ++instances;
 
   scalar_flag = 1;
   global_freq = 1;
   nevery = 1;
   extscalar = 1;
+  restart_global = 1;
 
   me = comm->me;
 
@@ -349,6 +350,7 @@ FixColvars::FixColvars(LAMMPS *lmp, int narg, char **arg) :
   tstat_id = -1;
   energy = 0.0;
   nlevels_respa = 0;
+  init_flag = 0;
   num_coords = 0;
   coords = forces = oforce = NULL;
   comm_buf = NULL;
@@ -396,13 +398,6 @@ void FixColvars::deallocate()
 
 /* ---------------------------------------------------------------------- */
 
-void FixColvars::post_run()
-{
-  deallocate();
-  memory->sfree(inp_name);
-  inp_name = strdup(out_name);
-}
-
 /* ---------------------------------------------------------------------- */
 
 int FixColvars::setmask()
@@ -412,7 +407,6 @@ int FixColvars::setmask()
   mask |= MIN_POST_FORCE;
   mask |= POST_FORCE;
   mask |= POST_FORCE_RESPA;
-  mask |= POST_RUN;
   mask |= END_OF_STEP;
   return mask;
 }
@@ -423,9 +417,11 @@ int FixColvars::setmask()
 
 void FixColvars::init()
 {
+  if (init_flag) return;
+  init_flag = 1;
+
   if (strstr(update->integrate_style,"respa"))
     nlevels_respa = ((Respa *) update->integrate)->nlevels;
-
 
   int i,nme,tmp,ndata;
 
@@ -477,6 +473,7 @@ void FixColvars::init()
       type_buf[nme+1] = type[i];
       nme +=2;
     }
+
     /* blocking receive to wait until it is our turn to send data. */
     MPI_Recv(&tmp, 0, MPI_INT, 0, 0, world, &status);
     MPI_Rsend(type_buf, nme, MPI_INT, 0, 0, world);
@@ -505,8 +502,8 @@ void FixColvars::init()
       }
     }
 
-    proxy = new colvarproxy_lammps(lmp,conf_file,inp_name,out_name,
-                                   rng_seed,t_target,typemap);
+    proxy = new colvarproxy_lammps(lmp,inp_name,out_name,rng_seed,t_target);
+    proxy->init(conf_file,typemap);
     coords = proxy->get_coords();
     forces = proxy->get_forces();
     oforce = proxy->get_oforce();
@@ -916,6 +913,31 @@ void FixColvars::end_of_step()
       MPI_Recv(&tmp, 0, MPI_INT, 0, 0, world, &status);
       MPI_Rsend(comm_buf, nme*size_one, MPI_BYTE, 0, 0, world);
     }
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+
+void FixColvars::write_restart(FILE *fp)
+{
+  if (me == 0) {
+    std::string rest_text("");
+    proxy->serialize_status(rest_text);
+    const char *cvm_state = rest_text.c_str();
+    int len = strlen(cvm_state) + 1; // need to include terminating NULL byte.
+    fwrite(&len,sizeof(int),1,fp);
+    fwrite(cvm_state,1,len,fp);
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+
+void FixColvars::restart(char *buf)
+{
+  init();
+  if (me == 0) {
+    std::string rest_text(buf);
+    proxy->deserialize_status(rest_text);
   }
 }
 
