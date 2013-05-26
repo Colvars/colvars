@@ -1,0 +1,30 @@
+# Validated: 26 May 2013-ICMS
+include inc.minimal
+# minimal system config: two groups of two atoms
+units real
+atom_style atomic
+atom_modify map array # XXX this should not be needed
+
+pair_style lj/cut 5.0
+read_data data.minimal
+Reading data file ...
+  orthogonal box = (-5 -5 -10) to (5 5 10)
+  4 atoms
+  4 velocities
+
+group g1 id 1 2
+2 atoms in group g1
+group g2 id 3 4
+2 atoms in group g2
+
+variable com1z equal xcm(g1,z)
+variable com2z equal xcm(g2,z)
+variable fcm1z equal fcm(g1,z)
+variable fcm2z equal fcm(g2,z)
+variable cveng equal f_f1
+
+thermo_style custom step pe v_com1z v_com2z v_fcm1z v_fcm2z v_cveng
+thermo 1
+
+fix f1 all colvars minimal.cfg output # this should fail
+ERROR: Missing argument to keyword (../fix_colvars.cpp)

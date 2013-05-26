@@ -1,0 +1,4 @@
+# LAMMPS test 01b: unknown option
+# Validated: 26 May 2013-ICMS
+include inc.minimal
+fix f1 all colvars empty.cfg unknown yes

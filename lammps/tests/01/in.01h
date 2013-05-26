@@ -1,0 +1,6 @@
+# LAMMPS test 01h: wrong argument to unwrap
+# Validated: 26 May 2013-ICMS
+include inc.minimal
+fix f1 all colvars minimal.cfg unwrap true
+
+run 0 post no

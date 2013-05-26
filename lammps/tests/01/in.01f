@@ -1,0 +1,7 @@
+# LAMMPS test 01f: empty restart file
+# Validated: 26 May 2013-ICMS
+shell "rm -f out.colvars.traj"
+include inc.minimal
+fix f1 all colvars minimal.cfg input empty
+
+run 0 post no

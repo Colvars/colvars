@@ -1,0 +1,7 @@
+# LAMMPS test 01i: unwrap forced on
+# Validated: 26 May 2013-ICMS
+include inc.minimal
+fix f1 all colvars minimal.cfg unwrap yes output 01i
+
+run 0 post no
+

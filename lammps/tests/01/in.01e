@@ -1,0 +1,6 @@
+# LAMMPS test 01e: empty config file with minimize
+# Validated: 26 May 2013-ICMS
+include inc.minimal
+fix f1 all colvars empty.cfg
+
+minimize 1.0e-10 1.0e-10 1000 1000

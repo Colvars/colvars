@@ -1,0 +1,6 @@
+# LAMMPS test 01d: empty config file
+# Validated: 26 May 2013-ICMS
+include inc.minimal
+fix f1 all colvars empty.cfg
+
+run 0 post no
