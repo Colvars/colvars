@@ -25,6 +25,10 @@ then
     exit 2
 fi
 
+# undocumented option to only compare trees
+checkonly=0
+[ "$2" = "--diff" ] && checkonly=1
+
 # try to determine what code resides inside the target dir
 code=unkown
 if [ -f "${target}/src/lammps.h" ]
@@ -55,7 +59,12 @@ echo Beginning update...
 condcopy () {
   if [ -d $(dirname "$2") ]
   then
-    cmp -s "$1" "$2" || cp "$1" "$2"
+    if [ $checkonly -eq 1 ]
+    then
+      cmp -s "$1" "$2" || diff -uN "$1" "$2"
+    else
+      cmp -s "$1" "$2" || cp "$1" "$2"
+    fi
   fi
 }
 
@@ -72,21 +81,29 @@ then
   # update code-independent sources
   for src in ${source}/src/*.cpp
   do \
-    tgt=$(basename ${src%.cpp})
-    condcopy "${src}" "${target}/lib/colvars/${tgt}.cpp"
+    tgt=$(basename ${src})
+    condcopy "${src}" "${target}/lib/colvars/${tgt}"
   done
 
   # update LAMMPS interface files (library part)
-  for src in ${source}/lammps/lib/colvars/*
+  for src in ${source}/lammps/lib/colvars/Makefile.* ${source}/lammps/lib/colvars/README
   do \
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/lib/colvars/${tgt}"
   done
   # update LAMMPS interface files (package part)
-  for src in ${source}/lammps/src/USER-COLVARS/*
+  for src in ${source}/lammps/src/USER-COLVARS/*.cpp  ${source}/lammps/src/USER-COLVARS/*.h \
+    ${source}/lammps/src/USER-COLVARS/Install.sh ${source}/lammps/src/USER-COLVARS/README
   do \
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/src/USER-COLVARS/${tgt}"
+  done
+
+  # update LAMMPS documentation
+  for src in ${source}/lammps/doc/*.txt
+  do \
+    tgt=$(basename ${src})
+    condcopy "${src}" "${target}/doc/${tgt}"
   done
 
   echo Update complete.
@@ -111,7 +128,7 @@ then
   done
 
   # update NAMD interface files
-  for src in ${source}/namd/src/*
+  for src in ${source}/namd/src/*.h  ${source}/namd/src/*.C
   do \
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/src/${tgt}"
