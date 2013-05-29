@@ -1,0 +1,19 @@
+configuration {
+  step           10
+  dt 5.000000e-01
+}
+
+colvar {
+  name rmsd
+  x  3.82640484672394e-02
+}
+
+harmonic {
+  configuration {
+    name harmonic1
+    centers  1.00000000000000e-01
+    centers_raw  1.00000000000000e-01
+    accumulatedWork 3.54824797528161e+01
+  }
+}
+

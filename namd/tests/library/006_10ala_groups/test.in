@@ -1,0 +1,53 @@
+Colvarstrajfrequency    1
+Colvarsrestartfrequency 2000
+
+indexFile index.ndx
+
+colvar {
+  name rmsdA
+
+  outputSystemForce on
+#  outputAppliedForce on
+  width 1.0 
+
+  lowerboundary 0.0
+  upperboundary 5.0
+
+  lowerwallconstant 100.0
+  upperwallconstant 100.0
+
+  rmsd {
+      atoms {
+      indexGroup C-alpha
+    }
+    refpositionsfile ../Common/da.pdb
+  }
+} 
+
+colvar {
+  name rmsdB
+
+  outputSystemForce on
+#  outputAppliedForce on
+  width 1.0 
+
+  lowerboundary 0.0
+  upperboundary 5.0
+
+  lowerwallconstant 100.0
+  upperwallconstant 100.0
+
+  rmsd {
+      atoms {
+      psfSegID BH
+      atomNameResidueRange CA 1-10
+    }
+    refpositionsfile ../Common/da.pdb
+  }
+} 
+
+harmonic {
+   colvars        rmsdA rmsdB
+   forceConstant  1.0
+   centers        0.0   0.0
+}

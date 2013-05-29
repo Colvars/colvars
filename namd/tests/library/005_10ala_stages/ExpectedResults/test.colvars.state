@@ -1,0 +1,19 @@
+configuration {
+  step           20
+  dt 5.000000e-01
+}
+
+colvar {
+  name d
+  x  1.65448632224610e+02
+}
+
+harmonic {
+  configuration {
+    name harmonic1
+    centers  1.65000000000000e+02
+    centers_raw  1.65000000000000e+02
+    stage           10
+  }
+}
+
