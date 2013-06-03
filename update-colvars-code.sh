@@ -134,7 +134,8 @@ then
     condcopy "${src}" "${target}/src/${tgt}"
   done
 
-  condcopy "doc/ug_colvars.tex" "${target}/ug/ug_colvars.tex"
+  condcopy "doc/colvars-refman.bib" "${target}/ug/ug_colvars.bib"
+  condcopy "doc/colvars-refman-main.tex" "${target}/ug/ug_colvars.tex"
 
   echo Update complete.
   exit 0

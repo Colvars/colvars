@@ -1,0 +1,81 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+
+\usepackage[english]{babel}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathrsfs}
+
+\usepackage{times}
+\usepackage{inconsolata}
+\usepackage{mathptmx}
+
+\usepackage{graphicx}
+\usepackage{color}
+\definecolor{background-color}{gray}{0.84}
+
+\usepackage{makeidx}
+\makeindex
+
+\usepackage[stable]{footmisc}
+
+\usepackage[pagebackref,colorlinks,citecolor=blue,hyperfootnotes=false]{hyperref}
+
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{booktabs}
+
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{5}
+
+\begin{document}
+
+\begin{titlepage}
+
+  \noindent\colorbox{background-color}{
+    \begin{minipage}{1.0\textwidth}
+
+        $\,$\\
+        
+        \noindent\textsf{\bfseries\Huge COLLECTIVE VARIABLES MODULE\\}
+        
+        \noindent\textsf{\bfseries\Huge reference manual
+        \ifdefined\MDENGINE
+        for \MDENGINE{}
+        \fi
+        \\}
+        
+        \noindent\textsf{\Large \today}
+
+      \end{minipage}}
+%  \noindent\rule{\textwidth}{2pt}
+
+  \includegraphics[width=\textwidth]{cover}
+  \textsf{\large Giacomo Fiorin, J\'er\^ome H\'enin%
+\ifdefined\LAMMPS%
+, Axel Kohlmeyer
+\fi
+  }
+\end{titlepage}
+
+\newpage
+\tableofcontents
+\newpage
+
+\input{colvars-refman-main}
+
+\newpage
+\printindex
+
+\newpage
+%\addtocontents{toc}{\contentsline {section}{References}{\thepage}}
+\bibliographystyle{unsrt}
+\bibliography{colvars-refman}
+
+\end{document}
+
+% Emacs
+% Local Variables:
+% TeX-PDF-mode: t
+% End:
