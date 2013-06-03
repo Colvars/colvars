@@ -40,7 +40,7 @@ The colvars module in NAMD may be used in both MD simulations and energy minimiz
 \else
 This manual documents the collective variables module (colvars), a portable software that interfaces multiple MD simulation simulation programs, with a focus on flexibility, robustness and high performance.
 \fi
-The module is designed to perform concurrently multiple tasks, the most common of which are:
+The module is designed to perform multiple tasks concurrently, the most common of which are:
 \begin{itemize}
 
 \item apply restraints or biasing potentials to multiple colvars, tailored on the system by choosing from a wide set of basis functions, without limitations on their number or on the number of atoms involved; 
@@ -53,7 +53,6 @@ while this can in principle be done through a TclForces script, using the colvar
 \item calculate statistical properties of the colvars, such as running averages and standard deviations, correlation functions of pairs of colvars, and multidimensional histograms, without the need to save very large trajectory files%
 \ifdefined\NAMD%
 ;
-
 \item analyze an existing MD trajectory in terms of colvars: use NAMD's \texttt{coorfile read} command, and perform a 0-timestep run for each set of coordinates%
 \ifdefined\NAMDCONF%
 , as illustrated in \ref{section:sample}. 
@@ -99,9 +98,9 @@ One of these is the name of a configuration file for the collective variables mo
 \else\ifdefined\LAMMPS
 To enable a collective variable calculation, one or more parameters are added to the LAMMPS configuration file.
 In \ref{sec:colvars_lammps}, we document the syntax of such parameters.
+\fi
+\fi
 One of these is the name of a configuration file for the collective variables module itself, which is described in \ref{sec:colvars_config}, and in the following sections.
-\fi
-\fi
 
 
 \ifdefined\NAMD
@@ -271,7 +270,11 @@ The following rules apply:
 \ifdefined\NAMD
 \item unlike in the NAMD main configuration file, the deprecated `\texttt{=}' sign between a keyword and its value is not allowed;
 
-\item unlike in the NAMD main configuration file,  Tcl commands and variables are not available, but it is possible to use Tcl to generate a new configuration file with different parameters (see \ref{sec:colvar_namd_parameters});
+\item unlike in the NAMD main configuration file,  Tcl commands and variables are not available, but it is possible to use Tcl to generate a new configuration file with different parameters
+\ifdefined\NAMDCONF
+(see \ref{sec:colvar_namd_parameters})
+\fi
+;
 \fi
 
 \item if a keyword requiring a boolean value (\texttt{yes|on|true} or \texttt{no|off|false}) is provided without an explicit value, it defaults to `\texttt{yes|on|true}'; for example, `\texttt{outputAppliedForce}' may be used as shorthand for `\texttt{outputAppliedForce on}';
@@ -330,12 +333,13 @@ The following keywords are available in the global context of this configuration
     global}{%
     Index file for atom selection (GROMACS ``ndx'' format)}{%
     UNIX filename}{%
-    This option allows to read an index file (usually named with a \texttt{.ndx}
-    extension) formatted with the GROMACS syntax.
+    This option reads an index file (usually with a \texttt{.ndx}
+    extension) as produced by the \texttt{make\_ndx} tool of GROMACS.
     \ifdefined\LAMMPS
     In LAMMPS, the \texttt{group2ndx} command can be used to generate such file from existing groups.
     \fi
-    The names of index groups contained in this file can then be used to define colvars.
+    The names of index groups contained in this file can then be used to define
+    atom groups with the \texttt{indexGroup} keyword.
     Other supported methods to select atoms are described in \ref{sec:colvar_atom_groups}.
   }
 
@@ -471,7 +475,9 @@ Other output files may be written by specific methods applied to the colvars (e.
 Like the colvar trajectory file, they are needed only for analyzing, not continuing a simulation.
 All such files' names also begin with the prefix \outputName\texttt{}.
 
-
+\ifdefined\NAMD
+Finally, the total energy of all biases or restraints applied to the colvars appears under the NAMD standard output, under the MISC column.
+\fi
 
 
 \ifdefined\NAMDCONF
@@ -3529,7 +3535,7 @@ When the centers are changed continuously, a steered MD in a collective variable
     If \texttt{targetNumStages} is set to a nonzero value, the
     change is performed in discrete stages, lasting \texttt{targetNumSteps}
     steps \emph{each}. This second mode may be used to sample successive
-    windows in the}{%
+    windows in the context
     of an Umbrella Sampling simulation.
     When continuing a simulation
     run, the \texttt{centers} specified in the configuration file
