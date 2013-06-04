@@ -1748,10 +1748,9 @@ recognizes the following keywords:
     mass}{%
     boolean}{%
     \texttt{off}}{%
-    If this option is \texttt{on}, only contacts between the atoms in
-    \texttt{group1} and the center of mass of \texttt{group2} are
-    calculated.  By default, the sum extends over all pairs of
-    atoms in \texttt{group1} and \texttt{group2}.}
+    If this option is \texttt{on}, only contacts between each atoms in \texttt{group1} and the center of mass of     \texttt{group2} are calculated (by default, the sum extends over all pairs of atoms in \texttt{group1} and \texttt{group2}).
+If \texttt{group2} is a \texttt{dummyAtom}, set this option to \texttt{yes} for correct behavior.
+}
 
 \end{itemize}
 
