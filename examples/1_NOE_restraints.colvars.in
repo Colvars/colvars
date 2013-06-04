@@ -1,0 +1,61 @@
+colvarsTrajFrequency 100    # output values every 100 steps
+
+# intramolecular NOE signal
+colvar {
+
+    name NOE_1
+
+    # biharmonic potential
+    lowerBoundary      3.5  # experimentally measured distance
+    lowerWallConstant  30.0 # kcal/mol/Angstrom^2
+    upperBoundary      3.5  # experimentally measured distance
+    upperWallConstant  20.0 # kcal/mol/Angstrom^2
+
+    distanceInv {
+        exponent 6
+
+        group1 {
+            # ambiguous definition of the three HB* hydrogens of residue 2 of protein chain "PRA"
+            psfSegID PRA PRA PRA
+            atomNameResidueRange  HB1 2-2
+            atomNameResidueRange  HB2 2-2
+            atomNameResidueRange  HB3 2-2
+        }
+        group2 {
+            psfSegID PRA
+            atomNameResidueRange  HE 11-11
+        }
+    }
+}
+
+
+
+# intermolecular NOE signal
+colvar {
+
+    name NOE_1
+
+    # biharmonic potential
+    lowerBoundary      3.5  # experimentally measured distance
+    lowerWallConstant  30.0 # kcal/mol/Angstrom^2
+    upperBoundary      3.5  # experimentally measured distance
+    upperWallConstant  20.0 # kcal/mol/Angstrom^2
+
+    distanceInv {
+        exponent 6
+
+        group1 {
+            # ambiguous definition of the HE hydrogens of residue 11 of four protein chains
+            psfSegID PRA PRB PRC PRD
+            atomNameResidueRange  HE 11-11
+            atomNameResidueRange  HE 11-11
+            atomNameResidueRange  HE 11-11
+            atomNameResidueRange  HE 11-11
+        }
+        group2 {
+            # drug hydrogen
+            psfSegID DRUG
+            atomNameResidueRange  H102 1-1
+        }
+    }
+}

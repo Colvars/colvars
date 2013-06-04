@@ -1,0 +1,23 @@
+colvarsTrajFrequency 100
+
+colvar {
+  name Orient
+
+  orientation {
+    atoms {
+      psfSegID             P           # in segment P
+      atomNameResidueRange CA 20-350   # alpha carbons of residues 20-350
+    }
+    refPositionsFile     ref.pdb
+  }
+}
+
+
+
+harmonic {             # Define a harmonic restraint
+  colvars Orient       # acting on colvar "Orient"
+
+  centers  (1.0, 0.0, 0.0, 0.0)  # restraint center is the unit quaternion (no rotation)
+  forceConstant 10.              # unit is kcal/mol because quaternions are dimensionless
+}
+

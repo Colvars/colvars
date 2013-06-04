@@ -1,0 +1,46 @@
+colvarsTrajFrequency 100
+
+# The metadynamics bias drives the simulation
+
+metadynamics {
+    name meta
+    colvars        d
+    hillWeight  0.01
+    newHillFrequency 100
+    dumpFreeEnergyFile yes
+}
+
+# This "bias" is only used as an analysis method here
+# to collect a PMF from unconstrained Thermodynamic Integration
+
+abf {
+    name abf
+    colvars        d
+    applyBias off
+}
+
+
+
+colvar {
+
+    name d
+
+    width 0.1
+
+    hardLowerBoundary  yes
+    lowerBoundary      0.000
+    upperBoundary     14.000
+    outputAppliedForce  yes
+    outputSystemForce   yes
+
+    distance {
+        group1 { 
+            atomNumbers { 1 }
+        }
+        group2 { 
+            atomNumbers { 2 }
+        }
+    }
+}
+
+

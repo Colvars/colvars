@@ -1,0 +1,114 @@
+# configuration to calculate the variance of the dipole moments
+# of 5 water molecules (assumed to be rigid TIP3P molecules)
+# along the x axis (1, 0, 0)
+
+# distance between oxygen and center of H1 and H2 = 0.626 Angstrom
+# experimental estimate of dipole moment of one water in condensed phase = 2.35 Debye
+# scaling factor for one dipole d = 2.35/0.626 = 3.754
+
+# N = 5 water molecules
+# scaling factor to obtain <d>^2  = (3.754/N)^2 = 0.564
+# scaling factor to obtain <d^2>  = (3.754)^2/N = 2.819
+
+colvarsTrajFrequency 20
+
+colvar {
+
+    name dipole_variance
+
+    distanceZ {
+        # molecule 1's contribution to <d^2>
+        componentCoeff    2.819
+        componentExp      2
+        axis (1.0, 0.0, 0.0)
+        main {
+            psfSegID WAT
+            atomNameResidueRange H1 1-1
+            atomNameResidueRange H2 1-1
+        }
+        ref {
+            psfSegID WAT
+            atomNameResidueRange OH2 1-1
+        }
+    }
+
+    distanceZ {
+        # molecule 2's contribution to <d^2>
+        componentCoeff    2.819
+        componentExp      2
+        axis (1.0, 0.0, 0.0)
+        main {
+            psfSegID WAT
+            atomNameResidueRange H1 2-2
+            atomNameResidueRange H2 2-2
+        }
+        ref {
+            psfSegID WAT
+            atomNameResidueRange OH2 2-2
+        }
+    }
+
+    distanceZ {
+        # molecule 3's contribution to <d^2>
+        componentCoeff    2.819
+        componentExp      2
+        axis (1.0, 0.0, 0.0)
+        main {
+            psfSegID WAT
+            atomNameResidueRange H1 3-3
+            atomNameResidueRange H2 3-3
+        }
+        ref {
+            psfSegID WAT
+            atomNameResidueRange OH2 3-3
+        }
+    }
+
+    distanceZ {
+        # molecule 4's contribution to <d^2>
+        componentCoeff    2.819
+        componentExp      2
+        axis (1.0, 0.0, 0.0)
+        main {
+            psfSegID WAT
+            atomNameResidueRange H1 4-4
+            atomNameResidueRange H2 4-4
+        }
+        ref {
+            psfSegID WAT
+            atomNameResidueRange OH2 4-4
+        }
+    }
+
+    distanceZ {
+        # molecule 5's contribution to <d^2>
+        componentCoeff    2.819
+        componentExp      2
+        axis (1.0, 0.0, 0.0)
+        main {
+            psfSegID WAT
+            atomNameResidueRange H1 5-5
+            atomNameResidueRange H2 5-5
+        }
+        ref {
+            psfSegID WAT
+            atomNameResidueRange OH2 5-5
+        }
+    }
+
+    distanceZ {
+        # - <d>^2
+        componentCoeff    -0.564
+        componentExp      2
+        axis (1.0, 0.0, 0.0)
+        main {
+            psfSegID WAT
+            atomNameResidueRange H1 1-5
+            atomNameResidueRange H2 1-5
+        }
+        ref {
+            psfSegID WAT
+            atomNameResidueRange OH2 1-5
+        }
+    }
+}

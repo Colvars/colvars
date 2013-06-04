@@ -1,0 +1,19 @@
+colvarsTrajFrequency 100
+
+colvar {
+  name aggregation
+  width 1
+
+  upperWall            0.     # forbid significant positive values
+  upperWallConstant    5. 
+  # force constant unit is kcal/mol since colvar is dimensionless
+
+  selfCoordNum {
+    group1 {
+      atomsfile     atoms.pdb  # Select biased atoms from this file
+      atomsCol      B          # based on column beta
+      atomsColValue 1          # atoms flagged with 1
+    }
+  }
+}
+

@@ -1,0 +1,69 @@
+# In this example, the same set of atoms and reference coordinates
+# are used to restrain the position, orientation, and conformation
+# of a group of atoms, relative to a reference group.
+
+colvarsTrajFrequency 100
+
+colvar {
+  name d
+
+  width 1.0   # typical displacement is set to 1 Angstrom
+
+  # the position restraint is enforced as a distance to a fixed point
+  # defined by a dummy atom group.
+
+  distance {
+    group1 {
+      # group definition:
+      atomNumbers 12 13 14 15 16 # explicit list of 1-based atom IDs
+      
+      centerReference          # use relative coordinates
+      rotateReference          # (translated and rotated frame of reference)
+      refPositionsGroup {      # Define frame of reference base on separate atom group
+        atomsFile     ref.pdb  # from separate file
+        atomsCol      B
+      }
+      refPositionsFile ref.pdb # initial coordinates for reference group
+    }
+    group2 {
+      dummyAtom (6.0, -1.0, -0.2) # starting position of group center
+    }
+  }
+}
+
+colvar {
+  name RMSD
+
+  width 0.5  # typical RMSD set to 0.5 Angstrom
+
+  rmsd {
+    atoms {
+      atomNumbers 12 13 14 15 16
+    }
+    refPositionsFile     initial.pdb  # Fetch initial positions from this file
+  }
+}
+
+colvar {
+  name Orient
+
+  width 0.1   # distance between quaternions is from 0 to pi/2, so small fluctuations are significant
+
+  orientation {
+    atoms {
+      atomNumbers 12 13 14 15 16
+    }
+    refPositionsFile     initial.pdb  # Fetch initial positions from this file
+  }
+}
+
+
+
+harmonic {                # Define a moving harmonic restraint
+  colvars d RMSD Orient   # acting on 3 colvars
+
+  centers 0 0 (1, 0, 0, 0)  # centered around zero displacement, zero RMSD, and no rotation
+  forceConstant 0.01       # unit is kcal/mol/[width]^2
+  # where the width parameter is adapted to the dimension of each colvar
+}
+
