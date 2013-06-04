@@ -580,9 +580,11 @@ cvm::atom::atom (cvm::atom const &a)
 
 cvm::atom::~atom() 
 {
-  colvarproxy_namd *gm = (colvarproxy_namd *) cvm::proxy;
-  if (gm->colvars_atoms_ncopies[this->index] > 0)
-    gm->colvars_atoms_ncopies[this->index] -= 1;
+  if (this->index >= 0) {
+    colvarproxy_namd *gm = (colvarproxy_namd *) cvm::proxy;
+    if (gm->colvars_atoms_ncopies[this->index] > 0)
+      gm->colvars_atoms_ncopies[this->index] -= 1;
+  }
 }
 
 
