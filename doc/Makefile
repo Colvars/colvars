@@ -1,16 +1,22 @@
 
 PDF=colvars-refman-lammps.pdf  colvars-refman-namd.pdf 
-BIBTEX=colvars.bib
+BIBTEX=colvars-refman.bib
 
 all: $(PDF)
 
 %.pdf: %.tex $(BIBTEX)
 	pdflatex $<
 	bibtex $(basename $<)
-	makeindex $(basename $<)
+	pdflatex $<
+	echo makeindex $(basename $<)
 	pdflatex $<
 	pdflatex $<
 
 clean: 
-	rm -f *.aux *.bbl *.blg *.log *.pdf *.toc *.out *.idx *.ilg *.ind *.brf
+	rm -f *.aux *.bbl *.blg *.log *.toc *.out *.idx *.ilg *.ind *.brf 
+
+clean-all: 
+	rm -f $(PDF)
+
+
 
