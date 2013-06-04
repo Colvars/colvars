@@ -1,0 +1,37 @@
+colvarsTrajFrequency 100
+
+colvar {
+  name abscissa
+
+  width 0.2                  # the free energy grid will have a 0.2 A step
+
+  distanceZ {
+    main {
+      atomsfile  atoms.pdb   # Select biased atoms from this file
+      atomsCol   B           # based on column B
+      atomsColValue 1        # atoms flagged with 1
+
+      rotateReference
+      centerReference
+      refPositionsGroup {
+        atomsfile  ref.pdb
+        atomsCol   B         # atoms with nonzero value in column B
+                             # eg. pore atoms
+      }
+      refPositionsFile ref.pdb # initial coordinates for reference group
+    }
+    ref {
+      dummyAtom (42.0, 42.0, 42.0)  # sets the zero position along the pore
+    }
+    axis (0, 0, 1)  # initial orientation is along z
+  }
+}
+
+
+
+abf {                  # adaptive bias and free energy calculation
+  colvars abscissa
+  
+  fullSamples 200      # accumulate 200 samples per bin before applying full bias
+}
+
