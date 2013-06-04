@@ -2,9 +2,6 @@
 
 \ifdefined\NAMDCONF
 
-\input{namd_macros}
-\input{ug_macros}
-
 \newcommand{\key}[5]{\NAMDCONF{#1}{(#2 context) #3}{#4}{#5}}
 \newcommand{\keydef}[6]{\NAMDCONFWDEF{#1}{(#2 context) #3}{#4}{#5}{#6}}
 
@@ -97,7 +94,11 @@ To briefly illustrate the flexibility of the colvars module, Figure~\ref{fig:col
 
 \begin{figure}[!ht]
   \centering
+\ifdefined\NAMDCONF
+  \includegraphics[width=12cm]{figures/colvars_diagram}
+\else
   \includegraphics[width=12cm]{colvars_diagram}
+\fi
   \caption{Graphical representation of a collective variables configuration.
     The colvar called ``$d$'' is defined as the difference between two distances: the first distance ($d_{1}$) is taken between the center of mass of atoms 1 and 2 and that of atoms 3 to 5, the second ($d_{2}$) between atom 7 and the center of mass of atoms 8 to 10.
 The difference $d = d_{1} - d_{2}$ is obtained by multiplying the two by a coefficient $C = +1$ or $C = -1$, respectively.
@@ -2629,7 +2630,8 @@ following parameters, which are common to all components:
 \item %
   \keydef{%
     componentCoeff}{%
-    (any component) Coefficient of this component in the colvar}{%
+    any component}{%
+    Coefficient of this component in the colvar}{%
     decimal}{%
     \texttt{1.0}}{%
     Defines the coefficient by which this component is multiplied
@@ -2639,7 +2641,8 @@ following parameters, which are common to all components:
 \item %
   \keydef{%
     componentExp}{%
-    (any component) Exponent of this component in the colvar}{%
+    any component}{%
+    Exponent of this component in the colvar}{%
     integer}{%
     \texttt{1}}{%
     Defines the power at which the value of this component is raised
