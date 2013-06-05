@@ -303,35 +303,6 @@ void colvar::h_bond::apply_force (colvarvalue const &force)
 }
 
 
-// Self-coordination number for a group
-
-template<bool calculate_gradients>
-cvm::real colvar::selfcoordnum::switching_function (cvm::real const &r0,
-                                                int const &en,
-                                                int const &ed,
-                                                cvm::atom &A1,
-                                                cvm::atom &A2)
-{
-  cvm::rvector const diff = cvm::position_distance (A1.pos, A2.pos);
-  cvm::real const l2 = diff.norm2()/(r0*r0);
-
-  // Assume en and ed are even integers, and avoid sqrt in the following
-  int const en2 = en/2;
-  int const ed2 = ed/2;
-
-  cvm::real const xn = std::pow (l2, en2);
-  cvm::real const xd = std::pow (l2, ed2);
-  cvm::real const func = (1.0-xn)/(1.0-xd);
-
-  if (calculate_gradients) {
-    cvm::real const dFdl2 = (1.0/(1.0-xd))*(en2*(xn/l2) - func*ed2*(xd/l2))*(-1.0);
-    cvm::rvector const dl2dx = (2.0/(r0*r0))*diff;
-    A1.grad += (-1.0)*dFdl2*dl2dx;
-    A2.grad +=        dFdl2*dl2dx;
-  }
-
-  return func;
-}
 
 
 colvar::selfcoordnum::selfcoordnum (std::string const &conf)
@@ -369,7 +340,7 @@ void colvar::selfcoordnum::calc_value()
 
   for (size_t i = 0; i < group1.size() - 1; i++)
     for (size_t j = i + 1; j < group1.size(); j++)
-      x.real_value += switching_function<false> (r0, en, ed, group1[i], group1[j]);
+      x.real_value += colvar::coordnum::switching_function<false> (r0, en, ed, group1[i], group1[j]);
 }
 
 
@@ -377,7 +348,7 @@ void colvar::selfcoordnum::calc_gradients()
 {
   for (size_t i = 0; i < group1.size() - 1; i++)
     for (size_t j = i + 1; j < group1.size(); j++)
-      switching_function<true> (r0, en, ed, group1[i], group1[j]);
+      colvar::coordnum::switching_function<true> (r0, en, ed, group1[i], group1[j]);
 }
 
 void colvar::selfcoordnum::apply_force (colvarvalue const &force)
