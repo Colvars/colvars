@@ -77,7 +77,10 @@ colvar::coordnum::coordnum (std::string const &conf)
   x.type (colvarvalue::type_scalar);
 
   // group1 and group2 are already initialized by distance()
+  if (group1.b_dummy)
+    cvm::fatal_error ("Error: only group2 is allowed to be a dummy atom\n");
 
+  
   // need to specify this explicitly because the distance() constructor
   // has set it to true
   b_inverse_gradients = false;
@@ -105,7 +108,7 @@ colvar::coordnum::coordnum (std::string const &conf)
     cvm::fatal_error ("Error: odd exponents provided, can only use even ones.\n");
   }
 
-  get_keyval (conf, "group2CenterOnly", b_group2_center_only, false);
+  get_keyval (conf, "group2CenterOnly", b_group2_center_only, group2.b_dummy);
 }
 
 
@@ -120,14 +123,6 @@ colvar::coordnum::coordnum()
 void colvar::coordnum::calc_value()
 {
   x.real_value = 0.0;
-
-  // these are necessary: for each atom, gradients are summed together
-  // by multiple calls to switching_function()
-  group1.reset_atoms_data();
-  group2.reset_atoms_data();
-
-  group1.read_positions();
-  group2.read_positions();
 
   if (b_group2_center_only) {
 
@@ -289,14 +284,6 @@ colvar::h_bond::~h_bond()
 
 void colvar::h_bond::calc_value()
 {
-  // this is necessary, because switching_function() will sum the new
-  // gradient to the current one
-  acceptor.reset_data();
-  donor.reset_data();
-
-  acceptor.read_position();
-  donor.read_position();
-
   x.real_value = colvar::coordnum::switching_function<false> (r0, en, ed, acceptor, donor);
 }
 
@@ -379,10 +366,6 @@ colvar::selfcoordnum::selfcoordnum()
 void colvar::selfcoordnum::calc_value()
 {
   x.real_value = 0.0;
-
-  // for each atom, gradients are summed by multiple calls to switching_function()
-  group1.reset_atoms_data();
-  group1.read_positions();
 
   for (size_t i = 0; i < group1.size() - 1; i++)
     for (size_t j = i + 1; j < group1.size(); j++)
