@@ -8,7 +8,7 @@ all: $(PDF)
 	pdflatex $<
 	bibtex $(basename $<)
 	pdflatex $<
-	echo makeindex $(basename $<)
+	makeindex $(basename $<)
 	pdflatex $<
 	pdflatex $<
 
