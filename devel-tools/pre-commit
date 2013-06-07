@@ -2,36 +2,31 @@
 #
 # This hook will do some automatic checks and updates before a commit.
 
-# task 1: update the colvar module version string if a commit is made
-#         to a file in the src/ directory
+################################################################################
+# Task 1: update the colvar module version string if a file in the src/
+#         directory is about to be committed. Do not update it, if current.
 
 if git status --porcelain | grep -q '^M \+src/'
 then
-   datestr=$(date +'%Y-%m-%d')
-   prevstr=$(sed -n -e 's/^#define COLVARS_VERSION "(.*)".*/\1/p' src/colvarmodule.h)
-   exit 1
-   echo "Automatically updating colvars version string to ${datestr}"
-   sed -i -e "s/^#define COLVARS_VERSION.*/#define COLVARS_VERSION \"${datestr}\"/" src/colvarmodule.h
-   git add src/colvarmodule.h
+  datestr=$(date +'%Y-%m-%d')
+  prevstr=$(sed -n -e 's/^#define COLVARS_VERSION "\(.*\)".*/\1/p' src/colvarmodule.h)
+  if test "${prevstr}" = "${datestr}"
+  then
+    echo "Keeping colvars version string is: ${previous}"
+  else
+    echo "Updating colvars version string from ${previous} to ${datestr}"
+    sed -i -e "s/^#define COLVARS_VERSION.*/#define COLVARS_VERSION \"${datestr}\"/" src/colvarmodule.h
+    git add src/colvarmodule.h
+  fi
 fi
 
-# task 1: update the colvar module version string if a commit is made
-#         to a file in the src/ directory
+################################################################################
+# Task 2: remove all trailing whitespace in the files about to be committed.
 
-if git status --porcelain | grep -q '^M \+src/'
-then
-   datestr=$(date +'%Y-%m-%d')
-   previous=$(grep "^#define COLVARS_VERSION" src/colvarmodule.h | cut -d " " -f 3 | sed 's/\"//g')
-   if test ${datestr} = ${previous}
-   then
-      echo "Colvars version string is current: ${previous}"
-   else
-      echo "Automatically updating colvars version string from ${previous} to ${datestr}"
-      sed -i -e "s/^#define COLVARS_VERSION.*/#define COLVARS_VERSION \"${datestr}\"/" src/colvarmodule.h
-      git add src/colvarmodule.h
-   fi
-fi
-
-exit 0
+for f in $(git status --porcelain | sed -n -e 's/^M \+\(.*\.\(cpp\|h\|C\)\)/\1/p')
+do \
+  sed -i -e 's/ \+$//' -e 's/	\+$//' $f
+  git add $f
+done
 
 exit 0
