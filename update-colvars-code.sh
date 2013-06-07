@@ -61,7 +61,7 @@ condcopy () {
   then
     if [ $checkonly -eq 1 ]
     then
-      cmp -s "$1" "$2" || diff -uN "$1" "$2"
+      cmp -s "$1" "$2" || diff -uN "$2" "$1"
     else
       cmp -s "$1" "$2" || cp "$1" "$2"
     fi
