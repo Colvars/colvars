@@ -1,5 +1,9 @@
 # library build -*- makefile -*- for colvars module
 
+# which file will be copied to Makefile.lammps
+
+EXTRAMAKE = Makefile.lammps.empty
+
 # ------ SETTINGS ------
 
 CXX =		i686-w64-mingw32-g++
@@ -25,13 +29,17 @@ EXE = #colvars_standalone
 
 # ------ MAKE PROCEDURE ------
 
-default: $(DIR) $(LIB) $(EXE)
+default: $(DIR) $(LIB) $(EXE) Makefile.lammps
 
 $(DIR):
 	mkdir $(DIR)
 
+Makefile.lammps:
+	@cp $(EXTRAMAKE) Makefile.lammps
+
 $(LIB): $(DIR)	$(OBJ)
 	$(ARCHIVE) $(ARFLAGS) $(LIB) $(OBJ)
+	@cp $(EXTRAMAKE) Makefile.lammps
 
 $(DIR)colvars_standalone: colvars_main.o colvarproxy_standalone.o $(LIB)
 	$(CXX) -o $@ $(CXXFLAGS) $^
