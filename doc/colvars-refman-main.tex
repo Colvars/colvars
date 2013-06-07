@@ -92,6 +92,11 @@ while this can in principle be done through a TclForces script, using the colvar
 
 To briefly illustrate the flexibility of the colvars module, Figure~\ref{fig:colvars_diagram} shows an example of a non-trivial configuration (the corresponding input can be found in \ref{sec:colvars_config}).
 
+% AK: this figure looks a bit misplaced in the LAMMPS version of the
+% AK: documentation. perhaps it can be moved to be define a bit earlier,
+% AK: so that it is show inside the paragraph it refers to and not the
+% AK: next one.
+%
 \begin{figure}[!ht]
   \centering
 \ifdefined\NAMDCONF
@@ -111,7 +116,6 @@ The values of ``$c$'' and ``alpha'' are also recorded throughout the simulation 
 }
   \label{fig:colvars_diagram}
 \end{figure}
-
 
 \ifdefined\NAMDCONF
 \subsection{General parameters and input/output files}
@@ -202,9 +206,9 @@ An optional third parameter, \texttt{colvarsInput}, can be used to continue a pr
 
 To enable a collective variables-based calculation, the following line must be added to the LAMMPS configuration file:\\
 \\
-\texttt{fix } \emph{ID } \emph{group-ID }  \texttt{colvars } \emph{configfile } \emph{keyword values ...}\\
+\texttt{fix } \emph{ID } \texttt{all }  \texttt{colvars } \emph{configfile } \emph{keyword value pairs ...}\\
 \\
-where \emph{ID} and \emph{group-ID} are general options of the \texttt{fix} command, \emph{configfile} is the name of the configuration file for the collective variables module, and \emph{keyword} is one of the following optional keywords:
+where \emph{ID} is a string that uniquely identifies this fix command inside a LAMMPS script, \emph{configfile} is the name of the configuration file for the collective variables module, followed by one or more of the following optional keywords with their corresponding arguments:
 
 \begin{itemize}
 
@@ -215,7 +219,7 @@ where \emph{ID} and \emph{group-ID} are general options of the \texttt{fix} comm
     Name or prefix of the input state file}{%
     string}{%
     If a value is provided, it is interpreted as either the name of the input state file, or as the prefix of the file named \emph{input}\texttt{.colvars.state}.
-This allows to continue a previous collective variables-based calculation (see \ref{sec:colvars_input}).}
+This allows to continue a previous collective variables-based calculation when a regular binary LAMMPS restart file is not available (see \ref{sec:colvars_input}).}
 
 \item %
   \keydef{%
@@ -233,9 +237,8 @@ This allows to continue a previous collective variables-based calculation (see \
     Whether to unwrap coordinates passed to the colvars module}{%
     ``yes'' or ``no''}{%
     ``yes''}{%
-    This keyword controls whether wrapped or unwrapped coordinates are passed to the colvars module for     calculation of the collective variables and of the resulting forces.
-The default is to use the image flags to reconstruct the absolute atom positions: under this convention, centers of mass and centers of geometry are calculated as a weighted vector sum (see \ref{sec:colvar_atom_groups_wrapping}).
-Setting this to no will use the current local coordinates that are wrapped back into the simulation cell at each re-neighboring instead.}
+    This keyword controls whether wrapped or unwrapped coordinates are passed to the colvars module for calculation of the collective variables and of the resulting forces. The default is to use the image flags to reconstruct the absolute atom positions: under this convention, centers of mass and centers of geometry are calculated as a weighted vector sum (see \ref{sec:colvar_atom_groups_wrapping}).
+Setting this to \emph{no} will use the current local coordinates that are wrapped back into the simulation cell at each re-neighboring instead.}
 
 \item %
   \keydef{%
@@ -254,7 +257,7 @@ Setting this to no will use the current local coordinates that are wrapped back 
     Thermostating fix}{%
     string}{%
     NULL}{%
-    This keyword provides the label of a thermostating fix that thermostats all atoms in the fix colvars group. This will be used to provide the colvars module with the current thermostat target temperature.}
+    This keyword provides the \emph{ID} of an applicable thermostating fix command. This will be used to provide the colvars module with the current thermostat target temperature when using a method that needs this information.}
 
 \end{itemize}
 
@@ -463,7 +466,7 @@ Aside from the configuration file, an optional input state file may be provided 
 \ifdefined\NAMD
 The name of this file is provided as a value to the keyword \texttt{colvarsInput}.
 \else\ifdefined\LAMMPS
-The name of this file is provided as the argument to the \texttt{input} keyword of the \texttt{fix ID group-ID colvars} command.
+The name of this file is provided as the argument to the \texttt{input} keyword of the \texttt{fix ID all colvars} command. The same information is stored in the binary restart files of LAMMPS, so it not needed when continuing a calculation from such a restart.
 \fi
 \fi
 
