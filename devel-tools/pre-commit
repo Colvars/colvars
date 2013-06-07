@@ -12,9 +12,9 @@ then
   prevstr=$(sed -n -e 's/^#define COLVARS_VERSION "\(.*\)".*/\1/p' src/colvarmodule.h)
   if test "${prevstr}" = "${datestr}"
   then
-    echo "Keeping colvars version string is: ${previous}"
+    echo "Keeping colvars version string is: ${prevstr}"
   else
-    echo "Updating colvars version string from ${previous} to ${datestr}"
+    echo "Updating colvars version string from ${prevstr} to ${datestr}"
     sed -i -e "s/^#define COLVARS_VERSION.*/#define COLVARS_VERSION \"${datestr}\"/" src/colvarmodule.h
     git add src/colvarmodule.h
   fi
