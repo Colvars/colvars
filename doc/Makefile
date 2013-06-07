@@ -4,7 +4,7 @@ BIBTEX=colvars-refman.bib
 
 all: $(PDF)
 
-%.pdf: %.tex $(BIBTEX)
+%.pdf: %.tex $(BIBTEX) colvars-refman-main.tex
 	pdflatex $<
 	bibtex $(basename $<)
 	pdflatex $<
@@ -17,6 +17,4 @@ clean:
 
 clean-all: 
 	rm -f $(PDF)
-
-
 
