@@ -1,0 +1,6 @@
+Tools for colvars development
+
+pre-commit : Hook to run automatic tasks before committing files.
+             This script should be made executable and copied to
+             the <toplevel>/.git/hooks directory
+
