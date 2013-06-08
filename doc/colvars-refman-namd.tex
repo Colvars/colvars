@@ -1,5 +1,20 @@
+
 \newcommand\NAMD{}
 \newcommand\MDENGINE{NAMD}
+
+% macros to identify the format of this document
+% (section of the NAMD UG or standalone reference manual)
+\newcommand{\cvnamdugonly}[1]{}
+\newcommand{\cvrefmanonly}[1]{#1}
+
+% macros to identify which program
+\newcommand{\cvnamdonly}[1]{#1}
+\newcommand{\cvlammpsonly}[1]{}
+
+% content that applies only to programs that use atom names (i.e. not LAMMPS)
+\newcommand{\cvnamebasedonly}[1]{#1}
+
+
 \input{colvars-refman.tex}
 
 
