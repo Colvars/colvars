@@ -1,0 +1,65 @@
+
+\begin{cvnamd}
+
+% compiling the NAMD User's Guide
+
+% define missing macros
+\newcommand{\MDENGINE}{NAMD}
+\newcommand{\cvrefmanonly}[1]{}
+\newcommand{\cvnamdonly}[1]{#1}
+\newcommand{\cvnamebasedonly}[1]{#1}
+\newcommand{\cvlammpsonly}[1]{}
+\newcommand{\cvnamdugonly}[1]{#1}
+
+% use the NAMD UG macros to document keywords
+\newcommand{\key}[5]{\NAMDCONF{#1}{(#2 context) #3}{#4}{#5}}
+\newcommand{\keydef}[6]{\NAMDCONFWDEF{#1}{(#2 context) #3}{#4}{#5}{#6}}
+
+\newcommand{\cvsec}[1]{\subsection{#1}}
+\newcommand{\cvsubsec}[1]{\subsubsection{#1}}
+\newcommand{\cvsubsubsec}[1]{\paragraph*{#1}}
+
+\end{cvnamd}
+
+\begin{cvrefman}
+
+% compiling the standalone reference manual
+
+% use macros with context field to document keywords
+\newcommand{\key}[5]{%
+  \index{\texttt{#1}}
+  {\bf \large \tt #1 } $\langle\,$#3$\,\rangle$ \\%
+  {\bf Context: } #2 \\%
+  {\bf Acceptable values: } #4 \\%
+  {\bf Description: } #5%
+}
+\newcommand{\keydef}[6]{%
+  \index{\texttt{#1}}
+  {\bf \large \tt #1 } $\langle\,$#3$\,\rangle$ \\%
+  {\bf Context: } #2 \\%
+  {\bf Acceptable values: } #4 \\%
+  {\bf Default value: } #5 \\%
+  {\bf Description: } #6%
+}
+\newcommand{\gradx}{\mbox{\boldmath$\nabla_{\!\!x}\,$}}
+\newcommand{\vx}{{\mbox{\boldmath{$x$}}}}
+\newcommand{\bm}[1]{{\mbox{\boldmath{$#1$}}}}
+
+\newcommand{\cvsec}[1]{\section{#1}}
+\newcommand{\cvsubsec}[1]{\subsection{#1}}
+\newcommand{\cvsubsubsec}[1]{\subsubsection{#1}}
+
+\end{cvrefman}
+
+\begin{cvnamd}
+\newcommand{\outputName}{\emph{outputName}}
+\newcommand{\restartName}{\emph{restartName}}
+\newcommand{\inputName}{\emph{inputName}}
+\end{cvnamd}
+
+\begin{cvlammps}
+\newcommand{\outputName}{\emph{output}}
+\newcommand{\restartName}{\emph{restart}}
+\newcommand{\inputName}{\emph{input}}
+\end{cvlammps}
+

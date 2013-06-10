@@ -15,6 +15,9 @@
 \usepackage{color}
 \definecolor{background-color}{gray}{0.84}
 
+% for code-specific macros
+\usepackage{comment}
+
 \usepackage{makeidx}
 \makeindex
 
@@ -40,7 +43,7 @@
         
         \noindent\textsf{\bfseries\Huge COLLECTIVE VARIABLES MODULE\\}
         
-        \noindent\textsf{\bfseries\Huge reference manual
+        \noindent\textsf{\bfseries\Huge Reference manual
         \ifdefined\MDENGINE
         for \MDENGINE{}
         \fi
@@ -62,6 +65,44 @@
 \newpage
 \tableofcontents
 \newpage
+
+% compiling the standalone reference manual
+
+% use macros with context field to document keywords
+\newcommand{\key}[5]{%
+  \index{\texttt{#1}}
+  {\bf \large \tt #1 } $\langle\,$#3$\,\rangle$ \\%
+  {\bf Context: } #2 \\%
+  {\bf Acceptable values: } #4 \\%
+  {\bf Description: } #5%
+}
+\newcommand{\keydef}[6]{%
+  \index{\texttt{#1}}
+  {\bf \large \tt #1 } $\langle\,$#3$\,\rangle$ \\%
+  {\bf Context: } #2 \\%
+  {\bf Acceptable values: } #4 \\%
+  {\bf Default value: } #5 \\%
+  {\bf Description: } #6%
+}
+\newcommand{\gradx}{\mbox{\boldmath$\nabla_{\!\!x}\,$}}
+\newcommand{\vx}{{\mbox{\boldmath{$x$}}}}
+\newcommand{\bm}[1]{{\mbox{\boldmath{$#1$}}}}
+
+\newcommand{\cvsec}[1]{\section{#1}}
+\newcommand{\cvsubsec}[1]{\subsection{#1}}
+\newcommand{\cvsubsubsec}[1]{\subsubsection{#1}}
+
+\cvnamdonly{
+\newcommand{\outputName}{\emph{outputName}}
+\newcommand{\restartName}{\emph{restartName}}
+\newcommand{\inputName}{\emph{inputName}}
+}
+
+\cvlammpsonly{
+\newcommand{\outputName}{\emph{output}}
+\newcommand{\restartName}{\emph{restart}}
+\newcommand{\inputName}{\emph{input}}
+}
 
 \input{colvars-refman-main}
 
