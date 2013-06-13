@@ -2481,6 +2481,17 @@ The following parameters can be set in the ABF configuration block
     is recommended to apply the biasing force only after a reasonable estimate
     of the latter has been obtained.}
 
+\item \keydef{maxForce}{\texttt{abf}}{%
+    Maximum magnitude of the ABF force}
+  {positive decimals (one per colvar)}
+  {disabled}
+  {This option enforces a cap on the magnitude of the biasing force effectively applied
+   by this ABF bias on each colvar. This can be useful in the presence of singularities
+   in the PMF such as hard walls, where the discretization of the average force becomes
+   very inaccurate, causing the colvar's diffusion to get ``stuck'' at the singularity.
+   To enable this cap, provide one non-negative value for each colvar. The unit of force
+   is kcal/mol divided by the colvar unit (\AA{} for lengths, degrees for angles, etc.).}
+
 \item \keydef{hideJacobian}{\texttt{abf}}{%
     Remove geometric entropy term from calculated
     free energy gradient?}
