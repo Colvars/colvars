@@ -5,7 +5,7 @@ colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 2000
 colvars: # colvarsTrajAppend = off [default]
 colvars: The final output state file will be "test.colvars.state".
-colvars: The trajectory file will be "test.colvars.traj".
+colvars: Writing to colvar trajectory file "test.colvars.traj".
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = eigenvector_Ca

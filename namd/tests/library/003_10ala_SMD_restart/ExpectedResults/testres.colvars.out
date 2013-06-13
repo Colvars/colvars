@@ -6,7 +6,7 @@ colvars: # colvarsRestartFrequency = 40000 [default]
 colvars: # colvarsTrajAppend = off [default]
 colvars: The restart output state file will be "testres.colvars.state".
 colvars: The final output state file will be "testres.colvars.state".
-colvars: The trajectory file will be "testres.colvars.traj".
+colvars: Writing to colvar trajectory file "testres.colvars.traj".
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = rmsd
