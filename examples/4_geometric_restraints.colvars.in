@@ -26,7 +26,7 @@ colvar {
       refPositionsFile ref.pdb # initial coordinates for reference group
     }
     group2 {
-      dummyAtom (6.0, -1.0, -0.2) # starting position of group center
+      dummyAtom (6.0, -1.0, -0.2) # fixed position
     }
   }
 }
@@ -34,7 +34,7 @@ colvar {
 colvar {
   name RMSD
 
-  width 0.5  # typical RMSD set to 0.5 Angstrom
+  width 0.5  # typical RMSD fluctuation set to 0.5 Angstrom
 
   rmsd {
     atoms {
