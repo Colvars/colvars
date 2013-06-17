@@ -6,8 +6,6 @@ metadynamics {
     name meta
     colvars        d
     hillWeight  0.01
-    newHillFrequency 100
-    dumpFreeEnergyFile yes
 }
 
 # This "bias" is only used as an analysis method here
@@ -27,11 +25,13 @@ colvar {
 
     width 0.1
 
-    hardLowerBoundary  yes
     lowerBoundary      0.000
     upperBoundary     14.000
     outputAppliedForce  yes
     outputSystemForce   yes
+
+    # instruct the code that 0 Å is a hard limit for this variable
+    hardLowerBoundary  yes
 
     distance {
         group1 { 
