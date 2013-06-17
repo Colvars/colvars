@@ -8,7 +8,7 @@ colvar {
 
   lowerBoundary -180.0
   upperBoundary  180.0
-  width 8
+  width 1
 
   orientationAngle {          # orientationAngle is a scalar alternative
                               # to restraining the orientation quaternion
