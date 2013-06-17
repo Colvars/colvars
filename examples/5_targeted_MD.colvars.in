@@ -22,4 +22,6 @@ harmonic {             # Define a moving harmonic restraint
   targetCenters 1.0         # ... to 1 Angstrom
   targetNumSteps 2000000    # in 2 million MD steps
   forceConstant 10.         # in kcal/mol/A^2
+  
+  outputAccumulatedWork yes   # keep track of how much energy will be added
 }
