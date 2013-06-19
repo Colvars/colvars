@@ -53,7 +53,7 @@ else
 fi
 
 echo Detected ${code} source tree in ${target}
-echo Beginning update...
+echo -n Updating
 
 # conditional file copy
 condcopy () {
@@ -64,6 +64,7 @@ condcopy () {
       cmp -s "$1" "$2" || diff -uN "$2" "$1"
     else
       cmp -s "$1" "$2" || cp "$1" "$2"
+      echo -n '.'
     fi
   fi
 }
@@ -106,7 +107,13 @@ then
     condcopy "${src}" "${target}/doc/${tgt}"
   done
 
-  echo Update complete.
+  for src in ${source}/doc/colvars-refman-lammps.pdf
+  do \
+    tgt=$(basename ${src})
+    condcopy "${src}" "${target}/doc/PDF/${tgt}"
+  done
+
+  echo ' done.'
   exit 0
 fi
 
@@ -138,6 +145,6 @@ then
   condcopy "${source}/doc/colvars-refman-main.tex" "${target}/ug/ug_colvars.tex"
   condcopy "${source}/namd/ug/ug_colvars_macros.tex" "${target}/ug/ug_colvars_macros.tex"
 
-  echo Update complete.
+  echo ' done.'
   exit 0
 fi
