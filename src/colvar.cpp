@@ -667,6 +667,18 @@ void colvar::disable (colvar::task const &t)
 }
 
 
+void colvar::setup() {
+  // loop over all components to reset masses of all groups
+  for (size_t i = 0; i < cvcs.size(); i++) {
+    for (size_t ig = 0; ig < cvcs[i]->atom_groups.size(); ig++) {
+      cvm::atom_group &atoms = *(cvcs[i]->atom_groups[ig]);
+      atoms.read_positions();
+      atoms.reset_mass(name,i,ig);
+    }
+  }
+}
+
+
 colvar::~colvar()
 {
   for (size_t i = 0; i < cvcs.size(); i++) {
