@@ -1,0 +1,301 @@
+# Solvated 5-mer peptide
+
+log log.colvars-1
+
+units		real
+atom_style	full
+
+pair_style	lj/charmm/coul/long 8.0 10.0 10.0
+bond_style      harmonic
+angle_style     charmm
+dihedral_style  charmm
+improper_style  harmonic
+kspace_style	pppm 0.0001
+
+read_data	../common/data.peptide
+
+neighbor	2.0 bin
+neigh_modify	delay 2 every 1 check yes
+
+timestep	2.0
+
+group	peptide type <= 12
+group	one id 2 4 5 6
+group	two id 80 82 83 84
+group	ref id 37
+
+velocity ref set 0.0 0.0 0.0
+
+fix	f1 all nvt temp  275.0 275.0 100.0
+fix	f2 all colvars monitor.inp output monitor tstat f1
+fix	f3 ref setforce 0.0 0.0 0.0
+fix	f4 all shake 0.0001 10 0 b 4 6 8 10 12 14 18 a 31
+
+variable	rx equal xcm(ref,x)
+variable	ry equal xcm(ref,y)
+variable	rz equal xcm(ref,z)
+variable	d1x equal xcm(one,x)-v_rx
+variable	d1y equal xcm(one,y)-v_ry
+variable	d1z equal xcm(one,z)-v_rz
+variable	d2x equal xcm(two,x)-v_rx
+variable	d2y equal xcm(two,y)-v_ry
+variable	d2z equal xcm(two,z)-v_rz
+variable	d1 equal sqrt(v_d1x*v_d1x+v_d1y*v_d1y+v_d1z*v_d1z)
+variable	d2 equal sqrt(v_d2x*v_d2x+v_d2y*v_d2y+v_d2z*v_d2z)
+
+thermo_style	custom step temp pe epair emol ke v_d1 v_d2 f_f2
+thermo		10
+
+run		100 post no
+
+log log.colvars-2
+
+fix	f2 all colvars restrain.inp output restrain
+
+
+run		100 post no
+
+log log.colvars-3
+
+write_restart  after_restrain.restart
+write_data     colvars.data
+
+run		100 post no
+
+clear
+
+log log.colvars-4
+
+units		real
+atom_style	full
+
+pair_style	lj/charmm/coul/long 8.0 10.0 10.0
+bond_style      harmonic
+angle_style     charmm
+dihedral_style  charmm
+improper_style  harmonic
+kspace_style	pppm 0.0001
+
+read_restart	after_restrain.restart
+
+neighbor	2.0 bin
+neigh_modify	delay 2 every 1 check yes
+
+timestep	2.0
+
+velocity ref set 0.0 0.0 0.0
+
+fix	f1 all nvt temp  275.0 275.0 100.0
+fix	f2 all colvars restrain.inp output restart tstat f1
+fix	f3 ref setforce 0.0 0.0 0.0
+fix	f4 all shake 0.0001 10 0 b 4 6 8 10 12 14 18 a 31
+
+thermo_style	custom step temp pe epair emol ke v_d1 v_d2 f_f2
+thermo		10
+
+run		100 post no
+
+clear
+
+log log.colvars-5
+
+units		real
+atom_style	full
+
+pair_style	lj/charmm/coul/long 8.0 10.0 10.0
+bond_style      harmonic
+angle_style     charmm
+dihedral_style  charmm
+improper_style  harmonic
+kspace_style	pppm 0.0001
+
+read_data	colvars.data
+
+neighbor	2.0 bin
+neigh_modify	delay 2 every 1 check yes
+
+timestep	2.0
+
+group	peptide type <= 12
+group	one id 2 4 5 6
+group	two id 80 82 83 84
+group	ref id 37
+
+velocity ref set 0.0 0.0 0.0
+
+fix	f1 all nvt temp  275.0 275.0 100.0
+fix	f2 all colvars restrain.inp input restrain.colvars.state output data
+fix	f3 ref setforce 0.0 0.0 0.0
+fix	f4 all shake 0.0001 10 0 b 4 6 8 10 12 14 18 a 31
+
+variable	rx equal xcm(ref,x)
+variable	ry equal xcm(ref,y)
+variable	rz equal xcm(ref,z)
+variable	d1x equal xcm(one,x)-v_rx
+variable	d1y equal xcm(one,y)-v_ry
+variable	d1z equal xcm(one,z)-v_rz
+variable	d2x equal xcm(two,x)-v_rx
+variable	d2y equal xcm(two,y)-v_ry
+variable	d2z equal xcm(two,z)-v_rz
+variable	d1 equal sqrt(v_d1x*v_d1x+v_d1y*v_d1y+v_d1z*v_d1z)
+variable	d2 equal sqrt(v_d2x*v_d2x+v_d2y*v_d2y+v_d2z*v_d2z)
+
+thermo_style	custom step temp pe epair emol ke v_d1 v_d2 f_f2
+thermo		10
+
+run		100 post no
+
+clear
+
+log log.spring-1
+
+units		real
+atom_style	full
+
+pair_style	lj/charmm/coul/long 8.0 10.0 10.0
+bond_style      harmonic
+angle_style     charmm
+dihedral_style  charmm
+improper_style  harmonic
+kspace_style	pppm 0.0001
+
+read_data	../common/data.peptide
+
+neighbor	2.0 bin
+neigh_modify	delay 2 every 1 check yes
+
+timestep	2.0
+
+group	peptide type <= 12
+group	one id 2 4 5 6
+group	two id 80 82 83 84
+group	ref id 37
+
+velocity ref set 0.0 0.0 0.0
+
+fix	f1 all nvt temp  275.0 275.0 100.0
+fix	f2a one spring couple ref 0.0 0.0 0.0 0.0 10.0
+fix	f2b two spring couple ref 0.0 0.0 0.0 0.0 10.0
+fix	f3 ref setforce 0.0 0.0 0.0
+fix	f4 all shake 0.0001 10 0 b 4 6 8 10 12 14 18 a 31
+
+variable	rx equal xcm(ref,x)
+variable	ry equal xcm(ref,y)
+variable	rz equal xcm(ref,z)
+variable	d1x equal xcm(one,x)-v_rx
+variable	d1y equal xcm(one,y)-v_ry
+variable	d1z equal xcm(one,z)-v_rz
+variable	d2x equal xcm(two,x)-v_rx
+variable	d2y equal xcm(two,y)-v_ry
+variable	d2z equal xcm(two,z)-v_rz
+variable	d1 equal sqrt(v_d1x*v_d1x+v_d1y*v_d1y+v_d1z*v_d1z)
+variable	d2 equal sqrt(v_d2x*v_d2x+v_d2y*v_d2y+v_d2z*v_d2z)
+variable	f2 equal f_f2a+f_f2b
+
+thermo_style	custom step temp pe epair emol ke v_d1 v_d2 v_f2
+thermo		10
+
+run		100 post no
+
+log log.spring-2
+
+fix	f2a one spring couple ref 100.0 0.0 0.0 0.0 10.0
+fix	f2b two spring couple ref 100.0 0.0 0.0 0.0 10.0
+
+run		100 post no
+
+log log.spring-3
+
+write_restart  after_restrain.restart
+write_data     spring.data
+
+run		100 post no
+
+clear
+
+log log.spring-4
+
+units		real
+atom_style	full
+
+pair_style	lj/charmm/coul/long 8.0 10.0 10.0
+bond_style      harmonic
+angle_style     charmm
+dihedral_style  charmm
+improper_style  harmonic
+kspace_style	pppm 0.0001
+
+read_restart	after_restrain.restart
+
+neighbor	2.0 bin
+neigh_modify	delay 2 every 1 check yes
+
+timestep	2.0
+
+velocity ref set 0.0 0.0 0.0
+
+fix	f1 all nvt temp  275.0 275.0 100.0
+fix	f2a one spring couple ref 100.0 0.0 0.0 0.0 10.0
+fix	f2b two spring couple ref 100.0 0.0 0.0 0.0 10.0
+fix	f3 ref setforce 0.0 0.0 0.0
+fix	f4 all shake 0.0001 10 0 b 4 6 8 10 12 14 18 a 31
+
+thermo_style	custom step temp pe epair emol ke v_d1 v_d2 v_f2
+thermo		10
+
+run		100 post  no
+
+
+clear
+
+log log.spring-5
+
+units		real
+atom_style	full
+
+pair_style	lj/charmm/coul/long 8.0 10.0 10.0
+bond_style      harmonic
+angle_style     charmm
+dihedral_style  charmm
+improper_style  harmonic
+kspace_style	pppm 0.0001
+
+read_data	spring.data
+
+neighbor	2.0 bin
+neigh_modify	delay 2 every 1 check yes
+
+timestep	2.0
+
+group	peptide type <= 12
+group	one id 2 4 5 6
+group	two id 80 82 83 84
+group	ref id 37
+
+velocity ref set 0.0 0.0 0.0
+
+fix	f1 all nvt temp  275.0 275.0 100.0
+fix	f2a one spring couple ref 100.0 0.0 0.0 0.0 10.0
+fix	f2b two spring couple ref 100.0 0.0 0.0 0.0 10.0
+fix	f3 ref setforce 0.0 0.0 0.0
+fix	f4 all shake 0.0001 10 0 b 4 6 8 10 12 14 18 a 31
+
+variable	rx equal xcm(ref,x)
+variable	ry equal xcm(ref,y)
+variable	rz equal xcm(ref,z)
+variable	d1x equal xcm(one,x)-v_rx
+variable	d1y equal xcm(one,y)-v_ry
+variable	d1z equal xcm(one,z)-v_rz
+variable	d2x equal xcm(two,x)-v_rx
+variable	d2y equal xcm(two,y)-v_ry
+variable	d2z equal xcm(two,z)-v_rz
+variable	d1 equal sqrt(v_d1x*v_d1x+v_d1y*v_d1y+v_d1z*v_d1z)
+variable	d2 equal sqrt(v_d2x*v_d2x+v_d2y*v_d2y+v_d2z*v_d2z)
+variable	f2 equal f_f2a+f_f2b
+
+thermo_style	custom step temp pe epair emol ke v_d1 v_d2 v_f2
+thermo		10
+
+run		100 post  no
+
+

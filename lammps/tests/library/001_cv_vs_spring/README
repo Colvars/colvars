@@ -1,0 +1,15 @@
+This test compares harmonic distance restraints from colvars to
+using fix spring in LAMMPS. Apart from numerical differences the
+trajectories need to be the same. The run is broken down in chunks
+
+1) run 100 steps with inactive restraints
+2) run 100 steps with active restraints and write restart
+3) continue for 100 more steps with active restraints
+4) reset completely and restart from previously written restart file
+   this should result in repeating the previous 100 steps.
+5) reset again and restart from a previously written data file
+   this should result in a slightly different trajectory
+   due to re-initialization of the thermostat, but it should
+   be different in the same way between fix spring and fix colvars.
+   
+ 
