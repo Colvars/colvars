@@ -9,7 +9,7 @@ use warnings;
 my $version = 'v0.1';
 
 # delta for floating point comparisons.
-my $small = 1.0e-6;
+my $small = 1.0e-7;
 
 ########################################################################
 # floating point comparison
@@ -49,7 +49,6 @@ sub compare_files {
         chomp;
         @l2 = split;
 
-        print "'$l1[0]' '$l2[0]'\n";
         # skip over comment lines
         next if (($l1[0] eq '#') || ($l2[0] eq '#'));
 
