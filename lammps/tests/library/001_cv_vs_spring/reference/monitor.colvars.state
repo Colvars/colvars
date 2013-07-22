@@ -1,0 +1,15 @@
+configuration {
+  step          100
+  dt 2.000000e+00
+}
+
+colvar {
+  name one
+  x  1.02297386169296e+01
+}
+
+colvar {
+  name two
+  x  7.52397643106987e+00
+}
+

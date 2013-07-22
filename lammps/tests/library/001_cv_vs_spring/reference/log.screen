@@ -1,0 +1,1300 @@
+# Solvated 5-mer peptide
+
+log log.colvars-1
+
+units		real
+atom_style	full
+
+pair_style	lj/charmm/coul/long 8.0 10.0 10.0
+bond_style      harmonic
+angle_style     charmm
+dihedral_style  charmm
+improper_style  harmonic
+kspace_style	pppm 0.0001
+
+read_data	../common/data.peptide
+Scanning data file ...
+  3 = max bonds/atom
+  6 = max angles/atom
+  14 = max dihedrals/atom
+  1 = max impropers/atom
+Reading data file ...
+  orthogonal box = (36.8402 41.0137 29.7681) to (64.2116 68.3851 57.1395)
+  2004 atoms
+  2004 velocities
+  1365 bonds
+  786 angles
+  207 dihedrals
+  12 impropers
+Finding 1-2 1-3 1-4 neighbors ...
+  4 = max # of 1-2 neighbors
+  7 = max # of 1-3 neighbors
+  14 = max # of 1-4 neighbors
+  18 = max # of special neighbors
+
+neighbor	2.0 bin
+neigh_modify	delay 2 every 1 check yes
+
+timestep	2.0
+
+group	peptide type <= 12
+84 atoms in group peptide
+group	one id 2 4 5 6
+4 atoms in group one
+group	two id 80 82 83 84
+4 atoms in group two
+group	ref id 37
+1 atoms in group ref
+
+velocity ref set 0.0 0.0 0.0
+
+fix	f1 all nvt temp  275.0 275.0 100.0
+fix	f2 all colvars monitor.inp output monitor tstat f1
+fix	f3 ref setforce 0.0 0.0 0.0
+fix	f4 all shake 0.0001 10 0 b 4 6 8 10 12 14 18 a 31
+Finding SHAKE clusters ...
+  19 = # of size 2 clusters
+  6 = # of size 3 clusters
+  3 = # of size 4 clusters
+  640 = # of frozen angles
+
+variable	rx equal xcm(ref,x)
+variable	ry equal xcm(ref,y)
+variable	rz equal xcm(ref,z)
+variable	d1x equal xcm(one,x)-v_rx
+variable	d1y equal xcm(one,y)-v_ry
+variable	d1z equal xcm(one,z)-v_rz
+variable	d2x equal xcm(two,x)-v_rx
+variable	d2y equal xcm(two,y)-v_ry
+variable	d2z equal xcm(two,z)-v_rz
+variable	d1 equal sqrt(v_d1x*v_d1x+v_d1y*v_d1y+v_d1z*v_d1z)
+variable	d2 equal sqrt(v_d2x*v_d2x+v_d2y*v_d2y+v_d2z*v_d2z)
+
+thermo_style	custom step temp pe epair emol ke v_d1 v_d2 f_f2
+thermo		10
+
+run		100 post no
+PPPM initialization ...
+  G vector (1/distance)= 0.268725
+  grid = 15 15 15
+  stencil order = 5
+  estimated absolute RMS force accuracy = 0.0228209
+  estimated relative force accuracy = 6.87243e-05
+Setting up run ...
+colvars: Creating proxy instance
+colvars: ----------------------------------------------------------------------
+colvars: # indexFile = "" [default]
+colvars: # analysis = off [default]
+colvars: # colvarsTrajFrequency = 10
+colvars: # colvarsRestartFrequency = 100
+colvars: # colvarsTrajAppend = off [default]
+colvars: The restart output state file will be "rest.colvars.state".
+colvars: The final output state file will be "monitor.colvars.state".
+colvars: Writing to colvar trajectory file "monitor.colvars.traj".
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = one
+colvars:   Initializing a new "distance" component.
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # oneSiteSystemForce = off [default]
+colvars:       Initializing atom group "group1".
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # disableForces = off [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Atom group "group1" defined, 4 atoms initialized: total mass = 0.
+colvars:       Initializing atom group "group2".
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # disableForces = off [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Atom group "group2" defined, 1 atoms initialized: total mass = 0.
+colvars:   All components initialized.
+colvars:   # width = 1 [default]
+colvars:   # lowerBoundary = 0 [default]
+colvars:   # lowerWallConstant = 0 [default]
+colvars:   # upperBoundary = 0 [default]
+colvars:   # upperWallConstant = 0 [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = off [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputSystemForce = off [default]
+colvars:   # outputAppliedForce = off [default]
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = two
+colvars:   Initializing a new "distance" component.
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # oneSiteSystemForce = off [default]
+colvars:       Initializing atom group "group1".
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # disableForces = off [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Atom group "group1" defined, 4 atoms initialized: total mass = 0.
+colvars:       Initializing atom group "group2".
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # disableForces = off [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Atom group "group2" defined, 1 atoms initialized: total mass = 0.
+colvars:   All components initialized.
+colvars:   # width = 1 [default]
+colvars:   # lowerBoundary = 0 [default]
+colvars:   # lowerWallConstant = 0 [default]
+colvars:   # upperBoundary = 0 [default]
+colvars:   # upperWallConstant = 0 [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = off [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputSystemForce = off [default]
+colvars:   # outputAppliedForce = off [default]
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables initialized, 2 in total.
+colvars: Collective variables biases initialized, 0 in total.
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables module initialized.
+colvars: ----------------------------------------------------------------------
+colvars: Re-initialized atom group one:0/0. 4 atoms: total mass = 15.035.
+colvars: Re-initialized atom group one:0/1. 1 atoms: total mass = 12.011.
+colvars: Re-initialized atom group two:0/0. 4 atoms: total mass = 15.035.
+colvars: Re-initialized atom group two:0/1. 1 atoms: total mass = 12.011.
+Step Temp PotEng E_pair E_mol KinEng d1 d2 f2 
+       0    281.90811   -6372.3766    -6442.768    70.391395    1134.1445    9.9349081    7.5836631            0 
+      10     277.1825   -6354.0194   -6421.0495     67.03014    1115.1329    10.083445     7.684912            0 
+      20     277.3993    -6355.492   -6437.8159    82.323905    1116.0051    10.198565    7.7312506            0 
+      30    280.24532   -6368.6425   -6447.9655     79.32294    1127.4549    10.244465     7.724218            0 
+      40    272.68748   -6341.8932   -6420.4899    78.596698     1097.049    10.262493    7.5192628            0 
+      50    280.79396   -6378.8834   -6446.2865    67.403082    1129.6622    10.346152    7.4116777            0 
+      60    267.08046   -6328.5212   -6410.0658    81.544646    1074.4914    10.321114    7.3666141            0 
+      70     269.2007   -6342.3169   -6414.1424    71.825477    1083.0213    10.298519    7.3175151            0 
+      80    270.94896   -6354.1758   -6428.3762    74.200415    1090.0548     10.27071    7.3659756            0 
+      90    279.41523   -6395.0358   -6467.6114    72.575606    1124.1154    10.236734    7.4312551            0 
+colvars: Writing the state file "rest.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "monitor.colvars.traj".
+     100    264.83396   -6346.8498   -6420.3506    73.500781    1065.4535    10.229739    7.5239764            0 
+
+log log.colvars-2
+
+fix	f2 all colvars restrain.inp output restrain
+colvars: Saving collective variables state to "monitor.colvars.state".
+
+
+run		100 post no
+PPPM initialization ...
+  G vector (1/distance)= 0.268725
+  grid = 15 15 15
+  stencil order = 5
+  estimated absolute RMS force accuracy = 0.0228209
+  estimated relative force accuracy = 6.87243e-05
+Setting up run ...
+colvars: Creating proxy instance
+colvars: ----------------------------------------------------------------------
+colvars: # indexFile = "" [default]
+colvars: # analysis = off [default]
+colvars: # colvarsTrajFrequency = 10
+colvars: # colvarsRestartFrequency = 100
+colvars: # colvarsTrajAppend = off [default]
+colvars: The restart output state file will be "rest.colvars.state".
+colvars: The final output state file will be "restrain.colvars.state".
+colvars: Writing to colvar trajectory file "restrain.colvars.traj".
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = one
+colvars:   Initializing a new "distance" component.
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # oneSiteSystemForce = off [default]
+colvars:       Initializing atom group "group1".
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # disableForces = off [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Atom group "group1" defined, 4 atoms initialized: total mass = 0.
+colvars:       Initializing atom group "group2".
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # disableForces = off [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Atom group "group2" defined, 1 atoms initialized: total mass = 0.
+colvars:   All components initialized.
+colvars:   # width = 1 [default]
+colvars:   # lowerBoundary = 0 [default]
+colvars:   # lowerWallConstant = 0 [default]
+colvars:   # upperBoundary = 0 [default]
+colvars:   # upperWallConstant = 0 [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = off [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputSystemForce = off [default]
+colvars:   # outputAppliedForce = off [default]
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = two
+colvars:   Initializing a new "distance" component.
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # oneSiteSystemForce = off [default]
+colvars:       Initializing atom group "group1".
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # disableForces = off [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Atom group "group1" defined, 4 atoms initialized: total mass = 0.
+colvars:       Initializing atom group "group2".
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # disableForces = off [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Atom group "group2" defined, 1 atoms initialized: total mass = 0.
+colvars:   All components initialized.
+colvars:   # width = 1 [default]
+colvars:   # lowerBoundary = 0 [default]
+colvars:   # lowerWallConstant = 0 [default]
+colvars:   # upperBoundary = 0 [default]
+colvars:   # upperWallConstant = 0 [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = off [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputSystemForce = off [default]
+colvars:   # outputAppliedForce = off [default]
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables initialized, 2 in total.
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new "harmonic" instance.
+colvars:   # name = h_pot
+colvars:   # colvars = { one, two }
+colvars:   # outputEnergy = off [default]
+colvars:   # forceConstant = 100
+colvars:   # centers = { 10, 10 }
+colvars:   # targetCenters = { 10, 10 } [default]
+colvars:   # targetForceConstant = 0 [default]
+colvars:   # outputCenters = off [default]
+colvars:   # outputAccumulatedWork = off [default]
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables biases initialized, 1 in total.
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables module initialized.
+colvars: ----------------------------------------------------------------------
+colvars: Initializing step number as firstTimestep.
+colvars: Re-initialized atom group one:0/0. 4 atoms: total mass = 15.035.
+colvars: Re-initialized atom group one:0/1. 1 atoms: total mass = 12.011.
+colvars: Re-initialized atom group two:0/0. 4 atoms: total mass = 15.035.
+colvars: Re-initialized atom group two:0/1. 1 atoms: total mass = 12.011.
+Step Temp PotEng E_pair E_mol KinEng d1 d2 f2 
+     100    264.83396   -6346.8498   -6420.3506    73.500781    1065.4535    10.229739    7.5239764    309.17363 
+     110    311.17072    -6355.568   -6490.7506    135.18268    1251.8709     10.07866    8.4823811    115.46772 
+     120    314.92793    -6299.552   -6487.2859    187.73386    1266.9865    9.9503067    9.4333393     16.17869 
+     130    302.57425   -6274.7047   -6441.2544    166.54962    1217.2864    9.9798269    9.5421224    10.502942 
+     140    297.38508   -6270.0153   -6441.2716    171.25631    1196.4099    9.9217582    9.6997708    4.8129676 
+     150    299.93496   -6297.2647    -6489.628     192.3633    1206.6683    9.9832576    9.7742173    2.5629079 
+     160    301.92852   -6326.3166   -6514.5834    188.26682    1214.6886    10.073279     9.821709    1.8578781 
+     170    290.79461   -6305.0071   -6471.5227    166.51562    1169.8958    10.041333    9.7702835    2.7239044 
+     180    287.74919   -6314.0496   -6475.0658    161.01621    1157.6438    9.9799828    9.7647183    2.7879079 
+     190    285.89772   -6323.5845   -6469.2523    145.66784    1150.1951    9.9188729    9.9764788   0.35674296 
+colvars: Writing the state file "rest.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "restrain.colvars.traj".
+     200    287.02301   -6346.7542   -6497.0878    150.33365    1154.7223    9.9396812    10.018482   0.19899693 
+
+log log.colvars-3
+
+write_restart  after_restrain.restart
+System init for write_restart ...
+PPPM initialization ...
+  G vector (1/distance)= 0.268725
+  grid = 15 15 15
+  stencil order = 5
+  estimated absolute RMS force accuracy = 0.0228209
+  estimated relative force accuracy = 6.87243e-05
+write_data     colvars.data
+System init for write_data ...
+PPPM initialization ...
+  G vector (1/distance)= 0.268725
+  grid = 15 15 15
+  stencil order = 5
+  estimated absolute RMS force accuracy = 0.0228209
+  estimated relative force accuracy = 6.87243e-05
+
+run		100 post no
+PPPM initialization ...
+  G vector (1/distance)= 0.268725
+  grid = 15 15 15
+  stencil order = 5
+  estimated absolute RMS force accuracy = 0.0228209
+  estimated relative force accuracy = 6.87243e-05
+Setting up run ...
+colvars: Re-initialized atom group one:0/0. 4 atoms: total mass = 15.035.
+colvars: Re-initialized atom group one:0/1. 1 atoms: total mass = 12.011.
+colvars: Re-initialized atom group two:0/0. 4 atoms: total mass = 15.035.
+colvars: Re-initialized atom group two:0/1. 1 atoms: total mass = 12.011.
+colvars: Writing the state file "rest.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "restrain.colvars.traj".
+Step Temp PotEng E_pair E_mol KinEng d1 d2 f2 
+     200    287.02301   -6346.7542   -6497.0878    150.33365    1154.7223    9.9396812    10.018482   0.19899693 
+     210    279.92592   -6338.6032   -6487.9902    149.38691    1126.1699    10.081922    9.8747753    1.1196234 
+     220    279.38152   -6355.4662   -6487.5788    132.11264    1123.9798    10.091935    9.7558112     3.404011 
+     230    275.67688     -6352.12   -6501.5086    149.38859    1109.0756    10.080749    9.8292674    1.7835014 
+     240    271.06868   -6345.9062   -6484.9805    139.07428    1090.5364    10.075925    9.8397894    1.5716052 
+     250    280.82338   -6399.3468   -6517.0738    117.72705    1129.7805    10.034838     9.734008    3.5982706 
+     260    281.31551   -6412.1734   -6538.7373     126.5639    1131.7604    10.011313    9.8358442    1.3537556 
+     270    274.54279   -6399.0607   -6528.3636    129.30289    1104.5131     10.09581    9.7934687    2.5917329 
+     280    276.17874    -6418.265   -6543.2102    124.94525    1111.0947    10.098858    9.8693292    1.3423882 
+     290     277.8724   -6437.5732   -6554.2693    116.69603    1117.9084    10.058676    9.8288375    1.6369715 
+colvars: Writing the state file "rest.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "restrain.colvars.traj".
+     300    275.13223   -6442.7755   -6568.5703    125.79482    1106.8845    9.9810675    9.6340676    6.7132494 
+
+clear
+colvars: Saving collective variables state to "restrain.colvars.state".
+
+------------------------------------------------------------------------
+This simulation made use of algorithms and methodologies described
+in the following references:
+
+    http://lammps.sandia.gov
+
+S.J. Plimpton,
+ Fast Parallel Algorithms for Short-Range Molecular Dynamics,
+  J. Comp. Phys., 117, 1-19 (1995)
+
+S.J. Plimpton, R. Pollock, M. Stevens,
+ Particle-Mesh Ewald and r-RESPA for Parallel Molecular Dynamics Simulations,
+ Proc. of the 8th SIAM Conference on Parallel Processing for Scientific Computing,
+  Minneapolis, MN (March 1997).
+
+A.P. Thompson, S.J. Plimpton, W. Mattson,
+ General formulation of pressure and stress tensor for arbitrary many-body
+ interaction potentials under periodic boundary conditions,
+ J. Chem. Phys., 131, 154107 (2009)
+
+G. Fiorin, M.L. Klein and J. Henin,
+ Using collective variables to drive molecular dynamics simulations,
+ Mol. Phys. http://dx.doi.org/10.1080/00268976.2013.813594 (2013)
+
+
+log log.colvars-4
+
+units		real
+atom_style	full
+
+pair_style	lj/charmm/coul/long 8.0 10.0 10.0
+bond_style      harmonic
+angle_style     charmm
+dihedral_style  charmm
+improper_style  harmonic
+kspace_style	pppm 0.0001
+
+read_restart	after_restrain.restart
+Reading restart file ...
+  orthogonal box = (36.8402 41.0137 29.7681) to (64.2116 68.3851 57.1395)
+  2004 atoms
+  1365 bonds
+  786 angles
+  207 dihedrals
+  12 impropers
+Finding 1-2 1-3 1-4 neighbors ...
+  4 = max # of 1-2 neighbors
+  7 = max # of 1-3 neighbors
+  14 = max # of 1-4 neighbors
+  18 = max # of special neighbors
+
+neighbor	2.0 bin
+neigh_modify	delay 2 every 1 check yes
+
+timestep	2.0
+
+velocity ref set 0.0 0.0 0.0
+
+fix	f1 all nvt temp  275.0 275.0 100.0
+Resetting global state of Fix f1 Style nvt from restart file info
+fix	f2 all colvars restrain.inp output restart tstat f1
+colvars: Creating proxy instance
+colvars: ----------------------------------------------------------------------
+colvars: # indexFile = "" [default]
+colvars: # analysis = off [default]
+colvars: # colvarsTrajFrequency = 10
+colvars: # colvarsRestartFrequency = 100
+colvars: # colvarsTrajAppend = off [default]
+colvars: The restart output state file will be "rest.colvars.state".
+colvars: The final output state file will be "restart.colvars.state".
+colvars: Writing to colvar trajectory file "restart.colvars.traj".
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = one
+colvars:   Initializing a new "distance" component.
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # oneSiteSystemForce = off [default]
+colvars:       Initializing atom group "group1".
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # disableForces = off [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Atom group "group1" defined, 4 atoms initialized: total mass = 0.
+colvars:       Initializing atom group "group2".
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # disableForces = off [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Atom group "group2" defined, 1 atoms initialized: total mass = 0.
+colvars:   All components initialized.
+colvars:   # width = 1 [default]
+colvars:   # lowerBoundary = 0 [default]
+colvars:   # lowerWallConstant = 0 [default]
+colvars:   # upperBoundary = 0 [default]
+colvars:   # upperWallConstant = 0 [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = off [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputSystemForce = off [default]
+colvars:   # outputAppliedForce = off [default]
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = two
+colvars:   Initializing a new "distance" component.
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # oneSiteSystemForce = off [default]
+colvars:       Initializing atom group "group1".
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # disableForces = off [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Atom group "group1" defined, 4 atoms initialized: total mass = 0.
+colvars:       Initializing atom group "group2".
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # disableForces = off [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Atom group "group2" defined, 1 atoms initialized: total mass = 0.
+colvars:   All components initialized.
+colvars:   # width = 1 [default]
+colvars:   # lowerBoundary = 0 [default]
+colvars:   # lowerWallConstant = 0 [default]
+colvars:   # upperBoundary = 0 [default]
+colvars:   # upperWallConstant = 0 [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = off [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputSystemForce = off [default]
+colvars:   # outputAppliedForce = off [default]
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables initialized, 2 in total.
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new "harmonic" instance.
+colvars:   # name = h_pot
+colvars:   # colvars = { one, two }
+colvars:   # outputEnergy = off [default]
+colvars:   # forceConstant = 100
+colvars:   # centers = { 10, 10 }
+colvars:   # targetCenters = { 10, 10 } [default]
+colvars:   # targetForceConstant = 0 [default]
+colvars:   # outputCenters = off [default]
+colvars:   # outputAccumulatedWork = off [default]
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables biases initialized, 1 in total.
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables module initialized.
+colvars: ----------------------------------------------------------------------
+colvars: Initializing step number as firstTimestep.
+colvars:   Restarting collective variable "one" from value: 9.93968
+colvars:   Restarting collective variable "two" from value: 10.0185
+colvars:   Restarting harmonic bias "h_pot".
+Resetting global state of Fix f2 Style colvars from restart file info
+fix	f3 ref setforce 0.0 0.0 0.0
+fix	f4 all shake 0.0001 10 0 b 4 6 8 10 12 14 18 a 31
+Finding SHAKE clusters ...
+  19 = # of size 2 clusters
+  6 = # of size 3 clusters
+  3 = # of size 4 clusters
+  640 = # of frozen angles
+
+thermo_style	custom step temp pe epair emol ke v_d1 v_d2 f_f2
+thermo		10
+
+run		100 post no
+PPPM initialization ...
+  G vector (1/distance)= 0.268725
+  grid = 15 15 15
+  stencil order = 5
+  estimated absolute RMS force accuracy = 0.0228209
+  estimated relative force accuracy = 6.87243e-05
+Setting up run ...
+colvars: Re-initialized atom group one:0/0. 4 atoms: total mass = 15.035.
+colvars: Re-initialized atom group one:0/1. 1 atoms: total mass = 12.011.
+colvars: Re-initialized atom group two:0/0. 4 atoms: total mass = 15.035.
+colvars: Re-initialized atom group two:0/1. 1 atoms: total mass = 12.011.
+Step Temp PotEng E_pair E_mol KinEng d1 d2 f2 
+     200    287.02301   -6346.7542   -6497.0878    150.33365    1154.7223    9.9396812    10.018482   0.19899693 
+     210    279.92592   -6338.6032   -6487.9902    149.38691    1126.1699    10.081922    9.8747753    1.1196234 
+     220    279.38152   -6355.4662   -6487.5788    132.11264    1123.9798    10.091935    9.7558112     3.404011 
+     230    275.67688     -6352.12   -6501.5086    149.38859    1109.0756    10.080749    9.8292674    1.7835014 
+     240    271.06868   -6345.9062   -6484.9805    139.07428    1090.5364    10.075925    9.8397894    1.5716052 
+     250    280.82338   -6399.3468   -6517.0738    117.72705    1129.7805    10.034838     9.734008    3.5982706 
+     260    281.31551   -6412.1734   -6538.7373     126.5639    1131.7604    10.011313    9.8358442    1.3537556 
+     270    274.54279   -6399.0607   -6528.3636    129.30289    1104.5131     10.09581    9.7934687    2.5917329 
+     280    276.17874    -6418.265   -6543.2102    124.94525    1111.0947    10.098858    9.8693292    1.3423882 
+     290     277.8724   -6437.5732   -6554.2693    116.69603    1117.9084    10.058676    9.8288375    1.6369715 
+colvars: Writing the state file "rest.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "restart.colvars.traj".
+     300    275.13223   -6442.7755   -6568.5703    125.79482    1106.8845    9.9810675    9.6340676    6.7132494 
+
+clear
+colvars: Saving collective variables state to "restart.colvars.state".
+
+------------------------------------------------------------------------
+This simulation made use of algorithms and methodologies described
+in the following references:
+
+    http://lammps.sandia.gov
+
+S.J. Plimpton,
+ Fast Parallel Algorithms for Short-Range Molecular Dynamics,
+  J. Comp. Phys., 117, 1-19 (1995)
+
+S.J. Plimpton, R. Pollock, M. Stevens,
+ Particle-Mesh Ewald and r-RESPA for Parallel Molecular Dynamics Simulations,
+ Proc. of the 8th SIAM Conference on Parallel Processing for Scientific Computing,
+  Minneapolis, MN (March 1997).
+
+A.P. Thompson, S.J. Plimpton, W. Mattson,
+ General formulation of pressure and stress tensor for arbitrary many-body
+ interaction potentials under periodic boundary conditions,
+ J. Chem. Phys., 131, 154107 (2009)
+
+G. Fiorin, M.L. Klein and J. Henin,
+ Using collective variables to drive molecular dynamics simulations,
+ Mol. Phys. http://dx.doi.org/10.1080/00268976.2013.813594 (2013)
+
+
+log log.colvars-5
+
+units		real
+atom_style	full
+
+pair_style	lj/charmm/coul/long 8.0 10.0 10.0
+bond_style      harmonic
+angle_style     charmm
+dihedral_style  charmm
+improper_style  harmonic
+kspace_style	pppm 0.0001
+
+read_data	colvars.data
+Scanning data file ...
+  3 = max bonds/atom
+  6 = max angles/atom
+  14 = max dihedrals/atom
+  1 = max impropers/atom
+Reading data file ...
+  orthogonal box = (36.8402 41.0137 29.7681) to (64.2116 68.3851 57.1395)
+  2004 atoms
+  2004 velocities
+  1365 bonds
+  786 angles
+  207 dihedrals
+  12 impropers
+Finding 1-2 1-3 1-4 neighbors ...
+  4 = max # of 1-2 neighbors
+  7 = max # of 1-3 neighbors
+  14 = max # of 1-4 neighbors
+  18 = max # of special neighbors
+
+neighbor	2.0 bin
+neigh_modify	delay 2 every 1 check yes
+
+timestep	2.0
+
+group	peptide type <= 12
+84 atoms in group peptide
+group	one id 2 4 5 6
+4 atoms in group one
+group	two id 80 82 83 84
+4 atoms in group two
+group	ref id 37
+1 atoms in group ref
+
+velocity ref set 0.0 0.0 0.0
+
+fix	f1 all nvt temp  275.0 275.0 100.0
+fix	f2 all colvars restrain.inp input restrain.colvars.state output data
+fix	f3 ref setforce 0.0 0.0 0.0
+fix	f4 all shake 0.0001 10 0 b 4 6 8 10 12 14 18 a 31
+Finding SHAKE clusters ...
+  19 = # of size 2 clusters
+  6 = # of size 3 clusters
+  3 = # of size 4 clusters
+  640 = # of frozen angles
+
+variable	rx equal xcm(ref,x)
+variable	ry equal xcm(ref,y)
+variable	rz equal xcm(ref,z)
+variable	d1x equal xcm(one,x)-v_rx
+variable	d1y equal xcm(one,y)-v_ry
+variable	d1z equal xcm(one,z)-v_rz
+variable	d2x equal xcm(two,x)-v_rx
+variable	d2y equal xcm(two,y)-v_ry
+variable	d2z equal xcm(two,z)-v_rz
+variable	d1 equal sqrt(v_d1x*v_d1x+v_d1y*v_d1y+v_d1z*v_d1z)
+variable	d2 equal sqrt(v_d2x*v_d2x+v_d2y*v_d2y+v_d2z*v_d2z)
+
+thermo_style	custom step temp pe epair emol ke v_d1 v_d2 f_f2
+thermo		10
+
+run		100 post no
+PPPM initialization ...
+  G vector (1/distance)= 0.268725
+  grid = 15 15 15
+  stencil order = 5
+  estimated absolute RMS force accuracy = 0.0228209
+  estimated relative force accuracy = 6.87243e-05
+Setting up run ...
+colvars: Creating proxy instance
+colvars: ----------------------------------------------------------------------
+colvars: # indexFile = "" [default]
+colvars: # analysis = off [default]
+colvars: # colvarsTrajFrequency = 10
+colvars: # colvarsRestartFrequency = 100
+colvars: # colvarsTrajAppend = off [default]
+colvars: The restart output state file will be "rest.colvars.state".
+colvars: The final output state file will be "data.colvars.state".
+colvars: Writing to colvar trajectory file "data.colvars.traj".
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = one
+colvars:   Initializing a new "distance" component.
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # oneSiteSystemForce = off [default]
+colvars:       Initializing atom group "group1".
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # disableForces = off [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Atom group "group1" defined, 4 atoms initialized: total mass = 0.
+colvars:       Initializing atom group "group2".
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # disableForces = off [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Atom group "group2" defined, 1 atoms initialized: total mass = 0.
+colvars:   All components initialized.
+colvars:   # width = 1 [default]
+colvars:   # lowerBoundary = 0 [default]
+colvars:   # lowerWallConstant = 0 [default]
+colvars:   # upperBoundary = 0 [default]
+colvars:   # upperWallConstant = 0 [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = off [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputSystemForce = off [default]
+colvars:   # outputAppliedForce = off [default]
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = two
+colvars:   Initializing a new "distance" component.
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # oneSiteSystemForce = off [default]
+colvars:       Initializing atom group "group1".
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # disableForces = off [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Atom group "group1" defined, 4 atoms initialized: total mass = 0.
+colvars:       Initializing atom group "group2".
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # disableForces = off [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Atom group "group2" defined, 1 atoms initialized: total mass = 0.
+colvars:   All components initialized.
+colvars:   # width = 1 [default]
+colvars:   # lowerBoundary = 0 [default]
+colvars:   # lowerWallConstant = 0 [default]
+colvars:   # upperBoundary = 0 [default]
+colvars:   # upperWallConstant = 0 [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = off [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputSystemForce = off [default]
+colvars:   # outputAppliedForce = off [default]
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables initialized, 2 in total.
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new "harmonic" instance.
+colvars:   # name = h_pot
+colvars:   # colvars = { one, two }
+colvars:   # outputEnergy = off [default]
+colvars:   # forceConstant = 100
+colvars:   # centers = { 10, 10 }
+colvars:   # targetCenters = { 10, 10 } [default]
+colvars:   # targetForceConstant = 0 [default]
+colvars:   # outputCenters = off [default]
+colvars:   # outputAccumulatedWork = off [default]
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables biases initialized, 1 in total.
+colvars: ----------------------------------------------------------------------
+colvars: Restarting from file "restrain.colvars.state".
+colvars:   Restarting collective variable "one" from value: 9.98107
+colvars:   Restarting collective variable "two" from value: 9.63407
+colvars:   Restarting harmonic bias "h_pot".
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables module initialized.
+colvars: ----------------------------------------------------------------------
+colvars: Re-initialized atom group one:0/0. 4 atoms: total mass = 15.035.
+colvars: Re-initialized atom group one:0/1. 1 atoms: total mass = 12.011.
+colvars: Re-initialized atom group two:0/0. 4 atoms: total mass = 15.035.
+colvars: Re-initialized atom group two:0/1. 1 atoms: total mass = 12.011.
+Step Temp PotEng E_pair E_mol KinEng d1 d2 f2 
+       0    287.02301   -6346.7546   -6497.0882    150.33366    1154.7223    9.9396812    10.018482   0.19899693 
+      10    282.71906    -6333.288   -6483.3253    150.03728     1137.407    10.082348     9.874291    1.1291936 
+      20    283.58423   -6344.1861   -6477.2004    133.01435    1140.8877    10.092654    9.7539676    3.4558376 
+      30    280.63829   -6336.3942   -6487.3551    150.96089    1129.0359    10.081609    9.8266893    1.8348345 
+      40    275.82772    -6325.564   -6466.4424    140.87842    1109.6825    10.076867     9.837444    1.6166486 
+      50    285.64928   -6378.6542   -6497.8336    119.17935    1149.1956    10.035445    9.7326632    3.6362647 
+      60    285.34179   -6390.1335   -6518.0847    127.95112    1147.9585    10.012325    9.8362376    1.3485013 
+      70    278.25013   -6377.8359   -6508.5525    130.71659    1119.4281    10.097549    9.7932738    2.6125717 
+      80    279.71342   -6396.2825   -6522.5958    126.31332    1125.3151    10.100247     9.869618    1.3524455 
+      90    282.64221   -6417.5892   -6535.7043    118.11503    1137.0979    10.059356    9.8296541    1.6270406 
+colvars: Writing the state file "rest.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "data.colvars.traj".
+     100    280.01962   -6418.9519   -6545.9799    127.02805    1126.5469    9.9802964    9.6338702    6.7219647 
+
+clear
+colvars: Saving collective variables state to "data.colvars.state".
+
+------------------------------------------------------------------------
+This simulation made use of algorithms and methodologies described
+in the following references:
+
+    http://lammps.sandia.gov
+
+S.J. Plimpton,
+ Fast Parallel Algorithms for Short-Range Molecular Dynamics,
+  J. Comp. Phys., 117, 1-19 (1995)
+
+S.J. Plimpton, R. Pollock, M. Stevens,
+ Particle-Mesh Ewald and r-RESPA for Parallel Molecular Dynamics Simulations,
+ Proc. of the 8th SIAM Conference on Parallel Processing for Scientific Computing,
+  Minneapolis, MN (March 1997).
+
+A.P. Thompson, S.J. Plimpton, W. Mattson,
+ General formulation of pressure and stress tensor for arbitrary many-body
+ interaction potentials under periodic boundary conditions,
+ J. Chem. Phys., 131, 154107 (2009)
+
+G. Fiorin, M.L. Klein and J. Henin,
+ Using collective variables to drive molecular dynamics simulations,
+ Mol. Phys. http://dx.doi.org/10.1080/00268976.2013.813594 (2013)
+
+
+log log.spring-1
+
+units		real
+atom_style	full
+
+pair_style	lj/charmm/coul/long 8.0 10.0 10.0
+bond_style      harmonic
+angle_style     charmm
+dihedral_style  charmm
+improper_style  harmonic
+kspace_style	pppm 0.0001
+
+read_data	../common/data.peptide
+Scanning data file ...
+  3 = max bonds/atom
+  6 = max angles/atom
+  14 = max dihedrals/atom
+  1 = max impropers/atom
+Reading data file ...
+  orthogonal box = (36.8402 41.0137 29.7681) to (64.2116 68.3851 57.1395)
+  2004 atoms
+  2004 velocities
+  1365 bonds
+  786 angles
+  207 dihedrals
+  12 impropers
+Finding 1-2 1-3 1-4 neighbors ...
+  4 = max # of 1-2 neighbors
+  7 = max # of 1-3 neighbors
+  14 = max # of 1-4 neighbors
+  18 = max # of special neighbors
+
+neighbor	2.0 bin
+neigh_modify	delay 2 every 1 check yes
+
+timestep	2.0
+
+group	peptide type <= 12
+84 atoms in group peptide
+group	one id 2 4 5 6
+4 atoms in group one
+group	two id 80 82 83 84
+4 atoms in group two
+group	ref id 37
+1 atoms in group ref
+
+velocity ref set 0.0 0.0 0.0
+
+fix	f1 all nvt temp  275.0 275.0 100.0
+fix	f2a one spring couple ref 0.0 0.0 0.0 0.0 10.0
+fix	f2b two spring couple ref 0.0 0.0 0.0 0.0 10.0
+fix	f3 ref setforce 0.0 0.0 0.0
+fix	f4 all shake 0.0001 10 0 b 4 6 8 10 12 14 18 a 31
+Finding SHAKE clusters ...
+  19 = # of size 2 clusters
+  6 = # of size 3 clusters
+  3 = # of size 4 clusters
+  640 = # of frozen angles
+
+variable	rx equal xcm(ref,x)
+variable	ry equal xcm(ref,y)
+variable	rz equal xcm(ref,z)
+variable	d1x equal xcm(one,x)-v_rx
+variable	d1y equal xcm(one,y)-v_ry
+variable	d1z equal xcm(one,z)-v_rz
+variable	d2x equal xcm(two,x)-v_rx
+variable	d2y equal xcm(two,y)-v_ry
+variable	d2z equal xcm(two,z)-v_rz
+variable	d1 equal sqrt(v_d1x*v_d1x+v_d1y*v_d1y+v_d1z*v_d1z)
+variable	d2 equal sqrt(v_d2x*v_d2x+v_d2y*v_d2y+v_d2z*v_d2z)
+variable	f2 equal f_f2a+f_f2b
+
+thermo_style	custom step temp pe epair emol ke v_d1 v_d2 v_f2
+thermo		10
+
+run		100 post no
+PPPM initialization ...
+  G vector (1/distance)= 0.268725
+  grid = 15 15 15
+  stencil order = 5
+  estimated absolute RMS force accuracy = 0.0228209
+  estimated relative force accuracy = 6.87243e-05
+Setting up run ...
+Step Temp PotEng E_pair E_mol KinEng d1 d2 f2 
+       0    281.90811   -6372.3766    -6442.768    70.391395    1134.1445    9.9349081    7.5836631            0 
+      10     277.1825   -6354.0194   -6421.0495     67.03014    1115.1329    10.083445     7.684912            0 
+      20     277.3993    -6355.492   -6437.8159    82.323905    1116.0051    10.198565    7.7312506            0 
+      30    280.24532   -6368.6425   -6447.9655     79.32294    1127.4549    10.244465     7.724218            0 
+      40    272.68748   -6341.8932   -6420.4899    78.596698     1097.049    10.262493    7.5192628            0 
+      50    280.79396   -6378.8834   -6446.2865    67.403082    1129.6622    10.346152    7.4116777            0 
+      60    267.08046   -6328.5212   -6410.0658    81.544646    1074.4914    10.321114    7.3666141            0 
+      70     269.2007   -6342.3169   -6414.1424    71.825477    1083.0213    10.298519    7.3175151            0 
+      80    270.94896   -6354.1758   -6428.3762    74.200415    1090.0548     10.27071    7.3659756            0 
+      90    279.41523   -6395.0358   -6467.6114    72.575606    1124.1154    10.236734    7.4312551            0 
+     100    264.83396   -6346.8498   -6420.3506    73.500781    1065.4535    10.229739    7.5239764            0 
+
+log log.spring-2
+
+fix	f2a one spring couple ref 100.0 0.0 0.0 0.0 10.0
+fix	f2b two spring couple ref 100.0 0.0 0.0 0.0 10.0
+
+run		100 post no
+PPPM initialization ...
+  G vector (1/distance)= 0.268725
+  grid = 15 15 15
+  stencil order = 5
+  estimated absolute RMS force accuracy = 0.0228209
+  estimated relative force accuracy = 6.87243e-05
+Setting up run ...
+Step Temp PotEng E_pair E_mol KinEng d1 d2 f2 
+     100    264.83396   -6346.8498   -6420.3506    73.500781    1065.4535    10.229739    7.5239764    309.17363 
+     110    311.17072    -6355.568   -6490.7506    135.18268    1251.8709     10.07866    8.4823811    115.46772 
+     120    314.92793    -6299.552   -6487.2859    187.73386    1266.9865    9.9503067    9.4333393     16.17869 
+     130    302.57425   -6274.7047   -6441.2544    166.54962    1217.2864    9.9798269    9.5421224    10.502942 
+     140    297.38508   -6270.0153   -6441.2716    171.25631    1196.4099    9.9217582    9.6997708    4.8129676 
+     150    299.93496   -6297.2647    -6489.628     192.3633    1206.6683    9.9832576    9.7742173    2.5629079 
+     160    301.92852   -6326.3166   -6514.5834    188.26682    1214.6886    10.073279     9.821709    1.8578781 
+     170    290.79461   -6305.0071   -6471.5227    166.51562    1169.8958    10.041333    9.7702835    2.7239044 
+     180    287.74919   -6314.0496   -6475.0658    161.01621    1157.6438    9.9799828    9.7647183    2.7879079 
+     190    285.89772   -6323.5845   -6469.2523    145.66784    1150.1951    9.9188729    9.9764788   0.35674296 
+     200    287.02301   -6346.7542   -6497.0878    150.33365    1154.7223    9.9396812    10.018482   0.19899693 
+
+log log.spring-3
+
+write_restart  after_restrain.restart
+System init for write_restart ...
+PPPM initialization ...
+  G vector (1/distance)= 0.268725
+  grid = 15 15 15
+  stencil order = 5
+  estimated absolute RMS force accuracy = 0.0228209
+  estimated relative force accuracy = 6.87243e-05
+write_data     spring.data
+System init for write_data ...
+PPPM initialization ...
+  G vector (1/distance)= 0.268725
+  grid = 15 15 15
+  stencil order = 5
+  estimated absolute RMS force accuracy = 0.0228209
+  estimated relative force accuracy = 6.87243e-05
+
+run		100 post no
+PPPM initialization ...
+  G vector (1/distance)= 0.268725
+  grid = 15 15 15
+  stencil order = 5
+  estimated absolute RMS force accuracy = 0.0228209
+  estimated relative force accuracy = 6.87243e-05
+Setting up run ...
+Step Temp PotEng E_pair E_mol KinEng d1 d2 f2 
+     200    287.02301   -6346.7542   -6497.0878    150.33365    1154.7223    9.9396812    10.018482   0.19899693 
+     210    279.92592   -6338.6032   -6487.9902    149.38691    1126.1699    10.081922    9.8747753    1.1196234 
+     220    279.38152   -6355.4662   -6487.5788    132.11264    1123.9798    10.091935    9.7558112     3.404011 
+     230    275.67688     -6352.12   -6501.5086    149.38859    1109.0756    10.080749    9.8292674    1.7835014 
+     240    271.06868   -6345.9062   -6484.9805    139.07428    1090.5364    10.075925    9.8397894    1.5716052 
+     250    280.82338   -6399.3468   -6517.0738    117.72705    1129.7805    10.034838     9.734008    3.5982706 
+     260    281.31551   -6412.1734   -6538.7373     126.5639    1131.7604    10.011313    9.8358442    1.3537556 
+     270    274.54279   -6399.0607   -6528.3636    129.30289    1104.5131     10.09581    9.7934687    2.5917329 
+     280    276.17874    -6418.265   -6543.2103    124.94525    1111.0947    10.098858    9.8693292    1.3423882 
+     290     277.8724   -6437.5732   -6554.2693    116.69603    1117.9084    10.058676    9.8288375    1.6369715 
+     300    275.13223   -6442.7754   -6568.5702    125.79482    1106.8845    9.9810675    9.6340676    6.7132494 
+
+clear
+
+------------------------------------------------------------------------
+This simulation made use of algorithms and methodologies described
+in the following references:
+
+    http://lammps.sandia.gov
+
+S.J. Plimpton,
+ Fast Parallel Algorithms for Short-Range Molecular Dynamics,
+  J. Comp. Phys., 117, 1-19 (1995)
+
+S.J. Plimpton, R. Pollock, M. Stevens,
+ Particle-Mesh Ewald and r-RESPA for Parallel Molecular Dynamics Simulations,
+ Proc. of the 8th SIAM Conference on Parallel Processing for Scientific Computing,
+  Minneapolis, MN (March 1997).
+
+A.P. Thompson, S.J. Plimpton, W. Mattson,
+ General formulation of pressure and stress tensor for arbitrary many-body
+ interaction potentials under periodic boundary conditions,
+ J. Chem. Phys., 131, 154107 (2009)
+
+
+log log.spring-4
+
+units		real
+atom_style	full
+
+pair_style	lj/charmm/coul/long 8.0 10.0 10.0
+bond_style      harmonic
+angle_style     charmm
+dihedral_style  charmm
+improper_style  harmonic
+kspace_style	pppm 0.0001
+
+read_restart	after_restrain.restart
+Reading restart file ...
+  orthogonal box = (36.8402 41.0137 29.7681) to (64.2116 68.3851 57.1395)
+  2004 atoms
+  1365 bonds
+  786 angles
+  207 dihedrals
+  12 impropers
+Finding 1-2 1-3 1-4 neighbors ...
+  4 = max # of 1-2 neighbors
+  7 = max # of 1-3 neighbors
+  14 = max # of 1-4 neighbors
+  18 = max # of special neighbors
+
+neighbor	2.0 bin
+neigh_modify	delay 2 every 1 check yes
+
+timestep	2.0
+
+velocity ref set 0.0 0.0 0.0
+
+fix	f1 all nvt temp  275.0 275.0 100.0
+Resetting global state of Fix f1 Style nvt from restart file info
+fix	f2a one spring couple ref 100.0 0.0 0.0 0.0 10.0
+fix	f2b two spring couple ref 100.0 0.0 0.0 0.0 10.0
+fix	f3 ref setforce 0.0 0.0 0.0
+fix	f4 all shake 0.0001 10 0 b 4 6 8 10 12 14 18 a 31
+Finding SHAKE clusters ...
+  19 = # of size 2 clusters
+  6 = # of size 3 clusters
+  3 = # of size 4 clusters
+  640 = # of frozen angles
+
+thermo_style	custom step temp pe epair emol ke v_d1 v_d2 v_f2
+thermo		10
+
+run		100 post  no
+PPPM initialization ...
+  G vector (1/distance)= 0.268725
+  grid = 15 15 15
+  stencil order = 5
+  estimated absolute RMS force accuracy = 0.0228209
+  estimated relative force accuracy = 6.87243e-05
+Setting up run ...
+Step Temp PotEng E_pair E_mol KinEng d1 d2 f2 
+     200    287.02301   -6346.7542   -6497.0878    150.33365    1154.7223    9.9396812    10.018482   0.19899693 
+     210    279.92592   -6338.6032   -6487.9902    149.38691    1126.1699    10.081922    9.8747753    1.1196234 
+     220    279.38152   -6355.4662   -6487.5788    132.11264    1123.9798    10.091935    9.7558112     3.404011 
+     230    275.67688     -6352.12   -6501.5086    149.38859    1109.0756    10.080749    9.8292674    1.7835014 
+     240    271.06868   -6345.9062   -6484.9805    139.07428    1090.5364    10.075925    9.8397894    1.5716052 
+     250    280.82338   -6399.3468   -6517.0738    117.72705    1129.7805    10.034838     9.734008    3.5982706 
+     260    281.31551   -6412.1734   -6538.7373     126.5639    1131.7604    10.011313    9.8358442    1.3537556 
+     270    274.54279   -6399.0607   -6528.3636    129.30289    1104.5131     10.09581    9.7934687    2.5917329 
+     280    276.17874    -6418.265   -6543.2103    124.94525    1111.0947    10.098858    9.8693292    1.3423882 
+     290     277.8724   -6437.5732   -6554.2693    116.69603    1117.9084    10.058676    9.8288375    1.6369715 
+     300    275.13223   -6442.7754   -6568.5702    125.79482    1106.8845    9.9810675    9.6340676    6.7132494 
+
+
+clear
+
+------------------------------------------------------------------------
+This simulation made use of algorithms and methodologies described
+in the following references:
+
+    http://lammps.sandia.gov
+
+S.J. Plimpton,
+ Fast Parallel Algorithms for Short-Range Molecular Dynamics,
+  J. Comp. Phys., 117, 1-19 (1995)
+
+S.J. Plimpton, R. Pollock, M. Stevens,
+ Particle-Mesh Ewald and r-RESPA for Parallel Molecular Dynamics Simulations,
+ Proc. of the 8th SIAM Conference on Parallel Processing for Scientific Computing,
+  Minneapolis, MN (March 1997).
+
+A.P. Thompson, S.J. Plimpton, W. Mattson,
+ General formulation of pressure and stress tensor for arbitrary many-body
+ interaction potentials under periodic boundary conditions,
+ J. Chem. Phys., 131, 154107 (2009)
+
+
+log log.spring-5
+
+units		real
+atom_style	full
+
+pair_style	lj/charmm/coul/long 8.0 10.0 10.0
+bond_style      harmonic
+angle_style     charmm
+dihedral_style  charmm
+improper_style  harmonic
+kspace_style	pppm 0.0001
+
+read_data	spring.data
+Scanning data file ...
+  3 = max bonds/atom
+  6 = max angles/atom
+  14 = max dihedrals/atom
+  1 = max impropers/atom
+Reading data file ...
+  orthogonal box = (36.8402 41.0137 29.7681) to (64.2116 68.3851 57.1395)
+  2004 atoms
+  2004 velocities
+  1365 bonds
+  786 angles
+  207 dihedrals
+  12 impropers
+Finding 1-2 1-3 1-4 neighbors ...
+  4 = max # of 1-2 neighbors
+  7 = max # of 1-3 neighbors
+  14 = max # of 1-4 neighbors
+  18 = max # of special neighbors
+
+neighbor	2.0 bin
+neigh_modify	delay 2 every 1 check yes
+
+timestep	2.0
+
+group	peptide type <= 12
+84 atoms in group peptide
+group	one id 2 4 5 6
+4 atoms in group one
+group	two id 80 82 83 84
+4 atoms in group two
+group	ref id 37
+1 atoms in group ref
+
+velocity ref set 0.0 0.0 0.0
+
+fix	f1 all nvt temp  275.0 275.0 100.0
+fix	f2a one spring couple ref 100.0 0.0 0.0 0.0 10.0
+fix	f2b two spring couple ref 100.0 0.0 0.0 0.0 10.0
+fix	f3 ref setforce 0.0 0.0 0.0
+fix	f4 all shake 0.0001 10 0 b 4 6 8 10 12 14 18 a 31
+Finding SHAKE clusters ...
+  19 = # of size 2 clusters
+  6 = # of size 3 clusters
+  3 = # of size 4 clusters
+  640 = # of frozen angles
+
+variable	rx equal xcm(ref,x)
+variable	ry equal xcm(ref,y)
+variable	rz equal xcm(ref,z)
+variable	d1x equal xcm(one,x)-v_rx
+variable	d1y equal xcm(one,y)-v_ry
+variable	d1z equal xcm(one,z)-v_rz
+variable	d2x equal xcm(two,x)-v_rx
+variable	d2y equal xcm(two,y)-v_ry
+variable	d2z equal xcm(two,z)-v_rz
+variable	d1 equal sqrt(v_d1x*v_d1x+v_d1y*v_d1y+v_d1z*v_d1z)
+variable	d2 equal sqrt(v_d2x*v_d2x+v_d2y*v_d2y+v_d2z*v_d2z)
+variable	f2 equal f_f2a+f_f2b
+
+thermo_style	custom step temp pe epair emol ke v_d1 v_d2 v_f2
+thermo		10
+
+run		100 post  no
+PPPM initialization ...
+  G vector (1/distance)= 0.268725
+  grid = 15 15 15
+  stencil order = 5
+  estimated absolute RMS force accuracy = 0.0228209
+  estimated relative force accuracy = 6.87243e-05
+Setting up run ...
+Step Temp PotEng E_pair E_mol KinEng d1 d2 f2 
+       0    287.02301   -6346.7546   -6497.0882    150.33366    1154.7223    9.9396812    10.018482   0.19899693 
+      10    282.71906    -6333.288   -6483.3253    150.03728     1137.407    10.082348     9.874291    1.1291936 
+      20    283.58423   -6344.1861   -6477.2004    133.01435    1140.8877    10.092654    9.7539676    3.4558376 
+      30    280.63829   -6336.3942   -6487.3551    150.96089    1129.0359    10.081609    9.8266893    1.8348345 
+      40    275.82772    -6325.564   -6466.4424    140.87842    1109.6825    10.076867     9.837444    1.6166486 
+      50    285.64928   -6378.6542   -6497.8336    119.17935    1149.1956    10.035445    9.7326632    3.6362647 
+      60    285.34179   -6390.1335   -6518.0847    127.95112    1147.9585    10.012325    9.8362376    1.3485013 
+      70    278.25013   -6377.8359   -6508.5525    130.71659    1119.4281    10.097549    9.7932738    2.6125717 
+      80    279.71342   -6396.2824   -6522.5958    126.31332    1125.3151    10.100247     9.869618    1.3524455 
+      90    282.64221   -6417.5892   -6535.7042    118.11503    1137.0979    10.059356    9.8296541    1.6270406 
+     100    280.01962   -6418.9518   -6545.9799    127.02805    1126.5469    9.9802964    9.6338702    6.7219647 
+
+
+
+------------------------------------------------------------------------
+This simulation made use of algorithms and methodologies described
+in the following references:
+
+    http://lammps.sandia.gov
+
+S.J. Plimpton,
+ Fast Parallel Algorithms for Short-Range Molecular Dynamics,
+  J. Comp. Phys., 117, 1-19 (1995)
+
+S.J. Plimpton, R. Pollock, M. Stevens,
+ Particle-Mesh Ewald and r-RESPA for Parallel Molecular Dynamics Simulations,
+ Proc. of the 8th SIAM Conference on Parallel Processing for Scientific Computing,
+  Minneapolis, MN (March 1997).
+
+A.P. Thompson, S.J. Plimpton, W. Mattson,
+ General formulation of pressure and stress tensor for arbitrary many-body
+ interaction potentials under periodic boundary conditions,
+ J. Chem. Phys., 131, 154107 (2009)
+

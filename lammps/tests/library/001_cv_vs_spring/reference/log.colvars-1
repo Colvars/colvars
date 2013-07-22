@@ -1,0 +1,46 @@
+  3 = max bonds/atom
+  6 = max angles/atom
+  14 = max dihedrals/atom
+  1 = max impropers/atom
+  orthogonal box = (36.8402 41.0137 29.7681) to (64.2116 68.3851 57.1395)
+  1 by 1 by 1 MPI processor grid
+  2004 atoms
+  2004 velocities
+  1365 bonds
+  786 angles
+  207 dihedrals
+  12 impropers
+  4 = max # of 1-2 neighbors
+  7 = max # of 1-3 neighbors
+  14 = max # of 1-4 neighbors
+  18 = max # of special neighbors
+84 atoms in group peptide
+4 atoms in group one
+4 atoms in group two
+1 atoms in group ref
+  19 = # of size 2 clusters
+  6 = # of size 3 clusters
+  3 = # of size 4 clusters
+  640 = # of frozen angles
+PPPM initialization ...
+  G vector (1/distance) = 0.268725
+  grid = 15 15 15
+  stencil order = 5
+  estimated absolute RMS force accuracy = 0.0228209
+  estimated relative force accuracy = 6.87243e-05
+  using double precision FFTs
+  3d grid and FFT values/proc = 10648 3375
+
+Step Temp PotEng E_pair E_mol KinEng d1 d2 f2 
+       0    281.90811   -6372.3766    -6442.768    70.391395    1134.1445    9.9349081    7.5836631            0 
+      10     277.1825   -6354.0194   -6421.0495     67.03014    1115.1329    10.083445     7.684912            0 
+      20     277.3993    -6355.492   -6437.8159    82.323905    1116.0051    10.198565    7.7312506            0 
+      30    280.24532   -6368.6425   -6447.9655     79.32294    1127.4549    10.244465     7.724218            0 
+      40    272.68748   -6341.8932   -6420.4899    78.596698     1097.049    10.262493    7.5192628            0 
+      50    280.79396   -6378.8834   -6446.2865    67.403082    1129.6622    10.346152    7.4116777            0 
+      60    267.08046   -6328.5212   -6410.0658    81.544646    1074.4914    10.321114    7.3666141            0 
+      70     269.2007   -6342.3169   -6414.1424    71.825477    1083.0213    10.298519    7.3175151            0 
+      80    270.94896   -6354.1758   -6428.3762    74.200415    1090.0548     10.27071    7.3659756            0 
+      90    279.41523   -6395.0358   -6467.6114    72.575606    1124.1154    10.236734    7.4312551            0 
+     100    264.83396   -6346.8498   -6420.3506    73.500781    1065.4535    10.229739    7.5239764            0 
+

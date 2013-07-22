@@ -1,0 +1,64 @@
+PPPM initialization ...
+  G vector (1/distance) = 0.268725
+  grid = 15 15 15
+  stencil order = 5
+  estimated absolute RMS force accuracy = 0.0228209
+  estimated relative force accuracy = 6.87243e-05
+  using double precision FFTs
+  3d grid and FFT values/proc = 10648 3375
+PPPM initialization ...
+  G vector (1/distance) = 0.268725
+  grid = 15 15 15
+  stencil order = 5
+  estimated absolute RMS force accuracy = 0.0228209
+  estimated relative force accuracy = 6.87243e-05
+  using double precision FFTs
+  3d grid and FFT values/proc = 10648 3375
+PPPM initialization ...
+  G vector (1/distance) = 0.268725
+  grid = 15 15 15
+  stencil order = 5
+  estimated absolute RMS force accuracy = 0.0228209
+  estimated relative force accuracy = 6.87243e-05
+  using double precision FFTs
+  3d grid and FFT values/proc = 10648 3375
+
+Step Temp PotEng E_pair E_mol KinEng d1 d2 f2 
+     200    287.02301   -6346.7542   -6497.0878    150.33365    1154.7223    9.9396812    10.018482   0.19899693 
+     210    279.92592   -6338.6032   -6487.9902    149.38691    1126.1699    10.081922    9.8747753    1.1196234 
+     220    279.38152   -6355.4662   -6487.5788    132.11264    1123.9798    10.091935    9.7558112     3.404011 
+     230    275.67688     -6352.12   -6501.5086    149.38859    1109.0756    10.080749    9.8292674    1.7835014 
+     240    271.06868   -6345.9062   -6484.9805    139.07428    1090.5364    10.075925    9.8397894    1.5716052 
+     250    280.82338   -6399.3468   -6517.0738    117.72705    1129.7805    10.034838     9.734008    3.5982706 
+     260    281.31551   -6412.1734   -6538.7373     126.5639    1131.7604    10.011313    9.8358442    1.3537556 
+     270    274.54279   -6399.0607   -6528.3636    129.30289    1104.5131     10.09581    9.7934687    2.5917329 
+     280    276.17874    -6418.265   -6543.2102    124.94525    1111.0947    10.098858    9.8693292    1.3423882 
+     290     277.8724   -6437.5732   -6554.2693    116.69603    1117.9084    10.058676    9.8288375    1.6369715 
+     300    275.13223   -6442.7755   -6568.5703    125.79482    1106.8845    9.9810675    9.6340676    6.7132494 
+
+
+------------------------------------------------------------------------
+This simulation made use of algorithms and methodologies described
+in the following references:
+
+The LAMMPS Molecular Dynamics Simulator, Version 11 Jul 2013
+    http://lammps.sandia.gov
+
+S.J. Plimpton,
+ Fast Parallel Algorithms for Short-Range Molecular Dynamics,
+  J. Comp. Phys., 117, 1-19 (1995)
+
+S.J. Plimpton, R. Pollock, M. Stevens,
+ Particle-Mesh Ewald and r-RESPA for Parallel Molecular Dynamics Simulations,
+ Proc. of the 8th SIAM Conference on Parallel Processing for Scientific Computing,
+  Minneapolis, MN (March 1997).
+
+A.P. Thompson, S.J. Plimpton, W. Mattson,
+ General formulation of pressure and stress tensor for arbitrary many-body
+ interaction potentials under periodic boundary conditions,
+ J. Chem. Phys., 131, 154107 (2009)
+
+G. Fiorin, M.L. Klein and J. Henin,
+ Using collective variables to drive molecular dynamics simulations,
+ Mol. Phys. http://dx.doi.org/10.1080/00268976.2013.813594 (2013)
+

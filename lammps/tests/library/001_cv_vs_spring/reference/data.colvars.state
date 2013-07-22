@@ -1,0 +1,21 @@
+configuration {
+  step          400
+  dt 2.000000e+00
+}
+
+colvar {
+  name one
+  x  9.98029636203717e+00
+}
+
+colvar {
+  name two
+  x  9.63387015849992e+00
+}
+
+harmonic {
+  configuration {
+    name h_pot
+  }
+}
+
