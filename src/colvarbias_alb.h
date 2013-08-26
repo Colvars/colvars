@@ -48,8 +48,8 @@ protected:
   /// \brief current coupling force
   cvm::real coupling_force; 
 
-  /// \brief correlation time of the colvars
-  int corr_time;
+  /// \brief equilibration time of the colvars
+  int equil_time;
 
   // \brief if we're equilibrating our estimates or collecting data
   bool b_equilibration;

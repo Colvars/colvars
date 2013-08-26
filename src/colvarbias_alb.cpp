@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 colvarbias_alb::colvarbias_alb(std::string const &conf, char const *key) :
-  colvarbias(conf, key), coupling_force(0.0), update_calls(0), coupling_force_accum(1.), corr_time(0), b_equilibration(true) {
+  colvarbias(conf, key), update_calls(0), coupling_force(0.), coupling_force_accum(1.), b_equilibration(true) {
 
   // get the initial restraint centers
   colvar_centers.resize (colvars.size());
@@ -42,12 +42,18 @@ colvarbias_alb::colvarbias_alb(std::string const &conf, char const *key) :
   if(!get_keyval (conf, "UpdateFrequency", update_freq, 0))
     cvm::fatal_error("Error: must set updateFrequency for apadtive linear bias.\n");
   
-  //assume update frequency five times the correlation time.
-  corr_time = (int) update_freq / 5.;
+  //assume update frequency is twice the correlation time.
+  equil_time = (int) (update_freq / 2.) + 1;
+  update_freq = 2 * equil_time;
+  if(update_freq == 0)
+    cvm::fatal_error("Error: must set updateFrequency to greater than 1.\n");
 
   get_keyval (conf, "outputCenters", b_output_centers, false);
   get_keyval (conf, "outputGradient", b_output_grad, false);
   get_keyval (conf, "outputCoupling", b_output_coupling, true);
+
+  //initial guess
+  get_keyval (conf, "forceConstant", coupling_force, 0.0);
 
   if(cvm::temperature() > 0)
     get_keyval (conf, "couplingRange", max_coupling_change, 3 * cvm::temperature() * cvm::boltzmann());
@@ -92,16 +98,16 @@ cvm::real colvarbias_alb::update() {
       means[i] *= (update_calls - 1.) / update_calls;
       means_sq[i] *= (update_calls - 1.) / update_calls;
       means_cu[i] *= (update_calls - 1.) / update_calls;
+
       
       //add with copy from divide
       means[i] += colvars[i]->value() / static_cast<cvm::real> (update_calls);
       means_sq[i] += colvars[i]->value().norm2() / static_cast<cvm::real> (update_calls);
       means_cu[i] += colvars[i]->value().norm2() * colvars[i]->value() / static_cast<cvm::real> (update_calls);
-
     }
   }
 
-  if(b_equilibration && update_calls == 2 * corr_time) {
+  if(b_equilibration && update_calls == equil_time) {
     b_equilibration = false;
     update_calls = 0;
   }
@@ -116,8 +122,9 @@ cvm::real colvarbias_alb::update() {
     //reset means and means_sq
     for(size_t i = 0; i < colvars.size(); i++) {
       
-      temp = means_cu[i] - means[i] * means_sq[i] - 2. * colvar_centers[i] * means_sq[i] + 2. *
-	colvar_centers[i] * means[i] * means[i];
+      //temp = means_cu[i] - means[i] * means_sq[i] - 2. * colvar_centers[i] * means_sq[i] + 2. *
+      //colvar_centers[i] * means[i] * means[i];
+      temp = 2. * (means[i] - colvar_centers[i]) * (means_sq[i] - means[i] * means[i]);
       
       if(cvm::temperature() > 0)
 	step_size += temp / (cvm::temperature()  * cvm::boltzmann());
@@ -131,6 +138,7 @@ cvm::real colvarbias_alb::update() {
     
     coupling_force_accum += step_size * step_size;
     coupling_force += max_coupling_change / sqrt(coupling_force_accum) * step_size;
+
 
     update_calls = 0;      
     b_equilibration = true;
@@ -177,8 +185,8 @@ std::istream & colvarbias_alb::read_restart (std::istream &is)
                       "has no identifiers.\n");
   }
 
-  if (!get_keyval (conf, "couplingForce", coupling_force))
-    cvm::fatal_error ("Error: coupling force is missing from the restart.\n");
+  if (!get_keyval (conf, "forceConstant", coupling_force))
+    cvm::fatal_error ("Error: current force constant  is missing from the restart.\n");
 
   is >> brace;
   if (brace != "}") {
@@ -275,7 +283,6 @@ std::ostream & colvarbias_alb::write_traj (std::ostream &os)
       os << " "
 	 << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width)
 	 << (means_sq[i]);
-
       os << " "
 	 << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width)
 	 << (means_cu[i].norm());
