@@ -1,3 +1,4 @@
+#include <sstream>
 #include "colvarmodule.h"
 #include "colvarparse.h"
 #include "colvarproxy.h"
@@ -359,6 +360,27 @@ void colvarmodule::change_configuration (std::string const &bias_name,
   if (found > 1) cvm::fatal_error ("Error: duplicate bias name.\n");
   cvm::decrease_depth();
 }
+
+
+std::string colvarmodule::read_colvar(std::string const &name)
+{
+  cvm::increase_depth();
+  int found = 0;
+  std::stringstream ss;
+  for (std::vector<colvar *>::iterator cvi = colvars.begin();
+       cvi != colvars.end();
+       cvi++) {
+    if ( (*cvi)->name == name ) {
+      ++found;
+      ss << (*cvi)->value();
+    }
+  }
+  if ( found < 1 ) cvm::fatal_error ("Error: colvar not found");
+  if ( found > 1 ) cvm::fatal_error ("Error: duplicate colvar");
+  cvm::decrease_depth();
+  return ss.str();
+}
+
 
 cvm::real colvarmodule::energy_difference (std::string const &bias_name,
                                            std::string const &conf)

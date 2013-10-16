@@ -2,7 +2,7 @@
 #define COLVARMODULE_H
 
 #ifndef COLVARS_VERSION
-#define COLVARS_VERSION "2013-09-19"
+#define COLVARS_VERSION "2013-10-16"
 #endif
 
 #ifndef COLVARS_DEBUG
@@ -177,6 +177,9 @@ public:
   /// Load new configuration for the given bias -
   /// currently works for harmonic (force constant and/or centers)
   void change_configuration (std::string const &bias_name, std::string const &conf);
+
+  /// Read a colvar value
+  std::string read_colvar(std::string const &name);
 
   /// Calculate change in energy from using alt. config. for the given bias -
   /// currently works for harmonic (force constant and/or centers)
