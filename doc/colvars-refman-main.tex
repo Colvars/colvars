@@ -488,11 +488,11 @@ To apply moving restraints, or restraints to more than one colvar simultaneously
   \key{%
     lowerWallConstant}{%
     \texttt{colvar}}{%
-    Lower wall force constant (kcal/mol)}{%
+    Lower wall force constant (\cvnamdonly{kcal/mol}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
     positive decimal}{%
     Defines the force constant for a confining restraint on the colvar, in the form of a     ``half-harmonic'' potential.
     The potential starts at \texttt{lowerWall} if it is defined, or     \texttt{lowerBoundary} otherwise.
-    The energy unit of the constant is kcal/mol, while the spatial unit is that of the colvar.}
+    The energy unit of the constant is \cvnamdonly{kcal/mol}\cvlammpsonly{the unit of energy specified by \texttt{units}}, while the spatial unit is that of the colvar.}
 
 \item %
   \keydef{%
@@ -508,7 +508,7 @@ To apply moving restraints, or restraints to more than one colvar simultaneously
   \key{%
     upperWallConstant}{%
     \texttt{colvar}}{%
-    Upper wall force constant (kcal/mol)}{%
+    Upper wall force constant (\cvnamdonly{kcal/mol}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
     positive decimal}{%
     Analogous to \texttt{lowerWallConstant}.}
 
@@ -578,8 +578,7 @@ To apply moving restraints, or restraints to more than one colvar simultaneously
     equation~(\ref{eq:gradient_vector}) in
     section~\ref{sec:colvarbias_abf}) are written to the trajectory
     file under the label ``\texttt{fs\_}$<$\texttt{name}$>$''.  \textbf{Note:} not all components support this option.  The
-    physical unit for this force is kcal/mol divided by the colvar
-    unit.}
+    physical unit for this force is \cvnamdonly{kcal/mol}\cvlammpsonly{the unit of energy specified by \texttt{units}}, divided by the colvar unit.}
 
 \item %
   \keydef{%
@@ -593,7 +592,7 @@ To apply moving restraints, or restraints to more than one colvar simultaneously
     applied on this colvar by biases within the colvar module are
     written to the trajectory under the label
     ``\texttt{fa\_}$<$\texttt{name}$>$''.  The physical unit for this
-    force is kcal/mol divided by the colvar unit.}
+    force is \cvnamdonly{kcal/mol}\cvlammpsonly{the unit of energy specified by \texttt{units}} divided by the colvar unit.}
 \end{itemize}
 
 
@@ -1108,7 +1107,7 @@ The following two options have default values appropriate for the vast majority 
     If this option is \texttt{off}, no forces are applied from this
     colvar to this group. Other forces are not affected (i.e. those
     from the MD engine, from other colvars, and other external forces).
-    For dummy atoms, this option is on by default.
+    For dummy atoms, this option is \texttt{off} by default.
  }
 
 \end{itemize}
@@ -1601,7 +1600,7 @@ are:
     This option\cvnamebasedonly{ (mutually exclusive with \texttt{refPositionsFile})}
     sets the reference coordinates.  If only \texttt{centerReference} is \texttt{on}, the list can be a single (x, y, z) triplet; if also \texttt{rotateReference} is \texttt{on}, the list should be as long as the atom group.  This option 
     is independent from that with the same keyword within the
-    \texttt{atoms~\{...\}} block.  The latter (and related fitting
+    \texttt{atoms~\{...\}} block (see \ref{sec:colvar_atom_groups}).  The latter (and related fitting
     options for the atom group) are normally not needed,
     and should be omitted altogether except for advanced usage cases.
     }
@@ -2492,7 +2491,7 @@ The following parameters can be set in the ABF configuration block
    in the PMF such as hard walls, where the discretization of the average force becomes
    very inaccurate, causing the colvar's diffusion to get ``stuck'' at the singularity.
    To enable this cap, provide one non-negative value for each colvar. The unit of force
-   is kcal/mol divided by the colvar unit (\AA{} for lengths, degrees for angles, etc.).}
+   is \cvnamdonly{kcal/mol}\cvlammpsonly{the unit of energy specified by \texttt{units}} divided by the colvar unit (\AA{} for lengths, degrees for angles, etc.).}
 
 \item \keydef{hideJacobian}{\texttt{abf}}{%
     Remove geometric entropy term from calculated
@@ -2707,7 +2706,7 @@ The values of these options are optimal for colvars with correlation times $\tau
   \keydef{%
     hillWeight}{%
     \texttt{metadynamics}}{%
-    Height of each hill (kcal/mol)}{%
+    Height of each hill (\cvnamdonly{kcal/mol}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
     positive decimal}{%
     \texttt{0.01}}{%
     This option sets the height $W$ of the hills that are added during
@@ -3052,7 +3051,7 @@ block, which may contain (in addition to the standard option
   \keydef{%
     forceConstant}{%
     \texttt{harmonic}}{%
-    Scaled force constant (kcal/mol)}{%
+    Scaled force constant (\cvnamdonly{kcal/mol}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
     positive decimal}{%
     \texttt{1.0}}{%
     This defines a scaled force constant for the harmonic potential.
