@@ -78,17 +78,43 @@ ABFdata::ABFdata(const char *gradFileName)
     deviation = new double[vec_dim];
     count = new unsigned int[scalar_dim];
 
+    int *pos = new int[Nvars];
+    for (int i = 0; i < Nvars; i++)
+        pos[i] = 0;
+
     for (unsigned int i = 0; i < scalar_dim; i++) {
+        // Here we do the Euclidian division iteratively
+        for (int k = Nvars - 1; k > 0; k--) {
+            if (pos[k] == sizes[k]) {
+                pos[k] = 0;
+                pos[k - 1]++;
+            }
+        }
         for (unsigned int j = 0; j < Nvars; j++) {
-            // Read and ignore values of the collective variables
+            // Read values of the collective variables only to check for consistency with grid
             gradFile >> xi;
+
+            double rel_diff = (mins[j] + widths[j] * (pos[j] + 0.5) - xi) / widths[j];
+            if ( rel_diff * rel_diff > 1e-12 )  {
+                std::cout << "\nERROR: wrong coordinates in gradient file\n";
+                std::cout << "Expected " << mins[j] + widths[j] * (pos[j] + 0.5) << ", got " <<  xi << std::endl;
+                exit(1);
+            }
         }
         for (unsigned int j = 0; j < Nvars; j++) {
             // Read and store gradients
-            gradFile >> gradients[i * Nvars + j];
+            if ( ! (gradFile >> gradients[i * Nvars + j]) ) {
+                std::cout << "\nERROR: could not read gradient data\n";
+                exit(1);
+            }
         }
+        pos[Nvars - 1]++;       // move on to next position
     }
-    // Could check for end-of-file string here
+    // check for end of file
+    if ( gradFile >> xi ) {
+        std::cout << "\nERROR: extraneous data at end of gradient file\n";
+        exit(1);
+    }
     gradFile.close();
 
 

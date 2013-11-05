@@ -1,7 +1,7 @@
 /****************************************************************
  * abf_integrate                                                *
  * Integrate n-dimensional PMF from discrete gradient grid      *
- * Jerome Henin <jhenin@ifr88.cnrs-mrs.fr>                      *
+ * Jerome Henin <jerome.henin@ibpc.fr>                          *
  ****************************************************************/
 
 #include "abf_data.h"
