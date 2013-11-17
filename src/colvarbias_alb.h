@@ -31,22 +31,28 @@ protected:
   std::vector<colvarvalue> colvar_centers;  
 
   /// \brief colvar moments, used for calculating the gradient
-  std::vector<colvarvalue> means;
+  std::vector<cvm::real> means;
   std::vector<cvm::real> means_sq;
-  std::vector<colvarvalue> means_cu;
   int update_calls;
 
   ///\brief how often to update coupling force
   int update_freq;
 
   ///\brief Estimated range of coupling force values
-  cvm::real max_coupling_change;
+  std::vector<cvm::real> max_coupling_change;
 
   /// \brief accumated couping force; used in stochastic online gradient descent algorithm
-  cvm::real coupling_force_accum;
+  std::vector<cvm::real> coupling_force_accum;
 
-  /// \brief current coupling force
-  cvm::real coupling_force; 
+  /// \brief coupling force
+  std::vector<cvm::real> set_coupling_force; 
+
+  /// \brief current coupling force, which is ramped up during equilibration to coupling_force
+  std::vector<cvm::real> current_coupling_force; 
+
+  /// \brief how quickly to change the coupling force
+  std::vector<cvm::real> coupling_force_rate; 
+
 
   /// \brief equilibration time of the colvars
   int equil_time;
@@ -63,10 +69,10 @@ protected:
   /// \brief flag for outputting coupling force
   bool b_output_coupling;
 
-  cvm::real restraint_potential(cvm::real k,  colvar*  x, const colvarvalue& xcenter) const;
+  cvm::real restraint_potential(cvm::real k,  const colvar*  x, const colvarvalue& xcenter) const;
 
   /// \brief Force function
-  colvarvalue restraint_force(cvm::real k,  colvar* x,  const colvarvalue& xcenter) const;
+  colvarvalue restraint_force(cvm::real k,  const colvar* x,  const colvarvalue& xcenter) const;
 
   ///\brief Unit scaling
   cvm::real restraint_convert_k(cvm::real k, cvm::real dist_measure) const;
