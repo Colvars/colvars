@@ -577,7 +577,10 @@ To apply moving restraints, or restraints to more than one colvar simultaneously
     except constraint forces on this colvar --- see
     equation~(\ref{eq:gradient_vector}) in
     section~\ref{sec:colvarbias_abf}) are written to the trajectory
-    file under the label ``\texttt{fs\_}$<$\texttt{name}$>$''.  \textbf{Note:} not all components support this option.  The
+    file under the label ``\texttt{fs\_}$<$\texttt{name}$>$''.
+    For extended Lagrangian colvars, the "system force" felt by the extended degree of freedom
+    is simply the force from the harmonic spring.
+    \textbf{Note:} not all components support this option.  The
     physical unit for this force is \cvnamdonly{kcal/mol}\cvlammpsonly{the unit of energy specified by \texttt{units}}, divided by the colvar unit.}
 
 \item %
@@ -589,9 +592,13 @@ To apply moving restraints, or restraints to more than one colvar simultaneously
     boolean}{%
     \texttt{off}}{%
     If \texttt{colvarsTrajFrequency} is defined, the total force
-    applied on this colvar by biases within the colvar module are
+    applied on this colvar by biases and confining potentials (walls)
+    within the colvar module are
     written to the trajectory under the label
-    ``\texttt{fa\_}$<$\texttt{name}$>$''.  The physical unit for this
+    ``\texttt{fa\_}$<$\texttt{name}$>$''. 
+    For extended Lagrangian colvars, this force is actually applied to the
+    extended degree of freedom rather than the geometric colvar itself.
+    The physical unit for this
     force is \cvnamdonly{kcal/mol}\cvlammpsonly{the unit of energy specified by \texttt{units}} divided by the colvar unit.}
 \end{itemize}
 
@@ -602,6 +609,9 @@ To apply moving restraints, or restraints to more than one colvar simultaneously
 The following options enable extended-system
 dynamics, where a colvar is coupled to an additional degree of freedom 
 (fictitious particle) by a harmonic spring.
+All biasing and confining forces are then applied to the extended degree
+of freedom, and the actual, geometric colvar (function of Cartesian 
+coordinates) only feels the force from the harmonic spring.
 
 \begin{itemize}
 \item %
