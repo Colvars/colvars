@@ -10,6 +10,7 @@
 
    See the README file in the top-level LAMMPS directory.
 ------------------------------------------------------------------------- */
+
 /* ----------------------------------------------------------------------
    Contributing author:  Axel Kohlmeyer (Temple U)
 ------------------------------------------------------------------------- */
@@ -18,7 +19,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include <errno.h>
 
 #include "fix_colvars.h"
@@ -31,8 +31,20 @@
 #include "modify.h"
 #include "respa.h"
 #include "update.h"
+#include "citeme.h"
 
 #include "colvarproxy_lammps.h"
+
+static const char colvars_pub[] =
+  "fix colvars command:\n\n"
+  "@Article{fiorin13,\n"
+  " author =  {G.~Fiorin and M.{\\,}L.~Klein and J.~H{\\'e}nin},\n"
+  " title =   {Using collective variables to drive molecular"
+  " dynamics simulations},\n"
+  " journal = {Mol.~Phys.},\n"
+  " year =    2013,\n"
+  " note =    {doi: 10.1080/00268976.2013.813594}\n"
+  "}\n\n";
 
 /* re-usable integer hash table code with static linkage. */
 
@@ -358,6 +370,8 @@ FixColvars::FixColvars(LAMMPS *lmp, int narg, char **arg) :
 
   /* storage required to communicate a single coordinate or force. */
   size_one = sizeof(struct commdata);
+
+  if (lmp->citeme) lmp->citeme->add(colvars_pub);
 }
 
 /*********************************
@@ -426,8 +440,8 @@ void FixColvars::one_time_init()
    // create and initialize the colvars proxy
 
   if (me == 0) {
-    if (screen) fputs("Creating colvars proxy instance\n",screen);
-    if (logfile) fputs("Creating colvars proxy instance\n",logfile);
+    if (screen) fputs("colvars: Creating proxy instance\n",screen);
+    if (logfile) fputs("colvars: Creating proxy instance\n",logfile);
 
     if (inp_name) {
       if (strcmp(inp_name,"NULL") == 0) {
