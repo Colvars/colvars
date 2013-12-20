@@ -55,7 +55,7 @@ The values of ``$c$''\cvnamebasedonly{ and ``alpha''} are also recorded througho
   \label{fig:colvars_diagram}
 \end{figure}
 
-More detailed explanations of the design of the colvars module are provided in G. Fiorin, M. L. Klein and J. H\'enin, \emph{Using collective variables to drive molecular dynamics simulations}, Molecular Physics (2013) (http://dx.doi.org/10.1080/00268976.2013.813594). Please cite this reference whenever publishing work that makes use of this module.
+Detailed explanations of the design of the colvars module are provided in reference~\cite{Fiorin2013}. Please cite this reference whenever publishing work that makes use of this module.
 
 \cvsec{General parameters and input/output files}
 \label{sec:colvarmodule}
@@ -1007,7 +1007,7 @@ In typical applications, the default settings result in the expected behavior.
     \texttt{off}}{%
     If this option is \texttt{on}, the coordinates of this group will be optimally superimposed to the reference positions provided by \cvnamebasedonly{either} \texttt{refPositions}\cvnamebasedonly{ or \texttt{refPositionsFile}}.
     The rotation will be performed around the center of geometry if \texttt{centerReference} is \texttt{on}, around the origin otherwise.
-    The algorithm used is the same employed by the \texttt{orientation} colvar component     \cite{Coutsias2004}.
+    The algorithm used is the same employed by the \texttt{orientation} colvar component~\cite{Coutsias2004}.
     Forces applied to the atoms of this group will also be implicitly rotated back to the original frame.
     \textbf{Note}: unless otherwise specified, \texttt{rmsd} and \texttt{eigenvector} set this option to \texttt{on} \emph{by default}.
 }
