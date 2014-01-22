@@ -30,9 +30,9 @@ protected:
   /// \brief Restraint centers
   std::vector<colvarvalue> colvar_centers;  
 
-  /// \brief colvar moments, used for calculating the gradient
+  /// \brief colvar parameters, used for calculating the gradient/variance
   std::vector<cvm::real> means;
-  std::vector<cvm::real> means_sq;
+  std::vector<cvm::real> ssd; // SSD = sum of squares of differences from mean
   int update_calls;
 
   ///\brief how often to update coupling constant

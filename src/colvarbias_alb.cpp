@@ -11,7 +11,7 @@ colvarbias_alb::colvarbias_alb(std::string const &conf, char const *key) :
   colvar_centers.resize (colvars.size());
   
   means.resize(colvars.size());
-  means_sq.resize(colvars.size());
+  ssd.resize(colvars.size()); //sum of squares of differences from mean
 
   //setup force vectors
   max_coupling_change.resize(colvars.size());
@@ -25,7 +25,7 @@ colvarbias_alb::colvarbias_alb(std::string const &conf, char const *key) :
   for (size_t i = 0; i < colvars.size(); i++) {
     colvar_centers[i].type (colvars[i]->type());
     //zero moments
-    means[i] = means_sq[i] = 0;
+    means[i] = ssd[i] = 0;
 
     //zero force some of the force vectors that aren't initialized
     coupling_accum[i] = current_coupling[i] = 0;
@@ -117,6 +117,7 @@ cvm::real colvarbias_alb::update() {
   //log the moments of the CVs
   // Force and energy calculation
   bool finished_equil_flag = 1;
+  cvm::real delta;
   for (size_t i = 0; i < colvars.size(); i++) {
     colvar_forces[i] = -restraint_force(restraint_convert_k(current_coupling[i], colvars[i]->width),
 					colvars[i],
@@ -126,13 +127,12 @@ cvm::real colvarbias_alb::update() {
 				       colvar_centers[i]);
 
     if(!b_equilibration) {      
-      //scale down 
-      means[i] *= (update_calls - 1.) / update_calls;
-      means_sq[i] *= (update_calls - 1.) / update_calls;
+      //Welford, West, and Hanso online variance method
 
-      //add
-      means[i] += static_cast<cvm::real>(colvars[i]->value()) / static_cast<cvm::real> (update_calls);
-      means_sq[i] += colvars[i]->value().norm2() / static_cast<cvm::real> (update_calls);
+      delta = static_cast<cvm::real>(colvars[i]->value())  - means[i];
+      means[i] += delta / update_calls;
+      ssd[i] += delta * (static_cast<cvm::real>(colvars[i]->value())  - means[i]);
+
     } else {
       //check if we've reached the setpoint
       if(coupling_rate[i] == 0 || pow(current_coupling[i] - set_coupling[i],2)  < pow(coupling_rate[i],2)) {
@@ -160,10 +160,10 @@ cvm::real colvarbias_alb::update() {
     cvm::real step_size = 0;
     cvm::real temp;
 
-    //reset means and means_sq
+    //reset means and sum of squares of differences
     for(size_t i = 0; i < colvars.size(); i++) {
       
-      temp = 2. * (means[i] - static_cast<cvm::real> (colvar_centers[i])) * (means_sq[i] - means[i] * means[i]);
+      temp = 2. * (means[i] - static_cast<cvm::real> (colvar_centers[i])) * ssd[i] / (update_calls - 1);
       
       if(cvm::temperature() > 0)
 	step_size = temp / (cvm::temperature()  * cvm::boltzmann());
@@ -171,7 +171,7 @@ cvm::real colvarbias_alb::update() {
 	step_size = temp / cvm::boltzmann();
 
       means[i] = 0;
-      means_sq[i] = 0;
+      ssd[i] = 0;
 
       //stochastic if we do that update or not
       if(colvars.size() == 1 || rand() < RAND_MAX / colvars.size()) {
@@ -321,7 +321,7 @@ std::ostream & colvarbias_alb::write_traj (std::ostream &os)
     for(size_t i = 0; i < means.size(); i++) {
       os << " "
 	 << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width)
-	 << -(means_sq[i] - means[i] * means[i]);
+	 << -ssd[i] / (fmax(update_calls,2) - 1);
 
     }
 
