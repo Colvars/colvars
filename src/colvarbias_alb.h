@@ -39,7 +39,7 @@ protected:
   int update_freq;
 
   ///\brief Estimated range of coupling constant values in kT
-  std::vector<cvm::real> max_coupling_change;
+  std::vector<cvm::real> max_coupling_range;
 
   //\brief Estimated max for how quickly the rate can change in kT / time 
   std::vector<cvm::real> max_coupling_rate;
@@ -58,6 +58,10 @@ protected:
 
   // \brief if we're equilibrating our estimates or collecting data
   bool b_equilibration;
+
+  // \brief If the coupling range should be increased
+  bool b_hard_coupling_range;
+
 
   /// \brief flag for outputting colvar centers
   bool b_output_centers;

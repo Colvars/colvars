@@ -14,7 +14,7 @@ colvarbias_alb::colvarbias_alb(std::string const &conf, char const *key) :
   ssd.resize(colvars.size()); //sum of squares of differences from mean
 
   //setup force vectors
-  max_coupling_change.resize(colvars.size());
+  max_coupling_range.resize(colvars.size());
   max_coupling_rate.resize(colvars.size());
   coupling_accum.resize(colvars.size());
   set_coupling.resize(colvars.size());
@@ -56,6 +56,7 @@ colvarbias_alb::colvarbias_alb(std::string const &conf, char const *key) :
   get_keyval (conf, "outputCenters", b_output_centers, false);
   get_keyval (conf, "outputGradient", b_output_grad, false);
   get_keyval (conf, "outputCoupling", b_output_coupling, true);
+  get_keyval (conf, "hardCouplingRange", b_hard_coupling_range, false);
 
   //initial guess
   if(!get_keyval (conf, "couplingConstant", set_coupling, set_coupling))
@@ -67,13 +68,13 @@ colvarbias_alb::colvarbias_alb(std::string const &conf, char const *key) :
     coupling_rate[i] = (set_coupling[i] - current_coupling[i]) / update_freq;
   
 
-  if(!get_keyval (conf, "couplingRange", max_coupling_change, max_coupling_change)) {
+  if(!get_keyval (conf, "couplingRange", max_coupling_range, max_coupling_range)) {
     //set to default
     for(size_t i = 0; i < colvars.size(); i++) {
       if(cvm::temperature() > 0) 
-	max_coupling_change[i] =   3 * cvm::temperature() * cvm::boltzmann();
+	max_coupling_range[i] =   3 * cvm::temperature() * cvm::boltzmann();
       else
-	max_coupling_change[i] =   3 * cvm::boltzmann();
+	max_coupling_range[i] =   3 * cvm::boltzmann();
     }
   }
 
@@ -82,7 +83,7 @@ colvarbias_alb::colvarbias_alb(std::string const &conf, char const *key) :
   if(!get_keyval (conf, "rateMax", max_coupling_rate, max_coupling_rate)) {
     //set to default
     for(size_t i = 0; i < colvars.size(); i++) {
-      max_coupling_rate[i] =   max_coupling_change[i] / (10 * update_freq);
+      max_coupling_rate[i] =   max_coupling_range[i] / (10 * update_freq);
     }
   }
 
@@ -142,7 +143,22 @@ cvm::real colvarbias_alb::update() {
 	current_coupling[i] += coupling_rate[i];
 	finished_equil_flag = 0;
       }
-      
+     
+
+      //update max_coupling_range
+      if(!b_hard_coupling_range && fabs(current_coupling[i]) > max_coupling_range[i]) {
+	std::ostringstream logStream;
+	logStream << "Coupling constant for "
+		  << colvars[i]->name
+		  << " has exceeded coupling range of " 
+		  << max_coupling_range[i] 
+		  << ".\n";
+
+	max_coupling_range[i] *= 1.25;
+	logStream << "Expanding coupling range to "  << max_coupling_range[i] << ".\n";
+	cvm::log(logStream.str());	
+      }
+	
 	
     }
   }
@@ -177,7 +193,7 @@ cvm::real colvarbias_alb::update() {
       if(colvars.size() == 1 || rand() < RAND_MAX / colvars.size()) {
 	coupling_accum[i] += step_size * step_size;
 	current_coupling[i] = set_coupling[i];
-	set_coupling[i] += max_coupling_change[i] / sqrt(coupling_accum[i]) * step_size;
+	set_coupling[i] += max_coupling_range[i] / sqrt(coupling_accum[i]) * step_size;
 	coupling_rate[i] = (set_coupling[i] - current_coupling[i]) / update_freq;
 	//set to the minimum rate and then put the sign back on it
 	coupling_rate[i] = copysign(fmin(fabs(coupling_rate[i]), max_coupling_rate[i]), coupling_rate[i]);
