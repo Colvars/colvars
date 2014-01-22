@@ -35,27 +35,26 @@ protected:
   std::vector<cvm::real> means_sq;
   int update_calls;
 
-  ///\brief how often to update coupling force
+  ///\brief how often to update coupling constant
   int update_freq;
 
-  ///\brief Estimated range of coupling force values
+  ///\brief Estimated range of coupling constant values in kT
   std::vector<cvm::real> max_coupling_change;
 
+  //\brief Estimated max for how quickly the rate can change in kT / time 
+  std::vector<cvm::real> max_coupling_rate;
+
   /// \brief accumated couping force; used in stochastic online gradient descent algorithm
-  std::vector<cvm::real> coupling_force_accum;
+  std::vector<cvm::real> coupling_accum;
 
-  /// \brief coupling force
-  std::vector<cvm::real> set_coupling_force; 
+  /// \brief coupling constant
+  std::vector<cvm::real> set_coupling; 
 
-  /// \brief current coupling force, which is ramped up during equilibration to coupling_force
-  std::vector<cvm::real> current_coupling_force; 
+  /// \brief current coupling constant, which is ramped up during equilibration to coupling
+  std::vector<cvm::real> current_coupling; 
 
-  /// \brief how quickly to change the coupling force
-  std::vector<cvm::real> coupling_force_rate; 
-
-
-  /// \brief equilibration time of the colvars
-  int equil_time;
+  /// \brief how quickly to change the coupling constant
+  std::vector<cvm::real> coupling_rate; 
 
   // \brief if we're equilibrating our estimates or collecting data
   bool b_equilibration;
@@ -66,7 +65,7 @@ protected:
   /// \brief flag for outputting current gradient
   bool b_output_grad;
 
-  /// \brief flag for outputting coupling force
+  /// \brief flag for outputting coupling constant
   bool b_output_coupling;
 
   cvm::real restraint_potential(cvm::real k,  const colvar*  x, const colvarvalue& xcenter) const;
