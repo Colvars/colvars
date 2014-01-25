@@ -11,13 +11,18 @@
 
 template<bool calculate_gradients>
 cvm::real colvar::coordnum::switching_function (cvm::real const &r0,
+						cvm::real const &rsys_cut,
                                                 int const &en,
                                                 int const &ed,
                                                 cvm::atom &A1,
                                                 cvm::atom &A2)
 {
   cvm::rvector const diff = cvm::position_distance (A1.pos, A2.pos);
-  cvm::real const l2 = diff.norm2()/(r0*r0);
+  cvm::real l2 = diff.norm2();
+  if(rsys_cut != -1 && l2 > rsys_cut * rsys_cut)
+    return 0;
+
+  l2 /= (r0*r0);
 
   // Assume en and ed are even integers, and avoid sqrt in the following
   int const en2 = en/2;
@@ -40,14 +45,21 @@ cvm::real colvar::coordnum::switching_function (cvm::real const &r0,
 
 template<bool calculate_gradients>
 cvm::real colvar::coordnum::switching_function (cvm::rvector const &r0_vec,
+						cvm::real const &rsys_cut,
                                                 int const &en,
                                                 int const &ed,
                                                 cvm::atom &A1,
                                                 cvm::atom &A2)
 {
   cvm::rvector const diff = cvm::position_distance (A1.pos, A2.pos);
+
+  if(rsys_cut != -1 && diff.norm2() > rsys_cut * rsys_cut)
+    return 0;
+
+
   cvm::rvector const scal_diff (diff.x/r0_vec.x, diff.y/r0_vec.y, diff.z/r0_vec.z);
   cvm::real const l2 = scal_diff.norm2();
+
 
   // Assume en and ed are even integers, and avoid sqrt in the following
   int const en2 = en/2;
@@ -87,6 +99,9 @@ colvar::coordnum::coordnum (std::string const &conf)
 
   bool const b_scale = get_keyval (conf, "cutoff", r0,
                                    cvm::real (4.0 * cvm::unit_angstrom()));
+
+  get_keyval (conf, "systemCutoff", rsys_cut, -1);
+
 
   if (get_keyval (conf, "cutoff3", r0_vec,
                   cvm::rvector (4.0, 4.0, 4.0), parse_silent)) {
@@ -132,10 +147,10 @@ void colvar::coordnum::calc_value()
 
     if (b_anisotropic) {
       for (cvm::atom_iter ai1 = group1.begin(); ai1 != group1.end(); ai1++)
-        x.real_value += switching_function<false> (r0_vec, en, ed, *ai1, group2_com_atom);
+        x.real_value += switching_function<false> (r0_vec, rsys_cut, en, ed, *ai1, group2_com_atom);
     } else {
       for (cvm::atom_iter ai1 = group1.begin(); ai1 != group1.end(); ai1++)
-        x.real_value += switching_function<false> (r0, en, ed, *ai1, group2_com_atom);
+        x.real_value += switching_function<false> (r0, rsys_cut, en, ed, *ai1, group2_com_atom);
     }
 
   } else {
@@ -143,12 +158,12 @@ void colvar::coordnum::calc_value()
     if (b_anisotropic) {
       for (cvm::atom_iter ai1 = group1.begin(); ai1 != group1.end(); ai1++)
         for (cvm::atom_iter ai2 = group2.begin(); ai2 != group2.end(); ai2++) {
-          x.real_value += switching_function<false> (r0_vec, en, ed, *ai1, *ai2);
+          x.real_value += switching_function<false> (r0_vec, rsys_cut, en, ed, *ai1, *ai2);
         }
     } else {
       for (cvm::atom_iter ai1 = group1.begin(); ai1 != group1.end(); ai1++)
         for (cvm::atom_iter ai2 = group2.begin(); ai2 != group2.end(); ai2++) {
-          x.real_value += switching_function<false> (r0, en, ed, *ai1, *ai2);
+          x.real_value += switching_function<false> (r0, rsys_cut, en, ed, *ai1, *ai2);
         }
     }
   }
@@ -166,10 +181,10 @@ void colvar::coordnum::calc_gradients()
 
     if (b_anisotropic) {
       for (cvm::atom_iter ai1 = group1.begin(); ai1 != group1.end(); ai1++)
-        switching_function<true> (r0_vec, en, ed, *ai1, group2_com_atom);
+        switching_function<true> (r0_vec, rsys_cut, en, ed, *ai1, group2_com_atom);
     } else {
       for (cvm::atom_iter ai1 = group1.begin(); ai1 != group1.end(); ai1++)
-        switching_function<true> (r0, en, ed, *ai1, group2_com_atom);
+        switching_function<true> (r0, rsys_cut, en, ed, *ai1, group2_com_atom);
     }
 
     group2.set_weighted_gradient (group2_com_atom.grad);
@@ -179,12 +194,12 @@ void colvar::coordnum::calc_gradients()
     if (b_anisotropic) {
       for (cvm::atom_iter ai1 = group1.begin(); ai1 != group1.end(); ai1++)
         for (cvm::atom_iter ai2 = group2.begin(); ai2 != group2.end(); ai2++) {
-          switching_function<true> (r0_vec, en, ed, *ai1, *ai2);
+          switching_function<true> (r0_vec, rsys_cut, en, ed, *ai1, *ai2);
         }
     } else {
       for (cvm::atom_iter ai1 = group1.begin(); ai1 != group1.end(); ai1++)
         for (cvm::atom_iter ai2 = group2.begin(); ai2 != group2.end(); ai2++) {
-          switching_function<true> (r0, en, ed, *ai1, *ai2);
+          switching_function<true> (r0, rsys_cut, en, ed, *ai1, *ai2);
         }
     }
   }
@@ -239,6 +254,7 @@ colvar::h_bond::h_bond (std::string const &conf)
   atom_groups[0]->add_atom (donor);
 
   get_keyval (conf, "cutoff",   r0, (3.3 * cvm::unit_angstrom()));
+  get_keyval (conf, "systemCutoff", rsys_cut, -1);
   get_keyval (conf, "expNumer", en, 6);
   get_keyval (conf, "expDenom", ed, 8);
 
@@ -284,13 +300,13 @@ colvar::h_bond::~h_bond()
 
 void colvar::h_bond::calc_value()
 {
-  x.real_value = colvar::coordnum::switching_function<false> (r0, en, ed, acceptor, donor);
+  x.real_value = colvar::coordnum::switching_function<false> (r0, rsys_cut, en, ed, acceptor, donor);
 }
 
 
 void colvar::h_bond::calc_gradients()
 {
-  colvar::coordnum::switching_function<true> (r0, en, ed, acceptor, donor);
+  colvar::coordnum::switching_function<true> (r0, rsys_cut, en, ed, acceptor, donor);
   (*atom_groups[0])[0].grad = acceptor.grad;
   (*atom_groups[0])[1].grad = donor.grad;
 }
@@ -318,6 +334,7 @@ colvar::selfcoordnum::selfcoordnum (std::string const &conf)
   b_inverse_gradients = false;
 
   get_keyval (conf, "cutoff", r0, cvm::real (4.0 * cvm::unit_angstrom()));
+  get_keyval (conf, "systemCutoff", rsys_cut, -1);
   get_keyval (conf, "expNumer", en, int (6) );
   get_keyval (conf, "expDenom", ed, int (12));
 
@@ -340,7 +357,7 @@ void colvar::selfcoordnum::calc_value()
 
   for (size_t i = 0; i < group1.size() - 1; i++)
     for (size_t j = i + 1; j < group1.size(); j++)
-      x.real_value += colvar::coordnum::switching_function<false> (r0, en, ed, group1[i], group1[j]);
+      x.real_value += colvar::coordnum::switching_function<false> (r0, rsys_cut, en, ed, group1[i], group1[j]);
 }
 
 
@@ -348,7 +365,7 @@ void colvar::selfcoordnum::calc_gradients()
 {
   for (size_t i = 0; i < group1.size() - 1; i++)
     for (size_t j = i + 1; j < group1.size(); j++)
-      colvar::coordnum::switching_function<true> (r0, en, ed, group1[i], group1[j]);
+      colvar::coordnum::switching_function<true> (r0, rsys_cut, en, ed, group1[i], group1[j]);
 }
 
 void colvar::selfcoordnum::apply_force (colvarvalue const &force)
