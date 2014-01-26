@@ -743,6 +743,8 @@ protected:
   cvm::real     r0;
   /// \brief Cutoff for including a given pair in the calculation. Useful for comparing coordination number results with a simulation engines results 
   cvm::real     rsys_cut;
+  /// \brief The moment of the coordination number. 0 = normal. 1 = weighted by radius. 2 = weighted by square radius. etc.
+  int moment;
   /// \brief "Cutoff vector" for anisotropic calculation
   cvm::rvector  r0_vec;
   /// \brief Wheter dist/r0 or \vec{dist}*\vec{1/r0_vec} should ne be
@@ -771,6 +773,7 @@ public:
   /// The rsys_cut removes all pairs that are farther than rsys_cut away
   static cvm::real switching_function (cvm::real const &r0,
 				       cvm::real const &rsys_cut,
+				       int const moment,
                                        int const &exp_num, int const &exp_den,
                                        cvm::atom &A1, cvm::atom &A2);
 
@@ -782,7 +785,8 @@ public:
   /// atom \param A2 atom.
   /// The rsys_cut removes all pairs that are farther than rsys_cut away
   static cvm::real switching_function (cvm::rvector const &r0_vec,
-				       cvm::real const &rsys_cut,
+				       cvm::real const &rsys_cut
+,						int const moment,
                                        int const &exp_num, int const &exp_den,
                                        cvm::atom &A1, cvm::atom &A2);
 
@@ -807,6 +811,8 @@ protected:
   /// Integer exponent of the function numerator
   /// \brief Cutoff for including a given pair in the calculation. Useful for comparing coordination number results with a simulation engines results 
   cvm::real     rsys_cut;
+  /// \brief The moment of the coordination number. 0 = normal. 1 = weighted by radius. 2 = weighted by square radius. etc.
+  int moment;
 
   int en;
   /// Integer exponent of the function denominator
@@ -827,6 +833,7 @@ public:
   /// The rsys_cut removes all pairs that are farther than rsys_cut away
   static cvm::real switching_function (cvm::real const &r0,
 				       cvm::real const &rsys_cut,
+						int const moment,
                                        int const &exp_num, int const &exp_den,
                                        cvm::atom &A1, cvm::atom &A2);
 
