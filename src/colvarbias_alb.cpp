@@ -56,7 +56,7 @@ colvarbias_alb::colvarbias_alb(std::string const &conf, char const *key) :
   get_keyval (conf, "outputCenters", b_output_centers, false);
   get_keyval (conf, "outputGradient", b_output_grad, false);
   get_keyval (conf, "outputCoupling", b_output_coupling, true);
-  get_keyval (conf, "hardCouplingRange", b_hard_coupling_range, false);
+  get_keyval (conf, "hardCouplingRange", b_hard_coupling_range, true);
 
   //initial guess
   if(!get_keyval (conf, "couplingConstant", set_coupling, set_coupling))
@@ -179,7 +179,7 @@ cvm::real colvarbias_alb::update() {
     //reset means and sum of squares of differences
     for(size_t i = 0; i < colvars.size(); i++) {
       
-      temp = 2. * (means[i] - static_cast<cvm::real> (colvar_centers[i])) * ssd[i] / (update_calls - 1);
+      temp = 2. * (means[i] / (static_cast<cvm::real> (colvar_centers[i])) - 1) * ssd[i] / (update_calls - 1);
       
       if(cvm::temperature() > 0)
 	step_size = temp / (cvm::temperature()  * cvm::boltzmann());
@@ -337,7 +337,7 @@ std::ostream & colvarbias_alb::write_traj (std::ostream &os)
     for(size_t i = 0; i < means.size(); i++) {
       os << " "
 	 << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width)
-	 << -ssd[i] / (fmax(update_calls,2) - 1);
+	 << -2. * (means[i] / (static_cast<cvm::real> (colvar_centers[i])) - 1) * ssd[i] / (fmax(update_calls,2) - 1);
 
     }
 
