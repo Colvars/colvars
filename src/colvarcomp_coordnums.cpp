@@ -10,23 +10,48 @@
 
 
 template<bool calculate_gradients>
-cvm::real colvar::coordnum::switching_function (cvm::real const &r0,
-						cvm::real const &rsys_cut,
+cvm::real colvar::coordnum::switching_function (cvm::real const r0,
+						cvm::real const d0,
+						cvm::real const rsys_cut,
 						int const moment,
-                                                int const &en,
-                                                int const &ed,
+                                                int const en,
+                                                int const ed,
                                                 cvm::atom &A1,
                                                 cvm::atom &A2)
 {
   cvm::rvector const diff = cvm::position_distance (A1.pos, A2.pos);
   cvm::real const length = diff.norm();
+  cvm::real const r = (length - d0) / r0;
+  
+
   if(rsys_cut != -1 && length > rsys_cut)
     return 0;
 
-  cvm::real const xn = std::pow (length / r0, en);
-  cvm::real const xd = std::pow (length / r0, ed);
+  cvm::real const length_moment = std::pow(length, moment);  
+
+  if(r < 0) {
+    if (calculate_gradients) {
+      A1.grad += (-1.0)*(moment * length_moment / length) * diff / length;
+      A2.grad +=        (moment * length_moment / length) * diff / length;
+    }
+    return length_moment;
+  }
+
+  if(r > 0.999999 && r <1.0000001) {    
+    if (calculate_gradients) {
+      A1.grad += (-1.0)*(moment * length_moment / length * en / ed +  
+			 length_moment * (0.5 * en * (en -  ed) / ed)) * diff / length;
+
+      A2.grad +=        (moment * length_moment / length * en / ed +   
+			 length_moment * (0.5 * en * (en -  ed) / ed)) * diff / length;
+    }
+	return length_moment * en / ed;
+  }
+
+  cvm::real const xn = std::pow (r, en);
+  cvm::real const xd = std::pow (r, ed);
   cvm::real const func = (1.0-xn)/(1.0-xd);
-  cvm::real const length_moment = std::pow(length, moment);
+
 
   if (calculate_gradients) {
     cvm::real const dFdl2 = (1.0/(1.0-xd))*(func*ed*(xd/length) - en*(xn/length));
@@ -48,14 +73,13 @@ cvm::real colvar::coordnum::switching_function (cvm::rvector const &r0_vec,
                                                 cvm::atom &A2)
 {
   cvm::rvector const diff = cvm::position_distance (A1.pos, A2.pos);
+  cvm::real const l2 = diff.norm2();
 
-  if(rsys_cut != -1 && diff.norm2() > rsys_cut * rsys_cut)
+  //check if we're beyond cutoff
+  if(rsys_cut != -1 && l2 > rsys_cut * rsys_cut)
     return 0;
 
-
   cvm::rvector const scal_diff (diff.x/r0_vec.x, diff.y/r0_vec.y, diff.z/r0_vec.z);
-  cvm::real const l2 = scal_diff.norm2();
-
 
   // Assume en and ed are even integers, and avoid sqrt in the following
   int const en2 = en/2;
@@ -97,6 +121,7 @@ colvar::coordnum::coordnum (std::string const &conf)
                                    cvm::real (4.0 * cvm::unit_angstrom()));
 
   get_keyval (conf, "systemCutoff", rsys_cut, -1);
+  get_keyval (conf, "coordBegin", d0, 1);
   get_keyval (conf, "moment", moment, 0);
 
 
@@ -147,7 +172,7 @@ void colvar::coordnum::calc_value()
         x.real_value += switching_function<false> (r0_vec, rsys_cut, moment, en, ed, *ai1, group2_com_atom);
     } else {
       for (cvm::atom_iter ai1 = group1.begin(); ai1 != group1.end(); ai1++)
-        x.real_value += switching_function<false> (r0, rsys_cut, moment, en, ed, *ai1, group2_com_atom);
+        x.real_value += switching_function<false> (r0, d0, rsys_cut, moment, en, ed, *ai1, group2_com_atom);
     }
 
   } else {
@@ -160,7 +185,7 @@ void colvar::coordnum::calc_value()
     } else {
       for (cvm::atom_iter ai1 = group1.begin(); ai1 != group1.end(); ai1++)
         for (cvm::atom_iter ai2 = group2.begin(); ai2 != group2.end(); ai2++) {
-          x.real_value += switching_function<false> (r0, rsys_cut, moment, en, ed, *ai1, *ai2);
+          x.real_value += switching_function<false> (r0, d0, rsys_cut, moment, en, ed, *ai1, *ai2);
         }
     }
   }
@@ -181,7 +206,7 @@ void colvar::coordnum::calc_gradients()
         switching_function<true> (r0_vec, rsys_cut, moment, en, ed, *ai1, group2_com_atom);
     } else {
       for (cvm::atom_iter ai1 = group1.begin(); ai1 != group1.end(); ai1++)
-        switching_function<true> (r0, rsys_cut, moment, en, ed, *ai1, group2_com_atom);
+        switching_function<true> (r0, d0, rsys_cut, moment, en, ed, *ai1, group2_com_atom);
     }
 
     group2.set_weighted_gradient (group2_com_atom.grad);
@@ -196,7 +221,7 @@ void colvar::coordnum::calc_gradients()
     } else {
       for (cvm::atom_iter ai1 = group1.begin(); ai1 != group1.end(); ai1++)
         for (cvm::atom_iter ai2 = group2.begin(); ai2 != group2.end(); ai2++) {
-          switching_function<true> (r0, rsys_cut, moment, en, ed, *ai1, *ai2);
+          switching_function<true> (r0, d0, rsys_cut, moment, en, ed, *ai1, *ai2);
         }
     }
   }
@@ -252,6 +277,7 @@ colvar::h_bond::h_bond (std::string const &conf)
 
   get_keyval (conf, "cutoff",   r0, (3.3 * cvm::unit_angstrom()));
   get_keyval (conf, "systemCutoff", rsys_cut, -1);
+  get_keyval (conf, "coordBegin", d0, 0);
   get_keyval (conf, "expNumer", en, 6);
   get_keyval (conf, "expDenom", ed, 8);
 
@@ -297,13 +323,13 @@ colvar::h_bond::~h_bond()
 
 void colvar::h_bond::calc_value()
 {
-  x.real_value = colvar::coordnum::switching_function<false> (r0, rsys_cut, 0, en, ed, acceptor, donor);
+  x.real_value = colvar::coordnum::switching_function<false> (r0, d0, rsys_cut, 0, en, ed, acceptor, donor);
 }
 
 
 void colvar::h_bond::calc_gradients()
 {
-  colvar::coordnum::switching_function<true> (r0, rsys_cut, 0, en, ed, acceptor, donor);
+  colvar::coordnum::switching_function<true> (r0, d0, rsys_cut, 0, en, ed, acceptor, donor);
   (*atom_groups[0])[0].grad = acceptor.grad;
   (*atom_groups[0])[1].grad = donor.grad;
 }
@@ -332,6 +358,7 @@ colvar::selfcoordnum::selfcoordnum (std::string const &conf)
 
   get_keyval (conf, "cutoff", r0, cvm::real (4.0 * cvm::unit_angstrom()));
   get_keyval (conf, "systemCutoff", rsys_cut, -1);
+  get_keyval (conf, "coordBegin", d0, 0);
   get_keyval (conf, "moment", moment, 0);
   get_keyval (conf, "expNumer", en, int (6) );
   get_keyval (conf, "expDenom", ed, int (12));
@@ -355,7 +382,7 @@ void colvar::selfcoordnum::calc_value()
 
   for (size_t i = 0; i < group1.size() - 1; i++)
     for (size_t j = i + 1; j < group1.size(); j++)
-      x.real_value += colvar::coordnum::switching_function<false> (r0, rsys_cut, moment, en, ed, group1[i], group1[j]);
+      x.real_value += colvar::coordnum::switching_function<false> (r0, d0, rsys_cut, moment, en, ed, group1[i], group1[j]);
 }
 
 
@@ -363,7 +390,7 @@ void colvar::selfcoordnum::calc_gradients()
 {
   for (size_t i = 0; i < group1.size() - 1; i++)
     for (size_t j = i + 1; j < group1.size(); j++)
-      colvar::coordnum::switching_function<true> (r0, rsys_cut, moment, en, ed, group1[i], group1[j]);
+      colvar::coordnum::switching_function<true> (r0, d0, rsys_cut, moment, en, ed, group1[i], group1[j]);
 }
 
 void colvar::selfcoordnum::apply_force (colvarvalue const &force)
