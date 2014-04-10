@@ -1,5 +1,5 @@
 #!/bin/sh
-# Script to update a LAMMPS or NAMD source tree with the latest colvars code.
+# Script to update a NAMD, VMD plugins, or LAMMPS source tree with the latest colvars code.
 
 if [ $# -lt 1 ]
 then
@@ -8,7 +8,7 @@ then
  usage: sh $0 <target source tree>
 
    "target source tree" = root directory of the MD code sources
-   supported MD codes: LAMMPS, NAMD
+   supported MD codes: NAMD, VMDPLUGINS, LAMMPS
 
 EOF
    exit 1
@@ -37,6 +37,9 @@ then
 elif [ -f "${target}/src/NamdTypes.h" ]
 then
   code=NAMD
+elif [ -f "${target}/build.csh" ]
+then
+  code=VMDPLUGINS
 else
   # handle the case if the user points to ${target}/src
   target=$(dirname "${target}")
@@ -144,6 +147,31 @@ then
   condcopy "${source}/doc/colvars-refman.bib" "${target}/ug/ug_colvars.bib"
   condcopy "${source}/doc/colvars-refman-main.tex" "${target}/ug/ug_colvars.tex"
   condcopy "${source}/namd/ug/ug_colvars_macros.tex" "${target}/ug/ug_colvars_macros.tex"
+
+  echo ' done.'
+  exit 0
+fi
+
+
+# update VMD plugin tree
+if [ ${code} = VMDPLUGINS ]
+then
+
+  # update code-independent headers and sources
+  for src in ${source}/src/*.h ${source}/src/*.cpp
+  do \
+    tgt=$(basename ${src})
+    condcopy "${src}" "${target}/colvars/src/"
+  done
+
+  # update VMD interface files
+  for src in ${source}/vmd-plugin/src/*.h ${source}/vmd-plugin/src/*.cpp  
+  do \
+    tgt=$(basename ${src})
+    condcopy "${src}" "${target}/colvars/src/"
+  done
+
+  condcopy "${source}/vmd-plugin/Makefile" "${target}/colvars/"
 
   echo ' done.'
   exit 0
