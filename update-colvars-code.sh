@@ -157,21 +157,25 @@ fi
 if [ ${code} = VMDPLUGINS ]
 then
 
+  if [ ! -d "${target}/colvars/src" ] ; then
+    mkdir -p "${target}/colvars/src"
+  fi
+
   # update code-independent headers and sources
   for src in ${source}/src/*.h ${source}/src/*.cpp
   do \
     tgt=$(basename ${src})
-    condcopy "${src}" "${target}/colvars/src/"
+    condcopy "${src}" "${target}/colvars/src/${tgt}"
   done
 
   # update VMD interface files
   for src in ${source}/vmd-plugin/src/*.h ${source}/vmd-plugin/src/*.cpp  
   do \
     tgt=$(basename ${src})
-    condcopy "${src}" "${target}/colvars/src/"
+    condcopy "${src}" "${target}/colvars/src/${tgt}"
   done
 
-  condcopy "${source}/vmd-plugin/Makefile" "${target}/colvars/"
+  condcopy "${source}/vmd-plugin/Makefile" "${target}/colvars/Makefile"
 
   echo ' done.'
   exit 0
