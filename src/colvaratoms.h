@@ -57,7 +57,7 @@ public:
   /// implementation
   cvm::rvector   grad;
 
-  /// \brief Default constructor, setting id and index to invalid numbers
+  /// \brief Default constructor, setting index and id to invalid numbers
   atom() : index (-1), id (-1) { reset_data(); }
 
   /// \brief Initialize an atom for collective variable calculation
