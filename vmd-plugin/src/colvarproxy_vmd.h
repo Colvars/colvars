@@ -2,6 +2,7 @@
 #define COLVARPROXY_VMD_H
 
 #include "DrawMolecule.h"
+#include "Timestep.h"
 
 #include "colvarmodule.h"
 #include "colvarproxy.h"
@@ -78,36 +79,36 @@ public:
 
 
 inline cvm::rvector colvarproxy_vmd::position_distance (cvm::atom_pos const &pos1,
-                                                         cvm::atom_pos const &pos2)
+                                                        cvm::atom_pos const &pos2)
 {
-  Position const p1 (pos1.x, pos1.y, pos1.z);
-  Position const p2 (pos2.x, pos2.y, pos2.z);
-  // return p2 - p1
-  Vector const d = this->lattice->delta (p2, p1);
-  return cvm::rvector (d.x, d.y, d.z);
+  // TODO: add in the proxy constructor a check for orthonormal PBCs
+  Timestep *ts = mol->current();
+  cvm::real const a = ts->a_length;
+  cvm::real const b = ts->b_length;
+  cvm::real const c = ts->c_length;
+  cvm::rvector const diff = (pos2 - pos1);
+  while (diff.x <= -0.5*a) diff.x += a;
+  while (diff.y <= -0.5*b) diff.y += b;
+  while (diff.z <= -0.5*c) diff.z += c;
+  while (diff.x  >  0.5*a) diff.x -= a;
+  while (diff.y  >  0.5*b) diff.y -= b;
+  while (diff.z  >  0.5*c) diff.z -= c;
+  return diff;
 }
 
 
 inline void colvarproxy_vmd::select_closest_image (cvm::atom_pos &pos,
-                                                    cvm::atom_pos const &ref_pos)
+                                                   cvm::atom_pos const &ref_pos)
 {
-  Position const p (pos.x, pos.y, pos.z);
-  Position const rp (ref_pos.x, ref_pos.y, ref_pos.z);
-  ScaledPosition const srp = this->lattice->scale (rp);
-  Position const np = this->lattice->nearest (p, srp);
-  pos.x = np.x;
-  pos.y = np.y;
-  pos.z = np.z;
+  cvm::rvector const diff = position_distance (ref_pos, pos);
+  pos = ref_pos + diff;
 }
 
 
 inline cvm::real colvarproxy_vmd::position_dist2 (cvm::atom_pos const &pos1,
-                                                   cvm::atom_pos const &pos2)
+                                                  cvm::atom_pos const &pos2)
 {
-  Lattice const *l = this->lattice;
-  Vector const p1 (pos1.x, pos1.y, pos1.z);
-  Vector const p2 (pos2.x, pos2.y, pos2.z);
-  Vector const d = l->delta (p1, p2);
+  cvm::rvector const d = position_distance (pos1, pos2);
   return cvm::real (d.x*d.x + d.y*d.y + d.z*d.z);
 }
 

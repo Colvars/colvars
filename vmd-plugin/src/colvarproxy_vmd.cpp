@@ -1,11 +1,48 @@
 #include "DrawMolecule.h"
-#include "Residue.h"
 #include "Timestep.h"
+#include "Residue.h"
+#include "Inform.h"
+
 
 #include "colvarmodule.h"
 #include "colvaratoms.h"
 #include "colvarproxy.h"
 #include "colvarproxy_vmd.h"
+
+#if defined(VMDTKCON)
+Inform msgColvars("colvars) ",    VMDCON_INFO);
+#else
+// XXX global instances of the Inform class
+Inform msgColvars("colvars) ");
+#endif
+
+
+void colvarproxy_vmd::log (std::string const &message)
+{
+  std::istringstream is (message);
+  std::string line;
+  while (std::getline (is, line)) {
+    msgColvars << line.c_str() << "\n";
+  }
+}
+
+
+void colvarproxy_vmd::fatal_error (std::string const &message)
+{
+  cvm::log (message);
+  if (!cvm::debug())
+    cvm::log ("If this error message is unclear, "
+              "try recompiling the colvars plugin with -DCOLVARS_DEBUG.\n");
+  // TODO: return control to Tcl interpreter
+}
+
+
+void colvarproxy_vmd::exit (std::string const &message)
+{
+  cvm::log (message);
+  // TODO: return control to Tcl interpreter
+}
+
 
 
 size_t colvarproxy_vmd::init_atom (int const &aid)
@@ -140,8 +177,8 @@ cvm::atom::~atom()
 
 void cvm::atom::read_position()
 {
-  // read the position directly from the current VMD timestep's memory
-  // no prior update should be required
+  // read the position directly from the current timestep's memory
+  // Note: no prior update should be required (unlike NAMD with GlobalMaster)
   DrawMolecule *mol = ((colvarproxy_vmd *) cvm::proxy)->vmdmol;
   float *vmdpos = (mol->current())->vmdpos;
   this->pos = cvm::atom_pos (vmdpos[this->id*3+0],
