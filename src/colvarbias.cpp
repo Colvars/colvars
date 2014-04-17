@@ -314,7 +314,8 @@ cvm::real colvarbias_harmonic::update()
             colvar_centers[i].apply_constraints();
           }
           stage++;
-          cvm::log ("Moving restraint stage " + cvm::to_str(stage) +
+          cvm::log ("Moving restraint \"" + this->name +
+              "\" stage " + cvm::to_str(stage) +
               " : setting centers to " + cvm::to_str (colvar_centers) +
               " at step " +  cvm::to_str (cvm::step_absolute()));
       }
