@@ -30,10 +30,10 @@ using namespace LAMMPS_NS;
    helper function. integer comparison for qsort()
    ---------------------------------------------------------------------- */
 
-static int cmpint(const void *p1, const void *p2)
+static int cmptagint(const void *p1, const void *p2)
 {
-  const int i1 = * static_cast<const int *>(p1);
-  const int i2 = * static_cast<const int *>(p2);
+  const tagint i1 = * static_cast<const tagint *>(p1);
+  const tagint i2 = * static_cast<const tagint *>(p2);
   if (i1 == i2) return 0;
   else {
     if (i1 < i2) return -1;
@@ -49,7 +49,7 @@ static void write_group(FILE *fp, int gid, Atom *atom, Group *group, int me,
                         int np, MPI_Comm world, FILE *screen, FILE *logfile)
 {
   char fmt[8];
-  int *sendlist, *recvlist;
+  tagint *sendlist, *recvlist;
   bigint num = group->count(gid);
   int lnum, cols;
 
@@ -66,7 +66,7 @@ static void write_group(FILE *fp, int gid, Atom *atom, Group *group, int me,
 
     // derive format string for index lists
     bigint j = atom->natoms;
-    int i = 0;
+    int i=0;
     while (j > 0) {
       ++i;
       j /= 10;
@@ -77,13 +77,13 @@ static void write_group(FILE *fp, int gid, Atom *atom, Group *group, int me,
 
   if (num > 0) {
     const int * const mask = atom->mask;
-    const int * const tag = atom->tag;
+    const tagint * const tag = atom->tag;
     const int groupbit = group->bitmask[gid];
     const int nlocal = atom->nlocal;
-    int i,j;
+    int i;
 
-    sendlist = new int[nlocal];
-    recvlist = new int[num];
+    sendlist = new tagint[nlocal];
+    recvlist = new tagint[num];
     lnum = 0;
     for (i = 0; i < nlocal; i++)
       if (mask[i] & groupbit) sendlist[lnum++] = tag[i];
@@ -92,30 +92,30 @@ static void write_group(FILE *fp, int gid, Atom *atom, Group *group, int me,
     MPI_Request request;
     int nrecv,allrecv;
     if (me == 0) {
-      for (i = 0; i < lnum; i++)
+      for (i=0; i < lnum; i++)
         recvlist[i] = sendlist[i];
 
       allrecv = lnum;
-      for (int i=1; i < np; ++i) {
-        MPI_Irecv(recvlist+allrecv,num-allrecv,MPI_INT,i,0, world,&request);
+      for (i=1; i < np; ++i) {
+        MPI_Irecv(recvlist+allrecv,num-allrecv,MPI_LMP_TAGINT,i,0, world,&request);
         MPI_Send(&nrecv,0,MPI_INT,i,0,world);
         MPI_Wait(&request,&status);
-        MPI_Get_count(&status,MPI_INT,&nrecv);
+        MPI_Get_count(&status,MPI_LMP_TAGINT,&nrecv);
         allrecv += nrecv;
       }
 
       // sort received list
-      qsort((void *)recvlist, num, sizeof(int), cmpint);
+      qsort((void *)recvlist, num, sizeof(tagint), cmptagint);
     } else {
       MPI_Recv(&nrecv,0,MPI_INT,0,0,world,&status);
-      MPI_Rsend(sendlist,lnum,MPI_INT,0,0,world);
+      MPI_Rsend(sendlist,lnum,MPI_LMP_TAGINT,0,0,world);
     }
     delete [] sendlist;
   }
 
   if (me == 0) {
     int i, j;
-    for(i = 0, j = 0; i < num; ++i) {
+    for(i=0, j=0; i < num; ++i) {
       fprintf(fp,fmt,recvlist[i]);
       ++j;
       if (j == cols) {
