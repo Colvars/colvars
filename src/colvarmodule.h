@@ -501,8 +501,8 @@ inline void cvm::load_coords (char const *file_name,
   // for XYZ files, use CVM internal parser
   // otherwise call proxy function for PDB
 
-  char const *ext = strlen(file_name) > 4 ? file_name + (strlen(file_name) - 4) : file_name;
-  if ( !strncmp(ext, ".xyz", 4) || !strncmp(ext, ".XYZ", 4) ) {
+  std::string const ext (strlen(file_name) > 4 ? (file_name + (strlen(file_name) - 4)) : file_name);
+  if (colvarparse::to_lower_cppstr (ext) == std::string (".xyz")) {
     if ( pdb_field.size() > 0 ) {
       cvm::fatal_error ("Error: PDB column may not be specified for XYZ coordinate file.\n");
     }
