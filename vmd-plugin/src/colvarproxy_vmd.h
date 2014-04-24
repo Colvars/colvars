@@ -14,6 +14,8 @@ class colvarproxy_vmd : public colvarproxy {
 
 protected:
 
+  VMDApp *vmd;
+  int vmdmolid;
   DrawMolecule *vmdmol;
 
   std::string input_prefix_str, output_prefix_str, restart_output_prefix_str;
