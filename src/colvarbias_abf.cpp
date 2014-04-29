@@ -13,6 +13,7 @@ colvarbias_abf::colvarbias_abf (std::string const &conf, char const *key)
     gradients (NULL),
     samples (NULL)
 {
+  // TODO relax this in case of VMD plugin
   if (cvm::temperature() == 0.0)
     cvm::log ("WARNING: ABF should not be run without a thermostat or at 0 Kelvin!\n");
 
