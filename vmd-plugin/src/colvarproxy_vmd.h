@@ -1,3 +1,5 @@
+// -*- c++ -*-
+
 #ifndef COLVARPROXY_VMD_H
 #define COLVARPROXY_VMD_H
 
@@ -18,19 +20,6 @@ protected:
   int vmdmolid;
   DrawMolecule *vmdmol;
 
-  std::string input_prefix_str, output_prefix_str, restart_output_prefix_str;
-  size_t      restart_frequency_s;
-  bool        first_timestep;
-  bool        system_force_requested;
-
-  std::vector<int>          colvars_atoms;
-  std::vector<size_t>       colvars_atoms_ncopies;
-  std::vector<cvm::rvector> positions;
-  std::vector<cvm::rvector> total_forces;
-  std::vector<cvm::rvector> applied_forces;
-
-  size_t init_atom (in const &aid);
-
 public:
 
   friend class cvm::atom;
@@ -38,9 +27,7 @@ public:
   colvarproxy_vmd();
   ~colvarproxy_vmd();
 
-  void log (std::string const &message);
-  void fatal_error (std::string const &message);
-  void exit (std::string const &message);
+  void update_conf();
 
   inline cvm::real unit_angstrom()
   {
@@ -52,10 +39,49 @@ public:
     return 0.001987191;
   }
 
-  inline std::string input_prefix()
+  cvm::real temperature()
   {
-    return input_prefix_str;
+    // TODO implement a user method to set the value of this
+    return 300.0;
   }
+
+  cvm::real dt()
+  {
+    // TODO implement a user method to set the value of this
+    return 1.0;
+  }
+
+  cvm::real rand_gaussian()
+  {
+    return vmd_random_gaussian();
+  }
+
+  std::string input_prefix()
+  {
+    return std::string (vmdmol->molname());
+  }
+
+  std::string restart_output_prefix()
+  {
+    // note that this shouldn't be called while running VMD anyway
+    return std::string (vmdmol->molname()) + std::string (".rst");
+  }
+
+  std::string output_prefix()
+  {
+    // note that this shouldn't be called while running VMD anyway
+    return std::string (vmdmol->molname()) + std::string (".out");
+  }
+
+  size_t restart_frequency() {
+    return 0;
+  }
+
+  void add_energy (cvm::real energy);
+
+  /// nothing to do here
+  inline void request_system_force (bool yesno) {}
+
 
   cvm::rvector position_distance (cvm::atom_pos const &pos1,
                                   cvm::atom_pos const &pos2);
@@ -64,6 +90,10 @@ public:
 
   void select_closest_image (cvm::atom_pos &pos,
                              cvm::atom_pos const &ref_pos);
+
+  void log (std::string const &message);
+  void fatal_error (std::string const &message);
+  void exit (std::string const &message);
 
 
   void load_atoms (char const *filename,
@@ -77,6 +107,7 @@ public:
                     std::string const pdb_field,
                     double const pdb_field_value = 0.0);
 
+  // no need to reimplement backup_file()
 };
 
 
@@ -118,8 +149,3 @@ inline cvm::real colvarproxy_vmd::position_dist2 (cvm::atom_pos const &pos1,
 
 #endif
 
-
-// Emacs
-// Local Variables:
-// mode: C++
-// End:

@@ -3,12 +3,13 @@
 #include "Timestep.h"
 #include "Residue.h"
 #include "Inform.h"
-
+#include "utilities.h"
 
 #include "colvarmodule.h"
 #include "colvaratoms.h"
 #include "colvarproxy.h"
 #include "colvarproxy_vmd.h"
+
 
 colvarproxy_vmd::colvarproxy_vmd (VMDApp *vmdapp)
   : vmd (vmdapp), vmdmolid (-1)
@@ -16,21 +17,23 @@ colvarproxy_vmd::colvarproxy_vmd (VMDApp *vmdapp)
   first_timestep = true;
   system_force_requested = false;
 
-  update();
+  // use the same seed as in Measure.C
+  vmd_srandom (38572111);
+
+  update_conf();
 }
 
-void colvarproxy_vmd::update()
+void colvarproxy_vmd::update_conf()
 {
-  // ideally, this could be executed later too
+  // when completed, this function could be executed multiple times
   vmdmolid = (vmd->molecule_top())->id();
   vmdmol = ((colvarproxy_vmd *) cvm::proxy)->vmd->moleculeList->mol_from_id (vmdmolid);
- }
+}
 
 
 #if defined(VMDTKCON)
   Inform msgColvars("colvars) ",    VMDCON_INFO);
 #else
-  // XXX global instances of the Inform class
   Inform msgColvars("colvars) ");
 #endif
 
@@ -45,37 +48,31 @@ void colvarproxy_vmd::log (std::string const &message)
 
 void colvarproxy_vmd::fatal_error (std::string const &message)
 {
-  cvm::log (message);
+  log (message);
   if (!cvm::debug())
-    cvm::log ("If this error message is unclear, "
-              "try recompiling the colvars plugin with -DCOLVARS_DEBUG.\n");
+    log ("If this error message is unclear, "
+         "try recompiling the colvars plugin with -DCOLVARS_DEBUG.\n");
+  if (colvars != NULL) {
+    delete colvars;
+    colvars = NULL;
+  }
   // TODO: return control to Tcl interpreter
 }
 
 void colvarproxy_vmd::exit (std::string const &message)
 {
-  cvm::log (message);
+  log (message);
+  if (colvars != NULL) {
+    delete colvars;
+    colvars = NULL;
+  }
   // TODO: return control to Tcl interpreter
 }
 
-
-
-size_t colvarproxy_vmd::init_atom (int const &aid)
+void colvarproxy_vmd::add_energy (cvm::real energy)
 {
-  for (size_t i = 0; i < colvars_atoms.size(); i++) {
-    if (colvars_atoms[i] == aid) {
-      // this atom id was already recorded
-      colvars_atoms_ncopies[i] += 1;
-      return i;
-    }
-  }
-
-  // allocate a new slot for this atom
-  colvars_atoms_ncopies.push_back (1);
-  colvars_atoms.push_back (aid);
-  positions.push_back (cvm::rvector());
-
-  return (colvars_atoms.size()-1);
+  (vmdmol->current())->energy[TSE_RESTRAINT] += energy;
+  (vmdmol->current())->energy[TSE_TOTAL] += energy;
 }
 
 
@@ -295,7 +292,7 @@ cvm::atom::atom (int const &atom_number)
   // VMD internal numbering starts from zero
   int const aid (atom_number-1);
 
- float *masses = vmdmol->mass();
+  float *masses = vmdmol->mass();
 
   if (cvm::debug())
     cvm::log ("Adding atom "+cvm::to_str (aid+1)+
@@ -305,11 +302,6 @@ cvm::atom::atom (int const &atom_number)
     cvm::fatal_error ("Error: invalid atom number specified, "+
                       cvm::to_str (atom_number)+"\n");
 
-
-  this->index = ((colvarproxy_vmd *) cvm::proxy)->init_atom (aid);
-  if (cvm::debug())
-    cvm::log ("The index of this atom in the colvarproxy_vmd arrays is "+
-              cvm::to_str (this->index)+".\n");
   this->id = aid;
   this->mass = masses[aid];
   this->reset_data();
@@ -357,10 +349,6 @@ cvm::atom::atom (cvm::residue_id const &resid,
                       "\n");
   }
 
-  this->index = ((colvarproxy_vmd *) cvm::proxy)->init_atom (aid);
-  if (cvm::debug())
-    cvm::log ("The index of this atom in the colvarproxy_vmd arrays is "+
-              cvm::to_str (this->index)+".\n");
   this->id = aid;
   this->mass = masses[aid];
   this->reset_data();
