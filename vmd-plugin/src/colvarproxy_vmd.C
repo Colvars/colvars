@@ -33,9 +33,9 @@ void colvarproxy_vmd::update_conf()
 
 
 #if defined(VMDTKCON)
-  Inform msgColvars("colvars) ",    VMDCON_INFO);
+Inform msgColvars("colvars: ",    VMDCON_INFO);
 #else
-  Inform msgColvars("colvars) ");
+Inform msgColvars("colvars: ");
 #endif
 
 void colvarproxy_vmd::log (std::string const &message)
