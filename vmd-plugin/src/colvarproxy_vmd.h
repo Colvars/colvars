@@ -5,6 +5,7 @@
 
 #include "DrawMolecule.h"
 #include "Timestep.h"
+#include "Inform.h"
 
 #include "colvarmodule.h"
 #include "colvarproxy.h"
@@ -19,6 +20,7 @@ protected:
   VMDApp *vmd;
   int vmdmolid;
   DrawMolecule *vmdmol;
+  Inform msgColvars;
 
 public:
 

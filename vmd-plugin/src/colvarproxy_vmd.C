@@ -12,7 +12,13 @@
 
 
 colvarproxy_vmd::colvarproxy_vmd (VMDApp *vmdapp)
-  : vmd (vmdapp), vmdmolid (-1)
+  : vmd (vmdapp),
+    vmdmolid (-1),
+#if defined(VMDTKCON)
+    msgColvars ("colvars: ",    VMDCON_INFO)
+#else
+    msgColvars ("colvars: ")
+#endif
 {
   first_timestep = true;
   system_force_requested = false;
@@ -30,13 +36,6 @@ void colvarproxy_vmd::update_conf()
 {
   // TODO when implementing multiple instances
 }
-
-
-#if defined(VMDTKCON)
-Inform msgColvars("colvars: ",    VMDCON_INFO);
-#else
-Inform msgColvars("colvars: ");
-#endif
 
 void colvarproxy_vmd::log (std::string const &message)
 {
