@@ -20,6 +20,10 @@ public:
   virtual inline ~colvarproxy() {}
 
 
+  /// \brief Synchronize the configuration of the colvars module with that of the interfacing program
+  virtual void update_conf() {}
+
+
   // **************** SYSTEM-WIDE PHYSICAL QUANTITIES ****************
 
   /// \brief Value of the unit for atomic coordinates with respect to
