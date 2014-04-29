@@ -43,7 +43,7 @@ void colvarproxy_vmd::log (std::string const &message)
   std::istringstream is (message);
   std::string line;
   while (std::getline (is, line)) {
-    msgColvars << line << "\n";
+    msgColvars << line << sendmsg;
   }
 }
 
