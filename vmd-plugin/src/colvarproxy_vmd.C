@@ -17,17 +17,18 @@ colvarproxy_vmd::colvarproxy_vmd (VMDApp *vmdapp)
   first_timestep = true;
   system_force_requested = false;
 
-  // use the same seed as in Measure.C
+  // same seed as in Measure.C
   vmd_srandom (38572111);
+
+  vmdmolid = (vmd->molecule_top())->id();
+  vmdmol = ((colvarproxy_vmd *) cvm::proxy)->vmd->moleculeList->mol_from_id (vmdmolid);
 
   update_conf();
 }
 
 void colvarproxy_vmd::update_conf()
 {
-  // when completed, this function could be executed multiple times
-  vmdmolid = (vmd->molecule_top())->id();
-  vmdmol = ((colvarproxy_vmd *) cvm::proxy)->vmd->moleculeList->mol_from_id (vmdmolid);
+  // TODO when implementing multiple instances
 }
 
 
@@ -42,7 +43,7 @@ void colvarproxy_vmd::log (std::string const &message)
   std::istringstream is (message);
   std::string line;
   while (std::getline (is, line)) {
-    msgColvars << line.c_str() << "\n";
+    msgColvars << line << "\n";
   }
 }
 
