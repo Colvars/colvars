@@ -1,4 +1,4 @@
-/sh
+#!/bin/sh
 # Script to update a NAMD, VMD plugins, or LAMMPS source tree with the latest colvars code.
 
 if [ $# -lt 1 ]
@@ -161,11 +161,17 @@ then
     mkdir -p "${target}/colvars/src"
   fi
 
-  # update code-independent headers and sources
-  for src in ${source}/src/*.h ${source}/src/*.cpp
+  # update code-independent headers
+  for src in ${source}/src/*.h
   do \
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/colvars/src/${tgt}"
+  done
+  # update code-independent sources
+  for src in ${source}/src/*.cpp
+  do \
+    tgt=$(basename ${src%.cpp})
+    condcopy "${src}" "${target}/colvars/src/${tgt}.C"
   done
 
   # update VMD interface files
