@@ -1,6 +1,6 @@
 # Makefile for colvars plugin
 
-.SUFFIXES: .cpp .o .d
+.SUFFIXES: .C .o .d
 .PHONY: clean depends
 
 AR= ar
@@ -11,12 +11,12 @@ PLUGINNAME=colvars
 VERSION=latest.version
 
 COMPILEDIR = ../compile
-ARCHDIR=$(COMPILEDIR)/lib_$(ARCH)/tcl/$(PLUGINNAME)$(VERSION)
+ARCHDIR=$(COMPILEDIR)/lib_$(ARCH)/tcl/$(PLUGINNAME)
 BINFILES=$(ARCHDIR)/colvars.so
 TCLFILES=pkgIndex.tcl colvars.tcl 
 
 SRCDIR=src
-INCDIR=-Isrc
+INCDIR=-Isrc -I$(VMDSRC) -I../include
 
 VPATH = src $(ARCHDIR)
 
@@ -31,7 +31,9 @@ endif
 endif
 endif
 
-# # uncomment below for testing purposes
+
+# # # uncomment below for testing purposesARCH = LINUXAMD64
+# VMDSRC = $(HOME)/programs/vmd/cvs/src
 # ARCHDIR = obj
 # TARGETS = $(ARCHDIR) $(BINFILES)
 # CXX = g++
@@ -52,9 +54,10 @@ endif
 # # "RANLIB = touch" \
 # # "SHLD = gcc -shared"
 
+
 bins:
 win32bins:
-dynlibs: $(TARGETS)
+dynlibs: $(TARGETS) $(ARCHDIR)
 staticlibs: 
 win32staticlibs: 
 
@@ -71,30 +74,32 @@ $(ARCHDIR):
 	mkdir -p $(ARCHDIR)
 
 COLVARS_SRCS = \
-	src/colvaratoms.cpp \
-	src/colvarbias.cpp \
-	src/colvarbias_abf.cpp \
-	src/colvarbias_meta.cpp \
-	src/colvar.cpp \
-	src/colvarcomp.cpp \
-	src/colvarcomp_angles.cpp \
-	src/colvarcomp_coordnums.cpp \
-	src/colvarcomp_distances.cpp \
-	src/colvarcomp_protein.cpp \
-	src/colvarcomp_rotations.cpp \
-	src/colvargrid.cpp \
-	src/colvarmodule.cpp \
-	src/colvarparse.cpp \
-	src/colvarvalue.cpp \
-	src/colvarscript.cpp \
-	src/colvarscript_tcl.cpp \
-	src/colvarproxy_vmd.cpp
+	src/colvaratoms.C \
+	src/colvarbias.C \
+	src/colvarbias_abf.C \
+	src/colvarbias_meta.C \
+	src/colvar.C \
+	src/colvarcomp.C \
+	src/colvarcomp_angles.C \
+	src/colvarcomp_coordnums.C \
+	src/colvarcomp_distances.C \
+	src/colvarcomp_protein.C \
+	src/colvarcomp_rotations.C \
+	src/colvargrid.C \
+	src/colvarmodule.C \
+	src/colvarparse.C \
+	src/colvarvalue.C \
+	src/colvarproxy_vmd.C
 
-COLVARS_OBJS = $(patsubst %.cpp, %.o,  $(patsubst src/%,$(ARCHDIR)/%,$(COLVARS_SRCS)))
+## not ready yet
+# COLVARS_SRCS + = src/colvarscript.C \
+# 	src/colvarscript_tcl.C \
 
-COLVARS_DEPS = $(COLVARS_SRCS:.cpp=.d)
-.cpp.d:
-	$(CXX) $(CXXFLAGS) $(INCDIR) -MM $< -MT $(patsubst src/%.cpp,'$$(ARCHDIR)'/%.o,$<) -MF $@
+COLVARS_OBJS = $(patsubst %.C, %.o,  $(patsubst src/%,$(ARCHDIR)/%,$(COLVARS_SRCS)))
+
+COLVARS_DEPS = $(COLVARS_SRCS:.C=.d)
+.C.d:
+	$(CXX) $(CXXFLAGS) $(INCDIR) -MM $< -MT $(patsubst src/%.C,'$$(ARCHDIR)'/%.o,$<) -MF $@
 
 depends: Makefile.colvars 
 
@@ -111,9 +116,9 @@ Makefile.colvars: $(COLVARS_DEPS) Makefile
 include Makefile.colvars
 
 clean:
-	rm -f ${COLVARS_OBJS} ${BINFILES}
+	rm -f ${COLVARS_OBJS} ${BINFILES} $(ARCHDIR)/colvars.so
 
-$(ARCHDIR)/colvars.so : $(COLVARS_OBJS)
+$(ARCHDIR)/colvars.so: $(COLVARS_OBJS)
 	if [ -n "$(TCLSHLD)" ]; \
 	then $(TCLSHLD) $(LOPTO)$@ $(COLVARS_OBJS) $(TCLLIB) $(TCLLDFLAGS) $(LDFLAGS) $(CXXLDFLAGS) ; \
 	else $(SHLD) $(LOPTO)$@ $(COLVARS_OBJS) $(TCLLIB) $(TCLLDFLAGS) $(CXXLDFLAGS) $(LDFLAGS); \
