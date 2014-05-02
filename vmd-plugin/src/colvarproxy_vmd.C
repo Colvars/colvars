@@ -1,5 +1,6 @@
 #include "VMDApp.h"
 #include "DrawMolecule.h"
+#include "MoleculeList.h"
 #include "Timestep.h"
 #include "Residue.h"
 #include "Inform.h"
@@ -20,14 +21,11 @@ colvarproxy_vmd::colvarproxy_vmd (VMDApp *vmdapp)
     msgColvars ("colvars: ")
 #endif
 {
-  first_timestep = true;
-  system_force_requested = false;
-
   // same seed as in Measure.C
   vmd_srandom (38572111);
 
-  vmdmolid = (vmd->molecule_top())->id();
-  vmdmol = ((colvarproxy_vmd *) cvm::proxy)->vmd->moleculeList->mol_from_id (vmdmolid);
+  vmdmolid = vmd->molecule_top();
+  vmdmol = vmd->moleculeList->mol_from_id (vmdmolid);
 
   update_conf();
 }
@@ -42,7 +40,7 @@ void colvarproxy_vmd::log (std::string const &message)
   std::istringstream is (message);
   std::string line;
   while (std::getline (is, line)) {
-    msgColvars << line << sendmsg;
+    msgColvars << line.c_str() << sendmsg;
   }
 }
 
@@ -75,6 +73,16 @@ void colvarproxy_vmd::add_energy (cvm::real energy)
   (vmdmol->current())->energy[TSE_TOTAL] += energy;
 }
 
+
+enum e_pdb_field {
+  e_pdb_none,
+  e_pdb_occ,
+  e_pdb_beta,
+  e_pdb_x,
+  e_pdb_y,
+  e_pdb_z,
+  e_pdb_ntot
+};
 
 e_pdb_field pdb_field_str2enum (std::string const &pdb_field_str)
 {
@@ -136,7 +144,7 @@ void colvarproxy_vmd::load_coords (char const *pdb_filename,
 
   FileSpec *tmpspec = new FileSpec();
   int tmpmolid = vmd->molecule_load (-1, pdb_filename, "pdb", tmpspec);
-  DrawMolecule *tmpmol = ((colvarproxy_vmd *) cvm::proxy)->vmd->moleculeList->mol_from_id (tmpmolid);
+  DrawMolecule *tmpmol = vmd->moleculeList->mol_from_id (tmpmolid);
   delete tmpspec;
   vmd->molecule_make_top (vmdmolid);
   size_t const pdb_natoms = tmpmol->nAtoms;
@@ -240,7 +248,7 @@ void colvarproxy_vmd::load_atoms (char const *pdb_filename,
 
   FileSpec *tmpspec = new FileSpec();
   int tmpmolid = vmd->molecule_load (-1, pdb_filename, "pdb", tmpspec);
-  DrawMolecule *tmpmol = ((colvarproxy_vmd *) cvm::proxy)->vmd->moleculeList->mol_from_id (tmpmolid);
+  DrawMolecule *tmpmol = vmd->moleculeList->mol_from_id (tmpmolid);
   delete tmpspec;
   vmd->molecule_make_top (vmdmolid);
   size_t const pdb_natoms = tmpmol->nAtoms;
@@ -292,6 +300,7 @@ cvm::atom::atom (int const &atom_number)
   // VMD internal numbering starts from zero
   int const aid (atom_number-1);
 
+  DrawMolecule *vmdmol = ((colvarproxy_vmd *) cvm::proxy)->vmdmol;
   float *masses = vmdmol->mass();
 
   if (cvm::debug())
@@ -314,11 +323,14 @@ cvm::atom::atom (cvm::residue_id const &resid,
                  std::string const     &atom_name,
                  std::string const     &segment_name)
 {
+  DrawMolecule *vmdmol = ((colvarproxy_vmd *) cvm::proxy)->vmdmol;
+  float *masses = vmdmol->mass();
+  
   int aid = -1;
   for (int ir = 0; ir < vmdmol->nResidues; ir++) {
-    Residue *vmdres = mol.residue(ir);
+    Residue *vmdres = vmdmol->residue (ir);
     if (vmdres->resid == resid) {
-      for (ia = 0; ia < vmdres->natoms; ia++) {
+      for (int ia = 0; ia < vmdres->atoms.num(); ia++) {
         int const resaid = vmdres->atoms[ia];
         std::string const sel_segname ((vmdmol->segNames).name(vmdmol->atom(resaid)->segnameindex));
         std::string const sel_atom_name ((vmdmol->atomNames).name(vmdmol->atom(resaid)->nameindex));
@@ -335,14 +347,14 @@ cvm::atom::atom (cvm::residue_id const &resid,
   if (cvm::debug())
     cvm::log ("Adding atom \""+
               atom_name+"\" in residue "+
-              cvm::to_str (residue)+
+              cvm::to_str (resid)+
               " (index "+cvm::to_str (aid)+
               ") for collective variables calculation.\n");
 
   if (aid < 0) {
     cvm::fatal_error ("Error: could not find atom \""+
                       atom_name+"\" in residue "+
-                      cvm::to_str (residue)+
+                      cvm::to_str (resid)+
                       ( (segment_name.size()) ?
                         (", segment \""+segment_name+"\"") :
                         ("") )+
@@ -354,33 +366,3 @@ cvm::atom::atom (cvm::residue_id const &resid,
   this->reset_data();
 }
 
-
-// copy constructor
-cvm::atom::atom (cvm::atom const &a)
-  : index (a.index), id (a.id), mass (a.mass)
-{
-  // increment the counter 
-  colvarproxy_vmd *p = (colvarproxy_vmd *) cvm::proxy;
-  p->colvars_atoms_ncopies[this->index] += 1;
-}
-
-
-cvm::atom::~atom() 
-{
-  if (this->index >= 0) {
-    colvarproxy_vmd *p = (colvarproxy_vmd *) cvm::proxy;
-    if (p->colvars_atoms_ncopies[this->index] > 0)
-      p->colvars_atoms_ncopies[this->index] -= 1;
-  }
-}
-
-
-void cvm::atom::read_position()
-{
-  // read the position directly from the current timestep's memory
-  // Note: no prior update should be required (unlike NAMD with GlobalMaster)
-  float *vmdpos = (vmdmol->current())->pos;
-  this->pos = cvm::atom_pos (vmdpos[this->id*3+0],
-                             vmdpos[this->id*3+1],
-                             vmdpos[this->id*3+2]);
-}

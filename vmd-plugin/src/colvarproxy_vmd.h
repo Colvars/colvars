@@ -9,6 +9,7 @@
 
 #include "colvarmodule.h"
 #include "colvarproxy.h"
+#include "colvartypes.h"
 
 
 /// \brief Communication between colvars and VMD (implementation of
@@ -26,7 +27,7 @@ public:
 
   friend class cvm::atom;
 
-  colvarproxy_vmd();
+  colvarproxy_vmd (VMDApp *vmdapp);
   ~colvarproxy_vmd();
 
   void update_conf();
@@ -117,11 +118,11 @@ inline cvm::rvector colvarproxy_vmd::position_distance (cvm::atom_pos const &pos
                                                         cvm::atom_pos const &pos2)
 {
   // TODO: add in the proxy constructor a check for orthonormal PBCs
-  Timestep *ts = mol->current();
+  Timestep *ts = vmdmol->current();
   cvm::real const a = ts->a_length;
   cvm::real const b = ts->b_length;
   cvm::real const c = ts->c_length;
-  cvm::rvector const diff = (pos2 - pos1);
+  cvm::rvector diff = (pos2 - pos1);
   while (diff.x <= -0.5*a) diff.x += a;
   while (diff.y <= -0.5*b) diff.y += b;
   while (diff.z <= -0.5*c) diff.z += c;
@@ -147,6 +148,26 @@ inline cvm::real colvarproxy_vmd::position_dist2 (cvm::atom_pos const &pos1,
   return cvm::real (d.x*d.x + d.y*d.y + d.z*d.z);
 }
 
+
+// copy constructor
+inline cvm::atom::atom (cvm::atom const &a)
+  : index (a.index), id (a.id), mass (a.mass)
+{}
+
+
+inline cvm::atom::~atom() 
+{}
+
+inline void cvm::atom::read_position()
+{
+  // read the position directly from the current timestep's memory
+  // Note: no prior update should be required (unlike NAMD with GlobalMaster)
+  DrawMolecule *vmdmol = ((colvarproxy_vmd *) cvm::proxy)->vmdmol;
+  float *vmdpos = (vmdmol->current())->pos;
+  this->pos = cvm::atom_pos (vmdpos[this->id*3+0],
+                             vmdpos[this->id*3+1],
+                             vmdpos[this->id*3+2]);
+}
 
 
 #endif
