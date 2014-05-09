@@ -27,63 +27,64 @@ public:
 
   friend class cvm::atom;
 
-  colvarproxy_vmd (VMDApp *vmdapp);
+  colvarproxy_vmd (VMDApp *vmdapp, int molid);
   ~colvarproxy_vmd();
 
-  void update_conf();
+  void update_proxy_data();
 
   inline cvm::real unit_angstrom()
   {
     return 1.0;
   }
 
-  cvm::real boltzmann()
+  inline cvm::real boltzmann()
   {
     return 0.001987191;
   }
 
-  cvm::real temperature()
+  inline cvm::real temperature()
   {
     // TODO implement a user method to set the value of this
     return 300.0;
   }
 
-  cvm::real dt()
+  inline cvm::real dt()
   {
     // TODO implement a user method to set the value of this
     return 1.0;
   }
 
-  cvm::real rand_gaussian()
+  inline cvm::real rand_gaussian()
   {
     return vmd_random_gaussian();
   }
 
-  std::string input_prefix()
+  inline std::string input_prefix()
   {
     return std::string (vmdmol->molname());
   }
 
-  std::string restart_output_prefix()
+  inline std::string restart_output_prefix()
   {
     // note that this shouldn't be called while running VMD anyway
     return std::string (vmdmol->molname()) + std::string (".rst");
   }
 
-  std::string output_prefix()
+  inline std::string output_prefix()
   {
     // note that this shouldn't be called while running VMD anyway
     return std::string (vmdmol->molname()) + std::string (".out");
   }
 
-  size_t restart_frequency() {
+  inline size_t restart_frequency() {
     return 0;
   }
 
   void add_energy (cvm::real energy);
 
   /// nothing to do here
-  inline void request_system_force (bool yesno) {}
+  inline void request_system_force (bool yesno)
+  {}
 
 
   cvm::rvector position_distance (cvm::atom_pos const &pos1,

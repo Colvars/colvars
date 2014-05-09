@@ -1,3 +1,4 @@
+#include <tcl.h>
 #include "VMDApp.h"
 #include "DrawMolecule.h"
 #include "MoleculeList.h"
@@ -12,25 +13,67 @@
 #include "colvarproxy_vmd.h"
 
 
-colvarproxy_vmd::colvarproxy_vmd (VMDApp *vmdapp)
+namespace {
+  colvarproxy_vmd *proxy = NULL;
+}
+
+
+extern "C" {
+  int tcl_colvars_create_module (ClientData nodata, Tcl_Interp *vmdtcl, int argc, const char *argv[]) {
+    VMDApp *vmd = (VMDApp *) Tcl_GetAssocData (vmdtcl, "VMDApp", NULL);
+
+    if (vmd == NULL) {
+      Tcl_SetResult (vmdtcl, "Error: cannot find VMD main object.", TCL_STATIC);
+      return TCL_ERROR;
+    }
+
+    if ( argc >= 3 ) {
+      if (!strcmp (argv[1], "molid")) {
+        int molid = -1;
+        if (!strcmp (argv[2], "top")) {
+          molid = vmd->molecule_top();
+        } else {
+          Tcl_GetInt (vmdtcl, argv[2], &molid);
+        }
+
+        if (vmd->molecule_valid_id (molid)) {
+          proxy = new colvarproxy_vmd (vmd, molid);
+          return TCL_OK;
+        }
+      }
+    }
+
+    Tcl_SetResult (vmdtcl, "usage: colvars molid <molecule id>", TCL_STATIC);
+    return TCL_ERROR;
+  }
+
+  int Colvars_Init (Tcl_Interp *vmdtcl) {
+    Tcl_CreateCommand (vmdtcl, "colvars", tcl_colvars_create_module, (ClientData) NULL, (Tcl_CmdDeleteProc*) NULL);
+    Tcl_PkgProvide (vmdtcl, "colvars", COLVARS_VERSION);
+    return TCL_OK;
+  }
+}
+
+
+colvarproxy_vmd::colvarproxy_vmd (VMDApp *vmdapp, int molid)
   : vmd (vmdapp),
-    vmdmolid (-1),
+    vmdmolid (molid),
 #if defined(VMDTKCON)
     msgColvars ("colvars: ",    VMDCON_INFO)
 #else
     msgColvars ("colvars: ")
 #endif
 {
+  colvars = NULL;
   // same seed as in Measure.C
   vmd_srandom (38572111);
 
-  vmdmolid = vmd->molecule_top();
   vmdmol = vmd->moleculeList->mol_from_id (vmdmolid);
 
-  update_conf();
+  update_proxy_data();
 }
 
-void colvarproxy_vmd::update_conf()
+void colvarproxy_vmd::update_proxy_data()
 {
   // TODO when implementing multiple instances
 }
@@ -46,6 +89,7 @@ void colvarproxy_vmd::log (std::string const &message)
 
 void colvarproxy_vmd::fatal_error (std::string const &message)
 {
+  // TODO: return control to Tcl interpreter instead of exiting
   log (message);
   if (!cvm::debug())
     log ("If this error message is unclear, "
@@ -54,16 +98,11 @@ void colvarproxy_vmd::fatal_error (std::string const &message)
     delete colvars;
     colvars = NULL;
   }
-  // TODO: return control to Tcl interpreter
+  vmd->VMDexit ("Collective variables error.\n", 1, 2);
 }
 
 void colvarproxy_vmd::exit (std::string const &message)
 {
-  log (message);
-  if (colvars != NULL) {
-    delete colvars;
-    colvars = NULL;
-  }
   // TODO: return control to Tcl interpreter
 }
 
