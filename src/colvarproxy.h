@@ -2,6 +2,10 @@
 #define COLVARPROXY_H
 
 
+#ifndef COLVARPROXY_VERSION
+#define COLVARPROXY_VERSION "2014-05-13"
+#endif
+
 
 #include "colvarmodule.h"
 
@@ -19,9 +23,8 @@ public:
   /// Default destructor
   virtual inline ~colvarproxy() {}
 
-
   /// \brief Synchronize the configuration of the colvars module with that of the interfacing program
-  virtual void update_conf() {}
+  virtual void update_proxy_data() {}
 
 
   // **************** SYSTEM-WIDE PHYSICAL QUANTITIES ****************
