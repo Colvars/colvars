@@ -1,4 +1,5 @@
 #include <tcl.h>
+
 #include "VMDApp.h"
 #include "DrawMolecule.h"
 #include "MoleculeList.h"
@@ -13,32 +14,43 @@
 #include "colvarproxy_vmd.h"
 
 
-namespace {
-  colvarproxy_vmd *proxy = NULL;
-}
-
 
 extern "C" {
-  int tcl_colvars_create_module (ClientData nodata, Tcl_Interp *vmdtcl, int argc, const char *argv[]) {
-    VMDApp *vmd = (VMDApp *) Tcl_GetAssocData (vmdtcl, "VMDApp", NULL);
+  int tcl_colvars (ClientData nodata, Tcl_Interp *vmdtcl, int argc, const char *argv[]) {
 
-    if (vmd == NULL) {
-      Tcl_SetResult (vmdtcl, "Error: cannot find VMD main object.", TCL_STATIC);
-      return TCL_ERROR;
-    }
+    static colvarproxy_vmd *proxy = NULL;
 
-    if ( argc >= 3 ) {
-      if (!strcmp (argv[1], "molid")) {
-        int molid = -1;
-        if (!strcmp (argv[2], "top")) {
-          molid = vmd->molecule_top();
-        } else {
-          Tcl_GetInt (vmdtcl, argv[2], &molid);
-        }
+    if (proxy != NULL) {
 
-        if (vmd->molecule_valid_id (molid)) {
-          proxy = new colvarproxy_vmd (vmd, molid);
-          return TCL_OK;
+      // // TODO uncomment after implementation and initialization of colvarscript *script
+      // if (proxy->script->args (argc, argv) != 0) {
+      //   return TCL_ERROR;
+      // } else {
+      //   return TCL_OK;
+      // }
+      
+    } else {
+
+      VMDApp *vmd = (VMDApp *) Tcl_GetAssocData (vmdtcl, "VMDApp", NULL);
+      if (vmd == NULL) {
+        Tcl_SetResult (vmdtcl, "Error: cannot find VMD main object.", TCL_STATIC);
+        return TCL_ERROR;
+      }
+
+      if ( argc >= 3 ) {
+        // require a molid to create the module
+        if (!strcmp (argv[1], "molid")) {
+          int molid = -1;
+          if (!strcmp (argv[2], "top")) {
+            molid = vmd->molecule_top();
+          } else {
+            Tcl_GetInt (vmdtcl, argv[2], &molid);
+          }
+          if (vmd->molecule_valid_id (molid)) {
+            proxy = new colvarproxy_vmd (vmdtcl, vmd, molid);
+            // TODO initialize script interface
+            return TCL_OK;
+          }
         }
       }
     }
@@ -48,15 +60,21 @@ extern "C" {
   }
 
   int Colvars_Init (Tcl_Interp *vmdtcl) {
-    Tcl_CreateCommand (vmdtcl, "colvars", tcl_colvars_create_module, (ClientData) NULL, (Tcl_CmdDeleteProc*) NULL);
+    VMDApp *vmd = (VMDApp *) Tcl_GetAssocData (vmdtcl, "VMDApp", NULL);
+    if (vmd == NULL) {
+      Tcl_SetResult (vmdtcl, "Error: cannot find VMD main object.", TCL_STATIC);
+      return TCL_ERROR;
+    }
+    Tcl_CreateCommand (vmdtcl, "colvars", tcl_colvars, (ClientData) NULL, (Tcl_CmdDeleteProc*) NULL);
     Tcl_PkgProvide (vmdtcl, "colvars", COLVARS_VERSION);
     return TCL_OK;
   }
 }
 
 
-colvarproxy_vmd::colvarproxy_vmd (VMDApp *vmdapp, int molid)
-  : vmd (vmdapp),
+colvarproxy_vmd::colvarproxy_vmd (Tcl_Interp *vti, VMDApp *v, int molid)
+  : vmdtcl (vti),
+    vmd (v),
     vmdmolid (molid),
 #if defined(VMDTKCON)
     msgColvars ("colvars: ",    VMDCON_INFO)
@@ -65,6 +83,7 @@ colvarproxy_vmd::colvarproxy_vmd (VMDApp *vmdapp, int molid)
 #endif
 {
   colvars = NULL;
+
   // same seed as in Measure.C
   vmd_srandom (38572111);
 

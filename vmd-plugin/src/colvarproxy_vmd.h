@@ -3,6 +3,8 @@
 #ifndef COLVARPROXY_VMD_H
 #define COLVARPROXY_VMD_H
 
+#include <tcl.h>
+
 #include "DrawMolecule.h"
 #include "Timestep.h"
 #include "Inform.h"
@@ -18,16 +20,22 @@ class colvarproxy_vmd : public colvarproxy {
 
 protected:
 
+  /// pointer to the VMD Tcl interpreter
+  Tcl_Interp *vmdtcl;
+  /// pointer to the VMD main object
   VMDApp *vmd;
+  /// VMD molecule id being used
   int vmdmolid;
+  /// pointer to VMD molecule
   DrawMolecule *vmdmol;
+  /// message output object
   Inform msgColvars;
 
 public:
 
   friend class cvm::atom;
 
-  colvarproxy_vmd (VMDApp *vmdapp, int molid);
+  colvarproxy_vmd (Tcl_Interp *vmdtcl, VMDApp *vmd, int molid);
   ~colvarproxy_vmd();
 
   void update_proxy_data();
