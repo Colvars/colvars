@@ -100,5 +100,5 @@ colvars:   # stage = 9
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables module initialized.
 colvars: ----------------------------------------------------------------------
-colvars:   Moving restraint stage 10 : setting centers to { -125 } at step 8330
+colvars:   Moving restraint "harmonic1" stage 10 : setting centers to { -125 } at step 8330
 colvars: Saving collective variables state to "test.colvars.state".
