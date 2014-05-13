@@ -307,7 +307,7 @@ colvarbias * colvarmodule::bias_by_name(std::string const &name) {
   for (std::vector<colvarbias *>::iterator bi = biases.begin();
        bi != biases.end();
        bi++) {
-    if ((*bi)->name == bias_name) {
+    if ((*bi)->name == name) {
       return (*bi);
     }
   }
@@ -332,8 +332,8 @@ void colvarmodule::change_configuration (std::string const &bias_name,
 {
   cvm::increase_depth();
   colvarbias *b;
-  b = bias_by_name (name);
-  if (b == NULL) { cvm::fatal_error ("Error: bias not found: " + name); }
+  b = bias_by_name (bias_name);
+  if (b == NULL) { cvm::fatal_error ("Error: bias not found: " + bias_name); }
   b->change_configuration (conf);
   cvm::decrease_depth();
 }
@@ -358,8 +358,8 @@ cvm::real colvarmodule::energy_difference (std::string const &bias_name,
   cvm::increase_depth();
   colvarbias *b;
   cvm::real energy_diff = 0.;
-  b = bias_by_name (name);
-  if (b == NULL) { cvm::fatal_error ("Error: bias not found: " + name); }
+  b = bias_by_name (bias_name);
+  if (b == NULL) { cvm::fatal_error ("Error: bias not found: " + bias_name); }
   energy_diff = b->energy_difference (conf);
   cvm::decrease_depth();
   return energy_diff;

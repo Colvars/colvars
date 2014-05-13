@@ -176,10 +176,10 @@ public:
   void setup();
 
   /// Look up a bias by name; returns NULL if not found
-  colvarbias * bias_by_name(std::string const &name);
+  static colvarbias * bias_by_name(std::string const &name);
   
   /// Look up a colvar by name; returns NULL if not found
-  colvar * colvar_by_name(std::string const &name);
+  static colvar * colvar_by_name(std::string const &name);
 
   /// Load new configuration for the given bias -
   /// currently works for harmonic (force constant and/or centers)
