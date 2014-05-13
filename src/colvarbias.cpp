@@ -26,12 +26,9 @@ colvarbias::colvarbias (std::string const &conf, char const *key)
 
   get_keyval (conf, "name", name, key_str+cvm::to_str (rank));
 
-  for (std::vector<colvarbias *>::iterator bi = cvm::biases.begin();
-       bi != cvm::biases.end();
-       bi++) {
-    if ((*bi)->name == this->name)
-      cvm::fatal_error ("Error: this bias cannot have the same name, \""+this->name+
-                        "\", as another bias.\n");
+  if (cvm::bias_by_name (this->name) != NULL) {
+    cvm::fatal_error ("Error: this bias cannot have the same name, \""+this->name+
+                      "\", as another bias.\n");
   }
 
   // lookup the associated colvars
@@ -56,7 +53,7 @@ colvarbias::colvarbias()
 
 void colvarbias::add_colvar (std::string const &cv_name)
 {
-  if (colvar *cvp = cvm::colvar_p (cv_name)) {
+  if (colvar *cvp = cvm::colvar_by_name (cv_name)) {
     cvp->enable (colvar::task_gradients);
     if (cvm::debug())
       cvm::log ("Applying this bias to collective variable \""+

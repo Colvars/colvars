@@ -523,20 +523,6 @@ public:
   }
 };
 
-
-inline colvar * cvm::colvar_p (std::string const &name)
-{
-  for (std::vector<colvar *>::iterator cvi = cvm::colvars.begin();
-       cvi != cvm::colvars.end();
-       cvi++) {
-    if ((*cvi)->name == name) {
-      return (*cvi);
-    }
-  }
-  return NULL;
-}
-
-
 inline colvarvalue::Type colvar::type() const
 {
   return x.type();

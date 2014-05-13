@@ -303,21 +303,38 @@ void colvarmodule::init_biases (std::string const &conf)
 }
 
 
+colvarbias * colvarmodule::bias_by_name(std::string const &name) {
+  for (std::vector<colvarbias *>::iterator bi = biases.begin();
+       bi != biases.end();
+       bi++) {
+    if ((*bi)->name == bias_name) {
+      return (*bi);
+    }
+  }
+  return NULL;
+}
+
+
+colvar *colvarmodule::colvar_by_name(std::string const &name) {
+  for (std::vector<colvar *>::iterator cvi = colvars.begin();
+       cvi != colvars.end();
+       cvi++) {
+    if ((*cvi)->name == name) {
+      return (*cvi);
+    }
+  }
+  return NULL;
+}
+ 
+
 void colvarmodule::change_configuration (std::string const &bias_name,
                                          std::string const &conf)
 {
   cvm::increase_depth();
-  int found = 0;
-  for (std::vector<colvarbias *>::iterator bi = biases.begin();
-       bi != biases.end();
-       bi++) {
-    if ( (*bi)->name == bias_name ) {
-      ++found;
-      (*bi)->change_configuration (conf);
-    }
-  }
-  if (found < 1) cvm::fatal_error ("Error: bias not found.\n");
-  if (found > 1) cvm::fatal_error ("Error: duplicate bias name.\n");
+  colvarbias *b;
+  b = bias_by_name (name);
+  if (b == NULL) { cvm::fatal_error ("Error: bias not found: " + name); }
+  b->change_configuration (conf);
   cvm::decrease_depth();
 }
 
@@ -325,18 +342,11 @@ void colvarmodule::change_configuration (std::string const &bias_name,
 std::string colvarmodule::read_colvar(std::string const &name)
 {
   cvm::increase_depth();
-  int found = 0;
+  colvar *c;
   std::stringstream ss;
-  for (std::vector<colvar *>::iterator cvi = colvars.begin();
-       cvi != colvars.end();
-       cvi++) {
-    if ( (*cvi)->name == name ) {
-      ++found;
-      ss << (*cvi)->value();
-    }
-  }
-  if ( found < 1 ) cvm::fatal_error ("Error: colvar not found");
-  if ( found > 1 ) cvm::fatal_error ("Error: duplicate colvar");
+  c = colvar_by_name (name);
+  if (c == NULL) { cvm::fatal_error ("Error: colvar not found: " + name); }
+  ss << c->value();
   cvm::decrease_depth();
   return ss.str();
 }
@@ -346,18 +356,11 @@ cvm::real colvarmodule::energy_difference (std::string const &bias_name,
                                            std::string const &conf)
 {
   cvm::increase_depth();
+  colvarbias *b;
   cvm::real energy_diff = 0.;
-  int found = 0;
-  for (std::vector<colvarbias *>::iterator bi = biases.begin();
-       bi != biases.end();
-       bi++) {
-    if ( (*bi)->name == bias_name ) {
-      ++found;
-      energy_diff = (*bi)->energy_difference (conf);
-    }
-  }
-  if (found < 1) cvm::fatal_error ("Error: bias not found.\n");
-  if (found > 1) cvm::fatal_error ("Error: duplicate bias name.\n");
+  b = bias_by_name (name);
+  if (b == NULL) { cvm::fatal_error ("Error: bias not found: " + name); }
+  energy_diff = b->energy_difference (conf);
   cvm::decrease_depth();
   return energy_diff;
 }

@@ -2,7 +2,7 @@
 #define COLVARMODULE_H
 
 #ifndef COLVARS_VERSION
-#define COLVARS_VERSION "2014-05-08"
+#define COLVARS_VERSION "2014-05-13"
 #endif
 
 #ifndef COLVARS_DEBUG
@@ -175,6 +175,12 @@ public:
   /// between run commands.
   void setup();
 
+  /// Look up a bias by name; returns NULL if not found
+  colvarbias * bias_by_name(std::string const &name);
+  
+  /// Look up a colvar by name; returns NULL if not found
+  colvar * colvar_by_name(std::string const &name);
+
   /// Load new configuration for the given bias -
   /// currently works for harmonic (force constant and/or centers)
   void change_configuration (std::string const &bias_name, std::string const &conf);
@@ -204,9 +210,6 @@ public:
   bool read_traj (char const *traj_filename,
                   size_t      traj_read_begin,
                   size_t      traj_read_end);
-
-  /// Get the pointer of a colvar from its name (returns NULL if not found)
-  static colvar * colvar_p (std::string const &name);
 
   /// Quick conversion of an object to a string
   template<typename T> static std::string to_str (T const &x,

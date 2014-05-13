@@ -18,12 +18,9 @@ colvar::colvar (std::string const &conf)
   get_keyval (conf, "name", this->name,
               (std::string ("colvar")+cvm::to_str (cvm::colvars.size()+1)));
 
-  for (std::vector<colvar *>::iterator cvi = cvm::colvars.begin();
-       cvi < cvm::colvars.end();
-       cvi++) {
-    if ((*cvi)->name == this->name)
-      cvm::fatal_error ("Error: this colvar cannot have the same name, \""+this->name+
-                        "\", as another colvar.\n");
+  if (cvm::colvar_by_name (this->name) != NULL) {
+     cvm::fatal_error ("Error: this colvar cannot have the same name, \""+this->name+
+                      "\", as another colvar.\n");
   }
 
   // all tasks disabled by default
@@ -484,7 +481,7 @@ void colvar::parse_analysis (std::string const &conf)
       acf_type = acf_vel;
       enable (task_fdiff_velocity);
       if (acf_colvar_name.size())
-        (cvm::colvar_p (acf_colvar_name))->enable (task_fdiff_velocity);
+        (cvm::colvar_by_name (acf_colvar_name))->enable (task_fdiff_velocity);
     } else if (acf_type_str == to_lower_cppstr (std::string ("coordinate_p2"))) {
       acf_type = acf_p2coor;
     } else {
@@ -1449,7 +1446,7 @@ void colvar::calc_acf()
     // first-step operations
 
     colvar *cfcv = (acf_colvar_name.size() ?
-                    cvm::colvar_p (acf_colvar_name) :
+                    cvm::colvar_by_name (acf_colvar_name) :
                     this);
     if (cfcv->type() != this->type())
       cvm::fatal_error ("Error: correlation function between \""+cfcv->name+
@@ -1488,7 +1485,7 @@ void colvar::calc_acf()
   } else {
 
     colvar *cfcv = (acf_colvar_name.size() ?
-                    cvm::colvar_p (acf_colvar_name) :
+                    cvm::colvar_by_name (acf_colvar_name) :
                     this);
 
     switch (acf_type) {
