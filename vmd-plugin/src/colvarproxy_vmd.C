@@ -9,10 +9,10 @@
 #include "utilities.h"
 
 #include "colvarmodule.h"
+#include "colvarscript.h"
 #include "colvaratoms.h"
 #include "colvarproxy.h"
 #include "colvarproxy_vmd.h"
-
 
 
 extern "C" {
@@ -22,12 +22,11 @@ extern "C" {
 
     if (proxy != NULL) {
 
-      // // TODO uncomment after implementation and initialization of colvarscript *script
-      // if (proxy->script->args (argc, argv) != 0) {
-      //   return TCL_ERROR;
-      // } else {
-      //   return TCL_OK;
-      // }
+      if (proxy->script->args (argc, argv) == COLVARSCRIPT_ERROR) {
+        return TCL_ERROR;
+      } else {
+        return TCL_OK;
+      }
       
     } else {
 
@@ -48,7 +47,7 @@ extern "C" {
           }
           if (vmd->molecule_valid_id (molid)) {
             proxy = new colvarproxy_vmd (vmdtcl, vmd, molid);
-            // TODO initialize script interface
+            proxy->script = new colvarscript();
             return TCL_OK;
           }
         }

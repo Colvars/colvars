@@ -1,24 +1,35 @@
+// -*- c++ -*-
+
 #ifndef COLVARPROXY_H
 #define COLVARPROXY_H
 
 
 #ifndef COLVARPROXY_VERSION
-#define COLVARPROXY_VERSION "2014-05-13"
+#define COLVARPROXY_VERSION "2014-05-14"
 #endif
 
 
 #include "colvarmodule.h"
+#include "colvarscript.h"
 
 
-/// \brief Interface class between the collective variables module and
-/// the simulation program
+/// \brief Interface between the collective variables module and
+/// the simulation or analysis program.
+/// This is the base class: each program is supported by a derived class.
+/// Only pure virtual functions ("= 0") must be reimplemented in a new interface.
 
 class colvarproxy {
 
 public:
 
-  /// Pointer to the instance of colvarmodule
+  /// Pointer to the main object
   colvarmodule *colvars;
+
+  /// Pointer to the scripting interface object (does not need to be allocated in a new interface)
+  colvarscript *script;
+
+  /// Default constructor
+  inline colvarproxy() : script (NULL) {}
 
   /// Default destructor
   virtual inline ~colvarproxy() {}
@@ -153,8 +164,3 @@ inline cvm::real colvarproxy::position_dist2 (cvm::atom_pos const &pos1,
 
 #endif
 
-
-// Emacs
-// Local Variables:
-// mode: C++
-// End:

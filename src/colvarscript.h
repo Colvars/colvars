@@ -1,3 +1,5 @@
+// -*- c++ -*-
+
 #ifndef COLVARSCRIPT_H
 #define COLVARSCRIPT_H
 
@@ -15,8 +17,15 @@ class colvarscript  {
 private:
 
 public:
+
+  inline colvarscript() {}
+  inline ~colvarscript() {}
+
   /// If an error is return by one of the methods, it should set this to the error message
   std::string error_message;
+
+  /// Parse the positional arguments of a script command
+  int args (int argc, const char *argv[]);
 
   /// Parse config from file
   int configfile (std::string const &filename);
