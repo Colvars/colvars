@@ -34,8 +34,8 @@ public:
   /// Default destructor
   virtual inline ~colvarproxy() {}
 
-  /// \brief Synchronize the configuration of the colvars module with that of the interfacing program
-  virtual void update_proxy_data() {}
+  /// (Re)initialize member data after construction
+  virtual void setup() {}
 
 
   // **************** SYSTEM-WIDE PHYSICAL QUANTITIES ****************
@@ -55,6 +55,12 @@ public:
 
   /// \brief Pseudo-random number with Gaussian distribution
   virtual cvm::real rand_gaussian (void) = 0;
+
+  /// \brief Get the current frame number
+  virtual int frame() { return 0; }
+
+  /// \brief Set the current frame number
+  virtual void frame (int) {}
 
 
   // **************** SIMULATION PARAMETERS ****************

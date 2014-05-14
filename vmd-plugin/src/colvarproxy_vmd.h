@@ -30,15 +30,18 @@ protected:
   DrawMolecule *vmdmol;
   /// message output object
   Inform msgColvars;
+  /// current frame (initial value: vmdmol->current())
+  int vmdmol_frame;
 
 public:
+
 
   friend class cvm::atom;
 
   colvarproxy_vmd (Tcl_Interp *vmdtcl, VMDApp *vmd, int molid);
   ~colvarproxy_vmd();
 
-  void update_proxy_data();
+  void setup();
 
   inline cvm::real unit_angstrom()
   {
@@ -65,6 +68,20 @@ public:
   inline cvm::real rand_gaussian()
   {
     return vmd_random_gaussian();
+  }
+
+  inline int frame()
+  {
+    return vmdmol_frame;
+  }
+
+  inline void frame (int f)
+  {
+    if (vmdmol->get_frame (f) != NULL) {
+      vmdmol_frame = f;
+    } else {
+      fatal_error ("Error: trying to set an invalid frame number.\n");
+    }
   }
 
   inline std::string input_prefix()
@@ -172,7 +189,7 @@ inline void cvm::atom::read_position()
   // read the position directly from the current timestep's memory
   // Note: no prior update should be required (unlike NAMD with GlobalMaster)
   DrawMolecule *vmdmol = ((colvarproxy_vmd *) cvm::proxy)->vmdmol;
-  float *vmdpos = (vmdmol->current())->pos;
+  float *vmdpos = (vmdmol->get_frame (vmdmol_frame))->pos;
   this->pos = cvm::atom_pos (vmdpos[this->id*3+0],
                              vmdpos[this->id*3+1],
                              vmdpos[this->id*3+2]);
