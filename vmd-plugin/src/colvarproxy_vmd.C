@@ -47,7 +47,6 @@ extern "C" {
           }
           if (vmd->molecule_valid_id (molid)) {
             proxy = new colvarproxy_vmd (vmdtcl, vmd, molid);
-            proxy->script = new colvarscript();
             return TCL_OK;
           }
         }
@@ -81,24 +80,43 @@ colvarproxy_vmd::colvarproxy_vmd (Tcl_Interp *vti, VMDApp *v, int molid)
     msgColvars ("colvars: ")
 #endif
 {
+  // TODO construct here, but fully initialize the module AFTER the script interface
   colvars = NULL;
-
-  // same seed as in Measure.C
-  vmd_srandom (38572111);
-
+  script = new colvarscript();
+  script->proxy_error = COLVARSCRIPT_OK;
   setup();
 }
+
+
+colvarproxy_vmd::~colvarproxy_vmd()
+{
+  if (script != NULL) {
+    delete script;
+    script = NULL;
+  }
+  if (colvars != NULL) {
+    delete colvars;
+    colvars = NULL;
+  }
+}
+
 
 void colvarproxy_vmd::setup()
 {
   vmdmol = vmd->moleculeList->mol_from_id (vmdmolid);
   if (vmdmol) {
-    frame = vmdmol->current();
+    frame = vmdmol->frame();
+  } else {
+    fatal_error ("Error: cannot find the molecule requested ("+cvm::to_str (vmdmolid)+").\n");
   }
   if (colvars) {
     colvars->setup();
   }
+
+  // same seed as in Measure.C
+  vmd_srandom (38572111);
 }
+
 
 void colvarproxy_vmd::log (std::string const &message)
 {
@@ -111,16 +129,19 @@ void colvarproxy_vmd::log (std::string const &message)
 
 void colvarproxy_vmd::fatal_error (std::string const &message)
 {
-  // TODO: return control to Tcl interpreter instead of exiting
   log (message);
   if (!cvm::debug())
     log ("If this error message is unclear, "
          "try recompiling the colvars plugin with -DCOLVARS_DEBUG.\n");
-  if (colvars != NULL) {
-    delete colvars;
-    colvars = NULL;
+  if (script) {
+    script->proxy_error = COLVARSCRIPT_ERROR;
+  } else {
+    if (colvars != NULL) {
+      delete colvars;
+      colvars = NULL;
+    }
+    vmd->VMDexit ("Fatal collective variables error, exiting.\n", 1, 2);
   }
-  vmd->VMDexit ("Collective variables error.\n", 1, 2);
 }
 
 void colvarproxy_vmd::exit (std::string const &message)

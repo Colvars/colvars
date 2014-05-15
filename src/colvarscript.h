@@ -17,9 +17,14 @@ class colvarscript  {
 private:
 
 public:
+ 
+  friend class colvarproxy;
 
   inline colvarscript() {}
   inline ~colvarscript() {}
+
+  /// If an error is caught by the proxy through fatal_error(), this is set to COLVARSCRIPT_ERROR
+  int proxy_error;
 
   /// If an error is return by one of the methods, it should set this to the error message
   std::string error_message;

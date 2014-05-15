@@ -22,16 +22,18 @@ protected:
 
   /// pointer to the VMD Tcl interpreter
   Tcl_Interp *vmdtcl;
+  /// pointer to the VMD Tcl interpreter
+  int *vmdtcl;
   /// pointer to the VMD main object
   VMDApp *vmd;
-  /// VMD molecule id being used
+  /// VMD molecule id being used (must be provided at construction)
   int vmdmolid;
-  /// pointer to VMD molecule
+  /// pointer to VMD molecule (derived from vmdmolid)
   DrawMolecule *vmdmol;
-  /// message output object
-  Inform msgColvars;
-  /// current frame (initial value: vmdmol->current())
+  /// current frame (initial/default value: vmdmol->frame())
   int vmdmol_frame;
+  /// output object
+  Inform msgColvars;
 
 public:
 
