@@ -44,7 +44,7 @@ public:
   colvarbias();
 
   /// Destructor
-  virtual inline ~colvarbias() {}
+  virtual ~colvarbias();
 
   /// Read the bias configuration from a restart file
   virtual std::istream & read_restart (std::istream &is) = 0;

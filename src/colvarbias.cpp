@@ -50,6 +50,22 @@ colvarbias::colvarbias()
   : colvarparse(), has_data (false)
 {}
 
+colvarbias::~colvarbias()
+{
+  // Remove references to this bias from colvars
+  for (std::vector<colvar *>::iterator cvi = colvars.begin();
+       cvi != colvars.end();
+       cvi++) {
+    for (std::vector<colvarbias *>::iterator bi = (*cvi)->biases.begin();
+         bi != (*cvi)->biases.end();
+         bi++) {
+      if ( *bi == this) {
+        (*cvi)->biases.erase (bi);
+        break;
+      }
+    }
+  }
+}
 
 void colvarbias::add_colvar (std::string const &cv_name)
 {
@@ -60,6 +76,7 @@ void colvarbias::add_colvar (std::string const &cv_name)
                 cvp->name+"\".\n");
     colvars.push_back (cvp);
     colvar_forces.push_back (colvarvalue (cvp->type()));
+    cvp->biases.push_back (this); // add back-reference to this bias to colvar
   } else {
     cvm::fatal_error ("Error: cannot find a colvar named \""+
                       cv_name+"\".\n");

@@ -155,6 +155,8 @@ public:
   /// Tasks performed by this colvar
   bool tasks[task_ntot];
 
+  /// List of biases that depend on this colvar
+  std::vector<colvarbias *> biases;
 protected:
 
 
