@@ -15,6 +15,7 @@
 class colvarscript  {
 
 private:
+  colvarmodule *colvars;
 
 public:
  
@@ -27,11 +28,12 @@ public:
   int proxy_error;
 
   /// If an error is return by one of the methods, it should set this to the error message
-  std::string error_message;
+  std::string result;
 
-  /// Parse the positional arguments of a script command
-  int args (int argc, const char *argv[]);
+  /// Run script command with given positional arguments
+  int run (int argc, char *argv[]);
 
+/*
   /// Parse config from file
   int configfile (std::string const &filename);
 
@@ -41,6 +43,8 @@ public:
   /// delete object (type colvar or bias or any type)
   /// A colvar may not be deleted if a bias depends on it (the bias should be deleted first)
   int delete_obj (std::string const &object, std::string const &name);
+  
+  //Note: frame functions below are unneccessary in VMD as we rely on VMD's own current frame
 
   /// In analysis mode, go to specified frame (-1 for last frame)
   /// returns new frame number, or COLVARSCRIPT_ERROR
@@ -61,6 +65,7 @@ public:
 
   /// Get bias energy
   int get_energy (std::string const &biasname, cvm::real &energy_out);
+*/
 };
 
 #endif

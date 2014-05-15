@@ -11,7 +11,7 @@
 #include "colvaratoms.h"
 #include "colvarproxy.h"
 #include "colvarproxy_namd.h"
-
+#include "colvarscript.h"
 
 colvarproxy_namd::colvarproxy_namd()
 {
@@ -80,6 +80,8 @@ colvarproxy_namd::colvarproxy_namd()
     cvm::log (cvm::line_marker);
   }
 
+  script = new colvarscript;
+
   // Initialize reduction object to submit restraint energy as MISC
   reduction = ReductionMgr::Object()->willSubmit(REDUCTIONS_BASIC);
 
@@ -91,6 +93,10 @@ colvarproxy_namd::colvarproxy_namd()
 colvarproxy_namd::~colvarproxy_namd()
 {
   delete reduction;
+  if (script != NULL) {
+    delete script;
+    script = NULL;
+  }
   if (colvars != NULL) {
     delete colvars;
     colvars = NULL;

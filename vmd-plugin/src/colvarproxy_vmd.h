@@ -57,13 +57,13 @@ public:
 
   inline cvm::real temperature()
   {
-    // TODO implement a user method to set the value of this
+    // TODO define, document and implement a user method to set the value of this
     return 300.0;
   }
 
   inline cvm::real dt()
   {
-    // TODO implement a user method to set the value of this
+    // TODO define, document and implement a user method to set the value of this
     return 1.0;
   }
 
@@ -77,12 +77,13 @@ public:
     return vmdmol_frame;
   }
 
-  inline void frame (int f)
+  inline int frame (int f)
   {
     if (vmdmol->get_frame (f) != NULL) {
       vmdmol_frame = f;
+      return 0;
     } else {
-      fatal_error ("Error: trying to set an invalid frame number.\n");
+      return -1;
     }
   }
 
@@ -109,10 +110,10 @@ public:
 
   void add_energy (cvm::real energy);
 
-  /// nothing to do here
-  inline void request_system_force (bool yesno)
-  {}
-
+  inline void request_system_force (bool yesno) {
+    if (yesno = true)
+      cvm::fatal_error("a bias requested system forces, which are undefined in VMD.");
+  }
 
   cvm::rvector position_distance (cvm::atom_pos const &pos1,
                                   cvm::atom_pos const &pos2);

@@ -369,15 +369,15 @@ protected:
   /// Output restart file
   std::ofstream restart_out_os;
 
+  /// \brief Counter for the current depth in the object hierarchy (useg e.g. in outpu
+  static size_t depth;
+
+public:
   /// \brief Pointer to the proxy object, used to retrieve atomic data
   /// from the hosting program; it is static in order to be accessible
   /// from static functions in the colvarmodule class
   static colvarproxy *proxy;
 
-  /// \brief Counter for the current depth in the object hierarchy (useg e.g. in outpu
-  static size_t depth;
-
-public:
 
   /// Increase the depth (number of indentations in the output)
   static void increase_depth();

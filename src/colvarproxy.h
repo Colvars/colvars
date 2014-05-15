@@ -10,8 +10,9 @@
 
 
 #include "colvarmodule.h"
-#include "colvarscript.h"
 
+// forward declaration
+class colvarscript;
 
 /// \brief Interface between the collective variables module and
 /// the simulation or analysis program.
@@ -57,10 +58,11 @@ public:
   virtual cvm::real rand_gaussian (void) = 0;
 
   /// \brief Get the current frame number
-  virtual int frame() { return 0; }
+  virtual int frame() { return -1; }
 
   /// \brief Set the current frame number
-  virtual void frame (int) {}
+  // return 0 on success, -1 on failure
+  virtual int frame (int) { return -1; }
 
 
   // **************** SIMULATION PARAMETERS ****************

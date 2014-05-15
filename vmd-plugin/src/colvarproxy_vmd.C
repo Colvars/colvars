@@ -11,6 +11,7 @@
 #include "colvarmodule.h"
 #include "colvarscript.h"
 #include "colvaratoms.h"
+#include "colvarscript.h"
 #include "colvarproxy.h"
 #include "colvarproxy_vmd.h"
 
@@ -19,13 +20,16 @@ extern "C" {
   int tcl_colvars (ClientData nodata, Tcl_Interp *vmdtcl, int argc, const char *argv[]) {
 
     static colvarproxy_vmd *proxy = NULL;
+    int retval;
 
     if (proxy != NULL) {
 
-      if (proxy->script->args (argc, argv) == COLVARSCRIPT_ERROR) {
-        return TCL_ERROR;
-      } else {
+      retval = proxy->script->run (argc, argv); 
+      Tcl_SetResult(vmdtcl, proxy->script->result.c_str(), TCL_STATIC);
+      if (retval == COLVARSCRIPT_OK) {
         return TCL_OK;
+      } else {
+        return TCL_ERROR;
       }
       
     } else {
