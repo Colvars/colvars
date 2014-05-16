@@ -23,7 +23,7 @@ TMP=/tmp
 cleanup_files () {
 for dir in [0-9][0-9][0-9]_* ; do
   for script in test*.namd ; do
-       rm -f ${dir}/${script%.namd}.*{state,out,traj,coor,vel,xsc,BAK,old,backup,diff}
+       rm -f ${dir}/${script%.namd}.*{state,out,traj,coor,vel,xsc,BAK,old,backup,diff,pmf,grad,count}
   done
 done
 }
@@ -51,6 +51,11 @@ do
       # collect output of colvars module, except the version number
       # TODO: strip also the echo of newly introduced keywords
       grep "^colvars:" ${script%.namd}.out | grep -v 'Initializing the collective variables module' > ${script%.namd}.colvars.out
+      # Output of Tcl interpreter for automatic testing of scripts
+      grep "^TCL:" ${script%.namd}.out | grep -v '^TCL: Suspending until startup complete.' > ${script%.namd}.Tcl.out
+      if [ ! -s ${script%.namd}.Tcl.out ]; then
+        rm -f ${script%.namd}.Tcl.out
+      fi
   done
   
   # now check results
