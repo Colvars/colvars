@@ -686,6 +686,16 @@ colvar::~colvar()
   for (size_t i = 0; i < cvcs.size(); i++) {
     delete cvcs[i];
   }
+
+  // remove reference to this colvar from the CVM
+  for (std::vector<colvar *>::iterator cvi = cvm::colvars.begin();
+       cvi != cvm::colvars.end();
+       cvi++) {
+    if ( *cvi == this) {
+      cvm::colvars.erase (cvi);
+      break;
+    }   
+  }
 }
 
 

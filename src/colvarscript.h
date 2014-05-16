@@ -8,6 +8,7 @@
 #include "colvarvalue.h"
 #include "colvar.h"
 #include "colvarbias.h"
+#include "colvarproxy.h"
 
 #define COLVARSCRIPT_ERROR -1
 #define COLVARSCRIPT_OK 0
@@ -15,13 +16,16 @@
 class colvarscript  {
 
 private:
+  colvarproxy *proxy;
   colvarmodule *colvars;
+
+  inline colvarscript() {} // no-argument construction forbidden
 
 public:
  
   friend class colvarproxy;
 
-  inline colvarscript() {}
+  colvarscript(colvarproxy * p);
   inline ~colvarscript() {}
 
   /// If an error is caught by the proxy through fatal_error(), this is set to COLVARSCRIPT_ERROR
@@ -33,6 +37,15 @@ public:
   /// Run script command with given positional arguments
   int run (int argc, char *argv[]);
 
+  /// Run subcommands on colvar
+  int proc_colvar (int argc, char *argv[]);
+
+  /// Run subcommands on bias
+  int proc_bias (int argc, char *argv[]);
+
+};
+
+  
 /*
   /// Parse config from file
   int configfile (std::string const &filename);
@@ -66,6 +79,5 @@ public:
   /// Get bias energy
   int get_energy (std::string const &biasname, cvm::real &energy_out);
 */
-};
 
 #endif

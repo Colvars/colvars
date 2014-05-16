@@ -60,6 +60,9 @@ colvarproxy_namd::colvarproxy_namd()
   restart_output_prefix_str = std::string (simparams->restartFilename);
   restart_frequency_s = simparams->restartFrequency;
 
+  // TODO outsource CVM construction
+  //construct_cvm(config->data);
+
   // initiate the colvarmodule, this object will be the communication
   // proxy
   colvars = new colvarmodule (config->data, this);
@@ -80,7 +83,7 @@ colvarproxy_namd::colvarproxy_namd()
     cvm::log (cvm::line_marker);
   }
 
-  script = new colvarscript;
+  script = new colvarscript (this);
 
   // Initialize reduction object to submit restraint energy as MISC
   reduction = ReductionMgr::Object()->willSubmit(REDUCTIONS_BASIC);
@@ -89,6 +92,34 @@ colvarproxy_namd::colvarproxy_namd()
     iout << "Info: done initializing the colvars proxy object.\n" << endi;
 }
 
+/*
+void colvarproxy_namd::construct_cvm (char const  *config_filename)
+// TODO This method might need some refinements for delayed initialization
+// eg. accept config string instead of filename, as below
+//void colvarproxy_namd::construct_cvm (std::string const &config)
+{
+
+  // initiate the colvarmodule, this object will be the communication
+  // proxy
+  colvars = new colvarmodule (config_filename, this);
+  // save to Node for Tcl script access
+  Node::Object()->colvars = colvars;
+
+  if (simparams->firstTimestep != 0) {
+    cvm::log ("Initializing step number as firstTimestep.\n");
+    colvars->it = colvars->it_restart = simparams->firstTimestep;
+  }
+
+  if (cvm::debug()) {
+    cvm::log ("colvars_atoms = "+cvm::to_str (colvars_atoms)+"\n");
+    cvm::log ("colvars_atoms_ncopies = "+cvm::to_str (colvars_atoms_ncopies)+"\n");
+    cvm::log ("positions = "+cvm::to_str (positions)+"\n");
+    cvm::log ("total_forces = "+cvm::to_str (total_forces)+"\n");
+    cvm::log ("applied_forces = "+cvm::to_str (applied_forces)+"\n");
+    cvm::log (cvm::line_marker);
+  }
+}
+*/
 
 colvarproxy_namd::~colvarproxy_namd()
 {

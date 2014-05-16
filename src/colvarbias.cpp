@@ -65,6 +65,15 @@ colvarbias::~colvarbias()
       }
     }
   }
+  // ...and from the colvars module
+  for (std::vector<colvarbias *>::iterator bi = cvm::biases.begin();
+       bi != cvm::biases.end();
+       bi++) {
+    if ( *bi == this) {
+      cvm::biases.erase (bi);
+      break;
+    }
+  }
 }
 
 void colvarbias::add_colvar (std::string const &cv_name)
