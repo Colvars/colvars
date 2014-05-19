@@ -1,0 +1,66 @@
+Index: ScriptTcl.C
+===================================================================
+RCS file: /namd/cvsroot/namd2/src/ScriptTcl.C,v
+retrieving revision 1.90
+diff -u -r1.90 ScriptTcl.C
+--- ScriptTcl.C	9 Jan 2014 20:20:07 -0000	1.90
++++ ScriptTcl.C	19 May 2014 12:32:29 -0000
+@@ -25,6 +25,7 @@
+ #include "PatchMap.h"
+ #include "Measure.h"
+ #include "colvarmodule.h"
++#include "colvarscript.h"
+ #include "DumpBench.h"
+ #include <stdio.h>
+ #include <ctype.h>  // for isspace
+@@ -1045,6 +1046,26 @@
+   return TCL_OK;
+ }
+ 
++int ScriptTcl::Tcl_colvars (ClientData clientData,
++        Tcl_Interp *interp, int argc, char *argv[]) {
++  ScriptTcl *script = (ScriptTcl *)clientData;
++  script->initcheck();
++  colvarmodule *colvars = Node::Object()->colvars;
++  if ( ! colvars ) {
++    Tcl_SetResult(interp,"colvars module not active",TCL_VOLATILE);
++    return TCL_ERROR;
++  }
++  int retval = colvars->proxy->script->run(argc, argv);
++  char buf[512];
++  strncpy (buf, colvars->proxy->script->result.c_str(), 511);
++  buf[511] = '\0';
++  Tcl_SetResult(interp, buf, TCL_VOLATILE);
++  if (retval == COLVARSCRIPT_OK)
++    return TCL_OK;
++  else
++    return TCL_ERROR;
++}
++
+ int ScriptTcl::Tcl_checkpoint(ClientData clientData,
+         Tcl_Interp *interp, int argc, char *argv[]) {
+   ScriptTcl *script = (ScriptTcl *)clientData;
+@@ -1498,6 +1519,8 @@
+     (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
+   Tcl_CreateCommand(interp, "colvarvalue", Tcl_colvarvalue,
+     (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
++  Tcl_CreateCommand(interp, "cv", Tcl_colvars,
++    (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
+   Tcl_CreateCommand(interp, "colvarfreq", Tcl_colvarfreq,
+     (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
+   Tcl_CreateCommand(interp, "checkpoint", Tcl_checkpoint,
+Index: ScriptTcl.h
+===================================================================
+RCS file: /namd/cvsroot/namd2/src/ScriptTcl.h,v
+retrieving revision 1.39
+diff -u -r1.39 ScriptTcl.h
+--- ScriptTcl.h	9 Jan 2014 20:20:07 -0000	1.39
++++ ScriptTcl.h	19 May 2014 12:32:29 -0000
+@@ -85,6 +85,7 @@
+   static int Tcl_measure(ClientData, Tcl_Interp *, int, char **);
+   static int Tcl_colvarbias(ClientData, Tcl_Interp *, int, char **);
+   static int Tcl_colvarvalue(ClientData, Tcl_Interp *, int, char **);
++  static int Tcl_colvars(ClientData, Tcl_Interp *, int, char **);
+   static int Tcl_colvarfreq(ClientData, Tcl_Interp *, int, char **);
+   static int Tcl_checkpoint(ClientData, Tcl_Interp *, int, char **);
+   static int Tcl_revert(ClientData, Tcl_Interp *, int, char **);
