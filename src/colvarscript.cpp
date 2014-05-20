@@ -43,10 +43,30 @@ int colvarscript::run (int argc, char *argv[]) {
     return COLVARSCRIPT_OK;
   }
 
+  if (cmd == "list") {
+    if (argc == 2) {
+      for (std::vector<colvar *>::iterator cvi = colvars->colvars.begin();
+           cvi != colvars->colvars.end();
+           cvi++) {
+        result += (cvi == colvars->colvars.begin() ? "" : " ") + (*cvi)->name;
+      }
+      return COLVARSCRIPT_OK;
+    } else if (argc == 3 && !strcmp(argv[2], "biases")) {
+      for (std::vector<colvarbias *>::iterator bi = colvars->biases.begin();
+           bi != colvars->biases.end();
+           bi++) {
+        result += (bi == colvars->biases.begin() ? "" : " ") + (*bi)->name;
+      }
+      return COLVARSCRIPT_OK;
+    } else {
+      result = "Wrong arguments to command \"list\"";
+      return COLVARSCRIPT_ERROR;
+    }
+  }
 
   /// Parse config from file
   //int colvarscript::configfile (std::string const &filename) {
-    // Implementation postponed until delayed initialization is in place
+    // Implementation postponed until deferred initialization is in place
 
   /// Parse config from string
   if (cmd == "config") {
