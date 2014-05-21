@@ -96,14 +96,18 @@ proc runcmd { cmd } {
   print [eval $cmd]
 }
 
-runcmd "cv colvar d value"
-runcmd "cv bias harmonic1 energy"
+foreach c [cv list] { print "$c = [cv colvar $c value]"}        
+foreach b [cv list biases] { print "E($b) = [cv bias $b energy]"}
+
 runcmd "cv update"
-runcmd "cv colvar d value"
-runcmd "cv bias harmonic1 energy"
+
+foreach c [cv list] { print "$c = [cv colvar $c value]"}        
+foreach b [cv list biases] { print "E($b) = [cv bias $b energy]"}
+
 run 20
-runcmd "cv colvar d value"
-runcmd "cv bias harmonic1 energy"
+
+foreach c [cv list] { print "$c = [cv colvar $c value]"}        
+foreach b [cv list biases] { print "E($b) = [cv bias $b energy]"}
 
 cv config "colvar {
   name d2
@@ -113,8 +117,6 @@ cv config "colvar {
   }
 }"
 
-runcmd "cv colvar d2 value"
-runcmd "cv colvar d2 update"
 runcmd "cv colvar d2 value"
 runcmd "cv update"
 runcmd "cv colvar d2 value"
@@ -131,6 +133,5 @@ cv config "harmonic {
 runcmd "cv bias harm2 energy"
 runcmd "cv bias harm2 update"
 runcmd "cv bias harm2 energy"
-
 runcmd "cv bias harm2 delete"
 runcmd "cv colvar d2 delete"
