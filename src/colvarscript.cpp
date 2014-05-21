@@ -1,4 +1,6 @@
+#include <cstdlib>
 #include "colvarscript.h"
+
 
 colvarscript::colvarscript (colvarproxy *p)
  : proxy (p)
@@ -33,7 +35,9 @@ int colvarscript::run (int argc, char *argv[]) {
 
   if (cmd == "reset") {
     /// Delete every child object
-    // Implementation postponed until delayed initialization is in place
+    // Implementation postponed until deferred initialization is in place
+    // Two options: delete all biases and colvars, or
+    // delete the whole cvm and reallocate
     // colvars = proxy->reset_cvm ();
     return COLVARSCRIPT_OK;
   }
@@ -75,6 +79,28 @@ int colvarscript::run (int argc, char *argv[]) {
     colvars->init_colvars (conf);
     colvars->init_biases (conf);
     return COLVARSCRIPT_OK;
+  }
+
+  if (cmd == "frame") {
+    if (argc == 2) {
+      int f = proxy->frame();
+      if (f >= 0) {
+        result = cvm::to_str (f);
+        return COLVARSCRIPT_OK;
+      } else {
+        result = "Frame number is not available";
+        return COLVARSCRIPT_ERROR;
+      }
+    } else if (argc == 3) {
+      // Failure of this function does not trigger an error, but
+      // returns the plain result to let scripts detect available frames
+      long int f = proxy->frame(strtol(argv[2], NULL, 10));
+      result = cvm::to_str (f);
+      return COLVARSCRIPT_OK;
+    } else {
+      result = "Wrong arguments to command \"frame\"";
+      return COLVARSCRIPT_ERROR;
+    }
   }
 
   result = "Syntax error";
