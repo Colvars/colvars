@@ -847,7 +847,11 @@ void colvar::calc()
 
     ft.reset();
 
-    if(!tasks[task_extended_lagrangian] && (cvm::step_relative() > 0)) {
+    // if(!tasks[task_extended_lagrangian] && (cvm::step_relative() > 0)) {
+    // Disabled check to allow for explicit system force calculation
+    // even with extended Lagrangian
+    
+    if(cvm::step_relative() > 0) {
       // get from the cvcs the system forces from the PREVIOUS step
       for (size_t i = 0; i < cvcs.size(); i++) {
         (cvcs[i])->calc_force_invgrads();
