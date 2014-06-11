@@ -234,6 +234,15 @@ void colvar::distance_z::calc_gradients()
         cvm::position_distance (main.center_of_mass(), ref1.center_of_mass()) + x.real_value * axis ));
     }
   }
+
+  if (b_debug_gradients) {
+    cvm::log ("Debugging gradients for group main:\n");
+    debug_gradients (main);
+    cvm::log ("Debugging gradients for group ref1:\n");
+    debug_gradients (ref1);
+    cvm::log ("Debugging gradients for group ref2:\n");
+    debug_gradients (ref2);
+  }
 }
 
 void colvar::distance_z::calc_force_invgrads()
