@@ -78,15 +78,17 @@ colvarproxy_vmd::colvarproxy_vmd (Tcl_Interp *vti, VMDApp *v, int molid)
   : vmdtcl (vti),
     vmd (v),
     vmdmolid (molid),
+    input_prefix_str (""), output_prefix_str (""),
 #if defined(VMDTKCON)
     msgColvars ("colvars: ",    VMDCON_INFO)
 #else
     msgColvars ("colvars: ")
 #endif
 {
-  // TODO construct here, but fully initialize the module AFTER the script interface
-  colvars = NULL;
-  script = new colvarscript();
+  // The module is only allocated here: it will be configured
+  // through the "configfile" and "config" commands of colvarscript.
+  colvars = new colvarmodule (this);
+  script = new colvarscript (this);
   script->proxy_error = COLVARSCRIPT_OK;
   setup();
 }

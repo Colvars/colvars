@@ -87,21 +87,22 @@ public:
     }
   }
 
-  inline std::string input_prefix()
+  std::string input_prefix_str;
+  std::string input_prefix()
   {
-    return std::string (vmdmol->molname());
+    return input_prefix_str;
   }
 
   inline std::string restart_output_prefix()
   {
     // note that this shouldn't be called while running VMD anyway
-    return std::string (vmdmol->molname()) + std::string (".rst");
+    return std::string ("");
   }
 
+  std::string output_prefix_str;
   inline std::string output_prefix()
   {
-    // note that this shouldn't be called while running VMD anyway
-    return std::string (vmdmol->molname()) + std::string (".out");
+    return output_prefix_str;
   }
 
   inline size_t restart_frequency() {
