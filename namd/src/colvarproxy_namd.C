@@ -124,10 +124,10 @@ void colvarproxy_namd::construct_cvm (char const  *config_filename)
 colvarproxy_namd::~colvarproxy_namd()
 {
   delete reduction;
-  // if (script != NULL) {
-  //   delete script;
-  //   script = NULL;
-  // }
+  if (script != NULL) {
+    delete script;
+    script = NULL;
+  }
   if (colvars != NULL) {
     delete colvars;
     colvars = NULL;
