@@ -69,17 +69,38 @@ int colvarscript::run (int argc, char *argv[]) {
   }
 
   /// Parse config from file
-  //int colvarscript::configfile (std::string const &filename) {
-    // Implementation postponed until deferred initialization is in place
+  if (cmd == "configfile") {
+    if (argc < 3) {
+      result = "Missing arguments";
+      return COLVARSCRIPT_ERROR;
+    }
+    colvars->config_file (configfile);
+    return COLVARSCRIPT_OK;
+  }
 
   /// Parse config from string
   if (cmd == "config") {
+    if (argc < 3) {
+      result = "Missing arguments";
+      return COLVARSCRIPT_ERROR;
+    }
     std::string conf = argv[2];
-    // Partial implementation: we are not reading global options
-    colvars->init_colvars (conf);
-    colvars->init_biases (conf);
+    colvars->config_string (conf);
     return COLVARSCRIPT_OK;
   }
+
+  /// Load an input state file
+  if (cmd == "load") {
+    if (argc < 3) {
+      result = "Missing arguments";
+      return COLVARSCRIPT_ERROR;
+    }
+    proxy->input_prefix_str argv[2];
+    colvars->setup_input();
+    return COLVARSCRIPT_OK;
+  }
+
+  /// TODO Write an output state file? (Useful for testing)
 
   if (cmd == "frame") {
     if (argc == 2) {
