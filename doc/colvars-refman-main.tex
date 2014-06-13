@@ -265,6 +265,7 @@ The following keywords are available in the global context of this configuration
     UNIX filename}{%
     This option reads an index file (usually with a \texttt{.ndx}
     extension) as produced by the \texttt{make\_ndx} tool of GROMACS.
+    This keyword may be repeated to load multiple index files: the same group name cannot appear in multiple index files.
     \cvlammpsonly{In LAMMPS, the \texttt{group2ndx} command can be used to generate such file from existing groups.
     Note that the collective variables module reads the indices of atoms from the index file: therefore, the LAMMPS groups do not need to remain active during the simulation, and could be deleted right after issuing \texttt{group2ndx}.
 }
