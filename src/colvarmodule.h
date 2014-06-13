@@ -2,7 +2,7 @@
 #define COLVARMODULE_H
 
 #ifndef COLVARS_VERSION
-#define COLVARS_VERSION "2014-06-11"
+#define COLVARS_VERSION "2014-06-13"
 #endif
 
 #ifndef COLVARS_DEBUG
@@ -158,22 +158,53 @@ public:
 
   /// \brief Constructor \param config_name Configuration file name
   /// \param restart_name (optional) Restart file name
-  colvarmodule (char const *config_name,
-                colvarproxy *proxy_in);
+  colvarmodule (colvarproxy *proxy);
 
   /// Destructor
   ~colvarmodule();
 
-  /// Initialize collective variables
-  void init_colvars (std::string const &conf);
+  /// Open a config file, load its contents, and pass it to config_string()
+  void config_file (char const *config_file_name); 
 
-  /// Initialize collective variable biases
-  void init_biases (std::string const &conf);
+  /// \brief Parse a config string assuming it is a complete configuration
+  /// (i.e. calling all parse functions)
+  void config_string (std::string &conf);
 
-  /// Re-initialize data at the beginning of a run. For use with
-  /// MD codes that can change system parameters like atom masses
-  /// between run commands.
+
+  // Parse functions (setup internal data based on a string)
+
+  /// Parse the few module's global parameters
+  void parse_global_params (std::string const &conf);
+
+  /// Parse and initialize collective variables
+  void parse_colvars (std::string const &conf);
+
+  /// Parse and initialize collective variable biases
+  void parse_biases (std::string const &conf);
+
+
+  // "Setup" functions (change internal data based on related data
+  // from the proxy that may change during program execution)
+  // No additional parsing is done within these functions
+
+  /// (Re)initialize internal data (currently used by LAMMPS)
+  /// Also calls setup() member functions of colvars and biases
   void setup();
+
+  /// (Re)initialize and (re)read the input state file calling read_restart()
+  void setup_input(); 
+
+  /// (Re)initialize the output trajectory and state file (does not write it yet)
+  void setup_output(); 
+
+  /// Read the input restart file
+  std::istream & read_restart (std::istream &is);
+  /// Write the output restart file
+  std::ostream & write_restart (std::ostream &os);
+  /// Write all FINAL output files
+  void write_output_files();
+  /// Backup a file before writing it
+  static void backup_file (char const *filename);
 
   /// Look up a bias by name; returns NULL if not found
   static colvarbias * bias_by_name(std::string const &name);
@@ -194,14 +225,6 @@ public:
 
   /// Calculate collective variables and biases
   void calc();
-  /// Read the input restart file
-  std::istream & read_restart (std::istream &is);
-  /// Write the output restart file
-  std::ostream & write_restart (std::ostream &os);
-  /// Write all output files (called by the proxy)
-  void write_output_files();
-  /// \brief Call colvarproxy::backup_file()
-  static void backup_file (char const *filename);
 
   /// Perform analysis
   void analyze();

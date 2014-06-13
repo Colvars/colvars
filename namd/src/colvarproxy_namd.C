@@ -60,12 +60,12 @@ colvarproxy_namd::colvarproxy_namd()
   restart_output_prefix_str = std::string (simparams->restartFilename);
   restart_frequency_s = simparams->restartFrequency;
 
-  // TODO outsource CVM construction
-  //construct_cvm(config->data);
+  // initiate module: this object will be the communication proxy
+  colvars = new colvarmodule (this);
+  colvars->config_file (config->data);
+  colvars->setup_input();
+  colvars->setup_output();
 
-  // initiate the colvarmodule, this object will be the communication
-  // proxy
-  colvars = new colvarmodule (config->data, this);
   // save to Node for Tcl script access
   Node::Object()->colvars = colvars;
 
@@ -124,10 +124,10 @@ void colvarproxy_namd::construct_cvm (char const  *config_filename)
 colvarproxy_namd::~colvarproxy_namd()
 {
   delete reduction;
-  if (script != NULL) {
-    delete script;
-    script = NULL;
-  }
+  // if (script != NULL) {
+  //   delete script;
+  //   script = NULL;
+  // }
   if (colvars != NULL) {
     delete colvars;
     colvars = NULL;

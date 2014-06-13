@@ -101,7 +101,12 @@ colvarproxy_lammps::colvarproxy_lammps(LAMMPS_NS::LAMMPS *lmp,
 void colvarproxy_lammps::init(const char *conf_file)
 {
   // create the colvarmodule instance
-  colvars = new colvarmodule(conf_file,this);
+  colvars = new colvarmodule (this);
+
+  // TODO move one or more of these to setup() if needed
+  colvars->config_file (conf_file);
+  colvars->setup_input();
+  colvars->setup_output();
 
   if (_lmp->update->ntimestep != 0) {
     cvm::log ("Initializing step number as firstTimestep.\n");

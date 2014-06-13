@@ -22,6 +22,8 @@ public:
   /// Return bias energy
   virtual cvm::real update() = 0;
 
+  // TODO: move update_bias here (share with metadynamics)
+
   /// Load new configuration - force constant and/or centers only
   virtual void change_configuration(std::string const &conf);
 
