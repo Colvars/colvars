@@ -67,16 +67,28 @@ public:
 
   // **************** SIMULATION PARAMETERS ****************
 
+
   /// \brief Prefix to be used for input files (restarts, not
   /// configuration)
-  virtual std::string input_prefix() = 0;
+  std::string input_prefix_str, output_prefix_str, restart_output_prefix_str;
+
+  inline std::string input_prefix()
+  {
+    return input_prefix_str;
+  }
 
   /// \brief Prefix to be used for output restart files
-  virtual std::string restart_output_prefix() = 0;
+  inline std::string restart_output_prefix()
+  {
+    return restart_output_prefix_str;
+  }
 
   /// \brief Prefix to be used for output files (final system
   /// configuration)
-  virtual std::string output_prefix() = 0;
+  inline std::string output_prefix()
+  {
+    return output_prefix_str;
+  }
 
   /// \brief Restarts will be fritten each time this number of steps has passed
   virtual size_t restart_frequency() = 0;

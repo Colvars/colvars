@@ -962,7 +962,6 @@ std::list<std::vector<int> > colvarmodule::index_groups;
 
 // file name prefixes
 std::string colvarmodule::output_prefix = "";
-std::string colvarmodule::input_prefix = "";
 std::string colvarmodule::restart_in_name = "";
 
 

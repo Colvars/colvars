@@ -29,7 +29,6 @@ protected:
   /// NAMD-style PRNG object
   Random random;
 
-  std::string input_prefix_str, output_prefix_str, restart_output_prefix_str;
   size_t      restart_frequency_s;
   size_t      previous_NAMD_step;
   bool        first_timestep;
@@ -81,18 +80,6 @@ public:
     return simparams->dt;
   }
 
-  inline std::string input_prefix()
-  {
-    return input_prefix_str;
-  }
-  inline std::string restart_output_prefix()
-  {
-    return restart_output_prefix_str;
-  }
-  inline std::string output_prefix()
-  {
-    return output_prefix_str;
-  }
   inline size_t restart_frequency()
   {
     return restart_frequency_s;
