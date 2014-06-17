@@ -2,7 +2,7 @@
 #define COLVARMODULE_H
 
 #ifndef COLVARS_VERSION
-#define COLVARS_VERSION "2014-06-13"
+#define COLVARS_VERSION "2014-06-17"
 #endif
 
 #ifndef COLVARS_DEBUG
@@ -114,9 +114,6 @@ public:
 
   /// Prefix for all output files for this run
   static std::string output_prefix;
-
-  /// Prefix for files from a previous run (including restart/output)
-  static std::string input_prefix;
 
   /// input restart file name (determined from input_prefix)
   static std::string restart_in_name;

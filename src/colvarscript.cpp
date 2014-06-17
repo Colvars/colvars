@@ -74,7 +74,7 @@ int colvarscript::run (int argc, char *argv[]) {
       result = "Missing arguments";
       return COLVARSCRIPT_ERROR;
     }
-    colvars->config_file (configfile);
+    colvars->config_file (argv[2]);
     return COLVARSCRIPT_OK;
   }
 
@@ -95,7 +95,7 @@ int colvarscript::run (int argc, char *argv[]) {
       result = "Missing arguments";
       return COLVARSCRIPT_ERROR;
     }
-    proxy->input_prefix_str argv[2];
+    proxy->input_prefix_str = argv[2];
     colvars->setup_input();
     return COLVARSCRIPT_OK;
   }
