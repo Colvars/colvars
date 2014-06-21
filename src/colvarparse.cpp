@@ -387,6 +387,9 @@ void colvarparse::check_keywords (std::string &conf, char const *key)
       cvm::fatal_error ("Error: keyword \""+uk+"\" is not supported, "
                         "or not recognized in this context.\n");
   }
+  allowed_keywords.clear();
+  data_begin_pos.clear();
+  data_end_pos.clear();
 }
 
 
