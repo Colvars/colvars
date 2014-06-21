@@ -1,3 +1,5 @@
+# -*- tcl -*-
+
 # FILENAMES
 set outName             [file rootname [file tail [info script]]]
 #set inFileNum           [expr [scan [string range $outName end-1 end] "%d"] - 1]
@@ -109,29 +111,30 @@ run 20
 foreach c [cv list] { print "$c = [cv colvar $c value]"}        
 foreach b [cv list biases] { print "E($b) = [cv bias $b energy]"}
 
-cv config "colvar {
-  name d2
-  distance {
-    group1 { atomnumbers 4 }
-    group2 { atomnumbers 99 }
-  }
-}"
-
-runcmd "cv colvar d2 value"
-runcmd "cv update"
-runcmd "cv colvar d2 value"
-run 20
-runcmd "cv colvar d2 value"
+# cv config "colvar {
+#   name d2
+#   distance {
+#     group1 { atomnumbers 4 }
+#     group2 { atomnumbers 99 }
+#   }
+# }"
+# runcmd "cv colvar d2 value"
+# runcmd "cv update"
+# runcmd "cv colvar d2 value"
+# run 20
+# runcmd "cv colvar d2 value"
 
 cv config "harmonic {
   name harm2
-  colvars d2
-  centers 15
+  colvars d
+  centers 13
   forceConstant 1.
+  outputEnergy yes
 }"
 
 runcmd "cv bias harm2 energy"
 runcmd "cv bias harm2 update"
+run 20 
 runcmd "cv bias harm2 energy"
 runcmd "cv bias harm2 delete"
-runcmd "cv colvar d2 delete"
+#runcmd "cv colvar d2 delete"

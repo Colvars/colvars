@@ -1,4 +1,4 @@
-Colvarstrajfrequency    20
+Colvarstrajfrequency    2
 Colvarsrestartfrequency 20000
 
 colvar {
