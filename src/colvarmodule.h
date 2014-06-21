@@ -198,6 +198,16 @@ public:
   std::istream & read_restart (std::istream &is);
   /// Write the output restart file
   std::ostream & write_restart (std::ostream &os);
+
+  /// Open a trajectory file if requested (and leave it open)
+  std::ostream & open_traj_file (std::string const &file_name);
+  /// Write in the trajectory file
+  std::ostream & write_traj (std::ostream &os);
+  /// Write explanatory labels in the trajectory file
+  std::ostream & write_traj_label (std::ostream &os);
+  /// Open a trajectory file if requested (and leave it open)
+  std::ostream & close_traj_file();
+
   /// Write all FINAL output files
   void write_output_files();
   /// Backup a file before writing it

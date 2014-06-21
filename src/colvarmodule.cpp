@@ -72,11 +72,17 @@ void colvarmodule::config_string (std::string &conf)
   // parse the options for biases
   parse_biases (conf);
 
-  // done with the parsing, check that all keywords are valid
+  // done parsing known keywords, check that all keywords found were valid ones
   parse->check_keywords (conf, "colvarmodule");
+
   cvm::log (cvm::line_marker);
   cvm::log ("Collective variables module (re)initialized.\n");
   cvm::log (cvm::line_marker);
+
+  if (cv_traj_os.good()) {
+    // configuration might have changed, better redo the labels
+    write_traj_label (cv_traj_os);
+  }
 } 
 
 
@@ -394,7 +400,6 @@ void colvarmodule::calc() {
                 restart_out_name+"\".\n");
       proxy->backup_file (restart_out_name.c_str());
       restart_out_os.open (restart_out_name.c_str());
-      restart_out_os.setf (std::ios::scientific, std::ios::floatfield);
       if (!write_restart (restart_out_os))
         cvm::fatal_error ("Error: in writing restart file.\n");
       restart_out_os.close();
@@ -404,67 +409,18 @@ void colvarmodule::calc() {
   // write trajectory file, if needed
   if (cv_traj_freq) {
 
-    if (cvm::debug())
-      cvm::log ("Writing trajectory file.\n");
-
-    // (re)open trajectory file
     if (!cv_traj_os.good()) {
-      if (cv_traj_append) {
-        cvm::log ("Appending to colvar trajectory file \""+cv_traj_name+
-                  "\".\n");
-        cv_traj_os.open (cv_traj_name.c_str(), std::ios::app);
-      } else {
-        cvm::log ("Overwriting colvar trajectory file \""+cv_traj_name+
-                  "\".\n");
-        proxy->backup_file (cv_traj_name.c_str());
-        cv_traj_os.open (cv_traj_name.c_str(), std::ios::out);
-      }
-      cv_traj_os.setf (std::ios::scientific, std::ios::floatfield);
+      open_traj_file (cv_traj_name);
     }
 
     // write labels in the traj file every 1000 lines and at first ts
-    cvm::increase_depth();
     if ((cvm::step_absolute() % (cv_traj_freq * 1000)) == 0 || cvm::step_relative() == 0) {
-      cv_traj_os << "# " << cvm::wrap_string ("step", cvm::it_width-2)
-                 << " ";
-      if (cvm::debug())
-        cv_traj_os.flush();
-      for (std::vector<colvar *>::iterator cvi = colvars.begin();
-	   cvi != colvars.end();
-	   cvi++) {
-	(*cvi)->write_traj_label (cv_traj_os);
-      }
-      for (std::vector<colvarbias *>::iterator bi = biases.begin();
-	   bi != biases.end();
-	   bi++) {
-	(*bi)->write_traj_label (cv_traj_os);
-      }
-      cv_traj_os << "\n";
-      if (cvm::debug())
-        cv_traj_os.flush();
+      write_traj_label (cv_traj_os);
     }
-    cvm::decrease_depth();
 
-    // write collective variable values to the traj file
-    cvm::increase_depth();
     if ((cvm::step_absolute() % cv_traj_freq) == 0) {
-      cv_traj_os << std::setw (cvm::it_width) << it
-                 << " ";
-      for (std::vector<colvar *>::iterator cvi = colvars.begin();
-	   cvi != colvars.end();
-	   cvi++) {
-        (*cvi)->write_traj (cv_traj_os);
-      }
-      for (std::vector<colvarbias *>::iterator bi = biases.begin();
-	   bi != biases.end();
-	   bi++) {
-	(*bi)->write_traj (cv_traj_os);
-      }
-      cv_traj_os << "\n";
-      if (cvm::debug())
-        cv_traj_os.flush();
+      write_traj (cv_traj_os);
     }
-    cvm::decrease_depth();
 
     if (restart_out_freq) {
       // flush the trajectory file if we are at the restart frequency
@@ -533,10 +489,8 @@ colvarmodule::~colvarmodule()
   }
   biases.clear();
 
-  if (cv_traj_os.good()) {
-    cv_traj_os.close();
-  }
-
+  close_traj_file();
+  
   delete parse;
   proxy = NULL;
 }
@@ -758,6 +712,7 @@ bool colvarmodule::read_traj (char const *traj_filename,
 
 std::ostream & colvarmodule::write_restart (std::ostream &os)
 {
+  os.setf (std::ios::scientific, std::ios::floatfield);
   os << "configuration {\n"
      << "  step " << std::setw (it_width)
      << it << "\n"
@@ -781,6 +736,80 @@ std::ostream & colvarmodule::write_restart (std::ostream &os)
   return os;
 }
 
+std::ostream & colvarmodule::open_traj_file (std::string const &file_name)
+{
+  // (re)open trajectory file
+  if (cv_traj_append) {
+    cvm::log ("Appending to colvar trajectory file \""+file_name+
+              "\".\n");
+    cv_traj_os.open (file_name.c_str(), std::ios::app);
+  } else {
+    cvm::log ("Overwriting colvar trajectory file \""+file_name+
+              "\".\n");
+    proxy->backup_file (file_name.c_str());
+    cv_traj_os.open (file_name.c_str(), std::ios::out);
+  }
+  if (!cv_traj_os.good()) {
+    cvm::fatal_error ("Error: cannot write to file \""+file_name+"\".\n");
+  }
+}
+
+std::ostream & colvarmodule::close_traj_file()
+{
+  if (cv_traj_os.good()) {
+    cv_traj_os.close();
+  }
+}
+
+std::ostream & colvarmodule::write_traj_label (std::ostream &os)
+{
+  os.setf (std::ios::scientific, std::ios::floatfield);
+
+  cv_traj_os << "# " << cvm::wrap_string ("step", cvm::it_width-2)
+             << " ";
+
+  cvm::increase_depth();
+  for (std::vector<colvar *>::iterator cvi = colvars.begin();
+       cvi != colvars.end();
+       cvi++) {
+    (*cvi)->write_traj_label (os);
+  }
+  for (std::vector<colvarbias *>::iterator bi = biases.begin();
+       bi != biases.end();
+       bi++) {
+    (*bi)->write_traj_label (os);
+  }
+  os << "\n";
+  if (cvm::debug())
+    os.flush();
+  cvm::decrease_depth();
+  return os;
+}
+
+std::ostream & colvarmodule::write_traj (std::ostream &os)
+{
+  os.setf (std::ios::scientific, std::ios::floatfield);
+
+  cv_traj_os << std::setw (cvm::it_width) << it
+             << " ";
+
+  cvm::increase_depth();
+  for (std::vector<colvar *>::iterator cvi = colvars.begin();
+       cvi != colvars.end();
+       cvi++) {
+    (*cvi)->write_traj (os);
+  }
+  for (std::vector<colvarbias *>::iterator bi = biases.begin();
+       bi != biases.end();
+       bi++) {
+    (*bi)->write_traj (os);
+  }
+  os << "\n";
+  if (cvm::debug())
+    os.flush();
+  cvm::decrease_depth();
+  return os;
+}
 
 
 void cvm::log (std::string const &message)
