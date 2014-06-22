@@ -35,10 +35,7 @@ int colvarscript::run (int argc, char *argv[]) {
 
   if (cmd == "reset") {
     /// Delete every child object
-    // Implementation postponed until deferred initialization is in place
-    // Two options: delete all biases and colvars, or
-    // delete the whole cvm and reallocate
-    // colvars = proxy->reset_cvm ();
+    colvars->reset();
     return COLVARSCRIPT_OK;
   }
   

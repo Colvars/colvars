@@ -44,6 +44,10 @@ colvarmodule::colvarmodule (colvarproxy *proxy_in)
 
 void colvarmodule::config_file (char const  *config_filename)
 {
+  cvm::log (cvm::line_marker);
+  cvm::log ("Reading new configuration from file \""+
+            std::string (config_filename)+"\":\n");
+
   // open the configfile
   config_s.open (config_filename);
   if (!config_s)
@@ -53,15 +57,31 @@ void colvarmodule::config_file (char const  *config_filename)
   // read the config file into a string
   std::string conf = "";
   std::string line;
-  while (colvarparse::getline_nocomments (config_s, line))
+  while (colvarparse::getline_nocomments (config_s, line)) {
     conf.append (line+"\n");
+  }
   config_s.close();
 
-  config_string (conf);
+  config (conf);
 }
 
 
-void colvarmodule::config_string (std::string &conf)
+void colvarmodule::config_string (std::string const &config_str)
+{
+  cvm::log (cvm::line_marker);
+  cvm::log ("Reading new configuration:\n");
+  std::istringstream config_s (config_str);
+
+  // strip the comments away
+  std::string conf = "";
+  std::string line;
+  while (colvarparse::getline_nocomments (config_s, line)) {
+    conf.append (line+"\n");
+  }
+  config (conf);
+}
+
+void colvarmodule::config (std::string &conf)
 {
   // parse global options
   parse_global_params (conf);
@@ -79,10 +99,8 @@ void colvarmodule::config_string (std::string &conf)
   cvm::log ("Collective variables module (re)initialized.\n");
   cvm::log (cvm::line_marker);
 
-  if (cv_traj_os.good()) {
-    // configuration might have changed, better redo the labels
-    write_traj_label (cv_traj_os);
-  }
+  // configuration might have changed, better redo the labels
+  write_traj_label (cv_traj_os);
 } 
 
 
@@ -475,10 +493,20 @@ void colvarmodule::setup()
 
 colvarmodule::~colvarmodule()
 {
+  reset();
+  delete parse;
+  proxy = NULL;
+}
+
+void colvarmodule::reset()
+{
+  if (cvm::debug())
+    cvm::log ("colvars::reset() called.\n");
   for (std::vector<colvar *>::iterator cvi = colvars.begin();
        cvi != colvars.end();
        cvi++) {
     delete *cvi;
+    cvi--;
   }
   colvars.clear();
 
@@ -486,17 +514,11 @@ colvarmodule::~colvarmodule()
        bi != biases.end();
        bi++) {
     delete *bi;
+    bi--;
   }
   biases.clear();
-
   close_traj_file();
-  
-  delete parse;
-  proxy = NULL;
 }
-
-
-
 
 
 void colvarmodule::setup_input()
@@ -763,6 +785,9 @@ std::ostream & colvarmodule::close_traj_file()
 
 std::ostream & colvarmodule::write_traj_label (std::ostream &os)
 {
+  if (!cv_traj_freq) return os;
+  if (!cv_traj_os.good()) open_traj_file (cv_traj_name);
+
   os.setf (std::ios::scientific, std::ios::floatfield);
 
   cv_traj_os << "# " << cvm::wrap_string ("step", cvm::it_width-2)

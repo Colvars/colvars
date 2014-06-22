@@ -160,12 +160,18 @@ public:
   /// Destructor
   ~colvarmodule();
 
+  /// Actual function called by the destructor
+  void reset();
+
   /// Open a config file, load its contents, and pass it to config_string()
   void config_file (char const *config_file_name); 
 
   /// \brief Parse a config string assuming it is a complete configuration
   /// (i.e. calling all parse functions)
-  void config_string (std::string &conf);
+  void config_string (std::string const &conf);
+
+  /// \brief Parse a "clean" config string (no comments)
+  void config (std::string &conf);
 
 
   // Parse functions (setup internal data based on a string)
