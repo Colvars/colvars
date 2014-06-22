@@ -161,6 +161,8 @@ int colvarscript::proc_colvar (int argc, char *argv[]) {
     }
     // colvar destructor is tasked with the cleanup
     delete cv;
+    // TODO this could be done by the destructors
+    colvars->write_traj_label (colvars->cv_traj_os);
     return COLVARSCRIPT_OK;
   }
 
@@ -197,6 +199,8 @@ int colvarscript::proc_bias (int argc, char *argv[]) {
   if (subcmd == "delete") {
     // the bias destructor takes care of the cleanup at cvm level
     delete b;
+    // TODO this could be done by the destructors
+    colvars->write_traj_label (colvars->cv_traj_os);
     return COLVARSCRIPT_OK;
   }
 

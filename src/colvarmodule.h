@@ -55,6 +55,8 @@ private:
 public:
 
   friend class colvarproxy;
+  // TODO colvarscript should be unaware of colvarmodule's internals
+  friend class colvarscript;
 
   /// Defining an abstract real number allows to switch precision
   typedef  double    real;
