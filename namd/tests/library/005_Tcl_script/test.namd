@@ -123,6 +123,7 @@ foreach b [cv list biases] { print "E($b) = [cv bias $b energy]"}
 # runcmd "cv colvar d2 value"
 # run 20
 # runcmd "cv colvar d2 value"
+# runcmd "cv colvar d2 delete"
 
 cv config "harmonic {
   name harm2
@@ -131,10 +132,16 @@ cv config "harmonic {
   forceConstant 1.
   outputEnergy yes
 }"
+run 20 
+
+runcmd "cv bias harmonic1 delete"
 
 runcmd "cv bias harm2 energy"
 runcmd "cv bias harm2 update"
 run 20 
 runcmd "cv bias harm2 energy"
 runcmd "cv bias harm2 delete"
-#runcmd "cv colvar d2 delete"
+
+cv reset
+# reinitialize just for the fun of it ;-)
+cv configfile 	  test.in
