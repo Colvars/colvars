@@ -601,7 +601,7 @@ protected:
   std::vector<cvm::atom_pos>  ref_pos;
 
   /// Geometric center of the reference coordinates
-  cvm::atom_pos               ref_pos_center;
+  cvm::rvector                ref_pos_center;
 
   /// Eigenvector (of a normal or essential mode): will always have zero center
   std::vector<cvm::rvector>   eigenvec;
@@ -741,13 +741,6 @@ class colvar::coordnum
 protected:
   /// \brief "Cutoff" for isotropic calculation (default)
   cvm::real     r0;
-  /// \brief The width parameter for coordination number
-  cvm::real     d0;
-  /// \brief Cutoff for including a given pair in the calculation. Useful for comparing coordination number results with a simulation engines results 
-  cvm::real     rsys_cut;
-
-  /// \brief The moment of the coordination number. 0 = normal. 1 = weighted by radius. 2 = weighted by square radius. etc.
-  int moment;
   /// \brief "Cutoff vector" for anisotropic calculation
   cvm::rvector  r0_vec;
   /// \brief Wheter dist/r0 or \vec{dist}*\vec{1/r0_vec} should ne be
@@ -773,13 +766,8 @@ public:
   /// (1-x**n)/(1-x**m), x = |A1-A2|/r0 \param r0 "cutoff" for the
   /// coordination number \param exp_num \i n exponent \param exp_den
   /// \i m exponent \param A1 atom \param A2 atom
-  /// The rsys_cut removes all pairs that are farther than rsys_cut away
-  static cvm::real switching_function (cvm::real const r0,
-				       cvm::real const d0,
-				       cvm::real const rsys_cut,
-				       int const moment,
-				       int const en,
-				       int const ed,
+  static cvm::real switching_function (cvm::real const &r0,
+                                       int const &exp_num, int const &exp_den,
                                        cvm::atom &A1, cvm::atom &A2);
 
   template<bool b_gradients>
@@ -787,11 +775,8 @@ public:
   /// (1-x**n)/(1-x**m), x = |(A1-A2)*(r0_vec)^-|1 \param r0_vec
   /// vector of different cutoffs in the three directions \param
   /// exp_num \i n exponent \param exp_den \i m exponent \param A1
-  /// atom \param A2 atom.
-  /// The rsys_cut removes all pairs that are farther than rsys_cut away
+  /// atom \param A2 atom
   static cvm::real switching_function (cvm::rvector const &r0_vec,
-				       cvm::real const &rsys_cut
-,						int const moment,
                                        int const &exp_num, int const &exp_den,
                                        cvm::atom &A1, cvm::atom &A2);
 
@@ -813,14 +798,7 @@ class colvar::selfcoordnum
 protected:
   /// \brief "Cutoff" for isotropic calculation (default)
   cvm::real     r0;
-  /// \brief The width parameter for coordination number
-  cvm::real     d0;
   /// Integer exponent of the function numerator
-  /// \brief Cutoff for including a given pair in the calculation. Useful for comparing coordination number results with a simulation engines results 
-  cvm::real     rsys_cut;
-  /// \brief The moment of the coordination number. 0 = normal. 1 = weighted by radius. 2 = weighted by square radius. etc.
-  int moment;
-
   int en;
   /// Integer exponent of the function denominator
   int ed;
@@ -837,13 +815,8 @@ public:
   /// (1-x**n)/(1-x**m), x = |A1-A2|/r0 \param r0 "cutoff" for the
   /// coordination number \param exp_num \i n exponent \param exp_den
   /// \i m exponent \param A1 atom \param A2 atom
-  /// The rsys_cut removes all pairs that are farther than rsys_cut away
-  static cvm::real switching_function (cvm::real const r0,
-				       cvm::real const d0,
-				       cvm::real const rsys_cut,
-				       int const moment,
-				       int const en,
-				       int const ed,
+  static cvm::real switching_function (cvm::real const &r0,
+                                       int const &exp_num, int const &exp_den,
                                        cvm::atom &A1, cvm::atom &A2);
 
   virtual cvm::real dist2 (colvarvalue const &x1,
@@ -867,11 +840,6 @@ protected:
   cvm::atom     acceptor, donor;
   /// \brief "Cutoff" distance between acceptor and donor
   cvm::real     r0;
-  /// \brief The width parameter for coordination number
-  cvm::real     d0;
-
-  /// \brief Cutoff for including a given pair in the calculation. Useful for comparing coordination number results with a simulation engines results 
-  cvm::real     rsys_cut;
   /// Integer exponent of the function numerator
   int en;
   /// Integer exponent of the function denominator
