@@ -98,10 +98,6 @@ colvarbias_alb::~colvarbias_alb() {
   if (cvm::n_rest_biases > 0)
     cvm::n_rest_biases -= 1;
   
-  //clean up memory
-  for(size_t i; i < colvars.size(); i++) {
-    
-  }
 }
 
 cvm::real colvarbias_alb::update() {
@@ -244,8 +240,35 @@ std::istream & colvarbias_alb::read_restart (std::istream &is)
                       "has no identifiers.\n");
   }
 
-  //  if (!get_keyval (conf, "forceConstant", set_coupling))
-  //    cvm::fatal_error ("Error: current force constant  is missing from the restart.\n");
+  if (!get_keyval (conf, "setCoupling", set_coupling))
+    cvm::fatal_error ("Error: current setCoupling  is missing from the restart.\n");
+
+  if (!get_keyval (conf, "currentCoupling", current_coupling))
+    cvm::fatal_error ("Error: current setCoupling  is missing from the restart.\n");
+
+  if (!get_keyval (conf, "maxCouplingRange", max_coupling_range))
+    cvm::fatal_error ("Error: maxCouplingRange  is missing from the restart.\n");
+
+
+  if (!get_keyval (conf, "couplingRate", coupling_rate))
+    cvm::fatal_error ("Error: current setCoupling  is missing from the restart.\n");
+
+  if (!get_keyval (conf, "couplingAccum", coupling_accum))
+    cvm::fatal_error ("Error: couplingAccum is missing from the restart.\n");
+
+
+  if (!get_keyval (conf, "mean", means))
+    cvm::fatal_error ("Error: current mean is missing from the restart.\n");
+
+  if (!get_keyval (conf, "ssd", ssd))
+    cvm::fatal_error ("Error: current ssd is missing from the restart.\n");
+
+  if (!get_keyval (conf, "updateCalls", update_calls))
+    cvm::fatal_error ("Error: current updateCalls is missing from the restart.\n");
+
+  if (!get_keyval (conf, "b_equilibration", b_equilibration))
+    cvm::fatal_error ("Error: current updateCalls is missing from the restart.\n");
+
 
   is >> brace;
   if (brace != "}") {
@@ -254,6 +277,7 @@ std::istream & colvarbias_alb::read_restart (std::istream &is)
                       cvm::to_str (is.tellg())+" in the restart file.\n");
     is.setstate (std::ios::failbit);
   }
+  
   return is;
 }
 
@@ -262,13 +286,47 @@ std::ostream & colvarbias_alb::write_restart (std::ostream &os)
 {
   os << "ALB {\n"
      << "  configuration {\n"
-    //      << "    id " << this->id << "\n"
      << "    name " << this->name << "\n";
-
-  //  os << "    couplingForce "
-  //     << std::setprecision (cvm::en_prec)
-  //     << std::setw (cvm::en_width) << set_coupling << "\n";
-
+  os << "    setCoupling ";
+  for(size_t i = 0; i < colvars.size(); i++) {
+    os << std::setprecision (cvm::en_prec)
+       << std::setw (cvm::en_width) << set_coupling[i] << "\n";
+  }
+  os << "    currentCoupling ";
+  for(size_t i = 0; i < colvars.size(); i++) {
+    os << std::setprecision (cvm::en_prec)
+       << std::setw (cvm::en_width) << current_coupling[i] << "\n";
+  }
+  os << "    maxCouplingRange ";
+  for(size_t i = 0; i < colvars.size(); i++) {
+    os << std::setprecision (cvm::en_prec)
+       << std::setw (cvm::en_width) << max_coupling_range[i] << "\n";
+  }
+  os << "    couplingRate ";
+  for(size_t i = 0; i < colvars.size(); i++) {
+    os << std::setprecision (cvm::en_prec)
+       << std::setw (cvm::en_width) << coupling_rate[i] << "\n";
+  }
+  os << "    couplingAccum ";
+  for(size_t i = 0; i < colvars.size(); i++) {
+    os << std::setprecision (cvm::en_prec)
+       << std::setw (cvm::en_width) << coupling_accum[i] << "\n";
+  }
+  os << "    mean ";
+  for(size_t i = 0; i < colvars.size(); i++) {
+    os << std::setprecision (cvm::en_prec)
+       << std::setw (cvm::en_width) << means[i] << "\n";
+  }
+  os << "    ssd ";
+  for(size_t i = 0; i < colvars.size(); i++) {
+    os << std::setprecision (cvm::en_prec)
+       << std::setw (cvm::en_width) << ssd[i] << "\n";
+  }
+  os << "    updateCalls " << update_calls << "\n";
+  if(b_equilibration)
+    os << "    b_equilibration yes\n";
+  else
+    os << "    b_equilibration no\n";
 
   os << "  }\n"
      << "}\n\n";
