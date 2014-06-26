@@ -3099,7 +3099,6 @@ limit the size of the colvars trajectory file, it
 may be wise to disable \texttt{outputValue} for such ``ancillary''
 variables, and leave it enabled only for ``relevant'' ones.
 
-
 \cvsubsubsec{Moving restraints: steered molecular dynamics}
 \label{sec:colvarbias_smd}
 
@@ -3285,6 +3284,127 @@ The force constant of the harmonic restraint may also be changed to equilibrate 
 
 \end{itemize}
 
+\cvsubsec{Linear restraints}
+\label{sec:colvarbias_linear}
+
+The linear restraint biasing method is used to minimally bias a
+simulation. There is generally a unique strength of bias for each CV
+center, which means you must know the bias force constant specifically
+for the center of the CV. This force constant may be found by using
+experiment directed simulation described in
+section \ref{sec:colvarbias_alb}. Please cite Pitera and Chodera when
+using \cite{Pitera2012}.
+
+\begin{itemize}
+
+\item %
+  \keydef{%
+    forceConstant}{%
+    \texttt{linear}}{%
+    Scaled force constant (\cvnamdonly{kcal/mol}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
+    positive decimal}{%
+    \texttt{1.0}}{%
+    This defines a scaled force constant for the linear bias.
+    To ensure consistency for multidimensional restraints, it is
+    divided internally by the square of the specific \texttt{width}
+    for each colvar involved (which is 1 by default), so that all colvars
+    are effectively dimensionless and of commensurate size.
+    For instance, setting a scaled force constant of 10~kcal/mol acting
+    on two colvars, an angle with a \texttt{width} of 5~degrees and a distance
+    with a width of 0.5~\AA{}, will apply actual force constants of
+    0.4~kcal/mol$\times$degree$^{-2}$ for the angle and
+    40~kcal/mol/\AA$^2$ for the distance.}
+
+\item %
+  \key{%
+    centers}{%
+    \texttt{linear}}{%
+    Initial linear restraint centers}{%
+    space-separated list of colvar values}{%
+    The centers (equilibrium values) of the restraint are entered here.
+    The number of values must be the number of requested colvars.
+    Each value is a decimal number if the corresponding colvar returns
+    a scalar, a ``\texttt{(x, y, z)}'' triplet if it returns a unit
+    vector or a vector, and a ``\texttt{q0, q1, q2, q3)}'' quadruplet
+    if it returns a rotational quaternion.  If a colvar has
+    periodicities or symmetries, its closest image to the restraint
+    center is considered when calculating the linear potential.}
+\end{itemize}
+
+\cvsubsec{Adaptive Linear Bias/Experiment Directed Simulation}
+\label{sec:colvarbias_alb}
+
+Experiment directed simulation applies a linear bias with a changing
+force constant. Please cite White and Voth \cite{White2014} when
+using. The bias converges to a linear bias, after which it will be the
+minimal possible bias. You may also stop the simulation, take the
+median of the force constants (ForceConst) found in the colvars
+trajectory file, and then apply a linear bias with that constant. All
+the notes about units described in
+sections \ref{sec:colvarbias_linear} and \ref{sec:colvarbias_harmonic}
+apply here as well. {\bf This is not a valid simulation of any
+particular statistical ensemble and is only an optimization algorithm
+until the bias has converged}.
+
+\begin{itemize}
+\item %
+      \key{centers}{\texttt{ALB}}{%
+      Collective variable centers}{%
+      space-separated list of colvar values}{%
+      The desired center (equilibrium values) which will be sought during the 
+      adaptive linear biasing.
+    The number of values must be the number of requested colvars.
+    Each value is a decimal number if the corresponding colvar returns
+    a scalar, a ``\texttt{(x, y, z)}'' triplet if it returns a unit
+    vector or a vector, and a ``\texttt{q0, q1, q2, q3)}'' quadruplet
+    if it returns a rotational quaternion.  If a colvar has
+    periodicities or symmetries, its closest image to the restraint
+    center is considered when calculating the linear potential.}
+\item %
+      \key{updateFrequency}{\texttt{ALB}}{%
+      The duration of updates}{An integer}{%
+      This is, $N$, the number of simulation steps to use for each update to the bias.
+      This determines how long the system requires to equilibrate 
+      after a change in force constant ($N/2$), how long statistics 
+      are collected for an iteration ($N/2$), and how quickly energy is 
+      added to the system (at most, $A/2N$, where $A$ is the \texttt{forceRange}). Until the force 
+      constant has converged, the method as described is an 
+      optimization procedure and not an integration of a particular 
+      statistical ensemble. It is important that each step should be 
+      uncorrelated from the last so that iterations are independent. 
+      Therefore, $N$ should be at least twice the autocorrelation time 
+      of the collective variable. The system should also be able to 
+      dissipate energy as fast as $N/2$, which can be done by adjusting 
+      thermostat parameters. Practically, $N$ has been tested successfully at 
+      significantly shorter than the autocorrelation time of the 
+      collective variables being biased and still converge correctly.}
+
+\item %
+      \keydef{forceRange}{\texttt{ALB}}{% 
+      The expected range of the force constant in units of energy}{A space-separated list of decimal numbers}{%
+      3 $k_b T$}{%
+      This is largest magnitude of the force constant which one expects. If this parameter is
+      too low, the simulation will not converge. If it is too high the
+      simulation will waste time exploring values that are too
+      large. A value of 3 $k_bT$ has worked well in the systems presented
+      as a first choice. This parameter is dynamically adjusted over
+      the course of a simulation. The benefit is that a bad guess for
+      the forceRange can be corrected. However, this can lead to
+      large amounts of energy being added over time to the system. To
+      prevent this dynamic update, add \texttt{hardForceRange yes}
+      as a parameter}
+\item %
+      \key{rateMax}{\texttt{ALB}}{%
+      The maximum rate of change of force constant}{%
+      A list of space-separated real numbers}{%
+      This optional parameter controls
+      how much energy is added to the system from this bias.  Tuning
+      this separately from the \texttt{updateFrequency}
+      and \texttt{forceRange} can allow for large bias changes but
+      with a low \texttt{rateMax} prevents large energy changes that
+      can lead to instability in the simulation.}
+     
+\end{itemize}
 
 \cvsubsec{Multidimensional histograms}
 \label{sec:colvarbias_histogram}

@@ -4,6 +4,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/* Note about nomenclature. Force constant is called a coupling
+ * constant here to emphasize its changing in the code. Outwards,
+ * everything is called a force constant to keep it consistent with
+ * the rest of colvars. 
+ *
+ */
+
 colvarbias_alb::colvarbias_alb(std::string const &conf, char const *key) :
   colvarbias(conf, key), update_calls(0), b_equilibration(true) {
 
@@ -56,10 +63,10 @@ colvarbias_alb::colvarbias_alb(std::string const &conf, char const *key) :
   get_keyval (conf, "outputCenters", b_output_centers, false);
   get_keyval (conf, "outputGradient", b_output_grad, false);
   get_keyval (conf, "outputCoupling", b_output_coupling, true);
-  get_keyval (conf, "hardCouplingRange", b_hard_coupling_range, true);
+  get_keyval (conf, "hardForceRange", b_hard_coupling_range, true);
 
   //initial guess
-  if(!get_keyval (conf, "couplingConstant", set_coupling, set_coupling))
+  if(!get_keyval (conf, "forceConstant", set_coupling, set_coupling))
     for(size_t i =0 ; i < colvars.size(); i++)
       set_coupling[i] = 0.;
   
@@ -68,7 +75,7 @@ colvarbias_alb::colvarbias_alb(std::string const &conf, char const *key) :
     coupling_rate[i] = (set_coupling[i] - current_coupling[i]) / update_freq;
   
 
-  if(!get_keyval (conf, "couplingRange", max_coupling_range, max_coupling_range)) {
+  if(!get_keyval (conf, "forceRange", max_coupling_range, max_coupling_range)) {
     //set to default
     for(size_t i = 0; i < colvars.size(); i++) {
       if(cvm::temperature() > 0) 
@@ -269,7 +276,6 @@ std::istream & colvarbias_alb::read_restart (std::istream &is)
   if (!get_keyval (conf, "b_equilibration", b_equilibration))
     cvm::fatal_error ("Error: current updateCalls is missing from the restart.\n");
 
-
   is >> brace;
   if (brace != "}") {
     cvm::fatal_error ("Error: corrupt restart information for adaptive linear bias \""+
@@ -345,7 +351,7 @@ std::ostream & colvarbias_alb::write_traj_label (std::ostream &os)
 
   if (b_output_coupling)
     for(size_t i = 0; i < current_coupling.size(); i++) {
-      os << " Alpha_" << i
+      os << " ForceConst_" << i
 	 <<std::setw(cvm::en_width - 6 - (i / 10 + 1))
 	 << "";
     }
