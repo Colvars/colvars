@@ -232,6 +232,8 @@ colvarbias_harmonic::colvarbias_harmonic (std::string const &conf,
   get_keyval (conf, "outputCenters", b_output_centers, false);
   if (b_chg_centers) {
     get_keyval (conf, "outputAccumulatedWork", b_output_acc_work, false);
+  } else {
+    b_output_acc_work = false;
   }
   acc_work = 0.0;
 
@@ -434,7 +436,7 @@ cvm::real colvarbias_harmonic::update()
     if (cvm::debug())
       cvm::log ("dist_grad["+cvm::to_str (i)+
                 "] = "+cvm::to_str (colvars[i]->dist2_lgrad (colvars[i]->value(),
-                               colvar_centers[i]))+"\n");
+                                                             colvar_centers[i]))+"\n");
   }
 
   if (b_output_acc_work) {
