@@ -5,3 +5,18 @@
 *.x
 *.exe
 .*.swp
+
+# output files from reg tests
+*.diff
+*.BAK
+*.old
+*.coor
+*.vel
+*.xsc
+*.backup
+*.state
+*.traj
+*.out
+*.count
+*.grad
+*.pmf
