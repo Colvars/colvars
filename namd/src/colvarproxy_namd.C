@@ -60,6 +60,12 @@ colvarproxy_namd::colvarproxy_namd()
   restart_output_prefix_str = std::string (simparams->restartFilename);
   restart_frequency_s = simparams->restartFrequency;
 
+  // check if it is possible to save output configuration
+  if ((!output_prefix_str.size()) && (!restart_output_prefix_str.size())) {
+    fatal_error ("Error: neither the final output state file or "
+                 "the output restart file could be defined, exiting.\n");
+  }
+
   // initiate module: this object will be the communication proxy
   colvars = new colvarmodule (this);
   colvars->config_file (config->data);
