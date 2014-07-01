@@ -35,13 +35,13 @@ public:
   std::string result;
 
   /// Run script command with given positional arguments
-  int run (int argc, char *argv[]);
+  int run (int argc, char const *argv[]);
 
   /// Run subcommands on colvar
-  int proc_colvar (int argc, char *argv[]);
+  int proc_colvar (int argc, char const *argv[]);
 
   /// Run subcommands on bias
-  int proc_bias (int argc, char *argv[]);
+  int proc_bias (int argc, char const *argv[]);
 
 };
 

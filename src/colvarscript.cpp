@@ -9,7 +9,7 @@ colvarscript::colvarscript (colvarproxy *p)
 }
 
 /// Run method based on given arguments
-int colvarscript::run (int argc, char *argv[]) {
+int colvarscript::run (int argc, char const *argv[]) {
 
   result = "";
 
@@ -99,6 +99,20 @@ int colvarscript::run (int argc, char *argv[]) {
 
   /// TODO Write an output state file? (Useful for testing)
 
+  /// Print the values that would go on colvars.traj
+  if (cmd == "printframelabels") {
+    std::ostringstream os;
+    colvars->write_traj_label (os);
+    result = os.str();
+    return COLVARSCRIPT_OK;
+  }
+  if (cmd == "printframe") {
+    std::ostringstream os;
+    colvars->write_traj (os);
+    result = os.str();
+    return COLVARSCRIPT_OK;
+  }
+
   if (cmd == "frame") {
     if (argc == 2) {
       int f = proxy->frame();
@@ -113,6 +127,7 @@ int colvarscript::run (int argc, char *argv[]) {
       // Failure of this function does not trigger an error, but
       // returns the plain result to let scripts detect available frames
       long int f = proxy->frame(strtol(argv[2], NULL, 10));
+      colvars->it = proxy->frame();
       result = cvm::to_str (f);
       return COLVARSCRIPT_OK;
     } else {
@@ -126,7 +141,7 @@ int colvarscript::run (int argc, char *argv[]) {
 }
 
 
-int colvarscript::proc_colvar (int argc, char *argv[]) {
+int colvarscript::proc_colvar (int argc, char const *argv[]) {
   std::string name = argv[1];
   colvar *cv = cvm::colvar_by_name (name);
   if (cv == NULL) {
@@ -171,7 +186,7 @@ int colvarscript::proc_colvar (int argc, char *argv[]) {
 }
 
 
-int colvarscript::proc_bias (int argc, char *argv[]) {
+int colvarscript::proc_bias (int argc, char const *argv[]) {
   std::string name = argv[1];
   colvarbias *b = cvm::bias_by_name (name);
   if (b == NULL) {
