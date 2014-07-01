@@ -208,13 +208,13 @@ public:
   std::ostream & write_restart (std::ostream &os);
 
   /// Open a trajectory file if requested (and leave it open)
-  std::ostream & open_traj_file (std::string const &file_name);
+  void open_traj_file (std::string const &file_name);
+  /// Close it
+  void close_traj_file();
   /// Write in the trajectory file
   std::ostream & write_traj (std::ostream &os);
   /// Write explanatory labels in the trajectory file
   std::ostream & write_traj_label (std::ostream &os);
-  /// Open a trajectory file if requested (and leave it open)
-  std::ostream & close_traj_file();
 
   /// Write all FINAL output files
   void write_output_files();

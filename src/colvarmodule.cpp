@@ -411,7 +411,7 @@ void colvarmodule::calc() {
   cvm::decrease_depth();
 
   // write restart file, if needed
-  if (restart_out_freq && restart_out_name.size() && !cvm::b_analysis) {
+  if (restart_out_freq && restart_out_name.size()) {
     if ( (cvm::step_relative() > 0) &&
          ((cvm::step_absolute() % restart_out_freq) == 0) ) {
       cvm::log ("Writing the state file \""+
@@ -425,7 +425,7 @@ void colvarmodule::calc() {
   }
 
   // write trajectory file, if needed
-  if (cv_traj_freq) {
+  if (cv_traj_freq && cv_traj_name.size()) {
 
     if (!cv_traj_os.good()) {
       open_traj_file (cv_traj_name);
@@ -551,22 +551,25 @@ void colvarmodule::setup_output()
     std::string (proxy->restart_output_prefix()+".colvars.state") :
     std::string ("");
 
-  if (restart_out_name.size())
+  if (restart_out_name.size()) {
     cvm::log ("The restart output state file will be \""+restart_out_name+"\".\n");
+  }
 
   output_prefix = proxy->output_prefix();
-  cvm::log ("The final output state file will be \""+
-            (output_prefix.size() ?
-             std::string (output_prefix+".colvars.state") :
-             std::string ("colvars.state"))+"\".\n");
-  cvm::log (cvm::line_marker);
+  if (output_prefix.size()) {
+    cvm::log ("The final output state file will be \""+
+              (output_prefix.size() ?
+               std::string (output_prefix+".colvars.state") :
+               std::string ("colvars.state"))+"\".\n");
+    // cvm::log (cvm::line_marker);
+  }
 
   cv_traj_name =
     (output_prefix.size() ?
      std::string (output_prefix+".colvars.traj") :
-     std::string ("colvars.traj"));
+     std::string (""));
 
-  if (cv_traj_freq) {
+  if (cv_traj_freq && cv_traj_name.size()) {
     // open trajectory file
     if (cv_traj_append) {
       cvm::log ("Appending to colvar trajectory file \""+cv_traj_name+
@@ -579,12 +582,6 @@ void colvarmodule::setup_output()
       cv_traj_os.open (cv_traj_name.c_str(), std::ios::out);
     }
     cv_traj_os.setf (std::ios::scientific, std::ios::floatfield);
-  }
-
-  // check if it is possible to save output configuration
-  if ((!output_prefix.size()) && (!restart_out_name.size())) {
-    cvm::fatal_error ("Error: neither the final output state file or "
-                      "the output restart file could be defined, exiting.\n");
   }
 }
 
@@ -758,7 +755,7 @@ std::ostream & colvarmodule::write_restart (std::ostream &os)
   return os;
 }
 
-std::ostream & colvarmodule::open_traj_file (std::string const &file_name)
+void colvarmodule::open_traj_file (std::string const &file_name)
 {
   // (re)open trajectory file
   if (cv_traj_append) {
@@ -776,7 +773,7 @@ std::ostream & colvarmodule::open_traj_file (std::string const &file_name)
   }
 }
 
-std::ostream & colvarmodule::close_traj_file()
+void colvarmodule::close_traj_file()
 {
   if (cv_traj_os.good()) {
     cv_traj_os.close();
@@ -785,13 +782,10 @@ std::ostream & colvarmodule::close_traj_file()
 
 std::ostream & colvarmodule::write_traj_label (std::ostream &os)
 {
-  if (!cv_traj_freq) return os;
-  if (!cv_traj_os.good()) open_traj_file (cv_traj_name);
-
   os.setf (std::ios::scientific, std::ios::floatfield);
 
-  cv_traj_os << "# " << cvm::wrap_string ("step", cvm::it_width-2)
-             << " ";
+  os << "# " << cvm::wrap_string ("step", cvm::it_width-2)
+     << " ";
 
   cvm::increase_depth();
   for (std::vector<colvar *>::iterator cvi = colvars.begin();
@@ -815,8 +809,8 @@ std::ostream & colvarmodule::write_traj (std::ostream &os)
 {
   os.setf (std::ios::scientific, std::ios::floatfield);
 
-  cv_traj_os << std::setw (cvm::it_width) << it
-             << " ";
+  os << std::setw (cvm::it_width) << it
+     << " ";
 
   cvm::increase_depth();
   for (std::vector<colvar *>::iterator cvi = colvars.begin();
