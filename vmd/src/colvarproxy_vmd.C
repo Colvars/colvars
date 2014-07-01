@@ -233,6 +233,7 @@ void colvarproxy_vmd::load_coords (char const *pdb_filename,
   int tmpmolid = vmd->molecule_load (-1, pdb_filename, "pdb", tmpspec);
   DrawMolecule *tmpmol = vmd->moleculeList->mol_from_id (tmpmolid);
   delete tmpspec;
+
   vmd->molecule_make_top (vmdmolid);
   size_t const pdb_natoms = tmpmol->nAtoms;
   
@@ -255,13 +256,13 @@ void colvarproxy_vmd::load_coords (char const *pdb_filename,
           atom_pdb_field_value = (tmpmol->beta())[ipdb];
           break;
         case e_pdb_x:
-          atom_pdb_field_value = (tmpmol->get_frame (this->frame())->pos)[ipdb*3];
+          atom_pdb_field_value = (tmpmol->get_frame (0)->pos)[ipdb*3];
           break;
         case e_pdb_y:
-          atom_pdb_field_value = (tmpmol->get_frame (this->frame())->pos)[ipdb*3+1];
+          atom_pdb_field_value = (tmpmol->get_frame (0)->pos)[ipdb*3+1];
           break;
         case e_pdb_z:
-          atom_pdb_field_value = (tmpmol->get_frame (this->frame())->pos)[ipdb*3+2];
+          atom_pdb_field_value = (tmpmol->get_frame (0)->pos)[ipdb*3+2];
           break;
         default:
           break;
@@ -293,9 +294,9 @@ void colvarproxy_vmd::load_coords (char const *pdb_filename,
                           "more atoms than needed.\n");
       }
 
-      pos[ipos] = cvm::atom_pos ((tmpmol->get_frame (this->frame())->pos)[ipdb*3],
-                                 (tmpmol->get_frame (this->frame())->pos)[ipdb*3+1],
-                                 (tmpmol->get_frame (this->frame())->pos)[ipdb*3+2]);
+      pos[ipos] = cvm::atom_pos ((tmpmol->get_frame (0)->pos)[ipdb*3],
+                                 (tmpmol->get_frame (0)->pos)[ipdb*3+1],
+                                 (tmpmol->get_frame (0)->pos)[ipdb*3+2]);
       ipos++;
       if (!use_pdb_field && current_index == indices.end())
         break;
@@ -313,9 +314,9 @@ void colvarproxy_vmd::load_coords (char const *pdb_filename,
     // when the PDB contains exactly the number of atoms of the array,
     // ignore the fields and just read coordinates
     for (size_t ia = 0; ia < pos.size(); ia++) {
-      pos[ia] = cvm::atom_pos ((tmpmol->get_frame (this->frame())->pos)[ia*3],
-                               (tmpmol->get_frame (this->frame())->pos)[ia*3+1],
-                               (tmpmol->get_frame (this->frame())->pos)[ia*3+2]);
+      pos[ia] = cvm::atom_pos ((tmpmol->get_frame (0)->pos)[ia*3],
+                               (tmpmol->get_frame (0)->pos)[ia*3+1],
+                               (tmpmol->get_frame (0)->pos)[ia*3+2]);
     }
   }
 
@@ -354,13 +355,13 @@ void colvarproxy_vmd::load_atoms (char const *pdb_filename,
       atom_pdb_field_value = (tmpmol->beta())[ipdb];
       break;
     case e_pdb_x:
-      atom_pdb_field_value = (tmpmol->get_frame (this->frame())->pos)[ipdb*3];
+      atom_pdb_field_value = (tmpmol->get_frame (0)->pos)[ipdb*3];
       break;
     case e_pdb_y:
-      atom_pdb_field_value = (tmpmol->get_frame (this->frame())->pos)[ipdb*3+1];
+      atom_pdb_field_value = (tmpmol->get_frame (0)->pos)[ipdb*3+1];
       break;
     case e_pdb_z:
-      atom_pdb_field_value = (tmpmol->get_frame (this->frame())->pos)[ipdb*3+2];
+      atom_pdb_field_value = (tmpmol->get_frame (0)->pos)[ipdb*3+2];
       break;
     default:
       break;
