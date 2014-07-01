@@ -12,6 +12,7 @@
 #include "colvarmodule.h"
 #include "colvarproxy.h"
 #include "colvartypes.h"
+#include "colvaratoms.h"
 
 
 /// \brief Communication between colvars and VMD (implementation of
@@ -22,15 +23,13 @@ protected:
 
   /// pointer to the VMD Tcl interpreter
   Tcl_Interp *vmdtcl;
-  /// pointer to the VMD Tcl interpreter
-  int *vmdtcl;
   /// pointer to the VMD main object
   VMDApp *vmd;
   /// VMD molecule id being used (must be provided at construction)
   int vmdmolid;
   /// pointer to VMD molecule (derived from vmdmolid)
   DrawMolecule *vmdmol;
-  /// current frame (initial/default value: vmdmol->frame())
+  /// current frame (returned by vmdmol->frame())
   int vmdmol_frame;
   /// output object
   Inform msgColvars;
@@ -112,8 +111,8 @@ public:
   void add_energy (cvm::real energy);
 
   inline void request_system_force (bool yesno) {
-    if (yesno = true)
-      cvm::fatal_error("a bias requested system forces, which are undefined in VMD.");
+    if (yesno == true)
+      cvm::fatal_error ("Error: a bias requested system forces, which are undefined in VMD.");
   }
 
   cvm::rvector position_distance (cvm::atom_pos const &pos1,
@@ -153,12 +152,18 @@ inline cvm::rvector colvarproxy_vmd::position_distance (cvm::atom_pos const &pos
   cvm::real const b = ts->b_length;
   cvm::real const c = ts->c_length;
   cvm::rvector diff = (pos2 - pos1);
-  while (diff.x <= -0.5*a) diff.x += a;
-  while (diff.y <= -0.5*b) diff.y += b;
-  while (diff.z <= -0.5*c) diff.z += c;
-  while (diff.x  >  0.5*a) diff.x -= a;
-  while (diff.y  >  0.5*b) diff.y -= b;
-  while (diff.z  >  0.5*c) diff.z -= c;
+  if (a*a > 1.0e-12) {
+    while (diff.x <= -0.5*a) diff.x += a;
+    while (diff.x  >  0.5*a) diff.x -= a;
+  }
+  if (b*b > 1.0e-12) {
+    while (diff.y <= -0.5*b) diff.y += b;
+    while (diff.y  >  0.5*b) diff.y -= b;
+  }
+  if (c*c > 1.0e-12) {
+    while (diff.z <= -0.5*c) diff.z += c;
+    while (diff.z  >  0.5*c) diff.z -= c;
+  }
   return diff;
 }
 
@@ -179,25 +184,7 @@ inline cvm::real colvarproxy_vmd::position_dist2 (cvm::atom_pos const &pos1,
 }
 
 
-// copy constructor
-inline cvm::atom::atom (cvm::atom const &a)
-  : index (a.index), id (a.id), mass (a.mass)
-{}
-
-
-inline cvm::atom::~atom() 
-{}
-
-inline void cvm::atom::read_position()
-{
-  // read the position directly from the current timestep's memory
-  // Note: no prior update should be required (unlike NAMD with GlobalMaster)
-  DrawMolecule *vmdmol = ((colvarproxy_vmd *) cvm::proxy)->vmdmol;
-  float *vmdpos = (vmdmol->get_frame (vmdmol_frame))->pos;
-  this->pos = cvm::atom_pos (vmdpos[this->id*3+0],
-                             vmdpos[this->id*3+1],
-                             vmdpos[this->id*3+2]);
-}
+int tcl_colvars (ClientData clientdata, Tcl_Interp *interp, int argc, const char *argv[]);
 
 
 #endif

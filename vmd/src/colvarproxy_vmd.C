@@ -16,61 +16,51 @@
 #include "colvarproxy_vmd.h"
 
 
-extern "C" {
-  int tcl_colvars (ClientData nodata, Tcl_Interp *vmdtcl, int argc, const char *argv[]) {
+int tcl_colvars (ClientData clientdata, Tcl_Interp *vmdtcl, int argc, const char *argv[]) {
 
-    static colvarproxy_vmd *proxy = NULL;
-    int retval;
+  static colvarproxy_vmd *proxy = NULL;
+  int retval;
 
-    if (proxy != NULL) {
+  if (proxy != NULL) {
 
-      retval = proxy->script->run (argc, argv); 
-      Tcl_SetResult(vmdtcl, proxy->script->result.c_str(), TCL_STATIC);
-      if (retval == COLVARSCRIPT_OK) {
-        return TCL_OK;
-      } else {
-        return TCL_ERROR;
-      }
-      
+    retval = proxy->script->run (argc, argv); 
+    Tcl_SetResult(vmdtcl, (char *) proxy->script->result.c_str(), TCL_STATIC);
+    if (retval == COLVARSCRIPT_OK) {
+      return TCL_OK;
     } else {
+      return TCL_ERROR;
+    }
+      
+  } else {
 
-      VMDApp *vmd = (VMDApp *) Tcl_GetAssocData (vmdtcl, "VMDApp", NULL);
-      if (vmd == NULL) {
-        Tcl_SetResult (vmdtcl, "Error: cannot find VMD main object.", TCL_STATIC);
-        return TCL_ERROR;
-      }
-
-      if ( argc >= 3 ) {
-        // require a molid to create the module
-        if (!strcmp (argv[1], "molid")) {
-          int molid = -1;
-          if (!strcmp (argv[2], "top")) {
-            molid = vmd->molecule_top();
-          } else {
-            Tcl_GetInt (vmdtcl, argv[2], &molid);
-          }
-          if (vmd->molecule_valid_id (molid)) {
-            proxy = new colvarproxy_vmd (vmdtcl, vmd, molid);
-            return TCL_OK;
-          }
+    VMDApp *vmd = (VMDApp *) clientdata;
+    if (vmd == NULL) {
+      Tcl_SetResult (vmdtcl, (char *) (std::string ("Error: cannot find VMD main object.").c_str()), TCL_STATIC);
+      return TCL_ERROR;
+    }
+      
+    if ( argc >= 3 ) {
+      // require a molid to create the module
+      if (!strcmp (argv[1], "molid")) {
+        int molid = -1;
+        if (!strcmp (argv[2], "top")) {
+          molid = vmd->molecule_top();
+        } else {
+          Tcl_GetInt (vmdtcl, argv[2], &molid);
+        }
+        if (vmd->molecule_valid_id (molid)) {
+          proxy = new colvarproxy_vmd (vmdtcl, vmd, molid);
+          return TCL_OK;
+        } else {
+          Tcl_SetResult (vmdtcl, (char *) (std::string ("Error: molecule not found.").c_str()), TCL_STATIC);
+          return TCL_ERROR;
         }
       }
     }
-
-    Tcl_SetResult (vmdtcl, "usage: colvars molid <molecule id>", TCL_STATIC);
-    return TCL_ERROR;
   }
 
-  int Colvars_Init (Tcl_Interp *vmdtcl) {
-    VMDApp *vmd = (VMDApp *) Tcl_GetAssocData (vmdtcl, "VMDApp", NULL);
-    if (vmd == NULL) {
-      Tcl_SetResult (vmdtcl, "Error: cannot find VMD main object.", TCL_STATIC);
-      return TCL_ERROR;
-    }
-    Tcl_CreateCommand (vmdtcl, "colvars", tcl_colvars, (ClientData) NULL, (Tcl_CmdDeleteProc*) NULL);
-    Tcl_PkgProvide (vmdtcl, "colvars", COLVARS_VERSION);
-    return TCL_OK;
-  }
+  Tcl_SetResult (vmdtcl, (char *) (std::string ("usage: colvars molid <molecule id>").c_str()), TCL_STATIC);
+  return TCL_ERROR;
 }
 
 
@@ -78,19 +68,27 @@ colvarproxy_vmd::colvarproxy_vmd (Tcl_Interp *vti, VMDApp *v, int molid)
   : vmdtcl (vti),
     vmd (v),
     vmdmolid (molid),
-    input_prefix_str (""), output_prefix_str (""),
 #if defined(VMDTKCON)
-    msgColvars ("colvars: ",    VMDCON_INFO)
+    msgColvars ("colvars: ",    VMDCON_INFO),
 #else
-    msgColvars ("colvars: ")
+    msgColvars ("colvars: "),
 #endif
+    input_prefix_str (""), output_prefix_str ("")
 {
   // The module is only allocated here: it will be configured
-  // through the "configfile" and "config" commands of colvarscript.
+  // through the "configfile" and "configstring" commands of colvarscript.
   colvars = new colvarmodule (this);
+
+  colvars->cv_traj_freq = 0;
+  colvars->restart_out_freq = 0;
+
+  colvars->setup_input();
+  colvars->setup_output();
+
   script = new colvarscript (this);
   script->proxy_error = COLVARSCRIPT_OK;
-  setup();
+
+  this->setup();
 }
 
 
@@ -111,7 +109,7 @@ void colvarproxy_vmd::setup()
 {
   vmdmol = vmd->moleculeList->mol_from_id (vmdmolid);
   if (vmdmol) {
-    frame = vmdmol->frame();
+    vmdmol_frame = vmdmol->frame();
   } else {
     fatal_error ("Error: cannot find the molecule requested ("+cvm::to_str (vmdmolid)+").\n");
   }
@@ -153,12 +151,13 @@ void colvarproxy_vmd::fatal_error (std::string const &message)
 void colvarproxy_vmd::exit (std::string const &message)
 {
   // TODO: return control to Tcl interpreter
+  vmd->VMDexit ("Collective variables module requested VMD shutdown.\n", 0, 2);
 }
 
 void colvarproxy_vmd::add_energy (cvm::real energy)
 {
-  (vmdmol->get_frame (frame))->energy[TSE_RESTRAINT] += energy;
-  (vmdmol->get_frame (frame))->energy[TSE_TOTAL] += energy;
+  // (vmdmol->get_frame (this->frame()))->energy[TSE_RESTRAINT] += energy;
+  // (vmdmol->get_frame (this->frame()))->energy[TSE_TOTAL] += energy;
 }
 
 
@@ -256,13 +255,13 @@ void colvarproxy_vmd::load_coords (char const *pdb_filename,
           atom_pdb_field_value = (tmpmol->beta())[ipdb];
           break;
         case e_pdb_x:
-          atom_pdb_field_value = (tmpmol->get_frame (frame)->pos)[ipdb*3];
+          atom_pdb_field_value = (tmpmol->get_frame (this->frame())->pos)[ipdb*3];
           break;
         case e_pdb_y:
-          atom_pdb_field_value = (tmpmol->get_frame (frame)->pos)[ipdb*3+1];
+          atom_pdb_field_value = (tmpmol->get_frame (this->frame())->pos)[ipdb*3+1];
           break;
         case e_pdb_z:
-          atom_pdb_field_value = (tmpmol->get_frame (frame)->pos)[ipdb*3+2];
+          atom_pdb_field_value = (tmpmol->get_frame (this->frame())->pos)[ipdb*3+2];
           break;
         default:
           break;
@@ -294,9 +293,9 @@ void colvarproxy_vmd::load_coords (char const *pdb_filename,
                           "more atoms than needed.\n");
       }
 
-      pos[ipos] = cvm::atom_pos ((tmpmol->get_frame (frame)->pos)[ipdb*3],
-                                 (tmpmol->get_frame (frame)->pos)[ipdb*3+1],
-                                 (tmpmol->get_frame (frame)->pos)[ipdb*3+2]);
+      pos[ipos] = cvm::atom_pos ((tmpmol->get_frame (this->frame())->pos)[ipdb*3],
+                                 (tmpmol->get_frame (this->frame())->pos)[ipdb*3+1],
+                                 (tmpmol->get_frame (this->frame())->pos)[ipdb*3+2]);
       ipos++;
       if (!use_pdb_field && current_index == indices.end())
         break;
@@ -314,9 +313,9 @@ void colvarproxy_vmd::load_coords (char const *pdb_filename,
     // when the PDB contains exactly the number of atoms of the array,
     // ignore the fields and just read coordinates
     for (size_t ia = 0; ia < pos.size(); ia++) {
-      pos[ia] = cvm::atom_pos ((tmpmol->get_frame (frame)->pos)[ia*3],
-                               (tmpmol->get_frame (frame)->pos)[ia*3+1],
-                               (tmpmol->get_frame (frame)->pos)[ia*3+2]);
+      pos[ia] = cvm::atom_pos ((tmpmol->get_frame (this->frame())->pos)[ia*3],
+                               (tmpmol->get_frame (this->frame())->pos)[ia*3+1],
+                               (tmpmol->get_frame (this->frame())->pos)[ia*3+2]);
     }
   }
 
@@ -355,13 +354,13 @@ void colvarproxy_vmd::load_atoms (char const *pdb_filename,
       atom_pdb_field_value = (tmpmol->beta())[ipdb];
       break;
     case e_pdb_x:
-      atom_pdb_field_value = (tmpmol->get_frame (frame)->pos)[ipdb*3];
+      atom_pdb_field_value = (tmpmol->get_frame (this->frame())->pos)[ipdb*3];
       break;
     case e_pdb_y:
-      atom_pdb_field_value = (tmpmol->get_frame (frame)->pos)[ipdb*3+1];
+      atom_pdb_field_value = (tmpmol->get_frame (this->frame())->pos)[ipdb*3+1];
       break;
     case e_pdb_z:
-      atom_pdb_field_value = (tmpmol->get_frame (frame)->pos)[ipdb*3+2];
+      atom_pdb_field_value = (tmpmol->get_frame (this->frame())->pos)[ipdb*3+2];
       break;
     default:
       break;
@@ -452,5 +451,44 @@ cvm::atom::atom (cvm::residue_id const &resid,
   this->id = aid;
   this->mass = masses[aid];
   this->reset_data();
+}
+
+
+// copy constructor
+cvm::atom::atom (cvm::atom const &a)
+  : index (a.index), id (a.id), mass (a.mass)
+{}
+
+
+cvm::atom::~atom() 
+{}
+
+void cvm::atom::read_position()
+{
+  // read the position directly from the current timestep's memory
+  // Note: no prior update should be required (unlike NAMD with GlobalMaster)
+  DrawMolecule *vmdmol = ((colvarproxy_vmd *) cvm::proxy)->vmdmol;
+  int frame = ((colvarproxy_vmd *) cvm::proxy)->vmdmol_frame;
+  float *vmdpos = (vmdmol->get_frame (frame))->pos;
+  this->pos = cvm::atom_pos (vmdpos[this->id*3+0],
+                             vmdpos[this->id*3+1],
+                             vmdpos[this->id*3+2]);
+}
+
+void cvm::atom::read_velocity()
+{
+  cvm::fatal_error ("Error: VMD does not store velocities for the colvars to use.\n");
+}
+
+
+void cvm::atom::read_system_force()
+{
+  cvm::fatal_error ("Error: system forces are undefined in VMD.\n");
+}
+
+
+void cvm::atom::apply_force (cvm::rvector const &new_force)
+{
+  // do nothing
 }
 
