@@ -230,7 +230,9 @@ colvarbias_harmonic::colvarbias_harmonic (std::string const &conf,
   }
 
   get_keyval (conf, "outputCenters", b_output_centers, false);
-  get_keyval (conf, "outputAccumulatedWork", b_output_acc_work, false);
+  if (b_chg_centers) {
+    get_keyval (conf, "outputAccumulatedWork", b_output_acc_work, false);
+  }
   acc_work = 0.0;
 
   if (cvm::debug())
@@ -319,10 +321,10 @@ cvm::real colvarbias_harmonic::update()
           cvm::real ( target_nstages ? (target_nstages - stage) :
                                       (target_nsteps - cvm::step_absolute()));
       }
-      if (cvm::debug())
+      if (cvm::debug()) {
         cvm::log ("Center increment for the harmonic bias \""+
                   this->name+"\": "+cvm::to_str (centers_incr)+" at stage "+cvm::to_str (stage)+ ".\n");
-
+      }
     }
 
     if (target_nstages) {

@@ -3166,10 +3166,10 @@ When the centers are changed continuously, a steered MD in a collective variable
   \keydef{%
     outputAccumulatedWork}{%
     \texttt{harmonic}}{%
-    Write the accumulated work to the trajectory file}{%
+    Write the accumulated work of the moving restraint to the trajectory file}{%
     boolean}{%
     \texttt{off}}{%
-    If this option is chosen and  \texttt{colvarsTrajFrequency} is not zero, the accumulated work from the beginning of the simulation will be written to the trajectory file.
+    If this option is chosen, \texttt{targetCenters} is defined, and \texttt{colvarsTrajFrequency} is not zero, the accumulated work from the beginning of the simulation will be written to the trajectory file.
     If the simulation has been continued from a previous state file, the previously accumulated work is included in the integral.
     This option allows to conveniently extract the PMF from the colvars trajectory files in a steered MD calculation.
 }
