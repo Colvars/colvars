@@ -1,5 +1,5 @@
 #!/bin/sh
-# Script to update a NAMD, VMD plugins, or LAMMPS source tree with the latest colvars code.
+# Script to update a NAMD, VMD, or LAMMPS source tree with the latest colvars code.
 
 if [ $# -lt 1 ]
 then
@@ -8,7 +8,7 @@ then
  usage: sh $0 <target source tree>
 
    "target source tree" = root directory of the MD code sources
-   supported MD codes: NAMD, VMDPLUGINS, LAMMPS
+   supported MD codes: NAMD, VMD, LAMMPS
 
 EOF
    exit 1
@@ -37,9 +37,9 @@ then
 elif [ -f "${target}/src/NamdTypes.h" ]
 then
   code=NAMD
-elif [ -f "${target}/build.csh" ]
+elif [ -f "${target}/src/VMDApp.h" ]
 then
-  code=VMDPLUGINS
+  code=VMD
 else
   # handle the case if the user points to ${target}/src
   target=$(dirname "${target}")
@@ -49,6 +49,9 @@ else
   elif [ -f "${target}/src/NamdTypes.h" ]
   then
     code=NAMD
+  elif [ -f "${target}/src/VMDApp.h" ]
+  then
+    code=VMD
   else
     echo ERROR: Cannot detect a supported code in the target directory
     exit 3
@@ -153,35 +156,35 @@ then
 fi
 
 
-# update VMD plugin tree
-if [ ${code} = VMDPLUGINS ]
+# update VMD tree
+if [ ${code} = VMD ]
 then
 
-  if [ ! -d "${target}/colvars/src" ] ; then
-    mkdir -p "${target}/colvars/src"
-  fi
+  # if [ ! -d "${target}/colvars/src" ] ; then
+  #   mkdir -p "${target}/colvars/src"
+  # fi
 
   # update code-independent headers
   for src in ${source}/src/*.h
   do \
     tgt=$(basename ${src})
-    condcopy "${src}" "${target}/colvars/src/${tgt}"
+    condcopy "${src}" "${target}/src/${tgt}"
   done
   # update code-independent sources
   for src in ${source}/src/*.cpp
   do \
     tgt=$(basename ${src%.cpp})
-    condcopy "${src}" "${target}/colvars/src/${tgt}.C"
+    condcopy "${src}" "${target}/src/${tgt}.C"
   done
 
   # update VMD interface files
-  for src in ${source}/vmd-plugin/src/*.h ${source}/vmd-plugin/src/*.C  
+  for src in ${source}/vmd/src/*.h ${source}/vmd/src/*.C  
   do \
     tgt=$(basename ${src})
-    condcopy "${src}" "${target}/colvars/src/${tgt}"
+    condcopy "${src}" "${target}/src/${tgt}"
   done
 
-  condcopy "${source}/vmd-plugin/Makefile" "${target}/colvars/Makefile"
+  # condcopy "${source}/vmd-plugin/Makefile" "${target}/colvars/Makefile"
 
   echo ' done.'
   exit 0

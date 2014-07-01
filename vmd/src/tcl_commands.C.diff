@@ -1,0 +1,10 @@
+30a31,33
+> #if defined(VMDCOLVARS)
+> #include "colvarproxy_vmd.h"
+> #endif
+284a288,292
+> #if defined(VMDCOLVARS)
+>   Tcl_CreateCommand (interp, "colvars", tcl_colvars, (ClientData) app, (Tcl_CmdDeleteProc*) NULL);
+>   Tcl_PkgProvide (interp, "colvars", COLVARS_VERSION);
+> #endif
+> 

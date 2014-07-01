@@ -1,0 +1,55 @@
+205a206
+> $config_colvars        = 0;  # Collective Variables module
+265a267
+>     if ($term eq "COLVARS")         { $config_colvars        = 1; next; }
+325a328
+> if ($config_colvars)         { $config_string .= " COLVARS"         }
+740a744,786
+> ################ COLVARS
+> # OPTIONAL COMPONENT: Collective variables (colvars) module
+> # This allows VMD to execute functions from the colvars module
+> # http://colvars.github.io/
+> if ($config_colvars && !$config_tcl) {
+>   die "Error, COLVARS option requires Tcl\n";
+> }
+> if ($config_colvars) {
+>   $tcl_defines .= " -DVMDCOLVARS";
+>   push (@tcl_ccpp, 'colvar.C');
+>   push (@tcl_ccpp, 'colvaratoms.C');
+>   push (@tcl_ccpp, 'colvarbias.C');
+>   push (@tcl_ccpp, 'colvarbias_abf.C');
+>   push (@tcl_ccpp, 'colvarbias_meta.C');
+>   push (@tcl_ccpp, 'colvarcomp.C');
+>   push (@tcl_ccpp, 'colvarcomp_angles.C');
+>   push (@tcl_ccpp, 'colvarcomp_coordnums.C');
+>   push (@tcl_ccpp, 'colvarcomp_distances.C');
+>   push (@tcl_ccpp, 'colvarcomp_protein.C');
+>   push (@tcl_ccpp, 'colvarcomp_rotations.C');
+>   push (@tcl_ccpp, 'colvargrid.C');
+>   push (@tcl_ccpp, 'colvarmodule.C');
+>   push (@tcl_ccpp, 'colvarparse.C');
+>   push (@tcl_ccpp, 'colvarproxy_vmd.C');
+>   push (@tcl_ccpp, 'colvarvalue.C');
+>   push (@tcl_ccpp, 'colvarscript.C');
+> 
+>   push (@tcl_h, 'colvar.h');
+>   push (@tcl_h, 'colvaratoms.h');
+>   push (@tcl_h, 'colvarbias.h');
+>   push (@tcl_h, 'colvarbias_abf.h');
+>   push (@tcl_h, 'colvarbias_meta.h');
+>   push (@tcl_h, 'colvarcomp.h');
+>   push (@tcl_h, 'colvargrid.h');
+>   push (@tcl_h, 'colvarparse.h');
+>   push (@tcl_h, 'colvarproxy_vmd.h');
+>   push (@tcl_h, 'colvarmodule.h');
+>   push (@tcl_h, 'colvarproxy.h');
+>   push (@tcl_h, 'colvarscript.h');
+>   push (@tcl_h, 'colvartypes.h');
+>   push (@tcl_h, 'colvarvalue.h');
+> }
+> 
+777,778d822
+< 
+< 
+3015a3060
+> $if_statements .= &create_config_option('colvars');
