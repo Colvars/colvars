@@ -517,6 +517,10 @@ void colvarmodule::reset()
     bi--;
   }
   biases.clear();
+
+  index_groups.clear();
+  index_group_names.clear();
+
   close_traj_file();
 }
 
