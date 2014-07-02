@@ -162,10 +162,6 @@ fi
 if [ ${code} = VMD ]
 then
 
-  # if [ ! -d "${target}/colvars/src" ] ; then
-  #   mkdir -p "${target}/colvars/src"
-  # fi
-
   # update code-independent headers
   for src in ${source}/src/*.h
   do \
@@ -180,13 +176,13 @@ then
   done
 
   # update VMD interface files
-  for src in ${source}/vmd/src/*.h ${source}/vmd/src/*.C  
+  for src in ${source}/vmd/src/colvarproxy_vmd.h ${source}/vmd/src/colvarproxy_vmd.C  
   do \
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/src/${tgt}"
   done
 
-  # condcopy "${source}/vmd-plugin/Makefile" "${target}/colvars/Makefile"
+  # TODO: update configure script and other VMD source files?
 
   echo ' done.'
   exit 0
