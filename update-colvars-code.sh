@@ -141,11 +141,13 @@ then
   done
 
   # update NAMD interface files
-  for src in ${source}/namd/src/*.h  ${source}/namd/src/*.C
+  for src in ${source}/namd/src/colvarproxy_namd.h ${source}/namd/src/colvarproxy_namd.C
   do \
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/src/${tgt}"
   done
+
+  # TODO: update Makefile and other NAMD source files?
 
   condcopy "${source}/doc/colvars-refman.bib" "${target}/ug/ug_colvars.bib"
   condcopy "${source}/doc/colvars-refman-main.tex" "${target}/ug/ug_colvars.tex"
