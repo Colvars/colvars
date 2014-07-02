@@ -214,8 +214,8 @@ OBJS = \
 	$(DSTDIR)/colvarmodule.o \
 	$(DSTDIR)/colvarparse.o \
 	$(DSTDIR)/colvarproxy_namd.o \
-	$(DSTDIR)/colvarvalue.o \
 	$(DSTDIR)/colvarscript.o \
+	$(DSTDIR)/colvarvalue.o \
 	$(DSTDIR)/GridForceGrid.o \
         $(DSTDIR)/GromacsTopFile.o \
 	$(DSTDIR)/heap.o \

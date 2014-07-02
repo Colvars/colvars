@@ -1,3 +1,5 @@
+/// -*- c++ -*-
+
 #ifndef COLVARCOMP_H
 #define COLVARCOMP_H
 
@@ -1437,9 +1439,3 @@ inline cvm::real colvar::orientation::compare (colvarvalue const &x1,
 
 
 #endif
-
-
-// Emacs
-// Local Variables:
-// mode: C++
-// End:

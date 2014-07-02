@@ -1,3 +1,5 @@
+/// -*- c++ -*-
+
 #ifndef COLVARBIAS_META_H
 #define COLVARBIAS_META_H
 
@@ -417,9 +419,3 @@ public:
 
 
 #endif
-
-
-// Emacs
-// Local Variables:
-// mode: C++
-// End:

@@ -1,3 +1,5 @@
+/// -*- c++ -*-
+
 #ifndef COLVARBIAS_H
 #define COLVARBIAS_H
 
@@ -188,10 +190,3 @@ protected:
 
 
 #endif
-
-
-
-// Emacs
-// Local Variables:
-// mode: C++
-// End:
