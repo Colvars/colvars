@@ -1,4 +1,4 @@
-/// -*- c++ -*-
+// -*- c++ -*-
 
 #include <cstdlib>
 #include "colvarscript.h"
@@ -21,7 +21,35 @@ int colvarscript::run (int argc, char const *argv[]) {
   }
 
   if (argc < 2) {
-    result = "Missing arguments";
+    // result = "Missing arguments";
+    result = "usage: "+std::string (argv[0])+" [args...]\n\
+\n\
+Initialize or deinitialize the module:\n\
+  configfile <file name>      -- read configuration from a file\n\
+  config <string>             -- read configuration from the given string\n\
+  reset                       -- delete all internal configuration\n\
+\n\
+Input and output:\n\
+  list                        -- return a list of all variables\n\
+  list biases                 -- return a list of all biases\n\
+  load <file name>            -- load a state file (requires configuration)\n\
+  update                      -- recalculate colvars and biases based\n\
+  printframe                  -- return a summary of the current frame\n\
+  printframelabels            -- return labels to annotate printframe's output\n\
+  frame                       -- return current frame number (VMD only)\n\
+  frame <new_frame>           -- return current frame number (VMD only)\n\
+\n\
+Access collective variables:\n\
+  colvar <name> value         -- return the current value of the colvar <name>\n\
+  colvar <name> update        -- recalculate the colvar <name>\n\
+  colvar <name> delete        -- delete the colvar <name>\n\
+\n\
+Access biases and algorithms:\n\
+  bias <name> energy          -- return the current energy of the bias <name>\n\
+  bias <name> update          -- recalculate the bias <name>\n\
+  bias <name> delete          -- delete the bias <name>\n\
+\n\
+";
     return COLVARSCRIPT_ERROR;
   }
 

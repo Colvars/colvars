@@ -25,8 +25,14 @@ int tcl_colvars (ClientData clientdata, Tcl_Interp *vmdtcl, int argc, const char
 
   if (proxy != NULL) {
 
+    if ( argc >= 3 ) {
+      if (!strcmp (argv[1], "molid")) {
+        Tcl_SetResult (vmdtcl, (char *) (std::string ("Colvars module already created: type \"colvars\" for a list of arguments.").c_str()), TCL_STATIC);
+        return TCL_OK;
+      }
+    }
     retval = proxy->script->run (argc, argv); 
-    Tcl_SetResult(vmdtcl, (char *) proxy->script->result.c_str(), TCL_STATIC);
+    Tcl_SetResult (vmdtcl, (char *) proxy->script->result.c_str(), TCL_STATIC);
     if (retval == COLVARSCRIPT_OK) {
       return TCL_OK;
     } else {
