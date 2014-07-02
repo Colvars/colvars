@@ -1,3 +1,5 @@
+/// -*- c++ -*-
+
 #include <sstream>
 #include "colvarmodule.h"
 #include "colvarparse.h"

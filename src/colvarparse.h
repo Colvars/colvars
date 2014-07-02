@@ -1,3 +1,5 @@
+/// -*- c++ -*-
+
 #ifndef COLVARPARSE_H
 #define COLVARPARSE_H
 
@@ -194,8 +196,3 @@ public:
 
 
 #endif
-
-// Emacs
-// Local Variables:
-// mode: C++
-// End:

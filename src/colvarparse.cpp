@@ -1,12 +1,11 @@
+/// -*- c++ -*-
+
 #include <sstream>
 #include <iostream>
-
-
 
 #include "colvarmodule.h"
 #include "colvarvalue.h"
 #include "colvarparse.h"
-
 
 
 // space & tab
@@ -638,9 +637,3 @@ bool colvarparse::brace_check (std::string const &conf,
   else
     return true;
 }
-
-
-// Emacs
-// Local Variables:
-// mode: C++
-// End:

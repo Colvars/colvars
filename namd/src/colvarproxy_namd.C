@@ -1,3 +1,5 @@
+/// -*- c++ -*-
+
 #include "common.h"
 #include "BackEnd.h"
 #include "InfoStream.h"

@@ -1,3 +1,5 @@
+/// -*- c++ -*-
+
 #ifndef COLVARMODULE_H
 #define COLVARMODULE_H
 
@@ -530,9 +532,3 @@ inline cvm::real cvm::rand_gaussian (void)
 }
 
 #endif
-
-
-// Emacs
-// Local Variables:
-// mode: C++
-// End:

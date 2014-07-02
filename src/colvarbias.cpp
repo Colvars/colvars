@@ -1,3 +1,5 @@
+/// -*- c++ -*-
+
 #include "colvarmodule.h"
 #include "colvarvalue.h"
 #include "colvarbias.h"

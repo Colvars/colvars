@@ -1,4 +1,4 @@
-// -*- c++ -*-
+/// -*- c++ -*-
 
 #ifndef COLVARPROXY_VMD_H
 #define COLVARPROXY_VMD_H

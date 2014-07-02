@@ -1,3 +1,5 @@
+/// -*- c++ -*-
+
 #ifndef COLVARVALUE_H
 #define COLVARVALUE_H
 
@@ -707,21 +709,10 @@ inline void colvarvalue::check_types (colvarvalue const &x1,
 }
 
 
-
-
 std::ostream & operator << (std::ostream &os, colvarvalue const &x);
 std::ostream & operator << (std::ostream &os, std::vector<colvarvalue> const &v);
 
 std::istream & operator >> (std::istream &is, colvarvalue &x);
 
 
-
-
-
 #endif
-
-
-// Emacs
-// Local Variables:
-// mode: C++
-// End:

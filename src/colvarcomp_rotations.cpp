@@ -1,3 +1,5 @@
+/// -*- c++ -*-
+
 #include <cmath>
 
 #include "colvarmodule.h"

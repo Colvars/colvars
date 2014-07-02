@@ -1,3 +1,5 @@
+/// -*- c++ -*-
+
 #include <cstdlib>
 #include "colvarscript.h"
 

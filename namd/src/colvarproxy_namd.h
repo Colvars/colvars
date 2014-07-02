@@ -1,3 +1,5 @@
+/// -*- c++ -*-
+
 #ifndef COLVARPROXY_NAMD_H
 #define COLVARPROXY_NAMD_H
 
@@ -151,9 +153,3 @@ inline cvm::real colvarproxy_namd::position_dist2 (cvm::atom_pos const &pos1,
 
 
 #endif
-
-
-// Emacs
-// Local Variables:
-// mode: C++
-// End:
