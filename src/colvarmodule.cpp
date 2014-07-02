@@ -855,45 +855,6 @@ void cvm::read_index_file (char const *filename)
 
 }
 
-void cvm::load_coords_xyz (char const *filename,
-                           std::vector<atom_pos> &pos,
-                           const std::vector<int> &indices)
-{
-  std::ifstream xyz_is (filename);
-  int natoms;
-  char symbol[256];
-  std::string line;
-
-  if ( ! (xyz_is >> natoms) ) {
-    cvm::fatal_error ("Error: cannot parse XYZ file "
-                      + std::string (filename) + ".\n");
-  }
-  // skip comment line
-  std::getline (xyz_is, line);
-  std::getline (xyz_is, line);
-  xyz_is.width (255);
-  std::vector<atom_pos>::iterator pos_i = pos.begin();
-
-  if (pos.size() != natoms) { // Use specified indices
-    int next = 0; // indices are zero-based
-    std::vector<int>::const_iterator index = indices.begin();
-    for ( ; pos_i != pos.end() ; pos_i++, index++) {
-
-      while ( next < *index ) {
-        std::getline (xyz_is, line);
-        next++;
-      }
-      xyz_is >> symbol;
-      xyz_is >> (*pos_i)[0] >> (*pos_i)[1] >> (*pos_i)[2];
-    }
-  } else {          // Use all positions
-    for ( ; pos_i != pos.end() ; pos_i++) {
-      xyz_is >> symbol;
-      xyz_is >> (*pos_i)[0] >> (*pos_i)[1] >> (*pos_i)[2];
-    }
-  }
-}
-
 void cvm::load_atoms (char const *file_name,
                              std::vector<cvm::atom> &atoms,
                              std::string const &pdb_field,
