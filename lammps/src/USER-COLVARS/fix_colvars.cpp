@@ -75,8 +75,6 @@ static int inthash_lookup(void *tptr, int key);
 static int inthash_insert(inthash_t *tptr, int key, int data);
 /* delete the hash table */
 static void inthash_destroy(inthash_t *tptr);
-/* adapted sort for in-place sorting of map indices. */
-static void id_sort(int *idmap, int left, int right);
 
 /************************************************************************
  * integer hash code:
@@ -237,44 +235,6 @@ void inthash_destroy(inthash_t *tptr) {
     free(tptr->bucket);
     memset(tptr, 0, sizeof(inthash_t));
   }
-}
-
-/************************************************************************
- * integer list sort code:
- ************************************************************************/
-
-/* sort for integer map. initial call  id_sort(idmap, 0, natoms - 1); */
-static void id_sort(int *idmap, int left, int right)
-{
-  int pivot, l_hold, r_hold;
-
-  l_hold = left;
-  r_hold = right;
-  pivot = idmap[left];
-
-  while (left < right) {
-    while ((idmap[right] >= pivot) && (left < right))
-      right--;
-    if (left != right) {
-      idmap[left] = idmap[right];
-      left++;
-    }
-    while ((idmap[left] <= pivot) && (left < right))
-      left++;
-    if (left != right) {
-      idmap[right] = idmap[left];
-      right--;
-    }
-  }
-  idmap[left] = pivot;
-  pivot = left;
-  left = l_hold;
-  right = r_hold;
-
-  if (left < pivot)
-    id_sort(idmap, left, pivot-1);
-  if (right > pivot)
-    id_sort(idmap, pivot+1, right);
 }
 
 /***************************************************************/
@@ -443,6 +403,11 @@ void FixColvars::one_time_init()
     if (screen) fputs("colvars: Creating proxy instance\n",screen);
     if (logfile) fputs("colvars: Creating proxy instance\n",logfile);
 
+#ifdef LAMMPS_BIGBIG
+    if (screen) fputs("colvars: cannot handle atom ids > 2147483647\n",screen);
+    if (logfile) fputs("colvars: cannot handle atom ids > 2147483647\n",logfile);
+#endif
+
     if (inp_name) {
       if (strcmp(inp_name,"NULL") == 0) {
         memory->sfree(inp_name);
@@ -490,14 +455,14 @@ void FixColvars::one_time_init()
       inthash_insert(hashtable, tl[i], i);
     }
   }
-  MPI_Bcast(taglist, num_coords, MPI_INT, 0, world);
+  MPI_Bcast(taglist, num_coords, MPI_LMP_TAGINT, 0, world);
 }
 
 /* ---------------------------------------------------------------------- */
 
 void FixColvars::setup(int vflag)
 {
-  const int * const tag  = atom->tag;
+  const tagint * const tag  = atom->tag;
   const int * const type = atom->type;
   int i,nme,tmp,ndata;
   int nlocal = atom->nlocal;
@@ -510,7 +475,7 @@ void FixColvars::setup(int vflag)
   // determine size of comm buffer
   nme=0;
   for (i=0; i < num_coords; ++i) {
-    const int k = atom->map(taglist[i]);
+    const tagint k = atom->map(taglist[i]);
     if ((k >= 0) && (k < nlocal))
       ++nme;
   }
@@ -519,7 +484,7 @@ void FixColvars::setup(int vflag)
   memory->create(comm_buf,nmax,"colvars:comm_buf");
 
   const double * const * const x = atom->x;
-  const tagint * const image = atom->image;
+  const imageint * const image = atom->image;
 
   const double xprd = domain->xprd;
   const double yprd = domain->yprd;
@@ -536,7 +501,7 @@ void FixColvars::setup(int vflag)
     // store coordinate data in holding array, clear old forces
 
     for (i=0; i<num_coords; ++i) {
-      const int k = atom->map(taglist[i]);
+      const tagint k = atom->map(taglist[i]);
       if ((k >= 0) && (k < nlocal)) {
 
         of[i].tag  = cd[i].tag  = tag[k];
@@ -593,7 +558,7 @@ void FixColvars::setup(int vflag)
 
     nme = 0;
     for (i=0; i<num_coords; ++i) {
-      const int k = atom->map(taglist[i]);
+      const tagint k = atom->map(taglist[i]);
       if ((k >= 0) && (k < nlocal)) {
 
         comm_buf[nme].tag  = tag[k];
@@ -665,10 +630,10 @@ void FixColvars::post_force(int vflag)
     }
   }
 
-  const int * const tag = atom->tag;
+  const tagint * const tag = atom->tag;
   const double * const * const x = atom->x;
   double * const * const f = atom->f;
-  const tagint * const image = atom->image;
+  const imageint * const image = atom->image;
 
   const double xprd = domain->xprd;
   const double yprd = domain->yprd;
@@ -681,7 +646,7 @@ void FixColvars::post_force(int vflag)
   /* check and potentially grow local communication buffers. */
   int i,nmax_new,nme=0;
   for (i=0; i < num_coords; ++i) {
-    const int k = atom->map(taglist[i]);
+    const tagint k = atom->map(taglist[i]);
     if ((k >= 0) && (k < nlocal))
       ++nme;
   }
@@ -702,7 +667,7 @@ void FixColvars::post_force(int vflag)
     // store coordinate data
 
     for (i=0; i<num_coords; ++i) {
-      const int k = atom->map(taglist[i]);
+      const tagint k = atom->map(taglist[i]);
       if ((k >= 0) && (k < nlocal)) {
 
         if (unwrap_flag) {
@@ -744,7 +709,7 @@ void FixColvars::post_force(int vflag)
     /* copy coordinate data into communication buffer */
     nme = 0;
     for (i=0; i<num_coords; ++i) {
-      const int k = atom->map(taglist[i]);
+      const tagint k = atom->map(taglist[i]);
       if ((k >= 0) && (k < nlocal)) {
         comm_buf[nme].tag = tag[k];
 
@@ -796,7 +761,7 @@ void FixColvars::post_force(int vflag)
   MPI_Bcast(force_buf, 3*num_coords, MPI_DOUBLE, 0, world);
 
   for (int i=0; i < num_coords; ++i) {
-    const int k = atom->map(taglist[i]);
+    const tagint k = atom->map(taglist[i]);
     if ((k >= 0) && (k < nlocal)) {
       f[k][0] += force_buf[3*i+0];
       f[k][1] += force_buf[3*i+1];
@@ -824,14 +789,14 @@ void FixColvars::end_of_step()
 {
   if (store_forces) {
 
-    const int * const tag = atom->tag;
+    const tagint * const tag = atom->tag;
     double * const * const f = atom->f;
     const int nlocal = atom->nlocal;
 
     /* check and potentially grow local communication buffers. */
     int i,nmax_new,nme=0;
     for (i=0; i < num_coords; ++i) {
-      const int k = atom->map(taglist[i]);
+      const tagint k = atom->map(taglist[i]);
       if ((k >= 0) && (k < nlocal))
         ++nme;
     }
@@ -852,7 +817,7 @@ void FixColvars::end_of_step()
       std::vector<struct commdata> &of = *oforce;
 
       for (i=0; i<num_coords; ++i) {
-        const int k = atom->map(taglist[i]);
+        const tagint k = atom->map(taglist[i]);
         if ((k >= 0) && (k < nlocal)) {
 
           const int j = inthash_lookup(idmap, tag[k]);
@@ -887,7 +852,7 @@ void FixColvars::end_of_step()
       /* copy total force data into communication buffer */
       nme = 0;
       for (i=0; i<num_coords; ++i) {
-        const int k = atom->map(taglist[i]);
+        const tagint k = atom->map(taglist[i]);
         if ((k >= 0) && (k < nlocal)) {
           comm_buf[nme].tag  = tag[k];
           comm_buf[nme].x    = f[k][0];

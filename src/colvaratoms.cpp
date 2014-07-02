@@ -14,8 +14,8 @@
 cvm::atom_group::atom_group (std::string const &conf,
                              char const        *key)
   : b_center (false), b_rotate (false), b_user_defined_fit (false),
-    ref_pos_group (NULL),
     b_fit_gradients (false),
+    ref_pos_group (NULL),
     noforce (false)
 {
   cvm::log ("Defining atom group \""+
@@ -27,7 +27,7 @@ cvm::atom_group::atom_group (std::string const &conf,
 
 cvm::atom_group::atom_group (std::vector<cvm::atom> const &atoms)
   : b_dummy (false), b_center (false), b_rotate (false),
-    ref_pos_group (NULL), b_fit_gradients (false),
+    b_fit_gradients (false), ref_pos_group (NULL),
     noforce (false)
 {
   this->reserve (atoms.size());
@@ -44,7 +44,7 @@ cvm::atom_group::atom_group (std::vector<cvm::atom> const &atoms)
 
 cvm::atom_group::atom_group()
   : b_dummy (false), b_center (false), b_rotate (false),
-    ref_pos_group (NULL), b_fit_gradients (false),
+    b_fit_gradients (false), ref_pos_group (NULL),
     noforce (false)
 {
   total_mass = 0.0;
@@ -343,6 +343,10 @@ void cvm::atom_group::parse (std::string const &conf,
       }
       cvm::log ("Within atom group \""+std::string (key)+"\":\n");
       ref_pos_group = new atom_group (group_conf, "refPositionsGroup");
+
+      // regardless of the configuration, fit gradients must be calculated by refPositionsGroup
+      ref_pos_group->b_fit_gradients = this->b_fit_gradients;
+      this->b_fit_gradients = false;
     }
 
     atom_group *group_for_fit = ref_pos_group ? ref_pos_group : this;

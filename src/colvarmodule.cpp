@@ -894,6 +894,79 @@ void cvm::load_coords_xyz (char const *filename,
   }
 }
 
+void cvm::load_atoms (char const *file_name,
+                             std::vector<cvm::atom> &atoms,
+                             std::string const &pdb_field,
+                             double const pdb_field_value)
+{
+  proxy->load_atoms (file_name, atoms, pdb_field, pdb_field_value);
+}
+
+void cvm::load_coords (char const *file_name,
+                              std::vector<cvm::atom_pos> &pos,
+                              const std::vector<int> &indices,
+                              std::string const &pdb_field,
+                              double const pdb_field_value)
+{
+  // Differentiate between PDB and XYZ files
+  // for XYZ files, use CVM internal parser
+  // otherwise call proxy function for PDB
+
+  std::string const ext (strlen(file_name) > 4 ? (file_name + (strlen(file_name) - 4)) : file_name);
+  if (colvarparse::to_lower_cppstr (ext) == std::string (".xyz")) {
+    if ( pdb_field.size() > 0 ) {
+      cvm::fatal_error ("Error: PDB column may not be specified for XYZ coordinate file.\n");
+    }
+    cvm::load_coords_xyz (file_name, pos, indices);
+  } else {
+    proxy->load_coords (file_name, pos, indices, pdb_field, pdb_field_value);
+  }
+}
+
+void cvm::backup_file (char const *filename)
+{
+  proxy->backup_file (filename);
+}
+
+void cvm::load_coords_xyz (char const *filename,
+                           std::vector<atom_pos> &pos,
+                           const std::vector<int> &indices)
+{
+  std::ifstream xyz_is (filename);
+  int natoms;
+  char symbol[256];
+  std::string line;
+
+  if ( ! (xyz_is >> natoms) ) {
+    cvm::fatal_error ("Error: cannot parse XYZ file "
+                      + std::string (filename) + ".\n");
+  }
+  // skip comment line
+  std::getline (xyz_is, line);
+  std::getline (xyz_is, line);
+  xyz_is.width (255);
+  std::vector<atom_pos>::iterator pos_i = pos.begin();
+
+  if (pos.size() != natoms) { // Use specified indices
+    int next = 0; // indices are zero-based
+    std::vector<int>::const_iterator index = indices.begin();
+    for ( ; pos_i != pos.end() ; pos_i++, index++) {
+
+      while ( next < *index ) {
+        std::getline (xyz_is, line);
+        next++;
+      }
+      xyz_is >> symbol;
+      xyz_is >> (*pos_i)[0] >> (*pos_i)[1] >> (*pos_i)[2];
+    }
+  } else {          // Use all positions
+    for ( ; pos_i != pos.end() ; pos_i++) {
+      xyz_is >> symbol;
+      xyz_is >> (*pos_i)[0] >> (*pos_i)[1] >> (*pos_i)[2];
+    }
+  }
+}
+
 // static pointers
 std::vector<colvar *>     colvarmodule::colvars;
 std::vector<colvarbias *> colvarmodule::biases;

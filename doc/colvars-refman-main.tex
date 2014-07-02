@@ -2487,10 +2487,13 @@ The following parameters can be set in the ABF configuration block
     to application of the ABF}
   {positive integer}
   {200}
-  {To avoid nonequilibrium effects in the dynamics of the system, due to large
-    fluctuations of the force exerted along the reaction coordinate, $\xi$, it
-    is recommended to apply the biasing force only after a reasonable estimate
-    of the latter has been obtained.}
+  {To avoid nonequilibrium effects due to large fluctuations of the force exerted along the
+   colvars, it is recommended to apply a biasing force only after a the estimate has started
+   converging. If \texttt{fullSamples} is non-zero, the applied biasing force is scaled by a factor
+   between 0 and 1. If the number of samples in the current bin is higher than \texttt{fullSamples},
+   the factor is one. If it is less than half of \texttt{fullSamples}, the factor is zero and
+   no bias is applied. Between those two thresholds, the factor follows a linear ramp from
+   0 to 1.}
 
 \item \keydef{maxForce}{\texttt{abf}}{%
     Maximum magnitude of the ABF force}

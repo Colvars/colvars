@@ -122,8 +122,8 @@ std::ostream & colvarbias::write_traj (std::ostream &os)
 colvarbias_restraint::colvarbias_restraint (std::string const &conf,
                                           char const *key)
   : colvarbias (conf, key),
-    target_nsteps (0),
-    target_nstages (0)
+    target_nstages (0),
+    target_nsteps (0)
 {
   get_keyval (conf, "forceConstant", force_k, 1.0);
 
