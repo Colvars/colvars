@@ -426,7 +426,7 @@ std::istream & colvarbias_restraint::read_restart (std::istream &is)
             this->name+"\".\n");
 
   std::string key, brace, conf;
-  if ( !(is >> key)   || !(key == "harmonic") ||
+  if ( !(is >> key)   || !(key == "restraint" || key == "harmonic") ||
        !(is >> brace) || !(brace == "{") ||
        !(is >> colvarparse::read_block ("configuration", conf)) ) {
 
