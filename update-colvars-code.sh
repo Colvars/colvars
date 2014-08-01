@@ -147,13 +147,26 @@ then
     condcopy "${src}" "${target}/src/${tgt}"
   done
 
-  # TODO: update Makefile and other NAMD source files?
+  # TODO: update Makefile and other NAMD source files? e.g. ScriptTcl.C
 
   condcopy "${source}/doc/colvars-refman.bib" "${target}/ug/ug_colvars.bib"
   condcopy "${source}/doc/colvars-refman-main.tex" "${target}/ug/ug_colvars.tex"
   condcopy "${source}/namd/ug/ug_colvars_macros.tex" "${target}/ug/ug_colvars_macros.tex"
 
   echo ' done.'
+
+  for src in ${source}/namd/src/*
+  do \
+    tgt=$(basename ${src})
+    diff "${src}" "${target}/src/${tgt}" > ${tgt}.diff
+    if [ -s ${tgt}.diff ]
+    then
+      echo "Differences found between ${src} and ${target}/src/${tgt}, check ${tgt}.diff"
+    else
+      rm -f ${tgt}.diff
+    fi
+  done
+
   exit 0
 fi
 
