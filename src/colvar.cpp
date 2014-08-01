@@ -323,7 +323,7 @@ colvar::colvar (std::string const &conf)
                             "by enabling a thermostat, or through \"extendedTemp\".\n");
       }
 
-      get_keyval (conf, "extendedFluctuation", tolerance, width);
+      get_keyval (conf, "extendedFluctuation", tolerance);
       if (tolerance <= 0.0)
         cvm::fatal_error ("Error: \"extendedFluctuation\" must be positive.\n");
       ext_force_k = cvm::boltzmann() * temp / (tolerance * tolerance);
