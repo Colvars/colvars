@@ -1074,10 +1074,9 @@ int ScriptTcl::Tcl_colvars (ClientData clientData,
     return TCL_ERROR;
   }
   int retval = colvars->proxy->script->run(argc, (char const **) argv);
-  char buf[2000];
-  strncpy (buf, colvars->proxy->script->result.c_str(), 1999);
-  buf[1999] = '\0';
-  Tcl_SetResult(interp, buf, TCL_VOLATILE);
+  char *buf = Tcl_Alloc(colvars->proxy->script->result.length() + 1);
+  strncpy (buf, colvars->proxy->script->result.c_str(), colvars->proxy->script->result.length() + 1);
+  Tcl_SetResult(interp, buf, TCL_DYNAMIC);
   if (retval == COLVARSCRIPT_OK)
     return TCL_OK;
   else

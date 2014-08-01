@@ -21,7 +21,6 @@ int colvarscript::run (int argc, char const *argv[]) {
   }
 
   if (argc < 2) {
-    // result = "Missing arguments";
     result = "usage: "+std::string (argv[0])+" [args...]\n\
 \n\
 Initialize or deinitialize the module:\n\
@@ -50,7 +49,7 @@ Access biases and algorithms:\n\
   bias <name> delete          -- delete the bias <name>\n\
 \n\
 ";
-    return COLVARSCRIPT_ERROR;
+    return COLVARSCRIPT_OK;
   }
 
   std::string cmd = argv[1];
