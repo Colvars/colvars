@@ -411,12 +411,12 @@ std::ostream & colvarbias_alb::write_traj (std::ostream &os)
 
 cvm::real colvarbias_alb::restraint_potential(cvm::real k,  const colvar* x,  const colvarvalue &xcenter) const 
 {
-  return (k / xcenter) * (x->value() - xcenter);
+  return k * (x->value() - xcenter);
 }
 
 colvarvalue colvarbias_alb::restraint_force(cvm::real k,  const colvar* x,  const colvarvalue &xcenter) const 
 {
-  return (k / xcenter)  * x->value() ;
+  return k;
 }
 
 cvm::real colvarbias_alb::restraint_convert_k(cvm::real k, cvm::real dist_measure) const 

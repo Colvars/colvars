@@ -623,7 +623,7 @@ cvm::real colvarbias_restraint_linear::restraint_potential(cvm::real k,  colvar*
 
 colvarvalue colvarbias_restraint_linear::restraint_force(cvm::real k,  colvar* x,  const colvarvalue &xcenter) const 
 {
-  return k * x->value();
+  return k;
 }
 
 cvm::real colvarbias_restraint_linear::restraint_convert_k(cvm::real k, cvm::real dist_measure) const 

@@ -3309,14 +3309,9 @@ using \cite{Pitera2012}.
     \texttt{1.0}}{%
     This defines a scaled force constant for the linear bias.
     To ensure consistency for multidimensional restraints, it is
-    divided internally by the square of the specific \texttt{width}
+    divided internally by  the specific \texttt{width}
     for each colvar involved (which is 1 by default), so that all colvars
-    are effectively dimensionless and of commensurate size.
-    For instance, setting a scaled force constant of 10~kcal/mol acting
-    on two colvars, an angle with a \texttt{width} of 5~degrees and a distance
-    with a width of 0.5~\AA{}, will apply actual force constants of
-    0.4~kcal/mol$\times$degree$^{-2}$ for the angle and
-    40~kcal/mol/\AA$^2$ for the distance.}
+    are effectively dimensionless and of commensurate size.}
 
 \item %
   \key{%
@@ -3339,15 +3334,17 @@ using \cite{Pitera2012}.
 
 Experiment directed simulation applies a linear bias with a changing
 force constant. Please cite White and Voth \cite{White2014} when
-using. The bias converges to a linear bias, after which it will be the
-minimal possible bias. You may also stop the simulation, take the
-median of the force constants (ForceConst) found in the colvars
-trajectory file, and then apply a linear bias with that constant. All
-the notes about units described in
-sections \ref{sec:colvarbias_linear} and \ref{sec:colvarbias_harmonic}
-apply here as well. {\bf This is not a valid simulation of any
-particular statistical ensemble and is only an optimization algorithm
-until the bias has converged}.
+using. As opposed to that reference, the force constant here is scaled
+by the \texttt{width} corresponding to the biased colvar. In White and
+Voth, each force constant is scaled by the colvars set center. The
+bias converges to a linear bias, after which it will be the minimal
+possible bias. You may also stop the simulation, take the median of
+the force constants (ForceConst) found in the colvars trajectory file,
+and then apply a linear bias with that constant. All the notes about
+units described in sections \ref{sec:colvarbias_linear}
+and \ref{sec:colvarbias_harmonic} apply here as well. {\bf This is not
+a valid simulation of any particular statistical ensemble and is only
+an optimization algorithm until the bias has converged}.
 
 \begin{itemize}
 \item %
