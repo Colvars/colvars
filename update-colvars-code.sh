@@ -155,15 +155,16 @@ then
 
   echo ' done.'
 
-  for src in ${source}/namd/src/*
+  for src in ${source}/namd/src/* ${source}/namd/Make*
   do \
-    tgt=$(basename ${src})
-    diff "${src}" "${target}/src/${tgt}" > ${tgt}.diff
-    if [ -s ${tgt}.diff ]
+    tgt=$(echo ${src} | sed "s/${source}\/namd\///")
+    name=$(basename ${src})
+    diff "${src}" "${target}/${tgt}" > ${name}.diff
+    if [ -s ${name}.diff ]
     then
-      echo "Differences found between ${src} and ${target}/src/${tgt}, check ${tgt}.diff"
+      echo "Differences found between ${src} and ${target}/${tgt}, check ${name}.diff"
     else
-      rm -f ${tgt}.diff
+      rm -f ${name}.diff
     fi
   done
 
@@ -197,15 +198,16 @@ then
   echo ' done.'
 
   # TODO: update configure script and other VMD source files?
-  for src in ${source}/vmd/src/*
+  for src in ${source}/vmd/src/* ${source}/vmd/configure
   do \
-    tgt=$(basename ${src})
-    diff "${src}" "${target}/src/${tgt}" > ${tgt}.diff
-    if [ -s ${tgt}.diff ]
+    tgt=$(echo ${src} | sed "s/${source}\/vmd\///")
+    name=$(basename ${src})
+    diff "${src}" "${target}/${tgt}" > ${name}.diff
+    if [ -s ${name}.diff ]
     then
-      echo "Differences found between ${src} and ${target}/src/${tgt}, check ${tgt}.diff"
+      echo "Differences found between ${src} and ${target}/${tgt}, check ${name}.diff"
     else
-      rm -f ${tgt}.diff
+      rm -f ${name}.diff
     fi
   done
 
