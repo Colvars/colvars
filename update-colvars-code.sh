@@ -194,9 +194,20 @@ then
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/src/${tgt}"
   done
+  echo ' done.'
 
   # TODO: update configure script and other VMD source files?
+  for src in ${source}/vmd/src/*
+  do \
+    tgt=$(basename ${src})
+    diff "${src}" "${target}/src/${tgt}" > ${tgt}.diff
+    if [ -s ${tgt}.diff ]
+    then
+      echo "Differences found between ${src} and ${target}/src/${tgt}, check ${tgt}.diff"
+    else
+      rm -f ${tgt}.diff
+    fi
+  done
 
-  echo ' done.'
   exit 0
 fi
