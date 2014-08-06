@@ -21,7 +21,7 @@ int colvarscript::run (int argc, char const *argv[]) {
   }
 
   if (argc < 2) {
-    result = "usage: "+std::string (argv[0])+" [args...]\n\
+    result = "usage: "+std::string (argv[0])+"<subcommand> [args...]\n\
 \n\
 Initialize or deinitialize the module:\n\
   configfile <file name>      -- read configuration from a file\n\
@@ -34,10 +34,15 @@ Input and output:\n\
   load <file name>            -- load a state file (requires configuration)\n\
   update                      -- recalculate colvars and biases based\n\
   printframe                  -- return a summary of the current frame\n\
-  printframelabels            -- return labels to annotate printframe's output\n\
-  frame                       -- return current frame number (VMD only)\n\
-  frame <new_frame>           -- return current frame number (VMD only)\n\
-\n\
+  printframelabels            -- return labels to annotate printframe's output\n";
+
+  if (proxy->frame() != COLVARS_NOT_IMPLEMENTED) {
+      result += "\
+  frame                       -- return current frame number\n\
+  frame <new_frame>           -- return current frame number\n";
+  }
+
+  result += "\n\
 Access collective variables:\n\
   colvar <name> value         -- return the current value of the colvar <name>\n\
   colvar <name> update        -- recalculate the colvar <name>\n\

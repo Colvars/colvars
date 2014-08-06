@@ -11,6 +11,10 @@
 
 #include "colvarmodule.h"
 
+// return values for the frame() routine
+#define COLVARS_NO_SUCH_FRAME -1
+#define COLVARS_NOT_IMPLEMENTED -2
+
 // forward declaration
 class colvarscript;
 
@@ -58,11 +62,11 @@ public:
   virtual cvm::real rand_gaussian (void) = 0;
 
   /// \brief Get the current frame number
-  virtual int frame() { return -1; }
+  virtual int frame() { return COLVARS_NOT_IMPLEMENTED; }
 
   /// \brief Set the current frame number
   // return 0 on success, -1 on failure
-  virtual int frame (int) { return -1; }
+  virtual int frame (int) { return COLVARS_NOT_IMPLEMENTED; }
 
 
   // **************** SIMULATION PARAMETERS ****************

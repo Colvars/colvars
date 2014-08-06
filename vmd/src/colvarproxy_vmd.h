@@ -82,7 +82,7 @@ public:
       vmdmol_frame = f;
       return 0;
     } else {
-      return -1;
+      return COLVARS_NO_SUCH_FRAME;
     }
   }
 

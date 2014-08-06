@@ -67,7 +67,7 @@ int tcl_colvars (ClientData clientdata, Tcl_Interp *vmdtcl, int argc, const char
     }
   }
 
-  Tcl_SetResult (vmdtcl, (char *) (std::string ("usage: colvars molid <molecule id>").c_str()), TCL_STATIC);
+  Tcl_SetResult (vmdtcl, (char *) (std::string ("First, setup the colvars with: colvars molid <molecule id>").c_str()), TCL_STATIC);
   return TCL_ERROR;
 }
 
