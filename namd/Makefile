@@ -203,6 +203,7 @@ OBJS = \
 	$(DSTDIR)/colvaratoms.o \
 	$(DSTDIR)/colvarbias.o \
 	$(DSTDIR)/colvarbias_abf.o \
+	$(DSTDIR)/colvarbias_alb.o \
 	$(DSTDIR)/colvarbias_meta.o \
 	$(DSTDIR)/colvarcomp.o \
 	$(DSTDIR)/colvarcomp_angles.o \
