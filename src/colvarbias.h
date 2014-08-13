@@ -199,7 +199,7 @@ protected:
 /// \brief Harmonic bias restraint
 /// (implementation of \link colvarbias_restraint \endlink)
 class colvarbias_restraint_harmonic : public colvarbias_restraint {
-  
+
 public:
   colvarbias_restraint_harmonic(std::string const &conf, char const *key);
 
@@ -217,7 +217,7 @@ protected: /// \brief Potential function
 /// \brief Linear bias restraint
 /// (implementation of \link colvarbias_restraint \endlink)
 class colvarbias_restraint_linear : public colvarbias_restraint {
-  
+
 public:
   colvarbias_restraint_linear(std::string const &conf, char const *key);
 
