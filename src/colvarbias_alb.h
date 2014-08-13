@@ -5,11 +5,11 @@
 #include "colvarbias.h"
 
 class colvarbias_alb : public colvarbias {
-  
+
 public:
   colvarbias_alb(std::string const &conf, char const *key);
   virtual ~colvarbias_alb();
-  
+
 
   virtual cvm::real update();
 
@@ -28,7 +28,7 @@ public:
 protected:
 
   /// \brief Restraint centers
-  std::vector<colvarvalue> colvar_centers;  
+  std::vector<colvarvalue> colvar_centers;
 
   /// \brief colvar parameters, used for calculating the gradient/variance
   std::vector<cvm::real> means;
@@ -41,20 +41,20 @@ protected:
   ///\brief Estimated range of coupling constant values in kT
   std::vector<cvm::real> max_coupling_range;
 
-  //\brief Estimated max for how quickly the rate can change in kT / time 
+  //\brief Estimated max for how quickly the rate can change in kT / time
   std::vector<cvm::real> max_coupling_rate;
 
   /// \brief accumated couping force; used in stochastic online gradient descent algorithm
   std::vector<cvm::real> coupling_accum;
 
   /// \brief coupling constant
-  std::vector<cvm::real> set_coupling; 
+  std::vector<cvm::real> set_coupling;
 
   /// \brief current coupling constant, which is ramped up during equilibration to coupling
-  std::vector<cvm::real> current_coupling; 
+  std::vector<cvm::real> current_coupling;
 
   /// \brief how quickly to change the coupling constant
-  std::vector<cvm::real> coupling_rate; 
+  std::vector<cvm::real> coupling_rate;
 
   // \brief if we're equilibrating our estimates or collecting data
   bool b_equilibration;

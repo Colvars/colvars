@@ -7,7 +7,7 @@
 /* Note about nomenclature. Force constant is called a coupling
  * constant here to emphasize its changing in the code. Outwards,
  * everything is called a force constant to keep it consistent with
- * the rest of colvars. 
+ * the rest of colvars.
  *
  */
 
@@ -16,7 +16,7 @@ colvarbias_alb::colvarbias_alb(std::string const &conf, char const *key) :
 
   // get the initial restraint centers
   colvar_centers.resize (colvars.size());
-  
+
   means.resize(colvars.size());
   ssd.resize(colvars.size()); //sum of squares of differences from mean
 
@@ -53,7 +53,7 @@ colvarbias_alb::colvarbias_alb(std::string const &conf, char const *key) :
 
   if(!get_keyval (conf, "UpdateFrequency", update_freq, 0))
     cvm::fatal_error("Error: must set updateFrequency for apadtive linear bias.\n");
-  
+
   //we split the time between updating and equilibrating
   update_freq /= 2;
 
@@ -69,16 +69,16 @@ colvarbias_alb::colvarbias_alb(std::string const &conf, char const *key) :
   if(!get_keyval (conf, "forceConstant", set_coupling, set_coupling))
     for(size_t i =0 ; i < colvars.size(); i++)
       set_coupling[i] = 0.;
-  
+
   //how we're going to increase to that point
   for(size_t i = 0; i < colvars.size(); i++)
     coupling_rate[i] = (set_coupling[i] - current_coupling[i]) / update_freq;
-  
+
 
   if(!get_keyval (conf, "forceRange", max_coupling_range, max_coupling_range)) {
     //set to default
     for(size_t i = 0; i < colvars.size(); i++) {
-      if(cvm::temperature() > 0) 
+      if(cvm::temperature() > 0)
 	max_coupling_range[i] =   3 * cvm::temperature() * cvm::boltzmann();
       else
 	max_coupling_range[i] =   3 * cvm::boltzmann();
@@ -101,10 +101,10 @@ colvarbias_alb::colvarbias_alb(std::string const &conf, char const *key) :
 }
 
 colvarbias_alb::~colvarbias_alb() {
-  
+
   if (cvm::n_rest_biases > 0)
     cvm::n_rest_biases -= 1;
-  
+
 }
 
 cvm::real colvarbias_alb::update() {
@@ -115,9 +115,9 @@ cvm::real colvarbias_alb::update() {
   if (cvm::debug())
     cvm::log ("Updating the adaptive linear bias \""+this->name+"\".\n");
 
-  
 
-  
+
+
   //log the moments of the CVs
   // Force and energy calculation
   bool finished_equil_flag = 1;
@@ -130,7 +130,7 @@ cvm::real colvarbias_alb::update() {
 				       colvars[i],
 				       colvar_centers[i]);
 
-    if(!b_equilibration) {      
+    if(!b_equilibration) {
       //Welford, West, and Hanso online variance method
 
       delta = static_cast<cvm::real>(colvars[i]->value())  - means[i];
@@ -146,44 +146,44 @@ cvm::real colvarbias_alb::update() {
 	current_coupling[i] += coupling_rate[i];
 	finished_equil_flag = 0;
       }
-     
+
 
       //update max_coupling_range
       if(!b_hard_coupling_range && fabs(current_coupling[i]) > max_coupling_range[i]) {
 	std::ostringstream logStream;
 	logStream << "Coupling constant for "
 		  << colvars[i]->name
-		  << " has exceeded coupling range of " 
-		  << max_coupling_range[i] 
+		  << " has exceeded coupling range of "
+		  << max_coupling_range[i]
 		  << ".\n";
 
 	max_coupling_range[i] *= 1.25;
 	logStream << "Expanding coupling range to "  << max_coupling_range[i] << ".\n";
-	cvm::log(logStream.str());	
+	cvm::log(logStream.str());
       }
-	
-	
+
+
     }
   }
-  
+
   if(b_equilibration && finished_equil_flag) {
     b_equilibration = false;
     update_calls = 0;
   }
-  
+
 
   //now we update coupling constant, if necessary
   if(!b_equilibration && update_calls == update_freq) {
-    
+
     //use estimated variance to take a step
     cvm::real step_size = 0;
     cvm::real temp;
 
     //reset means and sum of squares of differences
     for(size_t i = 0; i < colvars.size(); i++) {
-      
+
       temp = 2. * (means[i] / (static_cast<cvm::real> (colvar_centers[i])) - 1) * ssd[i] / (update_calls - 1);
-      
+
       if(cvm::temperature() > 0)
 	step_size = temp / (cvm::temperature()  * cvm::boltzmann());
       else
@@ -205,8 +205,8 @@ cvm::real colvarbias_alb::update() {
       }
 
     }
-    
-    update_calls = 0;      
+
+    update_calls = 0;
     b_equilibration = true;
 
   }
@@ -283,7 +283,7 @@ std::istream & colvarbias_alb::read_restart (std::istream &is)
                       cvm::to_str (is.tellg())+" in the restart file.\n");
     is.setstate (std::ios::failbit);
   }
-  
+
   return is;
 }
 
@@ -397,7 +397,7 @@ std::ostream & colvarbias_alb::write_traj (std::ostream &os)
          << colvar_centers[i];
     }
 
-  if(b_output_grad) 
+  if(b_output_grad)
     for(size_t i = 0; i < means.size(); i++) {
       os << " "
 	 << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width)
@@ -409,17 +409,17 @@ std::ostream & colvarbias_alb::write_traj (std::ostream &os)
 }
 
 
-cvm::real colvarbias_alb::restraint_potential(cvm::real k,  const colvar* x,  const colvarvalue &xcenter) const 
+cvm::real colvarbias_alb::restraint_potential(cvm::real k,  const colvar* x,  const colvarvalue &xcenter) const
 {
   return k * (x->value() - xcenter);
 }
 
-colvarvalue colvarbias_alb::restraint_force(cvm::real k,  const colvar* x,  const colvarvalue &xcenter) const 
+colvarvalue colvarbias_alb::restraint_force(cvm::real k,  const colvar* x,  const colvarvalue &xcenter) const
 {
   return k;
 }
 
-cvm::real colvarbias_alb::restraint_convert_k(cvm::real k, cvm::real dist_measure) const 
+cvm::real colvarbias_alb::restraint_convert_k(cvm::real k, cvm::real dist_measure) const
 {
   return k / dist_measure;
 }
