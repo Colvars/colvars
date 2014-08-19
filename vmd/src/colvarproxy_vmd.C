@@ -144,16 +144,16 @@ void colvarproxy_vmd::fatal_error (std::string const &message)
   log (message);
   if (!cvm::debug())
     log ("If this error message is unclear, "
-         "try recompiling the colvars plugin with -DCOLVARS_DEBUG.\n");
-  if (script) {
-    script->proxy_error = COLVARSCRIPT_ERROR;
-  } else {
+         "try recompiling VMD with -DCOLVARS_DEBUG.\n");
+  // if (script) {
+  //   script->proxy_error = COLVARSCRIPT_ERROR;
+  // } else {
     if (colvars != NULL) {
       delete colvars;
       colvars = NULL;
     }
     vmd->VMDexit ("Fatal collective variables error, exiting.\n", 1, 2);
-  }
+  // }
 }
 
 void colvarproxy_vmd::exit (std::string const &message)
@@ -239,8 +239,11 @@ void colvarproxy_vmd::load_coords (char const *pdb_filename,
 
   FileSpec *tmpspec = new FileSpec();
   int tmpmolid = vmd->molecule_load (-1, pdb_filename, "pdb", tmpspec);
-  DrawMolecule *tmpmol = vmd->moleculeList->mol_from_id (tmpmolid);
   delete tmpspec;
+  if (tmpmolid < 0) {
+    cvm::fatal_error ("Error: VMD could not read file \""+std::string (pdb_filename)+"\".\n");
+  }
+  DrawMolecule *tmpmol = vmd->moleculeList->mol_from_id (tmpmolid);
 
   vmd->molecule_make_top (vmdmolid);
   size_t const pdb_natoms = tmpmol->nAtoms;
@@ -344,8 +347,11 @@ void colvarproxy_vmd::load_atoms (char const *pdb_filename,
 
   FileSpec *tmpspec = new FileSpec();
   int tmpmolid = vmd->molecule_load (-1, pdb_filename, "pdb", tmpspec);
-  DrawMolecule *tmpmol = vmd->moleculeList->mol_from_id (tmpmolid);
   delete tmpspec;
+  if (tmpmolid < 0) {
+    cvm::fatal_error ("Error: VMD could not read file \""+std::string (pdb_filename)+"\".\n");
+  }
+  DrawMolecule *tmpmol = vmd->moleculeList->mol_from_id (tmpmolid);
   vmd->molecule_make_top (vmdmolid);
   size_t const pdb_natoms = tmpmol->nAtoms;
 
