@@ -202,8 +202,8 @@ $config_liboptix       = 0;  # Built-in OptiX ray tracing support
 $config_libtachyon     = 0;  # Built-in Tachyon ray tracing support 
 $config_vrpn           = 0;  # VRPN tracker/wand/haptic support
 $config_netcdf         = 0;  # NetCDF support
-$config_contrib        = 0;  # VMD Contributed code, off by default
 $config_colvars        = 0;  # Collective Variables module
+$config_contrib        = 0;  # VMD Contributed code, off by default
 
 $config_silent         = 0;  # noisy makefiles (can't turn this off, only on...)
 $config_system         = 1;  # this is always on 
@@ -263,8 +263,8 @@ foreach $term (@ARGV) {
     if ($term eq "LIBTACHYON")      { $config_libtachyon     = 1; next; }
     if ($term eq "VRPN")            { $config_vrpn           = 1; next; }
     if ($term eq "NETCDF")          { $config_netcdf         = 1; next; }
-    if ($term eq "CONTRIB")         { $config_contrib        = 1; next; }
     if ($term eq "COLVARS")         { $config_colvars        = 1; next; }
+    if ($term eq "CONTRIB")         { $config_contrib        = 1; next; }
     if ($term eq "TCL")             { $config_tcl            = 1; next; }
     if ($term eq "PYTHON")          { $config_python         = 1; next; }
     if ($term eq "PTHREADS")        { $config_pthreads       = 1; next; }
@@ -324,8 +324,8 @@ if ($config_liboptix)        { $config_string .= " LIBOPTIX"        }
 if ($config_libtachyon)      { $config_string .= " LIBTACHYON"      }
 if ($config_vrpn)            { $config_string .= " VRPN"            }
 if ($config_netcdf)          { $config_string .= " NETCDF"          }
-if ($config_contrib)         { $config_string .= " CONTRIB"         }
 if ($config_colvars)         { $config_string .= " COLVARS"         }
+if ($config_contrib)         { $config_string .= " CONTRIB"         }
 if ($config_tcl)             { $config_string .= " TCL"             }
 if ($config_python)          { $config_string .= " PYTHON"          }
 if ($config_pthreads)        { $config_string .= " PTHREADS"        }
@@ -381,7 +381,7 @@ $def_title="ON";
 $def_imageviewer="display %s";
 
 # program version number
-$progversion="1.9.2a41";
+$progversion="1.9.2a42";
 
 # text prompt string
 $promptstring="vmd > ";
@@ -741,48 +741,54 @@ if ($config_tkcon) {
   push (@tk_h,  'vmdconsole.h');
 }
 
+
 ################ COLVARS
 # OPTIONAL COMPONENT: Collective variables (colvars) module
 # This allows VMD to execute functions from the colvars module
 # http://colvars.github.io/
-if ($config_colvars && !$config_tcl) {
-  die "Error, COLVARS option requires Tcl\n";
-}
 if ($config_colvars) {
-  $tcl_defines .= " -DVMDCOLVARS";
-  push (@tcl_ccpp, 'colvar.C');
-  push (@tcl_ccpp, 'colvaratoms.C');
-  push (@tcl_ccpp, 'colvarbias.C');
-  push (@tcl_ccpp, 'colvarbias_abf.C');
-  push (@tcl_ccpp, 'colvarbias_meta.C');
-  push (@tcl_ccpp, 'colvarcomp.C');
-  push (@tcl_ccpp, 'colvarcomp_angles.C');
-  push (@tcl_ccpp, 'colvarcomp_coordnums.C');
-  push (@tcl_ccpp, 'colvarcomp_distances.C');
-  push (@tcl_ccpp, 'colvarcomp_protein.C');
-  push (@tcl_ccpp, 'colvarcomp_rotations.C');
-  push (@tcl_ccpp, 'colvargrid.C');
-  push (@tcl_ccpp, 'colvarmodule.C');
-  push (@tcl_ccpp, 'colvarparse.C');
-  push (@tcl_ccpp, 'colvarproxy_vmd.C');
-  push (@tcl_ccpp, 'colvarvalue.C');
-  push (@tcl_ccpp, 'colvarscript.C');
+  if (!$config_tcl) {
+    die "Error, COLVARS option requires Tcl\n";
+  }
 
-  push (@tcl_h, 'colvar.h');
-  push (@tcl_h, 'colvaratoms.h');
-  push (@tcl_h, 'colvarbias.h');
-  push (@tcl_h, 'colvarbias_abf.h');
-  push (@tcl_h, 'colvarbias_meta.h');
-  push (@tcl_h, 'colvarcomp.h');
-  push (@tcl_h, 'colvargrid.h');
-  push (@tcl_h, 'colvarparse.h');
-  push (@tcl_h, 'colvarproxy_vmd.h');
-  push (@tcl_h, 'colvarmodule.h');
-  push (@tcl_h, 'colvarproxy.h');
-  push (@tcl_h, 'colvarscript.h');
-  push (@tcl_h, 'colvartypes.h');
-  push (@tcl_h, 'colvarvalue.h');
+  $colvars_defines = " -DVMDCOLVARS";
+  @colvars_cc      = ();
+  @colvars_cu      = ();
+  @colvars_ccpp    = ('colvaratoms.C',
+                      'colvarbias_abf.C',
+                      'colvarbias_alb.C',
+                      'colvarbias.C',
+                      'colvarbias_meta.C',
+                      'colvar.C',
+                      'colvarcomp_angles.C',
+                      'colvarcomp.C',
+                      'colvarcomp_coordnums.C',
+                      'colvarcomp_distances.C',
+                      'colvarcomp_protein.C',
+                      'colvarcomp_rotations.C',
+                      'colvargrid.C',
+                      'colvarmodule.C',
+                      'colvarparse.C',
+                      'colvarproxy_vmd.C',
+                      'colvarscript.C',
+                      'colvarvalue.C');
+  @colvars_h    =    ('colvaratoms.h',
+                      'colvarbias_abf.h',
+                      'colvarbias_alb.h',
+                      'colvarbias.h',
+                      'colvarbias_meta.h',
+                      'colvarcomp.h',
+                      'colvargrid.h',
+                      'colvar.h',
+                      'colvarmodule.h',
+                      'colvarparse.h',
+                      'colvarproxy.h',
+                      'colvarproxy_vmd.h',
+                      'colvarscript.h',
+                      'colvartypes.h',
+                      'colvarvalue.h');
 }
+
 
 ################ IMD
 # OPTIONAL COMPONENT: Interactive Molecular Dynamics support
@@ -819,6 +825,7 @@ if ($config_pthreads) {
 	               'CmdIMD.h'
                       ); 
 }
+
 
 #######################
 # OPTIONAL COMPONENT: NVIDIA CUDA GPU acceleration API
@@ -908,11 +915,16 @@ $libgelato_libs        = "-lgelato";
 # OPTIONAL COMPONENT: Built-in NVIDIA OptiX rendering support 
 # This may be commented out if not required.
 $liboptix_defines     = "-DVMDLIBOPTIX";
+# Standard builds
 $liboptix_dir         = "/usr/local/encap/NVIDIA-OptiX-SDK-3.0.1-linux64";
 # $liboptix_dir         = "/usr/local/encap/NVIDIA-OptiX-SDK-3.5.0-linux64";
 # $liboptix_dir         = "/usr/local/encap/NVIDIA-OptiX-SDK-3.5.1-PRO-linux64";
+# NCSA Blue Waters
 # $liboptix_dir         = "/u/sciteam/stonej/local/NVIDIA-OptiX-SDK-3.5.0-linux64";
 # $liboptix_dir         = "/u/sciteam/stonej/local/NVIDIA-OptiX-SDK-3.5.1-PRO-linux64";
+# CSCS Piz Daint
+# $liboptix_dir         = "/users/stonej/local/NVIDIA-OptiX-SDK-3.5.1-PRO-linux64";
+# IU Big Red 2
 # $liboptix_dir         = "/N/u/johstone/BigRed2/local/NVIDIA-OptiX-SDK-3.0.1-linux64";
 # $liboptix_dir         = "/N/u/johstone/BigRed2/local/NVIDIA-OptiX-SDK-3.5.0-linux64";
 $liboptix_include     = "-I$liboptix_dir/include -I$cuda_dir/include";
@@ -1219,7 +1231,7 @@ $stock_numpy_library_dir=$ENV{"NUMPY_LIBRARY_DIR"} || "$vmd_library_dir/python/l
 $python_defines     = "-DVMDPYTHON";
 $python_include     = "-I$stock_python_include_dir -I$stock_numpy_include_dir -I$stock_numpy_library_dir";
 $python_library     = "-L$stock_python_library_dir";
-$python_libs        = "-lpython2.7 -lpthread";
+$python_libs        = "-lpython2.5 -lpthread";
 @python_h           = ('PythonTextInterp.h',
                        'VMDTkinterMenu.h',
 		       'py_commands.h',
@@ -1817,10 +1829,9 @@ if ($config_arch eq "BLUEWATERS") {
   }
 
   # The OptiX toolkit version has to be compatible with the CUDA libs
-  # installed on the machine...  We currently use OptiX 3.0.1 built against
-  # CUDA 5.0.
+  # installed on the machine...  We currently use OptiX 3.5.1 built against
+  # CUDA 5.5.
   if ($config_liboptix) {
-    $liboptix_dir         = "/u/sciteam/stonej/local/NVIDIA-OptiX-SDK-3.0.1-linux64";
     $liboptix_include     = "-I$liboptix_dir/include -I$cuda_dir/include";
     $liboptix_library     = "-L$liboptix_dir/lib64";
   }
@@ -3053,11 +3064,11 @@ $if_statements .= &create_config_option('cave');
 $if_statements .= &create_config_option('freevr');
 
 $if_statements .= &create_config_option('actc');
+$if_statements .= &create_config_option('colvars');
 $if_statements .= &create_config_option('cuda');
 $if_statements .= &create_config_option('opencl');
 $if_statements .= &create_config_option('mpi');
 $if_statements .= &create_config_option('imd');
-$if_statements .= &create_config_option('colvars');
 $if_statements .= &create_config_option('libsball');
 $if_statements .= &create_config_option('xinerama');
 $if_statements .= &create_config_option('xinput');
