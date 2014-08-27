@@ -52,7 +52,7 @@ colvarbias_alb::colvarbias_alb(std::string const &conf, char const *key) :
                       "that of collective variables.\n");
 
   if(!get_keyval (conf, "UpdateFrequency", update_freq, 0))
-    cvm::fatal_error("Error: must set updateFrequency for apadtive linear bias.\n");
+    cvm::fatal_error("Error: must set updateFrequency for adaptive linear bias.\n");
 
   //we split the time between updating and equilibrating
   update_freq /= 2;
