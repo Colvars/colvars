@@ -381,7 +381,7 @@ $def_title="ON";
 $def_imageviewer="display %s";
 
 # program version number
-$progversion="1.9.2a42";
+$progversion="1.9.2beta1";
 
 # text prompt string
 $promptstring="vmd > ";
@@ -755,9 +755,9 @@ if ($config_colvars) {
   @colvars_cc      = ();
   @colvars_cu      = ();
   @colvars_ccpp    = ('colvaratoms.C',
+                      'colvarbias.C',
                       'colvarbias_abf.C',
                       'colvarbias_alb.C',
-                      'colvarbias.C',
                       'colvarbias_meta.C',
                       'colvar.C',
                       'colvarcomp_angles.C',
@@ -773,9 +773,9 @@ if ($config_colvars) {
                       'colvarscript.C',
                       'colvarvalue.C');
   @colvars_h    =    ('colvaratoms.h',
+                      'colvarbias.h',
                       'colvarbias_abf.h',
                       'colvarbias_alb.h',
-                      'colvarbias.h',
                       'colvarbias_meta.h',
                       'colvarcomp.h',
                       'colvargrid.h',
@@ -1249,11 +1249,13 @@ $python_libs        = "-lpython2.5 -lpthread";
 		       'py_imd.C',
 		       'py_label.C',
 		       'py_material.C',
+                       'py_measure.C',
                        'py_menu.C',
 		       'py_molecule.C',
 		       'py_molrep.C',
 	               'py_mouse.C',
 		       'py_render.C',
+		       'py_topo.C',
 		       'py_trans.C',
                        'py_vmd.C');
 
