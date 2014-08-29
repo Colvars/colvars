@@ -194,7 +194,7 @@ cvm::real colvarbias_alb::update() {
       ssd[i] = 0;
 
       //stochastic if we do that update or not
-      if(colvars.size() == 1 || rand() < RAND_MAX / colvars.size()) {
+      if(colvars.size() == 1 || rand() < RAND_MAX / ((int) colvars.size())) {
 	coupling_accum[i] += step_size * step_size;
 	current_coupling[i] = set_coupling[i];
 	set_coupling[i] += max_coupling_range[i] / sqrt(coupling_accum[i]) * step_size;

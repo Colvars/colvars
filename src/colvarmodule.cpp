@@ -983,7 +983,7 @@ void cvm::load_coords_xyz (char const *filename,
                            const std::vector<int> &indices)
 {
   std::ifstream xyz_is (filename);
-  int natoms;
+  unsigned int natoms;
   char symbol[256];
   std::string line;
 

@@ -226,7 +226,7 @@ protected:
   std::ofstream          replica_hills_os;
 
   /// Position within replica_hills_file (when reading it)
-  size_t                 replica_hills_file_pos;
+  int                    replica_hills_file_pos;
 
 };
 

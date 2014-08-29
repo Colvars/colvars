@@ -288,7 +288,7 @@ void colvarproxy_vmd::load_coords (char const *pdb_filename,
 
       } else {
         // Atom ID mode: use predefined atom IDs from the atom group
-        if (ipdb != *current_index) {
+        if (((int)ipdb) != *current_index) {
           // Skip atoms not in the list
           continue;
         } else {

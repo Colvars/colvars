@@ -473,13 +473,12 @@ void cvm::atom_group::center_ref_pos()
   // This is called either by atom_group::parse or by CVCs that set
   // reference positions (eg. RMSD, eigenvector)
   ref_pos_cog = cvm::atom_pos (0.0, 0.0, 0.0);
-  std::vector<cvm::atom_pos>::iterator pi = ref_pos.begin();
-  for ( ; pi != ref_pos.end(); pi++) {
+  std::vector<cvm::atom_pos>::iterator pi;
+  for (pi = ref_pos.begin(); pi != ref_pos.end(); pi++) {
     ref_pos_cog += *pi;
   }
   ref_pos_cog /= (cvm::real) ref_pos.size();
-  for (std::vector<cvm::atom_pos>::iterator pi = ref_pos.begin();
-       pi != ref_pos.end(); pi++) {
+  for (pi = ref_pos.begin(); pi != ref_pos.end(); pi++) {
     (*pi) -= ref_pos_cog;
   }
 }
