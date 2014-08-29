@@ -1,0 +1,69 @@
+colvars: ----------------------------------------------------------------------
+colvars: ----------------------------------------------------------------------
+colvars: Reading new configuration from file "test.in":
+colvars: # indexFile = "" [default]
+colvars: # analysis = off [default]
+colvars: # colvarsTrajFrequency = 1
+colvars: # colvarsRestartFrequency = 0
+colvars: # colvarsTrajAppend = off [default]
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = rmsd
+colvars:   Initializing a new "rmsd" component.
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:       Initializing atom group "atoms".
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID = { BH }
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # disableForces = off [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Atom group "atoms" defined, 10 atoms initialized: total mass = 400.78.
+colvars:     # refPositions =  [default]
+colvars:     # refPositionsFile = ../Common/da.pdb
+colvars:     # refPositionsCol = "" [default]
+colvars:     Enabling "centerReference" and "rotateReference", to minimize RMSD before calculating it as a variable: if this is not the desired behavior, disable them explicitly within the "atoms" block.
+colvars:   All components initialized.
+colvars:   # width = 0.01
+colvars:   # lowerBoundary = 0
+colvars:   # lowerWallConstant = 10
+colvars:   # lowerWall = 0 [default]
+colvars:   # upperBoundary = 0.1
+colvars:   # upperWallConstant = 10
+colvars:   # upperWall = 0.1 [default]
+colvars:   # hardLowerBoundary = on
+colvars:   # hardUpperBoundary = off [default]
+colvars:   # expandBoundaries = on
+colvars:   # extendedLagrangian = off [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputSystemForce = off [default]
+colvars:   # outputAppliedForce = on
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables initialized, 1 in total.
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new "harmonic" instance.
+colvars:   # name = "harmonic1" [default]
+colvars:   # colvars = { rmsd }
+colvars:   # outputEnergy = on
+colvars:   # forceConstant = 1 [default]
+colvars:   # centers = { 0 }
+colvars:   # targetCenters = { 0.2 }
+colvars:   # targetForceConstant = 0 [default]
+colvars:   # targetNumSteps = 20
+colvars:   # targetNumStages = 0 [default]
+colvars:   # targetForceExponent = 1 [default]
+colvars:   # outputCenters = on
+colvars:   # outputAccumulatedWork = on
+colvars:   The force constant for colvar "rmsd" will be rescaled to 10000 according to the specified width.
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables biases initialized, 1 in total.
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables module (re)initialized.
+colvars: ----------------------------------------------------------------------
