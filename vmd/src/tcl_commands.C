@@ -11,7 +11,7 @@
  *
  *      $RCSfile: tcl_commands.C,v $
  *      $Author: johns $        $Locker:  $             $State: Exp $
- *      $Revision: 1.42 $       $Date: 2014/03/18 21:28:53 $
+ *      $Revision: 1.45 $       $Date: 2014/08/21 21:53:17 $
  *
  ***************************************************************************
  * DESCRIPTION:
@@ -295,7 +295,7 @@ int Vmd_Init(Tcl_Interp *interp) {
 
   Tcl_CreateCommand(interp, "parallel", text_cmd_parallel,
         (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
-  
+
   return TCL_OK;
 }
 

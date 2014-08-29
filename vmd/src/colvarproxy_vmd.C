@@ -148,11 +148,11 @@ void colvarproxy_vmd::fatal_error (std::string const &message)
   // if (script) {
   //   script->proxy_error = COLVARSCRIPT_ERROR;
   // } else {
-    if (colvars != NULL) {
-      delete colvars;
-      colvars = NULL;
-    }
-    vmd->VMDexit ("Fatal collective variables error, exiting.\n", 1, 2);
+  if (colvars != NULL) {
+    delete colvars;
+    colvars = NULL;
+  }
+  vmd->VMDexit ("Fatal collective variables error, exiting.\n", 1, 2);
   // }
 }
 
@@ -347,11 +347,8 @@ void colvarproxy_vmd::load_atoms (char const *pdb_filename,
 
   FileSpec *tmpspec = new FileSpec();
   int tmpmolid = vmd->molecule_load (-1, pdb_filename, "pdb", tmpspec);
-  delete tmpspec;
-  if (tmpmolid < 0) {
-    cvm::fatal_error ("Error: VMD could not read file \""+std::string (pdb_filename)+"\".\n");
-  }
   DrawMolecule *tmpmol = vmd->moleculeList->mol_from_id (tmpmolid);
+  delete tmpspec;
   vmd->molecule_make_top (vmdmolid);
   size_t const pdb_natoms = tmpmol->nAtoms;
 

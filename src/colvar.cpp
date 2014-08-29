@@ -13,6 +13,7 @@
 
 colvar::colvar (std::string const &conf)
 {
+  size_t i;
   cvm::log ("Initializing a new collective variable.\n");
 
   get_keyval (conf, "name", this->name,
@@ -24,7 +25,7 @@ colvar::colvar (std::string const &conf)
   }
 
   // all tasks disabled by default
-  for (size_t i = 0; i < task_ntot; i++) {
+  for (i = 0; i < task_ntot; i++) {
     tasks[i] = false;
   }
 
@@ -162,7 +163,7 @@ colvar::colvar (std::string const &conf)
   }
 
   // check the available features of each cvc
-  for (size_t i = 0; i < cvcs.size(); i++) {
+  for (i = 0; i < cvcs.size(); i++) {
 
     if ((cvcs[i])->b_debug_gradients)
       enable (task_gradients);
@@ -411,7 +412,15 @@ void colvar::build_atom_list (void)
 
   temp_id_list.sort();
   temp_id_list.unique();
-  atom_ids = std::vector<int> (temp_id_list.begin(), temp_id_list.end());
+
+  // atom_ids = std::vector<int> (temp_id_list.begin(), temp_id_list.end());
+  unsigned int id_i = 0;
+  std::list<int>::iterator li;
+  for (li = temp_id_list.begin(); li != temp_id_list.end(); li++) {
+    atom_ids[id_i] = *li;
+    id_i++;
+  }
+
   temp_id_list.clear();
 
   atomic_gradients.resize (atom_ids.size());
@@ -805,7 +814,7 @@ void colvar::calc()
 
     if (tasks[task_collect_gradients]) {
       // Collect the atomic gradients inside colvar object
-      for (int a = 0; a < atomic_gradients.size(); a++) {
+      for (unsigned int a = 0; a < atomic_gradients.size(); a++) {
         atomic_gradients[a].reset();
       }
       for (size_t i = 0; i < cvcs.size(); i++) {
@@ -960,15 +969,15 @@ cvm::real colvar::update()
   }
 
   if (tasks[task_Jacobian_force]) {
-
+    size_t i;
     cvm::increase_depth();
-    for (size_t i = 0; i < cvcs.size(); i++) {
+    for (i = 0; i < cvcs.size(); i++) {
       (cvcs[i])->calc_Jacobian_derivative();
     }
     cvm::decrease_depth();
 
     fj.reset();
-    for (size_t i = 0; i < cvcs.size(); i++) {
+    for (i = 0; i < cvcs.size(); i++) {
       // linear combination is assumed
       fj += 1.0 / ( cvm::real (cvcs.size()) *  cvm::real ((cvcs[i])->sup_coeff) ) *
         (cvcs[i])->Jacobian_derivative();
@@ -1473,11 +1482,12 @@ void colvar::calc_acf()
     if (acf.size() < acf_length+1)
       acf.resize (acf_length+1, 0.0);
 
+    size_t i;
     switch (acf_type) {
 
     case acf_vel:
       // allocate space for the velocities history
-      for (size_t i = 0; i < acf_stride; i++) {
+      for (i = 0; i < acf_stride; i++) {
         acf_v_history.push_back (std::list<colvarvalue>());
       }
       acf_v_history_p = acf_v_history.begin();
@@ -1486,7 +1496,7 @@ void colvar::calc_acf()
     case acf_coor:
     case acf_p2coor:
       // allocate space for the coordinates history
-      for (size_t i = 0; i < acf_stride; i++) {
+      for (i = 0; i < acf_stride; i++) {
         acf_x_history.push_back (std::list<colvarvalue>());
       }
       acf_x_history_p = acf_x_history.begin();
@@ -1664,7 +1674,8 @@ void colvar::calc_runave()
       if ((*x_history_p).size() >= runave_length-1) {
 
         runave = x;
-        for (std::list<colvarvalue>::iterator xs_i = (*x_history_p).begin();
+        std::list<colvarvalue>::iterator xs_i;
+        for (xs_i = (*x_history_p).begin();
              xs_i != (*x_history_p).end(); xs_i++) {
           runave += (*xs_i);
         }
@@ -1673,7 +1684,7 @@ void colvar::calc_runave()
 
         runave_variance = 0.0;
         runave_variance += this->dist2 (x, runave);
-        for (std::list<colvarvalue>::iterator xs_i = (*x_history_p).begin();
+        for (xs_i = (*x_history_p).begin();
              xs_i != (*x_history_p).end(); xs_i++) {
           runave_variance += this->dist2 (x, (*xs_i));
         }

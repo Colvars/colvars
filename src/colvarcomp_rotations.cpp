@@ -59,11 +59,12 @@ colvar::orientation::orientation (std::string const &conf)
             "assumed that each atom is the closest "
             "periodic image to the center of geometry.\n");
   cvm::rvector cog (0.0, 0.0, 0.0);
-  for (size_t i = 0; i < ref_pos.size(); i++) {
+  size_t i;
+  for (i = 0; i < ref_pos.size(); i++) {
     cog += ref_pos[i];
   }
   cog /= cvm::real (ref_pos.size());
-  for (size_t i = 0; i < ref_pos.size(); i++) {
+  for (i = 0; i < ref_pos.size(); i++) {
     ref_pos[i] -= cog;
   }
 

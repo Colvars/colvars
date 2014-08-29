@@ -362,6 +362,9 @@ void colvarmodule::calc() {
   cvm::real total_bias_energy = 0.0;
   cvm::real total_colvar_energy = 0.0;
 
+  std::vector<colvar *>::iterator cvi;
+  std::vector<colvarbias *>::iterator bi;
+
   if (cvm::debug()) {
     cvm::log (cvm::line_marker);
     cvm::log ("Collective variables module, step no. "+
@@ -372,9 +375,7 @@ void colvarmodule::calc() {
   if (cvm::debug())
     cvm::log ("Calculating collective variables.\n");
   cvm::increase_depth();
-  for (std::vector<colvar *>::iterator cvi = colvars.begin();
-       cvi != colvars.end();
-       cvi++) {
+  for (cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
     (*cvi)->calc();
   }
   cvm::decrease_depth();
@@ -384,9 +385,7 @@ void colvarmodule::calc() {
   if (cvm::debug() && biases.size())
     cvm::log ("Updating collective variable biases.\n");
   cvm::increase_depth();
-  for (std::vector<colvarbias *>::iterator bi = biases.begin();
-       bi != biases.end();
-       bi++) {
+  for (bi = biases.begin(); bi != biases.end(); bi++) {
     total_bias_energy += (*bi)->update();
   }
   cvm::decrease_depth();
@@ -395,14 +394,10 @@ void colvarmodule::calc() {
   if (cvm::debug() && biases.size())
     cvm::log ("Collecting forces from all biases.\n");
   cvm::increase_depth();
-  for (std::vector<colvar *>::iterator cvi = colvars.begin();
-       cvi != colvars.end();
-       cvi++) {
+  for (cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
     (*cvi)->reset_bias_force();
   }
-  for (std::vector<colvarbias *>::iterator bi = biases.begin();
-       bi != biases.end();
-       bi++) {
+  for (bi = biases.begin(); bi != biases.end(); bi++) {
     (*bi)->communicate_forces();
   }
   cvm::decrease_depth();
@@ -412,14 +407,10 @@ void colvarmodule::calc() {
     if (cvm::debug() && biases.size())
       cvm::log ("Perform runtime analyses.\n");
     cvm::increase_depth();
-    for (std::vector<colvar *>::iterator cvi = colvars.begin();
-         cvi != colvars.end();
-         cvi++) {
+    for (cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
       (*cvi)->analyse();
     }
-    for (std::vector<colvarbias *>::iterator bi = biases.begin();
-         bi != biases.end();
-         bi++) {
+    for (bi = biases.begin(); bi != biases.end(); bi++) {
       (*bi)->analyse();
     }
     cvm::decrease_depth();
@@ -431,9 +422,7 @@ void colvarmodule::calc() {
     cvm::log ("Updating the internal degrees of freedom "
               "of colvars (if they have any).\n");
   cvm::increase_depth();
-  for (std::vector<colvar *>::iterator cvi = colvars.begin();
-       cvi != colvars.end();
-       cvi++) {
+  for (cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
     total_colvar_energy += (*cvi)->update();
   }
   cvm::decrease_depth();
@@ -444,9 +433,7 @@ void colvarmodule::calc() {
   if (cvm::debug())
     cvm::log ("Communicating forces from the colvars to the atoms.\n");
   cvm::increase_depth();
-  for (std::vector<colvar *>::iterator cvi = colvars.begin();
-       cvi != colvars.end();
-       cvi++) {
+  for (cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
     if ((*cvi)->tasks[colvar::task_gradients])
       (*cvi)->communicate_forces();
   }
@@ -1314,9 +1301,10 @@ void colvarmodule::rotation::diagonalize_matrix (matrix2d<cvm::real, 4, 4> &S,
   // normalize eigenvectors
   for (size_t ie = 0; ie < 4; ie++) {
     cvm::real norm2 = 0.0;
-    for (size_t i = 0; i < 4; i++) norm2 += std::pow (S_eigvec[ie][i], int (2));
+    size_t i;
+    for (i = 0; i < 4; i++) norm2 += std::pow (S_eigvec[ie][i], int (2));
     cvm::real const norm = std::sqrt (norm2);
-    for (size_t i = 0; i < 4; i++) S_eigvec[ie][i] /= norm;
+    for (i = 0; i < 4; i++) S_eigvec[ie][i] /= norm;
   }
 }
 
@@ -1405,7 +1393,8 @@ void colvarmodule::rotation::calc_optimal_rotation
   // calculate derivatives of L0 and Q0 with respect to each atom in
   // either group; note: if dS_1 is a null vector, nothing will be
   // calculated
-  for (size_t ia = 0; ia < dS_1.size(); ia++) {
+  size_t ia;
+  for (ia = 0; ia < dS_1.size(); ia++) {
 
     cvm::real const &a2x = pos2[ia].x;
     cvm::real const &a2y = pos2[ia].y;
@@ -1460,7 +1449,7 @@ void colvarmodule::rotation::calc_optimal_rotation
   }
 
   // do the same for the second group
-  for (size_t ia = 0; ia < dS_2.size(); ia++) {
+  for (ia = 0; ia < dS_2.size(); ia++) {
 
     cvm::real const &a1x = pos1[ia].x;
     cvm::real const &a1y = pos1[ia].y;

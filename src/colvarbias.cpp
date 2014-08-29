@@ -265,16 +265,17 @@ cvm::real colvarbias_restraint::energy_difference (std::string const &conf)
   get_keyval (conf, "forceConstant", alt_force_k, force_k);
 
   alt_colvar_centers.resize (colvars.size());
-  for (size_t i = 0; i < colvars.size(); i++) {
+  size_t i;
+  for (i = 0; i < colvars.size(); i++) {
     alt_colvar_centers[i].type (colvars[i]->type());
   }
   if (get_keyval (conf, "centers", alt_colvar_centers, colvar_centers)) {
-    for (size_t i = 0; i < colvars.size(); i++) {
+    for (i = 0; i < colvars.size(); i++) {
       colvar_centers[i].apply_constraints();
     }
   }
 
-  for (size_t i = 0; i < colvars.size(); i++) {
+  for (i = 0; i < colvars.size(); i++) {
     alt_bias_energy += restraint_potential(restraint_convert_k(alt_force_k, colvars[i]->width), 
 					   colvars[i], 
 					   alt_colvar_centers[i]);
@@ -423,9 +424,9 @@ cvm::real colvarbias_restraint::update()
 
   // Force and energy calculation
   for (size_t i = 0; i < colvars.size(); i++) {
-    colvar_forces[i] = -restraint_force(restraint_convert_k(force_k, colvars[i]->width),
-					colvars[i],
-					colvar_centers[i]);
+    colvar_forces[i] = -1.0 * restraint_force(restraint_convert_k(force_k, colvars[i]->width),
+                                              colvars[i],
+                                              colvar_centers[i]);
     bias_energy += restraint_potential(restraint_convert_k(force_k, colvars[i]->width),
 				       colvars[i],
 				       colvar_centers[i]);
@@ -532,13 +533,14 @@ std::ostream & colvarbias_restraint::write_restart (std::ostream &os)
      << "    name " << this->name << "\n";
 
   if (b_chg_centers) {
+    size_t i;
     os << "    centers ";
-    for (size_t i = 0; i < colvars.size(); i++) {
+    for (i = 0; i < colvars.size(); i++) {
       os << " " << colvar_centers[i];
     }
     os << "\n";
     os << "    centers_raw ";
-    for (size_t i = 0; i < colvars.size(); i++) {
+    for (i = 0; i < colvars.size(); i++) {
       os << " " << colvar_centers_raw[i];
     }
     os << "\n";

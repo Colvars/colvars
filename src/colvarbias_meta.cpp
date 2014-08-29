@@ -66,7 +66,8 @@ colvarbias_meta::colvarbias_meta (std::string const &conf, char const *key)
     get_keyval (conf, "rebinGrids", rebin_grids, false);
 
     expand_grids = false;
-    for (size_t i = 0; i < colvars.size(); i++) {
+    size_t i;
+    for (i = 0; i < colvars.size(); i++) {
       if (colvars[i]->expand_boundaries) {
         expand_grids = true;
         cvm::log ("Metadynamics bias \""+this->name+"\""+
@@ -81,7 +82,7 @@ colvarbias_meta::colvarbias_meta (std::string const &conf, char const *key)
       get_keyval (conf, "dumpFreeEnergyFile", dump_fes, true, colvarparse::parse_silent);
     get_keyval (conf, "saveFreeEnergyFile", dump_fes_save, false);
 
-    for (size_t i = 0; i < colvars.size(); i++) {
+    for (i = 0; i < colvars.size(); i++) {
       colvars[i]->enable (colvar::task_grid);
     }
 
@@ -682,10 +683,11 @@ void colvarbias_meta::calc_hills_force (size_t const &i,
   // were already saved with their types matching those in the
   // colvars)
 
+  hill_iter h;
   switch (colvars[i]->type()) {
 
   case colvarvalue::type_scalar:
-    for (hill_iter h = h_first; h != h_last; h++) {
+    for (h = h_first; h != h_last; h++) {
       if (h->value() == 0.0) continue;
       colvarvalue const &center = h->centers[i];
       cvm::real const    half_width = 0.5 * h->widths[i];
@@ -697,7 +699,7 @@ void colvarbias_meta::calc_hills_force (size_t const &i,
 
   case colvarvalue::type_vector:
   case colvarvalue::type_unitvector:
-    for (hill_iter h = h_first; h != h_last; h++) {
+    for (h = h_first; h != h_last; h++) {
       if (h->value() == 0.0) continue;
       colvarvalue const &center = h->centers[i];
       cvm::real const    half_width = 0.5 * h->widths[i];
@@ -708,7 +710,7 @@ void colvarbias_meta::calc_hills_force (size_t const &i,
     break;
 
   case colvarvalue::type_quaternion:
-    for (hill_iter h = h_first; h != h_last; h++) {
+    for (h = h_first; h != h_last; h++) {
       if (h->value() == 0.0) continue;
       colvarvalue const &center = h->centers[i];
       cvm::real const    half_width = 0.5 * h->widths[i];
@@ -758,8 +760,8 @@ void colvarbias_meta::project_hills (colvarbias_meta::hill_iter  h_first,
     for ( ;
           (he->index_ok (he_ix)) && (hg->index_ok (hg_ix));
           count++) {
-
-      for (size_t i = 0; i < colvars.size(); i++) {
+      size_t i;
+      for (i = 0; i < colvars.size(); i++) {
         colvar_values[i] = hills_energy->bin_to_value_scalar (he_ix[i], i);
       }
 
@@ -768,7 +770,7 @@ void colvarbias_meta::project_hills (colvarbias_meta::hill_iter  h_first,
       calc_hills (h_first, h_last, hills_energy_here, colvar_values);
       he->acc_value (he_ix, hills_energy_here);
 
-      for (size_t i = 0; i < colvars.size(); i++) {
+      for (i = 0; i < colvars.size(); i++) {
         hills_forces_here[i].reset();
         calc_hills_force (i, h_first, h_last, hills_forces_here, colvar_values);
         colvar_forces_scalar[i] = hills_forces_here[i].real_value;
@@ -1658,15 +1660,16 @@ std::string colvarbias_meta::hill::output_traj()
 
   os.setf (std::ios::scientific, std::ios::floatfield);
 
+  size_t i;
   os << "  ";
-  for (size_t i = 0; i < centers.size(); i++) {
+  for (i = 0; i < centers.size(); i++) {
     os << " ";
     os << std::setprecision (cvm::cv_prec)
        << std::setw (cvm::cv_width)  << centers[i];
   }
 
   os << "  ";
-  for (size_t i = 0; i < widths.size(); i++) {
+  for (i = 0; i < widths.size(); i++) {
     os << " ";
     os << std::setprecision (cvm::cv_prec)
        << std::setw (cvm::cv_width) << widths[i];
@@ -1694,8 +1697,9 @@ std::ostream & operator << (std::ostream &os, colvarbias_meta::hill const &h)
   if (h.replica.size())
     os << "  replicaID  " << h.replica << "\n";
 
+  size_t i;
   os << "  centers ";
-  for (size_t i = 0; i < (h.centers).size(); i++) {
+  for (i = 0; i < (h.centers).size(); i++) {
     os << " "
        << std::setprecision (cvm::cv_prec)
        << std::setw (cvm::cv_width)
@@ -1704,7 +1708,7 @@ std::ostream & operator << (std::ostream &os, colvarbias_meta::hill const &h)
   os << "\n";
 
   os << "  widths  ";
-  for (size_t i = 0; i < (h.widths).size(); i++) {
+  for (i = 0; i < (h.widths).size(); i++) {
     os << " "
        << std::setprecision (cvm::cv_prec)
        << std::setw (cvm::cv_width)

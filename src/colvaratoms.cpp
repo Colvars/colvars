@@ -443,7 +443,8 @@ void cvm::atom_group::create_sorted_ids (void)
     return;
 
   std::list<int> temp_id_list;
-  for (cvm::atom_iter ai = this->begin(); ai != this->end(); ai++) {
+  cvm::atom_iter ai;
+  for (ai = this->begin(); ai != this->end(); ai++) {
     temp_id_list.push_back (ai->id);
   }
   temp_id_list.sort();
@@ -454,7 +455,13 @@ void cvm::atom_group::create_sorted_ids (void)
                       " unique atom IDs instead of" +
                       cvm::to_str(this->size()) + ").\n");
   }
-  sorted_ids = std::vector<int> (temp_id_list.begin(), temp_id_list.end());
+  sorted_ids = std::vector<int> (temp_id_list.size());
+  unsigned int id_i = 0;
+  std::list<int>::iterator li;
+  for (li = temp_id_list.begin(); li != temp_id_list.end(); li++) {
+    sorted_ids[id_i] = *li;
+    id_i++;
+  }
   return;
 }
 

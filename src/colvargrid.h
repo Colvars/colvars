@@ -570,25 +570,26 @@ public:
   /// \brief Write the grid parameters (number of colvars, boundaries, width and number of points)
   std::ostream & write_params (std::ostream &os)
   {
+    size_t i;
     os << "grid_parameters {\n  n_colvars " << nd << "\n";
 
     os << "  lower_boundaries ";
-    for (size_t i = 0; i < nd; i++)
+    for (i = 0; i < nd; i++)
       os << " " << lower_boundaries[i];
     os << "\n";
 
     os << "  upper_boundaries ";
-    for (size_t i = 0; i < nd; i++)
+    for (i = 0; i < nd; i++)
       os << " " << upper_boundaries[i];
     os << "\n";
 
     os << "  widths ";
-    for (size_t i = 0; i < nd; i++)
+    for (i = 0; i < nd; i++)
       os << " " << widths[i];
     os << "\n";
 
     os << "  sizes ";
-    for (size_t i = 0; i < nd; i++)
+    for (i = 0; i < nd; i++)
       os << " " << nx[i];
     os << "\n";
 
@@ -982,7 +983,7 @@ public:
     cvm::real A0, A1;
     std::vector<int> ix;
     if (nd != 2) cvm::fatal_error ("Finite differences available in dimension 2 only.");
-    for (int n = 0; n < nd; n++) {
+    for (unsigned int n = 0; n < nd; n++) {
       ix = ix0;
       A0 = data[address (ix)];
       ix[n]++; wrap (ix);

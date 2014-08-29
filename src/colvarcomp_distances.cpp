@@ -1003,8 +1003,8 @@ colvar::eigenvector::eigenvector (std::string const &conf)
   }
 
   cvm::atom_pos eig_center (0.0, 0.0, 0.0);
-  for (size_t i = 0; i < atoms.size(); i++) {
-    eig_center += eigenvec[i];
+  for (size_t eil = 0; eil < atoms.size(); eil++) {
+    eig_center += eigenvec[eil];
   }
   eig_center *= 1.0 / atoms.size();
   cvm::log ("Geometric center of the provided vector: "+cvm::to_str (eig_center)+"\n");
@@ -1049,8 +1049,8 @@ colvar::eigenvector::eigenvector (std::string const &conf)
 
   // for inverse gradients
   eigenvec_invnorm2 = 0.0;
-  for (size_t i = 0; i < atoms.size(); i++) {
-    eigenvec_invnorm2 += eigenvec[i].norm2();
+  for (size_t ein = 0; ein < atoms.size(); ein++) {
+    eigenvec_invnorm2 += eigenvec[ein].norm2();
   }
   eigenvec_invnorm2 = 1.0 / eigenvec_invnorm2;
 
