@@ -31,9 +31,27 @@ int tcl_colvars (ClientData clientdata, Tcl_Interp *vmdtcl, int argc, const char
         return TCL_OK;
       }
     }
+    
+    // Clear non-fatal errors from previous commands
+    cvm::clear_error();
+    
     retval = proxy->script->run (argc, argv); 
     Tcl_SetResult (vmdtcl, (char *) proxy->script->result.c_str(), TCL_STATIC);
-    if (retval == COLVARSCRIPT_OK) {
+    
+    if (cvm::get_error() & DELETE_COLVARS) {
+      delete proxy;
+      proxy = NULL;
+      return TCL_OK;
+    }
+    
+    if (cvm::get_error() & FATAL_ERROR) {
+      // Fatal error: clean up cvm object and proxy
+      delete proxy;
+      proxy = NULL;
+      return TCL_ERROR;
+    }
+      
+    if (retval == COLVARSCRIPT_OK && !cvm::get_error()) {
       return TCL_OK;
     } else {
       return TCL_ERROR;
@@ -141,6 +159,7 @@ void colvarproxy_vmd::log (std::string const &message)
 
 void colvarproxy_vmd::fatal_error (std::string const &message)
 {
+  // Ultimately, this should never be called within a VMD session
   log (message);
   if (!cvm::debug())
     log ("If this error message is unclear, "
@@ -158,7 +177,7 @@ void colvarproxy_vmd::fatal_error (std::string const &message)
 
 void colvarproxy_vmd::exit (std::string const &message)
 {
-  // TODO: return control to Tcl interpreter
+  // Ultimately, this should never be called
   vmd->VMDexit ("Collective variables module requested VMD shutdown.\n", 0, 2);
 }
 
@@ -217,7 +236,7 @@ e_pdb_field pdb_field_str2enum (std::string const &pdb_field_str)
 }
 
 
-void colvarproxy_vmd::load_coords (char const *pdb_filename,
+int colvarproxy_vmd::load_coords (char const *pdb_filename,
                                    std::vector<cvm::atom_pos> &pos,
                                    const std::vector<int> &indices,
                                    std::string const pdb_field_str,
@@ -332,11 +351,12 @@ void colvarproxy_vmd::load_coords (char const *pdb_filename,
   }
 
   vmd->molecule_delete (tmpmolid);
+  return COLVARS_OK;
 }
 
 
 
-void colvarproxy_vmd::load_atoms (char const *pdb_filename,
+int colvarproxy_vmd::load_atoms (char const *pdb_filename,
                                   std::vector<cvm::atom> &atoms,
                                   std::string const pdb_field_str,
                                   double const pdb_field_value)
@@ -389,6 +409,7 @@ void colvarproxy_vmd::load_atoms (char const *pdb_filename,
   }
 
   vmd->molecule_delete (tmpmolid);
+  return COLVARS_OK;
 }
 
 

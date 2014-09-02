@@ -348,7 +348,7 @@ void colvarparse::strip_values (std::string &conf)
 }
 
 
-void colvarparse::check_keywords (std::string &conf, char const *key)
+int colvarparse::check_keywords (std::string &conf, char const *key)
 {
   if (cvm::debug())
     cvm::log ("Configuration string for \""+std::string (key)+
@@ -382,13 +382,17 @@ void colvarparse::check_keywords (std::string &conf, char const *key)
         break;
       }
     }
-    if (!found_keyword)
-      cvm::fatal_error ("Error: keyword \""+uk+"\" is not supported, "
+    if (!found_keyword) {
+      cvm::log ("Error: keyword \""+uk+"\" is not supported, "
                         "or not recognized in this context.\n");
+      cvm::set_error_bits(PARSE_ERROR);
+      return COLVARS_ERROR;
+    }
   }
   allowed_keywords.clear();
   data_begin_pos.clear();
   data_end_pos.clear();
+  return COLVARS_OK;
 }
 
 

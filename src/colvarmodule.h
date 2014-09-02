@@ -20,6 +20,17 @@
 /// shared between all object instances) to be accessed from other
 /// objects.
 
+// Method return codes
+#define COLVARS_ERROR -1
+#define COLVARS_OK 0
+
+// On error, values of the colvars module error register
+#define FATAL_ERROR 1 // Should be set, or not, together with other bits
+#define FILE_ERROR (1<<1)
+#define MEMORY_ERROR (1<<2)
+#define BUG_ERROR (1<<3) // Inconsistent state indicating bug
+#define PARSE_ERROR (1<<4)
+#define DELETE_COLVARS (1<<5) // Instruct the caller to delete cvm 
 
 #include <iostream>
 #include <iomanip>
@@ -89,6 +100,22 @@ public:
   typedef std::vector<atom>::iterator       atom_iter;
   typedef std::vector<atom>::const_iterator atom_const_iter;
 
+  /// Module-wide error state
+  /// see constants at the top of this file
+  static int error;
+  static inline void set_error_bits(int code)
+  {
+    error |= code;
+  }
+  static inline int get_error()
+  {
+    return error;
+  }
+  static inline void clear_error()
+  {
+    error = 0;
+  }
+  
   /// Current step number
   static size_t it;
   /// Starting step number for this run
@@ -165,29 +192,29 @@ public:
   ~colvarmodule();
 
   /// Actual function called by the destructor
-  void reset();
+  int reset();
 
   /// Open a config file, load its contents, and pass it to config_string()
-  void config_file (char const *config_file_name); 
+  int config_file (char const *config_file_name); 
 
   /// \brief Parse a config string assuming it is a complete configuration
   /// (i.e. calling all parse functions)
-  void config_string (std::string const &conf);
+  int config_string (std::string const &conf);
 
   /// \brief Parse a "clean" config string (no comments)
-  void config (std::string &conf);
+  int config (std::string &conf);
 
 
   // Parse functions (setup internal data based on a string)
 
   /// Parse the few module's global parameters
-  void parse_global_params (std::string const &conf);
+  int parse_global_params (std::string const &conf);
 
   /// Parse and initialize collective variables
-  void parse_colvars (std::string const &conf);
+  int parse_colvars (std::string const &conf);
 
   /// Parse and initialize collective variable biases
-  void parse_biases (std::string const &conf);
+  int parse_biases (std::string const &conf);
 
 
   // "Setup" functions (change internal data based on related data
@@ -196,13 +223,13 @@ public:
 
   /// (Re)initialize internal data (currently used by LAMMPS)
   /// Also calls setup() member functions of colvars and biases
-  void setup();
+  int setup();
 
   /// (Re)initialize and (re)read the input state file calling read_restart()
-  void setup_input(); 
+  int setup_input(); 
 
   /// (Re)initialize the output trajectory and state file (does not write it yet)
-  void setup_output(); 
+  int setup_output(); 
 
   /// Read the input restart file
   std::istream & read_restart (std::istream &is);
@@ -210,18 +237,18 @@ public:
   std::ostream & write_restart (std::ostream &os);
 
   /// Open a trajectory file if requested (and leave it open)
-  void open_traj_file (std::string const &file_name);
+  int open_traj_file (std::string const &file_name);
   /// Close it
-  void close_traj_file();
+  int close_traj_file();
   /// Write in the trajectory file
   std::ostream & write_traj (std::ostream &os);
   /// Write explanatory labels in the trajectory file
   std::ostream & write_traj_label (std::ostream &os);
 
   /// Write all FINAL output files
-  void write_output_files();
+  int write_output_files();
   /// Backup a file before writing it
-  static void backup_file (char const *filename);
+  static int backup_file (char const *filename);
 
   /// Look up a bias by name; returns NULL if not found
   static colvarbias * bias_by_name(std::string const &name);
@@ -231,7 +258,7 @@ public:
 
   /// Load new configuration for the given bias -
   /// currently works for harmonic (force constant and/or centers)
-  void change_configuration (std::string const &bias_name, std::string const &conf);
+  int change_configuration (std::string const &bias_name, std::string const &conf);
 
   /// Read a colvar value
   std::string read_colvar(std::string const &name);
@@ -241,13 +268,13 @@ public:
   real energy_difference (std::string const &bias_name, std::string const &conf);
 
   /// Calculate collective variables and biases
-  void calc();
+  int calc();
 
   /// Perform analysis
-  void analyze();
+  int analyze();
   /// \brief Read a collective variable trajectory (post-processing
   /// only, not called at runtime)
-  bool read_traj (char const *traj_filename,
+  int read_traj (char const *traj_filename,
                   size_t      traj_read_begin,
                   size_t      traj_read_end);
 
@@ -350,21 +377,21 @@ public:
   static std::list<std::vector<int> > index_groups;
 
   /// \brief Read a Gromacs .ndx file
-  static void read_index_file (char const *filename);
+  static int read_index_file (char const *filename);
 
 
   /// \brief Create atoms from a file \param filename name of the file
   /// (usually a PDB) \param atoms array of the atoms to be allocated
   /// \param pdb_field (optiona) if "filename" is a PDB file, use this
   /// field to determine which are the atoms to be set
-  static void load_atoms (char const *filename,
+  static int load_atoms (char const *filename,
                           std::vector<atom> &atoms,
                           std::string const &pdb_field,
                           double const pdb_field_value = 0.0);
 
   /// \brief Load the coordinates for a group of atoms from a file
   /// (PDB or XYZ)
-  static void load_coords (char const *filename,
+  static int load_coords (char const *filename,
                            std::vector<atom_pos> &pos,
                            const std::vector<int> &indices,
                            std::string const &pdb_field,
@@ -372,7 +399,7 @@ public:
 
   /// \brief Load the coordinates for a group of atoms from an
   /// XYZ file
-  static void load_coords_xyz (char const *filename,
+  static int load_coords_xyz (char const *filename,
                               std::vector<atom_pos> &pos,
                               const std::vector<int> &indices);
 

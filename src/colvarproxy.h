@@ -151,7 +151,7 @@ public:
   /// from "filename" will be appended \param pdb_field (optiona) if
   /// "filename" is a PDB file, use this field to determine which are
   /// the atoms to be set
-  virtual void load_atoms (char const *filename,
+  virtual int load_atoms (char const *filename,
                            std::vector<cvm::atom> &atoms,
                            std::string const pdb_field,
                            double const pdb_field_value = 0.0) {}
@@ -159,14 +159,14 @@ public:
   /// \brief Load the coordinates for a group of atoms from a file
   /// (usually a PDB); if "pos" is already allocated, the number of its
   /// elements must match the number of atoms in "filename"
-  virtual void load_coords (char const *filename,
+  virtual int load_coords (char const *filename,
                             std::vector<cvm::atom_pos> &pos,
                             const std::vector<int> &indices,
                             std::string const pdb_field,
                             double const pdb_field_value = 0.0) = 0;
 
   /// \brief Rename the given file, before overwriting it
-  virtual void backup_file (char const *filename) {}
+  virtual int backup_file (char const *filename) {}
 
 };
 

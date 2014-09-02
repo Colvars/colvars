@@ -27,6 +27,7 @@ Initialize or deinitialize the module:\n\
   configfile <file name>      -- read configuration from a file\n\
   config <string>             -- read configuration from the given string\n\
   reset                       -- delete all internal configuration\n\
+  delete                      -- delete this colvars module instance\n\
 \n\
 Input and output:\n\
   list                        -- return a list of all variables\n\
@@ -70,6 +71,11 @@ Access biases and algorithms:\n\
   if (cmd == "reset") {
     /// Delete every child object
     colvars->reset();
+    return COLVARSCRIPT_OK;
+  }
+  
+  if (cmd == "delete") {
+    colvars->set_error_bits(DELETE_COLVARS);
     return COLVARSCRIPT_OK;
   }
   
