@@ -28,7 +28,7 @@ Initialize or deinitialize the module:\n\
   config <string>             -- read configuration from the given string\n\
   reset                       -- delete all internal configuration\n\
   delete                      -- delete this colvars module instance\n\
-\n\
+  \n\
 Input and output:\n\
   list                        -- return a list of all variables\n\
   list biases                 -- return a list of all biases\n\
@@ -75,6 +75,9 @@ Access biases and algorithms:\n\
   }
   
   if (cmd == "delete") {
+    colvars->reset();
+    // Note: the delete bit may be ignored by some backends
+    // it is mostly useful in VMD
     colvars->set_error_bits(DELETE_COLVARS);
     return COLVARSCRIPT_OK;
   }
@@ -111,8 +114,11 @@ Access biases and algorithms:\n\
       result = "Missing arguments";
       return COLVARSCRIPT_ERROR;
     }
-    colvars->config_file (argv[2]);
-    return COLVARSCRIPT_OK;
+    if (colvars->config_file (argv[2]) == COLVARS_OK) {
+      return COLVARSCRIPT_OK;
+    } else {
+      return COLVARSCRIPT_ERROR;
+    }
   }
 
   /// Parse config from string
@@ -122,8 +128,11 @@ Access biases and algorithms:\n\
       return COLVARSCRIPT_ERROR;
     }
     std::string conf = argv[2];
-    colvars->config_string (conf);
-    return COLVARSCRIPT_OK;
+    if (colvars->config_string (conf) == COLVARS_OK) {
+      return COLVARSCRIPT_OK;
+    } else {
+      return COLVARSCRIPT_ERROR;
+    }
   }
 
   /// Load an input state file
@@ -133,8 +142,11 @@ Access biases and algorithms:\n\
       return COLVARSCRIPT_ERROR;
     }
     proxy->input_prefix_str = argv[2];
-    colvars->setup_input();
-    return COLVARSCRIPT_OK;
+    if (colvars->setup_input() == COLVARS_OK) {
+      return COLVARSCRIPT_OK;
+    } else {
+      return COLVARSCRIPT_ERROR;
+    }
   }
 
   /// TODO Write an output state file? (Useful for testing)

@@ -96,18 +96,18 @@ public:
                              cvm::atom_pos const &ref_pos);
 
 
-  void load_atoms (char const *filename,
+  int load_atoms (char const *filename,
                    std::vector<cvm::atom> &atoms,
                    std::string const pdb_field,
                    double const pdb_field_value = 0.0);
 
-  void load_coords (char const *filename,
+  int load_coords (char const *filename,
                     std::vector<cvm::atom_pos> &pos,
                     const std::vector<int> &indices,
                     std::string const pdb_field,
                     double const pdb_field_value = 0.0);
 
-  void backup_file (char const *filename);
+  int backup_file (char const *filename);
 
   cvm::real rand_gaussian (void)
   {

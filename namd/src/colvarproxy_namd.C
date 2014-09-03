@@ -512,13 +512,14 @@ int colvarproxy_namd::load_atoms (char const *pdb_filename,
 }
 
 
-void colvarproxy_namd::backup_file (char const *filename)
+int colvarproxy_namd::backup_file (char const *filename)
 {
   if (std::string (filename).rfind (std::string (".colvars.state")) != std::string::npos) {
     NAMD_backup_file (filename, ".old");
   } else {
     NAMD_backup_file (filename, ".BAK");
   }
+  return COLVARS_OK;
 }
 
 

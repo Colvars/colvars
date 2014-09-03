@@ -361,9 +361,12 @@ int colvarproxy_vmd::load_atoms (char const *pdb_filename,
                                   std::string const pdb_field_str,
                                   double const pdb_field_value)
 {
-  if (pdb_field_str.size() == 0)
-    cvm::fatal_error ("Error: must define which PDB field to use "
+  if (pdb_field_str.size() == 0) {
+    cvm::log ("Error: must define which PDB field to use "
                       "in order to define atoms from a PDB file.\n");
+    cvm::set_error_bits(PARSE_ERROR);
+    return COLVARS_ERROR;
+  }
 
   FileSpec *tmpspec = new FileSpec();
   int tmpmolid = vmd->molecule_load (-1, pdb_filename, "pdb", tmpspec);
