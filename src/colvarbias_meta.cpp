@@ -147,7 +147,7 @@ colvarbias_meta::colvarbias_meta (std::string const &conf, char const *key)
       replica_state_file =
         (std::string (pwd)+std::string (PATHSEP)+
          cvm::output_prefix+".colvars."+this->name+"."+replica_id+".state");
-      delete pwd;
+      delete[] pwd;
     }
 
     // now register this replica
@@ -319,7 +319,7 @@ colvarbias_meta::delete_hill (hill_iter &h)
                                    "")+".\n");
   }
 
-  if (use_grids && hills_off_grid.size()) {
+  if (use_grids && !hills_off_grid.empty()) {
     for (hill_iter hoff = hills_off_grid.begin();
          hoff != hills_off_grid.end(); hoff++) {
       if (*h == *hoff) {
@@ -1303,7 +1303,7 @@ std::istream & colvarbias_meta::read_restart (std::istream& is)
       cvm::log ("Read "+cvm::to_str (hills.size())+
                 " hills in addition to the grids.\n");
   } else {
-    if (hills.size())
+    if (!hills.empty())
       cvm::log ("Read "+cvm::to_str (hills.size())+" hills.\n");
   }
 
@@ -1318,7 +1318,7 @@ std::istream & colvarbias_meta::read_restart (std::istream& is)
     colvar_grid_gradient *new_hills_energy_gradients =
       new colvar_grid_gradient (colvars);
 
-    if (!grids_from_restart_file || (keep_hills && hills.size())) {
+    if (!grids_from_restart_file || (keep_hills && !hills.empty())) {
       // if there are hills, recompute the new grids from them
       cvm::log ("Rebinning the energy and forces grids from "+
                 cvm::to_str (hills.size())+" hills (this may take a while)...\n");
@@ -1341,12 +1341,12 @@ std::istream & colvarbias_meta::read_restart (std::istream& is)
 
     // assuming that some boundaries have expanded, eliminate those
     // off-grid hills that aren't necessary any more
-    if (hills.size())
+    if (!hills.empty())
       recount_hills_off_grid (hills.begin(), hills.end(), hills_energy);
   }
 
   if (use_grids) {
-    if (hills_off_grid.size()) {
+    if (!hills_off_grid.empty()) {
       cvm::log (cvm::to_str (hills_off_grid.size())+" hills are near the "
                 "grid boundaries: they will be computed analytically "
                 "and saved to the state files.\n");

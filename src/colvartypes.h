@@ -37,7 +37,7 @@ public:
   {}
 
   /// \brief Set all components to a scalar value
-  inline void set (cvm::real const value = 0.0) {
+  inline void set (cvm::real const &value = 0.0) {
     x = y = z = value;
   }
 
@@ -605,7 +605,7 @@ public:
   }
 
   /// \brief Set all components to a scalar
-  inline void set (cvm::real const value = 0.0)
+  inline void set (cvm::real const &value = 0.0)
   {
     q0 = q1 = q2 = q3 = value;
   }
@@ -945,9 +945,9 @@ public:
 
   /// Constructor after a quaternion
   inline rotation (cvm::quaternion const &qi)
-    : b_debug_gradients (false)
+    : b_debug_gradients (false),
+      q (qi)
   {
-    q = qi;
   }
 
   /// Constructor after an axis of rotation and an angle (in radians)

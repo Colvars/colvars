@@ -153,7 +153,7 @@ public:
   /// the atoms to be set
   virtual int load_atoms (char const *filename,
                            std::vector<cvm::atom> &atoms,
-                           std::string const pdb_field,
+                           std::string const &pdb_field,
                            double const pdb_field_value = 0.0) {}
 
   /// \brief Load the coordinates for a group of atoms from a file
@@ -162,7 +162,7 @@ public:
   virtual int load_coords (char const *filename,
                             std::vector<cvm::atom_pos> &pos,
                             const std::vector<int> &indices,
-                            std::string const pdb_field,
+                            std::string const &pdb_field,
                             double const pdb_field_value = 0.0) = 0;
 
   /// \brief Rename the given file, before overwriting it
@@ -175,7 +175,7 @@ inline void colvarproxy::select_closest_images (std::vector<cvm::atom_pos> &pos,
                                                 cvm::atom_pos const &ref_pos)
 {
   for (std::vector<cvm::atom_pos>::iterator pi = pos.begin();
-       pi != pos.end(); pi++) {
+       pi != pos.end(); ++pi) {
     select_closest_image (*pi, ref_pos);
   }
 }

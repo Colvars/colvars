@@ -416,7 +416,7 @@ void colvar::build_atom_list (void)
   // atom_ids = std::vector<int> (temp_id_list.begin(), temp_id_list.end());
   unsigned int id_i = 0;
   std::list<int>::iterator li;
-  for (li = temp_id_list.begin(); li != temp_id_list.end(); li++) {
+  for (li = temp_id_list.begin(); li != temp_id_list.end(); ++li) {
     atom_ids[id_i] = *li;
     id_i++;
   }
@@ -699,7 +699,7 @@ colvar::~colvar()
   // remove reference to this colvar from the CVM
   for (std::vector<colvar *>::iterator cvi = cvm::colvars.begin();
        cvi != cvm::colvars.end();
-       cvi++) {
+       ++cvi) {
     if ( *cvi == this) {
       cvm::colvars.erase (cvi);
       break;
@@ -1464,7 +1464,7 @@ void colvar::calc_acf()
   // representation but separated by acf_stride in the time series;
   // the pointer to each vector is changed at every step
 
-  if (! (acf_x_history.size() || acf_v_history.size()) ) {
+  if (acf_x_history.empty() && acf_v_history.empty()) {
 
     // first-step operations
 
@@ -1566,10 +1566,11 @@ void colvar::calc_vel_acf (std::list<colvarvalue> &v_list,
     std::vector<cvm::real>::iterator acf_i = acf.begin();
 
     for (size_t i = 0; i < acf_offset; i++)
-      vs_i++;
+      ++vs_i;
 
     // current vel with itself
-    *(acf_i++) += v.norm2();
+    *(acf_i) += v.norm2();
+    ++acf_i;
 
     // inner products of previous velocities with current (acf_i and
     // vs_i are updated)
@@ -1589,7 +1590,7 @@ void colvar::calc_coor_acf (std::list<colvarvalue> &x_list,
     std::vector<cvm::real>::iterator acf_i = acf.begin();
 
     for (size_t i = 0; i < acf_offset; i++)
-      xs_i++;
+      ++xs_i;
 
     *(acf_i++) += x.norm2();
 
@@ -1610,7 +1611,7 @@ void colvar::calc_p2coor_acf (std::list<colvarvalue> &x_list,
     std::vector<cvm::real>::iterator acf_i = acf.begin();
 
     for (size_t i = 0; i < acf_offset; i++)
-      xs_i++;
+      ++xs_i;
 
     // value of P2(0) = 1
     *(acf_i++) += 1.0;
@@ -1638,7 +1639,7 @@ void colvar::write_acf (std::ostream &os)
   cvm::real const acf_norm = acf.front() / cvm::real (acf_nframes);
   std::vector<cvm::real>::iterator acf_i;
   size_t it = acf_offset;
-  for (acf_i = acf.begin(); acf_i != acf.end(); acf_i++) {
+  for (acf_i = acf.begin(); acf_i != acf.end(); ++acf_i) {
     os << std::setw (cvm::it_width) << acf_stride * (it++) << " "
        << std::setprecision (cvm::cv_prec)
        << std::setw (cvm::cv_width)
@@ -1651,7 +1652,7 @@ void colvar::write_acf (std::ostream &os)
 
 void colvar::calc_runave()
 {
-  if (!x_history.size()) {
+  if (x_history.empty()) {
 
     runave.type (x.type());
     runave.reset();
@@ -1676,7 +1677,7 @@ void colvar::calc_runave()
         runave = x;
         std::list<colvarvalue>::iterator xs_i;
         for (xs_i = (*x_history_p).begin();
-             xs_i != (*x_history_p).end(); xs_i++) {
+             xs_i != (*x_history_p).end(); ++xs_i) {
           runave += (*xs_i);
         }
         runave *= 1.0 / cvm::real (runave_length);
@@ -1685,7 +1686,7 @@ void colvar::calc_runave()
         runave_variance = 0.0;
         runave_variance += this->dist2 (x, runave);
         for (xs_i = (*x_history_p).begin();
-             xs_i != (*x_history_p).end(); xs_i++) {
+             xs_i != (*x_history_p).end(); ++xs_i) {
           runave_variance += this->dist2 (x, (*xs_i));
         }
         runave_variance *= 1.0 / cvm::real (runave_length-1);

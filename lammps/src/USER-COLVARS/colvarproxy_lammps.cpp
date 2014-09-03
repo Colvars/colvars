@@ -325,7 +325,7 @@ e_pdb_field pdb_field_str2enum(std::string const &pdb_field_str)
 void colvarproxy_lammps::load_coords(char const *pdb_filename,
                                     std::vector<cvm::atom_pos> &pos,
                                     const std::vector<int> &indices,
-                                    std::string const pdb_field_str,
+                                    std::string const &pdb_field_str,
                                     double const pdb_field_value)
 {
 
@@ -335,7 +335,7 @@ void colvarproxy_lammps::load_coords(char const *pdb_filename,
 
 void colvarproxy_lammps::load_atoms(char const *pdb_filename,
                                    std::vector<cvm::atom> &atoms,
-                                   std::string const pdb_field_str,
+                                   std::string const &pdb_field_str,
                                    double const pdb_field_value)
 {
   cvm::fatal_error("Selecting collective variable atoms "

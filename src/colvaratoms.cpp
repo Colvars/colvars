@@ -149,7 +149,7 @@ void cvm::atom_group::parse (std::string const &conf,
       // use an index group from the index file read globally
       std::list<std::string>::iterator names_i = cvm::index_group_names.begin();
       std::list<std::vector<int> >::iterator index_groups_i = cvm::index_groups.begin();
-      for ( ; names_i != cvm::index_group_names.end() ; names_i++, index_groups_i++) {
+      for ( ; names_i != cvm::index_group_names.end() ; ++names_i, ++index_groups_i) {
         if (*names_i == index_group_name)
           break;
       }
@@ -194,7 +194,7 @@ void cvm::atom_group::parse (std::string const &conf,
   std::vector<std::string> psf_segids;
   get_keyval (group_conf, "psfSegID", psf_segids, std::vector<std::string> (), mode);
   for (std::vector<std::string>::iterator psii = psf_segids.begin();
-       psii < psf_segids.end(); psii++) {
+       psii < psf_segids.end(); ++psii) {
 
     if ( (psii->size() == 0) || (psii->size() > 4) ) {
       cvm::fatal_error ("Error: invalid segmend identifier provided, \""+
@@ -243,7 +243,7 @@ void cvm::atom_group::parse (std::string const &conf,
       }
 
       if (psf_segid.size())
-        psii++;
+        ++psii;
     }
   }
 
@@ -268,10 +268,10 @@ void cvm::atom_group::parse (std::string const &conf,
   }
 
   for (std::vector<cvm::atom>::iterator a1 = this->begin();
-       a1 != this->end(); a1++) {
+       a1 != this->end(); ++a1) {
     std::vector<cvm::atom>::iterator a2 = a1;
     ++a2;
-    for ( ; a2 != this->end(); a2++) {
+    for ( ; a2 != this->end(); ++a2) {
       if (a1->id == a2->id) {
         if (cvm::debug())
           cvm::log ("Discarding doubly counted atom with number "+
@@ -458,7 +458,7 @@ void cvm::atom_group::create_sorted_ids (void)
   sorted_ids = std::vector<int> (temp_id_list.size());
   unsigned int id_i = 0;
   std::list<int>::iterator li;
-  for (li = temp_id_list.begin(); li != temp_id_list.end(); li++) {
+  for (li = temp_id_list.begin(); li != temp_id_list.end(); ++li) {
     sorted_ids[id_i] = *li;
     id_i++;
   }
@@ -474,11 +474,11 @@ void cvm::atom_group::center_ref_pos()
   // reference positions (eg. RMSD, eigenvector)
   ref_pos_cog = cvm::atom_pos (0.0, 0.0, 0.0);
   std::vector<cvm::atom_pos>::iterator pi;
-  for (pi = ref_pos.begin(); pi != ref_pos.end(); pi++) {
+  for (pi = ref_pos.begin(); pi != ref_pos.end(); ++pi) {
     ref_pos_cog += *pi;
   }
   ref_pos_cog /= (cvm::real) ref_pos.size();
-  for (pi = ref_pos.begin(); pi != ref_pos.end(); pi++) {
+  for (pi = ref_pos.begin(); pi != ref_pos.end(); ++pi) {
     (*pi) -= ref_pos_cog;
   }
 }
@@ -694,7 +694,7 @@ std::vector<cvm::atom_pos> cvm::atom_group::positions() const
   std::vector<cvm::atom_pos> x (this->size(), 0.0);
   cvm::atom_const_iter ai = this->begin();
   std::vector<cvm::atom_pos>::iterator xi = x.begin();
-  for ( ; ai != this->end(); xi++, ai++) {
+  for ( ; ai != this->end(); ++xi, ++ai) {
     *xi = ai->pos;
   }
   return x;
@@ -709,7 +709,7 @@ std::vector<cvm::atom_pos> cvm::atom_group::positions_shifted (cvm::rvector cons
   std::vector<cvm::atom_pos> x (this->size(), 0.0);
   cvm::atom_const_iter ai = this->begin();
   std::vector<cvm::atom_pos>::iterator xi = x.begin();
-  for ( ; ai != this->end(); xi++, ai++) {
+  for ( ; ai != this->end(); ++xi, ++ai) {
     *xi = (ai->pos + shift);
   }
   return x;
@@ -739,7 +739,7 @@ std::vector<cvm::rvector> cvm::atom_group::system_forces() const
   std::vector<cvm::rvector> f (this->size(), 0.0);
   cvm::atom_const_iter ai = this->begin();
   std::vector<cvm::atom_pos>::iterator fi = f.begin();
-  for ( ; ai != this->end(); fi++, ai++) {
+  for ( ; ai != this->end(); ++fi, ++ai) {
     *fi = ai->system_force;
   }
   return f;
@@ -852,7 +852,7 @@ void cvm::atom_group::apply_forces (std::vector<cvm::rvector> const &forces)
     cvm::rotation const rot_inv = rot.inverse();
     cvm::atom_iter ai = this->begin();
     std::vector<cvm::rvector>::const_iterator fi = forces.begin();
-    for ( ; ai != this->end(); fi++, ai++) {
+    for ( ; ai != this->end(); ++fi, ++ai) {
       ai->apply_force (rot_inv.rotate (*fi));
     }
 
@@ -860,7 +860,7 @@ void cvm::atom_group::apply_forces (std::vector<cvm::rvector> const &forces)
 
     cvm::atom_iter ai = this->begin();
     std::vector<cvm::rvector>::const_iterator fi = forces.begin();
-    for ( ; ai != this->end(); fi++, ai++) {
+    for ( ; ai != this->end(); ++fi, ++ai) {
       ai->apply_force (*fi);
     }
   }

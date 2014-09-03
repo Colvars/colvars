@@ -176,11 +176,12 @@ int colvarmodule::parse_colvars (std::string const &conf)
     cvm::log ("Warning: no collective variables defined.\n");
   }
     
-  if (!colvars.size())
+  if (colvars.size())
     cvm::log (cvm::line_marker);
   cvm::log ("Collective variables initialized, "+
             cvm::to_str (colvars.size())+
             " in total.\n");
+    
   return COLVARS_OK;
 }
 
