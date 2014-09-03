@@ -1,11 +1,11 @@
 colvars: ----------------------------------------------------------------------
+colvars: ----------------------------------------------------------------------
+colvars: Reading new configuration from file "test.in":
 colvars: # indexFile = "" [default]
 colvars: # analysis = off [default]
 colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 2000
 colvars: # colvarsTrajAppend = off [default]
-colvars: The final output state file will be "test.colvars.state".
-colvars: Writing to colvar trajectory file "test.colvars.traj".
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = rmsdA
@@ -224,10 +224,11 @@ colvars:   # centers = { 0, 0, 0, 0, 0 }
 colvars:   # targetCenters = { 0, 0, 0, 0, 0 } [default]
 colvars:   # targetForceConstant = 0 [default]
 colvars:   # outputCenters = off [default]
-colvars:   # outputAccumulatedWork = off [default]
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables biases initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
-colvars: Collective variables module initialized.
+colvars: Collective variables module (re)initialized.
 colvars: ----------------------------------------------------------------------
+colvars: The final output state file will be "test.colvars.state".
+colvars: Writing to colvar trajectory file "test.colvars.traj".
 colvars: Saving collective variables state to "test.colvars.state".

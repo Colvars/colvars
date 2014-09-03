@@ -1,12 +1,11 @@
 colvars: ----------------------------------------------------------------------
+colvars: ----------------------------------------------------------------------
+colvars: Reading new configuration from file "test.in":
 colvars: # indexFile = "" [default]
 colvars: # analysis = off [default]
 colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 40000 [default]
 colvars: # colvarsTrajAppend = off [default]
-colvars: The restart output state file will be "test.colvars.state".
-colvars: The final output state file will be "test.colvars.state".
-colvars: Writing to colvar trajectory file "test.colvars.traj".
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = rmsd
@@ -53,7 +52,6 @@ colvars:   # name = "harmonic1" [default]
 colvars:   # colvars = { rmsd }
 colvars:   # outputEnergy = on
 colvars:   # forceConstant = 1 [default]
-colvars:   The force constant for colvar "rmsd" will be rescaled to 10000 according to the specified width.
 colvars:   # centers = { 0 }
 colvars:   # targetCenters = { 0.2 }
 colvars:   # targetForceConstant = 0 [default]
@@ -62,9 +60,13 @@ colvars:   # targetNumStages = 0 [default]
 colvars:   # targetForceExponent = 1 [default]
 colvars:   # outputCenters = on
 colvars:   # outputAccumulatedWork = on
+colvars:   The force constant for colvar "rmsd" will be rescaled to 10000 according to the specified width.
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables biases initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
-colvars: Collective variables module initialized.
+colvars: Collective variables module (re)initialized.
 colvars: ----------------------------------------------------------------------
+colvars: The restart output state file will be "test.colvars.state".
+colvars: The final output state file will be "test.colvars.state".
+colvars: Writing to colvar trajectory file "test.colvars.traj".
 colvars: Saving collective variables state to "test.colvars.state".

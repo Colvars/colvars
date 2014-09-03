@@ -1,11 +1,11 @@
 colvars: ----------------------------------------------------------------------
+colvars: ----------------------------------------------------------------------
+colvars: Reading new configuration from file "test.in":
 colvars: # indexFile = "" [default]
 colvars: # analysis = off [default]
-colvars: # colvarsTrajFrequency = 20
+colvars: # colvarsTrajFrequency = 2
 colvars: # colvarsRestartFrequency = 20000
 colvars: # colvarsTrajAppend = off [default]
-colvars: The final output state file will be "test.colvars.state".
-colvars: Writing to colvar trajectory file "test.colvars.traj".
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = d
@@ -75,21 +75,56 @@ colvars:   # name = "harmonic1" [default]
 colvars:   # colvars = { d }
 colvars:   # outputEnergy = on
 colvars:   # forceConstant = 10
-colvars:   The force constant for colvar "d" will be rescaled to 250 according to the specified width.
 colvars:   # centers = { 12 }
 colvars:   # targetCenters = { 12 } [default]
 colvars:   # targetForceConstant = 0 [default]
 colvars:   # outputCenters = off [default]
-colvars:   # outputAccumulatedWork = off [default]
+colvars:   The force constant for colvar "d" will be rescaled to 250 according to the specified width.
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables biases initialized, 2 in total.
 colvars: ----------------------------------------------------------------------
-colvars: Collective variables module initialized.
+colvars: Collective variables module (re)initialized.
 colvars: ----------------------------------------------------------------------
+colvars: The final output state file will be "test.colvars.state".
+colvars: Writing to colvar trajectory file "test.colvars.traj".
 colvars: Saving collective variables state to "test.colvars.state".
 colvars: ----------------------------------------------------------------------
+colvars: Reading new configuration:
+colvars: # indexFile = "" [default]
+colvars: # analysis = off [default]
+colvars: # colvarsTrajFrequency = 2 [default]
+colvars: # colvarsRestartFrequency = 20000 [default]
+colvars: # colvarsTrajAppend = off [default]
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables initialized, 1 in total.
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new "harmonic" instance.
+colvars:   # name = harm2
+colvars:   # colvars = { d }
+colvars:   # outputEnergy = on
+colvars:   # forceConstant = 1
+colvars:   # centers = { 13 }
+colvars:   # targetCenters = { 13 } [default]
+colvars:   # targetForceConstant = 0 [default]
+colvars:   # outputCenters = off [default]
+colvars:   The force constant for colvar "d" will be rescaled to 25 according to the specified width.
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables biases initialized, 3 in total.
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables module (re)initialized.
+colvars: ----------------------------------------------------------------------
+colvars: Saving collective variables state to "test.colvars.state".
+colvars: Saving collective variables state to "test.colvars.state".
+colvars: ----------------------------------------------------------------------
+colvars: Reading new configuration from file "test.in":
+colvars: # indexFile = "" [default]
+colvars: # analysis = off [default]
+colvars: # colvarsTrajFrequency = 2
+colvars: # colvarsRestartFrequency = 20000
+colvars: # colvarsTrajAppend = off [default]
+colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
-colvars:   # name = d2
+colvars:   # name = d
 colvars:   Initializing a new "distance" component.
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
@@ -120,11 +155,13 @@ colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "group2" defined, 1 atoms initialized: total mass = 12.011.
 colvars:   All components initialized.
-colvars:   # width = 1 [default]
-colvars:   # lowerBoundary = 0 [default]
+colvars:   # width = 0.2
+colvars:   # lowerBoundary = 12
 colvars:   # lowerWallConstant = 0 [default]
-colvars:   # upperBoundary = 0 [default]
+colvars:   # upperBoundary = 32
 colvars:   # upperWallConstant = 0 [default]
+colvars:   # hardLowerBoundary = off [default]
+colvars:   # hardUpperBoundary = off [default]
 colvars:   # expandBoundaries = off [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
@@ -132,22 +169,35 @@ colvars:   # outputVelocity = off [default]
 colvars:   # outputSystemForce = off [default]
 colvars:   # outputAppliedForce = off [default]
 colvars: ----------------------------------------------------------------------
-colvars: Collective variables initialized, 2 in total.
+colvars: Collective variables initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
-colvars: Collective variables biases initialized, 2 in total.
-colvars: Saving collective variables state to "test.colvars.state".
-colvars: ----------------------------------------------------------------------
-colvars: Collective variables initialized, 2 in total.
+colvars:   Initializing a new "abf" instance.
+colvars:   # name = "abf1" [default]
+colvars:   # colvars = { d }
+colvars:   # outputEnergy = off [default]
+colvars:   # applyBias = on [default]
+colvars:   # updateBias = on [default]
+colvars:   # hideJacobian = off [default]
+colvars:   Jacobian (geometric) forces will be included in reported free energy gradients.
+colvars:   # fullSamples = 100
+colvars:   # inputPrefix =  [default]
+colvars:   # outputFreq = 20000 [default]
+colvars:   # historyFreq = 0 [default]
+colvars:   # maxForce =  [default]
+colvars:   Finished ABF setup.
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new "harmonic" instance.
-colvars:   # name = harm2
-colvars:   # colvars = { d2 }
-colvars:   # outputEnergy = off [default]
-colvars:   # forceConstant = 1
-colvars:   # centers = { 15 }
-colvars:   # targetCenters = { 15 } [default]
+colvars:   # name = "harmonic1" [default]
+colvars:   # colvars = { d }
+colvars:   # outputEnergy = on
+colvars:   # forceConstant = 10
+colvars:   # centers = { 12 }
+colvars:   # targetCenters = { 12 } [default]
 colvars:   # targetForceConstant = 0 [default]
 colvars:   # outputCenters = off [default]
-colvars:   # outputAccumulatedWork = off [default]
+colvars:   The force constant for colvar "d" will be rescaled to 250 according to the specified width.
 colvars: ----------------------------------------------------------------------
-colvars: Collective variables biases initialized, 3 in total.
+colvars: Collective variables biases initialized, 2 in total.
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables module (re)initialized.
+colvars: ----------------------------------------------------------------------

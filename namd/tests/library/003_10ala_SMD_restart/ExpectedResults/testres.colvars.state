@@ -8,7 +8,7 @@ colvar {
   x  1.03466918246938e-01
 }
 
-harmonic {
+restraint {
   configuration {
     name harmonic1
     centers  2.00000000000000e-01

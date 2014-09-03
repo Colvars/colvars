@@ -1,12 +1,11 @@
 colvars: ----------------------------------------------------------------------
+colvars: ----------------------------------------------------------------------
+colvars: Reading new configuration from file "test.in":
 colvars: # indexFile = "" [default]
 colvars: # analysis = off [default]
 colvars: # colvarsTrajFrequency = 2
 colvars: # colvarsRestartFrequency = 40000 [default]
 colvars: # colvarsTrajAppend = off [default]
-colvars: The restart output state file will be "testr.colvars.state".
-colvars: The final output state file will be "test.colvars.state".
-colvars: Writing to colvar trajectory file "test.colvars.traj".
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = d
@@ -91,14 +90,16 @@ colvars:   # outputAccumulatedWork = off [default]
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables biases initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
+colvars: Collective variables module (re)initialized.
+colvars: ----------------------------------------------------------------------
 colvars: Restarting from file "previous.colvars.state".
 colvars:   Restarting collective variable "d" from value: -137.21
-colvars:   Restarting harmonic bias "harmonic1".
+colvars:   Restarting restraint bias "harmonic1".
 colvars:   # centers = { -135 }
 colvars:   # centers_raw = { 225 }
 colvars:   # stage = 9
-colvars: ----------------------------------------------------------------------
-colvars: Collective variables module initialized.
-colvars: ----------------------------------------------------------------------
+colvars: The restart output state file will be "testr.colvars.state".
+colvars: The final output state file will be "test.colvars.state".
+colvars: Writing to colvar trajectory file "test.colvars.traj".
 colvars:   Moving restraint "harmonic1" stage 10 : setting centers to { -125 } at step 8330
 colvars: Saving collective variables state to "test.colvars.state".

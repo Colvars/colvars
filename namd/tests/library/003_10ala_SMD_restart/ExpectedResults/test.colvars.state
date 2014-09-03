@@ -5,10 +5,10 @@ configuration {
 
 colvar {
   name rmsd
-  x  3.82640484672394e-02
+  x  3.82640484672393e-02
 }
 
-harmonic {
+restraint {
   configuration {
     name harmonic1
     centers  1.00000000000000e-01
