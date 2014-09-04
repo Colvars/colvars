@@ -40,7 +40,7 @@ Input and output:\n\
   if (proxy->frame() != COLVARS_NOT_IMPLEMENTED) {
       result += "\
   frame                       -- return current frame number\n\
-  frame <new_frame>           -- return current frame number\n";
+  frame <new_frame>           -- set frame number\n";
   }
 
   result += "\n\
