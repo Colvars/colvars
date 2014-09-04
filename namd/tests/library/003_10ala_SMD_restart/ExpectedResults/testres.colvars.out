@@ -72,6 +72,7 @@ colvars:   Restarting restraint bias "harmonic1".
 colvars:   # centers = { 0.1 }
 colvars:   # centers_raw = { 0.1 }
 colvars:   # accumulatedWork = 35.4825
+colvars: ----------------------------------------------------------------------
 colvars: The restart output state file will be "testres.colvars.state".
 colvars: The final output state file will be "testres.colvars.state".
 colvars: Writing to colvar trajectory file "testres.colvars.traj".

@@ -141,6 +141,9 @@ public:
   virtual void log (std::string const &message) = 0;
 
   /// Print a message to the main log and exit with error code
+  virtual void error (std::string const &message) = 0;
+  
+  /// Print a message to the main log and exit with error code
   virtual void fatal_error (std::string const &message) = 0;
 
   /// Print a message to the main log and exit normally
@@ -154,7 +157,7 @@ public:
   virtual int load_atoms (char const *filename,
                            std::vector<cvm::atom> &atoms,
                            std::string const &pdb_field,
-                           double const pdb_field_value = 0.0) {}
+                           double const pdb_field_value = 0.0) = 0;
 
   /// \brief Load the coordinates for a group of atoms from a file
   /// (usually a PDB); if "pos" is already allocated, the number of its
@@ -166,8 +169,7 @@ public:
                             double const pdb_field_value = 0.0) = 0;
 
   /// \brief Rename the given file, before overwriting it
-  virtual int backup_file (char const *filename) {}
-
+  virtual int backup_file (char const *filename) {return 0;}
 };
 
 

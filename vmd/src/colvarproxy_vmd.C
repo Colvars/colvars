@@ -28,7 +28,7 @@ int tcl_colvars (ClientData clientdata, Tcl_Interp *vmdtcl, int argc, const char
     if ( argc >= 3 ) {
       if (!strcmp (argv[1], "molid")) {
         Tcl_SetResult (vmdtcl, (char *) (std::string ("Colvars module already created: type \"colvars\" for a list of arguments.").c_str()), TCL_STATIC);
-        return TCL_OK;
+        return TCL_ERROR;
       }
     }
     
@@ -157,6 +157,11 @@ void colvarproxy_vmd::log (std::string const &message)
   }
 }
 
+void colvarproxy_vmd::error (std::string const &message)
+{
+  log (message);
+}
+
 void colvarproxy_vmd::fatal_error (std::string const &message)
 {
   // Ultimately, this should never be called within a VMD session
@@ -171,8 +176,6 @@ void colvarproxy_vmd::fatal_error (std::string const &message)
     delete colvars;
     colvars = NULL;
   }
-  vmd->VMDexit ("Fatal collective variables error, exiting.\n", 1, 2);
-  // }
 }
 
 void colvarproxy_vmd::exit (std::string const &message)
@@ -243,8 +246,10 @@ int colvarproxy_vmd::load_coords (char const *pdb_filename,
                                    double const pdb_field_value)
 {
   if (pdb_field_str.size() == 0 && indices.size() == 0) {
-    cvm::fatal_error ("Bug alert: either PDB field should be defined or list of "
-                      "atom IDs should be available when loading atom coordinates!\n");
+    cvm::error ("Bug alert: either PDB field should be defined or list of "
+                "atom IDs should be available when loading atom coordinates!\n",
+                BUG_ERROR);
+    return COLVARS_ERROR;
   }
 
   e_pdb_field pdb_field_index;
@@ -260,7 +265,9 @@ int colvarproxy_vmd::load_coords (char const *pdb_filename,
   int tmpmolid = vmd->molecule_load (-1, pdb_filename, "pdb", tmpspec);
   delete tmpspec;
   if (tmpmolid < 0) {
-    cvm::fatal_error ("Error: VMD could not read file \""+std::string (pdb_filename)+"\".\n");
+    cvm::error ("Error: VMD could not read file \""+std::string (pdb_filename)+"\".\n",
+                FILE_ERROR);
+    return COLVARS_ERROR;
   }
   DrawMolecule *tmpmol = vmd->moleculeList->mol_from_id (tmpmolid);
 
@@ -318,10 +325,11 @@ int colvarproxy_vmd::load_coords (char const *pdb_filename,
       if (!pos_allocated) {
         pos.push_back (cvm::atom_pos (0.0, 0.0, 0.0));
       } else if (ipos >= pos.size()) {
-        cvm::fatal_error ("Error: the PDB file \""+
-                          std::string (pdb_filename)+
-                          "\" contains coordinates for "
-                          "more atoms than needed.\n");
+        cvm::error ("Error: the PDB file \""+
+                    std::string (pdb_filename)+
+                    "\" contains coordinates for "
+                    "more atoms than needed.\n", PARSE_ERROR);
+        return COLVARS_ERROR;
       }
 
       pos[ipos] = cvm::atom_pos ((tmpmol->get_frame (0)->pos)[ipdb*3],
@@ -332,12 +340,14 @@ int colvarproxy_vmd::load_coords (char const *pdb_filename,
         break;
     }
 
-    if ((ipos < pos.size()) || (current_index != indices.end()))
-      cvm::fatal_error ("Error: the number of records in the PDB file \""+
-                        std::string (pdb_filename)+
-                        "\" does not appear to match either the total number of atoms,"+
-                        " or the number of coordinates requested at this point ("+
-                        cvm::to_str (pos.size())+").\n");
+    if ((ipos < pos.size()) || (current_index != indices.end())) {
+      cvm::error ("Error: the number of records in the PDB file \""+
+                  std::string (pdb_filename)+
+                  "\" does not appear to match either the total number of atoms,"+
+                  " or the number of coordinates requested at this point ("+
+                  cvm::to_str (pos.size())+").\n", PARSE_ERROR);
+      return COLVARS_ERROR;
+    }
 
   } else {
 
@@ -351,7 +361,7 @@ int colvarproxy_vmd::load_coords (char const *pdb_filename,
   }
 
   vmd->molecule_delete (tmpmolid);
-  return COLVARS_OK;
+  return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
 }
 
 
@@ -412,7 +422,7 @@ int colvarproxy_vmd::load_atoms (char const *pdb_filename,
   }
 
   vmd->molecule_delete (tmpmolid);
-  return COLVARS_OK;
+  return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
 }
 
 
@@ -513,18 +523,18 @@ void cvm::atom::read_position()
 
 void cvm::atom::read_velocity()
 {
-  cvm::fatal_error ("Error: VMD does not store velocities for the colvars to use.\n");
+  cvm::error ("Error: VMD does not store velocities for the colvars to use.\n");
 }
 
 
 void cvm::atom::read_system_force()
 {
-  cvm::fatal_error ("Error: system forces are undefined in VMD.\n");
+  cvm::error ("Error: system forces are undefined in VMD.\n");
 }
 
 
 void cvm::atom::apply_force (cvm::rvector const &new_force)
 {
-  // do nothing
+  cvm::error ("Error: cannot apply forces in VMD.\n");
 }
 

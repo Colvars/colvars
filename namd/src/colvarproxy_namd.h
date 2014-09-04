@@ -59,6 +59,7 @@ public:
   void add_energy (cvm::real energy);
   void request_system_force (bool yesno);
   void log (std::string const &message);
+  void error (std::string const &message);
   void fatal_error (std::string const &message);
   void exit (std::string const &message);
 

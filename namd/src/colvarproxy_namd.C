@@ -281,12 +281,21 @@ void colvarproxy_namd::log (std::string const &message)
   iout << endi;
 }
 
+void colvarproxy_namd::error (std::string const &message)
+{
+  if (cvm::get_error() & FATAL_ERROR) {
+    fatal_error(message);
+  } else {
+    log (message);
+  }
+}
+
 
 void colvarproxy_namd::fatal_error (std::string const &message)
 {
-  cvm::log (message);
+  log (message);
   if (!cvm::debug())
-    cvm::log ("If this error message is unclear, "
+    log ("If this error message is unclear, "
               "try recompiling with -DCOLVARS_DEBUG.\n");
   NAMD_die ("Error in the collective variables module: exiting.\n");
 }

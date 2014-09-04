@@ -285,14 +285,14 @@ public:
   colvar (std::string const &conf);
 
   /// Enable the specified task
-  void enable (colvar::task const &t);
+  int enable (colvar::task const &t);
 
   /// Disable the specified task
   void disable (colvar::task const &t);
 
   /// Get ready for a run and possibly re-initialize internal data
   void setup();
-
+  
   /// Destructor
   ~colvar();
 
@@ -357,7 +357,7 @@ public:
 
 
   /// Read the analysis tasks
-  void parse_analysis (std::string const &conf);
+  int parse_analysis (std::string const &conf);
   /// Perform analysis tasks
   void analyse();
 
@@ -376,7 +376,7 @@ public:
   std::ostream & write_restart (std::ostream &os);
 
   /// Write output files (if defined, e.g. in analysis mode)
-  void write_output_files();
+  int write_output_files();
 
 
 protected:
@@ -432,7 +432,7 @@ protected:
   acf_type_e             acf_type;
 
   /// \brief Velocity ACF, scalar product between v(0) and v(t)
-  void calc_vel_acf (std::list<colvarvalue> &v_history,
+  int calc_vel_acf (std::list<colvarvalue> &v_history,
                      colvarvalue const      &v);
 
   /// \brief Coordinate ACF, scalar product between x(0) and x(t)
@@ -446,7 +446,7 @@ protected:
                         colvarvalue const      &x);
 
   /// Calculate the auto-correlation function (ACF)
-  void calc_acf();
+  int calc_acf();
   /// Save the ACF to a file
   void write_acf (std::ostream &os);
 

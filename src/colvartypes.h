@@ -945,8 +945,8 @@ public:
 
   /// Constructor after a quaternion
   inline rotation (cvm::quaternion const &qi)
-    : b_debug_gradients (false),
-      q (qi)
+    : q (qi),
+      b_debug_gradients (false)
   {
   }
 

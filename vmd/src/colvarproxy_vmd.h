@@ -124,6 +124,7 @@ public:
                              cvm::atom_pos const &ref_pos);
 
   void log (std::string const &message);
+  void error (std::string const &message);
   void fatal_error (std::string const &message);
   void exit (std::string const &message);
 

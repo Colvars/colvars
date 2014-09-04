@@ -25,12 +25,14 @@
 #define COLVARS_OK 0
 
 // On error, values of the colvars module error register
-#define FATAL_ERROR 1 // Should be set, or not, together with other bits
+#define GENERAL_ERROR 1
 #define FILE_ERROR (1<<1)
 #define MEMORY_ERROR (1<<2)
 #define BUG_ERROR (1<<3) // Inconsistent state indicating bug
 #define PARSE_ERROR (1<<4)
-#define DELETE_COLVARS (1<<5) // Instruct the caller to delete cvm 
+#define DELETE_COLVARS (1<<5) // Instruct the caller to delete cvm
+#define FATAL_ERROR (1<<6) // Should be set, or not, together with other bits
+#define INPUT_ERROR (1<<7) // out of bounds or inconsistent input
 
 #include <iostream>
 #include <iomanip>
@@ -102,18 +104,18 @@ public:
 
   /// Module-wide error state
   /// see constants at the top of this file
-  static int error;
+  static int errorCode;
   static inline void set_error_bits(int code)
   {
-    error |= code;
+    errorCode |= code;
   }
   static inline int get_error()
   {
-    return error;
+    return errorCode;
   }
   static inline void clear_error()
   {
-    error = 0;
+    errorCode = 0;
   }
   
   /// Current step number
@@ -336,6 +338,9 @@ public:
 
   /// Print a message to the main log and exit with error code
   static void fatal_error (std::string const &message);
+  
+  /// Print a message to the main log and set global error code
+  static void error (std::string const &message, int code = GENERAL_ERROR);
 
   /// Print a message to the main log and exit normally
   static void exit (std::string const &message);

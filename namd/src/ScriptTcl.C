@@ -1077,7 +1077,8 @@ int ScriptTcl::Tcl_colvars (ClientData clientData,
   char *buf = Tcl_Alloc(colvars->proxy->script->result.length() + 1);
   strncpy (buf, colvars->proxy->script->result.c_str(), colvars->proxy->script->result.length() + 1);
   Tcl_SetResult(interp, buf, TCL_DYNAMIC);
-  if (retval == COLVARSCRIPT_OK)
+   
+  if (retval == COLVARSCRIPT_OK && !cvm::get_error())
     return TCL_OK;
   else
     return TCL_ERROR;
