@@ -1,6 +1,9 @@
 \cvnamdugonly{
 \section{Collective Variable-based Calculations\footnote{The features described in this section were contributed by Giacomo Fiorin (ICMS, Temple University, Philadelphia, PA, USA) and J\'er\^ome H\'enin (IBPC, CNRS, Paris, France). Please send feedback and suggestions to the NAMD mailing list.}}
 }
+\cvvmdugonly{
+\chapter{Collective Variables Interface}
+}
 \cvrefmanonly{
 \section{Introduction}
 }
@@ -60,6 +63,7 @@ Detailed explanations of the design of the colvars module are provided in refere
 \cvsec{General parameters and input/output files}
 \label{sec:colvarmodule}
 
+% TODO: change for VMD
 To enable a collective variable calculation, one or more parameters are added to the \MDENGINE{} configuration file.
 In \ref{sec:colvars_mdengine_params}, we document the syntax of such parameters.
 One of these is the name of a configuration file for the collective variables module itself, which is described in \ref{sec:colvars_config}, and in the following sections.
@@ -358,6 +362,7 @@ Aside from the configuration file, an optional input state file may be provided 
 \cvsubsec{Output files}
 \label{sec:colvars_output}
 
+% TODO: change for VMD
 In addition to the output files written by \MDENGINE{}, the following three output files are written:
 
 \begin{itemize}

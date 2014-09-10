@@ -1,0 +1,43 @@
+
+% compiling the VMD User's Guide
+
+% define missing macros
+\newcommand{\MDENGINE}{VMD}
+\newcommand{\cvrefmanonly}[1]{}
+\newcommand{\cvvmdonly}[1]{#1}
+\newcommand{\cvvmdugonly}[1]{#1}
+\newcommand{\cvnamdonly}[1]{}
+\newcommand{\cvnamdugonly}[1]{}
+\newcommand{\cvnamebasedonly}[1]{#1}
+\newcommand{\cvlammpsonly}[1]{}
+
+% use macros with context field to document keywords
+\newcommand{\key}[5]{%
+  \index{\texttt{#1}}
+  {\bf \large \tt #1 } $\langle\,$#3$\,\rangle$ \\%
+  {\bf Context: } #2 \\%
+  {\bf Acceptable values: } #4 \\%
+  {\bf Description: } #5%
+}
+\newcommand{\keydef}[6]{%
+  \index{\texttt{#1}}
+  {\bf \large \tt #1 } $\langle\,$#3$\,\rangle$ \\%
+  {\bf Context: } #2 \\%
+  {\bf Acceptable values: } #4 \\%
+  {\bf Default value: } #5 \\%
+  {\bf Description: } #6%
+}
+
+\newcommand{\gradx}{\mbox{\boldmath$\nabla_{\!\!x}\,$}}
+\newcommand{\vx}{{\mbox{\boldmath{$x$}}}}
+\newcommand{\bm}[1]{{\mbox{\boldmath{$#1$}}}}
+
+\newcommand{\cvsec}[1]{\section{#1}}
+\newcommand{\cvsubsec}[1]{\subsection{#1}}
+\newcommand{\cvsubsubsec}[1]{\subsubsection*{#1}}
+
+% TODO: these may need to change
+\newcommand{\outputName}{\emph{outputName}}
+\newcommand{\restartName}{\emph{restartName}}
+\newcommand{\inputName}{\emph{inputName}}
+

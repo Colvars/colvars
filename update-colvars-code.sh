@@ -211,5 +211,9 @@ then
     fi
   done
 
+  condcopy "${source}/doc/colvars-refman.bib" "${target}/doc/ug_colvars.bib"
+  condcopy "${source}/doc/colvars-refman-main.tex" "${target}/doc/ug_colvars.tex"
+  condcopy "${source}/vmd/doc/ug_colvars_macros.tex" "${target}/doc/ug_colvars_macros.tex"
+
   exit 0
 fi
