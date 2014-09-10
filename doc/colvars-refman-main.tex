@@ -80,8 +80,8 @@ An optional third parameter, \texttt{colvarsInput}, can be used to continue a pr
 %  \setlength{\itemsep}{0.4cm}
 
 \item %
-  \keydef{%
-    colvars}{%
+  \keydef
+    {colvars}{%
     NAMD configuration file}{%
     Enable the collective variables module}{%
     boolean}{%
@@ -91,8 +91,8 @@ An optional third parameter, \texttt{colvarsInput}, can be used to continue a pr
     file, to be provided with \texttt{colvarsConfig}.}
 
 \item %
-  \key{%
-    colvarsConfig}{%
+  \key
+    {colvarsConfig}{%
     NAMD configuration file}{%
     Configuration file for the collective variables}{%
     UNIX filename}{%
@@ -119,8 +119,8 @@ An optional third parameter, \texttt{colvarsInput}, can be used to continue a pr
 }
 
 \item %
-  \key{%
-    colvarsInput}{%
+  \key
+    {colvarsInput}{%
     NAMD configuration file}{%
     Input state file for the collective variables}{%
     UNIX filename}{%
@@ -143,8 +143,8 @@ where \emph{ID} is a string that uniquely identifies this fix command inside a L
 \begin{itemize}
 
 \item %
-  \key{%
-    input}{%
+  \key
+    {input}{%
     Keyword of the \texttt{fix colvars} command}{%
     Name or prefix of the input state file}{%
     string}{%
@@ -152,8 +152,8 @@ where \emph{ID} is a string that uniquely identifies this fix command inside a L
 This allows to continue a previous collective variables-based calculation when a regular binary LAMMPS restart file is not available (see \ref{sec:colvars_input}).}
 
 \item %
-  \keydef{%
-    output}{%
+  \keydef
+    {output}{%
     Keyword of the \texttt{fix colvars} command}{%
     Prefix of the output state file}{%
     string}{%
@@ -161,8 +161,8 @@ This allows to continue a previous collective variables-based calculation when a
     If a value is provided, it is interpreted as the prefix to all output files that will be written by the collective variables module (see \ref{sec:colvars_output}).}
 
 \item %
-  \keydef{%
-    unwrap}{%
+  \keydef
+    {unwrap}{%
     keyword of the \texttt{fix colvars} command}{%
     Whether to unwrap coordinates passed to the colvars module}{%
     ``yes'' or ``no''}{%
@@ -171,8 +171,8 @@ This allows to continue a previous collective variables-based calculation when a
 Setting this to \emph{no} will use the current local coordinates that are wrapped back into the simulation cell at each re-neighboring instead.}
 
 \item %
-  \keydef{%
-    seed}{%
+  \keydef
+    {seed}{%
     Keyword of the \texttt{fix colvars} command}{%
     Seed for the random number generator}{%
     positive integer}{%
@@ -181,8 +181,8 @@ Setting this to \emph{no} will use the current local coordinates that are wrappe
     This is only meaningful when the \texttt{extendedLangevinDamping} keyword is used (see \ref{sec:colvar_extended}).}
 
 \item %
-  \keydef{%
-    tstat}{%
+  \keydef
+    {tstat}{%
     Keyword of the \texttt{fix colvars} command}{%
     Thermostating fix}{%
     string}{%
@@ -228,8 +228,8 @@ The following keywords are available in the global context of this configuration
 \begin{itemize}
 
 \item %
-  \keydef{%
-    colvarsTrajFrequency}{%
+  \keydef
+    {colvarsTrajFrequency}{%
     global}{%
   Colvar value trajectory frequency}{%
     positive integer}{%
@@ -239,8 +239,8 @@ The following keywords are available in the global context of this configuration
     For optimization the output is buffered, and synchronized with the disk only when the restart file is being written.}
 
 \item %
-  \keydef{%
-    colvarsTrajAppend}{%
+  \keydef
+    {colvarsTrajAppend}{%
     global}{%
     Append to trajectory file?}{%
     boolean}{%
@@ -250,8 +250,8 @@ The following keywords are available in the global context of this configuration
 \cvnamdonly{\textbf{Note:} \emph{when running consecutive simulations with the same \outputName{} (e.g.~in FEP calculations), you should enable this option to preserve the previous contents of the trajectory file.}}}
 
 \item %
-  \keydef{%
-    colvarsRestartFrequency}{%
+  \keydef
+    {colvarsRestartFrequency}{%
     global}{%
     Colvar module restart frequency}{%
     positive integer}{%
@@ -262,8 +262,8 @@ The following keywords are available in the global context of this configuration
     trajectory file for reasons of disk space.}
 
 \item %
-  \key{%
-    indexFile}{%
+  \key
+    {indexFile}{%
     global}{%
     Index file for atom selection (GROMACS ``ndx'' format)}{%
     UNIX filename}{%
@@ -279,8 +279,8 @@ The following keywords are available in the global context of this configuration
   }
 
 \item %
-  \keydef{%
-    analysis}{%
+  \keydef
+    {analysis}{%
     global}{%
     Turn on run-time statistical analysis }{%
     boolean}{%
@@ -398,8 +398,8 @@ The following options are not required by default; however, the first four are v
 \begin{itemize}
 
 \item %
-  \keydef{%
-    name}{%
+  \keydef
+    {name}{%
     \texttt{colvar}}{%
     Name of this colvar}{%
     string}{%
@@ -410,8 +410,8 @@ The following options are not required by default; however, the first four are v
     to this colvar.}
 
 \item %
-  \keydef{%
-    width}{%
+  \keydef
+    {width}{%
     \texttt{colvar}}{%
     Expected fluctuations amplitude, and resolution for grid-based methods}{%
     positive decimal}{%
@@ -426,8 +426,8 @@ The following options are not required by default; however, the first four are v
     as the colvar value.}
 
 \item %
-  \key{%
-    lowerBoundary}{%
+  \key
+    {lowerBoundary}{%
     \texttt{colvar}}{%
     Lower boundary of the colvar}{%
     decimal}{%
@@ -438,16 +438,16 @@ The following options are not required by default; however, the first four are v
 }
 
 \item %
-  \key{%
-    upperBoundary}{%
+  \key
+    {upperBoundary}{%
     \texttt{colvar}}{%
     Upper boundary of the colvar}{%
     decimal}{%
     Similarly to \texttt{lowerBoundary}, defines the highest possible or allowed value.}
 
 \item %
-  \keydef{%
-    hardLowerBoundary}{%
+  \keydef
+    {hardLowerBoundary}{%
     \texttt{colvar}}{%
     Whether the lower boundary is the physical lower limit}{%
     boolean}{%
@@ -457,8 +457,8 @@ The following options are not required by default; however, the first four are v
 See Section~\ref{sec:cvc} for the physical ranges of values of each component.}
 
 \item %
-  \keydef{%
-    hardUpperBoundary}{%
+  \keydef
+    {hardUpperBoundary}{%
     \texttt{colvar}}{%
     Whether the upper boundary is the physical upper limit of the colvar's values}{%
     boolean}{%
@@ -466,8 +466,8 @@ See Section~\ref{sec:cvc} for the physical ranges of values of each component.}
     Analogous to \texttt{hardLowerBoundary}.}
 
 \item %
-  \keydef{%
-    expandBoundaries}{%
+  \keydef
+    {expandBoundaries}{%
     \texttt{colvar}}{%
     Allow to expand the two boundaries if needed}{%
     boolean}{%
@@ -491,8 +491,8 @@ To apply moving restraints, or restraints to more than one colvar simultaneously
 \begin{itemize}
 
 \item %
-  \key{%
-    lowerWallConstant}{%
+  \key
+    {lowerWallConstant}{%
     \texttt{colvar}}{%
     Lower wall force constant (\cvnamdonly{kcal/mol}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
     positive decimal}{%
@@ -501,8 +501,8 @@ To apply moving restraints, or restraints to more than one colvar simultaneously
     The energy unit of the constant is \cvnamdonly{kcal/mol}\cvlammpsonly{the unit of energy specified by \texttt{units}}, while the spatial unit is that of the colvar.}
 
 \item %
-  \keydef{%
-    lowerWall}{%
+  \keydef
+    {lowerWall}{%
     \texttt{colvar}}{%
     Position of the lower wall}{%
     decimal}{%
@@ -511,16 +511,16 @@ To apply moving restraints, or restraints to more than one colvar simultaneously
     Allows to use a different position of the wall than \texttt{lowerBoundary}.}
 
 \item %
-  \key{%
-    upperWallConstant}{%
+  \key
+    {upperWallConstant}{%
     \texttt{colvar}}{%
     Upper wall force constant (\cvnamdonly{kcal/mol}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
     positive decimal}{%
     Analogous to \texttt{lowerWallConstant}.}
 
 \item %
-  \keydef{%
-    upperWall}{%
+  \keydef
+    {upperWall}{%
     \texttt{colvar}}{%
     Position of the upper wall}{%
     decimal}{%
@@ -533,8 +533,8 @@ To apply moving restraints, or restraints to more than one colvar simultaneously
 
 \begin{itemize}
 \item %
-  \keydef{%
-    outputValue}{%
+  \keydef
+    {outputValue}{%
     \texttt{colvar}}{%
     Output a trajectory for this colvar}{%
     boolean}{%
@@ -545,8 +545,8 @@ To apply moving restraints, or restraints to more than one colvar simultaneously
     ``$<$\texttt{name}$>$''.}
 
 \item %
-  \keydef{%
-    outputVelocity}{%
+  \keydef
+    {outputVelocity}{%
     \texttt{colvar}}{%
     Output a velocity trajectory for this colvar}{%
     boolean}{%
@@ -557,8 +557,8 @@ To apply moving restraints, or restraints to more than one colvar simultaneously
     ``\texttt{v\_}$<$\texttt{name}$>$''.}
 
 \item %
-  \keydef{%
-    outputEnergy}{%
+  \keydef
+    {outputEnergy}{%
     \texttt{colvar}}{%
     Output an energy trajectory for this colvar}{%
     boolean}{%
@@ -571,8 +571,8 @@ To apply moving restraints, or restraints to more than one colvar simultaneously
     ``\texttt{Ep\_}$<$\texttt{name}$>$''.}
 
 \item %
-  \keydef{%
-    outputSystemForce}{%
+  \keydef
+    {outputSystemForce}{%
     \texttt{colvar}}{%
     Output a system force trajectory for this
     colvar}{%
@@ -590,8 +590,8 @@ To apply moving restraints, or restraints to more than one colvar simultaneously
     physical unit for this force is \cvnamdonly{kcal/mol}\cvlammpsonly{the unit of energy specified by \texttt{units}}, divided by the colvar unit.}
 
 \item %
-  \keydef{%
-    outputAppliedForce}{%
+  \keydef
+    {outputAppliedForce}{%
     \texttt{colvar}}{%
     Output an applied force trajectory for this
     colvar}{%
@@ -621,8 +621,8 @@ coordinates) only feels the force from the harmonic spring.
 
 \begin{itemize}
 \item %
-  \keydef{%
-    extendedLagrangian}{%
+  \keydef
+    {extendedLagrangian}{%
     \texttt{colvar}}{%
     Add extended degree of freedom}{%
     boolean}{%
@@ -639,8 +639,8 @@ coordinates) only feels the force from the harmonic spring.
     }
 
 \item %
-  \key{%
-    extendedFluctuation}{%
+  \key
+    {extendedFluctuation}{%
     \texttt{colvar}}{%
     Standard deviation between the colvar and the fictitious
     particle (colvar unit)}{%
@@ -652,8 +652,8 @@ coordinates) only feels the force from the harmonic spring.
     where $\sigma$ is the value of \texttt{extendedFluctuation}.}
 
 \item %
-  \keydef{%
-    extendedTimeConstant}{%
+  \keydef
+    {extendedTimeConstant}{%
     \texttt{colvar}}{%
     Oscillation period of the fictitious particle (fs)}{%
     positive decimal}{%
@@ -667,8 +667,8 @@ coordinates) only feels the force from the harmonic spring.
     where $\tau$ is the period and $\sigma$ is the typical fluctuation (see above).}
 
 \item %
-  \keydef{%
-    extendedTemp}{%
+  \keydef
+    {extendedTemp}{%
     \texttt{colvar}}{%
     Temperature for the extended degree of freedom (K)}{%
     positive decimal}{%
@@ -680,8 +680,8 @@ coordinates) only feels the force from the harmonic spring.
     default value.}
 
 \item %
-  \keydef{%
-    extendedLangevinDamping}{%
+  \keydef
+    {extendedLangevinDamping}{%
     \texttt{colvar}}{%
     Damping factor for extended Langevin dynamics
     (ps$^{-1}$)}{%
@@ -710,8 +710,8 @@ deviations are available.
 \begin{itemize}
 
 \item %
-  \keydef{%
-    corrFunc}{%
+  \keydef
+    {corrFunc}{%
     \texttt{colvar}}{%
     Calculate a time correlation function?}{%
     boolean}{%
@@ -720,8 +720,8 @@ deviations are available.
     for this colvar.}
 
 \item %
-  \key{%
-    corrFuncWithColvar}{%
+  \key
+    {corrFuncWithColvar}{%
     \texttt{colvar}}{%
     Colvar name for the correlation function}{%
     string}{%
@@ -732,8 +732,8 @@ deviations are available.
     quaternion) as $\xi_{i}$.}
 
 \item%
-  \keydef{%
-    corrFuncType}{%
+  \keydef
+    {corrFuncType}{%
     \texttt{colvar}}{%
     Type of the correlation function}{%
     \texttt{velocity}, \texttt{coordinate} or
@@ -750,8 +750,8 @@ deviations are available.
     $(3\cos(\theta)^{2}-1)/2$, is used instead of the cosine.}
 
 \item %
-  \keydef{%
-    corrFuncNormalize}{%
+  \keydef
+    {corrFuncNormalize}{%
     \texttt{colvar}}{%
     Normalize the time correlation function?}{%
     boolean}{%
@@ -761,8 +761,8 @@ deviations are available.
       O\left(\xi_{i}, \xi_{j}\right) \right\rangle$.}
 
 \item %
-  \keydef{%
-    corrFuncLength}{%
+  \keydef
+    {corrFuncLength}{%
     \texttt{colvar}}{%
     Length of the time correlation function}{%
     positive integer}{%
@@ -770,8 +770,8 @@ deviations are available.
     Length (in number of points) of the time correlation function.}
 
 \item %
-  \keydef{%
-    corrFuncStride}{%
+  \keydef
+    {corrFuncStride}{%
     \texttt{colvar}}{%
     Stride of the time correlation function}{%
     positive integer}{%
@@ -779,8 +779,8 @@ deviations are available.
     Number of steps between two values of the time correlation function.}
 
 \item %
-  \keydef{%
-    corrFuncOffset}{%
+  \keydef
+    {corrFuncOffset}{%
     \texttt{colvar}}{%
     Offset of the time correlation function}{%
     positive integer}{%
@@ -790,8 +790,8 @@ deviations are available.
     used for the normalization}.}
 
 \item %
-  \keydef{%
-    corrFuncOutputFile}{%
+  \keydef
+    {corrFuncOutputFile}{%
     \texttt{colvar}}{%
     Output file for the time correlation function}{%
     UNIX filename}{%
@@ -799,8 +799,8 @@ deviations are available.
     The time correlation function is saved in this file.}
 
 \item %
-  \keydef{%
-    runAve}{%
+  \keydef
+    {runAve}{%
     \texttt{colvar}}{%
     Calculate the running average and standard deviation}{%
     boolean}{%
@@ -809,8 +809,8 @@ deviations are available.
     be calculated for this colvar.}
 
 \item %
-  \keydef{%
-    runAveLength}{%
+  \keydef
+    {runAveLength}{%
     \texttt{colvar}}{%
     Length of the running average window}{%
     positive integer}{%
@@ -818,8 +818,8 @@ deviations are available.
     Length (in number of points) of the running average window.}
 
 \item %
-  \keydef{%
-    runAveStride}{%
+  \keydef
+    {runAveStride}{%
     \texttt{colvar}}{%
     Stride of the running average window values}{%
     positive integer}{%
@@ -827,8 +827,8 @@ deviations are available.
     Number of steps between two values within the running average window.}
 
 \item %
-  \keydef{%
-    runAveOutputFile}{%
+  \keydef
+    {runAveOutputFile}{%
     \texttt{colvar}}{%
     Output file for the running average and standard deviation}{%
     UNIX filename}{%
@@ -886,8 +886,8 @@ The complete list of selection keywords available in \MDENGINE{} is:
 \begin{itemize}
 
 \item %
-  \key{%
-    atomNumbers}{%
+  \key
+    {atomNumbers}{%
     atom group}{%
     List of atom numbers}{%
     space-separated list of positive integers}{%
@@ -897,16 +897,16 @@ The complete list of selection keywords available in \MDENGINE{} is:
 
 
 \item %
-  \key{%
-    indexGroup}{%
+  \key
+    {indexGroup}{%
     atom group}{%
     Name of index group to be used (GROMACS format)}{%
     string}{%
     If the name of an index file has been provided by \texttt{indexFile}, this option allows to select one index group from that file: the atoms from that index group will be used to define the current group.}
 
 \item %
-  \key{%
-    atomNumbersRange}{%
+  \key
+    {atomNumbersRange}{%
     atom group}{%
     Atoms within a number range}{%
     $<$Starting number$>$-$<$Ending number$>$}{%
@@ -915,8 +915,8 @@ The complete list of selection keywords available in \MDENGINE{} is:
 
 \cvnamebasedonly{
 \item %
-  \key{%
-    atomNameResidueRange}{%
+  \key
+    {atomNameResidueRange}{%
     atom group}{%
     Named atoms within a range of residue numbers}{%
     $<$Atom name$>$ $<$Starting residue$>$-$<$Ending residue$>$}{%
@@ -924,8 +924,8 @@ The complete list of selection keywords available in \MDENGINE{} is:
     name, within residues in the given range.}
 
 \item %
-  \key{%
-    psfSegID}{%
+  \key
+    {psfSegID}{%
     atom group}{%
     PSF segment identifier}{%
     space-separated list of strings (max 4 characters)}{%
@@ -936,8 +936,8 @@ The complete list of selection keywords available in \MDENGINE{} is:
     This option is only necessary if a PSF topology file is used.}
 
 \item %
-  \key{%
-    atomsFile}{%
+  \key
+    {atomsFile}{%
     atom group}{%
     PDB file name for atom selection}{%
     UNIX filename}{%
@@ -947,8 +947,8 @@ The complete list of selection keywords available in \MDENGINE{} is:
     provided must match that in the system's topology}.}
 
 \item %
-  \key{%
-    atomsCol}{%
+  \key
+    {atomsCol}{%
     atom group}{%
     PDB column to use for atom selection flags}{%
     \texttt{O}, \texttt{B}, \texttt{X}, \texttt{Y}, or \texttt{Z}}{%
@@ -956,8 +956,8 @@ The complete list of selection keywords available in \MDENGINE{} is:
   }
 
 \item %
-  \key{%
-    atomsColValue}{%
+  \key
+    {atomsColValue}{%
     atom group}{%
     Atom selection flag in the PDB column}{%
     positive decimal}{%
@@ -966,8 +966,8 @@ The complete list of selection keywords available in \MDENGINE{} is:
 }
 
 \item %
-  \key{%
-    dummyAtom}{%
+  \key
+    {dummyAtom}{%
     atom group}{%
     Dummy atom position (\AA{})}{%
     \texttt{(x, y, z)} triplet}{%
@@ -992,8 +992,8 @@ In typical applications, the default settings result in the expected behavior.
 \begin{itemize}
 
 \item %
-  \keydef{%
-    centerReference}{%
+  \keydef
+    {centerReference}{%
     atom group}{%
     Implicitly remove translations for this group}{%
     boolean}{%
@@ -1004,8 +1004,8 @@ In typical applications, the default settings result in the expected behavior.
 }
 
 \item %
-  \keydef{%
-    rotateReference}{%
+  \keydef
+    {rotateReference}{%
     atom group}{%
     Implicitly remove rotations for this group}{%
     boolean}{%
@@ -1018,8 +1018,8 @@ In typical applications, the default settings result in the expected behavior.
 }
 
 \item %
-  \key{%
-    refPositions}{%
+  \key
+    {refPositions}{%
     atom group}{%
     Reference positions for fitting (\AA)}{%
     space-separated list of \texttt{(x, y, z)} triplets}{%
@@ -1029,8 +1029,8 @@ In typical applications, the default settings result in the expected behavior.
 
 \cvnamebasedonly{
 \item %
-  \key{%
-    refPositionsFile}{%
+  \key
+    {refPositionsFile}{%
     atom group}{%
     File containing the reference positions for fitting}{%
     UNIX filename}{%
@@ -1042,16 +1042,16 @@ In typical applications, the default settings result in the expected behavior.
 }
 
 \item %
-  \key{%
-    refPositionsCol}{%
+  \key
+    {refPositionsCol}{%
     atom group}{%
     PDB column containing atom flags}{%
     \texttt{O}, \texttt{B}, \texttt{X}, \texttt{Y}, or \texttt{Z}}{%
     Like \texttt{atomsCol} for \texttt{atomsFile}, indicates which column to use to identify the atoms in \texttt{refPositionsFile}.}
 
 \item %
-  \key{%
-    refPositionsColValue}{%
+  \key
+    {refPositionsColValue}{%
     atom group}{%
     Atom selection flag in the PDB column}{%
     positive decimal}{%
@@ -1059,8 +1059,8 @@ In typical applications, the default settings result in the expected behavior.
 }
 
 \item %
-  \keydef{%
-    refPositionsGroup}{%
+  \keydef
+    {refPositionsGroup}{%
     atom group}{%
     Use an alternate set of atoms to define the roto-translation}{%
     Block \texttt{refPositionsGroup \{ ... \}}}{%
@@ -1098,8 +1098,8 @@ The following two options have default values appropriate for the vast majority 
 \begin{itemize}
 
 \item %
-  \keydef{%
-    enableFitGradients}{%
+  \keydef
+    {enableFitGradients}{%
     atom group}{%
     Include the roto-translational contribution to colvar gradients}{%
     boolean}{%
@@ -1113,8 +1113,8 @@ The following two options have default values appropriate for the vast majority 
 }
 
 \item %
-  \keydef{%
-    enableForces}{%
+  \keydef
+    {enableForces}{%
     atom group}{%
     Apply forces from this colvar to this group}{%
     boolean}{%
@@ -1227,22 +1227,22 @@ The \texttt{distance \{...\}} block defines a distance component,
 between two atom groups, \texttt{group1} and \texttt{group2}.
 \begin{itemize}
 \item %
-  \key{%
-    group1}{%
+  \key
+    {group1}{%
     \texttt{distance}}{%
     First group of atoms}{%
     Block \texttt{group1 \{...\}}}{%
     First group of atoms.}
 \item %
-  \key{%
-    group2}{%
+  \key
+    {group2}{%
     \texttt{distance}}{%
     Second group of atoms}{%
     Block \texttt{group2 \{...\}}}{%
     Second group of atoms.}
 \item %
-  \keydef{%
-    forceNoPBC}{%
+  \keydef
+    {forceNoPBC}{%
     \texttt{distance}}{%
     Calculate absolute rather than minimum-image distance?}{%
     boolean}{%
@@ -1257,8 +1257,8 @@ between two atom groups, \texttt{group1} and \texttt{group2}.
     boundaries, and for which the minimum-image distance might give the
     wrong result because of a relatively small periodic cell.}
 \item %
-  \keydef{%
-    oneSiteSystemForce}{%
+  \keydef
+    {oneSiteSystemForce}{%
     \texttt{distance}}{%
     Measure system force on group 1 only?}{%
     boolean}{%
@@ -1285,15 +1285,15 @@ an axis.  The axis can be defined using either one reference group and
 a constant vector, or dynamically based on two reference groups.
 \begin{itemize}
 \item %
-  \key{%
-    main}{%
+  \key
+    {main}{%
     \texttt{distanceZ, \texttt{distanceXY}}}{%
     Main group of atoms}{%
     Block \texttt{main \{...\}}}{%
     Group of atoms whose position $\bm{r}$ is measured.}
 \item %
-  \key{%
-    ref}{%
+  \key
+    {ref}{%
     \texttt{distanceZ, \texttt{distanceXY}}}{%
     Reference group of
     atoms}{%
@@ -1301,8 +1301,8 @@ a constant vector, or dynamically based on two reference groups.
     Reference group of atoms.  The position of its center of mass is
     noted $\bm{r}_1$ below.}
 \item %
-  \keydef{%
-    ref2}{%
+  \keydef
+    {ref2}{%
     \texttt{distanceZ, \texttt{distanceXY}}}{%
     Secondary reference
     group}{%
@@ -1314,8 +1314,8 @@ a constant vector, or dynamically based on two reference groups.
     the origin is $\bm{r}_m = 1/2 (\bm{r}_1+\bm{r}_2)$, and the value
     of the component is $\bm{e} \cdot (\bm{r}-\bm{r}_m)$.}
 \item %
-  \keydef{%
-    axis}{%
+  \keydef
+    {axis}{%
     \texttt{distanceZ}, \texttt{distanceXY}}{%
     Projection axis (\AA{})}{%
     \texttt{(x, y, z)} triplet}{%
@@ -1327,8 +1327,8 @@ a constant vector, or dynamically based on two reference groups.
     (\bm{r}-\bm{r}_1)$.  The vector should be written as three
     components separated by commas and enclosed in parentheses.}
 \item %
-  \keydef{%
-    forceNoPBC}{%
+  \keydef
+    {forceNoPBC}{%
     \texttt{distanceZ, distanceXY}}{%
     Calculate absolute rather than minimum-image distance?}{%
     boolean}{%
@@ -1336,8 +1336,8 @@ a constant vector, or dynamically based on two reference groups.
     This parameter has the same meaning as that described above for the \texttt{distance}
     component.}
 \item %
-  \keydef{%
-    oneSiteSystemForce}{%
+  \keydef
+    {oneSiteSystemForce}{%
     \texttt{distanceZ, distanceXY}}{%
     Measure system force on group \texttt{main} only?}{%
     boolean}{%
@@ -1393,8 +1393,8 @@ where $\Vert\mathbf{d}^{ij}\Vert$ is the distance between atoms $i$ and $j$ in g
 This component accepts the same keywords as the component \texttt{distance}: \texttt{group1}, \texttt{group2}, and \texttt{forceNoPBC}.  In addition, the following option may be provided:
 \begin{itemize}
 \item %
-  \keydef{%
-    exponent}{%
+  \keydef
+    {exponent}{%
     \texttt{distanceInv}}{%
     Exponent $n$ in equation~\ref{eq:distanceInv}}{%
     positive even integer}{%
@@ -1419,8 +1419,8 @@ calculates all the distances between two angles taking into account
 periodicity.  For instance, reference values for restraints or range
 boundaries can be defined by using any real number of choice.
 \begin{itemize}
-\item \keydef{%
-    oneSiteSystemForce}{%
+\item \keydef
+    {oneSiteSystemForce}{%
     \texttt{angle}, \texttt{dihedral}}{%
     Measure system force on group 1 only?}{%
     boolean}{%
@@ -1456,8 +1456,8 @@ recognizes the following keywords:
 \begin{itemize}
 
 \item %
-  \keydef{%
-    cutoff}{%
+  \keydef
+    {cutoff}{%
     \texttt{coordNum}}{%
     ``Interaction'' distance (\AA)}{%
     positive decimal}{%
@@ -1470,8 +1470,8 @@ recognizes the following keywords:
     for a proper behavior, $m$ must be larger than $n$.}
 
 \item %
-  \keydef{%
-    cutoff3}{%
+  \keydef
+    {cutoff3}{%
     \texttt{coordNum}}{%
     Reference distance vector (\AA)}{%
     ``\texttt{(x, y, z)}'' triplet of positive decimals}{%
@@ -1481,8 +1481,8 @@ recognizes the following keywords:
     \texttt{cutoff}.}
 
 \item %
-  \keydef{%
-    expNumer}{%
+  \keydef
+    {expNumer}{%
     \texttt{coordNum}}{%
     Numerator exponent}{%
     positive even integer}{%
@@ -1490,8 +1490,8 @@ recognizes the following keywords:
     This number defines the $n$ exponent for the switching function.}
 
 \item %
-  \keydef{%
-    expDenom}{%
+  \keydef
+    {expDenom}{%
     \texttt{coordNum}}{%
     Denominator exponent}{%
     positive even integer}{%
@@ -1499,8 +1499,8 @@ recognizes the following keywords:
     This number defines the $m$ exponent for the switching function.}
 
 \item %
-  \keydef{%
-    group2CenterOnly}{%
+  \keydef
+    {group2CenterOnly}{%
     \texttt{coordNum}}{%
     Use only \texttt{group2}'s center of
     mass}{%
@@ -1594,8 +1594,8 @@ are:
 \begin{itemize}
 
 \item %
-  \key{%
-    atoms}{%
+  \key
+    {atoms}{%
     \texttt{rmsd}}{%
     Atom group}{%
     \texttt{atoms~\{...\}} block}{%
@@ -1607,8 +1607,8 @@ are:
     }
 
 \item %
-  \key{%
-    refPositions}{%
+  \key
+    {refPositions}{%
     \texttt{rmsd}}{%
     Reference coordinates}{%
     space-separated list of \texttt{(x, y, z)} triplets}{%
@@ -1622,8 +1622,8 @@ are:
 
 \cvnamebasedonly{
 \item %
-  \key{%
-    refPositionsFile}{%
+  \key
+    {refPositionsFile}{%
     \texttt{rmsd}}{%
     Reference coordinates file}{%
     UNIX filename}{%
@@ -1634,8 +1634,8 @@ are:
     }
 
 \item %
-  \key{%
-    refPositionsCol}{%
+  \key
+    {refPositionsCol}{%
     \texttt{rmsd}}{%
     PDB column containing atom flags}{%
     \texttt{O}, \texttt{B}, \texttt{X}, \texttt{Y}, or \texttt{Z}}{%
@@ -1646,8 +1646,8 @@ are:
   }
 
 \item %
-  \key{%
-    refPositionsColValue}{%
+  \key
+    {refPositionsColValue}{%
     \texttt{rmsd}}{%
     Atom selection flag in the PDB column}{%
     positive decimal}{%
@@ -1726,8 +1726,8 @@ In addition, the following are recognized:
 \begin{itemize}
 
 \item %
-  \key{%
-    vector}{%
+  \key
+    {vector}{%
     \texttt{eigenvector}}{%
     Vector components}{%
     space-separated list of \texttt{(x, y, z)} triplets}{%
@@ -1735,8 +1735,8 @@ In addition, the following are recognized:
 
 \cvnamebasedonly{
 \item %
-  \key{%
-    vectorFile}{%
+  \key
+    {vectorFile}{%
     \texttt{eigenvector}}{%
     PDB file containing vector components}{%
     UNIX filename}{%
@@ -1749,16 +1749,16 @@ In addition, the following are recognized:
       used instead.}}
 
 \item %
-  \key{%
-    vectorCol}{%
+  \key
+    {vectorCol}{%
     \texttt{eigenvector}}{%
     PDB column used to flag participating atoms}{%
     \texttt{O} or \texttt{B}}{%
     Analogous to \texttt{atomsCol}.}
 
 \item %
-  \key{%
-    vectorColValue}{%
+  \key
+    {vectorColValue}{%
     \texttt{eigenvector}}{%
     Value used to flag participating atoms in the PDB file}{%
     positive decimal}{%
@@ -1766,8 +1766,8 @@ In addition, the following are recognized:
 }
 
 \item %
-  \keydef{%
-    differenceVector}{%
+  \keydef
+    {differenceVector}{%
     \texttt{eigenvector}}{%
     The $3n$-dimensional vector is the difference between \texttt{vector} and \texttt{refPositions}}{%
     boolean}{%
@@ -1836,8 +1836,8 @@ define the atom group, and returns a positive number, expressed in
 \AA{}$^{2}$.  The following option may also be provided:
 \begin{itemize}
 \item %
-  \keydef{%
-    axis}{%
+  \keydef
+    {axis}{%
     \texttt{inertiaZ}}{%
     Projection axis (\AA{})}{%
     \texttt{(x, y, z)} triplet}{%
@@ -1873,8 +1873,8 @@ As for the component \texttt{rmsd}, the available options are \texttt{atoms}\cvn
 \begin{itemize}
 
 \item %
-  \keydef{%
-    closestToQuaternion}{%
+  \keydef
+    {closestToQuaternion}{%
     \texttt{orientation}}{%
     Reference rotation}{%
     ``\texttt{(q0, q1, q2, q3)}'' quadruplet}{%
@@ -1914,8 +1914,8 @@ This can be defined using the same options as the component \texttt{orientation}
 In addition, \texttt{spinAngle} accepts the \texttt{axis} option:
 \begin{itemize}
 \item %
-  \keydef{%
-    axis}{%
+  \keydef
+    {axis}{%
     \texttt{tilt, spinAngle}}{%
     Special rotation axis (\AA{})}{%
     \texttt{(x, y, z)} triplet}{%
@@ -2004,9 +2004,10 @@ colvar component on the same atoms.  The options recognized within the
 \begin{itemize}
 
 \item %
-  \key{%
-    residueRange}{%
-    (\texttt{alpha}) Potential $\alpha$-helical residues}{%
+  \key
+    {residueRange}{%
+      \texttt{alpha}}{%
+      Potential $\alpha$-helical residues}{%
     ``$<$Initial residue number$>$-$<$Final residue number$>$''}{%
     This option specifies the range of residues on which this
     component should be defined.  The colvar module looks for the
@@ -2015,8 +2016,8 @@ colvar component on the same atoms.  The options recognized within the
     not found.}
 
 \item %
-  \key{%
-    psfSegID}{%
+  \key
+    {psfSegID}{%
     \texttt{alpha}}{%
     PSF segment identifier}{%
     string (max 4 characters)}{%
@@ -2026,8 +2027,8 @@ colvar component on the same atoms.  The options recognized within the
 
 
 \item %
-  \keydef{%
-    hBondCoeff}{%
+  \keydef
+    {hBondCoeff}{%
     \texttt{alpha}}{%
     Coefficient for the hydrogen bond term}{%
     positive between 0 and 1}{%
@@ -2037,8 +2038,8 @@ colvar component on the same atoms.  The options recognized within the
     disables the angle terms.}
 
 \item %
-  \keydef{%
-    angleRef}{%
+  \keydef
+    {angleRef}{%
     \texttt{alpha}}{%
     Reference $\mathrm{C}_{\alpha} -
     \mathrm{C}_{\alpha} - \mathrm{C}_{\alpha}$ angle}{%
@@ -2048,8 +2049,8 @@ colvar component on the same atoms.  The options recognized within the
     (\ref{eq:colvars_alpha_Calpha}).}
 
 \item %
-  \keydef{%
-    angleTol}{%
+  \keydef
+    {angleTol}{%
     \texttt{alpha}}{%
     Tolerance in the $\mathrm{C}_{\alpha} -
     \mathrm{C}_{\alpha} - \mathrm{C}_{\alpha}$ angle}{%
@@ -2059,8 +2060,8 @@ colvar component on the same atoms.  The options recognized within the
     (\ref{eq:colvars_alpha_Calpha}).}
 
 \item %
-  \keydef{%
-    hBondCutoff}{%
+  \keydef
+    {hBondCutoff}{%
     \texttt{alpha}}{%
     Hydrogen bond cutoff}{%
     positive decimal}{%
@@ -2069,8 +2070,8 @@ colvar component on the same atoms.  The options recognized within the
     component.}
 
 \item %
-  \keydef{%
-    hBondExpNumer}{%
+  \keydef
+    {hBondExpNumer}{%
     \texttt{alpha}}{%
     Hydrogen bond numerator exponent}{%
     positive integer}{%
@@ -2079,8 +2080,8 @@ colvar component on the same atoms.  The options recognized within the
     component.}
 
 \item %
-  \keydef{%
-    hBondExpDenom}{%
+  \keydef
+    {hBondExpDenom}{%
     \texttt{alpha}}{%
     Hydrogen bond denominator exponent}{%
     positive integer}{%
@@ -2123,8 +2124,8 @@ and \texttt{psfSegID}) in addition to the following:
 
 \begin{itemize}
 \item %
-  \key{%
-    vectorFile}{%
+  \key
+    {vectorFile}{%
     \texttt{dihedralPC}}{%
     File containing dihedral PCA eigenvector(s)}{%
     file name}{%
@@ -2133,8 +2134,8 @@ and \texttt{psfSegID}) in addition to the following:
     as in the files output by Carma.\cite{Glykos2006}}
 
 \item %
-  \key{%
-    vectorNumber}{%
+  \key
+    {vectorNumber}{%
     \texttt{dihedralPC}}{%
     File containing dihedralPCA eigenvector(s)}{%
     positive integer}{%
@@ -2163,8 +2164,8 @@ illegal elsewhere):
 
 \begin{itemize}
 \item %
-  \keydef{%
-    period}{%
+  \keydef
+    {period}{%
     \texttt{distanceZ}}{%
     Period of the component}{%
     positive decimal}{%
@@ -2176,8 +2177,8 @@ illegal elsewhere):
     period is always 360~degrees.}
 
 \item %
-  \keydef{%
-    wrapAround}{%
+  \keydef
+    {wrapAround}{%
     \texttt{distanceZ}, \texttt{dihedral} or \texttt{spinAngle}}{%
     Center
     of the wrapping interval for periodic variables}{%
@@ -2265,8 +2266,8 @@ equation~(\ref{eq:colvar_combination})) can be obtained by setting the
 following parameters, which are common to all components:
 \begin{itemize}
 \item %
-  \keydef{%
-    componentCoeff}{%
+  \keydef
+    {componentCoeff}{%
     any component}{%
     Coefficient of this component in the colvar}{%
     decimal}{%
@@ -2276,8 +2277,8 @@ following parameters, which are common to all components:
     to the sum.}
 
 \item %
-  \keydef{%
-    componentExp}{%
+  \keydef
+    {componentExp}{%
     any component}{%
     Exponent of this component in the colvar}{%
     integer}{%
@@ -2305,8 +2306,8 @@ recognize the following options:
 \begin{itemize}
 
 \item %
-  \keydef{%
-    name}{%
+  \keydef
+    {name}{%
     colvar bias}{%
     Identifier for the bias}{%
     string}{%
@@ -2315,8 +2316,8 @@ recognize the following options:
     output messages and to name some output files.}
 
 \item %
-  \key{%
-    colvars}{%
+  \key
+    {colvars}{%
     colvar bias}{%
     Collective variables involved}{%
     space-separated list of colvar names}{%
@@ -2324,8 +2325,8 @@ recognize the following options:
     analysis will be applied.}
 
 \item %
-  \keydef{%
-    outputEnergy}{%
+  \keydef
+    {outputEnergy}{%
     colvar bias}{%
     Write the current bias energy to the trajectory file}{%
     boolean}{%
@@ -2721,8 +2722,8 @@ The values of these options are optimal for colvars with correlation times $\tau
 \begin{itemize}
 
 \item %
-  \keydef{%
-    hillWeight}{%
+  \keydef
+    {hillWeight}{%
     \texttt{metadynamics}}{%
     Height of each hill (\cvnamdonly{kcal/mol}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
     positive decimal}{%
@@ -2732,8 +2733,8 @@ The values of these options are optimal for colvars with correlation times $\tau
     of longer simulation times to complete a PMF calculation.}
 
 \item %
-  \keydef{%
-    newHillFrequency}{%
+  \keydef
+    {newHillFrequency}{%
     \texttt{metadynamics}}{%
     Frequency of hill creation}{%
     positive integer}{%
@@ -2759,8 +2760,8 @@ The following two options allow to control this behavior and to visually track s
 \begin{itemize}
 
 \item %
-  \keydef{%
-    writeFreeEnergyFile}{%
+  \keydef
+    {writeFreeEnergyFile}{%
     \texttt{metadynamics}}{%
     Periodically write the PMF for visualization}{%
     boolean}{%
@@ -2769,8 +2770,8 @@ The following two options allow to control this behavior and to visually track s
     written every \texttt{colvarsRestartFrequency} steps.}
 
 \item %
-  \keydef{%
-    saveFreeEnergyFile}{%
+  \keydef
+    {saveFreeEnergyFile}{%
     \texttt{metadynamics}}{%
     Keep all the PMF files}{%
     boolean}{%
@@ -2800,8 +2801,8 @@ Default values are chosen to minimize such cost with no loss of accuracy.
 \begin{itemize}
 
 \item %
-  \keydef{%
-    useGrids}{%
+  \keydef
+    {useGrids}{%
     \texttt{metadynamics}}{%
     Interpolate the hills with grids}{%
     boolean}{%
@@ -2817,8 +2818,8 @@ Default values are chosen to minimize such cost with no loss of accuracy.
     direction of that colvar.}
 
 \item %
-  \keydef{%
-    hillWidth}{%
+  \keydef
+    {hillWidth}{%
     \texttt{metadynamics}}{%
     Relative width of the hills}{%
     positive decimal}{%
@@ -2834,8 +2835,8 @@ Default values are chosen to minimize such cost with no loss of accuracy.
       should be avoided to avoid discretization errors}.}
 
 \item %
-  \keydef{%
-    rebinGrids}{%
+  \keydef
+    {rebinGrids}{%
     \texttt{metadynamics}}{%
     Recompute the grids when reading a state
     file}{%
@@ -2855,8 +2856,8 @@ The following options define the configuration for the ``well-tempered'' metadyn
 
 \begin{itemize}
 \item %
-  \keydef{%
-    wellTempered}{%
+  \keydef
+    {wellTempered}{%
     \texttt{metadynamics}}{%
     Perform well-tempered metadynamics}{%
     boolean}{%
@@ -2868,8 +2869,8 @@ The following options define the configuration for the ``well-tempered'' metadyn
     Li Li (Luthey-Schulten group, Departement of Chemistry, UIUC).}
 
 \item %
-  \key{%
-    biasTemperature}{%
+  \key
+    {biasTemperature}{%
     \texttt{metadynamics}}{%
     Temperature bias for well-tempered metadynamics}{%
     positive decimal}{%
@@ -2891,8 +2892,8 @@ one replica:
 \begin{itemize}
 
 \item %
-  \keydef{%
-    multipleReplicas}{%
+  \keydef
+    {multipleReplicas}{%
     \texttt{metadynamics}}{%
     Multiple replicas metadynamics}{%
     boolean}{%
@@ -2919,8 +2920,8 @@ one replica:
     \texttt{outputName}.  }
   
 \item %
-  \key{%
-    replicaID}{%
+  \key
+    {replicaID}{%
     \texttt{metadynamics}}{%
     Set the identifier for this replica}{%
     string}{%
@@ -2930,8 +2931,8 @@ one replica:
     of this option.}
   
 \item %
-  \keydef{%
-    replicasRegistry}{%
+  \keydef
+    {replicasRegistry}{%
     \texttt{metadynamics}}{%
     Multiple replicas database file}{%
     UNIX filename}{%
@@ -2949,8 +2950,8 @@ one replica:
   }
 
 \item %
-  \keydef{%
-    replicaUpdateFrequency}{%
+  \keydef
+    {replicaUpdateFrequency}{%
     \texttt{metadynamics}}{%
     How often hills are communicated between
     replicas}{%
@@ -2966,8 +2967,8 @@ one replica:
     not improve performance significantly.}
 
 \item %
-  \keydef{%
-    dumpPartialFreeEnergyFile}{%
+  \keydef
+    {dumpPartialFreeEnergyFile}{%
     \texttt{metadynamics}}{%
     Periodically write the contribution to the
     PMF from this replica}{%
@@ -2989,8 +2990,8 @@ The following options may be useful only for applications that go beyond the cal
 \begin{itemize}
 
 \item %
-  \keydef{%
-    name}{%
+  \keydef
+    {name}{%
     \texttt{metadynamics}}{%
     Name of this metadynamics instance}{%
     string}{%
@@ -3002,8 +3003,8 @@ The following options may be useful only for applications that go beyond the cal
     name of this bias is included in the metadynamics output file names, such as e.g.~the \texttt{.pmf} file.}
 
 % \item %
-%   \keydef{%
-%     gridsUpdateFrequency}{%
+%   \keydef
+%     {gridsUpdateFrequency}{%
 %     \texttt{metadynamics}}{%
 %  Frequency of update of the grids}{%
 %     positive integer}{%
@@ -3013,8 +3014,8 @@ The following options may be useful only for applications that go beyond the cal
 %     \texttt{gridsUpdateFrequency} steps.}
 
 \item %
-  \keydef{%
-    keepHills}{%
+  \keydef
+    {keepHills}{%
     \texttt{metadynamics}}{%
     Write each individual hill to the state
     file}{%
@@ -3027,8 +3028,8 @@ The following options may be useful only for applications that go beyond the cal
     added hills, \texttt{writeHillsTrajectory} is preferable.}
 
 \item %
-  \keydef{%
-    writeHillsTrajectory}{%
+  \keydef
+    {writeHillsTrajectory}{%
     \texttt{metadynamics}}{%
     Write a log of new hills}{%
     boolean}{%
@@ -3066,8 +3067,8 @@ block, which may contain (in addition to the standard option
 \begin{itemize}
 
 \item %
-  \keydef{%
-    forceConstant}{%
+  \keydef
+    {forceConstant}{%
     \texttt{harmonic}}{%
     Scaled force constant (\cvnamdonly{kcal/mol}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
     positive decimal}{%
@@ -3084,8 +3085,8 @@ block, which may contain (in addition to the standard option
     40~kcal/mol/\AA$^2$ for the distance.}
 
 \item %
-  \key{%
-    centers}{%
+  \key
+    {centers}{%
     \texttt{harmonic}}{%
     Initial harmonic restraint centers}{%
     space-separated list of colvar values}{%
@@ -3116,8 +3117,8 @@ When the centers are changed continuously, a steered MD in a collective variable
 \begin{itemize}
 
 \item %
-  \key{%
-    targetCenters}{%
+  \key
+    {targetCenters}{%
     \texttt{harmonic}}{%
     Steer the restraint centers towards these
     targets}{%
@@ -3141,8 +3142,8 @@ When the centers are changed continuously, a steered MD in a collective variable
     \texttt{outputAppliedForce} within each of the colvars involved.}
 
 \item %
-  \key{%
-    targetNumSteps}{%
+  \key
+    {targetNumSteps}{%
     \texttt{harmonic}}{%
     Number of steps for steering}{%
     positive integer}{%
@@ -3155,8 +3156,8 @@ When the centers are changed continuously, a steered MD in a collective variable
     number of MD steps \emph{per stage}.}
 
 \item %
-  \keydef{%
-    outputCenters}{%
+  \keydef
+    {outputCenters}{%
     \texttt{harmonic}}{%
     Write the current centers to the trajectory file}{%
     boolean}{%
@@ -3166,8 +3167,8 @@ When the centers are changed continuously, a steered MD in a collective variable
 }
 
 \item %
-  \keydef{%
-    outputAccumulatedWork}{%
+  \keydef
+    {outputAccumulatedWork}{%
     \texttt{harmonic}}{%
     Write the accumulated work of the moving restraint to the trajectory file}{%
     boolean}{%
@@ -3200,8 +3201,8 @@ To activate an umbrella sampling simulation, the same keywords as in the previou
 \begin{itemize}
 
 \item %
-  \keydef{%
-    targetNumStages}{%
+  \keydef
+    {targetNumStages}{%
     \texttt{harmonic}}{%
     Number of stages for steering}{%
     non-negative integer}{%
@@ -3223,8 +3224,8 @@ The force constant of the harmonic restraint may also be changed to equilibrate 
 \begin{itemize}
 
 \item %
-  \key{%
-    targetForceConstant}{%
+  \key
+    {targetForceConstant}{%
     \texttt{harmonic}}{%
     Change the force constant towards this value}{%
     positive decimal}{%
@@ -3249,10 +3250,11 @@ The force constant of the harmonic restraint may also be changed to equilibrate 
     determination of a PMF for the restrained coordinate.\cite{Deng2009}}
 
 \item %
-  \keydef{%
-    targetForceExponent}{%
-    Exponent in the time-dependence of the force constant}{%
-    decimal equal to or greater than 1.0}{%
+  \keydef
+    {targetForceExponent}{%
+      \texttt{harmonic}}{%
+      Exponent in the time-dependence of the force constant}{%
+      decimal equal to or greater than 1.0}{%
     \texttt{1.0}}{%
     Sets the exponent, $\alpha$, in the function used to vary the force
     constant as a function of time. The force is varied according to a
@@ -3271,8 +3273,8 @@ The force constant of the harmonic restraint may also be changed to equilibrate 
     been found to give good results in some tests.}
 
 \item %
-  \key{%
-    targetEquilSteps}{%
+  \key
+    {targetEquilSteps}{%
     \texttt{harmonic}}{%
     Number of steps discarded from TI estimate}{%
     positive integer}{%
@@ -3281,8 +3283,8 @@ The force constant of the harmonic restraint may also be changed to equilibrate 
     estimate reported reported in the output.}
 
 \item %
-  \key{%
-    lambdaSchedule}{%
+  \key
+    {lambdaSchedule}{%
     \texttt{harmonic}}{%
     Schedule of lambda-points for changing force constant}{%
     list of real numbers between 0 and 1}{%
@@ -3306,8 +3308,8 @@ using \cite{Pitera2012}.
 \begin{itemize}
 
 \item %
-  \keydef{%
-    forceConstant}{%
+  \keydef
+    {forceConstant}{%
     \texttt{linear}}{%
     Scaled force constant (\cvnamdonly{kcal/mol}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
     positive decimal}{%
@@ -3319,8 +3321,8 @@ using \cite{Pitera2012}.
     are effectively dimensionless and of commensurate size.}
 
 \item %
-  \key{%
-    centers}{%
+  \key
+    {centers}{%
     \texttt{linear}}{%
     Initial linear restraint centers}{%
     space-separated list of colvar values}{%
@@ -3353,7 +3355,7 @@ an optimization algorithm until the bias has converged}.
 
 \begin{itemize}
 \item %
-      \key{centers}{\texttt{ALB}}{%
+      \key{centers}{\texttt{alb}}{%
       Collective variable centers}{%
       space-separated list of colvar values}{%
       The desired center (equilibrium values) which will be sought during the 
@@ -3366,7 +3368,7 @@ an optimization algorithm until the bias has converged}.
     periodicities or symmetries, its closest image to the restraint
     center is considered when calculating the linear potential.}
 \item %
-      \key{updateFrequency}{\texttt{ALB}}{%
+      \key{updateFrequency}{\texttt{alb}}{%
       The duration of updates}{An integer}{%
       This is, $N$, the number of simulation steps to use for each update to the bias.
       This determines how long the system requires to equilibrate 
@@ -3385,7 +3387,7 @@ an optimization algorithm until the bias has converged}.
       collective variables being biased and still converge correctly.}
 
 \item %
-      \keydef{forceRange}{\texttt{ALB}}{% 
+      \keydef{forceRange}{\texttt{alb}}{% 
       The expected range of the force constant in units of energy}{A space-separated list of decimal numbers}{%
       3 $k_b T$}{%
       This is largest magnitude of the force constant which one expects. If this parameter is
@@ -3399,7 +3401,7 @@ an optimization algorithm until the bias has converged}.
       prevent this dynamic update, add \texttt{hardForceRange yes}
       as a parameter}
 \item %
-      \key{rateMax}{\texttt{ALB}}{%
+      \key{rateMax}{\texttt{alb}}{%
       The maximum rate of change of force constant}{%
       A list of space-separated real numbers}{%
       This optional parameter controls
