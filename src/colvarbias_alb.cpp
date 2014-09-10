@@ -78,16 +78,11 @@ colvarbias_alb::colvarbias_alb(std::string const &conf, char const *key) :
 
   if(!get_keyval (conf, "forceRange", max_coupling_range, max_coupling_range)) {
     //set to default
-<<<<<<< HEAD
     for(i = 0; i < colvars.size(); i++) {
-      if(cvm::temperature() > 0) 
-=======
-    for(size_t i = 0; i < colvars.size(); i++) {
       if(cvm::temperature() > 0)
->>>>>>> remove trailing whitespace to trigger version tag
-	max_coupling_range[i] =   3 * cvm::temperature() * cvm::boltzmann();
+        max_coupling_range[i] =   3 * cvm::temperature() * cvm::boltzmann();
       else
-	max_coupling_range[i] =   3 * cvm::boltzmann();
+        max_coupling_range[i] =   3 * cvm::boltzmann();
     }
   }
 
