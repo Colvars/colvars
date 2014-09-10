@@ -283,11 +283,8 @@ void colvarproxy_namd::log (std::string const &message)
 
 void colvarproxy_namd::error (std::string const &message)
 {
-  if (cvm::get_error() & FATAL_ERROR) {
-    fatal_error(message);
-  } else {
-    log (message);
-  }
+  // In NAMD, all errors are fatal
+  fatal_error(message); 
 }
 
 
@@ -349,8 +346,8 @@ e_pdb_field pdb_field_str2enum (std::string const &pdb_field_str)
   }
 
   if (pdb_field == e_pdb_none) {
-    cvm::fatal_error ("Error: unsupported PDB field, \""+
-                      pdb_field_str+"\".\n");
+    cvm::error ("Error: unsupported PDB field, \""+
+                 pdb_field_str+"\".\n", INPUT_ERROR);
   }
 
   return pdb_field;
@@ -517,7 +514,7 @@ int colvarproxy_namd::load_atoms (char const *pdb_filename,
   }
 
   delete pdb;
-  return COLVARS_OK;
+  return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
 }
 
 

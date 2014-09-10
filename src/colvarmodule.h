@@ -20,19 +20,20 @@
 /// shared between all object instances) to be accessed from other
 /// objects.
 
-// Method return codes
+// Internal method return codes
 #define COLVARS_ERROR -1
 #define COLVARS_OK 0
 
 // On error, values of the colvars module error register
-#define GENERAL_ERROR 1
-#define FILE_ERROR (1<<1)
-#define MEMORY_ERROR (1<<2)
-#define BUG_ERROR (1<<3) // Inconsistent state indicating bug
-#define PARSE_ERROR (1<<4)
-#define DELETE_COLVARS (1<<5) // Instruct the caller to delete cvm
-#define FATAL_ERROR (1<<6) // Should be set, or not, together with other bits
-#define INPUT_ERROR (1<<7) // out of bounds or inconsistent input
+#define GENERAL_ERROR   1
+#define FILE_ERROR      (1<<1)
+#define MEMORY_ERROR    (1<<2)
+#define BUG_ERROR       (1<<3) // Inconsistent state indicating bug
+#define PARSE_ERROR     (1<<4)
+#define DELETE_COLVARS  (1<<5) // Instruct the caller to delete cvm
+#define FATAL_ERROR     (1<<6) // Should be set, or not, together with other bits
+#define INPUT_ERROR     (1<<7) // out of bounds or inconsistent input
+
 
 #include <iostream>
 #include <iomanip>
