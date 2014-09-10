@@ -523,18 +523,21 @@ void cvm::atom::read_position()
 
 void cvm::atom::read_velocity()
 {
-  cvm::error ("Error: VMD does not store velocities for the colvars to use.\n");
+  // Unavailable, but do not display an error to avoid flooding the output
+  return;
 }
 
 
 void cvm::atom::read_system_force()
 {
-  cvm::error ("Error: system forces are undefined in VMD.\n");
+  // Unavailable, but do not display an error to avoid flooding the output
+  return;
 }
 
 
 void cvm::atom::apply_force (cvm::rvector const &new_force)
 {
-  cvm::error ("Error: cannot apply forces in VMD.\n");
+  // Unavailable, but do not display an error to avoid flooding the output
+  return;
 }
 
