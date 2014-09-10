@@ -70,14 +70,14 @@
 
 % use macros with context field to document keywords
 \newcommand{\key}[5]{%
-  \index{\texttt{#1}}
+  \index{#2!\texttt{#1}}
   {\bf \large \tt #1 } $\langle\,$#3$\,\rangle$ \\%
   {\bf Context: } #2 \\%
   {\bf Acceptable values: } #4 \\%
   {\bf Description: } #5%
 }
 \newcommand{\keydef}[6]{%
-  \index{\texttt{#1}}
+  \index{#2!\texttt{#1}}
   {\bf \large \tt #1 } $\langle\,$#3$\,\rangle$ \\%
   {\bf Context: } #2 \\%
   {\bf Acceptable values: } #4 \\%
