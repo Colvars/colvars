@@ -256,6 +256,12 @@ void colvarproxy_lammps::log(std::string const &message)
   }
 }
 
+void colvarproxy_lammps::error(std::string const &message)
+{
+  // In LAMMPS, all errors are fatal
+  fatal_error(message);
+}
+
 void colvarproxy_lammps::fatal_error(std::string const &message)
 {
   log(message);
