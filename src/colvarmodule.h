@@ -4,7 +4,7 @@
 #define COLVARMODULE_H
 
 #ifndef COLVARS_VERSION
-#define COLVARS_VERSION "2014-08-13"
+#define COLVARS_VERSION "2014-09-11"
 #endif
 
 #ifndef COLVARS_DEBUG
@@ -29,10 +29,9 @@
 #define FILE_ERROR      (1<<1)
 #define MEMORY_ERROR    (1<<2)
 #define BUG_ERROR       (1<<3) // Inconsistent state indicating bug
-#define PARSE_ERROR     (1<<4)
+#define INPUT_ERROR     (1<<4) // out of bounds or inconsistent input
 #define DELETE_COLVARS  (1<<5) // Instruct the caller to delete cvm
 #define FATAL_ERROR     (1<<6) // Should be set, or not, together with other bits
-#define INPUT_ERROR     (1<<7) // out of bounds or inconsistent input
 
 
 #include <iostream>
@@ -118,7 +117,7 @@ public:
   {
     errorCode = 0;
   }
-  
+
   /// Current step number
   static size_t it;
   /// Starting step number for this run
@@ -198,7 +197,7 @@ public:
   int reset();
 
   /// Open a config file, load its contents, and pass it to config_string()
-  int config_file (char const *config_file_name); 
+  int config_file (char const *config_file_name);
 
   /// \brief Parse a config string assuming it is a complete configuration
   /// (i.e. calling all parse functions)
@@ -229,10 +228,10 @@ public:
   int setup();
 
   /// (Re)initialize and (re)read the input state file calling read_restart()
-  int setup_input(); 
+  int setup_input();
 
   /// (Re)initialize the output trajectory and state file (does not write it yet)
-  int setup_output(); 
+  int setup_output();
 
   /// Read the input restart file
   std::istream & read_restart (std::istream &is);
@@ -255,7 +254,7 @@ public:
 
   /// Look up a bias by name; returns NULL if not found
   static colvarbias * bias_by_name(std::string const &name);
-  
+
   /// Look up a colvar by name; returns NULL if not found
   static colvar * colvar_by_name(std::string const &name);
 
@@ -339,7 +338,7 @@ public:
 
   /// Print a message to the main log and exit with error code
   static void fatal_error (std::string const &message);
-  
+
   /// Print a message to the main log and set global error code
   static void error (std::string const &message, int code = GENERAL_ERROR);
 

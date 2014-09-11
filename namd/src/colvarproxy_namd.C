@@ -52,7 +52,7 @@ colvarproxy_namd::colvarproxy_namd()
     thermostat_temperature = simparams->tCoupleTemp;
   //else if (simparams->loweAndersenOn)
   //  thermostat_temperature = simparams->loweAndersenTemp;
-  else 
+  else
     thermostat_temperature = 0.0;
 
   random = Random (simparams->randomSeed);
@@ -214,7 +214,7 @@ void colvarproxy_namd::calculate()
           found_total_force = true;
           Vector const &namd_force = *f_i;
           total_forces[i] = cvm::rvector (namd_force.x, namd_force.y, namd_force.z);
-          //           if (cvm::debug()) 
+          //           if (cvm::debug())
           //             cvm::log ("Found the total force of atom "+
           //                       cvm::to_str (colvars_atoms[i]+1)+", which is "+
           //                       cvm::to_str (total_forces[i])+".\n");
@@ -250,7 +250,9 @@ void colvarproxy_namd::calculate()
   }
 
   // call the collective variable module
-  colvars->calc();
+  if (colvars->calc() != COLVARS_OK) {
+    fatal_error("");
+  }
   // send MISC energy
   reduction->submit();
 
@@ -284,7 +286,7 @@ void colvarproxy_namd::log (std::string const &message)
 void colvarproxy_namd::error (std::string const &message)
 {
   // In NAMD, all errors are fatal
-  fatal_error(message); 
+  fatal_error(message);
 }
 
 
@@ -334,7 +336,7 @@ e_pdb_field pdb_field_str2enum (std::string const &pdb_field_str)
       colvarparse::to_lower_cppstr ("X")) {
     pdb_field = e_pdb_x;
   }
-  
+
   if (colvarparse::to_lower_cppstr (pdb_field_str) ==
       colvarparse::to_lower_cppstr ("Y")) {
     pdb_field = e_pdb_y;
@@ -376,7 +378,7 @@ int colvarproxy_namd::load_coords (char const *pdb_filename,
 
   PDB *pdb = new PDB (pdb_filename);
   size_t const pdb_natoms = pdb->num_atoms();
-  
+
   if (pos.size() != pdb_natoms) {
 
     bool const pos_allocated = (pos.size() > 0);
@@ -424,7 +426,7 @@ int colvarproxy_namd::load_coords (char const *pdb_filename,
           current_index++;
         }
       }
-      
+
       if (!pos_allocated) {
         pos.push_back (cvm::atom_pos (0.0, 0.0, 0.0));
       } else if (ipos >= pos.size()) {
@@ -509,7 +511,7 @@ int colvarproxy_namd::load_atoms (char const *pdb_filename,
     } else if (atom_pdb_field_value == 0.0) {
       continue;
     }
-     
+
     atoms.push_back (cvm::atom (ipdb+1));
   }
 
@@ -561,7 +563,7 @@ cvm::atom::atom (int const &atom_number)
     cvm::log ("Adding atom "+cvm::to_str (aid+1)+
               " for collective variables calculation.\n");
 
-  if ( (aid < 0) || (aid >= Node::Object()->molecule->numAtoms) ) 
+  if ( (aid < 0) || (aid >= Node::Object()->molecule->numAtoms) )
     cvm::fatal_error ("Error: invalid atom number specified, "+
                       cvm::to_str (atom_number)+"\n");
   this->index = ((colvarproxy_namd *) cvm::proxy)->init_namd_atom (aid);
@@ -582,14 +584,14 @@ cvm::atom::atom (cvm::residue_id const &residue,
                  std::string const     &segment_id)
 {
   AtomID const aid =
-    (segment_id.size() ? 
+    (segment_id.size() ?
        Node::Object()->molecule->get_atom_from_name (segment_id.c_str(),
                                                      residue,
                                                      atom_name.c_str()) :
      Node::Object()->molecule->get_atom_from_name ("MAIN",
                                                    residue,
                                                    atom_name.c_str()));
-    
+
 
   if (cvm::debug())
     cvm::log ("Adding atom \""+
@@ -632,7 +634,7 @@ cvm::atom::atom (cvm::atom const &a)
 }
 
 
-cvm::atom::~atom() 
+cvm::atom::~atom()
 {
   if (this->index >= 0) {
     colvarproxy_namd *gm = (colvarproxy_namd *) cvm::proxy;

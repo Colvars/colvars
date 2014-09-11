@@ -30,8 +30,9 @@ colvarbias::colvarbias (std::string const &conf, char const *key)
   get_keyval (conf, "name", name, key_str+cvm::to_str (rank));
 
   if (cvm::bias_by_name (this->name) != NULL) {
-    cvm::fatal_error ("Error: this bias cannot have the same name, \""+this->name+
-                      "\", as another bias.\n");
+    cvm::error ("Error: this bias cannot have the same name, \""+this->name+
+                "\", as another bias.\n", INPUT_ERROR);
+    return;
   }
 
   // lookup the associated colvars
@@ -42,7 +43,8 @@ colvarbias::colvarbias (std::string const &conf, char const *key)
     }
   }
   if (!colvars.size()) {
-    cvm::fatal_error ("Error: no collective variables specified.\n");
+    cvm::error ("Error: no collective variables specified.\n");
+    return;
   }
 
   get_keyval (conf, "outputEnergy", b_output_energy, false);
@@ -90,8 +92,8 @@ void colvarbias::add_colvar (std::string const &cv_name)
     colvar_forces.push_back (colvarvalue (cvp->type()));
     cvp->biases.push_back (this); // add back-reference to this bias to colvar
   } else {
-    cvm::fatal_error ("Error: cannot find a colvar named \""+
-                      cv_name+"\".\n");
+    cvm::error ("Error: cannot find a colvar named \""+
+                 cv_name+"\".\n");
   }
 }
 
@@ -111,13 +113,13 @@ void colvarbias::communicate_forces()
 
 void colvarbias::change_configuration(std::string const &conf)
 {
-  cvm::fatal_error ("Error: change_configuration() not implemented.\n");
+  cvm::error ("Error: change_configuration() not implemented.\n");
 }
 
 
 cvm::real colvarbias::energy_difference(std::string const &conf)
 {
-  cvm::fatal_error ("Error: energy_difference() not implemented.\n");
+  cvm::error ("Error: energy_difference() not implemented.\n");
   return 0.;
 }
 
@@ -166,11 +168,11 @@ colvarbias_restraint::colvarbias_restraint (std::string const &conf,
     }
   } else {
     colvar_centers.clear();
-    cvm::fatal_error ("Error: must define the initial centers of the restraints.\n");
+    cvm::error ("Error: must define the initial centers of the restraints.\n");
   }
 
   if (colvar_centers.size() != colvars.size())
-    cvm::fatal_error ("Error: number of centers does not match "
+    cvm::error ("Error: number of centers does not match "
                       "that of collective variables.\n");
 
   if (get_keyval (conf, "targetCenters", target_centers, colvar_centers)) {
@@ -185,7 +187,7 @@ colvarbias_restraint::colvarbias_restraint (std::string const &conf,
 
   if (get_keyval (conf, "targetForceConstant", target_force_k, 0.0)) {
     if (b_chg_centers)
-      cvm::fatal_error ("Error: cannot specify both targetCenters and targetForceConstant.\n");
+      cvm::error ("Error: cannot specify both targetCenters and targetForceConstant.\n");
 
     starting_force_k = force_k;
     b_chg_force_k = true;
@@ -204,11 +206,11 @@ colvarbias_restraint::colvarbias_restraint (std::string const &conf,
   if (b_chg_centers || b_chg_force_k) {
     get_keyval (conf, "targetNumSteps", target_nsteps, 0);
     if (!target_nsteps)
-      cvm::fatal_error ("Error: targetNumSteps must be non-zero.\n");
+      cvm::error ("Error: targetNumSteps must be non-zero.\n");
 
     if (get_keyval (conf, "targetNumStages", target_nstages, target_nstages) &&
         lambda_schedule.size()) {
-      cvm::fatal_error ("Error: targetNumStages and lambdaSchedule are incompatible.\n");
+      cvm::error ("Error: targetNumStages and lambdaSchedule are incompatible.\n");
     }
 
     if (target_nstages) {
@@ -481,42 +483,42 @@ std::istream & colvarbias_restraint::read_restart (std::istream &is)
 //          (id != this->id) ) ||
   if ( (colvarparse::get_keyval (conf, "name", name, std::string (""), colvarparse::parse_silent)) &&
        (name != this->name) )
-    cvm::fatal_error ("Error: in the restart file, the "
+    cvm::error ("Error: in the restart file, the "
                       "\"restraint\" block has a wrong name\n");
 //   if ( (id == -1) && (name == "") ) {
   if (name.size() == 0) {
-    cvm::fatal_error ("Error: \"restraint\" block in the restart file "
+    cvm::error ("Error: \"restraint\" block in the restart file "
                       "has no identifiers.\n");
   }
 
   if (b_chg_centers) {
 //    cvm::log ("Reading the updated restraint centers from the restart.\n");
     if (!get_keyval (conf, "centers", colvar_centers))
-      cvm::fatal_error ("Error: restraint centers are missing from the restart.\n");
+      cvm::error ("Error: restraint centers are missing from the restart.\n");
     if (!get_keyval (conf, "centers_raw", colvar_centers_raw))
-      cvm::fatal_error ("Error: \"raw\" restraint centers are missing from the restart.\n");
+      cvm::error ("Error: \"raw\" restraint centers are missing from the restart.\n");
   }
 
   if (b_chg_force_k) {
 //    cvm::log ("Reading the updated force constant from the restart.\n");
     if (!get_keyval (conf, "forceConstant", force_k))
-      cvm::fatal_error ("Error: force constant is missing from the restart.\n");
+      cvm::error ("Error: force constant is missing from the restart.\n");
   }
 
   if (target_nstages) {
 //    cvm::log ("Reading current stage from the restart.\n");
     if (!get_keyval (conf, "stage", stage))
-      cvm::fatal_error ("Error: current stage is missing from the restart.\n");
+      cvm::error ("Error: current stage is missing from the restart.\n");
   }
 
   if (b_output_acc_work) {
     if (!get_keyval (conf, "accumulatedWork", acc_work))
-      cvm::fatal_error ("Error: accumulatedWork is missing from the restart.\n");
+      cvm::error ("Error: accumulatedWork is missing from the restart.\n");
   }
 
   is >> brace;
   if (brace != "}") {
-    cvm::fatal_error ("Error: corrupt restart information for restraint bias \""+
+    cvm::error ("Error: corrupt restart information for restraint bias \""+
                       this->name+"\": no matching brace at position "+
                       cvm::to_str (is.tellg())+" in the restart file.\n");
     is.setstate (std::ios::failbit);

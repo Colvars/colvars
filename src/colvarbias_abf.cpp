@@ -362,7 +362,10 @@ std::istream & colvarbias_abf::read_restart (std::istream& is)
     return is;
   }
   if (! samples->read_raw (is)) {
-    samples->read_raw_error();
+    is.clear();
+    is.seekg (start_pos, std::ios::beg);
+    is.setstate (std::ios::failbit);
+    return is;
   }
 
   if ( !(is >> key)   || !(key == "gradient")) {
@@ -375,7 +378,10 @@ std::istream & colvarbias_abf::read_restart (std::istream& is)
     return is;
   }
   if (! gradients->read_raw (is)) {
-    gradients->read_raw_error();
+    is.clear();
+    is.seekg (start_pos, std::ios::beg);
+    is.setstate (std::ios::failbit);
+    return is;
   }
 
   is >> brace;
@@ -483,7 +489,7 @@ std::istream & colvarbias_histogram::read_restart (std::istream& is)
   }
 
   if ( !(is >> key)   || !(key == "grid")) {
-    cvm::log ("Error: in reading restart configuration for histogram \""+
+    cvm::error ("Error: in reading restart configuration for histogram \""+
               this->name+"\" at position "+
               cvm::to_str (is.tellg())+" in stream.\n");
     is.clear();
@@ -492,14 +498,17 @@ std::istream & colvarbias_histogram::read_restart (std::istream& is)
     return is;
   }
   if (! grid->read_raw (is)) {
-    grid->read_raw_error();
+    is.clear();
+    is.seekg (start_pos, std::ios::beg);
+    is.setstate (std::ios::failbit);
+    return is;
   }
 
   is >> brace;
   if (brace != "}") {
-    cvm::fatal_error ("Error: corrupt restart information for ABF bias \""+
-                      this->name+"\": no matching brace at position "+
-                      cvm::to_str (is.tellg())+" in the restart file.\n");
+    cvm::error ("Error: corrupt restart information for ABF bias \""+
+                this->name+"\": no matching brace at position "+
+                cvm::to_str (is.tellg())+" in the restart file.\n");
     is.setstate (std::ios::failbit);
   }
   return is;

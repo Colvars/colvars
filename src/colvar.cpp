@@ -70,7 +70,7 @@ colvar::colvar (std::string const &conf)
                             "\" component.\n"+                          \
                             "Period: "+cvm::to_str(cvcp->period) +      \
                         " wrapAround: "+cvm::to_str(cvcp->wrap_center), \
-                        PARSE_ERROR);                                   \
+                        INPUT_ERROR);                                   \
         }                                                               \
       }                                                                 \
       if ( ! cvcs.back()->name.size())                                  \
@@ -139,7 +139,7 @@ colvar::colvar (std::string const &conf)
   if (!cvcs.size()) {
     cvm::error ("Error: no valid components were provided "
                       "for this collective variable.\n",
-              PARSE_ERROR);
+              INPUT_ERROR);
   }
 
   cvm::log ("All components initialized.\n");
@@ -230,7 +230,7 @@ colvar::colvar (std::string const &conf)
 
   get_keyval (conf, "width", width, 1.0);
   if (width <= 0.0) {
-    cvm::error("Error: \"width\" must be positive.\n", PARSE_ERROR);
+    cvm::error("Error: \"width\" must be positive.\n", INPUT_ERROR);
   }
 
   lower_boundary.type (this->type());
@@ -306,7 +306,7 @@ colvar::colvar (std::string const &conf)
   if (expand_boundaries && hard_lower_boundary && hard_upper_boundary) {
     cvm::error ("Error: inconsistent configuration "
                       "(trying to expand boundaries with both "
-                      "hardLowerBoundary and hardUpperBoundary enabled).\n", 
+                      "hardLowerBoundary and hardUpperBoundary enabled).\n",
               INPUT_ERROR);
 }
 
@@ -338,14 +338,14 @@ colvar::colvar (std::string const &conf)
 
       get_keyval (conf, "extendedFluctuation", tolerance);
       if (tolerance <= 0.0) {
-        cvm::error("Error: \"extendedFluctuation\" must be positive.\n", PARSE_ERROR);
+        cvm::error("Error: \"extendedFluctuation\" must be positive.\n", INPUT_ERROR);
       }
       ext_force_k = cvm::boltzmann() * temp / (tolerance * tolerance);
       cvm::log ("Computed extended system force constant: " + cvm::to_str(ext_force_k) + " kcal/mol/U^2");
 
       get_keyval (conf, "extendedTimeConstant", period, 200.0);
       if (period <= 0.0) {
-        cvm::error("Error: \"extendedTimeConstant\" must be positive.\n", PARSE_ERROR);
+        cvm::error("Error: \"extendedTimeConstant\" must be positive.\n", INPUT_ERROR);
       }
       ext_mass = (cvm::boltzmann() * temp * period * period)
                  / (4.0 * PI * PI * tolerance * tolerance);
@@ -361,7 +361,7 @@ colvar::colvar (std::string const &conf)
 
       get_keyval (conf, "extendedLangevinDamping", ext_gamma, 1.0);
       if (ext_gamma < 0.0) {
-        cvm::error("Error: \"extendedLangevinDamping\" may not be negative.\n", PARSE_ERROR);
+        cvm::error("Error: \"extendedLangevinDamping\" may not be negative.\n", INPUT_ERROR);
       }
       if (ext_gamma != 0.0) {
         enable (task_langevin);
@@ -465,7 +465,7 @@ int colvar::parse_analysis (std::string const &conf)
     get_keyval (conf, "runAveStride", runave_stride, 1);
 
     if ((cvm::restart_out_freq % runave_stride) != 0) {
-      cvm::error("Error: runAveStride must be commensurate with the restart frequency.\n", PARSE_ERROR);
+      cvm::error("Error: runAveStride must be commensurate with the restart frequency.\n", INPUT_ERROR);
     }
 
     std::string runave_outfile;
@@ -512,7 +512,7 @@ int colvar::parse_analysis (std::string const &conf)
     } else {
       cvm::log ("Unknown type of correlation function, \""+
                         acf_type_str+"\".\n");
-      cvm::set_error_bits(PARSE_ERROR);
+      cvm::set_error_bits(INPUT_ERROR);
     }
 
     get_keyval (conf, "corrFuncOffset", acf_offset, 0);
@@ -520,7 +520,7 @@ int colvar::parse_analysis (std::string const &conf)
     get_keyval (conf, "corrFuncStride", acf_stride, 1);
 
     if ((cvm::restart_out_freq % acf_stride) != 0) {
-      cvm::error("Error: corrFuncStride must be commensurate with the restart frequency.\n", PARSE_ERROR);
+      cvm::error("Error: corrFuncStride must be commensurate with the restart frequency.\n", INPUT_ERROR);
     }
 
     get_keyval (conf, "corrFuncNormalize", acf_normalize, true);
@@ -650,7 +650,7 @@ int colvar::enable (colvar::task const &t)
     }
     break;
   }
-  
+
   tasks[t] = true;
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
 }
@@ -732,7 +732,7 @@ colvar::~colvar()
     if ( *cvi == this) {
       cvm::colvars.erase (cvi);
       break;
-    }   
+    }
   }
 }
 
@@ -888,7 +888,7 @@ void colvar::calc()
     // if(!tasks[task_extended_lagrangian] && (cvm::step_relative() > 0)) {
     // Disabled check to allow for explicit system force calculation
     // even with extended Lagrangian
-    
+
     if(cvm::step_relative() > 0) {
       // get from the cvcs the system forces from the PREVIOUS step
       for (size_t i = 0; i < cvcs.size(); i++) {

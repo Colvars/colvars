@@ -55,8 +55,10 @@ protected:
     for (size_t i = 0; i < nd; i++) {
       addr += ix[i]*nxc[i];
       if (cvm::debug()) {
-        if (ix[i] >= nx[i])
-          cvm::fatal_error ("Error: exceeding bounds in colvar_grid.\n");
+        if (ix[i] >= nx[i]) {
+          cvm::error ("Error: exceeding bounds in colvar_grid.\n");
+          return 0;
+        }
       }
     }
     return addr;
@@ -135,9 +137,11 @@ public:
 
     nt = mult;
     for (int i = nd-1; i >= 0; i--) {
-      if (nx_i[i] <= 0)
-        cvm::fatal_error ("Error: providing an invalid number of points, "+
+      if (nx_i[i] <= 0) {
+        cvm::error ("Error: providing an invalid number of points, "+
                           cvm::to_str (nx_i[i])+".\n");
+        return;
+      }
       nxc[i] = nt;
       nt *= nx[i];
     }
@@ -220,20 +224,23 @@ public:
     for (size_t i =  0; i < cv.size(); i++) {
 
       if (cv[i]->type() != colvarvalue::type_scalar) {
-        cvm::fatal_error ("Colvar grids can only be automatically "
-                          "constructed for scalar variables.  "
-                          "ABF and histogram can not be used; metadynamics "
-                          "can be used with useGrids disabled.\n");
+        cvm::error ("Colvar grids can only be automatically "
+                    "constructed for scalar variables.  "
+                    "ABF and histogram can not be used; metadynamics "
+                    "can be used with useGrids disabled.\n");
+        return;
       }
 
       if (cv[i]->width <= 0.0) {
-        cvm::fatal_error ("Tried to initialize a grid on a "
+        cvm::error ("Tried to initialize a grid on a "
                           "variable with negative or zero width.\n");
+        return;
       }
 
       if (!cv[i]->tasks[colvar::task_lower_boundary] || !cv[i]->tasks[colvar::task_upper_boundary]) {
-        cvm::fatal_error ("Tried to initialize a grid on a "
-                          "variable with undefined boundaries.\n");
+        cvm::error ("Tried to initialize a grid on a "
+                    "variable with undefined boundaries.\n");
+        return;
       }
 
       widths.push_back (cv[i]->width);
@@ -303,8 +310,9 @@ public:
         ix[i] = (ix[i] + nx[i]) % nx[i]; //to ensure non-negative result
       } else {
         if (ix[i] < 0 || ix[i] >= nx[i])
-          cvm::fatal_error ("Trying to wrap illegal index vector (non-PBC): "
-                            + cvm::to_str (ix));
+          cvm::error ("Trying to wrap illegal index vector (non-PBC): "
+                     + cvm::to_str (ix));
+          return;
       }
     }
   }
@@ -437,9 +445,11 @@ public:
   /// of whether it fits or not.
   void map_grid (colvar_grid<T> const &other_grid)
   {
-    if (other_grid.multiplicity() != this->multiplicity())
-      cvm::fatal_error ("Error: trying to merge two grids with values of "
+    if (other_grid.multiplicity() != this->multiplicity()) {
+      cvm::error ("Error: trying to merge two grids with values of "
                         "different multiplicity.\n");
+      return;
+    }
 
     std::vector<colvarvalue> const &gb  = this->lower_boundaries;
     std::vector<cvm::real> const &gw    = this->widths;
@@ -479,9 +489,11 @@ public:
   void add_grid (colvar_grid<T> const &other_grid,
                  cvm::real scale_factor = 1.0)
   {
-    if (other_grid.multiplicity() != this->multiplicity())
-      cvm::fatal_error ("Error: trying to sum togetehr two grids with values of "
+    if (other_grid.multiplicity() != this->multiplicity()) {
+      cvm::error ("Error: trying to sum togetehr two grids with values of "
                         "different multiplicity.\n");
+      return;
+    }
     if (scale_factor != 1.0)
       for (size_t i = 0; i < data.size(); i++) {
         data[i] += scale_factor * other_grid.data[i];
@@ -606,12 +618,14 @@ public:
     {
       size_t nd_in = 0;
       colvarparse::get_keyval (conf, "n_colvars", nd_in, nd, colvarparse::parse_silent);
-      if (nd_in != nd)
-        cvm::fatal_error ("Error: trying to read data for a grid "
-                          "that contains a different number of colvars ("+
-                          cvm::to_str (nd_in)+") than the grid defined "
-                          "in the configuration file ("+cvm::to_str (nd)+
-                          ").\n");
+      if (nd_in != nd) {
+        cvm::error ("Error: trying to read data for a grid "
+                    "that contains a different number of colvars ("+
+                    cvm::to_str (nd_in)+") than the grid defined "
+                    "in the configuration file ("+cvm::to_str (nd)+
+                    ").\n");
+        return false;
+      }
     }
 
     colvarparse::get_keyval (conf, "lower_boundaries",
@@ -654,8 +668,9 @@ public:
                                      upper_boundaries[i])) > 1.0E-10) ||
            (std::sqrt (cv[i]->dist2 (cv[i]->width,
                                      widths[i])) > 1.0E-10) ) {
-        cvm::fatal_error ("Error: restart information for a grid is "
-                          "inconsistent with that of its colvars.\n");
+        cvm::error ("Error: restart information for a grid is "
+                    "inconsistent with that of its colvars.\n");
+        return;
       }
     }
   }
@@ -676,9 +691,10 @@ public:
            (std::fabs (other_grid.widths[i] -
                        widths[i]) > 1.0E-10) ||
            (data.size() != other_grid.data.size()) ) {
-      cvm::fatal_error ("Error: inconsistency between "
-                        "two grids that are supposed to be equal, "
-                        "aside from the data stored.\n");
+      cvm::error ("Error: inconsistency between "
+                  "two grids that are supposed to be equal, "
+                  "aside from the data stored.\n");
+      return;
     }
   }
 }
@@ -725,6 +741,7 @@ std::istream & read_raw (std::istream &is)
         is.clear();
         is.seekg (start_pos, std::ios::beg);
         is.setstate (std::ios::failbit);
+        cvm::error ("Error: failed to read all of the grid points from file.  Possible explanations: grid parameters in the configuration (lowerBoundary, upperBoundary, width) are different from those in the file, or the file is corrupt/incomplete.\n");
         return is;
       }
     }
@@ -732,12 +749,6 @@ std::istream & read_raw (std::istream &is)
 
   has_data = true;
   return is;
-}
-
-/// \brief To be called after colvar_grid::read_raw() returns an error
-void read_raw_error()
-{
-  cvm::fatal_error ("Error: failed to read all of the grid points from file.  Possible explanations: grid parameters in the configuration (lowerBoundary, upperBoundary, width) are different from those in the file, or the file is corrupt/incomplete.\n");
 }
 
 /// \brief Write the grid in a format which is both human readable
