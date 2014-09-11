@@ -162,6 +162,11 @@ int colvarmodule::parse_colvars (std::string const &conf)
       cvm::log (cvm::line_marker);
       cvm::increase_depth();
       colvars.push_back (new colvar (colvar_conf));
+      if (cvm::get_error()) {
+        delete colvars.back();
+        colvars.pop_back();
+        return COLVARS_ERROR;
+      }
       if ((colvars.back())->check_keywords (colvar_conf, "colvar") != COLVARS_OK) {
         return COLVARS_ERROR;
       }
@@ -201,6 +206,11 @@ int colvarmodule::parse_biases (std::string const &conf)
         cvm::log (cvm::line_marker);
         cvm::increase_depth();
         biases.push_back (new colvarbias_abf (abf_conf, "abf"));
+        if (cvm::get_error()) {
+          delete biases.back();
+          biases.pop_back();
+          return COLVARS_ERROR;
+        }
         if ((biases.back())->check_keywords (abf_conf, "abf") != COLVARS_OK) {
           return COLVARS_ERROR;
         }
@@ -223,6 +233,11 @@ int colvarmodule::parse_biases (std::string const &conf)
         cvm::log (cvm::line_marker);
         cvm::increase_depth();
         biases.push_back (new colvarbias_restraint_harmonic (harm_conf, "harmonic"));
+        if (cvm::get_error()) {
+          delete biases.back();
+          biases.pop_back();
+          return COLVARS_ERROR;
+        }
         if ((biases.back())->check_keywords (harm_conf, "harmonic") != COLVARS_OK) {
           return COLVARS_ERROR;
         }
@@ -245,6 +260,11 @@ int colvarmodule::parse_biases (std::string const &conf)
         cvm::log (cvm::line_marker);
         cvm::increase_depth();
         biases.push_back (new colvarbias_restraint_linear (lin_conf, "linear"));
+        if (cvm::get_error()) {
+          delete biases.back();
+          biases.pop_back();
+          return COLVARS_ERROR;
+        }
         if ((biases.back())->check_keywords (lin_conf, "linear") != COLVARS_OK) {
           return COLVARS_ERROR;
         }
@@ -267,6 +287,11 @@ int colvarmodule::parse_biases (std::string const &conf)
         cvm::log (cvm::line_marker);
         cvm::increase_depth();
         biases.push_back (new colvarbias_alb (alb_conf, "ALB"));
+        if (cvm::get_error()) {
+          delete biases.back();
+          biases.pop_back();
+          return COLVARS_ERROR;
+        }
         if ((biases.back())->check_keywords (alb_conf, "ALB") != COLVARS_OK) {
           return COLVARS_ERROR;
         }
@@ -290,6 +315,11 @@ int colvarmodule::parse_biases (std::string const &conf)
         cvm::log (cvm::line_marker);
         cvm::increase_depth();
         biases.push_back (new colvarbias_histogram (histo_conf, "histogram"));
+        if (cvm::get_error()) {
+          delete biases.back();
+          biases.pop_back();
+          return COLVARS_ERROR;
+        }
         if ((biases.back())->check_keywords (histo_conf, "histogram") != COLVARS_OK) {
           return COLVARS_ERROR;
         }
@@ -312,6 +342,11 @@ int colvarmodule::parse_biases (std::string const &conf)
         cvm::log (cvm::line_marker);
         cvm::increase_depth();
         biases.push_back (new colvarbias_meta (meta_conf, "metadynamics"));
+        if (cvm::get_error()) {
+          delete biases.back();
+          biases.pop_back();
+          return COLVARS_ERROR;
+        }
         if ((biases.back())->check_keywords (meta_conf, "metadynamics") != COLVARS_OK) {
           return COLVARS_ERROR;
         }
