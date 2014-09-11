@@ -696,9 +696,10 @@ void cvm::atom_group::calc_fit_gradients()
 
 std::vector<cvm::atom_pos> cvm::atom_group::positions() const
 {
-  if (b_dummy)
-    cvm::fatal_error ("Error: positions are not available "
+  if (b_dummy) {
+    cvm::error ("Error: positions are not available "
                       "from a dummy atom group.\n");
+  }
 
   std::vector<cvm::atom_pos> x (this->size(), 0.0);
   cvm::atom_const_iter ai = this->begin();
@@ -711,9 +712,10 @@ std::vector<cvm::atom_pos> cvm::atom_group::positions() const
 
 std::vector<cvm::atom_pos> cvm::atom_group::positions_shifted (cvm::rvector const &shift) const
 {
-  if (b_dummy)
+  if (b_dummy) {
     cvm::error ("Error: positions are not available "
                  "from a dummy atom group.\n");
+  }
 
   std::vector<cvm::atom_pos> x (this->size(), 0.0);
   cvm::atom_const_iter ai = this->begin();
@@ -726,9 +728,10 @@ std::vector<cvm::atom_pos> cvm::atom_group::positions_shifted (cvm::rvector cons
 
 std::vector<cvm::rvector> cvm::atom_group::velocities() const
 {
-  if (b_dummy)
+  if (b_dummy) {
     cvm::error ("Error: velocities are not available "
                  "from a dummy atom group.\n");
+  }
 
   std::vector<cvm::rvector> v (this->size(), 0.0);
   cvm::atom_const_iter ai = this->begin();
@@ -741,9 +744,10 @@ std::vector<cvm::rvector> cvm::atom_group::velocities() const
 
 std::vector<cvm::rvector> cvm::atom_group::system_forces() const
 {
-  if (b_dummy)
+  if (b_dummy) {
     cvm::error ("Error: system forces are not available "
                  "from a dummy atom group.\n");
+  }
 
   std::vector<cvm::rvector> f (this->size(), 0.0);
   cvm::atom_const_iter ai = this->begin();
@@ -756,9 +760,10 @@ std::vector<cvm::rvector> cvm::atom_group::system_forces() const
 
 cvm::rvector cvm::atom_group::system_force() const
 {
-  if (b_dummy)
+  if (b_dummy) {
     cvm::error ("Error: system forces are not available "
                 "from a dummy atom group.\n");
+  }
 
   cvm::rvector f (0.0);
   for (cvm::atom_const_iter ai = this->begin(); ai != this->end(); ai++) {
@@ -773,9 +778,11 @@ void cvm::atom_group::apply_colvar_force (cvm::real const &force)
   if (b_dummy)
     return;
 
-  if (noforce)
+  if (noforce) {
     cvm::error ("Error: sending a force to a group that has "
                 "\"enableForces\" set to off.\n");
+    return;
+  }
 
   if (b_rotate) {
 
@@ -820,9 +827,11 @@ void cvm::atom_group::apply_force (cvm::rvector const &force)
   if (b_dummy)
     return;
 
-  if (noforce)
+  if (noforce) {
     cvm::error ("Error: sending a force to a group that has "
                 "\"disableForces\" defined.\n");
+    return;
+  }
 
   if (b_rotate) {
 

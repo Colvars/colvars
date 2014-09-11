@@ -697,14 +697,12 @@ inline void colvarvalue::check_types (colvarvalue const &x1,
                                       colvarvalue const &x2)
 {
   if (x1.value_type != x2.value_type) {
-    cvm::log ("x1 type = "+cvm::to_str (x1.value_type)+
-              ", x2 type = "+cvm::to_str (x2.value_type)+"\n");
-    cvm::fatal_error ("Performing an operation between two colvar "
-                      "values with different types, \""+
-                      colvarvalue::type_desc[x1.value_type]+
-                      "\" and \""+
-                      colvarvalue::type_desc[x2.value_type]+
-                      "\".\n");
+    cvm::error ("Performing an operation between two colvar "
+                "values with different types, \""+
+                colvarvalue::type_desc[x1.value_type]+
+                "\" and \""+
+                colvarvalue::type_desc[x2.value_type]+
+                "\".\n");
   }
 }
 

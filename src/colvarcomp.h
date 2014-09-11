@@ -298,8 +298,8 @@ inline cvm::real colvar::cvc::compare (colvarvalue const &x1,
   if (this->type() == colvarvalue::type_scalar) {
     return cvm::real (x1 - x2);
   } else {
-    cvm::fatal_error ("Error: you requested an operation which requires "
-                      "comparison between two non-scalar values.\n");
+    cvm::error ("Error: you requested an operation which requires "
+                "comparison between two non-scalar values.\n");
     return 0.0;
   }
 }
@@ -1381,7 +1381,7 @@ inline colvarvalue colvar::distance_vec::dist2_rgrad (colvarvalue const &x1,
 inline cvm::real colvar::distance_vec::compare (colvarvalue const &x1,
                                                 colvarvalue const &x2) const
 {
-  cvm::fatal_error ("Error: cannot compare() two distance vectors.\n");
+  cvm::error ("Error: cannot compare() two distance vectors.\n");
   return 0.0;
 }
 
@@ -1406,7 +1406,7 @@ inline colvarvalue colvar::distance_dir::dist2_rgrad (colvarvalue const &x1,
 inline cvm::real colvar::distance_dir::compare (colvarvalue const &x1,
                                                 colvarvalue const &x2) const
 {
-  cvm::fatal_error ("Error: cannot compare() two distance directions.\n");
+  cvm::error ("Error: cannot compare() two distance directions.\n");
   return 0.0;
 }
 
@@ -1433,7 +1433,7 @@ inline colvarvalue colvar::orientation::dist2_rgrad (colvarvalue const &x1,
 inline cvm::real colvar::orientation::compare (colvarvalue const &x1,
                                                colvarvalue const &x2) const
 {
-  cvm::fatal_error ("Error: cannot compare() two quaternions.\n");
+  cvm::error ("Error: cannot compare() two quaternions.\n");
   return 0.0;
 }
 

@@ -47,13 +47,13 @@ colvarbias_abf::colvarbias_abf (std::string const &conf, char const *key)
   // ************* checking the associated colvars *******************
 
   if (colvars.size() == 0) {
-    cvm::fatal_error ("Error: no collective variables specified for the ABF bias.\n");
+    cvm::error ("Error: no collective variables specified for the ABF bias.\n");
   }
 
   for (size_t i = 0; i < colvars.size(); i++) {
 
     if (colvars[i]->type() != colvarvalue::type_scalar) {
-      cvm::fatal_error ("Error: ABF bias can only use scalar-type variables.\n");
+      cvm::error ("Error: ABF bias can only use scalar-type variables.\n");
     }
 
     colvars[i]->enable (colvar::task_gradients);
@@ -87,11 +87,11 @@ colvarbias_abf::colvarbias_abf (std::string const &conf, char const *key)
 
   if (get_keyval (conf, "maxForce", max_force)) {
     if (max_force.size() != colvars.size()) {
-      cvm::fatal_error ("Error: Number of parameters to maxForce does not match number of colvars.");
+      cvm::error ("Error: Number of parameters to maxForce does not match number of colvars.");
     }
     for (size_t i=0; i<colvars.size(); i++) {
       if (max_force[i] < 0.0) {
-        cvm::fatal_error ("Error: maxForce should be non-negative.");
+        cvm::error ("Error: maxForce should be non-negative.");
       }
     }
     cap_force = true;
@@ -244,13 +244,13 @@ void colvarbias_abf::write_gradients_samples (const std::string &prefix, bool ap
 
   if (!append) cvm::backup_file (samples_out_name.c_str());
   samples_os.open (samples_out_name.c_str(), mode);
-  if (!samples_os.good()) cvm::fatal_error ("Error opening ABF samples file " + samples_out_name + " for writing");
+  if (!samples_os.good()) cvm::error ("Error opening ABF samples file " + samples_out_name + " for writing");
   samples->write_multicol (samples_os);
   samples_os.close ();
 
   if (!append) cvm::backup_file (gradients_out_name.c_str());
   gradients_os.open (gradients_out_name.c_str(), mode);
-  if (!gradients_os.good())	cvm::fatal_error ("Error opening ABF gradient file " + gradients_out_name + " for writing");
+  if (!gradients_os.good())	cvm::error ("Error opening ABF gradient file " + gradients_out_name + " for writing");
   gradients->write_multicol (gradients_os);
   gradients_os.close ();
 
@@ -260,7 +260,7 @@ void colvarbias_abf::write_gradients_samples (const std::string &prefix, bool ap
     std::ofstream pmf_os;
     // Do numerical integration and output a PMF
     pmf_os.open (pmf_out_name.c_str(), mode);
-    if (!pmf_os.good())	cvm::fatal_error ("Error opening pmf file " + pmf_out_name + " for writing");
+    if (!pmf_os.good())	cvm::error ("Error opening pmf file " + pmf_out_name + " for writing");
     gradients->write_1D_integral (pmf_os);
     pmf_os << std::endl;
     pmf_os.close ();
@@ -281,13 +281,13 @@ void colvarbias_abf::read_gradients_samples ()
 
     cvm::log ("Reading sample count from " + samples_in_name + " and gradients from " + gradients_in_name);
     is.open (samples_in_name.c_str());
-    if (!is.good()) cvm::fatal_error ("Error opening ABF samples file " + samples_in_name + " for reading");
+    if (!is.good()) cvm::error ("Error opening ABF samples file " + samples_in_name + " for reading");
     samples->read_multicol (is, true);
     is.close ();
     is.clear();
 
     is.open (gradients_in_name.c_str());
-    if (!is.good())	cvm::fatal_error ("Error opening ABF gradient file " + gradients_in_name + " for reading");
+    if (!is.good())	cvm::error ("Error opening ABF gradient file " + gradients_in_name + " for reading");
     gradients->read_multicol (is, true);
     is.close ();
   }
@@ -322,7 +322,7 @@ std::ostream & colvarbias_abf::write_restart (std::ostream& os)
 std::istream & colvarbias_abf::read_restart (std::istream& is)
 {
   if ( input_prefix.size() > 0 ) {
-    cvm::fatal_error ("ERROR: cannot provide both inputPrefix and restart information (colvarsInput)");
+    cvm::error ("ERROR: cannot provide both inputPrefix and restart information (colvarsInput)");
   }
 
   size_t const start_pos = is.tellg();
@@ -346,10 +346,10 @@ std::istream & colvarbias_abf::read_restart (std::istream& is)
   std::string name = "";
   if ( (colvarparse::get_keyval (conf, "name", name, std::string (""), colvarparse::parse_silent)) &&
          (name != this->name) )
-    cvm::fatal_error ("Error: in the restart file, the "
+    cvm::error ("Error: in the restart file, the "
                       "\"abf\" block has wrong name (" + name + ")\n");
   if ( name == "" ) {
-    cvm::fatal_error ("Error: \"abf\" block in the restart file has no name.\n");
+    cvm::error ("Error: \"abf\" block in the restart file has no name.\n");
   }
 
   if ( !(is >> key)   || !(key == "samples")) {
@@ -386,7 +386,7 @@ std::istream & colvarbias_abf::read_restart (std::istream& is)
 
   is >> brace;
   if (brace != "}") {
-    cvm::fatal_error ("Error: corrupt restart information for ABF bias \""+
+    cvm::error ("Error: corrupt restart information for ABF bias \""+
                       this->name+"\": no matching brace at position "+
                       cvm::to_str (is.tellg())+" in the restart file.\n");
     is.setstate (std::ios::failbit);
@@ -406,7 +406,7 @@ colvarbias_histogram::colvarbias_histogram (std::string const &conf, char const 
   get_keyval (conf, "outputfreq", output_freq, cvm::restart_out_freq);
 
   if ( output_freq == 0 ) {
-    cvm::fatal_error ("User required histogram with zero output frequency");
+    cvm::error ("User required histogram with zero output frequency");
   }
 
   grid   = new colvar_grid_count    (colvars);
@@ -449,7 +449,7 @@ cvm::real colvarbias_histogram::update()
     if (cvm::debug()) cvm::log ("Histogram bias trying to write grid to disk");
 
     grid_os.open (out_name.c_str());
-    if (!grid_os.good()) cvm::fatal_error ("Error opening histogram file " + out_name + " for writing");
+    if (!grid_os.good()) cvm::error ("Error opening histogram file " + out_name + " for writing");
     grid->write_multicol (grid_os);
     grid_os.close ();
   }
@@ -481,10 +481,10 @@ std::istream & colvarbias_histogram::read_restart (std::istream& is)
   std::string name = "";
   if ( (colvarparse::get_keyval (conf, "name", name, std::string (""), colvarparse::parse_silent)) &&
          (name != this->name) )
-    cvm::fatal_error ("Error: in the restart file, the "
+    cvm::error ("Error: in the restart file, the "
                       "\"histogram\" block has a wrong name: different system?\n");
   if ( (id == -1) && (name == "") ) {
-    cvm::fatal_error ("Error: \"histogram\" block in the restart file "
+    cvm::error ("Error: \"histogram\" block in the restart file "
                       "has no name.\n");
   }
 

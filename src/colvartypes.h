@@ -647,7 +647,7 @@ public:
     case 3:
       return this->q3;
     default:
-      cvm::fatal_error ("Error: incorrect quaternion component.\n");
+      cvm::error ("Error: incorrect quaternion component.\n");
       return q0;
     }
   }
@@ -664,9 +664,9 @@ public:
     case 3:
       return this->q3;
     default:
-      cvm::fatal_error ("Error: trying to access a quaternion "
-                        "component which is not between 0 and 3.\n");
-      return this->q0;
+      cvm::error ("Error: trying to access a quaternion "
+                 "component which is not between 0 and 3.\n");
+      return 0.0;
     }
   }
 
