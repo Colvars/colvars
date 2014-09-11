@@ -1015,6 +1015,7 @@ void cvm::error (std::string const &message, int code)
 
 void cvm::fatal_error (std::string const &message)
 {
+  set_error_bits(FATAL_ERROR);
   proxy->fatal_error (message);
 }
 

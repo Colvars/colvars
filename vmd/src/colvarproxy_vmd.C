@@ -168,7 +168,6 @@ void colvarproxy_vmd::fatal_error (std::string const &message)
   if (!cvm::debug())
     log ("If this error message is unclear, "
          "try recompiling VMD with -DCOLVARS_DEBUG.\n");
-  cvm::set_error_bits(FATAL_ERROR);
 }
 
 void colvarproxy_vmd::exit (std::string const &message)
@@ -321,7 +320,7 @@ int colvarproxy_vmd::load_coords (char const *pdb_filename,
         cvm::error ("Error: the PDB file \""+
                     std::string (pdb_filename)+
                     "\" contains coordinates for "
-                    "more atoms than needed.\n", PARSE_ERROR);
+                    "more atoms than needed.\n", INPUT_ERROR);
         return COLVARS_ERROR;
       }
 
@@ -338,7 +337,7 @@ int colvarproxy_vmd::load_coords (char const *pdb_filename,
                   std::string (pdb_filename)+
                   "\" does not appear to match either the total number of atoms,"+
                   " or the number of coordinates requested at this point ("+
-                  cvm::to_str (pos.size())+").\n", PARSE_ERROR);
+                  cvm::to_str (pos.size())+").\n", INPUT_ERROR);
       return COLVARS_ERROR;
     }
 
@@ -367,7 +366,7 @@ int colvarproxy_vmd::load_atoms (char const *pdb_filename,
   if (pdb_field_str.size() == 0) {
     cvm::log ("Error: must define which PDB field to use "
                       "in order to define atoms from a PDB file.\n");
-    cvm::set_error_bits(PARSE_ERROR);
+    cvm::set_error_bits(INPUT_ERROR);
     return COLVARS_ERROR;
   }
 
