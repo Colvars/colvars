@@ -31,32 +31,32 @@ int tcl_colvars (ClientData clientdata, Tcl_Interp *vmdtcl, int argc, const char
         return TCL_ERROR;
       }
     }
-    
+
     // Clear non-fatal errors from previous commands
     cvm::clear_error();
-    
-    retval = proxy->script->run (argc, argv); 
+
+    retval = proxy->script->run (argc, argv);
     Tcl_SetResult (vmdtcl, (char *) proxy->script->result.c_str(), TCL_STATIC);
-    
+
     if (cvm::get_error() & DELETE_COLVARS) {
       delete proxy;
       proxy = NULL;
       return TCL_OK;
     }
-    
+
     if (cvm::get_error() & FATAL_ERROR) {
       // Fatal error: clean up cvm object and proxy
       delete proxy;
       proxy = NULL;
       return TCL_ERROR;
     }
-      
+
     if (retval == COLVARSCRIPT_OK && !cvm::get_error()) {
       return TCL_OK;
     } else {
       return TCL_ERROR;
     }
-      
+
   } else {
 
     VMDApp *vmd = (VMDApp *) clientdata;
@@ -64,7 +64,7 @@ int tcl_colvars (ClientData clientdata, Tcl_Interp *vmdtcl, int argc, const char
       Tcl_SetResult (vmdtcl, (char *) (std::string ("Error: cannot find VMD main object.").c_str()), TCL_STATIC);
       return TCL_ERROR;
     }
-      
+
     if ( argc >= 3 ) {
       // require a molid to create the module
       if (!strcmp (argv[1], "molid")) {
@@ -164,18 +164,11 @@ void colvarproxy_vmd::error (std::string const &message)
 
 void colvarproxy_vmd::fatal_error (std::string const &message)
 {
-  // Ultimately, this should never be called within a VMD session
   log (message);
   if (!cvm::debug())
     log ("If this error message is unclear, "
          "try recompiling VMD with -DCOLVARS_DEBUG.\n");
-  // if (script) {
-  //   script->proxy_error = COLVARSCRIPT_ERROR;
-  // } else {
-  if (colvars != NULL) {
-    delete colvars;
-    colvars = NULL;
-  }
+  cvm::set_error_bits(FATAL_ERROR);
 }
 
 void colvarproxy_vmd::exit (std::string const &message)
@@ -219,7 +212,7 @@ e_pdb_field pdb_field_str2enum (std::string const &pdb_field_str)
       colvarparse::to_lower_cppstr ("X")) {
     pdb_field = e_pdb_x;
   }
-  
+
   if (colvarparse::to_lower_cppstr (pdb_field_str) ==
       colvarparse::to_lower_cppstr ("Y")) {
     pdb_field = e_pdb_y;
@@ -273,7 +266,7 @@ int colvarproxy_vmd::load_coords (char const *pdb_filename,
 
   vmd->molecule_make_top (vmdmolid);
   size_t const pdb_natoms = tmpmol->nAtoms;
-  
+
   if (pos.size() != pdb_natoms) {
 
     bool const pos_allocated = (pos.size() > 0);
@@ -321,7 +314,7 @@ int colvarproxy_vmd::load_coords (char const *pdb_filename,
           current_index++;
         }
       }
-      
+
       if (!pos_allocated) {
         pos.push_back (cvm::atom_pos (0.0, 0.0, 0.0));
       } else if (ipos >= pos.size()) {
@@ -417,7 +410,7 @@ int colvarproxy_vmd::load_atoms (char const *pdb_filename,
     } else if (atom_pdb_field_value == 0.0) {
       continue;
     }
-     
+
     atoms.push_back (cvm::atom (ipdb+1));
   }
 
@@ -440,7 +433,7 @@ cvm::atom::atom (int const &atom_number)
     cvm::log ("Adding atom "+cvm::to_str (aid+1)+
               " for collective variables calculation.\n");
 
-  if ( (aid < 0) || (aid >= vmdmol->nAtoms) ) 
+  if ( (aid < 0) || (aid >= vmdmol->nAtoms) )
     cvm::fatal_error ("Error: invalid atom number specified, "+
                       cvm::to_str (atom_number)+"\n");
 
@@ -458,7 +451,7 @@ cvm::atom::atom (cvm::residue_id const &resid,
 {
   DrawMolecule *vmdmol = ((colvarproxy_vmd *) cvm::proxy)->vmdmol;
   float *masses = vmdmol->mass();
-  
+
   int aid = -1;
   for (int ir = 0; ir < vmdmol->nResidues; ir++) {
     Residue *vmdres = vmdmol->residue (ir);
@@ -506,7 +499,7 @@ cvm::atom::atom (cvm::atom const &a)
 {}
 
 
-cvm::atom::~atom() 
+cvm::atom::~atom()
 {}
 
 void cvm::atom::read_position()
