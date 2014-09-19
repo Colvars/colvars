@@ -5,7 +5,7 @@
 
 
 #ifndef COLVARPROXY_VERSION
-#define COLVARPROXY_VERSION "2014-05-14"
+#define COLVARPROXY_VERSION "2014-09-19"
 #endif
 
 
@@ -140,7 +140,7 @@ public:
   /// Print a message to the main log
   virtual void log (std::string const &message) = 0;
 
-  /// Print a message to the main log and exit with error code
+  /// Print a message to the main log and let the rest of the program handle the error
   virtual void error (std::string const &message) = 0;
   
   /// Print a message to the main log and exit with error code
