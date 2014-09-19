@@ -3437,3 +3437,51 @@ parameters from the colvars to define its grid.  The grid ranges from
 \texttt{lowerBoundary} to \texttt{upperBoundary}, and the bin width is
 set by the \texttt{width} parameter.
 
+\cvscriptonly{\cvsec{Colvars scripting}
+
+Collective variables and biases can be added, queried and deleted through the scripting command
+\texttt{\cvcommand}, with the following syntax: \texttt{\cvcommand{} $<$subcommand$>$ [args...]}
+for which the available subcommands are listed below.
+
+
+\cvsubsec{Managing the colvars module}
+\begin{itemize}
+\cvvmdugonly{
+\item \texttt{molid $<$molecule ID$>$} : create colvars instance for specified molecule
+}
+\item \texttt{configfile $<$file name$>$} : read configuration from a file
+\item \texttt{config $<$string$>$} : read configuration from the given string
+\item \texttt{reset} : delete all internal configuration
+\cvvmdugonly{
+\item \texttt{delete} : delete this colvars module instance
+}
+\end{itemize}
+
+\cvsubsec{Input and output}
+\begin{itemize}
+\item \texttt{list} : return a list of all variables
+\item \texttt{list biases} : return a list of all biases
+\item \texttt{load $<$file name$>$} : load a state file (requires configuration)
+\item \texttt{update} : recalculate colvars and biases based
+\item \texttt{printframe} : return a summary of the current frame
+\item \texttt{printframelabels} : return labels to annotate printframe's output
+\cvvmdugonly{
+\item \texttt{frame} : return current frame number
+\item \texttt{frame $<$new\_frame$>$} : set frame number
+}
+\end{itemize}
+
+\cvsubsec{Accessing collective variables}
+\begin{itemize}
+\item \texttt{colvar $<$name$>$ value} : return the current value of the colvar $<$name$>$
+\item \texttt{colvar $<$name$>$ update} : recalculate the colvar $<$name$>$
+\item \texttt{colvar $<$name$>$ delete} : delete the colvar $<$name$>$
+\end{itemize}
+
+\cvsubsec{Accessing biases}
+\begin{itemize}
+\item \texttt{bias $<$name$>$ energy} : return the current energy of the bias $<$name$>$
+\item \texttt{bias $<$name$>$ update} : recalculate the bias $<$name$>$
+\item \texttt{bias $<$name$>$ delete} : delete the bias $<$name$>$
+\end{itemize}
+}

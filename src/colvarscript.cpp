@@ -21,9 +21,9 @@ int colvarscript::run (int argc, char const *argv[]) {
   }
 
   if (argc < 2) {
-    result = "usage: "+std::string (argv[0])+"<subcommand> [args...]\n\
+    result = "usage: "+std::string (argv[0])+" <subcommand> [args...]\n\
 \n\
-Initialize or deinitialize the module:\n\
+Managing the colvars module:\n\
   configfile <file name>      -- read configuration from a file\n\
   config <string>             -- read configuration from the given string\n\
   reset                       -- delete all internal configuration\n\
@@ -44,12 +44,12 @@ Input and output:\n\
   }
 
   result += "\n\
-Access collective variables:\n\
+Accessing collective variables:\n\
   colvar <name> value         -- return the current value of the colvar <name>\n\
   colvar <name> update        -- recalculate the colvar <name>\n\
   colvar <name> delete        -- delete the colvar <name>\n\
 \n\
-Access biases and algorithms:\n\
+Accessing biases:\n\
   bias <name> energy          -- return the current energy of the bias <name>\n\
   bias <name> update          -- recalculate the bias <name>\n\
   bias <name> delete          -- delete the bias <name>\n\
@@ -59,13 +59,13 @@ Access biases and algorithms:\n\
   }
 
   std::string cmd = argv[1];
-  
+
   if (cmd == "colvar") {
-    return proc_colvar (argc-1, &(argv[1])); 
+    return proc_colvar (argc-1, &(argv[1]));
   }
 
   if (cmd == "bias") {
-    return proc_bias (argc-1, &(argv[1])); 
+    return proc_bias (argc-1, &(argv[1]));
   }
 
   if (cmd == "reset") {
@@ -73,7 +73,7 @@ Access biases and algorithms:\n\
     colvars->reset();
     return COLVARSCRIPT_OK;
   }
-  
+
   if (cmd == "delete") {
     colvars->reset();
     // Note: the delete bit may be ignored by some backends
@@ -81,8 +81,8 @@ Access biases and algorithms:\n\
     colvars->set_error_bits(DELETE_COLVARS);
     return COLVARSCRIPT_OK;
   }
-  
-  if (cmd == "update") { 
+
+  if (cmd == "update") {
     colvars->calc();
     return COLVARSCRIPT_OK;
   }
