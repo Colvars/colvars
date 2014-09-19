@@ -3253,7 +3253,7 @@ YFLAGS      = $arch_yflags
 
 .cu.ptx:
 	\$(ECHO) "Compiling " \$< " --> " \$*.ptx " ..."; \\
-	\$(NVCC) $liboptix_include -gencode arch=compute_20,code=compute_20 -ptx \$< $arch_coptout$vmd_arch_dir/\$\@
+	\$(NVCC) --use_fast_math $liboptix_include -gencode arch=compute_20,code=compute_20 -ptx \$< $arch_coptout$vmd_arch_dir/\$\@
 
 .y.o:
 
@@ -3305,7 +3305,9 @@ install:
 	(cd "$install_library_dir" ; \$(TAR) -xf -)
 	-\$(CD) ..; \$(TAR) -cf - shaders | \\
 	(cd "$install_library_dir" ; \$(TAR) -xf -)
-	-\$(COPY) ../$config_arch/OptiXShaders.ptx "$install_library_dir/shaders"
+	if [ -f ../$config_arch/OptiXShaders.ptx ]; then \\
+		\$(COPY) ../$config_arch/OptiXShaders.ptx "$install_library_dir/shaders"; \\
+	fi; 
 	-\$(COPY) ../data/.vmdrc ../data/.vmdsensors ../data/vmd_completion.dat "$install_library_dir"
 	\$(CD) $vmd_bin_dir ; \\
 	if [ -f run_vmd_tmp ]; then \$(DELETE) run_vmd_tmp; fi ; \\
@@ -3330,14 +3332,14 @@ install:
 ##### remove most of the cruft
 clean:
 	\$(CD) $vmd_arch_dir ; \\
-		\$(DELETE) *.o *.warnings *.depend.old core
+		\$(DELETE) *.ptx *.o *.warnings *.depend.old core
 
 veryclean: clean
 	\$(CD) $vmd_arch_dir ; \\
 	  \$(DELETEDIR) $arch_template_repository; \\
 	  \$(DELETE) $config_progname
 	\$(CD) $vmd_src_dir ; \\
-	  \$(DELETE) *.o *.a *~ core; \\
+	  \$(DELETE) *.ptx *.o *.a *~ core; \\
 	  \$(DELETEDIR) $arch_template_repository; \\
 	  \$(DELETE) $config_progname
 	\$(CD) $vmd_doc_dir ; \\
