@@ -32,7 +32,7 @@
 // local helper functions
 
 // safely move filename to filename.extension
-static void my_backup_file(const char *filename, const char *extension)
+static int my_backup_file(const char *filename, const char *extension)
 {
   struct stat sbuf;
   if (stat(filename, &sbuf) == 0) {
@@ -328,18 +328,17 @@ e_pdb_field pdb_field_str2enum(std::string const &pdb_field_str)
   return pdb_field;
 }
 
-void colvarproxy_lammps::load_coords(char const *pdb_filename,
+int colvarproxy_lammps::load_coords(char const *pdb_filename,
                                     std::vector<cvm::atom_pos> &pos,
                                     const std::vector<int> &indices,
                                     std::string const &pdb_field_str,
                                     double const pdb_field_value)
 {
-
   cvm::fatal_error("Reading collective variable coordinates "
-                    "from a PDB file is currently not supported.\n");
+                   "from a PDB file is currently not supported.\n");
 }
 
-void colvarproxy_lammps::load_atoms(char const *pdb_filename,
+int colvarproxy_lammps::load_atoms(char const *pdb_filename,
                                    std::vector<cvm::atom> &atoms,
                                    std::string const &pdb_field_str,
                                    double const pdb_field_value)
@@ -348,13 +347,13 @@ void colvarproxy_lammps::load_atoms(char const *pdb_filename,
                     "from a PDB file is currently not supported.\n");
 }
 
-void colvarproxy_lammps::backup_file(char const *filename)
+int colvarproxy_lammps::backup_file(char const *filename)
 {
   if (std::string(filename).rfind(std::string(".colvars.state"))
       != std::string::npos) {
-    my_backup_file(filename, ".old");
+    return my_backup_file(filename, ".old");
   } else {
-    my_backup_file(filename, ".BAK");
+    return my_backup_file(filename, ".BAK");
   }
 }
 
