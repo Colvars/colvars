@@ -7,8 +7,8 @@
 /*****************************************************************************
  * $Source: /namd/cvsroot/namd2/src/SimParameters.C,v $
  * $Author: jim $
- * $Date: 2014/06/03 21:48:42 $
- * $Revision: 1.1442 $
+ * $Date: 2014/09/05 20:15:44 $
+ * $Revision: 1.1443 $
  *****************************************************************************/
 
 /** \file SimParameters.C
@@ -2924,9 +2924,10 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
       if (drudeOn) {
         NAMD_die("GBIS not compatible with Drude Polarization");
       }
-      if (fixedAtomsOn) {
+      if (fixedAtomsOn && ! fixedAtomsForces) {
 #ifdef NAMD_CUDA
-        NAMD_die("GBIS CUDA not yet compatible with fixed atoms");
+        iout << iWARN << "ENABLING FIXED ATOMS FORCES FOR COMPATIBILITY WITH GBIS CUDA\n" << endi;
+        fixedAtomsForces = TRUE;
 #endif
       }
 
@@ -4209,11 +4210,13 @@ if ( openatomOn )
    {
       iout << iINFO << "FIXED ATOMS ACTIVE\n";
 #ifdef NAMD_CUDA
+     if ( ! fixedAtomsForces ) {
       iout << iWARN << "FOR CUDA VERSION PRESSURE WILL BE INCORRECT WITHOUT FIXEDATOMSFORCES\n";
       if (berendsenPressureOn || langevinPistonOn) {
         fixedAtomsForces = TRUE;
         iout << iWARN << "ENABLING FIXEDATOMSFORCES DUE TO PRESSURE CONTROL\n";
       }
+     }
 #endif
       if ( fixedAtomsForces )
 	iout << iINFO << "FORCES BETWEEN FIXED ATOMS ARE CALCULATED\n";

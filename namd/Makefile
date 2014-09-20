@@ -1,5 +1,5 @@
 # pass version/platform information to compile
-NAMD_VERSION = 2.9
+NAMD_VERSION = 2.10b1
 
 # compiler flags (Win32 overrides)
 COPTI = -I
@@ -199,12 +199,17 @@ OBJS = \
 	$(DSTDIR)/GlobalMasterFreeEnergy.o \
 	$(DSTDIR)/GlobalMasterEasy.o \
 	$(DSTDIR)/GlobalMasterMisc.o \
+	$(DSTDIR)/colvarproxy_namd.o \
+	$(DSTDIR)/colvarscript.o \
+	$(DSTDIR)/colvarmodule.o \
+	$(DSTDIR)/colvarparse.o \
 	$(DSTDIR)/colvar.o \
-	$(DSTDIR)/colvaratoms.o \
+	$(DSTDIR)/colvarvalue.o \
 	$(DSTDIR)/colvarbias.o \
 	$(DSTDIR)/colvarbias_abf.o \
 	$(DSTDIR)/colvarbias_alb.o \
 	$(DSTDIR)/colvarbias_meta.o \
+	$(DSTDIR)/colvaratoms.o \
 	$(DSTDIR)/colvarcomp.o \
 	$(DSTDIR)/colvarcomp_angles.o \
 	$(DSTDIR)/colvarcomp_coordnums.o \
@@ -212,11 +217,6 @@ OBJS = \
 	$(DSTDIR)/colvarcomp_protein.o \
 	$(DSTDIR)/colvarcomp_rotations.o \
 	$(DSTDIR)/colvargrid.o \
-	$(DSTDIR)/colvarmodule.o \
-	$(DSTDIR)/colvarparse.o \
-	$(DSTDIR)/colvarproxy_namd.o \
-	$(DSTDIR)/colvarscript.o \
-	$(DSTDIR)/colvarvalue.o \
 	$(DSTDIR)/GridForceGrid.o \
         $(DSTDIR)/GromacsTopFile.o \
 	$(DSTDIR)/heap.o \
