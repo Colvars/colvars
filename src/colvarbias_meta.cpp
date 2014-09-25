@@ -94,6 +94,9 @@ colvarbias_meta::colvarbias_meta (std::string const &conf, char const *key)
     dump_fes = false;
     dump_fes_save = false;
     dump_replica_fes = false;
+
+    hills_energy           = NULL;
+    hills_energy_gradients = NULL;
   }
 
   if (comm != single_replica) {
