@@ -5,13 +5,24 @@ if [ $# -lt 1 ]
 then
     cat <<EOF
 
- usage: sh $0 <target source tree>
+ usage: sh $0 [-f] <target source tree>
 
-   "target source tree" = root directory of the MD code sources
+   -f  "force-update": overwrite conflicting files such as Makefile
+        (default: create diff files for inspection --- MD code may be different)
+
+   <target source tree> = root directory of the MD code sources
    supported MD codes: NAMD, VMD, LAMMPS
 
 EOF
    exit 1
+fi
+
+
+force_update=0
+if [ $1 = "-f" ]
+then
+  force_update=1
+  shift
 fi
 
 # infer source path from name of script
@@ -28,6 +39,7 @@ fi
 # undocumented option to only compare trees
 checkonly=0
 [ "$2" = "--diff" ] && checkonly=1
+[ $force_update = 1 ] && checkonly=0
 
 # try to determine what code resides inside the target dir
 code=unkown
@@ -72,6 +84,23 @@ condcopy () {
       cmp -s "$1" "$2" || cp "$1" "$2"
       echo -n '.'
     fi
+  fi
+}
+
+
+# check files related to, but not part of the colvars module
+checkfile () {
+  diff "${1}" "${2}" > $(basename ${1}).diff
+  if [ -s $(basename ${1}).diff ]
+  then
+    echo "Differences found between ${1} and ${2}, check $(basename ${1}).diff"
+    if [ $force_update = 1 ]
+    then
+      echo "Overwriting ${2}, as requested by the -f flag."
+      cp "$1" "$2"
+    fi
+  else
+    rm -f $(basename ${1}).diff
   fi
 }
 
@@ -147,25 +176,21 @@ then
     condcopy "${src}" "${target}/src/${tgt}"
   done
 
-  # TODO: update Makefile and other NAMD source files? e.g. ScriptTcl.C
-
   condcopy "${source}/doc/colvars-refman.bib" "${target}/ug/ug_colvars.bib"
   condcopy "${source}/doc/colvars-refman-main.tex" "${target}/ug/ug_colvars.tex"
   condcopy "${source}/namd/ug/ug_colvars_macros.tex" "${target}/ug/ug_colvars_macros.tex"
 
   echo ' done.'
 
-  for src in ${source}/namd/src/* ${source}/namd/Make*
+  for src in ${source}/namd/src/* 
   do \
-    tgt=$(echo ${src} | sed "s/${source}\/namd\///")
-    name=$(basename ${src})
-    diff "${src}" "${target}/${tgt}" > ${name}.diff
-    if [ -s ${name}.diff ]
-    then
-      echo "Differences found between ${src} and ${target}/${tgt}, check ${name}.diff"
-    else
-      rm -f ${name}.diff
-    fi
+    tgt=$(basename ${src})
+    checkfile "${src}" "${target}/src/${tgt}"
+  done
+  for src in ${source}/namd/Make*
+  do 
+    tgt=$(basename ${src})
+    checkfile "${src}" "${target}/${tgt}"
   done
 
   exit 0
@@ -197,18 +222,15 @@ then
   done
   echo ' done.'
 
-  # TODO: update configure script and other VMD source files?
-  for src in ${source}/vmd/src/* ${source}/vmd/configure
+  for src in ${source}/vmd/src/* 
   do \
-    tgt=$(echo ${src} | sed "s/${source}\/vmd\///")
-    name=$(basename ${src})
-    diff "${src}" "${target}/${tgt}" > ${name}.diff
-    if [ -s ${name}.diff ]
-    then
-      echo "Differences found between ${src} and ${target}/${tgt}, check ${name}.diff"
-    else
-      rm -f ${name}.diff
-    fi
+    tgt=$(basename ${src})
+    checkfile "${src}" "${target}/src/${tgt}"
+  done
+  for src in ${source}/vmd/configure
+  do 
+    tgt=$(basename ${src})
+    checkfile "${src}" "${target}/${tgt}"
   done
 
   condcopy "${source}/doc/colvars-refman.bib" "${target}/doc/ug_colvars.bib"
