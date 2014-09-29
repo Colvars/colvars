@@ -121,6 +121,8 @@ colvar::colvar (std::string const &conf)
   initialize_components ("orientation",      "orientation",    orientation);
   initialize_components ("orientation "
                          "angle",            "orientationAngle",orientation_angle);
+  initialize_components ("orientation "
+                         "projection",       "orientationProj",orientation_proj);
   initialize_components ("tilt",             "tilt",           tilt);
   initialize_components ("spin angle",       "spinAngle",      spin_angle);
 

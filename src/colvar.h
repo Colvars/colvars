@@ -292,7 +292,7 @@ public:
 
   /// Get ready for a run and possibly re-initialize internal data
   void setup();
-  
+
   /// Destructor
   ~colvar();
 
@@ -487,6 +487,7 @@ public:
   class h_bond;
   class rmsd;
   class orientation_angle;
+  class orientation_proj;
   class tilt;
   class spin_angle;
   class gyration;

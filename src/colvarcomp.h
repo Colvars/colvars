@@ -1052,6 +1052,31 @@ public:
 };
 
 
+/// \brief Colvar component: cosine of the angle of rotation with respect to a set
+/// of reference coordinates (colvarvalue::type_scalar type, range
+/// [-1:1])
+class colvar::orientation_proj
+  : public colvar::orientation
+{
+public:
+
+  orientation_proj (std::string const &conf);
+  orientation_proj();
+  virtual inline ~orientation_proj() {}
+  virtual void calc_value();
+  virtual void calc_gradients();
+  virtual void apply_force (colvarvalue const &force);
+  virtual cvm::real dist2 (colvarvalue const &x1,
+                           colvarvalue const &x2) const;
+  virtual colvarvalue dist2_lgrad (colvarvalue const &x1,
+                                   colvarvalue const &x2) const;
+  virtual colvarvalue dist2_rgrad (colvarvalue const &x1,
+                                   colvarvalue const &x2) const;
+  virtual cvm::real compare (colvarvalue const &x1,
+                             colvarvalue const &x2) const;
+};
+
+
 /// \brief Colvar component: projection of the orientation vector onto
 /// a predefined axis (colvarvalue::type_scalar type, range [-1:1])
 class colvar::tilt
@@ -1201,6 +1226,7 @@ public:
   simple_scalar_dist_functions (inertia_z)
   simple_scalar_dist_functions (rmsd)
   simple_scalar_dist_functions (orientation_angle)
+  simple_scalar_dist_functions (orientation_proj)
   simple_scalar_dist_functions (tilt)
   simple_scalar_dist_functions (eigenvector)
   //  simple_scalar_dist_functions (alpha_dihedrals)

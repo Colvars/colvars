@@ -170,10 +170,61 @@ void colvar::orientation_angle::calc_gradients()
   for (size_t ia = 0; ia < atoms.size(); ia++) {
     atoms[ia].grad = (dxdq0 * (rot.dQ0_2[ia])[0]);
   }
+  if (b_debug_gradients) {
+    cvm::log ("Debugging orientationAngle component gradients:\n");
+    debug_gradients (atoms);
+  }
 }
 
 
 void colvar::orientation_angle::apply_force (colvarvalue const &force)
+{
+  cvm::real const &fw = force.real_value;
+  if (!atoms.noforce) {
+    atoms.apply_colvar_force (fw);
+  }
+}
+
+
+
+colvar::orientation_proj::orientation_proj (std::string const &conf)
+  : orientation (conf)
+{
+  function_type = "orientation_proj";
+  x.type (colvarvalue::type_scalar);
+}
+
+
+colvar::orientation_proj::orientation_proj()
+  : orientation()
+{
+  function_type = "orientation_proj";
+  x.type (colvarvalue::type_scalar);
+}
+
+
+void colvar::orientation_proj::calc_value()
+{
+  atoms_cog = atoms.center_of_geometry();
+  rot.calc_optimal_rotation (ref_pos, atoms.positions_shifted (-1.0 * atoms_cog));
+  x.real_value = 2.0 * (rot.q).q0 * (rot.q).q0 - 1.0;
+}
+
+
+void colvar::orientation_proj::calc_gradients()
+{
+  cvm::real const dxdq0 = 2.0 * 2.0 * (rot.q).q0;
+  for (size_t ia = 0; ia < atoms.size(); ia++) {
+    atoms[ia].grad = (dxdq0 * (rot.dQ0_2[ia])[0]);
+  }
+  if (b_debug_gradients) {
+    cvm::log ("Debugging orientationProj component gradients:\n");
+    debug_gradients (atoms);
+  }
+}
+
+
+void colvar::orientation_proj::apply_force (colvarvalue const &force)
 {
   cvm::real const &fw = force.real_value;
 
@@ -181,6 +232,7 @@ void colvar::orientation_angle::apply_force (colvarvalue const &force)
     atoms.apply_colvar_force (fw);
   }
 }
+
 
 
 colvar::tilt::tilt (std::string const &conf)
