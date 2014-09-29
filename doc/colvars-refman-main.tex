@@ -1201,6 +1201,7 @@ one or more instances of the following components:
   vector;
 \item \texttt{orientationAngle}: angle of the best-fit rotation from
   a set of reference coordinates;
+\item \texttt{orientationProj}: cosine of \texttt{orientationProj};
 \item \texttt{spinAngle}: projection orthogonal to an axis of the best-fit rotation
   from a set of reference coordinates;
 \item \texttt{tilt}: projection on an axis of the best-fit rotation
@@ -1905,6 +1906,13 @@ The block \texttt{orientationAngle~\{...\}} accepts the same base options as
 the component \texttt{orientation}: \texttt{atoms} and \texttt{refPositions}\cvnamebasedonly{, or \texttt{refPositionsFile}, \texttt{refPositionsCol} and \texttt{refPositionsColValue}}.
 The returned value is the angle of rotation $\omega$ between the current and the reference positions.
 This angle is expressed in degrees within the range [0$^{\circ}$:180$^{\circ}$].
+
+
+\cvsubsubsec{\texttt{orientationProj}: cosine of the angle of rotation from reference coordinates.}  
+The block \texttt{orientationProj~\{...\}} accepts the same base options as
+the component \texttt{orientation}: \texttt{atoms} and \texttt{refPositions}\cvnamebasedonly{, or \texttt{refPositionsFile}, \texttt{refPositionsCol} and \texttt{refPositionsColValue}}.
+The returned value is the cosine of the angle of rotation $\omega$ between the current and the reference positions.
+The range of values is [-1:1].
 
 
 \cvsubsubsec{\texttt{spinAngle}: angle of rotation around a given axis.}
@@ -3440,7 +3448,7 @@ set by the \texttt{width} parameter.
 \cvscriptonly{\cvsec{Colvars scripting}
 
 Collective variables and biases can be added, queried and deleted through the scripting command
-\texttt{\cvcommand}, with the following syntax: \texttt{\cvcommand{} $<$subcommand$>$ [args...]}
+\cvnamdonly{\texttt{cv}}\cvvmdonly{\texttt{colvars}}, with the following syntax: \cvnamdonly{\texttt{cv}}\cvvmdonly{\texttt{colvars}}\texttt{~$<$subcommand$>$ [args...]}
 for which the available subcommands are listed below.
 
 
