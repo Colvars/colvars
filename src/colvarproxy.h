@@ -33,6 +33,9 @@ public:
   /// Pointer to the scripting interface object (does not need to be allocated in a new interface)
   colvarscript *script;
 
+  // is a user force script defined?
+  bool force_script_defined;
+
   /// Default constructor
   inline colvarproxy() : script (NULL) {}
 
@@ -137,12 +140,15 @@ public:
 
   // **************** INPUT/OUTPUT ****************
 
+  /// Run a user-defined colvar forces script
+  virtual int run_force_script () {}
+
   /// Print a message to the main log
   virtual void log (std::string const &message) = 0;
 
   /// Print a message to the main log and let the rest of the program handle the error
   virtual void error (std::string const &message) = 0;
-  
+
   /// Print a message to the main log and exit with error code
   virtual void fatal_error (std::string const &message) = 0;
 
@@ -169,7 +175,7 @@ public:
                             double const pdb_field_value = 0.0) = 0;
 
   /// \brief Rename the given file, before overwriting it
-  virtual int backup_file (char const *filename) {return 0;}
+  virtual int backup_file (char const *filename) {}
 };
 
 

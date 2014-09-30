@@ -74,6 +74,9 @@ colvarproxy_lammps::colvarproxy_lammps(LAMMPS_NS::LAMMPS *lmp,
   do_exit=false;
   restart_every=0;
 
+  // User-scripted forces are not available in LAMMPS
+  force_script_defined = false;
+
   // set input restart name and strip the extension, if present
   input_prefix_str = std::string(inp_name ? inp_name : "");
   if (input_prefix_str.rfind(".colvars.state") != std::string::npos)

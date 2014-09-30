@@ -8,6 +8,11 @@
 #include "PDB.h"
 #include "PDBData.h"
 #include "ReductionMgr.h"
+#include "ScriptTcl.h"
+
+#ifdef NAMD_TCL
+#include <tcl.h>
+#endif
 
 #include "colvarmodule.h"
 #include "colvaratoms.h"
@@ -76,6 +81,20 @@ colvarproxy_namd::colvarproxy_namd()
 
   // save to Node for Tcl script access
   Node::Object()->colvars = colvars;
+
+
+  #ifdef NAMD_TCL
+  // Store pointer to NAMD's Tcl interpreter
+  interp = Node::Object()->getScript()->interp;
+
+  // See is user-scripted forces are defined
+  if (Tcl_FindCommand(interp, "calc_colvar_forces", NULL, 0) == NULL) {
+    force_script_defined = false;
+  } else {
+    force_script_defined = true;
+  }
+  #endif
+
 
   if (simparams->firstTimestep != 0) {
     cvm::log ("Initializing step number as firstTimestep.\n");
@@ -263,6 +282,9 @@ void colvarproxy_namd::calculate()
   }
 }
 
+int colvarproxy_namd::run_force_script () {
+  return Tcl_Eval(interp, "calc_colvar_forces");
+}
 
 void colvarproxy_namd::add_energy (cvm::real energy)
 {

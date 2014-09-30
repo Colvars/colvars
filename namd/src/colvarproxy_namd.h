@@ -45,6 +45,9 @@ protected:
   size_t init_namd_atom (AtomID const &aid);
 
   SubmitReduction *reduction;
+
+  Tcl_Interp *interp; // Tcl interpreter embedded in NAMD
+
 public:
 
   friend class cvm::atom;
@@ -62,6 +65,7 @@ public:
   void error (std::string const &message);
   void fatal_error (std::string const &message);
   void exit (std::string const &message);
+  int run_force_script ();
 
   inline cvm::real unit_angstrom()
   {

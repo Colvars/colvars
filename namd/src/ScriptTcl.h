@@ -53,6 +53,7 @@ private:
 #ifdef NAMD_TCL
   friend class Controller;
   friend class GlobalMasterTcl;
+  friend class colvarproxy_namd;
   Tcl_Interp *interp;
   static int Tcl_exit(ClientData, Tcl_Interp *, int, char **);
   static int Tcl_abort(ClientData, Tcl_Interp *, int, char **);

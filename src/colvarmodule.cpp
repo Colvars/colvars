@@ -9,6 +9,7 @@
 #include "colvarbias_alb.h"
 #include "colvarbias_meta.h"
 #include "colvarbias_abf.h"
+#include "colvarbias_restraint.h"
 
 
 colvarmodule::colvarmodule (colvarproxy *proxy_in)
@@ -487,6 +488,18 @@ int colvarmodule::calc() {
       return COLVARS_ERROR;
     }
   }
+
+  // Run user force script, if provided,
+  // potentially adding scripted forces to the colvars
+  if (proxy->force_script_defined) {
+    int res;
+    res = proxy->run_force_script();
+    if (res != COLVARS_OK) {
+      cvm::error("Error running user colvar forces script");
+      return COLVARS_ERROR;
+    }
+  }
+
   cvm::decrease_depth();
 
   if (cvm::b_analysis) {
@@ -509,8 +522,9 @@ int colvarmodule::calc() {
     cvm::decrease_depth();
   }
 
-  // sum up the forces for each colvar and integrate any internal
-  // equation of motion
+  // sum up the forces for each colvar, including wall forces
+  // and integrate any internal
+  // equation of motion (extended system)
   if (cvm::debug())
     cvm::log ("Updating the internal degrees of freedom "
               "of colvars (if they have any).\n");

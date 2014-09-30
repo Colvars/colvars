@@ -114,6 +114,9 @@ colvarproxy_vmd::colvarproxy_vmd (Tcl_Interp *vti, VMDApp *v, int molid)
   script = new colvarscript (this);
   script->proxy_error = COLVARSCRIPT_OK;
 
+  // User-scripted forces are not available in VMD
+  force_script_defined = false;
+
   this->setup();
 }
 
