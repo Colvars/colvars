@@ -1,0 +1,18 @@
+Colvarstrajfrequency    2
+Colvarsrestartfrequency 20000
+
+colvar {
+  name d
+
+  lowerBoundary 12
+  upperBoundary 32
+  width 0.2
+
+  outputAppliedForce
+
+  distance {
+    group1 { atomnumbers 4 }
+    group2 { atomnumbers 99 }
+  }
+}
+
