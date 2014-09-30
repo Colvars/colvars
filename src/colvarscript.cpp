@@ -48,6 +48,7 @@ Accessing collective variables:\n\
   colvar <name> value         -- return the current value of the colvar <name>\n\
   colvar <name> update        -- recalculate the colvar <name>\n\
   colvar <name> delete        -- delete the colvar <name>\n\
+  colvar <name> addforce <F>  -- apply given force on <name>\n\
 \n\
 Accessing biases:\n\
   bias <name> energy          -- return the current energy of the bias <name>\n\
@@ -230,6 +231,23 @@ int colvarscript::proc_colvar (int argc, char const *argv[]) {
     delete cv;
     // TODO this could be done by the destructors
     colvars->write_traj_label (colvars->cv_traj_os);
+    return COLVARSCRIPT_OK;
+  }
+
+  if (subcmd == "addforce") {
+    if (argc < 4) {
+      result = "Missing parameter: force value";
+      return COLVARSCRIPT_ERROR;
+    }
+    std::string f_str = argv[3];
+    std::istringstream is (f_str);
+    colvarvalue force (cv->type());
+    if (!(is >> force)) {
+      result = "Error parsing force value";
+      return COLVARSCRIPT_ERROR;
+    }
+    cv->add_bias_force(force);
+    result = cvm::to_str(force);
     return COLVARSCRIPT_OK;
   }
 
