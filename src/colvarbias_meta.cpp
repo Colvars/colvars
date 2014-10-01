@@ -464,9 +464,14 @@ cvm::real colvarbias_meta::update()
 
     case single_replica:
       if (well_tempered) {
-        std::vector<int> curr_bin = hills_energy->get_colvars_index();
-        cvm::real const hills_energy_sum_here = hills_energy->value(curr_bin);
-        cvm::real const exp_weight = std::exp(-hills_energy_sum_here/(bias_temperature*cvm::boltzmann()));
+        cvm::real hills_energy_sum_here = 0.0;
+        if (use_grids) {
+          std::vector<int> curr_bin = hills_energy->get_colvars_index();
+          hills_energy_sum_here = hills_energy->value(curr_bin);
+        } else {
+          calc_hills (new_hills_begin, hills.end(), hills_energy_sum_here);
+        }
+        cvm::real const exp_weight = std::exp(-1.0*hills_energy_sum_here/(bias_temperature*cvm::boltzmann()));
         create_hill (hill ((hill_weight*exp_weight), colvars, hill_width));
       } else {
         create_hill (hill (hill_weight, colvars, hill_width));
@@ -475,9 +480,14 @@ cvm::real colvarbias_meta::update()
 
     case multiple_replicas:
       if (well_tempered) {
-        std::vector<int> curr_bin = hills_energy->get_colvars_index();
-        cvm::real const hills_energy_sum_here = hills_energy->value(curr_bin);
-        cvm::real const exp_weight = std::exp(-hills_energy_sum_here/(bias_temperature*cvm::boltzmann()));
+        cvm::real hills_energy_sum_here = 0.0;
+        if (use_grids) {
+          std::vector<int> curr_bin = hills_energy->get_colvars_index();
+          hills_energy_sum_here = hills_energy->value(curr_bin);
+        } else {
+          calc_hills (new_hills_begin, hills.end(), hills_energy_sum_here);
+        }
+        cvm::real const exp_weight = std::exp(-1.0*hills_energy_sum_here/(bias_temperature*cvm::boltzmann()));
         create_hill (hill ((hill_weight*exp_weight), colvars, hill_width, replica_id));
       } else {
         create_hill (hill (hill_weight, colvars, hill_width, replica_id));
