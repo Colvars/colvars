@@ -31,7 +31,7 @@ public:
   /// If an error is caught by the proxy through fatal_error(), this is set to COLVARSCRIPT_ERROR
   int proxy_error;
 
-  /// If an error is return by one of the methods, it should set this to the error message
+  /// If an error is returned by one of the methods, it should set this to the error message
   std::string result;
 
   /// Run script command with given positional arguments

@@ -83,7 +83,8 @@ colvarproxy_namd::colvarproxy_namd()
   Node::Object()->colvars = colvars;
 
 
-  #ifdef NAMD_TCL
+#ifdef NAMD_TCL
+  have_scripts = true;
   // Store pointer to NAMD's Tcl interpreter
   interp = Node::Object()->getScript()->interp;
 
@@ -93,7 +94,11 @@ colvarproxy_namd::colvarproxy_namd()
   } else {
     force_script_defined = true;
   }
-  #endif
+  script = new colvarscript (this);
+#else
+    force_script_defined = false;
+    have_scripts = false;
+#endif
 
 
   if (simparams->firstTimestep != 0) {
@@ -109,8 +114,6 @@ colvarproxy_namd::colvarproxy_namd()
     cvm::log ("applied_forces = "+cvm::to_str (applied_forces)+"\n");
     cvm::log (cvm::line_marker);
   }
-
-  script = new colvarscript (this);
 
   // Initialize reduction object to submit restraint energy as MISC
   reduction = ReductionMgr::Object()->willSubmit(REDUCTIONS_BASIC);

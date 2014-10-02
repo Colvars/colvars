@@ -76,6 +76,7 @@ colvarproxy_lammps::colvarproxy_lammps(LAMMPS_NS::LAMMPS *lmp,
 
   // User-scripted forces are not available in LAMMPS
   force_script_defined = false;
+  have_scripts = false;
 
   // set input restart name and strip the extension, if present
   input_prefix_str = std::string(inp_name ? inp_name : "");

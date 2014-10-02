@@ -30,12 +30,6 @@ public:
   /// Pointer to the main object
   colvarmodule *colvars;
 
-  /// Pointer to the scripting interface object (does not need to be allocated in a new interface)
-  colvarscript *script;
-
-  // is a user force script defined?
-  bool force_script_defined;
-
   /// Default constructor
   inline colvarproxy() : script (NULL) {}
 
@@ -136,12 +130,22 @@ public:
   void select_closest_images (std::vector<cvm::atom_pos> &pos,
                               cvm::atom_pos const &ref_pos);
 
+  // **************** SCRIPTING INTERFACE ****************
 
+  /// Pointer to the scripting interface object
+  /// (does not need to be allocated in a new interface)
+  colvarscript *script;
 
-  // **************** INPUT/OUTPUT ****************
+  /// is a user force script defined?
+  bool force_script_defined;
+
+  /// Do we have a scripting interface?
+  bool have_scripts;
 
   /// Run a user-defined colvar forces script
-  virtual int run_force_script () {}
+  virtual int run_force_script() {return 0;}
+
+  // **************** INPUT/OUTPUT ****************
 
   /// Print a message to the main log
   virtual void log (std::string const &message) = 0;
@@ -175,7 +179,7 @@ public:
                             double const pdb_field_value = 0.0) = 0;
 
   /// \brief Rename the given file, before overwriting it
-  virtual int backup_file (char const *filename) {}
+  virtual int backup_file (char const *filename) {return 0;}
 };
 
 

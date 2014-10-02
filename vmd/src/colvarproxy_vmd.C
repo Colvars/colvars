@@ -117,6 +117,14 @@ colvarproxy_vmd::colvarproxy_vmd (Tcl_Interp *vti, VMDApp *v, int molid)
   // User-scripted forces are not available in VMD
   force_script_defined = false;
 
+  // Do we have scripts?
+  // For now colvars depend on Tcl, but this may not always be the case in the future
+#if defined(VMDTCL)
+  have_scripts = true;
+#else
+  have_scripts = false;
+#endif
+
   this->setup();
 }
 
