@@ -11,9 +11,6 @@
 class colvarbias : public colvarparse {
 public:
 
-  /// Numeric id of this bias
-  int            id;
-
   /// Name of this bias
   std::string    name;
 

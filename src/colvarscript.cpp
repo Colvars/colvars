@@ -8,6 +8,7 @@ colvarscript::colvarscript (colvarproxy *p)
  : proxy (p)
 {
   colvars = proxy->colvars;
+  proxy_error = 0;
 }
 
 /// Run method based on given arguments
@@ -92,14 +93,14 @@ Accessing biases:\n\
     if (argc == 2) {
       for (std::vector<colvar *>::iterator cvi = colvars->colvars.begin();
            cvi != colvars->colvars.end();
-           cvi++) {
+           ++cvi) {
         result += (cvi == colvars->colvars.begin() ? "" : " ") + (*cvi)->name;
       }
       return COLVARSCRIPT_OK;
     } else if (argc == 3 && !strcmp(argv[2], "biases")) {
       for (std::vector<colvarbias *>::iterator bi = colvars->biases.begin();
            bi != colvars->biases.end();
-           bi++) {
+           ++bi) {
         result += (bi == colvars->biases.begin() ? "" : " ") + (*bi)->name;
       }
       return COLVARSCRIPT_OK;
@@ -290,7 +291,7 @@ int colvarscript::proc_bias (int argc, char const *argv[]) {
   }
 
   if (argc >= 4) {
-    std::string param = argv[3];
+//    std::string param = argv[3];
 
     result = "Syntax error";
     return COLVARSCRIPT_ERROR;

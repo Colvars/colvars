@@ -47,7 +47,7 @@ cvm::atom_group::atom_group (std::vector<cvm::atom> const &atoms)
 cvm::atom_group::atom_group()
   : b_dummy (false), b_center (false), b_rotate (false),
     b_fit_gradients (false), ref_pos_group (NULL),
-    noforce (false)
+    noforce (false), b_user_defined_fit (false)
 {
   total_mass = 0.0;
 }

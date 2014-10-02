@@ -266,7 +266,6 @@ bool colvarparse::get_keyval (std::string const &conf,
               std::string (key)+"\".\n");
 
   if (data.size()) {
-    std::istringstream is (data);
     if ( (data == std::string ("on")) ||
          (data == std::string ("yes")) ||
          (data == std::string ("true")) ) {

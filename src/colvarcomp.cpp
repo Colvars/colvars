@@ -82,12 +82,6 @@ void colvar::cvc::debug_gradients (cvm::atom_group &group)
 
   if (group.b_dummy) return;
 
-  // collect into a vector for convenience
-  std::vector<cvm::rvector> gradients (group.size());
-  for (size_t i = 0; i < group.size(); i++) {
-    gradients[i] = group[i].grad;
-  }
-
   cvm::rotation const rot_0 = group.rot;
   cvm::rotation const rot_inv = group.rot.inverse();
 
@@ -149,39 +143,42 @@ void colvar::cvc::debug_gradients (cvm::atom_group &group)
     }
   }
 
+/*
+ * The code below is WIP
+ */
+//   if (group.ref_pos_group != NULL) {
+//     cvm::atom_group &ref = *group.ref_pos_group;
+//     group.calc_fit_gradients();
+//
+//     for (size_t ia = 0; ia < ref.size(); ia++) {
+//
+//       for (size_t id = 0; id < 3; id++) {
+//         // (re)read original positions
+//         group.read_positions();
+//         ref.read_positions();
+//         // change one coordinate
+//         ref[ia].pos[id] += cvm::debug_gradients_step_size;
+//         group.calc_apply_roto_translation();
+//         calc_value();
+//         cvm::real const x_1 = x.real_value;
+//         cvm::log ("refPosGroup atom "+cvm::to_str (ia)+", component "+cvm::to_str (id)+":\n");
+//         cvm::log ("dx(actual) = "+cvm::to_str (x_1 - x_0,
+//                                21, 14)+"\n");
+//         //cvm::real const dx_pred = (group.fit_gradients.size() && (group.ref_pos_group == NULL)) ?
+//         // cvm::real const dx_pred = (group.fit_gradients.size()) ?
+//         //  (cvm::debug_gradients_step_size * (atom_grad[id] + group.fit_gradients[ia][id])) :
+//         //  (cvm::debug_gradients_step_size * atom_grad[id]);
+//         cvm::real const dx_pred = cvm::debug_gradients_step_size * ref.fit_gradients[ia][id];
+//         cvm::log ("dx(interp) = "+cvm::to_str (dx_pred,
+//                                21, 14)+"\n");
+//         cvm::log ("|dx(actual) - dx(interp)|/|dx(actual)| = "+
+//                   cvm::to_str (std::fabs (x_1 - x_0 - dx_pred) /
+//                                std::fabs (x_1 - x_0),
+//                                12, 5)+
+//                   ".\n");
+//       }
+//     }
+//   }
+
   return;
-  if (group.ref_pos_group != NULL) {
-    cvm::atom_group &ref = *group.ref_pos_group;
-    group.calc_fit_gradients();
-
-    for (size_t ia = 0; ia < ref.size(); ia++) {
-
-      for (size_t id = 0; id < 3; id++) {
-        // (re)read original positions
-        group.read_positions();
-        ref.read_positions();
-        // change one coordinate
-        ref[ia].pos[id] += cvm::debug_gradients_step_size;
-        group.calc_apply_roto_translation();
-        calc_value();
-        cvm::real const x_1 = x.real_value;
-        cvm::log ("refPosGroup atom "+cvm::to_str (ia)+", component "+cvm::to_str (id)+":\n");
-        cvm::log ("dx(actual) = "+cvm::to_str (x_1 - x_0,
-                               21, 14)+"\n");
-        //cvm::real const dx_pred = (group.fit_gradients.size() && (group.ref_pos_group == NULL)) ?
-        // cvm::real const dx_pred = (group.fit_gradients.size()) ?
-        //  (cvm::debug_gradients_step_size * (atom_grad[id] + group.fit_gradients[ia][id])) :
-        //  (cvm::debug_gradients_step_size * atom_grad[id]);
-        cvm::real const dx_pred = cvm::debug_gradients_step_size * ref.fit_gradients[ia][id];
-        cvm::log ("dx(interp) = "+cvm::to_str (dx_pred,
-                               21, 14)+"\n");
-        cvm::log ("|dx(actual) - dx(interp)|/|dx(actual)| = "+
-                  cvm::to_str (std::fabs (x_1 - x_0 - dx_pred) /
-                               std::fabs (x_1 - x_0),
-                               12, 5)+
-                  ".\n");
-      }
-    }
-  }
-
 }

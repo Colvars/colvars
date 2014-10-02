@@ -42,6 +42,7 @@ colvar::distance::distance()
   b_inverse_gradients = true;
   b_Jacobian_derivative = true;
   b_1site_force = false;
+  b_no_PBC = false;
   x.type (colvarvalue::type_scalar);
 }
 
@@ -657,9 +658,10 @@ colvar::inertia_z::inertia_z (std::string const &conf)
 {
   function_type = "inertia_z";
   if (get_keyval (conf, "axis", axis, cvm::rvector (0.0, 0.0, 1.0))) {
-    if (axis.norm2() == 0.0)
+    if (axis.norm2() == 0.0) {
       cvm::error ("Axis vector is zero!");
       return;
+    }
     if (axis.norm2() != 1.0) {
       axis = axis.unit();
       cvm::log ("The normalized axis is: "+cvm::to_str (axis)+".\n");

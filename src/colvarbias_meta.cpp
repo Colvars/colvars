@@ -952,10 +952,6 @@ void colvarbias_meta::update_replicas_registry()
         }
       }
     }
-
-    // continue the cycle
-    new_replica_file = "";
-    new_replica = "";
   } else {
     cvm::fatal_error ("Error: cannot read the replicas registry file \""+
                       replicas_registry+"\".\n");
@@ -1296,7 +1292,7 @@ std::istream & colvarbias_meta::read_restart (std::istream& is)
     }
   }
 
-  bool const existing_hills = (hills.size() > 0);
+  bool const existing_hills = !hills.empty();
   size_t const old_hills_size = hills.size();
   hill_iter old_hills_end = hills.end();
   hill_iter old_hills_off_grid_end = hills_off_grid.end();

@@ -60,10 +60,10 @@ colvarbias::~colvarbias()
   // Remove references to this bias from colvars
   for (std::vector<colvar *>::iterator cvi = colvars.begin();
        cvi != colvars.end();
-       cvi++) {
+       ++cvi) {
     for (std::vector<colvarbias *>::iterator bi = (*cvi)->biases.begin();
          bi != (*cvi)->biases.end();
-         bi++) {
+         ++bi) {
       if ( *bi == this) {
         (*cvi)->biases.erase (bi);
         break;
@@ -73,7 +73,7 @@ colvarbias::~colvarbias()
   // ...and from the colvars module
   for (std::vector<colvarbias *>::iterator bi = cvm::biases.begin();
        bi != cvm::biases.end();
-       bi++) {
+       ++bi) {
     if ( *bi == this) {
       cvm::biases.erase (bi);
       break;
