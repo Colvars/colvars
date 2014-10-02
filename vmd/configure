@@ -772,6 +772,7 @@ if ($config_colvars) {
                       'colvarparse.C',
                       'colvarproxy_vmd.C',
                       'colvarscript.C',
+                      'colvartypes.C',
                       'colvarvalue.C');
   @colvars_h    =    ('colvaratoms.h',
                       'colvarbias.h',

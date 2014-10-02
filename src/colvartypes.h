@@ -541,13 +541,13 @@ inline cvm::rvector operator * (cvm::rmatrix const &m,
 
 
 /// Numerical recipes diagonalization
-void jacobi (cvm::real **a, int n, cvm::real d[], cvm::real **v, int *nrot);
+void jacobi (cvm::real **a, cvm::real d[], cvm::real **v, int *nrot);
 
 /// Eigenvector sort
-void eigsrt (cvm::real d[], cvm::real **v, int n);
+void eigsrt (cvm::real d[], cvm::real **v);
 
 /// Transpose the matrix
-void transpose (cvm::real **v, int n);
+void transpose (cvm::real **v);
 
 
 

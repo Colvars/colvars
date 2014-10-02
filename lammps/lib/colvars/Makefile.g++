@@ -14,10 +14,11 @@ SHELL =		/bin/sh
 
 # ------ DEFINITIONS ------
 
-SRC = colvaratoms.cpp colvarbias_abf.cpp colvarbias.cpp colvarbias_meta.cpp \
+SRC = colvaratoms.cpp colvarbias_abf.cpp colvarbias_alb.cpp colvarbias.cpp  \
  colvar.cpp colvarcomp_angles.cpp colvarcomp.cpp colvarcomp_coordnums.cpp   \
  colvarcomp_distances.cpp colvarcomp_protein.cpp colvarcomp_rotations.cpp   \
- colvargrid.cpp colvarmodule.cpp colvarparse.cpp colvarvalue.cpp colvarbias_alb.cpp
+ colvargrid.cpp colvarmodule.cpp colvarparse.cpp colvarvalue.cpp            \
+ colvarbias_alb.cpp colvarbias_restraint.cpp colvartypes.cpp
 
 LIB = libcolvars.a
 OBJ = $(SRC:.cpp=.o)
