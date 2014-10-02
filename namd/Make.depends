@@ -4269,6 +4269,19 @@ obj/colvarproxy_namd.o: \
 	src/PDB.h \
 	src/PDBData.h \
 	src/ReductionMgr.h \
+	src/ScriptTcl.h \
+	src/Broadcasts.h \
+	src/BroadcastObject.h \
+	src/BroadcastMgr.h \
+	src/UniqueSetIter.h \
+	inc/BroadcastMgr.decl.h \
+	src/BroadcastClient.h \
+	src/LdbCoordinator.h \
+	inc/LdbCoordinator.decl.h \
+	inc/NamdCentLB.decl.h \
+	inc/NamdNborLB.decl.h \
+	inc/NamdHybridLB.decl.h \
+	inc/NamdDummyLB.decl.h \
 	src/colvarmodule.h \
 	src/colvartypes.h \
 	src/colvarproxy.h \
@@ -4293,6 +4306,12 @@ obj/colvarscript.o: \
 	src/colvarparse.h \
 	src/colvarbias.h
 	$(CXX) $(CXXFLAGS) $(COPTO)obj/colvarscript.o $(COPTC) src/colvarscript.C
+obj/colvartypes.o: \
+	src/colvartypes.C \
+	src/colvarmodule.h \
+	src/colvartypes.h \
+	src/colvarproxy.h
+	$(CXX) $(CXXFLAGS) $(COPTO)obj/colvartypes.o $(COPTC) src/colvartypes.C
 obj/colvarvalue.o: \
 	src/colvarvalue.C \
 	src/colvarmodule.h \
