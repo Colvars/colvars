@@ -167,17 +167,14 @@ public:
   }
 
 
-
   /// Set to the null value for the data type currently defined
   void reset();
 
-
   /// \brief If the variable has constraints (e.g. unitvector or
-  /// quaternion), transform it to satisfy them; use it when the \link
-  /// colvarvalue \endlink is not calculated from \link cvc
-  /// \endlink objects, but manipulated by you
+  /// quaternion), transform it to satisfy them; this function needs
+  /// to be called only when the \link colvarvalue \endlink
+  /// is calculated outside of \link cvc \endlink objects
   void apply_constraints();
-
 
   /// Get the current type
   inline Type type() const
@@ -200,6 +197,10 @@ public:
     value_type = x.value_type;
     reset();
   }
+
+  /// Make the type a derivative of the original type
+  /// (constraints do not apply on time derivatives of vector values)
+  inline void is_derivative();
 
   /// Square norm of this colvarvalue
   cvm::real norm2() const;
@@ -350,6 +351,27 @@ inline void colvarvalue::apply_constraints()
     break;
   case colvarvalue::type_quaternion:
     quaternion_value /= std::sqrt(quaternion_value.norm2());
+    break;
+  case colvarvalue::type_notset:
+  default:
+    break;
+  }
+}
+
+
+inline void colvarvalue::is_derivative()
+{
+  switch (value_type) {
+  case colvarvalue::type_scalar:
+  case colvarvalue::type_vector:
+  case colvarvalue::type_unitvectorderiv:
+  case colvarvalue::type_quaternionderiv:
+    break;
+  case colvarvalue::type_unitvector:
+    type(colvarvalue::type_unitvectorderiv);
+    break;
+  case colvarvalue::type_quaternion:
+    type(colvarvalue::type_quaternionderiv);
     break;
   case colvarvalue::type_notset:
   default:
