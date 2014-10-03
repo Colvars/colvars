@@ -233,31 +233,38 @@ public:
   // Casting operator
   inline operator cvm::real() const
   {
-    if (value_type != type_scalar) error_rside(type_scalar);
+    if (value_type != type_scalar) {
+      error_rside(type_scalar);
+    }
     return real_value;
   }
 
   // Casting operator
   inline operator cvm::rvector() const
   {
-    if ((value_type != type_vector) && (value_type != type_unitvector))
+    if ((value_type != type_vector) &&
+        (value_type != type_unitvector) &&
+        (value_type != type_unitvectorderiv)) {
       error_rside(type_vector);
+    }
     return rvector_value;
   }
 
   // Casting operator
   inline operator cvm::quaternion() const
   {
-    if (value_type != type_quaternion) error_rside(type_quaternion);
+    if ((value_type != type_quaternion) &&
+        (value_type != type_quaternionderiv)) {
+      error_rside(type_quaternion);
+    }
     return quaternion_value;
   }
 
   /// Special case when the variable is a real number, and all operations are defined
-  inline bool is_scalar()
+  inline bool is_scalar() const
   {
     return (value_type == type_scalar);
   }
-
 
   /// Ensure that the two types are the same within a binary operator
   void static check_types(colvarvalue const &x1, colvarvalue const &x2);
@@ -759,6 +766,16 @@ inline void colvarvalue::check_types(colvarvalue const &x1,
                                      colvarvalue const &x2)
 {
   if (x1.value_type != x2.value_type) {
+    if (((x1.value_type == type_unitvector) &&
+         (x2.value_type == type_unitvectorderiv)) ||
+        ((x2.value_type == type_unitvector) &&
+         (x1.value_type == type_unitvectorderiv)) ||
+        ((x1.value_type == type_quaternion) &&
+         (x2.value_type == type_quaternionderiv)) ||
+        ((x2.value_type == type_quaternion) &&
+         (x1.value_type == type_quaternionderiv))) {
+      return;
+    }
     cvm::error("Performing an operation between two colvar "
                "values with different types, \""+
                colvarvalue::type_desc[x1.value_type]+

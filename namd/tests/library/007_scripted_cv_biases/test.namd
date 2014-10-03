@@ -104,7 +104,7 @@ proc calc_colvar_forces {} {
   set r [cv colvar d addforce $f]
   print "Applying force $r to colvar d"
 
-  set r [cv colvar o addforce "(1., 0., 1., 0.)"]
+  set r [cv colvar o addforce "(1., 0., 0.66666, 0.)"]
   print "Applying force $r to colvar o"
 
   return
