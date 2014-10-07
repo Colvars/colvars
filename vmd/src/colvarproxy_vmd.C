@@ -18,7 +18,7 @@
 #include "colvarproxy_vmd.h"
 
 
-int tcl_colvars (ClientData clientdata, Tcl_Interp *vmdtcl, int argc, const char *argv[]) {
+int tcl_colvars (ClientData clientdata, Tcl_Interp *interp, int argc, const char *argv[]) {
 
   static colvarproxy_vmd *proxy = NULL;
   int retval;
@@ -27,7 +27,7 @@ int tcl_colvars (ClientData clientdata, Tcl_Interp *vmdtcl, int argc, const char
 
     if ( argc >= 3 ) {
       if (!strcmp (argv[1], "molid")) {
-        Tcl_SetResult (vmdtcl, (char *) (std::string ("Colvars module already created: type \"colvars\" for a list of arguments.").c_str()), TCL_STATIC);
+        Tcl_SetResult (interp, (char *) (std::string ("Colvars module already created: type \"colvars\" for a list of arguments.").c_str()), TCL_STATIC);
         return TCL_ERROR;
       }
     }
@@ -36,7 +36,7 @@ int tcl_colvars (ClientData clientdata, Tcl_Interp *vmdtcl, int argc, const char
     cvm::clear_error();
 
     retval = proxy->script->run (argc, argv);
-    Tcl_SetResult (vmdtcl, (char *) proxy->script->result.c_str(), TCL_STATIC);
+    Tcl_SetResult (interp, (char *) proxy->script->result.c_str(), TCL_STATIC);
 
     if (cvm::get_error() & DELETE_COLVARS) {
       delete proxy;
@@ -61,7 +61,7 @@ int tcl_colvars (ClientData clientdata, Tcl_Interp *vmdtcl, int argc, const char
 
     VMDApp *vmd = (VMDApp *) clientdata;
     if (vmd == NULL) {
-      Tcl_SetResult (vmdtcl, (char *) (std::string ("Error: cannot find VMD main object.").c_str()), TCL_STATIC);
+      Tcl_SetResult (interp, (char *) (std::string ("Error: cannot find VMD main object.").c_str()), TCL_STATIC);
       return TCL_ERROR;
     }
 
@@ -72,26 +72,26 @@ int tcl_colvars (ClientData clientdata, Tcl_Interp *vmdtcl, int argc, const char
         if (!strcmp (argv[2], "top")) {
           molid = vmd->molecule_top();
         } else {
-          Tcl_GetInt (vmdtcl, argv[2], &molid);
+          Tcl_GetInt (interp, argv[2], &molid);
         }
         if (vmd->molecule_valid_id (molid)) {
-          proxy = new colvarproxy_vmd (vmdtcl, vmd, molid);
+          proxy = new colvarproxy_vmd (interp, vmd, molid);
           return TCL_OK;
         } else {
-          Tcl_SetResult (vmdtcl, (char *) (std::string ("Error: molecule not found.").c_str()), TCL_STATIC);
+          Tcl_SetResult (interp, (char *) (std::string ("Error: molecule not found.").c_str()), TCL_STATIC);
           return TCL_ERROR;
         }
       }
     }
   }
 
-  Tcl_SetResult (vmdtcl, (char *) (std::string ("First, setup the colvars with: colvars molid <molecule id>").c_str()), TCL_STATIC);
+  Tcl_SetResult (interp, (char *) (std::string ("First, setup the colvars with: colvars molid <molecule id>").c_str()), TCL_STATIC);
   return TCL_ERROR;
 }
 
 
 colvarproxy_vmd::colvarproxy_vmd (Tcl_Interp *vti, VMDApp *v, int molid)
-  : vmdtcl (vti),
+  : interp (vti),
     vmd (v),
     vmdmolid (molid),
 #if defined(VMDTKCON)
@@ -121,7 +121,7 @@ colvarproxy_vmd::colvarproxy_vmd (Tcl_Interp *vti, VMDApp *v, int molid)
 
   // User-scripted forces are not really useful in VMD, but we accept them
   // for compatibility with NAMD scripts
-  if (Tcl_FindCommand(vmdtcl, "calc_colvar_forces", NULL, 0) == NULL) {
+  if (Tcl_FindCommand(interp, "calc_colvar_forces", NULL, 0) == NULL) {
     force_script_defined = false;
   } else {
     force_script_defined = true;
@@ -197,15 +197,12 @@ void colvarproxy_vmd::exit (std::string const &message)
 
 #ifdef VMDTCL
 int colvarproxy_vmd::run_force_callback () {
-  Tcl_Obj **cmd = new Tcl_Obj*[2];
-  cmd[0] = Tcl_NewStringObj("calc_colvar_forces", -1);
-  // Call with current timestep number, here, frame number
-  cmd[1] = Tcl_NewIntObj(vmdmol_frame);
-  int err = Tcl_EvalObjv(vmdtcl, 2, cmd, 0);
-  delete[] cmd;
+  std::string cmd = std::string("calc_colvar_forces ")
+    + cvm::to_str(cvm::step_absolute());
+  int err = Tcl_Eval(interp, cmd.c_str());
   if (err != TCL_OK) {
     cvm::log(std::string("Error while executing calc_colvar_forces:\n"));
-    cvm::error(Tcl_GetStringResult(vmdtcl));
+    cvm::error(Tcl_GetStringResult(interp));
     return COLVARS_ERROR;
   }
   return COLVARS_OK;
@@ -216,18 +213,15 @@ int colvarproxy_vmd::run_colvar_callback(std::string const &name,
                       colvarvalue &value)
 {
   size_t i;
-  Tcl_Obj **cmd = new Tcl_Obj*[values.size() + 1];
-  std::string procname = "calc_" + name;
-  cmd[0] = Tcl_NewStringObj(procname.c_str(), -1);
+  std::string cmd = std::string("calc_") + name;
   for (i = 0; i < values.size(); i++) {
-    cmd[i+1] = Tcl_NewStringObj(cvm::to_str(*(values[i]), cvm::cv_width, 2*cvm::cv_prec).c_str(), -1);
+    cmd += std::string(" {") +  cvm::to_str(*(values[i]), cvm::cv_width, cvm::cv_prec) + std::string("}");
   }
-  int err = Tcl_EvalObjv(vmdtcl, values.size() + 1, cmd, 0);
-  delete[] cmd;
-  const char *result = Tcl_GetStringResult(vmdtcl);
+  int err = Tcl_Eval(interp, cmd.c_str());
+  const char *result = Tcl_GetStringResult(interp);
   if (err != TCL_OK) {
     cvm::log(std::string("Error while executing ")
-              + procname + std::string(":\n"));
+              + cmd + std::string(":\n"));
     cvm::error(result);
     return COLVARS_ERROR;
   }
@@ -245,22 +239,20 @@ int colvarproxy_vmd::run_colvar_gradient_callback(std::string const &name,
                                std::vector<colvarvalue> &gradient)
 {
   size_t i;
-  Tcl_Obj **cmd = new Tcl_Obj*[values.size() + 1];
-  std::string procname = "calc_" + name + "_gradient";
-  cmd[0] = Tcl_NewStringObj(procname.c_str(), -1);
+  std::string cmd = std::string("calc_") + name + "_gradient";
   for (i = 0; i < values.size(); i++) {
-    cmd[i+1] = Tcl_NewStringObj(cvm::to_str(*(values[i]), cvm::cv_width, 2*cvm::cv_prec).c_str(), -1);
+    cmd += std::string(" {") +  cvm::to_str(*(values[i]), cvm::cv_width, cvm::cv_prec) + std::string("}");
   }
-  int err = Tcl_EvalObjv(vmdtcl, values.size() + 1, cmd, 0);
+  int err = Tcl_Eval(interp, cmd.c_str());
   if (err != TCL_OK) {
     cvm::log(std::string("Error while executing ")
-              + procname + std::string(":\n"));
-    cvm::error(Tcl_GetStringResult(vmdtcl));
+              + cmd + std::string(":\n"));
+    cvm::error(Tcl_GetStringResult(interp));
     return COLVARS_ERROR;
   }
   Tcl_Obj **list;
   int n;
-  Tcl_ListObjGetElements(vmdtcl, Tcl_GetObjResult(vmdtcl),
+  Tcl_ListObjGetElements(interp, Tcl_GetObjResult(interp),
                          &n, &list);
   if (n != int(gradient.size())) {
     cvm::error("Error parsing list of gradient values from script");

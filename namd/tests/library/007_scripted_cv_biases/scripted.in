@@ -43,9 +43,14 @@ colvar {
 colvar {
   name os
 
-  scriptedFunction Id_quaternion
+  scriptedFunction Id_pair
   scriptedFunctionType unit_quaternion
 
+  distance {
+    componentExp 2
+    group1 { atomnumbers 4 }
+    group2 { atomnumbers 99 }
+  }
   orientation {
       atoms {
         atomnumbers { 1 2 3 4 5 6 7 8 }

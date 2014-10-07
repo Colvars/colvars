@@ -290,12 +290,9 @@ void colvarproxy_namd::calculate()
 
 #ifdef NAMD_TCL
 int colvarproxy_namd::run_force_callback () {
-  Tcl_Obj **cmd = new Tcl_Obj*[2];
-  cmd[0] = Tcl_NewStringObj("calc_colvar_forces", -1);
-  // Call with current timestep number
-  cmd[1] = Tcl_NewIntObj(cvm::step_absolute());
-  int err = Tcl_EvalObjv(interp, 2, cmd, 0);
-  delete[] cmd;
+  std::string cmd = std::string("calc_colvar_forces ")
+    + cvm::to_str(cvm::step_absolute());
+  int err = Tcl_Eval(interp, cmd.c_str());
   if (err != TCL_OK) {
     cvm::log(std::string("Error while executing calc_colvar_forces:\n"));
     cvm::error(Tcl_GetStringResult(interp));
@@ -309,18 +306,15 @@ int colvarproxy_namd::run_colvar_callback(std::string const &name,
                       colvarvalue &value)
 {
   size_t i;
-  Tcl_Obj **cmd = new Tcl_Obj*[values.size() + 1];
-  std::string procname = "calc_" + name;
-  cmd[0] = Tcl_NewStringObj(procname.c_str(), -1);
+  std::string cmd = std::string("calc_") + name;
   for (i = 0; i < values.size(); i++) {
-    cmd[i+1] = Tcl_NewStringObj(cvm::to_str(*(values[i]), cvm::cv_width, 2*cvm::cv_prec).c_str(), -1);
+    cmd += std::string(" {") +  cvm::to_str(*(values[i]), cvm::cv_width, cvm::cv_prec) + std::string("}");
   }
-  int err = Tcl_EvalObjv(interp, values.size() + 1, cmd, 0);
-  delete[] cmd;
+  int err = Tcl_Eval(interp, cmd.c_str());
   const char *result = Tcl_GetStringResult(interp);
   if (err != TCL_OK) {
     cvm::log(std::string("Error while executing ")
-              + procname + std::string(":\n"));
+              + cmd + std::string(":\n"));
     cvm::error(result);
     return COLVARS_ERROR;
   }
@@ -338,16 +332,14 @@ int colvarproxy_namd::run_colvar_gradient_callback(std::string const &name,
                                std::vector<colvarvalue> &gradient)
 {
   size_t i;
-  Tcl_Obj **cmd = new Tcl_Obj*[values.size() + 1];
-  std::string procname = "calc_" + name + "_gradient";
-  cmd[0] = Tcl_NewStringObj(procname.c_str(), -1);
+  std::string cmd = std::string("calc_") + name + "_gradient";
   for (i = 0; i < values.size(); i++) {
-    cmd[i+1] = Tcl_NewStringObj(cvm::to_str(*(values[i]), cvm::cv_width, 2*cvm::cv_prec).c_str(), -1);
+    cmd += std::string(" {") +  cvm::to_str(*(values[i]), cvm::cv_width, cvm::cv_prec) + std::string("}");
   }
-  int err = Tcl_EvalObjv(interp, values.size() + 1, cmd, 0);
+  int err = Tcl_Eval(interp, cmd.c_str());
   if (err != TCL_OK) {
     cvm::log(std::string("Error while executing ")
-              + procname + std::string(":\n"));
+              + cmd + std::string(":\n"));
     cvm::error(Tcl_GetStringResult(interp));
     return COLVARS_ERROR;
   }

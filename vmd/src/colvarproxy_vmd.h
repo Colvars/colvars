@@ -22,7 +22,7 @@ class colvarproxy_vmd : public colvarproxy {
 protected:
 
   /// pointer to the VMD Tcl interpreter
-  Tcl_Interp *vmdtcl;
+  Tcl_Interp *interp;
   /// pointer to the VMD main object
   VMDApp *vmd;
   /// VMD molecule id being used (must be provided at construction)
@@ -39,7 +39,7 @@ public:
 
   friend class cvm::atom;
 
-  colvarproxy_vmd (Tcl_Interp *vmdtcl, VMDApp *vmd, int molid);
+  colvarproxy_vmd (Tcl_Interp *interp, VMDApp *vmd, int molid);
   ~colvarproxy_vmd();
 
   void setup();
