@@ -87,6 +87,8 @@ colvarproxy_namd::colvarproxy_namd()
   have_scripts = true;
   // Store pointer to NAMD's Tcl interpreter
   interp = Node::Object()->getScript()->interp;
+  // Construct instance of colvars scripting interface
+  script = new colvarscript (this);
 
   // See is user-scripted forces are defined
   if (Tcl_FindCommand(interp, "calc_colvar_forces", NULL, 0) == NULL) {
@@ -94,7 +96,6 @@ colvarproxy_namd::colvarproxy_namd()
   } else {
     force_script_defined = true;
   }
-  script = new colvarscript (this);
 #else
     force_script_defined = false;
     have_scripts = false;
@@ -285,9 +286,92 @@ void colvarproxy_namd::calculate()
   }
 }
 
-int colvarproxy_namd::run_force_script () {
-  return Tcl_Eval(interp, "calc_colvar_forces");
+// Callback functions
+
+#ifdef NAMD_TCL
+int colvarproxy_namd::run_force_callback () {
+  Tcl_Obj **cmd = new Tcl_Obj*[2];
+  cmd[0] = Tcl_NewStringObj("calc_colvar_forces", -1);
+  // Call with current timestep number
+  cmd[1] = Tcl_NewIntObj(cvm::step_absolute());
+  int err = Tcl_EvalObjv(interp, 2, cmd, 0);
+  delete[] cmd;
+  if (err != TCL_OK) {
+    cvm::log(std::string("Error while executing calc_colvar_forces:\n"));
+    cvm::error(Tcl_GetStringResult(interp));
+    return COLVARS_ERROR;
+  }
+  return COLVARS_OK;
 }
+
+int colvarproxy_namd::run_colvar_callback(std::string const &name,
+                      std::vector<const colvarvalue *> const &values,
+                      colvarvalue &value)
+{
+  size_t i;
+  Tcl_Obj **cmd = new Tcl_Obj*[values.size() + 1];
+  std::string procname = "calc_" + name;
+  cmd[0] = Tcl_NewStringObj(procname.c_str(), -1);
+  for (i = 0; i < values.size(); i++) {
+    cmd[i+1] = Tcl_NewStringObj(cvm::to_str(*(values[i]), cvm::cv_width, 2*cvm::cv_prec).c_str(), -1);
+  }
+  int err = Tcl_EvalObjv(interp, values.size() + 1, cmd, 0);
+  delete[] cmd;
+  const char *result = Tcl_GetStringResult(interp);
+  if (err != TCL_OK) {
+    cvm::log(std::string("Error while executing ")
+              + procname + std::string(":\n"));
+    cvm::error(result);
+    return COLVARS_ERROR;
+  }
+  std::istringstream is (result);
+  if (!(is >> value)) {
+    cvm::log("Error parsing colvar value from script:");
+    cvm::error(result);
+    return COLVARS_ERROR;
+  }
+  return COLVARS_OK;
+}
+
+int colvarproxy_namd::run_colvar_gradient_callback(std::string const &name,
+                               std::vector<const colvarvalue *> const &values,
+                               std::vector<colvarvalue> &gradient)
+{
+  size_t i;
+  Tcl_Obj **cmd = new Tcl_Obj*[values.size() + 1];
+  std::string procname = "calc_" + name + "_gradient";
+  cmd[0] = Tcl_NewStringObj(procname.c_str(), -1);
+  for (i = 0; i < values.size(); i++) {
+    cmd[i+1] = Tcl_NewStringObj(cvm::to_str(*(values[i]), cvm::cv_width, 2*cvm::cv_prec).c_str(), -1);
+  }
+  int err = Tcl_EvalObjv(interp, values.size() + 1, cmd, 0);
+  if (err != TCL_OK) {
+    cvm::log(std::string("Error while executing ")
+              + procname + std::string(":\n"));
+    cvm::error(Tcl_GetStringResult(interp));
+    return COLVARS_ERROR;
+  }
+  Tcl_Obj **list;
+  int n;
+  Tcl_ListObjGetElements(interp, Tcl_GetObjResult(interp),
+                         &n, &list);
+  if (n != int(gradient.size())) {
+    cvm::error("Error parsing list of gradient values from script");
+    return COLVARS_ERROR;
+  }
+  for (i = 0; i < gradient.size(); i++) {
+    std::istringstream is (Tcl_GetString(list[i]));
+    gradient[i].type(*(values[i]));
+    gradient[i].is_derivative();
+    if (!(is >> gradient[i])) {
+      cvm::error("Error parsing gradient value from script");
+      return COLVARS_ERROR;
+    }
+  }
+  return (err == TCL_OK) ? COLVARS_OK : COLVARS_ERROR;
+}
+#endif
+
 
 void colvarproxy_namd::add_energy (cvm::real energy)
 {

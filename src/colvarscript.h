@@ -4,9 +4,9 @@
 #define COLVARSCRIPT_H
 
 #include <string>
+#include <tcl.h>
 #include "colvarmodule.h"
 #include "colvarvalue.h"
-#include "colvar.h"
 #include "colvarbias.h"
 #include "colvarproxy.h"
 
@@ -42,7 +42,6 @@ public:
 
   /// Run subcommands on bias
   int proc_bias (int argc, char const *argv[]);
-
 };
 
 

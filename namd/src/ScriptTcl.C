@@ -583,7 +583,7 @@ int ScriptTcl::Tcl_istrue_param(ClientData clientData,
 
   char *param = argv[1];
   SimParameters *simParams = Node::Object()->simParameters;
-  int val = simParams->istrueinparseopts(param); 
+  int val = simParams->istrueinparseopts(param);
   if ( val == -1 ) {
     Tcl_SetResult(interp,"unknown parameter",TCL_VOLATILE);
     return TCL_ERROR;
@@ -613,7 +613,7 @@ int ScriptTcl::Tcl_isset_param(ClientData clientData,
 
   char *param = argv[1];
   SimParameters *simParams = Node::Object()->simParameters;
-  int val = simParams->issetinparseopts(param); 
+  int val = simParams->issetinparseopts(param);
   if ( val < 0 ) {
     Tcl_SetResult(interp,"unknown parameter",TCL_VOLATILE);
     return TCL_ERROR;
@@ -638,7 +638,7 @@ int ScriptTcl::Tcl_param(ClientData clientData,
   if ( argc == 2 ) { // get param value
     char buf[MAX_SCRIPT_PARAM_SIZE];
     SimParameters *simParams = Node::Object()->simParameters;
-    char *result = simParams->getfromparseopts(param,buf); 
+    char *result = simParams->getfromparseopts(param,buf);
     if ( result ) {
       Tcl_SetResult(interp, result,TCL_VOLATILE);
       return TCL_OK;
@@ -1074,10 +1074,16 @@ int ScriptTcl::Tcl_colvars (ClientData clientData,
     return TCL_ERROR;
   }
   int retval = colvars->proxy->script->run(argc, (char const **) argv);
+  // use Tcl dynamic allocation to prevent having to copy the buffer
+  // *twice* just because Tcl is missing const qualifiers for strings
   char *buf = Tcl_Alloc(colvars->proxy->script->result.length() + 1);
   strncpy (buf, colvars->proxy->script->result.c_str(), colvars->proxy->script->result.length() + 1);
   Tcl_SetResult(interp, buf, TCL_DYNAMIC);
-   
+  // Note: sometimes Tcl 8.5 will segfault here
+  // (only on error conditions, apparently)
+  // http://sourceforge.net/p/tcl/bugs/4677/
+  // Fixed in Tcl 8.6
+
   if (retval == COLVARSCRIPT_OK && !cvm::get_error())
     return TCL_OK;
   else
@@ -1257,7 +1263,7 @@ int ScriptTcl::Tcl_coorfile(ClientData clientData,
       return TCL_ERROR;
     }
     if (numatoms != Node::Object()->pdb->num_atoms()) {
-      Tcl_AppendResult(interp, "Coordinate file ", argv[3], 
+      Tcl_AppendResult(interp, "Coordinate file ", argv[3],
         "\ncontains the wrong number of atoms.", NULL);
       return TCL_ERROR;
     }
@@ -1307,11 +1313,11 @@ int ScriptTcl::Tcl_coorfile(ClientData clientData,
     Tcl_SetObjResult(interp, Tcl_NewIntObj(0));
   } else if (argc == 2 && !strcmp(argv[1], "close")) {
     if (!filehandle) {
-      Tcl_AppendResult(interp, "coorfile close: No file opened for reading!", 
+      Tcl_AppendResult(interp, "coorfile close: No file opened for reading!",
         NULL);
       return TCL_OK;
     }
-    iout << iINFO << "Closing coordinate file.\n" << endi; 
+    iout << iINFO << "Closing coordinate file.\n" << endi;
     dcdplugin->close_file_read(filehandle);
     filehandle = NULL;
     delete [] coords;
@@ -1397,7 +1403,7 @@ int ScriptTcl::Tcl_consForceConfig(ClientData clientData,
     int nelem;
     Tcl_Obj **elemlist;
     Vector force;
-    if (Tcl_GetIntFromObj(interp, atomobjlist[i], &atomid) != TCL_OK) 
+    if (Tcl_GetIntFromObj(interp, atomobjlist[i], &atomid) != TCL_OK)
       return TCL_ERROR;
     if (Tcl_ListObjGetElements(interp, forceobjlist[i], &nelem, &elemlist) != TCL_OK)
       return TCL_ERROR;
@@ -1438,7 +1444,7 @@ int ScriptTcl::Tcl_reloadGridforceGrid(ClientData clientData,
 	Tcl_Interp *interp, int argc, char *argv[]) {
   ScriptTcl *script = (ScriptTcl *)clientData;
   script->initcheck();
-  
+
   char *key = NULL;
   if (argc == 1) {
       // nothing ... key is NULL, then Node::reloadGridforceGrid uses the
@@ -1450,11 +1456,11 @@ int ScriptTcl::Tcl_reloadGridforceGrid(ClientData clientData,
       Tcl_AppendResult(interp, "usage: reloadGridforceGrid [<gridkey>]", NULL);
       return TCL_ERROR;
   }
-  
+
   //(CProxy_Node(CkpvAccess(BOCclass_group).node)).reloadGridforceGrid(key);
   Node::Object()->reloadGridforceGrid(key);
   script->barrier();
-  
+
   return TCL_OK;
 }
 // END gf
@@ -1559,7 +1565,7 @@ ScriptTcl::ScriptTcl() : scriptBarrier(scriptBarrierTag) {
     (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
   Tcl_CreateCommand(interp, "dumpbench", Tcl_dumpbench,
     (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
-  Tcl_CreateObjCommand(interp, "consForceConfig", Tcl_consForceConfig, 
+  Tcl_CreateObjCommand(interp, "consForceConfig", Tcl_consForceConfig,
     (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
   Tcl_CreateCommand(interp, "reloadCharges", Tcl_reloadCharges,
     (ClientData) this, (Tcl_CmdDeleteProc *) NULL);

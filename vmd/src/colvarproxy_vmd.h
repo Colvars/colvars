@@ -128,6 +128,14 @@ public:
   void fatal_error (std::string const &message);
   void exit (std::string const &message);
 
+  // Callback functions
+  int run_force_callback();
+  int run_colvar_callback(std::string const &name,
+                      std::vector<const colvarvalue *> const &cvcs,
+                      colvarvalue &value);
+  int run_colvar_gradient_callback(std::string const &name,
+                               std::vector<const colvarvalue *> const &cvcs,
+                               std::vector<colvarvalue> &gradient);
 
   int load_atoms (char const *filename,
                    std::vector<cvm::atom> &atoms,

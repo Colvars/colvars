@@ -13,7 +13,7 @@
 
 #include "colvarmodule.h"
 #include "colvarproxy.h"
-
+#include "colvarvalue.h"
 
 /// \brief Communication between colvars and NAMD (implementation of
 /// \link colvarproxy \endlink)
@@ -65,7 +65,15 @@ public:
   void error (std::string const &message);
   void fatal_error (std::string const &message);
   void exit (std::string const &message);
-  int run_force_script ();
+
+  // Callback functions
+  int run_force_callback();
+  int run_colvar_callback(std::string const &name,
+                      std::vector<const colvarvalue *> const &cvcs,
+                      colvarvalue &value);
+  int run_colvar_gradient_callback(std::string const &name,
+                               std::vector<const colvarvalue *> const &cvcs,
+                               std::vector<colvarvalue> &gradient);
 
   inline cvm::real unit_angstrom()
   {

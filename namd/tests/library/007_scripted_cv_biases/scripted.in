@@ -1,0 +1,56 @@
+Colvarstrajfrequency    2
+Colvarsrestartfrequency 20000
+
+scriptedColvarForces on
+
+# regular distance
+colvar {
+  name d
+
+  distance {
+    group1 { atomnumbers 4 }
+    group2 { atomnumbers 99 }
+  }
+}
+
+# same as d with scripted function
+# and scripted harmonic bias
+colvar {
+  name ds
+  outputAppliedForce
+
+  scriptedFunction Id
+
+  distance {
+    group1 { atomnumbers 4 }
+    group2 { atomnumbers 99 }
+  }
+}
+
+# orientation quaternion
+colvar {
+  name o
+
+  orientation {
+      atoms {
+        atomnumbers { 1 2 3 4 5 6 7 8 }
+    }
+    refpositionsfile ../Common/da.pdb
+  }
+}
+
+# same as o, with scripted function (identity)
+colvar {
+  name os
+
+  scriptedFunction Id_quaternion
+  scriptedFunctionType unit_quaternion
+
+  orientation {
+      atoms {
+        atomnumbers { 1 2 3 4 5 6 7 8 }
+    }
+    refpositionsfile ../Common/da.pdb
+  }
+}
+
