@@ -4,7 +4,6 @@
 #define COLVARSCRIPT_H
 
 #include <string>
-#include <tcl.h>
 #include "colvarmodule.h"
 #include "colvarvalue.h"
 #include "colvarbias.h"
