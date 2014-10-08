@@ -47,11 +47,16 @@ void colvar::cvc::parse_group (std::string const &conf,
                                bool optional)
 {
   if (key_lookup (conf, group_key)) {
-    group.parse (conf, group_key);
+    if (group.parse (conf, group_key) != COLVARS_OK) {
+      cvm::fatal_error ("Error parsing definition for atom group \""+
+                         std::string (group_key)+"\".\n");
+      return;
+    }
   } else {
     if (! optional) {
       cvm::fatal_error ("Error: definition for atom group \""+
                       std::string (group_key)+"\" not found.\n");
+      return;
     }
   }
 }

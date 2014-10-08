@@ -99,7 +99,7 @@ int colvarmodule::config (std::string &conf)
   // parse global options
   error_code |= parse_global_params (conf);
 
-  if (error_code != COLVARS_OK) {
+  if (error_code != COLVARS_OK || cvm::get_error()) {
     set_error_bits(INPUT_ERROR);
     return COLVARS_ERROR;
   }
@@ -107,13 +107,23 @@ int colvarmodule::config (std::string &conf)
   // parse the options for collective variables
   error_code |= parse_colvars (conf);
 
+  if (error_code != COLVARS_OK || cvm::get_error()) {
+    set_error_bits(INPUT_ERROR);
+    return COLVARS_ERROR;
+  }
+
   // parse the options for biases
   error_code |= parse_biases (conf);
+
+  if (error_code != COLVARS_OK || cvm::get_error()) {
+    set_error_bits(INPUT_ERROR);
+    return COLVARS_ERROR;
+  }
 
   // done parsing known keywords, check that all keywords found were valid ones
   error_code |= parse->check_keywords (conf, "colvarmodule");
 
-  if (error_code != COLVARS_OK) {
+  if (error_code != COLVARS_OK || cvm::get_error()) {
     set_error_bits(INPUT_ERROR);
     return COLVARS_ERROR;
   }

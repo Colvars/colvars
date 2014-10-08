@@ -53,11 +53,17 @@ colvar::colvar (std::string const &conf)
       if (cvcp != NULL) {                                               \
         cvcs.push_back (cvcp);                                          \
         cvcp->check_keywords (def_conf, def_config_key);                \
+        if (cvm::get_error()) {                                         \
+          cvm::error("Error: in setting up component \""                \
+                      def_config_key"\".\n");                           \
+          return;                                                       \
+        }                                                               \
         cvm::decrease_depth();                                          \
       } else {                                                          \
-        cvm::error ("Error: in allocating component \""                 \
+        cvm::error("Error: in allocating component \""                  \
                           def_config_key"\".\n",                        \
                           MEMORY_ERROR);                                \
+        return;                                                         \
       }                                                                 \
       if ( (cvcp->period != 0.0) || (cvcp->wrap_center != 0.0) ) {      \
         if ( (cvcp->function_type != std::string ("distance_z")) &&     \
@@ -70,6 +76,7 @@ colvar::colvar (std::string const &conf)
                             "Period: "+cvm::to_str(cvcp->period) +      \
                         " wrapAround: "+cvm::to_str(cvcp->wrap_center), \
                         INPUT_ERROR);                                   \
+          return;                                                       \
         }                                                               \
       }                                                                 \
       if ( ! cvcs.back()->name.size())                                  \
@@ -150,7 +157,7 @@ colvar::colvar (std::string const &conf)
     "", colvarparse::parse_silent)) {
 
     enable(task_scripted);
-    cvm::log("This colvar is a scripted function.");
+    cvm::log("This colvar uses scripted function \"" + scripted_function + "\".");
 
     std::string type_str;
     get_keyval (conf, "scriptedFunctionType", type_str, "scalar");

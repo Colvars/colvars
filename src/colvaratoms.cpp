@@ -433,6 +433,10 @@ int cvm::atom_group::parse (std::string const &conf,
               std::string (key)+"\".\n");
 
   this->check_keywords (group_conf, key);
+  if (cvm::get_error()) {
+    cvm::error("Error setting up atom group \""+std::string (key)+"\".");
+    return COLVARS_ERROR;
+  }
 
   cvm::log ("Atom group \""+std::string (key)+"\" defined, "+
             cvm::to_str (this->size())+" atoms initialized: total mass = "+
