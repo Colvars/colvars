@@ -725,10 +725,16 @@ colvar::rmsd::rmsd (std::string const &conf)
     return;
   }
 
-  if (atoms.ref_pos_group != NULL) {
+  if (atoms.ref_pos_group != NULL && b_Jacobian_derivative) {
     cvm::log ("The option \"refPositionsGroup\" (alternative group for fitting) was enabled: "
               "Jacobian derivatives of the RMSD will not be calculated.\n");
     b_Jacobian_derivative = false;
+  }
+
+  if (atoms.ref_pos_group == NULL) {
+    cvm::log ("This is a standard minimum RMSD, derivatives of the optimal rotation "
+              "will not be computed as they cancel out in the gradients.");
+    atoms.b_fit_gradients = false;
   }
 
   // the following is a simplified version of the corresponding atom group options;

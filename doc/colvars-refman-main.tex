@@ -1110,6 +1110,8 @@ The following two options have default values appropriate for the vast majority 
     $\partial\mathbf{x}^{\mathrm{C}}/\partial\mathbf{x}_{i}$ (translational gradients).
     By default, these terms are calculated and included in the total gradients;
     if this option is set to \texttt{off}, they are neglected.
+    In the case of a minimum RMSD component, this flag is automatically disabled
+    because the contributions of those derivatives to the gradients cancel out.
 }
 
 \item %
