@@ -48,13 +48,13 @@ void colvar::cvc::parse_group (std::string const &conf,
 {
   if (key_lookup (conf, group_key)) {
     if (group.parse (conf, group_key) != COLVARS_OK) {
-      cvm::fatal_error ("Error parsing definition for atom group \""+
+      cvm::error ("Error parsing definition for atom group \""+
                          std::string (group_key)+"\".\n");
       return;
     }
   } else {
     if (! optional) {
-      cvm::fatal_error ("Error: definition for atom group \""+
+      cvm::error ("Error: definition for atom group \""+
                       std::string (group_key)+"\" not found.\n");
       return;
     }
@@ -142,9 +142,7 @@ void colvar::cvc::debug_gradients (cvm::atom_group &group)
                              21, 14)+"\n");
       cvm::log ("|dx(actual) - dx(interp)|/|dx(actual)| = "+
                 cvm::to_str (std::fabs (x_1 - x_0 - dx_pred) /
-                             std::fabs (x_1 - x_0),
-                             12, 5)+
-                ".\n");
+                             std::fabs (x_1 - x_0), 12, 5)+"\n");
     }
   }
 

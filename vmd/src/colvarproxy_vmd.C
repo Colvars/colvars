@@ -527,9 +527,11 @@ cvm::atom::atom (int const &atom_number)
     cvm::log ("Adding atom "+cvm::to_str (aid+1)+
               " for collective variables calculation.\n");
 
-  if ( (aid < 0) || (aid >= vmdmol->nAtoms) )
-    cvm::fatal_error ("Error: invalid atom number specified, "+
+  if ( (aid < 0) || (aid >= vmdmol->nAtoms) ) {
+    cvm::error ("Error: invalid atom number specified, "+
                       cvm::to_str (atom_number)+"\n");
+    return;
+  }
 
   this->id = aid;
   this->mass = masses[aid];
@@ -572,7 +574,7 @@ cvm::atom::atom (cvm::residue_id const &resid,
               ") for collective variables calculation.\n");
 
   if (aid < 0) {
-    cvm::fatal_error ("Error: could not find atom \""+
+    cvm::error ("Error: could not find atom \""+
                       atom_name+"\" in residue "+
                       cvm::to_str (resid)+
                       ( (segment_name.size()) ?

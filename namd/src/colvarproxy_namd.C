@@ -664,9 +664,11 @@ cvm::atom::atom (int const &atom_number)
     cvm::log ("Adding atom "+cvm::to_str (aid+1)+
               " for collective variables calculation.\n");
 
-  if ( (aid < 0) || (aid >= Node::Object()->molecule->numAtoms) )
-    cvm::fatal_error ("Error: invalid atom number specified, "+
+  if ( (aid < 0) || (aid >= Node::Object()->molecule->numAtoms) ) {
+    cvm::error ("Error: invalid atom number specified, "+
                       cvm::to_str (atom_number)+"\n");
+    return;
+  }
   this->index = ((colvarproxy_namd *) cvm::proxy)->init_namd_atom (aid);
   if (cvm::debug())
     cvm::log ("The index of this atom in the colvarproxy_namd arrays is "+

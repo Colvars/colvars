@@ -112,7 +112,7 @@ public:
 
   inline void request_system_force (bool yesno) {
     if (yesno == true)
-      cvm::fatal_error ("Error: a bias requested system forces, which are undefined in VMD.");
+      cvm::error ("Error: a bias requested system forces, which are undefined in VMD.");
   }
 
   cvm::rvector position_distance (cvm::atom_pos const &pos1,
