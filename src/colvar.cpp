@@ -194,18 +194,20 @@ colvar::colvar (std::string const &conf)
     }
   }
 
-  // this is set false if any of the components has an exponent
-  // different from 1 in the polynomial
-  b_linear = true;
-
-  // these will be set to false if any of the cvcs has them false
-  b_inverse_gradients = true;
-  b_Jacobian_force    = true;
+  if (!tasks[task_scripted]) {
+    // this is set false if any of the components has an exponent
+    // different from 1 in the polynomial
+    b_linear = true;
+    // these will be set to false if any of the cvcs has them false
+    b_inverse_gradients = true;
+    b_Jacobian_force    = true;
+  }
 
   // Decide whether the colvar is periodic
   // Used to wrap extended DOF if extendedLagrangian is on
   if (cvcs.size() == 1 && (cvcs[0])->b_periodic && (cvcs[0])->sup_np == 1
-                                                && (cvcs[0])->sup_coeff == 1.0 ) {
+                                                && (cvcs[0])->sup_coeff == 1.0
+                        && !tasks[task_scripted]) {
     this->b_periodic = true;
     this->period = (cvcs[0])->period;
     // TODO write explicit wrap() function for colvars to allow for
