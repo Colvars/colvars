@@ -102,6 +102,7 @@ colvars: ----------------------------------------------------------------------
 colvars: The final output state file will be "test.colvars.state".
 colvars: Writing to colvar trajectory file "test.colvars.traj".
 colvars: Saving collective variables state to "test.colvars.state".
+colvars: Resetting the Collective Variables Module.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "scripted.in":
 colvars: # indexFile = "" [default]
@@ -186,7 +187,7 @@ colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "group2" defined, 1 atoms initialized: total mass = 12.011.
 colvars:   All components initialized.
-colvars:   This colvar is a scripted function.
+colvars:   This colvar uses scripted function "Id".
 colvars:   # scriptedFunctionType = "scalar" [default]
 colvars:   Expecting colvar value of type scalar number
 colvars:   # width = 1 [default]
@@ -286,7 +287,7 @@ colvars:     # refPositionsCol = "" [default]
 colvars:     Centering the reference coordinates: it is assumed that each atom is the closest periodic image to the center of geometry.
 colvars:     # closestToQuaternion = ( 1 , 0 , 0 , 0 ) [default]
 colvars:   All components initialized.
-colvars:   This colvar is a scripted function.
+colvars:   This colvar uses scripted function "Id_pair".
 colvars:   # scriptedFunctionType = unit_quaternion
 colvars:   Expecting colvar value of type 4-dimensional unit quaternion
 colvars:   # width = 1 [default]

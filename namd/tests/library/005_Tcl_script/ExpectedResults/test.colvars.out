@@ -115,6 +115,7 @@ colvars: Collective variables module (re)initialized.
 colvars: ----------------------------------------------------------------------
 colvars: Saving collective variables state to "test.colvars.state".
 colvars: Saving collective variables state to "test.colvars.state".
+colvars: Resetting the Collective Variables Module.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
 colvars: # indexFile = "" [default]

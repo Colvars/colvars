@@ -10,7 +10,7 @@ set outName             [file rootname [file tail [info script]]]
 
 # MD SETUP
 timestep          0.5
-numSteps		  20
+numSteps		  0
 
 # Interactive molecular dynamics
 #IMDon               on
