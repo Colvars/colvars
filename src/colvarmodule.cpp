@@ -189,12 +189,11 @@ int colvarmodule::parse_colvars (std::string const &conf)
       cvm::log (cvm::line_marker);
       cvm::increase_depth();
       colvars.push_back (new colvar (colvar_conf));
-      if (cvm::get_error()) {
-        delete colvars.back();
-        colvars.pop_back();
-        return COLVARS_ERROR;
-      }
-      if ((colvars.back())->check_keywords (colvar_conf, "colvar") != COLVARS_OK) {
+      if (cvm::get_error() ||
+          ((colvars.back())->check_keywords (colvar_conf, "colvar") != COLVARS_OK)) {
+            cvm::log("Error while constructing colvar number " +
+        cvm::to_str(colvars.size()) + " : deleting.");
+        delete colvars.back();  // the colvar destructor updates the colvars array
         return COLVARS_ERROR;
       }
       cvm::decrease_depth();
@@ -202,6 +201,7 @@ int colvarmodule::parse_colvars (std::string const &conf)
       cvm::error("Error: \"colvar\" keyword found without any configuration.\n", INPUT_ERROR);
       return COLVARS_ERROR;
     }
+    cvm::decrease_depth();
     colvar_conf = "";
   }
 
@@ -218,6 +218,17 @@ int colvarmodule::parse_colvars (std::string const &conf)
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
 }
 
+bool colvarmodule::check_new_bias(std::string &conf, char const *key)
+{
+  if (cvm::get_error() ||
+     (biases.back()->check_keywords(conf, key) != COLVARS_OK)) {
+    cvm::log("Error while constructing bias number " +
+        cvm::to_str(biases.size()) + " : deleting.\n");
+    delete biases.back(); // the bias destructor updates the biases array
+    return true;
+  }
+  return false;
+}
 
 int colvarmodule::parse_biases (std::string const &conf)
 {
@@ -233,12 +244,7 @@ int colvarmodule::parse_biases (std::string const &conf)
         cvm::log (cvm::line_marker);
         cvm::increase_depth();
         biases.push_back (new colvarbias_abf (abf_conf, "abf"));
-        if (cvm::get_error()) {
-          delete biases.back();
-          biases.pop_back();
-          return COLVARS_ERROR;
-        }
-        if ((biases.back())->check_keywords (abf_conf, "abf") != COLVARS_OK) {
+        if (cvm::check_new_bias(abf_conf, "abf")) {
           return COLVARS_ERROR;
         }
         cvm::decrease_depth();
@@ -260,12 +266,7 @@ int colvarmodule::parse_biases (std::string const &conf)
         cvm::log (cvm::line_marker);
         cvm::increase_depth();
         biases.push_back (new colvarbias_restraint_harmonic (harm_conf, "harmonic"));
-        if (cvm::get_error()) {
-          delete biases.back();
-          biases.pop_back();
-          return COLVARS_ERROR;
-        }
-        if ((biases.back())->check_keywords (harm_conf, "harmonic") != COLVARS_OK) {
+        if (cvm::check_new_bias(harm_conf, "harmonic")) {
           return COLVARS_ERROR;
         }
         cvm::decrease_depth();
@@ -287,12 +288,7 @@ int colvarmodule::parse_biases (std::string const &conf)
         cvm::log (cvm::line_marker);
         cvm::increase_depth();
         biases.push_back (new colvarbias_restraint_linear (lin_conf, "linear"));
-        if (cvm::get_error()) {
-          delete biases.back();
-          biases.pop_back();
-          return COLVARS_ERROR;
-        }
-        if ((biases.back())->check_keywords (lin_conf, "linear") != COLVARS_OK) {
+        if (cvm::check_new_bias(lin_conf, "linear")) {
           return COLVARS_ERROR;
         }
         cvm::decrease_depth();
@@ -314,12 +310,7 @@ int colvarmodule::parse_biases (std::string const &conf)
         cvm::log (cvm::line_marker);
         cvm::increase_depth();
         biases.push_back (new colvarbias_alb (alb_conf, "ALB"));
-        if (cvm::get_error()) {
-          delete biases.back();
-          biases.pop_back();
-          return COLVARS_ERROR;
-        }
-        if ((biases.back())->check_keywords (alb_conf, "ALB") != COLVARS_OK) {
+        if (cvm::check_new_bias(alb_conf, "ALB")) {
           return COLVARS_ERROR;
         }
         cvm::decrease_depth();
@@ -342,12 +333,7 @@ int colvarmodule::parse_biases (std::string const &conf)
         cvm::log (cvm::line_marker);
         cvm::increase_depth();
         biases.push_back (new colvarbias_histogram (histo_conf, "histogram"));
-        if (cvm::get_error()) {
-          delete biases.back();
-          biases.pop_back();
-          return COLVARS_ERROR;
-        }
-        if ((biases.back())->check_keywords (histo_conf, "histogram") != COLVARS_OK) {
+        if (cvm::check_new_bias(histo_conf, "histogram")) {
           return COLVARS_ERROR;
         }
         cvm::decrease_depth();
@@ -369,12 +355,7 @@ int colvarmodule::parse_biases (std::string const &conf)
         cvm::log (cvm::line_marker);
         cvm::increase_depth();
         biases.push_back (new colvarbias_meta (meta_conf, "metadynamics"));
-        if (cvm::get_error()) {
-          delete biases.back();
-          biases.pop_back();
-          return COLVARS_ERROR;
-        }
-        if ((biases.back())->check_keywords (meta_conf, "metadynamics") != COLVARS_OK) {
+        if (cvm::check_new_bias(meta_conf, "metadynamics")) {
           return COLVARS_ERROR;
         }
         cvm::decrease_depth();
@@ -685,21 +666,20 @@ colvarmodule::~colvarmodule()
 
 int colvarmodule::reset()
 {
-  if (cvm::debug())
-    cvm::log ("colvars::reset() called.\n");
-  for (std::vector<colvar *>::iterator cvi = colvars.begin();
-       cvi != colvars.end();
+  cvm::log("Resetting the Collective Variables Module.\n");
+  // Iterate backwards because we are deleting the elements as we go
+  for (std::vector<colvar *>::reverse_iterator cvi = colvars.rbegin();
+       cvi != colvars.rend();
        cvi++) {
-    delete *cvi;
-    cvi--;
+    delete *cvi; // the colvar destructor updates the colvars array
   }
   colvars.clear();
 
-  for (std::vector<colvarbias *>::iterator bi = biases.begin();
-       bi != biases.end();
+  // Iterate backwards because we are deleting the elements as we go
+  for (std::vector<colvarbias *>::reverse_iterator bi = biases.rbegin();
+       bi != biases.rend();
        bi++) {
-    delete *bi;
-    bi--;
+    delete *bi; // the bias destructor updates the biases array
   }
   biases.clear();
 
