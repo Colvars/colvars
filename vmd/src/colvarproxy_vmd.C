@@ -349,6 +349,7 @@ int colvarproxy_vmd::load_coords (char const *pdb_filename,
   std::vector<int>::const_iterator current_index = indices.begin();
 
   FileSpec *tmpspec = new FileSpec();
+  tmpspec->autobonds = 0;
   int tmpmolid = vmd->molecule_load (-1, pdb_filename, "pdb", tmpspec);
   delete tmpspec;
   if (tmpmolid < 0) {
@@ -466,6 +467,7 @@ int colvarproxy_vmd::load_atoms (char const *pdb_filename,
   }
 
   FileSpec *tmpspec = new FileSpec();
+  tmpspec->autobonds = 0;
   int tmpmolid = vmd->molecule_load (-1, pdb_filename, "pdb", tmpspec);
   DrawMolecule *tmpmol = vmd->moleculeList->mol_from_id (tmpmolid);
   delete tmpspec;
