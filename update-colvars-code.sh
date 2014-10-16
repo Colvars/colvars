@@ -90,7 +90,7 @@ condcopy () {
 
 # check files related to, but not part of the colvars module
 checkfile () {
-  diff "${1}" "${2}" > $(basename ${1}).diff
+  diff -uN "${1}" "${2}" > $(basename ${1}).diff
   if [ -s $(basename ${1}).diff ]
   then
     echo "Differences found between ${1} and ${2}, check $(basename ${1}).diff"

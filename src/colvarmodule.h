@@ -4,7 +4,7 @@
 #define COLVARMODULE_H
 
 #ifndef COLVARS_VERSION
-#define COLVARS_VERSION "2014-10-02"
+#define COLVARS_VERSION "2014-10-13"
 #endif
 
 #ifndef COLVARS_DEBUG
@@ -49,6 +49,7 @@ class colvarparse;
 class colvar;
 class colvarbias;
 class colvarproxy;
+class colvarscript;
 
 
 /// \brief Collective variables module (main class)
@@ -218,6 +219,9 @@ public:
   /// Parse and initialize collective variable biases
   int parse_biases (std::string const &conf);
 
+  /// Test error condition and keyword parsing
+  /// on error, delete new bias
+  bool check_new_bias(std::string &conf, char const *key);
 
   // "Setup" functions (change internal data based on related data
   // from the proxy that may change during program execution)
@@ -441,8 +445,11 @@ protected:
   /// Output restart file
   std::ofstream restart_out_os;
 
-  /// \brief Counter for the current depth in the object hierarchy (useg e.g. in outpu
+  /// \brief Counter for the current depth in the object hierarchy (useg e.g. in output
   static size_t depth;
+
+  /// Use scripted colvars forces?
+  bool use_scripted_forces;
 
 public:
   /// \brief Pointer to the proxy object, used to retrieve atomic data

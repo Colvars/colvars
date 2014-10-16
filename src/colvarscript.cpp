@@ -5,10 +5,10 @@
 
 
 colvarscript::colvarscript (colvarproxy *p)
- : proxy (p)
+ : proxy (p),
+   colvars (p->colvars),
+   proxy_error (0)
 {
-  colvars = proxy->colvars;
-  proxy_error = 0;
 }
 
 /// Run method based on given arguments
@@ -209,17 +209,14 @@ int colvarscript::proc_colvar (int argc, char const *argv[]) {
   std::string subcmd = argv[2];
 
   if (subcmd == "value") {
-    result = cvm::to_str(cv->value(), 0, 14);
+    result = cvm::to_str(cv->value(), 0, cvm::cv_prec);
     return COLVARSCRIPT_OK;
   }
 
   if (subcmd == "update") {
-    // note: this is not sufficient for a newly created colvar
-    // as atom coordinates may not be properly loaded
-    // a full CVM update is required
-    // or otherwise updating atom positions
+    cv->calc();
     cv->update();
-    result = cvm::to_str(cv->value(), 0, 14);
+    result = cvm::to_str(cv->value(), 0, cvm::cv_prec);
     return COLVARSCRIPT_OK;
   }
 
@@ -242,6 +239,8 @@ int colvarscript::proc_colvar (int argc, char const *argv[]) {
     }
     std::string f_str = argv[3];
     std::istringstream is (f_str);
+    is.width(cvm::cv_width);
+    is.precision(cvm::cv_prec);
     colvarvalue force (cv->type());
     force.is_derivative();
     if (!(is >> force)) {
@@ -249,7 +248,7 @@ int colvarscript::proc_colvar (int argc, char const *argv[]) {
       return COLVARSCRIPT_ERROR;
     }
     cv->add_bias_force(force);
-    result = cvm::to_str(force);
+    result = cvm::to_str(force, cvm::cv_width, cvm::cv_prec);
     return COLVARSCRIPT_OK;
   }
 

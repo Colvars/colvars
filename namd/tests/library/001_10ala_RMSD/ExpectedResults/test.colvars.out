@@ -29,6 +29,7 @@ colvars:     # refPositions =  [default]
 colvars:     # refPositionsFile = ../Common/da.pdb
 colvars:     # refPositionsCol = "" [default]
 colvars:     Enabling "centerReference" and "rotateReference", to minimize RMSD before calculating it as a variable: if this is not the desired behavior, disable them explicitly within the "atoms" block.
+colvars:     This is a standard minimum RMSD, derivatives of the optimal rotation will not be computed as they cancel out in the gradients.
 colvars:   All components initialized.
 colvars:   # width = 1
 colvars:   # lowerBoundary = 0
@@ -231,4 +232,492 @@ colvars: Collective variables module (re)initialized.
 colvars: ----------------------------------------------------------------------
 colvars: The final output state file will be "test.colvars.state".
 colvars: Writing to colvar trajectory file "test.colvars.traj".
+colvars:     Debugging gradients:
+colvars:     Atom 0, component 0:
+colvars:     dx(actual) =  2.11515971404452e-09
+colvars:     dx(interp) =  2.11515785633070e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.78285e-07
+colvars:     Atom 0, component 1:
+colvars:     dx(actual) = -3.67093849762412e-09
+colvars:     dx(interp) = -3.67094037479871e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.11361e-07
+colvars:     Atom 0, component 2:
+colvars:     dx(actual) = -7.97738819446892e-10
+colvars:     dx(interp) = -7.97740538642616e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.15509e-06
+colvars:     Atom 1, component 0:
+colvars:     dx(actual) = -4.45681297422951e-09
+colvars:     dx(interp) = -4.45681491477637e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.35411e-07
+colvars:     Atom 1, component 1:
+colvars:     dx(actual) = -1.82395765713217e-08
+colvars:     dx(interp) = -1.82395773499168e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.26871e-08
+colvars:     Atom 1, component 2:
+colvars:     dx(actual) =  5.74346781245794e-09
+colvars:     dx(interp) =  5.74346662646890e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.06494e-07
+colvars:     Atom 2, component 0:
+colvars:     dx(actual) = -5.93922666602964e-09
+colvars:     dx(interp) = -5.93922811759895e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.44404e-07
+colvars:     Atom 2, component 1:
+colvars:     dx(actual) =  2.15366370293069e-08
+colvars:     dx(interp) =  2.15366361633506e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.02085e-08
+colvars:     Atom 2, component 2:
+colvars:     dx(actual) = -5.84318088359126e-09
+colvars:     dx(interp) = -5.84318262954154e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.98801e-07
+colvars:     Atom 3, component 0:
+colvars:     dx(actual) = -4.87721463215962e-09
+colvars:     dx(interp) = -4.87721623202889e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.28029e-07
+colvars:     Atom 3, component 1:
+colvars:     dx(actual) = -6.02857430642700e-10
+colvars:     dx(interp) = -6.02859441525371e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.33559e-06
+colvars:     Atom 3, component 2:
+colvars:     dx(actual) = -6.87909562646638e-10
+colvars:     dx(interp) = -6.87911544888882e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.88154e-06
+colvars:     Atom 4, component 0:
+colvars:     dx(actual) = -3.05832198455036e-09
+colvars:     dx(interp) = -3.05832345389856e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.80443e-07
+colvars:     Atom 4, component 1:
+colvars:     dx(actual) =  3.34189181883104e-09
+colvars:     dx(interp) =  3.34189000744941e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.42023e-07
+colvars:     Atom 4, component 2:
+colvars:     dx(actual) =  9.65129215435567e-09
+colvars:     dx(interp) =  9.65129105434966e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.13975e-07
+colvars:     Atom 5, component 0:
+colvars:     dx(actual) =  2.94680979617823e-09
+colvars:     dx(interp) =  2.94680807206815e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.85077e-07
+colvars:     Atom 5, component 1:
+colvars:     dx(actual) = -9.15075348828509e-10
+colvars:     dx(interp) = -9.15077309996607e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.14318e-06
+colvars:     Atom 5, component 2:
+colvars:     dx(actual) = -4.44126529997035e-09
+colvars:     dx(interp) = -4.44126699340176e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.81295e-07
+colvars:     Atom 6, component 0:
+colvars:     dx(actual) =  1.97002220092557e-09
+colvars:     dx(interp) =  1.97002101591440e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.01522e-07
+colvars:     Atom 6, component 1:
+colvars:     dx(actual) = -1.14238551951473e-09
+colvars:     dx(interp) = -1.14238726681119e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.52952e-06
+colvars:     Atom 6, component 2:
+colvars:     dx(actual) = -3.48082801471250e-09
+colvars:     dx(interp) = -3.48082951434119e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.30825e-07
+colvars:     Atom 7, component 0:
+colvars:     dx(actual) =  1.12995970913410e-08
+colvars:     dx(interp) =  1.12995957739901e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.16584e-07
+colvars:     Atom 7, component 1:
+colvars:     dx(actual) = -3.07682601619064e-10
+colvars:     dx(interp) = -3.07684427751333e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.93512e-06
+colvars:     Atom 7, component 2:
+colvars:     dx(actual) = -1.43824840925788e-10
+colvars:     dx(interp) = -1.43826460002689e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.12573e-05
+colvars:     Debugging gradients:
+colvars:     fit_gradients = { ( 0.094943 , 0.0396782 , -0.0593847 ), ( 0.0892228 , 0.0371105 , -0.0614674 ), ( 0.0956349 , 0.038199 , -0.0533201 ), ( 0.099984 , 0.0427574 , -0.0602005 ), ( 0.0998653 , 0.0412784 , -0.0556134 ), ( 0.0978309 , 0.0442416 , -0.0689435 ), ( 0.0921223 , 0.0417488 , -0.0712482 ), ( 0.0983138 , 0.0459051 , -0.073466 ) }
+colvars:     Atom 0, component 0:
+colvars:     dx(actual) = -1.20819620974544e-09
+colvars:     dx(interp) = -1.20819889971326e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.22643e-06
+colvars:     Atom 0, component 1:
+colvars:     dx(actual) = -2.00738980993265e-09
+colvars:     dx(interp) = -2.00739052715804e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.57293e-07
+colvars:     Atom 0, component 2:
+colvars:     dx(actual) = -6.49061249191618e-10
+colvars:     dx(interp) = -6.49062357266145e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.70720e-06
+colvars:     Atom 1, component 0:
+colvars:     dx(actual) = -1.54767043625270e-09
+colvars:     dx(interp) = -1.54767416062336e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.40644e-06
+colvars:     Atom 1, component 1:
+colvars:     dx(actual) = -1.77356085373503e-09
+colvars:     dx(interp) = -1.77356220335878e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  7.60968e-07
+colvars:     Atom 1, component 2:
+colvars:     dx(actual) = -8.16367418110531e-10
+colvars:     dx(interp) = -8.16369307816801e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.31477e-06
+colvars:     Atom 2, component 0:
+colvars:     dx(actual) = -1.31570487837962e-09
+colvars:     dx(interp) = -1.31570653412344e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.25845e-06
+colvars:     Atom 2, component 1:
+colvars:     dx(actual) = -1.55903379095435e-09
+colvars:     dx(interp) = -1.55903328955863e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.21607e-07
+colvars:     Atom 2, component 2:
+colvars:     dx(actual) = -2.79257683644119e-09
+colvars:     dx(interp) = -2.79257971346943e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.03024e-06
+colvars:     Atom 3, component 0:
+colvars:     dx(actual) =  3.03845837379413e-11
+colvars:     dx(interp) =  3.03840739918890e-11
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.67765e-05
+colvars:     Atom 3, component 1:
+colvars:     dx(actual) = -6.57925269820225e-10
+colvars:     dx(interp) = -6.57927158858314e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.87120e-06
+colvars:     Atom 3, component 2:
+colvars:     dx(actual) =  1.26647492493248e-09
+colvars:     dx(interp) =  1.26647354210829e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.09187e-06
+colvars:     Atom 4, component 0:
+colvars:     dx(actual) =  2.58625121318801e-10
+colvars:     dx(interp) =  2.58621764891991e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.29780e-05
+colvars:     Atom 4, component 1:
+colvars:     dx(actual) = -5.11784392642767e-10
+colvars:     dx(interp) = -5.11785632179831e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.42199e-06
+colvars:     Atom 4, component 2:
+colvars:     dx(actual) =  1.09088027500093e-09
+colvars:     dx(interp) =  1.09087980782780e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.28253e-07
+colvars:     Atom 5, component 0:
+colvars:     dx(actual) =  9.76442038336245e-10
+colvars:     dx(interp) =  9.76440038123756e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.04847e-06
+colvars:     Atom 5, component 1:
+colvars:     dx(actual) =  1.44502720900164e-09
+colvars:     dx(interp) =  1.44502541176473e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.24374e-06
+colvars:     Atom 5, component 2:
+colvars:     dx(actual) =  6.76562805779213e-10
+colvars:     dx(interp) =  6.76560560446095e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.31874e-06
+colvars:     Atom 6, component 0:
+colvars:     dx(actual) =  1.93224103384182e-09
+colvars:     dx(interp) =  1.93223933096132e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.81298e-07
+colvars:     Atom 6, component 1:
+colvars:     dx(actual) =  3.54769547072920e-09
+colvars:     dx(interp) =  3.54769355344098e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.40432e-07
+colvars:     Atom 6, component 2:
+colvars:     dx(actual) =  1.96240534933168e-09
+colvars:     dx(interp) =  1.96240495202603e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.02459e-07
+colvars:     Atom 7, component 0:
+colvars:     dx(actual) =  8.73894734354508e-10
+colvars:     dx(interp) =  8.73894386491111e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.98061e-07
+colvars:     Atom 7, component 1:
+colvars:     dx(actual) =  1.51698031913838e-09
+colvars:     dx(interp) =  1.51697984590787e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.11956e-07
+colvars:     Atom 7, component 2:
+colvars:     dx(actual) = -7.38305416803087e-10
+colvars:     dx(interp) = -7.38307483855821e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.79973e-06
+colvars:     Debugging gradients:
+colvars:     fit_gradients = { ( -2.50668e-16 , -1.73472e-18 , 1.38778e-17 ), ( -2.50668e-16 , -1.73472e-18 , 1.38778e-17 ), ( -2.50668e-16 , -1.73472e-18 , 1.38778e-17 ), ( -2.50668e-16 , -1.73472e-18 , 1.38778e-17 ), ( -2.50668e-16 , -1.73472e-18 , 1.38778e-17 ), ( -2.50668e-16 , -1.73472e-18 , 1.38778e-17 ), ( -2.50668e-16 , -1.73472e-18 , 1.38778e-17 ), ( -2.50668e-16 , -1.73472e-18 , 1.38778e-17 ) }
+colvars:     Atom 0, component 0:
+colvars:     dx(actual) = -1.27149790696279e-09
+colvars:     dx(interp) = -1.27149867561536e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.04525e-07
+colvars:     Atom 0, component 1:
+colvars:     dx(actual) =  1.21774124117735e-09
+colvars:     dx(interp) =  1.21774045955074e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.41866e-07
+colvars:     Atom 0, component 2:
+colvars:     dx(actual) = -8.60598847740590e-09
+colvars:     dx(interp) = -8.60598919782307e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.37111e-08
+colvars:     Atom 1, component 0:
+colvars:     dx(actual) = -3.60881169392258e-09
+colvars:     dx(interp) = -3.60881241755536e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.00518e-07
+colvars:     Atom 1, component 1:
+colvars:     dx(actual) = -3.52933682279399e-10
+colvars:     dx(interp) = -3.52934375032940e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.96284e-06
+colvars:     Atom 1, component 2:
+colvars:     dx(actual) = -7.52614304211363e-10
+colvars:     dx(interp) = -7.52615024904675e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.57587e-07
+colvars:     Atom 2, component 0:
+colvars:     dx(actual) = -6.28269869462628e-09
+colvars:     dx(interp) = -6.28269933833471e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.02457e-07
+colvars:     Atom 2, component 1:
+colvars:     dx(actual) =  1.60830563311620e-08
+colvars:     dx(interp) =  1.60830558582891e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.94019e-08
+colvars:     Atom 2, component 2:
+colvars:     dx(actual) = -1.53000551117444e-08
+colvars:     dx(interp) = -1.53000557547392e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.20257e-08
+colvars:     Atom 3, component 0:
+colvars:     dx(actual) = -8.41432257203678e-10
+colvars:     dx(interp) = -8.41432947098406e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.19905e-07
+colvars:     Atom 3, component 1:
+colvars:     dx(actual) = -7.17788983806145e-09
+colvars:     dx(interp) = -7.17789050149773e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.24278e-08
+colvars:     Atom 3, component 2:
+colvars:     dx(actual) = -1.65014280018028e-09
+colvars:     dx(interp) = -1.65014350180964e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.25193e-07
+colvars:     Atom 4, component 0:
+colvars:     dx(actual) = -8.22733770000639e-10
+colvars:     dx(interp) = -8.22734437162880e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.10909e-07
+colvars:     Atom 4, component 1:
+colvars:     dx(actual) = -8.18760936827090e-09
+colvars:     dx(interp) = -8.18761003801581e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.17998e-08
+colvars:     Atom 4, component 2:
+colvars:     dx(actual) = -3.76307440763668e-09
+colvars:     dx(interp) = -3.76307512452339e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.90506e-07
+colvars:     Atom 5, component 0:
+colvars:     dx(actual) =  3.21614446185947e-09
+colvars:     dx(interp) =  3.21614370890944e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.34116e-07
+colvars:     Atom 5, component 1:
+colvars:     dx(actual) = -1.10087405857939e-09
+colvars:     dx(interp) = -1.10087477245374e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.48461e-07
+colvars:     Atom 5, component 2:
+colvars:     dx(actual) =  8.29746449326763e-09
+colvars:     dx(interp) =  8.29746378388699e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.54937e-08
+colvars:     Atom 6, component 0:
+colvars:     dx(actual) =  5.12339248803784e-09
+colvars:     dx(interp) =  5.12339172233250e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.49453e-07
+colvars:     Atom 6, component 1:
+colvars:     dx(actual) = -7.30877935950502e-09
+colvars:     dx(interp) = -7.30878007104637e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.73543e-08
+colvars:     Atom 6, component 2:
+colvars:     dx(actual) =  1.45053695721487e-08
+colvars:     dx(interp) =  1.45053690824796e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.37578e-08
+colvars:     Atom 7, component 0:
+colvars:     dx(actual) =  4.48764314597838e-09
+colvars:     dx(interp) =  4.48764238452477e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.69678e-07
+colvars:     Atom 7, component 1:
+colvars:     dx(actual) =  6.82729417444961e-09
+colvars:     dx(interp) =  6.82729344020673e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.07545e-07
+colvars:     Atom 7, component 2:
+colvars:     dx(actual) =  7.26904647585513e-09
+colvars:     dx(interp) =  7.26904573743339e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.01584e-07
+colvars:     Debugging gradients:
+colvars:     fit_gradients = { ( -0.520701 , 0.290948 , -0.0163888 ), ( -0.220614 , 0.600202 , -0.410319 ), ( -0.550794 , -0.122236 , 0.346345 ), ( -0.282756 , 0.14799 , -0.0004392 ), ( -0.57968 , -0.216859 , 0.439117 ), ( 0.588709 , -0.0585097 , -0.2102 ), ( 0.83237 , -0.176442 , -0.217938 ), ( 0.733466 , -0.465093 , 0.0698232 ) }
+colvars:     Atom 0, component 0:
+colvars:     dx(actual) = -5.10703332956552e-08
+colvars:     dx(interp) = -5.10703326369050e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.28989e-08
+colvars:     Atom 0, component 1:
+colvars:     dx(actual) =  4.03251333436216e-08
+colvars:     dx(interp) =  4.03251318178666e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.78363e-08
+colvars:     Atom 0, component 2:
+colvars:     dx(actual) =  1.94063737302130e-08
+colvars:     dx(interp) =  1.94063711571535e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.32588e-07
+colvars:     Atom 1, component 0:
+colvars:     dx(actual) = -2.24141527560562e-08
+colvars:     dx(interp) = -2.24141547433806e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.86638e-08
+colvars:     Atom 1, component 1:
+colvars:     dx(actual) =  7.96334089780970e-08
+colvars:     dx(interp) =  7.96334073447130e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.05113e-08
+colvars:     Atom 1, component 2:
+colvars:     dx(actual) = -3.17376191993901e-09
+colvars:     dx(interp) = -3.17377360426185e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.68154e-06
+colvars:     Atom 2, component 0:
+colvars:     dx(actual) = -5.83516926999650e-08
+colvars:     dx(interp) = -5.83516938952163e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.04836e-08
+colvars:     Atom 2, component 1:
+colvars:     dx(actual) = -5.59670410016366e-09
+colvars:     dx(interp) = -5.59670421196159e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.99757e-08
+colvars:     Atom 2, component 2:
+colvars:     dx(actual) =  3.21179969287044e-08
+colvars:     dx(interp) =  3.21179960879518e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.61770e-08
+colvars:     Atom 3, component 0:
+colvars:     dx(actual) = -3.08448276920004e-08
+colvars:     dx(interp) = -3.08448336803363e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.94144e-07
+colvars:     Atom 3, component 1:
+colvars:     dx(actual) =  2.61931649703229e-08
+colvars:     dx(interp) =  2.61931640485169e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.51926e-08
+colvars:     Atom 3, component 2:
+colvars:     dx(actual) =  1.19401464271363e-08
+colvars:     dx(interp) =  1.19401453887739e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.69640e-08
+colvars:     Atom 4, component 0:
+colvars:     dx(actual) = -6.08139770763572e-08
+colvars:     dx(interp) = -6.08139808632509e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.22701e-08
+colvars:     Atom 4, component 1:
+colvars:     dx(actual) = -2.31233520109342e-08
+colvars:     dx(interp) = -2.31233526861099e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.91989e-08
+colvars:     Atom 4, component 2:
+colvars:     dx(actual) =  4.07901458165938e-08
+colvars:     dx(interp) =  4.07901414650661e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.06681e-07
+colvars:     Atom 5, component 0:
+colvars:     dx(actual) =  5.42278941750851e-08
+colvars:     dx(interp) =  5.42278922631750e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.52569e-08
+colvars:     Atom 5, component 1:
+colvars:     dx(actual) =  1.15491541885504e-08
+colvars:     dx(interp) =  1.15491535486350e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.54080e-08
+colvars:     Atom 5, component 2:
+colvars:     dx(actual) = -2.62567660946900e-08
+colvars:     dx(interp) = -2.62567669786448e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.36658e-08
+colvars:     Atom 6, component 0:
+colvars:     dx(actual) =  7.68179605481478e-08
+colvars:     dx(interp) =  7.68179582751249e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.95897e-08
+colvars:     Atom 6, component 1:
+colvars:     dx(actual) = -2.44532838422629e-10
+colvars:     dx(interp) = -2.44533523284345e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.80069e-06
+colvars:     Atom 6, component 2:
+colvars:     dx(actual) = -3.45343483809657e-08
+colvars:     dx(interp) = -3.45343487617414e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.10260e-08
+colvars:     Atom 7, component 0:
+colvars:     dx(actual) =  6.84191854283256e-08
+colvars:     dx(interp) =  6.84191811770550e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.21357e-08
+colvars:     Atom 7, component 1:
+colvars:     dx(actual) = -3.80725559967487e-08
+colvars:     dx(interp) = -3.80725579896489e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.23448e-08
+colvars:     Atom 7, component 2:
+colvars:     dx(actual) = -1.98482232871555e-08
+colvars:     dx(interp) = -1.98482239282729e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.23010e-08
+colvars:     Debugging gradients:
+colvars:     Atom 0, component 0:
+colvars:     dx(actual) = -4.03503408463735e-09
+colvars:     dx(interp) = -4.03503467391049e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.46039e-07
+colvars:     Atom 0, component 1:
+colvars:     dx(actual) =  1.02737420792920e-08
+colvars:     dx(interp) =  1.02737416510290e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.16852e-08
+colvars:     Atom 0, component 2:
+colvars:     dx(actual) = -7.32544891413056e-09
+colvars:     dx(interp) = -7.32544948281007e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  7.76307e-08
+colvars:     Atom 1, component 0:
+colvars:     dx(actual) = -5.29283794570290e-09
+colvars:     dx(interp) = -5.29283849994244e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.04715e-07
+colvars:     Atom 1, component 1:
+colvars:     dx(actual) =  9.42849798235557e-09
+colvars:     dx(interp) =  9.42849747993549e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.32874e-08
+colvars:     Atom 1, component 2:
+colvars:     dx(actual) = -3.09922798535922e-09
+colvars:     dx(interp) = -3.09922862734272e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.07143e-07
+colvars:     Atom 2, component 0:
+colvars:     dx(actual) = -6.73176558940725e-09
+colvars:     dx(interp) = -6.73176607692299e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  7.24202e-08
+colvars:     Atom 2, component 1:
+colvars:     dx(actual) =  1.82733743692154e-08
+colvars:     dx(interp) =  1.82733739845922e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.10483e-08
+colvars:     Atom 2, component 2:
+colvars:     dx(actual) = -1.09277991100498e-08
+colvars:     dx(interp) = -1.09277996405656e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.85474e-08
+colvars:     Atom 3, component 0:
+colvars:     dx(actual) = -3.80359832519162e-09
+colvars:     dx(interp) = -3.80359876992062e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.16923e-07
+colvars:     Atom 3, component 1:
+colvars:     dx(actual) =  5.75571079686199e-09
+colvars:     dx(interp) =  5.75571030792220e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.49486e-08
+colvars:     Atom 3, component 2:
+colvars:     dx(actual) = -3.58222473906267e-09
+colvars:     dx(interp) = -3.58222529653899e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.55623e-07
+colvars:     Atom 4, component 0:
+colvars:     dx(actual) = -3.79353592983023e-09
+colvars:     dx(interp) = -3.79353633931236e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.07942e-07
+colvars:     Atom 4, component 1:
+colvars:     dx(actual) =  5.21233967099022e-09
+colvars:     dx(interp) =  5.21233905507640e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.18165e-07
+colvars:     Atom 4, component 2:
+colvars:     dx(actual) = -4.71927941170236e-09
+colvars:     dx(interp) = -4.71927995527187e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.15181e-07
+colvars:     Atom 5, component 0:
+colvars:     dx(actual) = -1.62005076020932e-09
+colvars:     dx(interp) = -1.62005132792915e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.50433e-07
+colvars:     Atom 5, component 1:
+colvars:     dx(actual) =  9.02600083563243e-09
+colvars:     dx(interp) =  9.02600025560527e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.42618e-08
+colvars:     Atom 5, component 2:
+colvars:     dx(actual) =  1.77098824494237e-09
+colvars:     dx(interp) =  1.77098778705299e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.58550e-07
+colvars:     Atom 6, component 0:
+colvars:     dx(actual) = -5.93682880634105e-10
+colvars:     dx(interp) = -5.93683405887073e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.84737e-07
+colvars:     Atom 6, component 1:
+colvars:     dx(actual) =  5.68527380728767e-09
+colvars:     dx(interp) =  5.68527329366441e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.03427e-08
+colvars:     Atom 6, component 2:
+colvars:     dx(actual) =  5.11171527328713e-09
+colvars:     dx(interp) =  5.11171474899384e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.02567e-07
+colvars:     Atom 7, component 0:
+colvars:     dx(actual) = -9.35805433144310e-10
+colvars:     dx(interp) = -9.35806046567770e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.55503e-07
+colvars:     Atom 7, component 1:
+colvars:     dx(actual) =  1.32924713458493e-08
+colvars:     dx(interp) =  1.32924708335056e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.85439e-08
+colvars:     Atom 7, component 2:
+colvars:     dx(actual) =  1.21755472370921e-09
+colvars:     dx(interp) =  1.21755410359893e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.09308e-07
 colvars: Saving collective variables state to "test.colvars.state".

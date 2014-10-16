@@ -1,13 +1,9 @@
 Colvarstrajfrequency    2
 Colvarsrestartfrequency 20000
 
+# regular distance with harmonic bias
 colvar {
   name d
-
-  lowerBoundary 12
-  upperBoundary 32
-  width 0.2
-
   outputAppliedForce
 
   distance {
@@ -16,9 +12,15 @@ colvar {
   }
 }
 
+harmonic {
+  colvars d
+  centers 18.
+  forceConstant 500.
+}
+
+# orientation quaternion
 colvar {
   name o
-  outputAppliedForce
 
   orientation {
       atoms {

@@ -22,7 +22,7 @@ class colvarproxy_vmd : public colvarproxy {
 protected:
 
   /// pointer to the VMD Tcl interpreter
-  Tcl_Interp *vmdtcl;
+  Tcl_Interp *interp;
   /// pointer to the VMD main object
   VMDApp *vmd;
   /// VMD molecule id being used (must be provided at construction)
@@ -39,7 +39,7 @@ public:
 
   friend class cvm::atom;
 
-  colvarproxy_vmd (Tcl_Interp *vmdtcl, VMDApp *vmd, int molid);
+  colvarproxy_vmd (Tcl_Interp *interp, VMDApp *vmd, int molid);
   ~colvarproxy_vmd();
 
   void setup();
@@ -112,7 +112,7 @@ public:
 
   inline void request_system_force (bool yesno) {
     if (yesno == true)
-      cvm::fatal_error ("Error: a bias requested system forces, which are undefined in VMD.");
+      cvm::error ("Error: a bias requested system forces, which are undefined in VMD.");
   }
 
   cvm::rvector position_distance (cvm::atom_pos const &pos1,
@@ -128,6 +128,14 @@ public:
   void fatal_error (std::string const &message);
   void exit (std::string const &message);
 
+  // Callback functions
+  int run_force_callback();
+  int run_colvar_callback(std::string const &name,
+                      std::vector<const colvarvalue *> const &cvcs,
+                      colvarvalue &value);
+  int run_colvar_gradient_callback(std::string const &name,
+                               std::vector<const colvarvalue *> const &cvcs,
+                               std::vector<colvarvalue> &gradient);
 
   int load_atoms (char const *filename,
                    std::vector<cvm::atom> &atoms,

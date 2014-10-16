@@ -290,6 +290,22 @@ The following keywords are available in the global context of this configuration
     correlation functions, or running averages and standard deviations.
     See section~\ref{sec:colvar_acf} for details.}
 
+\cvnamdonly{%
+\item %
+  \keydef
+    {scriptedColvarForces}{%
+    global}{%
+    Enable custom, scripted forces on colvars }{%
+    boolean}{%
+    \texttt{off}}{%
+    If this flag is enabled, a Tcl procedure named \texttt{calc\_colvar\_forces}
+    accepting one parameter should be defined by the user. It is executed
+    at each timestep, with the current step number as parameter, between the
+    calculation of colvars and the application of bias forces. This procedure
+    may use the scripting interface (see \ref{sec:scripting}) to access
+    the values of colvars and apply forces on them, effectively defining custom
+    collective variable biases.}}
+    
 \end{itemize}
 
 The example below defines the same configuration shown in Fig.~\ref{fig:colvars_diagram}.  The options within the \texttt{colvar} blocks are described in \ref{sec:colvar} and \ref{sec:cvc}, the ones within the \texttt{harmonic} and \texttt{histogram} blocks in \ref{sec:colvarbias}.
@@ -1110,6 +1126,8 @@ The following two options have default values appropriate for the vast majority 
     $\partial\mathbf{x}^{\mathrm{C}}/\partial\mathbf{x}_{i}$ (translational gradients).
     By default, these terms are calculated and included in the total gradients;
     if this option is set to \texttt{off}, they are neglected.
+    In the case of a minimum RMSD component, this flag is automatically disabled
+    because the contributions of those derivatives to the gradients cancel out.
 }
 
 \item %
@@ -2294,7 +2312,10 @@ following parameters, which are common to all components:
     Defines the power at which the value of this component is raised
     before being added to the sum.  When this exponent is
     different than 1 (non-linear sum), system forces and the Jacobian
-    force are not available, making the colvar unsuitable for ABF calculations.}
+    force are not available, making the colvar unsuitable for ABF calculations.
+    \cvscriptonly{Alternately, defines the order number of components
+    within scripted colvars. Values should then range from 1 to the number
+    of components. See~\ref{sec:colvar_scripted} for details.}}
 \end{itemize}
 
 \textbf{Example:} To define the \emph{average} of a colvar across
@@ -2303,6 +2324,47 @@ block a series of components of the same type (applied to different
 atom groups), and assign to each component a \texttt{componentCoeff}
 of $1/N$.
 
+
+\cvscriptonly{
+\cvsubsec{Colvars as scripted functions of components}
+\label{sec:colvar_scripted}
+In contexts that support scripting, a colvar may be defined as
+custom scripted function of the values of its components,
+rather than a linear or polynomial combination.
+\begin{itemize}
+ \item %
+  \key
+    {scriptedFunction}{%
+    \texttt{colvar}}{%
+    Compute colvar as a scripted function of its components}{%
+    string}{%
+    If this option is specified, the colvar will be computed as a
+    scripted function of the values of its components.
+    To that effect, the user should define two Tcl procedures:
+    \texttt{calc\_$<$scriptedFunction$>$} and \texttt{calc\_$<$scriptedFunction$>$\_gradient},
+    both accepting as many parameters as the colvar has components.
+    \texttt{calc\_$<$scriptedFunction$>$} should return one value of 
+    type $<$scriptedFunctionType$>$, corresponding to the colvar value.
+    \texttt{calc\_$<$scriptedFunction$>$\_gradient} should return a Tcl list
+    containing the derivatives of the function with respect to each
+    component.}
+
+\item%
+  \keydef
+    {scriptedFunctionType}{%
+    \texttt{colvar}}{%
+    Type of value returned by the scripted colvar}{%
+    string}{%
+    \texttt{scalar}}{%
+    If a colvar is defined as a scripted function, its type is not constrained by
+    the types of its components. With this flag, the user may specify whether the
+    colvar is a scalar or one of the following vector types: \texttt{vector}
+    (a 3D vector), \texttt{unitvector} (a normalized 3D vector), or
+    \texttt{unitquaternion} (a normalized quaternion). Non-scalar values
+    must be formatted as parenthesized, comma-separated lists, e.g. ``(1., 2., 3.)'',
+    for proper parsing.}
+\end{itemize}
+} % \cvscriptonly
 
 
 \cvsec{Biasing and analysis methods}
@@ -2423,20 +2485,24 @@ degrees of freedom.
 bonds involving hydrogen atoms, for example in TIP3P water molecules (parameter \texttt{rigidBonds}\cvnamdugonly{, section~\ref{section:rigidBonds}}).}
 
 In the framework of ABF,
-${\bf F}_\xi$ is accumulated in bins of finite size, $\delta \xi$,
+${\bf F}_\xi$ is accumulated in bins of finite size $\delta \xi$,
 thereby providing an estimate of the free energy gradient
 according to equation~({\ref{eq:gradient}}).
-The biasing force applied along the colective variables
+The biasing force applied along the collective variables
 to overcome free energy barriers is calculated as:
 
 \begin{equation}
   \label{eq:abf}
-  {\bf F}^{\rm ABF} = \gradx \widetilde A(\bm{\xi})
+  {\bf F}^{\rm ABF} = \alpha(N_\xi) \times \gradx \widetilde A(\bm{\xi})
 \end{equation}
 
 where $\gradx \widetilde A$ denotes the current estimate of the
 free energy gradient at the current point $\bm{\xi}$ in the collective
-variable subspace.
+variable subspace, and $\alpha(N_\xi)$ is a scaling factor that is ramped
+from 0 to 1 as the local number of samples $N_\xi$ increases
+to prevent nonequilibrium effects in the early phase of the simulation,
+when the gradient estimate has a large variance.
+See the \texttt{fullSamples} parameter below for details.
 
 As sampling of the phase space proceeds, the estimate
 $\gradx \widetilde A$ is progressively refined. The biasing
@@ -2504,10 +2570,11 @@ The following parameters can be set in the ABF configuration block
   {To avoid nonequilibrium effects due to large fluctuations of the force exerted along the
    colvars, it is recommended to apply a biasing force only after a the estimate has started
    converging. If \texttt{fullSamples} is non-zero, the applied biasing force is scaled by a factor
-   between 0 and 1. If the number of samples in the current bin is higher than \texttt{fullSamples},
+   $\alpha(N_\xi)$ between 0 and 1.
+   If the number of samples $N_\xi$ in the current bin is higher than \texttt{fullSamples},
    the factor is one. If it is less than half of \texttt{fullSamples}, the factor is zero and
    no bias is applied. Between those two thresholds, the factor follows a linear ramp from
-   0 to 1.}
+   0 to 1: $\alpha(N_\xi) =(2N_\xi/\mathrm{fullSamples})-1$}.
 
 \item \keydef{maxForce}{\texttt{abf}}{%
     Maximum magnitude of the ABF force}
@@ -3446,11 +3513,13 @@ parameters from the colvars to define its grid.  The grid ranges from
 set by the \texttt{width} parameter.
 
 \cvscriptonly{\cvsec{Colvars scripting}
+\label{sec:scripting}
 
 Collective variables and biases can be added, queried and deleted through the scripting command
 \cvnamdonly{\texttt{cv}}\cvvmdonly{\texttt{colvars}}, with the following syntax: \cvnamdonly{\texttt{cv}}\cvvmdonly{\texttt{colvars}}\texttt{~$<$subcommand$>$ [args...]}
 for which the available subcommands are listed below.
-
+\cvnamdonly{This interface is particularly useful to implement custom biases as scripted colvar forces.
+See the \texttt{scriptedColvarForces} option in \ref{sec:colvars_config}.}
 
 \cvsubsec{Managing the colvars module}
 \begin{itemize}
@@ -3470,7 +3539,7 @@ for which the available subcommands are listed below.
 \item \texttt{list} : return a list of all variables
 \item \texttt{list biases} : return a list of all biases
 \item \texttt{load $<$file name$>$} : load a state file (requires configuration)
-\item \texttt{update} : recalculate colvars and biases based
+\item \texttt{update} : recalculate colvars and biases
 \item \texttt{printframe} : return a summary of the current frame
 \item \texttt{printframelabels} : return labels to annotate printframe's output
 \cvvmdugonly{

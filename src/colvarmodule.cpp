@@ -10,7 +10,7 @@
 #include "colvarbias_meta.h"
 #include "colvarbias_abf.h"
 #include "colvarbias_restraint.h"
-
+#include "colvarscript.h"
 
 colvarmodule::colvarmodule (colvarproxy *proxy_in)
 {
@@ -35,6 +35,8 @@ colvarmodule::colvarmodule (colvarproxy *proxy_in)
   // "it" should be updated by the proxy
   colvarmodule::it = colvarmodule::it_restart = 0;
   colvarmodule::it_restart_from_state_file = true;
+
+  colvarmodule::use_scripted_forces = false;
 
   colvarmodule::b_analysis = false;
   colvarmodule::debug_gradients_step_size = 1.0e-07;
@@ -97,16 +99,31 @@ int colvarmodule::config (std::string &conf)
   // parse global options
   error_code |= parse_global_params (conf);
 
+  if (error_code != COLVARS_OK || cvm::get_error()) {
+    set_error_bits(INPUT_ERROR);
+    return COLVARS_ERROR;
+  }
+
   // parse the options for collective variables
   error_code |= parse_colvars (conf);
+
+  if (error_code != COLVARS_OK || cvm::get_error()) {
+    set_error_bits(INPUT_ERROR);
+    return COLVARS_ERROR;
+  }
 
   // parse the options for biases
   error_code |= parse_biases (conf);
 
+  if (error_code != COLVARS_OK || cvm::get_error()) {
+    set_error_bits(INPUT_ERROR);
+    return COLVARS_ERROR;
+  }
+
   // done parsing known keywords, check that all keywords found were valid ones
   error_code |= parse->check_keywords (conf, "colvarmodule");
 
-  if (error_code != COLVARS_OK) {
+  if (error_code != COLVARS_OK || cvm::get_error()) {
     set_error_bits(INPUT_ERROR);
     return COLVARS_ERROR;
   }
@@ -116,7 +133,7 @@ int colvarmodule::config (std::string &conf)
   cvm::log (cvm::line_marker);
 
   // configuration might have changed, better redo the labels
-  write_traj_label (cv_traj_os);
+  write_traj_label(cv_traj_os);
 
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
 }
@@ -144,7 +161,16 @@ int colvarmodule::parse_global_params (std::string const &conf)
   parse->get_keyval (conf, "colvarsRestartFrequency",
                      restart_out_freq, restart_out_freq);
 
+  // if this is true when initializing, it means
+  // we are continuing after a reset(): default to true
   parse->get_keyval (conf, "colvarsTrajAppend", cv_traj_append, cv_traj_append);
+
+  parse->get_keyval (conf, "scriptedColvarForces", use_scripted_forces, false,
+                     colvarparse::parse_silent);
+
+  if (use_scripted_forces && !proxy->force_script_defined) {
+    cvm::fatal_error("User script for scripted colvars forces not found.");
+  }
 
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
 }
@@ -163,12 +189,11 @@ int colvarmodule::parse_colvars (std::string const &conf)
       cvm::log (cvm::line_marker);
       cvm::increase_depth();
       colvars.push_back (new colvar (colvar_conf));
-      if (cvm::get_error()) {
-        delete colvars.back();
-        colvars.pop_back();
-        return COLVARS_ERROR;
-      }
-      if ((colvars.back())->check_keywords (colvar_conf, "colvar") != COLVARS_OK) {
+      if (cvm::get_error() ||
+          ((colvars.back())->check_keywords (colvar_conf, "colvar") != COLVARS_OK)) {
+            cvm::log("Error while constructing colvar number " +
+        cvm::to_str(colvars.size()) + " : deleting.");
+        delete colvars.back();  // the colvar destructor updates the colvars array
         return COLVARS_ERROR;
       }
       cvm::decrease_depth();
@@ -176,6 +201,7 @@ int colvarmodule::parse_colvars (std::string const &conf)
       cvm::error("Error: \"colvar\" keyword found without any configuration.\n", INPUT_ERROR);
       return COLVARS_ERROR;
     }
+    cvm::decrease_depth();
     colvar_conf = "";
   }
 
@@ -192,6 +218,17 @@ int colvarmodule::parse_colvars (std::string const &conf)
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
 }
 
+bool colvarmodule::check_new_bias(std::string &conf, char const *key)
+{
+  if (cvm::get_error() ||
+     (biases.back()->check_keywords(conf, key) != COLVARS_OK)) {
+    cvm::log("Error while constructing bias number " +
+        cvm::to_str(biases.size()) + " : deleting.\n");
+    delete biases.back(); // the bias destructor updates the biases array
+    return true;
+  }
+  return false;
+}
 
 int colvarmodule::parse_biases (std::string const &conf)
 {
@@ -207,12 +244,7 @@ int colvarmodule::parse_biases (std::string const &conf)
         cvm::log (cvm::line_marker);
         cvm::increase_depth();
         biases.push_back (new colvarbias_abf (abf_conf, "abf"));
-        if (cvm::get_error()) {
-          delete biases.back();
-          biases.pop_back();
-          return COLVARS_ERROR;
-        }
-        if ((biases.back())->check_keywords (abf_conf, "abf") != COLVARS_OK) {
+        if (cvm::check_new_bias(abf_conf, "abf")) {
           return COLVARS_ERROR;
         }
         cvm::decrease_depth();
@@ -234,12 +266,7 @@ int colvarmodule::parse_biases (std::string const &conf)
         cvm::log (cvm::line_marker);
         cvm::increase_depth();
         biases.push_back (new colvarbias_restraint_harmonic (harm_conf, "harmonic"));
-        if (cvm::get_error()) {
-          delete biases.back();
-          biases.pop_back();
-          return COLVARS_ERROR;
-        }
-        if ((biases.back())->check_keywords (harm_conf, "harmonic") != COLVARS_OK) {
+        if (cvm::check_new_bias(harm_conf, "harmonic")) {
           return COLVARS_ERROR;
         }
         cvm::decrease_depth();
@@ -261,12 +288,7 @@ int colvarmodule::parse_biases (std::string const &conf)
         cvm::log (cvm::line_marker);
         cvm::increase_depth();
         biases.push_back (new colvarbias_restraint_linear (lin_conf, "linear"));
-        if (cvm::get_error()) {
-          delete biases.back();
-          biases.pop_back();
-          return COLVARS_ERROR;
-        }
-        if ((biases.back())->check_keywords (lin_conf, "linear") != COLVARS_OK) {
+        if (cvm::check_new_bias(lin_conf, "linear")) {
           return COLVARS_ERROR;
         }
         cvm::decrease_depth();
@@ -288,12 +310,7 @@ int colvarmodule::parse_biases (std::string const &conf)
         cvm::log (cvm::line_marker);
         cvm::increase_depth();
         biases.push_back (new colvarbias_alb (alb_conf, "ALB"));
-        if (cvm::get_error()) {
-          delete biases.back();
-          biases.pop_back();
-          return COLVARS_ERROR;
-        }
-        if ((biases.back())->check_keywords (alb_conf, "ALB") != COLVARS_OK) {
+        if (cvm::check_new_bias(alb_conf, "ALB")) {
           return COLVARS_ERROR;
         }
         cvm::decrease_depth();
@@ -316,12 +333,7 @@ int colvarmodule::parse_biases (std::string const &conf)
         cvm::log (cvm::line_marker);
         cvm::increase_depth();
         biases.push_back (new colvarbias_histogram (histo_conf, "histogram"));
-        if (cvm::get_error()) {
-          delete biases.back();
-          biases.pop_back();
-          return COLVARS_ERROR;
-        }
-        if ((biases.back())->check_keywords (histo_conf, "histogram") != COLVARS_OK) {
+        if (cvm::check_new_bias(histo_conf, "histogram")) {
           return COLVARS_ERROR;
         }
         cvm::decrease_depth();
@@ -343,12 +355,7 @@ int colvarmodule::parse_biases (std::string const &conf)
         cvm::log (cvm::line_marker);
         cvm::increase_depth();
         biases.push_back (new colvarbias_meta (meta_conf, "metadynamics"));
-        if (cvm::get_error()) {
-          delete biases.back();
-          biases.pop_back();
-          return COLVARS_ERROR;
-        }
-        if ((biases.back())->check_keywords (meta_conf, "metadynamics") != COLVARS_OK) {
+        if (cvm::check_new_bias(meta_conf, "metadynamics")) {
           return COLVARS_ERROR;
         }
         cvm::decrease_depth();
@@ -361,7 +368,14 @@ int colvarmodule::parse_biases (std::string const &conf)
     }
   }
 
-  if (biases.size())
+  if (use_scripted_forces) {
+    cvm::log (cvm::line_marker);
+    cvm::increase_depth();
+    cvm::log("User forces script will be run at each bias update.");
+    cvm::decrease_depth();
+  }
+
+  if (biases.size() || use_scripted_forces)
     cvm::log (cvm::line_marker);
   cvm::log ("Collective variables biases initialized, "+
             cvm::to_str (biases.size())+" in total.\n");
@@ -491,9 +505,13 @@ int colvarmodule::calc() {
 
   // Run user force script, if provided,
   // potentially adding scripted forces to the colvars
-  if (proxy->force_script_defined) {
+  if (use_scripted_forces) {
     int res;
-    res = proxy->run_force_script();
+    res = proxy->run_force_callback();
+    if (res == COLVARS_NOT_IMPLEMENTED) {
+      cvm::error("Colvar forces scripts are not implemented.");
+      return COLVARS_ERROR;
+    }
     if (res != COLVARS_OK) {
       cvm::error("Error running user colvar forces script");
       return COLVARS_ERROR;
@@ -574,7 +592,7 @@ int colvarmodule::calc() {
       open_traj_file (cv_traj_name);
     }
 
-    // write labels in the traj file every 1000 lines and at first ts
+    // write labels in the traj file every 1000 lines and at first timestep
     if ((cvm::step_absolute() % (cv_traj_freq * 1000)) == 0 || cvm::step_relative() == 0) {
       write_traj_label (cv_traj_os);
     }
@@ -648,31 +666,30 @@ colvarmodule::~colvarmodule()
 
 int colvarmodule::reset()
 {
-  if (cvm::debug())
-    cvm::log ("colvars::reset() called.\n");
-  for (std::vector<colvar *>::iterator cvi = colvars.begin();
-       cvi != colvars.end();
+  cvm::log("Resetting the Collective Variables Module.\n");
+  // Iterate backwards because we are deleting the elements as we go
+  for (std::vector<colvar *>::reverse_iterator cvi = colvars.rbegin();
+       cvi != colvars.rend();
        cvi++) {
-    delete *cvi;
-    cvi--;
+    delete *cvi; // the colvar destructor updates the colvars array
   }
   colvars.clear();
 
-  for (std::vector<colvarbias *>::iterator bi = biases.begin();
-       bi != biases.end();
+  // Iterate backwards because we are deleting the elements as we go
+  for (std::vector<colvarbias *>::reverse_iterator bi = biases.rbegin();
+       bi != biases.rend();
        bi++) {
-    delete *bi;
-    bi--;
+    delete *bi; // the bias destructor updates the biases array
   }
   biases.clear();
 
   index_groups.clear();
   index_group_names.clear();
 
-  close_traj_file();
+  // Do not close file here, as we might not be done with it yet.
+  cv_traj_os.flush();
 
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
-
 }
 
 
@@ -954,6 +971,10 @@ int colvarmodule::close_traj_file()
 
 std::ostream & colvarmodule::write_traj_label (std::ostream &os)
 {
+  if (!os.good()) {
+    cvm::error("Cannot write to trajectory file.");
+    return os;
+  }
   os.setf (std::ios::scientific, std::ios::floatfield);
 
   os << "# " << cvm::wrap_string ("step", cvm::it_width-2)

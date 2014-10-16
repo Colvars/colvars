@@ -14,24 +14,9 @@ set outName             [file rootname [file tail [info script]]]
 timestep          0.5
 numSteps		  20
 
-# Interactive molecular dynamics
-#IMDon               on
-#IMDport             3000
-#IMDfreq             20
-#IMDwait             on
-
 colvars			  on
-colvarsConfig	  test.in
-#colvarsInput  $inName.colvars.state
-#colvarsInput  test.colvars.state
+colvarsConfig	  unscripted.in
 
-#tclForces on
-#tclForcesScript {
-#  addatom 12
-#  proc calcforces {} {
-#    addforce 12 { 10 0 0 }
-#  }
-#}
 
 # INPUT
 structure               ../Common/da.psf 
@@ -39,10 +24,7 @@ structure               ../Common/da.psf
 parameters              ../Common/par_all22_prot.inp
 paraTypeCharmm          on
 coordinates             ../Common/da.min.pdb
-
-temperature 250
-#bincoordinates       $inName.coor
-#binvelocities        $inName.vel
+velocities        start.vel
 
 # OUTPUT
 
@@ -93,19 +75,16 @@ commotion               no
 # SHAKE
 rigidBonds              none
 
-# Scripted harmonic bias on colvar d
+source procs.tcl
 
-proc calc_colvar_forces {} {
-  set center 18.
-  set k 500.
+print "First, running unscripted config"
+run 20
 
-  set d [cv colvar d value]
-  set f [expr {$k * ($center - $d)}]
-  set r [cv colvar d addforce $f]
-  print "Applying force $r to colvar d"
+print "Resetting colvars with scripted config"
+cv reset
+reinitatoms
 
-  set r [cv colvar o addforce "(1., 0., 0.66666, 0.)"]
-  print "Applying force $r to colvar o"
+cv configfile scripted.in
+# with scripted run
+run 20
 
-  return
-}
