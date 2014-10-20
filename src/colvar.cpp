@@ -805,13 +805,14 @@ void colvar::calc()
       // each atom group will take care of its own ref_pos_group, if defined
     }
   }
-  if (tasks[task_output_velocity]) {
-    for (i = 0; i < cvcs.size(); i++) {
-      for (ig = 0; ig < cvcs[i]->atom_groups.size(); ig++) {
-        cvcs[i]->atom_groups[ig]->read_velocities();
-      }
-    }
-  }
+////  Don't try to get atom velocities, as no back-end currently implements it
+//   if (tasks[task_output_velocity] && !tasks[task_fdiff_velocity]) {
+//     for (i = 0; i < cvcs.size(); i++) {
+//       for (ig = 0; ig < cvcs[i]->atom_groups.size(); ig++) {
+//         cvcs[i]->atom_groups[ig]->read_velocities();
+//       }
+//     }
+//   }
   if (tasks[task_system_force]) {
     for (i = 0; i < cvcs.size(); i++) {
       for (ig = 0; ig < cvcs[i]->atom_groups.size(); ig++) {
