@@ -159,26 +159,14 @@ colvar::colvar (std::string const &conf)
     enable(task_scripted);
     cvm::log("This colvar uses scripted function \"" + scripted_function + "\".");
 
-    std::string type_str;
-    get_keyval (conf, "scriptedFunctionType", type_str, "scalar");
-
-    x.type(colvarvalue::type_notset);
-    for (i = 0; i < colvarvalue::type_all; i++) {
-      if (type_str == colvarvalue::type_keyword[i]) {
-        x.type(colvarvalue::Type(i));
-        break;
-      }
-    }
-    if (x.type() == colvarvalue::type_notset) {
-      cvm::error("Could not parse scripted colvar type.");
-      return;
-    }
-    x_reported.type (x.type());
-    cvm::log(std::string("Expecting colvar value of type ")
-      + colvarvalue::type_desc[x.type()]);
+    // Only accept scalar scripted colvars
+    // might accept other types when the infrastructure is in place
+    // for derivatives of vectors wrt vectors
+    x.type(colvarvalue::type_scalar);
+    x_reported.type(x.type());
 
     // Build ordered list of component values that will be
-    // passed to the script
+    // passed to the script, based on values of componentExp
     for (i = 1; i <= cvcs.size(); i++) {
       for (j = 0; j < cvcs.size(); j++) {
         if (cvcs[j]->sup_np == int(i)) {
@@ -188,7 +176,7 @@ colvar::colvar (std::string const &conf)
       }
     }
     if (sorted_cvc_values.size() != cvcs.size()) {
-      cvm::error("Could not find order numbers for all components"
+      cvm::error("Could not find order numbers for all components "
                   "in componentExp values.");
       return;
     }
@@ -1162,8 +1150,11 @@ void colvar::communicate_forces()
 
     for (i = 0; i < cvcs.size(); i++) {
       cvm::increase_depth();
-      // Note: we need a dot product here
-      (cvcs[i])->apply_force (f * func_grads[i]);
+      // Force is scalar times colvarvalue (scalar or vector)
+      // Note: this can only handle scalar colvars (scalar values of f)
+      // A non-scalar colvar would need the gradient to be expressed
+      // as an order-2 tensor
+      (cvcs[i])->apply_force (f.real_value * func_grads[i]);
       cvm::decrease_depth();
     }
   } else if (x.type() == colvarvalue::type_scalar) {

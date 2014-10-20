@@ -2343,26 +2343,11 @@ rather than a linear or polynomial combination.
     To that effect, the user should define two Tcl procedures:
     \texttt{calc\_$<$scriptedFunction$>$} and \texttt{calc\_$<$scriptedFunction$>$\_gradient},
     both accepting as many parameters as the colvar has components.
-    \texttt{calc\_$<$scriptedFunction$>$} should return one value of 
-    type $<$scriptedFunctionType$>$, corresponding to the colvar value.
+    \texttt{calc\_$<$scriptedFunction$>$} should return one scalar,
+    corresponding to the colvar value.
     \texttt{calc\_$<$scriptedFunction$>$\_gradient} should return a Tcl list
     containing the derivatives of the function with respect to each
     component.}
-
-\item%
-  \keydef
-    {scriptedFunctionType}{%
-    \texttt{colvar}}{%
-    Type of value returned by the scripted colvar}{%
-    string}{%
-    \texttt{scalar}}{%
-    If a colvar is defined as a scripted function, its type is not constrained by
-    the types of its components. With this flag, the user may specify whether the
-    colvar is a scalar or one of the following vector types: \texttt{vector}
-    (a 3D vector), \texttt{unitvector} (a normalized 3D vector), or
-    \texttt{unitquaternion} (a normalized quaternion). Non-scalar values
-    must be formatted as parenthesized, comma-separated lists, e.g. ``(1., 2., 3.)'',
-    for proper parsing.}
 \end{itemize}
 } % \cvscriptonly
 
