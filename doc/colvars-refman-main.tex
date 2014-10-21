@@ -289,22 +289,6 @@ The following keywords are available in the global context of this configuration
     whatever run-time statistical analysis it is configured to, such as
     correlation functions, or running averages and standard deviations.
     See section~\ref{sec:colvar_acf} for details.}
-
-\cvnamdonly{%
-\item %
-  \keydef
-    {scriptedColvarForces}{%
-    global}{%
-    Enable custom, scripted forces on colvars }{%
-    boolean}{%
-    \texttt{off}}{%
-    If this flag is enabled, a Tcl procedure named \texttt{calc\_colvar\_forces}
-    accepting one parameter should be defined by the user. It is executed
-    at each timestep, with the current step number as parameter, between the
-    calculation of colvars and the application of bias forces. This procedure
-    may use the scripting interface (see \ref{sec:scripting}) to access
-    the values of colvars and apply forces on them, effectively defining custom
-    collective variable biases.}}
     
 \end{itemize}
 
@@ -3497,17 +3481,43 @@ parameters from the colvars to define its grid.  The grid ranges from
 \texttt{lowerBoundary} to \texttt{upperBoundary}, and the bin width is
 set by the \texttt{width} parameter.
 
+
+\cvnamdonly{%
+\cvsubsec{Scripted biases}
+\label{sec:scripted_biases}
+
+Rather than using the biasing methods described above, it is possible to apply biases
+provided at run time as a Tcl script, in the spirit of \texttt{TclForces}.
+
+\begin{itemize}
+\item %
+  \keydef
+    {scriptedColvarForces}{%
+    global}{%
+    Enable custom, scripted forces on colvars }{%
+    boolean}{%
+    \texttt{off}}{%
+    If this flag is enabled, a Tcl procedure named \texttt{calc\_colvar\_forces}
+    accepting one parameter should be defined by the user. It is executed
+    at each timestep, with the current step number as parameter, between the
+    calculation of colvars and the application of bias forces. This procedure
+    may use the scripting interface (see \ref{sec:scripting}) to access
+    the values of colvars and apply forces on them, effectively defining custom
+    collective variable biases.}
+\end{itemize}
+}
+
 \cvscriptonly{\cvsec{Colvars scripting}
 \label{sec:scripting}
 
 Collective variables and biases can be added, queried and deleted through the scripting command
-\texttt{colvars}, with the following syntax: \cvnamdonly{\texttt{cv}}\cvvmdonly{\texttt{colvars}}\texttt{~$<$subcommand$>$ [args...]}
+\texttt{colvars}, with the following syntax: \texttt{colvars~$<$subcommand$>$ [args...]}
 for which the available subcommands are listed below.
 \cvnamdonly{This interface is particularly useful to implement custom biases as scripted colvar forces.
-See the \texttt{scriptedColvarForces} option in \ref{sec:colvars_config}.
+See the \texttt{scriptedColvarForces} option in \ref{sec:scripted_biases}.
 Note that scripting commands may not be used directly in the NAMD configuration file before the first 
 \texttt{run} or \texttt{minimize} statement. That is, they may be used within the callback procedures
-(e.g. \texttt{calc_colvar_forces}) or in the NAMD config file after a \texttt{run} or
+(e.g. \texttt{calc\_colvar\_forces}) or in the NAMD config file after a \texttt{run} or
 \texttt{minimize} statement.}
 
 \cvsubsec{Managing the colvars module}
