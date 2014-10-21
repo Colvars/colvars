@@ -9,11 +9,9 @@
 #include <list>
 #include <sstream>
 #include <iomanip>
-//#include <cmath>
 
 #include "colvarbias.h"
 #include "colvargrid.h"
-#include "DataExchanger.h"
 
 typedef cvm::real* gradient_t;
 
@@ -60,7 +58,7 @@ private:
   colvar_grid_gradient  *gradients;
   /// n-dim grid of number of samples
   colvar_grid_count     *samples;
-  
+
   // shared ABF
   bool     shared_on;
   size_t   shared_freq;
@@ -71,7 +69,7 @@ private:
   // Store the last set for shared ABF
   colvar_grid_gradient  *last_gradients;
   colvar_grid_count     *last_samples;
-  
+
   // For Tcl implementation of selection rules.
   /// Give the total number of bins for a given bias.
   virtual int bin_num();

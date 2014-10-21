@@ -29,6 +29,7 @@ colvars:     # refPositions =  [default]
 colvars:     # refPositionsFile = ../Common/da.pdb
 colvars:     # refPositionsCol = "" [default]
 colvars:     Enabling "centerReference" and "rotateReference", to minimize RMSD before calculating it as a variable: if this is not the desired behavior, disable them explicitly within the "atoms" block.
+colvars:     This is a standard minimum RMSD, derivatives of the optimal rotation will not be computed as they cancel out in the gradients.
 colvars:   All components initialized.
 colvars:   # width = 0.01
 colvars:   # lowerBoundary = 0

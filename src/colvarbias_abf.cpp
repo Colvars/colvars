@@ -47,7 +47,7 @@ colvarbias_abf::colvarbias_abf (std::string const &conf, char const *key)
   // shared ABF
   get_keyval (conf, "shared", shared_on, false);
   if (shared_on) {
-    if (!cvm::replica_enabled || cvm::replica_num() <= 1) 
+    if (!cvm::replica_enabled || cvm::replica_num() <= 1)
       cvm::error ("Error: shared ABF requires more than one replica.");
     else
       cvm::log ("shared ABF will be applied among "+ cvm::to_str(cvm::replica_num()) + " replicas.\n");
@@ -129,7 +129,7 @@ colvarbias_abf::colvarbias_abf (std::string const &conf, char const *key)
   last_gradients->samples = last_samples;
   last_samples->has_parent_data = true;
   shared_last_step = -1;
-  
+
   // If custom grids are provided, read them
   if ( input_prefix.size() > 0 ) {
     read_gradients_samples ();
@@ -277,12 +277,14 @@ cvm::real colvarbias_abf::update()
     last_samples->copy_grid(*samples);
     shared_last_step = cvm::step_absolute();
     cvm::log ("Prepared sample and gradient buffers at step "+cvm::to_str(cvm::step_absolute())+".");
-  } 
+  }
 
   return 0.0;
 }
 
 void colvarbias_abf::replica_share () {
+  int p;
+
   if( !cvm::replica_enabled() ) {
     cvm::error ("Error: shared ABF: No replicas.\n");
     return;
@@ -304,7 +306,7 @@ void colvarbias_abf::replica_share () {
 
   if (cvm::replica_index() == 0) {
     // Replica 0 collects the delta gradient and count from the others.
-    for (int p = 1; p < cvm::replica_num(); p++) {
+    for (p = 1; p < cvm::replica_num(); p++) {
       // Receive the deltas.
       cvm::replica_comm_recv(msg_data, p);
 
@@ -321,8 +323,9 @@ void colvarbias_abf::replica_share () {
     // Now we must send the combined gradient to the other replicas.
     gradients->raw_data_out((cvm::real*)(&msg_data[0]));
     samples->raw_data_out((size_t*)(&msg_data[samp_start]));
-    for (size_t p = 1; p < cvm::replica_num(); p++)
+    for (p = 1; p < cvm::replica_num(); p++) {
       cvm::replica_comm_send(msg_data, msg_total, p);
+    }
 
   } else {
     // All other replicas send their delta gradient and count.
@@ -340,7 +343,7 @@ void colvarbias_abf::replica_share () {
     // We sync to the combined gradient computed by Replica 0.
     gradients->raw_data_in((cvm::real*)(&msg_data[0]));
     samples->raw_data_in((size_t*)(&msg_data[samp_start]));
-  } 
+  }
 
   // Without a barrier it's possible that one replica starts
   // share 2 when other replicas haven't finished share 1.

@@ -66,6 +66,26 @@ public:
     return 1.0;
   }
 
+  // Replica communication functions.
+  bool replica_enabled() {
+    return false;
+  }
+  int replica_index() {
+    return COLVARS_NOT_IMPLEMENTED;
+  }
+  int replica_num() {
+    return COLVARS_NOT_IMPLEMENTED;
+  }
+  void replica_comm_barrier() {
+    return;
+  }
+  int replica_comm_recv(char* msg_data, int src_rep) {
+    return COLVARS_NOT_IMPLEMENTED;
+  }
+  int replica_comm_send(char* msg_data, int msg_len, int dest_rep) {
+    return COLVARS_NOT_IMPLEMENTED;
+  }
+
   inline cvm::real rand_gaussian()
   {
     return vmd_random_gaussian();

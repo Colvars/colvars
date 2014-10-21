@@ -29,7 +29,7 @@ colvar {
     }
 } 
 
-    harmonic {
+harmonic {
     colvars        rmsd
     centers        0.0
     targetCenters  0.2
