@@ -69,13 +69,26 @@ public:
 
 
 /// \brief Replica exchange commands
-  virtual bool replica_enabled() = 0;
-  virtual int replica_index() = 0;
-  virtual int replica_num() = 0;
-  virtual void replica_comm_barrier() = 0;
-  virtual int replica_comm_recv(char* msg_data, int src_rep) = 0;
-  virtual int replica_comm_send(char* msg_data, int msg_len, int dest_rep) = 0;
 
+  // Replica communication functions.
+  virtual bool replica_enabled() {
+    return false;
+  }
+  virtual int replica_index() {
+    return COLVARS_NOT_IMPLEMENTED;
+  }
+  virtual int replica_num() {
+    return COLVARS_NOT_IMPLEMENTED;
+  }
+  virtual void replica_comm_barrier() {
+    return;
+  }
+  virtual int replica_comm_recv(char* msg_data, int src_rep) {
+    return COLVARS_NOT_IMPLEMENTED;
+  }
+  virtual int replica_comm_send(char* msg_data, int msg_len, int dest_rep) {
+    return COLVARS_NOT_IMPLEMENTED;
+  }
 
   // **************** SIMULATION PARAMETERS ****************
 
