@@ -3501,10 +3501,14 @@ set by the \texttt{width} parameter.
 \label{sec:scripting}
 
 Collective variables and biases can be added, queried and deleted through the scripting command
-\cvnamdonly{\texttt{cv}}\cvvmdonly{\texttt{colvars}}, with the following syntax: \cvnamdonly{\texttt{cv}}\cvvmdonly{\texttt{colvars}}\texttt{~$<$subcommand$>$ [args...]}
+\texttt{colvars}, with the following syntax: \cvnamdonly{\texttt{cv}}\cvvmdonly{\texttt{colvars}}\texttt{~$<$subcommand$>$ [args...]}
 for which the available subcommands are listed below.
 \cvnamdonly{This interface is particularly useful to implement custom biases as scripted colvar forces.
-See the \texttt{scriptedColvarForces} option in \ref{sec:colvars_config}.}
+See the \texttt{scriptedColvarForces} option in \ref{sec:colvars_config}.
+Note that scripting commands may not be used directly in the NAMD configuration file before the first 
+\texttt{run} or \texttt{minimize} statement. That is, they may be used within the callback procedures
+(e.g. \texttt{calc_colvar_forces}) or in the NAMD config file after a \texttt{run} or
+\texttt{minimize} statement.}
 
 \cvsubsec{Managing the colvars module}
 \begin{itemize}

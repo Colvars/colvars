@@ -5,11 +5,11 @@ proc calc_Id { x } {
 proc calc_Id_gradient { x } {
   return 1.
 }
-proc calc_Id_pair { x1 x2 } {
-  return $x2
+proc calc_Id_quaternion { x } {
+  return $x
 }
-proc calc_Id_pair_gradient { x1 x2 } {
-  return [list "(0., 0., 0., 0.) 1."]
+proc calc_Id_quaternion_gradient { x } {
+  return [list "(1., 1., 1., 1.)"]
 }
 
 proc calc_colvar_forces { ts } {

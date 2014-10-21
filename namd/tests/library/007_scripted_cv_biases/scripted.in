@@ -39,12 +39,11 @@ colvar {
   }
 }
 
-# same as o, with scripted function (identity)
+# same as d, with scripted function (identity)
 colvar {
   name os
 
   scriptedFunction Id_pair
-  scriptedFunctionType unit_quaternion
 
   distance {
     componentExp 2

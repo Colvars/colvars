@@ -188,8 +188,6 @@ colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "group2" defined, 1 atoms initialized: total mass = 12.011.
 colvars:   All components initialized.
 colvars:   This colvar uses scripted function "Id".
-colvars:   # scriptedFunctionType = "scalar" [default]
-colvars:   Expecting colvar value of type scalar number
 colvars:   # width = 1 [default]
 colvars:   # lowerBoundary = 0 [default]
 colvars:   # lowerWallConstant = 0 [default]
@@ -288,9 +286,11 @@ colvars:     Centering the reference coordinates: it is assumed that each atom i
 colvars:     # closestToQuaternion = ( 1 , 0 , 0 , 0 ) [default]
 colvars:   All components initialized.
 colvars:   This colvar uses scripted function "Id_pair".
-colvars:   # scriptedFunctionType = unit_quaternion
-colvars:   Expecting colvar value of type 4-dimensional unit quaternion
 colvars:   # width = 1 [default]
+colvars:   # lowerBoundary = 0 [default]
+colvars:   # lowerWallConstant = 0 [default]
+colvars:   # upperBoundary = 0 [default]
+colvars:   # upperWallConstant = 0 [default]
 colvars:   # expandBoundaries = off [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]

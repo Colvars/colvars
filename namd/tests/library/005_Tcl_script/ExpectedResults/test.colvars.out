@@ -67,6 +67,7 @@ colvars:   # fullSamples = 100
 colvars:   # inputPrefix =  [default]
 colvars:   # outputFreq = 20000 [default]
 colvars:   # historyFreq = 0 [default]
+colvars:   # shared = off [default]
 colvars:   # maxForce =  [default]
 colvars:   Finished ABF setup.
 colvars: ----------------------------------------------------------------------
@@ -87,6 +88,8 @@ colvars: Collective variables module (re)initialized.
 colvars: ----------------------------------------------------------------------
 colvars: The final output state file will be "test.colvars.state".
 colvars: Writing to colvar trajectory file "test.colvars.traj".
+colvars:   Prepared sample and gradient buffers at step 0.
+colvars: Saving collective variables state to "test.colvars.state".
 colvars: Saving collective variables state to "test.colvars.state".
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration:
@@ -184,6 +187,7 @@ colvars:   # fullSamples = 100
 colvars:   # inputPrefix =  [default]
 colvars:   # outputFreq = 20000 [default]
 colvars:   # historyFreq = 0 [default]
+colvars:   # shared = off [default]
 colvars:   # maxForce =  [default]
 colvars:   Finished ABF setup.
 colvars: ----------------------------------------------------------------------

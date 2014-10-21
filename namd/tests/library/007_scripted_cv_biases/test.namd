@@ -44,7 +44,7 @@ DCDfreq                 2000
 seed		87654321
 
 # CONSTANT-T
-langevin                on
+langevin                off
 langevinTemp		    300.0
 langevinDamping         10.0
 langevinHydrogen	    on
@@ -81,10 +81,10 @@ print "First, running unscripted config"
 run 20
 
 print "Resetting colvars with scripted config"
-cv reset
+colvars reset
 reinitatoms
 
-cv configfile scripted.in
+colvars configfile scripted.in
 # with scripted run
 run 20
 

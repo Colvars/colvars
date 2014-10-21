@@ -87,6 +87,8 @@ void ScriptTcl::initcheck() {
       (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
     Tcl_CreateCommand(interp, "istrue", Tcl_istrue_param,
       (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
+    Tcl_CreateCommand(interp, "colvars", Tcl_colvars,
+      (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
 #endif
     initWasCalled = 1;
 
@@ -1429,7 +1431,7 @@ int ScriptTcl::Tcl_consForceConfig(ClientData clientData,
     int nelem;
     Tcl_Obj **elemlist;
     Vector force;
-    if (Tcl_GetIntFromObj(interp, atomobjlist[i], &atomid) != TCL_OK) 
+    if (Tcl_GetIntFromObj(interp, atomobjlist[i], &atomid) != TCL_OK)
       return TCL_ERROR;
     if (Tcl_ListObjGetElements(interp, forceobjlist[i], &nelem, &elemlist) != TCL_OK)
       return TCL_ERROR;
@@ -1570,8 +1572,6 @@ ScriptTcl::ScriptTcl() : scriptBarrier(scriptBarrierTag) {
   Tcl_CreateCommand(interp, "colvarbias", Tcl_colvarbias,
     (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
   Tcl_CreateCommand(interp, "colvarvalue", Tcl_colvarvalue,
-    (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
-  Tcl_CreateCommand(interp, "cv", Tcl_colvars,
     (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
   Tcl_CreateCommand(interp, "colvarfreq", Tcl_colvarfreq,
     (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
