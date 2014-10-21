@@ -4,7 +4,7 @@
 #define COLVARMODULE_H
 
 #ifndef COLVARS_VERSION
-#define COLVARS_VERSION "2014-10-20"
+#define COLVARS_VERSION "2014-10-21"
 #endif
 
 #ifndef COLVARS_DEBUG
@@ -367,7 +367,7 @@ public:
   static void replica_comm_barrier();
   static int replica_comm_recv(char* msg_data, int src_rep);
   static int replica_comm_send(char* msg_data, int msg_len, int dest_rep);
-  
+
   /// \brief Get the distance between two atomic positions with pbcs handled
   /// correctly
   static rvector position_distance (atom_pos const &pos1,
