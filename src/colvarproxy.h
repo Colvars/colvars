@@ -101,7 +101,7 @@ public:
     return output_prefix_str;
   }
 
-  /// \brief Restarts will be fritten each time this number of steps has passed
+  /// \brief Restarts will be written each time this number of steps has passed
   virtual size_t restart_frequency() = 0;
 
 
