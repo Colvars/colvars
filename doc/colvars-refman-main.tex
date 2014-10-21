@@ -2626,6 +2626,36 @@ The following parameters can be set in the ABF configuration block
     of the bias force), and a count file containing only values greater than
     \texttt{fullSamples}. These files must match the grid parameters of the colvars.
   }
+
+\cvnamdonly{
+\item \keydef{shared}{\texttt{abf}}{%
+    Apply multiple-replica ABF, sharing force samples among the replicas?}
+  {boolean}
+  {\texttt{no}}
+  { This is command requires that NAMD be compiled and executed with multiple-replica
+    support.
+    If \texttt{shared} is set to yes, the system force samples will be synchronized among all replicas
+    at intervals defined by \texttt{sharedFreq}.
+    Thus, it is as if system force samples among all replicas are
+    gathered in a single shared buffer, which why the algorithm is referred to as shared ABF.
+    Shared ABF allows all replicas to benefit from the sampling done by other replicas and can lead to faster convergence of the biasing force.
+  }
+
+\item \keydef{sharedFreq}{\texttt{abf}}{%
+    Frequency (in timesteps) at which force samples are synchronized among the replicas}
+  {positive integer}
+  {\texttt{outputFreq}}
+  {
+  In the current implementation of shared ABF, each replica maintains a separate
+  buffer of system force samples that determine the biasing force.
+  Every \texttt{sharedFreq} steps, the replicas communicate the samples that
+  have been gathered since the last synchronization time, ensuring all replicas
+  apply a similar biasing force.
+  }
+}
+
+
+
 \end{itemize}
 
 ABF also depends on parameters from collective variables to define the grid on which free
