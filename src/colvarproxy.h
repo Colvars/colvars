@@ -68,8 +68,16 @@ public:
   virtual int frame (int) { return COLVARS_NOT_IMPLEMENTED; }
 
 
-  // **************** SIMULATION PARAMETERS ****************
+/// \brief Replica exchange commands
+  virtual bool replica_enabled() = 0;
+  virtual int replica_index() = 0;
+  virtual int replica_num() = 0;
+  virtual void replica_comm_barrier() = 0;
+  virtual int replica_comm_recv(char* msg_data, int src_rep) = 0;
+  virtual int replica_comm_send(char* msg_data, int msg_len, int dest_rep) = 0;
 
+
+  // **************** SIMULATION PARAMETERS ****************
 
   /// \brief Prefix to be used for input files (restarts, not
   /// configuration)
@@ -212,4 +220,3 @@ inline cvm::real colvarproxy::position_dist2 (cvm::atom_pos const &pos1,
 }
 
 #endif
-
