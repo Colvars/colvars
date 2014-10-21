@@ -165,20 +165,27 @@ colvar::colvar (std::string const &conf)
     x.type(colvarvalue::type_scalar);
     x_reported.type(x.type());
 
-    // Build ordered list of component values that will be
-    // passed to the script, based on values of componentExp
+    // Sort array of cvcs based on values of componentExp
+    std::vector<cvc *> temp_vec;
     for (i = 1; i <= cvcs.size(); i++) {
       for (j = 0; j < cvcs.size(); j++) {
         if (cvcs[j]->sup_np == int(i)) {
-          sorted_cvc_values.push_back(cvcs[j]->p_value());
+          temp_vec.push_back(cvcs[j]);
           break;
         }
       }
     }
-    if (sorted_cvc_values.size() != cvcs.size()) {
+    if (temp_vec.size() != cvcs.size()) {
       cvm::error("Could not find order numbers for all components "
                   "in componentExp values.");
       return;
+    }
+    cvcs = temp_vec;
+
+    // Build ordered list of component values that will be
+    // passed to the script
+    for (j = 0; j < cvcs.size(); j++) {
+      sorted_cvc_values.push_back(cvcs[j]->p_value());
     }
   }
 
