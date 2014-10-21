@@ -1,0 +1,194 @@
+# set: thisName lastName run temp reinitTemp
+outputName 			out_mw_selection.[myReplica]
+print "REPLICA [myReplica]"
+seed [expr {[myReplica]*[myReplica]*[myReplica]*20233 + 20219}]
+
+set temp 300
+structure			../Common/da.psf 
+coordinates			../Common/da.min.pdb
+temperature                     $temp
+cellBasisVector1 200 0 0
+cellBasisVector2 0 200 0
+cellBasisVector3 0 0 200
+
+# temperature control
+langevin                        on
+langevinTemp                    $temp
+langevinHydrogen                off
+langevinDamping			1
+
+# parameters
+parameters                      ../Common/par_all22_prot.inp
+paraTypeCharmm                  on
+exclude                         scaled1-4
+1-4scaling                      1
+
+switching                       on
+switchDist                      10
+cutoff                          12
+pairListDist                    14
+
+# integration
+rigidBonds                      all
+timestep                        2
+nonBondedFreq                   1
+fullElectFrequency              2
+stepsPerCycle                   10
+
+# output
+binaryOutput                    yes
+binaryRestart                   yes
+wrapAll				yes
+wrapNearest			yes
+comMotion                       yes
+
+outputEnergies                   1000
+#outputPressure			1000
+outputTiming                    1000
+#xstFreq                         1000
+dcdFreq                         5000
+restartFreq                     5000
+
+# A cutoff in vacuum!
+## electrostatics
+##pme                             on
+##pmeGridSpacing                  1.2
+
+print "DONE [myReplica]"
+
+colvars                         on
+colvarsConfig                   abf_12-15_less.colvars
+
+# Selection rules.
+replicaUniformPatchGrids        on
+
+source selectionRules.tcl
+## Selection rule parameters
+set cycleNum 20
+set shareFreq 2000
+set selectCycle 5
+set repNum [numReplicas]
+set rep [myReplica]
+set sampleRad 0
+set binNum [colvarbias binnum abf]
+set percentStop 40
+
+set s "REPLICA_SETUP"
+foreach var {cycleNum shareFreq selectCycle repNum rep sampleRad binNum percentStop} {
+    set s "$s $var [set $var]"
+}
+print "$s"
+
+for {set b 0} {$b < $binNum} {incr b} {
+    set binLastCount($b) [colvarbias count abf $b]
+}
+
+for {set i 0} {$i < $cycleNum} {incr i} {
+    print "CYCLE $i"
+    # Run the steps.
+    run $shareFreq
+    # Share the biases.
+    colvarbias share abf
+    print "REPLICA_SHARED_ABF"
+
+    if {$i % $selectCycle == 0} {
+	## Get the bin.
+	set bin [colvarbias bin abf]
+	# Keep within the domain.	    
+	if {$bin < 0} {set bin 0}
+	if {$bin >= $binNum} {set bin [expr {$binNum-1}]}
+
+	## Get the count in the vicinity of the bin.
+	set count0 [localCount $bin $binNum $sampleRad abf]
+	#set count [expr {$count0 - $binLastCount($bin)}]
+	set count $count0
+	print "REP_BIN REP $rep BIN $bin LASTCOUNT $binLastCount($bin) COUNT0 $count COUNT $count"
+
+	replicaBarrier
+	if {$rep > 0} {
+	    ## Send the count to Replica 0.
+	    replicaSend $count 0
+	    ## Receive the source and destination replicas.
+	    set srcDestList [replicaRecv 0]
+	} else {
+	    ## Build the weight list.
+	    # The weight is the inverse count.
+	    set weightList [list [expr {1.0/($count+1)}]]
+	    print "REPLICA_COUNT $rep $count"
+	    set countMin $count
+	    set countMax $count
+	    for {set r 1} {$r < $repNum} {incr r} {
+		set repCount [replicaRecv $r]
+		print "REPLICA_COUNT $r $repCount"
+		if {$repCount < $countMin} {
+		    set countMin $repCount
+		}
+		if {$repCount > $countMax} {
+		    set countMax $repCount
+		}
+		lappend weightList [expr {1.0/$repCount}]
+	    }
+
+	    ## Normalize the weight list.
+	    set weightList [normalizeWeights $weightList]
+	    set s "REPLICA_WEIGHT_LIST"
+	    foreach w $weightList {
+		set s "$s [format " %.3g" $w]"
+	    }
+	    print $s
+
+	    print "REPLICA_MINMAX $countMin $countMax"
+	    if {$countMin < 1} {set countMin 1}
+	    set percentDif [expr {(100*($countMax - $countMin))/$countMax}]
+
+	    ## Generate the list of exchanges "srcDestList"
+	    if {$percentDif < $percentStop} {
+		print "REPLICA_SELECTION_DISABLED $percentDif"
+		## If the relative difference between the min and max counts
+		##is less than the threshold, we don't do exchanges.
+		set srcDestList {}
+	    } else {
+		print "REPLICA_SELECTION_ENABLED $percentDif"
+		set cloneList [resampleWalkers $weightList]
+		print "REPLICA_CLONE_LIST $cloneList"
+
+		set srcDestList [resampleExchanges $cloneList]
+	    }
+	    
+	    ## Replica 0 sends the srcDestList to all other replicas,
+	    ## so they know who to receive from and who to send to.
+	    for {set r 1} {$r < $repNum} {incr r} {
+		replicaSend $srcDestList $r
+	    }
+	};  # End Replica 0 work
+
+	## Everyone should have an identical copy of the srcDestList.
+	if {[llength $srcDestList] > 0} {
+	    print "REPLICA_SRC_DEST_LIST $srcDestList"
+	    print "REPLICA_BARRIER"
+	    replicaBarrier
+
+	    # Do the coordinate exchanges if this replica is the source or destination.
+	    foreach srcDest $srcDestList {
+		set src [lindex $srcDest 0]
+		set dest [lindex $srcDest 1]
+
+		if {$src == $rep} {
+		    print "REPLICA_ATOM_SEND $dest"
+		    replicaAtomSend $dest
+		} elseif {$dest == $rep} {
+		    print "REPLICA_ATOM_RECV $src"
+		    replicaAtomRecv $src
+		}
+	    }
+	    
+	    # Since the resampling was successful, we set binLastCount to the current values.
+	    for {set b 0} {$b < $binNum} {incr b} {
+		set binLastCount($b) [colvarbias count abf $b]
+	    }
+	} else {
+	    print "REPLICA_SRC_DEST_EMPTY"
+	    # The resampling did not happen. binLastCount is not updated.
+	}
+    }
+}
