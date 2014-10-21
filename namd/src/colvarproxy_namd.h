@@ -15,6 +15,10 @@
 #include "colvarproxy.h"
 #include "colvarvalue.h"
 
+// For replica exchange
+#include "converse.h"
+#include "DataExchanger.h"
+
 /// \brief Communication between colvars and NAMD (implementation of
 /// \link colvarproxy \endlink)
 class colvarproxy_namd : public colvarproxy, public GlobalMaster {
@@ -31,6 +35,7 @@ protected:
   /// NAMD-style PRNG object
   Random random;
 
+  
   size_t      restart_frequency_s;
   size_t      previous_NAMD_step;
   bool        first_timestep;
@@ -93,6 +98,37 @@ public:
   cvm::real dt()
   {
     return simparams->dt;
+  }
+
+  // Replica communication functions.
+  bool replica_enabled() {
+#if CMK_HAS_PARTITION
+    return true;
+#else
+    return false;
+#endif
+  }
+  int replica_index() {
+    return CmiMyPartition();
+  }
+  int replica_num() {
+    return CmiNumPartitions();
+  }
+  void replica_comm_barrier() {
+    replica_barrier();
+  }
+  int replica_comm_recv(char* msg_data, int src_rep) {
+    DataMessage *recvMsg = NULL;
+    replica_recv(&recvMsg, src_rep, CkMyPe());
+    CmiAssert(recvMsg != NULL);
+    memcpy(msg_data,recvMsg->data,recvMsg->size);
+    int n = recvMsg->size; 
+    CmiFree(recvMsg);
+    return n;
+  }
+  int replica_comm_send(char* msg_data, int msg_len, int dest_rep) {
+    replica_send(msg_data, msg_len, dest_rep, CkMyPe());
+    return msg_len;
   }
 
   inline size_t restart_frequency()

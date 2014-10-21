@@ -957,7 +957,8 @@ int ScriptTcl::Tcl_colvarbias(ClientData clientData,
         Tcl_Interp *interp, int argc, char *argv[]) {
   ScriptTcl *script = (ScriptTcl *)clientData;
   script->initcheck();
-  if (argc < 4 || argc % 2) {
+  //if (argc < 4 || argc % 2) {
+  if (argc < 2) {
     Tcl_SetResult(interp,"wrong # args",TCL_VOLATILE);
     return TCL_ERROR;
   }
@@ -986,7 +987,32 @@ int ScriptTcl::Tcl_colvarbias(ClientData clientData,
     }
     Tcl_SetObjResult(interp, Tcl_NewDoubleObj(ediff));
     return TCL_OK;
-  } else {
+  } else if ( ! strcmp(argv[1],"bin") ) {
+      std::string name(argv[2]);
+      int ind = colvars->bias_current_bin(name);
+      Tcl_SetObjResult(interp, Tcl_NewIntObj(ind));
+      return TCL_OK;
+  } else if ( ! strcmp(argv[1],"binnum") ) {
+      std::string name(argv[2]);
+      int ind = colvars->bias_bin_num(name);
+      Tcl_SetObjResult(interp, Tcl_NewIntObj(ind));
+      return TCL_OK;
+  } else if ( ! strcmp(argv[1],"count") ) {
+      std::string name(argv[2]);
+      int ind = atoi(argv[3]);
+      int count = colvars->bias_bin_count(name, ind);
+      Tcl_SetObjResult(interp, Tcl_NewIntObj(count));
+      return TCL_OK;
+  } else if ( ! strcmp(argv[1],"binwidth") ) {
+      std::string name(argv[2]);
+      double width = colvars->read_width(name);
+      Tcl_SetObjResult(interp, Tcl_NewDoubleObj(width));
+      return TCL_OK;
+  } else if ( ! strcmp(argv[1],"share") ) {
+      std::string name(argv[2]);
+      colvars->bias_share(name);
+      return TCL_OK;
+  }  else {
     Tcl_SetResult(interp,"unknown colvarbias operation",TCL_VOLATILE);
     return TCL_ERROR;
   }
@@ -1403,7 +1429,7 @@ int ScriptTcl::Tcl_consForceConfig(ClientData clientData,
     int nelem;
     Tcl_Obj **elemlist;
     Vector force;
-    if (Tcl_GetIntFromObj(interp, atomobjlist[i], &atomid) != TCL_OK)
+    if (Tcl_GetIntFromObj(interp, atomobjlist[i], &atomid) != TCL_OK) 
       return TCL_ERROR;
     if (Tcl_ListObjGetElements(interp, forceobjlist[i], &nelem, &elemlist) != TCL_OK)
       return TCL_ERROR;
