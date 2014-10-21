@@ -1,0 +1,61 @@
+# set: thisName lastName run temp reinitTemp
+outputName 			out_mw_independent.[myReplica]
+print "REPLICA [myReplica]"
+seed [expr {[myReplica]*[myReplica]*[myReplica]*2803 + 99377}]
+
+set temp 300
+numSteps                        40000
+structure			../Common/da.psf 
+coordinates			../Common/da.pdb
+temperature                     $temp
+cellBasisVector1 200 0 0
+cellBasisVector2 0 200 0
+cellBasisVector3 0 0 200
+
+# temperature control
+langevin                        on
+langevinTemp                    $temp
+langevinHydrogen                off
+langevinDamping			1
+
+# parameters
+parameters                      ../Common/par_all22_prot.inp
+paraTypeCharmm                  on
+exclude                         scaled1-4
+1-4scaling                      1
+
+switching                       on
+switchDist                      10
+cutoff                          12
+pairListDist                    14
+
+# integration
+rigidBonds                      all
+timestep                        2
+nonBondedFreq                   1
+fullElectFrequency              2
+stepsPerCycle                   10
+
+# output
+binaryOutput                    yes
+binaryRestart                   yes
+wrapAll				yes
+wrapNearest			yes
+comMotion                       yes
+
+outputEnergies                  1000
+outputPressure			1000
+outputTiming                    1000
+#xstFreq                         1000
+dcdFreq                         5000
+restartFreq                     5000
+
+# A cutoff in vacuum!
+## electrostatics
+##pme                             on
+##pmeGridSpacing                  1.2
+
+print "DONE [myReplica]"
+
+colvars                         on
+colvarsConfig                   abf_12-15_less.colvars
