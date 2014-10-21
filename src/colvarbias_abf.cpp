@@ -308,7 +308,7 @@ void colvarbias_abf::replica_share () {
     // Replica 0 collects the delta gradient and count from the others.
     for (p = 1; p < cvm::replica_num(); p++) {
       // Receive the deltas.
-      cvm::replica_comm_recv(msg_data, p);
+      cvm::replica_comm_recv(msg_data, msg_total, p);
 
       // Map the deltas from the others into the grids.
       last_gradients->raw_data_in((cvm::real*)(&msg_data[0]));
@@ -339,7 +339,7 @@ void colvarbias_abf::replica_share () {
     cvm::replica_comm_send(msg_data, msg_total, 0);
 
     // We now receive the combined gradient from Replica 0.
-    cvm::replica_comm_recv(msg_data, 0);
+    cvm::replica_comm_recv(msg_data, msg_total, 0);
     // We sync to the combined gradient computed by Replica 0.
     gradients->raw_data_in((cvm::real*)(&msg_data[0]));
     samples->raw_data_in((size_t*)(&msg_data[samp_start]));

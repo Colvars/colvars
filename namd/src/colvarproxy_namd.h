@@ -35,7 +35,7 @@ protected:
   /// NAMD-style PRNG object
   Random random;
 
-  
+
   size_t      restart_frequency_s;
   size_t      previous_NAMD_step;
   bool        first_timestep;
@@ -108,24 +108,33 @@ public:
     return false;
 #endif
   }
+
   int replica_index() {
     return CmiMyPartition();
   }
+
   int replica_num() {
     return CmiNumPartitions();
   }
+
   void replica_comm_barrier() {
     replica_barrier();
   }
-  int replica_comm_recv(char* msg_data, int src_rep) {
+
+  int replica_comm_recv(char* msg_data, int buf_len, int src_rep) {
     DataMessage *recvMsg = NULL;
     replica_recv(&recvMsg, src_rep, CkMyPe());
     CmiAssert(recvMsg != NULL);
-    memcpy(msg_data,recvMsg->data,recvMsg->size);
-    int n = recvMsg->size; 
+    int retval = recvMsg->size;
+    if (buf_len >= retval) {
+      memcpy(msg_data,recvMsg->data,retval);
+    } else {
+      retval = 0;
+    }
     CmiFree(recvMsg);
-    return n;
+    return retval;
   }
+
   int replica_comm_send(char* msg_data, int msg_len, int dest_rep) {
     replica_send(msg_data, msg_len, dest_rep, CkMyPe());
     return msg_len;

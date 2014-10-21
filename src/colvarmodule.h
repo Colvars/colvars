@@ -360,12 +360,12 @@ public:
   /// Print a message to the main log and exit normally
   static void exit (std::string const &message);
 
-  /// Replica exchange commands.
+  // Replica exchange commands.
   static bool replica_enabled();
   static int replica_index();
   static int replica_num();
   static void replica_comm_barrier();
-  static int replica_comm_recv(char* msg_data, int src_rep);
+  static int replica_comm_recv(char* msg_data, int buf_len, int src_rep);
   static int replica_comm_send(char* msg_data, int msg_len, int dest_rep);
 
   /// \brief Get the distance between two atomic positions with pbcs handled
@@ -567,8 +567,8 @@ inline int cvm::replica_num() {
 inline void cvm::replica_comm_barrier() {
   return proxy->replica_comm_barrier();
 }
-inline int cvm::replica_comm_recv(char* msg_data, int src_rep) {
-  return proxy->replica_comm_recv(msg_data,src_rep);
+inline int cvm::replica_comm_recv(char* msg_data, int buf_len, int src_rep) {
+  return proxy->replica_comm_recv(msg_data,buf_len,src_rep);
 }
 inline int cvm::replica_comm_send(char* msg_data, int msg_len, int dest_rep) {
   return proxy->replica_comm_send(msg_data,msg_len,dest_rep);

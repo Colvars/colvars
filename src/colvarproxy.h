@@ -5,7 +5,7 @@
 
 
 #ifndef COLVARPROXY_VERSION
-#define COLVARPROXY_VERSION "2014-09-19"
+#define COLVARPROXY_VERSION "2014-10-21"
 #endif
 
 
@@ -68,24 +68,26 @@ public:
   virtual int frame (int) { return COLVARS_NOT_IMPLEMENTED; }
 
 
-/// \brief Replica exchange commands
+  // Replica exchange commands:
 
-  // Replica communication functions.
-  virtual bool replica_enabled() {
-    return false;
-  }
-  virtual int replica_index() {
+  /// \brief Indicate if multi-replica support is available and active
+  virtual bool replica_enabled() { return false; }
+
+  /// \brief Index of this replica
+  virtual int replica_index() { return 0; }
+
+  /// \brief Total number of replica
+  virtual int replica_num() { return 1; }
+
+  /// \brief Synchronize replica
+  virtual void replica_comm_barrier() {}
+
+  /// \brief Receive data from other replica
+  virtual int replica_comm_recv(char* msg_data, int buf_len, int src_rep) {
     return COLVARS_NOT_IMPLEMENTED;
   }
-  virtual int replica_num() {
-    return COLVARS_NOT_IMPLEMENTED;
-  }
-  virtual void replica_comm_barrier() {
-    return;
-  }
-  virtual int replica_comm_recv(char* msg_data, int src_rep) {
-    return COLVARS_NOT_IMPLEMENTED;
-  }
+
+  /// \brief Send data to other replica
   virtual int replica_comm_send(char* msg_data, int msg_len, int dest_rep) {
     return COLVARS_NOT_IMPLEMENTED;
   }
