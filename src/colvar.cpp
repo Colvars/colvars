@@ -198,19 +198,23 @@ colvar::colvar (std::string const &conf)
     b_Jacobian_force    = true;
   }
 
+  // Test whether this is a single-component variable
   // Decide whether the colvar is periodic
   // Used to wrap extended DOF if extendedLagrangian is on
-  if (cvcs.size() == 1 && (cvcs[0])->b_periodic && (cvcs[0])->sup_np == 1
-                                                && (cvcs[0])->sup_coeff == 1.0
+  if (cvcs.size() == 1  && (cvcs[0])->sup_np == 1
+                        && (cvcs[0])->sup_coeff == 1.0
                         && !tasks[task_scripted]) {
-    this->b_periodic = true;
-    this->period = (cvcs[0])->period;
+
+    b_single_cvc = true;
+    b_periodic = (cvcs[0])->b_periodic;
+    period = (cvcs[0])->period;
     // TODO write explicit wrap() function for colvars to allow for
     // sup_coeff different from 1
     // this->period = (cvcs[0])->period * (cvcs[0])->sup_coeff;
   } else {
-    this->b_periodic = false;
-    this->period = 0.0;
+    b_single_cvc = false;
+    b_periodic = false;
+    period = 0.0;
   }
 
   // check the available features of each cvc
@@ -1231,30 +1235,38 @@ bool colvar::periodic_boundaries() const
 cvm::real colvar::dist2 (colvarvalue const &x1,
                          colvarvalue const &x2) const
 {
-  return (cvcs[0])->dist2 (x1, x2);
+  if (b_single_cvc) {
+    return (cvcs[0])->dist2(x1, x2);
+  } else {
+    return x1.dist2(x2);
+  }
 }
 
 colvarvalue colvar::dist2_lgrad (colvarvalue const &x1,
                                  colvarvalue const &x2) const
 {
-  return (cvcs[0])->dist2_lgrad (x1, x2);
+  if (b_single_cvc) {
+    return (cvcs[0])->dist2_lgrad (x1, x2);
+  } else {
+    return x1.dist2_grad(x2);
+  }
 }
 
 colvarvalue colvar::dist2_rgrad (colvarvalue const &x1,
                                  colvarvalue const &x2) const
 {
-  return (cvcs[0])->dist2_rgrad (x1, x2);
-}
-
-cvm::real colvar::compare (colvarvalue const &x1,
-                           colvarvalue const &x2) const
-{
-  return (cvcs[0])->compare (x1, x2);
+  if (b_single_cvc) {
+    return (cvcs[0])->dist2_rgrad (x1, x2);
+  } else {
+    return x2.dist2_grad(x1);
+  }
 }
 
 void colvar::wrap (colvarvalue &x) const
 {
-  (cvcs[0])->wrap (x);
+  if (b_single_cvc) {
+    (cvcs[0])->wrap (x);
+  }
   return;
 }
 
