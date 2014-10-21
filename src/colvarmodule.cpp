@@ -453,7 +453,7 @@ cvm::real colvarmodule::read_width(std::string const &name)
 {
   cvm::increase_depth();
   int found = 0;
-  real width;
+  real width = -1.0;
   for (std::vector<colvar *>::iterator cvi = colvars.begin();
        cvi != colvars.end();
        cvi++) {
@@ -464,13 +464,11 @@ cvm::real colvarmodule::read_width(std::string const &name)
   }
   if (found < 1) {
     cvm::error ("Error: bias not found.\n");
-    return -1.0;
-  }
-  if (found > 1) {
+  } else if (found > 1) {
     cvm::error ("Error: duplicate bias name.\n");
-    return -1.0;
+  } else {
+    cvm::decrease_depth();
   }
-  cvm::decrease_depth();
   return width;
 }
 
@@ -478,7 +476,7 @@ size_t colvarmodule::bias_current_bin (std::string const &bias_name)
 {
   cvm::increase_depth();
   int found = 0;
-  size_t ret;
+  size_t ret = 0; // N.B.: size_t is unsigned, so returning -1 would be a problem.
 
   for (std::vector<colvarbias *>::iterator bi = biases.begin();
        bi != biases.end();
@@ -490,13 +488,11 @@ size_t colvarmodule::bias_current_bin (std::string const &bias_name)
   }
   if (found < 1) {
     cvm::error ("Error: bias not found.\n");
-    return -1;
-  }
-  if (found > 1) {
+  } else if (found > 1) {
     cvm::error ("Error: duplicate bias name.\n");
-    return -1;
+  } else {
+    cvm::decrease_depth();
   }
-  cvm::decrease_depth();
   return ret;
 }
 
@@ -504,7 +500,7 @@ size_t colvarmodule::bias_bin_num (std::string const &bias_name)
 {
   cvm::increase_depth();
   int found = 0;
-  size_t ret;  
+  size_t ret = 0; // N.B.: size_t is unsigned, so returning -1 would be a problem.
 
   for (std::vector<colvarbias *>::iterator bi = biases.begin();
        bi != biases.end();
@@ -516,13 +512,11 @@ size_t colvarmodule::bias_bin_num (std::string const &bias_name)
   }
   if (found < 1) {
     cvm::error ("Error: bias not found.\n");
-    return -1;
-  }
-  if (found > 1) {
+  } else if (found > 1) {
     cvm::error ("Error: duplicate bias name.\n");
-    return -1;
+  } else {
+    cvm::decrease_depth();
   }
-  cvm::decrease_depth();
   return ret;
 }
 
@@ -530,7 +524,7 @@ size_t colvarmodule::bias_bin_count (std::string const &bias_name, size_t bin_in
 {
   cvm::increase_depth();
   int found = 0;
-  size_t ret;
+  size_t ret = 0; // N.B.: size_t is unsigned, so returning -1 would be a problem.
 
   for (std::vector<colvarbias *>::iterator bi = biases.begin();
        bi != biases.end();
@@ -542,13 +536,11 @@ size_t colvarmodule::bias_bin_count (std::string const &bias_name, size_t bin_in
   }
   if (found < 1) {
     cvm::error ("Error: bias not found.\n");
-    return -1;
-  }
-  if (found > 1) {
+  } else if (found > 1) {
     cvm::error ("Error: duplicate bias name.\n");
-    return -1;
+  } else {
+    cvm::decrease_depth();
   }
-  cvm::decrease_depth();
   return ret;
 }
 
