@@ -2527,8 +2527,13 @@ group used in a \texttt{distance} component.
 
 \cvsubsubsec{Parameters for ABF}
 
-The following parameters can be set in the ABF configuration block
-(in addition to generic bias parameters such as \texttt{colvars}):
+ABF depends on parameters from collective variables to define the grid on which free
+energy gradients are computed. In the direction of each colvar, the grid ranges from
+\texttt{lowerBoundary} to \texttt{upperBoundary}, and the bin width (grid spacing)
+is set by the \texttt{width} parameter (see~\ref{sec:colvar_general}).
+The following specific parameters can be set in the ABF configuration block
+(in addition to generic bias parameters such as \texttt{colvars}
+-- section~\ref{sec:colvarbias}):
 
 \begin{itemize}
 \item \keydef{fullSamples}{\texttt{abf}}{%
@@ -2626,8 +2631,12 @@ The following parameters can be set in the ABF configuration block
     of the bias force), and a count file containing only values greater than
     \texttt{fullSamples}. These files must match the grid parameters of the colvars.
   }
+\end{itemize}
 
 \cvnamdonly{
+\cvsubsubsec{Multiple-replica ABF}
+
+\begin{itemize}
 \item \keydef{shared}{\texttt{abf}}{%
     Apply multiple-replica ABF, sharing force samples among the replicas?}
   {boolean}
@@ -2652,17 +2661,8 @@ The following parameters can be set in the ABF configuration block
   have been gathered since the last synchronization time, ensuring all replicas
   apply a similar biasing force.
   }
-}
-
-
-
 \end{itemize}
-
-ABF also depends on parameters from collective variables to define the grid on which free
-energy gradients are computed. In the direction of each colvar, the grid ranges from
-\texttt{lowerBoundary} to \texttt{upperBoundary}, and the bin width (grid spacing)
-is set by the \texttt{width} parameter.
-
+}
 
 \cvsubsubsec{Output files}
 
