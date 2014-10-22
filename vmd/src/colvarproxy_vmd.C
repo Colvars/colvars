@@ -209,13 +209,13 @@ int colvarproxy_vmd::run_force_callback () {
 }
 
 int colvarproxy_vmd::run_colvar_callback(std::string const &name,
-                      std::vector<const colvarvalue *> const &values,
+                      std::vector<const colvarvalue *> const &cvc_values,
                       colvarvalue &value)
 {
   size_t i;
   std::string cmd = std::string("calc_") + name;
-  for (i = 0; i < values.size(); i++) {
-    cmd += std::string(" {") +  cvm::to_str(*(values[i]), cvm::cv_width, cvm::cv_prec) + std::string("}");
+  for (i = 0; i < cvc_values.size(); i++) {
+    cmd += std::string(" {") +  (*(cvc_values[i])).to_simple_string() + std::string("}");
   }
   int err = Tcl_Eval(interp, cmd.c_str());
   const char *result = Tcl_GetStringResult(interp);
@@ -226,7 +226,7 @@ int colvarproxy_vmd::run_colvar_callback(std::string const &name,
     return COLVARS_ERROR;
   }
   std::istringstream is (result);
-  if (!(is >> value)) {
+  if (value.from_simple_string(is.str()) != COLVARS_OK) {
     cvm::log("Error parsing colvar value from script:");
     cvm::error(result);
     return COLVARS_ERROR;
@@ -235,13 +235,13 @@ int colvarproxy_vmd::run_colvar_callback(std::string const &name,
 }
 
 int colvarproxy_vmd::run_colvar_gradient_callback(std::string const &name,
-                               std::vector<const colvarvalue *> const &values,
+                               std::vector<const colvarvalue *> const &cvc_values,
                                std::vector<colvarvalue> &gradient)
 {
   size_t i;
   std::string cmd = std::string("calc_") + name + "_gradient";
-  for (i = 0; i < values.size(); i++) {
-    cmd += std::string(" {") +  cvm::to_str(*(values[i]), cvm::cv_width, cvm::cv_prec) + std::string("}");
+  for (i = 0; i < cvc_values.size(); i++) {
+    cmd += std::string(" {") +  (*(cvc_values[i])).to_simple_string() + std::string("}");
   }
   int err = Tcl_Eval(interp, cmd.c_str());
   if (err != TCL_OK) {
@@ -260,9 +260,9 @@ int colvarproxy_vmd::run_colvar_gradient_callback(std::string const &name,
   }
   for (i = 0; i < gradient.size(); i++) {
     std::istringstream is (Tcl_GetString(list[i]));
-    gradient[i].type(*(values[i]));
+    gradient[i].type(*(cvc_values[i]));
     gradient[i].is_derivative();
-    if (!(is >> gradient[i])) {
+    if (gradient[i].from_simple_string(is.str()) != COLVARS_OK) {
       cvm::error("Error parsing gradient value from script");
       return COLVARS_ERROR;
     }
