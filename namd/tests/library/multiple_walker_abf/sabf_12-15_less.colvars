@@ -31,5 +31,5 @@ abf {
    fullSamples 500
    historyFreq 20000
    shared
-   sharedFreq 10000
+   sharedFreq 2000
 }
