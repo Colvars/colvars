@@ -4,7 +4,7 @@
 #define COLVARMODULE_H
 
 #ifndef COLVARS_VERSION
-#define COLVARS_VERSION "2014-10-21"
+#define COLVARS_VERSION "2014-10-22"
 #endif
 
 #ifndef COLVARS_DEBUG
@@ -21,6 +21,7 @@
 /// objects.
 
 // Internal method return codes
+#define COLVARS_NOT_IMPLEMENTED -2
 #define COLVARS_ERROR -1
 #define COLVARS_OK 0
 
