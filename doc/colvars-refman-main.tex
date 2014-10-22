@@ -3541,8 +3541,11 @@ provided at run time as a Tcl script, in the spirit of \texttt{TclForces}.
 \label{sec:scripting}
 
 Collective variables and biases can be added, queried and deleted through the scripting command
-\texttt{colvars}, with the following syntax: \texttt{colvars~$<$subcommand$>$ [args...]}
-for which the available subcommands are listed below.
+\texttt{cv}, with the following syntax: \texttt{cv~$<$subcommand$>$ [args...]}
+for which the available subcommands are listed in the next subsections.
+For example, to query the value of a collective variable named \texttt{myVar},
+use the following syntax: \texttt{set value [cv colvar myVar value]}.
+
 \cvnamdonly{This interface is particularly useful to implement custom biases as scripted colvar forces.
 See the \texttt{scriptedColvarForces} option in \ref{sec:scripted_biases}.
 Note that scripting commands may not be used directly in the NAMD configuration file before the first 

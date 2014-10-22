@@ -3,15 +3,15 @@ mol new ../Common/da.psf type psf
 # this is the file from NAMD's 3rd reg test: it is XYZ format to gain more precision
 mol addfile ../Common/da.test-traj.xyz type xyz waitfor all
 
-colvars molid top
-colvars configfile test.in
+cv molid top
+cv configfile test.in
 
 set out [open "test.colvars.traj" "w"]
-puts -nonewline ${out} [colvars printframelabels]
+puts -nonewline ${out} [cv printframelabels]
 for { set frame 0 } { ${frame} < [molinfo top get numframes] } { incr frame } {
-    colvars frame ${frame}
-    colvars update
-    puts -nonewline ${out} [colvars printframe]
+    cv frame ${frame}
+    cv update
+    puts -nonewline ${out} [cv printframe]
 }
 
 quit

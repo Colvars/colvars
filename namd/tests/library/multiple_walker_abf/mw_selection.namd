@@ -70,7 +70,7 @@ set selectCycle 5
 set repNum [numReplicas]
 set rep [myReplica]
 set sampleRad 0
-set binNum [colvarbias binnum abf]
+set binNum [cv bias abf binnum]
 set percentStop 40
 
 set s "REPLICA_SETUP"
@@ -80,7 +80,7 @@ foreach var {cycleNum shareFreq selectCycle repNum rep sampleRad binNum percentS
 print "$s"
 
 for {set b 0} {$b < $binNum} {incr b} {
-    set binLastCount($b) [colvarbias count abf $b]
+    set binLastCount($b) [cv bias abf count $b]
 }
 
 for {set i 0} {$i < $cycleNum} {incr i} {
@@ -88,12 +88,12 @@ for {set i 0} {$i < $cycleNum} {incr i} {
     # Run the steps.
     run $shareFreq
     # Share the biases.
-    colvarbias share abf
+    cv bias abf share
     print "REPLICA_SHARED_ABF"
 
     if {$i % $selectCycle == 0} {
 	## Get the bin.
-	set bin [colvarbias bin abf]
+	set bin [cv bias abf bin]
 	# Keep within the domain.	    
 	if {$bin < 0} {set bin 0}
 	if {$bin >= $binNum} {set bin [expr {$binNum-1}]}
@@ -184,7 +184,7 @@ for {set i 0} {$i < $cycleNum} {incr i} {
 	    
 	    # Since the resampling was successful, we set binLastCount to the current values.
 	    for {set b 0} {$b < $binNum} {incr b} {
-		set binLastCount($b) [colvarbias count abf $b]
+		set binLastCount($b) [cv bias abf count $b]
 	    }
 	} else {
 	    print "REPLICA_SRC_DEST_EMPTY"

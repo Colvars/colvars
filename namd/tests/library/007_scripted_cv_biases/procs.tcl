@@ -17,8 +17,8 @@ proc calc_colvar_forces { ts } {
   set center 18.
   set k 500.
 
-  set ds [colvars colvar ds value]
+  set ds [cv colvar ds value]
   set f [expr {$k * ($center - $ds)}]
-  set r [colvars colvar ds addforce $f]
+  set r [cv colvar ds addforce $f]
   return
 }

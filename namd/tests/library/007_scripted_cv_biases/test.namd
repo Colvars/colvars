@@ -81,10 +81,10 @@ print "First, running unscripted config"
 run 20
 
 print "Resetting colvars with scripted config"
-colvars reset
+cv reset
 reinitatoms
 
-colvars configfile scripted.in
+cv configfile scripted.in
 # with scripted run
 run 20
 

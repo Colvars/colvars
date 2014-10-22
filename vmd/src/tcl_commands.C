@@ -124,21 +124,21 @@ static int vmdinfo_tcl(ClientData, Tcl_Interp *interp,
       return TCL_OK;
     }
 
-    // return the MPI node name 
+    // return the MPI node name
     if (!strcmp(argv[1], "nodename")) {
       Tcl_Obj *tcl_result = Tcl_NewListObj(0, NULL);
       Tcl_ListObjAppendElement(interp, tcl_result, Tcl_NewStringObj(app->par_name(), strlen(app->par_name())));
       Tcl_SetObjResult(interp, tcl_result);
       return TCL_OK;
-    }  
+    }
 
-    // return the MPI node rank 
+    // return the MPI node rank
     if (!strcmp(argv[1], "noderank")) {
       Tcl_Obj *tcl_result = Tcl_NewListObj(0, NULL);
       Tcl_ListObjAppendElement(interp, tcl_result, Tcl_NewIntObj(app->par_rank()));
       Tcl_SetObjResult(interp, tcl_result);
       return TCL_OK;
-    }  
+    }
 
     // return the MPI node count
     if (!strcmp(argv[1], "nodecount")) {
@@ -146,7 +146,7 @@ static int vmdinfo_tcl(ClientData, Tcl_Interp *interp,
       Tcl_ListObjAppendElement(interp, tcl_result, Tcl_NewIntObj(app->par_size()));
       Tcl_SetObjResult(interp, tcl_result);
       return TCL_OK;
-    }  
+    }
   }
 
   Tcl_AppendResult(interp,
@@ -199,7 +199,7 @@ int Vmd_Init(Tcl_Interp *interp) {
 
   Tcl_CreateCommand(interp, "vmd_menu", text_cmd_menu,
         (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
-  
+
   Tcl_CreateCommand(interp, "stage", text_cmd_stage,
         (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
 
@@ -257,7 +257,7 @@ int Vmd_Init(Tcl_Interp *interp) {
   Tcl_CreateObjCommand(interp, "mdffi", obj_mdff_cc,
         (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
 #endif
-  
+
 #if 0
   Tcl_CreateObjCommand(interp, "volgradient", obj_volgradient,
         (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
@@ -284,9 +284,9 @@ int Vmd_Init(Tcl_Interp *interp) {
   Tcl_CreateObjCommand(interp,"vmdcon",tcl_vmdcon,
         (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
 #endif
-  
+
 #if defined(VMDCOLVARS)
-  Tcl_CreateCommand (interp, "colvars", tcl_colvars, (ClientData) app, (Tcl_CmdDeleteProc*) NULL);
+  Tcl_CreateCommand (interp, "cv", tcl_colvars, (ClientData) app, (Tcl_CmdDeleteProc*) NULL);
   Tcl_PkgProvide (interp, "colvars", COLVARS_VERSION);
 #endif
 

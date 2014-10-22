@@ -90,7 +90,6 @@ colvars: The final output state file will be "test.colvars.state".
 colvars: Writing to colvar trajectory file "test.colvars.traj".
 colvars:   Prepared sample and gradient buffers at step 0.
 colvars: Saving collective variables state to "test.colvars.state".
-colvars: Saving collective variables state to "test.colvars.state".
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration:
 colvars: # indexFile = "" [default]

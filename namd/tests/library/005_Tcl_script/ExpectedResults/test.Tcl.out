@@ -1,26 +1,25 @@
-TCL: Original numsteps 20 will be ignored.
-TCL: Running for 0 steps
-TCL: d = 1.42467449615693e+01
+TCL: d = 0.00000000000000e+00
 TCL: E(abf1) = 3.49598e+228
-TCL: E(harmonic1) = 630.983
-TCL: Running colvars update
+TCL: E(harmonic1) = 3.49598e+228
+TCL: Running cv update
 TCL: 
-TCL: d = 1.42467449615693e+01
+TCL: d = 0.00000000000000e+00
 TCL: E(abf1) = 3.49598e+228
-TCL: E(harmonic1) = 630.983
+TCL: E(harmonic1) = 18000
+TCL: Original numsteps 20 will be ignored.
 TCL: Running for 20 steps
 TCL: d = 1.30566036331419e+01
 TCL: E(abf1) = 3.49598e+228
 TCL: E(harmonic1) = 139.551
 TCL: Running for 20 steps
-TCL: Running colvars bias harmonic1 delete
+TCL: Running cv bias harmonic1 delete
 TCL: 
-TCL: Running colvars bias harm2 energy
+TCL: Running cv bias harm2 energy
 TCL: 4.43075
-TCL: Running colvars bias harm2 update
+TCL: Running cv bias harm2 update
 TCL: 4.43075
 TCL: Running for 20 steps
-TCL: Running colvars bias harm2 energy
+TCL: Running cv bias harm2 energy
 TCL: 4.99131
-TCL: Running colvars bias harm2 delete
+TCL: Running cv bias harm2 delete
 TCL: 

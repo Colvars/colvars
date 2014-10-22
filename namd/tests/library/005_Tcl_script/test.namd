@@ -98,36 +98,34 @@ proc runcmd { cmd } {
   print [eval $cmd]
 }
 
-run 0
+foreach c [cv list] { print "$c = [cv colvar $c value]"}        
+foreach b [cv list biases] { print "E($b) = [cv bias $b energy]"}
 
-foreach c [colvars list] { print "$c = [colvars colvar $c value]"}        
-foreach b [colvars list biases] { print "E($b) = [colvars bias $b energy]"}
+runcmd "cv update"
 
-runcmd "colvars update"
-
-foreach c [colvars list] { print "$c = [colvars colvar $c value]"}        
-foreach b [colvars list biases] { print "E($b) = [colvars bias $b energy]"}
+foreach c [cv list] { print "$c = [cv colvar $c value]"}        
+foreach b [cv list biases] { print "E($b) = [cv bias $b energy]"}
 
 run 20
 
-foreach c [colvars list] { print "$c = [colvars colvar $c value]"}        
-foreach b [colvars list biases] { print "E($b) = [colvars bias $b energy]"}
+foreach c [cv list] { print "$c = [cv colvar $c value]"}        
+foreach b [cv list biases] { print "E($b) = [cv bias $b energy]"}
 
-# colvars config "colvar {
+# cv config "colvar {
 #   name d2
 #   distance {
 #     group1 { atomnumbers 4 }
 #     group2 { atomnumbers 99 }
 #   }
 # }"
-# runcmd "colvars colvar d2 value"
-# runcmd "colvars update"
-# runcmd "colvars colvar d2 value"
+# runcmd "cv colvar d2 value"
+# runcmd "cv update"
+# runcmd "cv colvar d2 value"
 # run 20
-# runcmd "colvars colvar d2 value"
-# runcmd "colvars colvar d2 delete"
+# runcmd "cv colvar d2 value"
+# runcmd "cv colvar d2 delete"
 
-colvars config "harmonic {
+cv config "harmonic {
   name harm2
   colvars d
   centers 13
@@ -136,14 +134,14 @@ colvars config "harmonic {
 }"
 run 20 
 
-runcmd "colvars bias harmonic1 delete"
+runcmd "cv bias harmonic1 delete"
 
-runcmd "colvars bias harm2 energy"
-runcmd "colvars bias harm2 update"
+runcmd "cv bias harm2 energy"
+runcmd "cv bias harm2 update"
 run 20 
-runcmd "colvars bias harm2 energy"
-runcmd "colvars bias harm2 delete"
+runcmd "cv bias harm2 energy"
+runcmd "cv bias harm2 delete"
 
-colvars reset
+cv reset
 # reinitialize just for the fun of it ;-)
-colvars configfile 	  test.in
+cv configfile 	  test.in
