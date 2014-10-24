@@ -47,7 +47,7 @@ protected:
   std::vector<cvm::rvector> total_forces;
   std::vector<cvm::rvector> applied_forces;
 
-  size_t init_namd_atom (AtomID const &aid);
+  size_t init_namd_atom(AtomID const &aid);
 
   SubmitReduction *reduction;
 
@@ -64,12 +64,12 @@ public:
   /// at every step
   void calculate();
 
-  void add_energy (cvm::real energy);
-  void request_system_force (bool yesno);
-  void log (std::string const &message);
-  void error (std::string const &message);
-  void fatal_error (std::string const &message);
-  void exit (std::string const &message);
+  void add_energy(cvm::real energy);
+  void request_system_force(bool yesno);
+  void log(std::string const &message);
+  void error(std::string const &message);
+  void fatal_error(std::string const &message);
+  void exit(std::string const &message);
 
   // Callback functions
   int run_force_callback();
@@ -145,67 +145,67 @@ public:
     return restart_frequency_s;
   }
 
-  cvm::rvector position_distance (cvm::atom_pos const &pos1,
+  cvm::rvector position_distance(cvm::atom_pos const &pos1,
                                   cvm::atom_pos const &pos2);
-  cvm::real position_dist2 (cvm::atom_pos const &pos1,
+  cvm::real position_dist2(cvm::atom_pos const &pos1,
                             cvm::atom_pos const &pos2);
 
-  void select_closest_image (cvm::atom_pos &pos,
+  void select_closest_image(cvm::atom_pos &pos,
                              cvm::atom_pos const &ref_pos);
 
 
-  int load_atoms (char const *filename,
+  int load_atoms(char const *filename,
                    std::vector<cvm::atom> &atoms,
                    std::string const &pdb_field,
                    double const pdb_field_value = 0.0);
 
-  int load_coords (char const *filename,
+  int load_coords(char const *filename,
                     std::vector<cvm::atom_pos> &pos,
                     const std::vector<int> &indices,
                     std::string const &pdb_field,
                     double const pdb_field_value = 0.0);
 
-  int backup_file (char const *filename);
+  int backup_file(char const *filename);
 
-  cvm::real rand_gaussian (void)
+  cvm::real rand_gaussian(void)
   {
     return random.gaussian();
   }
 };
 
 
-inline cvm::rvector colvarproxy_namd::position_distance (cvm::atom_pos const &pos1,
+inline cvm::rvector colvarproxy_namd::position_distance(cvm::atom_pos const &pos1,
                                                          cvm::atom_pos const &pos2)
 {
-  Position const p1 (pos1.x, pos1.y, pos1.z);
-  Position const p2 (pos2.x, pos2.y, pos2.z);
+  Position const p1(pos1.x, pos1.y, pos1.z);
+  Position const p2(pos2.x, pos2.y, pos2.z);
   // return p2 - p1
-  Vector const d = this->lattice->delta (p2, p1);
-  return cvm::rvector (d.x, d.y, d.z);
+  Vector const d = this->lattice->delta(p2, p1);
+  return cvm::rvector(d.x, d.y, d.z);
 }
 
 
-inline void colvarproxy_namd::select_closest_image (cvm::atom_pos &pos,
+inline void colvarproxy_namd::select_closest_image(cvm::atom_pos &pos,
                                                     cvm::atom_pos const &ref_pos)
 {
-  Position const p (pos.x, pos.y, pos.z);
-  Position const rp (ref_pos.x, ref_pos.y, ref_pos.z);
-  ScaledPosition const srp = this->lattice->scale (rp);
-  Position const np = this->lattice->nearest (p, srp);
+  Position const p(pos.x, pos.y, pos.z);
+  Position const rp(ref_pos.x, ref_pos.y, ref_pos.z);
+  ScaledPosition const srp = this->lattice->scale(rp);
+  Position const np = this->lattice->nearest(p, srp);
   pos.x = np.x;
   pos.y = np.y;
   pos.z = np.z;
 }
 
 
-inline cvm::real colvarproxy_namd::position_dist2 (cvm::atom_pos const &pos1,
+inline cvm::real colvarproxy_namd::position_dist2(cvm::atom_pos const &pos1,
                                                    cvm::atom_pos const &pos2)
 {
   Lattice const *l = this->lattice;
-  Vector const p1 (pos1.x, pos1.y, pos1.z);
-  Vector const p2 (pos2.x, pos2.y, pos2.z);
-  Vector const d = l->delta (p1, p2);
-  return cvm::real (d.x*d.x + d.y*d.y + d.z*d.z);
+  Vector const p1(pos1.x, pos1.y, pos1.z);
+  Vector const p2(pos2.x, pos2.y, pos2.z);
+  Vector const d = l->delta(p1, p2);
+  return cvm::real(d.x*d.x + d.y*d.y + d.z*d.z);
 }
 
 

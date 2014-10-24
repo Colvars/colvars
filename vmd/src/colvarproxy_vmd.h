@@ -39,7 +39,7 @@ public:
 
   friend class cvm::atom;
 
-  colvarproxy_vmd (Tcl_Interp *interp, VMDApp *vmd, int molid);
+  colvarproxy_vmd(Tcl_Interp *interp, VMDApp *vmd, int molid);
   ~colvarproxy_vmd();
 
   void setup();
@@ -76,9 +76,9 @@ public:
     return vmdmol_frame;
   }
 
-  inline int frame (int f)
+  inline int frame(int f)
   {
-    if (vmdmol->get_frame (f) != NULL) {
+    if (vmdmol->get_frame(f) != NULL) {
       vmdmol_frame = f;
       return 0;
     } else {
@@ -95,7 +95,7 @@ public:
   inline std::string restart_output_prefix()
   {
     // note that this shouldn't be called while running VMD anyway
-    return std::string ("");
+    return std::string("");
   }
 
   std::string output_prefix_str;
@@ -108,25 +108,25 @@ public:
     return 0;
   }
 
-  void add_energy (cvm::real energy);
+  void add_energy(cvm::real energy);
 
-  inline void request_system_force (bool yesno) {
+  inline void request_system_force(bool yesno) {
     if (yesno == true)
-      cvm::error ("Error: a bias requested system forces, which are undefined in VMD.");
+      cvm::error("Error: a bias requested system forces, which are undefined in VMD.");
   }
 
-  cvm::rvector position_distance (cvm::atom_pos const &pos1,
+  cvm::rvector position_distance(cvm::atom_pos const &pos1,
                                   cvm::atom_pos const &pos2);
-  cvm::real position_dist2 (cvm::atom_pos const &pos1,
+  cvm::real position_dist2(cvm::atom_pos const &pos1,
                             cvm::atom_pos const &pos2);
 
-  void select_closest_image (cvm::atom_pos &pos,
+  void select_closest_image(cvm::atom_pos &pos,
                              cvm::atom_pos const &ref_pos);
 
-  void log (std::string const &message);
-  void error (std::string const &message);
-  void fatal_error (std::string const &message);
-  void exit (std::string const &message);
+  void log(std::string const &message);
+  void error(std::string const &message);
+  void fatal_error(std::string const &message);
+  void exit(std::string const &message);
 
   // Callback functions
   int run_force_callback();
@@ -137,12 +137,12 @@ public:
                                std::vector<const colvarvalue *> const &cvcs,
                                std::vector<colvarvalue> &gradient);
 
-  int load_atoms (char const *filename,
+  int load_atoms(char const *filename,
                    std::vector<cvm::atom> &atoms,
                    std::string const &pdb_field,
                    double const pdb_field_value = 0.0);
 
-  int load_coords (char const *filename,
+  int load_coords(char const *filename,
                     std::vector<cvm::atom_pos> &pos,
                     const std::vector<int> &indices,
                     std::string const &pdb_field,
@@ -152,7 +152,7 @@ public:
 };
 
 
-inline cvm::rvector colvarproxy_vmd::position_distance (cvm::atom_pos const &pos1,
+inline cvm::rvector colvarproxy_vmd::position_distance(cvm::atom_pos const &pos1,
                                                         cvm::atom_pos const &pos2)
 {
   // TODO: add in the proxy constructor a check for orthonormal PBCs
@@ -177,23 +177,23 @@ inline cvm::rvector colvarproxy_vmd::position_distance (cvm::atom_pos const &pos
 }
 
 
-inline void colvarproxy_vmd::select_closest_image (cvm::atom_pos &pos,
+inline void colvarproxy_vmd::select_closest_image(cvm::atom_pos &pos,
                                                    cvm::atom_pos const &ref_pos)
 {
-  cvm::rvector const diff = position_distance (ref_pos, pos);
+  cvm::rvector const diff = position_distance(ref_pos, pos);
   pos = ref_pos + diff;
 }
 
 
-inline cvm::real colvarproxy_vmd::position_dist2 (cvm::atom_pos const &pos1,
+inline cvm::real colvarproxy_vmd::position_dist2(cvm::atom_pos const &pos1,
                                                   cvm::atom_pos const &pos2)
 {
-  cvm::rvector const d = position_distance (pos1, pos2);
-  return cvm::real (d.x*d.x + d.y*d.y + d.z*d.z);
+  cvm::rvector const d = position_distance(pos1, pos2);
+  return cvm::real(d.x*d.x + d.y*d.y + d.z*d.z);
 }
 
 
-int tcl_colvars (ClientData clientdata, Tcl_Interp *interp, int argc, const char *argv[]);
+int tcl_colvars(ClientData clientdata, Tcl_Interp *interp, int argc, const char *argv[]);
 
 
 #endif
