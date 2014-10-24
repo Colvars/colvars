@@ -481,7 +481,7 @@ public:
   /// Decrease the depth (number of indentations in the output)
   static void decrease_depth();
 
-  static inline const bool scripted_forces() { return use_scripted_forces; }
+  static inline bool scripted_forces() const { return use_scripted_forces; }
 };
 
 
