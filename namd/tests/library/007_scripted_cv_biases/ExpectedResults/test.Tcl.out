@@ -4,4 +4,4 @@ TCL: Running for 20 steps
 TCL: Resetting colvars with scripted config
 TCL: Reinitializing atom data
 TCL: Running for 20 steps
-TCL: 1.
+TCL: {0. 0. 0. 0.} 1.
