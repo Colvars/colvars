@@ -93,6 +93,9 @@ colvarproxy_namd::colvarproxy_namd()
 
   // initiate module: this object will be the communication proxy
   colvars = new colvarmodule(this);
+  cvm::log("Using NAMD interface, version "+
+            cvm::to_str(COLVARPROXY_VERSION)+".\n");
+
   colvars->config_file(config->data);
   colvars->setup_input();
   colvars->setup_output();

@@ -104,6 +104,8 @@ colvarproxy_vmd::colvarproxy_vmd(Tcl_Interp *vti, VMDApp *v, int molid)
   // The module is only allocated here: it will be configured
   // through the "configfile" and "configstring" commands of colvarscript.
   colvars = new colvarmodule(this);
+  cvm::log("Using VMD interface, version "+
+            cvm::to_str(COLVARPROXY_VERSION)+".\n");
 
   colvars->cv_traj_freq = 0;
   colvars->restart_out_freq = 0;

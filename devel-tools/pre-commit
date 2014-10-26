@@ -3,8 +3,8 @@
 # This hook will do some automatic checks and updates before a commit.
 
 ################################################################################
-# Task 1: update the colvar module version string if a file in the src/
-#         directory is about to be committed. Do not update it, if current.
+# Task 1a: update the colvar module version string if a file in the src/
+#          directory is about to be committed. Do not update it, if current.
 
 if git status --porcelain | grep -q '^M \+src/'
 then
@@ -12,11 +12,64 @@ then
   prevstr=$(sed -n -e 's/^#define COLVARS_VERSION "\(.*\)".*/\1/p' src/colvarmodule.h)
   if test "${prevstr}" = "${datestr}"
   then
-    echo "Keeping colvars version string is: ${prevstr}"
+    echo "Keeping colvars version string at: ${prevstr}"
   else
     echo "Updating colvars version string from ${prevstr} to ${datestr}"
     sed -i -e "s/^#define COLVARS_VERSION.*/#define COLVARS_VERSION \"${datestr}\"/" src/colvarmodule.h
     git add src/colvarmodule.h
+  fi
+fi
+
+################################################################################
+# Task 1b: update the respective colvar proxy version string if a file in the
+#          vmd/src, namd/src, or lammps/src directory is about to be committed.
+#          Do not update it, if current.
+
+if git status --porcelain | grep -q '^M \+lammps/src/'
+then
+  datestr=$(date +'%Y-%m-%d')
+  prevstr=$(sed -n -e 's/^#define COLVARPROXY_VERSION "\(.*\)".*/\1/p' \
+            src/lammps/USER-COLVARS/colvarproxy_lammps.h)
+  if test "${prevstr}" = "${datestr}"
+  then
+    echo "Keeping LAMMPS colvars interface version string at: ${prevstr}"
+  else
+    echo "Updating LAMMPS colvars interface version string from ${prevstr} to ${datestr}"
+    sed -i -e "s/^#define COLVARPROXY_VERSION.*/#define COLVARPROXY_VERSION \"${datestr}\"/" \
+       lammps/src/USER-COLVARS/colvarproxy_lammps.h
+    git add lammps/src/USER-COLVARS/colvarproxy_lammps.h
+  fi
+fi
+
+if git status --porcelain | grep -q '^M \+namd/src/'
+then
+  datestr=$(date +'%Y-%m-%d')
+  prevstr=$(sed -n -e 's/^#define COLVARPROXY_VERSION "\(.*\)".*/\1/p' \
+            src/namd/colvarproxy_namd.h)
+  if test "${prevstr}" = "${datestr}"
+  then
+    echo "Keeping NAMD colvars interface version string at: ${prevstr}"
+  else
+    echo "Updating NAMD colvars interface version string from ${prevstr} to ${datestr}"
+    sed -i -e "s/^#define COLVARPROXY_VERSION.*/#define COLVARPROXY_VERSION \"${datestr}\"/" \
+       namd/src/colvarproxy_namd.h
+    git add namd/src/colvarproxy_namd.h
+  fi
+fi
+
+if git status --porcelain | grep -q '^M \+vmd/src/'
+then
+  datestr=$(date +'%Y-%m-%d')
+  prevstr=$(sed -n -e 's/^#define COLVARPROXY_VERSION "\(.*\)".*/\1/p' \
+            src/vmd/colvarproxy_vmd.h)
+  if test "${prevstr}" = "${datestr}"
+  then
+    echo "Keeping VMD colvars interface version string at: ${prevstr}"
+  else
+    echo "Updating VMD colvars interface version string from ${prevstr} to ${datestr}"
+    sed -i -e "s/^#define COLVARPROXY_VERSION.*/#define COLVARPROXY_VERSION \"${datestr}\"/" \
+       vmd/src/colvarproxy_vmd.h
+    git add vmd/src/colvarproxy_vmd.h
   fi
 fi
 

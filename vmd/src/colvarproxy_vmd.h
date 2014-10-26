@@ -14,6 +14,9 @@
 #include "colvartypes.h"
 #include "colvaratoms.h"
 
+#ifndef COLVARPROXY_VERSION
+#define COLVARPROXY_VERSION "2014-10-26"
+#endif
 
 /// \brief Communication between colvars and VMD (implementation of
 /// \link colvarproxy \endlink)

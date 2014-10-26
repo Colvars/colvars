@@ -122,6 +122,9 @@ void colvarproxy_lammps::init(const char *conf_file)
   // create the colvarmodule instance
   colvars = new colvarmodule(this);
 
+  cvm::log("Using LAMMPS interface, version "+
+            cvm::to_str(COLVARPROXY_VERSION)+".\n");
+
   // TODO move one or more of these to setup() if needed
   colvars->config_file(conf_file);
   colvars->setup_input();

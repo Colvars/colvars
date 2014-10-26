@@ -15,6 +15,10 @@
 #include "colvarproxy.h"
 #include "colvarvalue.h"
 
+#ifndef COLVARPROXY_VERSION
+#define COLVARPROXY_VERSION "2014-10-26"
+#endif
+
 // For replica exchange
 #include "converse.h"
 #include "DataExchanger.h"
