@@ -196,12 +196,18 @@ public:
 
   /// Allocation routine, used by all constructors
   inline void alloc() {
-    array = new T [length];
+    if (length > 0) {
+      array = new T [length];
+    } else {
+      array = NULL;
+    }
   }
 
   /// Deallocation routine
   inline void dealloc() {
-    delete [] array;
+    if (array != NULL) {
+      delete [] array;
+    }
   }
 
   /// Length of the array
@@ -211,7 +217,7 @@ public:
   }
 
   /// Default constructor
-  inline vector1d(size_t const n = 1, T const &t = T())
+  inline vector1d(size_t const n = 0, T const &t = T())
   {
     length = n;
     this->alloc();
@@ -321,20 +327,25 @@ public:
 
   /// Allocation routine, used by all constructors
   inline void alloc() {
-    array = new T * [outer_length];
-    for (size_t i = 0; i < outer_length; i++) {
-      array[i] = new T [inner_length];
+    if ((outer_length > 0) && (inner_length > 0)) {
+      array = new T * [outer_length];
+      for (size_t i = 0; i < outer_length; i++) {
+        array[i] = new T [inner_length];
+      }
+    } else {
+      array = NULL;
     }
   }
 
   /// Deallocation routine
   inline void dealloc() {
-    for (size_t i = 0; i < outer_length; i++) {
-      delete [] array[i];
+    if (array != NULL) {
+      for (size_t i = 0; i < outer_length; i++) {
+        delete [] array[i];
+      }
+      delete [] array;
     }
-    delete [] array;
   }
-
   /// Set all elements to zero
   inline void reset()
   {
@@ -346,7 +357,7 @@ public:
   }
 
   /// Default constructor
-  inline matrix2d(size_t const no = 1, size_t const ni = 1, T const &t = T())
+  inline matrix2d(size_t const no = 0, size_t const ni = 0, T const &t = T())
     : outer_length(no), inner_length(ni)
   {
     this->alloc();
