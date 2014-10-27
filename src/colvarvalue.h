@@ -75,33 +75,33 @@ public:
 
   /// \brief If \link vector1d_value \endlink is a concatenation of colvarvalues,
   /// keep track of the individual types
-  std::vector<Type> value_types;
+  std::vector<Type> elem_types;
 
   /// \brief If \link vector1d_value \endlink is a concatenation of colvarvalues,
   /// these mark the initial components of each colvarvalue
-  std::vector<int> value_indices;
+  std::vector<int> elem_indices;
 
   /// \brief If \link vector1d_value \endlink is a concatenation of colvarvalues,
   /// these mark how many components for each colvarvalue
-  std::vector<int> value_sizes;
+  std::vector<int> elem_sizes;
 
   /// \brief Whether or not the type check is enforced
-  static inline bool type_checking() const
+  static inline bool type_checking()
   {
     return true;
   }
 
   /// Runtime description of value types
-  std::string static const type_desc(Type t);
+  static std::string const type_desc(Type t);
 
   /// User keywords for specifying value types in the configuration
-  std::string static const type_keyword(Type t);
+  static std::string const type_keyword(Type t);
 
   /// Number of degrees of freedom for each supported type
-  size_t static num_df(Type t);
+  static size_t num_df(Type t);
 
   /// Number of dimensions for each supported type (used to allocate vector1d_value)
-  size_t static num_dimensions(Type t);
+  static size_t num_dimensions(Type t);
 
   /// Number of dimensions of this variable
   size_t size() const;
@@ -148,6 +148,7 @@ public:
 
   /// Copy constructor from vector1d base type
   colvarvalue(cvm::vector1d<cvm::real> const &v, Type const &vti);
+
 
   /// Set to the null value for the data type currently defined
   void reset();
@@ -206,26 +207,51 @@ public:
   /// Assignment operator (type of x is checked)
   colvarvalue & operator = (colvarvalue const &x);
 
-  /// Assignment for a vector (type of x is checked)
-  void assign_value(int const i, colvarvalue const &x);
-
   void operator += (colvarvalue const &x);
   void operator -= (colvarvalue const &x);
   void operator *= (cvm::real const &a);
   void operator /= (cvm::real const &a);
 
 
-  // Cast to scaler
-  operator cvm::real() const;
+  // Cast to scalar
+  inline operator cvm::real() const
+  {
+    if (value_type != type_scalar) {
+      cvm::error("Error: trying to use a variable of type \""+
+                 type_desc(value_type)+"\" as one of type \""+
+                 type_desc(type_scalar)+"\".\n");
+    }
+    return real_value;
+  }
 
   // Cast to 3-vector
-  operator cvm::rvector() const;
+  inline operator cvm::rvector() const
+  {
+    if ((value_type != type_3vector) &&
+        (value_type != type_unit3vector) &&
+        (value_type != type_unit3vectorderiv)) {
+      cvm::error("Error: trying to use a variable of type \""+
+                 type_desc(value_type)+"\" as one of type \""+
+                 type_desc(type_3vector)+"\".\n");
+    }
+    return rvector_value;
+  }
 
   // Cast to quaternion
-  operator cvm::quaternion() const;
+  inline operator cvm::quaternion() const
+  {
+    if ((value_type != type_quaternion) &&
+        (value_type != type_quaternionderiv)) {
+      cvm::error("Error: trying to use a variable of type \""+
+                 type_desc(value_type)+"\" as one of type \""+
+                 type_desc(type_quaternion)+"\".\n");
+    }
+    return quaternion_value;
+  }
 
   // Cast to n-dimensional vector
-  operator cvm::vector1d<cvm::real>() const;
+  cvm::vector1d<cvm::real> const as_vector() const;
+
 
   /// Whether this variable is a real number
   inline bool is_scalar() const
@@ -233,19 +259,50 @@ public:
     return (value_type == type_scalar);
   }
 
+  /// Get a single colvarvalue out of elements of the vector
+  colvarvalue const get_elem(int const i_begin, int const i_end, Type const vt) const;
+
+  /// Set elements of the vector from a single colvarvalue
+  void set_elem(int const i_begin, int const i_end, colvarvalue const &x);
+
+  /// Get a single colvarvalue out of elements of the vector
+  colvarvalue const get_elem(int const icv) const;
+
+  /// Set elements of the vector from a single colvarvalue
+  void set_elem(int const icv, colvarvalue const &x);
+
+  /// Get a scalar number out of an element of the vector
+  inline cvm::real operator [] (int const i) const
+  {
+    if (vector1d_value.size() > 0) {
+      return vector1d_value[i];
+    } else {
+      cvm::error("Error: trying to use as a vector a variable that is not initialized as such.\n");
+      return 0.0;
+    }
+  }
+
+  /// Use an element of the vector as a scalar number
+  inline cvm::real & operator [] (int const i)
+  {
+    if (vector1d_value.size() > 0) {
+      return vector1d_value[i];
+    } else {
+      cvm::error("Error: trying to use as a vector a variable that is not initialized as such.\n");
+      real_value = 0.0;
+      return real_value;
+    }
+  }
+
+
   /// Ensure that the two types are the same within a binary operator
   void static check_types(colvarvalue const &x1, colvarvalue const &x2);
 
+  /// Ensure that the two types are the same within an assignment, or that the left side is type_notset
+  void static check_types_assign(Type const &vt1, Type const &vt2);
+
   /// Undefined operation
   void undef_op() const;
-
-  /// Trying to assign this \link colvarvalue \endlink object to
-  /// another object set with a different type
-  void error_lside(Type const &vt) const;
-
-  /// Trying to assign another \link colvarvalue \endlink object set
-  /// with a different type to this object
-  void error_rside(Type const &vt) const;
 
   /// Give the number of characters required to output this
   /// colvarvalue, given the current type assigned and the number of
@@ -295,7 +352,7 @@ public:
 
 
 
-inline std::string static const colvarvalue::type_desc(Type t)
+inline std::string const colvarvalue::type_desc(Type t)
 {
   switch (t) {
   case colvarvalue::type_notset:
@@ -319,7 +376,7 @@ inline std::string static const colvarvalue::type_desc(Type t)
 }
 
 
-inline std::string static const colvarvalue::type_keyword(Type t)
+inline std::string const colvarvalue::type_keyword(Type t)
 {
   switch (t) {
   case colvarvalue::type_notset:
@@ -343,7 +400,7 @@ inline std::string static const colvarvalue::type_keyword(Type t)
 }
 
 
-inline size_t static colvarvalue::num_df(Type t)
+inline size_t colvarvalue::num_df(Type t)
 {
   switch (t) {
   case colvarvalue::type_notset:
@@ -366,7 +423,7 @@ inline size_t static colvarvalue::num_df(Type t)
 }
 
 
-inline size_t static colvarvalue::num_dimensions(Type t)
+inline size_t colvarvalue::num_dimensions(Type t)
 {
   switch (t) {
   case colvarvalue::type_notset:
@@ -390,7 +447,7 @@ inline size_t static colvarvalue::num_dimensions(Type t)
 
 inline size_t colvarvalue::size() const
 {
-  switch (t) {
+  switch (value_type) {
   case colvarvalue::type_notset:
   default:
     return 0; break;
@@ -430,9 +487,9 @@ inline colvarvalue::colvarvalue(colvarvalue const &x)
     break;
   case type_vector:
     vector1d_value = x.vector1d_value;
-    value_types = x.value_types;
-    value_indices = x.value_indices;
-    value_sized = x.value_sizes;
+    elem_types = x.elem_types;
+    elem_indices = x.elem_indices;
+    elem_sizes = x.elem_sizes;
   case type_notset:
   default:
     break;
@@ -440,30 +497,78 @@ inline colvarvalue::colvarvalue(colvarvalue const &x)
 }
 
 inline colvarvalue::colvarvalue(cvm::vector1d<cvm::real> const &v, Type const &vti)
-  : value_type(vti)
 {
   reset();
   if (v.size() != num_dimensions(value_type)) {
-    wrong_size(v.size(), value_type);
+    cvm::error("Error: trying to initialize a variable of type \""+type_desc(vti)+
+               "\" using a vector of size \""+cvm::to_str(v.size())+
+               "\".\n");
+    value_type = type_notset;
+  } else {
+    value_type = vti;
+    switch (vti) {
+    case type_scalar:
+      real_value = v[0];
+      break;
+    case type_3vector:
+    case type_unit3vector:
+    case type_unit3vectorderiv:
+      rvector_value = cvm::rvector(v);
+      break;
+    case type_quaternion:
+    case type_quaternionderiv:
+      quaternion_value = cvm::quaternion(v);
+      break;
+    case type_vector:
+      vector1d_value = v;
+      break;
+    case type_notset:
+    default:
+      break;
+    }
   }
-  switch (vti) {
-  case type_scalar:
-    real_value = v[0];
-    break;
-  case type_3vector:
-  case type_unit3vector:
-  case type_unit3vectorderiv:
-    rvector_value = cvm::rvector(v);
-    break;
-  case type_quaternion:
-  case type_quaternionderiv:
-    quaternion_value = cvm::quaternion(v);
-    break;
-  case type_vector:
-    vector_value = v;
-  case type_notset:
-  default:
-    break;
+}
+
+
+inline colvarvalue const colvarvalue::get_elem(int const i_begin, int const i_end, Type const vt) const
+{
+  if (vector1d_value.size() > 0) {
+    cvm::vector1d<cvm::real> const v(vector1d_value.slice(i_begin, i_end));
+    return colvarvalue(v, vt);
+  } else {
+    cvm::error("Error: trying to get an element from a variable that is not a vector.\n");
+    return colvarvalue(type_notset);
+  }
+}
+
+inline void colvarvalue::set_elem(int const i_begin, int const i_end, colvarvalue const &x)
+{
+  if (vector1d_value.size() > 0) {
+    vector1d_value.sliceassign(i_begin, i_end, x.as_vector());
+  } else {
+    cvm::error("Error: trying to set an element for a variable that is not a vector.\n");
+  }
+}
+
+
+inline colvarvalue const colvarvalue::get_elem(int const icv) const
+{
+  if (elem_types.size() > 0) {
+    return get_elem(elem_indices[icv], elem_indices[icv] + elem_sizes[icv],
+                    elem_types[icv]);
+  } else {
+    cvm::error("Error: trying to get a colvarvalue element from a vector colvarvalue that was initialized as a plain array.\n");
+    return colvarvalue(type_notset);
+  }
+}
+
+inline void colvarvalue::set_elem(int const icv, colvarvalue const &x)
+{
+  if (elem_types.size() > 0) {
+    check_types_assign(elem_types[icv], x.value_type);
+    set_elem(elem_indices[icv], elem_indices[icv] + elem_sizes[icv], x);
+  } else {
+    cvm::error("Error: trying to set a colvarvalue element for a colvarvalue that was initialized as a plain array.\n");
   }
 }
 
@@ -509,18 +614,14 @@ inline void colvarvalue::apply_constraints()
     quaternion_value /= std::sqrt(quaternion_value.norm2());
     break;
   case colvarvalue::type_vector:
-    if (value_types.size() > 0) {
+    if (elem_types.size() > 0) {
       // if we have information about non-scalar types, use it
-      for (size_t i = 0; i < value_types.size(); i++) {
-        if (value_sizes[i] == 1) continue; // TODO this can be optimized further
-        cvm::vector1d<cvm::real> vtmp(vector1d_value.slice(value_indices[i],
-                                                           value_indices[i] + value_sizes[i]));
-        colvarvalue cvtmp(vtmp, value_types[i]);
+      for (size_t i = 0; i < elem_types.size(); i++) {
+        if (elem_sizes[i] == 1) continue; // TODO this can be optimized further
+        colvarvalue cvtmp(vector1d_value.slice(elem_indices[i],
+                                               elem_indices[i] + elem_sizes[i]), elem_types[i]);
         cvtmp.apply_constraints();
-        vtmp = cvtmp;
-        for (size_t id = 0; id < value_sizes[i]; id++) {
-          vector1d_value[value_indices[i]+id] = vtmp[id];
-        }
+        set_elem(i, cvtmp);
       }
     }
     break;
@@ -569,14 +670,11 @@ inline cvm::real colvarvalue::norm2() const
   case colvarvalue::type_quaternionderiv:
     return (this->quaternion_value).norm2();
   case colvarvalue::type_vector:
-    if (value_types.size() > 0) {
-      cvm::real result = 0.0;
+    if (elem_types.size() > 0) {
       // if we have information about non-scalar types, use it
-      for (size_t i = 0; i < value_types.size(); i++) {
-        cvm::vector1d<cvm::real> const vtmp(vector1d_value.slice(value_indices[i],
-                                                                 value_indices[i] + value_sizes[i]));
-        colvarvalue const cvtmp(vtmp, value_types[i]);
-        result += cvtmp.norm2();
+      cvm::real result = 0.0;
+      for (size_t i = 0; i < elem_types.size(); i++) {
+        result += (this->get_elem(i)).norm2();
       }
       return result;
     } else {
@@ -595,27 +693,44 @@ inline colvarvalue colvarvalue::inverse() const
   switch (value_type) {
   case colvarvalue::type_scalar:
     return colvarvalue(1.0/real_value);
+    break;
   case colvarvalue::type_3vector:
   case colvarvalue::type_unit3vector:
   case colvarvalue::type_unit3vectorderiv:
     return colvarvalue(cvm::rvector(1.0/rvector_value.x,
                                     1.0/rvector_value.y,
                                     1.0/rvector_value.z));
+    break;
   case colvarvalue::type_quaternion:
   case colvarvalue::type_quaternionderiv:
     return colvarvalue(cvm::quaternion(1.0/quaternion_value.q0,
                                        1.0/quaternion_value.q1,
                                        1.0/quaternion_value.q2,
                                        1.0/quaternion_value.q3));
+    break;
   case colvarvalue::type_vector:
-    if (value_types.size() > 0) {
-      // TODO
-    } else {
-      return vector1d_value.norm2();
+    {
+      cvm::vector1d<cvm::real> result(vector1d_value);
+      if (elem_types.size() > 0) {
+        // if we have information about non-scalar types, use it
+        for (size_t i = 0; i < elem_types.size(); i++) {
+          result.sliceassign(elem_indices[i], elem_indices[i]+elem_sizes[i],
+                             cvm::vector1d<cvm::real>((this->get_elem(i)).inverse()));
+        }
+      } else {
+        for (size_t i = 0; i < result.size(); i++) {
+          if (result[i] != 0.0) {
+            result = 1.0/result[i];
+          }
+        }
+      }
+      return colvarvalue(result, type_vector);
     }
+    break;
   case colvarvalue::type_notset:
   default:
     undef_op();
+    break;
   }
   return colvarvalue();
 }
@@ -623,12 +738,8 @@ inline colvarvalue colvarvalue::inverse() const
 
 inline colvarvalue & colvarvalue::operator = (colvarvalue const &x)
 {
-  if (this->value_type != type_notset) {
-    if (this->value_type != x.value_type) {
-      error_lside(x.value_type);
-    }
-  }
-  this->value_type = x.value_type;
+  check_types_assign(this->value_type, x.value_type);
+  value_type = x.value_type;
 
   switch (this->value_type) {
   case colvarvalue::type_scalar:
@@ -645,9 +756,9 @@ inline colvarvalue & colvarvalue::operator = (colvarvalue const &x)
     break;
   case colvarvalue::type_vector:
     vector1d_value = x.vector1d_value;
-    value_types = x.value_types;
-    value_indices = x.value_indices;
-    value_sized = x.value_sizes;
+    elem_types = x.elem_types;
+    elem_indices = x.elem_indices;
+    elem_sizes = x.elem_sizes;
     break;
   case colvarvalue::type_notset:
   default:
@@ -658,20 +769,9 @@ inline colvarvalue & colvarvalue::operator = (colvarvalue const &x)
 }
 
 
-void colvarvalue::assign_value(int const i, colvarvalue const &x);
-{
-  if (this->value_type != type_vector) {
-    cvm::error("Trying to assign an individual component to a variable that is not a vector.\n");
-  }
-
-  // TODO
-}
-
-
 inline void colvarvalue::operator += (colvarvalue const &x)
 {
-  if (colvarvalue::type_checking())
-    colvarvalue::check_types(*this, x);
+  colvarvalue::check_types(*this, x);
 
   switch (this->value_type) {
   case colvarvalue::type_scalar:
@@ -689,7 +789,7 @@ inline void colvarvalue::operator += (colvarvalue const &x)
   case colvarvalue::type_vector:
     // TODO move this to vector1d
     for (size_t i = 0; i < vector1d_value.size(); i++) {
-      vector1d_value[i] += x.[i];
+      vector1d_value[i] += x.vector1d_value[i];
     }
     break;
   case colvarvalue::type_notset:
@@ -700,8 +800,7 @@ inline void colvarvalue::operator += (colvarvalue const &x)
 
 inline void colvarvalue::operator -= (colvarvalue const &x)
 {
-  if (colvarvalue::type_checking())
-    colvarvalue::check_types(*this, x);
+  colvarvalue::check_types(*this, x);
 
   switch (value_type) {
   case colvarvalue::type_scalar:
@@ -719,7 +818,7 @@ inline void colvarvalue::operator -= (colvarvalue const &x)
   case colvarvalue::type_vector:
     // TODO move this to vector1d
     for (size_t i = 0; i < vector1d_value.size(); i++) {
-      vector1d_value[i] -= x.[i];
+      vector1d_value[i] -= x.vector1d_value[i];
     }
     break;
   case colvarvalue::type_notset:
@@ -784,8 +883,7 @@ inline void colvarvalue::operator /= (cvm::real const &a)
 inline colvarvalue operator + (colvarvalue const &x1,
                                colvarvalue const &x2)
 {
-  if (colvarvalue::type_checking())
-    colvarvalue::check_types(x1, x2);
+  colvarvalue::check_types(x1, x2);
 
   switch (x1.value_type) {
   case colvarvalue::type_scalar:
@@ -799,6 +897,9 @@ inline colvarvalue operator + (colvarvalue const &x1,
   case colvarvalue::type_quaternion:
   case colvarvalue::type_quaternionderiv:
     return colvarvalue(x1.quaternion_value + x2.quaternion_value);
+  case colvarvalue::type_vector:
+    // TODO
+    break;
   case colvarvalue::type_notset:
   default:
     x1.undef_op();
@@ -809,8 +910,7 @@ inline colvarvalue operator + (colvarvalue const &x1,
 inline colvarvalue operator - (colvarvalue const &x1,
                                colvarvalue const &x2)
 {
-  if (colvarvalue::type_checking())
-    colvarvalue::check_types(x1, x2);
+  colvarvalue::check_types(x1, x2);
 
   switch (x1.value_type) {
   case colvarvalue::type_scalar:
@@ -824,6 +924,10 @@ inline colvarvalue operator - (colvarvalue const &x1,
   case colvarvalue::type_quaternion:
   case colvarvalue::type_quaternionderiv:
     return colvarvalue(x1.quaternion_value - x2.quaternion_value);
+  case colvarvalue::type_vector:
+    // TODO
+    break;
+  case colvarvalue::type_notset:
   default:
     x1.undef_op();
     return colvarvalue(colvarvalue::type_notset);
@@ -848,6 +952,9 @@ inline colvarvalue operator * (cvm::real const &a,
   case colvarvalue::type_quaternion:
   case colvarvalue::type_quaternionderiv:
     return colvarvalue(a * x.quaternion_value);
+  case colvarvalue::type_vector:
+    // TODO
+    break;
   case colvarvalue::type_notset:
   default:
     x.undef_op();
@@ -870,6 +977,9 @@ inline colvarvalue operator * (colvarvalue const &x,
   case colvarvalue::type_quaternion:
   case colvarvalue::type_quaternionderiv:
     return colvarvalue(x.quaternion_value * a);
+  case colvarvalue::type_vector:
+    // TODO
+    break;
   case colvarvalue::type_notset:
   default:
     x.undef_op();
@@ -892,6 +1002,9 @@ inline colvarvalue operator / (colvarvalue const &x,
   case colvarvalue::type_quaternion:
   case colvarvalue::type_quaternionderiv:
     return colvarvalue(x.quaternion_value / a);
+  case colvarvalue::type_vector:
+    // TODO
+    break;
   case colvarvalue::type_notset:
   default:
     x.undef_op();
@@ -905,8 +1018,7 @@ inline colvarvalue operator / (colvarvalue const &x,
 inline cvm::real operator * (colvarvalue const &x1,
                              colvarvalue const &x2)
 {
-  if (colvarvalue::type_checking())
-    colvarvalue::check_types(x1, x2);
+  colvarvalue::check_types(x1, x2);
 
   switch (x1.value_type) {
   case colvarvalue::type_scalar:
@@ -920,6 +1032,9 @@ inline cvm::real operator * (colvarvalue const &x1,
     // the "*" product is the quaternion product, here the inner
     // member function is used instead
     return (x1.quaternion_value.inner(x2.quaternion_value));
+  case colvarvalue::type_vector:
+    // TODO
+    break;
   case colvarvalue::type_notset:
   default:
     x1.undef_op();
@@ -931,8 +1046,7 @@ inline cvm::real operator * (colvarvalue const &x1,
 
 inline cvm::real colvarvalue::dist2(colvarvalue const &x2) const
 {
-  if (colvarvalue::type_checking())
-    colvarvalue::check_types(*this, x2);
+  colvarvalue::check_types(*this, x2);
 
   switch (this->value_type) {
   case colvarvalue::type_scalar:
@@ -948,6 +1062,9 @@ inline cvm::real colvarvalue::dist2(colvarvalue const &x2) const
     // angle between (*this) and x2 is the distance, the quaternion
     // object has it implemented internally
     return this->quaternion_value.dist2(x2.quaternion_value);
+  case colvarvalue::type_vector:
+    // TODO
+    break;
   case colvarvalue::type_notset:
   default:
     this->undef_op();
@@ -958,8 +1075,7 @@ inline cvm::real colvarvalue::dist2(colvarvalue const &x2) const
 
 inline colvarvalue colvarvalue::dist2_grad(colvarvalue const &x2) const
 {
-  if (colvarvalue::type_checking())
-    colvarvalue::check_types(*this, x2);
+  colvarvalue::check_types(*this, x2);
 
   switch (this->value_type) {
   case colvarvalue::type_scalar:
@@ -986,6 +1102,9 @@ inline colvarvalue colvarvalue::dist2_grad(colvarvalue const &x2) const
   case colvarvalue::type_quaternion:
   case colvarvalue::type_quaternionderiv:
     return this->quaternion_value.dist2_grad(x2.quaternion_value);
+  case colvarvalue::type_vector:
+    // TODO
+    break;
   case colvarvalue::type_notset:
   default:
     this->undef_op();
@@ -995,38 +1114,7 @@ inline colvarvalue colvarvalue::dist2_grad(colvarvalue const &x2) const
 
 
 
-// Casting operator
-inline operator cvm::real() const
-{
-  if (value_type != type_scalar) {
-    error_rside(type_scalar);
-  }
-  return real_value;
-}
-
-// Casting operator
-inline operator cvm::rvector() const
-{
-  if ((value_type != type_3vector) &&
-      (value_type != type_unit3vector) &&
-      (value_type != type_unit3vectorderiv)) {
-    error_rside(type_3vector);
-  }
-  return rvector_value;
-}
-
-// Casting operator
-inline operator cvm::quaternion() const
-{
-  if ((value_type != type_quaternion) &&
-      (value_type != type_quaternionderiv)) {
-    error_rside(type_quaternion);
-  }
-  return quaternion_value;
-}
-
-// Casting operator
-inline operator cvm::vector1d<cvm::real>() const
+inline cvm::vector1d<cvm::real> const colvarvalue::as_vector() const
 {
   switch (value_type) {
   case colvarvalue::type_scalar:
@@ -1035,15 +1123,17 @@ inline operator cvm::vector1d<cvm::real>() const
   case colvarvalue::type_3vector:
   case colvarvalue::type_unit3vector:
   case colvarvalue::type_unit3vectorderiv:
-    return cvm::vector1d<cvm::real>(rvector_value);
+    return rvector_value.as_vector();
     break;
   case colvarvalue::type_quaternion:
   case colvarvalue::type_quaternionderiv:
-    return cvm::vector1d<cvm::real>(quaternion_value);
+    return quaternion_value.as_vector();
     break;
   case colvarvalue::type_vector:
-    // force using the copy constructor jic
-    return cvm::vector1d<cvm::real>(vector1d_value);
+    if (vector1d_value.size() == 0) {
+      cvm::error("Error: trying to use as vector a variable that is not yet initialized as such\".\n");
+    }
+    return vector1d_value;
     break;
   case colvarvalue::type_notset:
   default:
@@ -1055,6 +1145,8 @@ inline operator cvm::vector1d<cvm::real>() const
 inline void colvarvalue::check_types(colvarvalue const &x1,
                                      colvarvalue const &x2)
 {
+  if (!colvarvalue::type_checking()) return;
+
   if (x1.value_type != x2.value_type) {
     if (((x1.value_type == type_unit3vector) &&
          (x2.value_type == type_unit3vectorderiv)) ||
@@ -1073,32 +1165,35 @@ inline void colvarvalue::check_types(colvarvalue const &x1,
                colvarvalue::type_desc(x2.value_type)+
                "\".\n");
   }
+
+  if (x1.value_type == type_vector) {
+    if (x1.vector1d_value.size() != x2.vector1d_value.size()) {
+      cvm::error("Performing an operation between two vector colvar "
+                 "values with different sizes, "+
+                 cvm::to_str(x1.vector1d_value.size())+
+                 " and "+
+                 cvm::to_str(x2.vector1d_value.size())+
+                 ".\n");
+    }
+  }
+}
+
+inline void colvarvalue::check_types_assign(colvarvalue::Type const &vt1,
+                                            colvarvalue::Type const &vt2)
+{
+  if (vt1 != type_notset) {
+    if (vt1 != vt2) {
+      cvm::error("Trying to assign a colvar value with type \""+
+                 type_desc(vt2)+"\" to one with type \""+
+                 type_desc(vt1)+"\".\n");
+    }
+  }
 }
 
 inline void colvarvalue::undef_op() const
 {
   cvm::error("Error: Undefined operation on a colvar of type \""+
              type_desc(this->value_type)+"\".\n");
-}
-
-inline void colvarvalue::error_rside(colvarvalue::Type const &vt) const
-{
-  cvm::error("Trying to assign a colvar value with type \""+
-             type_desc(this->value_type)+"\" to one with type \""+
-             type_desc(vt)+"\".\n");
-}
-
-inline void colvarvalue::error_lside(colvarvalue::Type const &vt) const
-{
-  cvm::error("Trying to use a colvar value with type \""+
-             type_desc(vt)+"\" as one of type \""+
-             type_desc(this->value_type)+"\".\n");
-}
-
-inline void colvarvalue::wrong_size(int const n) const
-{
-  cvm::error("Error: trying to use a vector of size \""+cvm::to_str(n)+
-             "\" to initialize a variable with \""+type_desc(vt)+"\".\n");
 }
 
 

@@ -15,6 +15,177 @@
 // ----------------------------------------------------------------------
 
 
+/// \brief Arbitrary size array (one dimensions) suitable for linear
+/// algebra operations (i.e. for floating point numbers it can be used
+/// with library functions)
+template <class T> class colvarmodule::vector1d
+{
+protected:
+
+  /// Underlying C-array
+  T *array;
+  size_t length;
+
+public:
+
+  /// Allocation routine, used by all constructors
+  inline void alloc() {
+    if (length > 0) {
+      array = new T [length];
+    } else {
+      array = NULL;
+    }
+  }
+
+  /// Deallocation routine
+  inline void dealloc() {
+    if (array != NULL) {
+      delete [] array;
+    }
+  }
+
+  /// Length of the array
+  inline size_t size() const
+  {
+    return length;
+  }
+
+  /// Default constructor
+  inline vector1d(size_t const n = 0, T const &t = T())
+  {
+    length = n;
+    this->alloc();
+    reset();
+  }
+
+  /// Constructor from a 1-d C array
+  inline vector1d(size_t const n, T const *v)
+  {
+    length = n;
+    this->alloc();
+    for (size_t i = 0; i < length; i++) {
+      array[i] = v[i];
+    }
+  }
+
+  /// Copy constructor
+  inline vector1d(vector1d<T> const &v)
+  {
+    length = v.length;
+    this->alloc();
+    for (size_t i = 0; i < length; i++) {
+      array[i] = v.array[i];
+    }
+  }
+
+  /// Set all elements to zero
+  inline void reset()
+  {
+    for (size_t i = 0; i < length; i++) {
+      array[i] = T(0.0);
+    }
+  }
+
+  /// Assignment
+  inline vector1d<T> & operator = (vector1d<T> const &v)
+  {
+    if (length != v.length) {
+      this->dealloc();
+      length = v.length;
+      this->alloc();
+    }
+    for (size_t i = 0; i < length; i++) {
+      this->array[i] = v.array[i];
+    }
+    return *this;
+  }
+
+  /// Destructor
+  inline ~vector1d() {
+    this->dealloc();
+  }
+
+  /// Return the 1-d C array
+  inline operator T *() { return array; }
+
+  inline T & operator [] (int const &i) {
+    return array[i];
+  }
+
+  inline T const operator [] (int const &i) const {
+    return array[i];
+  }
+
+  /// Inner product
+  inline friend T operator * (vector1d<T> const &v1,
+                              vector1d<T> const &v2)
+  {
+    T prod(0.0);
+    size_t const min_length = (v1.length > v2.length) ? v1.length : v2.length;
+    for (size_t i = 0; i < min_length; i++) {
+      prod += v1.array[i] * v2.array[i];
+    }
+    return prod;
+  }
+
+  /// Slicing
+  inline vector1d<T> const slice(size_t const i1, size_t const i2) const
+  {
+    if ((i2 < i1) || (i1 < 0) || (i2 >= length)) {
+      cvm::error("Error: trying to slice a vector using incorrect boundaries.\n");
+    }
+    vector1d<T> result(i2 - i1, T());
+    for (size_t i = 0; i < (i2 - i1); i++) {
+      result[i] = (*this)[i1+i];
+    }
+  }
+
+  /// Assign to a slice
+  inline void sliceassign(size_t const i1, size_t const i2, vector1d<T> const &v)
+  {
+    if ((i2 < i1) || (i1 < 0) || (i2 >= length)) {
+      cvm::error("Error: trying to slice a vector using incorrect boundaries.\n");
+    }
+    for (size_t i = 0; i < (i2 - i1); i++) {
+      (*this)[i1+i] = v[i];
+    }
+  }
+
+  /// Squared norm
+  inline cvm::real norm2() const
+  {
+    cvm::real result = 0.0;
+    for (size_t i = 0; i < length; i++) {
+      result += array[i] * array[i];
+    }
+    return result;
+  }
+
+  inline cvm::real norm() const
+  {
+    return std::sqrt(this->norm2());
+  }
+
+  /// Formatted output
+  friend std::ostream & operator << (std::ostream &os,
+                                     vector1d<T> const &v)
+  {
+    std::streamsize const w = os.width();
+    std::streamsize const p = os.precision();
+
+    os << "( ";
+    for (size_t i = 0; i < v.length-1; i++) {
+      os.width(w); os.precision(p);
+      os << v.array[i] << " , ";
+    }
+    os.width(w); os.precision(p);
+    os << v.array[v.length-1] << " )";
+    return os;
+  }
+
+};
+
+
 /// vector of real numbers with three components
 class colvarmodule::rvector {
 
@@ -32,8 +203,12 @@ public:
     : x(x_i), y(y_i), z(z_i)
   {}
 
-  inline rvector(cvm::real v)
-    : x(v), y(v), z(v)
+  inline rvector(cvm::vector1d<cvm::real> const &v)
+    : x(v[0]), y(v[1]), z(v[2])
+  {}
+
+  inline rvector(cvm::real t)
+    : x(t), y(t), z(t)
   {}
 
   /// \brief Set all components to a scalar value
@@ -65,6 +240,13 @@ public:
     return (i == 0) ? x : (i == 1) ? y : (i == 2) ? z : x;
   }
 
+  inline cvm::vector1d<cvm::real> const as_vector() const
+  {
+    cvm::vector1d<cvm::real> result(3, 0.0);
+    result[0] = this->x;
+    result[1] = this->y;
+    result[2] = this->z;
+  }
 
   inline cvm::rvector & operator = (cvm::real const &v)
   {
@@ -177,159 +359,6 @@ public:
 
   std::string to_simple_string() const;
   int from_simple_string(std::string const &s);
-};
-
-
-
-/// \brief Arbitrary size array (one dimensions) suitable for linear
-/// algebra operations (i.e. for floating point numbers it can be used
-/// with library functions)
-template <class T> class colvarmodule::vector1d
-{
-protected:
-
-  /// Underlying C-array
-  T *array;
-  size_t length;
-
-public:
-
-  /// Allocation routine, used by all constructors
-  inline void alloc() {
-    if (length > 0) {
-      array = new T [length];
-    } else {
-      array = NULL;
-    }
-  }
-
-  /// Deallocation routine
-  inline void dealloc() {
-    if (array != NULL) {
-      delete [] array;
-    }
-  }
-
-  /// Length of the array
-  inline size_t size() const
-  {
-    return length;
-  }
-
-  /// Default constructor
-  inline vector1d(size_t const n = 0, T const &t = T())
-  {
-    length = n;
-    this->alloc();
-    reset();
-  }
-
-  /// Constructor from a 1-d C array
-  inline vector1d(size_t const n, T const *v)
-  {
-    length = n;
-    this->alloc();
-    for (size_t i = 0; i < length; i++) {
-      array[i] = v[i];
-    }
-  }
-
-  /// Copy constructor
-  inline vector1d(vector1d<T> const &v)
-  {
-    length = v.length;
-    this->alloc();
-    for (size_t i = 0; i < length; i++) {
-      array[i] = v.array[i];
-    }
-  }
-
-  /// Set all elements to zero
-  inline void reset()
-  {
-    for (size_t i = 0; i < length; i++) {
-      array[i] = T(0.0);
-    }
-  }
-
-  /// Assignment
-  inline vector1d<T> & operator = (vector1d<T> const &v)
-  {
-    if (length != v.length) {
-      this->dealloc();
-      length = v.length;
-      this->alloc();
-    }
-    for (size_t i = 0; i < length; i++) {
-      this->array[i] = v.array[i];
-    }
-    return *this;
-  }
-
-  /// Destructor
-  inline ~vector1d() {
-    this->dealloc();
-  }
-
-  /// Return the 1-d C array
-  inline operator T *() { return array; }
-
-  /// Inner product
-  inline friend T operator * (vector1d<T> const &v1,
-                              vector1d<T> const &v2)
-  {
-    T prod(0.0);
-    size_t const min_length = (v1.length > v2.length) ? v1.length : v2.length;
-    for (size_t i = 0; i < min_length; i++) {
-      prod += v1.array[i] * v2.array[i];
-    }
-    return prod;
-  }
-
-  /// Slicing
-  inline vector1d<T> slice(size_t const i1, size_t const i2) const
-  {
-    if ((i2 < i1) || (i1 < 0) || (i2 >= length)) {
-      cvm::error("Error: trying to slice a vector using incorrect boundaries.\n");
-    }
-    vector1d<T> result(i2 - i1, T());
-    for (size_t i = 0; i < (i2 - i1); i++) {
-      result[i] = (*this)[i1+i];
-    }
-  }
-
-  /// Squared norm
-  inline cvm::real norm2() const
-  {
-    cvm::real result = 0.0;
-    for (size_t i = 0; i < length; i++) {
-      result += array[i] * array[i];
-    }
-    return result;
-  }
-
-  inline cvm::real norm() const
-  {
-    return std::sqrt(this->norm2());
-  }
-
-  /// Formatted output
-  friend std::ostream & operator << (std::ostream &os,
-                                     vector1d<T> const &v)
-  {
-    std::streamsize const w = os.width();
-    std::streamsize const p = os.precision();
-
-    os << "( ";
-    for (size_t i = 0; i < v.length-1; i++) {
-      os.width(w); os.precision(p);
-      os << v.array[i] << " , ";
-    }
-    os.width(w); os.precision(p);
-    os << v.array[v.length-1] << " )";
-    return os;
-  }
-
 };
 
 
@@ -632,6 +661,10 @@ public:
     : q0(q0i), q1(q1i), q2(q2i), q3(q3i)
   {}
 
+  inline quaternion(cvm::vector1d<cvm::real> const &v)
+    : q0(v[0]), q1(v[1]), q2(v[2]), q3(v[3])
+  {}
+
   /// "Constructor" after Euler angles (in radians)
   ///
   /// http://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
@@ -725,6 +758,15 @@ public:
                  "component which is not between 0 and 3.\n");
       return 0.0;
     }
+  }
+
+  inline cvm::vector1d<cvm::real> const as_vector() const
+  {
+    cvm::vector1d<cvm::real> result(4, 0.0);
+    result[0] = q0;
+    result[1] = q1;
+    result[2] = q2;
+    result[3] = q3;
   }
 
   /// Square norm of the quaternion
