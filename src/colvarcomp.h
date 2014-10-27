@@ -153,17 +153,17 @@ public:
 
 
   /// \brief Return the previously calculated value
-  virtual colvarvalue value() const;
+  virtual colvarvalue const & value() const;
 
-  /// \brief Return const pointer to the previously calculated value
-  virtual const colvarvalue *p_value() const;
+  // /// \brief Return const pointer to the previously calculated value
+  // virtual const colvarvalue *p_value() const;
 
   /// \brief Return the previously calculated system force
-  virtual colvarvalue system_force() const;
+  virtual colvarvalue const & system_force() const;
 
   /// \brief Return the previously calculated divergence of the
   /// inverse atomic gradients
-  virtual colvarvalue Jacobian_derivative() const;
+  virtual colvarvalue const & Jacobian_derivative() const;
 
   /// \brief Apply the collective variable force, by communicating the
   /// atomic forces to the simulation program (\b Note: the \link ft
@@ -253,22 +253,22 @@ inline colvarvalue::Type colvar::cvc::type() const
   return x.type();
 }
 
-inline colvarvalue colvar::cvc::value() const
+inline colvarvalue const & colvar::cvc::value() const
 {
   return x;
 }
 
-inline const colvarvalue * colvar::cvc::p_value() const
-{
-  return &x;
-}
+// inline const colvarvalue * colvar::cvc::p_value() const
+// {
+//   return &x;
+// }
 
-inline colvarvalue colvar::cvc::system_force() const
+inline colvarvalue const & colvar::cvc::system_force() const
 {
   return ft;
 }
 
-inline colvarvalue colvar::cvc::Jacobian_derivative() const
+inline colvarvalue const & colvar::cvc::Jacobian_derivative() const
 {
   return jd;
 }
