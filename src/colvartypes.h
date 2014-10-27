@@ -272,9 +272,6 @@ public:
   }
 
   /// Return the 1-d C array
-  inline T *c_array() { return array; }
-
-  /// Return the 1-d C array
   inline operator T *() { return array; }
 
   /// Inner product
@@ -435,9 +432,6 @@ public:
   inline ~matrix2d() {
     this->dealloc();
   }
-
-  /// Return the 2-d C array
-  inline T **c_array() { return array; }
 
   /// Return the 2-d C array
   inline operator T **() { return array; }
