@@ -15,7 +15,7 @@
 // ----------------------------------------------------------------------
 
 
-/// 1-dimensional vector of real numbers with three components
+/// vector of real numbers with three components
 class colvarmodule::rvector {
 
 public:
@@ -211,7 +211,7 @@ public:
   }
 
   /// Length of the array
-  inline size_t size()
+  inline size_t size() const
   {
     return length;
   }
@@ -259,7 +259,6 @@ public:
       this->dealloc();
       length = v.length;
       this->alloc();
-      reset();
     }
     for (size_t i = 0; i < length; i++) {
       this->array[i] = v.array[i];
@@ -288,6 +287,33 @@ public:
       prod += v1.array[i] * v2.array[i];
     }
     return prod;
+  }
+
+  /// Slicing
+  inline vector1d<T> slice(size_t const i1, size_t const i2) const
+  {
+    if ((i2 < i1) || (i1 < 0) || (i2 >= length)) {
+      cvm::error("Error: trying to slice a vector using incorrect boundaries.\n");
+    }
+    vector1d<T> result(i2 - i1, T());
+    for (size_t i = 0; i < (i2 - i1); i++) {
+      result[i] = (*this)[i1+i];
+    }
+  }
+
+  /// Squared norm
+  inline cvm::real norm2() const
+  {
+    cvm::real result = 0.0;
+    for (size_t i = 0; i < length; i++) {
+      result += array[i] * array[i];
+    }
+    return result;
+  }
+
+  inline cvm::real norm() const
+  {
+    return std::sqrt(this->norm2());
   }
 
   /// Formatted output
@@ -370,8 +396,9 @@ public:
   {
     this->alloc();
     for (size_t i = 0; i < outer_length; i++) {
-      for (size_t j = 0; j < inner_length; j++)
+      for (size_t j = 0; j < inner_length; j++) {
         array[i][j] = m[i][j];
+      }
     }
   }
 
@@ -381,8 +408,9 @@ public:
   {
     this->alloc();
     for (size_t i = 0; i < outer_length; i++) {
-      for (size_t j = 0; j < inner_length; j++)
+      for (size_t j = 0; j < inner_length; j++) {
         this->array[i][j] = m.array[i][j];
+      }
     }
   }
 
@@ -394,11 +422,11 @@ public:
       outer_length = m.outer_length;
       inner_length = m.inner_length;
       this->alloc();
-      reset();
     }
     for (size_t i = 0; i < outer_length; i++) {
-      for (size_t j = 0; j < inner_length; j++)
+      for (size_t j = 0; j < inner_length; j++) {
         this->array[i][j] = m.array[i][j];
+      }
     }
     return *this;
   }

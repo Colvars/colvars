@@ -340,7 +340,7 @@ public:
 
 
 // \brief Colvar component: distance vector between centers of mass
-// of two groups (\link colvarvalue::type_vector \endlink type,
+// of two groups (\link colvarvalue::type_3vector \endlink type,
 // range (-*:*)x(-*:*)x(-*:*))
 class colvar::distance_vec
   : public colvar::distance

@@ -4,6 +4,7 @@
 #define COLVARVALUE_H
 
 #include "colvarmodule.h"
+#include "colvartypes.h"
 
 
 /// \brief Value of a collective variable: this is a metatype which
@@ -27,7 +28,7 @@
 /// stream. No problem of course with the output streams: \code os << x;
 ///
 /// \em Note \em on \em performance: to avoid type checks in a long array of \link
-/// colvarvalue \endlink objects, use one of the the "_opt" functions or implement a new one
+/// colvarvalue \endlink objects, use one of the existing "_opt" functions or implement a new one
 
 class colvarvalue {
 
@@ -44,99 +45,66 @@ public:
     /// Scalar number, implemented as \link colvarmodule::real \endlink (default)
     type_scalar,
     /// 3-dimensional vector, implemented as \link colvarmodule::rvector \endlink
-    type_vector,
+    type_3vector,
     /// 3-dimensional unit vector, implemented as \link colvarmodule::rvector \endlink
-    type_unitvector,
+    type_unit3vector,
     /// 3-dimensional vector that is a derivative of a unitvector
-    type_unitvectorderiv,
+    type_unit3vectorderiv,
     /// 4-dimensional unit vector representing a rotation, implemented as \link colvarmodule::quaternion \endlink
     type_quaternion,
     /// 4-dimensional vector that is a derivative of a quaternion
-    type_quaternionderiv
+    type_quaternionderiv,
+    /// vector (arbitrary dimension)
+    type_vector
   };
 
-  /// Runtime description of value types
-  inline std::string static const type_desc(Type t)
-  {
-    switch (t) {
-    case colvarvalue::type_notset:
-    default:
-      return "not set"; break;
-    case colvarvalue::type_scalar:
-      return "scalar number"; break;
-    case colvarvalue::type_vector:
-      return "3-dimensional vector"; break;
-    case colvarvalue::type_unitvector:
-      return "3-dimensional unit vector"; break;
-    case colvarvalue::type_unitvectorderiv:
-      return "derivative of a 3-dimensional unit vector"; break;
-    case colvarvalue::type_quaternion:
-      return "4-dimensional unit quaternion"; break;
-    case colvarvalue::type_quaternionderiv:
-      return "4-dimensional tangent vector"; break;
-    }
-  }
-
-  /// User keywords for specifying value types in the configuration
-  inline std::string static const type_keyword(Type t)
-  {
-    switch (t) {
-    case colvarvalue::type_notset:
-    default:
-      return "not_set"; break;
-    case colvarvalue::type_scalar:
-      return "scalar"; break;
-    case colvarvalue::type_vector:
-      return "vector"; break;
-    case colvarvalue::type_unitvector:
-      return "unit_vector"; break;
-    case colvarvalue::type_unitvectorderiv:
-      return ""; break;
-    case colvarvalue::type_quaternion:
-      return "unit_quaternion"; break;
-    case colvarvalue::type_quaternionderiv:
-      return ""; break;
-    }
-  }
-
-  /// Number of degrees of freedom for each type
-  inline size_t static num_df(Type t)
-  {
-    switch (t) {
-    case colvarvalue::type_notset:
-    default:
-      return 0; break;
-    case colvarvalue::type_scalar:
-      return 1; break;
-    case colvarvalue::type_vector:
-      return 3; break;
-    case colvarvalue::type_unitvector:
-      return 2; break;
-    case colvarvalue::type_unitvectorderiv:
-      return 2; break;
-    case colvarvalue::type_quaternion:
-      return 3; break;
-    case colvarvalue::type_quaternionderiv:
-      return 3; break;
-    }
-  }
+  /// Current type of this colvarvalue object
+  Type value_type;
 
   /// \brief Real data member
-  cvm::real       real_value;
+  cvm::real real_value;
 
-  /// \brief Vector data member
-  cvm::rvector    rvector_value;
+  /// \brief 3-dimensional vector data member
+  cvm::rvector rvector_value;
 
   /// \brief Quaternion data member
   cvm::quaternion quaternion_value;
 
-  /// Current type of this colvarvalue object
-  Type  value_type;
+  /// \brief Generic vector data member
+  cvm::vector1d<cvm::real> vector1d_value;
 
-  static inline bool type_checking()
+  /// \brief If \link vector1d_value \endlink is a concatenation of colvarvalues,
+  /// keep track of the individual types
+  std::vector<Type> value_types;
+
+  /// \brief If \link vector1d_value \endlink is a concatenation of colvarvalues,
+  /// these mark the initial components of each colvarvalue
+  std::vector<int> value_indices;
+
+  /// \brief If \link vector1d_value \endlink is a concatenation of colvarvalues,
+  /// these mark how many components for each colvarvalue
+  std::vector<int> value_sizes;
+
+  /// \brief Whether or not the type check is enforced
+  static inline bool type_checking() const
   {
     return true;
   }
+
+  /// Runtime description of value types
+  std::string static const type_desc(Type t);
+
+  /// User keywords for specifying value types in the configuration
+  std::string static const type_keyword(Type t);
+
+  /// Number of degrees of freedom for each supported type
+  size_t static num_df(Type t);
+
+  /// Number of dimensions for each supported type (used to allocate vector1d_value)
+  size_t static num_dimensions(Type t);
+
+  /// Number of dimensions of this variable
+  size_t size() const;
 
   /// \brief Default constructor: this class defaults to a scalar
   /// number and always behaves like it unless you change its type
@@ -157,14 +125,14 @@ public:
   {}
 
   /// \brief Copy constructor from rvector base type (Note: this sets
-  /// automatically a type \link type_vector \endlink , if you want a
-  /// \link type_unitvector \endlink you must set it explicitly)
+  /// automatically a type \link type_3vector \endlink , if you want a
+  /// \link type_unit3vector \endlink you must set it explicitly)
   inline colvarvalue(cvm::rvector const &v)
-    : rvector_value(v), value_type(type_vector)
+    : rvector_value(v), value_type(type_3vector)
   {}
 
   /// \brief Copy constructor from rvector base type (additional
-  /// argument to make possible to choose a \link type_unitvector
+  /// argument to make possible to choose a \link type_unit3vector
   /// \endlink
   inline colvarvalue(cvm::rvector const &v, Type const &vti)
     : rvector_value(v), value_type(vti)
@@ -176,28 +144,10 @@ public:
   {}
 
   /// Copy constructor from another \link colvarvalue \endlink
-  inline colvarvalue(colvarvalue const &x)
-    : value_type(x.value_type)
-  {
-    reset();
+  colvarvalue(colvarvalue const &x);
 
-    switch (x.value_type) {
-    case type_scalar:
-      real_value = x.real_value;
-      break;
-    case type_vector:
-    case type_unitvector:
-      rvector_value = x.rvector_value;
-      break;
-    case type_quaternion:
-      quaternion_value = x.quaternion_value;
-      break;
-    case type_notset:
-    default:
-      break;
-    }
-  }
-
+  /// Copy constructor from vector1d base type
+  colvarvalue(cvm::vector1d<cvm::real> const &v, Type const &vti);
 
   /// Set to the null value for the data type currently defined
   void reset();
@@ -231,7 +181,7 @@ public:
   }
 
   /// Make the type a derivative of the original type
-  /// (constraints do not apply on time derivatives of vector values)
+  /// (so that its constraints do not apply)
   inline void is_derivative();
 
   /// Square norm of this colvarvalue
@@ -256,43 +206,28 @@ public:
   /// Assignment operator (type of x is checked)
   colvarvalue & operator = (colvarvalue const &x);
 
+  /// Assignment for a vector (type of x is checked)
+  void assign_value(int const i, colvarvalue const &x);
+
   void operator += (colvarvalue const &x);
   void operator -= (colvarvalue const &x);
   void operator *= (cvm::real const &a);
   void operator /= (cvm::real const &a);
 
 
-  // Casting operator
-  inline operator cvm::real() const
-  {
-    if (value_type != type_scalar) {
-      error_rside(type_scalar);
-    }
-    return real_value;
-  }
+  // Cast to scaler
+  operator cvm::real() const;
 
-  // Casting operator
-  inline operator cvm::rvector() const
-  {
-    if ((value_type != type_vector) &&
-        (value_type != type_unitvector) &&
-        (value_type != type_unitvectorderiv)) {
-      error_rside(type_vector);
-    }
-    return rvector_value;
-  }
+  // Cast to 3-vector
+  operator cvm::rvector() const;
 
-  // Casting operator
-  inline operator cvm::quaternion() const
-  {
-    if ((value_type != type_quaternion) &&
-        (value_type != type_quaternionderiv)) {
-      error_rside(type_quaternion);
-    }
-    return quaternion_value;
-  }
+  // Cast to quaternion
+  operator cvm::quaternion() const;
 
-  /// Special case when the variable is a real number, and all operations are defined
+  // Cast to n-dimensional vector
+  operator cvm::vector1d<cvm::real>() const;
+
+  /// Whether this variable is a real number
   inline bool is_scalar() const
   {
     return (value_type == type_scalar);
@@ -360,6 +295,177 @@ public:
 
 
 
+inline std::string static const colvarvalue::type_desc(Type t)
+{
+  switch (t) {
+  case colvarvalue::type_notset:
+  default:
+    return "not set"; break;
+  case colvarvalue::type_scalar:
+    return "scalar number"; break;
+  case colvarvalue::type_3vector:
+    return "3-dimensional vector"; break;
+  case colvarvalue::type_unit3vector:
+    return "3-dimensional unit vector"; break;
+  case colvarvalue::type_unit3vectorderiv:
+    return "derivative of a 3-dimensional unit vector"; break;
+  case colvarvalue::type_quaternion:
+    return "4-dimensional unit quaternion"; break;
+  case colvarvalue::type_quaternionderiv:
+    return "4-dimensional tangent vector"; break;
+  case colvarvalue::type_vector:
+    return "n-dimensional vector"; break;
+  }
+}
+
+
+inline std::string static const colvarvalue::type_keyword(Type t)
+{
+  switch (t) {
+  case colvarvalue::type_notset:
+  default:
+    return "not_set"; break;
+  case colvarvalue::type_scalar:
+    return "scalar"; break;
+  case colvarvalue::type_3vector:
+    return "vector3"; break;
+  case colvarvalue::type_unit3vector:
+    return "unit_vector3"; break;
+  case colvarvalue::type_unit3vectorderiv:
+    return ""; break;
+  case colvarvalue::type_quaternion:
+    return "unit_quaternion"; break;
+  case colvarvalue::type_quaternionderiv:
+    return ""; break;
+  case colvarvalue::type_vector:
+    return "vector"; break;
+  }
+}
+
+
+inline size_t static colvarvalue::num_df(Type t)
+{
+  switch (t) {
+  case colvarvalue::type_notset:
+  default:
+    return 0; break;
+  case colvarvalue::type_scalar:
+    return 1; break;
+  case colvarvalue::type_3vector:
+    return 3; break;
+  case colvarvalue::type_unit3vector:
+  case colvarvalue::type_unit3vectorderiv:
+    return 2; break;
+  case colvarvalue::type_quaternion:
+  case colvarvalue::type_quaternionderiv:
+    return 3; break;
+  case colvarvalue::type_vector:
+    // the size of a vector is unknown without its object
+    return 0; break;
+  }
+}
+
+
+inline size_t static colvarvalue::num_dimensions(Type t)
+{
+  switch (t) {
+  case colvarvalue::type_notset:
+  default:
+    return 0; break;
+  case colvarvalue::type_scalar:
+    return 1; break;
+  case colvarvalue::type_3vector:
+  case colvarvalue::type_unit3vector:
+  case colvarvalue::type_unit3vectorderiv:
+    return 3; break;
+  case colvarvalue::type_quaternion:
+  case colvarvalue::type_quaternionderiv:
+    return 4; break;
+  case colvarvalue::type_vector:
+    // the size of a vector is unknown without its object
+    return 0; break;
+  }
+}
+
+
+inline size_t colvarvalue::size() const
+{
+  switch (t) {
+  case colvarvalue::type_notset:
+  default:
+    return 0; break;
+  case colvarvalue::type_scalar:
+    return 1; break;
+  case colvarvalue::type_3vector:
+  case colvarvalue::type_unit3vector:
+  case colvarvalue::type_unit3vectorderiv:
+    return 3; break;
+  case colvarvalue::type_quaternion:
+  case colvarvalue::type_quaternionderiv:
+    return 4; break;
+  case colvarvalue::type_vector:
+    return vector1d_value.size(); break;
+  }
+}
+
+
+
+inline colvarvalue::colvarvalue(colvarvalue const &x)
+  : value_type(x.value_type)
+{
+  reset();
+
+  switch (x.value_type) {
+  case type_scalar:
+    real_value = x.real_value;
+    break;
+  case type_3vector:
+  case type_unit3vector:
+  case type_unit3vectorderiv:
+    rvector_value = x.rvector_value;
+    break;
+  case type_quaternion:
+  case type_quaternionderiv:
+    quaternion_value = x.quaternion_value;
+    break;
+  case type_vector:
+    vector1d_value = x.vector1d_value;
+    value_types = x.value_types;
+    value_indices = x.value_indices;
+    value_sized = x.value_sizes;
+  case type_notset:
+  default:
+    break;
+  }
+}
+
+inline colvarvalue::colvarvalue(cvm::vector1d<cvm::real> const &v, Type const &vti)
+  : value_type(vti)
+{
+  reset();
+  if (v.size() != num_dimensions(value_type)) {
+    wrong_size(v.size(), value_type);
+  }
+  switch (vti) {
+  case type_scalar:
+    real_value = v[0];
+    break;
+  case type_3vector:
+  case type_unit3vector:
+  case type_unit3vectorderiv:
+    rvector_value = cvm::rvector(v);
+    break;
+  case type_quaternion:
+  case type_quaternionderiv:
+    quaternion_value = cvm::quaternion(v);
+    break;
+  case type_vector:
+    vector_value = v;
+  case type_notset:
+  default:
+    break;
+  }
+}
 
 
 
@@ -367,16 +473,19 @@ inline void colvarvalue::reset()
 {
   switch (value_type) {
   case colvarvalue::type_scalar:
-    real_value = cvm::real(0.0);
+    real_value = 0.0;
     break;
-  case colvarvalue::type_vector:
-  case colvarvalue::type_unitvector:
-  case colvarvalue::type_unitvectorderiv:
-    rvector_value = cvm::rvector(0.0, 0.0, 0.0);
+  case colvarvalue::type_3vector:
+  case colvarvalue::type_unit3vector:
+  case colvarvalue::type_unit3vectorderiv:
+    rvector_value.reset();
     break;
   case colvarvalue::type_quaternion:
   case colvarvalue::type_quaternionderiv:
-    quaternion_value = cvm::quaternion(0.0, 0.0, 0.0, 0.0);
+    quaternion_value.reset();
+    break;
+  case colvarvalue::type_vector:
+    vector1d_value.reset();
     break;
   case colvarvalue::type_notset:
   default:
@@ -389,15 +498,31 @@ inline void colvarvalue::apply_constraints()
 {
   switch (value_type) {
   case colvarvalue::type_scalar:
-  case colvarvalue::type_vector:
-  case colvarvalue::type_unitvectorderiv:
+  case colvarvalue::type_3vector:
+  case colvarvalue::type_unit3vectorderiv:
   case colvarvalue::type_quaternionderiv:
-   break;
-  case colvarvalue::type_unitvector:
+    break;
+  case colvarvalue::type_unit3vector:
     rvector_value /= std::sqrt(rvector_value.norm2());
     break;
   case colvarvalue::type_quaternion:
     quaternion_value /= std::sqrt(quaternion_value.norm2());
+    break;
+  case colvarvalue::type_vector:
+    if (value_types.size() > 0) {
+      // if we have information about non-scalar types, use it
+      for (size_t i = 0; i < value_types.size(); i++) {
+        if (value_sizes[i] == 1) continue; // TODO this can be optimized further
+        cvm::vector1d<cvm::real> vtmp(vector1d_value.slice(value_indices[i],
+                                                           value_indices[i] + value_sizes[i]));
+        colvarvalue cvtmp(vtmp, value_types[i]);
+        cvtmp.apply_constraints();
+        vtmp = cvtmp;
+        for (size_t id = 0; id < value_sizes[i]; id++) {
+          vector1d_value[value_indices[i]+id] = vtmp[id];
+        }
+      }
+    }
     break;
   case colvarvalue::type_notset:
   default:
@@ -410,15 +535,18 @@ inline void colvarvalue::is_derivative()
 {
   switch (value_type) {
   case colvarvalue::type_scalar:
-  case colvarvalue::type_vector:
-  case colvarvalue::type_unitvectorderiv:
+  case colvarvalue::type_3vector:
+  case colvarvalue::type_unit3vectorderiv:
   case colvarvalue::type_quaternionderiv:
     break;
-  case colvarvalue::type_unitvector:
-    type(colvarvalue::type_unitvectorderiv);
+  case colvarvalue::type_unit3vector:
+    type(colvarvalue::type_unit3vectorderiv);
     break;
   case colvarvalue::type_quaternion:
     type(colvarvalue::type_quaternionderiv);
+    break;
+  case colvarvalue::type_vector:
+    // TODO
     break;
   case colvarvalue::type_notset:
   default:
@@ -433,13 +561,28 @@ inline cvm::real colvarvalue::norm2() const
   switch (value_type) {
   case colvarvalue::type_scalar:
     return (this->real_value)*(this->real_value);
-  case colvarvalue::type_vector:
-  case colvarvalue::type_unitvector:
-  case colvarvalue::type_unitvectorderiv:
+  case colvarvalue::type_3vector:
+  case colvarvalue::type_unit3vector:
+  case colvarvalue::type_unit3vectorderiv:
     return (this->rvector_value).norm2();
   case colvarvalue::type_quaternion:
   case colvarvalue::type_quaternionderiv:
     return (this->quaternion_value).norm2();
+  case colvarvalue::type_vector:
+    if (value_types.size() > 0) {
+      cvm::real result = 0.0;
+      // if we have information about non-scalar types, use it
+      for (size_t i = 0; i < value_types.size(); i++) {
+        cvm::vector1d<cvm::real> const vtmp(vector1d_value.slice(value_indices[i],
+                                                                 value_indices[i] + value_sizes[i]));
+        colvarvalue const cvtmp(vtmp, value_types[i]);
+        result += cvtmp.norm2();
+      }
+      return result;
+    } else {
+      return vector1d_value.norm2();
+    }
+    break;
   case colvarvalue::type_notset:
   default:
     return 0.0;
@@ -452,9 +595,9 @@ inline colvarvalue colvarvalue::inverse() const
   switch (value_type) {
   case colvarvalue::type_scalar:
     return colvarvalue(1.0/real_value);
-  case colvarvalue::type_vector:
-  case colvarvalue::type_unitvector:
-  case colvarvalue::type_unitvectorderiv:
+  case colvarvalue::type_3vector:
+  case colvarvalue::type_unit3vector:
+  case colvarvalue::type_unit3vectorderiv:
     return colvarvalue(cvm::rvector(1.0/rvector_value.x,
                                     1.0/rvector_value.y,
                                     1.0/rvector_value.z));
@@ -464,6 +607,12 @@ inline colvarvalue colvarvalue::inverse() const
                                        1.0/quaternion_value.q1,
                                        1.0/quaternion_value.q2,
                                        1.0/quaternion_value.q3));
+  case colvarvalue::type_vector:
+    if (value_types.size() > 0) {
+      // TODO
+    } else {
+      return vector1d_value.norm2();
+    }
   case colvarvalue::type_notset:
   default:
     undef_op();
@@ -471,26 +620,34 @@ inline colvarvalue colvarvalue::inverse() const
   return colvarvalue();
 }
 
+
 inline colvarvalue & colvarvalue::operator = (colvarvalue const &x)
 {
-  if (this->value_type != type_notset)
-    if (this->value_type != x.value_type)
+  if (this->value_type != type_notset) {
+    if (this->value_type != x.value_type) {
       error_lside(x.value_type);
-
+    }
+  }
   this->value_type = x.value_type;
 
   switch (this->value_type) {
   case colvarvalue::type_scalar:
     this->real_value = x.real_value;
     break;
-  case colvarvalue::type_vector:
-  case colvarvalue::type_unitvector:
-  case colvarvalue::type_unitvectorderiv:
+  case colvarvalue::type_3vector:
+  case colvarvalue::type_unit3vector:
+  case colvarvalue::type_unit3vectorderiv:
     this->rvector_value = x.rvector_value;
     break;
   case colvarvalue::type_quaternion:
   case colvarvalue::type_quaternionderiv:
     this->quaternion_value = x.quaternion_value;
+    break;
+  case colvarvalue::type_vector:
+    vector1d_value = x.vector1d_value;
+    value_types = x.value_types;
+    value_indices = x.value_indices;
+    value_sized = x.value_sizes;
     break;
   case colvarvalue::type_notset:
   default:
@@ -499,6 +656,17 @@ inline colvarvalue & colvarvalue::operator = (colvarvalue const &x)
   }
   return *this;
 }
+
+
+void colvarvalue::assign_value(int const i, colvarvalue const &x);
+{
+  if (this->value_type != type_vector) {
+    cvm::error("Trying to assign an individual component to a variable that is not a vector.\n");
+  }
+
+  // TODO
+}
+
 
 inline void colvarvalue::operator += (colvarvalue const &x)
 {
@@ -509,14 +677,20 @@ inline void colvarvalue::operator += (colvarvalue const &x)
   case colvarvalue::type_scalar:
     this->real_value += x.real_value;
     break;
-  case colvarvalue::type_vector:
-  case colvarvalue::type_unitvector:
-  case colvarvalue::type_unitvectorderiv:
+  case colvarvalue::type_3vector:
+  case colvarvalue::type_unit3vector:
+  case colvarvalue::type_unit3vectorderiv:
     this->rvector_value += x.rvector_value;
     break;
   case colvarvalue::type_quaternion:
   case colvarvalue::type_quaternionderiv:
     this->quaternion_value += x.quaternion_value;
+    break;
+  case colvarvalue::type_vector:
+    // TODO move this to vector1d
+    for (size_t i = 0; i < vector1d_value.size(); i++) {
+      vector1d_value[i] += x.[i];
+    }
     break;
   case colvarvalue::type_notset:
   default:
@@ -533,14 +707,20 @@ inline void colvarvalue::operator -= (colvarvalue const &x)
   case colvarvalue::type_scalar:
     real_value -= x.real_value;
     break;
-  case colvarvalue::type_vector:
-  case colvarvalue::type_unitvector:
-  case colvarvalue::type_unitvectorderiv:
+  case colvarvalue::type_3vector:
+  case colvarvalue::type_unit3vector:
+  case colvarvalue::type_unit3vectorderiv:
     rvector_value -= x.rvector_value;
     break;
   case colvarvalue::type_quaternion:
   case colvarvalue::type_quaternionderiv:
     quaternion_value -= x.quaternion_value;
+    break;
+  case colvarvalue::type_vector:
+    // TODO move this to vector1d
+    for (size_t i = 0; i < vector1d_value.size(); i++) {
+      vector1d_value[i] -= x.[i];
+    }
     break;
   case colvarvalue::type_notset:
   default:
@@ -554,13 +734,19 @@ inline void colvarvalue::operator *= (cvm::real const &a)
   case colvarvalue::type_scalar:
     real_value *= a;
     break;
-  case colvarvalue::type_vector:
-  case colvarvalue::type_unitvectorderiv:
+  case colvarvalue::type_3vector:
+  case colvarvalue::type_unit3vectorderiv:
     rvector_value *= a;
     break;
   case colvarvalue::type_quaternion:
   case colvarvalue::type_quaternionderiv:
     quaternion_value *= a;
+    break;
+  case colvarvalue::type_vector:
+    // TODO move this to vector1d
+    for (size_t i = 0; i < vector1d_value.size(); i++) {
+      vector1d_value[i] *= a;
+    }
     break;
   case colvarvalue::type_notset:
   default:
@@ -573,13 +759,19 @@ inline void colvarvalue::operator /= (cvm::real const &a)
   switch (value_type) {
   case colvarvalue::type_scalar:
     real_value /= a; break;
-  case colvarvalue::type_vector:
-  case colvarvalue::type_unitvector:
-  case colvarvalue::type_unitvectorderiv:
+  case colvarvalue::type_3vector:
+  case colvarvalue::type_unit3vector:
+  case colvarvalue::type_unit3vectorderiv:
     rvector_value /= a; break;
   case colvarvalue::type_quaternion:
   case colvarvalue::type_quaternionderiv:
     quaternion_value /= a; break;
+  case colvarvalue::type_vector:
+    // TODO move this to vector1d
+    for (size_t i = 0; i < vector1d_value.size(); i++) {
+      vector1d_value[i] /= a;
+    }
+    break;
   case colvarvalue::type_notset:
   default:
     undef_op();
@@ -598,12 +790,12 @@ inline colvarvalue operator + (colvarvalue const &x1,
   switch (x1.value_type) {
   case colvarvalue::type_scalar:
     return colvarvalue(x1.real_value + x2.real_value);
-  case colvarvalue::type_vector:
+  case colvarvalue::type_3vector:
     return colvarvalue(x1.rvector_value + x2.rvector_value);
-  case colvarvalue::type_unitvector:
-  case colvarvalue::type_unitvectorderiv:
+  case colvarvalue::type_unit3vector:
+  case colvarvalue::type_unit3vectorderiv:
     return colvarvalue(x1.rvector_value + x2.rvector_value,
-                       colvarvalue::type_unitvector);
+                       colvarvalue::type_unit3vector);
   case colvarvalue::type_quaternion:
   case colvarvalue::type_quaternionderiv:
     return colvarvalue(x1.quaternion_value + x2.quaternion_value);
@@ -623,12 +815,12 @@ inline colvarvalue operator - (colvarvalue const &x1,
   switch (x1.value_type) {
   case colvarvalue::type_scalar:
     return colvarvalue(x1.real_value - x2.real_value);
-  case colvarvalue::type_vector:
+  case colvarvalue::type_3vector:
     return colvarvalue(x1.rvector_value - x2.rvector_value);
-  case colvarvalue::type_unitvector:
-  case colvarvalue::type_unitvectorderiv:
+  case colvarvalue::type_unit3vector:
+  case colvarvalue::type_unit3vectorderiv:
     return colvarvalue(x1.rvector_value - x2.rvector_value,
-                       colvarvalue::type_unitvector);
+                       colvarvalue::type_unit3vector);
   case colvarvalue::type_quaternion:
   case colvarvalue::type_quaternionderiv:
     return colvarvalue(x1.quaternion_value - x2.quaternion_value);
@@ -647,12 +839,12 @@ inline colvarvalue operator * (cvm::real const &a,
   switch (x.value_type) {
   case colvarvalue::type_scalar:
     return colvarvalue(a * x.real_value);
-  case colvarvalue::type_vector:
+  case colvarvalue::type_3vector:
     return colvarvalue(a * x.rvector_value);
-  case colvarvalue::type_unitvector:
-  case colvarvalue::type_unitvectorderiv:
+  case colvarvalue::type_unit3vector:
+  case colvarvalue::type_unit3vectorderiv:
     return colvarvalue(a * x.rvector_value,
-                       colvarvalue::type_unitvector);
+                       colvarvalue::type_unit3vector);
   case colvarvalue::type_quaternion:
   case colvarvalue::type_quaternionderiv:
     return colvarvalue(a * x.quaternion_value);
@@ -669,12 +861,12 @@ inline colvarvalue operator * (colvarvalue const &x,
   switch (x.value_type) {
   case colvarvalue::type_scalar:
     return colvarvalue(x.real_value * a);
-  case colvarvalue::type_vector:
+  case colvarvalue::type_3vector:
     return colvarvalue(x.rvector_value * a);
-  case colvarvalue::type_unitvector:
-  case colvarvalue::type_unitvectorderiv:
+  case colvarvalue::type_unit3vector:
+  case colvarvalue::type_unit3vectorderiv:
     return colvarvalue(x.rvector_value * a,
-                       colvarvalue::type_unitvector);
+                       colvarvalue::type_unit3vector);
   case colvarvalue::type_quaternion:
   case colvarvalue::type_quaternionderiv:
     return colvarvalue(x.quaternion_value * a);
@@ -691,12 +883,12 @@ inline colvarvalue operator / (colvarvalue const &x,
   switch (x.value_type) {
   case colvarvalue::type_scalar:
     return colvarvalue(x.real_value / a);
-  case colvarvalue::type_vector:
+  case colvarvalue::type_3vector:
     return colvarvalue(x.rvector_value / a);
-  case colvarvalue::type_unitvector:
-  case colvarvalue::type_unitvectorderiv:
+  case colvarvalue::type_unit3vector:
+  case colvarvalue::type_unit3vectorderiv:
     return colvarvalue(x.rvector_value / a,
-                       colvarvalue::type_unitvector);
+                       colvarvalue::type_unit3vector);
   case colvarvalue::type_quaternion:
   case colvarvalue::type_quaternionderiv:
     return colvarvalue(x.quaternion_value / a);
@@ -719,9 +911,9 @@ inline cvm::real operator * (colvarvalue const &x1,
   switch (x1.value_type) {
   case colvarvalue::type_scalar:
     return (x1.real_value * x2.real_value);
-  case colvarvalue::type_vector:
-  case colvarvalue::type_unitvector:
-  case colvarvalue::type_unitvectorderiv:
+  case colvarvalue::type_3vector:
+  case colvarvalue::type_unit3vector:
+  case colvarvalue::type_unit3vectorderiv:
     return (x1.rvector_value * x2.rvector_value);
   case colvarvalue::type_quaternion:
   case colvarvalue::type_quaternionderiv:
@@ -745,10 +937,10 @@ inline cvm::real colvarvalue::dist2(colvarvalue const &x2) const
   switch (this->value_type) {
   case colvarvalue::type_scalar:
     return (this->real_value - x2.real_value)*(this->real_value - x2.real_value);
-  case colvarvalue::type_vector:
+  case colvarvalue::type_3vector:
     return (this->rvector_value - x2.rvector_value).norm2();
-  case colvarvalue::type_unitvector:
-  case colvarvalue::type_unitvectorderiv:
+  case colvarvalue::type_unit3vector:
+  case colvarvalue::type_unit3vectorderiv:
     // angle between (*this) and x2 is the distance
     return std::acos(this->rvector_value * x2.rvector_value) * std::acos(this->rvector_value * x2.rvector_value);
   case colvarvalue::type_quaternion:
@@ -772,10 +964,10 @@ inline colvarvalue colvarvalue::dist2_grad(colvarvalue const &x2) const
   switch (this->value_type) {
   case colvarvalue::type_scalar:
     return 2.0 * (this->real_value - x2.real_value);
-  case colvarvalue::type_vector:
+  case colvarvalue::type_3vector:
     return 2.0 * (this->rvector_value - x2.rvector_value);
-  case colvarvalue::type_unitvector:
-  case colvarvalue::type_unitvectorderiv:
+  case colvarvalue::type_unit3vector:
+  case colvarvalue::type_unit3vectorderiv:
     {
       cvm::rvector const &v1 = this->rvector_value;
       cvm::rvector const &v2 = x2.rvector_value;
@@ -789,7 +981,7 @@ inline colvarvalue colvarvalue::dist2_grad(colvarvalue const &x2) const
                                        (-1.0) * sin_t * v2.z +
                                        cos_t/sin_t * (v1.z - cos_t*v2.z)
                                        ),
-                          colvarvalue::type_unitvector );
+                          colvarvalue::type_unit3vector );
     }
   case colvarvalue::type_quaternion:
   case colvarvalue::type_quaternionderiv:
@@ -802,14 +994,72 @@ inline colvarvalue colvarvalue::dist2_grad(colvarvalue const &x2) const
 }
 
 
+
+// Casting operator
+inline operator cvm::real() const
+{
+  if (value_type != type_scalar) {
+    error_rside(type_scalar);
+  }
+  return real_value;
+}
+
+// Casting operator
+inline operator cvm::rvector() const
+{
+  if ((value_type != type_3vector) &&
+      (value_type != type_unit3vector) &&
+      (value_type != type_unit3vectorderiv)) {
+    error_rside(type_3vector);
+  }
+  return rvector_value;
+}
+
+// Casting operator
+inline operator cvm::quaternion() const
+{
+  if ((value_type != type_quaternion) &&
+      (value_type != type_quaternionderiv)) {
+    error_rside(type_quaternion);
+  }
+  return quaternion_value;
+}
+
+// Casting operator
+inline operator cvm::vector1d<cvm::real>() const
+{
+  switch (value_type) {
+  case colvarvalue::type_scalar:
+    return cvm::vector1d<cvm::real>(1, real_value);
+    break;
+  case colvarvalue::type_3vector:
+  case colvarvalue::type_unit3vector:
+  case colvarvalue::type_unit3vectorderiv:
+    return cvm::vector1d<cvm::real>(rvector_value);
+    break;
+  case colvarvalue::type_quaternion:
+  case colvarvalue::type_quaternionderiv:
+    return cvm::vector1d<cvm::real>(quaternion_value);
+    break;
+  case colvarvalue::type_vector:
+    // force using the copy constructor jic
+    return cvm::vector1d<cvm::real>(vector1d_value);
+    break;
+  case colvarvalue::type_notset:
+  default:
+    break;
+  }
+}
+
+
 inline void colvarvalue::check_types(colvarvalue const &x1,
                                      colvarvalue const &x2)
 {
   if (x1.value_type != x2.value_type) {
-    if (((x1.value_type == type_unitvector) &&
-         (x2.value_type == type_unitvectorderiv)) ||
-        ((x2.value_type == type_unitvector) &&
-         (x1.value_type == type_unitvectorderiv)) ||
+    if (((x1.value_type == type_unit3vector) &&
+         (x2.value_type == type_unit3vectorderiv)) ||
+        ((x2.value_type == type_unit3vector) &&
+         (x1.value_type == type_unit3vectorderiv)) ||
         ((x1.value_type == type_quaternion) &&
          (x2.value_type == type_quaternionderiv)) ||
         ((x2.value_type == type_quaternion) &&
@@ -831,8 +1081,7 @@ inline void colvarvalue::undef_op() const
              type_desc(this->value_type)+"\".\n");
 }
 
-inline void colvarvalue::error_rside
-(colvarvalue::Type const &vt) const
+inline void colvarvalue::error_rside(colvarvalue::Type const &vt) const
 {
   cvm::error("Trying to assign a colvar value with type \""+
              type_desc(this->value_type)+"\" to one with type \""+
@@ -846,12 +1095,18 @@ inline void colvarvalue::error_lside(colvarvalue::Type const &vt) const
              type_desc(this->value_type)+"\".\n");
 }
 
+inline void colvarvalue::wrong_size(int const n) const
+{
+  cvm::error("Error: trying to use a vector of size \""+cvm::to_str(n)+
+             "\" to initialize a variable with \""+type_desc(vt)+"\".\n");
+}
+
 
 
 inline void colvarvalue::inner_opt(colvarvalue                        const &x,
-                            std::vector<colvarvalue>::iterator       &xv,
-                            std::vector<colvarvalue>::iterator const &xv_end,
-                            std::vector<cvm::real>::iterator         &inner)
+                                   std::vector<colvarvalue>::iterator       &xv,
+                                   std::vector<colvarvalue>::iterator const &xv_end,
+                                   std::vector<cvm::real>::iterator         &inner)
 {
   // doing type check only once, here
   colvarvalue::check_types(x, *xv);
@@ -865,9 +1120,9 @@ inline void colvarvalue::inner_opt(colvarvalue                        const &x,
       *(ii++) += (xvi++)->real_value * x.real_value;
     }
     break;
-  case colvarvalue::type_vector:
-  case colvarvalue::type_unitvector:
-  case colvarvalue::type_unitvectorderiv:
+  case colvarvalue::type_3vector:
+  case colvarvalue::type_unit3vector:
+  case colvarvalue::type_unit3vectorderiv:
     while (xvi != xv_end) {
       *(ii++) += (xvi++)->rvector_value * x.rvector_value;
     }
@@ -884,9 +1139,9 @@ inline void colvarvalue::inner_opt(colvarvalue                        const &x,
 }
 
 inline void colvarvalue::inner_opt(colvarvalue const                      &x,
-                            std::list<colvarvalue>::iterator       &xv,
-                            std::list<colvarvalue>::iterator const &xv_end,
-                            std::vector<cvm::real>::iterator       &inner)
+                                   std::list<colvarvalue>::iterator       &xv,
+                                   std::list<colvarvalue>::iterator const &xv_end,
+                                   std::vector<cvm::real>::iterator       &inner)
 {
   // doing type check only once, here
   colvarvalue::check_types(x, *xv);
@@ -900,9 +1155,9 @@ inline void colvarvalue::inner_opt(colvarvalue const                      &x,
       *(ii++) += (xvi++)->real_value * x.real_value;
     }
     break;
-  case colvarvalue::type_vector:
-  case colvarvalue::type_unitvector:
-  case colvarvalue::type_unitvectorderiv:
+  case colvarvalue::type_3vector:
+  case colvarvalue::type_unit3vector:
+  case colvarvalue::type_unit3vectorderiv:
     while (xvi != xv_end) {
       *(ii++) += (xvi++)->rvector_value * x.rvector_value;
     }
@@ -920,9 +1175,9 @@ inline void colvarvalue::inner_opt(colvarvalue const                      &x,
 
 
 inline void colvarvalue::p2leg_opt(colvarvalue const                        &x,
-                            std::vector<colvarvalue>::iterator       &xv,
-                            std::vector<colvarvalue>::iterator const &xv_end,
-                            std::vector<cvm::real>::iterator         &inner)
+                                   std::vector<colvarvalue>::iterator       &xv,
+                                   std::vector<colvarvalue>::iterator const &xv_end,
+                                   std::vector<cvm::real>::iterator         &inner)
 {
   // doing type check only once, here
   colvarvalue::check_types(x, *xv);
@@ -936,7 +1191,7 @@ inline void colvarvalue::p2leg_opt(colvarvalue const                        &x,
                "for scalar variables.\n");
     return;
     break;
-  case colvarvalue::type_vector:
+  case colvarvalue::type_3vector:
     while (xvi != xv_end) {
       cvm::real const cosine =
         ((xvi)->rvector_value * x.rvector_value) /
@@ -945,8 +1200,8 @@ inline void colvarvalue::p2leg_opt(colvarvalue const                        &x,
       *(ii++) += 1.5*cosine*cosine - 0.5;
     }
     break;
-  case colvarvalue::type_unitvector:
-  case colvarvalue::type_unitvectorderiv:
+  case colvarvalue::type_unit3vector:
+  case colvarvalue::type_unit3vectorderiv:
     while (xvi != xv_end) {
       cvm::real const cosine = (xvi++)->rvector_value * x.rvector_value;
       *(ii++) += 1.5*cosine*cosine - 0.5;
@@ -965,9 +1220,9 @@ inline void colvarvalue::p2leg_opt(colvarvalue const                        &x,
 }
 
 inline void colvarvalue::p2leg_opt(colvarvalue const                        &x,
-                            std::list<colvarvalue>::iterator         &xv,
-                            std::list<colvarvalue>::iterator const   &xv_end,
-                            std::vector<cvm::real>::iterator         &inner)
+                                   std::list<colvarvalue>::iterator         &xv,
+                                   std::list<colvarvalue>::iterator const   &xv_end,
+                                   std::vector<cvm::real>::iterator         &inner)
 {
   // doing type check only once, here
   colvarvalue::check_types(x, *xv);
@@ -980,7 +1235,7 @@ inline void colvarvalue::p2leg_opt(colvarvalue const                        &x,
     cvm::error("Error: cannot calculate Legendre polynomials "
                "for scalar variables.\n");
     break;
-  case colvarvalue::type_vector:
+  case colvarvalue::type_3vector:
     while (xvi != xv_end) {
       cvm::real const cosine =
         ((xvi)->rvector_value * x.rvector_value) /
@@ -989,8 +1244,8 @@ inline void colvarvalue::p2leg_opt(colvarvalue const                        &x,
       *(ii++) += 1.5*cosine*cosine - 0.5;
     }
     break;
-  case colvarvalue::type_unitvector:
-  case colvarvalue::type_unitvectorderiv:
+  case colvarvalue::type_unit3vector:
+  case colvarvalue::type_unit3vectorderiv:
     while (xvi != xv_end) {
       cvm::real const cosine = (xvi++)->rvector_value * x.rvector_value;
       *(ii++) += 1.5*cosine*cosine - 0.5;
@@ -1014,9 +1269,9 @@ inline std::string colvarvalue::to_simple_string() const
   case colvarvalue::type_scalar:
     return cvm::to_str(real_value, 0, cvm::cv_prec);
     break;
-  case colvarvalue::type_vector:
-  case colvarvalue::type_unitvector:
-  case colvarvalue::type_unitvectorderiv:
+  case colvarvalue::type_3vector:
+  case colvarvalue::type_unit3vector:
+  case colvarvalue::type_unit3vectorderiv:
     return rvector_value.to_simple_string();
     break;
   case colvarvalue::type_quaternion:
@@ -1037,9 +1292,9 @@ inline int colvarvalue::from_simple_string(std::string const &s)
     return ((std::istringstream(s) >> real_value)
             ? COLVARS_OK : COLVARS_ERROR);
     break;
-  case colvarvalue::type_vector:
-  case colvarvalue::type_unitvector:
-  case colvarvalue::type_unitvectorderiv:
+  case colvarvalue::type_3vector:
+  case colvarvalue::type_unit3vector:
+  case colvarvalue::type_unit3vectorderiv:
     return rvector_value.from_simple_string(s);
     break;
   case colvarvalue::type_quaternion:
@@ -1060,9 +1315,9 @@ inline std::ostream & operator << (std::ostream &os, colvarvalue const &x)
   case colvarvalue::type_scalar:
     os << x.real_value;
     break;
-  case colvarvalue::type_vector:
-  case colvarvalue::type_unitvector:
-  case colvarvalue::type_unitvectorderiv:
+  case colvarvalue::type_3vector:
+  case colvarvalue::type_unit3vector:
+  case colvarvalue::type_unit3vectorderiv:
     os << x.rvector_value;
     break;
   case colvarvalue::type_quaternion:
@@ -1097,11 +1352,11 @@ inline std::istream & operator >> (std::istream &is, colvarvalue &x)
   case colvarvalue::type_scalar:
     is >> x.real_value;
     break;
-  case colvarvalue::type_vector:
-  case colvarvalue::type_unitvectorderiv:
+  case colvarvalue::type_3vector:
+  case colvarvalue::type_unit3vectorderiv:
     is >> x.rvector_value;
     break;
-  case colvarvalue::type_unitvector:
+  case colvarvalue::type_unit3vector:
     is >> x.rvector_value;
     x.apply_constraints();
     break;
@@ -1124,9 +1379,9 @@ inline size_t colvarvalue::output_width(size_t const &real_width) const
   switch (this->value_type) {
   case colvarvalue::type_scalar:
     return real_width;
-  case colvarvalue::type_vector:
-  case colvarvalue::type_unitvector:
-  case colvarvalue::type_unitvectorderiv:
+  case colvarvalue::type_3vector:
+  case colvarvalue::type_unit3vector:
+  case colvarvalue::type_unit3vectorderiv:
     return cvm::rvector::output_width(real_width);
   case colvarvalue::type_quaternion:
   case colvarvalue::type_quaternionderiv:
