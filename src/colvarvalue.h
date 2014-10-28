@@ -109,7 +109,7 @@ public:
   /// \brief Default constructor: this class defaults to a scalar
   /// number and always behaves like it unless you change its type
   inline colvarvalue()
-    : real_value(0.0), value_type(type_scalar)
+    : value_type(type_scalar), real_value(0.0)
   {}
 
   /// Constructor from a type specification
@@ -121,26 +121,26 @@ public:
 
   /// Copy constructor from real base type
   inline colvarvalue(cvm::real const &x)
-    : real_value(x), value_type(type_scalar)
+    : value_type(type_scalar), real_value(x)
   {}
 
   /// \brief Copy constructor from rvector base type (Note: this sets
   /// automatically a type \link type_3vector \endlink , if you want a
   /// \link type_unit3vector \endlink you must set it explicitly)
   inline colvarvalue(cvm::rvector const &v)
-    : rvector_value(v), value_type(type_3vector)
+    : value_type(type_3vector), rvector_value(v)
   {}
 
   /// \brief Copy constructor from rvector base type (additional
   /// argument to make possible to choose a \link type_unit3vector
   /// \endlink
   inline colvarvalue(cvm::rvector const &v, Type const &vti)
-    : rvector_value(v), value_type(vti)
+    : value_type(vti), rvector_value(v)
   {}
 
   /// \brief Copy constructor from quaternion base type
   inline colvarvalue(cvm::quaternion const &q)
-    : quaternion_value(q), value_type(type_quaternion)
+    : value_type(type_quaternion), quaternion_value(q)
   {}
 
   /// Copy constructor from another \link colvarvalue \endlink

@@ -189,6 +189,7 @@ public:
     for (size_t i = 0; i < (i2 - i1); i++) {
       result[i] = (*this)[i1+i];
     }
+    return result;
   }
 
   /// Assign a vector to a slice of this vector
@@ -310,6 +311,7 @@ public:
     result[0] = this->x;
     result[1] = this->y;
     result[2] = this->z;
+    return result;
   }
 
   inline cvm::rvector & operator = (cvm::real const &v)
@@ -831,6 +833,7 @@ public:
     result[1] = q1;
     result[2] = q2;
     result[3] = q3;
+    return result;
   }
 
   /// Square norm of the quaternion
