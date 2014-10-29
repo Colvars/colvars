@@ -170,6 +170,10 @@ public:
   {
     // reset the value based on the previous type
     reset();
+    if (value_type == type_vector) {
+      // delete allocated data if necessary
+      vector1d_value.resize(0);
+    }
     value_type = vti;
     // reset the value based on the new type
     reset();

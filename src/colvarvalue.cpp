@@ -377,6 +377,7 @@ std::ostream & operator << (std::ostream &os, colvarvalue const &x)
     os << x.vector1d_value;
     break;
   case colvarvalue::type_notset:
+  default:
     os << "not set";
     break;
   }
@@ -421,6 +422,10 @@ std::istream & operator >> (std::istream &is, colvarvalue &x)
   case colvarvalue::type_quaternionderiv:
     is >> x.quaternion_value;
     break;
+  case colvarvalue::type_vector:
+    is >> x.vector1d_value;
+    break;
+  case colvarvalue::type_notset:
   default:
     x.undef_op();
   }
@@ -440,6 +445,9 @@ size_t colvarvalue::output_width(size_t const &real_width) const
   case colvarvalue::type_quaternion:
   case colvarvalue::type_quaternionderiv:
     return cvm::quaternion::output_width(real_width);
+  case colvarvalue::type_vector:
+    // note how this depends on the vector's size
+    return vector1d_value.output_width(real_width);
   case colvarvalue::type_notset:
   default:
     return 0;
@@ -477,6 +485,11 @@ void colvarvalue::inner_opt(colvarvalue                        const &x,
       *(ii++) += ((xvi++)->quaternion_value).cosine(x.quaternion_value);
     }
     break;
+  case colvarvalue::type_vector:
+    while (xvi != xv_end) {
+      *(ii++) += (xvi++)->vector1d_value * x.vector1d_value;
+    }
+    break;
   default:
     x.undef_op();
   };
@@ -511,6 +524,11 @@ void colvarvalue::inner_opt(colvarvalue const                      &x,
   case colvarvalue::type_quaternionderiv:
     while (xvi != xv_end) {
       *(ii++) += ((xvi++)->quaternion_value).cosine(x.quaternion_value);
+    }
+    break;
+  case colvarvalue::type_vector:
+    while (xvi != xv_end) {
+      *(ii++) += (xvi++)->vector1d_value * x.vector1d_value;
     }
     break;
   default:
@@ -556,6 +574,15 @@ void colvarvalue::p2leg_opt(colvarvalue const                        &x,
   case colvarvalue::type_quaternionderiv:
     while (xvi != xv_end) {
       cvm::real const cosine = (xvi++)->quaternion_value.cosine(x.quaternion_value);
+      *(ii++) += 1.5*cosine*cosine - 0.5;
+    }
+    break;
+  case colvarvalue::type_vector:
+    while (xvi != xv_end) {
+      cvm::real const cosine =
+        ((xvi)->vector1d_value * x.vector1d_value) /
+        ((xvi)->vector1d_value.norm() * x.rvector_value.norm());
+      xvi++;
       *(ii++) += 1.5*cosine*cosine - 0.5;
     }
     break;
