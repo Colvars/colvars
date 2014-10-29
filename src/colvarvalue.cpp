@@ -373,8 +373,12 @@ std::ostream & operator << (std::ostream &os, colvarvalue const &x)
   case colvarvalue::type_quaternionderiv:
     os << x.quaternion_value;
     break;
+  case colvarvalue::type_vector:
+    os << x.vector1d_value;
+    break;
   case colvarvalue::type_notset:
-    os << "not set"; break;
+    os << "not set";
+    break;
   }
   return os;
 }
