@@ -1,0 +1,30 @@
+colvarsTrajFrequency    1
+colvarsRestartFrequency 2000
+
+colvar {
+    name dmat
+
+    width 0.2
+
+    outputAppliedForce yes
+    distancePairs {
+        forceNoPBC yes
+        group1 {
+            psfSegID BH
+            atomNameResidueRange CA 1-2
+        }
+        group2 {
+            psfSegID BH
+            atomNameResidueRange CA 9-10
+        }
+    }
+} 
+
+harmonic {
+    colvars        dmat
+    forceConstant  1.0
+    centers        (12.0, 14.0, 10.0, 12.0)
+    targetCenters  (5.0, 5.0, 5.0, 5.0)
+    targetNumSteps 1000
+    outputCenters  yes
+}
