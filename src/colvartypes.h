@@ -252,8 +252,9 @@ public:
       return is;
     }
     size_t count = 0;
-    while ( (is >> v[count]) && (is >> sep) && (sep == ',') && (count < v.size()) ) {
-      count++;
+    while ( (is >> v[count]) &&
+            (count < (v.size()-1) ? ((is >> sep) && (sep == ',')) : true) ) {
+      if (++count == v.size()) break;
     }
     if (count < v.size()) {
       is.clear();
