@@ -902,7 +902,7 @@ int ScriptTcl::Tcl_output(ClientData clientData,
     } else if ( ! strcmp(argv[1], "onlyforces") ) {
       dorestart = 0;
       doforces = 1;
-    }  else {
+    } else {
       Tcl_SetResult(interp,
         "first arg not withforces or onlyforces",TCL_VOLATILE);
       return TCL_ERROR;
@@ -969,8 +969,7 @@ int ScriptTcl::Tcl_colvarbias(ClientData clientData,
         Tcl_Interp *interp, int argc, char *argv[]) {
   ScriptTcl *script = (ScriptTcl *)clientData;
   script->initcheck();
-  //if (argc < 4 || argc % 2) {
-  if (argc < 2) {
+  if (argc < 4 || argc % 2) {
     Tcl_SetResult(interp,"wrong # args",TCL_VOLATILE);
     return TCL_ERROR;
   }
@@ -999,7 +998,7 @@ int ScriptTcl::Tcl_colvarbias(ClientData clientData,
     }
     Tcl_SetObjResult(interp, Tcl_NewDoubleObj(ediff));
     return TCL_OK;
-  }  else {
+  } else {
     Tcl_SetResult(interp,"unknown colvarbias operation",TCL_VOLATILE);
     return TCL_ERROR;
   }
