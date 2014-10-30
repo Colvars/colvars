@@ -1,4 +1,5 @@
 colvars: ----------------------------------------------------------------------
+colvars: Using NAMD interface, version 2014-10-26.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "unscripted.in":
 colvars: # indexFile = "" [default]
