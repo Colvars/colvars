@@ -25,6 +25,13 @@ then
   shift
 fi
 
+reverse=0
+if [ $1 = "-R" ]
+then
+  reverse=1
+  shift
+fi
+
 # infer source path from name of script
 source=$(dirname "$0")
 
@@ -75,13 +82,21 @@ echo -n Updating
 
 # conditional file copy
 condcopy () {
-  if [ -d $(dirname "$2") ]
+  if [ $reverse -eq 1 ]
+  then
+    a=$2
+    b=$1
+  else
+    a=$1
+    b=$2
+  fi
+  if [ -d $(dirname "$b") ]
   then
     if [ $checkonly -eq 1 ]
     then
-      cmp -s "$1" "$2" || diff -uN "$2" "$1"
+      cmp -s "$a" "$b" || diff -uN "$b" "$a"
     else
-      cmp -s "$1" "$2" || cp "$1" "$2"
+      cmp -s "$a" "$b" || cp "$a" "$b"
       echo -n '.'
     fi
   fi
@@ -90,17 +105,25 @@ condcopy () {
 
 # check files related to, but not part of the colvars module
 checkfile () {
-  diff -uN "${1}" "${2}" > $(basename ${1}).diff
-  if [ -s $(basename ${1}).diff ]
+  if [ $reverse -eq 1 ]
   then
-    echo "Differences found between ${1} and ${2}, check $(basename ${1}).diff"
+    a=$2
+    b=$1
+  else
+    a=$1
+    b=$2
+  fi
+  diff -uN "${a}" "${b}" > $(basename ${a}).diff
+  if [ -s $(basename ${a}).diff ]
+  then
+    echo "Differences found between ${a} and ${b}, check $(basename ${a}).diff"
     if [ $force_update = 1 ]
     then
-      echo "Overwriting ${2}, as requested by the -f flag."
-      cp "$1" "$2"
+      echo "Overwriting ${b}, as requested by the -f flag."
+      cp "$a" "$b"
     fi
   else
-    rm -f $(basename ${1}).diff
+    rm -f $(basename ${a}).diff
   fi
 }
 
