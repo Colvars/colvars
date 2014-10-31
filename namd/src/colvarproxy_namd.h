@@ -55,7 +55,9 @@ protected:
 
   SubmitReduction *reduction;
 
+#ifdef NAMD_TCL
   Tcl_Interp *interp; // Tcl interpreter embedded in NAMD
+#endif
 
 public:
 

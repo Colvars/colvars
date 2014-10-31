@@ -296,8 +296,8 @@ void colvarproxy_namd::calculate()
 
 // Callback functions
 
-#ifdef NAMD_TCL
 int colvarproxy_namd::run_force_callback() {
+#ifdef NAMD_TCL
   std::string cmd = std::string("calc_colvar_forces ")
     + cvm::to_str(cvm::step_absolute());
   int err = Tcl_Eval(interp, cmd.c_str());
@@ -307,12 +307,16 @@ int colvarproxy_namd::run_force_callback() {
     return COLVARS_ERROR;
   }
   return COLVARS_OK;
+#else
+  return COLVARS_NOT_IMPLEMENTED;
+#endif
 }
 
 int colvarproxy_namd::run_colvar_callback(std::string const &name,
                       std::vector<const colvarvalue *> const &cvc_values,
                       colvarvalue &value)
 {
+#ifdef NAMD_TCL
   size_t i;
   std::string cmd = std::string("calc_") + name;
   for (i = 0; i < cvc_values.size(); i++) {
@@ -333,12 +337,16 @@ int colvarproxy_namd::run_colvar_callback(std::string const &name,
     return COLVARS_ERROR;
   }
   return COLVARS_OK;
+#else
+  return COLVARS_NOT_IMPLEMENTED;
+#endif
 }
 
 int colvarproxy_namd::run_colvar_gradient_callback(std::string const &name,
                                std::vector<const colvarvalue *> const &cvc_values,
                                std::vector<colvarvalue> &gradient)
 {
+#ifdef NAMD_TCL
   size_t i;
   std::string cmd = std::string("calc_") + name + "_gradient";
   for (i = 0; i < cvc_values.size(); i++) {
@@ -369,8 +377,10 @@ int colvarproxy_namd::run_colvar_gradient_callback(std::string const &name,
     }
   }
   return (err == TCL_OK) ? COLVARS_OK : COLVARS_ERROR;
-}
+#else
+  return COLVARS_NOT_IMPLEMENTED;
 #endif
+}
 
 
 void colvarproxy_namd::add_energy(cvm::real energy)

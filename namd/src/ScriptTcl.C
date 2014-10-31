@@ -962,7 +962,7 @@ int ScriptTcl::Tcl_measure(ClientData clientData,
 
 // Replace "colvarbias energydiff" with:
 // cv bias config <config_string_with_tempBias>
-// set ediff [expr [cv bias refBias energy] - [cv bias tempBias energy]]
+// set ediff [expr [cv bias tempBias energy] - [cv bias refBias energy]]
 // cv bias tempBias delete
 
 int ScriptTcl::Tcl_colvarbias(ClientData clientData,

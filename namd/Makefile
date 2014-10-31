@@ -205,7 +205,7 @@ OBJS = \
 	$(DSTDIR)/colvarbias_abf.o \
 	$(DSTDIR)/colvarbias_alb.o \
 	$(DSTDIR)/colvarbias_meta.o \
-    $(DSTDIR)/colvarbias_restraint.o \
+	$(DSTDIR)/colvarbias_restraint.o \
 	$(DSTDIR)/colvarcomp.o \
 	$(DSTDIR)/colvarcomp_angles.o \
 	$(DSTDIR)/colvarcomp_coordnums.o \
