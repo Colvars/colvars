@@ -290,10 +290,6 @@ int colvarscript::proc_bias(int argc, char const *argv[]) {
   // Subcommands for MW ABF
   if (subcmd == "bin") {
     int r = b->current_bin();
-    if (r < 0) {
-      result = "Error: calling current_bin() for bias " + b->name;
-      return COLVARSCRIPT_ERROR;
-    }
     result = cvm::to_str(r);
     return COLVARSCRIPT_OK;
   }
