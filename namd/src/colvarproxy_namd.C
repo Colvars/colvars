@@ -27,7 +27,6 @@ colvarproxy_namd::colvarproxy_namd()
 
   // initialize pointers to NAMD configuration data
   simparams = Node::Object()->simParameters;
-  lattice = &(simparams->lattice);
 
   if (cvm::debug())
     iout << "Info: initializing the colvars proxy object.\n" << endi;

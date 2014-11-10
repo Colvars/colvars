@@ -31,8 +31,6 @@ protected:
 
   /// Pointer to the NAMD simulation input object
   SimParameters const *simparams;
-  /// Pointer to the NAMD boundary conditions object
-  Lattice const       *lattice;
 
   BigReal thermostat_temperature;
 
