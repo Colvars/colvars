@@ -1,5 +1,7 @@
 /// -*- c++ -*-
 
+#include <errno.h>
+
 #include "common.h"
 #include "BackEnd.h"
 #include "InfoStream.h"
@@ -411,10 +413,15 @@ void colvarproxy_namd::error(std::string const &message)
 void colvarproxy_namd::fatal_error(std::string const &message)
 {
   log(message);
+  if (errno) log(strerror(errno));
   if (!cvm::debug())
     log("If this error message is unclear, "
               "try recompiling with -DCOLVARS_DEBUG.\n");
-  NAMD_die("Error in the collective variables module: exiting.\n");
+  if (errno) {
+    NAMD_err("Error in the collective variables module");
+  } else {
+    NAMD_die("Error in the collective variables module: exiting.\n");
+  }
 }
 
 
