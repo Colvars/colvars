@@ -1,6 +1,9 @@
 // -*- c++ -*-
 
 #include <cstdlib>
+#include <stdlib.h>
+#include <string.h>
+
 #include "colvarscript.h"
 
 
