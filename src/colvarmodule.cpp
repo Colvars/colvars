@@ -575,7 +575,7 @@ int colvarmodule::calc() {
   // write trajectory file, if needed
   if (cv_traj_freq && cv_traj_name.size()) {
 
-    if (!cv_traj_os.good()) {
+    if (!cv_traj_os.is_open()) {
       open_traj_file(cv_traj_name);
     }
 
@@ -736,21 +736,10 @@ int colvarmodule::setup_output()
      std::string(""));
 
   if (cv_traj_freq && cv_traj_name.size()) {
-    // open trajectory file
-    if (cv_traj_append) {
-      cvm::log("Appending to colvar trajectory file \""+cv_traj_name+
-                "\".\n");
-      cv_traj_os.open(cv_traj_name.c_str(), std::ios::app);
-    } else {
-      cvm::log("Writing to colvar trajectory file \""+cv_traj_name+
-                "\".\n");
-      proxy->backup_file(cv_traj_name.c_str());
-      cv_traj_os.open(cv_traj_name.c_str(), std::ios::out);
-    }
-    cv_traj_os.setf(std::ios::scientific, std::ios::floatfield);
+    open_traj_file(cv_traj_name);
   }
-  return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
 
+  return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
 }
 
 
@@ -930,21 +919,27 @@ std::ostream & colvarmodule::write_restart(std::ostream &os)
 
 int colvarmodule::open_traj_file(std::string const &file_name)
 {
+  if (cv_traj_os.is_open()) {
+    return COLVARS_OK;
+  }
+
   // (re)open trajectory file
   if (cv_traj_append) {
     cvm::log("Appending to colvar trajectory file \""+file_name+
               "\".\n");
     cv_traj_os.open(file_name.c_str(), std::ios::app);
   } else {
-    cvm::log("Overwriting colvar trajectory file \""+file_name+
+    cvm::log("Writing to colvar trajectory file \""+file_name+
               "\".\n");
     proxy->backup_file(file_name.c_str());
     cv_traj_os.open(file_name.c_str(), std::ios::out);
   }
-  if (!cv_traj_os.good()) {
+
+  if (!cv_traj_os.is_open()) {
     cvm::error("Error: cannot write to file \""+file_name+"\".\n",
                 FILE_ERROR);
   }
+
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
 }
 
