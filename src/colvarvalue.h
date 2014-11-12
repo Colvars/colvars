@@ -16,19 +16,20 @@
 /// treat different data types.  By default, a \link colvarvalue
 /// \endlink variable is a scalar number.  To use it as
 /// another type, declare and initialize it as
-/// \code colvarvalue x(colvarvalue::type_xxx), use \link x.type
+/// \code colvarvalue x(colvarvalue::type_xxx)\endcode, use \link x.type
 /// (colvarvalue::type_xxx) \endlink at a later stage, or if unset,
-//  assign the type with \code x = y; \endcode, provided y is correctly set.
+///  assign the type with \code x = y; \endcode, provided y is correctly set.
 ///
 /// All operators (either unary or binary) on a \link
 /// colvarvalue \endlink object performs one or more checks on the
 /// \link Type \endlink, except when reading from a stream, when there is no way to
 /// detect the \link Type \endlink.  To use  \code is >> x; \endcode x \b MUST
 /// already have a type correcly set up for properly parsing the
-/// stream. No problem of course with the output streams: \code os << x;
+/// stream. No problem of course with the output streams: \code os << x; \endcode
 ///
 /// \em Note \em on \em performance: to avoid type checks in a long array of \link
 /// colvarvalue \endlink objects, use one of the existing "_opt" functions or implement a new one
+
 
 class colvarvalue {
 
