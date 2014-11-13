@@ -345,7 +345,7 @@ int colvarproxy_namd::run_colvar_callback(std::string const &name,
 
 int colvarproxy_namd::run_colvar_gradient_callback(std::string const &name,
                                std::vector<const colvarvalue *> const &cvc_values,
-                               std::vector<colvarvalue> &gradient)
+                               std::vector<cvm::matrix2d<cvm::real> > &gradient)
 {
 #ifdef NAMD_TCL
   size_t i;
@@ -370,9 +370,9 @@ int colvarproxy_namd::run_colvar_gradient_callback(std::string const &name,
   }
   for (i = 0; i < gradient.size(); i++) {
     std::istringstream is(Tcl_GetString(list[i]));
-    gradient[i].type(*(cvc_values[i]));
-    gradient[i].is_derivative();
     if (gradient[i].from_simple_string(is.str()) != COLVARS_OK) {
+      cvm::log("Gradient matrix size: " + cvm::to_str(gradient[i].size()));
+      cvm::log("Gradient string: " + cvm::to_str(Tcl_GetString(list[i])));
       cvm::error("Error parsing gradient value from script");
       return COLVARS_ERROR;
     }

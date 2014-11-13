@@ -257,6 +257,7 @@ int colvarmodule::parse_biases_type(std::string const &conf,
     }
     bias_conf = "";
   }
+  return COLVARS_OK;
 }
 
 

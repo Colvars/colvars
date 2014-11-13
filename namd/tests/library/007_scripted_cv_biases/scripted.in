@@ -3,18 +3,7 @@ Colvarsrestartfrequency 20000
 
 scriptedColvarForces on
 
-# regular distance
-colvar {
-  name d
-
-  distance {
-    group1 { atomnumbers 4 }
-    group2 { atomnumbers 99 }
-  }
-}
-
 # same as d with scripted function
-# and scripted harmonic bias
 colvar {
   name ds
   outputAppliedForce
@@ -27,31 +16,25 @@ colvar {
   }
 }
 
-# orientation quaternion
+# Vector scripted function
+# returns a 5-vector [ scalar_distance orientation_quaternion ]
 colvar {
-  name o
+  name vec
+  outputAppliedForce
 
-  orientation {
-      atoms {
-        atomnumbers { 1 2 3 4 5 6 7 8 }
-    }
-    refpositionsfile ../Common/da.pdb
-  }
-}
+  scriptedFunction vector
+  scriptedFunctionType vector
+  scriptedFunctionVectorSize 5
 
-# same as d, with scripted function (identity)
-colvar {
-  name os
-
-  scriptedFunction Id_pair
-
-  distance {
+  distanceVec {
     componentExp 2
     group1 { atomnumbers 4 }
     group2 { atomnumbers 99 }
   }
+
   orientation {
-      atoms {
+    componentExp 1
+    atoms {
         atomnumbers { 1 2 3 4 5 6 7 8 }
     }
     refpositionsfile ../Common/da.pdb

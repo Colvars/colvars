@@ -56,7 +56,9 @@ public:
     /// 4-dimensional vector that is a derivative of a quaternion
     type_quaternionderiv,
     /// vector (arbitrary dimension)
-    type_vector
+    type_vector,
+    /// Needed to iterate through enum
+    type_all
   };
 
   /// Current type of this colvarvalue object
@@ -502,9 +504,6 @@ inline size_t colvarvalue::size() const
 inline colvarvalue::colvarvalue(colvarvalue const &x)
   : value_type(x.type())
 {
-  // reset the value based on the previous type
-  reset();
-
   switch (x.type()) {
   case type_scalar:
     real_value = x.real_value;
@@ -531,9 +530,7 @@ inline colvarvalue::colvarvalue(colvarvalue const &x)
 
 inline colvarvalue::colvarvalue(cvm::vector1d<cvm::real> const &v, Type const &vti)
 {
-  // reset the value based on the previous type
-  reset();
-  if ((vti != type_vector) && (v.size() != num_dimensions(value_type))) {
+  if ((vti != type_vector) && (v.size() != num_dimensions(vti))) {
     cvm::error("Error: trying to initialize a variable of type \""+type_desc(vti)+
                "\" using a vector of size "+cvm::to_str(v.size())+
                ".\n");
@@ -771,7 +768,7 @@ inline cvm::vector1d<cvm::real> const colvarvalue::as_vector() const
   case colvarvalue::type_scalar:
     {
       cvm::vector1d<cvm::real> v(1);
-      v = real_value;
+      v[0] = real_value;
       return v;
     }
   case colvarvalue::type_3vector:
