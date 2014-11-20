@@ -69,7 +69,7 @@ colvars:       # disableForces = off [default]
 colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Atom group "atoms" defined, 8 atoms initialized: total mass = 43.069.
+colvars:       Atom group "atoms" defined, 104 atoms initialized: total mass = 727.821.
 colvars:     # refPositions =  [default]
 colvars:     # refPositionsFile = ../Common/da.pdb
 colvars:     # refPositionsCol = "" [default]
@@ -95,6 +95,8 @@ colvars:   # centers = { 18 }
 colvars:   # targetCenters = { 18 } [default]
 colvars:   # targetForceConstant = 0 [default]
 colvars:   # outputCenters = off [default]
+colvars: ----------------------------------------------------------------------
+colvars:   User forces script will be run at each bias update.
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables biases initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
@@ -205,7 +207,7 @@ colvars:       # disableForces = off [default]
 colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Atom group "atoms" defined, 8 atoms initialized: total mass = 43.069.
+colvars:       Atom group "atoms" defined, 104 atoms initialized: total mass = 727.821.
 colvars:     # refPositions =  [default]
 colvars:     # refPositionsFile = ../Common/da.pdb
 colvars:     # refPositionsCol = "" [default]

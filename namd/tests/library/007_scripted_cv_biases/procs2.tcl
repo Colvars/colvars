@@ -34,6 +34,9 @@ proc calc_colvar_forces { ts } {
 
   set d [lindex [cv colvar vec value] 0]
   set f [expr {$k * ($center - $d)}]
-  set r [cv colvar vec addforce [list $f 0. 0. 0. 0.]]
+  cv colvar vec addforce [list $f 0. 0. 0. 0.]
+
+  # Constant force on orientation part
+  cv colvar vec addforce "0. 0. 100000. 0. 0."
   return
 }
