@@ -1331,3 +1331,4 @@ void colvar::cartesian::apply_force(colvarvalue const &force)
     }
   }
 }
+
