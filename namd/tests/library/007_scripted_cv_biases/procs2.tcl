@@ -8,23 +8,28 @@ proc calc_Id_gradient {x} {
 }
 
 proc calc_vector { x1 x2 } {
-  return [concat [veclength $x2] $x1]
+  foreach { xa ya za xb yb zb } $x2 {}
+  set v [vecsub "$xa $ya $za" "$xb $yb $zb"]
+  return [concat [veclength $v] $x1]
 }
 
 proc calc_vector_gradient { x1 x2 } {
-  set c [expr 1. / [veclength $x2]]
-  foreach { ex ey ez } [vecscale $x2 $c] {}
+  foreach { xa ya za xb yb zb } $x2 {}
+  set v [vecsub "$xa $ya $za" "$xb $yb $zb"]
+  set c [expr 1. / [veclength $v]]
+  foreach { ex ey ez } [vecscale $v $c] {}
+  foreach { ix iy iz } [vecscale "$ex $ey $ez" -1.] {}
   return [list "\
   0. 0. 0. 0.\
   1. 0. 0. 0.\
   0. 1. 0. 0.\
   0. 0. 1. 0.\
   0. 0. 0. 1."\
- "$ex $ey $ez\
-  0. 0. 0.\
-  0. 0. 0.\
-  0. 0. 0.\
-  0. 0. 0."]
+ "$ex $ey $ez $ix $iy $iz\
+  0. 0. 0. 0. 0. 0.\
+  0. 0. 0. 0. 0. 0.\
+  0. 0. 0. 0. 0. 0.\
+  0. 0. 0. 0. 0. 0."]
 }
 
 proc calc_colvar_forces { ts } {

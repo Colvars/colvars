@@ -163,14 +163,12 @@ colvars:   # outputAppliedForce = on
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = vec
-colvars:   Initializing a new "distanceVec" component.
+colvars:   Initializing a new "cartesian" component.
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 2
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
-colvars:     # forceNoPBC = off [default]
-colvars:     # oneSiteSystemForce = off [default]
-colvars:       Initializing atom group "group1".
+colvars:       Initializing atom group "atoms".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
@@ -180,18 +178,7 @@ colvars:       # disableForces = off [default]
 colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Atom group "group1" defined, 1 atoms initialized: total mass = 12.011.
-colvars:       Initializing atom group "group2".
-colvars:       # indexGroup = "" [default]
-colvars:       # psfSegID =  [default]
-colvars:       # atomsFile = "" [default]
-colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
-colvars:       # enableForces = on [default]
-colvars:       # disableForces = off [default]
-colvars:       # centerReference = off [default]
-colvars:       # rotateReference = off [default]
-colvars:       # enableFitGradients = on [default]
-colvars:       Atom group "group2" defined, 1 atoms initialized: total mass = 12.011.
+colvars:       Atom group "atoms" defined, 2 atoms initialized: total mass = 24.022.
 colvars:   Initializing a new "orientation" component.
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1
