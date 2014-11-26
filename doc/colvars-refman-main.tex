@@ -1189,8 +1189,6 @@ one or more instances of the following components:
 \item \texttt{distance}: distance between two groups;
 \item \texttt{distanceZ}: projection of a distance vector on an axis;
 \item \texttt{distanceXY}: projection of a distance vector on a plane;
-\item \texttt{distanceVec}: distance vector between two groups;
-\item \texttt{distanceDir}: unit vector parallel to distanceVec;
 \item \texttt{distanceInv}: mean distance between two groups of atoms (e.g.~NOE-based distance);
 \item \texttt{angle}: angle between three groups;
 \item \texttt{coordNum}: coordination number between two groups;
@@ -1217,6 +1215,16 @@ one or more instances of the following components:
 }
 \end{itemize}
 
+Some components do not return scalar, but vector values.
+They can only be combined with vector values of the same
+type\cvscriptonly{, except within a scripted collective variable}.
+\begin{itemize}
+\item \texttt{distanceVec}: distance vector between two groups;
+\item \texttt{distanceDir}: unit vector parallel to distanceVec;
+\item \texttt{cartesian}: vector of atomic Cartesian coordinates;
+\item \texttt{orientation}: best-fit rotation, expressed as a unit quaternion.
+\end{itemize}
+  
 In the following, all the available component types are listed, along
 with their physical units and the limiting values, if any.  Such
 limiting values can be used to define \texttt{lowerBoundary} and
@@ -1404,6 +1412,24 @@ This component accepts the same keywords as the component \texttt{distance}: \te
     6}{Defines the exponent to which the individual distances are elevated before averaging.  The default value of 6 is useful for example to applying restraints based on NOE-measured distances.}
 \end{itemize}
 This component returns a number in \AA{}, ranging from $0$ to the largest possible distance within the chosen boundary conditions.
+
+
+\cvsubsubsec{\texttt{cartesian}: vector of atomic Cartesian coordinates.}
+The \texttt{cartesian~\{...\}} block defines a component returning a flat vector containing
+the Cartesian coordinates of all participating atoms, in the order
+$(x_1, y_1, z_1, \cdots, x_n, y_n, z_n)$.
+This component accepts the following keyword:
+\begin{itemize}
+\item %
+  \key
+    {atoms}{%
+    \texttt{cartesian}}{%
+    Group of atoms}{%
+    Block \texttt{atoms \{...\}}}{%
+    Defines the atoms whose coordinates make up the value of the component.
+    If \texttt{rotateReference} or \texttt{centerReference} are defined, coordinates
+    are evaluated within the moving frame of reference.}
+\end{itemize}
 
 
 \cvsubsubsec{\texttt{angle}: angle between three groups.}
@@ -1863,7 +1889,7 @@ reference~\cite{Coutsias2004}.  The quaternion $(q_0, q_1, q_2, q_3)$
 can also be written as $\left(\cos(\theta/2), \,
   \sin(\theta/2)\mathbf{u}\right)$, where $\theta$ is the angle and
 $\mathbf{u}$ the normalized axis of rotation; for example, a rotation
-of 90$^{\circ}$ around the $z$ axis should be expressed as
+of 90$^{\circ}$ around the $z$ axis is expressed as
 ``\texttt{(0.707, 0.0, 0.0, 0.707)}''.  The script
 \texttt{quaternion2rmatrix.tcl} provides Tcl functions for converting
 to and from a $4\times{}4$ rotation matrix in a format suitable for
@@ -1906,14 +1932,14 @@ chain, or disable \texttt{wrapAll} otherwise.
 \cvsubsubsec{\texttt{orientationAngle}: angle of rotation from reference coordinates.}  
 The block \texttt{orientationAngle~\{...\}} accepts the same base options as
 the component \texttt{orientation}: \texttt{atoms} and \texttt{refPositions}\cvnamebasedonly{, or \texttt{refPositionsFile}, \texttt{refPositionsCol} and \texttt{refPositionsColValue}}.
-The returned value is the angle of rotation $\omega$ between the current and the reference positions.
+The returned value is the angle of rotation $\theta$ between the current and the reference positions.
 This angle is expressed in degrees within the range [0$^{\circ}$:180$^{\circ}$].
 
 
 \cvsubsubsec{\texttt{orientationProj}: cosine of the angle of rotation from reference coordinates.}  
 The block \texttt{orientationProj~\{...\}} accepts the same base options as
 the component \texttt{orientation}: \texttt{atoms} and \texttt{refPositions}\cvnamebasedonly{, or \texttt{refPositionsFile}, \texttt{refPositionsCol} and \texttt{refPositionsColValue}}.
-The returned value is the cosine of the angle of rotation $\omega$ between the current and the reference positions.
+The returned value is the cosine of the angle of rotation $\theta$ between the current and the reference positions.
 The range of values is [-1:1].
 
 
@@ -2315,6 +2341,10 @@ of $1/N$.
 In contexts that support scripting, a colvar may be defined as
 custom scripted function of the values of its components,
 rather than a linear or polynomial combination.
+When implementing generic functions of Cartesian coordinates rather
+than functions of existing components, the \texttt{cartesian} component
+may be particularly useful.
+
 \begin{itemize}
  \item %
   \key
@@ -2327,6 +2357,8 @@ rather than a linear or polynomial combination.
     To that effect, the user should define two Tcl procedures:
     \texttt{calc\_$<$scriptedFunction$>$} and \texttt{calc\_$<$scriptedFunction$>$\_gradient},
     both accepting as many parameters as the colvar has components.
+    Values of the components will be passed to those procedures in the
+    order defined by their respective \texttt{componentExp} values.
     \texttt{calc\_$<$scriptedFunction$>$} should return one value of 
     type $<$scriptedFunctionType$>$, corresponding to the colvar value.
     \texttt{calc\_$<$scriptedFunction$>$\_gradient} should return a Tcl list
