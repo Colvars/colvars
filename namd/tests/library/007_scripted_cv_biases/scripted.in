@@ -26,10 +26,9 @@ colvar {
   scriptedFunctionType vector
   scriptedFunctionVectorSize 5
 
-  distanceVec {
+  cartesian {
     componentExp 2
-    group1 { atomnumbers 4 }
-    group2 { atomnumbers 99 }
+    atoms { atomnumbers 4 99 }
   }
 
   orientation {

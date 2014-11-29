@@ -21,6 +21,7 @@ fi
 force_update=0
 if [ $1 = "-f" ]
 then
+  echo Forcing update of all files
   force_update=1
   shift
 fi
@@ -28,6 +29,7 @@ fi
 reverse=0
 if [ $1 = "-R" ]
 then
+  echo Reverse: updating git tree from downstream tree
   reverse=1
   shift
 fi
