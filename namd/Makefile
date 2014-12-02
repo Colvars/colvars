@@ -1,5 +1,5 @@
 # pass version/platform information to compile
-NAMD_VERSION = 2.10b1
+NAMD_VERSION = 2.10b2
 
 # compiler flags (Win32 overrides)
 COPTI = -I
@@ -187,6 +187,7 @@ OBJS = \
         $(DSTDIR)/FreeEnergyRestrain.o \
         $(DSTDIR)/FreeEnergyRMgr.o \
         $(DSTDIR)/FreeEnergyVector.o \
+	$(DSTDIR)/fstream_namd.o \
 	$(DSTDIR)/GlobalMaster.o \
 	$(DSTDIR)/GlobalMasterServer.o \
 	$(DSTDIR)/GlobalMasterTest.o \

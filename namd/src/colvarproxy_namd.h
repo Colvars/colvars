@@ -78,11 +78,11 @@ public:
   // Callback functions
   int run_force_callback();
   int run_colvar_callback(std::string const &name,
-                      std::vector<const colvarvalue *> const &cvcs,
-                      colvarvalue &value);
+                          std::vector<const colvarvalue *> const &cvcs,
+                          colvarvalue &value);
   int run_colvar_gradient_callback(std::string const &name,
-                               std::vector<const colvarvalue *> const &cvcs,
-                               std::vector<cvm::matrix2d<cvm::real> > &gradient);
+                                   std::vector<const colvarvalue *> const &cvcs,
+                                   std::vector<cvm::matrix2d<cvm::real> > &gradient);
 
   inline cvm::real unit_angstrom()
   {
@@ -150,25 +150,27 @@ public:
   }
 
   cvm::rvector position_distance(cvm::atom_pos const &pos1,
-                                  cvm::atom_pos const &pos2);
+                                 cvm::atom_pos const &pos2);
   cvm::real position_dist2(cvm::atom_pos const &pos1,
-                            cvm::atom_pos const &pos2);
+                           cvm::atom_pos const &pos2);
 
   void select_closest_image(cvm::atom_pos &pos,
-                             cvm::atom_pos const &ref_pos);
+                            cvm::atom_pos const &ref_pos);
 
 
   int load_atoms(char const *filename,
-                   std::vector<cvm::atom> &atoms,
-                   std::string const &pdb_field,
-                   double const pdb_field_value = 0.0);
+                 std::vector<cvm::atom> &atoms,
+                 std::string const &pdb_field,
+                 double const pdb_field_value = 0.0);
 
   int load_coords(char const *filename,
-                    std::vector<cvm::atom_pos> &pos,
-                    const std::vector<int> &indices,
-                    std::string const &pdb_field,
-                    double const pdb_field_value = 0.0);
+                  std::vector<cvm::atom_pos> &pos,
+                  const std::vector<int> &indices,
+                  std::string const &pdb_field,
+                  double const pdb_field_value = 0.0);
 
+  std::ostream * output_stream(std::string const &output_name);
+  int close_output_stream(std::string const &output_name);
   int backup_file(char const *filename);
 
   cvm::real rand_gaussian(void)
@@ -179,7 +181,7 @@ public:
 
 
 inline cvm::rvector colvarproxy_namd::position_distance(cvm::atom_pos const &pos1,
-                                                         cvm::atom_pos const &pos2)
+                                                        cvm::atom_pos const &pos2)
 {
   Position const p1(pos1.x, pos1.y, pos1.z);
   Position const p2(pos2.x, pos2.y, pos2.z);
@@ -190,7 +192,7 @@ inline cvm::rvector colvarproxy_namd::position_distance(cvm::atom_pos const &pos
 
 
 inline void colvarproxy_namd::select_closest_image(cvm::atom_pos &pos,
-                                                    cvm::atom_pos const &ref_pos)
+                                                   cvm::atom_pos const &ref_pos)
 {
   Position const p(pos.x, pos.y, pos.z);
   Position const rp(ref_pos.x, ref_pos.y, ref_pos.z);
@@ -203,7 +205,7 @@ inline void colvarproxy_namd::select_closest_image(cvm::atom_pos &pos,
 
 
 inline cvm::real colvarproxy_namd::position_dist2(cvm::atom_pos const &pos1,
-                                                   cvm::atom_pos const &pos2)
+                                                  cvm::atom_pos const &pos2)
 {
   Lattice const *l = this->lattice;
   Vector const p1(pos1.x, pos1.y, pos1.z);
