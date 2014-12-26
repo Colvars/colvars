@@ -6,6 +6,21 @@ mol addfile ../Common/da.test-traj.xyz type xyz waitfor all
 cv molid top
 cv configfile test.in
 
+# add the RMSD of all heavy atoms
+set noh [atomselect top "not hydrogen"]
+cv config "
+colvar {
+    name rmsd-all
+ 
+    rmsd {
+        atoms {
+            atomNumbers { [$noh get serial] }
+        }
+        refpositionsfile ../Common/da.pdb
+    }
+}
+"
+
 set out [open "test.colvars.traj" "w"]
 puts -nonewline ${out} [cv printframelabels]
 for { set frame 0 } { ${frame} < [molinfo top get numframes] } { incr frame } {
@@ -13,5 +28,6 @@ for { set frame 0 } { ${frame} < [molinfo top get numframes] } { incr frame } {
     cv update
     puts -nonewline ${out} [cv printframe]
 }
+close ${out}
 
 quit
