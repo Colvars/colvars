@@ -11,7 +11,7 @@
  *
  *      $RCSfile: tcl_commands.C,v $
  *      $Author: johns $        $Locker:  $             $State: Exp $
- *      $Revision: 1.46 $       $Date: 2014/12/03 20:42:12 $
+ *      $Revision: 1.47 $       $Date: 2014/12/28 16:56:47 $
  *
  ***************************************************************************
  * DESCRIPTION:
@@ -286,8 +286,9 @@ int Vmd_Init(Tcl_Interp *interp) {
 #endif
 
 #if defined(VMDCOLVARS)
-  Tcl_CreateCommand(interp, "cv", tcl_colvars, (ClientData) app, (Tcl_CmdDeleteProc*) NULL);
-  Tcl_PkgProvide(interp, "colvars", COLVARS_VERSION);
+  Tcl_CreateCommand (interp, "colvars", tcl_colvars, (ClientData) app, (Tcl_CmdDeleteProc*) NULL);
+  Tcl_CreateCommand (interp, "cv", tcl_colvars, (ClientData) app, (Tcl_CmdDeleteProc*) NULL);
+  Tcl_PkgProvide (interp, "colvars", COLVARS_VERSION);
 #endif
 
   Tcl_CreateObjCommand(interp,  "volmap", obj_volmap,
