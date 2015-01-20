@@ -76,6 +76,8 @@ colvarbias_abf::colvarbias_abf(std::string const &conf, char const *key)
 
       if (!colvars[i]->tasks[colvar::task_extended_lagrangian]) {
         // request computation of Jacobian force
+        // ultimately, will be done regardless of extended Lagrangian
+        // and colvar should then just report zero Jacobian force
         colvars[i]->enable(colvar::task_Jacobian_force);
 
         // request Jacobian force as part as system force
