@@ -1596,7 +1596,7 @@ int colvar::write_output_files()
     if (acf.size()) {
       cvm::log("Writing acf to file \""+acf_outfile+"\".\n");
 
-      std::ofstream acf_os(acf_outfile.c_str());
+      cvm::ofstream acf_os(acf_outfile.c_str());
       if (! acf_os.good()) {
         cvm::error("Cannot open file \""+acf_outfile+"\".\n", FILE_ERROR);
       }
