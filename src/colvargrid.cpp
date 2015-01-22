@@ -10,7 +10,9 @@
 
 colvar_grid_count::colvar_grid_count()
   : colvar_grid<size_t>()
-{}
+{
+  mult = 1;
+}
 
 colvar_grid_count::colvar_grid_count(std::vector<int> const &nx_i,
                                      size_t const           &def_count)
