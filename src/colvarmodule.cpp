@@ -819,8 +819,19 @@ int colvarmodule::write_output_files()
   }
   cvm::decrease_depth();
 
-  // do not close to avoid problems with multiple NAMD runs
-  cv_traj_os.flush();
+  cvm::increase_depth();
+  for (std::vector<colvarbias *>::iterator bi = biases.begin();
+       bi != biases.end();
+       bi++) {
+    (*bi)->write_output_files();
+  }
+  cvm::decrease_depth();
+
+  if (cv_traj_os.is_open()) {
+    // flush, but do not close to avoid problems with multiple NAMD runs
+    cv_traj_os.flush();
+  }
+
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
 }
 
