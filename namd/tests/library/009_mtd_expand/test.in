@@ -1,0 +1,21 @@
+colvarstrajfrequency    1
+colvarsrestartfrequency 10
+
+colvar {
+    name d
+
+    hardLowerBoundary yes
+    lowerBoundary 0
+    upperBoundary 10
+    width 0.2
+    expandBoundaries yes
+
+    distance {
+        group1 { atomnumbers 4 }
+        group2 { atomnumbers 99 }
+    }
+}
+
+metadynamics {
+    colvars        d
+}
