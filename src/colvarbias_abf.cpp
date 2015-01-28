@@ -577,6 +577,7 @@ colvarbias_histogram::colvarbias_histogram(std::string const &conf, char const *
   : colvarbias(conf, key),
     grid(NULL), out_name("")
 {
+  get_keyval(conf, "outputFile", out_name, std::string(""));
   get_keyval(conf, "outputFreq", output_freq, cvm::restart_out_freq);
   /// with VMD, this may not be an error
   // if ( output_freq == 0 ) {
@@ -602,7 +603,13 @@ colvarbias_histogram::colvarbias_histogram(std::string const &conf, char const *
     }
   }
 
-  grid = new colvar_grid_count();
+  if (colvar_array_size > 1) {
+    weights.assign(colvar_array_size, 1.0);
+    get_keyval(conf, "weights", weights, weights, colvarparse::parse_silent);
+  }
+
+  grid = new colvar_grid_scalar();
+
   {
     std::string grid_conf;
     if (key_lookup(conf, "grid", grid_conf)) {
@@ -611,8 +618,6 @@ colvarbias_histogram::colvarbias_histogram(std::string const &conf, char const *
       grid->init_from_colvars(colvars);
     }
   }
-
-  bin.assign(colvars.size(), 0);
 
   cvm::log("Finished histogram setup.\n");
 }
@@ -635,21 +640,21 @@ colvarbias_histogram::~colvarbias_histogram()
 /// Update the grid
 cvm::real colvarbias_histogram::update()
 {
-
   if (cvm::debug()) {
     cvm::log("Updating histogram bias " + this->name);
   }
 
-  // At the first timestep, we need to assign out_name since
-  // output_prefix is unset during the constructor
-
-  if (cvm::step_relative() == 0) {
-    out_name = cvm::output_prefix + "." + this->name + ".dat";
-    cvm::log("Histogram " + this->name + " will be written to file \"" + out_name + "\"");
-  }
-
-
+  // assign a valid bin size
   bin.assign(colvars.size(), 0);
+
+  if (out_name.size() == 0) {
+    // At the first timestep, we need to assign out_name since
+    // output_prefix is unset during the constructor
+    if (cvm::step_relative() == 0) {
+      out_name = cvm::output_prefix + "." + this->name + ".dat";
+      cvm::log("Histogram " + this->name + " will be written to file \"" + out_name + "\"");
+    }
+  }
 
   {
     // update indices for all scalar values
@@ -670,28 +675,38 @@ cvm::real colvarbias_histogram::update()
           bin[i] = grid->value_to_bin_scalar(colvars[i]->value().vector1d_value[iv], i);
         }
       }
+
       if (grid->index_ok(bin)) {
-        // Only within bounds of the grid...
-        grid->incr_count(bin);
+        grid->acc_value(bin, weights[iv]);
       }
     }
   } else {
     if (grid->index_ok(bin)) {
-      // Only within bounds of the grid...
-      grid->incr_count(bin);
+      grid->acc_value(bin, 1.0);
     }
   }
 
   if (output_freq && (cvm::step_absolute() % output_freq) == 0) {
-    if (cvm::debug()) cvm::log("Histogram bias trying to write grid to disk");
+    write_output_files();
+  }
+  return 0.0; // no bias energy for histogram
+}
+
+
+int colvarbias_histogram::write_output_files()
+{
+  if (out_name.size()) {
+    cvm::log("Writing the histogram file \""+out_name+"\".\n");
 
     grid_os.open(out_name.c_str());
-    if (!grid_os.is_open()) cvm::error("Error opening histogram file " + out_name + " for writing");
+    if (!grid_os.is_open()) {
+      cvm::error("Error opening histogram file " + out_name + " for writing");
+    }
+    // TODO add return code here
     grid->write_multicol(grid_os);
     grid_os.close();
   }
-
-  return 0.0; // no bias energy for histogram
+  return COLVARS_OK;
 }
 
 
