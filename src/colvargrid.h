@@ -84,9 +84,6 @@ public:
   /// Widths of the colvars in this grid
   std::vector<cvm::real>   widths;
 
-  /// If one or more of the variables are \link type_vector \endlink, treat them as arrays of this length
-  size_t colvar_array_size;
-
   /// True if this is a count grid related to another grid of data
   bool has_parent_data;
 
@@ -133,11 +130,17 @@ public:
             T const &t = T(),
             size_t const &mult_i = 1)
   {
+    if (cvm::debug()) {
+      cvm::log("Allocating grid: multiplicity = "+cvm::to_str(mult_i)+
+               ", dimensions = "+cvm::to_str(nx_i)+".\n");
+    }
+
+    mult = mult_i;
+
     data.clear();
 
     nx = nx_i;
     nd = nx.size();
-    mult = mult_i;
 
     nxc.resize(nd);
 
@@ -153,29 +156,13 @@ public:
       nt *= nx[i];
     }
 
+    if (cvm::debug()) {
+      cvm::log("Total number of grid elements = "+cvm::to_str(nt)+".\n");
+    }
+
     data.reserve(nt);
     data.assign(nt, t);
 
-    return check_array_size() || COLVARS_OK;
-  }
-
-  int check_array_size() {
-    size_t i;
-    for (i = 0; i < cv.size(); i++) {
-      if (cv[i]->value().type() == colvarvalue::type_vector) {
-        if (colvar_array_size == 1) {
-          colvar_array_size = cv[i]->value().size();
-        } else {
-          if (colvar_array_size != cv[i]->value().size()) {
-            cvm::error("Error: trying to use in the same grid vectors/arrays of different lengths.\n", INPUT_ERROR);
-            return COLVARS_ERROR;
-          }
-        }
-      }
-    }
-    if (colvar_array_size > 1) {
-      cvm::log("Will combine arrays of "+cvm::to_str(colvar_array_size)+" variables into one grid.\n");
-    }
     return COLVARS_OK;
   }
 
@@ -198,7 +185,7 @@ public:
     save_delimiters = false;
     nd = nt = 0;
     mult = 1;
-    colvar_array_size = 1;
+    this->setup();
   }
 
   /// Destructor
@@ -220,7 +207,6 @@ public:
                                          hard_lower_boundaries(g.hard_lower_boundaries),
                                          hard_upper_boundaries(g.hard_upper_boundaries),
                                          widths(g.widths),
-                                         colvar_array_size(g.colvar_array_size),
                                          has_data(false)
   {
     save_delimiters = false;
@@ -232,17 +218,17 @@ public:
   /// of each value
   colvar_grid(std::vector<int> const &nx_i,
               T const &t = T(),
-              size_t const &mult_i = 1) : has_data(false)
+              size_t mult_i = 1)
+    : has_data(false)
   {
     save_delimiters = false;
     this->setup(nx_i, t, mult_i);
-    colvar_array_size = 1;
   }
 
   /// \brief Constructor from a vector of colvars
   colvar_grid(std::vector<colvar *> const &colvars,
               T const &t = T(),
-              size_t const &mult_i = 1,
+              size_t mult_i = 1,
               bool margin = false)
     : has_data(false)
   {
@@ -252,27 +238,30 @@ public:
 
   int init_from_colvars(std::vector<colvar *> const &colvars,
                         T const &t = T(),
-                        size_t const &mult_i = 1,
+                        size_t mult_i = 1,
                         bool margin = false)
   {
-    if (cvm::debug()) cvm::log("Reading grid configuration from collective variables.\n");
+    if (cvm::debug()) {
+      cvm::log("Reading grid configuration from collective variables.\n");
+    }
 
     cv = colvars;
     nd = colvars.size();
+    mult = mult_i;
 
     for (size_t i = 0; i < cv.size(); i++) {
       if (!cv[i]->tasks[colvar::task_lower_boundary] ||
           !cv[i]->tasks[colvar::task_upper_boundary]) {
-        /// note: this is not an irrecoverable input error
-        // cvm::error("Tried to initialize a grid on a "
-        //            "variable with undefined boundaries.\n");
+        cvm::error("Tried to initialize a grid on a "
+                   "variable with undefined boundaries.\n", INPUT_ERROR);
         return COLVARS_ERROR;
       }
     }
 
-    if (cvm::debug())
+    if (cvm::debug()) {
       cvm::log("Allocating a grid for "+cvm::to_str(colvars.size())+
-               " collective variables.\n");
+               " collective variables, multiplicity = "+cvm::to_str(mult_i)+".\n");
+    }
 
     for (size_t i =  0; i < cv.size(); i++) {
 
@@ -320,14 +309,17 @@ public:
       }
     }
 
-    colvar_array_size = 1;
-
-    return (this->init_from_boundaries()) || (this->setup());
+    this->init_from_boundaries();
+    return this->setup();
   }
 
   int init_from_boundaries(T const &t = T(),
                            size_t const &mult_i = 1)
   {
+    if (cvm::debug()) {
+      cvm::log("Configuring grid dimensions from colvars boundaries.\n");
+    }
+
     // these will have to be updated
     nx.clear();
     nxc.clear();
@@ -902,8 +894,6 @@ public:
 
     // Data in the header: nColvars, then for each
     // xiMin, dXi, nPoints, periodic
-
-    cvm::log("p_size = "+cvm::to_str(periodic.size())+"\n");
 
     os << std::setw(2) << "# " << nd << "\n";
     for (size_t i = 0; i < nd; i++) {
