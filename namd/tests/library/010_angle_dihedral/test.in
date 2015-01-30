@@ -1,0 +1,66 @@
+colvarstrajfrequency    1
+colvarsrestartfrequency 2000
+
+colvar {
+  name angle
+
+  outputSystemForce on
+  outputAppliedForce on
+  width 6.0 
+
+  lowerBoundary    0.0
+  upperBoundary  180.0
+
+  angle {
+    group1 {
+      psfSegID BH
+      atomNameResidueRange CA 1-1
+    }
+    group2 {
+      psfSegID BH
+      atomNameResidueRange CA 2-2
+    }
+    group3 {
+      psfSegID BH
+      atomNameResidueRange CA 3-3
+    }
+  }
+} 
+
+
+colvar {
+  name dihedral
+
+  outputSystemForce on
+  outputAppliedForce on
+  width 6.0 
+
+  lowerBoundary    0.0
+  upperBoundary  180.0
+
+  dihedral {
+    group1 {
+      psfSegID BH
+      atomNameResidueRange CA 1-1
+    }
+    group2 {
+      psfSegID BH
+      atomNameResidueRange CA 2-2
+    }
+    group3 {
+      psfSegID BH
+      atomNameResidueRange CA 3-3
+    }
+    group4 {
+      psfSegID BH
+      atomNameResidueRange CA 4-4
+    }
+  }
+} 
+
+
+abf {
+    colvars angle dihedral
+    fullSamples 1
+}
+
