@@ -62,5 +62,5 @@ colvar {
 abf {
     colvars angle dihedral
     fullSamples 1
+    historyFreq 10
 }
-

@@ -137,7 +137,7 @@ colvars:   Jacobian (geometric) forces will be included in reported free energy 
 colvars:   # fullSamples = 1
 colvars:   # inputPrefix =  [default]
 colvars:   # outputFreq = 2000 [default]
-colvars:   # historyFreq = 0 [default]
+colvars:   # historyFreq = 10
 colvars:   # shared = off [default]
 colvars:   # maxForce =  [default]
 colvars:   Finished ABF setup.
@@ -148,5 +148,7 @@ colvars: Collective variables module (re)initialized.
 colvars: ----------------------------------------------------------------------
 colvars: The final output state file will be "test.colvars.state".
 colvars: Writing to colvar trajectory file "test.colvars.traj".
+colvars:   ABFHISTORYFILE 0
 colvars:   Prepared sample and gradient buffers at step 0.
+colvars:   ABFHISTORYFILE 10
 colvars: Saving collective variables state to "test.colvars.state".
