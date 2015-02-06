@@ -1,4 +1,10 @@
 # Numerical test for analytical scripted gradients
+#
+# example usage in tclsh:
+#
+# source test_scripted_gradients.tcl
+# source ../namd/tests/library/007_scripted_cv_biases/procs2.tcl 
+# test_grad vector {{0. 1. 0 0} {1. 2. 3. 4. 5. 6.}}
 
 if { [info tclversion] < 8.5 } {
     puts "###### Sorry, this script uses the {*} idiom of Tcl 8.5 and later. Please update. ######"
