@@ -171,12 +171,14 @@ public:
   /// Set the type explicitly
   inline void type(Type const &vti)
   {
-    // reset the value based on the previous type
-    reset();
-    if ((value_type == type_vector) && (vti != type_vector)) {
-      vector1d_value.resize(0);
+    if (vti != value_type) {
+      // reset the value based on the previous type
+      reset();
+      if ((value_type == type_vector) && (vti != type_vector)) {
+        vector1d_value.resize(0);
+      }
+      value_type = vti;
     }
-    value_type = vti;
   }
 
   /// Set the type after another \link colvarvalue \endlink
