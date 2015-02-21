@@ -85,7 +85,7 @@ int tcl_colvars(ClientData clientdata, Tcl_Interp *interp, int argc, const char 
     }
   }
 
-  Tcl_SetResult(interp, (char *) (std::string("First, setup the colvars with: cv molid <molecule id>").c_str()), TCL_STATIC);
+  Tcl_SetResult(interp, (char *) (std::string("First, setup the colvars module with: cv molid <molecule id>").c_str()), TCL_STATIC);
   return TCL_ERROR;
 }
 
