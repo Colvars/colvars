@@ -118,7 +118,7 @@ checkfile () {
   diff -uNw "${a}" "${b}" > $(basename ${a}).diff
   if [ -s $(basename ${a}).diff ]
   then
-    echo "Differences found between ${a} and ${b}, check $(basename ${a}).diff"
+    echo "Differences found between ${a} and ${b} -- Check $(basename ${a}).diff"
     if [ $force_update = 1 ]
     then
       echo "Overwriting ${b}, as requested by the -f flag."
