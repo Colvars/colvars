@@ -96,7 +96,7 @@ condcopy () {
   then
     if [ $checkonly -eq 1 ]
     then
-      cmp -s "$a" "$b" || diff -uN "$b" "$a"
+      cmp -s "$a" "$b" || diff -uNw "$b" "$a"
     else
       cmp -s "$a" "$b" || cp "$a" "$b"
       echo -n '.'
@@ -115,10 +115,10 @@ checkfile () {
     a=$1
     b=$2
   fi
-  diff -uN "${a}" "${b}" > $(basename ${a}).diff
+  diff -uNw "${a}" "${b}" > $(basename ${a}).diff
   if [ -s $(basename ${a}).diff ]
   then
-    echo "Differences found between ${a} and ${b}, check $(basename ${a}).diff"
+    echo "Differences found between ${a} and ${b} -- Check $(basename ${a}).diff"
     if [ $force_update = 1 ]
     then
       echo "Overwriting ${b}, as requested by the -f flag."
