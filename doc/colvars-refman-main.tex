@@ -90,6 +90,7 @@ The list of parameters of the \texttt{cv} command is:
 \item \texttt{list}: return a list of all colvars currently defined (see \ref{sec:colvar}, \ref{sec:cvc} and \ref{sec:colvar_atom_groups} for how to configure a collective variable);
 \item \texttt{list biases}: return a list of all collective variable biases (i.e.~sampling and analysis algorithms) currently defined (see \ref{sec:colvarbias} for how to configure a bias);
 \item \texttt{load} \emph{$<$file name$>$}: load a collective variables state file, typically produced during a simulation; this parameter requires that the corresponding configuration has already been loaded by \texttt{configfile} or \texttt{config}; see \ref{sec:colvars_output} for a brief description of this file; the contents of this file are not required for as long as the VMD molecule has valid coordinates and \texttt{cv update} is used;
+\item \texttt{save} \emph{$<$prefix$>$}: save the current state in a file whose name begins with the given argument; if any of the biases have additional output files defined, those are saved as well;
 \item \texttt{update}: recalculate all colvars and biases based on the current atomic coordinates;
 \item \texttt{printframe}: return a summary of the current frame, in a format equivalent to a line of the collective variables trajectory file;
 \item \texttt{printframelabels}: return text labels to annotate \texttt{printframe}'s output;
