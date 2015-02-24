@@ -15,7 +15,7 @@
 #include "colvaratoms.h"
 
 #ifndef COLVARPROXY_VERSION
-#define COLVARPROXY_VERSION "2015-02-21"
+#define COLVARPROXY_VERSION "2015-02-24"
 #endif
 
 /// \brief Communication between colvars and VMD (implementation of

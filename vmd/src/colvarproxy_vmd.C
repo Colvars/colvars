@@ -109,6 +109,7 @@ colvarproxy_vmd::colvarproxy_vmd(Tcl_Interp *vti, VMDApp *v, int molid)
 
   colvars->cv_traj_freq = 0;
   colvars->restart_out_freq = 0;
+  cvm::rotation::monitor_crossings = false;
 
   colvars->setup_input();
   colvars->setup_output();
