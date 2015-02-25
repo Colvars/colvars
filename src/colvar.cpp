@@ -152,6 +152,7 @@ colvar::colvar(std::string const &conf)
     cvm::error("Error: no valid components were provided "
                       "for this collective variable.\n",
               INPUT_ERROR);
+    return;
   }
 
   cvm::log("All components initialized.\n");
