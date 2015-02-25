@@ -11,6 +11,7 @@
 
 
 colvar::colvar(std::string const &conf)
+  : colvarparse(conf)
 {
   size_t i, j;
   cvm::log("Initializing a new collective variable.\n");

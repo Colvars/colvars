@@ -125,7 +125,7 @@ Accessing biases:\n\
       result = "Missing arguments";
       return COLVARSCRIPT_ERROR;
     }
-    if (colvars->config_file(argv[2]) == COLVARS_OK) {
+    if (colvars->read_config_file(argv[2]) == COLVARS_OK) {
       return COLVARSCRIPT_OK;
     } else {
       return COLVARSCRIPT_ERROR;
@@ -139,7 +139,7 @@ Accessing biases:\n\
       return COLVARSCRIPT_ERROR;
     }
     std::string conf = argv[2];
-    if (colvars->config_string(conf) == COLVARS_OK) {
+    if (colvars->read_config_string(conf) == COLVARS_OK) {
       return COLVARSCRIPT_OK;
     } else {
       return COLVARSCRIPT_ERROR;

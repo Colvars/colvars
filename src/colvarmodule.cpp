@@ -55,7 +55,7 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
 }
 
 
-int colvarmodule::config_file(char const  *config_filename)
+int colvarmodule::read_config_file(char const  *config_filename)
 {
   cvm::log(cvm::line_marker);
   cvm::log("Reading new configuration from file \""+
@@ -78,11 +78,11 @@ int colvarmodule::config_file(char const  *config_filename)
   }
   config_s.close();
 
-  return config(conf);
+  return parse_config(conf);
 }
 
 
-int colvarmodule::config_string(std::string const &config_str)
+int colvarmodule::read_config_string(std::string const &config_str)
 {
   cvm::log(cvm::line_marker);
   cvm::log("Reading new configuration:\n");
@@ -94,10 +94,10 @@ int colvarmodule::config_string(std::string const &config_str)
   while (colvarparse::getline_nocomments(config_s, line)) {
     conf.append(line+"\n");
   }
-  return config(conf);
+  return parse_config(conf);
 }
 
-int colvarmodule::config(std::string &conf)
+int colvarmodule::parse_config(std::string &conf)
 {
   int error_code = 0;
 

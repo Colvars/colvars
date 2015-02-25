@@ -48,10 +48,18 @@ protected:
   /// \brief Remove all the values from the config string
   void strip_values(std::string &conf);
 
+  /// \brief Configuration string of the object
+  std::string config_string;
+
 public:
 
   inline colvarparse()
     : save_delimiters(true)
+  {}
+
+  /// Constructor that stores the object's config string
+  inline colvarparse(const std::string& conf)
+    : save_delimiters(true), config_string(conf)
   {}
 
   /// How a keyword is parsed in a string
