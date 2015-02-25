@@ -62,6 +62,11 @@ public:
     : save_delimiters(true), config_string(conf)
   {}
 
+  inline const std::string& get_config()
+  {
+      return config_string;
+  }
+
   /// How a keyword is parsed in a string
   enum Parse_Mode {
     /// \brief(default) Read the first instance of a keyword (if

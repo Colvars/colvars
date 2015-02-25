@@ -54,11 +54,13 @@ Accessing collective variables:\n\
   colvar <name> update        -- recalculate the colvar <name>\n\
   colvar <name> delete        -- delete the colvar <name>\n\
   colvar <name> addforce <F>  -- apply given force on <name>\n\
+  colvar <name> getconfig     -- return config string of colvar\n\
 \n\
 Accessing biases:\n\
   bias <name> energy          -- return the current energy of the bias <name>\n\
   bias <name> update          -- recalculate the bias <name>\n\
   bias <name> delete          -- delete the bias <name>\n\
+  bias <name> getconfig       -- return config string of bias\n\
 \n\
 ";
     return COLVARSCRIPT_OK;
@@ -246,6 +248,11 @@ int colvarscript::proc_colvar(int argc, char const *argv[]) {
     return COLVARSCRIPT_OK;
   }
 
+  if (subcmd == "getconfig") {
+    result = cv->get_config();
+    return COLVARSCRIPT_OK;
+  }
+
   if (subcmd == "addforce") {
     if (argc < 4) {
       result = "addforce: missing parameter: force value";
@@ -293,6 +300,11 @@ int colvarscript::proc_bias(int argc, char const *argv[]) {
   if (subcmd == "update") {
     b->update();
     result = cvm::to_str(b->get_energy());
+    return COLVARSCRIPT_OK;
+  }
+
+  if (subcmd == "getconfig") {
+    result = b->get_config();
     return COLVARSCRIPT_OK;
   }
 
