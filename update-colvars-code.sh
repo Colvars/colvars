@@ -241,12 +241,19 @@ then
     condcopy "${src}" "${target}/src/${tgt}.C"
   done
 
+  condcopy "${source}/doc/colvars-refman.bib" "${target}/doc/ug_colvars.bib"
+  condcopy "${source}/doc/colvars-refman-main.tex" "${target}/doc/ug_colvars.tex"
+  condcopy "${source}/vmd/doc/ug_colvars_macros.tex" "${target}/doc/ug_colvars_macros.tex"
+  condcopy "${source}/doc/colvars_diagram.pdf" "${target}/doc/pictures/colvars_diagram.pdf"
+  condcopy "${source}/doc/colvars_diagram.eps" "${target}/doc/pictures/colvars_diagram.eps"
+
   # update VMD interface files
   for src in ${source}/vmd/src/colvarproxy_vmd.h ${source}/vmd/src/colvarproxy_vmd.C  
   do \
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/src/${tgt}"
   done
+
   echo ' done.'
 
   for src in ${source}/vmd/src/* 
@@ -260,11 +267,6 @@ then
     checkfile "${src}" "${target}/${tgt}"
   done
 
-  condcopy "${source}/doc/colvars-refman.bib" "${target}/doc/ug_colvars.bib"
-  condcopy "${source}/doc/colvars-refman-main.tex" "${target}/doc/ug_colvars.tex"
-  condcopy "${source}/vmd/doc/ug_colvars_macros.tex" "${target}/doc/ug_colvars_macros.tex"
-  condcopy "${source}/doc/colvars_diagram.pdf" "${target}/doc/pictures/colvars_diagram.pdf"
-  condcopy "${source}/doc/colvars_diagram.eps" "${target}/doc/pictures/colvars_diagram.eps"
 
   exit 0
 fi

@@ -41,7 +41,10 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
   colvarmodule::use_scripted_forces = false;
 
   colvarmodule::b_analysis = false;
+
   colvarmodule::debug_gradients_step_size = 1.0e-07;
+
+  colvarmodule::rotation::monitor_crossings = false;
   colvarmodule::rotation::crossing_threshold = 1.0e-02;
 
   colvarmodule::cv_traj_freq = 100;
@@ -156,6 +159,10 @@ int colvarmodule::parse_global_params(std::string const &conf)
                     debug_gradients_step_size,
                     colvarparse::parse_silent);
 
+  parse->get_keyval(conf, "monitorEigenvalueCrossing",
+                    colvarmodule::rotation::monitor_crossings,
+                    colvarmodule::rotation::monitor_crossings,
+                    colvarparse::parse_silent);
   parse->get_keyval(conf, "eigenvalueCrossingThreshold",
                     colvarmodule::rotation::crossing_threshold,
                     colvarmodule::rotation::crossing_threshold,
@@ -1207,7 +1214,6 @@ size_t    colvarmodule::restart_out_freq = 0;
 size_t    colvarmodule::cv_traj_freq = 0;
 size_t    colvarmodule::depth = 0;
 bool      colvarmodule::b_analysis = false;
-cvm::real colvarmodule::rotation::crossing_threshold = 1.0E-04;
 std::list<std::string> colvarmodule::index_group_names;
 std::list<std::vector<int> > colvarmodule::index_groups;
 bool     colvarmodule::use_scripted_forces = false;
