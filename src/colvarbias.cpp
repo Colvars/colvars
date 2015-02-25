@@ -6,7 +6,7 @@
 
 
 colvarbias::colvarbias(std::string const &conf, char const *key)
-  : colvarparse(conf), has_data(false), bias_energy(0.)
+  : colvarparse(conf), bias_energy(0.), has_data(false)
 {
   cvm::log("Initializing a new \""+std::string(key)+"\" instance.\n");
 
