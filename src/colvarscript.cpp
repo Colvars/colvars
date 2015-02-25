@@ -32,6 +32,7 @@ Managing the colvars module:\n\
   config <string>             -- read configuration from the given string\n\
   reset                       -- delete all internal configuration\n\
   delete                      -- delete this colvars module instance\n\
+  version                     -- return version of colvars code\n\
   \n\
 Input and output:\n\
   list                        -- return a list of all variables\n\
@@ -71,6 +72,11 @@ Accessing biases:\n\
 
   if (cmd == "bias") {
     return proc_bias(argc-1, &(argv[1]));
+  }
+
+  if (cmd == "version") {
+    result = COLVARS_VERSION;
+    return COLVARSCRIPT_OK;
   }
 
   if (cmd == "reset") {
