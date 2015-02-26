@@ -205,6 +205,41 @@ int ScriptTcl::Tcl_myReplica(ClientData, Tcl_Interp *interp, int argc, char **) 
   return TCL_OK;
 }
 
+#define CHECK_REPLICA(REP) do {\
+  if ( (REP) < 0 ) { \
+    Tcl_SetResult(interp,"negative replica index",TCL_VOLATILE); \
+    return TCL_ERROR; \
+  } \
+  if ( (REP) >= CmiNumPartitions() ) { \
+    Tcl_SetResult(interp,"non-existent replica index",TCL_VOLATILE); \
+    return TCL_ERROR; \
+  } \
+} while ( 0 )
+
+int ScriptTcl::Tcl_replicaEval(ClientData, Tcl_Interp *interp, int argc, char **argv) {
+  if ( argc != 3 ) {
+    Tcl_SetResult(interp,"args: dest script",TCL_VOLATILE);
+    return TCL_ERROR;
+  }
+  int dest = atoi(argv[1]);
+  CHECK_REPLICA(dest);
+#if CMK_HAS_PARTITION
+  Tcl_DString recvstr;
+  Tcl_DStringInit(&recvstr);
+  DataMessage *recvMsg = NULL;
+  replica_eval(argv[2], dest, CkMyPe(), &recvMsg);
+  CmiAssert(recvMsg != NULL);
+  int code = recvMsg->code;
+  Tcl_DStringAppend(&recvstr, recvMsg->data, recvMsg->size);
+  Tcl_DStringResult(interp, &recvstr);
+  Tcl_DStringFree(&recvstr);
+  CmiFree(recvMsg);
+  return code;
+#else
+  return Tcl_EvalEx(interp,argv[2],-1,TCL_EVAL_GLOBAL);
+#endif
+}
+
 
 int ScriptTcl::Tcl_replicaSendrecv(ClientData, Tcl_Interp *interp, int argc, char **argv) {
   if ( argc < 3 || argc > 4 ) {
@@ -219,7 +254,7 @@ int ScriptTcl::Tcl_replicaSendrecv(ClientData, Tcl_Interp *interp, int argc, cha
   int source = -1;
   if ( argc > 3 ) source = atoi(argv[3]);
 #if CMK_HAS_PARTITION
-  if (dest == CmiMyPartition()) {
+  if(dest == CmiMyPartition()) {
     Tcl_DStringSetLength(&recvstr,sendcount);
     memcpy(Tcl_DStringValue(&recvstr),argv[1],sendcount);
   } else {
@@ -305,7 +340,7 @@ int ScriptTcl::Tcl_replicaAtomSendrecv(ClientData clientData, Tcl_Interp *interp
   }
 
 #if CMK_HAS_PARTITION
-  if (dest != CmiMyPartition()) {
+  if(dest != CmiMyPartition()) {
     DataMessage *recvMsg = NULL;
     replica_sendRecv((char*)&(script->state->lattice), sizeof(Lattice), dest, CkMyPe(), &recvMsg, source, CkMyPe());
     CmiAssert(recvMsg != NULL);
@@ -325,7 +360,7 @@ int ScriptTcl::Tcl_replicaAtomSendrecv(ClientData clientData, Tcl_Interp *interp
   script->runController(SCRIPT_ATOMSENDRECV);
 
 #if CMK_HAS_PARTITION
-  if (dest != CmiMyPartition()) {
+  if(dest != CmiMyPartition()) {
     DataMessage *recvMsg = NULL;
     ControllerState *cstate = script->state->controller;
     replica_sendRecv((char*)cstate, sizeof(ControllerState), dest, CkMyPe(), &recvMsg, source, CkMyPe());
@@ -1079,7 +1114,7 @@ int ScriptTcl::Tcl_colvarfreq(ClientData clientData,
   return TCL_OK;
 }
 
-int ScriptTcl::Tcl_colvars(ClientData clientData,
+int ScriptTcl::Tcl_colvars (ClientData clientData,
         Tcl_Interp *interp, int argc, char *argv[]) {
   ScriptTcl *script = (ScriptTcl *)clientData;
   script->initcheck();
@@ -1092,7 +1127,7 @@ int ScriptTcl::Tcl_colvars(ClientData clientData,
   // use Tcl dynamic allocation to prevent having to copy the buffer
   // *twice* just because Tcl is missing const qualifiers for strings
   char *buf = Tcl_Alloc(colvars->proxy->script->result.length() + 1);
-  strncpy(buf, colvars->proxy->script->result.c_str(), colvars->proxy->script->result.length() + 1);
+  strncpy (buf, colvars->proxy->script->result.c_str(), colvars->proxy->script->result.length() + 1);
   Tcl_SetResult(interp, buf, TCL_DYNAMIC);
   // Note: sometimes Tcl 8.5 will segfault here
   // (only on error conditions, apparently)
@@ -1518,6 +1553,8 @@ ScriptTcl::ScriptTcl() : scriptBarrier(scriptBarrierTag) {
     (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
   Tcl_CreateCommand(interp, "myReplica", Tcl_myReplica,
     (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+  Tcl_CreateCommand(interp, "replicaEval", Tcl_replicaEval,
+    (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
   Tcl_CreateCommand(interp, "replicaSendrecv", Tcl_replicaSendrecv,
     (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
   Tcl_CreateCommand(interp, "replicaSend", Tcl_replicaSend,
@@ -1590,6 +1627,17 @@ ScriptTcl::ScriptTcl() : scriptBarrier(scriptBarrierTag) {
   // END gf
 #endif
 
+}
+
+int ScriptTcl::eval(const char *script, const char **resultPtr) {
+
+#ifdef NAMD_TCL
+  int code = Tcl_EvalEx(interp,script,-1,TCL_EVAL_GLOBAL);
+  *resultPtr = Tcl_GetStringResult(interp);
+  return code;
+#else
+  NAMD_bug("ScriptTcl::eval called without Tcl.");
+#endif
 }
 
 void ScriptTcl::eval(char *script) {
