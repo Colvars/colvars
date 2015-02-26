@@ -7,8 +7,8 @@
 /*****************************************************************************
  * $Source: /namd/cvsroot/namd2/src/SimParameters.C,v $
  * $Author: jim $
- * $Date: 2014/12/04 21:08:50 $
- * $Revision: 1.1446 $
+ * $Date: 2015/01/29 17:33:49 $
+ * $Revision: 1.1447 $
  *****************************************************************************/
 
 /** \file SimParameters.C
@@ -209,6 +209,9 @@ void SimParameters::scriptSet(const char *param, const char *value) {
 				berendsenPressureRelaxationTime)
   SCRIPT_PARSE_FLOAT("constraintScaling",constraintScaling)
   SCRIPT_PARSE_FLOAT("consForceScaling",consForceScaling)
+  SCRIPT_PARSE_BOOL("drudeHardWall",drudeHardWallOn)
+  SCRIPT_PARSE_FLOAT("drudeBondConst",drudeBondConst)
+  SCRIPT_PARSE_FLOAT("drudeBondLen",drudeBondLen)
   SCRIPT_PARSE_STRING("outputname",outputFilename)
   SCRIPT_PARSE_STRING("restartname",restartFilename)
   SCRIPT_PARSE_INT("DCDfreq",dcdFrequency)
@@ -3280,11 +3283,13 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
      }
      if ( ! opts.defined("drudeBondConst")) {
        drudeBondConst = 0;
-       if (opts.defined("drudeBondLen")) {
-         iout << iWARN << "Resetting 'drudeBondLen' to 0 "
-           "since 'drudeBondConst' is unset\n" << endi;
+       if (! drudeHardWallOn) {
+         drudeBondLen = 0;
+         if (opts.defined("drudeBondLen")) {
+           iout << iWARN << "Resetting 'drudeBondLen' to 0 "
+             "since 'drudeBondConst' and 'drudeHardWall' are unset\n" << endi;
+         }
        }
-       drudeBondLen = 0;
      }
      if ( ! opts.defined("drudeNbtholeCut")) {
        drudeNbtholeCut = 0;
@@ -4819,6 +4824,11 @@ if ( openatomOn )
              << drudeBondLen << "\n";
         iout << iINFO << "DRUDE BOND RESTRAINT CONSTANT IS                "
              << drudeBondConst << "\n";
+      }
+      if (drudeHardWallOn) {
+        iout << iINFO << "DRUDE HARD WALL RESTRAINT IS ACTIVE FOR DRUDE BONDS\n";
+        iout << iINFO << "DRUDE MAXIMUM BOND LENGTH BEFORE RESTRAINT IS   "
+             << drudeBondLen << "\n";
       }
       if (drudeNbtholeCut > 0.0) {
         iout << iINFO << "DRUDE NBTHOLE IS ACTIVE\n";
