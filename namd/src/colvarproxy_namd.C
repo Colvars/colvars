@@ -98,7 +98,7 @@ colvarproxy_namd::colvarproxy_namd()
   cvm::log("Using NAMD interface, version "+
            cvm::to_str(COLVARPROXY_VERSION)+".\n");
 
-  colvars->config_file(config->data);
+  colvars->read_config_file(config->data);
   colvars->setup_input();
   colvars->setup_output();
 

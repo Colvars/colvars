@@ -48,9 +48,9 @@ do
   # run simulation(s)
   for script in test*.namd ; do
       $BINARY $script > ${script%.namd}.out
-      # collect output of colvars module, except the version number
-      # TODO: strip also the echo of newly introduced keywords
-      grep "^colvars:" ${script%.namd}.out | grep -v 'Initializing the collective variables module' > ${script%.namd}.colvars.out
+      # collect output of colvars module, except the version numbers
+      grep "^colvars:" ${script%.namd}.out | grep -v 'Initializing the collective variables module' \
+                                           | grep -v 'Using NAMD interface, version' > ${script%.namd}.colvars.out
       # Output of Tcl interpreter for automatic testing of scripts
       grep "^TCL:" ${script%.namd}.out | grep -v '^TCL: Suspending until startup complete.' > ${script%.namd}.Tcl.out
       if [ ! -s ${script%.namd}.Tcl.out ]; then

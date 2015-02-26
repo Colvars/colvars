@@ -1,15 +1,15 @@
 TCL: d = 0.00000000000000e+00
-TCL: E(abf1) = 3.49598e+228
-TCL: E(harmonic1) = 3.49598e+228
+TCL: E(abf1) = 0
+TCL: E(harmonic1) = 0
 TCL: Running cv update
 TCL: 
 TCL: d = 0.00000000000000e+00
-TCL: E(abf1) = 3.49598e+228
+TCL: E(abf1) = 0
 TCL: E(harmonic1) = 18000
 TCL: Original numsteps 20 will be ignored.
 TCL: Running for 20 steps
 TCL: d = 1.30566036331419e+01
-TCL: E(abf1) = 3.49598e+228
+TCL: E(abf1) = 0
 TCL: E(harmonic1) = 139.551
 TCL: Running for 20 steps
 TCL: Running cv bias harmonic1 delete
