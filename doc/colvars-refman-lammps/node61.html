@@ -1,0 +1,180 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Well-tempered metadynamics</TITLE>
+<META NAME="description" CONTENT="Well-tempered metadynamics">
+<META NAME="keywords" CONTENT="colvars-refman-lammps">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="colvars-refman-lammps.css">
+
+<LINK REL="next" HREF="node62.html">
+<LINK REL="previous" HREF="node60.html">
+<LINK REL="up" HREF="node58.html">
+<LINK REL="next" HREF="node62.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A NAME="tex2html1042"
+  HREF="node62.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html1036"
+  HREF="node58.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html1030"
+  HREF="node60.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html1038"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html1040"
+  HREF="node71.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html1043"
+  HREF="node62.html">Multiple-replicas metadynamics</A>
+<B> Up:</B> <A NAME="tex2html1037"
+  HREF="node58.html">Metadynamics</A>
+<B> Previous:</B> <A NAME="tex2html1031"
+  HREF="node60.html">Performance tuning</A>
+ &nbsp; <B>  <A NAME="tex2html1039"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html1041"
+  HREF="node71.html">Index</A></B> 
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+
+<H3><A NAME="SECTION00082300000000000000"></A>
+<A NAME="sec:colvarbias_well_tempered"></A>
+<BR>
+Well-tempered metadynamics
+</H3>
+The following options define the configuration for the ``well-tempered'' metadynamics approach [<A
+ HREF="node72.html#Barducci2008">15</A>]:
+
+<P>
+
+<UL>
+<LI><A NAME="5863"></A>
+  <B><BIG CLASS="LARGE"><TT>wellTempered </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle\,$"></B></SPAN>Perform well-tempered metadynamics<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ \,\rangle$"></B></SPAN> 
+<BR><B>Context: </B> <TT>metadynamics</TT> 
+<BR><B>Acceptable values: </B> boolean 
+<BR><B>Default value: </B> <TT>off</TT> 
+<BR><B>Description: </B> If enabled, this flag causes well-tempered metadynamics as
+    described by Barducci et al.[<A
+ HREF="node72.html#Barducci2008">15</A>]
+    to be performed, rather than standard metadynamics.  The parameter
+    <TT>biasTemperature</TT> is then required.This feature 
+    was contributed by Li Li (Luthey-Schulten group, Departement of Chemistry, UIUC).
+
+<P>
+</LI>
+<LI><A NAME="5884"></A>
+  <B><BIG CLASS="LARGE"><TT>biasTemperature </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle\,$"></B></SPAN>Temperature bias for well-tempered metadynamics<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ \,\rangle$"></B></SPAN> 
+<BR><B>Context: </B> <TT>metadynamics</TT> 
+<BR><B>Acceptable values: </B> positive decimal 
+<BR><B>Description: </B> When running metadynamics in the long time limit, collective variable space is sampled to a modified
+    temperature <!-- MATH
+ $T+\Delta T$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="57" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img183.png"
+ ALT="$ T+\Delta T$"></B></SPAN>.  In conventional metadynamics, the temperature ``boost'' <SPAN CLASS="MATH"><B><IMG
+ WIDTH="27" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img184.png"
+ ALT="$ \Delta T$"></B></SPAN> would
+    constantly increases with time.  Instead, in well-tempered metadynamics <SPAN CLASS="MATH"><B><IMG
+ WIDTH="27" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img184.png"
+ ALT="$ \Delta T$"></B></SPAN> must be defined by the
+    user via <TT>biasTemperature</TT>.  If <TT>dumpFreeEnergyFile</TT> is enabled, the written PMF includes the
+    scaling factor <!-- MATH
+ $(T+\Delta T)/\Delta T$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="102" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img185.png"
+ ALT="$ (T+\Delta T)/\Delta T$"></B></SPAN> [<A
+ HREF="node72.html#Barducci2008">15</A>].  A careful choice of <SPAN CLASS="MATH"><B><IMG
+ WIDTH="27" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img184.png"
+ ALT="$ \Delta T$"></B></SPAN> determines the
+    sampling and convergence rate, and is hence crucial to the success of a well-tempered metadynamics
+    simulation.
+</LI>
+</UL>
+
+<P>
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A NAME="tex2html1042"
+  HREF="node62.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html1036"
+  HREF="node58.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html1030"
+  HREF="node60.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html1038"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html1040"
+  HREF="node71.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html1043"
+  HREF="node62.html">Multiple-replicas metadynamics</A>
+<B> Up:</B> <A NAME="tex2html1037"
+  HREF="node58.html">Metadynamics</A>
+<B> Previous:</B> <A NAME="tex2html1031"
+  HREF="node60.html">Performance tuning</A>
+ &nbsp; <B>  <A NAME="tex2html1039"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html1041"
+  HREF="node71.html">Index</A></B> </DIV>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Jérôme Hénin
+2015-02-27
+</ADDRESS>
+</BODY>
+</HTML>

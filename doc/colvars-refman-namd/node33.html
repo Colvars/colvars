@@ -1,0 +1,318 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>coordNum: coordination number between two groups.</TITLE>
+<META NAME="description" CONTENT="coordNum: coordination number between two groups.">
+<META NAME="keywords" CONTENT="colvars-refman-namd">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="colvars-refman-namd.css">
+
+<LINK REL="next" HREF="node34.html">
+<LINK REL="previous" HREF="node32.html">
+<LINK REL="up" HREF="node23.html">
+<LINK REL="next" HREF="node34.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A NAME="tex2html651"
+  HREF="node34.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html645"
+  HREF="node23.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html639"
+  HREF="node32.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html647"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html649"
+  HREF="node81.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html652"
+  HREF="node34.html">selfCoordNum: coordination number between</A>
+<B> Up:</B> <A NAME="tex2html646"
+  HREF="node23.html">List of available colvar</A>
+<B> Previous:</B> <A NAME="tex2html640"
+  HREF="node32.html">dihedral: torsional angle between</A>
+ &nbsp; <B>  <A NAME="tex2html648"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html650"
+  HREF="node81.html">Index</A></B> 
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+
+<H3><A NAME="SECTION000711000000000000000">
+<TT>coordNum</TT>: coordination number between two groups.</A>
+</H3>
+The <TT>coordNum {...}</TT> block defines
+a coordination number (or number of contacts), which calculates the
+function <!-- MATH
+ $(1-(d/d_0)^{n})/(1-(d/d_0)^{m})$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="207" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img71.png"
+ ALT="$ (1-(d/d_0)^{n})/(1-(d/d_0)^{m})$"></SPAN>, where <SPAN CLASS="MATH"><IMG
+ WIDTH="20" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img72.png"
+ ALT="$ d_0$"></SPAN> is the
+``cutoff'' distance, and <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img67.png"
+ ALT="$ n$"></SPAN> and <SPAN CLASS="MATH"><IMG
+ WIDTH="17" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img73.png"
+ ALT="$ m$"></SPAN> are exponents that can control
+its long range behavior and stiffness [<A
+ HREF="node82.html#Iannuzzi2003">2</A>].  This
+function is summed over all pairs of atoms in <TT>group1</TT> and
+<TT>group2</TT>:
+<P></P>
+<DIV ALIGN="CENTER" CLASS="mathdisplay"><A NAME="eq:cvc_coordNum"></A><!-- MATH
+ \begin{equation}
+C (\mathtt{group1}, \mathtt{group2}) \; = \;
+  \sum_{i\in\mathtt{group1}}\sum_{j\in\mathtt{group2}} {
+    \frac{1 - (|\mathbf{x}_{i}-\mathbf{x}_{j}|/d_{0})^{n}}{
+      1 - (|\mathbf{x}_{i}-\mathbf{x}_{j}|/d_{0})^{m} }
+  }
+\end{equation}
+ -->
+<TABLE CLASS="equation" CELLPADDING="0" WIDTH="100%" ALIGN="CENTER">
+<TR VALIGN="MIDDLE">
+<TD NOWRAP ALIGN="CENTER"><SPAN CLASS="MATH"><IMG
+ WIDTH="421" HEIGHT="60" ALIGN="MIDDLE" BORDER="0"
+ SRC="img74.png"
+ ALT="$\displaystyle C (\mathtt{group1}, \mathtt{group2}) \; = \; \sum_{i\in\mathtt{gr...
+...}\vert/d_{0})^{n}}{ 1 - (\vert\mathbf{x}_{i}-\mathbf{x}_{j}\vert/d_{0})^{m} } }$"></SPAN></TD>
+<TD NOWRAP CLASS="eqno" WIDTH="10" ALIGN="RIGHT">
+(<SPAN CLASS="arabic">3</SPAN>)</TD></TR>
+</TABLE></DIV>
+<BR CLEAR="ALL"><P></P>
+This colvar component accepts the same keywords as the component <TT>distance</TT>,
+<TT>group1</TT> and <TT>group2</TT>.  In addition to them, it
+recognizes the following keywords:
+
+<P>
+
+<UL>
+<LI><A NAME="5079"></A>
+  <B><BIG CLASS="LARGE"><TT>cutoff </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></SPAN>``Interaction'' distance (&#197;)<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>coordNum</TT> 
+<BR><B>Acceptable values: </B> positive decimal 
+<BR><B>Default value: </B> 4.0 
+<BR><B>Description: </B> This number defines the switching distance to define an
+    interatomic contact: for <SPAN CLASS="MATH"><IMG
+ WIDTH="55" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img75.png"
+ ALT="$ d \ll d_0$"></SPAN>, the switching function
+    <!-- MATH
+ $(1-(d/d_0)^{n})/(1-(d/d_0)^{m})$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="207" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img71.png"
+ ALT="$ (1-(d/d_0)^{n})/(1-(d/d_0)^{m})$"></SPAN> is close to 1, at <SPAN CLASS="MATH"><IMG
+ WIDTH="51" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img76.png"
+ ALT="$ d = d_0$"></SPAN> it
+    has a value of <SPAN CLASS="MATH"><IMG
+ WIDTH="34" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img77.png"
+ ALT="$ n/m$"></SPAN> (<SPAN CLASS="MATH"><IMG
+ WIDTH="30" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img78.png"
+ ALT="$ 1/2$"></SPAN> with the default <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img67.png"
+ ALT="$ n$"></SPAN> and <SPAN CLASS="MATH"><IMG
+ WIDTH="17" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img73.png"
+ ALT="$ m$"></SPAN>), and at
+    <SPAN CLASS="MATH"><IMG
+ WIDTH="55" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img79.png"
+ ALT="$ d \gg d_0$"></SPAN> it goes to zero approximately like <SPAN CLASS="MATH"><IMG
+ WIDTH="40" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img80.png"
+ ALT="$ d^{m-n}$"></SPAN>.  Hence,
+    for a proper behavior, <SPAN CLASS="MATH"><IMG
+ WIDTH="17" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img73.png"
+ ALT="$ m$"></SPAN> must be larger than <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img67.png"
+ ALT="$ n$"></SPAN>.
+
+<P>
+</LI>
+<LI><A NAME="5099"></A>
+  <B><BIG CLASS="LARGE"><TT>cutoff3 </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></SPAN>Reference distance vector (&#197;)<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>coordNum</TT> 
+<BR><B>Acceptable values: </B> ``<TT>(x, y, z)</TT>'' triplet of positive decimals 
+<BR><B>Default value: </B> <TT>(4.0, 4.0, 4.0)</TT> 
+<BR><B>Description: </B> The three components of this vector define three different cutoffs
+    <SPAN CLASS="MATH"><IMG
+ WIDTH="20" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img81.png"
+ ALT="$ d_{0}$"></SPAN> for each direction.  This option is mutually exclusive with
+    <TT>cutoff</TT>.
+
+<P>
+</LI>
+<LI><A NAME="5120"></A>
+  <B><BIG CLASS="LARGE"><TT>expNumer </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></SPAN>Numerator exponent<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>coordNum</TT> 
+<BR><B>Acceptable values: </B> positive even integer 
+<BR><B>Default value: </B> 6 
+<BR><B>Description: </B> This number defines the <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img67.png"
+ ALT="$ n$"></SPAN> exponent for the switching function.
+
+<P>
+</LI>
+<LI><A NAME="5137"></A>
+  <B><BIG CLASS="LARGE"><TT>expDenom </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></SPAN>Denominator exponent<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>coordNum</TT> 
+<BR><B>Acceptable values: </B> positive even integer 
+<BR><B>Default value: </B> 12 
+<BR><B>Description: </B> This number defines the <SPAN CLASS="MATH"><IMG
+ WIDTH="17" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img73.png"
+ ALT="$ m$"></SPAN> exponent for the switching function.
+
+<P>
+</LI>
+<LI><A NAME="5154"></A>
+  <B><BIG CLASS="LARGE"><TT>group2CenterOnly </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></SPAN>Use only <TT>group2</TT>'s center of
+    mass<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>coordNum</TT> 
+<BR><B>Acceptable values: </B> boolean 
+<BR><B>Default value: </B> <TT>off</TT> 
+<BR><B>Description: </B> If this option is <TT>on</TT>, only contacts between each atoms in <TT>group1</TT> and the center of mass of     <TT>group2</TT> are calculated (by default, the sum extends over all pairs of atoms in <TT>group1</TT> and <TT>group2</TT>).
+If <TT>group2</TT> is a <TT>dummyAtom</TT>, this option is set to <TT>yes</TT> by default.
+
+<P>
+</LI>
+</UL>
+
+<P>
+This component returns a dimensionless number, which ranges from
+approximately 0 (all interatomic distances are much larger than the
+cutoff) to <!-- MATH
+ $N_{\mathtt{group1}} \times N_{\mathtt{group2}}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="128" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img82.png"
+ ALT="$ N_{\mathtt{group1}} \times N_{\mathtt{group2}}$"></SPAN> (all distances
+are less than the cutoff), or <!-- MATH
+ $N_{\mathtt{group1}}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="57" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img83.png"
+ ALT="$ N_{\mathtt{group1}}$"></SPAN> if
+<TT>group2CenterOnly</TT> is used.  For performance reasons, at least
+one of <TT>group1</TT> and <TT>group2</TT> should be of limited size or <TT>group2CenterOnly</TT> should be used: the cost of the loop over all pairs grows as <!-- MATH
+ $N_{\mathtt{group1}} \times N_{\mathtt{group2}}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="128" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img82.png"
+ ALT="$ N_{\mathtt{group1}} \times N_{\mathtt{group2}}$"></SPAN>.
+
+<P>
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A NAME="tex2html651"
+  HREF="node34.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html645"
+  HREF="node23.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html639"
+  HREF="node32.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html647"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html649"
+  HREF="node81.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html652"
+  HREF="node34.html">selfCoordNum: coordination number between</A>
+<B> Up:</B> <A NAME="tex2html646"
+  HREF="node23.html">List of available colvar</A>
+<B> Previous:</B> <A NAME="tex2html640"
+  HREF="node32.html">dihedral: torsional angle between</A>
+ &nbsp; <B>  <A NAME="tex2html648"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html650"
+  HREF="node81.html">Index</A></B> </DIV>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Jérôme Hénin
+2015-02-27
+</ADDRESS>
+</BODY>
+</HTML>

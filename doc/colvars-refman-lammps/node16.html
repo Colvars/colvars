@@ -1,0 +1,390 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Statistical analysis of collective variables</TITLE>
+<META NAME="description" CONTENT="Statistical analysis of collective variables">
+<META NAME="keywords" CONTENT="colvars-refman-lammps">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="colvars-refman-lammps.css">
+
+<LINK REL="previous" HREF="node15.html">
+<LINK REL="up" HREF="node11.html">
+<LINK REL="next" HREF="node17.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A NAME="tex2html337"
+  HREF="node17.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html331"
+  HREF="node11.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html327"
+  HREF="node15.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html333"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html335"
+  HREF="node71.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html338"
+  HREF="node17.html">Selecting atoms for colvars:</A>
+<B> Up:</B> <A NAME="tex2html332"
+  HREF="node11.html">Defining collective variables and</A>
+<B> Previous:</B> <A NAME="tex2html328"
+  HREF="node15.html">Extended Lagrangian.</A>
+ &nbsp; <B>  <A NAME="tex2html334"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html336"
+  HREF="node71.html">Index</A></B> 
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+
+<H2><A NAME="SECTION00055000000000000000"></A>
+<A NAME="sec:colvar_acf"></A>
+<BR>
+Statistical analysis of collective variables
+</H2>
+
+<P>
+When the global keyword <TT>analysis</TT> is defined in the
+configuration file, run-time calculations of statistical properties for
+individual colvars can be performed.  At the moment, several types of
+time correlation functions, running averages and running standard
+deviations are available.
+
+<P>
+
+<UL>
+<LI><A NAME="4264"></A>
+  <B><BIG CLASS="LARGE"><TT>corrFunc </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle\,$"></SPAN>Calculate a time correlation function?<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ \,\rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>colvar</TT> 
+<BR><B>Acceptable values: </B> boolean 
+<BR><B>Default value: </B> <TT>off</TT> 
+<BR><B>Description: </B> Whether or not a time correlaction function should be calculated
+    for this colvar.
+
+<P>
+</LI>
+<LI><A NAME="4281"></A>
+  <B><BIG CLASS="LARGE"><TT>corrFuncWithColvar </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle\,$"></SPAN>Colvar name for the correlation function<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ \,\rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>colvar</TT> 
+<BR><B>Acceptable values: </B> string 
+<BR><B>Description: </B> By default, the auto-correlation function (ACF) of this colvar,
+    <SPAN CLASS="MATH"><IMG
+ WIDTH="17" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img28.png"
+ ALT="$ \xi_{i}$"></SPAN>, is calculated.  When this option is specified, the
+    correlation function is calculated instead with another colvar,
+    <SPAN CLASS="MATH"><IMG
+ WIDTH="19" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img29.png"
+ ALT="$ \xi_{j}$"></SPAN>, which must be of the same type (scalar, vector, or
+    quaternion) as <SPAN CLASS="MATH"><IMG
+ WIDTH="17" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img28.png"
+ ALT="$ \xi_{i}$"></SPAN>.
+
+<P>
+</LI>
+<LI><A NAME="4300"></A>
+  <B><BIG CLASS="LARGE"><TT>corrFuncType </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle\,$"></SPAN>Type of the correlation function<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ \,\rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>colvar</TT> 
+<BR><B>Acceptable values: </B> <TT>velocity</TT>, <TT>coordinate</TT> or
+    <TT>coordinate_p2</TT> 
+<BR><B>Default value: </B> <TT>velocity</TT> 
+<BR><B>Description: </B> With <TT>coordinate</TT> or <TT>velocity</TT>, the correlation
+    function <!-- MATH
+ $C_{i,j}(t)$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="47" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img30.png"
+ ALT="$ C_{i,j}(t)$"></SPAN>&nbsp;= <!-- MATH
+ $\left\langle \Pi\left(\xi_{i}(t_{0}),
+        \xi_{j}(t_{0}+t)\right) \right\rangle$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="159" HEIGHT="38" ALIGN="MIDDLE" BORDER="0"
+ SRC="img31.png"
+ ALT="$ \left\langle \Pi\left(\xi_{i}(t_{0}),
+\xi_{j}(t_{0}+t)\right) \right\rangle$"></SPAN> is calculated between
+    the variables <SPAN CLASS="MATH"><IMG
+ WIDTH="17" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img28.png"
+ ALT="$ \xi_{i}$"></SPAN> and <SPAN CLASS="MATH"><IMG
+ WIDTH="19" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img29.png"
+ ALT="$ \xi_{j}$"></SPAN>, or their velocities.
+    <!-- MATH
+ $\Pi(\xi_{i}, \xi_{j})$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="66" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img32.png"
+ ALT="$ \Pi(\xi_{i}, \xi_{j})$"></SPAN> is the scalar product when calculated
+    between scalar or vector values, whereas for quaternions it is the
+    cosine between the two corresponding rotation axes.  With
+    <TT>coordinate_p2</TT>, the second order Legendre polynomial,
+    <!-- MATH
+ $(3\cos(\theta)^{2}-1)/2$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="128" HEIGHT="38" ALIGN="MIDDLE" BORDER="0"
+ SRC="img33.png"
+ ALT="$ (3\cos(\theta)^{2}-1)/2$"></SPAN>, is used instead of the cosine.
+
+<P>
+</LI>
+<LI><A NAME="4334"></A>
+  <B><BIG CLASS="LARGE"><TT>corrFuncNormalize </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle\,$"></SPAN>Normalize the time correlation function?<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ \,\rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>colvar</TT> 
+<BR><B>Acceptable values: </B> boolean 
+<BR><B>Default value: </B> <TT>on</TT> 
+<BR><B>Description: </B> If enabled, the value of the correlation function at <SPAN CLASS="MATH"><IMG
+ WIDTH="10" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img34.png"
+ ALT="$ t$"></SPAN>&nbsp;= 0
+    is normalized to 1; otherwise, it equals to <!-- MATH
+ $\left\langle
+      O\left(\xi_{i}, \xi_{j}\right) \right\rangle$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="84" HEIGHT="38" ALIGN="MIDDLE" BORDER="0"
+ SRC="img35.png"
+ ALT="$ \left\langle
+O\left(\xi_{i}, \xi_{j}\right) \right\rangle$"></SPAN>.
+
+<P>
+</LI>
+<LI><A NAME="4354"></A>
+  <B><BIG CLASS="LARGE"><TT>corrFuncLength </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle\,$"></SPAN>Length of the time correlation function<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ \,\rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>colvar</TT> 
+<BR><B>Acceptable values: </B> positive integer 
+<BR><B>Default value: </B> <TT>1000</TT> 
+<BR><B>Description: </B> Length (in number of points) of the time correlation function.
+
+<P>
+</LI>
+<LI><A NAME="4372"></A>
+  <B><BIG CLASS="LARGE"><TT>corrFuncStride </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle\,$"></SPAN>Stride of the time correlation function<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ \,\rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>colvar</TT> 
+<BR><B>Acceptable values: </B> positive integer 
+<BR><B>Default value: </B> <TT>1</TT> 
+<BR><B>Description: </B> Number of steps between two values of the time correlation function.
+
+<P>
+</LI>
+<LI><A NAME="4390"></A>
+  <B><BIG CLASS="LARGE"><TT>corrFuncOffset </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle\,$"></SPAN>Offset of the time correlation function<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ \,\rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>colvar</TT> 
+<BR><B>Acceptable values: </B> positive integer 
+<BR><B>Default value: </B> <TT>0</TT> 
+<BR><B>Description: </B> The starting time (in number of steps) of the time correlation
+    function (default: <SPAN CLASS="MATH"><IMG
+ WIDTH="10" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img34.png"
+ ALT="$ t$"></SPAN>&nbsp;= 0).  <SPAN  CLASS="textbf">Note:</SPAN> <SPAN  CLASS="textit">the value at <SPAN CLASS="MATH"><IMG
+ WIDTH="10" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img34.png"
+ ALT="$ t$"></SPAN>&nbsp;= 0 is always
+    used for the normalization</SPAN>.
+
+<P>
+</LI>
+<LI><A NAME="4410"></A>
+  <B><BIG CLASS="LARGE"><TT>corrFuncOutputFile </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle\,$"></SPAN>Output file for the time correlation function<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ \,\rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>colvar</TT> 
+<BR><B>Acceptable values: </B> UNIX filename 
+<BR><B>Default value: </B> <TT><SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$ &lt;$"></SPAN>name<SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$ &gt;$"></SPAN>.corrfunc.dat</TT> 
+<BR><B>Description: </B> The time correlation function is saved in this file.
+
+<P>
+</LI>
+<LI><A NAME="4428"></A>
+  <B><BIG CLASS="LARGE"><TT>runAve </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle\,$"></SPAN>Calculate the running average and standard deviation<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ \,\rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>colvar</TT> 
+<BR><B>Acceptable values: </B> boolean 
+<BR><B>Default value: </B> <TT>off</TT> 
+<BR><B>Description: </B> Whether or not the running average and standard deviation should
+    be calculated for this colvar.
+
+<P>
+</LI>
+<LI><A NAME="4446"></A>
+  <B><BIG CLASS="LARGE"><TT>runAveLength </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle\,$"></SPAN>Length of the running average window<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ \,\rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>colvar</TT> 
+<BR><B>Acceptable values: </B> positive integer 
+<BR><B>Default value: </B> <TT>1000</TT> 
+<BR><B>Description: </B> Length (in number of points) of the running average window.
+
+<P>
+</LI>
+<LI><A NAME="4464"></A>
+  <B><BIG CLASS="LARGE"><TT>runAveStride </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle\,$"></SPAN>Stride of the running average window values<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ \,\rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>colvar</TT> 
+<BR><B>Acceptable values: </B> positive integer 
+<BR><B>Default value: </B> <TT>1</TT> 
+<BR><B>Description: </B> Number of steps between two values within the running average window.
+
+<P>
+</LI>
+<LI><A NAME="4482"></A>
+  <B><BIG CLASS="LARGE"><TT>runAveOutputFile </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle\,$"></SPAN>Output file for the running average and standard deviation<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ \,\rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>colvar</TT> 
+<BR><B>Acceptable values: </B> UNIX filename 
+<BR><B>Default value: </B> <TT><SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$ &lt;$"></SPAN>name<SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$ &gt;$"></SPAN>.runave.dat</TT> 
+<BR><B>Description: </B> The running average and standard deviation are saved in this file.
+
+<P>
+</LI>
+</UL>
+
+<P>
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A NAME="tex2html337"
+  HREF="node17.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html331"
+  HREF="node11.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html327"
+  HREF="node15.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html333"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html335"
+  HREF="node71.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html338"
+  HREF="node17.html">Selecting atoms for colvars:</A>
+<B> Up:</B> <A NAME="tex2html332"
+  HREF="node11.html">Defining collective variables and</A>
+<B> Previous:</B> <A NAME="tex2html328"
+  HREF="node15.html">Extended Lagrangian.</A>
+ &nbsp; <B>  <A NAME="tex2html334"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html336"
+  HREF="node71.html">Index</A></B> </DIV>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Jérôme Hénin
+2015-02-27
+</ADDRESS>
+</BODY>
+</HTML>

@@ -1,0 +1,190 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Periodic components.</TITLE>
+<META NAME="description" CONTENT="Periodic components.">
+<META NAME="keywords" CONTENT="colvars-refman-namd">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="colvars-refman-namd.css">
+
+<LINK REL="next" HREF="node51.html">
+<LINK REL="previous" HREF="node49.html">
+<LINK REL="up" HREF="node49.html">
+<LINK REL="next" HREF="node51.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A NAME="tex2html889"
+  HREF="node51.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html883"
+  HREF="node49.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html877"
+  HREF="node49.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html885"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html887"
+  HREF="node81.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html890"
+  HREF="node51.html">Non-scalar components.</A>
+<B> Up:</B> <A NAME="tex2html884"
+  HREF="node49.html">Advanced usage and special</A>
+<B> Previous:</B> <A NAME="tex2html878"
+  HREF="node49.html">Advanced usage and special</A>
+ &nbsp; <B>  <A NAME="tex2html886"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html888"
+  HREF="node81.html">Index</A></B> 
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+
+<H3><A NAME="SECTION00072100000000000000">
+Periodic components.</A>
+</H3> 
+The following components returns
+real numbers that lie in a periodic interval:
+
+<UL>
+<LI><TT>dihedral</TT>: torsional angle between four groups;
+</LI>
+<LI><TT>spinAngle</TT>: angle of rotation around a predefined axis
+  in the best-fit from a set of reference coordinates.
+</LI>
+</UL>
+In certain conditions, <TT>distanceZ</TT> can also be periodic, namely
+when periodic boundary conditions (PBCs) are defined in the simulation
+and <TT>distanceZ</TT>'s axis is parallel to a unit cell vector.
+
+<P>
+The following keywords can be used within periodic components (and are
+illegal elsewhere):
+
+<P>
+
+<UL>
+<LI><A NAME="5996"></A>
+  <B><BIG CLASS="LARGE"><TT>period </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></SPAN>Period of the component<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>distanceZ</TT> 
+<BR><B>Acceptable values: </B> positive decimal 
+<BR><B>Default value: </B> 0.0 
+<BR><B>Description: </B> Setting this number enables the treatment of <TT>distanceZ</TT> as
+    a periodic component: by default, <TT>distanceZ</TT> is not
+    considered periodic.  The keyword is supported, but irrelevant
+    within <TT>dihedral</TT> or <TT>spinAngle</TT>, because their
+    period is always 360&nbsp;degrees.
+
+<P>
+</LI>
+<LI><A NAME="6019"></A>
+  <B><BIG CLASS="LARGE"><TT>wrapAround </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></SPAN>Center
+    of the wrapping interval for periodic variables<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>distanceZ</TT>, <TT>dihedral</TT> or <TT>spinAngle</TT> 
+<BR><B>Acceptable values: </B> decimal 
+<BR><B>Default value: </B> 0.0 
+<BR><B>Description: </B> By default, values of the periodic components are centered around
+    zero, ranging from <SPAN CLASS="MATH"><IMG
+ WIDTH="46" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img139.png"
+ ALT="$ -P/2$"></SPAN> to <SPAN CLASS="MATH"><IMG
+ WIDTH="32" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img140.png"
+ ALT="$ P/2$"></SPAN>, where <SPAN CLASS="MATH"><IMG
+ WIDTH="15" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img141.png"
+ ALT="$ P$"></SPAN> is the period.
+    Setting this number centers the interval around this value.  This
+    can be useful for convenience of output, or to set
+    <TT>lowerWall</TT> and <TT>upperWall</TT> in an order that would
+    not otherwise be allowed.
+</LI>
+</UL>
+Internally, all differences between two values of a periodic colvar
+follow the minimum image convention: they are calculated based on
+the two periodic images that are closest to each other.
+
+<P>
+<SPAN  CLASS="textit">Note: linear or polynomial combinations of periodic components
+  may become meaningless when components cross the periodic boundary.
+  Use such combinations carefully: estimate the range of possible values
+  of each component in a given simulation, and make use of
+  <TT>wrapAround</TT> to limit this problem whenever possible.</SPAN>
+
+<P>
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A NAME="tex2html889"
+  HREF="node51.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html883"
+  HREF="node49.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html877"
+  HREF="node49.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html885"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html887"
+  HREF="node81.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html890"
+  HREF="node51.html">Non-scalar components.</A>
+<B> Up:</B> <A NAME="tex2html884"
+  HREF="node49.html">Advanced usage and special</A>
+<B> Previous:</B> <A NAME="tex2html878"
+  HREF="node49.html">Advanced usage and special</A>
+ &nbsp; <B>  <A NAME="tex2html886"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html888"
+  HREF="node81.html">Index</A></B> </DIV>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Jérôme Hénin
+2015-02-27
+</ADDRESS>
+</BODY>
+</HTML>

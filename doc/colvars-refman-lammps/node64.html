@@ -1,0 +1,211 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Harmonic restraints</TITLE>
+<META NAME="description" CONTENT="Harmonic restraints">
+<META NAME="keywords" CONTENT="colvars-refman-lammps">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="colvars-refman-lammps.css">
+
+<LINK REL="next" HREF="node68.html">
+<LINK REL="previous" HREF="node58.html">
+<LINK REL="up" HREF="node52.html">
+<LINK REL="next" HREF="node65.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A NAME="tex2html1082"
+  HREF="node65.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html1076"
+  HREF="node52.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html1070"
+  HREF="node63.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html1078"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html1080"
+  HREF="node71.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html1083"
+  HREF="node65.html">Moving restraints: steered molecular</A>
+<B> Up:</B> <A NAME="tex2html1077"
+  HREF="node52.html">Biasing and analysis methods</A>
+<B> Previous:</B> <A NAME="tex2html1071"
+  HREF="node63.html">Compatibility and post-processing</A>
+ &nbsp; <B>  <A NAME="tex2html1079"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html1081"
+  HREF="node71.html">Index</A></B> 
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+
+<H2><A NAME="SECTION00083000000000000000"></A>
+<A NAME="sec:colvarbias_harmonic"></A>
+<BR>
+Harmonic restraints
+</H2>
+
+<P>
+The harmonic biasing method may be used to enforce fixed or moving restraints,
+including variants of Steered and Targeted MD. Within energy minimization
+runs, it allows for restrained minimization, e.g. to calculate relaxed potential
+energy surfaces. In the context of the colvars module, 
+harmonic potentials are meant according to their textbook definition:
+<!-- MATH
+ $\displaystyle V({\mbox{\boldmath {$x$}}}) = \frac{1}{2} k ({\mbox{\boldmath {$x$}}} - {\mbox{\boldmath {$x_0$}}})^2$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="141" HEIGHT="57" ALIGN="MIDDLE" BORDER="0"
+ SRC="img186.png"
+ ALT="$ \displaystyle V({\mbox{\boldmath {$x$}}}) = \frac{1}{2} k ({\mbox{\boldmath {$x$}}} - {\mbox{\boldmath {$x_0$}}})^2$"></B></SPAN>.
+Note that this differs from harmonic bond and angle potentials in common
+force fields, where the factor of one half is typically omitted,
+resulting in a non-standard definition of the force constant.
+
+A harmonic restraint is set up by a <TT>harmonic&nbsp;{...}</TT>
+block, which may contain (in addition to the standard option
+<TT>colvars</TT>) the following keywords:
+
+<UL>
+<LI><A NAME="6108"></A>
+  <B><BIG CLASS="LARGE"><TT>forceConstant </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle\,$"></B></SPAN>Scaled force constant (unit of energy specified by <TT>units</TT>)<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ \,\rangle$"></B></SPAN> 
+<BR><B>Context: </B> <TT>harmonic</TT> 
+<BR><B>Acceptable values: </B> positive decimal 
+<BR><B>Default value: </B> <TT>1.0</TT> 
+<BR><B>Description: </B> This defines a scaled force constant for the harmonic potential.
+    To ensure consistency for multidimensional restraints, it is
+    divided internally by the square of the specific <TT>width</TT>
+    for each colvar involved (which is 1 by default), so that all colvars
+    are effectively dimensionless and of commensurate size.
+    For instance, setting a scaled force constant of 10&nbsp;kcal/mol acting
+    on two colvars, an angle with a <TT>width</TT> of 5&nbsp;degrees and a distance
+    with a width of 0.5&nbsp;&#197;, will apply actual force constants of
+    0.4&nbsp;kcal/mol<SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img187.png"
+ ALT="$ \times$"></B></SPAN>degree<SPAN CLASS="MATH"><B><IMG
+ WIDTH="21" HEIGHT="20" ALIGN="BOTTOM" BORDER="0"
+ SRC="img188.png"
+ ALT="$ ^{-2}$"></B></SPAN> for the angle and
+    40&nbsp;kcal/mol/&#197;<SPAN CLASS="MATH"><B><IMG
+ WIDTH="11" HEIGHT="20" ALIGN="BOTTOM" BORDER="0"
+ SRC="img189.png"
+ ALT="$ ^2$"></B></SPAN> for the distance.
+
+<P>
+</LI>
+<LI><A NAME="6134"></A>
+  <B><BIG CLASS="LARGE"><TT>centers </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle\,$"></B></SPAN>Initial harmonic restraint centers<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ \,\rangle$"></B></SPAN> 
+<BR><B>Context: </B> <TT>harmonic</TT> 
+<BR><B>Acceptable values: </B> space-separated list of colvar values 
+<BR><B>Description: </B> The centers (equilibrium values) of the restraint are entered here.
+    The number of values must be the number of requested colvars.
+    Each value is a decimal number if the corresponding colvar returns
+    a scalar, a ``<TT>(x, y, z)</TT>'' triplet if it returns a unit
+    vector or a vector, and a ``<TT>q0, q1, q2, q3)</TT>'' quadruplet
+    if it returns a rotational quaternion.  If a colvar has
+    periodicities or symmetries, its closest image to the restraint
+    center is considered when calculating the harmonic potential.
+</LI>
+</UL>
+
+<P>
+<SPAN  CLASS="textbf">Tip:</SPAN> A complex set of restraints can be applied to a system,
+by defining several colvars, and applying one or more harmonic
+restraints to different groups of colvars.  In some cases, dozens of
+colvars can be defined, but their value may not be relevant: to
+limit the size of the colvars trajectory file, it
+may be wise to disable <TT>outputValue</TT> for such ``ancillary''
+variables, and leave it enabled only for ``relevant'' ones.
+
+<P>
+<BR><HR>
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL CLASS="ChildLinks">
+<LI><A NAME="tex2html1084"
+  HREF="node65.html">Moving restraints: steered molecular dynamics</A>
+<LI><A NAME="tex2html1085"
+  HREF="node66.html">Moving restraints: umbrella sampling</A>
+<LI><A NAME="tex2html1086"
+  HREF="node67.html">Changing force constant</A>
+</UL>
+<!--End of Table of Child-Links-->
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A NAME="tex2html1082"
+  HREF="node65.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html1076"
+  HREF="node52.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html1070"
+  HREF="node63.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html1078"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html1080"
+  HREF="node71.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html1083"
+  HREF="node65.html">Moving restraints: steered molecular</A>
+<B> Up:</B> <A NAME="tex2html1077"
+  HREF="node52.html">Biasing and analysis methods</A>
+<B> Previous:</B> <A NAME="tex2html1071"
+  HREF="node63.html">Compatibility and post-processing</A>
+ &nbsp; <B>  <A NAME="tex2html1079"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html1081"
+  HREF="node71.html">Index</A></B> </DIV>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Jérôme Hénin
+2015-02-27
+</ADDRESS>
+</BODY>
+</HTML>

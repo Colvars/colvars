@@ -1,0 +1,233 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Multiple-replicas metadynamics</TITLE>
+<META NAME="description" CONTENT="Multiple-replicas metadynamics">
+<META NAME="keywords" CONTENT="colvars-refman-lammps">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="colvars-refman-lammps.css">
+
+<LINK REL="next" HREF="node63.html">
+<LINK REL="previous" HREF="node61.html">
+<LINK REL="up" HREF="node58.html">
+<LINK REL="next" HREF="node63.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A NAME="tex2html1056"
+  HREF="node63.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html1050"
+  HREF="node58.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html1044"
+  HREF="node61.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html1052"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html1054"
+  HREF="node71.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html1057"
+  HREF="node63.html">Compatibility and post-processing</A>
+<B> Up:</B> <A NAME="tex2html1051"
+  HREF="node58.html">Metadynamics</A>
+<B> Previous:</B> <A NAME="tex2html1045"
+  HREF="node61.html">Well-tempered metadynamics</A>
+ &nbsp; <B>  <A NAME="tex2html1053"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html1055"
+  HREF="node71.html">Index</A></B> 
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+
+<H3><A NAME="SECTION00082400000000000000"></A>
+<A NAME="sec:colvarbias_meta_mr"></A>
+<BR>
+Multiple-replicas metadynamics
+</H3>
+The following options define metadynamics calculations with more than
+one replica:
+
+<P>
+
+<UL>
+<LI><A NAME="5904"></A>
+  <B><BIG CLASS="LARGE"><TT>multipleReplicas </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle\,$"></B></SPAN>Multiple replicas metadynamics<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ \,\rangle$"></B></SPAN> 
+<BR><B>Context: </B> <TT>metadynamics</TT> 
+<BR><B>Acceptable values: </B> boolean 
+<BR><B>Default value: </B> <TT>off</TT> 
+<BR><B>Description: </B> If this option is <TT>on</TT>, multiple (independent) replica of the
+    same system can be run at the same time, and their hills will be
+    combined to obtain a single PMF [<A
+ HREF="node72.html#Raiteri2005">16</A>].  Replicas are
+    identified by the value of <TT>replicaID</TT>.  Communication is
+    done by files: each replica must be able to read the files
+    created by the others, whose paths are communicated through the file
+    <TT>replicasRegistry</TT>.  This file, and the files listed in it,
+    are read every <TT>replicaUpdateFrequency</TT> steps.  Every time
+    the colvars state file is written
+    (<TT>colvarsRestartFrequency</TT>), the file:
+<BR>    ``<SPAN  CLASS="textit">output</SPAN><TT>.colvars.</TT><SPAN  CLASS="textit">name</SPAN><TT>.</TT><SPAN  CLASS="textit">replicaID</SPAN><TT>.state</TT>''
+    is also written, containing
+    the state of the metadynamics bias for <TT>replicaID</TT>.  In the
+    time steps between <TT>colvarsRestartFrequency</TT>, new hills are
+    temporarily written to the file:
+<BR>    ``<SPAN  CLASS="textit">output</SPAN><TT>.colvars.</TT><SPAN  CLASS="textit">name</SPAN><TT>.</TT><SPAN  CLASS="textit">replicaID</SPAN><TT>.hills</TT>'',
+    which serves as communication
+    buffer.  These files are only required for communication, and may be
+    deleted after a new MD run is started with a different
+    <TT>outputName</TT>.  
+
+<P>
+</LI>
+<LI><A NAME="5942"></A>
+  <B><BIG CLASS="LARGE"><TT>replicaID </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle\,$"></B></SPAN>Set the identifier for this replica<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ \,\rangle$"></B></SPAN> 
+<BR><B>Context: </B> <TT>metadynamics</TT> 
+<BR><B>Acceptable values: </B> string 
+<BR><B>Description: </B> If <TT>multipleReplicas</TT> is <TT>on</TT>, this option sets a
+    unique identifier for this replica.  All replicas should use
+    identical collective variable configurations, except for the value
+    of this option.
+
+<P>
+</LI>
+<LI><A NAME="5960"></A>
+  <B><BIG CLASS="LARGE"><TT>replicasRegistry </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle\,$"></B></SPAN>Multiple replicas database file<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ \,\rangle$"></B></SPAN> 
+<BR><B>Context: </B> <TT>metadynamics</TT> 
+<BR><B>Acceptable values: </B> UNIX filename 
+<BR><B>Default value: </B> ``<SPAN  CLASS="textit">name</SPAN><TT>.replica_files.txt</TT>'' 
+<BR><B>Description: </B> If <TT>multipleReplicas</TT> is <TT>on</TT>, this option sets the
+    path to the replicas' database file.
+    
+<P>
+</LI>
+<LI><A NAME="5981"></A>
+  <B><BIG CLASS="LARGE"><TT>replicaUpdateFrequency </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle\,$"></B></SPAN>How often hills are communicated between
+    replicas<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ \,\rangle$"></B></SPAN> 
+<BR><B>Context: </B> <TT>metadynamics</TT> 
+<BR><B>Acceptable values: </B> positive integer 
+<BR><B>Default value: </B> <TT>newHillFrequency</TT> 
+<BR><B>Description: </B> If <TT>multipleReplicas</TT> is <TT>on</TT>, this option sets the
+    number of steps after which each replica (re)reads the other
+    replicas' files.  The lowest meaningful value of this number is
+    <TT>newHillFrequency</TT>.  If access to the file system is
+    significantly affecting the simulation performance, this number can
+    be increased, at the price of reduced synchronization between
+    replicas.  Values higher than <TT>colvarsRestartFrequency</TT> may
+    not improve performance significantly.
+
+<P>
+</LI>
+<LI><A NAME="6003"></A>
+  <B><BIG CLASS="LARGE"><TT>dumpPartialFreeEnergyFile </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle\,$"></B></SPAN>Periodically write the contribution to the
+    PMF from this replica<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ \,\rangle$"></B></SPAN> 
+<BR><B>Context: </B> <TT>metadynamics</TT> 
+<BR><B>Acceptable values: </B> boolean 
+<BR><B>Default value: </B> <TT>on</TT> 
+<BR><B>Description: </B> When <TT>multipleReplicas</TT> is <TT>on</TT>, tje file
+    <SPAN  CLASS="textit">output</SPAN><TT>.pmf</TT> contains the combined PMF from all
+    replicas.  Enabling this option produces an additional file
+    <SPAN  CLASS="textit">output</SPAN><TT>.partial.pmf</TT>, which can be useful to
+    quickly monitor the contribution of each replica to the PMF.  The
+    requirements for this option are the same as
+    <TT>dumpFreeEnergyFile</TT>.
+
+<P>
+</LI>
+</UL>
+
+<P>
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A NAME="tex2html1056"
+  HREF="node63.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html1050"
+  HREF="node58.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html1044"
+  HREF="node61.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html1052"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html1054"
+  HREF="node71.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html1057"
+  HREF="node63.html">Compatibility and post-processing</A>
+<B> Up:</B> <A NAME="tex2html1051"
+  HREF="node58.html">Metadynamics</A>
+<B> Previous:</B> <A NAME="tex2html1045"
+  HREF="node61.html">Well-tempered metadynamics</A>
+ &nbsp; <B>  <A NAME="tex2html1053"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html1055"
+  HREF="node71.html">Index</A></B> </DIV>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Jérôme Hénin
+2015-02-27
+</ADDRESS>
+</BODY>
+</HTML>
