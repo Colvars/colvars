@@ -61,9 +61,9 @@ colvars:   # applyBias = on [default]
 colvars:   # updateBias = on [default]
 colvars:   # hideJacobian = off [default]
 colvars:   Jacobian (geometric) forces will be included in reported free energy gradients.
-colvars:   # fullSamples = 100
+colvars:   # fullSamples = 0
 colvars:   # inputPrefix =  [default]
-colvars:   # outputFreq = 20000 [default]
+colvars:   # outputFreq = 60
 colvars:   # historyFreq = 0 [default]
 colvars:   # shared = off [default]
 colvars:   # maxForce =  [default]
@@ -178,9 +178,9 @@ colvars:   # applyBias = on [default]
 colvars:   # updateBias = on [default]
 colvars:   # hideJacobian = off [default]
 colvars:   Jacobian (geometric) forces will be included in reported free energy gradients.
-colvars:   # fullSamples = 100
+colvars:   # fullSamples = 0
 colvars:   # inputPrefix =  [default]
-colvars:   # outputFreq = 20000 [default]
+colvars:   # outputFreq = 60
 colvars:   # historyFreq = 0 [default]
 colvars:   # shared = off [default]
 colvars:   # maxForce =  [default]
