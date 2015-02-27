@@ -2731,7 +2731,8 @@ The following specific parameters can be set in the ABF configuration block
     Update the ABF bias?}
   {boolean}
   {\texttt{yes}}
-  { If this is set to no, the initial biasing force (e.g. read from a restart file\cvnamdonly{or through \texttt{inputPrefix}}\cvlammpsonly{or through the \texttt{input} keyword}) is not updated during the simulation.
+  { If this is set to no, the initial biasing force (e.g. read from a restart file or
+    through \texttt{inputPrefix}) is not updated during the simulation.
     As a result, a constant bias is applied. This can be used to apply a custom, tabulated
     biasing potential to any combination of colvars. To that effect, one should prepare
     a gradient file containing the gradient of the potential to be applied (negative
@@ -2787,12 +2788,9 @@ unique filenames for output, as in \outputName\texttt{.abf1.grad}.
 This should not be done routinely and could lead to meaningless results:
 only do it if you know what you are doing!
 
-\cvnamdonly{If the colvar space has been partitioned into sections (\emph{windows}) in which independent
+If the colvar space has been partitioned into sections (\emph{windows}) in which independent
 ABF simulations have been run, the resulting data can be merged using the
-\texttt{inputPrefix} option described above (a NAMD run of 0 steps is enough).}
-\cvlammpsonly{If the colvar space has been partitioned into sections (\emph{windows}) in which independent
-ABF simulations have been run, the resulting data can be merged using the
-the \texttt{input} keyword of the \texttt{fix ID group-ID colvars} command.}
+\texttt{inputPrefix} option described above (a run of 0 steps is enough).
 
 
 \cvsubsubsec{Post-processing: reconstructing a multidimensional free energy surface}
