@@ -535,11 +535,11 @@ To apply moving restraints, or restraints to more than one colvar simultaneously
   \key
     {lowerWallConstant}{%
     \texttt{colvar}}{%
-    Lower wall force constant (\cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
+    Lower wall force constant (\cvnamdonly{kcal/mol/U$^2$}\cvvmdonly{kcal/mol/U$^2$}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
     positive decimal}{%
-    Defines the force constant for a confining restraint on the colvar, in the form of a     ``half-harmonic'' potential.
-    The potential starts at \texttt{lowerWall} if it is defined, or     \texttt{lowerBoundary} otherwise.
-    The energy unit of the constant is \cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{the unit of energy specified by \texttt{units}}, while the spatial unit is that of the colvar.}
+    Defines the force constant for a confining restraint on the colvar, in the form of a ``half-harmonic'' potential.
+    The potential starts at \texttt{lowerWall} if it is defined, or \texttt{lowerBoundary} otherwise.
+    The energy unit of the constant is \cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{the unit of energy specified by \texttt{units}}, while the spatial unit U is that of the colvar.}
 
 \item %
   \keydef
@@ -555,7 +555,7 @@ To apply moving restraints, or restraints to more than one colvar simultaneously
   \key
     {upperWallConstant}{%
     \texttt{colvar}}{%
-    Upper wall force constant (\cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
+    Upper wall force constant (\cvnamdonly{kcal/mol/U$^2$}\cvvmdonly{kcal/mol/U$^2$}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
     positive decimal}{%
     Analogous to \texttt{lowerWallConstant}.}
 
@@ -628,7 +628,7 @@ To apply moving restraints, or restraints to more than one colvar simultaneously
     For extended Lagrangian colvars, the "system force" felt by the extended degree of freedom
     is simply the force from the harmonic spring.
     \textbf{Note:} not all components support this option.  The
-    physical unit for this force is \cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{the unit of energy specified by \texttt{units}}, divided by the colvar unit.}
+    physical unit for this force is \cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{the unit of energy specified by \texttt{units}}, divided by the colvar unit U.}
 
 \item %
   \keydef
@@ -2666,7 +2666,7 @@ The following specific parameters can be set in the ABF configuration block
    in the PMF such as hard walls, where the discretization of the average force becomes
    very inaccurate, causing the colvar's diffusion to get ``stuck'' at the singularity.
    To enable this cap, provide one non-negative value for each colvar. The unit of force
-   is \cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{the unit of energy specified by \texttt{units}} divided by the colvar unit (\AA{} for lengths, degrees for angles, etc.).}
+   is \cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{the unit of energy specified by \texttt{units}} divided by the colvar unit.}
 
 \item \keydef{hideJacobian}{\texttt{abf}}{%
     Remove geometric entropy term from calculated
