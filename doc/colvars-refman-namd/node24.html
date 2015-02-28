@@ -1,0 +1,185 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>distance: center-of-mass distance between two groups.</TITLE>
+<META NAME="description" CONTENT="distance: center-of-mass distance between two groups.">
+<META NAME="keywords" CONTENT="colvars-refman-namd">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="colvars-refman-namd.css">
+
+<LINK REL="next" HREF="node25.html">
+<LINK REL="previous" HREF="node23.html">
+<LINK REL="up" HREF="node23.html">
+<LINK REL="next" HREF="node25.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A NAME="tex2html525"
+  HREF="node25.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html519"
+  HREF="node23.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html513"
+  HREF="node23.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html521"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html523"
+  HREF="node81.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html526"
+  HREF="node25.html">distanceZ: projection of a</A>
+<B> Up:</B> <A NAME="tex2html520"
+  HREF="node23.html">List of available colvar</A>
+<B> Previous:</B> <A NAME="tex2html514"
+  HREF="node23.html">List of available colvar</A>
+ &nbsp; <B>  <A NAME="tex2html522"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html524"
+  HREF="node81.html">Index</A></B> 
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+
+<H3><A NAME="SECTION00071100000000000000">
+<TT>distance</TT>: center-of-mass distance between two groups.</A>
+</H3>
+The <TT>distance {...}</TT> block defines a distance component,
+between two atom groups, <TT>group1</TT> and <TT>group2</TT>.
+
+<UL>
+<LI><A NAME="4715"></A>
+  <B><BIG CLASS="LARGE"><TT>group1 </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></SPAN>First group of atoms<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>distance</TT> 
+<BR><B>Acceptable values: </B> Block <TT>group1 {...}</TT> 
+<BR><B>Description: </B> First group of atoms.
+</LI>
+<LI><A NAME="4731"></A>
+  <B><BIG CLASS="LARGE"><TT>group2 </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></SPAN>Second group of atoms<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>distance</TT> 
+<BR><B>Acceptable values: </B> Block <TT>group2 {...}</TT> 
+<BR><B>Description: </B> Second group of atoms.
+</LI>
+<LI><A NAME="4748"></A>
+  <B><BIG CLASS="LARGE"><TT>forceNoPBC </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></SPAN>Calculate absolute rather than minimum-image distance?<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>distance</TT> 
+<BR><B>Acceptable values: </B> boolean 
+<BR><B>Default value: </B> <TT>no</TT> 
+<BR><B>Description: </B> By default, in calculations with periodic boundary conditions, the
+    <TT>distance</TT> component returns the distance according to the
+    minimum-image convention. If this parameter is set to <TT>yes</TT>,
+    PBC will be ignored and the distance between the coordinates as maintained
+    internally will be used. This is only useful in a limited number of
+    special cases, e.g. to describe the distance between remote points
+    of a single macromolecule, which cannot be split across periodic cell
+    boundaries, and for which the minimum-image distance might give the
+    wrong result because of a relatively small periodic cell.
+</LI>
+<LI><A NAME="4768"></A>
+  <B><BIG CLASS="LARGE"><TT>oneSiteSystemForce </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></SPAN>Measure system force on group 1 only?<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>distance</TT> 
+<BR><B>Acceptable values: </B> boolean 
+<BR><B>Default value: </B> <TT>no</TT> 
+<BR><B>Description: </B> If this is set to <TT>yes</TT>, the system force is measured along
+    a vector field (see equation&nbsp;(<A HREF="node56.html#eq:gradient_vector">19</A>) in
+    section&nbsp;<A HREF="node56.html#sec:colvarbias_abf">6.1</A>) that only involves atoms of
+    <TT>group1</TT>.  This option is only useful for ABF, or custom
+    biases that compute system forces.  See
+    section&nbsp;<A HREF="node56.html#sec:colvarbias_abf">6.1</A> for details.
+</LI>
+</UL>
+
+<P>
+The value returned is a positive number (in &#197;), ranging from <SPAN CLASS="MATH">0</SPAN>
+to the largest possible interatomic distance within the chosen
+boundary conditions (with PBCs, the minimum image convention is used
+unless the <TT>forceNoPBC</TT> option is set).
+
+<P>
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A NAME="tex2html525"
+  HREF="node25.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html519"
+  HREF="node23.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html513"
+  HREF="node23.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html521"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html523"
+  HREF="node81.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html526"
+  HREF="node25.html">distanceZ: projection of a</A>
+<B> Up:</B> <A NAME="tex2html520"
+  HREF="node23.html">List of available colvar</A>
+<B> Previous:</B> <A NAME="tex2html514"
+  HREF="node23.html">List of available colvar</A>
+ &nbsp; <B>  <A NAME="tex2html522"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html524"
+  HREF="node81.html">Index</A></B> </DIV>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Jérôme Hénin
+2015-02-27
+</ADDRESS>
+</BODY>
+</HTML>

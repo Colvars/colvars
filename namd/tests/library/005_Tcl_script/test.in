@@ -16,7 +16,8 @@ colvar {
 
 abf {
     colvars        d
-    fullSamples    100
+    fullSamples    0
+    outputFreq     60
 }
 
 harmonic {

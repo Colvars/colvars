@@ -1,0 +1,232 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Biasing and analysis methods</TITLE>
+<META NAME="description" CONTENT="Biasing and analysis methods">
+<META NAME="keywords" CONTENT="colvars-refman-namd">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="colvars-refman-namd.css">
+
+<LINK REL="next" HREF="node76.html">
+<LINK REL="previous" HREF="node22.html">
+<LINK REL="up" HREF="colvars-refman-namd.html">
+<LINK REL="next" HREF="node56.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A NAME="tex2html955"
+  HREF="node56.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html949"
+  HREF="colvars-refman-namd.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html943"
+  HREF="node54.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html951"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html953"
+  HREF="node81.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html956"
+  HREF="node56.html">Adaptive Biasing Force</A>
+<B> Up:</B> <A NAME="tex2html950"
+  HREF="colvars-refman-namd.html">colvars-refman-namd</A>
+<B> Previous:</B> <A NAME="tex2html944"
+  HREF="node54.html">Colvars as scripted functions</A>
+ &nbsp; <B>  <A NAME="tex2html952"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html954"
+  HREF="node81.html">Index</A></B> 
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+
+<H1><A NAME="SECTION00080000000000000000"></A>
+<A NAME="sec:colvarbias"></A>
+<BR>
+Biasing and analysis methods
+</H1>
+
+<P>
+All of the biasing and analysis methods implemented (<TT>abf</TT>,
+<TT>harmonic</TT>, <TT>histogram</TT> and <TT>metadynamics</TT>)
+recognize the following options:
+
+<UL>
+<LI><A NAME="6156"></A>
+  <B><BIG CLASS="LARGE"><TT>name </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></SPAN>Identifier for the bias<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> colvar bias 
+<BR><B>Acceptable values: </B> string 
+<BR><B>Default value: </B> <TT><SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$ &lt;$"></SPAN>type of bias<SPAN CLASS="MATH"><IMG
+ WIDTH="31" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img152.png"
+ ALT="$ &gt;&lt;$"></SPAN>bias index<SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img23.png"
+ ALT="$ &gt;$"></SPAN></TT> 
+<BR><B>Description: </B> This string is used to identify the bias or analysis method in
+    output messages and to name some output files.
+
+<P>
+</LI>
+<LI><A NAME="6164"></A>
+  <B><BIG CLASS="LARGE"><TT>colvars </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></SPAN>Collective variables involved<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> colvar bias 
+<BR><B>Acceptable values: </B> space-separated list of colvar names 
+<BR><B>Description: </B> This option selects by name all the colvars to which this bias or
+    analysis will be applied.
+
+<P>
+</LI>
+<LI><A NAME="6170"></A>
+  <B><BIG CLASS="LARGE"><TT>outputEnergy </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></SPAN>Write the current bias energy to the trajectory file<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> colvar bias 
+<BR><B>Acceptable values: </B> boolean 
+<BR><B>Default value: </B> <TT>off</TT> 
+<BR><B>Description: </B> If this option is chosen and  <TT>colvarsTrajFrequency</TT> is not zero, the current value of the biasing energy will be written to the trajectory file during the simulation.
+
+<P>
+</LI>
+</UL>
+
+<P>
+<BR><HR>
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL CLASS="ChildLinks">
+<LI><A NAME="tex2html957"
+  HREF="node56.html">Adaptive Biasing Force</A>
+<UL>
+<LI><A NAME="tex2html958"
+  HREF="node57.html">ABF requirements on collective variables</A>
+<LI><A NAME="tex2html959"
+  HREF="node58.html">Parameters for ABF</A>
+<LI><A NAME="tex2html960"
+  HREF="node59.html">Multiple-replica ABF</A>
+<LI><A NAME="tex2html961"
+  HREF="node60.html">Output files</A>
+<LI><A NAME="tex2html962"
+  HREF="node61.html">Post-processing: reconstructing a multidimensional free energy surface</A>
+</UL>
+<BR>
+<LI><A NAME="tex2html963"
+  HREF="node62.html">Metadynamics</A>
+<UL>
+<LI><A NAME="tex2html964"
+  HREF="node63.html">Output files</A>
+<LI><A NAME="tex2html965"
+  HREF="node64.html">Performance tuning</A>
+<LI><A NAME="tex2html966"
+  HREF="node65.html">Well-tempered metadynamics</A>
+<LI><A NAME="tex2html967"
+  HREF="node66.html">Multiple-replicas metadynamics</A>
+<LI><A NAME="tex2html968"
+  HREF="node67.html">Compatibility and post-processing</A>
+</UL>
+<BR>
+<LI><A NAME="tex2html969"
+  HREF="node68.html">Harmonic restraints</A>
+<UL>
+<LI><A NAME="tex2html970"
+  HREF="node69.html">Moving restraints: steered molecular dynamics</A>
+<LI><A NAME="tex2html971"
+  HREF="node70.html">Moving restraints: umbrella sampling</A>
+<LI><A NAME="tex2html972"
+  HREF="node71.html">Changing force constant</A>
+</UL>
+<BR>
+<LI><A NAME="tex2html973"
+  HREF="node72.html">Linear restraints</A>
+<LI><A NAME="tex2html974"
+  HREF="node73.html">Adaptive Linear Bias/Experiment Directed Simulation</A>
+<LI><A NAME="tex2html975"
+  HREF="node74.html">Multidimensional histograms</A>
+<LI><A NAME="tex2html976"
+  HREF="node75.html">Scripted biases</A>
+</UL>
+<!--End of Table of Child-Links-->
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A NAME="tex2html955"
+  HREF="node56.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html949"
+  HREF="colvars-refman-namd.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html943"
+  HREF="node54.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html951"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html953"
+  HREF="node81.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html956"
+  HREF="node56.html">Adaptive Biasing Force</A>
+<B> Up:</B> <A NAME="tex2html950"
+  HREF="colvars-refman-namd.html">colvars-refman-namd</A>
+<B> Previous:</B> <A NAME="tex2html944"
+  HREF="node54.html">Colvars as scripted functions</A>
+ &nbsp; <B>  <A NAME="tex2html952"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html954"
+  HREF="node81.html">Index</A></B> </DIV>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Jérôme Hénin
+2015-02-27
+</ADDRESS>
+</BODY>
+</HTML>

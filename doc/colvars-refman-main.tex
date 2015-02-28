@@ -454,17 +454,17 @@ The following options are not required by default; however, the first four are v
   \keydef
     {width}{%
     \texttt{colvar}}{%
-    Expected fluctuations amplitude, and resolution for grid-based methods}{%
+    Colvar fluctuation scale, or resolution for grid-based methods}{%
     positive decimal}{%
     1.0}{%
-    This number is a user-provided estimate of the fluctuation amplitude for the colvar.  For example, it is recommended to set this number smaller than or equal to the standard deviation of the colvar during a very short simulation run.  Biasing algorithms use this parameter for different purposes:
-    harmonic restraints (\ref{sec:colvarbias_harmonic}) use it to set the physical unit of the force constant, the histogram
-    (\ref{sec:colvarbias_histogram}) and ABF biases
-    (\ref{sec:colvarbias_abf}) interpret it as the grid spacing in the
-    direction of this variable, and metadynamics
-    (\ref{sec:colvarbias_meta}) uses it to set the width of newly
-    added hills.  This number is expressed in the same physical unit
-    as the colvar value.}
+    This number has the same physical unit as the colvar value and defines an effective colvar unit.
+    Biasing algorithms use it for different purposes.
+    Harmonic restraints (\ref{sec:colvarbias_harmonic}) use it to set the physical unit of the force constant, which is useful for multidimensional restraints involving colvars with different units or scale which may then be defined by a single, scaled force constant.
+    Histogram (\ref{sec:colvarbias_histogram}) and ABF biases (\ref{sec:colvarbias_abf}) interpret it as the grid spacing in the direction of this variable.
+    Metadynamics (\ref{sec:colvarbias_meta}) uses it to set the width of newly added hills.
+    In other cases, it is simplest to keep the default value of 1, so that harmonic force constants are provided in their usual physical unit.
+    When a non-unity width is required by the application, the optimal value is application-dependent, but can often be thought of as a user-provided estimate of the fluctuation amplitude for the colvar.
+    In those cases, it should generally be set smaller than or equal to the standard deviation of the colvar during a very short simulation run.}
 
 \item %
   \key
@@ -535,11 +535,11 @@ To apply moving restraints, or restraints to more than one colvar simultaneously
   \key
     {lowerWallConstant}{%
     \texttt{colvar}}{%
-    Lower wall force constant (\cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
+    Lower wall force constant (\cvnamdonly{kcal/mol/U$^2$}\cvvmdonly{kcal/mol/U$^2$}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
     positive decimal}{%
-    Defines the force constant for a confining restraint on the colvar, in the form of a     ``half-harmonic'' potential.
-    The potential starts at \texttt{lowerWall} if it is defined, or     \texttt{lowerBoundary} otherwise.
-    The energy unit of the constant is \cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{the unit of energy specified by \texttt{units}}, while the spatial unit is that of the colvar.}
+    Defines the force constant for a confining restraint on the colvar, in the form of a ``half-harmonic'' potential.
+    The potential starts at \texttt{lowerWall} if it is defined, or \texttt{lowerBoundary} otherwise.
+    The energy unit of the constant is \cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{the unit of energy specified by \texttt{units}}, while the spatial unit U is that of the colvar.}
 
 \item %
   \keydef
@@ -555,7 +555,7 @@ To apply moving restraints, or restraints to more than one colvar simultaneously
   \key
     {upperWallConstant}{%
     \texttt{colvar}}{%
-    Upper wall force constant (\cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
+    Upper wall force constant (\cvnamdonly{kcal/mol/U$^2$}\cvvmdonly{kcal/mol/U$^2$}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
     positive decimal}{%
     Analogous to \texttt{lowerWallConstant}.}
 
@@ -628,7 +628,7 @@ To apply moving restraints, or restraints to more than one colvar simultaneously
     For extended Lagrangian colvars, the "system force" felt by the extended degree of freedom
     is simply the force from the harmonic spring.
     \textbf{Note:} not all components support this option.  The
-    physical unit for this force is \cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{the unit of energy specified by \texttt{units}}, divided by the colvar unit.}
+    physical unit for this force is \cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{the unit of energy specified by \texttt{units}}, divided by the colvar unit U.}
 
 \item %
   \keydef
@@ -2666,7 +2666,7 @@ The following specific parameters can be set in the ABF configuration block
    in the PMF such as hard walls, where the discretization of the average force becomes
    very inaccurate, causing the colvar's diffusion to get ``stuck'' at the singularity.
    To enable this cap, provide one non-negative value for each colvar. The unit of force
-   is \cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{the unit of energy specified by \texttt{units}} divided by the colvar unit (\AA{} for lengths, degrees for angles, etc.).}
+   is \cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{the unit of energy specified by \texttt{units}} divided by the colvar unit.}
 
 \item \keydef{hideJacobian}{\texttt{abf}}{%
     Remove geometric entropy term from calculated
@@ -2731,7 +2731,8 @@ The following specific parameters can be set in the ABF configuration block
     Update the ABF bias?}
   {boolean}
   {\texttt{yes}}
-  { If this is set to no, the initial biasing force (e.g. read from a restart file\cvnamdonly{or through \texttt{inputPrefix}}\cvlammpsonly{or through the \texttt{input} keyword}) is not updated during the simulation.
+  { If this is set to no, the initial biasing force (e.g. read from a restart file or
+    through \texttt{inputPrefix}) is not updated during the simulation.
     As a result, a constant bias is applied. This can be used to apply a custom, tabulated
     biasing potential to any combination of colvars. To that effect, one should prepare
     a gradient file containing the gradient of the potential to be applied (negative
@@ -2787,12 +2788,9 @@ unique filenames for output, as in \outputName\texttt{.abf1.grad}.
 This should not be done routinely and could lead to meaningless results:
 only do it if you know what you are doing!
 
-\cvnamdonly{If the colvar space has been partitioned into sections (\emph{windows}) in which independent
+If the colvar space has been partitioned into sections (\emph{windows}) in which independent
 ABF simulations have been run, the resulting data can be merged using the
-\texttt{inputPrefix} option described above (a NAMD run of 0 steps is enough).}
-\cvlammpsonly{If the colvar space has been partitioned into sections (\emph{windows}) in which independent
-ABF simulations have been run, the resulting data can be merged using the
-the \texttt{input} keyword of the \texttt{fix ID group-ID colvars} command.}
+\texttt{inputPrefix} option described above (a run of 0 steps is enough).
 
 
 \cvsubsubsec{Post-processing: reconstructing a multidimensional free energy surface}

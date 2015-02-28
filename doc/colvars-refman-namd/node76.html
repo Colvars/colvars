@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Colvars scripting</TITLE>
+<META NAME="description" CONTENT="Colvars scripting">
+<META NAME="keywords" CONTENT="colvars-refman-namd">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="colvars-refman-namd.css">
+
+<LINK REL="next" HREF="node81.html">
+<LINK REL="previous" HREF="node55.html">
+<LINK REL="up" HREF="colvars-refman-namd.html">
+<LINK REL="next" HREF="node77.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A NAME="tex2html1274"
+  HREF="node77.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html1268"
+  HREF="colvars-refman-namd.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html1262"
+  HREF="node75.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html1270"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html1272"
+  HREF="node81.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html1275"
+  HREF="node77.html">Managing the colvars module</A>
+<B> Up:</B> <A NAME="tex2html1269"
+  HREF="colvars-refman-namd.html">colvars-refman-namd</A>
+<B> Previous:</B> <A NAME="tex2html1263"
+  HREF="node75.html">Scripted biases</A>
+ &nbsp; <B>  <A NAME="tex2html1271"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html1273"
+  HREF="node81.html">Index</A></B> 
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+
+<H1><A NAME="SECTION00090000000000000000"></A>
+<A NAME="sec:scripting"></A>
+<BR>
+Colvars scripting
+</H1>
+
+<P>
+Collective variables and biases can be added, queried and deleted through the scripting command
+<TT>cv</TT>, with the following syntax: <TT>cv&nbsp;<SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$ &lt;$"></B></SPAN>subcommand<SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img23.png"
+ ALT="$ &gt;$"></B></SPAN> [args...]</TT>
+for which the available subcommands are listed in the next subsections.
+For example, to query the value of a collective variable named <TT>myVar</TT>,
+use the following syntax: <TT>set value [cv colvar myVar value]</TT>.
+
+<P>
+This interface is particularly useful to implement custom biases as scripted colvar forces.
+See the <TT>scriptedColvarForces</TT> option in <A HREF="node75.html#sec:scripted_biases">6.7</A>.
+Note that scripting commands may not be used directly in the NAMD configuration file before the first 
+<TT>run</TT> or <TT>minimize</TT> statement. That is, they may be used within the callback procedures
+(e.g. <TT>calc_colvar_forces</TT>) or in the NAMD config file after a <TT>run</TT> or
+<TT>minimize</TT> statement.
+
+<P>
+<BR><HR>
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL CLASS="ChildLinks">
+<LI><A NAME="tex2html1276"
+  HREF="node77.html">Managing the colvars module</A>
+<LI><A NAME="tex2html1277"
+  HREF="node78.html">Input and output</A>
+<LI><A NAME="tex2html1278"
+  HREF="node79.html">Accessing collective variables</A>
+<LI><A NAME="tex2html1279"
+  HREF="node80.html">Accessing biases</A>
+</UL>
+<!--End of Table of Child-Links-->
+<BR><HR>
+<ADDRESS>
+Jérôme Hénin
+2015-02-27
+</ADDRESS>
+</BODY>
+</HTML>

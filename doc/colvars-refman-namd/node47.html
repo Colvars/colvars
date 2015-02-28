@@ -1,0 +1,436 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>alpha: -helix content of a protein segment.</TITLE>
+<META NAME="description" CONTENT="alpha: -helix content of a protein segment.">
+<META NAME="keywords" CONTENT="colvars-refman-namd">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="colvars-refman-namd.css">
+
+<LINK REL="next" HREF="node48.html">
+<LINK REL="previous" HREF="node46.html">
+<LINK REL="up" HREF="node23.html">
+<LINK REL="next" HREF="node48.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A NAME="tex2html846"
+  HREF="node48.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html840"
+  HREF="node23.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html834"
+  HREF="node46.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html842"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html844"
+  HREF="node81.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html847"
+  HREF="node48.html">dihedralPC: protein dihedral pricipal</A>
+<B> Up:</B> <A NAME="tex2html841"
+  HREF="node23.html">List of available colvar</A>
+<B> Previous:</B> <A NAME="tex2html835"
+  HREF="node46.html">tilt: cosine of the</A>
+ &nbsp; <B>  <A NAME="tex2html843"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html845"
+  HREF="node81.html">Index</A></B> 
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+
+<H3><A NAME="SECTION000712300000000000000">
+<TT>alpha</TT>: <SPAN CLASS="MATH"><IMG
+ WIDTH="17" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img1.png"
+ ALT="$ \alpha $"></SPAN>-helix content of a  protein segment.</A>
+</H3>
+The block <TT>alpha&nbsp;{...}</TT> defines the
+parameters to calculate the helical content of a segment of protein
+residues.  The <SPAN CLASS="MATH"><IMG
+ WIDTH="17" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img1.png"
+ ALT="$ \alpha $"></SPAN>-helical content across the <SPAN CLASS="MATH"><IMG
+ WIDTH="44" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img123.png"
+ ALT="$ N+1$"></SPAN> residues
+<SPAN CLASS="MATH"><IMG
+ WIDTH="23" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img124.png"
+ ALT="$ N_{0}$"></SPAN> to <SPAN CLASS="MATH"><IMG
+ WIDTH="54" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img125.png"
+ ALT="$ N_{0}+N$"></SPAN> is calculated by the formula:
+<BR>
+<DIV ALIGN="CENTER" CLASS="mathdisplay"><A NAME="eq:colvars_alpha"></A><!-- MATH
+ \begin{eqnarray}
+{
+    \alpha\left(
+      \mathrm{C}_{\alpha}^{(N_{0})},
+      \mathrm{O}^{(N_{0})},
+      \mathrm{C}_{\alpha}^{(N_{0}+1)},
+      \mathrm{O}^{(N_{0}+1)},
+      \ldots
+      \mathrm{N}^{(N_{0}+5)},
+      \mathrm{C}_{\alpha}^{(N_{0}+5)},
+      \mathrm{O}^{(N_{0}+5)},
+      \ldots
+      \mathrm{N}^{(N_{0}+N)},
+      \mathrm{C}_{\alpha}^{(N_{0}+N)}
+    \right)
+  } \; = \; \; \; \; \\\; \; \; \; {
+    \nonumber
+    \frac{1}{2(N-2)} 
+    \sum_{n=N_{0}}^{N_{0}+N-2}
+    \mathrm{angf}\left(
+        \mathrm{C}_{\alpha}^{(n)},
+        \mathrm{C}_{\alpha}^{(n+1)},
+        \mathrm{C}_{\alpha}^{(n+2)}\right)
+  } \; + \; {
+    \frac{1}{2(N-4)} 
+    \sum_{n=N_{0}}^{N_{0}+N-4}
+    \mathrm{hbf}\left(
+      \mathrm{O}^{(n)},
+      \mathrm{N}^{(n+4)}\right) \mathrm{,}
+  } \\
+\end{eqnarray}
+ -->
+<TABLE CELLPADDING="0" ALIGN="CENTER" WIDTH="100%">
+<TR VALIGN="MIDDLE"><TD NOWRAP WIDTH="50%" ALIGN="RIGHT"><IMG
+ WIDTH="602" HEIGHT="48" ALIGN="MIDDLE" BORDER="0"
+ SRC="img126.png"
+ ALT="$\displaystyle {
+\alpha\left(
+\mathrm{C}_{\alpha}^{(N_{0})},
+\mathrm{O}^{(N_{0})...
+...thrm{N}^{(N_{0}+N)},
+\mathrm{C}_{\alpha}^{(N_{0}+N)}
+\right)
+} \; = \; \; \; \;$"></TD>
+<TD>&nbsp;</TD>
+<TD>&nbsp;</TD>
+<TD CLASS="eqno" WIDTH=10 ALIGN="RIGHT">
+(<SPAN CLASS="arabic">10</SPAN>)</TD></TR>
+<TR VALIGN="MIDDLE"><TD NOWRAP WIDTH="50%" ALIGN="RIGHT"><IMG
+ WIDTH="602" HEIGHT="67" ALIGN="MIDDLE" BORDER="0"
+ SRC="img127.png"
+ ALT="$\displaystyle \; \; \; \; {
+\frac{1}{2(N-2)}
+\sum_{n=N_{0}}^{N_{0}+N-2}
+\mathrm...
+...-4}
+\mathrm{hbf}\left(
+\mathrm{O}^{(n)},
+\mathrm{N}^{(n+4)}\right) \mathrm{,}
+}$"></TD>
+<TD>&nbsp;</TD>
+<TD>&nbsp;</TD>
+<TD CLASS="eqno" WIDTH=10 ALIGN="RIGHT">
+&nbsp;</TD></TR>
+</TABLE></DIV>
+<BR CLEAR="ALL">
+
+where the score function for the <!-- MATH
+ $\mathrm{C}_{\alpha} -
+\mathrm{C}_{\alpha} - \mathrm{C}_{\alpha}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="106" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img128.png"
+ ALT="$ \mathrm{C}_{\alpha} -
+\mathrm{C}_{\alpha} - \mathrm{C}_{\alpha}$"></SPAN> angle is defined as: 
+<P></P>
+<DIV ALIGN="CENTER" CLASS="mathdisplay"><A NAME="eq:colvars_alpha_Calpha"></A><!-- MATH
+ \begin{equation}
+{
+    \mathrm{angf}\left(
+      \mathrm{C}_{\alpha}^{(n)},
+      \mathrm{C}_{\alpha}^{(n+1)},
+      \mathrm{C}_{\alpha}^{(n+2)}\right)
+  } \; = \; {
+    \frac{1 - \left(\theta(
+        \mathrm{C}_{\alpha}^{(n)},
+        \mathrm{C}_{\alpha}^{(n+1)},
+        \mathrm{C}_{\alpha}^{(n+2)}) -
+        \theta_{0}\right)^{2} /
+      \left(\Delta\theta_{\mathrm{tol}}\right)^{2}}{
+      1 - \left(\theta(
+        \mathrm{C}_{\alpha}^{(n)},
+        \mathrm{C}_{\alpha}^{(n+1)},
+        \mathrm{C}_{\alpha}^{(n+2)}) -
+        \theta_{0}\right)^{4} /
+      \left(\Delta\theta_{\mathrm{tol}}\right)^{4}} \mathrm{,}
+  }
+\end{equation}
+ -->
+<TABLE CLASS="equation" CELLPADDING="0" WIDTH="100%" ALIGN="CENTER">
+<TR VALIGN="MIDDLE">
+<TD NOWRAP ALIGN="CENTER"><SPAN CLASS="MATH"><IMG
+ WIDTH="541" HEIGHT="92" ALIGN="MIDDLE" BORDER="0"
+ SRC="img129.png"
+ ALT="$\displaystyle { \mathrm{angf}\left( \mathrm{C}_{\alpha}^{(n)}, \mathrm{C}_{\alp...
+...eta_{0}\right)^{4} / \left(\Delta\theta_{\mathrm{tol}}\right)^{4}} \mathrm{,} }$"></SPAN></TD>
+<TD NOWRAP CLASS="eqno" WIDTH="10" ALIGN="RIGHT">
+(<SPAN CLASS="arabic">11</SPAN>)</TD></TR>
+</TABLE></DIV>
+<BR CLEAR="ALL"><P></P>
+and the score function for the <!-- MATH
+ $\mathrm{O}^{(n)} \leftrightarrow
+\mathrm{N}^{(n+4)}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="105" HEIGHT="40" ALIGN="MIDDLE" BORDER="0"
+ SRC="img130.png"
+ ALT="$ \mathrm{O}^{(n)} \leftrightarrow
+\mathrm{N}^{(n+4)}$"></SPAN> hydrogen bond is defined through a <TT>hBond</TT>
+colvar component on the same atoms.  The options recognized within the
+<TT>alpha&nbsp;{...}</TT> block are:
+
+<UL>
+<LI><A NAME="5801"></A>
+  <B><BIG CLASS="LARGE"><TT>residueRange </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></SPAN>Potential <SPAN CLASS="MATH"><IMG
+ WIDTH="17" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img1.png"
+ ALT="$ \alpha $"></SPAN>-helical residues<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>alpha</TT> 
+<BR><B>Acceptable values: </B> ``<SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$ &lt;$"></SPAN>Initial residue number<SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img23.png"
+ ALT="$ &gt;$"></SPAN>-<SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$ &lt;$"></SPAN>Final residue number<SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img23.png"
+ ALT="$ &gt;$"></SPAN>'' 
+<BR><B>Description: </B> This option specifies the range of residues on which this
+    component should be defined.  The colvar module looks for the
+    atoms within these residues named ``<TT>CA</TT>'', ``<TT>N</TT>''
+    and ``<TT>O</TT>'', and raises an error if any of those atoms is
+    not found.
+
+<P>
+</LI>
+<LI><A NAME="5819"></A>
+  <B><BIG CLASS="LARGE"><TT>psfSegID </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></SPAN>PSF segment identifier<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>alpha</TT> 
+<BR><B>Acceptable values: </B> string (max 4 characters) 
+<BR><B>Description: </B> This option sets the PSF segment identifier for the residues
+    specified in <TT>residueRange</TT>.  This option is only required
+    when PSF topologies are used.
+
+<P>
+</LI>
+<LI><A NAME="5836"></A>
+  <B><BIG CLASS="LARGE"><TT>hBondCoeff </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></SPAN>Coefficient for the hydrogen bond term<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>alpha</TT> 
+<BR><B>Acceptable values: </B> positive between 0 and 1 
+<BR><B>Default value: </B> 0.5 
+<BR><B>Description: </B> This number specifies the contribution to the total value from the
+    hydrogen bond terms.  0 disables the hydrogen bond terms, 1
+    disables the angle terms.
+
+<P>
+</LI>
+<LI><A NAME="5853"></A>
+  <B><BIG CLASS="LARGE"><TT>angleRef </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></SPAN>Reference <!-- MATH
+ $\mathrm{C}_{\alpha} -
+    \mathrm{C}_{\alpha} - \mathrm{C}_{\alpha}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="106" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img128.png"
+ ALT="$ \mathrm{C}_{\alpha} -
+\mathrm{C}_{\alpha} - \mathrm{C}_{\alpha}$"></SPAN> angle<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>alpha</TT> 
+<BR><B>Acceptable values: </B> positive decimal 
+<BR><B>Default value: </B> 88<SPAN CLASS="MATH"><IMG
+ WIDTH="11" HEIGHT="17" ALIGN="BOTTOM" BORDER="0"
+ SRC="img117.png"
+ ALT="$ ^{\circ}$"></SPAN> 
+<BR><B>Description: </B> This option sets the reference angle used in the score function
+    (<A HREF="#eq:colvars_alpha_Calpha">12</A>).
+
+<P>
+</LI>
+<LI><A NAME="5878"></A>
+  <B><BIG CLASS="LARGE"><TT>angleTol </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></SPAN>Tolerance in the <!-- MATH
+ $\mathrm{C}_{\alpha} -
+    \mathrm{C}_{\alpha} - \mathrm{C}_{\alpha}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="106" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img128.png"
+ ALT="$ \mathrm{C}_{\alpha} -
+\mathrm{C}_{\alpha} - \mathrm{C}_{\alpha}$"></SPAN> angle<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>alpha</TT> 
+<BR><B>Acceptable values: </B> positive decimal 
+<BR><B>Default value: </B> 15<SPAN CLASS="MATH"><IMG
+ WIDTH="11" HEIGHT="17" ALIGN="BOTTOM" BORDER="0"
+ SRC="img117.png"
+ ALT="$ ^{\circ}$"></SPAN> 
+<BR><B>Description: </B> This option sets the angle tolerance used in the score function
+    (<A HREF="#eq:colvars_alpha_Calpha">12</A>).
+
+<P>
+</LI>
+<LI><A NAME="5903"></A>
+  <B><BIG CLASS="LARGE"><TT>hBondCutoff </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></SPAN>Hydrogen bond cutoff<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>alpha</TT> 
+<BR><B>Acceptable values: </B> positive decimal 
+<BR><B>Default value: </B> 3.3&nbsp;&#197; 
+<BR><B>Description: </B> Equivalent to the <TT>cutoff</TT> option in the <TT>hBond</TT>
+    component.
+
+<P>
+</LI>
+<LI><A NAME="5923"></A>
+  <B><BIG CLASS="LARGE"><TT>hBondExpNumer </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></SPAN>Hydrogen bond numerator exponent<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>alpha</TT> 
+<BR><B>Acceptable values: </B> positive integer 
+<BR><B>Default value: </B> 6 
+<BR><B>Description: </B> Equivalent to the <TT>expNumer</TT> option in the <TT>hBond</TT>
+    component.
+
+<P>
+</LI>
+<LI><A NAME="5942"></A>
+  <B><BIG CLASS="LARGE"><TT>hBondExpDenom </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></SPAN>Hydrogen bond denominator exponent<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>alpha</TT> 
+<BR><B>Acceptable values: </B> positive integer 
+<BR><B>Default value: </B> 8 
+<BR><B>Description: </B> Equivalent to the <TT>expDenom</TT> option in the <TT>hBond</TT>
+    component.
+
+<P>
+</LI>
+</UL>
+
+<P>
+This component returns positive values, always comprised between 0
+(lowest <SPAN CLASS="MATH"><IMG
+ WIDTH="17" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img1.png"
+ ALT="$ \alpha $"></SPAN>-helical score) and 1 (highest <SPAN CLASS="MATH"><IMG
+ WIDTH="17" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img1.png"
+ ALT="$ \alpha $"></SPAN>-helical
+score).
+
+<P>
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A NAME="tex2html846"
+  HREF="node48.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html840"
+  HREF="node23.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html834"
+  HREF="node46.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html842"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html844"
+  HREF="node81.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html847"
+  HREF="node48.html">dihedralPC: protein dihedral pricipal</A>
+<B> Up:</B> <A NAME="tex2html841"
+  HREF="node23.html">List of available colvar</A>
+<B> Previous:</B> <A NAME="tex2html835"
+  HREF="node46.html">tilt: cosine of the</A>
+ &nbsp; <B>  <A NAME="tex2html843"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html845"
+  HREF="node81.html">Index</A></B> </DIV>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Jérôme Hénin
+2015-02-27
+</ADDRESS>
+</BODY>
+</HTML>

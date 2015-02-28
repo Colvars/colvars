@@ -50,17 +50,18 @@ Input and output:\n\
 
   result += "\n\
 Accessing collective variables:\n\
-  colvar <name> value         -- return the current value of the colvar <name>\n\
-  colvar <name> update        -- recalculate the colvar <name>\n\
-  colvar <name> delete        -- delete the colvar <name>\n\
-  colvar <name> addforce <F>  -- apply given force on <name>\n\
-  colvar <name> getconfig     -- return config string of colvar\n\
+  colvar <name> value         -- return the current value of colvar <name>\n\
+  colvar <name> update        -- recalculate colvar <name>\n\
+  colvar <name> type          -- return the type of colvar <name>\n\
+  colvar <name> delete        -- delete colvar <name>\n\
+  colvar <name> addforce <F>  -- apply given force on colvar <name>\n\
+  colvar <name> getconfig     -- return config string of colvar <name>\n\
 \n\
 Accessing biases:\n\
-  bias <name> energy          -- return the current energy of the bias <name>\n\
-  bias <name> update          -- recalculate the bias <name>\n\
-  bias <name> delete          -- delete the bias <name>\n\
-  bias <name> getconfig       -- return config string of bias\n\
+  bias <name> energy          -- return the current energy of bias <name>\n\
+  bias <name> update          -- recalculate bias <name>\n\
+  bias <name> delete          -- delete bias <name>\n\
+  bias <name> getconfig       -- return config string of bias <name>\n\
 \n\
 ";
     return COLVARSCRIPT_OK;
@@ -237,6 +238,11 @@ int colvarscript::proc_colvar(int argc, char const *argv[]) {
 
   if (subcmd == "width") {
     result = cvm::to_str(cv->width, 0, cvm::cv_prec);
+    return COLVARSCRIPT_OK;
+  }
+
+  if (subcmd == "type") {
+    result = cv->value().type_desc(cv->value().value_type);
     return COLVARSCRIPT_OK;
   }
 

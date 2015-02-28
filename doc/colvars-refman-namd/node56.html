@@ -1,0 +1,497 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Adaptive Biasing Force</TITLE>
+<META NAME="description" CONTENT="Adaptive Biasing Force">
+<META NAME="keywords" CONTENT="colvars-refman-namd">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="colvars-refman-namd.css">
+
+<LINK REL="next" HREF="node62.html">
+<LINK REL="previous" HREF="node55.html">
+<LINK REL="up" HREF="node55.html">
+<LINK REL="next" HREF="node57.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A NAME="tex2html989"
+  HREF="node57.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html983"
+  HREF="node55.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html977"
+  HREF="node55.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html985"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html987"
+  HREF="node81.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html990"
+  HREF="node57.html">ABF requirements on collective</A>
+<B> Up:</B> <A NAME="tex2html984"
+  HREF="node55.html">Biasing and analysis methods</A>
+<B> Previous:</B> <A NAME="tex2html978"
+  HREF="node55.html">Biasing and analysis methods</A>
+ &nbsp; <B>  <A NAME="tex2html986"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html988"
+  HREF="node81.html">Index</A></B> 
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+
+<H2><A NAME="SECTION00081000000000000000">
+Adaptive Biasing Force</A>
+</H2>
+
+<P>
+<A NAME="sec:colvarbias_abf"></A>
+<P>
+For a full description of the Adaptive Biasing Force method, see
+reference&nbsp;[<A
+ HREF="node82.html#Darve2008">7</A>]. For details about this implementation,
+see references&nbsp;[<A
+ HREF="node82.html#Henin2004">8</A>] and [<A
+ HREF="node82.html#Henin2010">9</A>]. <SPAN  CLASS="textbf">When
+publishing research that makes use of this functionality, please cite
+references&nbsp;[<A
+ HREF="node82.html#Darve2008">7</A>] and [<A
+ HREF="node82.html#Henin2010">9</A>].</SPAN>
+
+<P>
+An alternate usage of this feature is the application of custom
+tabulated biasing potentials to one or more colvars. See
+<TT>inputPrefix</TT> and <TT>updateBias</TT> below.
+
+<P>
+ABF is based on the thermodynamic integration (TI) scheme for
+computing free energy profiles. The free energy as a function
+of a set of collective variables <!-- MATH
+ ${\mbox{\boldmath {$\xi$}}}=(\xi_{i})_{i\in[1,n]}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="99" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img153.png"
+ ALT="$ {\mbox{\boldmath {$\xi$}}}=(\xi_{i})_{i\in[1,n]}$"></SPAN>
+is defined from the canonical distribution of <!-- MATH
+ ${\mbox{\boldmath {$\xi$}}}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="15" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img154.png"
+ ALT="$ {\mbox{\boldmath {$\xi$}}}$"></SPAN>, <!-- MATH
+ ${\mathcal P}({\mbox{\boldmath {$\xi$}}})$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="48" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img155.png"
+ ALT="$ {\mathcal P}({\mbox{\boldmath {$\xi$}}})$"></SPAN>:
+
+<P>
+<P></P>
+<DIV ALIGN="CENTER" CLASS="mathdisplay"><A NAME="eq:free"></A><!-- MATH
+ \begin{equation}
+A({\mbox{\boldmath {$\xi$}}}) = -\frac{1}{\beta} \ln {\mathcal P}({\mbox{\boldmath {$\xi$}}}) + A_0
+\end{equation}
+ -->
+<TABLE CLASS="equation" CELLPADDING="0" WIDTH="100%" ALIGN="CENTER">
+<TR VALIGN="MIDDLE">
+<TD NOWRAP ALIGN="CENTER"><SPAN CLASS="MATH"><IMG
+ WIDTH="187" HEIGHT="57" ALIGN="MIDDLE" BORDER="0"
+ SRC="img156.png"
+ ALT="$\displaystyle A({\mbox{\boldmath {$\xi$}}}) = -\frac{1}{\beta} \ln {\mathcal P}({\mbox{\boldmath {$\xi$}}}) + A_0$"></SPAN></TD>
+<TD NOWRAP CLASS="eqno" WIDTH="10" ALIGN="RIGHT">
+(<SPAN CLASS="arabic">14</SPAN>)</TD></TR>
+</TABLE></DIV>
+<BR CLEAR="ALL"><P></P>
+
+<P>
+In the TI formalism, the free energy is obtained from its gradient, 
+which is generally calculated in the form of the average of a force
+<!-- MATH
+ ${\mbox{\boldmath {$F$}}}_\xi$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="25" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img157.png"
+ ALT="$ {\mbox{\boldmath {$F$}}}_\xi$"></SPAN> exerted on <!-- MATH
+ ${\mbox{\boldmath {$\xi$}}}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="15" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img154.png"
+ ALT="$ {\mbox{\boldmath {$\xi$}}}$"></SPAN>, taken over an iso-<!-- MATH
+ ${\mbox{\boldmath {$\xi$}}}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="15" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img154.png"
+ ALT="$ {\mbox{\boldmath {$\xi$}}}$"></SPAN> surface:
+
+<P>
+<P></P>
+<DIV ALIGN="CENTER" CLASS="mathdisplay"><A NAME="eq:gradient"></A><!-- MATH
+ \begin{equation}
+{\mbox{\boldmath {$\nabla$}}}_\xi A({\mbox{\boldmath {$\xi$}}}) = \left\langle -{\mbox{\boldmath {$F$}}}_\xi \right\rangle_{\mbox{\boldmath {$\xi$}}}
+\end{equation}
+ -->
+<TABLE CLASS="equation" CELLPADDING="0" WIDTH="100%" ALIGN="CENTER">
+<TR VALIGN="MIDDLE">
+<TD NOWRAP ALIGN="CENTER"><SPAN CLASS="MATH"><IMG
+ WIDTH="144" HEIGHT="38" ALIGN="MIDDLE" BORDER="0"
+ SRC="img158.png"
+ ALT="$\displaystyle {\mbox{\boldmath {$\nabla$}}}_\xi A({\mbox{\boldmath {$\xi$}}}) =...
+...t\langle -{\mbox{\boldmath {$F$}}}_\xi \right\rangle_{\mbox{\boldmath {$\xi$}}}$"></SPAN></TD>
+<TD NOWRAP CLASS="eqno" WIDTH="10" ALIGN="RIGHT">
+(<SPAN CLASS="arabic">15</SPAN>)</TD></TR>
+</TABLE></DIV>
+<BR CLEAR="ALL"><P></P>
+
+<P>
+Several formulae that take the form of&nbsp;(<A HREF="#eq:gradient">16</A>) have been
+proposed.  This implementation relies partly on the classic
+formulation&nbsp;[<A
+ HREF="node82.html#Carter1989">10</A>], and partly on a more versatile scheme
+originating in a work by Ruiz-Montero et al.&nbsp;[<A
+ HREF="node82.html#Ruiz-Montero1997">11</A>],
+generalized by den Otter&nbsp;[<A
+ HREF="node82.html#denOtter2000">12</A>] and extended to multiple
+variables by Ciccotti et al.&nbsp;[<A
+ HREF="node82.html#Ciccotti2005">13</A>].  Consider a system
+subject to constraints of the form <!-- MATH
+ $\sigma_{k}({\mbox{\boldmath {$x$}}}) = 0$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="73" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img159.png"
+ ALT="$ \sigma_{k}({\mbox{\boldmath {$x$}}}) = 0$"></SPAN>.  Let
+(<!-- MATH
+ ${\mbox{\boldmath {$v$}}}_{i})_{i\in[1,n]}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="59" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img160.png"
+ ALT="$ {\mbox{\boldmath {$v$}}}_{i})_{i\in[1,n]}$"></SPAN> be arbitrarily chosen vector fields
+(<!-- MATH
+ $\mathbb{R}^{3N}\rightarrow\mathbb{R}^{3N}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="87" HEIGHT="19" ALIGN="BOTTOM" BORDER="0"
+ SRC="img161.png"
+ ALT="$ \mathbb{R}^{3N}\rightarrow\mathbb{R}^{3N}$"></SPAN>) verifying, for all <SPAN CLASS="MATH"><IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img4.png"
+ ALT="$ i$"></SPAN>,
+<SPAN CLASS="MATH"><IMG
+ WIDTH="12" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img66.png"
+ ALT="$ j$"></SPAN>, and <SPAN CLASS="MATH"><IMG
+ WIDTH="12" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img162.png"
+ ALT="$ k$"></SPAN>:
+
+<P>
+<BR>
+<DIV ALIGN="CENTER" CLASS="mathdisplay"><A NAME="eq:ortho_gradient"></A><A NAME="eq:ortho_constraints"></A><!-- MATH
+ \begin{eqnarray}
+{\mbox{\boldmath {$v$}}}_{i} \cdot \mbox{\boldmath$\nabla_{\!\!x}\,$}\xi_{j}    & = & \delta_{ij}\\
+{\mbox{\boldmath {$v$}}}_{i} \cdot \mbox{\boldmath$\nabla_{\!\!x}\,$}\sigma_{k} & = & 0
+\end{eqnarray}
+ -->
+<TABLE CELLPADDING="0" ALIGN="CENTER" WIDTH="100%">
+<TR VALIGN="MIDDLE"><TD NOWRAP WIDTH="50%" ALIGN="RIGHT"><IMG
+ WIDTH="59" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img163.png"
+ ALT="$\displaystyle {\mbox{\boldmath {$v$}}}_{i} \cdot \mbox{\boldmath$\nabla_{\!\!x} $}\xi_{j}$"></TD>
+<TD WIDTH="10" ALIGN="CENTER" NOWRAP><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img164.png"
+ ALT="$\displaystyle =$"></TD>
+<TD ALIGN="LEFT" NOWRAP WIDTH="50%"><IMG
+ WIDTH="23" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img165.png"
+ ALT="$\displaystyle \delta_{ij}$"></TD>
+<TD CLASS="eqno" WIDTH=10 ALIGN="RIGHT">
+(<SPAN CLASS="arabic">16</SPAN>)</TD></TR>
+<TR VALIGN="MIDDLE"><TD NOWRAP WIDTH="50%" ALIGN="RIGHT"><IMG
+ WIDTH="61" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img166.png"
+ ALT="$\displaystyle {\mbox{\boldmath {$v$}}}_{i} \cdot \mbox{\boldmath$\nabla_{\!\!x} $}\sigma_{k}$"></TD>
+<TD WIDTH="10" ALIGN="CENTER" NOWRAP><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img164.png"
+ ALT="$\displaystyle =$"></TD>
+<TD ALIGN="LEFT" NOWRAP WIDTH="50%">0</TD>
+<TD CLASS="eqno" WIDTH=10 ALIGN="RIGHT">
+(<SPAN CLASS="arabic">17</SPAN>)</TD></TR>
+</TABLE></DIV>
+<BR CLEAR="ALL">
+
+<P>
+then the following holds&nbsp;[<A
+ HREF="node82.html#Ciccotti2005">13</A>]:
+
+<P>
+<P></P>
+<DIV ALIGN="CENTER" CLASS="mathdisplay"><A NAME="eq:gradient_vector"></A><!-- MATH
+ \begin{equation}
+\frac{\partial A}{\partial \xi_{i}} = \left\langle {\mbox{\boldmath {$v$}}}_{i} \cdot \mbox{\boldmath$\nabla_{\!\!x}\,$}V
+- k_B T \mbox{\boldmath$\nabla_{\!\!x}\,$}\cdot {\mbox{\boldmath {$v$}}}_{i} \right\rangle_{\mbox{\boldmath {$\xi$}}}
+\end{equation}
+ -->
+<TABLE CLASS="equation" CELLPADDING="0" WIDTH="100%" ALIGN="CENTER">
+<TR VALIGN="MIDDLE">
+<TD NOWRAP ALIGN="CENTER"><SPAN CLASS="MATH"><IMG
+ WIDTH="216" HEIGHT="58" ALIGN="MIDDLE" BORDER="0"
+ SRC="img167.png"
+ ALT="$\displaystyle \frac{\partial A}{\partial \xi_{i}} = \left\langle {\mbox{\boldma...
+... $}\cdot {\mbox{\boldmath {$v$}}}_{i} \right\rangle_{\mbox{\boldmath {$\xi$}}}$"></SPAN></TD>
+<TD NOWRAP CLASS="eqno" WIDTH="10" ALIGN="RIGHT">
+(<SPAN CLASS="arabic">18</SPAN>)</TD></TR>
+</TABLE></DIV>
+<BR CLEAR="ALL"><P></P>
+
+<P>
+where <SPAN CLASS="MATH"><IMG
+ WIDTH="16" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img168.png"
+ ALT="$ V$"></SPAN> is the potential energy function.
+<!-- MATH
+ ${\mbox{\boldmath {$v$}}}_{i}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="16" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img169.png"
+ ALT="$ {\mbox{\boldmath {$v$}}}_{i}$"></SPAN> can be interpreted as the direction along which the force
+acting on variable <SPAN CLASS="MATH"><IMG
+ WIDTH="17" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img29.png"
+ ALT="$ \xi_{i}$"></SPAN> is measured, whereas the second term in the
+average corresponds to the geometric entropy contribution that appears
+as a Jacobian correction in the classic formalism&nbsp;[<A
+ HREF="node82.html#Carter1989">10</A>].
+Condition&nbsp;(<A HREF="#eq:ortho_gradient">17</A>) states that the direction along
+which the system force on <SPAN CLASS="MATH"><IMG
+ WIDTH="17" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img29.png"
+ ALT="$ \xi_{i}$"></SPAN> is measured is orthogonal to the
+gradient of <SPAN CLASS="MATH"><IMG
+ WIDTH="19" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img30.png"
+ ALT="$ \xi_{j}$"></SPAN>, which means that the force measured on <SPAN CLASS="MATH"><IMG
+ WIDTH="17" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img29.png"
+ ALT="$ \xi_{i}$"></SPAN>
+does not act on <SPAN CLASS="MATH"><IMG
+ WIDTH="19" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img30.png"
+ ALT="$ \xi_{j}$"></SPAN>.
+
+<P>
+Equation&nbsp;(<A HREF="#eq:ortho_constraints">18</A>) implies that constraint forces
+are orthogonal to the directions along which the free energy gradient is
+measured, so that the measurement is effectively performed on unconstrained
+degrees of freedom.
+In NAMD, constraints are typically applied to the lengths of
+bonds involving hydrogen atoms, for example in TIP3P water molecules (parameter <TT>rigidBonds</TT>).
+
+<P>
+In the framework of ABF,
+<!-- MATH
+ ${\bf F}_\xi$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="24" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img170.png"
+ ALT="$ {\bf F}_\xi$"></SPAN> is accumulated in bins of finite size <!-- MATH
+ $\delta \xi$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="26" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img171.png"
+ ALT="$ \delta \xi$"></SPAN>,
+thereby providing an estimate of the free energy gradient
+according to equation&nbsp;(<A HREF="#eq:gradient">16</A>).
+The biasing force applied along the collective variables
+to overcome free energy barriers is calculated as:
+
+<P>
+<P></P>
+<DIV ALIGN="CENTER" CLASS="mathdisplay"><A NAME="eq:abf"></A><!-- MATH
+ \begin{equation}
+{\bf F}^{\rm ABF} = \alpha(N_\xi) \times \mbox{\boldmath$\nabla_{\!\!x}\,$}\widetilde A({\mbox{\boldmath {$\xi$}}})
+\end{equation}
+ -->
+<TABLE CLASS="equation" CELLPADDING="0" WIDTH="100%" ALIGN="CENTER">
+<TR VALIGN="MIDDLE">
+<TD NOWRAP ALIGN="CENTER"><SPAN CLASS="MATH"><IMG
+ WIDTH="121" HEIGHT="40" ALIGN="MIDDLE" BORDER="0"
+ SRC="img172.png"
+ ALT="$\displaystyle {\bf F}^{\rm ABF} = \alpha(N_\xi) \times$">&nbsp; &nbsp;<IMG
+ WIDTH="22" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img173.png"
+ ALT="$\displaystyle \mbox{\boldmath$\nabla_{\!\!x} $}$"><IMG
+ WIDTH="39" HEIGHT="42" ALIGN="MIDDLE" BORDER="0"
+ SRC="img174.png"
+ ALT="$\displaystyle \widetilde A({\mbox{\boldmath {$\xi$}}})$"></SPAN></TD>
+<TD NOWRAP CLASS="eqno" WIDTH="10" ALIGN="RIGHT">
+(<SPAN CLASS="arabic">19</SPAN>)</TD></TR>
+</TABLE></DIV>
+<BR CLEAR="ALL"><P></P>
+
+<P>
+where <!-- MATH
+ $\mbox{\boldmath $\nabla_{\!\!x}\,$}\widetilde A$
+ -->
+<SPAN CLASS="MATH"><!-- MATH
+ $\nabla_{\!\!x}\,$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="22" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img175.png"
+ ALT="$ \nabla_{\!\!x} $"></B></SPAN><IMG
+ WIDTH="15" HEIGHT="20" ALIGN="BOTTOM" BORDER="0"
+ SRC="img176.png"
+ ALT="$ \widetilde A$"></SPAN> denotes the current estimate of the
+free energy gradient at the current point <!-- MATH
+ ${\mbox{\boldmath {$\xi$}}}$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="15" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img154.png"
+ ALT="$ {\mbox{\boldmath {$\xi$}}}$"></B></SPAN> in the collective
+variable subspace, and <!-- MATH
+ $\alpha(N_\xi)$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="50" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img177.png"
+ ALT="$ \alpha(N_\xi)$"></B></SPAN> is a scaling factor that is ramped
+from 0 to 1 as the local number of samples <SPAN CLASS="MATH"><B><IMG
+ WIDTH="24" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img178.png"
+ ALT="$ N_\xi$"></B></SPAN> increases
+to prevent nonequilibrium effects in the early phase of the simulation,
+when the gradient estimate has a large variance.
+See the <TT>fullSamples</TT> parameter below for details.
+
+<P>
+As sampling of the phase space proceeds, the estimate
+<!-- MATH
+ $\mbox{\boldmath $\nabla_{\!\!x}\,$}\widetilde A$
+ -->
+<SPAN CLASS="MATH"><B><!-- MATH
+ $\nabla_{\!\!x}\,$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="22" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img175.png"
+ ALT="$ \nabla_{\!\!x} $"></B></SPAN><IMG
+ WIDTH="15" HEIGHT="20" ALIGN="BOTTOM" BORDER="0"
+ SRC="img176.png"
+ ALT="$ \widetilde A$"></B></SPAN> is progressively refined. The biasing
+force introduced in the equations of motion guarantees that in
+the bin centered around <!-- MATH
+ ${\mbox{\boldmath {$\xi$}}}$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="15" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img154.png"
+ ALT="$ {\mbox{\boldmath {$\xi$}}}$"></B></SPAN>,
+the forces acting along the selected collective variables average
+to zero over time. Eventually, as the undelying free energy surface is canceled
+by the adaptive bias, evolution of the system along <!-- MATH
+ ${\mbox{\boldmath {$\xi$}}}$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="15" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img154.png"
+ ALT="$ {\mbox{\boldmath {$\xi$}}}$"></B></SPAN>
+is governed mainly by diffusion.
+Although this implementation of ABF can in principle be used in 
+arbitrary dimension, a higher-dimension collective variable space is likely
+to result in sampling difficulties.
+Most commonly, the number of variables is one or two.
+
+<P>
+<BR><HR>
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL CLASS="ChildLinks">
+<LI><A NAME="tex2html991"
+  HREF="node57.html">ABF requirements on collective variables</A>
+<LI><A NAME="tex2html992"
+  HREF="node58.html">Parameters for ABF</A>
+<LI><A NAME="tex2html993"
+  HREF="node59.html">Multiple-replica ABF</A>
+<LI><A NAME="tex2html994"
+  HREF="node60.html">Output files</A>
+<LI><A NAME="tex2html995"
+  HREF="node61.html">Post-processing: reconstructing a multidimensional free energy surface</A>
+</UL>
+<!--End of Table of Child-Links-->
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A NAME="tex2html989"
+  HREF="node57.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html983"
+  HREF="node55.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html977"
+  HREF="node55.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html985"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html987"
+  HREF="node81.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html990"
+  HREF="node57.html">ABF requirements on collective</A>
+<B> Up:</B> <A NAME="tex2html984"
+  HREF="node55.html">Biasing and analysis methods</A>
+<B> Previous:</B> <A NAME="tex2html978"
+  HREF="node55.html">Biasing and analysis methods</A>
+ &nbsp; <B>  <A NAME="tex2html986"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html988"
+  HREF="node81.html">Index</A></B> </DIV>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Jérôme Hénin
+2015-02-27
+</ADDRESS>
+</BODY>
+</HTML>

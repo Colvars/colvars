@@ -1,0 +1,413 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Metadynamics</TITLE>
+<META NAME="description" CONTENT="Metadynamics">
+<META NAME="keywords" CONTENT="colvars-refman-lammps">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="colvars-refman-lammps.css">
+
+<LINK REL="next" HREF="node64.html">
+<LINK REL="previous" HREF="node53.html">
+<LINK REL="up" HREF="node52.html">
+<LINK REL="next" HREF="node59.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A NAME="tex2html995"
+  HREF="node59.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html989"
+  HREF="node52.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html983"
+  HREF="node57.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html991"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html993"
+  HREF="node71.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html996"
+  HREF="node59.html">Output files</A>
+<B> Up:</B> <A NAME="tex2html990"
+  HREF="node52.html">Biasing and analysis methods</A>
+<B> Previous:</B> <A NAME="tex2html984"
+  HREF="node57.html">Post-processing: reconstructing a multidimensional</A>
+ &nbsp; <B>  <A NAME="tex2html992"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html994"
+  HREF="node71.html">Index</A></B> 
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+
+<H2><A NAME="SECTION00082000000000000000"></A>
+<A NAME="sec:colvarbias_meta"></A>
+<BR>
+Metadynamics
+</H2>
+
+<P>
+The metadynamics method uses a history-dependent potential [<A
+ HREF="node72.html#Laio2002">11</A>] that generalizes to any type of colvars the conformational flooding [<A
+ HREF="node72.html#Grubmuller1995">12</A>] and local elevation [<A
+ HREF="node72.html#Huber1994">13</A>] methods, originally formulated to use as colvars the principal components of a covariance matrix or a set of dihedral angles, respectively.
+The metadynamics potential on the colvars <!-- MATH
+ ${\mbox{\boldmath {$\xi$}}} = (\xi_{1}, \xi_{2}, \ldots, \xi_{N_{\mathrm{cv}}})$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="149" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img162.png"
+ ALT="$ {\mbox{\boldmath {$\xi$}}} = (\xi_{1}, \xi_{2}, \ldots, \xi_{N_{\mathrm{cv}}})$"></B></SPAN> is defined as:
+<P></P>
+<DIV ALIGN="CENTER" CLASS="mathdisplay"><A NAME="eq:colvars_meta_pot"></A><!-- MATH
+ \begin{equation}
+V_{\mathrm{meta}}({\mbox{\boldmath {$\xi$}}}) \; = \; {
+    \sum_{t' = \delta{}t, \\2\delta{}t, \\\ldots}^{t'<t} W \: {
+      \prod_{i = 1}^{N_{\mathrm{cv}}}
+      \exp\left(-\frac{(\xi_{i}-\xi_{i}(t'))^{2}}{2\delta_{\xi_{i}}^{2}}\right)
+    }
+  }\mathrm{,}
+\end{equation}
+ -->
+<TABLE CLASS="equation" CELLPADDING="0" WIDTH="100%" ALIGN="CENTER">
+<TR VALIGN="MIDDLE">
+<TD NOWRAP ALIGN="CENTER"><SPAN CLASS="MATH"><IMG
+ WIDTH="365" HEIGHT="71" ALIGN="MIDDLE" BORDER="0"
+ SRC="img163.png"
+ ALT="$\displaystyle V_{\mathrm{meta}}({\mbox{\boldmath {$\xi$}}}) \; = \; { \sum_{t' ...
+...t(-\frac{(\xi_{i}-\xi_{i}(t'))^{2}}{2\delta_{\xi_{i}}^{2}}\right) } }\mathrm{,}$"></SPAN></TD>
+<TD NOWRAP CLASS="eqno" WIDTH="10" ALIGN="RIGHT">
+(<SPAN CLASS="arabic">17</SPAN>)</TD></TR>
+</TABLE></DIV>
+<BR CLEAR="ALL"><P></P>
+where <!-- MATH
+ $V_{\mathrm{meta}}$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="39" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img164.png"
+ ALT="$ V_{\mathrm{meta}}$"></B></SPAN> is the history-dependent potential acting on the <SPAN  CLASS="textit">current</SPAN> values of the colvars <!-- MATH
+ ${\mbox{\boldmath {$\xi$}}}$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="15" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img134.png"
+ ALT="$ {\mbox{\boldmath {$\xi$}}}$"></B></SPAN>, and depends only parametrically on the <SPAN  CLASS="textit">previous</SPAN> values of the colvars.
+<!-- MATH
+ $V_{\mathrm{meta}}$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="39" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img164.png"
+ ALT="$ V_{\mathrm{meta}}$"></B></SPAN> is constructed as a sum of <!-- MATH
+ $N_{\mathrm{cv}}$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="28" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img165.png"
+ ALT="$ N_{\mathrm{cv}}$"></B></SPAN>-dimensional repulsive Gaussian ``hills'', whose height is a chosen energy constant <SPAN CLASS="MATH"><B><IMG
+ WIDTH="20" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img166.png"
+ ALT="$ W$"></B></SPAN>, and whose centers are the previously explored configurations <!-- MATH
+ $\left({\mbox{\boldmath {$\xi$}}}(\delta{}t), {\mbox{\boldmath {$\xi$}}}(2\delta{}t), \ldots\right)$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="140" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img167.png"
+ ALT="$ \left({\mbox{\boldmath {$\xi$}}}(\delta{}t), {\mbox{\boldmath {$\xi$}}}(2\delta{}t), \ldots\right)$"></B></SPAN>.
+Each Gaussian functions has a width of approximately <!-- MATH
+ $2\delta_{\xi_{i}}$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="32" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img168.png"
+ ALT="$ 2\delta_{\xi_{i}}$"></B></SPAN> along the direction of the <SPAN CLASS="MATH"><B><IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img3.png"
+ ALT="$ i$"></B></SPAN>-th colvar.
+
+<P>
+During the simulation, the system evolves towards the nearest minimum of the ``effective'' potential of mean force <!-- MATH
+ $\tilde{A}({\mbox{\boldmath {$\xi$}}})$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="39" HEIGHT="38" ALIGN="MIDDLE" BORDER="0"
+ SRC="img169.png"
+ ALT="$ \tilde{A}({\mbox{\boldmath {$\xi$}}})$"></B></SPAN>, which is the sum of the ``real'' underlying potential of mean force <!-- MATH
+ $A({\mbox{\boldmath {$\xi$}}})$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="39" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img170.png"
+ ALT="$ A({\mbox{\boldmath {$\xi$}}})$"></B></SPAN> and the the metadynamics potential <!-- MATH
+ $V_{\mathrm{meta}}({\mbox{\boldmath {$\xi$}}})$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="63" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img171.png"
+ ALT="$ V_{\mathrm{meta}}({\mbox{\boldmath {$\xi$}}})$"></B></SPAN>.
+Therefore, at any given time the probability of observing the configuration <!-- MATH
+ ${\mbox{\boldmath {$\xi^{*}$}}}$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="22" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img172.png"
+ ALT="$ {\mbox{\boldmath {$\xi^{*}$}}}$"></B></SPAN> is proportional to <!-- MATH
+ $\exp\left(-\tilde{A}({\mbox{\boldmath {$\xi^{*}$}}})/\kappa_{\mathrm{B}}T\right)$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="142" HEIGHT="38" ALIGN="MIDDLE" BORDER="0"
+ SRC="img173.png"
+ ALT="$ \exp\left(-\tilde{A}({\mbox{\boldmath {$\xi^{*}$}}})/\kappa_{\mathrm{B}}T\right)$"></B></SPAN>: this is also the probability that a new Gaussian ``hill'' is added at that configuration.
+If the simulation is run for a sufficiently long time, each local minimum is canceled out by the sum of the Gaussian ``hill'' functions.
+At that stage the the ``effective'' potential of mean force <!-- MATH
+ $\tilde{A}({\mbox{\boldmath {$\xi$}}})$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="39" HEIGHT="38" ALIGN="MIDDLE" BORDER="0"
+ SRC="img169.png"
+ ALT="$ \tilde{A}({\mbox{\boldmath {$\xi$}}})$"></B></SPAN> is constant, and <!-- MATH
+ $-V_{\mathrm{meta}}({\mbox{\boldmath {$\xi$}}})$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="77" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img174.png"
+ ALT="$ -V_{\mathrm{meta}}({\mbox{\boldmath {$\xi$}}})$"></B></SPAN> is an accurate estimator of the ``real'' potential of mean force <!-- MATH
+ $A({\mbox{\boldmath {$\xi$}}})$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="39" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img170.png"
+ ALT="$ A({\mbox{\boldmath {$\xi$}}})$"></B></SPAN>, save for an additive constant:
+<P></P>
+<DIV ALIGN="CENTER" CLASS="mathdisplay"><A NAME="eq:colvars_meta_fes"></A><!-- MATH
+ \begin{equation}
+A({\mbox{\boldmath {$\xi$}}}) \; \simeq \; {
+    -V_{\mathrm{meta}}({\mbox{\boldmath {$\xi$}}}) + K
+  }
+\end{equation}
+ -->
+<TABLE CLASS="equation" CELLPADDING="0" WIDTH="100%" ALIGN="CENTER">
+<TR VALIGN="MIDDLE">
+<TD NOWRAP ALIGN="CENTER"><SPAN CLASS="MATH"><IMG
+ WIDTH="172" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img175.png"
+ ALT="$\displaystyle A({\mbox{\boldmath {$\xi$}}}) \; \simeq \; { -V_{\mathrm{meta}}({\mbox{\boldmath {$\xi$}}}) + K }$"></SPAN></TD>
+<TD NOWRAP CLASS="eqno" WIDTH="10" ALIGN="RIGHT">
+(<SPAN CLASS="arabic">18</SPAN>)</TD></TR>
+</TABLE></DIV>
+<BR CLEAR="ALL"><P></P>
+
+<P>
+Assuming that the set of collective variables includes all relevant degrees of freedom, the predicted error of the estimate is a simple function of the correlation times of the colvars <!-- MATH
+ $\tau_{\xi_{i}}$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="22" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img176.png"
+ ALT="$ \tau_{\xi_{i}}$"></B></SPAN>, and of the user-defined parameters <SPAN CLASS="MATH"><B><IMG
+ WIDTH="20" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img166.png"
+ ALT="$ W$"></B></SPAN>, <!-- MATH
+ $\delta_{\xi_{i}}$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="23" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img177.png"
+ ALT="$ \delta_{\xi_{i}}$"></B></SPAN> and <SPAN CLASS="MATH"><B><IMG
+ WIDTH="21" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img178.png"
+ ALT="$ \delta{}t$"></B></SPAN> [<A
+ HREF="node72.html#Bussi2006">14</A>]. 
+In typical applications, a good rule of thumb can be to choose the ratio <!-- MATH
+ $W/\delta{}t$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="45" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img179.png"
+ ALT="$ W/\delta{}t$"></B></SPAN> much smaller than <!-- MATH
+ $\kappa_{\mathrm{B}}T/\tau_{{\mbox{\boldmath {$\xi$}}}}$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="63" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img180.png"
+ ALT="$ \kappa_{\mathrm{B}}T/\tau_{{\mbox{\boldmath {$\xi$}}}}$"></B></SPAN>, where <!-- MATH
+ $\tau_{{\mbox{\boldmath {$\xi$}}}}$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="24" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img181.png"
+ ALT="$ \tau_{{\mbox{\boldmath {$\xi$}}}}$"></B></SPAN> is the longest among <!-- MATH
+ ${\mbox{\boldmath {$\xi$}}}$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="15" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img134.png"
+ ALT="$ {\mbox{\boldmath {$\xi$}}}$"></B></SPAN>'s correlation times: <!-- MATH
+ $\delta_{\xi_{i}}$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="23" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img177.png"
+ ALT="$ \delta_{\xi_{i}}$"></B></SPAN> then dictates the resolution of the calculated PMF.
+
+<P>
+To enable a metadynamics calculation, a <TT>metadynamics</TT> block must be defined in the colvars configuration file. 
+Its only mandatory keyword is the <TT>colvars</TT> option listing all the variables involved: multidimensional PMFs are obtained by the same <TT>metadynamics</TT> instance applied to all the colvars.
+
+<P>
+The parameters <SPAN CLASS="MATH"><B><IMG
+ WIDTH="20" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img166.png"
+ ALT="$ W$"></B></SPAN> and <SPAN CLASS="MATH"><B><IMG
+ WIDTH="21" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img178.png"
+ ALT="$ \delta{}t$"></B></SPAN> are specified by the keywords <TT>hillWeight</TT> and <TT>newHillFrequency</TT>, respectively.
+The values of these options are optimal for colvars with correlation times <!-- MATH
+ $\tau_{{\mbox{\boldmath {$\xi$}}}}$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="24" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img181.png"
+ ALT="$ \tau_{{\mbox{\boldmath {$\xi$}}}}$"></B></SPAN> in the range of a few thousand simulation steps, typical of many biomolecular simulations:
+
+<UL>
+<LI><A NAME="5703"></A>
+  <B><BIG CLASS="LARGE"><TT>hillWeight </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle\,$"></B></SPAN>Height of each hill (unit of energy specified by <TT>units</TT>)<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ \,\rangle$"></B></SPAN> 
+<BR><B>Context: </B> <TT>metadynamics</TT> 
+<BR><B>Acceptable values: </B> positive decimal 
+<BR><B>Default value: </B> <TT>0.01</TT> 
+<BR><B>Description: </B> This option sets the height <SPAN CLASS="MATH"><B><IMG
+ WIDTH="20" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img166.png"
+ ALT="$ W$"></B></SPAN> of the hills that are added during
+    this run.  Lower values provide more accurate sampling at the price
+    of longer simulation times to complete a PMF calculation.
+
+<P>
+</LI>
+<LI><A NAME="5726"></A>
+  <B><BIG CLASS="LARGE"><TT>newHillFrequency </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle\,$"></B></SPAN>Frequency of hill creation<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ \,\rangle$"></B></SPAN> 
+<BR><B>Context: </B> <TT>metadynamics</TT> 
+<BR><B>Acceptable values: </B> positive integer 
+<BR><B>Default value: </B> <TT>1000</TT> 
+<BR><B>Description: </B> This option sets the number of integration steps after which a new
+    hill is added to the metadynamics potential.  Its value determines
+    the parameter <SPAN CLASS="MATH"><B><IMG
+ WIDTH="21" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img178.png"
+ ALT="$ \delta{}t$"></B></SPAN> in eq.&nbsp;<A HREF="#eq:colvars_meta_pot">17</A>.  Higher
+    values provide more accurate sampling at the price of longer
+    simulation times to complete a PMF calculation.
+
+<P>
+</LI>
+</UL>
+
+<P>
+It is the user's responsibility to either leave <TT>hillWeight</TT> and <TT>newHillFrequency</TT> at their default values, or to change them to match the specifics of each system.
+The parameter <!-- MATH
+ $\delta_{\xi_{i}}$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="23" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img177.png"
+ ALT="$ \delta_{\xi_{i}}$"></B></SPAN> is instead defined as approximately half the <TT>width</TT> of the corresponding colvar <SPAN CLASS="MATH"><B><IMG
+ WIDTH="17" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img28.png"
+ ALT="$ \xi_{i}$"></B></SPAN> (see <A HREF="node12.html#sec:colvar_general">3.1</A>).
+
+<P>
+<BR><HR>
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL CLASS="ChildLinks">
+<LI><A NAME="tex2html997"
+  HREF="node59.html">Output files</A>
+<LI><A NAME="tex2html998"
+  HREF="node60.html">Performance tuning</A>
+<LI><A NAME="tex2html999"
+  HREF="node61.html">Well-tempered metadynamics</A>
+<LI><A NAME="tex2html1000"
+  HREF="node62.html">Multiple-replicas metadynamics</A>
+<LI><A NAME="tex2html1001"
+  HREF="node63.html">Compatibility and post-processing</A>
+</UL>
+<!--End of Table of Child-Links-->
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A NAME="tex2html995"
+  HREF="node59.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html989"
+  HREF="node52.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html983"
+  HREF="node57.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html991"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html993"
+  HREF="node71.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html996"
+  HREF="node59.html">Output files</A>
+<B> Up:</B> <A NAME="tex2html990"
+  HREF="node52.html">Biasing and analysis methods</A>
+<B> Previous:</B> <A NAME="tex2html984"
+  HREF="node57.html">Post-processing: reconstructing a multidimensional</A>
+ &nbsp; <B>  <A NAME="tex2html992"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html994"
+  HREF="node71.html">Index</A></B> </DIV>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Jérôme Hénin
+2015-02-27
+</ADDRESS>
+</BODY>
+</HTML>

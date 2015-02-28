@@ -1,0 +1,200 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Performance tuning</TITLE>
+<META NAME="description" CONTENT="Performance tuning">
+<META NAME="keywords" CONTENT="colvars-refman-lammps">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="colvars-refman-lammps.css">
+
+<LINK REL="next" HREF="node61.html">
+<LINK REL="previous" HREF="node59.html">
+<LINK REL="up" HREF="node58.html">
+<LINK REL="next" HREF="node61.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A NAME="tex2html1028"
+  HREF="node61.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html1022"
+  HREF="node58.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html1016"
+  HREF="node59.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html1024"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html1026"
+  HREF="node71.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html1029"
+  HREF="node61.html">Well-tempered metadynamics</A>
+<B> Up:</B> <A NAME="tex2html1023"
+  HREF="node58.html">Metadynamics</A>
+<B> Previous:</B> <A NAME="tex2html1017"
+  HREF="node59.html">Output files</A>
+ &nbsp; <B>  <A NAME="tex2html1025"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html1027"
+  HREF="node71.html">Index</A></B> 
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+
+<H3><A NAME="SECTION00082200000000000000"></A>
+<A NAME="sec:colvarbias_meta_performance"></A>
+<BR>
+Performance tuning
+</H3>
+The following options control the computational cost of metadynamics calculations, but do not affect results.
+Default values are chosen to minimize such cost with no loss of accuracy.
+
+<P>
+
+<UL>
+<LI><A NAME="5790"></A>
+  <B><BIG CLASS="LARGE"><TT>useGrids </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle\,$"></B></SPAN>Interpolate the hills with grids<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ \,\rangle$"></B></SPAN> 
+<BR><B>Context: </B> <TT>metadynamics</TT> 
+<BR><B>Acceptable values: </B> boolean 
+<BR><B>Default value: </B> <TT>on</TT> 
+<BR><B>Description: </B> This option discretizes all hills for improved performance,
+    accumulating their energy and their gradients on two separate grids
+    of equal spacing.  Grids are defined by the values of
+    <TT>lowerBoundary</TT>, <TT>upperBoundary</TT> and <TT>width</TT>
+    for each colvar.  Currently, this option is implemented for all
+    types of variables except the non-scalar types (<TT>distanceDir</TT>
+    or <TT>orientation</TT>).  If <TT>expandBoundaries</TT> is defined
+    in one of the colvars, grids are automatically expanded along the
+    direction of that colvar.
+
+<P>
+</LI>
+<LI><A NAME="5814"></A>
+  <B><BIG CLASS="LARGE"><TT>hillWidth </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle\,$"></B></SPAN>Relative width of the hills<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ \,\rangle$"></B></SPAN> 
+<BR><B>Context: </B> <TT>metadynamics</TT> 
+<BR><B>Acceptable values: </B> positive decimal 
+<BR><B>Default value: </B> <!-- MATH
+ $\sqrt{2\pi}/2$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="56" HEIGHT="40" ALIGN="MIDDLE" BORDER="0"
+ SRC="img182.png"
+ ALT="$ \sqrt{2\pi}/2$"></B></SPAN> 
+<BR><B>Description: </B> Along each colvar, the width of each Gaussian hill
+    (<!-- MATH
+ $2\delta_{\xi_{i}}$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="32" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img168.png"
+ ALT="$ 2\delta_{\xi_{i}}$"></B></SPAN>) is given by the product between this number
+    and the colvar's <TT>width</TT>.  The default value gives hills
+    whose volume is the product of <SPAN CLASS="MATH"><B><IMG
+ WIDTH="20" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img166.png"
+ ALT="$ W$"></B></SPAN> times the <TT>width</TT> of all
+    colvars.  For a smoother visualization of the free energy plot,
+    decrease <TT>width</TT> and increase <TT>hillWidth</TT> in the same
+    proportion.  <SPAN  CLASS="textbf">Note:</SPAN> <SPAN  CLASS="textit">when </SPAN><TT>useGrids</TT><SPAN  CLASS="textit"> is
+    </SPAN><TT>on</TT><SPAN  CLASS="textit"> (default in most cases), values smaller than 1
+      should be avoided to avoid discretization errors</SPAN>.
+
+<P>
+</LI>
+<LI><A NAME="5844"></A>
+  <B><BIG CLASS="LARGE"><TT>rebinGrids </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle\,$"></B></SPAN>Recompute the grids when reading a state
+    file<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ \,\rangle$"></B></SPAN> 
+<BR><B>Context: </B> <TT>metadynamics</TT> 
+<BR><B>Acceptable values: </B> boolean 
+<BR><B>Default value: </B> <TT>off</TT> 
+<BR><B>Description: </B> When restarting from a state file, the grid's parameters (boundaries
+    and widths) saved in the state file override those in the
+    configuration file.  Enabling this option forces the grids to match
+    those in the current configuration file.
+
+<P>
+</LI>
+</UL>
+
+<P>
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A NAME="tex2html1028"
+  HREF="node61.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html1022"
+  HREF="node58.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html1016"
+  HREF="node59.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html1024"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html1026"
+  HREF="node71.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html1029"
+  HREF="node61.html">Well-tempered metadynamics</A>
+<B> Up:</B> <A NAME="tex2html1023"
+  HREF="node58.html">Metadynamics</A>
+<B> Previous:</B> <A NAME="tex2html1017"
+  HREF="node59.html">Output files</A>
+ &nbsp; <B>  <A NAME="tex2html1025"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html1027"
+  HREF="node71.html">Index</A></B> </DIV>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Jérôme Hénin
+2015-02-27
+</ADDRESS>
+</BODY>
+</HTML>

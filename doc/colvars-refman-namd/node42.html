@@ -1,0 +1,249 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>orientation: orientation from reference coordinates.</TITLE>
+<META NAME="description" CONTENT="orientation: orientation from reference coordinates.">
+<META NAME="keywords" CONTENT="colvars-refman-namd">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="colvars-refman-namd.css">
+
+<LINK REL="next" HREF="node43.html">
+<LINK REL="previous" HREF="node41.html">
+<LINK REL="up" HREF="node23.html">
+<LINK REL="next" HREF="node43.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A NAME="tex2html776"
+  HREF="node43.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html770"
+  HREF="node23.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html764"
+  HREF="node41.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html772"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html774"
+  HREF="node81.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html777"
+  HREF="node43.html">orientationAngle: angle of rotation</A>
+<B> Up:</B> <A NAME="tex2html771"
+  HREF="node23.html">List of available colvar</A>
+<B> Previous:</B> <A NAME="tex2html765"
+  HREF="node41.html">inertiaZ: total moment of</A>
+ &nbsp; <B>  <A NAME="tex2html773"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html775"
+  HREF="node81.html">Index</A></B> 
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+
+<H3><A NAME="SECTION000711800000000000000">
+<TT>orientation</TT>: orientation from reference  coordinates.</A>
+</H3>
+The block <TT>orientation&nbsp;{...}</TT> returns the
+same optimal rotation used in the <TT>rmsd</TT> component to
+superimpose the coordinates <!-- MATH
+ $\{\mathbf{x}_{i}(t)\}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="54" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img89.png"
+ ALT="$ \{\mathbf{x}_{i}(t)\}$"></SPAN> onto a set of
+reference coordinates <!-- MATH
+ $\{\mathbf{x}_{i}^{\mathrm{(ref)}}\}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="55" HEIGHT="46" ALIGN="MIDDLE" BORDER="0"
+ SRC="img90.png"
+ ALT="$ \{\mathbf{x}_{i}^{\mathrm{(ref)}}\}$"></SPAN>.  Such
+component returns a four dimensional vector <!-- MATH
+ $\mathsf{q} = (q_0, q_1,
+q_2, q_3)$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="132" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img110.png"
+ ALT="$ \mathsf{q} = (q_0, q_1,
+q_2, q_3)$"></SPAN>, with <!-- MATH
+ $\sum_{i} q_{i}^{2} = 1$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="69" HEIGHT="38" ALIGN="MIDDLE" BORDER="0"
+ SRC="img111.png"
+ ALT="$ \sum_{i} q_{i}^{2} = 1$"></SPAN>; this <SPAN  CLASS="textit">quaternion</SPAN>
+expresses the optimal rotation <!-- MATH
+ $\{\mathbf{x}_{i}(t)\} \rightarrow
+\{\mathbf{x}_{i}^{\mathrm{(ref)}}\}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="130" HEIGHT="46" ALIGN="MIDDLE" BORDER="0"
+ SRC="img112.png"
+ ALT="$ \{\mathbf{x}_{i}(t)\} \rightarrow
+\{\mathbf{x}_{i}^{\mathrm{(ref)}}\}$"></SPAN> according to the formalism in
+reference&nbsp;[<A
+ HREF="node82.html#Coutsias2004">3</A>].  The quaternion <!-- MATH
+ $(q_0, q_1, q_2, q_3)$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="102" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img113.png"
+ ALT="$ (q_0, q_1, q_2, q_3)$"></SPAN>
+can also be written as <!-- MATH
+ $\left(\cos(\theta/2), \,
+  \sin(\theta/2)\mathbf{u}\right)$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="164" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img114.png"
+ ALT="$ \left(\cos(\theta/2),  
+\sin(\theta/2)\mathbf{u}\right)$"></SPAN>, where <SPAN CLASS="MATH"><IMG
+ WIDTH="15" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img115.png"
+ ALT="$ \theta$"></SPAN> is the angle and
+<!-- MATH
+ $\mathbf{u}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="14" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img116.png"
+ ALT="$ \mathbf{u}$"></SPAN> the normalized axis of rotation; for example, a rotation
+of 90<SPAN CLASS="MATH"><IMG
+ WIDTH="11" HEIGHT="17" ALIGN="BOTTOM" BORDER="0"
+ SRC="img117.png"
+ ALT="$ ^{\circ}$"></SPAN> around the <SPAN CLASS="MATH"><IMG
+ WIDTH="11" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img57.png"
+ ALT="$ z$"></SPAN> axis is expressed as
+``<TT>(0.707, 0.0, 0.0, 0.707)</TT>''.  The script
+<TT>quaternion2rmatrix.tcl</TT> provides Tcl functions for converting
+to and from a <!-- MATH
+ $4\times{}4$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="40" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img118.png"
+ ALT="$ 4\times{}4$"></SPAN> rotation matrix in a format suitable for
+usage in VMD.
+
+<P>
+As for the component <TT>rmsd</TT>, the available options are <TT>atoms</TT>, <TT>refPositionsFile</TT>, <TT>refPositionsCol</TT> and <TT>refPositionsColValue</TT>,  and <TT>refPositions</TT>.
+
+<P>
+<SPAN  CLASS="textbf">Note:</SPAN> <TT>refPositions</TT> and <TT>refPositionsFile</TT> define the set of positions <SPAN  CLASS="textit">from which</SPAN> the optimal rotation is calculated, but this rotation is not applied to the coordinates of the atoms involved: it is used instead to define the variable itself.
+
+<P>
+
+<UL>
+<LI><A NAME="5491"></A>
+  <B><BIG CLASS="LARGE"><TT>closestToQuaternion </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></SPAN>Reference rotation<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>orientation</TT> 
+<BR><B>Acceptable values: </B> ``<TT>(q0, q1, q2, q3)</TT>'' quadruplet 
+<BR><B>Default value: </B> <TT>(1.0, 0.0, 0.0, 0.0)</TT> (``null'' rotation) 
+<BR><B>Description: </B> Between the two equivalent quaternions <!-- MATH
+ $(q_0, q_1, q_2, q_3)$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="102" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img113.png"
+ ALT="$ (q_0, q_1, q_2, q_3)$"></SPAN> and
+    <!-- MATH
+ $(-q_0, -q_1, -q_2, -q_3)$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="156" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img119.png"
+ ALT="$ (-q_0, -q_1, -q_2, -q_3)$"></SPAN>, the closer to <TT>(1.0, 0.0, 0.0,
+      0.0)</TT> is chosen.  This simplifies the visualization of the
+    colvar trajectory when samples values are a smaller subset of all
+    possible rotations.  <SPAN  CLASS="textbf">Note:</SPAN> <SPAN  CLASS="textit">this only affects the
+      output, never the dynamics</SPAN>.
+
+<P>
+</LI>
+</UL>
+
+<P>
+<SPAN  CLASS="textbf">Hint: stopping the rotation of a protein.</SPAN>  To stop the
+rotation of an elongated macromolecule in solution (and use an
+anisotropic box to save water molecules), it is possible to define a
+colvar with an <TT>orientation</TT> component, and restrain it throuh
+the <TT>harmonic</TT> bias around the identity rotation, <TT>(1.0,
+  0.0, 0.0, 0.0)</TT>.  Only the overall orientation of the macromolecule
+is affected, and <SPAN  CLASS="textit">not</SPAN> its internal degrees of freedom.  The user
+should also take care that the macromolecule is composed by a single
+chain, or disable <TT>wrapAll</TT> otherwise.
+
+<P>
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A NAME="tex2html776"
+  HREF="node43.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html770"
+  HREF="node23.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html764"
+  HREF="node41.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html772"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html774"
+  HREF="node81.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html777"
+  HREF="node43.html">orientationAngle: angle of rotation</A>
+<B> Up:</B> <A NAME="tex2html771"
+  HREF="node23.html">List of available colvar</A>
+<B> Previous:</B> <A NAME="tex2html765"
+  HREF="node41.html">inertiaZ: total moment of</A>
+ &nbsp; <B>  <A NAME="tex2html773"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html775"
+  HREF="node81.html">Index</A></B> </DIV>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Jérôme Hénin
+2015-02-27
+</ADDRESS>
+</BODY>
+</HTML>
