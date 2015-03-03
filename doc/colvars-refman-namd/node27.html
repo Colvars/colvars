@@ -7,8 +7,8 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
   Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
 <HTML>
 <HEAD>
-<TITLE>distanceVec: distance vector between two groups.</TITLE>
-<META NAME="description" CONTENT="distanceVec: distance vector between two groups.">
+<TITLE>Adaptive Biasing Force</TITLE>
+<META NAME="description" CONTENT="Adaptive Biasing Force">
 <META NAME="keywords" CONTENT="colvars-refman-namd">
 <META NAME="resource-type" CONTENT="document">
 <META NAME="distribution" CONTENT="global">
@@ -21,54 +21,929 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 
 <LINK REL="next" HREF="node28.html">
 <LINK REL="previous" HREF="node26.html">
-<LINK REL="up" HREF="node23.html">
+<LINK REL="up" HREF="node26.html">
 <LINK REL="next" HREF="node28.html">
 </HEAD>
 
 <BODY >
 
 <DIV CLASS="navigation"><!--Navigation Panel-->
-<A NAME="tex2html567"
+<A NAME="tex2html590"
   HREF="node28.html">
 <IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
-<A NAME="tex2html561"
-  HREF="node23.html">
+<A NAME="tex2html584"
+  HREF="node26.html">
 <IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
-<A NAME="tex2html555"
+<A NAME="tex2html578"
   HREF="node26.html">
 <IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
-<A NAME="tex2html563"
+<A NAME="tex2html586"
   HREF="node1.html">
 <IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
-<A NAME="tex2html565"
-  HREF="node81.html">
+<A NAME="tex2html588"
+  HREF="node39.html">
 <IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
 <BR>
-<B> Next:</B> <A NAME="tex2html568"
-  HREF="node28.html">distanceDir: distance unit vector</A>
-<B> Up:</B> <A NAME="tex2html562"
-  HREF="node23.html">List of available colvar</A>
-<B> Previous:</B> <A NAME="tex2html556"
-  HREF="node26.html">distanceXY: modulus of the</A>
- &nbsp; <B>  <A NAME="tex2html564"
+<B> Next:</B> <A NAME="tex2html591"
+  HREF="node28.html">Metadynamics</A>
+<B> Up:</B> <A NAME="tex2html585"
+  HREF="node26.html">Biasing and analysis methods</A>
+<B> Previous:</B> <A NAME="tex2html579"
+  HREF="node26.html">Biasing and analysis methods</A>
+ &nbsp; <B>  <A NAME="tex2html587"
   HREF="node1.html">Contents</A></B>
- &nbsp; <B>  <A NAME="tex2html566"
-  HREF="node81.html">Index</A></B>
+ &nbsp; <B>  <A NAME="tex2html589"
+  HREF="node39.html">Index</A></B>
 <BR>
 <BR></DIV>
 <!--End of Navigation Panel-->
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
 
-<H3><A NAME="SECTION00071400000000000000">
-<TT>distanceVec</TT>: distance vector  between two groups.</A>
-</H3>
-The <TT>distanceVec&nbsp;{...}</TT> block defines
-a distance vector component, which accepts the same keywords as
-the component <TT>distance</TT>: <TT>group1</TT>, <TT>group2</TT>, and
-<TT>forceNoPBC</TT>. Its value is the 3-vector joining the centers
-of mass of <TT>group1</TT> and <TT>group2</TT>.
+<UL CLASS="ChildLinks">
+<LI><A NAME="tex2html592"
+  HREF="node27.html#SECTION00081100000000000000">ABF requirements on collective variables</A>
+<LI><A NAME="tex2html593"
+  HREF="node27.html#SECTION00081200000000000000">Parameters for ABF</A>
+<LI><A NAME="tex2html594"
+  HREF="node27.html#SECTION00081300000000000000">Multiple-replica ABF</A>
+<LI><A NAME="tex2html595"
+  HREF="node27.html#SECTION00081400000000000000">Output files</A>
+<LI><A NAME="tex2html596"
+  HREF="node27.html#SECTION00081500000000000000">Post-processing: reconstructing a multidimensional free energy surface</A>
+</UL>
+<!--End of Table of Child-Links-->
+<HR>
+
+<H2><A NAME="SECTION00081000000000000000">
+Adaptive Biasing Force</A>
+</H2>
 
 <P>
-<BR><HR>
+<A NAME="sec:colvarbias_abf"></A>
+<P>
+For a full description of the Adaptive Biasing Force method, see
+reference&nbsp;[<A
+ HREF="node40.html#Darve2008">7</A>]. For details about this implementation,
+see references&nbsp;[<A
+ HREF="node40.html#Henin2004">8</A>] and [<A
+ HREF="node40.html#Henin2010">9</A>]. <SPAN  CLASS="textbf">When
+publishing research that makes use of this functionality, please cite
+references&nbsp;[<A
+ HREF="node40.html#Darve2008">7</A>] and [<A
+ HREF="node40.html#Henin2010">9</A>].</SPAN>
+
+<P>
+An alternate usage of this feature is the application of custom
+tabulated biasing potentials to one or more colvars. See
+<TT>inputPrefix</TT> and <TT>updateBias</TT> below.
+
+<P>
+ABF is based on the thermodynamic integration (TI) scheme for
+computing free energy profiles. The free energy as a function
+of a set of collective variables <!-- MATH
+ ${\mbox{\boldmath {$\xi$}}}=(\xi_{i})_{i\in[1,n]}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="99" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img153.png"
+ ALT="$ {\mbox{\boldmath {$\xi$}}}=(\xi_{i})_{i\in[1,n]}$"></SPAN>
+is defined from the canonical distribution of <!-- MATH
+ ${\mbox{\boldmath {$\xi$}}}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="15" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img154.png"
+ ALT="$ {\mbox{\boldmath {$\xi$}}}$"></SPAN>, <!-- MATH
+ ${\mathcal P}({\mbox{\boldmath {$\xi$}}})$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="48" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img155.png"
+ ALT="$ {\mathcal P}({\mbox{\boldmath {$\xi$}}})$"></SPAN>:
+
+<P>
+<P></P>
+<DIV ALIGN="CENTER" CLASS="mathdisplay"><A NAME="eq:free"></A><!-- MATH
+ \begin{equation}
+A({\mbox{\boldmath {$\xi$}}}) = -\frac{1}{\beta} \ln {\mathcal P}({\mbox{\boldmath {$\xi$}}}) + A_0
+\end{equation}
+ -->
+<TABLE CLASS="equation" CELLPADDING="0" WIDTH="100%" ALIGN="CENTER">
+<TR VALIGN="MIDDLE">
+<TD NOWRAP ALIGN="CENTER"><SPAN CLASS="MATH"><IMG
+ WIDTH="187" HEIGHT="57" ALIGN="MIDDLE" BORDER="0"
+ SRC="img156.png"
+ ALT="$\displaystyle A({\mbox{\boldmath {$\xi$}}}) = -\frac{1}{\beta} \ln {\mathcal P}({\mbox{\boldmath {$\xi$}}}) + A_0$"></SPAN></TD>
+<TD NOWRAP CLASS="eqno" WIDTH="10" ALIGN="RIGHT">
+(<SPAN CLASS="arabic">14</SPAN>)</TD></TR>
+</TABLE></DIV>
+<BR CLEAR="ALL"><P></P>
+
+<P>
+In the TI formalism, the free energy is obtained from its gradient,
+which is generally calculated in the form of the average of a force
+<!-- MATH
+ ${\mbox{\boldmath {$F$}}}_\xi$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="25" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img157.png"
+ ALT="$ {\mbox{\boldmath {$F$}}}_\xi$"></SPAN> exerted on <!-- MATH
+ ${\mbox{\boldmath {$\xi$}}}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="15" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img154.png"
+ ALT="$ {\mbox{\boldmath {$\xi$}}}$"></SPAN>, taken over an iso-<!-- MATH
+ ${\mbox{\boldmath {$\xi$}}}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="15" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img154.png"
+ ALT="$ {\mbox{\boldmath {$\xi$}}}$"></SPAN> surface:
+
+<P>
+<P></P>
+<DIV ALIGN="CENTER" CLASS="mathdisplay"><A NAME="eq:gradient"></A><!-- MATH
+ \begin{equation}
+{\mbox{\boldmath {$\nabla$}}}_\xi A({\mbox{\boldmath {$\xi$}}}) = \left\langle -{\mbox{\boldmath {$F$}}}_\xi \right\rangle_{\mbox{\boldmath {$\xi$}}}
+\end{equation}
+ -->
+<TABLE CLASS="equation" CELLPADDING="0" WIDTH="100%" ALIGN="CENTER">
+<TR VALIGN="MIDDLE">
+<TD NOWRAP ALIGN="CENTER"><SPAN CLASS="MATH"><IMG
+ WIDTH="144" HEIGHT="38" ALIGN="MIDDLE" BORDER="0"
+ SRC="img158.png"
+ ALT="$\displaystyle {\mbox{\boldmath {$\nabla$}}}_\xi A({\mbox{\boldmath {$\xi$}}}) =...
+...t\langle -{\mbox{\boldmath {$F$}}}_\xi \right\rangle_{\mbox{\boldmath {$\xi$}}}$"></SPAN></TD>
+<TD NOWRAP CLASS="eqno" WIDTH="10" ALIGN="RIGHT">
+(<SPAN CLASS="arabic">15</SPAN>)</TD></TR>
+</TABLE></DIV>
+<BR CLEAR="ALL"><P></P>
+
+<P>
+Several formulae that take the form of&nbsp;(<A HREF="#eq:gradient">16</A>) have been
+proposed.  This implementation relies partly on the classic
+formulation&nbsp;[<A
+ HREF="node40.html#Carter1989">10</A>], and partly on a more versatile scheme
+originating in a work by Ruiz-Montero et al.&nbsp;[<A
+ HREF="node40.html#Ruiz-Montero1997">11</A>],
+generalized by den Otter&nbsp;[<A
+ HREF="node40.html#denOtter2000">12</A>] and extended to multiple
+variables by Ciccotti et al.&nbsp;[<A
+ HREF="node40.html#Ciccotti2005">13</A>].  Consider a system
+subject to constraints of the form <!-- MATH
+ $\sigma_{k}({\mbox{\boldmath {$x$}}}) = 0$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="73" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img159.png"
+ ALT="$ \sigma_{k}({\mbox{\boldmath {$x$}}}) = 0$"></SPAN>.  Let
+(<!-- MATH
+ ${\mbox{\boldmath {$v$}}}_{i})_{i\in[1,n]}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="59" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img160.png"
+ ALT="$ {\mbox{\boldmath {$v$}}}_{i})_{i\in[1,n]}$"></SPAN> be arbitrarily chosen vector fields
+(<!-- MATH
+ $\mathbb{R}^{3N}\rightarrow\mathbb{R}^{3N}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="87" HEIGHT="19" ALIGN="BOTTOM" BORDER="0"
+ SRC="img161.png"
+ ALT="$ \mathbb{R}^{3N}\rightarrow\mathbb{R}^{3N}$"></SPAN>) verifying, for all <SPAN CLASS="MATH"><IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img4.png"
+ ALT="$ i$"></SPAN>,
+<SPAN CLASS="MATH"><IMG
+ WIDTH="12" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img66.png"
+ ALT="$ j$"></SPAN>, and <SPAN CLASS="MATH"><IMG
+ WIDTH="12" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img162.png"
+ ALT="$ k$"></SPAN>:
+
+<P>
+<BR>
+<DIV ALIGN="CENTER" CLASS="mathdisplay"><A NAME="eq:ortho_gradient"></A><A NAME="eq:ortho_constraints"></A><!-- MATH
+ \begin{eqnarray}
+{\mbox{\boldmath {$v$}}}_{i} \cdot \mbox{\boldmath$\nabla_{\!\!x}\,$}\xi_{j}    & = & \delta_{ij}\\
+{\mbox{\boldmath {$v$}}}_{i} \cdot \mbox{\boldmath$\nabla_{\!\!x}\,$}\sigma_{k} & = & 0
+\end{eqnarray}
+ -->
+<TABLE CELLPADDING="0" ALIGN="CENTER" WIDTH="100%">
+<TR VALIGN="MIDDLE"><TD NOWRAP WIDTH="50%" ALIGN="RIGHT"><IMG
+ WIDTH="59" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img163.png"
+ ALT="$\displaystyle {\mbox{\boldmath {$v$}}}_{i} \cdot \mbox{\boldmath$\nabla_{\!\!x} $}\xi_{j}$"></TD>
+<TD WIDTH="10" ALIGN="CENTER" NOWRAP><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img164.png"
+ ALT="$\displaystyle =$"></TD>
+<TD ALIGN="LEFT" NOWRAP WIDTH="50%"><IMG
+ WIDTH="23" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img165.png"
+ ALT="$\displaystyle \delta_{ij}$"></TD>
+<TD CLASS="eqno" WIDTH=10 ALIGN="RIGHT">
+(<SPAN CLASS="arabic">16</SPAN>)</TD></TR>
+<TR VALIGN="MIDDLE"><TD NOWRAP WIDTH="50%" ALIGN="RIGHT"><IMG
+ WIDTH="61" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img166.png"
+ ALT="$\displaystyle {\mbox{\boldmath {$v$}}}_{i} \cdot \mbox{\boldmath$\nabla_{\!\!x} $}\sigma_{k}$"></TD>
+<TD WIDTH="10" ALIGN="CENTER" NOWRAP><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img164.png"
+ ALT="$\displaystyle =$"></TD>
+<TD ALIGN="LEFT" NOWRAP WIDTH="50%">0</TD>
+<TD CLASS="eqno" WIDTH=10 ALIGN="RIGHT">
+(<SPAN CLASS="arabic">17</SPAN>)</TD></TR>
+</TABLE></DIV>
+<BR CLEAR="ALL">
+
+<P>
+then the following holds&nbsp;[<A
+ HREF="node40.html#Ciccotti2005">13</A>]:
+
+<P>
+<P></P>
+<DIV ALIGN="CENTER" CLASS="mathdisplay"><A NAME="eq:gradient_vector"></A><!-- MATH
+ \begin{equation}
+\frac{\partial A}{\partial \xi_{i}} = \left\langle {\mbox{\boldmath {$v$}}}_{i} \cdot \mbox{\boldmath$\nabla_{\!\!x}\,$}V
+- k_B T \mbox{\boldmath$\nabla_{\!\!x}\,$}\cdot {\mbox{\boldmath {$v$}}}_{i} \right\rangle_{\mbox{\boldmath {$\xi$}}}
+\end{equation}
+ -->
+<TABLE CLASS="equation" CELLPADDING="0" WIDTH="100%" ALIGN="CENTER">
+<TR VALIGN="MIDDLE">
+<TD NOWRAP ALIGN="CENTER"><SPAN CLASS="MATH"><IMG
+ WIDTH="216" HEIGHT="58" ALIGN="MIDDLE" BORDER="0"
+ SRC="img167.png"
+ ALT="$\displaystyle \frac{\partial A}{\partial \xi_{i}} = \left\langle {\mbox{\boldma...
+... $}\cdot {\mbox{\boldmath {$v$}}}_{i} \right\rangle_{\mbox{\boldmath {$\xi$}}}$"></SPAN></TD>
+<TD NOWRAP CLASS="eqno" WIDTH="10" ALIGN="RIGHT">
+(<SPAN CLASS="arabic">18</SPAN>)</TD></TR>
+</TABLE></DIV>
+<BR CLEAR="ALL"><P></P>
+
+<P>
+where <SPAN CLASS="MATH"><IMG
+ WIDTH="16" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img168.png"
+ ALT="$ V$"></SPAN> is the potential energy function.
+<!-- MATH
+ ${\mbox{\boldmath {$v$}}}_{i}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="16" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img169.png"
+ ALT="$ {\mbox{\boldmath {$v$}}}_{i}$"></SPAN> can be interpreted as the direction along which the force
+acting on variable <SPAN CLASS="MATH"><IMG
+ WIDTH="17" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img29.png"
+ ALT="$ \xi_{i}$"></SPAN> is measured, whereas the second term in the
+average corresponds to the geometric entropy contribution that appears
+as a Jacobian correction in the classic formalism&nbsp;[<A
+ HREF="node40.html#Carter1989">10</A>].
+Condition&nbsp;(<A HREF="#eq:ortho_gradient">17</A>) states that the direction along
+which the system force on <SPAN CLASS="MATH"><IMG
+ WIDTH="17" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img29.png"
+ ALT="$ \xi_{i}$"></SPAN> is measured is orthogonal to the
+gradient of <SPAN CLASS="MATH"><IMG
+ WIDTH="19" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img30.png"
+ ALT="$ \xi_{j}$"></SPAN>, which means that the force measured on <SPAN CLASS="MATH"><IMG
+ WIDTH="17" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img29.png"
+ ALT="$ \xi_{i}$"></SPAN>
+does not act on <SPAN CLASS="MATH"><IMG
+ WIDTH="19" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img30.png"
+ ALT="$ \xi_{j}$"></SPAN>.
+
+<P>
+Equation&nbsp;(<A HREF="#eq:ortho_constraints">18</A>) implies that constraint forces
+are orthogonal to the directions along which the free energy gradient is
+measured, so that the measurement is effectively performed on unconstrained
+degrees of freedom.
+In NAMD, constraints are typically applied to the lengths of
+bonds involving hydrogen atoms, for example in TIP3P water molecules (parameter <TT>rigidBonds</TT>).
+
+<P>
+In the framework of ABF,
+<!-- MATH
+ ${\bf F}_\xi$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="24" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img170.png"
+ ALT="$ {\bf F}_\xi$"></SPAN> is accumulated in bins of finite size <!-- MATH
+ $\delta \xi$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="26" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img171.png"
+ ALT="$ \delta \xi$"></SPAN>,
+thereby providing an estimate of the free energy gradient
+according to equation&nbsp;(<A HREF="#eq:gradient">16</A>).
+The biasing force applied along the collective variables
+to overcome free energy barriers is calculated as:
+
+<P>
+<P></P>
+<DIV ALIGN="CENTER" CLASS="mathdisplay"><A NAME="eq:abf"></A><!-- MATH
+ \begin{equation}
+{\bf F}^{\rm ABF} = \alpha(N_\xi) \times \mbox{\boldmath$\nabla_{\!\!x}\,$}\widetilde A({\mbox{\boldmath {$\xi$}}})
+\end{equation}
+ -->
+<TABLE CLASS="equation" CELLPADDING="0" WIDTH="100%" ALIGN="CENTER">
+<TR VALIGN="MIDDLE">
+<TD NOWRAP ALIGN="CENTER"><SPAN CLASS="MATH"><IMG
+ WIDTH="121" HEIGHT="40" ALIGN="MIDDLE" BORDER="0"
+ SRC="img172.png"
+ ALT="$\displaystyle {\bf F}^{\rm ABF} = \alpha(N_\xi) \times$">&nbsp; &nbsp;<IMG
+ WIDTH="22" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img173.png"
+ ALT="$\displaystyle \mbox{\boldmath$\nabla_{\!\!x} $}$"><IMG
+ WIDTH="39" HEIGHT="42" ALIGN="MIDDLE" BORDER="0"
+ SRC="img174.png"
+ ALT="$\displaystyle \widetilde A({\mbox{\boldmath {$\xi$}}})$"></SPAN></TD>
+<TD NOWRAP CLASS="eqno" WIDTH="10" ALIGN="RIGHT">
+(<SPAN CLASS="arabic">19</SPAN>)</TD></TR>
+</TABLE></DIV>
+<BR CLEAR="ALL"><P></P>
+
+<P>
+where <!-- MATH
+ $\mbox{\boldmath $\nabla_{\!\!x}\,$}\widetilde A$
+ -->
+<SPAN CLASS="MATH"><!-- MATH
+ $\nabla_{\!\!x}\,$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="22" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img175.png"
+ ALT="$ \nabla_{\!\!x} $"></B></SPAN><IMG
+ WIDTH="15" HEIGHT="20" ALIGN="BOTTOM" BORDER="0"
+ SRC="img176.png"
+ ALT="$ \widetilde A$"></SPAN> denotes the current estimate of the
+free energy gradient at the current point <!-- MATH
+ ${\mbox{\boldmath {$\xi$}}}$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="15" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img154.png"
+ ALT="$ {\mbox{\boldmath {$\xi$}}}$"></B></SPAN> in the collective
+variable subspace, and <!-- MATH
+ $\alpha(N_\xi)$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="50" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img177.png"
+ ALT="$ \alpha(N_\xi)$"></B></SPAN> is a scaling factor that is ramped
+from 0 to 1 as the local number of samples <SPAN CLASS="MATH"><B><IMG
+ WIDTH="24" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img178.png"
+ ALT="$ N_\xi$"></B></SPAN> increases
+to prevent nonequilibrium effects in the early phase of the simulation,
+when the gradient estimate has a large variance.
+See the <TT>fullSamples</TT> parameter below for details.
+
+<P>
+As sampling of the phase space proceeds, the estimate
+<!-- MATH
+ $\mbox{\boldmath $\nabla_{\!\!x}\,$}\widetilde A$
+ -->
+<SPAN CLASS="MATH"><B><!-- MATH
+ $\nabla_{\!\!x}\,$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="22" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img175.png"
+ ALT="$ \nabla_{\!\!x} $"></B></SPAN><IMG
+ WIDTH="15" HEIGHT="20" ALIGN="BOTTOM" BORDER="0"
+ SRC="img176.png"
+ ALT="$ \widetilde A$"></B></SPAN> is progressively refined. The biasing
+force introduced in the equations of motion guarantees that in
+the bin centered around <!-- MATH
+ ${\mbox{\boldmath {$\xi$}}}$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="15" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img154.png"
+ ALT="$ {\mbox{\boldmath {$\xi$}}}$"></B></SPAN>,
+the forces acting along the selected collective variables average
+to zero over time. Eventually, as the undelying free energy surface is canceled
+by the adaptive bias, evolution of the system along <!-- MATH
+ ${\mbox{\boldmath {$\xi$}}}$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="15" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img154.png"
+ ALT="$ {\mbox{\boldmath {$\xi$}}}$"></B></SPAN>
+is governed mainly by diffusion.
+Although this implementation of ABF can in principle be used in
+arbitrary dimension, a higher-dimension collective variable space is likely
+to result in sampling difficulties.
+Most commonly, the number of variables is one or two.
+
+<P>
+
+<H3><A NAME="SECTION00081100000000000000"></A>
+<A NAME="sec:colvarbias_abf_req"></A>
+<BR>
+ABF requirements on collective variables
+</H3>
+
+<P>
+
+<OL>
+<LI><SPAN  CLASS="textit">Only linear combinations</SPAN> of colvar components can be used in ABF calculations.
+</LI>
+<LI><SPAN  CLASS="textit">Availability of system forces</SPAN> is necessary. The following colvar components
+can be used in ABF calculations:
+<TT>distance</TT>, <TT>distance_xy</TT>, <TT>distance_z</TT>, <TT>angle</TT>,
+<TT>dihedral</TT>, <TT>gyration</TT>,  <TT>rmsd</TT> and <TT>eigenvector</TT>.
+Atom groups may not be replaced by dummy atoms, unless they are excluded
+from the force measurement by specifying <TT>oneSiteSystemForce</TT>, if available.
+</LI>
+<LI><SPAN  CLASS="textit">Mutual orthogonality of colvars</SPAN>. In a multidimensional ABF calculation,
+equation&nbsp;(<A HREF="#eq:ortho_gradient">17</A>) must be satisfied for any two colvars <SPAN CLASS="MATH"><B><IMG
+ WIDTH="17" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img29.png"
+ ALT="$ \xi_{i}$"></B></SPAN> and <SPAN CLASS="MATH"><B><IMG
+ WIDTH="19" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img30.png"
+ ALT="$ \xi_{j}$"></B></SPAN>.
+Various cases fulfill this orthogonality condition:
+
+<UL>
+<LI><SPAN CLASS="MATH"><B><IMG
+ WIDTH="17" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img29.png"
+ ALT="$ \xi_{i}$"></B></SPAN> and <SPAN CLASS="MATH"><B><IMG
+ WIDTH="19" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img30.png"
+ ALT="$ \xi_{j}$"></B></SPAN> are based on non-overlapping sets of atoms.
+</LI>
+<LI>atoms involved in the force measurement on <SPAN CLASS="MATH"><B><IMG
+ WIDTH="17" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img29.png"
+ ALT="$ \xi_{i}$"></B></SPAN> do not participate in
+the definition of <SPAN CLASS="MATH"><B><IMG
+ WIDTH="19" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img30.png"
+ ALT="$ \xi_{j}$"></B></SPAN>. This can be obtained using the option <TT>oneSiteSystemForce</TT>
+of the <TT>distance</TT>, <TT>angle</TT>, and <TT>dihedral</TT> components
+(example: Ramachandran angles <SPAN CLASS="MATH"><B><IMG
+ WIDTH="15" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img179.png"
+ ALT="$ \phi$"></B></SPAN>, <SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img180.png"
+ ALT="$ \psi$"></B></SPAN>).
+</LI>
+<LI><SPAN CLASS="MATH"><B><IMG
+ WIDTH="17" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img29.png"
+ ALT="$ \xi_{i}$"></B></SPAN> and <SPAN CLASS="MATH"><B><IMG
+ WIDTH="19" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img30.png"
+ ALT="$ \xi_{j}$"></B></SPAN> are orthogonal by construction. Useful cases are the sum and
+difference of two components, or <TT>distance_z</TT> and <TT>distance_xy</TT> using the same axis.
+</LI>
+</UL>
+</LI>
+<LI><SPAN  CLASS="textit">Mutual orthogonality of components</SPAN>: when several components are combined into a colvar,
+it is assumed that their vectors <!-- MATH
+ ${\mbox{\boldmath {$v$}}}_{i}$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="16" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img169.png"
+ ALT="$ {\mbox{\boldmath {$v$}}}_{i}$"></B></SPAN> (equation&nbsp;(<A HREF="#eq:gradient_vector">19</A>))
+are mutually orthogonal. The cases described for colvars in the previous paragraph apply.
+</LI>
+<LI><SPAN  CLASS="textit">Orthogonality of colvars and constraints</SPAN>: equation&nbsp;<A HREF="#eq:ortho_constraints">18</A> can
+be satisfied in two simple ways, if either no constrained atoms are involved in the force measurement
+(see point 3 above) or pairs of atoms joined by a constrained bond are part of an <SPAN  CLASS="textit">atom group</SPAN>
+which only intervenes through its center (center of mass or geometric center) in the force measurement.
+In the latter case, the contributions of the two atoms to the left-hand side of equation&nbsp;<A HREF="#eq:ortho_constraints">18</A>
+cancel out. For example, all atoms of a rigid TIP3P water molecule can safely be included in an atom
+group used in a <TT>distance</TT> component.
+</LI>
+</OL>
+
+<P>
+
+<H3><A NAME="SECTION00081200000000000000">
+Parameters for ABF</A>
+</H3>
+
+<P>
+ABF depends on parameters from collective variables to define the grid on which free
+energy gradients are computed. In the direction of each colvar, the grid ranges from
+<TT>lowerBoundary</TT> to <TT>upperBoundary</TT>, and the bin width (grid spacing)
+is set by the <TT>width</TT> parameter (see&nbsp;<A HREF="node11.html#sec:colvar_general">3.1</A>).
+The following specific parameters can be set in the ABF configuration block
+(in addition to generic bias parameters such as <TT>colvars</TT>
+- section&nbsp;<A HREF="node26.html#sec:colvarbias">6</A>):
+
+<P>
+
+<UL>
+<LI><A NAME="6302"></A>
+  <B><BIG CLASS="LARGE"><TT>fullSamples </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></B></SPAN>Number of samples in a bin prior
+    to application of the ABF<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>abf</TT>
+<BR><B>Acceptable values: </B> positive integer
+<BR><B>Default value: </B> 200
+<BR><B>Description: </B> To avoid nonequilibrium effects due to large fluctuations of the force exerted along the
+   colvars, it is recommended to apply a biasing force only after a the estimate has started
+   converging. If <TT>fullSamples</TT> is non-zero, the applied biasing force is scaled by a factor
+   <!-- MATH
+ $\alpha(N_\xi)$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="50" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img177.png"
+ ALT="$ \alpha(N_\xi)$"></B></SPAN> between 0 and 1.
+   If the number of samples <SPAN CLASS="MATH"><B><IMG
+ WIDTH="24" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img178.png"
+ ALT="$ N_\xi$"></B></SPAN> in the current bin is higher than <TT>fullSamples</TT>,
+   the factor is one. If it is less than half of <TT>fullSamples</TT>, the factor is zero and
+   no bias is applied. Between those two thresholds, the factor follows a linear ramp from
+   0 to 1: <!-- MATH
+ $\alpha(N_\xi) =(2N_\xi/\mathrm{fullSamples})-1$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="233" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img181.png"
+ ALT="$ \alpha(N_\xi) =(2N_\xi/\mathrm{fullSamples})-1$"></B></SPAN>.
+
+<P>
+</LI>
+<LI><A NAME="6323"></A>
+  <B><BIG CLASS="LARGE"><TT>maxForce </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></B></SPAN>Maximum magnitude of the ABF force<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>abf</TT>
+<BR><B>Acceptable values: </B> positive decimals (one per colvar)
+<BR><B>Default value: </B> disabled
+<BR><B>Description: </B> This option enforces a cap on the magnitude of the biasing force effectively applied
+   by this ABF bias on each colvar. This can be useful in the presence of singularities
+   in the PMF such as hard walls, where the discretization of the average force becomes
+   very inaccurate, causing the colvar's diffusion to get ``stuck'' at the singularity.
+   To enable this cap, provide one non-negative value for each colvar. The unit of force
+   is kcal/mol divided by the colvar unit.
+
+<P>
+</LI>
+<LI><A NAME="6344"></A>
+  <B><BIG CLASS="LARGE"><TT>hideJacobian </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></B></SPAN>Remove geometric entropy term from calculated
+    free energy gradient?<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>abf</TT>
+<BR><B>Acceptable values: </B> boolean
+<BR><B>Default value: </B> <TT>no</TT>
+<BR><B>Description: </B> In a few special cases, most notably distance-based variables, an alternate definition of
+    the potential of mean force is traditionally used, which excludes the Jacobian
+    term describing the effect of geometric entropy on the distribution of the variable.
+    This results, for example, in particle-particle potentials of mean force being flat
+    at large separations.
+    Setting this parameter to <TT>yes</TT> causes the output data to follow that convention,
+    by removing this contribution from the output gradients while
+    applying internally the corresponding correction to ensure uniform sampling.
+    It is not allowed for colvars with multiple components.
+
+<P>
+</LI>
+<LI><A NAME="6363"></A>
+  <B><BIG CLASS="LARGE"><TT>outputFreq </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></B></SPAN>Frequency (in timesteps) at which ABF data files are refreshed<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>abf</TT>
+<BR><B>Acceptable values: </B> positive integer
+<BR><B>Default value: </B> Colvar module restart frequency
+<BR><B>Description: </B> The files containing the free energy gradient estimate and sampling histogram
+    (and the PMF in one-dimensional calculations) are written on disk at the given
+    time interval.
+
+<P>
+</LI>
+<LI><A NAME="6380"></A>
+  <B><BIG CLASS="LARGE"><TT>historyFreq </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></B></SPAN>Frequency (in timesteps) at which ABF history files are
+  accumulated<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>abf</TT>
+<BR><B>Acceptable values: </B> positive integer
+<BR><B>Default value: </B> 0
+<BR><B>Description: </B> If this number is non-zero, the free energy gradient estimate and sampling histogram
+    (and the PMF in one-dimensional calculations) are appended to files on disk at
+    the given time interval. History file names use the same prefix as output files, with
+    ``<TT>.hist</TT>'' appended.
+
+<P>
+</LI>
+<LI><A NAME="6397"></A>
+  <B><BIG CLASS="LARGE"><TT>inputPrefix </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></B></SPAN>Filename prefix for reading ABF data<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>abf</TT>
+<BR><B>Acceptable values: </B> list of strings
+<BR><B>Description: </B> If this parameter is set, for each item in the list, ABF tries to read
+    a gradient and a sampling files named <TT><SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$ &lt;$"></B></SPAN>inputPrefix<SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img23.png"
+ ALT="$ &gt;$"></B></SPAN>.grad</TT>
+    and <TT><SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$ &lt;$"></B></SPAN>inputPrefix<SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img23.png"
+ ALT="$ &gt;$"></B></SPAN>.count</TT>. This is done at
+    startup and sets the initial state of the ABF algorithm.
+    The data from all provided files is combined appropriately.
+    Also, the grid definition (min and max values, width) need not be the same
+    that for the current run. This command is useful to piece together
+    data from simulations in different regions of collective variable space,
+    or change the colvar boundary values and widths. Note that it is not
+    recommended to use it to switch to a smaller width, as that will leave
+    some bins empty in the finer data grid.
+    This option is NOT compatible with reading the data from a restart file (<TT>colvarsInput</TT> option of the NAMD config file).
+
+<P>
+</LI>
+<LI><A NAME="6423"></A>
+  <B><BIG CLASS="LARGE"><TT>applyBias </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></B></SPAN>Apply the ABF bias?<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>abf</TT>
+<BR><B>Acceptable values: </B> boolean
+<BR><B>Default value: </B> <TT>yes</TT>
+<BR><B>Description: </B>  If this is set to no, the calculation proceeds normally but the adaptive
+    biasing force is not applied. Data is still collected to compute
+    the free energy gradient. This is mostly intended for testing purposes, and should
+    not be used in routine simulations.
+
+<P>
+</LI>
+<LI><A NAME="6441"></A>
+  <B><BIG CLASS="LARGE"><TT>updateBias </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></B></SPAN>Update the ABF bias?<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>abf</TT>
+<BR><B>Acceptable values: </B> boolean
+<BR><B>Default value: </B> <TT>yes</TT>
+<BR><B>Description: </B>  If this is set to no, the initial biasing force (e.g. read from a restart file or
+    through <TT>inputPrefix</TT>) is not updated during the simulation.
+    As a result, a constant bias is applied. This can be used to apply a custom, tabulated
+    biasing potential to any combination of colvars. To that effect, one should prepare
+    a gradient file containing the gradient of the potential to be applied (negative
+    of the bias force), and a count file containing only values greater than
+    <TT>fullSamples</TT>. These files must match the grid parameters of the colvars.
+
+</LI>
+</UL>
+
+<P>
+
+<H3><A NAME="SECTION00081300000000000000">
+Multiple-replica ABF</A>
+</H3>
+
+<P>
+
+<UL>
+<LI><A NAME="6484"></A>
+  <B><BIG CLASS="LARGE"><TT>shared </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></B></SPAN>Apply multiple-replica ABF, sharing force samples among the replicas?<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>abf</TT>
+<BR><B>Acceptable values: </B> boolean
+<BR><B>Default value: </B> <TT>no</TT>
+<BR><B>Description: </B>  This is command requires that NAMD be compiled and executed with multiple-replica
+    support.
+    If <TT>shared</TT> is set to yes, the system force samples will be synchronized among all replicas
+    at intervals defined by <TT>sharedFreq</TT>.
+    Thus, it is as if system force samples among all replicas are
+    gathered in a single shared buffer, which why the algorithm is referred to as shared ABF.
+    Shared ABF allows all replicas to benefit from the sampling done by other replicas and can lead to faster convergence of the biasing force.
+
+<P>
+</LI>
+<LI><A NAME="6504"></A>
+  <B><BIG CLASS="LARGE"><TT>sharedFreq </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></B></SPAN>Frequency (in timesteps) at which force samples are synchronized among the replicas<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>abf</TT>
+<BR><B>Acceptable values: </B> positive integer
+<BR><B>Default value: </B> <TT>outputFreq</TT>
+<BR><B>Description: </B>
+  In the current implementation of shared ABF, each replica maintains a separate
+  buffer of system force samples that determine the biasing force.
+  Every <TT>sharedFreq</TT> steps, the replicas communicate the samples that
+  have been gathered since the last synchronization time, ensuring all replicas
+  apply a similar biasing force.
+
+</LI>
+</UL>
+
+<P>
+
+<H3><A NAME="SECTION00081400000000000000">
+Output files</A>
+</H3>
+
+<P>
+The ABF bias produces the following files, all in multicolumn ASCII format:
+
+<UL>
+<LI><SPAN  CLASS="textit">output</SPAN><TT>.grad</TT>: current estimate of the free energy gradient (grid),
+  in multicolumn;
+</LI>
+<LI><SPAN  CLASS="textit">output</SPAN><TT>.count</TT>: total number of samples collected, on the same grid;
+</LI>
+<LI><SPAN  CLASS="textit">output</SPAN><TT>.pmf</TT>: only for one-dimensional calculations, integrated
+  free energy profile or PMF.
+</LI>
+</UL>
+
+<P>
+If several ABF biases are defined concurrently, their name is inserted to produce
+unique filenames for output, as in <SPAN  CLASS="textit">output</SPAN><TT>.abf1.grad</TT>.
+This should not be done routinely and could lead to meaningless results:
+only do it if you know what you are doing!
+
+<P>
+If the colvar space has been partitioned into sections (<SPAN  CLASS="textit">windows</SPAN>) in which independent
+ABF simulations have been run, the resulting data can be merged using the
+<TT>inputPrefix</TT> option described above (a run of 0 steps is enough).
+
+<P>
+
+<H3><A NAME="SECTION00081500000000000000">
+Post-processing: reconstructing a multidimensional free energy surface</A>
+</H3>
+
+<P>
+If a one-dimensional calculation is performed, the estimated free energy
+gradient is automatically integrated and a potential of mean force is written
+under the file name <TT>&lt;outputName&gt;.pmf</TT>, in a plain text format that
+can be read by most data plotting and analysis programs (e.g. gnuplot).
+
+<P>
+In dimension 2 or greater, integrating the discretized gradient becomes non-trivial. The
+standalone utility <TT>abf_integrate</TT> is provided to perform that task.
+<TT>abf_integrate</TT> reads the gradient data and uses it to perform a Monte-Carlo (M-C)
+simulation in discretized collective variable space (specifically, on the same grid
+used by ABF to discretize the free energy gradient).
+By default, a history-dependent bias (similar in spirit to metadynamics) is used:
+at each M-C step, the bias at the current position is incremented by a preset amount
+(the <SPAN  CLASS="textit">hill height</SPAN>).
+Upon convergence, this bias counteracts optimally the underlying gradient;
+it is negated to obtain the estimate of the free energy surface.
+
+<P>
+<TT>abf_integrate</TT> is invoked using the command-line:
+<PRE>
+integrate &lt;gradient_file&gt; [-n &lt;nsteps&gt;] [-t &lt;temp&gt;] [-m (0|1)]
+                          [-h &lt;hill_height&gt;] [-f &lt;factor&gt;]
+</PRE>
+
+<P>
+The gradient file name is provided first, followed by other parameters in any order.
+They are described below, with their default value in square brackets:
+
+<UL>
+<LI><TT>-n</TT>: number of M-C steps to be performed; by default, a minimal number of
+steps is chosen based on the size of the grid, and the integration runs until a convergence
+criterion is satisfied (based on the RMSD between the target gradient and the real PMF gradient)
+</LI>
+<LI><TT>-t</TT>: temperature for M-C sampling (unrelated to the simulation temperature)
+  [500&nbsp;K]
+</LI>
+<LI><TT>-m</TT>: use metadynamics-like biased sampling? (0 = false) [1]
+</LI>
+<LI><TT>-h</TT>: increment for the history-dependent bias (``hill height'') [0.01&nbsp;kcal/mol]
+</LI>
+<LI><TT>-f</TT>: if non-zero, this factor is used to scale the increment stepwise in the
+  second half of the M-C sampling to refine the free energy estimate [0.5]
+</LI>
+</UL>
+
+<P>
+Using the default values of all parameters should give reasonable results in most cases.
+
+<P>
+
+<P><P>
+<BR>
+<TT>abf_integrate</TT> produces the following output files:
+
+<UL>
+<LI><TT>&lt;gradient_file&gt;.pmf</TT>: computed free energy surface
+</LI>
+<LI><TT>&lt;gradient_file&gt;.histo</TT>: histogram of M-C sampling (not
+usable in a straightforward way if the history-dependent bias has been applied)
+</LI>
+<LI><TT>&lt;gradient_file&gt;.est</TT>: estimated gradient of the calculated free energy surface
+(from finite differences)
+</LI>
+<LI><TT>&lt;gradient_file&gt;.dev</TT>: deviation between the user-provided numerical gradient
+and the actual gradient of the calculated free energy surface. The RMS norm of this vector
+field is used as a convergence criteria and displayed periodically during the integration.
+</LI>
+</UL>
+
+<P>
+<SPAN  CLASS="textbf">Note:</SPAN> Typically, the ``deviation'' vector field does not
+vanish as the integration converges. This happens because the
+numerical estimate of the gradient does not exactly derive from a
+potential, due to numerical approximations used to obtain it (finite
+sampling and discretization on a grid).
+
+<P>
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A NAME="tex2html590"
+  HREF="node28.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
+<A NAME="tex2html584"
+  HREF="node26.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
+<A NAME="tex2html578"
+  HREF="node26.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
+<A NAME="tex2html586"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
+<A NAME="tex2html588"
+  HREF="node39.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
+<BR>
+<B> Next:</B> <A NAME="tex2html591"
+  HREF="node28.html">Metadynamics</A>
+<B> Up:</B> <A NAME="tex2html585"
+  HREF="node26.html">Biasing and analysis methods</A>
+<B> Previous:</B> <A NAME="tex2html579"
+  HREF="node26.html">Biasing and analysis methods</A>
+ &nbsp; <B>  <A NAME="tex2html587"
+  HREF="node1.html">Contents</A></B>
+ &nbsp; <B>  <A NAME="tex2html589"
+  HREF="node39.html">Index</A></B> </DIV>
+<!--End of Navigation Panel-->
 <ADDRESS>
 Jérôme Hénin
 2015-03-03

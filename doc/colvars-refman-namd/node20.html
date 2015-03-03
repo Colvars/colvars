@@ -7,8 +7,8 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
   Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
 <HTML>
 <HEAD>
-<TITLE>Treatment of periodic boundary conditions.</TITLE>
-<META NAME="description" CONTENT="Treatment of periodic boundary conditions.">
+<TITLE>Computational cost of colvars based on group size.</TITLE>
+<META NAME="description" CONTENT="Computational cost of colvars based on group size.">
 <META NAME="keywords" CONTENT="colvars-refman-namd">
 <META NAME="resource-type" CONTENT="document">
 <META NAME="distribution" CONTENT="global">
@@ -19,9 +19,8 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 
 <LINK REL="STYLESHEET" HREF="colvars-refman-namd.css">
 
-<LINK REL="next" HREF="node21.html">
 <LINK REL="previous" HREF="node19.html">
-<LINK REL="up" HREF="node17.html">
+<LINK REL="up" HREF="node16.html">
 <LINK REL="next" HREF="node21.html">
 </HEAD>
 
@@ -32,108 +31,46 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
   HREF="node21.html">
 <IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
 <A NAME="tex2html408"
-  HREF="node17.html">
+  HREF="node16.html">
 <IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
-<A NAME="tex2html402"
+<A NAME="tex2html404"
   HREF="node19.html">
 <IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
 <A NAME="tex2html410"
   HREF="node1.html">
 <IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
 <A NAME="tex2html412"
-  HREF="node81.html">
+  HREF="node39.html">
 <IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
 <BR>
 <B> Next:</B> <A NAME="tex2html415"
-  HREF="node21.html">Computational cost of colvars</A>
+  HREF="node21.html">Collective variable components (basis</A>
 <B> Up:</B> <A NAME="tex2html409"
-  HREF="node17.html">Selecting atoms for colvars:</A>
-<B> Previous:</B> <A NAME="tex2html403"
-  HREF="node19.html">Moving frame of reference.</A>
+  HREF="node16.html">Selecting atoms for colvars:</A>
+<B> Previous:</B> <A NAME="tex2html405"
+  HREF="node19.html">Treatment of periodic boundary</A>
  &nbsp; <B>  <A NAME="tex2html411"
   HREF="node1.html">Contents</A></B>
  &nbsp; <B>  <A NAME="tex2html413"
-  HREF="node81.html">Index</A></B>
+  HREF="node39.html">Index</A></B>
 <BR>
 <BR></DIV>
 <!--End of Navigation Panel-->
 
-<H2><A NAME="SECTION00063000000000000000"></A>
-<A NAME="sec:colvar_atom_groups_wrapping"></A>
+<H2><A NAME="SECTION00064000000000000000"></A>
+<A NAME="sec:colvar_atom_groups_scaling"></A>
 <BR>
-Treatment of periodic boundary conditions.
+Computational cost of colvars based on group size.
 </H2>
 
 <P>
-In simulations with periodic boundary conditions, NAMD maintains
-  the coordinates of all the atoms within a molecule contiguous to
-  each other (i.e.&nbsp;there are no spurious ``jumps'' in the molecular
-  bonds).  The colvar module relies on this when calculating a group's
-  center of geometry, but the condition may fail if the group spans
-  different molecules: in that case, writing the NAMD output files
-  <TT>wrapAll</TT> or <TT>wrapWater</TT> could produce wrong results
-  when a simulation run is continued from a previous one.
-  The user should then determine, according to which
-  type of colvars are being calculated, whether <TT>wrapAll</TT> or
-  <TT>wrapWater</TT> can be enabled.
-  In general, internal coordinate wrapping by NAMD does not affect the calculation of colvars if each atom group satisfies one or more of the following:
+In parallel MD simulations, the calculation of most interaction terms are spread over many computational nodes, but the calculation of colvars is not parallelized.
+Therefore, additional calculations are executed by the node calculating the colvars, and most importantly, additional communication is added between the first node and the other nodes.
+The latency-tolerant design and dynamic load balancing of NAMD alleviate both factors: however, under some circumstances, a noticeable performance impact may be observed.
+To mitigate that, atom groups should be kept relatively small (up to a few thousands, depending on the computational cost to simulate the system by itself).
 
 <P>
-<DL COMPACT>
-<DT><SPAN  CLASS="textit">i)</SPAN></DT>
-<DD>it is composed by only one atom;
-
-</DD>
-<DT><SPAN  CLASS="textit">ii)</SPAN></DT>
-<DD>it is used by a colvar component which does not make use of its center of geometry, but only of pairwise distances (<TT>distanceInv</TT>, <TT>coordNum</TT>, <TT>hBond</TT>, <TT>alpha</TT>, <TT>dihedralPC</TT>);
-
-</DD>
-<DT><SPAN  CLASS="textit">iii)</SPAN></DT>
-<DD>it is used by a colvar component that ignores the ill-defined Cartesian components of its center of mass (such as the <SPAN CLASS="MATH"><IMG
- WIDTH="12" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img46.png"
- ALT="$ x$"></SPAN> and <SPAN CLASS="MATH"><IMG
- WIDTH="12" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img47.png"
- ALT="$ y$"></SPAN> components of a membrane's center of mass modeled with <TT>distanceZ</TT>);
-
-</DD>
-<DT><SPAN  CLASS="textit">iv)</SPAN></DT>
-<DD>it has all of its atoms within the same molecular fragment.
-</DD>
-</DL>
-
-<P>
-
-<DIV CLASS="navigation"><HR>
-<!--Navigation Panel-->
-<A NAME="tex2html414"
-  HREF="node21.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
-<A NAME="tex2html408"
-  HREF="node17.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
-<A NAME="tex2html402"
-  HREF="node19.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
-<A NAME="tex2html410"
-  HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
-<A NAME="tex2html412"
-  HREF="node81.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
-<BR>
-<B> Next:</B> <A NAME="tex2html415"
-  HREF="node21.html">Computational cost of colvars</A>
-<B> Up:</B> <A NAME="tex2html409"
-  HREF="node17.html">Selecting atoms for colvars:</A>
-<B> Previous:</B> <A NAME="tex2html403"
-  HREF="node19.html">Moving frame of reference.</A>
- &nbsp; <B>  <A NAME="tex2html411"
-  HREF="node1.html">Contents</A></B>
- &nbsp; <B>  <A NAME="tex2html413"
-  HREF="node81.html">Index</A></B> </DIV>
-<!--End of Navigation Panel-->
+<BR><HR>
 <ADDRESS>
 Jérôme Hénin
 2015-03-03

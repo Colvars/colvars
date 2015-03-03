@@ -7,8 +7,8 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
   Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
 <HTML>
 <HEAD>
-<TITLE>inertia: total moment of inertia of a group of atoms.</TITLE>
-<META NAME="description" CONTENT="inertia: total moment of inertia of a group of atoms.">
+<TITLE>Bibliography</TITLE>
+<META NAME="description" CONTENT="Bibliography">
 <META NAME="keywords" CONTENT="colvars-refman-namd">
 <META NAME="resource-type" CONTENT="document">
 <META NAME="distribution" CONTENT="global">
@@ -21,88 +21,192 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 
 <LINK REL="next" HREF="node41.html">
 <LINK REL="previous" HREF="node39.html">
-<LINK REL="up" HREF="node23.html">
+<LINK REL="up" HREF="colvars-refman-namd.html">
 <LINK REL="next" HREF="node41.html">
 </HEAD>
 
 <BODY >
 
 <DIV CLASS="navigation"><!--Navigation Panel-->
-<A NAME="tex2html748"
+<A NAME="tex2html783"
   HREF="node41.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
-<A NAME="tex2html742"
-  HREF="node23.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
-<A NAME="tex2html736"
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html777"
+  HREF="colvars-refman-namd.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html771"
   HREF="node39.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
-<A NAME="tex2html744"
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html779"
   HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
-<A NAME="tex2html746"
-  HREF="node81.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html781"
+  HREF="node39.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
 <BR>
-<B> Next:</B> <A NAME="tex2html749"
-  HREF="node41.html">inertiaZ: total moment of</A>
-<B> Up:</B> <A NAME="tex2html743"
-  HREF="node23.html">List of available colvar</A>
-<B> Previous:</B> <A NAME="tex2html737"
-  HREF="node39.html">gyration: radius of gyration</A>
- &nbsp; <B>  <A NAME="tex2html745"
-  HREF="node1.html">Contents</A></B>
- &nbsp; <B>  <A NAME="tex2html747"
-  HREF="node81.html">Index</A></B>
-<BR>
-<BR></DIV>
+<B> Next:</B> <A NAME="tex2html784"
+  HREF="node41.html">About this document ...</A>
+<B> Up:</B> <A NAME="tex2html778"
+  HREF="colvars-refman-namd.html">colvars-refman-namd</A>
+<B> Previous:</B> <A NAME="tex2html772"
+  HREF="node39.html">Index</A>
+ &nbsp; <B>  <A NAME="tex2html780"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html782"
+  HREF="node39.html">Index</A></B> 
+<BR><BR></DIV>
 <!--End of Navigation Panel-->
 
-<H3><A NAME="SECTION000711600000000000000">
-<TT>inertia</TT>: total moment of inertia of a group  of atoms.</A>
-</H3>
-The block <TT>inertia&nbsp;{...}</TT> defines the
-parameters for calculating the total moment of inertia of a group of atomic
-positions <!-- MATH
- $\{ \mathbf{x}_1(t), \mathbf{x}_2(t), \ldots \mathbf{x}_N(t)
-\}$
- -->
-<SPAN CLASS="MATH"><IMG
- WIDTH="163" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
- SRC="img87.png"
- ALT="$ \{ \mathbf{x}_1(t), \mathbf{x}_2(t), \ldots
-\mathbf{x}_N(t) \}$"></SPAN> with respect to their center of geometry,
-<!-- MATH
- $\mathbf{x}_{\mathrm{cog}}(t)$
- -->
-<SPAN CLASS="MATH"><IMG
- WIDTH="51" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
- SRC="img91.png"
- ALT="$ \mathbf{x}_{\mathrm{cog}}(t)$"></SPAN>:
-<P></P>
-<DIV ALIGN="CENTER" CLASS="mathdisplay"><A NAME="eq:colvar_inertia"></A><!-- MATH
- \begin{equation}
-I \; = \; \sum_{i=1}^{N} \left|\mathbf{x}_{i}(t) -
-      \mathbf{x}_{\mathrm{cog}}(t)\right|^{2}
-\end{equation}
- -->
-<TABLE CLASS="equation" CELLPADDING="0" WIDTH="100%" ALIGN="CENTER">
-<TR VALIGN="MIDDLE">
-<TD NOWRAP ALIGN="CENTER"><SPAN CLASS="MATH"><IMG
- WIDTH="178" HEIGHT="67" ALIGN="MIDDLE" BORDER="0"
- SRC="img106.png"
- ALT="$\displaystyle I \; = \; \sum_{i=1}^{N} \left\vert\mathbf{x}_{i}(t) - \mathbf{x}_{\mathrm{cog}}(t)\right\vert^{2}$"></SPAN></TD>
-<TD NOWRAP CLASS="eqno" WIDTH="10" ALIGN="RIGHT">
-(<SPAN CLASS="arabic">8</SPAN>)</TD></TR>
-</TABLE></DIV>
-<BR CLEAR="ALL"><P></P>
-<SPAN  CLASS="textit">Note that all atomic masses are set to 1 for simplicity.</SPAN>
-This component must contain one <TT>atoms&nbsp;{...}</TT> block to
-define the atom group, and returns a positive number, expressed in
-&#197;<SPAN CLASS="MATH"><IMG
- WIDTH="11" HEIGHT="20" ALIGN="BOTTOM" BORDER="0"
- SRC="img107.png"
- ALT="$ ^{2}$"></SPAN>.
+<H2><A NAME="SECTION000110000000000000000">
+Bibliography</A>
+</H2><DL COMPACT><DD><P></P><DT><A NAME="Fiorin2013">1</A>
+<DD>
+G.&nbsp;Fiorin, M.&nbsp;L. Klein, and J.&nbsp;H&#233;nin.
+<BR>Using collective variables to drive molecular dynamics simulations.
+<BR><EM>Mol. Phys.</EM>, 111(22-23):3345-3362, 2013.
+
+<P></P><DT><A NAME="Iannuzzi2003">2</A>
+<DD>
+M.&nbsp;Iannuzzi, A.&nbsp;Laio, and M.&nbsp;Parrinello.
+<BR>Efficient exploration of reactive potential energy surfaces using
+  car-parrinello molecular dynamics.
+<BR><EM>Phys. Rev. Lett.</EM>, 90(23):238302, 2003.
+
+<P></P><DT><A NAME="Coutsias2004">3</A>
+<DD>
+E&nbsp;A Coutsias, C&nbsp;Seok, and K&nbsp;A Dill.
+<BR>Using quaternions to calculate RMSD.
+<BR><EM>J. Comput. Chem.</EM>, 25(15):1849-1857, 2004.
+
+<P></P><DT><A NAME="Mu2005">4</A>
+<DD>
+Yuguang Mu, Phuong&nbsp;H. Nguyen, and Gerhard Stock.
+<BR>Energy landscape of a small peptide revealed by dihedral angle
+  principal component analysis.
+<BR><EM>Proteins</EM>, 58(1):45-52, 2005.
+
+<P></P><DT><A NAME="Altis2007">5</A>
+<DD>
+Alexandros Altis, Phuong&nbsp;H. Nguyen, Rainer Hegger, and Gerhard Stock.
+<BR>Dihedral angle principal component analysis of molecular dynamics
+  simulations.
+<BR><EM>J. Chem. Phys.</EM>, 126(24):244111, 2007.
+
+<P></P><DT><A NAME="Glykos2006">6</A>
+<DD>
+Nicholas&nbsp;M Glykos.
+<BR>Carma: a molecular dynamics analysis program.
+<BR><EM>J. Comput. Chem.</EM>, 27(14):1765-1768, 2006.
+
+<P></P><DT><A NAME="Darve2008">7</A>
+<DD>
+Eric Darve, David Rodr&#237;guez-G&#243;mez, and Andrew Pohorille.
+<BR>Adaptive biasing force method for scalar and vector free energy
+  calculations.
+<BR><EM>J. Chem. Phys.</EM>, 128(14):144120, 2008.
+
+<P></P><DT><A NAME="Henin2004">8</A>
+<DD>
+J.&nbsp;H&#233;nin and C.&nbsp;Chipot.
+<BR>Overcoming free energy barriers using unconstrained molecular
+  dynamics simulations.
+<BR><EM>J. Chem. Phys.</EM>, 121:2904-2914, 2004.
+
+<P></P><DT><A NAME="Henin2010">9</A>
+<DD>
+J.&nbsp;H&#233;nin, G.&nbsp;Fiorin, C.&nbsp;Chipot, and M.&nbsp;L. Klein.
+<BR>Exploring multidimensional free energy landscapes using
+  time-dependent biases on collective variables.
+<BR><EM>J. Chem. Theory Comput.</EM>, 6(1):35-47, 2010.
+
+<P></P><DT><A NAME="Carter1989">10</A>
+<DD>
+A.&nbsp;Carter, E, G.&nbsp;Ciccotti, J.&nbsp;T. Hynes, and R.&nbsp;Kapral.
+<BR>Constrained reaction coordinate dynamics for the simulation of rare
+  events.
+<BR><EM>Chem. Phys. Lett.</EM>, 156:472-477, 1989.
+
+<P></P><DT><A NAME="Ruiz-Montero1997">11</A>
+<DD>
+M.&nbsp;J. Ruiz-Montero, D.&nbsp;Frenkel, and J.&nbsp;J. Brey.
+<BR>Efficient schemes to compute diffusive barrier crossing rates.
+<BR><EM>Mol. Phys.</EM>, 90:925-941, 1997.
+
+<P></P><DT><A NAME="denOtter2000">12</A>
+<DD>
+W.&nbsp;K. den Otter.
+<BR>Thermodynamic integration of the free energy along a reaction
+  coordinate in cartesian coordinates.
+<BR><EM>J. Chem. Phys.</EM>, 112:7283-7292, 2000.
+
+<P></P><DT><A NAME="Ciccotti2005">13</A>
+<DD>
+Giovanni Ciccotti, Raymond Kapral, and Eric Vanden-Eijnden.
+<BR>Blue moon sampling, vectorial reaction coordinates, and unbiased
+  constrained dynamics.
+<BR><EM>ChemPhysChem</EM>, 6(9):1809-1814, 2005.
+
+<P></P><DT><A NAME="Laio2002">14</A>
+<DD>
+A.&nbsp;Laio and M.&nbsp;Parrinello.
+<BR>Escaping free-energy minima.
+<BR><EM>Proc. Natl. Acad. Sci. USA</EM>, 99(20):12562-12566, 2002.
+
+<P></P><DT><A NAME="Grubmuller1995">15</A>
+<DD>
+Helmut Grubm&#252;ller.
+<BR>Predicting slow structural transitions in macromolecular systems:
+  Conformational flooding.
+<BR><EM>Phys. Rev. E</EM>, 52(3):2893-2906, Sep 1995.
+
+<P></P><DT><A NAME="Huber1994">16</A>
+<DD>
+T.&nbsp;Huber, A.&nbsp;E. Torda, and W.F. van Gunsteren.
+<BR>Local elevation - A method for improving the searching properties
+  of molecular-dynamics simulation.
+<BR><EM>Journal of Computer-Aided Molecular Design</EM>, 8(6):695-708, DEC
+  1994.
+
+<P></P><DT><A NAME="Bussi2006">17</A>
+<DD>
+G.&nbsp;Bussi, A.&nbsp;Laio, and M.&nbsp;Parrinello.
+<BR>Equilibrium free energies from nonequilibrium metadynamics.
+<BR><EM>Phys. Rev. Lett.</EM>, 96(9):090601, 2006.
+
+<P></P><DT><A NAME="Barducci2008">18</A>
+<DD>
+Alessandro Barducci, Giovanni Bussi, and Michele Parrinello.
+<BR>Well-tempered metadynamics: A smoothly converging and tunable
+  free-energy method.
+<BR><EM>Phys. Rev. Lett.</EM>, 100:020603, 2008.
+
+<P></P><DT><A NAME="Raiteri2005">19</A>
+<DD>
+P.&nbsp;Raiteri, A.&nbsp;Laio, F.&nbsp;L. Gervasio, C.&nbsp;Micheletti, and M.&nbsp;Parrinello.
+<BR>Efficient reconstruction of complex free energy landscapes by
+  multiple walkers metadynamics.
+<BR><EM>J. Phys. Chem. B</EM>, 110(8):3533-9, 2005.
+
+<P></P><DT><A NAME="Deng2009">20</A>
+<DD>
+Yuqing Deng and Beno&#238;t Roux.
+<BR>Computations of standard binding free energies with molecular
+  dynamics simulations.
+<BR><EM>J. Phys. Chem. B</EM>, 113(8):2234-2246, 2009.
+
+<P></P><DT><A NAME="Pitera2012">21</A>
+<DD>
+Jed&nbsp;W. Pitera and John&nbsp;D. Chodera.
+<BR>On the use of experimental observations to bias simulated ensembles.
+<BR><EM>J. Chem. Theory Comput.</EM>, 8:3445-3451, 2012.
+
+<P></P><DT><A NAME="White2014">22</A>
+<DD>
+A.&nbsp;D. White and G.&nbsp;A. Voth.
+<BR>Efficient and minimal method to bias molecular simulations with
+  experimental data.
+<BR><EM>J. Chem. Theory Comput.</EM>, ASAP, 2014.
+</DL>
 
 <P>
 <BR><HR>

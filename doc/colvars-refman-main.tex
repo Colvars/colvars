@@ -1623,7 +1623,7 @@ loop over all pairs grows as $N_{\mathtt{group1}}^2$.
 
 
 
-\paragraph*{\texttt{hBond}: hydrogen bond between two
+\cvsubsubsec{\texttt{hBond}: hydrogen bond between two
   atoms.}  The \texttt{hBond \{...\}} block defines a hydrogen
 bond, implemented as a coordination number (eq.~\ref{eq:cvc_coordNum})
 between the donor and the acceptor atoms.  Therefore, it accepts the
@@ -3664,13 +3664,12 @@ Note that scripting commands may not be used directly in the NAMD configuration 
 \begin{itemize}
 \cvvmdugonly{
 \item \texttt{molid $<$molecule ID$>$} : create colvars instance for specified molecule
+\item \texttt{delete} : delete this colvars module instance
 }
 \item \texttt{configfile $<$file name$>$} : read configuration from a file
 \item \texttt{config $<$string$>$} : read configuration from the given string
 \item \texttt{reset} : delete all internal configuration
-\cvvmdugonly{
-\item \texttt{delete} : delete this colvars module instance
-}
+\item \texttt{version} : return version of colvars codes
 \end{itemize}
 
 \cvsubsec{Input and output}
@@ -3689,9 +3688,14 @@ Note that scripting commands may not be used directly in the NAMD configuration 
 
 \cvsubsec{Accessing collective variables}
 \begin{itemize}
-\item \texttt{colvar $<$name$>$ value} : return the current value of the colvar $<$name$>$
-\item \texttt{colvar $<$name$>$ update} : recalculate the colvar $<$name$>$
-\item \texttt{colvar $<$name$>$ delete} : delete the colvar $<$name$>$
+\item \texttt{colvar $<$name$>$ value} : return the current value of colvar $<$name$>$
+\item \texttt{colvar $<$name$>$ update} : recalculate colvar $<$name$>$
+\item \texttt{colvar $<$name$>$ type} : return the type of colvar $<$name$>$
+\item \texttt{colvar $<$name$>$ delete} : delete colvar $<$name$>$
+\cvnamdonly{
+\item \texttt{colvar $<$name$>$ addforce $<$F$>$} : apply given force on colvar $<$name$>$
+}
+\item \texttt{colvar $<$name$>$ getconfig} : return config string of colvar $<$name$>$
 \end{itemize}
 
 \cvsubsec{Accessing biases}
@@ -3699,6 +3703,7 @@ Note that scripting commands may not be used directly in the NAMD configuration 
 \item \texttt{bias $<$name$>$ energy} : return the current energy of the bias $<$name$>$
 \item \texttt{bias $<$name$>$ update} : recalculate the bias $<$name$>$
 \item \texttt{bias $<$name$>$ delete} : delete the bias $<$name$>$
+\item \texttt{bias $<$name$>$ getconfig} : return config string of bias $<$name$>$
 \end{itemize}
 }
 }

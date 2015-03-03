@@ -7,8 +7,8 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
   Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
 <HTML>
 <HEAD>
-<TITLE>Extended Lagrangian.</TITLE>
-<META NAME="description" CONTENT="Extended Lagrangian.">
+<TITLE>Statistical analysis of collective variables</TITLE>
+<META NAME="description" CONTENT="Statistical analysis of collective variables">
 <META NAME="keywords" CONTENT="colvars-refman-lammps">
 <META NAME="resource-type" CONTENT="document">
 <META NAME="distribution" CONTENT="global">
@@ -19,9 +19,8 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 
 <LINK REL="STYLESHEET" HREF="colvars-refman-lammps.css">
 
-<LINK REL="next" HREF="node16.html">
 <LINK REL="previous" HREF="node14.html">
-<LINK REL="up" HREF="node11.html">
+<LINK REL="up" HREF="node10.html">
 <LINK REL="next" HREF="node16.html">
 </HEAD>
 
@@ -30,176 +29,315 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <DIV CLASS="navigation"><!--Navigation Panel-->
 <A NAME="tex2html325"
   HREF="node16.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
 <A NAME="tex2html319"
-  HREF="node11.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
-<A NAME="tex2html313"
+  HREF="node10.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html315"
   HREF="node14.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
 <A NAME="tex2html321"
   HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
 <A NAME="tex2html323"
-  HREF="node71.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
+  HREF="node32.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
 <BR>
 <B> Next:</B> <A NAME="tex2html326"
-  HREF="node16.html">Statistical analysis of collective</A>
+  HREF="node16.html">Selecting atoms for colvars:</A>
 <B> Up:</B> <A NAME="tex2html320"
-  HREF="node11.html">Defining collective variables and</A>
-<B> Previous:</B> <A NAME="tex2html314"
-  HREF="node14.html">Trajectory output</A>
+  HREF="node10.html">Defining collective variables and</A>
+<B> Previous:</B> <A NAME="tex2html316"
+  HREF="node14.html">Extended Lagrangian.</A>
  &nbsp; <B>  <A NAME="tex2html322"
-  HREF="node1.html">Contents</A></B>
+  HREF="node1.html">Contents</A></B> 
  &nbsp; <B>  <A NAME="tex2html324"
-  HREF="node71.html">Index</A></B>
+  HREF="node32.html">Index</A></B> 
 <BR>
 <BR></DIV>
 <!--End of Navigation Panel-->
 
-<H2><A NAME="SECTION00054000000000000000"></A>
-<A NAME="sec:colvar_extended"></A>
+<H2><A NAME="SECTION00055000000000000000"></A>
+<A NAME="sec:colvar_acf"></A>
 <BR>
-Extended Lagrangian.
+Statistical analysis of collective variables
 </H2>
 
 <P>
-The following options enable extended-system
-dynamics, where a colvar is coupled to an additional degree of freedom
-(fictitious particle) by a harmonic spring.
-All biasing and confining forces are then applied to the extended degree
-of freedom, and the actual, geometric colvar (function of Cartesian
-coordinates) only feels the force from the harmonic spring.
+When the global keyword <TT>analysis</TT> is defined in the
+configuration file, run-time calculations of statistical properties for
+individual colvars can be performed.  At the moment, several types of
+time correlation functions, running averages and running standard
+deviations are available.
 
 <P>
 
 <UL>
-<LI><A NAME="4179"></A>
-  <B><BIG CLASS="LARGE"><TT>extendedLagrangian </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+<LI><A NAME="4282"></A>
+  <B><BIG CLASS="LARGE"><TT>corrFunc </TT></BIG></B> <SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle $"></SPAN>Add extended degree of freedom<SPAN CLASS="MATH"><IMG
+ ALT="$ \langle $"></SPAN>Calculate a time correlation function?<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$  \rangle$"></SPAN>
-<BR><B>Context: </B> <TT>colvar</TT>
-<BR><B>Acceptable values: </B> boolean
-<BR><B>Default value: </B> <TT>off</TT>
-<BR><B>Description: </B> Adds a fictitious particle to be coupled to the colvar by a harmonic
-    spring. The fictitious mass and the force constant of the coupling
-    potential are derived from the parameters <TT>extendedTimeConstant</TT>
-    and <TT>extendedFluctuation</TT>, described below. Biasing forces on the
-    colvar are applied to this fictitious particle, rather than to the
-    atoms directly.  This implements the extended Lagrangian formalism
-    used in some metadynamics simulations&nbsp;[<A
- HREF="node72.html#Iannuzzi2003">2</A>].
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>colvar</TT> 
+<BR><B>Acceptable values: </B> boolean 
+<BR><B>Default value: </B> <TT>off</TT> 
+<BR><B>Description: </B> Whether or not a time correlaction function should be calculated
+    for this colvar.
 
 <P>
 </LI>
-<LI><A NAME="4200"></A>
-  <B><BIG CLASS="LARGE"><TT>extendedFluctuation </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+<LI><A NAME="4299"></A>
+  <B><BIG CLASS="LARGE"><TT>corrFuncWithColvar </TT></BIG></B> <SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle $"></SPAN>Standard deviation between the colvar and the fictitious
-    particle (colvar unit)<SPAN CLASS="MATH"><IMG
+ ALT="$ \langle $"></SPAN>Colvar name for the correlation function<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$  \rangle$"></SPAN>
-<BR><B>Context: </B> <TT>colvar</TT>
-<BR><B>Acceptable values: </B> positive decimal
-<BR><B>Description: </B> Defines the spring stiffness for the <TT>extendedLagrangian</TT>
-    mode, by setting the typical deviation between the colvar and the extended
-    degree of freedom due to thermal fluctuation.
-    The spring force constant is calculated internally as <!-- MATH
- $k_B T / \sigma^2$
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>colvar</TT> 
+<BR><B>Acceptable values: </B> string 
+<BR><B>Description: </B> By default, the auto-correlation function (ACF) of this colvar,
+    <SPAN CLASS="MATH"><IMG
+ WIDTH="17" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img28.png"
+ ALT="$ \xi_{i}$"></SPAN>, is calculated.  When this option is specified, the
+    correlation function is calculated instead with another colvar,
+    <SPAN CLASS="MATH"><IMG
+ WIDTH="19" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img29.png"
+ ALT="$ \xi_{j}$"></SPAN>, which must be of the same type (scalar, vector, or
+    quaternion) as <SPAN CLASS="MATH"><IMG
+ WIDTH="17" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img28.png"
+ ALT="$ \xi_{i}$"></SPAN>.
+
+<P>
+</LI>
+<LI><A NAME="4318"></A>
+  <B><BIG CLASS="LARGE"><TT>corrFuncType </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></SPAN>Type of the correlation function<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>colvar</TT> 
+<BR><B>Acceptable values: </B> <TT>velocity</TT>, <TT>coordinate</TT> or
+    <TT>coordinate_p2</TT> 
+<BR><B>Default value: </B> <TT>velocity</TT> 
+<BR><B>Description: </B> With <TT>coordinate</TT> or <TT>velocity</TT>, the correlation
+    function <!-- MATH
+ $C_{i,j}(t)$
  -->
 <SPAN CLASS="MATH"><IMG
- WIDTH="61" HEIGHT="38" ALIGN="MIDDLE" BORDER="0"
- SRC="img23.png"
- ALT="$ k_B T / \sigma^2$"></SPAN>,
-    where <SPAN CLASS="MATH"><IMG
- WIDTH="17" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img24.png"
- ALT="$ \sigma$"></SPAN> is the value of <TT>extendedFluctuation</TT>.
-
-<P>
-</LI>
-<LI><A NAME="4218"></A>
-  <B><BIG CLASS="LARGE"><TT>extendedTimeConstant </TT></BIG></B> <SPAN CLASS="MATH"><IMG
- WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
- SRC="img19.png"
- ALT="$ \langle $"></SPAN>Oscillation period of the fictitious particle (fs)<SPAN CLASS="MATH"><IMG
- WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
- SRC="img20.png"
- ALT="$  \rangle$"></SPAN>
-<BR><B>Context: </B> <TT>colvar</TT>
-<BR><B>Acceptable values: </B> positive decimal
-<BR><B>Default value: </B> <TT>200</TT>
-<BR><B>Description: </B> Defines the inertial mass of the fictitious particle, by setting the
-    oscillation period of the harmonic oscillator formed by the fictitious
-    particle and the spring. The period
-    should be much larger than the MD time step to ensure accurate integration
-    of the extended particle's equation of motion.
-    The fictitious mass is calculated internally as <!-- MATH
- $k_B T (\tau/2 \pi \sigma)^2$
+ WIDTH="47" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img30.png"
+ ALT="$ C_{i,j}(t)$"></SPAN>&nbsp;= <!-- MATH
+ $\left\langle \Pi\left(\xi_{i}(t_{0}),
+        \xi_{j}(t_{0}+t)\right) \right\rangle$
  -->
 <SPAN CLASS="MATH"><IMG
- WIDTH="103" HEIGHT="38" ALIGN="MIDDLE" BORDER="0"
- SRC="img25.png"
- ALT="$ k_B T (\tau/2 \pi \sigma)^2$"></SPAN>,
-    where <SPAN CLASS="MATH"><IMG
- WIDTH="13" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img26.png"
- ALT="$ \tau$"></SPAN> is the period and <SPAN CLASS="MATH"><IMG
- WIDTH="17" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img24.png"
- ALT="$ \sigma$"></SPAN> is the typical fluctuation (see above).
+ WIDTH="159" HEIGHT="38" ALIGN="MIDDLE" BORDER="0"
+ SRC="img31.png"
+ ALT="$ \left\langle \Pi\left(\xi_{i}(t_{0}),
+\xi_{j}(t_{0}+t)\right) \right\rangle$"></SPAN> is calculated between
+    the variables <SPAN CLASS="MATH"><IMG
+ WIDTH="17" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img28.png"
+ ALT="$ \xi_{i}$"></SPAN> and <SPAN CLASS="MATH"><IMG
+ WIDTH="19" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img29.png"
+ ALT="$ \xi_{j}$"></SPAN>, or their velocities.
+    <!-- MATH
+ $\Pi(\xi_{i}, \xi_{j})$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="66" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img32.png"
+ ALT="$ \Pi(\xi_{i}, \xi_{j})$"></SPAN> is the scalar product when calculated
+    between scalar or vector values, whereas for quaternions it is the
+    cosine between the two corresponding rotation axes.  With
+    <TT>coordinate_p2</TT>, the second order Legendre polynomial,
+    <!-- MATH
+ $(3\cos(\theta)^{2}-1)/2$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="128" HEIGHT="38" ALIGN="MIDDLE" BORDER="0"
+ SRC="img33.png"
+ ALT="$ (3\cos(\theta)^{2}-1)/2$"></SPAN>, is used instead of the cosine.
 
 <P>
 </LI>
-<LI><A NAME="4236"></A>
-  <B><BIG CLASS="LARGE"><TT>extendedTemp </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+<LI><A NAME="4352"></A>
+  <B><BIG CLASS="LARGE"><TT>corrFuncNormalize </TT></BIG></B> <SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle $"></SPAN>Temperature for the extended degree of freedom (K)<SPAN CLASS="MATH"><IMG
+ ALT="$ \langle $"></SPAN>Normalize the time correlation function?<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$  \rangle$"></SPAN>
-<BR><B>Context: </B> <TT>colvar</TT>
-<BR><B>Acceptable values: </B> positive decimal
-<BR><B>Default value: </B> thermostat temperature
-<BR><B>Description: </B> Temperature used for calculating the coupling force constant of the
-    extended coordinate (see <TT>extendedFluctuation</TT>) and, if needed, as a
-    target temperature for extended Langevin dynamics (see
-    <TT>extendedLangevinDamping</TT>). This should normally be left at its
-    default value.
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>colvar</TT> 
+<BR><B>Acceptable values: </B> boolean 
+<BR><B>Default value: </B> <TT>on</TT> 
+<BR><B>Description: </B> If enabled, the value of the correlation function at <SPAN CLASS="MATH"><IMG
+ WIDTH="10" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img34.png"
+ ALT="$ t$"></SPAN>&nbsp;= 0
+    is normalized to 1; otherwise, it equals to <!-- MATH
+ $\left\langle
+      O\left(\xi_{i}, \xi_{j}\right) \right\rangle$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="84" HEIGHT="38" ALIGN="MIDDLE" BORDER="0"
+ SRC="img35.png"
+ ALT="$ \left\langle
+O\left(\xi_{i}, \xi_{j}\right) \right\rangle$"></SPAN>.
 
 <P>
 </LI>
-<LI><A NAME="4255"></A>
-  <B><BIG CLASS="LARGE"><TT>extendedLangevinDamping </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+<LI><A NAME="4372"></A>
+  <B><BIG CLASS="LARGE"><TT>corrFuncLength </TT></BIG></B> <SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle $"></SPAN>Damping factor for extended Langevin dynamics
-    (ps<SPAN CLASS="MATH"><IMG
- WIDTH="21" HEIGHT="20" ALIGN="BOTTOM" BORDER="0"
- SRC="img27.png"
- ALT="$ ^{-1}$"></SPAN>)<SPAN CLASS="MATH"><IMG
+ ALT="$ \langle $"></SPAN>Length of the time correlation function<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$  \rangle$"></SPAN>
-<BR><B>Context: </B> <TT>colvar</TT>
-<BR><B>Acceptable values: </B> positive decimal
-<BR><B>Default value: </B> <TT>1.0</TT>
-<BR><B>Description: </B> If this is non-zero, the extended degree of freedom undergoes Langevin dynamics
-    at temperature <TT>extendedTemp</TT>. The friction force is minus
-    <TT>extendedLangevinDamping</TT> times the velocity. This is useful because
-    the extended dynamics coordinate may heat up in the transient
-    non-equilibrium regime of ABF. Use moderate damping values, to limit
-    viscous friction (potentially slowing down diffusive sampling) and stochastic
-    noise (increasing the variance of statistical measurements). In
-    doubt, use the default value.
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>colvar</TT> 
+<BR><B>Acceptable values: </B> positive integer 
+<BR><B>Default value: </B> <TT>1000</TT> 
+<BR><B>Description: </B> Length (in number of points) of the time correlation function.
+
+<P>
+</LI>
+<LI><A NAME="4390"></A>
+  <B><BIG CLASS="LARGE"><TT>corrFuncStride </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></SPAN>Stride of the time correlation function<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>colvar</TT> 
+<BR><B>Acceptable values: </B> positive integer 
+<BR><B>Default value: </B> <TT>1</TT> 
+<BR><B>Description: </B> Number of steps between two values of the time correlation function.
+
+<P>
+</LI>
+<LI><A NAME="4408"></A>
+  <B><BIG CLASS="LARGE"><TT>corrFuncOffset </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></SPAN>Offset of the time correlation function<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>colvar</TT> 
+<BR><B>Acceptable values: </B> positive integer 
+<BR><B>Default value: </B> <TT>0</TT> 
+<BR><B>Description: </B> The starting time (in number of steps) of the time correlation
+    function (default: <SPAN CLASS="MATH"><IMG
+ WIDTH="10" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img34.png"
+ ALT="$ t$"></SPAN>&nbsp;= 0).  <SPAN  CLASS="textbf">Note:</SPAN> <SPAN  CLASS="textit">the value at <SPAN CLASS="MATH"><IMG
+ WIDTH="10" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img34.png"
+ ALT="$ t$"></SPAN>&nbsp;= 0 is always
+    used for the normalization</SPAN>.
+
+<P>
+</LI>
+<LI><A NAME="4428"></A>
+  <B><BIG CLASS="LARGE"><TT>corrFuncOutputFile </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></SPAN>Output file for the time correlation function<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>colvar</TT> 
+<BR><B>Acceptable values: </B> UNIX filename 
+<BR><B>Default value: </B> <TT><SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$ &lt;$"></SPAN>name<SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$ &gt;$"></SPAN>.corrfunc.dat</TT> 
+<BR><B>Description: </B> The time correlation function is saved in this file.
+
+<P>
+</LI>
+<LI><A NAME="4446"></A>
+  <B><BIG CLASS="LARGE"><TT>runAve </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></SPAN>Calculate the running average and standard deviation<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>colvar</TT> 
+<BR><B>Acceptable values: </B> boolean 
+<BR><B>Default value: </B> <TT>off</TT> 
+<BR><B>Description: </B> Whether or not the running average and standard deviation should
+    be calculated for this colvar.
+
+<P>
+</LI>
+<LI><A NAME="4464"></A>
+  <B><BIG CLASS="LARGE"><TT>runAveLength </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></SPAN>Length of the running average window<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>colvar</TT> 
+<BR><B>Acceptable values: </B> positive integer 
+<BR><B>Default value: </B> <TT>1000</TT> 
+<BR><B>Description: </B> Length (in number of points) of the running average window.
+
+<P>
+</LI>
+<LI><A NAME="4482"></A>
+  <B><BIG CLASS="LARGE"><TT>runAveStride </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></SPAN>Stride of the running average window values<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>colvar</TT> 
+<BR><B>Acceptable values: </B> positive integer 
+<BR><B>Default value: </B> <TT>1</TT> 
+<BR><B>Description: </B> Number of steps between two values within the running average window.
+
+<P>
+</LI>
+<LI><A NAME="4500"></A>
+  <B><BIG CLASS="LARGE"><TT>runAveOutputFile </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></SPAN>Output file for the running average and standard deviation<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>colvar</TT> 
+<BR><B>Acceptable values: </B> UNIX filename 
+<BR><B>Default value: </B> <TT><SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$ &lt;$"></SPAN>name<SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$ &gt;$"></SPAN>.runave.dat</TT> 
+<BR><B>Description: </B> The running average and standard deviation are saved in this file.
+
+<P>
 </LI>
 </UL>
 
@@ -209,30 +347,30 @@ coordinates) only feels the force from the harmonic spring.
 <!--Navigation Panel-->
 <A NAME="tex2html325"
   HREF="node16.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
 <A NAME="tex2html319"
-  HREF="node11.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
-<A NAME="tex2html313"
+  HREF="node10.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html315"
   HREF="node14.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
 <A NAME="tex2html321"
   HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
 <A NAME="tex2html323"
-  HREF="node71.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
+  HREF="node32.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
 <BR>
 <B> Next:</B> <A NAME="tex2html326"
-  HREF="node16.html">Statistical analysis of collective</A>
+  HREF="node16.html">Selecting atoms for colvars:</A>
 <B> Up:</B> <A NAME="tex2html320"
-  HREF="node11.html">Defining collective variables and</A>
-<B> Previous:</B> <A NAME="tex2html314"
-  HREF="node14.html">Trajectory output</A>
+  HREF="node10.html">Defining collective variables and</A>
+<B> Previous:</B> <A NAME="tex2html316"
+  HREF="node14.html">Extended Lagrangian.</A>
  &nbsp; <B>  <A NAME="tex2html322"
-  HREF="node1.html">Contents</A></B>
+  HREF="node1.html">Contents</A></B> 
  &nbsp; <B>  <A NAME="tex2html324"
-  HREF="node71.html">Index</A></B> </DIV>
+  HREF="node32.html">Index</A></B> </DIV>
 <!--End of Navigation Panel-->
 <ADDRESS>
 Jérôme Hénin

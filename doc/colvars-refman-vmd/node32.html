@@ -7,8 +7,8 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
   Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
 <HTML>
 <HEAD>
-<TITLE>dihedral: torsional angle between four groups.</TITLE>
-<META NAME="description" CONTENT="dihedral: torsional angle between four groups.">
+<TITLE>Multidimensional histograms</TITLE>
+<META NAME="description" CONTENT="Multidimensional histograms">
 <META NAME="keywords" CONTENT="colvars-refman-vmd">
 <META NAME="resource-type" CONTENT="document">
 <META NAME="distribution" CONTENT="global">
@@ -21,79 +21,82 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 
 <LINK REL="next" HREF="node33.html">
 <LINK REL="previous" HREF="node31.html">
-<LINK REL="up" HREF="node23.html">
+<LINK REL="up" HREF="node26.html">
 <LINK REL="next" HREF="node33.html">
 </HEAD>
 
 <BODY >
 
 <DIV CLASS="navigation"><!--Navigation Panel-->
-<A NAME="tex2html626"
+<A NAME="tex2html660"
   HREF="node33.html">
 <IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
-<A NAME="tex2html620"
-  HREF="node23.html">
+<A NAME="tex2html654"
+  HREF="node26.html">
 <IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
-<A NAME="tex2html614"
+<A NAME="tex2html648"
   HREF="node31.html">
 <IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
-<A NAME="tex2html622"
+<A NAME="tex2html656"
   HREF="node1.html">
 <IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
-<A NAME="tex2html624"
-  HREF="node75.html">
+<A NAME="tex2html658"
+  HREF="node34.html">
 <IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
 <BR>
-<B> Next:</B> <A NAME="tex2html627"
-  HREF="node33.html">coordNum: coordination number between</A>
-<B> Up:</B> <A NAME="tex2html621"
-  HREF="node23.html">List of available colvar</A>
-<B> Previous:</B> <A NAME="tex2html615"
-  HREF="node31.html">angle: angle between three</A>
- &nbsp; <B>  <A NAME="tex2html623"
+<B> Next:</B> <A NAME="tex2html661"
+  HREF="node33.html">Scripted biases</A>
+<B> Up:</B> <A NAME="tex2html655"
+  HREF="node26.html">Biasing and analysis methods</A>
+<B> Previous:</B> <A NAME="tex2html649"
+  HREF="node31.html">Adaptive Linear Bias/Experiment Directed</A>
+ &nbsp; <B>  <A NAME="tex2html657"
   HREF="node1.html">Contents</A></B> 
- &nbsp; <B>  <A NAME="tex2html625"
-  HREF="node75.html">Index</A></B> 
+ &nbsp; <B>  <A NAME="tex2html659"
+  HREF="node34.html">Index</A></B> 
 <BR>
 <BR></DIV>
 <!--End of Navigation Panel-->
 
-<H3><A NAME="SECTION00071900000000000000">
-<TT>dihedral</TT>: torsional angle between four groups.</A>
-</H3>
-The <TT>dihedral&nbsp;{...}</TT> block defines a torsional angle, and
-contains the blocks <TT>group1</TT>, <TT>group2</TT>, <TT>group3</TT>
-and <TT>group4</TT>, defining the four groups.  It returns an angle
-(in degrees) within the interval <!-- MATH
- $[-180:180]$
- -->
-<SPAN CLASS="MATH"><IMG
- WIDTH="92" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
- SRC="img70.png"
- ALT="$ [-180:180]$"></SPAN>.  The colvar module
-calculates all the distances between two angles taking into account
-periodicity.  For instance, reference values for restraints or range
-boundaries can be defined by using any real number of choice.
+<H2><A NAME="SECTION00086000000000000000"></A>
+<A NAME="sec:colvarbias_histogram"></A>
+<BR>
+Multidimensional histograms
+</H2>
+
+<P>
+The <TT>histogram</TT> feature is used to record the distribution of a set of collective
+variables in the form of a N-dimensional histogram.
+It functions as a ``collective variable bias'', and is invoked by adding a
+<TT>histogram</TT> block to the <SPAN  CLASS="textit">colvars</SPAN> configuration file.
+
+<P>
+In addition to the common parameters <TT>name</TT> and <TT>colvars</TT>
+described above, a <TT>histogram</TT> block may define the following parameter:
+
+<P>
 
 <UL>
-<LI><A NAME="5092"></A>
-  <B><BIG CLASS="LARGE"><TT>oneSiteSystemForce </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+<LI><A NAME="7288"></A>
+  <B><BIG CLASS="LARGE"><TT>outputFreq </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img21.png"
- ALT="$ \langle $"></SPAN>Measure system force on group 1 only?<SPAN CLASS="MATH"><IMG
+ ALT="$ \langle $"></B></SPAN>Frequency (in timesteps) at which the histogram file is refreshed<SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img22.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> <TT>angle</TT>, <TT>dihedral</TT> 
-<BR><B>Acceptable values: </B> boolean 
-<BR><B>Default value: </B> <TT>no</TT> 
-<BR><B>Description: </B> If this is set to <TT>yes</TT>, the system force is measured along
-    a vector field (see equation&nbsp;(<A HREF="node56.html#eq:gradient_vector">19</A>) in
-    section&nbsp;<A HREF="node56.html#sec:colvarbias_abf">6.1</A>) that only involves atoms of
-    <TT>group1</TT>.  See section&nbsp;<A HREF="node56.html#sec:colvarbias_abf">6.1</A> for an
-    example.
+ ALT="$  \rangle$"></B></SPAN> 
+<BR><B>Context: </B> <TT>histogram</TT> 
+<BR><B>Acceptable values: </B> positive integer 
+<BR><B>Default value: </B> Colvar module restart frequency 
+<BR><B>Description: </B> The file containing histogram data is written on disk at the given time interval.
 </LI>
 </UL>
+
+<P>
+Like the ABF and metadynamics biases, <TT>histogram</TT> uses
+parameters from the colvars to define its grid.  The grid ranges from
+<TT>lowerBoundary</TT> to <TT>upperBoundary</TT>, and the bin width is
+set by the <TT>width</TT> parameter.
 
 <P>
 <BR><HR>

@@ -7,8 +7,8 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
   Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
 <HTML>
 <HEAD>
-<TITLE>distanceZ: projection of a distance vector on an axis.</TITLE>
-<META NAME="description" CONTENT="distanceZ: projection of a distance vector on an axis.">
+<TITLE>Biasing and analysis methods</TITLE>
+<META NAME="description" CONTENT="Biasing and analysis methods">
 <META NAME="keywords" CONTENT="colvars-refman-lammps">
 <META NAME="resource-type" CONTENT="document">
 <META NAME="distribution" CONTENT="global">
@@ -19,258 +19,196 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 
 <LINK REL="STYLESHEET" HREF="colvars-refman-lammps.css">
 
-<LINK REL="next" HREF="node26.html">
-<LINK REL="previous" HREF="node24.html">
-<LINK REL="up" HREF="node23.html">
+<LINK REL="next" HREF="node32.html">
+<LINK REL="previous" HREF="node21.html">
+<LINK REL="up" HREF="colvars-refman-lammps.html">
 <LINK REL="next" HREF="node26.html">
 </HEAD>
 
 <BODY >
 
 <DIV CLASS="navigation"><!--Navigation Panel-->
-<A NAME="tex2html517"
+<A NAME="tex2html520"
   HREF="node26.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
-<A NAME="tex2html511"
-  HREF="node23.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
-<A NAME="tex2html505"
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html514"
+  HREF="colvars-refman-lammps.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html508"
   HREF="node24.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
-<A NAME="tex2html513"
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html516"
   HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
-<A NAME="tex2html515"
-  HREF="node71.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html518"
+  HREF="node32.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
 <BR>
-<B> Next:</B> <A NAME="tex2html518"
-  HREF="node26.html">distanceXY: modulus of the</A>
-<B> Up:</B> <A NAME="tex2html512"
-  HREF="node23.html">List of available colvar</A>
-<B> Previous:</B> <A NAME="tex2html506"
-  HREF="node24.html">distance: center-of-mass distance between</A>
- &nbsp; <B>  <A NAME="tex2html514"
-  HREF="node1.html">Contents</A></B>
- &nbsp; <B>  <A NAME="tex2html516"
-  HREF="node71.html">Index</A></B>
+<B> Next:</B> <A NAME="tex2html521"
+  HREF="node26.html">Adaptive Biasing Force</A>
+<B> Up:</B> <A NAME="tex2html515"
+  HREF="colvars-refman-lammps.html">colvars-refman-lammps</A>
+<B> Previous:</B> <A NAME="tex2html509"
+  HREF="node24.html">Linear and polynomial combinations</A>
+ &nbsp; <B>  <A NAME="tex2html517"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html519"
+  HREF="node32.html">Index</A></B> 
 <BR>
 <BR></DIV>
 <!--End of Navigation Panel-->
 
-<H3><A NAME="SECTION00071200000000000000">
-<TT>distanceZ</TT>: projection of a distance vector on an axis.</A>
-</H3>
-The <TT>distanceZ&nbsp;{...}</TT> block defines a distance projection
-component, which can be seen as measuring the distance between two
-groups projected onto an axis, or the position of a group along such
-an axis.  The axis can be defined using either one reference group and
-a constant vector, or dynamically based on two reference groups.
-
-<UL>
-<LI><A NAME="4729"></A>
-  <B><BIG CLASS="LARGE"><TT>main </TT></BIG></B> <SPAN CLASS="MATH"><IMG
- WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
- SRC="img19.png"
- ALT="$ \langle $"></SPAN>Main group of atoms<SPAN CLASS="MATH"><IMG
- WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
- SRC="img20.png"
- ALT="$  \rangle$"></SPAN>
-<BR><B>Context: </B> <TT>distanceZ, <TT>distanceXY</TT></TT>
-<BR><B>Acceptable values: </B> Block <TT>main {...}</TT>
-<BR><B>Description: </B> Group of atoms whose position <!-- MATH
- ${\mbox{\boldmath {$r$}}}$
- -->
-<SPAN CLASS="MATH"><IMG
- WIDTH="11" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
- SRC="img46.png"
- ALT="$ {\mbox{\boldmath {$r$}}}$"></SPAN> is measured.
-</LI>
-<LI><A NAME="4752"></A>
-  <B><BIG CLASS="LARGE"><TT>ref </TT></BIG></B> <SPAN CLASS="MATH"><IMG
- WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
- SRC="img19.png"
- ALT="$ \langle $"></SPAN>Reference group of
-    atoms<SPAN CLASS="MATH"><IMG
- WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
- SRC="img20.png"
- ALT="$  \rangle$"></SPAN>
-<BR><B>Context: </B> <TT>distanceZ, <TT>distanceXY</TT></TT>
-<BR><B>Acceptable values: </B> Block <TT>ref {...}</TT>
-<BR><B>Description: </B> Reference group of atoms.  The position of its center of mass is
-    noted <!-- MATH
- ${\mbox{\boldmath {$r$}}}_1$
- -->
-<SPAN CLASS="MATH"><IMG
- WIDTH="19" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img47.png"
- ALT="$ {\mbox{\boldmath {$r$}}}_1$"></SPAN> below.
-</LI>
-<LI><A NAME="4776"></A>
-  <B><BIG CLASS="LARGE"><TT>ref2 </TT></BIG></B> <SPAN CLASS="MATH"><IMG
- WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
- SRC="img19.png"
- ALT="$ \langle $"></SPAN>Secondary reference
-    group<SPAN CLASS="MATH"><IMG
- WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
- SRC="img20.png"
- ALT="$  \rangle$"></SPAN>
-<BR><B>Context: </B> <TT>distanceZ, <TT>distanceXY</TT></TT>
-<BR><B>Acceptable values: </B> Block <TT>ref2 {...}</TT>
-<BR><B>Default value: </B> none
-<BR><B>Description: </B> Optional group of reference atoms, whose position <!-- MATH
- ${\mbox{\boldmath {$r$}}}_2$
- -->
-<SPAN CLASS="MATH"><IMG
- WIDTH="19" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img48.png"
- ALT="$ {\mbox{\boldmath {$r$}}}_2$"></SPAN> can
-    be used to define a dynamic projection axis: <!-- MATH
- ${\mbox{\boldmath {$e$}}}=(\| {\mbox{\boldmath {$r$}}}_2
-    - {\mbox{\boldmath {$r$}}}_1\|)^{-1} \times ({\mbox{\boldmath {$r$}}}_2 - {\mbox{\boldmath {$r$}}}_1)$
- -->
-<SPAN CLASS="MATH"><IMG
- WIDTH="207" HEIGHT="38" ALIGN="MIDDLE" BORDER="0"
- SRC="img49.png"
- ALT="$ {\mbox{\boldmath {$e$}}}=(\Vert {\mbox{\boldmath {$r$}}}_2
-- {\mbox{\boldmath...
-...}_1\Vert)^{-1} \times ({\mbox{\boldmath {$r$}}}_2 - {\mbox{\boldmath {$r$}}}_1)$"></SPAN>.  In this case,
-    the origin is <!-- MATH
- ${\mbox{\boldmath {$r$}}}_m = 1/2 ({\mbox{\boldmath {$r$}}}_1+{\mbox{\boldmath {$r$}}}_2)$
- -->
-<SPAN CLASS="MATH"><IMG
- WIDTH="129" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
- SRC="img50.png"
- ALT="$ {\mbox{\boldmath {$r$}}}_m = 1/2 ({\mbox{\boldmath {$r$}}}_1+{\mbox{\boldmath {$r$}}}_2)$"></SPAN>, and the value
-    of the component is <!-- MATH
- ${\mbox{\boldmath {$e$}}} \cdot ({\mbox{\boldmath {$r$}}}-{\mbox{\boldmath {$r$}}}_m)$
- -->
-<SPAN CLASS="MATH"><IMG
- WIDTH="78" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
- SRC="img51.png"
- ALT="$ {\mbox{\boldmath {$e$}}} \cdot ({\mbox{\boldmath {$r$}}}-{\mbox{\boldmath {$r$}}}_m)$"></SPAN>.
-</LI>
-<LI><A NAME="4846"></A>
-  <B><BIG CLASS="LARGE"><TT>axis </TT></BIG></B> <SPAN CLASS="MATH"><IMG
- WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
- SRC="img19.png"
- ALT="$ \langle $"></SPAN>Projection axis (&#197;)<SPAN CLASS="MATH"><IMG
- WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
- SRC="img20.png"
- ALT="$  \rangle$"></SPAN>
-<BR><B>Context: </B> <TT>distanceZ</TT>, <TT>distanceXY</TT>
-<BR><B>Acceptable values: </B> <TT>(x, y, z)</TT> triplet
-<BR><B>Default value: </B> <TT>(0.0, 0.0, 1.0)</TT>
-<BR><B>Description: </B> The three components of this vector define (when normalized) a
-    projection axis <!-- MATH
- ${\mbox{\boldmath {$e$}}}$
- -->
-<SPAN CLASS="MATH"><IMG
- WIDTH="12" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img52.png"
- ALT="$ {\mbox{\boldmath {$e$}}}$"></SPAN> for the distance vector <!-- MATH
- ${\mbox{\boldmath {$r$}}} -
-    {\mbox{\boldmath {$r$}}}_1$
- -->
-<SPAN CLASS="MATH"><IMG
- WIDTH="44" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img53.png"
- ALT="$ {\mbox{\boldmath {$r$}}} -
-{\mbox{\boldmath {$r$}}}_1$"></SPAN> joining the centers of groups <TT>ref</TT> and
-    <TT>main</TT>. The value of the component is then <!-- MATH
- ${\mbox{\boldmath {$e$}}} \cdot
-    ({\mbox{\boldmath {$r$}}}-{\mbox{\boldmath {$r$}}}_1)$
- -->
-<SPAN CLASS="MATH"><IMG
- WIDTH="75" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
- SRC="img54.png"
- ALT="$ {\mbox{\boldmath {$e$}}} \cdot
-({\mbox{\boldmath {$r$}}}-{\mbox{\boldmath {$r$}}}_1)$"></SPAN>.  The vector should be written as three
-    components separated by commas and enclosed in parentheses.
-</LI>
-<LI><A NAME="4894"></A>
-  <B><BIG CLASS="LARGE"><TT>forceNoPBC </TT></BIG></B> <SPAN CLASS="MATH"><IMG
- WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
- SRC="img19.png"
- ALT="$ \langle $"></SPAN>Calculate absolute rather than minimum-image distance?<SPAN CLASS="MATH"><IMG
- WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
- SRC="img20.png"
- ALT="$  \rangle$"></SPAN>
-<BR><B>Context: </B> <TT>distanceZ, distanceXY</TT>
-<BR><B>Acceptable values: </B> boolean
-<BR><B>Default value: </B> <TT>no</TT>
-<BR><B>Description: </B> This parameter has the same meaning as that described above for the <TT>distance</TT>
-    component.
-</LI>
-<LI><A NAME="4913"></A>
-  <B><BIG CLASS="LARGE"><TT>oneSiteSystemForce </TT></BIG></B> <SPAN CLASS="MATH"><IMG
- WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
- SRC="img19.png"
- ALT="$ \langle $"></SPAN>Measure system force on group <TT>main</TT> only?<SPAN CLASS="MATH"><IMG
- WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
- SRC="img20.png"
- ALT="$  \rangle$"></SPAN>
-<BR><B>Context: </B> <TT>distanceZ, distanceXY</TT>
-<BR><B>Acceptable values: </B> boolean
-<BR><B>Default value: </B> <TT>no</TT>
-<BR><B>Description: </B> If this is set to <TT>yes</TT>, the system force is measured along a
-    vector field (see equation&nbsp;(<A HREF="node53.html#eq:gradient_vector">15</A>) in
-    section&nbsp;<A HREF="node53.html#sec:colvarbias_abf">6.1</A>) that only involves atoms of <TT>main</TT>.
-    This option is only useful for ABF, or custom biases that compute
-    system forces.  See section&nbsp;<A HREF="node53.html#sec:colvarbias_abf">6.1</A> for details.
-</LI>
-</UL>
-This component returns a number (in &#197;) whose range is determined
-by the chosen boundary conditions.  For instance, if the <SPAN CLASS="MATH"><IMG
- WIDTH="11" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img55.png"
- ALT="$ z$"></SPAN> axis is
-used in a simulation with periodic boundaries, the returned value ranges
-between <SPAN CLASS="MATH"><IMG
- WIDTH="50" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
- SRC="img56.png"
- ALT="$ -b_{z}/2$"></SPAN> and <SPAN CLASS="MATH"><IMG
- WIDTH="36" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
- SRC="img57.png"
- ALT="$ b_{z}/2$"></SPAN>, where <SPAN CLASS="MATH"><IMG
- WIDTH="19" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
- SRC="img58.png"
- ALT="$ b_{z}$"></SPAN> is the box length
-along <SPAN CLASS="MATH"><IMG
- WIDTH="11" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img55.png"
- ALT="$ z$"></SPAN> (this behavior is disabled if <TT>forceNoPBC</TT> is set).
+<H1><A NAME="SECTION00080000000000000000"></A>
+<A NAME="sec:colvarbias"></A>
+<BR>
+Biasing and analysis methods
+</H1>
 
 <P>
+All of the biasing and analysis methods implemented (<TT>abf</TT>,
+<TT>harmonic</TT>, <TT>histogram</TT> and <TT>metadynamics</TT>)
+recognize the following options:
+
+<UL>
+<LI><A NAME="5373"></A>
+  <B><BIG CLASS="LARGE"><TT>name </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></SPAN>Identifier for the bias<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> colvar bias 
+<BR><B>Acceptable values: </B> string 
+<BR><B>Default value: </B> <TT><SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$ &lt;$"></SPAN>type of bias<SPAN CLASS="MATH"><IMG
+ WIDTH="31" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img132.png"
+ ALT="$ &gt;&lt;$"></SPAN>bias index<SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$ &gt;$"></SPAN></TT> 
+<BR><B>Description: </B> This string is used to identify the bias or analysis method in
+    output messages and to name some output files.
+
+<P>
+</LI>
+<LI><A NAME="5381"></A>
+  <B><BIG CLASS="LARGE"><TT>colvars </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></SPAN>Collective variables involved<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> colvar bias 
+<BR><B>Acceptable values: </B> space-separated list of colvar names 
+<BR><B>Description: </B> This option selects by name all the colvars to which this bias or
+    analysis will be applied.
+
+<P>
+</LI>
+<LI><A NAME="5387"></A>
+  <B><BIG CLASS="LARGE"><TT>outputEnergy </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></SPAN>Write the current bias energy to the trajectory file<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> colvar bias 
+<BR><B>Acceptable values: </B> boolean 
+<BR><B>Default value: </B> <TT>off</TT> 
+<BR><B>Description: </B> If this option is chosen and  <TT>colvarsTrajFrequency</TT> is not zero, the current value of the biasing energy will be written to the trajectory file during the simulation.
+
+<P>
+</LI>
+</UL>
+
+<P>
+<BR><HR>
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL CLASS="ChildLinks">
+<LI><A NAME="tex2html522"
+  HREF="node26.html">Adaptive Biasing Force</A>
+<UL>
+<LI><A NAME="tex2html523"
+  HREF="node26.html#SECTION00081100000000000000">ABF requirements on collective variables</A>
+<LI><A NAME="tex2html524"
+  HREF="node26.html#SECTION00081200000000000000">Parameters for ABF</A>
+<LI><A NAME="tex2html525"
+  HREF="node26.html#SECTION00081300000000000000">Output files</A>
+<LI><A NAME="tex2html526"
+  HREF="node26.html#SECTION00081400000000000000">Post-processing: reconstructing a multidimensional free energy surface</A>
+</UL>
+<BR>
+<LI><A NAME="tex2html527"
+  HREF="node27.html">Metadynamics</A>
+<UL>
+<LI><A NAME="tex2html528"
+  HREF="node27.html#SECTION00082100000000000000">Output files</A>
+<LI><A NAME="tex2html529"
+  HREF="node27.html#SECTION00082200000000000000">Performance tuning</A>
+<LI><A NAME="tex2html530"
+  HREF="node27.html#SECTION00082300000000000000">Well-tempered metadynamics</A>
+<LI><A NAME="tex2html531"
+  HREF="node27.html#SECTION00082400000000000000">Multiple-replicas metadynamics</A>
+<LI><A NAME="tex2html532"
+  HREF="node27.html#SECTION00082500000000000000">Compatibility and post-processing</A>
+</UL>
+<BR>
+<LI><A NAME="tex2html533"
+  HREF="node28.html">Harmonic restraints</A>
+<UL>
+<LI><A NAME="tex2html534"
+  HREF="node28.html#SECTION00083100000000000000">Moving restraints: steered molecular dynamics</A>
+<LI><A NAME="tex2html535"
+  HREF="node28.html#SECTION00083200000000000000">Moving restraints: umbrella sampling</A>
+<LI><A NAME="tex2html536"
+  HREF="node28.html#SECTION00083300000000000000">Changing force constant</A>
+</UL>
+<BR>
+<LI><A NAME="tex2html537"
+  HREF="node29.html">Linear restraints</A>
+<LI><A NAME="tex2html538"
+  HREF="node30.html">Adaptive Linear Bias/Experiment Directed Simulation</A>
+<LI><A NAME="tex2html539"
+  HREF="node31.html">Multidimensional histograms</A>
+</UL>
+<!--End of Table of Child-Links-->
 
 <DIV CLASS="navigation"><HR>
 <!--Navigation Panel-->
-<A NAME="tex2html517"
+<A NAME="tex2html520"
   HREF="node26.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
-<A NAME="tex2html511"
-  HREF="node23.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
-<A NAME="tex2html505"
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html514"
+  HREF="colvars-refman-lammps.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html508"
   HREF="node24.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
-<A NAME="tex2html513"
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html516"
   HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
-<A NAME="tex2html515"
-  HREF="node71.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html518"
+  HREF="node32.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
 <BR>
-<B> Next:</B> <A NAME="tex2html518"
-  HREF="node26.html">distanceXY: modulus of the</A>
-<B> Up:</B> <A NAME="tex2html512"
-  HREF="node23.html">List of available colvar</A>
-<B> Previous:</B> <A NAME="tex2html506"
-  HREF="node24.html">distance: center-of-mass distance between</A>
- &nbsp; <B>  <A NAME="tex2html514"
-  HREF="node1.html">Contents</A></B>
- &nbsp; <B>  <A NAME="tex2html516"
-  HREF="node71.html">Index</A></B> </DIV>
+<B> Next:</B> <A NAME="tex2html521"
+  HREF="node26.html">Adaptive Biasing Force</A>
+<B> Up:</B> <A NAME="tex2html515"
+  HREF="colvars-refman-lammps.html">colvars-refman-lammps</A>
+<B> Previous:</B> <A NAME="tex2html509"
+  HREF="node24.html">Linear and polynomial combinations</A>
+ &nbsp; <B>  <A NAME="tex2html517"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html519"
+  HREF="node32.html">Index</A></B> </DIV>
 <!--End of Navigation Panel-->
 <ADDRESS>
 Jérôme Hénin

@@ -7,8 +7,8 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
   Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
 <HTML>
 <HEAD>
-<TITLE>Output files</TITLE>
-<META NAME="description" CONTENT="Output files">
+<TITLE>Defining collective variables and their properties</TITLE>
+<META NAME="description" CONTENT="Defining collective variables and their properties">
 <META NAME="keywords" CONTENT="colvars-refman-namd">
 <META NAME="resource-type" CONTENT="document">
 <META NAME="distribution" CONTENT="global">
@@ -19,110 +19,78 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 
 <LINK REL="STYLESHEET" HREF="colvars-refman-namd.css">
 
-<LINK REL="previous" HREF="node9.html">
-<LINK REL="up" HREF="node6.html">
+<LINK REL="next" HREF="node16.html">
+<LINK REL="previous" HREF="node5.html">
+<LINK REL="up" HREF="colvars-refman-namd.html">
 <LINK REL="next" HREF="node11.html">
 </HEAD>
 
 <BODY >
 
 <DIV CLASS="navigation"><!--Navigation Panel-->
-<A NAME="tex2html267"
+<A NAME="tex2html269"
   HREF="node11.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
-<A NAME="tex2html261"
-  HREF="node6.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html263"
+  HREF="colvars-refman-namd.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
 <A NAME="tex2html257"
   HREF="node9.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
-<A NAME="tex2html263"
-  HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
 <A NAME="tex2html265"
-  HREF="node81.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html267"
+  HREF="node39.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
 <BR>
-<B> Next:</B> <A NAME="tex2html268"
-  HREF="node11.html">Defining collective variables and</A>
-<B> Up:</B> <A NAME="tex2html262"
-  HREF="node6.html">General parameters and input/output</A>
+<B> Next:</B> <A NAME="tex2html270"
+  HREF="node11.html">General options for a</A>
+<B> Up:</B> <A NAME="tex2html264"
+  HREF="colvars-refman-namd.html">colvars-refman-namd</A>
 <B> Previous:</B> <A NAME="tex2html258"
-  HREF="node9.html">Input state file (optional)</A>
- &nbsp; <B>  <A NAME="tex2html264"
-  HREF="node1.html">Contents</A></B>
+  HREF="node9.html">Output files</A>
  &nbsp; <B>  <A NAME="tex2html266"
-  HREF="node81.html">Index</A></B>
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html268"
+  HREF="node39.html">Index</A></B> 
 <BR>
 <BR></DIV>
 <!--End of Navigation Panel-->
 
-<H2><A NAME="SECTION00044000000000000000"></A>
-<A NAME="sec:colvars_output"></A>
+<H1><A NAME="SECTION00050000000000000000"></A>
+<A NAME="sec:colvar"></A>
 <BR>
-Output files
-</H2>
+Defining collective variables and their properties
+</H1>
 
 <P>
-During a simulation with collective variables defined, the following three output files are written:
+In the configuration file each colvar is defined by the keyword
+<TT>colvar</TT>, followed by its configuration options within curly braces: <TT>colvar&nbsp;{&nbsp;...&nbsp;}</TT>.  One of these options is the name of a colvar component: for example, including <TT>rmsd {&nbsp;...&nbsp;}</TT> defines the colvar as a RMSD function.  <SPAN  CLASS="textit">In most applications, only one component is used, and the component is equal to the colvar.</SPAN>
 
 <P>
-
-<UL>
-<LI>a <SPAN  CLASS="textit">state file</SPAN>, named <SPAN  CLASS="textit">output</SPAN><TT>.colvars.state</TT>; this file is in ASCII format
-, regardless of the value of <TT>binaryOutput</TT> in the NAMD configuration; to continue the simulation, the name of this file must be included in the configuration of the next run using <TT>colvarsInput</TT>, together with the other NAMD output files;
+The full list of colvar components can be found in Section&nbsp;<A HREF="node21.html#sec:cvc">5</A>, with the syntax to select atoms in Section&nbsp;<A HREF="node16.html#sec:colvar_atom_groups">4</A>. 
+The following section lists several options to control the behavior of a single colvar, regardless of its type.
 
 <P>
-</LI>
-<LI>if the NAMD parameter <TT>restartFreq</TT> or  the parameter <TT>colvarsRestartFrequency</TT> is larger than zero, a <SPAN  CLASS="textit">restart file</SPAN> named <SPAN  CLASS="textit">restart</SPAN><TT>.colvars.state</TT> is written every that many steps: this file is equivalent to the final state file;
+<BR><HR>
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
 
-<P>
-</LI>
-<LI>if the parameter <TT>colvarsTrajFrequency</TT> is greater than 0 (default: 100), a <SPAN  CLASS="textit">trajectory file</SPAN> is written during the simulation: its name is <SPAN  CLASS="textit">output</SPAN><TT>.colvars.traj</TT>; unlike the state file, it is not needed to restart a simulation, but can be used later for post-processing and analysis.
-
-<P>
-</LI>
+<UL CLASS="ChildLinks">
+<LI><A NAME="tex2html271"
+  HREF="node11.html">General options for a collective variable</A>
+<LI><A NAME="tex2html272"
+  HREF="node12.html">Artificial boundary potentials (walls)</A>
+<LI><A NAME="tex2html273"
+  HREF="node13.html">Trajectory output</A>
+<LI><A NAME="tex2html274"
+  HREF="node14.html">Extended Lagrangian.</A>
+<LI><A NAME="tex2html275"
+  HREF="node15.html">Statistical analysis of collective variables</A>
 </UL>
-
-<P>
-Other output files may be written by specific methods applied to the colvars (e.g.&nbsp;by the ABF method, see <A HREF="node56.html#sec:colvarbias_abf">6.1</A>, or the metadynamics method, see <A HREF="node62.html#sec:colvarbias_meta">6.2</A>).
-Like the colvar trajectory file, they are needed only for analyzing, not continuing a simulation.
-All such files' names also begin with the prefix <SPAN  CLASS="textit">output</SPAN>.
-
-<P>
-Finally, the total energy of all biases or restraints applied to the colvars appears under the NAMD standard output, under the MISC column.
-
-<P>
-
-<DIV CLASS="navigation"><HR>
-<!--Navigation Panel-->
-<A NAME="tex2html267"
-  HREF="node11.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
-<A NAME="tex2html261"
-  HREF="node6.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
-<A NAME="tex2html257"
-  HREF="node9.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
-<A NAME="tex2html263"
-  HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
-<A NAME="tex2html265"
-  HREF="node81.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
-<BR>
-<B> Next:</B> <A NAME="tex2html268"
-  HREF="node11.html">Defining collective variables and</A>
-<B> Up:</B> <A NAME="tex2html262"
-  HREF="node6.html">General parameters and input/output</A>
-<B> Previous:</B> <A NAME="tex2html258"
-  HREF="node9.html">Input state file (optional)</A>
- &nbsp; <B>  <A NAME="tex2html264"
-  HREF="node1.html">Contents</A></B>
- &nbsp; <B>  <A NAME="tex2html266"
-  HREF="node81.html">Index</A></B> </DIV>
-<!--End of Navigation Panel-->
+<!--End of Table of Child-Links-->
+<BR><HR>
 <ADDRESS>
 Jérôme Hénin
 2015-03-03

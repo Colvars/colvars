@@ -7,8 +7,8 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
   Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
 <HTML>
 <HEAD>
-<TITLE>Using the cv command</TITLE>
-<META NAME="description" CONTENT="Using the cv command">
+<TITLE>Configuration syntax for the collective variables module</TITLE>
+<META NAME="description" CONTENT="Configuration syntax for the collective variables module">
 <META NAME="keywords" CONTENT="colvars-refman-vmd">
 <META NAME="resource-type" CONTENT="document">
 <META NAME="distribution" CONTENT="global">
@@ -21,276 +21,270 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 
 <LINK REL="next" HREF="node8.html">
 <LINK REL="previous" HREF="node6.html">
-<LINK REL="up" HREF="node6.html">
+<LINK REL="up" HREF="node5.html">
 <LINK REL="next" HREF="node8.html">
 </HEAD>
 
 <BODY >
 
 <DIV CLASS="navigation"><!--Navigation Panel-->
-<A NAME="tex2html216"
+<A NAME="tex2html218"
   HREF="node8.html">
 <IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
-<A NAME="tex2html210"
-  HREF="node6.html">
+<A NAME="tex2html212"
+  HREF="node5.html">
 <IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
-<A NAME="tex2html204"
+<A NAME="tex2html206"
   HREF="node6.html">
 <IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
-<A NAME="tex2html212"
+<A NAME="tex2html214"
   HREF="node1.html">
 <IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
-<A NAME="tex2html214"
-  HREF="node75.html">
+<A NAME="tex2html216"
+  HREF="node34.html">
 <IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
 <BR>
-<B> Next:</B> <A NAME="tex2html217"
-  HREF="node8.html">Configuration syntax for the</A>
-<B> Up:</B> <A NAME="tex2html211"
-  HREF="node6.html">General parameters and input/output</A>
-<B> Previous:</B> <A NAME="tex2html205"
-  HREF="node6.html">General parameters and input/output</A>
- &nbsp; <B>  <A NAME="tex2html213"
-  HREF="node1.html">Contents</A></B> 
+<B> Next:</B> <A NAME="tex2html219"
+  HREF="node8.html">Input state file (optional)</A>
+<B> Up:</B> <A NAME="tex2html213"
+  HREF="node5.html">General parameters and input/output</A>
+<B> Previous:</B> <A NAME="tex2html207"
+  HREF="node6.html">Using the cv command</A>
  &nbsp; <B>  <A NAME="tex2html215"
-  HREF="node75.html">Index</A></B> 
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html217"
+  HREF="node34.html">Index</A></B> 
 <BR>
 <BR></DIV>
 <!--End of Navigation Panel-->
 
-<H2><A NAME="SECTION00041000000000000000"></A>
-<A NAME="sec:colvars_mdengine_params"></A>
+<H2><A NAME="SECTION00042000000000000000"></A>
+<A NAME="sec:colvars_config"></A>
 <BR>
-Using the <TT>cv</TT> command
+Configuration syntax for the collective variables module
 </H2>
 
 <P>
-The colvars module is accessed in VMD through the command <TT>cv</TT>.
-The command must be used the first time as <TT>cv molid </TT><SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img19.png"
- ALT="$ &lt;$"></SPAN>molid<SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img20.png"
- ALT="$ &gt;$"></SPAN></SPAN> to set up the collective variables module for a given molecule.
-In all following uses, the <TT>cv</TT> command will continue operating on the same molecule, regardless of its ``top'' status.
-To use the <TT>cv</TT> command on a different molecule, use <TT>cv delete</TT> first and then <TT>cv molid </TT><SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img19.png"
- ALT="$ &lt;$"></SPAN>molid<SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img20.png"
- ALT="$ &gt;$"></SPAN></SPAN>.
-Invoking the <TT>cv</TT> command with no arguments prints a help screen.
+The colvars configuration is usually read using the commands <TT>cv configfile</TT> or <TT>cv config</TT>.
+The syntax of the colvars configuration is ``<TT>keyword value</TT>'', where the keyword and its value are separated by any white space.
+The following rules apply:
 
 <P>
-The list of parameters of the <TT>cv</TT> command is:
 
 <UL>
-<LI><TT>molid</TT> <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img19.png"
- ALT="$ &lt;$"></SPAN>molid<SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img20.png"
- ALT="$ &gt;$"></SPAN></SPAN>: set up the colvars module, where <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img19.png"
- ALT="$ &lt;$"></SPAN>molid<SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img20.png"
- ALT="$ &gt;$"></SPAN></SPAN> is the identifier of a valid VMD molecule as provided e.g.&nbsp;by <TT>molinfo</TT>: for example, use <TT>cv molid top</TT> to set the colvars module for the top molecule;
+<LI>keywords are case-insensitive (<TT>upperBoundary</TT> is the same as <TT>upperboundary</TT> and <TT>UPPERBOUNDARY</TT>): their string values are however case-sensitive (e.g.&nbsp;file names);
+
+<P>
 </LI>
-<LI><TT>configfile</TT> <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img19.png"
- ALT="$ &lt;$"></SPAN>file name<SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img20.png"
- ALT="$ &gt;$"></SPAN></SPAN>: read the colvars configuration from the contents of the specified file; the <TT>cv</TT> command can be invoked multiple times with this argument and/or with the <TT>config</TT> argument; see <A HREF="node8.html#sec:colvars_config">2.2</A> for the configuration syntax;
+<LI>a long value or a list of multiple values can be distributed across multiple lines by using curly braces, ``<TT>{</TT>'' and ``<TT>}</TT>'': the opening brace ``<TT>{</TT>'' must occur on the same line as the keyword, following a space character or other white space; the closing brace ``<TT>}</TT>'' can be at any position after that;
+
+<P>
 </LI>
-<LI><TT>config</TT> <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img19.png"
- ALT="$ &lt;$"></SPAN>string<SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img20.png"
- ALT="$ &gt;$"></SPAN></SPAN>: read the colvars configuration from the given text string; see <A HREF="node8.html#sec:colvars_config">2.2</A> for the configuration syntax;
+<LI>many keywords are nested, and are only meaningful within a specific context: for every keyword documented in the following, the ``parent'' keyword that defines such context is also indicated;
+
+<P>
+
+<P>
 </LI>
-<LI><TT>reset</TT>: delete all internal configuration, while keeping information about the VMD molecule;
+<LI>Tcl commands and variables are not available, but it is possible to include Tcl variables and constructs inside a configuration string: for example, it is possible to load the atom selection $<SPAN  CLASS="textit">sel</SPAN> into an atom group (see <A HREF="node17.html#sec:colvar_atom_groups_sel">4.1</A>) using <TT>atomNumbers { [$sel get serial] }</TT> inside a configuration string read by <TT>cv config</TT>;
+
+<P>
 </LI>
-<LI><TT>delete</TT>: delete the colvars module; after this, the module can be reissued again using <TT>cv molid</TT>;
+<LI>if a keyword requiring a boolean value (<TT>yes|on|true</TT> or <TT>no|off|false</TT>) is provided without an explicit value, it defaults to `<TT>yes|on|true</TT>'; for example, `<TT>outputAppliedForce</TT>' may be used as shorthand for `<TT>outputAppliedForce on</TT>';
+
+<P>
 </LI>
-<LI><TT>list</TT>: return a list of all colvars currently defined (see <A HREF="node11.html#sec:colvar">3</A>, <A HREF="node22.html#sec:cvc">5</A> and <A HREF="node17.html#sec:colvar_atom_groups">4</A> for how to configure a collective variable);
-</LI>
-<LI><TT>list biases</TT>: return a list of all collective variable biases (i.e.&nbsp;sampling and analysis algorithms) currently defined (see <A HREF="node55.html#sec:colvarbias">6</A> for how to configure a bias);
-</LI>
-<LI><TT>load</TT> <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img19.png"
- ALT="$ &lt;$"></SPAN>file name<SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img20.png"
- ALT="$ &gt;$"></SPAN></SPAN>: load a collective variables state file, typically produced during a simulation; this parameter requires that the corresponding configuration has already been loaded by <TT>configfile</TT> or <TT>config</TT>; see <A HREF="node10.html#sec:colvars_output">2.4</A> for a brief description of this file; the contents of this file are not required for as long as the VMD molecule has valid coordinates and <TT>cv update</TT> is used;
-</LI>
-<LI><TT>save</TT> <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img19.png"
- ALT="$ &lt;$"></SPAN>prefix<SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img20.png"
- ALT="$ &gt;$"></SPAN></SPAN>: save the current state in a file whose name begins with the given argument; if any of the biases have additional output files defined, those are saved as well;
-</LI>
-<LI><TT>update</TT>: recalculate all colvars and biases based on the current atomic coordinates;
-</LI>
-<LI><TT>printframe</TT>: return a summary of the current frame, in a format equivalent to a line of the collective variables trajectory file;
-</LI>
-<LI><TT>printframelabels</TT>: return text labels to annotate <TT>printframe</TT>'s output;
-</LI>
-<LI><TT>frame</TT>: return the current frame number, where variables are calculated;
-</LI>
-<LI><TT>frame</TT> <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img19.png"
- ALT="$ &lt;$"></SPAN>new frame<SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img20.png"
- ALT="$ &gt;$"></SPAN></SPAN>: set the frame number (must be a valid frame number of the VMD molecule);
-</LI>
-<LI><TT>colvar</TT> <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img19.png"
- ALT="$ &lt;$"></SPAN>name<SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img20.png"
- ALT="$ &gt;$"></SPAN></SPAN> <TT>update</TT>: recalculate the colvar <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img19.png"
- ALT="$ &lt;$"></SPAN>name<SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img20.png"
- ALT="$ &gt;$"></SPAN></SPAN>;
-</LI>
-<LI><TT>colvar</TT> <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img19.png"
- ALT="$ &lt;$"></SPAN>name<SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img20.png"
- ALT="$ &gt;$"></SPAN></SPAN> <TT>value</TT>: return the current value of the colvar <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img19.png"
- ALT="$ &lt;$"></SPAN>name<SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img20.png"
- ALT="$ &gt;$"></SPAN></SPAN>;
-</LI>
-<LI><TT>colvar</TT> <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img19.png"
- ALT="$ &lt;$"></SPAN>name<SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img20.png"
- ALT="$ &gt;$"></SPAN></SPAN> <TT>delete</TT>: delete the colvar <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img19.png"
- ALT="$ &lt;$"></SPAN>name<SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img20.png"
- ALT="$ &gt;$"></SPAN></SPAN>;
-</LI>
-<LI><TT>colvar</TT> <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img19.png"
- ALT="$ &lt;$"></SPAN>name<SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img20.png"
- ALT="$ &gt;$"></SPAN></SPAN> <TT>addforce</TT> <SPAN  CLASS="textit">force</SPAN>: apply the given force on <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img19.png"
- ALT="$ &lt;$"></SPAN>name<SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img20.png"
- ALT="$ &gt;$"></SPAN></SPAN> (this option is provided for compatibility with NAMD, but has no effect in VMD);
-</LI>
-<LI><TT>bias</TT> <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img19.png"
- ALT="$ &lt;$"></SPAN>name<SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img20.png"
- ALT="$ &gt;$"></SPAN></SPAN> <TT>update</TT>: recalculate the bias <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img19.png"
- ALT="$ &lt;$"></SPAN>name<SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img20.png"
- ALT="$ &gt;$"></SPAN></SPAN>;
-</LI>
-<LI><TT>bias</TT> <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img19.png"
- ALT="$ &lt;$"></SPAN>name<SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img20.png"
- ALT="$ &gt;$"></SPAN></SPAN> <TT>energy</TT>: return the current energy of the bias <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img19.png"
- ALT="$ &lt;$"></SPAN>name<SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img20.png"
- ALT="$ &gt;$"></SPAN></SPAN>;
-</LI>
-<LI><TT>bias</TT> <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img19.png"
- ALT="$ &lt;$"></SPAN>name<SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img20.png"
- ALT="$ &gt;$"></SPAN></SPAN> <TT>delete</TT>: delete the bias <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img19.png"
- ALT="$ &lt;$"></SPAN>name<SPAN CLASS="MATH"><IMG
- WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
- SRC="img20.png"
- ALT="$ &gt;$"></SPAN></SPAN>.
+<LI>the hash character <TT>#</TT> indicates a comment: all text in the same line following this character will be ignored.
+
+<P>
 </LI>
 </UL>
 
 <P>
+The following keywords are available in the global context of the colvars configuration, i.e.&nbsp;they are not nested inside other keywords:
+
+<UL>
+<LI><A NAME="3710"></A>
+  <B><BIG CLASS="LARGE"><TT>colvarsTrajFrequency </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$ \langle $"></SPAN>Colvar value trajectory frequency<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> global 
+<BR><B>Acceptable values: </B> positive integer 
+<BR><B>Default value: </B> <TT>100</TT> 
+<BR><B>Description: </B> The values of each colvar (and of other related quantities, if requested) are written to the file <SPAN  CLASS="textit">output</SPAN><TT>.colvars.traj</TT> every these many steps throughout the simulation.
+    If the value is <TT>0</TT>, such trajectory file is not written.
+    For optimization the output is buffered, and synchronized with the disk only when the restart file is being written.
 
 <P>
+</LI>
+<LI><A NAME="3721"></A>
+  <B><BIG CLASS="LARGE"><TT>colvarsTrajAppend </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$ \langle $"></SPAN>Append to trajectory file?<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> global 
+<BR><B>Acceptable values: </B> boolean 
+<BR><B>Default value: </B> <TT>off</TT> 
+<BR><B>Description: </B> If this flag is enabled, and a file with the same name as the trajectory file is already present, new data is appended to that file.
+    Otherwise, a new file is created with the same name that overwrites the previous file.
+
+<P>
+</LI>
+<LI><A NAME="3733"></A>
+  <B><BIG CLASS="LARGE"><TT>colvarsRestartFrequency </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$ \langle $"></SPAN>Colvar module restart frequency<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> global 
+<BR><B>Acceptable values: </B> positive integer 
+<BR><B>Default value: </B> <TT>restartFreq</TT> 
+<BR><B>Description: </B> Allows to choose a different restart frequency for the collective
+    variables module.  Redefining it may be useful to trace the time
+    evolution of those few properties which are not written to the
+    trajectory file for reasons of disk space.
+
+<P>
+</LI>
+<LI><A NAME="3741"></A>
+  <B><BIG CLASS="LARGE"><TT>indexFile </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$ \langle $"></SPAN>Index file for atom selection (GROMACS ``ndx'' format)<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> global 
+<BR><B>Acceptable values: </B> UNIX filename 
+<BR><B>Description: </B> This option reads an index file (usually with a <TT>.ndx</TT>
+    extension) as produced by the <TT>make_ndx</TT> tool of GROMACS.
+    This keyword may be repeated to load multiple index files: the same group name cannot appear in multiple index files.
+    
+    The names of index groups contained in this file can then be used to define
+    atom groups with the <TT>indexGroup</TT> keyword.
+    Other supported methods to select atoms are described in <A HREF="node16.html#sec:colvar_atom_groups">4</A>.
+
+<P>
+</LI>
+<LI><A NAME="3754"></A>
+  <B><BIG CLASS="LARGE"><TT>analysis </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$ \langle $"></SPAN>Turn on run-time statistical analysis<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> global 
+<BR><B>Acceptable values: </B> boolean 
+<BR><B>Default value: </B> <TT>off</TT> 
+<BR><B>Description: </B> If this flag is enabled, each colvar is instructed to perform
+    whatever run-time statistical analysis it is configured to, such as
+    correlation functions, or running averages and standard deviations.
+    See section&nbsp;<A HREF="node15.html#sec:colvar_acf">3.5</A> for details.
+
+<P>
+</LI>
+</UL>
+
+<P>
+The example below defines the same configuration shown in Fig.&nbsp;<A HREF="node4.html#fig:colvars_diagram">1</A>.  The options within the <TT>colvar</TT> blocks are described in <A HREF="node10.html#sec:colvar">3</A> and <A HREF="node21.html#sec:cvc">5</A>, the ones within the <TT>harmonic</TT> and <TT>histogram</TT> blocks in <A HREF="node26.html#sec:colvarbias">6</A>.
+<SPAN  CLASS="textbf">Note:</SPAN> <SPAN  CLASS="textit">except </SPAN><TT>colvar</TT><SPAN  CLASS="textit">, none of the keywords shown is mandatory</SPAN>.
+<BR>
+<P>
+<TT>colvar {
+<BR>&nbsp;&nbsp;# difference of two distances
+<BR>&nbsp;&nbsp;name d 
+<BR>&nbsp;&nbsp;width 0.2  # 0.2 &#197; of estimated fluctuation width 
+<BR>&nbsp;&nbsp;distance {
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;componentCoeff  1.0
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;group1 { atomNumbers 1 2 }
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;group2 { atomNumbers 3 4 5 }
+<BR>&nbsp;&nbsp;}
+<BR>&nbsp;&nbsp;distance {
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;componentCoeff -1.0
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;group1 { atomNumbers 7 }
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;group2 { atomNumbers 8 9 10 }
+<BR>&nbsp;&nbsp;}
+<BR>}
+<BR>
+<BR>
+colvar {
+<BR>&nbsp;&nbsp;name c
+<BR>&nbsp;&nbsp;coordNum {
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;cutoff 6.0
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;group1 { atomNumbersRange  1-10 }
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;group2 { atomNumbersRange 11-20 }
+<BR>&nbsp;&nbsp;}
+<BR>}
+<BR></TT>
+<TT>
+<BR>
+colvar {
+<BR>&nbsp;&nbsp;name alpha
+<BR>&nbsp;&nbsp;alpha {
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;psfSegID PROT
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;residueRange 1-10
+<BR>&nbsp;&nbsp;}
+<BR>}</TT>
+<TT>
+<BR>
+<BR>
+harmonic {
+<BR>&nbsp;&nbsp;colvars d c
+<BR>&nbsp;&nbsp;centers 3.0 4.0
+<BR>&nbsp;&nbsp;forceConstant 5.0
+<BR>}
+<BR></TT>
+<P>
+<TT>histogram {
+<BR>&nbsp;&nbsp;colvars c alpha
+<BR>}
+<BR></TT>
+
+<P>
+Section <A HREF="node10.html#sec:colvar">3</A> explains how to define a colvar and its behavior, regardless of its specific functional form.
+To define colvars that are appropriate to a specific physical system, Section <A HREF="node16.html#sec:colvar_atom_groups">4</A> documents how to select atoms, and section <A HREF="node21.html#sec:cvc">5</A> lists all of the available functional forms, which we call ``colvar components''.
+Finally, section <A HREF="node26.html#sec:colvarbias">6</A> lists the available methods and algorithms to perform biased simulations and multidimensional analysis of colvars.
 
 <P>
 
 <DIV CLASS="navigation"><HR>
 <!--Navigation Panel-->
-<A NAME="tex2html216"
+<A NAME="tex2html218"
   HREF="node8.html">
 <IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
-<A NAME="tex2html210"
-  HREF="node6.html">
+<A NAME="tex2html212"
+  HREF="node5.html">
 <IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
-<A NAME="tex2html204"
+<A NAME="tex2html206"
   HREF="node6.html">
 <IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
-<A NAME="tex2html212"
+<A NAME="tex2html214"
   HREF="node1.html">
 <IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
-<A NAME="tex2html214"
-  HREF="node75.html">
+<A NAME="tex2html216"
+  HREF="node34.html">
 <IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
 <BR>
-<B> Next:</B> <A NAME="tex2html217"
-  HREF="node8.html">Configuration syntax for the</A>
-<B> Up:</B> <A NAME="tex2html211"
-  HREF="node6.html">General parameters and input/output</A>
-<B> Previous:</B> <A NAME="tex2html205"
-  HREF="node6.html">General parameters and input/output</A>
- &nbsp; <B>  <A NAME="tex2html213"
-  HREF="node1.html">Contents</A></B> 
+<B> Next:</B> <A NAME="tex2html219"
+  HREF="node8.html">Input state file (optional)</A>
+<B> Up:</B> <A NAME="tex2html213"
+  HREF="node5.html">General parameters and input/output</A>
+<B> Previous:</B> <A NAME="tex2html207"
+  HREF="node6.html">Using the cv command</A>
  &nbsp; <B>  <A NAME="tex2html215"
-  HREF="node75.html">Index</A></B> </DIV>
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html217"
+  HREF="node34.html">Index</A></B> </DIV>
 <!--End of Navigation Panel-->
 <ADDRESS>
 Jérôme Hénin

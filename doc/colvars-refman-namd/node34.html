@@ -7,8 +7,8 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
   Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
 <HTML>
 <HEAD>
-<TITLE>selfCoordNum: coordination number between atoms within a group.</TITLE>
-<META NAME="description" CONTENT="selfCoordNum: coordination number between atoms within a group.">
+<TITLE>Colvars scripting</TITLE>
+<META NAME="description" CONTENT="Colvars scripting">
 <META NAME="keywords" CONTENT="colvars-refman-namd">
 <META NAME="resource-type" CONTENT="document">
 <META NAME="distribution" CONTENT="global">
@@ -19,96 +19,71 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 
 <LINK REL="STYLESHEET" HREF="colvars-refman-namd.css">
 
-<LINK REL="next" HREF="node36.html">
-<LINK REL="previous" HREF="node33.html">
-<LINK REL="up" HREF="node23.html">
+<LINK REL="next" HREF="node39.html">
+<LINK REL="previous" HREF="node26.html">
+<LINK REL="up" HREF="colvars-refman-namd.html">
 <LINK REL="next" HREF="node35.html">
 </HEAD>
 
 <BODY >
 
 <DIV CLASS="navigation"><!--Navigation Panel-->
-<A NAME="tex2html665"
+<A NAME="tex2html699"
   HREF="node35.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
-<A NAME="tex2html659"
-  HREF="node23.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
-<A NAME="tex2html653"
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html693"
+  HREF="colvars-refman-namd.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html687"
   HREF="node33.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
-<A NAME="tex2html661"
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html695"
   HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
-<A NAME="tex2html663"
-  HREF="node81.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html697"
+  HREF="node39.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
 <BR>
-<B> Next:</B> <A NAME="tex2html666"
-  HREF="node35.html">hBond: hydrogen bond between</A>
-<B> Up:</B> <A NAME="tex2html660"
-  HREF="node23.html">List of available colvar</A>
-<B> Previous:</B> <A NAME="tex2html654"
-  HREF="node33.html">coordNum: coordination number between</A>
- &nbsp; <B>  <A NAME="tex2html662"
-  HREF="node1.html">Contents</A></B>
- &nbsp; <B>  <A NAME="tex2html664"
-  HREF="node81.html">Index</A></B>
+<B> Next:</B> <A NAME="tex2html700"
+  HREF="node35.html">Managing the colvars module</A>
+<B> Up:</B> <A NAME="tex2html694"
+  HREF="colvars-refman-namd.html">colvars-refman-namd</A>
+<B> Previous:</B> <A NAME="tex2html688"
+  HREF="node33.html">Scripted biases</A>
+ &nbsp; <B>  <A NAME="tex2html696"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html698"
+  HREF="node39.html">Index</A></B> 
 <BR>
 <BR></DIV>
 <!--End of Navigation Panel-->
 
-<H3><A NAME="SECTION000711100000000000000">
-<TT>selfCoordNum</TT>: coordination number between atoms within a group.</A>
-</H3>
-The <TT>selfCoordNum {...}</TT> block defines
-a coordination number similarly to the component <TT>coordNum</TT>,
-but the function is summed over atom pairs within <TT>group1</TT>:
-<P></P>
-<DIV ALIGN="CENTER" CLASS="mathdisplay"><A NAME="eq:cvc_selfCoordNum"></A><!-- MATH
- \begin{equation}
-C (\mathtt{group1}) \; = \;
-  \sum_{i\in\mathtt{group1}}\sum_{j > i} {
-    \frac{1 - (|\mathbf{x}_{i}-\mathbf{x}_{j}|/d_{0})^{n}}{
-      1 - (|\mathbf{x}_{i}-\mathbf{x}_{j}|/d_{0})^{m} }
-  }
-\end{equation}
- -->
-<TABLE CLASS="equation" CELLPADDING="0" WIDTH="100%" ALIGN="CENTER">
-<TR VALIGN="MIDDLE">
-<TD NOWRAP ALIGN="CENTER"><SPAN CLASS="MATH"><IMG
- WIDTH="324" HEIGHT="60" ALIGN="MIDDLE" BORDER="0"
- SRC="img84.png"
- ALT="$\displaystyle C (\mathtt{group1}) \; = \; \sum_{i\in\mathtt{group1}}\sum_{j &gt; i...
-...}\vert/d_{0})^{n}}{ 1 - (\vert\mathbf{x}_{i}-\mathbf{x}_{j}\vert/d_{0})^{m} } }$"></SPAN></TD>
-<TD NOWRAP CLASS="eqno" WIDTH="10" ALIGN="RIGHT">
-(<SPAN CLASS="arabic">4</SPAN>)</TD></TR>
-</TABLE></DIV>
-<BR CLEAR="ALL"><P></P>
-The keywords accepted by <TT>selfCoordNum</TT> are a subset of
-those accepted by <TT>coordNum</TT>, namely <TT>group1</TT>
-(here defining <SPAN  CLASS="textit">all</SPAN> of the atoms to be considered),
-<TT>cutoff</TT>, <TT>expNumer</TT>, and <TT>expDenom</TT>.
+<H1><A NAME="SECTION00090000000000000000"></A>
+<A NAME="sec:scripting"></A>
+<BR>
+Colvars scripting
+</H1>
 
 <P>
-This component returns a dimensionless number, which ranges from
-approximately 0 (all interatomic distances much larger than the
-cutoff) to <!-- MATH
- $N_{\mathtt{group1}} \times (N_{\mathtt{group1}} - 1) / 2$
- -->
-<SPAN CLASS="MATH"><IMG
- WIDTH="186" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
- SRC="img85.png"
- ALT="$ N_{\mathtt{group1}} \times (N_{\mathtt{group1}} - 1) / 2$"></SPAN> (all
-distances within the cutoff).  For performance reasons,
-<TT>group1</TT> should be of limited size, because the cost of the
-loop over all pairs grows as <!-- MATH
- $N_{\mathtt{group1}}^2$
- -->
-<SPAN CLASS="MATH"><IMG
- WIDTH="57" HEIGHT="38" ALIGN="MIDDLE" BORDER="0"
- SRC="img86.png"
- ALT="$ N_{\mathtt{group1}}^2$"></SPAN>.
+Collective variables and biases can be added, queried and deleted through the scripting command
+<TT>cv</TT>, with the following syntax: <TT>cv&nbsp;<SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$ &lt;$"></B></SPAN>subcommand<SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img23.png"
+ ALT="$ &gt;$"></B></SPAN> [args...]</TT>
+for which the available subcommands are listed in the next subsections.
+For example, to query the value of a collective variable named <TT>myVar</TT>,
+use the following syntax: <TT>set value [cv colvar myVar value]</TT>.
+
+<P>
+This interface is particularly useful to implement custom biases as scripted colvar forces.
+See the <TT>scriptedColvarForces</TT> option in <A HREF="node33.html#sec:scripted_biases">6.7</A>.
+Note that scripting commands may not be used directly in the NAMD configuration file before the first 
+<TT>run</TT> or <TT>minimize</TT> statement. That is, they may be used within the callback procedures
+(e.g. <TT>calc_colvar_forces</TT>) or in the NAMD config file after a <TT>run</TT> or
+<TT>minimize</TT> statement.
 
 <P>
 <BR><HR>
@@ -116,9 +91,14 @@ loop over all pairs grows as <!-- MATH
 <A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
 
 <UL CLASS="ChildLinks">
-<LI><A NAME="tex2html667"
-  HREF="node35.html"><TT>hBond</TT>: hydrogen bond between two
-  atoms.</A>
+<LI><A NAME="tex2html701"
+  HREF="node35.html">Managing the colvars module</A>
+<LI><A NAME="tex2html702"
+  HREF="node36.html">Input and output</A>
+<LI><A NAME="tex2html703"
+  HREF="node37.html">Accessing collective variables</A>
+<LI><A NAME="tex2html704"
+  HREF="node38.html">Accessing biases</A>
 </UL>
 <!--End of Table of Child-Links-->
 <BR><HR>

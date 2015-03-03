@@ -7,8 +7,8 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
   Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
 <HTML>
 <HEAD>
-<TITLE>rmsd: root mean square displacement (RMSD) from reference positions.</TITLE>
-<META NAME="description" CONTENT="rmsd: root mean square displacement (RMSD) from reference positions.">
+<TITLE>About this document ...</TITLE>
+<META NAME="description" CONTENT="About this document ...">
 <META NAME="keywords" CONTENT="colvars-refman-vmd">
 <META NAME="resource-type" CONTENT="document">
 <META NAME="distribution" CONTENT="global">
@@ -19,272 +19,59 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 
 <LINK REL="STYLESHEET" HREF="colvars-refman-vmd.css">
 
-<LINK REL="next" HREF="node37.html">
-<LINK REL="previous" HREF="node34.html">
-<LINK REL="up" HREF="node23.html">
-<LINK REL="next" HREF="node37.html">
+<LINK REL="previous" HREF="node35.html">
+<LINK REL="up" HREF="colvars-refman-vmd.html">
 </HEAD>
 
 <BODY >
 
 <DIV CLASS="navigation"><!--Navigation Panel-->
-<A NAME="tex2html681"
-  HREF="node37.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
-<A NAME="tex2html675"
-  HREF="node23.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next_g.png"> 
+<A NAME="tex2html704"
+  HREF="colvars-refman-vmd.html">
 <IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
-<A NAME="tex2html669"
+<A NAME="tex2html700"
   HREF="node35.html">
 <IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
-<A NAME="tex2html677"
+<A NAME="tex2html706"
   HREF="node1.html">
 <IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
-<A NAME="tex2html679"
-  HREF="node75.html">
+<A NAME="tex2html708"
+  HREF="node34.html">
 <IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
 <BR>
-<B> Next:</B> <A NAME="tex2html682"
-  HREF="node37.html">Advanced usage of the</A>
-<B> Up:</B> <A NAME="tex2html676"
-  HREF="node23.html">List of available colvar</A>
-<B> Previous:</B> <A NAME="tex2html670"
-  HREF="node35.html">hBond: hydrogen bond between</A>
- &nbsp; <B>  <A NAME="tex2html678"
+<B> Up:</B> <A NAME="tex2html705"
+  HREF="colvars-refman-vmd.html">colvars-refman-vmd</A>
+<B> Previous:</B> <A NAME="tex2html701"
+  HREF="node35.html">Bibliography</A>
+ &nbsp; <B>  <A NAME="tex2html707"
   HREF="node1.html">Contents</A></B> 
- &nbsp; <B>  <A NAME="tex2html680"
-  HREF="node75.html">Index</A></B> 
+ &nbsp; <B>  <A NAME="tex2html709"
+  HREF="node34.html">Index</A></B> 
 <BR>
 <BR></DIV>
 <!--End of Navigation Panel-->
 
-<H3><A NAME="SECTION000711200000000000000">
-<TT>rmsd</TT>: root mean square displacement  (RMSD) from reference positions.</A>
-</H3>
-The block <TT>rmsd&nbsp;{...}</TT> defines the root mean square replacement
-(RMSD) of a group of atoms with respect to a reference structure.  For
-each set of coordinates <!-- MATH
- $\{ \mathbf{x}_1(t), \mathbf{x}_2(t), \ldots
-\mathbf{x}_N(t) \}$
- -->
-<SPAN CLASS="MATH"><IMG
- WIDTH="163" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
- SRC="img87.png"
- ALT="$ \{ \mathbf{x}_1(t), \mathbf{x}_2(t), \ldots
-\mathbf{x}_N(t) \}$"></SPAN>, the colvar component <TT>rmsd</TT> calculates the
-optimal rotation
-<!-- MATH
- $U^{\{\mathbf{x}_{i}(t)\}\rightarrow\{\mathbf{x}_{i}^{\mathrm{(ref)}}\}}$
- -->
-<SPAN CLASS="MATH"><IMG
- WIDTH="106" HEIGHT="49" ALIGN="MIDDLE" BORDER="0"
- SRC="img88.png"
- ALT="$ U^{\{\mathbf{x}_{i}(t)\}\rightarrow\{\mathbf{x}_{i}^{\mathrm{(ref)}}\}}$"></SPAN>
-that best superimposes the coordinates <!-- MATH
- $\{\mathbf{x}_{i}(t)\}$
- -->
-<SPAN CLASS="MATH"><IMG
- WIDTH="54" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
- SRC="img89.png"
- ALT="$ \{\mathbf{x}_{i}(t)\}$"></SPAN> onto a
-set of reference coordinates <!-- MATH
- $\{\mathbf{x}_{i}^{\mathrm{(ref)}}\}$
- -->
-<SPAN CLASS="MATH"><IMG
- WIDTH="55" HEIGHT="46" ALIGN="MIDDLE" BORDER="0"
- SRC="img90.png"
- ALT="$ \{\mathbf{x}_{i}^{\mathrm{(ref)}}\}$"></SPAN>.
-Both the current and the reference coordinates are centered on their
-centers of geometry, <!-- MATH
- $\mathbf{x}_{\mathrm{cog}}(t)$
- -->
-<SPAN CLASS="MATH"><IMG
- WIDTH="51" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
- SRC="img91.png"
- ALT="$ \mathbf{x}_{\mathrm{cog}}(t)$"></SPAN> and
-<!-- MATH
- $\mathbf{x}_{\mathrm{cog}}^{\mathrm{(ref)}}$
- -->
-<SPAN CLASS="MATH"><IMG
- WIDTH="38" HEIGHT="46" ALIGN="MIDDLE" BORDER="0"
- SRC="img92.png"
- ALT="$ \mathbf{x}_{\mathrm{cog}}^{\mathrm{(ref)}}$"></SPAN>.  The root mean square
-displacement is then defined as:
-<P></P>
-<DIV ALIGN="CENTER" CLASS="mathdisplay"><A NAME="eq:cvc_rmsd"></A><!-- MATH
- \begin{equation}
-{ \mathrm{RMSD}(\{\mathbf{x}_{i}(t)\},
-    \{\mathbf{x}_{i}^{\mathrm{(ref)}}\}) } \; = \; \sqrt{
-    \frac{1}{N} \sum_{i=1}^{N} \left|
-      U
-      \left(\mathbf{x}_{i}(t) - \mathbf{x}_{\mathrm{cog}}(t)\right) -
-      \left(\mathbf{x}_{i}^{\mathrm{(ref)}} -
-        \mathbf{x}_{\mathrm{cog}}^{\mathrm{(ref)}} \right) \right|^{2} }
-\end{equation}
- -->
-<TABLE CLASS="equation" CELLPADDING="0" WIDTH="100%" ALIGN="CENTER">
-<TR VALIGN="MIDDLE">
-<TD NOWRAP ALIGN="CENTER"><SPAN CLASS="MATH"><IMG
- WIDTH="533" HEIGHT="74" ALIGN="MIDDLE" BORDER="0"
- SRC="img93.png"
- ALT="$\displaystyle { \mathrm{RMSD}(\{\mathbf{x}_{i}(t)\}, \{\mathbf{x}_{i}^{\mathrm{...
-...{(ref)}} - \mathbf{x}_{\mathrm{cog}}^{\mathrm{(ref)}} \right) \right\vert^{2} }$"></SPAN></TD>
-<TD NOWRAP CLASS="eqno" WIDTH="10" ALIGN="RIGHT">
-(<SPAN CLASS="arabic">5</SPAN>)</TD></TR>
-</TABLE></DIV>
-<BR CLEAR="ALL"><P></P>
-The optimal rotation
-<!-- MATH
- $U^{\{\mathbf{x}_{i}(t)\}\rightarrow\{\mathbf{x}_{i}^{\mathrm{(ref)}}\}}$
- -->
-<SPAN CLASS="MATH"><IMG
- WIDTH="106" HEIGHT="49" ALIGN="MIDDLE" BORDER="0"
- SRC="img88.png"
- ALT="$ U^{\{\mathbf{x}_{i}(t)\}\rightarrow\{\mathbf{x}_{i}^{\mathrm{(ref)}}\}}$"></SPAN>
-is calculated within the formalism developed in
-reference&nbsp;[<A
- HREF="node76.html#Coutsias2004">3</A>], which guarantees a continuous
-dependence of
-<!-- MATH
- $U^{\{\mathbf{x}_{i}(t)\}\rightarrow\{\mathbf{x}_{i}^{\mathrm{(ref)}}\}}$
- -->
-<SPAN CLASS="MATH"><IMG
- WIDTH="106" HEIGHT="49" ALIGN="MIDDLE" BORDER="0"
- SRC="img88.png"
- ALT="$ U^{\{\mathbf{x}_{i}(t)\}\rightarrow\{\mathbf{x}_{i}^{\mathrm{(ref)}}\}}$"></SPAN>
-with respect to <!-- MATH
- $\{\mathbf{x}_{i}(t)\}$
- -->
-<SPAN CLASS="MATH"><IMG
- WIDTH="54" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
- SRC="img89.png"
- ALT="$ \{\mathbf{x}_{i}(t)\}$"></SPAN>.  The options for <TT>rmsd</TT>
-are:
-
-<UL>
-<LI><A NAME="5224"></A>
-  <B><BIG CLASS="LARGE"><TT>atoms </TT></BIG></B> <SPAN CLASS="MATH"><IMG
- WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
- SRC="img21.png"
- ALT="$ \langle $"></SPAN>Atom group<SPAN CLASS="MATH"><IMG
- WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
- SRC="img22.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> <TT>rmsd</TT> 
-<BR><B>Acceptable values: </B> <TT>atoms&nbsp;{...}</TT> block 
-<BR><B>Description: </B> Defines the group of atoms of which the RMSD should be calculated.
-    Optimal fit options (such as <TT>refPositions</TT> and
-    <TT>rotateReference</TT>) should typically NOT be set within this
-    block. Exceptions to this rule are the special cases discussed in
-    the <SPAN  CLASS="textit">Advanced usage</SPAN> paragraph below.
-
+<H1><A NAME="SECTION000110000000000000000">
+About this document ...</A>
+</H1>
+ <P>
+This document was generated using the
+<A HREF="http://www.latex2html.org/"><STRONG>LaTeX</STRONG>2<tt>HTML</tt></A> translator Version 2008 (1.71)
 <P>
-</LI>
-<LI><A NAME="5243"></A>
-  <B><BIG CLASS="LARGE"><TT>refPositions </TT></BIG></B> <SPAN CLASS="MATH"><IMG
- WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
- SRC="img21.png"
- ALT="$ \langle $"></SPAN>Reference coordinates<SPAN CLASS="MATH"><IMG
- WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
- SRC="img22.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> <TT>rmsd</TT> 
-<BR><B>Acceptable values: </B> space-separated list of <TT>(x, y, z)</TT> triplets 
-<BR><B>Description: </B> This option (mutually exclusive with <TT>refPositionsFile</TT>)
-    sets the reference coordinates.  If only <TT>centerReference</TT> is <TT>on</TT>, the list can be a single (x, y, z) triplet; if also <TT>rotateReference</TT> is <TT>on</TT>, the list should be as long as the atom group.  This option 
-    is independent from that with the same keyword within the
-    <TT>atoms&nbsp;{...}</TT> block (see <A HREF="node17.html#sec:colvar_atom_groups">4</A>).  The latter (and related fitting
-    options for the atom group) are normally not needed,
-    and should be omitted altogether except for advanced usage cases.
-
-<P>
-
-</LI>
-<LI><A NAME="5297"></A>
-  <B><BIG CLASS="LARGE"><TT>refPositionsFile </TT></BIG></B> <SPAN CLASS="MATH"><IMG
- WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
- SRC="img21.png"
- ALT="$ \langle $"></SPAN>Reference coordinates file<SPAN CLASS="MATH"><IMG
- WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
- SRC="img22.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> <TT>rmsd</TT> 
-<BR><B>Acceptable values: </B> UNIX filename 
-<BR><B>Description: </B> This option (mutually exclusive with <TT>refPositions</TT>) sets
-    the PDB file name for the reference coordinates to be compared
-    with.  The format is the same as that provided by
-    <TT>refPositionsFile</TT> within an atom group definition.
-
-<P>
-</LI>
-<LI><A NAME="5314"></A>
-  <B><BIG CLASS="LARGE"><TT>refPositionsCol </TT></BIG></B> <SPAN CLASS="MATH"><IMG
- WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
- SRC="img21.png"
- ALT="$ \langle $"></SPAN>PDB column containing atom flags<SPAN CLASS="MATH"><IMG
- WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
- SRC="img22.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> <TT>rmsd</TT> 
-<BR><B>Acceptable values: </B> <TT>O</TT>, <TT>B</TT>, <TT>X</TT>, <TT>Y</TT>, or <TT>Z</TT> 
-<BR><B>Description: </B> If <TT>refPositionsFile</TT> is defined, and the file contains
-    all the atoms in the topology, this option may be povided to
-    set which PDB field is
-    used to flag the reference coordinates for <TT>atoms</TT>.
-
-<P>
-</LI>
-<LI><A NAME="5336"></A>
-  <B><BIG CLASS="LARGE"><TT>refPositionsColValue </TT></BIG></B> <SPAN CLASS="MATH"><IMG
- WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
- SRC="img21.png"
- ALT="$ \langle $"></SPAN>Atom selection flag in the PDB column<SPAN CLASS="MATH"><IMG
- WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
- SRC="img22.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> <TT>rmsd</TT> 
-<BR><B>Acceptable values: </B> positive decimal 
-<BR><B>Description: </B> If defined, this value identifies in the PDB column
-    <TT>refPositionsCol</TT> of the file <TT>refPositionsFile</TT>
-    which atom positions are to be read.  Otherwise, all positions
-    with a non-zero value are read.
-
-<P>
-</LI>
-</UL>
-This component returns a positive real number (in &#197;).
-
-<P>
-
-<DIV CLASS="navigation"><HR>
-<!--Navigation Panel-->
-<A NAME="tex2html681"
-  HREF="node37.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
-<A NAME="tex2html675"
-  HREF="node23.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
-<A NAME="tex2html669"
-  HREF="node35.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
-<A NAME="tex2html677"
-  HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
-<A NAME="tex2html679"
-  HREF="node75.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+Copyright &#169; 1993, 1994, 1995, 1996,
+Nikos Drakos, 
+Computer Based Learning Unit, University of Leeds.
 <BR>
-<B> Next:</B> <A NAME="tex2html682"
-  HREF="node37.html">Advanced usage of the</A>
-<B> Up:</B> <A NAME="tex2html676"
-  HREF="node23.html">List of available colvar</A>
-<B> Previous:</B> <A NAME="tex2html670"
-  HREF="node35.html">hBond: hydrogen bond between</A>
- &nbsp; <B>  <A NAME="tex2html678"
-  HREF="node1.html">Contents</A></B> 
- &nbsp; <B>  <A NAME="tex2html680"
-  HREF="node75.html">Index</A></B> </DIV>
-<!--End of Navigation Panel-->
+Copyright &#169; 1997, 1998, 1999,
+<A HREF="http://www.maths.mq.edu.au/~ross/">Ross Moore</A>, 
+Mathematics Department, Macquarie University, Sydney.
+<P>
+The command line arguments were: <BR>
+ <STRONG>latex2html</STRONG> <TT>colvars-refman-vmd.tex -html_version 4.0,unicode -local_icons -split 5</TT>
+<P>
+The translation was initiated by Jérôme Hénin on 2015-03-03
+<BR><HR>
 <ADDRESS>
 Jérôme Hénin
 2015-03-03
