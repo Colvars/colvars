@@ -43,11 +43,7 @@
         
         \noindent\textsf{\bfseries\Huge COLLECTIVE VARIABLES MODULE\\}
         
-        \noindent\textsf{\bfseries\Huge Reference manual
-        \ifdefined\MDENGINE
-        for \MDENGINE{}
-        \fi
-        \\}
+        \noindent\textsf{\bfseries\Huge Reference manual for \MDENGINE{} }
         
         \noindent\textsf{\Large \today}
 
@@ -56,10 +52,7 @@
 
   \includegraphics[width=\textwidth]{cover}
   \textsf{\large Giacomo Fiorin, J\'er\^ome H\'enin%
-\ifdefined\LAMMPS%
-, Axel Kohlmeyer
-\fi
-  }
+\cvlammpsonly{, Axel Kohlmeyer} }
 \end{titlepage}
 
 \newpage
@@ -93,6 +86,12 @@
 \newcommand{\cvsubsubsec}[1]{\subsubsection{#1}}
 
 \cvnamdonly{
+\newcommand{\outputName}{\emph{outputName}}
+\newcommand{\restartName}{\emph{restartName}}
+\newcommand{\inputName}{\emph{inputName}}
+}
+
+\cvvmdonly{
 \newcommand{\outputName}{\emph{outputName}}
 \newcommand{\restartName}{\emph{restartName}}
 \newcommand{\inputName}{\emph{inputName}}

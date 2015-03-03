@@ -1,0 +1,359 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Moving frame of reference.</TITLE>
+<META NAME="description" CONTENT="Moving frame of reference.">
+<META NAME="keywords" CONTENT="colvars-refman-vmd">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="colvars-refman-vmd.css">
+
+<LINK REL="next" HREF="node20.html">
+<LINK REL="previous" HREF="node18.html">
+<LINK REL="up" HREF="node17.html">
+<LINK REL="next" HREF="node20.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A NAME="tex2html389"
+  HREF="node20.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html383"
+  HREF="node17.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html377"
+  HREF="node18.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html385"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html387"
+  HREF="node75.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html390"
+  HREF="node20.html">Treatment of periodic boundary</A>
+<B> Up:</B> <A NAME="tex2html384"
+  HREF="node17.html">Selecting atoms for colvars:</A>
+<B> Previous:</B> <A NAME="tex2html378"
+  HREF="node18.html">Selection keywords</A>
+ &nbsp; <B>  <A NAME="tex2html386"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html388"
+  HREF="node75.html">Index</A></B> 
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+
+<H2><A NAME="SECTION00062000000000000000"></A> 
+<A NAME="sec:colvar_atom_groups_ref_frame"></A>
+<BR>
+Moving frame of reference.
+</H2>
+
+<P>
+The following options define an automatic calculation of an optimal translation (<TT>centerReference</TT>) or optimal rotation (<TT>rotateReference</TT>), that superimposes the positions of this group to a provided set of reference coordinates.
+This can allow, for example, to effectively remove from certain colvars the effects of molecular tumbling and of diffusion.
+Given the set of atomic positions <!-- MATH
+ $\mathbf{x}_{i}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="17" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img37.png"
+ ALT="$ \mathbf{x}_{i}$"></SPAN>, the colvar <SPAN CLASS="MATH"><IMG
+ WIDTH="15" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img38.png"
+ ALT="$ \xi$"></SPAN> can be defined on a set of roto-translated positions <!-- MATH
+ $\mathbf{x}_{i}' = R(\mathbf{x}_{i} - \mathbf{x}^{\mathrm{C}}) + \mathbf{x}^{\mathrm{ref}}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="154" HEIGHT="40" ALIGN="MIDDLE" BORDER="0"
+ SRC="img39.png"
+ ALT="$ \mathbf{x}_{i}' = R(\mathbf{x}_{i} - \mathbf{x}^{\mathrm{C}}) + \mathbf{x}^{\mathrm{ref}}$"></SPAN>.
+<!-- MATH
+ $\mathbf{x}^{\mathrm{C}}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="22" HEIGHT="18" ALIGN="BOTTOM" BORDER="0"
+ SRC="img40.png"
+ ALT="$ \mathbf{x}^{\mathrm{C}}$"></SPAN> is the geometric center of the <!-- MATH
+ $\mathbf{x}_{i}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="17" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img37.png"
+ ALT="$ \mathbf{x}_{i}$"></SPAN>, <SPAN CLASS="MATH"><IMG
+ WIDTH="15" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img41.png"
+ ALT="$ R$"></SPAN> is the optimal rotation matrix to the reference positions and <!-- MATH
+ $\mathbf{x}^{\mathrm{ref}}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="28" HEIGHT="18" ALIGN="BOTTOM" BORDER="0"
+ SRC="img42.png"
+ ALT="$ \mathbf{x}^{\mathrm{ref}}$"></SPAN> is the geometric center of the reference positions.
+
+<P>
+Components that are defined based on pairwise distances are naturally invariant under global roto-translations.
+Other components are instead affected by global rotations or translations: however, they can be made invariant if they are expressed in the frame of reference of a chosen group of atoms, using the <TT>centerReference</TT> and <TT>rotateReference</TT> options.
+Finally, a few components are defined by convention using a roto-translated frame (e.g. the minimal RMSD): for these components, <TT>centerReference</TT> and <TT>rotateReference</TT> are enabled by default.
+In typical applications, the default settings result in the expected behavior.
+
+<P>
+
+<UL>
+<LI><A NAME="4561"></A>
+  <B><BIG CLASS="LARGE"><TT>centerReference </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$ \langle $"></SPAN>Implicitly remove translations for this group<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> atom group 
+<BR><B>Acceptable values: </B> boolean 
+<BR><B>Default value: </B> <TT>off</TT> 
+<BR><B>Description: </B> If this option is <TT>on</TT>, the center of geometry of the group will be aligned with that of the reference positions provided by either <TT>refPositions</TT> or <TT>refPositionsFile</TT>.
+    Colvar components will only have access to the aligned positions.
+<SPAN  CLASS="textbf">Note</SPAN>: unless otherwise specified, <TT>rmsd</TT> and <TT>eigenvector</TT> set this option to <TT>on</TT> <SPAN  CLASS="textit">by default</SPAN>.
+
+<P>
+</LI>
+<LI><A NAME="4580"></A>
+  <B><BIG CLASS="LARGE"><TT>rotateReference </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$ \langle $"></SPAN>Implicitly remove rotations for this group<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> atom group 
+<BR><B>Acceptable values: </B> boolean 
+<BR><B>Default value: </B> <TT>off</TT> 
+<BR><B>Description: </B> If this option is <TT>on</TT>, the coordinates of this group will be optimally superimposed to the reference positions provided by either <TT>refPositions</TT> or <TT>refPositionsFile</TT>.
+    The rotation will be performed around the center of geometry if <TT>centerReference</TT> is <TT>on</TT>, around the origin otherwise.
+    The algorithm used is the same employed by the <TT>orientation</TT> colvar component&nbsp;[<A
+ HREF="node76.html#Coutsias2004">3</A>].
+    Forces applied to the atoms of this group will also be implicitly rotated back to the original frame.
+    <SPAN  CLASS="textbf">Note</SPAN>: unless otherwise specified, <TT>rmsd</TT> and <TT>eigenvector</TT> set this option to <TT>on</TT> <SPAN  CLASS="textit">by default</SPAN>.
+
+<P>
+</LI>
+<LI><A NAME="4603"></A>
+  <B><BIG CLASS="LARGE"><TT>refPositions </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$ \langle $"></SPAN>Reference positions for fitting (&#197;)<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> atom group 
+<BR><B>Acceptable values: </B> space-separated list of <TT>(x, y, z)</TT> triplets 
+<BR><B>Description: </B> This option provides a list of reference coordinates for <TT>centerReference</TT> or <TT>rotateReference</TT>.
+    If only <TT>centerReference</TT> is <TT>on</TT>, the list may contain a single (x, y, z) triplet; if also <TT>rotateReference</TT> is <TT>on</TT>, the list should be as long as the atom group.
+
+<P>
+
+</LI>
+<LI><A NAME="4651"></A>
+  <B><BIG CLASS="LARGE"><TT>refPositionsFile </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$ \langle $"></SPAN>File containing the reference positions for fitting<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> atom group 
+<BR><B>Acceptable values: </B> UNIX filename 
+<BR><B>Description: </B> Supplies the reference positions (mutually exclusive with <TT>refPositions</TT>).
+    Atomic positions are read differently depending on the three following scenarios:
+    <SPAN  CLASS="textit">i)</SPAN> <TT>refPositionsCol</TT> is specified: the PDB file contains a set of position larger than the size of the group, and positions are read according to the value of the column <TT>refPositionsCol</TT> (which may be the same as <TT>atomsCol</TT>).
+    <SPAN  CLASS="textit">ii)</SPAN> <TT>refPositionsCol</TT> is not specified and the PDB file contains exactly as many <TT>ATOM</TT> records as the atoms in the group: all positions are read in sequence;
+    <SPAN  CLASS="textit">iii)</SPAN> <TT>refPositionsCol</TT> is not specified and the PDB file contains the entire system: the positions corresponding to the numeric indices of the atom group are read.
+
+<P>
+</LI>
+<LI><A NAME="4667"></A>
+  <B><BIG CLASS="LARGE"><TT>refPositionsCol </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$ \langle $"></SPAN>PDB column containing atom flags<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> atom group 
+<BR><B>Acceptable values: </B> <TT>O</TT>, <TT>B</TT>, <TT>X</TT>, <TT>Y</TT>, or <TT>Z</TT> 
+<BR><B>Description: </B> Like <TT>atomsCol</TT> for <TT>atomsFile</TT>, indicates which column to use to identify the atoms in <TT>refPositionsFile</TT>.
+
+<P>
+</LI>
+<LI><A NAME="4681"></A>
+  <B><BIG CLASS="LARGE"><TT>refPositionsColValue </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$ \langle $"></SPAN>Atom selection flag in the PDB column<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> atom group 
+<BR><B>Acceptable values: </B> positive decimal 
+<BR><B>Description: </B> Analogous to <TT>atomsColValue</TT>, but applied to <TT>refPositionsCol</TT>.
+
+<P>
+</LI>
+<LI><A NAME="4689"></A>
+  <B><BIG CLASS="LARGE"><TT>refPositionsGroup </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$ \langle $"></SPAN>Use an alternate set of atoms to define the roto-translation<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> atom group 
+<BR><B>Acceptable values: </B> Block <TT>refPositionsGroup { ... }</TT> 
+<BR><B>Default value: </B> This group itself 
+<BR><B>Description: </B> If either <TT>centerReference</TT> or <TT>rotateReference</TT> is defined, this keyword defines an alternate atom group to calculate the optimal roto-translation.
+    Use this option to define a continuous rotation if the structure of the group involved changes significantly (a typical symptom would be the message ``Warning: discontinuous rotation!'').
+
+<P>
+The following example illustrates the syntax of <TT>refPositionsGroup</TT>: a group called ``<TT>atoms</TT>'' is defined, including 8 C<SPAN CLASS="MATH"><IMG
+ WIDTH="14" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img43.png"
+ ALT="$ _{\alpha}$"></SPAN> atoms of a protein of 100 residues.
+    An optimal roto-translation is calculated automatically by fitting the C<SPAN CLASS="MATH"><IMG
+ WIDTH="14" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img43.png"
+ ALT="$ _{\alpha}$"></SPAN> trace of the rest of the protein onto the coordinates provided by a PDB file.
+
+<P>
+<TT># Example: defining a group "atoms", with its coordinates expressed 
+<BR># on a roto-translated frame of reference defined by a second group
+<BR>
+atoms {
+<BR>
+<BR>&nbsp;&nbsp;psfSegID              PROT
+<BR>&nbsp;&nbsp;atomNameResidueRange  CA 41-48
+<BR>
+<BR>&nbsp;&nbsp;centerReference yes
+<BR>&nbsp;&nbsp;rotateReference yes
+<BR>&nbsp;&nbsp;refPositionsGroup {
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;# define the frame by fitting the rest of the protein
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;psfSegID              PROT PROT
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;atomNameResidueRange  CA  1-40
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;atomNameResidueRange  CA 49-100
+<BR>&nbsp;&nbsp;} 
+<BR>&nbsp;&nbsp;refPositionsFile all.pdb  # can be the entire system
+<BR>}
+<BR></TT>
+
+</LI>
+</UL>
+
+<P>
+The following two options have default values appropriate for the vast majority of applications, and are only provided to support rare, special cases.
+
+<UL>
+<LI><A NAME="4709"></A>
+  <B><BIG CLASS="LARGE"><TT>enableFitGradients </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$ \langle $"></SPAN>Include the roto-translational contribution to colvar gradients<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> atom group 
+<BR><B>Acceptable values: </B> boolean 
+<BR><B>Default value: </B> <TT>on</TT> 
+<BR><B>Description: </B> When either <TT>centerReference</TT> or <TT>rotateReference</TT> is on,
+    the gradients of some colvars include terms proportional to
+    <!-- MATH
+ $\partial{}R/\partial\mathbf{x}_{i}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="58" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img44.png"
+ ALT="$ \partial{}R/\partial\mathbf{x}_{i}$"></SPAN> (rotational gradients) and
+    <!-- MATH
+ $\partial\mathbf{x}^{\mathrm{C}}/\partial\mathbf{x}_{i}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="66" HEIGHT="38" ALIGN="MIDDLE" BORDER="0"
+ SRC="img45.png"
+ ALT="$ \partial\mathbf{x}^{\mathrm{C}}/\partial\mathbf{x}_{i}$"></SPAN> (translational gradients).
+    By default, these terms are calculated and included in the total gradients;
+    if this option is set to <TT>off</TT>, they are neglected.
+    In the case of a minimum RMSD component, this flag is automatically disabled
+    because the contributions of those derivatives to the gradients cancel out.
+
+<P>
+</LI>
+<LI><A NAME="4728"></A>
+  <B><BIG CLASS="LARGE"><TT>enableForces </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$ \langle $"></SPAN>Apply forces from this colvar to this group<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> atom group 
+<BR><B>Acceptable values: </B> boolean 
+<BR><B>Default value: </B> <TT>on</TT> 
+<BR><B>Description: </B> If this option is <TT>off</TT>, no forces are applied from this
+    colvar to this group. Other forces are not affected (i.e. those
+    from the MD engine, from other colvars, and other external forces).
+    For dummy atoms, this option is <TT>off</TT> by default.
+
+<P>
+</LI>
+</UL>
+
+<P>
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A NAME="tex2html389"
+  HREF="node20.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html383"
+  HREF="node17.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html377"
+  HREF="node18.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html385"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html387"
+  HREF="node75.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html390"
+  HREF="node20.html">Treatment of periodic boundary</A>
+<B> Up:</B> <A NAME="tex2html384"
+  HREF="node17.html">Selecting atoms for colvars:</A>
+<B> Previous:</B> <A NAME="tex2html378"
+  HREF="node18.html">Selection keywords</A>
+ &nbsp; <B>  <A NAME="tex2html386"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html388"
+  HREF="node75.html">Index</A></B> </DIV>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Jérôme Hénin
+2015-03-03
+</ADDRESS>
+</BODY>
+</HTML>

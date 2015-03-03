@@ -1,0 +1,130 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Treatment of periodic boundary conditions.</TITLE>
+<META NAME="description" CONTENT="Treatment of periodic boundary conditions.">
+<META NAME="keywords" CONTENT="colvars-refman-vmd">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="colvars-refman-vmd.css">
+
+<LINK REL="next" HREF="node21.html">
+<LINK REL="previous" HREF="node19.html">
+<LINK REL="up" HREF="node17.html">
+<LINK REL="next" HREF="node21.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A NAME="tex2html403"
+  HREF="node21.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html397"
+  HREF="node17.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html391"
+  HREF="node19.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html399"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html401"
+  HREF="node75.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html404"
+  HREF="node21.html">Computational cost of colvars</A>
+<B> Up:</B> <A NAME="tex2html398"
+  HREF="node17.html">Selecting atoms for colvars:</A>
+<B> Previous:</B> <A NAME="tex2html392"
+  HREF="node19.html">Moving frame of reference.</A>
+ &nbsp; <B>  <A NAME="tex2html400"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html402"
+  HREF="node75.html">Index</A></B> 
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+
+<H2><A NAME="SECTION00063000000000000000"></A>
+<A NAME="sec:colvar_atom_groups_wrapping"></A>
+<BR>
+Treatment of periodic boundary conditions.
+</H2>
+
+<P>
+When periodic boundary conditions are defined, the colvars module requires that the coordinates of each molecular fragment are contiguous, without ``jumps'' when a fragment is partially wrapped near a periodic boundary.
+  The colvars module relies on this assumption when calculating a group's center of geometry, but the condition may fail if the group spans different molecules.
+  In general, coordinate wrapping does not affect the calculation of colvars if each atom group satisfies one or more of the following:
+
+<P>
+<DL COMPACT>
+<DT><SPAN  CLASS="textit">i)</SPAN></DT>
+<DD>it is composed by only one atom;
+  
+</DD>
+<DT><SPAN  CLASS="textit">ii)</SPAN></DT>
+<DD>it is used by a colvar component which does not make use of its center of geometry, but only of pairwise distances (<TT>distanceInv</TT>, <TT>coordNum</TT>, <TT>hBond</TT>, <TT>alpha</TT>, <TT>dihedralPC</TT>);
+  
+</DD>
+<DT><SPAN  CLASS="textit">iii)</SPAN></DT>
+<DD>it is used by a colvar component that ignores the ill-defined Cartesian components of its center of mass (such as the <SPAN CLASS="MATH"><IMG
+ WIDTH="12" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img46.png"
+ ALT="$ x$"></SPAN> and <SPAN CLASS="MATH"><IMG
+ WIDTH="12" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img47.png"
+ ALT="$ y$"></SPAN> components of a membrane's center of mass modeled with <TT>distanceZ</TT>).
+</DD>
+</DL>
+If none of these conditions are met, wrapping may affect the calculation of collective variables: a possible solution is to use <TT>pbc wrap</TT> or <TT>pbc unwrap</TT> prior to processing a trajectory with the colvars module.
+
+<P>
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A NAME="tex2html403"
+  HREF="node21.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html397"
+  HREF="node17.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html391"
+  HREF="node19.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html399"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html401"
+  HREF="node75.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html404"
+  HREF="node21.html">Computational cost of colvars</A>
+<B> Up:</B> <A NAME="tex2html398"
+  HREF="node17.html">Selecting atoms for colvars:</A>
+<B> Previous:</B> <A NAME="tex2html392"
+  HREF="node19.html">Moving frame of reference.</A>
+ &nbsp; <B>  <A NAME="tex2html400"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html402"
+  HREF="node75.html">Index</A></B> </DIV>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Jérôme Hénin
+2015-03-03
+</ADDRESS>
+</BODY>
+</HTML>

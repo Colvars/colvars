@@ -1,0 +1,242 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Extended Lagrangian.</TITLE>
+<META NAME="description" CONTENT="Extended Lagrangian.">
+<META NAME="keywords" CONTENT="colvars-refman-vmd">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="colvars-refman-vmd.css">
+
+<LINK REL="next" HREF="node16.html">
+<LINK REL="previous" HREF="node14.html">
+<LINK REL="up" HREF="node11.html">
+<LINK REL="next" HREF="node16.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A NAME="tex2html331"
+  HREF="node16.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html325"
+  HREF="node11.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html319"
+  HREF="node14.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html327"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html329"
+  HREF="node75.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html332"
+  HREF="node16.html">Statistical analysis of collective</A>
+<B> Up:</B> <A NAME="tex2html326"
+  HREF="node11.html">Defining collective variables and</A>
+<B> Previous:</B> <A NAME="tex2html320"
+  HREF="node14.html">Trajectory output</A>
+ &nbsp; <B>  <A NAME="tex2html328"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html330"
+  HREF="node75.html">Index</A></B> 
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+
+<H2><A NAME="SECTION00054000000000000000"></A>
+<A NAME="sec:colvar_extended"></A>
+<BR>
+Extended Lagrangian.
+</H2>
+
+<P>
+The following options enable extended-system
+dynamics, where a colvar is coupled to an additional degree of freedom 
+(fictitious particle) by a harmonic spring.
+All biasing and confining forces are then applied to the extended degree
+of freedom, and the actual, geometric colvar (function of Cartesian 
+coordinates) only feels the force from the harmonic spring.
+
+<P>
+
+<UL>
+<LI><A NAME="4118"></A>
+  <B><BIG CLASS="LARGE"><TT>extendedLagrangian </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$ \langle $"></SPAN>Add extended degree of freedom<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>colvar</TT> 
+<BR><B>Acceptable values: </B> boolean 
+<BR><B>Default value: </B> <TT>off</TT> 
+<BR><B>Description: </B> Adds a fictitious particle to be coupled to the colvar by a harmonic
+    spring. The fictitious mass and the force constant of the coupling
+    potential are derived from the parameters <TT>extendedTimeConstant</TT>
+    and <TT>extendedFluctuation</TT>, described below. Biasing forces on the
+    colvar are applied to this fictitious particle, rather than to the
+    atoms directly.  This implements the extended Lagrangian formalism
+    used in some metadynamics simulations&nbsp;[<A
+ HREF="node76.html#Iannuzzi2003">2</A>].
+
+<P>
+</LI>
+<LI><A NAME="4139"></A>
+  <B><BIG CLASS="LARGE"><TT>extendedFluctuation </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$ \langle $"></SPAN>Standard deviation between the colvar and the fictitious
+    particle (colvar unit)<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>colvar</TT> 
+<BR><B>Acceptable values: </B> positive decimal 
+<BR><B>Description: </B> Defines the spring stiffness for the <TT>extendedLagrangian</TT>
+    mode, by setting the typical deviation between the colvar and the extended
+    degree of freedom due to thermal fluctuation.
+    The spring force constant is calculated internally as <!-- MATH
+ $k_B T / \sigma^2$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="61" HEIGHT="38" ALIGN="MIDDLE" BORDER="0"
+ SRC="img24.png"
+ ALT="$ k_B T / \sigma^2$"></SPAN>,
+    where <SPAN CLASS="MATH"><IMG
+ WIDTH="17" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img25.png"
+ ALT="$ \sigma$"></SPAN> is the value of <TT>extendedFluctuation</TT>.
+
+<P>
+</LI>
+<LI><A NAME="4157"></A>
+  <B><BIG CLASS="LARGE"><TT>extendedTimeConstant </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$ \langle $"></SPAN>Oscillation period of the fictitious particle (fs)<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>colvar</TT> 
+<BR><B>Acceptable values: </B> positive decimal 
+<BR><B>Default value: </B> <TT>200</TT> 
+<BR><B>Description: </B> Defines the inertial mass of the fictitious particle, by setting the
+    oscillation period of the harmonic oscillator formed by the fictitious
+    particle and the spring. The period
+    should be much larger than the MD time step to ensure accurate integration
+    of the extended particle's equation of motion.
+    The fictitious mass is calculated internally as <!-- MATH
+ $k_B T (\tau/2 \pi \sigma)^2$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="103" HEIGHT="38" ALIGN="MIDDLE" BORDER="0"
+ SRC="img26.png"
+ ALT="$ k_B T (\tau/2 \pi \sigma)^2$"></SPAN>,
+    where <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img27.png"
+ ALT="$ \tau$"></SPAN> is the period and <SPAN CLASS="MATH"><IMG
+ WIDTH="17" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img25.png"
+ ALT="$ \sigma$"></SPAN> is the typical fluctuation (see above).
+
+<P>
+</LI>
+<LI><A NAME="4175"></A>
+  <B><BIG CLASS="LARGE"><TT>extendedTemp </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$ \langle $"></SPAN>Temperature for the extended degree of freedom (K)<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>colvar</TT> 
+<BR><B>Acceptable values: </B> positive decimal 
+<BR><B>Default value: </B> thermostat temperature 
+<BR><B>Description: </B> Temperature used for calculating the coupling force constant of the
+    extended coordinate (see <TT>extendedFluctuation</TT>) and, if needed, as a
+    target temperature for extended Langevin dynamics (see
+    <TT>extendedLangevinDamping</TT>). This should normally be left at its
+    default value.
+
+<P>
+</LI>
+<LI><A NAME="4194"></A>
+  <B><BIG CLASS="LARGE"><TT>extendedLangevinDamping </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$ \langle $"></SPAN>Damping factor for extended Langevin dynamics
+    (ps<SPAN CLASS="MATH"><IMG
+ WIDTH="21" HEIGHT="20" ALIGN="BOTTOM" BORDER="0"
+ SRC="img28.png"
+ ALT="$ ^{-1}$"></SPAN>)<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>colvar</TT> 
+<BR><B>Acceptable values: </B> positive decimal 
+<BR><B>Default value: </B> <TT>1.0</TT> 
+<BR><B>Description: </B> If this is non-zero, the extended degree of freedom undergoes Langevin dynamics
+    at temperature <TT>extendedTemp</TT>. The friction force is minus
+    <TT>extendedLangevinDamping</TT> times the velocity. This is useful because
+    the extended dynamics coordinate may heat up in the transient
+    non-equilibrium regime of ABF. Use moderate damping values, to limit
+    viscous friction (potentially slowing down diffusive sampling) and stochastic
+    noise (increasing the variance of statistical measurements). In
+    doubt, use the default value.
+</LI>
+</UL>
+
+<P>
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A NAME="tex2html331"
+  HREF="node16.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html325"
+  HREF="node11.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html319"
+  HREF="node14.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html327"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html329"
+  HREF="node75.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html332"
+  HREF="node16.html">Statistical analysis of collective</A>
+<B> Up:</B> <A NAME="tex2html326"
+  HREF="node11.html">Defining collective variables and</A>
+<B> Previous:</B> <A NAME="tex2html320"
+  HREF="node14.html">Trajectory output</A>
+ &nbsp; <B>  <A NAME="tex2html328"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html330"
+  HREF="node75.html">Index</A></B> </DIV>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Jérôme Hénin
+2015-03-03
+</ADDRESS>
+</BODY>
+</HTML>

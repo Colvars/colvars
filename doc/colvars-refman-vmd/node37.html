@@ -1,0 +1,139 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Advanced usage of the rmsd component.</TITLE>
+<META NAME="description" CONTENT="Advanced usage of the rmsd component.">
+<META NAME="keywords" CONTENT="colvars-refman-vmd">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="colvars-refman-vmd.css">
+
+<LINK REL="next" HREF="node38.html">
+<LINK REL="previous" HREF="node36.html">
+<LINK REL="up" HREF="node23.html">
+<LINK REL="next" HREF="node38.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A NAME="tex2html695"
+  HREF="node38.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html689"
+  HREF="node23.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html683"
+  HREF="node36.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html691"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html693"
+  HREF="node75.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html696"
+  HREF="node38.html">eigenvector: projection of the</A>
+<B> Up:</B> <A NAME="tex2html690"
+  HREF="node23.html">List of available colvar</A>
+<B> Previous:</B> <A NAME="tex2html684"
+  HREF="node36.html">rmsd: root mean square</A>
+ &nbsp; <B>  <A NAME="tex2html692"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html694"
+  HREF="node75.html">Index</A></B> 
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+
+<H3><A NAME="SECTION000711300000000000000">
+Advanced usage of the <TT>rmsd</TT> component.</A>
+</H3> 
+In the standard usage as described above, the <TT>rmsd</TT> component
+calculates a minimum RMSD, that is, current coordinates are optimally
+fitted onto the same reference coordinates that are used to 
+compute the RMSD value. The fit itself is handled by the atom group
+object, whose parameters are automatically set by the <TT>rmsd</TT>
+component.
+For very specific applications, however, it may be
+useful to control the fitting process separately from the definition
+of the reference coordinates, to evaluate various types of
+non-minimal RMSD values. This can be achieved by setting the
+related options (<TT>refPositions</TT>, etc.) explicitly in the
+atom group block. This allows for the following non-standard cases:
+
+<P>
+
+<OL>
+<LI>applying the optimal translation, but no rotation
+(<TT>rotateReference off</TT>), to bias or restrain the shape and
+orientation, but not the position of the atom group;
+</LI>
+<LI>applying the optimal rotation, but no translation
+(<TT>translateReference off</TT>), to bias or restrain the shape and
+position, but not the orientation of the atom group;
+</LI>
+<LI>disabling the application of optimal roto-translations, which
+lets the RMSD component decribe the deviation of atoms
+from fixed positions in the laboratory frame: this allows for custom
+positional restraints within the colvars module;
+</LI>
+<LI>fitting the atomic positions to different reference coordinates
+than those used in the RMSD calculation itself;
+</LI>
+<LI>applying the optimal rotation and/or translation from a separate
+atom group, defined through <TT>refPositionsGroup</TT>: the RMSD then
+reflects the deviation from reference coordinates in a separate, moving
+reference frame.
+</LI>
+</OL>
+
+<P>
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A NAME="tex2html695"
+  HREF="node38.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html689"
+  HREF="node23.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html683"
+  HREF="node36.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html691"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html693"
+  HREF="node75.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html696"
+  HREF="node38.html">eigenvector: projection of the</A>
+<B> Up:</B> <A NAME="tex2html690"
+  HREF="node23.html">List of available colvar</A>
+<B> Previous:</B> <A NAME="tex2html684"
+  HREF="node36.html">rmsd: root mean square</A>
+ &nbsp; <B>  <A NAME="tex2html692"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html694"
+  HREF="node75.html">Index</A></B> </DIV>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Jérôme Hénin
+2015-03-03
+</ADDRESS>
+</BODY>
+</HTML>

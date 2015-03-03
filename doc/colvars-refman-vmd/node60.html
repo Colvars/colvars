@@ -1,0 +1,177 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Post-processing: reconstructing a multidimensional free energy surface</TITLE>
+<META NAME="description" CONTENT="Post-processing: reconstructing a multidimensional free energy surface">
+<META NAME="keywords" CONTENT="colvars-refman-vmd">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="colvars-refman-vmd.css">
+
+<LINK REL="previous" HREF="node59.html">
+<LINK REL="up" HREF="node56.html">
+<LINK REL="next" HREF="node61.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A NAME="tex2html1035"
+  HREF="node61.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html1029"
+  HREF="node56.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html1025"
+  HREF="node59.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html1031"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html1033"
+  HREF="node75.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html1036"
+  HREF="node61.html">Metadynamics</A>
+<B> Up:</B> <A NAME="tex2html1030"
+  HREF="node56.html">Adaptive Biasing Force</A>
+<B> Previous:</B> <A NAME="tex2html1026"
+  HREF="node59.html">Output files</A>
+ &nbsp; <B>  <A NAME="tex2html1032"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html1034"
+  HREF="node75.html">Index</A></B> 
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+
+<H3><A NAME="SECTION00081400000000000000">
+Post-processing: reconstructing a multidimensional free energy surface</A>
+</H3>
+
+<P>
+If a one-dimensional calculation is performed, the estimated free energy
+gradient is automatically integrated and a potential of mean force is written
+under the file name <TT>&lt;outputName&gt;.pmf</TT>, in a plain text format that
+can be read by most data plotting and analysis programs (e.g. gnuplot).
+
+<P>
+In dimension 2 or greater, integrating the discretized gradient becomes non-trivial. The
+standalone utility <TT>abf_integrate</TT> is provided to perform that task.
+<TT>abf_integrate</TT> reads the gradient data and uses it to perform a Monte-Carlo (M-C)
+simulation in discretized collective variable space (specifically, on the same grid
+used by ABF to discretize the free energy gradient).
+By default, a history-dependent bias (similar in spirit to metadynamics) is used:
+at each M-C step, the bias at the current position is incremented by a preset amount
+(the <SPAN  CLASS="textit">hill height</SPAN>).
+Upon convergence, this bias counteracts optimally the underlying gradient;
+it is negated to obtain the estimate of the free energy surface.
+
+<P>
+<TT>abf_integrate</TT> is invoked using the command-line:
+<PRE>
+integrate &lt;gradient_file&gt; [-n &lt;nsteps&gt;] [-t &lt;temp&gt;] [-m (0|1)]
+                          [-h &lt;hill_height&gt;] [-f &lt;factor&gt;]
+</PRE>
+
+<P>
+The gradient file name is provided first, followed by other parameters in any order.
+They are described below, with their default value in square brackets:
+
+<UL>
+<LI><TT>-n</TT>: number of M-C steps to be performed; by default, a minimal number of
+steps is chosen based on the size of the grid, and the integration runs until a convergence
+criterion is satisfied (based on the RMSD between the target gradient and the real PMF gradient)
+</LI>
+<LI><TT>-t</TT>: temperature for M-C sampling (unrelated to the simulation temperature)
+  [500&nbsp;K]
+</LI>
+<LI><TT>-m</TT>: use metadynamics-like biased sampling? (0 = false) [1]
+</LI>
+<LI><TT>-h</TT>: increment for the history-dependent bias (``hill height'') [0.01&nbsp;kcal/mol]
+</LI>
+<LI><TT>-f</TT>: if non-zero, this factor is used to scale the increment stepwise in the 
+  second half of the M-C sampling to refine the free energy estimate [0.5]
+</LI>
+</UL>
+
+<P>
+Using the default values of all parameters should give reasonable results in most cases.
+
+<P>
+
+<P><P>
+<BR>
+<TT>abf_integrate</TT> produces the following output files:
+
+<UL>
+<LI><TT>&lt;gradient_file&gt;.pmf</TT>: computed free energy surface
+</LI>
+<LI><TT>&lt;gradient_file&gt;.histo</TT>: histogram of M-C sampling (not
+usable in a straightforward way if the history-dependent bias has been applied)
+</LI>
+<LI><TT>&lt;gradient_file&gt;.est</TT>: estimated gradient of the calculated free energy surface
+(from finite differences)
+</LI>
+<LI><TT>&lt;gradient_file&gt;.dev</TT>: deviation between the user-provided numerical gradient
+and the actual gradient of the calculated free energy surface. The RMS norm of this vector
+field is used as a convergence criteria and displayed periodically during the integration.
+</LI>
+</UL>
+
+<P>
+<SPAN  CLASS="textbf">Note:</SPAN> Typically, the ``deviation'' vector field does not
+vanish as the integration converges. This happens because the
+numerical estimate of the gradient does not exactly derive from a
+potential, due to numerical approximations used to obtain it (finite
+sampling and discretization on a grid).
+
+<P>
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A NAME="tex2html1035"
+  HREF="node61.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html1029"
+  HREF="node56.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html1025"
+  HREF="node59.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html1031"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html1033"
+  HREF="node75.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html1036"
+  HREF="node61.html">Metadynamics</A>
+<B> Up:</B> <A NAME="tex2html1030"
+  HREF="node56.html">Adaptive Biasing Force</A>
+<B> Previous:</B> <A NAME="tex2html1026"
+  HREF="node59.html">Output files</A>
+ &nbsp; <B>  <A NAME="tex2html1032"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html1034"
+  HREF="node75.html">Index</A></B> </DIV>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Jérôme Hénin
+2015-03-03
+</ADDRESS>
+</BODY>
+</HTML>

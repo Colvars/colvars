@@ -1,0 +1,172 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>inertiaZ: total moment of inertia of a group of atoms around a chosen axis.</TITLE>
+<META NAME="description" CONTENT="inertiaZ: total moment of inertia of a group of atoms around a chosen axis.">
+<META NAME="keywords" CONTENT="colvars-refman-vmd">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="colvars-refman-vmd.css">
+
+<LINK REL="next" HREF="node42.html">
+<LINK REL="previous" HREF="node40.html">
+<LINK REL="up" HREF="node23.html">
+<LINK REL="next" HREF="node42.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A NAME="tex2html751"
+  HREF="node42.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html745"
+  HREF="node23.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html739"
+  HREF="node40.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html747"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html749"
+  HREF="node75.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html752"
+  HREF="node42.html">orientation: orientation from reference</A>
+<B> Up:</B> <A NAME="tex2html746"
+  HREF="node23.html">List of available colvar</A>
+<B> Previous:</B> <A NAME="tex2html740"
+  HREF="node40.html">inertia: total moment of</A>
+ &nbsp; <B>  <A NAME="tex2html748"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html750"
+  HREF="node75.html">Index</A></B> 
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+
+<H3><A NAME="SECTION000711700000000000000">
+<TT>inertiaZ</TT>: total moment of inertia of a group of atoms around a chosen axis.</A>
+</H3>
+The block <TT>inertiaZ&nbsp;{...}</TT> defines the
+parameters for calculating the component along the axis <!-- MATH
+ $\mathbf{e}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="12" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img108.png"
+ ALT="$ \mathbf{e}$"></SPAN> of the moment of inertia of a group of atomic
+positions <!-- MATH
+ $\{ \mathbf{x}_1(t), \mathbf{x}_2(t), \ldots \mathbf{x}_N(t)
+\}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="163" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img87.png"
+ ALT="$ \{ \mathbf{x}_1(t), \mathbf{x}_2(t), \ldots
+\mathbf{x}_N(t) \}$"></SPAN> with respect to their center of geometry,
+<!-- MATH
+ $\mathbf{x}_{\mathrm{cog}}(t)$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="51" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img91.png"
+ ALT="$ \mathbf{x}_{\mathrm{cog}}(t)$"></SPAN>:
+<P></P>
+<DIV ALIGN="CENTER" CLASS="mathdisplay"><A NAME="eq:colvar_inertia_z"></A><!-- MATH
+ \begin{equation}
+I_{\mathbf{e}} \; = \; \sum_{i=1}^{N} \left(\left(\mathbf{x}_{i}(t) -
+      \mathbf{x}_{\mathrm{cog}}(t)\right)\cdot\mathbf{e}\right)^{2}
+\end{equation}
+ -->
+<TABLE CLASS="equation" CELLPADDING="0" WIDTH="100%" ALIGN="CENTER">
+<TR VALIGN="MIDDLE">
+<TD NOWRAP ALIGN="CENTER"><SPAN CLASS="MATH"><IMG
+ WIDTH="221" HEIGHT="67" ALIGN="MIDDLE" BORDER="0"
+ SRC="img109.png"
+ ALT="$\displaystyle I_{\mathbf{e}} \; = \; \sum_{i=1}^{N} \left(\left(\mathbf{x}_{i}(t) - \mathbf{x}_{\mathrm{cog}}(t)\right)\cdot\mathbf{e}\right)^{2}$"></SPAN></TD>
+<TD NOWRAP CLASS="eqno" WIDTH="10" ALIGN="RIGHT">
+(<SPAN CLASS="arabic">9</SPAN>)</TD></TR>
+</TABLE></DIV>
+<BR CLEAR="ALL"><P></P>
+<SPAN  CLASS="textit">Note that all atomic masses are set to 1 for simplicity.</SPAN>
+This component must contain one <TT>atoms&nbsp;{...}</TT> block to
+define the atom group, and returns a positive number, expressed in
+&#197;<SPAN CLASS="MATH"><IMG
+ WIDTH="11" HEIGHT="20" ALIGN="BOTTOM" BORDER="0"
+ SRC="img107.png"
+ ALT="$ ^{2}$"></SPAN>.  The following option may also be provided:
+
+<UL>
+<LI><A NAME="5504"></A>
+  <B><BIG CLASS="LARGE"><TT>axis </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$ \langle $"></SPAN>Projection axis (&#197;)<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>inertiaZ</TT> 
+<BR><B>Acceptable values: </B> <TT>(x, y, z)</TT> triplet 
+<BR><B>Default value: </B> <TT>(0.0, 0.0, 1.0)</TT> 
+<BR><B>Description: </B> The three components of this vector define (when normalized) the
+    projection axis <!-- MATH
+ $\mathbf{e}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="12" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img108.png"
+ ALT="$ \mathbf{e}$"></SPAN>.
+</LI>
+</UL>
+
+<P>
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A NAME="tex2html751"
+  HREF="node42.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html745"
+  HREF="node23.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html739"
+  HREF="node40.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html747"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html749"
+  HREF="node75.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html752"
+  HREF="node42.html">orientation: orientation from reference</A>
+<B> Up:</B> <A NAME="tex2html746"
+  HREF="node23.html">List of available colvar</A>
+<B> Previous:</B> <A NAME="tex2html740"
+  HREF="node40.html">inertia: total moment of</A>
+ &nbsp; <B>  <A NAME="tex2html748"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html750"
+  HREF="node75.html">Index</A></B> </DIV>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Jérôme Hénin
+2015-03-03
+</ADDRESS>
+</BODY>
+</HTML>

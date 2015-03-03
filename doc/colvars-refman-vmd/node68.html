@@ -1,0 +1,217 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Moving restraints: steered molecular dynamics</TITLE>
+<META NAME="description" CONTENT="Moving restraints: steered molecular dynamics">
+<META NAME="keywords" CONTENT="colvars-refman-vmd">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="colvars-refman-vmd.css">
+
+<LINK REL="next" HREF="node69.html">
+<LINK REL="previous" HREF="node67.html">
+<LINK REL="up" HREF="node67.html">
+<LINK REL="next" HREF="node69.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A NAME="tex2html1153"
+  HREF="node69.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html1147"
+  HREF="node67.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html1141"
+  HREF="node67.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html1149"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html1151"
+  HREF="node75.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html1154"
+  HREF="node69.html">Moving restraints: umbrella sampling</A>
+<B> Up:</B> <A NAME="tex2html1148"
+  HREF="node67.html">Harmonic restraints</A>
+<B> Previous:</B> <A NAME="tex2html1142"
+  HREF="node67.html">Harmonic restraints</A>
+ &nbsp; <B>  <A NAME="tex2html1150"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html1152"
+  HREF="node75.html">Index</A></B> 
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+
+<H3><A NAME="SECTION00083100000000000000"></A>
+<A NAME="sec:colvarbias_smd"></A>
+<BR>
+Moving restraints: steered molecular dynamics
+</H3>
+
+<P>
+The following options allow to change gradually the centers of the harmonic restraints during a simulations.
+When the centers are changed continuously, a steered MD in a collective variable space is carried out.
+
+<P>
+
+<UL>
+<LI><A NAME="6991"></A>
+  <B><BIG CLASS="LARGE"><TT>targetCenters </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$ \langle $"></B></SPAN>Steer the restraint centers towards these
+    targets<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$  \rangle$"></B></SPAN> 
+<BR><B>Context: </B> <TT>harmonic</TT> 
+<BR><B>Acceptable values: </B> space-separated list of colvar values 
+<BR><B>Description: </B> When defined, the current <TT>centers</TT> will be moved towards
+    these values during the simulation.
+    By default, the centers are moved over a total of 
+    <TT>targetNumSteps</TT> steps by a linear interpolation, in the
+    spirit of Steered MD.
+    If <TT>targetNumStages</TT> is set to a nonzero value, the
+    change is performed in discrete stages, lasting <TT>targetNumSteps</TT>
+    steps <SPAN  CLASS="textit">each</SPAN>. This second mode may be used to sample successive
+    windows in the context
+    of an Umbrella Sampling simulation.
+    When continuing a simulation
+    run, the <TT>centers</TT> specified in the configuration file
+    <TT><SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ &lt;$"></B></SPAN>colvarsConfig<SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ &gt;$"></B></SPAN></TT> are overridden by those saved in
+    the restart file <TT><SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ &lt;$"></B></SPAN>colvarsInput<SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ &gt;$"></B></SPAN></TT>.  To perform Steered
+    MD in an arbitrary space of colvars, it is
+    sufficient to use this option and enable
+    <TT>outputAppliedForce</TT> within each of the colvars involved.
+
+<P>
+</LI>
+<LI><A NAME="7015"></A>
+  <B><BIG CLASS="LARGE"><TT>targetNumSteps </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$ \langle $"></B></SPAN>Number of steps for steering<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$  \rangle$"></B></SPAN> 
+<BR><B>Context: </B> <TT>harmonic</TT> 
+<BR><B>Acceptable values: </B> positive integer 
+<BR><B>Description: </B> In single-stage (continuous) transformations, defines the number of MD
+    steps required to move the restraint centers (or force constant)
+    towards the values specified with <TT>targetCenters</TT> or
+    <TT>targetForceConstant</TT>.
+    After the target values have been reached, the centers (resp. force
+    constant) are kept fixed. In multi-stage transformations, this sets the
+    number of MD steps <SPAN  CLASS="textit">per stage</SPAN>.
+
+<P>
+</LI>
+<LI><A NAME="7034"></A>
+  <B><BIG CLASS="LARGE"><TT>outputCenters </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$ \langle $"></B></SPAN>Write the current centers to the trajectory file<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$  \rangle$"></B></SPAN> 
+<BR><B>Context: </B> <TT>harmonic</TT> 
+<BR><B>Acceptable values: </B> boolean 
+<BR><B>Default value: </B> <TT>off</TT> 
+<BR><B>Description: </B> If this option is chosen and  <TT>colvarsTrajFrequency</TT> is not zero, the positions of the restraint  centers will be written to the trajectory file during the simulation.
+    This option allows to conveniently extract the PMF from the colvars trajectory files in a steered MD calculation.
+
+<P>
+</LI>
+<LI><A NAME="7053"></A>
+  <B><BIG CLASS="LARGE"><TT>outputAccumulatedWork </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$ \langle $"></B></SPAN>Write the accumulated work of the moving restraint to the trajectory file<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$  \rangle$"></B></SPAN> 
+<BR><B>Context: </B> <TT>harmonic</TT> 
+<BR><B>Acceptable values: </B> boolean 
+<BR><B>Default value: </B> <TT>off</TT> 
+<BR><B>Description: </B> If this option is chosen, <TT>targetCenters</TT> is defined, and <TT>colvarsTrajFrequency</TT> is not zero, the accumulated work from the beginning of the simulation will be written to the trajectory file.
+    If the simulation has been continued from a previous state file, the previously accumulated work is included in the integral.
+    This option allows to conveniently extract the PMF from the colvars trajectory files in a steered MD calculation.
+
+<P>
+</LI>
+</UL>
+
+<P>
+<SPAN  CLASS="textbf">Note on restarting moving restraint simulations:</SPAN> Information
+about the current step and stage of a simulation with moving restraints
+is stored in the restart file (state file). Thus, such simulations can
+be run in several chunks, and restarted directly using the same colvars
+configuration file. In case of a restart, the values of parameters such
+as <TT>targetCenters</TT>, <TT>targetNumSteps</TT>, etc. should not be
+changed manually.
+
+<P>
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A NAME="tex2html1153"
+  HREF="node69.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html1147"
+  HREF="node67.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html1141"
+  HREF="node67.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html1149"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html1151"
+  HREF="node75.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html1154"
+  HREF="node69.html">Moving restraints: umbrella sampling</A>
+<B> Up:</B> <A NAME="tex2html1148"
+  HREF="node67.html">Harmonic restraints</A>
+<B> Previous:</B> <A NAME="tex2html1142"
+  HREF="node67.html">Harmonic restraints</A>
+ &nbsp; <B>  <A NAME="tex2html1150"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html1152"
+  HREF="node75.html">Index</A></B> </DIV>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Jérôme Hénin
+2015-03-03
+</ADDRESS>
+</BODY>
+</HTML>
