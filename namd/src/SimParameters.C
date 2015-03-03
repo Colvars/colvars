@@ -1617,7 +1617,7 @@ void SimParameters::config_parser_constraints(ParseOptions &opts) {
     //// Collective variables
     opts.optionalB("main", "colvars", "Is the colvars module enabled?",
       &colvarsOn, FALSE);
-    opts.require("colvars", "colvarsConfig",
+    opts.optional("colvars", "colvarsConfig",
       "configuration for the collective variables", PARSE_STRING);
     opts.optional("colvars", "colvarsInput",
       "input restart file for the collective variables", PARSE_STRING);

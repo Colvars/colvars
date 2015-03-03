@@ -34,10 +34,8 @@ colvarproxy_namd::colvarproxy_namd()
   if (cvm::debug())
     iout << "Info: initializing the colvars proxy object.\n" << endi;
 
-  // find the configuration file
+  // find the configuration file, if provided
   StringList *config = Node::Object()->configList->find("colvarsConfig");
-  if (!config)
-    NAMD_die("No configuration file for collective variables: exiting.\n");
 
   // find the input state file
   StringList *input_restart = Node::Object()->configList->find("colvarsInput");
@@ -98,7 +96,9 @@ colvarproxy_namd::colvarproxy_namd()
   cvm::log("Using NAMD interface, version "+
            cvm::to_str(COLVARPROXY_VERSION)+".\n");
 
-  colvars->read_config_file(config->data);
+  if (config) {
+    colvars->read_config_file(config->data);
+  }
   colvars->setup_input();
   colvars->setup_output();
 
