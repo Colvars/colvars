@@ -30,24 +30,19 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <DIV CLASS="navigation"><!--Navigation Panel-->
 <A NAME="tex2html1153"
   HREF="node70.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
- SRC="/usr/share/latex2html/icons/next.png"></A> 
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
 <A NAME="tex2html1147"
   HREF="node52.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
- SRC="/usr/share/latex2html/icons/up.png"></A> 
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
 <A NAME="tex2html1141"
   HREF="node68.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
- SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
 <A NAME="tex2html1149"
   HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
- SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
 <A NAME="tex2html1151"
   HREF="node71.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
- SRC="/usr/share/latex2html/icons/index.png"></A> 
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
 <BR>
 <B> Next:</B> <A NAME="tex2html1154"
   HREF="node70.html">Multidimensional histograms</A>
@@ -56,9 +51,9 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <B> Previous:</B> <A NAME="tex2html1142"
   HREF="node68.html">Linear restraints</A>
  &nbsp; <B>  <A NAME="tex2html1150"
-  HREF="node1.html">Contents</A></B> 
+  HREF="node1.html">Contents</A></B>
  &nbsp; <B>  <A NAME="tex2html1152"
-  HREF="node71.html">Index</A></B> 
+  HREF="node71.html">Index</A></B>
 <BR>
 <BR></DIV>
 <!--End of Navigation Panel-->
@@ -71,8 +66,7 @@ Adaptive Linear Bias/Experiment Directed Simulation
 
 <P>
 Experiment directed simulation applies a linear bias with a changing
-force constant. Please cite White and Voth [<A
- HREF="node72.html#White2014">19</A>] when
+force constant. Please cite White and Voth [#!White2014!#] when
 using this feature. As opposed to that reference, the force constant here is scaled
 by the <TT>width</TT> corresponding to the biased colvar. In White and
 Voth, each force constant is scaled by the colvars set center. The
@@ -92,13 +86,13 @@ an optimization algorithm until the bias has converged</B>.
   <B><BIG CLASS="LARGE"><TT>centers </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle\,$"></B></SPAN>Collective variable centers<SPAN CLASS="MATH"><B><IMG
+ ALT="$ \langle $"></B></SPAN>Collective variable centers<SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$ \,\rangle$"></B></SPAN> 
-<BR><B>Context: </B> <TT>alb</TT> 
-<BR><B>Acceptable values: </B> space-separated list of colvar values 
-<BR><B>Description: </B> The desired center (equilibrium values) which will be sought during the 
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>alb</TT>
+<BR><B>Acceptable values: </B> space-separated list of colvar values
+<BR><B>Description: </B> The desired center (equilibrium values) which will be sought during the
       adaptive linear biasing.
     The number of values must be the number of requested colvars.
     Each value is a decimal number if the corresponding colvar returns
@@ -112,50 +106,50 @@ an optimization algorithm until the bias has converged</B>.
   <B><BIG CLASS="LARGE"><TT>updateFrequency </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle\,$"></B></SPAN>The duration of updates<SPAN CLASS="MATH"><B><IMG
+ ALT="$ \langle $"></B></SPAN>The duration of updates<SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$ \,\rangle$"></B></SPAN> 
-<BR><B>Context: </B> <TT>alb</TT> 
-<BR><B>Acceptable values: </B> An integer 
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>alb</TT>
+<BR><B>Acceptable values: </B> An integer
 <BR><B>Description: </B> This is, <SPAN CLASS="MATH"><B><IMG
  WIDTH="17" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
  SRC="img5.png"
  ALT="$ N$"></B></SPAN>, the number of simulation steps to use for each update to the bias.
-      This determines how long the system requires to equilibrate 
+      This determines how long the system requires to equilibrate
       after a change in force constant (<SPAN CLASS="MATH"><B><IMG
  WIDTH="34" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
  SRC="img195.png"
- ALT="$ N/2$"></B></SPAN>), how long statistics 
+ ALT="$ N/2$"></B></SPAN>), how long statistics
       are collected for an iteration (<SPAN CLASS="MATH"><B><IMG
  WIDTH="34" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
  SRC="img195.png"
- ALT="$ N/2$"></B></SPAN>), and how quickly energy is 
+ ALT="$ N/2$"></B></SPAN>), and how quickly energy is
       added to the system (at most, <SPAN CLASS="MATH"><B><IMG
  WIDTH="45" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
  SRC="img196.png"
  ALT="$ A/2N$"></B></SPAN>, where <SPAN CLASS="MATH"><B><IMG
  WIDTH="15" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
  SRC="img197.png"
- ALT="$ A$"></B></SPAN> is the <TT>forceRange</TT>). Until the force 
-      constant has converged, the method as described is an 
-      optimization procedure and not an integration of a particular 
-      statistical ensemble. It is important that each step should be 
-      uncorrelated from the last so that iterations are independent. 
+ ALT="$ A$"></B></SPAN> is the <TT>forceRange</TT>). Until the force
+      constant has converged, the method as described is an
+      optimization procedure and not an integration of a particular
+      statistical ensemble. It is important that each step should be
+      uncorrelated from the last so that iterations are independent.
       Therefore, <SPAN CLASS="MATH"><B><IMG
  WIDTH="17" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
  SRC="img5.png"
- ALT="$ N$"></B></SPAN> should be at least twice the autocorrelation time 
-      of the collective variable. The system should also be able to 
+ ALT="$ N$"></B></SPAN> should be at least twice the autocorrelation time
+      of the collective variable. The system should also be able to
       dissipate energy as fast as <SPAN CLASS="MATH"><B><IMG
  WIDTH="34" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
  SRC="img195.png"
- ALT="$ N/2$"></B></SPAN>, which can be done by adjusting 
+ ALT="$ N/2$"></B></SPAN>, which can be done by adjusting
       thermostat parameters. Practically, <SPAN CLASS="MATH"><B><IMG
  WIDTH="17" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
  SRC="img5.png"
- ALT="$ N$"></B></SPAN> has been tested successfully at 
-      significantly shorter than the autocorrelation time of the 
+ ALT="$ N$"></B></SPAN> has been tested successfully at
+      significantly shorter than the autocorrelation time of the
       collective variables being biased and still converge correctly.
 
 <P>
@@ -164,16 +158,16 @@ an optimization algorithm until the bias has converged</B>.
   <B><BIG CLASS="LARGE"><TT>forceRange </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle\,$"></B></SPAN>The expected range of the force constant in units of energy<SPAN CLASS="MATH"><B><IMG
+ ALT="$ \langle $"></B></SPAN>The expected range of the force constant in units of energy<SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$ \,\rangle$"></B></SPAN> 
-<BR><B>Context: </B> <TT>alb</TT> 
-<BR><B>Acceptable values: </B> A space-separated list of decimal numbers 
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>alb</TT>
+<BR><B>Acceptable values: </B> A space-separated list of decimal numbers
 <BR><B>Default value: </B> 3 <SPAN CLASS="MATH"><B><IMG
  WIDTH="31" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img198.png"
- ALT="$ k_b T$"></B></SPAN> 
+ ALT="$ k_b T$"></B></SPAN>
 <BR><B>Description: </B> This is largest magnitude of the force constant which one expects. If this parameter is
       too low, the simulation will not converge. If it is too high the
       simulation will waste time exploring values that are too
@@ -192,12 +186,12 @@ an optimization algorithm until the bias has converged</B>.
   <B><BIG CLASS="LARGE"><TT>rateMax </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle\,$"></B></SPAN>The maximum rate of change of force constant<SPAN CLASS="MATH"><B><IMG
+ ALT="$ \langle $"></B></SPAN>The maximum rate of change of force constant<SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$ \,\rangle$"></B></SPAN> 
-<BR><B>Context: </B> <TT>alb</TT> 
-<BR><B>Acceptable values: </B> A list of space-separated real numbers 
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>alb</TT>
+<BR><B>Acceptable values: </B> A list of space-separated real numbers
 <BR><B>Description: </B> This optional parameter controls
       how much energy is added to the system from this bias.  Tuning
       this separately from the <TT>updateFrequency</TT>
@@ -215,24 +209,19 @@ an optimization algorithm until the bias has converged</B>.
 <!--Navigation Panel-->
 <A NAME="tex2html1153"
   HREF="node70.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
- SRC="/usr/share/latex2html/icons/next.png"></A> 
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
 <A NAME="tex2html1147"
   HREF="node52.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
- SRC="/usr/share/latex2html/icons/up.png"></A> 
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
 <A NAME="tex2html1141"
   HREF="node68.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
- SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
 <A NAME="tex2html1149"
   HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
- SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
 <A NAME="tex2html1151"
   HREF="node71.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
- SRC="/usr/share/latex2html/icons/index.png"></A> 
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
 <BR>
 <B> Next:</B> <A NAME="tex2html1154"
   HREF="node70.html">Multidimensional histograms</A>
@@ -241,13 +230,13 @@ an optimization algorithm until the bias has converged</B>.
 <B> Previous:</B> <A NAME="tex2html1142"
   HREF="node68.html">Linear restraints</A>
  &nbsp; <B>  <A NAME="tex2html1150"
-  HREF="node1.html">Contents</A></B> 
+  HREF="node1.html">Contents</A></B>
  &nbsp; <B>  <A NAME="tex2html1152"
   HREF="node71.html">Index</A></B> </DIV>
 <!--End of Navigation Panel-->
 <ADDRESS>
 Jérôme Hénin
-2015-02-27
+2015-03-03
 </ADDRESS>
 </BODY>
 </HTML>

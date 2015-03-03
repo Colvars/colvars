@@ -30,24 +30,19 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <DIV CLASS="navigation"><!--Navigation Panel-->
 <A NAME="tex2html227"
   HREF="node8.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
- SRC="/usr/share/latex2html/icons/next.png"></A> 
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
 <A NAME="tex2html221"
   HREF="node6.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
- SRC="/usr/share/latex2html/icons/up.png"></A> 
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
 <A NAME="tex2html215"
   HREF="node6.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
- SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
 <A NAME="tex2html223"
   HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
- SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
 <A NAME="tex2html225"
   HREF="node81.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
- SRC="/usr/share/latex2html/icons/index.png"></A> 
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
 <BR>
 <B> Next:</B> <A NAME="tex2html228"
   HREF="node8.html">Configuration syntax for the</A>
@@ -56,9 +51,9 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <B> Previous:</B> <A NAME="tex2html216"
   HREF="node6.html">General parameters and input/output</A>
  &nbsp; <B>  <A NAME="tex2html224"
-  HREF="node1.html">Contents</A></B> 
+  HREF="node1.html">Contents</A></B>
  &nbsp; <B>  <A NAME="tex2html226"
-  HREF="node81.html">Index</A></B> 
+  HREF="node81.html">Index</A></B>
 <BR>
 <BR></DIV>
 <!--End of Navigation Panel-->
@@ -83,10 +78,10 @@ An optional third parameter, <TT>colvarsInput</TT>, can be used to continue a pr
  ALT="$ \langle $"></SPAN>Enable the collective variables module<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> NAMD configuration file 
-<BR><B>Acceptable values: </B> boolean 
-<BR><B>Default value: </B> <TT>off</TT> 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> NAMD configuration file
+<BR><B>Acceptable values: </B> boolean
+<BR><B>Default value: </B> <TT>off</TT>
 <BR><B>Description: </B> If this flag is on, the collective variables module within
     NAMD is enabled; the module requires a separate configuration
     file, to be provided with <TT>colvarsConfig</TT>.
@@ -100,9 +95,9 @@ An optional third parameter, <TT>colvarsInput</TT>, can be used to continue a pr
  ALT="$ \langle $"></SPAN>Configuration file for the collective variables<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> NAMD configuration file 
-<BR><B>Acceptable values: </B> UNIX filename 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> NAMD configuration file
+<BR><B>Acceptable values: </B> UNIX filename
 <BR><B>Description: </B> This file contains the definition of all collective variables and
     their biasing or analysis methods.
     Parameters within the configuration file can be controlled from
@@ -116,13 +111,13 @@ colvarsConfig colvars_subst.tmp
 set myParameter someValue
 <BR>    # Parse template and create specific config file on the fly
 <BR>
-set infile [open colvars_template.in r] 
+set infile [open colvars_template.in r]
 <BR>
-set outfile [open colvars_subst.tmp w+] 
+set outfile [open colvars_subst.tmp w+]
 <BR>
-puts $outfile [subst [read $infile]] 
+puts $outfile [subst [read $infile]]
 <BR>
-close $infile 
+close $infile
 <BR>
 close $outfile</TT>
 
@@ -141,9 +136,9 @@ In this example, the string <TT>$myParameter</TT> will be replaced
  ALT="$ \langle $"></SPAN>Input state file for the collective variables<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> NAMD configuration file 
-<BR><B>Acceptable values: </B> UNIX filename 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> NAMD configuration file
+<BR><B>Acceptable values: </B> UNIX filename
 <BR><B>Description: </B> When continuing a previous simulation run, this file contains the current state of all collective variables and of their associated algorithms.
     It is written automatically at the end of any simulation with collective variables.
 
@@ -159,24 +154,19 @@ In this example, the string <TT>$myParameter</TT> will be replaced
 <!--Navigation Panel-->
 <A NAME="tex2html227"
   HREF="node8.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
- SRC="/usr/share/latex2html/icons/next.png"></A> 
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
 <A NAME="tex2html221"
   HREF="node6.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
- SRC="/usr/share/latex2html/icons/up.png"></A> 
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
 <A NAME="tex2html215"
   HREF="node6.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
- SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
 <A NAME="tex2html223"
   HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
- SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
 <A NAME="tex2html225"
   HREF="node81.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
- SRC="/usr/share/latex2html/icons/index.png"></A> 
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
 <BR>
 <B> Next:</B> <A NAME="tex2html228"
   HREF="node8.html">Configuration syntax for the</A>
@@ -185,13 +175,13 @@ In this example, the string <TT>$myParameter</TT> will be replaced
 <B> Previous:</B> <A NAME="tex2html216"
   HREF="node6.html">General parameters and input/output</A>
  &nbsp; <B>  <A NAME="tex2html224"
-  HREF="node1.html">Contents</A></B> 
+  HREF="node1.html">Contents</A></B>
  &nbsp; <B>  <A NAME="tex2html226"
   HREF="node81.html">Index</A></B> </DIV>
 <!--End of Navigation Panel-->
 <ADDRESS>
 Jérôme Hénin
-2015-02-27
+2015-03-03
 </ADDRESS>
 </BODY>
 </HTML>

@@ -30,24 +30,19 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <DIV CLASS="navigation"><!--Navigation Panel-->
 <A NAME="tex2html955"
   HREF="node56.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
- SRC="/usr/share/latex2html/icons/next.png"></A> 
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
 <A NAME="tex2html949"
   HREF="node53.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
- SRC="/usr/share/latex2html/icons/up.png"></A> 
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
 <A NAME="tex2html943"
   HREF="node54.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
- SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
 <A NAME="tex2html951"
   HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
- SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
 <A NAME="tex2html953"
   HREF="node71.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
- SRC="/usr/share/latex2html/icons/index.png"></A> 
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
 <BR>
 <B> Next:</B> <A NAME="tex2html956"
   HREF="node56.html">Output files</A>
@@ -56,9 +51,9 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <B> Previous:</B> <A NAME="tex2html944"
   HREF="node54.html">ABF requirements on collective</A>
  &nbsp; <B>  <A NAME="tex2html952"
-  HREF="node1.html">Contents</A></B> 
+  HREF="node1.html">Contents</A></B>
  &nbsp; <B>  <A NAME="tex2html954"
-  HREF="node71.html">Index</A></B> 
+  HREF="node71.html">Index</A></B>
 <BR>
 <BR></DIV>
 <!--End of Navigation Panel-->
@@ -83,14 +78,14 @@ The following specific parameters can be set in the ABF configuration block
   <B><BIG CLASS="LARGE"><TT>fullSamples </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle\,$"></B></SPAN>Number of samples in a bin prior
+ ALT="$ \langle $"></B></SPAN>Number of samples in a bin prior
     to application of the ABF<SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$ \,\rangle$"></B></SPAN> 
-<BR><B>Context: </B> <TT>abf</TT> 
-<BR><B>Acceptable values: </B> positive integer 
-<BR><B>Default value: </B> 200 
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>abf</TT>
+<BR><B>Acceptable values: </B> positive integer
+<BR><B>Default value: </B> 200
 <BR><B>Description: </B> To avoid nonequilibrium effects due to large fluctuations of the force exerted along the
    colvars, it is recommended to apply a biasing force only after a the estimate has started
    converging. If <TT>fullSamples</TT> is non-zero, the applied biasing force is scaled by a factor
@@ -121,13 +116,13 @@ The following specific parameters can be set in the ABF configuration block
   <B><BIG CLASS="LARGE"><TT>maxForce </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle\,$"></B></SPAN>Maximum magnitude of the ABF force<SPAN CLASS="MATH"><B><IMG
+ ALT="$ \langle $"></B></SPAN>Maximum magnitude of the ABF force<SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$ \,\rangle$"></B></SPAN> 
-<BR><B>Context: </B> <TT>abf</TT> 
-<BR><B>Acceptable values: </B> positive decimals (one per colvar) 
-<BR><B>Default value: </B> disabled 
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>abf</TT>
+<BR><B>Acceptable values: </B> positive decimals (one per colvar)
+<BR><B>Default value: </B> disabled
 <BR><B>Description: </B> This option enforces a cap on the magnitude of the biasing force effectively applied
    by this ABF bias on each colvar. This can be useful in the presence of singularities
    in the PMF such as hard walls, where the discretization of the average force becomes
@@ -141,14 +136,14 @@ The following specific parameters can be set in the ABF configuration block
   <B><BIG CLASS="LARGE"><TT>hideJacobian </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle\,$"></B></SPAN>Remove geometric entropy term from calculated
+ ALT="$ \langle $"></B></SPAN>Remove geometric entropy term from calculated
     free energy gradient?<SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$ \,\rangle$"></B></SPAN> 
-<BR><B>Context: </B> <TT>abf</TT> 
-<BR><B>Acceptable values: </B> boolean 
-<BR><B>Default value: </B> <TT>no</TT> 
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>abf</TT>
+<BR><B>Acceptable values: </B> boolean
+<BR><B>Default value: </B> <TT>no</TT>
 <BR><B>Description: </B> In a few special cases, most notably distance-based variables, an alternate definition of
     the potential of mean force is traditionally used, which excludes the Jacobian
     term describing the effect of geometric entropy on the distribution of the variable.
@@ -165,13 +160,13 @@ The following specific parameters can be set in the ABF configuration block
   <B><BIG CLASS="LARGE"><TT>outputFreq </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle\,$"></B></SPAN>Frequency (in timesteps) at which ABF data files are refreshed<SPAN CLASS="MATH"><B><IMG
+ ALT="$ \langle $"></B></SPAN>Frequency (in timesteps) at which ABF data files are refreshed<SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$ \,\rangle$"></B></SPAN> 
-<BR><B>Context: </B> <TT>abf</TT> 
-<BR><B>Acceptable values: </B> positive integer 
-<BR><B>Default value: </B> Colvar module restart frequency 
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>abf</TT>
+<BR><B>Acceptable values: </B> positive integer
+<BR><B>Default value: </B> Colvar module restart frequency
 <BR><B>Description: </B> The files containing the free energy gradient estimate and sampling histogram
     (and the PMF in one-dimensional calculations) are written on disk at the given
     time interval.
@@ -182,14 +177,14 @@ The following specific parameters can be set in the ABF configuration block
   <B><BIG CLASS="LARGE"><TT>historyFreq </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle\,$"></B></SPAN>Frequency (in timesteps) at which ABF history files are
+ ALT="$ \langle $"></B></SPAN>Frequency (in timesteps) at which ABF history files are
   accumulated<SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$ \,\rangle$"></B></SPAN> 
-<BR><B>Context: </B> <TT>abf</TT> 
-<BR><B>Acceptable values: </B> positive integer 
-<BR><B>Default value: </B> 0 
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>abf</TT>
+<BR><B>Acceptable values: </B> positive integer
+<BR><B>Default value: </B> 0
 <BR><B>Description: </B> If this number is non-zero, the free energy gradient estimate and sampling histogram
     (and the PMF in one-dimensional calculations) are appended to files on disk at
     the given time interval. History file names use the same prefix as output files, with
@@ -201,12 +196,12 @@ The following specific parameters can be set in the ABF configuration block
   <B><BIG CLASS="LARGE"><TT>inputPrefix </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle\,$"></B></SPAN>Filename prefix for reading ABF data<SPAN CLASS="MATH"><B><IMG
+ ALT="$ \langle $"></B></SPAN>Filename prefix for reading ABF data<SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$ \,\rangle$"></B></SPAN> 
-<BR><B>Context: </B> <TT>abf</TT> 
-<BR><B>Acceptable values: </B> list of strings 
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>abf</TT>
+<BR><B>Acceptable values: </B> list of strings
 <BR><B>Description: </B> If this parameter is set, for each item in the list, ABF tries to read
     a gradient and a sampling files named <TT><SPAN CLASS="MATH"><B><IMG
  WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
@@ -238,13 +233,13 @@ The following specific parameters can be set in the ABF configuration block
   <B><BIG CLASS="LARGE"><TT>applyBias </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle\,$"></B></SPAN>Apply the ABF bias?<SPAN CLASS="MATH"><B><IMG
+ ALT="$ \langle $"></B></SPAN>Apply the ABF bias?<SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$ \,\rangle$"></B></SPAN> 
-<BR><B>Context: </B> <TT>abf</TT> 
-<BR><B>Acceptable values: </B> boolean 
-<BR><B>Default value: </B> <TT>yes</TT> 
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>abf</TT>
+<BR><B>Acceptable values: </B> boolean
+<BR><B>Default value: </B> <TT>yes</TT>
 <BR><B>Description: </B>  If this is set to no, the calculation proceeds normally but the adaptive
     biasing force is not applied. Data is still collected to compute
     the free energy gradient. This is mostly intended for testing purposes, and should
@@ -256,13 +251,13 @@ The following specific parameters can be set in the ABF configuration block
   <B><BIG CLASS="LARGE"><TT>updateBias </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle\,$"></B></SPAN>Update the ABF bias?<SPAN CLASS="MATH"><B><IMG
+ ALT="$ \langle $"></B></SPAN>Update the ABF bias?<SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$ \,\rangle$"></B></SPAN> 
-<BR><B>Context: </B> <TT>abf</TT> 
-<BR><B>Acceptable values: </B> boolean 
-<BR><B>Default value: </B> <TT>yes</TT> 
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>abf</TT>
+<BR><B>Acceptable values: </B> boolean
+<BR><B>Default value: </B> <TT>yes</TT>
 <BR><B>Description: </B>  If this is set to no, the initial biasing force (e.g. read from a restart file or
     through <TT>inputPrefix</TT>) is not updated during the simulation.
     As a result, a constant bias is applied. This can be used to apply a custom, tabulated
@@ -270,7 +265,7 @@ The following specific parameters can be set in the ABF configuration block
     a gradient file containing the gradient of the potential to be applied (negative
     of the bias force), and a count file containing only values greater than
     <TT>fullSamples</TT>. These files must match the grid parameters of the colvars.
-  
+
 </LI>
 </UL>
 
@@ -282,24 +277,19 @@ The following specific parameters can be set in the ABF configuration block
 <!--Navigation Panel-->
 <A NAME="tex2html955"
   HREF="node56.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
- SRC="/usr/share/latex2html/icons/next.png"></A> 
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
 <A NAME="tex2html949"
   HREF="node53.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
- SRC="/usr/share/latex2html/icons/up.png"></A> 
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
 <A NAME="tex2html943"
   HREF="node54.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
- SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
 <A NAME="tex2html951"
   HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
- SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
 <A NAME="tex2html953"
   HREF="node71.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
- SRC="/usr/share/latex2html/icons/index.png"></A> 
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
 <BR>
 <B> Next:</B> <A NAME="tex2html956"
   HREF="node56.html">Output files</A>
@@ -308,13 +298,13 @@ The following specific parameters can be set in the ABF configuration block
 <B> Previous:</B> <A NAME="tex2html944"
   HREF="node54.html">ABF requirements on collective</A>
  &nbsp; <B>  <A NAME="tex2html952"
-  HREF="node1.html">Contents</A></B> 
+  HREF="node1.html">Contents</A></B>
  &nbsp; <B>  <A NAME="tex2html954"
   HREF="node71.html">Index</A></B> </DIV>
 <!--End of Navigation Panel-->
 <ADDRESS>
 Jérôme Hénin
-2015-02-27
+2015-03-03
 </ADDRESS>
 </BODY>
 </HTML>

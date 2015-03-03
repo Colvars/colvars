@@ -30,24 +30,19 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <DIV CLASS="navigation"><!--Navigation Panel-->
 <A NAME="tex2html178"
   HREF="node6.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
- SRC="/usr/share/latex2html/icons/next.png"></A> 
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
 <A NAME="tex2html172"
   HREF="colvars-refman-lammps.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
- SRC="/usr/share/latex2html/icons/up.png"></A> 
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
 <A NAME="tex2html166"
   HREF="node4.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
- SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
 <A NAME="tex2html174"
   HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
- SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
 <A NAME="tex2html176"
   HREF="node71.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
- SRC="/usr/share/latex2html/icons/index.png"></A> 
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
 <BR>
 <B> Next:</B> <A NAME="tex2html179"
   HREF="node6.html">General parameters and input/output</A>
@@ -56,9 +51,9 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <B> Previous:</B> <A NAME="tex2html167"
   HREF="node4.html">#1</A>
  &nbsp; <B>  <A NAME="tex2html175"
-  HREF="node1.html">Contents</A></B> 
+  HREF="node1.html">Contents</A></B>
  &nbsp; <B>  <A NAME="tex2html177"
-  HREF="node71.html">Index</A></B> 
+  HREF="node71.html">Index</A></B>
 <BR>
 <BR></DIV>
 <!--End of Navigation Panel-->
@@ -71,7 +66,7 @@ Introduction
 </H1>
 
 <P>
-In today's molecular dynamics simulations, it is often useful to reduce the large number of degrees of freedom of a physical system into few parameters whose statistical distributions can be analyzed individually, or used to define biasing potentials to alter the dynamics of the system in a controlled manner. 
+In today's molecular dynamics simulations, it is often useful to reduce the large number of degrees of freedom of a physical system into few parameters whose statistical distributions can be analyzed individually, or used to define biasing potentials to alter the dynamics of the system in a controlled manner.
 These have been called `order parameters', `collective variables', `(surrogate) reaction coordinates', and many other terms.
 Here we use primarily the term `collective variable' (shortened to <SPAN  CLASS="textit">colvar</SPAN>), which indicates any differentiable function of atomic Cartesian coordinates, <!-- MATH
  ${\mbox{\boldmath {$x$}}}_{i}$
@@ -113,7 +108,7 @@ This manual documents the collective variables module (colvars), a portable soft
 The module is designed to perform multiple tasks concurrently during or after a simulation, the most common of which are:
 
 <UL>
-<LI>apply restraints or biasing potentials to multiple colvars, tailored on the system by choosing from a wide set of basis functions, without limitations on their number or on the number of atoms involved; 
+<LI>apply restraints or biasing potentials to multiple colvars, tailored on the system by choosing from a wide set of basis functions, without limitations on their number or on the number of atoms involved;
 
 <P>
 </LI>
@@ -207,8 +202,7 @@ The values of ``<SPAN CLASS="MATH"><IMG
 </DIV>
 
 <P>
-Detailed explanations of the design of the colvars module are provided in reference&nbsp;[<A
- HREF="node72.html#Fiorin2013">1</A>]. Please cite this reference whenever publishing work that makes use of this module.
+Detailed explanations of the design of the colvars module are provided in reference&nbsp;[#!Fiorin2013!#]. Please cite this reference whenever publishing work that makes use of this module.
 
 <P>
 
@@ -216,24 +210,19 @@ Detailed explanations of the design of the colvars module are provided in refere
 <!--Navigation Panel-->
 <A NAME="tex2html178"
   HREF="node6.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
- SRC="/usr/share/latex2html/icons/next.png"></A> 
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
 <A NAME="tex2html172"
   HREF="colvars-refman-lammps.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
- SRC="/usr/share/latex2html/icons/up.png"></A> 
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
 <A NAME="tex2html166"
   HREF="node4.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
- SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
 <A NAME="tex2html174"
   HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
- SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
 <A NAME="tex2html176"
   HREF="node71.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
- SRC="/usr/share/latex2html/icons/index.png"></A> 
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
 <BR>
 <B> Next:</B> <A NAME="tex2html179"
   HREF="node6.html">General parameters and input/output</A>
@@ -242,13 +231,13 @@ Detailed explanations of the design of the colvars module are provided in refere
 <B> Previous:</B> <A NAME="tex2html167"
   HREF="node4.html">#1</A>
  &nbsp; <B>  <A NAME="tex2html175"
-  HREF="node1.html">Contents</A></B> 
+  HREF="node1.html">Contents</A></B>
  &nbsp; <B>  <A NAME="tex2html177"
   HREF="node71.html">Index</A></B> </DIV>
 <!--End of Navigation Panel-->
 <ADDRESS>
 Jérôme Hénin
-2015-02-27
+2015-03-03
 </ADDRESS>
 </BODY>
 </HTML>

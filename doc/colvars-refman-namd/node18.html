@@ -30,24 +30,19 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <DIV CLASS="navigation"><!--Navigation Panel-->
 <A NAME="tex2html386"
   HREF="node19.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
- SRC="/usr/share/latex2html/icons/next.png"></A> 
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
 <A NAME="tex2html380"
   HREF="node17.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
- SRC="/usr/share/latex2html/icons/up.png"></A> 
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
 <A NAME="tex2html374"
   HREF="node17.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
- SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
 <A NAME="tex2html382"
   HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
- SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
 <A NAME="tex2html384"
   HREF="node81.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
- SRC="/usr/share/latex2html/icons/index.png"></A> 
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
 <BR>
 <B> Next:</B> <A NAME="tex2html387"
   HREF="node19.html">Moving frame of reference.</A>
@@ -56,9 +51,9 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <B> Previous:</B> <A NAME="tex2html375"
   HREF="node17.html">Selecting atoms for colvars:</A>
  &nbsp; <B>  <A NAME="tex2html383"
-  HREF="node1.html">Contents</A></B> 
+  HREF="node1.html">Contents</A></B>
  &nbsp; <B>  <A NAME="tex2html385"
-  HREF="node81.html">Index</A></B> 
+  HREF="node81.html">Index</A></B>
 <BR>
 <BR></DIV>
 <!--End of Navigation Panel-->
@@ -80,7 +75,7 @@ Below is an example configuration for an atom group named ``<TT>atoms</TT>'', wh
 <TT>atoms {
 <BR>
 <BR>&nbsp;&nbsp;# add atoms 1 and 3 to this group (note: the first atom in the system is 1)
-<BR>&nbsp;&nbsp;atomNumbers { 
+<BR>&nbsp;&nbsp;atomNumbers {
 <BR>&nbsp;&nbsp;&nbsp;&nbsp;1 3
 <BR>&nbsp;&nbsp;}
 <BR>
@@ -120,9 +115,9 @@ The complete list of selection keywords available in NAMD is:
  ALT="$ \langle $"></SPAN>List of atom numbers<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> atom group 
-<BR><B>Acceptable values: </B> space-separated list of positive integers 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> atom group
+<BR><B>Acceptable values: </B> space-separated list of positive integers
 <BR><B>Description: </B> This option adds to the group all the atoms whose numbers are in
     the list.  <SPAN  CLASS="textit">The number of the first atom in the system is 1: to convert from a VMD selection, use ``atomselect get serial''.</SPAN>
 
@@ -135,9 +130,9 @@ The complete list of selection keywords available in NAMD is:
  ALT="$ \langle $"></SPAN>Name of index group to be used (GROMACS format)<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> atom group 
-<BR><B>Acceptable values: </B> string 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> atom group
+<BR><B>Acceptable values: </B> string
 <BR><B>Description: </B> If the name of an index file has been provided by <TT>indexFile</TT>, this option allows to select one index group from that file: the atoms from that index group will be used to define the current group.
 
 <P>
@@ -149,8 +144,8 @@ The complete list of selection keywords available in NAMD is:
  ALT="$ \langle $"></SPAN>Atoms within a number range<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> atom group 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> atom group
 <BR><B>Acceptable values: </B> <SPAN CLASS="MATH"><IMG
  WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
  SRC="img22.png"
@@ -163,7 +158,7 @@ The complete list of selection keywords available in NAMD is:
  ALT="$ &lt;$"></SPAN>Ending number<SPAN CLASS="MATH"><IMG
  WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
  SRC="img23.png"
- ALT="$ &gt;$"></SPAN> 
+ ALT="$ &gt;$"></SPAN>
 <BR><B>Description: </B> This option includes in the group all atoms whose numbers are within the range specified.  <SPAN  CLASS="textit">The number of the first atom in the system is 1.</SPAN>
 
 <P>
@@ -176,8 +171,8 @@ The complete list of selection keywords available in NAMD is:
  ALT="$ \langle $"></SPAN>Named atoms within a range of residue numbers<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> atom group 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> atom group
 <BR><B>Acceptable values: </B> <SPAN CLASS="MATH"><IMG
  WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
  SRC="img22.png"
@@ -196,7 +191,7 @@ The complete list of selection keywords available in NAMD is:
  ALT="$ &lt;$"></SPAN>Ending residue<SPAN CLASS="MATH"><IMG
  WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
  SRC="img23.png"
- ALT="$ &gt;$"></SPAN> 
+ ALT="$ &gt;$"></SPAN>
 <BR><B>Description: </B> This option adds to the group all the atoms with the provided
     name, within residues in the given range.
 
@@ -209,9 +204,9 @@ The complete list of selection keywords available in NAMD is:
  ALT="$ \langle $"></SPAN>PSF segment identifier<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> atom group 
-<BR><B>Acceptable values: </B> space-separated list of strings (max 4 characters) 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> atom group
+<BR><B>Acceptable values: </B> space-separated list of strings (max 4 characters)
 <BR><B>Description: </B> This option sets the PSF segment identifier for
     <TT>atomNameResidueRange</TT>.  Multiple values may be provided,
     which correspond to multiple instances of
@@ -227,9 +222,9 @@ The complete list of selection keywords available in NAMD is:
  ALT="$ \langle $"></SPAN>PDB file name for atom selection<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> atom group 
-<BR><B>Acceptable values: </B> UNIX filename 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> atom group
+<BR><B>Acceptable values: </B> UNIX filename
 <BR><B>Description: </B> This option selects atoms from the PDB file provided and adds them
     to the group according to numerical flags in the column
     <TT>atomsCol</TT>.  <SPAN  CLASS="textbf">Note:</SPAN> <SPAN  CLASS="textit">the sequence of atoms in the PDB file
@@ -244,9 +239,9 @@ The complete list of selection keywords available in NAMD is:
  ALT="$ \langle $"></SPAN>PDB column to use for atom selection flags<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> atom group 
-<BR><B>Acceptable values: </B> <TT>O</TT>, <TT>B</TT>, <TT>X</TT>, <TT>Y</TT>, or <TT>Z</TT> 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> atom group
+<BR><B>Acceptable values: </B> <TT>O</TT>, <TT>B</TT>, <TT>X</TT>, <TT>Y</TT>, or <TT>Z</TT>
 <BR><B>Description: </B> This option specifies which PDB column in <TT>atomsFile</TT> is used to determine which atoms are to be included in the group.
 
 <P>
@@ -258,9 +253,9 @@ The complete list of selection keywords available in NAMD is:
  ALT="$ \langle $"></SPAN>Atom selection flag in the PDB column<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> atom group 
-<BR><B>Acceptable values: </B> positive decimal 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> atom group
+<BR><B>Acceptable values: </B> positive decimal
 <BR><B>Description: </B> If defined, this value in <TT>atomsCol</TT> identifies atoms in <TT>atomsFile</TT> that are included in the group.
     If undefined, all atoms with a non-zero value in <TT>atomsCol</TT> are included.
 
@@ -273,9 +268,9 @@ The complete list of selection keywords available in NAMD is:
  ALT="$ \langle $"></SPAN>Dummy atom position (&#197;)<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> atom group 
-<BR><B>Acceptable values: </B> <TT>(x, y, z)</TT> triplet 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> atom group
+<BR><B>Acceptable values: </B> <TT>(x, y, z)</TT> triplet
 <BR><B>Description: </B> Instead of selecting any atom, this option makes the group a virtual particle at a fixed position in space.  This is useful e.g.&nbsp;to replace a group's center of geometry with a user-defined position.
 
 <P>
@@ -288,24 +283,19 @@ The complete list of selection keywords available in NAMD is:
 <!--Navigation Panel-->
 <A NAME="tex2html386"
   HREF="node19.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
- SRC="/usr/share/latex2html/icons/next.png"></A> 
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
 <A NAME="tex2html380"
   HREF="node17.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
- SRC="/usr/share/latex2html/icons/up.png"></A> 
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
 <A NAME="tex2html374"
   HREF="node17.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
- SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
 <A NAME="tex2html382"
   HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
- SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
 <A NAME="tex2html384"
   HREF="node81.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
- SRC="/usr/share/latex2html/icons/index.png"></A> 
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
 <BR>
 <B> Next:</B> <A NAME="tex2html387"
   HREF="node19.html">Moving frame of reference.</A>
@@ -314,13 +304,13 @@ The complete list of selection keywords available in NAMD is:
 <B> Previous:</B> <A NAME="tex2html375"
   HREF="node17.html">Selecting atoms for colvars:</A>
  &nbsp; <B>  <A NAME="tex2html383"
-  HREF="node1.html">Contents</A></B> 
+  HREF="node1.html">Contents</A></B>
  &nbsp; <B>  <A NAME="tex2html385"
   HREF="node81.html">Index</A></B> </DIV>
 <!--End of Navigation Panel-->
 <ADDRESS>
 Jérôme Hénin
-2015-02-27
+2015-03-03
 </ADDRESS>
 </BODY>
 </HTML>

@@ -30,24 +30,19 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <DIV CLASS="navigation"><!--Navigation Panel-->
 <A NAME="tex2html1056"
   HREF="node63.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
- SRC="/usr/share/latex2html/icons/next.png"></A> 
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
 <A NAME="tex2html1050"
   HREF="node58.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
- SRC="/usr/share/latex2html/icons/up.png"></A> 
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
 <A NAME="tex2html1044"
   HREF="node61.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
- SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
 <A NAME="tex2html1052"
   HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
- SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
 <A NAME="tex2html1054"
   HREF="node71.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
- SRC="/usr/share/latex2html/icons/index.png"></A> 
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
 <BR>
 <B> Next:</B> <A NAME="tex2html1057"
   HREF="node63.html">Compatibility and post-processing</A>
@@ -56,9 +51,9 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <B> Previous:</B> <A NAME="tex2html1045"
   HREF="node61.html">Well-tempered metadynamics</A>
  &nbsp; <B>  <A NAME="tex2html1053"
-  HREF="node1.html">Contents</A></B> 
+  HREF="node1.html">Contents</A></B>
  &nbsp; <B>  <A NAME="tex2html1055"
-  HREF="node71.html">Index</A></B> 
+  HREF="node71.html">Index</A></B>
 <BR>
 <BR></DIV>
 <!--End of Navigation Panel-->
@@ -78,17 +73,16 @@ one replica:
   <B><BIG CLASS="LARGE"><TT>multipleReplicas </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle\,$"></B></SPAN>Multiple replicas metadynamics<SPAN CLASS="MATH"><B><IMG
+ ALT="$ \langle $"></B></SPAN>Multiple replicas metadynamics<SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$ \,\rangle$"></B></SPAN> 
-<BR><B>Context: </B> <TT>metadynamics</TT> 
-<BR><B>Acceptable values: </B> boolean 
-<BR><B>Default value: </B> <TT>off</TT> 
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>metadynamics</TT>
+<BR><B>Acceptable values: </B> boolean
+<BR><B>Default value: </B> <TT>off</TT>
 <BR><B>Description: </B> If this option is <TT>on</TT>, multiple (independent) replica of the
     same system can be run at the same time, and their hills will be
-    combined to obtain a single PMF [<A
- HREF="node72.html#Raiteri2005">16</A>].  Replicas are
+    combined to obtain a single PMF [#!Raiteri2005!#].  Replicas are
     identified by the value of <TT>replicaID</TT>.  Communication is
     done by files: each replica must be able to read the files
     created by the others, whose paths are communicated through the file
@@ -105,7 +99,7 @@ one replica:
     which serves as communication
     buffer.  These files are only required for communication, and may be
     deleted after a new MD run is started with a different
-    <TT>outputName</TT>.  
+    <TT>outputName</TT>.
 
 <P>
 </LI>
@@ -113,12 +107,12 @@ one replica:
   <B><BIG CLASS="LARGE"><TT>replicaID </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle\,$"></B></SPAN>Set the identifier for this replica<SPAN CLASS="MATH"><B><IMG
+ ALT="$ \langle $"></B></SPAN>Set the identifier for this replica<SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$ \,\rangle$"></B></SPAN> 
-<BR><B>Context: </B> <TT>metadynamics</TT> 
-<BR><B>Acceptable values: </B> string 
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>metadynamics</TT>
+<BR><B>Acceptable values: </B> string
 <BR><B>Description: </B> If <TT>multipleReplicas</TT> is <TT>on</TT>, this option sets a
     unique identifier for this replica.  All replicas should use
     identical collective variable configurations, except for the value
@@ -130,30 +124,30 @@ one replica:
   <B><BIG CLASS="LARGE"><TT>replicasRegistry </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle\,$"></B></SPAN>Multiple replicas database file<SPAN CLASS="MATH"><B><IMG
+ ALT="$ \langle $"></B></SPAN>Multiple replicas database file<SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$ \,\rangle$"></B></SPAN> 
-<BR><B>Context: </B> <TT>metadynamics</TT> 
-<BR><B>Acceptable values: </B> UNIX filename 
-<BR><B>Default value: </B> ``<SPAN  CLASS="textit">name</SPAN><TT>.replica_files.txt</TT>'' 
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>metadynamics</TT>
+<BR><B>Acceptable values: </B> UNIX filename
+<BR><B>Default value: </B> ``<SPAN  CLASS="textit">name</SPAN><TT>.replica_files.txt</TT>''
 <BR><B>Description: </B> If <TT>multipleReplicas</TT> is <TT>on</TT>, this option sets the
     path to the replicas' database file.
-    
+
 <P>
 </LI>
 <LI><A NAME="5981"></A>
   <B><BIG CLASS="LARGE"><TT>replicaUpdateFrequency </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle\,$"></B></SPAN>How often hills are communicated between
+ ALT="$ \langle $"></B></SPAN>How often hills are communicated between
     replicas<SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$ \,\rangle$"></B></SPAN> 
-<BR><B>Context: </B> <TT>metadynamics</TT> 
-<BR><B>Acceptable values: </B> positive integer 
-<BR><B>Default value: </B> <TT>newHillFrequency</TT> 
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>metadynamics</TT>
+<BR><B>Acceptable values: </B> positive integer
+<BR><B>Default value: </B> <TT>newHillFrequency</TT>
 <BR><B>Description: </B> If <TT>multipleReplicas</TT> is <TT>on</TT>, this option sets the
     number of steps after which each replica (re)reads the other
     replicas' files.  The lowest meaningful value of this number is
@@ -169,14 +163,14 @@ one replica:
   <B><BIG CLASS="LARGE"><TT>dumpPartialFreeEnergyFile </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle\,$"></B></SPAN>Periodically write the contribution to the
+ ALT="$ \langle $"></B></SPAN>Periodically write the contribution to the
     PMF from this replica<SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$ \,\rangle$"></B></SPAN> 
-<BR><B>Context: </B> <TT>metadynamics</TT> 
-<BR><B>Acceptable values: </B> boolean 
-<BR><B>Default value: </B> <TT>on</TT> 
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>metadynamics</TT>
+<BR><B>Acceptable values: </B> boolean
+<BR><B>Default value: </B> <TT>on</TT>
 <BR><B>Description: </B> When <TT>multipleReplicas</TT> is <TT>on</TT>, tje file
     <SPAN  CLASS="textit">output</SPAN><TT>.pmf</TT> contains the combined PMF from all
     replicas.  Enabling this option produces an additional file
@@ -195,24 +189,19 @@ one replica:
 <!--Navigation Panel-->
 <A NAME="tex2html1056"
   HREF="node63.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
- SRC="/usr/share/latex2html/icons/next.png"></A> 
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
 <A NAME="tex2html1050"
   HREF="node58.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
- SRC="/usr/share/latex2html/icons/up.png"></A> 
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
 <A NAME="tex2html1044"
   HREF="node61.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
- SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
 <A NAME="tex2html1052"
   HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
- SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
 <A NAME="tex2html1054"
   HREF="node71.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
- SRC="/usr/share/latex2html/icons/index.png"></A> 
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
 <BR>
 <B> Next:</B> <A NAME="tex2html1057"
   HREF="node63.html">Compatibility and post-processing</A>
@@ -221,13 +210,13 @@ one replica:
 <B> Previous:</B> <A NAME="tex2html1045"
   HREF="node61.html">Well-tempered metadynamics</A>
  &nbsp; <B>  <A NAME="tex2html1053"
-  HREF="node1.html">Contents</A></B> 
+  HREF="node1.html">Contents</A></B>
  &nbsp; <B>  <A NAME="tex2html1055"
   HREF="node71.html">Index</A></B> </DIV>
 <!--End of Navigation Panel-->
 <ADDRESS>
 Jérôme Hénin
-2015-02-27
+2015-03-03
 </ADDRESS>
 </BODY>
 </HTML>
