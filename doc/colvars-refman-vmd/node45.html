@@ -1,0 +1,140 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>spinAngle: angle of rotation around a given axis.</TITLE>
+<META NAME="description" CONTENT="spinAngle: angle of rotation around a given axis.">
+<META NAME="keywords" CONTENT="colvars-refman-vmd">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="colvars-refman-vmd.css">
+
+<LINK REL="next" HREF="node46.html">
+<LINK REL="previous" HREF="node44.html">
+<LINK REL="up" HREF="node23.html">
+<LINK REL="next" HREF="node46.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A NAME="tex2html807"
+  HREF="node46.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html801"
+  HREF="node23.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html795"
+  HREF="node44.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html803"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html805"
+  HREF="node75.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html808"
+  HREF="node46.html">tilt: cosine of the</A>
+<B> Up:</B> <A NAME="tex2html802"
+  HREF="node23.html">List of available colvar</A>
+<B> Previous:</B> <A NAME="tex2html796"
+  HREF="node44.html">orientationProj: cosine of the</A>
+ &nbsp; <B>  <A NAME="tex2html804"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html806"
+  HREF="node75.html">Index</A></B> 
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+
+<H3><A NAME="SECTION000712100000000000000">
+<TT>spinAngle</TT>: angle of rotation around a given axis.</A>
+</H3>
+The complete rotation described by <TT>orientation</TT> can optionally be decomposed into two sub-rotations: one is a ``<SPAN  CLASS="textit">spin</SPAN>'' rotation around <SPAN  CLASS="textbf">e</SPAN>, and the other a ``<SPAN  CLASS="textit">tilt</SPAN>'' rotation around an axis orthogonal to <SPAN  CLASS="textbf">e</SPAN>.
+The component <TT>spinAngle</TT> measures the angle of the ``spin'' sub-rotation around <SPAN  CLASS="textbf">e</SPAN>.
+This can be defined using the same options as the component <TT>orientation</TT>: <TT>atoms</TT> and <TT>refPositions</TT>, or <TT>refPositionsFile</TT>, <TT>refPositionsCol</TT> and <TT>refPositionsColValue</TT>.
+In addition, <TT>spinAngle</TT> accepts the <TT>axis</TT> option:
+
+<UL>
+<LI><A NAME="5568"></A>
+  <B><BIG CLASS="LARGE"><TT>axis </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$ \langle $"></SPAN>Special rotation axis (&#197;)<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> <TT>tilt, spinAngle</TT> 
+<BR><B>Acceptable values: </B> <TT>(x, y, z)</TT> triplet 
+<BR><B>Default value: </B> <TT>(0.0, 0.0, 1.0)</TT> 
+<BR><B>Description: </B> The three components of this vector define (when normalized) the special rotation axis used to calculate the <TT>tilt</TT> and <TT>spinAngle</TT> components.
+</LI>
+</UL>
+The component <TT>spinAngle</TT> returns an angle (in degrees) within the periodic interval <!-- MATH
+ $[-180:180]$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="92" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img70.png"
+ ALT="$ [-180:180]$"></SPAN>.  
+
+<P>
+<SPAN  CLASS="textbf">Note:</SPAN> the value of <TT>spinAngle</TT> is a continuous function almost everywhere, with the exception of configurations with the corresponding ``tilt'' angle equal to 180<SPAN CLASS="MATH"><IMG
+ WIDTH="11" HEIGHT="17" ALIGN="BOTTOM" BORDER="0"
+ SRC="img120.png"
+ ALT="$ ^\circ$"></SPAN> (i.e.&nbsp;the <TT>tilt</TT> component is equal to <SPAN CLASS="MATH"><IMG
+ WIDTH="27" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img121.png"
+ ALT="$ -1$"></SPAN>): in those cases, <TT>spinAngle</TT> is undefined.  If such configurations are expected, consider defining a <TT>tilt</TT> colvar using the same axis <SPAN  CLASS="textbf">e</SPAN>, and restraining it with a lower wall away from <SPAN CLASS="MATH"><IMG
+ WIDTH="27" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img121.png"
+ ALT="$ -1$"></SPAN>.
+
+<P>
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A NAME="tex2html807"
+  HREF="node46.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html801"
+  HREF="node23.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html795"
+  HREF="node44.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html803"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html805"
+  HREF="node75.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html808"
+  HREF="node46.html">tilt: cosine of the</A>
+<B> Up:</B> <A NAME="tex2html802"
+  HREF="node23.html">List of available colvar</A>
+<B> Previous:</B> <A NAME="tex2html796"
+  HREF="node44.html">orientationProj: cosine of the</A>
+ &nbsp; <B>  <A NAME="tex2html804"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html806"
+  HREF="node75.html">Index</A></B> </DIV>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Jérôme Hénin
+2015-03-03
+</ADDRESS>
+</BODY>
+</HTML>

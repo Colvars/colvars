@@ -30,24 +30,19 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <DIV CLASS="navigation"><!--Navigation Panel-->
 <A NAME="tex2html846"
   HREF="node48.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
- SRC="/usr/share/latex2html/icons/next.png"></A> 
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
 <A NAME="tex2html840"
   HREF="node23.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
- SRC="/usr/share/latex2html/icons/up.png"></A> 
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
 <A NAME="tex2html834"
   HREF="node46.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
- SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
 <A NAME="tex2html842"
   HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
- SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
 <A NAME="tex2html844"
   HREF="node81.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
- SRC="/usr/share/latex2html/icons/index.png"></A> 
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
 <BR>
 <B> Next:</B> <A NAME="tex2html847"
   HREF="node48.html">dihedralPC: protein dihedral pricipal</A>
@@ -56,9 +51,9 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <B> Previous:</B> <A NAME="tex2html835"
   HREF="node46.html">tilt: cosine of the</A>
  &nbsp; <B>  <A NAME="tex2html843"
-  HREF="node1.html">Contents</A></B> 
+  HREF="node1.html">Contents</A></B>
  &nbsp; <B>  <A NAME="tex2html845"
-  HREF="node81.html">Index</A></B> 
+  HREF="node81.html">Index</A></B>
 <BR>
 <BR></DIV>
 <!--End of Navigation Panel-->
@@ -104,14 +99,14 @@ residues.  The <SPAN CLASS="MATH"><IMG
     \right)
   } \; = \; \; \; \; \\\; \; \; \; {
     \nonumber
-    \frac{1}{2(N-2)} 
+    \frac{1}{2(N-2)}
     \sum_{n=N_{0}}^{N_{0}+N-2}
     \mathrm{angf}\left(
         \mathrm{C}_{\alpha}^{(n)},
         \mathrm{C}_{\alpha}^{(n+1)},
         \mathrm{C}_{\alpha}^{(n+2)}\right)
   } \; + \; {
-    \frac{1}{2(N-4)} 
+    \frac{1}{2(N-4)}
     \sum_{n=N_{0}}^{N_{0}+N-4}
     \mathrm{hbf}\left(
       \mathrm{O}^{(n)},
@@ -162,7 +157,7 @@ where the score function for the <!-- MATH
  WIDTH="106" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
  SRC="img128.png"
  ALT="$ \mathrm{C}_{\alpha} -
-\mathrm{C}_{\alpha} - \mathrm{C}_{\alpha}$"></SPAN> angle is defined as: 
+\mathrm{C}_{\alpha} - \mathrm{C}_{\alpha}$"></SPAN> angle is defined as:
 <P></P>
 <DIV ALIGN="CENTER" CLASS="mathdisplay"><A NAME="eq:colvars_alpha_Calpha"></A><!-- MATH
  \begin{equation}
@@ -211,7 +206,7 @@ colvar component on the same atoms.  The options recognized within the
 <TT>alpha&nbsp;{...}</TT> block are:
 
 <UL>
-<LI><A NAME="5801"></A>
+<LI><A NAME="5814"></A>
   <B><BIG CLASS="LARGE"><TT>residueRange </TT></BIG></B> <SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
@@ -221,8 +216,8 @@ colvar component on the same atoms.  The options recognized within the
  ALT="$ \alpha $"></SPAN>-helical residues<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> <TT>alpha</TT> 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> <TT>alpha</TT>
 <BR><B>Acceptable values: </B> ``<SPAN CLASS="MATH"><IMG
  WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
  SRC="img22.png"
@@ -235,7 +230,7 @@ colvar component on the same atoms.  The options recognized within the
  ALT="$ &lt;$"></SPAN>Final residue number<SPAN CLASS="MATH"><IMG
  WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
  SRC="img23.png"
- ALT="$ &gt;$"></SPAN>'' 
+ ALT="$ &gt;$"></SPAN>''
 <BR><B>Description: </B> This option specifies the range of residues on which this
     component should be defined.  The colvar module looks for the
     atoms within these residues named ``<TT>CA</TT>'', ``<TT>N</TT>''
@@ -244,40 +239,40 @@ colvar component on the same atoms.  The options recognized within the
 
 <P>
 </LI>
-<LI><A NAME="5819"></A>
+<LI><A NAME="5832"></A>
   <B><BIG CLASS="LARGE"><TT>psfSegID </TT></BIG></B> <SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
  ALT="$ \langle $"></SPAN>PSF segment identifier<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> <TT>alpha</TT> 
-<BR><B>Acceptable values: </B> string (max 4 characters) 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> <TT>alpha</TT>
+<BR><B>Acceptable values: </B> string (max 4 characters)
 <BR><B>Description: </B> This option sets the PSF segment identifier for the residues
     specified in <TT>residueRange</TT>.  This option is only required
     when PSF topologies are used.
 
 <P>
 </LI>
-<LI><A NAME="5836"></A>
+<LI><A NAME="5849"></A>
   <B><BIG CLASS="LARGE"><TT>hBondCoeff </TT></BIG></B> <SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
  ALT="$ \langle $"></SPAN>Coefficient for the hydrogen bond term<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> <TT>alpha</TT> 
-<BR><B>Acceptable values: </B> positive between 0 and 1 
-<BR><B>Default value: </B> 0.5 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> <TT>alpha</TT>
+<BR><B>Acceptable values: </B> positive between 0 and 1
+<BR><B>Default value: </B> 0.5
 <BR><B>Description: </B> This number specifies the contribution to the total value from the
     hydrogen bond terms.  0 disables the hydrogen bond terms, 1
     disables the angle terms.
 
 <P>
 </LI>
-<LI><A NAME="5853"></A>
+<LI><A NAME="5866"></A>
   <B><BIG CLASS="LARGE"><TT>angleRef </TT></BIG></B> <SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
@@ -292,19 +287,19 @@ colvar component on the same atoms.  The options recognized within the
 \mathrm{C}_{\alpha} - \mathrm{C}_{\alpha}$"></SPAN> angle<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> <TT>alpha</TT> 
-<BR><B>Acceptable values: </B> positive decimal 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> <TT>alpha</TT>
+<BR><B>Acceptable values: </B> positive decimal
 <BR><B>Default value: </B> 88<SPAN CLASS="MATH"><IMG
  WIDTH="11" HEIGHT="17" ALIGN="BOTTOM" BORDER="0"
  SRC="img117.png"
- ALT="$ ^{\circ}$"></SPAN> 
+ ALT="$ ^{\circ}$"></SPAN>
 <BR><B>Description: </B> This option sets the reference angle used in the score function
     (<A HREF="#eq:colvars_alpha_Calpha">12</A>).
 
 <P>
 </LI>
-<LI><A NAME="5878"></A>
+<LI><A NAME="5891"></A>
   <B><BIG CLASS="LARGE"><TT>angleTol </TT></BIG></B> <SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
@@ -319,61 +314,61 @@ colvar component on the same atoms.  The options recognized within the
 \mathrm{C}_{\alpha} - \mathrm{C}_{\alpha}$"></SPAN> angle<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> <TT>alpha</TT> 
-<BR><B>Acceptable values: </B> positive decimal 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> <TT>alpha</TT>
+<BR><B>Acceptable values: </B> positive decimal
 <BR><B>Default value: </B> 15<SPAN CLASS="MATH"><IMG
  WIDTH="11" HEIGHT="17" ALIGN="BOTTOM" BORDER="0"
  SRC="img117.png"
- ALT="$ ^{\circ}$"></SPAN> 
+ ALT="$ ^{\circ}$"></SPAN>
 <BR><B>Description: </B> This option sets the angle tolerance used in the score function
     (<A HREF="#eq:colvars_alpha_Calpha">12</A>).
 
 <P>
 </LI>
-<LI><A NAME="5903"></A>
+<LI><A NAME="5916"></A>
   <B><BIG CLASS="LARGE"><TT>hBondCutoff </TT></BIG></B> <SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
  ALT="$ \langle $"></SPAN>Hydrogen bond cutoff<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> <TT>alpha</TT> 
-<BR><B>Acceptable values: </B> positive decimal 
-<BR><B>Default value: </B> 3.3&nbsp;&#197; 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> <TT>alpha</TT>
+<BR><B>Acceptable values: </B> positive decimal
+<BR><B>Default value: </B> 3.3&nbsp;&#197;
 <BR><B>Description: </B> Equivalent to the <TT>cutoff</TT> option in the <TT>hBond</TT>
     component.
 
 <P>
 </LI>
-<LI><A NAME="5923"></A>
+<LI><A NAME="5936"></A>
   <B><BIG CLASS="LARGE"><TT>hBondExpNumer </TT></BIG></B> <SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
  ALT="$ \langle $"></SPAN>Hydrogen bond numerator exponent<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> <TT>alpha</TT> 
-<BR><B>Acceptable values: </B> positive integer 
-<BR><B>Default value: </B> 6 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> <TT>alpha</TT>
+<BR><B>Acceptable values: </B> positive integer
+<BR><B>Default value: </B> 6
 <BR><B>Description: </B> Equivalent to the <TT>expNumer</TT> option in the <TT>hBond</TT>
     component.
 
 <P>
 </LI>
-<LI><A NAME="5942"></A>
+<LI><A NAME="5955"></A>
   <B><BIG CLASS="LARGE"><TT>hBondExpDenom </TT></BIG></B> <SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
  ALT="$ \langle $"></SPAN>Hydrogen bond denominator exponent<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> <TT>alpha</TT> 
-<BR><B>Acceptable values: </B> positive integer 
-<BR><B>Default value: </B> 8 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> <TT>alpha</TT>
+<BR><B>Acceptable values: </B> positive integer
+<BR><B>Default value: </B> 8
 <BR><B>Description: </B> Equivalent to the <TT>expDenom</TT> option in the <TT>hBond</TT>
     component.
 
@@ -398,24 +393,19 @@ score).
 <!--Navigation Panel-->
 <A NAME="tex2html846"
   HREF="node48.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
- SRC="/usr/share/latex2html/icons/next.png"></A> 
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
 <A NAME="tex2html840"
   HREF="node23.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
- SRC="/usr/share/latex2html/icons/up.png"></A> 
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
 <A NAME="tex2html834"
   HREF="node46.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
- SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
 <A NAME="tex2html842"
   HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
- SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
 <A NAME="tex2html844"
   HREF="node81.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
- SRC="/usr/share/latex2html/icons/index.png"></A> 
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
 <BR>
 <B> Next:</B> <A NAME="tex2html847"
   HREF="node48.html">dihedralPC: protein dihedral pricipal</A>
@@ -424,13 +414,13 @@ score).
 <B> Previous:</B> <A NAME="tex2html835"
   HREF="node46.html">tilt: cosine of the</A>
  &nbsp; <B>  <A NAME="tex2html843"
-  HREF="node1.html">Contents</A></B> 
+  HREF="node1.html">Contents</A></B>
  &nbsp; <B>  <A NAME="tex2html845"
   HREF="node81.html">Index</A></B> </DIV>
 <!--End of Navigation Panel-->
 <ADDRESS>
 Jérôme Hénin
-2015-02-27
+2015-03-03
 </ADDRESS>
 </BODY>
 </HTML>

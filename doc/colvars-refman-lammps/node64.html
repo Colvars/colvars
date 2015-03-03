@@ -30,24 +30,19 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <DIV CLASS="navigation"><!--Navigation Panel-->
 <A NAME="tex2html1082"
   HREF="node65.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
- SRC="/usr/share/latex2html/icons/next.png"></A> 
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
 <A NAME="tex2html1076"
   HREF="node52.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
- SRC="/usr/share/latex2html/icons/up.png"></A> 
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
 <A NAME="tex2html1070"
   HREF="node63.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
- SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
 <A NAME="tex2html1078"
   HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
- SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
 <A NAME="tex2html1080"
   HREF="node71.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
- SRC="/usr/share/latex2html/icons/index.png"></A> 
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
 <BR>
 <B> Next:</B> <A NAME="tex2html1083"
   HREF="node65.html">Moving restraints: steered molecular</A>
@@ -56,9 +51,9 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <B> Previous:</B> <A NAME="tex2html1071"
   HREF="node63.html">Compatibility and post-processing</A>
  &nbsp; <B>  <A NAME="tex2html1079"
-  HREF="node1.html">Contents</A></B> 
+  HREF="node1.html">Contents</A></B>
  &nbsp; <B>  <A NAME="tex2html1081"
-  HREF="node71.html">Index</A></B> 
+  HREF="node71.html">Index</A></B>
 <BR>
 <BR></DIV>
 <!--End of Navigation Panel-->
@@ -73,7 +68,7 @@ Harmonic restraints
 The harmonic biasing method may be used to enforce fixed or moving restraints,
 including variants of Steered and Targeted MD. Within energy minimization
 runs, it allows for restrained minimization, e.g. to calculate relaxed potential
-energy surfaces. In the context of the colvars module, 
+energy surfaces. In the context of the colvars module,
 harmonic potentials are meant according to their textbook definition:
 <!-- MATH
  $\displaystyle V({\mbox{\boldmath {$x$}}}) = \frac{1}{2} k ({\mbox{\boldmath {$x$}}} - {\mbox{\boldmath {$x_0$}}})^2$
@@ -91,17 +86,17 @@ block, which may contain (in addition to the standard option
 <TT>colvars</TT>) the following keywords:
 
 <UL>
-<LI><A NAME="6108"></A>
+<LI><A NAME="6121"></A>
   <B><BIG CLASS="LARGE"><TT>forceConstant </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle\,$"></B></SPAN>Scaled force constant (unit of energy specified by <TT>units</TT>)<SPAN CLASS="MATH"><B><IMG
+ ALT="$ \langle $"></B></SPAN>Scaled force constant (unit of energy specified by <TT>units</TT>)<SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$ \,\rangle$"></B></SPAN> 
-<BR><B>Context: </B> <TT>harmonic</TT> 
-<BR><B>Acceptable values: </B> positive decimal 
-<BR><B>Default value: </B> <TT>1.0</TT> 
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>harmonic</TT>
+<BR><B>Acceptable values: </B> positive decimal
+<BR><B>Default value: </B> <TT>1.0</TT>
 <BR><B>Description: </B> This defines a scaled force constant for the harmonic potential.
     To ensure consistency for multidimensional restraints, it is
     divided internally by the square of the specific <TT>width</TT>
@@ -124,16 +119,16 @@ block, which may contain (in addition to the standard option
 
 <P>
 </LI>
-<LI><A NAME="6134"></A>
+<LI><A NAME="6147"></A>
   <B><BIG CLASS="LARGE"><TT>centers </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle\,$"></B></SPAN>Initial harmonic restraint centers<SPAN CLASS="MATH"><B><IMG
+ ALT="$ \langle $"></B></SPAN>Initial harmonic restraint centers<SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$ \,\rangle$"></B></SPAN> 
-<BR><B>Context: </B> <TT>harmonic</TT> 
-<BR><B>Acceptable values: </B> space-separated list of colvar values 
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>harmonic</TT>
+<BR><B>Acceptable values: </B> space-separated list of colvar values
 <BR><B>Description: </B> The centers (equilibrium values) of the restraint are entered here.
     The number of values must be the number of requested colvars.
     Each value is a decimal number if the corresponding colvar returns
@@ -173,24 +168,19 @@ variables, and leave it enabled only for ``relevant'' ones.
 <!--Navigation Panel-->
 <A NAME="tex2html1082"
   HREF="node65.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
- SRC="/usr/share/latex2html/icons/next.png"></A> 
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
 <A NAME="tex2html1076"
   HREF="node52.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
- SRC="/usr/share/latex2html/icons/up.png"></A> 
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
 <A NAME="tex2html1070"
   HREF="node63.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
- SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
 <A NAME="tex2html1078"
   HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
- SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
 <A NAME="tex2html1080"
   HREF="node71.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
- SRC="/usr/share/latex2html/icons/index.png"></A> 
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
 <BR>
 <B> Next:</B> <A NAME="tex2html1083"
   HREF="node65.html">Moving restraints: steered molecular</A>
@@ -199,13 +189,13 @@ variables, and leave it enabled only for ``relevant'' ones.
 <B> Previous:</B> <A NAME="tex2html1071"
   HREF="node63.html">Compatibility and post-processing</A>
  &nbsp; <B>  <A NAME="tex2html1079"
-  HREF="node1.html">Contents</A></B> 
+  HREF="node1.html">Contents</A></B>
  &nbsp; <B>  <A NAME="tex2html1081"
   HREF="node71.html">Index</A></B> </DIV>
 <!--End of Navigation Panel-->
 <ADDRESS>
 Jérôme Hénin
-2015-02-27
+2015-03-03
 </ADDRESS>
 </BODY>
 </HTML>

@@ -30,24 +30,19 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <DIV CLASS="navigation"><!--Navigation Panel-->
 <A NAME="tex2html995"
   HREF="node59.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
- SRC="/usr/share/latex2html/icons/next.png"></A> 
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
 <A NAME="tex2html989"
   HREF="node52.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
- SRC="/usr/share/latex2html/icons/up.png"></A> 
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
 <A NAME="tex2html983"
   HREF="node57.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
- SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
 <A NAME="tex2html991"
   HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
- SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
 <A NAME="tex2html993"
   HREF="node71.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
- SRC="/usr/share/latex2html/icons/index.png"></A> 
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
 <BR>
 <B> Next:</B> <A NAME="tex2html996"
   HREF="node59.html">Output files</A>
@@ -56,9 +51,9 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <B> Previous:</B> <A NAME="tex2html984"
   HREF="node57.html">Post-processing: reconstructing a multidimensional</A>
  &nbsp; <B>  <A NAME="tex2html992"
-  HREF="node1.html">Contents</A></B> 
+  HREF="node1.html">Contents</A></B>
  &nbsp; <B>  <A NAME="tex2html994"
-  HREF="node71.html">Index</A></B> 
+  HREF="node71.html">Index</A></B>
 <BR>
 <BR></DIV>
 <!--End of Navigation Panel-->
@@ -241,7 +236,7 @@ Assuming that the set of collective variables includes all relevant degrees of f
  WIDTH="21" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
  SRC="img178.png"
  ALT="$ \delta{}t$"></B></SPAN> [<A
- HREF="node72.html#Bussi2006">14</A>]. 
+ HREF="node72.html#Bussi2006">14</A>].
 In typical applications, a good rule of thumb can be to choose the ratio <!-- MATH
  $W/\delta{}t$
  -->
@@ -275,7 +270,7 @@ In typical applications, a good rule of thumb can be to choose the ratio <!-- MA
  ALT="$ \delta_{\xi_{i}}$"></B></SPAN> then dictates the resolution of the calculated PMF.
 
 <P>
-To enable a metadynamics calculation, a <TT>metadynamics</TT> block must be defined in the colvars configuration file. 
+To enable a metadynamics calculation, a <TT>metadynamics</TT> block must be defined in the colvars configuration file.
 Its only mandatory keyword is the <TT>colvars</TT> option listing all the variables involved: multidimensional PMFs are obtained by the same <TT>metadynamics</TT> instance applied to all the colvars.
 
 <P>
@@ -295,17 +290,17 @@ The values of these options are optimal for colvars with correlation times <!-- 
  ALT="$ \tau_{{\mbox{\boldmath {$\xi$}}}}$"></B></SPAN> in the range of a few thousand simulation steps, typical of many biomolecular simulations:
 
 <UL>
-<LI><A NAME="5703"></A>
+<LI><A NAME="5716"></A>
   <B><BIG CLASS="LARGE"><TT>hillWeight </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle\,$"></B></SPAN>Height of each hill (unit of energy specified by <TT>units</TT>)<SPAN CLASS="MATH"><B><IMG
+ ALT="$ \langle $"></B></SPAN>Height of each hill (unit of energy specified by <TT>units</TT>)<SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$ \,\rangle$"></B></SPAN> 
-<BR><B>Context: </B> <TT>metadynamics</TT> 
-<BR><B>Acceptable values: </B> positive decimal 
-<BR><B>Default value: </B> <TT>0.01</TT> 
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>metadynamics</TT>
+<BR><B>Acceptable values: </B> positive decimal
+<BR><B>Default value: </B> <TT>0.01</TT>
 <BR><B>Description: </B> This option sets the height <SPAN CLASS="MATH"><B><IMG
  WIDTH="20" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
  SRC="img166.png"
@@ -315,17 +310,17 @@ The values of these options are optimal for colvars with correlation times <!-- 
 
 <P>
 </LI>
-<LI><A NAME="5726"></A>
+<LI><A NAME="5739"></A>
   <B><BIG CLASS="LARGE"><TT>newHillFrequency </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle\,$"></B></SPAN>Frequency of hill creation<SPAN CLASS="MATH"><B><IMG
+ ALT="$ \langle $"></B></SPAN>Frequency of hill creation<SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$ \,\rangle$"></B></SPAN> 
-<BR><B>Context: </B> <TT>metadynamics</TT> 
-<BR><B>Acceptable values: </B> positive integer 
-<BR><B>Default value: </B> <TT>1000</TT> 
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>metadynamics</TT>
+<BR><B>Acceptable values: </B> positive integer
+<BR><B>Default value: </B> <TT>1000</TT>
 <BR><B>Description: </B> This option sets the number of integration steps after which a new
     hill is added to the metadynamics potential.  Its value determines
     the parameter <SPAN CLASS="MATH"><B><IMG
@@ -375,24 +370,19 @@ The parameter <!-- MATH
 <!--Navigation Panel-->
 <A NAME="tex2html995"
   HREF="node59.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
- SRC="/usr/share/latex2html/icons/next.png"></A> 
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
 <A NAME="tex2html989"
   HREF="node52.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
- SRC="/usr/share/latex2html/icons/up.png"></A> 
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
 <A NAME="tex2html983"
   HREF="node57.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
- SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
 <A NAME="tex2html991"
   HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
- SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
 <A NAME="tex2html993"
   HREF="node71.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
- SRC="/usr/share/latex2html/icons/index.png"></A> 
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
 <BR>
 <B> Next:</B> <A NAME="tex2html996"
   HREF="node59.html">Output files</A>
@@ -401,13 +391,13 @@ The parameter <!-- MATH
 <B> Previous:</B> <A NAME="tex2html984"
   HREF="node57.html">Post-processing: reconstructing a multidimensional</A>
  &nbsp; <B>  <A NAME="tex2html992"
-  HREF="node1.html">Contents</A></B> 
+  HREF="node1.html">Contents</A></B>
  &nbsp; <B>  <A NAME="tex2html994"
   HREF="node71.html">Index</A></B> </DIV>
 <!--End of Navigation Panel-->
 <ADDRESS>
 Jérôme Hénin
-2015-02-27
+2015-03-03
 </ADDRESS>
 </BODY>
 </HTML>

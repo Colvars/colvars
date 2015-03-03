@@ -1,0 +1,300 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Using the cv command</TITLE>
+<META NAME="description" CONTENT="Using the cv command">
+<META NAME="keywords" CONTENT="colvars-refman-vmd">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="colvars-refman-vmd.css">
+
+<LINK REL="next" HREF="node8.html">
+<LINK REL="previous" HREF="node6.html">
+<LINK REL="up" HREF="node6.html">
+<LINK REL="next" HREF="node8.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A NAME="tex2html216"
+  HREF="node8.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html210"
+  HREF="node6.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html204"
+  HREF="node6.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html212"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html214"
+  HREF="node75.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html217"
+  HREF="node8.html">Configuration syntax for the</A>
+<B> Up:</B> <A NAME="tex2html211"
+  HREF="node6.html">General parameters and input/output</A>
+<B> Previous:</B> <A NAME="tex2html205"
+  HREF="node6.html">General parameters and input/output</A>
+ &nbsp; <B>  <A NAME="tex2html213"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html215"
+  HREF="node75.html">Index</A></B> 
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+
+<H2><A NAME="SECTION00041000000000000000"></A>
+<A NAME="sec:colvars_mdengine_params"></A>
+<BR>
+Using the <TT>cv</TT> command
+</H2>
+
+<P>
+The colvars module is accessed in VMD through the command <TT>cv</TT>.
+The command must be used the first time as <TT>cv molid </TT><SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ &lt;$"></SPAN>molid<SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ &gt;$"></SPAN></SPAN> to set up the collective variables module for a given molecule.
+In all following uses, the <TT>cv</TT> command will continue operating on the same molecule, regardless of its ``top'' status.
+To use the <TT>cv</TT> command on a different molecule, use <TT>cv delete</TT> first and then <TT>cv molid </TT><SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ &lt;$"></SPAN>molid<SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ &gt;$"></SPAN></SPAN>.
+Invoking the <TT>cv</TT> command with no arguments prints a help screen.
+
+<P>
+The list of parameters of the <TT>cv</TT> command is:
+
+<UL>
+<LI><TT>molid</TT> <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ &lt;$"></SPAN>molid<SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ &gt;$"></SPAN></SPAN>: set up the colvars module, where <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ &lt;$"></SPAN>molid<SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ &gt;$"></SPAN></SPAN> is the identifier of a valid VMD molecule as provided e.g.&nbsp;by <TT>molinfo</TT>: for example, use <TT>cv molid top</TT> to set the colvars module for the top molecule;
+</LI>
+<LI><TT>configfile</TT> <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ &lt;$"></SPAN>file name<SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ &gt;$"></SPAN></SPAN>: read the colvars configuration from the contents of the specified file; the <TT>cv</TT> command can be invoked multiple times with this argument and/or with the <TT>config</TT> argument; see <A HREF="node8.html#sec:colvars_config">2.2</A> for the configuration syntax;
+</LI>
+<LI><TT>config</TT> <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ &lt;$"></SPAN>string<SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ &gt;$"></SPAN></SPAN>: read the colvars configuration from the given text string; see <A HREF="node8.html#sec:colvars_config">2.2</A> for the configuration syntax;
+</LI>
+<LI><TT>reset</TT>: delete all internal configuration, while keeping information about the VMD molecule;
+</LI>
+<LI><TT>delete</TT>: delete the colvars module; after this, the module can be reissued again using <TT>cv molid</TT>;
+</LI>
+<LI><TT>list</TT>: return a list of all colvars currently defined (see <A HREF="node11.html#sec:colvar">3</A>, <A HREF="node22.html#sec:cvc">5</A> and <A HREF="node17.html#sec:colvar_atom_groups">4</A> for how to configure a collective variable);
+</LI>
+<LI><TT>list biases</TT>: return a list of all collective variable biases (i.e.&nbsp;sampling and analysis algorithms) currently defined (see <A HREF="node55.html#sec:colvarbias">6</A> for how to configure a bias);
+</LI>
+<LI><TT>load</TT> <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ &lt;$"></SPAN>file name<SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ &gt;$"></SPAN></SPAN>: load a collective variables state file, typically produced during a simulation; this parameter requires that the corresponding configuration has already been loaded by <TT>configfile</TT> or <TT>config</TT>; see <A HREF="node10.html#sec:colvars_output">2.4</A> for a brief description of this file; the contents of this file are not required for as long as the VMD molecule has valid coordinates and <TT>cv update</TT> is used;
+</LI>
+<LI><TT>save</TT> <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ &lt;$"></SPAN>prefix<SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ &gt;$"></SPAN></SPAN>: save the current state in a file whose name begins with the given argument; if any of the biases have additional output files defined, those are saved as well;
+</LI>
+<LI><TT>update</TT>: recalculate all colvars and biases based on the current atomic coordinates;
+</LI>
+<LI><TT>printframe</TT>: return a summary of the current frame, in a format equivalent to a line of the collective variables trajectory file;
+</LI>
+<LI><TT>printframelabels</TT>: return text labels to annotate <TT>printframe</TT>'s output;
+</LI>
+<LI><TT>frame</TT>: return the current frame number, where variables are calculated;
+</LI>
+<LI><TT>frame</TT> <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ &lt;$"></SPAN>new frame<SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ &gt;$"></SPAN></SPAN>: set the frame number (must be a valid frame number of the VMD molecule);
+</LI>
+<LI><TT>colvar</TT> <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ &lt;$"></SPAN>name<SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ &gt;$"></SPAN></SPAN> <TT>update</TT>: recalculate the colvar <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ &lt;$"></SPAN>name<SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ &gt;$"></SPAN></SPAN>;
+</LI>
+<LI><TT>colvar</TT> <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ &lt;$"></SPAN>name<SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ &gt;$"></SPAN></SPAN> <TT>value</TT>: return the current value of the colvar <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ &lt;$"></SPAN>name<SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ &gt;$"></SPAN></SPAN>;
+</LI>
+<LI><TT>colvar</TT> <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ &lt;$"></SPAN>name<SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ &gt;$"></SPAN></SPAN> <TT>delete</TT>: delete the colvar <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ &lt;$"></SPAN>name<SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ &gt;$"></SPAN></SPAN>;
+</LI>
+<LI><TT>colvar</TT> <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ &lt;$"></SPAN>name<SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ &gt;$"></SPAN></SPAN> <TT>addforce</TT> <SPAN  CLASS="textit">force</SPAN>: apply the given force on <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ &lt;$"></SPAN>name<SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ &gt;$"></SPAN></SPAN> (this option is provided for compatibility with NAMD, but has no effect in VMD);
+</LI>
+<LI><TT>bias</TT> <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ &lt;$"></SPAN>name<SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ &gt;$"></SPAN></SPAN> <TT>update</TT>: recalculate the bias <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ &lt;$"></SPAN>name<SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ &gt;$"></SPAN></SPAN>;
+</LI>
+<LI><TT>bias</TT> <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ &lt;$"></SPAN>name<SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ &gt;$"></SPAN></SPAN> <TT>energy</TT>: return the current energy of the bias <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ &lt;$"></SPAN>name<SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ &gt;$"></SPAN></SPAN>;
+</LI>
+<LI><TT>bias</TT> <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ &lt;$"></SPAN>name<SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ &gt;$"></SPAN></SPAN> <TT>delete</TT>: delete the bias <SPAN  CLASS="textit"><SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ &lt;$"></SPAN>name<SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ &gt;$"></SPAN></SPAN>.
+</LI>
+</UL>
+
+<P>
+
+<P>
+
+<P>
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A NAME="tex2html216"
+  HREF="node8.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html210"
+  HREF="node6.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html204"
+  HREF="node6.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html212"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html214"
+  HREF="node75.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html217"
+  HREF="node8.html">Configuration syntax for the</A>
+<B> Up:</B> <A NAME="tex2html211"
+  HREF="node6.html">General parameters and input/output</A>
+<B> Previous:</B> <A NAME="tex2html205"
+  HREF="node6.html">General parameters and input/output</A>
+ &nbsp; <B>  <A NAME="tex2html213"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html215"
+  HREF="node75.html">Index</A></B> </DIV>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Jérôme Hénin
+2015-03-03
+</ADDRESS>
+</BODY>
+</HTML>

@@ -29,24 +29,19 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <DIV CLASS="navigation"><!--Navigation Panel-->
 <A NAME="tex2html941"
   HREF="node55.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
- SRC="/usr/share/latex2html/icons/next.png"></A> 
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
 <A NAME="tex2html935"
   HREF="node22.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
- SRC="/usr/share/latex2html/icons/up.png"></A> 
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
 <A NAME="tex2html931"
   HREF="node53.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
- SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
 <A NAME="tex2html937"
   HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
- SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
 <A NAME="tex2html939"
   HREF="node81.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
- SRC="/usr/share/latex2html/icons/index.png"></A> 
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
 <BR>
 <B> Next:</B> <A NAME="tex2html942"
   HREF="node55.html">Biasing and analysis methods</A>
@@ -55,9 +50,9 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <B> Previous:</B> <A NAME="tex2html932"
   HREF="node53.html">Linear and polynomial combinations</A>
  &nbsp; <B>  <A NAME="tex2html938"
-  HREF="node1.html">Contents</A></B> 
+  HREF="node1.html">Contents</A></B>
  &nbsp; <B>  <A NAME="tex2html940"
-  HREF="node81.html">Index</A></B> 
+  HREF="node81.html">Index</A></B>
 <BR>
 <BR></DIV>
 <!--End of Navigation Panel-->
@@ -77,16 +72,16 @@ may be particularly useful.
 <P>
 
 <UL>
-<LI><A NAME="6102"></A>
+<LI><A NAME="6115"></A>
   <B><BIG CLASS="LARGE"><TT>scriptedFunction </TT></BIG></B> <SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
  ALT="$ \langle $"></SPAN>Compute colvar as a scripted function of its components<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> <TT>colvar</TT> 
-<BR><B>Acceptable values: </B> string 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> <TT>colvar</TT>
+<BR><B>Acceptable values: </B> string
 <BR><B>Description: </B> If this option is specified, the colvar will be computed as a
     scripted function of the values of its components.
     To that effect, the user should define two Tcl procedures:
@@ -112,7 +107,7 @@ may be particularly useful.
  ALT="$ &lt;$"></SPAN>scriptedFunction<SPAN CLASS="MATH"><IMG
  WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
  SRC="img23.png"
- ALT="$ &gt;$"></SPAN></TT> should return one value of 
+ ALT="$ &gt;$"></SPAN></TT> should return one value of
     type <SPAN CLASS="MATH"><IMG
  WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
  SRC="img22.png"
@@ -128,7 +123,7 @@ may be particularly useful.
  SRC="img23.png"
  ALT="$ &gt;$"></SPAN>_gradient</TT> should return a Tcl list
     containing the derivatives of the function with respect to each
-    component. 
+    component.
     If both the function and some of the components are vectors, the gradient is really a Jacobian matrix that should be passed as a linear vector in row-major order, i.e. for a function <SPAN CLASS="MATH"><IMG
  WIDTH="44" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
  SRC="img150.png"
@@ -142,17 +137,17 @@ may be particularly useful.
 
 <P>
 </LI>
-<LI><A NAME="6123"></A>
+<LI><A NAME="6136"></A>
   <B><BIG CLASS="LARGE"><TT>scriptedFunctionType </TT></BIG></B> <SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
  ALT="$ \langle $"></SPAN>Type of value returned by the scripted colvar<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> <TT>colvar</TT> 
-<BR><B>Acceptable values: </B> string 
-<BR><B>Default value: </B> <TT>scalar</TT> 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> <TT>colvar</TT>
+<BR><B>Acceptable values: </B> string
+<BR><B>Default value: </B> <TT>scalar</TT>
 <BR><B>Description: </B> If a colvar is defined as a scripted function, its type is not constrained by
     the types of its components. With this flag, the user may specify whether the
     colvar is a scalar or one of the following vector types: <TT>vector3</TT>
@@ -164,46 +159,41 @@ may be particularly useful.
 
 <P>
 </LI>
-<LI><A NAME="6145"></A>
+<LI><A NAME="6158"></A>
   <B><BIG CLASS="LARGE"><TT>scriptedFunctionVectorSize </TT></BIG></B> <SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
  ALT="$ \langle $"></SPAN>Dimension of the vector value of a scripted colvar<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> <TT>colvar</TT> 
-<BR><B>Acceptable values: </B> positive integer 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> <TT>colvar</TT>
+<BR><B>Acceptable values: </B> positive integer
 <BR><B>Description: </B> This parameter is only valid when <TT>scriptedFunctionType</TT> is
     set to <TT>vector</TT>. It defines the vector length of the colvar value
     returned by the function.
 </LI>
 </UL>
- 
+
 <P>
 
 <DIV CLASS="navigation"><HR>
 <!--Navigation Panel-->
 <A NAME="tex2html941"
   HREF="node55.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
- SRC="/usr/share/latex2html/icons/next.png"></A> 
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
 <A NAME="tex2html935"
   HREF="node22.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
- SRC="/usr/share/latex2html/icons/up.png"></A> 
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
 <A NAME="tex2html931"
   HREF="node53.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
- SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
 <A NAME="tex2html937"
   HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
- SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
 <A NAME="tex2html939"
   HREF="node81.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
- SRC="/usr/share/latex2html/icons/index.png"></A> 
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
 <BR>
 <B> Next:</B> <A NAME="tex2html942"
   HREF="node55.html">Biasing and analysis methods</A>
@@ -212,13 +202,13 @@ may be particularly useful.
 <B> Previous:</B> <A NAME="tex2html932"
   HREF="node53.html">Linear and polynomial combinations</A>
  &nbsp; <B>  <A NAME="tex2html938"
-  HREF="node1.html">Contents</A></B> 
+  HREF="node1.html">Contents</A></B>
  &nbsp; <B>  <A NAME="tex2html940"
   HREF="node81.html">Index</A></B> </DIV>
 <!--End of Navigation Panel-->
 <ADDRESS>
 Jérôme Hénin
-2015-02-27
+2015-03-03
 </ADDRESS>
 </BODY>
 </HTML>

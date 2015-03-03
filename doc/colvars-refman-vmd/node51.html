@@ -1,0 +1,153 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Non-scalar components.</TITLE>
+<META NAME="description" CONTENT="Non-scalar components.">
+<META NAME="keywords" CONTENT="colvars-refman-vmd">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="colvars-refman-vmd.css">
+
+<LINK REL="next" HREF="node52.html">
+<LINK REL="previous" HREF="node50.html">
+<LINK REL="up" HREF="node49.html">
+<LINK REL="next" HREF="node52.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A NAME="tex2html892"
+  HREF="node52.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html886"
+  HREF="node49.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html880"
+  HREF="node50.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html888"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html890"
+  HREF="node75.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html893"
+  HREF="node52.html">Calculating system forces.</A>
+<B> Up:</B> <A NAME="tex2html887"
+  HREF="node49.html">Advanced usage and special</A>
+<B> Previous:</B> <A NAME="tex2html881"
+  HREF="node50.html">Periodic components.</A>
+ &nbsp; <B>  <A NAME="tex2html889"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html891"
+  HREF="node75.html">Index</A></B> 
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+
+<H3><A NAME="SECTION00072200000000000000">
+Non-scalar components.</A>
+</H3>
+When one of the following components are used, the defined colvar returns a value that is not a scalar number:
+
+<UL>
+<LI><TT>distanceVec</TT>: 3-dimensional vector of the distance
+  between two groups;
+</LI>
+<LI><TT>distanceDir</TT>: 3-dimensional unit vector of the distance
+  between two groups;
+</LI>
+<LI><TT>orientation</TT>: 4-dimensional unit quaternion representing
+  the best-fit rotation from a set of reference coordinates.
+</LI>
+</UL>
+The distance between two 3-dimensional unit vectors is computed as the
+angle between them.  The distance between two quaternions is computed
+as the angle between the two 4-dimensional unit vectors: because the
+orientation represented by <!-- MATH
+ $\mathsf{q}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img142.png"
+ ALT="$ \mathsf{q}$"></SPAN> is the same as the one
+represented by <!-- MATH
+ $-\mathsf{q}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="27" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img143.png"
+ ALT="$ -\mathsf{q}$"></SPAN>, distances between two quaternions are
+computed considering the closest of the two symmetric images.
+
+<P>
+Non-scalar components carry the following restrictions:
+
+<UL>
+<LI>Calculation of system forces (<TT>outputSystemForce</TT> option)
+  is currently not implemented.
+</LI>
+<LI>Each colvar can only contain one non-scalar component.
+</LI>
+<LI>Binning on a grid (<TT>abf</TT>, <TT>histogram</TT> and
+  <TT>metadynamics</TT> with <TT>useGrids</TT> enabled) is currently
+  not implemented for colvars based on such components.
+</LI>
+</UL>
+
+<P>
+<SPAN  CLASS="textit">Note: while these restrictions apply to individual colvars based
+  on non-scalar components, no limit is set to the number of scalar
+  colvars.  To compute multi-dimensional histograms and PMFs, use sets
+  of scalar colvars of arbitrary size.</SPAN>
+
+<P>
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A NAME="tex2html892"
+  HREF="node52.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html886"
+  HREF="node49.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html880"
+  HREF="node50.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html888"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html890"
+  HREF="node75.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html893"
+  HREF="node52.html">Calculating system forces.</A>
+<B> Up:</B> <A NAME="tex2html887"
+  HREF="node49.html">Advanced usage and special</A>
+<B> Previous:</B> <A NAME="tex2html881"
+  HREF="node50.html">Periodic components.</A>
+ &nbsp; <B>  <A NAME="tex2html889"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html891"
+  HREF="node75.html">Index</A></B> </DIV>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Jérôme Hénin
+2015-03-03
+</ADDRESS>
+</BODY>
+</HTML>

@@ -30,24 +30,19 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <DIV CLASS="navigation"><!--Navigation Panel-->
 <A NAME="tex2html1099"
   HREF="node66.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
- SRC="/usr/share/latex2html/icons/next.png"></A> 
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
 <A NAME="tex2html1093"
   HREF="node64.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
- SRC="/usr/share/latex2html/icons/up.png"></A> 
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
 <A NAME="tex2html1087"
   HREF="node64.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
- SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
 <A NAME="tex2html1095"
   HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
- SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
 <A NAME="tex2html1097"
   HREF="node71.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
- SRC="/usr/share/latex2html/icons/index.png"></A> 
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
 <BR>
 <B> Next:</B> <A NAME="tex2html1100"
   HREF="node66.html">Moving restraints: umbrella sampling</A>
@@ -56,9 +51,9 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <B> Previous:</B> <A NAME="tex2html1088"
   HREF="node64.html">Harmonic restraints</A>
  &nbsp; <B>  <A NAME="tex2html1096"
-  HREF="node1.html">Contents</A></B> 
+  HREF="node1.html">Contents</A></B>
  &nbsp; <B>  <A NAME="tex2html1098"
-  HREF="node71.html">Index</A></B> 
+  HREF="node71.html">Index</A></B>
 <BR>
 <BR></DIV>
 <!--End of Navigation Panel-->
@@ -76,20 +71,20 @@ When the centers are changed continuously, a steered MD in a collective variable
 <P>
 
 <UL>
-<LI><A NAME="6152"></A>
+<LI><A NAME="6165"></A>
   <B><BIG CLASS="LARGE"><TT>targetCenters </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle\,$"></B></SPAN>Steer the restraint centers towards these
+ ALT="$ \langle $"></B></SPAN>Steer the restraint centers towards these
     targets<SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$ \,\rangle$"></B></SPAN> 
-<BR><B>Context: </B> <TT>harmonic</TT> 
-<BR><B>Acceptable values: </B> space-separated list of colvar values 
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>harmonic</TT>
+<BR><B>Acceptable values: </B> space-separated list of colvar values
 <BR><B>Description: </B> When defined, the current <TT>centers</TT> will be moved towards
     these values during the simulation.
-    By default, the centers are moved over a total of 
+    By default, the centers are moved over a total of
     <TT>targetNumSteps</TT> steps by a linear interpolation, in the
     spirit of Steered MD.
     If <TT>targetNumStages</TT> is set to a nonzero value, the
@@ -119,16 +114,16 @@ When the centers are changed continuously, a steered MD in a collective variable
 
 <P>
 </LI>
-<LI><A NAME="6176"></A>
+<LI><A NAME="6189"></A>
   <B><BIG CLASS="LARGE"><TT>targetNumSteps </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle\,$"></B></SPAN>Number of steps for steering<SPAN CLASS="MATH"><B><IMG
+ ALT="$ \langle $"></B></SPAN>Number of steps for steering<SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$ \,\rangle$"></B></SPAN> 
-<BR><B>Context: </B> <TT>harmonic</TT> 
-<BR><B>Acceptable values: </B> positive integer 
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>harmonic</TT>
+<BR><B>Acceptable values: </B> positive integer
 <BR><B>Description: </B> In single-stage (continuous) transformations, defines the number of MD
     steps required to move the restraint centers (or force constant)
     towards the values specified with <TT>targetCenters</TT> or
@@ -139,33 +134,33 @@ When the centers are changed continuously, a steered MD in a collective variable
 
 <P>
 </LI>
-<LI><A NAME="6195"></A>
+<LI><A NAME="6208"></A>
   <B><BIG CLASS="LARGE"><TT>outputCenters </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle\,$"></B></SPAN>Write the current centers to the trajectory file<SPAN CLASS="MATH"><B><IMG
+ ALT="$ \langle $"></B></SPAN>Write the current centers to the trajectory file<SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$ \,\rangle$"></B></SPAN> 
-<BR><B>Context: </B> <TT>harmonic</TT> 
-<BR><B>Acceptable values: </B> boolean 
-<BR><B>Default value: </B> <TT>off</TT> 
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>harmonic</TT>
+<BR><B>Acceptable values: </B> boolean
+<BR><B>Default value: </B> <TT>off</TT>
 <BR><B>Description: </B> If this option is chosen and  <TT>colvarsTrajFrequency</TT> is not zero, the positions of the restraint  centers will be written to the trajectory file during the simulation.
     This option allows to conveniently extract the PMF from the colvars trajectory files in a steered MD calculation.
 
 <P>
 </LI>
-<LI><A NAME="6214"></A>
+<LI><A NAME="6227"></A>
   <B><BIG CLASS="LARGE"><TT>outputAccumulatedWork </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle\,$"></B></SPAN>Write the accumulated work of the moving restraint to the trajectory file<SPAN CLASS="MATH"><B><IMG
+ ALT="$ \langle $"></B></SPAN>Write the accumulated work of the moving restraint to the trajectory file<SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$ \,\rangle$"></B></SPAN> 
-<BR><B>Context: </B> <TT>harmonic</TT> 
-<BR><B>Acceptable values: </B> boolean 
-<BR><B>Default value: </B> <TT>off</TT> 
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>harmonic</TT>
+<BR><B>Acceptable values: </B> boolean
+<BR><B>Default value: </B> <TT>off</TT>
 <BR><B>Description: </B> If this option is chosen, <TT>targetCenters</TT> is defined, and <TT>colvarsTrajFrequency</TT> is not zero, the accumulated work from the beginning of the simulation will be written to the trajectory file.
     If the simulation has been continued from a previous state file, the previously accumulated work is included in the integral.
     This option allows to conveniently extract the PMF from the colvars trajectory files in a steered MD calculation.
@@ -189,24 +184,19 @@ changed manually.
 <!--Navigation Panel-->
 <A NAME="tex2html1099"
   HREF="node66.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
- SRC="/usr/share/latex2html/icons/next.png"></A> 
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
 <A NAME="tex2html1093"
   HREF="node64.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
- SRC="/usr/share/latex2html/icons/up.png"></A> 
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
 <A NAME="tex2html1087"
   HREF="node64.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
- SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
 <A NAME="tex2html1095"
   HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
- SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
 <A NAME="tex2html1097"
   HREF="node71.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
- SRC="/usr/share/latex2html/icons/index.png"></A> 
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
 <BR>
 <B> Next:</B> <A NAME="tex2html1100"
   HREF="node66.html">Moving restraints: umbrella sampling</A>
@@ -215,13 +205,13 @@ changed manually.
 <B> Previous:</B> <A NAME="tex2html1088"
   HREF="node64.html">Harmonic restraints</A>
  &nbsp; <B>  <A NAME="tex2html1096"
-  HREF="node1.html">Contents</A></B> 
+  HREF="node1.html">Contents</A></B>
  &nbsp; <B>  <A NAME="tex2html1098"
   HREF="node71.html">Index</A></B> </DIV>
 <!--End of Navigation Panel-->
 <ADDRESS>
 Jérôme Hénin
-2015-02-27
+2015-03-03
 </ADDRESS>
 </BODY>
 </HTML>

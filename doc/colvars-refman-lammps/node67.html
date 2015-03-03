@@ -29,24 +29,19 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <DIV CLASS="navigation"><!--Navigation Panel-->
 <A NAME="tex2html1125"
   HREF="node68.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
- SRC="/usr/share/latex2html/icons/next.png"></A> 
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
 <A NAME="tex2html1119"
   HREF="node64.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
- SRC="/usr/share/latex2html/icons/up.png"></A> 
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
 <A NAME="tex2html1115"
   HREF="node66.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
- SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
 <A NAME="tex2html1121"
   HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
- SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
 <A NAME="tex2html1123"
   HREF="node71.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
- SRC="/usr/share/latex2html/icons/index.png"></A> 
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
 <BR>
 <B> Next:</B> <A NAME="tex2html1126"
   HREF="node68.html">Linear restraints</A>
@@ -55,9 +50,9 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <B> Previous:</B> <A NAME="tex2html1116"
   HREF="node66.html">Moving restraints: umbrella sampling</A>
  &nbsp; <B>  <A NAME="tex2html1122"
-  HREF="node1.html">Contents</A></B> 
+  HREF="node1.html">Contents</A></B>
  &nbsp; <B>  <A NAME="tex2html1124"
-  HREF="node71.html">Index</A></B> 
+  HREF="node71.html">Index</A></B>
 <BR>
 <BR></DIV>
 <!--End of Navigation Panel-->
@@ -75,20 +70,20 @@ The force constant of the harmonic restraint may also be changed to equilibrate 
 <P>
 
 <UL>
-<LI><A NAME="6256"></A>
+<LI><A NAME="6269"></A>
   <B><BIG CLASS="LARGE"><TT>targetForceConstant </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle\,$"></B></SPAN>Change the force constant towards this value<SPAN CLASS="MATH"><B><IMG
+ ALT="$ \langle $"></B></SPAN>Change the force constant towards this value<SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$ \,\rangle$"></B></SPAN> 
-<BR><B>Context: </B> <TT>harmonic</TT> 
-<BR><B>Acceptable values: </B> positive decimal 
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>harmonic</TT>
+<BR><B>Acceptable values: </B> positive decimal
 <BR><B>Description: </B> When defined, the current <TT>forceConstant</TT> will be moved towards
     this value during the simulation. Time evolution of the force constant
     is dictated by the <TT>targetForceExponent</TT> parameter (see below).
-    By default, the force constant is changed smoothly over a total of 
+    By default, the force constant is changed smoothly over a total of
     <TT>targetNumSteps</TT> steps. This is useful to introduce or
     remove restraints in a progressive manner.
     If <TT>targetNumStages</TT> is set to a nonzero value, the
@@ -108,17 +103,17 @@ The force constant of the harmonic restraint may also be changed to equilibrate 
 
 <P>
 </LI>
-<LI><A NAME="6280"></A>
+<LI><A NAME="6293"></A>
   <B><BIG CLASS="LARGE"><TT>targetForceExponent </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle\,$"></B></SPAN>Exponent in the time-dependence of the force constant<SPAN CLASS="MATH"><B><IMG
+ ALT="$ \langle $"></B></SPAN>Exponent in the time-dependence of the force constant<SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$ \,\rangle$"></B></SPAN> 
-<BR><B>Context: </B> <TT>harmonic</TT> 
-<BR><B>Acceptable values: </B> decimal equal to or greater than 1.0 
-<BR><B>Default value: </B> <TT>1.0</TT> 
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>harmonic</TT>
+<BR><B>Acceptable values: </B> decimal equal to or greater than 1.0
+<BR><B>Default value: </B> <TT>1.0</TT>
 <BR><B>Description: </B> Sets the exponent, <SPAN CLASS="MATH"><B><IMG
  WIDTH="17" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
  SRC="img7.png"
@@ -164,32 +159,32 @@ The force constant of the harmonic restraint may also be changed to equilibrate 
 
 <P>
 </LI>
-<LI><A NAME="6299"></A>
+<LI><A NAME="6312"></A>
   <B><BIG CLASS="LARGE"><TT>targetEquilSteps </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle\,$"></B></SPAN>Number of steps discarded from TI estimate<SPAN CLASS="MATH"><B><IMG
+ ALT="$ \langle $"></B></SPAN>Number of steps discarded from TI estimate<SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$ \,\rangle$"></B></SPAN> 
-<BR><B>Context: </B> <TT>harmonic</TT> 
-<BR><B>Acceptable values: </B> positive integer 
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>harmonic</TT>
+<BR><B>Acceptable values: </B> positive integer
 <BR><B>Description: </B> Defines the number of steps within each stage that are considered
     equilibration and discarded from the restraint free energy derivative
     estimate reported reported in the output.
 
 <P>
 </LI>
-<LI><A NAME="6314"></A>
+<LI><A NAME="6327"></A>
   <B><BIG CLASS="LARGE"><TT>lambdaSchedule </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle\,$"></B></SPAN>Schedule of lambda-points for changing force constant<SPAN CLASS="MATH"><B><IMG
+ ALT="$ \langle $"></B></SPAN>Schedule of lambda-points for changing force constant<SPAN CLASS="MATH"><B><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$ \,\rangle$"></B></SPAN> 
-<BR><B>Context: </B> <TT>harmonic</TT> 
-<BR><B>Acceptable values: </B> list of real numbers between 0 and 1 
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>harmonic</TT>
+<BR><B>Acceptable values: </B> list of real numbers between 0 and 1
 <BR><B>Description: </B> If specified together with targetForceConstant, sets the sequence of
     discrete <SPAN CLASS="MATH"><B><IMG
  WIDTH="16" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
@@ -206,24 +201,19 @@ The force constant of the harmonic restraint may also be changed to equilibrate 
 <!--Navigation Panel-->
 <A NAME="tex2html1125"
   HREF="node68.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
- SRC="/usr/share/latex2html/icons/next.png"></A> 
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
 <A NAME="tex2html1119"
   HREF="node64.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
- SRC="/usr/share/latex2html/icons/up.png"></A> 
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
 <A NAME="tex2html1115"
   HREF="node66.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
- SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
 <A NAME="tex2html1121"
   HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
- SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
 <A NAME="tex2html1123"
   HREF="node71.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
- SRC="/usr/share/latex2html/icons/index.png"></A> 
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
 <BR>
 <B> Next:</B> <A NAME="tex2html1126"
   HREF="node68.html">Linear restraints</A>
@@ -232,13 +222,13 @@ The force constant of the harmonic restraint may also be changed to equilibrate 
 <B> Previous:</B> <A NAME="tex2html1116"
   HREF="node66.html">Moving restraints: umbrella sampling</A>
  &nbsp; <B>  <A NAME="tex2html1122"
-  HREF="node1.html">Contents</A></B> 
+  HREF="node1.html">Contents</A></B>
  &nbsp; <B>  <A NAME="tex2html1124"
   HREF="node71.html">Index</A></B> </DIV>
 <!--End of Navigation Panel-->
 <ADDRESS>
 Jérôme Hénin
-2015-02-27
+2015-03-03
 </ADDRESS>
 </BODY>
 </HTML>

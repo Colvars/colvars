@@ -30,24 +30,19 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <DIV CLASS="navigation"><!--Navigation Panel-->
 <A NAME="tex2html342"
   HREF="node16.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
- SRC="/usr/share/latex2html/icons/next.png"></A> 
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
 <A NAME="tex2html336"
   HREF="node11.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
- SRC="/usr/share/latex2html/icons/up.png"></A> 
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
 <A NAME="tex2html330"
   HREF="node14.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
- SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
 <A NAME="tex2html338"
   HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
- SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
 <A NAME="tex2html340"
   HREF="node81.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
- SRC="/usr/share/latex2html/icons/index.png"></A> 
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
 <BR>
 <B> Next:</B> <A NAME="tex2html343"
   HREF="node16.html">Statistical analysis of collective</A>
@@ -56,9 +51,9 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <B> Previous:</B> <A NAME="tex2html331"
   HREF="node14.html">Trajectory output</A>
  &nbsp; <B>  <A NAME="tex2html339"
-  HREF="node1.html">Contents</A></B> 
+  HREF="node1.html">Contents</A></B>
  &nbsp; <B>  <A NAME="tex2html341"
-  HREF="node81.html">Index</A></B> 
+  HREF="node81.html">Index</A></B>
 <BR>
 <BR></DIV>
 <!--End of Navigation Panel-->
@@ -71,26 +66,26 @@ Extended Lagrangian.
 
 <P>
 The following options enable extended-system
-dynamics, where a colvar is coupled to an additional degree of freedom 
+dynamics, where a colvar is coupled to an additional degree of freedom
 (fictitious particle) by a harmonic spring.
 All biasing and confining forces are then applied to the extended degree
-of freedom, and the actual, geometric colvar (function of Cartesian 
+of freedom, and the actual, geometric colvar (function of Cartesian
 coordinates) only feels the force from the harmonic spring.
 
 <P>
 
 <UL>
-<LI><A NAME="4076"></A>
+<LI><A NAME="4089"></A>
   <B><BIG CLASS="LARGE"><TT>extendedLagrangian </TT></BIG></B> <SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
  ALT="$ \langle $"></SPAN>Add extended degree of freedom<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> <TT>colvar</TT> 
-<BR><B>Acceptable values: </B> boolean 
-<BR><B>Default value: </B> <TT>off</TT> 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> <TT>colvar</TT>
+<BR><B>Acceptable values: </B> boolean
+<BR><B>Default value: </B> <TT>off</TT>
 <BR><B>Description: </B> Adds a fictitious particle to be coupled to the colvar by a harmonic
     spring. The fictitious mass and the force constant of the coupling
     potential are derived from the parameters <TT>extendedTimeConstant</TT>
@@ -104,7 +99,7 @@ coordinates) only feels the force from the harmonic spring.
 
 <P>
 </LI>
-<LI><A NAME="4097"></A>
+<LI><A NAME="4110"></A>
   <B><BIG CLASS="LARGE"><TT>extendedFluctuation </TT></BIG></B> <SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
@@ -112,9 +107,9 @@ coordinates) only feels the force from the harmonic spring.
     particle (colvar unit)<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> <TT>colvar</TT> 
-<BR><B>Acceptable values: </B> positive decimal 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> <TT>colvar</TT>
+<BR><B>Acceptable values: </B> positive decimal
 <BR><B>Description: </B> Defines the spring stiffness for the <TT>extendedLagrangian</TT>
     mode, by setting the typical deviation between the colvar and the extended
     degree of freedom due to thermal fluctuation.
@@ -132,17 +127,17 @@ coordinates) only feels the force from the harmonic spring.
 
 <P>
 </LI>
-<LI><A NAME="4115"></A>
+<LI><A NAME="4128"></A>
   <B><BIG CLASS="LARGE"><TT>extendedTimeConstant </TT></BIG></B> <SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
  ALT="$ \langle $"></SPAN>Oscillation period of the fictitious particle (fs)<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> <TT>colvar</TT> 
-<BR><B>Acceptable values: </B> positive decimal 
-<BR><B>Default value: </B> <TT>200</TT> 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> <TT>colvar</TT>
+<BR><B>Acceptable values: </B> positive decimal
+<BR><B>Default value: </B> <TT>200</TT>
 <BR><B>Description: </B> Defines the inertial mass of the fictitious particle, by setting the
     oscillation period of the harmonic oscillator formed by the fictitious
     particle and the spring. The period
@@ -165,17 +160,17 @@ coordinates) only feels the force from the harmonic spring.
 
 <P>
 </LI>
-<LI><A NAME="4133"></A>
+<LI><A NAME="4146"></A>
   <B><BIG CLASS="LARGE"><TT>extendedTemp </TT></BIG></B> <SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
  ALT="$ \langle $"></SPAN>Temperature for the extended degree of freedom (K)<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> <TT>colvar</TT> 
-<BR><B>Acceptable values: </B> positive decimal 
-<BR><B>Default value: </B> thermostat temperature 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> <TT>colvar</TT>
+<BR><B>Acceptable values: </B> positive decimal
+<BR><B>Default value: </B> thermostat temperature
 <BR><B>Description: </B> Temperature used for calculating the coupling force constant of the
     extended coordinate (see <TT>extendedFluctuation</TT>) and, if needed, as a
     target temperature for extended Langevin dynamics (see
@@ -184,7 +179,7 @@ coordinates) only feels the force from the harmonic spring.
 
 <P>
 </LI>
-<LI><A NAME="4152"></A>
+<LI><A NAME="4165"></A>
   <B><BIG CLASS="LARGE"><TT>extendedLangevinDamping </TT></BIG></B> <SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
@@ -195,10 +190,10 @@ coordinates) only feels the force from the harmonic spring.
  ALT="$ ^{-1}$"></SPAN>)<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> <TT>colvar</TT> 
-<BR><B>Acceptable values: </B> positive decimal 
-<BR><B>Default value: </B> <TT>1.0</TT> 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> <TT>colvar</TT>
+<BR><B>Acceptable values: </B> positive decimal
+<BR><B>Default value: </B> <TT>1.0</TT>
 <BR><B>Description: </B> If this is non-zero, the extended degree of freedom undergoes Langevin dynamics
     at temperature <TT>extendedTemp</TT>. The friction force is minus
     <TT>extendedLangevinDamping</TT> times the velocity. This is useful because
@@ -216,24 +211,19 @@ coordinates) only feels the force from the harmonic spring.
 <!--Navigation Panel-->
 <A NAME="tex2html342"
   HREF="node16.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
- SRC="/usr/share/latex2html/icons/next.png"></A> 
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
 <A NAME="tex2html336"
   HREF="node11.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
- SRC="/usr/share/latex2html/icons/up.png"></A> 
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
 <A NAME="tex2html330"
   HREF="node14.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
- SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
 <A NAME="tex2html338"
   HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
- SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
 <A NAME="tex2html340"
   HREF="node81.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
- SRC="/usr/share/latex2html/icons/index.png"></A> 
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
 <BR>
 <B> Next:</B> <A NAME="tex2html343"
   HREF="node16.html">Statistical analysis of collective</A>
@@ -242,13 +232,13 @@ coordinates) only feels the force from the harmonic spring.
 <B> Previous:</B> <A NAME="tex2html331"
   HREF="node14.html">Trajectory output</A>
  &nbsp; <B>  <A NAME="tex2html339"
-  HREF="node1.html">Contents</A></B> 
+  HREF="node1.html">Contents</A></B>
  &nbsp; <B>  <A NAME="tex2html341"
   HREF="node81.html">Index</A></B> </DIV>
 <!--End of Navigation Panel-->
 <ADDRESS>
 Jérôme Hénin
-2015-02-27
+2015-03-03
 </ADDRESS>
 </BODY>
 </HTML>

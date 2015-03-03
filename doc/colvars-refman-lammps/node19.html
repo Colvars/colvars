@@ -30,24 +30,19 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <DIV CLASS="navigation"><!--Navigation Panel-->
 <A NAME="tex2html383"
   HREF="node20.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
- SRC="/usr/share/latex2html/icons/next.png"></A> 
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
 <A NAME="tex2html377"
   HREF="node17.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
- SRC="/usr/share/latex2html/icons/up.png"></A> 
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
 <A NAME="tex2html371"
   HREF="node18.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
- SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
 <A NAME="tex2html379"
   HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
- SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
 <A NAME="tex2html381"
   HREF="node71.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
- SRC="/usr/share/latex2html/icons/index.png"></A> 
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
 <BR>
 <B> Next:</B> <A NAME="tex2html384"
   HREF="node20.html">Treatment of periodic boundary</A>
@@ -56,14 +51,14 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <B> Previous:</B> <A NAME="tex2html372"
   HREF="node18.html">Selection keywords</A>
  &nbsp; <B>  <A NAME="tex2html380"
-  HREF="node1.html">Contents</A></B> 
+  HREF="node1.html">Contents</A></B>
  &nbsp; <B>  <A NAME="tex2html382"
-  HREF="node71.html">Index</A></B> 
+  HREF="node71.html">Index</A></B>
 <BR>
 <BR></DIV>
 <!--End of Navigation Panel-->
 
-<H2><A NAME="SECTION00062000000000000000"></A> 
+<H2><A NAME="SECTION00062000000000000000"></A>
 <A NAME="sec:colvar_atom_groups_ref_frame"></A>
 <BR>
 Moving frame of reference.
@@ -120,34 +115,34 @@ In typical applications, the default settings result in the expected behavior.
 <P>
 
 <UL>
-<LI><A NAME="4524"></A>
+<LI><A NAME="4537"></A>
   <B><BIG CLASS="LARGE"><TT>centerReference </TT></BIG></B> <SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle\,$"></SPAN>Implicitly remove translations for this group<SPAN CLASS="MATH"><IMG
+ ALT="$ \langle $"></SPAN>Implicitly remove translations for this group<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$ \,\rangle$"></SPAN> 
-<BR><B>Context: </B> atom group 
-<BR><B>Acceptable values: </B> boolean 
-<BR><B>Default value: </B> <TT>off</TT> 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> atom group
+<BR><B>Acceptable values: </B> boolean
+<BR><B>Default value: </B> <TT>off</TT>
 <BR><B>Description: </B> If this option is <TT>on</TT>, the center of geometry of the group will be aligned with that of the reference positions provided by  <TT>refPositions</TT>.
     Colvar components will only have access to the aligned positions.
 <SPAN  CLASS="textbf">Note</SPAN>: unless otherwise specified, <TT>rmsd</TT> and <TT>eigenvector</TT> set this option to <TT>on</TT> <SPAN  CLASS="textit">by default</SPAN>.
 
 <P>
 </LI>
-<LI><A NAME="4542"></A>
+<LI><A NAME="4555"></A>
   <B><BIG CLASS="LARGE"><TT>rotateReference </TT></BIG></B> <SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle\,$"></SPAN>Implicitly remove rotations for this group<SPAN CLASS="MATH"><IMG
+ ALT="$ \langle $"></SPAN>Implicitly remove rotations for this group<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$ \,\rangle$"></SPAN> 
-<BR><B>Context: </B> atom group 
-<BR><B>Acceptable values: </B> boolean 
-<BR><B>Default value: </B> <TT>off</TT> 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> atom group
+<BR><B>Acceptable values: </B> boolean
+<BR><B>Default value: </B> <TT>off</TT>
 <BR><B>Description: </B> If this option is <TT>on</TT>, the coordinates of this group will be optimally superimposed to the reference positions provided by  <TT>refPositions</TT>.
     The rotation will be performed around the center of geometry if <TT>centerReference</TT> is <TT>on</TT>, around the origin otherwise.
     The algorithm used is the same employed by the <TT>orientation</TT> colvar component&nbsp;[<A
@@ -157,16 +152,16 @@ In typical applications, the default settings result in the expected behavior.
 
 <P>
 </LI>
-<LI><A NAME="4564"></A>
+<LI><A NAME="4577"></A>
   <B><BIG CLASS="LARGE"><TT>refPositions </TT></BIG></B> <SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle\,$"></SPAN>Reference positions for fitting (&#197;)<SPAN CLASS="MATH"><IMG
+ ALT="$ \langle $"></SPAN>Reference positions for fitting (&#197;)<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$ \,\rangle$"></SPAN> 
-<BR><B>Context: </B> atom group 
-<BR><B>Acceptable values: </B> space-separated list of <TT>(x, y, z)</TT> triplets 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> atom group
+<BR><B>Acceptable values: </B> space-separated list of <TT>(x, y, z)</TT> triplets
 <BR><B>Description: </B> This option provides a list of reference coordinates for <TT>centerReference</TT> or <TT>rotateReference</TT>.
     If only <TT>centerReference</TT> is <TT>on</TT>, the list may contain a single (x, y, z) triplet; if also <TT>rotateReference</TT> is <TT>on</TT>, the list should be as long as the atom group.
 
@@ -174,24 +169,24 @@ In typical applications, the default settings result in the expected behavior.
 
 <P>
 </LI>
-<LI><A NAME="4577"></A>
+<LI><A NAME="4590"></A>
   <B><BIG CLASS="LARGE"><TT>refPositionsGroup </TT></BIG></B> <SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle\,$"></SPAN>Use an alternate set of atoms to define the roto-translation<SPAN CLASS="MATH"><IMG
+ ALT="$ \langle $"></SPAN>Use an alternate set of atoms to define the roto-translation<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$ \,\rangle$"></SPAN> 
-<BR><B>Context: </B> atom group 
-<BR><B>Acceptable values: </B> Block <TT>refPositionsGroup { ... }</TT> 
-<BR><B>Default value: </B> This group itself 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> atom group
+<BR><B>Acceptable values: </B> Block <TT>refPositionsGroup { ... }</TT>
+<BR><B>Default value: </B> This group itself
 <BR><B>Description: </B> If either <TT>centerReference</TT> or <TT>rotateReference</TT> is defined, this keyword defines an alternate atom group to calculate the optimal roto-translation.
     Use this option to define a continuous rotation if the structure of the group involved changes significantly (a typical symptom would be the message ``Warning: discontinuous rotation!'').
 
 <P>
 
 <P>
-<TT># Example: defining a group "atoms", with its coordinates expressed 
+<TT># Example: defining a group "atoms", with its coordinates expressed
 <BR># on a roto-translated frame of reference defined by a second group
 <BR>
 atoms {
@@ -206,7 +201,7 @@ atoms {
 <BR>&nbsp;&nbsp;&nbsp;&nbsp;psfSegID              PROT PROT
 <BR>&nbsp;&nbsp;&nbsp;&nbsp;atomNameResidueRange  CA  1-40
 <BR>&nbsp;&nbsp;&nbsp;&nbsp;atomNameResidueRange  CA 49-100
-<BR>&nbsp;&nbsp;} 
+<BR>&nbsp;&nbsp;}
 <BR>&nbsp;&nbsp;refPositionsFile all.pdb  # can be the entire system
 <BR>}
 <BR></TT>
@@ -218,17 +213,17 @@ atoms {
 The following two options have default values appropriate for the vast majority of applications, and are only provided to support rare, special cases.
 
 <UL>
-<LI><A NAME="4593"></A>
+<LI><A NAME="4606"></A>
   <B><BIG CLASS="LARGE"><TT>enableFitGradients </TT></BIG></B> <SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle\,$"></SPAN>Include the roto-translational contribution to colvar gradients<SPAN CLASS="MATH"><IMG
+ ALT="$ \langle $"></SPAN>Include the roto-translational contribution to colvar gradients<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$ \,\rangle$"></SPAN> 
-<BR><B>Context: </B> atom group 
-<BR><B>Acceptable values: </B> boolean 
-<BR><B>Default value: </B> <TT>on</TT> 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> atom group
+<BR><B>Acceptable values: </B> boolean
+<BR><B>Default value: </B> <TT>on</TT>
 <BR><B>Description: </B> When either <TT>centerReference</TT> or <TT>rotateReference</TT> is on,
     the gradients of some colvars include terms proportional to
     <!-- MATH
@@ -252,17 +247,17 @@ The following two options have default values appropriate for the vast majority 
 
 <P>
 </LI>
-<LI><A NAME="4612"></A>
+<LI><A NAME="4625"></A>
   <B><BIG CLASS="LARGE"><TT>enableForces </TT></BIG></B> <SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle\,$"></SPAN>Apply forces from this colvar to this group<SPAN CLASS="MATH"><IMG
+ ALT="$ \langle $"></SPAN>Apply forces from this colvar to this group<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$ \,\rangle$"></SPAN> 
-<BR><B>Context: </B> atom group 
-<BR><B>Acceptable values: </B> boolean 
-<BR><B>Default value: </B> <TT>on</TT> 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> atom group
+<BR><B>Acceptable values: </B> boolean
+<BR><B>Default value: </B> <TT>on</TT>
 <BR><B>Description: </B> If this option is <TT>off</TT>, no forces are applied from this
     colvar to this group. Other forces are not affected (i.e. those
     from the MD engine, from other colvars, and other external forces).
@@ -278,24 +273,19 @@ The following two options have default values appropriate for the vast majority 
 <!--Navigation Panel-->
 <A NAME="tex2html383"
   HREF="node20.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
- SRC="/usr/share/latex2html/icons/next.png"></A> 
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
 <A NAME="tex2html377"
   HREF="node17.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
- SRC="/usr/share/latex2html/icons/up.png"></A> 
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
 <A NAME="tex2html371"
   HREF="node18.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
- SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
 <A NAME="tex2html379"
   HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
- SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
 <A NAME="tex2html381"
   HREF="node71.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
- SRC="/usr/share/latex2html/icons/index.png"></A> 
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
 <BR>
 <B> Next:</B> <A NAME="tex2html384"
   HREF="node20.html">Treatment of periodic boundary</A>
@@ -304,13 +294,13 @@ The following two options have default values appropriate for the vast majority 
 <B> Previous:</B> <A NAME="tex2html372"
   HREF="node18.html">Selection keywords</A>
  &nbsp; <B>  <A NAME="tex2html380"
-  HREF="node1.html">Contents</A></B> 
+  HREF="node1.html">Contents</A></B>
  &nbsp; <B>  <A NAME="tex2html382"
   HREF="node71.html">Index</A></B> </DIV>
 <!--End of Navigation Panel-->
 <ADDRESS>
 Jérôme Hénin
-2015-02-27
+2015-03-03
 </ADDRESS>
 </BODY>
 </HTML>

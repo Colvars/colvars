@@ -30,24 +30,19 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <DIV CLASS="navigation"><!--Navigation Panel-->
 <A NAME="tex2html300"
   HREF="node13.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
- SRC="/usr/share/latex2html/icons/next.png"></A> 
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
 <A NAME="tex2html294"
   HREF="node11.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
- SRC="/usr/share/latex2html/icons/up.png"></A> 
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
 <A NAME="tex2html288"
   HREF="node11.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
- SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
 <A NAME="tex2html296"
   HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
- SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
 <A NAME="tex2html298"
   HREF="node81.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
- SRC="/usr/share/latex2html/icons/index.png"></A> 
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
 <BR>
 <B> Next:</B> <A NAME="tex2html301"
   HREF="node13.html">Artificial boundary potentials (walls)</A>
@@ -56,9 +51,9 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <B> Previous:</B> <A NAME="tex2html289"
   HREF="node11.html">Defining collective variables and</A>
  &nbsp; <B>  <A NAME="tex2html297"
-  HREF="node1.html">Contents</A></B> 
+  HREF="node1.html">Contents</A></B>
  &nbsp; <B>  <A NAME="tex2html299"
-  HREF="node81.html">Index</A></B> 
+  HREF="node81.html">Index</A></B>
 <BR>
 <BR></DIV>
 <!--End of Navigation Panel-->
@@ -71,17 +66,17 @@ General options for a collective variable
 The following options are not required by default; however, the first four are very  frequently used:
 
 <UL>
-<LI><A NAME="3735"></A>
+<LI><A NAME="3748"></A>
   <B><BIG CLASS="LARGE"><TT>name </TT></BIG></B> <SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
  ALT="$ \langle $"></SPAN>Name of this colvar<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> <TT>colvar</TT> 
-<BR><B>Acceptable values: </B> string 
-<BR><B>Default value: </B> ``<TT>colvar</TT>'' + numeric id 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> <TT>colvar</TT>
+<BR><B>Acceptable values: </B> string
+<BR><B>Default value: </B> ``<TT>colvar</TT>'' + numeric id
 <BR><B>Description: </B> The name is an unique case-sensitive string which allows the
     colvar module to identify this colvar unambiguously; it is also
     used in the trajectory file to label to the columns corresponding
@@ -89,17 +84,17 @@ The following options are not required by default; however, the first four are v
 
 <P>
 </LI>
-<LI><A NAME="3753"></A>
+<LI><A NAME="3766"></A>
   <B><BIG CLASS="LARGE"><TT>width </TT></BIG></B> <SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
  ALT="$ \langle $"></SPAN>Colvar fluctuation scale, or resolution for grid-based methods<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> <TT>colvar</TT> 
-<BR><B>Acceptable values: </B> positive decimal 
-<BR><B>Default value: </B> 1.0 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> <TT>colvar</TT>
+<BR><B>Acceptable values: </B> positive decimal
+<BR><B>Default value: </B> 1.0
 <BR><B>Description: </B> This number has the same physical unit as the colvar value and defines an effective colvar unit.
     Biasing algorithms use it for different purposes.
     Harmonic restraints (<A HREF="node68.html#sec:colvarbias_harmonic">6.3</A>) use it to set the physical unit of the force constant, which is useful for multidimensional restraints involving colvars with different units or scale which may then be defined by a single, scaled force constant.
@@ -111,80 +106,80 @@ The following options are not required by default; however, the first four are v
 
 <P>
 </LI>
-<LI><A NAME="3773"></A>
+<LI><A NAME="3786"></A>
   <B><BIG CLASS="LARGE"><TT>lowerBoundary </TT></BIG></B> <SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
  ALT="$ \langle $"></SPAN>Lower boundary of the colvar<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> <TT>colvar</TT> 
-<BR><B>Acceptable values: </B> decimal 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> <TT>colvar</TT>
+<BR><B>Acceptable values: </B> decimal
 <BR><B>Description: </B> Defines the lowest end of the interval of ``relevant'' values for the colvar.
-    This number can be either a true physical boundary, or a user-defined number.  
+    This number can be either a true physical boundary, or a user-defined number.
     Together with <TT>upperBoundary</TT> and <TT>width</TT>, it is used to define a grid of values along the colvar (not available for colvars based on <TT>distanceDir</TT>, <TT>distanceVec</TT>, and <TT>orientation</TT>).
     This option does not affect dynamics: to confine a colvar within a certain interval, the options <TT>lowerWall</TT> and <TT>lowerWallConstant</TT> should be used.
 
 <P>
 </LI>
-<LI><A NAME="3795"></A>
+<LI><A NAME="3808"></A>
   <B><BIG CLASS="LARGE"><TT>upperBoundary </TT></BIG></B> <SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
  ALT="$ \langle $"></SPAN>Upper boundary of the colvar<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> <TT>colvar</TT> 
-<BR><B>Acceptable values: </B> decimal 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> <TT>colvar</TT>
+<BR><B>Acceptable values: </B> decimal
 <BR><B>Description: </B> Similarly to <TT>lowerBoundary</TT>, defines the highest possible or allowed value.
 
 <P>
 </LI>
-<LI><A NAME="3812"></A>
+<LI><A NAME="3825"></A>
   <B><BIG CLASS="LARGE"><TT>hardLowerBoundary </TT></BIG></B> <SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
  ALT="$ \langle $"></SPAN>Whether the lower boundary is the physical lower limit<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> <TT>colvar</TT> 
-<BR><B>Acceptable values: </B> boolean 
-<BR><B>Default value: </B> <TT>off</TT> 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> <TT>colvar</TT>
+<BR><B>Acceptable values: </B> boolean
+<BR><B>Default value: </B> <TT>off</TT>
 <BR><B>Description: </B> This option does not affect simulation results, but enables some internal optimizations.
     Depending on its mathematical definition, a colvar may have ``natural'' boundaries: for example, a <TT>distance</TT> colvar has a ``natural'' lower boundary at 0.  Setting this option instructs the colvars module that the user-defined lower boundary is ``natural''.
 See Section&nbsp;<A HREF="node22.html#sec:cvc">5</A> for the physical ranges of values of each component.
 
 <P>
 </LI>
-<LI><A NAME="3832"></A>
+<LI><A NAME="3845"></A>
   <B><BIG CLASS="LARGE"><TT>hardUpperBoundary </TT></BIG></B> <SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
  ALT="$ \langle $"></SPAN>Whether the upper boundary is the physical upper limit of the colvar's values<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> <TT>colvar</TT> 
-<BR><B>Acceptable values: </B> boolean 
-<BR><B>Default value: </B> <TT>off</TT> 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> <TT>colvar</TT>
+<BR><B>Acceptable values: </B> boolean
+<BR><B>Default value: </B> <TT>off</TT>
 <BR><B>Description: </B> Analogous to <TT>hardLowerBoundary</TT>.
 
 <P>
 </LI>
-<LI><A NAME="3851"></A>
+<LI><A NAME="3864"></A>
   <B><BIG CLASS="LARGE"><TT>expandBoundaries </TT></BIG></B> <SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
  ALT="$ \langle $"></SPAN>Allow to expand the two boundaries if needed<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$  \rangle$"></SPAN> 
-<BR><B>Context: </B> <TT>colvar</TT> 
-<BR><B>Acceptable values: </B> boolean 
-<BR><B>Default value: </B> <TT>off</TT> 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> <TT>colvar</TT>
+<BR><B>Acceptable values: </B> boolean
+<BR><B>Default value: </B> <TT>off</TT>
 <BR><B>Description: </B> If defined, biasing and analysis methods may keep their own copies
     of <TT>lowerBoundary</TT> and <TT>upperBoundary</TT>, and expand
     them to accommodate values that do not fit in the initial range.
@@ -202,24 +197,19 @@ See Section&nbsp;<A HREF="node22.html#sec:cvc">5</A> for the physical ranges of 
 <!--Navigation Panel-->
 <A NAME="tex2html300"
   HREF="node13.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
- SRC="/usr/share/latex2html/icons/next.png"></A> 
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
 <A NAME="tex2html294"
   HREF="node11.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
- SRC="/usr/share/latex2html/icons/up.png"></A> 
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
 <A NAME="tex2html288"
   HREF="node11.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
- SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
 <A NAME="tex2html296"
   HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
- SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
 <A NAME="tex2html298"
   HREF="node81.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
- SRC="/usr/share/latex2html/icons/index.png"></A> 
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
 <BR>
 <B> Next:</B> <A NAME="tex2html301"
   HREF="node13.html">Artificial boundary potentials (walls)</A>
@@ -228,13 +218,13 @@ See Section&nbsp;<A HREF="node22.html#sec:cvc">5</A> for the physical ranges of 
 <B> Previous:</B> <A NAME="tex2html289"
   HREF="node11.html">Defining collective variables and</A>
  &nbsp; <B>  <A NAME="tex2html297"
-  HREF="node1.html">Contents</A></B> 
+  HREF="node1.html">Contents</A></B>
  &nbsp; <B>  <A NAME="tex2html299"
   HREF="node81.html">Index</A></B> </DIV>
 <!--End of Navigation Panel-->
 <ADDRESS>
 Jérôme Hénin
-2015-02-27
+2015-03-03
 </ADDRESS>
 </BODY>
 </HTML>

@@ -30,24 +30,19 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <DIV CLASS="navigation"><!--Navigation Panel-->
 <A NAME="tex2html224"
   HREF="node9.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
- SRC="/usr/share/latex2html/icons/next.png"></A> 
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
 <A NAME="tex2html218"
   HREF="node6.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
- SRC="/usr/share/latex2html/icons/up.png"></A> 
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
 <A NAME="tex2html212"
   HREF="node7.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
- SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
 <A NAME="tex2html220"
   HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
- SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
 <A NAME="tex2html222"
   HREF="node71.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
- SRC="/usr/share/latex2html/icons/index.png"></A> 
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
 <BR>
 <B> Next:</B> <A NAME="tex2html225"
   HREF="node9.html">Input state file (optional)</A>
@@ -56,9 +51,9 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <B> Previous:</B> <A NAME="tex2html213"
   HREF="node7.html">LAMMPS keywords</A>
  &nbsp; <B>  <A NAME="tex2html221"
-  HREF="node1.html">Contents</A></B> 
+  HREF="node1.html">Contents</A></B>
  &nbsp; <B>  <A NAME="tex2html223"
-  HREF="node71.html">Index</A></B> 
+  HREF="node71.html">Index</A></B>
 <BR>
 <BR></DIV>
 <!--End of Navigation Panel-->
@@ -106,50 +101,50 @@ The following rules apply:
 The following keywords are available in the global context of the colvars configuration, i.e.&nbsp;they are not nested inside other keywords:
 
 <UL>
-<LI><A NAME="3747"></A>
+<LI><A NAME="3760"></A>
   <B><BIG CLASS="LARGE"><TT>colvarsTrajFrequency </TT></BIG></B> <SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle\,$"></SPAN>Colvar value trajectory frequency<SPAN CLASS="MATH"><IMG
+ ALT="$ \langle $"></SPAN>Colvar value trajectory frequency<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$ \,\rangle$"></SPAN> 
-<BR><B>Context: </B> global 
-<BR><B>Acceptable values: </B> positive integer 
-<BR><B>Default value: </B> <TT>100</TT> 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> global
+<BR><B>Acceptable values: </B> positive integer
+<BR><B>Default value: </B> <TT>100</TT>
 <BR><B>Description: </B> The values of each colvar (and of other related quantities, if requested) are written to the file <SPAN  CLASS="textit">output</SPAN><TT>.colvars.traj</TT> every these many steps throughout the simulation.
     If the value is <TT>0</TT>, such trajectory file is not written.
     For optimization the output is buffered, and synchronized with the disk only when the restart file is being written.
 
 <P>
 </LI>
-<LI><A NAME="3758"></A>
+<LI><A NAME="3771"></A>
   <B><BIG CLASS="LARGE"><TT>colvarsTrajAppend </TT></BIG></B> <SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle\,$"></SPAN>Append to trajectory file?<SPAN CLASS="MATH"><IMG
+ ALT="$ \langle $"></SPAN>Append to trajectory file?<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$ \,\rangle$"></SPAN> 
-<BR><B>Context: </B> global 
-<BR><B>Acceptable values: </B> boolean 
-<BR><B>Default value: </B> <TT>off</TT> 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> global
+<BR><B>Acceptable values: </B> boolean
+<BR><B>Default value: </B> <TT>off</TT>
 <BR><B>Description: </B> If this flag is enabled, and a file with the same name as the trajectory file is already present, new data is appended to that file.
     Otherwise, a new file is created with the same name that overwrites the previous file.
 
 <P>
 </LI>
-<LI><A NAME="3770"></A>
+<LI><A NAME="3783"></A>
   <B><BIG CLASS="LARGE"><TT>colvarsRestartFrequency </TT></BIG></B> <SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle\,$"></SPAN>Colvar module restart frequency<SPAN CLASS="MATH"><IMG
+ ALT="$ \langle $"></SPAN>Colvar module restart frequency<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$ \,\rangle$"></SPAN> 
-<BR><B>Context: </B> global 
-<BR><B>Acceptable values: </B> positive integer 
-<BR><B>Default value: </B> <TT>restartFreq</TT> 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> global
+<BR><B>Acceptable values: </B> positive integer
+<BR><B>Default value: </B> <TT>restartFreq</TT>
 <BR><B>Description: </B> Allows to choose a different restart frequency for the collective
     variables module.  Redefining it may be useful to trace the time
     evolution of those few properties which are not written to the
@@ -157,16 +152,16 @@ The following keywords are available in the global context of the colvars config
 
 <P>
 </LI>
-<LI><A NAME="3778"></A>
+<LI><A NAME="3791"></A>
   <B><BIG CLASS="LARGE"><TT>indexFile </TT></BIG></B> <SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle\,$"></SPAN>Index file for atom selection (GROMACS ``ndx'' format)<SPAN CLASS="MATH"><IMG
+ ALT="$ \langle $"></SPAN>Index file for atom selection (GROMACS ``ndx'' format)<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$ \,\rangle$"></SPAN> 
-<BR><B>Context: </B> global 
-<BR><B>Acceptable values: </B> UNIX filename 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> global
+<BR><B>Acceptable values: </B> UNIX filename
 <BR><B>Description: </B> This option reads an index file (usually with a <TT>.ndx</TT>
     extension) as produced by the <TT>make_ndx</TT> tool of GROMACS.
     This keyword may be repeated to load multiple index files: the same group name cannot appear in multiple index files.
@@ -179,17 +174,17 @@ The following keywords are available in the global context of the colvars config
 
 <P>
 </LI>
-<LI><A NAME="3793"></A>
+<LI><A NAME="3806"></A>
   <B><BIG CLASS="LARGE"><TT>analysis </TT></BIG></B> <SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img19.png"
- ALT="$ \langle\,$"></SPAN>Turn on run-time statistical analysis<SPAN CLASS="MATH"><IMG
+ ALT="$ \langle $"></SPAN>Turn on run-time statistical analysis<SPAN CLASS="MATH"><IMG
  WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
  SRC="img20.png"
- ALT="$ \,\rangle$"></SPAN> 
-<BR><B>Context: </B> global 
-<BR><B>Acceptable values: </B> boolean 
-<BR><B>Default value: </B> <TT>off</TT> 
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> global
+<BR><B>Acceptable values: </B> boolean
+<BR><B>Default value: </B> <TT>off</TT>
 <BR><B>Description: </B> If this flag is enabled, each colvar is instructed to perform
     whatever run-time statistical analysis it is configured to, such as
     correlation functions, or running averages and standard deviations.
@@ -206,8 +201,8 @@ The example below defines the same configuration shown in Fig.&nbsp;<A HREF="nod
 <P>
 <TT>colvar {
 <BR>&nbsp;&nbsp;# difference of two distances
-<BR>&nbsp;&nbsp;name d 
-<BR>&nbsp;&nbsp;width 0.2  # 0.2 &#197; of estimated fluctuation width 
+<BR>&nbsp;&nbsp;name d
+<BR>&nbsp;&nbsp;width 0.2  # 0.2 &#197; of estimated fluctuation width
 <BR>&nbsp;&nbsp;distance {
 <BR>&nbsp;&nbsp;&nbsp;&nbsp;componentCoeff  1.0
 <BR>&nbsp;&nbsp;&nbsp;&nbsp;group1 { atomNumbers 1 2 }
@@ -257,24 +252,19 @@ Finally, section <A HREF="node52.html#sec:colvarbias">6</A> lists the available 
 <!--Navigation Panel-->
 <A NAME="tex2html224"
   HREF="node9.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
- SRC="/usr/share/latex2html/icons/next.png"></A> 
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
 <A NAME="tex2html218"
   HREF="node6.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
- SRC="/usr/share/latex2html/icons/up.png"></A> 
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
 <A NAME="tex2html212"
   HREF="node7.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
- SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
 <A NAME="tex2html220"
   HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
- SRC="/usr/share/latex2html/icons/contents.png"></A> 
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
 <A NAME="tex2html222"
   HREF="node71.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
- SRC="/usr/share/latex2html/icons/index.png"></A> 
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
 <BR>
 <B> Next:</B> <A NAME="tex2html225"
   HREF="node9.html">Input state file (optional)</A>
@@ -283,13 +273,13 @@ Finally, section <A HREF="node52.html#sec:colvarbias">6</A> lists the available 
 <B> Previous:</B> <A NAME="tex2html213"
   HREF="node7.html">LAMMPS keywords</A>
  &nbsp; <B>  <A NAME="tex2html221"
-  HREF="node1.html">Contents</A></B> 
+  HREF="node1.html">Contents</A></B>
  &nbsp; <B>  <A NAME="tex2html223"
   HREF="node71.html">Index</A></B> </DIV>
 <!--End of Navigation Panel-->
 <ADDRESS>
 Jérôme Hénin
-2015-02-27
+2015-03-03
 </ADDRESS>
 </BODY>
 </HTML>
