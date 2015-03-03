@@ -1,5 +1,5 @@
 
-PDF=colvars-refman-lammps.pdf  colvars-refman-namd.pdf colvars-refman-vmd.pdf
+PDF=colvars-refman-lammps.pdf colvars-refman-namd.pdf colvars-refman-vmd.pdf
 BIBTEX=colvars-refman.bib
 
 all: $(PDF) html

@@ -1,0 +1,29 @@
+
+\newcommand{\VMD}{}
+\newcommand{\MDENGINE}{VMD}
+
+% macros to identify the format of this document
+% (section of the NAMD or VMD UG or standalone reference manual)
+\newcommand{\cvnamdugonly}[1]{}
+\newcommand{\cvvmdugonly}[1]{}
+\newcommand{\cvrefmanonly}[1]{#1}
+
+% macros to identify which program
+\newcommand{\cvnamdonly}[1]{}
+\newcommand{\cvvmdonly}[1]{#1}
+\newcommand{\cvlammpsonly}[1]{}
+
+% only in programs were scripting is available
+\newcommand{\cvscriptonly}[1]{#1}
+
+% content that applies only to programs that use atom names (i.e. not LAMMPS)
+\newcommand{\cvnamebasedonly}[1]{#1}
+
+
+\input{colvars-refman.tex}
+
+
+% Emacs
+% Local Variables:
+% TeX-PDF-mode: t
+% End:
