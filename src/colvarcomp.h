@@ -84,6 +84,10 @@ public:
   /// \brief Exponent in the polynomial combination (default: 1)
   int       sup_np;
 
+  /// \brief This defaults to true; setting it to false disables
+  /// update of this cvc to save compute time (useful with scriptedFunction)
+  bool b_enabled;
+
   /// \brief Is this a periodic component?
   bool b_periodic;
 

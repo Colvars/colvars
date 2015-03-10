@@ -882,6 +882,7 @@ void colvar::calc()
 
   // First, update component values
   for (i = 0; i < cvcs.size(); i++) {
+    if (!cvcs[i]->b_enabled) continue;
     cvm::increase_depth();
     (cvcs[i])->calc_value();
     cvm::decrease_depth();
@@ -907,6 +908,7 @@ void colvar::calc()
   } else if (x.type() == colvarvalue::type_scalar) {
     // polynomial combination allowed
     for (i = 0; i < cvcs.size(); i++) {
+      if (!cvcs[i]->b_enabled) continue;
       x += (cvcs[i])->sup_coeff *
       ( ((cvcs[i])->sup_np != 1) ?
         std::pow((cvcs[i])->value().real_value, (cvcs[i])->sup_np) :
@@ -915,6 +917,7 @@ void colvar::calc()
   } else {
     // only linear combination allowed
     for (i = 0; i < cvcs.size(); i++) {
+      if (!cvcs[i]->b_enabled) continue;
       x += (cvcs[i])->sup_coeff * (cvcs[i])->value();
     }
   }
@@ -930,6 +933,7 @@ void colvar::calc()
 
     for (i = 0; i < cvcs.size(); i++) {
       // calculate the gradients of each component
+      if (!cvcs[i]->b_enabled) continue;
       cvm::increase_depth();
       (cvcs[i])->calc_gradients();
       // if requested, propagate (via chain rule) the gradients above
@@ -957,6 +961,7 @@ void colvar::calc()
         atomic_gradients[a].reset();
       }
       for (i = 0; i < cvcs.size(); i++) {
+        if (!cvcs[i]->b_enabled) continue;
         // Coefficient: d(a * x^n) = a * n * x^(n-1) * dx
         cvm::real coeff = (cvcs[i])->sup_coeff * cvm::real((cvcs[i])->sup_np) *
           std::pow((cvcs[i])->value().real_value, (cvcs[i])->sup_np-1);
@@ -1122,19 +1127,23 @@ cvm::real colvar::update()
 
   if (tasks[task_Jacobian_force]) {
     size_t i;
-    cvm::increase_depth();
     for (i = 0; i < cvcs.size(); i++) {
+      if (!cvcs[i]->b_enabled) continue;
+      cvm::increase_depth();
       (cvcs[i])->calc_Jacobian_derivative();
+      cvm::decrease_depth();
     }
-    cvm::decrease_depth();
 
+    size_t ncvc = 0;
     fj.reset();
     for (i = 0; i < cvcs.size(); i++) {
+      if (!cvcs[i]->b_enabled) continue;
       // linear combination is assumed
-      fj += 1.0 / ( cvm::real(cvcs.size()) *  cvm::real((cvcs[i])->sup_coeff) ) *
+      fj += 1.0 / cvm::real((cvcs[i])->sup_coeff) *
         (cvcs[i])->Jacobian_derivative();
+      ncvc++;
     }
-    fj *= cvm::boltzmann() * cvm::temperature();
+    fj *= (1.0/cvm::real(ncvc)) * cvm::boltzmann() * cvm::temperature();
 
     // the instantaneous Jacobian force was not included in the reported system force;
     // instead, it is subtracted from the applied force (silent Jacobian correction)
@@ -1195,6 +1204,7 @@ void colvar::communicate_forces()
   if (tasks[task_scripted]) {
     std::vector<cvm::matrix2d<cvm::real> > func_grads;
     for (i = 0; i < cvcs.size(); i++) {
+      if (!cvcs[i]->b_enabled) continue;
       func_grads.push_back(cvm::matrix2d<cvm::real> (x.size(),
                                                      cvcs[i]->value().size()));
     }
@@ -1210,6 +1220,7 @@ void colvar::communicate_forces()
     }
 
     for (i = 0; i < cvcs.size(); i++) {
+      if (!cvcs[i]->b_enabled) continue;
       cvm::increase_depth();
       // cvc force is colvar force times colvar/cvc Jacobian
       // (vector-matrix product)
@@ -1220,6 +1231,7 @@ void colvar::communicate_forces()
   } else if (x.type() == colvarvalue::type_scalar) {
 
     for (i = 0; i < cvcs.size(); i++) {
+      if (!cvcs[i]->b_enabled) continue;
       cvm::increase_depth();
       (cvcs[i])->apply_force(f * (cvcs[i])->sup_coeff *
                               cvm::real((cvcs[i])->sup_np) *
@@ -1231,6 +1243,7 @@ void colvar::communicate_forces()
   } else {
 
     for (i = 0; i < cvcs.size(); i++) {
+      if (!cvcs[i]->b_enabled) continue;
       cvm::increase_depth();
       (cvcs[i])->apply_force(f * (cvcs[i])->sup_coeff);
       cvm::decrease_depth();
