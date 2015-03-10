@@ -844,6 +844,7 @@ void colvar::calc()
   // prepare atom groups for calculation
   if (cvm::debug())
     cvm::log("Collecting data from atom groups.\n");
+
   for (i = 0; i < cvcs.size(); i++) {
     for (ig = 0; ig < cvcs[i]->atom_groups.size(); ig++) {
       cvm::atom_group &atoms = *(cvcs[i]->atom_groups[ig]);
@@ -855,6 +856,7 @@ void colvar::calc()
       // each atom group will take care of its own ref_pos_group, if defined
     }
   }
+
 ////  Don't try to get atom velocities, as no back-end currently implements it
 //   if (tasks[task_output_velocity] && !tasks[task_fdiff_velocity]) {
 //     for (i = 0; i < cvcs.size(); i++) {
@@ -863,6 +865,7 @@ void colvar::calc()
 //       }
 //     }
 //   }
+
   if (tasks[task_system_force]) {
     for (i = 0; i < cvcs.size(); i++) {
       for (ig = 0; ig < cvcs[i]->atom_groups.size(); ig++) {
@@ -928,16 +931,13 @@ void colvar::calc()
     for (i = 0; i < cvcs.size(); i++) {
       // calculate the gradients of each component
       cvm::increase_depth();
-
       (cvcs[i])->calc_gradients();
-
       // if requested, propagate (via chain rule) the gradients above
       // to the atoms used to define the roto-translation
       for (ig = 0; ig < cvcs[i]->atom_groups.size(); ig++) {
         if (cvcs[i]->atom_groups[ig]->b_fit_gradients)
           cvcs[i]->atom_groups[ig]->calc_fit_gradients();
       }
-
       cvm::decrease_depth();
     }
 

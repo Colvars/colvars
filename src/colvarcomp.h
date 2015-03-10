@@ -84,13 +84,14 @@ public:
   /// \brief Exponent in the polynomial combination (default: 1)
   int       sup_np;
 
+  /// \brief Is this a periodic component?
+  bool b_periodic;
+
   /// \brief Period of this cvc value, (default: 0.0, non periodic)
   cvm::real period;
 
   /// \brief If the component is periodic, wrap around this value (default: 0.0)
   cvm::real wrap_center;
-
-  bool b_periodic;
 
   /// \brief Constructor
   ///
