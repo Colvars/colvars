@@ -50,7 +50,7 @@ do
       $BINARY -dispdev none -e $script > ${script%.vmd}.out
       # collect output of colvars module, except the version number
       # TODO: strip also the echo of newly introduced keywords
-      grep "^colvars:" ${script%.vmd}.out | grep -v 'Initializing the collective variables module' > ${script%.vmd}.colvars.out
+      grep "^colvars:" ${script%.vmd}.out | grep -v 'Initializing the collective variables module' | grep -v 'Using VMD interface' > ${script%.vmd}.colvars.out
   done
   
   # now check results

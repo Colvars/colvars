@@ -457,7 +457,7 @@ protected:
   /// Timesteps to skip between two values in the running average series
   size_t         runave_stride;
   /// Name of the file to write the running average
-  std::ofstream  runave_os;
+  cvm::ofstream  runave_os;
   /// Current value of the running average
   colvarvalue    runave;
   /// Current value of the square deviation from the running average
@@ -504,6 +504,7 @@ public:
   // non-scalar components
   class distance_vec;
   class distance_dir;
+  class cartesian;
   class orientation;
 
 protected:

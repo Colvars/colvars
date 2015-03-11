@@ -27,7 +27,7 @@ int tcl_colvars(ClientData clientdata, Tcl_Interp *interp, int argc, const char 
 
     if ( argc >= 3 ) {
       if (!strcmp(argv[1], "molid")) {
-        Tcl_SetResult(interp, (char *) (std::string("Colvars module already created: type \"colvars\" for a list of arguments.").c_str()), TCL_STATIC);
+        Tcl_SetResult(interp, (char *) (std::string("Colvars module already created: type \"cv\" for a list of arguments.").c_str()), TCL_STATIC);
         return TCL_ERROR;
       }
     }
@@ -85,7 +85,7 @@ int tcl_colvars(ClientData clientdata, Tcl_Interp *interp, int argc, const char 
     }
   }
 
-  Tcl_SetResult(interp, (char *) (std::string("First, setup the colvars with: colvars molid <molecule id>").c_str()), TCL_STATIC);
+  Tcl_SetResult(interp, (char *) (std::string("First, setup the colvars module with: cv molid <molecule id>").c_str()), TCL_STATIC);
   return TCL_ERROR;
 }
 
@@ -109,6 +109,7 @@ colvarproxy_vmd::colvarproxy_vmd(Tcl_Interp *vti, VMDApp *v, int molid)
 
   colvars->cv_traj_freq = 0;
   colvars->restart_out_freq = 0;
+  cvm::rotation::monitor_crossings = false;
 
   colvars->setup_input();
   colvars->setup_output();

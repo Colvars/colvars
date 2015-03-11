@@ -75,10 +75,12 @@ commotion               no
 # SHAKE
 rigidBonds              none
 
-source procs.tcl
+source procs1.tcl
 
 print "First, running unscripted config"
 run 20
+
+source procs2.tcl
 
 print "Resetting colvars with scripted config"
 cv reset

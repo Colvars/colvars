@@ -50,6 +50,8 @@ private:
   void runController(int task);
   void setParameter(const char* param, const char* value);
   void setParameter(const char* param, int value);
+  friend class DataExchanger;
+  int eval(const char *script, const char **resultPtr);
 #ifdef NAMD_TCL
   friend class Controller;
   friend class GlobalMasterTcl;
@@ -62,6 +64,7 @@ private:
   static int Tcl_numPhysicalNodes(ClientData, Tcl_Interp *, int, char **);
   static int Tcl_numReplicas(ClientData, Tcl_Interp *, int, char **);
   static int Tcl_myReplica(ClientData, Tcl_Interp *, int, char **);
+  static int Tcl_replicaEval(ClientData, Tcl_Interp *, int, char **);
   static int Tcl_replicaSendrecv(ClientData, Tcl_Interp *, int, char **);
   static int Tcl_replicaSend(ClientData, Tcl_Interp *, int, char **);
   static int Tcl_replicaRecv(ClientData, Tcl_Interp *, int, char **);

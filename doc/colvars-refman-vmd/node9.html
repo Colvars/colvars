@@ -1,0 +1,129 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Output files</TITLE>
+<META NAME="description" CONTENT="Output files">
+<META NAME="keywords" CONTENT="colvars-refman-vmd">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="colvars-refman-vmd.css">
+
+<LINK REL="previous" HREF="node8.html">
+<LINK REL="up" HREF="node5.html">
+<LINK REL="next" HREF="node10.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A NAME="tex2html244"
+  HREF="node10.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html238"
+  HREF="node5.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html234"
+  HREF="node8.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html240"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html242"
+  HREF="node34.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html245"
+  HREF="node10.html">Defining collective variables and</A>
+<B> Up:</B> <A NAME="tex2html239"
+  HREF="node5.html">General parameters and input/output</A>
+<B> Previous:</B> <A NAME="tex2html235"
+  HREF="node8.html">Input state file (optional)</A>
+ &nbsp; <B>  <A NAME="tex2html241"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html243"
+  HREF="node34.html">Index</A></B> 
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+
+<H2><A NAME="SECTION00044000000000000000"></A>
+<A NAME="sec:colvars_output"></A>
+<BR>
+Output files
+</H2>
+
+<P>
+During a simulation with collective variables defined, the following three output files are written:
+
+<P>
+
+<UL>
+<LI>a <SPAN  CLASS="textit">state file</SPAN>, named <SPAN  CLASS="textit">output</SPAN><TT>.colvars.state</TT>; this file is in ASCII format;
+
+<P>
+</LI>
+<LI>if  the parameter <TT>colvarsRestartFrequency</TT> is larger than zero, a <SPAN  CLASS="textit">restart file</SPAN> named <SPAN  CLASS="textit">restart</SPAN><TT>.colvars.state</TT> is written every that many steps: this file is equivalent to the final state file;
+
+<P>
+</LI>
+<LI>if the parameter <TT>colvarsTrajFrequency</TT> is greater than 0 (default: 100), a <SPAN  CLASS="textit">trajectory file</SPAN> is written during the simulation: its name is <SPAN  CLASS="textit">output</SPAN><TT>.colvars.traj</TT>; unlike the state file, it is not needed to restart a simulation, but can be used later for post-processing and analysis.
+
+<P>
+</LI>
+</UL>
+
+<P>
+Other output files may be written by specific methods applied to the colvars (e.g.&nbsp;by the ABF method, see <A HREF="node27.html#sec:colvarbias_abf">6.1</A>, or the metadynamics method, see <A HREF="node28.html#sec:colvarbias_meta">6.2</A>).
+Like the colvar trajectory file, they are needed only for analyzing, not continuing a simulation.
+All such files' names also begin with the prefix <SPAN  CLASS="textit">output</SPAN>.
+
+<P>
+
+<P>
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A NAME="tex2html244"
+  HREF="node10.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html238"
+  HREF="node5.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html234"
+  HREF="node8.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html240"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html242"
+  HREF="node34.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html245"
+  HREF="node10.html">Defining collective variables and</A>
+<B> Up:</B> <A NAME="tex2html239"
+  HREF="node5.html">General parameters and input/output</A>
+<B> Previous:</B> <A NAME="tex2html235"
+  HREF="node8.html">Input state file (optional)</A>
+ &nbsp; <B>  <A NAME="tex2html241"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html243"
+  HREF="node34.html">Index</A></B> </DIV>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Jérôme Hénin
+2015-03-03
+</ADDRESS>
+</BODY>
+</HTML>

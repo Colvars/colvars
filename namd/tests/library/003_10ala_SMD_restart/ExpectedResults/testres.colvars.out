@@ -1,5 +1,4 @@
 colvars: ----------------------------------------------------------------------
-colvars: Using NAMD interface, version 2014-10-26.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
 colvars: # indexFile = "" [default]
@@ -21,7 +20,6 @@ colvars:       # psfSegID = { BH }
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
-colvars:       # disableForces = off [default]
 colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on

@@ -11,6 +11,7 @@
 
 
 colvar::colvar(std::string const &conf)
+  : colvarparse(conf)
 {
   size_t i, j;
   cvm::log("Initializing a new collective variable.\n");
@@ -99,6 +100,7 @@ colvar::colvar(std::string const &conf)
 
   initialize_components("distance",         "distance",       distance);
   initialize_components("distance vector",  "distanceVec",    distance_vec);
+  initialize_components("Cartesian coordinates", "cartesian",  cartesian);
   initialize_components("distance vector "
                          "direction",        "distanceDir",    distance_dir);
   initialize_components("distance projection "
@@ -150,6 +152,7 @@ colvar::colvar(std::string const &conf)
     cvm::error("Error: no valid components were provided "
                       "for this collective variable.\n",
               INPUT_ERROR);
+    return;
   }
 
   cvm::log("All components initialized.\n");
@@ -161,11 +164,33 @@ colvar::colvar(std::string const &conf)
     enable(task_scripted);
     cvm::log("This colvar uses scripted function \"" + scripted_function + "\".");
 
-    // Only accept scalar scripted colvars
-    // might accept other types when the infrastructure is in place
-    // for derivatives of vectors wrt vectors
-    x.type(colvarvalue::type_scalar);
-    x_reported.type(x);
+    std::string type_str;
+    get_keyval(conf, "scriptedFunctionType", type_str, "scalar");
+
+    x.type(colvarvalue::type_notset);
+    int t;
+    for (t = 0; t < colvarvalue::type_all; t++) {
+      if (type_str == colvarvalue::type_keyword(colvarvalue::Type(t))) {
+        x.type(colvarvalue::Type(t));
+        break;
+      }
+    }
+    if (x.type() == colvarvalue::type_notset) {
+      cvm::error("Could not parse scripted colvar type.");
+      return;
+    }
+    x_reported.type(x.type());
+    cvm::log(std::string("Expecting colvar value of type ")
+      + colvarvalue::type_desc(x.type()));
+
+    if (x.type() == colvarvalue::type_vector) {
+      int size;
+      if (!get_keyval(conf, "scriptedFunctionVectorSize", size)) {
+        cvm::error("Error: no size specified for vector scripted function.");
+        return;
+      }
+      x.vector1d_value.resize(size);
+    }
 
     // Sort array of cvcs based on values of componentExp
     std::vector<cvc *> temp_vec;
@@ -190,15 +215,6 @@ colvar::colvar(std::string const &conf)
       sorted_cvc_values.push_back(&(cvcs[j]->value()));
     }
 
-    // // these two are the vector value and the Jacobian matrix of the scripted function, respectively
-    // x_cvc.type(type_vector);
-    // dx_cvc.type(type_matrix); // TODO: not implemented yet
-    // for (j = 0; j < cvcs.size(); j++) {
-    //   x_cvc.add_elem(cvcs[j]->value());
-    //   dx_cvc.add_elem(cvcs[j]->value());
-    // }
-
-
     b_homogeneous = false;
     // Scripted functions are deemed non-periodic
     b_periodic = false;
@@ -218,7 +234,6 @@ colvar::colvar(std::string const &conf)
     x.type(cvc_value);
     x_reported.type(cvc_value);
   }
-
   // If using scripted biases, any colvar may receive bias forces
   // and will need its gradient
   if (cvm::scripted_forces()) {
@@ -305,6 +320,10 @@ colvar::colvar(std::string const &conf)
     }
   }
 
+  // at this point, the colvar's type is defined
+  f.type(value());
+  fb.type(value());
+
   get_keyval(conf, "width", width, 1.0);
   if (width <= 0.0) {
     cvm::error("Error: \"width\" must be positive.\n", INPUT_ERROR);
@@ -360,10 +379,10 @@ colvar::colvar(std::string const &conf)
   if (tasks[task_lower_wall] && tasks[task_upper_wall]) {
     if (lower_wall >= upper_wall) {
       cvm::error("Error: the upper wall, "+
-                        cvm::to_str(upper_wall)+
-                        ", is not higher than the lower wall, "+
-                        cvm::to_str(lower_wall)+".\n",
-                INPUT_ERROR);
+                 cvm::to_str(upper_wall)+
+                 ", is not higher than the lower wall, "+
+                 cvm::to_str(lower_wall)+".\n",
+                 INPUT_ERROR);
     }
 
     if (dist2(lower_wall, upper_wall) < 1.0E-12) {
@@ -377,15 +396,15 @@ colvar::colvar(std::string const &conf)
   get_keyval(conf, "expandBoundaries", expand_boundaries, false);
   if (expand_boundaries && periodic_boundaries()) {
     cvm::error("Error: trying to expand boundaries that already "
-                      "cover a whole period of a periodic colvar.\n",
-              INPUT_ERROR);
+               "cover a whole period of a periodic colvar.\n",
+               INPUT_ERROR);
   }
   if (expand_boundaries && hard_lower_boundary && hard_upper_boundary) {
     cvm::error("Error: inconsistent configuration "
-                      "(trying to expand boundaries with both "
-                      "hardLowerBoundary and hardUpperBoundary enabled).\n",
-              INPUT_ERROR);
-}
+               "(trying to expand boundaries with both "
+               "hardLowerBoundary and hardUpperBoundary enabled).\n",
+               INPUT_ERROR);
+  }
 
   {
     bool b_extended_lagrangian;
@@ -708,11 +727,7 @@ int colvar::enable(colvar::task const &t)
   case task_langevin:
   case task_output_energy:
   case task_scripted:
-    break;
-
   case task_gradients:
-    f.type(value());
-    fb.type(value());
     break;
 
   case task_collect_gradients:
@@ -973,7 +988,9 @@ void colvar::calc()
     }
   }
 
-  if (tasks[task_system_force]) {
+  if (tasks[task_system_force] && !tasks[task_extended_lagrangian]) {
+    // If extended Lagrangian is enabled, system force calculation is trivial
+    // and done together with integration of the extended coordinate.
 
     if (tasks[task_scripted]) {
       // TODO see if this could reasonably be done in a generic way
@@ -1176,25 +1193,28 @@ void colvar::communicate_forces()
     cvm::log("Communicating forces from colvar \""+this->name+"\".\n");
 
   if (tasks[task_scripted]) {
-    std::vector<colvarvalue> func_grads(cvcs.size());
+    std::vector<cvm::matrix2d<cvm::real> > func_grads;
+    for (i = 0; i < cvcs.size(); i++) {
+      func_grads.push_back(cvm::matrix2d<cvm::real> (x.size(),
+                                                     cvcs[i]->value().size()));
+    }
     int res = cvm::proxy->run_colvar_gradient_callback(scripted_function, sorted_cvc_values, func_grads);
 
-    if (res == COLVARS_NOT_IMPLEMENTED) {
-      cvm::error("Colvar gradient scripts are not implemented.");
-      return;
-    }
     if (res != COLVARS_OK) {
-      cvm::error("Error running colvar gradient script");
+      if (res == COLVARS_NOT_IMPLEMENTED) {
+        cvm::error("Colvar gradient scripts are not implemented.");
+      } else {
+        cvm::error("Error running colvar gradient script");
+      }
       return;
     }
 
     for (i = 0; i < cvcs.size(); i++) {
       cvm::increase_depth();
-      // Force is scalar times colvarvalue (scalar or vector)
-      // Note: this can only handle scalar colvars (scalar values of f)
-      // A non-scalar colvar would need the gradient to be expressed
-      // as an order-2 tensor
-      (cvcs[i])->apply_force(f.real_value * func_grads[i]);
+      // cvc force is colvar force times colvar/cvc Jacobian
+      // (vector-matrix product)
+      (cvcs[i])->apply_force(colvarvalue(f.as_vector() * func_grads[i],
+                             cvcs[i]->value().type()));
       cvm::decrease_depth();
     }
   } else if (x.type() == colvarvalue::type_scalar) {
@@ -1577,7 +1597,7 @@ int colvar::write_output_files()
     if (acf.size()) {
       cvm::log("Writing acf to file \""+acf_outfile+"\".\n");
 
-      std::ofstream acf_os(acf_outfile.c_str());
+      cvm::ofstream acf_os(acf_outfile.c_str());
       if (! acf_os.good()) {
         cvm::error("Cannot open file \""+acf_outfile+"\".\n", FILE_ERROR);
       }

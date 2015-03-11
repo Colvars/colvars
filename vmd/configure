@@ -381,7 +381,7 @@ $def_title="ON";
 $def_imageviewer="display %s";
 
 # program version number
-$progversion="1.9.2beta1";
+$progversion="1.9.2";
 
 # text prompt string
 $promptstring="vmd > ";
@@ -919,12 +919,15 @@ $libgelato_libs        = "-lgelato";
 # This may be commented out if not required.
 $liboptix_defines     = "-DVMDLIBOPTIX";
 # Standard builds
-$liboptix_dir         = "/usr/local/encap/NVIDIA-OptiX-SDK-3.0.1-linux64";
+# $liboptix_dir         = "/usr/local/encap/NVIDIA-OptiX-SDK-3.0.1-linux64";
 # $liboptix_dir         = "/usr/local/encap/NVIDIA-OptiX-SDK-3.5.0-linux64";
 # $liboptix_dir         = "/usr/local/encap/NVIDIA-OptiX-SDK-3.5.1-PRO-linux64";
+$liboptix_dir         = "/usr/local/encap/NVIDIA-OptiX-SDK-3.6.3-linux64";
 # NCSA Blue Waters
 # $liboptix_dir         = "/u/sciteam/stonej/local/NVIDIA-OptiX-SDK-3.5.0-linux64";
 # $liboptix_dir         = "/u/sciteam/stonej/local/NVIDIA-OptiX-SDK-3.5.1-PRO-linux64";
+# $liboptix_dir         = "/u/sciteam/stonej/local/NVIDIA-OptiX-SDK-3.6.3-linux64";
+
 # CSCS Piz Daint
 # $liboptix_dir         = "/users/stonej/local/NVIDIA-OptiX-SDK-3.5.1-PRO-linux64";
 # IU Big Red 2

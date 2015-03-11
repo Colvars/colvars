@@ -21,6 +21,7 @@ fi
 force_update=0
 if [ $1 = "-f" ]
 then
+  echo Forcing update of all files
   force_update=1
   shift
 fi
@@ -28,6 +29,7 @@ fi
 reverse=0
 if [ $1 = "-R" ]
 then
+  echo Reverse: updating git tree from downstream tree
   reverse=1
   shift
 fi
@@ -94,7 +96,7 @@ condcopy () {
   then
     if [ $checkonly -eq 1 ]
     then
-      cmp -s "$a" "$b" || diff -uN "$b" "$a"
+      cmp -s "$a" "$b" || diff -uNw "$b" "$a"
     else
       cmp -s "$a" "$b" || cp "$a" "$b"
       echo -n '.'
@@ -113,10 +115,10 @@ checkfile () {
     a=$1
     b=$2
   fi
-  diff -uN "${a}" "${b}" > $(basename ${a}).diff
+  diff -uNw "${a}" "${b}" > $(basename ${a}).diff
   if [ -s $(basename ${a}).diff ]
   then
-    echo "Differences found between ${a} and ${b}, check $(basename ${a}).diff"
+    echo "Differences found between ${a} and ${b} -- Check $(basename ${a}).diff"
     if [ $force_update = 1 ]
     then
       echo "Overwriting ${b}, as requested by the -f flag."
@@ -202,6 +204,8 @@ then
   condcopy "${source}/doc/colvars-refman.bib" "${target}/ug/ug_colvars.bib"
   condcopy "${source}/doc/colvars-refman-main.tex" "${target}/ug/ug_colvars.tex"
   condcopy "${source}/namd/ug/ug_colvars_macros.tex" "${target}/ug/ug_colvars_macros.tex"
+  condcopy "${source}/doc/colvars_diagram.pdf" "${target}/ug/figures/colvars_diagram.pdf"
+  condcopy "${source}/doc/colvars_diagram.eps" "${target}/ug/figures/colvars_diagram.eps"
 
   echo ' done.'
 
@@ -237,12 +241,19 @@ then
     condcopy "${src}" "${target}/src/${tgt}.C"
   done
 
+  condcopy "${source}/doc/colvars-refman.bib" "${target}/doc/ug_colvars.bib"
+  condcopy "${source}/doc/colvars-refman-main.tex" "${target}/doc/ug_colvars.tex"
+  condcopy "${source}/vmd/doc/ug_colvars_macros.tex" "${target}/doc/ug_colvars_macros.tex"
+  condcopy "${source}/doc/colvars_diagram.pdf" "${target}/doc/pictures/colvars_diagram.pdf"
+  condcopy "${source}/doc/colvars_diagram.eps" "${target}/doc/pictures/colvars_diagram.eps"
+
   # update VMD interface files
   for src in ${source}/vmd/src/colvarproxy_vmd.h ${source}/vmd/src/colvarproxy_vmd.C  
   do \
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/src/${tgt}"
   done
+
   echo ' done.'
 
   for src in ${source}/vmd/src/* 
@@ -256,9 +267,6 @@ then
     checkfile "${src}" "${target}/${tgt}"
   done
 
-  condcopy "${source}/doc/colvars-refman.bib" "${target}/doc/ug_colvars.bib"
-  condcopy "${source}/doc/colvars-refman-main.tex" "${target}/doc/ug_colvars.tex"
-  condcopy "${source}/vmd/doc/ug_colvars_macros.tex" "${target}/doc/ug_colvars_macros.tex"
 
   exit 0
 fi

@@ -1,0 +1,156 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Linear restraints</TITLE>
+<META NAME="description" CONTENT="Linear restraints">
+<META NAME="keywords" CONTENT="colvars-refman-vmd">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="colvars-refman-vmd.css">
+
+<LINK REL="next" HREF="node31.html">
+<LINK REL="previous" HREF="node29.html">
+<LINK REL="up" HREF="node26.html">
+<LINK REL="next" HREF="node31.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A NAME="tex2html632"
+  HREF="node31.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html626"
+  HREF="node26.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html620"
+  HREF="node29.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html628"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html630"
+  HREF="node34.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html633"
+  HREF="node31.html">Adaptive Linear Bias/Experiment Directed</A>
+<B> Up:</B> <A NAME="tex2html627"
+  HREF="node26.html">Biasing and analysis methods</A>
+<B> Previous:</B> <A NAME="tex2html621"
+  HREF="node29.html">Harmonic restraints</A>
+ &nbsp; <B>  <A NAME="tex2html629"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html631"
+  HREF="node34.html">Index</A></B> 
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+
+<H2><A NAME="SECTION00084000000000000000"></A>
+<A NAME="sec:colvarbias_linear"></A>
+<BR>
+Linear restraints
+</H2>
+
+<P>
+The linear restraint biasing method is used to minimally bias a
+simulation. There is generally a unique strength of bias for each CV
+center, which means you must know the bias force constant specifically
+for the center of the CV. This force constant may be found by using
+experiment directed simulation described in
+section <A HREF="node31.html#sec:colvarbias_alb">6.5</A>. Please cite Pitera and Chodera when
+using [<A
+ HREF="node35.html#Pitera2012">21</A>].
+
+<P>
+
+<UL>
+<LI><A NAME="7177"></A>
+  <B><BIG CLASS="LARGE"><TT>forceConstant </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$ \langle $"></B></SPAN>Scaled force constant (kcal/mol)<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$  \rangle$"></B></SPAN> 
+<BR><B>Context: </B> <TT>linear</TT> 
+<BR><B>Acceptable values: </B> positive decimal 
+<BR><B>Default value: </B> <TT>1.0</TT> 
+<BR><B>Description: </B> This defines a scaled force constant for the linear bias.
+    To ensure consistency for multidimensional restraints, it is
+    divided internally by  the specific <TT>width</TT>
+    for each colvar involved (which is 1 by default), so that all colvars
+    are effectively dimensionless and of commensurate size.
+
+<P>
+</LI>
+<LI><A NAME="7199"></A>
+  <B><BIG CLASS="LARGE"><TT>centers </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$ \langle $"></B></SPAN>Initial linear restraint centers<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$  \rangle$"></B></SPAN> 
+<BR><B>Context: </B> <TT>linear</TT> 
+<BR><B>Acceptable values: </B> space-separated list of colvar values 
+<BR><B>Description: </B> The centers (equilibrium values) of the restraint are entered here.
+    The number of values must be the number of requested colvars.
+    Each value is a decimal number if the corresponding colvar returns
+    a scalar, a ``<TT>(x, y, z)</TT>'' triplet if it returns a unit
+    vector or a vector, and a ``<TT>q0, q1, q2, q3)</TT>'' quadruplet
+    if it returns a rotational quaternion.  If a colvar has
+    periodicities or symmetries, its closest image to the restraint
+    center is considered when calculating the linear potential.
+</LI>
+</UL>
+
+<P>
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A NAME="tex2html632"
+  HREF="node31.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html626"
+  HREF="node26.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html620"
+  HREF="node29.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html628"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html630"
+  HREF="node34.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html633"
+  HREF="node31.html">Adaptive Linear Bias/Experiment Directed</A>
+<B> Up:</B> <A NAME="tex2html627"
+  HREF="node26.html">Biasing and analysis methods</A>
+<B> Previous:</B> <A NAME="tex2html621"
+  HREF="node29.html">Harmonic restraints</A>
+ &nbsp; <B>  <A NAME="tex2html629"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html631"
+  HREF="node34.html">Index</A></B> </DIV>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Jérôme Hénin
+2015-03-03
+</ADDRESS>
+</BODY>
+</HTML>

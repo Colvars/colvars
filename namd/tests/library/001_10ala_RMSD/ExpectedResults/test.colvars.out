@@ -1,5 +1,4 @@
 colvars: ----------------------------------------------------------------------
-colvars: Using NAMD interface, version 2014-10-26.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
 colvars: # indexFile = "" [default]
@@ -21,7 +20,6 @@ colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
-colvars:       # disableForces = off [default]
 colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
@@ -61,7 +59,6 @@ colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
-colvars:       # disableForces = off [default]
 colvars:       # centerReference = on
 colvars:       # rotateReference = on
 colvars:       # enableFitGradients = on [default]
@@ -104,7 +101,6 @@ colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
-colvars:       # disableForces = off [default]
 colvars:       # centerReference = on
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
@@ -146,7 +142,6 @@ colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
-colvars:       # disableForces = off [default]
 colvars:       # centerReference = off [default]
 colvars:       # rotateReference = on
 colvars:       # enableFitGradients = on [default]
@@ -189,7 +184,6 @@ colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
-colvars:       # disableForces = off [default]
 colvars:       # centerReference = off
 colvars:       # rotateReference = off
 colvars:       # enableFitGradients = on [default]

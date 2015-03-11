@@ -1,0 +1,853 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Metadynamics</TITLE>
+<META NAME="description" CONTENT="Metadynamics">
+<META NAME="keywords" CONTENT="colvars-refman-namd">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="colvars-refman-namd.css">
+
+<LINK REL="next" HREF="node29.html">
+<LINK REL="previous" HREF="node27.html">
+<LINK REL="up" HREF="node26.html">
+<LINK REL="next" HREF="node29.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A NAME="tex2html609"
+  HREF="node29.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
+<A NAME="tex2html603"
+  HREF="node26.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
+<A NAME="tex2html597"
+  HREF="node27.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
+<A NAME="tex2html605"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
+<A NAME="tex2html607"
+  HREF="node39.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
+<BR>
+<B> Next:</B> <A NAME="tex2html610"
+  HREF="node29.html">Harmonic restraints</A>
+<B> Up:</B> <A NAME="tex2html604"
+  HREF="node26.html">Biasing and analysis methods</A>
+<B> Previous:</B> <A NAME="tex2html598"
+  HREF="node27.html">Adaptive Biasing Force</A>
+ &nbsp; <B>  <A NAME="tex2html606"
+  HREF="node1.html">Contents</A></B>
+ &nbsp; <B>  <A NAME="tex2html608"
+  HREF="node39.html">Index</A></B>
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL CLASS="ChildLinks">
+<LI><A NAME="tex2html611"
+  HREF="node28.html#SECTION00082100000000000000">Output files</A>
+<LI><A NAME="tex2html612"
+  HREF="node28.html#SECTION00082200000000000000">Performance tuning</A>
+<LI><A NAME="tex2html613"
+  HREF="node28.html#SECTION00082300000000000000">Well-tempered metadynamics</A>
+<LI><A NAME="tex2html614"
+  HREF="node28.html#SECTION00082400000000000000">Multiple-replicas metadynamics</A>
+<LI><A NAME="tex2html615"
+  HREF="node28.html#SECTION00082500000000000000">Compatibility and post-processing</A>
+</UL>
+<!--End of Table of Child-Links-->
+<HR>
+
+<H2><A NAME="SECTION00082000000000000000"></A>
+<A NAME="sec:colvarbias_meta"></A>
+<BR>
+Metadynamics
+</H2>
+
+<P>
+The metadynamics method uses a history-dependent potential [<A
+ HREF="node40.html#Laio2002">14</A>] that generalizes to any type of colvars the conformational flooding [<A
+ HREF="node40.html#Grubmuller1995">15</A>] and local elevation [<A
+ HREF="node40.html#Huber1994">16</A>] methods, originally formulated to use as colvars the principal components of a covariance matrix or a set of dihedral angles, respectively.
+The metadynamics potential on the colvars <!-- MATH
+ ${\mbox{\boldmath {$\xi$}}} = (\xi_{1}, \xi_{2}, \ldots, \xi_{N_{\mathrm{cv}}})$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="149" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img182.png"
+ ALT="$ {\mbox{\boldmath {$\xi$}}} = (\xi_{1}, \xi_{2}, \ldots, \xi_{N_{\mathrm{cv}}})$"></B></SPAN> is defined as:
+<P></P>
+<DIV ALIGN="CENTER" CLASS="mathdisplay"><A NAME="eq:colvars_meta_pot"></A><!-- MATH
+ \begin{equation}
+V_{\mathrm{meta}}({\mbox{\boldmath {$\xi$}}}) \; = \; {
+    \sum_{t' = \delta{}t, \\2\delta{}t, \\\ldots}^{t'<t} W \: {
+      \prod_{i = 1}^{N_{\mathrm{cv}}}
+      \exp\left(-\frac{(\xi_{i}-\xi_{i}(t'))^{2}}{2\delta_{\xi_{i}}^{2}}\right)
+    }
+  }\mathrm{,}
+\end{equation}
+ -->
+<TABLE CLASS="equation" CELLPADDING="0" WIDTH="100%" ALIGN="CENTER">
+<TR VALIGN="MIDDLE">
+<TD NOWRAP ALIGN="CENTER"><SPAN CLASS="MATH"><IMG
+ WIDTH="365" HEIGHT="71" ALIGN="MIDDLE" BORDER="0"
+ SRC="img183.png"
+ ALT="$\displaystyle V_{\mathrm{meta}}({\mbox{\boldmath {$\xi$}}}) \; = \; { \sum_{t' ...
+...t(-\frac{(\xi_{i}-\xi_{i}(t'))^{2}}{2\delta_{\xi_{i}}^{2}}\right) } }\mathrm{,}$"></SPAN></TD>
+<TD NOWRAP CLASS="eqno" WIDTH="10" ALIGN="RIGHT">
+(<SPAN CLASS="arabic">20</SPAN>)</TD></TR>
+</TABLE></DIV>
+<BR CLEAR="ALL"><P></P>
+where <!-- MATH
+ $V_{\mathrm{meta}}$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="39" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img184.png"
+ ALT="$ V_{\mathrm{meta}}$"></B></SPAN> is the history-dependent potential acting on the <SPAN  CLASS="textit">current</SPAN> values of the colvars <!-- MATH
+ ${\mbox{\boldmath {$\xi$}}}$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="15" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img154.png"
+ ALT="$ {\mbox{\boldmath {$\xi$}}}$"></B></SPAN>, and depends only parametrically on the <SPAN  CLASS="textit">previous</SPAN> values of the colvars.
+<!-- MATH
+ $V_{\mathrm{meta}}$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="39" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img184.png"
+ ALT="$ V_{\mathrm{meta}}$"></B></SPAN> is constructed as a sum of <!-- MATH
+ $N_{\mathrm{cv}}$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="28" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img185.png"
+ ALT="$ N_{\mathrm{cv}}$"></B></SPAN>-dimensional repulsive Gaussian ``hills'', whose height is a chosen energy constant <SPAN CLASS="MATH"><B><IMG
+ WIDTH="20" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img186.png"
+ ALT="$ W$"></B></SPAN>, and whose centers are the previously explored configurations <!-- MATH
+ $\left({\mbox{\boldmath {$\xi$}}}(\delta{}t), {\mbox{\boldmath {$\xi$}}}(2\delta{}t), \ldots\right)$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="140" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img187.png"
+ ALT="$ \left({\mbox{\boldmath {$\xi$}}}(\delta{}t), {\mbox{\boldmath {$\xi$}}}(2\delta{}t), \ldots\right)$"></B></SPAN>.
+Each Gaussian functions has a width of approximately <!-- MATH
+ $2\delta_{\xi_{i}}$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="32" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img188.png"
+ ALT="$ 2\delta_{\xi_{i}}$"></B></SPAN> along the direction of the <SPAN CLASS="MATH"><B><IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img4.png"
+ ALT="$ i$"></B></SPAN>-th colvar.
+
+<P>
+During the simulation, the system evolves towards the nearest minimum of the ``effective'' potential of mean force <!-- MATH
+ $\tilde{A}({\mbox{\boldmath {$\xi$}}})$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="39" HEIGHT="38" ALIGN="MIDDLE" BORDER="0"
+ SRC="img189.png"
+ ALT="$ \tilde{A}({\mbox{\boldmath {$\xi$}}})$"></B></SPAN>, which is the sum of the ``real'' underlying potential of mean force <!-- MATH
+ $A({\mbox{\boldmath {$\xi$}}})$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="39" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img190.png"
+ ALT="$ A({\mbox{\boldmath {$\xi$}}})$"></B></SPAN> and the the metadynamics potential <!-- MATH
+ $V_{\mathrm{meta}}({\mbox{\boldmath {$\xi$}}})$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="63" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img191.png"
+ ALT="$ V_{\mathrm{meta}}({\mbox{\boldmath {$\xi$}}})$"></B></SPAN>.
+Therefore, at any given time the probability of observing the configuration <!-- MATH
+ ${\mbox{\boldmath {$\xi^{*}$}}}$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="22" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img192.png"
+ ALT="$ {\mbox{\boldmath {$\xi^{*}$}}}$"></B></SPAN> is proportional to <!-- MATH
+ $\exp\left(-\tilde{A}({\mbox{\boldmath {$\xi^{*}$}}})/\kappa_{\mathrm{B}}T\right)$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="142" HEIGHT="38" ALIGN="MIDDLE" BORDER="0"
+ SRC="img193.png"
+ ALT="$ \exp\left(-\tilde{A}({\mbox{\boldmath {$\xi^{*}$}}})/\kappa_{\mathrm{B}}T\right)$"></B></SPAN>: this is also the probability that a new Gaussian ``hill'' is added at that configuration.
+If the simulation is run for a sufficiently long time, each local minimum is canceled out by the sum of the Gaussian ``hill'' functions.
+At that stage the the ``effective'' potential of mean force <!-- MATH
+ $\tilde{A}({\mbox{\boldmath {$\xi$}}})$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="39" HEIGHT="38" ALIGN="MIDDLE" BORDER="0"
+ SRC="img189.png"
+ ALT="$ \tilde{A}({\mbox{\boldmath {$\xi$}}})$"></B></SPAN> is constant, and <!-- MATH
+ $-V_{\mathrm{meta}}({\mbox{\boldmath {$\xi$}}})$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="77" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img194.png"
+ ALT="$ -V_{\mathrm{meta}}({\mbox{\boldmath {$\xi$}}})$"></B></SPAN> is an accurate estimator of the ``real'' potential of mean force <!-- MATH
+ $A({\mbox{\boldmath {$\xi$}}})$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="39" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img190.png"
+ ALT="$ A({\mbox{\boldmath {$\xi$}}})$"></B></SPAN>, save for an additive constant:
+<P></P>
+<DIV ALIGN="CENTER" CLASS="mathdisplay"><A NAME="eq:colvars_meta_fes"></A><!-- MATH
+ \begin{equation}
+A({\mbox{\boldmath {$\xi$}}}) \; \simeq \; {
+    -V_{\mathrm{meta}}({\mbox{\boldmath {$\xi$}}}) + K
+  }
+\end{equation}
+ -->
+<TABLE CLASS="equation" CELLPADDING="0" WIDTH="100%" ALIGN="CENTER">
+<TR VALIGN="MIDDLE">
+<TD NOWRAP ALIGN="CENTER"><SPAN CLASS="MATH"><IMG
+ WIDTH="172" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img195.png"
+ ALT="$\displaystyle A({\mbox{\boldmath {$\xi$}}}) \; \simeq \; { -V_{\mathrm{meta}}({\mbox{\boldmath {$\xi$}}}) + K }$"></SPAN></TD>
+<TD NOWRAP CLASS="eqno" WIDTH="10" ALIGN="RIGHT">
+(<SPAN CLASS="arabic">21</SPAN>)</TD></TR>
+</TABLE></DIV>
+<BR CLEAR="ALL"><P></P>
+
+<P>
+Assuming that the set of collective variables includes all relevant degrees of freedom, the predicted error of the estimate is a simple function of the correlation times of the colvars <!-- MATH
+ $\tau_{\xi_{i}}$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="22" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img196.png"
+ ALT="$ \tau_{\xi_{i}}$"></B></SPAN>, and of the user-defined parameters <SPAN CLASS="MATH"><B><IMG
+ WIDTH="20" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img186.png"
+ ALT="$ W$"></B></SPAN>, <!-- MATH
+ $\delta_{\xi_{i}}$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="23" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img197.png"
+ ALT="$ \delta_{\xi_{i}}$"></B></SPAN> and <SPAN CLASS="MATH"><B><IMG
+ WIDTH="21" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img198.png"
+ ALT="$ \delta{}t$"></B></SPAN> [<A
+ HREF="node40.html#Bussi2006">17</A>].
+In typical applications, a good rule of thumb can be to choose the ratio <!-- MATH
+ $W/\delta{}t$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="45" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img199.png"
+ ALT="$ W/\delta{}t$"></B></SPAN> much smaller than <!-- MATH
+ $\kappa_{\mathrm{B}}T/\tau_{{\mbox{\boldmath {$\xi$}}}}$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="63" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img200.png"
+ ALT="$ \kappa_{\mathrm{B}}T/\tau_{{\mbox{\boldmath {$\xi$}}}}$"></B></SPAN>, where <!-- MATH
+ $\tau_{{\mbox{\boldmath {$\xi$}}}}$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="24" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img201.png"
+ ALT="$ \tau_{{\mbox{\boldmath {$\xi$}}}}$"></B></SPAN> is the longest among <!-- MATH
+ ${\mbox{\boldmath {$\xi$}}}$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="15" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img154.png"
+ ALT="$ {\mbox{\boldmath {$\xi$}}}$"></B></SPAN>'s correlation times: <!-- MATH
+ $\delta_{\xi_{i}}$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="23" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img197.png"
+ ALT="$ \delta_{\xi_{i}}$"></B></SPAN> then dictates the resolution of the calculated PMF.
+
+<P>
+To enable a metadynamics calculation, a <TT>metadynamics</TT> block must be defined in the colvars configuration file.
+Its only mandatory keyword is the <TT>colvars</TT> option listing all the variables involved: multidimensional PMFs are obtained by the same <TT>metadynamics</TT> instance applied to all the colvars.
+
+<P>
+The parameters <SPAN CLASS="MATH"><B><IMG
+ WIDTH="20" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img186.png"
+ ALT="$ W$"></B></SPAN> and <SPAN CLASS="MATH"><B><IMG
+ WIDTH="21" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img198.png"
+ ALT="$ \delta{}t$"></B></SPAN> are specified by the keywords <TT>hillWeight</TT> and <TT>newHillFrequency</TT>, respectively.
+The values of these options are optimal for colvars with correlation times <!-- MATH
+ $\tau_{{\mbox{\boldmath {$\xi$}}}}$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="24" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img201.png"
+ ALT="$ \tau_{{\mbox{\boldmath {$\xi$}}}}$"></B></SPAN> in the range of a few thousand simulation steps, typical of many biomolecular simulations:
+
+<UL>
+<LI><A NAME="6589"></A>
+  <B><BIG CLASS="LARGE"><TT>hillWeight </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></B></SPAN>Height of each hill (kcal/mol)<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>metadynamics</TT>
+<BR><B>Acceptable values: </B> positive decimal
+<BR><B>Default value: </B> <TT>0.01</TT>
+<BR><B>Description: </B> This option sets the height <SPAN CLASS="MATH"><B><IMG
+ WIDTH="20" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img186.png"
+ ALT="$ W$"></B></SPAN> of the hills that are added during
+    this run.  Lower values provide more accurate sampling at the price
+    of longer simulation times to complete a PMF calculation.
+
+<P>
+</LI>
+<LI><A NAME="6611"></A>
+  <B><BIG CLASS="LARGE"><TT>newHillFrequency </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></B></SPAN>Frequency of hill creation<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>metadynamics</TT>
+<BR><B>Acceptable values: </B> positive integer
+<BR><B>Default value: </B> <TT>1000</TT>
+<BR><B>Description: </B> This option sets the number of integration steps after which a new
+    hill is added to the metadynamics potential.  Its value determines
+    the parameter <SPAN CLASS="MATH"><B><IMG
+ WIDTH="21" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img198.png"
+ ALT="$ \delta{}t$"></B></SPAN> in eq.&nbsp;<A HREF="#eq:colvars_meta_pot">21</A>.  Higher
+    values provide more accurate sampling at the price of longer
+    simulation times to complete a PMF calculation.
+
+<P>
+</LI>
+</UL>
+
+<P>
+It is the user's responsibility to either leave <TT>hillWeight</TT> and <TT>newHillFrequency</TT> at their default values, or to change them to match the specifics of each system.
+The parameter <!-- MATH
+ $\delta_{\xi_{i}}$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="23" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img197.png"
+ ALT="$ \delta_{\xi_{i}}$"></B></SPAN> is instead defined as approximately half the <TT>width</TT> of the corresponding colvar <SPAN CLASS="MATH"><B><IMG
+ WIDTH="17" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img29.png"
+ ALT="$ \xi_{i}$"></B></SPAN> (see <A HREF="node11.html#sec:colvar_general">3.1</A>).
+
+<P>
+
+<H3><A NAME="SECTION00082100000000000000"></A>
+<A NAME="sec:colvarbias_meta_output"></A>
+<BR>
+Output files
+</H3>
+When interpolating grids are enabled (default behavior), the PMF is written every <TT>colvarsRestartFrequency</TT> steps to the file <SPAN  CLASS="textit">output</SPAN><TT>.pmf</TT>.
+The following two options allow to control this behavior and to visually track statistical convergence:
+
+<P>
+
+<UL>
+<LI><A NAME="6633"></A>
+  <B><BIG CLASS="LARGE"><TT>writeFreeEnergyFile </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></B></SPAN>Periodically write the PMF for visualization<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>metadynamics</TT>
+<BR><B>Acceptable values: </B> boolean
+<BR><B>Default value: </B> <TT>on</TT>
+<BR><B>Description: </B> When <TT>useGrids</TT> and this option are <TT>on</TT>, the PMF is
+    written every <TT>colvarsRestartFrequency</TT> steps.
+
+<P>
+</LI>
+<LI><A NAME="6654"></A>
+  <B><BIG CLASS="LARGE"><TT>saveFreeEnergyFile </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></B></SPAN>Keep all the PMF files<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>metadynamics</TT>
+<BR><B>Acceptable values: </B> boolean
+<BR><B>Default value: </B> <TT>off</TT>
+<BR><B>Description: </B> When <TT>writeFreeEnergyFile</TT> and this option are <TT>on</TT>,
+    the step number is included in the file name.  Activating this
+    option can be useful to follow more closely the convergence of the
+    simulation, by comparing PMFs separated by short times.
+
+<P>
+</LI>
+</UL>
+
+<P>
+<SPAN  CLASS="textbf">Note:</SPAN> when Gaussian hills are deposited near <TT>lowerBoundary</TT> or <TT>upperBoundary</TT> (see <A HREF="node11.html#sec:colvar_general">3.1</A>) and interpolating grids are used (default behavior), their truncation can give rise to accumulating errors.
+In these cases, as a measure of fault-tolerance all Gaussian hills near the boundaries are included in the output state file, and are recalculated analytically whenever the colvar falls outside the grid's boundaries.
+(Such measure protects the accuracy of the calculation, and can only be disabled by <TT>hardLowerBoundary</TT> or <TT>hardUpperBoundary</TT>.)
+To avoid gradual loss of performance and growth of the state file, either one of the following solutions is recommended:
+
+<UL>
+<LI>enabling the option <TT>expandBoundaries</TT>, so that the grid's boundaries are automatically recalculated whenever necessary; the resulting <TT>.pmf</TT> will have its abscissas expanded accordingly;
+</LI>
+<LI>setting <TT>lowerWall</TT> and <TT>upperWall</TT> well within the interval delimited by <TT>lowerBoundary</TT> and <TT>upperBoundary</TT>.
+</LI>
+</UL>
+
+<P>
+
+<H3><A NAME="SECTION00082200000000000000"></A>
+<A NAME="sec:colvarbias_meta_performance"></A>
+<BR>
+Performance tuning
+</H3>
+The following options control the computational cost of metadynamics calculations, but do not affect results.
+Default values are chosen to minimize such cost with no loss of accuracy.
+
+<P>
+
+<UL>
+<LI><A NAME="6675"></A>
+  <B><BIG CLASS="LARGE"><TT>useGrids </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></B></SPAN>Interpolate the hills with grids<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>metadynamics</TT>
+<BR><B>Acceptable values: </B> boolean
+<BR><B>Default value: </B> <TT>on</TT>
+<BR><B>Description: </B> This option discretizes all hills for improved performance,
+    accumulating their energy and their gradients on two separate grids
+    of equal spacing.  Grids are defined by the values of
+    <TT>lowerBoundary</TT>, <TT>upperBoundary</TT> and <TT>width</TT>
+    for each colvar.  Currently, this option is implemented for all
+    types of variables except the non-scalar types (<TT>distanceDir</TT>
+    or <TT>orientation</TT>).  If <TT>expandBoundaries</TT> is defined
+    in one of the colvars, grids are automatically expanded along the
+    direction of that colvar.
+
+<P>
+</LI>
+<LI><A NAME="6699"></A>
+  <B><BIG CLASS="LARGE"><TT>hillWidth </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></B></SPAN>Relative width of the hills<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>metadynamics</TT>
+<BR><B>Acceptable values: </B> positive decimal
+<BR><B>Default value: </B> <!-- MATH
+ $\sqrt{2\pi}/2$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="56" HEIGHT="40" ALIGN="MIDDLE" BORDER="0"
+ SRC="img202.png"
+ ALT="$ \sqrt{2\pi}/2$"></B></SPAN>
+<BR><B>Description: </B> Along each colvar, the width of each Gaussian hill
+    (<!-- MATH
+ $2\delta_{\xi_{i}}$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="32" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img188.png"
+ ALT="$ 2\delta_{\xi_{i}}$"></B></SPAN>) is given by the product between this number
+    and the colvar's <TT>width</TT>.  The default value gives hills
+    whose volume is the product of <SPAN CLASS="MATH"><B><IMG
+ WIDTH="20" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img186.png"
+ ALT="$ W$"></B></SPAN> times the <TT>width</TT> of all
+    colvars.  For a smoother visualization of the free energy plot,
+    decrease <TT>width</TT> and increase <TT>hillWidth</TT> in the same
+    proportion.  <SPAN  CLASS="textbf">Note:</SPAN> <SPAN  CLASS="textit">when </SPAN><TT>useGrids</TT><SPAN  CLASS="textit"> is
+    </SPAN><TT>on</TT><SPAN  CLASS="textit"> (default in most cases), values smaller than 1
+      should be avoided to avoid discretization errors</SPAN>.
+
+<P>
+</LI>
+<LI><A NAME="6729"></A>
+  <B><BIG CLASS="LARGE"><TT>rebinGrids </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></B></SPAN>Recompute the grids when reading a state
+    file<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>metadynamics</TT>
+<BR><B>Acceptable values: </B> boolean
+<BR><B>Default value: </B> <TT>off</TT>
+<BR><B>Description: </B> When restarting from a state file, the grid's parameters (boundaries
+    and widths) saved in the state file override those in the
+    configuration file.  Enabling this option forces the grids to match
+    those in the current configuration file.
+
+<P>
+</LI>
+</UL>
+
+<P>
+
+<H3><A NAME="SECTION00082300000000000000"></A>
+<A NAME="sec:colvarbias_well_tempered"></A>
+<BR>
+Well-tempered metadynamics
+</H3>
+The following options define the configuration for the ``well-tempered'' metadynamics approach [<A
+ HREF="node40.html#Barducci2008">18</A>]:
+
+<P>
+
+<UL>
+<LI><A NAME="6748"></A>
+  <B><BIG CLASS="LARGE"><TT>wellTempered </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></B></SPAN>Perform well-tempered metadynamics<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>metadynamics</TT>
+<BR><B>Acceptable values: </B> boolean
+<BR><B>Default value: </B> <TT>off</TT>
+<BR><B>Description: </B> If enabled, this flag causes well-tempered metadynamics as
+    described by Barducci et al.[<A
+ HREF="node40.html#Barducci2008">18</A>]
+    to be performed, rather than standard metadynamics.  The parameter
+    <TT>biasTemperature</TT> is then required.This feature
+    was contributed by Li Li (Luthey-Schulten group, Departement of Chemistry, UIUC).
+
+<P>
+</LI>
+<LI><A NAME="6769"></A>
+  <B><BIG CLASS="LARGE"><TT>biasTemperature </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></B></SPAN>Temperature bias for well-tempered metadynamics<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>metadynamics</TT>
+<BR><B>Acceptable values: </B> positive decimal
+<BR><B>Description: </B> When running metadynamics in the long time limit, collective variable space is sampled to a modified
+    temperature <!-- MATH
+ $T+\Delta T$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="57" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img203.png"
+ ALT="$ T+\Delta T$"></B></SPAN>.  In conventional metadynamics, the temperature ``boost'' <SPAN CLASS="MATH"><B><IMG
+ WIDTH="27" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img204.png"
+ ALT="$ \Delta T$"></B></SPAN> would
+    constantly increases with time.  Instead, in well-tempered metadynamics <SPAN CLASS="MATH"><B><IMG
+ WIDTH="27" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img204.png"
+ ALT="$ \Delta T$"></B></SPAN> must be defined by the
+    user via <TT>biasTemperature</TT>.  If <TT>dumpFreeEnergyFile</TT> is enabled, the written PMF includes the
+    scaling factor <!-- MATH
+ $(T+\Delta T)/\Delta T$
+ -->
+<SPAN CLASS="MATH"><B><IMG
+ WIDTH="102" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img205.png"
+ ALT="$ (T+\Delta T)/\Delta T$"></B></SPAN> [<A
+ HREF="node40.html#Barducci2008">18</A>].  A careful choice of <SPAN CLASS="MATH"><B><IMG
+ WIDTH="27" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img204.png"
+ ALT="$ \Delta T$"></B></SPAN> determines the
+    sampling and convergence rate, and is hence crucial to the success of a well-tempered metadynamics
+    simulation.
+</LI>
+</UL>
+
+<P>
+
+<H3><A NAME="SECTION00082400000000000000"></A>
+<A NAME="sec:colvarbias_meta_mr"></A>
+<BR>
+Multiple-replicas metadynamics
+</H3>
+The following options define metadynamics calculations with more than
+one replica:
+
+<P>
+
+<UL>
+<LI><A NAME="6789"></A>
+  <B><BIG CLASS="LARGE"><TT>multipleReplicas </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></B></SPAN>Multiple replicas metadynamics<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>metadynamics</TT>
+<BR><B>Acceptable values: </B> boolean
+<BR><B>Default value: </B> <TT>off</TT>
+<BR><B>Description: </B> If this option is <TT>on</TT>, multiple (independent) replica of the
+    same system can be run at the same time, and their hills will be
+    combined to obtain a single PMF [<A
+ HREF="node40.html#Raiteri2005">19</A>].  Replicas are
+    identified by the value of <TT>replicaID</TT>.  Communication is
+    done by files: each replica must be able to read the files
+    created by the others, whose paths are communicated through the file
+    <TT>replicasRegistry</TT>.  This file, and the files listed in it,
+    are read every <TT>replicaUpdateFrequency</TT> steps.  Every time
+    the colvars state file is written
+    (<TT>colvarsRestartFrequency</TT>), the file:
+<BR>    ``<SPAN  CLASS="textit">output</SPAN><TT>.colvars.</TT><SPAN  CLASS="textit">name</SPAN><TT>.</TT><SPAN  CLASS="textit">replicaID</SPAN><TT>.state</TT>''
+    is also written, containing
+    the state of the metadynamics bias for <TT>replicaID</TT>.  In the
+    time steps between <TT>colvarsRestartFrequency</TT>, new hills are
+    temporarily written to the file:
+<BR>    ``<SPAN  CLASS="textit">output</SPAN><TT>.colvars.</TT><SPAN  CLASS="textit">name</SPAN><TT>.</TT><SPAN  CLASS="textit">replicaID</SPAN><TT>.hills</TT>'',
+    which serves as communication
+    buffer.  These files are only required for communication, and may be
+    deleted after a new MD run is started with a different
+    <TT>outputName</TT>.
+
+<P>
+</LI>
+<LI><A NAME="6827"></A>
+  <B><BIG CLASS="LARGE"><TT>replicaID </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></B></SPAN>Set the identifier for this replica<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>metadynamics</TT>
+<BR><B>Acceptable values: </B> string
+<BR><B>Description: </B> If <TT>multipleReplicas</TT> is <TT>on</TT>, this option sets a
+    unique identifier for this replica.  All replicas should use
+    identical collective variable configurations, except for the value
+    of this option.
+
+<P>
+</LI>
+<LI><A NAME="6845"></A>
+  <B><BIG CLASS="LARGE"><TT>replicasRegistry </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></B></SPAN>Multiple replicas database file<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>metadynamics</TT>
+<BR><B>Acceptable values: </B> UNIX filename
+<BR><B>Default value: </B> ``<SPAN  CLASS="textit">name</SPAN><TT>.replica_files.txt</TT>''
+<BR><B>Description: </B> If <TT>multipleReplicas</TT> is <TT>on</TT>, this option sets the
+    path to the replicas' database file.
+
+<P>
+</LI>
+<LI><A NAME="6866"></A>
+  <B><BIG CLASS="LARGE"><TT>replicaUpdateFrequency </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></B></SPAN>How often hills are communicated between
+    replicas<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>metadynamics</TT>
+<BR><B>Acceptable values: </B> positive integer
+<BR><B>Default value: </B> <TT>newHillFrequency</TT>
+<BR><B>Description: </B> If <TT>multipleReplicas</TT> is <TT>on</TT>, this option sets the
+    number of steps after which each replica (re)reads the other
+    replicas' files.  The lowest meaningful value of this number is
+    <TT>newHillFrequency</TT>.  If access to the file system is
+    significantly affecting the simulation performance, this number can
+    be increased, at the price of reduced synchronization between
+    replicas.  Values higher than <TT>colvarsRestartFrequency</TT> may
+    not improve performance significantly.
+
+<P>
+</LI>
+<LI><A NAME="6888"></A>
+  <B><BIG CLASS="LARGE"><TT>dumpPartialFreeEnergyFile </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></B></SPAN>Periodically write the contribution to the
+    PMF from this replica<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>metadynamics</TT>
+<BR><B>Acceptable values: </B> boolean
+<BR><B>Default value: </B> <TT>on</TT>
+<BR><B>Description: </B> When <TT>multipleReplicas</TT> is <TT>on</TT>, tje file
+    <SPAN  CLASS="textit">output</SPAN><TT>.pmf</TT> contains the combined PMF from all
+    replicas.  Enabling this option produces an additional file
+    <SPAN  CLASS="textit">output</SPAN><TT>.partial.pmf</TT>, which can be useful to
+    quickly monitor the contribution of each replica to the PMF.  The
+    requirements for this option are the same as
+    <TT>dumpFreeEnergyFile</TT>.
+
+<P>
+</LI>
+</UL>
+
+<P>
+
+<H3><A NAME="SECTION00082500000000000000">
+Compatibility and post-processing</A>
+</H3>
+The following options may be useful only for applications that go beyond the calculation of a PMF by metadynamics:
+
+<UL>
+<LI><A NAME="6914"></A>
+  <B><BIG CLASS="LARGE"><TT>name </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></B></SPAN>Name of this metadynamics instance<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>metadynamics</TT>
+<BR><B>Acceptable values: </B> string
+<BR><B>Default value: </B> ``<TT>meta</TT>'' + rank number
+<BR><B>Description: </B> This option sets the name for this metadynamics instance.  While it
+    is not advisable to use more than one metadynamics instance within
+    the same simulation, this allows to distinguish each instance from
+    the others.  If there is more than one metadynamics instance, the
+    name of this bias is included in the metadynamics output file names, such as e.g.&nbsp;the <TT>.pmf</TT> file.
+
+<P>
+</LI>
+<LI><A NAME="6933"></A>
+  <B><BIG CLASS="LARGE"><TT>keepHills </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></B></SPAN>Write each individual hill to the state
+    file<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>metadynamics</TT>
+<BR><B>Acceptable values: </B> boolean
+<BR><B>Default value: </B> <TT>off</TT>
+<BR><B>Description: </B> When <TT>useGrids</TT> and this option are <TT>on</TT>, all hills
+    are saved to the state file in their analytic form, alongside their
+    grids.  This makes it possible to later use exact analytic Gaussians
+    for <TT>rebinGrids</TT>.  To only keep track of the history of the
+    added hills, <TT>writeHillsTrajectory</TT> is preferable.
+
+<P>
+</LI>
+<LI><A NAME="6955"></A>
+  <B><BIG CLASS="LARGE"><TT>writeHillsTrajectory </TT></BIG></B> <SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></B></SPAN>Write a log of new hills<SPAN CLASS="MATH"><B><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></B></SPAN>
+<BR><B>Context: </B> <TT>metadynamics</TT>
+<BR><B>Acceptable values: </B> boolean
+<BR><B>Default value: </B> <TT>on</TT>
+<BR><B>Description: </B> If this option is <TT>on</TT>, a logfile is written by the
+    <TT>metadynamics</TT> bias, with the name
+    ``<SPAN  CLASS="textit">output</SPAN><TT>.colvars.<SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$ &lt;$"></B></SPAN>name<SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img23.png"
+ ALT="$ &gt;$"></B></SPAN>.hills.traj</TT>'', which
+    can be useful to follow the time series of the hills.  When
+    <TT>multipleReplicas</TT> is <TT>on</TT>, its name changes to
+<BR>    ``<SPAN  CLASS="textit">output</SPAN><TT>.colvars.<SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$ &lt;$"></B></SPAN>name<SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img23.png"
+ ALT="$ &gt;$"></B></SPAN>.<SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$ &lt;$"></B></SPAN>replicaID<SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img23.png"
+ ALT="$ &gt;$"></B></SPAN>.hills.traj</TT>''.
+    This file can be used to quickly visualize the positions of all
+    added hills, in case <TT>newHillFrequency</TT> does not coincide
+    with <TT>colvarsRestartFrequency</TT>.
+
+<P>
+</LI>
+</UL>
+
+<P>
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A NAME="tex2html609"
+  HREF="node29.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
+<A NAME="tex2html603"
+  HREF="node26.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
+<A NAME="tex2html597"
+  HREF="node27.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
+<A NAME="tex2html605"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
+<A NAME="tex2html607"
+  HREF="node39.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
+<BR>
+<B> Next:</B> <A NAME="tex2html610"
+  HREF="node29.html">Harmonic restraints</A>
+<B> Up:</B> <A NAME="tex2html604"
+  HREF="node26.html">Biasing and analysis methods</A>
+<B> Previous:</B> <A NAME="tex2html598"
+  HREF="node27.html">Adaptive Biasing Force</A>
+ &nbsp; <B>  <A NAME="tex2html606"
+  HREF="node1.html">Contents</A></B>
+ &nbsp; <B>  <A NAME="tex2html608"
+  HREF="node39.html">Index</A></B> </DIV>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Jérôme Hénin
+2015-03-03
+</ADDRESS>
+</BODY>
+</HTML>

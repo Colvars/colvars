@@ -1,0 +1,210 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Selection keywords</TITLE>
+<META NAME="description" CONTENT="Selection keywords">
+<META NAME="keywords" CONTENT="colvars-refman-lammps">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="colvars-refman-lammps.css">
+
+<LINK REL="next" HREF="node18.html">
+<LINK REL="previous" HREF="node16.html">
+<LINK REL="up" HREF="node16.html">
+<LINK REL="next" HREF="node18.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A NAME="tex2html357"
+  HREF="node18.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html351"
+  HREF="node16.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html345"
+  HREF="node16.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html353"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html355"
+  HREF="node32.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html358"
+  HREF="node18.html">Moving frame of reference.</A>
+<B> Up:</B> <A NAME="tex2html352"
+  HREF="node16.html">Selecting atoms for colvars:</A>
+<B> Previous:</B> <A NAME="tex2html346"
+  HREF="node16.html">Selecting atoms for colvars:</A>
+ &nbsp; <B>  <A NAME="tex2html354"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html356"
+  HREF="node32.html">Index</A></B> 
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+
+<H2><A NAME="SECTION00061000000000000000"></A>
+<A NAME="sec:colvar_atom_groups_sel"></A>
+<BR>
+Selection keywords
+</H2>
+
+<P>
+To define collective variables, atoms are usually selected by group.  Each group is identified by a name that is unique in the context of the specific colvar component (e.g.&nbsp;for a distance component, the names of the two groups are <TT>group1</TT> and <TT>group2</TT>).
+The name is followed by a brace-delimited block of selection keywords: these may be used individually or in combination with each other, and each can be repeated any number of times.
+Selection is incremental: each keyword adds the corresponding atoms to the selection, so that different sets of atoms can be combined.
+However, atoms included by multiple keywords are only counted once.
+Below is an example configuration for an atom group named ``<TT>atoms</TT>'', which uses an unusually varied combination of selection keywords:
+<BR>
+<P>
+<TT>atoms {
+<BR>
+<BR>&nbsp;&nbsp;# add atoms 1 and 3 to this group (note: the first atom in the system is 1)
+<BR>&nbsp;&nbsp;atomNumbers { 
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;1 3
+<BR>&nbsp;&nbsp;}
+<BR>
+<BR>&nbsp;&nbsp;# add atoms starting from 20 up to and including 50
+<BR>&nbsp;&nbsp;atomNumbersRange  20-50
+<BR>
+<BR>&nbsp;&nbsp;# add index group (requires a .ndx file to be provided globally)
+<BR>&nbsp;&nbsp;indexGroup Water
+<BR></TT>
+
+<TT>}
+<BR></TT>
+
+<P>
+The resulting selection includes atoms 1 and 3, those between 20 and 50, and those in the index group called ``Water''; the indices of this group are read from the file provided by <TT>indexFile</TT>, in the global section of the configuration file.
+
+<P>
+The complete list of selection keywords available in LAMMPS is:
+
+<P>
+
+<UL>
+<LI><A NAME="4512"></A>
+  <B><BIG CLASS="LARGE"><TT>atomNumbers </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></SPAN>List of atom numbers<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> atom group 
+<BR><B>Acceptable values: </B> space-separated list of positive integers 
+<BR><B>Description: </B> This option adds to the group all the atoms whose numbers are in
+    the list.  <SPAN  CLASS="textit">The number of the first atom in the system is 1: to convert from a VMD selection, use ``atomselect get serial''.</SPAN>
+
+<P>
+</LI>
+<LI><A NAME="4519"></A>
+  <B><BIG CLASS="LARGE"><TT>indexGroup </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></SPAN>Name of index group to be used (GROMACS format)<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> atom group 
+<BR><B>Acceptable values: </B> string 
+<BR><B>Description: </B> If the name of an index file has been provided by <TT>indexFile</TT>, this option allows to select one index group from that file: the atoms from that index group will be used to define the current group.
+
+<P>
+</LI>
+<LI><A NAME="4526"></A>
+  <B><BIG CLASS="LARGE"><TT>atomNumbersRange </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></SPAN>Atoms within a number range<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> atom group 
+<BR><B>Acceptable values: </B> <SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$ &lt;$"></SPAN>Starting number<SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$ &gt;$"></SPAN>-<SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$ &lt;$"></SPAN>Ending number<SPAN CLASS="MATH"><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$ &gt;$"></SPAN> 
+<BR><B>Description: </B> This option includes in the group all atoms whose numbers are within the range specified.  <SPAN  CLASS="textit">The number of the first atom in the system is 1.</SPAN>
+
+<P>
+
+<P>
+</LI>
+<LI><A NAME="4533"></A>
+  <B><BIG CLASS="LARGE"><TT>dummyAtom </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></SPAN>Dummy atom position (&#197;)<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></SPAN> 
+<BR><B>Context: </B> atom group 
+<BR><B>Acceptable values: </B> <TT>(x, y, z)</TT> triplet 
+<BR><B>Description: </B> Instead of selecting any atom, this option makes the group a virtual particle at a fixed position in space.  This is useful e.g.&nbsp;to replace a group's center of geometry with a user-defined position.
+
+<P>
+</LI>
+</UL>
+
+<P>
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A NAME="tex2html357"
+  HREF="node18.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html351"
+  HREF="node16.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html345"
+  HREF="node16.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html353"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html355"
+  HREF="node32.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html358"
+  HREF="node18.html">Moving frame of reference.</A>
+<B> Up:</B> <A NAME="tex2html352"
+  HREF="node16.html">Selecting atoms for colvars:</A>
+<B> Previous:</B> <A NAME="tex2html346"
+  HREF="node16.html">Selecting atoms for colvars:</A>
+ &nbsp; <B>  <A NAME="tex2html354"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html356"
+  HREF="node32.html">Index</A></B> </DIV>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Jérôme Hénin
+2015-03-03
+</ADDRESS>
+</BODY>
+</HTML>

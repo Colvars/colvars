@@ -18,24 +18,25 @@ number of atoms:
   \xi(t) \; = \xi\left(\bm{x}_{i}(t), \bm{x}_{j}(t), \bm{x}_{k}(t),
   \ldots \right)\;, \;\; 1 \leq i,j,k\ldots \leq N
 \end{equation}
-
 \cvnamdugonly{
 The colvars module in NAMD may be used in both MD simulations and energy minimization runs.
 }
-\cvrefmanonly{
-This manual documents the collective variables module (colvars), a portable software that interfaces multiple MD simulation simulation programs, with a focus on flexibility, robustness and high performance.
-}
-The module is designed to perform multiple tasks concurrently, the most common of which are:
+\cvvmdugonly{%
+The colvars module in VMD may be used to calculate these functions over a molecular structure, and to analyze the results of previous simulations.}
+\cvrefmanonly{%
+This manual documents the collective variables module (colvars), a portable software that interfaces multiple MD simulation programs, with a focus on flexibility, robustness and high performance.}
+The module is designed to perform multiple tasks concurrently during or after a simulation, the most common of which are:
 \begin{itemize}
 
-\item apply restraints or biasing potentials to multiple colvars, tailored on the system by choosing from a wide set of basis functions, without limitations on their number or on the number of atoms involved; \cvnamdonly{while this can in principle be done through a TclForces script, using the colvars is both easier and computationally more efficient;}
+\item apply restraints or biasing potentials to multiple colvars, tailored on the system by choosing from a wide set of basis functions, without limitations on their number or on the number of atoms involved; \cvnamdonly{while this can in principle be done through a TclForces script, using the colvars module is both easier and computationally more efficient;}
 
 \item calculate potentials of mean force (PMFs) along any set of colvars, using different enhanced sampling methods, such as Adaptive Biasing Force (ABF), metadynamics, steered MD and umbrella sampling; variants of these methods that make use of an ensemble of replicas are supported as well;
 
-\item calculate statistical properties of the colvars, such as running averages and standard deviations, correlation functions of pairs of colvars, and multidimensional histograms, without the need to save very large trajectory files \cvnamdonly{;
-\item analyze an existing MD trajectory in terms of colvars: use NAMD's \texttt{coorfile read} command, and perform a 0-timestep run for each set of coordinates\cvnamdugonly{, as illustrated in \ref{section:sample}}}.
+\item calculate statistical properties of the colvars, such as running averages and standard deviations, correlation functions of pairs of colvars, and multidimensional histograms: this can be done either at run-time without the need to save very large trajectory files, or after a simulation has been completed using VMD and the \texttt{cv} command\cvnamdugonly{ or NAMD and the \texttt{coorfile read} command as illustrated in \ref{section:sample}}.
 
 \end{itemize}
+
+\cvvmdonly{\textbf{Note:} although restraints and PMF algorithms are primarily used during simulations, they are also available in VMD to test a new input for a simulation, or to evaluate the relative free energy of a new structure based on data from a previous calculation.  \emph{Options that only have an effect during a simulation are also included for compatibility purposes.}} 
 
 To briefly illustrate the flexibility of the colvars module, Figure~\ref{fig:colvars_diagram} shows an example of a non-trivial configuration (the corresponding input can be found in \ref{sec:colvars_config}).
 
@@ -47,8 +48,9 @@ To briefly illustrate the flexibility of the colvars module, Figure~\ref{fig:col
 \begin{figure}[!ht]
   \centering
 \cvnamdugonly{\includegraphics[width=12cm]{figures/colvars_diagram}}
+\cvvmdugonly{\includegraphics[width=12cm]{pictures/colvars_diagram}}
 \cvrefmanonly{\includegraphics[width=12cm]{colvars_diagram}}
-  \caption{Graphical representation of a collective variables configuration\cvlammpsonly{ \textbf{(note:} \emph{currently, the $\alpha$-helical content colvar is unavailable in LAMMPS).}}
+  \caption[Graphical representation of a collective variables configuration.]{Graphical representation of a collective variables configuration\cvlammpsonly{ \textbf{(note:} \emph{currently, the $\alpha$-helical content colvar is unavailable in LAMMPS)}}.
     The colvar called ``$d$'' is defined as the difference between two distances: the first distance ($d_{1}$) is taken between the center of mass of atoms 1 and 2 and that of atoms 3 to 5, the second ($d_{2}$) between atom 7 and the center of mass of atoms 8 to 10.
 The difference $d = d_{1} - d_{2}$ is obtained by multiplying the two by a coefficient $C = +1$ or $C = -1$, respectively.
 The colvar called ``$c$'' is the coordination number calculated between atoms 1 to 10 and atoms 11 to 20.  A harmonic restraint is applied to both $d$ and $c$: to allow using the same force constant $K$, both $d$ and $c$ are scaled by their respective fluctuation widths $w_d$ and $w_c$.
@@ -60,14 +62,49 @@ The values of ``$c$''\cvnamebasedonly{ and ``alpha''} are also recorded througho
 
 Detailed explanations of the design of the colvars module are provided in reference~\cite{Fiorin2013}. Please cite this reference whenever publishing work that makes use of this module.
 
+
 \cvsec{General parameters and input/output files}
 \label{sec:colvarmodule}
 
-% TODO: change for VMD
-To enable a collective variable calculation, one or more parameters are added to the \MDENGINE{} configuration file.
-In \ref{sec:colvars_mdengine_params}, we document the syntax of such parameters.
-One of these is the name of a configuration file for the collective variables module itself, which is described in \ref{sec:colvars_config}, and in the following sections.
+Here, we document the syntax of the commands and parameters used to set up and use the collective variables module in \MDENGINE{}.
+One of these parameters is the configuration file or the configuration text for the module itself, whose syntax is described in \ref{sec:colvars_config} and in the following sections.
 
+\cvvmdonly{
+\cvsubsec{Using the \texttt{cv} command}
+\label{sec:colvars_mdengine_params}
+\cvvmdugonly{\index{collective variables!\texttt{cv} command}}
+
+The colvars module is accessed in VMD through the command \texttt{cv}.
+The command must be used the first time as \texttt{cv molid }\emph{$<$molid$>$} to set up the collective variables module for a given molecule.
+In all following uses, the \texttt{cv} command will continue operating on the same molecule, regardless of its ``top'' status.
+To use the \texttt{cv} command on a different molecule, use \texttt{cv delete} first and then \texttt{cv molid }\emph{$<$molid$>$}.
+Invoking the \texttt{cv} command with no arguments prints a help screen.
+
+The list of parameters of the \texttt{cv} command is:
+\begin{itemize}
+\item \texttt{molid} \emph{$<$molid$>$}: set up the colvars module, where \emph{$<$molid$>$} is the identifier of a valid VMD molecule as provided e.g.~by \texttt{molinfo}: for example, use \texttt{cv molid top} to set the colvars module for the top molecule;
+\item \texttt{configfile} \emph{$<$file name$>$}: read the colvars configuration from the contents of the specified file; the \texttt{cv} command can be invoked multiple times with this argument and/or with the \texttt{config} argument; see \ref{sec:colvars_config} for the configuration syntax;
+\item \texttt{config} \emph{$<$string$>$}: read the colvars configuration from the given text string; see \ref{sec:colvars_config} for the configuration syntax;
+\item \texttt{reset}: delete all internal configuration, while keeping information about the VMD molecule;
+\item \texttt{delete}: delete the colvars module; after this, the module can be reissued again using \texttt{cv molid};
+\item \texttt{list}: return a list of all colvars currently defined (see \ref{sec:colvar}, \ref{sec:cvc} and \ref{sec:colvar_atom_groups} for how to configure a collective variable);
+\item \texttt{list biases}: return a list of all collective variable biases (i.e.~sampling and analysis algorithms) currently defined (see \ref{sec:colvarbias} for how to configure a bias);
+\item \texttt{load} \emph{$<$file name$>$}: load a collective variables state file, typically produced during a simulation; this parameter requires that the corresponding configuration has already been loaded by \texttt{configfile} or \texttt{config}; see \ref{sec:colvars_output} for a brief description of this file; the contents of this file are not required for as long as the VMD molecule has valid coordinates and \texttt{cv update} is used;
+\item \texttt{save} \emph{$<$prefix$>$}: save the current state in a file whose name begins with the given argument; if any of the biases have additional output files defined, those are saved as well;
+\item \texttt{update}: recalculate all colvars and biases based on the current atomic coordinates;
+\item \texttt{printframe}: return a summary of the current frame, in a format equivalent to a line of the collective variables trajectory file;
+\item \texttt{printframelabels}: return text labels to annotate \texttt{printframe}'s output;
+\item \texttt{frame}: return the current frame number, where variables are calculated;
+\item \texttt{frame} \emph{$<$new frame$>$}: set the frame number (must be a valid frame number of the VMD molecule);
+\item \texttt{colvar} \emph{$<$name$>$} \texttt{update}: recalculate the colvar \emph{$<$name$>$};
+\item \texttt{colvar} \emph{$<$name$>$} \texttt{value}: return the current value of the colvar \emph{$<$name$>$};
+\item \texttt{colvar} \emph{$<$name$>$} \texttt{delete}: delete the colvar \emph{$<$name$>$};
+\item \texttt{colvar} \emph{$<$name$>$} \texttt{addforce} \emph{force}: apply the given force on \emph{$<$name$>$} (this option is provided for compatibility with NAMD, but has no effect in VMD);
+\item \texttt{bias} \emph{$<$name$>$} \texttt{update}: recalculate the bias \emph{$<$name$>$};
+\item \texttt{bias} \emph{$<$name$>$} \texttt{energy}: return the current energy of the bias \emph{$<$name$>$};
+\item \texttt{bias} \emph{$<$name$>$} \texttt{delete}: delete the bias \emph{$<$name$>$}.
+\end{itemize}
+}
 
 \cvnamdonly{
 \cvsubsec{NAMD parameters}
@@ -193,13 +230,14 @@ Setting this to \emph{no} will use the current local coordinates that are wrappe
 }
 
 
-\cvsubsec{Configuration file for the collective variables module}
+\cvsubsec{Configuration syntax for the collective variables module}
 \label{sec:colvars_config}
 
 \cvnamdonly{All the parameters defining the colvars and their biasing or analysis algorithms are read from the file specified by \texttt{colvarsConfig}.
 Hence, none of the keywords described in this section and the following ones are available as keywords for the
 NAMD configuration file.}
-The syntax of the colvars configuration file is ``\texttt{keyword value}'', where the keyword and its value are separated by any white space.
+\cvvmdonly{The colvars configuration is usually read using the commands \texttt{cv configfile} or \texttt{cv config}.}
+The syntax of the colvars configuration is ``\texttt{keyword value}'', where the keyword and its value are separated by any white space.
 The following rules apply:
 
 \begin{itemize}
@@ -208,13 +246,16 @@ The following rules apply:
 
 \item a long value or a list of multiple values can be distributed across multiple lines by using curly braces, ``\texttt{\{}'' and ``\texttt{\}}'': the opening brace ``\texttt{\{}'' must occur on the same line as the keyword, following a space character or other white space; the closing brace ``\texttt{\}}'' can be at any position after that;
 
-\cvnamdugonly{\item many keywords are nested, and are only meaningful within a specific context: for every keyword documented in the following, the ``parent'' keyword that defines such context is also indicated in parentheses;}
-\cvrefmanonly{\item many keywords are nested, and are only meaningful within a specific context: for every keyword documented in the following, the ``parent'' keyword that defines such context is also indicated;}
+\item many keywords are nested, and are only meaningful within a specific context: for every keyword documented in the following, the ``parent'' keyword that defines such context is also indicated\cvnamdugonly{ in parentheses};
 
 \cvnamdonly{%
 \item unlike in the NAMD main configuration file, the deprecated `\texttt{=}' sign between a keyword and its value is not allowed;
 
 \item unlike in the NAMD main configuration file,  Tcl commands and variables are not available, but it is possible to use Tcl to generate a new configuration file with different parameters \cvnamdugonly{(see \ref{sec:colvars_mdengine_params})};
+}
+
+\cvvmdonly{%
+\item Tcl commands and variables are not available, but it is possible to include Tcl variables and constructs inside a configuration string: for example, it is possible to load the atom selection \$\emph{sel} into an atom group (see \ref{sec:colvar_atom_groups_sel}) using \texttt{atomNumbers \{ [\$sel get serial] \}} inside a configuration string read by \texttt{cv config};
 }
 
 \item if a keyword requiring a boolean value (\texttt{yes|on|true} or \texttt{no|off|false}) is provided without an explicit value, it defaults to `\texttt{yes|on|true}'; for example, `\texttt{outputAppliedForce}' may be used as shorthand for `\texttt{outputAppliedForce on}';
@@ -223,8 +264,7 @@ The following rules apply:
 
 \end{itemize}
 
-All parameters defining the colvars and their biasing or analysis algorithms are read from the file specified by \texttt{colvarsConfig}.
-The following keywords are available in the global context of this configuration file, i.e.~not nested inside other keywords:
+The following keywords are available in the global context of the colvars configuration, i.e.~they are not nested inside other keywords:
 \begin{itemize}
 
 \item %
@@ -234,7 +274,7 @@ The following keywords are available in the global context of this configuration
   Colvar value trajectory frequency}{%
     positive integer}{%
     \texttt{100}}{%
-    Thevalues of each colvar (and of other related quantities, if requested) are written to the file \outputName\texttt{.colvars.traj} every these many steps throughout the simulation.
+    The values of each colvar (and of other related quantities, if requested) are written to the file \outputName\texttt{.colvars.traj} every these many steps throughout the simulation.
     If the value is \texttt{0}, such trajectory file is not written.
     For optimization the output is buffered, and synchronized with the disk only when the restart file is being written.}
 
@@ -282,7 +322,7 @@ The following keywords are available in the global context of this configuration
   \keydef
     {analysis}{%
     global}{%
-    Turn on run-time statistical analysis }{%
+    Turn on run-time statistical analysis}{%
     boolean}{%
     \texttt{off}}{%
     If this flag is enabled, each colvar is instructed to perform
@@ -354,16 +394,17 @@ Finally, section \ref{sec:colvarbias} lists the available methods and algorithms
 \cvsubsec{Input state file (optional)}
 \label{sec:colvars_input}
 
-Aside from the configuration file, an optional input state file may be provided to continue a previous simulation.
+Aside from the colvars configuration, an optional input state file may be provided to load the relevant data from a previous simulation.
 \cvnamdonly{The name of this file is provided as a value to the keyword \texttt{colvarsInput}.}
+\cvvmdonly{The name of this file is provided through \texttt{cv load }\emph{$<$file name $>$}.}
 \cvlammpsonly{The name of this file is provided as the argument to the \texttt{input} keyword of the \texttt{fix ID all colvars} command. The same information is stored in the binary restart files of LAMMPS, so it not needed when continuing a calculation from such a restart.}
+
 
 
 \cvsubsec{Output files}
 \label{sec:colvars_output}
 
-% TODO: change for VMD
-In addition to the output files written by \MDENGINE{}, the following three output files are written:
+During a simulation with collective variables defined, the following three output files are written:
 
 \begin{itemize}
 
@@ -413,17 +454,17 @@ The following options are not required by default; however, the first four are v
   \keydef
     {width}{%
     \texttt{colvar}}{%
-    Expected fluctuations amplitude, and resolution for grid-based methods}{%
+    Colvar fluctuation scale, or resolution for grid-based methods}{%
     positive decimal}{%
     1.0}{%
-    This number is a user-provided estimate of the fluctuation amplitude for the colvar.  For example, it is recommended to set this number smaller than or equal to the standard deviation of the colvar during a very short simulation run.  Biasing algorithms use this parameter for different purposes:
-    harmonic restraints (\ref{sec:colvarbias_harmonic}) use it to set the physical unit of the force constant, the histogram
-    (\ref{sec:colvarbias_histogram}) and ABF biases
-    (\ref{sec:colvarbias_abf}) interpret it as the grid spacing in the
-    direction of this variable, and metadynamics
-    (\ref{sec:colvarbias_meta}) uses it to set the width of newly
-    added hills.  This number is expressed in the same physical unit
-    as the colvar value.}
+    This number has the same physical unit as the colvar value and defines an effective colvar unit.
+    Biasing algorithms use it for different purposes.
+    Harmonic restraints (\ref{sec:colvarbias_harmonic}) use it to set the physical unit of the force constant, which is useful for multidimensional restraints involving colvars with different units or scale which may then be defined by a single, scaled force constant.
+    Histogram (\ref{sec:colvarbias_histogram}) and ABF biases (\ref{sec:colvarbias_abf}) interpret it as the grid spacing in the direction of this variable.
+    Metadynamics (\ref{sec:colvarbias_meta}) uses it to set the width of newly added hills.
+    In other cases, it is simplest to keep the default value of 1, so that harmonic force constants are provided in their usual physical unit.
+    When a non-unity width is required by the application, the optimal value is application-dependent, but can often be thought of as a user-provided estimate of the fluctuation amplitude for the colvar.
+    In those cases, it should generally be set smaller than or equal to the standard deviation of the colvar during a very short simulation run.}
 
 \item %
   \key
@@ -494,11 +535,11 @@ To apply moving restraints, or restraints to more than one colvar simultaneously
   \key
     {lowerWallConstant}{%
     \texttt{colvar}}{%
-    Lower wall force constant (\cvnamdonly{kcal/mol}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
+    Lower wall force constant (\cvnamdonly{kcal/mol/U$^2$}\cvvmdonly{kcal/mol/U$^2$}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
     positive decimal}{%
-    Defines the force constant for a confining restraint on the colvar, in the form of a     ``half-harmonic'' potential.
-    The potential starts at \texttt{lowerWall} if it is defined, or     \texttt{lowerBoundary} otherwise.
-    The energy unit of the constant is \cvnamdonly{kcal/mol}\cvlammpsonly{the unit of energy specified by \texttt{units}}, while the spatial unit is that of the colvar.}
+    Defines the force constant for a confining restraint on the colvar, in the form of a ``half-harmonic'' potential.
+    The potential starts at \texttt{lowerWall} if it is defined, or \texttt{lowerBoundary} otherwise.
+    The energy unit of the constant is \cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{the unit of energy specified by \texttt{units}}, while the spatial unit U is that of the colvar.}
 
 \item %
   \keydef
@@ -514,7 +555,7 @@ To apply moving restraints, or restraints to more than one colvar simultaneously
   \key
     {upperWallConstant}{%
     \texttt{colvar}}{%
-    Upper wall force constant (\cvnamdonly{kcal/mol}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
+    Upper wall force constant (\cvnamdonly{kcal/mol/U$^2$}\cvvmdonly{kcal/mol/U$^2$}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
     positive decimal}{%
     Analogous to \texttt{lowerWallConstant}.}
 
@@ -587,7 +628,7 @@ To apply moving restraints, or restraints to more than one colvar simultaneously
     For extended Lagrangian colvars, the "system force" felt by the extended degree of freedom
     is simply the force from the harmonic spring.
     \textbf{Note:} not all components support this option.  The
-    physical unit for this force is \cvnamdonly{kcal/mol}\cvlammpsonly{the unit of energy specified by \texttt{units}}, divided by the colvar unit.}
+    physical unit for this force is \cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{the unit of energy specified by \texttt{units}}, divided by the colvar unit U.}
 
 \item %
   \keydef
@@ -605,7 +646,7 @@ To apply moving restraints, or restraints to more than one colvar simultaneously
     For extended Lagrangian colvars, this force is actually applied to the
     extended degree of freedom rather than the geometric colvar itself.
     The physical unit for this
-    force is \cvnamdonly{kcal/mol}\cvlammpsonly{the unit of energy specified by \texttt{units}} divided by the colvar unit.}
+    force is \cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{the unit of energy specified by \texttt{units}} divided by the colvar unit.}
 \end{itemize}
 
 
@@ -881,6 +922,7 @@ Below is an example configuration for an atom group named ``\texttt{atoms}'', wh
 
 The resulting selection includes atoms 1 and 3, those between 20 and 50, and those in the index group called ``Water''; the indices of this group are read from the file provided by \texttt{indexFile}, in the global section of the configuration file.
 
+\cvvmdonly{In the current version, the colvars module does not manipulate VMD atom selections directly: however, these can be converted to atom groups within the colvars configuration string, using selection keywords such as \texttt{atomNumbers}.}
 The complete list of selection keywords available in \MDENGINE{} is:
 
 \begin{itemize}
@@ -1154,14 +1196,20 @@ For this reason, within the colvars module coordinates are unwrapped by default 
 The user should determine whether maintaining the default value of \texttt{unwrap}, depending on the specifics of each system.
 In general, internal coordinate wrapping by LAMMPS does not affect the calculation of colvars if each atom group satisfies one or more of the following:
 }
+\cvvmdonly{
+  When periodic boundary conditions are defined, the colvars module requires that the coordinates of each molecular fragment are contiguous, without ``jumps'' when a fragment is partially wrapped near a periodic boundary.
+  The colvars module relies on this assumption when calculating a group's center of geometry, but the condition may fail if the group spans different molecules.
+  In general, coordinate wrapping does not affect the calculation of colvars if each atom group satisfies one or more of the following:
+}
 
 \begin{enumerate}
   \item[\emph{i)}] it is composed by only one atom;
   \item[\emph{ii)}] it is used by a colvar component which does not make use of its center of geometry, but only of pairwise distances (\texttt{distanceInv}, \texttt{coordNum}, \texttt{hBond}, \texttt{alpha}, \texttt{dihedralPC});
   \item[\emph{iii)}]  it is used by a colvar component that ignores the ill-defined Cartesian components of its center of mass (such as the $x$ and $y$ components of a membrane's center of mass modeled with \texttt{distanceZ})\cvnamdonly{;
-  \item[\emph{iv)}] it has all of its atoms within the same molecule%
+  \item[\emph{iv)}] it has all of its atoms within the same molecular fragment%
 }.
 \end{enumerate}
+\cvvmdonly{If none of these conditions are met, wrapping may affect the calculation of collective variables: a possible solution is to use \texttt{pbc wrap} or \texttt{pbc unwrap} prior to processing a trajectory with the colvars module.}
 
 \cvsubsec{Computational cost of colvars based on group size.}
 \label{sec:colvar_atom_groups_scaling}
@@ -1169,8 +1217,7 @@ In general, internal coordinate wrapping by LAMMPS does not affect the calculati
 In parallel MD simulations, the calculation of most interaction terms are spread over many computational nodes, but the calculation of colvars is not parallelized.
 Therefore, additional calculations are executed by the node calculating the colvars, and most importantly, additional communication is added between the first node and the other nodes.
 \cvnamdonly{The latency-tolerant design and dynamic load balancing of NAMD alleviate both factors: however, under some circumstances, a noticeable performance impact may be observed.}
-To mitigate that, atom groups should be kept relatively small (up to a few thousands, depending on the computational cost to simulate the system by itself). 
-
+To mitigate that, atom groups should be kept relatively small (up to a few thousands, depending on the computational cost to simulate the system by itself).  \cvvmdonly{A test calculation with VMD can provide a crude estimate of the impact of a large colvar on a NAMD simulation.}
 
 \cvsec{Collective variable components (basis functions)}
 \label{sec:cvc}
@@ -1189,8 +1236,6 @@ one or more instances of the following components:
 \item \texttt{distance}: distance between two groups;
 \item \texttt{distanceZ}: projection of a distance vector on an axis;
 \item \texttt{distanceXY}: projection of a distance vector on a plane;
-\item \texttt{distanceVec}: distance vector between two groups;
-\item \texttt{distanceDir}: unit vector parallel to distanceVec;
 \item \texttt{distanceInv}: mean distance between two groups of atoms (e.g.~NOE-based distance);
 \item \texttt{angle}: angle between three groups;
 \item \texttt{coordNum}: coordination number between two groups;
@@ -1217,6 +1262,16 @@ one or more instances of the following components:
 }
 \end{itemize}
 
+Some components do not return scalar, but vector values.
+They can only be combined with vector values of the same
+type\cvscriptonly{, except within a scripted collective variable}.
+\begin{itemize}
+\item \texttt{distanceVec}: distance vector between two groups;
+\item \texttt{distanceDir}: unit vector parallel to distanceVec;
+\item \texttt{cartesian}: vector of atomic Cartesian coordinates;
+\item \texttt{orientation}: best-fit rotation, expressed as a unit quaternion.
+\end{itemize}
+  
 In the following, all the available component types are listed, along
 with their physical units and the limiting values, if any.  Such
 limiting values can be used to define \texttt{lowerBoundary} and
@@ -1406,6 +1461,24 @@ This component accepts the same keywords as the component \texttt{distance}: \te
 This component returns a number in \AA{}, ranging from $0$ to the largest possible distance within the chosen boundary conditions.
 
 
+\cvsubsubsec{\texttt{cartesian}: vector of atomic Cartesian coordinates.}
+The \texttt{cartesian~\{...\}} block defines a component returning a flat vector containing
+the Cartesian coordinates of all participating atoms, in the order
+$(x_1, y_1, z_1, \cdots, x_n, y_n, z_n)$.
+This component accepts the following keyword:
+\begin{itemize}
+\item %
+  \key
+    {atoms}{%
+    \texttt{cartesian}}{%
+    Group of atoms}{%
+    Block \texttt{atoms \{...\}}}{%
+    Defines the atoms whose coordinates make up the value of the component.
+    If \texttt{rotateReference} or \texttt{centerReference} are defined, coordinates
+    are evaluated within the moving frame of reference.}
+\end{itemize}
+
+
 \cvsubsubsec{\texttt{angle}: angle between three groups.}
 The \texttt{angle~\{...\}} block defines an angle, and contains the
 three blocks \texttt{group1}, \texttt{group2} and \texttt{group3}, defining
@@ -1550,7 +1623,7 @@ loop over all pairs grows as $N_{\mathtt{group1}}^2$.
 
 
 
-\paragraph*{\texttt{hBond}: hydrogen bond between two
+\cvsubsubsec{\texttt{hBond}: hydrogen bond between two
   atoms.}  The \texttt{hBond \{...\}} block defines a hydrogen
 bond, implemented as a coordination number (eq.~\ref{eq:cvc_coordNum})
 between the donor and the acceptor atoms.  Therefore, it accepts the
@@ -1863,7 +1936,7 @@ reference~\cite{Coutsias2004}.  The quaternion $(q_0, q_1, q_2, q_3)$
 can also be written as $\left(\cos(\theta/2), \,
   \sin(\theta/2)\mathbf{u}\right)$, where $\theta$ is the angle and
 $\mathbf{u}$ the normalized axis of rotation; for example, a rotation
-of 90$^{\circ}$ around the $z$ axis should be expressed as
+of 90$^{\circ}$ around the $z$ axis is expressed as
 ``\texttt{(0.707, 0.0, 0.0, 0.707)}''.  The script
 \texttt{quaternion2rmatrix.tcl} provides Tcl functions for converting
 to and from a $4\times{}4$ rotation matrix in a format suitable for
@@ -1906,14 +1979,14 @@ chain, or disable \texttt{wrapAll} otherwise.
 \cvsubsubsec{\texttt{orientationAngle}: angle of rotation from reference coordinates.}  
 The block \texttt{orientationAngle~\{...\}} accepts the same base options as
 the component \texttt{orientation}: \texttt{atoms} and \texttt{refPositions}\cvnamebasedonly{, or \texttt{refPositionsFile}, \texttt{refPositionsCol} and \texttt{refPositionsColValue}}.
-The returned value is the angle of rotation $\omega$ between the current and the reference positions.
+The returned value is the angle of rotation $\theta$ between the current and the reference positions.
 This angle is expressed in degrees within the range [0$^{\circ}$:180$^{\circ}$].
 
 
 \cvsubsubsec{\texttt{orientationProj}: cosine of the angle of rotation from reference coordinates.}  
 The block \texttt{orientationProj~\{...\}} accepts the same base options as
 the component \texttt{orientation}: \texttt{atoms} and \texttt{refPositions}\cvnamebasedonly{, or \texttt{refPositionsFile}, \texttt{refPositionsCol} and \texttt{refPositionsColValue}}.
-The returned value is the cosine of the angle of rotation $\omega$ between the current and the reference positions.
+The returned value is the cosine of the angle of rotation $\theta$ between the current and the reference positions.
 The range of values is [-1:1].
 
 
@@ -2315,6 +2388,10 @@ of $1/N$.
 In contexts that support scripting, a colvar may be defined as
 custom scripted function of the values of its components,
 rather than a linear or polynomial combination.
+When implementing generic functions of Cartesian coordinates rather
+than functions of existing components, the \texttt{cartesian} component
+may be particularly useful.
+
 \begin{itemize}
  \item %
   \key
@@ -2327,11 +2404,41 @@ rather than a linear or polynomial combination.
     To that effect, the user should define two Tcl procedures:
     \texttt{calc\_$<$scriptedFunction$>$} and \texttt{calc\_$<$scriptedFunction$>$\_gradient},
     both accepting as many parameters as the colvar has components.
-    \texttt{calc\_$<$scriptedFunction$>$} should return one scalar,
-    corresponding to the colvar value.
+    Values of the components will be passed to those procedures in the
+    order defined by their respective \texttt{componentExp} values.
+    \texttt{calc\_$<$scriptedFunction$>$} should return one value of 
+    type $<$scriptedFunctionType$>$, corresponding to the colvar value.
     \texttt{calc\_$<$scriptedFunction$>$\_gradient} should return a Tcl list
     containing the derivatives of the function with respect to each
-    component.}
+    component. 
+    If both the function and some of the components are vectors, the gradient is really a Jacobian matrix that should be passed as a linear vector in row-major order, i.e. for a function $f_i(x_j)$: $\nabla_x f_1 \nabla_x f_2 \cdots$.
+  }
+
+\item%
+  \keydef
+    {scriptedFunctionType}{%
+    \texttt{colvar}}{%
+    Type of value returned by the scripted colvar}{%
+    string}{%
+    \texttt{scalar}}{%
+    If a colvar is defined as a scripted function, its type is not constrained by
+    the types of its components. With this flag, the user may specify whether the
+    colvar is a scalar or one of the following vector types: \texttt{vector3}
+    (a 3D vector), \texttt{unit\_vector3} (a normalized 3D vector), or
+    \texttt{unit\_quaternion} (a normalized quaternion), or \texttt{vector}
+    (a vector whose size is specified by \texttt{scriptedFunctionVectorSize}).
+    Non-scalar values
+    should be passed as space-separated lists, e.g. ``1. 2. 3.''.}
+
+ \item %
+  \key
+    {scriptedFunctionVectorSize}{%
+    \texttt{colvar}}{%
+    Dimension of the vector value of a scripted colvar}{%
+    positive integer}{%
+    This parameter is only valid when \texttt{scriptedFunctionType} is
+    set to \texttt{vector}. It defines the vector length of the colvar value
+    returned by the function.}
 \end{itemize}
 } % \cvscriptonly
 
@@ -2559,7 +2666,7 @@ The following specific parameters can be set in the ABF configuration block
    in the PMF such as hard walls, where the discretization of the average force becomes
    very inaccurate, causing the colvar's diffusion to get ``stuck'' at the singularity.
    To enable this cap, provide one non-negative value for each colvar. The unit of force
-   is \cvnamdonly{kcal/mol}\cvlammpsonly{the unit of energy specified by \texttt{units}} divided by the colvar unit (\AA{} for lengths, degrees for angles, etc.).}
+   is \cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{the unit of energy specified by \texttt{units}} divided by the colvar unit.}
 
 \item \keydef{hideJacobian}{\texttt{abf}}{%
     Remove geometric entropy term from calculated
@@ -2608,7 +2715,7 @@ The following specific parameters can be set in the ABF configuration block
     or change the colvar boundary values and widths. Note that it is not
     recommended to use it to switch to a smaller width, as that will leave
     some bins empty in the finer data grid.
-    This option is NOT compatible with reading the data from a restart file\cvnamdonly{ (\texttt{colvarsInput} option of the NAMD config file)}\cvlammpsonly{ (\texttt{input} keyword of the \texttt{fix ID group-ID colvars} command)}.}
+    This option is NOT compatible with reading the data from a restart file\cvnamdonly{ (\texttt{colvarsInput} option of the NAMD config file)}\cvvmdonly{ (\texttt{cv load} command)}\cvlammpsonly{ (\texttt{input} keyword of the \texttt{fix ID group-ID colvars} command)}.}
 
 \item \keydef{applyBias}{\texttt{abf}}{%
     Apply the ABF bias?}
@@ -2624,7 +2731,8 @@ The following specific parameters can be set in the ABF configuration block
     Update the ABF bias?}
   {boolean}
   {\texttt{yes}}
-  { If this is set to no, the initial biasing force (e.g. read from a restart file\cvnamdonly{or through \texttt{inputPrefix}}\cvlammpsonly{or through the \texttt{input} keyword}) is not updated during the simulation.
+  { If this is set to no, the initial biasing force (e.g. read from a restart file or
+    through \texttt{inputPrefix}) is not updated during the simulation.
     As a result, a constant bias is applied. This can be used to apply a custom, tabulated
     biasing potential to any combination of colvars. To that effect, one should prepare
     a gradient file containing the gradient of the potential to be applied (negative
@@ -2680,12 +2788,9 @@ unique filenames for output, as in \outputName\texttt{.abf1.grad}.
 This should not be done routinely and could lead to meaningless results:
 only do it if you know what you are doing!
 
-\cvnamdonly{If the colvar space has been partitioned into sections (\emph{windows}) in which independent
+If the colvar space has been partitioned into sections (\emph{windows}) in which independent
 ABF simulations have been run, the resulting data can be merged using the
-\texttt{inputPrefix} option described above (a NAMD run of 0 steps is enough).}
-\cvlammpsonly{If the colvar space has been partitioned into sections (\emph{windows}) in which independent
-ABF simulations have been run, the resulting data can be merged using the
-the \texttt{input} keyword of the \texttt{fix ID group-ID colvars} command.}
+\texttt{inputPrefix} option described above (a run of 0 steps is enough).
 
 
 \cvsubsubsec{Post-processing: reconstructing a multidimensional free energy surface}
@@ -2799,7 +2904,7 @@ The values of these options are optimal for colvars with correlation times $\tau
   \keydef
     {hillWeight}{%
     \texttt{metadynamics}}{%
-    Height of each hill (\cvnamdonly{kcal/mol}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
+    Height of each hill (\cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
     positive decimal}{%
     \texttt{0.01}}{%
     This option sets the height $W$ of the hills that are added during
@@ -2939,8 +3044,9 @@ The following options define the configuration for the ``well-tempered'' metadyn
     If enabled, this flag causes well-tempered metadynamics as
     described by Barducci et al.\cite{Barducci2008}
     to be performed, rather than standard metadynamics.  The parameter
-    \texttt{biasTemperature} is then required.  This feature was contributed by
-    Li Li (Luthey-Schulten group, Departement of Chemistry, UIUC).}
+    \texttt{biasTemperature} is then required.\cvnamdugonly{This feature was contributed by
+    Li Li (Luthey-Schulten group, Departement of Chemistry, UIUC).}\cvrefmanonly{This feature 
+    was contributed by Li Li (Luthey-Schulten group, Departement of Chemistry, UIUC).}}
 
 \item %
   \key
@@ -3144,7 +3250,7 @@ block, which may contain (in addition to the standard option
   \keydef
     {forceConstant}{%
     \texttt{harmonic}}{%
-    Scaled force constant (\cvnamdonly{kcal/mol}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
+    Scaled force constant (\cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
     positive decimal}{%
     \texttt{1.0}}{%
     This defines a scaled force constant for the harmonic potential.
@@ -3385,7 +3491,7 @@ using \cite{Pitera2012}.
   \keydef
     {forceConstant}{%
     \texttt{linear}}{%
-    Scaled force constant (\cvnamdonly{kcal/mol}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
+    Scaled force constant (\cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
     positive decimal}{%
     \texttt{1.0}}{%
     This defines a scaled force constant for the linear bias.
@@ -3415,7 +3521,7 @@ using \cite{Pitera2012}.
 
 Experiment directed simulation applies a linear bias with a changing
 force constant. Please cite White and Voth \cite{White2014} when
-using. As opposed to that reference, the force constant here is scaled
+using this feature. As opposed to that reference, the force constant here is scaled
 by the \texttt{width} corresponding to the biased colvar. In White and
 Voth, each force constant is scaled by the colvars set center. The
 bias converges to a linear bias, after which it will be the minimal
@@ -3512,12 +3618,13 @@ parameters from the colvars to define its grid.  The grid ranges from
 set by the \texttt{width} parameter.
 
 
-\cvnamdonly{\cvscriptonly{%
+\cvscriptonly{%
 \cvsubsec{Scripted biases}
 \label{sec:scripted_biases}
 
 Rather than using the biasing methods described above, it is possible to apply biases
-provided at run time as a Tcl script, in the spirit of \texttt{TclForces}.
+provided at run time as a Tcl script\cvnamdonly{, in the spirit of \texttt{TclForces}}.
+\cvvmdonly{This option, also available in NAMD, can be useful to test a new algorithm to be used in a MD simulation.}
 
 \begin{itemize}
 \item %
@@ -3531,13 +3638,13 @@ provided at run time as a Tcl script, in the spirit of \texttt{TclForces}.
     accepting one parameter should be defined by the user. It is executed
     at each timestep, with the current step number as parameter, between the
     calculation of colvars and the application of bias forces. This procedure
-    may use the scripting interface (see \ref{sec:scripting}) to access
+    may use\cvnamdonly{ the scripting interface (see \ref{sec:scripting})}\cvvmdonly{ the \texttt{cv} command} to access
     the values of colvars and apply forces on them, effectively defining custom
     collective variable biases.}
 \end{itemize}
-}}
+}
 
-\cvscriptonly{\cvsec{Colvars scripting}
+\cvnamdonly{\cvscriptonly{\cvsec{Colvars scripting}
 \label{sec:scripting}
 
 Collective variables and biases can be added, queried and deleted through the scripting command
@@ -3557,13 +3664,12 @@ Note that scripting commands may not be used directly in the NAMD configuration 
 \begin{itemize}
 \cvvmdugonly{
 \item \texttt{molid $<$molecule ID$>$} : create colvars instance for specified molecule
+\item \texttt{delete} : delete this colvars module instance
 }
 \item \texttt{configfile $<$file name$>$} : read configuration from a file
 \item \texttt{config $<$string$>$} : read configuration from the given string
 \item \texttt{reset} : delete all internal configuration
-\cvvmdugonly{
-\item \texttt{delete} : delete this colvars module instance
-}
+\item \texttt{version} : return version of colvars codes
 \end{itemize}
 
 \cvsubsec{Input and output}
@@ -3582,9 +3688,14 @@ Note that scripting commands may not be used directly in the NAMD configuration 
 
 \cvsubsec{Accessing collective variables}
 \begin{itemize}
-\item \texttt{colvar $<$name$>$ value} : return the current value of the colvar $<$name$>$
-\item \texttt{colvar $<$name$>$ update} : recalculate the colvar $<$name$>$
-\item \texttt{colvar $<$name$>$ delete} : delete the colvar $<$name$>$
+\item \texttt{colvar $<$name$>$ value} : return the current value of colvar $<$name$>$
+\item \texttt{colvar $<$name$>$ update} : recalculate colvar $<$name$>$
+\item \texttt{colvar $<$name$>$ type} : return the type of colvar $<$name$>$
+\item \texttt{colvar $<$name$>$ delete} : delete colvar $<$name$>$
+\cvnamdonly{
+\item \texttt{colvar $<$name$>$ addforce $<$F$>$} : apply given force on colvar $<$name$>$
+}
+\item \texttt{colvar $<$name$>$ getconfig} : return config string of colvar $<$name$>$
 \end{itemize}
 
 \cvsubsec{Accessing biases}
@@ -3592,5 +3703,7 @@ Note that scripting commands may not be used directly in the NAMD configuration 
 \item \texttt{bias $<$name$>$ energy} : return the current energy of the bias $<$name$>$
 \item \texttt{bias $<$name$>$ update} : recalculate the bias $<$name$>$
 \item \texttt{bias $<$name$>$ delete} : delete the bias $<$name$>$
+\item \texttt{bias $<$name$>$ getconfig} : return config string of bias $<$name$>$
 \end{itemize}
+}
 }

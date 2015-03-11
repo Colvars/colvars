@@ -1,6 +1,8 @@
 Colvarstrajfrequency    2
 Colvarsrestartfrequency 20000
 
+scriptedColvarForces on
+
 # regular distance with harmonic bias
 colvar {
   name d
@@ -24,7 +26,7 @@ colvar {
 
   orientation {
       atoms {
-        atomnumbers { 1 2 3 4 5 6 7 8 }
+        atomNumbersRange 1-104
     }
     refpositionsfile ../Common/da.pdb
   }

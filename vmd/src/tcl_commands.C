@@ -11,7 +11,7 @@
  *
  *      $RCSfile: tcl_commands.C,v $
  *      $Author: johns $        $Locker:  $             $State: Exp $
- *      $Revision: 1.45 $       $Date: 2014/08/21 21:53:17 $
+ *      $Revision: 1.47 $       $Date: 2014/12/28 16:56:47 $
  *
  ***************************************************************************
  * DESCRIPTION:
@@ -35,7 +35,7 @@
 class VMDApp;
 
 #define SIMPLE_TCL_OPT(string,result)       \
-if(!strcmp(argv[1], string)) {             \
+if (!strcmp(argv[1], string)) {             \
   Tcl_AppendResult(interp, result, NULL);   \
   return TCL_OK;                            \
 }
@@ -152,7 +152,7 @@ static int vmdinfo_tcl(ClientData, Tcl_Interp *interp,
   Tcl_AppendResult(interp,
     "vmdinfo: version | versionmsg | authors | arch | \n"
     "freemem | numcpus | cpuaffinity | numcudadevices | \n"
-    "displaytype | nodename | noderank | nodecount | \n"
+    "dispdev | nodename | noderank | nodecount | \n"
     "options | www | wwwhelp", NULL);
   return TCL_ERROR;
 }
@@ -286,8 +286,9 @@ int Vmd_Init(Tcl_Interp *interp) {
 #endif
 
 #if defined(VMDCOLVARS)
-  Tcl_CreateCommand(interp, "cv", tcl_colvars, (ClientData) app, (Tcl_CmdDeleteProc*) NULL);
-  Tcl_PkgProvide(interp, "colvars", COLVARS_VERSION);
+  Tcl_CreateCommand (interp, "colvars", tcl_colvars, (ClientData) app, (Tcl_CmdDeleteProc*) NULL);
+  Tcl_CreateCommand (interp, "cv", tcl_colvars, (ClientData) app, (Tcl_CmdDeleteProc*) NULL);
+  Tcl_PkgProvide (interp, "colvars", COLVARS_VERSION);
 #endif
 
   Tcl_CreateObjCommand(interp,  "volmap", obj_volmap,
