@@ -208,14 +208,15 @@ Accessing biases:\n\
 
 
 int colvarscript::proc_colvar(int argc, char const *argv[]) {
+  if (argc < 3) {
+    result = "Missing parameters";
+    return COLVARSCRIPT_ERROR;
+  }
+
   std::string name = argv[1];
   colvar *cv = cvm::colvar_by_name(name);
   if (cv == NULL) {
     result = "Colvar not found: " + name;
-    return COLVARSCRIPT_ERROR;
-  }
-  if (argc < 3) {
-    result = "Missing parameters";
     return COLVARSCRIPT_ERROR;
   }
   std::string subcmd = argv[2];
@@ -285,6 +286,11 @@ int colvarscript::proc_colvar(int argc, char const *argv[]) {
 
 
 int colvarscript::proc_bias(int argc, char const *argv[]) {
+  if (argc < 3) {
+    result = "Missing parameters";
+    return COLVARSCRIPT_ERROR;
+  }
+
   std::string name = argv[1];
   colvarbias *b = cvm::bias_by_name(name);
   if (b == NULL) {
@@ -292,10 +298,6 @@ int colvarscript::proc_bias(int argc, char const *argv[]) {
     return COLVARSCRIPT_ERROR;
   }
 
-  if (argc < 3) {
-    result = "Missing parameters";
-    return COLVARSCRIPT_ERROR;
-  }
   std::string subcmd = argv[2];
 
   if (subcmd == "energy") {
