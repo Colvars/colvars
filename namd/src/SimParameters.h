@@ -7,8 +7,8 @@
 /*****************************************************************************
  * $Source: /namd/cvsroot/namd2/src/SimParameters.h,v $
  * $Author: jim $
- * $Date: 2014/05/09 21:39:06 $
- * $Revision: 1.1236 $
+ * $Date: 2015/03/03 17:54:15 $
+ * $Revision: 1.1237 $
  *****************************************************************************/
 
 #ifndef SIMPARAMETERS_H
@@ -28,7 +28,7 @@ class MIStream;
 //  The class SimParameters is really just a glorified structure used to
 //  maintain the global simulation parameters.  The only functions
 //  associated with the class are used to get the parameters from the
-//  ConfigList object, to send that Parameters from the master node 
+//  ConfigList object, to send that Parameters from the master node
 //  to the other nodes, and to receive the Parameters on the other nodes.
 
 
@@ -118,7 +118,7 @@ public:
 	zVector cellBasisVector3;	//  Basis vector for periodic cell
 	zVector cellOrigin;		//  Fixed center of periodic cell
 	Lattice lattice;		//  All data for periodic cell
-	
+
 	int nonbondedFrequency;		//  Number of timesteps between
 					//  nonbonded evaluation
 	int fullElectFrequency;		//  Number of timesteps between
@@ -127,7 +127,7 @@ public:
 	int ldBalancer;			//  None, Centralized or Hybrid
 	int ldbStrategy;                //  What load balancing strategy to use
 	int ldbPeriod;                  //  How often to do load balancing
-	int firstLdbStep;		//  What step to do the first 
+	int firstLdbStep;		//  What step to do the first
                                         //  load-balance on.
 	int lastLdbStep;		//  What step to do the last
                                         //  load-balance on.
@@ -136,16 +136,16 @@ public:
 	BigReal ldbPMEBackgroundScaling;//  scaling factor for PME background
 	BigReal ldbHomeBackgroundScaling;//  scaling factor for home background
 	BigReal ldbRelativeGrainsize;   //  fraction of average load per compute
-	
+
 	int traceStartStep; //the timestep when trace is turned on, default to 3*firstLdbStep;
 	int numTraceSteps; //the number of timesteps that are traced, default to 2*ldbPeriod;
-	
+
 #ifdef MEASURE_NAMD_WITH_PAPI
 	Bool papiMeasure; //default to false
 	int papiMeasureStartStep; //the timestep when to measure using PAPI, default to 3*firstLdbStep;
 	int numPapiMeasureSteps; //the number of timesteps when performance are measured with PAPI, default to 40;
 #endif
-	
+
 	Bool outputMaps; //control whether to dump compute/patch map before load balancing
 	Bool simulateInitialMapping; //if true, the initial mapping during startup is dumped and exit
 	int simulatedPEs;
@@ -159,7 +159,7 @@ public:
 	//It has multiple control levels. The higher the value is (must be positive), the more parallelization will be performed
 	//Currently, it is mainly used for PME computation. The default value is 0, meaning it is disabled
 	//Refer to macros CKLOOP_CTRL_* in this file for the ordering of different levels
-	int useCkLoop; 
+	int useCkLoop;
 
 	int twoAwayX;			//  half-size patches in X dimension
 	int twoAwayY;			//  half-size patches in Y dimension
@@ -167,15 +167,15 @@ public:
 	int maxPatches;			//  maximum patch count
 	Bool ldbUnloadPME;		//  unload processors doing PME
 	Bool ldbUnloadZero;		//  unload processor 0
-	Bool ldbUnloadOne;		//  unload processor 1 
+	Bool ldbUnloadOne;		//  unload processor 1
 	Bool ldbUnloadOutputPEs;	//  unload output processors
 	Bool noPatchesOnZero;		//  no patches on processor 0
 	Bool noPatchesOnOutputPEs;	//  no patches on output PEs
 	Bool noPatchesOnOne;		//  no patches on processor 1
-	
-	BigReal initialTemp;   		//  Initial temperature for the 
+
+	BigReal initialTemp;   		//  Initial temperature for the
 					//  simulation
-	Bool comMove;     		//  Should the center of mass be 
+	Bool comMove;     		//  Should the center of mass be
 					//  able to move
 	Bool zeroMomentum;		//  remove momentum drift from PME
 	Bool zeroMomentumAlt;		//  alternate method for testing
@@ -185,7 +185,7 @@ public:
 	BigReal dielectric;   		//  Dielectric constant
 	ExclusionSettings exclude;      //  What electrostatic exclusions should
 					//  be made
-	BigReal scale14;		//  Scaling factor for 1-4 
+	BigReal scale14;		//  Scaling factor for 1-4
 					//  electrostatics
 	BigReal nonbondedScaling;	//  Scaling factor for nonbonded forces
 	int dcdFrequency;		//  How often (in timesteps) should
@@ -203,8 +203,8 @@ public:
 	char forceDcdFilename[128];     //  Force DCD filename
 	char xstFilename[128];		//  Extended system trajectory filename
 	char outputFilename[128];	//  Output file name.  This name will
-					//  have .coor appended to it 
-					//  for the coordinates and 
+					//  have .coor appended to it
+					//  for the coordinates and
 					//  .vel appended to
 					//  it for the velocities
 	char restartFilename[128];	//  Base name of the restart file
@@ -233,9 +233,9 @@ public:
 					//  becomes active
 	Bool martiniSwitching;		//  Flag TRUE->use Martini residue-based
                                         //  coarse-grain switching function
-	Bool martiniDielAllow;          //  Allow non-standard dielectric constant 
+	Bool martiniDielAllow;          //  Allow non-standard dielectric constant
                                         //  for use with Martini when dielectric != 15.0
-	BigReal pairlistDist;		//  Distance within which atom pairs 
+	BigReal pairlistDist;		//  Distance within which atom pairs
 					//  should be added to pairlist
 	int pairlistMinProcs;		//  Minimum number of processors
 					//  to enable pairlists
@@ -247,7 +247,7 @@ public:
 	BigReal pairlistTrigger;	//  trigger is atom > (1 - x) * tol
 	int outputPairlists;		//  print pairlist warnings this often
 
-	Bool constraintsOn;		//  Flag TRUE-> harmonic constraints 
+	Bool constraintsOn;		//  Flag TRUE-> harmonic constraints
 					//  active
 	int constraintExp;		//  Exponent for harmonic constraints
 
@@ -265,13 +265,13 @@ public:
         Bool mgridforceOn;
         MGridforceParamsList mgridforcelist;
 
-        //****** BEGIN selective restraints (X,Y,Z) changes 
-        Bool selectConstraintsOn;       //  Flag TRUE-> selective restraints  
+        //****** BEGIN selective restraints (X,Y,Z) changes
+        Bool selectConstraintsOn;       //  Flag TRUE-> selective restraints
                                         //  active
-        Bool constrXOn, constrYOn,       
-             constrZOn;                 //  Flag TRUE-> select which Cartesian 
+        Bool constrXOn, constrYOn,
+             constrZOn;                 //  Flag TRUE-> select which Cartesian
                                         //  component to restrain
-        //****** END selective restraints (X,Y,Z) changes 
+        //****** END selective restraints (X,Y,Z) changes
 
 	// spherical constraints
 	Bool sphericalConstraintsOn;
@@ -293,18 +293,18 @@ public:
 	GoChoices  goMethod;      //  Integer for Go method -- 1) Matrix-Go, 3) Low-mem-Go
 	// End of port -- JL
 
-        //****** BEGIN moving constraints changes 
-        Bool movingConstraintsOn;       //  Flag TRUE-> moving constraints 
+        //****** BEGIN moving constraints changes
+        Bool movingConstraintsOn;       //  Flag TRUE-> moving constraints
                                         //  active
         zVector movingConsVel;           //  Velocity of the movement, A/timestep
-        //****** END moving constraints changes 
-        //****** BEGIN rotating constraints changes 
-        Bool rotConstraintsOn;          //  Flag TRUE-> rotating constraints 
+        //****** END moving constraints changes
+        //****** BEGIN rotating constraints changes
+        Bool rotConstraintsOn;          //  Flag TRUE-> rotating constraints
                                         //  active
         zVector rotConsAxis;             //  Axis of rotation
         zVector rotConsPivot;            //  Pivot point of rotation
         BigReal rotConsVel;             //  Velocity of rotation, Deg/timestep
-        //****** END rotating constraints changes 
+        //****** END rotating constraints changes
 
         //****** BEGIN moving drag changes
         Bool movDragOn;               //  Flag TRUE-> moving drag active
@@ -335,7 +335,7 @@ public:
                                       //  for each atom
         //****** END "constant" torque changes
 
-        //****** BEGIN SMD constraints changes   
+        //****** BEGIN SMD constraints changes
         Bool SMDOn;                     //  Flag TRUE-> SMD constraints active
         BigReal SMDVel;                 //  Velocity of the movement, A/timestep
         zVector SMDDir;                  //  Direction of the movement
@@ -343,8 +343,8 @@ public:
 	BigReal SMDk2;			//  Transverse elastic constant for SMD
  	char SMDFile[128];		//  File for SMD information
         int SMDOutputFreq;              //  Output frequency for SMD constr.
-        //****** END SMD constraints changes 
-        
+        //****** END SMD constraints changes
+
   //****** BEGIN tabulated energy section
   Bool tabulatedEnergies;
   int tableNumTypes;
@@ -370,7 +370,7 @@ public:
         char symmetryMatrixFile[128];
         int symmetryFirstStep, symmetryLastStep, symmetryFirstFullStep, symmetryLastFullStep;
 
-        
+
 // Modifications for alchemical simulations
 // Begin alch flags
 
@@ -392,26 +392,26 @@ public:
   BigReal alchFepWCArcut3;  //  rcut3 of WCA decomposition repulsion
   BigReal alchTemp;         //  temperature for alchemical calculation
   int alchOutFreq;          //  freq. of alchemical output
-  Bool alchEnsembleAvg;      //if do ensemble average for the net free energy difference 
+  Bool alchEnsembleAvg;      //if do ensemble average for the net free energy difference
   char alchOutFile[128];    //  alchemical output filename
   int alchEquilSteps;       //  # of equil. steps in the window
-  BigReal alchVdwShiftCoeff; //  r2 shift coeff used for generating  
+  BigReal alchVdwShiftCoeff; //  r2 shift coeff used for generating
                             //  the alchemical altered vdW interactions
   BigReal alchElecLambdaStart;  //  lambda value for starting point of
-                                //  electrostatic interactions of 
+                                //  electrostatic interactions of
                                 //  exnihilated particles.  For annihilated
                                 //  particles the starting point is
                                 //  (1-alchElecLambdaStart)
   BigReal alchVdwLambdaEnd;  //  lambda value for endpoint of vdW
                              //  interactions of exnihilated particles.
-                             //  For annihilated particles the endpoint is 
+                             //  For annihilated particles the endpoint is
                              //  (1-alchVdwLambdaEnd)
   Bool alchDecouple;  // alchemical decoupling rather than annihilation
 
 // End alch flags
 //fepe
 
-  
+
 	Bool lesOn;			//  Locally enhanced sampling?
 	int lesFactor;			//  local enhancement factor
 	Bool lesReduceTemp;		//  Reduce enhanced atom temperature?
@@ -454,7 +454,7 @@ public:
 	int pairInteractionGroup1;	//  Interaction group 1.
 	int pairInteractionGroup2;	//  Interaction group 2.
         Bool pairInteractionSelf;       //  Compute just within group.
-     
+
         Bool cosAngles;    // Can some angles be cos-based
 	Bool globalForcesOn;		//  Are global forces present?
 	Bool tclForcesOn;		//  Are Tcl forces present?
@@ -477,7 +477,7 @@ public:
 	Bool langevinHydrogen;		//  Flag TRUE-> apply to hydrogens
 	Bool langevin_useBAOAB;		//  Flag TRUE-> use the experimental BAOAB integrator for NVT instead of the BBK one
 					//  See Leimkuhler and Matthews (AMRX 2012); implemented in NAMD by CM June2012
-	
+
 	// BEGIN LA
 	Bool loweAndersenOn;		//  Flag TRUE-> Lowe-Andersen dynamics active
 	BigReal loweAndersenTemp;	//  Temperature for Lowe-Andersen dynamics
@@ -492,7 +492,7 @@ public:
 	BigReal COLDRate;		//  Damping coefficient for COLD.
 	BigReal COLDTemp;		//  Temperature for COLD.
 
-	Bool tCoupleOn;			//  Flag TRUE-> Temperature coupling 
+	Bool tCoupleOn;			//  Flag TRUE-> Temperature coupling
 					//  active
 	BigReal tCoupleTemp;		//  Temperature for temp coupling
 
@@ -501,7 +501,7 @@ public:
 
         Bool accelMDOn;                 //  Perform accelerated MD
         Bool accelMDdihe;               //  Apply boost to the dihedral potential
-        Bool accelMDdual;               //  dual boost mode  
+        Bool accelMDdual;               //  dual boost mode
         Bool accelMDDebugOn;            //  Debugging accelerated MD
         BigReal accelMDFirstStep;       //  First aMD step
         BigReal accelMDLastStep;        //  Last aMD step
@@ -520,7 +520,7 @@ public:
         int adaptTempFreq;                     //  Steps between adaptTemp updates
         BigReal adaptTempTmin;                 //  Lower temperature bound
         BigReal adaptTempTmax;                 //  Upper temperature bound
-        BigReal adaptTempAutoDt;               //  Auto jump size. Value determines upper bound, adaotTempDt determines lower bound 
+        BigReal adaptTempAutoDt;               //  Auto jump size. Value determines upper bound, adaotTempDt determines lower bound
         int adaptTempBins;                     //  Number of bins to store average energy values
         BigReal adaptTempDt;                   //  timestep for adaptTemp updates - only affects Temperature random walk
         BigReal adaptTempCgamma;               //  Cgamma variable for adaptive bin averaging Cgamma = 0 is normal Averaging. 1 > Cgamma >= 0
@@ -541,7 +541,7 @@ public:
 					//  quantities for pressure calc
 
 	Bool excludeFromPressure;	//  Flag TRUE-> some atoms not rescaled
- 
+
 	Bool useFlexibleCell;		//  Use anisotropic cell fluctuations
 	Bool useConstantArea;		//  x,y dimensions fixed.
 	Bool useConstantRatio;		//  x,y ratio fixed.
@@ -574,7 +574,7 @@ public:
         int pressureProfileEwaldX;
         int pressureProfileEwaldY;
         int pressureProfileEwaldZ;
-        
+
 	zVector strainRate;
 	zVector strainRate2; // off diagonal elements (xy, xz, yz)
 
@@ -615,7 +615,7 @@ public:
         BigReal MSMPadding;      // pad grid along non-periodic boundaries
                                  // defaults to 2.5 A
                                  // increase if atoms are drifting beyond
-                                 // edge of grid, which will terminate 
+                                 // edge of grid, which will terminate
                                  // simulation prematurely
 
         BigReal MSMxmin;  // define extent of non-periodic boundaries
@@ -654,7 +654,7 @@ public:
 
 	Bool useDPME;			//  Flag TRUE -> old DPME code
 	Bool useOptPME;                 //  Flag TRUE -> use the scalable version of PME
-	Bool useManyToMany;             //  Flag TRUE -> use the manytomany optimization of PME. 
+	Bool useManyToMany;             //  Flag TRUE -> use the manytomany optimization of PME.
 	                                //  This flag requres useOptPME to be set.
 
 	Bool FFTWEstimate;
@@ -665,7 +665,7 @@ public:
 
         #ifdef OPENATOM_VERSION
         Bool openatom;                  // Flag TRUE -> OpenAtom QM/MM active
-        #endif // OPENATOM_VERSION 
+        #endif // OPENATOM_VERSION
 
 	Bool minimizeCGOn;		//  Flag TRUE-> CG minimization active
         Bool minVerbose;                //  Flag TRUE-> print extra minimization data
@@ -673,15 +673,15 @@ public:
 	BigReal minBabyStep;		//  Minimization parameter
 	BigReal minLineGoal;		//  Minimization parameter
 	Bool minimizeOn;		//  Flag TRUE-> minimization active
-	BigReal maximumMove;		//  Maximum movement per timestep 
+	BigReal maximumMove;		//  Maximum movement per timestep
 					//  during minimization
 
-	Bool sphericalBCOn;		//  Flag TRUE-> spherical boundary 
+	Bool sphericalBCOn;		//  Flag TRUE-> spherical boundary
 					//  conditions are active
 	zVector sphericalCenter;		//  Center specified by user
-	BigReal sphericalBCk1;		//  First force constant for 
+	BigReal sphericalBCk1;		//  First force constant for
 					//  spherical BC
-	BigReal sphericalBCk2;		//  Second force constant for 
+	BigReal sphericalBCk2;		//  Second force constant for
 					//  spherical BC
 	BigReal sphericalBCr1;		//  First radius for spherical BC
 	BigReal sphericalBCr2;		//  Second radius for spherical BC
@@ -705,7 +705,7 @@ public:
 	Bool eFieldNormalized;          //  Is eField vector scaled by cell basis vectors
 	zVector eField;                 //  Electric field vector to be applied
 	BigReal eFieldFreq;		// Frequency of the electric field
-	BigReal eFieldPhase;		// Phase phi, cos(w*t-phi*PI/180) 
+	BigReal eFieldPhase;		// Phase phi, cos(w*t-phi*PI/180)
 
 	Bool stirOn;                   // Should a stirring torque be applied
 	char stirFilename[128];	       // Stirring filename (atoms marked)
@@ -745,7 +745,7 @@ public:
 	MTSChoices MTSAlgorithm;	//  What multiple timestep algorithm
 					//  to use
 
-	int longSplitting;		//  What electrostatic splitting 	
+	int longSplitting;		//  What electrostatic splitting
 					//  to use
 
 	Bool ignoreMass;		//  Mass < 3.5 does not indicate hydrogen, etc.
@@ -761,7 +761,7 @@ public:
                                         // none, all, or only water
 
         BigReal rigidTol;               // error tolerance for rigid bonds
-        int rigidIter;                  // Number of NR iterations 
+        int rigidIter;                  // Number of NR iterations
 	int rigidDie;			// die if rigidTol not achieved
 
 	Bool useSettle;			// Use SETTLE; requires rigid waters
@@ -776,15 +776,15 @@ public:
         int maxPairPart;                // maximum number of pair partitions
                                         // that a patch can be split into
         int numAtomsSelf;               // maximum number of atoms in a single
-                                        // self-compute 
+                                        // self-compute
         int numAtomsSelf2;              // maximum number of atoms in a pair compute
                                         // in the presence of twoAwayX,Y,Z options
         int numAtomsPair;               // maximum number of atoms in a single
-                                        // pair-compute 
+                                        // pair-compute
         int numAtomsPair2;              // maximum number of atoms in a single
-                                        // pair-compute 
+                                        // pair-compute
         int minAtomsPerPatch;           // minimum average atoms per patch
-                                        //  (may create larger patches) 
+                                        //  (may create larger patches)
 	int maxExclusionFlags;		// maximum size of exclusion check list
 					// for any given atom
 	Bool outputPatchDetails;	// print number of atoms per patch
@@ -824,7 +824,7 @@ public:
                       // connection
  	int IMDignore;  // IMD connection does not influence simulation
                         // only sends coordinates and energies to VMD
-        
+
         // AMBER options
         Bool amberOn; // FLAG TRUE-> amber force field is used
         Bool readExclusions; // FLAG TRUE-> Read exclusions from parm file
@@ -842,6 +842,10 @@ public:
 	BigReal scriptArg3;
 	BigReal scriptArg4;
 	BigReal scriptArg5;
+        int scriptIntArg1;
+        int scriptIntArg2;
+        char scriptStringArg1[128];
+        char scriptStringArg2[128];
 
 	Bool useCompressedPsf;
 	Bool genCompressedPsf;
@@ -862,11 +866,11 @@ public:
     int numinputprocs;
     char *binAtomFile;
     char *binCoorFile;
-    char *binVelFile; 
-    char *binRefFile; 
-    
+    char *binVelFile;
+    char *binRefFile;
+
     //fields needed for Parallel IO Output
-    int numoutputprocs; 
+    int numoutputprocs;
     int numoutputwrts;
 
 	char computeMapFilename[128];		//  store compute map
@@ -893,11 +897,11 @@ public:
 	void initialize_config_data(ConfigList *, char *&cwd);
 					//  Initialize SimParameters data
 					//  from the ConfigList object
-	void send_SimParameters(MOStream *);	
+	void send_SimParameters(MOStream *);
 					//  Used by the master process
 					//  to send the paramters to
 					//  the other processors
-	void receive_SimParameters(MIStream *);  
+	void receive_SimParameters(MIStream *);
 					//  Used by the other processors
 					//  to receive the data from the
 					//  master process

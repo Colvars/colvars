@@ -7,8 +7,8 @@
 /*****************************************************************************
  * $Source: /namd/cvsroot/namd2/src/SimParameters.C,v $
  * $Author: jim $
- * $Date: 2015/01/29 17:33:49 $
- * $Revision: 1.1447 $
+ * $Date: 2015/03/11 23:04:38 $
+ * $Revision: 1.1449 $
  *****************************************************************************/
 
 /** \file SimParameters.C
@@ -173,6 +173,10 @@ void SimParameters::scriptSet(const char *param, const char *value) {
   SCRIPT_PARSE_FLOAT("scriptArg3",scriptArg3)
   SCRIPT_PARSE_FLOAT("scriptArg4",scriptArg4)
   SCRIPT_PARSE_FLOAT("scriptArg5",scriptArg5)
+  SCRIPT_PARSE_INT("scriptIntArg1",scriptIntArg1)
+  SCRIPT_PARSE_INT("scriptIntArg2",scriptIntArg2)
+  SCRIPT_PARSE_STRING("scriptStringArg1",scriptStringArg1)
+  SCRIPT_PARSE_STRING("scriptStringArg2",scriptStringArg2)
   SCRIPT_PARSE_INT("numsteps",N)
   SCRIPT_PARSE_INT("firsttimestep",firstTimestep)
   SCRIPT_PARSE_FLOAT("reassignTemp",reassignTemp)
@@ -1943,7 +1947,7 @@ void SimParameters::config_parser_misc(ParseOptions &opts) {
    opts.optional("main", "proxyRecvSpanningTree", "using spanning tree to receive proxies",
                   &proxyRecvSpanningTree, 0);  // default off due to memory leak -1);
    opts.optional("main", "proxyTreeBranchFactor", "the branch factor when building a spanning tree",
-                  &proxyTreeBranchFactor, 4);
+                  &proxyTreeBranchFactor, 0);  // actual default in ProxyMgr.C
    opts.optionalB("main", "twoAwayX", "half-size patches in 1st dimension",
      &twoAwayX, -1);
    opts.optionalB("main", "twoAwayY", "half-size patches in 2nd dimension",

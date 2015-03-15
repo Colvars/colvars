@@ -141,6 +141,9 @@ int ScriptTcl::Tcl_exit(ClientData clientData,
   ScriptTcl *script = (ScriptTcl *)clientData;
   script->initcheck();
   CkPrintf("TCL: Exiting due to exit command.\n");
+#if CMK_HAS_PARTITION
+  replica_barrier();
+#endif
   script->runController(SCRIPT_END);
   BackEnd::exit();
   return TCL_OK;
@@ -238,6 +241,27 @@ int ScriptTcl::Tcl_replicaEval(ClientData, Tcl_Interp *interp, int argc, char **
 #else
   return Tcl_EvalEx(interp,argv[2],-1,TCL_EVAL_GLOBAL);
 #endif
+}
+
+int ScriptTcl::Tcl_replicaYield(ClientData, Tcl_Interp *interp, int argc, char **argv) {
+  if ( argc > 2 ) {
+    Tcl_SetResult(interp,"args: ?seconds?",TCL_VOLATILE);
+    return TCL_ERROR;
+  }
+  double time = 0.;
+  if ( argc == 2 ) {
+    if ( sscanf(argv[1],"%lf",&time) != 1 ) {
+      Tcl_SetResult(interp,"args: ?seconds?",TCL_VOLATILE);
+      return TCL_ERROR;
+    }
+  }
+  if ( time > 0. ) {
+    time += CmiWallTimer();
+    do { CsdSchedulePoll(); } while ( CmiWallTimer() < time );
+  } else {
+    CsdSchedulePoll();
+  }
+  return TCL_OK;
 }
 
 
@@ -1168,6 +1192,62 @@ int ScriptTcl::Tcl_revert(ClientData clientData,
   return TCL_OK;
 }
 
+static int replica_hash(const char *key) {
+  unsigned int hash = 0;
+
+  while (*key) {
+    hash *= 73;
+    hash += *key++;
+  }
+
+  return hash % CmiNumPartitions();
+}
+
+int ScriptTcl::Tcl_checkpointReplica(ClientData clientData,
+        Tcl_Interp *interp, int argc, char *argv[]) {
+  ScriptTcl *script = (ScriptTcl *)clientData;
+  script->initcheck();
+  if (argc < 2 || argc > 3) {
+    Tcl_SetResult(interp,"args: <key> ?<replica> or global?",TCL_VOLATILE);
+    return TCL_ERROR;
+  }
+  script->setParameter("scriptStringArg1", argv[1]);
+  int replica = CmiMyPartition();
+  if ( argc == 3 ) {
+    if ( ! strcmp(argv[2],"global") ) {
+      replica = replica_hash(argv[1]);
+    } else if ( sscanf(argv[2],"%d",&replica) != 1 ) {
+      Tcl_SetResult(interp,"args: <key> ?<replica> or global?",TCL_VOLATILE);
+      return TCL_ERROR;
+    }
+  }
+  if ( replica != CmiMyPartition() ) {
+    if ( ! Node::Object()->simParameters->replicaUniformPatchGrids ) {
+      Tcl_SetResult(interp,"replicaUniformPatchGrids is required for checkpointing on other replicas",TCL_VOLATILE);
+      return TCL_ERROR;
+    }
+  }
+
+  CHECK_REPLICA(replica);
+  char str[40];
+  sprintf(str, "%d", replica);
+  script->setParameter("scriptIntArg1", str);
+
+  CkpvAccess(_qd)->create(PatchMap::Object()->numPatches());
+  if ( replica != CmiMyPartition() ) CkpvAccess(_qd)->create(1);
+
+  if ( ! strcmp(argv[0],"checkpointStore") ) script->runController(SCRIPT_CHECKPOINT_STORE);
+  else if ( ! strcmp(argv[0],"checkpointLoad") ) script->runController(SCRIPT_CHECKPOINT_LOAD);
+  else if ( ! strcmp(argv[0],"checkpointSwap") ) script->runController(SCRIPT_CHECKPOINT_SWAP);
+  else if ( ! strcmp(argv[0],"checkpointFree") ) script->runController(SCRIPT_CHECKPOINT_FREE);
+  else {
+    Tcl_SetResult(interp,"checkpointStore/Load/Swap/Free called via unrecognized name",TCL_VOLATILE);
+    return TCL_ERROR;
+  }
+
+  return TCL_OK;
+}
+
 int ScriptTcl::Tcl_callback(ClientData clientData,
 	Tcl_Interp *interp, int argc, char *argv[]) {
   ScriptTcl *script = (ScriptTcl *)clientData;
@@ -1555,6 +1635,8 @@ ScriptTcl::ScriptTcl() : scriptBarrier(scriptBarrierTag) {
     (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
   Tcl_CreateCommand(interp, "replicaEval", Tcl_replicaEval,
     (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+  Tcl_CreateCommand(interp, "replicaYield", Tcl_replicaYield,
+    (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
   Tcl_CreateCommand(interp, "replicaSendrecv", Tcl_replicaSendrecv,
     (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
   Tcl_CreateCommand(interp, "replicaSend", Tcl_replicaSend,
@@ -1604,6 +1686,14 @@ ScriptTcl::ScriptTcl() : scriptBarrier(scriptBarrierTag) {
   Tcl_CreateCommand(interp, "checkpoint", Tcl_checkpoint,
     (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
   Tcl_CreateCommand(interp, "revert", Tcl_revert,
+    (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
+  Tcl_CreateCommand(interp, "checkpointStore", Tcl_checkpointReplica,
+    (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
+  Tcl_CreateCommand(interp, "checkpointLoad", Tcl_checkpointReplica,
+    (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
+  Tcl_CreateCommand(interp, "checkpointSwap", Tcl_checkpointReplica,
+    (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
+  Tcl_CreateCommand(interp, "checkpointFree", Tcl_checkpointReplica,
     (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
   Tcl_CreateCommand(interp, "reinitvels", Tcl_reinitvels,
     (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
@@ -1690,6 +1780,9 @@ void ScriptTcl::run(char *scriptFile) {
     runWasCalled = 1;
   }
 
+#if CMK_HAS_PARTITION
+  replica_barrier();
+#endif
   runController(SCRIPT_END);
 
 }
