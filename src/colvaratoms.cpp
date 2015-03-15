@@ -16,20 +16,20 @@ cvm::atom::atom()
 cvm::atom::atom(int const &atom_number)
 {
   colvarproxy *p = cvm::proxy;
-  index = p->init_atom(aid);
+  index = p->init_atom(atom_number);
   if (cvm::debug()) {
     cvm::log("The index of this atom in the colvarproxy arrays is "+
              cvm::to_str(index)+".\n");
   }
   id = p->get_atom_id(index);
-  mass = p->get_atom_mass(index);
+  update_mass();
   reset_data();
 }
 
 
 cvm::atom::atom(cvm::residue_id const &residue,
                 std::string const     &atom_name,
-                std::string const     &segment_id = std::string(""))
+                std::string const     &segment_id)
 {
   colvarproxy *p = cvm::proxy;
   index = p->init_atom(residue, atom_name, segment_id);
@@ -38,15 +38,17 @@ cvm::atom::atom(cvm::residue_id const &residue,
              cvm::to_str(index)+".\n");
   }
   id = p->get_atom_id(index);
-  mass = p->get_atom_mass(index);
+  update_mass();
   reset_data();
 }
 
 
-cvm::atom::atom(atom const &a_number)
-  : index(a.index), id(a.id), mass(a.mass)
+cvm::atom::atom(atom const &a)
+  : index(a.index)
 {
-  (cvm::proxy)->init_atom(a);
+  id = (cvm::proxy)->get_atom_id(index);
+  update_mass();
+  reset_data();
 }
 
 
