@@ -598,7 +598,7 @@ int colvarmodule::calc() {
       write_traj(cv_traj_os);
     }
 
-    if (restart_out_freq) {
+    if (restart_out_freq && cv_traj_os.is_open()) {
       // flush the trajectory file if we are at the restart frequency
       if ( (cvm::step_relative() > 0) &&
            ((cvm::step_absolute() % restart_out_freq) == 0) ) {
@@ -683,8 +683,10 @@ int colvarmodule::reset()
   index_groups.clear();
   index_group_names.clear();
 
-  // Do not close file here, as we might not be done with it yet.
-  cv_traj_os.flush();
+  if (cv_traj_os.is_open()) {
+    // Do not close file here, as we might not be done with it yet.
+    cv_traj_os.flush();
+  }
 
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
 }
@@ -835,7 +837,7 @@ int colvarmodule::write_output_files()
   cvm::decrease_depth();
 
   if (cv_traj_os.is_open()) {
-    // flush, but do not close to avoid problems with multiple NAMD runs
+    // do not close to avoid problems with multiple NAMD runs
     cv_traj_os.flush();
   }
 
@@ -996,8 +998,11 @@ std::ostream & colvarmodule::write_traj_label(std::ostream &os)
     (*bi)->write_traj_label(os);
   }
   os << "\n";
-  if (cvm::debug())
-    os.flush();
+  if (cvm::debug()) {
+    if (os.is_open()) {
+      os.flush();
+    }
+  }
   cvm::decrease_depth();
   return os;
 }
@@ -1021,8 +1026,11 @@ std::ostream & colvarmodule::write_traj(std::ostream &os)
     (*bi)->write_traj(os);
   }
   os << "\n";
-  if (cvm::debug())
-    os.flush();
+  if (cvm::debug()) {
+    if (os.is_open()) {
+      os.flush();
+    }
+  }
   cvm::decrease_depth();
   return os;
 }
