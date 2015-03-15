@@ -65,6 +65,7 @@ private:
   static int Tcl_numReplicas(ClientData, Tcl_Interp *, int, char **);
   static int Tcl_myReplica(ClientData, Tcl_Interp *, int, char **);
   static int Tcl_replicaEval(ClientData, Tcl_Interp *, int, char **);
+  static int Tcl_replicaYield(ClientData, Tcl_Interp *, int, char **);
   static int Tcl_replicaSendrecv(ClientData, Tcl_Interp *, int, char **);
   static int Tcl_replicaSend(ClientData, Tcl_Interp *, int, char **);
   static int Tcl_replicaRecv(ClientData, Tcl_Interp *, int, char **);
@@ -94,6 +95,7 @@ private:
   static int Tcl_colvarfreq(ClientData, Tcl_Interp *, int, char **);
   static int Tcl_checkpoint(ClientData, Tcl_Interp *, int, char **);
   static int Tcl_revert(ClientData, Tcl_Interp *, int, char **);
+  static int Tcl_checkpointReplica(ClientData, Tcl_Interp *, int, char **);
   static int Tcl_callback(ClientData, Tcl_Interp *, int, char **);
   static int Tcl_reinitatoms(ClientData, Tcl_Interp *, int, char **);
   static int Tcl_coorfile(ClientData, Tcl_Interp *, int, char **);
