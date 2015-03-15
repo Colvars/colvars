@@ -24,6 +24,35 @@ class colvarproxy {
 
 protected:
 
+  /// \brief Array of 0-based integers used to uniquely associate atoms
+  /// within the host program
+  std::vector<int>          atoms_ids;
+  /// \brief Keep track of how many times each atom is used by a separate colvar object
+  std::vector<size_t>       atoms_ncopies;
+  /// \brief Masses of the atoms (allow redefinition during a run, as done e.g. in LAMMPS)
+  std::vector<cvm::real>    atoms_masses;
+  /// \brief Current three-dimensional positions of the atoms
+  std::vector<cvm::rvector> atoms_positions;
+  /// \brief Most recent total forces on each atom
+  std::vector<cvm::rvector> atoms_total_forces;
+  /// \brief Most recent forces applied by external potentials onto each atom
+  std::vector<cvm::rvector> atoms_applied_forces;
+  /// \brief Forces applied from colvars, to be communicated to the MD integrator
+  std::vector<cvm::rvector> atoms_new_colvar_forces;
+
+  /// Used by all init_atom() functions: create a slot for an atom not requested yet
+  inline int add_atom_slot(int atom_id)
+  {
+    atoms_ids.push_back(atom_id);
+    atoms_ncopies.push_back(1);
+    atoms_masses.push_back(1.0);
+    atoms_positions.push_back(cvm::rvector(0.0));
+    atoms_total_forces.push_back(cvm::rvector(0.0));
+    atoms_applied_forces.push_back(cvm::rvector(0.0));
+    atoms_new_colvar_forces.push_back(cvm::rvector(0.0));
+    return (atoms_ids.size() - 1);
+  }
+
   /// \brief Currently opened output files: by default, these are ofstream objects.
   /// Allows redefinition to implement different output mechanisms
   std::list<std::ostream *> output_files;
@@ -259,6 +288,61 @@ public:
 
   // **************** ACCESS ATOMIC DATA ****************
 
+  /// Prepare this atom for collective variables calculation, selecting it by numeric index (1-based)
+  virtual int init_atom(int atom_number) = 0;
+
+  /// Select this atom for collective variables calculation, using name and residue number.
+  /// Not all programs support this: leave this function as is in those cases.
+  virtual int init_atom(cvm::residue_id const &residue,
+                        std::string const     &atom_name,
+                        std::string const     &segment_id)
+  {
+    cvm::error("Error: initializing an atom by name and residue number is currently not supported.\n",
+               COLVARS_NOT_IMPLEMENTED);
+    return -1;
+  }
+
+  /// \brief Used by the atom class destructor: rather than deleting the array slot
+  /// (costly) set the corresponding atoms_copies to zero
+  virtual void clear_atom(int index)
+  {
+    if ( (index < 0) || (index >= atoms_ids.size()) ) {
+      cvm::error("Error: trying to disable an atom that was not previously requested.\n",
+                 INPUT_ERROR);
+    }
+    if (atoms_ncopies[index] > 0) {
+      atoms_ncopies[index] -= 1;
+    }
+  }
+
+  /// Get the numeric ID of the given atom (for the program)
+  inline cvm::real get_atom_id(int index) const
+  {
+    return atoms_ids[index];
+  }
+
+  /// Get the mass of the given atom
+  inline cvm::real get_atom_mass(int index) const
+  {
+    return atoms_masses[index];
+  }
+
+  /// Read the current position of the given atom
+  inline cvm::rvector get_atom_position(int index) const
+  {
+    return atoms_positions[index];
+  }
+
+  /// Read the current total system force of the given atom
+  inline cvm::rvector get_atom_system_force(int index) const
+  {
+    return atoms_total_forces[index] - atoms_applied_forces[index];
+  }
+
+  /// Request that this force is applied to the given atom
+  inline void apply_atom_force(int index, cvm::rvector const &new_force)
+  {
+    atoms_new_colvar_forces[index] += new_force;
   }
 
   /// Read the current velocity of the given atom

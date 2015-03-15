@@ -5,10 +5,56 @@
 #include "colvaratoms.h"
 
 
-// member functions of the "atom" class depend tightly on the MD interface, and are
-// thus defined in colvarproxy_xxx.cpp
+cvm::atom::atom()
+{
+  index = -1;
+  id = -1;
+  reset_data();
+}
 
-// in this file only atom_group functions are defined
+
+cvm::atom::atom(int const &atom_number)
+{
+  colvarproxy *p = cvm::proxy;
+  index = p->init_atom(aid);
+  if (cvm::debug()) {
+    cvm::log("The index of this atom in the colvarproxy arrays is "+
+             cvm::to_str(index)+".\n");
+  }
+  id = p->get_atom_id(index);
+  mass = p->get_atom_mass(index);
+  reset_data();
+}
+
+
+cvm::atom::atom(cvm::residue_id const &residue,
+                std::string const     &atom_name,
+                std::string const     &segment_id = std::string(""))
+{
+  colvarproxy *p = cvm::proxy;
+  index = p->init_atom(residue, atom_name, segment_id);
+  if (cvm::debug()) {
+    cvm::log("The index of this atom in the colvarproxy_namd arrays is "+
+             cvm::to_str(index)+".\n");
+  }
+  id = p->get_atom_id(index);
+  mass = p->get_atom_mass(index);
+  reset_data();
+}
+
+
+cvm::atom::atom(atom const &a_number)
+  : index(a.index), id(a.id), mass(a.mass)
+{
+  (cvm::proxy)->init_atom(a);
+}
+
+
+cvm::atom::~atom()
+{
+  (cvm::proxy)->clear_atom(index);
+}
+
 
 
 // Note: "conf" is the configuration of the cvc who is using this atom group;

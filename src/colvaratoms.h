@@ -15,9 +15,7 @@
 /// There may be multiple instances with identical
 /// numeric id, all acting independently: forces communicated through
 /// these instances will be summed together.
-///
-/// Read/write operations depend on the underlying code: hence, some
-/// member functions are defined in colvarproxy_xxx.h.
+
 class colvarmodule::atom {
 
 protected:
@@ -57,8 +55,8 @@ public:
   /// implementation
   cvm::rvector   grad;
 
-  /// \brief Default constructor, setting index and id to invalid numbers
-  atom() : index(-1), id(-1) { reset_data(); }
+  /// \brief Default constructor (sets index and id both to -1)
+  atom();
 
   /// \brief Initialize an atom for collective variable calculation
   /// and get its internal identifier \param atom_number Atom index in
@@ -80,20 +78,36 @@ public:
   /// Destructor
   ~atom();
 
-  /// Set non-constant data (everything except id and mass) to zero
-  inline void reset_data() {
-    pos = atom_pos(0.0);
-    vel = grad = system_force = rvector(0.0);
+  /// Set mutable data (everything except id and mass) to zero; update mass
+  inline void reset_data()
+  {
+    pos = cvm::atom_pos(0.0);
+    vel = grad = system_force = cvm::rvector(0.0);
+  }
+
+  /// Get the latest value of the mass
+  inline void update_mass()
+  {
+    mass = (cvm::proxy)->get_atom_mass(index);
   }
 
   /// Get the current position
-  void read_position();
+  inline void read_position()
+  {
+    pos = (cvm::proxy)->get_atom_position(index);
+  }
 
   /// Get the current velocity
-  void read_velocity();
+  inline void read_velocity()
+  {
+    vel = (cvm::proxy)->get_atom_velocity(index);
+  }
 
   /// Get the system force
-  void read_system_force();
+  inline void read_system_force()
+  {
+    system_force = (cvm::proxy)->get_atom_system_force(index);
+  }
 
   /// \brief Apply a force to the atom
   ///
@@ -103,8 +117,11 @@ public:
   ///
   /// Multiple calls to this function by either the same
   /// \link atom \endlink object or different objects with identical
-  /// \link id \endlink, will all add to the existing MD force.
-  void apply_force(cvm::rvector const &new_force);
+  /// \link id \endlink will all be added together.
+  inline void apply_force(cvm::rvector const &new_force) const
+  {
+    (cvm::proxy)->apply_atom_force(index, new_force);
+  }
 };
 
 
