@@ -7,8 +7,8 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
   Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
 <HTML>
 <HEAD>
-<TITLE>Advanced usage of the rmsd component.</TITLE>
-<META NAME="description" CONTENT="Advanced usage of the rmsd component.">
+<TITLE>Accessing collective variables</TITLE>
+<META NAME="description" CONTENT="Accessing collective variables">
 <META NAME="keywords" CONTENT="colvars-refman-namd">
 <META NAME="resource-type" CONTENT="document">
 <META NAME="distribution" CONTENT="global">
@@ -21,116 +21,144 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 
 <LINK REL="next" HREF="node38.html">
 <LINK REL="previous" HREF="node36.html">
-<LINK REL="up" HREF="node23.html">
+<LINK REL="up" HREF="node34.html">
 <LINK REL="next" HREF="node38.html">
 </HEAD>
 
 <BODY >
 
 <DIV CLASS="navigation"><!--Navigation Panel-->
-<A NAME="tex2html706"
+<A NAME="tex2html745"
   HREF="node38.html">
 <IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
-<A NAME="tex2html700"
-  HREF="node23.html">
+<A NAME="tex2html739"
+  HREF="node34.html">
 <IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
-<A NAME="tex2html694"
+<A NAME="tex2html733"
   HREF="node36.html">
 <IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
-<A NAME="tex2html702"
+<A NAME="tex2html741"
   HREF="node1.html">
 <IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
-<A NAME="tex2html704"
-  HREF="node81.html">
+<A NAME="tex2html743"
+  HREF="node39.html">
 <IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
 <BR>
-<B> Next:</B> <A NAME="tex2html707"
-  HREF="node38.html">eigenvector: projection of the</A>
-<B> Up:</B> <A NAME="tex2html701"
-  HREF="node23.html">List of available colvar</A>
-<B> Previous:</B> <A NAME="tex2html695"
-  HREF="node36.html">rmsd: root mean square</A>
- &nbsp; <B>  <A NAME="tex2html703"
+<B> Next:</B> <A NAME="tex2html746"
+  HREF="node38.html">Accessing biases</A>
+<B> Up:</B> <A NAME="tex2html740"
+  HREF="node34.html">Colvars scripting</A>
+<B> Previous:</B> <A NAME="tex2html734"
+  HREF="node36.html">Input and output</A>
+ &nbsp; <B>  <A NAME="tex2html742"
   HREF="node1.html">Contents</A></B>
- &nbsp; <B>  <A NAME="tex2html705"
-  HREF="node81.html">Index</A></B>
+ &nbsp; <B>  <A NAME="tex2html744"
+  HREF="node39.html">Index</A></B>
 <BR>
 <BR></DIV>
 <!--End of Navigation Panel-->
 
-<H3><A NAME="SECTION000711300000000000000">
-Advanced usage of the <TT>rmsd</TT> component.</A>
-</H3>
-In the standard usage as described above, the <TT>rmsd</TT> component
-calculates a minimum RMSD, that is, current coordinates are optimally
-fitted onto the same reference coordinates that are used to
-compute the RMSD value. The fit itself is handled by the atom group
-object, whose parameters are automatically set by the <TT>rmsd</TT>
-component.
-For very specific applications, however, it may be
-useful to control the fitting process separately from the definition
-of the reference coordinates, to evaluate various types of
-non-minimal RMSD values. This can be achieved by setting the
-related options (<TT>refPositions</TT>, etc.) explicitly in the
-atom group block. This allows for the following non-standard cases:
+<H2><A NAME="SECTION00093000000000000000">
+Accessing collective variables</A>
+</H2>
+
+<UL>
+<LI><TT>colvar <SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$ &lt;$"></B></SPAN>name<SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img23.png"
+ ALT="$ &gt;$"></B></SPAN> value</TT> : return the current value of colvar <SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$ &lt;$"></B></SPAN>name<SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img23.png"
+ ALT="$ &gt;$"></B></SPAN>
+</LI>
+<LI><TT>colvar <SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$ &lt;$"></B></SPAN>name<SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img23.png"
+ ALT="$ &gt;$"></B></SPAN> update</TT> : recalculate colvar <SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$ &lt;$"></B></SPAN>name<SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img23.png"
+ ALT="$ &gt;$"></B></SPAN>
+</LI>
+<LI><TT>colvar <SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$ &lt;$"></B></SPAN>name<SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img23.png"
+ ALT="$ &gt;$"></B></SPAN> type</TT> : return the type of colvar <SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$ &lt;$"></B></SPAN>name<SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img23.png"
+ ALT="$ &gt;$"></B></SPAN>
+</LI>
+<LI><TT>colvar <SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$ &lt;$"></B></SPAN>name<SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img23.png"
+ ALT="$ &gt;$"></B></SPAN> delete</TT> : delete colvar <SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$ &lt;$"></B></SPAN>name<SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img23.png"
+ ALT="$ &gt;$"></B></SPAN>
+
+</LI>
+<LI><TT>colvar <SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$ &lt;$"></B></SPAN>name<SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img23.png"
+ ALT="$ &gt;$"></B></SPAN> addforce <SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$ &lt;$"></B></SPAN>F<SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img23.png"
+ ALT="$ &gt;$"></B></SPAN></TT> : apply given force on colvar <SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$ &lt;$"></B></SPAN>name<SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img23.png"
+ ALT="$ &gt;$"></B></SPAN>
+
+</LI>
+<LI><TT>colvar <SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$ &lt;$"></B></SPAN>name<SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img23.png"
+ ALT="$ &gt;$"></B></SPAN> getconfig</TT> : return config string of colvar <SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$ &lt;$"></B></SPAN>name<SPAN CLASS="MATH"><B><IMG
+ WIDTH="18" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img23.png"
+ ALT="$ &gt;$"></B></SPAN>
+</LI>
+</UL>
 
 <P>
-
-<OL>
-<LI>applying the optimal translation, but no rotation
-(<TT>rotateReference off</TT>), to bias or restrain the shape and
-orientation, but not the position of the atom group;
-</LI>
-<LI>applying the optimal rotation, but no translation
-(<TT>translateReference off</TT>), to bias or restrain the shape and
-position, but not the orientation of the atom group;
-</LI>
-<LI>disabling the application of optimal roto-translations, which
-lets the RMSD component decribe the deviation of atoms
-from fixed positions in the laboratory frame: this allows for custom
-positional restraints within the colvars module;
-</LI>
-<LI>fitting the atomic positions to different reference coordinates
-than those used in the RMSD calculation itself;
-</LI>
-<LI>applying the optimal rotation and/or translation from a separate
-atom group, defined through <TT>refPositionsGroup</TT>: the RMSD then
-reflects the deviation from reference coordinates in a separate, moving
-reference frame.
-</LI>
-</OL>
-
-<P>
-
-<DIV CLASS="navigation"><HR>
-<!--Navigation Panel-->
-<A NAME="tex2html706"
-  HREF="node38.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
-<A NAME="tex2html700"
-  HREF="node23.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
-<A NAME="tex2html694"
-  HREF="node36.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
-<A NAME="tex2html702"
-  HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
-<A NAME="tex2html704"
-  HREF="node81.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
-<BR>
-<B> Next:</B> <A NAME="tex2html707"
-  HREF="node38.html">eigenvector: projection of the</A>
-<B> Up:</B> <A NAME="tex2html701"
-  HREF="node23.html">List of available colvar</A>
-<B> Previous:</B> <A NAME="tex2html695"
-  HREF="node36.html">rmsd: root mean square</A>
- &nbsp; <B>  <A NAME="tex2html703"
-  HREF="node1.html">Contents</A></B>
- &nbsp; <B>  <A NAME="tex2html705"
-  HREF="node81.html">Index</A></B> </DIV>
-<!--End of Navigation Panel-->
+<BR><HR>
 <ADDRESS>
 Jérôme Hénin
 2015-03-03

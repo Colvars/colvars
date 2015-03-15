@@ -7,8 +7,8 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
   Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
 <HTML>
 <HEAD>
-<TITLE>#1</TITLE>
-<META NAME="description" CONTENT="#1">
+<TITLE>Introduction</TITLE>
+<META NAME="description" CONTENT="Introduction">
 <META NAME="keywords" CONTENT="colvars-refman-namd">
 <META NAME="resource-type" CONTENT="document">
 <META NAME="distribution" CONTENT="global">
@@ -19,57 +19,224 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 
 <LINK REL="STYLESHEET" HREF="colvars-refman-namd.css">
 
-<LINK REL="previous" HREF="node3.html">
-<LINK REL="up" HREF="node3.html">
+<LINK REL="next" HREF="node5.html">
+<LINK REL="previous" HREF="node2.html">
+<LINK REL="up" HREF="colvars-refman-namd.html">
 <LINK REL="next" HREF="node5.html">
 </HEAD>
 
 <BODY >
 
 <DIV CLASS="navigation"><!--Navigation Panel-->
-<A NAME="tex2html181"
+<A NAME="tex2html183"
   HREF="node5.html">
-<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
-<A NAME="tex2html175"
-  HREF="node3.html">
-<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html177"
+  HREF="colvars-refman-namd.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
 <A NAME="tex2html171"
   HREF="node3.html">
-<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
-<A NAME="tex2html177"
-  HREF="node1.html">
-<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
 <A NAME="tex2html179"
-  HREF="node81.html">
-<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html181"
+  HREF="node39.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
 <BR>
-<B> Next:</B> <A NAME="tex2html182"
-  HREF="node5.html">Introduction</A>
-<B> Up:</B> <A NAME="tex2html176"
-  HREF="node3.html">#1</A>
+<B> Next:</B> <A NAME="tex2html184"
+  HREF="node5.html">General parameters and input/output</A>
+<B> Up:</B> <A NAME="tex2html178"
+  HREF="colvars-refman-namd.html">colvars-refman-namd</A>
 <B> Previous:</B> <A NAME="tex2html172"
   HREF="node3.html">#1</A>
- &nbsp; <B>  <A NAME="tex2html178"
-  HREF="node1.html">Contents</A></B>
  &nbsp; <B>  <A NAME="tex2html180"
-  HREF="node81.html">Index</A></B>
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html182"
+  HREF="node39.html">Index</A></B> 
 <BR>
 <BR></DIV>
 <!--End of Navigation Panel-->
 
-<H3><A NAME="SECTION00021100000000000000">
-#1</A>
-</H3>
+<H1><A NAME="SECTION00030000000000000000"></A>
+
+<A NAME="section:colvars"></A>
+<BR>
+Introduction
+</H1>
+
+<P>
+In today's molecular dynamics simulations, it is often useful to reduce the large number of degrees of freedom of a physical system into few parameters whose statistical distributions can be analyzed individually, or used to define biasing potentials to alter the dynamics of the system in a controlled manner. 
+These have been called `order parameters', `collective variables', `(surrogate) reaction coordinates', and many other terms.
+Here we use primarily the term `collective variable' (shortened to <SPAN  CLASS="textit">colvar</SPAN>), which indicates any differentiable function of atomic Cartesian coordinates, <!-- MATH
+ ${\mbox{\boldmath {$x$}}}_{i}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="16" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img3.png"
+ ALT="$ {\mbox{\boldmath {$x$}}}_{i}$"></SPAN>, with <SPAN CLASS="MATH"><IMG
+ WIDTH="9" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img4.png"
+ ALT="$ i$"></SPAN> between <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img5.png"
+ ALT="$ 1$"></SPAN> and <SPAN CLASS="MATH"><IMG
+ WIDTH="17" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img6.png"
+ ALT="$ N$"></SPAN>, the total
+number of atoms:
+<P></P>
+<DIV ALIGN="CENTER" CLASS="mathdisplay"><A NAME="eq:colvar_basic"></A><!-- MATH
+ \begin{equation}
+\xi(t) \; = \xi\left({\mbox{\boldmath {$x$}}}_{i}(t), {\mbox{\boldmath {$x$}}}_{j}(t), {\mbox{\boldmath {$x$}}}_{k}(t),
+  \ldots \right)\;, \;\; 1 \leq i,j,k\ldots \leq N
+\end{equation}
+ -->
+<TABLE CLASS="equation" CELLPADDING="0" WIDTH="100%" ALIGN="CENTER">
+<TR VALIGN="MIDDLE">
+<TD NOWRAP ALIGN="CENTER"><SPAN CLASS="MATH"><IMG
+ WIDTH="361" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img7.png"
+ ALT="$\displaystyle \xi(t) \; = \xi\left({\mbox{\boldmath {$x$}}}_{i}(t), {\mbox{\bol...
+...mbox{\boldmath {$x$}}}_{k}(t), \ldots \right)\;, \;\; 1 \leq i,j,k\ldots \leq N$"></SPAN></TD>
+<TD NOWRAP CLASS="eqno" WIDTH="10" ALIGN="RIGHT">
+(<SPAN CLASS="arabic">1</SPAN>)</TD></TR>
+</TABLE></DIV>
+<BR CLEAR="ALL"><P></P>
+
+This manual documents the collective variables module (colvars), a portable software that interfaces multiple MD simulation programs, with a focus on flexibility, robustness and high performance.
+The module is designed to perform multiple tasks concurrently during or after a simulation, the most common of which are:
+
+<UL>
+<LI>apply restraints or biasing potentials to multiple colvars, tailored on the system by choosing from a wide set of basis functions, without limitations on their number or on the number of atoms involved; while this can in principle be done through a TclForces script, using the colvars module is both easier and computationally more efficient;
+
+<P>
+</LI>
+<LI>calculate potentials of mean force (PMFs) along any set of colvars, using different enhanced sampling methods, such as Adaptive Biasing Force (ABF), metadynamics, steered MD and umbrella sampling; variants of these methods that make use of an ensemble of replicas are supported as well;
+
+<P>
+</LI>
+<LI>calculate statistical properties of the colvars, such as running averages and standard deviations, correlation functions of pairs of colvars, and multidimensional histograms: this can be done either at run-time without the need to save very large trajectory files, or after a simulation has been completed using VMD and the <TT>cv</TT> command.
+
+<P>
+</LI>
+</UL>
 
 <P>
 
 <P>
+To briefly illustrate the flexibility of the colvars module, Figure&nbsp;<A HREF="#fig:colvars_diagram">1</A> shows an example of a non-trivial configuration (the corresponding input can be found in <A HREF="node7.html#sec:colvars_config">2.2</A>).
 
 <P>
 
+<DIV ALIGN="CENTER"><A NAME="fig:colvars_diagram"></A><A NAME="3534"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 1:</STRONG>
+Graphical representation of a collective variables configuration.
+    The colvar called ``<SPAN CLASS="MATH"><IMG
+ WIDTH="14" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img8.png"
+ ALT="$ d$"></SPAN>'' is defined as the difference between two distances: the first distance (<SPAN CLASS="MATH"><IMG
+ WIDTH="20" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img9.png"
+ ALT="$ d_{1}$"></SPAN>) is taken between the center of mass of atoms 1 and 2 and that of atoms 3 to 5, the second (<SPAN CLASS="MATH"><IMG
+ WIDTH="20" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img10.png"
+ ALT="$ d_{2}$"></SPAN>) between atom 7 and the center of mass of atoms 8 to 10.
+The difference <!-- MATH
+ $d = d_{1} - d_{2}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="85" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img11.png"
+ ALT="$ d = d_{1} - d_{2}$"></SPAN> is obtained by multiplying the two by a coefficient <SPAN CLASS="MATH"><IMG
+ WIDTH="59" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img12.png"
+ ALT="$ C = +1$"></SPAN> or <SPAN CLASS="MATH"><IMG
+ WIDTH="59" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img13.png"
+ ALT="$ C = -1$"></SPAN>, respectively.
+The colvar called ``<SPAN CLASS="MATH"><IMG
+ WIDTH="12" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img14.png"
+ ALT="$ c$"></SPAN>'' is the coordination number calculated between atoms 1 to 10 and atoms 11 to 20.  A harmonic restraint is applied to both <SPAN CLASS="MATH"><IMG
+ WIDTH="14" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img8.png"
+ ALT="$ d$"></SPAN> and <SPAN CLASS="MATH"><IMG
+ WIDTH="12" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img14.png"
+ ALT="$ c$"></SPAN>: to allow using the same force constant <SPAN CLASS="MATH"><IMG
+ WIDTH="17" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img15.png"
+ ALT="$ K$"></SPAN>, both <SPAN CLASS="MATH"><IMG
+ WIDTH="14" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img8.png"
+ ALT="$ d$"></SPAN> and <SPAN CLASS="MATH"><IMG
+ WIDTH="12" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img14.png"
+ ALT="$ c$"></SPAN> are scaled by their respective fluctuation widths <SPAN CLASS="MATH"><IMG
+ WIDTH="24" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img16.png"
+ ALT="$ w_d$"></SPAN> and <SPAN CLASS="MATH"><IMG
+ WIDTH="22" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img17.png"
+ ALT="$ w_c$"></SPAN>.
+A third colvar ``alpha'' is defined as the <SPAN CLASS="MATH"><IMG
+ WIDTH="17" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img1.png"
+ ALT="$ \alpha $"></SPAN>-helical content of residues 1 to 10.
+The values of ``<SPAN CLASS="MATH"><IMG
+ WIDTH="12" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img14.png"
+ ALT="$ c$"></SPAN>'' and ``alpha'' are also recorded throughout the simulation as a joint 2-dimensional histogram.
+</CAPTION>
+<TR><TD>
+<DIV ALIGN="CENTER">
+
+</DIV>
+
+<IMG
+ WIDTH="510" HEIGHT="375" ALIGN="BOTTOM" BORDER="0"
+ SRC="img18.png"
+ ALT="\includegraphics[width=12cm]{colvars_diagram}"></TD></TR>
+</TABLE>
+</DIV>
+
+<P>
+Detailed explanations of the design of the colvars module are provided in reference&nbsp;[<A
+ HREF="node40.html#Fiorin2013">1</A>]. Please cite this reference whenever publishing work that makes use of this module.
+
 <P>
 
-<BR><HR>
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A NAME="tex2html183"
+  HREF="node5.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A> 
+<A NAME="tex2html177"
+  HREF="colvars-refman-namd.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A> 
+<A NAME="tex2html171"
+  HREF="node3.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A> 
+<A NAME="tex2html179"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A> 
+<A NAME="tex2html181"
+  HREF="node39.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html184"
+  HREF="node5.html">General parameters and input/output</A>
+<B> Up:</B> <A NAME="tex2html178"
+  HREF="colvars-refman-namd.html">colvars-refman-namd</A>
+<B> Previous:</B> <A NAME="tex2html172"
+  HREF="node3.html">#1</A>
+ &nbsp; <B>  <A NAME="tex2html180"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html182"
+  HREF="node39.html">Index</A></B> </DIV>
+<!--End of Navigation Panel-->
 <ADDRESS>
 Jérôme Hénin
 2015-03-03

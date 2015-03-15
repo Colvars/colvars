@@ -7,8 +7,8 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
   Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
 <HTML>
 <HEAD>
-<TITLE>List of available colvar components</TITLE>
-<META NAME="description" CONTENT="List of available colvar components">
+<TITLE>Advanced usage and special considerations</TITLE>
+<META NAME="description" CONTENT="Advanced usage and special considerations">
 <META NAME="keywords" CONTENT="colvars-refman-lammps">
 <META NAME="resource-type" CONTENT="document">
 <META NAME="distribution" CONTENT="global">
@@ -19,108 +19,249 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 
 <LINK REL="STYLESHEET" HREF="colvars-refman-lammps.css">
 
-<LINK REL="next" HREF="node47.html">
+<LINK REL="next" HREF="node24.html">
 <LINK REL="previous" HREF="node22.html">
-<LINK REL="up" HREF="node22.html">
+<LINK REL="up" HREF="node21.html">
 <LINK REL="next" HREF="node24.html">
 </HEAD>
 
 <BODY >
 
 <DIV CLASS="navigation"><!--Navigation Panel-->
-<A NAME="tex2html466"
+<A NAME="tex2html491"
   HREF="node24.html">
 <IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
-<A NAME="tex2html460"
-  HREF="node22.html">
+<A NAME="tex2html485"
+  HREF="node21.html">
 <IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
-<A NAME="tex2html454"
+<A NAME="tex2html479"
   HREF="node22.html">
 <IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
-<A NAME="tex2html462"
+<A NAME="tex2html487"
   HREF="node1.html">
 <IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
-<A NAME="tex2html464"
-  HREF="node71.html">
+<A NAME="tex2html489"
+  HREF="node32.html">
 <IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
 <BR>
-<B> Next:</B> <A NAME="tex2html467"
-  HREF="node24.html">distance: center-of-mass distance between</A>
-<B> Up:</B> <A NAME="tex2html461"
-  HREF="node22.html">Collective variable components (basis</A>
-<B> Previous:</B> <A NAME="tex2html455"
-  HREF="node22.html">Collective variable components (basis</A>
- &nbsp; <B>  <A NAME="tex2html463"
+<B> Next:</B> <A NAME="tex2html492"
+  HREF="node24.html">Linear and polynomial combinations</A>
+<B> Up:</B> <A NAME="tex2html486"
+  HREF="node21.html">Collective variable components (basis</A>
+<B> Previous:</B> <A NAME="tex2html480"
+  HREF="node22.html">List of available colvar</A>
+ &nbsp; <B>  <A NAME="tex2html488"
   HREF="node1.html">Contents</A></B>
- &nbsp; <B>  <A NAME="tex2html465"
-  HREF="node71.html">Index</A></B>
+ &nbsp; <B>  <A NAME="tex2html490"
+  HREF="node32.html">Index</A></B>
 <BR>
 <BR></DIV>
 <!--End of Navigation Panel-->
-
-<H2><A NAME="SECTION00071000000000000000">
-List of available colvar components</A>
-</H2>
-
-<P>
-<BR><HR>
 <!--Table of Child-Links-->
 <A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
 
 <UL CLASS="ChildLinks">
-<LI><A NAME="tex2html468"
-  HREF="node24.html"><TT>distance</TT>: center-of-mass distance between two groups.</A>
-<LI><A NAME="tex2html469"
-  HREF="node25.html"><TT>distanceZ</TT>: projection of a distance vector on an axis.</A>
-<LI><A NAME="tex2html470"
-  HREF="node26.html"><TT>distanceXY</TT>: modulus of the projection of a distance vector on a plane.</A>
-<LI><A NAME="tex2html471"
-  HREF="node27.html"><TT>distanceVec</TT>: distance vector  between two groups.</A>
-<LI><A NAME="tex2html472"
-  HREF="node28.html"><TT>distanceDir</TT>: distance unit vector between two groups.</A>
-<LI><A NAME="tex2html473"
-  HREF="node29.html"><TT>distanceInv</TT>: mean distance between two groups of atoms.</A>
-<LI><A NAME="tex2html474"
-  HREF="node30.html"><TT>cartesian</TT>: vector of atomic Cartesian coordinates.</A>
-<LI><A NAME="tex2html475"
-  HREF="node31.html"><TT>angle</TT>: angle between three groups.</A>
-<LI><A NAME="tex2html476"
-  HREF="node32.html"><TT>dihedral</TT>: torsional angle between four groups.</A>
-<LI><A NAME="tex2html477"
-  HREF="node33.html"><TT>coordNum</TT>: coordination number between two groups.</A>
-<LI><A NAME="tex2html478"
-  HREF="node34.html"><TT>selfCoordNum</TT>: coordination number between atoms within a group.</A>
-<UL>
-<LI><A NAME="tex2html479"
-  HREF="node35.html"><TT>hBond</TT>: hydrogen bond between two
-  atoms.</A>
-</UL>
-<BR>
-<LI><A NAME="tex2html480"
-  HREF="node36.html"><TT>rmsd</TT>: root mean square displacement  (RMSD) from reference positions.</A>
-<LI><A NAME="tex2html481"
-  HREF="node37.html">Advanced usage of the <TT>rmsd</TT> component.</A>
-<LI><A NAME="tex2html482"
-  HREF="node38.html"><TT>eigenvector</TT>: projection of the atomic  coordinates on a vector.</A>
-<LI><A NAME="tex2html483"
-  HREF="node39.html"><TT>gyration</TT>: radius of gyration of a group  of atoms.</A>
-<LI><A NAME="tex2html484"
-  HREF="node40.html"><TT>inertia</TT>: total moment of inertia of a group  of atoms.</A>
-<LI><A NAME="tex2html485"
-  HREF="node41.html"><TT>inertiaZ</TT>: total moment of inertia of a group of atoms around a chosen axis.</A>
-<LI><A NAME="tex2html486"
-  HREF="node42.html"><TT>orientation</TT>: orientation from reference  coordinates.</A>
-<LI><A NAME="tex2html487"
-  HREF="node43.html"><TT>orientationAngle</TT>: angle of rotation from reference coordinates.</A>
-<LI><A NAME="tex2html488"
-  HREF="node44.html"><TT>orientationProj</TT>: cosine of the angle of rotation from reference coordinates.</A>
-<LI><A NAME="tex2html489"
-  HREF="node45.html"><TT>spinAngle</TT>: angle of rotation around a given axis.</A>
-<LI><A NAME="tex2html490"
-  HREF="node46.html"><TT>tilt</TT>: cosine of the rotation orthogonal to a given axis.</A>
+<LI><A NAME="tex2html493"
+  HREF="node23.html#SECTION00072100000000000000">Periodic components.</A>
+<LI><A NAME="tex2html494"
+  HREF="node23.html#SECTION00072200000000000000">Non-scalar components.</A>
+<LI><A NAME="tex2html495"
+  HREF="node23.html#SECTION00072300000000000000">Calculating system forces.</A>
 </UL>
 <!--End of Table of Child-Links-->
-<BR><HR>
+<HR>
+
+<H2><A NAME="SECTION00072000000000000000">
+Advanced usage and special considerations</A>
+</H2>
+
+<P>
+
+<H3><A NAME="SECTION00072100000000000000">
+Periodic components.</A>
+</H3>
+The following components returns
+real numbers that lie in a periodic interval:
+
+<UL>
+<LI><TT>dihedral</TT>: torsional angle between four groups;
+</LI>
+<LI><TT>spinAngle</TT>: angle of rotation around a predefined axis
+  in the best-fit from a set of reference coordinates.
+</LI>
+</UL>
+In certain conditions, <TT>distanceZ</TT> can also be periodic, namely
+when periodic boundary conditions (PBCs) are defined in the simulation
+and <TT>distanceZ</TT>'s axis is parallel to a unit cell vector.
+
+<P>
+The following keywords can be used within periodic components (and are
+illegal elsewhere):
+
+<P>
+
+<UL>
+<LI><A NAME="5312"></A>
+  <B><BIG CLASS="LARGE"><TT>period </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></SPAN>Period of the component<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> <TT>distanceZ</TT>
+<BR><B>Acceptable values: </B> positive decimal
+<BR><B>Default value: </B> 0.0
+<BR><B>Description: </B> Setting this number enables the treatment of <TT>distanceZ</TT> as
+    a periodic component: by default, <TT>distanceZ</TT> is not
+    considered periodic.  The keyword is supported, but irrelevant
+    within <TT>dihedral</TT> or <TT>spinAngle</TT>, because their
+    period is always 360&nbsp;degrees.
+
+<P>
+</LI>
+<LI><A NAME="5335"></A>
+  <B><BIG CLASS="LARGE"><TT>wrapAround </TT></BIG></B> <SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ \langle $"></SPAN>Center
+    of the wrapping interval for periodic variables<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$  \rangle$"></SPAN>
+<BR><B>Context: </B> <TT>distanceZ</TT>, <TT>dihedral</TT> or <TT>spinAngle</TT>
+<BR><B>Acceptable values: </B> decimal
+<BR><B>Default value: </B> 0.0
+<BR><B>Description: </B> By default, values of the periodic components are centered around
+    zero, ranging from <SPAN CLASS="MATH"><IMG
+ WIDTH="46" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img121.png"
+ ALT="$ -P/2$"></SPAN> to <SPAN CLASS="MATH"><IMG
+ WIDTH="32" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img122.png"
+ ALT="$ P/2$"></SPAN>, where <SPAN CLASS="MATH"><IMG
+ WIDTH="15" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img123.png"
+ ALT="$ P$"></SPAN> is the period.
+    Setting this number centers the interval around this value.  This
+    can be useful for convenience of output, or to set
+    <TT>lowerWall</TT> and <TT>upperWall</TT> in an order that would
+    not otherwise be allowed.
+</LI>
+</UL>
+Internally, all differences between two values of a periodic colvar
+follow the minimum image convention: they are calculated based on
+the two periodic images that are closest to each other.
+
+<P>
+<SPAN  CLASS="textit">Note: linear or polynomial combinations of periodic components
+  may become meaningless when components cross the periodic boundary.
+  Use such combinations carefully: estimate the range of possible values
+  of each component in a given simulation, and make use of
+  <TT>wrapAround</TT> to limit this problem whenever possible.</SPAN>
+
+<P>
+
+<H3><A NAME="SECTION00072200000000000000">
+Non-scalar components.</A>
+</H3>
+When one of the following components are used, the defined colvar returns a value that is not a scalar number:
+
+<UL>
+<LI><TT>distanceVec</TT>: 3-dimensional vector of the distance
+  between two groups;
+</LI>
+<LI><TT>distanceDir</TT>: 3-dimensional unit vector of the distance
+  between two groups;
+</LI>
+<LI><TT>orientation</TT>: 4-dimensional unit quaternion representing
+  the best-fit rotation from a set of reference coordinates.
+</LI>
+</UL>
+The distance between two 3-dimensional unit vectors is computed as the
+angle between them.  The distance between two quaternions is computed
+as the angle between the two 4-dimensional unit vectors: because the
+orientation represented by <!-- MATH
+ $\mathsf{q}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="13" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img124.png"
+ ALT="$ \mathsf{q}$"></SPAN> is the same as the one
+represented by <!-- MATH
+ $-\mathsf{q}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="27" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img125.png"
+ ALT="$ -\mathsf{q}$"></SPAN>, distances between two quaternions are
+computed considering the closest of the two symmetric images.
+
+<P>
+Non-scalar components carry the following restrictions:
+
+<UL>
+<LI>Calculation of system forces (<TT>outputSystemForce</TT> option)
+  is currently not implemented.
+</LI>
+<LI>Each colvar can only contain one non-scalar component.
+</LI>
+<LI>Binning on a grid (<TT>abf</TT>, <TT>histogram</TT> and
+  <TT>metadynamics</TT> with <TT>useGrids</TT> enabled) is currently
+  not implemented for colvars based on such components.
+</LI>
+</UL>
+
+<P>
+<SPAN  CLASS="textit">Note: while these restrictions apply to individual colvars based
+  on non-scalar components, no limit is set to the number of scalar
+  colvars.  To compute multi-dimensional histograms and PMFs, use sets
+  of scalar colvars of arbitrary size.</SPAN>
+
+<P>
+
+<H3><A NAME="SECTION00072300000000000000">
+Calculating system forces.</A>
+</H3>
+In addition to the restrictions due to the type of value computed (scalar or non-scalar),
+a final restriction can arise when calculating system force
+(<TT>outputSystemForce</TT> option or application of a <TT>abf</TT>
+bias).  System forces are available currently only for the following
+components: <TT>distance</TT>, <TT>distanceZ</TT>,
+<TT>distanceXY</TT>, <TT>angle</TT>, <TT>dihedral</TT>, <TT>rmsd</TT>,
+<TT>eigenvector</TT> and <TT>gyration</TT>.
+
+<P>
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A NAME="tex2html491"
+  HREF="node24.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next" SRC="next.png"></A>
+<A NAME="tex2html485"
+  HREF="node21.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up" SRC="up.png"></A>
+<A NAME="tex2html479"
+  HREF="node22.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous" SRC="prev.png"></A>
+<A NAME="tex2html487"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents" SRC="contents.png"></A>
+<A NAME="tex2html489"
+  HREF="node32.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index" SRC="index.png"></A>
+<BR>
+<B> Next:</B> <A NAME="tex2html492"
+  HREF="node24.html">Linear and polynomial combinations</A>
+<B> Up:</B> <A NAME="tex2html486"
+  HREF="node21.html">Collective variable components (basis</A>
+<B> Previous:</B> <A NAME="tex2html480"
+  HREF="node22.html">List of available colvar</A>
+ &nbsp; <B>  <A NAME="tex2html488"
+  HREF="node1.html">Contents</A></B>
+ &nbsp; <B>  <A NAME="tex2html490"
+  HREF="node32.html">Index</A></B> </DIV>
+<!--End of Navigation Panel-->
 <ADDRESS>
 Jérôme Hénin
 2015-03-03
