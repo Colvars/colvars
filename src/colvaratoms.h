@@ -6,12 +6,13 @@
 #include "colvarmodule.h"
 #include "colvarparse.h"
 
+
 /// \brief Stores numeric id, mass and all mutable data for an atom,
 /// mostly used by a \link cvc \endlink
 ///
-/// This class may be used (although not necessarily) to keep atomic
-/// data (id, mass, position and collective variable derivatives)
-/// altogether.  There may be multiple instances with identical
+/// This class may be used to keep atomic data such as id, mass,
+/// position and collective variable derivatives) altogether.
+/// There may be multiple instances with identical
 /// numeric id, all acting independently: forces communicated through
 /// these instances will be summed together.
 ///
@@ -21,28 +22,27 @@ class colvarmodule::atom {
 
 protected:
 
-  /// \brief Index in the list of atoms involved by the colvars (\b
-  /// NOT in the global topology!)
+  /// Index in the colvarproxy arrays (\b NOT in the global topology!)
   int           index;
 
 public:
 
-  /// Internal identifier (zero-based)
+  /// Identifier for the MD program (0-based)
   int              id;
 
   /// Mass
   cvm::real      mass;
 
   /// \brief Current position (copied from the program, can be
-  /// manipulated)
+  /// modified if necessary)
   cvm::atom_pos   pos;
 
   /// \brief Current velocity (copied from the program, can be
-  /// manipulated)
+  /// modified if necessary)
   cvm::rvector    vel;
 
   /// \brief System force at the previous step (copied from the
-  /// program, can be manipulated)
+  /// program, can be modified if necessary)
   cvm::rvector    system_force;
 
   /// \brief Gradient of a scalar collective variable with respect
@@ -71,8 +71,8 @@ public:
   /// segment_id For PSF topologies, the segment identifier; for other
   /// type of topologies, may not be required
   atom(cvm::residue_id const &residue,
-        std::string const     &atom_name,
-        std::string const     &segment_id = std::string(""));
+       std::string const     &atom_name,
+       std::string const     &segment_id = std::string(""));
 
   /// Copy constructor
   atom(atom const &a);
@@ -97,14 +97,15 @@ public:
 
   /// \brief Apply a force to the atom
   ///
-  /// The force will be used later by the MD integrator, the
-  /// collective variables module does not integrate equations of
-  /// motion.  Multiple calls to this function by either the same
+  /// Note: the force is not applied instantly, but will be used later
+  /// by the MD integrator (the colvars module does not integrate
+  /// equations of motion.
+  ///
+  /// Multiple calls to this function by either the same
   /// \link atom \endlink object or different objects with identical
   /// \link id \endlink, will all add to the existing MD force.
   void apply_force(cvm::rvector const &new_force);
 };
-
 
 
 
@@ -192,12 +193,12 @@ public:
   /// which is a member function so that a group can be initialized
   /// also after construction
   atom_group(std::string const &conf,
-              char const        *key);
+             char const        *key);
 
   /// \brief Initialize the group by looking up its configuration
   /// string in conf and parsing it
   int parse(std::string const &conf,
-              char const        *key);
+            char const        *key);
 
   /// \brief Initialize the group after a temporary vector of atoms
   atom_group(std::vector<cvm::atom> const &atoms);

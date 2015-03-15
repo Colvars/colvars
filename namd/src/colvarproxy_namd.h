@@ -16,7 +16,7 @@
 #include "colvarvalue.h"
 
 #ifndef COLVARPROXY_VERSION
-#define COLVARPROXY_VERSION "2015-03-14"
+#define COLVARPROXY_VERSION "2015-03-15"
 #endif
 
 // For replica exchange
@@ -32,16 +32,17 @@ protected:
   /// Pointer to the NAMD simulation input object
   SimParameters const *simparams;
 
+  /// Self-explained
   BigReal thermostat_temperature;
 
   /// NAMD-style PRNG object
   Random random;
 
+  /// How often NAMD is instructed to write state files
+  size_t restart_frequency_s;
 
-  size_t      restart_frequency_s;
-  size_t      previous_NAMD_step;
-  bool        first_timestep;
-  bool        system_force_requested;
+  bool first_timestep;
+  size_t previous_NAMD_step;
 
   std::vector<int>          colvars_atoms;
   std::vector<size_t>       colvars_atoms_ncopies;
@@ -49,8 +50,9 @@ protected:
   std::vector<cvm::rvector> total_forces;
   std::vector<cvm::rvector> applied_forces;
 
-  size_t init_namd_atom(AtomID const &aid);
+  bool system_force_requested;
 
+  /// Used to submit restraint energy as MISC
   SubmitReduction *reduction;
 
 #ifdef NAMD_TCL
@@ -64,18 +66,14 @@ public:
   colvarproxy_namd();
   ~colvarproxy_namd();
 
-  /// \brief Reimplements GlobalMaster member function, to be called
-  /// at every step
   void calculate();
 
-  void add_energy(cvm::real energy);
-  void request_system_force(bool yesno);
   void log(std::string const &message);
   void error(std::string const &message);
   void fatal_error(std::string const &message);
   void exit(std::string const &message);
-
-  // Callback functions
+  void add_energy(cvm::real energy);
+  void request_system_force(bool yesno);
   int run_force_callback();
   int run_colvar_callback(std::string const &name,
                           std::vector<const colvarvalue *> const &cvcs,
@@ -97,6 +95,11 @@ public:
   cvm::real temperature()
   {
     return thermostat_temperature;
+  }
+
+  cvm::real rand_gaussian()
+  {
+    return random.gaussian();
   }
 
   cvm::real dt()
@@ -172,11 +175,6 @@ public:
   std::ostream * output_stream(std::string const &output_name);
   int close_output_stream(std::string const &output_name);
   int backup_file(char const *filename);
-
-  cvm::real rand_gaussian(void)
-  {
-    return random.gaussian();
-  }
 };
 
 
@@ -191,6 +189,17 @@ inline cvm::rvector colvarproxy_namd::position_distance(cvm::atom_pos const &pos
 }
 
 
+inline cvm::real colvarproxy_namd::position_dist2(cvm::atom_pos const &pos1,
+                                                  cvm::atom_pos const &pos2)
+{
+  Lattice const *l = this->lattice;
+  Vector const p1(pos1.x, pos1.y, pos1.z);
+  Vector const p2(pos2.x, pos2.y, pos2.z);
+  Vector const d = l->delta(p1, p2);
+  return cvm::real(d.x*d.x + d.y*d.y + d.z*d.z);
+}
+
+
 inline void colvarproxy_namd::select_closest_image(cvm::atom_pos &pos,
                                                    cvm::atom_pos const &ref_pos)
 {
@@ -201,17 +210,6 @@ inline void colvarproxy_namd::select_closest_image(cvm::atom_pos &pos,
   pos.x = np.x;
   pos.y = np.y;
   pos.z = np.z;
-}
-
-
-inline cvm::real colvarproxy_namd::position_dist2(cvm::atom_pos const &pos1,
-                                                  cvm::atom_pos const &pos2)
-{
-  Lattice const *l = this->lattice;
-  Vector const p1(pos1.x, pos1.y, pos1.z);
-  Vector const p2(pos2.x, pos2.y, pos2.z);
-  Vector const d = l->delta(p1, p2);
-  return cvm::real(d.x*d.x + d.y*d.y + d.z*d.z);
 }
 
 

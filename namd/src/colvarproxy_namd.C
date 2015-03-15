@@ -105,12 +105,10 @@ colvarproxy_namd::colvarproxy_namd()
   // save to Node for Tcl script access
   Node::Object()->colvars = colvars;
 
-
 #ifdef NAMD_TCL
   // Construct instance of colvars scripting interface
   script = new colvarscript(this);
 #endif
-
 
   if (simparams->firstTimestep != 0) {
     cvm::log("Initializing step number as firstTimestep.\n");
@@ -133,34 +131,6 @@ colvarproxy_namd::colvarproxy_namd()
     iout << "Info: done initializing the colvars proxy object.\n" << endi;
 }
 
-/*
-  void colvarproxy_namd::construct_cvm(char const  *config_filename)
-  // TODO This method might need some refinements for delayed initialization
-  // eg. accept config string instead of filename, as below
-  //void colvarproxy_namd::construct_cvm (std::string const &config)
-  {
-
-  // initiate the colvarmodule, this object will be the communication
-  // proxy
-  colvars = new colvarmodule(config_filename, this);
-  // save to Node for Tcl script access
-  Node::Object()->colvars = colvars;
-
-  if (simparams->firstTimestep != 0) {
-  cvm::log("Initializing step number as firstTimestep.\n");
-  colvars->it = colvars->it_restart = simparams->firstTimestep;
-  }
-
-  if (cvm::debug()) {
-  cvm::log("colvars_atoms = "+cvm::to_str(colvars_atoms)+"\n");
-  cvm::log("colvars_atoms_ncopies = "+cvm::to_str(colvars_atoms_ncopies)+"\n");
-  cvm::log("positions = "+cvm::to_str(positions)+"\n");
-  cvm::log("total_forces = "+cvm::to_str(total_forces)+"\n");
-  cvm::log("applied_forces = "+cvm::to_str(applied_forces)+"\n");
-  cvm::log(cvm::line_marker);
-  }
-  }
-*/
 
 colvarproxy_namd::~colvarproxy_namd()
 {
@@ -178,7 +148,6 @@ colvarproxy_namd::~colvarproxy_namd()
 // Reimplemented function from GlobalMaster
 void colvarproxy_namd::calculate()
 {
-
   if (first_timestep) {
     first_timestep = false;
   } else {
@@ -191,6 +160,7 @@ void colvarproxy_namd::calculate()
     // - beginning of a new run statement
     // then the internal counter should not be incremented
   }
+
   previous_NAMD_step = step;
 
   if (cvm::debug()) {
@@ -199,8 +169,9 @@ void colvarproxy_namd::calculate()
              "Updating internal data.\n");
   }
 
-  // must delete the forces applied at the previous step: they have
-  // already been used and copied to other memory locations
+  // must delete the forces applied at the previous step: we can do
+  // that because they have already been used and copied to other
+  // memory locations
   modifyForcedAtoms().resize(0);
   modifyAppliedForces().resize(0);
 
@@ -284,13 +255,13 @@ void colvarproxy_namd::calculate()
 
   // call the collective variable module
   if (colvars->calc() != COLVARS_OK) {
-    fatal_error("");
+    fatal_error("Error in the collective variables module.\n");
   }
   // send MISC energy
   reduction->submit();
 
   // NAMD does not destruct GlobalMaster objects, so we must remember
-  // to write all output files at the end of the run
+  // to write all output files at the end of a run
   if (step == simparams->N) {
     colvars->write_output_files();
   }
@@ -656,7 +627,7 @@ std::ostream * colvarproxy_namd::output_stream(std::string const &output_name)
     }
   }
   output_stream_names.push_back(output_name);
-  this->backup_file(output_name.c_str());
+  backup_file(output_name.c_str());
   ofstream_namd * os = new ofstream_namd(output_name.c_str());
   if (!os->is_open()) {
     cvm::error("Error: cannot write to file \""+output_name+"\".\n",
@@ -665,6 +636,7 @@ std::ostream * colvarproxy_namd::output_stream(std::string const &output_name)
   output_files.push_back(os);
   return os;
 }
+
 
 int colvarproxy_namd::close_output_stream(std::string const &output_name)
 {
@@ -680,6 +652,7 @@ int colvarproxy_namd::close_output_stream(std::string const &output_name)
   }
   return COLVARS_ERROR;
 }
+
 
 int colvarproxy_namd::backup_file(char const *filename)
 {
