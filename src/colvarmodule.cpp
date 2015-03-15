@@ -991,9 +991,7 @@ std::ostream & colvarmodule::write_traj_label(std::ostream &os)
   }
   os << "\n";
   if (cvm::debug()) {
-    if (os.is_open()) {
-      os.flush();
-    }
+    os.flush();
   }
   cvm::decrease_depth();
   return os;
@@ -1019,9 +1017,7 @@ std::ostream & colvarmodule::write_traj(std::ostream &os)
   }
   os << "\n";
   if (cvm::debug()) {
-    if (os.is_open()) {
-      os.flush();
-    }
+    os.flush();
   }
   cvm::decrease_depth();
   return os;
