@@ -29,6 +29,10 @@ class colvarproxy_namd : public colvarproxy, public GlobalMaster {
 
 protected:
 
+  /// \brief Array of atom indices (relative to the colvarproxy arrays),
+  /// usedfor faster copy of atomic data
+  std::vector<int> atoms_map;
+
   /// Pointer to the NAMD simulation input object
   SimParameters const *simparams;
 
@@ -43,12 +47,6 @@ protected:
 
   bool first_timestep;
   size_t previous_NAMD_step;
-
-  std::vector<int>          colvars_atoms;
-  std::vector<size_t>       colvars_atoms_ncopies;
-  std::vector<cvm::rvector> positions;
-  std::vector<cvm::rvector> total_forces;
-  std::vector<cvm::rvector> applied_forces;
 
   bool system_force_requested;
 
@@ -65,6 +63,8 @@ public:
 
   colvarproxy_namd();
   ~colvarproxy_namd();
+
+  void setup();
 
   void calculate();
 
@@ -151,6 +151,12 @@ public:
   {
     return restart_frequency_s;
   }
+
+  int init_atom(int atom_number);
+  int init_atom(cvm::residue_id const &residue,
+                std::string const     &atom_name,
+                std::string const     &segment_id);
+  void clear_atom(int index);
 
   cvm::rvector position_distance(cvm::atom_pos const &pos1,
                                  cvm::atom_pos const &pos2);
