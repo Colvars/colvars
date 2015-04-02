@@ -15,7 +15,7 @@
 #include <iostream>
 
 #ifndef COLVARPROXY_VERSION
-#define COLVARPROXY_VERSION "2015-04-01"
+#define COLVARPROXY_VERSION "2015-04-02"
 #endif
 
 /* struct for packed data communication of coordinates and forces. */
@@ -78,8 +78,6 @@ class colvarproxy_lammps : public colvarproxy {
   // methods for lammps to move data or trigger actions in the proxy
  public:
   void set_temperature(double t) { t_target = t; };
-  void set_timestep(double t) { my_timestep = t; };
-
   bool need_system_forces() const { return  system_force_requested; };
   bool want_exit() const { return do_exit; };
   std::vector<int> *             get_tags()   { return &colvars_atoms; };
