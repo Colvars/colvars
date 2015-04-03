@@ -1319,18 +1319,9 @@ void colvar::cartesian::calc_value()
 {
   size_t const dim = axes.size();
   size_t ia, j;
-
-  if (atoms.weights.size()) {
-    for (ia = 0; ia < atoms.size(); ia++) {
-      for (j = 0; j < dim; j++) {
-        x.vector1d_value[dim*ia + j] = atoms[ia].pos[axes[j]] * atoms.weights[ia];
-      }
-    }
-  } else {
-    for (ia = 0; ia < atoms.size(); ia++) {
-      for (j = 0; j < dim; j++) {
-        x.vector1d_value[dim*ia + j] = atoms[ia].pos[axes[j]];
-      }
+  for (ia = 0; ia < atoms.size(); ia++) {
+    for (j = 0; j < dim; j++) {
+      x.vector1d_value[dim*ia + j] = atoms[ia].pos[axes[j]];
     }
   }
 }
@@ -1350,20 +1341,11 @@ void colvar::cartesian::apply_force(colvarvalue const &force)
   size_t ia, j;
   if (!atoms.noforce) {
     cvm::rvector f;
-    if (atoms.weights.size()) {
-      for (ia = 0; ia < atoms.size(); ia++) {
-        for (j = 0; j < dim; j++) {
-          f[axes[j]] = force.vector1d_value[dim*ia + j] / atoms.weights[ia];
-        }
-        atoms[ia].apply_force(f);
+    for (ia = 0; ia < atoms.size(); ia++) {
+      for (j = 0; j < dim; j++) {
+        f[axes[j]] = force.vector1d_value[dim*ia + j];
       }
-    } else {
-      for (ia = 0; ia < atoms.size(); ia++) {
-        for (j = 0; j < dim; j++) {
-          f[axes[j]] = force.vector1d_value[dim*ia + j];
-        }
-        atoms[ia].apply_force(f);
-      }
+      atoms[ia].apply_force(f);
     }
   }
 }
