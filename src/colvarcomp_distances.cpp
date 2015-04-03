@@ -1323,7 +1323,7 @@ void colvar::cartesian::calc_value()
   if (atoms.weights.size()) {
     for (ia = 0; ia < atoms.size(); ia++) {
       for (j = 0; j < dim; j++) {
-        x.vector1d_value[dim*ia + j] *= atoms[ia].pos[axes[j]] * atoms.weights[ia];
+        x.vector1d_value[dim*ia + j] = atoms[ia].pos[axes[j]] * atoms.weights[ia];
       }
     }
   } else {
