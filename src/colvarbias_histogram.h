@@ -30,7 +30,7 @@ protected:
   std::vector<int>  bin;
   std::string	  out_name;
 
-  int		  output_freq;
+  size_t output_freq;
 
   /// If one or more of the variables are \link type_vector \endlink, treat them as arrays of this length
   size_t colvar_array_size;

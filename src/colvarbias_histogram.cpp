@@ -11,7 +11,6 @@ colvarbias_histogram::colvarbias_histogram(std::string const &conf, char const *
     grid(NULL), out_name("")
 {
   get_keyval(conf, "outputFile", out_name, std::string(""));
-  // FIXME cvm::restart_out_freq is size_t, might overflow output_freq which is an int
   get_keyval(conf, "outputFreq", output_freq, cvm::restart_out_freq);
   /// with VMD, this may not be an error
   // if ( output_freq == 0 ) {
