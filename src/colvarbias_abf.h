@@ -1,7 +1,4 @@
 // -*- c++ -*-
-/************************************************************************
- * Headers for the ABF and histogram biases                             *
- ************************************************************************/
 
 #ifndef COLVARBIAS_ABF_H
 #define COLVARBIAS_ABF_H
@@ -40,7 +37,7 @@ private:
   bool		hide_Jacobian;
   size_t	full_samples;
   size_t	min_samples;
-  /// frequency for updating output files (default: same as restartFreq?)
+  /// frequency for updating output files
   int		output_freq;
   /// Write combined files with a history of all output data?
   bool      b_history_files;
@@ -90,38 +87,5 @@ private:
   std::ostream& write_restart(std::ostream&);
 };
 
-
-/// Histogram "bias" (does as the name says)
-class colvarbias_histogram : public colvarbias {
-
-public:
-
-  colvarbias_histogram(std::string const &conf, char const *key);
-  ~colvarbias_histogram();
-
-  cvm::real update();
-
-  int write_output_files();
-
-protected:
-
-  /// n-dim histogram
-  colvar_grid_scalar *grid;
-  std::vector<int>  bin;
-  std::string	  out_name;
-
-  int		  output_freq;
-
-  /// If one or more of the variables are \link type_vector \endlink, treat them as arrays of this length
-  size_t colvar_array_size;
-  /// If colvar_array_size is larger than 1, weigh each one by this number before accumulating the histogram
-  std::vector<cvm::real> weights;
-
-  void		  write_grid();
-  cvm::ofstream	  grid_os;  /// Stream for writing grid to disk
-
-  std::istream& read_restart(std::istream&);
-  std::ostream& write_restart(std::ostream&);
-};
-
 #endif
+

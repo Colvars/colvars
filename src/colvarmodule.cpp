@@ -8,9 +8,10 @@
 #include "colvarproxy.h"
 #include "colvar.h"
 #include "colvarbias.h"
-#include "colvarbias_alb.h"
-#include "colvarbias_meta.h"
 #include "colvarbias_abf.h"
+#include "colvarbias_alb.h"
+#include "colvarbias_histogram.h"
+#include "colvarbias_meta.h"
 #include "colvarbias_restraint.h"
 #include "colvarscript.h"
 
