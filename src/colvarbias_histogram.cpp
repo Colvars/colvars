@@ -17,26 +17,42 @@ colvarbias_histogram::colvarbias_histogram(std::string const &conf, char const *
   //   cvm::error("User required histogram with zero output frequency");
   // }
 
+  colvar_array_size = 0;
   {
-    colvar_array_size = 1;
+    size_t i;
     bool colvar_array = false;
-    if (get_keyval(conf, "sumVectorColvars", colvar_array, colvar_array)) {
-      size_t i;
-      for (i = 0; i < colvars.size(); i++) {
-        if (colvars[i]->value().type() == colvarvalue::type_vector) {
-          if (colvar_array_size == 1) {
-            colvar_array_size = colvars[i]->value().size();
-          } else {
-            if (colvar_array_size != colvars[i]->value().size()) {
-              cvm::error("Error: trying to combine vector colvars of different lengths.\n", INPUT_ERROR);
-            }
+    get_keyval(conf, "gatherVectorColvars", colvar_array, colvar_array);
+
+    if (colvar_array) {
+      for (i = 0; i < colvars.size(); i++) { // should be all vector
+        if (colvars[i]->value().type() != colvarvalue::type_vector) {
+          cvm::error("Error: used gatherVectorColvars with non-vector colvar.\n", INPUT_ERROR);
+          return;
+        }
+        if (i == 0) {
+          colvar_array_size = colvars[i]->value().size();
+          if (colvar_array_size < 1) {
+            cvm::error("Error: vector variable has dimension less than one.\n", INPUT_ERROR);
+            return;
           }
+        } else {
+          if (colvar_array_size != colvars[i]->value().size()) {
+            cvm::error("Error: trying to combine vector colvars of different lengths.\n", INPUT_ERROR);
+            return;
+          }
+        }
+      }
+    } else {
+      for (i = 0; i < colvars.size(); i++) { // should be all scalar
+        if (colvars[i]->value().type() != colvarvalue::type_scalar) {
+          cvm::error("Error: only scalar colvars are supported when gatherVectorColvars is off.\n", INPUT_ERROR);
+          return;
         }
       }
     }
   }
 
-  if (colvar_array_size > 1) {
+  if (colvar_array_size > 0) {
     weights.assign(colvar_array_size, 1.0);
     get_keyval(conf, "weights", weights, weights, colvarparse::parse_silent);
   }
@@ -89,33 +105,27 @@ cvm::real colvarbias_histogram::update()
     }
   }
 
-  {
-    // update indices for all scalar values
+  if (colvar_array_size == 0) {
+    // update indices for scalar values
     size_t i;
     for (i = 0; i < colvars.size(); i++) {
-      if (colvars[i]->value().type() == colvarvalue::type_scalar) {
-        bin[i] = grid->value_to_bin_scalar(colvars[i]->value(), i);
-      }
+      bin[i] = grid->value_to_bin_scalar(colvars[i]->value(), i);
     }
-  }
 
-  if (colvar_array_size > 1) {
-    // update indices for all vector/array values
+    if (grid->index_ok(bin)) {
+      grid->acc_value(bin, 1.0);
+    }
+  } else {
+    // update indices for vector/array values
     size_t iv, i;
     for (iv = 0; iv < colvar_array_size; iv++) {
       for (i = 0; i < colvars.size(); i++) {
-        if (colvars[i]->value().type() == colvarvalue::type_vector) {
-          bin[i] = grid->value_to_bin_scalar(colvars[i]->value().vector1d_value[iv], i);
-        }
+        bin[i] = grid->value_to_bin_scalar(colvars[i]->value().vector1d_value[iv], i);
       }
 
       if (grid->index_ok(bin)) {
         grid->acc_value(bin, weights[iv]);
       }
-    }
-  } else {
-    if (grid->index_ok(bin)) {
-      grid->acc_value(bin, 1.0);
     }
   }
 
