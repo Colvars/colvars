@@ -68,9 +68,16 @@ public:
   /// Output quantities such as the bias energy to the trajectory file
   virtual std::ostream & write_traj(std::ostream &os);
 
+  /// Write output files (if defined, e.g. in analysis mode)
+  virtual int write_output_files()
+  {
+    return COLVARS_OK;
+  }
+
   inline cvm::real get_energy() {
     return bias_energy;
   }
+
 protected:
 
   /// \brief Pointers to collective variables to which the bias is
