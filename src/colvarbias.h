@@ -39,15 +39,12 @@ public:
   virtual int replica_share();
 
   /// Perform analysis tasks
-  virtual inline void analyse() {}
+  virtual void analyze() {}
 
   /// Send forces to the collective variables
   void communicate_forces();
 
   /// \brief Constructor
-  ///
-  /// The constructor of the colvarbias base class is protected, so
-  /// that it can only be called from inherited classes
   colvarbias(std::string const &conf, char const *key);
 
   /// Default constructor
@@ -77,7 +74,6 @@ public:
   inline cvm::real get_energy() {
     return bias_energy;
   }
-
 protected:
 
   /// \brief Pointers to collective variables to which the bias is

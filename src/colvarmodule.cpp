@@ -524,13 +524,13 @@ int colvarmodule::calc() {
       cvm::log("Perform runtime analyses.\n");
     cvm::increase_depth();
     for (cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
-      (*cvi)->analyse();
+      (*cvi)->analyze();
       if (cvm::get_error()) {
         return COLVARS_ERROR;
       }
     }
     for (bi = biases.begin(); bi != biases.end(); bi++) {
-      (*bi)->analyse();
+      (*bi)->analyze();
       if (cvm::get_error()) {
         return COLVARS_ERROR;
       }
@@ -628,7 +628,7 @@ int colvarmodule::analyze()
        cvi != colvars.end();
        cvi++) {
     cvm::increase_depth();
-    (*cvi)->analyse();
+    (*cvi)->analyze();
     cvm::decrease_depth();
   }
 
@@ -637,7 +637,7 @@ int colvarmodule::analyze()
        bi != biases.end();
        bi++) {
     cvm::increase_depth();
-    (*bi)->analyse();
+    (*bi)->analyze();
     cvm::decrease_depth();
   }
 
@@ -718,8 +718,8 @@ int colvarmodule::setup_input()
       cvm::log(cvm::line_marker);
     }
   }
-  return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
 
+  return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
 }
 
 
