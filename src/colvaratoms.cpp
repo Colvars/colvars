@@ -41,6 +41,11 @@ cvm::atom_group::atom_group(std::vector<cvm::atom> const &atoms)
        ai != this->end(); ai++) {
     total_mass += ai->mass;
   }
+  total_charge = 0.0;
+  for (cvm::atom_iter ai = this->begin();
+       ai != this->end(); ai++) {
+    total_charge += ai->charge;
+  }
 }
 
 
@@ -643,6 +648,18 @@ cvm::atom_pos cvm::atom_group::center_of_mass() const
   return com;
 }
 
+cvm::atom_pos cvm::atom_group::dipole(cvm::atom_pos com) const
+{
+  if (b_dummy)
+    return dummy_atom_pos;
+
+  cvm::atom_pos dip (0.0, 0.0, 0.0);
+  for (cvm::atom_const_iter ai = this->begin();
+       ai != this->end(); ai++) {
+    dip += ai->charge * (ai->pos - com);
+  }
+  return dip;
+}
 
 void cvm::atom_group::set_weighted_gradient(cvm::rvector const &grad)
 {

@@ -118,6 +118,7 @@ colvar::colvar(std::string const &conf)
                          "number",           "selfCoordNum",   selfcoordnum);
 
   initialize_components("angle",            "angle",          angle);
+  initialize_components ("dipole angle",     "dipoleAngle",   dipole_angle);
   initialize_components("dihedral",         "dihedral",       dihedral);
 
   initialize_components("hydrogen bond",    "hBond",          h_bond);

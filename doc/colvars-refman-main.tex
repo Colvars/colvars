@@ -1238,6 +1238,7 @@ one or more instances of the following components:
 \item \texttt{distanceXY}: projection of a distance vector on a plane;
 \item \texttt{distanceInv}: mean distance between two groups of atoms (e.g.~NOE-based distance);
 \item \texttt{angle}: angle between three groups;
+\item \texttt{dipoleAngle}: angle between two groups and dipole of a third group;
 \item \texttt{coordNum}: coordination number between two groups;
 \item \texttt{selfCoordNum}: coordination number of atoms within a
   group;
@@ -1485,6 +1486,11 @@ three blocks \texttt{group1}, \texttt{group2} and \texttt{group3}, defining
 the three groups.  It returns an angle (in degrees) within the
 interval $[0:180]$.
 
+\cvsubsubsec{\texttt{dipoleAngle}: angle between two groups and dipole of a third group.}
+The \texttt{dipoleAngle~\{...\}} block defines an angle, and contains the
+three blocks \texttt{group1}, \texttt{group2} and \texttt{group3}, defining
+the three groups, being \texttt{group1} the group where dipole is calculated. 
+It returns an angle (in degrees) within the interval $[0:180]$.
 
 \cvsubsubsec{\texttt{dihedral}: torsional angle between four groups.}
 The \texttt{dihedral~\{...\}} block defines a torsional angle, and
@@ -1497,7 +1503,7 @@ boundaries can be defined by using any real number of choice.
 \begin{itemize}
 \item \keydef
     {oneSiteSystemForce}{%
-    \texttt{angle}, \texttt{dihedral}}{%
+    \texttt{angle}, \texttt{dipoleAngle}, \texttt{dihedral}}{%
     Measure system force on group 1 only?}{%
     boolean}{%
     \texttt{no}}{%

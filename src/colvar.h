@@ -484,6 +484,7 @@ public:
   class distance_inv;
   class distance_pairs;
   class angle;
+  class dipole_angle;
   class dihedral;
   class coordnum;
   class selfcoordnum;

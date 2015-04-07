@@ -735,6 +735,7 @@ cvm::atom::atom(int const &atom_number)
              cvm::to_str(this->index)+".\n");
   this->id = aid;
   this->mass = Node::Object()->molecule->atommass(aid);
+  this->charge = Node::Object()->molecule->atomcharge (aid);
   this->reset_data();
 }
 
@@ -780,13 +781,14 @@ cvm::atom::atom(cvm::residue_id const &residue,
              cvm::to_str(this->index)+".\n");
   this->id = aid;
   this->mass = Node::Object()->molecule->atommass(aid);
+  this->charge = Node::Object()->molecule->atomcharge (aid);
   this->reset_data();
 }
 
 
 // copy constructor
 cvm::atom::atom(cvm::atom const &a)
-  : index(a.index), id(a.id), mass(a.mass)
+  : index(a.index), id(a.id), mass(a.mass), charge (a.charge)
 {
   // init_namd_atom() has already been called by a's constructor, no
   // need to call it again
