@@ -132,101 +132,9 @@ colvarbias_meta::colvarbias_meta(std::string const &conf, char const *key)
                "large amount of input/output and slow down your calculations.  "
                "Please consider disabling it.\n");
 
-
-    {
-      // TODO: one may want to specify the path manually for intricated filesystems?
-      char *pwd = new char[3001];
-      if (GETCWD(pwd, 3000) == NULL)
-        cvm::fatal_error("Error: cannot get the path of the current working directory.\n");
-      replica_list_file =
-        (std::string(pwd)+std::string(PATHSEP)+
-         this->name+"."+replica_id+".files.txt");
-      // replica_hills_file and replica_state_file are those written
-      // by the current replica; within the mirror biases, they are
-      // those by another replica
-      replica_hills_file =
-        (std::string(pwd)+std::string(PATHSEP)+
-         cvm::output_prefix+".colvars."+this->name+"."+replica_id+".hills");
-      replica_state_file =
-        (std::string(pwd)+std::string(PATHSEP)+
-         cvm::output_prefix+".colvars."+this->name+"."+replica_id+".state");
-      delete[] pwd;
-    }
-
-    // now register this replica
-
-    // first check that it isn't already there
-    bool registered_replica = false;
-    std::ifstream reg_is(replicas_registry_file.c_str());
-    if (reg_is.good()) {  // the file may not be there yet
-      std::string existing_replica("");
-      std::string existing_replica_file("");
-      while ((reg_is >> existing_replica) && existing_replica.size() &&
-             (reg_is >> existing_replica_file) && existing_replica_file.size()) {
-        if (existing_replica == replica_id) {
-          // this replica was already registered
-          replica_list_file = existing_replica_file;
-          reg_is.close();
-          registered_replica = true;
-          break;
-        }
-      }
-      reg_is.close();
-    }
-
-    // if this replica was not included yet, we should generate a
-    // new record for it: but first, we write this replica's files,
-    // for the others to read
-
-    // open the "hills" buffer file
-    replica_hills_os.open(replica_hills_file.c_str());
-    if (!replica_hills_os.good())
-      cvm::fatal_error("Error: in opening file \""+
-                        replica_hills_file+"\" for writing.\n");
-    replica_hills_os.setf(std::ios::scientific, std::ios::floatfield);
-
-    // write the state file (so that there is always one available)
-    write_replica_state_file();
-    // schedule to read the state files of the other replicas
-    for (size_t ir = 0; ir < replicas.size(); ir++) {
-      (replicas[ir])->replica_state_file_in_sync = false;
-    }
-
-    // if we're running without grids, use a growing list of "hills" files
-    // otherwise, just one state file and one "hills" file as buffer
-    std::ofstream list_os(replica_list_file.c_str(),
-                           (use_grids ? std::ios::trunc : std::ios::app));
-    if (! list_os.good())
-      cvm::fatal_error("Error: in opening file \""+
-                        replica_list_file+"\" for writing.\n");
-    list_os << "stateFile " << replica_state_file << "\n";
-    list_os << "hillsFile " << replica_hills_file << "\n";
-    list_os.close();
-
-    // finally, if add a new record for this replica to the registry
-    if (! registered_replica) {
-      std::ofstream reg_os(replicas_registry_file.c_str(), std::ios::app);
-      if (! reg_os.good())
-        cvm::fatal_error("Error: in opening file \""+
-                          replicas_registry_file+"\" for writing.\n");
-      reg_os << replica_id << " " << replica_list_file << "\n";
-      reg_os.close();
-    }
   }
 
   get_keyval(conf, "writeHillsTrajectory", b_hills_traj, false);
-  if (b_hills_traj) {
-    std::string const traj_file_name(cvm::output_prefix+
-                                      ".colvars."+this->name+
-                                      ( (comm != single_replica) ?
-                                        ("."+replica_id) :
-                                        ("") )+
-                                      ".hills.traj");
-    hills_traj_os.open(traj_file_name.c_str());
-    if (!hills_traj_os.good())
-      cvm::fatal_error("Error: in opening hills output file \"" +
-                        traj_file_name + "\".\n");
-  }
 
   // for well-tempered metadynamics
   get_keyval(conf, "wellTempered", well_tempered, false);
@@ -1489,6 +1397,111 @@ std::istream & colvarbias_meta::read_hill(std::istream &is)
 // **********************************************************************
 // output functions
 // **********************************************************************
+
+
+int colvarbias_meta::setup_output()
+{
+
+  if (comm == multiple_replicas) {
+
+    // TODO: one may want to specify the path manually for intricated filesystems?
+    char *pwd = new char[3001];
+    if (GETCWD(pwd, 3000) == NULL)
+      cvm::fatal_error("Error: cannot get the path of the current working directory.\n");
+    replica_list_file =
+      (std::string(pwd)+std::string(PATHSEP)+
+       this->name+"."+replica_id+".files.txt");
+    // replica_hills_file and replica_state_file are those written
+    // by the current replica; within the mirror biases, they are
+    // those by another replica
+    replica_hills_file =
+      (std::string(pwd)+std::string(PATHSEP)+
+       cvm::output_prefix+".colvars."+this->name+"."+replica_id+".hills");
+    replica_state_file =
+      (std::string(pwd)+std::string(PATHSEP)+
+       cvm::output_prefix+".colvars."+this->name+"."+replica_id+".state");
+    delete[] pwd;
+
+    // now register this replica
+
+    // first check that it isn't already there
+    bool registered_replica = false;
+    std::ifstream reg_is(replicas_registry_file.c_str());
+    if (reg_is.is_open()) {  // the file may not be there yet
+      std::string existing_replica("");
+      std::string existing_replica_file("");
+      while ((reg_is >> existing_replica) && existing_replica.size() &&
+             (reg_is >> existing_replica_file) && existing_replica_file.size()) {
+        if (existing_replica == replica_id) {
+          // this replica was already registered
+          replica_list_file = existing_replica_file;
+          reg_is.close();
+          registered_replica = true;
+          break;
+        }
+      }
+      reg_is.close();
+    }
+
+    // if this replica was not included yet, we should generate a
+    // new record for it: but first, we write this replica's files,
+    // for the others to read
+
+    // open the "hills" buffer file
+    if (!replica_hills_os.is_open()) {
+      cvm::backup_file(replica_hills_file.c_str());
+      replica_hills_os.open(replica_hills_file.c_str());
+      if (!replica_hills_os.is_open())
+        cvm::error("Error: in opening file \""+
+                   replica_hills_file+"\" for writing.\n", FILE_ERROR);
+      replica_hills_os.setf(std::ios::scientific, std::ios::floatfield);
+    }
+
+    // write the state file (so that there is always one available)
+    write_replica_state_file();
+    // schedule to read the state files of the other replicas
+    for (size_t ir = 0; ir < replicas.size(); ir++) {
+      (replicas[ir])->replica_state_file_in_sync = false;
+    }
+
+    // if we're running without grids, use a growing list of "hills" files
+    // otherwise, just one state file and one "hills" file as buffer
+    std::ofstream list_os(replica_list_file.c_str(),
+                          (use_grids ? std::ios::trunc : std::ios::app));
+    if (! list_os.is_open())
+      cvm::fatal_error("Error: in opening file \""+
+                       replica_list_file+"\" for writing.\n");
+    list_os << "stateFile " << replica_state_file << "\n";
+    list_os << "hillsFile " << replica_hills_file << "\n";
+    list_os.close();
+
+    // finally, if add a new record for this replica to the registry
+    if (! registered_replica) {
+      std::ofstream reg_os(replicas_registry_file.c_str(), std::ios::app);
+      if (! reg_os.is_open())
+        cvm::error("Error: in opening file \""+
+                   replicas_registry_file+"\" for writing.\n", FILE_ERROR);
+      reg_os << replica_id << " " << replica_list_file << "\n";
+      reg_os.close();
+    }
+  }
+
+  if (b_hills_traj) {
+    std::string const traj_file_name(cvm::output_prefix+
+                                     ".colvars."+this->name+
+                                     ( (comm != single_replica) ?
+                                       ("."+replica_id) :
+                                       ("") )+
+                                     ".hills.traj");
+    hills_traj_os.open(traj_file_name.c_str());
+    if (!hills_traj_os.is_open())
+      cvm::error("Error: in opening hills output file \"" +
+                 traj_file_name+"\".\n", FILE_ERROR);
+  }
+
+  return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
+}
+
 
 std::ostream & colvarbias_meta::write_restart(std::ostream& os)
 {
