@@ -17,15 +17,17 @@ fi
 DIFF=spiff
 BASEDIR=$PWD
 ALL_SUCCESS=1
-TMP=/tmp
 
 
 cleanup_files () {
-for dir in [0-9][0-9][0-9]_* ; do
-  for script in test*.namd ; do
-       rm -f ${dir}/${script%.namd}.*{state,out,traj,coor,vel,xsc,BAK,old,backup,diff,pmf,grad,count}
-  done
-done
+    for dir in [0-9][0-9][0-9]_* ; do
+        for script in test*.namd testres*.namd ; do
+            rm -f ${dir}/${script%.namd}.*{diff,BAK,old,backup}
+            rm -f ${dir}/${script%.namd}.*{state,out,traj,coor,vel,xsc,pmf,hills,grad,count}
+            rm -f ${dir}/${script%.namd}.*{state,out,traj,coor,vel,xsc,pmf,hills,grad,count}
+            rm -f ${dir}/metadynamics1.*.files.txt ${dir}/replicas.registry.txt
+        done
+    done
 }
 
 
@@ -44,6 +46,8 @@ do
       mv $base $base.backup
     fi
   done
+
+  cleanup_files
 
   # run simulation(s)
   for script in test*.namd ; do
@@ -67,7 +71,7 @@ do
     RETVAL=$?
     if [ $RETVAL -ne 0 ]
     then
-      echo "***  Failure for file $base: see $dir/$base.diff ***"
+      echo "***  Failure for file $base: see `pwd`/$base.diff ***"
       SUCCESS=0
       ALL_SUCCESS=0
     fi
