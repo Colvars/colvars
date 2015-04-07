@@ -167,10 +167,10 @@ colvarbias_meta::~colvarbias_meta()
     hills_energy_gradients = NULL;
   }
 
-  if (replica_hills_os.good())
+  if (replica_hills_os.is_open())
     replica_hills_os.close();
 
-  if (hills_traj_os.good())
+  if (hills_traj_os.is_open())
     hills_traj_os.close();
 
   if (cvm::n_meta_biases > 0)
@@ -206,7 +206,7 @@ colvarbias_meta::create_hill(colvarbias_meta::hill const &h)
   }
 
   // output to trajectory (if specified)
-  if (hills_traj_os.good()) {
+  if (hills_traj_os.is_open()) {
     hills_traj_os << (hills.back()).output_traj();
     if (cvm::debug()) {
       hills_traj_os.flush();
@@ -240,7 +240,7 @@ colvarbias_meta::delete_hill(hill_iter &h)
     }
   }
 
-  if (hills_traj_os.good()) {
+  if (hills_traj_os.is_open()) {
     // output to the trajectory
     hills_traj_os << "# DELETED this hill: "
                   << (hills.back()).output_traj()
@@ -400,7 +400,7 @@ cvm::real colvarbias_meta::update()
       } else {
         create_hill(hill(hill_weight, colvars, hill_width, replica_id));
       }
-      if (replica_hills_os.good()) {
+      if (replica_hills_os.is_open()) {
         replica_hills_os << hills.back();
       } else {
         cvm::fatal_error("Error: in metadynamics bias \""+this->name+"\""+
@@ -418,7 +418,8 @@ cvm::real colvarbias_meta::update()
     if ((cvm::step_absolute() % replica_update_freq) == 0) {
       update_replicas_registry();
       // empty the output buffer
-      replica_hills_os.flush();
+      if (replica_hills_os.is_open())
+        replica_hills_os.flush();
 
       read_replica_files();
     }
@@ -801,7 +802,7 @@ void colvarbias_meta::update_replicas_registry()
     // copy the whole file into a string for convenience
     std::string line("");
     std::ifstream reg_file(replicas_registry_file.c_str());
-    if (reg_file.good()) {
+    if (reg_file.is_open()) {
       replicas_registry.clear();
       while (colvarparse::getline_nocomments(reg_file, line))
         replicas_registry.append(line+"\n");
@@ -965,11 +966,11 @@ void colvarbias_meta::read_replica_files()
       // the position recorded previously
 
       std::ifstream is((replicas[ir])->replica_hills_file.c_str());
-      if (is.good()) {
+      if (is.is_open()) {
 
         // try to resume the previous position
         is.seekg((replicas[ir])->replica_hills_file_pos, std::ios::beg);
-        if (!is.good()){
+        if (!is.is_open()){
           // if fail (the file may have been overwritten), reset this
           // position
           is.clear();
@@ -1637,7 +1638,7 @@ void colvarbias_meta::write_replica_state_file()
   // is duplicated code, that could be cleaned up later
   cvm::backup_file(replica_state_file.c_str());
   cvm::ofstream rep_state_os(replica_state_file.c_str());
-  if (!rep_state_os.good())
+  if (!rep_state_os.is_open())
     cvm::fatal_error("Error: in opening file \""+
                      replica_state_file+"\" for writing.\n");
 
@@ -1681,8 +1682,9 @@ void colvarbias_meta::write_replica_state_file()
 
   // reopen the hills file
   replica_hills_os.close();
+  cvm::backup_file(replica_hills_file.c_str());
   replica_hills_os.open(replica_hills_file.c_str());
-  if (!replica_hills_os.good())
+  if (!replica_hills_os.is_open())
     cvm::fatal_error("Error: in opening file \""+
                      replica_hills_file+"\" for writing.\n");
   replica_hills_os.setf(std::ios::scientific, std::ios::floatfield);
