@@ -725,6 +725,8 @@ int colvarmodule::setup_input()
 
 int colvarmodule::setup_output()
 {
+  int error_code = 0;
+
   // output state file (restart)
   restart_out_name = proxy->restart_output_prefix().size() ?
     std::string(proxy->restart_output_prefix()+".colvars.state") :
@@ -749,7 +751,17 @@ int colvarmodule::setup_output()
      std::string(""));
 
   if (cv_traj_freq && cv_traj_name.size()) {
-    open_traj_file(cv_traj_name);
+    error_code |= open_traj_file(cv_traj_name);
+  }
+
+  for (std::vector<colvarbias *>::iterator bi = biases.begin();
+       bi != biases.end();
+       bi++) {
+    error_code |= (*bi)->setup_output();
+  }
+
+  if (error_code != COLVARS_OK || cvm::get_error()) {
+    set_error_bits(FILE_ERROR);
   }
 
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);

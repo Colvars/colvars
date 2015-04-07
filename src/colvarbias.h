@@ -62,6 +62,9 @@ public:
   /// Write a label to the trajectory file (comment line)
   virtual std::ostream & write_traj_label(std::ostream &os);
 
+  /// (Re)initialize the output files (does not write them yet)
+  virtual int setup_output() { return COLVARS_OK; }
+
   /// Output quantities such as the bias energy to the trajectory file
   virtual std::ostream & write_traj(std::ostream &os);
 
