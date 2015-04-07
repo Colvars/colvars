@@ -381,7 +381,7 @@ $def_title="ON";
 $def_imageviewer="display %s";
 
 # program version number
-$progversion="1.9.2";
+$progversion="1.9.3a1";
 
 # text prompt string
 $promptstring="vmd > ";
@@ -758,6 +758,7 @@ if ($config_colvars) {
                       'colvarbias.C',
                       'colvarbias_abf.C',
                       'colvarbias_alb.C',
+                      'colvarbias_histogram.C',
                       'colvarbias_meta.C',
                       'colvarbias_restraint.C',
                       'colvar.C',
@@ -778,6 +779,7 @@ if ($config_colvars) {
                       'colvarbias.h',
                       'colvarbias_abf.h',
                       'colvarbias_alb.h',
+                      'colvarbias_histogram.h',
                       'colvarbias_meta.h',
                       'colvarbias_restraint.h',
                       'colvarcomp.h',
@@ -923,11 +925,14 @@ $liboptix_defines     = "-DVMDLIBOPTIX";
 # $liboptix_dir         = "/usr/local/encap/NVIDIA-OptiX-SDK-3.5.0-linux64";
 # $liboptix_dir         = "/usr/local/encap/NVIDIA-OptiX-SDK-3.5.1-PRO-linux64";
 $liboptix_dir         = "/usr/local/encap/NVIDIA-OptiX-SDK-3.6.3-linux64";
+# $liboptix_dir         = "/usr/local/encap/NVIDIA-OptiX-SDK-3.7.0-linux64";
+# $liboptix_dir         = "/usr/local/encap/NVIDIA-OptiX-SDK-3.8.0-DEV-linux64";
 # NCSA Blue Waters
 # $liboptix_dir         = "/u/sciteam/stonej/local/NVIDIA-OptiX-SDK-3.5.0-linux64";
 # $liboptix_dir         = "/u/sciteam/stonej/local/NVIDIA-OptiX-SDK-3.5.1-PRO-linux64";
 # $liboptix_dir         = "/u/sciteam/stonej/local/NVIDIA-OptiX-SDK-3.6.3-linux64";
-
+# ORNL Titan
+# $liboptix_dir         = "/ccs/home/stonej1/local/NVIDIA-OptiX-SDK-3.5.1-PRO-linux64";
 # CSCS Piz Daint
 # $liboptix_dir         = "/users/stonej/local/NVIDIA-OptiX-SDK-3.5.1-PRO-linux64";
 # IU Big Red 2

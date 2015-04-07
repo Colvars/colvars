@@ -8,9 +8,10 @@
 #include "colvarproxy.h"
 #include "colvar.h"
 #include "colvarbias.h"
-#include "colvarbias_alb.h"
-#include "colvarbias_meta.h"
 #include "colvarbias_abf.h"
+#include "colvarbias_alb.h"
+#include "colvarbias_histogram.h"
+#include "colvarbias_meta.h"
 #include "colvarbias_restraint.h"
 #include "colvarscript.h"
 
@@ -825,6 +826,14 @@ int colvarmodule::write_output_files()
        cvi != colvars.end();
        cvi++) {
     (*cvi)->write_output_files();
+  }
+  cvm::decrease_depth();
+
+  cvm::increase_depth();
+  for (std::vector<colvarbias *>::iterator bi = biases.begin();
+       bi != biases.end();
+       bi++) {
+    (*bi)->write_output_files();
   }
   cvm::decrease_depth();
 

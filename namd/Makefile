@@ -204,6 +204,7 @@ OBJS = \
 	$(DSTDIR)/colvaratoms.o \
 	$(DSTDIR)/colvarbias.o \
 	$(DSTDIR)/colvarbias_abf.o \
+	$(DSTDIR)/colvarbias_histogram.o \
 	$(DSTDIR)/colvarbias_alb.o \
 	$(DSTDIR)/colvarbias_meta.o \
 	$(DSTDIR)/colvarbias_restraint.o \

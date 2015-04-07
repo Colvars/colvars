@@ -1,0 +1,63 @@
+Collective variables and biases can be added, queried and deleted through the scripting command \texttt{cv}, with the following syntax: \texttt{cv~$<$subcommand$>$ [args...]}.
+For example, to query the value of a collective variable named \texttt{myVar},
+use the following syntax: \texttt{set value [cv colvar myVar value]}.
+All subcommands of \texttt{cv} are documented below.
+
+% The NAMD and VMD manuals have this section at different levels
+\newcommand{\cvparagraph}[1]{\cvsubsec{#1}}
+\cvvmdonly{
+\renewcommand{\cvparagraph}[1]{\cvsubsubsec{#1}}
+}
+
+\cvparagraph{Managing the colvars module}
+
+\begin{itemize}
+\cvvmdonly{
+\item \texttt{molid} \emph{$<$molid$>$}: setup the colvars module for the given molecule; \emph{$<$molid$>$} is the identifier of a valid VMD molecule, either an integer or \texttt{top} for the top molecule;
+\item \texttt{delete}: delete the colvars module; after this, the module can be setup again using \texttt{cv molid};
+}
+\item \texttt{configfile} \emph{$<$file name$>$}: read configuration from a file;
+\item \texttt{config} \emph{$<$string$>$}: read configuration from the given string; both \texttt{config} and \texttt{configfile} subcommands may be invoked multiple times;
+\cvvmdonly{see \ref{sec:colvars_config} for the configuration syntax;}
+\item \texttt{reset}: delete all internal configuration of the colvars module;
+\item \texttt{version}: return the version of the colvars code.
+\end{itemize}
+
+\cvparagraph{Input and output}
+
+\begin{itemize}
+\item \texttt{list}: return a list of all currently defined variables;
+\cvvmdonly{See \ref{sec:colvar}, \ref{sec:cvc} and \ref{sec:colvar_atom_groups} for how to configure a collective variable;}
+\item \texttt{list biases}: return a list of all currently defined biases (i.e.~sampling and analysis algorithms);
+\item \texttt{load} \emph{$<$file name$>$}: load a collective variables state file, typically produced during a simulation; \cvvmdonly{this parameter requires that the corresponding configuration has already been loaded by \texttt{configfile} or \texttt{config}; see \ref{sec:colvars_output} for a brief description of this file; the contents of this file are not required for as long as the VMD molecule has valid coordinates and \texttt{cv update} is used;}
+\item \texttt{save} \emph{$<$prefix$>$}: save the current state in a file whose name begins with the given argument; if any of the biases have additional output files defined, those are saved as well;
+\item \texttt{update}: recalculate all colvars and biases based on the current atomic coordinates;
+\item \texttt{printframe}: return a summary of the current frame, in a format equivalent to a line of the collective variables trajectory file;
+\item \texttt{printframelabels}: return text labels for the columns of \texttt{printframe}'s output;
+\cvvmdonly{
+\item \texttt{frame}: return the current frame number, from which colvar values are calculated;
+\item \texttt{frame} \emph{$<$new frame$>$}: set the frame numberi; returns 0 if successful, nonzero if the requested frame does not exist.
+}
+\end{itemize}
+
+\cvparagraph{Accessing collective variables}
+
+\begin{itemize}
+\item \texttt{colvar} \emph{$<$name$>$} \texttt{value}: return the current value of colvar \emph{$<$name$>$};
+\item \texttt{colvar} \emph{$<$name$>$} \texttt{update}: recalculate colvar \emph{$<$name$>$};
+\item \texttt{colvar} \emph{$<$name$>$} \texttt{type}: return the type of colvar \emph{$<$name$>$};
+\item \texttt{colvar} \emph{$<$name$>$} \texttt{delete}: delete colvar \emph{$<$name$>$};
+\cvnamdonly{
+\item \texttt{colvar} \emph{$<$name$>$} \texttt{addforce} \emph{$<$F$>$}: apply given force on colvar \emph{$<$name$>$};
+}
+\item \texttt{colvar} \emph{$<$name$>$} \texttt{getconfig}: return config string of colvar \emph{$<$name$>$}.
+\end{itemize}
+
+\cvparagraph{Accessing biases}
+
+\begin{itemize}
+\item \texttt{bias} \emph{$<$name$>$} \texttt{energy}: return the current energy of the bias \emph{$<$name$>$};
+\item \texttt{bias} \emph{$<$name$>$} \texttt{update}: recalculate the bias \emph{$<$name$>$};
+\item \texttt{bias} \emph{$<$name$>$} \texttt{delete}: delete the bias \emph{$<$name$>$};
+\item \texttt{bias} \emph{$<$name$>$} \texttt{getconfig}: return config string of bias \emph{$<$name$>$}.
+\end{itemize}
