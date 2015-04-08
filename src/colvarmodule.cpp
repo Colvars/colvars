@@ -860,8 +860,8 @@ int colvarmodule::write_output_files()
 
 
 int colvarmodule::read_traj(char const *traj_filename,
-                            size_t      traj_read_begin,
-                            size_t      traj_read_end)
+                            long        traj_read_begin,
+                            long        traj_read_end)
 {
   cvm::log("Opening trajectory file \""+
            std::string(traj_filename)+"\".\n");
@@ -1225,8 +1225,8 @@ colvarproxy              *colvarmodule::proxy = NULL;
 // static runtime data
 cvm::real colvarmodule::debug_gradients_step_size = 1.0e-03;
 int       colvarmodule::errorCode = 0;
-size_t    colvarmodule::it = 0;
-size_t    colvarmodule::it_restart = 0;
+long      colvarmodule::it = 0;
+long      colvarmodule::it_restart = 0;
 size_t    colvarmodule::restart_out_freq = 0;
 size_t    colvarmodule::cv_traj_freq = 0;
 size_t    colvarmodule::depth = 0;
