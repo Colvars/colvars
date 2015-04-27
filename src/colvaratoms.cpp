@@ -55,6 +55,7 @@ cvm::atom_group::atom_group()
     ref_pos_group(NULL), noforce(false)
 {
   total_mass = 0.0;
+  total_charge = 0.0; 
 }
 
 
@@ -74,6 +75,7 @@ void cvm::atom_group::add_atom(cvm::atom const &a)
   } else {
     this->push_back(a);
     total_mass += a.mass;
+    total_charge += a.charge;
   }
 }
 
@@ -84,6 +86,11 @@ void cvm::atom_group::reset_mass(std::string &name, int i, int j)
   for (cvm::atom_iter ai = this->begin();
        ai != this->end(); ai++) {
     total_mass += ai->mass;
+  }
+  total_charge = 0.0;
+  for (cvm::atom_iter ai = this->begin();
+       ai != this->end(); ai++) {
+    total_charge += ai->charge;
   }
   cvm::log("Re-initialized atom group "+name+":"+cvm::to_str(i)+"/"+
             cvm::to_str(j)+". "+ cvm::to_str(this->size())+
@@ -303,6 +310,7 @@ int cvm::atom_group::parse(std::string const &conf,
   if (get_keyval(group_conf, "dummyAtom", dummy_atom_pos, cvm::atom_pos(), mode)) {
     b_dummy = true;
     this->total_mass = 1.0;
+    this->total_charge = 0.0;
   } else
     b_dummy = false;
 
@@ -323,9 +331,11 @@ int cvm::atom_group::parse(std::string const &conf,
 
     // calculate total mass (TODO: this is the step that most needs deferred re-initialization)
     this->total_mass = 0.0;
+    this->total_charge = 0.0;
     for (cvm::atom_iter ai = this->begin();
          ai != this->end(); ai++) {
       this->total_mass += ai->mass;
+      this->total_charge += ai->charge;
     }
 
     // whether these atoms will ever receive forces or not
@@ -455,7 +465,8 @@ int cvm::atom_group::parse(std::string const &conf,
 
   cvm::log("Atom group \""+std::string(key)+"\" defined, "+
             cvm::to_str(this->size())+" atoms initialized: total mass = "+
-            cvm::to_str(this->total_mass)+".\n");
+	    cvm::to_str (this->total_mass)+", total charge = "+
+            cvm::to_str(this->total_charge)+".\n");
 
   cvm::decrease_depth();
 

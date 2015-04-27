@@ -539,6 +539,9 @@ void FixColvars::setup(int vflag)
         } else {
           cd[i].m = atom->mass[type[k]];
         }
+	if (atom->q_flag) {
+	  cd[i].c = atom->q[k];
+	}
       }
     }
 
@@ -561,6 +564,7 @@ void FixColvars::setup(int vflag)
           cd[j].y = comm_buf[k].y;
           cd[j].z = comm_buf[k].z;
           cd[j].m = comm_buf[k].m;
+	  cd[j].c = comm_buf[k].c;
           of[j].x = of[j].y = of[j].z = 0.0;
         }
       }
@@ -596,7 +600,10 @@ void FixColvars::setup(int vflag)
         } else {
           comm_buf[nme].m = atom->mass[type[k]];
         }
-
+	
+	if (atom->q_flag) {
+          comm_buf[nme].c = atom->q[k];
+        }
         ++nme;
       }
     }
