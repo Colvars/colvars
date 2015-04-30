@@ -224,6 +224,14 @@ void colvar::dipole_angle::calc_gradients()
   for (size_t i = 0; i < group1.size(); i++) {
     group1[i].grad =(group1[i].charge + (-1)* group1[i].mass * aux1) * (dxdr1);
   }
+  
+  for (size_t i = 0; i < group2.size(); i++) {
+    group2[i].grad = (group2[i].mass/group2.total_mass)* dxdr3 * (-1.0);
+  }
+  
+  for (size_t i = 0; i < group3.size(); i++) {
+    group3[i].grad =(group3[i].mass/group3.total_mass) * (dxdr3);
+  }
 }
 
 
