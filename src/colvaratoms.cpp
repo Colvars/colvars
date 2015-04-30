@@ -87,11 +87,6 @@ void cvm::atom_group::reset_mass(std::string &name, int i, int j)
        ai != this->end(); ai++) {
     total_mass += ai->mass;
   }
-  total_charge = 0.0;
-  for (cvm::atom_iter ai = this->begin();
-       ai != this->end(); ai++) {
-    total_charge += ai->charge;
-  }
   cvm::log("Re-initialized atom group "+name+":"+cvm::to_str(i)+"/"+
             cvm::to_str(j)+". "+ cvm::to_str(this->size())+
             " atoms: total mass = "+cvm::to_str(this->total_mass)+".\n");
