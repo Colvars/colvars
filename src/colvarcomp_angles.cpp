@@ -148,8 +148,6 @@ colvar::dipole_angle::dipole_angle (std::string const &conf)
   //: angle (conf)
 {
   function_type = "dipole_angle";
-  b_inverse_gradients = true;
-  b_Jacobian_derivative = true;
   parse_group (conf, "group1", group1);
   parse_group (conf, "group2", group2);
   parse_group (conf, "group3", group3);
@@ -171,8 +169,6 @@ colvar::dipole_angle::dipole_angle (cvm::atom const &a1,
     group3 (std::vector<cvm::atom> (1, a3))
 {
   function_type = "dipole_angle";
-  b_inverse_gradients = true;
-  b_Jacobian_derivative = true;
   b_1site_force = false;
   atom_groups.push_back (&group1);
   atom_groups.push_back (&group2);
@@ -205,14 +201,17 @@ void colvar::dipole_angle::calc_value()
   x.real_value = (180.0/PI) * std::acos (cos_theta);
 }
 
+//to be implemented
+//void colvar::dipole_angle::calc_force_invgrads(){}
+//void colvar::dipole_angle::calc_Jacobian_derivative(){}
 
 void colvar::dipole_angle::calc_gradients()
 {
   cvm::real const cos_theta = (r21*r23)/(r21l*r23l);
   cvm::real const dxdcos = -1.0 / std::sqrt (1.0 - cos_theta*cos_theta);
 
-  dxdr1 = dxdcos *
-  (1.0/r21l)* (r23/r23l + (-1.0) * cos_theta * r21/r21l );//implementacion mia
+  dxdr1 = (180.0/PI) * dxdcos *
+  (1.0/r21l)* (r23/r23l + (-1.0) * cos_theta * r21/r21l );
 
   dxdr3 =  (180.0/PI) * dxdcos *
     (1.0/r23l) * ( r21/r21l + (-1.0) * cos_theta * r23/r23l );
@@ -228,51 +227,17 @@ void colvar::dipole_angle::calc_gradients()
 }
 
 
-void colvar::dipole_angle::calc_force_invgrads()
-{
-  // This uses a force measurement on groups 1 and 3 only
-  // to keep in line with the implicit variable change used to
-  // evaluate the Jacobian term (essentially polar coordinates
-  // centered on group2, which means group2 is kept fixed
-  // when propagating changes in the angle)
-
-  if (b_1site_force) {
-    group1.read_system_forces();
-    cvm::real norm_fact = 1.0 / dxdr1.norm2();
-    ft.real_value = norm_fact * dxdr1 * group1.system_force();
-  } else {
-    group1.read_system_forces();
-    group3.read_system_forces();
-    cvm::real norm_fact = 1.0 / (dxdr1.norm2() + dxdr3.norm2());
-    ft.real_value = norm_fact * ( dxdr1 * group1.system_force()
-                                + dxdr3 * group3.system_force());
-				}
-  return;
-}
-
-
-void colvar::dipole_angle::calc_Jacobian_derivative()
-{
-  // det(J) = (2 pi) r^2 * sin(theta)
-  // hence Jd = cot(theta)
-  const cvm::real theta = x.real_value * PI / 180.0;
-    jd = PI / 180.0 * (theta != 0.0 ? std::cos(theta) / std::sin(theta) : 0.0);
-}
-
-
 void colvar::dipole_angle::apply_force (colvarvalue const &force)
 {
-  if (!group1.noforce){
+  if (!group1.noforce)
     group1.apply_colvar_force (force.real_value);
-  }
-  /*
+    
   if (!group2.noforce)
     group2.apply_colvar_force (force.real_value);
-
+  
   if (!group3.noforce)
     group3.apply_colvar_force (force.real_value);
-  */
-  }
+}
 
 
 

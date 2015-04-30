@@ -700,8 +700,6 @@ public:
   virtual inline ~dipole_angle() {}
   virtual void calc_value();
   virtual void calc_gradients();
-  virtual void calc_force_invgrads();
-  virtual void calc_Jacobian_derivative();
   virtual void apply_force (colvarvalue const &force);
   virtual cvm::real dist2 (colvarvalue const &x1,
                            colvarvalue const &x2) const;

@@ -564,7 +564,7 @@ void FixColvars::setup(int vflag)
           cd[j].y = comm_buf[k].y;
           cd[j].z = comm_buf[k].z;
           cd[j].m = comm_buf[k].m;
-	  cd[j].c = comm_buf[k].c;
+          cd[j].c = comm_buf[k].c;
           of[j].x = of[j].y = of[j].z = 0.0;
         }
       }
