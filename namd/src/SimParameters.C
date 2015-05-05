@@ -7,8 +7,8 @@
 /*****************************************************************************
  * $Source: /namd/cvsroot/namd2/src/SimParameters.C,v $
  * $Author: jim $
- * $Date: 2015/01/29 17:33:49 $
- * $Revision: 1.1447 $
+ * $Date: 2015/03/11 23:04:38 $
+ * $Revision: 1.1449 $
  *****************************************************************************/
 
 /** \file SimParameters.C
@@ -124,14 +124,14 @@ void SimParameters::initialize_config_data(ConfigList *config, char *&cwd)
    config_parser(opts);
 
    ///////////////////////////////// check the internal consistency
-   if (!opts.check_consistency())
+   if (!opts.check_consistency()) 
    {
       NAMD_die("Internal error in configuration file parser");
    }
 
    // Now, feed the object with the actual configuration options through the
    // ParseOptions file and make sure everything is OK
-   if (!opts.set(*config))
+   if (!opts.set(*config)) 
    {
       NAMD_die("ERROR(S) IN THE CONFIGURATION FILE");
    }
@@ -152,10 +152,10 @@ void SimParameters::initialize_config_data(ConfigList *config, char *&cwd)
 
 int atobool(const char *s) {
   return ( (! strncasecmp(s,"yes",8)) ||
-           (! strncasecmp(s,"on",8)) ||
+           (! strncasecmp(s,"on",8)) || 
            (! strncasecmp(s,"true",8)) );
 };
-
+                         
 void SimParameters::scriptSet(const char *param, const char *value) {
 
   if ( CkMyRank() ) return;
@@ -173,6 +173,10 @@ void SimParameters::scriptSet(const char *param, const char *value) {
   SCRIPT_PARSE_FLOAT("scriptArg3",scriptArg3)
   SCRIPT_PARSE_FLOAT("scriptArg4",scriptArg4)
   SCRIPT_PARSE_FLOAT("scriptArg5",scriptArg5)
+  SCRIPT_PARSE_INT("scriptIntArg1",scriptIntArg1)
+  SCRIPT_PARSE_INT("scriptIntArg2",scriptIntArg2)
+  SCRIPT_PARSE_STRING("scriptStringArg1",scriptStringArg1)
+  SCRIPT_PARSE_STRING("scriptStringArg2",scriptStringArg2)
   SCRIPT_PARSE_INT("numsteps",N)
   SCRIPT_PARSE_INT("firsttimestep",firstTimestep)
   SCRIPT_PARSE_FLOAT("reassignTemp",reassignTemp)
@@ -215,7 +219,7 @@ void SimParameters::scriptSet(const char *param, const char *value) {
   SCRIPT_PARSE_STRING("outputname",outputFilename)
   SCRIPT_PARSE_STRING("restartname",restartFilename)
   SCRIPT_PARSE_INT("DCDfreq",dcdFrequency)
-  if ( ! strncasecmp(param,"DCDfile",MAX_SCRIPT_PARAM_SIZE) ) {
+  if ( ! strncasecmp(param,"DCDfile",MAX_SCRIPT_PARAM_SIZE) ) { 
     close_dcdfile();  // *** implemented in Output.C ***
     strcpy(dcdFilename,value);
     return;
@@ -223,11 +227,11 @@ void SimParameters::scriptSet(const char *param, const char *value) {
   SCRIPT_PARSE_STRING("tclBCArgs",tclBCArgs)
   SCRIPT_PARSE_VECTOR("eField",eField)
   SCRIPT_PARSE_FLOAT("eFieldFreq",eFieldFreq)
-  SCRIPT_PARSE_FLOAT("eFieldPhase",eFieldPhase)
-  SCRIPT_PARSE_FLOAT("accelMDE",accelMDE)
-  SCRIPT_PARSE_FLOAT("accelMDalpha",accelMDalpha)
-  SCRIPT_PARSE_FLOAT("accelMDTE",accelMDTE)
-  SCRIPT_PARSE_FLOAT("accelMDTalpha",accelMDTalpha)
+  SCRIPT_PARSE_FLOAT("eFieldPhase",eFieldPhase) 
+  SCRIPT_PARSE_FLOAT("accelMDE",accelMDE) 
+  SCRIPT_PARSE_FLOAT("accelMDalpha",accelMDalpha) 
+  SCRIPT_PARSE_FLOAT("accelMDTE",accelMDTE) 
+  SCRIPT_PARSE_FLOAT("accelMDTalpha",accelMDTalpha) 
   SCRIPT_PARSE_VECTOR("stirAxis",stirAxis)
   SCRIPT_PARSE_VECTOR("stirPivot",stirPivot)
   if ( ! strncasecmp(param,"mgridforcescale",MAX_SCRIPT_PARAM_SIZE) ) {
@@ -238,7 +242,7 @@ void SimParameters::scriptSet(const char *param, const char *value) {
     NAMD_die("Can't yet modify mgridforcevoff in a script");
     return;
   }
-
+   
   if ( ! strncasecmp(param,"fixedatoms",MAX_SCRIPT_PARAM_SIZE) ) {
     if ( ! fixedAtomsOn )
       NAMD_die("FixedAtoms may not be enabled in a script.");
@@ -344,7 +348,7 @@ void SimParameters::nonbonded_select() {
 /*      FUNCTION config_parser                                          */
 /*                                                                      */
 /************************************************************************/
-
+                         
 void SimParameters::config_parser(ParseOptions &opts) {
 
    //  Set all variable to fallback default values.  This is not really
@@ -384,7 +388,7 @@ void SimParameters::config_parser(ParseOptions &opts) {
 }
 
 void SimParameters::config_parser_basic(ParseOptions &opts) {
-
+   
    //  So first we set up the ParseOptions objects so that it will check
    //  all of the logical rules that the configuration file must follow.
 
@@ -402,15 +406,15 @@ void SimParameters::config_parser_basic(ParseOptions &opts) {
    opts.range("numsteps", NOT_NEGATIVE);
 
    opts.optional("main", "stepspercycle",
-      "Number of steps between atom migrations",
+      "Number of steps between atom migrations", 
       &stepsPerCycle, 20);
    opts.range("stepspercycle", POSITIVE);
 
-   opts.require("main", "cutoff", "local electrostatic and Vdw distance",
+   opts.require("main", "cutoff", "local electrostatic and Vdw distance", 
       &cutoff);
    opts.range("cutoff", POSITIVE);
    opts.units("cutoff", N_ANGSTROM);
-
+   
    opts.optional("main", "nonbondedScaling", "nonbonded scaling factor",
      &nonbondedScaling, 1.0);
    opts.range("nonbondedScaling", NOT_NEGATIVE);
@@ -428,16 +432,16 @@ void SimParameters::config_parser_basic(ParseOptions &opts) {
 
    opts.optionalB("main", "switching",
      "Should a smoothing function be used?", &switchingActive, TRUE);
-
+   
    opts.optionalB("switching", "vdwForceSwitching",
      "Use force switching for vdw?", &vdwForceSwitching, FALSE);
-
+   
    opts.optional("switching", "switchdist",
      "Distance for switching function activation",
      &switchingDist);
    opts.range("switchdist", POSITIVE);
    opts.units("switchdist", N_ANGSTROM);
-
+   
    opts.optionalB("main", "martiniSwitching",
      "Use Martini residue-based coarse-grain switching?", &martiniSwitching, FALSE);
    opts.optionalB("main", "martiniDielAllow",
@@ -506,23 +510,23 @@ void SimParameters::config_parser_basic(ParseOptions &opts) {
    opts.optional("main", "outputEnergies", "How often to print energies in timesteps",
      &outputEnergies, 1);
    opts.range("outputEnergies", POSITIVE);
-
+     
    opts.optional("main", "outputMomenta", "How often to print linear and angular momenta in timesteps",
      &outputMomenta, 0);
    opts.range("outputMomenta", NOT_NEGATIVE);
-
+     
    opts.optional("main", "outputTiming", "How often to print timing data in timesteps",
      &outputTiming);
    opts.range("outputTiming", NOT_NEGATIVE);
-
+     
    opts.optional("main", "outputCudaTiming", "How often to print CUDA timing data in timesteps",
      &outputCudaTiming, 0);
    opts.range("outputCudaTiming", NOT_NEGATIVE);
-
+     
    opts.optional("main", "outputPressure", "How often to print pressure data in timesteps",
      &outputPressure, 0);
    opts.range("outputPressure", NOT_NEGATIVE);
-
+     
    opts.optionalB("main", "mergeCrossterms", "merge crossterm energy with dihedral when printing?",
       &mergeCrossterms, TRUE);
 
@@ -555,17 +559,17 @@ void SimParameters::config_parser_basic(ParseOptions &opts) {
    opts.optionalB("main", "molly", "Rigid bonds to hydrogen",&mollyOn,FALSE);
    opts.optional("main", "mollyTolerance", "Error tolerance for MOLLY",
                  &mollyTol, 0.00001);
-   opts.optional("main", "mollyIterations",
+   opts.optional("main", "mollyIterations", 
 		 "Max number of iterations for MOLLY", &mollyIter, 100);
 
    opts.optional("main", "rigidBonds", "Rigid bonds to hydrogen",PARSE_STRING);
-   opts.optional("main", "rigidTolerance",
+   opts.optional("main", "rigidTolerance", 
                  "Error tolerance for rigid bonds to hydrogen",
                  &rigidTol, 1.0e-8);
-   opts.optional("main", "rigidIterations",
+   opts.optional("main", "rigidIterations", 
 		 "Max number of SHAKE iterations for rigid bonds to hydrogen",
 		 &rigidIter, 100);
-   opts.optionalB("main", "rigidDieOnError",
+   opts.optionalB("main", "rigidDieOnError", 
 		 "Die if rigidTolerance is not achieved after rigidIterations",
 		 &rigidDie, TRUE);
    opts.optionalB("main", "useSettle",
@@ -588,7 +592,7 @@ void SimParameters::config_parser_basic(ParseOptions &opts) {
 }
 
 void SimParameters::config_parser_fileio(ParseOptions &opts) {
-
+   
    /////////////// file I/O
 
    opts.optional("main", "cwd", "current working directory", PARSE_STRING);
@@ -616,7 +620,7 @@ void SimParameters::config_parser_fileio(ParseOptions &opts) {
 //   opts.require("main", "structure", "initial PSF structure file",
 //    PARSE_STRING);
    opts.optional("main", "structure", "initial PSF structure file",
-    PARSE_STRING);
+    PARSE_STRING);   
 
 //   opts.require("main", "parameters",
 //"CHARMm 19 or CHARMm 22 compatable force field file (multiple "
@@ -629,7 +633,7 @@ void SimParameters::config_parser_fileio(ParseOptions &opts) {
    //****** BEGIN CHARMM/XPLOR type changes
    //// enable XPLOR as well as CHARMM input files for parameters
    opts.optionalB("parameters", "paraTypeXplor", "Parameter file in Xplor format?", &paraTypeXplorOn, FALSE);
-   opts.optionalB("parameters", "paraTypeCharmm", "Parameter file in Charmm format?", &paraTypeCharmmOn, FALSE);
+   opts.optionalB("parameters", "paraTypeCharmm", "Parameter file in Charmm format?", &paraTypeCharmmOn, FALSE); 
    //****** END CHARMM/XPLOR type changes
 
    // Ported by JLai -- JE - Go parameters
@@ -637,28 +641,28 @@ void SimParameters::config_parser_fileio(ParseOptions &opts) {
    opts.optionalB("main", "GoForcesOn", "Go forces will be calculated", &goForcesOn, FALSE);
    opts.require("GoForcesOn", "GoParameters", "Go parameter file", goParameters);
    opts.require("GoForcesOn", "GoCoordinates", "target coordinates for Go forces", goCoordinates);
-   // Added by JLai -- Go-method parameter -- switches between using the matrix and sparse matrix representations [6.3.11]
+   // Added by JLai -- Go-method parameter -- switches between using the matrix and sparse matrix representations [6.3.11] 
    //   opts.optional("GoForcesOn", "GoMethod", "Which type of matrix should be used to store Go contacts?", &goMethod);
    // Added by JLai -- Go-method parameter [8.2.11]
-   //opts.optional("GoForcesOn", "GoMethod", "Which type of matrix should be used to store Go contacts?", PARSE_STRING);
-   opts.require("GoForcesOn", "GoMethod", "Which type of matrix should be used to store Go contacts?", PARSE_STRING);
+   //opts.optional("GoForcesOn", "GoMethod", "Which type of matrix should be used to store Go contacts?", PARSE_STRING); 
+   opts.require("GoForcesOn", "GoMethod", "Which type of matrix should be used to store Go contacts?", PARSE_STRING); 
   // End of Port -- JL
-
+   
    opts.require("main", "outputname",
-    "prefix for the final PDB position and velocity filenames",
+    "prefix for the final PDB position and velocity filenames", 
     outputFilename);
 
    opts.optional("main", "auxFile", "Filename for data stream output",
      auxFilename);
 
-   opts.optional("main", "numinputprocs", "Number of pes to use for parallel input",
+   opts.optional("main", "numinputprocs", "Number of pes to use for parallel input", 
                  &numinputprocs, 0);
    opts.range("numinputprocs", NOT_NEGATIVE);
 
-   opts.optional("main", "numoutputprocs", "Number of pes to use for parallel output",
+   opts.optional("main", "numoutputprocs", "Number of pes to use for parallel output", 
                  &numoutputprocs, 0);
    opts.range("numoutputprocs", NOT_NEGATIVE);
-   opts.optional("main", "numoutputwriters", "Number of output processors that simultaneously write to an output file",
+   opts.optional("main", "numoutputwriters", "Number of output processors that simultaneously write to an output file", 
                  &numoutputwrts, 1);
    opts.range("numoutputwriters", NOT_NEGATIVE);
 
@@ -675,13 +679,13 @@ void SimParameters::config_parser_fileio(ParseOptions &opts) {
    opts.range("velDCDfreq", NOT_NEGATIVE);
    opts.optional("velDCDfreq", "velDCDfile", "velocity DCD output file name",
      velDcdFilename);
-
+   
    opts.optional("main", "forceDCDfreq", "Frequency of force"
     "DCD output, in timesteps", &forceDcdFrequency, 0);
    opts.range("forceDCDfreq", NOT_NEGATIVE);
    opts.optional("forceDCDfreq", "forceDCDfile", "force DCD output file name",
      forceDcdFilename);
-
+   
    opts.optional("main", "XSTfreq", "Frequency of XST trajectory output, in "
     "timesteps", &xstFrequency, 0);
    opts.range("XSTfreq", NOT_NEGATIVE);
@@ -698,10 +702,10 @@ void SimParameters::config_parser_fileio(ParseOptions &opts) {
    opts.optionalB("restartfreq", "restartsavedcd", "Save DCD files with "
      "unique filenames at each restart", &restartSaveDcd, FALSE);
 
-   opts.optionalB("restartfreq", "binaryrestart", "Specify use of binary restart files ",
+   opts.optionalB("restartfreq", "binaryrestart", "Specify use of binary restart files ", 
        &binaryRestart, TRUE);
 
-   opts.optionalB("outputname", "binaryoutput", "Specify use of binary output files ",
+   opts.optionalB("outputname", "binaryoutput", "Specify use of binary output files ", 
        &binaryOutput, TRUE);
 
    opts.optionalB("main", "amber", "Is it AMBER force field?",
@@ -714,7 +718,7 @@ void SimParameters::config_parser_fileio(ParseOptions &opts) {
    opts.optional("amber", "ambercoor", "AMBER coordinate file", PARSE_STRING);
 
 //Modifications for alchemical fep
-// begin fep output options
+// begin fep output options    
    opts.optional("alch", "alchoutfreq", "Frequency of alchemical energy"
      "output in timesteps", &alchOutFreq, 5);
    opts.range("alchoutfreq", NOT_NEGATIVE);
@@ -723,7 +727,7 @@ void SimParameters::config_parser_fileio(ParseOptions &opts) {
 // end fep output options
 //fepe
 
-// REDUNDANT TI BEGINS
+// REDUNDANT TI BEGINS 
 //   opts.optional("thermInt", "tioutfreq", "Frequency of TI energy output in "
 //     "timesteps", &tiOutFreq, 5);
 //   opts.range("tioutfreq", NOT_NEGATIVE);
@@ -755,7 +759,7 @@ void SimParameters::config_parser_fileio(ParseOptions &opts) {
 
 
 void SimParameters::config_parser_fullelect(ParseOptions &opts) {
-
+   
    /////////// FMA options
 #ifdef DPMTA
    DebugM(1,"DPMTA setup start\n");
@@ -781,18 +785,18 @@ void SimParameters::config_parser_fullelect(ParseOptions &opts) {
 #endif
 
    opts.optional("main", "fullElectFrequency",
-      "Number of steps between full electrostatic executions",
+      "Number of steps between full electrostatic executions", 
       &fullElectFrequency);
    opts.range("fullElectFrequency", POSITIVE);
 
    //  USE OF THIS PARAMETER DISCOURAGED
    opts.optional("main", "fmaFrequency",
-      "Number of steps between full electrostatic executions",
+      "Number of steps between full electrostatic executions", 
       &fmaFrequency);
    opts.range("fmaFrequency", POSITIVE);
 
    opts.optional("main", "fmaTheta",
-      "FMA theta parameter value",
+      "FMA theta parameter value", 
       &fmaTheta,0.715);
    opts.range("fmaTheta", POSITIVE);
 
@@ -934,7 +938,7 @@ void SimParameters::config_parser_fullelect(ParseOptions &opts) {
 }
 
 void SimParameters::config_parser_methods(ParseOptions &opts) {
-
+   
    /////////// Special Dynamics Methods
    opts.optionalB("main", "minimization", "Should minimization be performed?",
       &minimizeCGOn, FALSE);
@@ -1000,7 +1004,7 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
 //  alchemical fep options
    opts.optionalB("main", "alch", "Is achemical simulation being performed?",
      &alchOn, FALSE);
-   opts.optional("alch", "alchType", "Which alchemical method to use?",
+   opts.optional("alch", "alchType", "Which alchemical method to use?", 
        PARSE_STRING);
    opts.optionalB("alch", "alchFepWCARepuOn", "WCA decomposition repu interaction in use?",
      &alchFepWCARepuOn, FALSE);
@@ -1009,14 +1013,14 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
    opts.optionalB("alch", "alchEnsembleAvg", "Ensemble Average in use?",
      &alchEnsembleAvg, TRUE);
    opts.optionalB("alch", "alchFepWhamOn", "Energy output for Wham postprocessing in use?",
-     &alchFepWhamOn, FALSE);
+     &alchFepWhamOn, FALSE);   
    opts.optional("alch", "alchFepWCArcut1", "WCA repulsion Coeff1 used for generating"
      "the altered alchemical vDW interactions", &alchFepWCArcut1, 0.0);
    opts.optional("alch", "alchFepWCArcut2", "WCA repulsion Coeff2 used for generating"
      "the altered alchemical vDW interactions", &alchFepWCArcut2, 1.0);
    opts.optional("alch", "alchFepWCArcut3", "WCA repulsion Coeff3 used for generating"
      "the altered alchemical vDW interactions", &alchFepWCArcut3, 1.0);
-   opts.range("alchFepWCArcut1", NOT_NEGATIVE);
+   opts.range("alchFepWCArcut1", NOT_NEGATIVE); 
    opts.range("alchFepWCArcut2", NOT_NEGATIVE);
    opts.range("alchFepWCArcut3", NOT_NEGATIVE);
 
@@ -1027,12 +1031,12 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
    opts.optional("alch", "alchElecLambda", "Lambda of electrostatic perturbation"
      "Coupling parameter value for electrostatic perturbation", &alchElecLambda, -1.0);	// an invalid lambda value
 
-  opts.require("alch", "alchLambda", "Coupling parameter value",
+  opts.require("alch", "alchLambda", "Coupling parameter value", 
       &alchLambda);
   opts.optional("alch", "alchLambda2", "Coupling comparison value",
       &alchLambda2);
    opts.optional("alch", "alchFile", "PDB file with perturbation flags "
-     "default is the input PDB file", PARSE_STRING);
+     "default is the input PDB file", PARSE_STRING); 
    opts.optional("alch", "alchCol", "Column in the alchFile with the "
      "perturbation flag", PARSE_STRING);
    opts.optional("alch", "alchEquilSteps", "Equilibration steps, before "
@@ -1041,26 +1045,26 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
    opts.optional("alch", "alchVdwShiftCoeff", "Coeff used for generating"
      "the altered alchemical vDW interactions", &alchVdwShiftCoeff, 5.);
    opts.range("alchVdwShiftCoeff", NOT_NEGATIVE);
-
+   
    opts.optional("alch", "alchElecLambdaStart", "Lambda at which electrostatic"
-      "scaling of exnihilated particles begins", &alchElecLambdaStart, 0.5);
+      "scaling of exnihilated particles begins", &alchElecLambdaStart, 0.5); 
    opts.range("alchElecLambdaStart", NOT_NEGATIVE);
-
+   
    opts.optional("alch", "alchVdwLambdaEnd", "Lambda at which vdW"
-      "scaling of exnihilated particles begins", &alchVdwLambdaEnd, 1.0);
-   opts.range("alchVdwLambdaEnd", NOT_NEGATIVE);
+      "scaling of exnihilated particles begins", &alchVdwLambdaEnd, 1.0); 
+   opts.range("alchVdwLambdaEnd", NOT_NEGATIVE);  
 // end FEP options
 //fepe
 
 // REDUNDANT TI BEGINS
 // Modifications for TI
-// lots of duplication of FEP, we'd be better off without all this but
+// lots of duplication of FEP, we'd be better off without all this but 
 // keeping it in place for now for compatibility
 //   opts.optionalB("main", "thermInt", "Perform thermodynamic integration?",
 //     &thermInt, FALSE);
 // opts.require("thermInt", "tilambda", "Coupling parameter value", &tiLambda);
 // opts.optional("thermInt", "tiFile", "PDB file with perturbation flags "
-//     "default is the input PDB file", PARSE_STRING);
+//     "default is the input PDB file", PARSE_STRING); 
 //   opts.optional("thermInt", "tiCol", "Column in the tiFile with the "
 //     "perturbation flag", PARSE_STRING);
 //   opts.optional("thermInt", "tiEquilSteps", "Equilibration steps, before "
@@ -1069,14 +1073,14 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
 //   opts.optional("thermInt", "tiVdwShiftCoeff", "Coeff used for generating"
 //     "the altered alchemical vDW interactions", &tiVdwShiftCoeff, 5.);
 //   opts.range("tiVdwShiftCoeff", NOT_NEGATIVE);
-//
+//   
 //   opts.optional("thermInt", "tiElecLambdaStart", "Lambda at which to start"
-//      "electrostatics scaling", &tiElecLambdaStart, 0.5);
+//      "electrostatics scaling", &tiElecLambdaStart, 0.5); 
 //   opts.range("tiElecLambdaStart", NOT_NEGATIVE);
-//
+//   
 //   opts.optional("thermInt", "tiVdwLambdaEnd", "Lambda at which to end"
-//      "Vdw scaling", &tiVdwLambdaEnd, 0.5);
-//   opts.range("tiVdwLambdaEnd", NOT_NEGATIVE);
+//      "Vdw scaling", &tiVdwLambdaEnd, 0.5); 
+//   opts.range("tiVdwLambdaEnd", NOT_NEGATIVE);  
 // end TI options
 // REDUNDANT TI ENDS
 
@@ -1087,7 +1091,7 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
      &lesOn, FALSE);
    opts.require("les", "lesFactor", "Local enhancement factor", &lesFactor);
    opts.optional("les", "lesFile", "PDB file with enhancement flags "
-     "default is the input PDB file", PARSE_STRING);
+     "default is the input PDB file", PARSE_STRING); 
    opts.optional("les", "lesCol", "Column in the lesFile with the "
      "enhancement flag", PARSE_STRING);
    opts.optionalB("les", "lesReduceTemp", "Reduce enhanced atom temperature?",
@@ -1118,12 +1122,12 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
        "restriction?", &drudeHardWallOn, FALSE);
 
    // Pair interaction calculations
-    opts.optionalB("main", "pairInteraction",
+    opts.optionalB("main", "pairInteraction", 
 	"Are pair interactions calculated?", &pairInteractionOn, FALSE);
-    opts.optional("pairInteraction", "pairInteractionFile",
-	"PDB files with interaction flags " "default is the input PDB file",
+    opts.optional("pairInteraction", "pairInteractionFile", 
+	"PDB files with interaction flags " "default is the input PDB file", 
 	PARSE_STRING);
-    opts.optional("pairInteraction", "pairInteractionCol",
+    opts.optional("pairInteraction", "pairInteractionCol", 
 	"Column in the pairInteractionFile with the interaction flags",
 	PARSE_STRING);
     opts.require("pairInteraction", "pairInteractionGroup1",
@@ -1131,7 +1135,7 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
     opts.optional("pairInteraction", "pairInteractionGroup2",
         "Flag for interaction group 2", &pairInteractionGroup2, -1);
     opts.optionalB("pairInteraction", "pairInteractionSelf",
-        "Compute only within-group interactions?", &pairInteractionSelf,
+        "Compute only within-group interactions?", &pairInteractionSelf, 
         FALSE);
    // Options for CG simulations
    opts.optionalB("main", "cosAngles", "Are some angles cosine-based?", &cosAngles, FALSE);
@@ -1154,10 +1158,10 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
    opts.range("COLDRate", NOT_NEGATIVE);
 
    //  Get the parameters for temperature coupling
-   opts.optionalB("main", "tcouple",
+   opts.optionalB("main", "tcouple", 
       "Should temperature coupling be performed?",
       &tCoupleOn, FALSE);
-   opts.require("tcouple", "tCoupleTemp",
+   opts.require("tcouple", "tCoupleTemp", 
     "Temperature for temperature coupling", &tCoupleTemp);
    opts.range("tCoupleTemp", NOT_NEGATIVE);
    opts.units("tCoupleTemp", N_KELVIN);
@@ -1192,7 +1196,7 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
    opts.units("reassignHold", N_KELVIN);
 
    ////  Group rather than atomic pressure
-   opts.optionalB("main", "useGroupPressure",
+   opts.optionalB("main", "useGroupPressure", 
       "Use group rather than atomic quantities for pressure control?",
       &useGroupPressure, FALSE);
 
@@ -1233,13 +1237,13 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
    opts.optional("excludeFromPressure", "excludeFromPressureFile",
 	"PDB file for atoms to be excluded from pressure",
         PARSE_STRING);
-   opts.optional("excludeFromPressure", "excludeFromPressureCol",
+   opts.optional("excludeFromPressure", "excludeFromPressureCol", 
         "Column in the excludeFromPressureFile"
         "containing the flags (nonzero means excluded);\n"
         "default is 'O'", PARSE_STRING);
 
    ////  Berendsen pressure bath coupling
-   opts.optionalB("main", "BerendsenPressure",
+   opts.optionalB("main", "BerendsenPressure", 
       "Should Berendsen pressure bath coupling be performed?",
       &berendsenPressureOn, FALSE);
    opts.require("BerendsenPressure", "BerendsenPressureTarget",
@@ -1289,7 +1293,7 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
       "Initial strain rate for pressure control (x y z)",
       &strainRate);
 
-   //// Surface tension
+   //// Surface tension 
    opts.optional("main", "SurfaceTensionTarget",
       "Surface tension in the x-y plane",
       &surfaceTensionTarget, 0);
@@ -1297,20 +1301,20 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
    //// Pressure Profile calculations
    opts.optionalB("main", "pressureprofile", "Compute pressure profile?",
      &pressureProfileOn, FALSE);
-   opts.require("pressureprofile", "pressureprofileslabs",
+   opts.require("pressureprofile", "pressureprofileslabs", 
      "Number of pressure profile slabs", &pressureProfileSlabs, 10);
    opts.optional("pressureprofile", "pressureprofilefreq",
      "How often to store profile data", &pressureProfileFreq, 1);
-   opts.optional("pressureprofile", "pressureProfileAtomTypes",
+   opts.optional("pressureprofile", "pressureProfileAtomTypes", 
      "Number of pressure profile atom types", &pressureProfileAtomTypes, 1);
    opts.range("pressureProfileAtomTypes", POSITIVE);
-   opts.optional("pressureProfile", "pressureProfileAtomTypesFile",
-	"PDB files with pressure profile atom types" "default is the input PDB file",
+   opts.optional("pressureProfile", "pressureProfileAtomTypesFile", 
+	"PDB files with pressure profile atom types" "default is the input PDB file", 
 	PARSE_STRING);
-   opts.optional("pressureProfile", "pressureProfileAtomTypesCol",
+   opts.optional("pressureProfile", "pressureProfileAtomTypesCol", 
 	"Column in the pressureProfileAtomTypesFile with the atom types ",
 	PARSE_STRING);
-   opts.optionalB("pressureProfile", "pressureProfileEwald",
+   opts.optionalB("pressureProfile", "pressureProfileEwald", 
        "Compute Ewald contribution to pressure profile",
        &pressureProfileEwaldOn, FALSE);
    opts.optional("pressureProfile", "pressureProfileEwaldX",
@@ -1381,7 +1385,7 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
 }
 
 void SimParameters::config_parser_constraints(ParseOptions &opts) {
-
+   
    ////  Fixed Atoms
    opts.optionalB("main", "fixedatoms", "Are there fixed atoms?",
     &fixedAtomsOn, FALSE);
@@ -1423,43 +1427,43 @@ void SimParameters::config_parser_constraints(ParseOptions &opts) {
 
    //****** BEGIN selective restraints (X,Y,Z) changes
 
-   //// selective restraints (X,Y,Z)
-   opts.optionalB("constraints", "selectConstraints",
+   //// selective restraints (X,Y,Z) 
+   opts.optionalB("constraints", "selectConstraints", 
    "Restrain only selected Cartesian components of the coordinates?",
      &selectConstraintsOn, FALSE);
-   opts.optionalB("selectConstraints", "selectConstrX",
+   opts.optionalB("selectConstraints", "selectConstrX",  
    "Restrain X components of coordinates ", &constrXOn, FALSE);
-   opts.optionalB("selectConstraints", "selectConstrY",
+   opts.optionalB("selectConstraints", "selectConstrY",  
    "Restrain Y components of coordinates ", &constrYOn, FALSE);
-   opts.optionalB("selectConstraints", "selectConstrZ",
+   opts.optionalB("selectConstraints", "selectConstrZ",  
    "Restrain Z components of coordinates ", &constrZOn, FALSE);
    //****** END selective restraints (X,Y,Z) changes
 
    // spherical constraints
-   opts.optionalB("constraints", "sphericalConstraints",
+   opts.optionalB("constraints", "sphericalConstraints", 
    "Restrain only radial spherical component of the coordinates?",
      &sphericalConstraintsOn, FALSE);
    opts.optional("sphericalConstraints", "sphericalConstrCenter",
    "Center of spherical constraints", &sphericalConstrCenter);
-
-   //****** BEGIN moving constraints changes
+ 
+   //****** BEGIN moving constraints changes 
 
    //// Moving Harmonic Constraints
    opts.optionalB("constraints", "movingConstraints",
-      "Are some of the constraints moving?",
+      "Are some of the constraints moving?", 
       &movingConstraintsOn, FALSE);
    opts.require("movingConstraints", "movingConsVel",
     "Velocity of the movement, A/timestep", &movingConsVel);
-   //****** END moving constraints changes
+   //****** END moving constraints changes 
 
    // BEGIN rotating constraints changes
    opts.optionalB("constraints", "rotConstraints",
-      "Are the constraints rotating?",
+      "Are the constraints rotating?", 
       &rotConstraintsOn, FALSE);
    opts.require("rotConstraints", "rotConsAxis",
     "Axis of rotation", &rotConsAxis);
    opts.require("rotConstraints", "rotConsPivot",
-    "Pivot point of rotation",
+    "Pivot point of rotation", 
     &rotConsPivot);
    opts.require("rotConstraints", "rotConsVel",
     "Velocity of rotation, deg/timestep", &rotConsVel);
@@ -1511,11 +1515,11 @@ void SimParameters::config_parser_constraints(ParseOptions &opts) {
    opts.optional("SASA", "surfaceTension",
       "Surfce Tension for SASA (kcal/mol/Ang^2)", &surface_tension, 0.005);
 
-   //****** BEGIN SMD constraints changes
+   //****** BEGIN SMD constraints changes 
 
    // SMD constraints
    opts.optionalB("main", "SMD",
-      "Do we use SMD option?",
+      "Do we use SMD option?", 
       &SMDOn, FALSE);
    opts.require("SMD", "SMDVel",
 		"Velocity of the movement, A/timestep", &SMDVel);
@@ -1535,8 +1539,8 @@ void SimParameters::config_parser_constraints(ParseOptions &opts) {
 		 "Frequency of output",
 		 &SMDOutputFreq, 1);
    opts.range("SMDOutputFreq", POSITIVE);
-
-   //****** END SMD constraints changes
+   
+   //****** END SMD constraints changes 
 
    //****** BEGIN tabulated energies section
    opts.optionalB("main", "tabulatedEnergies", "Do we get energies from a table?", &tabulatedEnergies, FALSE);
@@ -1546,13 +1550,13 @@ void SimParameters::config_parser_constraints(ParseOptions &opts) {
 
    // TMD parameters
    opts.optionalB("main", "TMD", "Perform Targeted MD?", &TMDOn, FALSE);
-   opts.optional("TMD", "TMDk", "Elastic constant for TMD", &TMDk, 0);
+   opts.optional("TMD", "TMDk", "Elastic constant for TMD", &TMDk, 0); 
    opts.range("TMDk", NOT_NEGATIVE);
    opts.require("TMD", "TMDFile", "File for TMD information", TMDFile);
    opts.optionalB("TMD", "TMDDiffRMSD", "Restrain Difference between the RMSD from two structures", &TMDDiffRMSD, FALSE);
-   opts.require("TMDDiffRMSD", "TMDFile2",  "Second file for TMD information", TMDFile2);
-
-   opts.optional("TMD", "TMDOutputFreq", "Frequency of TMD output",
+   opts.require("TMDDiffRMSD", "TMDFile2",  "Second file for TMD information", TMDFile2); 
+    
+   opts.optional("TMD", "TMDOutputFreq", "Frequency of TMD output", 
        &TMDOutputFreq, 1);
    opts.range("TMDOutputFreq", POSITIVE);
    opts.require("TMD", "TMDLastStep", "Last TMD timestep", &TMDLastStep);
@@ -1565,7 +1569,7 @@ void SimParameters::config_parser_constraints(ParseOptions &opts) {
    // End of TMD parameters
 
    // Symmetry restraint parameters
-   opts.optionalB("main", "symmetryRestraints", "Enable symmetry restraints?", &symmetryOn, FALSE);
+   opts.optionalB("main", "symmetryRestraints", "Enable symmetry restraints?", &symmetryOn, FALSE); 
    opts.optional("symmetryRestraints", "symmetryk", "Elastic constant for symmetry restraints", &symmetryk, 0);
    opts.range("symmetryk", NOT_NEGATIVE);
    opts.optional("symmetryRestraints", "symmetrykfile", "PDB file specifying force contants on a per-atom basis", PARSE_MULTIPLES);
@@ -1613,7 +1617,7 @@ void SimParameters::config_parser_constraints(ParseOptions &opts) {
        "Configuration file for constant forces", PARSE_STRING);
    opts.require("constantforce", "consForceScaling",
        "Scaling factor for constant forces", &consForceScaling, 1.0);
-
+ 
     //// Collective variables
     opts.optionalB("main", "colvars", "Is the colvars module enabled?",
       &colvarsOn, FALSE);
@@ -1637,7 +1641,7 @@ void SimParameters::config_parser_openatom(ParseOptions &opts) {
 /* BEGIN gf */
 void SimParameters::config_parser_mgridforce(ParseOptions &opts) {
     //// Gridforce
-    opts.optionalB("main", "mgridforce", "Is Multiple gridforce active?",
+    opts.optionalB("main", "mgridforce", "Is Multiple gridforce active?", 
 		   &mgridforceOn, FALSE);
     opts.optional("mgridforce", "mgridforcevolts", "Is Gridforce using Volts/eV as units?",
                   PARSE_MULTIPLES);
@@ -1665,7 +1669,7 @@ void SimParameters::config_parser_mgridforce(ParseOptions &opts) {
 
 void SimParameters::config_parser_gridforce(ParseOptions &opts) {
     //// Gridforce
-    opts.optionalB("main", "gridforce", "Is Gridforce active?",
+    opts.optionalB("main", "gridforce", "Is Gridforce active?", 
 		   &gridforceOn, FALSE);
     opts.optionalB("gridforce", "gridforcevolts", "Is Gridforce using Volts/eV as units?",
 		   &gridforceVolts, FALSE);
@@ -1749,7 +1753,7 @@ void SimParameters::config_parser_constorque(ParseOptions &opts) {
 }
 
 void SimParameters::config_parser_boundary(ParseOptions &opts) {
-
+    
    //// Spherical Boundary Conditions
    opts.optionalB("main", "sphericalBC", "Are spherical boundary counditions "
       "active?", &sphericalBCOn, FALSE);
@@ -1766,7 +1770,7 @@ void SimParameters::config_parser_boundary(ParseOptions &opts) {
    opts.optional("sphericalBC", "sphericalBCexp1", "Exponent for first "
     "sphere potential", &sphericalBCexp1, 2);
    opts.range("sphericalBCexp1", POSITIVE);
-
+   
    opts.optional("sphericalBCr1", "sphericalBCr2", "Radius for second sphere "
      "potential", &sphericalBCr2);
    opts.range("sphericalBCr2", POSITIVE);
@@ -1858,13 +1862,13 @@ void SimParameters::config_parser_boundary(ParseOptions &opts) {
 }
 
 void SimParameters::config_parser_misc(ParseOptions &opts) {
-
+   
    ///////////////  Load balance options
    opts.optional("main", "ldBalancer", "Load balancer",
      loadBalancer);
    opts.optional("main", "ldbStrategy", "Load balancing strategy",
      loadStrategy);
-   opts.optional("main", "ldbPeriod", "steps between load balancing",
+   opts.optional("main", "ldbPeriod", "steps between load balancing", 
      &ldbPeriod);
    opts.range("ldbPeriod", POSITIVE);
    opts.optional("main", "firstLdbStep", "when to start load balancing",
@@ -1887,12 +1891,12 @@ void SimParameters::config_parser_misc(ParseOptions &opts) {
    opts.optional("main", "ldbRelativeGrainsize",
      "fraction of average load per compute", &ldbRelativeGrainsize, 0.);
    opts.range("ldbRelativeGrainsize", NOT_NEGATIVE);
-
+   
    opts.optional("main", "traceStartStep", "when to start tracing", &traceStartStep);
    opts.range("traceStartStep", POSITIVE);
    opts.optional("main", "numTraceSteps", "the number of timesteps to be traced", &numTraceSteps);
    opts.range("numTraceSteps", POSITIVE);
-
+ 
 #ifdef MEASURE_NAMD_WITH_PAPI
    opts.optionalB("main", "papiMeasure", "whether use PAPI to measure performacne", &papiMeasure, FALSE);
    opts.optional("main", "papiMeasureStartStep", "when to measure performacne using PAPI", &papiMeasureStartStep);
@@ -1932,18 +1936,18 @@ void SimParameters::config_parser_misc(ParseOptions &opts) {
                   &useCompressedPsf, FALSE);
    opts.optionalB("main", "genCompressedPsf", "Generate the compressed version of the psf file",
                   &genCompressedPsf, FALSE);
-   opts.optionalB("main", "usePluginIO", "Use the plugin I/O to load the molecule system",
-                  &usePluginIO, FALSE);
-   opts.optionalB("main", "mallocTest", "test how much memory all PEs can allocate",
-                  &mallocTest, FALSE);
-   opts.optionalB("main", "printExclusions", "print exclusion lists to stdout",
-                  &printExclusions, FALSE);
+   opts.optionalB("main", "usePluginIO", "Use the plugin I/O to load the molecule system", 
+                  &usePluginIO, FALSE);   
+   opts.optionalB("main", "mallocTest", "test how much memory all PEs can allocate", 
+                  &mallocTest, FALSE);   
+   opts.optionalB("main", "printExclusions", "print exclusion lists to stdout", 
+                  &printExclusions, FALSE);   
    opts.optional("main", "proxySendSpanningTree", "using spanning tree to send proxies",
                   &proxySendSpanningTree, -1);
    opts.optional("main", "proxyRecvSpanningTree", "using spanning tree to receive proxies",
                   &proxyRecvSpanningTree, 0);  // default off due to memory leak -1);
    opts.optional("main", "proxyTreeBranchFactor", "the branch factor when building a spanning tree",
-                  &proxyTreeBranchFactor, 4);
+                  &proxyTreeBranchFactor, 0);  // actual default in ProxyMgr.C
    opts.optionalB("main", "twoAwayX", "half-size patches in 1st dimension",
      &twoAwayX, -1);
    opts.optionalB("main", "twoAwayY", "half-size patches in 2nd dimension",
@@ -1956,7 +1960,7 @@ void SimParameters::config_parser_misc(ParseOptions &opts) {
    opts.optional("main", "firsttimestep", "Timestep to start simulation at",
      &firstTimestep, 0);
    opts.range("firsttimestep", NOT_NEGATIVE);
-
+ 
    /////  Test mode options
    opts.optionalB("main", "test", "Perform self-tests rather than simulation",
 		&testOn, FALSE);
@@ -2012,37 +2016,37 @@ void SimParameters::config_parser_misc(ParseOptions &opts) {
      FALSE);
 
    // Maximum Partition options
-   opts.optional("ldBalancer", "maxSelfPart",
+   opts.optional("ldBalancer", "maxSelfPart", 
      "maximum number of self partitions in one patch", &maxSelfPart, 20);
    opts.range("maxSelfPart",POSITIVE);
-   opts.optional("ldBalancer", "maxPairPart",
+   opts.optional("ldBalancer", "maxPairPart", 
      "maximum number of pair partitions in one patch", &maxPairPart, 8);
    opts.range("maxPairPart",POSITIVE);
-   opts.optional("ldBalancer", "numAtomsSelf",
-		 "maximum number of atoms in one self compute distribution",
+   opts.optional("ldBalancer", "numAtomsSelf", 
+		 "maximum number of atoms in one self compute distribution", 
 		 &numAtomsSelf, 154);
    opts.range("numAtomsSelf",NOT_NEGATIVE);
 
-   opts.optional("ldBalancer", "numAtomsSelf2",
-		 "maximum number of atoms in one self compute distribution",
+   opts.optional("ldBalancer", "numAtomsSelf2", 
+		 "maximum number of atoms in one self compute distribution", 
 		 &numAtomsSelf2, 154);
    opts.range("numAtomsSelf2",NOT_NEGATIVE);
 
-   opts.optional("ldBalancer", "numAtomsPair",
-		 "maximum number of atoms in one pair compute distribution",
+   opts.optional("ldBalancer", "numAtomsPair", 
+		 "maximum number of atoms in one pair compute distribution", 
 		 &numAtomsPair, 318);
    opts.range("numAtomsPair",NOT_NEGATIVE);
-   opts.optional("ldBalancer", "numAtomsPair2",
-               "maximum number of atoms in one pair compute distribution",
+   opts.optional("ldBalancer", "numAtomsPair2", 
+               "maximum number of atoms in one pair compute distribution", 
                &numAtomsPair2, 637);
    opts.range("numAtomsPair2",NOT_NEGATIVE);
-   opts.optional("main", "minAtomsPerPatch",
-               "minimum average atoms per patch",
+   opts.optional("main", "minAtomsPerPatch", 
+               "minimum average atoms per patch", 
                &minAtomsPerPatch, 40);
    opts.range("minAtomsPerPatch",NOT_NEGATIVE);
 
    // Maximum exclusion flags per atom
-   opts.optional("main", "maxExclusionFlags",
+   opts.optional("main", "maxExclusionFlags", 
      "maximum number of exclusion flags per atom", &maxExclusionFlags, 256);
    opts.range("maxExclusionFlags",POSITIVE);
 
@@ -2136,7 +2140,7 @@ void SimParameters::readExtendedSystem(const char *filename, Lattice *latptr) {
    if ( latptr ) {
      Lattice test;
      test.set(cellBasisVector1,cellBasisVector2,cellBasisVector3,cellOrigin);
-
+    
      if ( test.a_p() && ! lattice.a_p() ) {
        NAMD_die("cellBasisVector1 added during atom reinitialization");
      }
@@ -2167,7 +2171,7 @@ extern char *gWorkDir;
 #endif
 
 void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&cwd) {
-
+   
    int len;    //  String length
    StringList *current; //  Pointer to config option list
 
@@ -2207,7 +2211,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
    }
 
 #ifdef MEM_OPT_VERSION
-   if(cwd!=NULL)namdWorkDir = cwd;
+   if(cwd!=NULL)namdWorkDir = cwd;     
    else namdWorkDir = gWorkDir;
    int dirlen = strlen(namdWorkDir);
    //only support the path representation on UNIX-like platforms
@@ -2219,7 +2223,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
      tmpDir = new char[dirlen+2];
      tmpDir[dirlen]='/';
      tmpDir[dirlen+1]=0;
-   }
+   } 
    memcpy(tmpDir, namdWorkDir, dirlen);
    namdWorkDir = tmpDir;
  //finished recording the per atom files, free the space for gWorkDir
@@ -2253,7 +2257,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
      if (!opts.defined("parameters"))
        NAMD_die("parameters not found in the configuration file!");
    }
-
+   
    // In any case, there should be either "coordinates" or
    // "ambercoor", but not both
    if (opts.defined("coordinates") && opts.defined("ambercoor"))
@@ -2267,7 +2271,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
    //  Make sure that both a temperature and a velocity PDB were
    //  specified
    if (opts.defined("temperature") &&
-       (opts.defined("velocities") || opts.defined("binvelocities")) )
+       (opts.defined("velocities") || opts.defined("binvelocities")) ) 
    {
       NAMD_die("Cannot specify both an initial temperature and a velocity file");
    }
@@ -2276,7 +2280,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
 //record the absolute file name for binAtomFile, binCoorFile and binVelFile etc.
    binAtomFile = NULL;
    binCoorFile = NULL;
-   binVelFile = NULL;
+   binVelFile = NULL;   
    binRefFile = NULL;
 
    char *curfile = NULL;
@@ -2288,7 +2292,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
      //check whether it is an absolute path
      //WARNING: Only works on Unix-like platforms!
      //Needs to fix on Windows platform.
-     //-Chao Mei
+     //-Chao Mei     
      //adding 5 because of ".bin"+"\0"
      binAtomFile = new char[filelen+5];
      memcpy(binAtomFile, curfile, filelen);
@@ -2356,7 +2360,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
      CmiAssert(filelen+dirlen <= 120); //leave 8 chars for file suffix
      memcpy(outputFilename, namdWorkDir, dirlen);
      memcpy(outputFilename+dirlen, tmpout, filelen);
-     outputFilename[filelen+dirlen] = 0;
+     outputFilename[filelen+dirlen] = 0;     
      delete [] tmpout;
    }
 
@@ -2368,7 +2372,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
      CmiAssert(filelen+dirlen <= 120); //leave 8 chars for file suffix
      memcpy(dcdFilename, namdWorkDir, dirlen);
      memcpy(dcdFilename+dirlen, tmpout, filelen);
-     dcdFilename[filelen+dirlen] = 0;
+     dcdFilename[filelen+dirlen] = 0;     
      delete [] tmpout;
    }
 
@@ -2380,7 +2384,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
      CmiAssert(filelen+dirlen <= 120); //leave 8 chars for file suffix
      memcpy(velDcdFilename, namdWorkDir, dirlen);
      memcpy(velDcdFilename+dirlen, tmpout, filelen);
-     velDcdFilename[filelen+dirlen] = 0;
+     velDcdFilename[filelen+dirlen] = 0;     
      delete [] tmpout;
    }
 
@@ -2392,7 +2396,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
      CmiAssert(filelen+dirlen <= 120); //leave 8 chars for file suffix
      memcpy(forceDcdFilename, namdWorkDir, dirlen);
      memcpy(forceDcdFilename+dirlen, tmpout, filelen);
-     forceDcdFilename[filelen+dirlen] = 0;
+     forceDcdFilename[filelen+dirlen] = 0;     
      delete [] tmpout;
    }
 
@@ -2404,20 +2408,20 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
      CmiAssert(filelen+dirlen <= 120); //leave 8 chars for file suffix
      memcpy(restartFilename, namdWorkDir, dirlen);
      memcpy(restartFilename+dirlen, tmpout, filelen);
-     restartFilename[filelen+dirlen] = 0;
+     restartFilename[filelen+dirlen] = 0;     
      delete [] tmpout;
    }
 
    delete [] namdWorkDir;
 
-   if (opts.defined("numinputprocs")) {
+   if (opts.defined("numinputprocs")) {	
      if(numinputprocs > CkNumPes()) {
        iout << iWARN << "The number of input processors exceeds the total number of processors. Resetting to half of the number of total processors.\n" << endi;
        numinputprocs = (CkNumPes()>>1)+(CkNumPes()&1);
      }
    }
 
-   if (opts.defined("numoutputprocs")) {
+   if (opts.defined("numoutputprocs")) {	
      if(numoutputprocs > CkNumPes()) {
        iout << iWARN << "The number of output processors exceeds the total number of processors. Resetting to half of the number of total processors.\n" << endi;
        numoutputprocs = (CkNumPes()>>1)+(CkNumPes()&1);
@@ -2425,24 +2429,24 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
    }
 
    #if !OUTPUT_SINGLE_FILE
-   //create directories for multi-file output scheme
+   //create directories for multi-file output scheme   
    create_output_directories("coor");
    create_output_directories("vel");
    if(dcdFrequency) {
 	   create_output_directories("dcd");
 	   if(opts.defined("dcdfile")){
-		   iout << iWARN << "The dcd file output has been changed to directory: " << outputFilename << ".\n" << endi;
+		   iout << iWARN << "The dcd file output has been changed to directory: " << outputFilename << ".\n" << endi; 
 	   }
    }
    if (velDcdFrequency) {
 	   create_output_directories("veldcd");
-	   if(opts.defined("veldcdfile")){
+	   if(opts.defined("veldcdfile")){       
 		   iout << iWARN << "The veldcd file output has been changed to directory: " << outputFilename << ".\n" << endi;
 	   }
    }
    if (forceDcdFrequency) {
 	   create_output_directories("forcedcd");
-	   if(opts.defined("forcedcdfile")){
+	   if(opts.defined("forcedcdfile")){       
 		   iout << iWARN << "The forcedcd file output has been changed to directory: " << outputFilename << ".\n" << endi;
 	   }
    }
@@ -2472,7 +2476,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
    } else {
      velDcdFilename[0] = STRINGNULL;
    }
-
+   
    if (forceDcdFrequency) {
      if (! opts.defined("forcedcdfile")) {
        strcpy(forceDcdFilename,outputFilename);
@@ -2481,7 +2485,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
    } else {
      forceDcdFilename[0] = STRINGNULL;
    }
-
+   
    if (xstFrequency) {
      if (! opts.defined("xstfile")) {
        strcpy(xstFilename,outputFilename);
@@ -2513,22 +2517,22 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
    if (!amberOn)
    { //****** BEGIN CHARMM/XPLOR type changes
      //// set default
-     if (!paraTypeXplorOn && !paraTypeCharmmOn)
+     if (!paraTypeXplorOn && !paraTypeCharmmOn) 
      {
        paraTypeXplorOn = TRUE;
      }
      //// make sure that there is just one type of input parameters specified
-     if (paraTypeXplorOn && paraTypeCharmmOn)
+     if (paraTypeXplorOn && paraTypeCharmmOn) 
      {
        NAMD_die("Please specify either XPLOR or CHARMM format for parameters!");
      }
      //****** END CHARMM/XPLOR type changes
    }
 
-
+   
    //  If minimization isn't on, must have a temp or velocity
-   if (!(minimizeOn||minimizeCGOn) && !opts.defined("temperature") &&
-       !opts.defined("velocities") && !opts.defined("binvelocities") )
+   if (!(minimizeOn||minimizeCGOn) && !opts.defined("temperature") && 
+       !opts.defined("velocities") && !opts.defined("binvelocities") ) 
    {
       NAMD_die("Must have either an initial temperature or a velocity file");
    }
@@ -2611,8 +2615,8 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
      else
      {
        char err_msg[129];
-       sprintf(err_msg,
-          "Illegal value '%s' for 'splitPatch' in configuration file",
+       sprintf(err_msg, 
+          "Illegal value '%s' for 'splitPatch' in configuration file", 
        s);
        NAMD_die(err_msg);
      }
@@ -2715,7 +2719,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
        //GoMethod = GO_LOWMEM;
      }
      else {
-       char err_msg[129];
+       char err_msg[129];     
        sprintf(err_msg,
 	       "Illegal value '%s' for 'GoMethod' in configuration file",
 	       s);
@@ -2753,8 +2757,8 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
   {
     char err_msg[129];
 
-    sprintf(err_msg,
-       "Illegal value '%s' for 'MTSAlgorithm' in configuration file",
+    sprintf(err_msg, 
+       "Illegal value '%s' for 'MTSAlgorithm' in configuration file", 
        s);
     NAMD_die(err_msg);
   }
@@ -2780,8 +2784,8 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
   {
     char err_msg[129];
 
-    sprintf(err_msg,
-       "Illegal value '%s' for 'longSplitting' in configuration file",
+    sprintf(err_msg, 
+       "Illegal value '%s' for 'longSplitting' in configuration file", 
        s);
     NAMD_die(err_msg);
   }
@@ -2794,7 +2798,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
    }
    else
    {
-      opts.get("rigidBonds", s);
+      opts.get("rigidBonds", s); 
       if (!strcasecmp(s, "all"))
       {
           rigidBonds = RIGID_ALL;
@@ -2802,20 +2806,20 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
       else if (!strcasecmp(s, "water"))
       {
            rigidBonds = RIGID_WATER;
-      }
+      } 
       else if (!strcasecmp(s, "none"))
       {
            rigidBonds = RIGID_NONE;
-      }
+      } 
       else
       {
         char err_msg[256];
-        sprintf(err_msg,
+        sprintf(err_msg, 
           "Illegal value '%s' for 'rigidBonds' in configuration file", s);
         NAMD_die(err_msg);
       }
    }
-
+   
    //  Take care of switching stuff
    if (switchingActive)
    {
@@ -2828,7 +2832,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
      {
        char err_msg[129];
 
-       sprintf(err_msg,
+       sprintf(err_msg, 
          "switchDist muct be between 0 and cutoff, which is %f", cutoff);
        NAMD_die(err_msg);
      }
@@ -2837,15 +2841,15 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
 
    if ( martiniSwitching )
    {
-     if ( ! switchingActive )
-     {
+     if ( ! switchingActive ) 
+     { 
        NAMD_die("martiniSwitching requires switching");
      }
-     if ( vdwForceSwitching )
-     {
-       NAMD_die("martiniSwitching and vdwForceSwitching are exclusive to one another. Select only one.");
+     if ( vdwForceSwitching ) 
+     { 
+       NAMD_die("martiniSwitching and vdwForceSwitching are exclusive to one another. Select only one."); 
      }
-     if ( dielectric != 15.0 && ! martiniDielAllow )
+     if ( dielectric != 15.0 && ! martiniDielAllow ) 
      {
        iout << iWARN << "USE DIELECTRIC OF 15.0 WITH MARTINI.\n";
        iout << iWARN << "SETTING dielectric 15.0\n";
@@ -2939,7 +2943,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
       }
 
       if (alpha_cutoff > patchDimension) {
-        patchDimension = alpha_cutoff;
+        patchDimension = alpha_cutoff; 
       }
       //calculate kappa
       BigReal tmp = (initialTemp > 0) ? initialTemp : 300;
@@ -3015,20 +3019,20 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
 
    //  Set the default value for the maximum movement parameter
    //  for minimization
-   if (minimizeOn && (maximumMove == 0.0))
+   if (minimizeOn && (maximumMove == 0.0)) 
    {
       maximumMove = 0.75 * pairlistDist/stepsPerCycle;
    }
    if (adaptTempOn) {
-     if (!adaptTempRescale && !adaptTempLangevin)
+     if (!adaptTempRescale && !adaptTempLangevin) 
         NAMD_die("Adaptive tempering needs to be coupled to either the Langevin thermostat or velocity rescaling.");
      if (opts.defined("adaptTempInFile") && (opts.defined("adaptTempTmin") ||
                                              opts.defined("adaptTempTmax") ||
-                                             adaptTempBins != 0))
+                                             adaptTempBins != 0)) 
         NAMD_die("cannot simultaneously specify adaptTempInFile and any of {adaptTempTmin, adaptTempTmax,adaptTempBins} as these are read from the input file");
      if (!opts.defined("adaptTempInFile") && !(opts.defined("adaptTempTmin") &&
                                              opts.defined("adaptTempTmax") &&
-                                             adaptTempBins != 0 ))
+                                             adaptTempBins != 0 ))  
         NAMD_die("Need to specify either adaptTempInFile or all of {adaptTempTmin, adaptTempTmax,adaptTempBins} if adaptTempMD is on.");
    }
    if (langevinOn) {
@@ -3040,7 +3044,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
      if ( opts.defined("langevinHydrogen") && langevinDamping == 0.0 )
        NAMD_die("langevinHydrogen requires langevinDamping to be set.");
    }
-
+   
    // BEGIN LA
    if (loweAndersenOn) {
        if (!opts.defined("loweAndersenRate")) loweAndersenRate = 100;
@@ -3128,7 +3132,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
   reassignHold = 0.0;
    }
 
-   if (!opts.defined("seed"))
+   if (!opts.defined("seed")) 
    {
       randomSeed = (unsigned int) time(NULL) + 31530001 * CmiMyPartition();
    }
@@ -3150,7 +3154,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
        iout << iWARN << "Martini switching disabled for alchemical interactions.\n" << endi;
      }
 
-     if (!opts.defined("alchType"))
+     if (!opts.defined("alchType")) 
      {
        NAMD_die("Must define type of alchemical simulation: fep or ti\n");
      }
@@ -3183,12 +3187,12 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
      if (alchLambda < 0.0 || alchLambda > 1.0 || alchLambda2 < 0.0 || alchLambda2 > 1.0)
         NAMD_die("Alchemical lambda values should be in the range [0.0, 1.0]\n");
 
-     if ( alchOn && alchVdwLambdaEnd > 1.0)
+     if ( alchOn && alchVdwLambdaEnd > 1.0) 
         NAMD_die("Gosh tiny Elvis, you kicked soft-core in the van der Waals! alchVdwLambdaEnd should be in the range [0.0, 1.0]\n");
 
-     if ( alchOn && alchElecLambdaStart > 1.0)
+     if ( alchOn && alchElecLambdaStart > 1.0) 
         NAMD_die("alchElecLambdaStart should be in the range [0.0, 1.0]\n");
-
+     
      if (alchFepOn)
      {
        if (!opts.defined("alchoutfile")) {
@@ -3199,19 +3203,19 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
   	   if( (!alchFepWhamOn) && ( (!opts.defined("alchLambda")) || (!opts.defined("alchLambda2"))) )	{
 	  	   NAMD_die("alchFepOn is on, but alchLambda or alchLambda2 is not set.");
 	     }
-
+       
        if(alchRepLambda > 1.0)	NAMD_die("alchRepLambda should be in the range [0.0, 1.0].");
        else if(alchRepLambda >= 0.0)	alchFepWCARepuOn = true;
        else	alchFepWCARepuOn = false;
-
+ 
        if(alchDispLambda > 1.0)	NAMD_die("alchDispLambda should be in the range [0.0, 1.0].");
        else if(alchDispLambda >= 0.0)	alchFepWCADispOn = true;
        else	alchFepWCADispOn = false;
-
+ 
        if(alchElecLambda > 1.0)	NAMD_die("alchElecLambda should be in the range [0.0, 1.0].");
        else if(alchElecLambda >= 0.0)	alchFepElecOn = true;
        else	alchFepElecOn = false;
-
+       
        if( (alchFepWCARepuOn || alchFepWCADispOn || alchFepElecOn) && (!alchFepWhamOn))
        	  NAMD_die("alchFepWhamOn has to be on if one of alchFepWCARepuOn/alchFepWCADispOn/alchFepElecOn is set.");
        if (alchFepWCARepuOn && alchFepWCADispOn)
@@ -3226,7 +3230,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
            NAMD_die("When using WCA repulsion,  alchFepWCArcut2 must be larger than alchFEPWCArcut1, alchFepWCArcut3 must be larger than alchFEPWCArcut2!");
 //       if ((alchFepWCARepuOn || alchFepWCADispOn) && (alchElecLambdaStart < 1.0) )
 //           NAMD_die("When using WCA decomposition,  repulsion, dispersion and electrostatic must be in 3 different stages!");
-       if(alchFepWhamOn && (alchRepLambda < 0.0) && (alchDispLambda < 0.0) && (alchElecLambda < 0.0) )
+       if(alchFepWhamOn && (alchRepLambda < 0.0) && (alchDispLambda < 0.0) && (alchElecLambda < 0.0) )	
        	   NAMD_die("One of alchRepLambda, alchDispLambda and alchElecLambda should be set up when alchFepWhamOn is true!");
        if(alchFepWhamOn && (!alchFepElecOn) )	{
        	 alchElecLambda = 0.0;
@@ -3236,10 +3240,10 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
      }
      else if (alchThermIntOn)
      {
-       if (!opts.defined("alchoutfile")) {
-         strcpy(alchOutFile, outputFilename);
-         strcat(alchOutFile, ".ti");
-       }
+       if (!opts.defined("alchoutfile")) { 
+         strcpy(alchOutFile, outputFilename); 
+         strcat(alchOutFile, ".ti"); 
+       } 
      }
 
    } else {
@@ -3268,7 +3272,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
    if ( lesOn && ( lesFactor < 1 || lesFactor > 255 ) ) {
      NAMD_die("lesFactor must be positive and less than 256");
    }
-   if ((pairInteractionOn && alchFepOn) || (pairInteractionOn && lesOn) || (pairInteractionOn && alchThermIntOn) )
+   if ((pairInteractionOn && alchFepOn) || (pairInteractionOn && lesOn) || (pairInteractionOn && alchThermIntOn) ) 
      NAMD_die("Sorry, pair interactions may not be calculated when LES, FEP or TI is enabled.");
 
    // Drude model
@@ -3415,10 +3419,10 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
   //Some constraints on the values of load balancing parameters.
   //The reason is related to communication schemes used in sending proxy
   //data. If the step immediately after the load balancing is not a step
-  //for atom migration, then it's possible there are some necessary information
+  //for atom migration, then it's possible there are some necessary information 
   // missing inside the ProxyPatch which will crash the program. Therefore,
   // It's better that the step immediately after the load balancing be a step
-  // for atom migration so that the some overhead in Proxy msgs are removed.
+  // for atom migration so that the some overhead in Proxy msgs are removed. 
   // --Chao Mei
   if(ldbPeriod%stepsPerCycle!=0 || firstLdbStep%stepsPerCycle!=0) {
       iout << iWARN << "In memory optimized version, the ldbPeriod parameter or firstLdbStep parameter is better set to be a multiple of stepsPerCycle parameter!\n";
@@ -3653,7 +3657,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
    if ( ! pairInteractionOn ) {
      pairInteractionSelf = 0;
    }
-   if ( pairInteractionOn && !pairInteractionSelf && !config->find("pairInteractionGroup2"))
+   if ( pairInteractionOn && !pairInteractionSelf && !config->find("pairInteractionGroup2")) 
      NAMD_die("pairInteractionGroup2 must be specified");
 
    if ( ! fixedAtomsOn ) {
@@ -3663,34 +3667,34 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
    if ( gridforceOn || mgridforceOn ) {
      parse_mgrid_params(config);
    }
-
+      
    if (!opts.defined("constraints"))
    {
-     constraintExp = 0;
-     constraintScaling = 1.0;
+     constraintExp = 0;     
+     constraintScaling = 1.0;     
 
      //****** BEGIN selective restraints (X,Y,Z) changes
      selectConstraintsOn = FALSE;
      //****** END selective restraints (X,Y,Z) changes
-
-     //****** BEGIN moving constraints changes
+ 
+     //****** BEGIN moving constraints changes 
      movingConstraintsOn = FALSE;
-     //****** END moving constraints changes
-     //****** BEGIN rotating constraints changes
+     //****** END moving constraints changes 
+     //****** BEGIN rotating constraints changes 
      rotConstraintsOn = FALSE;
-    //****** END rotating constraints changes
-   }
-   //****** BEGIN rotating constraints changes
+    //****** END rotating constraints changes 
+   } 
+   //****** BEGIN rotating constraints changes 
    else {
      if (rotConstraintsOn) {
        rotConsAxis = rotConsAxis.unit();
      }
    }
-   if(opts.defined("rotConstraints")
+   if(opts.defined("rotConstraints") 
       && opts.defined("movingConstraints")) {
      NAMD_die("Rotating and moving constraints are mutually exclusive!");
    }
-   //****** END rotating constraints changes
+   //****** END rotating constraints changes 
 
    //****** BEGIN selective restraints (X,Y,Z) changes
    if(opts.defined("selectConstraints") && !opts.defined("selectConstrX")
@@ -3705,9 +3709,9 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
    //****** END selective restraints (X,Y,Z) changes
 
 
-   //****** BEGIN SMD constraints changes
-
-   if (!opts.defined("SMD")) {
+   //****** BEGIN SMD constraints changes 
+   
+   if (!opts.defined("SMD")) {     
      SMDOn = FALSE;
    }
 
@@ -3725,9 +3729,9 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
        NAMD_die("SMDOutputFreq must be a multiple of stepsPerCycle");
      }
    }
-
-   //****** END SMD constraints changes
-
+     
+   //****** END SMD constraints changes 
+   
    if (!sphericalBCOn)
      {
   sphericalBCr1 = 0.0;
@@ -3778,7 +3782,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
    }
 
    if (!stirOn)
-   {
+   { 
      stirFilename[0] = STRINGNULL;
      stirStartingTheta = 0.0;
      stirVel = 0.0;
@@ -3790,12 +3794,12 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
      stirPivot.y = 0.0;
      stirPivot.z = 0.0;
    }
-
+  
    if (!opts.defined("langevin"))
    {
   langevinTemp = 0.0;
    }
-
+   
    // BEGIN LA
    if (!opts.defined("loweAndersen"))
    {
@@ -3814,9 +3818,9 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
        NAMD_die("Hydrogen bond cutoff distance must be <= pairlist distance");
    }
 
-   // If we're doing pair interaction, set
-   // outputEnergies to 1 to make NAMD not die (the other nonbonded code paths
-   // aren't defined when these options are enabled), and set nonbondedFreq to
+   // If we're doing pair interaction, set 
+   // outputEnergies to 1 to make NAMD not die (the other nonbonded code paths 
+   // aren't defined when these options are enabled), and set nonbondedFreq to 
    // 1 to avoid getting erroneous output.  Warn the user of what we're doing.
    if (pairInteractionOn) {
 	   if (outputEnergies != 1) {
@@ -3923,7 +3927,7 @@ void SimParameters::print_config(ParseOptions &opts, ConfigList *config, char *&
      noPatchesOnZero = TRUE;
    }
    if ( noPatchesOnZero ) iout << iINFO << "REMOVING PATCHES FROM PROCESSOR 0\n";
-   if ( noPatchesOnOne ) iout << iINFO << "REMOVING PATCHES FROM PROCESSOR 1\n";
+   if ( noPatchesOnOne ) iout << iINFO << "REMOVING PATCHES FROM PROCESSOR 1\n";     
    iout << endi;
 
 #if defined(NAMD_CUDA) || defined(NAMD_MIC)
@@ -3940,7 +3944,7 @@ void SimParameters::print_config(ParseOptions &opts, ConfigList *config, char *&
    }
    iout << iINFO << "MIN ATOMS PER PATCH    " << minAtomsPerPatch << "\n"
         << endi;
-
+   
    if (initialTemp < 0)
    {
   current = config->find("velocities");
@@ -3954,7 +3958,7 @@ void SimParameters::print_config(ParseOptions &opts, ConfigList *config, char *&
    }
    else
    {
-  iout << iINFO << "INITIAL TEMPERATURE    "
+  iout << iINFO << "INITIAL TEMPERATURE    " 
      << initialTemp << "\n";
    }
    iout << endi;
@@ -3977,7 +3981,7 @@ void SimParameters::print_config(ParseOptions &opts, ConfigList *config, char *&
      iout << "\n" << endi;
    }
 
-   iout << iINFO << "DIELECTRIC             "
+   iout << iINFO << "DIELECTRIC             " 
       << dielectric << "\n";
 
    if ( nonbondedScaling != 1.0 )
@@ -4023,11 +4027,11 @@ void SimParameters::print_config(ParseOptions &opts, ConfigList *config, char *&
 
    if (dcdFrequency > 0)
    {
-     iout << iINFO << "DCD FILENAME           "
+     iout << iINFO << "DCD FILENAME           " 
         << dcdFilename << "\n";
-     iout << iINFO << "DCD FREQUENCY          "
+     iout << iINFO << "DCD FREQUENCY          " 
         << dcdFrequency << "\n";
-     iout << iINFO << "DCD FIRST STEP         "
+     iout << iINFO << "DCD FIRST STEP         " 
         << ( ((firstTimestep + dcdFrequency)/dcdFrequency)*dcdFrequency ) << "\n";
      if ( dcdUnitCell ) {
        iout << iINFO << "DCD FILE WILL CONTAIN UNIT CELL DATA\n";
@@ -4038,12 +4042,12 @@ void SimParameters::print_config(ParseOptions &opts, ConfigList *config, char *&
      iout << iINFO << "NO DCD TRAJECTORY OUTPUT\n";
    }
    iout << endi;
-
+   
    if (xstFrequency > 0)
    {
-     iout << iINFO << "XST FILENAME           "
+     iout << iINFO << "XST FILENAME           " 
         << xstFilename << "\n";
-     iout << iINFO << "XST FREQUENCY          "
+     iout << iINFO << "XST FREQUENCY          " 
         << xstFrequency << "\n";
    }
    else
@@ -4051,14 +4055,14 @@ void SimParameters::print_config(ParseOptions &opts, ConfigList *config, char *&
      iout << iINFO << "NO EXTENDED SYSTEM TRAJECTORY OUTPUT\n";
    }
    iout << endi;
-
+   
    if (velDcdFrequency > 0)
    {
-     iout << iINFO << "VELOCITY DCD FILENAME    "
+     iout << iINFO << "VELOCITY DCD FILENAME    " 
         << velDcdFilename << "\n";
-     iout << iINFO << "VELOCITY DCD FREQUENCY   "
+     iout << iINFO << "VELOCITY DCD FREQUENCY   " 
         << velDcdFrequency << "\n";
-     iout << iINFO << "VELOCITY DCD FIRST STEP  "
+     iout << iINFO << "VELOCITY DCD FIRST STEP  " 
         << ( ((firstTimestep + velDcdFrequency)/velDcdFrequency)*velDcdFrequency ) << "\n";
    }
    else
@@ -4066,14 +4070,14 @@ void SimParameters::print_config(ParseOptions &opts, ConfigList *config, char *&
      iout << iINFO << "NO VELOCITY DCD OUTPUT\n";
    }
    iout << endi;
-
+   
    if (forceDcdFrequency > 0)
    {
-     iout << iINFO << "FORCE DCD FILENAME     "
+     iout << iINFO << "FORCE DCD FILENAME     " 
         << forceDcdFilename << "\n";
-     iout << iINFO << "FORCE DCD FREQUENCY    "
+     iout << iINFO << "FORCE DCD FREQUENCY    " 
         << forceDcdFrequency << "\n";
-     iout << iINFO << "FORCE DCD FIRST STEP   "
+     iout << iINFO << "FORCE DCD FIRST STEP   " 
         << ( ((firstTimestep + forceDcdFrequency)/forceDcdFrequency)*forceDcdFrequency ) << "\n";
    }
    else
@@ -4081,8 +4085,8 @@ void SimParameters::print_config(ParseOptions &opts, ConfigList *config, char *&
      iout << iINFO << "NO FORCE DCD OUTPUT\n";
    }
    iout << endi;
-
-   iout << iINFO << "OUTPUT FILENAME        "
+   
+   iout << iINFO << "OUTPUT FILENAME        " 
       << outputFilename << "\n" << endi;
    if (binaryOutput)
    {
@@ -4103,7 +4107,7 @@ void SimParameters::print_config(ParseOptions &opts, ConfigList *config, char *&
    {
      iout << iINFO << "RESTART FILENAME       "
         << restartFilename << "\n";
-     iout << iINFO << "RESTART FREQUENCY      "
+     iout << iINFO << "RESTART FREQUENCY      " 
         << restartFrequency << "\n";
   if (restartSave) {
     iout << iINFO << "RESTART FILES WILL NOT BE OVERWRITTEN\n";
@@ -4118,14 +4122,14 @@ void SimParameters::print_config(ParseOptions &opts, ConfigList *config, char *&
   }
    }
    iout << endi;
-
+   
    if (switchingActive)
    {
       iout << iINFO << "SWITCHING ACTIVE\n";
       if ( vdwForceSwitching ) {
         iout << iINFO << "VDW FORCE SWITCHING ACTIVE\n";
       }
-      if ( martiniSwitching ) {
+      if ( martiniSwitching ) { 
         iout << iINFO << "MARTINI RESIDUE-BASED COARSE-GRAIN SWITCHING ACTIVE\n";
       }
       iout << iINFO << "SWITCHING ON           "
@@ -4135,7 +4139,7 @@ void SimParameters::print_config(ParseOptions &opts, ConfigList *config, char *&
    }
    else
    {
-      iout << iINFO << "CUTOFF                 "
+      iout << iINFO << "CUTOFF                 " 
          << cutoff << "\n";
    }
 
@@ -4153,7 +4157,7 @@ void SimParameters::print_config(ParseOptions &opts, ConfigList *config, char *&
    usePairlists = ( CkNumPes() >= pairlistMinProcs );
 
 #ifdef OPENATOM_VERSION
-if ( openatomOn )
+if ( openatomOn ) 
 {
   iout << iINFO << "OPENATOM QM/MM CAR-PARINELLO ACTIVE\n";
   iout << iINFO << "OPENATOM CONFIG FILE:  " << openatomConfig << "\n";
@@ -4172,7 +4176,7 @@ if ( openatomOn )
      iout << iINFO << "CUDA ACCELERATION REQUIRES PAIRLISTS\n";
    }
 #endif
-
+     
    iout << iINFO << "PAIRLISTS " << ( usePairlists ? "ENABLED" : "DISABLED" )
 							<< "\n" << endi;
 
@@ -4181,7 +4185,7 @@ if ( openatomOn )
    if ( splitPatch == SPLIT_PATCH_HYDROGEN ) {
       iout << iINFO << "HYDROGEN GROUP CUTOFF  " << hgroupCutoff << "\n";
    }
-
+   
    iout << iINFO << "PATCH DIMENSION        "
             << patchDimension << "\n";
 
@@ -4197,35 +4201,35 @@ if ( openatomOn )
    if (mergeCrossterms) {
       iout << iINFO << "CROSSTERM ENERGY INCLUDED IN DIHEDRAL\n" << endi;
    }
-
+   
    if (outputMomenta != 0)
    {
       iout << iINFO << "MOMENTUM OUTPUT STEPS  "
          << outputMomenta << "\n";
       iout << endi;
    }
-
+   
    if (outputTiming != 0)
    {
       iout << iINFO << "TIMING OUTPUT STEPS    "
          << outputTiming << "\n";
       iout << endi;
    }
-
+   
    if (outputCudaTiming != 0)
    {
       iout << iINFO << "CUDA TIMING OUTPUT STEPS    "
          << outputCudaTiming << "\n";
       iout << endi;
    }
-
+   
    if (outputPressure != 0)
    {
       iout << iINFO << "PRESSURE OUTPUT STEPS  "
          << outputPressure << "\n";
       iout << endi;
    }
-
+   
    if (fixedAtomsOn)
    {
       iout << iINFO << "FIXED ATOMS ACTIVE\n";
@@ -4255,7 +4259,7 @@ if ( openatomOn )
          << constraintScaling << "\n";
       }
 
-      //****** BEGIN selective restraints (X,Y,Z) changes
+      //****** BEGIN selective restraints (X,Y,Z) changes 
 
       if (selectConstraintsOn) {
 	iout << iINFO << "SELECTED CARTESIAN COMPONENTS OF HARMONIC RESTRAINTS ACTIVE\n";
@@ -4269,7 +4273,7 @@ if ( openatomOn )
         if (constrZOn)
 	iout << iINFO << "RESTRAINING Z-COMPONENTS OF CARTESIAN COORDINATES!\n";
       }
-      //****** END selective restraints (X,Y,Z) changes
+      //****** END selective restraints (X,Y,Z) changes 
 
       if (sphericalConstraintsOn) {
 	iout << iINFO << "SPHERICAL HARMONIC CONSTRAINTS ACTIVE\n";
@@ -4277,27 +4281,27 @@ if ( openatomOn )
       }
       iout << endi;
 
-      //****** BEGIN moving constraints changes
+      //****** BEGIN moving constraints changes 
 
       if (movingConstraintsOn) {
 	iout << iINFO << "MOVING HARMONIC CONSTRAINTS ACTIVE\n";
 
 	iout << iINFO << "MOVING CONSTRAINT VELOCITY    "
 	     << movingConsVel << " ANGSTROM/TIMESTEP\n";
-
+	
 	iout << iINFO << "ALL CONSTRAINED ATOMS WILL MOVE\n";
       }
-      //****** END moving constraints changes
+      //****** END moving constraints changes 
       iout << endi;
 
-      //****** BEGIN rotating constraints changes
+      //****** BEGIN rotating constraints changes 
 
       if (rotConstraintsOn) {
 	iout << iINFO << "ROTATING HARMONIC CONSTRAINTS ACTIVE\n";
 
 	iout << iINFO << "AXIS OF ROTATION    "
 	     << rotConsAxis << "\n";
-
+	
 	iout << iINFO << "PIVOT OF ROTATION   "
 	     << rotConsPivot << "\n";
 
@@ -4305,67 +4309,67 @@ if ( openatomOn )
 	     << rotConsVel << " DEGREES/TIMESTEP\n";
       }
       iout << endi;
-      //****** END rotating constraints changes
+      //****** END rotating constraints changes 
    }
 
    // moving drag
    if (movDragOn) {
      iout << iINFO << "MOVING DRAG ACTIVE.\n";
-
+     
      iout << iINFO << "MOVING DRAG MAIN PDB FILE "
 	  << movDragFile << "\n";
-
+     
      iout << iINFO << "MOVING DRAG GLOBAL VELOCITY (A/step) "
 	  << movDragGlobVel << "\n";
-
-     iout << iINFO << "MOVING DRAG LINEAR VELOCITY FILE "
+     
+     iout << iINFO << "MOVING DRAG LINEAR VELOCITY FILE " 
 	  << movDragVelFile << "\n";
-
+     
      iout << endi;
    }
-
+   
    // rotating drag
    if (rotDragOn) {
      iout << iINFO << "ROTATING DRAG ACTIVE.\n";
-
+     
      iout << iINFO << "ROTATING DRAG MAIN PDB FILE "
 	  << rotDragFile << "\n";
-
-     iout << iINFO << "ROTATING DRAG AXIS FILE "
+     
+     iout << iINFO << "ROTATING DRAG AXIS FILE " 
 	  << rotDragAxisFile << "\n";
-
-     iout << iINFO << "ROTATING DRAG PIVOT POINT FILE "
+     
+     iout << iINFO << "ROTATING DRAG PIVOT POINT FILE " 
 	  << rotDragPivotFile << "\n";
-
+     
      iout << iINFO << "ROTATING DRAG GLOBAL ANGULAR VELOCITY (deg/step) "
 	  << rotDragGlobVel << "\n";
-
-     iout << iINFO << "ROTATING DRAG ANGULAR VELOCITY FILE "
+     
+     iout << iINFO << "ROTATING DRAG ANGULAR VELOCITY FILE " 
 	  << rotDragVelFile << "\n";
-
+     
      iout << endi;
    }
-
+   
 
    // "constant" torque
    if (consTorqueOn) {
      iout << iINFO << "\"CONSTANT\" TORQUE ACTIVE.\n";
-
+     
      iout << iINFO << "\"CONSTANT\" TORQUE MAIN PDB FILE "
 	  << consTorqueFile << "\n";
-
-     iout << iINFO << "\"CONSTANT\" TORQUE AXIS FILE "
+     
+     iout << iINFO << "\"CONSTANT\" TORQUE AXIS FILE " 
 	  << consTorqueAxisFile << "\n";
-
-     iout << iINFO << "\"CONSTANT\" TORQUE PIVOT POINT FILE "
+     
+     iout << iINFO << "\"CONSTANT\" TORQUE PIVOT POINT FILE " 
 	  << consTorquePivotFile << "\n";
-
+     
      iout << iINFO << "\"CONSTANT\" TORQUE GLOBAL VALUE (Kcal/(mol*A^2)) "
 	  << consTorqueGlobVal << "\n";
-
-     iout << iINFO << "\"CONSTANT\" TORQUE DACTORS FILE "
+     
+     iout << iINFO << "\"CONSTANT\" TORQUE DACTORS FILE " 
 	  << consTorqueValFile << "\n";
-
+     
      iout << endi;
    }
 
@@ -4376,36 +4380,36 @@ if ( openatomOn )
      iout << iINFO << " and Aleksei Aksimentiev, J. Chem. Phys. 127:125101-10 (2007).\n";
      print_mgrid_params();
    }
-
-   //****** BEGIN SMD constraints changes
-
+   
+   //****** BEGIN SMD constraints changes 
+   
    if (SMDOn) {
      iout << iINFO << "SMD ACTIVE\n";
-
+     
      iout << iINFO << "SMD VELOCITY    "
 	  << SMDVel << " ANGSTROM/TIMESTEP\n";
-
+	
      iout << iINFO << "SMD DIRECTION   "
 	  << SMDDir << "\n";
-
-     iout << iINFO << "SMD K   "
+ 
+     iout << iINFO << "SMD K   " 
           << SMDk << "\n";
 
-     iout << iINFO << "SMD K2  "
+     iout << iINFO << "SMD K2  " 
           << SMDk2 << "\n";
 
      iout << iINFO << "SMD OUTPUT FREQUENCY   "
 	  << SMDOutputFreq << " TIMESTEPS\n";
-
-     iout << iINFO << "SMD FILE " << SMDFile << "\n";
+    
+     iout << iINFO << "SMD FILE " << SMDFile << "\n"; 
 
      iout << endi;
    }
-
-   //****** END SMD constraints changes
+   
+   //****** END SMD constraints changes 
 
    if (TMDOn) {
-     iout << iINFO << "TMD ACTIVE BETWEEN STEPS " << TMDFirstStep
+     iout << iINFO << "TMD ACTIVE BETWEEN STEPS " << TMDFirstStep 
           << " and " << TMDLastStep << "\n";
      iout << iINFO << "TMD K  " << TMDk << "\n";
      iout << iINFO << "TMD FILE  " << TMDFile << "\n";
@@ -4443,11 +4447,11 @@ if ( openatomOn )
      }
      iout << iINFO << "SYMMETRY FIRST FULL STEP " << symmetryFirstFullStep << "\n";
      if (symmetryLastFullStep == -1){
-      iout << iINFO << "SYMMETRY LAST FULL STEP " << "INFINITY" << "\n";
+      iout << iINFO << "SYMMETRY LAST FULL STEP " << "INFINITY" << "\n"; 
       //iout << iINFO << "FULL SYMMETRY FORCE BETWEEN STEPS " << symmetryFirstFullStep << " and " << "INFINITY" << "\n";
      }
      else {
-      iout << iINFO << "SYMMETRY LAST FULL STEP " << symmetryLastFullStep << "\n";
+      iout << iINFO << "SYMMETRY LAST FULL STEP " << symmetryLastFullStep << "\n"; 
      // iout << iINFO << "FULL SYMMETRY FORCE BETWEEN STEPS " << symmetryFirstFullStep << " and " << symmetryLastFullStep << "\n";
      }
 
@@ -4485,8 +4489,8 @@ if ( openatomOn )
      if (alchFepWCARepuOn)
      {
        iout << iINFO << "FEP WEEKS-CHANDLER-ANDERSEN DECOMPOSITION (REPULSION) ON\n";
-       iout << iINFO << "FEP WEEKS-CHANDLER-ANDERSEN RCUT1 = "
-            << alchFepWCArcut1 << " , RCUT2 = "
+       iout << iINFO << "FEP WEEKS-CHANDLER-ANDERSEN RCUT1 = " 
+            << alchFepWCArcut1 << " , RCUT2 = " 
             << alchFepWCArcut2  << " AND RCUT3 = " << alchFepWCArcut3 << "\n";
      }
    }
@@ -4523,15 +4527,15 @@ if ( openatomOn )
      if ( lesReduceMass ) iout << iINFO
        << "SCALING ENHANCED ATOM MASS BY 1/" << lesFactor << "\n";
    }
-
+   
    if ( pairInteractionOn ) {
      iout << iINFO << "PAIR INTERACTION CALCULATIONS ACTIVE\n";
-     iout << iINFO << "USING FLAG " << pairInteractionGroup1
+     iout << iINFO << "USING FLAG " << pairInteractionGroup1 
           << " FOR GROUP 1\n";
      if (pairInteractionSelf) {
        iout << iINFO << "COMPUTING ONLY SELF INTERACTIONS FOR GROUP 1 ATOMS\n";
      } else {
-       iout << iINFO << "USING FLAG " << pairInteractionGroup2
+       iout << iINFO << "USING FLAG " << pairInteractionGroup2 
             << " FOR GROUP 2\n";
      }
    }
@@ -4593,7 +4597,7 @@ if ( openatomOn )
        iout << iINFO << "TCL BOUNDARY FORCES ARGS     " << tclBCArgs << "\n";
      iout << endi;
    }
-
+   
    // Global forces configuration
 
    globalForcesOn = ( tclForcesOn || freeEnergyOn || miscForcesOn ||
@@ -4716,7 +4720,7 @@ if ( openatomOn )
    // should take this is a not too subtle hint about scale of this
    // violation of good coding practices.  Especially considering the
    // fact that this function still has about a thousand lines to go
-   // before its done, and is doomed to grow with new features.
+   // before its done, and is doomed to grow with new features. 
 
    if (COLDOn)
    {
@@ -4778,7 +4782,7 @@ if ( openatomOn )
    if (eFieldOn)
    {
       iout << iINFO << "ELECTRIC FIELD ACTIVE\n";
-
+      
       iout << iINFO << "E-FIELD VECTOR         ("
          << eField.x << ", " << eField.y
          << ", " << eField.z << ")\n";
@@ -4792,7 +4796,7 @@ if ( openatomOn )
       if (stirOn)
    {
       iout << iINFO << "STIRRING TORQUES ACTIVE\n";
-
+      
       iout << iINFO << "STIR STARTING THETA   (deg)  "<< stirStartingTheta << "\n";
       iout << iINFO << "STIR ANGULAR VELOCITY (deg/ts)   " << stirVel <<"\n";
       iout << iINFO << "STIR FORCE HARMONIC SPRING CONSTANT "<< stirK << "\n";
@@ -4803,7 +4807,7 @@ if ( openatomOn )
          << stirPivot.x << ", " << stirPivot.y
          << ", " << stirPivot.z << ")\n";
       current = config->find("stirFilename");
-
+		  
       iout << iINFO << "STIR ATOMS AND ORIGINAL POSITIONS FROM FILE    " <<current ->data << '\n';
       current = config->find("stirredAtomsCol");
       iout << iINFO <<"STIR FILE COLUMN " << current ->data << '\n';
@@ -4864,7 +4868,7 @@ if ( openatomOn )
       }
       iout << endi;
    }
-
+   
    // BEGIN LA
    if (loweAndersenOn)
    {
@@ -5010,9 +5014,9 @@ if ( openatomOn )
    if (berendsenPressureOn || langevinPistonOn) {
      iout << iINFO << "      CELL FLUCTUATION IS "
 	    << (useFlexibleCell?"AN":"") << "ISOTROPIC\n";
-     if (useConstantRatio)
+     if (useConstantRatio) 
        iout << iINFO << "    SHAPE OF CELL IS CONSTRAINED IN X-Y PLANE\n";
-     if (useConstantArea)
+     if (useConstantArea) 
        iout << iINFO << "    CONSTANT AREA PRESSURE CONTROL ACTIVE\n";
    }
 
@@ -5023,7 +5027,7 @@ if ( openatomOn )
           << surfaceTensionTarget << " DYN/CM\n";
      iout << endi;
      // multiply by 100 to convert from dyn/cm to bar-Angstroms, then divide
-     // by PRESSURE factor to convert bar to NAMD internal pressure units.
+     // by PRESSURE factor to convert bar to NAMD internal pressure units. 
      surfaceTensionTarget *= 100.0 / PRESSUREFACTOR;
    }
 
@@ -5040,13 +5044,13 @@ if ( openatomOn )
      if (pressureProfileEwaldOn)
        pressureProfileOn = 0;
 
-     if (pressureProfileSlabs < 1)
+     if (pressureProfileSlabs < 1) 
        NAMD_die("pressureProfileSlabs must be positive.");
      iout << iINFO << "PRESSURE PROFILE CALCULATIONS ACTIVE\n";
      iout << iINFO << "      NUMBER OF SLABS: " << pressureProfileSlabs << "\n";
      iout << iINFO << "      SLAB THICKNESS: " << cellBasisVector3.z / pressureProfileSlabs
                    << "\n";
-     iout << iINFO << "      TIMESTEPS BETWEEN DATA OUTPUT: "
+     iout << iINFO << "      TIMESTEPS BETWEEN DATA OUTPUT: " 
                    << pressureProfileFreq << "\n";
      iout << iINFO << "      NUMBER OF ATOM TYPES: " << pressureProfileAtomTypes << "\n";
      iout << endi;
@@ -5076,7 +5080,7 @@ if ( openatomOn )
         iout << iINFO << "accelMD WILL BE DONE FROM STEP " << accelMDFirstStep << " TO STEP " << accelMDLastStep << "\n";
      } else {
         iout << iINFO << "accelMD WILL BE DONE FROM STEP " << accelMDFirstStep << " TO THE END OF THE SIMULATION \n";
-     }
+     }        
      iout << iINFO << "accelMD OUTPUT FREQUENCY " << accelMDOutFreq << "\n";
      iout << endi;
    }
@@ -5096,7 +5100,7 @@ if ( openatomOn )
      if (adaptTempRestartFreq > 0) {
         iout << iINFO << "      WRITING RESTART INFORMATION TO " << adaptTempRestartFile << " EVERY " << adaptTempRestartFreq << " STEPS\n";
      }
-
+        
    }
 
    if (FMAOn)
@@ -5216,9 +5220,9 @@ if ( openatomOn )
        int xStride=block2 * dim3 / 2;
        fftwf_destroy_plan(
 			 fftwf_plan_many_dft_r2c(1, planLineSizes, sizeLines,
-						 (float *) grid2, NULL, 1,
+						 (float *) grid2, NULL, 1, 
 						 dim3,
-						 (fftwf_complex *) grid2,
+						 (fftwf_complex *) grid2, 
 						 NULL, 1,
 						 dim3/2,
 						 fftwFlags));
@@ -5227,7 +5231,7 @@ if ( openatomOn )
        fftwf_destroy_plan(
 			 fftwf_plan_many_dft_c2r(1, planLineSizes, sizeLines,
 						 (fftwf_complex *) grid2,
-						 NULL, 1,
+						 NULL, 1, 
 						 dim3/2,
 						 (float *) grid2, NULL, 1,
 						 dim3,
@@ -5235,20 +5239,20 @@ if ( openatomOn )
        iout << " 3..." << endi;
        sizeLines=nz;
        planLineSizes[0]=block2;
-       fftwf_destroy_plan(fftwf_plan_many_dft(1, planLineSizes, sizeLines,
-					      (fftwf_complex *) grid2, NULL,
+       fftwf_destroy_plan(fftwf_plan_many_dft(1, planLineSizes, sizeLines, 
+					      (fftwf_complex *) grid2, NULL, 
 					      sizeLines, 1,
-					      (fftwf_complex *) grid2, NULL,
+					      (fftwf_complex *) grid2, NULL, 
 					      sizeLines, 1,
-					      FFTW_FORWARD,
+					      FFTW_FORWARD, 
 					      fftwFlags));
        iout << " 4..." << endi;
-       fftwf_destroy_plan(fftwf_plan_many_dft(1, planLineSizes, sizeLines,
-					      (fftwf_complex *) grid2, NULL,
+       fftwf_destroy_plan(fftwf_plan_many_dft(1, planLineSizes, sizeLines, 
+					      (fftwf_complex *) grid2, NULL, 
 					      sizeLines, 1,
-					      (fftwf_complex *) grid2, NULL,
+					      (fftwf_complex *) grid2, NULL, 
 					      sizeLines, 1,
-					      FFTW_FORWARD,
+					      FFTW_FORWARD, 
 					      fftwFlags));
        iout << " 5..." << endi;
        sizeLines=ny*nz;
@@ -5256,15 +5260,15 @@ if ( openatomOn )
        fftwf_destroy_plan(fftwf_plan_many_dft(1, planLineSizes, sizeLines,
 					      (fftwf_complex *) grid2, NULL,
 					      sizeLines, 1,
-					      (fftwf_complex *) grid2, NULL,
+					      (fftwf_complex *) grid2, NULL, 
 					      sizeLines, 1,
 					      FFTW_FORWARD,
 					      fftwFlags));
        iout << " 6..." << endi;
        fftwf_destroy_plan(fftwf_plan_many_dft(1, planLineSizes, sizeLines,
-					      (fftwf_complex *) grid2, NULL,
+					      (fftwf_complex *) grid2, NULL, 
 					      sizeLines, 1,
-					      (fftwf_complex *) grid2, NULL,
+					      (fftwf_complex *) grid2, NULL, 
 					      sizeLines, 1,
 					      FFTW_BACKWARD,
 					      fftwFlags));
@@ -5310,7 +5314,7 @@ if ( openatomOn )
 		<< FFTWWisdomFile << "\n" << endi;
        wisdom_file = fopen(FFTWWisdomFile,"w");
        if ( wisdom_file ) {
-#ifdef NAMD_FFTW_3
+#ifdef NAMD_FFTW_3 
 	 fftwf_export_wisdom_to_file(wisdom_file);
 #else
 	 fftw_export_wisdom_to_file(wisdom_file);
@@ -5319,7 +5323,7 @@ if ( openatomOn )
        }
       }
 
-#ifdef NAMD_FFTW_3
+#ifdef NAMD_FFTW_3 
        FFTWWisdomString = fftwf_export_wisdom_to_string();
 #else
        FFTWWisdomString = fftw_export_wisdom_to_string();
@@ -5484,7 +5488,7 @@ if ( openatomOn )
      if (useSettle) iout << iINFO << "RIGID WATER USING SETTLE ALGORITHM\n";
      iout << endi;
    }
-
+   
 
    if (nonbondedFrequency != 1)
    {
@@ -5556,7 +5560,7 @@ if ( openatomOn )
 	 NAMD_die("no coordinate file defined!?");
        }
      }
-     iout << iINFO << "GROMACS COOR FILE        " << current->data << '\n'
+     iout << iINFO << "GROMACS COOR FILE        " << current->data << '\n' 
 	  << endi;
 
    }
@@ -5568,10 +5572,10 @@ if ( openatomOn )
 
      current = config->find("structure");
 
-     iout << iINFO << "STRUCTURE FILE         "
+     iout << iINFO << "STRUCTURE FILE         " 
         << current->data << "\n" << endi;
 
-     if (cosAngles)
+     if (cosAngles) 
      {
        iout << iINFO << "COSANGLES ON. SOME ANGLES WILL BE COSINE-BASED\n" << endi;
      }
@@ -5591,7 +5595,7 @@ if ( openatomOn )
 
      while (current != NULL)
      {
-       iout << iINFO << "PARAMETERS             "
+       iout << iINFO << "PARAMETERS             " 
           << current->data << "\n" << endi;
        current = current->next;
      }
@@ -5605,7 +5609,7 @@ if ( openatomOn )
    {
      current = config->find("bincoordinates");
 
-     iout << iINFO << "BINARY COORDINATES     "
+     iout << iINFO << "BINARY COORDINATES     " 
               << current->data << "\n";
    }
 
@@ -5614,7 +5618,7 @@ if ( openatomOn )
    {
      current = config->find("binrefcoords");
 
-     iout << iINFO << "BINARY REF COORDS      "
+     iout << iINFO << "BINARY REF COORDS      " 
               << current->data << "\n";
    }
 #endif
@@ -5626,8 +5630,8 @@ if ( openatomOn )
    }
 }
 /*    END OF FUNCTION initialize_config_data    */
-
-
+   
+   
 /****************************************************************/
 /*                                                              */
 /*      FUNCTION parse_mgrid_params                             */
@@ -5648,7 +5652,7 @@ void SimParameters::parse_mgrid_params(ConfigList *config)
     MGridforceParams* mgfp = NULL;
     mgfp = mgridforcelist.find_key(default_key);
     if (mgfp != NULL) {
-      iout << iINFO << "MGRIDFORCEPOTFILE key "
+      iout << iINFO << "MGRIDFORCEPOTFILE key " 
         << key << " redefined for file " << valstr << "\n" << endi;
     } else {
       mgfp = mgridforcelist.add(default_key);
@@ -5660,27 +5664,27 @@ void SimParameters::parse_mgrid_params(ConfigList *config)
     parse_mgrid_string_param(config,"gridforcecol",&(mgfp->gridforceCol));
     parse_mgrid_string_param(config,"gridforcechargecol",&(mgfp->gridforceQcol));
     parse_mgrid_string_param(config,"gridforcepotfile",&(mgfp->gridforceVfile));
-
+    
     mgfp->gridforceCont[0] = gridforceContA1;
     mgfp->gridforceCont[1] = gridforceContA2;
     mgfp->gridforceCont[2] = gridforceContA3;
     mgfp->gridforceVOffset = gridforceVOffset;
-
+    
     mgfp->gridforceLite = gridforceLite;
   }
-
+  
   // Create multigrid parameter structures
   current = config->find("mgridforcepotfile");
   while (current != NULL) {
     int curlen = strlen(current->data);
-    //    iout << iINFO << "MGRIDFORCEPOTFILE " << current->data
+    //    iout << iINFO << "MGRIDFORCEPOTFILE " << current->data 
     //         << " " << curlen << "\n"  << endi;
     sscanf(current->data,"%80s%255s",key,valstr);
-
+    
     MGridforceParams* mgfp = NULL;
     mgfp = mgridforcelist.find_key(key);
     if ( mgfp != NULL) {
-      iout << iINFO << "MGRIDFORCEPOTFILE key "
+      iout << iINFO << "MGRIDFORCEPOTFILE key " 
         << key << " redefined for file " << valstr << "\n" << endi;
     } else {
       mgfp = mgridforcelist.add(key);
@@ -5688,27 +5692,27 @@ void SimParameters::parse_mgrid_params(ConfigList *config)
     int fnamelen = strlen(valstr);
     mgfp->gridforceVfile = new char[fnamelen+1];
     strncpy(mgfp->gridforceVfile,valstr,fnamelen+1);
-    mgfp->gridforceScale.x =
-      mgfp->gridforceScale.y =
+    mgfp->gridforceScale.x = 
+      mgfp->gridforceScale.y = 
         mgfp->gridforceScale.z = 1.;
-    mgfp->gridforceVOffset.x =
-      mgfp->gridforceVOffset.y =
+    mgfp->gridforceVOffset.x = 
+      mgfp->gridforceVOffset.y = 
         mgfp->gridforceVOffset.z = 0.;
-
+    
     current = current->next;
   }
 
   current = config->find("mgridforcefile");
   while (current != NULL) {
     int curlen = strlen(current->data);
-    //    iout << iINFO << "MGRIDFORCEFILE " << current->data
+    //    iout << iINFO << "MGRIDFORCEFILE " << current->data          
     //         << " " << curlen << "\n"  << endi;
     sscanf(current->data,"%80s%255s",key,valstr);
-
+    
     MGridforceParams* mgfp = NULL;
     mgfp = mgridforcelist.find_key(key);
     if ( mgfp == NULL) {
-      iout << iINFO << "MGRIDFORCEFILE no key "
+      iout << iINFO << "MGRIDFORCEFILE no key " 
       << key << " defined for file " << valstr << "\n" << endi;
     } else {
       int fnamelen = strlen(valstr);
@@ -5721,23 +5725,23 @@ void SimParameters::parse_mgrid_params(ConfigList *config)
 
     current = current->next;
   }
-
+  
   current = config->find("mgridforcevolts");
   while (current != NULL) {
-    //    iout << iINFO << "MGRIDFORCEVOLTS " << current->data << "\n"
+    //    iout << iINFO << "MGRIDFORCEVOLTS " << current->data << "\n"  
     //         << endi;
     int curlen = strlen(current->data);
     sscanf(current->data,"%80s%255s",key,valstr);
-
+    
     MGridforceParams* mgfp = NULL;
     mgfp = mgridforcelist.find_key(key);
     if ( mgfp == NULL) {
-      iout << iINFO << "MGRIDFORCEVOLTS no key "
+      iout << iINFO << "MGRIDFORCEVOLTS no key " 
       << key << " defined for file " << valstr << "\n" << endi;
     } else {
       int boolval = MGridforceParamsList::atoBool(valstr);
       if (boolval == -1) {
-        iout << iINFO << "MGRIDFORCEVOLTS  key "
+        iout << iINFO << "MGRIDFORCEVOLTS  key " 
           << key << " boolval " << valstr << " badly defined" << endi;
       } else {
         mgfp->gridforceVolts = (boolval == 1);
@@ -5746,60 +5750,60 @@ void SimParameters::parse_mgrid_params(ConfigList *config)
 
     current = current->next;
   }
-
+  
   current = config->find("mgridforcescale");
   while (current != NULL) {
-    //    iout << iINFO << "MGRIDFORCESCALE " << current->data
+    //    iout << iINFO << "MGRIDFORCESCALE " << current->data 
     //         << "\n"  << endi;
     int curlen = strlen(current->data);
     int nread;
     sscanf(current->data,"%80s%n",key,&nread);
     char *val = current->data + nread + 1;
-
+    
     MGridforceParams* mgfp = NULL;
     mgfp = mgridforcelist.find_key(key);
     if ( mgfp == NULL) {
-      iout << iINFO << "MGRIDFORCESCALE no key "
+      iout << iINFO << "MGRIDFORCESCALE no key " 
       << key << " defined for vector " << val << "\n" << endi;
     } else {
       mgfp->gridforceScale.set(val);
     }
-
+    
     current = current->next;
   }
-
+  
   current = config->find("mgridforcevoff");
   while (current != NULL) {
-    //    iout << iINFO << "MGRIDFORCEVOFF " << current->data
+    //    iout << iINFO << "MGRIDFORCEVOFF " << current->data 
     //         << "\n"  << endi;
     int curlen = strlen(current->data);
     int nread;
     sscanf(current->data,"%80s%n",key,&nread);
     char *val = current->data + nread + 1;
-
+    
     MGridforceParams* mgfp = NULL;
     mgfp = mgridforcelist.find_key(key);
     if ( mgfp == NULL) {
-      iout << iINFO << "MGRIDFORCEVOFF no key "
+      iout << iINFO << "MGRIDFORCEVOFF no key " 
       << key << " defined for vector " << val << "\n" << endi;
     } else {
       mgfp->gridforceVOffset.set(val);
     }
-
+    
     current = current->next;
   }
-
+  
   current = config->find("mgridforcecol");
   while (current != NULL) {
-    //    iout << iINFO << "MGRIDFORCECOL " << current->data
+    //    iout << iINFO << "MGRIDFORCECOL " << current->data 
     //         << "\n"  << endi;
     int curlen = strlen(current->data);
     sscanf(current->data,"%80s%255s",key,valstr);
-
+    
     MGridforceParams* mgfp = NULL;
     mgfp = mgridforcelist.find_key(key);
     if ( mgfp == NULL) {
-      iout << iINFO << "MGRIDFORCECOL no key "
+      iout << iINFO << "MGRIDFORCECOL no key " 
       << key << " defined for file " << valstr << "\n" << endi;
     } else {
       int collen = strlen(valstr);
@@ -5809,21 +5813,21 @@ void SimParameters::parse_mgrid_params(ConfigList *config)
       mgfp->gridforceCol = new char[collen+1];
       strncpy(mgfp->gridforceCol,valstr,collen+1);
      }
-
+    
     current = current->next;
   }
-
+  
   current = config->find("mgridforcechargecol");
   while (current != NULL) {
-    //    iout << iINFO << "MGRIDFORCECHARGECOL " << current->data << "\n"
+    //    iout << iINFO << "MGRIDFORCECHARGECOL " << current->data << "\n"  
     //         << endi;
     int curlen = strlen(current->data);
     sscanf(current->data,"%80s%255s",key,valstr);
-
+    
     MGridforceParams* mgfp = NULL;
     mgfp = mgridforcelist.find_key(key);
     if ( mgfp == NULL) {
-      iout << iINFO << "MGRIDFORCECHARGECOL no key "
+      iout << iINFO << "MGRIDFORCECHARGECOL no key " 
       << key << " defined for file " << valstr << "\n" << endi;
     } else {
       int collen = strlen(valstr);
@@ -5833,101 +5837,101 @@ void SimParameters::parse_mgrid_params(ConfigList *config)
       mgfp->gridforceQcol = new char[collen+1];
       strncpy(mgfp->gridforceQcol,valstr,collen+1);
     }
-
+    
     current = current->next;
   }
-
+  
   current = config->find("mgridforcecont1");
   while (current != NULL) {
-    //    iout << iINFO << "MGRIDFORCECONT1 " << current->data
+    //    iout << iINFO << "MGRIDFORCECONT1 " << current->data 
     //         << "\n"  << endi;
     int curlen = strlen(current->data);
     sscanf(current->data,"%80s%255s",key,valstr);
-
+    
     MGridforceParams* mgfp = NULL;
     mgfp = mgridforcelist.find_key(key);
     if ( mgfp == NULL) {
-      iout << iINFO << "MGRIDFORCECONT1 no key "
+      iout << iINFO << "MGRIDFORCECONT1 no key " 
       << key << " defined for file " << valstr << "\n" << endi;
     } else {
       int boolval = MGridforceParamsList::atoBool(valstr);
       if (boolval == -1) {
-        iout << iINFO << "MGRIDFORCECONT1  key "
+        iout << iINFO << "MGRIDFORCECONT1  key " 
         << key << " boolval " << valstr << " badly defined" << endi;
       } else {
         mgfp->gridforceCont[0] = (boolval == 1);
       }
     }
-
+    
     current = current->next;
   }
-
+  
   current = config->find("mgridforcecont2");
   while (current != NULL) {
-    //    iout << iINFO << "MGRIDFORCECONT2 " << current->data
+    //    iout << iINFO << "MGRIDFORCECONT2 " << current->data 
     //         << "\n"  << endi;
     int curlen = strlen(current->data);
     sscanf(current->data,"%80s%255s",key,valstr);
-
+    
     MGridforceParams* mgfp = NULL;
     mgfp = mgridforcelist.find_key(key);
     if ( mgfp == NULL) {
-      iout << iINFO << "MGRIDFORCECONT2 no key "
+      iout << iINFO << "MGRIDFORCECONT2 no key " 
       << key << " defined for file " << valstr << "\n" << endi;
     } else {
       int boolval = MGridforceParamsList::atoBool(valstr);
       if (boolval == -1) {
-        iout << iINFO << "MGRIDFORCECONT2  key "
+        iout << iINFO << "MGRIDFORCECONT2  key " 
         << key << " boolval " << valstr << " badly defined" << endi;
       } else {
         mgfp->gridforceCont[1] = (boolval == 1);
       }
     }
-
+    
     current = current->next;
   }
   current = config->find("mgridforcecont3");
   while (current != NULL) {
-    //    iout << iINFO << "MGRIDFORCECONT3 " << current->data
+    //    iout << iINFO << "MGRIDFORCECONT3 " << current->data 
     //         << "\n"  << endi;
     int curlen = strlen(current->data);
     sscanf(current->data,"%80s%255s",key,valstr);
-
+    
     MGridforceParams* mgfp = NULL;
     mgfp = mgridforcelist.find_key(key);
     if ( mgfp == NULL) {
-      iout << iINFO << "MGRIDFORCECONT3 no key "
+      iout << iINFO << "MGRIDFORCECONT3 no key " 
       << key << " defined for file " << valstr << "\n" << endi;
       NAMD_die("MGRIDFORCE error");
     } else {
       int boolval = MGridforceParamsList::atoBool(valstr);
       if (boolval == -1) {
-        iout << iINFO << "MGRIDFORCECONT3  key "
+        iout << iINFO << "MGRIDFORCECONT3  key " 
         << key << " boolval " << valstr << " badly defined" << endi;
       } else {
         mgfp->gridforceCont[2] = (boolval == 1);
       }
     }
-
+    
     current = current->next;
   }
-
+  
   current = config->find("mgridforcelite");
   while (current != NULL) {
-    //    iout << iINFO << "MGRIDFORCELITE " << current->data << "\n"
+    //    iout << iINFO << "MGRIDFORCELITE " << current->data << "\n"  
     //         << endi;
     int curlen = strlen(current->data);
     sscanf(current->data,"%80s%255s",key,valstr);
-
+    
     MGridforceParams* mgfp = NULL;
     mgfp = mgridforcelist.find_key(key);
     if ( mgfp == NULL) {
-      iout << iINFO << "MGRIDFORCELITE no key "
+      iout << iINFO << "MGRIDFORCELITE no key " 
       << key << " defined for file " << valstr << "\n" << endi;
     } else {
       int boolval = MGridforceParamsList::atoBool(valstr);
       if (boolval == -1) {
-        iout << iINFO << "MGRIDFORCELITE  key "
+        iout << iINFO << "MGRIDFORCELITE  key " 
           << key << " boolval " << valstr << " badly defined" << endi;
       } else {
         mgfp->gridforceLite = (boolval == 1);
@@ -5936,14 +5940,14 @@ void SimParameters::parse_mgrid_params(ConfigList *config)
 
     current = current->next;
   }
-
+  
   delete [] valstr;
   delete [] key;
 
   // Fill in default values for optional items
-
+  
   MGridforceParams* params = mgridforcelist.get_first();
-
+  
   while (params != NULL) {
     if (params->gridforceFile == NULL) {
       char errmsg[255];
@@ -5959,22 +5963,22 @@ void SimParameters::parse_mgrid_params(ConfigList *config)
     }
     params = params->next;
   }
-
+  
 }
 
 void SimParameters::parse_mgrid_string_param(ConfigList *cl,
                                              const char *fieldname,
-                                             char **dest)
+                                             char **dest) 
 {
   StringList *vallist = cl->find(fieldname);
   char *val = NULL;
-
+  
   if (vallist != NULL) {
     val = vallist->data;
   } else {
     return;
   }
-
+  
   int len = 0;
   if (val == NULL) {
     *dest = NULL;
@@ -5988,13 +5992,13 @@ void SimParameters::parse_mgrid_string_param(ConfigList *cl,
     }
   }
 }
-
+   
 //This function is used to create directories when outputing into
 //multiple files, i.e. used for Parallel IO. -Chao Mei
 void SimParameters::create_output_directories(const char *dirname){
 	//output files organization:
 	//$outputFilename/$dirname/$outputproc_rank
-
+	
 	//Step 1: create $outputFilename if necessary
 	int baselen = strlen(outputFilename);
 	char *filename = new char[baselen+32];
@@ -6012,7 +6016,7 @@ void SimParameters::create_output_directories(const char *dirname){
 	//Step 2: create $dirname if necessary
 	strcat(filename, PATHSEPSTR);
 	strcat(filename, dirname);
-	//check if the directory exists or not
+	//check if the directory exists or not	
 	if(access(filename, F_OK)!=0) {
 		int ret = MKDIR(filename);
 		if(ret!=0) {
@@ -6037,7 +6041,7 @@ void SimParameters::create_output_directories(const char *dirname){
 		}
 	}
 }
-
+   
 /****************************************************************/
 /*                                                              */
 /*      FUNCTION print_mgrid_params                             */
@@ -6045,50 +6049,50 @@ void SimParameters::create_output_directories(const char *dirname){
 /*                                                              */
 /****************************************************************/
 #define BoolToString(b) ((b) ? "TRUE" : "FALSE")
-
+  
 void SimParameters::print_mgrid_params()
 {
   const MGridforceParams* params = mgridforcelist.get_first();
-
+  
   while (params != NULL) {
     iout << iINFO << "MGRIDFORCE key " << params->gridforceKey << "\n" << endi;
-    iout << iINFO << "           Potfile " << params->gridforceVfile
+    iout << iINFO << "           Potfile " << params->gridforceVfile 
       << "\n" << endi;
-    iout << iINFO << "           Scale " << params->gridforceScale
+    iout << iINFO << "           Scale " << params->gridforceScale 
       << "\n" << endi;
-    iout << iINFO << "           File " << params->gridforceFile
+    iout << iINFO << "           File " << params->gridforceFile 
       << "\n" << endi;
-    iout << iINFO << "           Col " << params->gridforceCol
+    iout << iINFO << "           Col " << params->gridforceCol 
       << "\n" << endi;
-
+    
     char *qcol_msg = "Use atom charge";
     if (params->gridforceQcol != NULL) {
       qcol_msg = params->gridforceQcol;
     }
     iout << iINFO << "           ChargeCol " << qcol_msg
       << "\n" << endi;
-    iout << iINFO << "           VOffset " << params->gridforceVOffset
+    iout << iINFO << "           VOffset " << params->gridforceVOffset 
       << "\n" << endi;
-    iout << iINFO << "           Continuous K1 "
-      << BoolToString(params->gridforceCont[0])
+    iout << iINFO << "           Continuous K1 " 
+      << BoolToString(params->gridforceCont[0]) 
       << "\n" << endi;
-    iout << iINFO << "           Continuous K2 "
-      << BoolToString(params->gridforceCont[1])
+    iout << iINFO << "           Continuous K2 " 
+      << BoolToString(params->gridforceCont[1]) 
     << "\n" << endi;
-    iout << iINFO << "           Continuous K3 "
-      << BoolToString(params->gridforceCont[2])
+    iout << iINFO << "           Continuous K3 " 
+      << BoolToString(params->gridforceCont[2]) 
       << "\n" << endi;
-    iout << iINFO << "           Volts "
+    iout << iINFO << "           Volts " 
       << BoolToString(params->gridforceVolts)
       << "\n" << endi;
-    iout << iINFO << "           Gridforce-Lite "
+    iout << iINFO << "           Gridforce-Lite " 
       << BoolToString(params->gridforceLite)
       << "\n" << endi;
     params = params->next;
   }
 }
-
-
+   
+   
 /****************************************************************/
 /*                */
 /*    FUNCTION send_SimParameters      */
@@ -6145,7 +6149,7 @@ void SimParameters::send_SimParameters(MOStream *msg)
 #endif
 
   mgridforcelist.pack_data(msg);
-
+  
   msg->end();
 }
 /*    END OF FUNCITON send_SimParameters    */
@@ -6188,18 +6192,18 @@ void SimParameters::receive_SimParameters(MIStream *msg)
   msg->get(filelen);
   binAtomFile = new char[filelen];
   msg->get(filelen, binAtomFile);
-
+  
   msg->get(filelen);
   binCoorFile = new char[filelen];
   msg->get(filelen, binCoorFile);
 
-  if(binVelFile) {
+  if(binVelFile) {    
     msg->get(filelen);
     binVelFile = new char[filelen];
     msg->get(filelen, binVelFile);
   }
 
-  if(binRefFile) {
+  if(binRefFile) {    
     msg->get(filelen);
     binRefFile = new char[filelen];
     msg->get(filelen, binRefFile);
@@ -6211,7 +6215,7 @@ void SimParameters::receive_SimParameters(MIStream *msg)
   // So this resets everything so that unpacking will work.
   mgridforcelist.clear();
   mgridforcelist.unpack_data(msg);
-
+  
   delete msg;
 }
 /*      END OF FUNCTION receive_SimParameters  */

@@ -1,0 +1,71 @@
+# FILENAMES
+set outName             [file rootname [file tail [info script]]]
+#set inFileNum           [expr [scan [string range $outName end-1 end] "%d"] - 1]
+#set inName              [format "%s%02u" [string range $outName 0 end-2] $inFileNum]
+set inName              "test.rep2"
+
+
+# MD SETUP
+timestep          0.5
+numSteps	  100
+
+
+colvars		  on
+colvarsConfig	  test.rep2.in
+colvarsInput  $inName.colvars.state
+
+
+# INPUT
+structure               ../Common/da.psf 
+parameters              ../Common/par_all22_prot.inp
+paraTypeCharmm          on
+coordinates             ../Common/da.min.pdb
+#temperature             250
+bincoordinates       $inName.coor
+binvelocities        $inName.vel
+
+# OUTPUT
+
+outputname              ${outName}
+outputenergies          2000
+outputtiming            20000
+binaryoutput            yes
+restartname             ${outName}r
+restartfreq             40000
+binaryrestart           yes
+
+
+seed		87654321
+
+# CONSTANT-T
+langevin                on
+langevinTemp		    300.0
+langevinDamping         10.0
+langevinHydrogen	    off
+
+# SPACE PARTITIONING
+splitpatch              hydrogen
+hgroupcutoff            2.8
+stepspercycle           20
+margin                  1.0
+
+# CUT-OFFS
+switching               on
+switchdist              9.0
+cutoff                  11.0
+pairlistdist            12.0
+
+# RESPA 
+fullElectFrequency      1
+nonbondedFreq           1
+
+# 1-4 NON-BONDED
+exclude                 scaled1-4
+1-4scaling              1.0
+
+# COM
+commotion               no
+
+# SHAKE
+rigidBonds              none
+

@@ -45,7 +45,7 @@ if git status --porcelain | grep -q '^M \+namd/src/'
 then
   datestr=$(date +'%Y-%m-%d')
   prevstr=$(sed -n -e 's/^#define COLVARPROXY_VERSION "\(.*\)".*/\1/p' \
-            src/namd/colvarproxy_namd.h)
+            namd/src/colvarproxy_namd.h)
   if test "${prevstr}" = "${datestr}"
   then
     echo "Keeping NAMD colvars interface version string at: ${prevstr}"

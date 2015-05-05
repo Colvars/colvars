@@ -1,5 +1,5 @@
 #!/bin/sh
-# Script to update a NAMD, VMD, or LAMMPS source tree with the latest colvars code.
+# Script to update a NAMD, VMD, LAMMPS, or GROMACS source tree with the latest colvars code.
 
 if [ $# -lt 1 ]
 then
@@ -11,7 +11,7 @@ then
         (default: create diff files for inspection --- MD code may be different)
 
    <target source tree> = root directory of the MD code sources
-   supported MD codes: NAMD, VMD, LAMMPS
+   supported MD codes: NAMD, VMD, LAMMPS, GROMACS
 
 EOF
    exit 1
@@ -61,6 +61,9 @@ then
 elif [ -f "${target}/src/VMDApp.h" ]
 then
   code=VMD
+elif [ -f "${target}/src/gromacs/commandline.h" ]
+then
+  code=GROMACS
 else
   # handle the case if the user points to ${target}/src
   target=$(dirname "${target}")
@@ -73,6 +76,9 @@ else
   elif [ -f "${target}/src/VMDApp.h" ]
   then
     code=VMD
+  elif [ -f "${target}/src/gromacs/commandline.h" ]
+  then
+    code=GROMACS
   else
     echo ERROR: Cannot detect a supported code in the target directory
     exit 3
@@ -203,6 +209,7 @@ then
 
   condcopy "${source}/doc/colvars-refman.bib" "${target}/ug/ug_colvars.bib"
   condcopy "${source}/doc/colvars-refman-main.tex" "${target}/ug/ug_colvars.tex"
+  condcopy "${source}/doc/colvars-cv.tex" "${target}/ug/colvars-cv.tex"
   condcopy "${source}/namd/ug/ug_colvars_macros.tex" "${target}/ug/ug_colvars_macros.tex"
   condcopy "${source}/doc/colvars_diagram.pdf" "${target}/ug/figures/colvars_diagram.pdf"
   condcopy "${source}/doc/colvars_diagram.eps" "${target}/ug/figures/colvars_diagram.eps"
@@ -243,6 +250,7 @@ then
 
   condcopy "${source}/doc/colvars-refman.bib" "${target}/doc/ug_colvars.bib"
   condcopy "${source}/doc/colvars-refman-main.tex" "${target}/doc/ug_colvars.tex"
+  condcopy "${source}/doc/colvars-cv.tex" "${target}/doc/colvars-cv.tex"
   condcopy "${source}/vmd/doc/ug_colvars_macros.tex" "${target}/doc/ug_colvars_macros.tex"
   condcopy "${source}/doc/colvars_diagram.pdf" "${target}/doc/pictures/colvars_diagram.pdf"
   condcopy "${source}/doc/colvars_diagram.eps" "${target}/doc/pictures/colvars_diagram.eps"
@@ -268,5 +276,50 @@ then
   done
 
 
+  exit 0
+fi
+
+
+# update GROMACS tree
+if [ ${code} = GROMACS ]
+then
+  # Copy the colvars source code into gromacs/pulling
+  for src in colvaratoms.cpp colvarbias_abf.cpp colvarbias_alb.cpp colvarbias.cpp colvarbias_meta.cpp colvarbias_restraint.cpp colvarcomp_angles.cpp colvarcomp_coordnums.cpp colvarcomp.cpp colvarcomp_distances.cpp colvarcomp_protein.cpp colvarcomp_rotations.cpp colvar.cpp colvargrid.cpp colvarmodule.cpp colvarparse.cpp colvarscript.cpp colvartypes.cpp colvarvalue.cpp colvaratoms.h colvarbias_abf.h colvarbias_alb.h colvarbias.h colvarbias_meta.h colvarbias_restraint.h colvarcomp.h colvargrid.h colvar.h colvarmodule.h colvarparse.h colvarproxy.h colvarscript.h colvartypes.h colvarvalue.h
+  do \
+    condcopy "src/${src}" "${target}/src/gromacs/pulling/${src}"
+  done
+
+  # Copy the GROMACS interface files into gromacs/pulling
+  srcDir=${source}/gromacs/src
+  for src in colvarproxy_gromacs.cpp colvarproxy_gromacs.h colvars_potential.h
+  do \
+      condcopy "$srcDir/${src}" "${target}/src/gromacs/pulling/${src}"
+  done
+
+  # Find the GROMACS sim_util file, which has changed from
+  # sim_util.c to sim_util.cpp between versions.
+  if [ -f ${target}/src/gromacs/mdlib/sim_util.cpp ]
+  then
+      sim_util=${target}/src/gromacs/mdlib/sim_util.cpp
+  elif [ -f ${target}/src/gromacs/mdlib/sim_util.c ]
+  then
+      sim_util=${target}/src/gromacs/mdlib/sim_util.c
+  else
+      echo "ERROR: Cannot find sim_util.c or sim_util.cpp in the GROMACS source"
+      exit 4
+  fi
+  
+  if [ `grep -c colvars $sim_util` -gt 0 ]
+  then
+      echo "$sim_util appears to already have Colvars modifications. Not modifying."
+  else
+      # Backup sim_util.
+      cp $sim_util ${sim_util}.orig
+      
+      # Insert necessary pieces of code into the GROMACS sim_util.c or sim_util.cpp.
+      awk -f ${source}/gromacs/gromacs-insert.awk ${sim_util}.orig > $sim_util
+  fi
+
+  echo ' done.'
   exit 0
 fi
