@@ -1025,6 +1025,49 @@ public:
     has_data = true;
     return is;
   }
+
+  /// \brief Write the grid data without labels, as they are
+  /// represented in memory
+  /// \param buf_size Number of values per line
+  std::ostream & write_opendx(std::ostream &os)
+  {
+    // write the header
+    os << "object 1 class gridpositions counts";
+    int icv;
+    for (icv = 0; icv < number_of_colvars(); icv++) {
+      os << " " << number_of_points(icv);
+    }
+    os << "\n";
+
+    os << "origin";
+    for (icv = 0; icv < number_of_colvars(); icv++) {
+      os << " " << (lower_boundaries[icv].real_value + 0.5 * widths[icv]);
+    }
+    os << "\n";
+
+    for (icv = 0; icv < number_of_colvars(); icv++) {
+      os << "delta";
+      for (size_t icv2 = 0; icv2 < number_of_colvars(); icv2++) {
+        if (icv == icv2) os << " " << widths[icv];
+        else os << " " << 0.0;
+      }
+      os << "\n";
+    }
+
+    os << "object 2 class gridconnections counts";
+    for (icv = 0; icv < number_of_colvars(); icv++) {
+      os << " " << number_of_points(icv);
+    }
+    os << "\n";
+
+    os << "object 3 class array type double rank 0 items "
+       << number_of_points() << " data follows\n";
+
+    write_raw(os);
+
+    os << "object \"collective variables scalar field\" class field\n";
+    return os;
+  }
 };
 
 
