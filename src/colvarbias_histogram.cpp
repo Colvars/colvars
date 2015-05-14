@@ -11,7 +11,9 @@ colvarbias_histogram::colvarbias_histogram(std::string const &conf, char const *
     grid(NULL), out_name("")
 {
   get_keyval(conf, "outputFile", out_name, std::string(""));
+  get_keyval(conf, "outputFileDX", out_name_dx, std::string(""));
   get_keyval(conf, "outputFreq", output_freq, cvm::restart_out_freq);
+
   /// with VMD, this may not be an error
   // if ( output_freq == 0 ) {
   //   cvm::error("User required histogram with zero output frequency");
@@ -74,9 +76,6 @@ colvarbias_histogram::colvarbias_histogram(std::string const &conf, char const *
 /// Destructor
 colvarbias_histogram::~colvarbias_histogram()
 {
-  if (grid_os.is_open())
-    grid_os.close();
-
   if (grid) {
     delete grid;
     grid = NULL;
@@ -102,6 +101,13 @@ cvm::real colvarbias_histogram::update()
     if (cvm::step_relative() == 0) {
       out_name = cvm::output_prefix + "." + this->name + ".dat";
       cvm::log("Histogram " + this->name + " will be written to file \"" + out_name + "\"");
+    }
+  }
+
+  if (out_name_dx.size() == 0) {
+    if (cvm::step_relative() == 0) {
+      out_name_dx = cvm::output_prefix + "." + this->name + ".dx";
+      cvm::log("Histogram " + this->name + " will be written to file \"" + out_name_dx + "\"");
     }
   }
 
@@ -140,13 +146,23 @@ int colvarbias_histogram::write_output_files()
 {
   if (out_name.size()) {
     cvm::log("Writing the histogram file \""+out_name+"\".\n");
-
-    grid_os.open(out_name.c_str());
+    cvm::ofstream grid_os(out_name.c_str());
     if (!grid_os.is_open()) {
-      cvm::error("Error opening histogram file " + out_name + " for writing");
+      cvm::error("Error opening histogram file " + out_name + " for writing.\n", FILE_ERROR);
     }
     // TODO add return code here
     grid->write_multicol(grid_os);
+    grid_os.close();
+  }
+
+  if (out_name_dx.size()) {
+    cvm::log("Writing the histogram file \""+out_name_dx+"\".\n");
+    cvm::ofstream grid_os(out_name_dx.c_str());
+    if (!grid_os.is_open()) {
+      cvm::error("Error opening histogram file " + out_name_dx + " for writing.\n", FILE_ERROR);
+    }
+    // TODO add return code here
+    grid->write_opendx(grid_os);
     grid_os.close();
   }
   return COLVARS_OK;
