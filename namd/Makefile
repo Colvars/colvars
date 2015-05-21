@@ -394,13 +394,14 @@ CHARMC = $(CHARM)/bin/charmc
 CHARMXI = $(CHARM)/bin/charmc
 CHARMINC = $(CHARM)/include $(COPTD)CMK_OPTIMIZE=1
 CHARMLIB = $(CHARM)/lib
-CHARM_MODULES = -module NeighborLB -module HybridLB -module RefineLB -module GreedyLB -module CkMulticast -module CkLoop
+CHARM_MODULES = -module NeighborLB -module HybridLB -module RefineLB -module GreedyLB -module CkMulticast
+#CHARM_MODULES = -module NeighborLB -module HybridLB -module RefineLB -module GreedyLB -module CkMulticast -module CkLoop
 #CHARM_MODULES = -module NeighborLB -module HybridLB -module RefineLB -module GreedyLB
 #CHARM_MODULES = -module msa -module NeighborLB -module HybridLB -module RefineLB -module GreedyLB
 #MSA = -DCHARM_HAS_MSA
 #If using the CkLoop library from Charm++ for PME calculation, first define macro
 # USE_CKLOOP=1 for compiling the code, and then add "-module CkLoop" for linking.
-CKLOOP = -DUSE_CKLOOP=1
+#CKLOOP = -DUSE_CKLOOP=1
 
 # Libraries we may have changed
 LIBS = $(CUDAOBJS) $(PLUGINLIB) $(DPMTALIBS) $(DPMELIBS) $(FMMLIBS) $(TCLDLL)
