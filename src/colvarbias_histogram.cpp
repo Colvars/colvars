@@ -88,6 +88,9 @@ colvarbias_histogram::~colvarbias_histogram()
 /// Update the grid
 cvm::real colvarbias_histogram::update()
 {
+  // update base class
+  colvarbias::update();
+
   if (cvm::debug()) {
     cvm::log("Updating histogram bias " + this->name);
   }
@@ -138,12 +141,18 @@ cvm::real colvarbias_histogram::update()
   if (output_freq && (cvm::step_absolute() % output_freq) == 0) {
     write_output_files();
   }
+
   return 0.0; // no bias energy for histogram
 }
 
 
 int colvarbias_histogram::write_output_files()
 {
+  if (!has_data) {
+    // nothing to write
+    return COLVARS_OK;
+  }
+
   if (out_name.size()) {
     cvm::log("Writing the histogram file \""+out_name+"\".\n");
     cvm::ofstream grid_os(out_name.c_str());
