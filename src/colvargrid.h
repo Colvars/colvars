@@ -1157,12 +1157,12 @@ public:
 
   /// Constructor from a vector of colvars
   colvar_grid_scalar(std::vector<colvar *> &colvars,
-                      bool margin = 0);
+                     bool margin = 0);
 
   /// Accumulate the value
   inline void acc_value(std::vector<int> const &ix,
-                         cvm::real const &new_value,
-                         size_t const &imult = 0)
+                        cvm::real const &new_value,
+                        size_t const &imult = 0)
   {
     // only legal value of imult here is 0
     data[address(ix)] += new_value;
@@ -1197,32 +1197,33 @@ public:
   /// \brief Return the value of the function at ix divided by its
   /// number of samples (if the count grid is defined)
   virtual cvm::real value_output(std::vector<int> const &ix,
-                                  size_t const &imult = 0)
+                                 size_t const &imult = 0)
   {
     if (imult > 0) {
       cvm::error("Error: trying to access a component "
-                  "larger than 1 in a scalar data grid.\n");
+                 "larger than 1 in a scalar data grid.\n");
       return 0.;
     }
-    if (samples)
+    if (samples) {
       return (samples->value(ix) > 0) ?
         (data[address(ix)] / cvm::real(samples->value(ix))) :
         0.0;
-    else
+    } else {
       return data[address(ix)];
+    }
   }
 
   /// \brief Get the value from a formatted output and transform it
   /// into the internal representation (it may have been rescaled or
   /// manipulated)
   virtual void value_input(std::vector<int> const &ix,
-                            cvm::real const &new_value,
-                            size_t const &imult = 0,
-                            bool add = false)
+                           cvm::real const &new_value,
+                           size_t const &imult = 0,
+                           bool add = false)
   {
     if (imult > 0) {
       cvm::error("Error: trying to access a component "
-                  "larger than 1 in a scalar data grid.\n");
+                 "larger than 1 in a scalar data grid.\n");
       return;
     }
     if (add) {
@@ -1246,24 +1247,17 @@ public:
   std::ostream & write_restart(std::ostream &os);
 
   /// \brief Return the highest value
-  inline cvm::real maximum_value()
-  {
-    cvm::real max = data[0];
-    for (size_t i = 0; i < nt; i++) {
-      if (data[i] > max) max = data[i];
-    }
-    return max;
-  }
+  cvm::real maximum_value() const;
 
   /// \brief Return the lowest value
-  inline cvm::real minimum_value()
-  {
-    cvm::real min = data[0];
-    for (size_t i = 0; i < nt; i++) {
-      if (data[i] < min) min = data[i];
-    }
-    return min;
-  }
+  cvm::real minimum_value() const;
+
+  /// \brief Calculates the integral of the map (uses widths if they are defined)
+  cvm::real integral() const;
+
+  /// \brief Assuming that the map is a normalized probability density, \
+  /// calculates the entropy (uses widths if they are defined)
+  cvm::real entropy() const;
 
 private:
   // gradient
