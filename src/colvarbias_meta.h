@@ -161,6 +161,7 @@ protected:
   bool       ebmeta;
   colvar_grid_scalar* target_dist;
   cvm::real target_dist_volume;
+  size_t ebmeta_equil_steps;
 
 
   /// \brief Try to read the restart information by allocating new

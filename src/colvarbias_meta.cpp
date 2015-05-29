@@ -155,9 +155,12 @@ colvarbias_meta::colvarbias_meta(std::string const &conf, char const *key)
     target_dist = new colvar_grid_scalar(); 
     target_dist->init_from_colvars(colvars);
     get_keyval(conf, "targetdistfile", target_dist_file);
-    cvm::ifstream targetdiststream(target_dist_file.c_str());
+    std::ifstream targetdiststream(target_dist_file.c_str());
     target_dist->read_multicol(targetdiststream);
     // normalize target distribution and multiply by effective volume = exp(differential entropy)
+    target_dist->multiply_constant(1.0/target_dist->integral());
+    cvm::real volume = std::exp(target_dist->entropy());
+    target_dist->multiply_constant(volume);
     get_keyval(conf, "ebMetaEquilSteps", ebmeta_equil_steps, 0);
   } 
 
