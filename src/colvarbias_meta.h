@@ -160,6 +160,7 @@ protected:
   // EBmeta parameters
   bool       ebmeta;
   colvar_grid_scalar* target_dist;
+  std::string target_dist_file;
   cvm::real target_dist_volume;
   size_t ebmeta_equil_steps;
 
