@@ -157,6 +157,12 @@ protected:
   /// \brief Biasing temperature in well-tempered metadynamics
   cvm::real  bias_temperature;
 
+  // EBmeta parameters
+  bool       ebmeta;
+  colvar_grid_scalar* target_dist;
+  cvm::real target_dist_volume;
+
+
   /// \brief Try to read the restart information by allocating new
   /// grids before replacing the current ones (used e.g. in
   /// multiple_replicas)
