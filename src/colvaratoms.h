@@ -6,28 +6,26 @@
 #include "colvarmodule.h"
 #include "colvarparse.h"
 
+
 /// \brief Stores numeric id, mass and all mutable data for an atom,
 /// mostly used by a \link cvc \endlink
 ///
-/// This class may be used (although not necessarily) to keep atomic
-/// data (id, mass, position and collective variable derivatives)
-/// altogether.  There may be multiple instances with identical
+/// This class may be used to keep atomic data such as id, mass,
+/// position and collective variable derivatives) altogether.
+/// There may be multiple instances with identical
 /// numeric id, all acting independently: forces communicated through
 /// these instances will be summed together.
-///
-/// Read/write operations depend on the underlying code: hence, some
-/// member functions are defined in colvarproxy_xxx.h.
+
 class colvarmodule::atom {
 
 protected:
 
-  /// \brief Index in the list of atoms involved by the colvars (\b
-  /// NOT in the global topology!)
+  /// Index in the colvarproxy arrays (\b NOT in the global topology!)
   int           index;
 
 public:
 
-  /// Internal identifier (zero-based)
+  /// Identifier for the MD program (0-based)
   int              id;
 
   /// Mass
@@ -37,15 +35,15 @@ public:
   cvm::real      charge;
   
   /// \brief Current position (copied from the program, can be
-  /// manipulated)
+  /// modified if necessary)
   cvm::atom_pos   pos;
 
   /// \brief Current velocity (copied from the program, can be
-  /// manipulated)
+  /// modified if necessary)
   cvm::rvector    vel;
 
   /// \brief System force at the previous step (copied from the
-  /// program, can be manipulated)
+  /// program, can be modified if necessary)
   cvm::rvector    system_force;
 
   /// \brief Gradient of a scalar collective variable with respect
@@ -60,8 +58,8 @@ public:
   /// implementation
   cvm::rvector   grad;
 
-  /// \brief Default constructor, setting index and id to invalid numbers
-  atom() : index(-1), id(-1) { reset_data(); }
+  /// \brief Default constructor (sets index and id both to -1)
+  atom();
 
   /// \brief Initialize an atom for collective variable calculation
   /// and get its internal identifier \param atom_number Atom index in
@@ -74,8 +72,8 @@ public:
   /// segment_id For PSF topologies, the segment identifier; for other
   /// type of topologies, may not be required
   atom(cvm::residue_id const &residue,
-        std::string const     &atom_name,
-        std::string const     &segment_id = std::string(""));
+       std::string const     &atom_name,
+       std::string const     &segment_id = std::string(""));
 
   /// Copy constructor
   atom(atom const &a);
@@ -83,31 +81,51 @@ public:
   /// Destructor
   ~atom();
 
-  /// Set non-constant data (everything except id and mass) to zero
-  inline void reset_data() {
-    pos = atom_pos(0.0);
-    vel = grad = system_force = rvector(0.0);
+  /// Set mutable data (everything except id and mass) to zero; update mass
+  inline void reset_data()
+  {
+    pos = cvm::atom_pos(0.0);
+    vel = grad = system_force = cvm::rvector(0.0);
+  }
+
+  /// Get the latest value of the mass
+  inline void update_mass()
+  {
+    mass = (cvm::proxy)->get_atom_mass(index);
   }
 
   /// Get the current position
-  void read_position();
+  inline void read_position()
+  {
+    pos = (cvm::proxy)->get_atom_position(index);
+  }
 
   /// Get the current velocity
-  void read_velocity();
+  inline void read_velocity()
+  {
+    vel = (cvm::proxy)->get_atom_velocity(index);
+  }
 
   /// Get the system force
-  void read_system_force();
+  inline void read_system_force()
+  {
+    system_force = (cvm::proxy)->get_atom_system_force(index);
+  }
 
   /// \brief Apply a force to the atom
   ///
-  /// The force will be used later by the MD integrator, the
-  /// collective variables module does not integrate equations of
-  /// motion.  Multiple calls to this function by either the same
+  /// Note: the force is not applied instantly, but will be used later
+  /// by the MD integrator (the colvars module does not integrate
+  /// equations of motion.
+  ///
+  /// Multiple calls to this function by either the same
   /// \link atom \endlink object or different objects with identical
-  /// \link id \endlink, will all add to the existing MD force.
-  void apply_force(cvm::rvector const &new_force);
+  /// \link id \endlink will all be added together.
+  inline void apply_force(cvm::rvector const &new_force) const
+  {
+    (cvm::proxy)->apply_atom_force(index, new_force);
+  }
 };
-
 
 
 
@@ -194,12 +212,12 @@ public:
   /// which is a member function so that a group can be initialized
   /// also after construction
   atom_group(std::string const &conf,
-              char const        *key);
+             char const        *key);
 
   /// \brief Initialize the group by looking up its configuration
   /// string in conf and parsing it
   int parse(std::string const &conf,
-              char const        *key);
+            char const        *key);
 
   /// \brief Initialize the group after a temporary vector of atoms
   atom_group(std::vector<cvm::atom> const &atoms);

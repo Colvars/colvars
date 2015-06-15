@@ -16,11 +16,48 @@
 class colvarscript;
 
 /// \brief Interface between the collective variables module and
-/// the simulation or analysis program.
-/// This is the base class: each program is supported by a derived class.
-/// Only pure virtual functions ("= 0") must be reimplemented in a new interface.
+/// the simulation or analysis program (NAMD, VMD, LAMMPS...).
+/// This is the base class: each interfaced program is supported by a derived class.
+/// Only pure virtual functions ("= 0") must be reimplemented to ensure baseline functionality.
 
 class colvarproxy {
+
+protected:
+
+  /// \brief Array of 0-based integers used to uniquely associate atoms
+  /// within the host program
+  std::vector<int>          atoms_ids;
+  /// \brief Keep track of how many times each atom is used by a separate colvar object
+  std::vector<size_t>       atoms_ncopies;
+  /// \brief Masses of the atoms (allow redefinition during a run, as done e.g. in LAMMPS)
+  std::vector<cvm::real>    atoms_masses;
+  /// \brief Current three-dimensional positions of the atoms
+  std::vector<cvm::rvector> atoms_positions;
+  /// \brief Most recent total forces on each atom
+  std::vector<cvm::rvector> atoms_total_forces;
+  /// \brief Most recent forces applied by external potentials onto each atom
+  std::vector<cvm::rvector> atoms_applied_forces;
+  /// \brief Forces applied from colvars, to be communicated to the MD integrator
+  std::vector<cvm::rvector> atoms_new_colvar_forces;
+
+  /// Used by all init_atom() functions: create a slot for an atom not requested yet
+  inline int add_atom_slot(int atom_id)
+  {
+    atoms_ids.push_back(atom_id);
+    atoms_ncopies.push_back(1);
+    atoms_masses.push_back(1.0);
+    atoms_positions.push_back(cvm::rvector(0.0));
+    atoms_total_forces.push_back(cvm::rvector(0.0));
+    atoms_applied_forces.push_back(cvm::rvector(0.0));
+    atoms_new_colvar_forces.push_back(cvm::rvector(0.0));
+    return (atoms_ids.size() - 1);
+  }
+
+  /// \brief Currently opened output files: by default, these are ofstream objects.
+  /// Allows redefinition to implement different output mechanisms
+  std::list<std::ostream *> output_files;
+  /// \brief Identifiers for output_stream objects: by default, these are the names of the files
+  std::list<std::string>    output_stream_names;
 
 public:
 
@@ -31,13 +68,13 @@ public:
   inline colvarproxy() : script(NULL) {}
 
   /// Default destructor
-  virtual inline ~colvarproxy() {}
+  virtual ~colvarproxy() {}
 
-  /// (Re)initialize member data after construction
+  /// (Re)initialize required member data after construction
   virtual void setup() {}
 
 
-  // **************** SYSTEM-WIDE PHYSICAL QUANTITIES ****************
+  // **************** SIMULATION PARAMETERS ****************
 
   /// \brief Value of the unit for atomic coordinates with respect to
   /// angstroms (used by some variables for hard-coded default values)
@@ -61,33 +98,6 @@ public:
   /// \brief Set the current frame number
   // return 0 on success, -1 on failure
   virtual int frame(int) { return COLVARS_NOT_IMPLEMENTED; }
-
-
-  // Replica exchange commands:
-
-  /// \brief Indicate if multi-replica support is available and active
-  virtual bool replica_enabled() { return false; }
-
-  /// \brief Index of this replica
-  virtual int replica_index() { return 0; }
-
-  /// \brief Total number of replica
-  virtual int replica_num() { return 1; }
-
-  /// \brief Synchronize replica
-  virtual void replica_comm_barrier() {}
-
-  /// \brief Receive data from other replica
-  virtual int replica_comm_recv(char* msg_data, int buf_len, int src_rep) {
-    return COLVARS_NOT_IMPLEMENTED;
-  }
-
-  /// \brief Send data to other replica
-  virtual int replica_comm_send(char* msg_data, int msg_len, int dest_rep) {
-    return COLVARS_NOT_IMPLEMENTED;
-  }
-
-  // **************** SIMULATION PARAMETERS ****************
 
   /// \brief Prefix to be used for input files (restarts, not
   /// configuration)
@@ -115,40 +125,32 @@ public:
   virtual size_t restart_frequency() = 0;
 
 
+  // **************** MULTIPLE REPLICAS COMMUNICATION ****************
 
-  // **************** ACCESS ATOMIC DATA ****************
+  // Replica exchange commands:
 
-  /// Pass restraint energy value for current timestep to MD engine
-  virtual void add_energy(cvm::real energy) = 0;
+  /// \brief Indicate if multi-replica support is available and active
+  virtual bool replica_enabled() { return false; }
 
-  /// Tell the proxy whether system forces are needed (may not always be available)
-  virtual void request_system_force(bool yesno) = 0;
+  /// \brief Index of this replica
+  virtual int replica_index() { return 0; }
 
+  /// \brief Total number of replica
+  virtual int replica_num() { return 1; }
 
+  /// \brief Synchronize replica
+  virtual void replica_comm_barrier() {}
 
-  // **************** PERIODIC BOUNDARY CONDITIONS ****************
+  /// \brief Receive data from other replica
+  virtual int replica_comm_recv(char* msg_data, int buf_len, int src_rep) {
+    return COLVARS_NOT_IMPLEMENTED;
+  }
 
-  /// \brief Get the PBC-aware distance vector between two positions
-  virtual cvm::rvector position_distance(cvm::atom_pos const &pos1,
-                                         cvm::atom_pos const &pos2) = 0;
+  /// \brief Send data to other replica
+  virtual int replica_comm_send(char* msg_data, int msg_len, int dest_rep) {
+    return COLVARS_NOT_IMPLEMENTED;
+  }
 
-  /// \brief Get the PBC-aware square distance between two positions;
-  /// may be implemented independently from position_distance() for optimization purposes
-  virtual cvm::real position_dist2(cvm::atom_pos const &pos1,
-                                   cvm::atom_pos const &pos2);
-
-  /// \brief Get the closest periodic image to a reference position
-  /// \param pos The position to look for the closest periodic image
-  /// \param ref_pos The reference position
-  virtual void select_closest_image(cvm::atom_pos &pos,
-                                    cvm::atom_pos const &ref_pos) = 0;
-
-  /// \brief Perform select_closest_image() on a set of atomic positions
-  ///
-  /// After that, distance vectors can then be calculated directly,
-  /// without using position_distance()
-  void select_closest_images(std::vector<cvm::atom_pos> &pos,
-                             cvm::atom_pos const &ref_pos);
 
   // **************** SCRIPTING INTERFACE ****************
 
@@ -175,6 +177,7 @@ public:
                                            std::vector<cvm::matrix2d<cvm::real> > &gradient)
   { return COLVARS_NOT_IMPLEMENTED; }
 
+
   // **************** INPUT/OUTPUT ****************
 
   /// Print a message to the main log
@@ -188,35 +191,6 @@ public:
 
   /// Print a message to the main log and exit normally
   virtual void exit(std::string const &message) = 0;
-
-  /// \brief Read atom identifiers from a file \param filename name of
-  /// the file (usually a PDB) \param atoms array to which atoms read
-  /// from "filename" will be appended \param pdb_field (optiona) if
-  /// "filename" is a PDB file, use this field to determine which are
-  /// the atoms to be set
-  virtual int load_atoms(char const *filename,
-                         std::vector<cvm::atom> &atoms,
-                         std::string const &pdb_field,
-                         double const pdb_field_value = 0.0) = 0;
-
-  /// \brief Load the coordinates for a group of atoms from a file
-  /// (usually a PDB); if "pos" is already allocated, the number of its
-  /// elements must match the number of atoms in "filename"
-  virtual int load_coords(char const *filename,
-                          std::vector<cvm::atom_pos> &pos,
-                          const std::vector<int> &indices,
-                          std::string const &pdb_field,
-                          double const pdb_field_value = 0.0) = 0;
-
-protected:
-
-  /// \brief Open output files: by default, these are ofstream objects.
-  /// Allows redefinition to implement different output mechanisms
-  std::list<std::ostream *> output_files;
-  /// \brief Identifiers for output_stream objects: by default, these are the names of the files
-  std::list<std::string>    output_stream_names;
-
-public:
 
   // TODO the following definitions may be moved to a .cpp file
 
@@ -254,6 +228,8 @@ public:
         return COLVARS_OK;
       }
     }
+    cvm::error("Error: trying to close an output file or stream that wasn't open.\n",
+               BUG_ERROR);
     return COLVARS_ERROR;
   }
 
@@ -262,22 +238,141 @@ public:
   {
     return COLVARS_NOT_IMPLEMENTED;
   }
+
+
+
+  // **************** ACCESS SYSTEM DATA ****************
+
+  /// Pass restraint energy value for current timestep to MD engine
+  virtual void add_energy(cvm::real energy) = 0;
+
+  /// Tell the proxy whether system forces are needed (may not always be available)
+  virtual void request_system_force(bool yesno)
+  {
+    if (yesno == true)
+      cvm::error("Error: system forces are currently not implemented.\n",
+                 COLVARS_NOT_IMPLEMENTED);
+  }
+
+  /// \brief Get the PBC-aware distance vector between two positions
+  virtual cvm::rvector position_distance(cvm::atom_pos const &pos1,
+                                         cvm::atom_pos const &pos2) = 0;
+
+  /// \brief Get the PBC-aware square distance between two positions;
+  /// may need to be reimplemented independently from position_distance() for optimization purposes
+  virtual cvm::real position_dist2(cvm::atom_pos const &pos1,
+                                   cvm::atom_pos const &pos2)
+  {
+    return (position_distance(pos1, pos2)).norm2();
+  }
+
+  /// \brief Get the closest periodic image to a reference position
+  /// \param pos The position to look for the closest periodic image
+  /// \param ref_pos The reference position
+  virtual void select_closest_image(cvm::atom_pos &pos,
+                                    cvm::atom_pos const &ref_pos) = 0;
+
+  /// \brief Perform select_closest_image() on a set of atomic positions
+  ///
+  /// After that, distance vectors can then be calculated directly,
+  /// without using position_distance()
+  void select_closest_images(std::vector<cvm::atom_pos> &pos,
+                             cvm::atom_pos const &ref_pos)
+  {
+    for (std::vector<cvm::atom_pos>::iterator pi = pos.begin();
+         pi != pos.end(); ++pi) {
+      select_closest_image(*pi, ref_pos);
+    }
+  }
+
+
+  // **************** ACCESS ATOMIC DATA ****************
+
+  /// Prepare this atom for collective variables calculation, selecting it by numeric index (1-based)
+  virtual int init_atom(int atom_number) = 0;
+
+  /// Select this atom for collective variables calculation, using name and residue number.
+  /// Not all programs support this: leave this function as is in those cases.
+  virtual int init_atom(cvm::residue_id const &residue,
+                        std::string const     &atom_name,
+                        std::string const     &segment_id)
+  {
+    cvm::error("Error: initializing an atom by name and residue number is currently not supported.\n",
+               COLVARS_NOT_IMPLEMENTED);
+    return -1;
+  }
+
+  /// \brief Used by the atom class destructor: rather than deleting the array slot
+  /// (costly) set the corresponding atoms_copies to zero
+  virtual void clear_atom(int index)
+  {
+    if ( (index < 0) || (index >= atoms_ids.size()) ) {
+      cvm::error("Error: trying to disable an atom that was not previously requested.\n",
+                 INPUT_ERROR);
+    }
+    if (atoms_ncopies[index] > 0) {
+      atoms_ncopies[index] -= 1;
+    }
+  }
+
+  /// Get the numeric ID of the given atom (for the program)
+  inline cvm::real get_atom_id(int index) const
+  {
+    return atoms_ids[index];
+  }
+
+  /// Get the mass of the given atom
+  inline cvm::real get_atom_mass(int index) const
+  {
+    return atoms_masses[index];
+  }
+
+  /// Read the current position of the given atom
+  inline cvm::rvector get_atom_position(int index) const
+  {
+    return atoms_positions[index];
+  }
+
+  /// Read the current total system force of the given atom
+  inline cvm::rvector get_atom_system_force(int index) const
+  {
+    return atoms_total_forces[index] - atoms_applied_forces[index];
+  }
+
+  /// Request that this force is applied to the given atom
+  inline void apply_atom_force(int index, cvm::rvector const &new_force)
+  {
+    atoms_new_colvar_forces[index] += new_force;
+  }
+
+  /// Read the current velocity of the given atom
+  virtual cvm::rvector get_atom_velocity(int index)
+  {
+    cvm::error("Error: reading the current velocity of an atom is not yet implemented.\n",
+               COLVARS_NOT_IMPLEMENTED);
+    return cvm::rvector(0.0);
+  }
+
+  /// \brief Read atom identifiers from a file \param filename name of
+  /// the file (usually a PDB) \param atoms array to which atoms read
+  /// from "filename" will be appended \param pdb_field (optiona) if
+  /// "filename" is a PDB file, use this field to determine which are
+  /// the atoms to be set
+  virtual int load_atoms(char const *filename,
+                         std::vector<cvm::atom> &atoms,
+                         std::string const &pdb_field,
+                         double const pdb_field_value = 0.0) = 0;
+
+  /// \brief Load the coordinates for a group of atoms from a file
+  /// (usually a PDB); if "pos" is already allocated, the number of its
+  /// elements must match the number of atoms in "filename"
+  virtual int load_coords(char const *filename,
+                          std::vector<cvm::atom_pos> &pos,
+                          const std::vector<int> &indices,
+                          std::string const &pdb_field,
+                          double const pdb_field_value = 0.0) = 0;
+
 };
 
-
-inline void colvarproxy::select_closest_images(std::vector<cvm::atom_pos> &pos,
-                                               cvm::atom_pos const &ref_pos)
-{
-  for (std::vector<cvm::atom_pos>::iterator pi = pos.begin();
-       pi != pos.end(); ++pi) {
-    select_closest_image(*pi, ref_pos);
-  }
-}
-
-inline cvm::real colvarproxy::position_dist2(cvm::atom_pos const &pos1,
-                                             cvm::atom_pos const &pos2)
-{
-  return (position_distance(pos1, pos2)).norm2();
-}
 
 #endif
