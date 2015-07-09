@@ -122,6 +122,7 @@ colvarproxy_namd::colvarproxy_namd()
     cvm::log("atoms_ids = "+cvm::to_str(atoms_ids)+"\n");
     cvm::log("atoms_ncopies = "+cvm::to_str(atoms_ncopies)+"\n");
     cvm::log("atoms_masses = "+cvm::to_str(atoms_masses)+"\n");
+    cvm::log("atoms_charges = "+cvm::to_str(atoms_charges)+"\n");
     cvm::log("atoms_positions = "+cvm::to_str(atoms_positions)+"\n");
     cvm::log("atoms_total_forces = "+cvm::to_str(atoms_total_forces)+"\n");
     cvm::log("atoms_applied_forces = "+cvm::to_str(atoms_applied_forces)+"\n");
@@ -175,6 +176,9 @@ void colvarproxy_namd::setup()
 
     // update mass
     atoms_masses[i] = Node::Object()->molecule->atommass(atoms_ids[i]);
+
+    // update charges
+    atoms_charges[i] = Node::Object()->molecule->atomcharge(atoms_ids[i]);
 
     // zero out mutable arrays
     atoms_positions[i] = cvm::rvector(0.0, 0.0, 0.0);
@@ -462,6 +466,7 @@ int colvarproxy_namd::init_atom(int atom_number)
   int const index = add_atom_slot(aid);
   modifyRequestedAtoms().add(aid);
   atoms_masses[index] = Node::Object()->molecule->atommass(aid);
+  atoms_charges[index] = Node::Object()->molecule->atomcharge(aid);
   return index;
 }
 
@@ -511,6 +516,7 @@ int colvarproxy_namd::init_atom(cvm::residue_id const &residue,
   int const index = add_atom_slot(aid);
   modifyRequestedAtoms().add(aid);
   atoms_masses[index] = Node::Object()->molecule->atommass(aid);
+  atoms_charges[index] = Node::Object()->molecule->atomcharge(aid);
   return index;
 }
 

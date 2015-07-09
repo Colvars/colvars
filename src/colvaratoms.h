@@ -31,6 +31,9 @@ public:
   /// Mass
   cvm::real      mass;
 
+  /// Charge
+  cvm::real      charge;
+  
   /// \brief Current position (copied from the program, can be
   /// modified if necessary)
   cvm::atom_pos   pos;
@@ -196,6 +199,9 @@ public:
   /// Total mass of the atom group
   cvm::real total_mass;
 
+  /// Total charge of the atom group
+  cvm::real total_charge;
+  
   /// \brief Don't apply any force on this group (use its coordinates
   /// only to calculate a colvar)
   bool        noforce;
@@ -277,6 +283,9 @@ public:
   /// that coordinates are already pbc-wrapped
   cvm::atom_pos center_of_geometry() const;
 
+  ///\brief Return the dipole of an atom group
+  cvm::atom_pos dipole(cvm::atom_pos) const;
+  
   /// \brief Return the center of mass of the positions, assuming that
   /// coordinates are already pbc-wrapped
   cvm::atom_pos center_of_mass() const;

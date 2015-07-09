@@ -386,6 +386,7 @@ int colvarproxy_lammps::init_lammps_atom(const int &aid, cvm::atom *atom)
 {
   atom->id = aid;
   atom->mass = 0.0;
+  atom->charge = 0.0;
 
   for (size_t i = 0; i < colvars_atoms.size(); i++) {
     if (colvars_atoms[i] == aid) {
@@ -479,7 +480,7 @@ cvm::atom::atom(cvm::residue_id const &residue,
 
 // copy constructor
 cvm::atom::atom(cvm::atom const &a)
-  : index(a.index), id(a.id), mass(a.mass)
+  : index(a.index), id(a.id), mass(a.mass), charge(a.charge)
 {
   // init_lammps_atom() has already been called by a's constructor, no
   // need to call it again
@@ -506,6 +507,7 @@ void cvm::atom::read_position()
   this->pos.y = cp->positions[this->index].y;
   this->pos.z = cp->positions[this->index].z;
   this->mass = cp->positions[this->index].m;
+  this->charge = cp->positions[this->index].c;
 }
 
 void cvm::atom::read_velocity()
