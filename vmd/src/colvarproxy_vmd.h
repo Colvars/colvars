@@ -159,7 +159,7 @@ inline cvm::rvector colvarproxy_vmd::position_distance(cvm::atom_pos const &pos1
                                                         cvm::atom_pos const &pos2)
 {
   // TODO: add in the proxy constructor a check for orthonormal PBCs
-  Timestep *ts = vmdmol->current();
+  Timestep *ts = vmdmol->get_frame(vmdmol_frame);
   cvm::real const a = ts->a_length;
   cvm::real const b = ts->b_length;
   cvm::real const c = ts->c_length;

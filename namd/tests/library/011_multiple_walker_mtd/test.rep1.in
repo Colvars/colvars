@@ -1,0 +1,37 @@
+colvarsTrajFrequency    1
+
+colvar {
+
+    name d
+
+    outputAppliedForce on
+    width 0.5
+
+    lowerBoundary 0.0
+    upperBoundary 25.0
+
+    upperWallConstant 100.0
+
+    distance {
+        group1 {
+            psfSegID BH
+            atomNameResidueRange CA 1-1
+        }
+        group2 {
+            psfSegID BH
+            atomNameResidueRange CA 10-10
+        }
+    }
+} 
+
+
+metadynamics {
+    colvars d
+
+    newHillFrequency 10
+
+    multipleReplicas  yes
+    replicaID         rep1
+    replicasRegistry  replicas.registry.txt
+    replicaUpdateFrequency 10
+}

@@ -37,7 +37,7 @@ protected:
   /// \brief Whether or not to accumulate data_begin_pos and
   /// data_end_pos in key_lookup(); it may be useful to disable
   /// this after the constructor is called, because other files may be
-  /// read (e.g. restart) that would mess up with the registry; in any
+  /// read (e.g. restart) that would mess up the registry; in any
   /// case, nothing serious happens until check_keywords() is invoked
   /// (which should happen only right after construction)
   bool save_delimiters;
@@ -113,6 +113,7 @@ public:
 
   _get_keyval_scalar_proto_(int, (int)0);
   _get_keyval_scalar_proto_(size_t, (size_t)0);
+  _get_keyval_scalar_proto_(long, 0);
   _get_keyval_scalar_proto_(std::string, std::string(""));
   _get_keyval_scalar_proto_(cvm::real, (cvm::real)0.0);
   _get_keyval_scalar_proto_(cvm::rvector, cvm::rvector());
@@ -130,6 +131,7 @@ public:
 
   _get_keyval_vector_proto_(int, 0);
   _get_keyval_vector_proto_(size_t, 0);
+  _get_keyval_vector_proto_(long, 0);
   _get_keyval_vector_proto_(std::string, std::string(""));
   _get_keyval_vector_proto_(cvm::real, 0.0);
   _get_keyval_vector_proto_(cvm::rvector, cvm::rvector());
@@ -141,6 +143,9 @@ public:
   /// of allowed keywords; this will invoke strip_values() first and
   /// then loop over all words
   int check_keywords(std::string &conf, char const *key);
+
+  /// \brief Use this after parsing a config string (note that check_keywords() calls it already)
+  void clear_keyword_registry();
 
 
   /// \brief Return a lowercased copy of the string

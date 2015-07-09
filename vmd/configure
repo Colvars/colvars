@@ -1100,8 +1100,11 @@ if ( $config_freevr && !$config_opengl) {
 }
 $freevr_defines     = "-DVMDFREEVR";
 $freevr_dir         = "$vmd_library_dir/freevr";
-$freevr_include     = "-I$freevr_dir/include";
-$freevr_library     = "-L$freevr_dir/lib_$config_arch";
+$freevr_include_dir = $ENV{"FREEVR_INC_DIR"} || "$freevr_dir/include";
+$freevr_library_dir = $ENV{"FREEVR_LIB_DIR"} || "$freevr_dir/lib_$config_arch";
+$freevr_include     = "-I$freevr_include_dir";
+$freevr_library     = "-L$freevr_library_dir";
+
 
 # choose which library to link against
 if (($config_arch eq "LINUX") || ($config_arch eq "LINUXAMD64")) {

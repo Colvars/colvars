@@ -1617,7 +1617,7 @@ int colvar::write_output_files()
 
 // ******************** ANALYSIS FUNCTIONS ********************
 
-void colvar::analyse()
+void colvar::analyze()
 {
   if (tasks[task_runave]) {
     calc_runave();
