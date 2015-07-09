@@ -29,9 +29,9 @@ colvar::angle::angle(std::string const &conf)
 colvar::angle::angle(cvm::atom const &a1,
                       cvm::atom const &a2,
                       cvm::atom const &a3)
-  : group1(std::vector<cvm::atom> (1, a1)),
-    group2(std::vector<cvm::atom> (1, a2)),
-    group3(std::vector<cvm::atom> (1, a3))
+  : group1(std::vector<cvm::atom>(1, a1)),
+    group2(std::vector<cvm::atom>(1, a2)),
+    group3(std::vector<cvm::atom>(1, a3))
 {
   function_type = "angle";
   b_inverse_gradients = true;
@@ -143,45 +143,44 @@ void colvar::angle::apply_force(colvarvalue const &force)
 
 
 
-colvar::dipole_angle::dipole_angle (std::string const &conf)
-: cvc (conf)
-  //: angle (conf)
+colvar::dipole_angle::dipole_angle(std::string const &conf)
+  : cvc(conf)
 {
   function_type = "dipole_angle";
-  parse_group (conf, "group1", group1);
-  parse_group (conf, "group2", group2);
-  parse_group (conf, "group3", group3);
-  atom_groups.push_back (&group1);
-  atom_groups.push_back (&group2);
-  atom_groups.push_back (&group3);
-  if (get_keyval (conf, "oneSiteSystemForce", b_1site_force, false)) {
-    cvm::log ("Computing system force on group 1 only");
+  parse_group(conf, "group1", group1);
+  parse_group(conf, "group2", group2);
+  parse_group(conf, "group3", group3);
+  atom_groups.push_back(&group1);
+  atom_groups.push_back(&group2);
+  atom_groups.push_back(&group3);
+  if (get_keyval(conf, "oneSiteSystemForce", b_1site_force, false)) {
+    cvm::log("Computing system force on group 1 only");
   }
-  x.type (colvarvalue::type_scalar);
+  x.type(colvarvalue::type_scalar);
 }
 
 
-colvar::dipole_angle::dipole_angle (cvm::atom const &a1,
+colvar::dipole_angle::dipole_angle(cvm::atom const &a1,
                       cvm::atom const &a2,
                       cvm::atom const &a3)
-  : group1 (std::vector<cvm::atom> (1, a1)),
-    group2 (std::vector<cvm::atom> (1, a2)),
-    group3 (std::vector<cvm::atom> (1, a3))
+  : group1(std::vector<cvm::atom>(1, a1)),
+    group2(std::vector<cvm::atom>(1, a2)),
+    group3(std::vector<cvm::atom>(1, a3))
 {
   function_type = "dipole_angle";
   b_1site_force = false;
-  atom_groups.push_back (&group1);
-  atom_groups.push_back (&group2);
-  atom_groups.push_back (&group3);
+  atom_groups.push_back(&group1);
+  atom_groups.push_back(&group2);
+  atom_groups.push_back(&group3);
 
-  x.type (colvarvalue::type_scalar);
+  x.type(colvarvalue::type_scalar);
 }
 
 
 colvar::dipole_angle::dipole_angle()
 {
   function_type = "dipole_angle";
-  x.type (colvarvalue::type_scalar);
+  x.type(colvarvalue::type_scalar);
 }
 
 
@@ -190,15 +189,15 @@ void colvar::dipole_angle::calc_value()
   cvm::atom_pos const g1_pos = group1.center_of_mass();
   cvm::atom_pos const g2_pos = group2.center_of_mass();
   cvm::atom_pos const g3_pos = group3.center_of_mass();
-  
+
   r21 = group1.dipole(g1_pos);
   r21l = r21.norm();
-  r23  = cvm::position_distance (g2_pos, g3_pos);
+  r23  = cvm::position_distance(g2_pos, g3_pos);
   r23l = r23.norm();
-  
+
   cvm::real     const cos_theta = (r21*r23)/(r21l*r23l);
 
-  x.real_value = (180.0/PI) * std::acos (cos_theta);
+  x.real_value = (180.0/PI) * std::acos(cos_theta);
 }
 
 //to be implemented
@@ -208,7 +207,7 @@ void colvar::dipole_angle::calc_value()
 void colvar::dipole_angle::calc_gradients()
 {
   cvm::real const cos_theta = (r21*r23)/(r21l*r23l);
-  cvm::real const dxdcos = -1.0 / std::sqrt (1.0 - cos_theta*cos_theta);
+  cvm::real const dxdcos = -1.0 / std::sqrt(1.0 - cos_theta*cos_theta);
 
   dxdr1 = (180.0/PI) * dxdcos *
   (1.0/r21l)* (r23/r23l + (-1.0) * cos_theta * r21/r21l );
@@ -224,27 +223,27 @@ void colvar::dipole_angle::calc_gradients()
   for (size_t i = 0; i < group1.size(); i++) {
     group1[i].grad =(group1[i].charge + (-1)* group1[i].mass * aux1) * (dxdr1);
   }
-  
+
   for (size_t i = 0; i < group2.size(); i++) {
     group2[i].grad = (group2[i].mass/group2.total_mass)* dxdr3 * (-1.0);
   }
-  
+
   for (size_t i = 0; i < group3.size(); i++) {
     group3[i].grad =(group3[i].mass/group3.total_mass) * (dxdr3);
   }
 }
 
 
-void colvar::dipole_angle::apply_force (colvarvalue const &force)
+void colvar::dipole_angle::apply_force(colvarvalue const &force)
 {
   if (!group1.noforce)
-    group1.apply_colvar_force (force.real_value);
-    
+    group1.apply_colvar_force(force.real_value);
+
   if (!group2.noforce)
-    group2.apply_colvar_force (force.real_value);
-  
+    group2.apply_colvar_force(force.real_value);
+
   if (!group3.noforce)
-    group3.apply_colvar_force (force.real_value);
+    group3.apply_colvar_force(force.real_value);
 }
 
 
@@ -278,10 +277,10 @@ colvar::dihedral::dihedral(cvm::atom const &a1,
                             cvm::atom const &a2,
                             cvm::atom const &a3,
                             cvm::atom const &a4)
-  : group1(std::vector<cvm::atom> (1, a1)),
-    group2(std::vector<cvm::atom> (1, a2)),
-    group3(std::vector<cvm::atom> (1, a3)),
-    group4(std::vector<cvm::atom> (1, a4))
+  : group1(std::vector<cvm::atom>(1, a1)),
+    group2(std::vector<cvm::atom>(1, a2)),
+    group3(std::vector<cvm::atom>(1, a3)),
+    group4(std::vector<cvm::atom>(1, a4))
 {
   if (cvm::debug())
     cvm::log("Initializing dihedral object from atom groups.\n");

@@ -103,23 +103,23 @@ colvar::colvar(std::string const &conf)
   initialize_components("distance vector",  "distanceVec",    distance_vec);
   initialize_components("Cartesian coordinates", "cartesian",  cartesian);
   initialize_components("distance vector "
-                         "direction",        "distanceDir",    distance_dir);
+                        "direction",        "distanceDir",    distance_dir);
   initialize_components("distance projection "
-                         "on an axis",       "distanceZ",      distance_z);
+                        "on an axis",       "distanceZ",      distance_z);
   initialize_components("distance projection "
-                         "on a plane",       "distanceXY",     distance_xy);
+                        "on a plane",       "distanceXY",     distance_xy);
   initialize_components("average distance weighted by inverse power",
-                         "distanceInv", distance_inv);
+                        "distanceInv", distance_inv);
   initialize_components("N1xN2-long vector of pairwise distances",
-                         "distancePairs", distance_pairs);
+                        "distancePairs", distance_pairs);
 
   initialize_components("coordination "
-                         "number",           "coordNum",       coordnum);
+                        "number",           "coordNum",       coordnum);
   initialize_components("self-coordination "
-                         "number",           "selfCoordNum",   selfcoordnum);
+                        "number",           "selfCoordNum",   selfcoordnum);
 
   initialize_components("angle",            "angle",          angle);
-  initialize_components ("dipole angle",     "dipoleAngle",   dipole_angle);
+  initialize_components("dipole angle",     "dipoleAngle",    dipole_angle);
   initialize_components("dihedral",         "dihedral",       dihedral);
 
   initialize_components("hydrogen bond",    "hBond",          h_bond);
@@ -128,13 +128,13 @@ colvar::colvar(std::string const &conf)
   initialize_components("alpha helix",      "alpha",          alpha_angles);
 
   initialize_components("dihedral principal "
-                         "component",        "dihedralPC",     dihedPC);
+                        "component",        "dihedralPC",     dihedPC);
 
   initialize_components("orientation",      "orientation",    orientation);
   initialize_components("orientation "
-                         "angle",            "orientationAngle",orientation_angle);
+                        "angle",            "orientationAngle",orientation_angle);
   initialize_components("orientation "
-                         "projection",       "orientationProj",orientation_proj);
+                        "projection",       "orientationProj",orientation_proj);
   initialize_components("tilt",             "tilt",           tilt);
   initialize_components("spin angle",       "spinAngle",      spin_angle);
 
@@ -143,17 +143,17 @@ colvar::colvar(std::string const &conf)
   //  initialize_components ("logarithm of MSD", "logmsd",         logmsd);
 
   initialize_components("radius of "
-                         "gyration",         "gyration",       gyration);
+                        "gyration",         "gyration",       gyration);
   initialize_components("moment of "
-                         "inertia",          "inertia",        inertia);
+                        "inertia",          "inertia",        inertia);
   initialize_components("moment of inertia around an axis",
-                                             "inertiaZ",       inertia_z);
+                        "inertiaZ",       inertia_z);
   initialize_components("eigenvector",      "eigenvector",    eigenvector);
 
   if (!cvcs.size()) {
     cvm::error("Error: no valid components were provided "
-                      "for this collective variable.\n",
-              INPUT_ERROR);
+               "for this collective variable.\n",
+               INPUT_ERROR);
     return;
   }
 

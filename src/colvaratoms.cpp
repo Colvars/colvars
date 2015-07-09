@@ -103,7 +103,7 @@ cvm::atom_group::atom_group()
     ref_pos_group(NULL), noforce(false)
 {
   total_mass = 0.0;
-  total_charge = 0.0; 
+  total_charge = 0.0;
 }
 
 
@@ -700,12 +700,9 @@ cvm::atom_pos cvm::atom_group::center_of_mass() const
   return com;
 }
 
-cvm::atom_pos cvm::atom_group::dipole(cvm::atom_pos com) const
+cvm::rvector cvm::atom_group::dipole(cvm::atom_pos const &com) const
 {
-  if (b_dummy)
-    return dummy_atom_pos;
-
-  cvm::atom_pos dip (0.0, 0.0, 0.0);
+  cvm::atom_pos dip(0.0, 0.0, 0.0);
   for (cvm::atom_const_iter ai = this->begin();
        ai != this->end(); ai++) {
     dip += ai->charge * (ai->pos - com);

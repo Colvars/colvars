@@ -600,10 +600,11 @@ void FixColvars::setup(int vflag)
         } else {
           comm_buf[nme].m = atom->mass[type[k]];
         }
-	
+
 	if (atom->q_flag) {
           comm_buf[nme].c = atom->q[k];
         }
+
         ++nme;
       }
     }

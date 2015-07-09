@@ -21,19 +21,19 @@ class colvarmodule::atom {
 protected:
 
   /// Index in the colvarproxy arrays (\b NOT in the global topology!)
-  int           index;
+  int index;
 
 public:
 
   /// Identifier for the MD program (0-based)
-  int              id;
+  int             id;
 
   /// Mass
-  cvm::real      mass;
+  cvm::real       mass;
 
   /// Charge
-  cvm::real      charge;
-  
+  cvm::real       charge;
+
   /// \brief Current position (copied from the program, can be
   /// modified if necessary)
   cvm::atom_pos   pos;
@@ -201,7 +201,7 @@ public:
 
   /// Total charge of the atom group
   cvm::real total_charge;
-  
+
   /// \brief Don't apply any force on this group (use its coordinates
   /// only to calculate a colvar)
   bool        noforce;
@@ -284,8 +284,8 @@ public:
   cvm::atom_pos center_of_geometry() const;
 
   ///\brief Return the dipole of an atom group
-  cvm::atom_pos dipole(cvm::atom_pos) const;
-  
+  cvm::rvector dipole(cvm::atom_pos const &com) const;
+
   /// \brief Return the center of mass of the positions, assuming that
   /// coordinates are already pbc-wrapped
   cvm::atom_pos center_of_mass() const;
