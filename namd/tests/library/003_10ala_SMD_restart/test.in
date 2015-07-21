@@ -24,7 +24,7 @@ colvar {
             psfSegID BH
             atomNameResidueRange CA 1-10
         }
-        refpositionsfile ../Common/da.pdb
+        refpositionsfile ../Common/pi-ideal.pdb
     }
 } 
 

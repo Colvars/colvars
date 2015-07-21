@@ -227,6 +227,7 @@ size_t      colvarparse::dummy_pos = 0;
 
 _get_keyval_scalar_(int);
 _get_keyval_scalar_(size_t);
+_get_keyval_scalar_(long);
 _get_keyval_scalar_string_(std::string);
 _get_keyval_scalar_(cvm::real);
 _get_keyval_scalar_(cvm::rvector);
@@ -238,6 +239,7 @@ _get_keyval_scalar_(colvarvalue);
 
 _get_keyval_vector_(int);
 _get_keyval_vector_(size_t);
+_get_keyval_vector_(long);
 _get_keyval_vector_(std::string);
 _get_keyval_vector_(cvm::real);
 _get_keyval_vector_(cvm::rvector);
@@ -353,6 +355,14 @@ void colvarparse::strip_values(std::string &conf)
 }
 
 
+void colvarparse::clear_keyword_registry()
+{
+  allowed_keywords.clear();
+  data_begin_pos.clear();
+  data_end_pos.clear();
+}
+
+
 int colvarparse::check_keywords(std::string &conf, char const *key)
 {
   if (cvm::debug())
@@ -394,9 +404,9 @@ int colvarparse::check_keywords(std::string &conf, char const *key)
       return COLVARS_ERROR;
     }
   }
-  allowed_keywords.clear();
-  data_begin_pos.clear();
-  data_end_pos.clear();
+
+  clear_keyword_registry();
+
   return COLVARS_OK;
 }
 

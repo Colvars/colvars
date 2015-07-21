@@ -80,30 +80,7 @@ In all following uses, the \texttt{cv} command will continue operating on the sa
 To use the \texttt{cv} command on a different molecule, use \texttt{cv delete} first and then \texttt{cv molid }\emph{$<$molid$>$}.
 Invoking the \texttt{cv} command with no arguments prints a help screen.
 
-The list of parameters of the \texttt{cv} command is:
-\begin{itemize}
-\item \texttt{molid} \emph{$<$molid$>$}: set up the colvars module, where \emph{$<$molid$>$} is the identifier of a valid VMD molecule as provided e.g.~by \texttt{molinfo}: for example, use \texttt{cv molid top} to set the colvars module for the top molecule;
-\item \texttt{configfile} \emph{$<$file name$>$}: read the colvars configuration from the contents of the specified file; the \texttt{cv} command can be invoked multiple times with this argument and/or with the \texttt{config} argument; see \ref{sec:colvars_config} for the configuration syntax;
-\item \texttt{config} \emph{$<$string$>$}: read the colvars configuration from the given text string; see \ref{sec:colvars_config} for the configuration syntax;
-\item \texttt{reset}: delete all internal configuration, while keeping information about the VMD molecule;
-\item \texttt{delete}: delete the colvars module; after this, the module can be reissued again using \texttt{cv molid};
-\item \texttt{list}: return a list of all colvars currently defined (see \ref{sec:colvar}, \ref{sec:cvc} and \ref{sec:colvar_atom_groups} for how to configure a collective variable);
-\item \texttt{list biases}: return a list of all collective variable biases (i.e.~sampling and analysis algorithms) currently defined (see \ref{sec:colvarbias} for how to configure a bias);
-\item \texttt{load} \emph{$<$file name$>$}: load a collective variables state file, typically produced during a simulation; this parameter requires that the corresponding configuration has already been loaded by \texttt{configfile} or \texttt{config}; see \ref{sec:colvars_output} for a brief description of this file; the contents of this file are not required for as long as the VMD molecule has valid coordinates and \texttt{cv update} is used;
-\item \texttt{save} \emph{$<$prefix$>$}: save the current state in a file whose name begins with the given argument; if any of the biases have additional output files defined, those are saved as well;
-\item \texttt{update}: recalculate all colvars and biases based on the current atomic coordinates;
-\item \texttt{printframe}: return a summary of the current frame, in a format equivalent to a line of the collective variables trajectory file;
-\item \texttt{printframelabels}: return text labels to annotate \texttt{printframe}'s output;
-\item \texttt{frame}: return the current frame number, where variables are calculated;
-\item \texttt{frame} \emph{$<$new frame$>$}: set the frame number (must be a valid frame number of the VMD molecule);
-\item \texttt{colvar} \emph{$<$name$>$} \texttt{update}: recalculate the colvar \emph{$<$name$>$};
-\item \texttt{colvar} \emph{$<$name$>$} \texttt{value}: return the current value of the colvar \emph{$<$name$>$};
-\item \texttt{colvar} \emph{$<$name$>$} \texttt{delete}: delete the colvar \emph{$<$name$>$};
-\item \texttt{colvar} \emph{$<$name$>$} \texttt{addforce} \emph{force}: apply the given force on \emph{$<$name$>$} (this option is provided for compatibility with NAMD, but has no effect in VMD);
-\item \texttt{bias} \emph{$<$name$>$} \texttt{update}: recalculate the bias \emph{$<$name$>$};
-\item \texttt{bias} \emph{$<$name$>$} \texttt{energy}: return the current energy of the bias \emph{$<$name$>$};
-\item \texttt{bias} \emph{$<$name$>$} \texttt{delete}: delete the bias \emph{$<$name$>$}.
-\end{itemize}
+\input{colvars-cv.tex}
 }
 
 \cvnamdonly{
@@ -3647,63 +3624,13 @@ provided at run time as a Tcl script\cvnamdonly{, in the spirit of \texttt{TclFo
 \cvnamdonly{\cvscriptonly{\cvsec{Colvars scripting}
 \label{sec:scripting}
 
-Collective variables and biases can be added, queried and deleted through the scripting command
-\texttt{cv}, with the following syntax: \texttt{cv~$<$subcommand$>$ [args...]}
-for which the available subcommands are listed in the next subsections.
-For example, to query the value of a collective variable named \texttt{myVar},
-use the following syntax: \texttt{set value [cv colvar myVar value]}.
-
-\cvnamdonly{This interface is particularly useful to implement custom biases as scripted colvar forces.
+This interface is particularly useful to implement custom biases as scripted colvar forces.
 See the \texttt{scriptedColvarForces} option in \ref{sec:scripted_biases}.
 Note that scripting commands may not be used directly in the NAMD configuration file before the first 
-\texttt{run} or \texttt{minimize} statement. That is, they may be used within the callback procedures
+\texttt{run} or \texttt{minimize} statement. They may be used either within the callback procedures
 (e.g. \texttt{calc\_colvar\_forces}) or in the NAMD config file after a \texttt{run} or
-\texttt{minimize} statement.}
+\texttt{minimize} statement.
 
-\cvsubsec{Managing the colvars module}
-\begin{itemize}
-\cvvmdugonly{
-\item \texttt{molid $<$molecule ID$>$} : create colvars instance for specified molecule
-\item \texttt{delete} : delete this colvars module instance
-}
-\item \texttt{configfile $<$file name$>$} : read configuration from a file
-\item \texttt{config $<$string$>$} : read configuration from the given string
-\item \texttt{reset} : delete all internal configuration
-\item \texttt{version} : return version of colvars codes
-\end{itemize}
-
-\cvsubsec{Input and output}
-\begin{itemize}
-\item \texttt{list} : return a list of all variables
-\item \texttt{list biases} : return a list of all biases
-\item \texttt{load $<$file name$>$} : load a state file (requires configuration)
-\item \texttt{update} : recalculate colvars and biases
-\item \texttt{printframe} : return a summary of the current frame
-\item \texttt{printframelabels} : return labels to annotate printframe's output
-\cvvmdugonly{
-\item \texttt{frame} : return current frame number
-\item \texttt{frame $<$new\_frame$>$} : set frame number
-}
-\end{itemize}
-
-\cvsubsec{Accessing collective variables}
-\begin{itemize}
-\item \texttt{colvar $<$name$>$ value} : return the current value of colvar $<$name$>$
-\item \texttt{colvar $<$name$>$ update} : recalculate colvar $<$name$>$
-\item \texttt{colvar $<$name$>$ type} : return the type of colvar $<$name$>$
-\item \texttt{colvar $<$name$>$ delete} : delete colvar $<$name$>$
-\cvnamdonly{
-\item \texttt{colvar $<$name$>$ addforce $<$F$>$} : apply given force on colvar $<$name$>$
-}
-\item \texttt{colvar $<$name$>$ getconfig} : return config string of colvar $<$name$>$
-\end{itemize}
-
-\cvsubsec{Accessing biases}
-\begin{itemize}
-\item \texttt{bias $<$name$>$ energy} : return the current energy of the bias $<$name$>$
-\item \texttt{bias $<$name$>$ update} : recalculate the bias $<$name$>$
-\item \texttt{bias $<$name$>$ delete} : delete the bias $<$name$>$
-\item \texttt{bias $<$name$>$ getconfig} : return config string of bias $<$name$>$
-\end{itemize}
+\input{colvars-cv.tex}
 }
 }
