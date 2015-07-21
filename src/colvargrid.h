@@ -1255,8 +1255,8 @@ public:
   /// \brief Calculates the integral of the map (uses widths if they are defined)
   cvm::real integral() const;
 
-  /// \brief Assuming that the map is a normalized probability density, \
-  /// calculates the entropy (uses widths if they are defined)
+  /// \brief Assuming that the map is a normalized probability density,
+  ///        calculates the entropy (uses widths if they are defined)
   cvm::real entropy() const;
 
 private:
