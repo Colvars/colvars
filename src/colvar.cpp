@@ -1256,6 +1256,25 @@ void colvar::communicate_forces()
 }
 
 
+int colvar::set_cvc_flags(std::vector<bool> const &flags) {
+
+  size_t i;
+  if (flags.size() != cvcs.size()) {
+    cvm::error("ERROR: Wrong number of CVC flags provided.");
+    return COLVARS_ERROR;
+  }
+  bool e = false;
+  for (i = 0; i < cvcs.size(); i++) {
+    cvcs[i]->b_enabled = flags[i];
+    e = e || flags[i];
+  }
+  if (!e) {
+    cvm::error("ERROR: All CVCs are disabled for this colvar.");
+    return COLVARS_ERROR;
+  }
+  return COLVARS_OK;
+}
+
 
 // ******************** METRIC FUNCTIONS ********************
 // Use the metrics defined by \link cvc \endlink objects
