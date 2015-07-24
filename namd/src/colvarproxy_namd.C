@@ -366,7 +366,8 @@ int colvarproxy_namd::run_colvar_gradient_callback(std::string const &name,
   Tcl_ListObjGetElements(interp, Tcl_GetObjResult(interp),
                          &n, &list);
   if (n != int(gradient.size())) {
-    cvm::error("Error parsing list of gradient values from script");
+    cvm::error("Error parsing list of gradient values from script: found "
+        + cvm::to_str(n) + " values instead of " + cvm::to_str(gradient.size()));
     return COLVARS_ERROR;
   }
   for (i = 0; i < gradient.size(); i++) {
