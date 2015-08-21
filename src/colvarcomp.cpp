@@ -42,12 +42,13 @@ colvar::cvc::cvc(std::string const &conf)
 
 
 void colvar::cvc::parse_group(std::string const &conf,
-                               char const *group_key,
-                               cvm::atom_group &group,
-                               bool optional)
+                              char const *group_key,
+                              cvm::atom_group &group,
+                              bool optional)
 {
   if (key_lookup(conf, group_key)) {
-    if (group.parse(conf, group_key) != COLVARS_OK) {
+    group.key = group_key;
+    if (group.parse(conf) != COLVARS_OK) {
       cvm::error("Error parsing definition for atom group \""+
                          std::string(group_key)+"\".\n");
       return;
@@ -126,10 +127,7 @@ void colvar::cvc::debug_gradients(cvm::atom_group &group)
       group.read_positions();
       // change one coordinate
       group[ia].pos[id] += cvm::debug_gradients_step_size;
-      // (re)do the fit (if defined)
-      if (group.b_center || group.b_rotate) {
-        group.calc_apply_roto_translation();
-      }
+      group.update_properties();
       calc_value();
       cvm::real x_1 = x.real_value;
       if ((x.type() == colvarvalue::type_vector) && (x.size() == 1)) x_1 = x[0];
@@ -163,7 +161,7 @@ void colvar::cvc::debug_gradients(cvm::atom_group &group)
 //         ref.read_positions();
 //         // change one coordinate
 //         ref[ia].pos[id] += cvm::debug_gradients_step_size;
-//         group.calc_apply_roto_translation();
+//         group.update();
 //         calc_value();
 //         cvm::real const x_1 = x.real_value;
 //         cvm::log("refPosGroup atom "+cvm::to_str(ia)+", component "+cvm::to_str (id)+":\n");

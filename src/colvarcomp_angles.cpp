@@ -190,7 +190,9 @@ void colvar::dipole_angle::calc_value()
   cvm::atom_pos const g2_pos = group2.center_of_mass();
   cvm::atom_pos const g3_pos = group3.center_of_mass();
 
-  r21 = group1.dipole(g1_pos);
+  group1.calc_dipole(g1_pos);
+
+  r21 = group1.dipole();
   r21l = r21.norm();
   r23  = cvm::position_distance(g2_pos, g3_pos);
   r23l = r23.norm();

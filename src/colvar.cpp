@@ -518,7 +518,8 @@ void colvar::build_atom_list(void)
   for (size_t i = 0; i < cvcs.size(); i++) {
     for (size_t j = 0; j < cvcs[i]->atom_groups.size(); j++) {
       for (size_t k = 0; k < cvcs[i]->atom_groups[j]->size(); k++) {
-        temp_id_list.push_back(cvcs[i]->atom_groups[j]->at(k).id);
+        cvm::atom_group &ag = *(cvcs[i]->atom_groups[j]);
+        temp_id_list.push_back(ag[k].id);
       }
     }
   }
@@ -851,9 +852,7 @@ void colvar::calc()
       cvm::atom_group &atoms = *(cvcs[i]->atom_groups[ig]);
       atoms.reset_atoms_data();
       atoms.read_positions();
-      if (atoms.b_center || atoms.b_rotate) {
-        atoms.calc_apply_roto_translation();
-      }
+      atoms.update_properties();
       // each atom group will take care of its own ref_pos_group, if defined
     }
   }
@@ -965,24 +964,25 @@ void colvar::calc()
 
         for (size_t j = 0; j < cvcs[i]->atom_groups.size(); j++) {
 
+          cvm::atom_group &ag = *(cvcs[i]->atom_groups[j]);
+
           // If necessary, apply inverse rotation to get atomic
           // gradient in the laboratory frame
           if (cvcs[i]->atom_groups[j]->b_rotate) {
             cvm::rotation const rot_inv = cvcs[i]->atom_groups[j]->rot.inverse();
 
             for (size_t k = 0; k < cvcs[i]->atom_groups[j]->size(); k++) {
-              int a = std::lower_bound(atom_ids.begin(), atom_ids.end(),
-                  cvcs[i]->atom_groups[j]->at(k).id) - atom_ids.begin();
-              atomic_gradients[a] += coeff *
-                rot_inv.rotate(cvcs[i]->atom_groups[j]->at(k).grad);
+              size_t a = std::lower_bound(atom_ids.begin(), atom_ids.end(),
+                                          ag[k].id) - atom_ids.begin();
+              atomic_gradients[a] += coeff * rot_inv.rotate(ag[k].grad);
             }
 
           } else {
 
             for (size_t k = 0; k < cvcs[i]->atom_groups[j]->size(); k++) {
-              int a = std::lower_bound(atom_ids.begin(), atom_ids.end(),
-                  cvcs[i]->atom_groups[j]->at(k).id) - atom_ids.begin();
-              atomic_gradients[a] += coeff * cvcs[i]->atom_groups[j]->at(k).grad;
+              size_t a = std::lower_bound(atom_ids.begin(), atom_ids.end(),
+                                          ag[k].id) - atom_ids.begin();
+              atomic_gradients[a] += coeff * ag[k].grad;
             }
           }
         }
