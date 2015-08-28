@@ -1116,9 +1116,9 @@ cvm::real colvar::update()
     // closer one (on a periodic colvar, both walls may be applicable
     // at the same time)
     if ( (!tasks[task_upper_wall]) ||
-         (this->dist2(x, lower_wall) < this->dist2(x, upper_wall)) ) {
+         (this->dist2(x_reported, lower_wall) < this->dist2(x_reported, upper_wall)) ) {
 
-      cvm::real const grad = this->dist2_lgrad(x, lower_wall);
+      cvm::real const grad = this->dist2_lgrad(x_reported, lower_wall);
       if (grad < 0.0) {
         fw = -0.5 * lower_wall_k * grad;
         if (cvm::debug())
@@ -1130,7 +1130,7 @@ cvm::real colvar::update()
 
     } else {
 
-      cvm::real const grad = this->dist2_lgrad(x, upper_wall);
+      cvm::real const grad = this->dist2_lgrad(x_reported, upper_wall);
       if (grad > 0.0) {
         fw = -0.5 * upper_wall_k * grad;
         if (cvm::debug())
