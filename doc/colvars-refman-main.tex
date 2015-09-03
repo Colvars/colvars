@@ -2346,10 +2346,7 @@ following parameters, which are common to all components:
     Defines the power at which the value of this component is raised
     before being added to the sum.  When this exponent is
     different than 1 (non-linear sum), system forces and the Jacobian
-    force are not available, making the colvar unsuitable for ABF calculations.
-    \cvscriptonly{Alternately, defines the order number of components
-    within scripted colvars. Values should then range from 1 to the number
-    of components. See~\ref{sec:colvar_scripted} for details.}}
+    force are not available, making the colvar unsuitable for ABF calculations.}
 \end{itemize}
 
 \textbf{Example:} To define the \emph{average} of a colvar across
@@ -2382,13 +2379,18 @@ may be particularly useful.
     \texttt{calc\_$<$scriptedFunction$>$} and \texttt{calc\_$<$scriptedFunction$>$\_gradient},
     both accepting as many parameters as the colvar has components.
     Values of the components will be passed to those procedures in the
-    order defined by their respective \texttt{componentExp} values.
+    order defined by their sorted \texttt{name} strings. Note that if all
+    components are of the same type, their default names are sorted in the
+    order in which they are defined, so that names need only be specified
+    for combinations of components of different types.
     \texttt{calc\_$<$scriptedFunction$>$} should return one value of 
     type $<$scriptedFunctionType$>$, corresponding to the colvar value.
     \texttt{calc\_$<$scriptedFunction$>$\_gradient} should return a Tcl list
     containing the derivatives of the function with respect to each
     component. 
-    If both the function and some of the components are vectors, the gradient is really a Jacobian matrix that should be passed as a linear vector in row-major order, i.e. for a function $f_i(x_j)$: $\nabla_x f_1 \nabla_x f_2 \cdots$.
+    If both the function and some of the components are vectors, the gradient
+    is really a Jacobian matrix that should be passed as a linear vector in
+    row-major order, i.e. for a function $f_i(x_j)$: $\nabla_x f_1 \nabla_x f_2 \cdots$.
   }
 
 \item%

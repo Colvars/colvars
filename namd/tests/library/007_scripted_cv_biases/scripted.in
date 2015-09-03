@@ -27,12 +27,13 @@ colvar {
   scriptedFunctionVectorSize 5
 
   cartesian {
-    componentExp 2
+    # the alphabetical order of names determines the CVC order
+    name cvc2
     atoms { atomnumbers 4 99 }
   }
 
   orientation {
-    componentExp 1
+    name cvc1
     atoms {
       atomNumbersRange 1-104
     }
