@@ -19,7 +19,7 @@ bool compare(colvar::cvc *i, colvar::cvc *j) {
 colvar::colvar(std::string const &conf)
   : colvarparse(conf)
 {
-  size_t i, j;
+  size_t i;
   cvm::log("Initializing a new collective variable.\n");
 
   get_keyval(conf, "name", this->name,
