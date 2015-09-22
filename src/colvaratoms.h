@@ -94,6 +94,12 @@ public:
     mass = (cvm::proxy)->get_atom_mass(index);
   }
 
+  /// Get the latest value of the charge
+  inline void update_charge()
+  {
+    charge = (cvm::proxy)->get_atom_charge(index);
+  }
+
   /// Get the current position
   inline void read_position()
   {
@@ -130,28 +136,110 @@ public:
 
 
 /// \brief Group of \link atom \endlink objects, mostly used by a
-/// \link cvc \endlink
-///
-/// This class inherits from \link colvarparse \endlink and from
-/// std::vector<colvarmodule::atom>, and hence all functions and
-/// operators (including the bracket operator, group[i]) can be used
-/// on an \link atom_group \endlink object.  It can be initialized as
-/// a vector, or by parsing a keyword in the configuration.
+/// \link cvc \endlink object to gather all atomic data
 class colvarmodule::atom_group
-  : public std::vector<cvm::atom>,
-    public colvarparse
+  : public colvarparse
 {
 public:
-  // Note: all members here are kept public, to allow any
-  // object accessing and manipulating them
 
+  /// \brief Initialize the group by looking up its configuration
+  /// string in conf and parsing it; this is actually done by parse(),
+  /// which is a member function so that a group can be initialized
+  /// also after construction
+  atom_group(std::string const &conf,
+             char const        *key);
+
+  /// \brief Keyword used to define the group
+  // TODO Make this field part of the data structures that link a group to a CVC
+  std::string key;
+
+  /// \brief Set default values for common flags
+  int init();
+
+  /// \brief Update data required to calculate cvc's
+  int setup();
+
+  /// \brief Initialize the group by looking up its configuration
+  /// string in conf and parsing it
+  int parse(std::string const &conf);
+
+  int add_atom_numbers(std::string const &numbers_conf);
+  int add_index_group(std::string const &index_group_name);
+  int add_atom_numbers_range(std::string const &range_conf);
+  int add_atom_name_residue_range(std::string const &psf_segid,
+                                  std::string const &range_conf);
+  int parse_fitting_options(std::string const &group_conf);
+
+  /// \brief Initialize the group after a (temporary) vector of atoms
+  atom_group(std::vector<cvm::atom> const &atoms_in);
+
+  /// \brief Add an atom object to this group
+  int add_atom(cvm::atom const &a);
+
+  /// \brief Remove an atom object from this group
+  int remove_atom(cvm::atom_iter ai);
+
+  /// \brief Re-initialize the total mass of a group.
+  /// This is needed in case the hosting MD code has an option to
+  /// change atom masses after their initialization.
+  void reset_mass(std::string &name, int i, int j);
+
+  /// \brief Default constructor
+  atom_group();
+
+  /// \brief Destructor
+  ~atom_group();
+
+
+private:
+
+  /// \brief Array of atom objects
+  std::vector<cvm::atom> atoms;
+
+  /// \brief Dummy atom position
+  cvm::atom_pos dummy_atom_pos;
+
+public:
+
+  inline cvm::atom & operator [] (size_t const i)
+  {
+    return atoms[i];
+  }
+
+  inline cvm::atom const & operator [] (size_t const i) const
+  {
+    return atoms[i];
+  }
+
+  inline cvm::atom_iter begin()
+  {
+    return atoms.begin();
+  }
+
+  inline cvm::atom_const_iter begin() const
+  {
+    return atoms.begin();
+  }
+
+  inline cvm::atom_iter end()
+  {
+    return atoms.end();
+  }
+
+  inline cvm::atom_const_iter end() const
+  {
+    return atoms.end();
+  }
+
+  inline size_t size() const
+  {
+    return atoms.size();
+  }
 
   /// \brief If this option is on, this group merely acts as a wrapper
   /// for a fixed position; any calls to atoms within or to
   /// functions that return disaggregated data will fail
   bool b_dummy;
-  /// \brief dummy atom position
-  cvm::atom_pos dummy_atom_pos;
 
   /// Sorted list of zero-based (internal) atom ids
   /// (populated on-demand by create_sorted_ids)
@@ -198,59 +286,35 @@ public:
 
   /// Total mass of the atom group
   cvm::real total_mass;
+  void calc_total_mass();
 
   /// Total charge of the atom group
   cvm::real total_charge;
+  void calc_total_charge();
 
   /// \brief Don't apply any force on this group (use its coordinates
   /// only to calculate a colvar)
   bool        noforce;
 
-
-  /// \brief Initialize the group by looking up its configuration
-  /// string in conf and parsing it; this is actually done by parse(),
-  /// which is a member function so that a group can be initialized
-  /// also after construction
-  atom_group(std::string const &conf,
-             char const        *key);
-
-  /// \brief Initialize the group by looking up its configuration
-  /// string in conf and parsing it
-  int parse(std::string const &conf,
-            char const        *key);
-
-  /// \brief Initialize the group after a temporary vector of atoms
-  atom_group(std::vector<cvm::atom> const &atoms);
-
-  /// \brief Add an atom to this group
-  void add_atom(cvm::atom const &a);
-
-  /// \brief Re-initialize the total mass of a group.
-  /// This is needed in case the hosting MD code has an option to
-  /// change atom masses after their initialization.
-  void reset_mass(std::string &name, int i, int j);
-
-  /// \brief Default constructor
-  atom_group();
-
-  /// \brief Destructor
-  ~atom_group();
-
-  /// \brief Get the current positions; if b_center or b_rotate are
-  /// true, calc_apply_roto_translation() will be called too
+  /// \brief Get the current positions
   void read_positions();
 
   /// \brief (Re)calculate the optimal roto-translation
   void calc_apply_roto_translation();
 
-  /// \brief Save center of geometry fo ref positions,
-  /// then subtract it
+  /// \brief Save aside the center of geometry of the reference positions,
+  /// then subtract it from them
+  /// 
+  /// In this way it will be possible to use ref_pos also for the
+  /// rotational fit.
+  /// This is called either by atom_group::parse or by CVCs that assign
+  /// reference positions (eg. RMSD, eigenvector).
   void center_ref_pos();
 
   /// \brief Move all positions
   void apply_translation(cvm::rvector const &t);
 
-  /// \brief Rotate all positions
+  /// \brief Rotate all positions around the center of geometry
   void apply_rotation(cvm::rotation const &q);
 
 
@@ -267,39 +331,64 @@ public:
   /// Call reset_data() for each atom
   inline void reset_atoms_data()
   {
-    for (cvm::atom_iter ai = this->begin(); ai != this->end(); ai++)
+    for (cvm::atom_iter ai = atoms.begin(); ai != atoms.end(); ai++)
       ai->reset_data();
     if (ref_pos_group)
       ref_pos_group->reset_atoms_data();
   }
 
+  /// \brief Recompute all the properties of the group required to compute most CVCs
+  int update_properties();
+
   /// \brief Return a copy of the current atom positions
   std::vector<cvm::atom_pos> positions() const;
+
+  /// \brief Calculate the center of geometry of the atomic positions, assuming
+  /// that they are already pbc-wrapped
+  int calc_center_of_geometry();
+private:
+  /// \brief Center of geometry
+  cvm::atom_pos cog;
+public:
+  /// \brief Return the center of geometry of the atomic positions
+  inline cvm::atom_pos center_of_geometry() const
+  {
+    return cog;
+  }
+
+  /// \brief Calculate the center of mass of the atomic positions, assuming that
+  /// they are already pbc-wrapped
+  int calc_center_of_mass();
+private:
+  /// \brief Center of mass
+  cvm::atom_pos com;
+public:
+  /// \brief Return the center of mass of the atomic positions
+  inline cvm::atom_pos center_of_mass() const
+  {
+    return com;
+  }
 
   /// \brief Return a copy of the current atom positions, shifted by a constant vector
   std::vector<cvm::atom_pos> positions_shifted(cvm::rvector const &shift) const;
 
-  /// \brief Return the center of geometry of the positions, assuming
-  /// that coordinates are already pbc-wrapped
-  cvm::atom_pos center_of_geometry() const;
-
-  ///\brief Return the dipole of an atom group
-  cvm::rvector dipole(cvm::atom_pos const &com) const;
-
-  /// \brief Return the center of mass of the positions, assuming that
-  /// coordinates are already pbc-wrapped
-  cvm::atom_pos center_of_mass() const;
-
-  /// \brief Atom positions at the previous step
-  std::vector<cvm::atom_pos> old_pos;
-
-
   /// \brief Return a copy of the current atom velocities
   std::vector<cvm::rvector> velocities() const;
 
+  ///\brief Calculate the dipole of the atom group around the specified center
+  int calc_dipole(cvm::atom_pos const &com);
+private:
+  cvm::rvector dip;
+public:
+  ///\brief Return the (previously calculated) dipole of the atom group
+  inline cvm::rvector dipole() const
+  {
+    return dip;
+  }
 
   /// \brief Return a copy of the system forces
   std::vector<cvm::rvector> system_forces() const;
+
   /// \brief Return a copy of the aggregated total force on the group
   cvm::rvector system_force() const;
 

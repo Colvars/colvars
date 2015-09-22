@@ -712,8 +712,6 @@ public:
                                    colvarvalue const &x2) const;
   virtual colvarvalue dist2_rgrad (colvarvalue const &x1,
                                    colvarvalue const &x2) const;
-  virtual cvm::real compare (colvarvalue const &x1,
-                             colvarvalue const &x2) const;
 };
 
 /// \brief Colvar component: dihedral between the centers of mass of

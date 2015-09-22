@@ -118,18 +118,6 @@ colvarproxy_namd::colvarproxy_namd()
     colvars->it = colvars->it_restart = simparams->firstTimestep;
   }
 
-  if (cvm::debug()) {
-    cvm::log("atoms_ids = "+cvm::to_str(atoms_ids)+"\n");
-    cvm::log("atoms_ncopies = "+cvm::to_str(atoms_ncopies)+"\n");
-    cvm::log("atoms_masses = "+cvm::to_str(atoms_masses)+"\n");
-    cvm::log("atoms_charges = "+cvm::to_str(atoms_charges)+"\n");
-    cvm::log("atoms_positions = "+cvm::to_str(atoms_positions)+"\n");
-    cvm::log("atoms_total_forces = "+cvm::to_str(atoms_total_forces)+"\n");
-    cvm::log("atoms_applied_forces = "+cvm::to_str(atoms_applied_forces)+"\n");
-    cvm::log("atoms_new_colvar_forces = "+cvm::to_str(atoms_new_colvar_forces)+"\n");
-    cvm::log(cvm::line_marker);
-  }
-
   reduction = ReductionMgr::Object()->willSubmit(REDUCTIONS_BASIC);
 
   if (cvm::debug())
@@ -278,6 +266,18 @@ void colvarproxy_namd::calculate()
         atoms_applied_forces[atoms_map[*a_i]] = cvm::rvector((*f_i).x, (*f_i).y, (*f_i).z);
       }
     }
+  }
+
+  if (cvm::debug()) {
+    cvm::log("atoms_ids = "+cvm::to_str(atoms_ids)+"\n");
+    cvm::log("atoms_ncopies = "+cvm::to_str(atoms_ncopies)+"\n");
+    cvm::log("atoms_masses = "+cvm::to_str(atoms_masses)+"\n");
+    cvm::log("atoms_charges = "+cvm::to_str(atoms_charges)+"\n");
+    cvm::log("atoms_positions = "+cvm::to_str(atoms_positions)+"\n");
+    cvm::log("atoms_total_forces = "+cvm::to_str(atoms_total_forces)+"\n");
+    cvm::log("atoms_applied_forces = "+cvm::to_str(atoms_applied_forces)+"\n");
+    cvm::log("atoms_new_colvar_forces = "+cvm::to_str(atoms_new_colvar_forces)+"\n");
+    cvm::log(cvm::line_marker);
   }
 
   // call the collective variable module

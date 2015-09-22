@@ -31,6 +31,8 @@ protected:
   std::vector<size_t>       atoms_ncopies;
   /// \brief Masses of the atoms (allow redefinition during a run, as done e.g. in LAMMPS)
   std::vector<cvm::real>    atoms_masses;
+  /// \brief Charges of the atoms (allow redefinition during a run, as done e.g. in LAMMPS)
+  std::vector<cvm::real>    atoms_charges;
   /// \brief Current three-dimensional positions of the atoms
   std::vector<cvm::rvector> atoms_positions;
   /// \brief Most recent total forces on each atom
@@ -46,6 +48,7 @@ protected:
     atoms_ids.push_back(atom_id);
     atoms_ncopies.push_back(1);
     atoms_masses.push_back(1.0);
+    atoms_charges.push_back(0.0);
     atoms_positions.push_back(cvm::rvector(0.0));
     atoms_total_forces.push_back(cvm::rvector(0.0));
     atoms_applied_forces.push_back(cvm::rvector(0.0));
@@ -325,6 +328,12 @@ public:
   inline cvm::real get_atom_mass(int index) const
   {
     return atoms_masses[index];
+  }
+
+  /// Get the charge of the given atom
+  inline cvm::real get_atom_charge(int index) const
+  {
+    return atoms_charges[index];
   }
 
   /// Read the current position of the given atom

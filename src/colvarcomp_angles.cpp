@@ -95,6 +95,12 @@ void colvar::angle::calc_gradients()
     group3[i].grad = (group3[i].mass/group3.total_mass) *
       (dxdr3);
   }
+
+  if (b_debug_gradients) {
+    debug_gradients(group1);
+    debug_gradients(group2);
+    debug_gradients(group3);
+  }
 }
 
 void colvar::angle::calc_force_invgrads()
@@ -150,6 +156,7 @@ colvar::dipole_angle::dipole_angle(std::string const &conf)
   parse_group(conf, "group1", group1);
   parse_group(conf, "group2", group2);
   parse_group(conf, "group3", group3);
+
   atom_groups.push_back(&group1);
   atom_groups.push_back(&group2);
   atom_groups.push_back(&group3);
@@ -190,7 +197,9 @@ void colvar::dipole_angle::calc_value()
   cvm::atom_pos const g2_pos = group2.center_of_mass();
   cvm::atom_pos const g3_pos = group3.center_of_mass();
 
-  r21 = group1.dipole(g1_pos);
+  group1.calc_dipole(g1_pos);
+
+  r21 = group1.dipole();
   r21l = r21.norm();
   r23  = cvm::position_distance(g2_pos, g3_pos);
   r23l = r23.norm();
