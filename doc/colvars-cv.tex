@@ -51,6 +51,8 @@ All subcommands of \texttt{cv} are documented below.
 \item \texttt{colvar} \emph{$<$name$>$} \texttt{addforce} \emph{$<$F$>$}: apply given force on colvar \emph{$<$name$>$};
 }
 \item \texttt{colvar} \emph{$<$name$>$} \texttt{getconfig}: return config string of colvar \emph{$<$name$>$}.
+\item \texttt{colvar} \emph{$<$name$>$} \texttt{cvcflags} \emph{$<$flags$>$}: for a colvar with several cvcs (numbered according to their name
+string order), set which cvcs are enabled or disabled in subsequent evaluations according to a list of 0/1 flags (one per cvc).
 \end{itemize}
 
 \cvparagraph{Accessing biases}
