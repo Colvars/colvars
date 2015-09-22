@@ -28,7 +28,7 @@ colvars:       # enableForces = on [default]
 colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Atom group "atoms" defined, 10 atoms initialized: total mass = 120.11.
+colvars:       Atom group "atoms" defined, 10 atoms initialized: total mass = 120.11, total charge = 0.53.
 colvars:     # refPositions =  [default]
 colvars:     # refPositionsFile = ../Common/da.pdb
 colvars:     # refPositionsCol = "" [default]
@@ -67,7 +67,7 @@ colvars:       # enableForces = on [default]
 colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Atom group "atoms" defined, 10 atoms initialized: total mass = 120.11.
+colvars:       Atom group "atoms" defined, 10 atoms initialized: total mass = 120.11, total charge = 0.53.
 colvars:     # refPositions =  [default]
 colvars:     # refPositionsFile = ../Common/da.pdb
 colvars:     # refPositionsCol = "" [default]

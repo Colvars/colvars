@@ -24,7 +24,7 @@ colvars:       # enableForces = on [default]
 colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Atom group "group1" defined, 1 atoms initialized: total mass = 14.007.
+colvars:       Atom group "group1" defined, 1 atoms initialized: total mass = 14.007, total charge = -0.62.
 colvars:       Initializing atom group "group2".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -34,7 +34,7 @@ colvars:       # enableForces = on [default]
 colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Atom group "group2" defined, 1 atoms initialized: total mass = 12.011.
+colvars:       Atom group "group2" defined, 1 atoms initialized: total mass = 12.011, total charge = -0.1.
 colvars:       Initializing atom group "group3".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -44,7 +44,7 @@ colvars:       # enableForces = on [default]
 colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Atom group "group3" defined, 1 atoms initialized: total mass = 12.011.
+colvars:       Atom group "group3" defined, 1 atoms initialized: total mass = 12.011, total charge = 0.51.
 colvars:       Initializing atom group "group4".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -54,7 +54,7 @@ colvars:       # enableForces = on [default]
 colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Atom group "group4" defined, 1 atoms initialized: total mass = 14.007.
+colvars:       Atom group "group4" defined, 1 atoms initialized: total mass = 14.007, total charge = -0.47.
 colvars:   All components initialized.
 colvars:   # width = 1 [default]
 colvars:   # lowerBoundary = 0 [default]

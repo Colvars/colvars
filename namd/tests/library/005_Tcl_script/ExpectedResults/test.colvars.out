@@ -25,7 +25,7 @@ colvars:       # enableForces = on [default]
 colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Atom group "group1" defined, 1 atoms initialized: total mass = 12.011.
+colvars:       Atom group "group1" defined, 1 atoms initialized: total mass = 12.011, total charge = -0.1.
 colvars:       Initializing atom group "group2".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -35,7 +35,7 @@ colvars:       # enableForces = on [default]
 colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Atom group "group2" defined, 1 atoms initialized: total mass = 12.011.
+colvars:       Atom group "group2" defined, 1 atoms initialized: total mass = 12.011, total charge = 0.07.
 colvars:   All components initialized.
 colvars:   # width = 0.2
 colvars:   # lowerBoundary = 12
@@ -142,7 +142,7 @@ colvars:       # enableForces = on [default]
 colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Atom group "group1" defined, 1 atoms initialized: total mass = 12.011.
+colvars:       Atom group "group1" defined, 1 atoms initialized: total mass = 12.011, total charge = -0.1.
 colvars:       Initializing atom group "group2".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -152,7 +152,7 @@ colvars:       # enableForces = on [default]
 colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Atom group "group2" defined, 1 atoms initialized: total mass = 12.011.
+colvars:       Atom group "group2" defined, 1 atoms initialized: total mass = 12.011, total charge = 0.07.
 colvars:   All components initialized.
 colvars:   # width = 0.2
 colvars:   # lowerBoundary = 12

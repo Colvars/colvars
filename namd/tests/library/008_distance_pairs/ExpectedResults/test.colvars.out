@@ -25,7 +25,7 @@ colvars:       # enableForces = on [default]
 colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Atom group "group1" defined, 2 atoms initialized: total mass = 24.022.
+colvars:       Atom group "group1" defined, 2 atoms initialized: total mass = 24.022, total charge = -0.03.
 colvars:       Initializing atom group "group2".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID = { BH }
@@ -35,7 +35,7 @@ colvars:       # enableForces = on [default]
 colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Atom group "group2" defined, 2 atoms initialized: total mass = 24.022.
+colvars:       Atom group "group2" defined, 2 atoms initialized: total mass = 24.022, total charge = 0.14.
 colvars:   All components initialized.
 colvars:   # width = 0.2
 colvars:   # expandBoundaries = off [default]

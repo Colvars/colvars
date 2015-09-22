@@ -25,7 +25,7 @@ colvars:       # enableForces = on [default]
 colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Atom group "group1" defined, 1 atoms initialized: total mass = 12.011.
+colvars:       Atom group "group1" defined, 1 atoms initialized: total mass = 12.011, total charge = -0.1.
 colvars:       Initializing atom group "group2".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -35,7 +35,7 @@ colvars:       # enableForces = on [default]
 colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Atom group "group2" defined, 1 atoms initialized: total mass = 12.011.
+colvars:       Atom group "group2" defined, 1 atoms initialized: total mass = 12.011, total charge = 0.07.
 colvars:   All components initialized.
 colvars:   # width = 1 [default]
 colvars:   # lowerBoundary = 0 [default]
@@ -65,7 +65,7 @@ colvars:       # enableForces = on [default]
 colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Atom group "atoms" defined, 104 atoms initialized: total mass = 727.821.
+colvars:       Atom group "atoms" defined, 104 atoms initialized: total mass = 727.821, total charge = 6.70552e-08.
 colvars:     # refPositions =  [default]
 colvars:     # refPositionsFile = ../Common/da.pdb
 colvars:     # refPositionsCol = "" [default]
@@ -128,7 +128,7 @@ colvars:       # enableForces = on [default]
 colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Atom group "group1" defined, 1 atoms initialized: total mass = 12.011.
+colvars:       Atom group "group1" defined, 1 atoms initialized: total mass = 12.011, total charge = -0.1.
 colvars:       Initializing atom group "group2".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -138,7 +138,7 @@ colvars:       # enableForces = on [default]
 colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Atom group "group2" defined, 1 atoms initialized: total mass = 12.011.
+colvars:       Atom group "group2" defined, 1 atoms initialized: total mass = 12.011, total charge = 0.07.
 colvars:   All components initialized.
 colvars:   This colvar uses scripted function "Id".
 colvars:   # scriptedFunctionType = "scalar" [default]
@@ -171,7 +171,7 @@ colvars:       # enableForces = on [default]
 colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Atom group "atoms" defined, 2 atoms initialized: total mass = 24.022.
+colvars:       Atom group "atoms" defined, 2 atoms initialized: total mass = 24.022, total charge = -0.03.
 colvars:     # useX = on [default]
 colvars:     # useY = on [default]
 colvars:     # useZ = on [default]
@@ -189,7 +189,7 @@ colvars:       # enableForces = on [default]
 colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Atom group "atoms" defined, 104 atoms initialized: total mass = 727.821.
+colvars:       Atom group "atoms" defined, 104 atoms initialized: total mass = 727.821, total charge = 6.70552e-08.
 colvars:     # refPositions =  [default]
 colvars:     # refPositionsFile = ../Common/da.pdb
 colvars:     # refPositionsCol = "" [default]
