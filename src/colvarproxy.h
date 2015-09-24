@@ -74,7 +74,10 @@ public:
   virtual ~colvarproxy() {}
 
   /// (Re)initialize required member data after construction
-  virtual void setup() {}
+  virtual int setup()
+  {
+    return COLVARS_OK;
+  }
 
 
   // **************** SIMULATION PARAMETERS ****************

@@ -160,10 +160,10 @@ colvarproxy_lammps::~colvarproxy_lammps()
 }
 
 // re-initialize data where needed
-void colvarproxy_lammps::setup()
+int colvarproxy_lammps::setup()
 {
   my_timestep  = _lmp->update->dt * _lmp->force->femtosecond;
-  colvars->setup();
+  return colvars->setup();
 }
 
 // trigger colvars computation

@@ -150,20 +150,24 @@ colvarproxy_vmd::~colvarproxy_vmd()
 }
 
 
-void colvarproxy_vmd::setup()
+int colvarproxy_vmd::setup()
 {
   vmdmol = vmd->moleculeList->mol_from_id(vmdmolid);
   if (vmdmol) {
     vmdmol_frame = vmdmol->frame();
   } else {
-    fatal_error("Error: cannot find the molecule requested("+cvm::to_str(vmdmolid)+").\n");
-  }
-  if (colvars) {
-    colvars->setup();
+    fatal_error("Error: cannot find the molecule requested("+cvm::to_str(vmdmolid)+").\n", INPUT_ERROR);
+    return COLVARS_ERROR;
   }
 
   // same seed as in Measure.C
   vmd_srandom(38572111);
+
+  if (colvars) {
+    return colvars->setup();
+  } else {
+    return COLVARS_OK;
+  }
 }
 
 

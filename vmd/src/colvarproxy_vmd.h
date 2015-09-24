@@ -45,7 +45,7 @@ public:
   colvarproxy_vmd(Tcl_Interp *interp, VMDApp *vmd, int molid);
   ~colvarproxy_vmd();
 
-  void setup();
+  int setup();
 
   inline cvm::real unit_angstrom()
   {

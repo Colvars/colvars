@@ -64,7 +64,7 @@ public:
   colvarproxy_namd();
   ~colvarproxy_namd();
 
-  void setup();
+  int setup();
 
   void calculate();
 

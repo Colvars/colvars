@@ -68,7 +68,7 @@ class colvarproxy_lammps : public colvarproxy {
                       const char *, const int, const double, MPI_Comm);
   virtual ~colvarproxy_lammps();
   void init(const char*);
-  void setup();
+  int setup();
 
  // disable default and copy constructor
  private:

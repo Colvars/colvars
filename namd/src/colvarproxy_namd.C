@@ -101,7 +101,7 @@ colvarproxy_namd::colvarproxy_namd()
   }
 
   setup();
-
+  colvars->setup();
   colvars->setup_input();
   colvars->setup_output();
 
@@ -139,7 +139,7 @@ colvarproxy_namd::~colvarproxy_namd()
 }
 
 
-void colvarproxy_namd::setup()
+int colvarproxy_namd::setup()
 {
   if (cvm::debug()) {
     cvm::log("Setting up atomic data arrays:\n");
