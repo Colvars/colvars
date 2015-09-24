@@ -100,6 +100,7 @@ cvm::atom_group::~atom_group()
 
 int cvm::atom_group::add_atom(cvm::atom const &a)
 {
+  // TODO check for doubly counted atoms here
   if (b_dummy) {
     cvm::error("Error: cannot add atoms to a dummy group.\n", INPUT_ERROR);
     return COLVARS_ERROR;
@@ -129,6 +130,8 @@ int cvm::atom_group::remove_atom(cvm::atom_iter ai)
 int cvm::atom_group::init()
 {
   if (!key.size()) key = "atoms";
+
+  atoms.clear();
 
   b_center = false;
   b_rotate = false;
@@ -368,7 +371,7 @@ int cvm::atom_group::parse(std::string const &conf)
     return COLVARS_ERROR;
   }
 
-  // Calculate all properties (such as total mass)
+  // Calculate all required properties (such as total mass)
   setup();
 
   if (cvm::debug())
@@ -400,7 +403,7 @@ int cvm::atom_group::add_atom_numbers(std::string const &numbers_conf)
   if (atom_indexes.size()) {
     atoms.reserve(this->size()+atom_indexes.size());
     for (size_t i = 0; i < atom_indexes.size(); i++) {
-      atoms.push_back(cvm::atom(atom_indexes[i]));
+      add_atom(cvm::atom(atom_indexes[i]));
     }
     if (cvm::get_error()) return COLVARS_ERROR;
   } else {
@@ -431,7 +434,7 @@ int cvm::atom_group::add_index_group(std::string const &index_group_name)
 
   atoms.reserve(index_groups_i->size());
   for (size_t i = 0; i < index_groups_i->size(); i++) {
-    atoms.push_back(cvm::atom((*index_groups_i)[i]));
+    add_atom(cvm::atom((*index_groups_i)[i]));
   }
 
   if (cvm::get_error())
@@ -451,7 +454,7 @@ int cvm::atom_group::add_atom_numbers_range(std::string const &range_conf)
          (is >> dash) && (dash == '-') &&
          (is >> final) && (final > 0) ) {
       for (int anum = initial; anum <= final; anum++) {
-        atoms.push_back(cvm::atom(anum));
+        add_atom(cvm::atom(anum));
       }
     }
     if (cvm::get_error()) return COLVARS_ERROR;
@@ -478,7 +481,7 @@ int cvm::atom_group::add_atom_name_residue_range(std::string const &psf_segid,
          (is >> dash) && (dash == '-') &&
          (is >> final) && (final > 0) ) {
       for (int resid = initial; resid <= final; resid++) {
-        atoms.push_back(cvm::atom(resid, atom_name, psf_segid));
+        add_atom(cvm::atom(resid, atom_name, psf_segid));
       }
       if (cvm::get_error()) return COLVARS_ERROR;
     } else {

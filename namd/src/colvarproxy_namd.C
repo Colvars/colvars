@@ -734,7 +734,7 @@ int colvarproxy_namd::load_atoms(char const *pdb_filename,
       continue;
     }
 
-    atoms.push_back(cvm::atom(ipdb+1));
+    atoms.add_atom(cvm::atom(ipdb+1));
   }
 
   delete pdb;

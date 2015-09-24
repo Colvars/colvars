@@ -510,7 +510,7 @@ int colvarproxy_vmd::load_atoms(char const *pdb_filename,
       continue;
     }
 
-    atoms.push_back(cvm::atom(ipdb+1));
+    atoms.add_atoms(cvm::atom(ipdb+1));
   }
 
   vmd->molecule_delete(tmpmolid);
