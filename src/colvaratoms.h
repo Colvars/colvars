@@ -184,20 +184,28 @@ public:
   /// change atom masses after their initialization.
   void reset_mass(std::string &name, int i, int j);
 
+  /// \brief Whether or not the properties of this group will be computed in parallel
+  bool b_scalable;
+
   /// \brief Default constructor
   atom_group();
 
   /// \brief Destructor
   ~atom_group();
 
-
-private:
+protected:
 
   /// \brief Array of atom objects
   std::vector<cvm::atom> atoms;
 
+  /// \brief Array of atom identifiers for the MD program (0-based)
+  std::vector<int> atoms_ids;
+
   /// \brief Dummy atom position
   cvm::atom_pos dummy_atom_pos;
+
+  /// \brief Index in the colvarproxy arrays (if the group is scalable)
+  int index;
 
 public:
 
@@ -337,8 +345,8 @@ public:
       ref_pos_group->reset_atoms_data();
   }
 
-  /// \brief Recompute all the properties of the group required to compute most CVCs
-  int update_properties();
+  /// \brief Recompute all mutable quantities that are required to compute CVCs
+  int calc_required_properties();
 
   /// \brief Return a copy of the current atom positions
   std::vector<cvm::atom_pos> positions() const;

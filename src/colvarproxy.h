@@ -305,7 +305,7 @@ public:
   {
     cvm::error("Error: initializing an atom by name and residue number is currently not supported.\n",
                COLVARS_NOT_IMPLEMENTED);
-    return -1;
+    return COLVARS_NOT_IMPLEMENTED;
   }
 
   /// \brief Used by the atom class destructor: rather than deleting the array slot
@@ -383,6 +383,121 @@ public:
                           const std::vector<int> &indices,
                           std::string const &pdb_field,
                           double const pdb_field_value = 0.0) = 0;
+
+protected:
+
+  // **************** ACCESS GROUP DATA ****************
+
+  /// \brief Array of 0-based integers used to uniquely associate atom groups
+  /// within the host program
+  std::vector<int>          atom_groups_ids;
+  /// \brief Keep track of how many times each group is used by a separate cvc
+  std::vector<size_t>       atom_groups_ncopies;
+  /// \brief Total masses of the atom groups
+  std::vector<cvm::real>    atom_groups_masses;
+  /// \brief Total charges of the atom groups (allow redefinition during a run, as done e.g. in LAMMPS)
+  std::vector<cvm::real>    atom_groups_charges;
+  /// \brief Current centers of mass of the atom groups
+  std::vector<cvm::rvector> atom_groups_coms;
+  /// \brief Most recently updated total forces on the com of each group
+  std::vector<cvm::rvector> atom_groups_total_forces;
+  /// \brief Most recent forces applied by external potentials onto each group
+  std::vector<cvm::rvector> atom_groups_applied_forces;
+  /// \brief Forces applied from colvars, to be communicated to the MD integrator
+  std::vector<cvm::rvector> atom_groups_new_colvar_forces;
+
+  /// TODO Add here containers of handles to cvc objects that are computed in parallel
+
+public:
+
+  /// \brief Whether this proxy implementation has capability for scalable groups
+  virtual bool has_scalable_groups() const
+  {
+    return false;
+  }
+
+  /// Used by all init_atom_group() functions: create a slot for an atom group not requested yet
+  // TODO Add a handle to cvc objects
+  inline int add_atom_group_slot(int atom_group_id)
+  {
+    atom_groups_ids.push_back(atom_group_id);
+    atom_groups_masses.push_back(1.0);
+    atom_groups_charges.push_back(0.0);
+    atom_groups_coms.push_back(cvm::rvector(0.0));
+    atom_groups_total_forces.push_back(cvm::rvector(0.0));
+    atom_groups_applied_forces.push_back(cvm::rvector(0.0));
+    atom_groups_new_colvar_forces.push_back(cvm::rvector(0.0));
+    return (atom_groups_ids.size() - 1);
+  }
+
+  /// Prepare this group for collective variables calculation, selecting atoms by internal ids (0-based)
+  virtual int init_atom_group(std::vector<int> const &atoms_ids) // TODO Add a handle to cvc objects
+  {
+    cvm::error("Error: initializing a group outside of the colvars module is currently not supported.\.\n",
+               COLVARS_NOT_IMPLEMENTED);
+    return COLVARS_NOT_IMPLEMENTED;
+  }
+
+  /// \brief Used by the atom_group class destructor
+  virtual void clear_atom_group(int index)
+  {
+    if ( (index < 0) || (index >= atom_groups_ids.size()) ) {
+      cvm::error("Error: trying to disable an atom group that was not previously requested.\n",
+                 INPUT_ERROR);
+    }
+
+    atom_groups_ids.erase(atom_groups_ids.begin()+index);
+    atom_groups_masses.erase(atom_groups_masses.begin()+index);
+    atom_groups_charges.erase(atom_groups_charges.begin()+index);
+    atom_groups_coms.erase(atom_groups_coms.begin()+index);
+    atom_groups_total_forces.erase(atom_groups_total_forces.begin()+index);
+    atom_groups_applied_forces.erase(atom_groups_applied_forces.begin()+index);
+    atom_groups_new_colvar_forces.erase(atom_groups_new_colvar_forces.begin()+index);
+  }
+
+  /// Get the numeric ID of the given atom group (for the MD program)
+  inline cvm::real get_atom_group_id(int index) const
+  {
+    return atom_groups_ids[index];
+  }
+
+  /// Get the mass of the given atom group
+  inline cvm::real get_atom_group_mass(int index) const
+  {
+    return atom_groups_masses[index];
+  }
+
+  /// Get the charge of the given atom group
+  inline cvm::real get_atom_group_charge(int index) const
+  {
+    return atom_groups_charges[index];
+  }
+
+  /// Read the current position of the center of mass given atom group
+  inline cvm::rvector get_atom_group_com(int index) const
+  {
+    return atom_groups_coms[index];
+  }
+
+  /// Read the current total system force of the given atom group
+  inline cvm::rvector get_atom_group_system_force(int index) const
+  {
+    return atom_groups_total_forces[index] - atom_groups_applied_forces[index];
+  }
+
+  /// Request that this force is applied to the given atom group
+  inline void apply_atom_group_force(int index, cvm::rvector const &new_force)
+  {
+    atom_groups_new_colvar_forces[index] += new_force;
+  }
+
+  /// Read the current velocity of the given atom group
+  virtual cvm::rvector get_atom_group_velocity(int index)
+  {
+    cvm::error("Error: reading the current velocity of an atom group is not yet implemented.\n",
+               COLVARS_NOT_IMPLEMENTED);
+    return cvm::rvector(0.0);
+  }
 
 };
 

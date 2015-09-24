@@ -178,6 +178,8 @@ public:
                   std::string const &pdb_field,
                   double const pdb_field_value = 0.0);
 
+  int init_atom_group(std::vector<int> const &atoms_ids);
+
   std::ostream * output_stream(std::string const &output_name);
   int close_output_stream(std::string const &output_name);
   int backup_file(char const *filename);

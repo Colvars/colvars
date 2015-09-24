@@ -91,6 +91,10 @@ cvm::atom_group::atom_group()
 
 cvm::atom_group::~atom_group()
 {
+  if (index >= 0) {
+    (cvm::proxy)->clear_atom_group(index);
+  }
+
   if (ref_pos_group) {
     delete ref_pos_group;
     ref_pos_group = NULL;
@@ -100,29 +104,45 @@ cvm::atom_group::~atom_group()
 
 int cvm::atom_group::add_atom(cvm::atom const &a)
 {
-  // TODO check for doubly counted atoms here
-  if (b_dummy) {
-    cvm::error("Error: cannot add atoms to a dummy group.\n", INPUT_ERROR);
-    return COLVARS_ERROR;
+  for (size_t i = 0; i < atoms_ids.size(); i++) {
+    if (atoms_ids[i] == a.id) {
+      if (cvm::debug())
+        cvm::log("Discarding doubly counted atom with number "+
+                 cvm::to_str(a.id+1)+".\n");
+      return COLVARS_OK;
+    }
+  }
+
+  if (b_scalable) {
+    atoms_ids.push_back(a.id);
   } else {
+    atoms_ids.push_back(a.id);
     atoms.push_back(a);
     total_mass += a.mass;
     total_charge += a.charge;
   }
+
   return COLVARS_OK;
 }
 
 
 int cvm::atom_group::remove_atom(cvm::atom_iter ai)
 {
+  if (b_scalable) {
+    cvm::error("Error: cannot remove atoms from a scalable group.\n", INPUT_ERROR);
+    return COLVARS_ERROR;
+  }
+
   if (!this->size()) {
     cvm::error("Error: trying to remove an atom from an empty group.\n", INPUT_ERROR);
     return COLVARS_ERROR;
   } else {
     total_mass -= ai->mass;
     total_charge -= ai->charge;
+    atoms_ids.erase(atoms_ids.begin() + (ai - atoms.begin()));
     atoms.erase(ai);
   }
+
   return COLVARS_OK;
 }
 
@@ -132,6 +152,9 @@ int cvm::atom_group::init()
   if (!key.size()) key = "atoms";
 
   atoms.clear();
+  
+  b_scalable = false;
+  index = -1;
 
   b_center = false;
   b_rotate = false;
@@ -159,7 +182,6 @@ int cvm::atom_group::setup()
   }
   calc_total_mass();
   calc_total_charge();
-  update_properties();
   return COLVARS_OK;
 }
 
@@ -171,9 +193,13 @@ void cvm::atom_group::calc_total_mass()
     return;
   }
 
-  total_mass = 0.0;
-  for (cvm::atom_iter ai = this->begin(); ai != this->end(); ai++) {
-    total_mass += ai->mass;
+  if (b_scalable) {
+    total_mass = (cvm::proxy)->get_atom_group_mass(index);
+  } else {
+    total_mass = 0.0;
+    for (cvm::atom_iter ai = this->begin(); ai != this->end(); ai++) {
+      total_mass += ai->mass;
+    }
   }
 }
 
@@ -194,9 +220,13 @@ void cvm::atom_group::calc_total_charge()
     return;
   }
 
-  total_charge = 0.0;
-  for (cvm::atom_iter ai = this->begin(); ai != this->end(); ai++) {
-    total_charge += ai->charge;
+  if (b_scalable) {
+    total_charge = (cvm::proxy)->get_atom_group_charge(index);
+  } else {
+    total_charge = 0.0;
+    for (cvm::atom_iter ai = this->begin(); ai != this->end(); ai++) {
+      total_charge += ai->charge;
+    }
   }
 }
 
@@ -237,6 +267,9 @@ int cvm::atom_group::parse(std::string const &conf)
   colvarparse::Parse_Mode mode = parse_normal;
 
   int parse_error = COLVARS_OK;
+
+  // if the cvc allows it, the flag has been set to true by default
+  get_keyval(group_conf, "scalable", b_scalable, b_scalable);
 
   {
     std::string numbers_conf = "";
@@ -319,39 +352,29 @@ int cvm::atom_group::parse(std::string const &conf)
   // Catch any errors from all the initialization steps above
   if (parse_error || cvm::get_error()) return COLVARS_ERROR;
 
-  for (cvm::atom_iter a1 = this->begin(); a1 != this->end(); a1++) {
-    std::vector<cvm::atom>::iterator a2 = a1;
-    ++a2;
-    for ( ; a2 != this->end(); ++a2) {
-      if (a1->id == a2->id) {
-        if (cvm::debug())
-          cvm::log("Discarding doubly counted atom with number "+
-                   cvm::to_str(a1->id+1)+".\n");
-        a2 = atoms.erase(a2);
-        if (a2 == atoms.end())
-          break;
-      }
-    }
+  if (b_scalable) {
+    index = (cvm::proxy)->init_atom_group(atoms_ids);
   }
+
+  // checks of doubly-counted atoms have been handled by add_atom() already
 
   if (get_keyval(group_conf, "dummyAtom", dummy_atom_pos, cvm::atom_pos())) {
     b_dummy = true;
+    // note: atoms_ids.size() is used here in lieu of atoms.size(),
+    // which can be empty for scalable groups
+    if (atoms_ids.size()) {
+      cvm::error("Error: cannot set up group \""+
+                 key+"\" as a dummy atom "
+                 "and provide it with atom definitions.\n", INPUT_ERROR);
+    }
   } else {
     b_dummy = false;
-  }
 
-  if (b_dummy && (this->size())) {
-    cvm::error("Error: cannot set up group \""+
-               key+"\" as a dummy atom "
-               "and provide it with atom definitions.\n", INPUT_ERROR);
-  }
+    if (!(atoms_ids.size())) {
+      cvm::error("Error: no atoms defined for atom group \""+
+                 key+"\".\n", INPUT_ERROR);
+    }
 
-  if ( (!b_dummy) && (!cvm::b_analysis) && (!(this->size())) ) {
-    cvm::error("Error: no atoms defined for atom group \""+
-               key+"\".\n", INPUT_ERROR);
-  }
-
-  if (!b_dummy) {
     // whether these atoms will ever receive forces or not
     bool enable_forces = true;
     // disableForces is deprecated
@@ -401,7 +424,8 @@ int cvm::atom_group::add_atom_numbers(std::string const &numbers_conf)
   }
 
   if (atom_indexes.size()) {
-    atoms.reserve(this->size()+atom_indexes.size());
+    // if we are handling the group on rank 0, better allocate the vector in one shot
+    if (! b_scalable) atoms.reserve(this->size()+atom_indexes.size());
     for (size_t i = 0; i < atom_indexes.size(); i++) {
       add_atom(cvm::atom(atom_indexes[i]));
     }
@@ -432,7 +456,8 @@ int cvm::atom_group::add_index_group(std::string const &index_group_name)
     return COLVARS_ERROR;
   }
 
-  atoms.reserve(index_groups_i->size());
+  // if we are handling the group on rank 0, better allocate the vector in one shot
+  if (! b_scalable) atoms.reserve(this->size()+index_groups_i->size());
   for (size_t i = 0; i < index_groups_i->size(); i++) {
     add_atom(cvm::atom((*index_groups_i)[i]));
   }
@@ -453,6 +478,7 @@ int cvm::atom_group::add_atom_numbers_range(std::string const &range_conf)
     if ( (is >> initial) && (initial > 0) &&
          (is >> dash) && (dash == '-') &&
          (is >> final) && (final > 0) ) {
+      if (! b_scalable) atoms.reserve(this->size() + (final - initial + 1));
       for (int anum = initial; anum <= final; anum++) {
         add_atom(cvm::atom(anum));
       }
@@ -480,6 +506,7 @@ int cvm::atom_group::add_atom_name_residue_range(std::string const &psf_segid,
          (is >> initial) && (initial > 0) &&
          (is >> dash) && (dash == '-') &&
          (is >> final) && (final > 0) ) {
+      if (! b_scalable) atoms.reserve(this->size() + (final - initial + 1));
       for (int resid = initial; resid <= final; resid++) {
         add_atom(cvm::atom(resid, atom_name, psf_segid));
       }
@@ -660,15 +687,21 @@ void cvm::atom_group::read_positions()
 }
 
 
-int cvm::atom_group::update_properties()
+int cvm::atom_group::calc_required_properties()
 {
   if (b_dummy) return COLVARS_OK;
-  
-  calc_center_of_geometry();
+
+  // TODO check if the com is needed?
   calc_center_of_mass();
-  if (b_center || b_rotate) {
-    calc_apply_roto_translation();
+  if (!b_scalable) {
+    // TODO check if calc_center_of_geometry() is needed without a fit?
+    calc_center_of_geometry();
+    if (b_center || b_rotate) {
+      calc_apply_roto_translation();
+    }
   }
+
+  // TODO calculate elements of scalable cvc's here before reduction
 
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
 }
@@ -706,7 +739,15 @@ void cvm::atom_group::calc_apply_roto_translation()
 
 void cvm::atom_group::apply_translation(cvm::rvector const &t)
 {
-  if (b_dummy) return;
+  if (b_dummy) {
+    cvm::error("Error: cannot translate the coordinates of a dummy atom group.\n", INPUT_ERROR);
+    return;
+  }
+
+  if (b_scalable) {
+    cvm::error("Error: cannot translate the coordinates of a scalable atom group.\n", INPUT_ERROR);
+    return;
+  }
 
   for (cvm::atom_iter ai = this->begin(); ai != this->end(); ai++) {
     ai->pos += t;
@@ -715,7 +756,15 @@ void cvm::atom_group::apply_translation(cvm::rvector const &t)
 
 void cvm::atom_group::apply_rotation(cvm::rotation const &rot)
 {
-  if (b_dummy) return;
+  if (b_dummy) {
+    cvm::error("Error: cannot rotate the coordinates of a dummy atom group.\n", INPUT_ERROR);
+    return;
+  }
+
+  if (b_scalable) {
+    cvm::error("Error: cannot rotate the coordinates of a scalable atom group.\n", INPUT_ERROR);
+    return;
+  }
 
   for (cvm::atom_iter ai = this->begin(); ai != this->end(); ai++) {
     ai->pos = rot.rotate(ai->pos - center_of_geometry()) + center_of_geometry();
@@ -781,6 +830,8 @@ int cvm::atom_group::calc_center_of_mass()
 {
   if (b_dummy) {
     com = dummy_atom_pos;
+  } else if (b_scalable) {
+    com 
   } else {
     com.reset();
     for (cvm::atom_const_iter ai = this->begin(); ai != this->end(); ai++) {
@@ -873,7 +924,12 @@ std::vector<cvm::atom_pos> cvm::atom_group::positions() const
 {
   if (b_dummy) {
     cvm::error("Error: positions are not available "
-               "from a dummy atom group.\n");
+               "from a dummy atom group.\n", INPUT_ERROR);
+  }
+
+  if (b_scalable) {
+    cvm::error("Error: positions are not available "
+               "from a scalable atom group.\n", INPUT_ERROR);
   }
 
   std::vector<cvm::atom_pos> x(this->size(), 0.0);
@@ -889,7 +945,12 @@ std::vector<cvm::atom_pos> cvm::atom_group::positions_shifted(cvm::rvector const
 {
   if (b_dummy) {
     cvm::error("Error: positions are not available "
-               "from a dummy atom group.\n");
+               "from a dummy atom group.\n", INPUT_ERROR);
+  }
+
+  if (b_scalable) {
+    cvm::error("Error: positions are not available "
+               "from a scalable atom group.\n", INPUT_ERROR);
   }
 
   std::vector<cvm::atom_pos> x(this->size(), 0.0);
@@ -905,7 +966,12 @@ std::vector<cvm::rvector> cvm::atom_group::velocities() const
 {
   if (b_dummy) {
     cvm::error("Error: velocities are not available "
-               "from a dummy atom group.\n");
+               "from a dummy atom group.\n", INPUT_ERROR);
+  }
+
+  if (b_scalable) {
+    cvm::error("Error: velocities are not available "
+               "from a scalable atom group.\n", INPUT_ERROR);
   }
 
   std::vector<cvm::rvector> v(this->size(), 0.0);
@@ -921,7 +987,12 @@ std::vector<cvm::rvector> cvm::atom_group::system_forces() const
 {
   if (b_dummy) {
     cvm::error("Error: system forces are not available "
-               "from a dummy atom group.\n");
+               "from a dummy atom group.\n", INPUT_ERROR);
+  }
+
+  if (b_scalable) {
+    cvm::error("Error: system fforces are not available "
+               "from a scalable atom group.\n", INPUT_ERROR);
   }
 
   std::vector<cvm::rvector> f(this->size(), 0.0);
@@ -936,8 +1007,13 @@ std::vector<cvm::rvector> cvm::atom_group::system_forces() const
 cvm::rvector cvm::atom_group::system_force() const
 {
   if (b_dummy) {
-    cvm::error("Error: system forces are not available "
-               "from a dummy atom group.\n");
+    cvm::error("Error: total system forces are not available "
+               "from a dummy atom group.\n", INPUT_ERROR);
+  }
+
+  if (b_scalable) {
+    cvm::error("Error: total system forces are currently not available "
+               "from a scalable atom group.\n", COLVARS_NOT_IMPLEMENTED);
   }
 
   cvm::rvector f(0.0);
@@ -958,6 +1034,11 @@ void cvm::atom_group::apply_colvar_force(cvm::real const &force)
                "\"enableForces\" set to off.\n");
     return;
   }
+
+  // Note: this case should be caught early
+  // if (b_scalable) {
+  //   return;
+  // }
 
   if (b_rotate) {
 
@@ -1004,6 +1085,10 @@ void cvm::atom_group::apply_force(cvm::rvector const &force)
     cvm::error("Error: sending a force to a group that has "
                "\"disableForces\" defined.\n");
     return;
+  }
+
+  if (b_scalable) {
+    (cvm::proxy)->apply_atom_group_force(index, force);
   }
 
   if (b_rotate) {

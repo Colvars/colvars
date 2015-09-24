@@ -51,6 +51,7 @@ void colvar::cvc::parse_group(std::string const &conf,
                               bool optional)
 {
   if (key_lookup(conf, group_key)) {
+    // TODO turn on scalable flag for group objects in cvc init function
     group.key = group_key;
     if (group.parse(conf) != COLVARS_OK) {
       cvm::error("Error parsing definition for atom group \""+
@@ -131,7 +132,7 @@ void colvar::cvc::debug_gradients(cvm::atom_group &group)
       group.read_positions();
       // change one coordinate
       group[ia].pos[id] += cvm::debug_gradients_step_size;
-      group.update_properties();
+      group.calc_required_properties();
       calc_value();
       cvm::real x_1 = x.real_value;
       if ((x.type() == colvarvalue::type_vector) && (x.size() == 1)) x_1 = x[0];

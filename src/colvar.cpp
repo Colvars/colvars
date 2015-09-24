@@ -871,7 +871,7 @@ void colvar::calc()
       cvm::atom_group &atoms = *(cvcs[i]->atom_groups[ig]);
       atoms.reset_atoms_data();
       atoms.read_positions();
-      atoms.update_properties();
+      atoms.calc_required_properties();
       // each atom group will take care of its own ref_pos_group, if defined
     }
   }

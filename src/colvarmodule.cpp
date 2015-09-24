@@ -652,7 +652,6 @@ int colvarmodule::setup()
     (*cvi)->setup();
   }
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
-
 }
 
 colvarmodule::~colvarmodule()
