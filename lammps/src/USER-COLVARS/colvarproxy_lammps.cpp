@@ -363,7 +363,7 @@ int colvarproxy_lammps::load_coords(char const *pdb_filename,
 }
 
 int colvarproxy_lammps::load_atoms(char const *pdb_filename,
-                                   std::vector<cvm::atom> &atoms,
+                                   cvm::atom_group &atoms,
                                    std::string const &pdb_field_str,
                                    double const pdb_field_value)
 {

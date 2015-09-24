@@ -15,7 +15,7 @@
 #include <iostream>
 
 #ifndef COLVARPROXY_VERSION
-#define COLVARPROXY_VERSION "2015-07-21"
+#define COLVARPROXY_VERSION "2015-09-24"
 #endif
 
 /* struct for packed data communication of coordinates and forces. */
@@ -123,15 +123,15 @@ class colvarproxy_lammps : public colvarproxy {
                             cvm::atom_pos const &ref_pos);
 
   int load_atoms(char const *filename,
-                  std::vector<cvm::atom> &atoms,
-                  std::string const &pdb_field,
-                  double const pdb_field_value = 0.0);
+                 cvm::atom_group &atoms,
+                 std::string const &pdb_field,
+                 double const pdb_field_value = 0.0);
 
   int load_coords(char const *filename,
-                   std::vector<cvm::atom_pos> &pos,
-                   const std::vector<int> &indices,
-                   std::string const &pdb_field,
-                   double const pdb_field_value = 0.0);
+                  std::vector<cvm::atom_pos> &pos,
+                  const std::vector<int> &indices,
+                  std::string const &pdb_field,
+                  double const pdb_field_value = 0.0);
 
   int backup_file(char const *filename);
 

@@ -16,7 +16,7 @@
 #include "colvarvalue.h"
 
 #ifndef COLVARPROXY_VERSION
-#define COLVARPROXY_VERSION "2015-07-24"
+#define COLVARPROXY_VERSION "2015-09-24"
 #endif
 
 // For replica exchange
@@ -168,7 +168,7 @@ public:
 
 
   int load_atoms(char const *filename,
-                 std::vector<cvm::atom> &atoms,
+                 cvm::atom_group &atoms,
                  std::string const &pdb_field,
                  double const pdb_field_value = 0.0);
 
@@ -179,6 +179,7 @@ public:
                   double const pdb_field_value = 0.0);
 
   int init_atom_group(std::vector<int> const &atoms_ids);
+  void clear_atom_group(int index);
 
   std::ostream * output_stream(std::string const &output_name);
   int close_output_stream(std::string const &output_name);

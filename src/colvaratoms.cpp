@@ -152,7 +152,7 @@ int cvm::atom_group::init()
   if (!key.size()) key = "atoms";
 
   atoms.clear();
-  
+
   b_scalable = false;
   index = -1;
 
@@ -345,7 +345,7 @@ int cvm::atom_group::parse(std::string const &conf)
         cvm::error("Error: atomsColValue, if provided, must be non-zero.\n", INPUT_ERROR);
       }
 
-      cvm::load_atoms(atoms_file_name.c_str(), atoms, atoms_col, atoms_col_value);
+      cvm::load_atoms(atoms_file_name.c_str(), *this, atoms_col, atoms_col_value);
     }
   }
 
@@ -831,7 +831,7 @@ int cvm::atom_group::calc_center_of_mass()
   if (b_dummy) {
     com = dummy_atom_pos;
   } else if (b_scalable) {
-    com 
+    com = (cvm::proxy)->get_atom_group_com(index);
   } else {
     com.reset();
     for (cvm::atom_const_iter ai = this->begin(); ai != this->end(); ai++) {

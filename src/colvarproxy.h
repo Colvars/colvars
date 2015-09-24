@@ -371,7 +371,7 @@ public:
   /// "filename" is a PDB file, use this field to determine which are
   /// the atoms to be set
   virtual int load_atoms(char const *filename,
-                         std::vector<cvm::atom> &atoms,
+                         cvm::atom_group &atoms,
                          std::string const &pdb_field,
                          double const pdb_field_value = 0.0) = 0;
 
@@ -433,7 +433,7 @@ public:
   /// Prepare this group for collective variables calculation, selecting atoms by internal ids (0-based)
   virtual int init_atom_group(std::vector<int> const &atoms_ids) // TODO Add a handle to cvc objects
   {
-    cvm::error("Error: initializing a group outside of the colvars module is currently not supported.\.\n",
+    cvm::error("Error: initializing a group outside of the colvars module is currently not supported.\n",
                COLVARS_NOT_IMPLEMENTED);
     return COLVARS_NOT_IMPLEMENTED;
   }

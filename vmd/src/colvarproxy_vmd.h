@@ -15,7 +15,7 @@
 #include "colvaratoms.h"
 
 #ifndef COLVARPROXY_VERSION
-#define COLVARPROXY_VERSION "2015-02-24"
+#define COLVARPROXY_VERSION "2015-09-24"
 #endif
 
 /// \brief Communication between colvars and VMD (implementation of
@@ -134,22 +134,22 @@ public:
   // Callback functions
   int run_force_callback();
   int run_colvar_callback(std::string const &name,
-                      std::vector<const colvarvalue *> const &cvcs,
-                      colvarvalue &value);
+                          std::vector<const colvarvalue *> const &cvcs,
+                          colvarvalue &value);
   int run_colvar_gradient_callback(std::string const &name,
-                               std::vector<const colvarvalue *> const &cvcs,
-                               std::vector<colvarvalue> &gradient);
+                                   std::vector<const colvarvalue *> const &cvcs,
+                                   std::vector<colvarvalue> &gradient);
 
   int load_atoms(char const *filename,
-                   std::vector<cvm::atom> &atoms,
-                   std::string const &pdb_field,
-                   double const pdb_field_value = 0.0);
+                 cvm::atom_group &atoms,
+                 std::string const &pdb_field,
+                 double const pdb_field_value = 0.0);
 
   int load_coords(char const *filename,
-                    std::vector<cvm::atom_pos> &pos,
-                    const std::vector<int> &indices,
-                    std::string const &pdb_field,
-                    double const pdb_field_value = 0.0);
+                  std::vector<cvm::atom_pos> &pos,
+                  const std::vector<int> &indices,
+                  std::string const &pdb_field,
+                  double const pdb_field_value = 0.0);
 
   // no need to reimplement backup_file()
 };

@@ -1142,7 +1142,7 @@ int cvm::read_index_file(char const *filename)
 }
 
 int cvm::load_atoms(char const *file_name,
-                    std::vector<cvm::atom> &atoms,
+                    cvm::atom_group &atoms,
                     std::string const &pdb_field,
                     double const pdb_field_value)
 {

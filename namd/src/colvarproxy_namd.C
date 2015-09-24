@@ -176,7 +176,7 @@ int colvarproxy_namd::setup()
   }
 
   for (size_t ig = 0; ig < modifyRequestedGroups().size(); ig++) {
-    ResizeArray<AtomIDList> const &namd_group = modifyRequestedGroups()[ig];
+    AtomIDList const &namd_group = modifyRequestedGroups()[ig];
     log("Calculating total mass and charge for scalable group no. "+cvm::to_str(ig+1)+".\n");
 
     cvm::real total_mass = 0.0;
@@ -188,7 +188,7 @@ int colvarproxy_namd::setup()
     atom_groups_masses[ig] = total_mass;
     atom_groups_charges[ig] = total_charge;
 
-    atom_groups_positions[ig] = cvm::rvector(0.0, 0.0, 0.0);
+    atom_groups_coms[ig] = cvm::rvector(0.0, 0.0, 0.0);
     atom_groups_total_forces[ig] = cvm::rvector(0.0, 0.0, 0.0);
     atom_groups_applied_forces[ig] = cvm::rvector(0.0, 0.0, 0.0);
     atom_groups_new_colvar_forces[ig] = cvm::rvector(0.0, 0.0, 0.0);
@@ -320,14 +320,14 @@ void colvarproxy_namd::calculate()
     log(cvm::line_marker);
   }
 
-  { 
+  {
     // update group data (only coms available so far)
     size_t ig;
     // note: getGroupMassBegin() could be used here, but masses and charges
     // have already been calculated from the last call to setup()
     PositionList::const_iterator gp_i = getGroupPositionBegin();
     for ( ; gp_i != getGroupPositionEnd(); gp_i++, ig++) {
-      atom_groups_coms[ig] = *gp_i;
+      atom_groups_coms[ig] = cvm::rvector(gp_i->x, gp_i->y, gp_i->z);
     }
   }
 
@@ -343,11 +343,12 @@ void colvarproxy_namd::calculate()
     modifyAppliedForces().add(Vector(f.x, f.y, f.z));
   }
 
-  { 
+  {
     size_t ig;
     ForceList::iterator gf_i = modifyGroupForces().begin();
-    for ( ; gf_i != modifyGroupForces.end(); gf_i++, ig++) {
-      *gf_i = atom_groups_new_colvar_forces[ig];
+    for ( ; gf_i != modifyGroupForces().end(); gf_i++, ig++) {
+      cvm::rvector const &f = atom_groups_new_colvar_forces[ig];
+      *gf_i = Vector(f.x, f.y, f.z);
     }
   }
 
@@ -750,7 +751,7 @@ int colvarproxy_namd::load_coords(char const *pdb_filename,
 
 
 int colvarproxy_namd::load_atoms(char const *pdb_filename,
-                                 std::vector<cvm::atom> &atoms,
+                                 cvm::atom_group &atoms,
                                  std::string const &pdb_field_str,
                                  double const pdb_field_value)
 {
@@ -865,7 +866,7 @@ int colvarproxy_namd::init_atom_group(std::vector<int> const &atoms_ids)
   for (ig = 0; ig < modifyRequestedGroups().size(); ig++) {
     if (modifyRequestedGroups().size() != atoms_ids.size()) continue;
     size_t ia;
-    ResizeArray<AtomIDList> const &namd_group = modifyRequestedGroups()[ig];
+    AtomIDList const &namd_group = modifyRequestedGroups()[ig];
     for (ia = 0; ia < namd_group.size(); ia++) {
       int const aid = atoms_ids[ia];
       if (namd_group[ia] != aid) break;
@@ -881,15 +882,15 @@ int colvarproxy_namd::init_atom_group(std::vector<int> const &atoms_ids)
 
   // add this group (note: the argument of add_atom_group_slot() is redundant for NAMD)
   size_t const index = add_atom_group_slot(atom_groups_ids.size());
-  modifyRequestedGroups().add(atoms_ids.size());
-  ResizeArray<AtomIDList> &namd_group = modifyRequestedGroups()[index];
-  int const num_atoms = Node::Object()->molecule->numAtoms;
+  modifyRequestedGroups().resize(atom_groups_ids.size());
+  AtomIDList &namd_group = modifyRequestedGroups()[index];
+  int const n_all_atoms = Node::Object()->molecule->numAtoms;
   for (size_t ia = 0; ia < namd_group.size(); ia++) {
     int const aid = atoms_ids[ia];
     if (cvm::debug())
       log("Adding atom "+cvm::to_str(aid+1)+
           " for collective variables calculation.\n");
-    if ( (aid < 0) || (aid >= numatoms) ) {
+    if ( (aid < 0) || (aid >= n_all_atoms) ) {
       cvm::error("Error: invalid atom number specified, "+
                  cvm::to_str(aid+1)+"\n", INPUT_ERROR);
       return -1;
@@ -903,6 +904,6 @@ int colvarproxy_namd::init_atom_group(std::vector<int> const &atoms_ids)
 
 void colvarproxy_namd::clear_atom_group(int index)
 {
-  modifyRequestedGroups.del(index);
+  modifyRequestedGroups().del(index);
   colvarproxy::clear_atom_group(index);
 }

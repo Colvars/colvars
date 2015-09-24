@@ -4,7 +4,7 @@
 #define COLVARMODULE_H
 
 #ifndef COLVARS_VERSION
-#define COLVARS_VERSION "2015-09-16"
+#define COLVARS_VERSION "2015-09-24"
 #endif
 
 #ifndef COLVARS_DEBUG
@@ -422,17 +422,17 @@ public:
   /// \param pdb_field (optiona) if "filename" is a PDB file, use this
   /// field to determine which are the atoms to be set
   static int load_atoms(char const *filename,
-                          std::vector<atom> &atoms,
-                          std::string const &pdb_field,
-                          double const pdb_field_value = 0.0);
+                        atom_group &atoms,
+                        std::string const &pdb_field,
+                        double const pdb_field_value = 0.0);
 
   /// \brief Load the coordinates for a group of atoms from a file
   /// (PDB or XYZ)
   static int load_coords(char const *filename,
-                           std::vector<atom_pos> &pos,
-                           const std::vector<int> &indices,
-                           std::string const &pdb_field,
-                           double const pdb_field_value = 0.0);
+                         std::vector<atom_pos> &pos,
+                         const std::vector<int> &indices,
+                         std::string const &pdb_field,
+                         double const pdb_field_value = 0.0);
 
   /// \brief Load the coordinates for a group of atoms from an
   /// XYZ file
