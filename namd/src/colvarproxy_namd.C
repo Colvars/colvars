@@ -93,8 +93,8 @@ colvarproxy_namd::colvarproxy_namd()
 
   // initiate module: this object will be the communication proxy
   colvars = new colvarmodule(this);
-  cvm::log("Using NAMD interface, version "+
-           cvm::to_str(COLVARPROXY_VERSION)+".\n");
+  log("Using NAMD interface, version "+
+      cvm::to_str(COLVARPROXY_VERSION)+".\n");
 
   if (config) {
     colvars->read_config_file(config->data);
@@ -114,7 +114,7 @@ colvarproxy_namd::colvarproxy_namd()
 #endif
 
   if (simparams->firstTimestep != 0) {
-    cvm::log("Initializing step number as firstTimestep.\n");
+    log("Initializing step number as firstTimestep.\n");
     colvars->it = colvars->it_restart = simparams->firstTimestep;
   }
 
@@ -142,7 +142,7 @@ colvarproxy_namd::~colvarproxy_namd()
 int colvarproxy_namd::setup()
 {
   if (cvm::debug()) {
-    cvm::log("Setting up atomic data arrays:\n");
+    log("Setting up atomic data arrays:\n");
   }
 
   int const n_all_atoms = Node::Object()->molecule->numAtoms;
@@ -196,9 +196,9 @@ void colvarproxy_namd::calculate()
   previous_NAMD_step = step;
 
   if (cvm::debug()) {
-    cvm::log(cvm::line_marker+
-             "colvarproxy_namd, step no. "+cvm::to_str(colvars->it)+"\n"+
-             "Updating atomic data arrays.\n");
+    log(cvm::line_marker+
+        "colvarproxy_namd, step no. "+cvm::to_str(colvars->it)+"\n"+
+        "Updating atomic data arrays.\n");
   }
 
   // must delete the forces applied at the previous step: we can do
@@ -311,7 +311,7 @@ int colvarproxy_namd::run_force_callback() {
     + cvm::to_str(cvm::step_absolute());
   int err = Tcl_Eval(interp, cmd.c_str());
   if (err != TCL_OK) {
-    cvm::log(std::string("Error while executing calc_colvar_forces:\n"));
+    log(std::string("Error while executing calc_colvar_forces:\n"));
     cvm::error(Tcl_GetStringResult(interp));
     return COLVARS_ERROR;
   }
@@ -334,14 +334,14 @@ int colvarproxy_namd::run_colvar_callback(std::string const &name,
   int err = Tcl_Eval(interp, cmd.c_str());
   const char *result = Tcl_GetStringResult(interp);
   if (err != TCL_OK) {
-    cvm::log(std::string("Error while executing ")
-             + cmd + std::string(":\n"));
+    log(std::string("Error while executing ")
+        + cmd + std::string(":\n"));
     cvm::error(result);
     return COLVARS_ERROR;
   }
   std::istringstream is(result);
   if (value.from_simple_string(is.str()) != COLVARS_OK) {
-    cvm::log("Error parsing colvar value from script:");
+    log("Error parsing colvar value from script:");
     cvm::error(result);
     return COLVARS_ERROR;
   }
@@ -363,8 +363,8 @@ int colvarproxy_namd::run_colvar_gradient_callback(std::string const &name,
   }
   int err = Tcl_Eval(interp, cmd.c_str());
   if (err != TCL_OK) {
-    cvm::log(std::string("Error while executing ")
-             + cmd + std::string(":\n"));
+    log(std::string("Error while executing ")
+        + cmd + std::string(":\n"));
     cvm::error(Tcl_GetStringResult(interp));
     return COLVARS_ERROR;
   }
@@ -374,14 +374,14 @@ int colvarproxy_namd::run_colvar_gradient_callback(std::string const &name,
                          &n, &list);
   if (n != int(gradient.size())) {
     cvm::error("Error parsing list of gradient values from script: found "
-        + cvm::to_str(n) + " values instead of " + cvm::to_str(gradient.size()));
+               + cvm::to_str(n) + " values instead of " + cvm::to_str(gradient.size()));
     return COLVARS_ERROR;
   }
   for (i = 0; i < gradient.size(); i++) {
     std::istringstream is(Tcl_GetString(list[i]));
     if (gradient[i].from_simple_string(is.str()) != COLVARS_OK) {
-      cvm::log("Gradient matrix size: " + cvm::to_str(gradient[i].size()));
-      cvm::log("Gradient string: " + cvm::to_str(Tcl_GetString(list[i])));
+      log("Gradient matrix size: " + cvm::to_str(gradient[i].size()));
+      log("Gradient string: " + cvm::to_str(Tcl_GetString(list[i])));
       cvm::error("Error parsing gradient value from script");
       return COLVARS_ERROR;
     }
@@ -436,7 +436,7 @@ void colvarproxy_namd::fatal_error(std::string const &message)
 
 void colvarproxy_namd::exit(std::string const &message)
 {
-  cvm::log(message);
+  log(message);
   BackEnd::exit();
 }
 
@@ -447,8 +447,8 @@ int colvarproxy_namd::init_atom(int atom_number)
   int const aid = (atom_number-1);
 
   if (cvm::debug())
-    cvm::log("Adding atom "+cvm::to_str(atom_number)+
-             " for collective variables calculation.\n");
+    log("Adding atom "+cvm::to_str(atom_number)+
+        " for collective variables calculation.\n");
 
   if ( (aid < 0) || (aid >= Node::Object()->molecule->numAtoms) ) {
     cvm::error("Error: invalid atom number specified, "+
@@ -500,11 +500,11 @@ int colvarproxy_namd::init_atom(cvm::residue_id const &residue,
   }
 
   if (cvm::debug())
-    cvm::log("Adding atom \""+
-             atom_name+"\" in residue "+
-             cvm::to_str(residue)+
-             " (index "+cvm::to_str(aid)+
-             ") for collective variables calculation.\n");
+    log("Adding atom \""+
+        atom_name+"\" in residue "+
+        cvm::to_str(residue)+
+        " (index "+cvm::to_str(aid)+
+        ") for collective variables calculation.\n");
 
   for (size_t i = 0; i < atoms_ids.size(); i++) {
     if (atoms_ids[i] == aid) {
