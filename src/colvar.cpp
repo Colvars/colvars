@@ -1224,6 +1224,7 @@ void colvar::communicate_forces()
 
   if (tasks[task_scripted]) {
     std::vector<cvm::matrix2d<cvm::real> > func_grads;
+    func_grads.reserve(cvcs.size());
     for (i = 0; i < cvcs.size(); i++) {
       if (!cvcs[i]->b_enabled) continue;
       func_grads.push_back(cvm::matrix2d<cvm::real> (x.size(),
