@@ -7,8 +7,8 @@
 /*****************************************************************************
  * $Source: /namd/cvsroot/namd2/src/SimParameters.C,v $
  * $Author: jim $
- * $Date: 2015/03/11 23:04:38 $
- * $Revision: 1.1449 $
+ * $Date: 2015/09/23 12:57:58 $
+ * $Revision: 1.1454 $
  *****************************************************************************/
 
 /** \file SimParameters.C
@@ -76,8 +76,12 @@ extern "C" {
 
 #include "ComputeNonbondedMICKernel.h"
 
+//#ifdef NAMD_CUDA
+//bool one_cuda_device_per_node();
+//#endif
+#include "DeviceCUDA.h"
 #ifdef NAMD_CUDA
-bool one_cuda_device_per_node();
+extern __thread DeviceCUDA *deviceCUDA;
 #endif
 
 //#define DEBUGM
@@ -1400,6 +1404,9 @@ void SimParameters::config_parser_constraints(ParseOptions &opts) {
      "default is 'O'", PARSE_STRING);
    opts.optional("fixedatoms", "fixedAtomListFile", "the text input file for fixed atoms "
                  "used for parallel input IO", PARSE_STRING);
+   opts.optionalB("fixedatoms", "fixedAtomsForceOutput",
+     "Do we write out forces acting on fixed atoms?",
+     &fixedAtomsForceOutput, FALSE);
 
    ////  Harmonic Constraints
    opts.optionalB("main", "constraints", "Are harmonic constraints active?",
@@ -2935,12 +2942,6 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
       if (drudeOn) {
         NAMD_die("GBIS not compatible with Drude Polarization");
       }
-      if (fixedAtomsOn && ! fixedAtomsForces) {
-#ifdef NAMD_CUDA
-        iout << iWARN << "ENABLING FIXED ATOMS FORCES FOR COMPATIBILITY WITH GBIS CUDA\n" << endi;
-        fixedAtomsForces = TRUE;
-#endif
-      }
 
       if (alpha_cutoff > patchDimension) {
         patchDimension = alpha_cutoff;
@@ -3553,7 +3554,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
      PMEEwaldCoefficient = ewaldcof;
 
 #ifdef NAMD_CUDA
-     bool one_device_per_node = one_cuda_device_per_node();  // only checks node 0
+     bool one_device_per_node = deviceCUDA->one_device_per_node();  // only checks node 0
      if ( ! opts.defined("PMEOffload") ) {
        PMEOffload = ( (PMEInterpOrder > 4) && one_device_per_node );
        if ( PMEOffload ) iout << iINFO << "Enabling PMEOffload because PMEInterpOrder > 4.\n" << endi;
@@ -3573,7 +3574,6 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
      PMEEwaldCoefficient = 0;
      PMEOffload = 0;
    }
-
 
    //  Take care of initializing FMA values to something if FMA is not
    //  active
@@ -4233,15 +4233,6 @@ if ( openatomOn )
    if (fixedAtomsOn)
    {
       iout << iINFO << "FIXED ATOMS ACTIVE\n";
-#ifdef NAMD_CUDA
-     if ( ! fixedAtomsForces ) {
-      iout << iWARN << "FOR CUDA VERSION PRESSURE WILL BE INCORRECT WITHOUT FIXEDATOMSFORCES\n";
-      if (berendsenPressureOn || langevinPistonOn) {
-        fixedAtomsForces = TRUE;
-        iout << iWARN << "ENABLING FIXEDATOMSFORCES DUE TO PRESSURE CONTROL\n";
-      }
-     }
-#endif
       if ( fixedAtomsForces )
 	iout << iINFO << "FORCES BETWEEN FIXED ATOMS ARE CALCULATED\n";
       iout << endi;

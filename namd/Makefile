@@ -75,6 +75,11 @@ EXTRALINKLIBS=
 #EXTRAINCS=-I$(HOME)/papi/include
 #EXTRALINKLIBS=-lpapi -L$(HOME)/papi/lib
 
+#If using the CkLoop library from Charm++ for PME calculation, first define macro
+# USE_CKLOOP=1 for compiling the code, and then add "-module CkLoop" for linking.
+CKLOOP = -DUSE_CKLOOP=1
+CKLOOP_MODULE = -module CkLoop
+
 # defaults for special cases
 CXXTHREADOPTS = $(CXXOPTS) 
 CXXSIMPARAMOPTS = $(CXXOPTS) 
@@ -176,8 +181,10 @@ OBJS = \
 	$(DSTDIR)/ComputeThole.o \
 	$(DSTDIR)/ConfigList.o \
 	$(DSTDIR)/Controller.o \
+	$(DSTDIR)/CudaUtils.o \
 	$(DSTDIR)/ccsinterface.o \
 	$(DSTDIR)/DataStream.o \
+	$(DSTDIR)/DeviceCUDA.o \
 	$(DSTDIR)/DumpBench.o \
         $(DSTDIR)/FreeEnergyAssert.o \
         $(DSTDIR)/FreeEnergyGroup.o \
@@ -204,8 +211,8 @@ OBJS = \
 	$(DSTDIR)/colvaratoms.o \
 	$(DSTDIR)/colvarbias.o \
 	$(DSTDIR)/colvarbias_abf.o \
-	$(DSTDIR)/colvarbias_histogram.o \
 	$(DSTDIR)/colvarbias_alb.o \
+	$(DSTDIR)/colvarbias_histogram.o \
 	$(DSTDIR)/colvarbias_meta.o \
 	$(DSTDIR)/colvarbias_restraint.o \
 	$(DSTDIR)/colvarcomp.o \
@@ -394,14 +401,10 @@ CHARMC = $(CHARM)/bin/charmc
 CHARMXI = $(CHARM)/bin/charmc
 CHARMINC = $(CHARM)/include $(COPTD)CMK_OPTIMIZE=1
 CHARMLIB = $(CHARM)/lib
-CHARM_MODULES = -module NeighborLB -module HybridLB -module RefineLB -module GreedyLB -module CkMulticast
-#CHARM_MODULES = -module NeighborLB -module HybridLB -module RefineLB -module GreedyLB -module CkMulticast -module CkLoop
+CHARM_MODULES = -module NeighborLB -module HybridLB -module RefineLB -module GreedyLB -module CkMulticast $(CKLOOP_MODULE)
 #CHARM_MODULES = -module NeighborLB -module HybridLB -module RefineLB -module GreedyLB
 #CHARM_MODULES = -module msa -module NeighborLB -module HybridLB -module RefineLB -module GreedyLB
 #MSA = -DCHARM_HAS_MSA
-#If using the CkLoop library from Charm++ for PME calculation, first define macro
-# USE_CKLOOP=1 for compiling the code, and then add "-module CkLoop" for linking.
-#CKLOOP = -DUSE_CKLOOP=1
 
 # Libraries we may have changed
 LIBS = $(CUDAOBJS) $(PLUGINLIB) $(DPMTALIBS) $(DPMELIBS) $(FMMLIBS) $(TCLDLL)
