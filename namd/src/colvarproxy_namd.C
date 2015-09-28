@@ -576,9 +576,8 @@ int colvarproxy_namd::init_atom(cvm::residue_id const &residue,
 
   int const index = add_atom_slot(aid);
   modifyRequestedAtoms().add(aid);
-  // the two calls below will be handled by colvarproxy_namd::setup()
-  // atoms_masses[index] = Node::Object()->molecule->atommass(aid);
-  // atoms_charges[index] = Node::Object()->molecule->atomcharge(aid);
+  atoms_masses[index] = Node::Object()->molecule->atommass(aid);
+  atoms_charges[index] = Node::Object()->molecule->atomcharge(aid);
   return index;
 }
 
