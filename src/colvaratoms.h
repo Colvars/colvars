@@ -64,7 +64,7 @@ public:
   /// \brief Initialize an atom for collective variable calculation
   /// and get its internal identifier \param atom_number Atom index in
   /// the system topology (starting from 1)
-  atom(int const &atom_number);
+  atom(int atom_number);
 
   /// \brief Initialize an atom for collective variable calculation
   /// and get its internal identifier \param residue Residue number
@@ -73,7 +73,7 @@ public:
   /// type of topologies, may not be required
   atom(cvm::residue_id const &residue,
        std::string const     &atom_name,
-       std::string const     &segment_id = std::string(""));
+       std::string const     &segment_id);
 
   /// Copy constructor
   atom(atom const &a);
@@ -175,6 +175,9 @@ public:
 
   /// \brief Add an atom object to this group
   int add_atom(cvm::atom const &a);
+
+  /// \brief Add an atom ID to this group (the actual atomicdata will be not be handled by the group)
+  int add_atom_id(int aid);
 
   /// \brief Remove an atom object from this group
   int remove_atom(cvm::atom_iter ai);
@@ -294,11 +297,11 @@ public:
 
   /// Total mass of the atom group
   cvm::real total_mass;
-  void calc_total_mass();
+  void update_total_mass();
 
   /// Total charge of the atom group
   cvm::real total_charge;
-  void calc_total_charge();
+  void update_total_charge();
 
   /// \brief Don't apply any force on this group (use its coordinates
   /// only to calculate a colvar)
@@ -312,7 +315,7 @@ public:
 
   /// \brief Save aside the center of geometry of the reference positions,
   /// then subtract it from them
-  /// 
+  ///
   /// In this way it will be possible to use ref_pos also for the
   /// rotational fit.
   /// This is called either by atom_group::parse or by CVCs that assign
@@ -370,6 +373,10 @@ public:
 private:
   /// \brief Center of mass
   cvm::atom_pos com;
+  /// \brief The derivative of a scalar variable with respect to the COM
+  // TODO for scalable calculations of more complex variables (e.g. rotation),
+  // use a colvarvalue of vectors to hold the entire derivative
+  cvm::rvector scalar_com_gradient;
 public:
   /// \brief Return the center of mass of the atomic positions
   inline cvm::atom_pos center_of_mass() const

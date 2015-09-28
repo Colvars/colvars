@@ -13,7 +13,7 @@ cvm::atom::atom()
 }
 
 
-cvm::atom::atom(int const &atom_number)
+cvm::atom::atom(int atom_number)
 {
   colvarproxy *p = cvm::proxy;
   index = p->init_atom(atom_number);
@@ -113,15 +113,28 @@ int cvm::atom_group::add_atom(cvm::atom const &a)
     }
   }
 
-  if (b_scalable) {
-    atoms_ids.push_back(a.id);
-  } else {
-    atoms_ids.push_back(a.id);
-    atoms.push_back(a);
-    total_mass += a.mass;
-    total_charge += a.charge;
+  // for consistency with add_atom_id(), we update the list as well
+  atoms_ids.push_back(a.id);
+  atoms.push_back(a);
+  total_mass += a.mass;
+  total_charge += a.charge;
+
+  return COLVARS_OK;
+}
+
+
+int cvm::atom_group::add_atom_id(int aid)
+{
+  for (size_t i = 0; i < atoms_ids.size(); i++) {
+    if (atoms_ids[i] == aid) {
+      if (cvm::debug())
+        cvm::log("Discarding doubly counted atom with number "+
+                 cvm::to_str(aid+1)+".\n");
+      return COLVARS_OK;
+    }
   }
 
+  atoms_ids.push_back(aid);
   return COLVARS_OK;
 }
 
@@ -176,17 +189,17 @@ int cvm::atom_group::init()
 
 int cvm::atom_group::setup()
 {
-  for (cvm::atom_iter ai = this->begin(); ai != this->end(); ai++) {
+  for (cvm::atom_iter ai = atoms.begin(); ai != atoms.end(); ai++) {
     ai->update_mass();
     ai->update_charge();
   }
-  calc_total_mass();
-  calc_total_charge();
+  update_total_mass();
+  update_total_charge();
   return COLVARS_OK;
 }
 
 
-void cvm::atom_group::calc_total_mass()
+void cvm::atom_group::update_total_mass()
 {
   if (b_dummy) {
     total_mass = 1.0;
@@ -206,14 +219,14 @@ void cvm::atom_group::calc_total_mass()
 
 void cvm::atom_group::reset_mass(std::string &name, int i, int j)
 {
-  calc_total_mass();
+  update_total_mass();
   cvm::log("Re-initialized atom group "+name+":"+cvm::to_str(i)+"/"+
-           cvm::to_str(j)+". "+ cvm::to_str(this->size())+
+           cvm::to_str(j)+". "+ cvm::to_str(atoms_ids.size())+
            " atoms: total mass = "+cvm::to_str(total_mass)+".\n");
 }
 
 
-void cvm::atom_group::calc_total_charge()
+void cvm::atom_group::update_total_charge()
 {
   if (b_dummy) {
     total_charge = 0.0;
@@ -401,7 +414,7 @@ int cvm::atom_group::parse(std::string const &conf)
     cvm::log("Done initializing atom group \""+key+"\".\n");
 
   cvm::log("Atom group \""+key+"\" defined, "+
-            cvm::to_str(this->size())+" atoms initialized: total mass = "+
+            cvm::to_str(atoms_ids.size())+" atoms initialized: total mass = "+
 	    cvm::to_str(total_mass)+", total charge = "+
             cvm::to_str(total_charge)+".\n");
 
@@ -424,11 +437,20 @@ int cvm::atom_group::add_atom_numbers(std::string const &numbers_conf)
   }
 
   if (atom_indexes.size()) {
-    // if we are handling the group on rank 0, better allocate the vector in one shot
-    if (! b_scalable) atoms.reserve(this->size()+atom_indexes.size());
-    for (size_t i = 0; i < atom_indexes.size(); i++) {
-      add_atom(cvm::atom(atom_indexes[i]));
+    atoms_ids.reserve(atoms_ids.size()+atom_indexes.size());
+
+    if (b_scalable) {
+      for (size_t i = 0; i < atom_indexes.size(); i++) {
+        add_atom_id((cvm::proxy)->check_atom_id(atom_indexes[i]));
+      }
+    } else {
+      // if we are handling the group on rank 0, better allocate the vector in one shot
+      atoms.reserve(atoms.size()+atom_indexes.size());
+      for (size_t i = 0; i < atom_indexes.size(); i++) {
+        add_atom(cvm::atom(atom_indexes[i]));
+      }
     }
+
     if (cvm::get_error()) return COLVARS_ERROR;
   } else {
     cvm::error("Error: no numbers provided for \""
@@ -456,10 +478,17 @@ int cvm::atom_group::add_index_group(std::string const &index_group_name)
     return COLVARS_ERROR;
   }
 
-  // if we are handling the group on rank 0, better allocate the vector in one shot
-  if (! b_scalable) atoms.reserve(this->size()+index_groups_i->size());
-  for (size_t i = 0; i < index_groups_i->size(); i++) {
-    add_atom(cvm::atom((*index_groups_i)[i]));
+  atoms_ids.reserve(atoms_ids.size()+index_groups_i->size());
+
+  if (b_scalable) {
+    for (size_t i = 0; i < index_groups_i->size(); i++) {
+      add_atom_id((cvm::proxy)->check_atom_id((*index_groups_i)[i]));
+    }
+  } else {
+    atoms.reserve(atoms.size()+index_groups_i->size());
+    for (size_t i = 0; i < index_groups_i->size(); i++) {
+      add_atom(cvm::atom((*index_groups_i)[i]));
+    }
   }
 
   if (cvm::get_error())
@@ -478,10 +507,20 @@ int cvm::atom_group::add_atom_numbers_range(std::string const &range_conf)
     if ( (is >> initial) && (initial > 0) &&
          (is >> dash) && (dash == '-') &&
          (is >> final) && (final > 0) ) {
-      if (! b_scalable) atoms.reserve(this->size() + (final - initial + 1));
-      for (int anum = initial; anum <= final; anum++) {
-        add_atom(cvm::atom(anum));
+
+      atoms_ids.reserve(atoms_ids.size() + (final - initial + 1));
+
+      if (b_scalable) {
+        for (int anum = initial; anum <= final; anum++) {
+          add_atom_id((cvm::proxy)->check_atom_id(anum));
+        }
+      } else {
+        atoms.reserve(atoms.size() + (final - initial + 1));
+        for (int anum = initial; anum <= final; anum++) {
+          add_atom(cvm::atom(anum));
+        }
       }
+
     }
     if (cvm::get_error()) return COLVARS_ERROR;
   } else {
@@ -506,10 +545,20 @@ int cvm::atom_group::add_atom_name_residue_range(std::string const &psf_segid,
          (is >> initial) && (initial > 0) &&
          (is >> dash) && (dash == '-') &&
          (is >> final) && (final > 0) ) {
-      if (! b_scalable) atoms.reserve(this->size() + (final - initial + 1));
-      for (int resid = initial; resid <= final; resid++) {
-        add_atom(cvm::atom(resid, atom_name, psf_segid));
+
+      atoms_ids.reserve(atoms_ids.size() + (final - initial + 1));
+
+      if (b_scalable) {
+        for (int resid = initial; resid <= final; resid++) {
+          add_atom_id((cvm::proxy)->check_atom_id(resid, atom_name, psf_segid));
+        }
+      } else {
+        atoms.reserve(atoms.size() + (final - initial + 1));
+        for (int resid = initial; resid <= final; resid++) {
+          add_atom(cvm::atom(resid, atom_name, psf_segid));
+        }
       }
+
       if (cvm::get_error()) return COLVARS_ERROR;
     } else {
       cvm::error("Error: cannot parse definition for \""
@@ -861,6 +910,11 @@ void cvm::atom_group::set_weighted_gradient(cvm::rvector const &grad)
 {
   if (b_dummy) return;
 
+  if (b_scalable) {
+    scalar_com_gradient = grad;
+    return;
+  }
+
   for (cvm::atom_iter ai = this->begin(); ai != this->end(); ai++) {
     ai->grad = (ai->mass/total_mass) * grad;
   }
@@ -1026,6 +1080,10 @@ cvm::rvector cvm::atom_group::system_force() const
 
 void cvm::atom_group::apply_colvar_force(cvm::real const &force)
 {
+  if (cvm::debug()) {
+    log("Communicating a colvar force from atom group to the MD engine.\n");
+  }
+
   if (b_dummy)
     return;
 
@@ -1035,10 +1093,10 @@ void cvm::atom_group::apply_colvar_force(cvm::real const &force)
     return;
   }
 
-  // Note: this case should be caught early
-  // if (b_scalable) {
-  //   return;
-  // }
+  if (b_scalable) {
+    (cvm::proxy)->apply_atom_group_force(index, force * scalar_com_gradient);
+    return;
+  }
 
   if (b_rotate) {
 

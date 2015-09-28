@@ -297,11 +297,24 @@ public:
   /// Prepare this atom for collective variables calculation, selecting it by numeric index (1-based)
   virtual int init_atom(int atom_number) = 0;
 
+  /// Check that this atom is valid, but do not initialize it yet
+  virtual int check_atom_id(int atom_number) = 0;
+
   /// Select this atom for collective variables calculation, using name and residue number.
   /// Not all programs support this: leave this function as is in those cases.
   virtual int init_atom(cvm::residue_id const &residue,
                         std::string const     &atom_name,
                         std::string const     &segment_id)
+  {
+    cvm::error("Error: initializing an atom by name and residue number is currently not supported.\n",
+               COLVARS_NOT_IMPLEMENTED);
+    return COLVARS_NOT_IMPLEMENTED;
+  }
+
+  /// Check that this atom is valid, but do not initialize it yet
+  virtual int check_atom_id(cvm::residue_id const &residue,
+                            std::string const     &atom_name,
+                            std::string const     &segment_id)
   {
     cvm::error("Error: initializing an atom by name and residue number is currently not supported.\n",
                COLVARS_NOT_IMPLEMENTED);
@@ -322,7 +335,7 @@ public:
   }
 
   /// Get the numeric ID of the given atom (for the program)
-  inline cvm::real get_atom_id(int index) const
+  inline int get_atom_id(int index) const
   {
     return atoms_ids[index];
   }

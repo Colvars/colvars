@@ -153,9 +153,13 @@ public:
   }
 
   int init_atom(int atom_number);
+  int check_atom_id(int atom_number);
   int init_atom(cvm::residue_id const &residue,
                 std::string const     &atom_name,
                 std::string const     &segment_id);
+  int check_atom_id(cvm::residue_id const &residue,
+                    std::string const     &atom_name,
+                    std::string const     &segment_id);
   void clear_atom(int index);
 
   cvm::rvector position_distance(cvm::atom_pos const &pos1,
@@ -180,6 +184,7 @@ public:
 
   int init_atom_group(std::vector<int> const &atoms_ids);
   void clear_atom_group(int index);
+  int update_group_properties(int index);
 
   std::ostream * output_stream(std::string const &output_name);
   int close_output_stream(std::string const &output_name);
