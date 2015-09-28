@@ -77,8 +77,10 @@ EXTRALINKLIBS=
 
 #If using the CkLoop library from Charm++ for PME calculation, first define macro
 # USE_CKLOOP=1 for compiling the code, and then add "-module CkLoop" for linking.
-CKLOOP = -DUSE_CKLOOP=1
-CKLOOP_MODULE = -module CkLoop
+# CKLOOP = -DUSE_CKLOOP=1
+# CKLOOP_MODULE = -module CkLoop
+CKLOOP = -DUSE_CKLOOP=0
+CKLOOP_MODULE = 
 
 # defaults for special cases
 CXXTHREADOPTS = $(CXXOPTS) 
