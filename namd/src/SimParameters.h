@@ -7,8 +7,8 @@
 /*****************************************************************************
  * $Source: /namd/cvsroot/namd2/src/SimParameters.h,v $
  * $Author: jim $
- * $Date: 2015/03/03 17:54:15 $
- * $Revision: 1.1237 $
+ * $Date: 2015/09/04 22:20:03 $
+ * $Revision: 1.1238 $
  *****************************************************************************/
 
 #ifndef SIMPARAMETERS_H
@@ -470,6 +470,7 @@ public:
 
 	Bool fixedAtomsOn;		//  Are there fixed atoms?
 	Bool fixedAtomsForces;		//  Calculate forces anyway?
+	Bool fixedAtomsForceOutput; // Output fixed forces?
 
 	Bool langevinOn;		//  Flag TRUE-> langevin dynamics active
 	BigReal langevinTemp;		//  Temperature for Langevin dynamics
@@ -745,7 +746,7 @@ public:
 	MTSChoices MTSAlgorithm;	//  What multiple timestep algorithm
 					//  to use
 
-	int longSplitting;		//  What electrostatic splitting
+	int longSplitting;		//  What electrostatic splitting 
 					//  to use
 
 	Bool ignoreMass;		//  Mass < 3.5 does not indicate hydrogen, etc.
