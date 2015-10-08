@@ -164,7 +164,11 @@ public:
   virtual void fatal_error(std::string const &message) = 0;
 
   /// Print a message to the main log and exit normally
-  virtual void exit(std::string const &message) = 0;
+  virtual void exit(std::string const &message)
+  {
+    cvm::error("Error: exiting without error is not implemented, returning error code.\n",
+               COLVARS_NOT_IMPLEMENTED);
+  }
 
   // TODO the following definitions may be moved to a .cpp file
 
@@ -244,7 +248,10 @@ public:
   /// \param pos The position to look for the closest periodic image
   /// \param ref_pos The reference position
   virtual void select_closest_image(cvm::atom_pos &pos,
-                                    cvm::atom_pos const &ref_pos) = 0;
+                                    cvm::atom_pos const &ref_pos)
+  {
+    pos = position_distance(ref_pos, pos) + ref_pos;
+  }
 
   /// \brief Perform select_closest_image() on a set of atomic positions
   ///
@@ -300,7 +307,7 @@ public:
   /// Prepare this atom for collective variables calculation, selecting it by numeric index (1-based)
   virtual int init_atom(int atom_number) = 0;
 
-  /// Check that this atom is valid, but do not initialize it yet
+  /// Check that this atom number is valid, but do not initialize the corresponding atom yet
   virtual int check_atom_id(int atom_number) = 0;
 
   /// Select this atom for collective variables calculation, using name and residue number.
@@ -389,7 +396,11 @@ public:
   virtual int load_atoms(char const *filename,
                          cvm::atom_group &atoms,
                          std::string const &pdb_field,
-                         double const pdb_field_value = 0.0) = 0;
+                         double const pdb_field_value = 0.0)
+  {
+    cvm::error("Error: loading atom identifiers from a file is currently not implemented.\n");
+    return COLVARS_NOT_IMPLEMENTED;
+  }
 
   /// \brief Load the coordinates for a group of atoms from a file
   /// (usually a PDB); if "pos" is already allocated, the number of its
@@ -398,9 +409,11 @@ public:
                           std::vector<cvm::atom_pos> &pos,
                           const std::vector<int> &indices,
                           std::string const &pdb_field,
-                          double const pdb_field_value = 0.0) = 0;
-
-protected:
+                          double const pdb_field_value = 0.0)
+  {
+    cvm::error("Error: loading atomic coordinates from a file is currently not implemented.\n");
+    return COLVARS_NOT_IMPLEMENTED;
+  }
 
   // **************** ACCESS GROUP DATA ****************
 
