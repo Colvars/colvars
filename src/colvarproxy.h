@@ -24,38 +24,6 @@ class colvarproxy {
 
 protected:
 
-  /// \brief Array of 0-based integers used to uniquely associate atoms
-  /// within the host program
-  std::vector<int>          atoms_ids;
-  /// \brief Keep track of how many times each atom is used by a separate colvar object
-  std::vector<size_t>       atoms_ncopies;
-  /// \brief Masses of the atoms (allow redefinition during a run, as done e.g. in LAMMPS)
-  std::vector<cvm::real>    atoms_masses;
-  /// \brief Charges of the atoms (allow redefinition during a run, as done e.g. in LAMMPS)
-  std::vector<cvm::real>    atoms_charges;
-  /// \brief Current three-dimensional positions of the atoms
-  std::vector<cvm::rvector> atoms_positions;
-  /// \brief Most recent total forces on each atom
-  std::vector<cvm::rvector> atoms_total_forces;
-  /// \brief Most recent forces applied by external potentials onto each atom
-  std::vector<cvm::rvector> atoms_applied_forces;
-  /// \brief Forces applied from colvars, to be communicated to the MD integrator
-  std::vector<cvm::rvector> atoms_new_colvar_forces;
-
-  /// Used by all init_atom() functions: create a slot for an atom not requested yet
-  inline int add_atom_slot(int atom_id)
-  {
-    atoms_ids.push_back(atom_id);
-    atoms_ncopies.push_back(1);
-    atoms_masses.push_back(1.0);
-    atoms_charges.push_back(0.0);
-    atoms_positions.push_back(cvm::rvector(0.0, 0.0, 0.0));
-    atoms_total_forces.push_back(cvm::rvector(0.0, 0.0, 0.0));
-    atoms_applied_forces.push_back(cvm::rvector(0.0, 0.0, 0.0));
-    atoms_new_colvar_forces.push_back(cvm::rvector(0.0, 0.0, 0.0));
-    return (atoms_ids.size() - 1);
-  }
-
   /// \brief Currently opened output files: by default, these are ofstream objects.
   /// Allows redefinition to implement different output mechanisms
   std::list<std::ostream *> output_files;
@@ -293,6 +261,41 @@ public:
 
 
   // **************** ACCESS ATOMIC DATA ****************
+protected:
+
+  /// \brief Array of 0-based integers used to uniquely associate atoms
+  /// within the host program
+  std::vector<int>          atoms_ids;
+  /// \brief Keep track of how many times each atom is used by a separate colvar object
+  std::vector<size_t>       atoms_ncopies;
+  /// \brief Masses of the atoms (allow redefinition during a run, as done e.g. in LAMMPS)
+  std::vector<cvm::real>    atoms_masses;
+  /// \brief Charges of the atoms (allow redefinition during a run, as done e.g. in LAMMPS)
+  std::vector<cvm::real>    atoms_charges;
+  /// \brief Current three-dimensional positions of the atoms
+  std::vector<cvm::rvector> atoms_positions;
+  /// \brief Most recent total forces on each atom
+  std::vector<cvm::rvector> atoms_total_forces;
+  /// \brief Most recent forces applied by external potentials onto each atom
+  std::vector<cvm::rvector> atoms_applied_forces;
+  /// \brief Forces applied from colvars, to be communicated to the MD integrator
+  std::vector<cvm::rvector> atoms_new_colvar_forces;
+
+  /// Used by all init_atom() functions: create a slot for an atom not requested yet
+  inline int add_atom_slot(int atom_id)
+  {
+    atoms_ids.push_back(atom_id);
+    atoms_ncopies.push_back(1);
+    atoms_masses.push_back(1.0);
+    atoms_charges.push_back(0.0);
+    atoms_positions.push_back(cvm::rvector(0.0, 0.0, 0.0));
+    atoms_total_forces.push_back(cvm::rvector(0.0, 0.0, 0.0));
+    atoms_applied_forces.push_back(cvm::rvector(0.0, 0.0, 0.0));
+    atoms_new_colvar_forces.push_back(cvm::rvector(0.0, 0.0, 0.0));
+    return (atoms_ids.size() - 1);
+  }
+
+public:
 
   /// Prepare this atom for collective variables calculation, selecting it by numeric index (1-based)
   virtual int init_atom(int atom_number) = 0;
@@ -400,6 +403,8 @@ public:
 protected:
 
   // **************** ACCESS GROUP DATA ****************
+
+protected:
 
   /// \brief Array of 0-based integers used to uniquely associate atom groups
   /// within the host program
