@@ -433,7 +433,7 @@ public:
   // TODO Add a handle to cvc objects
   inline int add_atom_group_slot(int atom_group_id)
   {
-    atom_groups_ids.push_back(atom_group_ids);
+    atom_groups_ids.push_back(atom_group_id);
     atom_groups_masses.push_back(1.0);
     atom_groups_charges.push_back(0.0);
     atom_groups_coms.push_back(cvm::rvector(0.0, 0.0, 0.0));
