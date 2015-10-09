@@ -923,6 +923,7 @@ int colvarproxy_namd::init_atom_group(std::vector<int> const &atoms_ids)
   // add this group (note: the argument of add_atom_group_slot() is redundant for NAMD)
   size_t const index = add_atom_group_slot(atom_groups_ids.size());
   modifyRequestedGroups().resize(atom_groups_ids.size());
+  // the following is done in calculate()
   // modifyGroupForces().resize(atom_groups_ids.size());
   AtomIDList &namd_group = modifyRequestedGroups()[index];
   namd_group.resize(atoms_ids.size());
