@@ -216,7 +216,7 @@ double colvarproxy_lammps::compute()
     log("atoms_positions = "+cvm::to_str(atoms_positions)+"\n");
     log("atoms_new_colvar_forces = "+cvm::to_str(atoms_new_colvar_forces)+"\n");
   }
-    
+
   return bias_energy;
 }
 
@@ -309,74 +309,6 @@ void colvarproxy_lammps::exit(std::string const &message)
   do_exit=true;
 }
 
-enum e_pdb_field {
-  e_pdb_none,
-  e_pdb_occ,
-  e_pdb_beta,
-  e_pdb_x,
-  e_pdb_y,
-  e_pdb_z,
-  e_pdb_ntot
-};
-
-
-e_pdb_field pdb_field_str2enum(std::string const &pdb_field_str)
-{
-  e_pdb_field pdb_field = e_pdb_none;
-
-  if (colvarparse::to_lower_cppstr(pdb_field_str) ==
-      colvarparse::to_lower_cppstr("O")) {
-    pdb_field = e_pdb_occ;
-  }
-
-  if (colvarparse::to_lower_cppstr(pdb_field_str) ==
-      colvarparse::to_lower_cppstr("B")) {
-    pdb_field = e_pdb_beta;
-  }
-
-  if (colvarparse::to_lower_cppstr(pdb_field_str) ==
-      colvarparse::to_lower_cppstr("X")) {
-    pdb_field = e_pdb_x;
-  }
-
-  if (colvarparse::to_lower_cppstr(pdb_field_str) ==
-      colvarparse::to_lower_cppstr("Y")) {
-    pdb_field = e_pdb_y;
-  }
-
-  if (colvarparse::to_lower_cppstr(pdb_field_str) ==
-      colvarparse::to_lower_cppstr("Z")) {
-    pdb_field = e_pdb_z;
-  }
-
-  if (pdb_field == e_pdb_none) {
-    cvm::fatal_error("Error: unsupported PDB field, \""+
-                      pdb_field_str+"\".\n");
-  }
-
-  return pdb_field;
-}
-
-int colvarproxy_lammps::load_coords(char const *pdb_filename,
-                                    std::vector<cvm::atom_pos> &pos,
-                                    const std::vector<int> &indices,
-                                    std::string const &pdb_field_str,
-                                    double const pdb_field_value)
-{
-  cvm::fatal_error("Reading collective variable coordinates "
-                   "from a PDB file is currently not supported.\n");
-  return COLVARS_ERROR;
-}
-
-int colvarproxy_lammps::load_atoms(char const *pdb_filename,
-                                   cvm::atom_group &atoms,
-                                   std::string const &pdb_field_str,
-                                   double const pdb_field_value)
-{
-  cvm::fatal_error("Selecting collective variable atoms "
-                    "from a PDB file is currently not supported.\n");
-  return COLVARS_ERROR;
-}
 
 int colvarproxy_lammps::backup_file(char const *filename)
 {
