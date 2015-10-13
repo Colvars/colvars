@@ -385,6 +385,15 @@ public:
     return cvm::rvector(0.0);
   }
 
+  // useful functions for data management outside this class
+  inline std::vector<int> *modify_atom_ids() { return &atoms_ids; }
+  inline std::vector<cvm::real> *modify_atom_masses() { return &atoms_masses; }
+  inline std::vector<cvm::real> *modify_atom_charges() { return &atoms_charges; }
+  inline std::vector<cvm::rvector> *modify_atom_positions() { return &atoms_positions; }
+  inline std::vector<cvm::rvector> *modify_atom_total_forces() { return &atoms_total_forces; }
+  inline std::vector<cvm::rvector> *modify_atom_applied_forces() { return &atoms_applied_forces; }
+  inline std::vector<cvm::rvector> *modify_atom_new_colvar_forces() { return &atoms_new_colvar_forces; }
+
   /// \brief Read atom identifiers from a file \param filename name of
   /// the file (usually a PDB) \param atoms array to which atoms read
   /// from "filename" will be appended \param pdb_field (optiona) if
