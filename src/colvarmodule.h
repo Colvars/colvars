@@ -4,7 +4,7 @@
 #define COLVARMODULE_H
 
 #ifndef COLVARS_VERSION
-#define COLVARS_VERSION "2015-10-08"
+#define COLVARS_VERSION "2015-10-13"
 #endif
 
 #ifndef COLVARS_DEBUG
@@ -31,6 +31,7 @@
 #define MEMORY_ERROR    (-1<<5)
 #define FATAL_ERROR     (-1<<6) // Should be set, or not, together with other bits
 #define DELETE_COLVARS  (-1<<7) // Instruct the caller to delete cvm
+#define COLVARS_NO_SUCH_FRAME (-1<<8) // Cannot load the requested frame
 
 
 #include <iostream>

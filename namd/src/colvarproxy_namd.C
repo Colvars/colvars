@@ -256,7 +256,7 @@ void colvarproxy_namd::calculate()
     }
 
     if (n_positions < atoms_ids.size()) {
-      cvm::fatal_error("Error: did not receive the positions of all atoms.\n");
+      cvm::error("Error: did not receive the positions of all atoms.\n", BUG_ERROR);
     }
   }
 
@@ -277,11 +277,11 @@ void colvarproxy_namd::calculate()
       }
 
       if (n_total_forces < atoms_ids.size()) {
-        cvm::fatal_error("Error: system forces were requested, but total forces "
-                         "were not received for all atoms.\n"
-                         "The most probable cause is combination of energy "
-                         "minimization with a biasing method that requires MD (e.g. ABF).\n"
-                         "Always run minimization and ABF separately.");
+        cvm::error("Error: system forces were requested, but total forces "
+                   "were not received for all atoms.\n"
+                   "The most probable cause is combination of energy "
+                   "minimization with a biasing method that requires MD (e.g. ABF).\n"
+                   "Always run minimization and ABF separately.", INPUT_ERROR);
       }
     }
 
@@ -331,7 +331,7 @@ void colvarproxy_namd::calculate()
 
   // call the collective variable module
   if (colvars->calc() != COLVARS_OK) {
-    fatal_error("Error in the collective variables module.\n");
+    cvm::error("Error in the collective variables module.\n", COLVARS_ERROR);
   }
 
   if (cvm::debug()) {
@@ -521,7 +521,7 @@ int colvarproxy_namd::check_atom_id(int atom_number)
   if ( (aid < 0) || (aid >= Node::Object()->molecule->numAtoms) ) {
     cvm::error("Error: invalid atom number specified, "+
                cvm::to_str(atom_number)+"\n", INPUT_ERROR);
-    return -1;
+    return INPUT_ERROR;
   }
 
   return aid;
@@ -545,7 +545,7 @@ int colvarproxy_namd::init_atom(int atom_number)
   aid = check_atom_id(atom_number);
 
   if (aid < 0) {
-    return -1;
+    return INPUT_ERROR;
   }
 
   int const index = add_atom_slot(aid);
@@ -579,7 +579,7 @@ int colvarproxy_namd::check_atom_id(cvm::residue_id const &residue,
                  (", segment \""+segment_id+"\"") :
                  ("") )+
                "\n", INPUT_ERROR);
-    return -1;
+    return INPUT_ERROR;
   }
 
   return aid;
@@ -682,8 +682,8 @@ int colvarproxy_namd::load_coords(char const *pdb_filename,
                                   double const pdb_field_value)
 {
   if (pdb_field_str.size() == 0 && indices.size() == 0) {
-    cvm::fatal_error("Bug alert: either PDB field should be defined or list of "
-                     "atom IDs should be available when loading atom coordinates!\n");
+    cvm::error("Bug alert: either PDB field should be defined or list of "
+               "atom IDs should be available when loading atom coordinates!\n", BUG_ERROR);
   }
 
   e_pdb_field pdb_field_index;
@@ -749,10 +749,10 @@ int colvarproxy_namd::load_coords(char const *pdb_filename,
       if (!pos_allocated) {
         pos.push_back(cvm::atom_pos(0.0, 0.0, 0.0));
       } else if (ipos >= pos.size()) {
-        cvm::fatal_error("Error: the PDB file \""+
-                         std::string(pdb_filename)+
-                         "\" contains coordinates for "
-                         "more atoms than needed.\n");
+        cvm::error("Error: the PDB file \""+
+                   std::string(pdb_filename)+
+                   "\" contains coordinates for "
+                   "more atoms than needed.\n", BUG_ERROR);
       }
 
       pos[ipos] = cvm::atom_pos((pdb->atom(ipdb))->xcoor(),
@@ -764,11 +764,11 @@ int colvarproxy_namd::load_coords(char const *pdb_filename,
     }
 
     if ((ipos < pos.size()) || (current_index != indices.end()))
-      cvm::fatal_error("Error: the number of records in the PDB file \""+
-                       std::string(pdb_filename)+
-                       "\" does not appear to match either the total number of atoms,"+
-                       " or the number of coordinates requested at this point("+
-                       cvm::to_str(pos.size())+").\n");
+      cvm::fatal("Error: the number of records in the PDB file \""+
+                 std::string(pdb_filename)+
+                 "\" does not appear to match either the total number of atoms,"+
+                 " or the number of coordinates requested at this point("+
+                 cvm::to_str(pos.size())+").\n", BUG_ERROR);
 
   } else {
 
@@ -792,8 +792,8 @@ int colvarproxy_namd::load_atoms(char const *pdb_filename,
                                  double const pdb_field_value)
 {
   if (pdb_field_str.size() == 0)
-    cvm::fatal_error("Error: must define which PDB field to use "
-                     "in order to define atoms from a PDB file.\n");
+    cvm::error("Error: must define which PDB field to use "
+               "in order to define atoms from a PDB file.\n", INPUT_ERROR);
 
   PDB *pdb = new PDB(pdb_filename);
   size_t const pdb_natoms = pdb->num_atoms();

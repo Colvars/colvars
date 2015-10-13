@@ -9,9 +9,6 @@
 #include "colvarmodule.h"
 #include "colvarvalue.h"
 
-// return values for the frame() routine
-#define COLVARS_NO_SUCH_FRAME -1
-
 // forward declarations
 class colvarscript;
 
@@ -332,7 +329,7 @@ public:
   }
 
   /// \brief Used by the atom class destructor: rather than deleting the array slot
-  /// (costly) set the corresponding atoms_copies to zero
+  /// (costly) set the corresponding atoms_ncopies to zero
   virtual void clear_atom(int index)
   {
     if ( (index < 0) || (index >= atoms_ids.size()) ) {
@@ -398,7 +395,8 @@ public:
                          std::string const &pdb_field,
                          double const pdb_field_value = 0.0)
   {
-    cvm::error("Error: loading atom identifiers from a file is currently not implemented.\n");
+    cvm::error("Error: loading atom identifiers from a file is currently not implemented.\n",
+               COLVARS_NOT_IMPLEMENTED);
     return COLVARS_NOT_IMPLEMENTED;
   }
 
