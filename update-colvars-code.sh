@@ -209,7 +209,7 @@ then
 
   condcopy "${source}/doc/colvars-refman.bib" "${target}/ug/ug_colvars.bib"
   condcopy "${source}/doc/colvars-refman-main.tex" "${target}/ug/ug_colvars.tex"
-  condcopy "${source}/doc/colvars-cv.tex" "${target}/ug/colvars-cv.tex"
+  condcopy "${source}/doc/colvars-cv.tex" "${target}/ug/ug_colvars-cv.tex"
   condcopy "${source}/namd/ug/ug_colvars_macros.tex" "${target}/ug/ug_colvars_macros.tex"
   condcopy "${source}/doc/colvars_diagram.pdf" "${target}/ug/figures/colvars_diagram.pdf"
   condcopy "${source}/doc/colvars_diagram.eps" "${target}/ug/figures/colvars_diagram.eps"
@@ -250,7 +250,7 @@ then
 
   condcopy "${source}/doc/colvars-refman.bib" "${target}/doc/ug_colvars.bib"
   condcopy "${source}/doc/colvars-refman-main.tex" "${target}/doc/ug_colvars.tex"
-  condcopy "${source}/doc/colvars-cv.tex" "${target}/doc/colvars-cv.tex"
+  condcopy "${source}/doc/colvars-cv.tex" "${target}/doc/ug_colvars-cv.tex"
   condcopy "${source}/vmd/doc/ug_colvars_macros.tex" "${target}/doc/ug_colvars_macros.tex"
   condcopy "${source}/doc/colvars_diagram.pdf" "${target}/doc/pictures/colvars_diagram.pdf"
   condcopy "${source}/doc/colvars_diagram.eps" "${target}/doc/pictures/colvars_diagram.eps"
