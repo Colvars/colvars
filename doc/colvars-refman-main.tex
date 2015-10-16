@@ -80,7 +80,9 @@ In all following uses, the \texttt{cv} command will continue operating on the sa
 To use the \texttt{cv} command on a different molecule, use \texttt{cv delete} first and then \texttt{cv molid }\emph{$<$molid$>$}.
 Invoking the \texttt{cv} command with no arguments prints a help screen.
 
-\input{colvars-cv.tex}
+\cvvmdugonly{\input{ug_colvars-cv.tex}}
+\cvrefmanonly{\input{colvars-cv.tex}}
+
 }
 
 \cvnamdonly{
@@ -3645,6 +3647,7 @@ Note that scripting commands may not be used directly in the NAMD configuration 
 (e.g. \texttt{calc\_colvar\_forces}) or in the NAMD config file after a \texttt{run} or
 \texttt{minimize} statement.
 
-\input{colvars-cv.tex}
+\cvnamdugonly{\input{ug_colvars-cv.tex}}
+\cvrefmanonly{\input{colvars-cv.tex}}
 }
 }
