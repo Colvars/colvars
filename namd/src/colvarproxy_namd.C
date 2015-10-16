@@ -764,7 +764,7 @@ int colvarproxy_namd::load_coords(char const *pdb_filename,
     }
 
     if ((ipos < pos.size()) || (current_index != indices.end()))
-      cvm::fatal("Error: the number of records in the PDB file \""+
+      cvm::error("Error: the number of records in the PDB file \""+
                  std::string(pdb_filename)+
                  "\" does not appear to match either the total number of atoms,"+
                  " or the number of coordinates requested at this point("+
