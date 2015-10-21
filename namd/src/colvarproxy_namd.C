@@ -238,9 +238,8 @@ void colvarproxy_namd::calculate()
   }
 
   for (size_t i = 0; i < atom_groups_ids.size(); i++) {
-    // TODO these are not supported yet
-    // atom_groups_total_forces[i] = cvm::rvector(0.0, 0.0, 0.0);
-    // atom_groups_applied_forces[i] = cvm::rvector(0.0, 0.0, 0.0);
+    atom_groups_total_forces[i] = cvm::rvector(0.0, 0.0, 0.0);
+    // atom_groups_applied_forces will not be filled in by GlobalMaster
     atom_groups_new_colvar_forces[i] = cvm::rvector(0.0, 0.0, 0.0);
   }
 
@@ -295,6 +294,23 @@ void colvarproxy_namd::calculate()
         atoms_applied_forces[atoms_map[*a_i]] = cvm::rvector((*f_i).x, (*f_i).y, (*f_i).z);
       }
     }
+
+    {
+      ForceList::const_iterator f_i = getGroupTotalForceBegin();
+      ForceList::const_iterator f_e = getGroupTotalForceEnd();
+      size_t i = 0;
+      if ((f_e - f_i) != atom_groups_ids.size()) {
+        cvm::error("Error: system forces were requested for scalable groups, "
+                   "but they are not in the same number from the number of groups.\n"
+                   "The most probable cause is combination of energy "
+                   "minimization with a biasing method that requires MD (e.g. ABF).\n"
+                   "Always run minimization and ABF separately.", INPUT_ERROR);
+      }
+      for ( ; f_i != f_e; f_i++, i++) {
+        atom_groups_total_forces[i] = cvm::rvector((*f_i).x, (*f_i).y, (*f_i).z);
+      }
+    }      
+  
   }
 
   if (cvm::debug()) {
@@ -361,6 +377,12 @@ void colvarproxy_namd::calculate()
 
   // send MISC energy
   reduction->submit();
+
+  if (system_force_requested) {
+    // GlobalMaster cannot currently communicate previous applied forces
+    // from all restraints: save them for the next step
+    atom_groups_applied_forces = atom_groups_new_colvar_forces;
+  }
 
   // NAMD does not destruct GlobalMaster objects, so we must remember
   // to write all output files at the end of a run
