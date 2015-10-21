@@ -27,6 +27,7 @@ colvarproxy_namd::colvarproxy_namd()
 {
   first_timestep = true;
   system_force_requested = false;
+  requestTotalForce(system_force_requested);
 
   // initialize pointers to NAMD configuration data
   simparams = Node::Object()->simParameters;
@@ -309,8 +310,8 @@ void colvarproxy_namd::calculate()
       for ( ; f_i != f_e; f_i++, i++) {
         atom_groups_total_forces[i] = cvm::rvector((*f_i).x, (*f_i).y, (*f_i).z);
       }
-    }      
-  
+    }
+
   }
 
   if (cvm::debug()) {
@@ -490,6 +491,7 @@ void colvarproxy_namd::add_energy(cvm::real energy)
 void colvarproxy_namd::request_system_force(bool yesno)
 {
   system_force_requested = yesno;
+  requestTotalForce(system_force_requested);
 }
 
 void colvarproxy_namd::log(std::string const &message)
