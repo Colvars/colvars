@@ -1066,8 +1066,7 @@ cvm::rvector cvm::atom_group::system_force() const
   }
 
   if (b_scalable) {
-    cvm::error("Error: total system forces are currently not available "
-               "from a scalable atom group.\n", COLVARS_NOT_IMPLEMENTED);
+    return (cvm::proxy)->get_atom_group_system_force(index);
   }
 
   cvm::rvector f(0.0);
