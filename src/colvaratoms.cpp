@@ -982,7 +982,7 @@ std::vector<cvm::atom_pos> cvm::atom_group::positions() const
   }
 
   if (b_scalable) {
-    cvm::error("Error: positions are not available "
+    cvm::error("Error: atomic positions are not available "
                "from a scalable atom group.\n", INPUT_ERROR);
   }
 
@@ -1003,7 +1003,7 @@ std::vector<cvm::atom_pos> cvm::atom_group::positions_shifted(cvm::rvector const
   }
 
   if (b_scalable) {
-    cvm::error("Error: positions are not available "
+    cvm::error("Error: atomic positions are not available "
                "from a scalable atom group.\n", INPUT_ERROR);
   }
 
@@ -1024,7 +1024,7 @@ std::vector<cvm::rvector> cvm::atom_group::velocities() const
   }
 
   if (b_scalable) {
-    cvm::error("Error: velocities are not available "
+    cvm::error("Error: atomic velocities are not available "
                "from a scalable atom group.\n", INPUT_ERROR);
   }
 
@@ -1045,7 +1045,7 @@ std::vector<cvm::rvector> cvm::atom_group::system_forces() const
   }
 
   if (b_scalable) {
-    cvm::error("Error: system fforces are not available "
+    cvm::error("Error: atomic system forces are not available "
                "from a scalable atom group.\n", INPUT_ERROR);
   }
 
