@@ -7,8 +7,8 @@
 /*****************************************************************************
  * $Source: /namd/cvsroot/namd2/src/SimParameters.C,v $
  * $Author: jim $
- * $Date: 2015/09/23 12:57:58 $
- * $Revision: 1.1454 $
+ * $Date: 2015/10/12 15:14:13 $
+ * $Revision: 1.1455 $
  *****************************************************************************/
 
 /** \file SimParameters.C
@@ -182,7 +182,9 @@ void SimParameters::scriptSet(const char *param, const char *value) {
   SCRIPT_PARSE_STRING("scriptStringArg1",scriptStringArg1)
   SCRIPT_PARSE_STRING("scriptStringArg2",scriptStringArg2)
   SCRIPT_PARSE_INT("numsteps",N)
-  SCRIPT_PARSE_INT("firsttimestep",firstTimestep)
+  if ( ! strncasecmp(param,"firsttimestep",MAX_SCRIPT_PARAM_SIZE) ) {
+    N = firstTimestep = atoi(value); return;
+  }
   SCRIPT_PARSE_FLOAT("reassignTemp",reassignTemp)
   SCRIPT_PARSE_FLOAT("rescaleTemp",rescaleTemp)
   SCRIPT_PARSE_BOOL("velocityQuenching",minimizeOn)

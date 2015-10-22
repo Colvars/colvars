@@ -278,7 +278,7 @@ int ScriptTcl::Tcl_replicaSendrecv(ClientData, Tcl_Interp *interp, int argc, cha
   int source = -1;
   if ( argc > 3 ) source = atoi(argv[3]);
 #if CMK_HAS_PARTITION
-  if(dest == CmiMyPartition()) {
+  if (dest == CmiMyPartition()) {
     Tcl_DStringSetLength(&recvstr,sendcount);
     memcpy(Tcl_DStringValue(&recvstr),argv[1],sendcount);
   } else {
@@ -364,7 +364,7 @@ int ScriptTcl::Tcl_replicaAtomSendrecv(ClientData clientData, Tcl_Interp *interp
   }
 
 #if CMK_HAS_PARTITION
-  if(dest != CmiMyPartition()) {
+  if (dest != CmiMyPartition()) {
     DataMessage *recvMsg = NULL;
     replica_sendRecv((char*)&(script->state->lattice), sizeof(Lattice), dest, CkMyPe(), &recvMsg, source, CkMyPe());
     CmiAssert(recvMsg != NULL);
@@ -384,7 +384,7 @@ int ScriptTcl::Tcl_replicaAtomSendrecv(ClientData clientData, Tcl_Interp *interp
   script->runController(SCRIPT_ATOMSENDRECV);
 
 #if CMK_HAS_PARTITION
-  if(dest != CmiMyPartition()) {
+  if (dest != CmiMyPartition()) {
     DataMessage *recvMsg = NULL;
     ControllerState *cstate = script->state->controller;
     replica_sendRecv((char*)cstate, sizeof(ControllerState), dest, CkMyPe(), &recvMsg, source, CkMyPe());
@@ -1138,7 +1138,7 @@ int ScriptTcl::Tcl_colvarfreq(ClientData clientData,
   return TCL_OK;
 }
 
-int ScriptTcl::Tcl_colvars (ClientData clientData,
+int ScriptTcl::Tcl_colvars(ClientData clientData,
         Tcl_Interp *interp, int argc, char *argv[]) {
   ScriptTcl *script = (ScriptTcl *)clientData;
   script->initcheck();
@@ -1151,7 +1151,7 @@ int ScriptTcl::Tcl_colvars (ClientData clientData,
   // use Tcl dynamic allocation to prevent having to copy the buffer
   // *twice* just because Tcl is missing const qualifiers for strings
   char *buf = Tcl_Alloc(colvars->proxy->script->result.length() + 1);
-  strncpy (buf, colvars->proxy->script->result.c_str(), colvars->proxy->script->result.length() + 1);
+  strncpy(buf, colvars->proxy->script->result.c_str(), colvars->proxy->script->result.length() + 1);
   Tcl_SetResult(interp, buf, TCL_DYNAMIC);
   // Note: sometimes Tcl 8.5 will segfault here
   // (only on error conditions, apparently)
@@ -1595,6 +1595,18 @@ int ScriptTcl::Tcl_reloadGridforceGrid(ClientData clientData,
 }
 // END gf
 
+
+extern "C" void newhandle_msg(void *v, const char *msg) {
+  CkPrintf("psfgen) %s\n",msg);
+}
+
+extern "C" void newhandle_msg_ex(void *v, const char *msg, int prepend, int newline) {
+  CkPrintf("%s%s%s", (prepend ? "psfgen) " : ""), msg, (newline ? "\n" : ""));
+}
+
+extern "C" int psfgen_static_init(Tcl_Interp *);
+
+
 #endif  // NAMD_TCL
 
 
@@ -1618,6 +1630,7 @@ ScriptTcl::ScriptTcl() : scriptBarrier(scriptBarrierTag) {
 
   // Create interpreter
   interp = Tcl_CreateInterp();
+  psfgen_static_init(interp);
   tcl_vector_math_init(interp);
   Tcl_CreateCommand(interp, "exit", Tcl_exit,
     (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
@@ -1727,6 +1740,7 @@ int ScriptTcl::eval(const char *script, const char **resultPtr) {
   return code;
 #else
   NAMD_bug("ScriptTcl::eval called without Tcl.");
+  return -1;  // appease compiler
 #endif
 }
 
