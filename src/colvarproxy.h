@@ -93,8 +93,10 @@ public:
   }
 
   /// \brief Restarts will be written each time this number of steps has passed
-  virtual size_t restart_frequency() = 0;
-
+  virtual size_t restart_frequency()
+  {
+    return 0;
+  }
 
   // **************** MULTIPLE REPLICAS COMMUNICATION ****************
 

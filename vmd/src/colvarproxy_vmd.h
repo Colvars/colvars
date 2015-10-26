@@ -15,8 +15,12 @@
 #include "colvaratoms.h"
 
 #ifndef COLVARPROXY_VERSION
-#define COLVARPROXY_VERSION "2015-09-24"
+#define COLVARPROXY_VERSION "2015-10-26"
 #endif
+
+
+int tcl_colvars(ClientData clientdata, Tcl_Interp *interp, int argc, const char *argv[]);
+
 
 /// \brief Communication between colvars and VMD (implementation of
 /// \link colvarproxy \endlink)
@@ -95,10 +99,10 @@ public:
     return input_prefix_str;
   }
 
-  inline std::string restart_output_prefix()
+  std::string restart_output_prefix()
   {
-    // note that this shouldn't be called while running VMD anyway
-    return std::string("");
+    // note: this shouldn't need to be called in VMD anyway
+    return output_prefix_str;
   }
 
   std::string output_prefix_str;
@@ -107,16 +111,12 @@ public:
     return output_prefix_str;
   }
 
-  inline size_t restart_frequency() {
-    return 0;
-  }
-
   void add_energy(cvm::real energy);
 
-  inline void request_system_force(bool yesno) {
-    if (yesno == true)
-      cvm::error("Error: a bias requested system forces, which are undefined in VMD.");
-  }
+private:
+  bool system_force_requested;
+public:
+  void request_system_force(bool yesno);
 
   cvm::rvector position_distance(cvm::atom_pos const &pos1,
                                   cvm::atom_pos const &pos2);
@@ -126,6 +126,7 @@ public:
   void select_closest_image(cvm::atom_pos &pos,
                              cvm::atom_pos const &ref_pos);
 
+  std::string error_output;
   void log(std::string const &message);
   void error(std::string const &message);
   void fatal_error(std::string const &message);
@@ -155,8 +156,9 @@ public:
 };
 
 
+
 inline cvm::rvector colvarproxy_vmd::position_distance(cvm::atom_pos const &pos1,
-                                                        cvm::atom_pos const &pos2)
+                                                       cvm::atom_pos const &pos2)
 {
   // TODO: add in the proxy constructor a check for orthonormal PBCs
   Timestep *ts = vmdmol->get_frame(vmdmol_frame);
@@ -181,7 +183,7 @@ inline cvm::rvector colvarproxy_vmd::position_distance(cvm::atom_pos const &pos1
 
 
 inline void colvarproxy_vmd::select_closest_image(cvm::atom_pos &pos,
-                                                   cvm::atom_pos const &ref_pos)
+                                                  cvm::atom_pos const &ref_pos)
 {
   cvm::rvector const diff = position_distance(ref_pos, pos);
   pos = ref_pos + diff;
@@ -189,14 +191,12 @@ inline void colvarproxy_vmd::select_closest_image(cvm::atom_pos &pos,
 
 
 inline cvm::real colvarproxy_vmd::position_dist2(cvm::atom_pos const &pos1,
-                                                  cvm::atom_pos const &pos2)
+                                                 cvm::atom_pos const &pos2)
 {
   cvm::rvector const d = position_distance(pos1, pos2);
   return cvm::real(d.x*d.x + d.y*d.y + d.z*d.z);
 }
 
-
-int tcl_colvars(ClientData clientdata, Tcl_Interp *interp, int argc, const char *argv[]);
 
 
 #endif
