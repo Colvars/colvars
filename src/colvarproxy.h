@@ -19,14 +19,6 @@ class colvarscript;
 
 class colvarproxy {
 
-protected:
-
-  /// \brief Currently opened output files: by default, these are ofstream objects.
-  /// Allows redefinition to implement different output mechanisms
-  std::list<std::ostream *> output_files;
-  /// \brief Identifiers for output_stream objects: by default, these are the names of the files
-  std::list<std::string>    output_stream_names;
-
 public:
 
   /// Pointer to the main object
@@ -44,6 +36,19 @@ public:
     return COLVARS_OK;
   }
 
+  /// \brief Update data required by the colvars module (e.g. cache atom positions)
+  ///
+  /// TODO Break up colvarproxy_namd and colvarproxy_lammps function into these
+  virtual int update_input()
+  {
+    return COLVARS_OK;
+  }
+
+  /// \brief Update data based from the results of a module update (e.g. send forces)
+  virtual int update_output()
+  {
+    return COLVARS_OK;
+  }
 
   // **************** SIMULATION PARAMETERS ****************
 
@@ -97,6 +102,16 @@ public:
   {
     return 0;
   }
+
+protected:
+
+  /// \brief Currently opened output files: by default, these are ofstream objects.
+  /// Allows redefinition to implement different output mechanisms
+  std::list<std::ostream *> output_files;
+  /// \brief Identifiers for output_stream objects: by default, these are the names of the files
+  std::list<std::string>    output_stream_names;
+
+public:
 
   // **************** MULTIPLE REPLICAS COMMUNICATION ****************
 
@@ -334,7 +349,7 @@ public:
   /// (costly) set the corresponding atoms_ncopies to zero
   virtual void clear_atom(int index)
   {
-    if ( (index < 0) || (index >= atoms_ids.size()) ) {
+    if ( (index < 0) || (((size_t) index) >= atoms_ids.size()) ) {
       cvm::error("Error: trying to disable an atom that was not previously requested.\n",
                  INPUT_ERROR);
     }
@@ -481,7 +496,7 @@ public:
   /// \brief Used by the atom_group class destructor
   virtual void clear_atom_group(int index)
   {
-    if ( (index < 0) || (index >= atom_groups_ids.size()) ) {
+    if ( (index < 0) || (((size_t) index) >= atom_groups_ids.size()) ) {
       cvm::error("Error: trying to disable an atom group that was not previously requested.\n",
                  INPUT_ERROR);
     }

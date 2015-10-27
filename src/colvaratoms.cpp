@@ -277,7 +277,7 @@ int cvm::atom_group::parse(std::string const &conf)
   //   get_keyval (group_conf, "verboseOutput", b_verbose, false, parse_silent);
   //   if (b_verbose) mode = parse_normal;
   // }
-  colvarparse::Parse_Mode mode = parse_normal;
+  // colvarparse::Parse_Mode mode = parse_normal;
 
   int parse_error = COLVARS_OK;
 

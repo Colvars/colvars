@@ -226,18 +226,19 @@ void colvar::dipole_angle::calc_gradients()
 
   //this auxiliar variables are to avoid numerical errors inside "for"
   double aux1 = group1.total_charge/group1.total_mass;
-  double aux2 = group2.total_charge/group2.total_mass;
-  double aux3 = group3.total_charge/group3.total_mass;
+  // double aux2 = group2.total_charge/group2.total_mass;
+  // double aux3 = group3.total_charge/group3.total_mass;
 
-  for (size_t i = 0; i < group1.size(); i++) {
+  size_t i;
+  for (i = 0; i < group1.size(); i++) {
     group1[i].grad =(group1[i].charge + (-1)* group1[i].mass * aux1) * (dxdr1);
   }
 
-  for (size_t i = 0; i < group2.size(); i++) {
+  for (i = 0; i < group2.size(); i++) {
     group2[i].grad = (group2[i].mass/group2.total_mass)* dxdr3 * (-1.0);
   }
 
-  for (size_t i = 0; i < group3.size(); i++) {
+  for (i = 0; i < group3.size(); i++) {
     group3[i].grad =(group3[i].mass/group3.total_mass) * (dxdr3);
   }
 }
