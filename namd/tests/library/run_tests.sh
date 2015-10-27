@@ -71,9 +71,14 @@ do
     RETVAL=$?
     if [ $RETVAL -ne 0 ]
     then
-      echo "***  Failure for file $base: see `pwd`/$base.diff ***"
-      SUCCESS=0
-      ALL_SUCCESS=0
+      if [ ${base##*\.} = 'out' ]
+      then
+        echo -n "(warning: differences in log file $base) "
+      else
+        echo -e "\n***  Failure for file $base: see `pwd`/$base.diff ***"
+        SUCCESS=0
+        ALL_SUCCESS=0
+      fi
     fi
   done
 
