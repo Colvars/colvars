@@ -169,13 +169,6 @@ int colvarproxy_vmd::setup()
     return COLVARS_ERROR;
   }
 
-  float const *masses = vmdmol->mass();
-  float const *charges = vmdmol->charge();
-  for (size_t i = 0; i < atoms_ids.size(); i++) {
-    atoms_masses[i]  = masses[atoms_ids[i]];
-    atoms_charges[i] = charges[atoms_ids[i]];
-  }
-
   // set the same seed as in Measure.C
   vmd_srandom(38572111);
 
@@ -184,6 +177,55 @@ int colvarproxy_vmd::setup()
   }
 
   return COLVARS_OK;
+}
+
+
+int colvarproxy_vmd::update_input()
+{
+  colvarproxy::update_input();
+
+  int error_code = COLVARS_OK;
+
+  error_code |= update_atomic_properties();
+
+  // copy positions in the internal arrays
+  float *vmdpos = (vmdmol->get_frame(vmdmol_frame))->pos;
+  for (size_t i = 0; i < atoms_positions.size(); i++) {
+    atoms_positions[i] = cvm::atom_pos(vmdpos[atoms_ids[i]*3+0],
+                                       vmdpos[atoms_ids[i]*3+1],
+                                       vmdpos[atoms_ids[i]*3+2]);
+  }
+
+  return error_code;
+}
+
+
+int colvarproxy_vmd::update_atomic_properties()
+{
+  float const *masses = vmdmol->mass();
+  float const *charges = vmdmol->charge();
+
+  int error_code = COLVARS_OK;
+
+  if (masses == NULL) {
+    error("Error: masses are undefined for the molecule being used.\n");
+    error_code |= BUG_ERROR;
+  } else {
+    for (size_t i = 0; i < atoms_ids.size(); i++) {
+      atoms_masses[i]  = masses[atoms_ids[i]];
+    }
+  }
+
+  if (charges == NULL) {
+    error("Error: charges are undefined for the molecule being used.\n");
+    error_code |= BUG_ERROR;
+  } else {
+    for (size_t i = 0; i < atoms_ids.size(); i++) {
+      atoms_charges[i] = charges[atoms_ids[i]];
+    }
+  }
+
+  return error_code;
 }
 
 
@@ -236,15 +278,7 @@ int colvarproxy_vmd::frame(int f)
 {
   if (vmdmol->get_frame(f) != NULL) {
     vmdmol_frame = f;
-
-    // copy positions in the internal arrays
-    float *vmdpos = (vmdmol->get_frame(frame))->pos;
-    for (size_t i = 0; i < atoms_positions.size(); i++) {
-      atoms_positions[i] = cvm::atom_pos(vmdpos[atoms_ids[i]*3+0],
-                                         vmdpos[atoms_ids[i]*3+1],
-                                         vmdpos[atoms_ids[i]*3+2]);
-    }
-
+    update_input();
     return f;
   } else {
     return COLVARS_NO_SUCH_FRAME;

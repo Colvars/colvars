@@ -15,7 +15,7 @@
 #include "colvaratoms.h"
 
 #ifndef COLVARPROXY_VERSION
-#define COLVARPROXY_VERSION "2015-10-26"
+#define COLVARPROXY_VERSION "2015-10-27"
 #endif
 
 
@@ -50,6 +50,10 @@ public:
   ~colvarproxy_vmd();
 
   int setup();
+
+  int update_input();
+  /// \brief Update mass, charge, etc
+  int update_atomic_properties();
 
   inline cvm::real unit_angstrom()
   {

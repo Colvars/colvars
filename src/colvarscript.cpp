@@ -31,6 +31,8 @@ int colvarscript::run(int argc, char const *argv[]) {
 
   std::string cmd = argv[1];
 
+  int error_code = COLVARS_OK;
+
   if (cmd == "colvar") {
     return proc_colvar(argc-1, &(argv[1]));
   }
@@ -59,8 +61,10 @@ int colvarscript::run(int argc, char const *argv[]) {
   }
 
   if (cmd == "update") {
-    colvars->calc();
-    return COLVARSCRIPT_OK;
+    error_code |= proxy->update_input();
+    error_code |= colvars->calc();
+    error_code |= proxy->update_output();
+    return error_code;
   }
 
   if (cmd == "list") {
