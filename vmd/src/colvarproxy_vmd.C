@@ -169,7 +169,14 @@ int colvarproxy_vmd::setup()
     return COLVARS_ERROR;
   }
 
-  // same seed as in Measure.C
+  float const *masses = vmdmol->mass();
+  float const *charges = vmdmol->charge();
+  for (size_t i = 0; i < atoms_ids.size(); i++) {
+    atoms_masses[i]  = masses[atoms_ids[i]];
+    atoms_charges[i] = charges[atoms_ids[i]];
+  }
+
+  // set the same seed as in Measure.C
   vmd_srandom(38572111);
 
   if (colvars) {
@@ -223,6 +230,25 @@ void colvarproxy_vmd::exit(std::string const &message)
 {
   error("Error: requested VMD shutdown.\n");
 }
+
+
+int colvarproxy_vmd::frame(int f)
+{
+  if (vmdmol->get_frame(f) != NULL) {
+    vmdmol_frame = f;
+
+    // copy positions in the internal arrays
+    float *vmdpos = (vmdmol->get_frame(frame))->pos;
+    for (size_t i = 0; i < atoms_positions.size(); i++) {
+      atoms_positions[i] = cvm::atom_pos(vmdpos[atoms_ids[i]*3+0],
+                                         vmdpos[atoms_ids[i]*3+1],
+                                         vmdpos[atoms_ids[i]*3+2]);
+    }
+
+    return f;
+  } else {
+    return COLVARS_NO_SUCH_FRAME;
+  }
 }
 
 
@@ -487,7 +513,6 @@ int colvarproxy_vmd::load_coords(char const *pdb_filename,
 }
 
 
-
 int colvarproxy_vmd::load_atoms(char const *pdb_filename,
                                 cvm::atom_group &atoms,
                                 std::string const &pdb_field_str,
@@ -541,7 +566,7 @@ int colvarproxy_vmd::load_atoms(char const *pdb_filename,
       continue;
     }
 
-    atoms.add_atoms(cvm::atom(ipdb+1));
+    atoms.add_atom(cvm::atom(ipdb+1));
   }
 
   vmd->molecule_delete(tmpmolid);
@@ -549,41 +574,61 @@ int colvarproxy_vmd::load_atoms(char const *pdb_filename,
 }
 
 
-// atom member functions, VMD specific implementations
 
-cvm::atom::atom(int const &atom_number)
+int colvarproxy_vmd::check_atom_id(int atom_number)
 {
   // VMD internal numbering starts from zero
   int const aid(atom_number-1);
 
-  DrawMolecule *vmdmol = ((colvarproxy_vmd *) cvm::proxy)->vmdmol;
-  float *masses = vmdmol->mass();
-
   if (cvm::debug())
     cvm::log("Adding atom "+cvm::to_str(aid+1)+
-              " for collective variables calculation.\n");
+             " for collective variables calculation.\n");
 
   if ( (aid < 0) || (aid >= vmdmol->nAtoms) ) {
     cvm::error("Error: invalid atom number specified, "+
-                      cvm::to_str(atom_number)+"\n");
-    return;
+               cvm::to_str(atom_number)+"\n");
+    return INPUT_ERROR;
   }
 
-  this->id = aid;
-  this->mass = masses[aid];
-  this->reset_data();
+  return aid;
 }
 
 
-// In case of PSF structure, this function's argument "resid" is the non-unique identifier
-// TODO: check that the default segment_id of non-PSF topologies is MAIN
-cvm::atom::atom(cvm::residue_id const &resid,
-                 std::string const     &atom_name,
-                 std::string const     &segment_name)
+int colvarproxy_vmd::init_atom(int atom_number)
 {
-  DrawMolecule *vmdmol = ((colvarproxy_vmd *) cvm::proxy)->vmdmol;
-  float *masses = vmdmol->mass();
+  // save time by checking first whether this atom has been requested before
+  // (this is more common than a non-valid atom number)
+  int aid = (atom_number-1);
 
+  for (size_t i = 0; i < atoms_ids.size(); i++) {
+    if (atoms_ids[i] == aid) {
+      // this atom id was already recorded
+      atoms_ncopies[i] += 1;
+      return i;
+    }
+  }
+
+  aid = check_atom_id(atom_number);
+
+  if (aid < 0) {
+    return INPUT_ERROR;
+  }
+
+  int const index = add_atom_slot(aid);
+
+  float const *masses = vmdmol->mass();
+  float const *charges = vmdmol->charge();
+  atoms_masses[index] = masses[aid];
+  atoms_charges[index] = charges[aid];
+
+  return index;
+}
+
+
+int colvarproxy_vmd::check_atom_id(cvm::residue_id const &resid,
+                                   std::string const     &atom_name,
+                                   std::string const     &segment_id)
+{
   int aid = -1;
   for (int ir = 0; ir < vmdmol->nResidues; ir++) {
     Residue *vmdres = vmdmol->residue(ir);
@@ -592,7 +637,7 @@ cvm::atom::atom(cvm::residue_id const &resid,
         int const resaid = vmdres->atoms[ia];
         std::string const sel_segname((vmdmol->segNames).name(vmdmol->atom(resaid)->segnameindex));
         std::string const sel_atom_name((vmdmol->atomNames).name(vmdmol->atom(resaid)->nameindex));
-        if ( ((segment_name.size() == 0) || (segment_name == sel_segname)) &&
+        if ( ((segment_id.size() == 0) || (segment_id == sel_segname)) &&
              (atom_name == sel_atom_name) ) {
           aid = resaid;
           break;
@@ -602,67 +647,50 @@ cvm::atom::atom(cvm::residue_id const &resid,
     if (aid >= 0) break;
   }
 
-  if (cvm::debug())
-    cvm::log("Adding atom \""+
-              atom_name+"\" in residue "+
-              cvm::to_str(resid)+
-              " (index "+cvm::to_str(aid)+
-              ") for collective variables calculation.\n");
 
   if (aid < 0) {
     cvm::error("Error: could not find atom \""+
-                      atom_name+"\" in residue "+
-                      cvm::to_str(resid)+
-                      ( (segment_name.size()) ?
-                        (", segment \""+segment_name+"\"") :
-                        ("") )+
-                      "\n");
+               atom_name+"\" in residue "+
+               cvm::to_str(resid)+
+               ( (segment_id.size()) ?
+                 (", segment \""+segment_id+"\"") :
+                 ("") )+
+               "\n", INPUT_ERROR);
+    return INPUT_ERROR;
   }
 
-  this->id = aid;
-  this->mass = masses[aid];
-  this->reset_data();
+  return aid;
 }
 
 
-// copy constructor
-cvm::atom::atom(cvm::atom const &a)
-  : index(a.index), id(a.id), mass(a.mass)
-{}
-
-
-cvm::atom::~atom()
-{}
-
-void cvm::atom::read_position()
+int colvarproxy_vmd::init_atom(cvm::residue_id const &resid,
+                               std::string const     &atom_name,
+                               std::string const     &segment_id)
 {
-  // read the position directly from the current timestep's memory
-  // Note: no prior update should be required (unlike NAMD with GlobalMaster)
-  DrawMolecule *vmdmol = ((colvarproxy_vmd *) cvm::proxy)->vmdmol;
-  int frame = ((colvarproxy_vmd *) cvm::proxy)->vmdmol_frame;
-  float *vmdpos = (vmdmol->get_frame(frame))->pos;
-  this->pos = cvm::atom_pos(vmdpos[this->id*3+0],
-                             vmdpos[this->id*3+1],
-                             vmdpos[this->id*3+2]);
-}
+  int const aid = check_atom_id(resid, atom_name, segment_id);
 
-void cvm::atom::read_velocity()
-{
-  // Unavailable, but do not display an error to avoid flooding the output
-  return;
-}
+  for (size_t i = 0; i < atoms_ids.size(); i++) {
+    if (atoms_ids[i] == aid) {
+      // this atom id was already recorded
+      atoms_ncopies[i] += 1;
+      return i;
+    }
+  }
 
+  if (cvm::debug())
+    log("Adding atom \""+
+        atom_name+"\" in residue "+
+        cvm::to_str(resid)+
+        " (index "+cvm::to_str(aid)+
+        ") for collective variables calculation.\n");
 
-void cvm::atom::read_system_force()
-{
-  // Unavailable, but do not display an error to avoid flooding the output
-  return;
-}
+  int const index = add_atom_slot(aid);
 
+  float const *masses = vmdmol->mass();
+  float const *charges = vmdmol->charge();
+  atoms_masses[index] = masses[aid];
+  atoms_charges[index] = charges[aid];
 
-void cvm::atom::apply_force(cvm::rvector const &new_force)
-{
-  // Unavailable, but do not display an error to avoid flooding the output
-  return;
+  return index;
 }
 

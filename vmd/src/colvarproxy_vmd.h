@@ -83,15 +83,7 @@ public:
     return vmdmol_frame;
   }
 
-  inline int frame(int f)
-  {
-    if (vmdmol->get_frame(f) != NULL) {
-      vmdmol_frame = f;
-      return 0;
-    } else {
-      return COLVARS_NO_SUCH_FRAME;
-    }
-  }
+  int frame(int f);
 
   std::string input_prefix_str;
   std::string input_prefix()
@@ -152,7 +144,15 @@ public:
                   std::string const &pdb_field,
                   double const pdb_field_value = 0.0);
 
-  // no need to reimplement backup_file()
+  int init_atom(int atom_number);
+  int check_atom_id(int atom_number);
+  int init_atom(cvm::residue_id const &residue,
+                std::string const     &atom_name,
+                std::string const     &segment_id);
+  int check_atom_id(cvm::residue_id const &residue,
+                    std::string const     &atom_name,
+                    std::string const     &segment_id);
+
 };
 
 
