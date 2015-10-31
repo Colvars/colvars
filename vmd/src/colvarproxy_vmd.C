@@ -21,6 +21,7 @@
 int tcl_colvars(ClientData clientdata, Tcl_Interp *interp, int argc, const char *argv[]) {
 
   static colvarproxy_vmd *proxy = NULL;
+  static std::string tcl_result;
   int script_retval;
 
   if (proxy != NULL) {
@@ -34,12 +35,12 @@ int tcl_colvars(ClientData clientdata, Tcl_Interp *interp, int argc, const char 
 
     // Clear non-fatal errors from previous commands
     cvm::clear_error();
-    // Clear error output text saved in proxy itself
     proxy->error_output.clear();
+    tcl_result.clear();
 
     script_retval = proxy->script->run(argc, argv);
-    // append the errors from colvarscript to the errors caught by the proxy
-    std::string tcl_result = proxy->error_output + proxy->script->result;
+    // append the error messages from colvarscript to the error messages caught by the proxy
+    tcl_result = proxy->error_output + proxy->script->result;
     Tcl_SetResult(interp, (char *) tcl_result.c_str(), TCL_STATIC);
 
     if (cvm::get_error() & DELETE_COLVARS) {
@@ -158,9 +159,6 @@ colvarproxy_vmd::~colvarproxy_vmd()
 
 int colvarproxy_vmd::setup()
 {
-  // clear for first use
-  error_output.clear();
-
   vmdmol = vmd->moleculeList->mol_from_id(vmdmolid);
   if (vmdmol) {
     frame(vmdmol->frame());
@@ -252,12 +250,12 @@ void colvarproxy_vmd::log(std::string const &message)
 
 void colvarproxy_vmd::error(std::string const &message)
 {
+  error_output += message;
   log(message);
   if (!cvm::debug()) {
     log("If this error message is unclear, "
         "try recompiling VMD with -DCOLVARS_DEBUG.\n");
   }
-  error_output += message;
 }
 
 
