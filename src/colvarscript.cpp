@@ -64,6 +64,9 @@ int colvarscript::run(int argc, char const *argv[]) {
     error_code |= proxy->update_input();
     error_code |= colvars->calc();
     error_code |= proxy->update_output();
+    if (error_code) {
+      result += "Error updating the colvars module.\n";
+    }
     return error_code;
   }
 
