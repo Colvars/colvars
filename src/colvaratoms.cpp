@@ -104,6 +104,10 @@ cvm::atom_group::~atom_group()
 
 int cvm::atom_group::add_atom(cvm::atom const &a)
 {
+  if (a.id < 0) {
+    return COLVARS_ERROR;
+  }
+
   for (size_t i = 0; i < atoms_ids.size(); i++) {
     if (atoms_ids[i] == a.id) {
       if (cvm::debug())
@@ -125,6 +129,10 @@ int cvm::atom_group::add_atom(cvm::atom const &a)
 
 int cvm::atom_group::add_atom_id(int aid)
 {
+  if (aid < 0) {
+    return COLVARS_ERROR;
+  }
+
   for (size_t i = 0; i < atoms_ids.size(); i++) {
     if (atoms_ids[i] == aid) {
       if (cvm::debug())
