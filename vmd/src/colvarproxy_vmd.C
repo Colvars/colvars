@@ -43,13 +43,13 @@ int tcl_colvars(ClientData clientdata, Tcl_Interp *interp, int argc, const char 
     tcl_result = proxy->error_output + proxy->script->result;
     Tcl_SetResult(interp, (char *) tcl_result.c_str(), TCL_STATIC);
 
-    if (cvm::get_error() & DELETE_COLVARS) {
+    if ((-1*cvm::get_error()) & DELETE_COLVARS) {
       delete proxy;
       proxy = NULL;
       return TCL_OK;
     }
 
-    if (cvm::get_error() & FATAL_ERROR) {
+    if ((-1*cvm::get_error()) & FATAL_ERROR) {
       // Fatal error: clean up cvm object and proxy
       delete proxy;
       proxy = NULL;
