@@ -23,7 +23,7 @@ TMP=/tmp
 cleanup_files () {
 for dir in [0-9][0-9][0-9]_* ; do
   for script in test*.vmd ; do
-       rm -f ${dir}/${script%.vmd}.*{state,out,traj,coor,vel,xsc,BAK,old,backup,diff,pmf,grad,count}
+       rm -f ${dir}/${script%.vmd}.*{state,out,err,traj,coor,vel,xsc,BAK,old,backup,diff,pmf,grad,count}
   done
 done
 }

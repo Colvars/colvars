@@ -17,6 +17,7 @@
 *.state
 *.traj
 *.out
+*.err
 *.count
 *.grad
 *.pmf

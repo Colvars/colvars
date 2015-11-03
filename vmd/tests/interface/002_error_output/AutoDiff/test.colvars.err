@@ -1,0 +1,15 @@
+Command "cv" returned the following errors:
+Error: keyword "wrongkeyword" is not supported, or not recognized in this context.
+Error parsing configuration string
+
+Command "cv" returned the following errors:
+Error: no valid components were provided for this collective variable.
+Error parsing configuration string
+
+Command "cv" returned the following errors:
+Error: invalid atom number specified, 1000
+Error parsing definition for atom group "atoms".
+Error: the number of records in the PDB file "../Common/da.pdb" does not appear to match either the total number of atoms, or the number of coordinates requested at this point(52).
+Error: in setting up component "rmsd".
+Error parsing configuration string
+
