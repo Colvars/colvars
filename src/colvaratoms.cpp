@@ -54,7 +54,9 @@ cvm::atom::atom(atom const &a)
 
 cvm::atom::~atom()
 {
-  (cvm::proxy)->clear_atom(index);
+  if (index >= 0) {
+    (cvm::proxy)->clear_atom(index);
+  }
 }
 
 

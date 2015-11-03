@@ -4,7 +4,7 @@
 #define COLVARMODULE_H
 
 #ifndef COLVARS_VERSION
-#define COLVARS_VERSION "2015-10-31"
+#define COLVARS_VERSION "2015-11-02"
 #endif
 
 #ifndef COLVARS_DEBUG
@@ -110,6 +110,7 @@ public:
   static inline void set_error_bits(int code)
   {
     errorCode |= code;
+    errorCode |= COLVARS_ERROR;
   }
   static inline int get_error()
   {

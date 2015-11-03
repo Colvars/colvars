@@ -349,7 +349,7 @@ public:
   /// (costly) set the corresponding atoms_ncopies to zero
   virtual void clear_atom(int index)
   {
-    if ( (index < 0) || (((size_t) index) >= atoms_ids.size()) ) {
+    if (((size_t) index) >= atoms_ids.size()) {
       cvm::error("Error: trying to disable an atom that was not previously requested.\n",
                  INPUT_ERROR);
     }
@@ -496,7 +496,7 @@ public:
   /// \brief Used by the atom_group class destructor
   virtual void clear_atom_group(int index)
   {
-    if ( (index < 0) || (((size_t) index) >= atom_groups_ids.size()) ) {
+    if (((size_t) index) >= atom_groups_ids.size()) {
       cvm::error("Error: trying to disable an atom group that was not previously requested.\n",
                  INPUT_ERROR);
     }
