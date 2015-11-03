@@ -229,6 +229,12 @@ public:
   /// on error, delete new bias
   bool check_new_bias(std::string &conf, char const *key);
 
+private:
+  /// Useful wrapper to interrupt parsing if any error occurs
+  int catch_input_errors(int result);
+
+public:
+
   // "Setup" functions (change internal data based on related data
   // from the proxy that may change during program execution)
   // No additional parsing is done within these functions

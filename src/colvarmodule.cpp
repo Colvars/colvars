@@ -100,38 +100,26 @@ int colvarmodule::read_config_string(std::string const &config_str)
 
 int colvarmodule::parse_config(std::string &conf)
 {
-  int error_code = 0;
+  int error_code = COLVARS_OK;
 
   // parse global options
-  error_code |= parse_global_params(conf);
-
-  if (error_code != COLVARS_OK || cvm::get_error()) {
-    set_error_bits(INPUT_ERROR);
-    return COLVARS_ERROR;
+  if (catch_input_errors(parse_global_params(conf))) {
+    return get_error();
   }
 
   // parse the options for collective variables
-  error_code |= parse_colvars(conf);
-
-  if (error_code != COLVARS_OK || cvm::get_error()) {
-    set_error_bits(INPUT_ERROR);
-    return COLVARS_ERROR;
+  if (catch_input_errors(parse_colvars(conf))) {
+    return get_error();
   }
 
   // parse the options for biases
-  error_code |= parse_biases(conf);
-
-  if (error_code != COLVARS_OK || cvm::get_error()) {
-    set_error_bits(INPUT_ERROR);
-    return COLVARS_ERROR;
+  if (catch_input_errors(parse_biases(conf))) {
+    return get_error();
   }
 
   // done parsing known keywords, check that all keywords found were valid ones
-  error_code |= parse->check_keywords(conf, "colvarmodule");
-
-  if (error_code != COLVARS_OK || cvm::get_error()) {
-    set_error_bits(INPUT_ERROR);
-    return COLVARS_ERROR;
+  if (catch_input_errors(parse->check_keywords(conf, "colvarmodule"))) {
+    return get_error();
   }
 
   cvm::log(cvm::line_marker);
@@ -143,7 +131,7 @@ int colvarmodule::parse_config(std::string &conf)
     write_traj_label(cv_traj_os);
   }
 
-  return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
+  return get_error();
 }
 
 
@@ -181,7 +169,7 @@ int colvarmodule::parse_global_params(std::string const &conf)
                     colvarparse::parse_silent);
 
   if (use_scripted_forces && !proxy->force_script_defined) {
-    cvm::fatal_error("User script for scripted colvar forces not found.");
+    cvm::error("User script for scripted colvar forces not found.", INPUT_ERROR);
   }
 
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
@@ -312,6 +300,17 @@ int colvarmodule::parse_biases(std::string const &conf)
   }
 
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
+}
+
+
+int colvarmodule::catch_input_errors(int result)
+{
+  if (result != COLVARS_OK || get_error()) {
+    set_error_bits(result | INPUT_ERROR);
+    parse->reset();
+    return get_error();
+  }
+  return COLVARS_OK;
 }
 
 
@@ -663,6 +662,8 @@ colvarmodule::~colvarmodule()
 
 int colvarmodule::reset()
 {
+  parse->reset();
+
   cvm::log("Resetting the Collective Variables Module.\n");
   // Iterate backwards because we are deleting the elements as we go
   for (std::vector<colvar *>::reverse_iterator cvi = colvars.rbegin();
