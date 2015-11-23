@@ -17,6 +17,7 @@
 #include "PDB.h"
 #include "WorkDistrib.h"
 #include "NamdState.h"
+#include "Output.h"
 #include "Controller.h"
 #include "SimParameters.h"
 #include "Thread.h"
@@ -135,6 +136,17 @@ void ScriptTcl::reinitAtoms(const char *basename) {
 }
 
 #ifdef NAMD_TCL
+
+int ScriptTcl::Tcl_startup(ClientData clientData,
+	Tcl_Interp *interp, int argc, char *argv[]) {
+  if ( argc > 1 ) {
+    Tcl_SetResult(interp,"no arguments needed",TCL_VOLATILE);
+    return TCL_ERROR;
+  }
+  ScriptTcl *script = (ScriptTcl *)clientData;
+  script->initcheck();
+  return TCL_OK;
+}
 
 int ScriptTcl::Tcl_exit(ClientData clientData,
 	Tcl_Interp *, int argc, char *argv[]) {
@@ -278,7 +290,7 @@ int ScriptTcl::Tcl_replicaSendrecv(ClientData, Tcl_Interp *interp, int argc, cha
   int source = -1;
   if ( argc > 3 ) source = atoi(argv[3]);
 #if CMK_HAS_PARTITION
-  if(dest == CmiMyPartition()) {
+  if (dest == CmiMyPartition()) {
     Tcl_DStringSetLength(&recvstr,sendcount);
     memcpy(Tcl_DStringValue(&recvstr),argv[1],sendcount);
   } else {
@@ -364,7 +376,7 @@ int ScriptTcl::Tcl_replicaAtomSendrecv(ClientData clientData, Tcl_Interp *interp
   }
 
 #if CMK_HAS_PARTITION
-  if(dest != CmiMyPartition()) {
+  if (dest != CmiMyPartition()) {
     DataMessage *recvMsg = NULL;
     replica_sendRecv((char*)&(script->state->lattice), sizeof(Lattice), dest, CkMyPe(), &recvMsg, source, CkMyPe());
     CmiAssert(recvMsg != NULL);
@@ -384,7 +396,7 @@ int ScriptTcl::Tcl_replicaAtomSendrecv(ClientData clientData, Tcl_Interp *interp
   script->runController(SCRIPT_ATOMSENDRECV);
 
 #if CMK_HAS_PARTITION
-  if(dest != CmiMyPartition()) {
+  if (dest != CmiMyPartition()) {
     DataMessage *recvMsg = NULL;
     ControllerState *cstate = script->state->controller;
     replica_sendRecv((char*)cstate, sizeof(ControllerState), dest, CkMyPe(), &recvMsg, source, CkMyPe());
@@ -1138,7 +1150,7 @@ int ScriptTcl::Tcl_colvarfreq(ClientData clientData,
   return TCL_OK;
 }
 
-int ScriptTcl::Tcl_colvars (ClientData clientData,
+int ScriptTcl::Tcl_colvars(ClientData clientData,
         Tcl_Interp *interp, int argc, char *argv[]) {
   ScriptTcl *script = (ScriptTcl *)clientData;
   script->initcheck();
@@ -1151,7 +1163,7 @@ int ScriptTcl::Tcl_colvars (ClientData clientData,
   // use Tcl dynamic allocation to prevent having to copy the buffer
   // *twice* just because Tcl is missing const qualifiers for strings
   char *buf = Tcl_Alloc(colvars->proxy->script->result.length() + 1);
-  strncpy (buf, colvars->proxy->script->result.c_str(), colvars->proxy->script->result.length() + 1);
+  strncpy(buf, colvars->proxy->script->result.c_str(), colvars->proxy->script->result.length() + 1);
   Tcl_SetResult(interp, buf, TCL_DYNAMIC);
   // Note: sometimes Tcl 8.5 will segfault here
   // (only on error conditions, apparently)
@@ -1245,6 +1257,30 @@ int ScriptTcl::Tcl_checkpointReplica(ClientData clientData,
     return TCL_ERROR;
   }
 
+  return TCL_OK;
+}
+
+int ScriptTcl::Tcl_replicaDcdFile(ClientData clientData,
+        Tcl_Interp *interp, int argc, char *argv[]) {
+#ifdef MEM_OPT_VERSION
+  Tcl_SetResult(interp,"replicaDcdFile not supported in memory-optimized builds",TCL_VOLATILE);
+  return TCL_ERROR;
+#endif
+  ScriptTcl *script = (ScriptTcl *)clientData;
+  script->initcheck();
+  int index;
+  int cmpoff;
+  if (argc < 2 || argc > 3 || ((cmpoff = strcmp(argv[1],"off")) != 0 && sscanf(argv[1],"%d",&index) != 1) ) {
+    Tcl_SetResult(interp,"args: <index>|off ?<filename>?",TCL_VOLATILE);
+    return TCL_ERROR;
+  }
+  if ( argc == 2 ) {
+    if ( cmpoff == 0 ) Node::Object()->output->replicaDcdOff();
+    else Node::Object()->output->setReplicaDcdIndex(index);
+  } else if ( argc == 3 ) {
+    Node::Object()->output->replicaDcdInit(index,argv[2]);
+    script->barrier();
+  }
   return TCL_OK;
 }
 
@@ -1595,6 +1631,18 @@ int ScriptTcl::Tcl_reloadGridforceGrid(ClientData clientData,
 }
 // END gf
 
+
+extern "C" void newhandle_msg(void *v, const char *msg) {
+  CkPrintf("psfgen) %s\n",msg);
+}
+
+extern "C" void newhandle_msg_ex(void *v, const char *msg, int prepend, int newline) {
+  CkPrintf("%s%s%s", (prepend ? "psfgen) " : ""), msg, (newline ? "\n" : ""));
+}
+
+extern "C" int psfgen_static_init(Tcl_Interp *);
+
+
 #endif  // NAMD_TCL
 
 
@@ -1618,7 +1666,10 @@ ScriptTcl::ScriptTcl() : scriptBarrier(scriptBarrierTag) {
 
   // Create interpreter
   interp = Tcl_CreateInterp();
+  psfgen_static_init(interp);
   tcl_vector_math_init(interp);
+  Tcl_CreateCommand(interp, "startup", Tcl_startup,
+    (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
   Tcl_CreateCommand(interp, "exit", Tcl_exit,
     (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
   Tcl_CreateCommand(interp, "abort", Tcl_abort,
@@ -1701,6 +1752,8 @@ ScriptTcl::ScriptTcl() : scriptBarrier(scriptBarrierTag) {
     (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
   Tcl_CreateCommand(interp, "reinitatoms", Tcl_reinitatoms,
     (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
+  Tcl_CreateCommand(interp, "replicaDcdFile", Tcl_replicaDcdFile,
+    (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
   Tcl_CreateCommand(interp, "callback", Tcl_callback,
     (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
   Tcl_CreateCommand(interp, "coorfile", Tcl_coorfile,
@@ -1727,6 +1780,7 @@ int ScriptTcl::eval(const char *script, const char **resultPtr) {
   return code;
 #else
   NAMD_bug("ScriptTcl::eval called without Tcl.");
+  return -1;  // appease compiler
 #endif
 }
 
@@ -1772,7 +1826,7 @@ void ScriptTcl::run(char *scriptFile) {
   }
 #endif
 
-  if (runWasCalled == 0) {
+  if (initWasCalled == 0) {
     initcheck();
     SimParameters *simParams = Node::Object()->simParameters;
     if ( simParams->minimizeCGOn ) runController(SCRIPT_MINIMIZE);
