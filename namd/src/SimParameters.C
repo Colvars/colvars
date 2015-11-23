@@ -7,8 +7,8 @@
 /*****************************************************************************
  * $Source: /namd/cvsroot/namd2/src/SimParameters.C,v $
  * $Author: jim $
- * $Date: 2015/10/12 15:14:13 $
- * $Revision: 1.1455 $
+ * $Date: 2015/11/19 22:29:36 $
+ * $Revision: 1.1457 $
  *****************************************************************************/
 
 /** \file SimParameters.C
@@ -3147,14 +3147,14 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
 
    if (alchOn) {
 
-     if (alchOn && ! switchingActive) {
-       iout << iWARN << "Switching active for alchemical interactions.\n" << endi;
+     if (vdwForceSwitching && (alchFepWCARepuOn || alchFepWCADispOn)) {
+       iout << iWARN << "vdwForceSwitching not implemented for alchemical "
+	 "interactions when WCA decomposition is on!\n" << endi;
      }
-     if (alchOn && vdwForceSwitching) {
-       iout << iWARN << "VDW force switching disabled for alchemical interactions.\n" << endi;
-     }
+
      if (alchOn && martiniSwitching) {
-       iout << iWARN << "Martini switching disabled for alchemical interactions.\n" << endi;
+       iout << iWARN << "Martini switching disabled for alchemical "
+	 "interactions.\n" << endi;
      }
 
      if (!opts.defined("alchType"))

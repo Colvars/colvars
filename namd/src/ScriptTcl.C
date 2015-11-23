@@ -17,6 +17,7 @@
 #include "PDB.h"
 #include "WorkDistrib.h"
 #include "NamdState.h"
+#include "Output.h"
 #include "Controller.h"
 #include "SimParameters.h"
 #include "Thread.h"
@@ -135,6 +136,17 @@ void ScriptTcl::reinitAtoms(const char *basename) {
 }
 
 #ifdef NAMD_TCL
+
+int ScriptTcl::Tcl_startup(ClientData clientData,
+	Tcl_Interp *interp, int argc, char *argv[]) {
+  if ( argc > 1 ) {
+    Tcl_SetResult(interp,"no arguments needed",TCL_VOLATILE);
+    return TCL_ERROR;
+  }
+  ScriptTcl *script = (ScriptTcl *)clientData;
+  script->initcheck();
+  return TCL_OK;
+}
 
 int ScriptTcl::Tcl_exit(ClientData clientData,
 	Tcl_Interp *, int argc, char *argv[]) {
@@ -1248,6 +1260,30 @@ int ScriptTcl::Tcl_checkpointReplica(ClientData clientData,
   return TCL_OK;
 }
 
+int ScriptTcl::Tcl_replicaDcdFile(ClientData clientData,
+        Tcl_Interp *interp, int argc, char *argv[]) {
+#ifdef MEM_OPT_VERSION
+  Tcl_SetResult(interp,"replicaDcdFile not supported in memory-optimized builds",TCL_VOLATILE);
+  return TCL_ERROR;
+#endif
+  ScriptTcl *script = (ScriptTcl *)clientData;
+  script->initcheck();
+  int index;
+  int cmpoff;
+  if (argc < 2 || argc > 3 || ((cmpoff = strcmp(argv[1],"off")) != 0 && sscanf(argv[1],"%d",&index) != 1) ) {
+    Tcl_SetResult(interp,"args: <index>|off ?<filename>?",TCL_VOLATILE);
+    return TCL_ERROR;
+  }
+  if ( argc == 2 ) {
+    if ( cmpoff == 0 ) Node::Object()->output->replicaDcdOff();
+    else Node::Object()->output->setReplicaDcdIndex(index);
+  } else if ( argc == 3 ) {
+    Node::Object()->output->replicaDcdInit(index,argv[2]);
+    script->barrier();
+  }
+  return TCL_OK;
+}
+
 int ScriptTcl::Tcl_callback(ClientData clientData,
 	Tcl_Interp *interp, int argc, char *argv[]) {
   ScriptTcl *script = (ScriptTcl *)clientData;
@@ -1632,6 +1668,8 @@ ScriptTcl::ScriptTcl() : scriptBarrier(scriptBarrierTag) {
   interp = Tcl_CreateInterp();
   psfgen_static_init(interp);
   tcl_vector_math_init(interp);
+  Tcl_CreateCommand(interp, "startup", Tcl_startup,
+    (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
   Tcl_CreateCommand(interp, "exit", Tcl_exit,
     (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
   Tcl_CreateCommand(interp, "abort", Tcl_abort,
@@ -1714,6 +1752,8 @@ ScriptTcl::ScriptTcl() : scriptBarrier(scriptBarrierTag) {
     (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
   Tcl_CreateCommand(interp, "reinitatoms", Tcl_reinitatoms,
     (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
+  Tcl_CreateCommand(interp, "replicaDcdFile", Tcl_replicaDcdFile,
+    (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
   Tcl_CreateCommand(interp, "callback", Tcl_callback,
     (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
   Tcl_CreateCommand(interp, "coorfile", Tcl_coorfile,
@@ -1786,7 +1826,7 @@ void ScriptTcl::run(char *scriptFile) {
   }
 #endif
 
-  if (runWasCalled == 0) {
+  if (initWasCalled == 0) {
     initcheck();
     SimParameters *simParams = Node::Object()->simParameters;
     if ( simParams->minimizeCGOn ) runController(SCRIPT_MINIMIZE);

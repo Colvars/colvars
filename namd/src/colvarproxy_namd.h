@@ -16,7 +16,7 @@
 #include "colvarvalue.h"
 
 #ifndef COLVARPROXY_VERSION
-#define COLVARPROXY_VERSION "2015-10-21"
+#define COLVARPROXY_VERSION "2015-11-23"
 #endif
 
 // For replica exchange
