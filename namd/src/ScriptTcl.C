@@ -88,6 +88,8 @@ void ScriptTcl::initcheck() {
       (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
     Tcl_CreateCommand(interp, "istrue", Tcl_istrue_param,
       (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
+    Tcl_CreateCommand(interp, "structure", Tcl_reloadStructure,
+      (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
 #endif
     initWasCalled = 1;
 
@@ -809,6 +811,10 @@ int ScriptTcl::Tcl_run(ClientData clientData,
   }
   if (numsteps % simParams->stepsPerCycle) {
     Tcl_SetResult(interp,"number of steps must be a multiple of stepsPerCycle",TCL_VOLATILE);
+    return TCL_ERROR;
+  }
+  if ( simParams->minimizeCGOn ) {
+    Tcl_SetResult(interp,"run called with minimization enabled; use minimize command instead",TCL_VOLATILE);
     return TCL_ERROR;
   }
   if ( simParams->N != simParams->firstTimestep ) {
@@ -1630,6 +1636,30 @@ int ScriptTcl::Tcl_reloadGridforceGrid(ClientData clientData,
   return TCL_OK;
 }
 // END gf
+
+int ScriptTcl::Tcl_reloadStructure(ClientData clientData,
+	Tcl_Interp *interp, int argc, char *argv[]) {
+  ScriptTcl *script = (ScriptTcl *)clientData;
+  script->initcheck();
+  int ok = 0;
+  if (argc == 2) ok = 1;
+  if (argc == 4 && ! strcmp(argv[2],"pdb")) ok = 1;
+  if (! ok) {
+    Tcl_AppendResult(interp, "usage: structure <filename> [pdb] <filename>", NULL);
+    return TCL_ERROR;
+  }
+
+  iout << "TCL: Reloading molecular structure from file " << argv[1];
+  if ( argc == 4 ) iout << " and pdb file " << argv[3];
+  iout << "\n" << endi;
+  Node::Object()->reloadStructure(argv[1], (argc == 4) ? argv[3] : 0);
+
+  script->barrier();
+
+  // return Tcl_reinitatoms(clientData, interp, argc-1, argv+1);
+
+  return TCL_OK;
+}
 
 
 extern "C" void newhandle_msg(void *v, const char *msg) {

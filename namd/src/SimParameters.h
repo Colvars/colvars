@@ -7,8 +7,8 @@
 /*****************************************************************************
  * $Source: /namd/cvsroot/namd2/src/SimParameters.h,v $
  * $Author: jim $
- * $Date: 2015/09/04 22:20:03 $
- * $Revision: 1.1238 $
+ * $Date: 2016/02/07 20:17:58 $
+ * $Revision: 1.1239 $
  *****************************************************************************/
 
 #ifndef SIMPARAMETERS_H
@@ -384,6 +384,10 @@ public:
   int alchMethod;           //  Which alchemical method to use? fep or ti
   BigReal alchLambda;       //  lambda for dynamics
   BigReal alchLambda2;      //  lambda for comparison
+  int alchLambdaFreq;       //  freq. (in steps) with which lambda changes
+                            //  from alchLambda to alchLambda2
+  BigReal getCurrentLambda(const int); // getter for changing lambda
+  BigReal getLambdaDelta(void); // getter for lambda increment
   BigReal alchRepLambda;    //  lambda for WCA repulsive interaction
   BigReal alchDispLambda;   //  lambda for WCA dispersion interaction
   BigReal alchElecLambda;   //  lambda for electrostatic perturbation
@@ -402,11 +406,19 @@ public:
                                 //  exnihilated particles.  For annihilated
                                 //  particles the starting point is
                                 //  (1-alchElecLambdaStart)
+  BigReal getElecLambda(const BigReal); // return min[0,x/(1-elecStart)]
   BigReal alchVdwLambdaEnd;  //  lambda value for endpoint of vdW
                              //  interactions of exnihilated particles.
                              //  For annihilated particles the endpoint is
                              //  (1-alchVdwLambdaEnd)
+  BigReal getVdwLambda(const BigReal); // return max[1,x/vdwEnd]
+  BigReal alchBondLambdaEnd; //  lambda value for endpoint of bonded
+                             //  interactions involving exnihilated particles.
+                             //  For annihilated particles the endpoint is
+                             //  (1-alchBondLambdaEnd)
+  BigReal getBondLambda(const BigReal); // return max[1,x/bondEnd]
   Bool alchDecouple;  // alchemical decoupling rather than annihilation
+  Bool alchBondDecouple; // decouple purely alchemical bonds
 
 // End alch flags
 //fepe
