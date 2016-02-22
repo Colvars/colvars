@@ -10,6 +10,7 @@ colvar {
     upperBoundary  50.0
 
     outputAppliedForce yes
+    outputSystemForce yes
 
     distanceZ {
 

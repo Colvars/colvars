@@ -1,7 +1,7 @@
 # -*- tcl -*-
 
-set topology_dir "../Common"
-set prefix "bench"
+set topology_dir "../../tests/library/Common"
+set prefix "test"
 
 cellBasisVector1     108.8612 0.0 0.0
 cellBasisVector2     0.0 108.8612 0.0
