@@ -7,8 +7,8 @@
 /*****************************************************************************
  * $Source: /namd/cvsroot/namd2/src/SimParameters.C,v $
  * $Author: jim $
- * $Date: 2015/11/19 22:29:36 $
- * $Revision: 1.1457 $
+ * $Date: 2016/02/07 20:17:58 $
+ * $Revision: 1.1459 $
  *****************************************************************************/
 
 /** \file SimParameters.C
@@ -104,7 +104,6 @@ int SimParameters::issetinparseopts(const char* name) {
   if ( parseopts ) return parseopts->issetfromptr(name);
   else return -1;
 }
-
 
 /************************************************************************/
 /*                  */
@@ -315,6 +314,12 @@ void SimParameters::scriptSet(const char *param, const char *value) {
 
   if ( ! strncasecmp(param,"alchLambda2",MAX_SCRIPT_PARAM_SIZE) ) {
     alchLambda2 = atof(value);
+    ComputeNonbondedUtil::select();
+    return;
+  }
+
+  if ( ! strncasecmp(param,"alchLambdaFreq",MAX_SCRIPT_PARAM_SIZE) ) {
+    alchLambdaFreq = atoi(value);
     ComputeNonbondedUtil::select();
     return;
   }
@@ -1041,6 +1046,8 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
       &alchLambda);
   opts.optional("alch", "alchLambda2", "Coupling comparison value",
       &alchLambda2);
+  opts.optional("alch", "alchLambdaFreq", "Frequency of increasing coupling parameter value",
+      &alchLambdaFreq);
    opts.optional("alch", "alchFile", "PDB file with perturbation flags "
      "default is the input PDB file", PARSE_STRING);
    opts.optional("alch", "alchCol", "Column in the alchFile with the "
@@ -1059,6 +1066,12 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
    opts.optional("alch", "alchVdwLambdaEnd", "Lambda at which vdW"
       "scaling of exnihilated particles begins", &alchVdwLambdaEnd, 1.0);
    opts.range("alchVdwLambdaEnd", NOT_NEGATIVE);
+
+   opts.optional("alch", "alchBondLambdaEnd", "Lambda at which bonded"
+      "scaling of exnihilated particles begins", &alchBondLambdaEnd, 1.0);
+   opts.range("alchBondLambdaEnd", NOT_NEGATIVE);
+
+
 // end FEP options
 //fepe
 
@@ -1092,6 +1105,8 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
 
    opts.optionalB("main", "alchDecouple", "Enable alchemical decoupling?",
      &alchDecouple, FALSE);
+   opts.optionalB("main", "alchBondDecouple", "Enable decoupling of purely "
+     "alchemical bonds?", &alchBondDecouple, FALSE);
 
    opts.optionalB("main", "les", "Is locally enhanced sampling enabled?",
      &lesOn, FALSE);
@@ -2556,6 +2571,12 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
 
    if ( opts.defined("extendedSystem") ) readExtendedSystem(config->find("extendedSystem")->data);
 
+#ifdef MEM_OPT_VERSION
+   if ( LJcorrection ) {
+      NAMD_die("LJ tail corrections not yet available for memory optimized builds");
+   }
+#endif
+
    if ( LJcorrection && ! cellBasisVector3.length2() ) {
      NAMD_die("Can't use LJ tail corrections without periodic boundary conditions!");
    }
@@ -3193,8 +3214,15 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
      if ( alchOn && alchVdwLambdaEnd > 1.0)
         NAMD_die("Gosh tiny Elvis, you kicked soft-core in the van der Waals! alchVdwLambdaEnd should be in the range [0.0, 1.0]\n");
 
+     if ( alchOn && alchBondLambdaEnd > 1.0)
+       NAMD_die("alchBondLambdaEnd should be in the range [0.0, 1.0]\n");
+
      if ( alchOn && alchElecLambdaStart > 1.0)
         NAMD_die("alchElecLambdaStart should be in the range [0.0, 1.0]\n");
+
+     if (!opts.defined("alchLambdaFreq")) {
+         alchLambdaFreq = 0;
+     }
 
      if (alchFepOn)
      {
@@ -3269,7 +3297,12 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
            alchemical free energy calculation is not active. Setting \
            alchDecouple to off.\n" << endi;
          alchDecouple = FALSE;
-     //NAMD_die("Alchemcial decoupling was requested but alchemical free energy calculation is not active.\n");
+   }
+   if ( alchBondDecouple && (! (alchFepOn || alchThermIntOn) ) ) {
+         iout << iWARN << "Alchemical bond decoupling was requested but \
+           alchemical free energy calculation is not active. Setting \
+           alchBondDecouple to off.\n" << endi;
+         alchBondDecouple = FALSE;
    }
 
    if ( lesOn && ( lesFactor < 1 || lesFactor > 255 ) ) {
@@ -4461,6 +4494,24 @@ if ( openatomOn )
           << alchLambda << "\n";
      iout << iINFO << "FEP COMPARISON LAMBDA VALUE  "
           << alchLambda2 << "\n";
+     if (alchLambdaFreq > 0) {
+       iout << iINFO << "FEP CURRENT LAMBDA VALUE SET TO INCREASE IN EVERY  "
+            << alchLambdaFreq << " STEPS\n";
+     }
+     if (!alchDecouple) {
+       iout << iINFO << "FEP INTRA-ALCHEMICAL NON-BONDED INTERACTIONS WILL BE "
+            << "DECOUPLED\n";
+     }else{
+       iout << iINFO << "FEP INTRA-ALCHEMICAL NON-BONDED INTERACTIONS WILL BE "
+            << "RETAINED\n";
+     }
+     if (alchBondDecouple) {
+       iout << iINFO << "FEP INTRA-ALCHEMICAL BONDED INTERACTIONS WILL BE "
+            << "DECOUPLED\n";
+     }else{
+       iout << iINFO << "FEP INTRA-ALCHEMICAL BONDED INTERACTIONS WILL BE "
+            << "RETAINED\n";
+     }
      iout << iINFO << "FEP VDW SHIFTING COEFFICIENT "
           << alchVdwShiftCoeff << "\n";
      iout << iINFO << "FEP ELEC. ACTIVE FOR ANNIHILATED "
@@ -4475,6 +4526,13 @@ if ( openatomOn )
      iout << iINFO << "FEP VDW ACTIVE FOR EXNIHILATED "
           << "PARTICLES BETWEEN LAMBDA = 0 AND LAMBDA = "
           << alchVdwLambdaEnd << "\n";
+     iout << iINFO << "FEP BOND ACTIVE FOR ANNIHILATED "
+          << "PARTICLES BETWEEN LAMBDA = "
+          << (1 - alchBondLambdaEnd) << " AND LAMBDA = 1\n";
+     iout << iINFO << "FEP BOND ACTIVE FOR EXNIHILATED "
+          << "PARTICLES BETWEEN LAMBDA = 0 AND LAMBDA = "
+          << alchBondLambdaEnd << "\n";
+
      if (alchFepWCADispOn)
      {
        iout << iINFO << "FEP WEEKS-CHANDLER-ANDERSEN DECOMPOSITION (DISPERSION) ON\n";
@@ -4494,6 +4552,26 @@ if ( openatomOn )
      iout << iINFO << "THERMODYNAMIC INTEGRATION (TI) ON\n";
      iout << iINFO << "TI LAMBDA VALUE     "
           << alchLambda << "\n";
+     if (alchLambdaFreq > 0) {
+       iout << iINFO << "TI COMPARISON LAMBDA VALUE  "
+            << alchLambda2 << "\n";
+       iout << iINFO << "TI CURRENT LAMBDA VALUE SET TO INCREASE IN EVERY  "
+            << alchLambdaFreq << " STEPS\n";
+     }
+     if (!alchDecouple) {
+       iout << iINFO << "TI INTRA-ALCHEMICAL NON-BONDED INTERACTIONS WILL BE "
+            << "DECOUPLED\n";
+     }else{
+       iout << iINFO << "TI INTRA-ALCHEMICAL NON-BONDED INTERACTIONS WILL BE "
+            << "RETAINED\n";
+     }
+     if (alchBondDecouple) {
+       iout << iINFO << "TI INTRA-ALCHEMICAL BONDED INTERACTIONS WILL BE "
+            << "DECOUPLED\n";
+     }else{
+       iout << iINFO << "TI INTRA-ALCHEMICAL BONDED INTERACTIONS WILL BE "
+            << "RETAINED\n";
+     }
      iout << iINFO << "TI VDW SHIFTING COEFFICIENT "
           << alchVdwShiftCoeff << "\n";
      iout << iINFO << "TI ELEC. ACTIVE FOR ANNIHILATED "
@@ -4508,6 +4586,12 @@ if ( openatomOn )
      iout << iINFO << "TI VDW ACTIVE FOR EXNIHILATED "
           << "PARTICLES BETWEEN LAMBDA = 0 AND LAMBDA = "
           << alchVdwLambdaEnd << "\n";
+     iout << iINFO << "TI BOND ACTIVE FOR ANNIHILATED "
+          << "PARTICLES BETWEEN LAMBDA = "
+          << (1 - alchBondLambdaEnd) << " AND LAMBDA = 1\n";
+     iout << iINFO << "TI BOND ACTIVE FOR EXNIHILATED "
+          << "PARTICLES BETWEEN LAMBDA = 0 AND LAMBDA = "
+          << alchBondLambdaEnd << "\n";
    }
 
 
@@ -6212,4 +6296,64 @@ void SimParameters::receive_SimParameters(MIStream *msg)
   delete msg;
 }
 /*      END OF FUNCTION receive_SimParameters  */
+
+//fepb BKR
+BigReal SimParameters::getCurrentLambda(const int step) {
+  /*Get lambda at the current step.
+
+   If alchLambdaFreq = 0, return alchLambda. For positive values of
+   alchLambdaFreq, apply a linear stepwise schedule from alchLambda to
+   alchLambda2:
+
+   l(t) = l + (l2 - l)*[dn / (N - n0)]*{floor[(n - n0)/dn] + 1}
+
+   n - the current time step
+   n0 - step at which switching begins (default = 0)
+   N - total steps in the simulation
+   dn - alchLambdaFreq (increment frequency, in steps)
+   l/l2 - alchLambda/alchLambda2
+
+   Note that each step _begins_ by incrementing alchLambda and then integrates
+   in time. This means that the first and last switch steps may not behave as
+   immediately expected - at step 0, alchLambda is NOT evaluated and at step N
+   no step occurs because alchLambda2 has already been reached.
+  */
+  if ( alchLambdaFreq > 0 && step >= alchEquilSteps ) {
+    if ( step == N ) {
+      return alchLambda2;
+    }
+    else {
+      const int timeOrigin = firstTimestep + alchEquilSteps;
+      const BigReal alchLambdaDelta = getLambdaDelta();
+      const BigReal increment = (step - timeOrigin) / BigReal(alchLambdaFreq);
+      return alchLambda + alchLambdaDelta*(floor(increment) + 1);
+    }
+  }
+  else {
+    return alchLambda;
+  }
+}
+
+BigReal SimParameters::getLambdaDelta(void) {
+  // Increment by which Lambda changes.
+  return ((alchLambda2 - alchLambda)*alchLambdaFreq
+          / BigReal(N - firstTimestep - alchEquilSteps));
+}
+
+BigReal SimParameters::getElecLambda(const BigReal lambda) {
+  // Convenience function for staggered lambda scaling
+  return (lambda <= alchElecLambdaStart ? 0.
+          : (lambda - alchElecLambdaStart) / (1. - alchElecLambdaStart));
+}
+
+BigReal SimParameters::getVdwLambda(const BigReal lambda) {
+  // Convenience function for staggered lambda scaling
+  return (lambda >= alchVdwLambdaEnd ? 1. : lambda / alchVdwLambdaEnd);
+}
+
+BigReal SimParameters::getBondLambda(const BigReal lambda) {
+  // Convenience function for staggered lambda scaling
+  return (lambda >= alchBondLambdaEnd ? 1. : lambda / alchBondLambdaEnd);
+}
+//fepe
 
