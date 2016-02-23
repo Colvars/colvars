@@ -15,6 +15,7 @@ colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
 colvars:       Initializing atom group "atoms".
+colvars:       # scalable = off [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID = { BH }
 colvars:       # atomsFile = "" [default]
@@ -66,6 +67,10 @@ colvars: Collective variables biases initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables module (re)initialized.
 colvars: ----------------------------------------------------------------------
+colvars: Updating NAMD interface:
+colvars: updating atomic data (10 atoms).
+colvars: updating group data (0 scalable groups, 0 atoms in total).
+colvars: Re-initialized atom group rmsd:0/0. 10 atoms: total mass = 120.11.
 colvars: Restarting from file "test.colvars.state".
 colvars:   Restarting collective variable "rmsd" from value: 1.39199
 colvars:   Restarting restraint bias "harmonic1".
@@ -76,4 +81,7 @@ colvars: ----------------------------------------------------------------------
 colvars: The restart output state file will be "testres.colvars.state".
 colvars: The final output state file will be "testres.colvars.state".
 colvars: Writing to colvar trajectory file "testres.colvars.traj".
+colvars: Updating NAMD interface:
+colvars: updating atomic data (10 atoms).
+colvars: updating group data (0 scalable groups, 0 atoms in total).
 colvars: Saving collective variables state to "testres.colvars.state".

@@ -17,6 +17,7 @@ colvars:     # wrapAround = 0 [default]
 colvars:     # forceNoPBC = off [default]
 colvars:     # oneSiteSystemForce = off [default]
 colvars:       Initializing atom group "group1".
+colvars:       # scalable = off [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
@@ -27,6 +28,7 @@ colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "group1" defined, 1 atoms initialized: total mass = 12.011, total charge = -0.1.
 colvars:       Initializing atom group "group2".
+colvars:       # scalable = off [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
@@ -84,9 +86,17 @@ colvars: Collective variables biases initialized, 2 in total.
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables module (re)initialized.
 colvars: ----------------------------------------------------------------------
+colvars: Updating NAMD interface:
+colvars: updating atomic data (2 atoms).
+colvars: updating group data (0 scalable groups, 0 atoms in total).
+colvars: Re-initialized atom group d:0/0. 1 atoms: total mass = 12.011.
+colvars: Re-initialized atom group d:0/1. 1 atoms: total mass = 12.011.
 colvars: The final output state file will be "test.colvars.state".
 colvars: Writing to colvar trajectory file "test.colvars.traj".
 colvars:   Prepared sample and gradient buffers at step 0.
+colvars: Updating NAMD interface:
+colvars: updating atomic data (2 atoms).
+colvars: updating group data (0 scalable groups, 0 atoms in total).
 colvars: Saving collective variables state to "test.colvars.state".
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration:
@@ -134,6 +144,7 @@ colvars:     # wrapAround = 0 [default]
 colvars:     # forceNoPBC = off [default]
 colvars:     # oneSiteSystemForce = off [default]
 colvars:       Initializing atom group "group1".
+colvars:       # scalable = off [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
@@ -144,6 +155,7 @@ colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "group1" defined, 1 atoms initialized: total mass = 12.011, total charge = -0.1.
 colvars:       Initializing atom group "group2".
+colvars:       # scalable = off [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]

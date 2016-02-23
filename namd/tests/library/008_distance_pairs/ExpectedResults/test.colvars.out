@@ -17,6 +17,7 @@ colvars:     # wrapAround = 0 [default]
 colvars:     # forceNoPBC = on
 colvars:     Computing distance using absolute positions (not minimal-image)
 colvars:       Initializing atom group "group1".
+colvars:       # scalable = off [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID = { BH }
 colvars:       # atomsFile = "" [default]
@@ -27,6 +28,7 @@ colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "group1" defined, 2 atoms initialized: total mass = 24.022, total charge = -0.03.
 colvars:       Initializing atom group "group2".
+colvars:       # scalable = off [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID = { BH }
 colvars:       # atomsFile = "" [default]
@@ -66,6 +68,14 @@ colvars: Collective variables biases initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables module (re)initialized.
 colvars: ----------------------------------------------------------------------
+colvars: Updating NAMD interface:
+colvars: updating atomic data (4 atoms).
+colvars: updating group data (0 scalable groups, 0 atoms in total).
+colvars: Re-initialized atom group dmat:0/0. 2 atoms: total mass = 24.022.
+colvars: Re-initialized atom group dmat:0/1. 2 atoms: total mass = 24.022.
 colvars: The final output state file will be "test.colvars.state".
 colvars: Writing to colvar trajectory file "test.colvars.traj".
+colvars: Updating NAMD interface:
+colvars: updating atomic data (4 atoms).
+colvars: updating group data (0 scalable groups, 0 atoms in total).
 colvars: Saving collective variables state to "test.colvars.state".
