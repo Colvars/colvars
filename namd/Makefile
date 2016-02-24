@@ -222,6 +222,7 @@ OBJS = \
 	$(DSTDIR)/colvarcomp_distances.o \
 	$(DSTDIR)/colvarcomp_protein.o \
 	$(DSTDIR)/colvarcomp_rotations.o \
+	$(DSTDIR)/colvardeps.o \
 	$(DSTDIR)/colvargrid.o \
 	$(DSTDIR)/colvarmodule.o \
 	$(DSTDIR)/colvarparse.o \

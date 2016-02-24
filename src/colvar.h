@@ -10,6 +10,7 @@
 #include "colvarmodule.h"
 #include "colvarvalue.h"
 #include "colvarparse.h"
+#include "colvardeps.h"
 
 
 /// \brief A collective variable (main class); to be defined, it needs
@@ -37,7 +38,7 @@
 /// \link colvarvalue \endlink type, you should also add its
 /// initialization line in the \link colvar \endlink constructor.
 
-class colvar : public colvarparse {
+class colvar : public colvarparse, public deps {
 
 public:
 
@@ -90,6 +91,14 @@ public:
   /// \brief True if all \link cvc \endlink objects are capable
   /// of calculating Jacobian forces
   bool b_Jacobian_force;
+
+  /// \brief Implementation of the feature list for colvar
+  static std::vector<feature *> cv_features;
+
+  /// \brief Implementation of the feature list accessor for colvar
+  virtual std::vector<feature *> &features() {
+    return cv_features;
+  }
 
   /// \brief Options controlling the behaviour of the colvar during
   /// the simulation, which are set from outside the cvcs

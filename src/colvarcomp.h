@@ -61,7 +61,7 @@
 /// call to e.g. apply_force().
 
 class colvar::cvc
-  : public colvarparse
+  : public colvarparse, public deps
 {
 public:
 
@@ -119,6 +119,13 @@ public:
   /// Destructor
   virtual ~cvc();
 
+  /// \brief Implementation of the feature list for colvar
+  static std::vector<feature *> cvc_features;
+
+  /// \brief Implementation of the feature list accessor for colvar
+  virtual std::vector<feature *> &features() {
+    return cvc_features;
+  }
 
   /// \brief If this flag is false (default), inverse gradients
   /// (derivatives of atom coordinates with respect to x) are
