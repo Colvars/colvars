@@ -269,6 +269,10 @@ public:
   /// Write explanatory labels in the trajectory file
   std::ostream & write_traj_label(std::ostream &os);
 
+  /// Write all trajectory files
+  int write_traj_files();
+  /// Write all restart files
+  int write_restart_files();
   /// Write all FINAL output files
   int write_output_files();
   /// Backup a file before writing it
@@ -300,11 +304,21 @@ public:
   //// Share among replicas.
   int bias_share(std::string const &bias_name);
 
-  /// Calculate collective variables and biases
+  /// Main worker function
   int calc();
+
+  /// Calculate collective variables
+  int calc_colvars();
+
+  /// Calculate biases
+  int calc_biases();
+
+  /// Integrate bias and restraint forces, send colvar forces to atoms
+  int update_colvar_forces();
 
   /// Perform analysis
   int analyze();
+
   /// \brief Read a collective variable trajectory (post-processing
   /// only, not called at runtime)
   int read_traj(char const *traj_filename,

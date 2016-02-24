@@ -448,18 +448,41 @@ int colvarmodule::bias_share(std::string const &bias_name)
 }
 
 
-int colvarmodule::calc() {
-  cvm::real total_bias_energy = 0.0;
-  cvm::real total_colvar_energy = 0.0;
-
-  std::vector<colvar *>::iterator cvi;
-  std::vector<colvarbias *>::iterator bi;
+int colvarmodule::calc()
+{
+  int error_code = COLVARS_OK;
 
   if (cvm::debug()) {
     cvm::log(cvm::line_marker);
     cvm::log("Collective variables module, step no. "+
              cvm::to_str(cvm::step_absolute())+"\n");
   }
+
+  error_code |= calc_colvars();
+  error_code |= calc_biases();
+  error_code |= update_colvar_forces();
+
+  if (cvm::b_analysis) {
+    error_code |= analyze();
+  }
+
+  // write trajectory files, if needed
+  if (cv_traj_freq && cv_traj_name.size()) {
+    error_code |= write_traj_files();
+  }
+
+  // write restart files, if needed
+  if (restart_out_freq && restart_out_name.size()) {
+    error_code |= write_restart_files();
+  }
+
+  return error_code;
+}
+
+
+int colvarmodule::calc_colvars()
+{
+  std::vector<colvar *>::iterator cvi;
 
   // calculate collective variables and their gradients
   if (cvm::debug())
@@ -473,10 +496,19 @@ int colvarmodule::calc() {
   }
   cvm::decrease_depth();
 
+  return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
+}
+
+
+int colvarmodule::calc_biases()
+{
+  std::vector<colvarbias *>::iterator bi;
+
   // update the biases and communicate their forces to the collective
   // variables
   if (cvm::debug() && biases.size())
     cvm::log("Updating collective variable biases.\n");
+  cvm::real total_bias_energy = 0.0;
   cvm::increase_depth();
   for (bi = biases.begin(); bi != biases.end(); bi++) {
     total_bias_energy += (*bi)->update();
@@ -485,6 +517,16 @@ int colvarmodule::calc() {
     }
   }
   cvm::decrease_depth();
+
+  proxy->add_energy(total_bias_energy);
+  return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
+}
+
+
+int colvarmodule::update_colvar_forces()
+{
+  std::vector<colvar *>::iterator cvi;
+  std::vector<colvarbias *>::iterator bi;
 
   // sum the forces from all biases for each collective variable
   if (cvm::debug() && biases.size())
@@ -514,29 +556,9 @@ int colvarmodule::calc() {
       return COLVARS_ERROR;
     }
   }
-
   cvm::decrease_depth();
 
-  if (cvm::b_analysis) {
-    // perform runtime analysis of colvars and biases
-    if (cvm::debug() && biases.size())
-      cvm::log("Perform runtime analyses.\n");
-    cvm::increase_depth();
-    for (cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
-      (*cvi)->analyze();
-      if (cvm::get_error()) {
-        return COLVARS_ERROR;
-      }
-    }
-    for (bi = biases.begin(); bi != biases.end(); bi++) {
-      (*bi)->analyze();
-      if (cvm::get_error()) {
-        return COLVARS_ERROR;
-      }
-    }
-    cvm::decrease_depth();
-  }
-
+  cvm::real total_colvar_energy = 0.0;
   // sum up the forces for each colvar, including wall forces
   // and integrate any internal
   // equation of motion (extended system)
@@ -551,7 +573,7 @@ int colvarmodule::calc() {
     }
   }
   cvm::decrease_depth();
-  proxy->add_energy(total_bias_energy + total_colvar_energy);
+  proxy->add_energy(total_colvar_energy);
 
   // make collective variables communicate their forces to their
   // coupled degrees of freedom (i.e. atoms)
@@ -568,46 +590,51 @@ int colvarmodule::calc() {
   }
   cvm::decrease_depth();
 
-  // write restart file, if needed
-  if (restart_out_freq && restart_out_name.size()) {
-    if ( (cvm::step_relative() > 0) &&
-         ((cvm::step_absolute() % restart_out_freq) == 0) ) {
-      cvm::log("Writing the state file \""+
-               restart_out_name+"\".\n");
-      proxy->backup_file(restart_out_name.c_str());
-      restart_out_os.open(restart_out_name.c_str());
-      if (!restart_out_os.is_open() || !write_restart(restart_out_os))
-        cvm::error("Error: in writing restart file.\n");
-      restart_out_os.close();
-    }
+  return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
+}
+
+
+int colvarmodule::write_restart_files()
+{
+  if ( (cvm::step_relative() > 0) &&
+       ((cvm::step_absolute() % restart_out_freq) == 0) ) {
+    cvm::log("Writing the state file \""+
+             restart_out_name+"\".\n");
+    proxy->backup_file(restart_out_name.c_str());
+    restart_out_os.open(restart_out_name.c_str());
+    if (!restart_out_os.is_open() || !write_restart(restart_out_os))
+      cvm::error("Error: in writing restart file.\n");
+    restart_out_os.close();
   }
 
-  // write trajectory file, if needed
-  if (cv_traj_freq && cv_traj_name.size()) {
+  return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
+}
 
-    if (!cv_traj_os.is_open()) {
-      open_traj_file(cv_traj_name);
-    }
 
-    // write labels in the traj file every 1000 lines and at first timestep
-    if ((cvm::step_absolute() % (cv_traj_freq * 1000)) == 0 || cvm::step_relative() == 0) {
-      write_traj_label(cv_traj_os);
-    }
+int colvarmodule::write_traj_files()
+{
+  if (!cv_traj_os.is_open()) {
+    open_traj_file(cv_traj_name);
+  }
 
-    if ((cvm::step_absolute() % cv_traj_freq) == 0) {
-      write_traj(cv_traj_os);
-    }
+  // write labels in the traj file every 1000 lines and at first timestep
+  if ((cvm::step_absolute() % (cv_traj_freq * 1000)) == 0 || cvm::step_relative() == 0) {
+    write_traj_label(cv_traj_os);
+  }
 
-    if (restart_out_freq && cv_traj_os.is_open()) {
-      // flush the trajectory file if we are at the restart frequency
-      if ( (cvm::step_relative() > 0) &&
-           ((cvm::step_absolute() % restart_out_freq) == 0) ) {
-        cvm::log("Synchronizing (emptying the buffer of) trajectory file \""+
-                 cv_traj_name+"\".\n");
-        cv_traj_os.flush();
-      }
+  if ((cvm::step_absolute() % cv_traj_freq) == 0) {
+    write_traj(cv_traj_os);
+  }
+
+  if (restart_out_freq && cv_traj_os.is_open()) {
+    // flush the trajectory file if we are at the restart frequency
+    if ( (cvm::step_relative() > 0) &&
+         ((cvm::step_absolute() % restart_out_freq) == 0) ) {
+      cvm::log("Synchronizing (emptying the buffer of) trajectory file \""+
+               cv_traj_name+"\".\n");
+      cv_traj_os.flush();
     }
-  } // end if (cv_traj_freq)
+  }
 
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
 }
@@ -643,6 +670,7 @@ int colvarmodule::analyze()
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
 }
 
+
 int colvarmodule::setup()
 {
   // loop over all components of all colvars to reset masses of all groups
@@ -653,12 +681,14 @@ int colvarmodule::setup()
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
 }
 
+
 colvarmodule::~colvarmodule()
 {
   reset();
   delete parse;
   proxy = NULL;
 }
+
 
 int colvarmodule::reset()
 {
