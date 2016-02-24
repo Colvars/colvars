@@ -889,8 +889,10 @@ int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
   }
 
   for (i = first_cvc, cvc_count = 0;
-       (i < cvcs.size()) && (cvc_count < cvc_max_count) && (cvcs[i]->b_enabled);
-       i++, cvc_count++) {
+       (i < cvcs.size()) && (cvc_count < cvc_max_count);
+       i++) {
+    if (!cvcs[i]->b_enabled) continue;
+    cvc_count++;
     for (ig = 0; ig < cvcs[i]->atom_groups.size(); ig++) {
       cvm::atom_group &atoms = *(cvcs[i]->atom_groups[ig]);
       atoms.reset_atoms_data();
@@ -911,8 +913,10 @@ int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
 
   if (tasks[task_system_force]) {
     for (i = first_cvc, cvc_count = 0;
-         (i < cvcs.size()) && (cvc_count < cvc_max_count) && (cvcs[i]->b_enabled);
-         i++, cvc_count++) {
+         (i < cvcs.size()) && (cvc_count < cvc_max_count);
+         i++) {
+      if (!cvcs[i]->b_enabled) continue;
+      cvc_count++;
       for (ig = 0; ig < cvcs[i]->atom_groups.size(); ig++) {
         cvcs[i]->atom_groups[ig]->read_system_forces();
       }
@@ -927,8 +931,10 @@ int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
 
   // First, calculate component values
   for (i = first_cvc, cvc_count = 0;
-       (i < cvcs.size()) && (cvc_count < cvc_max_count) && (cvcs[i]->b_enabled);
-       i++, cvc_count++) {
+       (i < cvcs.size()) && (cvc_count < cvc_max_count);
+       i++) {
+    if (!cvcs[i]->b_enabled) continue;
+    cvc_count++;
     cvm::increase_depth();
     (cvcs[i])->calc_value();
     cvm::decrease_depth();
@@ -954,8 +960,10 @@ int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
   } else if (x.type() == colvarvalue::type_scalar) {
     // polynomial combination allowed
     for (i = first_cvc, cvc_count = 0;
-         (i < cvcs.size()) && (cvc_count < cvc_max_count) && (cvcs[i]->b_enabled);
-         i++, cvc_count++) {
+        (i < cvcs.size()) && (cvc_count < cvc_max_count);
+        i++) {
+      if (!cvcs[i]->b_enabled) continue;
+      cvc_count++;
       x += (cvcs[i])->sup_coeff *
       ( ((cvcs[i])->sup_np != 1) ?
         std::pow((cvcs[i])->value().real_value, (cvcs[i])->sup_np) :
@@ -964,8 +972,10 @@ int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
   } else {
     // only linear combination allowed
     for (i = first_cvc, cvc_count = 0;
-         (i < cvcs.size()) && (cvc_count < cvc_max_count) && (cvcs[i]->b_enabled);
-         i++, cvc_count++) {
+        (i < cvcs.size()) && (cvc_count < cvc_max_count);
+        i++) {
+      if (!cvcs[i]->b_enabled) continue;
+      cvc_count++;
       x += (cvcs[i])->sup_coeff * (cvcs[i])->value();
     }
   }
@@ -981,8 +991,10 @@ int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
 
     // calculate the gradients of each component
     for (i = first_cvc, cvc_count = 0;
-         (i < cvcs.size()) && (cvc_count < cvc_max_count) && (cvcs[i]->b_enabled);
-         i++, cvc_count++) {
+        (i < cvcs.size()) && (cvc_count < cvc_max_count);
+        i++) {
+      if (!cvcs[i]->b_enabled) continue;
+      cvc_count++;
       cvm::increase_depth();
       (cvcs[i])->calc_gradients();
       // if requested, propagate (via chain rule) the gradients above
@@ -1010,8 +1022,10 @@ int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
         atomic_gradients[a].reset();
       }
       for (i = first_cvc, cvc_count = 0;
-           (i < cvcs.size()) && (cvc_count < cvc_max_count) && (cvcs[i]->b_enabled);
-           i++, cvc_count++) {
+          (i < cvcs.size()) && (cvc_count < cvc_max_count);
+          i++) {
+        if (!cvcs[i]->b_enabled) continue;
+        cvc_count++;
         // Coefficient: d(a * x^n) = a * n * x^(n-1) * dx
         cvm::real coeff = (cvcs[i])->sup_coeff * cvm::real((cvcs[i])->sup_np) *
           std::pow((cvcs[i])->value().real_value, (cvcs[i])->sup_np-1);
@@ -1067,8 +1081,10 @@ int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
     if (cvm::step_relative() > 0) {
       // get from the cvcs the system forces from the PREVIOUS step
       for (i = first_cvc, cvc_count = 0;
-           (i < cvcs.size()) && (cvc_count < cvc_max_count) && (cvcs[i]->b_enabled);
-           i++, cvc_count++) {
+          (i < cvcs.size()) && (cvc_count < cvc_max_count);
+          i++) {
+        if (!cvcs[i]->b_enabled) continue;
+        cvc_count++;
         (cvcs[i])->calc_force_invgrads();
         // linear combination is assumed
         cvm::increase_depth();
