@@ -864,30 +864,33 @@ colvar::~colvar()
 
 void colvar::calc()
 {
-  size_t i, ig;
   if (cvm::debug())
     cvm::log("Calculating colvar \""+this->name+"\".\n");
+  update_cvc_flags();
+  calc_cvcs();
+  calc_colvar_properties();
+}
+
+
+int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
+{
+  size_t i, ig;
+  size_t cvc_count;
+  size_t const cvc_max_count = num_cvcs ? num_cvcs : num_active_cvcs();
 
   // prepare atom groups for calculation
   if (cvm::debug())
     cvm::log("Collecting data from atom groups.\n");
 
-  // Update the enabled/disabled status of cvcs if necessary
-  if (cvc_flags.size()) {
-    bool any = false;
-    for (i = 0; i < cvcs.size(); i++) {
-      cvcs[i]->b_enabled = cvc_flags[i];
-      any = any || cvc_flags[i];
-    }
-    if (!any) {
-      cvm::error("ERROR: All CVCs are disabled for colvar " + this->name +"\n");
-      return;
-    }
-    cvc_flags.resize(0);
+  if (first_cvc >= cvcs.size()) {
+    cvm::error("Error: trying to address a component outside the "
+               "range defined for colvar \""+name+"\".\n", BUG_ERROR);
+    return BUG_ERROR;
   }
 
-  for (i = 0; i < cvcs.size(); i++) {
-    if (!cvcs[i]->b_enabled) continue;
+  for (i = first_cvc, cvc_count = 0;
+       (i < cvcs.size()) && (cvc_count < cvc_max_count) && (cvcs[i]->b_enabled);
+       i++, cvc_count++) {
     for (ig = 0; ig < cvcs[i]->atom_groups.size(); ig++) {
       cvm::atom_group &atoms = *(cvcs[i]->atom_groups[ig]);
       atoms.reset_atoms_data();
@@ -907,7 +910,9 @@ void colvar::calc()
 //   }
 
   if (tasks[task_system_force]) {
-    for (i = 0; i < cvcs.size(); i++) {
+    for (i = first_cvc, cvc_count = 0;
+         (i < cvcs.size()) && (cvc_count < cvc_max_count) && (cvcs[i]->b_enabled);
+         i++, cvc_count++) {
       for (ig = 0; ig < cvcs[i]->atom_groups.size(); ig++) {
         cvcs[i]->atom_groups[ig]->read_system_forces();
       }
@@ -920,9 +925,10 @@ void colvar::calc()
     cvm::log("Calculating colvar components.\n");
   x.reset();
 
-  // First, update component values
-  for (i = 0; i < cvcs.size(); i++) {
-    if (!cvcs[i]->b_enabled) continue;
+  // First, calculate component values
+  for (i = first_cvc, cvc_count = 0;
+       (i < cvcs.size()) && (cvc_count < cvc_max_count) && (cvcs[i]->b_enabled);
+       i++, cvc_count++) {
     cvm::increase_depth();
     (cvcs[i])->calc_value();
     cvm::decrease_depth();
@@ -933,22 +939,23 @@ void colvar::calc()
                 cvm::cv_width, cvm::cv_prec)+".\n");
   }
 
-  // Then combine them appropriately
+  // Then combine them appropriately, using either a scripted function or a polynomial
   if (tasks[task_scripted]) {
     // cvcs combined by user script
     int res = cvm::proxy->run_colvar_callback(scripted_function, sorted_cvc_values, x);
     if (res == COLVARS_NOT_IMPLEMENTED) {
       cvm::error("Scripted colvars are not implemented.");
-      return;
+      return COLVARS_NOT_IMPLEMENTED;
     }
     if (res != COLVARS_OK) {
       cvm::error("Error running scripted colvar");
-      return;
+      return COLVARS_OK;
     }
   } else if (x.type() == colvarvalue::type_scalar) {
     // polynomial combination allowed
-    for (i = 0; i < cvcs.size(); i++) {
-      if (!cvcs[i]->b_enabled) continue;
+    for (i = first_cvc, cvc_count = 0;
+         (i < cvcs.size()) && (cvc_count < cvc_max_count) && (cvcs[i]->b_enabled);
+         i++, cvc_count++) {
       x += (cvcs[i])->sup_coeff *
       ( ((cvcs[i])->sup_np != 1) ?
         std::pow((cvcs[i])->value().real_value, (cvcs[i])->sup_np) :
@@ -956,8 +963,9 @@ void colvar::calc()
     }
   } else {
     // only linear combination allowed
-    for (i = 0; i < cvcs.size(); i++) {
-      if (!cvcs[i]->b_enabled) continue;
+    for (i = first_cvc, cvc_count = 0;
+         (i < cvcs.size()) && (cvc_count < cvc_max_count) && (cvcs[i]->b_enabled);
+         i++, cvc_count++) {
       x += (cvcs[i])->sup_coeff * (cvcs[i])->value();
     }
   }
@@ -971,9 +979,10 @@ void colvar::calc()
     if (cvm::debug())
       cvm::log("Calculating gradients of colvar \""+this->name+"\".\n");
 
-    for (i = 0; i < cvcs.size(); i++) {
-      // calculate the gradients of each component
-      if (!cvcs[i]->b_enabled) continue;
+    // calculate the gradients of each component
+    for (i = first_cvc, cvc_count = 0;
+         (i < cvcs.size()) && (cvc_count < cvc_max_count) && (cvcs[i]->b_enabled);
+         i++, cvc_count++) {
       cvm::increase_depth();
       (cvcs[i])->calc_gradients();
       // if requested, propagate (via chain rule) the gradients above
@@ -992,16 +1001,17 @@ void colvar::calc()
 
       if (tasks[task_scripted]) {
         cvm::error("Collecting atomic gradients is not implemented for "
-          "scripted colvars.");
-        return;
+                   "scripted colvars.", COLVARS_NOT_IMPLEMENTED);
+        return COLVARS_NOT_IMPLEMENTED;
       }
 
       // Collect the atomic gradients inside colvar object
       for (unsigned int a = 0; a < atomic_gradients.size(); a++) {
         atomic_gradients[a].reset();
       }
-      for (i = 0; i < cvcs.size(); i++) {
-        if (!cvcs[i]->b_enabled) continue;
+      for (i = first_cvc, cvc_count = 0;
+           (i < cvcs.size()) && (cvc_count < cvc_max_count) && (cvcs[i]->b_enabled);
+           i++, cvc_count++) {
         // Coefficient: d(a * x^n) = a * n * x^(n-1) * dx
         cvm::real coeff = (cvcs[i])->sup_coeff * cvm::real((cvcs[i])->sup_np) *
           std::pow((cvcs[i])->value().real_value, (cvcs[i])->sup_np-1);
@@ -1042,8 +1052,8 @@ void colvar::calc()
       // TODO see if this could reasonably be done in a generic way
       // from generic inverse gradients
       cvm::error("System force is not implemented for "
-        "scripted colvars.");
-      return;
+                 "scripted colvars.", COLVARS_NOT_IMPLEMENTED);
+      return COLVARS_NOT_IMPLEMENTED;
     }
     if (cvm::debug())
       cvm::log("Calculating system force of colvar \""+this->name+"\".\n");
@@ -1056,7 +1066,9 @@ void colvar::calc()
 
     if (cvm::step_relative() > 0) {
       // get from the cvcs the system forces from the PREVIOUS step
-      for (i = 0; i < cvcs.size(); i++) {
+      for (i = first_cvc, cvc_count = 0;
+           (i < cvcs.size()) && (cvc_count < cvc_max_count) && (cvcs[i]->b_enabled);
+           i++, cvc_count++) {
         (cvcs[i])->calc_force_invgrads();
         // linear combination is assumed
         cvm::increase_depth();
@@ -1074,7 +1086,11 @@ void colvar::calc()
     if (cvm::debug())
       cvm::log("Done calculating system force of colvar \""+this->name+"\".\n");
   }
+}
 
+
+int colvar::calc_colvar_properties()
+{
   if (tasks[task_fdiff_velocity]) {
     // calculate the velocity by finite differences
     if (cvm::step_relative() == 0)
@@ -1255,7 +1271,7 @@ void colvar::communicate_forces()
 
     if (res != COLVARS_OK) {
       if (res == COLVARS_NOT_IMPLEMENTED) {
-        cvm::error("Colvar gradient scripts are not implemented.");
+        cvm::error("Colvar gradient scripts are not implemented.", COLVARS_NOT_IMPLEMENTED);
       } else {
         cvm::error("Error running colvar gradient script");
       }
@@ -1299,8 +1315,8 @@ void colvar::communicate_forces()
 }
 
 
-int colvar::set_cvc_flags(std::vector<bool> const &flags) {
-
+int colvar::set_cvc_flags(std::vector<bool> const &flags)
+{
   if (flags.size() != cvcs.size()) {
     cvm::error("ERROR: Wrong number of CVC flags provided.");
     return COLVARS_ERROR;
@@ -1309,6 +1325,36 @@ int colvar::set_cvc_flags(std::vector<bool> const &flags) {
   // so we store the flags that will be enforced at the next call to calc()
   cvc_flags = flags;
   return COLVARS_OK;
+}
+
+
+int colvar::update_cvc_flags()
+{
+  size_t i;
+  // Update the enabled/disabled status of cvcs if necessary
+  if (cvc_flags.size()) {
+    bool any = false;
+    for (i = 0; i < cvcs.size(); i++) {
+      cvcs[i]->b_enabled = cvc_flags[i];
+      any = any || cvc_flags[i];
+    }
+    if (!any) {
+      cvm::error("ERROR: All CVCs are disabled for colvar " + this->name +"\n");
+      return COLVARS_ERROR;
+    }
+    cvc_flags.resize(0);
+  }
+  return COLVARS_OK;
+}
+
+
+int colvar::num_active_cvcs() const
+{
+  int result = 0;
+  for (size_t i = 0; i < cvcs.size(); i++) {
+    if (cvcs[i]->b_enabled) result++;
+  }
+  return result;
 }
 
 
