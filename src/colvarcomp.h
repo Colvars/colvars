@@ -112,6 +112,9 @@ public:
                    cvm::atom_group &group,
                    bool optional = false);
 
+  /// \brief After construction, set data related to dependency handling
+  int setup();
+
   /// \brief Default constructor (used when \link cvc \endlink
   /// objects are declared within other ones)
   cvc();

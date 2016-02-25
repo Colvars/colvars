@@ -18,9 +18,9 @@ void add_dep_children(int) {int f, int dep) {
 }*/
 
 
-int deps::require(int feature_id, bool silent /* default: false */) {  // Enable given feature
-  // fails silently if requested by flag
-  // silent flag is passed recursively to deps of this feature
+int deps::require(int feature_id, bool dry_run /* default: false */) {  // Enable given feature
+  // dry_run: fail silently, do not enable if available
+  // flag is passed recursively to deps of this feature
 
   int res, i, j;
   bool ok;
@@ -29,23 +29,23 @@ int deps::require(int feature_id, bool silent /* default: false */) {  // Enable
 
   cvm::log(description + " requiring " + f->description);
 
-  if (!fs->available) {
-    if (!silent) {
-      cvm::error("Feature unavailable: \"" + f->description + "\" in object \"" + description + "\"");
-    }
-    return COLVARS_ERROR;
-  }
-
   if (fs->enabled) {
     // Do not try to solve deps if already enabled
     return COLVARS_OK;
   }
 
+  if (!fs->available) {
+    if (!dry_run) {
+      cvm::error("Feature unavailable: \"" + f->description + "\" in object \"" + description + "\"");
+    }
+    return COLVARS_ERROR;
+  }
+
   // 1) solve internal deps (self)
   for (i=0; i<f->requires_self.size(); i++) {
-    res = require(f->requires_self[i], silent);
+    res = require(f->requires_self[i], dry_run);
     if (res != COLVARS_OK) {
-      if (!silent) {
+      if (!dry_run) {
           cvm::error("Unsatisfied dependency for \"" + f->description + "\" in object \"" + description + "\"");
       }
       return res;
@@ -59,14 +59,15 @@ int deps::require(int feature_id, bool silent /* default: false */) {  // Enable
     ok = false;
     for (j=0; j<f->requires_alt[i].size(); j++) {
       int g = f->requires_alt[i][j];
-      res = require(g, true);  // fail silently
+      res = require(g, true);  // see if available
       if (res == COLVARS_OK) {
         ok = true;
+        if (!dry_run) require(g); // Require again, for real
         break;
       }
     }
     if (!ok) {
-      if (!silent) {
+      if (!dry_run) {
         cvm::log("In object \"" + description + "\", no dependency satisfied among alternates:");
         for (j=0; j<f->requires_alt[i].size(); j++) {
           int g = f->requires_alt[i][j];
@@ -83,9 +84,11 @@ int deps::require(int feature_id, bool silent /* default: false */) {  // Enable
 //     cvm::log("children " + cvm::to_str(g));
     for (j=0; j<children.size(); j++) {
 //       cvm::log("child " +  children[j]->description);
-      res = children[j]->require(g, silent);
+      cvm::increase_depth();
+      res = children[j]->require(g, dry_run);
+      cvm::decrease_depth();
       if (res != COLVARS_OK) {
-        if (!silent) {
+        if (!dry_run) {
           cvm::error("Unsatisfied dependency for \"" + f->description + "\" in object \"" + description + "\"");
         }
         return res;
@@ -94,7 +97,7 @@ int deps::require(int feature_id, bool silent /* default: false */) {  // Enable
   }
 
   // Actually enable feature only once everything checks out
-  fs->enabled = true;
+  if (!dry_run) fs->enabled = true;
   return COLVARS_OK;
 }
 
