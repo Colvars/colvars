@@ -1,5 +1,8 @@
 #include "colvarmodule.h"
 
+#ifndef COLVARDEPS_H
+#define COLVARDEPS_H
+
 /// Parent class for a member object of a bias, cv or cvc etc. containing dependencies
 /// (features) and handling dependency resolution
 
@@ -11,14 +14,14 @@
 
 
 // OPTION B:
-// To be implemented as colvar_deps, cvc_deps, atomgroup_deps ? 
-// deps ->    colvar_deps -> colvar 
+// To be implemented as colvar_deps, cvc_deps, atomgroup_deps ?
+// deps ->    colvar_deps -> colvar
 //   \ \->       cvc_deps -> cvc
 //    \--> atomgroup_deps -> atomgroup
 
 
 
-// Some features like colvar::f_linear have no dependencies, enable() doesn't enable anything but fails if unavailable
+// Some features like colvar::f_linear have no dependencies, require() doesn't enable anything but fails if unavailable
 // Policy: those features should be either enabled or unavailable at all times
 
 // It seems important to have available default to false (for safety) and enabled to false (for efficiency)
@@ -38,16 +41,21 @@ public:
   }
 
   // Subclasses should initialize the following members:
-  
+
   std::string description; // reference to object name (cv, cvc etc.)
 
   /// This contains the current state of each feature for each object
   struct feature_state {
-    bool available = false;   // unavailable until declared otherwise
+    /// Available means supported, subject to dependencies as listed
+    /// unavailable until declared otherwise
+    bool available = false;
+    /// Currently enabled - this flag is subject to change dynamically
+    /// TODO consider implications for dependency solving: anyone who disables
+    /// it should trigger a refresh of parent objects
     bool enabled = false;     // see if this should be private depending on implementation
     // bool enabledOnce; // this should trigger an update when object is evaluated
   };
-  
+
   /// List of the state of all features
   std::vector<feature_state *> feature_states;
 
@@ -58,38 +66,38 @@ public:
   public:
     feature() {}
     ~feature() {}
-    
+
     std::string description; // Set by derived object initializer
 
     // features that this feature requires in the same object
     // NOTE: we have no safety mechanism against circular dependencies, however, they would have to be internal to an object (ie. requires_self or requires_alt)
     std::vector<int> requires_self;
 
-    
+
     // sets of features that are required in an alternate way
     // when parent feature is enabled, if none are enabled, the first one listed that is available will be enabled
-    std::vector<std::vector<int>> requires_alt;  
+    std::vector<std::vector<int>> requires_alt;
 
     // features that this feature requires in children
-    std::vector<int> requires_children; 
+    std::vector<int> requires_children;
   };
-    
+
   // Accessor to list of all features, static in each derived class
   // Can be iterated over by going through subclass-specific enums
-  virtual std::vector<feature *>&features() = 0; 
-  
+  virtual std::vector<feature *>&features() = 0;
+
   // pointers to objects this object depends on
   // list should be maintained by any code that modifies the object
   // this could be secured by making lists of colvars / cvcs / atom groups private and modified through accessor functions
   std::vector<deps *> children;
-  
-  
+
+
   // std::vector<deps *> parents; // Needed to trigger a refresh if capabilities of this object change
 
   // End of members to be initialized by subclasses
 
-  
-  int enable(int f, bool silent = false);  // enable a feature and recursively solve its dependencies
+
+  int require(int f, bool silent = false);  // enable a feature and recursively solve its dependencies
   // fails silently if requested, useful to solve alternates
 //     int disable(int f);
 
@@ -113,18 +121,20 @@ public:
   enum features_colvar {
     /// \brief Calculate colvar value
     f_cv_value,
-    /// \brief Gradients are calculated and temporarily stored, so
-    /// that external forces can be applied
+    /// \brief is scalar
+    f_cv_scalar,
     f_cv_linear,
     f_cv_homogeneous,
-    f_cv_gradients,
+    /// \brief Gradients are calculated and temporarily stored, so
+    /// that external forces can be applied
+    f_cv_gradient,
     /// \brief Collect atomic gradient data from all cvcs into vector
-    /// atomic_gradients
-    f_cv_collect_gradients,
+    /// atomic_gradient
+    f_cv_collect_gradient,
     /// \brief Calculate the velocity with finite differences
     f_cv_fdiff_velocity,
     /// \brief The system force is calculated, projecting the atomic
-    /// forces on the inverse gradients
+    /// forces on the inverse gradient
     f_cv_system_force,
     /// \brief Calculate system force from atomic forces
     f_cv_system_force_calc,
@@ -171,24 +181,23 @@ public:
     f_cv_runave,
     /// \brief Compute time correlation function
     f_cv_corrfunc,
-    /// \brief Value and gradients computed by user script
+    /// \brief Value and gradient computed by user script
     f_cv_scripted,
     /// \brief Number of colvar features
     f_cv_ntot
   };
-  
-  
+
+
   enum features_cvc {
     f_cvc_value,
     f_cvc_scalar,
-    f_cvc_linear,
-    f_cvc_gradients,
+    f_cvc_gradient,
     f_cvc_system_force,
     f_cvc_inv_gradient,
     f_cvc_Jacobian,
     f_cvc_ntot
   };
-  
+
   enum features_atomgroup {
     f_ag_coordinates,
     f_ag_fit,
@@ -200,5 +209,7 @@ public:
   };
 
 };
+
+#endif
 
 

@@ -44,79 +44,64 @@ colvar::colvar(std::string const &conf)
 
   this->description = "colvar " + this->name;
 
+  // Initialize feature_states for each instance
+  for (i = 0; i < f_cv_ntot; i++) {
+    feature_states.push_back(new feature_state);
+    feature_states.back()->available = true;
+  }
+  // NOTE: for colvars, available defaults to true except these properties:
+  // extended_lagrangian, walls
+  // ie user-controlled features
+  // we could switch any of those to program controlled
+
+
   if (cv_features.size() == 0) {
     // Initialize static array once and for all
-    for (i = 0; i < deps::f_cv_ntot; i++) {
+    for (i = 0; i < f_cv_ntot; i++) {
       cv_features.push_back(new feature);
     }
 
-    cv_features[f_cv_value]->description = "Colvar value";
+    cv_features[f_cv_value]->description = "value";
+    cv_features[f_cv_value]->requires_children.push_back(f_cvc_value);
 
-    cv_features[deps::f_cv_gradients]->description = "Colvar gradients";
-    cv_features[deps::f_cv_gradients]->requires_children.push_back(deps::f_cvc_gradients);
+    cv_features[f_cv_gradient]->description = "gradient";
+    cv_features[f_cv_value]->requires_children.push_back(f_cvc_value);
+    cv_features[f_cv_gradient]->requires_children.push_back(f_cvc_gradient);
 
-    cv_features[deps::f_cv_collect_gradients]->description = "Collect colvar gradients";
-    cv_features[deps::f_cv_collect_gradients]->requires_self.push_back(deps::f_cv_gradients);
+    cv_features[f_cv_collect_gradient]->description = "Collect gradient";
+    cv_features[f_cv_collect_gradient]->requires_self.push_back(f_cv_gradient);
 
     // System force: either trivial (spring force) through extended Lagrangian, or calculated explicitly
-    cv_features[deps::f_cv_system_force]->description = "Colvar system force";
-    cv_features[deps::f_cv_system_force]->requires_alt.push_back(std::vector<int>(2));
-    cv_features[deps::f_cv_system_force]->requires_alt.back()[0] = deps::f_cv_extended_lagrangian;
-    cv_features[deps::f_cv_system_force]->requires_alt.back()[0] = deps::f_cv_system_force_calc;
+    cv_features[f_cv_system_force]->description = "system force";
+    cv_features[f_cv_system_force]->requires_alt.push_back(std::vector<int>(2));
+    cv_features[f_cv_system_force]->requires_alt.back()[0] = f_cv_extended_lagrangian;
+    cv_features[f_cv_system_force]->requires_alt.back()[1] = f_cv_system_force_calc;
     // Deps for explicit system force calculation
-    cv_features[deps::f_cv_system_force_calc]->description = "Colvar system force calculation";
-    cv_features[deps::f_cv_system_force_calc]->requires_self.push_back(deps::f_cvc_scalar);
-    cv_features[deps::f_cv_system_force_calc]->requires_self.push_back(deps::f_cvc_linear);
-    cv_features[deps::f_cv_system_force_calc]->requires_children.push_back(deps::f_cvc_system_force);
+    cv_features[f_cv_system_force_calc]->description = "system force calculation";
+    cv_features[f_cv_system_force_calc]->requires_self.push_back(f_cv_scalar);
+    cv_features[f_cv_system_force_calc]->requires_self.push_back(f_cv_linear);
+    cv_features[f_cv_system_force_calc]->requires_children.push_back(f_cvc_system_force);
 
     // Jacobian force: either trivial (zero) through extended Lagrangian, or calculated explicitly
-    cv_features[deps::f_cv_Jacobian]->description = "Colvar Jacobian derivative";
-    cv_features[deps::f_cv_Jacobian]->requires_alt.push_back(std::vector<int>(2));
-    cv_features[deps::f_cv_Jacobian]->requires_alt.back()[0] = deps::f_cv_extended_lagrangian;
-    cv_features[deps::f_cv_Jacobian]->requires_alt.back()[0] = deps::f_cv_Jacobian_calc;
+    cv_features[f_cv_Jacobian]->description = "Jacobian derivative";
+    cv_features[f_cv_Jacobian]->requires_alt.push_back(std::vector<int>(2));
+    cv_features[f_cv_Jacobian]->requires_alt.back()[0] = f_cv_extended_lagrangian;
+    cv_features[f_cv_Jacobian]->requires_alt.back()[1] = f_cv_Jacobian_calc;
     // Deps for explicit Jacobian calculation
-    cv_features[deps::f_cv_Jacobian_calc]->description = "Colvar Jacobian derivative calculation";
-    cv_features[deps::f_cv_Jacobian_calc]->requires_self.push_back(deps::f_cvc_scalar);
-    cv_features[deps::f_cv_Jacobian_calc]->requires_self.push_back(deps::f_cvc_linear);
-    cv_features[deps::f_cv_Jacobian_calc]->requires_children.push_back(deps::f_cvc_Jacobian);
+    cv_features[f_cv_Jacobian_calc]->description = "Jacobian derivative calculation";
+    cv_features[f_cv_Jacobian_calc]->requires_self.push_back(f_cv_scalar);
+    cv_features[f_cv_Jacobian_calc]->requires_self.push_back(f_cv_linear);
+    cv_features[f_cv_Jacobian_calc]->requires_children.push_back(f_cvc_Jacobian);
 
-  /*
-    deps::f_cv_gradients,
+    cv_features[f_cv_report_Jacobian]->description = "report Jacobian force";
 
-    deps::f_cv_collect_gradients,
+    cv_features[f_cv_output_value]->description = "output value";
+    cv_features[f_cv_output_value]->requires_self.push_back(f_cv_value);
 
-    deps::f_cv_fdiff_velocity,
-
-    deps::f_cv_system_force,
-
-    deps::f_cv_extended_lagrangian,
-    deps::f_cv_langevin,
-
-    deps::f_cv_output_energy,
-
-    deps::f_cv_Jacobian_force,
-
-    deps::f_cv_report_Jacobian_force,
-
-    deps::f_cv_output_value,
-
-    deps::f_cv_output_velocity,
-
-    deps::f_cv_output_applied_force,
-
-    deps::f_cv_output_system_force,
-
-    deps::f_cv_lower_boundary,
-
-    deps::f_cv_upper_boundary,
-
-    deps::f_cv_grid,
-
-    deps::f_cv_lower_wall,
-
-    deps::f_cv_upper_wall,
-
-    deps::f_cv_runave,*/
+    cv_features[f_cv_extended_lagrangian]->description = "extended Lagrangian";
+    cv_features[f_cv_langevin]->description = "Langevin dynamics";
+    cv_features[f_cv_linear]->description = "linear";
+    cv_features[f_cv_scalar]->description = "scalar";
   }
   // END deps TODO TODO TODO
 
@@ -176,6 +161,7 @@ colvar::colvar(std::string const &conf)
         cvcs.back()->name = s.str();                                    \
           /* pad cvc number for correct ordering when sorting by name */\
       }                                                                 \
+      cvcs.back()->description = "cvc " + cvcs.back()->name;            \
       if (cvm::debug())                                                 \
         cvm::log("Done initializing a \""+                             \
                   std::string(def_config_key)+                         \
@@ -250,6 +236,11 @@ colvar::colvar(std::string const &conf)
   }
 
   cvm::log("All components initialized.\n");
+
+  // Store list of children cvcs for dependency checking purposes
+  for (i = 0; i < cvcs.size(); i++) {
+    this->children.push_back((deps*) cvcs[i]);
+  }
 
   // Setup colvar as scripted function of components
   if (get_keyval(conf, "scriptedFunction", scripted_function,
@@ -378,6 +369,7 @@ colvar::colvar(std::string const &conf)
     }
   }
 
+  // TODO the stuff below will be deprecated by the new deps
   // these will be set to false if any of the cvcs has them false
   b_inverse_gradients = !tasks[task_scripted];
   b_Jacobian_force    = !tasks[task_scripted];
@@ -497,6 +489,8 @@ colvar::colvar(std::string const &conf)
   {
     bool b_extended_lagrangian;
     get_keyval(conf, "extendedLagrangian", b_extended_lagrangian, false);
+    // Prevent turning on extended Lagrangian if not user-requested
+    feature_states[f_cv_extended_lagrangian]->available = false;
 
     if (b_extended_lagrangian) {
       cvm::real temp, tolerance, period;
@@ -505,6 +499,7 @@ colvar::colvar(std::string const &conf)
                 this->name+"\".\n");
 
       enable(task_extended_lagrangian);
+      require(f_cv_extended_lagrangian);
 
       xr.type(value());
       vr.type(value());
@@ -586,6 +581,19 @@ colvar::colvar(std::string const &conf)
       enable(task_output_applied_force);
     }
   }
+
+
+  // FIXME FIXME FIXME deps test
+
+
+  cvm::log("Requesting gradient");
+  deps::require(f_cv_gradient);
+
+  cvm::log("Requesting system force");
+  deps::require(f_cv_system_force);
+
+
+  // FIXME FIXME FIXME deps test
 
   if (cvm::b_analysis)
     parse_analysis(conf);
