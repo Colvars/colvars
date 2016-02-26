@@ -96,7 +96,7 @@ public:
   static std::vector<feature *> cv_features;
 
   /// \brief Implementation of the feature list accessor for colvar
-  virtual std::vector<feature *> &features() {
+  std::vector<feature *> &features() {
     return cv_features;
   }
 

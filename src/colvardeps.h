@@ -75,8 +75,11 @@ public:
     std::vector<int> requires_children;
   };
 
-  // Accessor to list of all features, static in each derived class
-  // Can be iterated over by going through subclass-specific enums
+  // Accessor to array of all features with deps, static in most derived classes
+  // Subclasses with dynamic dependency trees may override this
+  // with a non-static array
+  // Intermediate classes (colvarbias and colvarcomp, which are also base classes)
+  // implement this as virtual to allow overriding
   virtual std::vector<feature *>&features() = 0;
 
   // pointers to objects this object depends on
@@ -100,6 +103,8 @@ public:
 //     int disable(int f);
 
   enum features_biases {
+    /// \brief calculate bias, requesting at least colvar values
+    f_cvb_calculate,
     f_cvb_ntot
   };
 

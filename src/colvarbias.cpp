@@ -10,6 +10,8 @@ colvarbias::colvarbias(std::string const &conf, char const *key)
 {
   cvm::log("Initializing a new \""+std::string(key)+"\" instance.\n");
 
+  init_cvb_requires();
+
   size_t rank = 1;
   std::string const key_str(key);
 
@@ -35,6 +37,8 @@ colvarbias::colvarbias(std::string const &conf, char const *key)
     return;
   }
 
+  description = name;
+
   // lookup the associated colvars
   std::vector<std::string> colvars_str;
   if (get_keyval(conf, "colvars", colvars_str)) {
@@ -49,7 +53,7 @@ colvarbias::colvarbias(std::string const &conf, char const *key)
   for (size_t i=0; i<colvars.size(); i++) {
     // All biases need at least the value of colvars
     // although possibly not at all timesteps
-    colvars[i]->require(f_cv_value);
+    children.push_back(colvars[i]);
   }
 
   get_keyval(conf, "outputEnergy", b_output_energy, false);

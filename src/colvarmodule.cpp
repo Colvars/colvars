@@ -289,6 +289,11 @@ int colvarmodule::parse_biases(std::string const &conf)
     cvm::decrease_depth();
   }
 
+  for (int i = 0; i < biases.size(); i++) {
+    biases[i]->require(deps::f_cvb_calculate);
+    biases[i]->print_state();
+  }
+
   if (biases.size() || use_scripted_forces) {
     cvm::log(cvm::line_marker);
     cvm::log("Collective variables biases initialized, "+

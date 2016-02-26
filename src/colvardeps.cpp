@@ -107,10 +107,23 @@ int deps::require(int feature_id, bool dry_run /* default: false */) {  // Enabl
 
 
 void deps::init_cvb_requires() {
+  int i;
   if (features().size() == 0) {
-    for (int i = 0; i < f_cv_ntot; i++) {
+    for (i = 0; i < f_cv_ntot; i++) {
       features().push_back(new feature);
     }
+  }
+
+  f_description(f_cvb_calculate, "calculate")
+  f_req_children(f_cvb_calculate, f_cv_value)
+
+
+  // Initialize feature_states for each instance
+  for (i = 0; i < f_cvb_ntot; i++) {
+    feature_states.push_back(new feature_state);
+    // Most features are available, so we set them so
+    // and list exceptions below
+    feature_states.back()->available = true;
   }
 }
 
@@ -299,10 +312,10 @@ void deps::print_state() {
   cvm::log("Enabled features of object " + description);
   for (i = 0; i<feature_states.size(); i++) {
     if (feature_states[i]->enabled)
-      cvm::log(cvm::to_str(i) + " " + features()[i]->description);
+      cvm::log("- " + features()[i]->description);
   }
   for (i=0; i<children.size(); i++) {
-    cvm::log("Child " + cvm::to_str(i+1));
+    cvm::log("* child " + cvm::to_str(i+1));
     cvm::increase_depth();
     children[i]->print_state();
     cvm::decrease_depth();
