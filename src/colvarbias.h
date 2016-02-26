@@ -5,10 +5,11 @@
 
 #include "colvar.h"
 #include "colvarparse.h"
+#include "colvardeps.h"
 
 
 /// \brief Collective variable bias, base class
-class colvarbias : public colvarparse {
+class colvarbias : public colvarparse, public deps {
 public:
 
   /// Name of this bias
@@ -76,6 +77,14 @@ public:
 
   inline cvm::real get_energy() {
     return bias_energy;
+  }
+
+  /// \brief Implementation of the feature list for colvarbias
+  static std::vector<feature *> cvb_features;
+
+  /// \brief Implementation of the feature list accessor for colvarbias
+  virtual std::vector<feature *> &features() {
+    return cvb_features;
   }
 protected:
 

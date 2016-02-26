@@ -11,8 +11,8 @@ colvar::angle::angle(std::string const &conf)
   : cvc(conf)
 {
   function_type = "angle";
-  b_inverse_gradients = true;
-  b_Jacobian_derivative = true;
+  provide(f_cvc_inv_gradient);
+  provide(f_cvc_Jacobian);
   parse_group(conf, "group1", group1);
   parse_group(conf, "group2", group2);
   parse_group(conf, "group3", group3);
@@ -34,8 +34,8 @@ colvar::angle::angle(cvm::atom const &a1,
     group3(std::vector<cvm::atom>(1, a3))
 {
   function_type = "angle";
-  b_inverse_gradients = true;
-  b_Jacobian_derivative = true;
+  provide(f_cvc_inv_gradient);
+  provide(f_cvc_Jacobian);
   b_1site_force = false;
   atom_groups.push_back(&group1);
   atom_groups.push_back(&group2);

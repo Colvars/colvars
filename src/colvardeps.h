@@ -6,28 +6,13 @@
 /// Parent class for a member object of a bias, cv or cvc etc. containing dependencies
 /// (features) and handling dependency resolution
 
-
-// OPTION A:
-// Simpler solution: update the "features" member object in the {colvarbias, colvar, cvc, atomgroup} constructor/initializer
-// No need for derived classes, code goes into colvar etc. classes
-// features set in cvc constructor, then refined in colvar_angle, etc.
-
-
-// OPTION B:
-// To be implemented as colvar_deps, cvc_deps, atomgroup_deps ?
-// deps ->    colvar_deps -> colvar
-//   \ \->       cvc_deps -> cvc
-//    \--> atomgroup_deps -> atomgroup
-
-
-
 // Some features like colvar::f_linear have no dependencies, require() doesn't enable anything but fails if unavailable
-// Policy: those features should be either enabled or unavailable at all times
+// Policy: those features are unavailable at all times
+// Other features are under user control
+// They are unavailable unless requested by the user, then they may be enabled subject to
+// satisfied dependencies
 
 // It seems important to have available default to false (for safety) and enabled to false (for efficiency)
-
-// Features need to be in a common namespace so that parents can list the features of children
-// derived class features can be added beyond the range of base class features (eg. 1site_force), to be used for self deps
 
 class deps {
 public:
@@ -46,8 +31,12 @@ public:
 
   /// This contains the current state of each feature for each object
   struct feature_state {
-    /// Available means supported, subject to dependencies as listed
-    /// unavailable until declared otherwise
+    /// Available means: supported, subject to dependencies as listed,
+    /// MAY BE ENABLED AS A RESULT OF DEPENDENCY SOLVING
+    /// Remains false for passive flags that are set based on other object properties,
+    /// eg. f_cv_linear
+    /// Is set to true upon user request for features that are under user control:
+    /// eg. f_cv_scripted or f_cv_extended_Lagrangian
     bool available = false;
     /// Currently enabled - this flag is subject to change dynamically
     /// TODO consider implications for dependency solving: anyone who disables
@@ -73,6 +62,10 @@ public:
     // NOTE: we have no safety mechanism against circular dependencies, however, they would have to be internal to an object (ie. requires_self or requires_alt)
     std::vector<int> requires_self;
 
+    // Features that are incompatible, ie. required disabled
+    // if enabled, they will cause a dependency failure (they will not be disabled)
+    // Unused for now
+//     std::vector<int> requires_incomp;
 
     // sets of features that are required in an alternate way
     // when parent feature is enabled, if none are enabled, the first one listed that is available will be enabled
@@ -96,35 +89,23 @@ public:
 
   // End of members to be initialized by subclasses
 
+  bool is_enabled(int f) const {
+    return feature_states[f]->enabled;
+  }
+
+  void provide(int feature_id); // set the feature's flag to available in local object
 
   int require(int f, bool dry_run = false);  // enable a feature and recursively solve its dependencies
   // dry_run is set to true to recursively test if a feature is available, without enabling it
 //     int disable(int f);
 
-  // At this point it is unclear which of the following refresh mechanisms will be useful
-  // int resolve() {} // Propagate "enables" downwards to children then trigger resolve in children
-  // int refresh() {} // Trigger refresh in children, then calculate whether each feature is available; sets available flag
+  enum features_biases {
+    f_cvb_ntot
+  };
 
-
-  /* Mockup code
-  features[f_Jacobian]->available
-  features[f_Jacobian]->enable();
-
-  if (!children[i]->features[f_Jacobian]->enable()) {
-    err_failed_dependency(description, features[f_Jacobian]->description, children[i]->features[f_Jacobian]->description);
-    // Ideally, give parent object name, parent feature descr, and child feature that failed
-  }
-  */
-
-  // Those are also documented by their description std::string
-  // see initializers in derived classes
   enum features_colvar {
     /// \brief Calculate colvar value
     f_cv_value,
-    /// \brief is scalar
-    f_cv_scalar,
-    f_cv_linear,
-    f_cv_homogeneous,
     /// \brief Gradients are calculated and temporarily stored, so
     /// that external forces can be applied
     f_cv_gradient,
@@ -138,6 +119,13 @@ public:
     f_cv_system_force,
     /// \brief Calculate system force from atomic forces
     f_cv_system_force_calc,
+    /// \brief Estimate Jacobian derivative
+    f_cv_Jacobian,
+    /// \brief Compute Jacobian derivative explicitly
+    f_cv_Jacobian_calc,
+    /// \brief Do not report the Jacobian force as part of the system force
+    /// instead, apply a correction internally to cancel it
+    f_cv_hide_Jacobian,
     /// \brief The variable has a harmonic restraint around a moving
     /// center with fictitious mass; bias forces will be applied to
     /// the center
@@ -147,13 +135,6 @@ public:
     /// \brief Output the potential and kinetic energies
     /// (for extended Lagrangian colvars only)
     f_cv_output_energy,
-    /// \brief Estimate Jacobian derivative
-    f_cv_Jacobian,
-    /// \brief Compute Jacobian derivative explicitly
-    f_cv_Jacobian_calc,
-    /// \brief Report the Jacobian force as part of the system force
-    /// if disabled, apply a correction internally to cancel it
-    f_cv_report_Jacobian,
     /// \brief Output the value to the trajectory file (on by default)
     f_cv_output_value,
     /// \brief Output the velocity to the trajectory file
@@ -182,65 +163,15 @@ public:
     f_cv_corrfunc,
     /// \brief Value and gradient computed by user script
     f_cv_scripted,
+    /// \brief Colvar is periodic
+    f_cv_periodic,
+    /// \brief is scalar
+    f_cv_scalar,
+    f_cv_linear,
+    f_cv_homogeneous,
     /// \brief Number of colvar features
     f_cv_ntot
   };
-
-
-
-    // Shorthand macros for describing dependencies
-#define f_description(f, d) features()[f]->description = d;
-#define f_req_self(f, g) features()[f]->requires_self.push_back(g);
-#define f_req_children(f, g) features()[f]->requires_children.push_back(g);
-#define f_req_alt2(f, g, h) features()[f]->requires_alt.push_back(std::vector<int>(2));\
-  features()[f]->requires_alt.back()[0] = g;                                           \
-  features()[f]->requires_alt.back()[1] = h;
-
-  inline void init_cv_requires() {
-    for (int i = 0; i < f_cv_ntot; i++) {
-      features().push_back(new feature);
-    }
-
-    f_description(f_cv_value, "value")
-    f_req_children(f_cv_value, f_cvc_value)
-
-    f_description(f_cv_gradient, "gradient")
-    f_req_self(f_cv_gradient, f_cv_value)
-    f_req_children(f_cv_gradient, f_cvc_gradient)
-
-    f_description(f_cv_collect_gradient, "collect gradient")
-    f_req_self(f_cv_collect_gradient, f_cv_gradient)
-
-    // System force: either trivial (spring force) through extended Lagrangian, or calculated explicitly
-    f_description(f_cv_system_force, "system force")
-    f_req_alt2(f_cv_system_force, f_cv_extended_Lagrangian, f_cv_system_force_calc)
-
-    // Deps for explicit system force calculation
-    f_description(f_cv_system_force_calc, "system force calculation")
-    f_req_self(f_cv_system_force_calc, f_cv_scalar)
-    f_req_self(f_cv_system_force_calc, f_cv_linear)
-    f_req_children(f_cv_system_force_calc, f_cvc_system_force)
-
-    // Jacobian force: either trivial (zero) through extended Lagrangian, or calculated explicitly
-    f_description(f_cv_Jacobian, "Jacobian derivative")
-    f_req_alt2(f_cv_Jacobian, f_cv_extended_Lagrangian, f_cv_Jacobian_calc)
-
-    // Deps for explicit Jacobian calculation
-    f_description(f_cv_Jacobian_calc, "Jacobian derivative calculation")
-    f_req_self(f_cv_Jacobian_calc, f_cv_scalar)
-    f_req_self(f_cv_Jacobian_calc, f_cv_linear)
-    f_req_children(f_cv_Jacobian_calc, f_cvc_Jacobian)
-
-    f_description(f_cv_report_Jacobian, "report Jacobian force")
-
-    f_description(f_cv_output_value, "output value")
-    f_req_self(f_cv_output_value, f_cv_value)
-
-    f_description(f_cv_extended_Lagrangian, "extended Lagrangian")
-    f_description(f_cv_Langevin, "Langevin dynamics")
-    f_description(f_cv_linear, "linear")
-    f_description(f_cv_scalar, "scalar")
-  }
 
   enum features_cvc {
     f_cvc_value,
@@ -252,29 +183,6 @@ public:
     f_cvc_ntot
   };
 
-  inline void init_cvc_requires() {
-    for (int i = 0; i < deps::f_cvc_ntot; i++) {
-      features().push_back(new feature);
-    }
-
-    f_description(f_cvc_value, "value")
-    f_req_children(f_cvc_value, f_ag_coordinates)
-
-    f_description(f_cvc_scalar, "scalar")
-
-    f_description(f_cvc_gradient, "gradient")
-    f_req_self(f_cvc_gradient, f_cvc_value)
-
-    f_description(f_cvc_system_force, "system force")
-    f_req_self(f_cvc_system_force, f_cvc_inv_gradient)
-
-    f_description(f_cvc_inv_gradient, "inverse gradient")
-    f_req_self(f_cvc_inv_gradient, f_cvc_gradient)
-
-    f_description(f_cvc_Jacobian, "Jacobian")
-    f_req_self(f_cvc_Jacobian, f_cvc_inv_gradient)
-  }
-
   enum features_atomgroup {
     f_ag_coordinates,
     f_ag_fit,
@@ -285,33 +193,13 @@ public:
     f_ag_ntot
   };
 
-  inline void init_ag_requires() {
-    for (int i = 0; i < f_ag_ntot; i++) {
-      features().push_back(new feature);
-    }
-
-    f_description(f_ag_coordinates, "coordinates")
-    f_description(f_ag_fit, "optimal fit")
-    f_description(f_ag_fit_gradient_group, "fit gradient for main group")
-    f_description(f_ag_fit_gradient_ref, "fit gradient for reference group")
-    f_description(f_ag_atom_forces, "atomic forces")
-  }
-
+  void init_cvb_requires();
+  void init_cv_requires();
+  void init_cvc_requires();
+  void init_ag_requires();
 
   /// \brief print all enabled features and those of children, for debugging
-  void print_state() {
-    cvm::log("Enabled features of object " + description);
-    for (int i = 0; i<feature_states.size(); i++) {
-      if (feature_states[i]->enabled)
-        cvm::log(cvm::to_str(i) + " " + features()[i]->description);
-    }
-    for (int i=0; i<children.size(); i++) {
-      cvm::log("Child " + cvm::to_str(i+1));
-      cvm::increase_depth();
-      children[i]->print_state();
-      cvm::decrease_depth();
-    }
-  }
+  void print_state();
 };
 
 #endif

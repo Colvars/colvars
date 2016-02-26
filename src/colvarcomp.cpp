@@ -32,19 +32,7 @@ colvar::cvc::cvc(std::string const &conf)
   if (cvm::debug())
     cvm::log("Initializing cvc base object.\n");
 
-  // Initialize feature_states for each instance
-  for (i = 0; i < deps::f_cvc_ntot; i++) {
-    feature_states.push_back(new feature_state);
-  }
-
-  // Features that are implemented by all cvcs by default
-  feature_states[f_cvc_value]->available = true;
-  feature_states[f_cvc_gradient]->available = true;
-
-  if (cvc_features.size() == 0) {
-    // Initialize static array once and for all
-    init_cvc_requires();
-  }
+  init_cvc_requires();
 
   get_keyval(conf, "name", this->name, std::string(""), parse_silent);
 

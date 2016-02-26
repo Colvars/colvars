@@ -174,19 +174,8 @@ int cvm::atom_group::init()
   if (!key.size()) key = "atoms";
   atoms.clear();
 
-  // Initialize feature_states for each instance
-  for (i = 0; i < deps::f_ag_ntot; i++) {
-    feature_states.push_back(new feature_state);
-  }
-  // Features that are implemented by all cvcs by default
-  feature_states[f_ag_coordinates]->available = true;
-
   // TODO: check with proxy whether atom forces etc are available
-
-  if (ag_features.size() == 0) {
-    // Initialize static array once and for all
-    init_ag_requires();
-  }
+  init_ag_requires();
 
   b_scalable = false;
   index = -1;

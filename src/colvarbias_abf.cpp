@@ -63,32 +63,17 @@ colvarbias_abf::colvarbias_abf(std::string const &conf, char const *key)
     if (colvars[i]->value().type() != colvarvalue::type_scalar) {
       cvm::error("Error: ABF bias can only use scalar-type variables.\n");
     }
-
-    colvars[i]->enable(colvar::task_gradients);
+    // NOTE: eventually this will be handled by a requirement in the deps class
+    colvars[i]->require(f_cv_gradient);
+    colvars[i]->require(f_cv_grid);
 
     if (update_bias) {
       // Request calculation of system force (which also checks for availability)
-      colvars[i]->enable(colvar::task_system_force);
+      colvars[i]->require(f_cv_system_force);
+      colvars[i]->require(f_cv_Jacobian);
 
-      if (!colvars[i]->tasks[colvar::task_extended_lagrangian]) {
-        // request computation of Jacobian force
-        // ultimately, will be done regardless of extended Lagrangian
-        // and colvar should then just report zero Jacobian force
-        colvars[i]->enable(colvar::task_Jacobian_force);
-
-        // request Jacobian force as part as system force
-        // except if the user explicitly requires the "silent" Jacobian
-        // correction AND the colvar has a single component
-        if (hide_Jacobian) {
-          if (colvars[i]->n_components() > 1) {
-            cvm::log("WARNING: colvar \"" + colvars[i]->name
-            + "\" has multiple components; reporting its Jacobian forces\n");
-            colvars[i]->enable(colvar::task_report_Jacobian_force);
-          }
-        } else {
-          colvars[i]->enable(colvar::task_report_Jacobian_force);
-        }
-      }
+      if (hide_Jacobian)
+         colvars[i]->require(f_cv_hide_Jacobian);
     }
 
     // Here we could check for orthogonality of the Cartesian coordinates
