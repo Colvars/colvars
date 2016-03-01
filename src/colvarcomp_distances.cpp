@@ -870,6 +870,12 @@ colvar::rmsd::rmsd(std::string const &conf)
     }
   }
 
+  if (ref_pos.size() != atoms.size()) {
+    cvm::error("Error: reference positions were not provided, or do not "
+                      "match the number of requested atoms.\n");
+    return;
+  }
+
   if (atoms.b_user_defined_fit) {
     cvm::log("WARNING: explicit fitting parameters were provided for atom group \"atoms\".");
   } else {
@@ -1060,6 +1066,12 @@ colvar::eigenvector::eigenvector(std::string const &conf)
       ref_pos.resize(atoms.size());
       cvm::load_coords(file_name.c_str(), ref_pos, atoms.sorted_ids, file_col, file_col_value);
     }
+  }
+
+  if (ref_pos.size() != atoms.size()) {
+    cvm::error("Error: reference positions were not provided, or do not "
+                      "match the number of requested atoms.\n");
+    return;
   }
 
   // save for later the geometric center of the provided positions (may not be the origin)
