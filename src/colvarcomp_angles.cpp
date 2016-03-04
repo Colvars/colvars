@@ -96,7 +96,7 @@ void colvar::angle::calc_gradients()
       (dxdr3);
   }
 
-  if (b_debug_gradients) {
+  if (is_enabled(f_cvc_debug_gradient)) {
     debug_gradients(group1);
     debug_gradients(group2);
     debug_gradients(group3);
@@ -265,8 +265,8 @@ colvar::dihedral::dihedral(std::string const &conf)
   function_type = "dihedral";
   period = 360.0;
   b_periodic = true;
-  b_inverse_gradients = true;
-  b_Jacobian_derivative = true;
+  provide(f_cvc_inv_gradient);
+  provide(f_cvc_Jacobian);
   if (get_keyval(conf, "oneSiteSystemForce", b_1site_force, false)) {
     cvm::log("Computing system force on group 1 only");
   }
@@ -298,8 +298,8 @@ colvar::dihedral::dihedral(cvm::atom const &a1,
   function_type = "dihedral";
   period = 360.0;
   b_periodic = true;
-  b_inverse_gradients = true;
-  b_Jacobian_derivative = true;
+  provide(f_cvc_inv_gradient);
+  provide(f_cvc_Jacobian);
   b_1site_force = false;
 
   atom_groups.push_back(&group1);
@@ -319,8 +319,8 @@ colvar::dihedral::dihedral()
   function_type = "dihedral";
   period = 360.0;
   b_periodic = true;
-  b_inverse_gradients = true;
-  b_Jacobian_derivative = true;
+  provide(f_cvc_inv_gradient);
+  provide(f_cvc_Jacobian);
   x.type(colvarvalue::type_scalar);
 }
 

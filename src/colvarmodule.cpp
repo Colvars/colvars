@@ -290,7 +290,7 @@ int colvarmodule::parse_biases(std::string const &conf)
   }
 
   for (int i = 0; i < biases.size(); i++) {
-    biases[i]->require(deps::f_cvb_calculate);
+    biases[i]->require(deps::f_cvb_active);
     biases[i]->print_state();
   }
 
@@ -564,7 +564,7 @@ int colvarmodule::calc() {
     cvm::log("Communicating forces from the colvars to the atoms.\n");
   cvm::increase_depth();
   for (cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
-    if ((*cvi)->tasks[colvar::task_gradients]) {
+    if ((*cvi)->is_enabled(deps::f_cv_gradient)) {
       (*cvi)->communicate_forces();
       if (cvm::get_error()) {
         return COLVARS_ERROR;

@@ -17,8 +17,8 @@ colvar::distance::distance(std::string const &conf, bool twogroups)
   : cvc(conf)
 {
   function_type = "distance";
-  b_inverse_gradients = true;
-  b_Jacobian_derivative = true;
+  provide(f_cvc_inv_gradient);
+  provide(f_cvc_Jacobian);
   if (get_keyval(conf, "forceNoPBC", b_no_PBC, false)) {
     cvm::log("Computing distance using absolute positions (not minimal-image)");
   }
@@ -39,8 +39,8 @@ colvar::distance::distance()
   : cvc()
 {
   function_type = "distance";
-  b_inverse_gradients = true;
-  b_Jacobian_derivative = true;
+  provide(f_cvc_inv_gradient);
+  provide(f_cvc_Jacobian);
   b_1site_force = false;
   b_no_PBC = false;
   x.type(colvarvalue::type_scalar);
@@ -136,8 +136,8 @@ colvar::distance_z::distance_z(std::string const &conf)
   : cvc(conf)
 {
   function_type = "distance_z";
-  b_inverse_gradients = true;
-  b_Jacobian_derivative = true;
+  provide(f_cvc_inv_gradient);
+  provide(f_cvc_Jacobian);
   x.type(colvarvalue::type_scalar);
 
   // TODO detect PBC from MD engine (in simple cases)
@@ -189,8 +189,8 @@ colvar::distance_z::distance_z(std::string const &conf)
 colvar::distance_z::distance_z()
 {
   function_type = "distance_z";
-  b_inverse_gradients = true;
-  b_Jacobian_derivative = true;
+  provide(f_cvc_inv_gradient);
+  provide(f_cvc_Jacobian);
   x.type(colvarvalue::type_scalar);
 }
 
@@ -241,7 +241,7 @@ void colvar::distance_z::calc_gradients()
     }
   }
 
-  if (b_debug_gradients) {
+  if (is_enabled(f_cvc_debug_gradient)) {
     cvm::log("Debugging gradients for group main:\n");
     debug_gradients(main);
     cvm::log("Debugging gradients for group ref1:\n");
@@ -286,8 +286,8 @@ colvar::distance_xy::distance_xy(std::string const &conf)
   : distance_z(conf)
 {
   function_type = "distance_xy";
-  b_inverse_gradients = true;
-  b_Jacobian_derivative = true;
+  provide(f_cvc_inv_gradient);
+  provide(f_cvc_Jacobian);
   x.type(colvarvalue::type_scalar);
 }
 
@@ -295,8 +295,8 @@ colvar::distance_xy::distance_xy()
   : distance_z()
 {
   function_type = "distance_xy";
-  b_inverse_gradients = true;
-  b_Jacobian_derivative = true;
+  provide(f_cvc_inv_gradient);
+  provide(f_cvc_Jacobian);
   x.type(colvarvalue::type_scalar);
 }
 
@@ -454,8 +454,6 @@ colvar::distance_inv::distance_inv(std::string const &conf)
     }
   }
 
-  b_inverse_gradients = false;
-  b_Jacobian_derivative = false;
   x.type(colvarvalue::type_scalar);
 }
 
@@ -463,8 +461,6 @@ colvar::distance_inv::distance_inv()
 {
   function_type = "distance_inv";
   exponent = 6;
-  b_inverse_gradients = false;
-  b_Jacobian_derivative = false;
   b_1site_force = false;
   x.type(colvarvalue::type_scalar);
 }
@@ -532,8 +528,6 @@ colvar::distance_pairs::distance_pairs(std::string const &conf)
   : cvc(conf)
 {
   function_type = "distance_pairs";
-  b_inverse_gradients = false;
-  b_Jacobian_derivative = false;
 
   if (get_keyval(conf, "forceNoPBC", b_no_PBC, false)) {
     cvm::log("Computing distance using absolute positions (not minimal-image)");
@@ -553,8 +547,6 @@ colvar::distance_pairs::distance_pairs(std::string const &conf)
 colvar::distance_pairs::distance_pairs()
 {
   function_type = "distance_pairs";
-  b_inverse_gradients = false;
-  b_Jacobian_derivative = false;
   x.type(colvarvalue::type_vector);
 }
 
@@ -591,7 +583,7 @@ void colvar::distance_pairs::calc_value()
 void colvar::distance_pairs::calc_gradients()
 {
   // will be calculated on the fly in apply_force()
-  if (b_debug_gradients) {
+  if (is_enabled(f_cvc_debug_gradient)) {
     cvm::log("Debugging gradients:\n");
     debug_gradients(group1);
   }
@@ -625,8 +617,8 @@ colvar::gyration::gyration(std::string const &conf)
   : cvc(conf)
 {
   function_type = "gyration";
-  b_inverse_gradients = true;
-  b_Jacobian_derivative = true;
+  provide(f_cvc_inv_gradient);
+  provide(f_cvc_Jacobian);
   parse_group(conf, "atoms", atoms);
   atom_groups.push_back(&atoms);
 
@@ -644,8 +636,8 @@ colvar::gyration::gyration(std::string const &conf)
 colvar::gyration::gyration()
 {
   function_type = "gyration";
-  b_inverse_gradients = true;
-  b_Jacobian_derivative = true;
+  provide(f_cvc_inv_gradient);
+  provide(f_cvc_Jacobian);
   x.type(colvarvalue::type_scalar);
 }
 
@@ -667,7 +659,7 @@ void colvar::gyration::calc_gradients()
     ai->grad = drdx * ai->pos;
   }
 
-  if (b_debug_gradients) {
+  if (is_enabled(f_cvc_debug_gradient)) {
     cvm::log("Debugging gradients:\n");
     debug_gradients(atoms);
   }
@@ -705,8 +697,6 @@ colvar::inertia::inertia(std::string const &conf)
   : gyration(conf)
 {
   function_type = "inertia";
-  b_inverse_gradients = false;
-  b_Jacobian_derivative = false;
   x.type(colvarvalue::type_scalar);
 }
 
@@ -733,7 +723,7 @@ void colvar::inertia::calc_gradients()
     ai->grad = 2.0 * ai->pos;
   }
 
-  if (b_debug_gradients) {
+  if (is_enabled(f_cvc_debug_gradient)) {
     cvm::log("Debugging gradients:\n");
     debug_gradients(atoms);
   }
@@ -788,7 +778,7 @@ void colvar::inertia_z::calc_gradients()
     ai->grad = 2.0 * (ai->pos * axis) * axis;
   }
 
-  if (b_debug_gradients) {
+  if (is_enabled(f_cvc_debug_gradient)) {
     cvm::log("Debugging gradients:\n");
     debug_gradients(atoms);
   }
@@ -806,11 +796,7 @@ void colvar::inertia_z::apply_force(colvarvalue const &force)
 colvar::rmsd::rmsd(std::string const &conf)
   : cvc(conf)
 {
-  feature_states[f_cvc_inv_gradient]->available = true;
-  feature_states[f_cvc_Jacobian]->available = true;
-
-  b_inverse_gradients = true;
-  b_Jacobian_derivative = true;
+  provide(f_cvc_inv_gradient);
   function_type = "rmsd";
   x.type(colvarvalue::type_scalar);
 
@@ -822,11 +808,13 @@ colvar::rmsd::rmsd(std::string const &conf)
     return;
   }
 
+  bool b_Jacobian_derivative = true;
   if (atoms.ref_pos_group != NULL && b_Jacobian_derivative) {
     cvm::log("The option \"refPositionsGroup\" (alternative group for fitting) was enabled: "
               "Jacobian derivatives of the RMSD will not be calculated.\n");
     b_Jacobian_derivative = false;
   }
+  if (b_Jacobian_derivative) provide(f_cvc_Jacobian);
 
   // the following is a simplified version of the corresponding atom group options;
   // we need this because the reference coordinates defined inside the atom group
@@ -929,7 +917,7 @@ void colvar::rmsd::calc_gradients()
     atoms[ia].grad = (drmsddx2 * 2.0 * (atoms[ia].pos - ref_pos[ia]));
   }
 
-  if (b_debug_gradients) {
+  if (is_enabled(f_cvc_debug_gradient)) {
     cvm::log("Debugging gradients:\n");
     debug_gradients(atoms);
   }
@@ -1016,8 +1004,8 @@ void colvar::rmsd::calc_Jacobian_derivative()
 colvar::eigenvector::eigenvector(std::string const &conf)
   : cvc(conf)
 {
-  b_inverse_gradients = true;
-  b_Jacobian_derivative = true;
+  provide(f_cvc_inv_gradient);
+  provide(f_cvc_Jacobian);
   function_type = "eigenvector";
   x.type(colvarvalue::type_scalar);
 
@@ -1212,7 +1200,7 @@ void colvar::eigenvector::calc_gradients()
     atoms[ia].grad = eigenvec[ia];
   }
 
-  if (b_debug_gradients) {
+  if (is_enabled(f_cvc_debug_gradient)) {
     cvm::log("Debugging gradients:\n");
     debug_gradients(atoms);
   }
@@ -1292,8 +1280,6 @@ void colvar::eigenvector::calc_Jacobian_derivative()
 colvar::cartesian::cartesian(std::string const &conf)
   : cvc(conf)
 {
-  b_inverse_gradients = false;
-  b_Jacobian_derivative = false;
   function_type = "cartesian";
 
   parse_group(conf, "atoms", atoms);
