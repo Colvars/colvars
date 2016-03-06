@@ -862,17 +862,17 @@ colvar::rmsd::rmsd(std::string const &conf)
       } else {
         // if not, rely on existing atom indices for the group
         atoms.create_sorted_ids();
+        ref_pos.resize(atoms.size());
       }
 
-      ref_pos.resize(atoms.size());
       cvm::load_coords(ref_pos_file.c_str(), ref_pos, atoms.sorted_ids,
                         ref_pos_col, ref_pos_col_value);
     }
   }
 
   if (ref_pos.size() != atoms.size()) {
-    cvm::error("Error: reference positions were not provided, or do not "
-                      "match the number of requested atoms.\n");
+    cvm::error("Error: found " + cvm::to_str(ref_pos.size()) +
+                    " reference positions; expected " + cvm::to_str(atoms.size()));
     return;
   }
 
