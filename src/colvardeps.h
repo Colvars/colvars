@@ -19,10 +19,15 @@ public:
 
   deps() {}
   ~deps() {
+    int i;
     // Do not delete features if it's static
 //     for (i=0; i<features.size(); i++) {
 //       if (features[i] != NULL) delete features[i];
 //     }
+    if (parents.size()) {
+      cvm::log("Error: destroying " + description + " before its parents objects:");
+      for (i=0; i<parents.size(); i++
+    }
   }
 
   // Subclasses should initialize the following members:
@@ -84,6 +89,12 @@ public:
   // implement this as virtual to allow overriding
   virtual std::vector<feature *>&features() = 0;
 
+  void add_child(deps *child) {
+    children.push_back(child);
+    child->parents.push_back((deps *)this);
+  }
+
+private:
   // pointers to objects this object depends on
   // list should be maintained by any code that modifies the object
   // this could be secured by making lists of colvars / cvcs / atom groups private and modified through accessor functions
@@ -93,11 +104,7 @@ public:
   // the size of this array is in effect a reference counter
   std::vector<deps *> parents;
 
-  void add_child(deps *child) {
-    children.push_back(child);
-    child->parents.push_back((deps *)this);
-  }
-
+public:
   // disabling a feature f:
   // if parents depend on f, tell them to refresh / check that they are ok?
   // if children provide features to satisfy f ONLY, disable that

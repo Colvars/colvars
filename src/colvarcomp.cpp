@@ -71,7 +71,7 @@ int colvar::cvc::setup() {
   description = "cvc " + name;
 
   for (int i = 0; i < atom_groups.size(); i++) {
-    children.push_back((deps *) atom_groups[i]);
+    add_child(atom_groups[i]);
   }
 
   return COLVARS_OK;

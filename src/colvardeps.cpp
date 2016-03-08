@@ -13,9 +13,11 @@ int deps::require(int feature_id, bool dry_run /* default: false */) {  // Enabl
   feature *f = features()[feature_id];
   feature_state *fs = feature_states[feature_id];
 
-  cvm::log("~~~ " + description +
-    (dry_run ? " testing " : " requiring ") +
-    "\"" + f->description + "\" ~~~");
+  if (cvm::debug()) {
+    cvm::log("~~~ " + description +
+      (dry_run ? " testing " : " requiring ") +
+      "\"" + f->description + "\" ~~~");
+  }
 
   if (fs->enabled) {
     // Do not try to solve deps if already enabled

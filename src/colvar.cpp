@@ -174,7 +174,7 @@ colvar::colvar(std::string const &conf)
 
   // Store list of children cvcs for dependency checking purposes
   for (i = 0; i < cvcs.size(); i++) {
-    this->children.push_back((deps*) cvcs[i]);
+    add_child(cvcs[i]);
   }
 
   // Setup colvar as scripted function of components
@@ -509,15 +509,8 @@ colvar::colvar(std::string const &conf)
 
   // Start in active state by default
   require(f_cv_active);
-
   // Make sure dependency side-effects are correct
   refresh_deps();
-
-  // FIXME FIXME FIXME deps test
-
-  this->print_state();
-
-  // FIXME FIXME FIXME deps test
 
   x_old.type(value());
   v_fdiff.type(value());
