@@ -805,8 +805,8 @@ colvar::rmsd::rmsd(std::string const &conf)
   parse_group(conf, "atoms", atoms);
   atom_groups.push_back(&atoms);
 
-  if (atoms.b_dummy) {
-    cvm::error("Error: \"atoms\" cannot be a dummy atom.");
+  if (atoms.size() == 0) {
+    cvm::error("Error: \"atoms\" must contain at least 1 atom to compute RMSD.");
     return;
   }
 

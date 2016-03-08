@@ -91,10 +91,6 @@ void colvar::cvc::read_data()
     atoms.read_positions();
     atoms.calc_required_properties();
     // each atom group will take care of its own ref_pos_group, if defined
-
-    if (is_enabled(f_cvc_system_force)) {
-      atoms.read_system_forces();
-    }
   }
 
 ////  Don't try to get atom velocities, as no back-end currently implements it

@@ -124,6 +124,12 @@ public:
   // dry_run is set to true to recursively test if a feature is available, without enabling it
 //     int disable(int f);
 
+
+  /// This function is called whenever feature states are changed outside
+  /// of the object's control, that is, by parents
+  /// Eventually it may also be used when properties of children change
+  virtual int refresh_deps() {}
+
   // NOTE that all feature enums should start with f_*_active
   enum features_biases {
     /// \brief Bias is active

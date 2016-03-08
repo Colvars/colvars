@@ -82,6 +82,8 @@ public:
     return cv_features;
   }
 
+  int refresh_deps();
+
   /// List of biases that depend on this colvar
   std::vector<colvarbias *> biases;
 protected:

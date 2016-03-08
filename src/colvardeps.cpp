@@ -104,6 +104,12 @@ int deps::require(int feature_id, bool dry_run /* default: false */) {  // Enabl
         return res;
       }
     }
+    // If we've just touched the features of child objects, refresh them
+    if (!dry_run && f->requires_children.size() != 0) {
+      for (j=0; j<children.size(); j++) {
+        children[j]->refresh_deps();
+      }
+    }
   }
 
   // Actually enable feature only once everything checks out
