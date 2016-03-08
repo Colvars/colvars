@@ -253,6 +253,8 @@ void deps::init_cv_requires() {
 
   // properties that may NOT be enabled as a dependency
   int unavailable_deps[] = {
+    f_cv_lower_boundary,
+    f_cv_upper_boundary,
     f_cv_extended_Lagrangian,
     f_cv_Langevin,
     f_cv_scripted,

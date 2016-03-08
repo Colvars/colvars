@@ -413,6 +413,8 @@ void colvar::distance_dir::calc_gradients()
   // gradients are computed on the fly within apply_force()
   // Note: could be a problem if a future bias relies on gradient
   // calculations...
+  // in new deps system: remove dependency of biasing force to gradient?
+  // That way we could tell apart an explicit gradient dependency
 }
 
 
@@ -1000,7 +1002,6 @@ void colvar::rmsd::calc_Jacobian_derivative()
       }
     }
   }
-
   jd.real_value = x.real_value > 0.0 ? (3.0 * atoms.size() - 4.0 - divergence) / x.real_value : 0.0;
 }
 
