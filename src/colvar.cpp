@@ -676,8 +676,15 @@ void colvar::setup() {
 
 colvar::~colvar()
 {
-  for (size_t i = 0; i < cvcs.size(); i++) {
-    delete cvcs[i];
+  for (std::vector<cvc *>::reverse_iterator ci = cvcs.rbegin();
+      ci != cvcs.rend();
+      ++ci) {
+    // clear all children of this cvc (i.e. its atom groups)
+    // because the cvc base class destructor can't do it early enough
+    // and we don't want to have each cvc derived class do it separately
+    (*ci)->remove_all_children();
+    remove_child(*ci);
+    delete *ci;
   }
 
   // remove reference to this colvar from the CVM
