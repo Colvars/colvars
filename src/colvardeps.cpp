@@ -46,7 +46,7 @@ int deps::require(int feature_id,
         cvm::log("Features \"" + f->description + "\" is incompatible with \""
         + g->description + "\" in " + description);
         if (toplevel) {
-          cvm::error("Failed dependency in " + description);
+          cvm::error("Failed dependency in " + description + ".");
         }
       }
       return COLVARS_ERROR;
@@ -60,9 +60,9 @@ int deps::require(int feature_id,
     res = require(f->requires_self[i], dry_run, false);
     if (res != COLVARS_OK) {
       if (!dry_run) {
-        cvm::log("...required by \"" + f->description + "\" in " + description + ".");
+        cvm::log("...required by \"" + f->description + "\" in " + description);
         if (toplevel) {
-          cvm::error("Failed dependency in " + description);
+          cvm::error("Failed dependency in " + description + ".");
         }
       }
       return res;
@@ -92,9 +92,9 @@ int deps::require(int feature_id,
           int g = f->requires_alt[i][j];
           cvm::log(cvm::to_str(j+1) + ". " + features()[g]->description);
         }
-        cvm::log("...required by \"" + f->description + "\" in " + description + ".");
+        cvm::log("...required by \"" + f->description + "\" in " + description);
         if (toplevel) {
-          cvm::error("Failed dependency in " + description);
+          cvm::error("Failed dependency in " + description + ".");
         }
       }
       return COLVARS_ERROR;
@@ -114,10 +114,10 @@ int deps::require(int feature_id,
       cvm::decrease_depth();
       if (res != COLVARS_OK) {
         if (!dry_run) {
-          cvm::log("...required by \"" + f->description + "\" in " + description + ".");
+          cvm::log("...required by \"" + f->description + "\" in " + description);
         }
         if (toplevel) {
-          cvm::error("Failed dependency in " + description);
+          cvm::error("Failed dependency in " + description + ".");
         }
         return res;
       }
