@@ -1,0 +1,33 @@
+colvarsTrajFrequency    1
+colvarsRestartFrequency 2000
+
+colvar {
+  name rmsd
+
+  lowerboundary 0.0
+  upperboundary 5.0
+  lowerwallconstant 100.0
+  upperwallconstant 100.0
+
+  outputAppliedForce
+
+  rmsd {
+    refPositionsFile ../Common/da.pdb # ref ligand positions for RMSD
+    atoms {
+      atomNumbers  1 2 3 4 # ligand atoms
+      rotateReference
+      centerReference
+      refPositionsGroup {
+        atomsFile ../Common/da.pdb
+        atomsCol O
+      }
+      refPositionsFile ../Common/da.pdb # ref prot positions for fitting
+    }
+  }
+} 
+
+harmonic {
+  colvars rmsd
+  centers 10.
+  forceConstant 100.
+}
