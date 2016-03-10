@@ -31,7 +31,11 @@ int deps::require(int feature_id,
 
   if (!fs->available) {
     if (!dry_run) {
-      cvm::error("Feature unavailable: \"" + f->description + "\" in " + description);
+      if (toplevel) {
+        cvm::error("Error: Feature unavailable: \"" + f->description + "\" in " + description + ".");
+      } else {
+        cvm::log("Feature unavailable: \"" + f->description + "\" in " + description);
+      }
     }
     return COLVARS_ERROR;
   }
@@ -46,7 +50,7 @@ int deps::require(int feature_id,
         cvm::log("Features \"" + f->description + "\" is incompatible with \""
         + g->description + "\" in " + description);
         if (toplevel) {
-          cvm::error("Failed dependency in " + description + ".");
+          cvm::error("Error: Failed dependency in " + description + ".");
         }
       }
       return COLVARS_ERROR;
@@ -62,7 +66,7 @@ int deps::require(int feature_id,
       if (!dry_run) {
         cvm::log("...required by \"" + f->description + "\" in " + description);
         if (toplevel) {
-          cvm::error("Failed dependency in " + description + ".");
+          cvm::error("Error: Failed dependency in " + description + ".");
         }
       }
       return res;
@@ -88,13 +92,18 @@ int deps::require(int feature_id,
     if (!ok) {
       if (!dry_run) {
         cvm::log("No dependency satisfied among alternates:");
+        cvm::log("-----------------------------------------");
         for (j=0; j<f->requires_alt[i].size(); j++) {
           int g = f->requires_alt[i][j];
           cvm::log(cvm::to_str(j+1) + ". " + features()[g]->description);
+          cvm::increase_depth();
+          require(g, false, false); // Just for printing error output
+          cvm::decrease_depth();
         }
-        cvm::log("...required by \"" + f->description + "\" in " + description);
+        cvm::log("-----------------------------------------");
+        cvm::log("for \"" + f->description + "\" in " + description);
         if (toplevel) {
-          cvm::error("Failed dependency in " + description + ".");
+          cvm::error("Error: Failed dependency in " + description + ".");
         }
       }
       return COLVARS_ERROR;
@@ -117,7 +126,7 @@ int deps::require(int feature_id,
           cvm::log("...required by \"" + f->description + "\" in " + description);
         }
         if (toplevel) {
-          cvm::error("Failed dependency in " + description + ".");
+          cvm::error("Error: Failed dependency in " + description + ".");
         }
         return res;
       }
@@ -207,7 +216,7 @@ void deps::init_cv_requires() {
     f_description(f_cv_system_force_calc, "system force calculation")
     f_req_self(f_cv_system_force_calc, f_cv_scalar)
     f_req_self(f_cv_system_force_calc, f_cv_linear)
-    f_req_children(f_cv_system_force_calc, f_cvc_system_force)
+    f_req_children(f_cv_system_force_calc, f_cvc_inv_gradient)
     f_req_self(f_cv_system_force_calc, f_cv_Jacobian)
 
     f_description(f_cv_Jacobian, "Jacobian derivative")
@@ -309,9 +318,6 @@ void deps::init_cvc_requires() {
 
     f_description(f_cvc_gradient, "gradient")
 
-    f_description(f_cvc_system_force, "system force")
-    f_req_self(f_cvc_system_force, f_cvc_inv_gradient)
-
     f_description(f_cvc_inv_gradient, "inverse gradient")
     f_req_self(f_cvc_inv_gradient, f_cvc_gradient)
 
@@ -327,8 +333,6 @@ void deps::init_cvc_requires() {
   // Features that are implemented by all cvcs by default
   feature_states[f_cvc_active]->available = true;
   feature_states[f_cvc_gradient]->available = true;
-  // implemented, subject to requirements
-  feature_states[f_cvc_system_force]->available = true;
 }
 
 

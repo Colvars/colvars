@@ -230,7 +230,6 @@ public:
     f_cvc_active,
     f_cvc_scalar,
     f_cvc_gradient,
-    f_cvc_system_force,
     f_cvc_inv_gradient,
     /// \brief If enabled, calc_gradients() will call debug_gradients() for every group needed
     f_cvc_debug_gradient,
