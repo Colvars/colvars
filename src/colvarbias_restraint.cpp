@@ -18,10 +18,10 @@ colvarbias_restraint::colvarbias_restraint(std::string const &conf,
     colvar_centers.resize(colvars.size());
     colvar_centers_raw.resize(colvars.size());
     size_t i;
-    for (i = 0; i < colvars.size(); i++) {
-      // NOTE: eventually this will be handled by a requirement in the deps class
-      colvars[i]->require(f_cv_gradient);
 
+    require(f_cvb_apply_force);
+
+    for (i = 0; i < colvars.size(); i++) {
       colvar_centers[i].type(colvars[i]->value());
       colvar_centers_raw[i].type(colvars[i]->value());
       if (cvm::debug()) {

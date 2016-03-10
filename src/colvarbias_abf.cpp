@@ -58,22 +58,22 @@ colvarbias_abf::colvarbias_abf(std::string const &conf, char const *key)
     cvm::error("Error: no collective variables specified for the ABF bias.\n");
   }
 
+  if (update_bias) {
+  // Request calculation of system force (which also checks for availability)
+    require(f_cvb_get_system_force);
+  }
+  if (apply_bias) {
+    require(f_cvb_apply_force);
+  }
+
   for (size_t i = 0; i < colvars.size(); i++) {
 
     if (colvars[i]->value().type() != colvarvalue::type_scalar) {
       cvm::error("Error: ABF bias can only use scalar-type variables.\n");
     }
-    // NOTE: eventually this will be handled by a requirement in the deps class
-    colvars[i]->require(f_cv_gradient);
     colvars[i]->require(f_cv_grid);
-
-    if (update_bias) {
-      // Request calculation of system force (which also checks for availability)
-      colvars[i]->require(f_cv_system_force);
-      colvars[i]->require(f_cv_Jacobian);
-
-      if (hide_Jacobian)
-         colvars[i]->require(f_cv_hide_Jacobian);
+    if (hide_Jacobian) {
+      colvars[i]->require(f_cv_hide_Jacobian);
     }
 
     // Here we could check for orthogonality of the Cartesian coordinates
