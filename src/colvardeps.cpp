@@ -1,5 +1,28 @@
 #include "colvardeps.h"
 
+deps::~deps() {
+  size_t i;
+
+  for (i=0; i<feature_states.size(); i++) {
+    if (feature_states[i] != NULL) delete feature_states[i];
+  }
+      // Do not delete features if it's static
+//     for (i=0; i<features.size(); i++) {
+//       if (features[i] != NULL) delete features[i];
+//     }
+  remove_all_children();
+
+  // Protest if we are deleting an object while a parent object may still depend on it
+  // Another possible strategy is to have the child unlist itself from the parent's children
+  if (parents.size()) {
+    cvm::log("Warning: destroying " + description + " before its parents objects:");
+    for (i=0; i<parents.size(); i++) {
+      cvm::log(parents[i]->description);
+    }
+  }
+}
+
+
 void deps::provide(int feature_id) {
   feature_states[feature_id]->available = true;
 }
@@ -13,7 +36,8 @@ int deps::require(int feature_id,
   // this is used to diagnose failed dependencies by displaying the full stack
   // only the toplevel dependency will throw a fatal error
 {
-  int res, i, j;
+  int res;
+  size_t i, j;
   bool ok;
   feature *f = features()[feature_id];
   feature_state *fs = feature_states[feature_id];
@@ -182,16 +206,15 @@ void deps::init_cvb_requires() {
 
   // Initialize feature_states for each instance
   for (i = 0; i < f_cvb_ntot; i++) {
-    feature_states.push_back(new feature_state);
+    feature_states.push_back(new feature_state(true, false));
     // Most features are available, so we set them so
     // and list exceptions below
-    feature_states.back()->available = true;
   }
 }
 
 
 void deps::init_cv_requires() {
-  int i;
+  size_t i;
   if (features().size() == 0) {
     for (i = 0; i < f_cv_ntot; i++) {
       features().push_back(new feature);
@@ -278,11 +301,10 @@ void deps::init_cv_requires() {
 
   // Initialize feature_states for each instance
   for (i = 0; i < f_cv_ntot; i++) {
-    feature_states.push_back(new feature_state);
+    feature_states.push_back(new feature_state(true, false));
     // Most features are available, so we set them so
     // and list exceptions below
-    feature_states.back()->available = true;
-  }
+   }
 
   // properties that may NOT be enabled as a dependency
   int unavailable_deps[] = {
@@ -303,7 +325,7 @@ void deps::init_cv_requires() {
 
 
 void deps::init_cvc_requires() {
-  int i;
+  size_t i;
   // Initialize static array once and for all
   if (features().size() == 0) {
     for (i = 0; i < deps::f_cvc_ntot; i++) {
@@ -326,18 +348,20 @@ void deps::init_cvc_requires() {
   }
 
   // Initialize feature_states for each instance
+  // default as unavailable, not enabled
   for (i = 0; i < deps::f_cvc_ntot; i++) {
-    feature_states.push_back(new feature_state);
+    feature_states.push_back(new feature_state(false, false));
   }
 
   // Features that are implemented by all cvcs by default
   feature_states[f_cvc_active]->available = true;
   feature_states[f_cvc_gradient]->available = true;
+  // Each cvc specifies what other features are available
 }
 
 
 void deps::init_ag_requires() {
-  int i;
+  size_t i;
   // Initialize static array once and for all
   if (features().size() == 0) {
     for (i = 0; i < f_ag_ntot; i++) {
@@ -354,8 +378,9 @@ void deps::init_ag_requires() {
   }
 
   // Initialize feature_states for each instance
+  // default as unavailable, not enabled
   for (i = 0; i < deps::f_ag_ntot; i++) {
-    feature_states.push_back(new feature_state);
+    feature_states.push_back(new feature_state(false, false));
   }
 
   // Features that are implemented by all cvcs by default
@@ -364,7 +389,7 @@ void deps::init_ag_requires() {
 
 
 void deps::print_state() {
-  int i;
+  size_t i;
   cvm::log("Enabled features of " + description);
   for (i = 0; i<feature_states.size(); i++) {
     if (feature_states[i]->enabled)
@@ -395,7 +420,7 @@ void deps::remove_child(deps *child) {
     }
   }
   if (!found) {
-    cvm::error("Trying to remove missing child reference from " + description);
+    cvm::error("Trying to remove missing child reference from " + description + "\n");
   }
   found = false;
   for (i = child->parents.size()-1; i>=0; --i) {
@@ -406,12 +431,13 @@ void deps::remove_child(deps *child) {
     }
   }
   if (!found) {
-    cvm::error("Trying to remove missing parent reference from " + child->description);
+    cvm::error("Trying to remove missing parent reference from " + child->description + "\n");
   }
 }
 
 void deps::remove_all_children() {
-  int i, j;
+  size_t i;
+  int j;
   bool found;
 
   for (i = 0; i < children.size(); ++i) {
@@ -424,7 +450,7 @@ void deps::remove_all_children() {
       }
     }
     if (!found) {
-      cvm::error("Trying to remove missing parent reference from " + children[i]->description);
+      cvm::error("Trying to remove missing parent reference from " + children[i]->description + "\n");
     }
   }
   children.clear();
