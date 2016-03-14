@@ -67,6 +67,7 @@ cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
   return group;
 }
 
+
 int colvar::cvc::setup() {
   size_t i;
   description = "cvc " + name;
@@ -80,7 +81,12 @@ int colvar::cvc::setup() {
 
 
 colvar::cvc::~cvc()
-{}
+{
+  remove_all_children();
+  for (size_t i = 0; i < atom_groups.size(); i++) {
+    if (atom_groups[i] != NULL) delete atom_groups[i];
+  }
+}
 
 
 void colvar::cvc::read_data()

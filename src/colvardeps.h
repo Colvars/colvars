@@ -18,7 +18,7 @@ class deps {
 public:
 
   deps() {}
-  ~deps();
+  virtual ~deps();
 
   // Subclasses should initialize the following members:
 

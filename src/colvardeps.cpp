@@ -228,6 +228,7 @@ void deps::init_cv_requires() {
 
     f_description(f_cv_collect_gradient, "collect gradient")
     f_req_self(f_cv_collect_gradient, f_cv_gradient)
+    f_req_self(f_cv_collect_gradient, f_cv_scalar)
 
     f_description(f_cv_fdiff_velocity, "fdiff_velocity")
 
