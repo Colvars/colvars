@@ -548,7 +548,7 @@ void colvar::build_atom_list(void)
   for (size_t i = 0; i < cvcs.size(); i++) {
     for (size_t j = 0; j < cvcs[i]->atom_groups.size(); j++) {
       cvm::atom_group &ag = *(cvcs[i]->atom_groups[j]);
-      for (size_t k = 0; k < cvcs[i]->atom_groups[j]->size(); k++) {
+      for (size_t k = 0; k < ag.size(); k++) {
         temp_id_list.push_back(ag[k].id);
       }
     }
@@ -839,10 +839,10 @@ int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
 
           // If necessary, apply inverse rotation to get atomic
           // gradient in the laboratory frame
-          if (cvcs[i]->atom_groups[j]->b_rotate) {
-            cvm::rotation const rot_inv = cvcs[i]->atom_groups[j]->rot.inverse();
+          if (ag.b_rotate) {
+            cvm::rotation const rot_inv = ag.rot.inverse();
 
-            for (size_t k = 0; k < cvcs[i]->atom_groups[j]->size(); k++) {
+            for (size_t k = 0; k < ag.size(); k++) {
               size_t a = std::lower_bound(atom_ids.begin(), atom_ids.end(),
                                           ag[k].id) - atom_ids.begin();
               atomic_gradients[a] += coeff * rot_inv.rotate(ag[k].grad);
@@ -850,7 +850,7 @@ int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
 
           } else {
 
-            for (size_t k = 0; k < cvcs[i]->atom_groups[j]->size(); k++) {
+            for (size_t k = 0; k < ag.size(); k++) {
               size_t a = std::lower_bound(atom_ids.begin(), atom_ids.end(),
                                           ag[k].id) - atom_ids.begin();
               atomic_gradients[a] += coeff * ag[k].grad;
