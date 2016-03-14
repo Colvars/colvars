@@ -10,6 +10,8 @@ colvarbias_histogram::colvarbias_histogram(std::string const &conf, char const *
   : colvarbias(conf, key),
     grid(NULL), out_name("")
 {
+  size_t i;
+
   get_keyval(conf, "outputFile", out_name, std::string(""));
   get_keyval(conf, "outputFileDX", out_name_dx, std::string(""));
   get_keyval(conf, "outputFreq", output_freq, cvm::restart_out_freq);
@@ -21,7 +23,6 @@ colvarbias_histogram::colvarbias_histogram(std::string const &conf, char const *
 
   colvar_array_size = 0;
   {
-    size_t i;
     bool colvar_array = false;
     get_keyval(conf, "gatherVectorColvars", colvar_array, colvar_array);
 
@@ -57,6 +58,10 @@ colvarbias_histogram::colvarbias_histogram(std::string const &conf, char const *
   if (colvar_array_size > 0) {
     weights.assign(colvar_array_size, 1.0);
     get_keyval(conf, "weights", weights, weights, colvarparse::parse_silent);
+  }
+
+  for (i = 0; i < colvars.size(); i++) {
+    colvars[i]->require(f_cv_grid);
   }
 
   grid = new colvar_grid_scalar();

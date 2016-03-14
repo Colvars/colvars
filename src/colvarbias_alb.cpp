@@ -41,6 +41,7 @@ colvarbias_alb::colvarbias_alb(std::string const &conf, char const *key) :
   current_coupling.resize(colvars.size());
   coupling_rate.resize(colvars.size());
 
+  require(f_cvb_apply_force);
 
   for (i = 0; i < colvars.size(); i++) {
     colvar_centers[i].type(colvars[i]->value());

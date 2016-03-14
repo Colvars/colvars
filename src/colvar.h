@@ -10,6 +10,7 @@
 #include "colvarmodule.h"
 #include "colvarvalue.h"
 #include "colvarparse.h"
+#include "colvardeps.h"
 
 
 /// \brief A collective variable (main class); to be defined, it needs
@@ -37,7 +38,7 @@
 /// \link colvarvalue \endlink type, you should also add its
 /// initialization line in the \link colvar \endlink constructor.
 
-class colvar : public colvarparse {
+class colvar : public colvarparse, public deps {
 
 public:
 
@@ -63,8 +64,6 @@ public:
   /// subtracted.
   colvarvalue const & system_force() const;
 
-  /// \brief
-
   /// \brief Typical fluctuation amplitude for this collective
   /// variable (e.g. local width of a free energy basin)
   ///
@@ -75,87 +74,15 @@ public:
   /// variable.
   cvm::real width;
 
-  /// \brief True if this \link colvar \endlink is a linear
-  /// combination of \link cvc \endlink elements
-  bool b_linear;
+  /// \brief Implementation of the feature list for colvar
+  static std::vector<feature *> cv_features;
 
-  /// \brief True if this \link colvar \endlink is a linear
-  /// combination of cvcs with coefficients 1 or -1
-  bool b_homogeneous;
+  /// \brief Implementation of the feature list accessor for colvar
+  std::vector<feature *> &features() {
+    return cv_features;
+  }
 
-  /// \brief True if all \link cvc \endlink objects are capable
-  /// of calculating inverse gradients
-  bool b_inverse_gradients;
-
-  /// \brief True if all \link cvc \endlink objects are capable
-  /// of calculating Jacobian forces
-  bool b_Jacobian_force;
-
-  /// \brief Options controlling the behaviour of the colvar during
-  /// the simulation, which are set from outside the cvcs
-  enum task {
-    /// \brief Gradients are calculated and temporarily stored, so
-    /// that external forces can be applied
-    task_gradients,
-    /// \brief Collect atomic gradient data from all cvcs into vector
-    /// atomic_gradients
-    task_collect_gradients,
-    /// \brief Calculate the velocity with finite differences
-    task_fdiff_velocity,
-    /// \brief The system force is calculated, projecting the atomic
-    /// forces on the inverse gradients
-    task_system_force,
-    /// \brief The variable has a harmonic restraint around a moving
-    /// center with fictitious mass; bias forces will be applied to
-    /// the center
-    task_extended_lagrangian,
-    /// \brief The extended system coordinate undergoes Langevin
-    /// dynamics
-    task_langevin,
-    /// \brief Output the potential and kinetic energies
-    /// (for extended Lagrangian colvars only)
-    task_output_energy,
-    /// \brief Compute analytically the "force" arising from the
-    /// geometric entropy component (for example, that from the angular
-    /// states orthogonal to a distance vector)
-    task_Jacobian_force,
-    /// \brief Report the Jacobian force as part of the system force
-    /// if disabled, apply a correction internally to cancel it
-    task_report_Jacobian_force,
-    /// \brief Output the value to the trajectory file (on by default)
-    task_output_value,
-    /// \brief Output the velocity to the trajectory file
-    task_output_velocity,
-    /// \brief Output the applied force to the trajectory file
-    task_output_applied_force,
-    /// \brief Output the system force to the trajectory file
-    task_output_system_force,
-    /// \brief A lower boundary is defined
-    task_lower_boundary,
-    /// \brief An upper boundary is defined
-    task_upper_boundary,
-    /// \brief Provide a discretization of the values of the colvar to
-    /// be used by the biases or in analysis (needs lower and upper
-    /// boundary)
-    task_grid,
-    /// \brief Apply a restraining potential (|x-xb|^2) to the colvar
-    /// when it goes below the lower wall
-    task_lower_wall,
-    /// \brief Apply a restraining potential (|x-xb|^2) to the colvar
-    /// when it goes above the upper wall
-    task_upper_wall,
-    /// \brief Compute running average
-    task_runave,
-    /// \brief Compute time correlation function
-    task_corrfunc,
-    /// \brief Value and gradients computed by user script
-    task_scripted,
-    /// \brief Number of possible tasks
-    task_ntot
-  };
-
-  /// Tasks performed by this colvar
-  bool tasks[task_ntot];
+  int refresh_deps();
 
   /// List of biases that depend on this colvar
   std::vector<colvarbias *> biases;
@@ -213,7 +140,7 @@ protected:
   /// Cached reported velocity
   colvarvalue v_reported;
 
-  // Options for task_extended_lagrangian
+  // Options for extended_lagrangian
   /// Restraint center
   colvarvalue xr;
   /// Velocity of the restraint center
@@ -230,7 +157,7 @@ protected:
   /// \brief Harmonic restraint force
   colvarvalue fr;
 
-  /// \brief Jacobian force, when task_Jacobian_force is enabled
+  /// \brief Jacobian force, when Jacobian_force is enabled
   colvarvalue fj;
 
   /// Cached reported system force
@@ -243,7 +170,7 @@ public:
   /// the biases are updated
   colvarvalue fb;
 
-  /// \brief Total \em applied force; fr (if task_extended_lagrangian
+  /// \brief Total \em applied force; fr (if extended_lagrangian
   /// is defined), fb (if biases are applied) and the walls' forces
   /// (if defined) contribute to it
   colvarvalue f;
@@ -292,12 +219,6 @@ public:
 
   /// Constructor
   colvar(std::string const &conf);
-
-  /// Enable the specified task
-  int enable(colvar::task const &t);
-
-  /// Disable the specified task
-  void disable(colvar::task const &t);
 
   /// Get ready for a run and possibly re-initialize internal data
   void setup();
@@ -528,7 +449,7 @@ protected:
   std::vector<bool> cvc_flags;
 
   /// \brief Initialize the sorted list of atom IDs for atoms involved
-  /// in all cvcs (called when enabling task_collect_gradients)
+  /// in all cvcs (called when enabling f_cv_collect_gradients)
   void build_atom_list(void);
 
 private:
