@@ -413,6 +413,8 @@ void colvar::distance_dir::calc_gradients()
   // gradients are computed on the fly within apply_force()
   // Note: could be a problem if a future bias relies on gradient
   // calculations...
+  // in new deps system: remove dependency of biasing force to gradient?
+  // That way we could tell apart an explicit gradient dependency
 }
 
 
@@ -853,17 +855,17 @@ colvar::rmsd::rmsd(std::string const &conf)
       } else {
         // if not, rely on existing atom indices for the group
         atoms.create_sorted_ids();
+        ref_pos.resize(atoms.size());
       }
 
-      ref_pos.resize(atoms.size());
       cvm::load_coords(ref_pos_file.c_str(), ref_pos, atoms.sorted_ids,
                         ref_pos_col, ref_pos_col_value);
     }
   }
 
   if (ref_pos.size() != atoms.size()) {
-    cvm::error("Error: reference positions were not provided, or do not "
-                      "match the number of requested atoms.\n");
+    cvm::error("Error: found " + cvm::to_str(ref_pos.size()) +
+                    " reference positions; expected " + cvm::to_str(atoms.size()));
     return;
   }
 
@@ -1000,7 +1002,6 @@ void colvar::rmsd::calc_Jacobian_derivative()
       }
     }
   }
-
   jd.real_value = x.real_value > 0.0 ? (3.0 * atoms.size() - 4.0 - divergence) / x.real_value : 0.0;
 }
 

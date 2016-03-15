@@ -351,6 +351,7 @@ colvar::colvar(std::string const &conf)
   if (is_enabled(f_cv_scalar)) {
 
     if (get_keyval(conf, "lowerBoundary", lower_boundary, lower_boundary)) {
+      provide(f_cv_lower_boundary);
       require(f_cv_lower_boundary);
     }
 
@@ -361,6 +362,7 @@ colvar::colvar(std::string const &conf)
     }
 
     if (get_keyval(conf, "upperBoundary", upper_boundary, upper_boundary)) {
+      provide(f_cv_upper_boundary);
       require(f_cv_upper_boundary);
     }
 
@@ -1471,10 +1473,8 @@ int colvar::update_cvc_flags()
 bool colvar::periodic_boundaries(colvarvalue const &lb, colvarvalue const &ub) const
 {
   if ( (!is_enabled(f_cv_lower_boundary)) || (!is_enabled(f_cv_upper_boundary)) ) {
-    cvm::log("Error: requesting to histogram the "
-                      "collective variable \""+this->name+"\", but a "
-                      "pair of lower and upper boundaries must be "
-                      "defined.\n");
+    cvm::log("Error: checking periodicity for collective variable \""+this->name+"\" "
+                    "requires lower and upper boundaries to be defined.\n");
     cvm::set_error_bits(INPUT_ERROR);
   }
 
@@ -1491,10 +1491,8 @@ bool colvar::periodic_boundaries(colvarvalue const &lb, colvarvalue const &ub) c
 bool colvar::periodic_boundaries() const
 {
   if ( (!is_enabled(f_cv_lower_boundary)) || (!is_enabled(f_cv_upper_boundary)) ) {
-    cvm::error("Error: requesting to histogram the "
-                      "collective variable \""+this->name+"\", but a "
-                      "pair of lower and upper boundaries must be "
-                      "defined.\n");
+    cvm::log("Error: checking periodicity for collective variable \""+this->name+"\" "
+                    "requires lower and upper boundaries to be defined.\n");
   }
 
   return periodic_boundaries(lower_boundary, upper_boundary);
