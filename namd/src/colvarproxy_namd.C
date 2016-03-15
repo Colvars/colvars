@@ -1029,9 +1029,7 @@ int colvarproxy_namd::smp_colvars_loop()
 {
   colvarmodule *cv = this->colvars;
   std::vector<colvar *>::iterator cvi;
-  cvm::increase_depth();
   CkLoop_Parallelize(calc_colvars_items_smp, 1, this, cv->colvars_smp.size(), 0, cv->colvars_smp.size()-1);
-  cvm::decrease_depth();
   return cvm::get_error();
 }
 
@@ -1057,9 +1055,7 @@ int colvarproxy_namd::smp_biases_loop()
 {
   colvarmodule *cv = this->colvars;
   std::vector<colvar *>::iterator cvi;
-  cvm::increase_depth();
   CkLoop_Parallelize(calc_biases_smp, 1, this, cv->biases.size(), 0, cv->biases.size()-1);
-  cvm::decrease_depth();
   return cvm::get_error();
 }
 

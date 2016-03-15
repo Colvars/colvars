@@ -1148,8 +1148,9 @@ std::ostream & colvarmodule::write_traj(std::ostream &os)
 
 void cvm::log(std::string const &message)
 {
-  if (depth > 0)
-    proxy->log((std::string(2*depth, ' '))+message);
+  size_t const d = depth();
+  if (d > 0)
+    proxy->log((std::string(2*d, ' '))+message);
   else
     proxy->log(message);
 }
@@ -1157,13 +1158,32 @@ void cvm::log(std::string const &message)
 
 void cvm::increase_depth()
 {
-  depth++;
+  (depth())++;
 }
 
 
 void cvm::decrease_depth()
 {
-  if (depth) depth--;
+  if (depth() > 0) {
+    (depth())--;
+  }
+}
+
+
+size_t & cvm::depth()
+{
+  size_t const nt = proxy->smp_num_threads();
+  if (proxy->smp_enabled() == COLVARS_OK) {
+    if (depth_v.size() != nt) {
+      if (depth_v.size() > 0) {
+        cvm::error("Error: number of threads was changed after first use by the colvars module.\n",
+                   COLVARS_ERROR);
+      }
+      depth_v.assign(nt, depth_s);
+    }
+    return depth_v[proxy->smp_thread_id()];
+  }
+  return depth_s;
 }
 
 
@@ -1354,7 +1374,8 @@ long      colvarmodule::it = 0;
 long      colvarmodule::it_restart = 0;
 size_t    colvarmodule::restart_out_freq = 0;
 size_t    colvarmodule::cv_traj_freq = 0;
-size_t    colvarmodule::depth = 0;
+size_t    colvarmodule::depth_s = 0;
+std::vector<size_t> colvarmodule::depth_v(0);
 bool      colvarmodule::b_analysis = false;
 std::list<std::string> colvarmodule::index_group_names;
 std::list<std::vector<int> > colvarmodule::index_groups;

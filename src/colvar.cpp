@@ -789,6 +789,7 @@ int colvar::calc_cvc_values(int first_cvc, size_t num_cvcs)
     cvm::log("Calculating colvar components.\n");
 
   // First, calculate component values
+  cvm::increase_depth();
   for (i = first_cvc, cvc_count = 0;
        (i < cvcs.size()) && (cvc_count < cvc_max_count);
        i++) {
@@ -802,6 +803,8 @@ int colvar::calc_cvc_values(int first_cvc, size_t num_cvcs)
                 cvm::to_str((cvcs[i])->value(),
                 cvm::cv_width, cvm::cv_prec)+".\n");
   }
+  cvm::decrease_depth();
+
   return COLVARS_OK;
 }
 
@@ -860,6 +863,7 @@ int colvar::calc_cvc_gradients(int first_cvc, size_t num_cvcs)
       cvm::log("Calculating gradients of colvar \""+this->name+"\".\n");
 
     // calculate the gradients of each component
+    cvm::increase_depth();
     for (i = first_cvc, cvc_count = 0;
         (i < cvcs.size()) && (cvc_count < cvc_max_count);
         i++) {
@@ -873,6 +877,7 @@ int colvar::calc_cvc_gradients(int first_cvc, size_t num_cvcs)
           cvcs[i]->atom_groups[ig]->calc_fit_gradients();
       }
     }
+    cvm::decrease_depth();
 
     if (cvm::debug())
       cvm::log("Done calculating gradients of colvar \""+this->name+"\".\n");
@@ -959,6 +964,7 @@ int colvar::calc_cvc_sys_forces(int first_cvc, size_t num_cvcs)
     // even with extended Lagrangian
 
     if (cvm::step_relative() > 0) {
+      cvm::increase_depth();
       // get from the cvcs the system forces from the PREVIOUS step
       for (i = first_cvc, cvc_count = 0;
           (i < cvcs.size()) && (cvc_count < cvc_max_count);
@@ -967,6 +973,7 @@ int colvar::calc_cvc_sys_forces(int first_cvc, size_t num_cvcs)
         cvc_count++;
         (cvcs[i])->calc_force_invgrads();
       }
+      cvm::decrease_depth();
     }
 
     if (cvm::debug())
@@ -1009,6 +1016,7 @@ int colvar::calc_cvc_Jacobians(int first_cvc, size_t num_cvcs)
   size_t const cvc_max_count = num_cvcs ? num_cvcs : num_active_cvcs();
 
   if (is_enabled(f_cv_Jacobian)) {
+    cvm::increase_depth();
     size_t i, cvc_count;
     for (i = first_cvc, cvc_count = 0;
          (i < cvcs.size()) && (cvc_count < cvc_max_count);
@@ -1017,6 +1025,7 @@ int colvar::calc_cvc_Jacobians(int first_cvc, size_t num_cvcs)
       cvc_count++;
       (cvcs[i])->calc_Jacobian_derivative();
     }
+    cvm::decrease_depth();
   }
 
   return COLVARS_OK;

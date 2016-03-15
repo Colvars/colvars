@@ -501,18 +501,18 @@ protected:
   /// Output restart file
   colvarmodule::ofstream restart_out_os;
 
-  /// \brief Counter for the current depth in the object hierarchy (useg e.g. in output
-  static size_t depth;
+protected:
 
-  /// Use scripted colvars forces?
-  static bool use_scripted_forces;
+  /// Counter for the current depth in the object hierarchy (useg e.g. in output)
+  static size_t depth_s;
+
+  /// Thread-specific depth
+  static std::vector<size_t> depth_v;
 
 public:
 
-  /// \brief Pointer to the proxy object, used to retrieve atomic data
-  /// from the hosting program; it is static in order to be accessible
-  /// from static functions in the colvarmodule class
-  static colvarproxy *proxy;
+  /// Get the current object depth in the hierarchy
+  static size_t & depth();
 
   /// Increase the depth (number of indentations in the output)
   static void increase_depth();
@@ -520,7 +520,18 @@ public:
   /// Decrease the depth (number of indentations in the output)
   static void decrease_depth();
 
-  static inline bool scripted_forces() { return use_scripted_forces; }
+  static inline bool scripted_forces()
+  {
+    return use_scripted_forces;
+  }
+
+  /// Use scripted colvars forces?
+  static bool use_scripted_forces;
+
+  /// \brief Pointer to the proxy object, used to retrieve atomic data
+  /// from the hosting program; it is static in order to be accessible
+  /// from static functions in the colvarmodule class
+  static colvarproxy *proxy;
 };
 
 
