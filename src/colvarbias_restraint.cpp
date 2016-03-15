@@ -18,6 +18,9 @@ colvarbias_restraint::colvarbias_restraint(std::string const &conf,
     colvar_centers.resize(colvars.size());
     colvar_centers_raw.resize(colvars.size());
     size_t i;
+
+    require(f_cvb_apply_force);
+
     for (i = 0; i < colvars.size(); i++) {
       colvar_centers[i].type(colvars[i]->value());
       colvar_centers_raw[i].type(colvars[i]->value());

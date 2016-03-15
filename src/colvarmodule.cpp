@@ -31,6 +31,8 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
   cvm::log(cvm::line_marker);
   cvm::log("Initializing the collective variables module, version "+
            cvm::to_str(COLVARS_VERSION)+".\n");
+  cvm::log("Please cite Fiorin et al, Mol Phys 2013 in any publication "
+           "based on this calculation.\n");
 
   // set initial default values
 
@@ -100,8 +102,6 @@ int colvarmodule::read_config_string(std::string const &config_str)
 
 int colvarmodule::parse_config(std::string &conf)
 {
-  int error_code = COLVARS_OK;
-
   // parse global options
   if (catch_input_errors(parse_global_params(conf))) {
     return get_error();
@@ -287,6 +287,12 @@ int colvarmodule::parse_biases(std::string const &conf)
     cvm::increase_depth();
     cvm::log("User forces script will be run at each bias update.");
     cvm::decrease_depth();
+  }
+
+  for (int i = 0; i < biases.size(); i++) {
+    biases[i]->require(deps::f_cvb_active);
+    if (cvm::debug())
+      biases[i]->print_state();
   }
 
   if (biases.size() || use_scripted_forces) {
@@ -581,7 +587,7 @@ int colvarmodule::update_colvar_forces()
     cvm::log("Communicating forces from the colvars to the atoms.\n");
   cvm::increase_depth();
   for (cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
-    if ((*cvi)->tasks[colvar::task_gradients]) {
+    if ((*cvi)->is_enabled(deps::f_cv_gradient)) {
       (*cvi)->communicate_forces();
       if (cvm::get_error()) {
         return COLVARS_ERROR;
@@ -695,13 +701,6 @@ int colvarmodule::reset()
   parse->reset();
 
   cvm::log("Resetting the Collective Variables Module.\n");
-  // Iterate backwards because we are deleting the elements as we go
-  for (std::vector<colvar *>::reverse_iterator cvi = colvars.rbegin();
-       cvi != colvars.rend();
-       cvi++) {
-    delete *cvi; // the colvar destructor updates the colvars array
-  }
-  colvars.clear();
 
   // Iterate backwards because we are deleting the elements as we go
   for (std::vector<colvarbias *>::reverse_iterator bi = biases.rbegin();
@@ -710,6 +709,14 @@ int colvarmodule::reset()
     delete *bi; // the bias destructor updates the biases array
   }
   biases.clear();
+
+  // Iterate backwards because we are deleting the elements as we go
+  for (std::vector<colvar *>::reverse_iterator cvi = colvars.rbegin();
+       cvi != colvars.rend();
+       cvi++) {
+    delete *cvi; // the colvar destructor updates the colvars array
+  }
+  colvars.clear();
 
   index_groups.clear();
   index_group_names.clear();
