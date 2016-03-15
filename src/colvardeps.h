@@ -18,24 +18,7 @@ class deps {
 public:
 
   deps() {}
-  ~deps() {
-    int i;
-    // Do not delete features if it's static
-//     for (i=0; i<features.size(); i++) {
-//       if (features[i] != NULL) delete features[i];
-//     }
-
-    remove_all_children();
-
-    // Protest if we are deleting an object while a parent object may still depend on it
-    // Another possible strategy is to have the child unlist itself from the parent's children
-    if (parents.size()) {
-      cvm::log("Warning: destroying " + description + " before its parents objects:");
-      for (i=0; i<parents.size(); i++) {
-        cvm::log(parents[i]->description);
-      }
-    }
-  }
+  ~deps();
 
   // Subclasses should initialize the following members:
 
@@ -43,17 +26,20 @@ public:
 
   /// This contains the current state of each feature for each object
   struct feature_state {
+    feature_state(bool a, bool e)
+    : available(a), enabled(e) {}
+
     /// Available means: supported, subject to dependencies as listed,
     /// MAY BE ENABLED AS A RESULT OF DEPENDENCY SOLVING
     /// Remains false for passive flags that are set based on other object properties,
     /// eg. f_cv_linear
     /// Is set to true upon user request for features that are under user control:
     /// eg. f_cv_scripted or f_cv_extended_Lagrangian
-    bool available = false;
+    bool available;
     /// Currently enabled - this flag is subject to change dynamically
     /// TODO consider implications for dependency solving: anyone who disables
     /// it should trigger a refresh of parent objects
-    bool enabled = false;     // see if this should be private depending on implementation
+    bool enabled;     // see if this should be private depending on implementation
     // bool enabledOnce; // this should trigger an update when object is evaluated
   };
 
@@ -83,7 +69,7 @@ public:
 
     // sets of features that are required in an alternate way
     // when parent feature is enabled, if none are enabled, the first one listed that is available will be enabled
-    std::vector<std::vector<int>> requires_alt;
+    std::vector<std::vector<int> > requires_alt;
 
     // features that this feature requires in children
     std::vector<int> requires_children;
@@ -147,7 +133,7 @@ public:
   /// This function is called whenever feature states are changed outside
   /// of the object's control, that is, by parents
   /// Eventually it may also be used when properties of children change
-  virtual int refresh_deps() {}
+  virtual int refresh_deps() { return COLVARS_OK; }
 
   // NOTE that all feature enums should start with f_*_active
   enum features_biases {
@@ -230,7 +216,6 @@ public:
     f_cvc_active,
     f_cvc_scalar,
     f_cvc_gradient,
-    f_cvc_system_force,
     f_cvc_inv_gradient,
     /// \brief If enabled, calc_gradients() will call debug_gradients() for every group needed
     f_cvc_debug_gradient,

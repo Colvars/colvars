@@ -678,6 +678,10 @@ void colvar::setup() {
 
 colvar::~colvar()
 {
+//   Clear references to this colvar's cvcs as children
+//   for dependency purposes
+  remove_all_children();
+
   for (std::vector<cvc *>::reverse_iterator ci = cvcs.rbegin();
       ci != cvcs.rend();
       ++ci) {
@@ -685,7 +689,6 @@ colvar::~colvar()
     // because the cvc base class destructor can't do it early enough
     // and we don't want to have each cvc derived class do it separately
     (*ci)->remove_all_children();
-    remove_child(*ci);
     delete *ci;
   }
 
