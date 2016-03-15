@@ -238,9 +238,6 @@ public:
   /// Ensure that the selected range of CVCs is consistent
   int check_cvc_range(int first_cvc, size_t num_cvcs);
 
-  /// \brief Gather all information needed by the calc_* functions of the given subset of CVCs
-  int update_cvc_data(int first, size_t num_cvcs);
-
   /// \brief Calculate the values of the given subset of CVCs
   int calc_cvc_values(int first, size_t num_cvcs);
   /// \brief Same as \link colvar::calc_cvc_values \endlink but for gradients

@@ -733,9 +733,6 @@ int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
     return error_code;
   }
 
-  // atom groups are updated here
-  error_code |= update_cvc_data(first_cvc, num_cvcs);
-
   error_code |= calc_cvc_values(first_cvc, num_cvcs);
   error_code |= calc_cvc_gradients(first_cvc, num_cvcs);
   error_code |= calc_cvc_sys_forces(first_cvc, num_cvcs);
@@ -776,58 +773,6 @@ int colvar::check_cvc_range(int first_cvc, size_t num_cvcs)
                "range defined for colvar \""+name+"\".\n", BUG_ERROR);
     return BUG_ERROR;
   }
-  return COLVARS_OK;
-}
-
-
-int colvar::update_cvc_data(int first_cvc, size_t num_cvcs)
-{
-  size_t const cvc_max_count = num_cvcs ? num_cvcs : num_active_cvcs();
-  size_t i, cvc_count;
-
-  // prepare atom groups for calculation
-  if (cvm::debug())
-    cvm::log("Collecting data from atom groups.\n");
-
-  for (i = first_cvc, cvc_count = 0;
-       (i < cvcs.size()) && (cvc_count < cvc_max_count);
-       i++) {
-    if (!cvcs[i]->b_enabled) continue;
-    cvc_count++;
-    // This loop could be done at CVC level
-    for (size_t ig = 0; ig < cvcs[i]->atom_groups.size(); ig++) {
-      cvm::atom_group &atoms = *(cvcs[i]->atom_groups[ig]);
-      atoms.reset_atoms_data();
-      atoms.read_positions();
-      atoms.calc_required_properties();
-      // each atom group will take care of its own ref_pos_group, if defined
-    }
-  }
-
-////  Don't try to get atom velocities, as no back-end currently implements it
-//   if (tasks[task_output_velocity] && !tasks[task_fdiff_velocity]) {
-//     for (i = 0; i < cvcs.size(); i++) {
-//       for (ig = 0; ig < cvcs[i]->atom_groups.size(); ig++) {
-//         cvcs[i]->atom_groups[ig]->read_velocities();
-//       }
-//     }
-//   }
-
-  if (is_enabled(f_cv_system_force)) {
-    for (i = first_cvc, cvc_count = 0;
-         (i < cvcs.size()) && (cvc_count < cvc_max_count);
-         i++) {
-      if (!cvcs[i]->b_enabled) continue;
-      cvc_count++;
-      for (size_t ig = 0; ig < cvcs[i]->atom_groups.size(); ig++) {
-        cvcs[i]->atom_groups[ig]->read_system_forces();
-      }
-    }
-  }
-
-  if (cvm::debug())
-    cvm::log("Done collecting data from atom groups.\n");
-
   return COLVARS_OK;
 }
 
