@@ -753,9 +753,12 @@ int colvarmodule::setup()
 
 colvarmodule::~colvarmodule()
 {
-  reset();
-  delete parse;
-  proxy = NULL;
+  if ((proxy->smp_thread_id() == COLVARS_NOT_IMPLEMENTED) ||
+      (proxy->smp_thread_id() == 0)) {
+    reset();
+    delete parse;
+    proxy = NULL;
+  }
 }
 
 
