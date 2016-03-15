@@ -567,7 +567,7 @@ int colvarmodule::update_colvar_forces()
              "of colvars (if they have any).\n");
   cvm::increase_depth();
   for (cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
-    total_colvar_energy += (*cvi)->update();
+    total_colvar_energy += (*cvi)->update_forces_energy();
     if (cvm::get_error()) {
       return COLVARS_ERROR;
     }

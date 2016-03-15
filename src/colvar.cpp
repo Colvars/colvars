@@ -1148,7 +1148,7 @@ int colvar::calc_colvar_properties()
 }
 
 
-cvm::real colvar::update()
+cvm::real colvar::update_forces_energy()
 {
   if (cvm::debug())
     cvm::log("Updating colvar \""+this->name+"\".\n");

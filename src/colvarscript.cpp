@@ -221,7 +221,7 @@ int colvarscript::proc_colvar(int argc, char const *argv[]) {
 
   if (subcmd == "update") {
     cv->calc();
-    cv->update();
+    cv->update_forces_energy();
     result = (cv->value()).to_simple_string();
     return COLVARS_OK;
   }

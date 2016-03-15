@@ -326,7 +326,7 @@ public:
   /// equations of motion of internal degrees of freedom; see also
   /// colvar::communicate_forces()
   /// return colvar energy if extended Lagrandian active
-  cvm::real update();
+  cvm::real update_forces_energy();
 
   /// \brief Communicate forces (previously calculated in
   /// colvar::update()) to the external degrees of freedom
