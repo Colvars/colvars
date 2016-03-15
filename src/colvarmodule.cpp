@@ -574,7 +574,7 @@ int colvarmodule::calc_biases()
 
     cvm::increase_depth();
     for (bi = biases.begin(); bi != biases.end(); bi++) {
-      (*bi)->update();
+      error_code |= (*bi)->update();
       if (cvm::get_error()) {
         return COLVARS_ERROR;
       }

@@ -36,7 +36,7 @@ public:
   /// Destructor
   virtual ~colvarbias_meta();
 
-  virtual cvm::real update();
+  virtual int update();
 
   virtual std::istream & read_restart(std::istream &is);
 

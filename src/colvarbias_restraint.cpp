@@ -170,7 +170,7 @@ cvm::real colvarbias_restraint::energy_difference(std::string const &conf)
 }
 
 
-cvm::real colvarbias_restraint::update()
+int colvarbias_restraint::update()
 {
   bias_energy = 0.0;
 
@@ -336,7 +336,7 @@ cvm::real colvarbias_restraint::update()
     cvm::log("Current forces for the restraint bias \""+
               this->name+"\": "+cvm::to_str(colvar_forces)+".\n");
 
-  return bias_energy;
+  return COLVARS_OK;
 }
 
 

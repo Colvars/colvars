@@ -161,7 +161,7 @@ colvarbias_abf::~colvarbias_abf()
 /// Update the FE gradient, compute and apply biasing force
 /// also output data to disk if needed
 
-cvm::real colvarbias_abf::update()
+int colvarbias_abf::update()
 {
   if (cvm::debug()) cvm::log("Updating ABF bias " + this->name);
 
@@ -268,7 +268,7 @@ cvm::real colvarbias_abf::update()
     cvm::log("Prepared sample and gradient buffers at step "+cvm::to_str(cvm::step_absolute())+".");
   }
 
-  return 0.0;
+  return COLVARS_OK;
 }
 
 int colvarbias_abf::replica_share() {

@@ -121,7 +121,7 @@ colvarbias_alb::~colvarbias_alb() {
 
 }
 
-cvm::real colvarbias_alb::update() {
+int colvarbias_alb::update() {
 
   bias_energy = 0.0;
   update_calls++;
@@ -225,8 +225,7 @@ cvm::real colvarbias_alb::update() {
 
   }
 
-  return bias_energy;
-
+  return COLVARS_OK;
 }
 
 

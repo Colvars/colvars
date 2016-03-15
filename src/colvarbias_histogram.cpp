@@ -91,10 +91,11 @@ colvarbias_histogram::~colvarbias_histogram()
 }
 
 /// Update the grid
-cvm::real colvarbias_histogram::update()
+int colvarbias_histogram::update()
 {
+  int error_code = COLVARS_OK;
   // update base class
-  colvarbias::update();
+  error_code |= colvarbias::update();
 
   if (cvm::debug()) {
     cvm::log("Updating histogram bias " + this->name);
@@ -147,7 +148,7 @@ cvm::real colvarbias_histogram::update()
     write_output_files();
   }
 
-  return 0.0; // no bias energy for histogram
+  return error_code | cvm::get_error();
 }
 
 

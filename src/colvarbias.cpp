@@ -112,11 +112,11 @@ void colvarbias::add_colvar(std::string const &cv_name)
 }
 
 
-cvm::real colvarbias::update()
+int colvarbias::update()
 {
   // Note: if anything is added here, it should be added also in the SMP block of calc_biases()
   has_data = true;
-  return 0.0;
+  return COLVARS_OK;
 }
 
 

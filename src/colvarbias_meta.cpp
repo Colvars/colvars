@@ -253,7 +253,7 @@ colvarbias_meta::delete_hill(hill_iter &h)
 }
 
 
-cvm::real colvarbias_meta::update()
+int colvarbias_meta::update()
 {
   if (cvm::debug())
     cvm::log("Updating the metadynamics bias \""+this->name+"\""+
@@ -544,7 +544,7 @@ cvm::real colvarbias_meta::update()
                  ", hills forces = "+cvm::to_str(colvar_forces)+".\n");
     }
 
-  return bias_energy;
+  return COLVARS_OK;
 }
 
 

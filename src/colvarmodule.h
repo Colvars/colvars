@@ -119,7 +119,7 @@ public:
     return errorCode;
   }
 
-  static inline void clear_error();
+  static void clear_error();
 
 
   /// Current step number
