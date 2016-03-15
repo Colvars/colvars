@@ -1175,13 +1175,11 @@ int colvar::calc_cvc_sys_forces(int first_cvc, size_t num_cvcs)
         if (!cvcs[i]->b_enabled) continue;
         cvc_count++;
         (cvcs[i])->calc_force_invgrads();
-        // linear combination is assumed
-        cvm::increase_depth();
-        ft += (cvcs[i])->system_force() / ((cvcs[i])->sup_coeff * cvm::real(cvcs.size()));
-        cvm::decrease_depth();
       }
     }
 
+    if (cvm::debug())
+      cvm::log("Done calculating system force of colvar \""+this->name+"\".\n");
   }
 
   return COLVARS_OK;
@@ -1199,6 +1197,7 @@ int colvar::collect_cvc_sys_forces()
       // get from the cvcs the system forces from the PREVIOUS step
       for (size_t i = 0; i < cvcs.size();  i++) {
         if (!cvcs[i]->b_enabled) continue;
+        // linear combination is assumed
         ft += (cvcs[i])->system_force() / ((cvcs[i])->sup_coeff * cvm::real(cvcs.size()));
       }
     }
@@ -1208,9 +1207,6 @@ int colvar::collect_cvc_sys_forces()
       // correction internally: biases such as colvarbias_abf will handle it
       ft += fj;
     }
-
-    if (cvm::debug())
-      cvm::log("Done calculating system force of colvar \""+this->name+"\".\n");
   }
 
   return COLVARS_OK;
