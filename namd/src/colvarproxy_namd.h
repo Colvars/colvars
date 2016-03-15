@@ -16,7 +16,7 @@
 #include "colvarvalue.h"
 
 #ifndef COLVARPROXY_VERSION
-#define COLVARPROXY_VERSION "2016-02-22"
+#define COLVARPROXY_VERSION "2016-03-15"
 #endif
 
 // For replica exchange
@@ -106,6 +106,15 @@ public:
   {
     return simparams->dt;
   }
+
+  int smp_enabled()
+  {
+    return COLVARS_OK;
+  }
+
+  int smp_colvars_loop();
+
+  friend void calc_colvars_items_smp(int first, int last, void *result, int paramNum, void *param);
 
   // Replica communication functions.
   bool replica_enabled() {

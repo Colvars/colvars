@@ -23,6 +23,7 @@
 #include "colvarproxy_namd.h"
 #include "colvarscript.h"
 
+
 colvarproxy_namd::colvarproxy_namd()
 {
   first_timestep = true;
@@ -1007,3 +1008,31 @@ int colvarproxy_namd::update_group_properties(int index)
 
   return COLVARS_OK;
 }
+
+
+void calc_colvars_items_smp(int first, int last, void *result, int paramNum, void *param)
+{
+  colvarproxy_namd *proxy = (colvarproxy_namd *) param;
+  colvarmodule *cv = proxy->colvars;
+
+  for (int i = first; i <= last; i++) {
+    if (cvm::debug()) {
+      cvm::log("["+cvm::to_str(CkMyPe())+"/"+cvm::to_str(CkNumPes())+
+               "]: smp_colvars_loop(), first = "+cvm::to_str(first)+
+               ", last = "+cvm::to_str(last)+", cv = "+
+               cv->colvars_smp[i]->name+", cvc = "+cvm::to_str(cv->colvars_smp_items[i])+"\n");
+    }
+    cv->colvars_smp[i]->calc_cvcs(cv->colvars_smp_items[i], 1);
+  }
+}
+
+
+int colvarproxy_namd::smp_colvars_loop()
+{
+  colvarmodule *cv = this->colvars;
+  std::vector<colvar *>::iterator cvi;
+  cvm::increase_depth();
+  CkLoop_Parallelize(calc_colvars_items_smp, 1, this, cv->colvars_smp.size(), 0, cv->colvars_smp.size()-1);
+  cvm::decrease_depth();
+}
+
