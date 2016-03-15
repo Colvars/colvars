@@ -1001,9 +1001,7 @@ int colvar::calc_cvc_values(int first_cvc, size_t num_cvcs)
        i++) {
     if (!cvcs[i]->b_enabled) continue;
     cvc_count++;
-    cvm::increase_depth();
     (cvcs[i])->calc_value();
-    cvm::decrease_depth();
     if (cvm::debug())
       cvm::log("Colvar component no. "+cvm::to_str(i+1)+
                 " within colvar \""+this->name+"\" has value "+
@@ -1072,7 +1070,6 @@ int colvar::calc_cvc_gradients(int first_cvc, size_t num_cvcs)
         i++) {
       if (!cvcs[i]->b_enabled) continue;
       cvc_count++;
-      cvm::increase_depth();
       (cvcs[i])->calc_gradients();
       // if requested, propagate (via chain rule) the gradients above
       // to the atoms used to define the roto-translation
@@ -1080,7 +1077,6 @@ int colvar::calc_cvc_gradients(int first_cvc, size_t num_cvcs)
         if (cvcs[i]->atom_groups[ig]->b_fit_gradients)
           cvcs[i]->atom_groups[ig]->calc_fit_gradients();
       }
-      cvm::decrease_depth();
     }
 
     if (cvm::debug())
@@ -1225,9 +1221,7 @@ int colvar::calc_cvc_Jacobians(int first_cvc, size_t num_cvcs)
          i++) {
       if (!cvcs[i]->b_enabled) continue;
       cvc_count++;
-      cvm::increase_depth();
       (cvcs[i])->calc_Jacobian_derivative();
-      cvm::decrease_depth();
     }
   }
 
@@ -1424,32 +1418,26 @@ void colvar::communicate_forces()
     int grad_index = 0; // index in the scripted gradients, to account for some components being disabled
     for (i = 0; i < cvcs.size(); i++) {
       if (!cvcs[i]->b_enabled) continue;
-      cvm::increase_depth();
       // cvc force is colvar force times colvar/cvc Jacobian
       // (vector-matrix product)
       (cvcs[i])->apply_force(colvarvalue(f.as_vector() * func_grads[grad_index++],
                              cvcs[i]->value().type()));
-      cvm::decrease_depth();
     }
   } else if (x.type() == colvarvalue::type_scalar) {
 
     for (i = 0; i < cvcs.size(); i++) {
       if (!cvcs[i]->b_enabled) continue;
-      cvm::increase_depth();
       (cvcs[i])->apply_force(f * (cvcs[i])->sup_coeff *
                               cvm::real((cvcs[i])->sup_np) *
                               (std::pow((cvcs[i])->value().real_value,
                                       (cvcs[i])->sup_np-1)) );
-      cvm::decrease_depth();
     }
 
   } else {
 
     for (i = 0; i < cvcs.size(); i++) {
       if (!cvcs[i]->b_enabled) continue;
-      cvm::increase_depth();
       (cvcs[i])->apply_force(f * (cvcs[i])->sup_coeff);
-      cvm::decrease_depth();
     }
   }
 
