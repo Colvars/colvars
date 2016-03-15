@@ -41,32 +41,10 @@ colvar::cvc::cvc(std::string const &conf)
   feature_states[f_cvc_value]->available = true;
   feature_states[f_cvc_gradient]->available = true;
 
-
   if (cvc_features.size() == 0) {
     // Initialize static array once and for all
-    // TODO TODO deps TODO TODO
-    for (i = 0; i < deps::f_cvc_ntot; i++) {
-      cvc_features.push_back(new feature);
-    }
-
-    cvc_features[f_cvc_value]->description = "value";
-
-    cvc_features[f_cvc_scalar]->description = "scalar";
-
-    cvc_features[f_cvc_gradient]->description = "gradient";
-    cvc_features[f_cvc_gradient]->requires_self.push_back(f_cvc_value);
-
-    cvc_features[f_cvc_system_force]->description = "system force";
-
-    cvc_features[f_cvc_inv_gradient]->description = "inverse gradient";
-    cvc_features[f_cvc_inv_gradient]->requires_self.push_back(f_cvc_gradient);
-
-    cvc_features[f_cvc_Jacobian]->description = "Jacobian";
-    cvc_features[f_cvc_inv_gradient]->requires_self.push_back(f_cvc_inv_gradient);
-
-    // TODO TODO deps TODO TODO
+    init_cvc_requires();
   }
-
 
   get_keyval(conf, "name", this->name, std::string(""), parse_silent);
 
@@ -103,6 +81,17 @@ void colvar::cvc::parse_group(std::string const &conf,
       return;
     }
   }
+}
+
+int colvar::cvc::setup() {
+
+  description = "cvc " + name;
+
+  for (int i = 0; i < atom_groups.size(); i++) {
+    children.push_back((deps *) atom_groups[i]);
+  }
+
+  return COLVARS_OK;
 }
 
 

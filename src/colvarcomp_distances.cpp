@@ -806,6 +806,9 @@ void colvar::inertia_z::apply_force(colvarvalue const &force)
 colvar::rmsd::rmsd(std::string const &conf)
   : cvc(conf)
 {
+  feature_states[f_cvc_inv_gradient]->available = true;
+  feature_states[f_cvc_Jacobian]->available = true;
+
   b_inverse_gradients = true;
   b_Jacobian_derivative = true;
   function_type = "rmsd";

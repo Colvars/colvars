@@ -4,7 +4,6 @@
 #include "colvarparse.h"
 #include "colvaratoms.h"
 
-
 cvm::atom::atom()
 {
   index = -1;
@@ -68,8 +67,7 @@ cvm::atom_group::atom_group(std::string const &conf,
                             char const        *key_in)
 {
   key = key_in;
-  cvm::log("Defining atom group \""+
-           std::string(key)+"\".\n");
+  cvm::log("Defining atom group \"" + key + "\".\n");
   init();
   // real work is done by parse
   parse(conf);
@@ -172,9 +170,23 @@ int cvm::atom_group::remove_atom(cvm::atom_iter ai)
 
 int cvm::atom_group::init()
 {
+  int i;
   if (!key.size()) key = "atoms";
-
   atoms.clear();
+
+  // Initialize feature_states for each instance
+  for (i = 0; i < deps::f_ag_ntot; i++) {
+    feature_states.push_back(new feature_state);
+  }
+  // Features that are implemented by all cvcs by default
+  feature_states[f_ag_coordinates]->available = true;
+
+  // TODO: check with proxy whether atom forces etc are available
+
+  if (ag_features.size() == 0) {
+    // Initialize static array once and for all
+    init_ag_requires();
+  }
 
   b_scalable = false;
   index = -1;
@@ -279,6 +291,8 @@ int cvm::atom_group::parse(std::string const &conf)
   cvm::increase_depth();
 
   cvm::log("Initializing atom group \""+key+"\".\n");
+
+  description = "atom group " + key;
 
   // whether or not to include messages in the log
   // colvarparse::Parse_Mode mode = parse_silent;
@@ -1206,4 +1220,9 @@ void cvm::atom_group::apply_forces(std::vector<cvm::rvector> const &forces)
     }
   }
 }
+
+// Static members
+
+std::vector<deps::feature *> cvm::atom_group::ag_features;
+
 
