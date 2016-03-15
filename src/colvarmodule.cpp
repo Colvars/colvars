@@ -556,21 +556,36 @@ int colvarmodule::calc_colvars()
 
 int colvarmodule::calc_biases()
 {
-  std::vector<colvarbias *>::iterator bi;
-
   // update the biases and communicate their forces to the collective
   // variables
   if (cvm::debug() && biases.size())
     cvm::log("Updating collective variable biases.\n");
-  cvm::real total_bias_energy = 0.0;
-  cvm::increase_depth();
-  for (bi = biases.begin(); bi != biases.end(); bi++) {
-    total_bias_energy += (*bi)->update();
-    if (cvm::get_error()) {
-      return COLVARS_ERROR;
+
+  std::vector<colvarbias *>::iterator bi;
+  int error_code = COLVARS_OK;
+
+  // if SMP support is available, split up the work
+  if (proxy->smp_enabled() == COLVARS_OK) {
+
+    // calculate biases in parallel
+    error_code |= proxy->smp_biases_loop();
+
+  } else {
+
+    cvm::increase_depth();
+    for (bi = biases.begin(); bi != biases.end(); bi++) {
+      (*bi)->update();
+      if (cvm::get_error()) {
+        return COLVARS_ERROR;
+      }
     }
+    cvm::decrease_depth();
   }
-  cvm::decrease_depth();
+
+  cvm::real total_bias_energy = 0.0;
+  for (bi = biases.begin(); bi != biases.end(); bi++) {
+    total_bias_energy += (*bi)->get_energy();
+  }
 
   proxy->add_energy(total_bias_energy);
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);

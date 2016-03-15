@@ -127,6 +127,12 @@ public:
     return COLVARS_NOT_IMPLEMENTED;
   }
 
+  /// Distribute calculation of biases across threads
+  virtual int smp_biases_loop()
+  {
+    return COLVARS_NOT_IMPLEMENTED;
+  }
+
   /// Index of this thread
   virtual int smp_thread_id()
   {

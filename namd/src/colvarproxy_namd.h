@@ -114,6 +114,8 @@ public:
 
   int smp_colvars_loop();
 
+  int smp_biases_loop();
+
   friend void calc_colvars_items_smp(int first, int last, void *result, int paramNum, void *param);
 
   int smp_thread_id()

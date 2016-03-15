@@ -1032,6 +1032,34 @@ int colvarproxy_namd::smp_colvars_loop()
   cvm::increase_depth();
   CkLoop_Parallelize(calc_colvars_items_smp, 1, this, cv->colvars_smp.size(), 0, cv->colvars_smp.size()-1);
   cvm::decrease_depth();
-  return COLVARS_OK;
+  return cvm::get_error();
+}
+
+
+void calc_biases_smp(int first, int last, void *result, int paramNum, void *param)
+{
+  colvarproxy_namd *proxy = (colvarproxy_namd *) param;
+  colvarmodule *cv = proxy->colvars;
+
+  for (int i = first; i <= last; i++) {
+    if (cvm::debug()) {
+      cvm::log("["+cvm::to_str(proxy->smp_thread_id())+"/"+cvm::to_str(proxy->smp_num_threads())+
+               "]: smp_colvars_loop(), first = "+cvm::to_str(first)+
+               ", last = "+cvm::to_str(last)+", bias = "+
+               cv->biases[i]->name+"\n");
+    }
+    cv->biases[i]->update();
+  }
+}
+
+
+int colvarproxy_namd::smp_biases_loop()
+{
+  colvarmodule *cv = this->colvars;
+  std::vector<colvar *>::iterator cvi;
+  cvm::increase_depth();
+  CkLoop_Parallelize(calc_biases_smp, 1, this, cv->biases.size(), 0, cv->biases.size()-1);
+  cvm::decrease_depth();
+  return cvm::get_error();
 }
 
