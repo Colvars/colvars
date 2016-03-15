@@ -113,6 +113,20 @@ protected:
 
 public:
 
+  // ***************** SHARED-MEMORY PARALLELIZATION *****************
+
+  /// Whether or not threaded parallelization is available
+  virtual int smp_enabled()
+  {
+    return COLVARS_NOT_IMPLEMENTED;
+  }
+
+  /// Distribute calculation of colvars (and their components) across threads
+  virtual int smp_colvars_loop()
+  {
+    return COLVARS_NOT_IMPLEMENTED;
+  }
+
   // **************** MULTIPLE REPLICAS COMMUNICATION ****************
 
   // Replica exchange commands:

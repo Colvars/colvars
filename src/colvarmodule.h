@@ -4,7 +4,7 @@
 #define COLVARMODULE_H
 
 #ifndef COLVARS_VERSION
-#define COLVARS_VERSION "2016-02-24"
+#define COLVARS_VERSION "2016-03-15"
 #endif
 
 #ifndef COLVARS_DEBUG
@@ -166,6 +166,12 @@ public:
     cvcs.push_back(p);
   }
   */
+
+  /// Collective variables to be calculated on different threads;
+  /// colvars with multple items (e.g. multiple active CVCs) are duplicated
+  std::vector<colvar *> colvars_smp;
+  /// Indexes of the items to calculate for each colvar
+  std::vector<int> colvars_smp_items;
 
   /// Array of collective variable biases
   static std::vector<colvarbias *> biases;

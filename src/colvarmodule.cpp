@@ -482,19 +482,63 @@ int colvarmodule::calc()
 
 int colvarmodule::calc_colvars()
 {
-  std::vector<colvar *>::iterator cvi;
-
-  // calculate collective variables and their gradients
   if (cvm::debug())
     cvm::log("Calculating collective variables.\n");
-  cvm::increase_depth();
-  for (cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
-    (*cvi)->calc();
-    if (cvm::get_error()) {
-      return COLVARS_ERROR;
+  // calculate collective variables and their gradients
+
+  std::vector<colvar *>::iterator cvi;
+
+  // if SMP support is available, split up the work
+  if (proxy->smp_enabled() == COLVARS_OK) {
+
+    // first, calculate how much work (currently, how many active CVCs) each colvar has
+    
+    colvars_smp.resize(0);
+    colvars_smp_items.resize(0);
+
+    colvars_smp.reserve(colvars.size());
+    colvars_smp_items.reserve(colvars.size());
+                        
+    // set up a vector containing all components
+    size_t num_colvar_items = 0;
+    cvm::increase_depth();
+    for (cvi = colvars.begin(); cvi != colvars.end(); cvi++) { 
+
+      (*cvi)->update_cvc_flags();
+
+      size_t num_items = (*cvi)->num_active_cvcs();
+      colvars_smp.reserve(colvars_smp.size() + num_items);
+      colvars_smp_items.reserve(colvars_smp_items.size() + num_items);
+      for (size_t icvc = 0; icvc < num_items; icvc++) {
+        colvars_smp.push_back(*cvi);
+        colvars_smp_items.push_back(icvc);
+      }
+
+      num_colvar_items += num_items;
     }
+    cvm::decrease_depth();
+
+    // calculate colvar components in parallel
+    proxy->smp_colvars_loop();
+
+    cvm::increase_depth();
+    for (cvi = colvars.begin(); cvi != colvars.end(); cvi++) { 
+      (*cvi)->collect_cvc_data();
+    }
+    cvm::decrease_depth();
+    
+  } else {
+
+    // calculate colvars one at a time
+    cvm::increase_depth();
+    for (cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
+      (*cvi)->calc();
+      if (cvm::get_error()) {
+        return COLVARS_ERROR;
+      }
+    }
+    cvm::decrease_depth();
   }
-  cvm::decrease_depth();
 
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
 }
