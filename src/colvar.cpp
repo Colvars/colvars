@@ -864,38 +864,91 @@ colvar::~colvar()
 // ******************** CALC FUNCTIONS ********************
 
 
-void colvar::calc()
+// Default schedule (everything is serialized)
+int colvar::calc()
 {
-  if (cvm::debug())
-    cvm::log("Calculating colvar \""+this->name+"\".\n");
-  update_cvc_flags();
-  calc_cvcs();
-  calc_colvar_properties();
+  int error_code = COLVARS_OK;
+  error_code |= update_cvc_flags();
+  error_code |= calc_cvcs();
+  error_code |= collect_cvc_data();
+  return COLVARS_OK;
 }
 
 
 int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
 {
-  size_t i, ig;
-  size_t cvc_count;
-  size_t const cvc_max_count = num_cvcs ? num_cvcs : num_active_cvcs();
-
-  // prepare atom groups for calculation
+  int error_code = COLVARS_OK;
   if (cvm::debug())
-    cvm::log("Collecting data from atom groups.\n");
+    cvm::log("Calculating colvar \""+this->name+"\", components "+
+             cvm::to_str(first_cvc)+" through "+cvm::to_str(first_cvc+num_cvcs)+".\n");
 
-  if (first_cvc >= cvcs.size()) {
+  error_code |= check_cvc_range(first_cvc, num_cvcs);
+  if (error_code != COLVARS_OK) {
+    return error_code;
+  }
+
+  // atom groups are updated here
+  error_code |= update_cvc_data(first_cvc, num_cvcs);
+
+  error_code |= calc_cvc_values(first_cvc, num_cvcs);
+  error_code |= calc_cvc_gradients(first_cvc, num_cvcs);
+  error_code |= calc_cvc_sys_forces(first_cvc, num_cvcs);
+  error_code |= calc_cvc_Jacobians(first_cvc, num_cvcs);
+
+  if (cvm::debug())
+    cvm::log("Done calculating colvar \""+this->name+"\".\n");
+
+  return error_code;
+}
+
+
+int colvar::collect_cvc_data()
+{
+  if (cvm::debug())
+    cvm::log("Calculating colvar \""+this->name+"\"'s properties.\n");
+
+  int error_code = COLVARS_OK;
+
+  error_code |= collect_cvc_values();
+  error_code |= collect_cvc_gradients();
+  error_code |= collect_cvc_sys_forces();
+  error_code |= collect_cvc_Jacobians();
+
+  error_code |= calc_colvar_properties();
+
+  if (cvm::debug())
+    cvm::log("Done calculating colvar \""+this->name+"\"'s properties.\n");
+
+  return error_code;
+}
+
+
+int colvar::check_cvc_range(int first_cvc, size_t num_cvcs)
+{
+  if ((first_cvc < 0) || (first_cvc >= cvcs.size())) {
     cvm::error("Error: trying to address a component outside the "
                "range defined for colvar \""+name+"\".\n", BUG_ERROR);
     return BUG_ERROR;
   }
+  return COLVARS_OK;
+}
+
+
+int colvar::update_cvc_data(int first_cvc, size_t num_cvcs)
+{
+  size_t const cvc_max_count = num_cvcs ? num_cvcs : num_active_cvcs();
+  size_t i, cvc_count;
+
+  // prepare atom groups for calculation
+  if (cvm::debug())
+    cvm::log("Collecting data from atom groups.\n");
 
   for (i = first_cvc, cvc_count = 0;
        (i < cvcs.size()) && (cvc_count < cvc_max_count);
        i++) {
     if (!cvcs[i]->b_enabled) continue;
     cvc_count++;
-    for (ig = 0; ig < cvcs[i]->atom_groups.size(); ig++) {
+    for (size_t ig = 0; ig < cvcs[i]->atom_groups.size(); ig++) {
       cvm::atom_group &atoms = *(cvcs[i]->atom_groups[ig]);
       atoms.reset_atoms_data();
       atoms.read_positions();
@@ -919,17 +972,28 @@ int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
          i++) {
       if (!cvcs[i]->b_enabled) continue;
       cvc_count++;
-      for (ig = 0; ig < cvcs[i]->atom_groups.size(); ig++) {
+      for (size_t ig = 0; ig < cvcs[i]->atom_groups.size(); ig++) {
         cvcs[i]->atom_groups[ig]->read_system_forces();
       }
     }
   }
 
+  if (cvm::debug())
+    cvm::log("Done collecting data from atom groups.\n");
+
+  return COLVARS_OK;
+}
+
+
+int colvar::calc_cvc_values(int first_cvc, size_t num_cvcs)
+{
+  size_t const cvc_max_count = num_cvcs ? num_cvcs : num_active_cvcs();
+  size_t i, cvc_count;
+
   // calculate the value of the colvar
 
   if (cvm::debug())
     cvm::log("Calculating colvar components.\n");
-  x.reset();
 
   // First, calculate component values
   for (i = first_cvc, cvc_count = 0;
@@ -946,8 +1010,16 @@ int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
                 cvm::to_str((cvcs[i])->value(),
                 cvm::cv_width, cvm::cv_prec)+".\n");
   }
+  return COLVARS_OK;
+}
 
-  // Then combine them appropriately, using either a scripted function or a polynomial
+
+int colvar::collect_cvc_values()
+{
+  x.reset();
+  size_t i;
+
+  // combine them appropriately, using either a scripted function or a polynomial
   if (tasks[task_scripted]) {
     // cvcs combined by user script
     int res = cvm::proxy->run_colvar_callback(scripted_function, sorted_cvc_values, x);
@@ -961,11 +1033,8 @@ int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
     }
   } else if (x.type() == colvarvalue::type_scalar) {
     // polynomial combination allowed
-    for (i = first_cvc, cvc_count = 0;
-        (i < cvcs.size()) && (cvc_count < cvc_max_count);
-        i++) {
+    for (i = 0; i < cvcs.size(); i++) {
       if (!cvcs[i]->b_enabled) continue;
-      cvc_count++;
       x += (cvcs[i])->sup_coeff *
       ( ((cvcs[i])->sup_np != 1) ?
         std::pow((cvcs[i])->value().real_value, (cvcs[i])->sup_np) :
@@ -973,11 +1042,8 @@ int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
     }
   } else {
     // only linear combination allowed
-    for (i = first_cvc, cvc_count = 0;
-        (i < cvcs.size()) && (cvc_count < cvc_max_count);
-        i++) {
+    for (i = 0; i < cvcs.size(); i++) {
       if (!cvcs[i]->b_enabled) continue;
-      cvc_count++;
       x += (cvcs[i])->sup_coeff * (cvcs[i])->value();
     }
   }
@@ -985,6 +1051,15 @@ int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
   if (cvm::debug())
     cvm::log("Colvar \""+this->name+"\" has value "+
               cvm::to_str(x, cvm::cv_width, cvm::cv_prec)+".\n");
+
+  return COLVARS_OK;
+}
+
+
+int colvar::calc_cvc_gradients(int first_cvc, size_t num_cvcs)
+{
+  size_t const cvc_max_count = num_cvcs ? num_cvcs : num_active_cvcs();
+  size_t i, cvc_count;
 
   if (tasks[task_gradients]) {
 
@@ -1001,7 +1076,7 @@ int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
       (cvcs[i])->calc_gradients();
       // if requested, propagate (via chain rule) the gradients above
       // to the atoms used to define the roto-translation
-      for (ig = 0; ig < cvcs[i]->atom_groups.size(); ig++) {
+      for (size_t ig = 0; ig < cvcs[i]->atom_groups.size(); ig++) {
         if (cvcs[i]->atom_groups[ig]->b_fit_gradients)
           cvcs[i]->atom_groups[ig]->calc_fit_gradients();
       }
@@ -1010,55 +1085,68 @@ int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
 
     if (cvm::debug())
       cvm::log("Done calculating gradients of colvar \""+this->name+"\".\n");
+  }
 
-    if (tasks[task_collect_gradients]) {
+  return COLVARS_OK;
+}
 
-      if (tasks[task_scripted]) {
-        cvm::error("Collecting atomic gradients is not implemented for "
-                   "scripted colvars.", COLVARS_NOT_IMPLEMENTED);
-        return COLVARS_NOT_IMPLEMENTED;
-      }
 
-      // Collect the atomic gradients inside colvar object
-      for (unsigned int a = 0; a < atomic_gradients.size(); a++) {
-        atomic_gradients[a].reset();
-      }
-      for (i = first_cvc, cvc_count = 0;
-          (i < cvcs.size()) && (cvc_count < cvc_max_count);
-          i++) {
-        if (!cvcs[i]->b_enabled) continue;
-        cvc_count++;
-        // Coefficient: d(a * x^n) = a * n * x^(n-1) * dx
-        cvm::real coeff = (cvcs[i])->sup_coeff * cvm::real((cvcs[i])->sup_np) *
-          std::pow((cvcs[i])->value().real_value, (cvcs[i])->sup_np-1);
+int colvar::collect_cvc_gradients()
+{
+  size_t i;
 
-        for (size_t j = 0; j < cvcs[i]->atom_groups.size(); j++) {
+  if (tasks[task_collect_gradients]) {
 
-          cvm::atom_group &ag = *(cvcs[i]->atom_groups[j]);
+    if (tasks[task_scripted]) {
+      cvm::error("Collecting atomic gradients is not implemented for "
+                 "scripted colvars.", COLVARS_NOT_IMPLEMENTED);
+      return COLVARS_NOT_IMPLEMENTED;
+    }
 
-          // If necessary, apply inverse rotation to get atomic
-          // gradient in the laboratory frame
-          if (cvcs[i]->atom_groups[j]->b_rotate) {
-            cvm::rotation const rot_inv = cvcs[i]->atom_groups[j]->rot.inverse();
+    // Collect the atomic gradients inside colvar object
+    for (unsigned int a = 0; a < atomic_gradients.size(); a++) {
+      atomic_gradients[a].reset();
+    }
+    for (i = 0; i < cvcs.size(); i++) {
+      if (!cvcs[i]->b_enabled) continue;
+      // Coefficient: d(a * x^n) = a * n * x^(n-1) * dx
+      cvm::real coeff = (cvcs[i])->sup_coeff * cvm::real((cvcs[i])->sup_np) *
+        std::pow((cvcs[i])->value().real_value, (cvcs[i])->sup_np-1);
 
-            for (size_t k = 0; k < cvcs[i]->atom_groups[j]->size(); k++) {
-              size_t a = std::lower_bound(atom_ids.begin(), atom_ids.end(),
-                                          ag[k].id) - atom_ids.begin();
-              atomic_gradients[a] += coeff * rot_inv.rotate(ag[k].grad);
-            }
+      for (size_t j = 0; j < cvcs[i]->atom_groups.size(); j++) {
 
-          } else {
+        cvm::atom_group &ag = *(cvcs[i]->atom_groups[j]);
 
-            for (size_t k = 0; k < cvcs[i]->atom_groups[j]->size(); k++) {
-              size_t a = std::lower_bound(atom_ids.begin(), atom_ids.end(),
-                                          ag[k].id) - atom_ids.begin();
-              atomic_gradients[a] += coeff * ag[k].grad;
-            }
+        // If necessary, apply inverse rotation to get atomic
+        // gradient in the laboratory frame
+        if (cvcs[i]->atom_groups[j]->b_rotate) {
+          cvm::rotation const rot_inv = cvcs[i]->atom_groups[j]->rot.inverse();
+
+          for (size_t k = 0; k < cvcs[i]->atom_groups[j]->size(); k++) {
+            size_t a = std::lower_bound(atom_ids.begin(), atom_ids.end(),
+                                        ag[k].id) - atom_ids.begin();
+            atomic_gradients[a] += coeff * rot_inv.rotate(ag[k].grad);
+          }
+
+        } else {
+
+          for (size_t k = 0; k < cvcs[i]->atom_groups[j]->size(); k++) {
+            size_t a = std::lower_bound(atom_ids.begin(), atom_ids.end(),
+                                        ag[k].id) - atom_ids.begin();
+            atomic_gradients[a] += coeff * ag[k].grad;
           }
         }
       }
     }
   }
+  return COLVARS_OK;
+}
+
+
+int colvar::calc_cvc_sys_forces(int first_cvc, size_t num_cvcs)
+{
+  size_t const cvc_max_count = num_cvcs ? num_cvcs : num_active_cvcs();
+  size_t i, cvc_count;
 
   if (tasks[task_system_force] && !tasks[task_extended_lagrangian]) {
     // If extended Lagrangian is enabled, system force calculation is trivial
@@ -1071,10 +1159,9 @@ int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
                  "scripted colvars.", COLVARS_NOT_IMPLEMENTED);
       return COLVARS_NOT_IMPLEMENTED;
     }
+
     if (cvm::debug())
       cvm::log("Calculating system force of colvar \""+this->name+"\".\n");
-
-    ft.reset();
 
     // if (!tasks[task_extended_lagrangian] && (cvm::step_relative() > 0)) {
     // Disabled check to allow for explicit system force calculation
@@ -1095,6 +1182,27 @@ int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
       }
     }
 
+  }
+
+  return COLVARS_OK;
+}
+
+
+int colvar::collect_cvc_sys_forces()
+{
+  if (tasks[task_system_force] && !tasks[task_extended_lagrangian]) {
+    // If extended Lagrangian is enabled, system force calculation is trivial
+    // and done together with integration of the extended coordinate.
+    ft.reset();
+
+    if (cvm::step_relative() > 0) {
+      // get from the cvcs the system forces from the PREVIOUS step
+      for (size_t i = 0; i < cvcs.size();  i++) {
+        if (!cvcs[i]->b_enabled) continue;
+        ft += (cvcs[i])->system_force() / ((cvcs[i])->sup_coeff * cvm::real(cvcs.size()));
+      }
+    }
+
     if (tasks[task_report_Jacobian_force]) {
       // add the Jacobian force to the system force, and don't apply any silent
       // correction internally: biases such as colvarbias_abf will handle it
@@ -1104,6 +1212,49 @@ int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
     if (cvm::debug())
       cvm::log("Done calculating system force of colvar \""+this->name+"\".\n");
   }
+
+  return COLVARS_OK;
+}
+
+
+int colvar::calc_cvc_Jacobians(int first_cvc, size_t num_cvcs)
+{
+  size_t const cvc_max_count = num_cvcs ? num_cvcs : num_active_cvcs();
+  size_t i, cvc_count;
+
+  if (tasks[task_Jacobian_force]) {
+    size_t i;
+    for (i = first_cvc, cvc_count = 0;
+         (i < cvcs.size()) && (cvc_count < cvc_max_count);
+         i++) {
+      if (!cvcs[i]->b_enabled) continue;
+      cvc_count++;
+      cvm::increase_depth();
+      (cvcs[i])->calc_Jacobian_derivative();
+      cvm::decrease_depth();
+    }
+  }
+
+  return COLVARS_OK;
+}
+
+
+int colvar::collect_cvc_Jacobians()
+{
+  if (tasks[task_Jacobian_force]) {
+    size_t ncvc = 0;
+    fj.reset();
+    for (size_t i = 0; i < cvcs.size(); i++) {
+      if (!cvcs[i]->b_enabled) continue;
+      // linear combination is assumed
+      fj += 1.0 / cvm::real((cvcs[i])->sup_coeff) *
+        (cvcs[i])->Jacobian_derivative();
+      ncvc++;
+    }
+    fj *= (1.0/cvm::real(ncvc)) * cvm::boltzmann() * cvm::temperature();
+  }
+
+  return COLVARS_OK;
 }
 
 
@@ -1143,8 +1294,7 @@ int colvar::calc_colvar_properties()
     ft_reported = ft;
   }
 
-  if (cvm::debug())
-    cvm::log("Done calculating colvar \""+this->name+"\".\n");
+  return COLVARS_OK;
 }
 
 
@@ -1161,33 +1311,12 @@ cvm::real colvar::update_forces_energy()
   // been summed over each bias using this colvar
   f += fb;
 
-
   if (tasks[task_Jacobian_force]) {
-    size_t i;
-    for (i = 0; i < cvcs.size(); i++) {
-      if (!cvcs[i]->b_enabled) continue;
-      cvm::increase_depth();
-      (cvcs[i])->calc_Jacobian_derivative();
-      cvm::decrease_depth();
-    }
-
-    size_t ncvc = 0;
-    fj.reset();
-    for (i = 0; i < cvcs.size(); i++) {
-      if (!cvcs[i]->b_enabled) continue;
-      // linear combination is assumed
-      fj += 1.0 / cvm::real((cvcs[i])->sup_coeff) *
-        (cvcs[i])->Jacobian_derivative();
-      ncvc++;
-    }
-    fj *= (1.0/cvm::real(ncvc)) * cvm::boltzmann() * cvm::temperature();
-
     // the instantaneous Jacobian force was not included in the reported system force;
     // instead, it is subtracted from the applied force (silent Jacobian correction)
     if (! tasks[task_report_Jacobian_force])
       f -= fj;
   }
-
 
   if (tasks[task_extended_lagrangian]) {
 

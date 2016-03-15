@@ -306,13 +306,40 @@ public:
   ~colvar();
 
 
-  /// \brief Calculate the colvar value and all the other requested
-  /// quantities
-  void calc();
+  /// \brief Calculate the colvar's value and related quantities
+  int calc();
 
-  /// \brief Calculate a given subset of colvar components (CVCs) (default: all CVCs)
+  /// \brief Calculate a subset of the colvar components (CVCs) currently active
+  /// (default: all active CVCs)
+  /// Note: both arguments refer to the sect of *active* CVCs, not all CVCs
   int calc_cvcs(int first = 0, size_t num_cvcs = 0);
 
+  /// Ensure that the selected range of CVCs is consistent
+  int check_cvc_range(int first_cvc, size_t num_cvcs);
+
+  /// \brief Gather all information needed by the calc_* functions of the given subset of CVCs
+  int update_cvc_data(int first, size_t num_cvcs);
+
+  /// \brief Calculate the values of the given subset of CVCs
+  int calc_cvc_values(int first, size_t num_cvcs);
+  /// \brief Same as \link colvar::calc_cvc_values \endlink but for gradients
+  int calc_cvc_gradients(int first, size_t num_cvcs);
+  /// \brief Same as \link colvar::calc_cvc_values \endlink but for system forces
+  int calc_cvc_sys_forces(int first, size_t num_cvcs);
+  /// \brief Same as \link colvar::calc_cvc_values \endlink but for Jacobian derivatives/forces
+  int calc_cvc_Jacobians(int first, size_t num_cvcs);
+
+  /// \brief Collect quantities from CVCs and update aggregated data for the colvar
+  int collect_cvc_data();
+
+  /// \brief Collect the values of the CVCs
+  int collect_cvc_values();
+  /// \brief Same as \link colvar::collect_cvc_values \endlink but for gradients
+  int collect_cvc_gradients();
+  /// \brief Same as \link colvar::collect_cvc_values \endlink but for system forces
+  int collect_cvc_sys_forces();
+  /// \brief Same as \link colvar::collect_cvc_values \endlink but for Jacobian derivatives/forces
+  int collect_cvc_Jacobians();
   /// \brief Calculate the quantities associated to the colvar (but not to the CVCs)
   int calc_colvar_properties();
 
