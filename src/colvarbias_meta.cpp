@@ -59,10 +59,8 @@ colvarbias_meta::colvarbias_meta(std::string const &conf, char const *key)
       comm = single_replica;
   }
 
-  // NOTE: eventually this will be handled by a requirement in the deps class
-  for (int i = 0; i < colvars.size(); i++) {
-    colvars[i]->require(f_cv_gradient);
-  }
+  // This implies gradients for all colvars
+  require(f_cvb_apply_force);
 
   get_keyval(conf, "useGrids", use_grids, true);
 
@@ -87,10 +85,6 @@ colvarbias_meta::colvarbias_meta(std::string const &conf, char const *key)
     if (! get_keyval(conf, "writeFreeEnergyFile", dump_fes, true))
       get_keyval(conf, "dumpFreeEnergyFile", dump_fes, true, colvarparse::parse_silent);
     get_keyval(conf, "saveFreeEnergyFile", dump_fes_save, false);
-
-    for (int i = 0; i < colvars.size(); i++) {
-      colvars[i]->require(f_cv_grid);
-    }
 
     hills_energy           = new colvar_grid_scalar(colvars);
     hills_energy_gradients = new colvar_grid_gradient(colvars);

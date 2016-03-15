@@ -37,7 +37,7 @@ colvarbias::colvarbias(std::string const &conf, char const *key)
     return;
   }
 
-  description = name;
+  description = "bias " + name;
 
   // lookup the associated colvars
   std::vector<std::string> colvars_str;

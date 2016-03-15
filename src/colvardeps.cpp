@@ -19,9 +19,9 @@ int deps::require(int feature_id,
   feature_state *fs = feature_states[feature_id];
 
   if (cvm::debug()) {
-    cvm::log("~~~ " + description +
+    cvm::log("DEPS: " + description +
       (dry_run ? " testing " : " requiring ") +
-      "\"" + f->description + "\" ~~~");
+      "\"" + f->description);
   }
 
   if (fs->enabled) {
@@ -46,7 +46,7 @@ int deps::require(int feature_id,
         cvm::log("Features \"" + f->description + "\" is incompatible with \""
         + g->description + "\" in " + description);
         if (toplevel) {
-          cvm::error("Failed dependency in " + description + ".");
+          cvm::error("Failed dependency in " + description);
         }
       }
       return COLVARS_ERROR;
@@ -62,7 +62,7 @@ int deps::require(int feature_id,
       if (!dry_run) {
         cvm::log("...required by \"" + f->description + "\" in " + description + ".");
         if (toplevel) {
-          cvm::error("Failed dependency in " + description + ".");
+          cvm::error("Failed dependency in " + description);
         }
       }
       return res;
@@ -87,13 +87,14 @@ int deps::require(int feature_id,
     }
     if (!ok) {
       if (!dry_run) {
-        cvm::log("In " + description + ", no dependency satisfied among alternates:");
+        cvm::log("No dependency satisfied among alternates:");
         for (j=0; j<f->requires_alt[i].size(); j++) {
           int g = f->requires_alt[i][j];
           cvm::log(cvm::to_str(j+1) + ". " + features()[g]->description);
         }
+        cvm::log("...required by \"" + f->description + "\" in " + description + ".");
         if (toplevel) {
-          cvm::error("Failed dependency in " + description + ".");
+          cvm::error("Failed dependency in " + description);
         }
       }
       return COLVARS_ERROR;
@@ -116,7 +117,7 @@ int deps::require(int feature_id,
           cvm::log("...required by \"" + f->description + "\" in " + description + ".");
         }
         if (toplevel) {
-          cvm::error("Failed dependency in " + description + ".");
+          cvm::error("Failed dependency in " + description);
         }
         return res;
       }
@@ -164,6 +165,11 @@ void deps::init_cvb_requires() {
   f_description(f_cvb_active, "active")
   f_req_children(f_cvb_active, f_cv_active)
 
+  f_description(f_cvb_apply_force, "apply force")
+  f_req_children(f_cvb_apply_force, f_cv_gradient)
+
+  f_description(f_cvb_get_system_force, "obtain system force")
+  f_req_children(f_cvb_get_system_force, f_cv_system_force)
 
   // Initialize feature_states for each instance
   for (i = 0; i < f_cvb_ntot; i++) {
@@ -196,26 +202,21 @@ void deps::init_cv_requires() {
     // System force: either trivial (spring force) through extended Lagrangian, or calculated explicitly
     f_description(f_cv_system_force, "system force")
     f_req_alt2(f_cv_system_force, f_cv_extended_Lagrangian, f_cv_system_force_calc)
-    f_req_self(f_cv_system_force, f_cv_Jacobian)
 
     // Deps for explicit system force calculation
     f_description(f_cv_system_force_calc, "system force calculation")
     f_req_self(f_cv_system_force_calc, f_cv_scalar)
     f_req_self(f_cv_system_force_calc, f_cv_linear)
     f_req_children(f_cv_system_force_calc, f_cvc_system_force)
+    f_req_self(f_cv_system_force_calc, f_cv_Jacobian)
 
-    // Jacobian force: either trivial (zero) through extended Lagrangian, or calculated explicitly
     f_description(f_cv_Jacobian, "Jacobian derivative")
-    f_req_alt2(f_cv_Jacobian, f_cv_extended_Lagrangian, f_cv_Jacobian_calc)
-
-    // Deps for explicit Jacobian calculation
-    f_description(f_cv_Jacobian_calc, "Jacobian derivative calculation")
-    f_req_self(f_cv_Jacobian_calc, f_cv_scalar)
-    f_req_self(f_cv_Jacobian_calc, f_cv_linear)
-    f_req_children(f_cv_Jacobian_calc, f_cvc_Jacobian)
+    f_req_self(f_cv_Jacobian, f_cv_scalar)
+    f_req_self(f_cv_Jacobian, f_cv_linear)
+    f_req_children(f_cv_Jacobian, f_cvc_Jacobian)
 
     f_description(f_cv_hide_Jacobian, "hide Jacobian force")
-    f_req_self(f_cv_hide_Jacobian, f_cv_Jacobian_calc) // can only hide if explicitly calculated
+    f_req_self(f_cv_hide_Jacobian, f_cv_Jacobian) // can only hide if calculated
 
     f_description(f_cv_extended_Lagrangian, "extended Lagrangian")
 

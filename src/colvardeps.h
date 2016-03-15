@@ -153,6 +153,8 @@ public:
   enum features_biases {
     /// \brief Bias is active
     f_cvb_active,
+    f_cvb_apply_force,
+    f_cvb_get_system_force,
     f_cvb_ntot
   };
 
@@ -174,8 +176,6 @@ public:
     f_cv_system_force_calc,
     /// \brief Estimate Jacobian derivative
     f_cv_Jacobian,
-    /// \brief Compute Jacobian derivative explicitly
-    f_cv_Jacobian_calc,
     /// \brief Do not report the Jacobian force as part of the system force
     /// instead, apply a correction internally to cancel it
     f_cv_hide_Jacobian,
