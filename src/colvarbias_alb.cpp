@@ -43,6 +43,10 @@ colvarbias_alb::colvarbias_alb(std::string const &conf, char const *key) :
 
 
   for (i = 0; i < colvars.size(); i++) {
+
+    // NOTE: eventually this will be handled by a requirement in the deps class
+    colvars[i]->require(f_cv_gradient);
+
     colvar_centers[i].type(colvars[i]->value());
     //zero moments
     means[i] = ssd[i] = 0;

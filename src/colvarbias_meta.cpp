@@ -59,6 +59,11 @@ colvarbias_meta::colvarbias_meta(std::string const &conf, char const *key)
       comm = single_replica;
   }
 
+  // NOTE: eventually this will be handled by a requirement in the deps class
+  for (int i = 0; i < colvars.size(); i++) {
+    colvars[i]->require(f_cv_gradient);
+  }
+
   get_keyval(conf, "useGrids", use_grids, true);
 
   if (use_grids) {
@@ -68,6 +73,7 @@ colvarbias_meta::colvarbias_meta(std::string const &conf, char const *key)
     expand_grids = false;
     size_t i;
     for (i = 0; i < colvars.size(); i++) {
+      colvars[i]->require(f_cv_grid);
       if (colvars[i]->expand_boundaries) {
         expand_grids = true;
         cvm::log("Metadynamics bias \""+this->name+"\""+
@@ -82,8 +88,8 @@ colvarbias_meta::colvarbias_meta(std::string const &conf, char const *key)
       get_keyval(conf, "dumpFreeEnergyFile", dump_fes, true, colvarparse::parse_silent);
     get_keyval(conf, "saveFreeEnergyFile", dump_fes_save, false);
 
-    for (i = 0; i < colvars.size(); i++) {
-      colvars[i]->enable(colvar::task_grid);
+    for (int i = 0; i < colvars.size(); i++) {
+      colvars[i]->require(f_cv_grid);
     }
 
     hills_energy           = new colvar_grid_scalar(colvars);
