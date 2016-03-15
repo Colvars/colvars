@@ -27,34 +27,43 @@ colvar::cvc::cvc(std::string const &conf)
     b_Jacobian_derivative(false),
     b_debug_gradients(false)
 {
+  int i;
+
   if (cvm::debug())
     cvm::log("Initializing cvc base object.\n");
+
+  // Initialize feature_states for each instance
+  for (i = 0; i < deps::f_cvc_ntot; i++) {
+    feature_states.push_back(new feature_state);
+  }
+
+  // Features that are implemented by all cvcs by default
+  feature_states[f_cvc_value]->available = true;
+  feature_states[f_cvc_gradient]->available = true;
 
 
   if (cvc_features.size() == 0) {
     // Initialize static array once and for all
     // TODO TODO deps TODO TODO
-    for (int i = 0; i < deps::f_cvc_ntot; i++) {
+    for (i = 0; i < deps::f_cvc_ntot; i++) {
       cvc_features.push_back(new feature);
     }
-    //   enum features_cvc {
-    //     f_cvc_value,
-    //     f_cvc_scalar,
-    //     f_cvc_gradient,
-    //     f_cvc_system_force,
-    //     f_cvc_inv_gradient,
-    //     f_cvc_Jacobian,
-    //     f_cvc_ntot
-    //   };
 
-    //   features[deps::f_cvc_value]->description = "Colvar component value";
-    //
-    //   features[deps::f_cvc_gradient]->description = "Colvar component gradients";
-    //
-    //   features[deps::f_cvc_inv_gradient]->description = "Colvar component inverse gradients";
-    //
-    //   features[deps::f_cvc_Jacobian]->description = "Colvar component Jacobian derivative";
-    //
+    cvc_features[f_cvc_value]->description = "value";
+
+    cvc_features[f_cvc_scalar]->description = "scalar";
+
+    cvc_features[f_cvc_gradient]->description = "gradient";
+    cvc_features[f_cvc_gradient]->requires_self.push_back(f_cvc_value);
+
+    cvc_features[f_cvc_system_force]->description = "system force";
+
+    cvc_features[f_cvc_inv_gradient]->description = "inverse gradient";
+    cvc_features[f_cvc_inv_gradient]->requires_self.push_back(f_cvc_gradient);
+
+    cvc_features[f_cvc_Jacobian]->description = "Jacobian";
+    cvc_features[f_cvc_inv_gradient]->requires_self.push_back(f_cvc_inv_gradient);
+
     // TODO TODO deps TODO TODO
   }
 
