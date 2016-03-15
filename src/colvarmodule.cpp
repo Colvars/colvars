@@ -291,7 +291,8 @@ int colvarmodule::parse_biases(std::string const &conf)
 
   for (int i = 0; i < biases.size(); i++) {
     biases[i]->require(deps::f_cvb_active);
-    biases[i]->print_state();
+    if (cvm::debug())
+      biases[i]->print_state();
   }
 
   if (biases.size() || use_scripted_forces) {
@@ -744,13 +745,6 @@ int colvarmodule::reset()
   parse->reset();
 
   cvm::log("Resetting the Collective Variables Module.\n");
-  // Iterate backwards because we are deleting the elements as we go
-  for (std::vector<colvar *>::reverse_iterator cvi = colvars.rbegin();
-       cvi != colvars.rend();
-       cvi++) {
-    delete *cvi; // the colvar destructor updates the colvars array
-  }
-  colvars.clear();
 
   // Iterate backwards because we are deleting the elements as we go
   for (std::vector<colvarbias *>::reverse_iterator bi = biases.rbegin();
@@ -759,6 +753,14 @@ int colvarmodule::reset()
     delete *bi; // the bias destructor updates the biases array
   }
   biases.clear();
+
+  // Iterate backwards because we are deleting the elements as we go
+  for (std::vector<colvar *>::reverse_iterator cvi = colvars.rbegin();
+       cvi != colvars.rend();
+       cvi++) {
+    delete *cvi; // the colvar destructor updates the colvars array
+  }
+  colvars.clear();
 
   index_groups.clear();
   index_group_names.clear();

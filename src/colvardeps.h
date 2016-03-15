@@ -19,10 +19,22 @@ public:
 
   deps() {}
   ~deps() {
+    int i;
     // Do not delete features if it's static
 //     for (i=0; i<features.size(); i++) {
 //       if (features[i] != NULL) delete features[i];
 //     }
+
+    remove_all_children();
+
+    // Protest if we are deleting an object while a parent object may still depend on it
+    // Another possible strategy is to have the child unlist itself from the parent's children
+    if (parents.size()) {
+      cvm::log("Warning: destroying " + description + " before its parents objects:");
+      for (i=0; i<parents.size(); i++) {
+        cvm::log(parents[i]->description);
+      }
+    }
   }
 
   // Subclasses should initialize the following members:
@@ -84,6 +96,17 @@ public:
   // implement this as virtual to allow overriding
   virtual std::vector<feature *>&features() = 0;
 
+  void add_child(deps *child);
+
+  void remove_child(deps *child);
+
+  /// Used before deleting an object, if not handled by that object's destructor
+  /// (useful for cvcs because their children are member objects)
+  void remove_all_children();
+
+
+
+private:
   // pointers to objects this object depends on
   // list should be maintained by any code that modifies the object
   // this could be secured by making lists of colvars / cvcs / atom groups private and modified through accessor functions
@@ -93,11 +116,7 @@ public:
   // the size of this array is in effect a reference counter
   std::vector<deps *> parents;
 
-  void add_child(deps *child) {
-    children.push_back(child);
-    child->parents.push_back((deps *)this);
-  }
-
+public:
   // disabling a feature f:
   // if parents depend on f, tell them to refresh / check that they are ok?
   // if children provide features to satisfy f ONLY, disable that
@@ -120,9 +139,15 @@ public:
 
   void provide(int feature_id); // set the feature's flag to available in local object
 
-  int require(int f, bool dry_run = false);  // enable a feature and recursively solve its dependencies
+  int require(int f, bool dry_run = false, bool toplevel = true);  // enable a feature and recursively solve its dependencies
   // dry_run is set to true to recursively test if a feature is available, without enabling it
 //     int disable(int f);
+
+
+  /// This function is called whenever feature states are changed outside
+  /// of the object's control, that is, by parents
+  /// Eventually it may also be used when properties of children change
+  virtual int refresh_deps() {}
 
   // NOTE that all feature enums should start with f_*_active
   enum features_biases {

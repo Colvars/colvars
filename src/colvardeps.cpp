@@ -4,18 +4,25 @@ void deps::provide(int feature_id) {
   feature_states[feature_id]->available = true;
 }
 
-int deps::require(int feature_id, bool dry_run /* default: false */) {  // Enable given feature
+int deps::require(int feature_id,
+                  bool dry_run /* default: false */,
   // dry_run: fail silently, do not enable if available
   // flag is passed recursively to deps of this feature
-
+                  bool toplevel /* default: true */)
+  // toplevel: false if this is called as part of a chain of dependency resolution
+  // this is used to diagnose failed dependencies by displaying the full stack
+  // only the toplevel dependency will throw a fatal error
+{
   int res, i, j;
   bool ok;
   feature *f = features()[feature_id];
   feature_state *fs = feature_states[feature_id];
 
-  cvm::log("~~~ " + description +
-    (dry_run ? " testing " : " requiring ") +
-    "\"" + f->description + "\" ~~~");
+  if (cvm::debug()) {
+    cvm::log("~~~ " + description +
+      (dry_run ? " testing " : " requiring ") +
+      "\"" + f->description + "\" ~~~");
+  }
 
   if (fs->enabled) {
     // Do not try to solve deps if already enabled
@@ -32,11 +39,15 @@ int deps::require(int feature_id, bool dry_run /* default: false */) {  // Enabl
   // 1) enforce exclusions
   for (i=0; i<f->requires_exclude.size(); i++) {
     feature *g = features()[f->requires_exclude[i]];
-    cvm::log(f->description + " requires exclude " + g->description);
+    if (cvm::debug())
+      cvm::log(f->description + " requires exclude " + g->description);
     if (is_enabled(f->requires_exclude[i])) {
       if (!dry_run) {
-          cvm::error("Features \"" + f->description + "\" and \""
-          + g->description + "\" are incompatible in " + description);
+        cvm::log("Features \"" + f->description + "\" is incompatible with \""
+        + g->description + "\" in " + description);
+        if (toplevel) {
+          cvm::error("Failed dependency in " + description + ".");
+        }
       }
       return COLVARS_ERROR;
     }
@@ -44,13 +55,15 @@ int deps::require(int feature_id, bool dry_run /* default: false */) {  // Enabl
 
   // 2) solve internal deps (self)
   for (i=0; i<f->requires_self.size(); i++) {
-    cvm::log(f->description + " requires self " + features()[f->requires_self[i]]->description);
-    cvm::increase_depth();
-    res = require(f->requires_self[i], dry_run);
-    cvm::decrease_depth();
+    if (cvm::debug())
+      cvm::log(f->description + " requires self " + features()[f->requires_self[i]]->description);
+    res = require(f->requires_self[i], dry_run, false);
     if (res != COLVARS_OK) {
       if (!dry_run) {
-          cvm::error("Unsatisfied dependency for \"" + f->description + "\" in " + description);
+        cvm::log("...required by \"" + f->description + "\" in " + description + ".");
+        if (toplevel) {
+          cvm::error("Failed dependency in " + description + ".");
+        }
       }
       return res;
     }
@@ -63,15 +76,12 @@ int deps::require(int feature_id, bool dry_run /* default: false */) {  // Enabl
     ok = false;
     for (j=0; j<f->requires_alt[i].size(); j++) {
       int g = f->requires_alt[i][j];
-      cvm::log(f->description + " requires alt " + features()[g]->description);
-      cvm::increase_depth();
-      res = require(g, true);  // see if available
-      cvm::decrease_depth();
+      if (cvm::debug())
+        cvm::log(f->description + " requires alt " + features()[g]->description);
+      res = require(g, true, false);  // see if available
       if (res == COLVARS_OK) {
         ok = true;
-        cvm::increase_depth();
-        if (!dry_run) require(g); // Require again, for real
-        cvm::decrease_depth();
+        if (!dry_run) require(g, false, false); // Require again, for real
         break;
       }
     }
@@ -82,6 +92,9 @@ int deps::require(int feature_id, bool dry_run /* default: false */) {  // Enabl
           int g = f->requires_alt[i][j];
           cvm::log(cvm::to_str(j+1) + ". " + features()[g]->description);
         }
+        if (toplevel) {
+          cvm::error("Failed dependency in " + description + ".");
+        }
       }
       return COLVARS_ERROR;
     }
@@ -90,18 +103,28 @@ int deps::require(int feature_id, bool dry_run /* default: false */) {  // Enabl
   // 4) solve deps in children
   for (i=0; i<f->requires_children.size(); i++) {
     int g = f->requires_children[i];
-    cvm::log("requires children " + features()[g]->description);
+    if (cvm::debug())
+      cvm::log("requires children " + features()[g]->description);
 //     cvm::log("children " + cvm::to_str(g));
     for (j=0; j<children.size(); j++) {
 //       cvm::log("child " +  children[j]->description);
       cvm::increase_depth();
-      res = children[j]->require(g, dry_run);
+      res = children[j]->require(g, dry_run, false);
       cvm::decrease_depth();
       if (res != COLVARS_OK) {
         if (!dry_run) {
-          cvm::error("Unsatisfied dependency for \"" + f->description + "\" in " + description);
+          cvm::log("...required by \"" + f->description + "\" in " + description + ".");
+        }
+        if (toplevel) {
+          cvm::error("Failed dependency in " + description + ".");
         }
         return res;
+      }
+    }
+    // If we've just touched the features of child objects, refresh them
+    if (!dry_run && f->requires_children.size() != 0) {
+      for (j=0; j<children.size(); j++) {
+        children[j]->refresh_deps();
       }
     }
   }
@@ -348,4 +371,56 @@ void deps::print_state() {
     children[i]->print_state();
     cvm::decrease_depth();
   }
+}
+
+void deps::add_child(deps *child) {
+  children.push_back(child);
+  child->parents.push_back((deps *)this);
+}
+
+void deps::remove_child(deps *child) {
+  int i;
+  bool found = false;
+
+  for (i = children.size()-1; i>=0; --i) {
+    if (children[i] == child) {
+      children.erase(children.begin() + i);
+      found = true;
+      break;
+    }
+  }
+  if (!found) {
+    cvm::error("Trying to remove missing child reference from " + description);
+  }
+  found = false;
+  for (i = child->parents.size()-1; i>=0; --i) {
+    if (child->parents[i] == this) {
+      child->parents.erase(child->parents.begin() + i);
+      found = true;
+      break;
+    }
+  }
+  if (!found) {
+    cvm::error("Trying to remove missing parent reference from " + child->description);
+  }
+}
+
+void deps::remove_all_children() {
+  int i, j;
+  bool found;
+
+  for (i = 0; i < children.size(); ++i) {
+    found = false;
+    for (j = children[i]->parents.size()-1; j>=0; --j) {
+      if (children[i]->parents[j] == this) {
+        children[i]->parents.erase(children[i]->parents.begin() + j);
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      cvm::error("Trying to remove missing parent reference from " + children[i]->description);
+    }
+  }
+  children.clear();
 }

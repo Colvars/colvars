@@ -71,7 +71,7 @@ int colvar::cvc::setup() {
   description = "cvc " + name;
 
   for (int i = 0; i < atom_groups.size(); i++) {
-    children.push_back((deps *) atom_groups[i]);
+    add_child(atom_groups[i]);
   }
 
   return COLVARS_OK;
@@ -91,10 +91,6 @@ void colvar::cvc::read_data()
     atoms.read_positions();
     atoms.calc_required_properties();
     // each atom group will take care of its own ref_pos_group, if defined
-
-    if (is_enabled(f_cvc_system_force)) {
-      atoms.read_system_forces();
-    }
   }
 
 ////  Don't try to get atom velocities, as no back-end currently implements it

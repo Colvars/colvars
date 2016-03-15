@@ -176,7 +176,7 @@ colvar::colvar(std::string const &conf)
 
   // Store list of children cvcs for dependency checking purposes
   for (i = 0; i < cvcs.size(); i++) {
-    this->children.push_back((deps*) cvcs[i]);
+    add_child(cvcs[i]);
   }
 
   // Setup colvar as scripted function of components
@@ -256,7 +256,7 @@ colvar::colvar(std::string const &conf)
     bool lin = !is_enabled(f_cv_scripted);
     for (i = 0; i < cvcs.size(); i++) {
 
-  //     FIXME this is a reverse dependecy, ie. cv feature depends on cvc flag
+  //     FIXME this is a reverse dependency, ie. cv feature depends on cvc flag
   //     need to clarify this case
   //     if ((cvcs[i])->b_debug_gradients)
   //       enable(task_gradients);
@@ -511,12 +511,8 @@ colvar::colvar(std::string const &conf)
 
   // Start in active state by default
   require(f_cv_active);
-
-  // FIXME FIXME FIXME deps test
-
-  this->print_state();
-
-  // FIXME FIXME FIXME deps test
+  // Make sure dependency side-effects are correct
+  refresh_deps();
 
   x_old.type(value());
   v_fdiff.type(value());
@@ -525,15 +521,6 @@ colvar::colvar(std::string const &conf)
   ft.type(value());
   ft_reported.type(value());
 
-  // If dependencies are handled in a dynamic way, the features below should be refreshed
-  if (is_enabled(f_cv_system_force_calc)) {
-    cvm::request_system_force();
-  }
-  if (is_enabled(f_cv_collect_gradient) && atom_ids.size() == 0) {
-    build_atom_list();
-  }
-  // End of dependency side-effects
-
   if (cvm::b_analysis)
     parse_analysis(conf);
 
@@ -541,6 +528,18 @@ colvar::colvar(std::string const &conf)
     cvm::log("Done initializing collective variable \""+this->name+"\".\n");
 }
 
+
+int colvar::refresh_deps()
+{
+  // If enabled features are changed upstream, the features below should be refreshed
+  if (is_enabled(f_cv_system_force_calc)) {
+    cvm::request_system_force();
+  }
+  if (is_enabled(f_cv_collect_gradient) && atom_ids.size() == 0) {
+    build_atom_list();
+  }
+  return COLVARS_OK;
+}
 
 
 void colvar::build_atom_list(void)
@@ -663,153 +662,6 @@ int colvar::parse_analysis(std::string const &conf)
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
 }
 
-// FIXME FIXME Take care of all side effects of this function!
- /*
-int colvar::enable(colvar::task const &t)
-{
-  switch (t) {
-
-  case task_output_system_force:
-    enable(task_system_force);
-    tasks[t] = true;
-    break;
-
-  case task_report_Jacobian:
-    enable(task_Jacobian);
-    enable(task_system_force);
-    if (cvm::debug())
-      cvm::log("Adding the Jacobian force to the system force, "
-                "rather than applying its opposite silently.\n");
-    tasks[t] = true;
-    break;
-
-  case task_Jacobian:
-    // checks below do not apply to extended-system colvars
-    if ( !is_enabled(f_cv_extended_Lagrangian) ) {
-      enable(task_gradients);
-
-      if (!b_Jacobian) {
-        cvm::error("Error: colvar \""+this->name+
-                          "\" does not have Jacobian forces implemented.\n",
-                  INPUT_ERROR);
-      }
-      if (!b_linear) {
-        cvm::error("Error: colvar \""+this->name+
-                          "\" must be defined as a linear combination "
-                          "to calculate the Jacobian force.\n",
-                  INPUT_ERROR);
-      }
-      if (cvm::debug())
-        cvm::log("Enabling calculation of the Jacobian force "
-                  "on this colvar.\n");
-    }
-    fj.type(value());
-    tasks[t] = true;
-    break;
-
-  case task_system_force:
-    if (!is_enabled(f_cv_extended_Lagrangian)) {
-      if (!b_inverse_gradients) {
-        cvm::error("Error: one or more of the components of "
-                          "colvar \""+this->name+
-                          "\" does not support system force calculation.\n",
-                  INPUT_ERROR);
-      }
-      // FIXME side effect here FIXME
-      cvm::request_system_force();
-    }
-    // FIXME side effect here FIXME
-    ft.type(value());
-    ft_reported.type(value());
-    // FIXME side effect here FIXME
-    tasks[t] = true;
-    break;
-
-  case task_output_applied_force:
-  case task_lower_wall:
-  case task_upper_wall:
-    // all of the above require gradients
-    enable(task_gradients);
-    tasks[t] = true;
-    break;
-
-  case task_fdiff_velocity:
-    // FIXME side effect here FIXME
-    x_old.type(value());
-    v_fdiff.type(value());
-    v_reported.type(value());
-    // FIXME side effect here FIXME
-
-    tasks[t] = true;
-    break;
-
-  case task_output_velocity:
-    enable(task_fdiff_velocity);
-    tasks[t] = true;
-    break;
-
-  case task_grid:
-    if (value().type() != colvarvalue::type_scalar) {
-      cvm::error("Cannot calculate a grid for collective variable, \""+
-                        this->name+"\", because its value is not a scalar number.\n",
-                  INPUT_ERROR);
-    }
-    tasks[t] = true;
-    break;
-
-  case task_extended_Lagrangian:
-    enable(task_gradients);
-    // FIXME side effect here FIXME
-    v_reported.type(value());
-    // FIXME side effect here FIXME
-
-    tasks[t] = true;
-    break;
-
-  case task_lower_boundary:
-  case task_upper_boundary:
-    if (value().type() != colvarvalue::type_scalar) {
-      cvm::error("Error: this colvar is not a scalar value "
-                        "and cannot produce a grid.\n",
-                INPUT_ERROR);
-    }
-    tasks[t] = true;
-    break;
-
-  case task_output_value:
-  case task_runave:
-  case task_corrfunc:
-  case task_Langevin:
-  case task_output_energy:
-  case task_scripted:
-  case task_gradients:
-    tasks[t] = true;
-    break;
-
-  case task_collect_gradients:
-    if (value().type() != colvarvalue::type_scalar) {
-      cvm::error("Collecting atomic gradients for non-scalar collective variable \""+
-                        this->name+"\" is not yet implemented.\n",
-                  INPUT_ERROR);
-    }
-
-    enable(task_gradients);
-    // FIXME side effect here FIXME
-    if (atom_ids.size() == 0) {
-      build_atom_list();
-    }
-    // FIXME side effect here FIXME
-
-    tasks[t] = true;
-    break;
-
-  default:
-    break;
-  }
-
-  return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
-}
-*/
 
 void colvar::setup() {
   // loop over all components to reset masses of all groups
@@ -826,8 +678,15 @@ void colvar::setup() {
 
 colvar::~colvar()
 {
-  for (size_t i = 0; i < cvcs.size(); i++) {
-    delete cvcs[i];
+  for (std::vector<cvc *>::reverse_iterator ci = cvcs.rbegin();
+      ci != cvcs.rend();
+      ++ci) {
+    // clear all children of this cvc (i.e. its atom groups)
+    // because the cvc base class destructor can't do it early enough
+    // and we don't want to have each cvc derived class do it separately
+    (*ci)->remove_all_children();
+    remove_child(*ci);
+    delete *ci;
   }
 
   // remove reference to this colvar from the CVM

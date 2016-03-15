@@ -53,7 +53,7 @@ colvarbias::colvarbias(std::string const &conf, char const *key)
   for (size_t i=0; i<colvars.size(); i++) {
     // All biases need at least the value of colvars
     // although possibly not at all timesteps
-    children.push_back(colvars[i]);
+    add_child(colvars[i]);
   }
   // Start in active state by default
   require(f_cvb_active);
