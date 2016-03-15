@@ -126,6 +126,29 @@ public:
     return CkMyNodeSize();
   }
 
+protected:
+
+  CmiNodeLock smp_lock_state;
+
+public:
+
+  int smp_lock()
+  {
+    smp_lock_state = CmiCreateLock();
+    return COLVARS_OK;
+  }
+
+  int smp_trylock()
+  {
+    return COLVARS_NOT_IMPLEMENTED;
+  }
+
+  int smp_unlock()
+  {
+    CmiDestroyLock(smp_lock_state);
+    return COLVARS_OK;
+  }
+
   // Replica communication functions.
   bool replica_enabled() {
 #if CMK_HAS_PARTITION
