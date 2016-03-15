@@ -711,6 +711,7 @@ colvar::~colvar()
 // Default schedule (everything is serialized)
 int colvar::calc()
 {
+  // Note: if anything is added here, it should be added also in the SMP block of calc_colvars()
   int error_code = COLVARS_OK;
   if (is_enabled(f_cv_active)) {
     error_code |= update_cvc_flags();

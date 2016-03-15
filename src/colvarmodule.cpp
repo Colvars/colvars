@@ -495,6 +495,7 @@ int colvarmodule::calc_colvars()
     cvm::log("Calculating collective variables.\n");
   // calculate collective variables and their gradients
 
+  int error_code = COLVARS_OK;
   std::vector<colvar *>::iterator cvi;
 
   // if SMP support is available, split up the work
@@ -513,7 +514,7 @@ int colvarmodule::calc_colvars()
     cvm::increase_depth();
     for (cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
 
-      (*cvi)->update_cvc_flags();
+      error_code |= (*cvi)->update_cvc_flags();
 
       size_t num_items = (*cvi)->num_active_cvcs();
       colvars_smp.reserve(colvars_smp.size() + num_items);
@@ -528,11 +529,11 @@ int colvarmodule::calc_colvars()
     cvm::decrease_depth();
 
     // calculate colvar components in parallel
-    proxy->smp_colvars_loop();
+    error_code |= proxy->smp_colvars_loop();
 
     cvm::increase_depth();
     for (cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
-      (*cvi)->collect_cvc_data();
+      error_code |= (*cvi)->collect_cvc_data();
     }
     cvm::decrease_depth();
 
@@ -541,7 +542,7 @@ int colvarmodule::calc_colvars()
     // calculate colvars one at a time
     cvm::increase_depth();
     for (cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
-      (*cvi)->calc();
+      error_code |= (*cvi)->calc();
       if (cvm::get_error()) {
         return COLVARS_ERROR;
       }
@@ -549,7 +550,7 @@ int colvarmodule::calc_colvars()
     cvm::decrease_depth();
   }
 
-  return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
+  return error_code | cvm::get_error();
 }
 
 
