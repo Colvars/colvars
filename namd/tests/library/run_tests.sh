@@ -52,7 +52,7 @@ do
 
   # run simulation(s)
   for script in test*.namd ; do
-      $BINARY $script > ${script%.namd}.out
+      $BINARY +p 5 $script > ${script%.namd}.out
       # collect output of colvars module, except the version numbers
       grep "^colvars:" ${script%.namd}.out | grep -v 'Initializing the collective variables module' \
                                            | grep -v 'Using NAMD interface, version' > ${script%.namd}.colvars.out
