@@ -30,6 +30,35 @@ colvar::cvc::cvc(std::string const &conf)
   if (cvm::debug())
     cvm::log("Initializing cvc base object.\n");
 
+
+  if (cvc_features.size() == 0) {
+    // Initialize static array once and for all
+    // TODO TODO deps TODO TODO
+    for (int i = 0; i < deps::f_cvc_ntot; i++) {
+      cvc_features.push_back(new feature);
+    }
+    //   enum features_cvc {
+    //     f_cvc_value,
+    //     f_cvc_scalar,
+    //     f_cvc_gradient,
+    //     f_cvc_system_force,
+    //     f_cvc_inv_gradient,
+    //     f_cvc_Jacobian,
+    //     f_cvc_ntot
+    //   };
+
+    //   features[deps::f_cvc_value]->description = "Colvar component value";
+    //
+    //   features[deps::f_cvc_gradient]->description = "Colvar component gradients";
+    //
+    //   features[deps::f_cvc_inv_gradient]->description = "Colvar component inverse gradients";
+    //
+    //   features[deps::f_cvc_Jacobian]->description = "Colvar component Jacobian derivative";
+    //
+    // TODO TODO deps TODO TODO
+  }
+
+
   get_keyval(conf, "name", this->name, std::string(""), parse_silent);
 
   get_keyval(conf, "componentCoeff", sup_coeff, 1.0);
@@ -190,3 +219,8 @@ void colvar::cvc::debug_gradients(cvm::atom_group &group)
 
   return;
 }
+
+
+// Static members
+
+std::vector<deps::feature *> colvar::cvc::cvc_features;
