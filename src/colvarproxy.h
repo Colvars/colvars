@@ -127,6 +127,18 @@ public:
     return COLVARS_NOT_IMPLEMENTED;
   }
 
+  /// Index of this thread
+  virtual int smp_thread_id()
+  {
+    return COLVARS_NOT_IMPLEMENTED;
+  }
+
+  /// Number of threads sharing this address space
+  virtual int smp_num_threads()
+  {
+    return COLVARS_NOT_IMPLEMENTED;
+  }
+
   // **************** MULTIPLE REPLICAS COMMUNICATION ****************
 
   // Replica exchange commands:

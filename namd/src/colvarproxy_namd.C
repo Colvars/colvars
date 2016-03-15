@@ -1017,7 +1017,7 @@ void calc_colvars_items_smp(int first, int last, void *result, int paramNum, voi
 
   for (int i = first; i <= last; i++) {
     if (cvm::debug()) {
-      cvm::log("["+cvm::to_str(CkMyPe())+"/"+cvm::to_str(CkNumPes())+
+      cvm::log("["+cvm::to_str(proxy->smp_thread_id())+"/"+cvm::to_str(proxy->smp_num_threads())+
                "]: smp_colvars_loop(), first = "+cvm::to_str(first)+
                ", last = "+cvm::to_str(last)+", cv = "+
                cv->colvars_smp[i]->name+", cvc = "+cvm::to_str(cv->colvars_smp_items[i])+"\n");

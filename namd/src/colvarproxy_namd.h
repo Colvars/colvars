@@ -116,6 +116,16 @@ public:
 
   friend void calc_colvars_items_smp(int first, int last, void *result, int paramNum, void *param);
 
+  int smp_thread_id()
+  {
+    return CkMyRank();
+  }
+
+  int smp_num_threads()
+  {
+    return CkMyNodeSize();
+  }
+
   // Replica communication functions.
   bool replica_enabled() {
 #if CMK_HAS_PARTITION
