@@ -1,4 +1,5 @@
 colvars: ----------------------------------------------------------------------
+colvars: Please cite Fiorin et al, Mol Phys 2013 in any publication based on this calculation.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration:
 colvars: # indexFile = "" [default]
