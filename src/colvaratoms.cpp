@@ -170,7 +170,6 @@ int cvm::atom_group::remove_atom(cvm::atom_iter ai)
 
 int cvm::atom_group::init()
 {
-  int i;
   if (!key.size()) key = "atoms";
   atoms.clear();
 

@@ -107,9 +107,9 @@ public:
 
   /// \brief Within the constructor, make a group parse its own
   /// options from the provided configuration string
-  void parse_group(std::string const &conf,
+  /// Returns reference to new group
+  cvm::atom_group *parse_group(std::string const &conf,
                    char const *group_key,
-                   cvm::atom_group &group,
                    bool optional = false);
 
   /// \brief After construction, set data related to dependency handling
@@ -141,7 +141,7 @@ public:
   virtual void calc_gradients() = 0;
 
   /// \brief Calculate finite-difference gradients alongside the analytical ones, for each Cartesian component
-  virtual void debug_gradients(cvm::atom_group &group);
+  virtual void debug_gradients(cvm::atom_group *group);
 
   /// \brief Calculate the total force from the system using the
   /// inverse atomic gradients
@@ -305,9 +305,9 @@ class colvar::distance
 {
 protected:
   /// First atom group
-  cvm::atom_group  group1;
+  cvm::atom_group  *group1;
   /// Second atom group
-  cvm::atom_group  group2;
+  cvm::atom_group  *group2;
   /// Vector distance, cached to be recycled
   cvm::rvector     dist_v;
   /// Use absolute positions, ignoring PBCs when present
@@ -387,11 +387,11 @@ class colvar::distance_z
 {
 protected:
   /// Main atom group
-  cvm::atom_group  main;
+  cvm::atom_group  *main;
   /// Reference atom group
-  cvm::atom_group  ref1;
+  cvm::atom_group  *ref1;
   /// Optional, second ref atom group
-  cvm::atom_group  ref2;
+  cvm::atom_group  *ref2;
   /// Use absolute positions, ignoring PBCs when present
   bool b_no_PBC;
   /// Compute system force on one site only to avoid unwanted
@@ -484,9 +484,9 @@ class colvar::distance_pairs
 {
 protected:
   /// First atom group
-  cvm::atom_group  group1;
+  cvm::atom_group  *group1;
   /// Second atom group
-  cvm::atom_group  group2;
+  cvm::atom_group  *group2;
   /// Use absolute positions, ignoring PBCs when present
   bool b_no_PBC;
 public:
@@ -513,7 +513,7 @@ class colvar::gyration
 {
 protected:
   /// Atoms involved
-  cvm::atom_group atoms;
+  cvm::atom_group  *atoms;
 public:
   /// Constructor
   gyration(std::string const &conf);
@@ -588,7 +588,7 @@ class colvar::eigenvector
 protected:
 
   /// Atom group
-  cvm::atom_group             atoms;
+  cvm::atom_group  *           atoms;
 
   /// Reference coordinates
   std::vector<cvm::atom_pos>  ref_pos;
@@ -630,11 +630,11 @@ class colvar::angle
 protected:
 
   /// Atom group
-  cvm::atom_group group1;
+  cvm::atom_group  *group1;
   /// Atom group
-  cvm::atom_group group2;
+  cvm::atom_group  *group2;
   /// Atom group
-  cvm::atom_group group3;
+  cvm::atom_group  *group3;
 
   /// Inter site vectors
   cvm::rvector r21, r23;
@@ -676,11 +676,11 @@ class colvar::dipole_angle
 protected:
 
   /// Dipole atom group
-  cvm::atom_group group1;
+  cvm::atom_group  *group1;
   /// Atom group
-  cvm::atom_group group2;
+  cvm::atom_group  *group2;
   /// Atom group
-  cvm::atom_group group3;
+  cvm::atom_group  *group3;
 
   /// Inter site vectors
   cvm::rvector r21, r23;
@@ -720,13 +720,13 @@ class colvar::dihedral
 protected:
 
   /// Atom group
-  cvm::atom_group group1;
+  cvm::atom_group  *group1;
   /// Atom group
-  cvm::atom_group group2;
+  cvm::atom_group  *group2;
   /// Atom group
-  cvm::atom_group group3;
+  cvm::atom_group  *group3;
   /// Atom group
-  cvm::atom_group group4;
+  cvm::atom_group  *group4;
   /// Inter site vectors
   cvm::rvector r12, r23, r34;
 
@@ -1007,7 +1007,7 @@ class colvar::orientation
 protected:
 
   /// Atom group
-  cvm::atom_group            atoms;
+  cvm::atom_group  *          atoms;
   /// Center of geometry of the group
   cvm::atom_pos              atoms_cog;
 
@@ -1153,7 +1153,7 @@ class colvar::rmsd
 protected:
 
   /// Atom group
-  cvm::atom_group             atoms;
+  cvm::atom_group  *atoms;
 
   /// Reference coordinates (for RMSD calculation only)
   std::vector<cvm::atom_pos>  ref_pos;
@@ -1184,7 +1184,7 @@ class colvar::cartesian
 {
 protected:
   /// Atom group
-  cvm::atom_group atoms;
+  cvm::atom_group  *atoms;
   /// Which Cartesian coordinates to include
   std::vector<size_t> axes;
 public:
