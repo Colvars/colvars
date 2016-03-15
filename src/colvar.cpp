@@ -768,7 +768,7 @@ int colvar::collect_cvc_data()
 
 int colvar::check_cvc_range(int first_cvc, size_t num_cvcs)
 {
-  if ((first_cvc < 0) || (first_cvc >= cvcs.size())) {
+  if ((first_cvc < 0) || (first_cvc >= ((int) cvcs.size()))) {
     cvm::error("Error: trying to address a component outside the "
                "range defined for colvar \""+name+"\".\n", BUG_ERROR);
     return BUG_ERROR;
@@ -1006,10 +1006,9 @@ int colvar::collect_cvc_sys_forces()
 int colvar::calc_cvc_Jacobians(int first_cvc, size_t num_cvcs)
 {
   size_t const cvc_max_count = num_cvcs ? num_cvcs : num_active_cvcs();
-  size_t i, cvc_count;
 
   if (is_enabled(f_cv_Jacobian)) {
-    size_t i;
+    size_t i, cvc_count;
     for (i = first_cvc, cvc_count = 0;
          (i < cvcs.size()) && (cvc_count < cvc_max_count);
          i++) {

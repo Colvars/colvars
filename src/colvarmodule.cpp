@@ -292,7 +292,7 @@ int colvarmodule::parse_biases(std::string const &conf)
     cvm::decrease_depth();
   }
 
-  for (int i = 0; i < biases.size(); i++) {
+  for (size_t i = 0; i < biases.size(); i++) {
     biases[i]->require(deps::f_cvb_active);
     if (cvm::debug())
       biases[i]->print_state();

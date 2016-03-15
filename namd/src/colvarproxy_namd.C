@@ -178,7 +178,7 @@ int colvarproxy_namd::setup()
   }
 
   size_t n_group_atoms = 0;
-  for (size_t ig = 0; ig < modifyRequestedGroups().size(); ig++) {
+  for (int ig = 0; ig < modifyRequestedGroups().size(); ig++) {
     n_group_atoms += modifyRequestedGroups()[ig].size();
   }
 
@@ -186,7 +186,7 @@ int colvarproxy_namd::setup()
       cvm::to_str(n_group_atoms)+" atoms in total).\n");
 
   // Note: groupMassBegin, groupMassEnd may be used here, but they won't work for charges
-  for (size_t ig = 0; ig < modifyRequestedGroups().size(); ig++) {
+  for (int ig = 0; ig < modifyRequestedGroups().size(); ig++) {
 
     // update mass and charge
     update_group_properties(ig);
@@ -301,7 +301,7 @@ void colvarproxy_namd::calculate()
       ForceList::const_iterator f_i = getGroupTotalForceBegin();
       ForceList::const_iterator f_e = getGroupTotalForceEnd();
       size_t i = 0;
-      if ((f_e - f_i) != atom_groups_ids.size()) {
+      if ((f_e - f_i) != ((int) atom_groups_ids.size())) {
         cvm::error("Error: system forces were requested for scalable groups, "
                    "but they are not in the same number from the number of groups.\n"
                    "The most probable cause is combination of energy "
@@ -371,7 +371,7 @@ void colvarproxy_namd::calculate()
     // zero out the applied forces on each group
     modifyGroupForces().resize(modifyRequestedGroups().size());
     ForceList::iterator gf_i = modifyGroupForces().begin();
-    for (size_t ig = 0; gf_i != modifyGroupForces().end(); gf_i++, ig++) {
+    for (int ig = 0; gf_i != modifyGroupForces().end(); gf_i++, ig++) {
       cvm::rvector const &f = atom_groups_new_colvar_forces[ig];
       *gf_i = Vector(f.x, f.y, f.z);
     }
@@ -763,7 +763,7 @@ int colvarproxy_namd::load_coords(char const *pdb_filename,
 
       } else {
         // Atom ID mode: use predefined atom IDs from the atom group
-        if (ipdb != *current_index) {
+        if (((int) ipdb) != *current_index) {
           // Skip atoms not in the list
           continue;
         } else {
@@ -926,11 +926,10 @@ int colvarproxy_namd::init_atom_group(std::vector<int> const &atoms_ids)
   // and to stay that way during a simulation
 
   // compare this new group to those already allocated inside GlobalMaster
-  size_t ig;
-  bool namd_group_id = -1;
+  int ig;
   for (ig = 0; ig < modifyRequestedGroups().size(); ig++) {
-    if (modifyRequestedGroups().size() != atoms_ids.size()) continue;
-    size_t ia;
+    if (modifyRequestedGroups().size() != ((int) atoms_ids.size())) continue;
+    int ia;
     AtomIDList const &namd_group = modifyRequestedGroups()[ig];
     for (ia = 0; ia < namd_group.size(); ia++) {
       int const aid = atoms_ids[ia];
@@ -941,7 +940,6 @@ int colvarproxy_namd::init_atom_group(std::vector<int> const &atoms_ids)
       log("Group was already added.\n");
 
     // this group already exists
-    namd_group_id = ig;
     return ig;
   }
 
@@ -994,7 +992,7 @@ int colvarproxy_namd::update_group_properties(int index)
 
   cvm::real total_mass = 0.0;
   cvm::real total_charge = 0.0;
-  for (size_t i = 0; i < namd_group.size(); i++) {
+  for (int i = 0; i < namd_group.size(); i++) {
     total_mass += Node::Object()->molecule->atommass(namd_group[i]);
     total_charge += Node::Object()->molecule->atomcharge(namd_group[i]);
   }
@@ -1034,5 +1032,6 @@ int colvarproxy_namd::smp_colvars_loop()
   cvm::increase_depth();
   CkLoop_Parallelize(calc_colvars_items_smp, 1, this, cv->colvars_smp.size(), 0, cv->colvars_smp.size()-1);
   cvm::decrease_depth();
+  return COLVARS_OK;
 }
 
