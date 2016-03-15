@@ -106,20 +106,21 @@ public:
 
   /// Module-wide error state
   /// see constants at the top of this file
+protected:
+
   static int errorCode;
-  static inline void set_error_bits(int code)
-  {
-    errorCode |= code;
-    errorCode |= COLVARS_ERROR;
-  }
+
+public:
+
+  static void set_error_bits(int code);
+
   static inline int get_error()
   {
     return errorCode;
   }
-  static inline void clear_error()
-  {
-    errorCode = 0;
-  }
+
+  static inline void clear_error();
+
 
   /// Current step number
   static long it;

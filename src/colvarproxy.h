@@ -139,6 +139,24 @@ public:
     return COLVARS_NOT_IMPLEMENTED;
   }
 
+  /// Lock the proxy's shared data for access by a thread, if threads are implemented; if not implemented, does nothing
+  virtual int smp_lock()
+  {
+    return COLVARS_OK;
+  }
+
+  /// Attempt to lock the proxy's shared data
+  virtual int smp_trylock()
+  {
+    return COLVARS_OK;
+  }
+
+  /// Release the lock
+  virtual int smp_unlock()
+  {
+    return COLVARS_OK;
+  }
+
   // **************** MULTIPLE REPLICAS COMMUNICATION ****************
 
   // Replica exchange commands:

@@ -15,6 +15,7 @@
 #include "colvarbias_restraint.h"
 #include "colvarscript.h"
 
+
 colvarmodule::colvarmodule(colvarproxy *proxy_in)
 {
   // pointer to the proxy object
@@ -99,6 +100,7 @@ int colvarmodule::read_config_string(std::string const &config_str)
   }
   return parse_config(conf);
 }
+
 
 int colvarmodule::parse_config(std::string &conf)
 {
@@ -217,6 +219,7 @@ int colvarmodule::parse_colvars(std::string const &conf)
 
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
 }
+
 
 bool colvarmodule::check_new_bias(std::string &conf, char const *key)
 {
@@ -1135,21 +1138,42 @@ void cvm::log(std::string const &message)
     proxy->log(message);
 }
 
+
 void cvm::increase_depth()
 {
   depth++;
 }
+
 
 void cvm::decrease_depth()
 {
   if (depth) depth--;
 }
 
+
+void colvarmodule::set_error_bits(int code)
+{
+  proxy->smp_lock();
+  errorCode |= code;
+  errorCode |= COLVARS_ERROR;
+  proxy->smp_unlock();
+}
+
+
+void colvarmodule::clear_error()
+{
+  proxy->smp_lock();
+  errorCode = COLVARS_OK;
+  proxy->smp_unlock();
+}
+
+
 void cvm::error(std::string const &message, int code)
 {
   set_error_bits(code);
   proxy->error(message);
 }
+
 
 void cvm::fatal_error(std::string const &message)
 {
@@ -1158,6 +1182,7 @@ void cvm::fatal_error(std::string const &message)
   set_error_bits(FATAL_ERROR);
   proxy->fatal_error(message);
 }
+
 
 void cvm::exit(std::string const &message)
 {
