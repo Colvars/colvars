@@ -335,11 +335,16 @@ public:
   /// \brief Enables and disables individual CVCs based on flags
   int set_cvc_flags(std::vector<bool> const &flags);
 
-  /// \brief Updates the flags in the CVC objects
+  /// \brief Updates the flags in the CVC objects, and their number
   int update_cvc_flags();
 
-  /// \brief Return the number of CVC objects with an active flag
-  int num_active_cvcs() const;
+protected:
+  /// \brief Number of CVC objects with an active flag
+  size_t n_active_cvcs;
+
+public:
+  /// \brief Return the number of CVC objects with an active flag (as set by update_cvc_flags)
+  inline size_t num_active_cvcs() const { return n_active_cvcs; }
 
   /// \brief Use the internal metrics (as from \link cvc
   /// \endlink objects) to calculate square distances and gradients

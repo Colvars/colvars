@@ -166,6 +166,8 @@ colvar::colvar(std::string const &conf)
     return;
   }
 
+  n_active_cvcs = cvcs.size();
+
   cvm::log("All components initialized.\n");
 
   // Setup colvar as scripted function of components
@@ -1346,31 +1348,21 @@ int colvar::set_cvc_flags(std::vector<bool> const &flags)
 
 int colvar::update_cvc_flags()
 {
-  size_t i;
   // Update the enabled/disabled status of cvcs if necessary
   if (cvc_flags.size()) {
-    bool any = false;
-    for (i = 0; i < cvcs.size(); i++) {
+    n_active_cvcs = 0;
+    for (size_t i = 0; i < cvcs.size(); i++) {
       cvcs[i]->b_enabled = cvc_flags[i];
-      any = any || cvc_flags[i];
+      if (cvcs[i]->b_enabled) n_active_cvcs++;
     }
-    if (!any) {
+    if (!n_active_cvcs) {
       cvm::error("ERROR: All CVCs are disabled for colvar " + this->name +"\n");
       return COLVARS_ERROR;
     }
     cvc_flags.resize(0);
   }
+
   return COLVARS_OK;
-}
-
-
-int colvar::num_active_cvcs() const
-{
-  int result = 0;
-  for (size_t i = 0; i < cvcs.size(); i++) {
-    if (cvcs[i]->b_enabled) result++;
-  }
-  return result;
 }
 
 
