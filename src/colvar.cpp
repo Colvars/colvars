@@ -32,11 +32,6 @@ colvar::colvar(std::string const &conf)
     return;
   }
 
-  // all tasks disabled by default
-  for (i = 0; i < task_ntot; i++) {
-    tasks[i] = false;
-  }
-
   // Initialize dependency members
   // Could be a function defined in a different source file, for space?
 
@@ -512,12 +507,30 @@ colvar::colvar(std::string const &conf)
     }
   }
 
+  // Start in active state by default
+  require(f_cv_active);
 
   // FIXME FIXME FIXME deps test
 
   this->print_state();
 
   // FIXME FIXME FIXME deps test
+
+  x_old.type(value());
+  v_fdiff.type(value());
+  v_reported.type(value());
+  fj.type(value());
+  ft.type(value());
+  ft_reported.type(value());
+
+  // If dependencies are handled in a dynamic way, the features below should be refreshed
+  if (is_enabled(f_cv_system_force_calc)) {
+    cvm::request_system_force();
+  }
+  if (is_enabled(f_cv_collect_gradient) && atom_ids.size() == 0) {
+    build_atom_list();
+  }
+  // End of dependency side-effects
 
   if (cvm::b_analysis)
     parse_analysis(conf);
@@ -700,6 +713,7 @@ int colvar::enable(colvar::task const &t)
                           "\" does not support system force calculation.\n",
                   INPUT_ERROR);
       }
+      // FIXME side effect here FIXME
       cvm::request_system_force();
     }
     // FIXME side effect here FIXME
@@ -834,7 +848,7 @@ colvar::~colvar()
 int colvar::calc()
 {
   int error_code = COLVARS_OK;
-  if (is_enabled(f_cvc_value)) {
+  if (is_enabled(f_cv_active)) {
     error_code |= update_cvc_flags();
     error_code |= calc_cvcs();
     error_code |= collect_cvc_data();
@@ -968,8 +982,9 @@ int colvar::calc_cvc_values(int first_cvc, size_t num_cvcs)
   for (i = first_cvc, cvc_count = 0;
        (i < cvcs.size()) && (cvc_count < cvc_max_count);
        i++) {
-    if (!cvcs[i]->b_enabled) continue;
+    if (!cvcs[i]->is_enabled()) continue;
     cvc_count++;
+    (cvcs[i])->read_data();
     (cvcs[i])->calc_value();
     if (cvm::debug())
       cvm::log("Colvar component no. "+cvm::to_str(i+1)+
@@ -1001,7 +1016,7 @@ int colvar::collect_cvc_values()
   } else if (x.type() == colvarvalue::type_scalar) {
     // polynomial combination allowed
     for (i = 0; i < cvcs.size(); i++) {
-      if (!cvcs[i]->b_enabled) continue;
+      if (!cvcs[i]->is_enabled()) continue;
       x += (cvcs[i])->sup_coeff *
       ( ((cvcs[i])->sup_np != 1) ?
         std::pow((cvcs[i])->value().real_value, (cvcs[i])->sup_np) :
@@ -1011,7 +1026,7 @@ int colvar::collect_cvc_values()
     // only linear combination allowed
     // FIXME is that actually enforced?
     for (i = 0; i < cvcs.size(); i++) {
-      if (!cvcs[i]->b_enabled) continue;
+      if (!cvcs[i]->is_enabled()) continue;
       x += (cvcs[i])->sup_coeff * (cvcs[i])->value();
     }
   }
@@ -1038,7 +1053,7 @@ int colvar::calc_cvc_gradients(int first_cvc, size_t num_cvcs)
     for (i = first_cvc, cvc_count = 0;
         (i < cvcs.size()) && (cvc_count < cvc_max_count);
         i++) {
-      if (!cvcs[i]->b_enabled) continue;
+      if (!cvcs[i]->is_enabled()) continue;
       cvc_count++;
       (cvcs[i])->calc_gradients();
       // if requested, propagate (via chain rule) the gradients above
@@ -1074,7 +1089,7 @@ int colvar::collect_cvc_gradients()
       atomic_gradients[a].reset();
     }
     for (i = 0; i < cvcs.size(); i++) {
-      if (!cvcs[i]->b_enabled) continue;
+      if (!cvcs[i]->is_enabled()) continue;
       // Coefficient: d(a * x^n) = a * n * x^(n-1) * dx
       cvm::real coeff = (cvcs[i])->sup_coeff * cvm::real((cvcs[i])->sup_np) *
         std::pow((cvcs[i])->value().real_value, (cvcs[i])->sup_np-1);
@@ -1138,7 +1153,7 @@ int colvar::calc_cvc_sys_forces(int first_cvc, size_t num_cvcs)
       for (i = first_cvc, cvc_count = 0;
           (i < cvcs.size()) && (cvc_count < cvc_max_count);
           i++) {
-        if (!cvcs[i]->b_enabled) continue;
+        if (!cvcs[i]->is_enabled()) continue;
         cvc_count++;
         (cvcs[i])->calc_force_invgrads();
       }
@@ -1370,7 +1385,7 @@ void colvar::communicate_forces()
     std::vector<cvm::matrix2d<cvm::real> > func_grads;
     func_grads.reserve(cvcs.size());
     for (i = 0; i < cvcs.size(); i++) {
-      if (!cvcs[i]->b_enabled) continue;
+      if (!cvcs[i]->is_enabled()) continue;
       func_grads.push_back(cvm::matrix2d<cvm::real> (x.size(),
                                                      cvcs[i]->value().size()));
     }
@@ -1387,7 +1402,7 @@ void colvar::communicate_forces()
 
     int grad_index = 0; // index in the scripted gradients, to account for some components being disabled
     for (i = 0; i < cvcs.size(); i++) {
-      if (!cvcs[i]->b_enabled) continue;
+      if (!cvcs[i]->is_enabled()) continue;
       // cvc force is colvar force times colvar/cvc Jacobian
       // (vector-matrix product)
       (cvcs[i])->apply_force(colvarvalue(f.as_vector() * func_grads[grad_index++],
@@ -1396,7 +1411,7 @@ void colvar::communicate_forces()
   } else if (x.type() == colvarvalue::type_scalar) {
 
     for (i = 0; i < cvcs.size(); i++) {
-      if (!cvcs[i]->b_enabled) continue;
+      if (!cvcs[i]->is_enabled()) continue;
       (cvcs[i])->apply_force(f * (cvcs[i])->sup_coeff *
                               cvm::real((cvcs[i])->sup_np) *
                               (std::pow((cvcs[i])->value().real_value,
@@ -1406,7 +1421,7 @@ void colvar::communicate_forces()
   } else {
 
     for (i = 0; i < cvcs.size(); i++) {
-      if (!cvcs[i]->b_enabled) continue;
+      if (!cvcs[i]->is_enabled()) continue;
       (cvcs[i])->apply_force(f * (cvcs[i])->sup_coeff);
     }
   }
@@ -1435,8 +1450,8 @@ int colvar::update_cvc_flags()
   if (cvc_flags.size()) {
     n_active_cvcs = 0;
     for (size_t i = 0; i < cvcs.size(); i++) {
-      cvcs[i]->b_enabled = cvc_flags[i];
-      if (cvcs[i]->b_enabled) n_active_cvcs++;
+      cvcs[i]->feature_states[f_cvc_active]->enabled = cvc_flags[i];
+      if (cvcs[i]->is_enabled()) n_active_cvcs++;
     }
     if (!n_active_cvcs) {
       cvm::error("ERROR: All CVCs are disabled for colvar " + this->name +"\n");
@@ -1489,7 +1504,7 @@ bool colvar::periodic_boundaries() const
 cvm::real colvar::dist2(colvarvalue const &x1,
                          colvarvalue const &x2) const
 {
-  if (b_homogeneous) {
+  if (is_enabled(f_cv_homogeneous)) {
     return (cvcs[0])->dist2(x1, x2);
   } else {
     return x1.dist2(x2);
@@ -1499,7 +1514,7 @@ cvm::real colvar::dist2(colvarvalue const &x1,
 colvarvalue colvar::dist2_lgrad(colvarvalue const &x1,
                                  colvarvalue const &x2) const
 {
-  if (b_homogeneous) {
+  if (is_enabled(f_cv_homogeneous)) {
     return (cvcs[0])->dist2_lgrad(x1, x2);
   } else {
     return x1.dist2_grad(x2);
@@ -1509,7 +1524,7 @@ colvarvalue colvar::dist2_lgrad(colvarvalue const &x1,
 colvarvalue colvar::dist2_rgrad(colvarvalue const &x1,
                                  colvarvalue const &x2) const
 {
-  if (b_homogeneous) {
+  if (is_enabled(f_cv_homogeneous)) {
     return (cvcs[0])->dist2_rgrad(x1, x2);
   } else {
     return x2.dist2_grad(x1);
@@ -1518,7 +1533,7 @@ colvarvalue colvar::dist2_rgrad(colvarvalue const &x1,
 
 void colvar::wrap(colvarvalue &x) const
 {
-  if (b_homogeneous) {
+  if (is_enabled(f_cv_homogeneous)) {
     (cvcs[0])->wrap(x);
   }
   return;

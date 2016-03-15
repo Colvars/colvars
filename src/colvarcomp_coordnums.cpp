@@ -85,7 +85,7 @@ colvar::coordnum::coordnum(std::string const &conf)
 
   // need to specify this explicitly because the distance() constructor
   // has set it to true
-  b_inverse_gradients = false;
+  feature_states[f_cvc_inv_gradient]->available = false;
 
   bool const b_scale = get_keyval(conf, "cutoff", r0,
                                    cvm::real(4.0 * cvm::unit_angstrom()));
@@ -298,7 +298,8 @@ colvar::selfcoordnum::selfcoordnum(std::string const &conf)
 
   // need to specify this explicitly because the distance() constructor
   // has set it to true
-  b_inverse_gradients = false;
+  feature_states[f_cvc_inv_gradient]->available = false;
+
 
   get_keyval(conf, "cutoff", r0, cvm::real(4.0 * cvm::unit_angstrom()));
   get_keyval(conf, "expNumer", en, int(6) );

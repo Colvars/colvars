@@ -64,8 +64,10 @@ public:
 
     // Features that are incompatible, ie. required disabled
     // if enabled, they will cause a dependency failure (they will not be disabled)
-    // Unused for now
-//     std::vector<int> requires_incomp;
+    // To enforce these dependencies regardless of the order in which they
+    // are enabled, they are always set in a symmetric way, so whichever is enabled
+    // second will cause the dependency to fail
+    std::vector<int> requires_exclude;
 
     // sets of features that are required in an alternate way
     // when parent feature is enabled, if none are enabled, the first one listed that is available will be enabled
@@ -75,8 +77,11 @@ public:
     std::vector<int> requires_children;
   };
 
-  // Accessor to list of all features, static in each derived class
-  // Can be iterated over by going through subclass-specific enums
+  // Accessor to array of all features with deps, static in most derived classes
+  // Subclasses with dynamic dependency trees may override this
+  // with a non-static array
+  // Intermediate classes (colvarbias and colvarcomp, which are also base classes)
+  // implement this as virtual to allow overriding
   virtual std::vector<feature *>&features() = 0;
 
   // pointers to objects this object depends on
@@ -84,12 +89,32 @@ public:
   // this could be secured by making lists of colvars / cvcs / atom groups private and modified through accessor functions
   std::vector<deps *> children;
 
+  // pointers to objects that depend on this object
+  // the size of this array is in effect a reference counter
+  std::vector<deps *> parents;
+
+  void add_child(deps *child) {
+    children.push_back(child);
+    child->parents.push_back((deps *)this);
+  }
+
+  // disabling a feature f:
+  // if parents depend on f, tell them to refresh / check that they are ok?
+  // if children provide features to satisfy f ONLY, disable that
+
+  // When the state of this object has changed, recursively tell parents
+  // to enforce their dependencies
+//   void refresh_parents() {
+//
+//   }
 
   // std::vector<deps *> parents; // Needed to trigger a refresh if capabilities of this object change
 
   // End of members to be initialized by subclasses
 
-  bool is_enabled(int f) const {
+  // Checks whether given feature is enabled
+  // Defaults to querying f_*_active
+  bool is_enabled(int f = f_cv_active) const {
     return feature_states[f]->enabled;
   }
 
@@ -99,13 +124,16 @@ public:
   // dry_run is set to true to recursively test if a feature is available, without enabling it
 //     int disable(int f);
 
+  // NOTE that all feature enums should start with f_*_active
   enum features_biases {
+    /// \brief Bias is active
+    f_cvb_active,
     f_cvb_ntot
   };
 
   enum features_colvar {
-    /// \brief Calculate colvar value
-    f_cv_value,
+    /// \brief Calculate colvar
+    f_cv_active,
     /// \brief Gradients are calculated and temporarily stored, so
     /// that external forces can be applied
     f_cv_gradient,
@@ -174,18 +202,22 @@ public:
   };
 
   enum features_cvc {
-    f_cvc_value,
+    f_cvc_active,
     f_cvc_scalar,
     f_cvc_gradient,
     f_cvc_system_force,
     f_cvc_inv_gradient,
+    /// \brief If enabled, calc_gradients() will call debug_gradients() for every group needed
+    f_cvc_debug_gradient,
     f_cvc_Jacobian,
     f_cvc_ntot
   };
 
   enum features_atomgroup {
-    f_ag_coordinates,
-    f_ag_fit,
+    f_ag_active,
+    f_ag_center,
+    f_ag_rotate,
+    f_ag_ref_pos_group,
     f_ag_fit_gradient_group,// TODO check that these are sometimes needed separately
                             // maybe for minimum RMSD?
     f_ag_fit_gradient_ref,

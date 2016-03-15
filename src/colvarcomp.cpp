@@ -10,22 +10,14 @@
 colvar::cvc::cvc()
   : sup_coeff(1.0),
     sup_np(1),
-    b_enabled(true),
-    b_periodic(false),
-    b_inverse_gradients(false),
-    b_Jacobian_derivative(false),
-    b_debug_gradients(false)
+    b_periodic(false)
 {}
 
 
 colvar::cvc::cvc(std::string const &conf)
   : sup_coeff(1.0),
     sup_np(1),
-    b_enabled(true),
-    b_periodic(false),
-    b_inverse_gradients(false),
-    b_Jacobian_derivative(false),
-    b_debug_gradients(false)
+    b_periodic(false)
 {
   int i;
 
@@ -42,8 +34,11 @@ colvar::cvc::cvc(std::string const &conf)
   get_keyval(conf, "period", period, 0.0);
   get_keyval(conf, "wrapAround", wrap_center, 0.0);
 
-  get_keyval(conf, "debugGradients", b_debug_gradients, false, parse_silent);
-
+  {
+    bool b_debug_gradient;
+    get_keyval(conf, "debugGradients", b_debug_gradient, false, parse_silent);
+    if (b_debug_gradient) require(f_cvc_debug_gradient);
+  }
   if (cvm::debug())
     cvm::log("Done initializing cvc base object.\n");
 }
@@ -86,6 +81,31 @@ int colvar::cvc::setup() {
 colvar::cvc::~cvc()
 {}
 
+
+void colvar::cvc::read_data()
+{
+  int ig, i;
+  for (ig = 0; ig < atom_groups.size(); ig++) {
+    cvm::atom_group &atoms = *(atom_groups[ig]);
+    atoms.reset_atoms_data();
+    atoms.read_positions();
+    atoms.calc_required_properties();
+    // each atom group will take care of its own ref_pos_group, if defined
+
+    if (is_enabled(f_cvc_system_force)) {
+      atoms.read_system_forces();
+    }
+  }
+
+////  Don't try to get atom velocities, as no back-end currently implements it
+//   if (tasks[task_output_velocity] && !tasks[task_fdiff_velocity]) {
+//     for (i = 0; i < cvcs.size(); i++) {
+//       for (ig = 0; ig < cvcs[i]->atom_groups.size(); ig++) {
+//         cvcs[i]->atom_groups[ig]->read_velocities();
+//       }
+//     }
+//   }
+}
 
 void colvar::cvc::calc_force_invgrads()
 {

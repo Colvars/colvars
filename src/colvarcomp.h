@@ -130,17 +130,8 @@ public:
     return cvc_features;
   }
 
-  /// \brief If this flag is false (default), inverse gradients
-  /// (derivatives of atom coordinates with respect to x) are
-  /// unavailable; it should be set to true by the constructor of each
-  /// derived object capable of calculating them
-  bool b_inverse_gradients;
-
-  /// \brief If this flag is false (default), the Jacobian derivative
-  /// (divergence of the inverse gradients) is unavailable; it should
-  /// be set to true by the constructor of each derived object capable
-  /// of calculating it
-  bool b_Jacobian_derivative;
+  /// \brief Obtain data needed for the calculation for the backend
+  void read_data();
 
   /// \brief Calculate the variable
   virtual void calc_value() = 0;
@@ -148,9 +139,6 @@ public:
   /// \brief Calculate the atomic gradients, to be reused later in
   /// order to apply forces
   virtual void calc_gradients() = 0;
-
-  /// \brief If true, calc_gradients() will call debug_gradients() for every group needed
-  bool b_debug_gradients;
 
   /// \brief Calculate finite-difference gradients alongside the analytical ones, for each Cartesian component
   virtual void debug_gradients(cvm::atom_group &group);

@@ -100,8 +100,6 @@ int colvarmodule::read_config_string(std::string const &config_str)
 
 int colvarmodule::parse_config(std::string &conf)
 {
-  int error_code = COLVARS_OK;
-
   // parse global options
   if (catch_input_errors(parse_global_params(conf))) {
     return get_error();
@@ -287,6 +285,11 @@ int colvarmodule::parse_biases(std::string const &conf)
     cvm::increase_depth();
     cvm::log("User forces script will be run at each bias update.");
     cvm::decrease_depth();
+  }
+
+  for (int i = 0; i < biases.size(); i++) {
+    biases[i]->require(deps::f_cvb_active);
+    biases[i]->print_state();
   }
 
   if (biases.size() || use_scripted_forces) {
@@ -492,17 +495,17 @@ int colvarmodule::calc_colvars()
   if (proxy->smp_enabled() == COLVARS_OK) {
 
     // first, calculate how much work (currently, how many active CVCs) each colvar has
-    
+
     colvars_smp.resize(0);
     colvars_smp_items.resize(0);
 
     colvars_smp.reserve(colvars.size());
     colvars_smp_items.reserve(colvars.size());
-                        
+
     // set up a vector containing all components
     size_t num_colvar_items = 0;
     cvm::increase_depth();
-    for (cvi = colvars.begin(); cvi != colvars.end(); cvi++) { 
+    for (cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
 
       (*cvi)->update_cvc_flags();
 
@@ -522,11 +525,11 @@ int colvarmodule::calc_colvars()
     proxy->smp_colvars_loop();
 
     cvm::increase_depth();
-    for (cvi = colvars.begin(); cvi != colvars.end(); cvi++) { 
+    for (cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
       (*cvi)->collect_cvc_data();
     }
     cvm::decrease_depth();
-    
+
   } else {
 
     // calculate colvars one at a time
@@ -625,7 +628,7 @@ int colvarmodule::update_colvar_forces()
     cvm::log("Communicating forces from the colvars to the atoms.\n");
   cvm::increase_depth();
   for (cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
-    if ((*cvi)->tasks[colvar::task_gradients]) {
+    if ((*cvi)->is_enabled(deps::f_cv_gradient)) {
       (*cvi)->communicate_forces();
       if (cvm::get_error()) {
         return COLVARS_ERROR;
