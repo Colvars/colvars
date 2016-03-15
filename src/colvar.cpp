@@ -885,13 +885,13 @@ int colvar::collect_cvc_gradients()
 {
   size_t i;
 
-    if (is_enabled(f_cv_collect_gradient)) {
+  if (is_enabled(f_cv_collect_gradient)) {
 
-      if (is_enabled(f_cv_scripted)) {
-        cvm::error("Collecting atomic gradients is not implemented for "
-                   "scripted colvars.", COLVARS_NOT_IMPLEMENTED);
-        return COLVARS_NOT_IMPLEMENTED;
-      }
+    if (is_enabled(f_cv_scripted)) {
+      cvm::error("Collecting atomic gradients is not implemented for "
+                 "scripted colvars.", COLVARS_NOT_IMPLEMENTED);
+      return COLVARS_NOT_IMPLEMENTED;
+    }
 
     // Collect the atomic gradients inside colvar object
     for (unsigned int a = 0; a < atomic_gradients.size(); a++) {
@@ -907,24 +907,23 @@ int colvar::collect_cvc_gradients()
 
         cvm::atom_group &ag = *(cvcs[i]->atom_groups[j]);
 
-          // If necessary, apply inverse rotation to get atomic
-          // gradient in the laboratory frame
-          if (ag.b_rotate) {
-            cvm::rotation const rot_inv = ag.rot.inverse();
+        // If necessary, apply inverse rotation to get atomic
+        // gradient in the laboratory frame
+        if (ag.b_rotate) {
+          cvm::rotation const rot_inv = ag.rot.inverse();
 
-            for (size_t k = 0; k < ag.size(); k++) {
-              size_t a = std::lower_bound(atom_ids.begin(), atom_ids.end(),
-                                          ag[k].id) - atom_ids.begin();
-              atomic_gradients[a] += coeff * rot_inv.rotate(ag[k].grad);
-            }
+          for (size_t k = 0; k < ag.size(); k++) {
+            size_t a = std::lower_bound(atom_ids.begin(), atom_ids.end(),
+                                        ag[k].id) - atom_ids.begin();
+            atomic_gradients[a] += coeff * rot_inv.rotate(ag[k].grad);
+          }
 
         } else {
 
-            for (size_t k = 0; k < ag.size(); k++) {
-              size_t a = std::lower_bound(atom_ids.begin(), atom_ids.end(),
-                                          ag[k].id) - atom_ids.begin();
-              atomic_gradients[a] += coeff * ag[k].grad;
-            }
+          for (size_t k = 0; k < ag.size(); k++) {
+            size_t a = std::lower_bound(atom_ids.begin(), atom_ids.end(),
+                                        ag[k].id) - atom_ids.begin();
+            atomic_gradients[a] += coeff * ag[k].grad;
           }
         }
       }
@@ -979,7 +978,7 @@ int colvar::calc_cvc_sys_forces(int first_cvc, size_t num_cvcs)
 
 int colvar::collect_cvc_sys_forces()
 {
-  if (tasks[task_system_force] && !tasks[task_extended_lagrangian]) {
+  if (is_enabled(f_cv_system_force) && !is_enabled(f_cv_extended_Lagrangian)) {
     // If extended Lagrangian is enabled, system force calculation is trivial
     // and done together with integration of the extended coordinate.
     ft.reset();
@@ -987,7 +986,7 @@ int colvar::collect_cvc_sys_forces()
     if (cvm::step_relative() > 0) {
       // get from the cvcs the system forces from the PREVIOUS step
       for (size_t i = 0; i < cvcs.size();  i++) {
-        if (!cvcs[i]->b_enabled) continue;
+        if (!cvcs[i]->is_enabled()) continue;
         // linear combination is assumed
         ft += (cvcs[i])->system_force() / ((cvcs[i])->sup_coeff * cvm::real(cvcs.size()));
       }
@@ -1009,12 +1008,12 @@ int colvar::calc_cvc_Jacobians(int first_cvc, size_t num_cvcs)
   size_t const cvc_max_count = num_cvcs ? num_cvcs : num_active_cvcs();
   size_t i, cvc_count;
 
-  if (tasks[task_Jacobian_force]) {
+  if (is_enabled(f_cv_Jacobian)) {
     size_t i;
     for (i = first_cvc, cvc_count = 0;
          (i < cvcs.size()) && (cvc_count < cvc_max_count);
          i++) {
-      if (!cvcs[i]->b_enabled) continue;
+      if (!cvcs[i]->is_enabled()) continue;
       cvc_count++;
       (cvcs[i])->calc_Jacobian_derivative();
     }
@@ -1026,11 +1025,11 @@ int colvar::calc_cvc_Jacobians(int first_cvc, size_t num_cvcs)
 
 int colvar::collect_cvc_Jacobians()
 {
-  if (tasks[task_Jacobian_force]) {
+  if (is_enabled(f_cv_Jacobian)) {
     size_t ncvc = 0;
     fj.reset();
     for (size_t i = 0; i < cvcs.size(); i++) {
-      if (!cvcs[i]->b_enabled) continue;
+      if (!cvcs[i]->is_enabled()) continue;
       // linear combination is assumed
       fj += 1.0 / cvm::real((cvcs[i])->sup_coeff) *
         (cvcs[i])->Jacobian_derivative();
