@@ -185,7 +185,7 @@ colvar::colvar(std::string const &conf)
 
     // Make feature available only on user request
     provide(f_cv_scripted);
-    require(f_cv_scripted);
+    enable(f_cv_scripted);
     cvm::log("This colvar uses scripted function \"" + scripted_function + "\".");
 
     std::string type_str;
@@ -248,7 +248,7 @@ colvar::colvar(std::string const &conf)
   // If using scripted biases, any colvar may receive bias forces
   // and will need its gradient
   if (cvm::scripted_forces()) {
-    require(f_cv_gradient);
+    enable(f_cv_gradient);
   }
 
   // check for linear combinations
@@ -352,24 +352,24 @@ colvar::colvar(std::string const &conf)
 
     if (get_keyval(conf, "lowerBoundary", lower_boundary, lower_boundary)) {
       provide(f_cv_lower_boundary);
-      require(f_cv_lower_boundary);
+      enable(f_cv_lower_boundary);
     }
 
     get_keyval(conf, "lowerWallConstant", lower_wall_k, 0.0);
     if (lower_wall_k > 0.0) {
       get_keyval(conf, "lowerWall", lower_wall, lower_boundary);
-      require(f_cv_lower_wall);
+      enable(f_cv_lower_wall);
     }
 
     if (get_keyval(conf, "upperBoundary", upper_boundary, upper_boundary)) {
       provide(f_cv_upper_boundary);
-      require(f_cv_upper_boundary);
+      enable(f_cv_upper_boundary);
     }
 
     get_keyval(conf, "upperWallConstant", upper_wall_k, 0.0);
     if (upper_wall_k > 0.0) {
       get_keyval(conf, "upperWall", upper_wall, upper_boundary);
-      require(f_cv_upper_wall);
+      enable(f_cv_upper_wall);
     }
   }
 
@@ -426,7 +426,7 @@ colvar::colvar(std::string const &conf)
 
       // Make feature available only on user request
       provide(f_cv_extended_Lagrangian);
-      require(f_cv_extended_Lagrangian);
+      enable(f_cv_extended_Lagrangian);
 
       xr.type(value());
       vr.type(value());
@@ -461,7 +461,7 @@ colvar::colvar(std::string const &conf)
         bool b_output_energy;
         get_keyval(conf, "outputEnergy", b_output_energy, false);
         if (b_output_energy) {
-          require(f_cv_output_energy);
+          enable(f_cv_output_energy);
         }
       }
 
@@ -470,7 +470,7 @@ colvar::colvar(std::string const &conf)
         cvm::error("Error: \"extendedLangevinDamping\" may not be negative.\n", INPUT_ERROR);
       }
       if (ext_gamma != 0.0) {
-        require(f_cv_Langevin);
+        enable(f_cv_Langevin);
         ext_gamma *= 1.0e-3; // convert from ps-1 to fs-1
         ext_sigma = std::sqrt(2.0 * cvm::boltzmann() * temp * ext_gamma * ext_mass / cvm::dt());
       }
@@ -481,7 +481,7 @@ colvar::colvar(std::string const &conf)
     bool b_output_value;
     get_keyval(conf, "outputValue", b_output_value, true);
     if (b_output_value) {
-      require(f_cv_output_value);
+      enable(f_cv_output_value);
     }
   }
 
@@ -489,7 +489,7 @@ colvar::colvar(std::string const &conf)
     bool b_output_velocity;
     get_keyval(conf, "outputVelocity", b_output_velocity, false);
     if (b_output_velocity) {
-      require(f_cv_output_velocity);
+      enable(f_cv_output_velocity);
     }
   }
 
@@ -497,7 +497,7 @@ colvar::colvar(std::string const &conf)
     bool b_output_system_force;
     get_keyval(conf, "outputSystemForce", b_output_system_force, false);
     if (b_output_system_force) {
-      require(f_cv_output_system_force);
+      enable(f_cv_output_system_force);
     }
   }
 
@@ -505,12 +505,12 @@ colvar::colvar(std::string const &conf)
     bool b_output_applied_force;
     get_keyval(conf, "outputAppliedForce", b_output_applied_force, false);
     if (b_output_applied_force) {
-      require(f_cv_output_applied_force);
+      enable(f_cv_output_applied_force);
     }
   }
 
   // Start in active state by default
-  require(f_cv_active);
+  enable(f_cv_active);
   // Make sure dependency side-effects are correct
   refresh_deps();
 
@@ -590,7 +590,7 @@ int colvar::parse_analysis(std::string const &conf)
   bool b_runave = false;
   if (get_keyval(conf, "runAve", b_runave) && b_runave) {
 
-    require(f_cv_runave);
+    enable(f_cv_runave);
 
     get_keyval(conf, "runAveLength", runave_length, 1000);
     get_keyval(conf, "runAveStride", runave_stride, 1);
@@ -618,7 +618,7 @@ int colvar::parse_analysis(std::string const &conf)
   bool b_acf = false;
   if (get_keyval(conf, "corrFunc", b_acf) && b_acf) {
 
-    require(f_cv_corrfunc);
+    enable(f_cv_corrfunc);
 
     std::string acf_colvar_name;
     get_keyval(conf, "corrFuncWithColvar", acf_colvar_name, this->name);
@@ -635,9 +635,9 @@ int colvar::parse_analysis(std::string const &conf)
       acf_type = acf_coor;
     } else if (acf_type_str == to_lower_cppstr(std::string("velocity"))) {
       acf_type = acf_vel;
-      require(f_cv_fdiff_velocity);
+      enable(f_cv_fdiff_velocity);
       if (acf_colvar_name.size())
-        (cvm::colvar_by_name(acf_colvar_name))->require(f_cv_fdiff_velocity);
+        (cvm::colvar_by_name(acf_colvar_name))->enable(f_cv_fdiff_velocity);
     } else if (acf_type_str == to_lower_cppstr(std::string("coordinate_p2"))) {
       acf_type = acf_p2coor;
     } else {

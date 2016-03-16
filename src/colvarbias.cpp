@@ -56,7 +56,7 @@ colvarbias::colvarbias(std::string const &conf, char const *key)
     add_child(colvars[i]);
   }
   // Start in active state by default
-  require(f_cvb_active);
+  enable(f_cvb_active);
 
   get_keyval(conf, "outputEnergy", b_output_energy, false);
 }

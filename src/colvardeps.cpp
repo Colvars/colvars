@@ -30,11 +30,11 @@ void cvm::deps::provide(int feature_id) {
 }
 
 
-int cvm::deps::require(int feature_id,
-                  bool dry_run /* default: false */,
-  // dry_run: fail silently, do not enable if available
-  // flag is passed recursively to deps of this feature
-                  bool toplevel /* default: true */)
+int cvm::deps::enable(int feature_id,
+                      bool dry_run /* default: false */,
+                      // dry_run: fail silently, do not enable if available
+                      // flag is passed recursively to deps of this feature
+                      bool toplevel /* default: true */)
   // toplevel: false if this is called as part of a chain of dependency resolution
   // this is used to diagnose failed dependencies by displaying the full stack
   // only the toplevel dependency will throw a fatal error
@@ -88,7 +88,7 @@ int cvm::deps::require(int feature_id,
   for (i=0; i<f->requires_self.size(); i++) {
     if (cvm::debug())
       cvm::log(f->description + " requires self " + features()[f->requires_self[i]]->description);
-    res = require(f->requires_self[i], dry_run, false);
+    res = enable(f->requires_self[i], dry_run, false);
     if (res != COLVARS_OK) {
       if (!dry_run) {
         cvm::log("...required by \"" + f->description + "\" in " + description);
@@ -109,10 +109,10 @@ int cvm::deps::require(int feature_id,
       int g = f->requires_alt[i][j];
       if (cvm::debug())
         cvm::log(f->description + " requires alt " + features()[g]->description);
-      res = require(g, true, false);  // see if available
+      res = enable(g, true, false);  // see if available
       if (res == COLVARS_OK) {
         ok = true;
-        if (!dry_run) require(g, false, false); // Require again, for real
+        if (!dry_run) enable(g, false, false); // Require again, for real
         break;
       }
     }
@@ -124,7 +124,7 @@ int cvm::deps::require(int feature_id,
           int g = f->requires_alt[i][j];
           cvm::log(cvm::to_str(j+1) + ". " + features()[g]->description);
           cvm::increase_depth();
-          require(g, false, false); // Just for printing error output
+          enable(g, false, false); // Just for printing error output
           cvm::decrease_depth();
         }
         cvm::log("-----------------------------------------");
@@ -146,7 +146,7 @@ int cvm::deps::require(int feature_id,
     for (j=0; j<children.size(); j++) {
 //       cvm::log("child " +  children[j]->description);
       cvm::increase_depth();
-      res = children[j]->require(g, dry_run, false);
+      res = children[j]->enable(g, dry_run, false);
       cvm::decrease_depth();
       if (res != COLVARS_OK) {
         if (!dry_run) {

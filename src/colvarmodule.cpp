@@ -293,7 +293,7 @@ int colvarmodule::parse_biases(std::string const &conf)
   }
 
   for (size_t i = 0; i < biases.size(); i++) {
-    biases[i]->require(cvm::deps::f_cvb_active);
+    biases[i]->enable(cvm::deps::f_cvb_active);
     if (cvm::debug())
       biases[i]->print_state();
   }

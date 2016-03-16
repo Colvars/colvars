@@ -61,7 +61,7 @@ colvarbias_histogram::colvarbias_histogram(std::string const &conf, char const *
   }
 
   for (i = 0; i < colvars.size(); i++) {
-    colvars[i]->require(f_cv_grid);
+    colvars[i]->enable(f_cv_grid);
   }
 
   grid = new colvar_grid_scalar();

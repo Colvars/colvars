@@ -127,7 +127,7 @@ public:
 
   void provide(int feature_id); // set the feature's flag to available in local object
 
-  int require(int f, bool dry_run = false, bool toplevel = true);  // enable a feature and recursively solve its dependencies
+  int enable(int f, bool dry_run = false, bool toplevel = true);  // enable a feature and recursively solve its dependencies
   // dry_run is set to true to recursively test if a feature is available, without enabling it
 //     int disable(int f);
 

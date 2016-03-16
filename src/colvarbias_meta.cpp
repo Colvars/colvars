@@ -60,7 +60,7 @@ colvarbias_meta::colvarbias_meta(std::string const &conf, char const *key)
   }
 
   // This implies gradients for all colvars
-  require(f_cvb_apply_force);
+  enable(f_cvb_apply_force);
 
   get_keyval(conf, "useGrids", use_grids, true);
 
@@ -71,7 +71,7 @@ colvarbias_meta::colvarbias_meta(std::string const &conf, char const *key)
     expand_grids = false;
     size_t i;
     for (i = 0; i < colvars.size(); i++) {
-      colvars[i]->require(f_cv_grid);
+      colvars[i]->enable(f_cv_grid);
       if (colvars[i]->expand_boundaries) {
         expand_grids = true;
         cvm::log("Metadynamics bias \""+this->name+"\""+

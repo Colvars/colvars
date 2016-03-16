@@ -35,7 +35,7 @@ colvar::cvc::cvc(std::string const &conf)
   {
     bool b_debug_gradient;
     get_keyval(conf, "debugGradients", b_debug_gradient, false, parse_silent);
-    if (b_debug_gradient) require(f_cvc_debug_gradient);
+    if (b_debug_gradient) enable(f_cvc_debug_gradient);
   }
   if (cvm::debug())
     cvm::log("Done initializing cvc base object.\n");
