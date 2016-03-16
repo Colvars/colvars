@@ -1013,6 +1013,7 @@ void calc_colvars_items_smp(int first, int last, void *result, int paramNum, voi
   colvarproxy_namd *proxy = (colvarproxy_namd *) param;
   colvarmodule *cv = proxy->colvars;
 
+  cvm::increase_depth();
   for (int i = first; i <= last; i++) {
     if (cvm::debug()) {
       cvm::log("["+cvm::to_str(proxy->smp_thread_id())+"/"+cvm::to_str(proxy->smp_num_threads())+
@@ -1022,6 +1023,7 @@ void calc_colvars_items_smp(int first, int last, void *result, int paramNum, voi
     }
     cv->colvars_smp[i]->calc_cvcs(cv->colvars_smp_items[i], 1);
   }
+  cvm::decrease_depth();
 }
 
 
@@ -1039,6 +1041,7 @@ void calc_biases_smp(int first, int last, void *result, int paramNum, void *para
   colvarproxy_namd *proxy = (colvarproxy_namd *) param;
   colvarmodule *cv = proxy->colvars;
 
+  cvm::increase_depth();
   for (int i = first; i <= last; i++) {
     if (cvm::debug()) {
       cvm::log("["+cvm::to_str(proxy->smp_thread_id())+"/"+cvm::to_str(proxy->smp_num_threads())+
@@ -1048,6 +1051,7 @@ void calc_biases_smp(int first, int last, void *result, int paramNum, void *para
     }
     cv->biases[i]->update();
   }
+  cvm::decrease_depth();
 }
 
 
