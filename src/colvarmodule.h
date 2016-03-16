@@ -4,7 +4,7 @@
 #define COLVARMODULE_H
 
 #ifndef COLVARS_VERSION
-#define COLVARS_VERSION "2016-03-15"
+#define COLVARS_VERSION "2016-03-16"
 #endif
 
 #ifndef COLVARS_DEBUG
@@ -73,6 +73,9 @@ private:
   colvarmodule();
 
 public:
+
+  /// Base class to handle mutual dependencies of most objects
+  class deps;
 
   friend class colvarproxy;
   // TODO colvarscript should be unaware of colvarmodule's internals

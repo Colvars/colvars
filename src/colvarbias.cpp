@@ -188,4 +188,4 @@ std::ostream & colvarbias::write_traj(std::ostream &os)
 
 // Static members
 
-std::vector<deps::feature *> colvarbias::cvb_features;
+std::vector<cvm::deps::feature *> colvarbias::cvb_features;

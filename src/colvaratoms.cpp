@@ -1213,6 +1213,6 @@ void cvm::atom_group::apply_forces(std::vector<cvm::rvector> const &forces)
 
 // Static members
 
-std::vector<deps::feature *> cvm::atom_group::ag_features;
+std::vector<cvm::deps::feature *> cvm::atom_group::ag_features;
 
 

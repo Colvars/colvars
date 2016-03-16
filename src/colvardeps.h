@@ -1,3 +1,5 @@
+/// -*- c++ -*-
+
 #include "colvarmodule.h"
 
 #ifndef COLVARDEPS_H
@@ -14,7 +16,7 @@
 
 // It seems important to have available default to false (for safety) and enabled to false (for efficiency)
 
-class deps {
+class cvm::deps {
 public:
 
   deps() {}

@@ -408,7 +408,7 @@ void colvar::distance_dir::calc_gradients()
   // gradients are computed on the fly within apply_force()
   // Note: could be a problem if a future bias relies on gradient
   // calculations...
-  // in new deps system: remove dependency of biasing force to gradient?
+  // TODO in new deps system: remove dependency of biasing force to gradient?
   // That way we could tell apart an explicit gradient dependency
 }
 

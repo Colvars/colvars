@@ -1932,4 +1932,4 @@ void colvar::calc_runave()
 
 // Static members
 
-std::vector<deps::feature *> colvar::cv_features;
+std::vector<cvm::deps::feature *> colvar::cv_features;

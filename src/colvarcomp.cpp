@@ -73,7 +73,7 @@ int colvar::cvc::setup() {
   description = "cvc " + name;
 
   for (i = 0; i < atom_groups.size(); i++) {
-    add_child((deps *)atom_groups[i]);
+    add_child((cvm::deps *) atom_groups[i]);
   }
 
   return COLVARS_OK;
@@ -232,4 +232,4 @@ void colvar::cvc::debug_gradients(cvm::atom_group *group)
 
 // Static members
 
-std::vector<deps::feature *> colvar::cvc::cvc_features;
+std::vector<cvm::deps::feature *> colvar::cvc::cvc_features;
