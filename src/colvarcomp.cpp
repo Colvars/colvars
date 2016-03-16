@@ -10,14 +10,16 @@
 colvar::cvc::cvc()
   : sup_coeff(1.0),
     sup_np(1),
-    b_periodic(false)
+    b_periodic(false),
+    b_try_scalable(true)
 {}
 
 
 colvar::cvc::cvc(std::string const &conf)
   : sup_coeff(1.0),
     sup_np(1),
-    b_periodic(false)
+    b_periodic(false),
+    b_try_scalable(true)
 {
   if (cvm::debug())
     cvm::log("Initializing cvc base object.\n");
@@ -37,14 +39,18 @@ colvar::cvc::cvc(std::string const &conf)
     get_keyval(conf, "debugGradients", b_debug_gradient, false, parse_silent);
     if (b_debug_gradient) enable(f_cvc_debug_gradient);
   }
+
+  // Attempt scalable calculations when in parallel? (By default yes, if available)
+  get_keyval(conf, "scalable", b_try_scalable, true, parse_silent);
+
   if (cvm::debug())
     cvm::log("Done initializing cvc base object.\n");
 }
 
 
 cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
-                              char const *group_key,
-                              bool optional)
+                                          char const *group_key,
+                                          bool optional)
 {
   cvm::atom_group *group = NULL;
 
@@ -68,12 +74,17 @@ cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
 }
 
 
-int colvar::cvc::setup() {
+int colvar::cvc::setup()
+{
   size_t i;
   description = "cvc " + name;
 
   for (i = 0; i < atom_groups.size(); i++) {
     add_child((cvm::deps *) atom_groups[i]);
+  }
+
+  if (b_try_scalable && is_available(f_cvc_scalable)) {
+    enable(f_cvc_scalable);
   }
 
   return COLVARS_OK;
@@ -109,6 +120,7 @@ void colvar::cvc::read_data()
 //     }
 //   }
 }
+
 
 void colvar::cvc::calc_force_invgrads()
 {

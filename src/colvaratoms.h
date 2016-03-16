@@ -188,9 +188,6 @@ public:
   /// change atom masses after their initialization.
   void reset_mass(std::string &name, int i, int j);
 
-  /// \brief Whether or not the properties of this group will be computed in parallel
-  bool b_scalable;
-
   /// \brief Implementation of the feature list for atom group
   static std::vector<feature *> ag_features;
 

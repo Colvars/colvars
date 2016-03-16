@@ -221,6 +221,9 @@ public:
   /// e.g. atomic gradients
   std::vector<cvm::atom_group *> atom_groups;
 
+  /// \brief Whether or not this CVC will be computed in parallel whenever possible
+  bool b_try_scalable;
+
 protected:
 
   /// \brief Cached value

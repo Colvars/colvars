@@ -35,8 +35,8 @@ public:
     /// MAY BE ENABLED AS A RESULT OF DEPENDENCY SOLVING
     /// Remains false for passive flags that are set based on other object properties,
     /// eg. f_cv_linear
-    /// Is set to true upon user request for features that are under user control:
-    /// eg. f_cv_scripted or f_cv_extended_Lagrangian
+    /// Is set to true upon user request for features that are implemented by the user
+    /// or under his/her direct control, e.g. f_cv_scripted or f_cv_extended_Lagrangian
     bool available;
     /// Currently enabled - this flag is subject to change dynamically
     /// TODO consider implications for dependency solving: anyone who disables
@@ -121,8 +121,14 @@ public:
 
   // Checks whether given feature is enabled
   // Defaults to querying f_*_active
-  bool is_enabled(int f = f_cv_active) const {
+  inline bool is_enabled(int f = f_cv_active) const {
     return feature_states[f]->enabled;
+  }
+
+  // Checks whether given feature is available
+  // Defaults to querying f_*_active
+  inline bool is_available(int f = f_cv_active) const {
+    return feature_states[f]->available;
   }
 
   void provide(int feature_id); // set the feature's flag to available in local object
@@ -222,6 +228,9 @@ public:
     /// \brief If enabled, calc_gradients() will call debug_gradients() for every group needed
     f_cvc_debug_gradient,
     f_cvc_Jacobian,
+    f_cvc_com_based,
+    f_cvc_scalable,
+    f_cvc_scalable_com,
     f_cvc_ntot
   };
 
@@ -234,6 +243,8 @@ public:
                             // maybe for minimum RMSD?
     f_ag_fit_gradient_ref,
     f_ag_atom_forces,
+    f_ag_scalable,
+    f_ag_scalable_com,
     f_ag_ntot
   };
 

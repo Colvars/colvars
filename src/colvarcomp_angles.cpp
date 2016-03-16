@@ -13,6 +13,7 @@ colvar::angle::angle(std::string const &conf)
   function_type = "angle";
   provide(f_cvc_inv_gradient);
   provide(f_cvc_Jacobian);
+  provide(f_cvc_com_based);
   group1 = parse_group(conf, "group1");
   group2 = parse_group(conf, "group2");
   group3 = parse_group(conf, "group3");
@@ -30,6 +31,7 @@ colvar::angle::angle(cvm::atom const &a1,
   function_type = "angle";
   provide(f_cvc_inv_gradient);
   provide(f_cvc_Jacobian);
+  provide(f_cvc_com_based);
   b_1site_force = false;
 
   group1 = new cvm::atom_group(std::vector<cvm::atom>(1, a1));

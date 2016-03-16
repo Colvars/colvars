@@ -18,7 +18,6 @@ colvars:     # wrapAround = 0 [default]
 colvars:     # forceNoPBC = off [default]
 colvars:     # oneSiteSystemForce = off [default]
 colvars:       Initializing atom group "group1".
-colvars:       # scalable = off [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
@@ -29,7 +28,6 @@ colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "group1" defined, 1 atoms initialized: total mass = 12.011, total charge = -0.1.
 colvars:       Initializing atom group "group2".
-colvars:       # scalable = off [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
@@ -145,7 +143,6 @@ colvars:     # wrapAround = 0 [default]
 colvars:     # forceNoPBC = off [default]
 colvars:     # oneSiteSystemForce = off [default]
 colvars:       Initializing atom group "group1".
-colvars:       # scalable = off [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
@@ -156,7 +153,6 @@ colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "group1" defined, 1 atoms initialized: total mass = 12.011, total charge = -0.1.
 colvars:       Initializing atom group "group2".
-colvars:       # scalable = off [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]

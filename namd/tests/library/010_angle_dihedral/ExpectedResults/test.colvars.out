@@ -16,7 +16,6 @@ colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
 colvars:       Initializing atom group "group1".
-colvars:       # scalable = off [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID = { BH }
 colvars:       # atomsFile = "" [default]
@@ -27,7 +26,6 @@ colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "group1" defined, 1 atoms initialized: total mass = 12.011, total charge = -0.1.
 colvars:       Initializing atom group "group2".
-colvars:       # scalable = off [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID = { BH }
 colvars:       # atomsFile = "" [default]
@@ -38,7 +36,6 @@ colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "group2" defined, 1 atoms initialized: total mass = 12.011, total charge = 0.07.
 colvars:       Initializing atom group "group3".
-colvars:       # scalable = off [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID = { BH }
 colvars:       # atomsFile = "" [default]
@@ -73,7 +70,6 @@ colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
 colvars:     # oneSiteSystemForce = off [default]
 colvars:       Initializing atom group "group1".
-colvars:       # scalable = off [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID = { BH }
 colvars:       # atomsFile = "" [default]
@@ -84,7 +80,6 @@ colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "group1" defined, 1 atoms initialized: total mass = 12.011, total charge = -0.1.
 colvars:       Initializing atom group "group2".
-colvars:       # scalable = off [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID = { BH }
 colvars:       # atomsFile = "" [default]
@@ -95,7 +90,6 @@ colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "group2" defined, 1 atoms initialized: total mass = 12.011, total charge = 0.07.
 colvars:       Initializing atom group "group3".
-colvars:       # scalable = off [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID = { BH }
 colvars:       # atomsFile = "" [default]
@@ -106,7 +100,6 @@ colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "group3" defined, 1 atoms initialized: total mass = 12.011, total charge = 0.07.
 colvars:       Initializing atom group "group4".
-colvars:       # scalable = off [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID = { BH }
 colvars:       # atomsFile = "" [default]

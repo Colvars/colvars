@@ -516,9 +516,9 @@ protected:
 public:
 
   /// \brief Whether this proxy implementation has capability for scalable groups
-  virtual bool has_scalable_groups() const
+  virtual int scalable_group_coms()
   {
-    return false;
+    return COLVARS_NOT_IMPLEMENTED;
   }
 
   /// Used by all init_atom_group() functions: create a slot for an atom group not requested yet

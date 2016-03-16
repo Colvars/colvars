@@ -19,6 +19,8 @@ colvar::distance::distance(std::string const &conf, bool twogroups)
   function_type = "distance";
   provide(f_cvc_inv_gradient);
   provide(f_cvc_Jacobian);
+  provide(f_cvc_com_based);
+
   if (get_keyval(conf, "forceNoPBC", b_no_PBC, false)) {
     cvm::log("Computing distance using absolute positions (not minimal-image)");
   }
@@ -39,10 +41,12 @@ colvar::distance::distance()
   function_type = "distance";
   provide(f_cvc_inv_gradient);
   provide(f_cvc_Jacobian);
+  provide(f_cvc_com_based);
   b_1site_force = false;
   b_no_PBC = false;
   x.type(colvarvalue::type_scalar);
 }
+
 
 void colvar::distance::calc_value()
 {
@@ -55,12 +59,14 @@ void colvar::distance::calc_value()
   x.real_value = dist_v.norm();
 }
 
+
 void colvar::distance::calc_gradients()
 {
   cvm::rvector const u = dist_v.unit();
   group1->set_weighted_gradient(-1.0 * u);
   group2->set_weighted_gradient(       u);
 }
+
 
 void colvar::distance::calc_force_invgrads()
 {
@@ -73,10 +79,12 @@ void colvar::distance::calc_force_invgrads()
   }
 }
 
+
 void colvar::distance::calc_Jacobian_derivative()
 {
   jd.real_value = x.real_value ? (2.0 / x.real_value) : 0.0;
 }
+
 
 void colvar::distance::apply_force(colvarvalue const &force)
 {
@@ -96,12 +104,14 @@ colvar::distance_vec::distance_vec(std::string const &conf)
   x.type(colvarvalue::type_3vector);
 }
 
+
 colvar::distance_vec::distance_vec()
   : distance()
 {
   function_type = "distance_vec";
   x.type(colvarvalue::type_3vector);
 }
+
 
 void colvar::distance_vec::calc_value()
 {
@@ -113,11 +123,13 @@ void colvar::distance_vec::calc_value()
   }
 }
 
+
 void colvar::distance_vec::calc_gradients()
 {
   // gradients are not stored: a 3x3 matrix for each atom would be
   // needed to store just the identity matrix
 }
+
 
 void colvar::distance_vec::apply_force(colvarvalue const &force)
 {
@@ -136,6 +148,7 @@ colvar::distance_z::distance_z(std::string const &conf)
   function_type = "distance_z";
   provide(f_cvc_inv_gradient);
   provide(f_cvc_Jacobian);
+  provide(f_cvc_com_based);
   x.type(colvarvalue::type_scalar);
 
   // TODO detect PBC from MD engine (in simple cases)
@@ -186,6 +199,7 @@ colvar::distance_z::distance_z()
   function_type = "distance_z";
   provide(f_cvc_inv_gradient);
   provide(f_cvc_Jacobian);
+  provide(f_cvc_com_based);
   x.type(colvarvalue::type_scalar);
 }
 
@@ -283,6 +297,7 @@ colvar::distance_xy::distance_xy(std::string const &conf)
   function_type = "distance_xy";
   provide(f_cvc_inv_gradient);
   provide(f_cvc_Jacobian);
+  provide(f_cvc_com_based);
   x.type(colvarvalue::type_scalar);
 }
 
@@ -292,6 +307,7 @@ colvar::distance_xy::distance_xy()
   function_type = "distance_xy";
   provide(f_cvc_inv_gradient);
   provide(f_cvc_Jacobian);
+  provide(f_cvc_com_based);
   x.type(colvarvalue::type_scalar);
 }
 

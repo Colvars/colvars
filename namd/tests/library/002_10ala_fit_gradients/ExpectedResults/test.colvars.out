@@ -16,7 +16,6 @@ colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
 colvars:       Initializing atom group "atoms".
-colvars:       # scalable = off [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID = { BH }
 colvars:       # atomsFile = "" [default]

@@ -16,7 +16,7 @@
 #include "colvarvalue.h"
 
 #ifndef COLVARPROXY_VERSION
-#define COLVARPROXY_VERSION "2016-03-15"
+#define COLVARPROXY_VERSION "2016-03-16"
 #endif
 
 // For replica exchange
@@ -226,6 +226,11 @@ public:
                   std::string const &pdb_field,
                   double const pdb_field_value = 0.0);
 
+
+  int scalable_group_coms()
+  {
+    return COLVARS_OK;
+  }
   int init_atom_group(std::vector<int> const &atoms_ids);
   void clear_atom_group(int index);
   int update_group_properties(int index);

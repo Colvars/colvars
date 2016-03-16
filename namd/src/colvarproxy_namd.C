@@ -856,7 +856,7 @@ int colvarproxy_namd::load_atoms(char const *pdb_filename,
       continue;
     }
 
-    if (atoms.b_scalable) {
+    if (atoms.is_enabled(cvm::deps::f_ag_scalable)) {
       atoms.add_atom_id(ipdb+1);
     } else {
       atoms.add_atom(cvm::atom(ipdb+1));

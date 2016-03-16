@@ -351,6 +351,15 @@ void cvm::deps::init_cvc_requires() {
 
     f_description(f_cvc_Jacobian, "Jacobian");
     f_req_self(f_cvc_Jacobian, f_cvc_inv_gradient);
+
+    f_description(f_cvc_scalable, "scalable calculation");
+    f_req_self(f_cvc_scalable, f_cvc_scalable_com);
+    f_req_children(f_cvc_scalable, f_ag_scalable);
+
+    // TODO handle other types of parallelizaton
+    f_description(f_cvc_scalable_com, "scalable calculation of centers of mass");
+    f_req_self(f_cvc_scalable_com, f_cvc_com_based);
+    f_req_children(f_cvc_scalable_com, f_ag_scalable_com);
   }
 
   // Initialize feature_states for each instance
@@ -364,6 +373,7 @@ void cvm::deps::init_cvc_requires() {
   feature_states[f_cvc_active]->available = true;
   feature_states[f_cvc_gradient]->available = true;
   // Each cvc specifies what other features are available
+  feature_states[f_cvc_scalable_com]->available = (proxy->scalable_group_coms() == COLVARS_OK);
 }
 
 
@@ -382,6 +392,9 @@ void cvm::deps::init_ag_requires() {
     f_description(f_ag_fit_gradient_group, "fit gradient for main group");
     f_description(f_ag_fit_gradient_ref, "fit gradient for reference group");
     f_description(f_ag_atom_forces, "atomic forces");
+
+    // parallel calculation implies that we have at least a scalable center of mass
+    f_req_self(f_ag_scalable, f_ag_scalable_com);
   }
 
   // Initialize feature_states for each instance
@@ -391,8 +404,10 @@ void cvm::deps::init_ag_requires() {
     feature_states.push_back(new feature_state(false, false));
   }
 
-  // Features that are implemented by all cvcs by default
+  // Features that are implemented (or not) by all atom groups
   feature_states[f_ag_active]->available = true;
+  feature_states[f_ag_scalable_com]->available = (proxy->scalable_group_coms() == COLVARS_OK);
+  feature_states[f_ag_scalable]->available = feature_states[f_ag_scalable_com]->available;
 }
 
 

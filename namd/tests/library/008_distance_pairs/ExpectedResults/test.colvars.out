@@ -18,7 +18,6 @@ colvars:     # wrapAround = 0 [default]
 colvars:     # forceNoPBC = on
 colvars:     Computing distance using absolute positions (not minimal-image)
 colvars:       Initializing atom group "group1".
-colvars:       # scalable = off [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID = { BH }
 colvars:       # atomsFile = "" [default]
@@ -29,7 +28,6 @@ colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "group1" defined, 2 atoms initialized: total mass = 24.022, total charge = -0.03.
 colvars:       Initializing atom group "group2".
-colvars:       # scalable = off [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID = { BH }
 colvars:       # atomsFile = "" [default]
