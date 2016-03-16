@@ -208,6 +208,7 @@ void cvm::deps::init_cvb_requires() {
   f_req_children(f_cvb_get_system_force, f_cv_system_force);
 
   // Initialize feature_states for each instance
+  feature_states.reserve(f_cvb_ntot);
   for (i = 0; i < f_cvb_ntot; i++) {
     feature_states.push_back(new feature_state(true, false));
     // Most features are available, so we set them so
@@ -304,6 +305,7 @@ void cvm::deps::init_cv_requires() {
   }
 
   // Initialize feature_states for each instance
+  feature_states.reserve(f_cv_ntot);
   for (i = 0; i < f_cv_ntot; i++) {
     feature_states.push_back(new feature_state(true, false));
     // Most features are available, so we set them so
@@ -353,6 +355,7 @@ void cvm::deps::init_cvc_requires() {
 
   // Initialize feature_states for each instance
   // default as unavailable, not enabled
+  feature_states.reserve(f_cvc_ntot);
   for (i = 0; i < cvm::deps::f_cvc_ntot; i++) {
     feature_states.push_back(new feature_state(false, false));
   }
@@ -383,6 +386,7 @@ void cvm::deps::init_ag_requires() {
 
   // Initialize feature_states for each instance
   // default as unavailable, not enabled
+  feature_states.reserve(f_ag_ntot);
   for (i = 0; i < cvm::deps::f_ag_ntot; i++) {
     feature_states.push_back(new feature_state(false, false));
   }
@@ -395,7 +399,7 @@ void cvm::deps::init_ag_requires() {
 void cvm::deps::print_state() {
   size_t i;
   cvm::log("Enabled features of " + description);
-  for (i = 0; i<feature_states.size(); i++) {
+  for (i = 0; i < feature_states.size(); i++) {
     if (feature_states[i]->enabled)
       cvm::log("- " + features()[i]->description);
   }
