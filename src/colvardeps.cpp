@@ -179,15 +179,15 @@ int cvm::deps::enable(int feature_id,
 //     }
 
    // Shorthand macros for describing dependencies
-#define f_description(f, d) features()[f]->description = d;
-#define f_req_self(f, g) features()[f]->requires_self.push_back(g);
+#define f_description(f, d) features()[f]->description = d
+#define f_req_self(f, g) features()[f]->requires_self.push_back(g)
 // This macro ensures that exclusions are symmetric
 #define f_req_exclude(f, g) features()[f]->requires_exclude.push_back(g); \
-                            features()[g]->requires_exclude.push_back(f);
-#define f_req_children(f, g) features()[f]->requires_children.push_back(g);
+                            features()[g]->requires_exclude.push_back(f)
+#define f_req_children(f, g) features()[f]->requires_children.push_back(g)
 #define f_req_alt2(f, g, h) features()[f]->requires_alt.push_back(std::vector<int>(2));\
   features()[f]->requires_alt.back()[0] = g;                                           \
-  features()[f]->requires_alt.back()[1] = h;
+  features()[f]->requires_alt.back()[1] = h
 
 
 void cvm::deps::init_cvb_requires() {
@@ -198,14 +198,14 @@ void cvm::deps::init_cvb_requires() {
     }
   }
 
-  f_description(f_cvb_active, "active")
-  f_req_children(f_cvb_active, f_cv_active)
+  f_description(f_cvb_active, "active");
+  f_req_children(f_cvb_active, f_cv_active);
 
-  f_description(f_cvb_apply_force, "apply force")
-  f_req_children(f_cvb_apply_force, f_cv_gradient)
+  f_description(f_cvb_apply_force, "apply force");
+  f_req_children(f_cvb_apply_force, f_cv_gradient);
 
-  f_description(f_cvb_get_system_force, "obtain system force")
-  f_req_children(f_cvb_get_system_force, f_cv_system_force)
+  f_description(f_cvb_get_system_force, "obtain system force");
+  f_req_children(f_cvb_get_system_force, f_cv_system_force);
 
   // Initialize feature_states for each instance
   for (i = 0; i < f_cvb_ntot; i++) {
@@ -223,84 +223,84 @@ void cvm::deps::init_cv_requires() {
       features().push_back(new feature);
     }
 
-    f_description(f_cv_active, "active")
-    f_req_children(f_cv_active, f_cvc_active)
+    f_description(f_cv_active, "active");
+    f_req_children(f_cv_active, f_cvc_active);
 
-    f_description(f_cv_gradient, "gradient")
-    f_req_children(f_cv_gradient, f_cvc_gradient)
+    f_description(f_cv_gradient, "gradient");
+    f_req_children(f_cv_gradient, f_cvc_gradient);
 
-    f_description(f_cv_collect_gradient, "collect gradient")
-    f_req_self(f_cv_collect_gradient, f_cv_gradient)
-    f_req_self(f_cv_collect_gradient, f_cv_scalar)
+    f_description(f_cv_collect_gradient, "collect gradient");
+    f_req_self(f_cv_collect_gradient, f_cv_gradient);
+    f_req_self(f_cv_collect_gradient, f_cv_scalar);
 
-    f_description(f_cv_fdiff_velocity, "fdiff_velocity")
+    f_description(f_cv_fdiff_velocity, "fdiff_velocity");
 
-    // System force: either trivial (spring force) through extended Lagrangian, or calculated explicitly
-    f_description(f_cv_system_force, "system force")
-    f_req_alt2(f_cv_system_force, f_cv_extended_Lagrangian, f_cv_system_force_calc)
+    // System force: either trivial (spring force); through extended Lagrangian, or calculated explicitly
+    f_description(f_cv_system_force, "system force");
+    f_req_alt2(f_cv_system_force, f_cv_extended_Lagrangian, f_cv_system_force_calc);
 
     // Deps for explicit system force calculation
-    f_description(f_cv_system_force_calc, "system force calculation")
-    f_req_self(f_cv_system_force_calc, f_cv_scalar)
-    f_req_self(f_cv_system_force_calc, f_cv_linear)
-    f_req_children(f_cv_system_force_calc, f_cvc_inv_gradient)
-    f_req_self(f_cv_system_force_calc, f_cv_Jacobian)
+    f_description(f_cv_system_force_calc, "system force calculation");
+    f_req_self(f_cv_system_force_calc, f_cv_scalar);
+    f_req_self(f_cv_system_force_calc, f_cv_linear);
+    f_req_children(f_cv_system_force_calc, f_cvc_inv_gradient);
+    f_req_self(f_cv_system_force_calc, f_cv_Jacobian);
 
-    f_description(f_cv_Jacobian, "Jacobian derivative")
-    f_req_self(f_cv_Jacobian, f_cv_scalar)
-    f_req_self(f_cv_Jacobian, f_cv_linear)
-    f_req_children(f_cv_Jacobian, f_cvc_Jacobian)
+    f_description(f_cv_Jacobian, "Jacobian derivative");
+    f_req_self(f_cv_Jacobian, f_cv_scalar);
+    f_req_self(f_cv_Jacobian, f_cv_linear);
+    f_req_children(f_cv_Jacobian, f_cvc_Jacobian);
 
-    f_description(f_cv_hide_Jacobian, "hide Jacobian force")
-    f_req_self(f_cv_hide_Jacobian, f_cv_Jacobian) // can only hide if calculated
+    f_description(f_cv_hide_Jacobian, "hide Jacobian force");
+    f_req_self(f_cv_hide_Jacobian, f_cv_Jacobian); // can only hide if calculated
 
-    f_description(f_cv_extended_Lagrangian, "extended Lagrangian")
+    f_description(f_cv_extended_Lagrangian, "extended Lagrangian");
 
-    f_description(f_cv_Langevin, "Langevin dynamics")
+    f_description(f_cv_Langevin, "Langevin dynamics");
 
-    f_description(f_cv_linear, "linear")
+    f_description(f_cv_linear, "linear");
 
-    f_description(f_cv_scalar, "scalar")
+    f_description(f_cv_scalar, "scalar");
 
-    f_description(f_cv_output_energy, "output energy")
+    f_description(f_cv_output_energy, "output energy");
 
-    f_description(f_cv_output_value, "output value")
+    f_description(f_cv_output_value, "output value");
 
-    f_description(f_cv_output_velocity, "output velocity")
+    f_description(f_cv_output_velocity, "output velocity");
 
-    f_description(f_cv_output_applied_force, "output applied force")
+    f_description(f_cv_output_applied_force, "output applied force");
 
-    f_description(f_cv_output_system_force, "output system force")
-    f_req_self(f_cv_output_system_force, f_cv_system_force)
+    f_description(f_cv_output_system_force, "output system force");
+    f_req_self(f_cv_output_system_force, f_cv_system_force);
 
-    f_description(f_cv_lower_boundary, "lower boundary")
-    f_req_self(f_cv_lower_boundary, f_cv_scalar)
+    f_description(f_cv_lower_boundary, "lower boundary");
+    f_req_self(f_cv_lower_boundary, f_cv_scalar);
 
-    f_description(f_cv_upper_boundary, "upper boundary")
-    f_req_self(f_cv_upper_boundary, f_cv_scalar)
+    f_description(f_cv_upper_boundary, "upper boundary");
+    f_req_self(f_cv_upper_boundary, f_cv_scalar);
 
-    f_description(f_cv_grid, "grid")
-    f_req_self(f_cv_grid, f_cv_lower_boundary)
-    f_req_self(f_cv_grid, f_cv_upper_boundary)
+    f_description(f_cv_grid, "grid");
+    f_req_self(f_cv_grid, f_cv_lower_boundary);
+    f_req_self(f_cv_grid, f_cv_upper_boundary);
 
-    f_description(f_cv_lower_wall, "lower wall")
-    f_req_self(f_cv_lower_wall, f_cv_lower_boundary)
-    f_req_self(f_cv_lower_wall, f_cv_gradient)
+    f_description(f_cv_lower_wall, "lower wall");
+    f_req_self(f_cv_lower_wall, f_cv_lower_boundary);
+    f_req_self(f_cv_lower_wall, f_cv_gradient);
 
-    f_description(f_cv_upper_wall, "upper wall")
-    f_req_self(f_cv_upper_wall, f_cv_upper_boundary)
-    f_req_self(f_cv_upper_wall, f_cv_gradient)
+    f_description(f_cv_upper_wall, "upper wall");
+    f_req_self(f_cv_upper_wall, f_cv_upper_boundary);
+    f_req_self(f_cv_upper_wall, f_cv_gradient);
 
-    f_description(f_cv_runave, "running average")
+    f_description(f_cv_runave, "running average");
 
-    f_description(f_cv_corrfunc, "correlation function")
+    f_description(f_cv_corrfunc, "correlation function");
 
     // The features below are set programmatically
-    f_description(f_cv_scripted, "scripted")
-    f_description(f_cv_periodic, "periodic")
-    f_description(f_cv_scalar, "scalar")
-    f_description(f_cv_linear, "linear")
-    f_description(f_cv_homogeneous, "homogeneous")
+    f_description(f_cv_scripted, "scripted");
+    f_description(f_cv_periodic, "periodic");
+    f_description(f_cv_scalar, "scalar");
+    f_description(f_cv_linear, "linear");
+    f_description(f_cv_homogeneous, "homogeneous");
   }
 
   // Initialize feature_states for each instance
@@ -336,19 +336,19 @@ void cvm::deps::init_cvc_requires() {
       features().push_back(new feature);
     }
 
-    f_description(f_cvc_active, "active")
+    f_description(f_cvc_active, "active");
 //     The dependency below may become useful if we use dynamic atom groups
-//     f_req_children(f_cvc_active, f_ag_active)
+//     f_req_children(f_cvc_active, f_ag_active);
 
-    f_description(f_cvc_scalar, "scalar")
+    f_description(f_cvc_scalar, "scalar");
 
-    f_description(f_cvc_gradient, "gradient")
+    f_description(f_cvc_gradient, "gradient");
 
-    f_description(f_cvc_inv_gradient, "inverse gradient")
-    f_req_self(f_cvc_inv_gradient, f_cvc_gradient)
+    f_description(f_cvc_inv_gradient, "inverse gradient");
+    f_req_self(f_cvc_inv_gradient, f_cvc_gradient);
 
-    f_description(f_cvc_Jacobian, "Jacobian")
-    f_req_self(f_cvc_Jacobian, f_cvc_inv_gradient)
+    f_description(f_cvc_Jacobian, "Jacobian");
+    f_req_self(f_cvc_Jacobian, f_cvc_inv_gradient);
   }
 
   // Initialize feature_states for each instance
@@ -372,13 +372,13 @@ void cvm::deps::init_ag_requires() {
       features().push_back(new feature);
     }
 
-    f_description(f_ag_active, "active")
-    f_description(f_ag_center, "translational fit")
-    f_description(f_ag_rotate, "rotational fit")
-    f_description(f_ag_ref_pos_group, "reference positions group")
-    f_description(f_ag_fit_gradient_group, "fit gradient for main group")
-    f_description(f_ag_fit_gradient_ref, "fit gradient for reference group")
-    f_description(f_ag_atom_forces, "atomic forces")
+    f_description(f_ag_active, "active");
+    f_description(f_ag_center, "translational fit");
+    f_description(f_ag_rotate, "rotational fit");
+    f_description(f_ag_ref_pos_group, "reference positions group");
+    f_description(f_ag_fit_gradient_group, "fit gradient for main group");
+    f_description(f_ag_fit_gradient_ref, "fit gradient for reference group");
+    f_description(f_ag_atom_forces, "atomic forces");
   }
 
   // Initialize feature_states for each instance
