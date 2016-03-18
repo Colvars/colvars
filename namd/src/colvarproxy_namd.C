@@ -313,27 +313,7 @@ void colvarproxy_namd::calculate()
       }
     }
 
-  }
-
-  if (cvm::debug()) {
-    log("atoms_ids = "+cvm::to_str(atoms_ids)+"\n");
-    log("atoms_ncopies = "+cvm::to_str(atoms_ncopies)+"\n");
-    log("atoms_masses = "+cvm::to_str(atoms_masses)+"\n");
-    log("atoms_charges = "+cvm::to_str(atoms_charges)+"\n");
-    log("atoms_positions = "+cvm::to_str(atoms_positions)+"\n");
-    log("atoms_total_forces = "+cvm::to_str(atoms_total_forces)+"\n");
-    log("atoms_applied_forces = "+cvm::to_str(atoms_applied_forces)+"\n");
-    log("atoms_new_colvar_forces = "+cvm::to_str(atoms_new_colvar_forces)+"\n");
-    log(cvm::line_marker);
-
-    log("atom_groups_ids = "+cvm::to_str(atom_groups_ids)+"\n");
-    log("atom_groups_masses = "+cvm::to_str(atom_groups_masses)+"\n");
-    log("atom_groups_charges = "+cvm::to_str(atom_groups_charges)+"\n");
-    log("atom_groups_coms = "+cvm::to_str(atom_groups_coms)+"\n");
-    log("atom_groups_total_forces = "+cvm::to_str(atom_groups_total_forces)+"\n");
-    log("atom_groups_applied_forces = "+cvm::to_str(atom_groups_applied_forces)+"\n");
-    log("atom_groups_new_colvar_forces = "+cvm::to_str(atom_groups_new_colvar_forces)+"\n");
-    log(cvm::line_marker);
+    // atom_groups_applied_forces is not provided by GlobalMaster
   }
 
   {
@@ -345,6 +325,26 @@ void colvarproxy_namd::calculate()
     for (ig = 0; gp_i != getGroupPositionEnd(); gp_i++, ig++) {
       atom_groups_coms[ig] = cvm::rvector(gp_i->x, gp_i->y, gp_i->z);
     }
+  }
+
+  if (cvm::debug()) {
+    log("atoms_ids = "+cvm::to_str(atoms_ids)+"\n");
+    log("atoms_ncopies = "+cvm::to_str(atoms_ncopies)+"\n");
+    log("atoms_masses = "+cvm::to_str(atoms_masses)+"\n");
+    log("atoms_charges = "+cvm::to_str(atoms_charges)+"\n");
+    log("atoms_positions = "+cvm::to_str(atoms_positions)+"\n");
+    log("atoms_total_forces = "+cvm::to_str(atoms_total_forces)+"\n");
+    log("atoms_applied_forces = "+cvm::to_str(atoms_applied_forces)+"\n");
+    log(cvm::line_marker);
+
+    log("atom_groups_ids = "+cvm::to_str(atom_groups_ids)+"\n");
+    log("atom_groups_ncopies = "+cvm::to_str(atom_groups_ncopies)+"\n");
+    log("atom_groups_masses = "+cvm::to_str(atom_groups_masses)+"\n");
+    log("atom_groups_charges = "+cvm::to_str(atom_groups_charges)+"\n");
+    log("atom_groups_coms = "+cvm::to_str(atom_groups_coms)+"\n");
+    log("atom_groups_total_forces = "+cvm::to_str(atom_groups_total_forces)+"\n");
+    log("atom_groups_applied_forces = "+cvm::to_str(atom_groups_applied_forces)+"\n");
+    log(cvm::line_marker);
   }
 
   // call the collective variable module
