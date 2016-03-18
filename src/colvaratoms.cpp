@@ -852,6 +852,8 @@ void cvm::atom_group::read_velocities()
   }
 }
 
+
+// TODO make this a calc function
 void cvm::atom_group::read_system_forces()
 {
   if (b_dummy) return;
@@ -1070,6 +1072,8 @@ std::vector<cvm::rvector> cvm::atom_group::system_forces() const
   return f;
 }
 
+
+// TODO make this an accessor
 cvm::rvector cvm::atom_group::system_force() const
 {
   if (b_dummy) {

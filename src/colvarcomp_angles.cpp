@@ -14,6 +14,7 @@ colvar::angle::angle(std::string const &conf)
   provide(f_cvc_inv_gradient);
   provide(f_cvc_Jacobian);
   provide(f_cvc_com_based);
+
   group1 = parse_group(conf, "group1");
   group2 = parse_group(conf, "group2");
   group3 = parse_group(conf, "group3");
@@ -81,20 +82,9 @@ void colvar::angle::calc_gradients()
   dxdr3 = (180.0/PI) * dxdcos *
     (1.0/r23l) * ( r21/r21l + (-1.0) * cos_theta * r23/r23l );
 
-  for (i = 0; i < group1->size(); i++) {
-    (*group1)[i].grad = ((*group1)[i].mass/group1->total_mass) *
-      (dxdr1);
-  }
-
-  for (i = 0; i < group2->size(); i++) {
-    (*group2)[i].grad = ((*group2)[i].mass/group2->total_mass) *
-      (dxdr1 + dxdr3) * (-1.0);
-  }
-
-  for (i = 0; i < group3->size(); i++) {
-    (*group3)[i].grad = ((*group3)[i].mass/group3->total_mass) *
-      (dxdr3);
-  }
+  group1->set_weighted_gradient(dxdr1);
+  group2->set_weighted_gradient((dxdr1 + dxdr3) * (-1.0));
+  group3->set_weighted_gradient(dxdr3);
 
   if (is_enabled(f_cvc_debug_gradient)) {
     debug_gradients(group1);
@@ -265,6 +255,8 @@ colvar::dihedral::dihedral(std::string const &conf)
   b_periodic = true;
   provide(f_cvc_inv_gradient);
   provide(f_cvc_Jacobian);
+  provide(f_cvc_com_based);
+
   if (get_keyval(conf, "oneSiteSystemForce", b_1site_force, false)) {
     cvm::log("Computing system force on group 1 only");
   }
@@ -290,6 +282,8 @@ colvar::dihedral::dihedral(cvm::atom const &a1,
   b_periodic = true;
   provide(f_cvc_inv_gradient);
   provide(f_cvc_Jacobian);
+  provide(f_cvc_com_based);
+
   b_1site_force = false;
 
   group1 = new cvm::atom_group(std::vector<cvm::atom>(1, a1));
@@ -409,18 +403,10 @@ void colvar::dihedral::calc_gradients()
               +dsindB.y*r34.x - dsindB.x*r34.y);
   }
 
-  size_t i;
-  for (i = 0; i < group1->size(); i++)
-    (*group1)[i].grad = ((*group1)[i].mass/group1->total_mass) * (-f1);
-
-  for (i = 0; i < group2->size(); i++)
-    (*group2)[i].grad = ((*group2)[i].mass/group2->total_mass) * (-f2 + f1);
-
-  for (i = 0; i < group3->size(); i++)
-	(*group3)[i].grad = ((*group3)[i].mass/group3->total_mass) * (-f3 + f2);
-
-  for (i = 0; i < group4->size(); i++)
-    (*group4)[i].grad = ((*group4)[i].mass/group4->total_mass) * (f3);
+  group1->set_weighted_gradient(-f1);
+  group2->set_weighted_gradient(-f2 + f1);
+  group3->set_weighted_gradient(-f3 + f2);
+  group4->set_weighted_gradient(f3);
 }
 
 

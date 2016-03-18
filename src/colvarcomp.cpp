@@ -57,6 +57,9 @@ cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
   if (key_lookup(conf, group_key)) {
     group = new cvm::atom_group;
     // TODO turn on scalable flag for group objects in cvc init function
+    if (b_try_scalable && is_available(f_cvc_com_based)) {
+      group->enable(f_ag_scalable);
+    }
     group->key = group_key;
     if (group->parse(conf) == COLVARS_OK) {
       atom_groups.push_back(group);
