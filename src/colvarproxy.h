@@ -546,18 +546,18 @@ public:
   /// \brief Used by the atom_group class destructor
   virtual void clear_atom_group(int index)
   {
+    if (cvm::debug()) {
+      log("Trying to remove/disable atom group number "+cvm::to_str(index)+"\n");
+    }
+
     if (((size_t) index) >= atom_groups_ids.size()) {
       cvm::error("Error: trying to disable an atom group that was not previously requested.\n",
                  INPUT_ERROR);
     }
 
-    atom_groups_ids.erase(atom_groups_ids.begin()+index);
-    atom_groups_masses.erase(atom_groups_masses.begin()+index);
-    atom_groups_charges.erase(atom_groups_charges.begin()+index);
-    atom_groups_coms.erase(atom_groups_coms.begin()+index);
-    atom_groups_total_forces.erase(atom_groups_total_forces.begin()+index);
-    atom_groups_applied_forces.erase(atom_groups_applied_forces.begin()+index);
-    atom_groups_new_colvar_forces.erase(atom_groups_new_colvar_forces.begin()+index);
+    if (atom_groups_ncopies[index] > 0) {
+      atom_groups_ncopies[index] -= 1;
+    }
   }
 
   /// Get the numeric ID of the given atom group (for the MD program)

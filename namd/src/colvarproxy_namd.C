@@ -988,7 +988,7 @@ int colvarproxy_namd::init_atom_group(std::vector<int> const &atoms_ids)
 
 void colvarproxy_namd::clear_atom_group(int index)
 {
-  modifyRequestedGroups().del(index);
+  // do nothing, keep the NAMD arrays in sync with the colvarproxy ones
   colvarproxy::clear_atom_group(index);
 }
 
