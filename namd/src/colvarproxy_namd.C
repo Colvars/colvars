@@ -928,22 +928,32 @@ int colvarproxy_namd::init_atom_group(std::vector<int> const &atoms_ids)
   // compare this new group to those already allocated inside GlobalMaster
   int ig;
   for (ig = 0; ig < modifyRequestedGroups().size(); ig++) {
-    if (modifyRequestedGroups().size() != ((int) atoms_ids.size())) continue;
-    int ia;
     AtomIDList const &namd_group = modifyRequestedGroups()[ig];
-    for (ia = 0; ia < namd_group.size(); ia++) {
-      int const aid = atoms_ids[ia];
-      if (namd_group[ia] != aid) break;
+    bool b_match = true;
+
+    if (namd_group.size() != ((int) atoms_ids.size())) {
+      b_match = false;
+    } else {
+      int ia;
+      for (ia = 0; ia < namd_group.size(); ia++) {
+        int const aid = atoms_ids[ia];
+        if (namd_group[ia] != aid) {
+          b_match = false;
+          break;
+        }
+      }
     }
 
-    if (cvm::debug())
-      log("Group was already added.\n");
-
-    // this group already exists
-    return ig;
+    if (b_match) {
+      if (cvm::debug())
+        log("Group was already added.\n");
+      // this group already exists
+      atom_groups_ncopies[ig] += 1;
+      return ig;
+    }
   }
 
-  // add this group (note: the argument of add_atom_group_slot() is redundant for NAMD)
+  // add this group (note: the argument of add_atom_group_slot() is redundant for NAMD, and provided only for consistency)
   size_t const index = add_atom_group_slot(atom_groups_ids.size());
   modifyRequestedGroups().resize(atom_groups_ids.size());
   // the following is done in calculate()
@@ -967,6 +977,7 @@ int colvarproxy_namd::init_atom_group(std::vector<int> const &atoms_ids)
   update_group_properties(index);
 
   if (cvm::debug()) {
+    log("Group has index "+cvm::to_str(index)+"\n");
     log("modifyRequestedGroups length = "+cvm::to_str(modifyRequestedGroups().size())+
         ", modifyGroupForces length = "+cvm::to_str(modifyGroupForces().size())+"\n");
   }
