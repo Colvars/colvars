@@ -7,8 +7,8 @@
 /*****************************************************************************
  * $Source: /namd/cvsroot/namd2/src/SimParameters.h,v $
  * $Author: jim $
- * $Date: 2016/02/07 20:17:58 $
- * $Revision: 1.1239 $
+ * $Date: 2016/03/02 21:33:06 $
+ * $Revision: 1.1240 $
  *****************************************************************************/
 
 #ifndef SIMPARAMETERS_H
@@ -577,6 +577,15 @@ public:
 	BigReal langevinPistonDecay;
 	BigReal langevinPistonTemp;
 
+	Bool multigratorOn;     // Multigrator temperature and/or pressure control
+	BigReal multigratorPressureTarget;
+	BigReal multigratorPressureRelaxationTime;
+	int multigratorPressureFreq;
+	BigReal multigratorTemperatureTarget;
+	BigReal multigratorTemperatureRelaxationTime;
+	int multigratorTemperatureFreq;
+	int multigratorNoseHooverChainLength;
+
         BigReal surfaceTensionTarget;
 
         Bool pressureProfileOn;         // Compute lateral pressure profile?
@@ -666,6 +675,8 @@ public:
         Bool PMEOffload;		//  Offload reciprocal sum to accelerator
 
 	Bool useDPME;			//  Flag TRUE -> old DPME code
+	Bool usePMECUDA;                //  Flag TRUE -> use the PME CUDA version
+	Bool useCUDA2;                  //  Flag TRUE -> use ComputeNonbondedCUDA2
 	Bool useOptPME;                 //  Flag TRUE -> use the scalable version of PME
 	Bool useManyToMany;             //  Flag TRUE -> use the manytomany optimization of PME.
 	                                //  This flag requres useOptPME to be set.

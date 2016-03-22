@@ -7,8 +7,8 @@
 /*****************************************************************************
  * $Source: /namd/cvsroot/namd2/src/SimParameters.C,v $
  * $Author: jim $
- * $Date: 2016/02/07 20:17:58 $
- * $Revision: 1.1459 $
+ * $Date: 2016/03/02 21:33:06 $
+ * $Revision: 1.1461 $
  *****************************************************************************/
 
 /** \file SimParameters.C
@@ -104,6 +104,7 @@ int SimParameters::issetinparseopts(const char* name) {
   if ( parseopts ) return parseopts->issetfromptr(name);
   else return -1;
 }
+
 
 /************************************************************************/
 /*                  */
@@ -863,6 +864,7 @@ void SimParameters::config_parser_fullelect(ParseOptions &opts) {
    opts.optional("FMM", "FMMPadding", "FMM padding margin (Angstroms)",
        &FMMPadding, 0);
 
+   opts.optionalB("main", "useCUDA2", "Use ComputeNonbondedCUDA2", &useCUDA2, FALSE);
 
    ///////////  Particle Mesh Ewald
 
@@ -914,6 +916,7 @@ void SimParameters::config_parser_fullelect(ParseOptions &opts) {
    opts.optionalB("main", "PMEOffload", "Offload PME to accelerator?",
 	&PMEOffload);
 
+   opts.optionalB("PME", "usePMECUDA", "Use the PME CUDA version", &usePMECUDA, FALSE);
    opts.optionalB("PME", "useOptPME", "Use the new scalable PME optimization", &useOptPME, FALSE);
    opts.optionalB("PME", "useManyToMany", "Use the many-to-many PME optimization", &useManyToMany, FALSE);
    if (PMEOn && !useOptPME)
@@ -1313,6 +1316,39 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
    opts.optional("LangevinPiston", "StrainRate",
       "Initial strain rate for pressure control (x y z)",
       &strainRate);
+
+   // Multigrator temperature and/or pressure control
+   opts.optionalB("main", "Multigrator",
+      "Should multigrator temperature and/or pressure control be used?",
+      &multigratorOn, FALSE);
+   opts.require("Multigrator", "MultigratorPressureTarget",
+    "Target pressure for pressure coupling",
+    &multigratorPressureTarget);
+   opts.require("Multigrator", "MultigratorTemperatureTarget",
+    "Target temperature for temperature coupling",
+    &multigratorTemperatureTarget);
+   opts.require("Multigrator", "MultigratorPressureFreq",
+    "Number of steps between pressure control moves",
+    &multigratorPressureFreq);
+   opts.range("MultigratorPressureFreq", POSITIVE);
+   opts.optional("Multigrator", "MultigratorPressureRelaxationTime",
+    "Relaxation time for pressure coupling is fs",
+    &multigratorPressureRelaxationTime, 30000);
+   opts.range("MultigratorPressureRelaxationTime", POSITIVE);
+   opts.units("MultigratorPressureRelaxationTime", N_FSEC);
+   opts.optional("Multigrator", "MultigratorTemperatureRelaxationTime",
+    "Relaxation time for temperature coupling is fs",
+    &multigratorTemperatureRelaxationTime, 1000);
+   opts.range("MultigratorTemperatureRelaxationTime", POSITIVE);
+   opts.units("MultigratorTemperatureRelaxationTime", N_FSEC);
+   opts.require("Multigrator", "MultigratorTemperatureFreq",
+    "Number of steps between temperature control moves",
+    &multigratorTemperatureFreq);
+   opts.range("MultigratorTemperatureFreq", POSITIVE);
+   opts.optional("Multigrator", "MultigratorNoseHooverChainLength",
+    "Nose-Hoover chain length",
+    &multigratorNoseHooverChainLength, 4);
+   opts.range("MultigratorNoseHooverChainLength", POSITIVE);
 
    //// Surface tension
    opts.optional("main", "SurfaceTensionTarget",
@@ -2452,6 +2488,10 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
      }
    }
 
+#ifndef OUTPUT_SINGLE_FILE
+#error OUTPUT_SINGLE_FILE not defined!
+#endif
+
    #if !OUTPUT_SINGLE_FILE
    //create directories for multi-file output scheme
    create_output_directories("coor");
@@ -3170,12 +3210,12 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
 
      if (vdwForceSwitching && (alchFepWCARepuOn || alchFepWCADispOn)) {
        iout << iWARN << "vdwForceSwitching not implemented for alchemical "
-	 "interactions when WCA decomposition is on!\n" << endi;
+   "interactions when WCA decomposition is on!\n" << endi;
      }
 
      if (alchOn && martiniSwitching) {
        iout << iWARN << "Martini switching disabled for alchemical "
-	 "interactions.\n" << endi;
+   "interactions.\n" << endi;
      }
 
      if (!opts.defined("alchType"))
@@ -3666,6 +3706,19 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
        NAMD_die("fullElectFrequency must be a multiple of nonbondedFreq");
      }
 
+      if (multigratorOn) {
+        if ( (multigratorTemperatureFreq > multigratorPressureFreq) || ( (multigratorPressureFreq % multigratorTemperatureFreq) != 0) )
+        {
+          NAMD_die("multigratorTemperatureFreq must be a multiple of multigratorPressureFreq");
+        }
+        if ( (fullElectFrequency > multigratorTemperatureFreq) || ( (multigratorTemperatureFreq % fullElectFrequency) != 0) )
+        {
+          NAMD_die("fullElectFrequency must be a multiple of multigratorTemperatureFreq");
+        }
+        if (multigratorNoseHooverChainLength <= 2) {
+          NAMD_die("multigratorNoseHooverChainLength must be greater than 2");
+        }
+      }
 
      if (!opts.defined("fmaTheta"))
      fmaTheta=0.715;  /* Suggested by Duke developers */
@@ -5014,7 +5067,7 @@ if ( openatomOn )
      iout << endi;
    }
 
-   if (berendsenPressureOn && langevinPistonOn)
+   if ((int)berendsenPressureOn + (int)langevinPistonOn + (int)multigratorOn > 1)
    {
       NAMD_die("Multiple pressure control algorithms selected!\n");
    }
@@ -5087,6 +5140,10 @@ if ( openatomOn )
      iout << endi;
      langevinPistonTarget /= PRESSUREFACTOR;
    }
+
+    if (multigratorOn) {
+      multigratorPressureTarget /= PRESSUREFACTOR;
+    }
 
    if (berendsenPressureOn || langevinPistonOn) {
      iout << iINFO << "      CELL FLUCTUATION IS "
@@ -6356,4 +6413,3 @@ BigReal SimParameters::getBondLambda(const BigReal lambda) {
   return (lambda >= alchBondLambdaEnd ? 1. : lambda / alchBondLambdaEnd);
 }
 //fepe
-

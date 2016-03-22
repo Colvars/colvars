@@ -57,6 +57,7 @@ private:
   friend class GlobalMasterTcl;
   friend class colvarproxy_namd;
   Tcl_Interp *interp;
+  static int Tcl_python(ClientData, Tcl_Interp *, int, char **);
   static int Tcl_startup(ClientData, Tcl_Interp *, int, char **);
   static int Tcl_exit(ClientData, Tcl_Interp *, int, char **);
   static int Tcl_abort(ClientData, Tcl_Interp *, int, char **);
