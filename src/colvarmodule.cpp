@@ -1175,14 +1175,16 @@ void cvm::decrease_depth()
 
 size_t & cvm::depth()
 {
+  // NOTE: do not call log() or error() here, to avoid recursion
   size_t const nt = proxy->smp_num_threads();
   if (proxy->smp_enabled() == COLVARS_OK) {
     if (depth_v.size() != nt) {
-      if (depth_v.size() > 0) {
-        cvm::error("Error: number of threads was changed after first use by the colvars module.\n",
-                   COLVARS_ERROR);
-      }
+      // update array of depths
+      proxy->smp_lock();
+      if (depth_v.size() > 0) { depth_s = depth_v[0]; }
+      depth_v.clear();
       depth_v.assign(nt, depth_s);
+      proxy->smp_unlock();
     }
     return depth_v[proxy->smp_thread_id()];
   }
