@@ -41,7 +41,7 @@ colvar::cvc::cvc(std::string const &conf)
   }
 
   // Attempt scalable calculations when in parallel? (By default yes, if available)
-  get_keyval(conf, "scalable", b_try_scalable, true, parse_silent);
+  get_keyval(conf, "scalable", b_try_scalable, true);
 
   if (cvm::debug())
     cvm::log("Done initializing cvc base object.\n");
@@ -56,11 +56,25 @@ cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
 
   if (key_lookup(conf, group_key)) {
     group = new cvm::atom_group;
-    // TODO turn on scalable flag for group objects in cvc init function
-    if (b_try_scalable && is_available(f_cvc_com_based)) {
-      group->enable(f_ag_scalable);
-    }
     group->key = group_key;
+
+    if (b_try_scalable) {
+      if (is_available(f_cvc_scalable_com) && is_available(f_cvc_com_based)) {
+        enable(f_cvc_scalable_com);
+        enable(f_cvc_scalable);
+        group->enable(f_ag_scalable_com);
+        group->enable(f_ag_scalable);
+      }
+
+      // TODO check for other types of parallelism here
+
+      if (is_enabled(f_cvc_scalable)) {
+        cvm::log("Will enable scalable calculation for group \""+group->key+"\".\n");
+      } else {
+        cvm::log("Scalable calculation is not available for group \""+group->key+"\" with the current configuration.\n");
+      }
+    }
+
     if (group->parse(conf) == COLVARS_OK) {
       atom_groups.push_back(group);
     } else {
