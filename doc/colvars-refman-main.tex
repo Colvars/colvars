@@ -3051,7 +3051,7 @@ The following options define the configuration for the ``well-tempered'' metadyn
     When running metadynamics in the long time limit, collective variable space is sampled to a modified
     temperature $T+\Delta T$.  In conventional metadynamics, the temperature ``boost'' $\Delta T$ would
     constantly increases with time.  Instead, in well-tempered metadynamics $\Delta T$ must be defined by the
-    user via \texttt{biasTemperature}.  If \texttt{dumpFreeEnergyFile} is enabled, the written PMF includes the
+    user via \texttt{biasTemperature}.  The written PMF includes the
     scaling factor $(T+\Delta T)/\Delta T$ \cite{Barducci2008}.  A careful choice of $\Delta T$ determines the
     sampling and convergence rate, and is hence crucial to the success of a well-tempered metadynamics
     simulation.}
@@ -3148,13 +3148,12 @@ one replica:
     PMF from this replica}{%
     boolean}{%
     \texttt{on}}{%
-    When \texttt{multipleReplicas} is \texttt{on}, tje file
+    When \texttt{multipleReplicas} is \texttt{on}, the file
     \outputName\texttt{.pmf} contains the combined PMF from all
-    replicas.  Enabling this option produces an additional file
+    replicas, provided that \texttt{useGrids} is \texttt{on} (default).
+    Enabling this option produces an additional file
     \outputName\texttt{.partial.pmf}, which can be useful to
-    quickly monitor the contribution of each replica to the PMF.  The
-    requirements for this option are the same as
-    \texttt{dumpFreeEnergyFile}.}
+    quickly monitor the contribution of each replica to the PMF.}
 
 \end{itemize}
 
