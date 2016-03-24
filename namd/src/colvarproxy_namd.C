@@ -1041,7 +1041,6 @@ void calc_colvars_items_smp(int first, int last, void *result, int paramNum, voi
 int colvarproxy_namd::smp_colvars_loop()
 {
   colvarmodule *cv = this->colvars;
-  std::vector<colvar *>::iterator cvi;
   CkLoop_Parallelize(calc_colvars_items_smp, 1, this, cv->colvars_smp.size(), 0, cv->colvars_smp.size()-1);
   return cvm::get_error();
 }
@@ -1069,7 +1068,6 @@ void calc_biases_smp(int first, int last, void *result, int paramNum, void *para
 int colvarproxy_namd::smp_biases_loop()
 {
   colvarmodule *cv = this->colvars;
-  std::vector<colvar *>::iterator cvi;
   CkLoop_Parallelize(calc_biases_smp, 1, this, cv->biases.size(), 0, cv->biases.size()-1);
   return cvm::get_error();
 }
