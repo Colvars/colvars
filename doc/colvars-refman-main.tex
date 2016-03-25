@@ -1193,12 +1193,16 @@ In general, internal coordinate wrapping by LAMMPS does not affect the calculati
 \end{enumerate}
 \cvvmdonly{If none of these conditions are met, wrapping may affect the calculation of collective variables: a possible solution is to use \texttt{pbc wrap} or \texttt{pbc unwrap} prior to processing a trajectory with the colvars module.}
 
-\cvsubsec{Computational cost of colvars based on group size.}
+\cvsubsec{Computational cost of colvars calculations based on group size.}
 \label{sec:colvar_atom_groups_scaling}
 
-In parallel MD simulations, the calculation of most interaction terms are spread over many computational nodes, but the calculation of colvars is not parallelized.
-Therefore, additional calculations are executed by the node calculating the colvars, and most importantly, additional communication is added between the first node and the other nodes.
-\cvnamdonly{The latency-tolerant design and dynamic load balancing of NAMD alleviate both factors: however, under some circumstances, a noticeable performance impact may be observed.}
+In parallel simulations (as supported by NAMD and LAMMPS), the calculation of energy and forces is distributed over many nodes and processor cores.
+Unless the calculation of each colvar component is also parallelized, the overall performance may be affected.
+You can check the output to see if the parallel calculation of a certain component is available: if the keyword \texttt{scalable} (see \ref{sec:cvc_common}) is \texttt{on}, this will be reported by the message ``Will enable scalable calculation for group \ldots'' for each of its groups.
+
+If the calculation of a component is not parallelized (as reported by the message ``Scalable calculation is not available''), the performance of the first computational node may decrease significantly.
+Even more importantly, additional communication will carried out between nodes to transfer the required atomic coordinates.
+\cvnamdonly{The latency-tolerant design and dynamic load balancing of NAMD alleviate both factors, but a noticeable performance impact may be observed.}
 To mitigate that, atom groups should be kept relatively small (up to a few thousands, depending on the computational cost to simulate the system by itself).  \cvvmdonly{A test calculation with VMD can provide a crude estimate of the impact of a large colvar on a NAMD simulation.}
 
 \cvsec{Collective variable components (basis functions)}
@@ -1254,11 +1258,17 @@ type\cvscriptonly{, except within a scripted collective variable}.
 \item \texttt{cartesian}: vector of atomic Cartesian coordinates;
 \item \texttt{orientation}: best-fit rotation, expressed as a unit quaternion.
 \end{itemize}
-  
+
+
 In the following, all the available component types are listed, along
 with their physical units and the limiting values, if any.  Such
 limiting values can be used to define \texttt{lowerBoundary} and
 \texttt{upperBoundary} in the parent colvar.
+
+For each type of component, the available configurations keywords are listed:
+when two components share certain keywords, the second component simply references
+to the documentation of the first regarding that keyword.
+The keywords that are available for all types of components are listed at the end (see \
 
 
 \cvsubsec{List of available colvar components}
@@ -2216,9 +2226,45 @@ and \texttt{psfSegID}) in addition to the following:
 } % end of \cvnamebasedonly
 
 
+\cvsubsec{Configuration keywords shared by all components}
+\label{sec:cvc_common}
+
+All types of components support the following keywords:
+\begin{itemize}
+\item %
+  \keydef
+    {name}{%
+    any component}{%
+    Name of this component}{%
+    string}{%
+    type of component + numeric id}{%
+    The name is an unique case-sensitive string which allows the
+    colvar module to identify this component. This is useful, for example,
+    when combining multiple components via a \texttt{scriptedFunction}.}
+\item %
+  \keydef
+    {scalable}{%
+    any component}{%
+    Attempt to calculate this component in parallel?}{%
+    boolean}{%
+    \texttt{on}, if available}{%
+    If set to \texttt{on} (default), the module will attempt to calculate this component in parallel,
+    over multiple processor cores or multiple nodes (whichever is faster). 
+    Whether this feature is available depends on the specific configuration and the hosting code:
+    a message is printed to indicate this. 
+    If available, this feature reduces the overhead of a collective variables-based calculation:
+    otherwise, the component is calculated entirely on one processor core.
+    This flag influences parallel performance, but does not affect numerical results: therefore, it should only
+    be turned off for debugging or testing purposes.
+  }
+\end{itemize}
+
+
 \cvsubsec{Advanced usage and special considerations}
+\label{sec:cvc_advanced}
 
 \cvsubsubsec{Periodic components.} 
+\label{sec:cvc_periodic}
 The following components returns
 real numbers that lie in a periodic interval:
 \begin{itemize}
@@ -2274,6 +2320,7 @@ the two periodic images that are closest to each other.
 
 
 \cvsubsubsec{Non-scalar components.}
+\label{sec:cvc_non_scalar}
 When one of the following components are used, the defined colvar returns a value that is not a scalar number:
 \begin{itemize}
 \item \texttt{distanceVec}: 3-dimensional vector of the distance
@@ -2307,6 +2354,7 @@ Non-scalar components carry the following restrictions:
 
 
 \cvsubsubsec{Calculating system forces.}
+\label{sec:cvc_sys_forces}
 In addition to the restrictions due to the type of value computed (scalar or non-scalar),
 a final restriction can arise when calculating system force
 (\texttt{outputSystemForce} option or application of a \texttt{abf}
