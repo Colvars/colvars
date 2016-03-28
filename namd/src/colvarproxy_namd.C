@@ -1072,3 +1072,14 @@ int colvarproxy_namd::smp_biases_loop()
   return cvm::get_error();
 }
 
+
+int colvarproxy_namd::smp_biases_script_loop()
+{
+  // colvarmodule *cv = this->colvars;
+  // CkLoop_Parallelize(calc_biases_smp, 1, this, cv->biases.size(), 0, cv->biases.size()-1);
+  // return cvm::get_error();
+
+  // TODO get modified CkLoop syntax and update this
+  return COLVARS_NOT_IMPLEMENTED;
+}
+

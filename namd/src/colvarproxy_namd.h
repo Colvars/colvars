@@ -16,7 +16,7 @@
 #include "colvarvalue.h"
 
 #ifndef COLVARPROXY_VERSION
-#define COLVARPROXY_VERSION "2016-03-24"
+#define COLVARPROXY_VERSION "2016-03-28"
 #endif
 
 // For replica exchange
@@ -115,6 +115,8 @@ public:
   int smp_colvars_loop();
 
   int smp_biases_loop();
+
+  int smp_biases_script_loop();
 
   friend void calc_colvars_items_smp(int first, int last, void *result, int paramNum, void *param);
 

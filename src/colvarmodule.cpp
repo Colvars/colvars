@@ -167,8 +167,9 @@ int colvarmodule::parse_global_params(std::string const &conf)
   // we are continuing after a reset(): default to true
   parse->get_keyval(conf, "colvarsTrajAppend", cv_traj_append, cv_traj_append);
 
-  parse->get_keyval(conf, "scriptedColvarForces", use_scripted_forces, false,
-                    colvarparse::parse_silent);
+  parse->get_keyval(conf, "scriptedColvarForces", use_scripted_forces, false);
+
+  parse->get_keyval(conf, "scriptingAfterBiases", scripting_after_biases, true);
 
   if (use_scripted_forces && !proxy->force_script_defined) {
     cvm::error("User script for scripted colvar forces not found.", INPUT_ERROR);
@@ -468,6 +469,11 @@ int colvarmodule::calc()
   }
 
   error_code |= calc_colvars();
+  // set biasing forces to zero before biases are calculated and summed over
+  for (std::vector<colvar *>::iterator cvi = colvars.begin();
+       cvi != colvars.end(); cvi++) {
+    (*cvi)->reset_bias_force();
+  }
   error_code |= calc_biases();
   error_code |= update_colvar_forces();
 
@@ -567,10 +573,19 @@ int colvarmodule::calc_biases()
   // if SMP support is available, split up the work
   if (proxy->smp_enabled() == COLVARS_OK) {
 
-    // calculate biases in parallel
-    error_code |= proxy->smp_biases_loop();
+    if (use_scripted_forces && !scripting_after_biases) {
+      // calculate biases and scripted forces in parallel
+      error_code |= proxy->smp_biases_script_loop();
+    } else {
+      // calculate biases in parallel
+      error_code |= proxy->smp_biases_loop();
+    }
 
   } else {
+
+    if (use_scripted_forces && !scripting_after_biases) {
+      error_code |= calc_scripted_forces();
+    }
 
     cvm::increase_depth();
     for (bi = biases.begin(); bi != biases.end(); bi++) {
@@ -594,6 +609,8 @@ int colvarmodule::calc_biases()
 
 int colvarmodule::update_colvar_forces()
 {
+  int error_code = COLVARS_OK;
+
   std::vector<colvar *>::iterator cvi;
   std::vector<colvarbias *>::iterator bi;
 
@@ -601,31 +618,17 @@ int colvarmodule::update_colvar_forces()
   if (cvm::debug() && biases.size())
     cvm::log("Collecting forces from all biases.\n");
   cvm::increase_depth();
-  for (cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
-    (*cvi)->reset_bias_force();
-  }
   for (bi = biases.begin(); bi != biases.end(); bi++) {
     (*bi)->communicate_forces();
     if (cvm::get_error()) {
       return COLVARS_ERROR;
     }
   }
-
-  // Run user force script, if provided,
-  // potentially adding scripted forces to the colvars
-  if (use_scripted_forces) {
-    int res;
-    res = proxy->run_force_callback();
-    if (res == COLVARS_NOT_IMPLEMENTED) {
-      cvm::error("Colvar forces scripts are not implemented.");
-      return COLVARS_ERROR;
-    }
-    if (res != COLVARS_OK) {
-      cvm::error("Error running user colvar forces script");
-      return COLVARS_ERROR;
-    }
-  }
   cvm::decrease_depth();
+
+  if (use_scripted_forces && scripting_after_biases) {
+    error_code |= calc_scripted_forces();
+  }
 
   cvm::real total_colvar_energy = 0.0;
   // sum up the forces for each colvar, including wall forces
@@ -660,6 +663,23 @@ int colvarmodule::update_colvar_forces()
   cvm::decrease_depth();
 
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
+}
+
+
+int colvarmodule::calc_scripted_forces()
+{
+  // Run user force script, if provided,
+  // potentially adding scripted forces to the colvars
+  int res;
+  res = proxy->run_force_callback();
+  if (res == COLVARS_NOT_IMPLEMENTED) {
+    cvm::error("Colvar forces scripts are not implemented.");
+    return COLVARS_NOT_IMPLEMENTED;
+  }
+  if (res != COLVARS_OK) {
+    cvm::error("Error running user colvar forces script");
+    return COLVARS_ERROR;
+  }
 }
 
 
@@ -1385,6 +1405,7 @@ bool      colvarmodule::b_analysis = false;
 std::list<std::string> colvarmodule::index_group_names;
 std::list<std::vector<int> > colvarmodule::index_groups;
 bool     colvarmodule::use_scripted_forces = false;
+bool     colvarmodule::scripting_after_biases = true;
 
 // file name prefixes
 std::string colvarmodule::output_prefix = "";
