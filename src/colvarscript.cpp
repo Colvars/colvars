@@ -243,6 +243,16 @@ int colvarscript::proc_colvar(int argc, char const *argv[]) {
     return COLVARS_OK;
   }
 
+  if (subcmd == "getappliedforce") {
+    result = (cv->bias_force()).to_simple_string();
+    return COLVARS_OK;
+  }
+
+  if (subcmd == "getsystemforce") {
+    result = (cv->system_force()).to_simple_string();
+    return COLVARS_OK;
+  }
+
   if (subcmd == "addforce") {
     if (argc < 4) {
       result = "addforce: missing parameter: force value\n" + help_string();

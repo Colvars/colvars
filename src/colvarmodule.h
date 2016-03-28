@@ -4,7 +4,7 @@
 #define COLVARMODULE_H
 
 #ifndef COLVARS_VERSION
-#define COLVARS_VERSION "2016-03-24"
+#define COLVARS_VERSION "2016-03-28"
 #endif
 
 #ifndef COLVARS_DEBUG
@@ -530,6 +530,12 @@ public:
 
   /// Use scripted colvars forces?
   static bool use_scripted_forces;
+
+  /// Wait for all biases before calculating scripted forces?
+  static bool scripting_after_biases;
+
+  /// Calculate the energy and forces of scripted biases
+  int calc_scripted_forces();
 
   /// \brief Pointer to the proxy object, used to retrieve atomic data
   /// from the hosting program; it is static in order to be accessible

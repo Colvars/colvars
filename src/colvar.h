@@ -261,6 +261,12 @@ public:
   /// \brief Calculate the quantities associated to the colvar (but not to the CVCs)
   int calc_colvar_properties();
 
+  /// Get the current biasing force
+  inline colvarvalue bias_force() const
+  {
+    return fb;
+  }
+
   /// Set the total biasing force to zero
   void reset_bias_force();
 
@@ -530,6 +536,9 @@ inline colvarvalue const & colvar::system_force() const
 
 inline void colvar::add_bias_force(colvarvalue const &force)
 {
+  if (cvm::debug()) {
+    cvm::log("Adding biasing force "+cvm::to_str(force)+" to colvar \""+name+"\".\n");
+  }
   fb += force;
 }
 
