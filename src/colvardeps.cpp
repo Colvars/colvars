@@ -188,7 +188,10 @@ int cvm::deps::enable(int feature_id,
 #define f_req_alt2(f, g, h) features()[f]->requires_alt.push_back(std::vector<int>(2));\
   features()[f]->requires_alt.back()[0] = g;                                           \
   features()[f]->requires_alt.back()[1] = h
-
+#define f_req_alt3(f, g, h, i) features()[f]->requires_alt.push_back(std::vector<int>(3));\
+  features()[f]->requires_alt.back()[0] = g;                                           \
+  features()[f]->requires_alt.back()[1] = h;                                           \
+  features()[f]->requires_alt.back()[2] = i
 
 void cvm::deps::init_cvb_requires() {
   int i;
@@ -226,6 +229,8 @@ void cvm::deps::init_cv_requires() {
 
     f_description(f_cv_active, "active");
     f_req_children(f_cv_active, f_cvc_active);
+    // Colvars must be either a linear combination, or scalar (and polynomial) or scripted
+    f_req_alt3(f_cv_active, f_cv_scalar, f_cv_linear, f_cv_scripted);
 
     f_description(f_cv_gradient, "gradient");
     f_req_children(f_cv_gradient, f_cvc_gradient);
@@ -268,7 +273,7 @@ void cvm::deps::init_cv_requires() {
     f_description(f_cv_output_value, "output value");
 
     f_description(f_cv_output_velocity, "output velocity");
-    f_req_self(f_cv_output_velocity, f_cv_fdiff_velocity)
+    f_req_self(f_cv_output_velocity, f_cv_fdiff_velocity);
 
     f_description(f_cv_output_applied_force, "output applied force");
 
