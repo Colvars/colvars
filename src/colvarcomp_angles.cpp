@@ -72,7 +72,6 @@ void colvar::angle::calc_value()
 
 void colvar::angle::calc_gradients()
 {
-  size_t i;
   cvm::real const cos_theta = (r21*r23)/(r21l*r23l);
   cvm::real const dxdcos = -1.0 / std::sqrt(1.0 - cos_theta*cos_theta);
 
