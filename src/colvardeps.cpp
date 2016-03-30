@@ -268,6 +268,7 @@ void cvm::deps::init_cv_requires() {
     f_description(f_cv_output_value, "output value");
 
     f_description(f_cv_output_velocity, "output velocity");
+    f_req_self(f_cv_output_velocity, f_cv_fdiff_velocity)
 
     f_description(f_cv_output_applied_force, "output applied force");
 
@@ -399,6 +400,11 @@ void cvm::deps::init_ag_requires() {
     f_description(f_ag_scalable, "scalable group calculation");
     f_description(f_ag_scalable_com, "scalable group center of mass calculation");
     f_req_self(f_ag_scalable, f_ag_scalable_com);
+
+//     f_description(f_ag_min_msd_fit, "minimum MSD fit")
+//     f_req_self(f_ag_min_msd_fit, f_ag_center)
+//     f_req_self(f_ag_min_msd_fit, f_ag_rotate)
+//     f_req_exclude(f_ag_min_msd_fit, f_ag_ref_pos_group)
   }
 
   // Initialize feature_states for each instance

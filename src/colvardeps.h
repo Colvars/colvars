@@ -239,6 +239,9 @@ public:
     f_ag_center,
     f_ag_rotate,
     f_ag_ref_pos_group,
+    /// Perform a standard minimum msd fit for given atoms
+    /// ie. not using refpositionsgroup
+//     f_ag_min_msd_fit,
     f_ag_fit_gradient_group,// TODO check that these are sometimes needed separately
                             // maybe for minimum RMSD?
     f_ag_fit_gradient_ref,
