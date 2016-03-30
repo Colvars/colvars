@@ -328,6 +328,11 @@ colvar::colvar(std::string const &conf)
     }
   }
 
+  active_cvc_square_norm = 0.;
+  for (i = 0; i < cvcs.size(); i++) {
+    active_cvc_square_norm += cvcs[i]->sup_coeff * cvcs[i]->sup_coeff;
+  }
+
   // at this point, the colvar's type is defined
   f.type(value());
   fb.type(value());
@@ -836,8 +841,6 @@ int colvar::collect_cvc_values()
         (cvcs[i])->value().real_value );
     }
   } else {
-    // only linear combination allowed
-    // FIXME is that actually enforced?
     for (i = 0; i < cvcs.size(); i++) {
       if (!cvcs[i]->is_enabled()) continue;
       x += (cvcs[i])->sup_coeff * (cvcs[i])->value();
@@ -996,7 +999,7 @@ int colvar::collect_cvc_sys_forces()
       for (size_t i = 0; i < cvcs.size();  i++) {
         if (!cvcs[i]->is_enabled()) continue;
         // linear combination is assumed
-        ft += (cvcs[i])->system_force() / ((cvcs[i])->sup_coeff * cvm::real(cvcs.size()));
+        ft += (cvcs[i])->system_force() * (cvcs[i])->sup_coeff / active_cvc_square_norm;
       }
     }
 
@@ -1035,16 +1038,13 @@ int colvar::calc_cvc_Jacobians(int first_cvc, size_t num_cvcs)
 int colvar::collect_cvc_Jacobians()
 {
   if (is_enabled(f_cv_Jacobian)) {
-    size_t ncvc = 0;
     fj.reset();
     for (size_t i = 0; i < cvcs.size(); i++) {
       if (!cvcs[i]->is_enabled()) continue;
       // linear combination is assumed
-      fj += 1.0 / cvm::real((cvcs[i])->sup_coeff) *
-        (cvcs[i])->Jacobian_derivative();
-      ncvc++;
+      fj += (cvcs[i])->Jacobian_derivative() * (cvcs[i])->sup_coeff / active_cvc_square_norm;
     }
-    fj *= (1.0/cvm::real(ncvc)) * cvm::boltzmann() * cvm::temperature();
+    fj *= cvm::boltzmann() * cvm::temperature();
   }
 
   return COLVARS_OK;
@@ -1267,9 +1267,14 @@ int colvar::update_cvc_flags()
   // Update the enabled/disabled status of cvcs if necessary
   if (cvc_flags.size()) {
     n_active_cvcs = 0;
+    active_cvc_square_norm = 0.;
+
     for (size_t i = 0; i < cvcs.size(); i++) {
       cvcs[i]->feature_states[f_cvc_active]->enabled = cvc_flags[i];
-      if (cvcs[i]->is_enabled()) n_active_cvcs++;
+      if (cvcs[i]->is_enabled()) {
+        n_active_cvcs++;
+        active_cvc_square_norm += cvcs[i]->sup_coeff * cvcs[i]->sup_coeff;
+      }
     }
     if (!n_active_cvcs) {
       cvm::error("ERROR: All CVCs are disabled for colvar " + this->name +"\n");

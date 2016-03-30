@@ -293,6 +293,9 @@ protected:
   /// \brief Number of CVC objects with an active flag
   size_t n_active_cvcs;
 
+  /// Sum of square coefficients for active cvcs
+  cvm::real active_cvc_square_norm;
+
 public:
   /// \brief Return the number of CVC objects with an active flag (as set by update_cvc_flags)
   inline size_t num_active_cvcs() const { return n_active_cvcs; }
