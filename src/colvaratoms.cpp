@@ -757,6 +757,9 @@ int cvm::atom_group::calc_required_properties()
     // TODO check if calc_center_of_geometry() is needed without a fit?
     calc_center_of_geometry();
     if (b_center || b_rotate) {
+      if (ref_pos_group) {
+        ref_pos_group->calc_center_of_geometry();
+      }
       calc_apply_roto_translation();
     }
   }
@@ -811,23 +814,6 @@ void cvm::atom_group::apply_translation(cvm::rvector const &t)
 
   for (cvm::atom_iter ai = this->begin(); ai != this->end(); ai++) {
     ai->pos += t;
-  }
-}
-
-void cvm::atom_group::apply_rotation(cvm::rotation const &rot)
-{
-  if (b_dummy) {
-    cvm::error("Error: cannot rotate the coordinates of a dummy atom group.\n", INPUT_ERROR);
-    return;
-  }
-
-  if (is_enabled(f_ag_scalable)) {
-    cvm::error("Error: cannot rotate the coordinates of a scalable atom group.\n", INPUT_ERROR);
-    return;
-  }
-
-  for (cvm::atom_iter ai = this->begin(); ai != this->end(); ai++) {
-    ai->pos = rot.rotate(ai->pos - center_of_geometry()) + center_of_geometry();
   }
 }
 
