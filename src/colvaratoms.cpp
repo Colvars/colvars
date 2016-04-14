@@ -374,10 +374,6 @@ int cvm::atom_group::parse(std::string const &conf)
   // Catch any errors from all the initialization steps above
   if (parse_error || cvm::get_error()) return (parse_error || cvm::get_error());
 
-  if (is_enabled(f_ag_scalable)) {
-    index = (cvm::proxy)->init_atom_group(atoms_ids);
-  }
-
   // checks of doubly-counted atoms have been handled by add_atom() already
 
   if (get_keyval(group_conf, "dummyAtom", dummy_atom_pos, cvm::atom_pos())) {
@@ -405,6 +401,10 @@ int cvm::atom_group::parse(std::string const &conf)
     } else {
       get_keyval(group_conf, "disableForces", noforce, false, colvarparse::parse_silent);
     }
+  }
+
+  if (is_enabled(f_ag_scalable) && !b_dummy) {
+    index = (cvm::proxy)->init_atom_group(atoms_ids);
   }
 
   parse_error |= parse_fitting_options(group_conf);
@@ -749,8 +749,6 @@ void cvm::atom_group::read_positions()
 
 int cvm::atom_group::calc_required_properties()
 {
-  if (b_dummy) return COLVARS_OK;
-
   // TODO check if the com is needed?
   calc_center_of_mass();
   calc_center_of_geometry();
@@ -898,6 +896,9 @@ int cvm::atom_group::calc_center_of_mass()
 {
   if (b_dummy) {
     com = dummy_atom_pos;
+    if (cvm::debug()) {
+      cvm::log("Dummy atom center of mass = "+cvm::to_str(com)+"\n");
+    }
   } else if (is_enabled(f_ag_scalable)) {
     com = (cvm::proxy)->get_atom_group_com(index);
   } else {

@@ -1,0 +1,16 @@
+configuration {
+  step           10
+  dt 5.000000e-01
+}
+
+colvar {
+  name angle
+  x  9.03916964164922e+01
+}
+
+restraint {
+  configuration {
+    name harmonic1
+  }
+}
+
