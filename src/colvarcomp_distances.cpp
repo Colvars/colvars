@@ -806,6 +806,7 @@ colvar::rmsd::rmsd(std::string const &conf)
   : cvc(conf)
 {
   provide(f_cvc_inv_gradient);
+  provide(f_cvc_debug_gradient);
   function_type = "rmsd";
   x.type(colvarvalue::type_scalar);
 

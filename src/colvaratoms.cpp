@@ -612,7 +612,6 @@ int cvm::atom_group::parse_fitting_options(std::string const &group_conf)
 
       // regardless of the configuration, fit gradients must be calculated by refPositionsGroup
       ref_pos_group->b_fit_gradients = this->b_fit_gradients;
-      this->b_fit_gradients = false;
     }
 
     atom_group *group_for_fit = ref_pos_group ? ref_pos_group : this;
