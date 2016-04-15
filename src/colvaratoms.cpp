@@ -780,11 +780,11 @@ void cvm::atom_group::calc_apply_roto_translation()
 {
   if (b_center) {
     // center on the origin first
-    cvm::atom_pos const cog = ref_pos_group ?
+    cvm::atom_pos const rpg_cog = ref_pos_group ?
       ref_pos_group->center_of_geometry() : this->center_of_geometry();
-    apply_translation(-1.0 * cog);
+    apply_translation(-1.0 * rpg_cog);
     if (ref_pos_group) {
-      ref_pos_group->apply_translation(-1.0 * cog);
+      ref_pos_group->apply_translation(-1.0 * rpg_cog);
     }
   }
 
