@@ -1314,6 +1314,7 @@ colvar::cartesian::cartesian(std::string const &conf)
 
   if (axes.size() == 0) {
     cvm::error("Error: a \"cartesian\" component was defined with all three axes disabled.\n");
+    return;
   }
 
   x.type(colvarvalue::type_vector);
