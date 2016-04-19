@@ -172,25 +172,39 @@ void colvar::cvc::debug_gradients(cvm::atom_group *group)
 
   // cvm::log("gradients     = "+cvm::to_str (gradients)+"\n");
 
-  // it only makes sense to debug the fit gradients
-  // when the fitting group is the same as this group
-  if (group->b_rotate || group->b_center)
-    if (group->b_fit_gradients && (group->ref_pos_group == NULL)) {
-      group->calc_fit_gradients();
+  cvm::atom_group *group_for_fit = group->ref_pos_group ? group->ref_pos_group : group;
+
+  // print the values of the fit gradients
+  if (group->b_rotate || group->b_center) {
+    if (group->b_fit_gradients) {
+
+      size_t j;
+
+      // this should have been called already!
+      // group->calc_fit_gradients();
+
+      // fit_gradients are in the original frame: we should print them in the rotated frame
       if (group->b_rotate) {
-        // fit_gradients are in the original frame, we should print them in the rotated frame
-        for (size_t j = 0; j < group->fit_gradients.size(); j++) {
-          group->fit_gradients[j] = rot_0.rotate(group->fit_gradients[j]);
+        for (j = 0; j < group_for_fit->fit_gradients.size(); j++) {
+          group_for_fit->fit_gradients[j] = rot_0.rotate(group_for_fit->fit_gradients[j]);
         }
       }
-      cvm::log("fit_gradients = "+cvm::to_str(group->fit_gradients)+"\n");
+
+      cvm::log("Fit gradients:\n");
+      for (j = 0; j < group_for_fit->fit_gradients.size(); j++) {
+        cvm::log((group->ref_pos_group ? std::string("refPosGroup") : group->key) +
+                 "[" + cvm::to_str(j) + "] = " + cvm::to_str(group_for_fit->fit_gradients[j]));
+      }
+
       if (group->b_rotate) {
-        for (size_t j = 0; j < group->fit_gradients.size(); j++) {
-          group->fit_gradients[j] = rot_inv.rotate(group->fit_gradients[j]);
+        for (j = 0; j < group_for_fit->fit_gradients.size(); j++) {
+          group_for_fit->fit_gradients[j] = rot_inv.rotate(group_for_fit->fit_gradients[j]);
         }
       }
     }
+  }
 
+  // debug the gradients
   for (size_t ia = 0; ia < group->size(); ia++) {
 
     // tests are best conducted in the unrotated (simulation) frame
@@ -204,6 +218,7 @@ void colvar::cvc::debug_gradients(cvm::atom_group *group)
       // change one coordinate
       (*group)[ia].pos[id] += cvm::debug_gradients_step_size;
       group->calc_required_properties();
+      group->calc_fit_gradients();
       calc_value();
       cvm::real x_1 = x.real_value;
       if ((x.type() == colvarvalue::type_vector) && (x.size() == 1)) x_1 = x[0];
@@ -221,25 +236,34 @@ void colvar::cvc::debug_gradients(cvm::atom_group *group)
     }
   }
 
-  if (group->ref_pos_group != NULL) {
-    cvm::atom_group &ref = *group->ref_pos_group;
+  if ((group->b_fit_gradients) && (group->ref_pos_group != NULL)) {
+    cvm::atom_group *ref_group = group->ref_pos_group;
     group->read_positions();
+    group->calc_required_properties();
     group->calc_fit_gradients();
 
-    for (size_t ia = 0; ia < ref.size(); ia++) {
+    for (size_t ia = 0; ia < ref_group->size(); ia++) {
+
+      // tests are best conducted in the unrotated (simulation) frame
+      cvm::rvector const atom_grad = ref_group->fit_gradients[ia];
 
       for (size_t id = 0; id < 3; id++) {
         // (re)read original positions
-        ref.read_positions();
+        group->read_positions();
+        ref_group->read_positions();
+
         // change one coordinate
-        ref[ia].pos[id] += cvm::debug_gradients_step_size;
+        (*ref_group)[ia].pos[id] += cvm::debug_gradients_step_size;
+
         group->calc_required_properties();
+
         calc_value();
+
         cvm::real const x_1 = x.real_value;
         cvm::log("refPosGroup atom "+cvm::to_str(ia)+", component "+cvm::to_str (id)+":\n");
         cvm::log("dx(actual) = "+cvm::to_str (x_1 - x_0,
                                21, 14)+"\n");
-        cvm::real const dx_pred = cvm::debug_gradients_step_size * ref.fit_gradients[ia][id];
+        cvm::real const dx_pred = cvm::debug_gradients_step_size * atom_grad[id];
         cvm::log("dx(interp) = "+cvm::to_str (dx_pred,
                                21, 14)+"\n");
         cvm::log ("|dx(actual) - dx(interp)|/|dx(actual)| = "+
