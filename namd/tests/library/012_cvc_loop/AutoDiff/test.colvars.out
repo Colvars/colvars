@@ -7,6 +7,8 @@ colvars: # analysis = off [default]
 colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 2000
 colvars: # colvarsTrajAppend = off [default]
+colvars: # scriptedColvarForces = off [default]
+colvars: # scriptingAfterBiases = on [default]
 colvars: Warning: no collective variables defined.
 colvars: Collective variables initialized, 0 in total.
 colvars: No collective variables biases were defined.
@@ -25,6 +27,8 @@ colvars: # analysis = off [default]
 colvars: # colvarsTrajFrequency = 1 [default]
 colvars: # colvarsRestartFrequency = 2000 [default]
 colvars: # colvarsTrajAppend = off [default]
+colvars: # scriptedColvarForces = off [default]
+colvars: # scriptingAfterBiases = on [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = d0
@@ -33,8 +37,10 @@ colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
+colvars:     # scalable = on [default]
 colvars:     # forceNoPBC = off [default]
 colvars:     # oneSiteSystemForce = off [default]
+colvars:     Will enable scalable calculation for group "group1".
 colvars:       Initializing atom group "group1".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -45,6 +51,7 @@ colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "group1" defined, 1 atoms initialized: total mass = 14.007, total charge = -0.62.
+colvars:     Will enable scalable calculation for group "group2".
 colvars:       Initializing atom group "group2".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -75,8 +82,10 @@ colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
+colvars:     # scalable = on [default]
 colvars:     # forceNoPBC = off [default]
 colvars:     # oneSiteSystemForce = off [default]
+colvars:     Will enable scalable calculation for group "group1".
 colvars:       Initializing atom group "group1".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -87,6 +96,7 @@ colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "group1" defined, 1 atoms initialized: total mass = 14.007, total charge = -0.62.
+colvars:     Will enable scalable calculation for group "group2".
 colvars:       Initializing atom group "group2".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -102,8 +112,10 @@ colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
+colvars:     # scalable = on [default]
 colvars:     # forceNoPBC = off [default]
 colvars:     # oneSiteSystemForce = off [default]
+colvars:     Will enable scalable calculation for group "group1".
 colvars:       Initializing atom group "group1".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -114,6 +126,7 @@ colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "group1" defined, 2 atoms initialized: total mass = 15.015, total charge = -0.31.
+colvars:     Will enable scalable calculation for group "group2".
 colvars:       Initializing atom group "group2".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -129,8 +142,10 @@ colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
+colvars:     # scalable = on [default]
 colvars:     # forceNoPBC = off [default]
 colvars:     # oneSiteSystemForce = off [default]
+colvars:     Will enable scalable calculation for group "group1".
 colvars:       Initializing atom group "group1".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -141,6 +156,7 @@ colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "group1" defined, 3 atoms initialized: total mass = 16.023, total charge = 0.
+colvars:     Will enable scalable calculation for group "group2".
 colvars:       Initializing atom group "group2".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -171,8 +187,10 @@ colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
+colvars:     # scalable = on [default]
 colvars:     # forceNoPBC = off [default]
 colvars:     # oneSiteSystemForce = off [default]
+colvars:     Will enable scalable calculation for group "group1".
 colvars:       Initializing atom group "group1".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -183,6 +201,7 @@ colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "group1" defined, 1 atoms initialized: total mass = 14.007, total charge = -0.62.
+colvars:     Will enable scalable calculation for group "group2".
 colvars:       Initializing atom group "group2".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -198,8 +217,10 @@ colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
+colvars:     # scalable = on [default]
 colvars:     # forceNoPBC = off [default]
 colvars:     # oneSiteSystemForce = off [default]
+colvars:     Will enable scalable calculation for group "group1".
 colvars:       Initializing atom group "group1".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -210,6 +231,7 @@ colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "group1" defined, 2 atoms initialized: total mass = 15.015, total charge = -0.31.
+colvars:     Will enable scalable calculation for group "group2".
 colvars:       Initializing atom group "group2".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -225,8 +247,10 @@ colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
+colvars:     # scalable = on [default]
 colvars:     # forceNoPBC = off [default]
 colvars:     # oneSiteSystemForce = off [default]
+colvars:     Will enable scalable calculation for group "group1".
 colvars:       Initializing atom group "group1".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -237,6 +261,7 @@ colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "group1" defined, 3 atoms initialized: total mass = 16.023, total charge = 0.
+colvars:     Will enable scalable calculation for group "group2".
 colvars:       Initializing atom group "group2".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -252,8 +277,10 @@ colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
+colvars:     # scalable = on [default]
 colvars:     # forceNoPBC = off [default]
 colvars:     # oneSiteSystemForce = off [default]
+colvars:     Will enable scalable calculation for group "group1".
 colvars:       Initializing atom group "group1".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -264,6 +291,7 @@ colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "group1" defined, 4 atoms initialized: total mass = 28.034, total charge = -0.1.
+colvars:     Will enable scalable calculation for group "group2".
 colvars:       Initializing atom group "group2".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -279,8 +307,10 @@ colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
+colvars:     # scalable = on [default]
 colvars:     # forceNoPBC = off [default]
 colvars:     # oneSiteSystemForce = off [default]
+colvars:     Will enable scalable calculation for group "group1".
 colvars:       Initializing atom group "group1".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -291,6 +321,7 @@ colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "group1" defined, 5 atoms initialized: total mass = 29.042, total charge = 0.
+colvars:     Will enable scalable calculation for group "group2".
 colvars:       Initializing atom group "group2".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -306,8 +337,10 @@ colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
+colvars:     # scalable = on [default]
 colvars:     # forceNoPBC = off [default]
 colvars:     # oneSiteSystemForce = off [default]
+colvars:     Will enable scalable calculation for group "group1".
 colvars:       Initializing atom group "group1".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -318,6 +351,7 @@ colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "group1" defined, 6 atoms initialized: total mass = 41.053, total charge = -0.27.
+colvars:     Will enable scalable calculation for group "group2".
 colvars:       Initializing atom group "group2".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -333,8 +367,10 @@ colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
+colvars:     # scalable = on [default]
 colvars:     # forceNoPBC = off [default]
 colvars:     # oneSiteSystemForce = off [default]
+colvars:     Will enable scalable calculation for group "group1".
 colvars:       Initializing atom group "group1".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -345,6 +381,7 @@ colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "group1" defined, 7 atoms initialized: total mass = 42.061, total charge = -0.18.
+colvars:     Will enable scalable calculation for group "group2".
 colvars:       Initializing atom group "group2".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -374,6 +411,6 @@ colvars: ----------------------------------------------------------------------
 colvars: Collective variables module (re)initialized.
 colvars: ----------------------------------------------------------------------
 colvars: Updating NAMD interface:
-colvars: updating atomic data (14 atoms).
-colvars: updating group data (0 scalable groups, 0 atoms in total).
+colvars: updating atomic data (0 atoms).
+colvars: updating group data (14 scalable groups, 56 atoms in total).
 colvars: Saving collective variables state to "test.colvars.state".

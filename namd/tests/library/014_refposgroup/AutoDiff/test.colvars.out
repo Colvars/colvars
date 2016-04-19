@@ -7,6 +7,8 @@ colvars: # analysis = off [default]
 colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 2000
 colvars: # colvarsTrajAppend = off [default]
+colvars: # scriptedColvarForces = off [default]
+colvars: # scriptingAfterBiases = on [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = rmsd
@@ -15,6 +17,8 @@ colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
+colvars:     # scalable = on [default]
+colvars:     Scalable calculation is not available for group "atoms" with the current configuration.
 colvars:       Initializing atom group "atoms".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
