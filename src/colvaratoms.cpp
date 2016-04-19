@@ -777,6 +777,12 @@ int cvm::atom_group::calc_required_properties()
 
 void cvm::atom_group::calc_apply_roto_translation()
 {
+  // store the laborarory-frame COGs for when they are needed later
+  cog_orig = cog;
+  if (ref_pos_group) {
+    ref_pos_group->cog_orig = ref_pos_group->cog;
+  }
+
   if (b_center) {
     // center on the origin first
     cvm::atom_pos const rpg_cog = ref_pos_group ?
@@ -971,11 +977,13 @@ void cvm::atom_group::calc_fit_gradients()
 
     // add the rotation matrix contribution to the gradients
     cvm::rotation const rot_inv = rot.inverse();
-    cvm::atom_pos const cog = center_of_geometry();
 
     for (size_t i = 0; i < this->size(); i++) {
 
-      cvm::atom_pos const pos_orig = rot_inv.rotate((b_center ? (atoms[i].pos - cog) : (atoms[i].pos)));
+      // restore original position for this atom
+      cvm::atom_pos const pos_orig = 
+        rot_inv.rotate((b_center ? (atoms[i].pos - ref_pos_cog) : (atoms[i].pos))) +
+        (ref_pos_group ? ref_pos_group->cog_orig : cog_orig);
 
       for (size_t j = 0; j < group_for_fit->size(); j++) {
         // calculate \partial(R(q) \vec{x}_i)/\partial q) \cdot \partial\xi/\partial\vec{x}_i
