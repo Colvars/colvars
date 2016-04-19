@@ -43,13 +43,13 @@ int tcl_colvars(ClientData clientdata, Tcl_Interp *interp, int argc, const char 
     tcl_result = proxy->error_output + proxy->script->result;
     Tcl_SetResult(interp, (char *) tcl_result.c_str(), TCL_STATIC);
 
-    if ((-1*cvm::get_error()) & DELETE_COLVARS) {
+    if (cvm::get_error_bit(DELETE_COLVARS)) {
       delete proxy;
       proxy = NULL;
       return TCL_OK;
     }
 
-    if ((-1*cvm::get_error()) & FATAL_ERROR) {
+    if (cvm::get_error_bit(FATAL_ERROR)) {
       // Fatal error: clean up cvm object and proxy
       delete proxy;
       proxy = NULL;
@@ -184,7 +184,7 @@ int colvarproxy_vmd::update_input()
 
   int error_code = COLVARS_OK;
 
-  error_code |= update_atomic_properties();
+  cvm::combine_errors(error_code, update_atomic_properties());
 
   // copy positions in the internal arrays
   float *vmdpos = (vmdmol->get_frame(vmdmol_frame))->pos;
@@ -207,7 +207,7 @@ int colvarproxy_vmd::update_atomic_properties()
 
   if (masses == NULL) {
     error("Error: masses are undefined for the molecule being used.\n");
-    error_code |= BUG_ERROR;
+    cvm::combine_errors(error_code, BUG_ERROR);
   } else {
     for (size_t i = 0; i < atoms_ids.size(); i++) {
       atoms_masses[i]  = masses[atoms_ids[i]];
@@ -216,7 +216,7 @@ int colvarproxy_vmd::update_atomic_properties()
 
   if (charges == NULL) {
     error("Error: charges are undefined for the molecule being used.\n");
-    error_code |= BUG_ERROR;
+    cvm::combine_errors(error_code, BUG_ERROR);
   } else {
     for (size_t i = 0; i < atoms_ids.size(); i++) {
       atoms_charges[i] = charges[atoms_ids[i]];
@@ -261,7 +261,8 @@ void colvarproxy_vmd::error(std::string const &message)
 
 void colvarproxy_vmd::fatal_error(std::string const &message)
 {
-  // In VMD, no errors should be fatal
+  // Fatal error bit is already set, will be handled
+  // by tcl_colvars() before handing control back to VMD
   error(message);
 }
 
@@ -553,7 +554,7 @@ int colvarproxy_vmd::load_atoms(char const *pdb_filename,
   if (pdb_field_str.size() == 0) {
     cvm::log("Error: must define which PDB field to use "
              "in order to define atoms from a PDB file.\n");
-    cvm::set_error_bits(INPUT_ERROR);
+    cvm::set_error_bit(INPUT_ERROR);
     return COLVARS_ERROR;
   }
 
