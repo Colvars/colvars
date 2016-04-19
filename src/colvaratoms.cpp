@@ -961,7 +961,7 @@ void cvm::atom_group::calc_fit_gradients()
   if (b_center) {
     // add the center of geometry contribution to the gradients
     for (size_t i = 0; i < this->size(); i++) {
-      // need to bring the gradients in original frame first
+      // need to use the gradients in original frame
       cvm::rvector const atom_grad = b_rotate ?
         (rot.inverse()).rotate(atoms[i].grad) :
         atoms[i].grad;
@@ -981,7 +981,7 @@ void cvm::atom_group::calc_fit_gradients()
     for (size_t i = 0; i < this->size(); i++) {
 
       // restore original position for this atom
-      cvm::atom_pos const pos_orig = 
+      cvm::atom_pos const pos_orig =
         rot_inv.rotate((b_center ? (atoms[i].pos - ref_pos_cog) : (atoms[i].pos))) +
         (ref_pos_group ? ref_pos_group->cog_orig : cog_orig);
 
@@ -996,6 +996,7 @@ void cvm::atom_group::calc_fit_gradients()
       }
     }
   }
+
   if (cvm::debug())
     cvm::log("Done calculating fit gradients.\n");
 }

@@ -286,7 +286,7 @@ public:
   bool b_user_defined_fit;
 
   /// \brief Whether or not the derivatives of the roto-translation
-  /// should be included when calculating the colvar's gradients (default: no)
+  /// should be included when calculating the colvar's gradients (default: yes)
   bool b_fit_gradients;
 
   /// \brief use reference coordinates for b_center or b_rotate
