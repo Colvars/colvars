@@ -7,6 +7,8 @@ colvars: # analysis = off [default]
 colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 2000
 colvars: # colvarsTrajAppend = off [default]
+colvars: # scriptedColvarForces = off [default]
+colvars: # scriptingAfterBiases = on [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = angle
@@ -15,6 +17,8 @@ colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
+colvars:     # scalable = on [default]
+colvars:     Will enable scalable calculation for group "group1".
 colvars:       Initializing atom group "group1".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID = { BH }
@@ -25,6 +29,7 @@ colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "group1" defined, 1 atoms initialized: total mass = 12.011, total charge = -0.1.
+colvars:     Will enable scalable calculation for group "group2".
 colvars:       Initializing atom group "group2".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID = { BH }
@@ -35,6 +40,7 @@ colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "group2" defined, 1 atoms initialized: total mass = 12.011, total charge = 0.07.
+colvars:     Will enable scalable calculation for group "group3".
 colvars:       Initializing atom group "group3".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID = { BH }
@@ -68,7 +74,9 @@ colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
+colvars:     # scalable = on [default]
 colvars:     # oneSiteSystemForce = off [default]
+colvars:     Will enable scalable calculation for group "group1".
 colvars:       Initializing atom group "group1".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID = { BH }
@@ -79,6 +87,7 @@ colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "group1" defined, 1 atoms initialized: total mass = 12.011, total charge = -0.1.
+colvars:     Will enable scalable calculation for group "group2".
 colvars:       Initializing atom group "group2".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID = { BH }
@@ -89,6 +98,7 @@ colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "group2" defined, 1 atoms initialized: total mass = 12.011, total charge = 0.07.
+colvars:     Will enable scalable calculation for group "group3".
 colvars:       Initializing atom group "group3".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID = { BH }
@@ -99,6 +109,7 @@ colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "group3" defined, 1 atoms initialized: total mass = 12.011, total charge = 0.07.
+colvars:     Will enable scalable calculation for group "group4".
 colvars:       Initializing atom group "group4".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID = { BH }
@@ -147,8 +158,8 @@ colvars: ----------------------------------------------------------------------
 colvars: Collective variables module (re)initialized.
 colvars: ----------------------------------------------------------------------
 colvars: Updating NAMD interface:
-colvars: updating atomic data (4 atoms).
-colvars: updating group data (0 scalable groups, 0 atoms in total).
+colvars: updating atomic data (0 atoms).
+colvars: updating group data (4 scalable groups, 4 atoms in total).
 colvars: Re-initialized atom group angle:0/0. 1 atoms: total mass = 12.011.
 colvars: Re-initialized atom group angle:0/1. 1 atoms: total mass = 12.011.
 colvars: Re-initialized atom group angle:0/2. 1 atoms: total mass = 12.011.
@@ -159,8 +170,8 @@ colvars: Re-initialized atom group dihedral:0/3. 1 atoms: total mass = 12.011.
 colvars: The final output state file will be "test.colvars.state".
 colvars: Writing to colvar trajectory file "test.colvars.traj".
 colvars: Updating NAMD interface:
-colvars: updating atomic data (4 atoms).
-colvars: updating group data (0 scalable groups, 0 atoms in total).
+colvars: updating atomic data (0 atoms).
+colvars: updating group data (4 scalable groups, 4 atoms in total).
 colvars:   ABFHISTORYFILE 0
 colvars:   Prepared sample and gradient buffers at step 0.
 colvars:   ABFHISTORYFILE 10

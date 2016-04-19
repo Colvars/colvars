@@ -25,7 +25,6 @@ cleanup_files () {
             for f in ${dir}/${script%.namd}.*diff; do if [ ! -s $f ]; then rm -f $f; fi; done # remove empty diffs only
             rm -f ${dir}/${script%.namd}.*{BAK,old,backup}
             rm -f ${dir}/${script%.namd}.*{state,out,traj,coor,vel,xsc,pmf,hills,grad,count}
-            rm -f ${dir}/${script%.namd}.*{state,out,traj,coor,vel,xsc,pmf,hills,grad,count}
             rm -f ${dir}/metadynamics1.*.files.txt ${dir}/replicas.registry.txt
         done
     done

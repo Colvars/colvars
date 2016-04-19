@@ -7,6 +7,8 @@ colvars: # analysis = off [default]
 colvars: # colvarsTrajFrequency = 0 [default]
 colvars: # colvarsRestartFrequency = 0 [default]
 colvars: # colvarsTrajAppend = off [default]
+colvars: # scriptedColvarForces = off [default]
+colvars: # scriptingAfterBiases = on [default]
 colvars: Warning: no collective variables defined.
 colvars: Collective variables initialized, 0 in total.
 colvars: No collective variables biases were defined.
@@ -20,6 +22,8 @@ colvars: # analysis = off [default]
 colvars: # colvarsTrajFrequency = 0 [default]
 colvars: # colvarsRestartFrequency = 0 [default]
 colvars: # colvarsTrajAppend = off [default]
+colvars: # scriptedColvarForces = off [default]
+colvars: # scriptingAfterBiases = on [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "colvar1" [default]
@@ -34,6 +38,8 @@ colvars:   # analysis = off [default]
 colvars:   # colvarsTrajFrequency = 0 [default]
 colvars:   # colvarsRestartFrequency = 0 [default]
 colvars:   # colvarsTrajAppend = off [default]
+colvars:   # scriptedColvarForces = off [default]
+colvars:   # scriptingAfterBiases = on [default]
 colvars:   ----------------------------------------------------------------------
 colvars:     Initializing a new collective variable.
 colvars:     # name = rmsd-all
@@ -42,8 +48,9 @@ colvars:       # componentCoeff = 1 [default]
 colvars:       # componentExp = 1 [default]
 colvars:       # period = 0 [default]
 colvars:       # wrapAround = 0 [default]
+colvars:       # scalable = on [default]
+colvars:       Scalable calculation is not available for group "atoms" with the current configuration.
 colvars:         Initializing atom group "atoms".
-colvars:         # scalable = off [default]
 colvars: Error: invalid atom number specified, 1000
 colvars: If this error message is unclear, try recompiling VMD with -DCOLVARS_DEBUG.
 colvars:         # indexGroup = "" [default]
