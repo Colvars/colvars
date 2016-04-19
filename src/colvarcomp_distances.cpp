@@ -1020,6 +1020,7 @@ colvar::eigenvector::eigenvector(std::string const &conf)
 {
   provide(f_cvc_inv_gradient);
   provide(f_cvc_Jacobian);
+  provide(f_cvc_debug_gradient);
   function_type = "eigenvector";
   x.type(colvarvalue::type_scalar);
 
@@ -1032,7 +1033,7 @@ colvar::eigenvector::eigenvector(std::string const &conf)
       cvm::log("Using reference positions from input file.\n");
       if (ref_pos.size() != atoms->size()) {
         cvm::error("Error: reference positions do not "
-                          "match the number of requested atoms->\n");
+                   "match the number of requested atoms.\n");
         return;
       }
     }
@@ -1065,9 +1066,14 @@ colvar::eigenvector::eigenvector(std::string const &conf)
     }
   }
 
+  if (ref_pos.size() == 0) {
+    cvm::error("Error: reference positions were not provided.\n", INPUT_ERROR);
+    return;
+  }
+
   if (ref_pos.size() != atoms->size()) {
-    cvm::error("Error: reference positions were not provided, or do not "
-                      "match the number of requested atoms->\n");
+    cvm::error("Error: reference positions do not "
+               "match the number of requested atoms.\n", INPUT_ERROR);
     return;
   }
 
