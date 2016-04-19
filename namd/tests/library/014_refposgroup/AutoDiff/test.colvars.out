@@ -11,8 +11,8 @@ colvars: # scriptedColvarForces = off [default]
 colvars: # scriptingAfterBiases = on [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
-colvars:   # name = rmsd
-colvars:   Initializing a new "rmsd" component.
+colvars:   # name = r
+colvars:   Initializing a new "eigenvector" component.
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
@@ -33,35 +33,35 @@ colvars:       Defining atom group "refPositionsGroup".
 colvars:         Initializing atom group "refPositionsGroup".
 colvars:         # indexGroup = "" [default]
 colvars:         # psfSegID =  [default]
-colvars:         # atomsFile = ../Common/da.pdb
-colvars:         # atomsCol = O
-colvars:         # atomsColValue = 0 [default]
+colvars:         # atomsFile = "" [default]
 colvars:         # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:         # enableForces = on [default]
 colvars:         # centerReference = off [default]
 colvars:         # rotateReference = off [default]
 colvars:         # enableFitGradients = on [default]
-colvars:         Atom group "refPositionsGroup" defined, 104 atoms initialized: total mass = 727.821, total charge = 6.70552e-08.
+colvars:         Atom group "refPositionsGroup" defined, 10 atoms initialized: total mass = 120.11, total charge = 0.53.
 colvars:       # refPositions =  [default]
-colvars:       # refPositionsFile = ../Common/da.pdb
+colvars:       # refPositionsFile = ../Common/da-rotated.pdb
 colvars:       # refPositionsCol = "" [default]
 colvars:       Warning: atom group "atoms" will be aligned to a fixed orientation given by the reference positions provided.  If the internal structure of the group changes too much (i.e. its RMSD is comparable to its radius of gyration), the optimal rotation and its gradients may become discontinuous.  If that happens, use refPositionsGroup (or a different definition for it if already defined) to align the coordinates.
-colvars:       Atom group "atoms" defined, 4 atoms initialized: total mass = 28.034, total charge = -0.1.
-colvars:     The option "refPositionsGroup" (alternative group for fitting) was enabled: Jacobian derivatives of the RMSD will not be calculated.
+colvars:       Atom group "atoms" defined, 10 atoms initialized: total mass = 120.11, total charge = 5.14.
 colvars:     # refPositions =  [default]
-colvars:     # refPositionsFile = ../Common/da.pdb
+colvars:     # refPositionsFile = ../Common/da-rotated.pdb
 colvars:     # refPositionsCol = "" [default]
 colvars:     WARNING: explicit fitting parameters were provided for atom group "atoms".
+colvars:     # vector =  [default]
+colvars:     # vectorFile = ../Common/random_vec_10.xyz
+colvars:     # vectorCol = "" [default]
+colvars:     Geometric center of the provided vector: ( 0.0011991 , -0.0565727 , 0.0425808 )
+colvars:     # differenceVector = off [default]
+colvars:     Centering the provided vector to zero.
+colvars:     The norm of the vector is |v| = 0.115418.
 colvars:   All components initialized.
 colvars:   # width = 1 [default]
-colvars:   # lowerBoundary = 0
-colvars:   # lowerWallConstant = 100
-colvars:   # lowerWall = 0 [default]
-colvars:   # upperBoundary = 5
-colvars:   # upperWallConstant = 100
-colvars:   # upperWall = 5 [default]
-colvars:   # hardLowerBoundary = off [default]
-colvars:   # hardUpperBoundary = off [default]
+colvars:   # lowerBoundary = 0 [default]
+colvars:   # lowerWallConstant = 0 [default]
+colvars:   # upperBoundary = 0 [default]
+colvars:   # upperWallConstant = 0 [default]
 colvars:   # expandBoundaries = off [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
@@ -69,15 +69,48 @@ colvars:   # outputVelocity = off [default]
 colvars:   # outputSystemForce = off [default]
 colvars:   # outputAppliedForce = on
 colvars: ----------------------------------------------------------------------
-colvars: Collective variables initialized, 1 in total.
+colvars:   Initializing a new collective variable.
+colvars:   # name = ori
+colvars:   Initializing a new "orientation" component.
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # scalable = on [default]
+colvars:     Scalable calculation is not available for group "atoms" with the current configuration.
+colvars:       Initializing atom group "atoms".
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Atom group "atoms" defined, 10 atoms initialized: total mass = 120.11, total charge = 0.53.
+colvars:     # refPositions =  [default]
+colvars:     # refPositionsFile = ../Common/da-rotated-Calpha.xyz
+colvars:     # refPositionsCol = "" [default]
+colvars:     Centering the reference coordinates: it is assumed that each atom is the closest periodic image to the center of geometry.
+colvars:     # closestToQuaternion = ( 1 , 0 , 0 , 0 ) [default]
+colvars:   All components initialized.
+colvars:   # width = 1 [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = off [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputSystemForce = off [default]
+colvars:   # outputAppliedForce = off [default]
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables initialized, 2 in total.
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new "harmonic" instance.
 colvars:   # name = "harmonic1" [default]
-colvars:   # colvars = { rmsd }
+colvars:   # colvars = { r }
 colvars:   # outputEnergy = off [default]
-colvars:   # forceConstant = 100
-colvars:   # centers = { 10 }
-colvars:   # targetCenters = { 10 } [default]
+colvars:   # forceConstant = 0.1
+colvars:   # centers = { 0 }
+colvars:   # targetCenters = { 0 } [default]
 colvars:   # targetForceConstant = 0 [default]
 colvars:   # outputCenters = off [default]
 colvars: ----------------------------------------------------------------------
@@ -86,12 +119,13 @@ colvars: ----------------------------------------------------------------------
 colvars: Collective variables module (re)initialized.
 colvars: ----------------------------------------------------------------------
 colvars: Updating NAMD interface:
-colvars: updating atomic data (104 atoms).
+colvars: updating atomic data (20 atoms).
 colvars: updating group data (0 scalable groups, 0 atoms in total).
-colvars: Re-initialized atom group rmsd:0/0. 4 atoms: total mass = 28.034.
+colvars: Re-initialized atom group r:0/0. 10 atoms: total mass = 120.11.
+colvars: Re-initialized atom group ori:0/0. 10 atoms: total mass = 120.11.
 colvars: The final output state file will be "test.colvars.state".
 colvars: Writing to colvar trajectory file "test.colvars.traj".
 colvars: Updating NAMD interface:
-colvars: updating atomic data (104 atoms).
+colvars: updating atomic data (20 atoms).
 colvars: updating group data (0 scalable groups, 0 atoms in total).
 colvars: Saving collective variables state to "test.colvars.state".

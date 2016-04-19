@@ -1,33 +1,42 @@
 colvarsTrajFrequency    1
 colvarsRestartFrequency 2000
 
+
 colvar {
-  name rmsd
+  name r
 
-  lowerboundary 0.0
-  upperboundary 5.0
-  lowerwallconstant 100.0
-  upperwallconstant 100.0
+  outputAppliedForce yes
 
-  outputAppliedForce
-
-  rmsd {
-    refPositionsFile ../Common/da.pdb # ref ligand positions for RMSD
+  eigenvector {
+    refPositionsFile ../Common/da-rotated.pdb # ref ligand positions
+    vectorFile ../Common/random_vec_10.xyz # 30 random numbers
+#    debugGradients yes
     atoms {
-      atomNumbers  1 2 3 4 # ligand atoms
-      rotateReference
-      centerReference
+      atomNumbers  10 20 30 40 50 60 70 80 90 92  # carbonyl carbons
+      rotateReference yes
+      centerReference yes
       refPositionsGroup {
-        atomsFile ../Common/da.pdb
-        atomsCol O
+        atomNumbers  4 14 24 34 44 54 64 74 84 99   # Calpha
       }
-      refPositionsFile ../Common/da.pdb # ref prot positions for fitting
+      refPositionsFile ../Common/da-rotated.pdb # ref prot positions for fitting
     }
   }
 } 
 
+
 harmonic {
-  colvars rmsd
-  centers 10.
-  forceConstant 100.
+  colvars r
+  centers 0.0
+  forceConstant 0.1
 }
+
+
+colvar {
+  name ori
+  orientation {
+    refPositionsFile ../Common/da-rotated-Calpha.xyz
+    atoms {
+      atomNumbers  4 14 24 34 44 54 64 74 84 99   # Calpha
+    }
+  }
+} 
