@@ -904,6 +904,13 @@ std::istream & colvarmodule::read_restart(std::istream &is)
                           colvarparse::parse_silent);
         it = it_restart;
       }
+      std::string restart_version;
+      parse->get_keyval(restart_conf, "version",
+                        restart_version, std::string(""),
+                        colvarparse::parse_silent);
+      if (restart_version.size() && (restart_version != std::string(COLVARS_VERSION))) {
+        cvm::log("This state file was generated with version "+restart_version+"\n");
+      }
     }
     is.clear();
     parse->clear_keyword_registry();
@@ -1060,6 +1067,7 @@ std::ostream & colvarmodule::write_restart(std::ostream &os)
      << "  step " << std::setw(it_width)
      << it << "\n"
      << "  dt " << dt() << "\n"
+     // << "  version " << std::string(COLVARS_VERSION) << "\n"
      << "}\n\n";
 
   cvm::increase_depth();
