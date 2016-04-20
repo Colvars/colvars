@@ -249,15 +249,6 @@ void colvar::distance_z::calc_gradients()
         cvm::position_distance(main->center_of_mass(), ref1->center_of_mass()) + x.real_value * axis ));
     }
   }
-
-  if (is_enabled(f_cvc_debug_gradient)) {
-    cvm::log("Debugging gradients for group main:\n");
-    debug_gradients(main);
-    cvm::log("Debugging gradients for group ref1:\n");
-    debug_gradients(ref1);
-    cvm::log("Debugging gradients for group ref2:\n");
-    debug_gradients(ref2);
-  }
 }
 
 void colvar::distance_z::calc_force_invgrads()
@@ -593,10 +584,6 @@ void colvar::distance_pairs::calc_value()
 void colvar::distance_pairs::calc_gradients()
 {
   // will be calculated on the fly in apply_force()
-  if (is_enabled(f_cvc_debug_gradient)) {
-    cvm::log("Debugging gradients:\n");
-    debug_gradients(group1);
-  }
 }
 
 void colvar::distance_pairs::apply_force(colvarvalue const &force)
@@ -667,11 +654,6 @@ void colvar::gyration::calc_gradients()
   for (cvm::atom_iter ai = atoms->begin(); ai != atoms->end(); ai++) {
     ai->grad = drdx * ai->pos;
   }
-
-  if (is_enabled(f_cvc_debug_gradient)) {
-    cvm::log("Debugging gradients:\n");
-    debug_gradients(atoms);
-  }
 }
 
 
@@ -731,11 +713,6 @@ void colvar::inertia::calc_gradients()
   for (cvm::atom_iter ai = atoms->begin(); ai != atoms->end(); ai++) {
     ai->grad = 2.0 * ai->pos;
   }
-
-  if (is_enabled(f_cvc_debug_gradient)) {
-    cvm::log("Debugging gradients:\n");
-    debug_gradients(atoms);
-  }
 }
 
 
@@ -786,11 +763,6 @@ void colvar::inertia_z::calc_gradients()
   for (cvm::atom_iter ai = atoms->begin(); ai != atoms->end(); ai++) {
     ai->grad = 2.0 * (ai->pos * axis) * axis;
   }
-
-  if (is_enabled(f_cvc_debug_gradient)) {
-    cvm::log("Debugging gradients:\n");
-    debug_gradients(atoms);
-  }
 }
 
 
@@ -806,7 +778,6 @@ colvar::rmsd::rmsd(std::string const &conf)
   : cvc(conf)
 {
   provide(f_cvc_inv_gradient);
-  provide(f_cvc_debug_gradient);
   function_type = "rmsd";
   x.type(colvarvalue::type_scalar);
 
@@ -931,11 +902,6 @@ void colvar::rmsd::calc_gradients()
   for (size_t ia = 0; ia < atoms->size(); ia++) {
     (*atoms)[ia].grad = (drmsddx2 * 2.0 * ((*atoms)[ia].pos - ref_pos[ia]));
   }
-
-  if (is_enabled(f_cvc_debug_gradient)) {
-    cvm::log("Debugging gradients:\n");
-    debug_gradients(atoms);
-  }
 }
 
 
@@ -1020,7 +986,6 @@ colvar::eigenvector::eigenvector(std::string const &conf)
 {
   provide(f_cvc_inv_gradient);
   provide(f_cvc_Jacobian);
-  provide(f_cvc_debug_gradient);
   function_type = "eigenvector";
   x.type(colvarvalue::type_scalar);
 
@@ -1222,11 +1187,6 @@ void colvar::eigenvector::calc_gradients()
 {
   for (size_t ia = 0; ia < atoms->size(); ia++) {
     (*atoms)[ia].grad = eigenvec[ia];
-  }
-
-  if (is_enabled(f_cvc_debug_gradient)) {
-    cvm::log("Debugging gradients:\n");
-    debug_gradients(atoms);
   }
 }
 

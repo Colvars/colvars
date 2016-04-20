@@ -44,6 +44,9 @@ colvar::cvc::cvc(std::string const &conf)
   // Attempt scalable calculations when in parallel? (By default yes, if available)
   get_keyval(conf, "scalable", b_try_scalable, true);
 
+  // All cvcs implement this
+  provide(f_cvc_debug_gradient);
+
   if (cvm::debug())
     cvm::log("Done initializing cvc base object.\n");
 }
@@ -180,9 +183,6 @@ void colvar::cvc::debug_gradients(cvm::atom_group *group)
 
       size_t j;
 
-      // this should have been called already!
-      // group->calc_fit_gradients();
-
       // fit_gradients are in the original frame: we should print them in the rotated frame
       if (group->b_rotate) {
         for (j = 0; j < group_for_fit->fit_gradients.size(); j++) {
@@ -218,7 +218,6 @@ void colvar::cvc::debug_gradients(cvm::atom_group *group)
       // change one coordinate
       (*group)[ia].pos[id] += cvm::debug_gradients_step_size;
       group->calc_required_properties();
-      group->calc_fit_gradients();
       calc_value();
       cvm::real x_1 = x.real_value;
       if ((x.type() == colvarvalue::type_vector) && (x.size() == 1)) x_1 = x[0];
@@ -240,7 +239,6 @@ void colvar::cvc::debug_gradients(cvm::atom_group *group)
     cvm::atom_group *ref_group = group->ref_pos_group;
     group->read_positions();
     group->calc_required_properties();
-    group->calc_fit_gradients();
 
     for (size_t ia = 0; ia < ref_group->size(); ia++) {
 

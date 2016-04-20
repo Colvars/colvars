@@ -879,6 +879,10 @@ int colvar::calc_cvc_gradients(int first_cvc, size_t num_cvcs)
       for (size_t ig = 0; ig < cvcs[i]->atom_groups.size(); ig++) {
         if (cvcs[i]->atom_groups[ig]->b_fit_gradients)
           cvcs[i]->atom_groups[ig]->calc_fit_gradients();
+
+        if (cvcs[i]->is_enabled(f_cvc_debug_gradient)) {
+          cvcs[i]->debug_gradients(cvcs[i]->atom_groups[ig]);
+        }
       }
     }
     cvm::decrease_depth();
