@@ -956,20 +956,21 @@ void cvm::atom_group::calc_fit_gradients()
     cvm::log("Calculating fit gradients.\n");
 
   atom_group *group_for_fit = ref_pos_group ? ref_pos_group : this;
-  group_for_fit->fit_gradients.assign(group_for_fit->size(), cvm::rvector(0.0, 0.0, 0.0));
 
   if (b_center) {
     // add the center of geometry contribution to the gradients
+    cvm::rvector atom_grad;
+
     for (size_t i = 0; i < this->size(); i++) {
-      // need to use the gradients in original frame
-      cvm::rvector const atom_grad = b_rotate ?
-        (rot.inverse()).rotate(atoms[i].grad) :
-        atoms[i].grad;
-      for (size_t j = 0; j < group_for_fit->size(); j++) {
-        group_for_fit->fit_gradients[j] +=
-          (-1.0)/(cvm::real(group_for_fit->size())) *
-          atom_grad;
-      }
+      atom_grad += (-1.0)/(cvm::real(group_for_fit->size())) * atoms[i].grad;
+    }
+
+    // need to use the gradients in original frame
+    // we only rotate the sum for efficiency
+    if (b_rotate) atom_grad = (rot.inverse()).rotate(atom_grad);
+
+    for (size_t j = 0; j < group_for_fit->size(); j++) {
+      group_for_fit->fit_gradients[j] = atom_grad;
     }
   }
 
@@ -985,10 +986,11 @@ void cvm::atom_group::calc_fit_gradients()
         rot_inv.rotate((b_center ? (atoms[i].pos - ref_pos_cog) : (atoms[i].pos))) +
         (ref_pos_group ? ref_pos_group->cog_orig : cog_orig);
 
+      // calculate \partial(R(q) \vec{x}_i)/\partial q) \cdot \partial\xi/\partial\vec{x}_i
+      cvm::quaternion const dxdq =
+        rot.q.position_derivative_inner(pos_orig, atoms[i].grad);
+
       for (size_t j = 0; j < group_for_fit->size(); j++) {
-        // calculate \partial(R(q) \vec{x}_i)/\partial q) \cdot \partial\xi/\partial\vec{x}_i
-        cvm::quaternion const dxdq =
-          rot.q.position_derivative_inner(pos_orig, atoms[i].grad);
         // multiply by \cdot {\partial q}/\partial\vec{x}_j and add it to the fit gradients
         for (size_t iq = 0; iq < 4; iq++) {
           group_for_fit->fit_gradients[j] += dxdq[iq] * rot.dQ0_1[j][iq];
