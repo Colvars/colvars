@@ -59,12 +59,13 @@ real colvars_potential(t_inputrec *gmx_inp, t_mdatoms *md, t_pbc *pbc,
   // putting it every step to be safe.
   if (gmx_inp->opts.ref_t[0] > 0)
     colvars_global_proxy.set_temper(gmx_inp->opts.ref_t[0]);
-  else colvars_global_proxy.set_temper(gmx_inp->opts.ref_t[0]);
+  else
+    colvars_global_proxy.set_temper(gmx_inp->opts.ref_t[0]); // FIXME duplicate or 'if' case above
 
   // Initialize if this is the first call.
   if (colvars_global_is_first) {
     colvars_global_proxy.init(gmx_inp, step);
-    colvars_global_is_first = false;    
+    colvars_global_is_first = false;
   }
 
   // colvars computation
@@ -101,7 +102,7 @@ static int my_backup_file(const char *filename, const char *extension)
 
 //************************************************************
 // colvarproxy_gromacs
-colvarproxy_gromacs::colvarproxy_gromacs() : colvarproxy() {  
+colvarproxy_gromacs::colvarproxy_gromacs() : colvarproxy() {
 }
 
 // Colvars Initialization
@@ -128,7 +129,7 @@ void colvarproxy_gromacs::init(t_inputrec *gmx_inp, gmx_int64_t step) {
   // gmx_inp->userint2 is the config file index
   // the colvars config file is assumed to be called colvars${userint2}.colvars
   // the output files will have the prefix colvars${userint2}
-  // 
+  //
   // gmx_inp->userint3 is the input file index
   // the input state file is assumed to have the prefix colvars${userint3}
 
@@ -189,7 +190,7 @@ void colvarproxy_gromacs::init(t_inputrec *gmx_inp, gmx_int64_t step) {
   if (cvm::debug())
     log("done initializing the colvars proxy object.\n");
 } // End colvars initialization.
- 
+
 // We don't really know when GROMACS will die, but
 // since the object has file scope, this should get called.
 colvarproxy_gromacs::~colvarproxy_gromacs()
@@ -209,7 +210,7 @@ void colvarproxy_gromacs::set_temper(double temper) {
 cvm::real colvarproxy_gromacs::unit_angstrom() { return 0.1; }
 
 // From Gnu units
-// $ units -ts 'k' 'kJ/mol/K/avogadro' 
+// $ units -ts 'k' 'kJ/mol/K/avogadro'
 // 0.0083144621
 cvm::real colvarproxy_gromacs::boltzmann() { return 0.0083144621; }
 
@@ -245,7 +246,7 @@ cvm::rvector colvarproxy_gromacs::position_distance (cvm::atom_pos const &pos1,
   r2[0] = pos2.x;
   r2[1] = pos2.y;
   r2[2] = pos2.z;
-  
+
   pbc_dx(&gmx_pbc, r1, r2, dr);
   return cvm::atom_pos( dr[0], dr[1], dr[2] );
 }
@@ -316,7 +317,7 @@ int colvarproxy_gromacs::backup_file (char const *filename)
     return my_backup_file(filename, ".old");
   } else {
     // GROMACS has its own way to avoid overwriting files.
-    //if (make_backup(filename)) return COLVARS_OK; 
+    //if (make_backup(filename)) return COLVARS_OK;
     //else return FILE_ERROR;
     make_backup(filename);
   }
@@ -341,7 +342,7 @@ double colvarproxy_gromacs::calculate(gmx_int64_t step, const rvec *x, rvec *f, 
              "colvarproxy_gromacs, step no. "+cvm::to_str(colvars->it)+"\n"+
              "Updating internal data.\n");
   }
-  
+
   // backup applied forces if necessary to calculate system forces
   //if (system_force_requested)
   //  previous_applied_forces = applied_forces;
@@ -375,7 +376,7 @@ double colvarproxy_gromacs::calculate(gmx_int64_t step, const rvec *x, rvec *f, 
   if (colvars->calc() != COLVARS_OK) {
     cvm::fatal_error("");
   }
-  
+
   // Pass the applied forces back to GROMACS.
   for (size_t i = 0; i < colvars_atoms.size(); i++) {
     size_t aid = colvars_atoms[i];
@@ -387,7 +388,7 @@ double colvarproxy_gromacs::calculate(gmx_int64_t step, const rvec *x, rvec *f, 
 
   // We should probably update the virial.
 
-  return bias_energy; 
+  return bias_energy;
 }
 
 
