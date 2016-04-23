@@ -159,17 +159,39 @@ then
     condcopy "${src}" "${target}/lib/colvars/${tgt}"
   done
   # update LAMMPS interface files (package part)
-  for src in ${source}/lammps/src/USER-COLVARS/*.cpp  ${source}/lammps/src/USER-COLVARS/*.h \
-    ${source}/lammps/src/USER-COLVARS/Install.sh ${source}/lammps/src/USER-COLVARS/README
-  do \
-    tgt=$(basename ${src})
-    condcopy "${src}" "${target}/src/USER-COLVARS/${tgt}"
-  done
+  # versions before 2016-04-22, using old pseudo random number generators
+  if [ -f ${target}/src/random_park.h ]
+  then
+    echo "Using backward compatible source with old pRNG"
+    for src in ${source}/lammps/src/USER-COLVARS/*.cpp \
+               ${source}/lammps/src/USER-COLVARS/*.h \
+               ${source}/lammps/src/USER-COLVARS/Install.sh \
+               ${source}/lammps/src/USER-COLVARS/README
+    do \
+      tgt=$(basename ${src})
+      if [ -f ${src}-20160422 ]
+      then
+        condcopy "${src}-20160422" "${target}/src/USER-COLVARS/${tgt}"
+      else
+        condcopy "${src}" "${target}/src/USER-COLVARS/${tgt}"
+      fi
+    done
+  # versions since 2016-04-22, using new pseudo random number generators
+  else
+    for src in ${source}/lammps/src/USER-COLVARS/*.cpp \
+               ${source}/lammps/src/USER-COLVARS/*.h \
+               ${source}/lammps/src/USER-COLVARS/Install.sh \
+               ${source}/lammps/src/USER-COLVARS/README
+    do \
+      tgt=$(basename ${src})
+      condcopy "${src}" "${target}/src/USER-COLVARS/${tgt}"
+    done
+  fi
 
   # update LAMMPS documentation
-  for src in ${source}/lammps/doc/*.txt
-  do \
-    tgt=$(basename ${src})
+    for src in ${source}/lammps/doc/*.txt
+    do \
+      tgt=$(basename ${src})
     condcopy "${src}" "${target}/doc/${tgt}"
   done
 

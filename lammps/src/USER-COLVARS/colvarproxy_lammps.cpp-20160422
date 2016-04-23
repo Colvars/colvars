@@ -4,7 +4,7 @@
 #include "atom.h"
 #include "error.h"
 #include "output.h"
-#include "random.h"
+#include "random_park.h"
 
 #include "fix_colvars.h"
 
@@ -70,7 +70,7 @@ colvarproxy_lammps::colvarproxy_lammps(LAMMPS_NS::LAMMPS *lmp,
   if (cvm::debug())
     log("Initializing the colvars proxy object.\n");
 
-  _random = new LAMMPS_NS::Random(lmp,seed);
+  _random = new LAMMPS_NS::RanPark(lmp,seed);
 
   first_timestep=true;
   system_force_requested=false;
