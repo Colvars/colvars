@@ -949,9 +949,7 @@ void cvm::atom_group::set_weighted_gradient(cvm::rvector const &grad)
 void cvm::atom_group::calc_fit_gradients()
 {
   if (b_dummy) return;
-
-  if ((!b_center) && (!b_rotate)) return; // no fit
-
+  
   if (cvm::debug())
     cvm::log("Calculating fit gradients.\n");
 
@@ -962,12 +960,10 @@ void cvm::atom_group::calc_fit_gradients()
     cvm::rvector atom_grad;
 
     for (size_t i = 0; i < this->size(); i++) {
-      atom_grad += (-1.0)/(cvm::real(group_for_fit->size())) * atoms[i].grad;
+      atom_grad += atoms[i].grad;
     }
-
-    // need to use the gradients in original frame
-    // we only rotate the sum for efficiency
     if (b_rotate) atom_grad = (rot.inverse()).rotate(atom_grad);
+    atom_grad *= (-1.0)/(cvm::real(group_for_fit->size()));
 
     for (size_t j = 0; j < group_for_fit->size(); j++) {
       group_for_fit->fit_gradients[j] = atom_grad;
@@ -991,7 +987,7 @@ void cvm::atom_group::calc_fit_gradients()
         rot.q.position_derivative_inner(pos_orig, atoms[i].grad);
 
       for (size_t j = 0; j < group_for_fit->size(); j++) {
-        // multiply by \cdot {\partial q}/\partial\vec{x}_j and add it to the fit gradients
+        // multiply by {\partial q}/\partial\vec{x}_j and add it to the fit gradients
         for (size_t iq = 0; iq < 4; iq++) {
           group_for_fit->fit_gradients[j] += dxdq[iq] * rot.dQ0_1[j][iq];
         }

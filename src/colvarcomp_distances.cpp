@@ -863,18 +863,11 @@ colvar::rmsd::rmsd(std::string const &conf)
     cvm::log("This is a standard minimum RMSD, derivatives of the optimal rotation "
               "will not be computed as they cancel out in the gradients.");
     atoms->b_fit_gradients = false;
-  }
-
-  if (atoms->b_rotate) {
-    // TODO: finer-grained control of this would require exposing a
-    // "request_Jacobian_derivative()" method to the colvar, and the same
-    // from the colvar to biases
-    // TODO: this should not be enabled here anyway, as it is not specific of the
-    // component - instead it should be decided in a generic way by the atom group
-
+    
     // request the calculation of the derivatives of the rotation defined by the atom group
     atoms->rot.request_group1_gradients(atoms->size());
     // request derivatives of optimal rotation wrt reference coordinates for Jacobian:
+    // this is only required for ABF, but we do both groups here for better caching
     atoms->rot.request_group2_gradients(atoms->size());
   }
 }
