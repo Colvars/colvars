@@ -1148,17 +1148,9 @@ void cvm::atom_group::apply_colvar_force(cvm::real const &force)
 
     atom_group *group_for_fit = ref_pos_group ? ref_pos_group : this;
 
-    // add the contribution from the roto-translational fit to the gradients
-    if (b_rotate) {
-      // rotate forces back to the original frame
-      cvm::rotation const rot_inv = rot.inverse();
-      for (size_t j = 0; j < group_for_fit->size(); j++) {
-        (*group_for_fit)[j].apply_force(rot_inv.rotate(force * group_for_fit->fit_gradients[j]));
-      }
-    } else {
-      for (size_t j = 0; j < group_for_fit->size(); j++) {
-        (*group_for_fit)[j].apply_force(force * group_for_fit->fit_gradients[j]);
-      }
+    // Fit gradients are already calculated in "laboratory" frame
+    for (size_t j = 0; j < group_for_fit->size(); j++) {
+      (*group_for_fit)[j].apply_force(force * group_for_fit->fit_gradients[j]);
     }
   }
 
