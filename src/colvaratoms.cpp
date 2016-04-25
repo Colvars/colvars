@@ -681,7 +681,7 @@ int cvm::atom_group::parse_fitting_options(std::string const &group_conf)
                "If that happens, use refPositionsGroup (or a different definition for it if already defined) "
                "to align the coordinates.\n");
       // initialize rot member data
-      rot.request_group1_gradients(this->size());
+      rot.request_group1_gradients(group_for_fit->size());
     }
   }
 
