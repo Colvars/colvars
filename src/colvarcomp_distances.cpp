@@ -863,7 +863,7 @@ colvar::rmsd::rmsd(std::string const &conf)
     cvm::log("This is a standard minimum RMSD, derivatives of the optimal rotation "
               "will not be computed as they cancel out in the gradients.");
     atoms->b_fit_gradients = false;
-    
+
     // request the calculation of the derivatives of the rotation defined by the atom group
     atoms->rot.request_group1_gradients(atoms->size());
     // request derivatives of optimal rotation wrt reference coordinates for Jacobian:
@@ -1052,6 +1052,8 @@ colvar::eigenvector::eigenvector(std::string const &conf)
     atoms->b_rotate = true;
     atoms->ref_pos = ref_pos;
     atoms->center_ref_pos();
+    atoms->b_fit_gradients = false; // cancel out if group is fitted on itself
+                                    // and cvc is translationally invariant
 
     // request the calculation of the derivatives of the rotation defined by the atom group
     atoms->rot.request_group1_gradients(atoms->size());
