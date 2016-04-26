@@ -1,84 +1,29 @@
 colvarsTrajFrequency    1
 colvarsRestartFrequency 2000
 
-
-#colvar {
-#  name e
-#
-#  outputAppliedForce yes
-#
-#  eigenvector {
-#    refPositionsFile ../Common/310turn-ideal.pdb
-#    vectorFile ../Common/random_vec_10.xyz # 30 random numbers
-#    debugGradients yes
-#    atoms {
-#      atomNumbers  4 14 24 34 44 10 20 30 40 50 # Calpha + CO, N-term
-#      rotateReference yes
-#      centerReference yes
-#      refPositionsGroup {
-#        atomNumbers  54 64 74 84 99 60 70 80 90 92   # Calpha + CO, C-term
-#      }
-#      refPositionsFile ../Common/310turn-ideal.pdb # ref prot positions for fitting
-#    }
-#  }
-#} 
-#
-#colvar {
-#  name r
-#
-#  outputAppliedForce yes
-#
-#  rmsd {
-#    refPositionsFile ../Common/310turn-ideal.pdb
-#    debugGradients yes
-#    atoms {
-#      atomNumbers  4
-#      rotateReference yes
-#      centerReference yes
-#      refPositionsGroup {
-#        atomNumbers  54 64 74 84 99 
-#      }
-#      refPositionsFile ../Common/310turn-ideal.pdb # ref prot positions for fitting
-#    }
-#  }
-#}
-
 colvar {
-  name z
+  name r
 
   outputAppliedForce yes
 
-  distanceZ {
+  rmsd {
+    refPositionsFile ../Common/310turn-ideal.pdb
     debugGradients yes
-    scalable no
-    main {
-    atomNumbers  4
+    atoms {
+      atomNumbers  4
       rotateReference yes
       centerReference yes
       refPositionsGroup {
-        atomNumbers  54 64 74 84
+        atomNumbers  54 64 74 84 99 
       }
-      refPositionsFile ../Common/da.pdb # ref prot positions for fitting
-    }
-    ref {
-      dummyAtom (0, 0, 0)
+      refPositionsFile ../Common/310turn-ideal.pdb # ref prot positions for fitting
     }
   }
 }
 
 harmonic {
-  colvars z
+  colvars r
   centers 0.
   forceConstant 0.1
 }
 
-#colvar {
-#  name ori
-#  orientation {
-#    refPositionsFile ../Common/da-rotated-Calpha.xyz
-#    atoms {
-#      atomNumbers  4 14 24 34 44 54 64 74 84 99   # Calpha
-#    }
-#  }
-#} 
-#

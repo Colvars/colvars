@@ -68,7 +68,7 @@ langevinHydrogen	    on
 # SPACE PARTITIONING
 splitpatch              hydrogen
 hgroupcutoff            2.8
-stepspercycle           20
+stepspercycle           4
 margin                  1.0
 
 # CUT-OFFS
