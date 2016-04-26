@@ -778,9 +778,9 @@ int cvm::atom_group::calc_required_properties()
 void cvm::atom_group::calc_apply_roto_translation()
 {
   // store the laborarory-frame COGs for when they are needed later
-  cog_orig = cog;
+  cog_orig = this->center_of_geometry();
   if (ref_pos_group) {
-    ref_pos_group->cog_orig = ref_pos_group->cog;
+    ref_pos_group->cog_orig = ref_pos_group->center_of_geometry();
   }
 
   if (b_center) {
@@ -977,13 +977,11 @@ void cvm::atom_group::calc_fit_gradients()
 
     for (size_t i = 0; i < this->size(); i++) {
 
-      // Centered position for this atom
+      // restore original position for this atom
+      // TODO: is it less expensive to remember the original positions?
       cvm::atom_pos const pos_orig =
-        rot_inv.rotate(b_center ?
-                       (atoms[i].pos - (ref_pos_group ?
-                                        ref_pos_group->cog_orig :
-                                        cog_orig)) :
-                       (atoms[i].pos));
+        rot_inv.rotate((b_center ? (atoms[i].pos - ref_pos_cog) : (atoms[i].pos))) +
+        (ref_pos_group ? ref_pos_group->cog_orig : cog_orig);
 
       // calculate \partial(R(q) \vec{x}_i)/\partial q) \cdot \partial\xi/\partial\vec{x}_i
       cvm::quaternion const dxdq =
