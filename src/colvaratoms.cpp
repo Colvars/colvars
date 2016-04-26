@@ -949,7 +949,7 @@ void cvm::atom_group::set_weighted_gradient(cvm::rvector const &grad)
 void cvm::atom_group::calc_fit_gradients()
 {
   if (b_dummy) return;
-  
+
   if (cvm::debug())
     cvm::log("Calculating fit gradients.\n");
 
@@ -977,11 +977,9 @@ void cvm::atom_group::calc_fit_gradients()
 
     for (size_t i = 0; i < this->size(); i++) {
 
-      // restore original position for this atom
-      // TODO: is it less expensive to remember the original positions?
+      // compute centered, unrotated position
       cvm::atom_pos const pos_orig =
-        rot_inv.rotate((b_center ? (atoms[i].pos - ref_pos_cog) : (atoms[i].pos))) +
-        (ref_pos_group ? ref_pos_group->cog_orig : cog_orig);
+        rot_inv.rotate((b_center ? (atoms[i].pos - ref_pos_cog) : (atoms[i].pos)));
 
       // calculate \partial(R(q) \vec{x}_i)/\partial q) \cdot \partial\xi/\partial\vec{x}_i
       cvm::quaternion const dxdq =
