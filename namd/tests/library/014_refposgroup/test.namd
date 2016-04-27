@@ -23,13 +23,7 @@ colvarsConfig	  test.in
 #colvarsInput  $inName.colvars.state
 #colvarsInput  test.colvars.state
 
-#tclForces on
-#tclForcesScript {
-#  addatom 12
-#  proc calcforces {} {
-#    addforce 12 { 10 0 0 }
-#  }
-#}
+source ../Common/measure_net_force_torque.tcl
 
 # INPUT
 structure               ../Common/da.psf 
