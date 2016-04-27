@@ -87,6 +87,7 @@ colvar::orientation::orientation()
 
 void colvar::orientation::calc_value()
 {
+  rot.b_debug_gradients = is_enabled(f_cvc_debug_gradient);
   atoms_cog = atoms->center_of_geometry();
 
   rot.calc_optimal_rotation(ref_pos, atoms->positions_shifted(-1.0 * atoms_cog));

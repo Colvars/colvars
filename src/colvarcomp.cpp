@@ -39,13 +39,16 @@ colvar::cvc::cvc(std::string const &conf)
   get_keyval(conf, "period", period, 0.0);
   get_keyval(conf, "wrapAround", wrap_center, 0.0);
 
-  get_keyval(conf, "debugGradients", b_debug_gradient, false, parse_silent);
+  // All cvcs implement this
+  provide(f_cvc_debug_gradient);
+  {
+    bool b_debug_gradient;
+    get_keyval(conf, "debugGradients", b_debug_gradient, false, parse_silent);
+    if (b_debug_gradient) enable(f_cvc_debug_gradient);
+  }
 
   // Attempt scalable calculations when in parallel? (By default yes, if available)
   get_keyval(conf, "scalable", b_try_scalable, true);
-
-  // All cvcs implement this
-  provide(f_cvc_debug_gradient);
 
   if (cvm::debug())
     cvm::log("Done initializing cvc base object.\n");
@@ -107,7 +110,6 @@ int colvar::cvc::setup()
   if (b_try_scalable && is_available(f_cvc_scalable)) {
     enable(f_cvc_scalable);
   }
-  if (b_debug_gradient) enable(f_cvc_debug_gradient);
 
   return COLVARS_OK;
 }
