@@ -60,6 +60,11 @@ do
       if [ ! -s ${script%.namd}.Tcl.out ]; then
         rm -f ${script%.namd}.Tcl.out
       fi
+
+      # Filter out the version number from the state files to allow comparisons
+      grep -v 'version' ${script%.namd}.colvars.state > ${script%.namd}.colvars.state.tmp
+      mv ${script%.namd}.colvars.state.tmp ${script%.namd}.colvars.state
+
   done
   
   # now check results
