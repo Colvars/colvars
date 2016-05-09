@@ -109,9 +109,14 @@ public:
 
   int smp_enabled()
   {
+#ifdef CKLOOP_NONE
     return COLVARS_OK;
+#else
+    return COLVARS_NOT_IMPLEMENTED;
+#endif
   }
 
+#ifdef CKLOOP_NONE
   int smp_colvars_loop();
 
   int smp_biases_loop();
@@ -120,6 +125,8 @@ public:
 
   friend void calc_colvars_items_smp(int first, int last, void *result, int paramNum, void *param);
   friend void calc_cv_biases_smp(int first, int last, void *result, int paramNum, void *param);
+#endif
+
   friend void calc_cv_scripted_forces(int paramNum, void *param);
 
   int smp_thread_id()
