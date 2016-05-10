@@ -109,14 +109,14 @@ public:
 
   int smp_enabled()
   {
-#ifdef CKLOOP_NONE
+#if CMK_SMP && USE_CKLOOP
     return COLVARS_OK;
 #else
     return COLVARS_NOT_IMPLEMENTED;
 #endif
   }
 
-#ifdef CKLOOP_NONE
+#if CMK_SMP && USE_CKLOOP
   int smp_colvars_loop();
 
   int smp_biases_loop();

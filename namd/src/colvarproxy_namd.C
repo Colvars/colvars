@@ -1020,7 +1020,7 @@ int colvarproxy_namd::update_group_properties(int index)
   return COLVARS_OK;
 }
 
-#ifdef CKLOOP_NONE  // SMP only
+#if CMK_SMP && USE_CKLOOP // SMP only
 
 void calc_colvars_items_smp(int first, int last, void *result, int paramNum, void *param)
 {
@@ -1075,16 +1075,6 @@ int colvarproxy_namd::smp_biases_loop()
   return cvm::get_error();
 }
 
-int colvarproxy_namd::smp_biases_script_loop()
-{
-  colvarmodule *cv = this->colvars;
-  CkLoop_Parallelize(calc_cv_biases_smp, 1, this, cv->biases.size(), 0, cv->biases.size()-1,
-                     1, NULL, CKLOOP_NONE,
-                     calc_cv_scripted_forces, 1, this);
-  return cvm::get_error();
-}
-
-#endif  // SMP section
 
 void calc_cv_scripted_forces(int paramNum, void *param)
 {
@@ -1096,3 +1086,15 @@ void calc_cv_scripted_forces(int paramNum, void *param)
     }
   cv->calc_scripted_forces();
 }
+
+
+int colvarproxy_namd::smp_biases_script_loop()
+{
+  colvarmodule *cv = this->colvars;
+  CkLoop_Parallelize(calc_cv_biases_smp, 1, this, cv->biases.size(), 0, cv->biases.size()-1,
+                     1, NULL, CKLOOP_NONE,
+                     calc_cv_scripted_forces, 1, this);
+  return cvm::get_error();
+}
+
+#endif  // SMP section
