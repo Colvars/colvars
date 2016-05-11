@@ -189,16 +189,18 @@ then
   fi
 
   # update LAMMPS documentation
-    for src in ${source}/lammps/doc/*.txt
+  # location of documentation has changed with version 10 May 2016
+  test -d "${target}/doc/src/PDF" && docdir="${target}/doc/src" || docdir="${target}/doc"
+  for src in ${source}/lammps/doc/*.txt
     do \
       tgt=$(basename ${src})
-    condcopy "${src}" "${target}/doc/${tgt}"
+    condcopy "${src}" "${docdir}/${tgt}"
   done
 
   for src in ${source}/doc/colvars-refman-lammps.pdf
   do \
     tgt=$(basename ${src})
-    condcopy "${src}" "${target}/doc/PDF/${tgt}"
+    condcopy "${src}" "${docdir}/PDF/${tgt}"
   done
 
   echo ' done.'
