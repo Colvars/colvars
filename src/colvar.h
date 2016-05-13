@@ -296,9 +296,17 @@ protected:
   /// Sum of square coefficients for active cvcs
   cvm::real active_cvc_square_norm;
 
+  /// Time step multiplier (for coarse-time-step colvars)
+  int   time_step_factor;
+
+  /// Biasing force collected between updates, to be applied at next update for coarse-time-step colvars
+  colvarvalue f_accumulated;
+
 public:
   /// \brief Return the number of CVC objects with an active flag (as set by update_cvc_flags)
   inline size_t num_active_cvcs() const { return n_active_cvcs; }
+
+  inline int get_time_step_factor() const {return time_step_factor;}
 
   /// \brief Use the internal metrics (as from \link cvc
   /// \endlink objects) to calculate square distances and gradients
@@ -352,7 +360,6 @@ public:
 
 
 protected:
-
   /// Previous value (to calculate velocities during analysis)
   colvarvalue            x_old;
 

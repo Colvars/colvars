@@ -337,6 +337,7 @@ colvar::colvar(std::string const &conf)
 
   // at this point, the colvar's type is defined
   f.type(value());
+  f_accumulated.type(value());
   fb.type(value());
 
   get_keyval(conf, "width", width, 1.0);
@@ -420,6 +421,8 @@ colvar::colvar(std::string const &conf)
                "hardLowerBoundary and hardUpperBoundary enabled).\n",
                INPUT_ERROR);
   }
+
+  get_keyval(conf, "timeStepFactor", time_step_factor, 1);
 
   {
     bool b_extended_Lagrangian;
@@ -1190,6 +1193,7 @@ cvm::real colvar::update_forces_energy()
     }
   }
 
+  f_accumulated += f;
 
   if (is_enabled(f_cv_fdiff_velocity)) {
     // set it for the next step
@@ -1232,14 +1236,14 @@ void colvar::communicate_forces()
       if (!cvcs[i]->is_enabled()) continue;
       // cvc force is colvar force times colvar/cvc Jacobian
       // (vector-matrix product)
-      (cvcs[i])->apply_force(colvarvalue(f.as_vector() * func_grads[grad_index++],
+      (cvcs[i])->apply_force(colvarvalue(f_accumulated.as_vector() * func_grads[grad_index++],
                              cvcs[i]->value().type()));
     }
   } else if (x.type() == colvarvalue::type_scalar) {
 
     for (i = 0; i < cvcs.size(); i++) {
       if (!cvcs[i]->is_enabled()) continue;
-      (cvcs[i])->apply_force(f * (cvcs[i])->sup_coeff *
+      (cvcs[i])->apply_force(f_accumulated * (cvcs[i])->sup_coeff *
                               cvm::real((cvcs[i])->sup_np) *
                               (std::pow((cvcs[i])->value().real_value,
                                       (cvcs[i])->sup_np-1)) );
@@ -1249,9 +1253,13 @@ void colvar::communicate_forces()
 
     for (i = 0; i < cvcs.size(); i++) {
       if (!cvcs[i]->is_enabled()) continue;
-      (cvcs[i])->apply_force(f * (cvcs[i])->sup_coeff);
+      (cvcs[i])->apply_force(f_accumulated * (cvcs[i])->sup_coeff);
     }
   }
+
+  // Accumulated forces have been applied, impulse-style
+  // Reset to start accumulating again
+  f_accumulated.reset();
 
   if (cvm::debug())
     cvm::log("Done communicating forces from colvar \""+this->name+"\".\n");
