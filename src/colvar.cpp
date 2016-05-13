@@ -203,7 +203,7 @@ colvar::colvar(std::string const &conf)
       cvm::error("Could not parse scripted colvar type.");
       return;
     }
-    x_reported.type(x.type());
+
     cvm::log(std::string("Expecting colvar value of type ")
       + colvarvalue::type_desc(x.type()));
 
@@ -215,6 +215,8 @@ colvar::colvar(std::string const &conf)
       }
       x.vector1d_value.resize(size);
     }
+
+    x_reported.type(x);
 
     // Sort array of cvcs based on their names
     // Note: default CVC names are in input order for same type of CVC
