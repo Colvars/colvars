@@ -434,6 +434,7 @@ colvar::colvar(std::string const &conf)
       // Make feature available only on user request
       provide(f_cv_extended_Lagrangian);
       enable(f_cv_extended_Lagrangian);
+      provide(f_cv_Langevin);
 
       xr.type(value());
       vr.type(value());
