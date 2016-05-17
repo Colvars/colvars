@@ -3694,7 +3694,6 @@ Note that scripting commands may not be used directly in the NAMD configuration 
 \texttt{run} or \texttt{minimize} statement. They may be used either within the callback procedures
 (e.g. \texttt{calc\_colvar\_forces}) or in the NAMD config file after a \texttt{run} or
 \texttt{minimize} statement.
-}
 
 \cvnamdugonly{\input{ug_colvars-cv.tex}}
 \cvrefmanonly{\input{colvars-cv.tex}}
@@ -3715,7 +3714,7 @@ The following configuration options can modify the behavior of the scripting int
     When this flag is set to \texttt{off}, it is assumed that only the values of their colvars
     (but not their energy or forces) will be used by \texttt{calc\_colvar\_forces}:
     this can be used to schedule the calculation of scripted forces and biases concurrently
-    to increase performance.
+    to increase performance.}
 \end{itemize}
 
 }
