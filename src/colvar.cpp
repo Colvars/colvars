@@ -959,18 +959,7 @@ int colvar::calc_cvc_sys_forces(int first_cvc, size_t num_cvcs)
   size_t const cvc_max_count = num_cvcs ? num_cvcs : num_active_cvcs();
   size_t i, cvc_count;
 
-  if (is_enabled(f_cv_system_force) && !is_enabled(f_cv_extended_Lagrangian)) {
-    // If extended Lagrangian is enabled, system force calculation is trivial
-    // and done together with integration of the extended coordinate.
-
-    if (is_enabled(f_cv_scripted)) {
-      // TODO see if this could reasonably be done in a generic way
-      // from generic inverse gradients
-      cvm::error("System force is not implemented for "
-                 "scripted colvars.", COLVARS_NOT_IMPLEMENTED);
-      return COLVARS_NOT_IMPLEMENTED;
-    }
-
+  if (is_enabled(f_cv_system_force_calc)) {
     if (cvm::debug())
       cvm::log("Calculating system force of colvar \""+this->name+"\".\n");
 
@@ -1001,9 +990,7 @@ int colvar::calc_cvc_sys_forces(int first_cvc, size_t num_cvcs)
 
 int colvar::collect_cvc_sys_forces()
 {
-  if (is_enabled(f_cv_system_force) && !is_enabled(f_cv_extended_Lagrangian)) {
-    // If extended Lagrangian is enabled, system force calculation is trivial
-    // and done together with integration of the extended coordinate.
+  if (is_enabled(f_cv_system_force_calc)) {
     ft.reset();
 
     if (cvm::step_relative() > 0) {
