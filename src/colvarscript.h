@@ -9,6 +9,7 @@
 #include "colvarbias.h"
 #include "colvarproxy.h"
 
+// Only these error values are part of the scripting interface
 #define COLVARSCRIPT_ERROR -1
 #define COLVARSCRIPT_OK 0
 

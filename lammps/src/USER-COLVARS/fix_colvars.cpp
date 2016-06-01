@@ -32,6 +32,7 @@
 #include "respa.h"
 #include "universe.h"
 #include "update.h"
+#include "random.h"
 #include "citeme.h"
 
 #include "colvarproxy_lammps.h"
@@ -280,7 +281,7 @@ FixColvars::FixColvars(LAMMPS *lmp, int narg, char **arg) :
   root2root = MPI_COMM_NULL;
 
   conf_file = strdup(arg[3]);
-  rng_seed = 1966;
+  rng_seed = 0;
   unwrap_flag = 1;
 
   inp_name = NULL;
@@ -300,6 +301,7 @@ FixColvars::FixColvars(LAMMPS *lmp, int narg, char **arg) :
       out_name = strdup(arg[argsdone+1]);
     } else if (0 == strcmp(arg[argsdone], "seed")) {
       rng_seed = force->inumeric(FLERR,arg[argsdone+1]);
+      if (rng_seed < 0) error->all(FLERR,"Illegal random seed");
     } else if (0 == strcmp(arg[argsdone], "unwrap")) {
       if (0 == strcmp(arg[argsdone+1], "yes")) {
         unwrap_flag = 1;
@@ -317,6 +319,7 @@ FixColvars::FixColvars(LAMMPS *lmp, int narg, char **arg) :
   }
 
   if (!out_name) out_name = strdup("out");
+  if (rng_seed == 0) update->get_rng_seed();
 
   /* initialize various state variables. */
   tstat_id = -1;
@@ -324,7 +327,6 @@ FixColvars::FixColvars(LAMMPS *lmp, int narg, char **arg) :
   nlevels_respa = 0;
   init_flag = 0;
   num_coords = 0;
-  coords = forces = oforce = NULL;
   comm_buf = NULL;
   force_buf = NULL;
   proxy = NULL;
@@ -443,10 +445,8 @@ void FixColvars::one_time_init()
     proxy = new colvarproxy_lammps(lmp,inp_name,out_name,
                                    rng_seed,t_target,root2root);
     proxy->init(conf_file);
-    coords = proxy->get_coords();
-    forces = proxy->get_forces();
-    oforce = proxy->get_oforce();
-    num_coords = coords->size();
+
+    num_coords = (proxy->modify_atom_positions()->size());
   }
 
   // send the list of all colvar atom IDs to all nodes.
@@ -457,8 +457,7 @@ void FixColvars::one_time_init()
   memory->create(force_buf,3*num_coords,"colvars:force_buf");
 
   if (me == 0) {
-    std::vector<int> *tags_list = proxy->get_tags();
-    std::vector<int> &tl = *tags_list;
+    std::vector<int> &tl = *(proxy->modify_atom_ids());
     inthash_t *hashtable=new inthash_t;
     inthash_init(hashtable, num_coords);
     idmap = (void *)hashtable;
@@ -508,17 +507,20 @@ void FixColvars::setup(int vflag)
 
   if (me == 0) {
 
-    std::vector<struct commdata> &cd = *coords;
-    std::vector<struct commdata> &of = *oforce;
+    std::vector<int>           &id = *(proxy->modify_atom_ids());
+    std::vector<int>           &tp = *(proxy->modify_atom_types());
+    std::vector<cvm::atom_pos> &cd = *(proxy->modify_atom_positions());
+    std::vector<cvm::rvector>  &of = *(proxy->modify_atom_total_forces());
+    std::vector<cvm::real>     &m  = *(proxy->modify_atom_masses());
+    std::vector<cvm::real>     &q  = *(proxy->modify_atom_charges());
 
     // store coordinate data in holding array, clear old forces
+
 
     for (i=0; i<num_coords; ++i) {
       const tagint k = atom->map(taglist[i]);
       if ((k >= 0) && (k < nlocal)) {
 
-        of[i].tag  = cd[i].tag  = tag[k];
-        of[i].type = cd[i].type = type[k];
         of[i].x = of[i].y = of[i].z = 0.0;
 
         if (unwrap_flag) {
@@ -535,10 +537,13 @@ void FixColvars::setup(int vflag)
           cd[i].z = x[k][2];
         }
         if (atom->rmass_flag) {
-          cd[i].m = atom->rmass[k];
+          m[i] = atom->rmass[k];
         } else {
-          cd[i].m = atom->mass[type[k]];
+          m[i] = atom->mass[type[k]];
         }
+	if (atom->q_flag) {
+	  q[i] = atom->q[k];
+	}
       }
     }
 
@@ -553,14 +558,20 @@ void FixColvars::setup(int vflag)
       ndata /= size_one;
 
       for (int k=0; k<ndata; ++k) {
+
         const int j = inthash_lookup(idmap, comm_buf[k].tag);
+
         if (j != HASH_FAIL) {
-          of[j].tag  = cd[j].tag  = comm_buf[k].tag;
-          of[j].type = cd[j].type = comm_buf[k].type;
+
+          tp[j] = comm_buf[k].type;
+
           cd[j].x = comm_buf[k].x;
           cd[j].y = comm_buf[k].y;
           cd[j].z = comm_buf[k].z;
-          cd[j].m = comm_buf[k].m;
+
+          m[j] = comm_buf[k].m;
+          q[j] = comm_buf[k].q;
+
           of[j].x = of[j].y = of[j].z = 0.0;
         }
       }
@@ -595,6 +606,10 @@ void FixColvars::setup(int vflag)
           comm_buf[nme].m = atom->rmass[k];
         } else {
           comm_buf[nme].m = atom->mass[type[k]];
+        }
+
+	if (atom->q_flag) {
+          comm_buf[nme].q = atom->q[k];
         }
 
         ++nme;
@@ -675,7 +690,8 @@ void FixColvars::post_force(int vflag)
   int tmp, ndata;
 
   if (me == 0) {
-    std::vector<struct commdata> &cd = *coords;
+
+    std::vector<cvm::atom_pos> &cd = *(proxy->modify_atom_positions());
 
     // store coordinate data
 
@@ -763,7 +779,9 @@ void FixColvars::post_force(int vflag)
   // broadcast and apply biasing forces
 
   if (me == 0) {
-    std::vector<struct commdata> &fo = *forces;
+
+    std::vector<cvm::rvector> &fo = *(proxy->modify_atom_new_colvar_forces());
+
     double *fbuf = force_buf;
     for (int j=0; j < num_coords; ++j) {
       *fbuf++ = fo[j].x;
@@ -827,7 +845,7 @@ void FixColvars::end_of_step()
     if (me == 0) {
 
       // store old force data
-      std::vector<struct commdata> &of = *oforce;
+      std::vector<cvm::rvector> &of = *(proxy->modify_atom_total_forces());
 
       for (i=0; i<num_coords; ++i) {
         const tagint k = atom->map(taglist[i]);

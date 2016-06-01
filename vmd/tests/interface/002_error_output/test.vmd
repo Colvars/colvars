@@ -1,0 +1,48 @@
+# -*- tcl -*-
+
+mol new ../Common/da.psf type psf
+mol addfile ../Common/da.pdb type pdb waitfor all
+
+set error_log [open "test.colvars.err" "w"]
+
+proc run_command { args } {
+    global error_log
+    set error_output ""
+    puts "\nRunning \"${args}\"."
+    set error_code [catch { {*}$args } error_output]
+    if { ${error_code} != 0 } {
+        puts ${error_log} "Command \"[lindex ${args} 0]\" returned the following errors:\n${error_output}"
+        puts ${error_log} ""
+    }
+    return ${error_code}
+}
+
+run_command cv molid top
+# test an illegal keyword
+if { [run_command cv config "wrongKeyword"] != 0 } {
+    run_command cv reset
+}
+
+# test an incomplete configuration for a colvar
+if { [run_command cv config "colvar { distance { group1 {} } }"] != 0 } {
+    run_command cv reset
+}
+
+# define a variable that contains an invalid atom
+set noh [atomselect top "not hydrogen"]
+run_command cv config "
+colvar {
+    name rmsd-all
+ 
+    rmsd {
+        atoms {
+            atomNumbers { [$noh get serial] 1000 }
+        }
+        refpositionsfile ../Common/da.pdb
+    }
+}
+"
+${noh} delete
+
+close ${error_log}
+quit

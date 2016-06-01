@@ -17,6 +17,7 @@
 #include "PDB.h"
 #include "WorkDistrib.h"
 #include "NamdState.h"
+#include "Output.h"
 #include "Controller.h"
 #include "SimParameters.h"
 #include "Thread.h"
@@ -87,6 +88,8 @@ void ScriptTcl::initcheck() {
       (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
     Tcl_CreateCommand(interp, "istrue", Tcl_istrue_param,
       (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
+    Tcl_CreateCommand(interp, "structure", Tcl_reloadStructure,
+      (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
 #endif
     initWasCalled = 1;
 
@@ -135,6 +138,213 @@ void ScriptTcl::reinitAtoms(const char *basename) {
 }
 
 #ifdef NAMD_TCL
+
+#ifdef NAMD_PYTHON
+#include <Python.h>
+
+static Tcl_Obj* python_tcl_convert(PyObject *obj) {
+  if ( PyString_Check(obj) ) {
+    return Tcl_NewStringObj(PyString_AsString(obj), -1);
+  }
+  if ( PySequence_Check(obj) ) {
+    PyObject *iter = PyObject_GetIter(obj);
+    if ( ! iter ) NAMD_bug("python_tcl_convert failed to get iterator");
+    Tcl_Obj *rlist = Tcl_NewListObj(0,0);
+    while ( PyObject *item = PyIter_Next(iter) ) {
+      Tcl_ListObjAppendElement(0, rlist, python_tcl_convert(item));
+      Py_DECREF(item);
+    }
+    Py_DECREF(iter);
+    return rlist;
+  }
+  PyObject *str = PyObject_Str(obj);
+  Tcl_Obj *robj = Tcl_NewStringObj(PyString_AsString(str), -1);
+  Py_DECREF(str);
+  return robj;
+}
+
+static Tcl_Interp *static_interp;
+
+static PyObject* python_tcl_call(PyObject *self, PyObject *args) {
+  Tcl_Interp *interp = static_interp;
+  Tcl_Obj *command = python_tcl_convert(args);
+  Tcl_IncrRefCount(command);
+  if ( TCL_OK != Tcl_EvalObjEx(interp,command,TCL_EVAL_GLOBAL) ) {
+    PyErr_SetString(PyExc_RuntimeError, Tcl_GetStringResult(interp));
+    Tcl_DecrRefCount(command);
+    return 0;
+  }
+  Tcl_DecrRefCount(command);
+  return Py_BuildValue("s", Tcl_GetStringResult(interp));
+}
+
+static PyObject* python_tcl_eval(PyObject *self, PyObject *args) {
+  Tcl_Interp *interp = static_interp;
+  const char *command;
+  if ( ! PyArg_ParseTuple(args, "s", &command) ) return 0;
+  if ( TCL_OK != Tcl_EvalEx(interp,command,-1,TCL_EVAL_GLOBAL) ) {
+    PyErr_SetString(PyExc_RuntimeError, Tcl_GetStringResult(interp));
+    return 0;
+  }
+  return Py_BuildValue("s", Tcl_GetStringResult(interp));
+}
+
+static PyObject* python_tcl_write(PyObject *self, PyObject *args) {
+  const char *string;
+  if ( ! PyArg_ParseTuple(args, "s", &string) ) return 0;
+  CkPrintf("%s", string);
+  return Py_None;
+}
+
+static PyMethodDef methods[] = {
+  {"eval", python_tcl_eval, METH_VARARGS,
+   "Evaluate string in Tcl interpreter."},
+  {"call", python_tcl_call, METH_VARARGS,
+   "Call command and arguments in Tcl interpreter."},
+  {"write", python_tcl_write, METH_VARARGS,
+   "Write string using CkPrintf."},
+  {NULL, NULL, 0, NULL}
+};
+
+static void namd_python_initialize(void *interp) {
+  if ( static_interp ) return;
+  static_interp = (Tcl_Interp*) interp;
+  Py_InitializeEx(0);  // do not initialize signal handlers
+  Py_InitModule("tcl", methods);
+
+  const char * python_code = "\n"
+"import sys\n"
+"import tcl\n"
+"sys.stdout = tcl\n"
+"\n"
+"class wrapper:\n"
+"  class wrapped:\n"
+"    def __init__(self,_name):\n"
+"      self.name = _name\n"
+"    def __call__(self,*args):\n"
+"      return tcl.call(self.name,*args)\n"
+"  def __getattr__(self,name):\n"
+"    if tcl.call('info','commands',name) == name:\n"
+"      return self.wrapped(name)\n"
+"    else:\n"
+"      return tcl.call('param',name)\n"
+"  def __setattr__(self,name,val):\n"
+"    if tcl.call('info','commands',name) == name:\n"
+"      raise AttributeError\n"
+"    return tcl.call('param',name,val)\n"
+"  def __call__(self, **args):\n"
+"    for (name,val) in args.items():\n"
+"      tcl.call('param',name,val)\n"
+"\n"
+"namd = wrapper()\n"
+"\n";
+
+  if ( TCL_OK != PyRun_SimpleString(python_code) ) {
+    NAMD_bug("namd_python_initialize failed");
+  }
+}
+
+int ScriptTcl::Tcl_python(ClientData, Tcl_Interp *interp, int argc, char **argv) {
+  if ( argc < 2 ) {
+    Tcl_SetResult(interp,"args: script",TCL_VOLATILE);
+    return TCL_ERROR;
+  }
+  namd_python_initialize(interp);
+  PyObject *dict = PyModule_GetDict(PyImport_AddModule("__main__"));
+
+  const char *script = argv[1];
+  int token = Py_eval_input;
+
+  Tcl_DString scr;
+  Tcl_DStringInit(&scr);
+  if ( argc > 2 ) {
+    Tcl_DStringAppend(&scr,argv[1],-1);
+    for ( int i = 2; i < argc; ++i ) {
+      Tcl_DStringAppend(&scr," ",-1);
+      Tcl_DStringAppend(&scr,argv[i],-1);
+    }
+    script = Tcl_DStringValue(&scr);
+  } else {
+    while ( script[0] == ' ' || script[0] == '\t' ) ++script;
+    for ( int i=0; script[i]; ++i ) {
+      if ( script[i] == '\n' ) {
+        token = Py_file_input;
+        script = argv[1];
+        break;
+      }
+    }
+  }
+
+  PyObject *result = PyRun_String(script, token, dict, dict);
+  Tcl_ResetResult(interp);  // Python may have called Tcl
+  Tcl_DStringFree(&scr);
+
+  if ( PyErr_Occurred() ) {
+    if ( result ) NAMD_bug("PyErr_Occurred indicates error but PyRun does not");
+    // PyErr_Print();
+    Tcl_AppendResult(interp, "error from python interpreter\n", NULL);
+    PyObject *type, *value, *traceback, *str;
+    PyErr_Fetch(&type, &value, &traceback);
+
+    if ( ! traceback ) {
+      traceback = Py_None;
+      Py_INCREF(Py_None);
+    }
+
+    PyObject *mod = PyImport_ImportModule("traceback");
+    if ( ! mod ) return TCL_ERROR;
+
+    PyObject *func = PyObject_GetAttrString(mod, "format_exception");
+    if ( ! func ) return TCL_ERROR;
+
+    PyObject *list = PyObject_CallFunctionObjArgs(func, type, value, traceback, NULL);
+    Py_DECREF(mod);
+    Py_DECREF(func);
+    Py_DECREF(type);
+    Py_DECREF(value);
+    Py_DECREF(traceback);
+
+    PyObject *iter = PyObject_GetIter(list);
+    if ( ! iter ) return TCL_ERROR;
+    while ( PyObject *item = PyIter_Next(iter) ) {
+      str = PyObject_Str(item);
+      Tcl_AppendResult(interp, PyString_AsString(str), "\n", NULL);
+      Py_DECREF(str);
+      Py_DECREF(item);
+    }
+    Py_DECREF(iter);
+    Py_DECREF(list);
+
+    return TCL_ERROR;
+  } else if ( ! result ) {
+    NAMD_bug("PyRun indicates error but PyErr_Occurred does not");
+  }
+  if ( result != Py_None ) {
+    Tcl_SetObjResult(interp, python_tcl_convert(result));
+  }
+  Py_DECREF(result);
+  return TCL_OK;
+}
+
+#else // NAMD_PYTHON
+
+int ScriptTcl::Tcl_python(ClientData, Tcl_Interp *interp, int argc, char **argv) {
+  Tcl_SetResult(interp,"python not enabled",TCL_VOLATILE);
+  return TCL_ERROR;
+}
+
+#endif // NAMD_PYTHON
+
+int ScriptTcl::Tcl_startup(ClientData clientData,
+	Tcl_Interp *interp, int argc, char *argv[]) {
+  if ( argc > 1 ) {
+    Tcl_SetResult(interp,"no arguments needed",TCL_VOLATILE);
+    return TCL_ERROR;
+  }
+  ScriptTcl *script = (ScriptTcl *)clientData;
+  script->initcheck();
+  return TCL_OK;
+}
 
 int ScriptTcl::Tcl_exit(ClientData clientData,
 	Tcl_Interp *, int argc, char *argv[]) {
@@ -278,7 +488,7 @@ int ScriptTcl::Tcl_replicaSendrecv(ClientData, Tcl_Interp *interp, int argc, cha
   int source = -1;
   if ( argc > 3 ) source = atoi(argv[3]);
 #if CMK_HAS_PARTITION
-  if(dest == CmiMyPartition()) {
+  if (dest == CmiMyPartition()) {
     Tcl_DStringSetLength(&recvstr,sendcount);
     memcpy(Tcl_DStringValue(&recvstr),argv[1],sendcount);
   } else {
@@ -364,7 +574,7 @@ int ScriptTcl::Tcl_replicaAtomSendrecv(ClientData clientData, Tcl_Interp *interp
   }
 
 #if CMK_HAS_PARTITION
-  if(dest != CmiMyPartition()) {
+  if (dest != CmiMyPartition()) {
     DataMessage *recvMsg = NULL;
     replica_sendRecv((char*)&(script->state->lattice), sizeof(Lattice), dest, CkMyPe(), &recvMsg, source, CkMyPe());
     CmiAssert(recvMsg != NULL);
@@ -384,7 +594,7 @@ int ScriptTcl::Tcl_replicaAtomSendrecv(ClientData clientData, Tcl_Interp *interp
   script->runController(SCRIPT_ATOMSENDRECV);
 
 #if CMK_HAS_PARTITION
-  if(dest != CmiMyPartition()) {
+  if (dest != CmiMyPartition()) {
     DataMessage *recvMsg = NULL;
     ControllerState *cstate = script->state->controller;
     replica_sendRecv((char*)cstate, sizeof(ControllerState), dest, CkMyPe(), &recvMsg, source, CkMyPe());
@@ -799,6 +1009,10 @@ int ScriptTcl::Tcl_run(ClientData clientData,
     Tcl_SetResult(interp,"number of steps must be a multiple of stepsPerCycle",TCL_VOLATILE);
     return TCL_ERROR;
   }
+  if ( simParams->minimizeCGOn ) {
+    Tcl_SetResult(interp,"run called with minimization enabled; use minimize command instead",TCL_VOLATILE);
+    return TCL_ERROR;
+  }
   if ( simParams->N != simParams->firstTimestep ) {
     iout << "TCL: Original numsteps " << simParams->N
          << " will be ignored.\n";
@@ -1138,7 +1352,7 @@ int ScriptTcl::Tcl_colvarfreq(ClientData clientData,
   return TCL_OK;
 }
 
-int ScriptTcl::Tcl_colvars (ClientData clientData,
+int ScriptTcl::Tcl_colvars(ClientData clientData,
         Tcl_Interp *interp, int argc, char *argv[]) {
   ScriptTcl *script = (ScriptTcl *)clientData;
   script->initcheck();
@@ -1151,7 +1365,7 @@ int ScriptTcl::Tcl_colvars (ClientData clientData,
   // use Tcl dynamic allocation to prevent having to copy the buffer
   // *twice* just because Tcl is missing const qualifiers for strings
   char *buf = Tcl_Alloc(colvars->proxy->script->result.length() + 1);
-  strncpy (buf, colvars->proxy->script->result.c_str(), colvars->proxy->script->result.length() + 1);
+  strncpy(buf, colvars->proxy->script->result.c_str(), colvars->proxy->script->result.length() + 1);
   Tcl_SetResult(interp, buf, TCL_DYNAMIC);
   // Note: sometimes Tcl 8.5 will segfault here
   // (only on error conditions, apparently)
@@ -1245,6 +1459,30 @@ int ScriptTcl::Tcl_checkpointReplica(ClientData clientData,
     return TCL_ERROR;
   }
 
+  return TCL_OK;
+}
+
+int ScriptTcl::Tcl_replicaDcdFile(ClientData clientData,
+        Tcl_Interp *interp, int argc, char *argv[]) {
+#ifdef MEM_OPT_VERSION
+  Tcl_SetResult(interp,"replicaDcdFile not supported in memory-optimized builds",TCL_VOLATILE);
+  return TCL_ERROR;
+#endif
+  ScriptTcl *script = (ScriptTcl *)clientData;
+  script->initcheck();
+  int index;
+  int cmpoff;
+  if (argc < 2 || argc > 3 || ((cmpoff = strcmp(argv[1],"off")) != 0 && sscanf(argv[1],"%d",&index) != 1) ) {
+    Tcl_SetResult(interp,"args: <index>|off ?<filename>?",TCL_VOLATILE);
+    return TCL_ERROR;
+  }
+  if ( argc == 2 ) {
+    if ( cmpoff == 0 ) Node::Object()->output->replicaDcdOff();
+    else Node::Object()->output->setReplicaDcdIndex(index);
+  } else if ( argc == 3 ) {
+    Node::Object()->output->replicaDcdInit(index,argv[2]);
+    script->barrier();
+  }
   return TCL_OK;
 }
 
@@ -1595,6 +1833,42 @@ int ScriptTcl::Tcl_reloadGridforceGrid(ClientData clientData,
 }
 // END gf
 
+int ScriptTcl::Tcl_reloadStructure(ClientData clientData,
+	Tcl_Interp *interp, int argc, char *argv[]) {
+  ScriptTcl *script = (ScriptTcl *)clientData;
+  script->initcheck();
+  int ok = 0;
+  if (argc == 2) ok = 1;
+  if (argc == 4 && ! strcmp(argv[2],"pdb")) ok = 1;
+  if (! ok) {
+    Tcl_AppendResult(interp, "usage: structure <filename> [pdb] <filename>", NULL);
+    return TCL_ERROR;
+  }
+
+  iout << "TCL: Reloading molecular structure from file " << argv[1];
+  if ( argc == 4 ) iout << " and pdb file " << argv[3];
+  iout << "\n" << endi;
+  Node::Object()->reloadStructure(argv[1], (argc == 4) ? argv[3] : 0);
+
+  script->barrier();
+
+  // return Tcl_reinitatoms(clientData, interp, argc-1, argv+1);
+
+  return TCL_OK;
+}
+
+
+extern "C" void newhandle_msg(void *v, const char *msg) {
+  CkPrintf("psfgen) %s\n",msg);
+}
+
+extern "C" void newhandle_msg_ex(void *v, const char *msg, int prepend, int newline) {
+  CkPrintf("%s%s%s", (prepend ? "psfgen) " : ""), msg, (newline ? "\n" : ""));
+}
+
+extern "C" int psfgen_static_init(Tcl_Interp *);
+
+
 #endif  // NAMD_TCL
 
 
@@ -1618,7 +1892,12 @@ ScriptTcl::ScriptTcl() : scriptBarrier(scriptBarrierTag) {
 
   // Create interpreter
   interp = Tcl_CreateInterp();
+  psfgen_static_init(interp);
   tcl_vector_math_init(interp);
+  Tcl_CreateCommand(interp, "python", Tcl_python,
+    (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
+  Tcl_CreateCommand(interp, "startup", Tcl_startup,
+    (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
   Tcl_CreateCommand(interp, "exit", Tcl_exit,
     (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
   Tcl_CreateCommand(interp, "abort", Tcl_abort,
@@ -1701,6 +1980,8 @@ ScriptTcl::ScriptTcl() : scriptBarrier(scriptBarrierTag) {
     (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
   Tcl_CreateCommand(interp, "reinitatoms", Tcl_reinitatoms,
     (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
+  Tcl_CreateCommand(interp, "replicaDcdFile", Tcl_replicaDcdFile,
+    (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
   Tcl_CreateCommand(interp, "callback", Tcl_callback,
     (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
   Tcl_CreateCommand(interp, "coorfile", Tcl_coorfile,
@@ -1727,6 +2008,7 @@ int ScriptTcl::eval(const char *script, const char **resultPtr) {
   return code;
 #else
   NAMD_bug("ScriptTcl::eval called without Tcl.");
+  return -1;  // appease compiler
 #endif
 }
 
@@ -1772,7 +2054,7 @@ void ScriptTcl::run(char *scriptFile) {
   }
 #endif
 
-  if (runWasCalled == 0) {
+  if (initWasCalled == 0) {
     initcheck();
     SimParameters *simParams = Node::Object()->simParameters;
     if ( simParams->minimizeCGOn ) runController(SCRIPT_MINIMIZE);

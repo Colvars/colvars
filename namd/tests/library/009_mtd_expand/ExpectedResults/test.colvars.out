@@ -1,4 +1,5 @@
 colvars: ----------------------------------------------------------------------
+colvars: Please cite Fiorin et al, Mol Phys 2013 in any publication based on this calculation.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
 colvars: # indexFile = "" [default]
@@ -6,6 +7,8 @@ colvars: # analysis = off [default]
 colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 10
 colvars: # colvarsTrajAppend = off [default]
+colvars: # scriptedColvarForces = off [default]
+colvars: # scriptingAfterBiases = on [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = d
@@ -14,8 +17,10 @@ colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
+colvars:     # scalable = on [default]
 colvars:     # forceNoPBC = off [default]
 colvars:     # oneSiteSystemForce = off [default]
+colvars:     Will enable scalable calculation for group "group1".
 colvars:       Initializing atom group "group1".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -25,7 +30,8 @@ colvars:       # enableForces = on [default]
 colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Atom group "group1" defined, 1 atoms initialized: total mass = 12.011.
+colvars:       Atom group "group1" defined, 1 atoms initialized: total mass = 12.011, total charge = -0.1.
+colvars:     Will enable scalable calculation for group "group2".
 colvars:       Initializing atom group "group2".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -35,7 +41,7 @@ colvars:       # enableForces = on [default]
 colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Atom group "group2" defined, 1 atoms initialized: total mass = 12.011.
+colvars:       Atom group "group2" defined, 1 atoms initialized: total mass = 12.011, total charge = 0.07.
 colvars:   All components initialized.
 colvars:   # width = 0.2
 colvars:   # lowerBoundary = 0
@@ -76,8 +82,16 @@ colvars: Collective variables biases initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables module (re)initialized.
 colvars: ----------------------------------------------------------------------
+colvars: Updating NAMD interface:
+colvars: updating atomic data (0 atoms).
+colvars: updating group data (2 scalable groups, 2 atoms in total).
+colvars: Re-initialized atom group d:0/0. 1 atoms: total mass = 12.011.
+colvars: Re-initialized atom group d:0/1. 1 atoms: total mass = 12.011.
 colvars: The final output state file will be "test.colvars.state".
 colvars: Writing to colvar trajectory file "test.colvars.traj".
+colvars: Updating NAMD interface:
+colvars: updating atomic data (0 atoms).
+colvars: updating group data (2 scalable groups, 2 atoms in total).
 colvars:   Metadynamics bias "metadynamics1": new upper boundary for colvar "d", at 15.2.
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".

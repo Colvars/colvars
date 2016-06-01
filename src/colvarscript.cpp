@@ -26,10 +26,12 @@ int colvarscript::run(int argc, char const *argv[]) {
 
   if (argc < 2) {
     result = help_string();
-    return COLVARSCRIPT_OK;
+    return COLVARS_OK;
   }
 
   std::string cmd = argv[1];
+
+  int error_code = COLVARS_OK;
 
   if (cmd == "colvar") {
     return proc_colvar(argc-1, &(argv[1]));
@@ -41,26 +43,30 @@ int colvarscript::run(int argc, char const *argv[]) {
 
   if (cmd == "version") {
     result = COLVARS_VERSION;
-    return COLVARSCRIPT_OK;
+    return COLVARS_OK;
   }
 
   if (cmd == "reset") {
     /// Delete every child object
     colvars->reset();
-    return COLVARSCRIPT_OK;
+    return COLVARS_OK;
   }
 
   if (cmd == "delete") {
-    colvars->reset();
     // Note: the delete bit may be ignored by some backends
     // it is mostly useful in VMD
-    colvars->set_error_bits(DELETE_COLVARS);
-    return COLVARSCRIPT_OK;
+    colvars->set_error_bit(DELETE_COLVARS);
+    return COLVARS_OK;
   }
 
   if (cmd == "update") {
-    colvars->calc();
-    return COLVARSCRIPT_OK;
+    cvm::combine_errors(error_code, proxy->update_input());
+    cvm::combine_errors(error_code, colvars->calc());
+    cvm::combine_errors(error_code, proxy->update_output());
+    if (error_code) {
+      result += "Error updating the colvars module.\n";
+    }
+    return error_code;
   }
 
   if (cmd == "list") {
@@ -70,14 +76,14 @@ int colvarscript::run(int argc, char const *argv[]) {
            ++cvi) {
         result += (cvi == colvars->colvars.begin() ? "" : " ") + (*cvi)->name;
       }
-      return COLVARSCRIPT_OK;
+      return COLVARS_OK;
     } else if (argc == 3 && !strcmp(argv[2], "biases")) {
       for (std::vector<colvarbias *>::iterator bi = colvars->biases.begin();
            bi != colvars->biases.end();
            ++bi) {
         result += (bi == colvars->biases.begin() ? "" : " ") + (*bi)->name;
       }
-      return COLVARSCRIPT_OK;
+      return COLVARS_OK;
     } else {
       result = "Wrong arguments to command \"list\"\n" + help_string();
       return COLVARSCRIPT_ERROR;
@@ -91,7 +97,7 @@ int colvarscript::run(int argc, char const *argv[]) {
       return COLVARSCRIPT_ERROR;
     }
     if (colvars->read_config_file(argv[2]) == COLVARS_OK) {
-      return COLVARSCRIPT_OK;
+      return COLVARS_OK;
     } else {
       result = "Error parsing configuration file";
       return COLVARSCRIPT_ERROR;
@@ -106,7 +112,7 @@ int colvarscript::run(int argc, char const *argv[]) {
     }
     std::string conf = argv[2];
     if (colvars->read_config_string(conf) == COLVARS_OK) {
-      return COLVARSCRIPT_OK;
+      return COLVARS_OK;
     } else {
       result = "Error parsing configuration string";
       return COLVARSCRIPT_ERROR;
@@ -121,7 +127,7 @@ int colvarscript::run(int argc, char const *argv[]) {
     }
     proxy->input_prefix_str = argv[2];
     if (colvars->setup_input() == COLVARS_OK) {
-      return COLVARSCRIPT_OK;
+      return COLVARS_OK;
     } else {
       result = "Error loading state file";
       return COLVARSCRIPT_ERROR;
@@ -136,9 +142,9 @@ int colvarscript::run(int argc, char const *argv[]) {
     }
     proxy->output_prefix_str = argv[2];
     int error = 0;
-    error |= colvars->setup_output();
-    error |= colvars->write_output_files();
-    return error ? COLVARSCRIPT_ERROR : COLVARSCRIPT_OK;
+    cvm::combine_errors(error, colvars->setup_output());
+    cvm::combine_errors(error, colvars->write_output_files());
+    return error ? COLVARSCRIPT_ERROR : COLVARS_OK;
   }
 
   /// Print the values that would go on colvars.traj
@@ -146,13 +152,13 @@ int colvarscript::run(int argc, char const *argv[]) {
     std::ostringstream os;
     colvars->write_traj_label(os);
     result = os.str();
-    return COLVARSCRIPT_OK;
+    return COLVARS_OK;
   }
   if (cmd == "printframe") {
     std::ostringstream os;
     colvars->write_traj(os);
     result = os.str();
-    return COLVARSCRIPT_OK;
+    return COLVARS_OK;
   }
 
   if (cmd == "frame") {
@@ -160,7 +166,7 @@ int colvarscript::run(int argc, char const *argv[]) {
       int f = proxy->frame();
       if (f >= 0) {
         result = cvm::to_str(f);
-        return COLVARSCRIPT_OK;
+        return COLVARS_OK;
       } else {
         result = "Frame number is not available";
         return COLVARSCRIPT_ERROR;
@@ -171,7 +177,7 @@ int colvarscript::run(int argc, char const *argv[]) {
       long int f = proxy->frame(strtol(argv[2], NULL, 10));
       colvars->it = proxy->frame();
       result = cvm::to_str(f);
-      return COLVARSCRIPT_OK;
+      return COLVARS_OK;
     } else {
       result = "Wrong arguments to command \"frame\"\n" + help_string();
       return COLVARSCRIPT_ERROR;
@@ -199,24 +205,24 @@ int colvarscript::proc_colvar(int argc, char const *argv[]) {
 
   if (subcmd == "value") {
     result = (cv->value()).to_simple_string();
-    return COLVARSCRIPT_OK;
+    return COLVARS_OK;
   }
 
   if (subcmd == "width") {
     result = cvm::to_str(cv->width, 0, cvm::cv_prec);
-    return COLVARSCRIPT_OK;
+    return COLVARS_OK;
   }
 
   if (subcmd == "type") {
     result = cv->value().type_desc(cv->value().value_type);
-    return COLVARSCRIPT_OK;
+    return COLVARS_OK;
   }
 
   if (subcmd == "update") {
     cv->calc();
-    cv->update();
+    cv->update_forces_energy();
     result = (cv->value()).to_simple_string();
-    return COLVARSCRIPT_OK;
+    return COLVARS_OK;
   }
 
   if (subcmd == "delete") {
@@ -228,12 +234,22 @@ int colvarscript::proc_colvar(int argc, char const *argv[]) {
     delete cv;
     // TODO this could be done by the destructors
     colvars->write_traj_label(colvars->cv_traj_os);
-    return COLVARSCRIPT_OK;
+    return COLVARS_OK;
   }
 
   if (subcmd == "getconfig") {
     result = cv->get_config();
-    return COLVARSCRIPT_OK;
+    return COLVARS_OK;
+  }
+
+  if (subcmd == "getappliedforce") {
+    result = (cv->bias_force()).to_simple_string();
+    return COLVARS_OK;
+  }
+
+  if (subcmd == "getsystemforce") {
+    result = (cv->system_force()).to_simple_string();
+    return COLVARS_OK;
   }
 
   if (subcmd == "addforce") {
@@ -253,7 +269,30 @@ int colvarscript::proc_colvar(int argc, char const *argv[]) {
     }
     cv->add_bias_force(force);
     result = force.to_simple_string();
-    return COLVARSCRIPT_OK;
+    return COLVARS_OK;
+  }
+
+  if (subcmd == "cvcflags") {
+    if (argc < 4) {
+      result = "cvcflags: missing parameter: vector of flags";
+      return COLVARSCRIPT_ERROR;
+    }
+    std::string flags_str = argv[3];
+    std::istringstream is(flags_str);
+    std::vector<bool> flags;
+
+    int flag;
+    while (is >> flag) {
+      flags.push_back(flag != 0);
+    }
+
+    int res = cv->set_cvc_flags(flags);
+    if (res != COLVARS_OK) {
+      result = "Error setting CVC flags";
+      return COLVARSCRIPT_ERROR;
+    }
+    result = "0";
+    return COLVARS_OK;
   }
 
   result = "Syntax error\n" + help_string();
@@ -278,25 +317,25 @@ int colvarscript::proc_bias(int argc, char const *argv[]) {
 
   if (subcmd == "energy") {
     result = cvm::to_str(b->get_energy());
-    return COLVARSCRIPT_OK;
+    return COLVARS_OK;
   }
 
   if (subcmd == "update") {
     b->update();
     result = cvm::to_str(b->get_energy());
-    return COLVARSCRIPT_OK;
+    return COLVARS_OK;
   }
 
   if (subcmd == "getconfig") {
     result = b->get_config();
-    return COLVARSCRIPT_OK;
+    return COLVARS_OK;
   }
 
   // Subcommands for MW ABF
   if (subcmd == "bin") {
     int r = b->current_bin();
     result = cvm::to_str(r);
-    return COLVARSCRIPT_OK;
+    return COLVARS_OK;
   }
 
   if (subcmd == "binnum") {
@@ -306,7 +345,7 @@ int colvarscript::proc_bias(int argc, char const *argv[]) {
       return COLVARSCRIPT_ERROR;
     }
     result = cvm::to_str(r);
-    return COLVARSCRIPT_OK;
+    return COLVARS_OK;
   }
 
   if (subcmd == "share") {
@@ -316,7 +355,7 @@ int colvarscript::proc_bias(int argc, char const *argv[]) {
       return COLVARSCRIPT_ERROR;
     }
     result = cvm::to_str(r);
-    return COLVARSCRIPT_OK;
+    return COLVARS_OK;
   }
   // End commands for MW ABF
 
@@ -325,7 +364,7 @@ int colvarscript::proc_bias(int argc, char const *argv[]) {
     delete b;
     // TODO this could be done by the destructors
     colvars->write_traj_label(colvars->cv_traj_os);
-    return COLVARSCRIPT_OK;
+    return COLVARS_OK;
   }
 
   if (argc >= 4) {
@@ -337,7 +376,7 @@ int colvarscript::proc_bias(int argc, char const *argv[]) {
         return COLVARSCRIPT_ERROR;
       }
       result = cvm::to_str(b->bin_count(index));
-      return COLVARSCRIPT_OK;
+      return COLVARS_OK;
     }
 
     result = "Syntax error\n" + help_string();
@@ -365,7 +404,8 @@ Input and output:\n\
   list                        -- return a list of all variables\n\
   list biases                 -- return a list of all biases\n\
   load <file name>            -- load a state file (requires configuration)\n\
-  update                      -- recalculate colvars and biases based\n\
+  save <file name>            -- save a state file (requires configuration)\n\
+  update                      -- recalculate colvars and biases\n\
   printframe                  -- return a summary of the current frame\n\
   printframelabels            -- return labels to annotate printframe's output\n";
 
@@ -383,6 +423,7 @@ Accessing collective variables:\n\
   colvar <name> delete        -- delete colvar <name>\n\
   colvar <name> addforce <F>  -- apply given force on colvar <name>\n\
   colvar <name> getconfig     -- return config string of colvar <name>\n\
+  colvar <name> cvcflags <fl> -- enable or disable cvcs according to 0/1 flags\n\
 \n\
 Accessing biases:\n\
   bias <name> energy          -- return the current energy of bias <name>\n\

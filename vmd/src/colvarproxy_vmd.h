@@ -15,8 +15,12 @@
 #include "colvaratoms.h"
 
 #ifndef COLVARPROXY_VERSION
-#define COLVARPROXY_VERSION "2015-02-24"
+#define COLVARPROXY_VERSION "2015-11-02"
 #endif
+
+
+int tcl_colvars(ClientData clientdata, Tcl_Interp *interp, int argc, const char *argv[]);
+
 
 /// \brief Communication between colvars and VMD (implementation of
 /// \link colvarproxy \endlink)
@@ -45,7 +49,11 @@ public:
   colvarproxy_vmd(Tcl_Interp *interp, VMDApp *vmd, int molid);
   ~colvarproxy_vmd();
 
-  void setup();
+  int setup();
+
+  int update_input();
+  /// \brief Update mass, charge, etc
+  int update_atomic_properties();
 
   inline cvm::real unit_angstrom()
   {
@@ -79,15 +87,7 @@ public:
     return vmdmol_frame;
   }
 
-  inline int frame(int f)
-  {
-    if (vmdmol->get_frame(f) != NULL) {
-      vmdmol_frame = f;
-      return 0;
-    } else {
-      return COLVARS_NO_SUCH_FRAME;
-    }
-  }
+  int frame(int f);
 
   std::string input_prefix_str;
   std::string input_prefix()
@@ -95,10 +95,10 @@ public:
     return input_prefix_str;
   }
 
-  inline std::string restart_output_prefix()
+  std::string restart_output_prefix()
   {
-    // note that this shouldn't be called while running VMD anyway
-    return std::string("");
+    // note: this shouldn't need to be called in VMD anyway
+    return output_prefix_str;
   }
 
   std::string output_prefix_str;
@@ -107,16 +107,12 @@ public:
     return output_prefix_str;
   }
 
-  inline size_t restart_frequency() {
-    return 0;
-  }
-
   void add_energy(cvm::real energy);
 
-  inline void request_system_force(bool yesno) {
-    if (yesno == true)
-      cvm::error("Error: a bias requested system forces, which are undefined in VMD.");
-  }
+private:
+  bool system_force_requested;
+public:
+  void request_system_force(bool yesno);
 
   cvm::rvector position_distance(cvm::atom_pos const &pos1,
                                   cvm::atom_pos const &pos2);
@@ -126,6 +122,7 @@ public:
   void select_closest_image(cvm::atom_pos &pos,
                              cvm::atom_pos const &ref_pos);
 
+  std::string error_output;
   void log(std::string const &message);
   void error(std::string const &message);
   void fatal_error(std::string const &message);
@@ -134,29 +131,38 @@ public:
   // Callback functions
   int run_force_callback();
   int run_colvar_callback(std::string const &name,
-                      std::vector<const colvarvalue *> const &cvcs,
-                      colvarvalue &value);
+                          std::vector<const colvarvalue *> const &cvcs,
+                          colvarvalue &value);
   int run_colvar_gradient_callback(std::string const &name,
-                               std::vector<const colvarvalue *> const &cvcs,
-                               std::vector<colvarvalue> &gradient);
+                                   std::vector<const colvarvalue *> const &cvcs,
+                                   std::vector<colvarvalue> &gradient);
 
   int load_atoms(char const *filename,
-                   std::vector<cvm::atom> &atoms,
-                   std::string const &pdb_field,
-                   double const pdb_field_value = 0.0);
+                 cvm::atom_group &atoms,
+                 std::string const &pdb_field,
+                 double const pdb_field_value = 0.0);
 
   int load_coords(char const *filename,
-                    std::vector<cvm::atom_pos> &pos,
-                    const std::vector<int> &indices,
-                    std::string const &pdb_field,
-                    double const pdb_field_value = 0.0);
+                  std::vector<cvm::atom_pos> &pos,
+                  const std::vector<int> &indices,
+                  std::string const &pdb_field,
+                  double const pdb_field_value = 0.0);
 
-  // no need to reimplement backup_file()
+  int init_atom(int atom_number);
+  int check_atom_id(int atom_number);
+  int init_atom(cvm::residue_id const &residue,
+                std::string const     &atom_name,
+                std::string const     &segment_id);
+  int check_atom_id(cvm::residue_id const &residue,
+                    std::string const     &atom_name,
+                    std::string const     &segment_id);
+
 };
 
 
+
 inline cvm::rvector colvarproxy_vmd::position_distance(cvm::atom_pos const &pos1,
-                                                        cvm::atom_pos const &pos2)
+                                                       cvm::atom_pos const &pos2)
 {
   // TODO: add in the proxy constructor a check for orthonormal PBCs
   Timestep *ts = vmdmol->get_frame(vmdmol_frame);
@@ -181,7 +187,7 @@ inline cvm::rvector colvarproxy_vmd::position_distance(cvm::atom_pos const &pos1
 
 
 inline void colvarproxy_vmd::select_closest_image(cvm::atom_pos &pos,
-                                                   cvm::atom_pos const &ref_pos)
+                                                  cvm::atom_pos const &ref_pos)
 {
   cvm::rvector const diff = position_distance(ref_pos, pos);
   pos = ref_pos + diff;
@@ -189,14 +195,12 @@ inline void colvarproxy_vmd::select_closest_image(cvm::atom_pos &pos,
 
 
 inline cvm::real colvarproxy_vmd::position_dist2(cvm::atom_pos const &pos1,
-                                                  cvm::atom_pos const &pos2)
+                                                 cvm::atom_pos const &pos2)
 {
   cvm::rvector const d = position_distance(pos1, pos2);
   return cvm::real(d.x*d.x + d.y*d.y + d.z*d.z);
 }
 
-
-int tcl_colvars(ClientData clientdata, Tcl_Interp *interp, int argc, const char *argv[]);
 
 
 #endif

@@ -251,15 +251,6 @@ public:
 
     size_t i;
 
-    for (i = 0; i < cv.size(); i++) {
-      if (!cv[i]->tasks[colvar::task_lower_boundary] ||
-          !cv[i]->tasks[colvar::task_upper_boundary]) {
-        cvm::error("Tried to initialize a grid on a "
-                   "variable with undefined boundaries.\n", INPUT_ERROR);
-        return COLVARS_ERROR;
-      }
-    }
-
     if (cvm::debug()) {
       cvm::log("Allocating a grid for "+cvm::to_str(colvars.size())+
                " collective variables, multiplicity = "+cvm::to_str(mult_i)+".\n");
@@ -836,6 +827,32 @@ public:
 }
 
 
+  /// \brief Read grid entry in restart file
+  std::istream & read_restart(std::istream &is)
+  {
+    size_t const start_pos = is.tellg();
+    std::string key, conf;
+    if ((is >> key) && (key == std::string("grid_parameters"))) {
+      is.seekg(start_pos, std::ios::beg);
+      is >> colvarparse::read_block("grid_parameters", conf);
+      parse_params(conf);
+    } else {
+      cvm::log("Grid parameters are missing in the restart file, using those from the configuration.\n");
+      is.seekg(start_pos, std::ios::beg);
+    }
+    read_raw(is);
+    return is;
+  }
+
+  /// \brief Write grid entry in restart file
+  std::ostream & write_restart(std::ostream &os)
+  {
+    write_params(os);
+    write_raw(os);
+    return os;
+  }
+
+
 /// \brief Write the grid data without labels, as they are
 /// represented in memory
 /// \param buf_size Number of values per line
@@ -1106,12 +1123,6 @@ public:
     return new_data[address(ix) + imult];
   }
 
-  /// \brief Read the grid from a restart
-  std::istream & read_restart(std::istream &is);
-
-  /// \brief Write the grid to a restart
-  std::ostream & write_restart(std::ostream &os);
-
   /// \brief Get the value from a formatted output and transform it
   /// into the internal representation (it may have been rescaled or
   /// manipulated)
@@ -1240,12 +1251,6 @@ public:
     has_data = true;
   }
 
-  /// \brief Read the grid from a restart
-  std::istream & read_restart(std::istream &is);
-
-  /// \brief Write the grid to a restart
-  std::ostream & write_restart(std::ostream &os);
-
   /// \brief Return the highest value
   cvm::real maximum_value() const;
 
@@ -1255,8 +1260,8 @@ public:
   /// \brief Calculates the integral of the map (uses widths if they are defined)
   cvm::real integral() const;
 
-  /// \brief Assuming that the map is a normalized probability density, \
-  /// calculates the entropy (uses widths if they are defined)
+  /// \brief Assuming that the map is a normalized probability density,
+  ///        calculates the entropy (uses widths if they are defined)
   cvm::real entropy() const;
 
 private:
@@ -1342,12 +1347,6 @@ public:
     has_data = true;
   }
 
-
-  /// \brief Read the grid from a restart
-  std::istream & read_restart(std::istream &is);
-
-  /// \brief Write the grid to a restart
-  std::ostream & write_restart(std::ostream &os);
 
   /// Compute and return average value for a 1D gradient grid
   inline cvm::real average()

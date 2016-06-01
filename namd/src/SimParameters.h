@@ -7,8 +7,8 @@
 /*****************************************************************************
  * $Source: /namd/cvsroot/namd2/src/SimParameters.h,v $
  * $Author: jim $
- * $Date: 2015/03/03 17:54:15 $
- * $Revision: 1.1237 $
+ * $Date: 2016/03/02 21:33:06 $
+ * $Revision: 1.1240 $
  *****************************************************************************/
 
 #ifndef SIMPARAMETERS_H
@@ -384,6 +384,10 @@ public:
   int alchMethod;           //  Which alchemical method to use? fep or ti
   BigReal alchLambda;       //  lambda for dynamics
   BigReal alchLambda2;      //  lambda for comparison
+  int alchLambdaFreq;       //  freq. (in steps) with which lambda changes
+                            //  from alchLambda to alchLambda2
+  BigReal getCurrentLambda(const int); // getter for changing lambda
+  BigReal getLambdaDelta(void); // getter for lambda increment
   BigReal alchRepLambda;    //  lambda for WCA repulsive interaction
   BigReal alchDispLambda;   //  lambda for WCA dispersion interaction
   BigReal alchElecLambda;   //  lambda for electrostatic perturbation
@@ -402,11 +406,19 @@ public:
                                 //  exnihilated particles.  For annihilated
                                 //  particles the starting point is
                                 //  (1-alchElecLambdaStart)
+  BigReal getElecLambda(const BigReal); // return min[0,x/(1-elecStart)]
   BigReal alchVdwLambdaEnd;  //  lambda value for endpoint of vdW
                              //  interactions of exnihilated particles.
                              //  For annihilated particles the endpoint is
                              //  (1-alchVdwLambdaEnd)
+  BigReal getVdwLambda(const BigReal); // return max[1,x/vdwEnd]
+  BigReal alchBondLambdaEnd; //  lambda value for endpoint of bonded
+                             //  interactions involving exnihilated particles.
+                             //  For annihilated particles the endpoint is
+                             //  (1-alchBondLambdaEnd)
+  BigReal getBondLambda(const BigReal); // return max[1,x/bondEnd]
   Bool alchDecouple;  // alchemical decoupling rather than annihilation
+  Bool alchBondDecouple; // decouple purely alchemical bonds
 
 // End alch flags
 //fepe
@@ -470,6 +482,7 @@ public:
 
 	Bool fixedAtomsOn;		//  Are there fixed atoms?
 	Bool fixedAtomsForces;		//  Calculate forces anyway?
+	Bool fixedAtomsForceOutput; // Output fixed forces?
 
 	Bool langevinOn;		//  Flag TRUE-> langevin dynamics active
 	BigReal langevinTemp;		//  Temperature for Langevin dynamics
@@ -564,6 +577,15 @@ public:
 	BigReal langevinPistonDecay;
 	BigReal langevinPistonTemp;
 
+	Bool multigratorOn;     // Multigrator temperature and/or pressure control
+	BigReal multigratorPressureTarget;
+	BigReal multigratorPressureRelaxationTime;
+	int multigratorPressureFreq;
+	BigReal multigratorTemperatureTarget;
+	BigReal multigratorTemperatureRelaxationTime;
+	int multigratorTemperatureFreq;
+	int multigratorNoseHooverChainLength;
+
         BigReal surfaceTensionTarget;
 
         Bool pressureProfileOn;         // Compute lateral pressure profile?
@@ -653,6 +675,8 @@ public:
         Bool PMEOffload;		//  Offload reciprocal sum to accelerator
 
 	Bool useDPME;			//  Flag TRUE -> old DPME code
+	Bool usePMECUDA;                //  Flag TRUE -> use the PME CUDA version
+	Bool useCUDA2;                  //  Flag TRUE -> use ComputeNonbondedCUDA2
 	Bool useOptPME;                 //  Flag TRUE -> use the scalable version of PME
 	Bool useManyToMany;             //  Flag TRUE -> use the manytomany optimization of PME.
 	                                //  This flag requres useOptPME to be set.
@@ -745,7 +769,7 @@ public:
 	MTSChoices MTSAlgorithm;	//  What multiple timestep algorithm
 					//  to use
 
-	int longSplitting;		//  What electrostatic splitting 
+	int longSplitting;		//  What electrostatic splitting
 					//  to use
 
 	Bool ignoreMass;		//  Mass < 3.5 does not indicate hydrogen, etc.

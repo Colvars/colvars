@@ -5,7 +5,7 @@
 # and output files (text only) to be matched in the ExpectedResults/ subdir
 # Returns 1 if any test failed, otherwise 0.
 
-# binary to be tested is specified as command-line argument (defaults to namd2)
+# binary to be tested is specified as command-line argument (defaults to vmd)
 
 if [ $# -lt 1 ]
 then
@@ -23,7 +23,8 @@ TMP=/tmp
 cleanup_files () {
 for dir in [0-9][0-9][0-9]_* ; do
   for script in test*.vmd ; do
-       rm -f ${dir}/${script%.vmd}.*{state,out,traj,coor,vel,xsc,BAK,old,backup,diff,pmf,grad,count}
+    for f in ${dir}/${script%.vmd}.*diff; do if [ ! -s $f ]; then rm -f $f; fi; done # remove empty diffs only
+    rm -f ${dir}/${script%.vmd}.*{state,out,err,traj,coor,vel,xsc,BAK,old,backup,pmf,grad,count}
   done
 done
 }
@@ -32,7 +33,7 @@ done
 
 for dir in [0-9][0-9][0-9]_*
 do
-  echo -ne "Entering $dir... "
+  echo "Entering $dir... "
   cd $dir
 
   # first, remove target files from work directory
@@ -62,9 +63,14 @@ do
     RETVAL=$?
     if [ $RETVAL -ne 0 ]
     then
-      echo "***  Failure for file $base: see $dir/$base.diff ***"
-      SUCCESS=0
-      ALL_SUCCESS=0
+      if [ ${base##*\.} = 'out' ]
+      then
+        echo -n "(warning: differences in log file $base) "
+      else
+        echo -e "\n***  Failure for file $base: see $dir/$base.diff ***"
+        SUCCESS=0
+        ALL_SUCCESS=0
+      fi
     fi
   done
 

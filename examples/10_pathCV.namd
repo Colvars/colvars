@@ -1,0 +1,89 @@
+# This does 2D extended-Lagrangian ABF in path coordinates (s, z)
+# See Branduardi et al. JCP 2007 for details
+
+# Define normal MD here
+# ...
+
+# Parameters for the path colvars
+
+namespace eval pathCV {
+  set lambda     20.   # as in Branduardi et al.: should be 1/d^2 where d is the distance between images
+  set tolerance  1e-4  # images whose exponential term is above this are included in the calculation
+  set freq       20    # number of timesteps between two updates, where all images are enabled for one
+                       # timestep to decide which ones should be disabled next
+  set min_images 4     # if all exponential terms are small (moving away from the path), no fewer than
+                       # this many images are retained
+}
+source                  ../colvartools/pathCV.tcl
+
+set atoms "atomNumbers 1 5 6 7 9 11 15 16 17 19"
+# Note: this could also be:
+# set atoms "atomsFile atoms.pdb
+# atomsCol O" 
+
+set imagePrefix "images/string-"
+set nImages 20
+# Supposing we have 20 images with names of the form "images/string-01.pdb" etc.
+
+set config "
+colvarsTrajFrequency 20
+
+colvar {
+   name                  s
+
+   width                 0.05
+   lowerboundary        -0.2
+   upperboundary         1.2
+   lowerwallconstant     10.0
+   upperwallconstant     10.0
+
+   scriptedFunction      pathCVs
+   extendedLagrangian    on
+   extendedFluctuation   0.01
+"
+
+for {set i 0} {$i < $nImages} {incr i} {
+  append config "rmsd {
+     atoms {
+       $atoms
+     }
+     refpositionsfile    $imagePrefix[format "%02i" $i].pdb
+   }
+   "
+}
+append config "}"
+
+append config "
+colvar {
+   name                  z
+
+   width                 0.05
+   lowerboundary        -0.5
+   upperboundary         1.5
+
+   scriptedFunction      pathCVz
+   extendedLagrangian    on
+   extendedFluctuation   0.01
+"
+
+for {set i 0} {$i < $nImages} {incr i} {
+  append config "rmsd {
+     atoms {
+       $atoms
+     }
+     refpositionsfile    $imagePrefix[format "%02i" $i].pdb
+   }
+   "
+}
+append config "}"
+
+append config "
+abf {
+  colvars s z
+  fullSamples 1000
+}"
+
+
+colvars	on
+cv config $config
+

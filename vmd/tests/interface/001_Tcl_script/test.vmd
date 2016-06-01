@@ -1,7 +1,10 @@
 # -*- tcl -*-
 mol new ../Common/da.psf type psf
+mol addfile ../Common/da.pdb type pdb waitfor all
 # this is the file from NAMD's 3rd reg test: it is XYZ format to gain more precision
 mol addfile ../Common/da.test-traj.xyz type xyz waitfor all
+# load again the PSF file to restore correct masses (XYZ parser temporarily screws them up)
+mol addfile ../Common/da.psf type psf waitfor all
 
 cv molid top
 cv configfile test.in

@@ -80,7 +80,9 @@ In all following uses, the \texttt{cv} command will continue operating on the sa
 To use the \texttt{cv} command on a different molecule, use \texttt{cv delete} first and then \texttt{cv molid }\emph{$<$molid$>$}.
 Invoking the \texttt{cv} command with no arguments prints a help screen.
 
-\input{colvars-cv.tex}
+\cvvmdugonly{\input{ug_colvars-cv.tex}}
+\cvrefmanonly{\input{colvars-cv.tex}}
+
 }
 
 \cvnamdonly{
@@ -505,6 +507,7 @@ See Section~\ref{sec:cvc} for the physical ranges of values of each component.}
 
 The following options are useful to define restraints (confining potentials) for this colvar.
 To apply moving restraints, or restraints to more than one colvar simultaneously, a more convenient option is to use the \texttt{harmonic} bias (\ref{sec:colvarbias_harmonic}).
+When using an extended Lagrangian, the boundary potential is applied to the ``actual'' colvar, in contrast with forces for all types of biases, which are applied to the extended coordinate.
 
 \begin{itemize}
 
@@ -634,8 +637,9 @@ The following options enable extended-system
 dynamics, where a colvar is coupled to an additional degree of freedom 
 (fictitious particle) by a harmonic spring.
 All biasing and confining forces are then applied to the extended degree
-of freedom, and the actual, geometric colvar (function of Cartesian 
-coordinates) only feels the force from the harmonic spring.
+of freedom. The ``actual'' geometric colvar (function of Cartesian 
+coordinates) only feels the force from the harmonic spring and its wall
+potentials, if any.
 
 \begin{itemize}
 \item %
@@ -1169,7 +1173,8 @@ The following two options have default values appropriate for the vast majority 
 \cvlammpsonly{
 In simulations with periodic boundary conditions, many of the implemented colvar components rely on the fact that each position within a group of atoms is at the nearest periodic image from the center of geometry of the group itself.
 However, due to the internal wrapping of individual atomic positions done by LAMMPS, this assumption is inaccurate if groups lies at one of the unit cell's boundaries.
-For this reason, within the colvars module coordinates are unwrapped by default to avoid discontinuities due to coordinate wrapping (see \texttt{unwrap} keyword in \ref{sec:colvars_lammps}).
+For this reason, within the colvars module coordinates are unwrapped by default to avoid discontinuities due to coordinate wrapping (see \texttt{unwrap} keyword in \ref{sec:colvars_mdengine_parameters}).
+
 The user should determine whether maintaining the default value of \texttt{unwrap}, depending on the specifics of each system.
 In general, internal coordinate wrapping by LAMMPS does not affect the calculation of colvars if each atom group satisfies one or more of the following:
 }
@@ -1188,12 +1193,16 @@ In general, internal coordinate wrapping by LAMMPS does not affect the calculati
 \end{enumerate}
 \cvvmdonly{If none of these conditions are met, wrapping may affect the calculation of collective variables: a possible solution is to use \texttt{pbc wrap} or \texttt{pbc unwrap} prior to processing a trajectory with the colvars module.}
 
-\cvsubsec{Computational cost of colvars based on group size.}
+\cvsubsec{Computational cost of colvars calculations based on group size.}
 \label{sec:colvar_atom_groups_scaling}
 
-In parallel MD simulations, the calculation of most interaction terms are spread over many computational nodes, but the calculation of colvars is not parallelized.
-Therefore, additional calculations are executed by the node calculating the colvars, and most importantly, additional communication is added between the first node and the other nodes.
-\cvnamdonly{The latency-tolerant design and dynamic load balancing of NAMD alleviate both factors: however, under some circumstances, a noticeable performance impact may be observed.}
+In parallel simulations (as supported by NAMD and LAMMPS), the calculation of energy and forces is distributed over many nodes and processor cores.
+Unless the calculation of each colvar component is also parallelized, the overall performance may be affected.
+You can check the output to see if the parallel calculation of a certain component is available: if the keyword \texttt{scalable} (see \ref{sec:cvc_common}) is \texttt{on}, this will be reported by the message ``Will enable scalable calculation for group \ldots'' for each of its groups.
+
+If the calculation of a component is not parallelized (as reported by the message ``Scalable calculation is not available''), the performance of the first computational node may decrease significantly.
+Even more importantly, additional communication will carried out between nodes to transfer the required atomic coordinates.
+\cvnamdonly{The latency-tolerant design and dynamic load balancing of NAMD alleviate both factors, but a noticeable performance impact may be observed.}
 To mitigate that, atom groups should be kept relatively small (up to a few thousands, depending on the computational cost to simulate the system by itself).  \cvvmdonly{A test calculation with VMD can provide a crude estimate of the impact of a large colvar on a NAMD simulation.}
 
 \cvsec{Collective variable components (basis functions)}
@@ -1215,6 +1224,7 @@ one or more instances of the following components:
 \item \texttt{distanceXY}: projection of a distance vector on a plane;
 \item \texttt{distanceInv}: mean distance between two groups of atoms (e.g.~NOE-based distance);
 \item \texttt{angle}: angle between three groups;
+\item \texttt{dipoleAngle}: angle between two groups and dipole of a third group;
 \item \texttt{coordNum}: coordination number between two groups;
 \item \texttt{selfCoordNum}: coordination number of atoms within a
   group;
@@ -1248,11 +1258,17 @@ type\cvscriptonly{, except within a scripted collective variable}.
 \item \texttt{cartesian}: vector of atomic Cartesian coordinates;
 \item \texttt{orientation}: best-fit rotation, expressed as a unit quaternion.
 \end{itemize}
-  
+
+
 In the following, all the available component types are listed, along
 with their physical units and the limiting values, if any.  Such
 limiting values can be used to define \texttt{lowerBoundary} and
 \texttt{upperBoundary} in the parent colvar.
+
+For each type of component, the available configurations keywords are listed:
+when two components share certain keywords, the second component simply references
+to the documentation of the first regarding that keyword.
+The keywords that are available for all types of components are listed at the end (see \
 
 
 \cvsubsec{List of available colvar components}
@@ -1462,6 +1478,11 @@ three blocks \texttt{group1}, \texttt{group2} and \texttt{group3}, defining
 the three groups.  It returns an angle (in degrees) within the
 interval $[0:180]$.
 
+\cvsubsubsec{\texttt{dipoleAngle}: angle between two groups and dipole of a third group.}
+The \texttt{dipoleAngle~\{...\}} block defines an angle, and contains the
+three blocks \texttt{group1}, \texttt{group2} and \texttt{group3}, defining
+the three groups, being \texttt{group1} the group where dipole is calculated. 
+It returns an angle (in degrees) within the interval $[0:180]$.
 
 \cvsubsubsec{\texttt{dihedral}: torsional angle between four groups.}
 The \texttt{dihedral~\{...\}} block defines a torsional angle, and
@@ -1474,7 +1495,7 @@ boundaries can be defined by using any real number of choice.
 \begin{itemize}
 \item \keydef
     {oneSiteSystemForce}{%
-    \texttt{angle}, \texttt{dihedral}}{%
+    \texttt{angle}, \texttt{dipoleAngle}, \texttt{dihedral}}{%
     Measure system force on group 1 only?}{%
     boolean}{%
     \texttt{no}}{%
@@ -2205,9 +2226,45 @@ and \texttt{psfSegID}) in addition to the following:
 } % end of \cvnamebasedonly
 
 
+\cvsubsec{Configuration keywords shared by all components}
+\label{sec:cvc_common}
+
+All types of components support the following keywords:
+\begin{itemize}
+\item %
+  \keydef
+    {name}{%
+    any component}{%
+    Name of this component}{%
+    string}{%
+    type of component + numeric id}{%
+    The name is an unique case-sensitive string which allows the
+    colvar module to identify this component. This is useful, for example,
+    when combining multiple components via a \texttt{scriptedFunction}.}
+\item %
+  \keydef
+    {scalable}{%
+    any component}{%
+    Attempt to calculate this component in parallel?}{%
+    boolean}{%
+    \texttt{on}, if available}{%
+    If set to \texttt{on} (default), the module will attempt to calculate this component in parallel,
+    over multiple processor cores or multiple nodes (whichever is faster). 
+    Whether this feature is available depends on the specific configuration and the hosting code:
+    a message is printed to indicate this. 
+    If available, this feature reduces the overhead of a collective variables-based calculation:
+    otherwise, the component is calculated entirely on one processor core.
+    This flag influences parallel performance, but does not affect numerical results: therefore, it should only
+    be turned off for debugging or testing purposes.
+  }
+\end{itemize}
+
+
 \cvsubsec{Advanced usage and special considerations}
+\label{sec:cvc_advanced}
 
 \cvsubsubsec{Periodic components.} 
+\label{sec:cvc_periodic}
 The following components returns
 real numbers that lie in a periodic interval:
 \begin{itemize}
@@ -2263,6 +2320,7 @@ the two periodic images that are closest to each other.
 
 
 \cvsubsubsec{Non-scalar components.}
+\label{sec:cvc_non_scalar}
 When one of the following components are used, the defined colvar returns a value that is not a scalar number:
 \begin{itemize}
 \item \texttt{distanceVec}: 3-dimensional vector of the distance
@@ -2296,6 +2354,7 @@ Non-scalar components carry the following restrictions:
 
 
 \cvsubsubsec{Calculating system forces.}
+\label{sec:cvc_sys_forces}
 In addition to the restrictions due to the type of value computed (scalar or non-scalar),
 a final restriction can arise when calculating system force
 (\texttt{outputSystemForce} option or application of a \texttt{abf}
@@ -2346,10 +2405,7 @@ following parameters, which are common to all components:
     Defines the power at which the value of this component is raised
     before being added to the sum.  When this exponent is
     different than 1 (non-linear sum), system forces and the Jacobian
-    force are not available, making the colvar unsuitable for ABF calculations.
-    \cvscriptonly{Alternately, defines the order number of components
-    within scripted colvars. Values should then range from 1 to the number
-    of components. See~\ref{sec:colvar_scripted} for details.}}
+    force are not available, making the colvar unsuitable for ABF calculations.}
 \end{itemize}
 
 \textbf{Example:} To define the \emph{average} of a colvar across
@@ -2369,6 +2425,10 @@ When implementing generic functions of Cartesian coordinates rather
 than functions of existing components, the \texttt{cartesian} component
 may be particularly useful.
 
+An example of elaborate scripted colvar is given in example 10, in the
+form of path-based collective variables as defined by Branduardi et al.\cite{Branduardi2007}
+The required Tcl procedures are provided in the colvartools directory.
+
 \begin{itemize}
  \item %
   \key
@@ -2382,13 +2442,18 @@ may be particularly useful.
     \texttt{calc\_$<$scriptedFunction$>$} and \texttt{calc\_$<$scriptedFunction$>$\_gradient},
     both accepting as many parameters as the colvar has components.
     Values of the components will be passed to those procedures in the
-    order defined by their respective \texttt{componentExp} values.
+    order defined by their sorted \texttt{name} strings. Note that if all
+    components are of the same type, their default names are sorted in the
+    order in which they are defined, so that names need only be specified
+    for combinations of components of different types.
     \texttt{calc\_$<$scriptedFunction$>$} should return one value of 
     type $<$scriptedFunctionType$>$, corresponding to the colvar value.
     \texttt{calc\_$<$scriptedFunction$>$\_gradient} should return a Tcl list
     containing the derivatives of the function with respect to each
     component. 
-    If both the function and some of the components are vectors, the gradient is really a Jacobian matrix that should be passed as a linear vector in row-major order, i.e. for a function $f_i(x_j)$: $\nabla_x f_1 \nabla_x f_2 \cdots$.
+    If both the function and some of the components are vectors, the gradient
+    is really a Jacobian matrix that should be passed as a linear vector in
+    row-major order, i.e. for a function $f_i(x_j)$: $\nabla_x f_1 \nabla_x f_2 \cdots$.
   }
 
 \item%
@@ -3034,7 +3099,7 @@ The following options define the configuration for the ``well-tempered'' metadyn
     When running metadynamics in the long time limit, collective variable space is sampled to a modified
     temperature $T+\Delta T$.  In conventional metadynamics, the temperature ``boost'' $\Delta T$ would
     constantly increases with time.  Instead, in well-tempered metadynamics $\Delta T$ must be defined by the
-    user via \texttt{biasTemperature}.  If \texttt{dumpFreeEnergyFile} is enabled, the written PMF includes the
+    user via \texttt{biasTemperature}.  The written PMF includes the
     scaling factor $(T+\Delta T)/\Delta T$ \cite{Barducci2008}.  A careful choice of $\Delta T$ determines the
     sampling and convergence rate, and is hence crucial to the success of a well-tempered metadynamics
     simulation.}
@@ -3131,13 +3196,12 @@ one replica:
     PMF from this replica}{%
     boolean}{%
     \texttt{on}}{%
-    When \texttt{multipleReplicas} is \texttt{on}, tje file
+    When \texttt{multipleReplicas} is \texttt{on}, the file
     \outputName\texttt{.pmf} contains the combined PMF from all
-    replicas.  Enabling this option produces an additional file
+    replicas, provided that \texttt{useGrids} is \texttt{on} (default).
+    Enabling this option produces an additional file
     \outputName\texttt{.partial.pmf}, which can be useful to
-    quickly monitor the contribution of each replica to the PMF.  The
-    requirements for this option are the same as
-    \texttt{dumpFreeEnergyFile}.}
+    quickly monitor the contribution of each replica to the PMF.}
 
 \end{itemize}
 
@@ -3631,6 +3695,27 @@ Note that scripting commands may not be used directly in the NAMD configuration 
 (e.g. \texttt{calc\_colvar\_forces}) or in the NAMD config file after a \texttt{run} or
 \texttt{minimize} statement.
 
-\input{colvars-cv.tex}
+\cvnamdugonly{\input{ug_colvars-cv.tex}}
+\cvrefmanonly{\input{colvars-cv.tex}}
+
+The following configuration options can modify the behavior of the scripting interface for optimization purposes:
+\begin{itemize}
+\item %
+  \keydef
+    {scriptingAfterBiases}{%
+    global}{%
+    Scripted colvar forces need updated biases}{%
+    boolean}{%
+    \texttt{on}}{%
+    This flag specifies that the \texttt{calc\_colvar\_forces} procedure, when defined,
+    is executed only after all biases have been updated.
+    For example, this allows using the energy of a restraint bias, or the force applied on a colvar,
+    to calculate additional scripted forces, such as boundary constraints.
+    When this flag is set to \texttt{off}, it is assumed that only the values of their colvars
+    (but not their energy or forces) will be used by \texttt{calc\_colvar\_forces}:
+    this can be used to schedule the calculation of scripted forces and biases concurrently
+    to increase performance.}
+\end{itemize}
+
 }
 }

@@ -1,0 +1,9 @@
+ REMARKS  Additional POPC parameters guessed by Jim Phillips
+ REMARKS  FILENAME="par_all22_popc.xplor"
+
+ ANGLE  CEL1  CEL1  CTL2     48.00   124.00  ! JCP guess 3/97
+ ANGLE  CEL1  CTL2  CTL2     32.00   112.00  ! JCP guess 3/97
+ DIHEDRAL  CEL1  CEL1  CTL2  CTL2     0.5000     3     0.00 ! JCP guess 3/97
+ DIHEDRAL  HAL1  CEL1  CTL2  CTL2     0.1200     3     0.00 ! JCP guess 3/97
+ DIHEDRAL  CEL1  CEL1  CTL2  HAL      0.1200     3     0.00 ! JCP guess 3/97
+

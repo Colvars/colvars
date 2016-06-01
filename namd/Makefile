@@ -1,5 +1,5 @@
 # pass version/platform information to compile
-NAMD_VERSION = 2.10
+NAMD_VERSION = 2.11
 
 # compiler flags (Win32 overrides)
 COPTI = -I
@@ -75,10 +75,16 @@ EXTRALINKLIBS=
 #EXTRAINCS=-I$(HOME)/papi/include
 #EXTRALINKLIBS=-lpapi -L$(HOME)/papi/lib
 
+#If using the CkLoop library from Charm++ for PME calculation, first define macro
+# USE_CKLOOP=1 for compiling the code, and then add "-module CkLoop" for linking.
+CKLOOP = -DUSE_CKLOOP=1
+CKLOOP_MODULE = -module CkLoop
+
 # defaults for special cases
 CXXTHREADOPTS = $(CXXOPTS) 
 CXXSIMPARAMOPTS = $(CXXOPTS) 
 CXXNOALIASOPTS = $(CXXOPTS) 
+CXXCOLVAROPTS = $(CXXOPTS) 
 CXXMEMUSAGE = $(CXX)
 CUDACC = $(CXX)
 CUDAOBJS =
@@ -176,8 +182,10 @@ OBJS = \
 	$(DSTDIR)/ComputeThole.o \
 	$(DSTDIR)/ConfigList.o \
 	$(DSTDIR)/Controller.o \
+	$(DSTDIR)/CudaUtils.o \
 	$(DSTDIR)/ccsinterface.o \
 	$(DSTDIR)/DataStream.o \
+	$(DSTDIR)/DeviceCUDA.o \
 	$(DSTDIR)/DumpBench.o \
         $(DSTDIR)/FreeEnergyAssert.o \
         $(DSTDIR)/FreeEnergyGroup.o \
@@ -204,8 +212,8 @@ OBJS = \
 	$(DSTDIR)/colvaratoms.o \
 	$(DSTDIR)/colvarbias.o \
 	$(DSTDIR)/colvarbias_abf.o \
-	$(DSTDIR)/colvarbias_histogram.o \
 	$(DSTDIR)/colvarbias_alb.o \
+	$(DSTDIR)/colvarbias_histogram.o \
 	$(DSTDIR)/colvarbias_meta.o \
 	$(DSTDIR)/colvarbias_restraint.o \
 	$(DSTDIR)/colvarcomp.o \
@@ -214,6 +222,7 @@ OBJS = \
 	$(DSTDIR)/colvarcomp_distances.o \
 	$(DSTDIR)/colvarcomp_protein.o \
 	$(DSTDIR)/colvarcomp_rotations.o \
+	$(DSTDIR)/colvardeps.o \
 	$(DSTDIR)/colvargrid.o \
 	$(DSTDIR)/colvarmodule.o \
 	$(DSTDIR)/colvarparse.o \
@@ -370,8 +379,9 @@ $(DSTDIR)/ComputeNonbondedCUDAKernel.o: \
 	$(SRCDIR)/ComputeNonbondedCUDAKernel.h
 	$(CUDACC) $(CUDACCOPTS) -Xptxas -v $(COPTO) "`$(NATIVEPATH) $(DSTDIR)/`ComputeNonbondedCUDAKernel.o" $(COPTC) "`$(NATIVEPATH) $(SRCDIR)/`ComputeNonbondedCUDAKernel.cu"
 
-SBOBJS = \
-	$(DSTDIR)/tcl_main.o \
+SBOBJS = $(DSTDIR)/tcl_main.o $(SBLIB)
+
+SBLIB = \
 	$(DSTDIR)/tcl_psfgen.o \
 	$(DSTDIR)/charmm_file.o \
 	$(DSTDIR)/charmm_parse_topo_defs.o \
@@ -394,24 +404,22 @@ CHARMC = $(CHARM)/bin/charmc
 CHARMXI = $(CHARM)/bin/charmc
 CHARMINC = $(CHARM)/include $(COPTD)CMK_OPTIMIZE=1
 CHARMLIB = $(CHARM)/lib
-CHARM_MODULES = -module NeighborLB -module HybridLB -module RefineLB -module GreedyLB -module CkMulticast
-#CHARM_MODULES = -module NeighborLB -module HybridLB -module RefineLB -module GreedyLB -module CkMulticast -module CkLoop
+CHARM_MODULES = -module NeighborLB -module HybridLB -module RefineLB -module GreedyLB -module CkMulticast $(CKLOOP_MODULE)
 #CHARM_MODULES = -module NeighborLB -module HybridLB -module RefineLB -module GreedyLB
 #CHARM_MODULES = -module msa -module NeighborLB -module HybridLB -module RefineLB -module GreedyLB
 #MSA = -DCHARM_HAS_MSA
-#If using the CkLoop library from Charm++ for PME calculation, first define macro
-# USE_CKLOOP=1 for compiling the code, and then add "-module CkLoop" for linking.
-#CKLOOP = -DUSE_CKLOOP=1
 
 # Libraries we may have changed
-LIBS = $(CUDAOBJS) $(PLUGINLIB) $(DPMTALIBS) $(DPMELIBS) $(FMMLIBS) $(TCLDLL)
+LIBS = $(CUDAOBJS) $(PLUGINLIB) $(SBLIB) $(DPMTALIBS) $(DPMELIBS) $(FMMLIBS) $(TCLDLL)
 
 # CXX is platform dependent
-CXXBASEFLAGS = $(COPTI)$(CHARMINC) $(COPTI)$(SRCDIR) $(COPTI)$(INCDIR) $(DPMTA) $(DPME) $(FMM) $(COPTI)$(PLUGININCDIR) $(COPTD)STATIC_PLUGIN $(TCL) $(FFT) $(CUDA) $(MIC) $(MEMOPT) $(CCS) $(RELEASE) $(EXTRADEFINES) $(TRACEOBJDEF) $(EXTRAINCS) $(MSA) $(CKLOOP)
-CXXFLAGS = $(CXXBASEFLAGS) $(CXXOPTS) $(CXXMICOPTS)
-CXXTHREADFLAGS = $(CXXBASEFLAGS) $(CXXTHREADOPTS) $(CXXMICOPTS)
-CXXSIMPARAMFLAGS = $(CXXBASEFLAGS) $(CXXSIMPARAMOPTS) $(CXXMICOPTS)
-CXXNOALIASFLAGS = $(CXXBASEFLAGS) $(CXXNOALIASOPTS) $(CXXMICOPTS)
+CXXBASEFLAGS = $(COPTI)$(CHARMINC) $(COPTI)$(SRCDIR) $(COPTI)$(INCDIR) $(DPMTA) $(DPME) $(FMM) $(COPTI)$(PLUGININCDIR) $(COPTD)STATIC_PLUGIN $(TCL) $(PYTHON) $(FFT) $(CUDA) $(MIC) $(MEMOPT) $(CCS) $(RELEASE) $(EXTRADEFINES) $(TRACEOBJDEF) $(EXTRAINCS) $(MSA) $(CKLOOP)
+CXXFLAGS = $(CXXBASEFLAGS) $(CXXOPTS)
+CXXMICFLAGS = $(CXXBASEFLAGS) $(CXXOPTS) $(CXXMICOPTS)
+CXXTHREADFLAGS = $(CXXBASEFLAGS) $(CXXTHREADOPTS)
+CXXSIMPARAMFLAGS = $(CXXBASEFLAGS) $(CXXSIMPARAMOPTS)
+CXXNOALIASFLAGS = $(CXXBASEFLAGS) $(CXXNOALIASOPTS)
+CXXCOLVARFLAGS = $(CXXBASEFLAGS) $(CXXCOLVAROPTS)
 GXXFLAGS = $(CXXBASEFLAGS) -DNO_STRSTREAM_H
 CFLAGS = $(COPTI)$(SRCDIR) $(TCL) $(COPTS) $(RELEASE) $(EXTRADEFINES) $(TRACEOBJDEF)
 PLUGINGCCFLAGS = $(COPTI)$(PLUGINSRCDIR) $(COPTI)$(PLUGININCDIR) $(COPTD)STATIC_PLUGIN
@@ -438,7 +446,7 @@ all:	$(BINARIES) $(LIBCUDARTSO)
 namd2:	$(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS)
 	$(MAKEBUILDINFO)
 	$(CHARMC) -verbose -ld++-option \
-	'$(COPTI)$(CHARMINC) $(COPTI)$(INCDIR) $(COPTI)$(SRCDIR) $(CXXOPTS) $(CXXMICOPTS)' \
+	'$(COPTI)$(CHARMINC) $(COPTI)$(INCDIR) $(COPTI)$(SRCDIR) $(CXXOPTS)' \
 	$(CHARM_MODULES) -language charm++ \
 	$(BUILDINFO).o \
 	$(OBJS) \
@@ -448,8 +456,10 @@ namd2:	$(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS)
 	$(DPMELIB) \
 	$(FMMLIB) \
 	$(TCLLIB) \
+	$(PYTHONLIB) \
 	$(FFTLIB) \
 	$(PLUGINLIB) \
+	$(SBLIB) \
 	$(CHARMOPTS) \
 	$(EXTRALINKLIBS) \
 	-lm -o namd2
@@ -476,8 +486,10 @@ namd2.exe:  $(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS) $(TCLDLL)
 	$(DPMELIB) \
 	$(FMMLIB) \
 	$(TCLLIB) \
+	$(PYTHONLIB) \
 	$(FFTLIB) \
 	$(PLUGINLIB) \
+	$(SBLIB) \
 	$(CHARMOPTS) \
 	-o namd2
 
@@ -538,7 +550,7 @@ updatefiles:
 tracecomputes: updatefiles $(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS)
 	$(MAKEBUILDINFO)
 	$(CHARMC) -verbose -ld++-option \
-	'$(COPTI)$(CHARMINC) $(COPTI)$(INCDIR) $(COPTI)$(SRCDIR) $(CXXOPTS) $(CXXMICOPTS)' \
+	'$(COPTI)$(CHARMINC) $(COPTI)$(INCDIR) $(COPTI)$(SRCDIR) $(CXXOPTS)' \
 	$(CHARM_MODULES) -language charm++ \
 	-tracemode projections \
 	$(BUILDINFO).o \
@@ -549,8 +561,10 @@ tracecomputes: updatefiles $(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS)
 	$(DPMELIB) \
 	$(FMMLIB) \
 	$(TCLLIB) \
+	$(PYTHONLIB) \
 	$(FFTLIB) \
 	$(PLUGINLIB) \
+	$(SBLIB) \
 	$(CHARMOPTS) \
 	$(EXTRALINKLIBS) \
 	-lm -o namd2.tc.prj
@@ -558,7 +572,7 @@ tracecomputes: updatefiles $(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS)
 projections: $(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS)
 	$(MAKEBUILDINFO)
 	$(CHARMC) -verbose -ld++-option \
-	'$(COPTI)$(CHARMINC) $(COPTI)$(INCDIR) $(COPTI)$(SRCDIR) $(CXXOPTS) $(CXXMICOPTS)' \
+	'$(COPTI)$(CHARMINC) $(COPTI)$(INCDIR) $(COPTI)$(SRCDIR) $(CXXOPTS)' \
 	$(CHARM_MODULES) -language charm++ \
 	-tracemode projections \
 	$(BUILDINFO).o \
@@ -569,8 +583,10 @@ projections: $(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS)
 	$(DPMELIB) \
 	$(FMMLIB) \
 	$(TCLLIB) \
+	$(PYTHONLIB) \
 	$(FFTLIB) \
 	$(PLUGINLIB) \
+	$(SBLIB) \
 	$(CHARMOPTS) \
 	$(EXTRALINKLIBS) \
 	-lm -o namd2.prj
@@ -578,7 +594,7 @@ projections: $(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS)
 summary: $(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS)
 	$(MAKEBUILDINFO)
 	$(CHARMC) -verbose -ld++-option \
-	'$(COPTI)$(CHARMINC) $(COPTI)$(INCDIR) $(COPTI)$(SRCDIR) $(CXXOPTS) $(CXXMICOPTS)' \
+	'$(COPTI)$(CHARMINC) $(COPTI)$(INCDIR) $(COPTI)$(SRCDIR) $(CXXOPTS)' \
 	-module NeighborLB -module CkMulticast -language charm++ \
 	-tracemode summary \
 	$(BUILDINFO).o \
@@ -589,8 +605,10 @@ summary: $(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS)
 	$(DPMELIB) \
 	$(FMMLIB) \
 	$(TCLLIB) \
+	$(PYTHONLIB) \
 	$(FFTLIB) \
 	$(PLUGINLIB) \
+	$(SBLIB) \
 	$(CHARMOPTS) \
 	$(EXTRALINKLIBS) \
 	-lm -o namd2.sum
@@ -687,6 +705,9 @@ depends: $(MKINCDIR) $(CIFILES) $(MKDSTDIR) $(DEPENDFILE)
 	    -e "/obj\/ComputeNonbondedLES.o/ s/CXXFLAGS/CXXNOALIASFLAGS/" \
 	    -e "/obj\/ComputeNonbondedPProf.o/ s/CXXFLAGS/CXXNOALIASFLAGS/" \
 	    -e "/obj\/ComputeNonbondedTabEnergies.o/ s/CXXFLAGS/CXXNOALIASFLAGS/" \
+	    -e "/obj\/ComputeNonbondedMIC.o/ s/CXXFLAGS/CXXMICFLAGS/" \
+	    -e "/obj\/ComputeNonbondedMICKernel.o/ s/CXXFLAGS/CXXMICFLAGS/" \
+	    -e "/obj\/colvar.*.o/ s/CXXFLAGS/CXXCOLVARFLAGS/" \
 	    -e "/obj\/memusage.o/ s/CXX/CXXMEMUSAGE/" \
 	    $(DEPENDFILE) > $(DEPENDFILE).sed; \
 	$(MOVE) -f $(DEPENDFILE).sed $(DEPENDFILE);
