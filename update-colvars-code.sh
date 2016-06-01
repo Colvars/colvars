@@ -124,7 +124,7 @@ checkfile () {
   diff -uNw "${a}" "${b}" > $(basename ${a}).diff
   if [ -s $(basename ${a}).diff ]
   then
-    echo "Differences found between ${a} and ${b} -- Check $(basename ${a}).diff"
+    echo "Differences found between ${a} and ${b} -- Check $(basename ${a}).diff and merge changes as needed."
     if [ $force_update = 1 ]
     then
       echo "Overwriting ${b}, as requested by the -f flag."
@@ -159,24 +159,48 @@ then
     condcopy "${src}" "${target}/lib/colvars/${tgt}"
   done
   # update LAMMPS interface files (package part)
-  for src in ${source}/lammps/src/USER-COLVARS/*.cpp  ${source}/lammps/src/USER-COLVARS/*.h \
-    ${source}/lammps/src/USER-COLVARS/Install.sh ${source}/lammps/src/USER-COLVARS/README
-  do \
-    tgt=$(basename ${src})
-    condcopy "${src}" "${target}/src/USER-COLVARS/${tgt}"
-  done
+  # versions before 2016-04-22, using old pseudo random number generators
+  if [ -f ${target}/src/random_park.h ]
+  then
+    echo "Using backward compatible source with old pRNG"
+    for src in ${source}/lammps/src/USER-COLVARS/*.cpp \
+               ${source}/lammps/src/USER-COLVARS/*.h \
+               ${source}/lammps/src/USER-COLVARS/Install.sh \
+               ${source}/lammps/src/USER-COLVARS/README
+    do \
+      tgt=$(basename ${src})
+      if [ -f ${src}-20160422 ]
+      then
+        condcopy "${src}-20160422" "${target}/src/USER-COLVARS/${tgt}"
+      else
+        condcopy "${src}" "${target}/src/USER-COLVARS/${tgt}"
+      fi
+    done
+  # versions since 2016-04-22, using new pseudo random number generators
+  else
+    for src in ${source}/lammps/src/USER-COLVARS/*.cpp \
+               ${source}/lammps/src/USER-COLVARS/*.h \
+               ${source}/lammps/src/USER-COLVARS/Install.sh \
+               ${source}/lammps/src/USER-COLVARS/README
+    do \
+      tgt=$(basename ${src})
+      condcopy "${src}" "${target}/src/USER-COLVARS/${tgt}"
+    done
+  fi
 
   # update LAMMPS documentation
+  # location of documentation has changed with version 10 May 2016
+  test -d "${target}/doc/src/PDF" && docdir="${target}/doc/src" || docdir="${target}/doc"
   for src in ${source}/lammps/doc/*.txt
-  do \
-    tgt=$(basename ${src})
-    condcopy "${src}" "${target}/doc/${tgt}"
+    do \
+      tgt=$(basename ${src})
+    condcopy "${src}" "${docdir}/${tgt}"
   done
 
   for src in ${source}/doc/colvars-refman-lammps.pdf
   do \
     tgt=$(basename ${src})
-    condcopy "${src}" "${target}/doc/PDF/${tgt}"
+    condcopy "${src}" "${docdir}/PDF/${tgt}"
   done
 
   echo ' done.'
@@ -209,7 +233,7 @@ then
 
   condcopy "${source}/doc/colvars-refman.bib" "${target}/ug/ug_colvars.bib"
   condcopy "${source}/doc/colvars-refman-main.tex" "${target}/ug/ug_colvars.tex"
-  condcopy "${source}/doc/colvars-cv.tex" "${target}/ug/colvars-cv.tex"
+  condcopy "${source}/doc/colvars-cv.tex" "${target}/ug/ug_colvars-cv.tex"
   condcopy "${source}/namd/ug/ug_colvars_macros.tex" "${target}/ug/ug_colvars_macros.tex"
   condcopy "${source}/doc/colvars_diagram.pdf" "${target}/ug/figures/colvars_diagram.pdf"
   condcopy "${source}/doc/colvars_diagram.eps" "${target}/ug/figures/colvars_diagram.eps"
@@ -250,7 +274,7 @@ then
 
   condcopy "${source}/doc/colvars-refman.bib" "${target}/doc/ug_colvars.bib"
   condcopy "${source}/doc/colvars-refman-main.tex" "${target}/doc/ug_colvars.tex"
-  condcopy "${source}/doc/colvars-cv.tex" "${target}/doc/colvars-cv.tex"
+  condcopy "${source}/doc/colvars-cv.tex" "${target}/doc/ug_colvars-cv.tex"
   condcopy "${source}/vmd/doc/ug_colvars_macros.tex" "${target}/doc/ug_colvars_macros.tex"
   condcopy "${source}/doc/colvars_diagram.pdf" "${target}/doc/pictures/colvars_diagram.pdf"
   condcopy "${source}/doc/colvars_diagram.eps" "${target}/doc/pictures/colvars_diagram.eps"

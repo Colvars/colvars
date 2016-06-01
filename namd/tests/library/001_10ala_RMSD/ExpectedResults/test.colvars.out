@@ -1,4 +1,5 @@
 colvars: ----------------------------------------------------------------------
+colvars: Please cite Fiorin et al, Mol Phys 2013 in any publication based on this calculation.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
 colvars: # indexFile = "" [default]
@@ -6,6 +7,8 @@ colvars: # analysis = off [default]
 colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 2000
 colvars: # colvarsTrajAppend = off [default]
+colvars: # scriptedColvarForces = off [default]
+colvars: # scriptingAfterBiases = on [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = rmsdA
@@ -14,6 +17,8 @@ colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
+colvars:     # scalable = on [default]
+colvars:     Scalable calculation is not available for group "atoms" with the current configuration.
 colvars:       Initializing atom group "atoms".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -23,7 +28,7 @@ colvars:       # enableForces = on [default]
 colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Atom group "atoms" defined, 8 atoms initialized: total mass = 43.069.
+colvars:       Atom group "atoms" defined, 8 atoms initialized: total mass = 43.069, total charge = -0.09.
 colvars:     # refPositions =  [default]
 colvars:     # refPositionsFile = ../Common/da.pdb
 colvars:     # refPositionsCol = "" [default]
@@ -53,6 +58,8 @@ colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
+colvars:     # scalable = on [default]
+colvars:     Scalable calculation is not available for group "atoms" with the current configuration.
 colvars:       Initializing atom group "atoms".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -66,7 +73,7 @@ colvars:       # refPositions =  [default]
 colvars:       # refPositionsFile = ../Common/pi-ideal.pdb
 colvars:       # refPositionsCol = "" [default]
 colvars:       Warning: atom group "atoms" will be aligned to a fixed orientation given by the reference positions provided.  If the internal structure of the group changes too much (i.e. its RMSD is comparable to its radius of gyration), the optimal rotation and its gradients may become discontinuous.  If that happens, use refPositionsGroup (or a different definition for it if already defined) to align the coordinates.
-colvars:       Atom group "atoms" defined, 8 atoms initialized: total mass = 43.069.
+colvars:       Atom group "atoms" defined, 8 atoms initialized: total mass = 43.069, total charge = -0.09.
 colvars:     # refPositions =  [default]
 colvars:     # refPositionsFile = ../Common/da.pdb
 colvars:     # refPositionsCol = "" [default]
@@ -95,6 +102,8 @@ colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
+colvars:     # scalable = on [default]
+colvars:     Scalable calculation is not available for group "atoms" with the current configuration.
 colvars:       Initializing atom group "atoms".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -107,7 +116,7 @@ colvars:       # enableFitGradients = on [default]
 colvars:       # refPositions =  [default]
 colvars:       # refPositionsFile = ../Common/da.pdb
 colvars:       # refPositionsCol = "" [default]
-colvars:       Atom group "atoms" defined, 8 atoms initialized: total mass = 43.069.
+colvars:       Atom group "atoms" defined, 8 atoms initialized: total mass = 43.069, total charge = -0.09.
 colvars:     # refPositions =  [default]
 colvars:     # refPositionsFile = ../Common/da.pdb
 colvars:     # refPositionsCol = "" [default]
@@ -136,6 +145,8 @@ colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
+colvars:     # scalable = on [default]
+colvars:     Scalable calculation is not available for group "atoms" with the current configuration.
 colvars:       Initializing atom group "atoms".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -149,7 +160,7 @@ colvars:       # refPositions =  [default]
 colvars:       # refPositionsFile = ../Common/da.pdb
 colvars:       # refPositionsCol = "" [default]
 colvars:       Warning: atom group "atoms" will be aligned to a fixed orientation given by the reference positions provided.  If the internal structure of the group changes too much (i.e. its RMSD is comparable to its radius of gyration), the optimal rotation and its gradients may become discontinuous.  If that happens, use refPositionsGroup (or a different definition for it if already defined) to align the coordinates.
-colvars:       Atom group "atoms" defined, 8 atoms initialized: total mass = 43.069.
+colvars:       Atom group "atoms" defined, 8 atoms initialized: total mass = 43.069, total charge = -0.09.
 colvars:     # refPositions =  [default]
 colvars:     # refPositionsFile = ../Common/da.pdb
 colvars:     # refPositionsCol = "" [default]
@@ -178,6 +189,8 @@ colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
+colvars:     # scalable = on [default]
+colvars:     Scalable calculation is not available for group "atoms" with the current configuration.
 colvars:       Initializing atom group "atoms".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -187,7 +200,7 @@ colvars:       # enableForces = on [default]
 colvars:       # centerReference = off
 colvars:       # rotateReference = off
 colvars:       # enableFitGradients = on [default]
-colvars:       Atom group "atoms" defined, 8 atoms initialized: total mass = 43.069.
+colvars:       Atom group "atoms" defined, 8 atoms initialized: total mass = 43.069, total charge = -0.09.
 colvars:     # refPositions =  [default]
 colvars:     # refPositionsFile = ../Common/da.pdb
 colvars:     # refPositionsCol = "" [default]
@@ -225,6 +238,17 @@ colvars: Collective variables biases initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables module (re)initialized.
 colvars: ----------------------------------------------------------------------
+colvars: Updating NAMD interface:
+colvars: updating atomic data (8 atoms).
+colvars: updating group data (0 scalable groups, 0 atoms in total).
+colvars: Re-initialized atom group rmsdA:0/0. 8 atoms: total mass = 43.069.
+colvars: Re-initialized atom group rmsdB:0/0. 8 atoms: total mass = 43.069.
+colvars: Re-initialized atom group rmsdC:0/0. 8 atoms: total mass = 43.069.
+colvars: Re-initialized atom group rmsdD:0/0. 8 atoms: total mass = 43.069.
+colvars: Re-initialized atom group rmsdE:0/0. 8 atoms: total mass = 43.069.
 colvars: The final output state file will be "test.colvars.state".
 colvars: Writing to colvar trajectory file "test.colvars.traj".
+colvars: Updating NAMD interface:
+colvars: updating atomic data (8 atoms).
+colvars: updating group data (0 scalable groups, 0 atoms in total).
 colvars: Saving collective variables state to "test.colvars.state".

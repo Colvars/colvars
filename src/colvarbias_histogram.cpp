@@ -10,6 +10,8 @@ colvarbias_histogram::colvarbias_histogram(std::string const &conf, char const *
   : colvarbias(conf, key),
     grid(NULL), out_name("")
 {
+  size_t i;
+
   get_keyval(conf, "outputFile", out_name, std::string(""));
   get_keyval(conf, "outputFileDX", out_name_dx, std::string(""));
   get_keyval(conf, "outputFreq", output_freq, cvm::restart_out_freq);
@@ -21,7 +23,6 @@ colvarbias_histogram::colvarbias_histogram(std::string const &conf, char const *
 
   colvar_array_size = 0;
   {
-    size_t i;
     bool colvar_array = false;
     get_keyval(conf, "gatherVectorColvars", colvar_array, colvar_array);
 
@@ -59,6 +60,10 @@ colvarbias_histogram::colvarbias_histogram(std::string const &conf, char const *
     get_keyval(conf, "weights", weights, weights, colvarparse::parse_silent);
   }
 
+  for (i = 0; i < colvars.size(); i++) {
+    colvars[i]->enable(f_cv_grid);
+  }
+
   grid = new colvar_grid_scalar();
 
   {
@@ -86,10 +91,11 @@ colvarbias_histogram::~colvarbias_histogram()
 }
 
 /// Update the grid
-cvm::real colvarbias_histogram::update()
+int colvarbias_histogram::update()
 {
+  int error_code = COLVARS_OK;
   // update base class
-  colvarbias::update();
+  cvm::combine_errors(error_code, colvarbias::update());
 
   if (cvm::debug()) {
     cvm::log("Updating histogram bias " + this->name);
@@ -142,7 +148,8 @@ cvm::real colvarbias_histogram::update()
     write_output_files();
   }
 
-  return 0.0; // no bias energy for histogram
+  cvm::combine_errors(error_code, cvm::get_error());
+  return error_code;
 }
 
 
@@ -155,6 +162,7 @@ int colvarbias_histogram::write_output_files()
 
   if (out_name.size()) {
     cvm::log("Writing the histogram file \""+out_name+"\".\n");
+    cvm::backup_file(out_name.c_str());
     cvm::ofstream grid_os(out_name.c_str());
     if (!grid_os.is_open()) {
       cvm::error("Error opening histogram file " + out_name + " for writing.\n", FILE_ERROR);
@@ -166,6 +174,7 @@ int colvarbias_histogram::write_output_files()
 
   if (out_name_dx.size()) {
     cvm::log("Writing the histogram file \""+out_name_dx+"\".\n");
+    cvm::backup_file(out_name_dx.c_str());
     cvm::ofstream grid_os(out_name_dx.c_str());
     if (!grid_os.is_open()) {
       cvm::error("Error opening histogram file " + out_name_dx + " for writing.\n", FILE_ERROR);

@@ -22,8 +22,8 @@ ALL_SUCCESS=1
 cleanup_files () {
     for dir in [0-9][0-9][0-9]_* ; do
         for script in test*.namd testres*.namd ; do
-            rm -f ${dir}/${script%.namd}.*{diff,BAK,old,backup}
-            rm -f ${dir}/${script%.namd}.*{state,out,traj,coor,vel,xsc,pmf,hills,grad,count}
+            for f in ${dir}/${script%.namd}.*diff; do if [ ! -s $f ]; then rm -f $f; fi; done # remove empty diffs only
+            rm -f ${dir}/${script%.namd}.*{BAK,old,backup}
             rm -f ${dir}/${script%.namd}.*{state,out,traj,coor,vel,xsc,pmf,hills,grad,count}
             rm -f ${dir}/metadynamics1.*.files.txt ${dir}/replicas.registry.txt
         done
@@ -51,7 +51,7 @@ do
 
   # run simulation(s)
   for script in test*.namd ; do
-      $BINARY $script > ${script%.namd}.out
+      $BINARY +p 5 $script > ${script%.namd}.out
       # collect output of colvars module, except the version numbers
       grep "^colvars:" ${script%.namd}.out | grep -v 'Initializing the collective variables module' \
                                            | grep -v 'Using NAMD interface, version' > ${script%.namd}.colvars.out
@@ -60,6 +60,11 @@ do
       if [ ! -s ${script%.namd}.Tcl.out ]; then
         rm -f ${script%.namd}.Tcl.out
       fi
+
+      # Filter out the version number from the state files to allow comparisons
+      grep -v 'version' ${script%.namd}.colvars.state > ${script%.namd}.colvars.state.tmp
+      mv ${script%.namd}.colvars.state.tmp ${script%.namd}.colvars.state
+
   done
   
   # now check results
@@ -71,9 +76,14 @@ do
     RETVAL=$?
     if [ $RETVAL -ne 0 ]
     then
-      echo "***  Failure for file $base: see `pwd`/$base.diff ***"
-      SUCCESS=0
-      ALL_SUCCESS=0
+      if [ ${base##*\.} = 'out' ]
+      then
+        echo -n "(warning: differences in log file $base) "
+      else
+        echo -e "\n***  Failure for file $base: see `pwd`/$base.diff ***"
+        SUCCESS=0
+        ALL_SUCCESS=0
+      fi
     fi
   done
 

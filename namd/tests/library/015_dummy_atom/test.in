@@ -1,0 +1,33 @@
+colvarsTrajFrequency    1
+
+colvar {
+  name angle
+
+  outputAppliedForce on
+
+  width 6.0 
+  lowerBoundary    0.0
+  upperBoundary  180.0
+
+  angle {
+    group1 {
+      # Calpha 1
+      atomNumbers 4
+    }
+    group2 {
+      # Calpha 2
+      atomNumbers 14
+    }
+    group3 {
+      # close to Calpha 3
+      dummyAtom (5, 6, 3)
+    }
+  }
+} 
+
+
+harmonic {
+    colvars angle
+    centers 100.0
+    forceConstant 10.0
+}

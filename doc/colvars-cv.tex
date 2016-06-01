@@ -49,8 +49,12 @@ All subcommands of \texttt{cv} are documented below.
 \item \texttt{colvar} \emph{$<$name$>$} \texttt{delete}: delete colvar \emph{$<$name$>$};
 \cvnamdonly{
 \item \texttt{colvar} \emph{$<$name$>$} \texttt{addforce} \emph{$<$F$>$}: apply given force on colvar \emph{$<$name$>$};
+\item \texttt{colvar} \emph{$<$name$>$} \texttt{getappliedforce}: get the force currently being applied on colvar \emph{$<$name$>$};
+\item \texttt{colvar} \emph{$<$name$>$} \texttt{getsystemforce}: get the system force acting on colvar \emph{$<$name$>$} at the previous step (see \ref{sec:cvc_sys_forces});
 }
 \item \texttt{colvar} \emph{$<$name$>$} \texttt{getconfig}: return config string of colvar \emph{$<$name$>$}.
+\item \texttt{colvar} \emph{$<$name$>$} \texttt{cvcflags} \emph{$<$flags$>$}: for a colvar with several cvcs (numbered according to their name
+string order), set which cvcs are enabled or disabled in subsequent evaluations according to a list of 0/1 flags (one per cvc).
 \end{itemize}
 
 \cvparagraph{Accessing biases}

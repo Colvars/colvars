@@ -57,6 +57,8 @@ private:
   friend class GlobalMasterTcl;
   friend class colvarproxy_namd;
   Tcl_Interp *interp;
+  static int Tcl_python(ClientData, Tcl_Interp *, int, char **);
+  static int Tcl_startup(ClientData, Tcl_Interp *, int, char **);
   static int Tcl_exit(ClientData, Tcl_Interp *, int, char **);
   static int Tcl_abort(ClientData, Tcl_Interp *, int, char **);
   static int Tcl_numPes(ClientData, Tcl_Interp *, int, char **);
@@ -96,6 +98,7 @@ private:
   static int Tcl_checkpoint(ClientData, Tcl_Interp *, int, char **);
   static int Tcl_revert(ClientData, Tcl_Interp *, int, char **);
   static int Tcl_checkpointReplica(ClientData, Tcl_Interp *, int, char **);
+  static int Tcl_replicaDcdFile(ClientData, Tcl_Interp *, int, char **);
   static int Tcl_callback(ClientData, Tcl_Interp *, int, char **);
   static int Tcl_reinitatoms(ClientData, Tcl_Interp *, int, char **);
   static int Tcl_coorfile(ClientData, Tcl_Interp *, int, char **);
@@ -103,6 +106,7 @@ private:
   static int Tcl_consForceConfig(ClientData, Tcl_Interp *, int, Tcl_Obj *const objv[]);
   static int Tcl_reloadCharges(ClientData, Tcl_Interp *, int, char **);
   static int Tcl_reloadGridforceGrid(ClientData, Tcl_Interp *, int, char **);	// BEGIN, END gf
+  static int Tcl_reloadStructure(ClientData, Tcl_Interp *, int, char **);
   char *callbackname;
   void doCallback(const char *labels, const char *data);
   int doCallback() { return ! ! callbackname; }

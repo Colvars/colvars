@@ -1,0 +1,70 @@
+colvars: ----------------------------------------------------------------------
+colvars: Please cite Fiorin et al, Mol Phys 2013 in any publication based on this calculation.
+colvars: ----------------------------------------------------------------------
+colvars: Reading new configuration:
+colvars: # indexFile = "" [default]
+colvars: # analysis = off [default]
+colvars: # colvarsTrajFrequency = 0 [default]
+colvars: # colvarsRestartFrequency = 0 [default]
+colvars: # colvarsTrajAppend = off [default]
+colvars: # scriptedColvarForces = off [default]
+colvars: # scriptingAfterBiases = on [default]
+colvars: Warning: no collective variables defined.
+colvars: Collective variables initialized, 0 in total.
+colvars: No collective variables biases were defined.
+colvars: Error: keyword "wrongkeyword" is not supported, or not recognized in this context.
+colvars: If this error message is unclear, try recompiling VMD with -DCOLVARS_DEBUG.
+colvars: Resetting the Collective Variables Module.
+colvars: ----------------------------------------------------------------------
+colvars: Reading new configuration:
+colvars: # indexFile = "" [default]
+colvars: # analysis = off [default]
+colvars: # colvarsTrajFrequency = 0 [default]
+colvars: # colvarsRestartFrequency = 0 [default]
+colvars: # colvarsTrajAppend = off [default]
+colvars: # scriptedColvarForces = off [default]
+colvars: # scriptingAfterBiases = on [default]
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = "colvar1" [default]
+colvars: Error: no valid components were provided for this collective variable.
+colvars: If this error message is unclear, try recompiling VMD with -DCOLVARS_DEBUG.
+colvars:   Error while constructing colvar number 1 : deleting.
+colvars:   Resetting the Collective Variables Module.
+colvars:   ----------------------------------------------------------------------
+colvars:   Reading new configuration:
+colvars:   # indexFile = "" [default]
+colvars:   # analysis = off [default]
+colvars:   # colvarsTrajFrequency = 0 [default]
+colvars:   # colvarsRestartFrequency = 0 [default]
+colvars:   # colvarsTrajAppend = off [default]
+colvars:   # scriptedColvarForces = off [default]
+colvars:   # scriptingAfterBiases = on [default]
+colvars:   ----------------------------------------------------------------------
+colvars:     Initializing a new collective variable.
+colvars:     # name = rmsd-all
+colvars:     Initializing a new "rmsd" component.
+colvars:       # componentCoeff = 1 [default]
+colvars:       # componentExp = 1 [default]
+colvars:       # period = 0 [default]
+colvars:       # wrapAround = 0 [default]
+colvars:       # scalable = on [default]
+colvars:       Scalable calculation is not available for group "atoms" with the current configuration.
+colvars:         Initializing atom group "atoms".
+colvars: Error: invalid atom number specified, 1000
+colvars: If this error message is unclear, try recompiling VMD with -DCOLVARS_DEBUG.
+colvars:         # indexGroup = "" [default]
+colvars:         # psfSegID =  [default]
+colvars:         # atomsFile = "" [default]
+colvars: Error parsing definition for atom group "atoms".
+colvars: If this error message is unclear, try recompiling VMD with -DCOLVARS_DEBUG.
+colvars:         # refPositions =  [default]
+colvars:         # refPositionsFile = ../Common/da.pdb
+colvars:         # refPositionsCol = "" [default]
+colvars: Error: the number of records in the PDB file "../Common/da.pdb" does not appear to match either the total number of atoms, or the number of coordinates requested at this point(52).
+colvars: If this error message is unclear, try recompiling VMD with -DCOLVARS_DEBUG.
+colvars:         Enabling "centerReference" and "rotateReference", to minimize RMSD before calculating it as a variable: if this is not the desired behavior, disable them explicitly within the "atoms" block.
+colvars:         This is a standard minimum RMSD, derivatives of the optimal rotation will not be computed as they cancel out in the gradients.
+colvars: Error: in setting up component "rmsd".
+colvars: If this error message is unclear, try recompiling VMD with -DCOLVARS_DEBUG.
+colvars:         Error while constructing colvar number 1 : deleting.
