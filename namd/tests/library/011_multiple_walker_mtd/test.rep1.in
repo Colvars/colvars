@@ -28,6 +28,7 @@ colvar {
 metadynamics {
     colvars d
 
+    hillWeight 0.01
     newHillFrequency 10
 
     multipleReplicas  yes

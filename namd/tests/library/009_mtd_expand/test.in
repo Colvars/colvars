@@ -18,4 +18,5 @@ colvar {
 
 metadynamics {
     colvars        d
+    hillWeight 0.01
 }
