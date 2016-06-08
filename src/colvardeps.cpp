@@ -196,7 +196,7 @@ int cvm::deps::enable(int feature_id,
 void cvm::deps::init_cvb_requires() {
   int i;
   if (features().size() == 0) {
-    for (i = 0; i < f_cv_ntot; i++) {
+    for (i = 0; i < f_cvb_ntot; i++) {
       features().push_back(new feature);
     }
   }
