@@ -18,7 +18,7 @@ colvar {
                               
 
       rotateReference
-      refPositionsGroup {      # define the reference group atoms
+      fittingGroup {          # define the fitting group atoms
         atomsfile  atoms.pdb  
         atomsCol   O           # all atoms with nonzero occupancy
       }

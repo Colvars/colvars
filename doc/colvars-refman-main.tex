@@ -1083,16 +1083,16 @@ In typical applications, the default settings result in the expected behavior.
 
 \item %
   \keydef
-    {refPositionsGroup}{%
+    {fittingGroup}{%
     atom group}{%
     Use an alternate set of atoms to define the roto-translation}{%
-    Block \texttt{refPositionsGroup \{ ... \}}}{%
+    Block \texttt{fittingGroup \{ ... \}}}{%
     This group itself}{%
     If either \texttt{centerReference} or \texttt{rotateReference} is defined, this keyword defines an alternate atom group to calculate the optimal roto-translation.
     Use this option to define a continuous rotation if the structure of the group involved changes significantly (a typical symptom would be the message ``Warning: discontinuous rotation!'').
 
 \cvnamebasedonly{
-    The following example illustrates the syntax of \texttt{refPositionsGroup}: a group called ``\texttt{atoms}'' is defined, including 8 C$_{\alpha}$ atoms of a protein of 100 residues.
+    The following example illustrates the syntax of \texttt{fittingGroup}: a group called ``\texttt{atoms}'' is defined, including 8 C$_{\alpha}$ atoms of a protein of 100 residues.
     An optimal roto-translation is calculated automatically by fitting the C$_{\alpha}$ trace of the rest of the protein onto the coordinates provided by a PDB file.}
 
 {%
@@ -1106,7 +1106,7 @@ atoms \{\\
 \\
 \-~~centerReference yes\\
 \-~~rotateReference yes\\
-\-~~refPositionsGroup \{\\
+\-~~fittingGroup \{\\
 \-~~~~\# define the frame by fitting the rest of the protein\\
 \-~~~~psfSegID              PROT PROT\\
 \-~~~~atomNameResidueRange  CA  1-40\\
@@ -1763,7 +1763,7 @@ positional restraints within the colvars module;
 \item fitting the atomic positions to different reference coordinates
 than those used in the RMSD calculation itself;
 \item applying the optimal rotation and/or translation from a separate
-atom group, defined through \texttt{refPositionsGroup}: the RMSD then
+atom group, defined through \texttt{fittingGroup}: the RMSD then
 reflects the deviation from reference coordinates in a separate, moving
 reference frame.
 \end{enumerate}

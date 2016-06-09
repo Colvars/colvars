@@ -13,7 +13,7 @@ colvar {
       atomNumbers  4
       rotateReference yes
       centerReference yes
-      refPositionsGroup {
+      fittingGroup {
         atomNumbers  54 64 74 84 99 
       }
       refPositionsFile ../Common/310turn-ideal.pdb # ref prot positions for fitting

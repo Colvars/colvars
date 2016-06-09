@@ -13,7 +13,7 @@ colvar {
 
       rotateReference
       centerReference
-      refPositionsGroup {
+      fittingGroup {
         atomsfile  ref.pdb
         atomsCol   B         # atoms with nonzero value in column B
                              # eg. pore atoms
