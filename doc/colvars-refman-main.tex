@@ -1021,7 +1021,7 @@ In typical applications, the default settings result in the expected behavior.
     Implicitly remove translations for this group}{%
     boolean}{%
     \texttt{off}}{%
-    If this option is \texttt{on}, the center of geometry of the group will be aligned with that of the reference positions provided by \cvnamebasedonly{either} \texttt{refPositions}\cvnamebasedonly{ or \texttt{refPositionsFile}}.
+    If this option is \texttt{on}, the center of geometry of the group will be aligned with that of the reference positions provided by \cvnamebasedonly{either} \texttt{refPositions} or \texttt{refPositionsFile}.
     Colvar components will only have access to the aligned positions.
 \textbf{Note}: unless otherwise specified, \texttt{rmsd} and \texttt{eigenvector} set this option to \texttt{on} \emph{by default}.
 }
@@ -1033,7 +1033,7 @@ In typical applications, the default settings result in the expected behavior.
     Implicitly remove rotations for this group}{%
     boolean}{%
     \texttt{off}}{%
-    If this option is \texttt{on}, the coordinates of this group will be optimally superimposed to the reference positions provided by \cvnamebasedonly{either} \texttt{refPositions}\cvnamebasedonly{ or \texttt{refPositionsFile}}.
+    If this option is \texttt{on}, the coordinates of this group will be optimally superimposed to the reference positions provided by \cvnamebasedonly{either} \texttt{refPositions} or \texttt{refPositionsFile}.
     The rotation will be performed around the center of geometry if \texttt{centerReference} is \texttt{on}, around the origin otherwise.
     The algorithm used is the same employed by the \texttt{orientation} colvar component~\cite{Coutsias2004}.
     Forces applied to the atoms of this group will also be implicitly rotated back to the original frame.
@@ -1046,31 +1046,34 @@ In typical applications, the default settings result in the expected behavior.
     atom group}{%
     Reference positions for fitting (\AA)}{%
     space-separated list of \texttt{(x, y, z)} triplets}{%
+    \label{key:colvars:atom_group:refPositions}
     This option provides a list of reference coordinates for \texttt{centerReference} or \texttt{rotateReference}.
     If only \texttt{centerReference} is \texttt{on}, the list may contain a single (x, y, z) triplet; if also \texttt{rotateReference} is \texttt{on}, the list should be as long as the atom group.
 }
 
-\cvnamebasedonly{
 \item %
   \key
     {refPositionsFile}{%
     atom group}{%
     File containing the reference positions for fitting}{%
     UNIX filename}{%
-    Supplies the reference positions (mutually exclusive with \texttt{refPositions}).
+    \label{key:colvars:atom_group:refPositionsFile}
+    This keyword provides the reference coordinates for fitting from the given file, and is mutually exclusive with \texttt{refPositions}.
+    The acceptable file format is XYZ\cvnamebasedonly{or PDB}.
     Atomic positions are read differently depending on the three following scenarios:
-    \emph{i)} \texttt{refPositionsCol} is specified: the PDB file contains a set of position larger than the size of the group, and positions are read according to the value of the column \texttt{refPositionsCol} (which may be the same as \texttt{atomsCol}).
-    \emph{ii)} \texttt{refPositionsCol} is not specified and the PDB file contains exactly as many \texttt{ATOM} records as the atoms in the group: all positions are read in sequence;
-    \emph{iii)} \texttt{refPositionsCol} is not specified and the PDB file contains the entire system: the positions corresponding to the numeric indices of the atom group are read.
+    \emph{i)} the file contains exactly as many records as the atoms in the group: all positions are read in sequence;
+    \emph{ii)} the file contains coordinates for the entire system: only the positions corresponding to the numeric indices of the atom group are read\cvnamebasedonly{;
+    \emph{iii)} if the file is a PDB file and \texttt{refPositionsCol} is specified, positions are read according to the value of the column \texttt{refPositionsCol} (which may be the same as \texttt{atomsCol})}.
 }
 
+\cvnamebasedonly{
 \item %
   \key
     {refPositionsCol}{%
     atom group}{%
     PDB column containing atom flags}{%
     \texttt{O}, \texttt{B}, \texttt{X}, \texttt{Y}, or \texttt{Z}}{%
-    Like \texttt{atomsCol} for \texttt{atomsFile}, indicates which column to use to identify the atoms in \texttt{refPositionsFile}.}
+    Like \texttt{atomsCol} for \texttt{atomsFile}, indicates which column to use to identify the atoms in \texttt{refPositionsFile} (if this is a PDB file).}
 
 \item %
   \key
@@ -1686,37 +1689,30 @@ are:
     \texttt{rmsd}}{%
     Reference coordinates}{%
     space-separated list of \texttt{(x, y, z)} triplets}{%
-    This option\cvnamebasedonly{ (mutually exclusive with \texttt{refPositionsFile})}
-    sets the reference coordinates.  If only \texttt{centerReference} is \texttt{on}, the list can be a single (x, y, z) triplet; if also \texttt{rotateReference} is \texttt{on}, the list should be as long as the atom group.  This option 
+    This option (mutually exclusive with \texttt{refPositionsFile}) sets the reference coordinates.  If only \texttt{centerReference} is \texttt{on}, the list can be a single (x, y, z) triplet; if also \texttt{rotateReference} is \texttt{on}, the list should be as long as the atom group.  This option 
     is independent from that with the same keyword within the
-    \texttt{atoms~\{...\}} block (see \ref{sec:colvar_atom_groups}).  The latter (and related fitting
+    \texttt{atoms~\{...\}} block (see \ref{key:colvars:atom_group:refPositions}).  The latter (and related fitting
     options for the atom group) are normally not needed,
     and should be omitted altogether except for advanced usage cases.
     }
 
-\cvnamebasedonly{
 \item %
   \key
     {refPositionsFile}{%
     \texttt{rmsd}}{%
     Reference coordinates file}{%
     UNIX filename}{%
-    This option (mutually exclusive with \texttt{refPositions}) sets
-    the PDB file name for the reference coordinates to be compared
-    with.  The format is the same as that provided by
-    \texttt{refPositionsFile} within an atom group definition.
+    This option (mutually exclusive with \texttt{refPositions}) sets the file name for the reference coordinates to be compared with.  The format is the same as that provided by \texttt{refPositionsFile} within an atom group's definition (see \ref{key:colvars:atom_group:refPositionsFile}).
     }
 
+\cvnamebasedonly{
 \item %
   \key
     {refPositionsCol}{%
     \texttt{rmsd}}{%
     PDB column containing atom flags}{%
     \texttt{O}, \texttt{B}, \texttt{X}, \texttt{Y}, or \texttt{Z}}{%
-    If \texttt{refPositionsFile} is defined, and the file contains
-    all the atoms in the topology, this option may be povided to
-    set which PDB field is
-    used to flag the reference coordinates for \texttt{atoms}.
+    If \texttt{refPositionsFile} is a PDB file that contains all the atoms in the topology, this option may be provided to set which PDB field is used to flag the reference coordinates for \texttt{atoms}.
   }
 
 \item %
@@ -1795,7 +1791,7 @@ mode of the system.  It is assumed that $\sum_{i}\mathbf{v}_{i} = 0$:
 otherwise, the colvars module centers the $\mathbf{v}_{i}$
 automatically when reading them from the configuration.
 
-As for the component \texttt{rmsd}, the available options are \texttt{atoms}\cvnamebasedonly{, \texttt{refPositionsFile}, \texttt{refPositionsCol} and \texttt{refPositionsColValue}, } and \texttt{refPositions}.
+As for the component \texttt{rmsd}, the available options are \texttt{atoms}, \texttt{refPositionsFile}\cvnamebasedonly{, \texttt{refPositionsCol} and \texttt{refPositionsColValue}, } and \texttt{refPositions}.
 In addition, the following are recognized:
 \begin{itemize}
 
@@ -1940,9 +1936,9 @@ of 90$^{\circ}$ around the $z$ axis is expressed as
 to and from a $4\times{}4$ rotation matrix in a format suitable for
 usage in VMD.
 
-As for the component \texttt{rmsd}, the available options are \texttt{atoms}\cvnamebasedonly{, \texttt{refPositionsFile}, \texttt{refPositionsCol} and \texttt{refPositionsColValue}, } and \texttt{refPositions}.
+As for the component \texttt{rmsd}, the available options are \texttt{atoms}, \texttt{refPositionsFile}\cvnamebasedonly{, \texttt{refPositionsCol} and \texttt{refPositionsColValue}, } and \texttt{refPositions}.
 
-\textbf{Note:} \texttt{refPositions}\cvnamebasedonly{ and \texttt{refPositionsFile}} define the set of positions \emph{from which} the optimal rotation is calculated, but this rotation is not applied to the coordinates of the atoms involved: it is used instead to define the variable itself.
+\textbf{Note:} \texttt{refPositions}and \texttt{refPositionsFile} define the set of positions \emph{from which} the optimal rotation is calculated, but this rotation is not applied to the coordinates of the atoms involved: it is used instead to define the variable itself.
 
 \begin{itemize}
 
@@ -1976,14 +1972,14 @@ chain, or disable \texttt{wrapAll} otherwise.
 
 \cvsubsubsec{\texttt{orientationAngle}: angle of rotation from reference coordinates.}  
 The block \texttt{orientationAngle~\{...\}} accepts the same base options as
-the component \texttt{orientation}: \texttt{atoms} and \texttt{refPositions}\cvnamebasedonly{, or \texttt{refPositionsFile}, \texttt{refPositionsCol} and \texttt{refPositionsColValue}}.
+the component \texttt{orientation}: \texttt{atoms}, \texttt{refPositions}, \texttt{refPositionsFile}\cvnamebasedonly{, \texttt{refPositionsCol} and \texttt{refPositionsColValue}}.
 The returned value is the angle of rotation $\theta$ between the current and the reference positions.
 This angle is expressed in degrees within the range [0$^{\circ}$:180$^{\circ}$].
 
 
 \cvsubsubsec{\texttt{orientationProj}: cosine of the angle of rotation from reference coordinates.}  
 The block \texttt{orientationProj~\{...\}} accepts the same base options as
-the component \texttt{orientation}: \texttt{atoms} and \texttt{refPositions}\cvnamebasedonly{, or \texttt{refPositionsFile}, \texttt{refPositionsCol} and \texttt{refPositionsColValue}}.
+the component \texttt{orientation}: \texttt{atoms}, \texttt{refPositions}, \texttt{refPositionsFile}\cvnamebasedonly{, \texttt{refPositionsCol} and \texttt{refPositionsColValue}}.
 The returned value is the cosine of the angle of rotation $\theta$ between the current and the reference positions.
 The range of values is [-1:1].
 
@@ -1991,7 +1987,7 @@ The range of values is [-1:1].
 \cvsubsubsec{\texttt{spinAngle}: angle of rotation around a given axis.}
 The complete rotation described by \texttt{orientation} can optionally be decomposed into two sub-rotations: one is a ``\emph{spin}'' rotation around \textbf{e}, and the other a ``\emph{tilt}'' rotation around an axis orthogonal to \textbf{e}.
 The component \texttt{spinAngle} measures the angle of the ``spin'' sub-rotation around \textbf{e}.
-This can be defined using the same options as the component \texttt{orientation}: \texttt{atoms} and \texttt{refPositions}\cvnamebasedonly{, or \texttt{refPositionsFile}, \texttt{refPositionsCol} and \texttt{refPositionsColValue}}.
+This can be defined using the same options as the component \texttt{orientation}: \texttt{atoms} and \texttt{refPositions} or \texttt{refPositionsFile}\cvnamebasedonly{, \texttt{refPositionsCol} and \texttt{refPositionsColValue}}.
 In addition, \texttt{spinAngle} accepts the \texttt{axis} option:
 \begin{itemize}
 \item %
