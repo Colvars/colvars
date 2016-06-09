@@ -64,7 +64,7 @@ public:
 
   inline const std::string& get_config()
   {
-      return config_string;
+    return config_string;
   }
 
   /// How a keyword is parsed in a string
@@ -257,17 +257,16 @@ public:
   static std::string const white_space;
 
   /// \brief Low-level function for parsing configuration strings;
-  /// automatically adds the requested keywords to the list of valid
+  /// automatically adds the requested keyword to the list of valid
   /// ones.  \param conf the content of the configuration file or one
-  /// of its blocks \param key the keyword to search in "conf" \param
+  /// of its blocks \param key the keyword to search within "conf" \param
   /// data (optional) holds the string provided after "key", if any
   /// \param save_pos (optional) stores the position of the keyword
-  /// within "conf", useful when doing multiple calls \param
-  /// save_delimiters (optional)
+  /// within "conf", useful when doing multiple calls
   bool key_lookup(std::string const &conf,
-                   char const *key,
-                   std::string &data = dummy_string,
-                   size_t &save_pos = dummy_pos);
+                  char const *key,
+                  std::string &data = dummy_string,
+                  size_t &save_pos = dummy_pos);
 
   /// Used as a default argument by key_lookup
   static std::string dummy_string;
@@ -277,12 +276,12 @@ public:
   /// \brief Works as std::getline() but also removes everything
   /// between a comment character and the following newline
   static std::istream & getline_nocomments(std::istream &is,
-                                            std::string &s,
-                                            char const delim = '\n');
+                                           std::string &s,
+                                           char const delim = '\n');
 
   /// Check if the content of the file has matching braces
   bool brace_check(std::string const &conf,
-                    size_t const start_pos = 0);
+                   size_t const start_pos = 0);
 
 };
 
