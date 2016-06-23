@@ -323,7 +323,7 @@ int colvarmodule::catch_input_errors(int result)
   if (result != COLVARS_OK || get_error()) {
     set_error_bit(result);
     set_error_bit(INPUT_ERROR);
-    parse->reset();
+    parse->init();
     return get_error();
   }
   return COLVARS_OK;
@@ -796,6 +796,7 @@ colvarmodule::~colvarmodule()
       (proxy->smp_thread_id() == 0)) {
     reset();
     delete parse;
+    parse = NULL;
     proxy = NULL;
   }
 }
@@ -803,7 +804,7 @@ colvarmodule::~colvarmodule()
 
 int colvarmodule::reset()
 {
-  parse->reset();
+  parse->init();
 
   cvm::log("Resetting the Collective Variables Module.\n");
 
