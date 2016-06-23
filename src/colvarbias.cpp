@@ -6,8 +6,11 @@
 
 
 colvarbias::colvarbias(std::string const &conf, char const *key)
-  : colvarparse(conf), bias_energy(0.), has_data(false)
 {
+  has_data = false;
+
+  colvarparse::init(conf);
+
   cvm::log("Initializing a new \""+std::string(key)+"\" instance.\n");
 
   init_cvb_requires();
@@ -39,26 +42,53 @@ colvarbias::colvarbias(std::string const &conf, char const *key)
 
   description = "bias " + name;
 
-  // lookup the associated colvars
-  std::vector<std::string> colvars_str;
-  if (get_keyval(conf, "colvars", colvars_str)) {
-    for (size_t i = 0; i < colvars_str.size(); i++) {
-      add_colvar(colvars_str[i]);
+  {
+    // lookup the associated colvars
+    std::vector<std::string> colvar_names;
+    if (get_keyval(conf, "colvars", colvar_names)) {
+      for (size_t i = 0; i < colvar_names.size(); i++) {
+        add_colvar(colvar_names[i]);
+      }
     }
   }
+
   if (!colvars.size()) {
-    cvm::error("Error: no collective variables specified.\n");
+    cvm::error("Error: no collective variables specified.\n", INPUT_ERROR);
     return;
   }
-  for (size_t i=0; i<colvars.size(); i++) {
+
+  for (size_t i = 0; i < colvars.size(); i++) {
     // All biases need at least the value of colvars
     // although possibly not at all timesteps
     add_child(colvars[i]);
   }
+
+  init(conf);
+}
+
+
+int colvarbias::init(std::string const &conf)
+{
+  colvarparse::init(conf);
+
   // Start in active state by default
   enable(f_cvb_active);
 
   get_keyval(conf, "outputEnergy", b_output_energy, false);
+
+  reset();
+
+  return COLVARS_OK;
+}
+
+
+int colvarbias::reset()
+{
+  bias_energy = 0.0;
+  for (size_t i = 0; i < colvars.size(); i++) {
+    colvar_forces[i].reset();
+  }
+  return COLVARS_OK;
 }
 
 
@@ -66,7 +96,14 @@ colvarbias::colvarbias()
   : colvarparse(), has_data(false)
 {}
 
+
 colvarbias::~colvarbias()
+{
+  clear();
+}
+
+
+int colvarbias::clear()
 {
   // Remove references to this bias from colvars
   for (std::vector<colvar *>::iterator cvi = colvars.begin();
@@ -81,6 +118,7 @@ colvarbias::~colvarbias()
       }
     }
   }
+
   // ...and from the colvars module
   for (std::vector<colvarbias *>::iterator bi = cvm::biases.begin();
        bi != cvm::biases.end();
@@ -90,25 +128,34 @@ colvarbias::~colvarbias()
       break;
     }
   }
+
+  return COLVARS_OK;
 }
 
-void colvarbias::add_colvar(std::string const &cv_name)
+
+int colvarbias::add_colvar(std::string const &cv_name)
 {
   if (colvar *cv = cvm::colvar_by_name(cv_name)) {
     // Removed this as nor all biases apply forces eg histogram
     // cv->enable(colvar::task_gradients);
-    if (cvm::debug())
+    if (cvm::debug()) {
       cvm::log("Applying this bias to collective variable \""+
-                cv->name+"\".\n");
+               cv->name+"\".\n");
+    }
     colvars.push_back(cv);
+
     colvar_forces.push_back(colvarvalue());
-    colvar_forces.back().type(cv->value()); // make sure each forces is initialized to zero
+    colvar_forces.back().type(cv->value()); // make sure each force is initialized to zero
     colvar_forces.back().reset();
+
     cv->biases.push_back(this); // add back-reference to this bias to colvar
+
   } else {
     cvm::error("Error: cannot find a colvar named \""+
-               cv_name+"\".\n");
+               cv_name+"\".\n", INPUT_ERROR);
+    return INPUT_ERROR;
   }
+  return COLVARS_OK;
 }
 
 

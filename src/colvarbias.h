@@ -13,10 +13,10 @@ class colvarbias : public colvarparse, public cvm::deps {
 public:
 
   /// Name of this bias
-  std::string    name;
+  std::string name;
 
   /// Add a new collective variable to this bias
-  void add_colvar(std::string const &cv_name);
+  int add_colvar(std::string const &cv_name);
 
   /// Retrieve colvar values and calculate their biasing forces
   /// Return bias energy
@@ -45,11 +45,29 @@ public:
   /// Send forces to the collective variables
   void communicate_forces();
 
-  /// \brief Constructor
+  /// \brief Constructor from config string
   colvarbias(std::string const &conf, char const *key);
+
+  /// \brief Parse config string and (re)initialize
+  virtual int init(std::string const &conf);
+
+  /// \brief Set to zero all mutable data
+  virtual int reset();
+
+protected:
 
   /// Default constructor
   colvarbias();
+
+private:
+
+  /// Copy constructor
+  colvarbias(colvarbias &);
+
+public:
+
+  /// \brief Delete everything
+  virtual int clear();
 
   /// Destructor
   virtual ~colvarbias();
