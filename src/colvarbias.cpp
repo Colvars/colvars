@@ -27,58 +27,61 @@ colvarbias::colvarbias(char const *key)
   }
 
   has_data = false;
+  b_output_energy = false;
   reset();
+
+  // Start in active state by default
+  enable(f_cvb_active);
 }
 
 
 int colvarbias::init(std::string const &conf)
 {
-  cvm::log("Initializing a new \""+bias_type+"\" instance.\n");
-
   colvarparse::init(conf);
 
-  get_keyval(conf, "name", name, bias_type+cvm::to_str(rank));
+  if (name.size() == 0) {
+    cvm::log("Initializing a new \""+bias_type+"\" instance.\n");
+    get_keyval(conf, "name", name, bias_type+cvm::to_str(rank));
 
-  {
-    colvarbias *bias_with_name = cvm::bias_by_name(this->name);
-    if (bias_with_name != NULL) {
-      if ((bias_with_name->rank != this->rank) ||
-          (bias_with_name->bias_type != this->bias_type)) {
-        cvm::error("Error: this bias cannot have the same name, \""+this->name+
-                   "\", as another bias.\n", INPUT_ERROR);
-        return INPUT_ERROR;
+    {
+      colvarbias *bias_with_name = cvm::bias_by_name(this->name);
+      if (bias_with_name != NULL) {
+        if ((bias_with_name->rank != this->rank) ||
+            (bias_with_name->bias_type != this->bias_type)) {
+          cvm::error("Error: this bias cannot have the same name, \""+this->name+
+                     "\", as another bias.\n", INPUT_ERROR);
+          return INPUT_ERROR;
+        }
       }
     }
-  }
 
-  description = "bias " + name;
+    description = "bias " + name;
 
-  {
-    // lookup the associated colvars
-    std::vector<std::string> colvar_names;
-    if (get_keyval(conf, "colvars", colvar_names)) {
-      if (colvars.size()) {
-        cvm::error("Error: cannot redefine the colvars that a bias was already defined on.\n",
-                   INPUT_ERROR);
-        return INPUT_ERROR;
-      }
-      for (size_t i = 0; i < colvar_names.size(); i++) {
-        add_colvar(colvar_names[i]);
+    {
+      // lookup the associated colvars
+      std::vector<std::string> colvar_names;
+      if (get_keyval(conf, "colvars", colvar_names)) {
+        if (colvars.size()) {
+          cvm::error("Error: cannot redefine the colvars that a bias was already defined on.\n",
+                     INPUT_ERROR);
+          return INPUT_ERROR;
+        }
+        for (size_t i = 0; i < colvar_names.size(); i++) {
+          add_colvar(colvar_names[i]);
+        }
       }
     }
+
+    if (!colvars.size()) {
+      cvm::error("Error: no collective variables specified.\n", INPUT_ERROR);
+      return INPUT_ERROR;
+    }
+
+  } else {
+    cvm::log("Reinitializing bias \""+name+"\".\n");
   }
 
-  if (!colvars.size()) {
-    cvm::error("Error: no collective variables specified.\n", INPUT_ERROR);
-    return INPUT_ERROR;
-  }
-
-  // Start in active state by default
-  enable(f_cvb_active);
-
-  get_keyval(conf, "outputEnergy", b_output_energy, false);
-
-  reset();
+  get_keyval(conf, "outputEnergy", b_output_energy, b_output_energy);
 
   return COLVARS_OK;
 }
