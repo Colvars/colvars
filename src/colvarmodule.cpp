@@ -251,8 +251,9 @@ int colvarmodule::parse_biases_type(std::string const &conf,
     if (bias_conf.size()) {
       cvm::log(cvm::line_marker);
       cvm::increase_depth();
-      biases.push_back(new bias_type(bias_conf, keyword));
-      if (cvm::check_new_bias(bias_conf, keyword)) {
+      biases.push_back(new bias_type(keyword));
+      biases.back()->init(bias_conf);
+      if (cvm::check_new_bias(bias_conf, keyword) != COLVARS_OK) {
         return COLVARS_ERROR;
       }
       cvm::decrease_depth();

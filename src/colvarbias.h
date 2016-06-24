@@ -15,6 +15,12 @@ public:
   /// Name of this bias
   std::string name;
 
+  /// Type of this bias
+  std::string bias_type;
+
+  /// If there is more than one bias of this type, record its rank
+  int rank;
+
   /// Add a new collective variable to this bias
   int add_colvar(std::string const &cv_name);
 
@@ -45,8 +51,8 @@ public:
   /// Send forces to the collective variables
   void communicate_forces();
 
-  /// \brief Constructor from config string
-  colvarbias(std::string const &conf, char const *key);
+  /// \brief Constructor
+  colvarbias(char const *key);
 
   /// \brief Parse config string and (re)initialize
   virtual int init(std::string const &conf);
@@ -121,7 +127,7 @@ protected:
   bool                     b_output_energy;
 
   /// \brief Whether this bias has already accumulated information
-  /// (when relevant)
+  /// (for history-dependent biases)
   bool                     has_data;
 
 };
