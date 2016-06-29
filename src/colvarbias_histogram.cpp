@@ -132,7 +132,7 @@ int colvarbias_histogram::update()
     // update indices for scalar values
     size_t i;
     for (i = 0; i < colvars.size(); i++) {
-      bin[i] = grid->value_to_bin_scalar(colvars[i]->value(), i);
+      bin[i] = grid->current_bin_scalar(i);
     }
 
     if (grid->index_ok(bin)) {
@@ -143,7 +143,7 @@ int colvarbias_histogram::update()
     size_t iv, i;
     for (iv = 0; iv < colvar_array_size; iv++) {
       for (i = 0; i < colvars.size(); i++) {
-        bin[i] = grid->value_to_bin_scalar(colvars[i]->value().vector1d_value[iv], i);
+        bin[i] = grid->current_bin_scalar(i, iv);
       }
 
       if (grid->index_ok(bin)) {
