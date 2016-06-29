@@ -3259,10 +3259,23 @@ including variants of Steered and Targeted MD. Within energy minimization
 runs, it allows for restrained minimization, e.g. to calculate relaxed potential
 energy surfaces. In the context of the colvars module, 
 harmonic potentials are meant according to their textbook definition:
-$\displaystyle V(\bm{x}) = \frac{1}{2} k (\bm{x} - \bm{x_0})^2$.
+\begin{equation}
+  \label{eq:colvarbias_harmonic}
+  V(\xi) = \frac{1}{2} k \left(\frac{\xi - \xi_0}{w_{\xi}}\right)^2
+\end{equation}
 Note that this differs from harmonic bond and angle potentials in common
 force fields, where the factor of one half is typically omitted,
 resulting in a non-standard definition of the force constant.
+
+The formula above includes the characteristic length scale $w_{\xi}$ of the colvar $\xi$ (keyword \texttt{width}, see \ref{sec:colvar_general}) to allow the definition of a multi-dimensional restraint with a unified force constant:
+\begin{equation}
+  \label{eq:colvarbias_harmonic_multi}
+  V(\xi_{1}, \ldots, \xi_{M}) = \frac{1}{2} k \sum_{i=1}^{M} \left(\frac{\xi_{i} - \xi_0}{w_{\xi}}\right)^2
+\end{equation}
+
+If one-dimensional or homogeneous multi-dimensional restraints are defined, and there are no other uses for the parameter $w_{\xi}$, \emph{the parameter} \texttt{width} \emph{can be left at its default value of $1$}.
+
+
 \cvnamdonly{The restraint energy is reported by NAMD under the MISC title.}
 A harmonic restraint is set up by a \texttt{harmonic~\{...\}}
 block, which may contain (in addition to the standard option
@@ -3276,7 +3289,7 @@ block, which may contain (in addition to the standard option
     Scaled force constant (\cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
     positive decimal}{%
     \texttt{1.0}}{%
-    This defines a scaled force constant for the harmonic potential.
+    This defines a scaled force constant $k$ for the harmonic potential (eq.~\ref{eq:colvarbias_harmonic_multi}).
     To ensure consistency for multidimensional restraints, it is
     divided internally by the square of the specific \texttt{width}
     for each colvar involved (which is 1 by default), so that all colvars
@@ -3293,11 +3306,11 @@ block, which may contain (in addition to the standard option
     \texttt{harmonic}}{%
     Initial harmonic restraint centers}{%
     space-separated list of colvar values}{%
-    The centers (equilibrium values) of the restraint are entered here.
+    The centers (equilibrium values) of the restraint, $\xi_{0}$, are entered here.
     The number of values must be the number of requested colvars.
     Each value is a decimal number if the corresponding colvar returns
     a scalar, a ``\texttt{(x, y, z)}'' triplet if it returns a unit
-    vector or a vector, and a ``\texttt{q0, q1, q2, q3)}'' quadruplet
+    vector or a vector, and a ``\texttt{(q0, q1, q2, q3)}'' quadruplet
     if it returns a rotational quaternion.  If a colvar has
     periodicities or symmetries, its closest image to the restraint
     center is considered when calculating the harmonic potential.}
