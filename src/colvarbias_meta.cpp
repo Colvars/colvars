@@ -49,6 +49,11 @@ int colvarbias_meta::init(std::string const &conf)
   get_keyval(conf, "newHillFrequency", new_hill_freq, 1000);
 
   get_keyval(conf, "hillWidth", hill_width, std::sqrt(2.0 * PI) / 2.0);
+  cvm::log("Half-widths of the Gaussian hills (sigma's):\n");
+  for (size_t i = 0; i < colvars.size(); i++) {
+    cvm::log(colvars[i]->name+std::string(": ")+
+             cvm::to_str(0.5 * colvars[i]->width * hill_width));
+  }
 
   {
     bool b_replicas = false;
