@@ -2902,21 +2902,20 @@ The metadynamics method uses a history-dependent potential \cite{Laio2002} that 
 The metadynamics potential on the colvars $\bm{\xi} = (\xi_{1}, \xi_{2}, \ldots, \xi_{N_{\mathrm{cv}}})$ is defined as:
 \begin{equation}
   \label{eq:colvars_meta_pot}
-  V_{\mathrm{meta}}(\bm{\xi}) \; = \; {
+  V_{\mathrm{meta}}(\bm{\xi}(t)) \; = \; {
     \sum_{t' = \delta{}t, \\ 2\delta{}t, \\ \ldots}^{t'<t} W \: {
       \prod_{i = 1}^{N_{\mathrm{cv}}}
-      \exp\left(-\frac{(\xi_{i}-\xi_{i}(t'))^{2}}{2\delta_{\xi_{i}}^{2}}\right)
+      \exp\left(-\frac{(\xi_{i}(t)-\xi_{i}(t'))^{2}}{2\sigma_{\xi_{i}}^{2}}\right)
     }
   }\mathrm{,}
 \end{equation}
 where $V_{\mathrm{meta}}$ is the history-dependent potential acting on the \emph{current} values of the colvars $\bm{\xi}$, and depends only parametrically on the \emph{previous} values of the colvars.
 $V_{\mathrm{meta}}$ is constructed as a sum of $N_{\mathrm{cv}}$-dimensional repulsive Gaussian ``hills'', whose height is a chosen energy constant $W$, and whose centers are the previously explored configurations $\left(\bm{\xi}(\delta{}t), \bm{\xi}(2\delta{}t), \ldots\right)$.
-Each Gaussian functions has a width of approximately $2\delta_{\xi_{i}}$ along the direction of the $i$-th colvar.
 
-During the simulation, the system evolves towards the nearest minimum of the ``effective'' potential of mean force $\tilde{A}(\bm{\xi})$, which is the sum of the ``real'' underlying potential of mean force $A(\bm{\xi})$ and the the metadynamics potential $V_{\mathrm{meta}}(\bm{\xi})$.
+During the simulation, the system evolves towards the nearest minimum of the ``effective'' potential of mean force $\tilde{A}(\bm{\xi})$, which is the sum of the ``real'' underlying potential of mean force $A(\bm{\xi})$ and the the metadynamics potential, $V_{\mathrm{meta}}(\bm{\xi})$.
 Therefore, at any given time the probability of observing the configuration $\bm{\xi^{*}}$ is proportional to $\exp\left(-\tilde{A}(\bm{\xi^{*}})/\kappa_{\mathrm{B}}T\right)$: this is also the probability that a new Gaussian ``hill'' is added at that configuration.
-If the simulation is run for a sufficiently long time, each local minimum is canceled out by the sum of the Gaussian ``hill'' functions.
-At that stage the the ``effective'' potential of mean force $\tilde{A}(\bm{\xi})$ is constant, and $-V_{\mathrm{meta}}(\bm{\xi})$ is an accurate estimator of the ``real'' potential of mean force $A(\bm{\xi})$, save for an additive constant:
+If the simulation is run for a sufficiently long time, each local minimum is canceled out by the sum of the Gaussian ``hills''.
+At that stage the ``effective'' potential of mean force $\tilde{A}(\bm{\xi})$ is constant, and $-V_{\mathrm{meta}}(\bm{\xi})$ is an accurate estimator of the ``real'' potential of mean force $A(\bm{\xi})$, save for an additive constant:
 \begin{equation}
   \label{eq:colvars_meta_fes}
   A(\bm{\xi}) \; \simeq \; {
@@ -2924,18 +2923,16 @@ At that stage the the ``effective'' potential of mean force $\tilde{A}(\bm{\xi})
   }
 \end{equation}
 
-Assuming that the set of collective variables includes all relevant degrees of freedom, the predicted error of the estimate is a simple function of the correlation times of the colvars $\tau_{\xi_{i}}$, and of the user-defined parameters $W$, $\delta_{\xi_{i}}$ and $\delta{}t$ \cite{Bussi2006}. 
-In typical applications, a good rule of thumb can be to choose the ratio $W/\delta{}t$ much smaller than $\kappa_{\mathrm{B}}T/\tau_{\bm{\xi}}$, where $\tau_{\bm{\xi}}$ is the longest among $\bm{\xi}$'s correlation times: $\delta_{\xi_{i}}$ then dictates the resolution of the calculated PMF.
+Assuming that the set of collective variables includes all relevant degrees of freedom, the predicted error of the estimate is a simple function of the correlation times of the colvars $\tau_{\xi_{i}}$, and of the user-defined parameters $W$, $\sigma_{\xi_{i}}$ and $\delta{}t$ \cite{Bussi2006}. 
+In typical applications, a good rule of thumb can be to choose the ratio $W/\delta{}t$ much smaller than $\kappa_{\mathrm{B}}T/\tau_{\bm{\xi}}$, where $\tau_{\bm{\xi}}$ is the longest among $\bm{\xi}$'s correlation times: $\sigma_{\xi_{i}}$ then dictates the resolution of the calculated PMF.
 
-%Given $\Delta\xi$ the length of the relevant region of the colvar $\xi$, and $A^{*}$ the highest free energy that needs to be sampled (e.g.~the higher transition state free energy), the upper bound for the required simulation time is of the order of $N_{\mathrm{s}}(\xi) = (A^{*}\Delta\xi)/(W2\delta_{\xi})$ multiples of $\delta{}t$.
+%Given $\Delta\xi$ the length of the relevant region of the colvar $\xi$, and $A^{*}$ the highest free energy that needs to be sampled (e.g.~the higher transition state free energy), the upper bound for the required simulation time is of the order of $N_{\mathrm{s}}(\xi) = (A^{*}\Delta\xi)/(W2\sigma_{\xi})$ multiples of $\delta{}t$.
 %In calculations with multiple colvars $\bm{\xi}$, the upper bound is then 
 %$N_{\mathrm{s}}(\xi_{1}) \times N_{\mathrm{s}}(\xi_{2}) \times \ldots \times %N_{\mathrm{s}}(\xi_{N_{\mathrm{cv}}}) \times \delta{}t$.
 
 To enable a metadynamics calculation, a \texttt{metadynamics} block must be defined in the colvars configuration file. 
-Its only mandatory keyword is the \texttt{colvars} option listing all the variables involved: multidimensional PMFs are obtained by the same \texttt{metadynamics} instance applied to all the colvars.
-
-The parameters $W$ and $\delta{}t$ are specified by the keywords \texttt{hillWeight} and \texttt{newHillFrequency}, respectively.
-The values of these options are optimal for colvars with correlation times $\tau_{\bm{\xi}}$ in the range of a few thousand simulation steps, typical of many biomolecular simulations:
+Its mandatory keywords are \texttt{colvars}, which lists all the variables involved, and \texttt{hillWeight}, which specifies the weight parameter $W$.
+The parameters $\delta{}t$ and $\sigma_{\xi}$ specified by the optional keywords \texttt{newHillFrequency} and \texttt{hillWidth}:
 \begin{itemize}
 
 \item %
@@ -2944,9 +2941,8 @@ The values of these options are optimal for colvars with correlation times $\tau
     \texttt{metadynamics}}{%
     Height of each hill (\cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
     positive decimal}{%
-    This option sets the height $W$ of the hills that are added during
-    this run.  Lower values provide more accurate sampling at the price
-    of longer simulation times to complete a PMF calculation.}
+    This option sets the height $W$ of the Gaussian hills that are added during this run.
+    Lower values provide more accurate sampling of the system's degrees of freedom at the price of longer simulation times to complete a PMF calculation based on metadynamics.}
 
 \item %
   \keydef
@@ -2961,11 +2957,19 @@ The values of these options are optimal for colvars with correlation times $\tau
     values provide more accurate sampling at the price of longer
     simulation times to complete a PMF calculation.}
 
+\item %
+  \keydef
+    {hillWidth}{%
+    \texttt{metadynamics}}{%
+    Relative width of a Gaussian hill with respect to the colvar's width}{%
+    positive decimal}{%
+    $\sqrt{2\pi}/2$}{%
+    The Gaussian width along each colvar, $2\sigma_{\xi_{i}}$, is set as the product between this number and the colvar's parameter $w_{i}$ given by \texttt{width} (see \ref{sec:colvar_general}); such product is printed in the standard output of \MDENGINE{}.
+    The default value of this number gives a Gaussian hill function whose volume is equal to the product of $\prod_{i}w_{i}$, the volume of one \texttt{histogram} bin (see \ref{sec:colvarbias_histogram}), and $W$.
+    \textbf{Tip:} \emph{use this property to estimate the fraction of colvar space covered by the Gaussian bias within a given simulation time.}
+    When \texttt{useGrids} is on, the default value also gives acceptable discretization errors~\cite{Fiorin2013}: for smoother visualization, this parameter may be increased and the \texttt{width} $w_{i}$ decreased in the same proportion.
+    \textbf{Note:} \emph{values smaller than 1 are not recommended}.}
 \end{itemize}
-
-It is the user's responsibility to either leave \texttt{hillWeight} and \texttt{newHillFrequency} at their default values, or to change them to match the specifics of each system.
-The parameter $\delta_{\xi_{i}}$ is instead defined as approximately half the \texttt{width} of the corresponding colvar $\xi_{i}$ (see \ref{sec:colvar_general}).
-
 
 
 \cvsubsubsec{Output files}
@@ -3032,23 +3036,6 @@ Default values are chosen to minimize such cost with no loss of accuracy.
     or \texttt{orientation}).  If \texttt{expandBoundaries} is defined
     in one of the colvars, grids are automatically expanded along the
     direction of that colvar.}
-
-\item %
-  \keydef
-    {hillWidth}{%
-    \texttt{metadynamics}}{%
-    Relative width of the hills}{%
-    positive decimal}{%
-    $\sqrt{2\pi}/2$}{%
-    Along each colvar, the width of each Gaussian hill
-    ($2\delta_{\xi_{i}}$) is given by the product between this number
-    and the colvar's \texttt{width}.  The default value gives hills
-    whose volume is the product of $W$ times the \texttt{width} of all
-    colvars.  For a smoother visualization of the free energy plot,
-    decrease \texttt{width} and increase \texttt{hillWidth} in the same
-    proportion.  \textbf{Note:} \emph{when }\texttt{useGrids}\emph{ is
-    }\texttt{on}\emph{ (default in most cases), values smaller than 1
-      should be avoided to avoid discretization errors}.}
 
 \item %
   \keydef
