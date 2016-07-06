@@ -1,125 +1,127 @@
-Colvarstrajfrequency    1
-Colvarsrestartfrequency 2000
+colvarsTrajFrequency 1
+
 
 colvar {
-  name rmsdA
+    name rmsdA
 
-  outputSystemForce on
-#  outputAppliedForce on
-  width 1.0 
+    outputSystemForce on
+    #  outputAppliedForce on
+    width 1.0 
 
-  lowerboundary 0.0
-  upperboundary 5.0
+    lowerBoundary 0.0
+    upperBoundary 5.0
 
-  lowerwallconstant 100.0
-  upperwallconstant 100.0
+    lowerWallConstant 100.0
+    upperWallConstant 100.0
 
-  rmsd {
-    atoms {
-        atomnumbers { 1 2 3 4 5 6 7 8 }
+    rmsd {
+        atoms {
+            atomNumbers { 1 2 3 4 5 6 7 8 }
+        }
+        refpositionsfile ../Common/da.xyz
     }
-    refpositionsfile ../Common/da.pdb
-  }
-} 
-
-colvar {
-  name rmsdB
-
-  outputSystemForce on
-
-  width 1.0 
-
-  lowerboundary 0.0
-  upperboundary 5.0
-
-  lowerwallconstant 100.0
-  upperwallconstant 100.0
-
-  rmsd {
-    atoms {
-        atomnumbers { 1 2 3 4 5 6 7 8 }
-        rotateReference
-        centerReference
-        refpositionsfile ../Common/pi-ideal.pdb
-    }
-    refpositionsfile ../Common/da.pdb
-  }
-} 
-
-colvar {
-  name rmsdC
-
-  outputSystemForce on
-
-  width 1.0 
-
-  lowerboundary 0.0
-  upperboundary 5.0
-
-  lowerwallconstant 100.0
-  upperwallconstant 100.0
-
-  rmsd {
-    atoms {
-        atomnumbers { 1 2 3 4 5 6 7 8 }
-        centerReference
-        refpositionsfile ../Common/da.pdb
-    }
-    refpositionsfile ../Common/da.pdb
-  }
-
-} 
-
-colvar {
-  name rmsdD
-
-  outputSystemForce on
-
-  width 1.0 
-
-  lowerboundary 0.0
-  upperboundary 5.0
-
-  lowerwallconstant 100.0
-  upperwallconstant 100.0
-
-  rmsd {
-    atoms {
-        atomnumbers { 1 2 3 4 5 6 7 8 }
-        rotateReference
-        refpositionsfile ../Common/da.pdb
-    }
-    refpositionsfile ../Common/da.pdb
-  }
 } 
 
 
 colvar {
-  name rmsdE
+    name rmsdB
 
-  outputSystemForce on
+    outputSystemForce on
 
-  width 1.0 
+    width 1.0 
 
-  lowerboundary 0.0
-  upperboundary 5.0
+    lowerBoundary 0.0
+    upperBoundary 5.0
 
-  lowerwallconstant 100.0
-  upperwallconstant 100.0
+    lowerWallConstant 100.0
+    upperWallConstant 100.0
 
-  rmsd {
-    atoms {
-        atomnumbers { 1 2 3 4 5 6 7 8 }
-        centerReference no
-        rotateReference no
+    rmsd {
+        atoms {
+            atomNumbers { 1 2 3 4 5 6 7 8 }
+            rotateReference
+            centerReference
+            refpositionsfile ../Common/pi-ideal.xyz
+        }
+        refpositionsfile ../Common/da.xyz
     }
-    refpositionsfile ../Common/da.pdb
-  }
+} 
+
+
+colvar {
+    name rmsdC
+
+    outputSystemForce on
+
+    width 1.0 
+
+    lowerBoundary 0.0
+    upperBoundary 5.0
+
+    lowerWallConstant 100.0
+    upperWallConstant 100.0
+
+    rmsd {
+        atoms {
+            atomNumbers { 1 2 3 4 5 6 7 8 }
+            centerReference
+            refpositionsfile ../Common/da.xyz
+        }
+        refpositionsfile ../Common/da.xyz
+    }
+} 
+
+
+colvar {
+    name rmsdD
+
+    outputSystemForce on
+
+    width 1.0 
+
+    lowerBoundary 0.0
+    upperBoundary 5.0
+
+    lowerWallConstant 100.0
+    upperWallConstant 100.0
+
+    rmsd {
+        atoms {
+            atomNumbers { 1 2 3 4 5 6 7 8 }
+            rotateReference
+            refpositionsfile ../Common/da.xyz
+        }
+        refpositionsfile ../Common/da.xyz
+    }
+} 
+
+
+colvar {
+    name rmsdE
+
+    outputSystemForce on
+
+    width 1.0 
+
+    lowerBoundary 0.0
+    upperBoundary 5.0
+
+    lowerWallConstant 100.0
+    upperWallConstant 100.0
+
+    rmsd {
+        atoms {
+            atomNumbers { 1 2 3 4 5 6 7 8 }
+            centerReference no
+            rotateReference no
+        }
+        refpositionsfile ../Common/da.xyz
+    }
 } 
 
 
 harmonic {
-   colvars        rmsdA rmsdB rmsdC rmsdD rmsdE
-   forceConstant  1.0
-   centers        0.0   0.0   0.0   0.0   0.0   
+    colvars        rmsdA rmsdB rmsdC rmsdD rmsdE
+    forceConstant  1.0
+    centers        0.0   0.0   0.0   0.0   0.0   
 }

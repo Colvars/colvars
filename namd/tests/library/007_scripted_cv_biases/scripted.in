@@ -1,43 +1,42 @@
-Colvarstrajfrequency    2
-Colvarsrestartfrequency 20000
+colvarsTrajFrequency    2
 
 scriptedColvarForces on
 
 # same as d with scripted function
 colvar {
-  name ds
-  outputAppliedForce
+    name ds
+    outputAppliedForce
 
-  scriptedFunction Id
+    scriptedFunction Id
 
-  distance {
-    group1 { atomnumbers 4 }
-    group2 { atomnumbers 99 }
-  }
+    distance {
+        group1 { atomnumbers 4 }
+        group2 { atomnumbers 99 }
+    }
 }
 
 # Vector scripted function
 # returns a 5-vector [ scalar_distance orientation_quaternion ]
 colvar {
-  name vec
-  outputAppliedForce
+    name vec
+    outputAppliedForce
 
-  scriptedFunction vector
-  scriptedFunctionType vector
-  scriptedFunctionVectorSize 5
+    scriptedFunction vector
+    scriptedFunctionType vector
+    scriptedFunctionVectorSize 5
 
-  cartesian {
-    # the alphabetical order of names determines the CVC order
-    name cvc2
-    atoms { atomnumbers 4 99 }
-  }
-
-  orientation {
-    name cvc1
-    atoms {
-      atomNumbersRange 1-104
+    cartesian {
+        # the alphabetical order of names determines the CVC order
+        name cvc2
+        atoms { atomnumbers 4 99 }
     }
-    refpositionsfile ../Common/da.pdb
-  }
+
+    orientation {
+        name cvc1
+        atoms {
+            atomNumbersRange 1-104
+        }
+        refpositionsfile ../Common/da.xyz
+    }
 }
 

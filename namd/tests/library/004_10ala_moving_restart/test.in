@@ -1,23 +1,23 @@
 colvarsTrajFrequency 2
 
 colvar {
-  name d
-  dihedral {
-    group1 { atomNumbers 1 }
-    group2 { atomNumbers 4 }
-    group3 { atomNumbers 10 }
-    group4 { atomNumbers 12 }
-  }
-  outputAppliedForce
+    name d
+    dihedral {
+        group1 { atomNumbers 1 }
+        group2 { atomNumbers 4 }
+        group3 { atomNumbers 10 }
+        group4 { atomNumbers 12 }
+    }
+    outputAppliedForce
 }
 
 harmonic {
-  colvars d
+    colvars d
 
-  centers 135
-  targetCenters 495
-  targetNumStages 36
-  targetNumSteps  833
-  forceConstant 10. 
+    centers 135
+    targetCenters 495
+    targetNumStages 36
+    targetNumSteps  833
+    forceConstant 10. 
 }
 

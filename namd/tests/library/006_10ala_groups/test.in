@@ -1,53 +1,54 @@
-Colvarstrajfrequency    1
-Colvarsrestartfrequency 2000
+colvarsTrajFrequency    1
 
-indexFile index.ndx
+indexFile ../Common/da.ndx
 
-colvar {
-  name rmsdA
-
-  outputSystemForce on
-#  outputAppliedForce on
-  width 1.0 
-
-  lowerboundary 0.0
-  upperboundary 5.0
-
-  lowerwallconstant 100.0
-  upperwallconstant 100.0
-
-  rmsd {
-      atoms {
-      indexGroup C-alpha
-    }
-    refpositionsfile ../Common/da.pdb
-  }
-} 
 
 colvar {
-  name rmsdB
+    name rmsdA
 
-  outputSystemForce on
-#  outputAppliedForce on
-  width 1.0 
+    outputSystemForce on
+    #  outputAppliedForce on
+    width 1.0 
 
-  lowerboundary 0.0
-  upperboundary 5.0
+    lowerboundary 0.0
+    upperboundary 5.0
 
-  lowerwallconstant 100.0
-  upperwallconstant 100.0
+    lowerwallconstant 100.0
+    upperwallconstant 100.0
 
-  rmsd {
-      atoms {
-      psfSegID BH
-      atomNameResidueRange CA 1-10
+    rmsd {
+        atoms {
+            indexGroup Protein_C-alpha
+        }
+        refPositionsFile ../Common/da.xyz
     }
-    refpositionsfile ../Common/da.pdb
-  }
 } 
+
+
+colvar {
+    name rmsdB
+
+    outputSystemForce on
+    #  outputAppliedForce on
+    width 1.0 
+
+    lowerboundary 0.0
+    upperboundary 5.0
+
+    lowerwallconstant 100.0
+    upperwallconstant 100.0
+
+    rmsd {
+        atoms {
+            indexGroup Protein_C-alpha
+        }
+        refpositionsfile ../Common/da.xyz
+    }
+} 
+
 
 harmonic {
-   colvars        rmsdA rmsdB
-   forceConstant  1.0
-   centers        0.0   0.0
+    colvars        rmsdA rmsdB
+    forceConstant  1.0
+    centers        0.0   0.0
 }

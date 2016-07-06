@@ -1,29 +1,29 @@
 colvarsTrajFrequency    1
-colvarsRestartFrequency 2000
+
 
 colvar {
-  name r
+    name r
 
-  outputAppliedForce yes
+    outputAppliedForce yes
 
-  rmsd {
-    refPositionsFile ../Common/310turn-ideal.pdb
-    debugGradients yes
-    atoms {
-      atomNumbers  4
-      rotateReference yes
-      centerReference yes
-      fittingGroup {
-        atomNumbers  54 64 74 84 99 
-      }
-      refPositionsFile ../Common/310turn-ideal.pdb # ref prot positions for fitting
+    rmsd {
+        refPositionsFile ../Common/310turn-ideal.xyz
+        debugGradients yes
+        atoms {
+            atomNumbers  4
+            rotateReference yes
+            centerReference yes
+            fittingGroup {
+                atomNumbers  54 64 74 84 99 
+            }
+            refPositionsFile ../Common/310turn-ideal.xyz # ref prot positions for fitting
+        }
     }
-  }
 }
 
 harmonic {
-  colvars r
-  centers 0.
-  forceConstant 0.1
+    colvars r
+    centers 0.0
+    forceConstant 0.1
 }
 

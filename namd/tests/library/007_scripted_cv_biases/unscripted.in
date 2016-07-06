@@ -1,34 +1,36 @@
-Colvarstrajfrequency    2
-Colvarsrestartfrequency 20000
+colvarsTrajFrequency    2
 
 scriptedColvarForces on
 
+
 # regular distance with harmonic bias
 colvar {
-  name d
-  outputAppliedForce
+    name d
+    outputAppliedForce
 
-  distance {
-    group1 { atomnumbers 4 }
-    group2 { atomnumbers 99 }
-  }
+    distance {
+        group1 { atomnumbers 4 }
+        group2 { atomnumbers 99 }
+    }
 }
+
 
 harmonic {
-  colvars d
-  centers 18.
-  forceConstant 500.
+    colvars d
+    centers 18.
+    forceConstant 500.
 }
+
 
 # orientation quaternion
 colvar {
-  name o
+    name o
 
-  orientation {
-      atoms {
-        atomNumbersRange 1-104
+    orientation {
+        atoms {
+            atomNumbersRange 1-104
+        }
+        refpositionsfile ../Common/da.xyz
     }
-    refpositionsfile ../Common/da.pdb
-  }
 }
 

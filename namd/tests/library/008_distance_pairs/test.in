@@ -1,5 +1,7 @@
 colvarsTrajFrequency    1
-colvarsRestartFrequency 2000
+
+indexFile ../Common/da.ndx
+
 
 colvar {
     name dmat
@@ -10,15 +12,14 @@ colvar {
     distancePairs {
         forceNoPBC yes
         group1 {
-            psfSegID BH
-            atomNameResidueRange CA 1-2
+            indexGroup Protein_C-alpha_1_2
         }
         group2 {
-            psfSegID BH
-            atomNameResidueRange CA 9-10
+            indexGroup Protein_C-alpha_9_10
         }
     }
 } 
+
 
 harmonic {
     colvars        dmat
