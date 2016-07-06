@@ -17,6 +17,9 @@ int colvarbias_histogram::init(std::string const &conf)
 {
   colvarbias::init(conf);
 
+  provide(f_cvb_history_dependent);
+  enable(f_cvb_history_dependent);
+
   size_t i;
 
   get_keyval(conf, "outputFile", out_name, std::string(""));
@@ -82,7 +85,6 @@ int colvarbias_histogram::init(std::string const &conf)
     }
   }
 
-  cvm::log("Finished histogram setup.\n");
   return COLVARS_OK;
 }
 
