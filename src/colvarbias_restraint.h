@@ -5,9 +5,12 @@
 
 #include "colvarbias.h"
 
-/// \brief Bias restraint, optionally moving towards a target
+/// \brief Most general definition of a colvar restraint:
+/// see derived classes for specific types
 /// (implementation of \link colvarbias \endlink)
-class colvarbias_restraint : public colvarbias {
+class colvarbias_restraint
+  : public virtual colvarbias
+{
 
 public:
 
@@ -16,10 +19,10 @@ public:
 
   // TODO the following can be supplanted by a new call to init()
   /// Load new configuration - force constant and/or centers only
-  virtual void change_configuration(std::string const &conf);
+  virtual void change_configuration(std::string const &conf) {}
 
   /// Calculate change in energy from using alternate configuration
-  virtual cvm::real energy_difference(std::string const &conf);
+  virtual cvm::real energy_difference(std::string const &conf) {}
 
   virtual std::string const get_state_params() const;
   virtual int set_state_params(std::string const &conf);
@@ -40,28 +43,104 @@ public:
 
 protected:
 
-  /// \brief Potential function
-  virtual cvm::real restraint_potential(cvm::real k, colvar const *x,
-                                        colvarvalue const &xcenter) const = 0;
+  /// \brief Potential function for the i-th colvar
+  virtual cvm::real restraint_potential(size_t i) const = 0;
 
-  /// \brief Force function
-  virtual colvarvalue restraint_force(cvm::real k, colvar const *x,
-                                      colvarvalue const &xcenter) const = 0;
+  /// \brief Force function for the i-th colvar
+  virtual colvarvalue const restraint_force(size_t i) const = 0;
 
-  ///\brief Unit scaling
-  virtual cvm::real restraint_convert_k(cvm::real k, cvm::real dist_measure) const = 0;
+  /// \brief Derivative of the potential function with respect to the force constant
+  virtual cvm::real d_restraint_potential_dk(size_t i) const = 0;
+};
+
+
+/// Definition and parsing of the restraint centers
+class colvarbias_restraint_centers
+  : public virtual colvarbias_restraint
+{
+public:
+
+  colvarbias_restraint_centers(char const *key);
+  virtual int init(std::string const &conf);
+
+protected:
 
   /// \brief Restraint centers
   std::vector<colvarvalue> colvar_centers;
 
-  /// \brief Restraint centers without wrapping or constraints applied
+  /// \brief Restraint centers outside the domain of the colvars (no wrapping or constraints applied)
   std::vector<colvarvalue> colvar_centers_raw;
+};
 
+
+/// Definition and parsing of the force constant
+class colvarbias_restraint_k
+  : public virtual colvarbias_restraint
+{
+public:
+
+  colvarbias_restraint_k(char const *key);
+  virtual int init(std::string const &conf);
+
+protected:
+  /// \brief Restraint force constant
+  cvm::real force_k;
+};
+
+
+/// Options to change the restraint configuration over time (shared between centers and k moving)
+class colvarbias_restraint_moving
+  : public virtual colvarparse, public virtual cvm::deps {
+public:
+
+  colvarbias_restraint_moving(char const *key);
+  // Note: despite the diamond inheritance, most of this function gets only executed once
+  virtual int init(std::string const &conf);
+  virtual int update() { return COLVARS_OK; }
   virtual std::string const get_state_params() const;
   virtual int set_state_params(std::string const &conf);
 
+protected:
+
   /// \brief Moving target?
   bool b_chg_centers;
+
+  /// \brief Changing force constant?
+  bool b_chg_force_k;
+
+  /// \brief Number of stages over which to perform the change
+  /// If zero, perform a continuous change
+  int target_nstages;
+
+  /// \brief Number of current stage of the perturbation
+  int stage;
+
+    /// \brief Lambda-schedule for custom varying force constant
+  std::vector<cvm::real> lambda_schedule;
+
+  /// \brief Number of steps required to reach the target force constant
+  /// or restraint centers
+  long target_nsteps;
+};
+
+
+/// Options to change the restraint centers over time
+class colvarbias_restraint_centers_moving
+  : public virtual colvarbias_restraint_centers,
+    public virtual colvarbias_restraint_moving
+{
+public:
+
+  colvarbias_restraint_centers_moving(char const *key);
+  virtual int init(std::string const &conf);
+  virtual int update();
+
+  virtual std::string const get_state_params() const;
+  virtual int set_state_params(std::string const &conf);
+  virtual std::ostream & write_traj_label(std::ostream &os);
+  virtual std::ostream & write_traj(std::ostream &os);
+
+protected:
 
   /// \brief New restraint centers
   std::vector<colvarvalue> target_centers;
@@ -79,20 +158,34 @@ protected:
   /// \brief Accumulated work
   cvm::real acc_work;
 
-  /// \brief Restraint force constant
-  cvm::real force_k;
+  /// Update the accumulated work
+  int update_acc_work();
+};
 
-  /// \brief Changing force constant?
-  bool b_chg_force_k;
+
+/// Options to change the restraint force constant over time
+class colvarbias_restraint_k_moving
+  : public virtual colvarbias_restraint_k,
+    public virtual colvarbias_restraint_moving
+{
+public:
+
+  colvarbias_restraint_k_moving(char const *key);
+  virtual int init(std::string const &conf);
+  virtual int update();
+
+  virtual std::string const get_state_params() const;
+  virtual int set_state_params(std::string const &conf);
+  virtual std::ostream & write_traj_label(std::ostream &os);
+  virtual std::ostream & write_traj(std::ostream &os);
+
+protected:
 
   /// \brief Restraint force constant (target value)
   cvm::real target_force_k;
 
   /// \brief Restraint force constant (starting value)
   cvm::real starting_force_k;
-
-  /// \brief Lambda-schedule for custom varying force constant
-  std::vector<cvm::real> lambda_schedule;
 
   /// \brief Exponent for varying the force constant
   cvm::real force_k_exp;
@@ -101,71 +194,55 @@ protected:
   /// (in TI, would be the accumulating FE derivative)
   cvm::real restraint_FE;
 
-
   /// \brief Equilibration steps for restraint FE calculation through TI
   cvm::real target_equil_steps;
-
-  /// \brief Number of stages over which to perform the change
-  /// If zero, perform a continuous change
-  int target_nstages;
-
-  /// \brief Number of current stage of the perturbation
-  int stage;
-
-  /// \brief Number of steps required to reach the target force constant
-  /// or restraint centers
-  long target_nsteps;
 };
 
 
 /// \brief Harmonic bias restraint
 /// (implementation of \link colvarbias_restraint \endlink)
-class colvarbias_restraint_harmonic : public colvarbias_restraint {
-
+class colvarbias_restraint_harmonic
+  : public colvarbias_restraint_centers_moving,
+    public colvarbias_restraint_k_moving
+{
 public:
-
   colvarbias_restraint_harmonic(char const *key);
   virtual int init(std::string const &conf);
-  // no additional members, destructor not needed
+  virtual int update();
+  virtual std::string const get_state_params() const;
+  virtual int set_state_params(std::string const &conf);
+  virtual std::ostream & write_traj_label(std::ostream &os);
+  virtual std::ostream & write_traj(std::ostream &os);
 
 protected:
 
-  /// \brief Potential function
-  virtual cvm::real restraint_potential(cvm::real k, colvar const *x,
-                                        colvarvalue const &xcenter) const;
-
-  /// \brief Force function
-  virtual colvarvalue restraint_force(cvm::real k, colvar const *x,
-                                      colvarvalue const &xcenter) const;
-
-  ///\brief Unit scaling
-  virtual cvm::real restraint_convert_k(cvm::real k, cvm::real dist_measure) const;
-
-};
+  virtual cvm::real restraint_potential(size_t i) const;
+  virtual colvarvalue const restraint_force(size_t i) const;
+  virtual cvm::real d_restraint_potential_dk(size_t i) const;}
+;
 
 
 /// \brief Linear bias restraint
 /// (implementation of \link colvarbias_restraint \endlink)
-class colvarbias_restraint_linear : public colvarbias_restraint {
+class colvarbias_restraint_linear
+  : public colvarbias_restraint_centers_moving,
+    public colvarbias_restraint_k_moving
+{
 
 public:
   colvarbias_restraint_linear(char const *key);
   virtual int init(std::string const &conf);
-  // no additional members, destructor not needed
+  virtual int update();
+  virtual std::string const get_state_params() const;
+  virtual int set_state_params(std::string const &conf);
+  virtual std::ostream & write_traj_label(std::ostream &os);
+  virtual std::ostream & write_traj(std::ostream &os);
 
 protected:
 
-  /// \brief Potential function
-  virtual cvm::real restraint_potential(cvm::real k, colvar const *x,
-                                        colvarvalue const &xcenter) const;
-
-  /// \brief Force function
-  virtual colvarvalue restraint_force(cvm::real k, colvar const *x,
-                                      colvarvalue const &xcenter) const;
-
-  ///\brief Unit scaling
-  virtual cvm::real restraint_convert_k(cvm::real k, cvm::real dist_measure) const;
-
+  virtual cvm::real restraint_potential(size_t i) const;
+  virtual colvarvalue const restraint_force(size_t i) const;
+  virtual cvm::real d_restraint_potential_dk(size_t i) const;
 };
 
 

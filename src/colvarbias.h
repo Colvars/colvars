@@ -61,12 +61,10 @@ public:
   /// \brief Set to zero all mutable data
   virtual int reset();
 
-protected:
+private:
 
   /// Default constructor
   colvarbias();
-
-private:
 
   /// Copy constructor
   colvarbias(colvarbias &);

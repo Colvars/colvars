@@ -152,6 +152,7 @@ int colvarbias::add_colvar(std::string const &cv_name)
 
     colvar_forces.push_back(colvarvalue());
     colvar_forces.back().type(cv->value()); // make sure each force is initialized to zero
+    colvar_forces.back().is_derivative(); // colvar constraints are not applied to the force
     colvar_forces.back().reset();
 
     cv->biases.push_back(this); // add back-reference to this bias to colvar
