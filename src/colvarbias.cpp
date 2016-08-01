@@ -142,12 +142,12 @@ int colvarbias::clear()
 int colvarbias::add_colvar(std::string const &cv_name)
 {
   if (colvar *cv = cvm::colvar_by_name(cv_name)) {
-    // Removed this as nor all biases apply forces eg histogram
-    // cv->enable(colvar::task_gradients);
+
     if (cvm::debug()) {
       cvm::log("Applying this bias to collective variable \""+
                cv->name+"\".\n");
     }
+
     colvars.push_back(cv);
 
     colvar_forces.push_back(colvarvalue());
@@ -155,6 +155,10 @@ int colvarbias::add_colvar(std::string const &cv_name)
     colvar_forces.back().reset();
 
     cv->biases.push_back(this); // add back-reference to this bias to colvar
+
+    if (is_enabled(f_cvb_apply_force)) {
+      cv->enable(f_cv_gradient);
+    }
 
     // Add dependency link.
     // All biases need at least the value of each colvar
@@ -166,6 +170,7 @@ int colvarbias::add_colvar(std::string const &cv_name)
                cv_name+"\".\n", INPUT_ERROR);
     return INPUT_ERROR;
   }
+
   return COLVARS_OK;
 }
 
