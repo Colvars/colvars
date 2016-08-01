@@ -1,4 +1,4 @@
-/// -*- c++ -*-
+// -*- c++ -*-
 
 #ifndef COLVARGRID_H
 #define COLVARGRID_H
@@ -366,6 +366,14 @@ public:
   inline int current_bin_scalar(int const i) const
   {
     return value_to_bin_scalar(actual_value[i] ? cv[i]->actual_value() : cv[i]->value(), i);
+  }
+
+  /// \brief Report the bin corresponding to the current value of item iv in variable i
+  inline int current_bin_scalar(int const i, int const iv) const
+  {
+    return value_to_bin_scalar(actual_value[i] ?
+        cv[i]->actual_value().vector1d_value[iv] :
+        cv[i]->value().vector1d_value[iv], i);
   }
 
   /// \brief Use the lower boundary and the width to report which bin

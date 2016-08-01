@@ -1,61 +1,56 @@
-colvarstrajfrequency    1
-colvarsrestartfrequency 2000
+colvarsTrajFrequency    1
+
+indexFile ../Common/da.ndx
+
 
 colvar {
-  name angle
+    name angle
 
-  outputSystemForce on
-  outputAppliedForce on
-  width 6.0 
+    outputSystemForce on
+    outputAppliedForce on
+    width 6.0 
 
-  lowerBoundary    0.0
-  upperBoundary  180.0
+    lowerBoundary    0.0
+    upperBoundary  180.0
 
-  angle {
-    group1 {
-      psfSegID BH
-      atomNameResidueRange CA 1-1
+    angle {
+        group1 {
+            indexGroup Protein_C-alpha_1
+        }
+        group2 {
+            indexGroup Protein_C-alpha_2
+        }
+        group3 {
+            indexGroup Protein_C-alpha_3
+        }
     }
-    group2 {
-      psfSegID BH
-      atomNameResidueRange CA 2-2
-    }
-    group3 {
-      psfSegID BH
-      atomNameResidueRange CA 3-3
-    }
-  }
 } 
 
 
 colvar {
-  name dihedral
+    name dihedral
 
-  outputSystemForce on
-  outputAppliedForce on
-  width 6.0 
+    outputSystemForce on
+    outputAppliedForce on
+    width 6.0 
 
-  lowerBoundary    0.0
-  upperBoundary  180.0
+    lowerBoundary    0.0
+    upperBoundary  180.0
 
-  dihedral {
-    group1 {
-      psfSegID BH
-      atomNameResidueRange CA 1-1
+    dihedral {
+        group1 {
+            indexGroup Protein_C-alpha_1
+        }
+        group2 {
+            indexGroup Protein_C-alpha_2
+        }
+        group3 {
+            indexGroup Protein_C-alpha_3
+        }
+        group4 {
+            indexGroup Protein_C-alpha_4
+        }
     }
-    group2 {
-      psfSegID BH
-      atomNameResidueRange CA 2-2
-    }
-    group3 {
-      psfSegID BH
-      atomNameResidueRange CA 3-3
-    }
-    group4 {
-      psfSegID BH
-      atomNameResidueRange CA 4-4
-    }
-  }
 } 
 
 

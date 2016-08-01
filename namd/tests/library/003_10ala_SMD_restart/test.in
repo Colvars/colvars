@@ -1,5 +1,6 @@
 colvarsTrajFrequency    1
-#colvarsRestartFrequency 10
+
+indexFile ../Common/da.ndx
 
 
 colvar {
@@ -21,12 +22,12 @@ colvar {
     rmsd {
         atoms {
             enablefitGradients yes
-            psfSegID BH
-            atomNameResidueRange CA 1-10
+            indexGroup Protein_C-alpha
         }
-        refpositionsfile ../Common/pi-ideal.pdb
+        refpositionsfile ../Common/pi-ideal.xyz
     }
 } 
+
 
 harmonic {
     colvars        rmsd

@@ -24,7 +24,7 @@ The colvars module in NAMD may be used in both MD simulations and energy minimiz
 \cvvmdugonly{%
 The colvars module in VMD may be used to calculate these functions over a molecular structure, and to analyze the results of previous simulations.}
 \cvrefmanonly{%
-This manual documents the collective variables module (colvars), a portable software that interfaces multiple MD simulation programs, with a focus on flexibility, robustness and high performance.}
+This manual documents the collective variables module (\textbf{Colvars}), a portable software that interfaces multiple MD simulation programs, with a focus on flexibility, robustness and high performance.}
 The module is designed to perform multiple tasks concurrently during or after a simulation, the most common of which are:
 \begin{itemize}
 
@@ -1021,7 +1021,7 @@ In typical applications, the default settings result in the expected behavior.
     Implicitly remove translations for this group}{%
     boolean}{%
     \texttt{off}}{%
-    If this option is \texttt{on}, the center of geometry of the group will be aligned with that of the reference positions provided by \cvnamebasedonly{either} \texttt{refPositions}\cvnamebasedonly{ or \texttt{refPositionsFile}}.
+    If this option is \texttt{on}, the center of geometry of the group will be aligned with that of the reference positions provided by \cvnamebasedonly{either} \texttt{refPositions} or \texttt{refPositionsFile}.
     Colvar components will only have access to the aligned positions.
 \textbf{Note}: unless otherwise specified, \texttt{rmsd} and \texttt{eigenvector} set this option to \texttt{on} \emph{by default}.
 }
@@ -1033,7 +1033,7 @@ In typical applications, the default settings result in the expected behavior.
     Implicitly remove rotations for this group}{%
     boolean}{%
     \texttt{off}}{%
-    If this option is \texttt{on}, the coordinates of this group will be optimally superimposed to the reference positions provided by \cvnamebasedonly{either} \texttt{refPositions}\cvnamebasedonly{ or \texttt{refPositionsFile}}.
+    If this option is \texttt{on}, the coordinates of this group will be optimally superimposed to the reference positions provided by \cvnamebasedonly{either} \texttt{refPositions} or \texttt{refPositionsFile}.
     The rotation will be performed around the center of geometry if \texttt{centerReference} is \texttt{on}, around the origin otherwise.
     The algorithm used is the same employed by the \texttt{orientation} colvar component~\cite{Coutsias2004}.
     Forces applied to the atoms of this group will also be implicitly rotated back to the original frame.
@@ -1046,31 +1046,34 @@ In typical applications, the default settings result in the expected behavior.
     atom group}{%
     Reference positions for fitting (\AA)}{%
     space-separated list of \texttt{(x, y, z)} triplets}{%
+    \label{key:colvars:atom_group:refPositions}
     This option provides a list of reference coordinates for \texttt{centerReference} or \texttt{rotateReference}.
     If only \texttt{centerReference} is \texttt{on}, the list may contain a single (x, y, z) triplet; if also \texttt{rotateReference} is \texttt{on}, the list should be as long as the atom group.
 }
 
-\cvnamebasedonly{
 \item %
   \key
     {refPositionsFile}{%
     atom group}{%
     File containing the reference positions for fitting}{%
     UNIX filename}{%
-    Supplies the reference positions (mutually exclusive with \texttt{refPositions}).
+    \label{key:colvars:atom_group:refPositionsFile}
+    This keyword provides the reference coordinates for fitting from the given file, and is mutually exclusive with \texttt{refPositions}.
+    The acceptable file format is XYZ\cvnamebasedonly{or PDB}.
     Atomic positions are read differently depending on the three following scenarios:
-    \emph{i)} \texttt{refPositionsCol} is specified: the PDB file contains a set of position larger than the size of the group, and positions are read according to the value of the column \texttt{refPositionsCol} (which may be the same as \texttt{atomsCol}).
-    \emph{ii)} \texttt{refPositionsCol} is not specified and the PDB file contains exactly as many \texttt{ATOM} records as the atoms in the group: all positions are read in sequence;
-    \emph{iii)} \texttt{refPositionsCol} is not specified and the PDB file contains the entire system: the positions corresponding to the numeric indices of the atom group are read.
+    \emph{i)} the file contains exactly as many records as the atoms in the group: all positions are read in sequence;
+    \emph{ii)} the file contains coordinates for the entire system: only the positions corresponding to the numeric indices of the atom group are read\cvnamebasedonly{;
+    \emph{iii)} if the file is a PDB file and \texttt{refPositionsCol} is specified, positions are read according to the value of the column \texttt{refPositionsCol} (which may be the same as \texttt{atomsCol})}.
 }
 
+\cvnamebasedonly{
 \item %
   \key
     {refPositionsCol}{%
     atom group}{%
     PDB column containing atom flags}{%
     \texttt{O}, \texttt{B}, \texttt{X}, \texttt{Y}, or \texttt{Z}}{%
-    Like \texttt{atomsCol} for \texttt{atomsFile}, indicates which column to use to identify the atoms in \texttt{refPositionsFile}.}
+    Like \texttt{atomsCol} for \texttt{atomsFile}, indicates which column to use to identify the atoms in \texttt{refPositionsFile} (if this is a PDB file).}
 
 \item %
   \key
@@ -1083,16 +1086,16 @@ In typical applications, the default settings result in the expected behavior.
 
 \item %
   \keydef
-    {refPositionsGroup}{%
+    {fittingGroup}{%
     atom group}{%
     Use an alternate set of atoms to define the roto-translation}{%
-    Block \texttt{refPositionsGroup \{ ... \}}}{%
+    Block \texttt{fittingGroup \{ ... \}}}{%
     This group itself}{%
     If either \texttt{centerReference} or \texttt{rotateReference} is defined, this keyword defines an alternate atom group to calculate the optimal roto-translation.
     Use this option to define a continuous rotation if the structure of the group involved changes significantly (a typical symptom would be the message ``Warning: discontinuous rotation!'').
 
 \cvnamebasedonly{
-    The following example illustrates the syntax of \texttt{refPositionsGroup}: a group called ``\texttt{atoms}'' is defined, including 8 C$_{\alpha}$ atoms of a protein of 100 residues.
+    The following example illustrates the syntax of \texttt{fittingGroup}: a group called ``\texttt{atoms}'' is defined, including 8 C$_{\alpha}$ atoms of a protein of 100 residues.
     An optimal roto-translation is calculated automatically by fitting the C$_{\alpha}$ trace of the rest of the protein onto the coordinates provided by a PDB file.}
 
 {%
@@ -1106,7 +1109,7 @@ atoms \{\\
 \\
 \-~~centerReference yes\\
 \-~~rotateReference yes\\
-\-~~refPositionsGroup \{\\
+\-~~fittingGroup \{\\
 \-~~~~\# define the frame by fitting the rest of the protein\\
 \-~~~~psfSegID              PROT PROT\\
 \-~~~~atomNameResidueRange  CA  1-40\\
@@ -1686,37 +1689,30 @@ are:
     \texttt{rmsd}}{%
     Reference coordinates}{%
     space-separated list of \texttt{(x, y, z)} triplets}{%
-    This option\cvnamebasedonly{ (mutually exclusive with \texttt{refPositionsFile})}
-    sets the reference coordinates.  If only \texttt{centerReference} is \texttt{on}, the list can be a single (x, y, z) triplet; if also \texttt{rotateReference} is \texttt{on}, the list should be as long as the atom group.  This option 
+    This option (mutually exclusive with \texttt{refPositionsFile}) sets the reference coordinates.  If only \texttt{centerReference} is \texttt{on}, the list can be a single (x, y, z) triplet; if also \texttt{rotateReference} is \texttt{on}, the list should be as long as the atom group.  This option 
     is independent from that with the same keyword within the
-    \texttt{atoms~\{...\}} block (see \ref{sec:colvar_atom_groups}).  The latter (and related fitting
+    \texttt{atoms~\{...\}} block (see \ref{key:colvars:atom_group:refPositions}).  The latter (and related fitting
     options for the atom group) are normally not needed,
     and should be omitted altogether except for advanced usage cases.
     }
 
-\cvnamebasedonly{
 \item %
   \key
     {refPositionsFile}{%
     \texttt{rmsd}}{%
     Reference coordinates file}{%
     UNIX filename}{%
-    This option (mutually exclusive with \texttt{refPositions}) sets
-    the PDB file name for the reference coordinates to be compared
-    with.  The format is the same as that provided by
-    \texttt{refPositionsFile} within an atom group definition.
+    This option (mutually exclusive with \texttt{refPositions}) sets the file name for the reference coordinates to be compared with.  The format is the same as that provided by \texttt{refPositionsFile} within an atom group's definition (see \ref{key:colvars:atom_group:refPositionsFile}).
     }
 
+\cvnamebasedonly{
 \item %
   \key
     {refPositionsCol}{%
     \texttt{rmsd}}{%
     PDB column containing atom flags}{%
     \texttt{O}, \texttt{B}, \texttt{X}, \texttt{Y}, or \texttt{Z}}{%
-    If \texttt{refPositionsFile} is defined, and the file contains
-    all the atoms in the topology, this option may be povided to
-    set which PDB field is
-    used to flag the reference coordinates for \texttt{atoms}.
+    If \texttt{refPositionsFile} is a PDB file that contains all the atoms in the topology, this option may be provided to set which PDB field is used to flag the reference coordinates for \texttt{atoms}.
   }
 
 \item %
@@ -1763,7 +1759,7 @@ positional restraints within the colvars module;
 \item fitting the atomic positions to different reference coordinates
 than those used in the RMSD calculation itself;
 \item applying the optimal rotation and/or translation from a separate
-atom group, defined through \texttt{refPositionsGroup}: the RMSD then
+atom group, defined through \texttt{fittingGroup}: the RMSD then
 reflects the deviation from reference coordinates in a separate, moving
 reference frame.
 \end{enumerate}
@@ -1795,7 +1791,7 @@ mode of the system.  It is assumed that $\sum_{i}\mathbf{v}_{i} = 0$:
 otherwise, the colvars module centers the $\mathbf{v}_{i}$
 automatically when reading them from the configuration.
 
-As for the component \texttt{rmsd}, the available options are \texttt{atoms}\cvnamebasedonly{, \texttt{refPositionsFile}, \texttt{refPositionsCol} and \texttt{refPositionsColValue}, } and \texttt{refPositions}.
+As for the component \texttt{rmsd}, the available options are \texttt{atoms}, \texttt{refPositionsFile}\cvnamebasedonly{, \texttt{refPositionsCol} and \texttt{refPositionsColValue}, } and \texttt{refPositions}.
 In addition, the following are recognized:
 \begin{itemize}
 
@@ -1940,9 +1936,9 @@ of 90$^{\circ}$ around the $z$ axis is expressed as
 to and from a $4\times{}4$ rotation matrix in a format suitable for
 usage in VMD.
 
-As for the component \texttt{rmsd}, the available options are \texttt{atoms}\cvnamebasedonly{, \texttt{refPositionsFile}, \texttt{refPositionsCol} and \texttt{refPositionsColValue}, } and \texttt{refPositions}.
+As for the component \texttt{rmsd}, the available options are \texttt{atoms}, \texttt{refPositionsFile}\cvnamebasedonly{, \texttt{refPositionsCol} and \texttt{refPositionsColValue}, } and \texttt{refPositions}.
 
-\textbf{Note:} \texttt{refPositions}\cvnamebasedonly{ and \texttt{refPositionsFile}} define the set of positions \emph{from which} the optimal rotation is calculated, but this rotation is not applied to the coordinates of the atoms involved: it is used instead to define the variable itself.
+\textbf{Note:} \texttt{refPositions}and \texttt{refPositionsFile} define the set of positions \emph{from which} the optimal rotation is calculated, but this rotation is not applied to the coordinates of the atoms involved: it is used instead to define the variable itself.
 
 \begin{itemize}
 
@@ -1962,7 +1958,7 @@ As for the component \texttt{rmsd}, the available options are \texttt{atoms}\cvn
 
 \end{itemize}
 
-\textbf{Hint: stopping the rotation of a protein.}  To stop the
+\textbf{Tip: stopping the rotation of a protein.}  To stop the
 rotation of an elongated macromolecule in solution (and use an
 anisotropic box to save water molecules), it is possible to define a
 colvar with an \texttt{orientation} component, and restrain it throuh
@@ -1976,14 +1972,14 @@ chain, or disable \texttt{wrapAll} otherwise.
 
 \cvsubsubsec{\texttt{orientationAngle}: angle of rotation from reference coordinates.}  
 The block \texttt{orientationAngle~\{...\}} accepts the same base options as
-the component \texttt{orientation}: \texttt{atoms} and \texttt{refPositions}\cvnamebasedonly{, or \texttt{refPositionsFile}, \texttt{refPositionsCol} and \texttt{refPositionsColValue}}.
+the component \texttt{orientation}: \texttt{atoms}, \texttt{refPositions}, \texttt{refPositionsFile}\cvnamebasedonly{, \texttt{refPositionsCol} and \texttt{refPositionsColValue}}.
 The returned value is the angle of rotation $\theta$ between the current and the reference positions.
 This angle is expressed in degrees within the range [0$^{\circ}$:180$^{\circ}$].
 
 
 \cvsubsubsec{\texttt{orientationProj}: cosine of the angle of rotation from reference coordinates.}  
 The block \texttt{orientationProj~\{...\}} accepts the same base options as
-the component \texttt{orientation}: \texttt{atoms} and \texttt{refPositions}\cvnamebasedonly{, or \texttt{refPositionsFile}, \texttt{refPositionsCol} and \texttt{refPositionsColValue}}.
+the component \texttt{orientation}: \texttt{atoms}, \texttt{refPositions}, \texttt{refPositionsFile}\cvnamebasedonly{, \texttt{refPositionsCol} and \texttt{refPositionsColValue}}.
 The returned value is the cosine of the angle of rotation $\theta$ between the current and the reference positions.
 The range of values is [-1:1].
 
@@ -1991,7 +1987,7 @@ The range of values is [-1:1].
 \cvsubsubsec{\texttt{spinAngle}: angle of rotation around a given axis.}
 The complete rotation described by \texttt{orientation} can optionally be decomposed into two sub-rotations: one is a ``\emph{spin}'' rotation around \textbf{e}, and the other a ``\emph{tilt}'' rotation around an axis orthogonal to \textbf{e}.
 The component \texttt{spinAngle} measures the angle of the ``spin'' sub-rotation around \textbf{e}.
-This can be defined using the same options as the component \texttt{orientation}: \texttt{atoms} and \texttt{refPositions}\cvnamebasedonly{, or \texttt{refPositionsFile}, \texttt{refPositionsCol} and \texttt{refPositionsColValue}}.
+This can be defined using the same options as the component \texttt{orientation}: \texttt{atoms} and \texttt{refPositions} or \texttt{refPositionsFile}\cvnamebasedonly{, \texttt{refPositionsCol} and \texttt{refPositionsColValue}}.
 In addition, \texttt{spinAngle} accepts the \texttt{axis} option:
 \begin{itemize}
 \item %
@@ -2906,21 +2902,20 @@ The metadynamics method uses a history-dependent potential \cite{Laio2002} that 
 The metadynamics potential on the colvars $\bm{\xi} = (\xi_{1}, \xi_{2}, \ldots, \xi_{N_{\mathrm{cv}}})$ is defined as:
 \begin{equation}
   \label{eq:colvars_meta_pot}
-  V_{\mathrm{meta}}(\bm{\xi}) \; = \; {
+  V_{\mathrm{meta}}(\bm{\xi}(t)) \; = \; {
     \sum_{t' = \delta{}t, \\ 2\delta{}t, \\ \ldots}^{t'<t} W \: {
       \prod_{i = 1}^{N_{\mathrm{cv}}}
-      \exp\left(-\frac{(\xi_{i}-\xi_{i}(t'))^{2}}{2\delta_{\xi_{i}}^{2}}\right)
+      \exp\left(-\frac{(\xi_{i}(t)-\xi_{i}(t'))^{2}}{2\sigma_{\xi_{i}}^{2}}\right)
     }
   }\mathrm{,}
 \end{equation}
 where $V_{\mathrm{meta}}$ is the history-dependent potential acting on the \emph{current} values of the colvars $\bm{\xi}$, and depends only parametrically on the \emph{previous} values of the colvars.
 $V_{\mathrm{meta}}$ is constructed as a sum of $N_{\mathrm{cv}}$-dimensional repulsive Gaussian ``hills'', whose height is a chosen energy constant $W$, and whose centers are the previously explored configurations $\left(\bm{\xi}(\delta{}t), \bm{\xi}(2\delta{}t), \ldots\right)$.
-Each Gaussian functions has a width of approximately $2\delta_{\xi_{i}}$ along the direction of the $i$-th colvar.
 
-During the simulation, the system evolves towards the nearest minimum of the ``effective'' potential of mean force $\tilde{A}(\bm{\xi})$, which is the sum of the ``real'' underlying potential of mean force $A(\bm{\xi})$ and the the metadynamics potential $V_{\mathrm{meta}}(\bm{\xi})$.
+During the simulation, the system evolves towards the nearest minimum of the ``effective'' potential of mean force $\tilde{A}(\bm{\xi})$, which is the sum of the ``real'' underlying potential of mean force $A(\bm{\xi})$ and the the metadynamics potential, $V_{\mathrm{meta}}(\bm{\xi})$.
 Therefore, at any given time the probability of observing the configuration $\bm{\xi^{*}}$ is proportional to $\exp\left(-\tilde{A}(\bm{\xi^{*}})/\kappa_{\mathrm{B}}T\right)$: this is also the probability that a new Gaussian ``hill'' is added at that configuration.
-If the simulation is run for a sufficiently long time, each local minimum is canceled out by the sum of the Gaussian ``hill'' functions.
-At that stage the the ``effective'' potential of mean force $\tilde{A}(\bm{\xi})$ is constant, and $-V_{\mathrm{meta}}(\bm{\xi})$ is an accurate estimator of the ``real'' potential of mean force $A(\bm{\xi})$, save for an additive constant:
+If the simulation is run for a sufficiently long time, each local minimum is canceled out by the sum of the Gaussian ``hills''.
+At that stage the ``effective'' potential of mean force $\tilde{A}(\bm{\xi})$ is constant, and $-V_{\mathrm{meta}}(\bm{\xi})$ is an accurate estimator of the ``real'' potential of mean force $A(\bm{\xi})$, save for an additive constant:
 \begin{equation}
   \label{eq:colvars_meta_fes}
   A(\bm{\xi}) \; \simeq \; {
@@ -2928,30 +2923,26 @@ At that stage the the ``effective'' potential of mean force $\tilde{A}(\bm{\xi})
   }
 \end{equation}
 
-Assuming that the set of collective variables includes all relevant degrees of freedom, the predicted error of the estimate is a simple function of the correlation times of the colvars $\tau_{\xi_{i}}$, and of the user-defined parameters $W$, $\delta_{\xi_{i}}$ and $\delta{}t$ \cite{Bussi2006}. 
-In typical applications, a good rule of thumb can be to choose the ratio $W/\delta{}t$ much smaller than $\kappa_{\mathrm{B}}T/\tau_{\bm{\xi}}$, where $\tau_{\bm{\xi}}$ is the longest among $\bm{\xi}$'s correlation times: $\delta_{\xi_{i}}$ then dictates the resolution of the calculated PMF.
+Assuming that the set of collective variables includes all relevant degrees of freedom, the predicted error of the estimate is a simple function of the correlation times of the colvars $\tau_{\xi_{i}}$, and of the user-defined parameters $W$, $\sigma_{\xi_{i}}$ and $\delta{}t$ \cite{Bussi2006}. 
+In typical applications, a good rule of thumb can be to choose the ratio $W/\delta{}t$ much smaller than $\kappa_{\mathrm{B}}T/\tau_{\bm{\xi}}$, where $\tau_{\bm{\xi}}$ is the longest among $\bm{\xi}$'s correlation times: $\sigma_{\xi_{i}}$ then dictates the resolution of the calculated PMF.
 
-%Given $\Delta\xi$ the length of the relevant region of the colvar $\xi$, and $A^{*}$ the highest free energy that needs to be sampled (e.g.~the higher transition state free energy), the upper bound for the required simulation time is of the order of $N_{\mathrm{s}}(\xi) = (A^{*}\Delta\xi)/(W2\delta_{\xi})$ multiples of $\delta{}t$.
+%Given $\Delta\xi$ the length of the relevant region of the colvar $\xi$, and $A^{*}$ the highest free energy that needs to be sampled (e.g.~the higher transition state free energy), the upper bound for the required simulation time is of the order of $N_{\mathrm{s}}(\xi) = (A^{*}\Delta\xi)/(W2\sigma_{\xi})$ multiples of $\delta{}t$.
 %In calculations with multiple colvars $\bm{\xi}$, the upper bound is then 
 %$N_{\mathrm{s}}(\xi_{1}) \times N_{\mathrm{s}}(\xi_{2}) \times \ldots \times %N_{\mathrm{s}}(\xi_{N_{\mathrm{cv}}}) \times \delta{}t$.
 
 To enable a metadynamics calculation, a \texttt{metadynamics} block must be defined in the colvars configuration file. 
-Its only mandatory keyword is the \texttt{colvars} option listing all the variables involved: multidimensional PMFs are obtained by the same \texttt{metadynamics} instance applied to all the colvars.
-
-The parameters $W$ and $\delta{}t$ are specified by the keywords \texttt{hillWeight} and \texttt{newHillFrequency}, respectively.
-The values of these options are optimal for colvars with correlation times $\tau_{\bm{\xi}}$ in the range of a few thousand simulation steps, typical of many biomolecular simulations:
+Its mandatory keywords are \texttt{colvars}, which lists all the variables involved, and \texttt{hillWeight}, which specifies the weight parameter $W$.
+The parameters $\delta{}t$ and $\sigma_{\xi}$ specified by the optional keywords \texttt{newHillFrequency} and \texttt{hillWidth}:
 \begin{itemize}
 
 \item %
-  \keydef
+  \key
     {hillWeight}{%
     \texttt{metadynamics}}{%
     Height of each hill (\cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
     positive decimal}{%
-    \texttt{0.01}}{%
-    This option sets the height $W$ of the hills that are added during
-    this run.  Lower values provide more accurate sampling at the price
-    of longer simulation times to complete a PMF calculation.}
+    This option sets the height $W$ of the Gaussian hills that are added during this run.
+    Lower values provide more accurate sampling of the system's degrees of freedom at the price of longer simulation times to complete a PMF calculation based on metadynamics.}
 
 \item %
   \keydef
@@ -2966,11 +2957,19 @@ The values of these options are optimal for colvars with correlation times $\tau
     values provide more accurate sampling at the price of longer
     simulation times to complete a PMF calculation.}
 
+\item %
+  \keydef
+    {hillWidth}{%
+    \texttt{metadynamics}}{%
+    Relative width of a Gaussian hill with respect to the colvar's width}{%
+    positive decimal}{%
+    $\sqrt{2\pi}/2$}{%
+    The Gaussian width along each colvar, $2\sigma_{\xi_{i}}$, is set as the product between this number and the colvar's parameter $w_{i}$ given by \texttt{width} (see \ref{sec:colvar_general}); such product is printed in the standard output of \MDENGINE{}.
+    The default value of this number gives a Gaussian hill function whose volume is equal to the product of $\prod_{i}w_{i}$, the volume of one \texttt{histogram} bin (see \ref{sec:colvarbias_histogram}), and $W$.
+    \textbf{Tip:} \emph{use this property to estimate the fraction of colvar space covered by the Gaussian bias within a given simulation time.}
+    When \texttt{useGrids} is on, the default value also gives acceptable discretization errors~\cite{Fiorin2013}: for smoother visualization, this parameter may be increased and the \texttt{width} $w_{i}$ decreased in the same proportion.
+    \textbf{Note:} \emph{values smaller than 1 are not recommended}.}
 \end{itemize}
-
-It is the user's responsibility to either leave \texttt{hillWeight} and \texttt{newHillFrequency} at their default values, or to change them to match the specifics of each system.
-The parameter $\delta_{\xi_{i}}$ is instead defined as approximately half the \texttt{width} of the corresponding colvar $\xi_{i}$ (see \ref{sec:colvar_general}).
-
 
 
 \cvsubsubsec{Output files}
@@ -3037,23 +3036,6 @@ Default values are chosen to minimize such cost with no loss of accuracy.
     or \texttt{orientation}).  If \texttt{expandBoundaries} is defined
     in one of the colvars, grids are automatically expanded along the
     direction of that colvar.}
-
-\item %
-  \keydef
-    {hillWidth}{%
-    \texttt{metadynamics}}{%
-    Relative width of the hills}{%
-    positive decimal}{%
-    $\sqrt{2\pi}/2$}{%
-    Along each colvar, the width of each Gaussian hill
-    ($2\delta_{\xi_{i}}$) is given by the product between this number
-    and the colvar's \texttt{width}.  The default value gives hills
-    whose volume is the product of $W$ times the \texttt{width} of all
-    colvars.  For a smoother visualization of the free energy plot,
-    decrease \texttt{width} and increase \texttt{hillWidth} in the same
-    proportion.  \textbf{Note:} \emph{when }\texttt{useGrids}\emph{ is
-    }\texttt{on}\emph{ (default in most cases), values smaller than 1
-      should be avoided to avoid discretization errors}.}
 
 \item %
   \keydef
@@ -3277,10 +3259,23 @@ including variants of Steered and Targeted MD. Within energy minimization
 runs, it allows for restrained minimization, e.g. to calculate relaxed potential
 energy surfaces. In the context of the colvars module, 
 harmonic potentials are meant according to their textbook definition:
-$\displaystyle V(\bm{x}) = \frac{1}{2} k (\bm{x} - \bm{x_0})^2$.
+\begin{equation}
+  \label{eq:colvarbias_harmonic}
+  V(\xi) = \frac{1}{2} k \left(\frac{\xi - \xi_0}{w_{\xi}}\right)^2
+\end{equation}
 Note that this differs from harmonic bond and angle potentials in common
 force fields, where the factor of one half is typically omitted,
 resulting in a non-standard definition of the force constant.
+
+The formula above includes the characteristic length scale $w_{\xi}$ of the colvar $\xi$ (keyword \texttt{width}, see \ref{sec:colvar_general}) to allow the definition of a multi-dimensional restraint with a unified force constant:
+\begin{equation}
+  \label{eq:colvarbias_harmonic_multi}
+  V(\xi_{1}, \ldots, \xi_{M}) = \frac{1}{2} k \sum_{i=1}^{M} \left(\frac{\xi_{i} - \xi_0}{w_{\xi}}\right)^2
+\end{equation}
+
+If one-dimensional or homogeneous multi-dimensional restraints are defined, and there are no other uses for the parameter $w_{\xi}$, \emph{the parameter} \texttt{width} \emph{can be left at its default value of $1$}.
+
+
 \cvnamdonly{The restraint energy is reported by NAMD under the MISC title.}
 A harmonic restraint is set up by a \texttt{harmonic~\{...\}}
 block, which may contain (in addition to the standard option
@@ -3294,7 +3289,7 @@ block, which may contain (in addition to the standard option
     Scaled force constant (\cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
     positive decimal}{%
     \texttt{1.0}}{%
-    This defines a scaled force constant for the harmonic potential.
+    This defines a scaled force constant $k$ for the harmonic potential (eq.~\ref{eq:colvarbias_harmonic_multi}).
     To ensure consistency for multidimensional restraints, it is
     divided internally by the square of the specific \texttt{width}
     for each colvar involved (which is 1 by default), so that all colvars
@@ -3311,11 +3306,11 @@ block, which may contain (in addition to the standard option
     \texttt{harmonic}}{%
     Initial harmonic restraint centers}{%
     space-separated list of colvar values}{%
-    The centers (equilibrium values) of the restraint are entered here.
+    The centers (equilibrium values) of the restraint, $\xi_{0}$, are entered here.
     The number of values must be the number of requested colvars.
     Each value is a decimal number if the corresponding colvar returns
     a scalar, a ``\texttt{(x, y, z)}'' triplet if it returns a unit
-    vector or a vector, and a ``\texttt{q0, q1, q2, q3)}'' quadruplet
+    vector or a vector, and a ``\texttt{(q0, q1, q2, q3)}'' quadruplet
     if it returns a rotational quaternion.  If a colvar has
     periodicities or symmetries, its closest image to the restraint
     center is considered when calculating the harmonic potential.}

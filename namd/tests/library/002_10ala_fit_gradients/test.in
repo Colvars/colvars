@@ -1,31 +1,31 @@
-Colvarstrajfrequency    1
-Colvarsrestartfrequency 2000
-debugGradientsStepSize 1.0e-07
+colvarsTrajFrequency    1
 
- 
+indexFile ../Common/da.ndx
+
+
 colvar {
-  name eigenvector_Ca
+    name eigenvector_Ca
 
-  outputSystemForce on
-  outputAppliedForce on
-  width 1.0 
+    outputSystemForce on
+    outputAppliedForce on
+    width 1.0 
 
-  eigenvector {
-#    debugGradients
-    atoms {
-        enableFitGradients yes
-        psfSegID BH
-        atomNameResidueRange CA 1-10
+    eigenvector {
+        #    debugGradients
+        atoms {
+            enableFitGradients yes
+            indexGroup Protein_C-alpha
+        }
+        refpositionsfile ../Common/pi-ideal.xyz
+        #    vector { (1.0, 2.0, 3.0) (3.0, 1.0, 2.0) (2.0, 3.0, 1.0) (1.0, 2.0, 3.0) (3.0, 1.0, 2.0) (2.0, 3.0, 1.0) (1.0, 2.0, 3.0) (3.0, 1.0, 2.0) (2.0, 3.0, 1.0) (1.0, 2.0, 3.0) }
+        vectorFile ../Common/da.xyz
+        differenceVector yes
     }
-    refpositionsfile ../Common/pi-ideal.pdb
-#    vector { (1.0, 2.0, 3.0) (3.0, 1.0, 2.0) (2.0, 3.0, 1.0) (1.0, 2.0, 3.0) (3.0, 1.0, 2.0) (2.0, 3.0, 1.0) (1.0, 2.0, 3.0) (3.0, 1.0, 2.0) (2.0, 3.0, 1.0) (1.0, 2.0, 3.0) }
-    vectorFile ../Common/da.pdb
-    differenceVector yes
-  }
 } 
 
+
 harmonic {
-   colvars        eigenvector_Ca
-   forceConstant  10.0  
-   centers        0.0
+    colvars        eigenvector_Ca
+    forceConstant  10.0  
+    centers        0.0
 }

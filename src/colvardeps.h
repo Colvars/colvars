@@ -1,4 +1,4 @@
-/// -*- c++ -*-
+// -*- c++ -*-
 
 #include "colvarmodule.h"
 
@@ -147,8 +147,9 @@ public:
   enum features_biases {
     /// \brief Bias is active
     f_cvb_active,
-    f_cvb_apply_force,
-    f_cvb_get_system_force,
+    f_cvb_apply_force, // will apply forces
+    f_cvb_get_system_force, // requires system forces
+    f_cvb_history_dependent, // depends on simulation history
     f_cvb_ntot
   };
 
@@ -238,7 +239,7 @@ public:
     f_ag_active,
     f_ag_center,
     f_ag_rotate,
-    f_ag_ref_pos_group,
+    f_ag_fitting_group,
     /// Perform a standard minimum msd fit for given atoms
     /// ie. not using refpositionsgroup
 //     f_ag_min_msd_fit,

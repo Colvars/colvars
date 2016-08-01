@@ -1,5 +1,8 @@
 colvarsTrajFrequency    1
 
+indexFile ../Common/da.ndx
+
+
 colvar {
 
     name d
@@ -14,12 +17,10 @@ colvar {
 
     distance {
         group1 {
-            psfSegID BH
-            atomNameResidueRange CA 1-1
+            indexGroup Protein_C-alpha_1
         }
         group2 {
-            psfSegID BH
-            atomNameResidueRange CA 10-10
+            indexGroup Protein_C-alpha_10
         }
     }
 } 
@@ -28,6 +29,7 @@ colvar {
 metadynamics {
     colvars d
 
+    hillWeight 0.01
     newHillFrequency 10
 
     multipleReplicas  yes

@@ -1,5 +1,5 @@
-colvarstrajfrequency    1
-colvarsrestartfrequency 10
+colvarsTrajFrequency    1
+
 
 colvar {
     name d
@@ -16,6 +16,8 @@ colvar {
     }
 }
 
+
 metadynamics {
-    colvars        d
+    colvars    d
+    hillWeight 0.01
 }

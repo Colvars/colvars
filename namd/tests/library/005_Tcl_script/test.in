@@ -1,24 +1,26 @@
-Colvarstrajfrequency    2
-Colvarsrestartfrequency 20000
+colvarsTrajFrequency    2
+
 
 colvar {
-  name d
+    name d
 
-  lowerBoundary 12
-  upperBoundary 32
-  width 0.2
+    lowerBoundary 12
+    upperBoundary 32
+    width 0.2
 
-  distance {
-    group1 { atomnumbers 4 }
-    group2 { atomnumbers 99 }
-  }
+    distance {
+        group1 { atomnumbers 4 }
+        group2 { atomnumbers 99 }
+    }
 }
+
 
 abf {
     colvars        d
     fullSamples    0
     outputFreq     60
 }
+
 
 harmonic {
     colvars d
