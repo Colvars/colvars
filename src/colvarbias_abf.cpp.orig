@@ -487,7 +487,7 @@ std::ostream & colvarbias_abf::write_restart(std::ostream& os)
 std::istream & colvarbias_abf::read_restart(std::istream& is)
 {
   if ( input_prefix.size() > 0 ) {
-    cvm::error("ERROR: cannot provide both inputPrefix and a colvars state file.\n", INPUT_ERROR);
+    cvm::error("ERROR: cannot provide both inputPrefix and restart information(colvarsInput)");
   }
 
   size_t const start_pos = is.tellg();
