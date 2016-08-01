@@ -35,8 +35,8 @@ protected:
   /// If colvar_array_size is larger than 1, weigh each one by this number before accumulating the histogram
   std::vector<cvm::real> weights;
 
-  virtual std::istream& read_restart(std::istream&);
-  virtual std::ostream& write_restart(std::ostream&);
+  virtual std::istream & read_state_data(std::istream &is);
+  virtual std::ostream & write_state_data(std::ostream &os);
 };
 
 #endif

@@ -21,16 +21,14 @@ public:
   /// Calculate change in energy from using alternate configuration
   virtual cvm::real energy_difference(std::string const &conf);
 
-  /// Read the bias configuration from a restart file
-  virtual std::istream & read_restart(std::istream &is);
+  virtual std::string const get_state_params() const;
+  virtual int set_state_params(std::string const &conf);
+  // virtual std::ostream & write_state_data(std::ostream &os);
+  // virtual std::istream & read_state_data(std::istream &os);
+  virtual std::ostream & write_state(std::ostream &os);
+  virtual std::istream & read_state(std::istream &is);
 
-  /// Write the bias configuration to a restart file
-  virtual std::ostream & write_restart(std::ostream &os);
-
-  /// Write a label to the trajectory file (comment line)
   virtual std::ostream & write_traj_label(std::ostream &os);
-
-  /// Output quantities such as the bias energy to the trajectory file
   virtual std::ostream & write_traj(std::ostream &os);
 
   /// \brief Constructor
@@ -58,6 +56,9 @@ protected:
 
   /// \brief Restraint centers without wrapping or constraints applied
   std::vector<colvarvalue> colvar_centers_raw;
+
+  virtual std::string const get_state_params() const;
+  virtual int set_state_params(std::string const &conf);
 
   /// \brief Moving target?
   bool b_chg_centers;

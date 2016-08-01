@@ -15,8 +15,8 @@ public:
   virtual int init(std::string const &conf);
   virtual int update();
 
-  virtual std::istream & read_restart(std::istream &is);
-  virtual std::ostream & write_restart(std::ostream &os);
+  virtual std::string const get_state_params() const;
+  virtual int set_state_params(std::string const &conf);
   virtual std::ostream & write_traj_label(std::ostream &os);
   virtual std::ostream & write_traj(std::ostream &os);
 

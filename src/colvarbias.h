@@ -78,28 +78,56 @@ public:
   /// Destructor
   virtual ~colvarbias();
 
-  /// Read the bias configuration from a restart file
-  virtual std::istream & read_restart(std::istream &is) = 0;
+  /// Write the values of specific mutable properties to a string
+  virtual std::string const get_state_params() const;
 
-  /// Write the bias configuration to a restart file
-  virtual std::ostream & write_restart(std::ostream &os) = 0;
+  /// Read the values of specific mutable properties from a string
+  virtual int set_state_params(std::string const &state_conf);
+
+  /// Write all mutable data not already written by get_state_params()
+  virtual std::ostream & write_state_data(std::ostream &os)
+  {
+    return os;
+  }
+
+  /// Read all mutable data not already set by set_state_params()
+  virtual std::istream & read_state_data(std::istream &is)
+  {
+    return is;
+  }
+
+  /// Write the bias configuration to a restart file or other stream
+  virtual std::ostream & write_state(std::ostream &os);
+
+  /// Read the bias configuration from a restart file or other stream
+  virtual std::istream & read_state(std::istream &is);
 
   /// Write a label to the trajectory file (comment line)
   virtual std::ostream & write_traj_label(std::ostream &os);
 
-  /// (Re)initialize the output files (does not write them yet)
-  virtual int setup_output() { return COLVARS_OK; }
-
   /// Output quantities such as the bias energy to the trajectory file
   virtual std::ostream & write_traj(std::ostream &os);
 
-  /// Write output files (if defined, e.g. in analysis mode)
+  /// (Re)initialize the output files (does not write them yet)
+  virtual int setup_output()
+  {
+    return COLVARS_OK;
+  }
+
+  /// Write any output files that this bias may have (e.g. PMF files)
   virtual int write_output_files()
   {
     return COLVARS_OK;
   }
 
-  inline cvm::real get_energy() {
+  /// If this bias is communicating with other replicas through files, send it to them
+  virtual int write_state_to_replicas()
+  {
+    return COLVARS_OK;
+  }
+
+  inline cvm::real get_energy()
+  {
     return bias_energy;
   }
 
@@ -107,9 +135,11 @@ public:
   static std::vector<feature *> cvb_features;
 
   /// \brief Implementation of the feature list accessor for colvarbias
-  virtual std::vector<feature *> &features() {
+  virtual std::vector<feature *> &features()
+  {
     return cvb_features;
   }
+
 protected:
 
   /// \brief Pointers to collective variables to which the bias is
@@ -129,6 +159,9 @@ protected:
   /// \brief Whether this bias has already accumulated information
   /// (for history-dependent biases)
   bool                     has_data;
+
+  /// \brief Step number read from the last state file
+  size_t                   state_file_step;
 
 };
 

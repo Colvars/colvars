@@ -970,7 +970,7 @@ std::istream & colvarmodule::read_restart(std::istream &is)
   for (std::vector<colvarbias *>::iterator bi = biases.begin();
        bi != biases.end();
        bi++) {
-    if (!((*bi)->read_restart(is))) {
+    if (!((*bi)->read_state(is))) {
       cvm::error("Error: in reading restart configuration for bias \""+
                  (*bi)->name+"\".\n",
                  INPUT_ERROR);
@@ -1016,6 +1016,7 @@ int colvarmodule::write_output_files()
        bi != biases.end();
        bi++) {
     (*bi)->write_output_files();
+    (*bi)->write_state_to_replicas();
   }
   cvm::decrease_depth();
 
@@ -1108,19 +1109,29 @@ std::ostream & colvarmodule::write_restart(std::ostream &os)
      << "  version " << std::string(COLVARS_VERSION) << "\n"
      << "}\n\n";
 
+  int error_code = COLVARS_OK;
+
   cvm::increase_depth();
   for (std::vector<colvar *>::iterator cvi = colvars.begin();
        cvi != colvars.end();
        cvi++) {
     (*cvi)->write_restart(os);
+    combine_errors(error_code, (*cvi)->write_output_files());
   }
 
   for (std::vector<colvarbias *>::iterator bi = biases.begin();
        bi != biases.end();
        bi++) {
-    (*bi)->write_restart(os);
+    (*bi)->write_state(os);
+    combine_errors(error_code, (*bi)->write_state_to_replicas());
+    combine_errors(error_code, (*bi)->write_output_files());
   }
   cvm::decrease_depth();
+
+  if (error_code != COLVARS_OK) {
+    // TODO make this function return an int instead
+    os.setstate(std::ios::failbit);
+  }
 
   return os;
 }
