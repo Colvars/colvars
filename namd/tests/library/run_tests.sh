@@ -1,9 +1,10 @@
 #!/bin/bash
+# -*- sh-basic-offset: 2; sh-indentation: 2; -*-
 
-# Run automated tests for NAMD/colvars
+# Run automated tests for NAMD/colvars
 # each test is defined by a directory with NAMD input test.namd
-# and output files (text only) to be matched in the ExpectedResults/ subdir
-# Returns 1 if any test failed, otherwise 0.
+# and output files (text only) to be matched in the ExpectedResults/ subdir
+# Returns 1 if any test failed, otherwise 0.
 
 # binary to be tested is specified as command-line argument (defaults to namd2)
 
@@ -54,19 +55,21 @@ for dir in ${DIRLIST} ; do
 
   # run simulation(s)
   for script in test*.namd ; do
-      $BINARY +p 5 $script > ${script%.namd}.out
-      # collect output of colvars module, except the version numbers
-      grep "^colvars:" ${script%.namd}.out | grep -v 'Initializing the collective variables module' \
-                                           | grep -v 'Using NAMD interface, version' > ${script%.namd}.colvars.out
-      # Output of Tcl interpreter for automatic testing of scripts
-      grep "^TCL:" ${script%.namd}.out | grep -v '^TCL: Suspending until startup complete.' > ${script%.namd}.Tcl.out
-      if [ ! -s ${script%.namd}.Tcl.out ]; then
-        rm -f ${script%.namd}.Tcl.out
-      fi
+    # use --source to avoid letting NAMD change directory
+    # use 5 threads to test SMP code
+    $BINARY +p 5 --source $script > ${script%.namd}.out
+    # collect output of colvars module, except the version numbers
+    grep "^colvars:" ${script%.namd}.out | grep -v 'Initializing the collective variables module' \
+      | grep -v 'Using NAMD interface, version' > ${script%.namd}.colvars.out
+    # Output of Tcl interpreter for automatic testing of scripts
+    grep "^TCL:" ${script%.namd}.out | grep -v '^TCL: Suspending until startup complete.' > ${script%.namd}.Tcl.out
+    if [ ! -s ${script%.namd}.Tcl.out ]; then
+      rm -f ${script%.namd}.Tcl.out
+    fi
 
-      # Filter out the version number from the state files to allow comparisons
-      grep -v 'version' ${script%.namd}.colvars.state > ${script%.namd}.colvars.state.tmp
-      mv ${script%.namd}.colvars.state.tmp ${script%.namd}.colvars.state
+    # Filter out the version number from the state files to allow comparisons
+    grep -v 'version' ${script%.namd}.colvars.state > ${script%.namd}.colvars.state.tmp
+    mv ${script%.namd}.colvars.state.tmp ${script%.namd}.colvars.state
 
   done
   
