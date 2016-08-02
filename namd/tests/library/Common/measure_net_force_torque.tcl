@@ -1,4 +1,5 @@
 # Insert into a NAMD script to get output with the total applied force and torque
+# -*- mode: tcl; tcl-indent-level: 2; -*-
 
 tclForces on
 tclForcesScript {
