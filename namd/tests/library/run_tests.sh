@@ -19,15 +19,13 @@ BASEDIR=$PWD
 ALL_SUCCESS=1
 
 
-cleanup_files () {
-    for dir in [0-9][0-9][0-9]_* ; do
-        for script in test*.namd testres*.namd ; do
-            for f in ${dir}/${script%.namd}.*diff; do if [ ! -s $f ]; then rm -f $f; fi; done # remove empty diffs only
-            rm -f ${dir}/${script%.namd}.*{BAK,old,backup}
-            rm -f ${dir}/${script%.namd}.*{state,out,traj,coor,vel,xsc,pmf,hills,grad,count}
-            rm -f ${dir}/metadynamics1.*.files.txt ${dir}/replicas.registry.txt
-        done
-    done
+cleanup_files() {
+  for script in test*.namd testres*.namd ; do
+    for f in ${script%.namd}.*diff; do if [ ! -s $f ]; then rm -f $f; fi; done # remove empty diffs only
+    rm -f ${script%.namd}.*{BAK,old,backup}
+    rm -f ${script%.namd}.*{state,out,traj,coor,vel,xsc,pmf,hills,grad,count}
+    rm -f metadynamics1.*.files.txt replicas.registry.txt
+  done
 }
 
 
@@ -99,7 +97,13 @@ done
 if [ $ALL_SUCCESS -eq 1 ]
 then
   echo "All tests succeeded."
-  cleanup_files
+
+  for dir in [0-9][0-9][0-9]_* ; do
+    cd $dir
+    cleanup_files
+    cd $BASEDIR
+  done
+  
   exit 0
 else
   echo "There were failed tests."
