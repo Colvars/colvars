@@ -7,11 +7,18 @@
 
 # binary to be tested is specified as command-line argument (defaults to namd2)
 
-if [ $# -lt 1 ]
-then
-  BINARY=namd2
-else
-  BINARY=$1
+
+
+BINARY=namd2
+if [ $# -ge 1 ]; then
+  if { echo $1 | grep -q namd2 ; }; then
+    BINARY=$1
+    shift
+  fi
+fi
+DIRLIST=`eval ls -d [0-9][0-9][0-9]_*`
+if [ $# -ge 1 ]; then
+  DIRLIST=`echo $@`
 fi
 
 DIFF=spiff
@@ -29,9 +36,7 @@ cleanup_files() {
 }
 
 
-
-for dir in [0-9][0-9][0-9]_*
-do
+for dir in ${DIRLIST} ; do
   echo -ne "Entering $dir... "
   cd $dir
 
