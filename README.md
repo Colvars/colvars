@@ -1,4 +1,4 @@
-Collective variables module (colvars)
+Collective variables module (Colvars)
 =======
 
 A software module for molecular simulation and analysis programs that provides a flexible and high-performance platform for present and future algorithms.
@@ -28,5 +28,5 @@ This software is distributed under the GNU Lesser General Public License, versio
 The webpage for this project is: http://colvars.github.io/
 
 The reference article is:
-G. Fiorin, M. L. Klein, and J. Hénin, Molecular Physics 111, 3345 (2013).
-http://dx.doi.org/10.1080/00268976.2013.813594  [BibTex file](https://github.com/colvars/colvars/blob/master/doc/ref_Fiorin_2013.bib?raw=true) [Endnote file](https://github.com/colvars/colvars/blob/master/doc/ref_Fiorin_2013.ciw?raw=true)
+G. Fiorin, M. L. Klein, and J. Hénin, Molecular Physics 111, 3345 (2013).  
+http://dx.doi.org/10.1080/00268976.2013.813594  \[[BibTex file](https://github.com/colvars/colvars/blob/master/doc/ref_Fiorin_2013.bib?raw=true)\] \[[Endnote file](https://github.com/colvars/colvars/blob/master/doc/ref_Fiorin_2013.ciw?raw=true)\]
