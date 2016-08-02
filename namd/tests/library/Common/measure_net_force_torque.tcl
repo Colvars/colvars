@@ -3,7 +3,7 @@
 tclForces on
 tclForcesScript {
   set t 0
-  for {set i 1} {$i < 104} {incr i} {
+  for {set i 1} {$i <= 104} {incr i} {
     addatom $i
   }
   proc calcforces {} {
@@ -18,7 +18,7 @@ tclForcesScript {
       set tot [list 0. 0. 0.]
       set torque [list 0. 0. 0.]
 
-      for {set i 1} {$i < 104} {incr i} {
+      for {set i 1} {$i <= 104} {incr i} {
         if { [info exists f($i)] } {
           set tot [vecadd $tot $f($i)]
 
@@ -28,7 +28,9 @@ tclForcesScript {
           set torque [vecadd $torque $to]
         }
       }
-      print "[expr $t-1]   Force: ( $tot )   Torque: ( $torque )"
+      #      print "[expr $t-1]   Force: ( $tot )   Torque: ( $torque )"
+      print "TOTAL FORCE: ( $tot )"
+      print "TOTAL TORQUE: ( $torque )"
       array set prev_c [array get c]
     }
     incr t
