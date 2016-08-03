@@ -1,1 +1,248 @@
-../ExpectedResults/test.colvars.out
+colvars: ----------------------------------------------------------------------
+colvars: Please cite Fiorin et al, Mol Phys 2013 in any publication based on this calculation.
+colvars: ----------------------------------------------------------------------
+colvars: Reading new configuration from file "unscripted.in":
+colvars: # indexFile = "" [default]
+colvars: # analysis = off [default]
+colvars: # colvarsTrajFrequency = 2
+colvars: # colvarsRestartFrequency = 20000
+colvars: # colvarsTrajAppend = off [default]
+colvars: # scriptedColvarForces = on
+colvars: # scriptingAfterBiases = on [default]
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = d
+colvars:   Initializing a new "distance" component.
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # scalable = on [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # oneSiteSystemForce = off [default]
+colvars:     Will enable scalable calculation for group "group1".
+colvars:       Initializing atom group "group1".
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Atom group "group1" defined, 1 atoms initialized: total mass = 12.011, total charge = -0.1.
+colvars:     Will enable scalable calculation for group "group2".
+colvars:       Initializing atom group "group2".
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Atom group "group2" defined, 1 atoms initialized: total mass = 12.011, total charge = 0.07.
+colvars:   All components initialized.
+colvars:   # width = 1 [default]
+colvars:   # lowerBoundary = 0 [default]
+colvars:   # lowerWallConstant = 0 [default]
+colvars:   # upperBoundary = 0 [default]
+colvars:   # upperWallConstant = 0 [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = off [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputSystemForce = off [default]
+colvars:   # outputAppliedForce = on
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = o
+colvars:   Initializing a new "orientation" component.
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # scalable = on [default]
+colvars:     Scalable calculation is not available for group "atoms" with the current configuration.
+colvars:       Initializing atom group "atoms".
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Atom group "atoms" defined, 104 atoms initialized: total mass = 727.821, total charge = 6.70552e-08.
+colvars:     # refPositions =  [default]
+colvars:     # refPositionsFile = ../Common/da.pdb
+colvars:     # refPositionsCol = "" [default]
+colvars:     Centering the reference coordinates: it is assumed that each atom is the closest periodic image to the center of geometry.
+colvars:     # closestToQuaternion = ( 1 , 0 , 0 , 0 ) [default]
+colvars:   All components initialized.
+colvars:   # width = 1 [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = off [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputSystemForce = off [default]
+colvars:   # outputAppliedForce = off [default]
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables initialized, 2 in total.
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new "harmonic" instance.
+colvars:   # name = "harmonic1" [default]
+colvars:   # colvars = { d }
+colvars:   # outputEnergy = off [default]
+colvars:   # forceConstant = 500
+colvars:   # centers = { 18 }
+colvars:   # targetCenters = { 18 } [default]
+colvars:   # targetForceConstant = 0 [default]
+colvars:   # outputCenters = off [default]
+colvars: ----------------------------------------------------------------------
+colvars:   User forces script will be run at each bias update.
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables biases initialized, 1 in total.
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables module (re)initialized.
+colvars: ----------------------------------------------------------------------
+colvars: Updating NAMD interface:
+colvars: updating atomic data (104 atoms).
+colvars: updating group data (2 scalable groups, 2 atoms in total).
+colvars: Re-initialized atom group d:0/0. 1 atoms: total mass = 12.011.
+colvars: Re-initialized atom group d:0/1. 1 atoms: total mass = 12.011.
+colvars: Re-initialized atom group o:0/0. 104 atoms: total mass = 727.821.
+colvars: The final output state file will be "test.colvars.state".
+colvars: Writing to colvar trajectory file "test.colvars.traj".
+colvars: Updating NAMD interface:
+colvars: updating atomic data (104 atoms).
+colvars: updating group data (2 scalable groups, 2 atoms in total).
+colvars: Saving collective variables state to "test.colvars.state".
+colvars: Resetting the Collective Variables Module.
+colvars: ----------------------------------------------------------------------
+colvars: Reading new configuration from file "scripted.in":
+colvars: # indexFile = "" [default]
+colvars: # analysis = off [default]
+colvars: # colvarsTrajFrequency = 2
+colvars: # colvarsRestartFrequency = 20000
+colvars: # colvarsTrajAppend = off [default]
+colvars: # scriptedColvarForces = on
+colvars: # scriptingAfterBiases = on [default]
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = ds
+colvars:   Initializing a new "distance" component.
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # scalable = on [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # oneSiteSystemForce = off [default]
+colvars:     Will enable scalable calculation for group "group1".
+colvars:       Initializing atom group "group1".
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Atom group "group1" defined, 1 atoms initialized: total mass = 12.011, total charge = -0.1.
+colvars:     Will enable scalable calculation for group "group2".
+colvars:       Initializing atom group "group2".
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Atom group "group2" defined, 1 atoms initialized: total mass = 12.011, total charge = 0.07.
+colvars:   All components initialized.
+colvars:   This colvar uses scripted function "Id".
+colvars:   # scriptedFunctionType = "scalar" [default]
+colvars:   Expecting colvar value of type scalar number
+colvars:   # width = 1 [default]
+colvars:   # lowerBoundary = 0 [default]
+colvars:   # lowerWallConstant = 0 [default]
+colvars:   # upperBoundary = 0 [default]
+colvars:   # upperWallConstant = 0 [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = off [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputSystemForce = off [default]
+colvars:   # outputAppliedForce = on
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = vec
+colvars:   Initializing a new "cartesian" component.
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # scalable = on [default]
+colvars:     Scalable calculation is not available for group "atoms" with the current configuration.
+colvars:       Initializing atom group "atoms".
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Atom group "atoms" defined, 2 atoms initialized: total mass = 24.022, total charge = -0.03.
+colvars:     # useX = on [default]
+colvars:     # useY = on [default]
+colvars:     # useZ = on [default]
+colvars:   Initializing a new "orientation" component.
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # scalable = on [default]
+colvars:     Scalable calculation is not available for group "atoms" with the current configuration.
+colvars:       Initializing atom group "atoms".
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Atom group "atoms" defined, 104 atoms initialized: total mass = 727.821, total charge = 6.70552e-08.
+colvars:     # refPositions =  [default]
+colvars:     # refPositionsFile = ../Common/da.pdb
+colvars:     # refPositionsCol = "" [default]
+colvars:     Centering the reference coordinates: it is assumed that each atom is the closest periodic image to the center of geometry.
+colvars:     # closestToQuaternion = ( 1 , 0 , 0 , 0 ) [default]
+colvars:   All components initialized.
+colvars:   This colvar uses scripted function "vector".
+colvars:   # scriptedFunctionType = vector
+colvars:   Expecting colvar value of type n-dimensional vector
+colvars:   # scriptedFunctionVectorSize = 5
+colvars:   Sorted list of components for this scripted colvar:
+colvars:   1 cvc1
+colvars:   2 cvc2
+colvars:   # width = 1 [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = off [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputSystemForce = off [default]
+colvars:   # outputAppliedForce = on
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables initialized, 2 in total.
+colvars: ----------------------------------------------------------------------
+colvars:   User forces script will be run at each bias update.
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables biases initialized, 0 in total.
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables module (re)initialized.
+colvars: ----------------------------------------------------------------------
+colvars: Saving collective variables state to "test.colvars.state".
