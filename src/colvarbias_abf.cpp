@@ -237,7 +237,11 @@ int colvarbias_abf::update()
         z_bin[i] = z_samples->current_bin_scalar(i);
       }
       if ( z_samples->index_ok(z_bin) ) {
-        // Set increment flag to 0 to only increment
+        for (size_t i=0; i<colvars.size(); i++) {
+          // If we are outside the range of xi, the force has not been obtained above
+          // the function is just an accessor, so cheap to call again anyway
+          force[i] = colvars[i]->system_force();
+        }
         z_gradients->acc_force(z_bin, force);
       }
     }
