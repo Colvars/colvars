@@ -52,9 +52,15 @@ for dir in ${DIRLIST} ; do
   done
 
   cleanup_files
+  
+  if ls | grep -q \.namd ; then
+    SCRIPTS=`ls *namd`
+  else
+    SCRIPTS="../Common/test.namd ../Common/test.restart.namd"
+  fi
 
-  # run simulation(s)
-  for script in test*.namd ; do
+  # run simulation(s)
+  for script in ${SCRIPTS} ; do
     # use --source to avoid letting NAMD change directory
     # use 5 threads to test SMP code
     $BINARY +p 5 --source $script > ${script%.namd}.out
