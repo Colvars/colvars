@@ -7,8 +7,8 @@
 /*****************************************************************************
  * $Source: /namd/cvsroot/namd2/src/SimParameters.C,v $
  * $Author: jim $
- * $Date: 2016/03/02 21:33:06 $
- * $Revision: 1.1461 $
+ * $Date: 2016/07/29 21:16:22 $
+ * $Revision: 1.1463 $
  *****************************************************************************/
 
 /** \file SimParameters.C
@@ -190,6 +190,13 @@ void SimParameters::scriptSet(const char *param, const char *value) {
   SCRIPT_PARSE_BOOL("velocityQuenching",minimizeOn)
   SCRIPT_PARSE_BOOL("maximumMove",maximumMove)
   // SCRIPT_PARSE_BOOL("Langevin",langevinOn)
+  if ( ! strncasecmp(param,"Langevin",MAX_SCRIPT_PARAM_SIZE) ) {
+    langevinOn = atobool(value);
+    if ( langevinOn && ! langevinOnAtStartup ) {
+      NAMD_die("Langevin must be enabled at startup to disable and re-enable in script.");
+    }
+    return;
+  }
   SCRIPT_PARSE_FLOAT("langevinTemp",langevinTemp)
   SCRIPT_PARSE_BOOL("langevinBAOAB",langevin_useBAOAB) // [!!] Use the BAOAB integrator or not
   SCRIPT_PARSE_FLOAT("loweAndersenTemp",loweAndersenTemp) // BEGIN LA, END LA
@@ -3099,6 +3106,8 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
                                              adaptTempBins != 0 ))
         NAMD_die("Need to specify either adaptTempInFile or all of {adaptTempTmin, adaptTempTmax,adaptTempBins} if adaptTempMD is on.");
    }
+
+   langevinOnAtStartup = langevinOn;
    if (langevinOn) {
      if ( ! opts.defined("langevinDamping") ) langevinDamping = 0.0;
      if ( ! opts.defined("langevinHydrogen") ) langevinHydrogen = TRUE;
@@ -5443,7 +5452,13 @@ if ( openatomOn )
        fftwf_free(grid1);
        fftwf_free(grid2);
 
-      if ( CmiNumPartitions() == 1 ) {
+#ifdef NAMD_FFTW_3
+       FFTWWisdomString = fftwf_export_wisdom_to_string();
+#else
+       FFTWWisdomString = fftw_export_wisdom_to_string();
+#endif
+
+      if ( FFTWWisdomString && (CmiNumPartitions() == 1) ) {
        iout << iINFO << "Writing FFTW data to "
 		<< FFTWWisdomFile << "\n" << endi;
        wisdom_file = fopen(FFTWWisdomFile,"w");
@@ -5456,12 +5471,6 @@ if ( openatomOn )
 	 fclose(wisdom_file);
        }
       }
-
-#ifdef NAMD_FFTW_3
-       FFTWWisdomString = fftwf_export_wisdom_to_string();
-#else
-       FFTWWisdomString = fftw_export_wisdom_to_string();
-#endif
      }
 #endif
      iout << endi;
