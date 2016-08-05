@@ -507,7 +507,6 @@ See Section~\ref{sec:cvc} for the physical ranges of values of each component.}
 
 The following options are useful to define restraints (confining potentials) for this colvar.
 To apply moving restraints, or restraints to more than one colvar simultaneously, a more convenient option is to use the \texttt{harmonic} bias (\ref{sec:colvarbias_harmonic}).
-When using an extended Lagrangian, the boundary potential is applied to the ``actual'' colvar, in contrast with forces for all types of biases, which are applied to the extended coordinate.
 
 \begin{itemize}
 
@@ -638,8 +637,7 @@ dynamics, where a colvar is coupled to an additional degree of freedom
 (fictitious particle) by a harmonic spring.
 All biasing and confining forces are then applied to the extended degree
 of freedom. The ``actual'' geometric colvar (function of Cartesian 
-coordinates) only feels the force from the harmonic spring and its wall
-potentials, if any.
+coordinates) only feels the force from the harmonic spring.
 
 \begin{itemize}
 \item %
