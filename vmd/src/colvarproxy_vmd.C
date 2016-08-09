@@ -277,6 +277,7 @@ int colvarproxy_vmd::set_frame(long int f)
 {
   if (vmdmol->get_frame(f) != NULL) {
     vmdmol_frame = f;
+    colvars->it = f;
     update_input();
     return f;
   } else {

@@ -72,7 +72,7 @@ public:
   // Returns error code
   virtual int get_frame(long int&) { return COLVARS_NOT_IMPLEMENTED; }
 
-  /// \brief Set the current frame number
+  /// \brief Set the current frame number (as well as colvarmodule::it)
   // Returns error code
   virtual int set_frame(long int) { return COLVARS_NOT_IMPLEMENTED; }
 

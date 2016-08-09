@@ -176,7 +176,6 @@ int colvarscript::run(int argc, char const *argv[]) {
       // Failure of this function does not trigger an error, but
       // returns nonzero, to let scripts detect available frames
       int error = proxy->set_frame(strtol(argv[2], NULL, 10));
-      proxy->get_frame(colvars->it);
       result = cvm::to_str(error == COLVARS_OK ? 0 : -1);
       return COLVARS_OK;
     } else {
