@@ -1,17 +1,37 @@
 colvars: ----------------------------------------------------------------------
-colvars: Please cite Fiorin et al, Mol Phys 2013 in any publication based on this calculation.
+colvars: Please cite Fiorin et al, Mol Phys 2013:
+colvars:  http://dx.doi.org/10.1080/00268976.2013.813594
+colvars: in any publication based on this calculation.
+colvars: SMP parallelism is available.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
-colvars: # indexFile = "" [default]
+colvars: # indexFile = "../Common/da.ndx"
+colvars: The following index groups were read from the index file "../Common/da.ndx":
+colvars:   Protein (104 atoms).
+colvars:   Protein_noH (51 atoms).
+colvars:   Protein_Backbone (40 atoms).
+colvars:   Protein_C-alpha (10 atoms).
+colvars:   Protein_C-alpha_1_2 (2 atoms).
+colvars:   Protein_C-alpha_9_10 (2 atoms).
+colvars:   Protein_C-alpha_1 (1 atoms).
+colvars:   Protein_C-alpha_2 (1 atoms).
+colvars:   Protein_C-alpha_3 (1 atoms).
+colvars:   Protein_C-alpha_4 (1 atoms).
+colvars:   Protein_C-alpha_5 (1 atoms).
+colvars:   Protein_C-alpha_6 (1 atoms).
+colvars:   Protein_C-alpha_7 (1 atoms).
+colvars:   Protein_C-alpha_8 (1 atoms).
+colvars:   Protein_C-alpha_9 (1 atoms).
+colvars:   Protein_C-alpha_10 (1 atoms).
 colvars: # analysis = off [default]
 colvars: # colvarsTrajFrequency = 1
-colvars: # colvarsRestartFrequency = 2000
+colvars: # colvarsRestartFrequency = 0 [default]
 colvars: # colvarsTrajAppend = off [default]
 colvars: # scriptedColvarForces = off [default]
 colvars: # scriptingAfterBiases = on [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
-colvars:   # name = dmat
+colvars:   # name = "dmat"
 colvars:   Initializing a new "distancePairs" component.
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
@@ -22,8 +42,8 @@ colvars:     # forceNoPBC = on
 colvars:     Computing distance using absolute positions (not minimal-image)
 colvars:     Scalable calculation is not available for group "group1" with the current configuration.
 colvars:       Initializing atom group "group1".
-colvars:       # indexGroup = "" [default]
-colvars:       # psfSegID = { BH }
+colvars:       # indexGroup = "Protein_C-alpha_1_2"
+colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
@@ -33,8 +53,8 @@ colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "group1" defined, 2 atoms initialized: total mass = 24.022, total charge = -0.03.
 colvars:     Scalable calculation is not available for group "group2" with the current configuration.
 colvars:       Initializing atom group "group2".
-colvars:       # indexGroup = "" [default]
-colvars:       # psfSegID = { BH }
+colvars:       # indexGroup = "Protein_C-alpha_9_10"
+colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
@@ -45,6 +65,7 @@ colvars:       Atom group "group2" defined, 2 atoms initialized: total mass = 24
 colvars:   All components initialized.
 colvars:   # width = 0.2
 colvars:   # expandBoundaries = off [default]
+colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]

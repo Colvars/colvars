@@ -1,17 +1,20 @@
 colvars: ----------------------------------------------------------------------
-colvars: Please cite Fiorin et al, Mol Phys 2013 in any publication based on this calculation.
+colvars: Please cite Fiorin et al, Mol Phys 2013:
+colvars:  http://dx.doi.org/10.1080/00268976.2013.813594
+colvars: in any publication based on this calculation.
+colvars: SMP parallelism is available.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
 colvars: # indexFile = "" [default]
 colvars: # analysis = off [default]
 colvars: # colvarsTrajFrequency = 2
-colvars: # colvarsRestartFrequency = 20000
+colvars: # colvarsRestartFrequency = 0 [default]
 colvars: # colvarsTrajAppend = off [default]
 colvars: # scriptedColvarForces = off [default]
 colvars: # scriptingAfterBiases = on [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
-colvars:   # name = d
+colvars:   # name = "d"
 colvars:   Initializing a new "distance" component.
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
@@ -51,6 +54,7 @@ colvars:   # upperWallConstant = 0 [default]
 colvars:   # hardLowerBoundary = off [default]
 colvars:   # hardUpperBoundary = off [default]
 colvars:   # expandBoundaries = off [default]
+colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
@@ -107,7 +111,7 @@ colvars: Reading new configuration:
 colvars: # indexFile = "" [default]
 colvars: # analysis = off [default]
 colvars: # colvarsTrajFrequency = 2 [default]
-colvars: # colvarsRestartFrequency = 20000 [default]
+colvars: # colvarsRestartFrequency = 0 [default]
 colvars: # colvarsTrajAppend = off [default]
 colvars: # scriptedColvarForces = off [default]
 colvars: # scriptingAfterBiases = on [default]
@@ -115,7 +119,7 @@ colvars: ----------------------------------------------------------------------
 colvars: Collective variables initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new "harmonic" instance.
-colvars:   # name = harm2
+colvars:   # name = "harm2"
 colvars:   # colvars = { d }
 colvars:   # outputEnergy = on
 colvars:   # forceConstant = 1
@@ -137,13 +141,13 @@ colvars: Reading new configuration from file "test.in":
 colvars: # indexFile = "" [default]
 colvars: # analysis = off [default]
 colvars: # colvarsTrajFrequency = 2
-colvars: # colvarsRestartFrequency = 20000
+colvars: # colvarsRestartFrequency = 0 [default]
 colvars: # colvarsTrajAppend = off [default]
 colvars: # scriptedColvarForces = off [default]
 colvars: # scriptingAfterBiases = on [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
-colvars:   # name = d
+colvars:   # name = "d"
 colvars:   Initializing a new "distance" component.
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
@@ -183,6 +187,7 @@ colvars:   # upperWallConstant = 0 [default]
 colvars:   # hardLowerBoundary = off [default]
 colvars:   # hardUpperBoundary = off [default]
 colvars:   # expandBoundaries = off [default]
+colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]

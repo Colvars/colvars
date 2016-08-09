@@ -1,17 +1,20 @@
 colvars: ----------------------------------------------------------------------
-colvars: Please cite Fiorin et al, Mol Phys 2013 in any publication based on this calculation.
+colvars: Please cite Fiorin et al, Mol Phys 2013:
+colvars:  http://dx.doi.org/10.1080/00268976.2013.813594
+colvars: in any publication based on this calculation.
+colvars: SMP parallelism is available.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "unscripted.in":
 colvars: # indexFile = "" [default]
 colvars: # analysis = off [default]
 colvars: # colvarsTrajFrequency = 2
-colvars: # colvarsRestartFrequency = 20000
+colvars: # colvarsRestartFrequency = 0 [default]
 colvars: # colvarsTrajAppend = off [default]
 colvars: # scriptedColvarForces = on
 colvars: # scriptingAfterBiases = on [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
-colvars:   # name = d
+colvars:   # name = "d"
 colvars:   Initializing a new "distance" component.
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
@@ -49,6 +52,7 @@ colvars:   # lowerWallConstant = 0 [default]
 colvars:   # upperBoundary = 0 [default]
 colvars:   # upperWallConstant = 0 [default]
 colvars:   # expandBoundaries = off [default]
+colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
@@ -56,7 +60,7 @@ colvars:   # outputSystemForce = off [default]
 colvars:   # outputAppliedForce = on
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
-colvars:   # name = o
+colvars:   # name = "o"
 colvars:   Initializing a new "orientation" component.
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
@@ -75,13 +79,14 @@ colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "atoms" defined, 104 atoms initialized: total mass = 727.821, total charge = 6.70552e-08.
 colvars:     # refPositions =  [default]
-colvars:     # refPositionsFile = ../Common/da.pdb
+colvars:     # refPositionsFile = "../Common/da.xyz"
 colvars:     # refPositionsCol = "" [default]
 colvars:     Centering the reference coordinates: it is assumed that each atom is the closest periodic image to the center of geometry.
 colvars:     # closestToQuaternion = ( 1 , 0 , 0 , 0 ) [default]
 colvars:   All components initialized.
 colvars:   # width = 1 [default]
 colvars:   # expandBoundaries = off [default]
+colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
@@ -124,13 +129,13 @@ colvars: Reading new configuration from file "scripted.in":
 colvars: # indexFile = "" [default]
 colvars: # analysis = off [default]
 colvars: # colvarsTrajFrequency = 2
-colvars: # colvarsRestartFrequency = 20000
+colvars: # colvarsRestartFrequency = 0 [default]
 colvars: # colvarsTrajAppend = off [default]
 colvars: # scriptedColvarForces = on
 colvars: # scriptingAfterBiases = on [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
-colvars:   # name = ds
+colvars:   # name = "ds"
 colvars:   Initializing a new "distance" component.
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
@@ -171,6 +176,7 @@ colvars:   # lowerWallConstant = 0 [default]
 colvars:   # upperBoundary = 0 [default]
 colvars:   # upperWallConstant = 0 [default]
 colvars:   # expandBoundaries = off [default]
+colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
@@ -178,7 +184,7 @@ colvars:   # outputSystemForce = off [default]
 colvars:   # outputAppliedForce = on
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
-colvars:   # name = vec
+colvars:   # name = "vec"
 colvars:   Initializing a new "cartesian" component.
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
@@ -217,13 +223,13 @@ colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "atoms" defined, 104 atoms initialized: total mass = 727.821, total charge = 6.70552e-08.
 colvars:     # refPositions =  [default]
-colvars:     # refPositionsFile = ../Common/da.pdb
+colvars:     # refPositionsFile = "../Common/da.xyz"
 colvars:     # refPositionsCol = "" [default]
 colvars:     Centering the reference coordinates: it is assumed that each atom is the closest periodic image to the center of geometry.
 colvars:     # closestToQuaternion = ( 1 , 0 , 0 , 0 ) [default]
 colvars:   All components initialized.
 colvars:   This colvar uses scripted function "vector".
-colvars:   # scriptedFunctionType = vector
+colvars:   # scriptedFunctionType = "vector"
 colvars:   Expecting colvar value of type n-dimensional vector
 colvars:   # scriptedFunctionVectorSize = 5
 colvars:   Sorted list of components for this scripted colvar:
@@ -231,6 +237,7 @@ colvars:   1 cvc1
 colvars:   2 cvc2
 colvars:   # width = 1 [default]
 colvars:   # expandBoundaries = off [default]
+colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]

@@ -1,5 +1,8 @@
 colvars: ----------------------------------------------------------------------
-colvars: Please cite Fiorin et al, Mol Phys 2013 in any publication based on this calculation.
+colvars: Please cite Fiorin et al, Mol Phys 2013:
+colvars:  http://dx.doi.org/10.1080/00268976.2013.813594
+colvars: in any publication based on this calculation.
+colvars: SMP parallelism is available.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
 colvars: # indexFile = "" [default]
@@ -11,7 +14,7 @@ colvars: # scriptedColvarForces = off [default]
 colvars: # scriptingAfterBiases = on [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
-colvars:   # name = d
+colvars:   # name = "d"
 colvars:   Initializing a new "dihedral" component.
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
@@ -70,6 +73,7 @@ colvars:   # lowerWallConstant = 0 [default]
 colvars:   # upperBoundary = 0 [default]
 colvars:   # upperWallConstant = 0 [default]
 colvars:   # expandBoundaries = off [default]
+colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
@@ -116,5 +120,4 @@ colvars: Writing to colvar trajectory file "test.colvars.traj".
 colvars: Updating NAMD interface:
 colvars: updating atomic data (0 atoms).
 colvars: updating group data (4 scalable groups, 4 atoms in total).
-colvars:   Moving restraint "harmonic1" stage 10 : setting centers to { -125 } at step 8330
 colvars: Saving collective variables state to "test.colvars.state".
