@@ -37,7 +37,7 @@ protected:
   /// pointer to VMD molecule (derived from vmdmolid)
   DrawMolecule *vmdmol;
   /// current frame (returned by vmdmol->frame())
-  int vmdmol_frame;
+  long int vmdmol_frame;
   /// output object
   Inform msgColvars;
 
@@ -82,12 +82,13 @@ public:
     return vmd_random_gaussian();
   }
 
-  inline int frame()
+  inline int get_frame(long int &f)
   {
-    return vmdmol_frame;
+    f = vmdmol_frame;
+    return COLVARS_OK;
   }
 
-  int frame(int f);
+  int set_frame(long int f);
 
   std::string input_prefix_str;
   std::string input_prefix()

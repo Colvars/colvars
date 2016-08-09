@@ -1,17 +1,20 @@
 colvars: ----------------------------------------------------------------------
-colvars: Please cite Fiorin et al, Mol Phys 2013 in any publication based on this calculation.
+colvars: Please cite Fiorin et al, Mol Phys 2013:
+colvars:  http://dx.doi.org/10.1080/00268976.2013.813594
+colvars: in any publication based on this calculation.
+colvars: SMP parallelism is available.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
 colvars: # indexFile = "" [default]
 colvars: # analysis = off [default]
 colvars: # colvarsTrajFrequency = 1
-colvars: # colvarsRestartFrequency = 10
+colvars: # colvarsRestartFrequency = 0 [default]
 colvars: # colvarsTrajAppend = off [default]
 colvars: # scriptedColvarForces = off [default]
 colvars: # scriptingAfterBiases = on [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
-colvars:   # name = d
+colvars:   # name = "d"
 colvars:   Initializing a new "distance" component.
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
@@ -51,6 +54,7 @@ colvars:   # upperWallConstant = 0 [default]
 colvars:   # hardLowerBoundary = on
 colvars:   # hardUpperBoundary = off [default]
 colvars:   # expandBoundaries = on
+colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
@@ -63,9 +67,11 @@ colvars:   Initializing a new "metadynamics" instance.
 colvars:   # name = "metadynamics1" [default]
 colvars:   # colvars = { d }
 colvars:   # outputEnergy = off [default]
-colvars:   # hillWeight = 0.01 [default]
+colvars:   # hillWeight = 0.01
 colvars:   # newHillFrequency = 1000 [default]
 colvars:   # hillWidth = 1.25331 [default]
+colvars:   Half-widths of the Gaussian hills (sigma's):
+colvars:   d: 0.125331
 colvars:   # multipleReplicas = off [default]
 colvars:   # useGrids = on [default]
 colvars:   # gridsUpdateFrequency = 1000 [default]
@@ -93,6 +99,4 @@ colvars: Updating NAMD interface:
 colvars: updating atomic data (0 atoms).
 colvars: updating group data (2 scalable groups, 2 atoms in total).
 colvars:   Metadynamics bias "metadynamics1": new upper boundary for colvar "d", at 15.2.
-colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
-colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
 colvars: Saving collective variables state to "test.colvars.state".

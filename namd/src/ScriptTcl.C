@@ -163,6 +163,24 @@ static Tcl_Obj* python_tcl_convert(PyObject *obj) {
   return robj;
 }
 
+int atoBool(const char *s);
+
+static PyObject* tcl_python_convert(Tcl_Obj *obj) {
+  long rlong;
+  if ( TCL_OK == Tcl_GetLongFromObj(0, obj, &rlong) )
+    return Py_BuildValue("l", rlong);
+  double rdouble;
+  if ( TCL_OK == Tcl_GetDoubleFromObj(0, obj, &rdouble) )
+    return Py_BuildValue("d", rdouble);
+  const char *rstring = Tcl_GetString(obj);
+  if ( rstring[0] == '\0' )
+    return Py_None;
+  int rbool = atoBool(rstring);
+  if ( rbool >= 0 )
+    return Py_BuildValue("i", rbool);
+  return Py_BuildValue("s", rstring);
+}
+
 static Tcl_Interp *static_interp;
 
 static PyObject* python_tcl_call(PyObject *self, PyObject *args) {
@@ -175,7 +193,7 @@ static PyObject* python_tcl_call(PyObject *self, PyObject *args) {
     return 0;
   }
   Tcl_DecrRefCount(command);
-  return Py_BuildValue("s", Tcl_GetStringResult(interp));
+  return tcl_python_convert(Tcl_GetObjResult(interp));
 }
 
 static PyObject* python_tcl_eval(PyObject *self, PyObject *args) {
@@ -186,7 +204,7 @@ static PyObject* python_tcl_eval(PyObject *self, PyObject *args) {
     PyErr_SetString(PyExc_RuntimeError, Tcl_GetStringResult(interp));
     return 0;
   }
-  return Py_BuildValue("s", Tcl_GetStringResult(interp));
+  return tcl_python_convert(Tcl_GetObjResult(interp));
 }
 
 static PyObject* python_tcl_write(PyObject *self, PyObject *args) {
@@ -217,15 +235,15 @@ static void namd_python_initialize(void *interp) {
 "import tcl\n"
 "sys.stdout = tcl\n"
 "\n"
-"class wrapper:\n"
-"  class wrapped:\n"
+"class _namd_wrapper:\n"
+"  class _wrapped:\n"
 "    def __init__(self,_name):\n"
 "      self.name = _name\n"
 "    def __call__(self,*args):\n"
 "      return tcl.call(self.name,*args)\n"
 "  def __getattr__(self,name):\n"
 "    if tcl.call('info','commands',name) == name:\n"
-"      return self.wrapped(name)\n"
+"      return self._wrapped(name)\n"
 "    else:\n"
 "      return tcl.call('param',name)\n"
 "  def __setattr__(self,name,val):\n"
@@ -236,7 +254,7 @@ static void namd_python_initialize(void *interp) {
 "    for (name,val) in args.items():\n"
 "      tcl.call('param',name,val)\n"
 "\n"
-"namd = wrapper()\n"
+"namd = _namd_wrapper()\n"
 "\n";
 
   if ( TCL_OK != PyRun_SimpleString(python_code) ) {
@@ -2054,7 +2072,7 @@ void ScriptTcl::run(char *scriptFile) {
   }
 #endif
 
-  if (initWasCalled == 0) {
+  if (runWasCalled == 0) {
     initcheck();
     SimParameters *simParams = Node::Object()->simParameters;
     if ( simParams->minimizeCGOn ) runController(SCRIPT_MINIMIZE);

@@ -1,17 +1,20 @@
 colvars: ----------------------------------------------------------------------
-colvars: Please cite Fiorin et al, Mol Phys 2013 in any publication based on this calculation.
+colvars: Please cite Fiorin et al, Mol Phys 2013:
+colvars:  http://dx.doi.org/10.1080/00268976.2013.813594
+colvars: in any publication based on this calculation.
+colvars: SMP parallelism is available.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
 colvars: # indexFile = "" [default]
 colvars: # analysis = off [default]
 colvars: # colvarsTrajFrequency = 1
-colvars: # colvarsRestartFrequency = 2000
+colvars: # colvarsRestartFrequency = 0 [default]
 colvars: # colvarsTrajAppend = off [default]
 colvars: # scriptedColvarForces = off [default]
 colvars: # scriptingAfterBiases = on [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
-colvars:   # name = rmsdA
+colvars:   # name = "rmsdA"
 colvars:   Initializing a new "rmsd" component.
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
@@ -30,7 +33,7 @@ colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "atoms" defined, 8 atoms initialized: total mass = 43.069, total charge = -0.09.
 colvars:     # refPositions =  [default]
-colvars:     # refPositionsFile = ../Common/da.pdb
+colvars:     # refPositionsFile = "../Common/da.xyz"
 colvars:     # refPositionsCol = "" [default]
 colvars:     Enabling "centerReference" and "rotateReference", to minimize RMSD before calculating it as a variable: if this is not the desired behavior, disable them explicitly within the "atoms" block.
 colvars:     This is a standard minimum RMSD, derivatives of the optimal rotation will not be computed as they cancel out in the gradients.
@@ -45,6 +48,7 @@ colvars:   # upperWall = 5 [default]
 colvars:   # hardLowerBoundary = off [default]
 colvars:   # hardUpperBoundary = off [default]
 colvars:   # expandBoundaries = off [default]
+colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
@@ -52,7 +56,7 @@ colvars:   # outputSystemForce = on
 colvars:   # outputAppliedForce = off [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
-colvars:   # name = rmsdB
+colvars:   # name = "rmsdB"
 colvars:   Initializing a new "rmsd" component.
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
@@ -70,12 +74,12 @@ colvars:       # centerReference = on
 colvars:       # rotateReference = on
 colvars:       # enableFitGradients = on [default]
 colvars:       # refPositions =  [default]
-colvars:       # refPositionsFile = ../Common/pi-ideal.pdb
+colvars:       # refPositionsFile = "../Common/pi-ideal.xyz"
 colvars:       # refPositionsCol = "" [default]
-colvars:       Warning: atom group "atoms" will be aligned to a fixed orientation given by the reference positions provided.  If the internal structure of the group changes too much (i.e. its RMSD is comparable to its radius of gyration), the optimal rotation and its gradients may become discontinuous.  If that happens, use refPositionsGroup (or a different definition for it if already defined) to align the coordinates.
+colvars:       Warning: atom group "atoms" will be aligned to a fixed orientation given by the reference positions provided.  If the internal structure of the group changes too much (i.e. its RMSD is comparable to its radius of gyration), the optimal rotation and its gradients may become discontinuous.  If that happens, use fittingGroup (or a different definition for it if already defined) to align the coordinates.
 colvars:       Atom group "atoms" defined, 8 atoms initialized: total mass = 43.069, total charge = -0.09.
 colvars:     # refPositions =  [default]
-colvars:     # refPositionsFile = ../Common/da.pdb
+colvars:     # refPositionsFile = "../Common/da.xyz"
 colvars:     # refPositionsCol = "" [default]
 colvars:     WARNING: explicit fitting parameters were provided for atom group "atoms".
 colvars:   All components initialized.
@@ -89,6 +93,7 @@ colvars:   # upperWall = 5 [default]
 colvars:   # hardLowerBoundary = off [default]
 colvars:   # hardUpperBoundary = off [default]
 colvars:   # expandBoundaries = off [default]
+colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
@@ -96,7 +101,7 @@ colvars:   # outputSystemForce = on
 colvars:   # outputAppliedForce = off [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
-colvars:   # name = rmsdC
+colvars:   # name = "rmsdC"
 colvars:   Initializing a new "rmsd" component.
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
@@ -114,11 +119,11 @@ colvars:       # centerReference = on
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # refPositions =  [default]
-colvars:       # refPositionsFile = ../Common/da.pdb
+colvars:       # refPositionsFile = "../Common/da.xyz"
 colvars:       # refPositionsCol = "" [default]
 colvars:       Atom group "atoms" defined, 8 atoms initialized: total mass = 43.069, total charge = -0.09.
 colvars:     # refPositions =  [default]
-colvars:     # refPositionsFile = ../Common/da.pdb
+colvars:     # refPositionsFile = "../Common/da.xyz"
 colvars:     # refPositionsCol = "" [default]
 colvars:     WARNING: explicit fitting parameters were provided for atom group "atoms".
 colvars:   All components initialized.
@@ -132,6 +137,7 @@ colvars:   # upperWall = 5 [default]
 colvars:   # hardLowerBoundary = off [default]
 colvars:   # hardUpperBoundary = off [default]
 colvars:   # expandBoundaries = off [default]
+colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
@@ -139,7 +145,7 @@ colvars:   # outputSystemForce = on
 colvars:   # outputAppliedForce = off [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
-colvars:   # name = rmsdD
+colvars:   # name = "rmsdD"
 colvars:   Initializing a new "rmsd" component.
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
@@ -157,12 +163,12 @@ colvars:       # centerReference = off [default]
 colvars:       # rotateReference = on
 colvars:       # enableFitGradients = on [default]
 colvars:       # refPositions =  [default]
-colvars:       # refPositionsFile = ../Common/da.pdb
+colvars:       # refPositionsFile = "../Common/da.xyz"
 colvars:       # refPositionsCol = "" [default]
-colvars:       Warning: atom group "atoms" will be aligned to a fixed orientation given by the reference positions provided.  If the internal structure of the group changes too much (i.e. its RMSD is comparable to its radius of gyration), the optimal rotation and its gradients may become discontinuous.  If that happens, use refPositionsGroup (or a different definition for it if already defined) to align the coordinates.
+colvars:       Warning: atom group "atoms" will be aligned to a fixed orientation given by the reference positions provided.  If the internal structure of the group changes too much (i.e. its RMSD is comparable to its radius of gyration), the optimal rotation and its gradients may become discontinuous.  If that happens, use fittingGroup (or a different definition for it if already defined) to align the coordinates.
 colvars:       Atom group "atoms" defined, 8 atoms initialized: total mass = 43.069, total charge = -0.09.
 colvars:     # refPositions =  [default]
-colvars:     # refPositionsFile = ../Common/da.pdb
+colvars:     # refPositionsFile = "../Common/da.xyz"
 colvars:     # refPositionsCol = "" [default]
 colvars:     WARNING: explicit fitting parameters were provided for atom group "atoms".
 colvars:   All components initialized.
@@ -176,6 +182,7 @@ colvars:   # upperWall = 5 [default]
 colvars:   # hardLowerBoundary = off [default]
 colvars:   # hardUpperBoundary = off [default]
 colvars:   # expandBoundaries = off [default]
+colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
@@ -183,7 +190,7 @@ colvars:   # outputSystemForce = on
 colvars:   # outputAppliedForce = off [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
-colvars:   # name = rmsdE
+colvars:   # name = "rmsdE"
 colvars:   Initializing a new "rmsd" component.
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
@@ -202,7 +209,7 @@ colvars:       # rotateReference = off
 colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "atoms" defined, 8 atoms initialized: total mass = 43.069, total charge = -0.09.
 colvars:     # refPositions =  [default]
-colvars:     # refPositionsFile = ../Common/da.pdb
+colvars:     # refPositionsFile = "../Common/da.xyz"
 colvars:     # refPositionsCol = "" [default]
 colvars:     WARNING: explicit fitting parameters were provided for atom group "atoms".
 colvars:   All components initialized.
@@ -216,6 +223,7 @@ colvars:   # upperWall = 5 [default]
 colvars:   # hardLowerBoundary = off [default]
 colvars:   # hardUpperBoundary = off [default]
 colvars:   # expandBoundaries = off [default]
+colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]

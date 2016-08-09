@@ -1,5 +1,7 @@
 colvars: ----------------------------------------------------------------------
-colvars: Please cite Fiorin et al, Mol Phys 2013 in any publication based on this calculation.
+colvars: Please cite Fiorin et al, Mol Phys 2013:
+colvars:  http://dx.doi.org/10.1080/00268976.2013.813594
+colvars: in any publication based on this calculation.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
 colvars: # indexFile = "" [default]
@@ -11,7 +13,7 @@ colvars: # scriptedColvarForces = off [default]
 colvars: # scriptingAfterBiases = on [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
-colvars:   # name = rmsd
+colvars:   # name = "rmsd"
 colvars:   Initializing a new "rmsd" component.
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
@@ -30,7 +32,7 @@ colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "atoms" defined, 10 atoms initialized: total mass = 120.11, total charge = 0.53.
 colvars:     # refPositions =  [default]
-colvars:     # refPositionsFile = ../Common/da.pdb
+colvars:     # refPositionsFile = "../Common/da.pdb"
 colvars:     # refPositionsCol = "" [default]
 colvars:     Enabling "centerReference" and "rotateReference", to minimize RMSD before calculating it as a variable: if this is not the desired behavior, disable them explicitly within the "atoms" block.
 colvars:     This is a standard minimum RMSD, derivatives of the optimal rotation will not be computed as they cancel out in the gradients.
@@ -45,6 +47,7 @@ colvars:   # upperWall = 0.1 [default]
 colvars:   # hardLowerBoundary = on
 colvars:   # hardUpperBoundary = off [default]
 colvars:   # expandBoundaries = on
+colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
@@ -83,7 +86,7 @@ colvars: # scriptedColvarForces = off [default]
 colvars: # scriptingAfterBiases = on [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
-colvars:   # name = rmsd-all
+colvars:   # name = "rmsd-all"
 colvars:   Initializing a new "rmsd" component.
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
@@ -102,7 +105,7 @@ colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "atoms" defined, 51 atoms initialized: total mass = 674.397, total charge = -7.64.
 colvars:     # refPositions =  [default]
-colvars:     # refPositionsFile = ../Common/da.pdb
+colvars:     # refPositionsFile = "../Common/da.pdb"
 colvars:     # refPositionsCol = "" [default]
 colvars:     Enabling "centerReference" and "rotateReference", to minimize RMSD before calculating it as a variable: if this is not the desired behavior, disable them explicitly within the "atoms" block.
 colvars:     This is a standard minimum RMSD, derivatives of the optimal rotation will not be computed as they cancel out in the gradients.
@@ -113,6 +116,7 @@ colvars:   # lowerWallConstant = 0 [default]
 colvars:   # upperBoundary = 0 [default]
 colvars:   # upperWallConstant = 0 [default]
 colvars:   # expandBoundaries = off [default]
+colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]

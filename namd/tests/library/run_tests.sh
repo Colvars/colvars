@@ -31,14 +31,17 @@ cleanup_files() {
   for script in test*.namd testres*.namd ; do
     for f in ${script%.namd}.*diff; do if [ ! -s $f ]; then rm -f $f; fi; done # remove empty diffs only
     rm -f ${script%.namd}.*{BAK,old,backup}
-    rm -f ${script%.namd}.*{state,out,traj,coor,vel,xsc,pmf,hills,grad,count}
+    for f in ${script%.namd}.*{state,out,traj,coor,vel,xsc,pmf,hills,grad,count}
+    do
+      if [ ! -f "$f.diff" ]; then rm -f $f; fi # keep files that have a non-empty diff 
+    done
     rm -f metadynamics1.*.files.txt replicas.registry.txt
   done
 }
 
 
 for dir in ${DIRLIST} ; do
-  echo -ne "Entering $dir... "
+  echo -ne "Entering $dir ..."
   cd $dir
 
   # first, remove target files from work directory
@@ -102,6 +105,7 @@ for dir in ${DIRLIST} ; do
   if [ $SUCCESS -eq 1 ]
   then
     echo "Success!"
+    cleanup_files
   fi
 
   cd $BASEDIR
@@ -111,13 +115,6 @@ done
 if [ $ALL_SUCCESS -eq 1 ]
 then
   echo "All tests succeeded."
-
-  for dir in [0-9][0-9][0-9]_* ; do
-    cd $dir
-    cleanup_files
-    cd $BASEDIR
-  done
-  
   exit 0
 else
   echo "There were failed tests."

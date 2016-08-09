@@ -1,17 +1,37 @@
 colvars: ----------------------------------------------------------------------
-colvars: Please cite Fiorin et al, Mol Phys 2013 in any publication based on this calculation.
+colvars: Please cite Fiorin et al, Mol Phys 2013:
+colvars:  http://dx.doi.org/10.1080/00268976.2013.813594
+colvars: in any publication based on this calculation.
+colvars: SMP parallelism is available.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
-colvars: # indexFile = "" [default]
+colvars: # indexFile = "../Common/da.ndx"
+colvars: The following index groups were read from the index file "../Common/da.ndx":
+colvars:   Protein (104 atoms).
+colvars:   Protein_noH (51 atoms).
+colvars:   Protein_Backbone (40 atoms).
+colvars:   Protein_C-alpha (10 atoms).
+colvars:   Protein_C-alpha_1_2 (2 atoms).
+colvars:   Protein_C-alpha_9_10 (2 atoms).
+colvars:   Protein_C-alpha_1 (1 atoms).
+colvars:   Protein_C-alpha_2 (1 atoms).
+colvars:   Protein_C-alpha_3 (1 atoms).
+colvars:   Protein_C-alpha_4 (1 atoms).
+colvars:   Protein_C-alpha_5 (1 atoms).
+colvars:   Protein_C-alpha_6 (1 atoms).
+colvars:   Protein_C-alpha_7 (1 atoms).
+colvars:   Protein_C-alpha_8 (1 atoms).
+colvars:   Protein_C-alpha_9 (1 atoms).
+colvars:   Protein_C-alpha_10 (1 atoms).
 colvars: # analysis = off [default]
 colvars: # colvarsTrajFrequency = 1
-colvars: # colvarsRestartFrequency = 2000
+colvars: # colvarsRestartFrequency = 0 [default]
 colvars: # colvarsTrajAppend = off [default]
 colvars: # scriptedColvarForces = off [default]
 colvars: # scriptingAfterBiases = on [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
-colvars:   # name = angle
+colvars:   # name = "angle"
 colvars:   Initializing a new "angle" component.
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
@@ -20,8 +40,8 @@ colvars:     # wrapAround = 0 [default]
 colvars:     # scalable = on [default]
 colvars:     Will enable scalable calculation for group "group1".
 colvars:       Initializing atom group "group1".
-colvars:       # indexGroup = "" [default]
-colvars:       # psfSegID = { BH }
+colvars:       # indexGroup = "Protein_C-alpha_1"
+colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
@@ -31,8 +51,8 @@ colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "group1" defined, 1 atoms initialized: total mass = 12.011, total charge = -0.1.
 colvars:     Will enable scalable calculation for group "group2".
 colvars:       Initializing atom group "group2".
-colvars:       # indexGroup = "" [default]
-colvars:       # psfSegID = { BH }
+colvars:       # indexGroup = "Protein_C-alpha_2"
+colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
@@ -42,8 +62,8 @@ colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "group2" defined, 1 atoms initialized: total mass = 12.011, total charge = 0.07.
 colvars:     Will enable scalable calculation for group "group3".
 colvars:       Initializing atom group "group3".
-colvars:       # indexGroup = "" [default]
-colvars:       # psfSegID = { BH }
+colvars:       # indexGroup = "Protein_C-alpha_3"
+colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
@@ -61,6 +81,7 @@ colvars:   # upperWallConstant = 0 [default]
 colvars:   # hardLowerBoundary = off [default]
 colvars:   # hardUpperBoundary = off [default]
 colvars:   # expandBoundaries = off [default]
+colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
@@ -68,7 +89,7 @@ colvars:   # outputSystemForce = on
 colvars:   # outputAppliedForce = on
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
-colvars:   # name = dihedral
+colvars:   # name = "dihedral"
 colvars:   Initializing a new "dihedral" component.
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
@@ -78,8 +99,8 @@ colvars:     # scalable = on [default]
 colvars:     # oneSiteSystemForce = off [default]
 colvars:     Will enable scalable calculation for group "group1".
 colvars:       Initializing atom group "group1".
-colvars:       # indexGroup = "" [default]
-colvars:       # psfSegID = { BH }
+colvars:       # indexGroup = "Protein_C-alpha_1"
+colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
@@ -89,8 +110,8 @@ colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "group1" defined, 1 atoms initialized: total mass = 12.011, total charge = -0.1.
 colvars:     Will enable scalable calculation for group "group2".
 colvars:       Initializing atom group "group2".
-colvars:       # indexGroup = "" [default]
-colvars:       # psfSegID = { BH }
+colvars:       # indexGroup = "Protein_C-alpha_2"
+colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
@@ -100,8 +121,8 @@ colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "group2" defined, 1 atoms initialized: total mass = 12.011, total charge = 0.07.
 colvars:     Will enable scalable calculation for group "group3".
 colvars:       Initializing atom group "group3".
-colvars:       # indexGroup = "" [default]
-colvars:       # psfSegID = { BH }
+colvars:       # indexGroup = "Protein_C-alpha_3"
+colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
@@ -111,8 +132,8 @@ colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "group3" defined, 1 atoms initialized: total mass = 12.011, total charge = 0.07.
 colvars:     Will enable scalable calculation for group "group4".
 colvars:       Initializing atom group "group4".
-colvars:       # indexGroup = "" [default]
-colvars:       # psfSegID = { BH }
+colvars:       # indexGroup = "Protein_C-alpha_4"
+colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
@@ -129,6 +150,7 @@ colvars:   # upperWallConstant = 0 [default]
 colvars:   # hardLowerBoundary = off [default]
 colvars:   # hardUpperBoundary = off [default]
 colvars:   # expandBoundaries = off [default]
+colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
@@ -147,7 +169,7 @@ colvars:   # hideJacobian = off [default]
 colvars:   Jacobian (geometric) forces will be included in reported free energy gradients.
 colvars:   # fullSamples = 1
 colvars:   # inputPrefix =  [default]
-colvars:   # outputFreq = 2000 [default]
+colvars:   # outputFreq = 0 [default]
 colvars:   # historyFreq = 10
 colvars:   # shared = off [default]
 colvars:   # maxForce =  [default]
@@ -172,7 +194,5 @@ colvars: Writing to colvar trajectory file "test.colvars.traj".
 colvars: Updating NAMD interface:
 colvars: updating atomic data (0 atoms).
 colvars: updating group data (4 scalable groups, 4 atoms in total).
-colvars:   ABFHISTORYFILE 0
 colvars:   Prepared sample and gradient buffers at step 0.
-colvars:   ABFHISTORYFILE 10
 colvars: Saving collective variables state to "test.colvars.state".
