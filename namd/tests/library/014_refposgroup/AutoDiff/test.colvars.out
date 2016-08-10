@@ -65,6 +65,7 @@ colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
 colvars:   # outputSystemForce = off [default]
+colvars:   # outputTotalForce = off [default]
 colvars:   # outputAppliedForce = on
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables initialized, 1 in total.

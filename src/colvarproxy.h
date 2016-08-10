@@ -295,11 +295,11 @@ public:
   /// Pass restraint energy value for current timestep to MD engine
   virtual void add_energy(cvm::real energy) = 0;
 
-  /// Tell the proxy whether system forces are needed (may not always be available)
-  virtual void request_system_force(bool yesno)
+  /// Tell the proxy whether total forces are needed (may not always be available)
+  virtual void request_total_force(bool yesno)
   {
     if (yesno == true)
-      cvm::error("Error: system forces are currently not implemented.\n",
+      cvm::error("Error: total forces are currently not implemented.\n",
                  COLVARS_NOT_IMPLEMENTED);
   }
 
@@ -439,8 +439,8 @@ public:
     return atoms_positions[index];
   }
 
-  /// Read the current total system force of the given atom
-  inline cvm::rvector get_atom_system_force(int index) const
+  /// Read the current total force of the given atom
+  inline cvm::rvector get_atom_total_force(int index) const
   {
     return atoms_total_forces[index] - atoms_applied_forces[index];
   }
@@ -592,8 +592,8 @@ public:
     return atom_groups_coms[index];
   }
 
-  /// Read the current total system force of the given atom group
-  inline cvm::rvector get_atom_group_system_force(int index) const
+  /// Read the current total force of the given atom group
+  inline cvm::rvector get_atom_group_total_force(int index) const
   {
     return atom_groups_total_forces[index] - atom_groups_applied_forces[index];
   }

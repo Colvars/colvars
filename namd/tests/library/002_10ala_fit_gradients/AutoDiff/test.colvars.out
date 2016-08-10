@@ -71,7 +71,8 @@ colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
-colvars:   # outputSystemForce = on
+colvars:   # outputSystemForce = off [default]
+colvars:   # outputTotalForce = on
 colvars:   # outputAppliedForce = on
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables initialized, 1 in total.

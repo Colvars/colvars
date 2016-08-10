@@ -6,7 +6,7 @@ indexFile ../Common/da.ndx
 colvar {
     name angle
 
-    outputSystemForce on
+    outputTotalForce on
     outputAppliedForce on
     width 6.0 
 
@@ -30,7 +30,7 @@ colvar {
 colvar {
     name dihedral
 
-    outputSystemForce on
+    outputTotalForce on
     outputAppliedForce on
     width 6.0 
 

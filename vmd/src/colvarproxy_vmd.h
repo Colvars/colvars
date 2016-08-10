@@ -111,9 +111,9 @@ public:
   void add_energy(cvm::real energy);
 
 private:
-  bool system_force_requested;
+  bool total_force_requested;
 public:
-  void request_system_force(bool yesno);
+  void request_total_force(bool yesno);
 
   cvm::rvector position_distance(cvm::atom_pos const &pos1,
                                   cvm::atom_pos const &pos2);

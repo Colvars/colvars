@@ -48,7 +48,7 @@ protected:
   bool first_timestep;
   size_t previous_NAMD_step;
 
-  bool system_force_requested;
+  bool total_force_requested;
 
   /// Used to submit restraint energy as MISC
   SubmitReduction *reduction;
@@ -73,7 +73,7 @@ public:
   void fatal_error(std::string const &message);
   void exit(std::string const &message);
   void add_energy(cvm::real energy);
-  void request_system_force(bool yesno);
+  void request_total_force(bool yesno);
   int run_force_callback();
   int run_colvar_callback(std::string const &name,
                           std::vector<const colvarvalue *> const &cvcs,

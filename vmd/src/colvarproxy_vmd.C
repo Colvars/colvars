@@ -116,7 +116,7 @@ colvarproxy_vmd::colvarproxy_vmd(Tcl_Interp *vti, VMDApp *v, int molid)
   colvars->restart_out_freq = 0;
   cvm::rotation::monitor_crossings = false;
 
-  system_force_requested = false;
+  total_force_requested = false;
 
   colvars->setup_input();
   colvars->setup_output();
@@ -227,14 +227,14 @@ int colvarproxy_vmd::update_atomic_properties()
 }
 
 
-void colvarproxy_vmd::request_system_force(bool yesno)
+void colvarproxy_vmd::request_total_force(bool yesno)
 {
-  if ((yesno == true) && (system_force_requested == false)) {
-    cvm::log("Warning: a bias requested system forces, which are undefined in VMD.  "
+  if ((yesno == true) && (total_force_requested == false)) {
+    cvm::log("Warning: a bias requested total forces, which are undefined in VMD.  "
              "This is only meaningful when analyzing a simulation where these were used, "
              "provided that a state file is loaded.\n");
   }
-  system_force_requested = yesno;
+  total_force_requested = yesno;
 }
 
 

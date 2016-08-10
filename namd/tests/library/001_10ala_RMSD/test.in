@@ -4,7 +4,7 @@ colvarsTrajFrequency 1
 colvar {
     name rmsdA
 
-    outputSystemForce on
+    outputTotalForce on
     #  outputAppliedForce on
     width 1.0 
 
@@ -26,7 +26,7 @@ colvar {
 colvar {
     name rmsdB
 
-    outputSystemForce on
+    outputTotalForce on
 
     width 1.0 
 
@@ -51,7 +51,7 @@ colvar {
 colvar {
     name rmsdC
 
-    outputSystemForce on
+    outputTotalForce on
 
     width 1.0 
 
@@ -75,7 +75,7 @@ colvar {
 colvar {
     name rmsdD
 
-    outputSystemForce on
+    outputTotalForce on
 
     width 1.0 
 
@@ -99,7 +99,7 @@ colvar {
 colvar {
     name rmsdE
 
-    outputSystemForce on
+    outputTotalForce on
 
     width 1.0 
 

@@ -81,8 +81,8 @@ int colvarbias_abf::init(std::string const &conf)
   }
 
   if (update_bias) {
-  // Request calculation of system force (which also checks for availability)
-    if(enable(f_cvb_get_system_force)) return cvm::get_error();
+  // Request calculation of total force (which also checks for availability)
+    if(enable(f_cvb_get_total_force)) return cvm::get_error();
   }
   if (apply_bias) {
     if(enable(f_cvb_apply_force)) return cvm::get_error();
@@ -245,7 +245,7 @@ int colvarbias_abf::update()
       // Only if requested and within bounds of the grid...
 
       for (size_t i=0; i<colvars.size(); i++) {	  // get forces(lagging by 1 timestep) from colvars
-        force[i] = colvars[i]->system_force();
+        force[i] = colvars[i]->total_force();
       }
       gradients->acc_force(force_bin, force);
     }
@@ -257,7 +257,7 @@ int colvarbias_abf::update()
         for (size_t i=0; i<colvars.size(); i++) {
           // If we are outside the range of xi, the force has not been obtained above
           // the function is just an accessor, so cheap to call again anyway
-          force[i] = colvars[i]->system_force();
+          force[i] = colvars[i]->total_force();
         }
         z_gradients->acc_force(z_bin, force);
       }

@@ -27,8 +27,8 @@
 colvarproxy_namd::colvarproxy_namd()
 {
   first_timestep = true;
-  system_force_requested = false;
-  requestTotalForce(system_force_requested);
+  total_force_requested = false;
+  requestTotalForce(total_force_requested);
 
   // initialize pointers to NAMD configuration data
   simparams = Node::Object()->simParameters;
@@ -261,7 +261,7 @@ void colvarproxy_namd::calculate()
     }
   }
 
-  if (system_force_requested && cvm::step_relative() > 0) {
+  if (total_force_requested && cvm::step_relative() > 0) {
 
     // sort the force arrays the previous step
     // (but only do so if there *is* a previous step!)
@@ -278,7 +278,7 @@ void colvarproxy_namd::calculate()
       }
 
       if (n_total_forces < atoms_ids.size()) {
-        cvm::error("Error: system forces were requested, but total forces "
+        cvm::error("Error: total forces were requested, but total forces "
                    "were not received for all atoms.\n"
                    "The most probable cause is combination of energy "
                    "minimization with a biasing method that requires MD (e.g. ABF).\n"
@@ -302,7 +302,7 @@ void colvarproxy_namd::calculate()
       ForceList::const_iterator f_e = getGroupTotalForceEnd();
       size_t i = 0;
       if ((f_e - f_i) != ((int) atom_groups_ids.size())) {
-        cvm::error("Error: system forces were requested for scalable groups, "
+        cvm::error("Error: total forces were requested for scalable groups, "
                    "but they are not in the same number from the number of groups.\n"
                    "The most probable cause is combination of energy "
                    "minimization with a biasing method that requires MD (e.g. ABF).\n"
@@ -380,7 +380,7 @@ void colvarproxy_namd::calculate()
   // send MISC energy
   reduction->submit();
 
-  if (system_force_requested) {
+  if (total_force_requested) {
     // GlobalMaster cannot currently communicate previous applied forces
     // from all restraints: save them for the next step
     atom_groups_applied_forces = atom_groups_new_colvar_forces;
@@ -489,10 +489,10 @@ void colvarproxy_namd::add_energy(cvm::real energy)
   reduction->item(REDUCTION_MISC_ENERGY) += energy;
 }
 
-void colvarproxy_namd::request_system_force(bool yesno)
+void colvarproxy_namd::request_total_force(bool yesno)
 {
-  system_force_requested = yesno;
-  requestTotalForce(system_force_requested);
+  total_force_requested = yesno;
+  requestTotalForce(total_force_requested);
 }
 
 void colvarproxy_namd::log(std::string const &message)

@@ -73,7 +73,7 @@ colvarproxy_lammps::colvarproxy_lammps(LAMMPS_NS::LAMMPS *lmp,
   _random = new LAMMPS_NS::Random(lmp,seed);
 
   first_timestep=true;
-  system_force_requested=false;
+  total_force_requested=false;
   previous_step=-1;
   t_target=temp;
   do_exit=false;
@@ -200,7 +200,7 @@ double colvarproxy_lammps::compute()
   }
 
   // backup applied forces if necessary to calculate system forces
-  if (system_force_requested) {
+  if (total_force_requested) {
     atoms_applied_forces = atoms_new_colvar_forces;
   }
 
