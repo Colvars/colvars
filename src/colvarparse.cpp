@@ -356,7 +356,7 @@ bool colvarparse::get_keyval(std::string const &conf,
 
 bool colvarparse::get_keyval(std::string const &conf,
                              char const *key,
-                             cvm::deps::feature_state *value,
+                             colvardeps::feature_state *value,
                              bool const &def_value,
                              Parse_Mode const parse_mode)
 {
