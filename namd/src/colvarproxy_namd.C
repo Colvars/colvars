@@ -173,7 +173,6 @@ int colvarproxy_namd::setup()
     // zero out mutable arrays
     atoms_positions[i] = cvm::rvector(0.0, 0.0, 0.0);
     atoms_total_forces[i] = cvm::rvector(0.0, 0.0, 0.0);
-    atoms_applied_forces[i] = cvm::rvector(0.0, 0.0, 0.0);
     atoms_new_colvar_forces[i] = cvm::rvector(0.0, 0.0, 0.0);
   }
 
@@ -193,7 +192,6 @@ int colvarproxy_namd::setup()
 
     atom_groups_coms[ig] = cvm::rvector(0.0, 0.0, 0.0);
     atom_groups_total_forces[ig] = cvm::rvector(0.0, 0.0, 0.0);
-    atom_groups_applied_forces[ig] = cvm::rvector(0.0, 0.0, 0.0);
     atom_groups_new_colvar_forces[ig] = cvm::rvector(0.0, 0.0, 0.0);
   }
 
@@ -235,13 +233,11 @@ void colvarproxy_namd::calculate()
   for (size_t i = 0; i < atoms_ids.size(); i++) {
     atoms_positions[i] = cvm::rvector(0.0, 0.0, 0.0);
     atoms_total_forces[i] = cvm::rvector(0.0, 0.0, 0.0);
-    atoms_applied_forces[i] = cvm::rvector(0.0, 0.0, 0.0);
     atoms_new_colvar_forces[i] = cvm::rvector(0.0, 0.0, 0.0);
   }
 
   for (size_t i = 0; i < atom_groups_ids.size(); i++) {
     atom_groups_total_forces[i] = cvm::rvector(0.0, 0.0, 0.0);
-    // atom_groups_applied_forces will not be filled in by GlobalMaster
     atom_groups_new_colvar_forces[i] = cvm::rvector(0.0, 0.0, 0.0);
   }
 
@@ -287,17 +283,6 @@ void colvarproxy_namd::calculate()
     }
 
     {
-      // do the same for applied forces
-      AtomIDList::const_iterator a_i = getLastAtomsForcedBegin();
-      AtomIDList::const_iterator a_e = getLastAtomsForcedEnd();
-      ForceList::const_iterator f_i = getLastForcesBegin();
-
-      for ( ; a_i != a_e; ++a_i, ++f_i ) {
-        atoms_applied_forces[atoms_map[*a_i]] = cvm::rvector((*f_i).x, (*f_i).y, (*f_i).z);
-      }
-    }
-
-    {
       ForceList::const_iterator f_i = getGroupTotalForceBegin();
       ForceList::const_iterator f_e = getGroupTotalForceEnd();
       size_t i = 0;
@@ -312,8 +297,6 @@ void colvarproxy_namd::calculate()
         atom_groups_total_forces[i] = cvm::rvector((*f_i).x, (*f_i).y, (*f_i).z);
       }
     }
-
-    // atom_groups_applied_forces is not provided by GlobalMaster
   }
 
   {
@@ -334,7 +317,6 @@ void colvarproxy_namd::calculate()
     log("atoms_charges = "+cvm::to_str(atoms_charges)+"\n");
     log("atoms_positions = "+cvm::to_str(atoms_positions)+"\n");
     log("atoms_total_forces = "+cvm::to_str(atoms_total_forces)+"\n");
-    log("atoms_applied_forces = "+cvm::to_str(atoms_applied_forces)+"\n");
     log(cvm::line_marker);
 
     log("atom_groups_ids = "+cvm::to_str(atom_groups_ids)+"\n");
@@ -343,7 +325,6 @@ void colvarproxy_namd::calculate()
     log("atom_groups_charges = "+cvm::to_str(atom_groups_charges)+"\n");
     log("atom_groups_coms = "+cvm::to_str(atom_groups_coms)+"\n");
     log("atom_groups_total_forces = "+cvm::to_str(atom_groups_total_forces)+"\n");
-    log("atom_groups_applied_forces = "+cvm::to_str(atom_groups_applied_forces)+"\n");
     log(cvm::line_marker);
   }
 
@@ -379,12 +360,6 @@ void colvarproxy_namd::calculate()
 
   // send MISC energy
   reduction->submit();
-
-  if (total_force_requested) {
-    // GlobalMaster cannot currently communicate previous applied forces
-    // from all restraints: save them for the next step
-    atom_groups_applied_forces = atom_groups_new_colvar_forces;
-  }
 
   // NAMD does not destruct GlobalMaster objects, so we must remember
   // to write all output files at the end of a run

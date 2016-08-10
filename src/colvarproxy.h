@@ -354,8 +354,6 @@ protected:
   std::vector<cvm::rvector> atoms_positions;
   /// \brief Most recent total forces on each atom
   std::vector<cvm::rvector> atoms_total_forces;
-  /// \brief Most recent forces applied by external potentials onto each atom
-  std::vector<cvm::rvector> atoms_applied_forces;
   /// \brief Forces applied from colvars, to be communicated to the MD integrator
   std::vector<cvm::rvector> atoms_new_colvar_forces;
 
@@ -368,7 +366,6 @@ protected:
     atoms_charges.push_back(0.0);
     atoms_positions.push_back(cvm::rvector(0.0, 0.0, 0.0));
     atoms_total_forces.push_back(cvm::rvector(0.0, 0.0, 0.0));
-    atoms_applied_forces.push_back(cvm::rvector(0.0, 0.0, 0.0));
     atoms_new_colvar_forces.push_back(cvm::rvector(0.0, 0.0, 0.0));
     return (atoms_ids.size() - 1);
   }
@@ -442,7 +439,7 @@ public:
   /// Read the current total force of the given atom
   inline cvm::rvector get_atom_total_force(int index) const
   {
-    return atoms_total_forces[index] - atoms_applied_forces[index];
+    return atoms_total_forces[index];
   }
 
   /// Request that this force is applied to the given atom
@@ -465,7 +462,6 @@ public:
   inline std::vector<cvm::real> *modify_atom_charges() { return &atoms_charges; }
   inline std::vector<cvm::rvector> *modify_atom_positions() { return &atoms_positions; }
   inline std::vector<cvm::rvector> *modify_atom_total_forces() { return &atoms_total_forces; }
-  inline std::vector<cvm::rvector> *modify_atom_applied_forces() { return &atoms_applied_forces; }
   inline std::vector<cvm::rvector> *modify_atom_new_colvar_forces() { return &atoms_new_colvar_forces; }
 
   /// \brief Read atom identifiers from a file \param filename name of
@@ -513,8 +509,6 @@ protected:
   std::vector<cvm::rvector> atom_groups_coms;
   /// \brief Most recently updated total forces on the com of each group
   std::vector<cvm::rvector> atom_groups_total_forces;
-  /// \brief Most recent forces applied by external potentials onto each group
-  std::vector<cvm::rvector> atom_groups_applied_forces;
   /// \brief Forces applied from colvars, to be communicated to the MD integrator
   std::vector<cvm::rvector> atom_groups_new_colvar_forces;
 
@@ -538,7 +532,6 @@ public:
     atom_groups_charges.push_back(0.0);
     atom_groups_coms.push_back(cvm::rvector(0.0, 0.0, 0.0));
     atom_groups_total_forces.push_back(cvm::rvector(0.0, 0.0, 0.0));
-    atom_groups_applied_forces.push_back(cvm::rvector(0.0, 0.0, 0.0));
     atom_groups_new_colvar_forces.push_back(cvm::rvector(0.0, 0.0, 0.0));
     return (atom_groups_ids.size() - 1);
   }
@@ -595,7 +588,7 @@ public:
   /// Read the current total force of the given atom group
   inline cvm::rvector get_atom_group_total_force(int index) const
   {
-    return atom_groups_total_forces[index] - atom_groups_applied_forces[index];
+    return atom_groups_total_forces[index];
   }
 
   /// Request that this force is applied to the given atom group

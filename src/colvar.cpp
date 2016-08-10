@@ -1577,7 +1577,7 @@ std::ostream & colvar::write_traj_label(std::ostream & os)
   }
 
   if (is_enabled(f_cv_output_total_force)) {
-    os << " fs_"
+    os << " ft_"
        << cvm::wrap_string(this->name, this_cv_width-3);
   }
 
