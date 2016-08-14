@@ -27,16 +27,9 @@ public:
   std::string description; // reference to object name (cv, cvc etc.)
 
   /// This contains the current state of each feature for each object
-  class feature_state {
-  private:
-    colvardeps *const deps_object;
-    int const id;
-    operator int() { return 0; } // never cast as int
-  public:
-    inline colvardeps *object() const { return deps_object; }
-    inline int feature_id() const { return id; }
-    feature_state(colvardeps *o, int i, bool a, bool e)
-      : deps_object(o), id(i), available(a), enabled(e) {}
+  struct feature_state {
+    feature_state(bool a, bool e)
+    : available(a), enabled(e) {}
 
     /// Available means: supported, subject to dependencies as listed,
     /// MAY BE ENABLED AS A RESULT OF DEPENDENCY SOLVING
@@ -54,12 +47,6 @@ public:
 
   /// List of the state of all features
   std::vector<feature_state *> feature_states;
-
-  /// Allow setting a feature state while parsing its kewyord
-  inline feature_state * set_feature(int id)
-  {
-    return feature_states[id];
-  }
 
   /// Describes a feature and its dependecies
   /// used in a static array within each subclass

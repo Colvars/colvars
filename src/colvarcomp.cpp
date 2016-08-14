@@ -43,7 +43,11 @@ colvar::cvc::cvc(std::string const &conf)
 
   // All cvcs implement this
   provide(f_cvc_debug_gradient);
-  get_keyval(conf, "debugGradients", set_feature(f_cvc_debug_gradient), false, parse_silent);
+  {
+    bool b_debug_gradient;
+    get_keyval(conf, "debugGradients", b_debug_gradient, false, parse_silent);
+    if (b_debug_gradient) enable(f_cvc_debug_gradient);
+  }
 
   // Attempt scalable calculations when in parallel? (By default yes, if available)
   get_keyval(conf, "scalable", b_try_scalable, true);

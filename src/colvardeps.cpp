@@ -215,7 +215,7 @@ void colvardeps::init_cvb_requires() {
   // Initialize feature_states for each instance
   feature_states.reserve(f_cvb_ntot);
   for (i = 0; i < f_cvb_ntot; i++) {
-    feature_states.push_back(new feature_state(this, feature_states.size(), true, false));
+    feature_states.push_back(new feature_state(true, false));
     // Most features are available, so we set them so
     // and list exceptions below
   }
@@ -319,7 +319,7 @@ void colvardeps::init_cv_requires() {
   // Initialize feature_states for each instance
   feature_states.reserve(f_cv_ntot);
   for (i = 0; i < f_cv_ntot; i++) {
-    feature_states.push_back(new feature_state(this, feature_states.size(), true, false));
+    feature_states.push_back(new feature_state(true, false));
     // Most features are available, so we set them so
     // and list exceptions below
    }
@@ -385,7 +385,7 @@ void colvardeps::init_cvc_requires() {
   // default as unavailable, not enabled
   feature_states.reserve(f_cvc_ntot);
   for (i = 0; i < colvardeps::f_cvc_ntot; i++) {
-    feature_states.push_back(new feature_state(this, feature_states.size(), false, false));
+    feature_states.push_back(new feature_state(false, false));
   }
 
   // Features that are implemented by all cvcs by default
@@ -429,7 +429,7 @@ void colvardeps::init_ag_requires() {
   // default as unavailable, not enabled
   feature_states.reserve(f_ag_ntot);
   for (i = 0; i < colvardeps::f_ag_ntot; i++) {
-    feature_states.push_back(new feature_state(this, feature_states.size(), false, false));
+    feature_states.push_back(new feature_state(false, false));
   }
 
   // Features that are implemented (or not) by all atom groups
