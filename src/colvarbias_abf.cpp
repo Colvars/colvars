@@ -82,9 +82,6 @@ int colvarbias_abf::init(std::string const &conf)
   // Request calculation of total force (which also checks for availability)
     if(enable(f_cvb_get_total_force)) return cvm::get_error();
   }
-  if (apply_bias) {
-    if(enable(f_cvb_apply_force)) return cvm::get_error();
-  }
 
   bool b_extended = false;
   for (size_t i = 0; i < colvars.size(); i++) {
@@ -275,7 +272,7 @@ int colvarbias_abf::update()
   }
 
   // Compute and apply the new bias, if applicable
-  if ( apply_bias && samples->index_ok(bin) ) {
+  if (is_enabled(f_cvb_apply_force) && samples->index_ok(bin)) {
 
     size_t  count = samples->value(bin);
     cvm::real	fact = 1.0;
