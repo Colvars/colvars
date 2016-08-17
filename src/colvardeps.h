@@ -1,9 +1,10 @@
 // -*- c++ -*-
 
-#include "colvarmodule.h"
-
 #ifndef COLVARDEPS_H
 #define COLVARDEPS_H
+
+#include "colvarmodule.h"
+#include "colvarparse.h"
 
 /// Parent class for a member object of a bias, cv or cvc etc. containing dependencies
 /// (features) and handling dependency resolution
@@ -132,6 +133,12 @@ public:
   }
 
   void provide(int feature_id); // set the feature's flag to available in local object
+
+  /// Parse a keyword and enable a feature accordingly
+  bool get_keyval_feature(colvarparse *cvp,
+                          std::string const &conf, char const *key,
+                          int feature_id, bool const &def_value,
+                          colvarparse::Parse_Mode const parse_mode = colvarparse::parse_normal);
 
   int enable(int f, bool dry_run = false, bool toplevel = true);  // enable a feature and recursively solve its dependencies
   // dry_run is set to true to recursively test if a feature is available, without enabling it

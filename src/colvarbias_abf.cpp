@@ -31,10 +31,8 @@ int colvarbias_abf::init(std::string const &conf)
 
   // ************* parsing general ABF options ***********************
 
-  get_keyval(conf, "applyBias",  apply_bias, true);
-  if (apply_bias) {
-    enable(f_cvb_apply_force);
-  } else {
+  get_keyval_feature((colvarparse *)this, conf, "applyBias",  f_cvb_apply_force, true);
+  if (!is_enabled(f_cvb_apply_force)){
     cvm::log("WARNING: ABF biases will *not* be applied!\n");
   }
 

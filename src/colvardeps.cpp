@@ -1,4 +1,3 @@
-#include "colvarmodule.h"
 #include "colvardeps.h"
 
 
@@ -29,6 +28,15 @@ void colvardeps::provide(int feature_id) {
   feature_states[feature_id]->available = true;
 }
 
+
+bool colvardeps::get_keyval_feature(colvarparse *cvp,
+                        std::string const &conf, char const *key,
+                        int feature_id, bool const &def_value,
+                        colvarparse::Parse_Mode const parse_mode)
+{
+  return cvp->get_keyval(conf, key, feature_states[feature_id]->enabled,
+                                 def_value, parse_mode);
+}
 
 int colvardeps::enable(int feature_id,
                       bool dry_run /* default: false */,
