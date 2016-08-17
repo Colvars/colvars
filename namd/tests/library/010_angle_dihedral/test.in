@@ -39,16 +39,16 @@ colvar {
 
     dihedral {
         group1 {
-            indexGroup Protein_C-alpha_1
+            indexGroup Protein_C-alpha_4
         }
         group2 {
-            indexGroup Protein_C-alpha_2
+            indexGroup Protein_C-alpha_5
         }
         group3 {
-            indexGroup Protein_C-alpha_3
+            indexGroup Protein_C-alpha_6
         }
         group4 {
-            indexGroup Protein_C-alpha_4
+            indexGroup Protein_C-alpha_7
         }
     }
 } 
