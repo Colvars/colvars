@@ -889,21 +889,22 @@ int colvar::calc_cvc_gradients(int first_cvc, size_t num_cvcs)
   size_t const cvc_max_count = num_cvcs ? num_cvcs : num_active_cvcs();
   size_t i, cvc_count;
 
-  if (is_enabled(f_cv_gradient)) {
+  if (cvm::debug())
+    cvm::log("Calculating gradients of colvar \""+this->name+"\".\n");
 
-    if (cvm::debug())
-      cvm::log("Calculating gradients of colvar \""+this->name+"\".\n");
+  // calculate the gradients of each component
+  cvm::increase_depth();
+  for (i = first_cvc, cvc_count = 0;
+      (i < cvcs.size()) && (cvc_count < cvc_max_count);
+      i++) {
+    if (!cvcs[i]->is_enabled()) continue;
+    cvc_count++;
 
-    // calculate the gradients of each component
-    cvm::increase_depth();
-    for (i = first_cvc, cvc_count = 0;
-        (i < cvcs.size()) && (cvc_count < cvc_max_count);
-        i++) {
-      if (!cvcs[i]->is_enabled()) continue;
-      cvc_count++;
+    if ((cvcs[i])->is_enabled(f_cvc_gradient)) {
       (cvcs[i])->calc_gradients();
       // if requested, propagate (via chain rule) the gradients above
       // to the atoms used to define the roto-translation
+      // This could be integrated in the CVC base class
       for (size_t ig = 0; ig < cvcs[i]->atom_groups.size(); ig++) {
         if (cvcs[i]->atom_groups[ig]->b_fit_gradients)
           cvcs[i]->atom_groups[ig]->calc_fit_gradients();
@@ -914,6 +915,7 @@ int colvar::calc_cvc_gradients(int first_cvc, size_t num_cvcs)
         }
       }
     }
+
     cvm::decrease_depth();
 
     if (cvm::debug())
