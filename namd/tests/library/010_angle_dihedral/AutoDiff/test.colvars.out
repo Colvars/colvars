@@ -100,7 +100,7 @@ colvars:     # scalable = on [default]
 colvars:     # oneSiteSystemForce = off [default]
 colvars:     Will enable scalable calculation for group "group1".
 colvars:       Initializing atom group "group1".
-colvars:       # indexGroup = "Protein_C-alpha_1"
+colvars:       # indexGroup = "Protein_C-alpha_4"
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
@@ -108,10 +108,10 @@ colvars:       # enableForces = on [default]
 colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Atom group "group1" defined, 1 atoms initialized: total mass = 12.011, total charge = -0.1.
+colvars:       Atom group "group1" defined, 1 atoms initialized: total mass = 12.011, total charge = 0.07.
 colvars:     Will enable scalable calculation for group "group2".
 colvars:       Initializing atom group "group2".
-colvars:       # indexGroup = "Protein_C-alpha_2"
+colvars:       # indexGroup = "Protein_C-alpha_5"
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
@@ -122,7 +122,7 @@ colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "group2" defined, 1 atoms initialized: total mass = 12.011, total charge = 0.07.
 colvars:     Will enable scalable calculation for group "group3".
 colvars:       Initializing atom group "group3".
-colvars:       # indexGroup = "Protein_C-alpha_3"
+colvars:       # indexGroup = "Protein_C-alpha_6"
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
@@ -133,7 +133,7 @@ colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "group3" defined, 1 atoms initialized: total mass = 12.011, total charge = 0.07.
 colvars:     Will enable scalable calculation for group "group4".
 colvars:       Initializing atom group "group4".
-colvars:       # indexGroup = "Protein_C-alpha_4"
+colvars:       # indexGroup = "Protein_C-alpha_7"
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
@@ -183,7 +183,7 @@ colvars: Collective variables module (re)initialized.
 colvars: ----------------------------------------------------------------------
 colvars: Updating NAMD interface:
 colvars: updating atomic data (0 atoms).
-colvars: updating group data (4 scalable groups, 4 atoms in total).
+colvars: updating group data (7 scalable groups, 7 atoms in total).
 colvars: Re-initialized atom group angle:0/0. 1 atoms: total mass = 12.011.
 colvars: Re-initialized atom group angle:0/1. 1 atoms: total mass = 12.011.
 colvars: Re-initialized atom group angle:0/2. 1 atoms: total mass = 12.011.
@@ -195,6 +195,6 @@ colvars: The final output state file will be "test.colvars.state".
 colvars: Writing to colvar trajectory file "test.colvars.traj".
 colvars: Updating NAMD interface:
 colvars: updating atomic data (0 atoms).
-colvars: updating group data (4 scalable groups, 4 atoms in total).
+colvars: updating group data (7 scalable groups, 7 atoms in total).
 colvars:   Prepared sample and gradient buffers at step 0.
 colvars: Saving collective variables state to "test.colvars.state".
