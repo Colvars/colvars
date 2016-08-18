@@ -59,7 +59,7 @@ int colvardeps::enable(int feature_id,
   if (cvm::debug()) {
     cvm::log("DEPS: " + description +
       (dry_run ? " testing " : " requiring ") +
-      "\"" + f->description);
+      "\"" + f->description +"\"");
   }
 
   if (fs->enabled) {
@@ -151,11 +151,7 @@ int colvardeps::enable(int feature_id,
   // 4) solve deps in children
   for (i=0; i<f->requires_children.size(); i++) {
     int g = f->requires_children[i];
-    if (cvm::debug())
-      cvm::log("requires children " + features()[g]->description);
-//     cvm::log("children " + cvm::to_str(g));
     for (j=0; j<children.size(); j++) {
-//       cvm::log("child " +  children[j]->description);
       cvm::increase_depth();
       res = children[j]->enable(g, dry_run, false);
       cvm::decrease_depth();
