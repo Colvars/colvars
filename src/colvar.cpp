@@ -1099,10 +1099,8 @@ int colvar::calc_colvar_properties()
     // report the restraint center as "value"
     x_reported = xr;
     v_reported = vr;
-    // the "total force" with the extended Lagrangian is the
-    // harmonic term acting on the extended variable
-    // Note: this is the force for current timestep
-    ft_reported = (-0.5 * ext_force_k) * this->dist2_lgrad(xr, x);
+    // the "total force" with the extended Lagrangian is
+    // calculated in update_forces_energy() below
 
   } else {
 
@@ -1184,6 +1182,10 @@ cvm::real colvar::update_forces_energy()
     fr    = f;
     f_ext = f + (-0.5 * ext_force_k) * this->dist2_lgrad(xr, x);
     f     =     (-0.5 * ext_force_k) * this->dist2_rgrad(xr, x);
+
+    // The total force acting on the extended variable is f_ext
+    // This will be used in the next timestep
+    ft_reported = f_ext;
 
     // leapfrog: starting from x_i, f_i, v_(i-1/2)
     vr  += (0.5 * dt) * f_ext / ext_mass;

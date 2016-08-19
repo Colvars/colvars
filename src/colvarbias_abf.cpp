@@ -244,6 +244,11 @@ int colvarbias_abf::update()
         // and subtract previous ABF force
         system_force[i] = colvars[i]->total_force().real_value
                         - colvar_forces[i].real_value;
+//         if (cvm::debug())
+//           cvm::log("ABF System force calc: cv " + cvm::to_str(i) +
+//                   " fs " + cvm::to_str(system_force[i]) +
+//                   " = ft " + cvm::to_str(colvars[i]->total_force().real_value) +
+//                   " - fa " + cvm::to_str(colvar_forces[i].real_value));
       }
       gradients->acc_force(force_bin, system_force);
     }
