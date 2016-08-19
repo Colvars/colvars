@@ -771,7 +771,7 @@ int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
 
   error_code |= calc_cvc_values(first_cvc, num_cvcs);
   error_code |= calc_cvc_gradients(first_cvc, num_cvcs);
-  error_code |= calc_cvc_sys_forces(first_cvc, num_cvcs);
+  error_code |= calc_cvc_total_force(first_cvc, num_cvcs);
   error_code |= calc_cvc_Jacobians(first_cvc, num_cvcs);
 
   if (cvm::debug())
@@ -790,7 +790,7 @@ int colvar::collect_cvc_data()
 
   error_code |= collect_cvc_values();
   error_code |= collect_cvc_gradients();
-  error_code |= collect_cvc_sys_forces();
+  error_code |= collect_cvc_total_forces();
   error_code |= collect_cvc_Jacobians();
   error_code |= calc_colvar_properties();
 
@@ -978,7 +978,7 @@ int colvar::collect_cvc_gradients()
 }
 
 
-int colvar::calc_cvc_sys_forces(int first_cvc, size_t num_cvcs)
+int colvar::calc_cvc_total_force(int first_cvc, size_t num_cvcs)
 {
   size_t const cvc_max_count = num_cvcs ? num_cvcs : num_active_cvcs();
   size_t i, cvc_count;
@@ -1012,7 +1012,7 @@ int colvar::calc_cvc_sys_forces(int first_cvc, size_t num_cvcs)
 }
 
 
-int colvar::collect_cvc_sys_forces()
+int colvar::collect_cvc_total_forces()
 {
   if (is_enabled(f_cv_total_force_calc)) {
     ft.reset();
@@ -1099,8 +1099,8 @@ int colvar::calc_colvar_properties()
     // report the restraint center as "value"
     x_reported = xr;
     v_reported = vr;
-    // the "total force" with the extended Lagrangian is just the
-    // harmonic term acting on the extended coordinate
+    // the "total force" with the extended Lagrangian is the
+    // harmonic term acting on the extended variable
     // Note: this is the force for current timestep
     ft_reported = (-0.5 * ext_force_k) * this->dist2_lgrad(xr, x);
 
@@ -1177,8 +1177,8 @@ cvm::real colvar::update_forces_energy()
 
     // the total force is applied to the fictitious mass, while the
     // atoms only feel the harmonic force
-    // fr: bias force on extended coordinate (without harmonic spring), for output in trajectory
-    // f_ext: total force on extended coordinate (including harmonic spring)
+    // fr: bias force on extended variable (without harmonic spring), for output in trajectory
+    // f_ext: total force on extended variable (including harmonic spring)
     // f: - initially, external biasing force
     //    - after this code block, colvar force to be applied to atomic coordinates, ie. spring force
     fr    = f;
