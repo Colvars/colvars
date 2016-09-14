@@ -16,7 +16,7 @@
 #include "colvarvalue.h"
 
 #ifndef COLVARPROXY_VERSION
-#define COLVARPROXY_VERSION "2016-04-28"
+#define COLVARPROXY_VERSION "2016-09-14"
 #endif
 
 // For replica exchange
@@ -65,6 +65,9 @@ public:
   ~colvarproxy_namd();
 
   int setup();
+
+  // synchronize the local arrays with requested or forced atoms
+  int update_atoms_map(AtomIDList::const_iterator begin, AtomIDList::const_iterator end);
 
   void calculate();
 
@@ -216,6 +219,15 @@ public:
                     std::string const     &atom_name,
                     std::string const     &segment_id);
   void clear_atom(int index);
+
+  inline void update_atom_properties(int index)
+  {
+    Molecule *mol = Node::Object()->molecule;
+    // update mass
+    atoms_masses[index] = mol->atommass(atoms_ids[index]);
+    // update charge
+    atoms_charges[index] = mol->atomcharge(atoms_ids[index]);
+  }
 
   cvm::rvector position_distance(cvm::atom_pos const &pos1,
                                  cvm::atom_pos const &pos2);
