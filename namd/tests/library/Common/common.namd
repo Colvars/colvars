@@ -12,6 +12,7 @@ if { [info exists mol_name] == 0 } {
     proc num_atoms {} {
         return 104
     }
+    file copy -force "../Common/da.ndx" "index.ndx"
 }
 
 if { [info exists output_name] == 0 } {

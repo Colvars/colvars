@@ -21,8 +21,14 @@ proc write_index_group { output sel label { n_atoms_max 0 } } {
 }
 
 
-set protein_sel "((protein) or (segid BH))" 
+if { [info exists mol_name] == 0 } {
+    set mol_name [file rootname [molinfo top get name]]
+}
 
+
+if { ${mol_name} == "da" } {
+
+set protein_sel "((protein) or (segid BH))" 
 
 set index_file [open "da.ndx" "w"]
 
@@ -38,6 +44,9 @@ write_index_group ${index_file} \
 write_index_group ${index_file} \
     [atomselect top "(${protein_sel} and (alpha))"] \
     "Protein_C-alpha"
+write_index_group ${index_file} \
+    [atomselect top "(${protein_sel} and (alpha))"] \
+    "RMSD_atoms"
 
 write_index_group ${index_file} \
     [atomselect top "(${protein_sel} and (alpha) and resid 1 2)"] \
@@ -50,9 +59,15 @@ for { set resid 1 } { ${resid} <= 10 } { incr resid } {
     write_index_group ${index_file} \
         [atomselect top "(${protein_sel} and (alpha) and resid ${resid})"] \
         "Protein_C-alpha_${resid}"
+
+    write_index_group ${index_file} \
+        [atomselect top "(${protein_sel} and (name N CA C O) and resid ${resid})"] \
+        "group${resid}"
 }
 
 close ${index_file}
 
-#quit
+}
+
+quit
 

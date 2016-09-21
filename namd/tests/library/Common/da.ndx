@@ -33,6 +33,10 @@
          4        14        24        34        44        54        64        74
         84        99
 
+[ RMSD_atoms ]
+         4        14        24        34        44        54        64        74
+        84        99
+
 [ Protein_C-alpha_1_2 ]
          4        14
 
@@ -42,30 +46,60 @@
 [ Protein_C-alpha_1 ]
          4
 
+[ group1 ]
+         1         4        10        11
+
 [ Protein_C-alpha_2 ]
         14
+
+[ group2 ]
+        12        14        20        21
 
 [ Protein_C-alpha_3 ]
         24
 
+[ group3 ]
+        22        24        30        31
+
 [ Protein_C-alpha_4 ]
         34
+
+[ group4 ]
+        32        34        40        41
 
 [ Protein_C-alpha_5 ]
         44
 
+[ group5 ]
+        42        44        50        51
+
 [ Protein_C-alpha_6 ]
         54
+
+[ group6 ]
+        52        54        60        61
 
 [ Protein_C-alpha_7 ]
         64
 
+[ group7 ]
+        62        64        70        71
+
 [ Protein_C-alpha_8 ]
         74
+
+[ group8 ]
+        72        74        80        81
 
 [ Protein_C-alpha_9 ]
         84
 
+[ group9 ]
+        82        84        90        91
+
 [ Protein_C-alpha_10 ]
         99
+
+[ group10 ]
+        92        93        97        99
 
