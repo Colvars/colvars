@@ -1,0 +1,20 @@
+# -*- tcl -*-
+
+set output_name "da.eq"
+set pdb_restart "yes"
+set coor_pdb_file "../Common/da.min.pdb"
+
+langevin                on
+langevinTemp            300.0
+langevinDamping         10.0            
+langevinHydrogen        no
+
+set numsteps 2000
+
+source ../Common/common.namd
+
+run ${numsteps}
+
+file rename -force ${output_name}.restart.vel  da.vel.pdb
+file rename -force ${output_name}.restart.coor da.coor.pdb
+

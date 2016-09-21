@@ -4,8 +4,10 @@
 if { [info exists mol_name] == 0 } {
     set mol_name "da"
     set pbc "no"
-    set coor_pdb_file "../Common/da.eq.coor"
-    set vel_pdb_file "../Common/da.eq.vel"
+    if { [info exists coor_pdb_file] == 0 } {
+        set coor_pdb_file "../Common/da.coor.pdb"
+        set vel_pdb_file "../Common/da.vel.pdb"
+    }
     set par_files [list "../Common/par_all22_prot.inp"]
     proc num_atoms {} {
         return 104
@@ -59,7 +61,7 @@ timestep                1.0
 outputName              ${output_name}
 restartName             ${output_name}.restart
 restartFreq             100
-if { 0 } {
+if { [info exists pdb_restart] > 0 } {
     binaryRestart       no
     binaryOutput        no
 } else {
