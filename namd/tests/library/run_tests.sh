@@ -8,18 +8,22 @@
 
 # binary to be tested is specified as command-line argument (defaults to namd2)
 
+gen_ref_output=''
 
-
+DIRLIST=''
 BINARY=namd2
-if [ $# -ge 1 ]; then
+while [ $# -ge 1 ]; do 
   if { echo $1 | grep -q namd2 ; }; then
     BINARY=$1
-    shift
+  elif [ "x$1" = 'x-g' ]; then
+    gen_ref_output='yes'
+  else
+    DIRLIST=`echo ${DIRLIST} $1`
   fi
-fi
-DIRLIST=`eval ls -d [0-9][0-9][0-9]_*`
-if [ $# -ge 1 ]; then
-  DIRLIST=`echo $@`
+  shift
+done
+if ! { echo ${DIRLIST} | grep -q 0 ; } then
+  DIRLIST=`eval ls -d [0-9][0-9][0-9]_*`
 fi
 
 DIFF=spiff
@@ -44,15 +48,34 @@ for dir in ${DIRLIST} ; do
   echo -ne "Entering $dir ..."
   cd $dir
 
-  # first, remove target files from work directory
-  for f in AutoDiff/*
-  do
-    base=`basename $f`
-    if [ -f $base ]
-    then
-      mv $base $base.backup
+  if [ ! -d AutoDiff ] ; then
+    echo ""
+    echo "  Creating directory AutoDiff, use -g to fill it."
+    mkdir AutoDiff
+    cd $BASEDIR
+    continue
+  else  
+
+    if [ "x${gen_ref_output}" != 'xyes' ]; then
+
+      if ! { ls AutoDiff/ | grep -q traj ; } then
+        echo ""
+        echo "  Warning: directory AutoDiff empty!"
+        cd $BASEDIR
+        continue
+      fi
+
+      # first, remove target files from work directory
+      for f in AutoDiff/*
+      do
+        base=`basename $f`
+        if [ -f $base ]
+        then
+          mv $base $base.backup
+        fi
+      done
     fi
-  done
+  fi
 
   cleanup_files
   
@@ -82,9 +105,15 @@ for dir in ${DIRLIST} ; do
     grep -v 'version' ${basename}.colvars.state > ${basename}.colvars.state.tmp
     mv ${basename}.colvars.state.tmp ${basename}.colvars.state
 
+    if [ "x${gen_ref_output}" = 'xyes' ]; then
+      cp ${basename}.colvars.state AutoDiff/
+      cp ${basename}.colvars.traj  AutoDiff/
+      cp ${basename}.colvars.out   AutoDiff/
+    fi
+
   done
-  
-  # now check results
+
+  # now check results
   SUCCESS=1
   for f in AutoDiff/*
   do
@@ -106,7 +135,11 @@ for dir in ${DIRLIST} ; do
 
   if [ $SUCCESS -eq 1 ]
   then
-    echo "Success!"
+    if [ "x${gen_ref_output}" == 'xyes' ]; then
+      echo "Reference files copied successfully."
+    else
+      echo "Success!"
+    fi
     cleanup_files
   fi
 
