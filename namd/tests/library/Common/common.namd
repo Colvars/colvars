@@ -1,0 +1,75 @@
+# -*- tcl -*-
+
+# set default options
+if { [info exists mol_name] == 0 } {
+    set mol_name "da"
+    set pbc "no"
+    set coor_pdb_file "../Common/da.eq.coor"
+    set vel_pdb_file "../Common/da.eq.vel"
+    set par_files [list "../Common/par_all22_prot.inp"]
+    proc num_atoms {} {
+        return 104
+    }
+}
+
+if { [info exists output_name] == 0 } {
+    set output_name "test"
+}
+
+if { [info exists numsteps] == 0 } {
+    set numsteps 20
+}
+
+paraTypeCharmm          on
+structure               ../Common/${mol_name}.psf
+foreach par_file ${par_files} {
+    parameters          ${par_file}
+}
+1-4scaling              1.0
+exclude                 scaled1-4
+rigidBonds              all
+useSettle               on
+
+switchdist              10.0
+cutoff                  12.0
+pairlistdist            14.0
+fullElectFrequency      1
+nonbondedFreq           1
+
+coordinates             ${coor_pdb_file}
+if { [info exists coor_bin_file] > 0 } {
+    binCoordinates      ${coor_bin_file}
+}
+if { [info exists vel_bin_file] > 0 } {
+    binVelocities       ${vel_bin_file}
+} else {
+    if { [info exists vel_pdb_file] > 0 } {
+        velocities      ${vel_pdb_file}
+    } else {
+        seed            87654321
+        temperature     300.0
+    }
+}
+
+COMmotion               no
+zeroMomentum            yes
+
+timestep                1.0
+
+outputName              ${output_name}
+restartName             ${output_name}.restart
+restartFreq             100
+if { 0 } {
+    binaryRestart       no
+    binaryOutput        no
+} else {
+    binaryRestart       yes
+    binaryOutput        yes
+}
+
+outputEnergies          1
+outputMomenta           1
+outputPressure          1
+outputTiming            0
+
+
