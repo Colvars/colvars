@@ -1,0 +1,19 @@
+colvar {
+
+    name two
+
+    outputAppliedForce on
+
+    width 0.5
+    lowerBoundary 0.0
+    upperBoundary 10.0
+
+    distance {
+        group1 {
+            indexGroup group3
+        }
+        group2 {
+            indexGroup group4
+        }
+    }
+} 
