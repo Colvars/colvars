@@ -64,21 +64,23 @@ for dir in ${DIRLIST} ; do
 
   # run simulation(s)
   for script in ${SCRIPTS} ; do
-    # use --source to avoid letting NAMD change directory
-    # use 5 threads to test SMP code
-    $BINARY +p 5 --source $script > ${script%.namd}.out
+    # use --source to avoid letting NAMD change its working directory
+    # use multiple threads to test SMP code (TODO: move SMP tests to interface?)
+    basename=`basename ${script}`
+    basename=${basename%.namd}
+    $BINARY +p 3 --source $script > ${basename}.out
     # collect output of colvars module, except the version numbers
-    grep "^colvars:" ${script%.namd}.out | grep -v 'Initializing the collective variables module' \
-      | grep -v 'Using NAMD interface, version' > ${script%.namd}.colvars.out
-    # Output of Tcl interpreter for automatic testing of scripts
-    grep "^TCL:" ${script%.namd}.out | grep -v '^TCL: Suspending until startup complete.' > ${script%.namd}.Tcl.out
-    if [ ! -s ${script%.namd}.Tcl.out ]; then
-      rm -f ${script%.namd}.Tcl.out
+    grep "^colvars:" ${basename}.out | grep -v 'Initializing the collective variables module' \
+      | grep -v 'Using NAMD interface, version' > ${basename}.colvars.out
+    # Output of Tcl interpreter for automatic testing of scripts (TODO: move this to interface)
+    grep "^TCL:" ${basename}.out | grep -v '^TCL: Suspending until startup complete.' > ${basename}.Tcl.out
+    if [ ! -s ${basename}.Tcl.out ]; then
+      rm -f ${basename}.Tcl.out
     fi
 
     # Filter out the version number from the state files to allow comparisons
-    grep -v 'version' ${script%.namd}.colvars.state > ${script%.namd}.colvars.state.tmp
-    mv ${script%.namd}.colvars.state.tmp ${script%.namd}.colvars.state
+    grep -v 'version' ${basename}.colvars.state > ${basename}.colvars.state.tmp
+    mv ${basename}.colvars.state.tmp ${basename}.colvars.state
 
   done
   
