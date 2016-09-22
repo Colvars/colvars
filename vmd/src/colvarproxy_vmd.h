@@ -15,7 +15,7 @@
 #include "colvaratoms.h"
 
 #ifndef COLVARPROXY_VERSION
-#define COLVARPROXY_VERSION "2015-11-02"
+#define COLVARPROXY_VERSION "2016-09-22"
 #endif
 
 
@@ -37,7 +37,7 @@ protected:
   /// pointer to VMD molecule (derived from vmdmolid)
   DrawMolecule *vmdmol;
   /// current frame (returned by vmdmol->frame())
-  int vmdmol_frame;
+  long int vmdmol_frame;
   /// output object
   Inform msgColvars;
 
@@ -82,12 +82,13 @@ public:
     return vmd_random_gaussian();
   }
 
-  inline int frame()
+  inline int get_frame(long int &f)
   {
-    return vmdmol_frame;
+    f = vmdmol_frame;
+    return COLVARS_OK;
   }
 
-  int frame(int f);
+  int set_frame(long int f);
 
   std::string input_prefix_str;
   std::string input_prefix()
@@ -110,9 +111,9 @@ public:
   void add_energy(cvm::real energy);
 
 private:
-  bool system_force_requested;
+  bool total_force_requested;
 public:
-  void request_system_force(bool yesno);
+  void request_total_force(bool yesno);
 
   cvm::rvector position_distance(cvm::atom_pos const &pos1,
                                   cvm::atom_pos const &pos2);

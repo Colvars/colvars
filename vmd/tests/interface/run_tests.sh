@@ -21,12 +21,13 @@ TMP=/tmp
 
 
 cleanup_files () {
-for dir in [0-9][0-9][0-9]_* ; do
   for script in test*.vmd ; do
-    for f in ${dir}/${script%.vmd}.*diff; do if [ ! -s $f ]; then rm -f $f; fi; done # remove empty diffs only
-    rm -f ${dir}/${script%.vmd}.*{state,out,err,traj,coor,vel,xsc,BAK,old,backup,pmf,grad,count}
+    for f in ${script%.vmd}.*diff; do if [ ! -s $f ]; then rm -f $f; fi; done # remove empty diffs only
+    for f in ${script%.vmd}.*{state,out,err,traj,coor,vel,xsc,BAK,old,backup,pmf,grad,count}
+    do
+      if [ ! -f "$f.diff" ]; then rm -f $f; fi # keep files that have a non-empty diff 
+    done
   done
-done
 }
 
 
@@ -77,6 +78,7 @@ do
   if [ $SUCCESS -eq 1 ]
   then
     echo "Success!"
+    cleanup_files
   fi
 
   cd $BASEDIR
@@ -86,7 +88,6 @@ done
 if [ $ALL_SUCCESS -eq 1 ]
 then
   echo "All tests succeeded."
-  cleanup_files
   exit 0
 else
   echo "There were failed tests."

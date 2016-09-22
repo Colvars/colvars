@@ -31,6 +31,8 @@ public:
   void load(char *scriptFile);
 #ifdef NAMD_TCL
   void run();
+  static int tclsh(int, char **);
+  void tclmain(int, char **);
 #else
   void run(char *scriptFile);
 #endif

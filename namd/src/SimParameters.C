@@ -7,8 +7,8 @@
 /*****************************************************************************
  * $Source: /namd/cvsroot/namd2/src/SimParameters.C,v $
  * $Author: jim $
- * $Date: 2016/03/02 21:33:06 $
- * $Revision: 1.1461 $
+ * $Date: 2016/09/19 17:39:17 $
+ * $Revision: 1.1467 $
  *****************************************************************************/
 
 /** \file SimParameters.C
@@ -81,6 +81,9 @@ extern "C" {
 //#endif
 #include "DeviceCUDA.h"
 #ifdef NAMD_CUDA
+#ifdef WIN32
+#define __thread __declspec(thread)
+#endif
 extern __thread DeviceCUDA *deviceCUDA;
 #endif
 
@@ -190,6 +193,13 @@ void SimParameters::scriptSet(const char *param, const char *value) {
   SCRIPT_PARSE_BOOL("velocityQuenching",minimizeOn)
   SCRIPT_PARSE_BOOL("maximumMove",maximumMove)
   // SCRIPT_PARSE_BOOL("Langevin",langevinOn)
+  if ( ! strncasecmp(param,"Langevin",MAX_SCRIPT_PARAM_SIZE) ) {
+    langevinOn = atobool(value);
+    if ( langevinOn && ! langevinOnAtStartup ) {
+      NAMD_die("Langevin must be enabled at startup to disable and re-enable in script.");
+    }
+    return;
+  }
   SCRIPT_PARSE_FLOAT("langevinTemp",langevinTemp)
   SCRIPT_PARSE_BOOL("langevinBAOAB",langevin_useBAOAB) // [!!] Use the BAOAB integrator or not
   SCRIPT_PARSE_FLOAT("loweAndersenTemp",loweAndersenTemp) // BEGIN LA, END LA
@@ -223,6 +233,7 @@ void SimParameters::scriptSet(const char *param, const char *value) {
   SCRIPT_PARSE_FLOAT("drudeBondConst",drudeBondConst)
   SCRIPT_PARSE_FLOAT("drudeBondLen",drudeBondLen)
   SCRIPT_PARSE_STRING("outputname",outputFilename)
+  SCRIPT_PARSE_INT("outputEnergies",outputEnergies)
   SCRIPT_PARSE_STRING("restartname",restartFilename)
   SCRIPT_PARSE_INT("DCDfreq",dcdFrequency)
   if ( ! strncasecmp(param,"DCDfile",MAX_SCRIPT_PARAM_SIZE) ) {
@@ -258,7 +269,15 @@ void SimParameters::scriptSet(const char *param, const char *value) {
     return;
   }
 
-//Modifications for alchemical fep
+//fepb
+  if ( ! strncasecmp(param,"alch",MAX_SCRIPT_PARAM_SIZE) ) {
+    alchOn = atobool(value);
+    if ( alchOn && ! alchOnAtStartup ) {
+       NAMD_die("Alchemy must be enabled at startup to disable and re-enable in script.");
+    }
+    ComputeNonbondedUtil::select();
+    return;
+  }
   SCRIPT_PARSE_INT("alchEquilSteps",alchEquilSteps)
 
   if ( ! strncasecmp(param,"alchRepLambda",MAX_SCRIPT_PARAM_SIZE) ) {
@@ -325,14 +344,6 @@ void SimParameters::scriptSet(const char *param, const char *value) {
     return;
   }
 //fepe
-
-// REDUNDANT TI BEGINS
-//  if ( ! strncasecmp(param,"tiLambda",MAX_SCRIPT_PARAM_SIZE) ) {
-//    alchLambda = atof(value);
-//    ComputeNonbondedUtil::select();
-//    return;
-//  }
-// REDUNDANT TI ENDS
 
   if ( ! strncasecmp(param,"nonbondedScaling",MAX_SCRIPT_PARAM_SIZE) ) {
     nonbondedScaling = atof(value);
@@ -729,24 +740,6 @@ void SimParameters::config_parser_fileio(ParseOptions &opts) {
    opts.require("amber", "parmfile", "AMBER parm file", PARSE_STRING);
    opts.optional("amber", "ambercoor", "AMBER coordinate file", PARSE_STRING);
 
-//Modifications for alchemical fep
-// begin fep output options
-   opts.optional("alch", "alchoutfreq", "Frequency of alchemical energy"
-     "output in timesteps", &alchOutFreq, 5);
-   opts.range("alchoutfreq", NOT_NEGATIVE);
-   opts.optional("alchoutfreq", "alchoutfile", "Alchemical energy output"
-       "filename", alchOutFile);
-// end fep output options
-//fepe
-
-// REDUNDANT TI BEGINS
-//   opts.optional("thermInt", "tioutfreq", "Frequency of TI energy output in "
-//     "timesteps", &tiOutFreq, 5);
-//   opts.range("tioutfreq", NOT_NEGATIVE);
-//   opts.optional("tioutfreq", "tioutfile", "TI energy output filename",
-//     tiOutFile);
-// REDUNDANT TI ENDS
-
    /* GROMACS options */
    opts.optionalB("main", "gromacs", "Use GROMACS-like force field?",
        &gromacsOn, FALSE);
@@ -1014,54 +1007,29 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
    opts.units("loweAndersenCutoff", N_ANGSTROM);
 // END LA
 
-//Modifications for alchemical fep
-//  alchemical fep options
+//fepb
    opts.optionalB("main", "alch", "Is achemical simulation being performed?",
      &alchOn, FALSE);
-   opts.optional("alch", "alchType", "Which alchemical method to use?",
-       PARSE_STRING);
-   opts.optionalB("alch", "alchFepWCARepuOn", "WCA decomposition repu interaction in use?",
-     &alchFepWCARepuOn, FALSE);
-   opts.optionalB("alch", "alchFepWCADispOn", "WCA decomposition disp interaction in use?",
-     &alchFepWCADispOn, FALSE);
-   opts.optionalB("alch", "alchEnsembleAvg", "Ensemble Average in use?",
-     &alchEnsembleAvg, TRUE);
-   opts.optionalB("alch", "alchFepWhamOn", "Energy output for Wham postprocessing in use?",
-     &alchFepWhamOn, FALSE);
-   opts.optional("alch", "alchFepWCArcut1", "WCA repulsion Coeff1 used for generating"
-     "the altered alchemical vDW interactions", &alchFepWCArcut1, 0.0);
-   opts.optional("alch", "alchFepWCArcut2", "WCA repulsion Coeff2 used for generating"
-     "the altered alchemical vDW interactions", &alchFepWCArcut2, 1.0);
-   opts.optional("alch", "alchFepWCArcut3", "WCA repulsion Coeff3 used for generating"
-     "the altered alchemical vDW interactions", &alchFepWCArcut3, 1.0);
-   opts.range("alchFepWCArcut1", NOT_NEGATIVE);
-   opts.range("alchFepWCArcut2", NOT_NEGATIVE);
-   opts.range("alchFepWCArcut3", NOT_NEGATIVE);
+   opts.require("alch", "alchLambda", "Coupling parameter value",
+     &alchLambda);
 
-   opts.optional("alch", "alchRepLambda", "Lambda of WCA repulsion"
-     "Coupling parameter value for WCA repulsion", &alchRepLambda, -1.0);	// an invalid lambda value
-   opts.optional("alch", "alchDispLambda", "Lambda of WCA dispersion"
-     "Coupling parameter value for WCA dispersion", &alchDispLambda, -1.0);	// an invalid lambda value
-   opts.optional("alch", "alchElecLambda", "Lambda of electrostatic perturbation"
-     "Coupling parameter value for electrostatic perturbation", &alchElecLambda, -1.0);	// an invalid lambda value
-
-  opts.require("alch", "alchLambda", "Coupling parameter value",
-      &alchLambda);
-  opts.optional("alch", "alchLambda2", "Coupling comparison value",
-      &alchLambda2);
-  opts.optional("alch", "alchLambdaFreq", "Frequency of increasing coupling parameter value",
-      &alchLambdaFreq);
    opts.optional("alch", "alchFile", "PDB file with perturbation flags "
      "default is the input PDB file", PARSE_STRING);
    opts.optional("alch", "alchCol", "Column in the alchFile with the "
      "perturbation flag", PARSE_STRING);
-   opts.optional("alch", "alchEquilSteps", "Equilibration steps, before "
-     "data collection in the alchemical window", &alchEquilSteps, 0);
-   opts.range("alchEquilSteps", NOT_NEGATIVE);
+
+   opts.optional("alch", "alchOutFreq", "Frequency of alchemical energy"
+     "output in timesteps", &alchOutFreq, 5);
+   opts.range("alchoutfreq", NOT_NEGATIVE);
+   opts.optional("alch", "alchOutFile", "Alchemical energy output filename",
+     alchOutFile);
+
+   // soft-core parameters
    opts.optional("alch", "alchVdwShiftCoeff", "Coeff used for generating"
      "the altered alchemical vDW interactions", &alchVdwShiftCoeff, 5.);
    opts.range("alchVdwShiftCoeff", NOT_NEGATIVE);
 
+   // scheduling options for different interaction types
    opts.optional("alch", "alchElecLambdaStart", "Lambda at which electrostatic"
       "scaling of exnihilated particles begins", &alchElecLambdaStart, 0.5);
    opts.range("alchElecLambdaStart", NOT_NEGATIVE);
@@ -1074,42 +1042,55 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
       "scaling of exnihilated particles begins", &alchBondLambdaEnd, 1.0);
    opts.range("alchBondLambdaEnd", NOT_NEGATIVE);
 
-
-// end FEP options
-//fepe
-
-// REDUNDANT TI BEGINS
-// Modifications for TI
-// lots of duplication of FEP, we'd be better off without all this but
-// keeping it in place for now for compatibility
-//   opts.optionalB("main", "thermInt", "Perform thermodynamic integration?",
-//     &thermInt, FALSE);
-// opts.require("thermInt", "tilambda", "Coupling parameter value", &tiLambda);
-// opts.optional("thermInt", "tiFile", "PDB file with perturbation flags "
-//     "default is the input PDB file", PARSE_STRING);
-//   opts.optional("thermInt", "tiCol", "Column in the tiFile with the "
-//     "perturbation flag", PARSE_STRING);
-//   opts.optional("thermInt", "tiEquilSteps", "Equilibration steps, before "
-//     "data collection at each tiLambda value", &tiEquilSteps, 0);
-//   opts.range("tiEquilSteps", NOT_NEGATIVE);
-//   opts.optional("thermInt", "tiVdwShiftCoeff", "Coeff used for generating"
-//     "the altered alchemical vDW interactions", &tiVdwShiftCoeff, 5.);
-//   opts.range("tiVdwShiftCoeff", NOT_NEGATIVE);
-//
-//   opts.optional("thermInt", "tiElecLambdaStart", "Lambda at which to start"
-//      "electrostatics scaling", &tiElecLambdaStart, 0.5);
-//   opts.range("tiElecLambdaStart", NOT_NEGATIVE);
-//
-//   opts.optional("thermInt", "tiVdwLambdaEnd", "Lambda at which to end"
-//      "Vdw scaling", &tiVdwLambdaEnd, 0.5);
-//   opts.range("tiVdwLambdaEnd", NOT_NEGATIVE);
-// end TI options
-// REDUNDANT TI ENDS
-
-   opts.optionalB("main", "alchDecouple", "Enable alchemical decoupling?",
+   opts.optionalB("alch", "alchDecouple", "Enable alchemical decoupling?",
      &alchDecouple, FALSE);
-   opts.optionalB("main", "alchBondDecouple", "Enable decoupling of purely "
+   opts.optionalB("alch", "alchBondDecouple", "Enable decoupling of purely "
      "alchemical bonds?", &alchBondDecouple, FALSE);
+
+   // parameters for alchemical analysis options
+   opts.optional("alch", "alchType", "Which alchemical method to use?",
+     PARSE_STRING);
+   opts.optional("alch", "alchLambda2", "Coupling comparison value",
+     &alchLambda2);
+   opts.optional("alch", "alchLambdaFreq",
+     "Frequency of increasing coupling parameter value", &alchLambdaFreq, 0);
+   opts.range("alchLambdaFreq", NOT_NEGATIVE);
+   opts.optional("alch", "alchSwitchType", "Switching type flag",
+     PARSE_STRING);
+   opts.optional("alch", "alchEquilSteps", "Equilibration steps, before "
+     "data collection in the alchemical window", &alchEquilSteps, 0);
+   opts.range("alchEquilSteps", NOT_NEGATIVE);
+
+   // WCA decomposition options
+   opts.optionalB("alch", "alchFepWCARepuOn",
+     "WCA decomposition repu interaction in use?", &alchFepWCARepuOn, FALSE);
+   opts.optionalB("alch", "alchFepWCADispOn",
+     "WCA decomposition disp interaction in use?", &alchFepWCADispOn, FALSE);
+   opts.optionalB("alch", "alchEnsembleAvg", "Ensemble Average in use?",
+     &alchEnsembleAvg, TRUE);
+   opts.optionalB("alch", "alchFepWhamOn",
+     "Energy output for Wham postprocessing in use?", &alchFepWhamOn, FALSE);
+   opts.optional("alch", "alchFepWCArcut1",
+     "WCA repulsion Coeff1 used for generating the altered alchemical vDW "
+     "interactions", &alchFepWCArcut1, 0.0);
+   opts.range("alchFepWCArcut1", NOT_NEGATIVE);
+   opts.optional("alch", "alchFepWCArcut2", "WCA repulsion Coeff2 used for "
+     "generating the altered alchemical vDW interactions", &alchFepWCArcut2,
+     1.0);
+   opts.range("alchFepWCArcut2", NOT_NEGATIVE);
+   opts.optional("alch", "alchFepWCArcut3",
+     "WCA repulsion Coeff3 used for generating the altered alchemical vDW "
+     "interactions", &alchFepWCArcut3, 1.0);
+   opts.range("alchFepWCArcut3", NOT_NEGATIVE);
+   // These default to invalid lambda values.
+   opts.optional("alch", "alchRepLambda", "Lambda of WCA repulsion"
+     "Coupling parameter value for WCA repulsion", &alchRepLambda, -1.0);
+   opts.optional("alch", "alchDispLambda", "Lambda of WCA dispersion"
+     "Coupling parameter value for WCA dispersion", &alchDispLambda, -1.0);
+   opts.optional("alch", "alchElecLambda", "Lambda of electrostatic "
+     "perturbation Coupling parameter value for electrostatic perturbation",
+     &alchElecLambda, -1.0);
+//fepe
 
    opts.optionalB("main", "les", "Is locally enhanced sampling enabled?",
      &lesOn, FALSE);
@@ -3099,6 +3080,8 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
                                              adaptTempBins != 0 ))
         NAMD_die("Need to specify either adaptTempInFile or all of {adaptTempTmin, adaptTempTmax,adaptTempBins} if adaptTempMD is on.");
    }
+
+   langevinOnAtStartup = langevinOn;
    if (langevinOn) {
      if ( ! opts.defined("langevinDamping") ) langevinDamping = 0.0;
      if ( ! opts.defined("langevinHydrogen") ) langevinHydrogen = TRUE;
@@ -3201,40 +3184,33 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
       randomSeed = (unsigned int) time(NULL) + 31530001 * CmiMyPartition();
    }
 
-//Modifications for alchemical fep
-
+//fepb
    alchFepOn = FALSE;
    alchThermIntOn = FALSE;
+   alchOnAtStartup = alchOn;
 
    if (alchOn) {
-
      if (vdwForceSwitching && (alchFepWCARepuOn || alchFepWCADispOn)) {
        iout << iWARN << "vdwForceSwitching not implemented for alchemical "
-   "interactions when WCA decomposition is on!\n" << endi;
+         "interactions when WCA decomposition is on!\n" << endi;
      }
-
-     if (alchOn && martiniSwitching) {
+     if (martiniSwitching) {
        iout << iWARN << "Martini switching disabled for alchemical "
-   "interactions.\n" << endi;
+         "interactions.\n" << endi;
      }
 
-     if (!opts.defined("alchType"))
-     {
+     if (!opts.defined("alchType")) {
        NAMD_die("Must define type of alchemical simulation: fep or ti\n");
      }
-     else
-     {
+     else {
        opts.get("alchType",s);
-       if (!strcasecmp(s, "fep"))
-       {
+       if (!strcasecmp(s, "fep")) {
          alchFepOn = TRUE;
        }
-       else if (!strcasecmp(s, "ti"))
-       {
+       else if (!strcasecmp(s, "ti")) {
          alchThermIntOn = TRUE;
        }
-       else
-       {
+       else {
          NAMD_die("Unknown type of alchemical simulation; choices are fep or ti\n");
        }
      }
@@ -3248,82 +3224,84 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
      if (reassignFreq > 0 && reassignIncr != 0)
 	NAMD_die("reassignIncr cannot be used in alchemical simulations\n");
 
-     if (alchLambda < 0.0 || alchLambda > 1.0 || alchLambda2 < 0.0 || alchLambda2 > 1.0)
+     if (alchLambda < 0.0 || alchLambda > 1.0 ||
+         alchLambda2 < 0.0 || alchLambda2 > 1.0)
         NAMD_die("Alchemical lambda values should be in the range [0.0, 1.0]\n");
 
-     if ( alchOn && alchVdwLambdaEnd > 1.0)
+     if (alchVdwLambdaEnd > 1.0)
         NAMD_die("Gosh tiny Elvis, you kicked soft-core in the van der Waals! alchVdwLambdaEnd should be in the range [0.0, 1.0]\n");
 
-     if ( alchOn && alchBondLambdaEnd > 1.0)
+     if (alchBondLambdaEnd > 1.0)
        NAMD_die("alchBondLambdaEnd should be in the range [0.0, 1.0]\n");
 
-     if ( alchOn && alchElecLambdaStart > 1.0)
+     if (alchElecLambdaStart > 1.0)
         NAMD_die("alchElecLambdaStart should be in the range [0.0, 1.0]\n");
 
-     if (!opts.defined("alchLambdaFreq")) {
-         alchLambdaFreq = 0;
-     }
-
-     if (alchFepOn)
-     {
+     if (alchFepOn) {
        if (!opts.defined("alchoutfile")) {
-       strcpy(alchOutFile, outputFilename);
-       strcat(alchOutFile, ".fep");
+         strcpy(alchOutFile, outputFilename);
+         strcat(alchOutFile, ".fep");
        }
 
-  	   if( (!alchFepWhamOn) && ( (!opts.defined("alchLambda")) || (!opts.defined("alchLambda2"))) )	{
-	  	   NAMD_die("alchFepOn is on, but alchLambda or alchLambda2 is not set.");
-	     }
+       if (!alchFepWhamOn &&
+           ((!opts.defined("alchLambda")) || (!opts.defined("alchLambda2")))) {
+         NAMD_die("alchFepOn is on, but alchLambda or alchLambda2 is not set.");
+       }
 
-       if(alchRepLambda > 1.0)	NAMD_die("alchRepLambda should be in the range [0.0, 1.0].");
-       else if(alchRepLambda >= 0.0)	alchFepWCARepuOn = true;
-       else	alchFepWCARepuOn = false;
+       if(alchRepLambda > 1.0)
+         NAMD_die("alchRepLambda should be in the range [0.0, 1.0].");
+       else if(alchRepLambda >= 0.0)
+         alchFepWCARepuOn = true;
+       else
+         alchFepWCARepuOn = false;
 
-       if(alchDispLambda > 1.0)	NAMD_die("alchDispLambda should be in the range [0.0, 1.0].");
-       else if(alchDispLambda >= 0.0)	alchFepWCADispOn = true;
-       else	alchFepWCADispOn = false;
+       if(alchDispLambda > 1.0)
+         NAMD_die("alchDispLambda should be in the range [0.0, 1.0].");
+       else if(alchDispLambda >= 0.0)
+         alchFepWCADispOn = true;
+       else
+         alchFepWCADispOn = false;
 
-       if(alchElecLambda > 1.0)	NAMD_die("alchElecLambda should be in the range [0.0, 1.0].");
-       else if(alchElecLambda >= 0.0)	alchFepElecOn = true;
-       else	alchFepElecOn = false;
+       if(alchElecLambda > 1.0)
+         NAMD_die("alchElecLambda should be in the range [0.0, 1.0].");
+       else if(alchElecLambda >= 0.0)
+         alchFepElecOn = true;
+       else
+         alchFepElecOn = false;
 
-       if( (alchFepWCARepuOn || alchFepWCADispOn || alchFepElecOn) && (!alchFepWhamOn))
-       	  NAMD_die("alchFepWhamOn has to be on if one of alchFepWCARepuOn/alchFepWCADispOn/alchFepElecOn is set.");
+       if ((alchFepWCARepuOn || alchFepWCADispOn || alchFepElecOn) &&
+           !alchFepWhamOn)
+         NAMD_die("alchFepWhamOn has to be on if one of alchFepWCARepuOn/alchFepWCADispOn/alchFepElecOn is set.");
        if (alchFepWCARepuOn && alchFepWCADispOn)
           NAMD_die("With WCA decomposition, repulsion and dispersion can NOT be in the same FEP stage");
        if (alchFepWCARepuOn && alchFepElecOn)
           NAMD_die("With WCA decomposition, repulsion and electrostatic perturbation can NOT be in the same FEP stage");
        if (alchFepWCADispOn && alchFepElecOn)
           NAMD_die("With WCA decomposition, dispersion and electrostatic perturbation can NOT be in the same FEP stage");
-       if (alchFepWCARepuOn && (!opts.defined("alchFepWCArcut1")||!opts.defined("alchFepWCArcut2")||!opts.defined("alchFepWCArcut3")))
+       if (alchFepWCARepuOn &&
+           (!opts.defined("alchFepWCArcut1") ||
+            !opts.defined("alchFepWCArcut2") ||
+            !opts.defined("alchFepWCArcut3") ))
           NAMD_die("When using WCA repulsion,  alchFepWCArcut1, alchFepWCArcut2, and alchFepWCArcut3 must be defined!");
-       if (alchFepWCARepuOn && ((alchFepWCArcut1 > alchFepWCArcut2) || (alchFepWCArcut2 > alchFepWCArcut3) ))
+       if (alchFepWCARepuOn &&
+           ((alchFepWCArcut1 > alchFepWCArcut2) ||
+            (alchFepWCArcut2 > alchFepWCArcut3) ))
            NAMD_die("When using WCA repulsion,  alchFepWCArcut2 must be larger than alchFEPWCArcut1, alchFepWCArcut3 must be larger than alchFEPWCArcut2!");
-//       if ((alchFepWCARepuOn || alchFepWCADispOn) && (alchElecLambdaStart < 1.0) )
-//           NAMD_die("When using WCA decomposition,  repulsion, dispersion and electrostatic must be in 3 different stages!");
-       if(alchFepWhamOn && (alchRepLambda < 0.0) && (alchDispLambda < 0.0) && (alchElecLambda < 0.0) )
+       if (alchFepWhamOn && (alchRepLambda < 0.0) && (alchDispLambda < 0.0) &&
+           (alchElecLambda < 0.0) )
        	   NAMD_die("One of alchRepLambda, alchDispLambda and alchElecLambda should be set up when alchFepWhamOn is true!");
-       if(alchFepWhamOn && (!alchFepElecOn) )	{
+       if (alchFepWhamOn && (!alchFepElecOn)) {
        	 alchElecLambda = 0.0;
        	 ComputeNonbondedUtil::alchElecLambda = alchElecLambda;
-//       	 ComputeNonbondedUtil::select();
        }
      }
-     else if (alchThermIntOn)
-     {
+     else if (alchThermIntOn) {
        if (!opts.defined("alchoutfile")) {
          strcpy(alchOutFile, outputFilename);
          strcat(alchOutFile, ".ti");
        }
      }
-
-   } else {
-     alchLambda = alchLambda2 = 0;
-     alchElecLambdaStart = 0;
-     alchOutFile[0] = STRINGNULL;
    }
-
-
 //fepe
 
    if ( alchOn && alchFepOn && alchThermIntOn )
@@ -3332,13 +3310,13 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
      NAMD_die("Sorry, combined LES with FEP or TI is not implemented.\n");
    if ( alchOn && alchThermIntOn && lesOn )
      NAMD_die("Sorry, combined LES and TI is not implemented.\n");
-   if ( alchDecouple && (! (alchFepOn || alchThermIntOn) ) ) {
+   if ( alchDecouple && !alchOn ) {
          iout << iWARN << "Alchemical decoupling was requested but \
            alchemical free energy calculation is not active. Setting \
            alchDecouple to off.\n" << endi;
          alchDecouple = FALSE;
    }
-   if ( alchBondDecouple && (! (alchFepOn || alchThermIntOn) ) ) {
+   if ( alchBondDecouple && !alchOn ) {
          iout << iWARN << "Alchemical bond decoupling was requested but \
            alchemical free energy calculation is not active. Setting \
            alchBondDecouple to off.\n" << endi;
@@ -3348,7 +3326,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
    if ( lesOn && ( lesFactor < 1 || lesFactor > 255 ) ) {
      NAMD_die("lesFactor must be positive and less than 256");
    }
-   if ((pairInteractionOn && alchFepOn) || (pairInteractionOn && lesOn) || (pairInteractionOn && alchThermIntOn) )
+   if ((pairInteractionOn && alchOn) || (pairInteractionOn && lesOn))
      NAMD_die("Sorry, pair interactions may not be calculated when LES, FEP or TI is enabled.");
 
    // Drude model
@@ -5443,7 +5421,13 @@ if ( openatomOn )
        fftwf_free(grid1);
        fftwf_free(grid2);
 
-      if ( CmiNumPartitions() == 1 ) {
+#ifdef NAMD_FFTW_3
+       FFTWWisdomString = fftwf_export_wisdom_to_string();
+#else
+       FFTWWisdomString = fftw_export_wisdom_to_string();
+#endif
+
+      if ( FFTWWisdomString && (CmiNumPartitions() == 1) ) {
        iout << iINFO << "Writing FFTW data to "
 		<< FFTWWisdomFile << "\n" << endi;
        wisdom_file = fopen(FFTWWisdomFile,"w");
@@ -5456,12 +5440,6 @@ if ( openatomOn )
 	 fclose(wisdom_file);
        }
       }
-
-#ifdef NAMD_FFTW_3
-       FFTWWisdomString = fftwf_export_wisdom_to_string();
-#else
-       FFTWWisdomString = fftw_export_wisdom_to_string();
-#endif
      }
 #endif
      iout << endi;

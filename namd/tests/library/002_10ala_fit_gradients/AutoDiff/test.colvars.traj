@@ -1,1 +1,2 @@
-../ExpectedResults/test.colvars.traj
+# step         eigenvector_Ca        ft_eigenvector_Ca     fa_eigenvector_Ca     
+           0    1.00000000000000e+00  0.00000000000000e+00 -1.00000000000000e+01 

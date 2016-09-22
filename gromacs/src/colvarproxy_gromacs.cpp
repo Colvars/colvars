@@ -109,7 +109,7 @@ colvarproxy_gromacs::colvarproxy_gromacs() : colvarproxy() {
 void colvarproxy_gromacs::init(t_inputrec *gmx_inp, gmx_int64_t step) {
   // Initialize colvars.
   first_timestep = true;
-  system_force_requested = false;
+  total_force_requested = false;
 
   // User-scripted forces are not available in GROMACS
   force_script_defined = false;
@@ -182,7 +182,7 @@ void colvarproxy_gromacs::init(t_inputrec *gmx_inp, gmx_int64_t step) {
     cvm::log ("colvars_atoms = "+cvm::to_str (colvars_atoms)+"\n");
     cvm::log ("colvars_atoms_ncopies = "+cvm::to_str (colvars_atoms_ncopies)+"\n");
     cvm::log ("positions = "+cvm::to_str (positions)+"\n");
-    cvm::log ("system_forces = "+cvm::to_str (system_forces)+"\n");
+    cvm::log ("total_forces = "+cvm::to_str (total_forces)+"\n");
     cvm::log ("applied_forces = "+cvm::to_str (applied_forces)+"\n");
     cvm::log (cvm::line_marker);
   }
@@ -227,8 +227,8 @@ cvm::real colvarproxy_gromacs::rand_gaussian() {
   return gmx_rng_gaussian_real(rando);
 }
 
-void colvarproxy_gromacs::request_system_force (bool yesno) {
-  system_force_requested = yesno;
+void colvarproxy_gromacs::request_total_force (bool yesno) {
+  total_force_requested = yesno;
 }
 
 size_t colvarproxy_gromacs::restart_frequency() {
@@ -343,8 +343,8 @@ double colvarproxy_gromacs::calculate(gmx_int64_t step, const rvec *x, rvec *f, 
              "Updating internal data.\n");
   }
 
-  // backup applied forces if necessary to calculate system forces
-  //if (system_force_requested)
+  // backup applied forces if necessary to calculate total forces
+  //if (total_force_requested)
   //  previous_applied_forces = applied_forces;
 
   // Zero the forces on the atoms, so that they can be accumulated by the colvars.
@@ -361,13 +361,13 @@ double colvarproxy_gromacs::calculate(gmx_int64_t step, const rvec *x, rvec *f, 
     positions[i] = cvm::rvector(x[aid][0], x[aid][1], x[aid][2]);
   }
 
-  // Get system forces if required.
-  if (system_force_requested && cvm::step_relative() > 0) {
+  // Get total forces if required.
+  if (total_force_requested && cvm::step_relative() > 0) {
      for (size_t i = 0; i < colvars_atoms.size(); i++) {
        size_t aid = colvars_atoms[i];
        // We already checked above that gmx_atoms->nr < aid.
        // The change of sign appears necessary.
-       system_forces[i] = cvm::rvector(-f[aid][0], -f[aid][1], -f[aid][2]);
+       total_forces[i] = cvm::rvector(-f[aid][0], -f[aid][1], -f[aid][2]);
      }
   }
 
@@ -423,7 +423,7 @@ int colvarproxy_gromacs::init_gromacs_atom(const int &aid, cvm::atom *atom)
   colvars_atoms_ncopies.push_back(1);
   colvars_atoms.push_back(aid);
   positions.push_back(cvm::rvector());
-  system_forces.push_back(cvm::rvector());
+  total_forces.push_back(cvm::rvector());
   applied_forces.push_back(cvm::rvector());
 
   return colvars_atoms.size()-1;
@@ -535,12 +535,12 @@ void cvm::atom::read_velocity()
   cvm::fatal_error("Error: read_velocity is not yet implemented.\n");
 }
 
-void cvm::atom::read_system_force()
+void cvm::atom::read_total_force()
 {
   colvarproxy_gromacs const * const cp = (colvarproxy_gromacs *) cvm::proxy;
-  this->system_force.x = cp->system_forces[this->index].x;
-  this->system_force.y = cp->system_forces[this->index].y;
-  this->system_force.z = cp->system_forces[this->index].z;
+  this->total_force.x = cp->total_forces[this->index].x;
+  this->total_force.y = cp->total_forces[this->index].y;
+  this->total_force.z = cp->total_forces[this->index].z;
 }
 
 void cvm::atom::apply_force(cvm::rvector const &new_force)

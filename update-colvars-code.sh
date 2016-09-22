@@ -1,6 +1,10 @@
 #!/bin/sh
 # Script to update a NAMD, VMD, LAMMPS, or GROMACS source tree with the latest colvars code.
 
+# enforce using portable C locale
+LC_ALL=C
+export LC_ALL
+
 if [ $# -lt 1 ]
 then
     cat <<EOF

@@ -1,1 +1,2 @@
-../ExpectedResults/test.colvars.traj
+# step         rmsdA                 ft_rmsdA               rmsdB                 ft_rmsdB               rmsdC                 ft_rmsdC               rmsdD                 ft_rmsdD               rmsdE                 ft_rmsdE              
+           0    2.61009345658189e-01  0.00000000000000e+00   1.27145912684355e+01  0.00000000000000e+00   6.68502465870546e-01  0.00000000000000e+00   9.31703240469482e-01  0.00000000000000e+00   1.24224459145532e+00  0.00000000000000e+00 

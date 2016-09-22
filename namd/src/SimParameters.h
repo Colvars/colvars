@@ -7,8 +7,8 @@
 /*****************************************************************************
  * $Source: /namd/cvsroot/namd2/src/SimParameters.h,v $
  * $Author: jim $
- * $Date: 2016/03/02 21:33:06 $
- * $Revision: 1.1240 $
+ * $Date: 2016/09/07 18:09:59 $
+ * $Revision: 1.1243 $
  *****************************************************************************/
 
 #ifndef SIMPARAMETERS_H
@@ -371,9 +371,8 @@ public:
         int symmetryFirstStep, symmetryLastStep, symmetryFirstFullStep, symmetryLastFullStep;
 
 
-// Modifications for alchemical simulations
-// Begin alch flags
-
+//fepb
+  Bool alchOnAtStartup;     //  Ensure that alchemy is set up properly
   Bool alchOn;              //  Doing alchemical simulation?
   Bool alchFepOn;           //  Doing alchemical simulation?
   Bool alchThermIntOn;      //  Doing thermodynamic integration?
@@ -419,8 +418,6 @@ public:
   BigReal getBondLambda(const BigReal); // return max[1,x/bondEnd]
   Bool alchDecouple;  // alchemical decoupling rather than annihilation
   Bool alchBondDecouple; // decouple purely alchemical bonds
-
-// End alch flags
 //fepe
 
 
@@ -484,6 +481,7 @@ public:
 	Bool fixedAtomsForces;		//  Calculate forces anyway?
 	Bool fixedAtomsForceOutput; // Output fixed forces?
 
+	Bool langevinOnAtStartup;	//  Ensure that langevin is set up properly
 	Bool langevinOn;		//  Flag TRUE-> langevin dynamics active
 	BigReal langevinTemp;		//  Temperature for Langevin dynamics
 	BigReal langevinDamping;	//  Damping coefficient (1/ps)

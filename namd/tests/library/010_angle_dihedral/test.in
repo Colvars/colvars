@@ -6,7 +6,7 @@ indexFile ../Common/da.ndx
 colvar {
     name angle
 
-    outputSystemForce on
+    outputTotalForce on
     outputAppliedForce on
     width 6.0 
 
@@ -30,7 +30,7 @@ colvar {
 colvar {
     name dihedral
 
-    outputSystemForce on
+    outputTotalForce on
     outputAppliedForce on
     width 6.0 
 
@@ -39,16 +39,16 @@ colvar {
 
     dihedral {
         group1 {
-            indexGroup Protein_C-alpha_1
+            indexGroup Protein_C-alpha_4
         }
         group2 {
-            indexGroup Protein_C-alpha_2
+            indexGroup Protein_C-alpha_5
         }
         group3 {
-            indexGroup Protein_C-alpha_3
+            indexGroup Protein_C-alpha_6
         }
         group4 {
-            indexGroup Protein_C-alpha_4
+            indexGroup Protein_C-alpha_7
         }
     }
 } 
