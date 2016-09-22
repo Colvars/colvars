@@ -7,8 +7,8 @@
 /*****************************************************************************
  * $Source: /namd/cvsroot/namd2/src/SimParameters.h,v $
  * $Author: jim $
- * $Date: 2016/05/24 19:05:41 $
- * $Revision: 1.1241 $
+ * $Date: 2016/09/07 18:09:59 $
+ * $Revision: 1.1243 $
  *****************************************************************************/
 
 #ifndef SIMPARAMETERS_H
@@ -371,9 +371,8 @@ public:
         int symmetryFirstStep, symmetryLastStep, symmetryFirstFullStep, symmetryLastFullStep;
 
 
-// Modifications for alchemical simulations
-// Begin alch flags
-
+//fepb
+  Bool alchOnAtStartup;     //  Ensure that alchemy is set up properly
   Bool alchOn;              //  Doing alchemical simulation?
   Bool alchFepOn;           //  Doing alchemical simulation?
   Bool alchThermIntOn;      //  Doing thermodynamic integration?
@@ -419,8 +418,6 @@ public:
   BigReal getBondLambda(const BigReal); // return max[1,x/bondEnd]
   Bool alchDecouple;  // alchemical decoupling rather than annihilation
   Bool alchBondDecouple; // decouple purely alchemical bonds
-
-// End alch flags
 //fepe
 
 
