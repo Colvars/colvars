@@ -29,7 +29,7 @@ if git status --porcelain | grep -q '^M \+lammps/src/'
 then
   datestr=$(date +'%Y-%m-%d')
   prevstr=$(sed -n -e 's/^#define COLVARPROXY_VERSION "\(.*\)".*/\1/p' \
-            src/lammps/USER-COLVARS/colvarproxy_lammps.h)
+            lammps/src/USER-COLVARS/colvarproxy_lammps.h)
   if test "${prevstr}" = "${datestr}"
   then
     echo "Keeping LAMMPS colvars interface version string at: ${prevstr}"
@@ -61,7 +61,7 @@ if git status --porcelain | grep -q '^M \+vmd/src/'
 then
   datestr=$(date +'%Y-%m-%d')
   prevstr=$(sed -n -e 's/^#define COLVARPROXY_VERSION "\(.*\)".*/\1/p' \
-            src/vmd/colvarproxy_vmd.h)
+            vmd/src/colvarproxy_vmd.h)
   if test "${prevstr}" = "${datestr}"
   then
     echo "Keeping VMD colvars interface version string at: ${prevstr}"
