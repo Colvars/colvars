@@ -1194,17 +1194,36 @@ In general, internal coordinate wrapping by LAMMPS does not affect the calculati
 \end{enumerate}
 \cvvmdonly{If none of these conditions are met, wrapping may affect the calculation of collective variables: a possible solution is to use \texttt{pbc wrap} or \texttt{pbc unwrap} prior to processing a trajectory with the colvars module.}
 
-\cvsubsec{Computational cost of colvars calculations based on group size.}
+\cvsubsec{Performance a Colvars calculation based on group size.}
 \label{sec:colvar_atom_groups_scaling}
 
-In parallel simulations (as supported by NAMD and LAMMPS), the calculation of energy and forces is distributed over many nodes and processor cores.
-Unless the calculation of each colvar component is also parallelized, the overall performance may be affected.
-You can check the output to see if the parallel calculation of a certain component is available: if the keyword \texttt{scalable} (see \ref{sec:cvc_common}) is \texttt{on}, this will be reported by the message ``Will enable scalable calculation for group \ldots'' for each of its groups.
+In simulations performed with message-passing programs (such as NAMD or LAMMPS), the calculation of energy and forces is distributed (i.e., parallelized) across multiple nodes, as well as over the processor cores of each node.
+Atomic coordinates are typically collected on one node, where the calculation of collective variables and of their biases is executed.
+This means that for simulations over large numbers of nodes, a Colvars calculation may produce a significant overhead, coming from the costs of transmitting atomic coordinates to one node and of processing them.
+\cvnamdonly{The latency-tolerant design and dynamic load balancing of NAMD may alleviate both factors, but a noticeable performance impact may be observed.}
 
-If the calculation of a component is not parallelized (as reported by the message ``Scalable calculation is not available''), the performance of the first computational node may decrease significantly.
-Even more importantly, additional communication will carried out between nodes to transfer the required atomic coordinates.
-\cvnamdonly{The latency-tolerant design and dynamic load balancing of NAMD alleviate both factors, but a noticeable performance impact may be observed.}
-To mitigate that, atom groups should be kept relatively small (up to a few thousands, depending on the computational cost to simulate the system by itself).  \cvvmdonly{A test calculation with VMD can provide a crude estimate of the impact of a large colvar on a NAMD simulation.}
+Performance can be improved in multiple ways:
+\begin{itemize}
+\item The calculation of variables, components and biases can be distributed over the processor cores of the node where the Colvars module is executed.
+  Currently, an equal weight is assigned to each colvar, or to each component of those colvars that include more than one component.
+  The performance of simulations that use many colvars or components is improved automatically.
+  For simulations that use a single large colvar, it may be advisable to partition it in multiple components, which will be then distributed across the available cores.
+  \cvnamdonly{In NAMD, this feature is enabled in all binaries compiled using SMP builds of Charm++ with the CkLoop extension.}
+  \cvlammpsonly{In LAMMPS, this feature is supported automatically.}
+  If printed, the message ``SMP parallelism is available.'' indicates the availability of the option\cvvmdonly{ (will be supported in a future relase of VMD)}.
+
+\cvnamdonly{
+  % Use the following command to identify them:
+  % grep -B10 'provide(f_cvc_com_based' * |grep '\:\:'|grep '(std::string const &conf)'
+\item NAMD also offers a parallelized calculation of the centers of mass of groups of atoms.
+  This option is on by default for all components that are simple functions of centers of mass, and is controlled by the keyword \texttt{scalable} (see \ref{sec:cvc_common}).
+  When supported, the message ``Will enable scalable calculation for group \ldots'' is printed for each group.
+}
+
+\item As a general rule, the size of atom groups should be kept relatively small (up to a few thousands of atoms, depending on the size of the entire system in comparison).
+To gain an estimate of the computational cost of a large colvar, one can use a test calculation of the same colvar in VMD (hint: use the \texttt{time} Tcl command to measure the cost of running \texttt{cv update}).
+\end{itemize}
+
 
 \cvsec{Collective variable components (basis functions)}
 \label{sec:cvc}
@@ -2242,14 +2261,9 @@ All types of components support the following keywords:
     Attempt to calculate this component in parallel?}{%
     boolean}{%
     \texttt{on}, if available}{%
-    If set to \texttt{on} (default), the module will attempt to calculate this component in parallel,
-    over multiple processor cores or multiple nodes (whichever is faster). 
-    Whether this feature is available depends on the specific configuration and the hosting code:
-    a message is printed to indicate this. 
-    If available, this feature reduces the overhead of a collective variables-based calculation:
-    otherwise, the component is calculated entirely on one processor core.
-    This flag influences parallel performance, but does not affect numerical results: therefore, it should only
-    be turned off for debugging or testing purposes.
+    If set to \texttt{on} (default), the Colvars module will attempt to calculate this component in parallel to reduce overhead.
+    Whether this option is available depends on the type of component: currently supported are \texttt{distance}, \texttt{distanceZ}, \texttt{distanceXY}, \texttt{distanceVec}, \texttt{distanceDir}, \texttt{angle} and \texttt{dihedral}.
+    This flag influences computational cost, but does not affect numerical results: therefore, it should only be turned off for debugging or testing purposes.
   }
 \end{itemize}
 

@@ -77,8 +77,6 @@ cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
 
       if (is_enabled(f_cvc_scalable)) {
         cvm::log("Will enable scalable calculation for group \""+group->key+"\".\n");
-      } else {
-        cvm::log("Scalable calculation is not available for group \""+group->key+"\" with the current configuration.\n");
       }
     }
 
