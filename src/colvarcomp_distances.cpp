@@ -97,6 +97,7 @@ colvar::distance_vec::distance_vec(std::string const &conf)
   : distance(conf)
 {
   function_type = "distance_vec";
+  provide(f_cvc_com_based);
   x.type(colvarvalue::type_3vector);
 }
 
@@ -105,6 +106,7 @@ colvar::distance_vec::distance_vec()
   : distance()
 {
   function_type = "distance_vec";
+  provide(f_cvc_com_based);
   x.type(colvarvalue::type_3vector);
 }
 
@@ -382,6 +384,7 @@ colvar::distance_dir::distance_dir(std::string const &conf)
   : distance(conf)
 {
   function_type = "distance_dir";
+  provide(f_cvc_com_based);
   x.type(colvarvalue::type_unit3vector);
 }
 
@@ -390,6 +393,7 @@ colvar::distance_dir::distance_dir()
   : distance()
 {
   function_type = "distance_dir";
+  provide(f_cvc_com_based);
   x.type(colvarvalue::type_unit3vector);
 }
 
