@@ -375,7 +375,7 @@ colvar::colvar(std::string const &conf)
 
   {
     bool temp;
-    if (get_keyval(conf, "outputSystemForce", temp, false)) {
+    if (get_keyval(conf, "outputSystemForce", temp, false, colvarparse::parse_silent)) {
       cvm::error("Colvar option outputSystemForce is deprecated.\n"
         "Please use outputTotalForce, or outputSystemForce within an ABF bias.");
       return;
