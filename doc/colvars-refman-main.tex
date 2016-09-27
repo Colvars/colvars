@@ -1296,25 +1296,33 @@ The keywords that are available for all types of components are listed at the en
 
 \cvsubsec{List of available colvar components}
 
+\newenvironment{cvcoptions}%
+  {\noindent\textbf{List of keywords} (see also \ref{sec:cvc_superp} for additional options):
+  \begin{itemize}}
+  {
+  \end{itemize}
+}
+
 \cvsubsubsec{\texttt{distance}: center-of-mass distance between two groups.}
-The \texttt{distance \{...\}} block defines a distance component,
-between two atom groups, \texttt{group1} and \texttt{group2}.
-\begin{itemize}
+\label{sec:cvc_distance}
+The \texttt{distance \{...\}} block defines a distance component between the two atom groups, \texttt{group1} and \texttt{group2}.
+
+\begin{cvcoptions}
 \item %
+  \labelkey{colvar|distance|group1}
   \key
     {group1}{%
     \texttt{distance}}{%
     First group of atoms}{%
     Block \texttt{group1 \{...\}}}{%
     First group of atoms.}
+
 \item %
-  \key
-    {group2}{%
-    \texttt{distance}}{%
-    Second group of atoms}{%
-    Block \texttt{group2 \{...\}}}{%
-    Second group of atoms.}
+  \labelkey{colvar|distance|group2}
+  \simkey{group2}{\texttt{distance}}{group1}
+
 \item %
+  \labelkey{colvar|distance|forceNoPBC}
   \keydef
     {forceNoPBC}{%
     \texttt{distance}}{%
@@ -1330,10 +1338,12 @@ between two atom groups, \texttt{group1} and \texttt{group2}.
     of a single macromolecule, which cannot be split across periodic cell
     boundaries, and for which the minimum-image distance might give the
     wrong result because of a relatively small periodic cell.}
+
 \item %
+  \labelkey{colvar|distance|oneSiteSystemForce}
   \keydef
     {oneSiteSystemForce}{%
-    \texttt{distance}}{%
+    \texttt{angle}, \texttt{dipoleAngle}, \texttt{dihedral}}{%
     Measure system force on group 1 only?}{%
     boolean}{%
     \texttt{no}}{%
@@ -1343,7 +1353,8 @@ between two atom groups, \texttt{group1} and \texttt{group2}.
     \texttt{group1}.  This option is only useful for ABF, or custom
     biases that compute system forces.  See
     section~\ref{sec:colvarbias_abf} for details.}
-\end{itemize}
+
+\end{cvcoptions}
 
 The value returned is a positive number (in \AA), ranging from $0$
 to the largest possible interatomic distance within the chosen
@@ -1357,27 +1368,33 @@ component, which can be seen as measuring the distance between two
 groups projected onto an axis, or the position of a group along such
 an axis.  The axis can be defined using either one reference group and
 a constant vector, or dynamically based on two reference groups.
-\begin{itemize}
+
+\begin{cvcoptions}
 \item %
+  \labelkey{colvar|distanceZ|main}
   \key
     {main}{%
-    \texttt{distanceZ, \texttt{distanceXY}}}{%
+    \texttt{distanceZ}}{%
     Main group of atoms}{%
     Block \texttt{main \{...\}}}{%
     Group of atoms whose position $\bm{r}$ is measured.}
+
 \item %
+  \labelkey{colvar|distanceZ|ref}
   \key
     {ref}{%
-    \texttt{distanceZ, \texttt{distanceXY}}}{%
+    \texttt{distanceZ}}{%
     Reference group of
     atoms}{%
     Block \texttt{ref \{...\}}}{%
     Reference group of atoms.  The position of its center of mass is
     noted $\bm{r}_1$ below.}
+
 \item %
+  \labelkey{colvar|distanceZ|ref2}
   \keydef
     {ref2}{%
-    \texttt{distanceZ, \texttt{distanceXY}}}{%
+    \texttt{distanceZ}}{%
     Secondary reference
     group}{%
     Block \texttt{ref2 \{...\}}}{%
@@ -1387,41 +1404,28 @@ a constant vector, or dynamically based on two reference groups.
     - \bm{r}_1\|)^{-1} \times (\bm{r}_2 - \bm{r}_1)$.  In this case,
     the origin is $\bm{r}_m = 1/2 (\bm{r}_1+\bm{r}_2)$, and the value
     of the component is $\bm{e} \cdot (\bm{r}-\bm{r}_m)$.}
+
 \item %
+  \labelkey{colvar|distanceZ|axis}
   \keydef
     {axis}{%
-    \texttt{distanceZ}, \texttt{distanceXY}}{%
+    \texttt{distanceZ}}{%
     Projection axis (\AA{})}{%
     \texttt{(x, y, z)} triplet}{%
     \texttt{(0.0, 0.0, 1.0)}}{%
-    The three components of this vector define (when normalized) a
+    The three components of this vector define a
     projection axis $\bm{e}$ for the distance vector $\bm{r} -
     \bm{r}_1$ joining the centers of groups \texttt{ref} and
     \texttt{main}. The value of the component is then $\bm{e} \cdot
     (\bm{r}-\bm{r}_1)$.  The vector should be written as three
     components separated by commas and enclosed in parentheses.}
+
 \item %
-  \keydef
-    {forceNoPBC}{%
-    \texttt{distanceZ, distanceXY}}{%
-    Calculate absolute rather than minimum-image distance?}{%
-    boolean}{%
-    \texttt{no}}{%
-    This parameter has the same meaning as that described above for the \texttt{distance}
-    component.}
+  \dupkey{forceNoPBC}{\texttt{distanceZ}}{colvar|distance|forceNoPBC}{\texttt{distance} component}
+
 \item %
-  \keydef
-    {oneSiteSystemForce}{%
-    \texttt{distanceZ, distanceXY}}{%
-    Measure system force on group \texttt{main} only?}{%
-    boolean}{%
-    \texttt{no}}{%
-    If this is set to \texttt{yes}, the system force is measured along a
-    vector field (see equation~(\ref{eq:gradient_vector}) in
-    section~\ref{sec:colvarbias_abf}) that only involves atoms of \texttt{main}.
-    This option is only useful for ABF, or custom biases that compute
-    system forces.  See section~\ref{sec:colvarbias_abf} for details.}
-\end{itemize}
+  \dupkey{oneSiteSystemForce}{\texttt{distanceZ}}{colvar|distance|oneSiteSystemForce}{\texttt{distance} component}
+\end{cvcoptions}
 This component returns a number (in \AA{}) whose range is determined
 by the chosen boundary conditions.  For instance, if the $z$ axis is
 used in a simulation with periodic boundaries, the returned value ranges
@@ -1439,6 +1443,22 @@ projection of the distance vector between \texttt{main} and
 defined using the \texttt{axis} parameter or as the vector joining
 \texttt{ref} and \texttt{ref2} (see \texttt{distanceZ} above).
 
+\begin{cvcoptions}
+\item %
+  \dupkey{main}{\texttt{distanceXY}}{colvar|distanceZ|main}{\texttt{distanceZ} component}
+\item %
+  \dupkey{ref}{\texttt{distanceXY}}{colvar|distanceZ|ref}{\texttt{distanceZ} component}
+\item %
+  \dupkey{ref2}{\texttt{distanceXY}}{colvar|distanceZ|ref2}{\texttt{distanceZ} component}
+\item %
+  \dupkey{axis}{\texttt{distanceXY}}{colvar|distanceZ|axis}{\texttt{distanceZ} component}
+\item %
+  \dupkey{forceNoPBC}{\texttt{distanceZ}}{colvar|distance|forceNoPBC}{\texttt{distance} component}
+\item %
+  \dupkey{oneSiteSystemForce}{\texttt{distanceZ}}{colvar|distance|oneSiteSystemForce}{\texttt{distance} component}
+\end{cvcoptions}
+
+
 
 \cvsubsubsec{\texttt{distanceVec}: distance vector  between two groups.}
 The \texttt{distanceVec~\{...\}} block defines
@@ -1446,6 +1466,16 @@ a distance vector component, which accepts the same keywords as
 the component \texttt{distance}: \texttt{group1}, \texttt{group2}, and
 \texttt{forceNoPBC}. Its value is the 3-vector joining the centers
 of mass of \texttt{group1} and \texttt{group2}.
+
+\begin{cvcoptions}
+\item %
+  \dupkey{group1}{\texttt{distanceVec}}{colvar|distance|group1}{\texttt{distance} component}
+\item %
+  \simkey{group2}{\texttt{distanceVec}}{group1}
+\item %
+  \dupkey{oneSiteSystemForce}{\texttt{distanceVec}}{colvar|distance|oneSiteSystemForce}{\texttt{distance} component}
+\end{cvcoptions}
+
 
 
 \cvsubsubsec{\texttt{distanceDir}: distance unit vector between two groups.}
@@ -1456,6 +1486,15 @@ the component \texttt{distance}: \texttt{group1}, \texttt{group2}, and
 3-dimensional unit vector $\mathbf{d} = (d_{x}, d_{y}, d_{z})$, with
 $|\mathbf{d}| = 1$.
 
+\begin{cvcoptions}
+\item %
+  \dupkey{group1}{\texttt{distanceDir}}{colvar|distance|group1}{\texttt{distance} component}
+\item %
+  \simkey{group2}{\texttt{distanceDir}}{group1}
+\item %
+  \dupkey{oneSiteSystemForce}{\texttt{distanceDir}}{colvar|distance|oneSiteSystemForce}{\texttt{distance} component}
+\end{cvcoptions}
+
 
 \cvsubsubsec{\texttt{distanceInv}: mean distance between two groups of atoms.}
 The \texttt{distanceInv~\{...\}} block defines a generalized mean distance between two groups of atoms 1 and 2, weighted with exponent $1/n$:
@@ -1464,8 +1503,14 @@ The \texttt{distanceInv~\{...\}} block defines a generalized mean distance betwe
   d_{\mathrm{1,2}}^{[n]} \; = \;   \left(\frac{1}{N_{\mathrm{1}}N_{\mathrm{2}}}\sum_{i,j} \left(\frac{1}{\Vert\mathbf{d}^{ij}\Vert}\right)^{n} \right)^{-1/n}
 \end{equation}
 where $\Vert\mathbf{d}^{ij}\Vert$ is the distance between atoms $i$ and $j$ in groups 1 and 2 respectively, and $n$ is an even integer.
-This component accepts the same keywords as the component \texttt{distance}: \texttt{group1}, \texttt{group2}, and \texttt{forceNoPBC}.  In addition, the following option may be provided:
-\begin{itemize}
+
+\begin{cvcoptions}
+\item %
+  \dupkey{group1}{\texttt{distanceInv}}{colvar|distance|group1}{\texttt{distance} component}
+\item %
+  \simkey{group2}{\texttt{distanceInv}}{group1}
+\item %
+  \dupkey{oneSiteSystemForce}{\texttt{distanceInv}}{colvar|distance|oneSiteSystemForce}{\texttt{distance} component}
 \item %
   \keydef
     {exponent}{%
@@ -1473,7 +1518,7 @@ This component accepts the same keywords as the component \texttt{distance}: \te
     Exponent $n$ in equation~\ref{eq:distanceInv}}{%
     positive even integer}{%
     6}{Defines the exponent to which the individual distances are elevated before averaging.  The default value of 6 is useful for example to applying restraints based on NOE-measured distances.}
-\end{itemize}
+\end{cvcoptions}
 This component returns a number in \AA{}, ranging from $0$ to the largest possible distance within the chosen boundary conditions.
 
 
@@ -1481,8 +1526,8 @@ This component returns a number in \AA{}, ranging from $0$ to the largest possib
 The \texttt{cartesian~\{...\}} block defines a component returning a flat vector containing
 the Cartesian coordinates of all participating atoms, in the order
 $(x_1, y_1, z_1, \cdots, x_n, y_n, z_n)$.
-This component accepts the following keyword:
-\begin{itemize}
+
+\begin{cvcoptions}
 \item %
   \key
     {atoms}{%
@@ -1492,7 +1537,7 @@ This component accepts the following keyword:
     Defines the atoms whose coordinates make up the value of the component.
     If \texttt{rotateReference} or \texttt{centerReference} are defined, coordinates
     are evaluated within the moving frame of reference.}
-\end{itemize}
+\end{cvcoptions}
 
 
 \cvsubsubsec{\texttt{angle}: angle between three groups.}
@@ -1501,11 +1546,36 @@ three blocks \texttt{group1}, \texttt{group2} and \texttt{group3}, defining
 the three groups.  It returns an angle (in degrees) within the
 interval $[0:180]$.
 
+\begin{cvcoptions}
+\item %
+  \dupkey{group1}{\texttt{angle}}{colvar|distance|group1}{\texttt{distance} component}
+\item %
+  \simkey{group2}{\texttt{angle}}{group1}
+\item %
+  \simkey{group3}{\texttt{angle}}{group1}
+\item %
+  \dupkey{oneSiteSystemForce}{\texttt{angle}}{colvar|distance|oneSiteSystemForce}{\texttt{distance} component}
+\end{cvcoptions}
+
+
+
 \cvsubsubsec{\texttt{dipoleAngle}: angle between two groups and dipole of a third group.}
 The \texttt{dipoleAngle~\{...\}} block defines an angle, and contains the
 three blocks \texttt{group1}, \texttt{group2} and \texttt{group3}, defining
 the three groups, being \texttt{group1} the group where dipole is calculated. 
 It returns an angle (in degrees) within the interval $[0:180]$.
+
+\begin{cvcoptions}
+\item %
+  \dupkey{group1}{\texttt{dipoleAngle}}{colvar|distance|group1}{\texttt{distance} component}
+\item %
+  \simkey{group2}{\texttt{dipoleAngle}}{group1}
+\item %
+  \simkey{group3}{\texttt{dipoleAngle}}{group1}
+\item %
+  \dupkey{oneSiteSystemForce}{\texttt{dipoleAngle}}{colvar|distance|oneSiteSystemForce}{\texttt{distance} component}
+\end{cvcoptions}
+
 
 \cvsubsubsec{\texttt{dihedral}: torsional angle between four groups.}
 The \texttt{dihedral~\{...\}} block defines a torsional angle, and
@@ -1515,19 +1585,19 @@ and \texttt{group4}, defining the four groups.  It returns an angle
 calculates all the distances between two angles taking into account
 periodicity.  For instance, reference values for restraints or range
 boundaries can be defined by using any real number of choice.
-\begin{itemize}
-\item \keydef
-    {oneSiteSystemForce}{%
-    \texttt{angle}, \texttt{dipoleAngle}, \texttt{dihedral}}{%
-    Measure system force on group 1 only?}{%
-    boolean}{%
-    \texttt{no}}{%
-    If this is set to \texttt{yes}, the system force is measured along
-    a vector field (see equation~(\ref{eq:gradient_vector}) in
-    section~\ref{sec:colvarbias_abf}) that only involves atoms of
-    \texttt{group1}.  See section~\ref{sec:colvarbias_abf} for an
-    example.}
-\end{itemize}
+
+\begin{cvcoptions}
+\item %
+  \dupkey{group1}{\texttt{dihedral}}{colvar|distance|group1}{\texttt{distance} component}
+\item %
+  \simkey{group2}{\texttt{dihedral}}{group1}
+\item %
+  \simkey{group3}{\texttt{dihedral}}{group1}
+\item %
+  \simkey{group4}{\texttt{dihedral}}{group1}
+\item %
+  \dupkey{oneSiteSystemForce}{\texttt{dihedral}}{colvar|distance|oneSiteSystemForce}{\texttt{distance} component}
+\end{cvcoptions}
 
 
 \cvsubsubsec{\texttt{coordNum}: coordination number between two groups.}
@@ -1546,13 +1616,19 @@ function is summed over all pairs of atoms in \texttt{group1} and
       1 - (|\mathbf{x}_{i}-\mathbf{x}_{j}|/d_{0})^{m} }
   }
 \end{equation}
-This colvar component accepts the same keywords as the component \texttt{distance},
-\texttt{group1} and \texttt{group2}.  In addition to them, it
-recognizes the following keywords:
 
-\begin{itemize}
+\begin{cvcoptions}
 
 \item %
+  \labelkey{colvar|coordNum|group1}
+  \dupkey{group1}{\texttt{coordNum}}{colvar|distance|group1}{\texttt{distance} component}
+
+\item %
+  \labelkey{colvar|coordNum|group2}
+  \simkey{group2}{\texttt{coordNum}}{group1}
+
+\item %
+  \labelkey{colvar|coordNum|cutoff}
   \keydef
     {cutoff}{%
     \texttt{coordNum}}{%
@@ -1567,6 +1643,7 @@ recognizes the following keywords:
     for a proper behavior, $m$ must be larger than $n$.}
 
 \item %
+  \labelkey{colvar|coordNum|cutoff3}
   \keydef
     {cutoff3}{%
     \texttt{coordNum}}{%
@@ -1578,6 +1655,7 @@ recognizes the following keywords:
     \texttt{cutoff}.}
 
 \item %
+  \labelkey{colvar|coordNum|expNumer}
   \keydef
     {expNumer}{%
     \texttt{coordNum}}{%
@@ -1587,6 +1665,7 @@ recognizes the following keywords:
     This number defines the $n$ exponent for the switching function.}
 
 \item %
+  \labelkey{colvar|coordNum|expDenom}
   \keydef
     {expDenom}{%
     \texttt{coordNum}}{%
@@ -1596,6 +1675,7 @@ recognizes the following keywords:
     This number defines the $m$ exponent for the switching function.}
 
 \item %
+  \labelkey{colvar|coordNum|group2CenterOnly}
   \keydef
     {group2CenterOnly}{%
     \texttt{coordNum}}{%
@@ -1606,8 +1686,7 @@ recognizes the following keywords:
     If this option is \texttt{on}, only contacts between each atoms in \texttt{group1} and the center of mass of     \texttt{group2} are calculated (by default, the sum extends over all pairs of atoms in \texttt{group1} and \texttt{group2}).
 If \texttt{group2} is a \texttt{dummyAtom}, this option is set to \texttt{yes} by default.
 }
-
-\end{itemize}
+\end{cvcoptions}
 
 This component returns a dimensionless number, which ranges from
 approximately 0 (all interatomic distances are much larger than the
@@ -1635,6 +1714,21 @@ those accepted by \texttt{coordNum}, namely \texttt{group1}
 (here defining \emph{all} of the atoms to be considered),
 \texttt{cutoff}, \texttt{expNumer}, and \texttt{expDenom}.
 
+\begin{cvcoptions}
+\item %
+  \dupkey{group1}{\texttt{selfCoordNum}}{colvar|coordNum|group1}{\texttt{coordNum} component}
+\item %
+  \simkey{group2}{\texttt{selfCoordNum}}{group1}
+\item %
+  \dupkey{cutoff}{\texttt{selfCoordNum}}{colvar|coordNum|cutoff}{\texttt{coordNum} component}
+\item %
+  \dupkey{cutoff3}{\texttt{selfCoordNum}}{colvar|coordNum|cutoff3}{\texttt{coordNum} component}
+\item %
+  \dupkey{expNumer}{\texttt{selfCoordNum}}{colvar|coordNum|expNumer}{\texttt{coordNum} component}
+\item %
+  \dupkey{expDenom}{\texttt{selfCoordNum}}{colvar|coordNum|expDenom}{\texttt{coordNum} component}
+\end{cvcoptions}
+
 This component returns a dimensionless number, which ranges from
 approximately 0 (all interatomic distances much larger than the
 cutoff) to $N_{\mathtt{group1}} \times (N_{\mathtt{group1}} - 1) / 2$ (all
@@ -1656,6 +1750,26 @@ same options \texttt{cutoff} (with a different default value of
 with values between 0 (acceptor and donor far outside the cutoff
 distance) and 1 (acceptor and donor much closer than the cutoff).
 
+\begin{cvcoptions}
+\item %
+  \key
+    {acceptor}{%
+    \texttt{hBond}}{%
+    Number of the acceptor atom}{%
+    positive integer}{%
+    Number that uses the same convention as \texttt{atomNumbers}.}
+\item %
+  \simkey{donor}{\texttt{hBond}}{acceptor}
+\item %
+  \dupkey{cutoff}{\texttt{hBond}}{colvar|coordNum|cutoff}{\texttt{coordNum} component}\\
+  \textbf{Note:} default value is 3.3~\AA.
+\item %
+  \dupkey{expNumer}{\texttt{hBond}}{colvar|coordNum|expNumer}{\texttt{coordNum} component}\\
+  \textbf{Note:} default value is 6.
+\item %
+  \dupkey{expDenom}{\texttt{hBond}}{colvar|coordNum|expDenom}{\texttt{coordNum} component}\\
+  \textbf{Note:} default value is 8.
+\end{cvcoptions}
 
 \cvsubsubsec{\texttt{rmsd}: root mean square displacement  (RMSD) from reference positions.}
 The block \texttt{rmsd~\{...\}} defines the root mean square replacement
@@ -1686,11 +1800,12 @@ is calculated within the formalism developed in
 reference~\cite{Coutsias2004}, which guarantees a continuous
 dependence of
 $U^{\{\mathbf{x}_{i}(t)\}\rightarrow\{\mathbf{x}_{i}^{\mathrm{(ref)}}\}}$
-with respect to $\{\mathbf{x}_{i}(t)\}$.  The options for \texttt{rmsd}
-are:
-\begin{itemize}
+with respect to $\{\mathbf{x}_{i}(t)\}$.
+
+\begin{cvcoptions}
 
 \item %
+  \labelkey{colvar|rmsd|atoms}
   \key
     {atoms}{%
     \texttt{rmsd}}{%
@@ -1704,6 +1819,7 @@ are:
     }
 
 \item %
+  \labelkey{colvar|rmsd|refPositions}
   \key
     {refPositions}{%
     \texttt{rmsd}}{%
@@ -1717,6 +1833,7 @@ are:
     }
 
 \item %
+  \labelkey{colvar|rmsd|refPositionsFile}
   \key
     {refPositionsFile}{%
     \texttt{rmsd}}{%
@@ -1727,6 +1844,7 @@ are:
 
 \cvnamebasedonly{
 \item %
+  \labelkey{colvar|rmsd|refPositionsCol}
   \key
     {refPositionsCol}{%
     \texttt{rmsd}}{%
@@ -1736,6 +1854,7 @@ are:
   }
 
 \item %
+  \labelkey{colvar|rmsd|refPositionsColValue}
   \key
     {refPositionsColValue}{%
     \texttt{rmsd}}{%
@@ -1747,8 +1866,7 @@ are:
     with a non-zero value are read.
   }
 }
-
-\end{itemize}
+\end{cvcoptions}
 This component returns a positive real number (in \AA).
 
 \cvsubsubsec{Advanced usage of the \texttt{rmsd} component.} 
@@ -1811,9 +1929,19 @@ mode of the system.  It is assumed that $\sum_{i}\mathbf{v}_{i} = 0$:
 otherwise, the Colvars module centers the $\mathbf{v}_{i}$
 automatically when reading them from the configuration.
 
-As for the component \texttt{rmsd}, the available options are \texttt{atoms}, \texttt{refPositionsFile}\cvnamebasedonly{, \texttt{refPositionsCol} and \texttt{refPositionsColValue}, } and \texttt{refPositions}.
-In addition, the following are recognized:
-\begin{itemize}
+\begin{cvcoptions}
+\item %
+  \dupkey{atoms}{\texttt{eigenvector}}{colvar|rmsd|atoms}{\texttt{rmsd} component}
+\item %
+  \dupkey{refPositions}{\texttt{eigenvector}}{colvar|rmsd|refPositions}{\texttt{rmsd} component}
+\item %
+  \dupkey{refPositionsFile}{\texttt{eigenvector}}{colvar|rmsd|refPositionsFile}{\texttt{rmsd} component}
+\cvnamebasedonly{
+\item %
+  \dupkey{refPositionsCol}{\texttt{eigenvector}}{colvar|rmsd|refPositionsCol}{\texttt{rmsd} component}
+\item %
+  \dupkey{refPositionsColValue}{\texttt{eigenvector}}{colvar|rmsd|refPositionsColValue}{\texttt{rmsd} component}
+}
 
 \item %
   \key
@@ -1866,8 +1994,7 @@ In addition, the following are recognized:
 This allows to conveniently define a colvar $\xi$ as a projection on the linear transformation between two sets of positions, ``A'' and ``B''.
 For convenience, the vector is also normalized so that $\xi = 0$ when the atoms are at the set of positions ``A'' and $\xi = 1$ at the set of positions ``B''.
 }
-
-\end{itemize}
+\end{cvcoptions}
 This component returns a number (in \AA), whose value ranges between
 the smallest and largest absolute positions in the unit cell during
 the simulations (see also \texttt{distanceZ}).  Due to the
@@ -1891,6 +2018,10 @@ This component must contain one \texttt{atoms~\{...\}} block to
 define the atom group, and returns a positive number, expressed in
 \AA{}.
 
+\begin{cvcoptions}
+\item %
+  \dupkey{atoms}{\texttt{gyration}}{colvar|rmsd|atoms}{\texttt{rmsd} component}
+\end{cvcoptions}
 
 \cvsubsubsec{\texttt{inertia}: total moment of inertia of a group  of atoms.}
 The block \texttt{inertia~\{...\}} defines the
@@ -1908,6 +2039,10 @@ This component must contain one \texttt{atoms~\{...\}} block to
 define the atom group, and returns a positive number, expressed in
 \AA{}$^{2}$.
 
+\begin{cvcoptions}
+\item %
+  \dupkey{atoms}{\texttt{inertia}}{colvar|rmsd|atoms}{\texttt{rmsd} component}
+\end{cvcoptions}
 
 \cvsubsubsec{\texttt{inertiaZ}: total moment of inertia of a group of atoms around a chosen axis.}
 The block \texttt{inertiaZ~\{...\}} defines the
@@ -1923,8 +2058,11 @@ $\mathbf{x}_{\mathrm{cog}}(t)$:
 \emph{Note that all atomic masses are set to 1 for simplicity.}
 This component must contain one \texttt{atoms~\{...\}} block to
 define the atom group, and returns a positive number, expressed in
-\AA{}$^{2}$.  The following option may also be provided:
-\begin{itemize}
+\AA{}$^{2}$.
+
+\begin{cvcoptions}
+\item %
+  \dupkey{atoms}{\texttt{inertiaZ}}{colvar|rmsd|atoms}{\texttt{rmsd} component}
 \item %
   \keydef
     {axis}{%
@@ -1934,7 +2072,7 @@ define the atom group, and returns a positive number, expressed in
     \texttt{(0.0, 0.0, 1.0)}}{%
     The three components of this vector define (when normalized) the
     projection axis $\mathbf{e}$.}
-\end{itemize}
+\end{cvcoptions}
 
 
 \cvsubsubsec{\texttt{orientation}: orientation from reference  coordinates.}
@@ -1960,7 +2098,20 @@ As for the component \texttt{rmsd}, the available options are \texttt{atoms}, \t
 
 \textbf{Note:} \texttt{refPositions}and \texttt{refPositionsFile} define the set of positions \emph{from which} the optimal rotation is calculated, but this rotation is not applied to the coordinates of the atoms involved: it is used instead to define the variable itself.
 
-\begin{itemize}
+\begin{cvcoptions}
+\item %
+  \dupkey{atoms}{\texttt{orientation}}{colvar|rmsd|atoms}{\texttt{rmsd} component}
+\item %
+  \dupkey{refPositions}{\texttt{orientation}}{colvar|rmsd|refPositions}{\texttt{rmsd} component}
+\item %
+  \dupkey{refPositionsFile}{\texttt{orientation}}{colvar|rmsd|refPositionsFile}{\texttt{rmsd} component}
+
+\cvnamebasedonly{
+\item %
+  \dupkey{refPositionsCol}{\texttt{orientation}}{colvar|rmsd|refPositionsCol}{\texttt{rmsd} component}
+\item %
+  \dupkey{refPositionsColValue}{\texttt{orientation}}{colvar|rmsd|refPositionsColValue}{\texttt{rmsd} component}
+}
 
 \item %
   \keydef
@@ -1976,7 +2127,7 @@ As for the component \texttt{rmsd}, the available options are \texttt{atoms}, \t
     possible rotations.  \textbf{Note:} \emph {this only affects the
       output, never the dynamics}.}
 
-\end{itemize}
+\end{cvcoptions}
 
 \textbf{Tip: stopping the rotation of a protein.}  To stop the
 rotation of an elongated macromolecule in solution (and use an
@@ -1996,6 +2147,22 @@ the component \texttt{orientation}: \texttt{atoms}, \texttt{refPositions}, \text
 The returned value is the angle of rotation $\theta$ between the current and the reference positions.
 This angle is expressed in degrees within the range [0$^{\circ}$:180$^{\circ}$].
 
+\begin{cvcoptions}
+\item %
+  \dupkey{atoms}{\texttt{orientationAngle}}{colvar|rmsd|atoms}{\texttt{rmsd} component}
+\item %
+  \dupkey{refPositions}{\texttt{orientationAngle}}{colvar|rmsd|refPositions}{\texttt{rmsd} component}
+\item %
+  \dupkey{refPositionsFile}{\texttt{orientationAngle}}{colvar|rmsd|refPositionsFile}{\texttt{rmsd} component}
+
+\cvnamebasedonly{
+\item %
+  \dupkey{refPositionsCol}{\texttt{orientationAngle}}{colvar|rmsd|refPositionsCol}{\texttt{rmsd} component}
+\item %
+  \dupkey{refPositionsColValue}{\texttt{orientationAngle}}{colvar|rmsd|refPositionsColValue}{\texttt{rmsd} component}
+}
+
+\end{cvcoptions}
 
 \cvsubsubsec{\texttt{orientationProj}: cosine of the angle of rotation from reference coordinates.}  
 The block \texttt{orientationProj~\{...\}} accepts the same base options as
@@ -2003,22 +2170,49 @@ the component \texttt{orientation}: \texttt{atoms}, \texttt{refPositions}, \text
 The returned value is the cosine of the angle of rotation $\theta$ between the current and the reference positions.
 The range of values is [-1:1].
 
+\begin{cvcoptions}
+\item %
+  \dupkey{atoms}{\texttt{orientationProj}}{colvar|rmsd|atoms}{\texttt{rmsd} component}
+\item %
+  \dupkey{refPositions}{\texttt{orientationProj}}{colvar|rmsd|refPositions}{\texttt{rmsd} component}
+\item %
+  \dupkey{refPositionsFile}{\texttt{orientationProj}}{colvar|rmsd|refPositionsFile}{\texttt{rmsd} component}
+\cvnamebasedonly{
+\item %
+  \dupkey{refPositionsCol}{\texttt{orientationProj}}{colvar|rmsd|refPositionsCol}{\texttt{rmsd} component}
+\item %
+  \dupkey{refPositionsColValue}{\texttt{orientationProj}}{colvar|rmsd|refPositionsColValue}{\texttt{rmsd} component}
+}
+\end{cvcoptions}
+
 
 \cvsubsubsec{\texttt{spinAngle}: angle of rotation around a given axis.}
 The complete rotation described by \texttt{orientation} can optionally be decomposed into two sub-rotations: one is a ``\emph{spin}'' rotation around \textbf{e}, and the other a ``\emph{tilt}'' rotation around an axis orthogonal to \textbf{e}.
 The component \texttt{spinAngle} measures the angle of the ``spin'' sub-rotation around \textbf{e}.
-This can be defined using the same options as the component \texttt{orientation}: \texttt{atoms} and \texttt{refPositions} or \texttt{refPositionsFile}\cvnamebasedonly{, \texttt{refPositionsCol} and \texttt{refPositionsColValue}}.
-In addition, \texttt{spinAngle} accepts the \texttt{axis} option:
-\begin{itemize}
+
+\begin{cvcoptions}
 \item %
+  \dupkey{atoms}{\texttt{spinAngle}}{colvar|rmsd|atoms}{\texttt{rmsd} component}
+\item %
+  \dupkey{refPositions}{\texttt{spinAngle}}{colvar|rmsd|refPositions}{\texttt{rmsd} component}
+\item %
+  \dupkey{refPositionsFile}{\texttt{spinAngle}}{colvar|rmsd|refPositionsFile}{\texttt{rmsd} component}
+\cvnamebasedonly{
+\item %
+  \dupkey{refPositionsCol}{\texttt{spinAngle}}{colvar|rmsd|refPositionsCol}{\texttt{rmsd} component}
+\item %
+  \dupkey{refPositionsColValue}{\texttt{spinAngle}}{colvar|rmsd|refPositionsColValue}{\texttt{rmsd} component}
+}
+\item %
+  \labelkey{colvar|spinAngle|axis}
   \keydef
     {axis}{%
-    \texttt{tilt, spinAngle}}{%
+    \texttt{tilt}}{%
     Special rotation axis (\AA{})}{%
     \texttt{(x, y, z)} triplet}{%
     \texttt{(0.0, 0.0, 1.0)}}{%
     The three components of this vector define (when normalized) the special rotation axis used to calculate the \texttt{tilt} and \texttt{spinAngle} components.}
-\end{itemize}
+\end{cvcoptions}
 The component \texttt{spinAngle} returns an angle (in degrees) within the periodic interval $[-180:180]$.  
 
 \textbf{Note:} the value of \texttt{spinAngle} is a continuous function almost everywhere, with the exception of configurations with the corresponding ``tilt'' angle equal to 180$^\circ$ (i.e.~the \texttt{tilt} component is equal to $-1$): in those cases, \texttt{spinAngle} is undefined.  If such configurations are expected, consider defining a \texttt{tilt} colvar using the same axis \textbf{e}, and restraining it with a lower wall away from $-1$.
@@ -2030,7 +2224,23 @@ The cosine of the tilt angle rather than the tilt angle itself is implemented, b
 The component \texttt{tilt} relies on the same options as \texttt{spinAngle}, including the definition of the axis \textbf{e}.
 The values of \texttt{tilt} are real numbers in the interval $[-1:1]$: the value $1$ represents an orientation fully parallel to \textbf{e} (tilt angle = 0$^\circ$), and the value $-1$ represents an anti-parallel orientation.
 
-
+\begin{cvcoptions}
+\item %
+  \dupkey{atoms}{\texttt{tilt}}{colvar|rmsd|atoms}{\texttt{rmsd} component}
+\item %
+  \dupkey{refPositions}{\texttt{tilt}}{colvar|rmsd|refPositions}{\texttt{rmsd} component}
+\item %
+  \dupkey{refPositionsFile}{\texttt{tilt}}{colvar|rmsd|refPositionsFile}{\texttt{rmsd} component}
+\cvnamebasedonly{
+\item %
+  \dupkey{refPositionsCol}{\texttt{tilt}}{colvar|rmsd|refPositionsCol}{\texttt{rmsd} component}
+\item %
+  \dupkey{refPositionsColValue}{\texttt{tilt}}{colvar|rmsd|refPositionsColValue}{\texttt{rmsd} component}
+}
+\item %
+  \dupkey{axis}{\texttt{tilt}}{colvar|spinAngle|axis}{\texttt{spinAngle} component}
+\end{cvcoptions}
+ 
 \cvnamebasedonly{
 
 \cvsubsubsec{\texttt{alpha}: $\alpha$-helix content of a  protein segment.}
@@ -2096,11 +2306,12 @@ where the score function for the $\mathrm{C}_{\alpha} -
 \end{equation}
 and the score function for the $\mathrm{O}^{(n)} \leftrightarrow
 \mathrm{N}^{(n+4)}$ hydrogen bond is defined through a \texttt{hBond}
-colvar component on the same atoms.  The options recognized within the
-\texttt{alpha~\{...\}} block are:
-\begin{itemize}
+colvar component on the same atoms.
+
+\begin{cvcoptions}
 
 \item %
+  \labelkey{colvar|alpha|residueRange}
   \key
     {residueRange}{%
       \texttt{alpha}}{%
@@ -2113,6 +2324,7 @@ colvar component on the same atoms.  The options recognized within the
     not found.}
 
 \item %
+  \labelkey{colvar|alpha|psfSegID}
   \key
     {psfSegID}{%
     \texttt{alpha}}{%
@@ -2124,6 +2336,7 @@ colvar component on the same atoms.  The options recognized within the
 
 
 \item %
+  \labelkey{colvar|alpha|hBondCoeff}
   \keydef
     {hBondCoeff}{%
     \texttt{alpha}}{%
@@ -2135,6 +2348,7 @@ colvar component on the same atoms.  The options recognized within the
     disables the angle terms.}
 
 \item %
+  \labelkey{colvar|alpha|angleRef}
   \keydef
     {angleRef}{%
     \texttt{alpha}}{%
@@ -2146,6 +2360,7 @@ colvar component on the same atoms.  The options recognized within the
     (\ref{eq:colvars_alpha_Calpha}).}
 
 \item %
+  \labelkey{colvar|alpha|angleTol}
   \keydef
     {angleTol}{%
     \texttt{alpha}}{%
@@ -2157,6 +2372,7 @@ colvar component on the same atoms.  The options recognized within the
     (\ref{eq:colvars_alpha_Calpha}).}
 
 \item %
+  \labelkey{colvar|alpha|hBondCutoff}
   \keydef
     {hBondCutoff}{%
     \texttt{alpha}}{%
@@ -2167,6 +2383,7 @@ colvar component on the same atoms.  The options recognized within the
     component.}
 
 \item %
+  \labelkey{colvar|alpha|hBondExpNumer}
   \keydef
     {hBondExpNumer}{%
     \texttt{alpha}}{%
@@ -2177,6 +2394,7 @@ colvar component on the same atoms.  The options recognized within the
     component.}
 
 \item %
+  \labelkey{colvar|alpha|hBondExpDenom}
   \keydef
     {hBondExpDenom}{%
     \texttt{alpha}}{%
@@ -2186,7 +2404,7 @@ colvar component on the same atoms.  The options recognized within the
     Equivalent to the \texttt{expDenom} option in the \texttt{hBond}
     component.}
 
-\end{itemize}
+\end{cvcoptions}
 
 This component returns positive values, always comprised between 0
 (lowest $\alpha$-helical score) and 1 (highest $\alpha$-helical
@@ -2219,7 +2437,32 @@ the projection of the current backbone conformation is:
 component for defining the relevant residues (\texttt{residueRange}
 and \texttt{psfSegID}) in addition to the following:
 
-\begin{itemize}
+\begin{cvcoptions}
+
+\item %
+  \dupkey{residueRange}{\texttt{dihedralPC}}{colvar|alpha|residueRange}{\texttt{alpha} component}
+
+\item %
+  \dupkey{psfSegID}{\texttt{dihedralPC}}{colvar|alpha|psfSegID}{\texttt{alpha} component}
+
+\item %
+  \dupkey{hBondCoeff}{\texttt{dihedralPC}}{colvar|alpha|hBondCoeff}{\texttt{alpha} component}
+
+\item %
+  \dupkey{angleRef}{\texttt{dihedralPC}}{colvar|alpha|angleRef}{\texttt{alpha} component}
+
+\item %
+  \dupkey{angleTol}{\texttt{dihedralPC}}{colvar|alpha|angleTol}{\texttt{alpha} component}
+
+\item %
+  \dupkey{hBondCutoff}{\texttt{dihedralPC}}{colvar|alpha|hBondCutoff}{\texttt{alpha} component}
+
+\item %
+  \dupkey{hBondExpNumer}{\texttt{dihedralPC}}{colvar|alpha|hBondExpNumer}{\texttt{alpha} component}
+
+\item %
+  \dupkey{hBondExpDenom}{\texttt{dihedralPC}}{colvar|alpha|hBondExpDenom}{\texttt{alpha} component}
+
 \item %
   \key
     {vectorFile}{%
@@ -2237,7 +2480,7 @@ and \texttt{psfSegID}) in addition to the following:
     File containing dihedralPCA eigenvector(s)}{%
     positive integer}{%
     Number of the eigenvector to be used for this component.}
-\end{itemize}
+\end{cvcoptions}
 
 } % end of \cvnamebasedonly
 
@@ -2245,7 +2488,7 @@ and \texttt{psfSegID}) in addition to the following:
 \cvsubsec{Configuration keywords shared by all components}
 \label{sec:cvc_common}
 
-All types of components support the following keywords:
+The following options can be used for any of the above colvar components in order to obtain a polynomial combination\cvscriptonly{ or any user-supplied function provided by the \refkey{scriptedFunction} command}.
 \begin{itemize}
 \item %
   \keydef
@@ -2257,6 +2500,7 @@ All types of components support the following keywords:
     The name is an unique case-sensitive string which allows the
     colvar module to identify this component. This is useful, for example,
     when combining multiple components via a \texttt{scriptedFunction}.}
+
 \item %
   \keydef
     {scalable}{%
@@ -2442,7 +2686,8 @@ The required Tcl procedures are provided in the colvartools directory.
 
 \begin{itemize}
  \item %
-  \key
+   \labelkey{colvar|scriptedFunction}
+   \key
     {scriptedFunction}{%
     \texttt{colvar}}{%
     Compute colvar as a scripted function of its components}{%
@@ -2691,11 +2936,14 @@ ABF depends on parameters from collective variables to define the grid on which 
 energy gradients are computed. In the direction of each colvar, the grid ranges from
 \texttt{lowerBoundary} to \texttt{upperBoundary}, and the bin width (grid spacing)
 is set by the \texttt{width} parameter (see~\ref{sec:colvar_general}).
-The following specific parameters can be set in the ABF configuration block
-(in addition to generic bias parameters such as \texttt{colvars}
--- section~\ref{sec:colvarbias}):
+The following specific parameters can be set in the ABF configuration block:
 
 \begin{itemize}
+
+\item \dupkey{name}{\texttt{abf}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{colvars}{\texttt{abf}}{sec:colvarbias}{biasing and analysis methods}
+%\item \dupkey{outputEnergy}{sec:colvarbias}{biasing and analysis methods}
+
 \item \keydef{fullSamples}{\texttt{abf}}{%
     Number of samples in a bin prior
     to application of the ABF}
@@ -2912,7 +3160,7 @@ sampling and discretization on a grid).
 \cvsubsec{Metadynamics}
 \label{sec:colvarbias_meta}
 
-The metadynamics method uses a history-dependent potential \cite{Laio2002} that generalizes to any type of colvars the conformational flooding \cite{Grubmuller1995} and local elevation \cite{Huber1994} methods, originally formulated to use as colvars the principal components of a covariance matrix or a set of dihedral angles, respectively.
+The metadynamics method uses a history-dependent potential \cite{Laio2002} that generalizes to any type of colvars the conformational flooding \cite{Grubmuller1995} and local elevation \cite{Huber1994} methods,  originally formulated to use as colvars the principal components of a covariance matrix or a set of dihedral  angles, respectively.
 The metadynamics potential on the colvars $\bm{\xi} = (\xi_{1}, \xi_{2}, \ldots, \xi_{N_{\mathrm{cv}}})$ is defined as:
 \begin{equation}
   \label{eq:colvars_meta_pot}
@@ -2926,10 +3174,10 @@ The metadynamics potential on the colvars $\bm{\xi} = (\xi_{1}, \xi_{2}, \ldots,
 where $V_{\mathrm{meta}}$ is the history-dependent potential acting on the \emph{current} values of the colvars $\bm{\xi}$, and depends only parametrically on the \emph{previous} values of the colvars.
 $V_{\mathrm{meta}}$ is constructed as a sum of $N_{\mathrm{cv}}$-dimensional repulsive Gaussian ``hills'', whose height is a chosen energy constant $W$, and whose centers are the previously explored configurations $\left(\bm{\xi}(\delta{}t), \bm{\xi}(2\delta{}t), \ldots\right)$.
 
-During the simulation, the system evolves towards the nearest minimum of the ``effective'' potential of mean force $\tilde{A}(\bm{\xi})$, which is the sum of the ``real'' underlying potential of mean force $A(\bm{\xi})$ and the the metadynamics potential, $V_{\mathrm{meta}}(\bm{\xi})$.
+During the simulation, the system evolves towards the nearest minimum of the ``effective'' potential of mean force $\tilde{A}(\bm{\xi})$, which is the sum of the ``real'' underlying potential of mean force $A(\bm{\xi})$  and the the metadynamics potential, $V_{\mathrm{meta}}(\bm{\xi})$.
 Therefore, at any given time the probability of observing the configuration $\bm{\xi^{*}}$ is proportional to $\exp\left(-\tilde{A}(\bm{\xi^{*}})/\kappa_{\mathrm{B}}T\right)$: this is also the probability that a new Gaussian ``hill'' is added at that configuration.
 If the simulation is run for a sufficiently long time, each local minimum is canceled out by the sum of the Gaussian ``hills''.
-At that stage the ``effective'' potential of mean force $\tilde{A}(\bm{\xi})$ is constant, and $-V_{\mathrm{meta}}(\bm{\xi})$ is an accurate estimator of the ``real'' potential of mean force $A(\bm{\xi})$, save for an additive constant:
+At that stage the ``effective'' potential of mean force $\tilde{A}(\bm{\xi})$ is constant, and $-V_{\mathrm{meta}}(\bm{\xi})$ is an accurate estimator of the ``real'' potential of mean force $A(\bm{\xi})$,  save for an additive constant:
 \begin{equation}
   \label{eq:colvars_meta_fes}
   A(\bm{\xi}) \; \simeq \; {
@@ -2940,14 +3188,18 @@ At that stage the ``effective'' potential of mean force $\tilde{A}(\bm{\xi})$ is
 Assuming that the set of collective variables includes all relevant degrees of freedom, the predicted error of the estimate is a simple function of the correlation times of the colvars $\tau_{\xi_{i}}$, and of the user-defined parameters $W$, $\sigma_{\xi_{i}}$ and $\delta{}t$ \cite{Bussi2006}. 
 In typical applications, a good rule of thumb can be to choose the ratio $W/\delta{}t$ much smaller than $\kappa_{\mathrm{B}}T/\tau_{\bm{\xi}}$, where $\tau_{\bm{\xi}}$ is the longest among $\bm{\xi}$'s correlation times: $\sigma_{\xi_{i}}$ then dictates the resolution of the calculated PMF.
 
-%Given $\Delta\xi$ the length of the relevant region of the colvar $\xi$, and $A^{*}$ the highest free energy that needs to be sampled (e.g.~the higher transition state free energy), the upper bound for the required simulation time is of the order of $N_{\mathrm{s}}(\xi) = (A^{*}\Delta\xi)/(W2\sigma_{\xi})$ multiples of $\delta{}t$.
+%Given $\Delta\xi$ the length of the relevant region of the colvar $\xi$, and $A^{*}$ the highest free energy that needs to be sampled (e.g.~the higher transition state free energy), the upper bound for the required simulation time is of the order of $N_{\mathrm{s}}(\xi) = (A^{*}\Delta\xi)/(W2\sigma_{\xi})$ multiples of  $\delta{}t$.
 %In calculations with multiple colvars $\bm{\xi}$, the upper bound is then 
-%$N_{\mathrm{s}}(\xi_{1}) \times N_{\mathrm{s}}(\xi_{2}) \times \ldots \times %N_{\mathrm{s}}(\xi_{N_{\mathrm{cv}}}) \times \delta{}t$.
+%$N_{\mathrm{s}}(\xi_{1}) \times N_{\mathrm{s}}(\xi_{2}) \times \ldots \times N_{\mathrm{s}}(\xi_{N_{\mathrm{cv}}}) \times \delta{}t$.
 
 To enable a metadynamics calculation, a \texttt{metadynamics} block must be defined in the colvars configuration file. 
 Its mandatory keywords are \texttt{colvars}, which lists all the variables involved, and \texttt{hillWeight}, which specifies the weight parameter $W$.
 The parameters $\delta{}t$ and $\sigma_{\xi}$ specified by the optional keywords \texttt{newHillFrequency} and \texttt{hillWidth}:
 \begin{itemize}
+
+\item \dupkey{name}{\texttt{metadynamics}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{colvars}{\texttt{metadynamics}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{outputEnergy}{\texttt{metadynamics}}{sec:colvarbias}{biasing and analysis methods}
 
 \item %
   \key
@@ -3005,15 +3257,13 @@ The following two options allow to control this behavior and to visually track s
 
 \item %
   \keydef
-    {saveFreeEnergyFile}{%
+    {keepFreeEnergyFiles}{%
     \texttt{metadynamics}}{%
     Keep all the PMF files}{%
     boolean}{%
     \texttt{off}}{%
-    When \texttt{writeFreeEnergyFile} and this option are \texttt{on},
-    the step number is included in the file name.  Activating this
-    option can be useful to follow more closely the convergence of the
-    simulation, by comparing PMFs separated by short times.}
+    When \texttt{writeFreeEnergyFile} and this option are \texttt{on}, the step number is included in the file name, thus generating a series of PMF files.
+    Activating this option can be useful to follow more closely the convergence of the simulation, by comparing PMFs separated by short times.}
 
 \end{itemize}
 
@@ -3271,7 +3521,7 @@ The following options may be useful only for applications that go beyond the cal
 The harmonic biasing method may be used to enforce fixed or moving restraints,
 including variants of Steered and Targeted MD. Within energy minimization
 runs, it allows for restrained minimization, e.g. to calculate relaxed potential
-energy surfaces. In the context of the colvars module, 
+energy surfaces. In the context of the Colvars module, 
 harmonic potentials are meant according to their textbook definition:
 \begin{equation}
   \label{eq:colvarbias_harmonic}
@@ -3295,6 +3545,10 @@ A harmonic restraint is set up by a \texttt{harmonic~\{...\}}
 block, which may contain (in addition to the standard option
 \texttt{colvars}) the following keywords:
 \begin{itemize}
+
+\item \dupkey{name}{\texttt{harmonic}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{colvars}{\texttt{harmonic}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{outputEnergy}{\texttt{harmonic}}{sec:colvarbias}{biasing and analysis methods}
 
 \item %
   \keydef
@@ -3392,7 +3646,7 @@ When the centers are changed continuously, a steered MD in a collective variable
     Write the current centers to the trajectory file}{%
     boolean}{%
     \texttt{off}}{%
-    If this option is chosen and  \texttt{colvarsTrajFrequency} is not zero, the positions of the restraint  centers will be written to the trajectory file during the simulation.
+    If this option is chosen and  \texttt{colvarsTrajFrequency} is not zero, the positions of the restraint centers will be written to the trajectory file during the simulation.
     This option allows to conveniently extract the PMF from the colvars trajectory files in a steered MD calculation.
 }
 
@@ -3472,7 +3726,7 @@ The force constant of the harmonic restraint may also be changed to equilibrate 
     the FEP or TI formalisms. For convenience, the code provides an estimate
     of the free energy derivative for use in TI. A more complete free energy
     calculation (particularly with regard to convergence analysis),
-    while not handled by the colvars module, can be performed by post-processing
+    while not handled by the Colvars module, can be performed by post-processing
     the colvars trajectory, if \texttt{colvarsTrajFrequency} is set to a
     suitably small value. It should be noted, however, that restraint
     free energy calculations may be handled more efficiently by an
@@ -3537,6 +3791,10 @@ using \cite{Pitera2012}.
 
 \begin{itemize}
 
+\item \dupkey{name}{\texttt{linear}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{colvars}{\texttt{linear}}{sec:colvarbias}{biasing and analysis methods}
+%\item \dupkey{outputEnergy}{\texttt{linear}}{sec:colvarbias}{biasing and analysis methods}
+
 \item %
   \keydef
     {forceConstant}{%
@@ -3584,6 +3842,11 @@ a valid simulation of any particular statistical ensemble and is only
 an optimization algorithm until the bias has converged}.
 
 \begin{itemize}
+
+\item \dupkey{name}{\texttt{alb}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{colvars}{\texttt{alb}}{sec:colvarbias}{biasing and analysis methods}
+%\item \dupkey{outputEnergy}{\texttt{alb}}{sec:colvarbias}{biasing and analysis methods}
+
 \item %
       \key{centers}{\texttt{alb}}{%
       Collective variable centers}{%
@@ -3617,7 +3880,7 @@ an optimization algorithm until the bias has converged}.
       collective variables being biased and still converge correctly.}
 
 \item %
-      \keydef{forceRange}{\texttt{alb}}{% 
+      \keydef{forceRange}{\texttt{alb}}{%
       The expected range of the force constant in units of energy}{A space-separated list of decimal numbers}{%
       3 $k_b T$}{%
       This is largest magnitude of the force constant which one expects. If this parameter is
@@ -3655,6 +3918,11 @@ In addition to the common parameters \texttt{name} and \texttt{colvars}
 described above, a \texttt{histogram} block may define the following parameter:
 
 \begin{itemize}
+
+\item \dupkey{name}{\texttt{histogram}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{colvars}{\texttt{histogram}}{sec:colvarbias}{biasing and analysis methods}
+%\item \dupkey{outputEnergy}{\texttt{histogram}}{sec:colvarbias}{biasing and analysis methods}
+
 \item \keydef{outputFreq}{\texttt{histogram}}{%
     Frequency (in timesteps) at which the histogram file is refreshed}
   {positive integer}
