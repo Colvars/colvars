@@ -14,6 +14,7 @@
 
 In today's molecular dynamics simulations, it is often useful to reduce the large number of degrees of freedom of a physical system into few parameters whose statistical distributions can be analyzed individually, or used to define biasing potentials to alter the dynamics of the system in a controlled manner. 
 These have been called `order parameters', `collective variables', `(surrogate) reaction coordinates', and many other terms.
+
 Here we use primarily the term `collective variable' (shortened to \textit{colvar}), which indicates any differentiable function of atomic Cartesian coordinates, $\bm{x}_{i}$, with $i$ between $1$ and $N$, the total
 number of atoms:
 \begin{equation} 
@@ -22,16 +23,16 @@ number of atoms:
   \ldots \right)\;, \;\; 1 \leq i,j,k\ldots \leq N
 \end{equation}
 \cvnamdugonly{
-The colvars module in NAMD may be used in both MD simulations and energy minimization runs.
+The Colvars module in NAMD may be used in both MD simulations and energy minimization runs.
 }
 \cvvmdugonly{%
-The colvars module in VMD may be used to calculate these functions over a molecular structure, and to analyze the results of previous simulations.}
+The Colvars module in VMD may be used to calculate these functions over a molecular structure, and to analyze the results of previous simulations.}
 \cvrefmanonly{%
 This manual documents the collective variables module (\textbf{Colvars}), a portable software that interfaces multiple MD simulation programs, with a focus on flexibility, robustness and high performance.}
 The module is designed to perform multiple tasks concurrently during or after a simulation, the most common of which are:
 \begin{itemize}
 
-\item apply restraints or biasing potentials to multiple colvars, tailored on the system by choosing from a wide set of basis functions, without limitations on their number or on the number of atoms involved; \cvnamdonly{while this can in principle be done through a TclForces script, using the colvars module is both easier and computationally more efficient;}
+\item apply restraints or biasing potentials to multiple colvars, tailored on the system by choosing from a wide set of basis functions, without limitations on their number or on the number of atoms involved; \cvnamdonly{while this can in principle be done through a TclForces script, using the Colvars module is both easier and computationally more efficient;}
 
 \item calculate potentials of mean force (PMFs) along any set of colvars, using different enhanced sampling methods, such as Adaptive Biasing Force (ABF), metadynamics, steered MD and umbrella sampling; variants of these methods that make use of an ensemble of replicas are supported as well;
 
@@ -41,7 +42,7 @@ The module is designed to perform multiple tasks concurrently during or after a 
 
 \cvvmdonly{\textbf{Note:} although restraints and PMF algorithms are primarily used during simulations, they are also available in VMD to test a new input for a simulation, or to evaluate the relative free energy of a new structure based on data from a previous calculation.  \emph{Options that only have an effect during a simulation are also included for compatibility purposes.}} 
 
-To briefly illustrate the flexibility of the colvars module, Figure~\ref{fig:colvars_diagram} shows an example of a non-trivial configuration (the corresponding input can be found in \ref{sec:colvars_config}).
+To briefly illustrate the flexibility of the Colvars module, Figure~\ref{fig:colvars_diagram} shows an example of a non-trivial configuration (the corresponding input can be found in \ref{sec:colvars_config}).
 
 % AK: this figure looks a bit misplaced in the LAMMPS version of the
 % AK: documentation. perhaps it can be moved to be define a bit earlier,
@@ -63,7 +64,7 @@ The values of ``$c$''\cvnamebasedonly{ and ``alpha''} are also recorded througho
   \label{fig:colvars_diagram}
 \end{figure}
 
-Detailed explanations of the design of the colvars module are provided in reference~\cite{Fiorin2013}. Please cite this reference whenever publishing work that makes use of this module.
+Detailed explanations of the design of the Colvars module are provided in reference~\cite{Fiorin2013}. Please cite this reference whenever publishing work that makes use of this module.
 
 
 \cvsec{General parameters and input/output files}
@@ -77,7 +78,7 @@ One of these parameters is the configuration file or the configuration text for 
 \label{sec:colvars_mdengine_params}
 \cvvmdugonly{\index{collective variables!\texttt{cv} command}}
 
-The colvars module is accessed in VMD through the command \texttt{cv}.
+The Colvars module is accessed in VMD through the command \texttt{cv}.
 The command must be used the first time as \texttt{cv molid }\emph{$<$molid$>$} to set up the collective variables module for a given molecule.
 In all following uses, the \texttt{cv} command will continue operating on the same molecule, regardless of its ``top'' status.
 To use the \texttt{cv} command on a different molecule, use \texttt{cv delete} first and then \texttt{cv molid }\emph{$<$molid$>$}.
@@ -134,7 +135,7 @@ An optional third parameter, \texttt{colvarsInput}, can be used to continue a pr
     In this example, the string \texttt{\$myParameter} will be replaced
     with the value \texttt{someValue} wherever it appears in the file
     \texttt{colvars\_template.in}. This value will then be read in by
-    the colvars module when it parses its input.
+    the Colvars module when it parses its input.
 }
 
 \item %
@@ -183,10 +184,10 @@ This allows to continue a previous collective variables-based calculation when a
   \keydef
     {unwrap}{%
     keyword of the \texttt{fix colvars} command}{%
-    Whether to unwrap coordinates passed to the colvars module}{%
+    Whether to unwrap coordinates passed to the Colvars module}{%
     ``yes'' or ``no''}{%
     ``yes''}{%
-    This keyword controls whether wrapped or unwrapped coordinates are passed to the colvars module for calculation of the collective variables and of the resulting forces. The default is to use the image flags to reconstruct the absolute atom positions: under this convention, centers of mass and centers of geometry are calculated as a weighted vector sum (see \ref{sec:colvar_atom_groups_wrapping}).
+    This keyword controls whether wrapped or unwrapped coordinates are passed to the Colvars module for calculation of the collective variables and of the resulting forces. The default is to use the image flags to reconstruct the absolute atom positions: under this convention, centers of mass and centers of geometry are calculated as a weighted vector sum (see \ref{sec:colvar_atom_groups_wrapping}).
 Setting this to \emph{no} will use the current local coordinates that are wrapped back into the simulation cell at each re-neighboring instead.}
 
 \item %
@@ -206,7 +207,7 @@ Setting this to \emph{no} will use the current local coordinates that are wrappe
     Thermostating fix}{%
     string}{%
     NULL}{%
-    This keyword provides the \emph{ID} of an applicable thermostating fix command. This will be used to provide the colvars module with the current thermostat target temperature when using a method that needs this information.}
+    This keyword provides the \emph{ID} of an applicable thermostating fix command. This will be used to provide the Colvars module with the current thermostat target temperature when using a method that needs this information.}
 
 \end{itemize}
 }
@@ -218,8 +219,8 @@ Setting this to \emph{no} will use the current local coordinates that are wrappe
 \cvnamdonly{All the parameters defining the colvars and their biasing or analysis algorithms are read from the file specified by \texttt{colvarsConfig}.
 Hence, none of the keywords described in this section and the following ones are available as keywords for the
 NAMD configuration file.}
-\cvvmdonly{The colvars configuration is usually read using the commands \texttt{cv configfile} or \texttt{cv config}.}
-The syntax of the colvars configuration is ``\texttt{keyword value}'', where the keyword and its value are separated by any white space.
+\cvvmdonly{The Colvars configuration is usually read using the commands \texttt{cv configfile} or \texttt{cv config}.}
+The syntax of the Colvars configuration is ``\texttt{keyword value}'', where the keyword and its value are separated by any white space.
 The following rules apply:
 
 \begin{itemize}
@@ -476,7 +477,7 @@ The following options are not required by default; however, the first four are v
     boolean}{%
     \texttt{off}}{%
     This option does not affect simulation results, but enables some internal optimizations.
-    Depending on its mathematical definition, a colvar may have ``natural'' boundaries: for example, a \texttt{distance} colvar has a ``natural'' lower boundary at 0.  Setting this option instructs the colvars module that the user-defined lower boundary is ``natural''.
+    Depending on its mathematical definition, a colvar may have ``natural'' boundaries: for example, a \texttt{distance} colvar has a ``natural'' lower boundary at 0.  Setting this option instructs the Colvars module that the user-defined lower boundary is ``natural''.
 See Section~\ref{sec:cvc} for the physical ranges of values of each component.}
 
 \item %
@@ -904,7 +905,7 @@ Below is an example configuration for an atom group named ``\texttt{atoms}'', wh
 
 The resulting selection includes atoms 1 and 3, those between 20 and 50, and those in the index group called ``Water''; the indices of this group are read from the file provided by \texttt{indexFile}, in the global section of the configuration file.
 
-\cvvmdonly{In the current version, the colvars module does not manipulate VMD atom selections directly: however, these can be converted to atom groups within the colvars configuration string, using selection keywords such as \texttt{atomNumbers}.}
+\cvvmdonly{In the current version, the Colvars module does not manipulate VMD atom selections directly: however, these can be converted to atom groups within the colvars configuration string, using selection keywords such as \texttt{atomNumbers}.}
 The complete list of selection keywords available in \MDENGINE{} is:
 
 \begin{itemize}
@@ -1177,14 +1178,14 @@ The following two options have default values appropriate for the vast majority 
 \cvlammpsonly{
 In simulations with periodic boundary conditions, many of the implemented colvar components rely on the fact that each position within a group of atoms is at the nearest periodic image from the center of geometry of the group itself.
 However, due to the internal wrapping of individual atomic positions done by LAMMPS, this assumption is inaccurate if groups lies at one of the unit cell's boundaries.
-For this reason, within the colvars module coordinates are unwrapped by default to avoid discontinuities due to coordinate wrapping (see \texttt{unwrap} keyword in \ref{sec:colvars_mdengine_parameters}).
+For this reason, within the Colvars module coordinates are unwrapped by default to avoid discontinuities due to coordinate wrapping (see \texttt{unwrap} keyword in \ref{sec:colvars_mdengine_parameters}).
 
 The user should determine whether maintaining the default value of \texttt{unwrap}, depending on the specifics of each system.
 In general, internal coordinate wrapping by LAMMPS does not affect the calculation of colvars if each atom group satisfies one or more of the following:
 }
 \cvvmdonly{
-  When periodic boundary conditions are defined, the colvars module requires that the coordinates of each molecular fragment are contiguous, without ``jumps'' when a fragment is partially wrapped near a periodic boundary.
-  The colvars module relies on this assumption when calculating a group's center of geometry, but the condition may fail if the group spans different molecules.
+  When periodic boundary conditions are defined, the Colvars module requires that the coordinates of each molecular fragment are contiguous, without ``jumps'' when a fragment is partially wrapped near a periodic boundary.
+  The Colvars module relies on this assumption when calculating a group's center of geometry, but the condition may fail if the group spans different molecules.
   In general, coordinate wrapping does not affect the calculation of colvars if each atom group satisfies one or more of the following:
 }
 
@@ -1195,7 +1196,7 @@ In general, internal coordinate wrapping by LAMMPS does not affect the calculati
   \item[\emph{iv)}] it has all of its atoms within the same molecular fragment%
 }.
 \end{enumerate}
-\cvvmdonly{If none of these conditions are met, wrapping may affect the calculation of collective variables: a possible solution is to use \texttt{pbc wrap} or \texttt{pbc unwrap} prior to processing a trajectory with the colvars module.}
+\cvvmdonly{If none of these conditions are met, wrapping may affect the calculation of collective variables: a possible solution is to use \texttt{pbc wrap} or \texttt{pbc unwrap} prior to processing a trajectory with the Colvars module.}
 
 \cvsubsec{Performance a Colvars calculation based on group size.}
 \label{sec:colvar_atom_groups_scaling}
@@ -1219,7 +1220,7 @@ Performance can be improved in multiple ways:
   % Use the following command to identify them:
   % grep -B10 'provide(f_cvc_com_based' * |grep '\:\:'|grep '(std::string const &conf)'
 \item NAMD also offers a parallelized calculation of the centers of mass of groups of atoms.
-  This option is on by default for all components that are simple functions of centers of mass, and is controlled by the keyword \texttt{scalable} (see \ref{sec:cvc_common}).
+  This option is on by default for all components that are simple functions of centers of mass, and is controlled by the keyword \refkey{scalable}{sec:cvc_common}.
   When supported, the message ``Will enable scalable calculation for group \ldots'' is printed for each group.
 }
 
@@ -1775,7 +1776,7 @@ position, but not the orientation of the atom group;
 \item disabling the application of optimal roto-translations, which
 lets the RMSD component decribe the deviation of atoms
 from fixed positions in the laboratory frame: this allows for custom
-positional restraints within the colvars module;
+positional restraints within the Colvars module;
 \item fitting the atomic positions to different reference coordinates
 than those used in the RMSD calculation itself;
 \item applying the optimal rotation and/or translation from a separate
@@ -1808,7 +1809,7 @@ $\mathbf{v}_{i}$ are the components of the vector for each atom.
 Example choices for $(\mathbf{v}_{i})$ are an eigenvector
 of the covariance matrix (essential mode), or a normal
 mode of the system.  It is assumed that $\sum_{i}\mathbf{v}_{i} = 0$:
-otherwise, the colvars module centers the $\mathbf{v}_{i}$
+otherwise, the Colvars module centers the $\mathbf{v}_{i}$
 automatically when reading them from the configuration.
 
 As for the component \texttt{rmsd}, the available options are \texttt{atoms}, \texttt{refPositionsFile}\cvnamebasedonly{, \texttt{refPositionsCol} and \texttt{refPositionsColValue}, } and \texttt{refPositions}.
