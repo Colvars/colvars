@@ -57,6 +57,12 @@ public:
     }
   }
 
+  /// Return a reference to the data
+  inline std::vector<T> &data_array()
+  {
+    return data;
+  }
+
   inline ~vector1d()
   {
     data.clear();
@@ -432,6 +438,12 @@ public:
   /// Destructor
   inline ~matrix2d() {
     this->clear();
+  }
+
+  /// Return a reference to the data
+  inline std::vector<T> &data_array()
+  {
+    return data;
   }
 
   inline row & operator [] (size_t const i)
