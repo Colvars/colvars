@@ -209,6 +209,16 @@ public:
     return std::sqrt(this->norm2());
   }
 
+  inline cvm::real sum() const
+  {
+    cvm::real result = 0.0;
+    size_t i;
+    for (i = 0; i < this->size(); i++) {
+      result += (*this)[i];
+    }
+    return result;
+  }
+
   /// Slicing
   inline vector1d<T> const slice(size_t const i1, size_t const i2) const
   {
