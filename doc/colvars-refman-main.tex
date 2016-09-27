@@ -216,7 +216,7 @@ Setting this to \emph{no} will use the current local coordinates that are wrappe
 \cvsubsec{Configuration syntax for the collective variables module}
 \label{sec:colvars_config}
 
-\cvnamdonly{All the parameters defining the colvars and their biasing or analysis algorithms are read from the file specified by \texttt{colvarsConfig}.
+\cvnamdonly{All the parameters defining the colvars and their biasing or analysis algorithms are read from the file specified by the configuration option \texttt{colvarsConfig}, or by the Tcl commands \texttt{cv config} and \texttt{cv configfile}.
 Hence, none of the keywords described in this section and the following ones are available as keywords for the
 NAMD configuration file.}
 \cvvmdonly{The Colvars configuration is usually read using the commands \texttt{cv configfile} or \texttt{cv config}.}
@@ -232,14 +232,13 @@ The following rules apply:
 \item many keywords are nested, and are only meaningful within a specific context: for every keyword documented in the following, the ``parent'' keyword that defines such context is also indicated\cvnamdugonly{ in parentheses};
 
 \cvnamdonly{%
-\item unlike in the NAMD main configuration file, the deprecated `\texttt{=}' sign between a keyword and its value is not allowed;
+\item the `\texttt{=}' sign between a keyword and its value, deprecated in the NAMD main configuration file, is not allowed;
 
-\item unlike in the NAMD main configuration file,  Tcl commands and variables are not available, but it is possible to use Tcl to generate a new configuration file with different parameters \cvnamdugonly{(see \ref{sec:colvars_mdengine_params})};
+\item Tcl syntax is generally not available, but it is possible to use Tcl variables or bracket expansion of commands within a configuration string, when this is passed via the command \texttt{cv config \ldots}; this is particularly useful when combined with parameter introspection\cvnamdugonly{ (see \ref{section:tclscripting})}, e.g.{} \texttt{cv config "colvarsTrajFrequency [DCDFreq]"};
 }
 
 \cvvmdonly{%
-\item Tcl commands and variables are not available, but it is possible to include Tcl variables and constructs inside a configuration string: for example, it is possible to load the atom selection \$\emph{sel} into an atom group (see \ref{sec:colvar_atom_groups_sel}) using \texttt{atomNumbers \{ [\$sel get serial] \}} inside a configuration string read by \texttt{cv config};
-}
+\item Tcl syntax is generally not available, but it is possible to use Tcl variables or bracket expansion of commands within a configuration string, when this is passed via the command \texttt{cv config \ldots}: for example, it is possible to convert the atom selection \$\emph{sel} into an atom group (see \ref{sec:colvar_atom_groups_sel}) using \texttt{cv config "atomNumbers \{ [\$sel get serial] \}"};}
 
 \item if a keyword requiring a boolean value (\texttt{yes|on|true} or \texttt{no|off|false}) is provided without an explicit value, it defaults to `\texttt{yes|on|true}'; for example, `\texttt{outputAppliedForce}' may be used as shorthand for `\texttt{outputAppliedForce on}';
 
