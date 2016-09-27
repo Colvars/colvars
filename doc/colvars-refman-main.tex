@@ -3912,7 +3912,7 @@ an optimization algorithm until the bias has converged}.
 The \texttt{histogram} feature is used to record the distribution of a set of collective
 variables in the form of a N-dimensional histogram.
 It functions as a ``collective variable bias'', and is invoked by adding a
-\texttt{histogram} block to the \textit{colvars} configuration file.
+\texttt{histogram} block to the Colvars configuration file.
 
 In addition to the common parameters \texttt{name} and \texttt{colvars}
 described above, a \texttt{histogram} block may define the following parameter:
@@ -3934,6 +3934,106 @@ Like the ABF and metadynamics biases, \texttt{histogram} uses
 parameters from the colvars to define its grid.  The grid ranges from
 \texttt{lowerBoundary} to \texttt{upperBoundary}, and the bin width is
 set by the \texttt{width} parameter.
+
+
+\cvsubsec{Probability distribution-restraints}
+\label{sec:colvarbias_restraint_histogram}
+
+The \texttt{histogramRestraint} bias implements a continuous potential of many variables (or of a single high-dimensional variable) aimed at reproducing a one-dimensional statistical distribution that is provided by the user.
+The $M$ variables $(\xi_{1}, \ldots, \xi_{M})$ are interpreted as multiple observations of a random variable $\xi$ with unknown probability distribution.
+The potential is minimized when the histogram $h(\xi)$, estimated as a sum of Gaussian functions centered at $(\xi_{1}, \ldots, \xi_{M})$, is close to the reference histogram $h_{0}(\xi)$:
+\begin{equation}
+  \label{eq:colvarbias_restraint_histogram}
+  V(\xi_{1}, \ldots, \xi_{M}) = \frac{1}{2} k \int\left(h(\xi)-h_{0}(\xi)\right)^2 \mathrm{d}\xi
+\end{equation}
+\begin{equation}
+  \label{eq:colvarbias_restraint_histogram_gaussian}
+  h(\xi) = \frac{1}{M\sqrt{2\pi\sigma^2}} \sum_{i=1}^{M} \exp\left(-\frac{(\xi-\xi_{i})^2}{2\sigma^2}\right)
+\end{equation}
+When used in combination with a \texttt{distancePairs} multi-dimensional variable, this bias implements the refinement algorithm against ESR/DEER experiments published by Shen \emph{et al} \cite{Shen2015}.
+
+The list of options is as follows:
+\begin{itemize}
+
+\item \dupkey{name}{\texttt{histogramRestraint}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{colvars}{\texttt{histogramRestraint}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{outputEnergy}{\texttt{histogramRestraint}}{sec:colvarbias}{biasing and analysis methods}
+
+\item %
+  \key
+    {lowerBoundary}{%
+    \texttt{histogramRestraint}}{%
+    Lower boundary of the colvar grid}{%
+    decimal}{%
+    Defines the lowest end of the interval where the reference distribution $h_{0}(\xi)$ is defined.
+}
+
+\item %
+  \simkey{upperBoundary}{\texttt{histogramRestraint}}{lowerBoundary}
+
+\item %
+  \key%
+  {width}{%
+    \texttt{histogramRestraint}}{%
+    Width of the colvar grid}{%
+    positive decimal}{%
+    Defines the spacing of the grid where the reference distribution $h_{0}(\xi)$ is defined.
+  }
+
+\item %
+  \keydef%
+  {gaussianSigma}{%
+    \texttt{histogramRestraint}}{%
+    Standard deviation of the approximating Gaussian}{%
+    positive decimal}{%
+    2 $\times$ \texttt{width}}{%
+    Defines the parameter $\sigma$ in eq.~\ref{eq:colvarbias_restraint_histogram_gaussian}.
+  }
+
+\item %
+  \keydef
+    {forceConstant}{%
+    \texttt{}}{%
+    Force constant (\cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
+    positive decimal}{%
+    \texttt{1.0}}{%
+    Defines the parameter $k$ in eq.~\ref{eq:colvarbias_restraint_histogram}.
+  }
+
+\item %
+  \key%
+  {refHistogram}{%
+    \texttt{histogramRestraint}}{%
+    Reference histogram $h_{0}(\xi)$}{%
+    space-separated list of $M$ positive decimals}{%
+    Provides the values of $h_{0}(\xi)$ consecutively.
+    The mid-point convention is used, i.e.~the first point that should be included is for $\xi$ = \texttt{lowerBoundary}+\texttt{width}/2.
+    If the integral of $h_{0}(\xi)$ is not normalized to 1, $h_{0}(\xi)$ is rescaled automatically before use.
+  }
+
+\item %
+  \key%
+  {refHistogramFile}{%
+    \texttt{histogramRestraint}}{%
+    Reference histogram $h_{0}(\xi)$}{%
+    UNIX file name}{%
+    Provides the values of $h_{0}(\xi)$ as contents of the corresponding file (mutually exclusive with \texttt{refHistogram}).
+    The format is that of a text file, with each line containing the space-separated values of $\xi$ and $h_{0}(\xi)$.
+    The same numerical conventions as \texttt{refHistogram} are used.
+  }
+
+\item %
+  \keydef
+    {writeHistogram}{%
+    \texttt{metadynamics}}{%
+    Periodically write the instantaneous histogram $h(\xi)$}{%
+    boolean}{%
+    \texttt{off}}{%
+    If \texttt{on}, the histogram $h(\xi)$ is write every \texttt{colvarsRestartFrequency} steps to a file with the name \texttt{$<$\outputName$>$.$<$name$>$.hist.dat}}{%
+    This is useful to diagnose the convergence of $h(\xi)$ against $h_{0}(\xi)$.
+  }
+
+\end{itemize}
 
 
 \cvscriptonly{%
@@ -3995,4 +4095,5 @@ The following configuration options can modify the behavior of the scripting int
 \end{itemize}
 
 }
+
 }
