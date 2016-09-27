@@ -301,11 +301,23 @@ public:
   {
     std::stringstream stream(s);
     size_t i = 0;
-    while ((stream >> (*this)[i]) && (i < this->size())) {
-      i++;
-    }
-    if (i < this->size()) {
-      return COLVARS_ERROR;
+    if (this->size()) {
+      while ((stream >> (*this)[i]) && (i < this->size())) {
+        i++;
+      }
+      if (i < this->size()) {
+        return COLVARS_ERROR;
+      }
+    } else {
+      T input;
+      while (stream >> input) {
+        if ((i % 100) == 0) {
+          data.reserve(data.size()+100);
+        }
+        data.resize(data.size()+1);
+        data[i] = input;
+        i++;
+      }
     }
     return COLVARS_OK;
   }
