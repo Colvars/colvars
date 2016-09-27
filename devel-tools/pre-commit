@@ -16,7 +16,8 @@ then
   else
     echo "Updating colvars version string from ${prevstr} to ${datestr}"
     sed -i -e "s/^#define COLVARS_VERSION.*/#define COLVARS_VERSION \"${datestr}\"/" src/colvarmodule.h
-    git add src/colvarmodule.h
+    echo "\newcommand{\cvversion}{${datestr}}" > doc/cv_version.tex
+    git add src/colvarmodule.h doc/cv_version.tex
   fi
 fi
 
