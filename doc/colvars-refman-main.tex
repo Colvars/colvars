@@ -1522,6 +1522,21 @@ where $\Vert\mathbf{d}^{ij}\Vert$ is the distance between atoms $i$ and $j$ in g
 This component returns a number in \AA{}, ranging from $0$ to the largest possible distance within the chosen boundary conditions.
 
 
+\cvsubsubsec{\texttt{distancePairs}: set of pairwise distances between two groups.}
+The \texttt{distancePairs~\{...\}} block defines a $N_{\mathrm{1}}\times{}N_{\mathrm{2}}$-dimensional variable that includes all mutual distances between the atoms of two groups.
+This can be useful, for example, to develop a new variable defined over two groups, by using the \texttt{scriptedFunction} feature.
+
+\begin{cvcoptions}
+\item %
+  \dupkey{group1}{\texttt{distanceInv}}{colvar|distance|group1}{\texttt{distance} component}
+\item %
+  \simkey{group2}{\texttt{distanceInv}}{group1}
+\item %
+  \dupkey{forceNoPBC}{\texttt{distanceInv}}{colvar|distance|forceNoPBC}{\texttt{distance} component}
+\end{cvcoptions}
+This component returns a $N_{\mathrm{1}}\times{}N_{\mathrm{2}}$-dimensional vector of numbers, each ranging from $0$ to the largest possible distance within the chosen boundary conditions.
+
+
 \cvsubsubsec{\texttt{cartesian}: vector of atomic Cartesian coordinates.}
 The \texttt{cartesian~\{...\}} block defines a component returning a flat vector containing
 the Cartesian coordinates of all participating atoms, in the order
