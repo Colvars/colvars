@@ -854,6 +854,62 @@ public:
                                   colvarvalue const &x2) const;
 };
 
+
+/// \brief Colvar component: coordination number between two groups
+/// (colvarvalue::type_scalar type, range [0:N1*N2])
+class colvar::groupcoordnum
+  : public colvar::distance
+{
+protected:
+  /// \brief "Cutoff" for isotropic calculation (default)
+  cvm::real     r0;
+  /// \brief "Cutoff vector" for anisotropic calculation
+  cvm::rvector  r0_vec;
+  /// \brief Wheter dist/r0 or \vec{dist}*\vec{1/r0_vec} should ne be
+  /// used
+  bool b_anisotropic;
+  /// Integer exponent of the function numerator
+  int en;
+  /// Integer exponent of the function denominator
+  int ed;
+public:
+  /// Constructor
+  groupcoordnum(std::string const &conf);
+  groupcoordnum();
+  virtual inline ~groupcoordnum() {}
+  virtual void calc_value();
+  virtual void calc_gradients();
+  virtual void apply_force(colvarvalue const &force);
+  template<bool b_gradients>
+  /// \brief Calculate a coordination number through the function
+  /// (1-x**n)/(1-x**m), x = |A1-A2|/r0 \param r0 "cutoff" for the
+  /// coordination number \param exp_num \i n exponent \param exp_den
+  /// \i m exponent \param A1 atom \param A2 atom
+  static cvm::real switching_function(cvm::real const &r0,
+                                      int const &exp_num, int const &exp_den,
+                                      cvm::atom &A1, cvm::atom &A2);
+
+  /*
+  template<bool b_gradients>
+  /// \brief Calculate a coordination number through the function
+  /// (1-x**n)/(1-x**m), x = |(A1-A2)*(r0_vec)^-|1 \param r0_vec
+  /// vector of different cutoffs in the three directions \param
+  /// exp_num \i n exponent \param exp_den \i m exponent \param A1
+  /// atom \param A2 atom
+  static cvm::real switching_function(cvm::rvector const &r0_vec,
+                                      int const &exp_num, int const &exp_den,
+                                      cvm::atom &A1, cvm::atom &A2);
+
+  virtual cvm::real dist2(colvarvalue const &x1,
+                          colvarvalue const &x2) const;
+  virtual colvarvalue dist2_lgrad(colvarvalue const &x1,
+                                  colvarvalue const &x2) const;
+  virtual colvarvalue dist2_rgrad(colvarvalue const &x1,
+                                  colvarvalue const &x2) const;
+  */
+};
+
+
 /// \brief Colvar component: hydrogen bond, defined as the product of
 /// a colvar::coordnum and 1/2*(1-cos((180-ang)/ang_tol))
 /// (colvarvalue::type_scalar type, range [0:1])

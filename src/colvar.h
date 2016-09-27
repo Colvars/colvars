@@ -482,6 +482,7 @@ public:
   class dihedral;
   class coordnum;
   class selfcoordnum;
+  class groupcoordnum;
   class h_bond;
   class rmsd;
   class orientation_angle;
