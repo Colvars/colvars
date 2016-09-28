@@ -118,25 +118,26 @@ An optional third parameter, \texttt{colvarsInput}, can be used to continue a pr
     UNIX filename}{%
     This file contains the definition of all collective variables and
     their biasing or analysis methods.
-    Parameters within the configuration file can be controlled from
-    a NAMD config file using Tcl variables in the following way:
+    This file can also be provided by the Tcl command \texttt{cv configfile}; alternatively, the contents of the file itself can be given as an argument to the command \texttt{cv config}.
+    % Parameters within the configuration file can be controlled from
+    % a NAMD config file using Tcl variables in the following way:
 
-    {\ttfamily
-    colvars on\\
-    colvarsConfig colvars\_subst.tmp\\
-    set myParameter someValue\\
-    \# Parse template and create specific config file on the fly\\
-    set infile [open colvars\_template.in r] \\
-    set outfile [open colvars\_subst.tmp w+] \\
-    puts \$outfile [subst [read \$infile]] \\
-    close \$infile \\
-    close \$outfile}
+    % {\ttfamily
+    % colvars on\\
+    % colvarsConfig colvars\_subst.tmp\\
+    % set myParameter someValue\\
+    % \# Parse template and create specific config file on the fly\\
+    % set infile [open colvars\_template.in r] \\
+    % set outfile [open colvars\_subst.tmp w+] \\
+    % puts \$outfile [subst [read \$infile]] \\
+    % close \$infile \\
+    % close \$outfile}
 
-    In this example, the string \texttt{\$myParameter} will be replaced
-    with the value \texttt{someValue} wherever it appears in the file
-    \texttt{colvars\_template.in}. This value will then be read in by
-    the Colvars module when it parses its input.
-}
+    % In this example, the string \texttt{\$myParameter} will be replaced
+    % with the value \texttt{someValue} wherever it appears in the file
+    % \texttt{colvars\_template.in}. This value will then be read in by
+    % the Colvars module when it parses its input.
+  }
 
 \item %
   \key
@@ -145,7 +146,9 @@ An optional third parameter, \texttt{colvarsInput}, can be used to continue a pr
     Input state file for the collective variables}{%
     UNIX filename}{%
     When continuing a previous simulation run, this file contains the current state of all collective variables and of their associated algorithms.
-    It is written automatically at the end of any simulation with collective variables.}
+    It is written automatically at the end of any simulation with collective variables.
+    This file can also be provided by the Tcl command \texttt{cv load}.
+  }
 
 \end{itemize}
 }
