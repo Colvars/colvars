@@ -1,11 +1,11 @@
 \cvnamdugonly{
-\section{Collective Variable-based Calculations\footnote{The features described in this section were contributed by Giacomo Fiorin (ICMS, Temple University, Philadelphia, PA, USA) and J\'er\^ome H\'enin (IBPC, CNRS, Paris, France). Please send feedback and suggestions to the NAMD mailing list.}}
+\section{Collective Variable-based Calculations (Colvars)\footnote{The features described in this section were contributed by Giacomo Fiorin (ICMS, Temple University, Philadelphia, PA, USA) and J\'er\^ome H\'enin (IBPC, CNRS, Paris, France). Please send feedback and suggestions to the NAMD mailing list.}}
 
 \emph{This chapter can also be downloaded as a separate manual (PDF and HTML) at the webpage:\\{\tt http://colvars.github.io}}
 }
 
 \cvvmdugonly{
-\chapter{Collective Variables Interface}
+\chapter{Collective Variables Interface (Colvars)}
 }
 \cvrefmanonly{
 \section{Introduction}
@@ -54,7 +54,7 @@ To briefly illustrate the flexibility of the Colvars module, Figure~\ref{fig:col
 \cvnamdugonly{\includegraphics[width=12cm]{figures/colvars_diagram}}
 \cvvmdugonly{\includegraphics[width=12cm]{pictures/colvars_diagram}}
 \cvrefmanonly{\includegraphics[width=12cm]{colvars_diagram}}
-  \caption[Graphical representation of a collective variables configuration.]{Graphical representation of a collective variables configuration\cvlammpsonly{ \textbf{(note:} \emph{currently, the $\alpha$-helical content colvar is unavailable in LAMMPS)}}.
+  \caption[Graphical representation of a Colvars configuration.]{Graphical representation of a Colvars configuration\cvlammpsonly{ \textbf{(note:} \emph{currently, the $\alpha$-helical content colvar is unavailable in LAMMPS)}}.
     The colvar called ``$d$'' is defined as the difference between two distances: the first distance ($d_{1}$) is taken between the center of mass of atoms 1 and 2 and that of atoms 3 to 5, the second ($d_{2}$) between atom 7 and the center of mass of atoms 8 to 10.
 The difference $d = d_{1} - d_{2}$ is obtained by multiplying the two by a coefficient $C = +1$ or $C = -1$, respectively.
 The colvar called ``$c$'' is the coordination number calculated between atoms 1 to 10 and atoms 11 to 20.  A harmonic restraint is applied to both $d$ and $c$: to allow using the same force constant $K$, both $d$ and $c$ are scaled by their respective fluctuation widths $w_d$ and $w_c$.
@@ -70,16 +70,16 @@ Detailed explanations of the design of the Colvars module are provided in refere
 \cvsec{General parameters and input/output files}
 \label{sec:colvarmodule}
 
-Here, we document the syntax of the commands and parameters used to set up and use the collective variables module in \MDENGINE{}.
+Here, we document the syntax of the commands and parameters used to set up and use the Colvars module in \MDENGINE{}.
 One of these parameters is the configuration file or the configuration text for the module itself, whose syntax is described in \ref{sec:colvars_config} and in the following sections.
 
 \cvvmdonly{
 \cvsubsec{Using the \texttt{cv} command}
 \label{sec:colvars_mdengine_params}
-\cvvmdugonly{\index{collective variables!\texttt{cv} command}}
+\cvvmdugonly{\index{Colvars!\texttt{cv} command}}
 
 The Colvars module is accessed in VMD through the command \texttt{cv}.
-The command must be used the first time as \texttt{cv molid }\emph{$<$molid$>$} to set up the collective variables module for a given molecule.
+The command must be used the first time as \texttt{cv molid }\emph{$<$molid$>$} to set up the Colvars module for a given molecule.
 In all following uses, the \texttt{cv} command will continue operating on the same molecule, regardless of its ``top'' status.
 To use the \texttt{cv} command on a different molecule, use \texttt{cv delete} first and then \texttt{cv molid }\emph{$<$molid$>$}.
 Invoking the \texttt{cv} command with no arguments prints a help screen.
@@ -93,7 +93,7 @@ Invoking the \texttt{cv} command with no arguments prints a help screen.
 \cvsubsec{NAMD parameters}
 \label{sec:colvars_mdengine_params}
 
-To enable a collective variables-based calculation, two parameters must be added to the NAMD configuration file, \texttt{colvars} and \texttt{colvarsConfig}.
+To enable a Colvars-based calculation, two parameters must be added to the NAMD configuration file, \texttt{colvars} and \texttt{colvarsConfig}.
 An optional third parameter, \texttt{colvarsInput}, can be used to continue a previous simulation.
 
 \begin{itemize}
@@ -103,10 +103,10 @@ An optional third parameter, \texttt{colvarsInput}, can be used to continue a pr
   \keydef
     {colvars}{%
     NAMD configuration file}{%
-    Enable the collective variables module}{%
+    Enable the Colvars module}{%
     boolean}{%
     \texttt{off}}{%
-    If this flag is on, the collective variables module within
+    If this flag is on, the Colvars module within
     NAMD is enabled; the module requires a separate configuration
     file, to be provided with \texttt{colvarsConfig}.}
 
@@ -154,11 +154,11 @@ An optional third parameter, \texttt{colvarsInput}, can be used to continue a pr
 \subsection{LAMMPS keywords}
 \label{sec:colvars_mdengine_parameters}
 
-To enable a collective variables-based calculation, the following line must be added to the LAMMPS configuration file:\\
+To enable a Colvars-based calculation, the following line must be added to the LAMMPS configuration file:\\
 \\
 \texttt{fix } \emph{ID } \texttt{all }  \texttt{colvars } \emph{configfile } \emph{keyword value pairs ...}\\
 \\
-where \emph{ID} is a string that uniquely identifies this fix command inside a LAMMPS script, \emph{configfile} is the name of the configuration file for the collective variables module, followed by one or more of the following optional keywords with their corresponding arguments:
+where \emph{ID} is a string that uniquely identifies this fix command inside a LAMMPS script, \emph{configfile} is the name of the configuration file for the Colvars module, followed by one or more of the following optional keywords with their corresponding arguments:
 
 \begin{itemize}
 
@@ -178,7 +178,7 @@ This allows to continue a previous collective variables-based calculation when a
     Prefix of the output state file}{%
     string}{%
     ``out''}{%
-    If a value is provided, it is interpreted as the prefix to all output files that will be written by the collective variables module (see \ref{sec:colvars_output}).}
+    If a value is provided, it is interpreted as the prefix to all output files that will be written by the Colvars module (see \ref{sec:colvars_output}).}
 
 \item %
   \keydef
@@ -213,7 +213,7 @@ Setting this to \emph{no} will use the current local coordinates that are wrappe
 }
 
 
-\cvsubsec{Configuration syntax for the collective variables module}
+\cvsubsec{Configuration syntax for the Colvars module}
 \label{sec:colvars_config}
 
 \cvnamdonly{All the parameters defining the colvars and their biasing or analysis algorithms are read from the file specified by the configuration option \texttt{colvarsConfig}, or by the Tcl commands \texttt{cv config} and \texttt{cv configfile}.
@@ -278,8 +278,8 @@ The following keywords are available in the global context of the colvars config
     Colvar module restart frequency}{%
     positive integer}{%
     \texttt{restartFreq}}{%
-    Allows to choose a different restart frequency for the collective
-    variables module.  Redefining it may be useful to trace the time
+    Allows to choose a different restart frequency for the Colvars module.
+    Redefining it may be useful to trace the time
     evolution of those few properties which are not written to the
     trajectory file for reasons of disk space.}
 
@@ -293,7 +293,7 @@ The following keywords are available in the global context of the colvars config
     extension) as produced by the \texttt{make\_ndx} tool of GROMACS.
     This keyword may be repeated to load multiple index files: the same group name cannot appear in multiple index files.
     \cvlammpsonly{In LAMMPS, the \texttt{group2ndx} command can be used to generate such file from existing groups.
-    Note that the collective variables module reads the indices of atoms from the index file: therefore, the LAMMPS groups do not need to remain active during the simulation, and could be deleted right after issuing \texttt{group2ndx}.
+    Note that the Colvars module reads the indices of atoms from the index file: therefore, the LAMMPS groups do not need to remain active during the simulation, and could be deleted right after issuing \texttt{group2ndx}.
 }
     The names of index groups contained in this file can then be used to define
     atom groups with the \texttt{indexGroup} keyword.
@@ -428,7 +428,7 @@ The following options are not required by default; however, the first four are v
     string}{%
     ``\texttt{colvar}'' + numeric id}{%
     The name is an unique case-sensitive string which allows the
-    colvar module to identify this colvar unambiguously; it is also
+    Colvars module to identify this colvar unambiguously; it is also
     used in the trajectory file to label to the columns corresponding
     to this colvar.}
 
@@ -622,7 +622,7 @@ To apply moving restraints, or restraints to more than one colvar simultaneously
     \texttt{off}}{%
     If \texttt{colvarsTrajFrequency} is defined, the total force
     applied on this colvar by biases and confining potentials (walls)
-    within the colvar module are
+    within the Colvars module are
     written to the trajectory under the label
     ``\texttt{fa\_}$<$\texttt{name}$>$''. 
     For extended Lagrangian colvars, this force is actually applied to the
@@ -1164,7 +1164,7 @@ The following two options have default values appropriate for the vast majority 
  In simulations with periodic boundary conditions, NAMD maintains
   the coordinates of all the atoms within a molecule contiguous to
   each other (i.e.~there are no spurious ``jumps'' in the molecular
-  bonds).  The colvar module relies on this when calculating a group's
+  bonds).  The Colvars module relies on this when calculating a group's
   center of geometry, but the condition may fail if the group spans
   different molecules: in that case, writing the NAMD output files
   \texttt{wrapAll} or \texttt{wrapWater} could produce wrong results
@@ -1596,7 +1596,7 @@ It returns an angle (in degrees) within the interval $[0:180]$.
 The \texttt{dihedral~\{...\}} block defines a torsional angle, and
 contains the blocks \texttt{group1}, \texttt{group2}, \texttt{group3}
 and \texttt{group4}, defining the four groups.  It returns an angle
-(in degrees) within the interval $[-180:180]$.  The colvar module
+(in degrees) within the interval $[-180:180]$.  The Colvars module
 calculates all the distances between two angles taking into account
 periodicity.  For instance, reference values for restraints or range
 boundaries can be defined by using any real number of choice.
@@ -2333,7 +2333,7 @@ colvar component on the same atoms.
       Potential $\alpha$-helical residues}{%
     ``$<$Initial residue number$>$-$<$Final residue number$>$''}{%
     This option specifies the range of residues on which this
-    component should be defined.  The colvar module looks for the
+    component should be defined.  The Colvars module looks for the
     atoms within these residues named ``\texttt{CA}'', ``\texttt{N}''
     and ``\texttt{O}'', and raises an error if any of those atoms is
     not found.}
@@ -2513,7 +2513,7 @@ The following options can be used for any of the above colvar components in orde
     string}{%
     type of component + numeric id}{%
     The name is an unique case-sensitive string which allows the
-    colvar module to identify this component. This is useful, for example,
+    Colvars module to identify this component. This is useful, for example,
     when combining multiple components via a \texttt{scriptedFunction}.}
 
 \item %
@@ -3002,7 +3002,7 @@ The following specific parameters can be set in the ABF configuration block:
 \item \keydef{outputFreq}{\texttt{abf}}{%
     Frequency (in timesteps) at which ABF data files are refreshed}
   {positive integer}
-  {Colvar module restart frequency}
+  {Colvars module restart frequency}
   {The files containing the free energy gradient estimate and sampling histogram
     (and the PMF in one-dimensional calculations) are written on disk at the given
     time interval.}
