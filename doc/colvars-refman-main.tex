@@ -3938,17 +3938,86 @@ described above, a \texttt{histogram} block may define the following parameter:
 \item \dupkey{colvars}{\texttt{histogram}}{sec:colvarbias}{biasing and analysis methods}
 %\item \dupkey{outputEnergy}{\texttt{histogram}}{sec:colvarbias}{biasing and analysis methods}
 
-\item \keydef{outputFreq}{\texttt{histogram}}{%
-    Frequency (in timesteps) at which the histogram file is refreshed}
-  {positive integer}
-  {Colvar module restart frequency}
-  {The file containing histogram data is written on disk at the given time interval.}
+\item %
+  \keydef{%
+    outputFreq}{%
+    \texttt{histogram}}{%
+    Frequency (in timesteps) at which the histogram files are refreshed}{%
+    positive integer}{%
+    \texttt{colvarsRestartFrequency}}{%
+    The histogram data are written to files at the given time interval.
+    A value of 0 disables the creation of these files (\textbf{note:} all data to continue a simulation are still included in the state file).}
+
+\item %
+  \keydef{%
+    outputFile}{%
+    \texttt{histogram}}{%
+    Write the histogram to a file}{%
+    UNIX filename}{%
+    \outputName\texttt{.$<$name$>$.dat}}{%
+    Name of the file containing histogram data (multicolumn format), which is written every \texttt{outputFreq} steps.
+    For the special case of 2 variables, Gnuplot may be used to visualize this file.
+  }
+
+\item %
+  \keydef{%
+    outputFileDX}{%
+    \texttt{histogram}}{%
+    Write the histogram to a file}{%
+    UNIX filename}{%
+    \outputName\texttt{.$<$name$>$.dat}}{%
+    Name of the file containing histogram data (OpenDX format), which is written every \texttt{outputFreq} steps.
+    For the special case of 3 variables, VMD may be used to visualize this file.
+}
+
+
+\item %
+  \keydef{%
+    gatherVectorColvars}{%
+    \texttt{histogram}}{%
+    Treat vector variables as multiple observations of a scalar variable?}{%
+    UNIX filename}{%
+    \texttt{off}}{%
+    When this is set to \texttt{on}, the components of a multi-dimensional colvar (e.g.~one based on \texttt{cartesian}, \texttt{distancePairs}, or a vector of scalar numbers given by \texttt{scriptedFunction}) are treated as multiple observations of a scalar variable.
+    This results in the histogram being accumulated multiple times for each simulation step\cvvmdonly{ or iteration of \texttt{cv update}}).
+    When multiple vector variables are included in \texttt{histogram}, these must have the same length because their components are accumulated together.
+    For example, if $\xi$, $\lambda$ and $\tau$ are three variables of dimensions 5, 5 and 1, respectively, for each iteration 5 triplets $(\xi_{i},\lambda_{i},\tau)$ ($i = 1, \ldots 5$) are accumulated into a 3-dimensional histogram.
+  }
+
+\item %
+  \keydef{%
+    weights}{%
+    \texttt{histogram}}{%
+    Treat vector variables as multiple observations of a scalar variable?}{%
+    list of space-separated decimals}{%
+    all weights equal to 1}{%
+    When \texttt{gatherVectorColvars} is \texttt{on}, the components of each multi-dimensional colvar are accumulated with a different weight.
+    For example, if $x$ and $y$ are two distinct \texttt{cartesian} variables defined on the same group of atoms, the corresponding 2D histogram can be weighted on a per-atom basis\cvvmdonly{: to compute an electron density map, it is possible to use \texttt{weights [\${sel} get atomicnumber]}} in the definition of \texttt{histogram}.
+  }
+
 \end{itemize}
 
-Like the ABF and metadynamics biases, \texttt{histogram} uses
-parameters from the colvars to define its grid.  The grid ranges from
-\texttt{lowerBoundary} to \texttt{upperBoundary}, and the bin width is
-set by the \texttt{width} parameter.
+\cvsubsubsec{Grid definition for multidimensional histograms}
+\label{sec:colvarbias_histogram_grid}
+
+Like the ABF and metadynamics biases, \texttt{histogram} uses the parameters \texttt{lowerBoundary}, \texttt{upperBoundary}, and \texttt{width} to define its grid.
+These values can be overridden if a configuration block \texttt{histogramGrid \{ \ldots \}} is provided inside the configuration of \texttt{histogram}.
+The options supported inside this configuration block are:
+\begin{itemize}
+\item %
+  \key{%
+    lowerBoundaries}{%
+    \texttt{histogramGrid}}{%
+    Lower boundaries of the grid}{%
+    list of space-separated decimals}{%
+    This option defines the lower boundaries of the grid, overriding any values defined by the \texttt{lowerBoundary} keyword of each colvar.
+    Note that when \texttt{gatherVectorColvars} is \texttt{on}, each vector variable is automatically treated as a scalar, and a single value should be provided for it. 
+  }
+\item %
+  \simkey{upperBoundaries}{\texttt{histogramGrid}}{lowerBoundaries}
+\item %
+  \simkey{widths}{\texttt{histogramGrid}}{lowerBoundaries}
+\end{itemize}
 
 
 \cvsubsec{Probability distribution-restraints}
@@ -3956,7 +4025,7 @@ set by the \texttt{width} parameter.
 
 The \texttt{histogramRestraint} bias implements a continuous potential of many variables (or of a single high-dimensional variable) aimed at reproducing a one-dimensional statistical distribution that is provided by the user.
 The $M$ variables $(\xi_{1}, \ldots, \xi_{M})$ are interpreted as multiple observations of a random variable $\xi$ with unknown probability distribution.
-The potential is minimized when the histogram $h(\xi)$, estimated as a sum of Gaussian functions centered at $(\xi_{1}, \ldots, \xi_{M})$, is close to the reference histogram $h_{0}(\xi)$:
+The potential is minimized when the histogram $h(\xi)$, estimated as a sum of Gaussian functions centered at $(\xi_{1}, \ldots, \xi_{M})$, is equal to the reference histogram $h_{0}(\xi)$:
 \begin{equation}
   \label{eq:colvarbias_restraint_histogram}
   V(\xi_{1}, \ldots, \xi_{M}) = \frac{1}{2} k \int\left(h(\xi)-h_{0}(\xi)\right)^2 \mathrm{d}\xi
@@ -3967,6 +4036,9 @@ The potential is minimized when the histogram $h(\xi)$, estimated as a sum of Ga
 \end{equation}
 When used in combination with a \texttt{distancePairs} multi-dimensional variable, this bias implements the refinement algorithm against ESR/DEER experiments published by Shen \emph{et al} \cite{Shen2015}.
 
+This bias behaves similarly to the \texttt{histogram} bias with the \texttt{gatherVectorColvars} option, with the important difference that \emph{all} variables are gathered, resulting in a one-dimensional histogram.
+Future versions will include support for multi-dimensional histograms.
+
 The list of options is as follows:
 \begin{itemize}
 
@@ -3975,19 +4047,20 @@ The list of options is as follows:
 \item \dupkey{outputEnergy}{\texttt{histogramRestraint}}{sec:colvarbias}{biasing and analysis methods}
 
 \item %
-  \key
+  \key %
     {lowerBoundary}{%
     \texttt{histogramRestraint}}{%
     Lower boundary of the colvar grid}{%
     decimal}{%
     Defines the lowest end of the interval where the reference distribution $h_{0}(\xi)$ is defined.
-}
+    Exactly one value must be provided, because only one-dimensional histograms are supported by the current version.
+  }
 
 \item %
   \simkey{upperBoundary}{\texttt{histogramRestraint}}{lowerBoundary}
 
 \item %
-  \key%
+  \key %
   {width}{%
     \texttt{histogramRestraint}}{%
     Width of the colvar grid}{%
@@ -4008,7 +4081,7 @@ The list of options is as follows:
 \item %
   \keydef
     {forceConstant}{%
-    \texttt{}}{%
+    \texttt{histogramRestraint}}{%
     Force constant (\cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
     positive decimal}{%
     \texttt{1.0}}{%
@@ -4044,7 +4117,7 @@ The list of options is as follows:
     Periodically write the instantaneous histogram $h(\xi)$}{%
     boolean}{%
     \texttt{off}}{%
-    If \texttt{on}, the histogram $h(\xi)$ is write every \texttt{colvarsRestartFrequency} steps to a file with the name \texttt{$<$\outputName$>$.$<$name$>$.hist.dat}}{%
+    If \texttt{on}, the histogram $h(\xi)$ is written every \texttt{colvarsRestartFrequency} steps to a file with the name \outputName\texttt{.$<$name$>$.hist.dat}}{%
     This is useful to diagnose the convergence of $h(\xi)$ against $h_{0}(\xi)$.
   }
 
