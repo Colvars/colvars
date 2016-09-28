@@ -329,6 +329,33 @@ obj/dcdlib.o: \
 	src/common.h \
 	src/Vector.h
 	$(CXX) $(CXXFLAGS) $(COPTO)obj/dcdlib.o $(COPTC) src/dcdlib.C
+obj/eabf1D.o: \
+	obj/.exists \
+	src/eabf1D.C \
+	src/eabf1D.h \
+	src/eabf.h \
+	src/eabffunc.h
+	$(CXX) $(CXXFLAGS) $(COPTO)obj/eabf1D.o $(COPTC) src/eabf1D.C
+obj/eabf2D.o: \
+	obj/.exists \
+	src/eabf2D.C \
+	src/eabf2D.h \
+	src/eabf.h \
+	src/eabffunc.h
+	$(CXX) $(CXXFLAGS) $(COPTO)obj/eabf2D.o $(COPTC) src/eabf2D.C
+obj/eabffunc.o: \
+	obj/.exists \
+	src/eabffunc.C \
+	src/eabffunc.h
+	$(CXX) $(CXXFLAGS) $(COPTO)obj/eabffunc.o $(COPTC) src/eabffunc.C
+obj/eabfTcl.o: \
+	obj/.exists \
+	src/eabfTcl.C \
+	src/eabf.h \
+	src/eabf1D.h \
+	src/eabf2D.h \
+	src/eabffunc.h
+	$(CXX) $(CXXFLAGS) $(COPTO)obj/eabfTcl.o $(COPTC) src/eabfTcl.C
 obj/erf.o: \
 	obj/.exists \
 	src/erf.C

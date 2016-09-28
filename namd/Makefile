@@ -112,6 +112,10 @@ OBJS = \
 	$(DSTDIR)/wkfutils.o \
 	$(DSTDIR)/common.o \
 	$(DSTDIR)/dcdlib.o \
+	$(DSTDIR)/eabf1D.o \
+	$(DSTDIR)/eabf2D.o \
+	$(DSTDIR)/eabffunc.o \
+	$(DSTDIR)/eabfTcl.o \
 	$(DSTDIR)/erf.o \
 	$(DSTDIR)/fitrms.o \
 	$(DSTDIR)/main.o \

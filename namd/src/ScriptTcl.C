@@ -1942,6 +1942,8 @@ extern "C" void newhandle_msg_ex(void *v, const char *msg, int prepend, int newl
 
 extern "C" int psfgen_static_init(Tcl_Interp *);
 
+int eabf_static_init(Tcl_Interp *);
+
 
 #endif  // NAMD_TCL
 
@@ -1967,6 +1969,7 @@ ScriptTcl::ScriptTcl() : scriptBarrier(scriptBarrierTag) {
   // Create interpreter
   interp = Tcl_CreateInterp();
   psfgen_static_init(interp);
+  eabf_static_init(interp);
   tcl_vector_math_init(interp);
   Tcl_CreateCommand(interp, "python", Tcl_python,
     (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
@@ -2109,6 +2112,7 @@ void ScriptTcl::eval(char *script) {
 int ScriptTcl::tclsh(int argc, char **argv) {
   Tcl_Interp *interp = Tcl_CreateInterp();
   psfgen_static_init(interp);
+  eabf_static_init(interp);
   tcl_vector_math_init(interp);
   Tcl_SetVar(interp, "argv0", argv[0], TCL_GLOBAL_ONLY);
   Tcl_SetVar2Ex(interp, "argc", NULL, Tcl_NewIntObj(argc-1), TCL_GLOBAL_ONLY);
