@@ -67,7 +67,7 @@ int colvarbias_histogram::init(std::string const &conf)
 
   if (colvar_array_size > 0) {
     weights.assign(colvar_array_size, 1.0);
-    get_keyval(conf, "weights", weights, weights, colvarparse::parse_silent);
+    get_keyval(conf, "weights", weights, weights);
   }
 
   for (i = 0; i < colvars.size(); i++) {
