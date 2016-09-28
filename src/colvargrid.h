@@ -737,7 +737,8 @@ public:
   }
 
   /// Read a grid definition from a config string
-  int parse_params(std::string const &conf)
+  int parse_params(std::string const &conf,
+                   colvarparse::Parse_Mode const parse_mode = colvarparse::parse_normal)
   {
     if (cvm::debug()) cvm::log("Reading grid configuration from string.\n");
 
@@ -746,6 +747,7 @@ public:
 
     {
       size_t nd_in = 0;
+      // this is only used in state files
       colvarparse::get_keyval(conf, "n_colvars", nd_in, nd, colvarparse::parse_silent);
       if (nd_in != nd) {
         cvm::error("Error: trying to read data for a grid "
@@ -757,19 +759,21 @@ public:
       }
     }
 
+    // underscore keywords are used in state file
     colvarparse::get_keyval(conf, "lower_boundaries",
                             lower_boundaries, lower_boundaries, colvarparse::parse_silent);
     colvarparse::get_keyval(conf, "upper_boundaries",
                             upper_boundaries, upper_boundaries, colvarparse::parse_silent);
 
-    // support also camel case
+    // camel case keywords are used in config file
     colvarparse::get_keyval(conf, "lowerBoundaries",
-                             lower_boundaries, lower_boundaries, colvarparse::parse_silent);
+                            lower_boundaries, lower_boundaries, parse_mode);
     colvarparse::get_keyval(conf, "upperBoundaries",
-                             upper_boundaries, upper_boundaries, colvarparse::parse_silent);
+                            upper_boundaries, upper_boundaries, parse_mode);
 
-    colvarparse::get_keyval(conf, "widths", widths, widths, colvarparse::parse_silent);
+    colvarparse::get_keyval(conf, "widths", widths, widths, parse_mode);
 
+    // only used in state file
     colvarparse::get_keyval(conf, "sizes", nx, nx, colvarparse::parse_silent);
 
     if (nd < lower_boundaries.size()) nd = lower_boundaries.size();
