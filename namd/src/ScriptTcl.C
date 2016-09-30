@@ -1858,6 +1858,37 @@ int ScriptTcl::Tcl_reloadGridforceGrid(ClientData clientData,
 
   return TCL_OK;
 }
+
+int ScriptTcl::Tcl_updateGridScale(ClientData clientData,
+	Tcl_Interp *interp, int argc, char *argv[]) {
+  ScriptTcl *script = (ScriptTcl *)clientData;
+  script->initcheck();
+
+  Vector scale(1.0f,1.0f,1.0f);
+  char *key = NULL;
+  if (argc == 4) {
+      // nothing ... key is NULL, then Node::updateGridScale uses the
+      // default key, which is used internally when the gridforce*
+      // keywords are used (as opposed to the mgridforce* keywords)
+      scale.x = atof( argv[1] );
+      scale.y = atof( argv[2] );
+      scale.z = atof( argv[3] );
+  } else if (argc == 5) {
+      key = argv[1];
+      scale.x = atof( argv[2] );
+      scale.y = atof( argv[3] );
+      scale.z = atof( argv[4] );
+  } else {
+      Tcl_AppendResult(interp, "usage: updateGridforceGrid [<gridkey>] scaleX scaleY scaleZ", NULL);
+      return TCL_ERROR;
+  }
+
+  //(CProxy_Node(CkpvAccess(BOCclass_group).node)).reloadGridforceGrid(key);
+  Node::Object()->updateGridScale(key,scale);
+  script->barrier();
+
+  return TCL_OK;
+}
 // END gf
 
 int ScriptTcl::Tcl_reloadStructure(ClientData clientData,
@@ -1911,6 +1942,8 @@ extern "C" void newhandle_msg_ex(void *v, const char *msg, int prepend, int newl
 
 extern "C" int psfgen_static_init(Tcl_Interp *);
 
+int eabf_static_init(Tcl_Interp *);
+
 
 #endif  // NAMD_TCL
 
@@ -1936,6 +1969,7 @@ ScriptTcl::ScriptTcl() : scriptBarrier(scriptBarrierTag) {
   // Create interpreter
   interp = Tcl_CreateInterp();
   psfgen_static_init(interp);
+  eabf_static_init(interp);
   tcl_vector_math_init(interp);
   Tcl_CreateCommand(interp, "python", Tcl_python,
     (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
@@ -2038,6 +2072,8 @@ ScriptTcl::ScriptTcl() : scriptBarrier(scriptBarrierTag) {
   // BEGIN gf
   Tcl_CreateCommand(interp, "reloadGridforceGrid", Tcl_reloadGridforceGrid,
     (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
+  Tcl_CreateCommand(interp, "updateGridScale", Tcl_updateGridScale,
+    (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
   // END gf
 #endif
 
@@ -2076,6 +2112,7 @@ void ScriptTcl::eval(char *script) {
 int ScriptTcl::tclsh(int argc, char **argv) {
   Tcl_Interp *interp = Tcl_CreateInterp();
   psfgen_static_init(interp);
+  eabf_static_init(interp);
   tcl_vector_math_init(interp);
   Tcl_SetVar(interp, "argv0", argv[0], TCL_GLOBAL_ONLY);
   Tcl_SetVar2Ex(interp, "argc", NULL, Tcl_NewIntObj(argc-1), TCL_GLOBAL_ONLY);

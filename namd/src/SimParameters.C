@@ -6,9 +6,9 @@
 
 /*****************************************************************************
  * $Source: /namd/cvsroot/namd2/src/SimParameters.C,v $
- * $Author: jim $
- * $Date: 2016/09/19 17:39:17 $
- * $Revision: 1.1467 $
+ * $Author: ryanmcgreevy $
+ * $Date: 2016/09/21 20:40:53 $
+ * $Revision: 1.1468 $
  *****************************************************************************/
 
 /** \file SimParameters.C
@@ -1706,6 +1706,7 @@ void SimParameters::config_parser_mgridforce(ParseOptions &opts) {
                   PARSE_MULTIPLES);
     opts.optional("mgridforce", "mgridforcelite", "Use Gridforce Lite?",
 		  PARSE_MULTIPLES);
+    opts.optional("mgridforce", "mgridforcechecksize", "Check if grid exceeds PBC cell dimensions?", PARSE_MULTIPLES);
 }
 
 void SimParameters::config_parser_gridforce(ParseOptions &opts) {
@@ -5783,6 +5784,7 @@ void SimParameters::parse_mgrid_params(ConfigList *config)
     mgfp->gridforceVOffset = gridforceVOffset;
 
     mgfp->gridforceLite = gridforceLite;
+    mgfp->gridforceCheckSize = gridforcechecksize;
   }
 
   // Create multigrid parameter structures
@@ -6053,6 +6055,31 @@ void SimParameters::parse_mgrid_params(ConfigList *config)
     current = current->next;
   }
 
+  current = config->find("mgridforcechecksize");
+  while (current != NULL) {
+    //    iout << iINFO << "MGRIDFORCELITE " << current->data << "\n"
+    //         << endi;
+    int curlen = strlen(current->data);
+    sscanf(current->data,"%80s%255s",key,valstr);
+
+    MGridforceParams* mgfp = NULL;
+    mgfp = mgridforcelist.find_key(key);
+    if ( mgfp == NULL) {
+      iout << iINFO << "MGRIDFORCECHECKSIZE no key "
+      << key << " defined for file " << valstr << "\n" << endi;
+    } else {
+      int boolval = MGridforceParamsList::atoBool(valstr);
+      if (boolval == -1) {
+        iout << iINFO << "MGRIDFORCECHECKSIZE  key "
+          << key << " boolval " << valstr << " badly defined" << endi;
+      } else {
+        mgfp->gridforceCheckSize = (boolval == 1);
+      }
+    }
+
+    current = current->next;
+  }
+
   delete [] valstr;
   delete [] key;
 
@@ -6199,6 +6226,9 @@ void SimParameters::print_mgrid_params()
       << "\n" << endi;
     iout << iINFO << "           Gridforce-Lite "
       << BoolToString(params->gridforceLite)
+      << "\n" << endi;
+    iout << iINFO << "           Gridforce-CheckSize "
+      << BoolToString(params->gridforceCheckSize)
       << "\n" << endi;
     params = params->next;
   }

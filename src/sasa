@@ -1,0 +1,15 @@
+Starting from the version 2016-08-10 of the Colvars module, system
+forces have been replaced by total forces.  These now include ALL forces
+acting on the variable, whether they come from the force field or from
+external terms (e.g. boundary restraints), including those applied by
+Colvars.
+
+The values of reported system forces (flag outputSystemForce) may
+change, without other changes to the simulation.  When using Adaptive
+Biasing Force (ABF), a different trajectory is to be expected when the
+ABF method attempts to balance external forces.  However, the change
+presents the advantage that the calculated potential of mean force (PMF)
+now converges to the same PMF as other methods.
+
+Although the new convention is preferable, it is not possible to
+continue an ABF simulation where 

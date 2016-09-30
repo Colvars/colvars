@@ -14,8 +14,8 @@ pdf: $(PDF)
 	pdflatex $<
 
 clean: 
-	rm -f *.aux *.blg *.log *.toc *.out *.idx *.ilg *.ind *.brf *.4tc *.4ct *.css *.dvi *.html *.idv *.lg *.xref *.tmp
+	rm -f *.aux *.blg *.log *.toc *.out *.idx *.ilg *.ind *.brf *.4tc *.4ct *.css *.dvi *.html *.idv *.lg *.xref *.tmp 
 
-clean-all: 
+clean-all: clean
 	rm -f $(PDF)
 
