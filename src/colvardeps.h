@@ -236,6 +236,7 @@ public:
     /// \brief If enabled, calc_gradients() will call debug_gradients() for every group needed
     f_cvc_debug_gradient,
     f_cvc_Jacobian,
+    f_cvc_one_site_total_force,
     f_cvc_com_based,
     f_cvc_scalable,
     f_cvc_scalable_com,

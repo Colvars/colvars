@@ -1343,18 +1343,18 @@ The \texttt{distance \{...\}} block defines a distance component between the two
     wrong result because of a relatively small periodic cell.}
 
 \item %
-  \labelkey{colvar|distance|oneSiteSystemForce}
+  \labelkey{colvar|distance|oneSiteTotalForce}
   \keydef
-    {oneSiteSystemForce}{%
+    {oneSiteTotalForce}{%
     \texttt{angle}, \texttt{dipoleAngle}, \texttt{dihedral}}{%
-    Measure system force on group 1 only?}{%
+    Measure total force on group 1 only?}{%
     boolean}{%
     \texttt{no}}{%
-    If this is set to \texttt{yes}, the system force is measured along
+    If this is set to \texttt{yes}, the total force is measured along
     a vector field (see equation~(\ref{eq:gradient_vector}) in
     section~\ref{sec:colvarbias_abf}) that only involves atoms of
     \texttt{group1}.  This option is only useful for ABF, or custom
-    biases that compute system forces.  See
+    biases that compute total forces.  See
     section~\ref{sec:colvarbias_abf} for details.}
 
 \end{cvcoptions}
@@ -1427,7 +1427,7 @@ a constant vector, or dynamically based on two reference groups.
   \dupkey{forceNoPBC}{\texttt{distanceZ}}{colvar|distance|forceNoPBC}{\texttt{distance} component}
 
 \item %
-  \dupkey{oneSiteSystemForce}{\texttt{distanceZ}}{colvar|distance|oneSiteSystemForce}{\texttt{distance} component}
+  \dupkey{oneSiteTotalForce}{\texttt{distanceZ}}{colvar|distance|oneSiteTotalForce}{\texttt{distance} component}
 \end{cvcoptions}
 This component returns a number (in \AA{}) whose range is determined
 by the chosen boundary conditions.  For instance, if the $z$ axis is
@@ -1440,7 +1440,7 @@ along $z$ (this behavior is disabled if \texttt{forceNoPBC} is set).
 The \texttt{distanceXY~\{...\}} block defines a distance projected on
 a plane, and accepts the same keywords as the component \texttt{distanceZ}, i.e.
 \texttt{main}, \texttt{ref}, either \texttt{ref2} or \texttt{axis},
-and \texttt{oneSiteSystemForce}.  It returns the norm of the
+and \texttt{oneSiteTotalForce}.  It returns the norm of the
 projection of the distance vector between \texttt{main} and
 \texttt{ref} onto the plane orthogonal to the axis.  The axis is
 defined using the \texttt{axis} parameter or as the vector joining
@@ -1458,7 +1458,7 @@ defined using the \texttt{axis} parameter or as the vector joining
 \item %
   \dupkey{forceNoPBC}{\texttt{distanceZ}}{colvar|distance|forceNoPBC}{\texttt{distance} component}
 \item %
-  \dupkey{oneSiteSystemForce}{\texttt{distanceZ}}{colvar|distance|oneSiteSystemForce}{\texttt{distance} component}
+  \dupkey{oneSiteTotalForce}{\texttt{distanceZ}}{colvar|distance|oneSiteTotalForce}{\texttt{distance} component}
 \end{cvcoptions}
 
 
@@ -1476,7 +1476,7 @@ of mass of \texttt{group1} and \texttt{group2}.
 \item %
   \simkey{group2}{\texttt{distanceVec}}{group1}
 \item %
-  \dupkey{oneSiteSystemForce}{\texttt{distanceVec}}{colvar|distance|oneSiteSystemForce}{\texttt{distance} component}
+  \dupkey{oneSiteTotalForce}{\texttt{distanceVec}}{colvar|distance|oneSiteTotalForce}{\texttt{distance} component}
 \end{cvcoptions}
 
 
@@ -1495,7 +1495,7 @@ $|\mathbf{d}| = 1$.
 \item %
   \simkey{group2}{\texttt{distanceDir}}{group1}
 \item %
-  \dupkey{oneSiteSystemForce}{\texttt{distanceDir}}{colvar|distance|oneSiteSystemForce}{\texttt{distance} component}
+  \dupkey{oneSiteTotalForce}{\texttt{distanceDir}}{colvar|distance|oneSiteTotalForce}{\texttt{distance} component}
 \end{cvcoptions}
 
 
@@ -1513,7 +1513,7 @@ where $\Vert\mathbf{d}^{ij}\Vert$ is the distance between atoms $i$ and $j$ in g
 \item %
   \simkey{group2}{\texttt{distanceInv}}{group1}
 \item %
-  \dupkey{oneSiteSystemForce}{\texttt{distanceInv}}{colvar|distance|oneSiteSystemForce}{\texttt{distance} component}
+  \dupkey{oneSiteTotalForce}{\texttt{distanceInv}}{colvar|distance|oneSiteTotalForce}{\texttt{distance} component}
 \item %
   \keydef
     {exponent}{%
@@ -1572,7 +1572,7 @@ interval $[0:180]$.
 \item %
   \simkey{group3}{\texttt{angle}}{group1}
 \item %
-  \dupkey{oneSiteSystemForce}{\texttt{angle}}{colvar|distance|oneSiteSystemForce}{\texttt{distance} component}
+  \dupkey{oneSiteTotalForce}{\texttt{angle}}{colvar|distance|oneSiteTotalForce}{\texttt{distance} component}
 \end{cvcoptions}
 
 
@@ -1591,7 +1591,7 @@ It returns an angle (in degrees) within the interval $[0:180]$.
 \item %
   \simkey{group3}{\texttt{dipoleAngle}}{group1}
 \item %
-  \dupkey{oneSiteSystemForce}{\texttt{dipoleAngle}}{colvar|distance|oneSiteSystemForce}{\texttt{distance} component}
+  \dupkey{oneSiteTotalForce}{\texttt{dipoleAngle}}{colvar|distance|oneSiteTotalForce}{\texttt{distance} component}
 \end{cvcoptions}
 
 
@@ -1614,7 +1614,7 @@ boundaries can be defined by using any real number of choice.
 \item %
   \simkey{group4}{\texttt{dihedral}}{group1}
 \item %
-  \dupkey{oneSiteSystemForce}{\texttt{dihedral}}{colvar|distance|oneSiteSystemForce}{\texttt{distance} component}
+  \dupkey{oneSiteTotalForce}{\texttt{dihedral}}{colvar|distance|oneSiteTotalForce}{\texttt{distance} component}
 \end{cvcoptions}
 
 

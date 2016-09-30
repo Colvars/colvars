@@ -108,6 +108,9 @@ public:
                    char const *group_key,
                    bool optional = false);
 
+  /// \brief Parse options pertaining to total force calculation
+  virtual int init_total_force_params(std::string const &conf);
+
   /// \brief After construction, set data related to dependency handling
   int setup();
 
@@ -306,9 +309,6 @@ protected:
   cvm::rvector     dist_v;
   /// Use absolute positions, ignoring PBCs when present
   bool b_no_PBC;
-  /// Compute total force on first site only to avoid unwanted
-  /// coupling to other colvars (see e.g. Ciccotti et al., 2005)
-  bool b_1site_force;
 public:
   distance(std::string const &conf);
   distance();
@@ -388,9 +388,6 @@ protected:
   cvm::atom_group  *ref2;
   /// Use absolute positions, ignoring PBCs when present
   bool b_no_PBC;
-  /// Compute total force on one site only to avoid unwanted
-  /// coupling to other colvars (see e.g. Ciccotti et al., 2005)
-  bool b_1site_force;
   /// Vector on which the distance vector is projected
   cvm::rvector axis;
   /// Norm of the axis
