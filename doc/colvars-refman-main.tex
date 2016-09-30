@@ -2707,16 +2707,17 @@ of $1/N$.
 \cvscriptonly{
 \cvsubsec{Colvars as scripted functions of components}
 \label{sec:colvar_scripted}
-In contexts that support scripting, a colvar may be defined as
-custom scripted function of the values of its components,
+When scripting is supported\cvnamdonly{ (default in NAMD)}\cvvmdonly{ (default in VMD)},
+a colvar may be defined as a
+custom function of its components,
 rather than a linear or polynomial combination.
 When implementing generic functions of Cartesian coordinates rather
 than functions of existing components, the \texttt{cartesian} component
 may be particularly useful.
 
 An example of elaborate scripted colvar is given in example 10, in the
-form of path-based collective variables as defined by Branduardi et al.\cite{Branduardi2007}
-The required Tcl procedures are provided in the colvartools directory.
+form of path-based collective variables as defined by Branduardi et al\cite{Branduardi2007}.
+The required Tcl procedures are provided in the \texttt{colvartools} directory.
 
 \begin{itemize}
  \item %
