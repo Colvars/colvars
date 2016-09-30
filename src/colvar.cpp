@@ -384,6 +384,7 @@ colvar::colvar(std::string const &conf)
 
   get_keyval_feature(this, conf, "outputTotalForce", f_cv_output_total_force, false);
   get_keyval_feature(this, conf, "outputAppliedForce", f_cv_output_applied_force, false);
+  get_keyval_feature(this, conf, "subtractAppliedForce", f_cv_subtract_applied_force, false);
 
   // Start in active state by default
   enable(f_cv_active);
@@ -396,6 +397,8 @@ colvar::colvar(std::string const &conf)
   fj.type(value());
   ft.type(value());
   ft_reported.type(value());
+  f_old.type(value());
+  f_old.reset();
 
   if (cvm::b_analysis)
     parse_analysis(conf);
@@ -1093,6 +1096,14 @@ int colvar::calc_colvar_properties()
 
   } else {
 
+    if (is_enabled(f_cv_subtract_applied_force)) {
+      // correct the total force only if it has been measured
+      // TODO add a specific test instead of relying on sq norm
+      if (ft.norm2() > 0.0) {
+        ft -= f_old;
+      }
+    }
+
     x_reported = x;
     ft_reported = ft;
   }
@@ -1197,6 +1208,10 @@ cvm::real colvar::update_forces_energy()
   if (is_enabled(f_cv_fdiff_velocity)) {
     // set it for the next step
     x_old = x;
+  }
+
+  if (is_enabled(f_cv_subtract_applied_force)) {
+    f_old = f;
   }
 
   if (cvm::debug())

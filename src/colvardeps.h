@@ -176,6 +176,8 @@ public:
     f_cv_total_force,
     /// \brief Calculate total force from atomic forces
     f_cv_total_force_calc,
+    /// \brief Subtract the applied force from the total force
+    f_cv_subtract_applied_force,
     /// \brief Estimate Jacobian derivative
     f_cv_Jacobian,
     /// \brief Do not report the Jacobian force as part of the total force

@@ -506,6 +506,21 @@ See Section~\ref{sec:cvc} for the physical ranges of values of each component.}
     the grid.  This option cannot be used when
       the initial boundaries already span the full period of a periodic
       colvar.}
+
+\item %
+  \keydef
+    {subtractAppliedForce}{%
+    \texttt{colvar}}{%
+    Do not include biasing forces in the total force for this colvar}{%
+    boolean}{%
+    \texttt{off}}{%
+    If the colvar supports total force calculation (see \ref{sec:cvc_sys_forces}), all forces applied to this colvar by biases will be removed from the total force.
+    This keyword allows to recover some of the ``system force'' calculation available in the Colvars module     before version 2016-08-10.
+    Please note that removal of \emph{all} other external forces (including biasing forces applied to a         different colvar) is \emph{no longer supported}, due to changes in the underlying simulation engines (primarily NAMD).
+    This option may be useful when continuing a previous simulation where the removal of external/applied forces is essential.
+    \emph{For all new simulations, the use of this option is not recommended.}
+}
+
 \end{itemize}
 
 

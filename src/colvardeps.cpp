@@ -293,6 +293,9 @@ void colvardeps::init_cv_requires() {
     f_description(f_cv_output_total_force, "output total force");
     f_req_self(f_cv_output_total_force, f_cv_total_force);
 
+    f_description(f_cv_subtract_applied_force, "subtract applied force from total force");
+    f_req_self(f_cv_subtract_applied_force, f_cv_total_force);
+
     f_description(f_cv_lower_boundary, "lower boundary");
     f_req_self(f_cv_lower_boundary, f_cv_scalar);
 

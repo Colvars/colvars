@@ -175,6 +175,9 @@ public:
   /// (if defined) contribute to it
   colvarvalue f;
 
+  /// Applied force at the previous step (to be subtracted from total force if needed)
+  colvarvalue f_old;
+
   /// \brief Total force, as derived from the atomic trajectory;
   /// should equal the system force plus \link f \endlink
   colvarvalue ft;
