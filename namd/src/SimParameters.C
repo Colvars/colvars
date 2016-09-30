@@ -6,9 +6,9 @@
 
 /*****************************************************************************
  * $Source: /namd/cvsroot/namd2/src/SimParameters.C,v $
- * $Author: ryanmcgreevy $
- * $Date: 2016/09/21 20:40:53 $
- * $Revision: 1.1468 $
+ * $Author: jim $
+ * $Date: 2016/09/29 21:30:48 $
+ * $Revision: 1.1470 $
  *****************************************************************************/
 
 /** \file SimParameters.C
@@ -1520,6 +1520,77 @@ void SimParameters::config_parser_constraints(ParseOptions &opts) {
       "External forces coordinate filename", extCoordFilename);
    opts.require("extForces", "extForceFilename",
       "External forces force filename", extForceFilename);
+
+
+  // QM/MM forces
+   opts.optionalB("main", "QMForces", "Apply QM forces?",
+      &qmForcesOn, FALSE);
+   opts.require("QMForces", "QMSoftware",
+      "software whose format will be used for input/output", qmSoftware);
+   opts.require("QMForces", "QMExecPath",
+      "path to executable", qmExecPath);
+   opts.optional("QMForces", "QMChargeMode",
+      "type of QM atom charges gathered from the QM software", qmChrgModeS);
+   opts.require("QMForces", "QMColumn",
+      "column defining QM and MM regions", qmColumn);
+   opts.require("QMForces", "QMBaseDir",
+      "base path and name for QM input and output (preferably in memory)", qmBaseDir);
+   opts.require("QMForces", "QMConfigLine",
+      "Configuration line for QM (multiple inputs allowed)", PARSE_MULTIPLES);
+   opts.optional("QMForces", "QMParamPDB",
+      "PDB with QM parameters", qmParamPDB);
+   opts.optional("QMForces", "QMPrepProc",
+      "initial preparation executable", qmPrepProc);
+   opts.optional("QMForces", "QMSecProc",
+      "secondary executable", qmSecProc);
+   opts.optional("QMForces", "QMCharge",
+      "charge of the QM group", PARSE_MULTIPLES);
+   opts.optional("QMForces", "QMMult",
+      "multiplicity of the QM group", PARSE_MULTIPLES);
+   opts.optional("QMForces", "QMLinkElement",
+      "element of link atom", PARSE_MULTIPLES);
+   opts.optionalB("QMForces", "QMReplaceAll",
+      "replace all NAMD forces with QM forces", &qmReplaceAll, FALSE);
+   opts.optional("QMForces", "QMPCStride",
+      "frequency of selection of point charges", &qmPCSelFreq, 1);
+   opts.optionalB("QMForces", "QMNoPntChrg",
+      "no point charges will be passed to the QM system(s)", &qmNoPC, FALSE);
+   opts.optionalB("QMForces", "QMVdWParams",
+      "use special VdW parameters for QM atoms", &qmVDW, TRUE);
+   opts.optional("QMForces", "QMBondColumn",
+      "column defining QM-MM bomnds", qmBondColumn);
+   opts.optionalB("QMForces", "QMBondDist",
+      "values in QMBondColumn defines the distance of new link atom", &qmBondDist, FALSE);
+   opts.optional("QMForces", "QMBondValueType",
+      "type of value in bond column: len or ratio", qmBondValueTypeS);
+   opts.optional("QMForces", "QMBondScheme",
+      "type of treatment given to QM-MM bonds.", qmBondSchemeS);
+   opts.optional("QMForces", "QMOutStride",
+      "frequency of QM specific charge output (every x steps)", &qmOutFreq, 0);
+   opts.optional("QMForces", "QMPositionOutStride",
+      "frequency of QM specific position output (every x steps)", &qmPosOutFreq, 0);
+   opts.optional("QMForces", "QMSimsPerNode",
+      "QM executions per node", &qmSimsPerNode, 0);
+   opts.optionalB("QMForces", "QMSwitching",
+      "apply switching to point charges.", &qmPCSwitchOn, FALSE);
+   opts.optional("QMForces", "QMSwitchingType",
+      "How are charges scaled down to be presented to QM groups.", qmPCSwitchTypeS);
+   opts.optional("QMForces", "QMPointChargeScheme",
+      "type of treatment given to the total sum of point charges.", qmPCSchemeS);
+   opts.optionalB("QMForces", "QMCustomPCSelection",
+      "custom and fixed selection of point charges per QM group.", &qmCustomPCSel, FALSE);
+   opts.optional("QMForces", "QMCustomPCFile",
+      "file with a selection of point charges for a single QM group", PARSE_MULTIPLES);
+   opts.optionalB("QMForces", "QMLiveSolventSel",
+      "Continuously update the selection of solvent molecules in QM groups", &qmLSSOn, FALSE);
+   opts.optional("QMForces", "QMLSSFreq",
+      "frequency of QM water selection update", &qmLSSFreq, 100);
+   opts.optional("QMForces", "QMLSSResname",
+      "residue name for the solvent molecules (TIP3).", qmLSSResname);
+   opts.optional("QMForces", "QMLSSMode",
+      "mode of selection of point solvent molecules", qmLSSModeS);
+   opts.optional("QMForces", "QMLSSRef",
+      "for COM mode, defines reference for COM distance calculation", PARSE_MULTIPLES);
 
    //print which bad contacts are being moved downhill
    opts.optionalB("main", "printBadContacts", "Print atoms with huge forces?",
@@ -3911,6 +3982,209 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
       if ( outputTiming < ot2 ) outputTiming = ot2;
    }
 
+    // Checks if a secondary process was added in the configuration, and sets
+    // the appropriated variable
+    if(qmForcesOn){
+
+        if (opts.defined("QMSecProc")){
+            qmSecProcOn = true;
+        }
+        else {
+            qmSecProcOn = false;
+        }
+
+        if (opts.defined("qmPrepProc")){
+            qmPrepProcOn = true;
+        }
+        else {
+            qmPrepProcOn = false;
+        }
+
+        if (opts.defined("QMParamPDB")){
+            qmParamPDBDefined = true;
+        }
+        else {
+            qmParamPDBDefined = false;
+        }
+
+        if (opts.defined("QMBondColumn")){
+            qmBondOn = true;
+        }
+        else {
+            qmBondOn = false;
+        }
+
+        if ( strcasecmp(qmSoftware,"orca") != 0 &&
+             strcasecmp(qmSoftware,"mopac") != 0 &&
+             strcasecmp(qmSoftware,"custom") != 0 ) {
+            NAMD_die("Available QM software options are \'mopac\', \'orca\', or \'custom\'.");
+        }
+        else {
+            if ( strcasecmp(qmSoftware,"orca") == 0 )
+                qmFormat = QMFormatORCA;
+            if ( strcasecmp(qmSoftware,"mopac") == 0 )
+                qmFormat = QMFormatMOPAC;
+            if ( strcasecmp(qmSoftware,"custom") == 0 )
+                qmFormat = QMFormatUSR;
+        }
+
+        qmChrgMode = QMCHRGMULLIKEN;
+        if (opts.defined("QMChargeMode")) {
+            if ( strcasecmp(qmChrgModeS,"none") != 0 &&
+                 strcasecmp(qmChrgModeS,"mulliken") != 0 &&
+                 strcasecmp(qmChrgModeS,"chelpg") != 0) {
+                NAMD_die("Available charge options are \'none\', \'mulliken\' or \'chelpg\'.");
+            }
+            else {
+                if ( strcasecmp(qmChrgModeS,"none") == 0 )
+                    qmChrgMode = QMCHRGNONE;
+                if ( strcasecmp(qmChrgModeS,"mulliken") == 0 )
+                    qmChrgMode = QMCHRGMULLIKEN;
+                if ( strcasecmp(qmChrgModeS,"chelpg") == 0 )
+                    qmChrgMode = QMCHRGCHELPG;
+            }
+        }
+
+        if (qmFormat == QMFormatMOPAC && qmChrgMode == QMCHRGCHELPG)
+            NAMD_die("Available charge options for MOPAC are \'none\' and \'mulliken\'.");
+
+        if (qmFormat == QMFormatUSR && qmChrgMode == QMCHRGCHELPG)
+            NAMD_die("Available charge options for MOPAC are \'none\' and \'mulliken\'.");
+
+        if (qmBondOn && (opts.defined("QMBondValueType"))) {
+            if ( strcasecmp(qmBondValueTypeS,"len") != 0 &&
+                strcasecmp(qmBondValueTypeS,"ratio") != 0 ) {
+                NAMD_die("Available QM bond value type options are \'len\' or \'ratio\'.");
+            }
+            else {
+    //         #define QMLENTYPE 1
+    //         #define QMRATIOTYPE 2
+                if ( strcasecmp(qmBondValueTypeS,"len") == 0 )
+                    qmBondValType = 1;
+                if ( strcasecmp(qmBondValueTypeS,"ratio") == 0 )
+                    qmBondValType = 2;
+            }
+        }
+        else if (qmBondOn && ! (opts.defined("QMBondValueType")))
+            qmBondValType = 1;
+
+        if ( strcmp(qmColumn,"beta") != 0 &&
+             strcmp(qmColumn,"occ") != 0 ) {
+            NAMD_die("Available column options are \'beta\' and \'occ\'.");
+        }
+
+        if (qmBondOn) {
+            if ( strcmp(qmBondColumn,"beta") != 0 &&
+                 strcmp(qmBondColumn,"occ") != 0 ) {
+                NAMD_die("Available column options are \'beta\' and \'occ\'.");
+            }
+
+            if (strcmp(qmBondColumn,qmColumn) == 0)
+                NAMD_die("QM column and bond-column must be different!");
+        }
+
+        qmBondScheme = 1;
+        if (opts.defined("QMBondScheme")) {
+            if ( strcasecmp(qmBondSchemeS,"CS") == 0 )
+                qmBondScheme = QMSCHEMECS;
+            if ( strcasecmp(qmBondSchemeS,"RCD") == 0 )
+                qmBondScheme = QMSCHEMERCD;
+            if ( strcasecmp(qmBondSchemeS,"Z1") == 0 )
+                qmBondScheme = QMSCHEMEZ1;
+            if ( strcasecmp(qmBondSchemeS,"Z2") == 0 )
+                qmBondScheme = QMSCHEMEZ2;
+            if ( strcasecmp(qmBondSchemeS,"Z3") == 0 )
+                qmBondScheme = QMSCHEMEZ3;
+        }
+
+//         #define QMPCSCHEMENONE 1
+//         #define QMPCSCHEMEROUND 2
+//         #define QMPCSCHEMEZERO 3
+        qmPCScheme = 1;
+        if (opts.defined("QMPointChargeScheme") && qmPCSwitchOn) {
+            if ( strcasecmp(qmPCSchemeS,"none") == 0 )
+                qmPCScheme = 1;
+
+            if ( strcasecmp(qmPCSchemeS,"round") == 0 )
+                qmPCScheme = 2;
+            if ( strcasecmp(qmPCSchemeS,"zero") == 0 )
+                qmPCScheme = 3;
+
+            if ( qmPCScheme > 1 && ! qmPCSwitchOn)
+                NAMD_die("QM Charge Schemes \'round\' or \'zero\' can only be applied with QMswitching set to \'on\'!");
+        }
+
+//         #define QMLSSMODEDIST 1
+//         #define QMLSSMODECOM 2
+        if (qmLSSOn) {
+
+            if (qmNoPC)
+                NAMD_die("QM Live Solvent Selection cannot be done with QMNoPntChrg set to \'on\'!") ;
+
+            if (rigidBonds != RIGID_NONE)
+                NAMD_die("QM Live Solvent Selection cannot be done with fixed bonds!") ;
+
+            if (qmLSSFreq % qmPCSelFreq != 0)
+                NAMD_die("Frequency of QM solvent update must be a multiple of frequency of point charge selection.");
+
+            if (qmLSSFreq % stepsPerCycle != 0)
+                NAMD_die("Frequency of QM solvent update must be a multiple of steps per cycle.");
+
+            if (opts.defined("QMLSSMode") ) {
+                if ( strcasecmp(qmLSSModeS,"dist") != 0 &&
+                     strcasecmp(qmLSSModeS,"COM") != 0 ) {
+                    NAMD_die("Available LSS mode options are \'dist\' and \'COM\'.");
+                }
+                if ( strcasecmp(qmLSSModeS,"dist") == 0 )
+                    qmLSSMode = 1;
+                else if ( strcasecmp(qmLSSModeS,"COM") == 0 )
+                    qmLSSMode = 2;
+            }
+            else
+                qmLSSMode = 1;
+        }
+
+//         #define QMPCSCALESHIFT 1
+//         #define QMPCSCALESWITCH 2
+        if (qmPCSwitchOn) {
+
+            if (opts.defined("QMSwitchingType") ) {
+                if ( strcasecmp(qmPCSwitchTypeS,"shift") != 0 &&
+                     strcasecmp(qmPCSwitchTypeS,"switch") != 0 ) {
+                    NAMD_die("Available scaling options are \'shift\' and \'switch\'.");
+                }
+                if ( strcasecmp(qmPCSwitchTypeS,"shift") == 0 )
+                    qmPCSwitchType = 1;
+                else if ( strcasecmp(qmPCSwitchTypeS,"switch") == 0 )
+                    qmPCSwitchType = 2;
+            }
+            else
+                qmPCSwitchType = 1;
+        }
+
+        if (qmNoPC && qmPCSelFreq > 1) {
+            iout << iWARN << "QMPCStride being IGNORED since QMNoPntChrg is set to \'on\'!\n" << endi;
+            qmPCSelFreq = 1;
+        }
+
+        if (qmNoPC && qmPCSwitchOn)
+            NAMD_die("QM PC switching can only be applied with QMNoPntChrg set to \'off\'!");
+
+//         if (qmNoPC && qmBondOn)
+//             NAMD_die("QM-MM bonds can only be applied with QMNoPntChrg set to \'off\'!");
+
+        if (qmPCSelFreq <= 0)
+            NAMD_die("QMPCFreq can only be a positive number! For static point charge selection, see QMCutomPC.");
+
+        if (qmCustomPCSel && qmNoPC)
+            NAMD_die("QM Custom PC Selection is incompatible with QMNoPntChrg!");
+
+        if (qmCustomPCSel && qmPCSwitchOn)
+            NAMD_die("QM Custom PC Selection is incompatible with QMSwitching!");
+
+        if (qmCustomPCSel && qmPCSelFreq > 1)
+            NAMD_die("QM Custom PC Selection is incompatible with QMPCStride!");
+    }
 }
 
 void SimParameters::print_config(ParseOptions &opts, ConfigList *config, char *&cwd) {
@@ -4668,6 +4942,121 @@ if ( openatomOn )
      iout << endi;
    }
 
+    // QM command forces
+
+    if (qmForcesOn) {
+        iout << iINFO << "QM FORCES ACTIVE\n";
+        if (qmParamPDBDefined){
+            iout << iINFO << "QM PDB PARAMETER FILE: " << qmParamPDB << "\n";
+        }
+        iout << iINFO << "QM SOFTWARE: " << qmSoftware << "\n";
+
+        if ( qmChrgMode == QMCHRGNONE )
+            iout << iINFO << "QM ATOM CHARGES FROM QM SOFTWARE: NONE\n";
+        if ( qmChrgMode == QMCHRGMULLIKEN )
+            iout << iINFO << "QM ATOM CHARGES FROM QM SOFTWARE: MULLIKEN\n";
+        if ( qmChrgMode == QMCHRGCHELPG )
+            iout << iINFO << "QM ATOM CHARGES FROM QM SOFTWARE: CHELPG\n";
+
+        iout << iINFO << "QM EXECUTABLE PATH: " << qmExecPath << "\n";
+        iout << iINFO << "QM COLUMN: " << qmColumn << "\n";
+        if (qmBondOn) {
+            iout << iINFO << "QM BOND COLUMN: " << qmBondColumn << "\n";
+            iout << iINFO << "QM WILL DETECT BONDS BETWEEN QM AND MM ATOMS.\n";
+            if (qmBondDist) {
+                iout << iINFO << "QM BOND COLUMN WILL DEFINE LINK AOTM DISTANCE.\n";
+                if (qmBondValType == 1)
+                    iout << iINFO << "QM BOND COLUMN HAS LENGTH INFORMATION.\n";
+                else if (qmBondValType == 2)
+                    iout << iINFO << "QM BOND COLUMN HAS RATIO INFORMATION.\n";
+            }
+            if (qmNoPC) {
+                iout << iINFO << "MECHANICHAL EMBEDDING SELECTED."
+                " BOND SCHEME WILL BE IGNORED!\n" << endi;
+                qmBondScheme = QMSCHEMEZ1;
+            }
+            else {
+                if (qmBondScheme == QMSCHEMECS)
+                    iout << iINFO << "QM-MM BOND SCHEME: Charge Shift.\n";
+                else if (qmBondScheme == QMSCHEMERCD)
+                    iout << iINFO << "QM-MM BOND SCHEME: Redistributed Charge and Dipole.\n";
+                else if (qmBondScheme == QMSCHEMEZ1)
+                    iout << iINFO << "QM-MM BOND SCHEME: Z1.\n";
+                else if (qmBondScheme == QMSCHEMEZ2)
+                    iout << iINFO << "QM-MM BOND SCHEME: Z2.\n";
+                else if (qmBondScheme == QMSCHEMEZ3)
+                    iout << iINFO << "QM-MM BOND SCHEME: Z3.\n";
+            }
+
+        }
+        iout << iINFO << "QM BASE DIRECTORY: " << qmBaseDir << "\n";
+//         iout << iINFO << "QM CHARGE: " << qmCharge << "\n";
+//         iout << iINFO << "QM MULTIPLICITY: " << qmMult << "\n";
+        if (qmPrepProcOn) {
+            iout << iINFO << "QM PREPARATION PROCESS: " << qmPrepProc << "\n";
+        }
+        if (qmSecProcOn) {
+            iout << iINFO << "QM SECONDARY PROCESS: " << qmSecProc << "\n";
+        }
+
+        current = config->find("QMConfigLine");
+        for ( ; current; current = current->next ) {
+
+            if ( strstr(current->data,"\n") ) {
+                iout << iINFO << "QM configuration lines from NADM config file\n";
+                continue;
+            }
+
+            iout << iINFO << "QM CONFIG LINE: " << current->data << "\n";
+
+        }
+
+        if (qmReplaceAll) {
+            iout << iINFO << "QM FORCES WILL REPLACE ALL NAMD FORCES!\n";
+        }
+
+        if (qmNoPC)
+            iout << iINFO << "QM NO POINT CHARGE: ON.\n";
+
+        if (qmCustomPCSel)
+            iout << iINFO << "QM CUSTOM POINT CHARGE SELECTION IS ACTIVATED\n";
+
+        if (! qmNoPC && ! qmCustomPCSel)
+            iout << iINFO << "QM POINT CHARGES WILL BE SELECTED EVERY "
+            << qmPCSelFreq << " STEPS.\n";
+
+        if (qmPCSwitchOn) {
+            iout << iINFO << "QM Point Charge Switching: ON.\n";
+
+            if (qmPCScheme == 1)
+                iout << iINFO << "QM Point Charge SCHEME: none.\n";
+            else if (qmPCScheme == 2)
+                iout << iINFO << "QM Point Charge SCHEME: round.\n";
+            else if (qmPCScheme == 3)
+                iout << iINFO << "QM Point Charge SCHEME: zero.\n";
+        }
+
+        if (qmLSSOn) {
+            iout << iINFO << "QM LIVE SOLVENT SELECTION IS ACTIVE.\n" ;
+            iout << iINFO << "QM LIVE SOLVENT SELECTION FREQUENCY: "
+            << qmLSSFreq << "\n" << endi;
+
+            current = config->find("QMLSSSize");
+            for ( ; current; current = current->next ) {
+                iout << iINFO << "QM LIVE SOLVENT SELECTION SIZE (\"qmGrpID numMolecules\"): " << current->data << "\n";
+            }
+
+            if (! opts.defined("QMLWSResname"))
+                strcpy(qmLSSResname,"TIP3");
+            iout << iINFO << "QM LIVE SOLVENT SELECTION WILL USE RESIDUE TYPE: " << qmLSSResname << "\n" << endi;
+        }
+
+        iout << iINFO << "QM execution per node: " << qmSimsPerNode << "\n";
+
+        iout << endi;
+    }
+
+
    // gbis gbobc implicit solvent parameters
 
   if (GBISserOn) {
@@ -4710,7 +5099,8 @@ if ( openatomOn )
    // Global forces configuration
 
    globalForcesOn = ( tclForcesOn || freeEnergyOn || miscForcesOn ||
-                      (IMDon && ! IMDignore) || SMDOn || TMDOn || colvarsOn || symmetryOn );
+                      (IMDon && ! IMDignore) || SMDOn || TMDOn ||
+                      colvarsOn || symmetryOn || qmForcesOn );
 
 
    if (tclForcesOn)
