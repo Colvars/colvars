@@ -376,27 +376,14 @@ colvar::colvar(std::string const &conf)
   {
     bool temp;
     if (get_keyval(conf, "outputSystemForce", temp, false, colvarparse::parse_silent)) {
-      cvm::error("Colvar option outputSystemForce is deprecated.\n"
-        "Please use outputTotalForce, or outputSystemForce within an ABF bias.");
+      cvm::error("Option outputSystemForce is deprecated: only outputTotalForce is supported instead.\n"
+                 "The two are NOT identical: see http://colvars.github.io/totalforce.html.\n", INPUT_ERROR);
       return;
     }
   }
 
-  {
-    bool b_output_total_force;
-    get_keyval(conf, "outputTotalForce", b_output_total_force, false);
-    if (b_output_total_force) {
-      enable(f_cv_output_total_force);
-    }
-  }
-
-  {
-    bool b_output_applied_force;
-    get_keyval(conf, "outputAppliedForce", b_output_applied_force, false);
-    if (b_output_applied_force) {
-      enable(f_cv_output_applied_force);
-    }
-  }
+  get_keyval_feature(this, conf, "outputTotalForce", f_cv_output_total_force, false);
+  get_keyval_feature(this, conf, "outputAppliedForce", f_cv_output_applied_force, false);
 
   // Start in active state by default
   enable(f_cv_active);

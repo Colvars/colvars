@@ -598,19 +598,19 @@ To apply moving restraints, or restraints to more than one colvar simultaneously
 
 \item %
   \keydef
-    {outputSystemForce}{%
+    {outputTotalForce}{%
     \texttt{colvar}}{%
-    Output a system force trajectory for this
+    Output a total force trajectory for this
     colvar}{%
     boolean}{%
     \texttt{off}}{%
-    If \texttt{colvarsTrajFrequency} is defined, the total system force on this
-    colvar (i.e.~the projection of all interatomic forces
-    except constraint forces on this colvar --- see
+    If \texttt{colvarsTrajFrequency} is defined, the total force on this
+    colvar (i.e.~the projection of all atomic total forces
+    onto this colvar --- see
     equation~(\ref{eq:gradient_vector}) in
     section~\ref{sec:colvarbias_abf}) are written to the trajectory
     file under the label ``\texttt{fs\_}$<$\texttt{name}$>$''.
-    For extended Lagrangian colvars, the "system force" felt by the extended degree of freedom
+    For extended Lagrangian colvars, the ``total force'' felt by the extended degree of freedom
     is simply the force from the harmonic spring.
     \textbf{Note:} not all components support this option.  The
     physical unit for this force is \cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{the unit of energy specified by \texttt{units}}, divided by the colvar unit U.}
@@ -632,6 +632,7 @@ To apply moving restraints, or restraints to more than one colvar simultaneously
     extended degree of freedom rather than the geometric colvar itself.
     The physical unit for this
     force is \cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{the unit of energy specified by \texttt{units}} divided by the colvar unit.}
+
 \end{itemize}
 
 
@@ -2612,7 +2613,7 @@ computed considering the closest of the two symmetric images.
 
 Non-scalar components carry the following restrictions:
 \begin{itemize}
-\item Calculation of system forces (\texttt{outputSystemForce} option)
+\item Calculation of total forces (\texttt{outputTotalForce} option)
   is currently not implemented.
 \item Each colvar can only contain one non-scalar component.
 \item Binning on a grid (\texttt{abf}, \texttt{histogram} and
@@ -2626,12 +2627,12 @@ Non-scalar components carry the following restrictions:
   of scalar colvars of arbitrary size.}
 
 
-\cvsubsubsec{Calculating system forces.}
+\cvsubsubsec{Calculating total forces.}
 \label{sec:cvc_sys_forces}
 In addition to the restrictions due to the type of value computed (scalar or non-scalar),
-a final restriction can arise when calculating system force
-(\texttt{outputSystemForce} option or application of a \texttt{abf}
-bias).  System forces are available currently only for the following
+a final restriction can arise when calculating total force
+(\texttt{outputTotalForce} option or application of a \texttt{abf}
+bias).  total forces are available currently only for the following
 components: \texttt{distance}, \texttt{distanceZ},
 \texttt{distanceXY}, \texttt{angle}, \texttt{dihedral}, \texttt{rmsd},
 \texttt{eigenvector} and \texttt{gyration}.
@@ -2677,7 +2678,7 @@ following parameters, which are common to all components:
     \texttt{1}}{%
     Defines the power at which the value of this component is raised
     before being added to the sum.  When this exponent is
-    different than 1 (non-linear sum), system forces and the Jacobian
+    different than 1 (non-linear sum), total forces and the Jacobian
     force are not available, making the colvar unsuitable for ABF calculations.}
 \end{itemize}
 
@@ -2865,7 +2866,7 @@ acting on variable $\xi_{i}$ is measured, whereas the second term in the
 average corresponds to the geometric entropy contribution that appears
 as a Jacobian correction in the classic formalism~\cite{Carter1989}.
 Condition~(\ref{eq:ortho_gradient}) states that the direction along
-which the system force on $\xi_{i}$ is measured is orthogonal to the
+which the total force on $\xi_{i}$ is measured is orthogonal to the
 gradient of $\xi_{j}$, which means that the force measured on $\xi_{i}$
 does not act on $\xi_{j}$.
 
@@ -2916,19 +2917,19 @@ Most commonly, the number of variables is one or two.
 
 \begin{enumerate}
  \item \emph{Only linear combinations} of colvar components can be used in ABF calculations.
- \item \emph{Availability of system forces} is necessary. The following colvar components
+ \item \emph{Availability of total forces} is necessary. The following colvar components
 can be used in ABF calculations:
 \texttt{distance}, \texttt{distance\_xy}, \texttt{distance\_z}, \texttt{angle},
 \texttt{dihedral}, \texttt{gyration},  \texttt{rmsd} and \texttt{eigenvector}.
 Atom groups may not be replaced by dummy atoms, unless they are excluded
-from the force measurement by specifying \texttt{oneSiteSystemForce}, if available.
+from the force measurement by specifying \texttt{oneSiteTotalForce}, if available.
  \item \emph{Mutual orthogonality of colvars}. In a multidimensional ABF calculation,
 equation~(\ref{eq:ortho_gradient}) must be satisfied for any two colvars $\xi_{i}$ and $\xi_{j}$.
 Various cases fulfill this orthogonality condition:
 \begin{itemize}
  \item $\xi_{i}$ and $\xi_{j}$ are based on non-overlapping sets of atoms.
  \item atoms involved in the force measurement on $\xi_{i}$ do not participate in
-the definition of $\xi_{j}$. This can be obtained using the option \texttt{oneSiteSystemForce}
+the definition of $\xi_{j}$. This can be obtained using the option \texttt{oneSiteTotalForce}
 of the \texttt{distance}, \texttt{angle}, and \texttt{dihedral} components
 (example: Ramachandran angles $\phi$, $\psi$).
  \item $\xi_{i}$ and $\xi_{j}$ are orthogonal by construction. Useful cases are the sum and
@@ -3070,9 +3071,9 @@ The following specific parameters can be set in the ABF configuration block:
   {\texttt{no}}
   { This is command requires that NAMD be compiled and executed with multiple-replica
     support.
-    If \texttt{shared} is set to yes, the system force samples will be synchronized among all replicas
+    If \texttt{shared} is set to yes, the total force samples will be synchronized among all replicas
     at intervals defined by \texttt{sharedFreq}.
-    Thus, it is as if system force samples among all replicas are
+    Thus, it is as if total force samples among all replicas are
     gathered in a single shared buffer, which why the algorithm is referred to as shared ABF.
     Shared ABF allows all replicas to benefit from the sampling done by other replicas and can lead to faster convergence of the biasing force.
   }
@@ -3083,7 +3084,7 @@ The following specific parameters can be set in the ABF configuration block:
   {\texttt{outputFreq}}
   {
   In the current implementation of shared ABF, each replica maintains a separate
-  buffer of system force samples that determine the biasing force.
+  buffer of total force samples that determine the biasing force.
   Every \texttt{sharedFreq} steps, the replicas communicate the samples that
   have been gathered since the last synchronization time, ensuring all replicas
   apply a similar biasing force.
