@@ -272,10 +272,13 @@ public:
   /// \brief Calculate the quantities associated to the colvar (but not to the CVCs)
   int calc_colvar_properties();
 
-  /// Get the current biasing force
-  inline colvarvalue bias_force() const
+  /// Get the current applied force
+  inline colvarvalue const applied_force() const
   {
-    return fb;
+    if (is_enabled(f_cv_extended_Lagrangian)) {
+      return fr;
+    }
+    return f;
   }
 
   /// Set the total biasing force to zero

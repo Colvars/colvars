@@ -150,7 +150,7 @@ colvar::colvar(std::string const &conf)
     feature_states[f_cv_linear]->enabled = lin;
   }
 
-  // Colvar is homogeneous iff:
+  // Colvar is homogeneous if:
   // - it is linear (hence not scripted)
   // - all cvcs have coefficient 1 or -1
   // i.e. sum or difference of cvcs
@@ -1642,15 +1642,9 @@ std::ostream & colvar::write_traj(std::ostream &os)
   }
 
   if (is_enabled(f_cv_output_applied_force)) {
-    if (is_enabled(f_cv_extended_Lagrangian)) {
-      os << " "
-         << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width)
-         << fr;
-    } else {
-      os << " "
-         << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width)
-         << f;
-    }
+    os << " "
+       << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width)
+       << applied_force();
   }
 
   return os;

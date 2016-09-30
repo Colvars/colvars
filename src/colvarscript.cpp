@@ -243,7 +243,7 @@ int colvarscript::proc_colvar(int argc, char const *argv[]) {
   }
 
   if (subcmd == "getappliedforce") {
-    result = (cv->bias_force()).to_simple_string();
+    result = (cv->applied_force()).to_simple_string();
     return COLVARS_OK;
   }
 
