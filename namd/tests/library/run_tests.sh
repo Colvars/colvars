@@ -101,10 +101,6 @@ for dir in ${DIRLIST} ; do
       rm -f ${basename}.Tcl.out
     fi
 
-    # Filter out the version number from the state files to allow comparisons
-    grep -v 'version' ${basename}.colvars.state > ${basename}.colvars.state.tmp
-    mv ${basename}.colvars.state.tmp ${basename}.colvars.state
-
     if [ "x${gen_ref_output}" = 'xyes' ]; then
       cp ${basename}.colvars.state AutoDiff/
       cp ${basename}.colvars.traj  AutoDiff/
@@ -118,6 +114,11 @@ for dir in ${DIRLIST} ; do
   for f in AutoDiff/*
   do
     base=`basename $f`
+    if [ "${base}" != "${base%.state}" ] ; then
+      # Filter out the version number from the state files to allow comparisons
+      grep -v 'version' ${base} > ${base}.tmp
+      mv ${base}.tmp ${base} 
+    fi
     $DIFF $f $base > "$base.diff"
     RETVAL=$?
     if [ $RETVAL -ne 0 ]
