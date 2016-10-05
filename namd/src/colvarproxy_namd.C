@@ -540,9 +540,9 @@ void colvarproxy_namd::fatal_error(std::string const &message)
 {
   log(message);
   if (errno) log(strerror(errno));
-  if (!cvm::debug())
-    log("If this error message is unclear, "
-        "try recompiling with -DCOLVARS_DEBUG.\n");
+  // if (!cvm::debug())
+  //   log("If this error message is unclear, "
+  //       "try recompiling with -DCOLVARS_DEBUG.\n");
   if (errno) {
     NAMD_err("Error in the collective variables module");
   } else {
