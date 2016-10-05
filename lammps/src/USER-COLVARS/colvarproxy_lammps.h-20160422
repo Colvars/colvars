@@ -86,7 +86,7 @@ class colvarproxy_lammps : public colvarproxy {
   // methods for lammps to move data or trigger actions in the proxy
  public:
   void set_temperature(double t) { t_target = t; };
-  bool need_total_forces() const { return  total_force_requested; };
+  bool total_forces_enabled() const { return  total_force_requested; };
   bool want_exit() const { return do_exit; };
 
   // perform colvars computation. returns biasing energy
