@@ -197,6 +197,11 @@ public:
     return COLVARS_DEBUG;
   }
 
+  /// \brief How many objects are configured yet?
+  inline size_t const size() const
+  {
+    return colvars.size() + biases.size();
+  }
 
   /// \brief Constructor \param config_name Configuration file name
   /// \param restart_name (optional) Restart file name

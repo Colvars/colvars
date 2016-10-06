@@ -810,6 +810,7 @@ int colvarmodule::analyze()
 
 int colvarmodule::setup()
 {
+  if (this->size() == 0) return cvm::get_error();
   // loop over all components of all colvars to reset masses of all groups
   for (std::vector<colvar *>::iterator cvi = colvars.begin();
        cvi != colvars.end();  cvi++) {
@@ -867,6 +868,8 @@ int colvarmodule::reset()
 
 int colvarmodule::setup_input()
 {
+  if (this->size() == 0) return cvm::get_error();
+
   // name of input state file
   restart_in_name = proxy->input_prefix().size() ?
     std::string(proxy->input_prefix()+".colvars.state") :
@@ -897,7 +900,9 @@ int colvarmodule::setup_input()
 
 int colvarmodule::setup_output()
 {
-  int error_code = 0;
+  if (this->size() == 0) return cvm::get_error();
+
+  int error_code = COLVARS_OK;
 
   // output state file (restart)
   restart_out_name = proxy->restart_output_prefix().size() ?
