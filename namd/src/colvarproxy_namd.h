@@ -16,7 +16,7 @@
 #include "colvarvalue.h"
 
 #ifndef COLVARPROXY_VERSION
-#define COLVARPROXY_VERSION "2016-04-28"
+#define COLVARPROXY_VERSION "2016-10-05"
 #endif
 
 // For replica exchange
@@ -48,7 +48,7 @@ protected:
   bool first_timestep;
   size_t previous_NAMD_step;
 
-  bool system_force_requested;
+  bool total_force_requested;
 
   /// Used to submit restraint energy as MISC
   SubmitReduction *reduction;
@@ -66,6 +66,9 @@ public:
 
   int setup();
 
+  // synchronize the local arrays with requested or forced atoms
+  int update_atoms_map(AtomIDList::const_iterator begin, AtomIDList::const_iterator end);
+
   void calculate();
 
   void log(std::string const &message);
@@ -73,7 +76,13 @@ public:
   void fatal_error(std::string const &message);
   void exit(std::string const &message);
   void add_energy(cvm::real energy);
-  void request_system_force(bool yesno);
+  void request_total_force(bool yesno);
+
+  bool total_forces_enabled() const
+  {
+    return total_force_requested;
+  }
+
   int run_force_callback();
   int run_colvar_callback(std::string const &name,
                           std::vector<const colvarvalue *> const &cvcs,
@@ -82,7 +91,7 @@ public:
                                    std::vector<const colvarvalue *> const &cvcs,
                                    std::vector<cvm::matrix2d<cvm::real> > &gradient);
 
-  inline cvm::real unit_angstrom()
+  cvm::real unit_angstrom()
   {
     return 1.0;
   }
@@ -216,6 +225,15 @@ public:
                     std::string const     &atom_name,
                     std::string const     &segment_id);
   void clear_atom(int index);
+
+  inline void update_atom_properties(int index)
+  {
+    Molecule *mol = Node::Object()->molecule;
+    // update mass
+    atoms_masses[index] = mol->atommass(atoms_ids[index]);
+    // update charge
+    atoms_charges[index] = mol->atomcharge(atoms_ids[index]);
+  }
 
   cvm::rvector position_distance(cvm::atom_pos const &pos1,
                                  cvm::atom_pos const &pos2);

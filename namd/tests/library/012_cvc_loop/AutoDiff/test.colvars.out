@@ -1,11 +1,14 @@
 colvars: ----------------------------------------------------------------------
-colvars: Please cite Fiorin et al, Mol Phys 2013 in any publication based on this calculation.
+colvars: Please cite Fiorin et al, Mol Phys 2013:
+colvars:  http://dx.doi.org/10.1080/00268976.2013.813594
+colvars: in any publication based on this calculation.
+colvars: SMP parallelism is available.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
 colvars: # indexFile = "" [default]
 colvars: # analysis = off [default]
 colvars: # colvarsTrajFrequency = 1
-colvars: # colvarsRestartFrequency = 2000
+colvars: # colvarsRestartFrequency = 0 [default]
 colvars: # colvarsTrajAppend = off [default]
 colvars: # scriptedColvarForces = off [default]
 colvars: # scriptingAfterBiases = on [default]
@@ -25,13 +28,13 @@ colvars: Reading new configuration:
 colvars: # indexFile = "" [default]
 colvars: # analysis = off [default]
 colvars: # colvarsTrajFrequency = 1 [default]
-colvars: # colvarsRestartFrequency = 2000 [default]
+colvars: # colvarsRestartFrequency = 0 [default]
 colvars: # colvarsTrajAppend = off [default]
 colvars: # scriptedColvarForces = off [default]
 colvars: # scriptingAfterBiases = on [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
-colvars:   # name = d0
+colvars:   # name = "d0"
 colvars:   Initializing a new "distance" component.
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
@@ -69,14 +72,16 @@ colvars:   # lowerWallConstant = 0 [default]
 colvars:   # upperBoundary = 0 [default]
 colvars:   # upperWallConstant = 0 [default]
 colvars:   # expandBoundaries = off [default]
+colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
 colvars:   # outputSystemForce = off [default]
+colvars:   # outputTotalForce = off [default]
 colvars:   # outputAppliedForce = off [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
-colvars:   # name = d1
+colvars:   # name = "d1"
 colvars:   Initializing a new "distance" component.
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
@@ -174,14 +179,16 @@ colvars:   # lowerWallConstant = 0 [default]
 colvars:   # upperBoundary = 0 [default]
 colvars:   # upperWallConstant = 0 [default]
 colvars:   # expandBoundaries = off [default]
+colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
 colvars:   # outputSystemForce = off [default]
+colvars:   # outputTotalForce = off [default]
 colvars:   # outputAppliedForce = off [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
-colvars:   # name = d2
+colvars:   # name = "d2"
 colvars:   Initializing a new "distance" component.
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
@@ -399,10 +406,12 @@ colvars:   # lowerWallConstant = 0 [default]
 colvars:   # upperBoundary = 0 [default]
 colvars:   # upperWallConstant = 0 [default]
 colvars:   # expandBoundaries = off [default]
+colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
 colvars:   # outputSystemForce = off [default]
+colvars:   # outputTotalForce = off [default]
 colvars:   # outputAppliedForce = off [default]
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables initialized, 3 in total.

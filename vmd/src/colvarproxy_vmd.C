@@ -116,7 +116,7 @@ colvarproxy_vmd::colvarproxy_vmd(Tcl_Interp *vti, VMDApp *v, int molid)
   colvars->restart_out_freq = 0;
   cvm::rotation::monitor_crossings = false;
 
-  system_force_requested = false;
+  total_force_requested = false;
 
   colvars->setup_input();
   colvars->setup_output();
@@ -161,7 +161,7 @@ int colvarproxy_vmd::setup()
 {
   vmdmol = vmd->moleculeList->mol_from_id(vmdmolid);
   if (vmdmol) {
-    frame(vmdmol->frame());
+    set_frame(vmdmol->frame());
   } else {
     error("Error: cannot find the molecule requested("+cvm::to_str(vmdmolid)+").\n");
     return COLVARS_ERROR;
@@ -184,7 +184,7 @@ int colvarproxy_vmd::update_input()
 
   int error_code = COLVARS_OK;
 
-  cvm::combine_errors(error_code, update_atomic_properties());
+  error_code |= update_atomic_properties();
 
   // copy positions in the internal arrays
   float *vmdpos = (vmdmol->get_frame(vmdmol_frame))->pos;
@@ -207,7 +207,7 @@ int colvarproxy_vmd::update_atomic_properties()
 
   if (masses == NULL) {
     error("Error: masses are undefined for the molecule being used.\n");
-    cvm::combine_errors(error_code, BUG_ERROR);
+    error_code |= BUG_ERROR;
   } else {
     for (size_t i = 0; i < atoms_ids.size(); i++) {
       atoms_masses[i]  = masses[atoms_ids[i]];
@@ -216,7 +216,7 @@ int colvarproxy_vmd::update_atomic_properties()
 
   if (charges == NULL) {
     error("Error: charges are undefined for the molecule being used.\n");
-    cvm::combine_errors(error_code, BUG_ERROR);
+    error_code |= BUG_ERROR;
   } else {
     for (size_t i = 0; i < atoms_ids.size(); i++) {
       atoms_charges[i] = charges[atoms_ids[i]];
@@ -227,14 +227,14 @@ int colvarproxy_vmd::update_atomic_properties()
 }
 
 
-void colvarproxy_vmd::request_system_force(bool yesno)
+void colvarproxy_vmd::request_total_force(bool yesno)
 {
-  if ((yesno == true) && (system_force_requested == false)) {
-    cvm::log("Warning: a bias requested system forces, which are undefined in VMD.  "
+  if ((yesno == true) && (total_force_requested == false)) {
+    cvm::log("Warning: a bias requested total forces, which are undefined in VMD.  "
              "This is only meaningful when analyzing a simulation where these were used, "
              "provided that a state file is loaded.\n");
   }
-  system_force_requested = yesno;
+  total_force_requested = yesno;
 }
 
 
@@ -273,12 +273,13 @@ void colvarproxy_vmd::exit(std::string const &message)
 }
 
 
-int colvarproxy_vmd::frame(int f)
+int colvarproxy_vmd::set_frame(long int f)
 {
   if (vmdmol->get_frame(f) != NULL) {
     vmdmol_frame = f;
+    colvars->it = f;
     update_input();
-    return f;
+    return COLVARS_OK;
   } else {
     return COLVARS_NO_SUCH_FRAME;
   }
@@ -554,7 +555,7 @@ int colvarproxy_vmd::load_atoms(char const *pdb_filename,
   if (pdb_field_str.size() == 0) {
     cvm::log("Error: must define which PDB field to use "
              "in order to define atoms from a PDB file.\n");
-    cvm::set_error_bit(INPUT_ERROR);
+    cvm::set_error_bits(INPUT_ERROR);
     return COLVARS_ERROR;
   }
 

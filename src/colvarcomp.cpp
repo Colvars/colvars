@@ -43,17 +43,29 @@ colvar::cvc::cvc(std::string const &conf)
 
   // All cvcs implement this
   provide(f_cvc_debug_gradient);
-  {
-    bool b_debug_gradient;
-    get_keyval(conf, "debugGradients", b_debug_gradient, false, parse_silent);
-    if (b_debug_gradient) enable(f_cvc_debug_gradient);
-  }
+  get_keyval_feature((colvarparse *)this, conf, "debugGradients",
+                     f_cvc_debug_gradient, false, parse_silent);
 
   // Attempt scalable calculations when in parallel? (By default yes, if available)
   get_keyval(conf, "scalable", b_try_scalable, true);
 
   if (cvm::debug())
     cvm::log("Done initializing cvc base object.\n");
+}
+
+
+int colvar::cvc::init_total_force_params(std::string const &conf)
+{
+  if (get_keyval_feature(this, conf, "oneSiteSystemForce",
+                         f_cvc_one_site_total_force, is_enabled(f_cvc_one_site_total_force))) {
+    cvm::log("Warning: keyword \"oneSiteSystemForce\" is deprecated: "
+             "please use \"oneSiteTotalForce\" instead.\n");
+  }
+  if (get_keyval_feature(this, conf, "oneSiteTotalForce",
+                         f_cvc_one_site_total_force, is_enabled(f_cvc_one_site_total_force))) {
+    cvm::log("Computing total force on group 1 only");
+  }
+  return COLVARS_OK;
 }
 
 
@@ -80,8 +92,6 @@ cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
 
       if (is_enabled(f_cvc_scalable)) {
         cvm::log("Will enable scalable calculation for group \""+group->key+"\".\n");
-      } else {
-        cvm::log("Scalable calculation is not available for group \""+group->key+"\" with the current configuration.\n");
       }
     }
 
@@ -107,7 +117,7 @@ int colvar::cvc::setup()
   description = "cvc " + name;
 
   for (i = 0; i < atom_groups.size(); i++) {
-    add_child((cvm::deps *) atom_groups[i]);
+    add_child((colvardeps *) atom_groups[i]);
   }
 
   return COLVARS_OK;
@@ -276,4 +286,4 @@ void colvar::cvc::debug_gradients(cvm::atom_group *group)
 
 // Static members
 
-std::vector<cvm::deps::feature *> colvar::cvc::cvc_features;
+std::vector<colvardeps::feature *> colvar::cvc::cvc_features;

@@ -6,7 +6,7 @@ indexFile ../Common/da.ndx
 colvar {
     name rmsdA
 
-    outputSystemForce on
+    outputTotalForce on
     #  outputAppliedForce on
     width 1.0 
 
@@ -28,7 +28,7 @@ colvar {
 colvar {
     name rmsdB
 
-    outputSystemForce on
+    outputTotalForce on
     #  outputAppliedForce on
     width 1.0 
 

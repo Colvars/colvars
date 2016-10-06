@@ -1,1 +1,7 @@
-../ExpectedResults/test.Tcl.out
+TCL: First, running unscripted config
+TCL: Original numsteps 20 will be ignored.
+TCL: Running for 20 steps
+TCL: Resetting colvars with scripted config
+TCL: Reinitializing atom data
+TCL: Running for 20 steps
+TCL: { 0. 0. 0. 0. 1. 0. 0. 0. 0. 1. 0. 0. 0. 0. 1. 0. 0. 0. 0. 1.} {0.8030419238505132 -0.04433522347381156 -0.5942710294957967 -0.8030419238505132 0.04433522347381156 0.5942710294957967 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.}

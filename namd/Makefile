@@ -112,6 +112,10 @@ OBJS = \
 	$(DSTDIR)/wkfutils.o \
 	$(DSTDIR)/common.o \
 	$(DSTDIR)/dcdlib.o \
+	$(DSTDIR)/eabf1D.o \
+	$(DSTDIR)/eabf2D.o \
+	$(DSTDIR)/eabffunc.o \
+	$(DSTDIR)/eabfTcl.o \
 	$(DSTDIR)/erf.o \
 	$(DSTDIR)/fitrms.o \
 	$(DSTDIR)/main.o \
@@ -135,6 +139,7 @@ OBJS = \
 	$(DSTDIR)/ComputeConsForce.o \
 	$(DSTDIR)/ComputeConsForceMsgs.o \
 	$(DSTDIR)/ComputeCrossterms.o \
+	$(DSTDIR)/ComputeCUDAMgr.o \
 	$(DSTDIR)/ComputeCylindricalBC.o \
 	$(DSTDIR)/ComputeDihedrals.o \
 	$(DSTDIR)/ComputeDPME.o \
@@ -143,6 +148,7 @@ OBJS = \
 	$(DSTDIR)/ComputeEField.o \
 	$(DSTDIR)/ComputeEwald.o \
 	$(DSTDIR)/ComputeExt.o \
+	$(DSTDIR)/ComputeQM.o \
 	$(DSTDIR)/ComputeGBISser.o \
 	$(DSTDIR)/ComputeGBIS.o \
 	$(DSTDIR)/ComputeGromacsPair.o \
@@ -173,6 +179,8 @@ OBJS = \
 	$(DSTDIR)/ComputePatch.o \
 	$(DSTDIR)/ComputePatchPair.o \
 	$(DSTDIR)/ComputePme.o \
+	$(DSTDIR)/ComputePmeCUDA.o \
+	$(DSTDIR)/ComputePmeCUDAMgr.o \
 	$(DSTDIR)/OptPme.o \
 	$(DSTDIR)/OptPmeRealSpace.o \
 	$(DSTDIR)/ComputeRestraints.o \
@@ -182,6 +190,9 @@ OBJS = \
 	$(DSTDIR)/ComputeThole.o \
 	$(DSTDIR)/ConfigList.o \
 	$(DSTDIR)/Controller.o \
+	$(DSTDIR)/CudaComputeNonbonded.o \
+	$(DSTDIR)/CudaPmeSolver.o \
+	$(DSTDIR)/CudaPmeSolverUtil.o \
 	$(DSTDIR)/CudaUtils.o \
 	$(DSTDIR)/ccsinterface.o \
 	$(DSTDIR)/DataStream.o \
@@ -245,6 +256,7 @@ OBJS = \
 	$(DSTDIR)/Molecule.o \
 	$(DSTDIR)/Molecule2.o \
 	$(DSTDIR)/GoMolecule.o \
+        $(DSTDIR)/MoleculeQM.o \
 	$(DSTDIR)/NamdCentLB.o \
 	$(DSTDIR)/NamdNborLB.o \
 	$(DSTDIR)/NamdHybridLB.o \
@@ -262,6 +274,7 @@ OBJS = \
 	$(DSTDIR)/PDBData.o \
 	$(DSTDIR)/PmeKSpace.o \
 	$(DSTDIR)/PmeRealSpace.o \
+	$(DSTDIR)/PmeSolver.o \
 	$(DSTDIR)/ProcessorPrivate.o \
 	$(DSTDIR)/ProxyMgr.o \
 	$(DSTDIR)/ProxyPatch.o \
@@ -309,18 +322,28 @@ CIFILES = 	\
 		$(INCDIR)/CollectionMaster.def.h \
 		$(INCDIR)/CollectionMgr.decl.h \
 		$(INCDIR)/CollectionMgr.def.h \
+		$(INCDIR)/ComputeCUDAMgr.decl.h \
+		$(INCDIR)/ComputeCUDAMgr.def.h \
 		$(INCDIR)/ComputeMgr.decl.h \
 		$(INCDIR)/ComputeMgr.def.h \
 		$(INCDIR)/ComputeGridForceMgr.decl.h \
 		$(INCDIR)/ComputeGridForceMgr.def.h \
 		$(INCDIR)/ComputePmeMgr.decl.h \
 		$(INCDIR)/ComputePmeMgr.def.h \
+		$(INCDIR)/ComputePmeCUDAMgr.decl.h \
+		$(INCDIR)/ComputePmeCUDAMgr.def.h \
+		$(INCDIR)/CudaPmeSolver.decl.h \
+		$(INCDIR)/CudaPmeSolver.def.h \
 		$(INCDIR)/OptPmeMgr.decl.h \
 		$(INCDIR)/OptPmeMgr.def.h \
 		$(INCDIR)/PmeFFTLib.decl.h \
 		$(INCDIR)/PmeFFTLib.def.h \
+		$(INCDIR)/PmeSolver.decl.h \
+		$(INCDIR)/PmeSolver.def.h \
 		$(INCDIR)/ComputeExtMgr.decl.h \
 		$(INCDIR)/ComputeExtMgr.def.h \
+		$(INCDIR)/ComputeQMMgr.decl.h \
+		$(INCDIR)/ComputeQMMgr.def.h \
 		$(INCDIR)/ComputeGBISserMgr.decl.h \
 		$(INCDIR)/ComputeGBISserMgr.def.h \
 		$(INCDIR)/LdbCoordinator.decl.h \
@@ -364,20 +387,19 @@ PLUGINOBJS = \
 PLUGINLIB = $(PLUGINOBJS)
 
 CUDAOBJSRAW = \
+	$(DSTDIR)/ComputeNonbondedCUDAKernel.o \
 	$(DSTDIR)/ComputePmeCUDAKernel.o \
-	$(DSTDIR)/ComputeNonbondedCUDAKernel.o
+	$(DSTDIR)/CudaComputeGBISKernel.o \
+	$(DSTDIR)/CudaComputeNonbondedKernel.o \
+	$(DSTDIR)/CudaPmeSolverUtilKernel.o \
+	$(DSTDIR)/CudaTileListKernel.o \
+	$(DSTDIR)/DeviceCUDAkernel.o
 
-$(DSTDIR)/ComputePmeCUDAKernel.o: \
-	$(SRCDIR)/ComputePmeCUDAKernel.cu \
-	$(SRCDIR)/ComputePmeCUDAKernel.h
-	$(CUDACC) $(CUDACCOPTS) -Xptxas -v $(COPTO) "`$(NATIVEPATH) $(DSTDIR)/`ComputePmeCUDAKernel.o" $(COPTC) "`$(NATIVEPATH) $(SRCDIR)/`ComputePmeCUDAKernel.cu"
+CUDAOBJSRAWSTATIC = $(CUDAOBJSRAW) \
+	$(DSTDIR)/CudaPmeSolverUtilKernel_dlink.o
 
-$(DSTDIR)/ComputeNonbondedCUDAKernel.o: \
-	$(SRCDIR)/ComputeNonbondedCUDAKernel.cu \
-	$(SRCDIR)/ComputeNonbondedCUDAKernelBase.h \
-	$(SRCDIR)/ComputeGBISCUDAKernel.h \
-	$(SRCDIR)/ComputeNonbondedCUDAKernel.h
-	$(CUDACC) $(CUDACCOPTS) -Xptxas -v $(COPTO) "`$(NATIVEPATH) $(DSTDIR)/`ComputeNonbondedCUDAKernel.o" $(COPTC) "`$(NATIVEPATH) $(SRCDIR)/`ComputeNonbondedCUDAKernel.cu"
+$(DSTDIR)/CudaPmeSolverUtilKernel_dlink.o: $(DSTDIR)/CudaPmeSolverUtilKernel.o
+	$(CUDACC) $(CUDACCOPTS) -v -lcufft_static -dlink $(DSTDIR)/CudaPmeSolverUtilKernel.o $(COPTO)$@
 
 SBOBJS = $(DSTDIR)/tcl_main.o $(SBLIB)
 
@@ -427,6 +449,9 @@ PLUGINCFLAGS = $(PLUGINGCCFLAGS) $(COPTS)
 SBCFLAGS = $(COPTI)$(SBSRCDIR) $(COPTI)$(PLUGININCDIR) $(COPTD)STATIC_PLUGIN -DPSFGEN_USEPLUGINS $(TCL) $(COPTS) $(RELEASE) $(EXTRADEFINES) $(TRACEOBJDEF)
 SBGCCFLAGS = $(COPTI)$(SBSRCDIR) $(COPTI)$(PLUGININCDIR) $(COPTD)STATIC_PLUGIN -DPSFGEN_USEPLUGINS $(TCL) $(RELEASE) $(EXTRADEFINES) $(TRACEOBJDEF)
 
+# .ci preprocessing flags
+CIPPFLAGS = $(CUDAFLAGS)
+
 # Add new executables here.
 
 BINARIES = namd2 psfgen sortreplicas flipdcd flipbinpdb charmrun
@@ -441,7 +466,7 @@ MAKEBUILDINFO = \
 	cat $(BUILDINFO).C; \
 	$(CXX) $(CXXFLAGS) $(COPTO)$(BUILDINFO).o $(COPTC) $(BUILDINFO).C
 
-all:	$(BINARIES) $(LIBCUDARTSO)
+all:	$(BINARIES) $(LIBCUDARTSO) $(LIBCUFFTSO)
 
 namd2:	$(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS)
 	$(MAKEBUILDINFO)
@@ -470,9 +495,12 @@ charmrun: $(CHARM)/bin/charmrun # XXX
 $(LIBCUDARTSO):
 	$(COPY) $(CUDASODIR)/$(LIBCUDARTSO) $@;
 
+$(LIBCUFFTSO):
+	$(COPY) $(CUDASODIR)/$(LIBCUFFTSO) $@;
+
 WINDOWSBINARIES = namd2.exe psfgen.exe sortreplicas.exe
 
-winall: $(WINDOWSBINARIES) $(LIBCUDARTSO)
+winall: $(WINDOWSBINARIES) $(LIBCUDARTSO) $(LIBCUFFTSO)
 
 namd2.exe:  $(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS) $(TCLDLL)
 	$(MAKEBUILDINFO)
@@ -631,7 +659,7 @@ $(FMMDIR)/src/lib$(FMMNAME).a:
 	# prevent gmake from deleting intermediate files
 
 $(INCDIR)/%.decl.h $(INCDIR)/%.def.h: $(MKINCDIR) $(SRCDIR)/%.ci
-	$(COPY) $(SRCDIR)/$*.ci $(INCDIR)
+	cpp -E -P $(CIPPFLAGS) $(SRCDIR)/$*.ci > $(INCDIR)/$*.ci
 	$(CHARMXI) $(INCDIR)/$*.ci
 	$(RM) $(INCDIR)/$*.ci
 	$(MOVE) $*.def.h $(INCDIR)
@@ -671,9 +699,17 @@ depends: $(MKINCDIR) $(CIFILES) $(MKDSTDIR) $(DEPENDFILE)
               fi; \
 	      $(ECHO) "checking dependencies for $$SRCFILE" ; \
 	      g++ -MM $(GXXFLAGS) $$SRCFILE | \
-	      perl $(SRCDIR)/dc.pl $(CHARMINC) $(TCLDIR) $(FFTDIR) /usr/include /usr/local >> $(DEPENDFILE); \
+	      perl $(SRCDIR)/dc.pl $(CHARMINC) $(TCLDIR) $(FFTDIR) /usr/include /usr/local $(CUDADIR) >> $(DEPENDFILE); \
 	      $(ECHO) '	$$(CXX) $$(CXXFLAGS) $$(COPTO)'$$i '$$(COPTC)' \
 		$$SRCFILE >> $(DEPENDFILE) ; \
+	done; \
+	for i in $(CUDAOBJSRAW) ; do \
+	      SRCFILE=`basename $$i .o`.cu ; \
+	      $(ECHO) "checking dependencies for $(SRCDIR)/$$SRCFILE" ; \
+	      g++ -x c++ -MM $(CUDA) $(SRCDIR)/$$SRCFILE | \
+	      perl $(SRCDIR)/dc.pl $(CHARMINC) $(TCLDIR) $(FFTDIR) /usr/include /usr/local $(CUDADIR) $(CUBDIR) >> $(DEPENDFILE); \
+	      $(ECHO) '	$$(CUDACC) $$(CUDACCOPTS) -Xptxas -v $$(COPTO)'$$i '$$(COPTC)' \
+		'`$$(NATIVEPATH) $(SRCDIR)/`'$$SRCFILE >> $(DEPENDFILE) ; \
 	done; \
 	for i in $(PLUGINOBJS) ; do \
 	      BASENAME=`basename $$i .o` ; \
@@ -735,9 +771,9 @@ RELEASE_DIR_NAME = NAMD_$(NAMD_VERSION)_$(NAMD_PLATFORM)
 
 DOC_FILES = README.txt announce.txt license.txt notes.txt
 
-RELEASE_FILES = $(LIBCUDARTSO) flipdcd flipbinpdb sortreplicas psfgen charmrun namd2
+RELEASE_FILES = $(LIBCUDARTSO) $(LIBCUFFTSO) flipdcd flipbinpdb sortreplicas psfgen charmrun namd2
 
-WINDOWS_RELEASE_FILES = $(LIBCUDARTSO) $(WINDOWSBINARIES) $(TCLDLL)
+WINDOWS_RELEASE_FILES = $(LIBCUDARTSO) $(LIBCUFFTSO) $(WINDOWSBINARIES) $(TCLDLL)
 
 release: all
 	$(ECHO) Creating release $(RELEASE_DIR_NAME)

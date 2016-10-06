@@ -1,1 +1,19 @@
-../ExpectedResults/test.colvars.state
+configuration {
+  step           10
+  dt 5.000000e-01
+}
+
+colvar {
+  name rmsd
+  x  1.39198635631904e+00
+}
+
+restraint {
+  configuration {
+    name harmonic1
+    centers  1.00000000000000e-01
+    centers_raw  1.00000000000000e-01
+    accumulatedWork -2.01574785800035e+03
+  }
+}
+

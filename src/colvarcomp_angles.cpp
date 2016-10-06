@@ -18,9 +18,9 @@ colvar::angle::angle(std::string const &conf)
   group1 = parse_group(conf, "group1");
   group2 = parse_group(conf, "group2");
   group3 = parse_group(conf, "group3");
-  if (get_keyval(conf, "oneSiteSystemForce", b_1site_force, false)) {
-    cvm::log("Computing system force on group 1 only");
-  }
+
+  init_total_force_params(conf);
+
   x.type(colvarvalue::type_scalar);
 }
 
@@ -33,7 +33,6 @@ colvar::angle::angle(cvm::atom const &a1,
   provide(f_cvc_inv_gradient);
   provide(f_cvc_Jacobian);
   provide(f_cvc_com_based);
-  b_1site_force = false;
 
   group1 = new cvm::atom_group(std::vector<cvm::atom>(1, a1));
   group2 = new cvm::atom_group(std::vector<cvm::atom>(1, a2));
@@ -94,16 +93,16 @@ void colvar::angle::calc_force_invgrads()
   // centered on group2, which means group2 is kept fixed
   // when propagating changes in the angle)
 
-  if (b_1site_force) {
-    group1->read_system_forces();
+  if (is_enabled(f_cvc_one_site_total_force)) {
+    group1->read_total_forces();
     cvm::real norm_fact = 1.0 / dxdr1.norm2();
-    ft.real_value = norm_fact * dxdr1 * group1->system_force();
+    ft.real_value = norm_fact * dxdr1 * group1->total_force();
   } else {
-    group1->read_system_forces();
-    group3->read_system_forces();
+    group1->read_total_forces();
+    group3->read_total_forces();
     cvm::real norm_fact = 1.0 / (dxdr1.norm2() + dxdr3.norm2());
-    ft.real_value = norm_fact * ( dxdr1 * group1->system_force()
-                                + dxdr3 * group3->system_force());
+    ft.real_value = norm_fact * ( dxdr1 * group1->total_force()
+                                + dxdr3 * group3->total_force());
   }
   return;
 }
@@ -140,9 +139,8 @@ colvar::dipole_angle::dipole_angle(std::string const &conf)
   group2 = parse_group(conf, "group2");
   group3 = parse_group(conf, "group3");
 
-  if (get_keyval(conf, "oneSiteSystemForce", b_1site_force, false)) {
-    cvm::log("Computing system force on group 1 only");
-  }
+  init_total_force_params(conf);
+
   x.type(colvarvalue::type_scalar);
 }
 
@@ -152,7 +150,6 @@ colvar::dipole_angle::dipole_angle(cvm::atom const &a1,
                       cvm::atom const &a3)
 {
   function_type = "dipole_angle";
-  b_1site_force = false;
 
   group1 = new cvm::atom_group(std::vector<cvm::atom>(1, a1));
   group2 = new cvm::atom_group(std::vector<cvm::atom>(1, a2));
@@ -250,13 +247,12 @@ colvar::dihedral::dihedral(std::string const &conf)
   provide(f_cvc_Jacobian);
   provide(f_cvc_com_based);
 
-  if (get_keyval(conf, "oneSiteSystemForce", b_1site_force, false)) {
-    cvm::log("Computing system force on group 1 only");
-  }
   group1 = parse_group(conf, "group1");
   group2 = parse_group(conf, "group2");
   group3 = parse_group(conf, "group3");
   group4 = parse_group(conf, "group4");
+
+  init_total_force_params(conf);
 
   x.type(colvarvalue::type_scalar);
 }
@@ -421,15 +417,15 @@ void colvar::dihedral::calc_force_invgrads()
   cvm::real const fact1 = d12 * std::sqrt(1.0 - dot1 * dot1);
   cvm::real const fact4 = d34 * std::sqrt(1.0 - dot4 * dot4);
 
-  group1->read_system_forces();
-  if ( b_1site_force ) {
+  group1->read_total_forces();
+  if (is_enabled(f_cvc_one_site_total_force)) {
     // This is only measuring the force on group 1
-    ft.real_value = PI/180.0 * fact1 * (cross1 * group1->system_force());
+    ft.real_value = PI/180.0 * fact1 * (cross1 * group1->total_force());
   } else {
     // Default case: use groups 1 and 4
-    group4->read_system_forces();
-    ft.real_value = PI/180.0 * 0.5 * (fact1 * (cross1 * group1->system_force())
-				      + fact4 * (cross4 * group4->system_force()));
+    group4->read_total_forces();
+    ft.real_value = PI/180.0 * 0.5 * (fact1 * (cross1 * group1->total_force())
+				      + fact4 * (cross4 * group4->total_force()));
   }
 }
 

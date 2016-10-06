@@ -6,7 +6,7 @@ indexFile ../Common/da.ndx
 colvar {
     name eigenvector_Ca
 
-    outputSystemForce on
+    outputTotalForce on
     outputAppliedForce on
     width 1.0 
 

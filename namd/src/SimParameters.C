@@ -7,8 +7,8 @@
 /*****************************************************************************
  * $Source: /namd/cvsroot/namd2/src/SimParameters.C,v $
  * $Author: jim $
- * $Date: 2016/03/02 21:33:06 $
- * $Revision: 1.1461 $
+ * $Date: 2016/09/29 21:30:48 $
+ * $Revision: 1.1470 $
  *****************************************************************************/
 
 /** \file SimParameters.C
@@ -81,6 +81,9 @@ extern "C" {
 //#endif
 #include "DeviceCUDA.h"
 #ifdef NAMD_CUDA
+#ifdef WIN32
+#define __thread __declspec(thread)
+#endif
 extern __thread DeviceCUDA *deviceCUDA;
 #endif
 
@@ -190,6 +193,13 @@ void SimParameters::scriptSet(const char *param, const char *value) {
   SCRIPT_PARSE_BOOL("velocityQuenching",minimizeOn)
   SCRIPT_PARSE_BOOL("maximumMove",maximumMove)
   // SCRIPT_PARSE_BOOL("Langevin",langevinOn)
+  if ( ! strncasecmp(param,"Langevin",MAX_SCRIPT_PARAM_SIZE) ) {
+    langevinOn = atobool(value);
+    if ( langevinOn && ! langevinOnAtStartup ) {
+      NAMD_die("Langevin must be enabled at startup to disable and re-enable in script.");
+    }
+    return;
+  }
   SCRIPT_PARSE_FLOAT("langevinTemp",langevinTemp)
   SCRIPT_PARSE_BOOL("langevinBAOAB",langevin_useBAOAB) // [!!] Use the BAOAB integrator or not
   SCRIPT_PARSE_FLOAT("loweAndersenTemp",loweAndersenTemp) // BEGIN LA, END LA
@@ -223,6 +233,7 @@ void SimParameters::scriptSet(const char *param, const char *value) {
   SCRIPT_PARSE_FLOAT("drudeBondConst",drudeBondConst)
   SCRIPT_PARSE_FLOAT("drudeBondLen",drudeBondLen)
   SCRIPT_PARSE_STRING("outputname",outputFilename)
+  SCRIPT_PARSE_INT("outputEnergies",outputEnergies)
   SCRIPT_PARSE_STRING("restartname",restartFilename)
   SCRIPT_PARSE_INT("DCDfreq",dcdFrequency)
   if ( ! strncasecmp(param,"DCDfile",MAX_SCRIPT_PARAM_SIZE) ) {
@@ -258,7 +269,15 @@ void SimParameters::scriptSet(const char *param, const char *value) {
     return;
   }
 
-//Modifications for alchemical fep
+//fepb
+  if ( ! strncasecmp(param,"alch",MAX_SCRIPT_PARAM_SIZE) ) {
+    alchOn = atobool(value);
+    if ( alchOn && ! alchOnAtStartup ) {
+       NAMD_die("Alchemy must be enabled at startup to disable and re-enable in script.");
+    }
+    ComputeNonbondedUtil::select();
+    return;
+  }
   SCRIPT_PARSE_INT("alchEquilSteps",alchEquilSteps)
 
   if ( ! strncasecmp(param,"alchRepLambda",MAX_SCRIPT_PARAM_SIZE) ) {
@@ -325,14 +344,6 @@ void SimParameters::scriptSet(const char *param, const char *value) {
     return;
   }
 //fepe
-
-// REDUNDANT TI BEGINS
-//  if ( ! strncasecmp(param,"tiLambda",MAX_SCRIPT_PARAM_SIZE) ) {
-//    alchLambda = atof(value);
-//    ComputeNonbondedUtil::select();
-//    return;
-//  }
-// REDUNDANT TI ENDS
 
   if ( ! strncasecmp(param,"nonbondedScaling",MAX_SCRIPT_PARAM_SIZE) ) {
     nonbondedScaling = atof(value);
@@ -729,24 +740,6 @@ void SimParameters::config_parser_fileio(ParseOptions &opts) {
    opts.require("amber", "parmfile", "AMBER parm file", PARSE_STRING);
    opts.optional("amber", "ambercoor", "AMBER coordinate file", PARSE_STRING);
 
-//Modifications for alchemical fep
-// begin fep output options
-   opts.optional("alch", "alchoutfreq", "Frequency of alchemical energy"
-     "output in timesteps", &alchOutFreq, 5);
-   opts.range("alchoutfreq", NOT_NEGATIVE);
-   opts.optional("alchoutfreq", "alchoutfile", "Alchemical energy output"
-       "filename", alchOutFile);
-// end fep output options
-//fepe
-
-// REDUNDANT TI BEGINS
-//   opts.optional("thermInt", "tioutfreq", "Frequency of TI energy output in "
-//     "timesteps", &tiOutFreq, 5);
-//   opts.range("tioutfreq", NOT_NEGATIVE);
-//   opts.optional("tioutfreq", "tioutfile", "TI energy output filename",
-//     tiOutFile);
-// REDUNDANT TI ENDS
-
    /* GROMACS options */
    opts.optionalB("main", "gromacs", "Use GROMACS-like force field?",
        &gromacsOn, FALSE);
@@ -1014,54 +1007,29 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
    opts.units("loweAndersenCutoff", N_ANGSTROM);
 // END LA
 
-//Modifications for alchemical fep
-//  alchemical fep options
+//fepb
    opts.optionalB("main", "alch", "Is achemical simulation being performed?",
      &alchOn, FALSE);
-   opts.optional("alch", "alchType", "Which alchemical method to use?",
-       PARSE_STRING);
-   opts.optionalB("alch", "alchFepWCARepuOn", "WCA decomposition repu interaction in use?",
-     &alchFepWCARepuOn, FALSE);
-   opts.optionalB("alch", "alchFepWCADispOn", "WCA decomposition disp interaction in use?",
-     &alchFepWCADispOn, FALSE);
-   opts.optionalB("alch", "alchEnsembleAvg", "Ensemble Average in use?",
-     &alchEnsembleAvg, TRUE);
-   opts.optionalB("alch", "alchFepWhamOn", "Energy output for Wham postprocessing in use?",
-     &alchFepWhamOn, FALSE);
-   opts.optional("alch", "alchFepWCArcut1", "WCA repulsion Coeff1 used for generating"
-     "the altered alchemical vDW interactions", &alchFepWCArcut1, 0.0);
-   opts.optional("alch", "alchFepWCArcut2", "WCA repulsion Coeff2 used for generating"
-     "the altered alchemical vDW interactions", &alchFepWCArcut2, 1.0);
-   opts.optional("alch", "alchFepWCArcut3", "WCA repulsion Coeff3 used for generating"
-     "the altered alchemical vDW interactions", &alchFepWCArcut3, 1.0);
-   opts.range("alchFepWCArcut1", NOT_NEGATIVE);
-   opts.range("alchFepWCArcut2", NOT_NEGATIVE);
-   opts.range("alchFepWCArcut3", NOT_NEGATIVE);
+   opts.require("alch", "alchLambda", "Coupling parameter value",
+     &alchLambda);
 
-   opts.optional("alch", "alchRepLambda", "Lambda of WCA repulsion"
-     "Coupling parameter value for WCA repulsion", &alchRepLambda, -1.0);	// an invalid lambda value
-   opts.optional("alch", "alchDispLambda", "Lambda of WCA dispersion"
-     "Coupling parameter value for WCA dispersion", &alchDispLambda, -1.0);	// an invalid lambda value
-   opts.optional("alch", "alchElecLambda", "Lambda of electrostatic perturbation"
-     "Coupling parameter value for electrostatic perturbation", &alchElecLambda, -1.0);	// an invalid lambda value
-
-  opts.require("alch", "alchLambda", "Coupling parameter value",
-      &alchLambda);
-  opts.optional("alch", "alchLambda2", "Coupling comparison value",
-      &alchLambda2);
-  opts.optional("alch", "alchLambdaFreq", "Frequency of increasing coupling parameter value",
-      &alchLambdaFreq);
    opts.optional("alch", "alchFile", "PDB file with perturbation flags "
      "default is the input PDB file", PARSE_STRING);
    opts.optional("alch", "alchCol", "Column in the alchFile with the "
      "perturbation flag", PARSE_STRING);
-   opts.optional("alch", "alchEquilSteps", "Equilibration steps, before "
-     "data collection in the alchemical window", &alchEquilSteps, 0);
-   opts.range("alchEquilSteps", NOT_NEGATIVE);
+
+   opts.optional("alch", "alchOutFreq", "Frequency of alchemical energy"
+     "output in timesteps", &alchOutFreq, 5);
+   opts.range("alchoutfreq", NOT_NEGATIVE);
+   opts.optional("alch", "alchOutFile", "Alchemical energy output filename",
+     alchOutFile);
+
+   // soft-core parameters
    opts.optional("alch", "alchVdwShiftCoeff", "Coeff used for generating"
      "the altered alchemical vDW interactions", &alchVdwShiftCoeff, 5.);
    opts.range("alchVdwShiftCoeff", NOT_NEGATIVE);
 
+   // scheduling options for different interaction types
    opts.optional("alch", "alchElecLambdaStart", "Lambda at which electrostatic"
       "scaling of exnihilated particles begins", &alchElecLambdaStart, 0.5);
    opts.range("alchElecLambdaStart", NOT_NEGATIVE);
@@ -1074,42 +1042,55 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
       "scaling of exnihilated particles begins", &alchBondLambdaEnd, 1.0);
    opts.range("alchBondLambdaEnd", NOT_NEGATIVE);
 
-
-// end FEP options
-//fepe
-
-// REDUNDANT TI BEGINS
-// Modifications for TI
-// lots of duplication of FEP, we'd be better off without all this but
-// keeping it in place for now for compatibility
-//   opts.optionalB("main", "thermInt", "Perform thermodynamic integration?",
-//     &thermInt, FALSE);
-// opts.require("thermInt", "tilambda", "Coupling parameter value", &tiLambda);
-// opts.optional("thermInt", "tiFile", "PDB file with perturbation flags "
-//     "default is the input PDB file", PARSE_STRING);
-//   opts.optional("thermInt", "tiCol", "Column in the tiFile with the "
-//     "perturbation flag", PARSE_STRING);
-//   opts.optional("thermInt", "tiEquilSteps", "Equilibration steps, before "
-//     "data collection at each tiLambda value", &tiEquilSteps, 0);
-//   opts.range("tiEquilSteps", NOT_NEGATIVE);
-//   opts.optional("thermInt", "tiVdwShiftCoeff", "Coeff used for generating"
-//     "the altered alchemical vDW interactions", &tiVdwShiftCoeff, 5.);
-//   opts.range("tiVdwShiftCoeff", NOT_NEGATIVE);
-//
-//   opts.optional("thermInt", "tiElecLambdaStart", "Lambda at which to start"
-//      "electrostatics scaling", &tiElecLambdaStart, 0.5);
-//   opts.range("tiElecLambdaStart", NOT_NEGATIVE);
-//
-//   opts.optional("thermInt", "tiVdwLambdaEnd", "Lambda at which to end"
-//      "Vdw scaling", &tiVdwLambdaEnd, 0.5);
-//   opts.range("tiVdwLambdaEnd", NOT_NEGATIVE);
-// end TI options
-// REDUNDANT TI ENDS
-
-   opts.optionalB("main", "alchDecouple", "Enable alchemical decoupling?",
+   opts.optionalB("alch", "alchDecouple", "Enable alchemical decoupling?",
      &alchDecouple, FALSE);
-   opts.optionalB("main", "alchBondDecouple", "Enable decoupling of purely "
+   opts.optionalB("alch", "alchBondDecouple", "Enable decoupling of purely "
      "alchemical bonds?", &alchBondDecouple, FALSE);
+
+   // parameters for alchemical analysis options
+   opts.optional("alch", "alchType", "Which alchemical method to use?",
+     PARSE_STRING);
+   opts.optional("alch", "alchLambda2", "Coupling comparison value",
+     &alchLambda2);
+   opts.optional("alch", "alchLambdaFreq",
+     "Frequency of increasing coupling parameter value", &alchLambdaFreq, 0);
+   opts.range("alchLambdaFreq", NOT_NEGATIVE);
+   opts.optional("alch", "alchSwitchType", "Switching type flag",
+     PARSE_STRING);
+   opts.optional("alch", "alchEquilSteps", "Equilibration steps, before "
+     "data collection in the alchemical window", &alchEquilSteps, 0);
+   opts.range("alchEquilSteps", NOT_NEGATIVE);
+
+   // WCA decomposition options
+   opts.optionalB("alch", "alchFepWCARepuOn",
+     "WCA decomposition repu interaction in use?", &alchFepWCARepuOn, FALSE);
+   opts.optionalB("alch", "alchFepWCADispOn",
+     "WCA decomposition disp interaction in use?", &alchFepWCADispOn, FALSE);
+   opts.optionalB("alch", "alchEnsembleAvg", "Ensemble Average in use?",
+     &alchEnsembleAvg, TRUE);
+   opts.optionalB("alch", "alchFepWhamOn",
+     "Energy output for Wham postprocessing in use?", &alchFepWhamOn, FALSE);
+   opts.optional("alch", "alchFepWCArcut1",
+     "WCA repulsion Coeff1 used for generating the altered alchemical vDW "
+     "interactions", &alchFepWCArcut1, 0.0);
+   opts.range("alchFepWCArcut1", NOT_NEGATIVE);
+   opts.optional("alch", "alchFepWCArcut2", "WCA repulsion Coeff2 used for "
+     "generating the altered alchemical vDW interactions", &alchFepWCArcut2,
+     1.0);
+   opts.range("alchFepWCArcut2", NOT_NEGATIVE);
+   opts.optional("alch", "alchFepWCArcut3",
+     "WCA repulsion Coeff3 used for generating the altered alchemical vDW "
+     "interactions", &alchFepWCArcut3, 1.0);
+   opts.range("alchFepWCArcut3", NOT_NEGATIVE);
+   // These default to invalid lambda values.
+   opts.optional("alch", "alchRepLambda", "Lambda of WCA repulsion"
+     "Coupling parameter value for WCA repulsion", &alchRepLambda, -1.0);
+   opts.optional("alch", "alchDispLambda", "Lambda of WCA dispersion"
+     "Coupling parameter value for WCA dispersion", &alchDispLambda, -1.0);
+   opts.optional("alch", "alchElecLambda", "Lambda of electrostatic "
+     "perturbation Coupling parameter value for electrostatic perturbation",
+     &alchElecLambda, -1.0);
+//fepe
 
    opts.optionalB("main", "les", "Is locally enhanced sampling enabled?",
      &lesOn, FALSE);
@@ -1540,6 +1521,77 @@ void SimParameters::config_parser_constraints(ParseOptions &opts) {
    opts.require("extForces", "extForceFilename",
       "External forces force filename", extForceFilename);
 
+
+  // QM/MM forces
+   opts.optionalB("main", "QMForces", "Apply QM forces?",
+      &qmForcesOn, FALSE);
+   opts.require("QMForces", "QMSoftware",
+      "software whose format will be used for input/output", qmSoftware);
+   opts.require("QMForces", "QMExecPath",
+      "path to executable", qmExecPath);
+   opts.optional("QMForces", "QMChargeMode",
+      "type of QM atom charges gathered from the QM software", qmChrgModeS);
+   opts.require("QMForces", "QMColumn",
+      "column defining QM and MM regions", qmColumn);
+   opts.require("QMForces", "QMBaseDir",
+      "base path and name for QM input and output (preferably in memory)", qmBaseDir);
+   opts.require("QMForces", "QMConfigLine",
+      "Configuration line for QM (multiple inputs allowed)", PARSE_MULTIPLES);
+   opts.optional("QMForces", "QMParamPDB",
+      "PDB with QM parameters", qmParamPDB);
+   opts.optional("QMForces", "QMPrepProc",
+      "initial preparation executable", qmPrepProc);
+   opts.optional("QMForces", "QMSecProc",
+      "secondary executable", qmSecProc);
+   opts.optional("QMForces", "QMCharge",
+      "charge of the QM group", PARSE_MULTIPLES);
+   opts.optional("QMForces", "QMMult",
+      "multiplicity of the QM group", PARSE_MULTIPLES);
+   opts.optional("QMForces", "QMLinkElement",
+      "element of link atom", PARSE_MULTIPLES);
+   opts.optionalB("QMForces", "QMReplaceAll",
+      "replace all NAMD forces with QM forces", &qmReplaceAll, FALSE);
+   opts.optional("QMForces", "QMPCStride",
+      "frequency of selection of point charges", &qmPCSelFreq, 1);
+   opts.optionalB("QMForces", "QMNoPntChrg",
+      "no point charges will be passed to the QM system(s)", &qmNoPC, FALSE);
+   opts.optionalB("QMForces", "QMVdWParams",
+      "use special VdW parameters for QM atoms", &qmVDW, TRUE);
+   opts.optional("QMForces", "QMBondColumn",
+      "column defining QM-MM bomnds", qmBondColumn);
+   opts.optionalB("QMForces", "QMBondDist",
+      "values in QMBondColumn defines the distance of new link atom", &qmBondDist, FALSE);
+   opts.optional("QMForces", "QMBondValueType",
+      "type of value in bond column: len or ratio", qmBondValueTypeS);
+   opts.optional("QMForces", "QMBondScheme",
+      "type of treatment given to QM-MM bonds.", qmBondSchemeS);
+   opts.optional("QMForces", "QMOutStride",
+      "frequency of QM specific charge output (every x steps)", &qmOutFreq, 0);
+   opts.optional("QMForces", "QMPositionOutStride",
+      "frequency of QM specific position output (every x steps)", &qmPosOutFreq, 0);
+   opts.optional("QMForces", "QMSimsPerNode",
+      "QM executions per node", &qmSimsPerNode, 0);
+   opts.optionalB("QMForces", "QMSwitching",
+      "apply switching to point charges.", &qmPCSwitchOn, FALSE);
+   opts.optional("QMForces", "QMSwitchingType",
+      "How are charges scaled down to be presented to QM groups.", qmPCSwitchTypeS);
+   opts.optional("QMForces", "QMPointChargeScheme",
+      "type of treatment given to the total sum of point charges.", qmPCSchemeS);
+   opts.optionalB("QMForces", "QMCustomPCSelection",
+      "custom and fixed selection of point charges per QM group.", &qmCustomPCSel, FALSE);
+   opts.optional("QMForces", "QMCustomPCFile",
+      "file with a selection of point charges for a single QM group", PARSE_MULTIPLES);
+   opts.optionalB("QMForces", "QMLiveSolventSel",
+      "Continuously update the selection of solvent molecules in QM groups", &qmLSSOn, FALSE);
+   opts.optional("QMForces", "QMLSSFreq",
+      "frequency of QM water selection update", &qmLSSFreq, 100);
+   opts.optional("QMForces", "QMLSSResname",
+      "residue name for the solvent molecules (TIP3).", qmLSSResname);
+   opts.optional("QMForces", "QMLSSMode",
+      "mode of selection of point solvent molecules", qmLSSModeS);
+   opts.optional("QMForces", "QMLSSRef",
+      "for COM mode, defines reference for COM distance calculation", PARSE_MULTIPLES);
+
    //print which bad contacts are being moved downhill
    opts.optionalB("main", "printBadContacts", "Print atoms with huge forces?",
       &printBadContacts, FALSE);
@@ -1725,6 +1777,7 @@ void SimParameters::config_parser_mgridforce(ParseOptions &opts) {
                   PARSE_MULTIPLES);
     opts.optional("mgridforce", "mgridforcelite", "Use Gridforce Lite?",
 		  PARSE_MULTIPLES);
+    opts.optional("mgridforce", "mgridforcechecksize", "Check if grid exceeds PBC cell dimensions?", PARSE_MULTIPLES);
 }
 
 void SimParameters::config_parser_gridforce(ParseOptions &opts) {
@@ -3099,6 +3152,8 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
                                              adaptTempBins != 0 ))
         NAMD_die("Need to specify either adaptTempInFile or all of {adaptTempTmin, adaptTempTmax,adaptTempBins} if adaptTempMD is on.");
    }
+
+   langevinOnAtStartup = langevinOn;
    if (langevinOn) {
      if ( ! opts.defined("langevinDamping") ) langevinDamping = 0.0;
      if ( ! opts.defined("langevinHydrogen") ) langevinHydrogen = TRUE;
@@ -3201,40 +3256,33 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
       randomSeed = (unsigned int) time(NULL) + 31530001 * CmiMyPartition();
    }
 
-//Modifications for alchemical fep
-
+//fepb
    alchFepOn = FALSE;
    alchThermIntOn = FALSE;
+   alchOnAtStartup = alchOn;
 
    if (alchOn) {
-
      if (vdwForceSwitching && (alchFepWCARepuOn || alchFepWCADispOn)) {
        iout << iWARN << "vdwForceSwitching not implemented for alchemical "
-   "interactions when WCA decomposition is on!\n" << endi;
+         "interactions when WCA decomposition is on!\n" << endi;
      }
-
-     if (alchOn && martiniSwitching) {
+     if (martiniSwitching) {
        iout << iWARN << "Martini switching disabled for alchemical "
-   "interactions.\n" << endi;
+         "interactions.\n" << endi;
      }
 
-     if (!opts.defined("alchType"))
-     {
+     if (!opts.defined("alchType")) {
        NAMD_die("Must define type of alchemical simulation: fep or ti\n");
      }
-     else
-     {
+     else {
        opts.get("alchType",s);
-       if (!strcasecmp(s, "fep"))
-       {
+       if (!strcasecmp(s, "fep")) {
          alchFepOn = TRUE;
        }
-       else if (!strcasecmp(s, "ti"))
-       {
+       else if (!strcasecmp(s, "ti")) {
          alchThermIntOn = TRUE;
        }
-       else
-       {
+       else {
          NAMD_die("Unknown type of alchemical simulation; choices are fep or ti\n");
        }
      }
@@ -3248,82 +3296,84 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
      if (reassignFreq > 0 && reassignIncr != 0)
 	NAMD_die("reassignIncr cannot be used in alchemical simulations\n");
 
-     if (alchLambda < 0.0 || alchLambda > 1.0 || alchLambda2 < 0.0 || alchLambda2 > 1.0)
+     if (alchLambda < 0.0 || alchLambda > 1.0 ||
+         alchLambda2 < 0.0 || alchLambda2 > 1.0)
         NAMD_die("Alchemical lambda values should be in the range [0.0, 1.0]\n");
 
-     if ( alchOn && alchVdwLambdaEnd > 1.0)
+     if (alchVdwLambdaEnd > 1.0)
         NAMD_die("Gosh tiny Elvis, you kicked soft-core in the van der Waals! alchVdwLambdaEnd should be in the range [0.0, 1.0]\n");
 
-     if ( alchOn && alchBondLambdaEnd > 1.0)
+     if (alchBondLambdaEnd > 1.0)
        NAMD_die("alchBondLambdaEnd should be in the range [0.0, 1.0]\n");
 
-     if ( alchOn && alchElecLambdaStart > 1.0)
+     if (alchElecLambdaStart > 1.0)
         NAMD_die("alchElecLambdaStart should be in the range [0.0, 1.0]\n");
 
-     if (!opts.defined("alchLambdaFreq")) {
-         alchLambdaFreq = 0;
-     }
-
-     if (alchFepOn)
-     {
+     if (alchFepOn) {
        if (!opts.defined("alchoutfile")) {
-       strcpy(alchOutFile, outputFilename);
-       strcat(alchOutFile, ".fep");
+         strcpy(alchOutFile, outputFilename);
+         strcat(alchOutFile, ".fep");
        }
 
-  	   if( (!alchFepWhamOn) && ( (!opts.defined("alchLambda")) || (!opts.defined("alchLambda2"))) )	{
-	  	   NAMD_die("alchFepOn is on, but alchLambda or alchLambda2 is not set.");
-	     }
+       if (!alchFepWhamOn &&
+           ((!opts.defined("alchLambda")) || (!opts.defined("alchLambda2")))) {
+         NAMD_die("alchFepOn is on, but alchLambda or alchLambda2 is not set.");
+       }
 
-       if(alchRepLambda > 1.0)	NAMD_die("alchRepLambda should be in the range [0.0, 1.0].");
-       else if(alchRepLambda >= 0.0)	alchFepWCARepuOn = true;
-       else	alchFepWCARepuOn = false;
+       if(alchRepLambda > 1.0)
+         NAMD_die("alchRepLambda should be in the range [0.0, 1.0].");
+       else if(alchRepLambda >= 0.0)
+         alchFepWCARepuOn = true;
+       else
+         alchFepWCARepuOn = false;
 
-       if(alchDispLambda > 1.0)	NAMD_die("alchDispLambda should be in the range [0.0, 1.0].");
-       else if(alchDispLambda >= 0.0)	alchFepWCADispOn = true;
-       else	alchFepWCADispOn = false;
+       if(alchDispLambda > 1.0)
+         NAMD_die("alchDispLambda should be in the range [0.0, 1.0].");
+       else if(alchDispLambda >= 0.0)
+         alchFepWCADispOn = true;
+       else
+         alchFepWCADispOn = false;
 
-       if(alchElecLambda > 1.0)	NAMD_die("alchElecLambda should be in the range [0.0, 1.0].");
-       else if(alchElecLambda >= 0.0)	alchFepElecOn = true;
-       else	alchFepElecOn = false;
+       if(alchElecLambda > 1.0)
+         NAMD_die("alchElecLambda should be in the range [0.0, 1.0].");
+       else if(alchElecLambda >= 0.0)
+         alchFepElecOn = true;
+       else
+         alchFepElecOn = false;
 
-       if( (alchFepWCARepuOn || alchFepWCADispOn || alchFepElecOn) && (!alchFepWhamOn))
-       	  NAMD_die("alchFepWhamOn has to be on if one of alchFepWCARepuOn/alchFepWCADispOn/alchFepElecOn is set.");
+       if ((alchFepWCARepuOn || alchFepWCADispOn || alchFepElecOn) &&
+           !alchFepWhamOn)
+         NAMD_die("alchFepWhamOn has to be on if one of alchFepWCARepuOn/alchFepWCADispOn/alchFepElecOn is set.");
        if (alchFepWCARepuOn && alchFepWCADispOn)
           NAMD_die("With WCA decomposition, repulsion and dispersion can NOT be in the same FEP stage");
        if (alchFepWCARepuOn && alchFepElecOn)
           NAMD_die("With WCA decomposition, repulsion and electrostatic perturbation can NOT be in the same FEP stage");
        if (alchFepWCADispOn && alchFepElecOn)
           NAMD_die("With WCA decomposition, dispersion and electrostatic perturbation can NOT be in the same FEP stage");
-       if (alchFepWCARepuOn && (!opts.defined("alchFepWCArcut1")||!opts.defined("alchFepWCArcut2")||!opts.defined("alchFepWCArcut3")))
+       if (alchFepWCARepuOn &&
+           (!opts.defined("alchFepWCArcut1") ||
+            !opts.defined("alchFepWCArcut2") ||
+            !opts.defined("alchFepWCArcut3") ))
           NAMD_die("When using WCA repulsion,  alchFepWCArcut1, alchFepWCArcut2, and alchFepWCArcut3 must be defined!");
-       if (alchFepWCARepuOn && ((alchFepWCArcut1 > alchFepWCArcut2) || (alchFepWCArcut2 > alchFepWCArcut3) ))
+       if (alchFepWCARepuOn &&
+           ((alchFepWCArcut1 > alchFepWCArcut2) ||
+            (alchFepWCArcut2 > alchFepWCArcut3) ))
            NAMD_die("When using WCA repulsion,  alchFepWCArcut2 must be larger than alchFEPWCArcut1, alchFepWCArcut3 must be larger than alchFEPWCArcut2!");
-//       if ((alchFepWCARepuOn || alchFepWCADispOn) && (alchElecLambdaStart < 1.0) )
-//           NAMD_die("When using WCA decomposition,  repulsion, dispersion and electrostatic must be in 3 different stages!");
-       if(alchFepWhamOn && (alchRepLambda < 0.0) && (alchDispLambda < 0.0) && (alchElecLambda < 0.0) )
+       if (alchFepWhamOn && (alchRepLambda < 0.0) && (alchDispLambda < 0.0) &&
+           (alchElecLambda < 0.0) )
        	   NAMD_die("One of alchRepLambda, alchDispLambda and alchElecLambda should be set up when alchFepWhamOn is true!");
-       if(alchFepWhamOn && (!alchFepElecOn) )	{
+       if (alchFepWhamOn && (!alchFepElecOn)) {
        	 alchElecLambda = 0.0;
        	 ComputeNonbondedUtil::alchElecLambda = alchElecLambda;
-//       	 ComputeNonbondedUtil::select();
        }
      }
-     else if (alchThermIntOn)
-     {
+     else if (alchThermIntOn) {
        if (!opts.defined("alchoutfile")) {
          strcpy(alchOutFile, outputFilename);
          strcat(alchOutFile, ".ti");
        }
      }
-
-   } else {
-     alchLambda = alchLambda2 = 0;
-     alchElecLambdaStart = 0;
-     alchOutFile[0] = STRINGNULL;
    }
-
-
 //fepe
 
    if ( alchOn && alchFepOn && alchThermIntOn )
@@ -3332,13 +3382,13 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
      NAMD_die("Sorry, combined LES with FEP or TI is not implemented.\n");
    if ( alchOn && alchThermIntOn && lesOn )
      NAMD_die("Sorry, combined LES and TI is not implemented.\n");
-   if ( alchDecouple && (! (alchFepOn || alchThermIntOn) ) ) {
+   if ( alchDecouple && !alchOn ) {
          iout << iWARN << "Alchemical decoupling was requested but \
            alchemical free energy calculation is not active. Setting \
            alchDecouple to off.\n" << endi;
          alchDecouple = FALSE;
    }
-   if ( alchBondDecouple && (! (alchFepOn || alchThermIntOn) ) ) {
+   if ( alchBondDecouple && !alchOn ) {
          iout << iWARN << "Alchemical bond decoupling was requested but \
            alchemical free energy calculation is not active. Setting \
            alchBondDecouple to off.\n" << endi;
@@ -3348,7 +3398,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
    if ( lesOn && ( lesFactor < 1 || lesFactor > 255 ) ) {
      NAMD_die("lesFactor must be positive and less than 256");
    }
-   if ((pairInteractionOn && alchFepOn) || (pairInteractionOn && lesOn) || (pairInteractionOn && alchThermIntOn) )
+   if ((pairInteractionOn && alchOn) || (pairInteractionOn && lesOn))
      NAMD_die("Sorry, pair interactions may not be calculated when LES, FEP or TI is enabled.");
 
    // Drude model
@@ -3932,6 +3982,209 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
       if ( outputTiming < ot2 ) outputTiming = ot2;
    }
 
+    // Checks if a secondary process was added in the configuration, and sets
+    // the appropriated variable
+    if(qmForcesOn){
+
+        if (opts.defined("QMSecProc")){
+            qmSecProcOn = true;
+        }
+        else {
+            qmSecProcOn = false;
+        }
+
+        if (opts.defined("qmPrepProc")){
+            qmPrepProcOn = true;
+        }
+        else {
+            qmPrepProcOn = false;
+        }
+
+        if (opts.defined("QMParamPDB")){
+            qmParamPDBDefined = true;
+        }
+        else {
+            qmParamPDBDefined = false;
+        }
+
+        if (opts.defined("QMBondColumn")){
+            qmBondOn = true;
+        }
+        else {
+            qmBondOn = false;
+        }
+
+        if ( strcasecmp(qmSoftware,"orca") != 0 &&
+             strcasecmp(qmSoftware,"mopac") != 0 &&
+             strcasecmp(qmSoftware,"custom") != 0 ) {
+            NAMD_die("Available QM software options are \'mopac\', \'orca\', or \'custom\'.");
+        }
+        else {
+            if ( strcasecmp(qmSoftware,"orca") == 0 )
+                qmFormat = QMFormatORCA;
+            if ( strcasecmp(qmSoftware,"mopac") == 0 )
+                qmFormat = QMFormatMOPAC;
+            if ( strcasecmp(qmSoftware,"custom") == 0 )
+                qmFormat = QMFormatUSR;
+        }
+
+        qmChrgMode = QMCHRGMULLIKEN;
+        if (opts.defined("QMChargeMode")) {
+            if ( strcasecmp(qmChrgModeS,"none") != 0 &&
+                 strcasecmp(qmChrgModeS,"mulliken") != 0 &&
+                 strcasecmp(qmChrgModeS,"chelpg") != 0) {
+                NAMD_die("Available charge options are \'none\', \'mulliken\' or \'chelpg\'.");
+            }
+            else {
+                if ( strcasecmp(qmChrgModeS,"none") == 0 )
+                    qmChrgMode = QMCHRGNONE;
+                if ( strcasecmp(qmChrgModeS,"mulliken") == 0 )
+                    qmChrgMode = QMCHRGMULLIKEN;
+                if ( strcasecmp(qmChrgModeS,"chelpg") == 0 )
+                    qmChrgMode = QMCHRGCHELPG;
+            }
+        }
+
+        if (qmFormat == QMFormatMOPAC && qmChrgMode == QMCHRGCHELPG)
+            NAMD_die("Available charge options for MOPAC are \'none\' and \'mulliken\'.");
+
+        if (qmFormat == QMFormatUSR && qmChrgMode == QMCHRGCHELPG)
+            NAMD_die("Available charge options for MOPAC are \'none\' and \'mulliken\'.");
+
+        if (qmBondOn && (opts.defined("QMBondValueType"))) {
+            if ( strcasecmp(qmBondValueTypeS,"len") != 0 &&
+                strcasecmp(qmBondValueTypeS,"ratio") != 0 ) {
+                NAMD_die("Available QM bond value type options are \'len\' or \'ratio\'.");
+            }
+            else {
+    //         #define QMLENTYPE 1
+    //         #define QMRATIOTYPE 2
+                if ( strcasecmp(qmBondValueTypeS,"len") == 0 )
+                    qmBondValType = 1;
+                if ( strcasecmp(qmBondValueTypeS,"ratio") == 0 )
+                    qmBondValType = 2;
+            }
+        }
+        else if (qmBondOn && ! (opts.defined("QMBondValueType")))
+            qmBondValType = 1;
+
+        if ( strcmp(qmColumn,"beta") != 0 &&
+             strcmp(qmColumn,"occ") != 0 ) {
+            NAMD_die("Available column options are \'beta\' and \'occ\'.");
+        }
+
+        if (qmBondOn) {
+            if ( strcmp(qmBondColumn,"beta") != 0 &&
+                 strcmp(qmBondColumn,"occ") != 0 ) {
+                NAMD_die("Available column options are \'beta\' and \'occ\'.");
+            }
+
+            if (strcmp(qmBondColumn,qmColumn) == 0)
+                NAMD_die("QM column and bond-column must be different!");
+        }
+
+        qmBondScheme = 1;
+        if (opts.defined("QMBondScheme")) {
+            if ( strcasecmp(qmBondSchemeS,"CS") == 0 )
+                qmBondScheme = QMSCHEMECS;
+            if ( strcasecmp(qmBondSchemeS,"RCD") == 0 )
+                qmBondScheme = QMSCHEMERCD;
+            if ( strcasecmp(qmBondSchemeS,"Z1") == 0 )
+                qmBondScheme = QMSCHEMEZ1;
+            if ( strcasecmp(qmBondSchemeS,"Z2") == 0 )
+                qmBondScheme = QMSCHEMEZ2;
+            if ( strcasecmp(qmBondSchemeS,"Z3") == 0 )
+                qmBondScheme = QMSCHEMEZ3;
+        }
+
+//         #define QMPCSCHEMENONE 1
+//         #define QMPCSCHEMEROUND 2
+//         #define QMPCSCHEMEZERO 3
+        qmPCScheme = 1;
+        if (opts.defined("QMPointChargeScheme") && qmPCSwitchOn) {
+            if ( strcasecmp(qmPCSchemeS,"none") == 0 )
+                qmPCScheme = 1;
+
+            if ( strcasecmp(qmPCSchemeS,"round") == 0 )
+                qmPCScheme = 2;
+            if ( strcasecmp(qmPCSchemeS,"zero") == 0 )
+                qmPCScheme = 3;
+
+            if ( qmPCScheme > 1 && ! qmPCSwitchOn)
+                NAMD_die("QM Charge Schemes \'round\' or \'zero\' can only be applied with QMswitching set to \'on\'!");
+        }
+
+//         #define QMLSSMODEDIST 1
+//         #define QMLSSMODECOM 2
+        if (qmLSSOn) {
+
+            if (qmNoPC)
+                NAMD_die("QM Live Solvent Selection cannot be done with QMNoPntChrg set to \'on\'!") ;
+
+            if (rigidBonds != RIGID_NONE)
+                NAMD_die("QM Live Solvent Selection cannot be done with fixed bonds!") ;
+
+            if (qmLSSFreq % qmPCSelFreq != 0)
+                NAMD_die("Frequency of QM solvent update must be a multiple of frequency of point charge selection.");
+
+            if (qmLSSFreq % stepsPerCycle != 0)
+                NAMD_die("Frequency of QM solvent update must be a multiple of steps per cycle.");
+
+            if (opts.defined("QMLSSMode") ) {
+                if ( strcasecmp(qmLSSModeS,"dist") != 0 &&
+                     strcasecmp(qmLSSModeS,"COM") != 0 ) {
+                    NAMD_die("Available LSS mode options are \'dist\' and \'COM\'.");
+                }
+                if ( strcasecmp(qmLSSModeS,"dist") == 0 )
+                    qmLSSMode = 1;
+                else if ( strcasecmp(qmLSSModeS,"COM") == 0 )
+                    qmLSSMode = 2;
+            }
+            else
+                qmLSSMode = 1;
+        }
+
+//         #define QMPCSCALESHIFT 1
+//         #define QMPCSCALESWITCH 2
+        if (qmPCSwitchOn) {
+
+            if (opts.defined("QMSwitchingType") ) {
+                if ( strcasecmp(qmPCSwitchTypeS,"shift") != 0 &&
+                     strcasecmp(qmPCSwitchTypeS,"switch") != 0 ) {
+                    NAMD_die("Available scaling options are \'shift\' and \'switch\'.");
+                }
+                if ( strcasecmp(qmPCSwitchTypeS,"shift") == 0 )
+                    qmPCSwitchType = 1;
+                else if ( strcasecmp(qmPCSwitchTypeS,"switch") == 0 )
+                    qmPCSwitchType = 2;
+            }
+            else
+                qmPCSwitchType = 1;
+        }
+
+        if (qmNoPC && qmPCSelFreq > 1) {
+            iout << iWARN << "QMPCStride being IGNORED since QMNoPntChrg is set to \'on\'!\n" << endi;
+            qmPCSelFreq = 1;
+        }
+
+        if (qmNoPC && qmPCSwitchOn)
+            NAMD_die("QM PC switching can only be applied with QMNoPntChrg set to \'off\'!");
+
+//         if (qmNoPC && qmBondOn)
+//             NAMD_die("QM-MM bonds can only be applied with QMNoPntChrg set to \'off\'!");
+
+        if (qmPCSelFreq <= 0)
+            NAMD_die("QMPCFreq can only be a positive number! For static point charge selection, see QMCutomPC.");
+
+        if (qmCustomPCSel && qmNoPC)
+            NAMD_die("QM Custom PC Selection is incompatible with QMNoPntChrg!");
+
+        if (qmCustomPCSel && qmPCSwitchOn)
+            NAMD_die("QM Custom PC Selection is incompatible with QMSwitching!");
+
+        if (qmCustomPCSel && qmPCSelFreq > 1)
+            NAMD_die("QM Custom PC Selection is incompatible with QMPCStride!");
+    }
 }
 
 void SimParameters::print_config(ParseOptions &opts, ConfigList *config, char *&cwd) {
@@ -4689,6 +4942,121 @@ if ( openatomOn )
      iout << endi;
    }
 
+    // QM command forces
+
+    if (qmForcesOn) {
+        iout << iINFO << "QM FORCES ACTIVE\n";
+        if (qmParamPDBDefined){
+            iout << iINFO << "QM PDB PARAMETER FILE: " << qmParamPDB << "\n";
+        }
+        iout << iINFO << "QM SOFTWARE: " << qmSoftware << "\n";
+
+        if ( qmChrgMode == QMCHRGNONE )
+            iout << iINFO << "QM ATOM CHARGES FROM QM SOFTWARE: NONE\n";
+        if ( qmChrgMode == QMCHRGMULLIKEN )
+            iout << iINFO << "QM ATOM CHARGES FROM QM SOFTWARE: MULLIKEN\n";
+        if ( qmChrgMode == QMCHRGCHELPG )
+            iout << iINFO << "QM ATOM CHARGES FROM QM SOFTWARE: CHELPG\n";
+
+        iout << iINFO << "QM EXECUTABLE PATH: " << qmExecPath << "\n";
+        iout << iINFO << "QM COLUMN: " << qmColumn << "\n";
+        if (qmBondOn) {
+            iout << iINFO << "QM BOND COLUMN: " << qmBondColumn << "\n";
+            iout << iINFO << "QM WILL DETECT BONDS BETWEEN QM AND MM ATOMS.\n";
+            if (qmBondDist) {
+                iout << iINFO << "QM BOND COLUMN WILL DEFINE LINK AOTM DISTANCE.\n";
+                if (qmBondValType == 1)
+                    iout << iINFO << "QM BOND COLUMN HAS LENGTH INFORMATION.\n";
+                else if (qmBondValType == 2)
+                    iout << iINFO << "QM BOND COLUMN HAS RATIO INFORMATION.\n";
+            }
+            if (qmNoPC) {
+                iout << iINFO << "MECHANICHAL EMBEDDING SELECTED."
+                " BOND SCHEME WILL BE IGNORED!\n" << endi;
+                qmBondScheme = QMSCHEMEZ1;
+            }
+            else {
+                if (qmBondScheme == QMSCHEMECS)
+                    iout << iINFO << "QM-MM BOND SCHEME: Charge Shift.\n";
+                else if (qmBondScheme == QMSCHEMERCD)
+                    iout << iINFO << "QM-MM BOND SCHEME: Redistributed Charge and Dipole.\n";
+                else if (qmBondScheme == QMSCHEMEZ1)
+                    iout << iINFO << "QM-MM BOND SCHEME: Z1.\n";
+                else if (qmBondScheme == QMSCHEMEZ2)
+                    iout << iINFO << "QM-MM BOND SCHEME: Z2.\n";
+                else if (qmBondScheme == QMSCHEMEZ3)
+                    iout << iINFO << "QM-MM BOND SCHEME: Z3.\n";
+            }
+
+        }
+        iout << iINFO << "QM BASE DIRECTORY: " << qmBaseDir << "\n";
+//         iout << iINFO << "QM CHARGE: " << qmCharge << "\n";
+//         iout << iINFO << "QM MULTIPLICITY: " << qmMult << "\n";
+        if (qmPrepProcOn) {
+            iout << iINFO << "QM PREPARATION PROCESS: " << qmPrepProc << "\n";
+        }
+        if (qmSecProcOn) {
+            iout << iINFO << "QM SECONDARY PROCESS: " << qmSecProc << "\n";
+        }
+
+        current = config->find("QMConfigLine");
+        for ( ; current; current = current->next ) {
+
+            if ( strstr(current->data,"\n") ) {
+                iout << iINFO << "QM configuration lines from NADM config file\n";
+                continue;
+            }
+
+            iout << iINFO << "QM CONFIG LINE: " << current->data << "\n";
+
+        }
+
+        if (qmReplaceAll) {
+            iout << iINFO << "QM FORCES WILL REPLACE ALL NAMD FORCES!\n";
+        }
+
+        if (qmNoPC)
+            iout << iINFO << "QM NO POINT CHARGE: ON.\n";
+
+        if (qmCustomPCSel)
+            iout << iINFO << "QM CUSTOM POINT CHARGE SELECTION IS ACTIVATED\n";
+
+        if (! qmNoPC && ! qmCustomPCSel)
+            iout << iINFO << "QM POINT CHARGES WILL BE SELECTED EVERY "
+            << qmPCSelFreq << " STEPS.\n";
+
+        if (qmPCSwitchOn) {
+            iout << iINFO << "QM Point Charge Switching: ON.\n";
+
+            if (qmPCScheme == 1)
+                iout << iINFO << "QM Point Charge SCHEME: none.\n";
+            else if (qmPCScheme == 2)
+                iout << iINFO << "QM Point Charge SCHEME: round.\n";
+            else if (qmPCScheme == 3)
+                iout << iINFO << "QM Point Charge SCHEME: zero.\n";
+        }
+
+        if (qmLSSOn) {
+            iout << iINFO << "QM LIVE SOLVENT SELECTION IS ACTIVE.\n" ;
+            iout << iINFO << "QM LIVE SOLVENT SELECTION FREQUENCY: "
+            << qmLSSFreq << "\n" << endi;
+
+            current = config->find("QMLSSSize");
+            for ( ; current; current = current->next ) {
+                iout << iINFO << "QM LIVE SOLVENT SELECTION SIZE (\"qmGrpID numMolecules\"): " << current->data << "\n";
+            }
+
+            if (! opts.defined("QMLWSResname"))
+                strcpy(qmLSSResname,"TIP3");
+            iout << iINFO << "QM LIVE SOLVENT SELECTION WILL USE RESIDUE TYPE: " << qmLSSResname << "\n" << endi;
+        }
+
+        iout << iINFO << "QM execution per node: " << qmSimsPerNode << "\n";
+
+        iout << endi;
+    }
+
+
    // gbis gbobc implicit solvent parameters
 
   if (GBISserOn) {
@@ -4731,7 +5099,8 @@ if ( openatomOn )
    // Global forces configuration
 
    globalForcesOn = ( tclForcesOn || freeEnergyOn || miscForcesOn ||
-                      (IMDon && ! IMDignore) || SMDOn || TMDOn || colvarsOn || symmetryOn );
+                      (IMDon && ! IMDignore) || SMDOn || TMDOn ||
+                      colvarsOn || symmetryOn || qmForcesOn );
 
 
    if (tclForcesOn)
@@ -5443,7 +5812,13 @@ if ( openatomOn )
        fftwf_free(grid1);
        fftwf_free(grid2);
 
-      if ( CmiNumPartitions() == 1 ) {
+#ifdef NAMD_FFTW_3
+       FFTWWisdomString = fftwf_export_wisdom_to_string();
+#else
+       FFTWWisdomString = fftw_export_wisdom_to_string();
+#endif
+
+      if ( FFTWWisdomString && (CmiNumPartitions() == 1) ) {
        iout << iINFO << "Writing FFTW data to "
 		<< FFTWWisdomFile << "\n" << endi;
        wisdom_file = fopen(FFTWWisdomFile,"w");
@@ -5456,12 +5831,6 @@ if ( openatomOn )
 	 fclose(wisdom_file);
        }
       }
-
-#ifdef NAMD_FFTW_3
-       FFTWWisdomString = fftwf_export_wisdom_to_string();
-#else
-       FFTWWisdomString = fftw_export_wisdom_to_string();
-#endif
      }
 #endif
      iout << endi;
@@ -5805,6 +6174,7 @@ void SimParameters::parse_mgrid_params(ConfigList *config)
     mgfp->gridforceVOffset = gridforceVOffset;
 
     mgfp->gridforceLite = gridforceLite;
+    mgfp->gridforceCheckSize = gridforcechecksize;
   }
 
   // Create multigrid parameter structures
@@ -6075,6 +6445,31 @@ void SimParameters::parse_mgrid_params(ConfigList *config)
     current = current->next;
   }
 
+  current = config->find("mgridforcechecksize");
+  while (current != NULL) {
+    //    iout << iINFO << "MGRIDFORCELITE " << current->data << "\n"
+    //         << endi;
+    int curlen = strlen(current->data);
+    sscanf(current->data,"%80s%255s",key,valstr);
+
+    MGridforceParams* mgfp = NULL;
+    mgfp = mgridforcelist.find_key(key);
+    if ( mgfp == NULL) {
+      iout << iINFO << "MGRIDFORCECHECKSIZE no key "
+      << key << " defined for file " << valstr << "\n" << endi;
+    } else {
+      int boolval = MGridforceParamsList::atoBool(valstr);
+      if (boolval == -1) {
+        iout << iINFO << "MGRIDFORCECHECKSIZE  key "
+          << key << " boolval " << valstr << " badly defined" << endi;
+      } else {
+        mgfp->gridforceCheckSize = (boolval == 1);
+      }
+    }
+
+    current = current->next;
+  }
+
   delete [] valstr;
   delete [] key;
 
@@ -6221,6 +6616,9 @@ void SimParameters::print_mgrid_params()
       << "\n" << endi;
     iout << iINFO << "           Gridforce-Lite "
       << BoolToString(params->gridforceLite)
+      << "\n" << endi;
+    iout << iINFO << "           Gridforce-CheckSize "
+      << BoolToString(params->gridforceCheckSize)
       << "\n" << endi;
     params = params->next;
   }

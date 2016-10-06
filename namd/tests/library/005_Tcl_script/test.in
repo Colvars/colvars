@@ -8,6 +8,13 @@ colvar {
     upperBoundary 32
     width 0.2
 
+    outputTotalForce yes
+    subtractAppliedForce yes
+
+#    outputSystemForce yes
+
+    outputAppliedForce yes
+
     distance {
         group1 { atomnumbers 4 }
         group2 { atomnumbers 99 }

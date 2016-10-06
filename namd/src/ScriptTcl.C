@@ -143,6 +143,12 @@ void ScriptTcl::reinitAtoms(const char *basename) {
 #include <Python.h>
 
 static Tcl_Obj* python_tcl_convert(PyObject *obj) {
+  if ( PyInt_Check(obj) ) {
+    return Tcl_NewLongObj(PyInt_AsLong(obj));
+  }
+  if ( PyFloat_Check(obj) ) {
+    return Tcl_NewDoubleObj(PyFloat_AsDouble(obj));
+  }
   if ( PyString_Check(obj) ) {
     return Tcl_NewStringObj(PyString_AsString(obj), -1);
   }
@@ -163,30 +169,48 @@ static Tcl_Obj* python_tcl_convert(PyObject *obj) {
   return robj;
 }
 
+static int atoBool(const char *s);
+
+static PyObject* tcl_python_convert(Tcl_Obj *obj) {
+  long rlong;
+  if ( TCL_OK == Tcl_GetLongFromObj(0, obj, &rlong) )
+    return Py_BuildValue("l", rlong);
+  double rdouble;
+  if ( TCL_OK == Tcl_GetDoubleFromObj(0, obj, &rdouble) )
+    return Py_BuildValue("d", rdouble);
+  const char *rstring = Tcl_GetString(obj);
+  if ( rstring[0] == '\0' )
+    return Py_None;
+  int rbool = atoBool(rstring);
+  if ( rbool >= 0 )
+    return PyBool_FromLong(rbool);
+  return Py_BuildValue("s", rstring);
+}
+
 static Tcl_Interp *static_interp;
 
 static PyObject* python_tcl_call(PyObject *self, PyObject *args) {
   Tcl_Interp *interp = static_interp;
   Tcl_Obj *command = python_tcl_convert(args);
   Tcl_IncrRefCount(command);
-  if ( TCL_OK != Tcl_EvalObjEx(interp,command,TCL_EVAL_GLOBAL) ) {
+  if ( TCL_OK != Tcl_EvalObjEx(interp,command,TCL_EVAL_DIRECT) ) {
     PyErr_SetString(PyExc_RuntimeError, Tcl_GetStringResult(interp));
     Tcl_DecrRefCount(command);
     return 0;
   }
   Tcl_DecrRefCount(command);
-  return Py_BuildValue("s", Tcl_GetStringResult(interp));
+  return tcl_python_convert(Tcl_GetObjResult(interp));
 }
 
 static PyObject* python_tcl_eval(PyObject *self, PyObject *args) {
   Tcl_Interp *interp = static_interp;
   const char *command;
   if ( ! PyArg_ParseTuple(args, "s", &command) ) return 0;
-  if ( TCL_OK != Tcl_EvalEx(interp,command,-1,TCL_EVAL_GLOBAL) ) {
+  if ( TCL_OK != Tcl_EvalEx(interp,command,-1,TCL_EVAL_DIRECT) ) {
     PyErr_SetString(PyExc_RuntimeError, Tcl_GetStringResult(interp));
     return 0;
   }
-  return Py_BuildValue("s", Tcl_GetStringResult(interp));
+  return tcl_python_convert(Tcl_GetObjResult(interp));
 }
 
 static PyObject* python_tcl_write(PyObject *self, PyObject *args) {
@@ -217,15 +241,15 @@ static void namd_python_initialize(void *interp) {
 "import tcl\n"
 "sys.stdout = tcl\n"
 "\n"
-"class wrapper:\n"
-"  class wrapped:\n"
+"class _namd_wrapper:\n"
+"  class _wrapped:\n"
 "    def __init__(self,_name):\n"
 "      self.name = _name\n"
 "    def __call__(self,*args):\n"
 "      return tcl.call(self.name,*args)\n"
 "  def __getattr__(self,name):\n"
 "    if tcl.call('info','commands',name) == name:\n"
-"      return self.wrapped(name)\n"
+"      return self._wrapped(name)\n"
 "    else:\n"
 "      return tcl.call('param',name)\n"
 "  def __setattr__(self,name,val):\n"
@@ -236,7 +260,7 @@ static void namd_python_initialize(void *interp) {
 "    for (name,val) in args.items():\n"
 "      tcl.call('param',name,val)\n"
 "\n"
-"namd = wrapper()\n"
+"namd = _namd_wrapper()\n"
 "\n";
 
   if ( TCL_OK != PyRun_SimpleString(python_code) ) {
@@ -349,12 +373,15 @@ int ScriptTcl::Tcl_startup(ClientData clientData,
 int ScriptTcl::Tcl_exit(ClientData clientData,
 	Tcl_Interp *, int argc, char *argv[]) {
   ScriptTcl *script = (ScriptTcl *)clientData;
-  script->initcheck();
+  if ( CmiNumPartitions() > 1 ) {
+    if ( ! script->initWasCalled ) CkPrintf("TCL: Running startup before exit due to replicas.\n");
+    script->initcheck();
+  }
   CkPrintf("TCL: Exiting due to exit command.\n");
 #if CMK_HAS_PARTITION
   replica_barrier();
 #endif
-  script->runController(SCRIPT_END);
+  if ( script->runWasCalled ) script->runController(SCRIPT_END);
   BackEnd::exit();
   return TCL_OK;
 }
@@ -894,13 +921,13 @@ int ScriptTcl::Tcl_isset_param(ClientData clientData,
 int ScriptTcl::Tcl_param(ClientData clientData,
         Tcl_Interp *interp, int argc, char *argv[]) {
   if (argc != 2 && argc != 3 && argc != 5) {
-    Tcl_SetResult(interp,"wrong # args",TCL_VOLATILE);
+    Tcl_SetResult(interp,"wrong # args for NAMD config parameter",TCL_VOLATILE);
     return TCL_ERROR;
   }
 
   char *param = argv[1];
   if ( strlen(param) + 1 > MAX_SCRIPT_PARAM_SIZE ) {
-    Tcl_SetResult(interp,"parameter name too long",TCL_VOLATILE);
+    Tcl_SetResult(interp,"parameter name too long for NAMD config parameter",TCL_VOLATILE);
     return TCL_ERROR;
   }
 
@@ -912,7 +939,7 @@ int ScriptTcl::Tcl_param(ClientData clientData,
       Tcl_SetResult(interp, result,TCL_VOLATILE);
       return TCL_OK;
     } else {
-      Tcl_SetResult(interp,"unknown parameter",TCL_VOLATILE);
+      Tcl_SetResult(interp,"parameter unknown for NAMD config parameter",TCL_VOLATILE);
       return TCL_ERROR;
     }
   }
@@ -921,7 +948,7 @@ int ScriptTcl::Tcl_param(ClientData clientData,
   int arglen = strlen(argv[2]) + 1;
   if ( argc == 5 ) arglen += strlen(argv[3]) + strlen(argv[4]) + 2;
   if ( arglen > MAX_SCRIPT_PARAM_SIZE ) {
-    Tcl_SetResult(interp,"parameter value too long",TCL_VOLATILE);
+    Tcl_SetResult(interp,"parameter value too long for NAMD config parameter",TCL_VOLATILE);
     return TCL_ERROR;
   }
   if ( argc == 3 ) sprintf(value,"%s",argv[2]);
@@ -1513,7 +1540,7 @@ void ScriptTcl::doCallback(const char *labels, const char *data) {
   delete [] cmd;
   if (rval != TCL_OK) {
     const char *errorInfo = Tcl_GetVar(interp,"errorInfo",0);
-    NAMD_die(errorInfo);
+    NAMD_die(errorInfo ? errorInfo : "Unknown Tcl error");
   }
 }
 
@@ -1831,12 +1858,57 @@ int ScriptTcl::Tcl_reloadGridforceGrid(ClientData clientData,
 
   return TCL_OK;
 }
+
+int ScriptTcl::Tcl_updateGridScale(ClientData clientData,
+	Tcl_Interp *interp, int argc, char *argv[]) {
+  ScriptTcl *script = (ScriptTcl *)clientData;
+  script->initcheck();
+
+  Vector scale(1.0f,1.0f,1.0f);
+  char *key = NULL;
+  if (argc == 4) {
+      // nothing ... key is NULL, then Node::updateGridScale uses the
+      // default key, which is used internally when the gridforce*
+      // keywords are used (as opposed to the mgridforce* keywords)
+      scale.x = atof( argv[1] );
+      scale.y = atof( argv[2] );
+      scale.z = atof( argv[3] );
+  } else if (argc == 5) {
+      key = argv[1];
+      scale.x = atof( argv[2] );
+      scale.y = atof( argv[3] );
+      scale.z = atof( argv[4] );
+  } else {
+      Tcl_AppendResult(interp, "usage: updateGridforceGrid [<gridkey>] scaleX scaleY scaleZ", NULL);
+      return TCL_ERROR;
+  }
+
+  //(CProxy_Node(CkpvAccess(BOCclass_group).node)).reloadGridforceGrid(key);
+  Node::Object()->updateGridScale(key,scale);
+  script->barrier();
+
+  return TCL_OK;
+}
 // END gf
 
 int ScriptTcl::Tcl_reloadStructure(ClientData clientData,
 	Tcl_Interp *interp, int argc, char *argv[]) {
   ScriptTcl *script = (ScriptTcl *)clientData;
   script->initcheck();
+
+  if ( argc == 1 ) { // get param value
+    char buf[MAX_SCRIPT_PARAM_SIZE];
+    SimParameters *simParams = Node::Object()->simParameters;
+    char *result = simParams->getfromparseopts("structure",buf);
+    if ( result ) {
+      Tcl_SetResult(interp, result,TCL_VOLATILE);
+      return TCL_OK;
+    } else {
+      Tcl_SetResult(interp,"unknown structure",TCL_VOLATILE);
+      return TCL_ERROR;
+    }
+  }
+
   int ok = 0;
   if (argc == 2) ok = 1;
   if (argc == 4 && ! strcmp(argv[2],"pdb")) ok = 1;
@@ -1848,6 +1920,8 @@ int ScriptTcl::Tcl_reloadStructure(ClientData clientData,
   iout << "TCL: Reloading molecular structure from file " << argv[1];
   if ( argc == 4 ) iout << " and pdb file " << argv[3];
   iout << "\n" << endi;
+  script->config->find("structure")->set(argv[1]);
+  if (argc == 4) script->config->find("coordinates")->set(argv[3]);
   Node::Object()->reloadStructure(argv[1], (argc == 4) ? argv[3] : 0);
 
   script->barrier();
@@ -1867,6 +1941,8 @@ extern "C" void newhandle_msg_ex(void *v, const char *msg, int prepend, int newl
 }
 
 extern "C" int psfgen_static_init(Tcl_Interp *);
+
+int eabf_static_init(Tcl_Interp *);
 
 
 #endif  // NAMD_TCL
@@ -1893,6 +1969,7 @@ ScriptTcl::ScriptTcl() : scriptBarrier(scriptBarrierTag) {
   // Create interpreter
   interp = Tcl_CreateInterp();
   psfgen_static_init(interp);
+  eabf_static_init(interp);
   tcl_vector_math_init(interp);
   Tcl_CreateCommand(interp, "python", Tcl_python,
     (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
@@ -1995,6 +2072,8 @@ ScriptTcl::ScriptTcl() : scriptBarrier(scriptBarrierTag) {
   // BEGIN gf
   Tcl_CreateCommand(interp, "reloadGridforceGrid", Tcl_reloadGridforceGrid,
     (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
+  Tcl_CreateCommand(interp, "updateGridScale", Tcl_updateGridScale,
+    (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
   // END gf
 #endif
 
@@ -2020,13 +2099,54 @@ void ScriptTcl::eval(char *script) {
   if (*result != 0) CkPrintf("TCL: %s\n",result);
   if (code != TCL_OK) {
     const char *errorInfo = Tcl_GetVar(interp,"errorInfo",0);
-    NAMD_die(errorInfo);
+    NAMD_die(errorInfo ? errorInfo : "Unknown Tcl error");
   }
 #else
   NAMD_bug("ScriptTcl::eval called without Tcl.");
 #endif
 
 }
+
+
+#ifdef NAMD_TCL
+int ScriptTcl::tclsh(int argc, char **argv) {
+  Tcl_Interp *interp = Tcl_CreateInterp();
+  psfgen_static_init(interp);
+  eabf_static_init(interp);
+  tcl_vector_math_init(interp);
+  Tcl_SetVar(interp, "argv0", argv[0], TCL_GLOBAL_ONLY);
+  Tcl_SetVar2Ex(interp, "argc", NULL, Tcl_NewIntObj(argc-1), TCL_GLOBAL_ONLY);
+  Tcl_Obj *argvPtr = Tcl_NewListObj(0, NULL);
+  for ( int i=1; i<argc; ++i ) {
+    Tcl_ListObjAppendElement(NULL, argvPtr, Tcl_NewStringObj(argv[i],-1));
+  }
+  Tcl_SetVar2Ex(interp, "argv", NULL, argvPtr, TCL_GLOBAL_ONLY);
+  int code = Tcl_EvalFile(interp,argv[0]);
+  if (code != TCL_OK) {
+    const char *errorInfo = Tcl_GetVar(interp,"errorInfo",0);
+    fprintf(stderr,"%s\n",(errorInfo ? errorInfo : "Unknown Tcl error"));
+    return -1;
+  }
+  return 0;
+}
+
+
+void ScriptTcl::tclmain(int argc, char **argv) {
+  Tcl_SetVar(interp, "argv0", argv[0], TCL_GLOBAL_ONLY);
+  Tcl_SetVar2Ex(interp, "argc", NULL, Tcl_NewIntObj(argc-1), TCL_GLOBAL_ONLY);
+  Tcl_Obj *argvPtr = Tcl_NewListObj(0, NULL);
+  for ( int i=1; i<argc; ++i ) {
+    Tcl_ListObjAppendElement(NULL, argvPtr, Tcl_NewStringObj(argv[i],-1));
+  }
+  Tcl_SetVar2Ex(interp, "argv", NULL, argvPtr, TCL_GLOBAL_ONLY);
+  int code = Tcl_EvalFile(interp,argv[0]);
+  if (code != TCL_OK) {
+    const char *errorInfo = Tcl_GetVar(interp,"errorInfo",0);
+    NAMD_die(errorInfo ? errorInfo : "Unknown Tcl error");
+  }
+}
+#endif
+
 
 void ScriptTcl::load(char *scriptFile) {
 
@@ -2036,7 +2156,7 @@ void ScriptTcl::load(char *scriptFile) {
   if (*result != 0) CkPrintf("TCL: %s\n",result);
   if (code != TCL_OK) {
     const char *errorInfo = Tcl_GetVar(interp,"errorInfo",0);
-    NAMD_die(errorInfo);
+    NAMD_die(errorInfo ? errorInfo : "Unknown Tcl error");
   }
 #else
   NAMD_bug("ScriptTcl::load called without Tcl.");
@@ -2054,7 +2174,7 @@ void ScriptTcl::run(char *scriptFile) {
   }
 #endif
 
-  if (initWasCalled == 0) {
+  if (runWasCalled == 0) {
     initcheck();
     SimParameters *simParams = Node::Object()->simParameters;
     if ( simParams->minimizeCGOn ) runController(SCRIPT_MINIMIZE);

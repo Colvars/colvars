@@ -36,7 +36,7 @@ All subcommands of \texttt{cv} are documented below.
 \item \texttt{printframelabels}: return text labels for the columns of \texttt{printframe}'s output;
 \cvvmdonly{
 \item \texttt{frame}: return the current frame number, from which colvar values are calculated;
-\item \texttt{frame} \emph{$<$new frame$>$}: set the frame numberi; returns 0 if successful, nonzero if the requested frame does not exist.
+\item \texttt{frame} \emph{$<$new frame$>$}: set the frame number; returns 0 if successful, nonzero if the requested frame does not exist.
 }
 \end{itemize}
 
@@ -50,7 +50,7 @@ All subcommands of \texttt{cv} are documented below.
 \cvnamdonly{
 \item \texttt{colvar} \emph{$<$name$>$} \texttt{addforce} \emph{$<$F$>$}: apply given force on colvar \emph{$<$name$>$};
 \item \texttt{colvar} \emph{$<$name$>$} \texttt{getappliedforce}: get the force currently being applied on colvar \emph{$<$name$>$};
-\item \texttt{colvar} \emph{$<$name$>$} \texttt{getsystemforce}: get the system force acting on colvar \emph{$<$name$>$} at the previous step (see \ref{sec:cvc_sys_forces});
+\item \texttt{colvar} \emph{$<$name$>$} \texttt{gettotalforce}: get the total force acting on colvar \emph{$<$name$>$} at the previous step (see \ref{sec:cvc_sys_forces});
 }
 \item \texttt{colvar} \emph{$<$name$>$} \texttt{getconfig}: return config string of colvar \emph{$<$name$>$}.
 \item \texttt{colvar} \emph{$<$name$>$} \texttt{cvcflags} \emph{$<$flags$>$}: for a colvar with several cvcs (numbered according to their name

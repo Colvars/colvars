@@ -31,6 +31,8 @@ public:
   void load(char *scriptFile);
 #ifdef NAMD_TCL
   void run();
+  static int tclsh(int, char **);
+  void tclmain(int, char **);
 #else
   void run(char *scriptFile);
 #endif
@@ -106,6 +108,7 @@ private:
   static int Tcl_consForceConfig(ClientData, Tcl_Interp *, int, Tcl_Obj *const objv[]);
   static int Tcl_reloadCharges(ClientData, Tcl_Interp *, int, char **);
   static int Tcl_reloadGridforceGrid(ClientData, Tcl_Interp *, int, char **);	// BEGIN, END gf
+  static int Tcl_updateGridScale(ClientData, Tcl_Interp *, int, char **);	// BEGIN, END gf
   static int Tcl_reloadStructure(ClientData, Tcl_Interp *, int, char **);
   char *callbackname;
   void doCallback(const char *labels, const char *data);

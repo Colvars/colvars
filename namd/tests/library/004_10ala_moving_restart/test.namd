@@ -8,7 +8,7 @@ set inName previous
 
 # MD SETUP
 timestep          0.5
-numSteps		  400
+numSteps		  20
 
 
 colvars			  on

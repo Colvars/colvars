@@ -22,19 +22,19 @@ protected:
   cvm::real thermostat_temperature;
   cvm::real timestep;
   bool first_timestep;
-  
+
   int outInd; // Index of the output files.
   bool colvars_restart;
   std::string config_file;
   size_t restart_frequency_s;
   int previous_gmx_step;
-  bool system_force_requested;
+  bool total_force_requested;
   double bias_energy;
 
   std::vector<int>          colvars_atoms;
   std::vector<size_t>       colvars_atoms_ncopies;
   std::vector<cvm::rvector> positions;
-  std::vector<cvm::rvector> system_forces;
+  std::vector<cvm::rvector> total_forces;
   std::vector<cvm::rvector> applied_forces;
   // GROMACS random number generation.
   gmx_rng_t rando;
@@ -62,7 +62,7 @@ public:
   std::string restart_output_prefix();
   std::string output_prefix();
   // **************** ACCESS ATOMIC DATA ****************
-  void request_system_force (bool yesno);
+  void request_total_force (bool yesno);
   int init_gromacs_atom(const int &aid, cvm::atom *atom);
   // **************** PERIODIC BOUNDARY CONDITIONS ****************
   cvm::rvector position_distance (cvm::atom_pos const &pos1,
@@ -71,7 +71,7 @@ public:
   //                                    cvm::atom_pos const &pos2);
   void select_closest_image (cvm::atom_pos &pos,
                              cvm::atom_pos const &ref_pos);
-  
+
   // **************** INPUT/OUTPUT ****************
   /// Print a message to the main log
   void log (std::string const &message);

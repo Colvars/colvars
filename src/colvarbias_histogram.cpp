@@ -67,7 +67,7 @@ int colvarbias_histogram::init(std::string const &conf)
 
   if (colvar_array_size > 0) {
     weights.assign(colvar_array_size, 1.0);
-    get_keyval(conf, "weights", weights, weights, colvarparse::parse_silent);
+    get_keyval(conf, "weights", weights, weights);
   }
 
   for (i = 0; i < colvars.size(); i++) {
@@ -75,13 +75,12 @@ int colvarbias_histogram::init(std::string const &conf)
   }
 
   grid = new colvar_grid_scalar();
+  grid->init_from_colvars(colvars);
 
   {
     std::string grid_conf;
-    if (key_lookup(conf, "grid", grid_conf)) {
+    if (key_lookup(conf, "histogramGrid", grid_conf)) {
       grid->parse_params(grid_conf);
-    } else {
-      grid->init_from_colvars(colvars);
     }
   }
 
@@ -105,7 +104,7 @@ int colvarbias_histogram::update()
 {
   int error_code = COLVARS_OK;
   // update base class
-  cvm::combine_errors(error_code, colvarbias::update());
+  error_code |= colvarbias::update();
 
   if (cvm::debug()) {
     cvm::log("Updating histogram bias " + this->name);
@@ -158,7 +157,7 @@ int colvarbias_histogram::update()
     write_output_files();
   }
 
-  cvm::combine_errors(error_code, cvm::get_error());
+  error_code |= cvm::get_error();
   return error_code;
 }
 
@@ -256,6 +255,9 @@ std::istream & colvarbias_histogram::read_restart(std::istream& is)
 
 std::ostream & colvarbias_histogram::write_restart(std::ostream& os)
 {
+  std::ios::fmtflags flags(os.flags());
+  os.setf(std::ios::fmtflags(0), std::ios::floatfield);
+
   os << "histogram {\n"
      << "  configuration {\n"
      << "    name " << this->name << "\n";
@@ -266,5 +268,6 @@ std::ostream & colvarbias_histogram::write_restart(std::ostream& os)
 
   os << "}\n\n";
 
+  os.flags(flags);
   return os;
 }
