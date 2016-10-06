@@ -154,9 +154,6 @@ public:
   /// Prefix for all output files for this run
   static std::string output_prefix;
 
-  /// input restart file name (determined from input_prefix)
-  static std::string restart_in_name;
-
 
   /// Array of collective variables
   static std::vector<colvar *>     colvars;
