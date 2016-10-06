@@ -40,8 +40,8 @@ private:
   int		output_freq;
   /// Write combined files with a history of all output data?
   bool      b_history_files;
-  /// Write CZAR output files for stratified eABF (.zcount, .zgrad)
-  bool      b_czar_window_files;
+  /// Write CZAR output file for stratified eABF (.zgrad)
+  bool      b_czar_window_file;
   size_t    history_freq;
 
   /// Cap applied biasing force?
