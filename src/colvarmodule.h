@@ -12,6 +12,9 @@
 #endif
 
 /*! \mainpage Main page
+This is the Developer's documentation for the Collective Variables Module.
+
+You can browse the class hierarchy or the list of source files.
  */
 
 /// \file colvarmodule.h
