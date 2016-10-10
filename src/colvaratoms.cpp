@@ -410,6 +410,9 @@ int cvm::atom_group::parse(std::string const &conf)
 
   parse_error |= parse_fitting_options(group_conf);
 
+  bool b_print_atom_ids = false;
+  get_keyval(group_conf, "printAtomIDs", b_print_atom_ids, false, colvarparse::parse_silent);
+
   // TODO move this to colvarparse object
   check_keywords(group_conf, key.c_str());
   if (cvm::get_error()) {
@@ -427,6 +430,10 @@ int cvm::atom_group::parse(std::string const &conf)
             cvm::to_str(atoms_ids.size())+" atoms initialized: total mass = "+
 	    cvm::to_str(total_mass)+", total charge = "+
             cvm::to_str(total_charge)+".\n");
+
+  if (b_print_atom_ids) {
+    cvm::log("Internal definition of the atom group:\n");
+  }
 
   cvm::decrease_depth();
 
@@ -581,6 +588,21 @@ int cvm::atom_group::add_atom_name_residue_range(std::string const &psf_segid,
     return COLVARS_ERROR;
   }
   return COLVARS_OK;
+}
+
+
+std::string const cvm::atom_group::print_atom_ids() const
+{
+  size_t line_count = 0;
+  std::ostringstream os("");
+  for (size_t i = 0; i < atoms_ids.size(); i++) {
+    os << " " << std::setw(9) << atoms_ids[i];
+    if (++line_count == 7) {
+      os << "\n";
+      line_count = 0;
+    }
+  }
+  return os.str();
 }
 
 
