@@ -888,7 +888,7 @@ int colvarproxy_namd::load_atoms(char const *pdb_filename,
     }
 
     if (atoms.is_enabled(colvardeps::f_ag_scalable)) {
-      atoms.add_atom_id(ipdb+1);
+      atoms.add_atom_id(ipdb);
     } else {
       atoms.add_atom(cvm::atom(ipdb+1));
     }
