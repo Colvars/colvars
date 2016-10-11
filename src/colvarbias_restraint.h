@@ -90,7 +90,7 @@ protected:
 
 /// Options to change the restraint configuration over time (shared between centers and k moving)
 class colvarbias_restraint_moving
-  : public virtual colvarparse, public virtual cvm::deps {
+  : public virtual colvarparse {
 public:
 
   colvarbias_restraint_moving(char const *key);

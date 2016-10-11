@@ -80,7 +80,7 @@ public:
   /// configuration)
   std::string input_prefix_str, output_prefix_str, restart_output_prefix_str;
 
-  inline std::string input_prefix()
+  inline std::string & input_prefix()
   {
     return input_prefix_str;
   }
@@ -301,6 +301,14 @@ public:
     if (yesno == true)
       cvm::error("Error: total forces are currently not implemented.\n",
                  COLVARS_NOT_IMPLEMENTED);
+  }
+
+  /// Are total forces being used?
+  virtual bool total_forces_enabled() const
+  {
+    cvm::error("Error: total forces are currently not implemented.\n",
+               COLVARS_NOT_IMPLEMENTED);
+    return false;
   }
 
   /// \brief Get the PBC-aware distance vector between two positions

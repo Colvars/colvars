@@ -332,6 +332,7 @@ obj/dcdlib.o: \
 obj/eabf1D.o: \
 	obj/.exists \
 	src/eabf1D.C \
+	src/fstream_namd.h \
 	src/eabf1D.h \
 	src/eabf.h \
 	src/eabffunc.h
@@ -339,6 +340,7 @@ obj/eabf1D.o: \
 obj/eabf2D.o: \
 	obj/.exists \
 	src/eabf2D.C \
+	src/fstream_namd.h \
 	src/eabf2D.h \
 	src/eabf.h \
 	src/eabffunc.h
@@ -398,6 +400,7 @@ obj/main.o: \
 	inc/OptPmeMgr.decl.h \
 	inc/PmeFFTLib.decl.h \
 	inc/ComputeExtMgr.decl.h \
+	inc/ComputeQMMgr.decl.h \
 	inc/ComputeGBISserMgr.decl.h \
 	inc/ComputeFmmSerialMgr.decl.h \
 	inc/ComputeMsmSerialMgr.decl.h \
@@ -614,6 +617,7 @@ obj/BackEnd.o: \
 	inc/OptPmeMgr.decl.h \
 	inc/PmeFFTLib.decl.h \
 	inc/ComputeExtMgr.decl.h \
+	inc/ComputeQMMgr.decl.h \
 	inc/ComputeGBISserMgr.decl.h \
 	inc/ComputeFmmSerialMgr.decl.h \
 	inc/ComputeMsmSerialMgr.decl.h \
@@ -1639,6 +1643,78 @@ obj/ComputeExt.o: \
 	src/varsizemsg.h \
 	inc/ComputeExtMgr.def.h
 	$(CXX) $(CXXFLAGS) $(COPTO)obj/ComputeExt.o $(COPTC) src/ComputeExt.C
+obj/ComputeQM.o: \
+	obj/.exists \
+	src/ComputeQM.C \
+	src/dcdlib.h \
+	src/largefiles.h \
+	src/common.h \
+	src/Vector.h \
+	src/Debug.h \
+	src/InfoStream.h \
+	src/Node.h \
+	src/main.h \
+	src/ProcessorPrivate.h \
+	src/BOCgroup.h \
+	inc/Node.decl.h \
+	src/PatchMap.h \
+	src/NamdTypes.h \
+	src/ResizeArray.h \
+	src/ResizeArrayRaw.h \
+	src/HomePatchList.h \
+	src/SortedArray.h \
+	src/SortableResizeArray.h \
+	src/ResizeArrayIter.h \
+	src/Lattice.h \
+	src/Tensor.h \
+	src/PatchMap.inl \
+	src/AtomMap.h \
+	src/ComputeQM.h \
+	src/ComputeHomePatches.h \
+	src/Compute.h \
+	src/HomePatch.h \
+	src/Patch.h \
+	src/OwnerBox.h \
+	src/Box.h \
+	src/UniqueSortedArray.h \
+	src/PatchTypes.h \
+	src/MigrateAtomsMsg.h \
+	src/Migration.h \
+	inc/PatchMgr.decl.h \
+	src/Settle.h \
+	inc/ComputeQMMgr.decl.h \
+	src/PatchMgr.h \
+	src/Molecule.h \
+	src/parm.h \
+	src/structures.h \
+	src/ConfigList.h \
+	src/UniqueSet.h \
+	src/UniqueSetRaw.h \
+	src/Hydrogen.h \
+	src/GromacsTopFile.h \
+	src/GridForceGrid.h \
+	src/SimParameters.h \
+	src/MGridforceParams.h \
+	src/strlib.h \
+	src/MStream.h \
+	plugins/include/molfile_plugin.h \
+	plugins/include/vmdplugin.h \
+	src/ReductionMgr.h \
+	src/ComputeMgr.h \
+	src/GlobalMaster.h \
+	src/GlobalMasterServer.h \
+	inc/ComputeMgr.decl.h \
+	src/WorkDistrib.h \
+	src/ComputeMap.h \
+	inc/WorkDistrib.decl.h \
+	src/varsizemsg.h \
+	src/ComputePme.h \
+	src/PmeBase.h \
+	src/MathArray.h \
+	src/Array.h \
+	inc/ComputePmeMgr.decl.h \
+	inc/ComputeQMMgr.def.h
+	$(CXX) $(CXXFLAGS) $(COPTO)obj/ComputeQM.o $(COPTC) src/ComputeQM.C
 obj/ComputeGBISser.o: \
 	obj/.exists \
 	src/ComputeGBISser.C \
@@ -2328,6 +2404,7 @@ obj/ComputeMgr.o: \
 	src/ComputeGlobal.h \
 	src/ComputeGlobalMsgs.h \
 	src/ComputeExt.h \
+	src/ComputeQM.h \
 	src/ComputeGBISser.h \
 	src/ComputeLCPO.h \
 	src/ComputeFmmSerial.h \
@@ -5137,6 +5214,10 @@ obj/HomePatch.o: \
 	src/ComputeNonbondedUtil.h \
 	src/ComputeGBIS.inl \
 	src/SortAtoms.h \
+	src/ComputeQM.h \
+	src/ComputeHomePatches.h \
+	src/Compute.h \
+	inc/ComputeQMMgr.decl.h \
 	src/Debug.h \
 	src/ComputeNonbondedMICKernel.h
 	$(CXX) $(CXXFLAGS) $(COPTO)obj/HomePatch.o $(COPTC) src/HomePatch.C
@@ -5549,6 +5630,65 @@ obj/GoMolecule.o: \
 	src/PatchMgr.h \
 	inc/ParallelIOMgr.decl.h
 	$(CXX) $(CXXFLAGS) $(COPTO)obj/GoMolecule.o $(COPTC) src/GoMolecule.C
+obj/MoleculeQM.o: \
+	obj/.exists \
+	src/MoleculeQM.C \
+	src/ResizeArray.h \
+	src/ResizeArrayRaw.h \
+	src/common.h \
+	src/InfoStream.h \
+	src/Molecule.h \
+	src/parm.h \
+	src/NamdTypes.h \
+	src/Vector.h \
+	src/structures.h \
+	src/ConfigList.h \
+	src/UniqueSet.h \
+	src/UniqueSetRaw.h \
+	src/Hydrogen.h \
+	src/SortableResizeArray.h \
+	src/GromacsTopFile.h \
+	src/GridForceGrid.h \
+	src/Tensor.h \
+	src/SimParameters.h \
+	src/Lattice.h \
+	src/MGridforceParams.h \
+	src/strlib.h \
+	src/MStream.h \
+	plugins/include/molfile_plugin.h \
+	plugins/include/vmdplugin.h \
+	src/Communicate.h \
+	src/Node.h \
+	src/main.h \
+	src/ProcessorPrivate.h \
+	src/BOCgroup.h \
+	inc/Node.decl.h \
+	src/ObjectArena.h \
+	src/Parameters.h \
+	src/PDB.h \
+	src/PDBData.h \
+	src/UniqueSetIter.h \
+	src/Debug.h \
+	src/CompressPsf.h \
+	src/ParallelIOMgr.h \
+	src/NamdState.h \
+	src/PatchMgr.h \
+	src/SortedArray.h \
+	src/HomePatch.h \
+	src/Patch.h \
+	src/OwnerBox.h \
+	src/Box.h \
+	src/UniqueSortedArray.h \
+	src/PatchTypes.h \
+	src/PatchMap.h \
+	src/HomePatchList.h \
+	src/ResizeArrayIter.h \
+	src/MigrateAtomsMsg.h \
+	src/Migration.h \
+	inc/PatchMgr.decl.h \
+	src/Settle.h \
+	inc/ParallelIOMgr.decl.h
+	$(CXX) $(CXXFLAGS) $(COPTO)obj/MoleculeQM.o $(COPTC) src/MoleculeQM.C
 obj/NamdCentLB.o: \
 	obj/.exists \
 	src/NamdCentLB.C \
@@ -5902,6 +6042,7 @@ obj/Node.o: \
 	inc/OptPmeMgr.decl.h \
 	inc/PmeFFTLib.decl.h \
 	inc/ComputeExtMgr.decl.h \
+	inc/ComputeQMMgr.decl.h \
 	inc/ComputeGBISserMgr.decl.h \
 	inc/ComputeFmmSerialMgr.decl.h \
 	inc/ComputeMsmSerialMgr.decl.h \
@@ -6180,6 +6321,7 @@ obj/PatchMgr.o: \
 	inc/OptPmeMgr.decl.h \
 	inc/PmeFFTLib.decl.h \
 	inc/ComputeExtMgr.decl.h \
+	inc/ComputeQMMgr.decl.h \
 	inc/ComputeGBISserMgr.decl.h \
 	inc/ComputeFmmSerialMgr.decl.h \
 	inc/ComputeMsmSerialMgr.decl.h \
@@ -6457,6 +6599,7 @@ obj/ProxyPatch.o: \
 	inc/OptPmeMgr.decl.h \
 	inc/PmeFFTLib.decl.h \
 	inc/ComputeExtMgr.decl.h \
+	inc/ComputeQMMgr.decl.h \
 	inc/ComputeGBISserMgr.decl.h \
 	inc/ComputeFmmSerialMgr.decl.h \
 	inc/ComputeMsmSerialMgr.decl.h \
@@ -6995,6 +7138,7 @@ obj/WorkDistrib.o: \
 	inc/OptPmeMgr.decl.h \
 	inc/PmeFFTLib.decl.h \
 	inc/ComputeExtMgr.decl.h \
+	inc/ComputeQMMgr.decl.h \
 	inc/ComputeGBISserMgr.decl.h \
 	inc/ComputeFmmSerialMgr.decl.h \
 	inc/ComputeMsmSerialMgr.decl.h \

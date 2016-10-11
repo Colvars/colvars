@@ -1,0 +1,5 @@
+linear {
+    colvars        one
+    centers        0.1
+    forceConstant  0.001
+}

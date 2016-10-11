@@ -7,8 +7,8 @@
 /*****************************************************************************
  * $Source: /namd/cvsroot/namd2/src/SimParameters.h,v $
  * $Author: jim $
- * $Date: 2016/09/07 18:09:59 $
- * $Revision: 1.1243 $
+ * $Date: 2016/09/29 20:31:47 $
+ * $Revision: 1.1244 $
  *****************************************************************************/
 
 #ifndef SIMPARAMETERS_H
@@ -430,6 +430,52 @@ public:
         char extForcesCommand[256];
         char extCoordFilename[128];
         char extForceFilename[128];
+
+
+        // Defines variables for QM/MM calculations
+        Bool qmForcesOn;               //  Are QM/MM command forces present?
+        char qmParamPDB[128];
+        Bool qmParamPDBDefined;
+        char qmExecPath[256];
+        char qmSoftware[128];
+        char qmChrgModeS[16];
+        int qmChrgMode;
+        char qmColumn[16];
+        char qmBaseDir[256];
+        char qmSecProc[256];
+        Bool qmSecProcOn;
+        char qmPrepProc[256];
+        Bool qmPrepProcOn;
+        int qmFormat ;
+        Bool qmReplaceAll ;
+
+        Bool qmBondOn;
+        char qmBondColumn[16];
+        Bool qmBondDist;
+        int qmBondValType;
+        char qmBondValueTypeS[16];
+        char qmBondSchemeS[16] ;
+        int qmBondScheme;
+        Bool qmPCSwitchOn;
+        char qmPCSwitchTypeS[16];
+        int qmPCSwitchType;
+        char qmPCSchemeS[16];
+        int qmPCScheme;
+        int qmSimsPerNode;
+
+        Bool qmVDW ;
+        Bool qmNoPC ;
+        int qmPCSelFreq ;
+        Bool qmCustomPCSel;
+
+        Bool qmLSSOn ;
+        int qmLSSFreq ;
+        char qmLSSResname[5] ;
+        char qmLSSModeS[16];
+        int qmLSSMode;
+
+        int qmOutFreq ;
+        int qmPosOutFreq ;
 
   Bool printBadContacts;        //print indices of bad contacts being moved downhill
 

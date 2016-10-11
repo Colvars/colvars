@@ -16,7 +16,7 @@
 #include "colvarvalue.h"
 
 #ifndef COLVARPROXY_VERSION
-#define COLVARPROXY_VERSION "2016-09-30"
+#define COLVARPROXY_VERSION "2016-10-11"
 #endif
 
 // For replica exchange
@@ -77,6 +77,12 @@ public:
   void exit(std::string const &message);
   void add_energy(cvm::real energy);
   void request_total_force(bool yesno);
+
+  bool total_forces_enabled() const
+  {
+    return total_force_requested;
+  }
+
   int run_force_callback();
   int run_colvar_callback(std::string const &name,
                           std::vector<const colvarvalue *> const &cvcs,
@@ -85,7 +91,7 @@ public:
                                    std::vector<const colvarvalue *> const &cvcs,
                                    std::vector<cvm::matrix2d<cvm::real> > &gradient);
 
-  inline cvm::real unit_angstrom()
+  cvm::real unit_angstrom()
   {
     return 1.0;
   }

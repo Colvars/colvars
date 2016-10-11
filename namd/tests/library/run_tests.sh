@@ -10,9 +10,10 @@
 
 gen_ref_output=''
 
+TMPDIR=/tmp
 DIRLIST=''
 BINARY=namd2
-while [ $# -ge 1 ]; do 
+while [ $# -ge 1 ]; do
   if { echo $1 | grep -q namd2 ; }; then
     BINARY=$1
   elif [ "x$1" = 'x-g' ]; then
@@ -35,9 +36,9 @@ cleanup_files() {
   for script in test*.namd testres*.namd ; do
     for f in ${script%.namd}.*diff; do if [ ! -s $f ]; then rm -f $f; fi; done # remove empty diffs only
     rm -f ${script%.namd}.*{BAK,old,backup}
-    for f in ${script%.namd}.*{state,out,traj,coor,vel,xsc,pmf,hills,grad,count}
+    for f in ${script%.namd}.*{state,out,traj,coor,vel,xsc,pmf,hills,grad,count,histogram?.dat,histogram?.dx}
     do
-      if [ ! -f "$f.diff" ]; then rm -f $f; fi # keep files that have a non-empty diff 
+      if [ ! -f "$f.diff" ]; then rm -f $f; fi # keep files that have a non-empty diff
     done
     rm -f metadynamics1.*.files.txt replicas.registry.txt
   done
@@ -54,7 +55,7 @@ for dir in ${DIRLIST} ; do
     mkdir AutoDiff
     cd $BASEDIR
     continue
-  else  
+  else
 
     if [ "x${gen_ref_output}" != 'xyes' ]; then
 
@@ -78,23 +79,34 @@ for dir in ${DIRLIST} ; do
   fi
 
   cleanup_files
-  
+
   if ls | grep -q \.namd ; then
-    SCRIPTS=`ls *namd`
+    SCRIPTS=`ls -1 *namd | grep -v legacy`
   else
     SCRIPTS="../Common/test.namd ../Common/test.restart.namd"
   fi
 
   # run simulation(s)
   for script in ${SCRIPTS} ; do
-    # use --source to avoid letting NAMD change its working directory
-    # use multiple threads to test SMP code (TODO: move SMP tests to interface?)
+
     basename=`basename ${script}`
     basename=${basename%.namd}
-    $BINARY +p 3 --source $script > ${basename}.out
-    # collect output of colvars module, except the version numbers
+
+    # Try running the test (use a subshell to avoid cluttering stdout)
+    # Use --source to avoid letting NAMD change its working directory
+    # Use multiple threads to test SMP code (TODO: move SMP tests to interface?)
+    if ! ( $BINARY +p 3 --source $script > ${basename}.out || false ) > /dev/null 2>&1 ; then
+      # This test may be using syntax that changed between versions
+      if [ -f ${script%.namd}.legacy.namd ] ; then
+        # Try a legacy input
+        ( $BINARY +p 3 --source ${script%.namd}.legacy.namd > ${basename}.out || false ) > /dev/null 2>&1
+      fi
+    fi
+
+    # Output of Colvars module, minus the version numbers
     grep "^colvars:" ${basename}.out | grep -v 'Initializing the collective variables module' \
       | grep -v 'Using NAMD interface, version' > ${basename}.colvars.out
+
     # Output of Tcl interpreter for automatic testing of scripts (TODO: move this to interface)
     grep "^TCL:" ${basename}.out | grep -v '^TCL: Suspending until startup complete.' > ${basename}.Tcl.out
     if [ ! -s ${basename}.Tcl.out ]; then
@@ -102,13 +114,25 @@ for dir in ${DIRLIST} ; do
     fi
 
     # Filter out the version number from the state files to allow comparisons
-    grep -v 'version' ${basename}.colvars.state > ${basename}.colvars.state.tmp
-    mv ${basename}.colvars.state.tmp ${basename}.colvars.state
+    grep -v 'version' ${basename}.colvars.state > ${TMPDIR}/${basename}.colvars.state
+    mv -f ${TMPDIR}/${basename}.colvars.state ${basename}.colvars.state
 
+    # If this test is used to generate the reference output files, copy them
     if [ "x${gen_ref_output}" = 'xyes' ]; then
       cp ${basename}.colvars.state AutoDiff/
       cp ${basename}.colvars.traj  AutoDiff/
       cp ${basename}.colvars.out   AutoDiff/
+      if [ -f ${basename}.histogram1.dat ] ; then
+        cp -f ${basename}.histogram1.dat AutoDiff/
+      fi
+      if [ -f ${basename}.pmf ] ; then
+        cp -f ${basename}.pmf AutoDiff/
+      fi
+    fi
+
+    # Old versions did not accurately update the prefix
+    if [ -f .histogram1.dat ] ; then
+      mv .histogram1.dat ${basename}.histogram1.dat
     fi
 
   done
@@ -118,6 +142,11 @@ for dir in ${DIRLIST} ; do
   for f in AutoDiff/*
   do
     base=`basename $f`
+    if [ "${base}" != "${base%.traj}" ] ; then
+      # System force is now total force
+      sed 's/fs_/ft_/g' < ${base} > ${TMPDIR}/${base}
+      mv -f ${TMPDIR}/${base} ${base}
+    fi
     $DIFF $f $base > "$base.diff"
     RETVAL=$?
     if [ $RETVAL -ne 0 ]
@@ -155,4 +184,3 @@ else
   echo "There were failed tests."
   exit 1
 fi
-

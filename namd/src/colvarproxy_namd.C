@@ -178,6 +178,8 @@ int colvarproxy_namd::update_atoms_map(AtomIDList::const_iterator begin,
 
 int colvarproxy_namd::setup()
 {
+  if (colvars->size() == 0) return COLVARS_OK;
+
   log("Updating NAMD interface:\n");
 
   log("updating atomic data ("+cvm::to_str(atoms_ids.size())+" atoms).\n");
@@ -218,8 +220,14 @@ int colvarproxy_namd::setup()
 void colvarproxy_namd::calculate()
 {
   if (first_timestep) {
-    setup();
+
+    this->setup();
+    colvars->setup();
+    colvars->setup_input();
+    colvars->setup_output();
+
     first_timestep = false;
+
   } else {
     // Use the time step number inherited from GlobalMaster
     if ( step - previous_NAMD_step == 1 ) {
@@ -540,9 +548,9 @@ void colvarproxy_namd::fatal_error(std::string const &message)
 {
   log(message);
   if (errno) log(strerror(errno));
-  if (!cvm::debug())
-    log("If this error message is unclear, "
-        "try recompiling with -DCOLVARS_DEBUG.\n");
+  // if (!cvm::debug())
+  //   log("If this error message is unclear, "
+  //       "try recompiling with -DCOLVARS_DEBUG.\n");
   if (errno) {
     NAMD_err("Error in the collective variables module");
   } else {
@@ -880,7 +888,7 @@ int colvarproxy_namd::load_atoms(char const *pdb_filename,
     }
 
     if (atoms.is_enabled(colvardeps::f_ag_scalable)) {
-      atoms.add_atom_id(ipdb+1);
+      atoms.add_atom_id(ipdb);
     } else {
       atoms.add_atom(cvm::atom(ipdb+1));
     }

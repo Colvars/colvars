@@ -17,13 +17,11 @@
 \newcommand{\key}[5]{\NAMDCOLVARCONF{#1}{#2}{#3}{#4}{#5}}
 \newcommand{\keydef}[6]{\NAMDCOLVARCONFWDEF{#1}{#2}{#3}{#4}{#5}{#6}}
 \newcommand{\labelkey}[1]{}
-\newcommand{\refkey}[2]{\texttt{#1} (see \ref{#2})}
+\newcommand{\refkey}[2]{\texttt{#1}}
 \newcommand{\dupkey}[4]{%
-  \index{#2!\texttt{#1}}
-  {\bf \large \tt #1:} see definition of \texttt{#1} in sec.~\ref{#3} (#4)%
+  {\bf \large \tt #1:} see definition of \texttt{#1} (#4)%
 }
 \newcommand{\simkey}[3]{%
-  \index{#2!\texttt{#1}}
   {\bf \large \tt #1:} analogous to \texttt{#3}%
 }
 

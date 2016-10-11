@@ -148,6 +148,7 @@ OBJS = \
 	$(DSTDIR)/ComputeEField.o \
 	$(DSTDIR)/ComputeEwald.o \
 	$(DSTDIR)/ComputeExt.o \
+	$(DSTDIR)/ComputeQM.o \
 	$(DSTDIR)/ComputeGBISser.o \
 	$(DSTDIR)/ComputeGBIS.o \
 	$(DSTDIR)/ComputeGromacsPair.o \
@@ -255,6 +256,7 @@ OBJS = \
 	$(DSTDIR)/Molecule.o \
 	$(DSTDIR)/Molecule2.o \
 	$(DSTDIR)/GoMolecule.o \
+        $(DSTDIR)/MoleculeQM.o \
 	$(DSTDIR)/NamdCentLB.o \
 	$(DSTDIR)/NamdNborLB.o \
 	$(DSTDIR)/NamdHybridLB.o \
@@ -340,6 +342,8 @@ CIFILES = 	\
 		$(INCDIR)/PmeSolver.def.h \
 		$(INCDIR)/ComputeExtMgr.decl.h \
 		$(INCDIR)/ComputeExtMgr.def.h \
+		$(INCDIR)/ComputeQMMgr.decl.h \
+		$(INCDIR)/ComputeQMMgr.def.h \
 		$(INCDIR)/ComputeGBISserMgr.decl.h \
 		$(INCDIR)/ComputeGBISserMgr.def.h \
 		$(INCDIR)/LdbCoordinator.decl.h \
