@@ -10,6 +10,7 @@
 
 gen_ref_output=''
 
+TMPDIR=/tmp
 DIRLIST=''
 BINARY=namd2
 while [ $# -ge 1 ]; do
@@ -112,6 +113,10 @@ for dir in ${DIRLIST} ; do
       rm -f ${basename}.Tcl.out
     fi
 
+    # Filter out the version number from the state files to allow comparisons
+    grep -v 'version' ${basename}.colvars.state > ${TMPDIR}/${basename}.colvars.state
+    mv -f ${TMPDIR}/${basename}.colvars.state ${basename}.colvars.state
+
     # If this test is used to generate the reference output files, copy them
     if [ "x${gen_ref_output}" = 'xyes' ]; then
       cp ${basename}.colvars.state AutoDiff/
@@ -126,15 +131,10 @@ for dir in ${DIRLIST} ; do
   for f in AutoDiff/*
   do
     base=`basename $f`
-    if [ "${base}" != "${base%.state}" ] ; then
-      # Filter out the version number from the state files to allow comparisons
-      grep -v 'version' ${base} > ${base}.tmp
-      mv ${base}.tmp ${base}
-    fi
     if [ "${base}" != "${base%.traj}" ] ; then
       # System force is now total force
-      sed 's/fs_/ft_/g' < ${base} > ${base}.tmp
-      mv ${base}.tmp ${base}
+      sed 's/fs_/ft_/g' < ${base} > ${TMPDIR}/${base}
+      mv -f ${TMPDIR}/${base} ${base}
     fi
     $DIFF $f $base > "$base.diff"
     RETVAL=$?
