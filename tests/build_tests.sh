@@ -42,6 +42,7 @@ for colvar in "distance" ; do
         "harmonic-fixed" \
         "harmonic-centers-moving" \
         "harmonic-k-moving" \
+        "linear-fixed" \
         ; do
         create_test_dir ${colvar}_${bias}
         echo 'colvarsTrajFrequency 1' > ${dirname}/test.in 
@@ -61,18 +62,25 @@ for colvar in "distance-grid" ; do
         "harmonic-fixed" \
         "harmonic-centers-moving" \
         "harmonic-k-moving" \
+        "histogram" \
         "metadynamics" \
         ; do
         create_test_dir ${colvar}_${bias}
         echo 'colvarsTrajFrequency 1' > ${dirname}/test.in 
         echo 'colvarsRestartFrequency 10' >> ${dirname}/test.in 
         cat indexfile.in >> ${dirname}/test.in
-        echo '' >> ${dirname}/test.in 
+        echo '' >> ${dirname}/test.in
         cat ${colvar}.in >> ${dirname}/test.in
-        echo '' >> ${dirname}/test.in 
+        echo '' >> ${dirname}/test.in
         cat ${bias}.in >> ${dirname}/test.in
     done
 done
+
+# for colvar in "distancePairs" ; do
+#     for bias in \
+#         "histogram" \
+#         ; do
+
 
 # TODO uncomment this and the add two-dimensional regtests
 # # Generate two-variables versions of bias configurations
@@ -87,6 +95,5 @@ done
 #         | sed 's/centers        0.0/centers        0.0 0.0/' \
 #         | sed 's/targetCenters  0.1/targetCenters  0.1 0.1/' \
 #         > ${bias}-2.in
-# done
 
 unset -f n_test dirname
