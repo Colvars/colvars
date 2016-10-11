@@ -12,7 +12,7 @@ gen_ref_output=''
 
 DIRLIST=''
 BINARY=namd2
-while [ $# -ge 1 ]; do 
+while [ $# -ge 1 ]; do
   if { echo $1 | grep -q namd2 ; }; then
     BINARY=$1
   elif [ "x$1" = 'x-g' ]; then
@@ -37,7 +37,7 @@ cleanup_files() {
     rm -f ${script%.namd}.*{BAK,old,backup}
     for f in ${script%.namd}.*{state,out,traj,coor,vel,xsc,pmf,hills,grad,count}
     do
-      if [ ! -f "$f.diff" ]; then rm -f $f; fi # keep files that have a non-empty diff 
+      if [ ! -f "$f.diff" ]; then rm -f $f; fi # keep files that have a non-empty diff
     done
     rm -f metadynamics1.*.files.txt replicas.registry.txt
   done
@@ -54,7 +54,7 @@ for dir in ${DIRLIST} ; do
     mkdir AutoDiff
     cd $BASEDIR
     continue
-  else  
+  else
 
     if [ "x${gen_ref_output}" != 'xyes' ]; then
 
@@ -78,29 +78,41 @@ for dir in ${DIRLIST} ; do
   fi
 
   cleanup_files
-  
+
   if ls | grep -q \.namd ; then
-    SCRIPTS=`ls *namd`
+    SCRIPTS=`ls -1 *namd | grep -v legacy`
   else
     SCRIPTS="../Common/test.namd ../Common/test.restart.namd"
   fi
 
   # run simulation(s)
   for script in ${SCRIPTS} ; do
-    # use --source to avoid letting NAMD change its working directory
-    # use multiple threads to test SMP code (TODO: move SMP tests to interface?)
+
     basename=`basename ${script}`
     basename=${basename%.namd}
-    $BINARY +p 3 --source $script > ${basename}.out
-    # collect output of colvars module, except the version numbers
+
+    # Try running the test (use a subshell to avoid cluttering stdout)
+    # Use --source to avoid letting NAMD change its working directory
+    # Use multiple threads to test SMP code (TODO: move SMP tests to interface?)
+    if ! ( $BINARY +p 3 --source $script > ${basename}.out || false ) > /dev/null 2>&1 ; then
+      # This test may be using syntax that changed between versions
+      if [ -f ${script%.namd}.legacy.namd ] ; then
+        # Try a legacy input
+        ( $BINARY +p 3 --source ${script%.namd}.legacy.namd > ${basename}.out || false ) > /dev/null 2>&1
+      fi
+    fi
+
+    # Output of Colvars module, minus the version numbers
     grep "^colvars:" ${basename}.out | grep -v 'Initializing the collective variables module' \
       | grep -v 'Using NAMD interface, version' > ${basename}.colvars.out
+
     # Output of Tcl interpreter for automatic testing of scripts (TODO: move this to interface)
     grep "^TCL:" ${basename}.out | grep -v '^TCL: Suspending until startup complete.' > ${basename}.Tcl.out
     if [ ! -s ${basename}.Tcl.out ]; then
       rm -f ${basename}.Tcl.out
     fi
 
+    # If this test is used to generate the reference output files, copy them
     if [ "x${gen_ref_output}" = 'xyes' ]; then
       cp ${basename}.colvars.state AutoDiff/
       cp ${basename}.colvars.traj  AutoDiff/
@@ -156,4 +168,3 @@ else
   echo "There were failed tests."
   exit 1
 fi
-
