@@ -13,6 +13,7 @@ if [ -n "${1}" ] ; then
     fi
 fi
 
+# Create a directory (or find an existing one) and set the variable $dirname
 create_test_dir() {
 
     if ls $WORKDIR/ | grep -q "_${1}" ; then
@@ -22,10 +23,10 @@ create_test_dir() {
         return
     fi
     
-    # Add to an existing set of regression tests
-    while ls $WORKDIR/ | grep -q `printf %03d $n_test`_ ; do
-        n_test=$((++n_test))
-    done
+    # # Add to an existing set of regression tests
+    # while ls $WORKDIR/ | grep -q `printf %03d $n_test`_ ; do
+    #     n_test=$((++n_test))
+    # done
 
     dirname="${WORKDIR}/`printf %03d ${n_test}`_$1"
     if [ ! -d ${dirname} ] ; then
@@ -34,7 +35,7 @@ create_test_dir() {
 }
 
 dirname=''
-n_test=1
+n_test=0
 
 for colvar in "distance" ; do
     for bias in \
