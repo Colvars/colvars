@@ -39,8 +39,8 @@ n_test=1
 for colvar in "distance" ; do
     for bias in \
         "harmonic-fixed" \
-            "harmonic-centers-moving" \
-            "harmonic-k-moving" \
+        "harmonic-centers-moving" \
+        "harmonic-k-moving" \
         ; do
         create_test_dir ${colvar}_${bias}
         echo 'colvarsTrajFrequency 1' > ${dirname}/test.in 
@@ -53,13 +53,14 @@ for colvar in "distance" ; do
     done
 done
 
+# NOTE: abf is not included because total/system force calculations
+# should be tested separately
 for colvar in "distance-grid" ; do
     for bias in \
         "harmonic-fixed" \
-            "harmonic-centers-moving" \
-            "harmonic-k-moving" \
-            "abf" \
-            "metadynamics" \
+        "harmonic-centers-moving" \
+        "harmonic-k-moving" \
+        "metadynamics" \
         ; do
         create_test_dir ${colvar}_${bias}
         echo 'colvarsTrajFrequency 1' > ${dirname}/test.in 
