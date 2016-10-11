@@ -129,7 +129,12 @@ for dir in ${DIRLIST} ; do
     if [ "${base}" != "${base%.state}" ] ; then
       # Filter out the version number from the state files to allow comparisons
       grep -v 'version' ${base} > ${base}.tmp
-      mv ${base}.tmp ${base} 
+      mv ${base}.tmp ${base}
+    fi
+    if [ "${base}" != "${base%.traj}" ] ; then
+      # System force is now total force
+      sed 's/fs_/ft_/g' < ${base} > ${base}.tmp
+      mv ${base}.tmp ${base}
     fi
     $DIFF $f $base > "$base.diff"
     RETVAL=$?
