@@ -36,7 +36,7 @@ cleanup_files() {
   for script in test*.namd testres*.namd ; do
     for f in ${script%.namd}.*diff; do if [ ! -s $f ]; then rm -f $f; fi; done # remove empty diffs only
     rm -f ${script%.namd}.*{BAK,old,backup}
-    for f in ${script%.namd}.*{state,out,traj,coor,vel,xsc,pmf,hills,grad,count}
+    for f in ${script%.namd}.*{state,out,traj,coor,vel,xsc,pmf,hills,grad,count,histogram?.dat,histogram?.dx}
     do
       if [ ! -f "$f.diff" ]; then rm -f $f; fi # keep files that have a non-empty diff
     done
@@ -122,6 +122,17 @@ for dir in ${DIRLIST} ; do
       cp ${basename}.colvars.state AutoDiff/
       cp ${basename}.colvars.traj  AutoDiff/
       cp ${basename}.colvars.out   AutoDiff/
+      if [ -f ${basename}.histogram1.dat ] ; then
+        cp -f ${basename}.histogram1.dat AutoDiff/
+      fi
+      if [ -f ${basename}.pmf ] ; then
+        cp -f ${basename}.pmf AutoDiff/
+      fi
+    fi
+
+    # Old versions did not accurately update the prefix
+    if [ -f .histogram1.dat ] ; then
+      mv .histogram1.dat ${basename}.histogram1.dat
     fi
 
   done
