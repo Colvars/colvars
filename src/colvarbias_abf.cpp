@@ -245,7 +245,7 @@ int colvarbias_abf::update()
 
       for (size_t i = 0; i < colvars.size(); i++) {
         // get total forces (lagging by 1 timestep) from colvars
-        // and subtract previous ABF force
+        // and subtract previous ABF force if necessary
         update_system_force(i);
       }
       gradients->acc_force(force_bin, system_force);
