@@ -266,7 +266,7 @@ void colvarproxy_namd::calculate()
   }
 
   // create the atom map if needed
-  int const n_all_atoms = Node::Object()->molecule->numAtoms;
+  size_t const n_all_atoms = Node::Object()->molecule->numAtoms;
   if (atoms_map.size() != n_all_atoms) {
     atoms_map.resize(n_all_atoms);
     atoms_map.assign(n_all_atoms, -1);
@@ -274,8 +274,8 @@ void colvarproxy_namd::calculate()
   }
 
   // if new atomic positions or forces have been communicated by other GlobalMasters, add them to the atom map
-  if ((atoms_ids.size() < (getAtomIdEnd() - getAtomIdBegin())) ||
-      (atoms_ids.size() < (getForceIdEnd() - getForceIdBegin()))) {
+  if ((int(atoms_ids.size()) < (getAtomIdEnd() - getAtomIdBegin())) ||
+      (int(atoms_ids.size()) < (getForceIdEnd() - getForceIdBegin()))) {
     update_atoms_map(getAtomIdBegin(), getAtomIdEnd());
     update_atoms_map(getForceIdBegin(), getForceIdEnd());
   }
