@@ -367,6 +367,7 @@ int cvm::atom_group::parse(std::string const &conf)
         cvm::error("Error: atomsColValue, if provided, must be non-zero.\n", INPUT_ERROR);
       }
 
+      // NOTE: calls to add_atom() and/or add_atom_id() are in the proxy-implemented function
       cvm::load_atoms(atoms_file_name.c_str(), *this, atoms_col, atoms_col_value);
     }
   }
@@ -403,11 +404,21 @@ int cvm::atom_group::parse(std::string const &conf)
     }
   }
 
+  // We need to know the fitting options to decide whether the group is scalable
+  parse_error |= parse_fitting_options(group_conf);
+
+  if (is_available(f_ag_scalable_com) && !b_rotate) {
+    enable(f_ag_scalable_com);
+    enable(f_ag_scalable);
+  }
+
   if (is_enabled(f_ag_scalable) && !b_dummy) {
+    cvm::log("Enabling scalable calculation for group \""+this->key+"\".\n");
     index = (cvm::proxy)->init_atom_group(atoms_ids);
   }
 
-  parse_error |= parse_fitting_options(group_conf);
+  bool b_print_atom_ids = false;
+  get_keyval(group_conf, "printAtomIDs", b_print_atom_ids, false, colvarparse::parse_silent);
 
   // TODO move this to colvarparse object
   check_keywords(group_conf, key.c_str());
@@ -426,6 +437,10 @@ int cvm::atom_group::parse(std::string const &conf)
             cvm::to_str(atoms_ids.size())+" atoms initialized: total mass = "+
 	    cvm::to_str(total_mass)+", total charge = "+
             cvm::to_str(total_charge)+".\n");
+
+  if (b_print_atom_ids) {
+    cvm::log("Internal definition of the atom group:\n");
+  }
 
   cvm::decrease_depth();
 
@@ -580,6 +595,21 @@ int cvm::atom_group::add_atom_name_residue_range(std::string const &psf_segid,
     return COLVARS_ERROR;
   }
   return COLVARS_OK;
+}
+
+
+std::string const cvm::atom_group::print_atom_ids() const
+{
+  size_t line_count = 0;
+  std::ostringstream os("");
+  for (size_t i = 0; i < atoms_ids.size(); i++) {
+    os << " " << std::setw(9) << atoms_ids[i];
+    if (++line_count == 7) {
+      os << "\n";
+      line_count = 0;
+    }
+  }
+  return os.str();
 }
 
 

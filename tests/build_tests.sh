@@ -13,6 +13,7 @@ if [ -n "${1}" ] ; then
     fi
 fi
 
+# Create a directory (or find an existing one) and set the variable $dirname
 create_test_dir() {
 
     if ls $WORKDIR/ | grep -q "_${1}" ; then
@@ -22,10 +23,10 @@ create_test_dir() {
         return
     fi
     
-    # Add to an existing set of regression tests
-    while ls $WORKDIR/ | grep -q `printf %03d $n_test`_ ; do
-        n_test=$((++n_test))
-    done
+    # # Add to an existing set of regression tests
+    # while ls $WORKDIR/ | grep -q `printf %03d $n_test`_ ; do
+    #     n_test=$((++n_test))
+    # done
 
     dirname="${WORKDIR}/`printf %03d ${n_test}`_$1"
     if [ ! -d ${dirname} ] ; then
@@ -34,13 +35,14 @@ create_test_dir() {
 }
 
 dirname=''
-n_test=1
+n_test=0
 
 for colvar in "distance" ; do
     for bias in \
         "harmonic-fixed" \
-            "harmonic-centers-moving" \
-            "harmonic-k-moving" \
+        "harmonic-centers-moving" \
+        "harmonic-k-moving" \
+        "linear-fixed" \
         ; do
         create_test_dir ${colvar}_${bias}
         echo 'colvarsTrajFrequency 1' > ${dirname}/test.in 
@@ -53,24 +55,32 @@ for colvar in "distance" ; do
     done
 done
 
+# NOTE: abf is not included because total/system force calculations
+# should be tested separately
 for colvar in "distance-grid" ; do
     for bias in \
         "harmonic-fixed" \
-            "harmonic-centers-moving" \
-            "harmonic-k-moving" \
-            "abf" \
-            "metadynamics" \
+        "harmonic-centers-moving" \
+        "harmonic-k-moving" \
+        "histogram" \
+        "metadynamics" \
         ; do
         create_test_dir ${colvar}_${bias}
         echo 'colvarsTrajFrequency 1' > ${dirname}/test.in 
         echo 'colvarsRestartFrequency 10' >> ${dirname}/test.in 
         cat indexfile.in >> ${dirname}/test.in
-        echo '' >> ${dirname}/test.in 
+        echo '' >> ${dirname}/test.in
         cat ${colvar}.in >> ${dirname}/test.in
-        echo '' >> ${dirname}/test.in 
+        echo '' >> ${dirname}/test.in
         cat ${bias}.in >> ${dirname}/test.in
     done
 done
+
+# for colvar in "distancePairs" ; do
+#     for bias in \
+#         "histogram" \
+#         ; do
+
 
 # TODO uncomment this and the add two-dimensional regtests
 # # Generate two-variables versions of bias configurations
@@ -85,6 +95,5 @@ done
 #         | sed 's/centers        0.0/centers        0.0 0.0/' \
 #         | sed 's/targetCenters  0.1/targetCenters  0.1 0.1/' \
 #         > ${bias}-2.in
-# done
 
 unset -f n_test dirname
