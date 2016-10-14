@@ -449,7 +449,8 @@ void colvardeps::init_ag_requires() {
 
   // Features that are implemented (or not) by all atom groups
   feature_states[f_ag_active]->available = true;
-  feature_states[f_ag_scalable_com]->available = (cvm::proxy->scalable_group_coms() == COLVARS_OK);
+  // f_ag_scalable_com is provided by the CVC iff it is COM-based
+  feature_states[f_ag_scalable_com]->available = false;
   feature_states[f_ag_scalable]->available = feature_states[f_ag_scalable_com]->available;
 }
 

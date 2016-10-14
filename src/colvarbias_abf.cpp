@@ -80,6 +80,7 @@ int colvarbias_abf::init(std::string const &conf)
 
   if (update_bias) {
   // Request calculation of total force (which also checks for availability)
+  // TODO - change this to a dependency - needs ABF-specific features
     if(enable(f_cvb_get_total_force)) return cvm::get_error();
   }
 

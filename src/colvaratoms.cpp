@@ -404,11 +404,18 @@ int cvm::atom_group::parse(std::string const &conf)
     }
   }
 
-  if (is_enabled(f_ag_scalable) && !b_dummy) {
-    index = (cvm::proxy)->init_atom_group(atoms_ids);
+  // We need to know the fitting options to decide whether the group is scalable
+  parse_error |= parse_fitting_options(group_conf);
+
+  if (is_available(f_ag_scalable_com) && !is_enabled(f_ag_rotate)) {
+    enable(f_ag_scalable_com);
+    enable(f_ag_scalable);
   }
 
-  parse_error |= parse_fitting_options(group_conf);
+  if (is_enabled(f_ag_scalable) && !b_dummy) {
+    cvm::log("Enabling scalable calculation for group \""+this->key+"\".\n");
+    index = (cvm::proxy)->init_atom_group(atoms_ids);
+  }
 
   bool b_print_atom_ids = false;
   get_keyval(group_conf, "printAtomIDs", b_print_atom_ids, false, colvarparse::parse_silent);
