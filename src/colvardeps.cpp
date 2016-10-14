@@ -451,7 +451,8 @@ void colvardeps::init_ag_requires() {
   feature_states[f_ag_active]->available = true;
   // f_ag_scalable_com is provided by the CVC iff it is COM-based
   feature_states[f_ag_scalable_com]->available = false;
-  feature_states[f_ag_scalable]->available = feature_states[f_ag_scalable_com]->available;
+  // TODO make f_ag_scalable depend on f_ag_scalable_com (or something else)
+  feature_states[f_ag_scalable]->available = true;
 }
 
 
