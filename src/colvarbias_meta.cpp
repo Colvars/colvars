@@ -243,9 +243,7 @@ colvarbias_meta::create_hill(colvarbias_meta::hill const &h)
   // output to trajectory (if specified)
   if (hills_traj_os.is_open()) {
     hills_traj_os << (hills.back()).output_traj();
-    if (cvm::debug()) {
-      hills_traj_os.flush();
-    }
+    hills_traj_os.flush();
   }
 
   has_data = true;
@@ -280,8 +278,7 @@ colvarbias_meta::delete_hill(hill_iter &h)
     hills_traj_os << "# DELETED this hill: "
                   << (hills.back()).output_traj()
                   << "\n";
-    if (cvm::debug())
-      hills_traj_os.flush();
+    hills_traj_os.flush();
   }
 
   return hills.erase(h);
