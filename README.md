@@ -1,6 +1,8 @@
 # Collective variables module (Colvars)
 
-A software module for molecular simulation and analysis programs that provides a flexible and high-performance platform for present and future algorithms.
+A software module for molecular simulation and analysis that provides a high-performance implementation of sampling algorithms defined on a reduced space of continuously differentiable functions (aka collective variables).
+
+The module itself implements a variety of functions and algorithms, including free-energy estimators based on thermodynamic forces, non-equilibrium work and probability distributions.
 
 ## Obtaining and using
 
