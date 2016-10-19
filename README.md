@@ -18,6 +18,8 @@ http://dx.doi.org/10.1080/00268976.2013.813594  \[[BibTex file](https://github.c
 
 ## Example input
 
+Colvars requires a configuration file, or alternatively configuration arguments given through scripting commands by the linked program.
+
 Please see the [examples](https://github.com/colvars/colvars/tree/master/examples?raw=true) folder of this repository.  Configuration options (particularly, the selections of atoms) require minimal changes to reflect the specifics of each simulation.
 
 The [tests](https://github.com/colvars/colvars/tree/master/tests?raw=true) folder also contains functional segments of Colvars configuration, used to build numerical tests of code accuracy and stability.  Feel free to use these segments in your production runs.
