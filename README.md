@@ -1,9 +1,8 @@
 # Collective variables module (Colvars)
-=======
 
 A software module for molecular simulation and analysis programs that provides a flexible and high-performance platform for present and future algorithms.
 
-## Obtaining
+## Obtaining and using
 
 The easiest way to obtain binary versions of Colvars is via the simulation programs [NAMD](http://www.ks.uiuc.edu/Research/namd/) and [LAMMPS](http://lammps.sandia.gov/) and the visualization program [VMD](http://www.ks.uiuc.edu/Research/vmd/).  Please check [here](https://github.com/colvars/colvars/releases) to see which version of Colvars is included with the round-number versions of VMD and NAMD.  Colvars is integrated with LAMMPS on a near-continuous basis, most often immediately after significant code changes.
 
@@ -18,6 +17,8 @@ http://dx.doi.org/10.1080/00268976.2013.813594  \[[BibTex file](https://github.c
 ## Example input
 
 Please see the [examples](https://github.com/colvars/colvars/tree/master/examples?raw=true) folder of this repository.  Configuration options (particularly, the selections of atoms) require minimal changes to reflect the specifics of each simulation.
+
+The [tests](https://github.com/colvars/colvars/tree/master/tests?raw=true) folder also contains functional segments of Colvars configuration, used to build numerical tests of code accuracy and stability.  Feel free to use these segments in your production runs.
 
 ## Updating to the latest version
 
