@@ -1,0 +1,14 @@
+# -*- tcl -*-
+
+set output_name "test.restart"
+set coor_bin_file "test.coor"
+set vel_bin_file "test.vel"
+
+source ../Common/common.namd
+source ../Common/measure_net_force_torque.tcl
+
+colvars                 on
+colvarsConfig           test.legacy.in
+
+run ${numsteps}
+
