@@ -65,6 +65,10 @@ for { set resid 1 } { ${resid} <= 10 } { incr resid } {
         "group${resid}"
 }
 
+write_index_group ${index_file} \
+    [atomselect top "(${protein_sel} and (not hydrogen))"] \
+    "heavy_atoms"
+
 close ${index_file}
 
 }
