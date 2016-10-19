@@ -18,7 +18,7 @@ create_test_dir() {
 
     if ls $WORKDIR/ | grep -q "_${1}" ; then
         dirname=`ls $WORKDIR/ | grep "_${1}"`
-        echo "$dirname exists"
+        echo "$dirname already exists"
         dirname=${WORKDIR}/${dirname}
         return
     fi
@@ -28,10 +28,25 @@ create_test_dir() {
     #     n_test=$((++n_test))
     # done
 
-    dirname="${WORKDIR}/`printf %03d ${n_test}`_$1"
+    dirname=`printf %03d ${n_test}`_$1
+    echo "$dirname was just created now"
+    dirname="${WORKDIR}/$dirname"
     if [ ! -d ${dirname} ] ; then
         mkdir ${dirname}
     fi
+}
+
+write_colvars_config() {
+    local colvar=$1
+    local bias=$2
+    local filename=$3
+    echo 'colvarsTrajFrequency 1' > ${filename}
+    echo 'colvarsRestartFrequency 10' >> ${filename}
+    cat indexfile.in >> ${filename}
+    echo '' >> ${filename}
+    cat ${colvar}.in >> ${filename}
+    echo '' >> ${filename}
+    cat ${bias}.in >> ${filename}
 }
 
 dirname=''
@@ -45,13 +60,7 @@ for colvar in "distance" ; do
         "linear-fixed" \
         ; do
         create_test_dir ${colvar}_${bias}
-        echo 'colvarsTrajFrequency 1' > ${dirname}/test.in 
-        echo 'colvarsRestartFrequency 10' >> ${dirname}/test.in 
-        cat indexfile.in >> ${dirname}/test.in
-        echo '' >> ${dirname}/test.in 
-        cat ${colvar}.in >> ${dirname}/test.in
-        echo '' >> ${dirname}/test.in 
-        cat ${bias}.in >> ${dirname}/test.in
+        write_colvars_config ${colvar} ${bias} ${dirname}/test.in
     done
 done
 
@@ -66,13 +75,7 @@ for colvar in "distance-grid" ; do
         "metadynamics" \
         ; do
         create_test_dir ${colvar}_${bias}
-        echo 'colvarsTrajFrequency 1' > ${dirname}/test.in 
-        echo 'colvarsRestartFrequency 10' >> ${dirname}/test.in 
-        cat indexfile.in >> ${dirname}/test.in
-        echo '' >> ${dirname}/test.in
-        cat ${colvar}.in >> ${dirname}/test.in
-        echo '' >> ${dirname}/test.in
-        cat ${bias}.in >> ${dirname}/test.in
+        write_colvars_config ${colvar} ${bias} ${dirname}/test.in
     done
 done
 
