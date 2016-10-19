@@ -99,6 +99,26 @@ for colvar in \
     done
 done
 
+
+for colvar in \
+    "orientation" \
+    ; do
+    for bias in \
+        "harmonic-ori-fixed" \
+        ; do
+        create_test_dir ${colvar}_${bias}
+        write_colvars_config ${colvar} ${bias} ${dirname}/test.in
+        if [ -f ${colvar}-fitgroup.in ] ; then
+            create_test_dir ${colvar}-fitgroup_${bias}
+            write_colvars_config ${colvar}-fitgroup ${bias} ${dirname}/test.in
+            m4 -DfittingGroup=refPositionsGroup < ${colvar}-fitgroup.in > ${colvar}-refposgroup.in
+            write_colvars_config ${colvar}-refposgroup ${bias} ${dirname}/test.legacy.in
+        fi
+    done
+done
+
+
+
 # for colvar in "distancePairs" ; do
 #     for bias in \
 #         "histogram" \
