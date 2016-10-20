@@ -1148,8 +1148,7 @@ void cvm::atom_group::apply_colvar_force(cvm::real const &force)
     log("Communicating a colvar force from atom group to the MD engine.\n");
   }
 
-  if (b_dummy)
-    return;
+  if (b_dummy) return;
 
   if (noforce) {
     cvm::error("Error: sending a force to a group that has "
@@ -1191,17 +1190,21 @@ void cvm::atom_group::apply_colvar_force(cvm::real const &force)
 
 void cvm::atom_group::apply_force(cvm::rvector const &force)
 {
-  if (b_dummy)
-    return;
+  if (cvm::debug()) {
+    log("Communicating a colvar force from atom group to the MD engine.\n");
+  }
+
+  if (b_dummy) return;
 
   if (noforce) {
     cvm::error("Error: sending a force to a group that has "
-               "\"disableForces\" defined.\n");
+               "\"enableForces\" set to off.\n");
     return;
   }
 
   if (is_enabled(f_ag_scalable)) {
     (cvm::proxy)->apply_atom_group_force(index, force);
+    return;
   }
 
   if (b_rotate) {
