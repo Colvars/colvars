@@ -1,0 +1,29 @@
+colvar {
+
+    name one
+
+    outputAppliedForce on
+
+    width 0.5
+
+    distanceVec {
+        group1 {
+            indexGroup group1
+            centerReference yes
+            rotateReference yes
+            fittingGroup {
+                indexGroup heavy_atoms
+            }
+            refPositionsFile heavy_atoms_refpos.xyz
+        }
+        group2 {
+            indexGroup group2
+            centerReference yes
+            rotateReference yes
+            fittingGroup {
+                indexGroup heavy_atoms
+            }
+            refPositionsFile heavy_atoms_refpos.xyz
+        }
+    }
+} 
