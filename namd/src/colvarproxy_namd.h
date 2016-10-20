@@ -16,7 +16,7 @@
 #include "colvarvalue.h"
 
 #ifndef COLVARPROXY_VERSION
-#define COLVARPROXY_VERSION "2016-10-10"
+#define COLVARPROXY_VERSION "2016-10-20"
 #endif
 
 // For replica exchange
@@ -119,7 +119,10 @@ public:
   int smp_enabled()
   {
 #if CMK_SMP && USE_CKLOOP
-    return COLVARS_OK;
+    if (b_smp_active) {
+      return COLVARS_OK;
+    }
+    return COLVARS_ERROR;
 #else
     return COLVARS_NOT_IMPLEMENTED;
 #endif

@@ -305,6 +305,15 @@ The following keywords are available in the global context of the colvars config
 
 \item %
   \keydef
+    {smp}{%
+    global}{%
+    Whether SMP parallelism should be used}{%
+    boolean}{%
+    \texttt{on}}{%
+    If this flag is enabled (default), SMP parallelism over threads will be used to compute variables and biases, provided that this is supported by \MDENGINE{}.}
+
+\item %
+  \keydef
     {analysis}{%
     global}{%
     Turn on run-time statistical analysis}{%
