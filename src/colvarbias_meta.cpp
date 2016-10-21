@@ -1525,7 +1525,9 @@ int colvarbias_meta::setup_output()
                                        ("."+replica_id) :
                                        ("") )+
                                      ".hills.traj");
-    hills_traj_os.open(traj_file_name.c_str());
+    if (!hills_traj_os.is_open()) {
+      hills_traj_os.open(traj_file_name.c_str());
+    }
     if (!hills_traj_os.is_open())
       cvm::error("Error: in opening hills output file \"" +
                  traj_file_name+"\".\n", FILE_ERROR);
