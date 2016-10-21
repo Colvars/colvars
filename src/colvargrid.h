@@ -378,6 +378,13 @@ public:
     return value_to_bin_scalar(actual_value[i] ? cv[i]->actual_value() : cv[i]->value(), i);
   }
 
+  /// \brief Report the bin corresponding to the current value of variable i
+  /// and assign first or last bin if out of boundaries
+  inline int current_bin_scalar_bound(int const i) const
+  {
+    return value_to_bin_scalar_bound(actual_value[i] ? cv[i]->actual_value() : cv[i]->value(), i);
+  }
+
   /// \brief Report the bin corresponding to the current value of item iv in variable i
   inline int current_bin_scalar(int const i, int const iv) const
   {
@@ -391,6 +398,16 @@ public:
   inline int value_to_bin_scalar(colvarvalue const &value, const int i) const
   {
     return (int) std::floor( (value.real_value - lower_boundaries[i].real_value) / widths[i] );
+  }
+
+  /// \brief Use the lower boundary and the width to report which bin
+  /// the provided value is in and assign first or last bin if out of boundaries
+  inline int value_to_bin_scalar_bound(colvarvalue const &value, const int i) const
+  {
+    int bin_index = std::floor( (value.real_value - lower_boundaries[i].real_value) / widths[i] );
+    if (bin_index < 0) bin_index=0;
+    if (bin_index >=int(nx[i])) bin_index=int(nx[i])-1;
+    return (int) bin_index;
   }
 
   /// \brief Same as the standard version, but uses another grid definition
@@ -514,6 +531,13 @@ public:
       data[i] *= a;
   }
 
+  /// \brief Assign all zero elements a scalar constant (fast loop)
+  inline void remove_zeros(cvm::real const &a)
+  {
+    for (size_t i = 0; i < nt; i++)
+      if(data[i]==0) data[i] = a;
+  }
+
 
   /// \brief Get the bin indices corresponding to the provided values of
   /// the colvars
@@ -533,6 +557,17 @@ public:
     std::vector<int> index = new_index();
     for (size_t i = 0; i < nd; i++) {
       index[i] = current_bin_scalar(i);
+    }
+    return index;
+  }
+
+  /// \brief Get the bin indices corresponding to the provided values of
+  /// the colvars and assign first or last bin if out of boundaries
+  inline std::vector<int> const get_colvars_index_bound() const
+  {
+    std::vector<int> index = new_index();
+    for (size_t i = 0; i < nd; i++) {
+      index[i] = current_bin_scalar_bound(i);
     }
     return index;
   }
@@ -1321,6 +1356,9 @@ public:
 
   /// \brief Return the lowest value
   cvm::real minimum_value() const;
+
+  /// \brief Return the lowest positive value
+  cvm::real minimum_pos_value() const;
 
   /// \brief Calculates the integral of the map (uses widths if they are defined)
   cvm::real integral() const;
