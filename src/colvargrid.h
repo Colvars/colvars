@@ -1166,8 +1166,8 @@ public:
 
   /// \brief Return the log-gradient from finite differences
   /// on the *same* grid for dimension n
-  inline const cvm::real log_gradient_finite_diff( const std::vector<int> &ix0,
-                                                   int n = 0)
+  inline cvm::real log_gradient_finite_diff(const std::vector<int> &ix0,
+                                            int n = 0)
   {
     cvm::real A0, A1;
     std::vector<int> ix;
