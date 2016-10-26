@@ -1071,7 +1071,7 @@ public:
   {
     // write the header
     os << "object 1 class gridpositions counts";
-    int icv;
+    size_t icv;
     for (icv = 0; icv < number_of_colvars(); icv++) {
       os << " " << number_of_points(icv);
     }
