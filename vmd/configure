@@ -87,6 +87,7 @@ if ($ENV{VMDINSTALLLIBRARYDIR}) {
 # Optional components:
 # ---------------------------------------------------------------
 # ACTC         - triangle mesh stripification library for higher speed surfaces
+# AVX512       - enable use of AVX512 instructions on target CPU
 # CUDA         - NVIDIA CUDA GPU acceleration functions
 # OPENCL       - OpenCL CPU/GPU/Accelerator device support
 # MPI          - MPI based message passing
@@ -195,6 +196,7 @@ $config_tk              = 0;  # Tk interface extensions
 $config_tkcon           = 0;  # Tk console log
  
 $config_actc            = 0;  # ACTC
+$config_avx512          = 0;  # AVX512
 $config_cuda            = 0;  # CUDA
 $config_opencl          = 0;  # OpenCL
 $config_openhmd         = 0;  # OpenHMD driver for Oculus Rift
@@ -247,6 +249,7 @@ foreach $term (@ARGV) {
     
     # Optional components
     if ($term eq "ACTC")            { $config_actc            = 1; next; }
+    if ($term eq "AVX512")          { $config_avx512          = 1; next; }
     if ($term eq "CUDA")            { $config_cuda            = 1; next; }
     if ($term eq "OPENCL")          { $config_opencl          = 1; next; }
     if ($term eq "MPI")             { $config_mpi             = 1; next; }
@@ -329,6 +332,7 @@ if ($config_fltk)            { $config_string .= " FLTK"            }
 if ($config_tk)              { $config_string .= " TK"              }
 
 if ($config_actc)            { $config_string .= " ACTC"            }
+if ($config_avx512)          { $config_string .= " AVX512"          }
 if ($config_cuda)            { $config_string .= " CUDA"            }
 if ($config_opencl)          { $config_string .= " OPENCL"          }
 if ($config_mpi)             { $config_string .= " MPI"             }
@@ -404,7 +408,7 @@ $def_title="ON";
 $def_imageviewer="display %s";
 
 # program version number
-$progversion="1.9.3beta3";
+$progversion="1.9.3beta4";
 
 # text prompt string
 $promptstring="vmd > ";
@@ -811,8 +815,8 @@ if ($config_colvars) {
                       'colvarbias_meta.C',
                       'colvarbias_restraint.C',
                       'colvar.C',
-                      'colvarcomp_angles.C',
                       'colvarcomp.C',
+                      'colvarcomp_angles.C',
                       'colvarcomp_coordnums.C',
                       'colvarcomp_distances.C',
                       'colvarcomp_protein.C',
@@ -900,6 +904,22 @@ if ( $config_gcc ) {
 @system_ccpp           = ();
 @system_h              = ();
 @system_extra          = ();
+
+
+
+#######################
+# OPTIONAL COMPONENT: Optional AVX512 CPU vector instrution support
+#   This option enables the use of AVX512 CPU instructions and optimizations.
+#######################
+$avx512_defines     = "-DVMDUSEAVX512";
+$avx512_dir         = "";
+$avx512_include     = "";
+$avx512_library     = "";
+$avx512_libs        = "";
+@avx512_cc          = ();
+@avx512_ccpp        = ();
+@avx512_h           = ();
+@avx512_extra       = ();
 
 
 
@@ -2341,9 +2361,14 @@ if ($config_arch eq "LINUXAMD64") {
       # for compiling with Intel C/C++:
       $arch_cc          = "icc";
       $arch_ccpp        = "icpc";
-      $arch_opt_flag    = "-Wall -m64 -msse2 -O3";
+      if ($config_avx512) {
+        $arch_opt_flag    = "-Wall -m64 -xMIC-AVX512 -O3";
+        $arch_copts       = "-Wall -m64 -xMIC-AVX512 -O3";
+      } else {
+        $arch_opt_flag    = "-Wall -m64 -msse2 -O3";
+        $arch_copts       = "-Wall -m64 -msse2 -O3";
+      }
       $arch_depend_flag = "-MM";
-      $arch_copts       = "-Wall -m64 -msse2 -O3";
       $arch_template_repository = "foobar";
       $arch_shlibname   = "so";
       $arch_shcppopts   = "-fPIC";
@@ -3272,6 +3297,7 @@ $if_statements .= &create_config_option('cave');
 $if_statements .= &create_config_option('freevr');
 
 $if_statements .= &create_config_option('actc');
+$if_statements .= &create_config_option('avx512');
 $if_statements .= &create_config_option('colvars');
 $if_statements .= &create_config_option('cuda');
 $if_statements .= &create_config_option('opencl');
