@@ -433,7 +433,7 @@ int colvarproxy_vmd::load_coords(char const *pdb_filename,
     return COLVARS_ERROR;
   }
 
-  e_pdb_field pdb_field_index;
+  e_pdb_field pdb_field_index = e_pdb_none;
   bool const use_pdb_field = (pdb_field_str.size() > 0);
   if (use_pdb_field) {
     pdb_field_index = pdb_field_str2enum(pdb_field_str);
