@@ -154,15 +154,17 @@ void colvar::cvc::read_data()
 
 void colvar::cvc::calc_force_invgrads()
 {
-  cvm::fatal_error("Error: calculation of inverse gradients is not implemented "
-                    "for colvar components of type \""+function_type+"\".\n");
+  cvm::error("Error: calculation of inverse gradients is not implemented "
+             "for colvar components of type \""+function_type+"\".\n",
+             COLVARS_NOT_IMPLEMENTED);
 }
 
 
 void colvar::cvc::calc_Jacobian_derivative()
 {
-  cvm::fatal_error("Error: calculation of inverse gradients is not implemented "
-                    "for colvar components of type \""+function_type+"\".\n");
+  cvm::error("Error: calculation of inverse gradients is not implemented "
+             "for colvar components of type \""+function_type+"\".\n",
+             COLVARS_NOT_IMPLEMENTED);
 }
 
 
@@ -277,6 +279,33 @@ void colvar::cvc::debug_gradients(cvm::atom_group *group)
         "  Fit gradient sum: " + cvm::to_str(fit_gradient_sum) +
         "  Total " + cvm::to_str(gradient_sum + fit_gradient_sum));
 
+  return;
+}
+
+
+cvm::real colvar::cvc::dist2(colvarvalue const &x1,
+                             colvarvalue const &x2) const
+{
+  return x1.dist2(x2);
+}
+
+
+colvarvalue colvar::cvc::dist2_lgrad(colvarvalue const &x1,
+                                     colvarvalue const &x2) const
+{
+  return x1.dist2_grad(x2);
+}
+
+
+colvarvalue colvar::cvc::dist2_rgrad(colvarvalue const &x1,
+                                     colvarvalue const &x2) const
+{
+  return x2.dist2_grad(x1);
+}
+
+
+void colvar::cvc::wrap(colvarvalue &x) const
+{
   return;
 }
 

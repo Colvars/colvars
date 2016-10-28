@@ -119,6 +119,7 @@ colvar::alpha_angles::alpha_angles()
   x.type(colvarvalue::type_scalar);
 }
 
+
 colvar::alpha_angles::~alpha_angles()
 {
   while (theta.size() != 0) {
@@ -130,6 +131,7 @@ colvar::alpha_angles::~alpha_angles()
     hb.pop_back();
   }
 }
+
 
 void colvar::alpha_angles::calc_value()
 {
@@ -220,6 +222,10 @@ void colvar::alpha_angles::apply_force(colvarvalue const &force)
     }
   }
 }
+
+
+simple_scalar_dist_functions(alpha_angles)
+
 
 
 //////////////////////////////////////////////////////////////////////
@@ -400,3 +406,6 @@ void colvar::dihedPC::apply_force(colvarvalue const &force)
                            coeffs[2*i+1] * dsindt) * force);
   }
 }
+
+
+simple_scalar_dist_functions(dihedPC)
