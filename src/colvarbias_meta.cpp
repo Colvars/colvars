@@ -164,11 +164,32 @@ int colvarbias_meta::init(std::string const &conf)
   target_dist = NULL;
   get_keyval(conf, "ebMeta", ebmeta, false);
   if(ebmeta){
+    if (use_grids && expand_grids) {
+      cvm::fatal_error("Error: expandBoundaries is not supported with "
+                       "ebMeta please allocate wide enough boundaries for "
+                       "each colvar ahead of time and set targetdistfile "
+                       "accordingly. \n");
+    }
     target_dist = new colvar_grid_scalar();
     target_dist->init_from_colvars(colvars);
     get_keyval(conf, "targetdistfile", target_dist_file);
     std::ifstream targetdiststream(target_dist_file.c_str());
     target_dist->read_multicol(targetdiststream);
+    cvm::real min_val = target_dist->minimum_value();
+    if(min_val<0){
+      cvm::error("Error: Target distribution of ebMeta "
+                 "has negative values!.\n", INPUT_ERROR);
+    }
+    cvm::real min_pos_val = target_dist->minimum_pos_value();
+    if(min_pos_val<=0){
+      cvm::error("Error: Target distribution of ebMeta has negative "
+                 "or zero minimum positive value!.\n", INPUT_ERROR);
+    }
+    if(min_val==0){
+      cvm::log("WARNING: Target distribution has zero values.\n");
+      cvm::log("Zeros will be converted to the minimum positive value.\n");
+      target_dist->remove_zeros(min_pos_val);
+    }
     // normalize target distribution and multiply by effective volume = exp(differential entropy)
     target_dist->multiply_constant(1.0/target_dist->integral());
     cvm::real volume = std::exp(target_dist->entropy());
@@ -405,7 +426,9 @@ int colvarbias_meta::update()
     if (ebmeta) {
        hills_scale *= 1.0/target_dist->value(target_dist->get_colvars_index());
        if(cvm::step_absolute() <= long(ebmeta_equil_steps)) {
-         cvm::real const hills_lambda=(cvm::real(ebmeta_equil_steps - cvm::step_absolute()))/(cvm::real(ebmeta_equil_steps));
+         cvm::real const hills_lambda =
+           (cvm::real(long(ebmeta_equil_steps) - cvm::step_absolute())) / 
+           (cvm::real(ebmeta_equil_steps));
          hills_scale = hills_lambda + (1-hills_lambda)*hills_scale;
        }
     }
