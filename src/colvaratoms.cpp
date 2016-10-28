@@ -440,6 +440,7 @@ int cvm::atom_group::parse(std::string const &conf)
 
   if (b_print_atom_ids) {
     cvm::log("Internal definition of the atom group:\n");
+    cvm::log(print_atom_ids());
   }
 
   cvm::decrease_depth();

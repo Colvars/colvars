@@ -64,7 +64,7 @@ public:
 
   /// \brief Initialize an atom for collective variable calculation
   /// and get its internal identifier \param atom_number Atom index in
-  /// the system topology (starting from 1)
+  /// the system topology (1-based)
   atom(int atom_number);
 
   /// \brief Initialize an atom for collective variable calculation
