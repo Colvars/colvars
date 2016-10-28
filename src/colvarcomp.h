@@ -105,8 +105,8 @@ public:
   /// options from the provided configuration string
   /// Returns reference to new group
   cvm::atom_group *parse_group(std::string const &conf,
-                   char const *group_key,
-                   bool optional = false);
+                               char const *group_key,
+                               bool optional = false);
 
   /// \brief Parse options pertaining to total force calculation
   virtual int init_total_force_params(std::string const &conf);
@@ -281,7 +281,7 @@ protected:
 public:
   distance(std::string const &conf);
   distance();
-  virtual inline ~distance() {}
+  virtual ~distance() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void calc_force_invgrads();
@@ -306,7 +306,7 @@ class colvar::distance_vec
 public:
   distance_vec(std::string const &conf);
   distance_vec();
-  virtual inline ~distance_vec() {}
+  virtual ~distance_vec() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void apply_force(colvarvalue const &force);
@@ -332,7 +332,7 @@ class colvar::distance_dir
 public:
   distance_dir(std::string const &conf);
   distance_dir();
-  virtual inline ~distance_dir() {}
+  virtual ~distance_dir() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void apply_force(colvarvalue const &force);
@@ -371,7 +371,7 @@ protected:
 public:
   distance_z(std::string const &conf);
   distance_z();
-  virtual inline ~distance_z() {}
+  virtual ~distance_z() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void calc_force_invgrads();
@@ -402,7 +402,7 @@ protected:
 public:
   distance_xy(std::string const &conf);
   distance_xy();
-  virtual inline ~distance_xy() {}
+  virtual ~distance_xy() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void calc_force_invgrads();
@@ -429,7 +429,7 @@ protected:
 public:
   distance_inv(std::string const &conf);
   distance_inv();
-  virtual inline ~distance_inv() {}
+  virtual ~distance_inv() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void apply_force(colvarvalue const &force);
@@ -458,7 +458,7 @@ protected:
 public:
   distance_pairs(std::string const &conf);
   distance_pairs();
-  virtual inline ~distance_pairs() {}
+  virtual ~distance_pairs() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void apply_force(colvarvalue const &force);
@@ -484,7 +484,7 @@ public:
   /// Constructor
   gyration(std::string const &conf);
   gyration();
-  virtual inline ~gyration() {}
+  virtual ~gyration() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void calc_force_invgrads();
@@ -509,7 +509,7 @@ public:
   /// Constructor
   inertia(std::string const &conf);
   inertia();
-  virtual inline ~inertia() {}
+  virtual ~inertia() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void apply_force(colvarvalue const &force);
@@ -535,7 +535,7 @@ public:
   /// Constructor
   inertia_z(std::string const &conf);
   inertia_z();
-  virtual inline ~inertia_z() {}
+  virtual ~inertia_z() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void apply_force(colvarvalue const &force);
@@ -575,7 +575,7 @@ public:
 
   /// Constructor
   eigenvector(std::string const &conf);
-  virtual inline ~eigenvector() {}
+  virtual ~eigenvector() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void calc_force_invgrads();
@@ -623,7 +623,7 @@ public:
   /// \brief Initialize the three groups after three atoms
   angle(cvm::atom const &a1, cvm::atom const &a2, cvm::atom const &a3);
   angle();
-  virtual inline ~angle() {}
+  virtual ~angle() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void calc_force_invgrads();
@@ -671,7 +671,7 @@ public:
   /// \brief Initialize the three groups after three atoms
   dipole_angle (cvm::atom const &a1, cvm::atom const &a2, cvm::atom const &a3);
   dipole_angle();
-  virtual inline ~dipole_angle() {}
+  virtual ~dipole_angle() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void apply_force (colvarvalue const &force);
@@ -714,7 +714,7 @@ public:
   /// \brief Initialize the four groups after four atoms
   dihedral(cvm::atom const &a1, cvm::atom const &a2, cvm::atom const &a3, cvm::atom const &a4);
   dihedral();
-  virtual inline ~dihedral() {}
+  virtual ~dihedral() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void calc_force_invgrads();
@@ -764,7 +764,7 @@ public:
   /// Constructor
   coordnum(std::string const &conf);
   coordnum();
-  virtual inline ~coordnum() {}
+  virtual ~coordnum() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void apply_force(colvarvalue const &force);
@@ -815,7 +815,7 @@ public:
   /// Constructor
   selfcoordnum(std::string const &conf);
   selfcoordnum();
-  virtual inline ~selfcoordnum() {}
+  virtual ~selfcoordnum() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void apply_force(colvarvalue const &force);
@@ -859,7 +859,7 @@ public:
   /// Constructor
   groupcoordnum(std::string const &conf);
   groupcoordnum();
-  virtual inline ~groupcoordnum() {}
+  virtual ~groupcoordnum() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void apply_force(colvarvalue const &force);
@@ -957,7 +957,7 @@ public:
 
 //   alpha_dihedrals (std::string const &conf);
 //   alpha_dihedrals();
-//   virtual inline ~alpha_dihedrals() {}
+//   virtual ~alpha_dihedrals() {}
 //   virtual void calc_value();
 //   virtual void calc_gradients();
 //   virtual void apply_force (colvarvalue const &force);
@@ -1071,7 +1071,7 @@ public:
 
   orientation(std::string const &conf);
   orientation();
-  virtual inline ~orientation() {}
+  virtual ~orientation() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void apply_force(colvarvalue const &force);
@@ -1095,7 +1095,7 @@ public:
 
   orientation_angle(std::string const &conf);
   orientation_angle();
-  virtual inline ~orientation_angle() {}
+  virtual ~orientation_angle() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void apply_force(colvarvalue const &force);
@@ -1119,7 +1119,7 @@ public:
 
   orientation_proj(std::string const &conf);
   orientation_proj();
-  virtual inline ~orientation_proj() {}
+  virtual ~orientation_proj() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void apply_force(colvarvalue const &force);
@@ -1146,7 +1146,7 @@ public:
 
   tilt(std::string const &conf);
   tilt();
-  virtual inline ~tilt() {}
+  virtual ~tilt() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void apply_force(colvarvalue const &force);
@@ -1173,7 +1173,7 @@ public:
 
   spin_angle(std::string const &conf);
   spin_angle();
-  virtual inline ~spin_angle() {}
+  virtual ~spin_angle() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void apply_force(colvarvalue const &force);
@@ -1211,7 +1211,7 @@ public:
 
   /// Constructor
   rmsd(std::string const &conf);
-  virtual inline ~rmsd() {}
+  virtual ~rmsd() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void calc_force_invgrads();
@@ -1240,7 +1240,7 @@ protected:
 public:
   cartesian(std::string const &conf);
   cartesian();
-  virtual inline ~cartesian() {}
+  virtual ~cartesian() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void apply_force(colvarvalue const &force);
@@ -1266,14 +1266,14 @@ public:
                                                                         \
                                                                         \
   colvarvalue colvar::TYPE::dist2_lgrad(colvarvalue const &x1,          \
-                                               colvarvalue const &x2) const \
+                                        colvarvalue const &x2) const    \
   {                                                                     \
     return 2.0 * (x1.real_value - x2.real_value);                       \
   }                                                                     \
                                                                         \
                                                                         \
   colvarvalue colvar::TYPE::dist2_rgrad(colvarvalue const &x1,          \
-                                               colvarvalue const &x2) const \
+                                        colvarvalue const &x2) const    \
   {                                                                     \
     return this->dist2_lgrad(x2, x1);                                   \
   }                                                                     \
