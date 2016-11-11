@@ -7,8 +7,8 @@
 /*****************************************************************************
  * $Source: /namd/cvsroot/namd2/src/SimParameters.C,v $
  * $Author: jim $
- * $Date: 2016/09/29 21:30:48 $
- * $Revision: 1.1470 $
+ * $Date: 2016/11/07 20:26:15 $
+ * $Revision: 1.1474 $
  *****************************************************************************/
 
 /** \file SimParameters.C
@@ -857,7 +857,7 @@ void SimParameters::config_parser_fullelect(ParseOptions &opts) {
    opts.optional("FMM", "FMMPadding", "FMM padding margin (Angstroms)",
        &FMMPadding, 0);
 
-   opts.optionalB("main", "useCUDA2", "Use ComputeNonbondedCUDA2", &useCUDA2, FALSE);
+   opts.optionalB("main", "useCUDA2", "Use new CUDA code", &useCUDA2, TRUE);
 
    ///////////  Particle Mesh Ewald
 
@@ -909,7 +909,7 @@ void SimParameters::config_parser_fullelect(ParseOptions &opts) {
    opts.optionalB("main", "PMEOffload", "Offload PME to accelerator?",
 	&PMEOffload);
 
-   opts.optionalB("PME", "usePMECUDA", "Use the PME CUDA version", &usePMECUDA, FALSE);
+   opts.optionalB("PME", "usePMECUDA", "Use the PME CUDA version", &usePMECUDA, CmiNumPhysicalNodes() < 5);
    opts.optionalB("PME", "useOptPME", "Use the new scalable PME optimization", &useOptPME, FALSE);
    opts.optionalB("PME", "useManyToMany", "Use the many-to-many PME optimization", &useManyToMany, FALSE);
    if (PMEOn && !useOptPME)
@@ -1039,7 +1039,7 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
    opts.range("alchVdwLambdaEnd", NOT_NEGATIVE);
 
    opts.optional("alch", "alchBondLambdaEnd", "Lambda at which bonded"
-      "scaling of exnihilated particles begins", &alchBondLambdaEnd, 1.0);
+      "scaling of exnihilated particles begins", &alchBondLambdaEnd, 0.0);
    opts.range("alchBondLambdaEnd", NOT_NEGATIVE);
 
    opts.optionalB("alch", "alchDecouple", "Enable alchemical decoupling?",
@@ -2020,7 +2020,12 @@ void SimParameters::config_parser_misc(ParseOptions &opts) {
 
    opts.optionalB("main", "outputMaps", "whether to dump compute map and patch map for analysis just before load balancing", &outputMaps, FALSE);
    opts.optionalB("main", "benchTimestep", "whether to do benchmarking timestep in which case final file output is disabled", &benchTimestep, FALSE);
-   opts.optional("main", "useCkLoop", "whether to use CkLoop library to parallelize a loop in a function like OpenMP", &useCkLoop, 0);
+   opts.optional("main", "useCkLoop", "whether to use CkLoop library to parallelize a loop in a function like OpenMP", &useCkLoop,
+    #if CMK_SMP && USE_CKLOOP
+     ( CkNumPes() < 2 * CkNumNodes() ? 0 : CKLOOP_CTRL_PME_FORWARDFFT ) );
+    #else
+     0);
+    #endif
    opts.range("useCkLoop", NOT_NEGATIVE);
 
    opts.optionalB("main", "simulateInitialMapping", "whether to study the initial mapping scheme", &simulateInitialMapping, FALSE);
@@ -3686,6 +3691,25 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
      } else if ( PMEOffload && ! one_device_per_node ) {
        PMEOffload = 0;
        iout << iWARN << "Disabling PMEOffload because multiple CUDA devices per process are not supported.\n" << endi;
+     }
+     if ( usePMECUDA && ! ( useCUDA2 || one_device_per_node ) ) {
+       usePMECUDA = 0;
+       iout << iWARN << "Disabling usePMECUDA because multiple CUDA devices per process requires useCUDA2.\n" << endi;
+     }
+     if ( cellBasisVector1.y != 0 ||
+          cellBasisVector1.z != 0 ||
+          cellBasisVector2.x != 0 ||
+          cellBasisVector2.z != 0 ||
+          cellBasisVector3.x != 0 ||
+          cellBasisVector3.y != 0    ) {
+       if ( useCUDA2 ) {
+         useCUDA2 = 0;
+         iout << iWARN << "Disabling useCUDA2 because of non-orthorhombic periodic cell.\n" << endi;
+       }
+       if ( usePMECUDA ) {
+         usePMECUDA = 0;
+         iout << iWARN << "Disabling usePMECUDA because of non-orthorhombic periodic cell.\n" << endi;
+       }
      }
 #else
      PMEOffload = 0;
