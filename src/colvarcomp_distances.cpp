@@ -141,25 +141,22 @@ void colvar::distance_vec::apply_force(colvarvalue const &force)
 }
 
 
-// TODO apply PBC to distance_vec
-// Note: differences should be centered around (0, 0, 0)!
-
 cvm::real colvar::distance_vec::dist2(colvarvalue const &x1,
-                                             colvarvalue const &x2) const
+                                      colvarvalue const &x2) const
 {
   return cvm::position_dist2(x1.rvector_value, x2.rvector_value);
 }
 
 
 colvarvalue colvar::distance_vec::dist2_lgrad(colvarvalue const &x1,
-                                                     colvarvalue const &x2) const
+                                              colvarvalue const &x2) const
 {
   return 2.0 * cvm::position_distance(x2.rvector_value, x1.rvector_value);
 }
 
 
 colvarvalue colvar::distance_vec::dist2_rgrad(colvarvalue const &x1,
-                                                     colvarvalue const &x2) const
+                                              colvarvalue const &x2) const
 {
   return 2.0 * cvm::position_distance(x2.rvector_value, x1.rvector_value);
 }
@@ -495,7 +492,7 @@ void colvar::distance_dir::calc_value()
     dist_v = group2->center_of_mass() - group1->center_of_mass();
   } else {
     dist_v = cvm::position_distance(group1->center_of_mass(),
-                                     group2->center_of_mass());
+                                    group2->center_of_mass());
   }
   x.rvector_value = dist_v.unit();
 }
@@ -522,27 +519,6 @@ void colvar::distance_dir::apply_force(colvarvalue const &force)
 
   if (!group2->noforce)
     group2->apply_force(       force_tang);
-}
-
-
-cvm::real colvar::distance_dir::dist2(colvarvalue const &x1,
-                                             colvarvalue const &x2) const
-{
-  return (x1.rvector_value - x2.rvector_value).norm2();
-}
-
-
-colvarvalue colvar::distance_dir::dist2_lgrad(colvarvalue const &x1,
-                                                     colvarvalue const &x2) const
-{
-  return colvarvalue((x1.rvector_value - x2.rvector_value), colvarvalue::type_unit3vector);
-}
-
-
-colvarvalue colvar::distance_dir::dist2_rgrad(colvarvalue const &x1,
-                                                     colvarvalue const &x2) const
-{
-  return colvarvalue((x2.rvector_value - x1.rvector_value), colvarvalue::type_unit3vector);
 }
 
 
@@ -727,27 +703,6 @@ void colvar::distance_pairs::apply_force(colvarvalue const &force)
       }
     }
   }
-}
-
-
-cvm::real colvar::distance_pairs::dist2(colvarvalue const &x1,
-                                        colvarvalue const &x2) const
-{
-  return (x1.vector1d_value - x2.vector1d_value).norm2();
-}
-
-
-colvarvalue colvar::distance_pairs::dist2_lgrad(colvarvalue const &x1,
-                                                colvarvalue const &x2) const
-{
-  return colvarvalue((x1.vector1d_value - x2.vector1d_value), colvarvalue::type_vector);
-}
-
-
-colvarvalue colvar::distance_pairs::dist2_rgrad(colvarvalue const &x1,
-                                                colvarvalue const &x2) const
-{
-  return colvarvalue((x2.vector1d_value - x1.vector1d_value), colvarvalue::type_vector);
 }
 
 
