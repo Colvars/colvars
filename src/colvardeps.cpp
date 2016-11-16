@@ -407,6 +407,11 @@ void colvardeps::init_cvc_requires() {
   // Each cvc specifies what other features are available
   feature_states[f_cvc_active]->available = true;
   feature_states[f_cvc_gradient]->available = true;
+
+  // Features that are implemented by default if their requirements are
+  feature_states[f_cvc_one_site_total_force]->available = true;
+
+  // Features That are implemented only for certain simulation engine configurations
   feature_states[f_cvc_scalable_com]->available = (cvm::proxy->scalable_group_coms() == COLVARS_OK);
   feature_states[f_cvc_scalable]->available = feature_states[f_cvc_scalable_com]->available;
 }
