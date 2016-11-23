@@ -7,8 +7,8 @@
 /*****************************************************************************
  * $Source: /namd/cvsroot/namd2/src/SimParameters.C,v $
  * $Author: jim $
- * $Date: 2016/11/07 20:26:15 $
- * $Revision: 1.1474 $
+ * $Date: 2016/11/14 20:24:41 $
+ * $Revision: 1.1475 $
  *****************************************************************************/
 
 /** \file SimParameters.C
@@ -1555,8 +1555,10 @@ void SimParameters::config_parser_constraints(ParseOptions &opts) {
       "frequency of selection of point charges", &qmPCSelFreq, 1);
    opts.optionalB("QMForces", "QMNoPntChrg",
       "no point charges will be passed to the QM system(s)", &qmNoPC, FALSE);
+   opts.optionalB("QMForces", "QMElecEmbed",
+      "activates electrostatic embedding", &qmElecEmbed, TRUE);
    opts.optionalB("QMForces", "QMVdWParams",
-      "use special VdW parameters for QM atoms", &qmVDW, TRUE);
+      "use special VdW parameters for QM atoms", &qmVDW, FALSE);
    opts.optional("QMForces", "QMBondColumn",
       "column defining QM-MM bomnds", qmBondColumn);
    opts.optionalB("QMForces", "QMBondDist",
@@ -1570,7 +1572,7 @@ void SimParameters::config_parser_constraints(ParseOptions &opts) {
    opts.optional("QMForces", "QMPositionOutStride",
       "frequency of QM specific position output (every x steps)", &qmPosOutFreq, 0);
    opts.optional("QMForces", "QMSimsPerNode",
-      "QM executions per node", &qmSimsPerNode, 0);
+      "QM executions per node", &qmSimsPerNode, 1);
    opts.optionalB("QMForces", "QMSwitching",
       "apply switching to point charges.", &qmPCSwitchOn, FALSE);
    opts.optional("QMForces", "QMSwitchingType",
@@ -4138,6 +4140,10 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
                 NAMD_die("QM Charge Schemes \'round\' or \'zero\' can only be applied with QMswitching set to \'on\'!");
         }
 
+        // Redundant option to deprecate "qmNoPC" option.
+        if (qmElecEmbed)
+            qmNoPC = FALSE;
+
 //         #define QMLSSMODEDIST 1
 //         #define QMLSSMODECOM 2
         if (qmLSSOn) {
@@ -4207,7 +4213,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
             NAMD_die("QM Custom PC Selection is incompatible with QMSwitching!");
 
         if (qmCustomPCSel && qmPCSelFreq > 1)
-            NAMD_die("QM Custom PC Selection is incompatible with QMPCStride!");
+            NAMD_die("QM Custom PC Selection is incompatible with QMPCStride > 1!");
     }
 }
 
@@ -5075,7 +5081,7 @@ if ( openatomOn )
             iout << iINFO << "QM LIVE SOLVENT SELECTION WILL USE RESIDUE TYPE: " << qmLSSResname << "\n" << endi;
         }
 
-        iout << iINFO << "QM execution per node: " << qmSimsPerNode << "\n";
+        iout << iINFO << "QM executions per node: " << qmSimsPerNode << "\n";
 
         iout << endi;
     }
