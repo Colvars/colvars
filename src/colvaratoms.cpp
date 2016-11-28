@@ -182,6 +182,7 @@ int cvm::atom_group::init()
 
   index = -1;
 
+  b_dummy = false;
   b_center = false;
   b_rotate = false;
   b_user_defined_fit = false;
