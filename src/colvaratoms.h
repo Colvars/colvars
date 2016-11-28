@@ -453,6 +453,8 @@ public:
   /// are not used, either because they were not defined (e.g because
   /// the colvar has not a scalar value) or the biases require to
   /// micromanage the force.
+  /// This function will be phased out eventually, in favor of
+  /// apply_colvar_force() once that is implemented for non-scalar values
   void apply_force(cvm::rvector const &force);
 
 };
