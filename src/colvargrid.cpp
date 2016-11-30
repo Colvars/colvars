@@ -76,13 +76,14 @@ cvm::real colvar_grid_scalar::minimum_value() const
 cvm::real colvar_grid_scalar::minimum_pos_value() const
 {
   cvm::real minpos = data[0];
-  for (size_t i = 0; i < nt; i++) {
+  size_t i;
+  for (i = 0; i < nt; i++) {
     if(data[i] > 0) {
       minpos = data[i];
       break;
     }
   }
-  for (size_t i = 0; i < nt; i++) {
+  for (i = 0; i < nt; i++) {
     if (data[i] > 0 && data[i] < minpos) minpos = data[i];
   }
   return minpos;

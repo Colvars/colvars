@@ -72,6 +72,7 @@ void colvarvalue::set_elem(int const icv, colvarvalue const &x)
 
 void colvarvalue::set_random()
 {
+  size_t ic;
   switch (this->type()) {
   case colvarvalue::type_scalar:
     this->real_value = cvm::rand_gaussian();
@@ -91,7 +92,7 @@ void colvarvalue::set_random()
     this->quaternion_value.q3 = cvm::rand_gaussian();
     break;
   case colvarvalue::type_vector:
-    for (size_t ic = 0; ic < this->vector1d_value.size(); ic++) {
+    for (ic = 0; ic < this->vector1d_value.size(); ic++) {
       this->vector1d_value[ic] = cvm::rand_gaussian();
     }
     break;
