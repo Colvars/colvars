@@ -211,10 +211,6 @@ public:
     return std::sqrt(this->norm2());
   }
 
-  /// \brief Return the value whose scalar product with this value is
-  /// 1
-  inline colvarvalue inverse() const;
-
   /// Square distance between this \link colvarvalue \endlink and another
   cvm::real dist2(colvarvalue const &x2) const;
 
