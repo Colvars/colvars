@@ -1132,11 +1132,11 @@ cvm::real colvar::update_forces_energy()
       f -= fj;
   }
 
-  if (is_enabled(f_cv_lower_wall) || is_enabled(f_cv_upper_wall)) {
+  // Wall force
+  colvarvalue fw(x);
+  fw.reset();
 
-    // Wall force
-    colvarvalue fw(x);
-    fw.reset();
+  if (is_enabled(f_cv_lower_wall) || is_enabled(f_cv_upper_wall)) {
 
     if (cvm::debug())
       cvm::log("Calculating wall forces for colvar \""+this->name+"\".\n");
@@ -1144,12 +1144,11 @@ cvm::real colvar::update_forces_energy()
     // For a periodic colvar, both walls may be applicable at the same time
     // in which case we pick the closer one
     if ( (!is_enabled(f_cv_upper_wall)) ||
-         (this->dist2(x_reported, lower_wall) < this->dist2(x_reported, upper_wall)) ) {
+         (this->dist2(x, lower_wall) < this->dist2(x, upper_wall)) ) {
 
-      cvm::real const grad = this->dist2_lgrad(x_reported, lower_wall);
+      cvm::real const grad = this->dist2_lgrad(x, lower_wall);
       if (grad < 0.0) {
         fw = -0.5 * lower_wall_k * grad;
-        f += fw;
         if (cvm::debug())
           cvm::log("Applying a lower wall force("+
                     cvm::to_str(fw)+") to \""+this->name+"\".\n");
@@ -1157,16 +1156,18 @@ cvm::real colvar::update_forces_energy()
 
     } else {
 
-      cvm::real const grad = this->dist2_lgrad(x_reported, upper_wall);
+      cvm::real const grad = this->dist2_lgrad(x, upper_wall);
       if (grad > 0.0) {
         fw = -0.5 * upper_wall_k * grad;
-        f += fw;
         if (cvm::debug())
           cvm::log("Applying an upper wall force("+
                     cvm::to_str(fw)+") to \""+this->name+"\".\n");
       }
     }
   }
+
+  // At this point f is the force f from external biases that will be applied to the
+  // extended variable if there is one
 
   if (is_enabled(f_cv_extended_Lagrangian)) {
 
@@ -1175,11 +1176,12 @@ cvm::real colvar::update_forces_energy()
     f_ext.reset();
 
     // the total force is applied to the fictitious mass, while the
-    // atoms only feel the harmonic force
+    // atoms only feel the harmonic force + wall force
     // fr: bias force on extended variable (without harmonic spring), for output in trajectory
     // f_ext: total force on extended variable (including harmonic spring)
-    // f: - initially, external biasing force (including wall forces)
-    //    - after this code block, colvar force to be applied to atomic coordinates, ie. spring force
+    // f: - initially, external biasing force
+    //    - after this code block, colvar force to be applied to atomic coordinates
+    //      ie. spring force + wall force
     fr    = f;
     f_ext = f + (-0.5 * ext_force_k) * this->dist2_lgrad(xr, x);
     f     =     (-0.5 * ext_force_k) * this->dist2_rgrad(xr, x);
@@ -1210,7 +1212,13 @@ cvm::real colvar::update_forces_energy()
     xr  += dt * vr;
     xr.apply_constraints();
     if (this->b_periodic) this->wrap(xr);
+
   }
+
+  // Now adding the wall force to the force on the actual colvar
+  // eventually, this will be the point to apply any bias forces that
+  // should bypass the extended variable
+  f += fw;
 
   f_accumulated += f;
 
