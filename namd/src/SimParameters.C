@@ -5194,7 +5194,13 @@ if ( openatomOn )
    {
      iout << iINFO << "COLLECTIVE VARIABLES CALCULATION REQUESTED\n";
 
-     current = config->find ("colvarsConfig");
+     if (wrapAll) {
+       iout << iWARN << "Using Colvars with wrapAll enabled can lead to "
+         "inconsistent results: disabling wrapAll.\n";
+       wrapAll = FALSE;
+     }
+
+     current = config->find("colvarsConfig");
      for ( ; current; current = current->next ) {
        if ( strstr(current->data,"\n") ) {
          iout << iINFO << "COLLECTIVE VARIABLES CONFIGURATION INLINED IN CONFIG FILE\n";
@@ -5203,7 +5209,7 @@ if ( openatomOn )
        iout << iINFO << "COLLECTIVE VARIABLES CONFIGURATION   " << current->data << "\n";
      }
 
-     current = config->find ("colvarsInput");
+     current = config->find("colvarsInput");
      for ( ; current; current = current->next ) {
        if ( strstr(current->data,"\n") ) {
          iout << iINFO << "COLLECTIVE VARIABLES RESTART INFORMATION INLINED IN CONFIG FILE\n";
