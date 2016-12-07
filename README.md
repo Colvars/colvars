@@ -18,7 +18,37 @@ http://dx.doi.org/10.1080/00268976.2013.813594  \[[BibTex file](https://github.c
 
 ## Example input
 
-Colvars requires a configuration file, or alternatively configuration arguments given through scripting commands by the linked program.
+Colvars requires a configuration file, or alternatively configuration arguments given through scripting commands by the linked program.  In NAMD:
+```
+colvars on
+cv configfile <Colvars configuration file>
+```
+In VMD:
+```
+cv molid top
+cv configfile <Colvars configuration file>
+```
+In LAMMPS:
+```
+fix Colvars all colvars configfile <Colvars configuration file>
+```
+The contents of the configuration file are typically the same across all programs, for example:
+```
+colvar { # Define a new variable
+  name d # Must give a name to this variable
+  width 0.2 # Estimated fluctuation amplitude and/or grid resolution, "w_d"
+  distance { # This variable is a distance between centers of mass (COMs)
+    group1 { atomNumbers 1 2 3 } # List the atoms of the 1st group
+    group2 { atomNumbers 4 5 6 } # List the atoms of the 2nd group
+  }
+}
+
+harmonic { # Define a harmonic potential, 1/2*K*(d-d0)^2/w_d^2
+  colvars d # Apply it to the variable "d"
+  centers 5.0 # The center of the potential, "d0"
+  forceConstant 10.0 # Force constant, "K"
+}
+```
 
 Please see the [examples](https://github.com/colvars/colvars/tree/master/examples?raw=true) folder of this repository.  Configuration options (particularly, the selections of atoms) require minimal changes to reflect the specifics of each simulation.
 
