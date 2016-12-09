@@ -30,6 +30,7 @@ colvars:   Protein_C-alpha_9 (1 atoms).
 colvars:   group9 (4 atoms).
 colvars:   Protein_C-alpha_10 (1 atoms).
 colvars:   group10 (4 atoms).
+colvars:   heavy_atoms (51 atoms).
 colvars: # analysis = off [default]
 colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 10
