@@ -9,6 +9,7 @@ source ../Common/measure_net_force_torque.tcl
 
 colvars                 on
 colvarsConfig           test.legacy.in
+colvarsInput            test.colvars.state
 
 run ${numsteps}
 

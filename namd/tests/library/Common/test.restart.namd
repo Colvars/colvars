@@ -1,5 +1,7 @@
 # -*- tcl -*-
 
+# Note: see also test.restart.legacy.namd
+
 set output_name "test.restart"
 set coor_bin_file "test.coor"
 set vel_bin_file "test.vel"

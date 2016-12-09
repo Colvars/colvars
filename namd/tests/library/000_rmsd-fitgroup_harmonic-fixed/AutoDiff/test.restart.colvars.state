@@ -1,5 +1,5 @@
 configuration {
-  step           20
+  step           40
   dt 1.000000e+00
 }
 

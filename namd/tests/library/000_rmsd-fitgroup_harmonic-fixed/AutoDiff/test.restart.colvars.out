@@ -104,6 +104,10 @@ colvars: Collective variables biases initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables module (re)initialized.
 colvars: ----------------------------------------------------------------------
+colvars: Restarting from file "test.colvars.state".
+colvars:   Restarting collective variable "one" from value: 0.651992
+colvars:   Restarting restraint bias "harmonic1".
+colvars: ----------------------------------------------------------------------
 colvars: The restart output state file will be "test.restart.restart.colvars.state".
 colvars: The final output state file will be "test.restart.colvars.state".
 colvars: Writing to colvar trajectory file "test.restart.colvars.traj".
