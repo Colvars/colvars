@@ -1436,8 +1436,7 @@ std::istream & colvar::read_restart(std::istream &is)
     }
   }
 
-  if ( !(get_keyval(conf, "x", x,
-                    colvarvalue(x.type()), colvarparse::parse_silent)) ) {
+  if ( !(get_keyval(conf, "x", x, x, colvarparse::parse_silent)) ) {
     cvm::log("Error: restart file does not contain "
              "the value of the colvar \""+
              name+"\" .\n");
