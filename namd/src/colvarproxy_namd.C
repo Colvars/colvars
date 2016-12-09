@@ -182,6 +182,12 @@ int colvarproxy_namd::setup()
 
   log("Updating NAMD interface:\n");
 
+  if (simparams->wrapAll) {
+    cvm::log("Warning: enabling wrapAll can lead to inconsistent results "
+             "for Colvars calculations: please disable wrapAll, "
+             "as is the default option in NAMD.\n");
+  }
+
   log("updating atomic data ("+cvm::to_str(atoms_ids.size())+" atoms).\n");
 
   size_t i;
