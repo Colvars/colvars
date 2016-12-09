@@ -106,6 +106,8 @@ colvarproxy_vmd::colvarproxy_vmd(Tcl_Interp *vti, VMDApp *v, int molid)
 #endif
     input_prefix_str(""), output_prefix_str("")
 {
+  b_simulation_running = false;
+
   // The module is only allocated here: it will be configured
   // through the "configfile" and "configstring" commands of colvarscript.
   colvars = new colvarmodule(this);

@@ -15,7 +15,7 @@
 #include "colvaratoms.h"
 
 #ifndef COLVARPROXY_VERSION
-#define COLVARPROXY_VERSION "2015-11-02"
+#define COLVARPROXY_VERSION "2016-12-09"
 #endif
 
 

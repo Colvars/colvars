@@ -24,11 +24,18 @@ public:
   /// Pointer to the main object
   colvarmodule *colvars;
 
-  /// Default constructor
-  inline colvarproxy() : b_smp_active(true), script(NULL) {}
+  /// Constructor
+  colvarproxy()
+  {
+    colvars = NULL;
+    b_simulation_running = true;
+    b_smp_active = true;
+    script = NULL;
+  }
 
-  /// Default destructor
-  virtual ~colvarproxy() {}
+  /// Destructor
+  virtual ~colvarproxy()
+  {}
 
   /// (Re)initialize required member data after construction
   virtual int setup()
@@ -102,6 +109,19 @@ public:
   virtual size_t restart_frequency()
   {
     return 0;
+  }
+
+protected:
+
+  /// Whether a simulation is running (and try to prevent irrecovarable errors)
+  bool b_simulation_running;
+
+public:
+
+  /// Whether a simulation is running (and try to prevent irrecovarable errors)
+  virtual bool simulation_running() const
+  {
+    return b_simulation_running;
   }
 
 protected:
