@@ -400,6 +400,9 @@ colvar::colvar(std::string const &conf)
   f_old.type(value());
   f_old.reset();
 
+  x_restart.type(value());
+  after_restart = false;
+
   if (cvm::b_analysis)
     parse_analysis(conf);
 
@@ -871,6 +874,22 @@ int colvar::collect_cvc_values()
   if (cvm::debug())
     cvm::log("Colvar \""+this->name+"\" has value "+
               cvm::to_str(x, cvm::cv_width, cvm::cv_prec)+".\n");
+
+  if (after_restart) {
+    after_restart = false;
+    if (cvm::proxy->simulation_running()) {
+      cvm::real const jump2 = dist2(x, x_restart) / (width*width);
+      if (jump2 > 0.25) {
+        cvm::error("Error: the calculated value of colvar \""+name+
+                   "\":\n"+cvm::to_str(x)+"\n differs greatly from the value "
+                   "last read from the state file:\n"+cvm::to_str(x_restart)+
+                   "\nPossible causes are changes in configuration, "
+                   "wrong state file, or how PBC wrapping is handled.\n",
+                   INPUT_ERROR);
+        return INPUT_ERROR;
+      }
+    }
+  }
 
   return COLVARS_OK;
 }
@@ -1444,6 +1463,8 @@ std::istream & colvar::read_restart(std::istream &is)
   } else {
     cvm::log("Restarting collective variable \""+name+"\" from value: "+
              cvm::to_str(x)+"\n");
+    x_restart = x;
+    after_restart = true;
   }
 
   if (is_enabled(f_cv_extended_Lagrangian)) {
