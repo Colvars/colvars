@@ -1204,42 +1204,46 @@ public:
   inline cvm::real log_gradient_finite_diff(const std::vector<int> &ix0,
                                             int n = 0)
   {
-    cvm::real A0, A1;
-    std::vector<int> ix;
-
-    // factor for mesh width, 2.0 for central finite difference
-    // but only 1.0 on edges for non-PBC coordinates
-    cvm::real factor;
+    int A0, A1, A2;
+    std::vector<int> ix = ix0;
 
     if (periodic[n]) {
-      factor = 2.;
-      ix = ix0;
       ix[n]--; wrap(ix);
       A0 = data[address(ix)];
       ix = ix0;
       ix[n]++; wrap(ix);
       A1 = data[address(ix)];
-    } else {
-      factor = 0.;
-      ix = ix0;
-      if (ix[n] > 0) { // not left edge
-        ix[n]--;
-        factor += 1.;
+      if (A0 * A1 == 0) {
+        return 0.; // can't handle empty bins
+      } else {
+        return (std::log((cvm::real)A1) - std::log((cvm::real)A0))
+          / (widths[n] * 2.);
       }
+    } else if (ix[n] > 0 && ix[n] < nx[n]-1) { // not an edge
+      ix[n]--;
       A0 = data[address(ix)];
       ix = ix0;
-      if (ix[n]+1 < nx[n]) { // not right edge
-        ix[n]++;
-        factor += 1.;
-      }
+      ix[n]++;
       A1 = data[address(ix)];
-    }
-    if (A0 == 0 || A1 == 0) {
-      // can't handle empty bins
-      return 0.;
+      if (A0 * A1 == 0) {
+        return 0.; // can't handle empty bins
+      } else {
+        return (std::log((cvm::real)A1) - std::log((cvm::real)A0))
+          / (widths[n] * 2.);
+      }
     } else {
-      return (std::log((cvm::real)A1) - std::log((cvm::real)A0))
-        / (widths[n] * factor);
+      // edge: use 2nd order derivative
+      int increment = (ix[n] == 0 ? 1 : -1);
+      // move right from left edge, or the other way around
+      A0 = data[address(ix)];
+      ix[n] += increment; A1 = data[address(ix)];
+      ix[n] += increment; A2 = data[address(ix)];
+      if (A0 * A1 * A2 == 0) {
+        return 0.; // can't handle empty bins
+      } else {
+        return (-1.5 * std::log((cvm::real)A0) + 2. * std::log((cvm::real)A1)
+          - 0.5 * std::log((cvm::real)A2)) * increment / widths[n];
+      }
     }
   }
 };

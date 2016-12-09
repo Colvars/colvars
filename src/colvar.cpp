@@ -1220,6 +1220,7 @@ cvm::real colvar::update_forces_energy()
   // should bypass the extended variable
   f += fw;
 
+  // Store force to be applied, possibly summed over several timesteps
   f_accumulated += f;
 
   if (is_enabled(f_cv_fdiff_velocity)) {
