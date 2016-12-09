@@ -80,6 +80,7 @@ int colvarbias_abf::init(std::string const &conf)
 
   if (update_bias) {
   // Request calculation of total force (which also checks for availability)
+  // TODO - change this to a dependency - needs ABF-specific features
     if(enable(f_cvb_get_total_force)) return cvm::get_error();
   }
 
@@ -245,7 +246,7 @@ int colvarbias_abf::update()
 
       for (size_t i = 0; i < colvars.size(); i++) {
         // get total forces (lagging by 1 timestep) from colvars
-        // and subtract previous ABF force
+        // and subtract previous ABF force if necessary
         update_system_force(i);
       }
       gradients->acc_force(force_bin, system_force);

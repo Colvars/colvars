@@ -386,6 +386,12 @@ protected:
   /// Previous value (to calculate velocities during analysis)
   colvarvalue            x_old;
 
+  /// Value read from the most recent state file (if any)
+  colvarvalue            x_restart;
+
+  /// True if a state file was just read
+  bool                   after_restart;
+
   /// Time series of values and velocities used in correlation
   /// functions
   std::list< std::list<colvarvalue> > acf_x_history, acf_v_history;

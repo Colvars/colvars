@@ -400,6 +400,9 @@ colvar::colvar(std::string const &conf)
   f_old.type(value());
   f_old.reset();
 
+  x_restart.type(value());
+  after_restart = false;
+
   if (cvm::b_analysis)
     parse_analysis(conf);
 
@@ -872,6 +875,22 @@ int colvar::collect_cvc_values()
     cvm::log("Colvar \""+this->name+"\" has value "+
               cvm::to_str(x, cvm::cv_width, cvm::cv_prec)+".\n");
 
+  if (after_restart) {
+    after_restart = false;
+    if (cvm::proxy->simulation_running()) {
+      cvm::real const jump2 = dist2(x, x_restart) / (width*width);
+      if (jump2 > 0.25) {
+        cvm::error("Error: the calculated value of colvar \""+name+
+                   "\":\n"+cvm::to_str(x)+"\n differs greatly from the value "
+                   "last read from the state file:\n"+cvm::to_str(x_restart)+
+                   "\nPossible causes are changes in configuration, "
+                   "wrong state file, or how PBC wrapping is handled.\n",
+                   INPUT_ERROR);
+        return INPUT_ERROR;
+      }
+    }
+  }
+
   return COLVARS_OK;
 }
 
@@ -1085,7 +1104,7 @@ int colvar::calc_colvar_properties()
     // TODO: put it in the restart information
     if (cvm::step_relative() == 0) {
       xr = x;
-      vr = 0.0; // (already 0; added for clarity)
+      vr.reset(); // (already 0; added for clarity)
     }
 
     // report the restraint center as "value"
@@ -1132,11 +1151,11 @@ cvm::real colvar::update_forces_energy()
       f -= fj;
   }
 
-  if (is_enabled(f_cv_lower_wall) || is_enabled(f_cv_upper_wall)) {
+  // Wall force
+  colvarvalue fw(x);
+  fw.reset();
 
-    // Wall force
-    colvarvalue fw(x);
-    fw.reset();
+  if (is_enabled(f_cv_lower_wall) || is_enabled(f_cv_upper_wall)) {
 
     if (cvm::debug())
       cvm::log("Calculating wall forces for colvar \""+this->name+"\".\n");
@@ -1144,12 +1163,11 @@ cvm::real colvar::update_forces_energy()
     // For a periodic colvar, both walls may be applicable at the same time
     // in which case we pick the closer one
     if ( (!is_enabled(f_cv_upper_wall)) ||
-         (this->dist2(x_reported, lower_wall) < this->dist2(x_reported, upper_wall)) ) {
+         (this->dist2(x, lower_wall) < this->dist2(x, upper_wall)) ) {
 
-      cvm::real const grad = this->dist2_lgrad(x_reported, lower_wall);
+      cvm::real const grad = this->dist2_lgrad(x, lower_wall);
       if (grad < 0.0) {
         fw = -0.5 * lower_wall_k * grad;
-        f += fw;
         if (cvm::debug())
           cvm::log("Applying a lower wall force("+
                     cvm::to_str(fw)+") to \""+this->name+"\".\n");
@@ -1157,10 +1175,9 @@ cvm::real colvar::update_forces_energy()
 
     } else {
 
-      cvm::real const grad = this->dist2_lgrad(x_reported, upper_wall);
+      cvm::real const grad = this->dist2_lgrad(x, upper_wall);
       if (grad > 0.0) {
         fw = -0.5 * upper_wall_k * grad;
-        f += fw;
         if (cvm::debug())
           cvm::log("Applying an upper wall force("+
                     cvm::to_str(fw)+") to \""+this->name+"\".\n");
@@ -1168,24 +1185,35 @@ cvm::real colvar::update_forces_energy()
     }
   }
 
+  // At this point f is the force f from external biases that will be applied to the
+  // extended variable if there is one
+
   if (is_enabled(f_cv_extended_Lagrangian)) {
 
     cvm::real dt = cvm::dt();
-    cvm::real f_ext;
+    colvarvalue f_ext(fr.type());
+    f_ext.reset();
 
     // the total force is applied to the fictitious mass, while the
-    // atoms only feel the harmonic force
+    // atoms only feel the harmonic force + wall force
     // fr: bias force on extended variable (without harmonic spring), for output in trajectory
     // f_ext: total force on extended variable (including harmonic spring)
-    // f: - initially, external biasing force (including wall forces)
-    //    - after this code block, colvar force to be applied to atomic coordinates, ie. spring force
+    // f: - initially, external biasing force
+    //    - after this code block, colvar force to be applied to atomic coordinates
+    //      ie. spring force + wall force
     fr    = f;
     f_ext = f + (-0.5 * ext_force_k) * this->dist2_lgrad(xr, x);
     f     =     (-0.5 * ext_force_k) * this->dist2_rgrad(xr, x);
 
-    // The total force acting on the extended variable is f_ext
-    // This will be used in the next timestep
-    ft_reported = f_ext;
+    if (is_enabled(f_cv_subtract_applied_force)) {
+      // Report a "system" force without the biases on this colvar
+      // that is, just the spring force
+      ft_reported = (-0.5 * ext_force_k) * this->dist2_lgrad(xr, x);
+    } else {
+      // The total force acting on the extended variable is f_ext
+      // This will be used in the next timestep
+      ft_reported = f_ext;
+    }
 
     // leapfrog: starting from x_i, f_i, v_(i-1/2)
     vr  += (0.5 * dt) * f_ext / ext_mass;
@@ -1194,15 +1222,24 @@ cvm::real colvar::update_forces_energy()
     potential_energy = 0.5 * ext_force_k * this->dist2(xr, x);
     // leap to v_(i+1/2)
     if (is_enabled(f_cv_Langevin)) {
-      vr -= dt * ext_gamma * vr.real_value;
-      vr += dt * ext_sigma * cvm::rand_gaussian() / ext_mass;
+      vr -= dt * ext_gamma * vr;
+      colvarvalue rnd(x);
+      rnd.set_random();
+      vr += dt * ext_sigma * rnd / ext_mass;
     }
     vr  += (0.5 * dt) * f_ext / ext_mass;
     xr  += dt * vr;
     xr.apply_constraints();
     if (this->b_periodic) this->wrap(xr);
+
   }
 
+  // Now adding the wall force to the force on the actual colvar
+  // eventually, this will be the point to apply any bias forces that
+  // should bypass the extended variable
+  f += fw;
+
+  // Store force to be applied, possibly summed over several timesteps
   f_accumulated += f;
 
   if (is_enabled(f_cv_fdiff_velocity)) {
@@ -1419,14 +1456,15 @@ std::istream & colvar::read_restart(std::istream &is)
     }
   }
 
-  if ( !(get_keyval(conf, "x", x,
-                    colvarvalue(x.type()), colvarparse::parse_silent)) ) {
+  if ( !(get_keyval(conf, "x", x, x, colvarparse::parse_silent)) ) {
     cvm::log("Error: restart file does not contain "
              "the value of the colvar \""+
              name+"\" .\n");
   } else {
     cvm::log("Restarting collective variable \""+name+"\" from value: "+
              cvm::to_str(x)+"\n");
+    x_restart = x;
+    after_restart = true;
   }
 
   if (is_enabled(f_cv_extended_Lagrangian)) {

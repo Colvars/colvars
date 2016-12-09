@@ -119,6 +119,7 @@ for dir in ${DIRLIST} ; do
 
     # If this test is used to generate the reference output files, copy them
     if [ "x${gen_ref_output}" = 'xyes' ]; then
+      grep 'NAMD' ${basename}.out | head -n 1 > namd-version.txt
       cp ${basename}.colvars.state AutoDiff/
       cp ${basename}.colvars.traj  AutoDiff/
       cp ${basename}.colvars.out   AutoDiff/
@@ -171,6 +172,9 @@ for dir in ${DIRLIST} ; do
     fi
     cleanup_files
   fi
+
+  # TODO: at this point, we may use the diff file to update the reference tests for harmless changes
+  # (e.g. keyword echos). Before then, figure out a way to strip the formatting characters produced by spiff.
 
   cd $BASEDIR
 done

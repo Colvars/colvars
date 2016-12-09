@@ -7,6 +7,7 @@
 #include <cmath>
 
 
+
 colvar::angle::angle(std::string const &conf)
   : cvc(conf)
 {
@@ -85,6 +86,7 @@ void colvar::angle::calc_gradients()
   group3->set_weighted_gradient(dxdr3);
 }
 
+
 void colvar::angle::calc_force_invgrads()
 {
   // This uses a force measurement on groups 1 and 3 only
@@ -107,6 +109,7 @@ void colvar::angle::calc_force_invgrads()
   return;
 }
 
+
 void colvar::angle::calc_Jacobian_derivative()
 {
   // det(J) = (2 pi) r^2 * sin(theta)
@@ -128,6 +131,8 @@ void colvar::angle::apply_force(colvarvalue const &force)
     group3->apply_colvar_force(force.real_value);
 }
 
+
+simple_scalar_dist_functions(angle)
 
 
 
@@ -234,6 +239,8 @@ void colvar::dipole_angle::apply_force(colvarvalue const &force)
     group3->apply_colvar_force(force.real_value);
 }
 
+
+simple_scalar_dist_functions(dipole_angle)
 
 
 
@@ -453,3 +460,46 @@ void colvar::dihedral::apply_force(colvarvalue const &force)
 }
 
 
+// metrics functions for cvc implementations with a periodicity
+
+cvm::real colvar::dihedral::dist2(colvarvalue const &x1,
+                                  colvarvalue const &x2) const
+{
+  cvm::real diff = x1.real_value - x2.real_value;
+  diff = (diff < -180.0 ? diff + 360.0 : (diff > 180.0 ? diff - 360.0 : diff));
+  return diff * diff;
+}
+
+
+colvarvalue colvar::dihedral::dist2_lgrad(colvarvalue const &x1,
+                                          colvarvalue const &x2) const
+{
+  cvm::real diff = x1.real_value - x2.real_value;
+  diff = (diff < -180.0 ? diff + 360.0 : (diff > 180.0 ? diff - 360.0 : diff));
+  return 2.0 * diff;
+}
+
+
+colvarvalue colvar::dihedral::dist2_rgrad(colvarvalue const &x1,
+                                          colvarvalue const &x2) const
+{
+  cvm::real diff = x1.real_value - x2.real_value;
+  diff = (diff < -180.0 ? diff + 360.0 : (diff > 180.0 ? diff - 360.0 : diff));
+  return (-2.0) * diff;
+}
+
+
+void colvar::dihedral::wrap(colvarvalue &x) const
+{
+  if ((x.real_value - wrap_center) >= 180.0) {
+    x.real_value -= 360.0;
+    return;
+  }
+
+  if ((x.real_value - wrap_center) < -180.0) {
+    x.real_value += 360.0;
+    return;
+  }
+
+  return;
+}

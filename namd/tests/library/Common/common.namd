@@ -13,6 +13,8 @@ if { [info exists mol_name] == 0 } {
         return 104
     }
     file copy -force "../Common/da.ndx" "index.ndx"
+    file copy -force "../Common/da-Calpha.xyz" "rmsd_atoms_refpos.xyz"
+    file copy -force "../Common/da-noh.xyz" "heavy_atoms_refpos.xyz"
 }
 
 if { [info exists output_name] == 0 } {

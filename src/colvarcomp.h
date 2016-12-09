@@ -105,8 +105,8 @@ public:
   /// options from the provided configuration string
   /// Returns reference to new group
   cvm::atom_group *parse_group(std::string const &conf,
-                   char const *group_key,
-                   bool optional = false);
+                               char const *group_key,
+                               bool optional = false);
 
   /// \brief Parse options pertaining to total force calculation
   virtual int init_total_force_params(std::string const &conf);
@@ -130,7 +130,7 @@ public:
   }
 
   /// \brief Obtain data needed for the calculation for the backend
-  void read_data();
+  virtual void read_data();
 
   /// \brief Calculate the variable
   virtual void calc_value() = 0;
@@ -151,17 +151,14 @@ public:
 
 
   /// \brief Return the previously calculated value
-  virtual colvarvalue const & value() const;
-
-  // /// \brief Return const pointer to the previously calculated value
-  // virtual const colvarvalue *p_value() const;
+  colvarvalue const & value() const;
 
   /// \brief Return the previously calculated total force
-  virtual colvarvalue const & total_force() const;
+  colvarvalue const & total_force() const;
 
   /// \brief Return the previously calculated divergence of the
   /// inverse atomic gradients
-  virtual colvarvalue const & Jacobian_derivative() const;
+  colvarvalue const & Jacobian_derivative() const;
 
   /// \brief Apply the collective variable force, by communicating the
   /// atomic forces to the simulation program (\b Note: the \link ft
@@ -247,51 +244,23 @@ protected:
 };
 
 
-
-
 inline colvarvalue const & colvar::cvc::value() const
 {
   return x;
 }
 
-// inline const colvarvalue * colvar::cvc::p_value() const
-// {
-//   return &x;
-// }
 
 inline colvarvalue const & colvar::cvc::total_force() const
 {
   return ft;
 }
 
+
 inline colvarvalue const & colvar::cvc::Jacobian_derivative() const
 {
   return jd;
 }
 
-
-inline cvm::real colvar::cvc::dist2(colvarvalue const &x1,
-                                    colvarvalue const &x2) const
-{
-  return x1.dist2(x2);
-}
-
-inline colvarvalue colvar::cvc::dist2_lgrad(colvarvalue const &x1,
-                                            colvarvalue const &x2) const
-{
-  return x1.dist2_grad(x2);
-}
-
-inline colvarvalue colvar::cvc::dist2_rgrad(colvarvalue const &x1,
-                                            colvarvalue const &x2) const
-{
-  return x2.dist2_grad(x1);
-}
-
-inline void colvar::cvc::wrap(colvarvalue &x) const
-{
-  return;
-}
 
 
 /// \brief Colvar component: distance between the centers of mass of
@@ -312,7 +281,7 @@ protected:
 public:
   distance(std::string const &conf);
   distance();
-  virtual inline ~distance() {}
+  virtual ~distance() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void calc_force_invgrads();
@@ -327,6 +296,7 @@ public:
 };
 
 
+
 // \brief Colvar component: distance vector between centers of mass
 // of two groups (\link colvarvalue::type_3vector \endlink type,
 // range (-*:*)x(-*:*)x(-*:*))
@@ -336,7 +306,7 @@ class colvar::distance_vec
 public:
   distance_vec(std::string const &conf);
   distance_vec();
-  virtual inline ~distance_vec() {}
+  virtual ~distance_vec() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void apply_force(colvarvalue const &force);
@@ -350,6 +320,7 @@ public:
   virtual colvarvalue dist2_rgrad(colvarvalue const &x1,
                                   colvarvalue const &x2) const;
 };
+
 
 
 /// \brief Colvar component: distance unit vector (direction) between
@@ -361,17 +332,12 @@ class colvar::distance_dir
 public:
   distance_dir(std::string const &conf);
   distance_dir();
-  virtual inline ~distance_dir() {}
+  virtual ~distance_dir() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void apply_force(colvarvalue const &force);
-  virtual cvm::real dist2(colvarvalue const &x1,
-                          colvarvalue const &x2) const;
-  virtual colvarvalue dist2_lgrad(colvarvalue const &x1,
-                                  colvarvalue const &x2) const;
-  virtual colvarvalue dist2_rgrad(colvarvalue const &x1,
-                                  colvarvalue const &x2) const;
 };
+
 
 
 /// \brief Colvar component: projection of the distance vector along
@@ -399,7 +365,7 @@ protected:
 public:
   distance_z(std::string const &conf);
   distance_z();
-  virtual inline ~distance_z() {}
+  virtual ~distance_z() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void calc_force_invgrads();
@@ -416,6 +382,7 @@ public:
 };
 
 
+
 /// \brief Colvar component: projection of the distance vector on a
 /// plane (colvarvalue::type_scalar type, range [0:*))
 class colvar::distance_xy
@@ -429,7 +396,7 @@ protected:
 public:
   distance_xy(std::string const &conf);
   distance_xy();
-  virtual inline ~distance_xy() {}
+  virtual ~distance_xy() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void calc_force_invgrads();
@@ -444,6 +411,7 @@ public:
 };
 
 
+
 /// \brief Colvar component: average distance between two groups of atoms, weighted as the sixth power,
 /// as in NMR refinements(colvarvalue::type_scalar type, range (0:*))
 class colvar::distance_inv
@@ -455,7 +423,7 @@ protected:
 public:
   distance_inv(std::string const &conf);
   distance_inv();
-  virtual inline ~distance_inv() {}
+  virtual ~distance_inv() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void apply_force(colvarvalue const &force);
@@ -466,6 +434,7 @@ public:
   virtual colvarvalue dist2_rgrad(colvarvalue const &x1,
                                   colvarvalue const &x2) const;
 };
+
 
 
 /// \brief Colvar component: N1xN2 vector of pairwise distances
@@ -483,16 +452,10 @@ protected:
 public:
   distance_pairs(std::string const &conf);
   distance_pairs();
-  virtual inline ~distance_pairs() {}
+  virtual ~distance_pairs() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void apply_force(colvarvalue const &force);
-  virtual cvm::real dist2(colvarvalue const &x1,
-                          colvarvalue const &x2) const;
-  virtual colvarvalue dist2_lgrad(colvarvalue const &x1,
-                                  colvarvalue const &x2) const;
-  virtual colvarvalue dist2_rgrad(colvarvalue const &x1,
-                                  colvarvalue const &x2) const;
 };
 
 
@@ -509,7 +472,7 @@ public:
   /// Constructor
   gyration(std::string const &conf);
   gyration();
-  virtual inline ~gyration() {}
+  virtual ~gyration() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void calc_force_invgrads();
@@ -524,6 +487,7 @@ public:
 };
 
 
+
 /// \brief Colvar component: moment of inertia of an atom group
 /// (colvarvalue::type_scalar type, range [0:*))
 class colvar::inertia
@@ -533,7 +497,7 @@ public:
   /// Constructor
   inertia(std::string const &conf);
   inertia();
-  virtual inline ~inertia() {}
+  virtual ~inertia() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void apply_force(colvarvalue const &force);
@@ -544,6 +508,7 @@ public:
   virtual colvarvalue dist2_rgrad(colvarvalue const &x1,
                                   colvarvalue const &x2) const;
 };
+
 
 
 /// \brief Colvar component: moment of inertia of an atom group
@@ -558,7 +523,7 @@ public:
   /// Constructor
   inertia_z(std::string const &conf);
   inertia_z();
-  virtual inline ~inertia_z() {}
+  virtual ~inertia_z() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void apply_force(colvarvalue const &force);
@@ -569,6 +534,7 @@ public:
   virtual colvarvalue dist2_rgrad(colvarvalue const &x1,
                                   colvarvalue const &x2) const;
 };
+
 
 
 /// \brief Colvar component: projection of 3N coordinates onto an
@@ -597,7 +563,7 @@ public:
 
   /// Constructor
   eigenvector(std::string const &conf);
-  virtual inline ~eigenvector() {}
+  virtual ~eigenvector() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void calc_force_invgrads();
@@ -645,7 +611,7 @@ public:
   /// \brief Initialize the three groups after three atoms
   angle(cvm::atom const &a1, cvm::atom const &a2, cvm::atom const &a3);
   angle();
-  virtual inline ~angle() {}
+  virtual ~angle() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void calc_force_invgrads();
@@ -658,6 +624,8 @@ public:
   virtual colvarvalue dist2_rgrad(colvarvalue const &x1,
                                   colvarvalue const &x2) const;
 };
+
+
 
 /// \brief Colvar component: angle between the dipole of a molecule and an axis
 /// formed by two groups of atoms(colvarvalue::type_scalar type, range [0:PI])
@@ -691,7 +659,7 @@ public:
   /// \brief Initialize the three groups after three atoms
   dipole_angle (cvm::atom const &a1, cvm::atom const &a2, cvm::atom const &a3);
   dipole_angle();
-  virtual inline ~dipole_angle() {}
+  virtual ~dipole_angle() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void apply_force (colvarvalue const &force);
@@ -702,6 +670,8 @@ public:
   virtual colvarvalue dist2_rgrad (colvarvalue const &x1,
                                    colvarvalue const &x2) const;
 };
+
+
 
 /// \brief Colvar component: dihedral between the centers of mass of
 /// four groups (colvarvalue::type_scalar type, range [-PI:PI])
@@ -732,7 +702,7 @@ public:
   /// \brief Initialize the four groups after four atoms
   dihedral(cvm::atom const &a1, cvm::atom const &a2, cvm::atom const &a3, cvm::atom const &a4);
   dihedral();
-  virtual inline ~dihedral() {}
+  virtual ~dihedral() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void calc_force_invgrads();
@@ -751,6 +721,7 @@ public:
   /// Redefined to handle the 2*PI periodicity
   virtual void wrap(colvarvalue &x) const;
 };
+
 
 
 /// \brief Colvar component: coordination number between two groups
@@ -781,7 +752,7 @@ public:
   /// Constructor
   coordnum(std::string const &conf);
   coordnum();
-  virtual inline ~coordnum() {}
+  virtual ~coordnum() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void apply_force(colvarvalue const &force);
@@ -812,6 +783,8 @@ public:
                                   colvarvalue const &x2) const;
 };
 
+
+
 /// \brief Colvar component: self-coordination number within a group
 /// (colvarvalue::type_scalar type, range [0:N*(N-1)/2])
 class colvar::selfcoordnum
@@ -830,7 +803,7 @@ public:
   /// Constructor
   selfcoordnum(std::string const &conf);
   selfcoordnum();
-  virtual inline ~selfcoordnum() {}
+  virtual ~selfcoordnum() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void apply_force(colvarvalue const &force);
@@ -850,6 +823,7 @@ public:
   virtual colvarvalue dist2_rgrad(colvarvalue const &x1,
                                   colvarvalue const &x2) const;
 };
+
 
 
 /// \brief Colvar component: coordination number between two groups
@@ -873,7 +847,7 @@ public:
   /// Constructor
   groupcoordnum(std::string const &conf);
   groupcoordnum();
-  virtual inline ~groupcoordnum() {}
+  virtual ~groupcoordnum() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void apply_force(colvarvalue const &force);
@@ -896,6 +870,7 @@ public:
   static cvm::real switching_function(cvm::rvector const &r0_vec,
                                       int const &exp_num, int const &exp_den,
                                       cvm::atom &A1, cvm::atom &A2);
+  */
 
   virtual cvm::real dist2(colvarvalue const &x1,
                           colvarvalue const &x2) const;
@@ -903,8 +878,8 @@ public:
                                   colvarvalue const &x2) const;
   virtual colvarvalue dist2_rgrad(colvarvalue const &x1,
                                   colvarvalue const &x2) const;
-  */
 };
+
 
 
 /// \brief Colvar component: hydrogen bond, defined as the product of
@@ -941,6 +916,7 @@ public:
 };
 
 
+
 /// \brief Colvar component: alpha helix content of a contiguous
 /// segment of 5 or more residues, implemented as a sum of phi/psi
 /// dihedral angles and hydrogen bonds (colvarvalue::type_scalar type,
@@ -969,7 +945,7 @@ public:
 
 //   alpha_dihedrals (std::string const &conf);
 //   alpha_dihedrals();
-//   virtual inline ~alpha_dihedrals() {}
+//   virtual ~alpha_dihedrals() {}
 //   virtual void calc_value();
 //   virtual void calc_gradients();
 //   virtual void apply_force (colvarvalue const &force);
@@ -980,6 +956,7 @@ public:
 //   virtual colvarvalue dist2_rgrad (colvarvalue const &x1,
 //                                    colvarvalue const &x2) const;
 // };
+
 
 
 /// \brief Colvar component: alpha helix content of a contiguous
@@ -1022,6 +999,8 @@ public:
                                   colvarvalue const &x2) const;
 };
 
+
+
 /// \brief Colvar component: dihedPC
 /// Projection of the config onto a dihedral principal component
 /// See e.g. Altis et al., J. Chem. Phys 126, 244111 (2007)
@@ -1049,6 +1028,8 @@ public:
   virtual colvarvalue dist2_rgrad(colvarvalue const &x1,
                                   colvarvalue const &x2) const;
 };
+
+
 
 /// \brief Colvar component: orientation in space of an atom group,
 /// with respect to a set of reference coordinates
@@ -1078,7 +1059,7 @@ public:
 
   orientation(std::string const &conf);
   orientation();
-  virtual inline ~orientation() {}
+  virtual ~orientation() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void apply_force(colvarvalue const &force);
@@ -1089,6 +1070,7 @@ public:
   virtual colvarvalue dist2_rgrad(colvarvalue const &x1,
                                   colvarvalue const &x2) const;
 };
+
 
 
 /// \brief Colvar component: angle of rotation with respect to a set
@@ -1101,7 +1083,7 @@ public:
 
   orientation_angle(std::string const &conf);
   orientation_angle();
-  virtual inline ~orientation_angle() {}
+  virtual ~orientation_angle() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void apply_force(colvarvalue const &force);
@@ -1112,6 +1094,7 @@ public:
   virtual colvarvalue dist2_rgrad(colvarvalue const &x1,
                                   colvarvalue const &x2) const;
 };
+
 
 
 /// \brief Colvar component: cosine of the angle of rotation with respect to a set
@@ -1124,7 +1107,7 @@ public:
 
   orientation_proj(std::string const &conf);
   orientation_proj();
-  virtual inline ~orientation_proj() {}
+  virtual ~orientation_proj() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void apply_force(colvarvalue const &force);
@@ -1135,6 +1118,7 @@ public:
   virtual colvarvalue dist2_rgrad(colvarvalue const &x1,
                                   colvarvalue const &x2) const;
 };
+
 
 
 /// \brief Colvar component: projection of the orientation vector onto
@@ -1150,7 +1134,7 @@ public:
 
   tilt(std::string const &conf);
   tilt();
-  virtual inline ~tilt() {}
+  virtual ~tilt() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void apply_force(colvarvalue const &force);
@@ -1177,7 +1161,7 @@ public:
 
   spin_angle(std::string const &conf);
   spin_angle();
-  virtual inline ~spin_angle() {}
+  virtual ~spin_angle() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void apply_force(colvarvalue const &force);
@@ -1215,7 +1199,7 @@ public:
 
   /// Constructor
   rmsd(std::string const &conf);
-  virtual inline ~rmsd() {}
+  virtual ~rmsd() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void calc_force_invgrads();
@@ -1228,6 +1212,7 @@ public:
   virtual colvarvalue dist2_rgrad(colvarvalue const &x1,
                                   colvarvalue const &x2) const;
 };
+
 
 
 // \brief Colvar component: flat vector of Cartesian coordinates
@@ -1243,7 +1228,7 @@ protected:
 public:
   cartesian(std::string const &conf);
   cartesian();
-  virtual inline ~cartesian() {}
+  virtual ~cartesian() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void apply_force(colvarvalue const &force);
@@ -1260,255 +1245,26 @@ public:
 
 #define simple_scalar_dist_functions(TYPE)                              \
                                                                         \
-  inline cvm::real colvar::TYPE::dist2(colvarvalue const &x1,           \
-                                       colvarvalue const &x2) const     \
+                                                                        \
+  cvm::real colvar::TYPE::dist2(colvarvalue const &x1,                  \
+                                colvarvalue const &x2) const            \
   {                                                                     \
     return (x1.real_value - x2.real_value)*(x1.real_value - x2.real_value); \
   }                                                                     \
                                                                         \
-  inline colvarvalue colvar::TYPE::dist2_lgrad(colvarvalue const &x1,   \
-                                               colvarvalue const &x2) const \
+                                                                        \
+  colvarvalue colvar::TYPE::dist2_lgrad(colvarvalue const &x1,          \
+                                        colvarvalue const &x2) const    \
   {                                                                     \
     return 2.0 * (x1.real_value - x2.real_value);                       \
   }                                                                     \
                                                                         \
-  inline colvarvalue colvar::TYPE::dist2_rgrad(colvarvalue const &x1,   \
-                                               colvarvalue const &x2) const \
+                                                                        \
+  colvarvalue colvar::TYPE::dist2_rgrad(colvarvalue const &x1,          \
+                                        colvarvalue const &x2) const    \
   {                                                                     \
     return this->dist2_lgrad(x2, x1);                                   \
   }                                                                     \
                                                                         \
-
-simple_scalar_dist_functions(distance)
-// NOTE: distance_z has explicit functions, see below
-simple_scalar_dist_functions(distance_xy)
-simple_scalar_dist_functions(distance_inv)
-simple_scalar_dist_functions(angle)
-simple_scalar_dist_functions(dipole_angle)
-simple_scalar_dist_functions(coordnum)
-simple_scalar_dist_functions(selfcoordnum)
-simple_scalar_dist_functions(h_bond)
-simple_scalar_dist_functions(gyration)
-simple_scalar_dist_functions(inertia)
-simple_scalar_dist_functions(inertia_z)
-simple_scalar_dist_functions(rmsd)
-simple_scalar_dist_functions(orientation_angle)
-simple_scalar_dist_functions(orientation_proj)
-simple_scalar_dist_functions(tilt)
-simple_scalar_dist_functions(eigenvector)
-//  simple_scalar_dist_functions (alpha_dihedrals)
-simple_scalar_dist_functions(alpha_angles)
-simple_scalar_dist_functions(dihedPC)
-
-
-// metrics functions for cvc implementations with a periodicity
-
-inline cvm::real colvar::dihedral::dist2(colvarvalue const &x1,
-                                           colvarvalue const &x2) const
-{
-cvm::real diff = x1.real_value - x2.real_value;
-diff = (diff < -180.0 ? diff + 360.0 : (diff > 180.0 ? diff - 360.0 : diff));
-return diff * diff;
-}
-
-inline colvarvalue colvar::dihedral::dist2_lgrad(colvarvalue const &x1,
-                                                   colvarvalue const &x2) const
-{
-cvm::real diff = x1.real_value - x2.real_value;
-diff = (diff < -180.0 ? diff + 360.0 : (diff > 180.0 ? diff - 360.0 : diff));
-return 2.0 * diff;
-}
-
-inline colvarvalue colvar::dihedral::dist2_rgrad(colvarvalue const &x1,
-                                                   colvarvalue const &x2) const
-{
-cvm::real diff = x1.real_value - x2.real_value;
-diff = (diff < -180.0 ? diff + 360.0 : (diff > 180.0 ? diff - 360.0 : diff));
-return (-2.0) * diff;
-}
-
-inline void colvar::dihedral::wrap(colvarvalue &x) const
-{
-if ((x.real_value - wrap_center) >= 180.0) {
-x.real_value -= 360.0;
-return;
-}
-
-if ((x.real_value - wrap_center) < -180.0) {
-x.real_value += 360.0;
-return;
-}
-
-return;
-}
-
-inline cvm::real colvar::spin_angle::dist2(colvarvalue const &x1,
-                                             colvarvalue const &x2) const
-{
-cvm::real diff = x1.real_value - x2.real_value;
-diff = (diff < -180.0 ? diff + 360.0 : (diff > 180.0 ? diff - 360.0 : diff));
-return diff * diff;
-}
-
-inline colvarvalue colvar::spin_angle::dist2_lgrad(colvarvalue const &x1,
-                                                     colvarvalue const &x2) const
-{
-cvm::real diff = x1.real_value - x2.real_value;
-diff = (diff < -180.0 ? diff + 360.0 : (diff > 180.0 ? diff - 360.0 : diff));
-return 2.0 * diff;
-}
-
-inline colvarvalue colvar::spin_angle::dist2_rgrad(colvarvalue const &x1,
-                                                     colvarvalue const &x2) const
-{
-cvm::real diff = x1.real_value - x2.real_value;
-diff = (diff < -180.0 ? diff + 360.0 : (diff > 180.0 ? diff - 360.0 : diff));
-return (-2.0) * diff;
-}
-
-inline void colvar::spin_angle::wrap(colvarvalue &x) const
-{
-if ((x.real_value - wrap_center) >= 180.0) {
-x.real_value -= 360.0;
-return;
-}
-
-if ((x.real_value - wrap_center) < -180.0) {
-x.real_value += 360.0;
-return;
-}
-
-return;
-}
-
-
-// Projected distance
-// Differences should always be wrapped around 0 (ignoring wrap_center)
-inline cvm::real colvar::distance_z::dist2(colvarvalue const &x1,
-                                             colvarvalue const &x2) const
-{
-  cvm::real diff = x1.real_value - x2.real_value;
-  if (period != 0.0) {
-    cvm::real shift = std::floor(diff/period + 0.5);
-    diff -= shift * period;
-  }
-  return diff * diff;
-}
-
-inline colvarvalue colvar::distance_z::dist2_lgrad(colvarvalue const &x1,
-                                                   colvarvalue const &x2) const
-{
-  cvm::real diff = x1.real_value - x2.real_value;
-  if (period != 0.0) {
-    cvm::real shift = std::floor(diff/period + 0.5);
-    diff -= shift * period;
-  }
-  return 2.0 * diff;
-}
-
-inline colvarvalue colvar::distance_z::dist2_rgrad(colvarvalue const &x1,
-                                                   colvarvalue const &x2) const
-{
-  cvm::real diff = x1.real_value - x2.real_value;
-  if (period != 0.0) {
-    cvm::real shift = std::floor(diff/period + 0.5);
-    diff -= shift * period;
-  }
-  return (-2.0) * diff;
-}
-
-inline void colvar::distance_z::wrap(colvarvalue &x) const
-{
-  if (! this->b_periodic) {
-    // don't wrap if the period has not been set
-    return;
-  }
-
-  cvm::real shift = std::floor((x.real_value - wrap_center) / period + 0.5);
-  x.real_value -= shift * period;
-  return;
-}
-
-
-// distance between three dimensional vectors
-//
-// TODO apply PBC to distance_vec
-// Note: differences should be centered around (0, 0, 0)!
-
-inline cvm::real colvar::distance_vec::dist2(colvarvalue const &x1,
-                                             colvarvalue const &x2) const
-{
-  return cvm::position_dist2(x1.rvector_value, x2.rvector_value);
-}
-
-inline colvarvalue colvar::distance_vec::dist2_lgrad(colvarvalue const &x1,
-                                                     colvarvalue const &x2) const
-{
-  return 2.0 * cvm::position_distance(x2.rvector_value, x1.rvector_value);
-}
-
-inline colvarvalue colvar::distance_vec::dist2_rgrad(colvarvalue const &x1,
-                                                     colvarvalue const &x2) const
-{
-  return 2.0 * cvm::position_distance(x2.rvector_value, x1.rvector_value);
-}
-
-inline cvm::real colvar::distance_dir::dist2(colvarvalue const &x1,
-                                             colvarvalue const &x2) const
-{
-  return (x1.rvector_value - x2.rvector_value).norm2();
-}
-
-inline colvarvalue colvar::distance_dir::dist2_lgrad(colvarvalue const &x1,
-                                                     colvarvalue const &x2) const
-{
-  return colvarvalue((x1.rvector_value - x2.rvector_value), colvarvalue::type_unit3vector);
-}
-
-inline colvarvalue colvar::distance_dir::dist2_rgrad(colvarvalue const &x1,
-                                                     colvarvalue const &x2) const
-{
-  return colvarvalue((x2.rvector_value - x1.rvector_value), colvarvalue::type_unit3vector);
-}
-
-inline cvm::real colvar::distance_pairs::dist2(colvarvalue const &x1,
-                                               colvarvalue const &x2) const
-{
-  return (x1.vector1d_value - x2.vector1d_value).norm2();
-}
-
-inline colvarvalue colvar::distance_pairs::dist2_lgrad(colvarvalue const &x1,
-                                                       colvarvalue const &x2) const
-{
-  return colvarvalue((x1.vector1d_value - x2.vector1d_value), colvarvalue::type_vector);
-}
-
-inline colvarvalue colvar::distance_pairs::dist2_rgrad(colvarvalue const &x1,
-                                                       colvarvalue const &x2) const
-{
-  return colvarvalue((x2.vector1d_value - x1.vector1d_value), colvarvalue::type_vector);
-}
-
-
-// distance between quaternions
-
-inline cvm::real colvar::orientation::dist2(colvarvalue const &x1,
-                                            colvarvalue const &x2) const
-{
-  return x1.quaternion_value.dist2(x2);
-}
-
-inline colvarvalue colvar::orientation::dist2_lgrad(colvarvalue const &x1,
-                                                    colvarvalue const &x2) const
-{
-  return x1.quaternion_value.dist2_grad(x2);
-}
-
-inline colvarvalue colvar::orientation::dist2_rgrad(colvarvalue const &x1,
-                                                    colvarvalue const &x2) const
-{
-  return x2.quaternion_value.dist2_grad(x1);
-}
-
 
 #endif

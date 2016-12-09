@@ -4,7 +4,7 @@
 #define COLVARMODULE_H
 
 #ifndef COLVARS_VERSION
-#define COLVARS_VERSION "2016-10-11"
+#define COLVARS_VERSION "2016-12-09"
 #endif
 
 #ifndef COLVARS_DEBUG
@@ -198,7 +198,7 @@ public:
   }
 
   /// \brief How many objects are configured yet?
-  inline size_t const size() const
+  inline size_t size() const
   {
     return colvars.size() + biases.size();
   }
@@ -371,7 +371,7 @@ public:
   /// Number of characters to represent the collective variables energy
   static size_t const en_width;
   /// Line separator in the log output
-  static std::string const line_marker;
+  static const char * const line_marker;
 
 
   // proxy functions

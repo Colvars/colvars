@@ -193,7 +193,7 @@ double colvarproxy_lammps::compute()
   previous_step = _lmp->update->ntimestep;
 
   if (cvm::debug()) {
-    cvm::log(cvm::line_marker+
+    cvm::log(std::string(cvm::line_marker)+
              "colvarproxy_lammps, step no. "+cvm::to_str(colvars->it)+"\n"+
              "Updating internal data.\n");
   }
@@ -333,7 +333,10 @@ int colvarproxy_lammps::backup_file(char const *filename)
 
 int colvarproxy_lammps::smp_enabled()
 {
-  return COLVARS_OK;
+  if (b_smp_active) {
+    return COLVARS_OK;
+  }
+  return COLVARS_ERROR;
 }
 
 

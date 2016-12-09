@@ -88,6 +88,10 @@ int main(int argc, char *argv[])
     dpos = new int[data.Nvars];
     newpos = new int[data.Nvars];
 
+    // TODO: this will be an infinite loop if there is no sampling
+    // it would be more robust to build a list of non-empty bins, and
+    // pick from there (or just treat the special case of no sampling
+    // and output a null PMF)
     do {
       for (int i = 0; i < data.Nvars; i++) {
           pos[i] = rand() % data.sizes[i];

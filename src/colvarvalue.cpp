@@ -70,45 +70,30 @@ void colvarvalue::set_elem(int const icv, colvarvalue const &x)
 }
 
 
-colvarvalue colvarvalue::inverse() const
+void colvarvalue::set_random()
 {
-  switch (value_type) {
+  size_t ic;
+  switch (this->type()) {
   case colvarvalue::type_scalar:
-    return colvarvalue(1.0/real_value);
+    this->real_value = cvm::rand_gaussian();
     break;
   case colvarvalue::type_3vector:
   case colvarvalue::type_unit3vector:
   case colvarvalue::type_unit3vectorderiv:
-    return colvarvalue(cvm::rvector(1.0/rvector_value.x,
-                                    1.0/rvector_value.y,
-                                    1.0/rvector_value.z));
+    this->rvector_value.x = cvm::rand_gaussian();
+    this->rvector_value.y = cvm::rand_gaussian();
+    this->rvector_value.z = cvm::rand_gaussian();
     break;
   case colvarvalue::type_quaternion:
   case colvarvalue::type_quaternionderiv:
-    return colvarvalue(cvm::quaternion(1.0/quaternion_value.q0,
-                                       1.0/quaternion_value.q1,
-                                       1.0/quaternion_value.q2,
-                                       1.0/quaternion_value.q3));
+    this->quaternion_value.q0 = cvm::rand_gaussian();
+    this->quaternion_value.q1 = cvm::rand_gaussian();
+    this->quaternion_value.q2 = cvm::rand_gaussian();
+    this->quaternion_value.q3 = cvm::rand_gaussian();
     break;
   case colvarvalue::type_vector:
-    {
-      cvm::vector1d<cvm::real> result(vector1d_value);
-      if (elem_types.size() > 0) {
-        // if we have information about non-scalar types, use it
-        size_t i;
-        for (i = 0; i < elem_types.size(); i++) {
-          result.sliceassign(elem_indices[i], elem_indices[i]+elem_sizes[i],
-                             cvm::vector1d<cvm::real>((this->get_elem(i)).inverse()));
-        }
-      } else {
-        size_t i;
-        for (i = 0; i < result.size(); i++) {
-          if (result[i] != 0.0) {
-            result = 1.0/result[i];
-          }
-        }
-      }
-      return colvarvalue(result, type_vector);
+    for (ic = 0; ic < this->vector1d_value.size(); ic++) {
+      this->vector1d_value[ic] = cvm::rand_gaussian();
     }
     break;
   case colvarvalue::type_notset:
@@ -116,7 +101,6 @@ colvarvalue colvarvalue::inverse() const
     undef_op();
     break;
   }
-  return colvarvalue();
 }
 
 

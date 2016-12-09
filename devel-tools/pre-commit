@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # This hook will do some automatic checks and updates before a commit.
 

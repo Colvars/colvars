@@ -13,10 +13,10 @@
 
 template<bool calculate_gradients>
 cvm::real colvar::coordnum::switching_function(cvm::real const &r0,
-                                                int const &en,
-                                                int const &ed,
-                                                cvm::atom &A1,
-                                                cvm::atom &A2)
+                                               int const &en,
+                                               int const &ed,
+                                               cvm::atom &A1,
+                                               cvm::atom &A2)
 {
   cvm::rvector const diff = cvm::position_distance(A1.pos, A2.pos);
   cvm::real const l2 = diff.norm2()/(r0*r0);
@@ -42,10 +42,10 @@ cvm::real colvar::coordnum::switching_function(cvm::real const &r0,
 
 template<bool calculate_gradients>
 cvm::real colvar::coordnum::switching_function(cvm::rvector const &r0_vec,
-                                                int const &en,
-                                                int const &ed,
-                                                cvm::atom &A1,
-                                                cvm::atom &A2)
+                                               int const &en,
+                                               int const &ed,
+                                               cvm::atom &A1,
+                                               cvm::atom &A2)
 {
   cvm::rvector const diff = cvm::position_distance(A1.pos, A2.pos);
   cvm::rvector const scal_diff(diff.x/r0_vec.x, diff.y/r0_vec.y, diff.z/r0_vec.z);
@@ -190,6 +190,7 @@ void colvar::coordnum::calc_gradients()
   }
 }
 
+
 void colvar::coordnum::apply_force(colvarvalue const &force)
 {
   if (!group1->noforce)
@@ -198,6 +199,9 @@ void colvar::coordnum::apply_force(colvarvalue const &force)
   if (!group2->noforce)
     group2->apply_colvar_force(force.real_value);
 }
+
+
+simple_scalar_dist_functions(coordnum)
 
 
 
@@ -252,6 +256,7 @@ colvar::h_bond::h_bond(cvm::atom const &acceptor,
   atom_groups[0]->add_atom(donor);
 }
 
+
 colvar::h_bond::h_bond()
   : cvc()
 {
@@ -283,6 +288,8 @@ void colvar::h_bond::apply_force(colvarvalue const &force)
   (atom_groups[0])->apply_colvar_force(force);
 }
 
+
+simple_scalar_dist_functions(h_bond)
 
 
 
@@ -337,6 +344,9 @@ void colvar::selfcoordnum::apply_force(colvarvalue const &force)
     group1->apply_colvar_force(force.real_value);
   }
 }
+
+
+simple_scalar_dist_functions(selfcoordnum)
 
 
 // groupcoordnum member functions
@@ -448,7 +458,6 @@ cvm::real colvar::groupcoordnum::switching_function(cvm::rvector const &r0_vec,
 #endif
 
 
-
 void colvar::groupcoordnum::calc_value()
 {
 
@@ -460,7 +469,6 @@ void colvar::groupcoordnum::calc_value()
 
   x.real_value = coordnum::switching_function<false>(r0, en, ed,
                                                      group1_com_atom, group2_com_atom);
-
 }
 
 
@@ -486,3 +494,6 @@ void colvar::groupcoordnum::apply_force(colvarvalue const &force)
   if (!group2->noforce)
     group2->apply_colvar_force(force.real_value);
 }
+
+
+simple_scalar_dist_functions(groupcoordnum)

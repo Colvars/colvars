@@ -106,6 +106,8 @@ colvarproxy_vmd::colvarproxy_vmd(Tcl_Interp *vti, VMDApp *v, int molid)
 #endif
     input_prefix_str(""), output_prefix_str("")
 {
+  b_simulation_running = false;
+
   // The module is only allocated here: it will be configured
   // through the "configfile" and "configstring" commands of colvarscript.
   colvars = new colvarmodule(this);
@@ -433,7 +435,7 @@ int colvarproxy_vmd::load_coords(char const *pdb_filename,
     return COLVARS_ERROR;
   }
 
-  e_pdb_field pdb_field_index;
+  e_pdb_field pdb_field_index = e_pdb_none;
   bool const use_pdb_field = (pdb_field_str.size() > 0);
   if (use_pdb_field) {
     pdb_field_index = pdb_field_str2enum(pdb_field_str);

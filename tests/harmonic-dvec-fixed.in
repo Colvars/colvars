@@ -1,0 +1,5 @@
+harmonic {
+    colvars        one
+    centers        (0.0, 0.0, 0.0)
+    forceConstant  0.001
+}

@@ -305,6 +305,15 @@ The following keywords are available in the global context of the colvars config
 
 \item %
   \keydef
+    {smp}{%
+    global}{%
+    Whether SMP parallelism should be used}{%
+    boolean}{%
+    \texttt{on}}{%
+    If this flag is enabled (default), SMP parallelism over threads will be used to compute variables and biases, provided that this is supported by \MDENGINE{}.}
+
+\item %
+  \keydef
     {analysis}{%
     global}{%
     Turn on run-time statistical analysis}{%
@@ -528,6 +537,7 @@ See Section~\ref{sec:cvc} for the physical ranges of values of each component.}
 
 The following options are useful to define restraints (confining potentials) for this colvar.
 To apply moving restraints, or restraints to more than one colvar simultaneously, a more convenient option is to use the \texttt{harmonic} bias (\ref{sec:colvarbias_harmonic}).
+When using an extended Lagrangian, the boundary potential is applied to the ``actual'' colvar, in contrast with forces for all types of biases, which are applied to the extended coordinate.
 
 \begin{itemize}
 

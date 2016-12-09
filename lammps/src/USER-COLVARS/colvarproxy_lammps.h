@@ -21,11 +21,7 @@
 #endif
 
 #ifndef COLVARPROXY_VERSION
-<<<<<<< HEAD
-#define COLVARPROXY_VERSION "2016-10-11"
-=======
-#define COLVARPROXY_VERSION "2016-10-11"
->>>>>>> master
+#define COLVARPROXY_VERSION "2016-12-09"
 #endif
 
 /* struct for packed data communication of coordinates and forces. */

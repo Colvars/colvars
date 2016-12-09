@@ -24,11 +24,18 @@ public:
   /// Pointer to the main object
   colvarmodule *colvars;
 
-  /// Default constructor
-  inline colvarproxy() : script(NULL) {}
+  /// Constructor
+  colvarproxy()
+  {
+    colvars = NULL;
+    b_simulation_running = true;
+    b_smp_active = true;
+    script = NULL;
+  }
 
-  /// Default destructor
-  virtual ~colvarproxy() {}
+  /// Destructor
+  virtual ~colvarproxy()
+  {}
 
   /// (Re)initialize required member data after construction
   virtual int setup()
@@ -106,6 +113,19 @@ public:
 
 protected:
 
+  /// Whether a simulation is running (and try to prevent irrecovarable errors)
+  bool b_simulation_running;
+
+public:
+
+  /// Whether a simulation is running (and try to prevent irrecovarable errors)
+  virtual bool simulation_running() const
+  {
+    return b_simulation_running;
+  }
+
+protected:
+
   /// \brief Currently opened output files: by default, these are ofstream objects.
   /// Allows redefinition to implement different output mechanisms
   std::list<std::ostream *> output_files;
@@ -116,11 +136,14 @@ public:
 
   // ***************** SHARED-MEMORY PARALLELIZATION *****************
 
-  /// Whether or not threaded parallelization is available
+  /// Whether threaded parallelization is available (TODO: make this a cvm::deps feature)
   virtual int smp_enabled()
   {
     return COLVARS_NOT_IMPLEMENTED;
   }
+
+  /// Whether threaded parallelization should be used (TODO: make this a cvm::deps feature)
+  bool b_smp_active;
 
   /// Distribute calculation of colvars (and their components) across threads
   virtual int smp_colvars_loop()

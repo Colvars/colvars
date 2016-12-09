@@ -7,8 +7,8 @@
 /*****************************************************************************
  * $Source: /namd/cvsroot/namd2/src/SimParameters.h,v $
  * $Author: jim $
- * $Date: 2016/09/29 20:31:47 $
- * $Revision: 1.1244 $
+ * $Date: 2016/11/14 20:24:41 $
+ * $Revision: 1.1245 $
  *****************************************************************************/
 
 #ifndef SIMPARAMETERS_H
@@ -465,6 +465,7 @@ public:
 
         Bool qmVDW ;
         Bool qmNoPC ;
+        Bool qmElecEmbed ;
         int qmPCSelFreq ;
         Bool qmCustomPCSel;
 

@@ -1,5 +1,7 @@
 # -*- tcl -*-
 
+# Note: see also test.restart.namd, test.legacy.namd, test.restart.legacy.namd
+
 source ../Common/common.namd
 source ../Common/measure_net_force_torque.tcl
 

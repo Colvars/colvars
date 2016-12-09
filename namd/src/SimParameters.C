@@ -7,8 +7,8 @@
 /*****************************************************************************
  * $Source: /namd/cvsroot/namd2/src/SimParameters.C,v $
  * $Author: jim $
- * $Date: 2016/09/29 21:30:48 $
- * $Revision: 1.1470 $
+ * $Date: 2016/11/14 20:24:41 $
+ * $Revision: 1.1475 $
  *****************************************************************************/
 
 /** \file SimParameters.C
@@ -857,7 +857,7 @@ void SimParameters::config_parser_fullelect(ParseOptions &opts) {
    opts.optional("FMM", "FMMPadding", "FMM padding margin (Angstroms)",
        &FMMPadding, 0);
 
-   opts.optionalB("main", "useCUDA2", "Use ComputeNonbondedCUDA2", &useCUDA2, FALSE);
+   opts.optionalB("main", "useCUDA2", "Use new CUDA code", &useCUDA2, TRUE);
 
    ///////////  Particle Mesh Ewald
 
@@ -909,7 +909,7 @@ void SimParameters::config_parser_fullelect(ParseOptions &opts) {
    opts.optionalB("main", "PMEOffload", "Offload PME to accelerator?",
 	&PMEOffload);
 
-   opts.optionalB("PME", "usePMECUDA", "Use the PME CUDA version", &usePMECUDA, FALSE);
+   opts.optionalB("PME", "usePMECUDA", "Use the PME CUDA version", &usePMECUDA, CmiNumPhysicalNodes() < 5);
    opts.optionalB("PME", "useOptPME", "Use the new scalable PME optimization", &useOptPME, FALSE);
    opts.optionalB("PME", "useManyToMany", "Use the many-to-many PME optimization", &useManyToMany, FALSE);
    if (PMEOn && !useOptPME)
@@ -1039,7 +1039,7 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
    opts.range("alchVdwLambdaEnd", NOT_NEGATIVE);
 
    opts.optional("alch", "alchBondLambdaEnd", "Lambda at which bonded"
-      "scaling of exnihilated particles begins", &alchBondLambdaEnd, 1.0);
+      "scaling of exnihilated particles begins", &alchBondLambdaEnd, 0.0);
    opts.range("alchBondLambdaEnd", NOT_NEGATIVE);
 
    opts.optionalB("alch", "alchDecouple", "Enable alchemical decoupling?",
@@ -1555,8 +1555,10 @@ void SimParameters::config_parser_constraints(ParseOptions &opts) {
       "frequency of selection of point charges", &qmPCSelFreq, 1);
    opts.optionalB("QMForces", "QMNoPntChrg",
       "no point charges will be passed to the QM system(s)", &qmNoPC, FALSE);
+   opts.optionalB("QMForces", "QMElecEmbed",
+      "activates electrostatic embedding", &qmElecEmbed, TRUE);
    opts.optionalB("QMForces", "QMVdWParams",
-      "use special VdW parameters for QM atoms", &qmVDW, TRUE);
+      "use special VdW parameters for QM atoms", &qmVDW, FALSE);
    opts.optional("QMForces", "QMBondColumn",
       "column defining QM-MM bomnds", qmBondColumn);
    opts.optionalB("QMForces", "QMBondDist",
@@ -1570,7 +1572,7 @@ void SimParameters::config_parser_constraints(ParseOptions &opts) {
    opts.optional("QMForces", "QMPositionOutStride",
       "frequency of QM specific position output (every x steps)", &qmPosOutFreq, 0);
    opts.optional("QMForces", "QMSimsPerNode",
-      "QM executions per node", &qmSimsPerNode, 0);
+      "QM executions per node", &qmSimsPerNode, 1);
    opts.optionalB("QMForces", "QMSwitching",
       "apply switching to point charges.", &qmPCSwitchOn, FALSE);
    opts.optional("QMForces", "QMSwitchingType",
@@ -2020,7 +2022,12 @@ void SimParameters::config_parser_misc(ParseOptions &opts) {
 
    opts.optionalB("main", "outputMaps", "whether to dump compute map and patch map for analysis just before load balancing", &outputMaps, FALSE);
    opts.optionalB("main", "benchTimestep", "whether to do benchmarking timestep in which case final file output is disabled", &benchTimestep, FALSE);
-   opts.optional("main", "useCkLoop", "whether to use CkLoop library to parallelize a loop in a function like OpenMP", &useCkLoop, 0);
+   opts.optional("main", "useCkLoop", "whether to use CkLoop library to parallelize a loop in a function like OpenMP", &useCkLoop,
+    #if CMK_SMP && USE_CKLOOP
+     ( CkNumPes() < 2 * CkNumNodes() ? 0 : CKLOOP_CTRL_PME_FORWARDFFT ) );
+    #else
+     0);
+    #endif
    opts.range("useCkLoop", NOT_NEGATIVE);
 
    opts.optionalB("main", "simulateInitialMapping", "whether to study the initial mapping scheme", &simulateInitialMapping, FALSE);
@@ -3687,6 +3694,25 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
        PMEOffload = 0;
        iout << iWARN << "Disabling PMEOffload because multiple CUDA devices per process are not supported.\n" << endi;
      }
+     if ( usePMECUDA && ! ( useCUDA2 || one_device_per_node ) ) {
+       usePMECUDA = 0;
+       iout << iWARN << "Disabling usePMECUDA because multiple CUDA devices per process requires useCUDA2.\n" << endi;
+     }
+     if ( cellBasisVector1.y != 0 ||
+          cellBasisVector1.z != 0 ||
+          cellBasisVector2.x != 0 ||
+          cellBasisVector2.z != 0 ||
+          cellBasisVector3.x != 0 ||
+          cellBasisVector3.y != 0    ) {
+       if ( useCUDA2 ) {
+         useCUDA2 = 0;
+         iout << iWARN << "Disabling useCUDA2 because of non-orthorhombic periodic cell.\n" << endi;
+       }
+       if ( usePMECUDA ) {
+         usePMECUDA = 0;
+         iout << iWARN << "Disabling usePMECUDA because of non-orthorhombic periodic cell.\n" << endi;
+       }
+     }
 #else
      PMEOffload = 0;
 #endif
@@ -4114,6 +4140,10 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
                 NAMD_die("QM Charge Schemes \'round\' or \'zero\' can only be applied with QMswitching set to \'on\'!");
         }
 
+        // Redundant option to deprecate "qmNoPC" option.
+        if (qmElecEmbed)
+            qmNoPC = FALSE;
+
 //         #define QMLSSMODEDIST 1
 //         #define QMLSSMODECOM 2
         if (qmLSSOn) {
@@ -4183,7 +4213,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
             NAMD_die("QM Custom PC Selection is incompatible with QMSwitching!");
 
         if (qmCustomPCSel && qmPCSelFreq > 1)
-            NAMD_die("QM Custom PC Selection is incompatible with QMPCStride!");
+            NAMD_die("QM Custom PC Selection is incompatible with QMPCStride > 1!");
     }
 }
 
@@ -5051,7 +5081,7 @@ if ( openatomOn )
             iout << iINFO << "QM LIVE SOLVENT SELECTION WILL USE RESIDUE TYPE: " << qmLSSResname << "\n" << endi;
         }
 
-        iout << iINFO << "QM execution per node: " << qmSimsPerNode << "\n";
+        iout << iINFO << "QM executions per node: " << qmSimsPerNode << "\n";
 
         iout << endi;
     }

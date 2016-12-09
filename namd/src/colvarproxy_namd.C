@@ -182,6 +182,12 @@ int colvarproxy_namd::setup()
 
   log("Updating NAMD interface:\n");
 
+  if (simparams->wrapAll) {
+    cvm::log("Warning: enabling wrapAll can lead to inconsistent results "
+             "for Colvars calculations: please disable wrapAll, "
+             "as is the default option in NAMD.\n");
+  }
+
   log("updating atomic data ("+cvm::to_str(atoms_ids.size())+" atoms).\n");
 
   size_t i;
@@ -242,7 +248,7 @@ void colvarproxy_namd::calculate()
   previous_NAMD_step = step;
 
   if (cvm::debug()) {
-    log(cvm::line_marker+
+    log(std::string(cvm::line_marker)+
         "colvarproxy_namd, step no. "+cvm::to_str(colvars->it)+"\n"+
         "Updating atomic data arrays.\n");
   }
@@ -266,7 +272,7 @@ void colvarproxy_namd::calculate()
   }
 
   // create the atom map if needed
-  int const n_all_atoms = Node::Object()->molecule->numAtoms;
+  size_t const n_all_atoms = Node::Object()->molecule->numAtoms;
   if (atoms_map.size() != n_all_atoms) {
     atoms_map.resize(n_all_atoms);
     atoms_map.assign(n_all_atoms, -1);
@@ -274,8 +280,8 @@ void colvarproxy_namd::calculate()
   }
 
   // if new atomic positions or forces have been communicated by other GlobalMasters, add them to the atom map
-  if ((atoms_ids.size() < (getAtomIdEnd() - getAtomIdBegin())) ||
-      (atoms_ids.size() < (getForceIdEnd() - getForceIdBegin()))) {
+  if ((int(atoms_ids.size()) < (getAtomIdEnd() - getAtomIdBegin())) ||
+      (int(atoms_ids.size()) < (getForceIdEnd() - getForceIdBegin()))) {
     update_atoms_map(getAtomIdBegin(), getAtomIdEnd());
     update_atoms_map(getForceIdBegin(), getForceIdEnd());
   }

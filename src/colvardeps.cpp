@@ -407,6 +407,11 @@ void colvardeps::init_cvc_requires() {
   // Each cvc specifies what other features are available
   feature_states[f_cvc_active]->available = true;
   feature_states[f_cvc_gradient]->available = true;
+
+  // Features that are implemented by default if their requirements are
+  feature_states[f_cvc_one_site_total_force]->available = true;
+
+  // Features That are implemented only for certain simulation engine configurations
   feature_states[f_cvc_scalable_com]->available = (cvm::proxy->scalable_group_coms() == COLVARS_OK);
   feature_states[f_cvc_scalable]->available = feature_states[f_cvc_scalable_com]->available;
 }
@@ -449,8 +454,10 @@ void colvardeps::init_ag_requires() {
 
   // Features that are implemented (or not) by all atom groups
   feature_states[f_ag_active]->available = true;
-  feature_states[f_ag_scalable_com]->available = (cvm::proxy->scalable_group_coms() == COLVARS_OK);
-  feature_states[f_ag_scalable]->available = feature_states[f_ag_scalable_com]->available;
+  // f_ag_scalable_com is provided by the CVC iff it is COM-based
+  feature_states[f_ag_scalable_com]->available = false;
+  // TODO make f_ag_scalable depend on f_ag_scalable_com (or something else)
+  feature_states[f_ag_scalable]->available = true;
 }
 
 
