@@ -95,6 +95,9 @@ public:
     return is;
   }
 
+  /// Read a keyword from the state data (typically a header)
+  std::istream & read_state_data_key(std::istream &is, char const *key);
+
   /// Write the bias configuration to a restart file or other stream
   virtual std::ostream & write_state(std::ostream &os);
 

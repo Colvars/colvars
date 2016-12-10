@@ -625,68 +625,33 @@ std::istream & colvarbias_abf::read_state_data(std::istream& is)
   std::string key;
   size_t const start_pos = is.tellg();
 
-  if ( !(is >> key)   || !(key == "samples")) {
-    cvm::error("Error: in reading restart configuration for ABF bias \""+
-               this->name+"\" at position "+
-               cvm::to_str(is.tellg())+" in stream.\n", INPUT_ERROR);
-    is.clear();
-    is.seekg(start_pos, std::ios::beg);
-    is.setstate(std::ios::failbit);
+  if (! read_state_data_key(is, "samples")) {
     return is;
   }
   if (! samples->read_raw(is)) {
-    is.clear();
-    is.seekg(start_pos, std::ios::beg);
-    is.setstate(std::ios::failbit);
     return is;
   }
 
-  if ( !(is >> key)   || !(key == "gradient")) {
-    cvm::error("Error: in reading restart configuration for ABF bias \""+
-               this->name+"\" at position "+
-               cvm::to_str(is.tellg())+" in stream.\n", INPUT_ERROR);
-    is.clear();
-    is.seekg(start_pos, std::ios::beg);
-    is.setstate(std::ios::failbit);
+  if (! read_state_data_key(is, "gradient")) {
     return is;
   }
   if (! gradients->read_raw(is)) {
-    is.clear();
-    is.seekg(start_pos, std::ios::beg);
-    is.setstate(std::ios::failbit);
     return is;
   }
 
   if (z_gradients) {
-    if ( !(is >> key) || !(key == "z_samples")) {
-      cvm::log("Error: in reading restart configuration for ABF bias \""+
-                this->name+"\" at position "+
-                cvm::to_str(is.tellg())+" in stream.\n");
-      is.clear();
-      is.seekg(start_pos, std::ios::beg);
-      is.setstate(std::ios::failbit);
+
+    if (! read_state_data_key(is, "z_samples")) {
       return is;
     }
     if (! z_samples->read_raw(is)) {
-      is.clear();
-      is.seekg(start_pos, std::ios::beg);
-      is.setstate(std::ios::failbit);
       return is;
     }
 
-    if ( !(is >> key)   || !(key == "z_gradient")) {
-      cvm::log("Error: in reading restart configuration for ABF bias \""+
-                this->name+"\" at position "+
-                cvm::to_str(is.tellg())+" in stream.\n");
-      is.clear();
-      is.seekg(start_pos, std::ios::beg);
-      is.setstate(std::ios::failbit);
+    if (! read_state_data_key(is, "z_gradient")) {
       return is;
     }
     if (! z_gradients->read_raw(is)) {
-      is.clear();
-      is.seekg(start_pos, std::ios::beg);
-      is.setstate(std::ios::failbit);
       return is;
     }
   }

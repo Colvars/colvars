@@ -198,22 +198,10 @@ int colvarbias_histogram::write_output_files()
 
 std::istream & colvarbias_histogram::read_state_data(std::istream& is)
 {
-  size_t const start_pos = is.tellg();
-
-  std::string key;
-  if ( !(is >> key)   || !(key == "grid")) {
-    cvm::error("Error: in reading restart configuration for histogram \""+
-              this->name+"\" at position "+
-              cvm::to_str(is.tellg())+" in stream.\n");
-    is.clear();
-    is.seekg(start_pos, std::ios::beg);
-    is.setstate(std::ios::failbit);
+  if (! read_state_data_key(is, "grid")) {
     return is;
   }
   if (! grid->read_raw(is)) {
-    is.clear();
-    is.seekg(start_pos, std::ios::beg);
-    is.setstate(std::ios::failbit);
     return is;
   }
 

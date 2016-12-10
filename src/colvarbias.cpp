@@ -326,6 +326,25 @@ std::istream & colvarbias::read_state(std::istream &is)
 }
 
 
+std::istream & colvarbias::read_state_data_key(std::istream &is, char const *key)
+{
+  size_t const start_pos = is.tellg();
+  std::string key_in;
+  if ( !(is >> key_in) ||
+       !(key_in == to_lower_cppstr(std::string(key))) ) {
+    cvm::error("Error: in reading restart configuration for "+
+               bias_type+" bias \""+this->name+"\" at position "+
+               cvm::to_str(is.tellg())+" in stream.\n", INPUT_ERROR);
+    is.clear();
+    is.seekg(start_pos, std::ios::beg);
+    is.setstate(std::ios::failbit);
+    return is;
+  }
+  return is;
+}
+
+
+
 std::ostream & colvarbias::write_traj_label(std::ostream &os)
 {
   os << " ";
