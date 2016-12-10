@@ -609,11 +609,22 @@ inline int colvarvalue::check_types_assign(colvarvalue::Type const &vt1,
   }
 
   if (vt1 != type_notset) {
-    if (vt1 != vt2) {
-      cvm::error("Trying to assign a colvar value with type \""+
-                 type_desc(vt2)+"\" to one with type \""+
-                 type_desc(vt1)+"\".\n");
-      return COLVARS_ERROR;
+    if (((vt1 == type_unit3vector) &&
+         (vt2 == type_unit3vectorderiv)) ||
+        ((vt2 == type_unit3vector) &&
+         (vt1 == type_unit3vectorderiv)) ||
+        ((vt1 == type_quaternion) &&
+         (vt2 == type_quaternionderiv)) ||
+        ((vt2 == type_quaternion) &&
+         (vt1 == type_quaternionderiv))) {
+      return COLVARS_OK;
+    } else {
+      if (vt1 != vt2) {
+        cvm::error("Trying to assign a colvar value with type \""+
+                   type_desc(vt2)+"\" to one with type \""+
+                   type_desc(vt1)+"\".\n");
+        return COLVARS_ERROR;
+      }
     }
   }
   return COLVARS_OK;
