@@ -10,6 +10,7 @@ colvar {
 
 restraint {
   configuration {
+    step 20
     name harmonic1
     forceConstant  1.00000000000000e-04
   }

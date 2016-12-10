@@ -10,6 +10,7 @@ colvar {
 
 restraint {
   configuration {
+    step 40
     name linear1
   }
 }

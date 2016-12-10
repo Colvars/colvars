@@ -10,6 +10,7 @@ colvar {
 
 histogram {
   configuration {
+    step 40
     name histogram1
   }
 grid

@@ -15,6 +15,7 @@ colvar {
 
 abf {
   configuration {
+    step 10
     name abf1
   }
 
