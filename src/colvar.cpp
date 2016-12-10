@@ -764,9 +764,9 @@ int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
     return error_code;
   }
 
+  error_code |= calc_cvc_total_force(first_cvc, num_cvcs);
   error_code |= calc_cvc_values(first_cvc, num_cvcs);
   error_code |= calc_cvc_gradients(first_cvc, num_cvcs);
-  error_code |= calc_cvc_total_force(first_cvc, num_cvcs);
   error_code |= calc_cvc_Jacobians(first_cvc, num_cvcs);
 
   if (cvm::debug())
@@ -998,13 +998,9 @@ int colvar::calc_cvc_total_force(int first_cvc, size_t num_cvcs)
     if (cvm::debug())
       cvm::log("Calculating total force of colvar \""+this->name+"\".\n");
 
-    // if (!tasks[task_extended_lagrangian] && (cvm::step_relative() > 0)) {
-   // Disabled check to allow for explicit total force calculation
-    // even with extended Lagrangian
-
-    if (cvm::step_relative() > 0) {
+    if (cvm::step_relative() > 0) { // get total forces from the PREVIOUS step
       cvm::increase_depth();
-      // get from the cvcs the total forces from the PREVIOUS step
+
       for (i = first_cvc, cvc_count = 0;
           (i < cvcs.size()) && (cvc_count < cvc_max_count);
           i++) {
@@ -1231,7 +1227,6 @@ cvm::real colvar::update_forces_energy()
     xr  += dt * vr;
     xr.apply_constraints();
     if (this->b_periodic) this->wrap(xr);
-
   }
 
   // Now adding the wall force to the force on the actual colvar
