@@ -1,6 +1,8 @@
 
 metadynamics {
   configuration {
+    step 100
+    name metadynamics1
     replicaID rep2
   }
 

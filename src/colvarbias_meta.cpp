@@ -1507,10 +1507,10 @@ int colvarbias_meta::setup_output()
 
 std::string const colvarbias_meta::get_state_params() const
 {
-  std::ostringstream os(colvarbias::get_state_params());
+  std::ostringstream os;
   if (this->comm != single_replica)
     os << "replicaID " << this->replica_id << "\n";
-  return os.str();
+  return (colvarbias::get_state_params() + os.str());
 }
 
 
