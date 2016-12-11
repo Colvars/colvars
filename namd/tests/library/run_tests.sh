@@ -28,6 +28,17 @@ if ! { echo ${DIRLIST} | grep -q 0 ; } then
 fi
 
 DIFF=spiff
+TPUT_RED='true'
+TPUT_GREEN='true'
+TPUT_BLUE='true'
+TPUT_CLEAR='true'
+if which tput >& /dev/null ; then
+  TPUT_RED='tput setaf 1'
+  TPUT_GREEN='tput setaf 2'
+  TPUT_BLUE='tput setaf 4'
+  TPUT_CLEAR='tput sgr 0'
+fi
+
 BASEDIR=$PWD
 ALL_SUCCESS=1
 
@@ -46,7 +57,7 @@ cleanup_files() {
 
 
 for dir in ${DIRLIST} ; do
-  echo -ne "Entering $dir ..."
+  echo -ne "Entering $(${TPUT_BLUE})${dir}$(${TPUT_CLEAR}) ..."
   cd $dir
 
   if [ ! -d AutoDiff ] ; then
@@ -156,7 +167,7 @@ for dir in ${DIRLIST} ; do
       then
         echo -n "(warning: differences in log file $base) "
       else
-        echo -e "\n***  Failure for file $base: see `pwd`/$base.diff ***"
+        echo -e "\n*** Failure for file $(${TPUT_RED})$base$(${TPUT_CLEAR}): see `pwd`/$base.diff "
         SUCCESS=0
         ALL_SUCCESS=0
       fi
@@ -168,7 +179,7 @@ for dir in ${DIRLIST} ; do
     if [ "x${gen_ref_output}" == 'xyes' ]; then
       echo "Reference files copied successfully."
     else
-      echo "Success!"
+      echo "$(${TPUT_GREEN})Success!$(${TPUT_CLEAR})"
     fi
     cleanup_files
   fi
@@ -182,9 +193,9 @@ done
 
 if [ $ALL_SUCCESS -eq 1 ]
 then
-  echo "All tests succeeded."
+  echo "$(${TPUT_GREEN})All tests succeeded.$(${TPUT_CLEAR})"
   exit 0
 else
-  echo "There were failed tests."
+  echo "$(${TPUT_RED})There were failed tests.$(${TPUT_CLEAR})"
   exit 1
 fi
