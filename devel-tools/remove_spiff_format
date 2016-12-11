@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# Strip formatting codes coming from spiff
+# Warning: strips underscore as well!
+
+for file in "${@}" ; do
+  base=$(basename "${file}")
+  cat "${file}" | \
+    tr -cd '\11\12\15\40-\176' | \
+    tr -d '_' > /tmp/"${base}" && \
+    mv /tmp/"${base}" "${file}" 
+done
