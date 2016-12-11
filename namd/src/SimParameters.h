@@ -814,7 +814,7 @@ public:
 	MTSChoices MTSAlgorithm;	//  What multiple timestep algorithm
 					//  to use
 
-	int longSplitting;		//  What electrostatic splitting 
+	int longSplitting;		//  What electrostatic splitting
 					//  to use
 
 	Bool ignoreMass;		//  Mass < 3.5 does not indicate hydrogen, etc.

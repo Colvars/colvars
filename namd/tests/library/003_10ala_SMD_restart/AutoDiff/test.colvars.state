@@ -10,6 +10,7 @@ colvar {
 
 restraint {
   configuration {
+    step 10
     name harmonic1
     centers  1.00000000000000e-01
     centers_raw  1.00000000000000e-01

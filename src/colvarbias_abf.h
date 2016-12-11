@@ -107,8 +107,8 @@ private:
   /// Read human-readable FE gradients and sample count (if not using restart)
   void		  read_gradients_samples();
 
-  std::istream& read_restart(std::istream&);
-  std::ostream& write_restart(std::ostream&);
+  std::istream& read_state_data(std::istream&);
+  std::ostream& write_state_data(std::ostream&);
 };
 
 #endif

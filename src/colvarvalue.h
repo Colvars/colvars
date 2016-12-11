@@ -128,29 +128,22 @@ public:
   {}
 
   /// \brief Copy constructor from rvector base type (Note: this sets
-  /// automatically a type \link type_3vector \endlink , if you want a
+  /// by default a type \link type_3vector \endlink , if you want a
   /// \link type_unit3vector \endlink you must set it explicitly)
-  inline colvarvalue(cvm::rvector const &v)
-    : value_type(type_3vector), rvector_value(v)
-  {}
-
-  /// \brief Copy constructor from rvector base type (additional
-  /// argument to make possible to choose a \link type_unit3vector
-  /// \endlink
-  inline colvarvalue(cvm::rvector const &v, Type const &vti)
+  inline colvarvalue(cvm::rvector const &v, Type vti = type_3vector)
     : value_type(vti), rvector_value(v)
   {}
 
   /// \brief Copy constructor from quaternion base type
-  inline colvarvalue(cvm::quaternion const &q)
-    : value_type(type_quaternion), quaternion_value(q)
+  inline colvarvalue(cvm::quaternion const &q, Type vti = type_quaternion)
+    : value_type(vti), quaternion_value(q)
   {}
+
+  /// Copy constructor from vector1d base type
+  colvarvalue(cvm::vector1d<cvm::real> const &v, Type vti = type_vector);
 
   /// Copy constructor from another \link colvarvalue \endlink
   colvarvalue(colvarvalue const &x);
-
-  /// Copy constructor from vector1d base type
-  colvarvalue(cvm::vector1d<cvm::real> const &v, Type const &vti);
 
 
   /// Set to the null value for the data type currently defined
@@ -532,7 +525,7 @@ inline colvarvalue::colvarvalue(colvarvalue const &x)
   }
 }
 
-inline colvarvalue::colvarvalue(cvm::vector1d<cvm::real> const &v, Type const &vti)
+inline colvarvalue::colvarvalue(cvm::vector1d<cvm::real> const &v, Type vti)
 {
   if ((vti != type_vector) && (v.size() != num_dimensions(vti))) {
     cvm::error("Error: trying to initialize a variable of type \""+type_desc(vti)+
@@ -616,11 +609,22 @@ inline int colvarvalue::check_types_assign(colvarvalue::Type const &vt1,
   }
 
   if (vt1 != type_notset) {
-    if (vt1 != vt2) {
-      cvm::error("Trying to assign a colvar value with type \""+
-                 type_desc(vt2)+"\" to one with type \""+
-                 type_desc(vt1)+"\".\n");
-      return COLVARS_ERROR;
+    if (((vt1 == type_unit3vector) &&
+         (vt2 == type_unit3vectorderiv)) ||
+        ((vt2 == type_unit3vector) &&
+         (vt1 == type_unit3vectorderiv)) ||
+        ((vt1 == type_quaternion) &&
+         (vt2 == type_quaternionderiv)) ||
+        ((vt2 == type_quaternion) &&
+         (vt1 == type_quaternionderiv))) {
+      return COLVARS_OK;
+    } else {
+      if (vt1 != vt2) {
+        cvm::error("Trying to assign a colvar value with type \""+
+                   type_desc(vt2)+"\" to one with type \""+
+                   type_desc(vt1)+"\".\n");
+        return COLVARS_ERROR;
+      }
     }
   }
   return COLVARS_OK;

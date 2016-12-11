@@ -10,8 +10,6 @@ colvar {
 
 metadynamics {
   configuration {
-    step 20
-    name metadynamics1
   }
 
   hills_energy

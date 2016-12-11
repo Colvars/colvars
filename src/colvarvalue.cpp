@@ -272,7 +272,7 @@ colvarvalue colvarvalue::dist2_grad(colvarvalue const &x2) const
                                        (-1.0) * sin_t * v2.z +
                                        cos_t/sin_t * (v1.z - cos_t*v2.z)
                                        ),
-                          colvarvalue::type_unit3vector );
+                          colvarvalue::type_unit3vectorderiv );
     }
   case colvarvalue::type_quaternion:
   case colvarvalue::type_quaternionderiv:
