@@ -271,7 +271,6 @@ std::ostream & colvarbias::write_state(std::ostream &os)
     cvm::log("Writing state file for bias \""+name+"\"\n");
   }
   os.setf(std::ios::scientific, std::ios::floatfield);
-  os.width(cvm::cv_width);
   os.precision(cvm::cv_prec);
   os << bias_type << " {\n"
      << "  configuration {\n";
