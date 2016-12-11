@@ -1,0 +1,7 @@
+#!/bin/bash
+
+for file in "${@}" ; do
+  base=$(basename "${file}")
+  dirname=$(dirname "${file}")
+  patch < "${file}" ${dirname}/AutoDiff/"${base%.diff}"
+done
