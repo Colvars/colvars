@@ -28,6 +28,7 @@ if ! { echo ${DIRLIST} | grep -q 0 ; } then
 fi
 
 DIFF=spiff
+DIFFOPTS="-r 1e-7" 
 TPUT_RED='true'
 TPUT_GREEN='true'
 TPUT_BLUE='true'
@@ -159,7 +160,7 @@ for dir in ${DIRLIST} ; do
       sed 's/fs_/ft_/g' < ${base} > ${TMPDIR}/${base}
       mv -f ${TMPDIR}/${base} ${base}
     fi
-    $DIFF $f $base > "$base.diff"
+    $DIFF $DIFFOPTS $f $base > "$base.diff"
     RETVAL=$?
     if [ $RETVAL -ne 0 ]
     then
