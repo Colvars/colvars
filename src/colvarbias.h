@@ -25,6 +25,12 @@ public:
   /// Add a new collective variable to this bias
   int add_colvar(std::string const &cv_name);
 
+  /// Add a new collective variable to this bias
+  size_t number_of_colvars() const
+  {
+    return colvars.size();
+  }
+
   /// Retrieve colvar values and calculate their biasing forces
   /// Return bias energy
   virtual int update();
