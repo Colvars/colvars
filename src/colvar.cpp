@@ -163,38 +163,38 @@ colvar::colvar(std::string const &conf)
     }
     feature_states[f_cv_homogeneous]->enabled = homogeneous;
   }
-  // Colvar is deemed periodic iff:
+
+  // Colvar is deemed periodic if:
   // - it is homogeneous
   // - all cvcs are periodic
   // - all cvcs have the same period
-
-  b_periodic = cvcs[0]->b_periodic && is_enabled(f_cv_homogeneous);
-  period = cvcs[0]->period;
-  for (i = 1; i < cvcs.size(); i++) {
-    if (!cvcs[i]->b_periodic || cvcs[i]->period != period) {
-      b_periodic = false;
-      period = 0.0;
+  if (cvcs[0]->b_periodic) { // TODO make this a CVC feature
+    bool b_periodic = true;
+    period = cvcs[0]->period;
+    for (i = 1; i < cvcs.size(); i++) {
+      if (!cvcs[i]->b_periodic || cvcs[i]->period != period) {
+        b_periodic = false;
+        period = 0.0;
+        cvm::log("Warning: although one component is periodic, this colvar will "
+                 "not be treated as periodic, either because the exponent is not "
+                 "1, or because components of different periodicity are defined.  "
+                 "Make sure that you know what you are doing!");
+      }
     }
+    feature_states[f_cv_periodic]->enabled = b_periodic;
   }
-  feature_states[f_cv_periodic]->enabled = b_periodic;
 
   // check that cvcs are compatible
 
   for (i = 0; i < cvcs.size(); i++) {
-    if ((cvcs[i])->b_periodic && !b_periodic) {
-        cvm::log("Warning: although this component is periodic, the colvar will "
-                  "not be treated as periodic, either because the exponent is not "
-                  "1, or because multiple components are present. Make sure that "
-                  "you know what you are doing!");
-    }
 
     // components may have different types only for scripted functions
     if (!is_enabled(f_cv_scripted) && (colvarvalue::check_types(cvcs[i]->value(),
-                                                           cvcs[0]->value())) ) {
+                                                                cvcs[0]->value())) ) {
       cvm::error("ERROR: you are definining this collective variable "
                  "by using components of different types. "
                  "You must use the same type in order to "
-                 " sum them together.\n", INPUT_ERROR);
+                 "sum them together.\n", INPUT_ERROR);
       return;
     }
   }
@@ -212,6 +212,7 @@ colvar::colvar(std::string const &conf)
   get_keyval(conf, "width", width, 1.0);
   if (width <= 0.0) {
     cvm::error("Error: \"width\" must be positive.\n", INPUT_ERROR);
+    return;
   }
 
   // NOTE: not porting wall stuff to new deps, as this will change to a separate bias
@@ -1226,7 +1227,7 @@ cvm::real colvar::update_forces_energy()
     vr  += (0.5 * dt) * f_ext / ext_mass;
     xr  += dt * vr;
     xr.apply_constraints();
-    if (this->b_periodic) this->wrap(xr);
+    if (this->is_enabled(f_cv_periodic)) this->wrap(xr);
   }
 
   // Now adding the wall force to the force on the actual colvar

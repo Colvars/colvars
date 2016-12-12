@@ -183,12 +183,8 @@ public:
   colvarvalue ft;
 
 
-  /// Period, if it is a constant
+  /// Period, if this variable is periodic
   cvm::real period;
-
-  /// \brief Same as above, but also takes into account components
-  /// with a variable period, such as distanceZ
-  bool b_periodic;
 
 
   /// \brief Expand the boundaries of multiples of width, to keep the

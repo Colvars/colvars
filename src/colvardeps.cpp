@@ -327,6 +327,7 @@ void colvardeps::init_cv_requires() {
     // The features below are set programmatically
     f_description(f_cv_scripted, "scripted");
     f_description(f_cv_periodic, "periodic");
+    f_req_self(f_cv_periodic, f_cv_homogeneous);
     f_description(f_cv_scalar, "scalar");
     f_description(f_cv_linear, "linear");
     f_description(f_cv_homogeneous, "homogeneous");
