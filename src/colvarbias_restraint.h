@@ -218,8 +218,38 @@ protected:
 
   virtual cvm::real restraint_potential(size_t i) const;
   virtual colvarvalue const restraint_force(size_t i) const;
-  virtual cvm::real d_restraint_potential_dk(size_t i) const;}
-;
+  virtual cvm::real d_restraint_potential_dk(size_t i) const;
+};
+
+
+/// \brief Wall restraint
+/// (implementation of \link colvarbias_restraint \endlink)
+class colvarbias_restraint_harmonic_walls
+  : public colvarbias_restraint_k_moving
+{
+public:
+
+  colvarbias_restraint_harmonic_walls(char const *key);
+  virtual int init(std::string const &conf);
+  virtual int update();
+  virtual std::string const get_state_params() const;
+  virtual int set_state_params(std::string const &conf);
+  virtual std::ostream & write_traj_label(std::ostream &os);
+  virtual std::ostream & write_traj(std::ostream &os);
+
+protected:
+
+  /// \brief Location of the lower walls
+  std::vector<colvarvalue> lower_walls;
+
+  /// \brief Location of the upper walls
+  std::vector<colvarvalue> upper_walls;
+
+  virtual cvm::real colvar_distance(size_t i) const;
+  virtual cvm::real restraint_potential(size_t i) const;
+  virtual colvarvalue const restraint_force(size_t i) const;
+  virtual cvm::real d_restraint_potential_dk(size_t i) const;
+};
 
 
 /// \brief Linear bias restraint

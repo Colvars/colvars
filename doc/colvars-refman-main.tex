@@ -533,53 +533,6 @@ See Section~\ref{sec:cvc} for the physical ranges of values of each component.}
 \end{itemize}
 
 
-\cvsubsec{Artificial boundary potentials (walls)}
-
-The following options are useful to define restraints (confining potentials) for this colvar.
-To apply moving restraints, or restraints to more than one colvar simultaneously, a more convenient option is to use the \texttt{harmonic} bias (\ref{sec:colvarbias_harmonic}).
-When using an extended Lagrangian, the boundary potential is applied to the ``actual'' colvar, in contrast with forces for all types of biases, which are applied to the extended coordinate.
-
-\begin{itemize}
-
-\item %
-  \key
-    {lowerWallConstant}{%
-    \texttt{colvar}}{%
-    Lower wall force constant (\cvnamdonly{kcal/mol/U$^2$}\cvvmdonly{kcal/mol/U$^2$}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
-    positive decimal}{%
-    Defines the force constant for a confining restraint on the colvar, in the form of a ``half-harmonic'' potential.
-    The potential starts at \texttt{lowerWall} if it is defined, or \texttt{lowerBoundary} otherwise.
-    The energy unit of the constant is \cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{the unit of energy specified by \texttt{units}}, while the spatial unit U is that of the colvar.}
-
-\item %
-  \keydef
-    {lowerWall}{%
-    \texttt{colvar}}{%
-    Position of the lower wall}{%
-    decimal}{%
-    \texttt{lowerBoundary}}{%
-    Defines the value below which a confining restraint on the colvar is applied, in the form of a ``half-harmonic'' potential.
-    Allows to use a different position of the wall than \texttt{lowerBoundary}.}
-
-\item %
-  \key
-    {upperWallConstant}{%
-    \texttt{colvar}}{%
-    Upper wall force constant (\cvnamdonly{kcal/mol/U$^2$}\cvvmdonly{kcal/mol/U$^2$}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
-    positive decimal}{%
-    Analogous to \texttt{lowerWallConstant}.}
-
-\item %
-  \keydef
-    {upperWall}{%
-    \texttt{colvar}}{%
-    Position of the upper wall}{%
-    decimal}{%
-    \texttt{upperBoundary}}{%
-    Analogous to \texttt{lowerWall}.}
-\end{itemize}
-
-
 \cvsubsec{Trajectory output}
 
 \begin{itemize}
@@ -649,8 +602,7 @@ When using an extended Lagrangian, the boundary potential is applied to the ``ac
     boolean}{%
     \texttt{off}}{%
     If \texttt{colvarsTrajFrequency} is defined, the total force
-    applied on this colvar by biases and confining potentials (walls)
-    within the Colvars module are
+    applied on this colvar by Colvars biases are
     written to the trajectory under the label
     ``\texttt{fa\_}$<$\texttt{name}$>$''. 
     For extended Lagrangian colvars, this force is actually applied to the
@@ -4002,6 +3954,62 @@ The force constant of the harmonic restraint may also be changed to equilibrate 
   }
 
 \end{itemize}
+
+
+\cvsubsec{Harmonic wall restraints}
+\label{sec:colvarbias_harmonic_walls}
+
+The \texttt{harmonicWalls~\{...\}} bias is closely related to the harmonic bias (see \ref{sec:colvarbias_harmonic}), with the following two differences: \emph{(i)} instead of a center a \emph{lower wall} and/or an \emph{upper wall} are defined, outside odf which the bias implements a half-harmonic potential;
+\begin{equation}
+  \label{eq:colvarbias_harmonic_walls}
+  V(\xi) = \left\{
+    \begin{array}{l l}
+      \frac{1}{2} k \left(\frac{\xi - \xi_{\mathrm{upper}}}{w_{\xi}}\right)^2 & \mathrm{if }\ \xi > \xi_{\mathrm{upper}} \\
+      0 & \mathrm{if }\ \xi_{\mathrm{lower}} \leq \xi \geq \xi_{\mathrm{upper}} \\
+      \frac{1}{2} k \left(\frac{\xi - \xi_{\mathrm{lower}}}{w_{\xi}}\right)^2 & \mathrm{if }\ \xi < \xi_{\mathrm{lower}}
+    \end{array}
+  \right.
+\end{equation}
+where $\xi_{\mathrm{lower}}$ and $\xi_{\mathrm{upper}}$ are the lower and upper wall thresholds, respectively; \emph{(ii)} because an interval between two walls is defined, only scalar variables can be used (but any number of variables can be deined, and the wall bias is intrinsically multi-dimensional).
+
+\textbf{Note:} this bias replaces the keywords \texttt{lowerWall}, \texttt{lowerWallConstant}, \texttt{upperWall} and \texttt{upperWallConstant} defined in the \texttt{colvar} context (see \ref{sec:colvar}).
+These keywords are still supported, but will be deprecated in the future.
+
+The \texttt{harmonicWalls} bias implements the following options:
+\begin{itemize}
+\item \dupkey{name}{\texttt{harmonicWalls}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{colvars}{\texttt{harmonicWalls}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{outputEnergy}{\texttt{harmonicWalls}}{sec:colvarbias}{biasing and analysis methods}
+
+\item %
+  \key
+    {lowerWalls}{%
+    \texttt{colvar}}{%
+    Position of the lower wall}{%
+    Space-separated list of decimals}{%
+    Defines the values $\xi_{\mathrm{lower}}$ below which a confining restraint on the colvar is applied to each colvar $\xi$.}
+
+\item %
+  \key
+    {upperWalls}{%
+    \texttt{colvar}}{%
+    Position of the lower wall}{%
+    Space-separated list of decimals}{%
+    Defines the values $\xi_{\mathrm{upper}}$ ve which a confining restraint on the colvar is applied to each colvar $\xi$.}
+
+\item \dupkey{forceConstant}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{Harmonic restraints}
+  \textbf{Note:} if two distinct force constants are needed for the two walls, it is possible to define a \texttt{harmonicWalls} instance for each.
+
+\item \dupkey{targetForceConstant}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{Harmonic restraints}
+\item \dupkey{targetNumSteps}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{Harmonic restraints}
+\item \dupkey{targetForceExponent}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{Harmonic restraints}
+\item \dupkey{targetEquilSteps}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{Harmonic restraints}
+\item \dupkey{targetNumStages}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{Harmonic restraints}
+\item \dupkey{lambdaSchedule}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{Harmonic restraints}
+
+\end{itemize}
+
+
 
 \cvsubsec{Linear restraints}
 \label{sec:colvarbias_linear}

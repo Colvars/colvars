@@ -816,6 +816,196 @@ std::ostream & colvarbias_restraint_harmonic::write_traj(std::ostream &os)
 
 
 
+colvarbias_restraint_harmonic_walls::colvarbias_restraint_harmonic_walls(char const *key)
+  : colvarbias(key),
+    colvarbias_restraint(key),
+    colvarbias_restraint_k(key),
+    colvarbias_restraint_moving(key),
+    colvarbias_restraint_k_moving(key)
+{
+}
+
+
+int colvarbias_restraint_harmonic_walls::init(std::string const &conf)
+{
+  colvarbias_restraint::init(conf);
+  colvarbias_restraint_moving::init(conf);
+  colvarbias_restraint_k_moving::init(conf);
+
+  provide(f_cvb_scalar_variables);
+  enable(f_cvb_scalar_variables);
+
+  size_t i;
+
+  bool b_null_lower_walls = false;
+  if (lower_walls.size() == 0) {
+    b_null_lower_walls = true;
+    lower_walls.resize(number_of_colvars());
+    for (i = 0; i < colvars.size(); i++) {
+      lower_walls[i].type(colvars[i]->value());
+      lower_walls[i].reset();
+    }
+  }
+  if (!get_keyval(conf, "lowerWalls", lower_walls, lower_walls) && 
+      b_null_lower_walls) {
+    cvm::log("Lower walls were not provided.\n");
+    lower_walls.resize(0);
+  }
+
+  bool b_null_upper_walls = false;
+  if (upper_walls.size() == 0) {  
+    b_null_upper_walls = true;
+    upper_walls.resize(number_of_colvars());
+    for (i = 0; i < colvars.size(); i++) {
+      upper_walls[i].type(colvars[i]->value());
+      upper_walls[i].reset();
+    }
+  }
+  if (!get_keyval(conf, "upperWalls", upper_walls, upper_walls) &&
+      b_null_upper_walls) {
+    cvm::log("Upper walls were not provided.\n");
+    upper_walls.resize(0);
+  }
+
+  if ((lower_walls.size() == 0) && (upper_walls.size() == 0)) {
+    cvm::error("Error: no walls provided.\n", INPUT_ERROR);
+    return INPUT_ERROR;
+  }
+
+  if ((lower_walls.size() == 0) || (upper_walls.size() == 0)) {
+    for (i = 0; i < colvars.size(); i++) {
+      if (colvars[i]->is_enabled(f_cv_periodic)) {
+        cvm::error("Error: at least one variable is periodic, "
+                   "both walls must be provided .\n", INPUT_ERROR);
+        return INPUT_ERROR;
+      }
+    }
+  }
+
+  if ((lower_walls.size() > 0) && (upper_walls.size() > 0)) {
+    for (i = 0; i < colvars.size(); i++) {
+      if (lower_walls[i] >= upper_walls[i]) {
+        cvm::error("Error: one upper wall, "+
+                   cvm::to_str(upper_walls[i])+
+                   ", is not higher than the lower wall, "+
+                   cvm::to_str(lower_walls[i])+".\n",
+                   INPUT_ERROR);
+      }
+    }
+  }
+
+  for (i = 0; i < colvars.size(); i++) {
+    if (colvars[i]->width != 1.0)
+      cvm::log("The force constant for colvar \""+colvars[i]->name+
+               "\" will be rescaled to "+
+               cvm::to_str(force_k / (colvars[i]->width * colvars[i]->width))+
+               " according to the specified width.\n");
+  }
+
+  return COLVARS_OK;
+}
+
+
+int colvarbias_restraint_harmonic_walls::update()
+{
+  colvarbias_restraint_k_moving::update();
+
+  colvarbias_restraint::update();
+
+  return COLVARS_OK;
+}
+
+
+cvm::real colvarbias_restraint_harmonic_walls::colvar_distance(size_t i) const
+{
+  colvar *cv = colvars[i];
+  colvarvalue const &cvv = colvars[i]->value(); 
+
+  // For a periodic colvar, both walls may be applicable at the same time
+  // in which case we pick the closer one
+
+  if (cv->is_enabled(f_cv_periodic)) {
+    cvm::real const lower_wall_dist2 = cv->dist2(cvv, lower_walls[i]);
+    cvm::real const upper_wall_dist2 = cv->dist2(cvv, upper_walls[i]);
+    if (lower_wall_dist2 < upper_wall_dist2) {
+      cvm::real const grad = cv->dist2_lgrad(cvv, lower_walls[i]);
+      if (grad < 0.0) { return grad; }
+    } else {
+      cvm::real const grad = cv->dist2_lgrad(cvv, upper_walls[i]);
+      if (grad > 0.0) { return grad; }
+    }
+    return 0.0;
+  }
+
+  if (lower_walls.size() > 0) {
+    cvm::real const grad = cv->dist2_lgrad(cvv, lower_walls[i]);
+    if (grad < 0.0) { return grad; }
+  }
+  if (upper_walls.size() > 0) {
+    cvm::real const grad = cv->dist2_lgrad(cvv, upper_walls[i]);
+    if (grad > 0.0) { return grad; }
+  }
+  return 0.0;
+}
+
+
+cvm::real colvarbias_restraint_harmonic_walls::restraint_potential(size_t i) const
+{
+  cvm::real const dist = colvar_distance(i);
+  return 0.5 * force_k / (colvars[i]->width * colvars[i]->width) *
+    dist * dist;
+}
+
+
+colvarvalue const colvarbias_restraint_harmonic_walls::restraint_force(size_t i) const
+{
+  cvm::real const dist = colvar_distance(i);
+  return -0.5 * force_k / (colvars[i]->width * colvars[i]->width) *
+    dist;
+}
+
+
+cvm::real colvarbias_restraint_harmonic_walls::d_restraint_potential_dk(size_t i) const
+{
+  cvm::real const dist = colvar_distance(i);
+  return 0.5 / (colvars[i]->width * colvars[i]->width) *
+    dist * dist;
+}
+
+
+std::string const colvarbias_restraint_harmonic_walls::get_state_params() const
+{
+  return colvarbias_restraint::get_state_params() +
+    colvarbias_restraint_k_moving::get_state_params();
+}
+
+
+int colvarbias_restraint_harmonic_walls::set_state_params(std::string const &conf)
+{
+  int error_code = COLVARS_OK;
+  error_code |= colvarbias_restraint::set_state_params(conf);
+  error_code |= colvarbias_restraint_k_moving::set_state_params(conf);
+  return error_code;
+}
+
+
+std::ostream & colvarbias_restraint_harmonic_walls::write_traj_label(std::ostream &os)
+{
+  colvarbias_restraint::write_traj_label(os);
+  colvarbias_restraint_k_moving::write_traj_label(os);
+  return os;
+}
+
+
+std::ostream & colvarbias_restraint_harmonic_walls::write_traj(std::ostream &os)
+{
+  colvarbias_restraint::write_traj(os);
+  colvarbias_restraint_k_moving::write_traj(os);
+  return os;
+}
+
+
+
 colvarbias_restraint_linear::colvarbias_restraint_linear(char const *key)
   : colvarbias(key),
     colvarbias_restraint(key),

@@ -296,6 +296,9 @@ int colvarmodule::parse_biases(std::string const &conf)
   /// initialize harmonic restraints
   parse_biases_type<colvarbias_restraint_harmonic>(conf, "harmonic", n_rest_biases);
 
+  /// initialize harmonic walls restraints
+  parse_biases_type<colvarbias_restraint_harmonic_walls>(conf, "harmonicWalls", n_rest_biases);
+
   /// initialize histograms
   parse_biases_type<colvarbias_histogram>(conf, "histogram", n_histo_biases);
 

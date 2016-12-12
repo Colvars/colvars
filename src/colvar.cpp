@@ -215,9 +215,6 @@ colvar::colvar(std::string const &conf)
     return;
   }
 
-  // NOTE: not porting wall stuff to new deps, as this will change to a separate bias
-  // the grid functions will wait a little as well
-
   lower_boundary.type(value());
   lower_wall.type(value());
 
