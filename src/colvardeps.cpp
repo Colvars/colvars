@@ -219,6 +219,9 @@ void colvardeps::init_cvb_requires() {
 
   f_description(f_cvb_history_dependent, "history-dependent");
 
+  f_description(f_cvb_scalar_variables, "require scalar variables");
+  f_req_children(f_cvb_scalar_variables, f_cv_scalar);
+
   // Initialize feature_states for each instance
   feature_states.reserve(f_cvb_ntot);
   for (i = 0; i < f_cvb_ntot; i++) {
@@ -229,6 +232,9 @@ void colvardeps::init_cvb_requires() {
 
   // some biases are not history-dependent
   feature_states[f_cvb_history_dependent]->available = false;
+
+  // by default, biases should work with vector variables, too
+  feature_states[f_cvb_scalar_variables]->available = false;
 }
 
 

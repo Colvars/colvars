@@ -23,6 +23,8 @@ int colvarbias_abf::init(std::string const &conf)
 {
   colvarbias::init(conf);
 
+  provide(f_cvb_scalar_variables);
+  enable(f_cvb_scalar_variables);
   provide(f_cvb_history_dependent);
 
   // TODO relax this in case of VMD plugin

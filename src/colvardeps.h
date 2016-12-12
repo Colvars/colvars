@@ -157,6 +157,7 @@ public:
     f_cvb_apply_force, // will apply forces
     f_cvb_get_total_force, // requires total forces
     f_cvb_history_dependent, // depends on simulation history
+    f_cvb_scalar_variables, // requires scalar colvars
     f_cvb_ntot
   };
 
