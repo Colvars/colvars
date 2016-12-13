@@ -38,7 +38,7 @@ public:
   // TODO: move update_bias here (share with metadynamics)
 
   /// Load new configuration - force constant and/or centers only
-  virtual void change_configuration(std::string const &conf);
+  virtual int change_configuration(std::string const &conf);
 
   /// Calculate change in energy from using alternate configuration
   virtual cvm::real energy_difference(std::string const &conf);

@@ -17,11 +17,10 @@ public:
   /// Retrieve colvar values and calculate their biasing forces
   virtual int update();
 
-  // TODO the following can be supplanted by a new call to init()
   /// Load new configuration - force constant and/or centers only
-  virtual void change_configuration(std::string const &conf) {}
+  virtual int change_configuration(std::string const &conf) { return COLVARS_NOT_IMPLEMENTED; }
 
-  /// TODO Calculate change in energy from using alternate configuration
+  /// Calculate change in energy from using alternate configuration
   virtual cvm::real energy_difference(std::string const &conf) { return 0.0; }
 
   virtual std::string const get_state_params() const;
@@ -62,6 +61,7 @@ public:
 
   colvarbias_restraint_centers(char const *key);
   virtual int init(std::string const &conf);
+  virtual int change_configuration(std::string const &conf);
 
 protected:
 
@@ -81,6 +81,7 @@ public:
 
   colvarbias_restraint_k(char const *key);
   virtual int init(std::string const &conf);
+  virtual int change_configuration(std::string const &conf);
 
 protected:
   /// \brief Restraint force constant
@@ -97,6 +98,8 @@ public:
   // Note: despite the diamond inheritance, most of this function gets only executed once
   virtual int init(std::string const &conf);
   virtual int update() { return COLVARS_OK; }
+  virtual int change_configuration(std::string const &conf) { return COLVARS_NOT_IMPLEMENTED; }
+
   virtual std::string const get_state_params() const;
   virtual int set_state_params(std::string const &conf);
 
@@ -134,6 +137,7 @@ public:
   colvarbias_restraint_centers_moving(char const *key);
   virtual int init(std::string const &conf);
   virtual int update();
+  virtual int change_configuration(std::string const &conf) { return COLVARS_NOT_IMPLEMENTED; }
 
   virtual std::string const get_state_params() const;
   virtual int set_state_params(std::string const &conf);
@@ -173,6 +177,7 @@ public:
   colvarbias_restraint_k_moving(char const *key);
   virtual int init(std::string const &conf);
   virtual int update();
+  virtual int change_configuration(std::string const &conf) { return COLVARS_NOT_IMPLEMENTED; }
 
   virtual std::string const get_state_params() const;
   virtual int set_state_params(std::string const &conf);
@@ -213,6 +218,8 @@ public:
   virtual int set_state_params(std::string const &conf);
   virtual std::ostream & write_traj_label(std::ostream &os);
   virtual std::ostream & write_traj(std::ostream &os);
+  virtual int change_configuration(std::string const &conf);
+  virtual cvm::real energy_difference(std::string const &conf);
 
 protected:
 
@@ -263,6 +270,9 @@ public:
   colvarbias_restraint_linear(char const *key);
   virtual int init(std::string const &conf);
   virtual int update();
+  virtual int change_configuration(std::string const &conf);
+  virtual cvm::real energy_difference(std::string const &conf);
+
   virtual std::string const get_state_params() const;
   virtual int set_state_params(std::string const &conf);
   virtual std::ostream & write_traj_label(std::ostream &os);

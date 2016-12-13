@@ -132,6 +132,20 @@ int colvarbias_restraint_centers::init(std::string const &conf)
 }
 
 
+int colvarbias_restraint_centers::change_configuration(std::string const &conf)
+{
+  if (get_keyval(conf, "centers", colvar_centers, colvar_centers)) {
+    for (size_t i = 0; i < colvars.size(); i++) {
+      colvar_centers[i].type(colvars[i]->value());
+      colvar_centers[i].apply_constraints();
+      colvar_centers_raw[i].type(colvars[i]->value());
+      colvar_centers_raw[i] = colvar_centers[i];
+    }
+  }
+  return COLVARS_OK;
+}
+
+
 
 colvarbias_restraint_k::colvarbias_restraint_k(char const *key)
   : colvarbias(key), colvarbias_restraint(key)
@@ -147,6 +161,13 @@ int colvarbias_restraint_k::init(std::string const &conf)
     cvm::error("Error: undefined or invalid force constant.\n", INPUT_ERROR);
     return INPUT_ERROR;
   }
+  return COLVARS_OK;
+}
+
+
+int colvarbias_restraint_k::change_configuration(std::string const &conf)
+{
+  get_keyval(conf, "forceConstant", force_k, force_k);
   return COLVARS_OK;
 }
 
@@ -614,51 +635,6 @@ std::ostream & colvarbias_restraint_k_moving::write_traj(std::ostream &os)
 }
 
 
-// void colvarbias_restraint::change_configuration(std::string const &conf)
-// {
-//   get_keyval(conf, "forceConstant", force_k, force_k);
-//   if (get_keyval(conf, "centers", colvar_centers, colvar_centers)) {
-//     for (size_t i = 0; i < colvars.size(); i++) {
-//       colvar_centers[i].type(colvars[i]->value());
-//       colvar_centers[i].apply_constraints();
-//       colvar_centers_raw[i].type(colvars[i]->value());
-//       colvar_centers_raw[i] = colvar_centers[i];
-//     }
-//   }
-// }
-
-
-// cvm::real colvarbias_restraint::energy_difference(std::string const &conf)
-// {
-//   std::vector<colvarvalue> alt_colvar_centers;
-//   cvm::real alt_force_k;
-//   cvm::real alt_bias_energy = 0.0;
-
-//   get_keyval(conf, "forceConstant", alt_force_k, force_k);
-
-//   alt_colvar_centers.resize(colvars.size());
-//   size_t i;
-//   for (i = 0; i < colvars.size(); i++) {
-//     alt_colvar_centers[i].type(colvars[i]->value());
-//   }
-//   if (get_keyval(conf, "centers", alt_colvar_centers, colvar_centers)) {
-//     for (i = 0; i < colvars.size(); i++) {
-//       alt_colvar_centers[i].apply_constraints();
-//     }
-//   }
-
-//   for (i = 0; i < colvars.size(); i++) {
-//     alt_bias_energy += restraint_potential(alt_force_k,
-// 					   colvars[i],
-// 					   alt_colvar_centers[i]);
-//   }
-
-//   return alt_bias_energy - bias_energy;
-// }
-
-
-
-
 
 // redefined due to legacy state file keyword "harmonic"
 std::istream & colvarbias_restraint::read_state(std::istream &is)
@@ -820,6 +796,32 @@ std::ostream & colvarbias_restraint_harmonic::write_traj(std::ostream &os)
   colvarbias_restraint_centers_moving::write_traj(os);
   colvarbias_restraint_k_moving::write_traj(os);
   return os;
+}
+
+
+int colvarbias_restraint_harmonic::change_configuration(std::string const &conf)
+{
+  return colvarbias_restraint_centers::change_configuration(conf) | 
+    colvarbias_restraint_k::change_configuration(conf);
+}
+
+
+cvm::real colvarbias_restraint_harmonic::energy_difference(std::string const &conf)
+{
+  cvm::real const old_bias_energy = bias_energy;
+  cvm::real const old_force_k = force_k;
+  std::vector<colvarvalue> const old_centers = colvar_centers;
+
+  change_configuration(conf);
+  update();
+
+  cvm::real const result = (bias_energy - old_bias_energy);
+
+  bias_energy = old_bias_energy;
+  force_k = old_force_k;
+  colvar_centers = old_centers;
+
+  return result;
 }
 
 
@@ -1063,6 +1065,30 @@ int colvarbias_restraint_linear::update()
   colvarbias_restraint_centers_moving::update_acc_work();
 
   return COLVARS_OK;
+}
+
+
+int colvarbias_restraint_linear::change_configuration(std::string const &conf)
+{
+  // Only makes sense to change the force constant
+  return colvarbias_restraint_k::change_configuration(conf);
+}
+
+
+cvm::real colvarbias_restraint_linear::energy_difference(std::string const &conf)
+{
+  cvm::real const old_bias_energy = bias_energy;
+  cvm::real const old_force_k = force_k;
+
+  change_configuration(conf);
+  update();
+
+  cvm::real const result = (bias_energy - old_bias_energy);
+
+  bias_energy = old_bias_energy;
+  force_k = old_force_k;
+
+  return result;
 }
 
 

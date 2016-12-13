@@ -197,16 +197,19 @@ void colvarbias::communicate_forces()
 }
 
 
-void colvarbias::change_configuration(std::string const &conf)
+int colvarbias::change_configuration(std::string const &conf)
 {
-  cvm::error("Error: change_configuration() not implemented.\n");
+  cvm::error("Error: change_configuration() not implemented.\n",
+             COLVARS_NOT_IMPLEMENTED);
+  return COLVARS_NOT_IMPLEMENTED;
 }
 
 
 cvm::real colvarbias::energy_difference(std::string const &conf)
 {
-  cvm::error("Error: energy_difference() not implemented.\n");
-  return 0.;
+  cvm::error("Error: energy_difference() not implemented.\n",
+             COLVARS_NOT_IMPLEMENTED);
+  return 0.0;
 }
 
 
