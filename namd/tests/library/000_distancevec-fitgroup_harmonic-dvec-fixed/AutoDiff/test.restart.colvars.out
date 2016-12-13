@@ -1,7 +1,11 @@
 colvars: ----------------------------------------------------------------------
+colvars: Please cite Fiorin et al, Mol Phys 2013:
+colvars:  http://dx.doi.org/10.1080/00268976.2013.813594
+colvars: in any publication based on this calculation.
+colvars: SMP parallelism is available.
 colvars: ----------------------------------------------------------------------
-colvars: Reading new configuration from file "test.legacy.in":
-colvars: # indexFile = index.ndx
+colvars: Reading new configuration from file "test.in":
+colvars: # indexFile = "index.ndx"
 colvars: The following index groups were read from the index file "index.ndx":
 colvars:   Protein (104 atoms).
 colvars:   Protein_noH (51 atoms).
@@ -31,22 +35,24 @@ colvars:   group9 (4 atoms).
 colvars:   Protein_C-alpha_10 (1 atoms).
 colvars:   group10 (4 atoms).
 colvars:   heavy_atoms (51 atoms).
+colvars: # smp = on [default]
 colvars: # analysis = off [default]
 colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 10
 colvars: # colvarsTrajAppend = off [default]
+colvars: # scriptedColvarForces = off [default]
+colvars: # scriptingAfterBiases = on [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
-colvars:   # name = one
+colvars:   # name = "one"
 colvars:   Initializing a new "distanceVec" component.
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
-colvars:     # forceNoPBC = off [default]
-colvars:     # oneSiteSystemForce = off [default]
+colvars:     # scalable = on [default]
 colvars:       Initializing atom group "group1".
-colvars:       # indexGroup = group1
+colvars:       # indexGroup = "group1"
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
@@ -55,9 +61,9 @@ colvars:       # centerReference = on
 colvars:       # rotateReference = on
 colvars:       # enableFitGradients = on [default]
 colvars:       Within atom group "group1":
-colvars:       Defining atom group "refPositionsGroup".
-colvars:         Initializing atom group "refPositionsGroup".
-colvars:         # indexGroup = heavy_atoms
+colvars:       Defining atom group "fittingGroup".
+colvars:         Initializing atom group "fittingGroup".
+colvars:         # indexGroup = "heavy_atoms"
 colvars:         # psfSegID =  [default]
 colvars:         # atomsFile = "" [default]
 colvars:         # dummyAtom = ( 0 , 0 , 0 ) [default]
@@ -65,14 +71,14 @@ colvars:         # enableForces = on [default]
 colvars:         # centerReference = off [default]
 colvars:         # rotateReference = off [default]
 colvars:         # enableFitGradients = on [default]
-colvars:         Atom group "refPositionsGroup" defined, 51 atoms initialized: total mass = 674.397.
+colvars:         Atom group "fittingGroup" defined, 51 atoms initialized: total mass = 674.397, total charge = -7.64.
 colvars:       # refPositions =  [default]
-colvars:       # refPositionsFile = heavy_atoms_refpos.xyz
+colvars:       # refPositionsFile = "heavy_atoms_refpos.xyz"
 colvars:       # refPositionsCol = "" [default]
-colvars:       Warning: atom group "group1" will be aligned to a fixed orientation given by the reference positions provided.  If the internal structure of the group changes too much (i.e. its RMSD is comparable to its radius of gyration), the optimal rotation and its gradients may become discontinuous.  If that happens, use refPositionsGroup (or a different definition for it if already defined) to align the coordinates.
-colvars:       Atom group "group1" defined, 4 atoms initialized: total mass = 54.028.
+colvars:       Warning: atom group "group1" will be aligned to a fixed orientation given by the reference positions provided.  If the internal structure of the group changes too much (i.e. its RMSD is comparable to its radius of gyration), the optimal rotation and its gradients may become discontinuous.  If that happens, use fittingGroup (or a different definition for it if already defined) to align the coordinates.
+colvars:       Atom group "group1" defined, 4 atoms initialized: total mass = 54.028, total charge = -0.72.
 colvars:       Initializing atom group "group2".
-colvars:       # indexGroup = group2
+colvars:       # indexGroup = "group2"
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
@@ -81,9 +87,9 @@ colvars:       # centerReference = on
 colvars:       # rotateReference = on
 colvars:       # enableFitGradients = on [default]
 colvars:       Within atom group "group2":
-colvars:       Defining atom group "refPositionsGroup".
-colvars:         Initializing atom group "refPositionsGroup".
-colvars:         # indexGroup = heavy_atoms
+colvars:       Defining atom group "fittingGroup".
+colvars:         Initializing atom group "fittingGroup".
+colvars:         # indexGroup = "heavy_atoms"
 colvars:         # psfSegID =  [default]
 colvars:         # atomsFile = "" [default]
 colvars:         # dummyAtom = ( 0 , 0 , 0 ) [default]
@@ -91,20 +97,25 @@ colvars:         # enableForces = on [default]
 colvars:         # centerReference = off [default]
 colvars:         # rotateReference = off [default]
 colvars:         # enableFitGradients = on [default]
-colvars:         Atom group "refPositionsGroup" defined, 51 atoms initialized: total mass = 674.397.
+colvars:         Atom group "fittingGroup" defined, 51 atoms initialized: total mass = 674.397, total charge = -7.64.
 colvars:       # refPositions =  [default]
-colvars:       # refPositionsFile = heavy_atoms_refpos.xyz
+colvars:       # refPositionsFile = "heavy_atoms_refpos.xyz"
 colvars:       # refPositionsCol = "" [default]
-colvars:       Warning: atom group "group2" will be aligned to a fixed orientation given by the reference positions provided.  If the internal structure of the group changes too much (i.e. its RMSD is comparable to its radius of gyration), the optimal rotation and its gradients may become discontinuous.  If that happens, use refPositionsGroup (or a different definition for it if already defined) to align the coordinates.
-colvars:       Atom group "group2" defined, 4 atoms initialized: total mass = 54.028.
+colvars:       Warning: atom group "group2" will be aligned to a fixed orientation given by the reference positions provided.  If the internal structure of the group changes too much (i.e. its RMSD is comparable to its radius of gyration), the optimal rotation and its gradients may become discontinuous.  If that happens, use fittingGroup (or a different definition for it if already defined) to align the coordinates.
+colvars:       Atom group "group2" defined, 4 atoms initialized: total mass = 54.028, total charge = -0.4.
+colvars:     # forceNoPBC = off [default]
+colvars:     # oneSiteSystemForce = off [default]
+colvars:     # oneSiteTotalForce = off [default]
 colvars:   All components initialized.
 colvars:   # width = 0.5
 colvars:   # expandBoundaries = off [default]
+colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
-colvars:   # outputSystemForce = off [default]
+colvars:   # outputTotalForce = off [default]
 colvars:   # outputAppliedForce = on
+colvars:   # subtractAppliedForce = off [default]
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
@@ -112,26 +123,40 @@ colvars:   Initializing a new "harmonic" instance.
 colvars:   # name = "harmonic1" [default]
 colvars:   # colvars = { one }
 colvars:   # outputEnergy = off [default]
-colvars:   # forceConstant = 0.001
 colvars:   # centers = { ( 0 , 0 , 0 ) }
 colvars:   # targetCenters = { ( 0 , 0 , 0 ) } [default]
+colvars:   # forceConstant = 0.001
 colvars:   # targetForceConstant = 0 [default]
-colvars:   # outputCenters = off [default]
 colvars:   The force constant for colvar "one" will be rescaled to 0.004 according to the specified width.
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables biases initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables module (re)initialized.
 colvars: ----------------------------------------------------------------------
+colvars: Updating NAMD interface:
+colvars: updating atomic data (51 atoms).
+colvars: updating group data (0 scalable groups, 0 atoms in total).
+colvars: Updating NAMD interface:
+colvars: updating atomic data (51 atoms).
+colvars: updating group data (0 scalable groups, 0 atoms in total).
+colvars: Re-initialized atom group one:0/0. 4 atoms: total mass = 54.028.
+colvars: Re-initialized atom group one:0/1. 4 atoms: total mass = 54.028.
+colvars: ----------------------------------------------------------------------
 colvars: Restarting from file "test.colvars.state".
 colvars:   Restarting collective variable "one" from value: ( -1.02063 , -0.00608214 , 3.05064 )
-colvars:   Restarting restraint bias "harmonic1".
 colvars: ----------------------------------------------------------------------
 colvars: The restart output state file will be "test.restart.restart.colvars.state".
 colvars: The final output state file will be "test.restart.colvars.state".
 colvars: Writing to colvar trajectory file "test.restart.colvars.traj".
-colvars: Writing the state file "test.restart.restart.colvars.state".
+colvars: Updating NAMD interface:
+colvars: updating atomic data (51 atoms).
+colvars: updating group data (0 scalable groups, 0 atoms in total).
+colvars: Re-initialized atom group one:0/0. 4 atoms: total mass = 54.028.
+colvars: Re-initialized atom group one:0/1. 4 atoms: total mass = 54.028.
+colvars: The restart output state file will be "test.restart.restart.colvars.state".
+colvars: The final output state file will be "test.restart.colvars.state".
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".
 colvars: Writing the state file "test.restart.restart.colvars.state".
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".
+colvars: Writing the state file "test.restart.restart.colvars.state".
 colvars: Saving collective variables state to "test.restart.colvars.state".

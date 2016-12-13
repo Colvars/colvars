@@ -11,18 +11,31 @@ colvars:   Protein (104 atoms).
 colvars:   Protein_noH (51 atoms).
 colvars:   Protein_Backbone (40 atoms).
 colvars:   Protein_C-alpha (10 atoms).
+colvars:   RMSD_atoms (10 atoms).
 colvars:   Protein_C-alpha_1_2 (2 atoms).
 colvars:   Protein_C-alpha_9_10 (2 atoms).
 colvars:   Protein_C-alpha_1 (1 atoms).
+colvars:   group1 (4 atoms).
 colvars:   Protein_C-alpha_2 (1 atoms).
+colvars:   group2 (4 atoms).
 colvars:   Protein_C-alpha_3 (1 atoms).
+colvars:   group3 (4 atoms).
 colvars:   Protein_C-alpha_4 (1 atoms).
+colvars:   group4 (4 atoms).
 colvars:   Protein_C-alpha_5 (1 atoms).
+colvars:   group5 (4 atoms).
 colvars:   Protein_C-alpha_6 (1 atoms).
+colvars:   group6 (4 atoms).
 colvars:   Protein_C-alpha_7 (1 atoms).
+colvars:   group7 (4 atoms).
 colvars:   Protein_C-alpha_8 (1 atoms).
+colvars:   group8 (4 atoms).
 colvars:   Protein_C-alpha_9 (1 atoms).
+colvars:   group9 (4 atoms).
 colvars:   Protein_C-alpha_10 (1 atoms).
+colvars:   group10 (4 atoms).
+colvars:   heavy_atoms (51 atoms).
+colvars: # smp = on [default]
 colvars: # analysis = off [default]
 colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 0 [default]
@@ -40,7 +53,6 @@ colvars:     # wrapAround = 0 [default]
 colvars:     # scalable = on [default]
 colvars:     # forceNoPBC = on
 colvars:     Computing distance using absolute positions (not minimal-image)
-colvars:     Scalable calculation is not available for group "group1" with the current configuration.
 colvars:       Initializing atom group "group1".
 colvars:       # indexGroup = "Protein_C-alpha_1_2"
 colvars:       # psfSegID =  [default]
@@ -51,7 +63,6 @@ colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Atom group "group1" defined, 2 atoms initialized: total mass = 24.022, total charge = -0.03.
-colvars:     Scalable calculation is not available for group "group2" with the current configuration.
 colvars:       Initializing atom group "group2".
 colvars:       # indexGroup = "Protein_C-alpha_9_10"
 colvars:       # psfSegID =  [default]
@@ -69,9 +80,9 @@ colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
-colvars:   # outputSystemForce = off [default]
 colvars:   # outputTotalForce = off [default]
 colvars:   # outputAppliedForce = on
+colvars:   # subtractAppliedForce = off [default]
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
@@ -79,21 +90,23 @@ colvars:   Initializing a new "harmonic" instance.
 colvars:   # name = "harmonic1" [default]
 colvars:   # colvars = { dmat }
 colvars:   # outputEnergy = off [default]
-colvars:   # forceConstant = 1
 colvars:   # centers = { ( 12 , 14 , 10 , 12 ) }
 colvars:   # targetCenters = { ( 5 , 5 , 5 , 5 ) }
-colvars:   # targetForceConstant = 0 [default]
 colvars:   # targetNumSteps = 1000
 colvars:   # targetNumStages = 0 [default]
-colvars:   # targetForceExponent = 1 [default]
 colvars:   # outputCenters = on
 colvars:   # outputAccumulatedWork = off [default]
+colvars:   # forceConstant = 1
+colvars:   # targetForceConstant = 0 [default]
 colvars:   The force constant for colvar "dmat" will be rescaled to 25 according to the specified width.
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables biases initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables module (re)initialized.
 colvars: ----------------------------------------------------------------------
+colvars: Updating NAMD interface:
+colvars: updating atomic data (4 atoms).
+colvars: updating group data (0 scalable groups, 0 atoms in total).
 colvars: Updating NAMD interface:
 colvars: updating atomic data (4 atoms).
 colvars: updating group data (0 scalable groups, 0 atoms in total).
@@ -104,4 +117,7 @@ colvars: Writing to colvar trajectory file "test.colvars.traj".
 colvars: Updating NAMD interface:
 colvars: updating atomic data (4 atoms).
 colvars: updating group data (0 scalable groups, 0 atoms in total).
+colvars: Re-initialized atom group dmat:0/0. 2 atoms: total mass = 24.022.
+colvars: Re-initialized atom group dmat:0/1. 2 atoms: total mass = 24.022.
+colvars: The final output state file will be "test.colvars.state".
 colvars: Saving collective variables state to "test.colvars.state".

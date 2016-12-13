@@ -6,6 +6,7 @@ colvars: SMP parallelism is available.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
 colvars: # indexFile = "" [default]
+colvars: # smp = on [default]
 colvars: # analysis = off [default]
 colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 0 [default]
@@ -21,9 +22,6 @@ colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
 colvars:     # scalable = on [default]
-colvars:     # forceNoPBC = off [default]
-colvars:     # oneSiteSystemForce = off [default]
-colvars:     Will enable scalable calculation for group "group1".
 colvars:       Initializing atom group "group1".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -33,8 +31,8 @@ colvars:       # enableForces = on [default]
 colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group1".
 colvars:       Atom group "group1" defined, 1 atoms initialized: total mass = 12.011, total charge = -0.1.
-colvars:     Will enable scalable calculation for group "group2".
 colvars:       Initializing atom group "group2".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -44,7 +42,11 @@ colvars:       # enableForces = on [default]
 colvars:       # centerReference = off [default]
 colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group2".
 colvars:       Atom group "group2" defined, 1 atoms initialized: total mass = 12.011, total charge = 0.07.
+colvars:     # forceNoPBC = off [default]
+colvars:     # oneSiteSystemForce = off [default]
+colvars:     # oneSiteTotalForce = off [default]
 colvars:   All components initialized.
 colvars:   # width = 0.2
 colvars:   # lowerBoundary = 0
@@ -58,9 +60,9 @@ colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
-colvars:   # outputSystemForce = off [default]
 colvars:   # outputTotalForce = off [default]
 colvars:   # outputAppliedForce = off [default]
+colvars:   # subtractAppliedForce = off [default]
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
@@ -80,24 +82,31 @@ colvars:   # rebinGrids = off [default]
 colvars:   Metadynamics bias "metadynamics1": Will expand grids when the colvar "d" approaches its boundaries.
 colvars:   # keepHills = off [default]
 colvars:   # writeFreeEnergyFile = on [default]
-colvars:   # saveFreeEnergyFile = off [default]
+colvars:   # keepFreeEnergyFiles = off [default]
 colvars:   # writeHillsTrajectory = off [default]
 colvars:   # wellTempered = off [default]
 colvars:   # biasTemperature = -1 [default]
+colvars:   # ebMeta = off [default]
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables biases initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables module (re)initialized.
 colvars: ----------------------------------------------------------------------
 colvars: Updating NAMD interface:
-colvars: updating atomic data (0 atoms).
+colvars: updating atomic data (2 atoms).
+colvars: updating group data (2 scalable groups, 2 atoms in total).
+colvars: Updating NAMD interface:
+colvars: updating atomic data (2 atoms).
 colvars: updating group data (2 scalable groups, 2 atoms in total).
 colvars: Re-initialized atom group d:0/0. 1 atoms: total mass = 12.011.
 colvars: Re-initialized atom group d:0/1. 1 atoms: total mass = 12.011.
 colvars: The final output state file will be "test.colvars.state".
 colvars: Writing to colvar trajectory file "test.colvars.traj".
 colvars: Updating NAMD interface:
-colvars: updating atomic data (0 atoms).
+colvars: updating atomic data (2 atoms).
 colvars: updating group data (2 scalable groups, 2 atoms in total).
+colvars: Re-initialized atom group d:0/0. 1 atoms: total mass = 12.011.
+colvars: Re-initialized atom group d:0/1. 1 atoms: total mass = 12.011.
+colvars: The final output state file will be "test.colvars.state".
 colvars:   Metadynamics bias "metadynamics1": new upper boundary for colvar "d", at 15.2.
 colvars: Saving collective variables state to "test.colvars.state".

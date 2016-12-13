@@ -6,6 +6,7 @@ colvars: SMP parallelism is available.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
 colvars: # indexFile = "" [default]
+colvars: # smp = on [default]
 colvars: # analysis = off [default]
 colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 0 [default]
@@ -21,7 +22,6 @@ colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
 colvars:     # scalable = on [default]
-colvars:     Scalable calculation is not available for group "atoms" with the current configuration.
 colvars:       Initializing atom group "atoms".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -64,9 +64,9 @@ colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
-colvars:   # outputSystemForce = off [default]
 colvars:   # outputTotalForce = off [default]
 colvars:   # outputAppliedForce = on
+colvars:   # subtractAppliedForce = off [default]
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
@@ -74,16 +74,18 @@ colvars:   Initializing a new "harmonic" instance.
 colvars:   # name = "harmonic1" [default]
 colvars:   # colvars = { r }
 colvars:   # outputEnergy = off [default]
-colvars:   # forceConstant = 0.1
 colvars:   # centers = { 0 }
 colvars:   # targetCenters = { 0 } [default]
+colvars:   # forceConstant = 0.1
 colvars:   # targetForceConstant = 0 [default]
-colvars:   # outputCenters = off [default]
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables biases initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables module (re)initialized.
 colvars: ----------------------------------------------------------------------
+colvars: Updating NAMD interface:
+colvars: updating atomic data (6 atoms).
+colvars: updating group data (0 scalable groups, 0 atoms in total).
 colvars: Updating NAMD interface:
 colvars: updating atomic data (6 atoms).
 colvars: updating group data (0 scalable groups, 0 atoms in total).
@@ -93,6 +95,8 @@ colvars: Writing to colvar trajectory file "test.colvars.traj".
 colvars: Updating NAMD interface:
 colvars: updating atomic data (6 atoms).
 colvars: updating group data (0 scalable groups, 0 atoms in total).
+colvars: Re-initialized atom group r:0/0. 1 atoms: total mass = 12.011.
+colvars: The final output state file will be "test.colvars.state".
 colvars:     Debugging gradients for cvc rmsd0001
 colvars:     Fit gradients:
 colvars:     refPosGroup[0] = ( -0.234818 , 0.269283 , -0.173044 )
@@ -172,7 +176,7 @@ colvars:     refPosGroup atom 4, component 2:
 colvars:     dx(actual) =  3.02938776286510e-08
 colvars:     dx(interp) =  3.02938806702504e-08
 colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.00403e-07.
-colvars:     Gradient sum: ( 0.973323 , -0.185412 , -0.13515 )  Fit gradient sum: ( -0.973323 , 0.185412 , 0.13515 )  Total ( -1.11022e-16 , -8.32667e-17 , -1.11022e-16 )
+colvars:     Gradient sum: ( 0.973323 , -0.185412 , -0.13515 )  Fit gradient sum: ( -0.973323 , 0.185412 , 0.13515 )  Total ( -2.22045e-16 , -8.32667e-17 , -1.11022e-16 )
 colvars:     Debugging gradients for cvc rmsd0001
 colvars:     Fit gradients:
 colvars:     refPosGroup[0] = ( -0.234785 , 0.269301 , -0.173026 )
@@ -182,7 +186,7 @@ colvars:     refPosGroup[3] = ( 0.135477 , -0.018324 , -0.117498 )
 colvars:     refPosGroup[4] = ( 0.21991 , -0.181069 , 0.219847 )
 colvars:     Atom 0, component 0:
 colvars:     dx(actual) =  9.73303144746751e-08
-colvars:     dx(interp) =  9.73303132367809e-08
+colvars:     dx(interp) =  9.73303132367808e-08
 colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.27185e-08
 colvars:     Atom 0, component 1:
 colvars:     dx(actual) = -1.85527966323207e-08
@@ -252,7 +256,7 @@ colvars:     refPosGroup atom 4, component 2:
 colvars:     dx(actual) =  3.02918117256468e-08
 colvars:     dx(interp) =  3.02918110782710e-08
 colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.13713e-08.
-colvars:     Gradient sum: ( 0.973303 , -0.185528 , -0.135131 )  Fit gradient sum: ( -0.973303 , 0.185528 , 0.135131 )  Total ( 1.11022e-16 , -2.77556e-17 , -1.94289e-16 )
+colvars:     Gradient sum: ( 0.973303 , -0.185528 , -0.135131 )  Fit gradient sum: ( -0.973303 , 0.185528 , 0.135131 )  Total ( 0 , -2.77556e-17 , -1.94289e-16 )
 colvars:     Debugging gradients for cvc rmsd0001
 colvars:     Fit gradients:
 colvars:     refPosGroup[0] = ( -0.234756 , 0.269374 , -0.172978 )
@@ -332,7 +336,7 @@ colvars:     refPosGroup atom 4, component 2:
 colvars:     dx(actual) =  3.02961637999033e-08
 colvars:     dx(interp) =  3.02961588118105e-08
 colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.64644e-07.
-colvars:     Gradient sum: ( 0.973277 , -0.185665 , -0.135133 )  Fit gradient sum: ( -0.973277 , 0.185665 , 0.135133 )  Total ( -3.33067e-16 , 2.77556e-17 , 1.66533e-16 )
+colvars:     Gradient sum: ( 0.973277 , -0.185665 , -0.135133 )  Fit gradient sum: ( -0.973277 , 0.185665 , 0.135133 )  Total ( -3.33067e-16 , 5.55112e-17 , 1.66533e-16 )
 colvars:     Debugging gradients for cvc rmsd0001
 colvars:     Fit gradients:
 colvars:     refPosGroup[0] = ( -0.234717 , 0.269457 , -0.172922 )
@@ -412,7 +416,7 @@ colvars:     refPosGroup atom 4, component 2:
 colvars:     dx(actual) =  3.03022318348667e-08
 colvars:     dx(interp) =  3.03022309014091e-08
 colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.08049e-08.
-colvars:     Gradient sum: ( 0.973258 , -0.185792 , -0.135096 )  Fit gradient sum: ( -0.973258 , 0.185792 , 0.135096 )  Total ( -1.11022e-16 , 3.33067e-16 , 8.32667e-17 )
+colvars:     Gradient sum: ( 0.973258 , -0.185792 , -0.135096 )  Fit gradient sum: ( -0.973258 , 0.185792 , 0.135096 )  Total ( 0 , 3.33067e-16 , 8.32667e-17 )
 colvars:     Debugging gradients for cvc rmsd0001
 colvars:     Fit gradients:
 colvars:     refPosGroup[0] = ( -0.234673 , 0.269532 , -0.172868 )
@@ -572,7 +576,7 @@ colvars:     refPosGroup atom 4, component 2:
 colvars:     dx(actual) =  3.03068983242838e-08
 colvars:     dx(interp) =  3.03068956667301e-08
 colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.76881e-08.
-colvars:     Gradient sum: ( 0.973222 , -0.186041 , -0.135007 )  Fit gradient sum: ( -0.973222 , 0.186041 , 0.135007 )  Total ( 0 , 2.77556e-17 , 1.66533e-16 )
+colvars:     Gradient sum: ( 0.973222 , -0.186041 , -0.135007 )  Fit gradient sum: ( -0.973222 , 0.186041 , 0.135007 )  Total ( 0 , 0 , 1.66533e-16 )
 colvars:     Debugging gradients for cvc rmsd0001
 colvars:     Fit gradients:
 colvars:     refPosGroup[0] = ( -0.234537 , 0.269561 , -0.17281 )
@@ -590,7 +594,7 @@ colvars:     dx(interp) = -1.86178417796983e-08
 colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.55222e-08
 colvars:     Atom 0, component 2:
 colvars:     dx(actual) = -1.34952582442338e-08
-colvars:     dx(interp) = -1.34952575499686e-08
+colvars:     dx(interp) = -1.34952575499687e-08
 colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.14451e-08
 colvars:     refPosGroup atom 0, component 0:
 colvars:     dx(actual) = -1.32292541366041e-08
@@ -652,7 +656,7 @@ colvars:     refPosGroup atom 4, component 2:
 colvars:     dx(actual) =  3.03053173666967e-08
 colvars:     dx(interp) =  3.03053173599273e-08
 colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.23374e-10.
-colvars:     Gradient sum: ( 0.973204 , -0.186178 , -0.134953 )  Fit gradient sum: ( -0.973204 , 0.186178 , 0.134953 )  Total ( -2.22045e-16 , 1.11022e-16 , -3.60822e-16 )
+colvars:     Gradient sum: ( 0.973204 , -0.186178 , -0.134953 )  Fit gradient sum: ( -0.973204 , 0.186178 , 0.134953 )  Total ( -2.22045e-16 , 2.77556e-17 , -4.16334e-16 )
 colvars:     Debugging gradients for cvc rmsd0001
 colvars:     Fit gradients:
 colvars:     refPosGroup[0] = ( -0.234465 , 0.26953 , -0.172803 )
@@ -812,7 +816,7 @@ colvars:     refPosGroup atom 4, component 2:
 colvars:     dx(actual) =  3.02934690665779e-08
 colvars:     dx(interp) =  3.02934722034674e-08
 colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.03550e-07.
-colvars:     Gradient sum: ( 0.973155 , -0.186464 , -0.134908 )  Fit gradient sum: ( -0.973155 , 0.186464 , 0.134908 )  Total ( -2.22045e-16 , 1.66533e-16 , 5.55112e-17 )
+colvars:     Gradient sum: ( 0.973155 , -0.186464 , -0.134908 )  Fit gradient sum: ( -0.973155 , 0.186464 , 0.134908 )  Total ( -3.33067e-16 , 1.38778e-16 , 5.55112e-17 )
 colvars:     Debugging gradients for cvc rmsd0001
 colvars:     Fit gradients:
 colvars:     refPosGroup[0] = ( -0.234296 , 0.269417 , -0.172808 )
@@ -892,7 +896,7 @@ colvars:     refPosGroup atom 4, component 2:
 colvars:     dx(actual) =  3.02822602549213e-08
 colvars:     dx(interp) =  3.02822597447134e-08
 colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.68484e-08.
-colvars:     Gradient sum: ( 0.973121 , -0.186623 , -0.134934 )  Fit gradient sum: ( -0.973121 , 0.186623 , 0.134934 )  Total ( -1.11022e-16 , 1.66533e-16 , -5.55112e-17 )
+colvars:     Gradient sum: ( 0.973121 , -0.186623 , -0.134934 )  Fit gradient sum: ( -0.973121 , 0.186623 , 0.134934 )  Total ( -2.22045e-16 , 1.94289e-16 , -5.55112e-17 )
 colvars:     Debugging gradients for cvc rmsd0001
 colvars:     Fit gradients:
 colvars:     refPosGroup[0] = ( -0.234174 , 0.269337 , -0.172813 )
@@ -902,7 +906,7 @@ colvars:     refPosGroup[3] = ( 0.135263 , -0.0183502 , -0.118166 )
 colvars:     refPosGroup[4] = ( 0.21941 , -0.181155 , 0.219077 )
 colvars:     Atom 0, component 0:
 colvars:     dx(actual) =  9.73080762634027e-08
-colvars:     dx(interp) =  9.73080759392825e-08
+colvars:     dx(interp) =  9.73080759392826e-08
 colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.33087e-09
 colvars:     Atom 0, component 1:
 colvars:     dx(actual) = -1.86776762944874e-08
@@ -972,7 +976,7 @@ colvars:     refPosGroup atom 4, component 2:
 colvars:     dx(actual) =  3.02664240336981e-08
 colvars:     dx(interp) =  3.02664253558762e-08
 colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.36847e-08.
-colvars:     Gradient sum: ( 0.973081 , -0.186777 , -0.135012 )  Fit gradient sum: ( -0.973081 , 0.186777 , 0.135012 )  Total ( -1.11022e-16 , 1.38778e-16 , -2.498e-16 )
+colvars:     Gradient sum: ( 0.973081 , -0.186777 , -0.135012 )  Fit gradient sum: ( -0.973081 , 0.186777 , 0.135012 )  Total ( 1.11022e-16 , 1.38778e-16 , -2.498e-16 )
 colvars:     Debugging gradients for cvc rmsd0001
 colvars:     Fit gradients:
 colvars:     refPosGroup[0] = ( -0.234049 , 0.269251 , -0.172818 )
@@ -1132,7 +1136,7 @@ colvars:     refPosGroup atom 4, component 2:
 colvars:     dx(actual) =  3.02379508099193e-08
 colvars:     dx(interp) =  3.02379521611812e-08
 colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.46876e-08.
-colvars:     Gradient sum: ( 0.973014 , -0.187041 , -0.135129 )  Fit gradient sum: ( -0.973014 , 0.187041 , 0.135129 )  Total ( -1.11022e-16 , 5.55112e-17 , -2.22045e-16 )
+colvars:     Gradient sum: ( 0.973014 , -0.187041 , -0.135129 )  Fit gradient sum: ( -0.973014 , 0.187041 , 0.135129 )  Total ( -1.11022e-16 , 5.55112e-17 , -1.66533e-16 )
 colvars:     Debugging gradients for cvc rmsd0001
 colvars:     Fit gradients:
 colvars:     refPosGroup[0] = ( -0.233783 , 0.269072 , -0.172824 )
@@ -1292,7 +1296,7 @@ colvars:     refPosGroup atom 4, component 2:
 colvars:     dx(actual) =  3.02093141613113e-08
 colvars:     dx(interp) =  3.02093113110636e-08
 colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.43500e-08.
-colvars:     Gradient sum: ( 0.972963 , -0.187251 , -0.135202 )  Fit gradient sum: ( -0.972963 , 0.187251 , 0.135202 )  Total ( -1.11022e-16 , -2.77556e-17 , -2.77556e-16 )
+colvars:     Gradient sum: ( 0.972963 , -0.187251 , -0.135202 )  Fit gradient sum: ( -0.972963 , 0.187251 , 0.135202 )  Total ( 0 , -5.55112e-17 , -2.77556e-16 )
 colvars:     Debugging gradients for cvc rmsd0001
 colvars:     Fit gradients:
 colvars:     refPosGroup[0] = ( -0.233501 , 0.268891 , -0.17282 )
@@ -1372,7 +1376,7 @@ colvars:     refPosGroup atom 4, component 2:
 colvars:     dx(actual) =  3.01953075876327e-08
 colvars:     dx(interp) =  3.01953067754785e-08
 colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.68967e-08.
-colvars:     Gradient sum: ( 0.972936 , -0.18736 , -0.135247 )  Fit gradient sum: ( -0.972936 , 0.18736 , 0.135247 )  Total ( -1.11022e-16 , -2.77556e-17 , -2.22045e-16 )
+colvars:     Gradient sum: ( 0.972936 , -0.18736 , -0.135247 )  Fit gradient sum: ( -0.972936 , 0.18736 , 0.135247 )  Total ( -1.11022e-16 , -5.55112e-17 , -2.22045e-16 )
 colvars:     Debugging gradients for cvc rmsd0001
 colvars:     Fit gradients:
 colvars:     refPosGroup[0] = ( -0.233334 , 0.268839 , -0.172792 )
@@ -1452,7 +1456,7 @@ colvars:     refPosGroup atom 4, component 2:
 colvars:     dx(actual) =  3.01791320822531e-08
 colvars:     dx(interp) =  3.01791291794734e-08
 colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.61850e-08.
-colvars:     Gradient sum: ( 0.972906 , -0.187482 , -0.135296 )  Fit gradient sum: ( -0.972906 , 0.187482 , 0.135296 )  Total ( 1.11022e-16 , -5.55112e-17 , -1.11022e-16 )
+colvars:     Gradient sum: ( 0.972906 , -0.187482 , -0.135296 )  Fit gradient sum: ( -0.972906 , 0.187482 , 0.135296 )  Total ( 0 , -5.55112e-17 , -1.11022e-16 )
 colvars:     Debugging gradients for cvc rmsd0001
 colvars:     Fit gradients:
 colvars:     refPosGroup[0] = ( -0.233163 , 0.26881 , -0.172755 )
@@ -1612,7 +1616,7 @@ colvars:     refPosGroup atom 4, component 2:
 colvars:     dx(actual) =  3.01451823503385e-08
 colvars:     dx(interp) =  3.01451822117770e-08
 colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.59647e-09.
-colvars:     Gradient sum: ( 0.972812 , -0.187862 , -0.135443 )  Fit gradient sum: ( -0.972812 , 0.187862 , 0.135443 )  Total ( -4.44089e-16 , -8.32667e-17 , 1.66533e-16 )
+colvars:     Gradient sum: ( 0.972812 , -0.187862 , -0.135443 )  Fit gradient sum: ( -0.972812 , 0.187862 , 0.135443 )  Total ( -4.44089e-16 , -1.11022e-16 , 1.66533e-16 )
 colvars:     Debugging gradients for cvc rmsd0001
 colvars:     Fit gradients:
 colvars:     refPosGroup[0] = ( -0.232895 , 0.268756 , -0.172689 )
@@ -1710,7 +1714,7 @@ colvars:     dx(interp) = -1.88344114389440e-08
 colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.98680e-09
 colvars:     Atom 0, component 2:
 colvars:     dx(actual) = -1.35598501316281e-08
-colvars:     dx(interp) = -1.35598506910710e-08
+colvars:     dx(interp) = -1.35598506910709e-08
 colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.12573e-08
 colvars:     refPosGroup atom 0, component 0:
 colvars:     dx(actual) = -1.33169564264790e-08
@@ -1772,5 +1776,5 @@ colvars:     refPosGroup atom 4, component 2:
 colvars:     dx(actual) =  3.01179454709199e-08
 colvars:     dx(interp) =  3.01179465380155e-08
 colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.54306e-08.
-colvars:     Gradient sum: ( 0.972697 , -0.188344 , -0.135599 )  Fit gradient sum: ( -0.972697 , 0.188344 , 0.135599 )  Total ( 1.11022e-16 , -8.32667e-17 , 1.38778e-16 )
+colvars:     Gradient sum: ( 0.972697 , -0.188344 , -0.135599 )  Fit gradient sum: ( -0.972697 , 0.188344 , 0.135599 )  Total ( 1.11022e-16 , -5.55112e-17 , 1.94289e-16 )
 colvars: Saving collective variables state to "test.colvars.state".

@@ -6,6 +6,7 @@ colvars: SMP parallelism is available.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
 colvars: # indexFile = "" [default]
+colvars: # smp = on [default]
 colvars: # analysis = off [default]
 colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 0 [default]
@@ -21,7 +22,6 @@ colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
 colvars:     # scalable = on [default]
-colvars:     Scalable calculation is not available for group "atoms" with the current configuration.
 colvars:       Initializing atom group "atoms".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -52,9 +52,9 @@ colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
-colvars:   # outputSystemForce = off [default]
 colvars:   # outputTotalForce = on
 colvars:   # outputAppliedForce = off [default]
+colvars:   # subtractAppliedForce = off [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "rmsdB"
@@ -64,7 +64,6 @@ colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
 colvars:     # scalable = on [default]
-colvars:     Scalable calculation is not available for group "atoms" with the current configuration.
 colvars:       Initializing atom group "atoms".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -98,9 +97,9 @@ colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
-colvars:   # outputSystemForce = off [default]
 colvars:   # outputTotalForce = on
 colvars:   # outputAppliedForce = off [default]
+colvars:   # subtractAppliedForce = off [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "rmsdC"
@@ -110,7 +109,6 @@ colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
 colvars:     # scalable = on [default]
-colvars:     Scalable calculation is not available for group "atoms" with the current configuration.
 colvars:       Initializing atom group "atoms".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -143,9 +141,9 @@ colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
-colvars:   # outputSystemForce = off [default]
 colvars:   # outputTotalForce = on
 colvars:   # outputAppliedForce = off [default]
+colvars:   # subtractAppliedForce = off [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "rmsdD"
@@ -155,7 +153,6 @@ colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
 colvars:     # scalable = on [default]
-colvars:     Scalable calculation is not available for group "atoms" with the current configuration.
 colvars:       Initializing atom group "atoms".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -189,9 +186,9 @@ colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
-colvars:   # outputSystemForce = off [default]
 colvars:   # outputTotalForce = on
 colvars:   # outputAppliedForce = off [default]
+colvars:   # subtractAppliedForce = off [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "rmsdE"
@@ -201,7 +198,6 @@ colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
 colvars:     # scalable = on [default]
-colvars:     Scalable calculation is not available for group "atoms" with the current configuration.
 colvars:       Initializing atom group "atoms".
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
@@ -231,9 +227,9 @@ colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
-colvars:   # outputSystemForce = off [default]
 colvars:   # outputTotalForce = on
 colvars:   # outputAppliedForce = off [default]
+colvars:   # subtractAppliedForce = off [default]
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables initialized, 5 in total.
 colvars: ----------------------------------------------------------------------
@@ -241,16 +237,18 @@ colvars:   Initializing a new "harmonic" instance.
 colvars:   # name = "harmonic1" [default]
 colvars:   # colvars = { rmsdA, rmsdB, rmsdC, rmsdD, rmsdE }
 colvars:   # outputEnergy = off [default]
-colvars:   # forceConstant = 1
 colvars:   # centers = { 0, 0, 0, 0, 0 }
 colvars:   # targetCenters = { 0, 0, 0, 0, 0 } [default]
+colvars:   # forceConstant = 1
 colvars:   # targetForceConstant = 0 [default]
-colvars:   # outputCenters = off [default]
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables biases initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables module (re)initialized.
 colvars: ----------------------------------------------------------------------
+colvars: Updating NAMD interface:
+colvars: updating atomic data (8 atoms).
+colvars: updating group data (0 scalable groups, 0 atoms in total).
 colvars: Updating NAMD interface:
 colvars: updating atomic data (8 atoms).
 colvars: updating group data (0 scalable groups, 0 atoms in total).
@@ -264,4 +262,10 @@ colvars: Writing to colvar trajectory file "test.colvars.traj".
 colvars: Updating NAMD interface:
 colvars: updating atomic data (8 atoms).
 colvars: updating group data (0 scalable groups, 0 atoms in total).
+colvars: Re-initialized atom group rmsdA:0/0. 8 atoms: total mass = 43.069.
+colvars: Re-initialized atom group rmsdB:0/0. 8 atoms: total mass = 43.069.
+colvars: Re-initialized atom group rmsdC:0/0. 8 atoms: total mass = 43.069.
+colvars: Re-initialized atom group rmsdD:0/0. 8 atoms: total mass = 43.069.
+colvars: Re-initialized atom group rmsdE:0/0. 8 atoms: total mass = 43.069.
+colvars: The final output state file will be "test.colvars.state".
 colvars: Saving collective variables state to "test.colvars.state".

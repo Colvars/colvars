@@ -8,18 +8,18 @@ TCL: E(abf1) = 0
 TCL: E(harmonic1) = 18000
 TCL: Original numsteps 20 will be ignored.
 TCL: Running for 20 steps
-TCL: d = 1.28684264449456e+01
+TCL: d = 1.28684277602171e+01
 TCL: E(abf1) = 0
-TCL: E(harmonic1) = 94.2706
+TCL: E(harmonic1) = 94.2708
 TCL: Running for 20 steps
 TCL: Running cv bias harmonic1 delete
 TCL: 
 TCL: Running cv bias harm2 energy
-TCL: 17.8181
+TCL: 17.8166
 TCL: Running cv bias harm2 update
-TCL: 17.8181
+TCL: 17.8166
 TCL: Running for 20 steps
 TCL: Running cv bias harm2 energy
-TCL: 13.4825
+TCL: 13.4817
 TCL: Running cv bias harm2 delete
 TCL: 

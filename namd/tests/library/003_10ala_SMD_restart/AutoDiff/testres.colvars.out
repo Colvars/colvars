@@ -11,18 +11,31 @@ colvars:   Protein (104 atoms).
 colvars:   Protein_noH (51 atoms).
 colvars:   Protein_Backbone (40 atoms).
 colvars:   Protein_C-alpha (10 atoms).
+colvars:   RMSD_atoms (10 atoms).
 colvars:   Protein_C-alpha_1_2 (2 atoms).
 colvars:   Protein_C-alpha_9_10 (2 atoms).
 colvars:   Protein_C-alpha_1 (1 atoms).
+colvars:   group1 (4 atoms).
 colvars:   Protein_C-alpha_2 (1 atoms).
+colvars:   group2 (4 atoms).
 colvars:   Protein_C-alpha_3 (1 atoms).
+colvars:   group3 (4 atoms).
 colvars:   Protein_C-alpha_4 (1 atoms).
+colvars:   group4 (4 atoms).
 colvars:   Protein_C-alpha_5 (1 atoms).
+colvars:   group5 (4 atoms).
 colvars:   Protein_C-alpha_6 (1 atoms).
+colvars:   group6 (4 atoms).
 colvars:   Protein_C-alpha_7 (1 atoms).
+colvars:   group7 (4 atoms).
 colvars:   Protein_C-alpha_8 (1 atoms).
+colvars:   group8 (4 atoms).
 colvars:   Protein_C-alpha_9 (1 atoms).
+colvars:   group9 (4 atoms).
 colvars:   Protein_C-alpha_10 (1 atoms).
+colvars:   group10 (4 atoms).
+colvars:   heavy_atoms (51 atoms).
+colvars: # smp = on [default]
 colvars: # analysis = off [default]
 colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 40000 [default]
@@ -38,7 +51,6 @@ colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
 colvars:     # scalable = on [default]
-colvars:     Scalable calculation is not available for group "atoms" with the current configuration.
 colvars:       Initializing atom group "atoms".
 colvars:       # indexGroup = "Protein_C-alpha"
 colvars:       # psfSegID =  [default]
@@ -68,9 +80,9 @@ colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
-colvars:   # outputSystemForce = off [default]
 colvars:   # outputTotalForce = on
 colvars:   # outputAppliedForce = on
+colvars:   # subtractAppliedForce = off [default]
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
@@ -78,15 +90,14 @@ colvars:   Initializing a new "harmonic" instance.
 colvars:   # name = "harmonic1" [default]
 colvars:   # colvars = { rmsd }
 colvars:   # outputEnergy = on
-colvars:   # forceConstant = 1 [default]
 colvars:   # centers = { 0 }
 colvars:   # targetCenters = { 0.2 }
-colvars:   # targetForceConstant = 0 [default]
 colvars:   # targetNumSteps = 20
 colvars:   # targetNumStages = 0 [default]
-colvars:   # targetForceExponent = 1 [default]
 colvars:   # outputCenters = on
 colvars:   # outputAccumulatedWork = on
+colvars:   # forceConstant = 1 [default]
+colvars:   # targetForceConstant = 0 [default]
 colvars:   The force constant for colvar "rmsd" will be rescaled to 10000 according to the specified width.
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables biases initialized, 1 in total.
@@ -96,10 +107,13 @@ colvars: ----------------------------------------------------------------------
 colvars: Updating NAMD interface:
 colvars: updating atomic data (10 atoms).
 colvars: updating group data (0 scalable groups, 0 atoms in total).
+colvars: Updating NAMD interface:
+colvars: updating atomic data (10 atoms).
+colvars: updating group data (0 scalable groups, 0 atoms in total).
 colvars: Re-initialized atom group rmsd:0/0. 10 atoms: total mass = 120.11.
+colvars: ----------------------------------------------------------------------
 colvars: Restarting from file "test.colvars.state".
 colvars:   Restarting collective variable "rmsd" from value: 1.39199
-colvars:   Restarting restraint bias "harmonic1".
 colvars:   # centers = { 0.1 }
 colvars:   # centers_raw = { 0.1 }
 colvars:   # accumulatedWork = -2015.75
@@ -110,4 +124,7 @@ colvars: Writing to colvar trajectory file "testres.colvars.traj".
 colvars: Updating NAMD interface:
 colvars: updating atomic data (10 atoms).
 colvars: updating group data (0 scalable groups, 0 atoms in total).
+colvars: Re-initialized atom group rmsd:0/0. 10 atoms: total mass = 120.11.
+colvars: The restart output state file will be "testres.colvars.state".
+colvars: The final output state file will be "testres.colvars.state".
 colvars: Saving collective variables state to "testres.colvars.state".
