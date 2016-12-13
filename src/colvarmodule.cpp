@@ -1073,15 +1073,15 @@ continue the previous simulation.\n\n");
     cvm::log(cvm::line_marker);
 
     // update this ahead of time in this special case
-    output_prefix = proxy->output_prefix();
+    output_prefix = proxy->input_prefix();
     cvm::log("All output files will now be saved with the prefix \""+output_prefix+".tmp.*\".\n");
-    output_prefix = output_prefix+".tmp";
-    write_output_files();
     cvm::log(cvm::line_marker);
     cvm::log("Please review the important warning above. After that, you may rename:\n\
 \""+output_prefix+".tmp.colvars.state\"\n\
 to:\n\
-\""+output_prefix+".colvars.state\"\n");
+\""+ proxy->input_prefix()+".colvars.state\"\n");
+    output_prefix = output_prefix+".tmp";
+    write_output_files();
     cvm::error("Exiting with error until issue is addressed.\n", FATAL_ERROR);
   }
 
