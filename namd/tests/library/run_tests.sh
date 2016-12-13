@@ -126,15 +126,15 @@ for dir in ${DIRLIST} ; do
     fi
 
     # Filter out the version number from the state files to allow comparisons
-    grep -v 'version' ${basename}.colvars.state > ${TMPDIR}/${basename}.colvars.state
-    mv -f ${TMPDIR}/${basename}.colvars.state ${basename}.colvars.state
+    grep -v 'version' ${basename}.colvars.state > ${TMPDIR}/${basename}.colvars.state.stripped
+    mv -f ${TMPDIR}/${basename}.colvars.state.stripped ${basename}.colvars.state.stripped
 
     # If this test is used to generate the reference output files, copy them
     if [ "x${gen_ref_output}" = 'xyes' ]; then
       grep 'NAMD' ${basename}.out | head -n 1 > namd-version.txt
-      cp ${basename}.colvars.state AutoDiff/
-      cp ${basename}.colvars.traj  AutoDiff/
-      cp ${basename}.colvars.out   AutoDiff/
+      cp ${basename}.colvars.state.stripped AutoDiff/
+      cp ${basename}.colvars.traj           AutoDiff/
+      cp ${basename}.colvars.out            AutoDiff/
       if [ -f ${basename}.histogram1.dat ] ; then
         cp -f ${basename}.histogram1.dat AutoDiff/
       fi
