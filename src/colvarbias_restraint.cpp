@@ -136,13 +136,13 @@ int colvarbias_restraint_centers::init(std::string const &conf)
 colvarbias_restraint_k::colvarbias_restraint_k(char const *key)
   : colvarbias(key), colvarbias_restraint(key)
 {
-  force_k = 1.0;
+  force_k = -1.0;
 }
 
 
 int colvarbias_restraint_k::init(std::string const &conf)
 {
-  get_keyval(conf, "forceConstant", force_k, force_k);
+  get_keyval(conf, "forceConstant", force_k, (force_k > 0.0 ? force_k : 1.0));
   return COLVARS_OK;
 }
 
