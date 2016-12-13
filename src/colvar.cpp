@@ -762,8 +762,13 @@ int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
     return error_code;
   }
 
-  error_code |= calc_cvc_total_force(first_cvc, num_cvcs);
-  error_code |= calc_cvc_Jacobians(first_cvc, num_cvcs);
+  if (cvm::step_relative() > 0) {
+    // Using coordinates from previous timestep
+    error_code |= calc_cvc_Jacobians(first_cvc, num_cvcs);
+    // Total force depends on Jacobian derivative
+    error_code |= calc_cvc_total_force(first_cvc, num_cvcs);
+  }
+  // atom coordinates are reset now
   error_code |= calc_cvc_values(first_cvc, num_cvcs);
   error_code |= calc_cvc_gradients(first_cvc, num_cvcs);
 
@@ -781,10 +786,13 @@ int colvar::collect_cvc_data()
 
   int error_code = COLVARS_OK;
 
+  if (cvm::step_relative() > 0) {
+    error_code |= collect_cvc_Jacobians();
+    // Total force depends on Jacobian derivative
+    error_code |= collect_cvc_total_forces();
+  }
   error_code |= collect_cvc_values();
   error_code |= collect_cvc_gradients();
-  error_code |= collect_cvc_total_forces();
-  error_code |= collect_cvc_Jacobians();
   error_code |= calc_colvar_properties();
 
   if (cvm::debug())
@@ -996,18 +1004,17 @@ int colvar::calc_cvc_total_force(int first_cvc, size_t num_cvcs)
     if (cvm::debug())
       cvm::log("Calculating total force of colvar \""+this->name+"\".\n");
 
-    if (cvm::step_relative() > 0) { // get total forces from the PREVIOUS step
-      cvm::increase_depth();
+    cvm::increase_depth();
 
-      for (i = first_cvc, cvc_count = 0;
-          (i < cvcs.size()) && (cvc_count < cvc_max_count);
-          i++) {
-        if (!cvcs[i]->is_enabled()) continue;
-        cvc_count++;
-        (cvcs[i])->calc_force_invgrads();
-      }
-      cvm::decrease_depth();
+    for (i = first_cvc, cvc_count = 0;
+        (i < cvcs.size()) && (cvc_count < cvc_max_count);
+        i++) {
+      if (!cvcs[i]->is_enabled()) continue;
+      cvc_count++;
+      (cvcs[i])->calc_force_invgrads();
     }
+    cvm::decrease_depth();
+
 
     if (cvm::debug())
       cvm::log("Done calculating total force of colvar \""+this->name+"\".\n");
@@ -1026,6 +1033,11 @@ int colvar::collect_cvc_total_forces()
       // get from the cvcs the total forces from the PREVIOUS step
       for (size_t i = 0; i < cvcs.size();  i++) {
         if (!cvcs[i]->is_enabled()) continue;
+            if (cvm::debug())
+            cvm::log("Colvar component no. "+cvm::to_str(i+1)+
+                " within colvar \""+this->name+"\" has total force "+
+                cvm::to_str((cvcs[i])->total_force(),
+                cvm::cv_width, cvm::cv_prec)+".\n");
         // linear combination is assumed
         ft += (cvcs[i])->total_force() * (cvcs[i])->sup_coeff / active_cvc_square_norm;
       }
@@ -1069,6 +1081,11 @@ int colvar::collect_cvc_Jacobians()
     fj.reset();
     for (size_t i = 0; i < cvcs.size(); i++) {
       if (!cvcs[i]->is_enabled()) continue;
+        if (cvm::debug())
+          cvm::log("Colvar component no. "+cvm::to_str(i+1)+
+            " within colvar \""+this->name+"\" has Jacobian derivative"+
+            cvm::to_str((cvcs[i])->Jacobian_derivative(),
+            cvm::cv_width, cvm::cv_prec)+".\n");
       // linear combination is assumed
       fj += (cvcs[i])->Jacobian_derivative() * (cvcs[i])->sup_coeff / active_cvc_square_norm;
     }
