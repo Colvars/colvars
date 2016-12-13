@@ -467,7 +467,12 @@ int colvarbias_restraint_k_moving::init(std::string const &conf)
 
   get_keyval(conf, "targetEquilSteps", target_equil_steps, target_equil_steps);
 
-  get_keyval(conf, "lambdaSchedule", lambda_schedule, lambda_schedule);
+  if (get_keyval(conf, "lambdaSchedule", lambda_schedule, lambda_schedule) &&
+      target_nstages > 0) {
+    cvm::error("Error: targetNumStages and lambdaSchedule are incompatible.\n", INPUT_ERROR);
+    return cvm::get_error();
+  }
+
   if (lambda_schedule.size()) {
     // There is one more lambda-point than stages
     target_nstages = lambda_schedule.size() - 1;
