@@ -45,8 +45,10 @@ write_colvars_config() {
     cat indexfile.in >> ${filename}
     echo '' >> ${filename}
     cat ${colvar}.in >> ${filename}
-    echo '' >> ${filename}
-    cat ${bias}.in >> ${filename}
+    if [ "x$bias" != "x" ] ; then
+        echo '' >> ${filename}
+        cat ${bias}.in >> ${filename}
+    fi
 }
 
 dirname=''
@@ -63,6 +65,14 @@ for colvar in "distance" ; do
         write_colvars_config ${colvar} ${bias} ${dirname}/test.in
     done
 done
+
+create_test_dir "distancewalls"
+write_colvars_config "distance" "harmonicwalls-fixed" ${dirname}/test.in
+write_colvars_config "distancewalls" "" ${dirname}/test.legacy.in
+
+create_test_dir "dihedralwalls"
+write_colvars_config "dihedral" "harmonicwalls360angle-fixed" ${dirname}/test.in
+write_colvars_config "dihedralwalls" "" ${dirname}/test.legacy.in
 
 # NOTE: abf is not included because total/system force calculations
 # should be tested separately
@@ -98,7 +108,6 @@ for colvar in \
         fi
     done
 done
-
 
 for colvar in \
     "orientation" \
