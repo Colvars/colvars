@@ -1108,8 +1108,6 @@ int colvarbias_meta::set_state_params(std::string const &state_conf)
 
 std::istream & colvarbias_meta::read_state_data(std::istream& is)
 {
-  size_t const start_pos = is.tellg();
-
   bool grids_from_restart_file = use_grids;
 
   if (use_grids) {
