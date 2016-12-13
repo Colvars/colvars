@@ -610,7 +610,6 @@ std::ostream & colvarbias_restraint_k_moving::write_traj(std::ostream &os)
 }
 
 
-// // TODO remove these two
 // void colvarbias_restraint::change_configuration(std::string const &conf)
 // {
 //   get_keyval(conf, "forceConstant", force_k, force_k);
@@ -851,14 +850,14 @@ int colvarbias_restraint_harmonic_walls::init(std::string const &conf)
       lower_walls[i].reset();
     }
   }
-  if (!get_keyval(conf, "lowerWalls", lower_walls, lower_walls) && 
+  if (!get_keyval(conf, "lowerWalls", lower_walls, lower_walls) &&
       b_null_lower_walls) {
     cvm::log("Lower walls were not provided.\n");
     lower_walls.resize(0);
   }
 
   bool b_null_upper_walls = false;
-  if (upper_walls.size() == 0) {  
+  if (upper_walls.size() == 0) {
     b_null_upper_walls = true;
     upper_walls.resize(number_of_colvars());
     for (i = 0; i < colvars.size(); i++) {
@@ -924,7 +923,7 @@ int colvarbias_restraint_harmonic_walls::update()
 cvm::real colvarbias_restraint_harmonic_walls::colvar_distance(size_t i) const
 {
   colvar *cv = colvars[i];
-  colvarvalue const &cvv = colvars[i]->value(); 
+  colvarvalue const &cvv = colvars[i]->value();
 
   // For a periodic colvar, both walls may be applicable at the same time
   // in which case we pick the closer one

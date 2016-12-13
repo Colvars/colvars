@@ -21,8 +21,8 @@ public:
   /// Load new configuration - force constant and/or centers only
   virtual void change_configuration(std::string const &conf) {}
 
-  /// Calculate change in energy from using alternate configuration
-  virtual cvm::real energy_difference(std::string const &conf) {}
+  /// TODO Calculate change in energy from using alternate configuration
+  virtual cvm::real energy_difference(std::string const &conf) { return 0.0; }
 
   virtual std::string const get_state_params() const;
   virtual int set_state_params(std::string const &conf);
