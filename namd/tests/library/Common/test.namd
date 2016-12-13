@@ -10,3 +10,6 @@ colvarsConfig           test.in
 
 run ${numsteps}
 
+if { [file exists test.postprocess.tcl] > 0 } {
+    source test.postprocess.tcl
+}

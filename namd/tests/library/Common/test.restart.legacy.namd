@@ -13,3 +13,7 @@ colvarsInput            test.colvars.state
 
 run ${numsteps}
 
+if { [file exists test.restart.legacy.postprocess.tcl] > 0 } {
+    source test.restart.legacy.postprocess.tcl
+}
+

@@ -8,3 +8,7 @@ colvarsConfig           test.legacy.in
 
 run ${numsteps}
 
+if { [file exists test.legacy.postprocess.tcl] > 0 } {
+    source test.legacy.postprocess.tcl
+}
+
