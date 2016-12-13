@@ -763,9 +763,9 @@ int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
   }
 
   error_code |= calc_cvc_total_force(first_cvc, num_cvcs);
+  error_code |= calc_cvc_Jacobians(first_cvc, num_cvcs);
   error_code |= calc_cvc_values(first_cvc, num_cvcs);
   error_code |= calc_cvc_gradients(first_cvc, num_cvcs);
-  error_code |= calc_cvc_Jacobians(first_cvc, num_cvcs);
 
   if (cvm::debug())
     cvm::log("Done calculating colvar \""+this->name+"\".\n");
