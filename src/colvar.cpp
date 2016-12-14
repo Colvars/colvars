@@ -763,14 +763,13 @@ int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
   }
 
   if (cvm::step_relative() > 0) {
-    // Using coordinates from previous timestep
-    error_code |= calc_cvc_Jacobians(first_cvc, num_cvcs);
-    // Total force depends on Jacobian derivative
+    // Total force depends on Jacobian derivative from previous timestep
     error_code |= calc_cvc_total_force(first_cvc, num_cvcs);
   }
-  // atom coordinates are reset now
+  // atom coordinates are updated by the next line
   error_code |= calc_cvc_values(first_cvc, num_cvcs);
   error_code |= calc_cvc_gradients(first_cvc, num_cvcs);
+  error_code |= calc_cvc_Jacobians(first_cvc, num_cvcs);
 
   if (cvm::debug())
     cvm::log("Done calculating colvar \""+this->name+"\".\n");
@@ -787,12 +786,12 @@ int colvar::collect_cvc_data()
   int error_code = COLVARS_OK;
 
   if (cvm::step_relative() > 0) {
-    error_code |= collect_cvc_Jacobians();
-    // Total force depends on Jacobian derivative
+    // Total force depends on Jacobian derivative from previous timestep
     error_code |= collect_cvc_total_forces();
   }
   error_code |= collect_cvc_values();
   error_code |= collect_cvc_gradients();
+  error_code |= collect_cvc_Jacobians();
   error_code |= calc_colvar_properties();
 
   if (cvm::debug())
@@ -1158,6 +1157,7 @@ cvm::real colvar::update_forces_energy()
   if (is_enabled(f_cv_Jacobian)) {
     // the instantaneous Jacobian force was not included in the reported total force;
     // instead, it is subtracted from the applied force (silent Jacobian correction)
+    // This requires the Jacobian term for the *current* timestep
     if (is_enabled(f_cv_hide_Jacobian))
       f -= fj;
   }
