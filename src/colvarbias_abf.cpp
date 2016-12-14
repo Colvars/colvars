@@ -624,9 +624,6 @@ std::istream & colvarbias_abf::read_state_data(std::istream& is)
     cvm::error("ERROR: cannot provide both inputPrefix and a colvars state file.\n", INPUT_ERROR);
   }
 
-  std::string key;
-  size_t const start_pos = is.tellg();
-
   if (! read_state_data_key(is, "samples")) {
     return is;
   }

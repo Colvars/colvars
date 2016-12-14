@@ -565,7 +565,6 @@ int colvarmodule::calc_colvars()
     colvars_smp_items.reserve(colvars.size());
 
     // set up a vector containing all components
-    size_t num_colvar_items = 0;
     cvm::increase_depth();
     for (cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
 
@@ -579,8 +578,6 @@ int colvarmodule::calc_colvars()
         colvars_smp.push_back(*cvi);
         colvars_smp_items.push_back(icvc);
       }
-
-      num_colvar_items += num_items;
     }
     cvm::decrease_depth();
 
@@ -644,7 +641,7 @@ int colvarmodule::calc_biases()
     for (bi = biases.begin(); bi != biases.end(); bi++) {
       error_code |= (*bi)->update();
       if (cvm::get_error()) {
-        return COLVARS_ERROR;
+        return error_code;
       }
     }
     cvm::decrease_depth();
