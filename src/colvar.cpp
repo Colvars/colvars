@@ -207,7 +207,8 @@ colvar::colvar(std::string const &conf)
   // at this point, the colvar's type is defined
   f.type(value());
   f_accumulated.type(value());
-  fb.type(value());
+
+  reset_bias_force();
 
   get_keyval(conf, "width", width, 1.0);
   if (width <= 0.0) {
@@ -1244,10 +1245,11 @@ cvm::real colvar::update_forces_energy()
     if (this->is_enabled(f_cv_periodic)) this->wrap(xr);
   }
 
-  // Now adding the wall force to the force on the actual colvar
-  // eventually, this will be the point to apply any bias forces that
-  // should bypass the extended variable
+  // TODO remove the wall force
   f += fw;
+  // Now adding the force on the actual colvar (for those biases who
+  // bypass the extended Lagrangian mass)
+  f += fb_actual;
 
   // Store force to be applied, possibly summed over several timesteps
   f_accumulated += f;

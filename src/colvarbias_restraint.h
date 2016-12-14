@@ -239,6 +239,7 @@ public:
   colvarbias_restraint_harmonic_walls(char const *key);
   virtual int init(std::string const &conf);
   virtual int update();
+  virtual void communicate_forces();
   virtual std::string const get_state_params() const;
   virtual int set_state_params(std::string const &conf);
   virtual std::ostream & write_traj_label(std::ostream &os);

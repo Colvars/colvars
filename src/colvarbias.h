@@ -56,7 +56,7 @@ public:
   virtual void analyze() {}
 
   /// Send forces to the collective variables
-  void communicate_forces();
+  virtual void communicate_forces();
 
   /// \brief Constructor
   colvarbias(char const *key);

@@ -170,6 +170,9 @@ public:
   /// the biases are updated
   colvarvalue fb;
 
+  /// \brief Bias force to the actual value (only useful with extended Lagrangian)
+  colvarvalue fb_actual;
+
   /// \brief Total \em applied force; fr (if extended_lagrangian
   /// is defined), fb (if biases are applied) and the walls' forces
   /// (if defined) contribute to it
@@ -285,6 +288,9 @@ public:
 
   /// Add to the total force from biases
   void add_bias_force(colvarvalue const &force);
+
+  /// Apply a force to the actual value (only meaningful with extended Lagrangian)
+  void add_bias_force_actual_value(colvarvalue const &force);
 
   /// \brief Collect all forces on this colvar, integrate internal
   /// equations of motion of internal degrees of freedom; see also
@@ -579,9 +585,20 @@ inline void colvar::add_bias_force(colvarvalue const &force)
 }
 
 
+inline void colvar::add_bias_force_actual_value(colvarvalue const &force)
+{
+  if (cvm::debug()) {
+    cvm::log("Adding biasing force "+cvm::to_str(force)+" to colvar \""+name+"\".\n");
+  }
+  fb_actual += force;
+}
+
+
 inline void colvar::reset_bias_force() {
   fb.type(value());
   fb.reset();
+  fb_actual.type(value());
+  fb_actual.reset();
 }
 
 #endif

@@ -926,10 +926,22 @@ int colvarbias_restraint_harmonic_walls::update()
 }
 
 
+void colvarbias_restraint_harmonic_walls::communicate_forces()
+{
+  for (size_t i = 0; i < colvars.size(); i++) {
+    if (cvm::debug()) {
+      cvm::log("Communicating a force to colvar \""+
+               colvars[i]->name+"\".\n");
+    }
+    colvars[i]->add_bias_force_actual_value(colvar_forces[i]);
+  }
+}
+
+
 cvm::real colvarbias_restraint_harmonic_walls::colvar_distance(size_t i) const
 {
   colvar *cv = colvars[i];
-  colvarvalue const &cvv = colvars[i]->value();
+  colvarvalue const &cvv = colvars[i]->actual_value();
 
   // For a periodic colvar, both walls may be applicable at the same time
   // in which case we pick the closer one
