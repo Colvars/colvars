@@ -1,7 +1,6 @@
 configuration {
   step           10
   dt 5.000000e-01
-  version 2016-12-13
 }
 
 colvar {
