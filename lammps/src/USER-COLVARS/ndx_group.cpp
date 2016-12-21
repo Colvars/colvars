@@ -1,3 +1,5 @@
+// -*- c++ -*-
+
 /* ----------------------------------------------------------------------
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
@@ -34,7 +36,7 @@ static char *find_section(FILE *fp, const char *name)
 {
   char linebuf[BUFLEN];
   char *n,*p,*t,*r;
-  
+
   while ((p = fgets(linebuf,BUFLEN,fp))) {
     t = strtok(p," \t\n\r\f");
     if ((t != NULL) && *t == '[') {

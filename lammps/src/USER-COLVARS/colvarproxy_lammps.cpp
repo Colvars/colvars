@@ -1,3 +1,5 @@
+// -*- c++ -*-
+
 
 #include <mpi.h>
 #include "lammps.h"

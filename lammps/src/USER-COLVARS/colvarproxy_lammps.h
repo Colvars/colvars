@@ -1,5 +1,6 @@
 // -*- c++ -*-
 
+
 #ifndef COLVARPROXY_LAMMPS_H
 #define COLVARPROXY_LAMMPS_H
 
@@ -21,7 +22,7 @@
 #endif
 
 #ifndef COLVARPROXY_VERSION
-#define COLVARPROXY_VERSION "2016-12-09"
+#define COLVARPROXY_VERSION "2016-12-21"
 #endif
 
 /* struct for packed data communication of coordinates and forces. */
