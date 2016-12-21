@@ -46,7 +46,7 @@ class colvarproxy_lammps : public colvarproxy {
 
   // pointers to LAMMPS class instances
   class LAMMPS_NS::LAMMPS *_lmp;
-  class LAMMPS_NS::Random *_random;
+  class LAMMPS_NS::RanPark *_random;
 
   // state of LAMMPS properties
   double t_target, my_timestep, my_boltzmann, my_angstrom;

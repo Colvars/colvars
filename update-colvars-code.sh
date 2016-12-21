@@ -163,25 +163,9 @@ then
     condcopy "${src}" "${target}/lib/colvars/${tgt}"
   done
   # update LAMMPS interface files (package part)
-  # versions before 2016-04-22, using old pseudo random number generators
   if [ -f ${target}/src/random_park.h ]
   then
-    echo "Using backward compatible source with old pRNG"
-    for src in ${source}/lammps/src/USER-COLVARS/*.cpp \
-               ${source}/lammps/src/USER-COLVARS/*.h \
-               ${source}/lammps/src/USER-COLVARS/Install.sh \
-               ${source}/lammps/src/USER-COLVARS/README
-    do \
-      tgt=$(basename ${src})
-      if [ -f ${src}-20160422 ]
-      then
-        condcopy "${src}-20160422" "${target}/src/USER-COLVARS/${tgt}"
-      else
-        condcopy "${src}" "${target}/src/USER-COLVARS/${tgt}"
-      fi
-    done
-  # versions since 2016-04-22, using new pseudo random number generators
-  else
+    # versions before 2016-04-22, using old pseudo random number generators
     for src in ${source}/lammps/src/USER-COLVARS/*.cpp \
                ${source}/lammps/src/USER-COLVARS/*.h \
                ${source}/lammps/src/USER-COLVARS/Install.sh \
@@ -190,6 +174,9 @@ then
       tgt=$(basename ${src})
       condcopy "${src}" "${target}/src/USER-COLVARS/${tgt}"
     done
+  else
+    echo "ERROR: Support for the new pRNG (old LAMMPS-ICMS branch) is currently disabled."
+    exit 2
   fi
 
   # update LAMMPS documentation
@@ -201,6 +188,9 @@ then
     condcopy "${src}" "${docdir}/${tgt}"
   done
 
+  cd ${source}/doc
+  make colvars-refman-lammps.pdf 1> /dev/null 2> /dev/null
+  cd - 1> /dev/null 2> /dev/null
   for src in ${source}/doc/colvars-refman-lammps.pdf
   do \
     tgt=$(basename ${src})
