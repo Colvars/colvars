@@ -1,3 +1,6 @@
+// -*- c++ -*-
+
+
 #include "colvardeps.h"
 
 

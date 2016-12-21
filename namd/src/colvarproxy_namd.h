@@ -1,4 +1,4 @@
-/// -*- c++ -*-
+// -*- c++ -*-
 
 #ifndef COLVARPROXY_NAMD_H
 #define COLVARPROXY_NAMD_H
