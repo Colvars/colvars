@@ -3327,10 +3327,11 @@ e.g.,
 
 If one runs an ABF--based calculation, breaking the reaction pathway
 into several non--overlapping windows, one can use
-{\ttfamily ./eabf.tcl -mergesplitwindow [merge\_gradfilename] [output\_gradfile1] [output\_gradfile2] ...}
+{\ttfamily ./eabf.tcl -mergesplitwindow [merged\_fileprefix] [eabf\_output] [eabf\_output2] ...}
 to merge the data accrued in these non--overlapping windows. 
 This option can be utilized in both eABF and classical ABF simulations, e.g.,
-{\ttfamily ./eabf.tcl -mergesplitwindow merge.grad window0.grad window1.grad window2.grad}.
+{\ttfamily ./eabf.tcl -mergesplitwindow merge window0.eabf window1.eabf window2.eabf window3.eabf} or
+{\ttfamily ./eabf.tcl -mergesplitwindow merge abf0 abf1 abf2 abf3}.
 }
 
 
