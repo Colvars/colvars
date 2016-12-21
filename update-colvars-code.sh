@@ -41,6 +41,9 @@ fi
 # infer source path from name of script
 source=$(dirname "$0")
 
+cpp_patch=${source}/devel-tools/update-header-cpp.patch
+tex_patch=${source}/devel-tools/update-header-tex.patch
+
 # check general validity of target path
 target="$1"
 if [ ! -d "${target}" ]
@@ -93,7 +96,7 @@ echo Detected ${code} source tree in ${target}
 echo -n Updating
 
 # conditional file copy
-condcopy () {
+condcopy() {
   if [ $reverse -eq 1 ]
   then
     a=$2
@@ -112,11 +115,17 @@ condcopy () {
       echo -n '.'
     fi
   fi
+
+  # if a patch file is available, apply it
+  if [ "x$3" != "x" ] ; then
+    if [ -f "$3" ] ; then
+      patch < $3 $2 > /dev/null
+    fi
+  fi
 }
 
-
 # check files related to, but not part of the colvars module
-checkfile () {
+checkfile() {
   if [ $reverse -eq 1 ]
   then
     a=$2
@@ -147,13 +156,13 @@ then
   for src in ${source}/src/*.h
   do \
     tgt=$(basename ${src})
-    condcopy "${src}" "${target}/lib/colvars/${tgt}"
+    condcopy "${src}" "${target}/lib/colvars/${tgt}" "${cpp_patch}"
   done
   # update code-independent sources
   for src in ${source}/src/*.cpp
   do \
     tgt=$(basename ${src})
-    condcopy "${src}" "${target}/lib/colvars/${tgt}"
+    condcopy "${src}" "${target}/lib/colvars/${tgt}" "${cpp_patch}"
   done
 
   # update LAMMPS interface files (library part)
@@ -167,8 +176,12 @@ then
   then
     # versions before 2016-04-22, using old pseudo random number generators
     for src in ${source}/lammps/src/USER-COLVARS/*.cpp \
-               ${source}/lammps/src/USER-COLVARS/*.h \
-               ${source}/lammps/src/USER-COLVARS/Install.sh \
+               ${source}/lammps/src/USER-COLVARS/*.h 
+    do \
+      tgt=$(basename ${src})
+      condcopy "${src}" "${target}/src/USER-COLVARS/${tgt}" "${cpp_patch}"
+    done
+    for src in ${source}/lammps/src/USER-COLVARS/Install.sh \
                ${source}/lammps/src/USER-COLVARS/README
     do \
       tgt=$(basename ${src})
@@ -209,32 +222,39 @@ then
   for src in ${source}/src/*.h
   do \
     tgt=$(basename ${src})
-    condcopy "${src}" "${target}/src/${tgt}"
+    condcopy "${src}" "${target}/src/${tgt}" "${cpp_patch}"
   done
   # update code-independent sources
   for src in ${source}/src/*.cpp
   do \
     tgt=$(basename ${src%.cpp})
-    condcopy "${src}" "${target}/src/${tgt}.C"
+    condcopy "${src}" "${target}/src/${tgt}.C" "${cpp_patch}"
   done
 
   # update NAMD interface files
   for src in ${source}/namd/src/colvarproxy_namd.h ${source}/namd/src/colvarproxy_namd.C
   do \
     tgt=$(basename ${src})
-    condcopy "${src}" "${target}/src/${tgt}"
+    condcopy "${src}" "${target}/src/${tgt}" "${cpp_patch}"
   done
 
   condcopy "${source}/doc/colvars-refman.bib" "${target}/ug/ug_colvars.bib"
-  condcopy "${source}/doc/colvars-refman-main.tex" "${target}/ug/ug_colvars.tex"
-  condcopy "${source}/doc/colvars-cv.tex" "${target}/ug/ug_colvars-cv.tex"
-  condcopy "${source}/namd/ug/ug_colvars_macros.tex" "${target}/ug/ug_colvars_macros.tex"
+  condcopy "${source}/doc/colvars-refman-main.tex" "${target}/ug/ug_colvars.tex" "${tex_patch}"
+  condcopy "${source}/doc/colvars-cv.tex" "${target}/ug/ug_colvars-cv.tex" "${tex_patch}"
+  condcopy "${source}/namd/ug/ug_colvars_macros.tex" "${target}/ug/ug_colvars_macros.tex" "${tex_patch}"
   condcopy "${source}/doc/colvars_diagram.pdf" "${target}/ug/figures/colvars_diagram.pdf"
   condcopy "${source}/doc/colvars_diagram.eps" "${target}/ug/figures/colvars_diagram.eps"
 
   echo ' done.'
 
-  for src in ${source}/namd/src/* 
+  # Check for changes in related NAMD files
+  for src in \
+      ${source}/namd/src/GlobalMasterColvars.h \
+      ${source}/namd/src/ScriptTcl.h \
+      ${source}/namd/src/ScriptTcl.C \
+      ${source}/namd/src/SimParameters.h \
+      ${source}/namd/src/SimParameters.C \
+      ;
   do \
     tgt=$(basename ${src})
     checkfile "${src}" "${target}/src/${tgt}"
@@ -257,19 +277,19 @@ then
   for src in ${source}/src/*.h
   do \
     tgt=$(basename ${src})
-    condcopy "${src}" "${target}/src/${tgt}"
+    condcopy "${src}" "${target}/src/${tgt}" "${cpp_patch}"
   done
   # update code-independent sources
   for src in ${source}/src/*.cpp
   do \
     tgt=$(basename ${src%.cpp})
-    condcopy "${src}" "${target}/src/${tgt}.C"
+    condcopy "${src}" "${target}/src/${tgt}.C" "${cpp_patch}"
   done
 
   condcopy "${source}/doc/colvars-refman.bib" "${target}/doc/ug_colvars.bib"
-  condcopy "${source}/doc/colvars-refman-main.tex" "${target}/doc/ug_colvars.tex"
-  condcopy "${source}/doc/colvars-cv.tex" "${target}/doc/ug_colvars-cv.tex"
-  condcopy "${source}/vmd/doc/ug_colvars_macros.tex" "${target}/doc/ug_colvars_macros.tex"
+  condcopy "${source}/doc/colvars-refman-main.tex" "${target}/doc/ug_colvars.tex" "${tex_patch}"
+  condcopy "${source}/doc/colvars-cv.tex" "${target}/doc/ug_colvars-cv.tex" "${tex_patch}"
+  condcopy "${source}/vmd/doc/ug_colvars_macros.tex" "${target}/doc/ug_colvars_macros.tex" "${tex_patch}"
   condcopy "${source}/doc/colvars_diagram.pdf" "${target}/doc/pictures/colvars_diagram.pdf"
   condcopy "${source}/doc/colvars_diagram.eps" "${target}/doc/pictures/colvars_diagram.eps"
 
@@ -277,12 +297,13 @@ then
   for src in ${source}/vmd/src/colvarproxy_vmd.h ${source}/vmd/src/colvarproxy_vmd.C  
   do \
     tgt=$(basename ${src})
-    condcopy "${src}" "${target}/src/${tgt}"
+    condcopy "${src}" "${target}/src/${tgt}" "${tex_patch}"
   done
 
   echo ' done.'
 
-  for src in ${source}/vmd/src/* 
+  # Check for changes in related VMD files
+  for src in ${source}/vmd/src/tcl_commands.C
   do \
     tgt=$(basename ${src})
     checkfile "${src}" "${target}/src/${tgt}"
@@ -292,7 +313,6 @@ then
     tgt=$(basename ${src})
     checkfile "${src}" "${target}/${tgt}"
   done
-
 
   exit 0
 fi
