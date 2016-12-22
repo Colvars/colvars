@@ -93,8 +93,14 @@ for colvar in \
     "angle" \
     "dihedral" \
     "coordnum" \
+    "gyration" \
+    "inertia" \
+    "inertiaz" \
     "rmsd" \
-    ; do
+    "tilt" \
+    "selfcoordnum" \
+    "spinangle" \
+   ; do
     for bias in \
         "harmonic-fixed" \
         ; do

@@ -1,0 +1,14 @@
+colvar {
+
+    name one
+
+    outputAppliedForce on
+
+    width 0.5
+
+    inertia {
+        atoms {
+            indexGroup RMSD_atoms
+        }
+    }
+} 
