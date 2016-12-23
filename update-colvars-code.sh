@@ -297,7 +297,7 @@ then
   for src in ${source}/vmd/src/colvarproxy_vmd.h ${source}/vmd/src/colvarproxy_vmd.C  
   do \
     tgt=$(basename ${src})
-    condcopy "${src}" "${target}/src/${tgt}" "${tex_patch}"
+    condcopy "${src}" "${target}/src/${tgt}" "${cpp_patch}"
   done
 
   echo ' done.'
