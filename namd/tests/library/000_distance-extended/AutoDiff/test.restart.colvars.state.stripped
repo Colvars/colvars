@@ -1,0 +1,12 @@
+configuration {
+  step           40
+  dt 1.000000e+00
+}
+
+colvar {
+  name one
+  x  3.21287767413221e+00
+  extended_x  3.21339571952174e+00
+  extended_v -1.85575621774385e-04
+}
+

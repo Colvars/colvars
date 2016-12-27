@@ -74,6 +74,23 @@ create_test_dir "dihedralwalls"
 write_colvars_config "dihedral" "harmonicwalls360angle-fixed" ${dirname}/test.in
 write_colvars_config "dihedralwalls" "" ${dirname}/test.legacy.in
 
+# Tests for each colvar without a bias
+for colvar in \
+    "distance" \
+    ; do
+    create_test_dir ${colvar}
+    write_colvars_config ${colvar} "" ${dirname}/test.in
+    # if [ -f ${colvar}-fitgroup.in ] ; then
+    #     create_test_dir ${colvar}-fitgroup_${bias}
+    #     write_colvars_config ${colvar}-fitgroup ${bias} ${dirname}/test.in
+    #     m4 -DfittingGroup=refPositionsGroup < ${colvar}-fitgroup.in > ${colvar}-refposgroup.in
+    #     write_colvars_config ${colvar}-refposgroup ${bias} ${dirname}/test.legacy.in
+    # fi
+done
+
+create_test_dir "distance-extended"
+write_colvars_config "distance-extended" "" ${dirname}/test.in
+
 # NOTE: abf is not included because total/system force calculations
 # should be tested separately
 for colvar in "distance-grid" ; do
