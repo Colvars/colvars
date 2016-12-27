@@ -16,8 +16,8 @@ fi
 # Create a directory (or find an existing one) and set the variable $dirname
 create_test_dir() {
 
-    if ls $WORKDIR/ | grep -q "_${1}" ; then
-        dirname=`ls $WORKDIR/ | grep "_${1}"`
+    if ls $WORKDIR/ | grep -q "^[0-9]\{3\}_${1}$" ; then
+        dirname=`ls $WORKDIR/ | grep "^[0-9]\{3\}_${1}$"`
         echo "$dirname already exists"
         dirname=${WORKDIR}/${dirname}
         return
