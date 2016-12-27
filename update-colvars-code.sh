@@ -175,13 +175,19 @@ then
   if [ -f ${target}/src/random_park.h ]
   then
     # versions before 2016-04-22, using old pseudo random number generators
-    for src in ${source}/lammps/src/USER-COLVARS/*.cpp \
-               ${source}/lammps/src/USER-COLVARS/*.h 
+    for src in ${source}/lammps/src/USER-COLVARS/colvarproxy_lammps.cpp \
+               ${source}/lammps/src/USER-COLVARS/colvarproxy_lammps.h \
+               ${source}/lammps/src/USER-COLVARS/fix_colvars.cpp \
+               ${source}/lammps/src/USER-COLVARS/fix_colvars.h
     do \
       tgt=$(basename ${src})
       condcopy "${src}" "${target}/src/USER-COLVARS/${tgt}" "${cpp_patch}"
     done
     for src in ${source}/lammps/src/USER-COLVARS/Install.sh \
+               ${source}/lammps/src/USER-COLVARS/group_ndx.cpp \
+               ${source}/lammps/src/USER-COLVARS/group_ndx.h \
+               ${source}/lammps/src/USER-COLVARS/ndx_group.cpp \
+               ${source}/lammps/src/USER-COLVARS/ndx_group.h \
                ${source}/lammps/src/USER-COLVARS/README
     do \
       tgt=$(basename ${src})
