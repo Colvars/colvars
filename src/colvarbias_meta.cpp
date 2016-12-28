@@ -307,9 +307,10 @@ colvarbias_meta::delete_hill(hill_iter &h)
 
 int colvarbias_meta::update()
 {
-  if (cvm::debug())
-    cvm::log("Updating the metadynamics bias \""+this->name+"\""+
-             ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+".\n");
+  int error_code = COLVARS_OK;
+
+  // update base class
+  error_code |= colvarbias::update();
 
   if (use_grids) {
 

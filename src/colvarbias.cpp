@@ -178,9 +178,17 @@ int colvarbias::add_colvar(std::string const &cv_name)
 
 int colvarbias::update()
 {
-  // Note: if anything is added here, it should be added also in the SMP block of calc_biases()
-  // TODO move here debug msg of bias update
+  if (cvm::debug()) {
+    cvm::log("Updating the "+bias_type+" bias \""+this->name+"\".\n");
+  }
+
   has_data = true;
+
+  bias_energy = 0.0;
+  for (size_t ir = 0; ir < colvars.size(); ir++) {
+    colvar_forces[ir].reset();
+  }
+
   return COLVARS_OK;
 }
 

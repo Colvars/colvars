@@ -26,17 +26,15 @@ int colvarbias_restraint::init(std::string const &conf)
 
 int colvarbias_restraint::update()
 {
-  bias_energy = 0.0;
-
-  if (cvm::debug())
-    cvm::log("Updating the restraint bias \""+this->name+"\".\n");
+  // Update base class (bias_energy and colvar_forces are zeroed there)
+  colvarbias::update();
 
   // Force and energy calculation
   for (size_t i = 0; i < colvars.size(); i++) {
+    bias_energy += restraint_potential(i);
     colvar_forces[i].type(colvars[i]->value());
     colvar_forces[i].is_derivative();
     colvar_forces[i] = restraint_force(i);
-    bias_energy += restraint_potential(i);
   }
 
   if (cvm::debug())
