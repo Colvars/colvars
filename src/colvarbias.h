@@ -35,6 +35,18 @@ public:
   /// Return bias energy
   virtual int update();
 
+  /// \brief Compute the energy of the bias with alternative values of the
+  /// collective variables (suitable for bias exchange)
+  virtual int calc_energy(std::vector<colvarvalue> const &values = 
+                          std::vector<colvarvalue>(0))
+  {
+    cvm::error("Error: calc_energy() not implemented.\n", COLVARS_NOT_IMPLEMENTED);
+    return COLVARS_NOT_IMPLEMENTED;
+  }
+
+  /// Send forces to the collective variables
+  virtual void communicate_forces();
+
   // TODO: move update_bias here (share with metadynamics)
 
   /// Load new configuration - force constant and/or centers only
@@ -54,9 +66,6 @@ public:
 
   /// Perform analysis tasks
   virtual void analyze() {}
-
-  /// Send forces to the collective variables
-  virtual void communicate_forces();
 
   /// \brief Constructor
   colvarbias(char const *key);
