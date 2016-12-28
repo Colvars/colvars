@@ -106,6 +106,9 @@ for colvar in "distance-grid" ; do
     done
 done
 
+create_test_dir "distance-grid-expand_metadynamics"
+write_colvars_config "distance-grid-expand" "metadynamics" ${dirname}/test.in
+
 for colvar in \
     "angle" \
     "dihedral" \
