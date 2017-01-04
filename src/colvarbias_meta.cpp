@@ -1492,6 +1492,7 @@ int colvarbias_meta::setup_output()
                                        ("") )+
                                      ".hills.traj");
     if (!hills_traj_os.is_open()) {
+      cvm::backup_file(traj_file_name.c_str());
       hills_traj_os.open(traj_file_name.c_str());
     }
     if (!hills_traj_os.is_open())
