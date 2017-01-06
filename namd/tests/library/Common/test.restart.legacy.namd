@@ -11,6 +11,10 @@ colvars                 on
 colvarsConfig           test.legacy.in
 colvarsInput            test.colvars.state
 
+if { [file exists test.restart.legacy.prerun.tcl] > 0 } {
+    source test.restart.legacy.prerun.tcl
+}
+
 run ${numsteps}
 
 if { [file exists test.restart.legacy.postprocess.tcl] > 0 } {

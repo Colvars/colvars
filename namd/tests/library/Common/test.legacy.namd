@@ -6,6 +6,10 @@ source ../Common/measure_net_force_torque.tcl
 colvars                 on
 colvarsConfig           test.legacy.in
 
+if { [file exists test.legacy.prerun.tcl] > 0 } {
+    source test.legacy.prerun.tcl
+}
+
 run ${numsteps}
 
 if { [file exists test.legacy.postprocess.tcl] > 0 } {

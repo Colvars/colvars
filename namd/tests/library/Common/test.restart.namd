@@ -13,6 +13,10 @@ colvars                 on
 colvarsConfig           test.in
 colvarsInput            test.colvars.state
 
+if { [file exists test.restart.prerun.tcl] > 0 } {
+    source test.restart.prerun.tcl
+}
+
 run ${numsteps}
 
 if { [file exists test.restart.postprocess.tcl] > 0 } {
