@@ -4,7 +4,7 @@
 #define COLVARMODULE_H
 
 #ifndef COLVARS_VERSION
-#define COLVARS_VERSION "2017-01-05"
+#define COLVARS_VERSION "2017-01-06"
 #endif
 
 #ifndef COLVARS_DEBUG
@@ -178,6 +178,8 @@ public:
 
   /// Array of collective variable biases
   static std::vector<colvarbias *> biases;
+  /// Array of active collective variable biases
+  std::vector<colvarbias *> biases_active;
   /// \brief Number of ABF biases initialized (in normal conditions
   /// should be 1)
   static size_t n_abf_biases;

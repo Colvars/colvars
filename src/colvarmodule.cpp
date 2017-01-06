@@ -620,6 +620,15 @@ int colvarmodule::calc_biases()
   std::vector<colvarbias *>::iterator bi;
   int error_code = COLVARS_OK;
 
+  // update the list of active biases
+  biases_active.resize(0);
+  biases_active.reserve(biases.size());
+  for (bi = biases.begin(); bi != biases.end(); bi++) {
+    if ((*bi)->is_enabled()) {
+      biases_active.push_back(*bi);
+    }
+  }
+
   // if SMP support is available, split up the work
   if (proxy->smp_enabled() == COLVARS_OK) {
 
@@ -638,7 +647,7 @@ int colvarmodule::calc_biases()
     }
 
     cvm::increase_depth();
-    for (bi = biases.begin(); bi != biases.end(); bi++) {
+    for (bi = biases_active.begin(); bi != biases_active.end(); bi++) {
       error_code |= (*bi)->update();
       if (cvm::get_error()) {
         return error_code;
@@ -648,7 +657,7 @@ int colvarmodule::calc_biases()
   }
 
   cvm::real total_bias_energy = 0.0;
-  for (bi = biases.begin(); bi != biases.end(); bi++) {
+  for (bi = biases_active.begin(); bi != biases_active.end(); bi++) {
     total_bias_energy += (*bi)->get_energy();
   }
 
@@ -668,7 +677,7 @@ int colvarmodule::update_colvar_forces()
   if (cvm::debug() && biases.size())
     cvm::log("Collecting forces from all biases.\n");
   cvm::increase_depth();
-  for (bi = biases.begin(); bi != biases.end(); bi++) {
+  for (bi = biases_active.begin(); bi != biases_active.end(); bi++) {
     (*bi)->communicate_forces();
     if (cvm::get_error()) {
       return COLVARS_ERROR;
