@@ -431,7 +431,7 @@ int colvarscript::proc_bias(int argc, char const *argv[]) {
   result = "Syntax error\n" + help_string();
   return COLVARSCRIPT_ERROR;
 }
- 
+
 
 int colvarscript::proc_features(colvardeps *obj,
                                 int argc, char const *argv[]) {
@@ -454,9 +454,8 @@ int colvarscript::proc_features(colvardeps *obj,
     std::vector<colvardeps::feature *> &features = obj->features();
     std::string const req_feature(argv[3]);
     colvardeps::feature *f = NULL;
-    colvardeps::feature_state *fs = NULL;
     int fid = 0;
-    for (fid = 0; fid < features.size(); fid++) {
+    for (fid = 0; fid < int(features.size()); fid++) {
       if (features[fid]->description ==
           colvarparse::to_lower_cppstr(req_feature)) {
         f = features[fid];

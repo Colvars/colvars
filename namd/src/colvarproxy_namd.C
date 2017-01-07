@@ -1093,13 +1093,14 @@ void calc_cv_biases_smp(int first, int last, void *result, int paramNum, void *p
 
   cvm::increase_depth();
   for (int i = first; i <= last; i++) {
+    colvarbias *b = (*(cv->biases_active()))[i];
     if (cvm::debug()) {
       cvm::log("["+cvm::to_str(proxy->smp_thread_id())+"/"+cvm::to_str(proxy->smp_num_threads())+
                "]: calc_cv_biases_smp(), first = "+cvm::to_str(first)+
                ", last = "+cvm::to_str(last)+", bias = "+
-               cv->biases[i]->name+"\n");
+               b->name+"\n");
     }
-    cv->biases[i]->update();
+    b->update();
   }
   cvm::decrease_depth();
 }
@@ -1109,7 +1110,7 @@ int colvarproxy_namd::smp_biases_loop()
 {
   colvarmodule *cv = this->colvars;
   CkLoop_Parallelize(calc_cv_biases_smp, 1, this,
-                     cv->biases_active.size(), 0, cv->biases_active.size()-1);
+                     cv->biases_active()->size(), 0, cv->biases_active()->size()-1);
   return cvm::get_error();
 }
 
@@ -1118,10 +1119,10 @@ void calc_cv_scripted_forces(int paramNum, void *param)
 {
   colvarproxy_namd *proxy = (colvarproxy_namd *) param;
   colvarmodule *cv = proxy->colvars;
-    if (cvm::debug()) {
-      cvm::log("["+cvm::to_str(proxy->smp_thread_id())+"/"+cvm::to_str(proxy->smp_num_threads())+
-               "]: calc_cv_scripted_forces()\n");
-    }
+  if (cvm::debug()) {
+    cvm::log("["+cvm::to_str(proxy->smp_thread_id())+"/"+cvm::to_str(proxy->smp_num_threads())+
+             "]: calc_cv_scripted_forces()\n");
+  }
   cv->calc_scripted_forces();
 }
 
@@ -1130,7 +1131,7 @@ int colvarproxy_namd::smp_biases_script_loop()
 {
   colvarmodule *cv = this->colvars;
   CkLoop_Parallelize(calc_cv_biases_smp, 1, this,
-                     cv->biases_active.size(), 0, cv->biases_active.size()-1,
+                     cv->biases_active()->size(), 0, cv->biases_active()->size()-1,
                      1, NULL, CKLOOP_NONE,
                      calc_cv_scripted_forces, 1, this);
   return cvm::get_error();

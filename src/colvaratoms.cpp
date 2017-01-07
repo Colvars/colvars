@@ -493,14 +493,16 @@ int cvm::atom_group::add_atom_numbers(std::string const &numbers_conf)
 
 int cvm::atom_group::add_index_group(std::string const &index_group_name)
 {
-  std::list<std::string>::iterator names_i = cvm::index_group_names.begin();
-  std::list<std::vector<int> >::iterator index_groups_i = cvm::index_groups.begin();
-  for ( ; names_i != cvm::index_group_names.end() ; ++names_i, ++index_groups_i) {
+  colvarmodule *cv = cvm::main();
+
+  std::list<std::string>::iterator names_i = cv->index_group_names.begin();
+  std::list<std::vector<int> >::iterator index_groups_i = cv->index_groups.begin();
+  for ( ; names_i != cv->index_group_names.end() ; ++names_i, ++index_groups_i) {
     if (*names_i == index_group_name)
       break;
   }
 
-  if (names_i == cvm::index_group_names.end()) {
+  if (names_i == cv->index_group_names.end()) {
     cvm::error("Error: could not find index group "+
                index_group_name+" among those provided by the index file.\n",
                INPUT_ERROR);

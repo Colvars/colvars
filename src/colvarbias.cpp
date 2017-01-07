@@ -12,20 +12,6 @@ colvarbias::colvarbias(char const *key)
 
   rank = 1;
 
-  if (bias_type == std::string("abf")) {
-    rank = cvm::n_abf_biases+1;
-  }
-  if (bias_type == std::string("harmonic") ||
-      bias_type == std::string("linear")) {
-    rank = cvm::n_rest_biases+1;
-  }
-  if (bias_type == std::string("histogram")) {
-    rank = cvm::n_histo_biases+1;
-  }
-  if (bias_type == std::string("metadynamics")) {
-    rank = cvm::n_meta_biases+1;
-  }
-
   has_data = false;
   b_output_energy = false;
   reset();
@@ -125,12 +111,13 @@ int colvarbias::clear()
     }
   }
 
+  colvarmodule *cv = cvm::main();
   // ...and from the colvars module
-  for (std::vector<colvarbias *>::iterator bi = cvm::biases.begin();
-       bi != cvm::biases.end();
+  for (std::vector<colvarbias *>::iterator bi = cv->biases.begin();
+       bi != cv->biases.end();
        ++bi) {
     if ( *bi == this) {
-      cvm::biases.erase(bi);
+      cv->biases.erase(bi);
       break;
     }
   }

@@ -38,6 +38,9 @@ int colvarbias_meta::init(std::string const &conf)
 
   provide(f_cvb_history_dependent);
 
+  provide(f_cvb_calc_pmf);
+  enable(f_cvb_calc_pmf);
+
   get_keyval(conf, "hillWeight", hill_weight, 0.0);
   if (hill_weight > 0.0) {
     enable(f_cvb_apply_force);
@@ -70,7 +73,7 @@ int colvarbias_meta::init(std::string const &conf)
   if (replicas.size() == 0) {
     replicas.push_back(this);
   }
-  
+
   get_keyval(conf, "useGrids", use_grids, true);
 
   if (use_grids) {
@@ -151,7 +154,7 @@ int colvarbias_meta::init(std::string const &conf)
 
   init_well_tempered_params(conf);
   init_ebmeta_params(conf);
-  
+
   if (cvm::debug())
     cvm::log("Done initializing the metadynamics bias \""+this->name+"\""+
              ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+".\n");
@@ -242,9 +245,6 @@ colvarbias_meta::~colvarbias_meta()
     delete target_dist;
     target_dist = NULL;
   }
-
-  if (cvm::n_meta_biases > 0)
-    cvm::n_meta_biases -= 1;
 }
 
 
@@ -334,7 +334,7 @@ int colvarbias_meta::update()
   // update grid content to reflect new bias
   error_code |= update_grid_data();
 
-  if (comm != single_replica && 
+  if (comm != single_replica &&
       (cvm::step_absolute() % replica_update_freq) == 0) {
     // sync with the other replicas (if needed)
     error_code |= replica_share();
@@ -453,9 +453,9 @@ int colvarbias_meta::update_grid_params()
 
 
 int colvarbias_meta::update_bias()
-{      
+{
   // add a new hill if the required time interval has passed
-  if ((cvm::step_absolute() % new_hill_freq) == 0 && 
+  if ((cvm::step_absolute() % new_hill_freq) == 0 &&
       is_enabled(f_cvb_history_dependent)) {
 
     if (cvm::debug()) {
@@ -463,7 +463,7 @@ int colvarbias_meta::update_bias()
                ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
                ": adding a new hill at step "+cvm::to_str(cvm::step_absolute())+".\n");
     }
-  
+
     cvm::real hills_scale=1.0;
 
     if (ebmeta) {
@@ -569,7 +569,7 @@ int colvarbias_meta::calc_energy(std::vector<colvarvalue> const &values)
                  values);
     }
   }
-  
+
   // now include the hills that have not been binned yet (starting
   // from new_hills_begin)
 
@@ -602,7 +602,7 @@ int colvarbias_meta::calc_forces(std::vector<colvarvalue> const &values)
     for (size_t ir = 0; ir < replicas.size(); ir++) {
       cvm::real const *f = &(replicas[ir]->hills_energy_gradients->value(curr_bin));
       for (size_t ic = 0; ic < colvars.size(); ic++) {
-        // the gradients are stored, not the forces 
+        // the gradients are stored, not the forces
         colvar_forces[ic].real_value += -1.0 * f[ic];
       }
     }
@@ -633,7 +633,7 @@ int colvarbias_meta::calc_forces(std::vector<colvarvalue> const &values)
       calc_hills_force(ic,
                        replicas[ir]->new_hills_begin,
                        replicas[ir]->hills.end(),
-                       colvar_forces, 
+                       colvar_forces,
                        values);
       if (cvm::debug()) {
         cvm::log("Hills forces = "+cvm::to_str(colvar_forces)+".\n");
@@ -1474,10 +1474,10 @@ int colvarbias_meta::setup_output()
     // those by another replica
     replica_hills_file =
       (std::string(pwd)+std::string(PATHSEP)+
-       cvm::output_prefix+".colvars."+this->name+"."+replica_id+".hills");
+       cvm::output_prefix()+".colvars."+this->name+"."+replica_id+".hills");
     replica_state_file =
       (std::string(pwd)+std::string(PATHSEP)+
-       cvm::output_prefix+".colvars."+this->name+"."+replica_id+".state");
+       cvm::output_prefix()+".colvars."+this->name+"."+replica_id+".state");
     delete[] pwd;
 
     // now register this replica
@@ -1545,7 +1545,7 @@ int colvarbias_meta::setup_output()
   }
 
   if (b_hills_traj) {
-    std::string const traj_file_name(cvm::output_prefix+
+    std::string const traj_file_name(cvm::output_prefix()+
                                      ".colvars."+this->name+
                                      ( (comm != single_replica) ?
                                        ("."+replica_id) :
@@ -1639,13 +1639,12 @@ void colvarbias_meta::write_pmf()
   colvar_grid_scalar *pmf = new colvar_grid_scalar(*hills_energy);
   pmf->setup();
 
-  std::string fes_file_name_prefix(cvm::output_prefix);
+  std::string fes_file_name_prefix(cvm::output_prefix());
 
-  if ((cvm::n_meta_biases > 1) || (cvm::n_abf_biases > 0)) {
+  if (cvm::num_biases_feature(colvardeps::f_cvb_calc_pmf) > 1) {
     // if this is not the only free energy integrator, append
     // this bias's name, to distinguish it from the output of the other
     // biases producing a .pmf file
-    // TODO: fix for ABF with updateBias == no
     fes_file_name_prefix += ("."+this->name);
   }
 

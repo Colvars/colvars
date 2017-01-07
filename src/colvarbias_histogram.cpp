@@ -97,9 +97,6 @@ colvarbias_histogram::~colvarbias_histogram()
     delete grid;
     grid = NULL;
   }
-
-  if (cvm::n_histo_biases > 0)
-    cvm::n_histo_biases -= 1;
 }
 
 
@@ -120,14 +117,14 @@ int colvarbias_histogram::update()
     // At the first timestep, we need to assign out_name since
     // output_prefix is unset during the constructor
     if (cvm::step_relative() == 0) {
-      out_name = cvm::output_prefix + "." + this->name + ".dat";
+      out_name = cvm::output_prefix() + "." + this->name + ".dat";
       cvm::log("Histogram " + this->name + " will be written to file \"" + out_name + "\"");
     }
   }
 
   if (out_name_dx.size() == 0) {
     if (cvm::step_relative() == 0) {
-      out_name_dx = cvm::output_prefix + "." + this->name + ".dx";
+      out_name_dx = cvm::output_prefix() + "." + this->name + ".dx";
       cvm::log("Histogram " + this->name + " will be written to file \"" + out_name_dx + "\"");
     }
   }

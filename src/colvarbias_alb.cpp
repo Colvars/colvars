@@ -131,8 +131,6 @@ int colvarbias_alb::init(std::string const &conf)
 
 colvarbias_alb::~colvarbias_alb()
 {
-  if (cvm::n_rest_biases > 0)
-    cvm::n_rest_biases -= 1;
 }
 
 

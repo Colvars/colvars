@@ -1,3 +1,4 @@
+
 // -*- c++ -*-
 
 #include "colvarmodule.h"
@@ -22,8 +23,10 @@ colvar::colvar(std::string const &conf)
   cvm::log("Initializing a new collective variable.\n");
   int error_code = COLVARS_OK;
 
+  colvarmodule *cv = cvm::main();
+
   get_keyval(conf, "name", this->name,
-             (std::string("colvar")+cvm::to_str(cvm::colvars.size()+1)));
+             (std::string("colvar")+cvm::to_str(cv->variables()->size()+1)));
 
   if (cvm::colvar_by_name(this->name) != NULL) {
     cvm::error("Error: this colvar cannot have the same name, \""+this->name+
@@ -630,7 +633,7 @@ int colvar::parse_analysis(std::string const &conf)
 
     std::string runave_outfile;
     get_keyval(conf, "runAveOutputFile", runave_outfile,
-                std::string(cvm::output_prefix+"."+
+                std::string(cvm::output_prefix()+"."+
                              this->name+".runave.traj"));
 
     size_t const this_cv_width = x.output_width(cvm::cv_width);
@@ -686,7 +689,7 @@ int colvar::parse_analysis(std::string const &conf)
 
     get_keyval(conf, "corrFuncNormalize", acf_normalize, true);
     get_keyval(conf, "corrFuncOutputFile", acf_outfile,
-                std::string(cvm::output_prefix+"."+this->name+
+                std::string(cvm::output_prefix()+"."+this->name+
                              ".corrfunc.dat"));
   }
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
@@ -723,11 +726,12 @@ colvar::~colvar()
   }
 
   // remove reference to this colvar from the CVM
-  for (std::vector<colvar *>::iterator cvi = cvm::colvars.begin();
-       cvi != cvm::colvars.end();
+  colvarmodule *cv = cvm::main();
+  for (std::vector<colvar *>::iterator cvi = cv->variables()->begin();
+       cvi != cv->variables()->end();
        ++cvi) {
     if ( *cvi == this) {
-      cvm::colvars.erase(cvi);
+      cv->variables()->erase(cvi);
       break;
     }
   }

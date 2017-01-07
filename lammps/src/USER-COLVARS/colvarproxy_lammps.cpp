@@ -360,11 +360,13 @@ int colvarproxy_lammps::smp_biases_loop()
 {
   colvarmodule *cv = this->colvars;
 #pragma omp parallel for
-  for (size_t i = 0; i < cv->biases_active.size(); i++) {
+  for (size_t i = 0; i < cv->biases_active()->size(); i++) {
+    colvarbias *b = (*(biases_active()))[i];
     if (cvm::debug()) {
-      cvm::log("Calculating bias \""+cv->biases[i]->name+"\" on thread "+cvm::to_str(smp_thread_id())+"\n");
+      cvm::log("Calculating bias \""+b->name+"\" on thread "+
+               cvm::to_str(smp_thread_id())+"\n");
     }
-    cv->biases[i]->update();
+    b->update();
   }
   return cvm::get_error();
 }

@@ -50,8 +50,6 @@ int colvarbias_restraint::update()
 
 colvarbias_restraint::~colvarbias_restraint()
 {
-  if (cvm::n_rest_biases > 0)
-    cvm::n_rest_biases -= 1;
 }
 
 
@@ -1354,7 +1352,7 @@ int colvarbias_restraint_histogram::update()
 std::ostream & colvarbias_restraint_histogram::write_restart(std::ostream &os)
 {
   if (b_write_histogram) {
-    std::string file_name(cvm::output_prefix+"."+this->name+".hist.dat");
+    std::string file_name(cvm::output_prefix()+"."+this->name+".hist.dat");
     std::ofstream os(file_name.c_str());
     os << "# " << cvm::wrap_string(colvars[0]->name, cvm::cv_width)
        << "  " << "p(" << cvm::wrap_string(colvars[0]->name, cvm::cv_width-3)
