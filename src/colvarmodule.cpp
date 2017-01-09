@@ -158,6 +158,8 @@ int colvarmodule::read_config_string(std::string const &config_str)
 
 int colvarmodule::parse_config(std::string &conf)
 {
+  extra_conf.clear();
+
   // parse global options
   if (catch_input_errors(parse_global_params(conf))) {
     return get_error();
@@ -178,6 +180,14 @@ int colvarmodule::parse_config(std::string &conf)
     return get_error();
   }
 
+  if (extra_conf.size()) {
+    catch_input_errors(parse_global_params(extra_conf));
+    catch_input_errors(parse_colvars(extra_conf));
+    catch_input_errors(parse_biases(extra_conf));
+    extra_conf.clear();
+    if (get_error() != COLVARS_OK) return get_error();
+  }
+
   cvm::log(cvm::line_marker);
   cvm::log("Collective variables module (re)initialized.\n");
   cvm::log(cvm::line_marker);
@@ -191,6 +201,13 @@ int colvarmodule::parse_config(std::string &conf)
   }
 
   return get_error();
+}
+
+
+int colvarmodule::append_new_config(std::string const &new_conf)
+{
+  extra_conf += new_conf;
+  return COLVARS_OK;
 }
 
 

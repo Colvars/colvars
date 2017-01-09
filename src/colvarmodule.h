@@ -258,7 +258,16 @@ public:
   /// Parse and initialize collective variable biases
   int parse_biases(std::string const &conf);
 
+  /// \brief Add new configuration during parsing (e.g. to implement
+  /// back-compatibility); cannot be nested, i.e. conf should not contain
+  /// anything that triggers another call
+  int append_new_config(std::string const &conf);
+
 private:
+
+  /// Auto-generated configuration during parsing (e.g. to implement
+  /// back-compatibility)
+  std::string extra_conf;
 
   /// Parse and initialize collective variable biases of a specific type
   template <class bias_type>
