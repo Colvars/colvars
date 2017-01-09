@@ -1066,13 +1066,15 @@ void calc_colvars_items_smp(int first, int last, void *result, int paramNum, voi
 
   cvm::increase_depth();
   for (int i = first; i <= last; i++) {
+    colvar *x = (*(cv->variables_active_smp()))[i];
+    int x_item = (*(cv->variables_active_smp_items()))[i];
     if (cvm::debug()) {
       cvm::log("["+cvm::to_str(proxy->smp_thread_id())+"/"+cvm::to_str(proxy->smp_num_threads())+
                "]: calc_colvars_items_smp(), first = "+cvm::to_str(first)+
                ", last = "+cvm::to_str(last)+", cv = "+
-               cv->colvars_smp[i]->name+", cvc = "+cvm::to_str(cv->colvars_smp_items[i])+"\n");
+               x->name+", cvc = "+cvm::to_str(x_item)+"\n");
     }
-    cv->colvars_smp[i]->calc_cvcs(cv->colvars_smp_items[i], 1);
+    x->calc_cvcs(x_item, 1);
   }
   cvm::decrease_depth();
 }
@@ -1081,7 +1083,9 @@ void calc_colvars_items_smp(int first, int last, void *result, int paramNum, voi
 int colvarproxy_namd::smp_colvars_loop()
 {
   colvarmodule *cv = this->colvars;
-  CkLoop_Parallelize(calc_colvars_items_smp, 1, this, cv->colvars_smp.size(), 0, cv->colvars_smp.size()-1);
+  CkLoop_Parallelize(calc_colvars_items_smp, 1, this,
+                     cv->variables_active_smp()->size(),
+                     0, cv->variables_active_smp()->size()-1);
   return cvm::get_error();
 }
 

@@ -346,11 +346,16 @@ int colvarproxy_lammps::smp_colvars_loop()
 {
   colvarmodule *cv = this->colvars;
 #pragma omp parallel for
-  for (size_t i = 0; i < cv->colvars_smp.size(); i++) {
+  for (size_t i = 0; i < cv->variables_active_smp()->size(); i++) {
+    colvar *x = (*(cv->variables_active_smp()))[i];
+    int x_item = (*(cv->variables_active_smp_items()))[i];
     if (cvm::debug()) {
-      cvm::log("Calculating colvar \""+cv->colvars_smp[i]->name+"\" on thread "+cvm::to_str(smp_thread_id())+"\n");
+      cvm::log("["+cvm::to_str(proxy->smp_thread_id())+"/"+cvm::to_str(proxy->smp_num_threads())+
+               "]: calc_colvars_items_smp(), first = "+cvm::to_str(first)+
+               ", last = "+cvm::to_str(last)+", cv = "+
+               x->name+", cvc = "+cvm::to_str(x_item)+"\n");
     }
-    cv->colvars_smp[i]->calc_cvcs(cv->colvars_smp_items[i], 1);
+    x->calc_cvcs(x_item, 1);
   }
   return cvm::get_error();
 }

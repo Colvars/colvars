@@ -73,6 +73,42 @@ colvarmodule * colvarmodule::main()
 }
 
 
+std::vector<colvar *> *colvarmodule::variables()
+{
+  return &colvars;
+}
+
+
+std::vector<colvar *> *colvarmodule::variables_active()
+{
+  return &colvars_active;
+}
+
+
+std::vector<colvar *> *colvarmodule::variables_active_smp()
+{
+  return &colvars_smp;
+}
+
+
+std::vector<int> *colvarmodule::variables_active_smp_items()
+{
+  return &colvars_smp_items;
+}
+
+
+std::vector<colvarbias *> *colvarmodule::biases_active()
+{
+  return &(biases_active_);
+}
+
+
+size_t colvarmodule::size() const
+{
+  return colvars.size() + biases.size();
+}
+
+
 int colvarmodule::read_config_file(char const  *config_filename)
 {
   cvm::log(cvm::line_marker);
@@ -575,9 +611,13 @@ int colvarmodule::calc_colvars()
   int error_code = COLVARS_OK;
   std::vector<colvar *>::iterator cvi;
 
-  // Determine which colvars are active at this time step
-  for (cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
-    (*cvi)->feature_states[colvardeps::f_cv_active]->enabled = (step_absolute() % (*cvi)->get_time_step_factor() == 0);
+  // Determine which colvars are active at this iteration
+  variables_active()->resize(0);
+  variables_active()->reserve(variables()->size());
+  for (cvi = variables()->begin(); cvi != variables()->end(); cvi++) {
+    (*cvi)->feature_states[colvardeps::f_cv_active]->enabled =
+      (step_absolute() % (*cvi)->get_time_step_factor() == 0);
+    variables_active()->push_back(*cvi);
   }
 
   // if SMP support is available, split up the work
@@ -585,25 +625,24 @@ int colvarmodule::calc_colvars()
 
     // first, calculate how much work (currently, how many active CVCs) each colvar has
 
-    colvars_smp.resize(0);
-    colvars_smp_items.resize(0);
+    variables_active_smp()->resize(0);
+    variables_active_smp_items()->resize(0);
 
-    colvars_smp.reserve(colvars.size());
-    colvars_smp_items.reserve(colvars.size());
+    variables_active_smp()->reserve(variables_active()->size());
+    variables_active_smp_items()->reserve(variables_active()->size());
 
     // set up a vector containing all components
     cvm::increase_depth();
-    for (cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
+    for (cvi = variables_active()->begin(); cvi != variables_active()->end(); cvi++) {
 
-      if (!(*cvi)->is_enabled()) continue;
       error_code |= (*cvi)->update_cvc_flags();
 
       size_t num_items = (*cvi)->num_active_cvcs();
-      colvars_smp.reserve(colvars_smp.size() + num_items);
-      colvars_smp_items.reserve(colvars_smp_items.size() + num_items);
+      variables_active_smp()->reserve(variables_active_smp()->size() + num_items);
+      variables_active_smp_items()->reserve(variables_active_smp_items()->size() + num_items);
       for (size_t icvc = 0; icvc < num_items; icvc++) {
-        colvars_smp.push_back(*cvi);
-        colvars_smp_items.push_back(icvc);
+        variables_active_smp()->push_back(*cvi);
+        variables_active_smp_items()->push_back(icvc);
       }
     }
     cvm::decrease_depth();
@@ -612,8 +651,7 @@ int colvarmodule::calc_colvars()
     error_code |= proxy->smp_colvars_loop();
 
     cvm::increase_depth();
-    for (cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
-      if (!(*cvi)->is_enabled()) continue;
+    for (cvi = variables_active()->begin(); cvi != variables_active()->end(); cvi++) {
       error_code |= (*cvi)->collect_cvc_data();
     }
     cvm::decrease_depth();
@@ -622,8 +660,7 @@ int colvarmodule::calc_colvars()
 
     // calculate colvars one at a time
     cvm::increase_depth();
-    for (cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
-      if (!(*cvi)->is_enabled()) continue;
+    for (cvi = variables_active()->begin(); cvi != variables_active()->end(); cvi++) {
       error_code |= (*cvi)->calc();
       if (cvm::get_error()) {
         return COLVARS_ERROR;
@@ -724,7 +761,7 @@ int colvarmodule::update_colvar_forces()
     cvm::log("Updating the internal degrees of freedom "
              "of colvars (if they have any).\n");
   cvm::increase_depth();
-  for (cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
+  for (cvi = variables()->begin(); cvi != variables()->end(); cvi++) {
     // Here we call even inactive colvars, so they accumulate biasing forces
     // as well as update their extended-system dynamics
     total_colvar_energy += (*cvi)->update_forces_energy();
@@ -740,9 +777,8 @@ int colvarmodule::update_colvar_forces()
   if (cvm::debug())
     cvm::log("Communicating forces from the colvars to the atoms.\n");
   cvm::increase_depth();
-  for (cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
+  for (cvi = variables_active()->begin(); cvi != variables_active()->end(); cvi++) {
     if ((*cvi)->is_enabled(colvardeps::f_cv_gradient)) {
-      if (!(*cvi)->is_enabled()) continue;
       (*cvi)->communicate_forces();
       if (cvm::get_error()) {
         return COLVARS_ERROR;
@@ -829,8 +865,8 @@ int colvarmodule::analyze()
     cvm::log("Performing analysis.\n");
 
   // perform colvar-specific analysis
-  for (std::vector<colvar *>::iterator cvi = colvars.begin();
-       cvi != colvars.end();
+  for (std::vector<colvar *>::iterator cvi = variables_active()->begin();
+       cvi != variables_active()->end();
        cvi++) {
     cvm::increase_depth();
     (*cvi)->analyze();
@@ -854,8 +890,8 @@ int colvarmodule::setup()
 {
   if (this->size() == 0) return cvm::get_error();
   // loop over all components of all colvars to reset masses of all groups
-  for (std::vector<colvar *>::iterator cvi = colvars.begin();
-       cvi != colvars.end();  cvi++) {
+  for (std::vector<colvar *>::iterator cvi = variables()->begin();
+       cvi != variables()->end();  cvi++) {
     (*cvi)->setup();
   }
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);

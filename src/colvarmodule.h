@@ -4,7 +4,7 @@
 #define COLVARMODULE_H
 
 #ifndef COLVARS_VERSION
-#define COLVARS_VERSION "2017-01-07"
+#define COLVARS_VERSION "2017-01-09"
 #endif
 
 #ifndef COLVARS_DEBUG
@@ -170,16 +170,21 @@ public:
 private:
 
   /// Array of collective variables
-  std::vector<colvar *>     colvars;
+  std::vector<colvar *> colvars;
+
+  /// Array of collective variables
+  std::vector<colvar *> colvars_active;
+
+  /// Collective variables to be calculated on different threads;
+  /// colvars with multple items (e.g. multiple active CVCs) are duplicated
+  std::vector<colvar *> colvars_smp;
+  /// Indexes of the items to calculate for each colvar
+  std::vector<int> colvars_smp_items;
 
 public:
 
   /// Array of collective variables
-  inline std::vector<colvar *> *variables()
-  {
-    colvarmodule *cv = colvarmodule::main();
-    return &(cv->colvars);
-  }
+  std::vector<colvar *> *variables();
 
   /* TODO: implement named CVCs
   /// Array of named (reusable) collective variable components
@@ -190,12 +195,15 @@ public:
   }
   */
 
-  // TODO make these uniform with the previous
+  /// Collective variables with the active flag on
+  std::vector<colvar *> *variables_active();
+
   /// Collective variables to be calculated on different threads;
   /// colvars with multple items (e.g. multiple active CVCs) are duplicated
-  std::vector<colvar *> colvars_smp;
+  std::vector<colvar *> *variables_active_smp();
+
   /// Indexes of the items to calculate for each colvar
-  std::vector<int> colvars_smp_items;
+  std::vector<int> *variables_active_smp_items();
 
   /// Array of collective variable biases
   std::vector<colvarbias *> biases;
@@ -208,10 +216,7 @@ private:
 public:
 
   /// Array of active collective variable biases
-  inline std::vector<colvarbias *> *biases_active()
-  {
-    return &(biases_active_);
-  }
+  std::vector<colvarbias *> *biases_active();
 
   /// \brief Whether debug output should be enabled (compile-time option)
   static inline bool debug()
@@ -220,10 +225,7 @@ public:
   }
 
   /// \brief How many objects are configured yet?
-  inline size_t size() const
-  {
-    return colvars.size() + biases.size();
-  }
+  size_t size() const;
 
   /// \brief Constructor \param config_name Configuration file name
   /// \param restart_name (optional) Restart file name
