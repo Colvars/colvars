@@ -210,12 +210,6 @@ public:
     /// be used by the biases or in analysis (needs lower and upper
     /// boundary)
     f_cv_grid,
-    /// \brief Apply a restraining potential (|x-xb|^2) to the colvar
-    /// when it goes below the lower wall
-    f_cv_lower_wall,
-    /// \brief Apply a restraining potential (|x-xb|^2) to the colvar
-    /// when it goes above the upper wall
-    f_cv_upper_wall,
     /// \brief Compute running average
     f_cv_runave,
     /// \brief Compute time correlation function

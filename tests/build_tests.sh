@@ -70,6 +70,9 @@ create_test_dir "distancewalls"
 write_colvars_config "distance" "harmonicwalls-fixed" ${dirname}/test.in
 write_colvars_config "distancewalls" "" ${dirname}/test.legacy.in
 
+create_test_dir "distancewalls-compatible"
+write_colvars_config "distancewalls" "" ${dirname}/test.in
+
 create_test_dir "dihedralwalls"
 write_colvars_config "dihedral" "harmonicwalls360angle-fixed" ${dirname}/test.in
 write_colvars_config "dihedralwalls" "" ${dirname}/test.legacy.in

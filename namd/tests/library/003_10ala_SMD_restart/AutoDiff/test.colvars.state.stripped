@@ -17,4 +17,10 @@ restraint {
     accumulatedWork -2.01574785800035e+03
   }
 }
+restraint {
+  configuration {
+    step 10
+    name rmsduw
+  }
+}
 

@@ -321,14 +321,6 @@ void colvardeps::init_cv_requires() {
     f_req_self(f_cv_grid, f_cv_lower_boundary);
     f_req_self(f_cv_grid, f_cv_upper_boundary);
 
-    f_description(f_cv_lower_wall, "lower wall");
-    f_req_self(f_cv_lower_wall, f_cv_lower_boundary);
-    f_req_self(f_cv_lower_wall, f_cv_gradient);
-
-    f_description(f_cv_upper_wall, "upper wall");
-    f_req_self(f_cv_upper_wall, f_cv_upper_boundary);
-    f_req_self(f_cv_upper_wall, f_cv_gradient);
-
     f_description(f_cv_runave, "running average");
 
     f_description(f_cv_corrfunc, "correlation function");

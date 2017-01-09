@@ -17,7 +17,7 @@ bool compare(colvar::cvc *i, colvar::cvc *j) {
 }
 
 
-colvar::colvar() 
+colvar::colvar()
 {
   // Initialize static array once and for all
   init_cv_requires();
@@ -280,11 +280,21 @@ int colvar::init_grid_parameters(std::string const &conf)
       provide(f_cv_lower_boundary);
       enable(f_cv_lower_boundary);
     }
+    std::string lw_conf, uw_conf;
 
-    get_keyval(conf, "lowerWallConstant", lower_wall_k, 0.0);
-    if (lower_wall_k > 0.0) {
+    if (get_keyval(conf, "lowerWallConstant", lower_wall_k, 0.0, parse_silent)) {
+      cvm::log("Warning: lowerWallConstant and lowerWall are deprecated, "
+               "please define a harmonicWalls bias instead.\n");
+      lower_wall.type(value());
       get_keyval(conf, "lowerWall", lower_wall, lower_boundary);
-      enable(f_cv_lower_wall);
+      lw_conf = std::string("\n\
+harmonicWalls {\n\
+    name "+this->name+"lw\n\
+    colvars "+this->name+"\n\
+    forceConstant "+cvm::to_str(lower_wall_k*width*width)+"\n\
+    lowerWalls "+cvm::to_str(lower_wall)+"\n\
+}\n");
+      cv->append_new_config(lw_conf);
     }
 
     if (get_keyval(conf, "upperBoundary", upper_boundary, upper_boundary)) {
@@ -292,10 +302,30 @@ int colvar::init_grid_parameters(std::string const &conf)
       enable(f_cv_upper_boundary);
     }
 
-    get_keyval(conf, "upperWallConstant", upper_wall_k, 0.0);
-    if (upper_wall_k > 0.0) {
+    if (get_keyval(conf, "upperWallConstant", upper_wall_k, 0.0, parse_silent)) {
+      cvm::log("Warning: upperWallConstant and upperWall are deprecated, "
+               "please define a harmonicWalls bias instead.\n");
+      upper_wall.type(value());
       get_keyval(conf, "upperWall", upper_wall, upper_boundary);
-      enable(f_cv_upper_wall);
+      uw_conf = std::string("\n\
+harmonicWalls {\n\
+    name "+this->name+"uw\n\
+    colvars "+this->name+"\n\
+    forceConstant "+cvm::to_str(upper_wall_k*width*width)+"\n\
+    upperWalls "+cvm::to_str(upper_wall)+"\n\
+}\n");
+      cv->append_new_config(uw_conf);
+    }
+
+    if (lw_conf.size() && uw_conf.size()) {
+      if (lower_wall >= upper_wall) {
+        cvm::error("Error: the upper wall, "+
+                   cvm::to_str(upper_wall)+
+                   ", is not higher than the lower wall, "+
+                   cvm::to_str(lower_wall)+".\n",
+                   INPUT_ERROR);
+        return INPUT_ERROR;
+      }
     }
   }
 
@@ -314,17 +344,6 @@ int colvar::init_grid_parameters(std::string const &conf)
                         ", is not higher than the lower boundary, "+
                         cvm::to_str(lower_boundary)+".\n",
                 INPUT_ERROR);
-      return INPUT_ERROR;
-    }
-  }
-
-  if (is_enabled(f_cv_lower_wall) && is_enabled(f_cv_upper_wall)) {
-    if (lower_wall >= upper_wall) {
-      cvm::error("Error: the upper wall, "+
-                 cvm::to_str(upper_wall)+
-                 ", is not higher than the lower wall, "+
-                 cvm::to_str(lower_wall)+".\n",
-                 INPUT_ERROR);
       return INPUT_ERROR;
     }
   }
@@ -1211,40 +1230,6 @@ cvm::real colvar::update_forces_energy()
       f -= fj;
   }
 
-  // Wall force
-  colvarvalue fw(x);
-  fw.reset();
-
-  if (is_enabled(f_cv_lower_wall) || is_enabled(f_cv_upper_wall)) {
-
-    if (cvm::debug())
-      cvm::log("Calculating wall forces for colvar \""+this->name+"\".\n");
-
-    // For a periodic colvar, both walls may be applicable at the same time
-    // in which case we pick the closer one
-    if ( (!is_enabled(f_cv_upper_wall)) ||
-         (this->dist2(x, lower_wall) < this->dist2(x, upper_wall)) ) {
-
-      cvm::real const grad = this->dist2_lgrad(x, lower_wall);
-      if (grad < 0.0) {
-        fw = -0.5 * lower_wall_k * grad;
-        if (cvm::debug())
-          cvm::log("Applying a lower wall force("+
-                    cvm::to_str(fw)+") to \""+this->name+"\".\n");
-      }
-
-    } else {
-
-      cvm::real const grad = this->dist2_lgrad(x, upper_wall);
-      if (grad > 0.0) {
-        fw = -0.5 * upper_wall_k * grad;
-        if (cvm::debug())
-          cvm::log("Applying an upper wall force("+
-                    cvm::to_str(fw)+") to \""+this->name+"\".\n");
-      }
-    }
-  }
-
   // At this point f is the force f from external biases that will be applied to the
   // extended variable if there is one
 
@@ -1297,8 +1282,6 @@ cvm::real colvar::update_forces_energy()
     if (this->is_enabled(f_cv_periodic)) this->wrap(xr);
   }
 
-  // TODO remove the wall force
-  f += fw;
   // Now adding the force on the actual colvar (for those biases who
   // bypass the extended Lagrangian mass)
   f += fb_actual;
