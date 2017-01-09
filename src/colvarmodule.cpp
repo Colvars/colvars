@@ -273,8 +273,8 @@ int colvarmodule::parse_colvars(std::string const &conf)
     if (colvar_conf.size()) {
       cvm::log(cvm::line_marker);
       cvm::increase_depth();
-      colvars.push_back(new colvar(colvar_conf));
-      if (cvm::get_error() ||
+      colvars.push_back(new colvar());
+      if (((colvars.back())->init(colvar_conf) != COLVARS_OK) ||
           ((colvars.back())->check_keywords(colvar_conf, "colvar") != COLVARS_OK)) {
         cvm::log("Error while constructing colvar number " +
                  cvm::to_str(colvars.size()) + " : deleting.");
