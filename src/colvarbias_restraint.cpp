@@ -7,7 +7,7 @@
 
 
 colvarbias_restraint::colvarbias_restraint(char const *key)
-  : colvarbias(key)
+  : colvarbias(key), colvarbias_ti(key)
 {
 }
 
@@ -16,6 +16,8 @@ int colvarbias_restraint::init(std::string const &conf)
 {
   colvarbias::init(conf);
   enable(f_cvb_apply_force);
+
+  colvarbias_ti::init(conf);
 
   if (cvm::debug())
     cvm::log("Initializing a new restraint bias.\n");
@@ -79,7 +81,7 @@ std::ostream & colvarbias_restraint::write_traj(std::ostream &os)
 
 
 colvarbias_restraint_centers::colvarbias_restraint_centers(char const *key)
-  : colvarbias(key), colvarbias_restraint(key)
+  : colvarbias(key), colvarbias_restraint(key), colvarbias_ti(key)
 {
 }
 
@@ -138,7 +140,7 @@ int colvarbias_restraint_centers::change_configuration(std::string const &conf)
 
 
 colvarbias_restraint_k::colvarbias_restraint_k(char const *key)
-  : colvarbias(key), colvarbias_restraint(key)
+  : colvarbias(key), colvarbias_restraint(key), colvarbias_ti(key)
 {
   force_k = -1.0;
 }
@@ -232,7 +234,8 @@ colvarbias_restraint_centers_moving::colvarbias_restraint_centers_moving(char co
   : colvarbias(key),
     colvarbias_restraint(key),
     colvarbias_restraint_centers(key),
-    colvarbias_restraint_moving(key)
+    colvarbias_restraint_moving(key),
+    colvarbias_ti(key)
 {
   b_chg_centers = false;
   b_output_centers = false;
@@ -473,7 +476,8 @@ colvarbias_restraint_k_moving::colvarbias_restraint_k_moving(char const *key)
   : colvarbias(key),
     colvarbias_restraint(key),
     colvarbias_restraint_k(key),
-    colvarbias_restraint_moving(key)
+    colvarbias_restraint_moving(key),
+    colvarbias_ti(key)
 {
   b_chg_force_k = false;
   target_equil_steps = 0;
@@ -713,7 +717,8 @@ colvarbias_restraint_harmonic::colvarbias_restraint_harmonic(char const *key)
     colvarbias_restraint_moving(key),
     colvarbias_restraint_k(key),
     colvarbias_restraint_centers_moving(key),
-    colvarbias_restraint_k_moving(key)
+    colvarbias_restraint_k_moving(key),
+    colvarbias_ti(key)
 {
 }
 
@@ -739,17 +744,22 @@ int colvarbias_restraint_harmonic::init(std::string const &conf)
 
 int colvarbias_restraint_harmonic::update()
 {
+  int error_code = COLVARS_OK;
+
+  // update the TI estimator (if defined)
+  error_code |= colvarbias_ti::update();
+
   // update parameters (centers or force constant)
-  colvarbias_restraint_centers_moving::update();
-  colvarbias_restraint_k_moving::update();
+  error_code |= colvarbias_restraint_centers_moving::update();
+  error_code |= colvarbias_restraint_k_moving::update();
 
   // update restraint energy and forces
-  colvarbias_restraint::update();
+  error_code |= colvarbias_restraint::update();
 
   // update accumulated work using the current forces
-  colvarbias_restraint_centers_moving::update_acc_work();
+  error_code |= colvarbias_restraint_centers_moving::update_acc_work();
 
-  return COLVARS_OK;
+  return error_code;
 }
 
 
@@ -791,6 +801,18 @@ int colvarbias_restraint_harmonic::set_state_params(std::string const &conf)
   error_code |= colvarbias_restraint_centers_moving::set_state_params(conf);
   error_code |= colvarbias_restraint_k_moving::set_state_params(conf);
   return error_code;
+}
+
+
+std::ostream & colvarbias_restraint_harmonic::write_state_data(std::ostream &os)
+{
+  return colvarbias_ti::write_state_data(os);
+}
+
+
+std::istream & colvarbias_restraint_harmonic::read_state_data(std::istream &is)
+{
+  return colvarbias_ti::read_state_data(is);
 }
 
 
@@ -844,7 +866,8 @@ colvarbias_restraint_harmonic_walls::colvarbias_restraint_harmonic_walls(char co
     colvarbias_restraint(key),
     colvarbias_restraint_k(key),
     colvarbias_restraint_moving(key),
-    colvarbias_restraint_k_moving(key)
+    colvarbias_restraint_k_moving(key),
+    colvarbias_ti(key)
 {
   lower_wall_k = 0.0;
   upper_wall_k = 0.0;
@@ -963,11 +986,15 @@ int colvarbias_restraint_harmonic_walls::init(std::string const &conf)
 
 int colvarbias_restraint_harmonic_walls::update()
 {
-  colvarbias_restraint_k_moving::update();
+  int error_code = COLVARS_OK;
 
-  colvarbias_restraint::update();
+  error_code |= colvarbias_ti::update();
 
-  return COLVARS_OK;
+  error_code |= colvarbias_restraint_k_moving::update();
+
+  error_code |= colvarbias_restraint::update();
+
+  return error_code;
 }
 
 
@@ -1061,6 +1088,18 @@ int colvarbias_restraint_harmonic_walls::set_state_params(std::string const &con
 }
 
 
+std::ostream & colvarbias_restraint_harmonic_walls::write_state_data(std::ostream &os)
+{
+  return colvarbias_ti::write_state_data(os);
+}
+
+
+std::istream & colvarbias_restraint_harmonic_walls::read_state_data(std::istream &is)
+{
+  return colvarbias_ti::read_state_data(is);
+}
+
+
 std::ostream & colvarbias_restraint_harmonic_walls::write_traj_label(std::ostream &os)
 {
   colvarbias_restraint::write_traj_label(os);
@@ -1085,7 +1124,8 @@ colvarbias_restraint_linear::colvarbias_restraint_linear(char const *key)
     colvarbias_restraint_moving(key),
     colvarbias_restraint_k(key),
     colvarbias_restraint_centers_moving(key),
-    colvarbias_restraint_k_moving(key)
+    colvarbias_restraint_k_moving(key),
+    colvarbias_ti(key)
 {
 }
 
@@ -1116,17 +1156,22 @@ int colvarbias_restraint_linear::init(std::string const &conf)
 
 int colvarbias_restraint_linear::update()
 {
+  int error_code = COLVARS_OK;
+
+  // update the TI estimator (if defined)
+  error_code |= colvarbias_ti::update();
+
   // update parameters (centers or force constant)
-  colvarbias_restraint_centers_moving::update();
-  colvarbias_restraint_k_moving::update();
+  error_code |= colvarbias_restraint_centers_moving::update();
+  error_code |= colvarbias_restraint_k_moving::update();
 
   // update restraint energy and forces
-  colvarbias_restraint::update();
+  error_code |= colvarbias_restraint::update();
 
   // update accumulated work using the current forces
-  colvarbias_restraint_centers_moving::update_acc_work();
+  error_code |= colvarbias_restraint_centers_moving::update_acc_work();
 
-  return COLVARS_OK;
+  return error_code;
 }
 
 
@@ -1189,6 +1234,18 @@ int colvarbias_restraint_linear::set_state_params(std::string const &conf)
   error_code |= colvarbias_restraint_centers_moving::set_state_params(conf);
   error_code |= colvarbias_restraint_k_moving::set_state_params(conf);
   return error_code;
+}
+
+
+std::ostream & colvarbias_restraint_linear::write_state_data(std::ostream &os)
+{
+  return colvarbias_ti::write_state_data(os);
+}
+
+
+std::istream & colvarbias_restraint_linear::read_state_data(std::istream &is)
+{
+  return colvarbias_ti::read_state_data(is);
 }
 
 

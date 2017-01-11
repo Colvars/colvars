@@ -59,6 +59,11 @@ m4 -Dcenters_moving_half < harmonic.in.m4 > harmonic-centers-moving.in
 m4 -Dcenters_moving_full < harmonic.in.m4 > harmonic-centers-moving-full.in
 m4 -Dcenters_moving_stages < harmonic.in.m4 > harmonic-centers-moving-stages.in
 
+
+m4 -Dti_pmf < harmonic.in.m4 > harmonic-fixed-ti.in
+m4 -Dti_pmf -Dcenters_moving_half < harmonic.in.m4 > harmonic-centers-moving-ti.in
+
+
 for colvar in "distance" ; do
     for bias in \
         "harmonic-fixed" \
@@ -101,15 +106,22 @@ done
 create_test_dir "distance-extended"
 write_colvars_config "distance-extended" "" ${dirname}/test.in
 
+
+m4 < metadynamics.in.m4 > metadynamics.in
+m4 -Dti_pmf < metadynamics.in.m4 > metadynamics-ti.in
+
 # NOTE: abf is not included because total/system force calculations
 # should be tested separately
 for colvar in "distance-grid" ; do
     for bias in \
         "harmonic-fixed" \
         "harmonic-centers-moving" \
+        "harmonic-fixed-ti" \
+        "harmonic-centers-moving-ti" \
         "harmonic-k-moving" \
         "histogram" \
         "metadynamics" \
+        "metadynamics-ti" \
         ; do
         create_test_dir ${colvar}_${bias}
         write_colvars_config ${colvar} ${bias} ${dirname}/test.in

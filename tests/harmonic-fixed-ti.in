@@ -1,0 +1,6 @@
+harmonic {
+    colvars        one
+    centers        0.1
+    forceConstant  0.001
+    writeTIPMF     yes
+}

@@ -2939,6 +2939,37 @@ recognize the following options:
     If this option is chosen and  \texttt{colvarsTrajFrequency} is not zero, the current value of the biasing energy will be written to the trajectory file during the simulation.
 }
 
+\end{itemize}
+
+In addition, restraint biases (\ref{sec:colvarbias_harmonic}, \ref{sec:colvarbias_harmonic_walls}, \ref{sec:colvarbias_linear}, ...) and metadynamics biases (\ref{sec:colvarbias_meta}) offer the following optional keywords, which allow the use of thermodynamic integration (TI) to compute potentials of mean force (PMFs).  In adaptive biasing force (ABF) biases (\ref{sec:colvarbias_abf}) the same keywords are not recognized because their functionality is always included.
+
+\begin{itemize}
+
+\item %
+  \keydef
+    {writeTIPMF}{%
+    colvar bias}{%
+    Write the PMF computed by thermodynamic integration}{%
+    boolean}{%
+    \texttt{off}}{%
+    If the bias is applied to a variable that supports the calculation of total forces (see \refkey{outputTotalForce}{sec:colvar} and \ref{sec:cvc_sys_forces}), this option allows calculating the corresponding PMF by thermodynanic integration, and writing it to the file \outputName{}\texttt{.$<$name$>$.ti.pmf}, where \texttt{$<$name$>$} is the name of the bias.
+    The total force includes the forces applied to the variable by all bias, except those from this bias itself.
+    If any bias applies time-dependent forces besides the one using this option, an error is raised.
+}
+
+
+\item %
+  \keydef
+    {writeTISamples}{%
+    colvar bias}{%
+    Write the free-energy gradient samples}{%
+    boolean}{%
+    \texttt{off}}{%
+    This option allows to compute total forces for use with thermodynamic integration as done by the keyword \refkey{writeTIPMF}{sec:colvarbias}.
+    The names of the files containing the variables' histogram and mean thermodyunamic forces are \outputName\texttt{.$<$name$>$.ti.count} and \outputName\texttt{.$<$name$>$.ti.grad}, respectively: these can be used by \texttt{abf\_integrate} or similar utility.
+    This option on by default when \texttt{writeTIPMF} is on, but can be enabled separately if the bias is applied to more than one variable, making not possible the direct integration of the PMF at runtime.
+    If any bias applies time-dependent forces besides the one using this option, an error is raised.
+}
 
 \end{itemize}
 
@@ -4032,7 +4063,7 @@ To activate an umbrella sampling simulation, the same keywords as in the previou
 
 
 \cvsubsubsec{Changing force constant}
-\label{sec:colvarbias_ti}
+\label{sec:colvarbias_force_k_ti}
 
 The force constant of the harmonic restraint may also be changed to equilibrate \cite{Deng2009}.
 

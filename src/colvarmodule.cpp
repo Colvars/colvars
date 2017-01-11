@@ -402,22 +402,12 @@ int colvarmodule::parse_biases(std::string const &conf)
     cvm::decrease_depth();
   }
 
-  size_t i;
-
-  size_t n_hist_dep_biases = 0;
-  std::vector<std::string> hist_dep_biases_names;
-  for (i = 0; i < biases.size(); i++) {
-    if (biases[i]->is_enabled(colvardeps::f_cvb_apply_force) &&
-        biases[i]->is_enabled(colvardeps::f_cvb_history_dependent)) {
-      n_hist_dep_biases++;
-      hist_dep_biases_names.push_back(biases[i]->name);
-    }
-  }
-  if (n_hist_dep_biases > 1) {
-    cvm::log("WARNING: there are "+cvm::to_str(n_hist_dep_biases)+
-             " history-dependent biases with non-zero force parameters:\n"+
-             cvm::to_str(hist_dep_biases_names)+"\n"+
-             "Please make sure that their forces do not counteract each other.\n");
+  std::vector<std::string> const time_biases = time_dependent_biases();
+  if (time_biases.size() > 1) {
+    cvm::log("WARNING: there are "+cvm::to_str(time_biases.size())+
+             " time-dependent biases with non-zero force parameters:\n"+
+             cvm::to_str(time_biases)+"\n"+
+             "Please ensure that their forces do not counteract each other.\n");
   }
 
   if (biases.size() || use_scripted_forces) {
@@ -434,7 +424,7 @@ int colvarmodule::parse_biases(std::string const &conf)
 }
 
 
-int colvarmodule::num_biases_feature(int feature_id)
+int colvarmodule::num_biases_feature(int feature_id) const
 {
   colvarmodule *cv = cvm::main();
   size_t n = 0;
@@ -449,7 +439,7 @@ int colvarmodule::num_biases_feature(int feature_id)
 }
 
 
-int colvarmodule::num_biases_type(std::string const &type)
+int colvarmodule::num_biases_type(std::string const &type) const
 {
   colvarmodule *cv = cvm::main();
   size_t n = 0;
@@ -461,6 +451,22 @@ int colvarmodule::num_biases_type(std::string const &type)
     }
   }
   return n;
+}
+
+
+std::vector<std::string> const colvarmodule::time_dependent_biases() const
+{
+  size_t i;
+  std::vector<std::string> biases_names;
+  for (i = 0; i < biases.size(); i++) {
+    if (biases[i]->is_enabled(colvardeps::f_cvb_apply_force) &&
+        biases[i]->is_enabled(colvardeps::f_cvb_active) &&
+        (biases[i]->is_enabled(colvardeps::f_cvb_history_dependent) ||
+         biases[i]->is_enabled(colvardeps::f_cvb_time_dependent))) {
+      biases_names.push_back(biases[i]->name);
+    }
+  }
+  return biases_names;
 }
 
 
@@ -1404,15 +1410,12 @@ std::ostream & colvarmodule::write_restart(std::ostream &os)
        cvi != colvars.end();
        cvi++) {
     (*cvi)->write_restart(os);
-    error_code |= (*cvi)->write_output_files();
   }
 
   for (std::vector<colvarbias *>::iterator bi = biases.begin();
        bi != biases.end();
        bi++) {
     (*bi)->write_state(os);
-    error_code |= (*bi)->write_state_to_replicas();
-    error_code |= (*bi)->write_output_files();
   }
   cvm::decrease_depth();
 

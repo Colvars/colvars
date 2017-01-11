@@ -406,15 +406,27 @@ void colvardeps::init_cvb_requires() {
     init_feature(f_cvb_apply_force, "apply force", f_type_user);
     f_req_children(f_cvb_apply_force, f_cv_gradient);
 
-    init_feature(f_cvb_get_total_force, "obtain total force");
+    init_feature(f_cvb_get_total_force, "obtain total force", f_type_dynamic);
     f_req_children(f_cvb_get_total_force, f_cv_total_force);
 
     init_feature(f_cvb_history_dependent, "history-dependent", f_type_static);
+
+    init_feature(f_cvb_time_dependent, "time-dependent", f_type_static);
 
     init_feature(f_cvb_scalar_variables, "require scalar variables", f_type_static);
     f_req_children(f_cvb_scalar_variables, f_cv_scalar);
 
     init_feature(f_cvb_calc_pmf, "calculate a PMF", f_type_static);
+
+    init_feature(f_cvb_calc_ti_samples, "calculate TI samples", f_type_dynamic);
+    f_req_self(f_cvb_calc_ti_samples, f_cvb_get_total_force);
+    f_req_children(f_cvb_calc_ti_samples, f_cv_grid);
+
+    init_feature(f_cvb_write_ti_samples, "write TI samples ", f_type_user);
+    f_req_self(f_cvb_write_ti_samples, f_cvb_calc_ti_samples);
+
+    init_feature(f_cvb_write_ti_pmf, "write TI PMF", f_type_user);
+    f_req_self(f_cvb_write_ti_pmf, f_cvb_calc_ti_samples);
   }
 
   // Initialize feature_states for each instance
@@ -424,6 +436,9 @@ void colvardeps::init_cvb_requires() {
     // Most features are available, so we set them so
     // and list exceptions below
   }
+
+  // only compute TI samples when deriving from colvarbias_ti
+  feature_states[f_cvb_calc_ti_samples].available = false;
 }
 
 
@@ -507,7 +522,7 @@ void colvardeps::init_cv_requires() {
     init_feature(f_cv_upper_boundary, "upper boundary", f_type_user);
     f_req_self(f_cv_upper_boundary, f_cv_scalar);
 
-    init_feature(f_cv_grid, "grid", f_type_user);
+    init_feature(f_cv_grid, "grid", f_type_dynamic);
     f_req_self(f_cv_grid, f_cv_lower_boundary);
     f_req_self(f_cv_grid, f_cv_upper_boundary);
 

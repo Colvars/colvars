@@ -358,7 +358,7 @@ int colvarbias_abf::update()
   }
 
   // update the output prefix; TODO: move later to setup_output() function
-  if (cvm::num_biases_feature(colvardeps::f_cvb_calc_pmf) == 1) {
+  if (cvm::main()->num_biases_feature(colvardeps::f_cvb_calc_pmf) == 1) {
     // This is the only bias computing PMFs
     output_prefix = cvm::output_prefix();
   } else {
