@@ -1459,6 +1459,13 @@ std::istream & colvarbias_meta::read_hill(std::istream &is)
 
 int colvarbias_meta::setup_output()
 {
+  output_prefix = cvm::output_prefix();
+  if (cvm::num_biases_feature(colvardeps::f_cvb_calc_pmf) > 1) {
+    // if this is not the only free energy integrator, append
+    // this bias's name, to distinguish it from the output of the other
+    // biases producing a .pmf file
+    output_prefix += ("."+this->name);
+  }
 
   if (comm == multiple_replicas) {
 
@@ -1639,15 +1646,6 @@ void colvarbias_meta::write_pmf()
   colvar_grid_scalar *pmf = new colvar_grid_scalar(*hills_energy);
   pmf->setup();
 
-  std::string fes_file_name_prefix(cvm::output_prefix());
-
-  if (cvm::num_biases_feature(colvardeps::f_cvb_calc_pmf) > 1) {
-    // if this is not the only free energy integrator, append
-    // this bias's name, to distinguish it from the output of the other
-    // biases producing a .pmf file
-    fes_file_name_prefix += ("."+this->name);
-  }
-
   if ((comm == single_replica) || (dump_replica_fes)) {
     // output the PMF from this instance or replica
     pmf->reset();
@@ -1660,7 +1658,7 @@ void colvarbias_meta::write_pmf()
       pmf->multiply_constant(well_temper_scale);
     }
     {
-      std::string const fes_file_name(fes_file_name_prefix +
+      std::string const fes_file_name(this->output_prefix +
                                       ((comm != single_replica) ? ".partial" : "") +
                                       (dump_fes_save ?
                                        "."+cvm::to_str(cvm::step_absolute()) : "") +
@@ -1685,7 +1683,7 @@ void colvarbias_meta::write_pmf()
       cvm::real const well_temper_scale = (bias_temperature + cvm::temperature()) / bias_temperature;
       pmf->multiply_constant(well_temper_scale);
     }
-    std::string const fes_file_name(fes_file_name_prefix +
+    std::string const fes_file_name(this->output_prefix +
                                     (dump_fes_save ?
                                      "."+cvm::to_str(cvm::step_absolute()) : "") +
                                     ".pmf");

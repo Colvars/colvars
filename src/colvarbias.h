@@ -150,6 +150,9 @@ public:
     return COLVARS_OK;
   }
 
+  /// Use this prefix for all output files
+  std::string output_prefix;
+
   /// If this bias is communicating with other replicas through files, send it to them
   virtual int write_state_to_replicas()
   {
