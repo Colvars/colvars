@@ -55,9 +55,9 @@ int colvarbias_meta::init(std::string const &conf)
 
   get_keyval(conf, "hillWidth", hill_width, std::sqrt(2.0 * PI) / 2.0);
   cvm::log("Half-widths of the Gaussian hills (sigma's):\n");
-  for (size_t i = 0; i < colvars.size(); i++) {
-    cvm::log(colvars[i]->name+std::string(": ")+
-             cvm::to_str(0.5 * colvars[i]->width * hill_width));
+  for (size_t i = 0; i < num_variables(); i++) {
+    cvm::log(variables(i)->name+std::string(": ")+
+             cvm::to_str(0.5 * variables(i)->width * hill_width));
   }
 
   {
@@ -82,14 +82,14 @@ int colvarbias_meta::init(std::string const &conf)
 
     expand_grids = false;
     size_t i;
-    for (i = 0; i < colvars.size(); i++) {
-      colvars[i]->enable(f_cv_grid);
-      if (colvars[i]->expand_boundaries) {
+    for (i = 0; i < num_variables(); i++) {
+      variables(i)->enable(f_cv_grid);
+      if (variables(i)->expand_boundaries) {
         expand_grids = true;
         cvm::log("Metadynamics bias \""+this->name+"\""+
                  ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
                  ": Will expand grids when the colvar \""+
-                 colvars[i]->name+"\" approaches its boundaries.\n");
+                 variables(i)->name+"\" approaches its boundaries.\n");
       }
     }
 
@@ -329,7 +329,7 @@ int colvarbias_meta::update()
 
   // update grid definition, if needed
   error_code |= update_grid_params();
-  // add new bias
+  // add new biasing energy/forces
   error_code |= update_bias();
   // update grid content to reflect new bias
   error_code |= update_grid_data();
@@ -369,9 +369,9 @@ int colvarbias_meta::update_grid_params()
       std::vector<colvarvalue> new_lower_boundaries(hills_energy->lower_boundaries);
       std::vector<colvarvalue> new_upper_boundaries(hills_energy->upper_boundaries);
 
-      for (size_t i = 0; i < colvars.size(); i++) {
+      for (size_t i = 0; i < num_variables(); i++) {
 
-        if (! colvars[i]->expand_boundaries)
+        if (! variables(i)->expand_boundaries)
           continue;
 
         cvm::real &new_lb   = new_lower_boundaries[i].real_value;
@@ -379,10 +379,10 @@ int colvarbias_meta::update_grid_params()
         int       &new_size = new_sizes[i];
         bool changed_lb = false, changed_ub = false;
 
-        if (!colvars[i]->hard_lower_boundary)
+        if (!variables(i)->hard_lower_boundary)
           if (curr_bin[i] < min_buffer) {
             int const extra_points = (min_buffer - curr_bin[i]);
-            new_lb -= extra_points * colvars[i]->width;
+            new_lb -= extra_points * variables(i)->width;
             new_size += extra_points;
             // changed offset in this direction => the pointer needs to
             // be changed, too
@@ -392,21 +392,21 @@ int colvarbias_meta::update_grid_params()
             cvm::log("Metadynamics bias \""+this->name+"\""+
                      ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
                      ": new lower boundary for colvar \""+
-                     colvars[i]->name+"\", at "+
+                     variables(i)->name+"\", at "+
                      cvm::to_str(new_lower_boundaries[i])+".\n");
           }
 
-        if (!colvars[i]->hard_upper_boundary)
+        if (!variables(i)->hard_upper_boundary)
           if (curr_bin[i] > new_size - min_buffer - 1) {
             int const extra_points = (curr_bin[i] - (new_size - 1) + min_buffer);
-            new_ub += extra_points * colvars[i]->width;
+            new_ub += extra_points * variables(i)->width;
             new_size += extra_points;
 
             changed_ub = true;
             cvm::log("Metadynamics bias \""+this->name+"\""+
                      ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
                      ": new upper boundary for colvar \""+
-                     colvars[i]->name+"\", at "+
+                     variables(i)->name+"\", at "+
                      cvm::to_str(new_upper_boundaries[i])+".\n");
           }
 
@@ -431,7 +431,7 @@ int colvarbias_meta::update_grid_params()
 
         new_hills_energy_gradients->lower_boundaries = new_lower_boundaries;
         new_hills_energy_gradients->upper_boundaries = new_upper_boundaries;
-        new_hills_energy_gradients->setup(new_sizes, 0.0, colvars.size());
+        new_hills_energy_gradients->setup(new_sizes, 0.0, num_variables());
 
         new_hills_energy->map_grid(*hills_energy);
         new_hills_energy_gradients->map_grid(*hills_energy_gradients);
@@ -589,7 +589,7 @@ int colvarbias_meta::calc_energy(std::vector<colvarvalue> const &values)
 int colvarbias_meta::calc_forces(std::vector<colvarvalue> const &values)
 {
   for (size_t ir = 0; ir < replicas.size(); ir++) {
-    for (size_t ic = 0; ic < colvars.size(); ic++) {
+    for (size_t ic = 0; ic < num_variables(); ic++) {
       replicas[ir]->colvar_forces[ic].reset();
     }
   }
@@ -601,7 +601,7 @@ int colvarbias_meta::calc_forces(std::vector<colvarvalue> const &values)
   if (hills_energy->index_ok(curr_bin)) {
     for (size_t ir = 0; ir < replicas.size(); ir++) {
       cvm::real const *f = &(replicas[ir]->hills_energy_gradients->value(curr_bin));
-      for (size_t ic = 0; ic < colvars.size(); ic++) {
+      for (size_t ic = 0; ic < num_variables(); ic++) {
         // the gradients are stored, not the forces
         colvar_forces[ic].real_value += -1.0 * f[ic];
       }
@@ -609,7 +609,7 @@ int colvarbias_meta::calc_forces(std::vector<colvarvalue> const &values)
   } else {
     // off the grid: compute analytically only the hills at the grid's edges
     for (size_t ir = 0; ir < replicas.size(); ir++) {
-      for (size_t ic = 0; ic < colvars.size(); ic++) {
+      for (size_t ic = 0; ic < num_variables(); ic++) {
         calc_hills_force(ic,
                          replicas[ir]->hills_off_grid.begin(),
                          replicas[ir]->hills_off_grid.end(),
@@ -629,7 +629,7 @@ int colvarbias_meta::calc_forces(std::vector<colvarvalue> const &values)
   }
 
   for (size_t ir = 0; ir < replicas.size(); ir++) {
-    for (size_t ic = 0; ic < colvars.size(); ic++) {
+    for (size_t ic = 0; ic < num_variables(); ic++) {
       calc_hills_force(ic,
                        replicas[ir]->new_hills_begin,
                        replicas[ir]->hills.end(),
@@ -651,18 +651,18 @@ void colvarbias_meta::calc_hills(colvarbias_meta::hill_iter      h_first,
                                  cvm::real                      &energy,
                                  std::vector<colvarvalue> const &colvar_values)
 {
-  std::vector<colvarvalue> curr_values(colvars.size());
-  for (size_t i = 0; i < colvars.size(); i++) {
-    curr_values[i].type(colvars[i]->value());
+  std::vector<colvarvalue> curr_values(num_variables());
+  for (size_t i = 0; i < num_variables(); i++) {
+    curr_values[i].type(variables(i)->value());
   }
 
   if (colvar_values.size()) {
-    for (size_t i = 0; i < colvars.size(); i++) {
+    for (size_t i = 0; i < num_variables(); i++) {
       curr_values[i] = colvar_values[i];
     }
   } else {
-    for (size_t i = 0; i < colvars.size(); i++) {
-      curr_values[i] = colvars[i]->value();
+    for (size_t i = 0; i < num_variables(); i++) {
+      curr_values[i] = variables(i)->value();
     }
   }
 
@@ -670,11 +670,11 @@ void colvarbias_meta::calc_hills(colvarbias_meta::hill_iter      h_first,
 
     // compute the gaussian exponent
     cvm::real cv_sqdev = 0.0;
-    for (size_t i = 0; i < colvars.size(); i++) {
+    for (size_t i = 0; i < num_variables(); i++) {
       colvarvalue const &x  = curr_values[i];
       colvarvalue const &center = h->centers[i];
       cvm::real const    half_width = 0.5 * h->widths[i];
-      cv_sqdev += (colvars[i]->dist2(x, center)) / (half_width*half_width);
+      cv_sqdev += (variables(i)->dist2(x, center)) / (half_width*half_width);
     }
 
     // compute the gaussian
@@ -696,14 +696,14 @@ void colvarbias_meta::calc_hills_force(size_t const &i,
                                        std::vector<colvarvalue> const &values)
 {
   // Retrieve the value of the colvar
-  colvarvalue const x(values.size() ? values[i] : colvars[i]->value());
+  colvarvalue const x(values.size() ? values[i] : variables(i)->value());
 
   // do the type check only once (all colvarvalues in the hills series
   // were already saved with their types matching those in the
   // colvars)
 
   hill_iter h;
-  switch (colvars[i]->value().type()) {
+  switch (variables(i)->value().type()) {
 
   case colvarvalue::type_scalar:
     for (h = h_first; h != h_last; h++) {
@@ -712,7 +712,7 @@ void colvarbias_meta::calc_hills_force(size_t const &i,
       cvm::real const    half_width = 0.5 * h->widths[i];
       forces[i].real_value +=
         ( h->weight() * h->value() * (0.5 / (half_width*half_width)) *
-          (colvars[i]->dist2_lgrad(x, center)).real_value );
+          (variables(i)->dist2_lgrad(x, center)).real_value );
     }
     break;
 
@@ -725,7 +725,7 @@ void colvarbias_meta::calc_hills_force(size_t const &i,
       cvm::real const    half_width = 0.5 * h->widths[i];
       forces[i].rvector_value +=
         ( h->weight() * h->value() * (0.5 / (half_width*half_width)) *
-          (colvars[i]->dist2_lgrad(x, center)).rvector_value );
+          (variables(i)->dist2_lgrad(x, center)).rvector_value );
     }
     break;
 
@@ -737,7 +737,7 @@ void colvarbias_meta::calc_hills_force(size_t const &i,
       cvm::real const    half_width = 0.5 * h->widths[i];
       forces[i].quaternion_value +=
         ( h->weight() * h->value() * (0.5 / (half_width*half_width)) *
-          (colvars[i]->dist2_lgrad(x, center)).quaternion_value );
+          (variables(i)->dist2_lgrad(x, center)).quaternion_value );
     }
     break;
 
@@ -748,7 +748,7 @@ void colvarbias_meta::calc_hills_force(size_t const &i,
       cvm::real const    half_width = 0.5 * h->widths[i];
       forces[i].vector1d_value +=
         ( h->weight() * h->value() * (0.5 / (half_width*half_width)) *
-          (colvars[i]->dist2_lgrad(x, center)).vector1d_value );
+          (variables(i)->dist2_lgrad(x, center)).vector1d_value );
     }
     break;
 
@@ -777,13 +777,13 @@ void colvarbias_meta::project_hills(colvarbias_meta::hill_iter  h_first,
 
   // TODO: improve it by looping over a small subgrid instead of the whole grid
 
-  std::vector<colvarvalue> colvar_values(colvars.size());
-  std::vector<cvm::real> colvar_forces_scalar(colvars.size());
+  std::vector<colvarvalue> colvar_values(num_variables());
+  std::vector<cvm::real> colvar_forces_scalar(num_variables());
 
   std::vector<int> he_ix = he->new_index();
   std::vector<int> hg_ix = (hg != NULL) ? hg->new_index() : std::vector<int> (0);
   cvm::real hills_energy_here = 0.0;
-  std::vector<colvarvalue> hills_forces_here(colvars.size(), 0.0);
+  std::vector<colvarvalue> hills_forces_here(num_variables(), 0.0);
 
   size_t count = 0;
   size_t const print_frequency = ((hills.size() >= 1000000) ? 1 : (1000000/(hills.size()+1)));
@@ -795,7 +795,7 @@ void colvarbias_meta::project_hills(colvarbias_meta::hill_iter  h_first,
           (he->index_ok(he_ix)) && (hg->index_ok(hg_ix));
           count++) {
       size_t i;
-      for (i = 0; i < colvars.size(); i++) {
+      for (i = 0; i < num_variables(); i++) {
         colvar_values[i] = hills_energy->bin_to_value_scalar(he_ix[i], i);
       }
 
@@ -804,7 +804,7 @@ void colvarbias_meta::project_hills(colvarbias_meta::hill_iter  h_first,
       calc_hills(h_first, h_last, hills_energy_here, colvar_values);
       he->acc_value(he_ix, hills_energy_here);
 
-      for (i = 0; i < colvars.size(); i++) {
+      for (i = 0; i < num_variables(); i++) {
         hills_forces_here[i].reset();
         calc_hills_force(i, h_first, h_last, hills_forces_here, colvar_values);
         colvar_forces_scalar[i] = hills_forces_here[i].real_value;
@@ -833,7 +833,7 @@ void colvarbias_meta::project_hills(colvarbias_meta::hill_iter  h_first,
 
     for ( ; (he->index_ok(he_ix)); ) {
 
-      for (size_t i = 0; i < colvars.size(); i++) {
+      for (size_t i = 0; i < num_variables(); i++) {
         colvar_values[i] = hills_energy->bin_to_value_scalar(he_ix[i], i);
       }
 
@@ -1405,9 +1405,9 @@ std::istream & colvarbias_meta::read_hill(std::istream &is)
   cvm::real h_weight;
   get_keyval(data, "weight", h_weight, hill_weight, parse_silent);
 
-  std::vector<colvarvalue> h_centers(colvars.size());
-  for (size_t i = 0; i < colvars.size(); i++) {
-    h_centers[i].type(colvars[i]->value());
+  std::vector<colvarvalue> h_centers(num_variables());
+  for (size_t i = 0; i < num_variables(); i++) {
+    h_centers[i].type(variables(i)->value());
   }
   {
     // it is safer to read colvarvalue objects one at a time;
@@ -1415,14 +1415,14 @@ std::istream & colvarbias_meta::read_hill(std::istream &is)
     std::string centers_input;
     key_lookup(data, "centers", centers_input);
     std::istringstream centers_is(centers_input);
-    for (size_t i = 0; i < colvars.size(); i++) {
+    for (size_t i = 0; i < num_variables(); i++) {
       centers_is >> h_centers[i];
     }
   }
 
-  std::vector<cvm::real> h_widths(colvars.size());
+  std::vector<cvm::real> h_widths(num_variables());
   get_keyval(data, "widths", h_widths,
-             std::vector<cvm::real> (colvars.size(), (std::sqrt(2.0 * PI) / 2.0)),
+             std::vector<cvm::real>(num_variables(), (std::sqrt(2.0 * PI) / 2.0)),
              parse_silent);
 
   std::string h_replica = "";

@@ -52,7 +52,7 @@ int colvarbias::init(std::string const &conf)
       // lookup the associated colvars
       std::vector<std::string> colvar_names;
       if (get_keyval(conf, "colvars", colvar_names)) {
-        if (colvars.size()) {
+        if (num_variables()) {
           cvm::error("Error: cannot redefine the colvars that a bias was already defined on.\n",
                      INPUT_ERROR);
           return INPUT_ERROR;
@@ -63,7 +63,7 @@ int colvarbias::init(std::string const &conf)
       }
     }
 
-    if (!colvars.size()) {
+    if (!num_variables()) {
       cvm::error("Error: no collective variables specified.\n", INPUT_ERROR);
       return INPUT_ERROR;
     }
@@ -81,7 +81,7 @@ int colvarbias::init(std::string const &conf)
 int colvarbias::reset()
 {
   bias_energy = 0.0;
-  for (size_t i = 0; i < colvars.size(); i++) {
+  for (size_t i = 0; i < num_variables(); i++) {
     colvar_forces[i].reset();
   }
   return COLVARS_OK;
@@ -176,7 +176,7 @@ int colvarbias::update()
   has_data = true;
 
   bias_energy = 0.0;
-  for (size_t ir = 0; ir < colvars.size(); ir++) {
+  for (size_t ir = 0; ir < num_variables(); ir++) {
     colvar_forces[ir].reset();
   }
 
@@ -186,12 +186,12 @@ int colvarbias::update()
 
 void colvarbias::communicate_forces()
 {
-  for (size_t i = 0; i < colvars.size(); i++) {
+  for (size_t i = 0; i < num_variables(); i++) {
     if (cvm::debug()) {
       cvm::log("Communicating a force to colvar \""+
-               colvars[i]->name+"\".\n");
+               variables(i)->name+"\".\n");
     }
-    colvars[i]->add_bias_force(colvar_forces[i]);
+    variables(i)->add_bias_force(colvar_forces[i]);
   }
 }
 

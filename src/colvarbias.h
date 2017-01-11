@@ -25,10 +25,22 @@ public:
   /// Add a new collective variable to this bias
   int add_colvar(std::string const &cv_name);
 
-  /// Add a new collective variable to this bias
-  size_t number_of_colvars() const
+  /// How many variables are defined for this bias
+  inline size_t num_variables() const
   {
     return colvars.size();
+  }
+
+  /// Access the variables vector
+  inline std::vector<colvar *> *variables()
+  {
+    return &colvars;
+  }
+
+  /// Access the i-th variable
+  inline colvar * variables(int i) const
+  {
+    return colvars[i];
   }
 
   /// Retrieve colvar values and calculate their biasing forces
@@ -47,8 +59,6 @@ public:
   /// Send forces to the collective variables
   virtual void communicate_forces();
 
-  // TODO: move update_bias here (share with metadynamics)
-
   /// Load new configuration - force constant and/or centers only
   virtual int change_configuration(std::string const &conf);
 
@@ -56,10 +66,13 @@ public:
   virtual cvm::real energy_difference(std::string const &conf);
 
   /// Give the total number of bins for a given bias.
+  // FIXME this is currently 1D only
   virtual int bin_num();
   /// Calculate the bin index for a given bias.
+  // FIXME this is currently 1D only
   virtual int current_bin();
   //// Give the count at a given bin index.
+  // FIXME this is currently 1D only
   virtual int bin_count(int bin_index);
   //// Share information between replicas, whatever it may be.
   virtual int replica_share();
@@ -164,7 +177,7 @@ protected:
   /// through each colvar object
   std::vector<colvar *>    colvars;
 
-  /// \brief Current forces from this bias to the colvars
+  /// \brief Current forces from this bias to the variables
   std::vector<colvarvalue> colvar_forces;
 
   /// \brief Current energy of this bias (colvar_forces should be obtained by deriving this)
