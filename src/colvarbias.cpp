@@ -27,7 +27,11 @@ int colvarbias::init(std::string const &conf)
   colvarparse::init(conf);
 
   if (name.size() == 0) {
+
+    // first initialization
+
     cvm::log("Initializing a new \""+bias_type+"\" instance.\n");
+    rank = cvm::num_biases_type(bias_type);
     get_keyval(conf, "name", name, bias_type+cvm::to_str(rank));
 
     {

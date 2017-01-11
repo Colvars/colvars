@@ -4,7 +4,7 @@
 #define COLVARMODULE_H
 
 #ifndef COLVARS_VERSION
-#define COLVARS_VERSION "2017-01-09"
+#define COLVARS_VERSION "2017-01-11"
 #endif
 
 #ifndef COLVARS_DEBUG
@@ -281,6 +281,9 @@ public:
 
   /// Return how many biases have this feature enabled
   static int num_biases_feature(int feature_id);
+
+  /// Return how many biases are defined with this type
+  static int num_biases_type(std::string const &type);
 
 private:
   /// Useful wrapper to interrupt parsing if any error occurs

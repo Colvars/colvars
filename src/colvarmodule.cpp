@@ -433,6 +433,20 @@ int colvarmodule::num_biases_feature(int feature_id)
 }
 
 
+int colvarmodule::num_biases_type(std::string const &type)
+{
+  colvarmodule *cv = cvm::main();
+  size_t n = 0;
+  for (std::vector<colvarbias *>::iterator bi = cv->biases.begin();
+       bi != cv->biases.end();
+       bi++) {
+    if ((*bi)->bias_type == type) {
+      n++;
+    }
+  }
+  return n;
+}
+
 
 int colvarmodule::catch_input_errors(int result)
 {
