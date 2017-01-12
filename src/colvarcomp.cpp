@@ -65,6 +65,19 @@ int colvar::cvc::init_total_force_params(std::string const &conf)
                          f_cvc_one_site_total_force, is_enabled(f_cvc_one_site_total_force))) {
     cvm::log("Computing total force on group 1 only");
   }
+
+  if (! is_enabled(f_cvc_one_site_total_force)) {
+    // check whether any of the other atom groups is dummy
+    std::vector<cvm::atom_group *>::iterator agi = atom_groups.begin();
+    agi++;
+    for ( ; agi != atom_groups.end(); agi++) {
+      if ((*agi)->b_dummy) {
+        set_available(f_cvc_inv_gradient, false);
+        set_available(f_cvc_Jacobian, false);
+      }
+    }
+  }
+
   return COLVARS_OK;
 }
 
