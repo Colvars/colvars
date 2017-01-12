@@ -171,9 +171,9 @@ int colvardeps::enable(int feature_id,
       if (res != COLVARS_OK) {
         if (!dry_run) {
           cvm::log("...required by \"" + f->description + "\" in " + description);
-        }
-        if (toplevel) {
-          cvm::error("Error: Failed dependency in " + description + ".");
+          if (toplevel) {
+            cvm::error("Error: Failed dependency in " + description + ".");
+          }
         }
         return res;
       }
