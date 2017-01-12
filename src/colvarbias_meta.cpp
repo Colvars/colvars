@@ -539,7 +539,9 @@ int colvarbias_meta::update_grid_data()
 
 int colvarbias_meta::calc_energy(std::vector<colvarvalue> const &values)
 {
-  for (size_t ir = 0; ir < replicas.size(); ir++) {
+  size_t ir = 0;
+
+  for (ir = 0; ir < replicas.size(); ir++) {
     replicas[ir]->bias_energy = 0.0;
   }
 
@@ -549,7 +551,7 @@ int colvarbias_meta::calc_energy(std::vector<colvarvalue> const &values)
 
   if (hills_energy->index_ok(curr_bin)) {
     // index is within the grid: get the energy from there
-    for (size_t ir = 0; ir < replicas.size(); ir++) {
+    for (ir = 0; ir < replicas.size(); ir++) {
 
       bias_energy += replicas[ir]->hills_energy->value(curr_bin);
       if (cvm::debug()) {
@@ -562,7 +564,7 @@ int colvarbias_meta::calc_energy(std::vector<colvarvalue> const &values)
     }
   } else {
     // off the grid: compute analytically only the hills at the grid's edges
-    for (size_t ir = 0; ir < replicas.size(); ir++) {
+    for (ir = 0; ir < replicas.size(); ir++) {
       calc_hills(replicas[ir]->hills_off_grid.begin(),
                  replicas[ir]->hills_off_grid.end(),
                  bias_energy,
@@ -573,7 +575,7 @@ int colvarbias_meta::calc_energy(std::vector<colvarvalue> const &values)
   // now include the hills that have not been binned yet (starting
   // from new_hills_begin)
 
-  for (size_t ir = 0; ir < replicas.size(); ir++) {
+  for (ir = 0; ir < replicas.size(); ir++) {
     calc_hills(replicas[ir]->new_hills_begin,
                replicas[ir]->hills.end(),
                bias_energy);
@@ -588,8 +590,9 @@ int colvarbias_meta::calc_energy(std::vector<colvarvalue> const &values)
 
 int colvarbias_meta::calc_forces(std::vector<colvarvalue> const &values)
 {
-  for (size_t ir = 0; ir < replicas.size(); ir++) {
-    for (size_t ic = 0; ic < num_variables(); ic++) {
+  size_t ir = 0, ic = 0;
+  for (ir = 0; ir < replicas.size(); ir++) {
+    for (ic = 0; ic < num_variables(); ic++) {
       replicas[ir]->colvar_forces[ic].reset();
     }
   }
@@ -599,17 +602,17 @@ int colvarbias_meta::calc_forces(std::vector<colvarvalue> const &values)
     hills_energy->get_colvars_index();
 
   if (hills_energy->index_ok(curr_bin)) {
-    for (size_t ir = 0; ir < replicas.size(); ir++) {
+    for (ir = 0; ir < replicas.size(); ir++) {
       cvm::real const *f = &(replicas[ir]->hills_energy_gradients->value(curr_bin));
-      for (size_t ic = 0; ic < num_variables(); ic++) {
+      for (ic = 0; ic < num_variables(); ic++) {
         // the gradients are stored, not the forces
         colvar_forces[ic].real_value += -1.0 * f[ic];
       }
     }
   } else {
     // off the grid: compute analytically only the hills at the grid's edges
-    for (size_t ir = 0; ir < replicas.size(); ir++) {
-      for (size_t ic = 0; ic < num_variables(); ic++) {
+    for (ir = 0; ir < replicas.size(); ir++) {
+      for (ic = 0; ic < num_variables(); ic++) {
         calc_hills_force(ic,
                          replicas[ir]->hills_off_grid.begin(),
                          replicas[ir]->hills_off_grid.end(),
@@ -628,8 +631,8 @@ int colvarbias_meta::calc_forces(std::vector<colvarvalue> const &values)
              ": adding the forces from the other replicas.\n");
   }
 
-  for (size_t ir = 0; ir < replicas.size(); ir++) {
-    for (size_t ic = 0; ic < num_variables(); ic++) {
+  for (ir = 0; ir < replicas.size(); ir++) {
+    for (ic = 0; ic < num_variables(); ic++) {
       calc_hills_force(ic,
                        replicas[ir]->new_hills_begin,
                        replicas[ir]->hills.end(),
@@ -651,17 +654,18 @@ void colvarbias_meta::calc_hills(colvarbias_meta::hill_iter      h_first,
                                  cvm::real                      &energy,
                                  std::vector<colvarvalue> const &colvar_values)
 {
+  size_t i = 0;
   std::vector<colvarvalue> curr_values(num_variables());
-  for (size_t i = 0; i < num_variables(); i++) {
+  for (i = 0; i < num_variables(); i++) {
     curr_values[i].type(variables(i)->value());
   }
 
   if (colvar_values.size()) {
-    for (size_t i = 0; i < num_variables(); i++) {
+    for (i = 0; i < num_variables(); i++) {
       curr_values[i] = colvar_values[i];
     }
   } else {
-    for (size_t i = 0; i < num_variables(); i++) {
+    for (i = 0; i < num_variables(); i++) {
       curr_values[i] = variables(i)->value();
     }
   }
@@ -670,7 +674,7 @@ void colvarbias_meta::calc_hills(colvarbias_meta::hill_iter      h_first,
 
     // compute the gaussian exponent
     cvm::real cv_sqdev = 0.0;
-    for (size_t i = 0; i < num_variables(); i++) {
+    for (i = 0; i < num_variables(); i++) {
       colvarvalue const &x  = curr_values[i];
       colvarvalue const &center = h->centers[i];
       cvm::real const    half_width = 0.5 * h->widths[i];
