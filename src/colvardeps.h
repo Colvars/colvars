@@ -134,11 +134,18 @@ public:
 
   void provide(int feature_id); // set the feature's flag to available in local object
 
+protected:
+
+  void set_available(int feature_id, bool truefalse); // set the feature's available flag, without checking 
+  void set_enabled(int feature_id, bool truefalse); // set the feature's enabled flag, without checking 
+
   /// Parse a keyword and enable a feature accordingly
   bool get_keyval_feature(colvarparse *cvp,
                           std::string const &conf, char const *key,
                           int feature_id, bool const &def_value,
                           colvarparse::Parse_Mode const parse_mode = colvarparse::parse_normal);
+
+public:
 
   int enable(int f, bool dry_run = false, bool toplevel = true);  // enable a feature and recursively solve its dependencies
   // dry_run is set to true to recursively test if a feature is available, without enabling it
