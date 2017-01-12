@@ -72,6 +72,8 @@ int colvarbias::init(std::string const &conf)
     cvm::log("Reinitializing bias \""+name+"\".\n");
   }
 
+  output_prefix = cvm::output_prefix();
+
   get_keyval(conf, "outputEnergy", b_output_energy, b_output_energy);
 
   return COLVARS_OK;
