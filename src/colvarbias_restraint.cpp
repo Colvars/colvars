@@ -947,21 +947,21 @@ cvm::real colvarbias_restraint_harmonic_walls::colvar_distance(size_t i) const
     cvm::real const upper_wall_dist2 = cv->dist2(cvv, upper_walls[i]);
     if (lower_wall_dist2 < upper_wall_dist2) {
       cvm::real const grad = cv->dist2_lgrad(cvv, lower_walls[i]);
-      if (grad < 0.0) { return grad; }
+      if (grad < 0.0) { return 0.5 * grad; }
     } else {
       cvm::real const grad = cv->dist2_lgrad(cvv, upper_walls[i]);
-      if (grad > 0.0) { return grad; }
+      if (grad > 0.0) { return 0.5 * grad; }
     }
     return 0.0;
   }
 
   if (lower_walls.size() > 0) {
     cvm::real const grad = cv->dist2_lgrad(cvv, lower_walls[i]);
-    if (grad < 0.0) { return grad; }
+    if (grad < 0.0) { return 0.5 * grad; }
   }
   if (upper_walls.size() > 0) {
     cvm::real const grad = cv->dist2_lgrad(cvv, upper_walls[i]);
-    if (grad > 0.0) { return grad; }
+    if (grad > 0.0) { return 0.5 * grad; }
   }
   return 0.0;
 }
@@ -978,8 +978,7 @@ cvm::real colvarbias_restraint_harmonic_walls::restraint_potential(size_t i) con
 colvarvalue const colvarbias_restraint_harmonic_walls::restraint_force(size_t i) const
 {
   cvm::real const dist = colvar_distance(i);
-  return -0.5 * force_k / (variables(i)->width * variables(i)->width) *
-    dist;
+  return - force_k / (variables(i)->width * variables(i)->width) * dist;
 }
 
 
