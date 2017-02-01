@@ -156,6 +156,25 @@ int colvarmodule::read_config_string(std::string const &config_str)
 }
 
 
+std::istream & colvarmodule::getline(std::istream &is, std::string &line)
+{
+  std::string l;
+  if (std::getline(is, l)) {
+    size_t const sz = l.size();
+    if (sz > 0) {
+      if (l[sz-1] == '\r' ) {
+        line = l.substr(0, sz-1);
+      } else {
+        line = l;
+      }
+    } else {
+      line.clear();
+    }
+  }
+  return is;
+}
+
+
 int colvarmodule::parse_config(std::string &conf)
 {
   extra_conf.clear();
@@ -1630,8 +1649,8 @@ int cvm::load_coords_xyz(char const *filename,
                + std::string(filename) + ".\n", INPUT_ERROR);
   }
   // skip comment line
-  std::getline(xyz_is, line);
-  std::getline(xyz_is, line);
+  cvm::getline(xyz_is, line);
+  cvm::getline(xyz_is, line);
   xyz_is.width(255);
   std::vector<atom_pos>::iterator pos_i = pos.begin();
 
@@ -1641,7 +1660,7 @@ int cvm::load_coords_xyz(char const *filename,
     for ( ; pos_i != pos.end() ; pos_i++, index++) {
 
       while ( next < *index ) {
-        std::getline(xyz_is, line);
+        cvm::getline(xyz_is, line);
         next++;
       }
       xyz_is >> symbol;

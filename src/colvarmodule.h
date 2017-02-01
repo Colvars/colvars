@@ -249,6 +249,10 @@ public:
 
   // Parse functions (setup internal data based on a string)
 
+  /// Allow reading from Windows text files using using std::getline
+  /// (which can still be used when the text is produced by Colvars itself)
+  static std::istream & getline(std::istream &is, std::string &line);
+
   /// Parse the few module's global parameters
   int parse_global_params(std::string const &conf);
 
