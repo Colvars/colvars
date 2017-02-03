@@ -736,6 +736,7 @@ if ($config_tk) { $tcl_libs = "-ltk8.5 -lX11 " . $tcl_libs; }
 @tcl_cu           = ();
 @tcl_ccpp         = ('ColorInfo.C',
 		     'TclCommands.C',
+		     'TclFastPBC.C',
 		     'TclMDFF.C',
 		     'TclMeasure.C',
 		     'TclMolInfo.C',
@@ -933,6 +934,7 @@ $cuda_libs        = "-Wl,-rpath -Wl,\$\$ORIGIN/ -lcudart_static";
                      'CUDABench.cu',
                      'CUDAClearDevice.cu',
                      'CUDADispCmds.cu',
+                     'CUDAFastPBC.cu',
                      'CUDAMarchingCubes.cu',
                      'CUDAMDFF.cu',
                      'CUDAMeasureRDF.cu',
@@ -1506,6 +1508,7 @@ $vmd_libs          = "$tcl_libs";
 		   'DrawMolItemVolume.C', 
 		   'DrawForce.C', 
 		   'DrawRingsUtils.C', 
+		   'FastPBC.C',
 		   'FileRenderList.C', 
 		   'FileRenderer.C', 
 		   'FPS.C',

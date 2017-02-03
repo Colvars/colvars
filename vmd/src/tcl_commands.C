@@ -11,7 +11,7 @@
  *
  *      $RCSfile: tcl_commands.C,v $
  *      $Author: johns $        $Locker:  $             $State: Exp $
- *      $Revision: 1.48 $       $Date: 2016/11/28 03:05:08 $
+ *      $Revision: 1.49 $       $Date: 2017/02/02 20:59:32 $
  *
  ***************************************************************************
  * DESCRIPTION:
@@ -296,6 +296,11 @@ int Vmd_Init(Tcl_Interp *interp) {
 
   Tcl_CreateCommand(interp, "parallel", text_cmd_parallel,
         (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
+
+#if 0
+  Tcl_CreateObjCommand(interp, "fastpbc", obj_fastpbc,
+                    (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
+#endif
 
   return TCL_OK;
 }
