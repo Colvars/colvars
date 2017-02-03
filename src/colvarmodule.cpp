@@ -775,6 +775,8 @@ int colvarmodule::calc_biases()
     total_bias_energy += (*bi)->get_energy();
   }
 
+  if (cvm::debug())
+    cvm::log("Adding total bias energy: " + cvm::to_str(total_bias_energy) + "\n");
   proxy->add_energy(total_bias_energy);
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
 }
@@ -820,6 +822,8 @@ int colvarmodule::update_colvar_forces()
     }
   }
   cvm::decrease_depth();
+  if (cvm::debug())
+    cvm::log("Adding total colvar energy: " + cvm::to_str(total_colvar_energy) + "\n");
   proxy->add_energy(total_colvar_energy);
 
   // make collective variables communicate their forces to their

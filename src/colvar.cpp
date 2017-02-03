@@ -1249,7 +1249,7 @@ cvm::real colvar::update_forces_energy()
     // f_ext: total force on extended variable (including harmonic spring)
     // f: - initially, external biasing force
     //    - after this code block, colvar force to be applied to atomic coordinates
-    //      ie. spring force + wall force
+    //      ie. spring force (fb_actual will be added just below)
     fr    = f;
     f_ext = f + (-0.5 * ext_force_k) * this->dist2_lgrad(xr, x);
     f     =     (-0.5 * ext_force_k) * this->dist2_rgrad(xr, x);
@@ -1307,8 +1307,10 @@ cvm::real colvar::update_forces_energy()
 void colvar::communicate_forces()
 {
   size_t i;
-  if (cvm::debug())
+  if (cvm::debug()) {
     cvm::log("Communicating forces from colvar \""+this->name+"\".\n");
+    cvm::log("Force to be applied: " + cvm::to_str(f_accumulated) + "\n");
+  }
 
   if (is_enabled(f_cv_scripted)) {
     std::vector<cvm::matrix2d<cvm::real> > func_grads;
