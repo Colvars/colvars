@@ -257,10 +257,11 @@ int colvarscript::proc_colvar(int argc, char const *argv[]) {
   }
 
   if (subcmd == "delete") {
-    if (cv->biases.size() > 0) {
-      result = "Cannot delete a colvar currently used by biases, delete those biases first";
-      return COLVARSCRIPT_ERROR;
+    size_t i;
+    for (i = 0; i < cv->biases.size(); i++) {
+      delete cv->biases[i];
     }
+    cv->biases.resize(0);
     // colvar destructor is tasked with the cleanup
     delete cv;
     // TODO this could be done by the destructors
