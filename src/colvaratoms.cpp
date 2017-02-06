@@ -91,7 +91,7 @@ cvm::atom_group::atom_group()
 
 cvm::atom_group::~atom_group()
 {
-  if (is_enabled(f_ag_scalable)) {
+  if (is_enabled(f_ag_scalable) && !b_dummy) {
     (cvm::proxy)->clear_atom_group(index);
     index = -1;
   }
