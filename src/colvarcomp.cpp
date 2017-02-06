@@ -56,6 +56,8 @@ colvar::cvc::cvc(std::string const &conf)
 
 int colvar::cvc::init_total_force_params(std::string const &conf)
 {
+  if (cvm::get_error()) return COLVARS_ERROR;
+
   if (get_keyval_feature(this, conf, "oneSiteSystemForce",
                          f_cvc_one_site_total_force, is_enabled(f_cvc_one_site_total_force))) {
     cvm::log("Warning: keyword \"oneSiteSystemForce\" is deprecated: "
