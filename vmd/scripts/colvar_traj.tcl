@@ -23,3 +23,26 @@ proc colvar_save_traj_file { {fileName vmd.colvars.traj} } {
   puts $o [colvar_traj]
   close $o
 }
+
+proc colvar_plot_traj {} {
+
+  set nf [molinfo top get numframes]
+  set x [list]
+  for {set f 0} {$f< $nf} {incr f} { lappend x $f }
+
+  foreach c [cv list] {
+    set y($c) [list]
+  }
+  for {set f 0} {$f< $nf} {incr f} {
+    cv frame $f
+    cv update
+    foreach c [cv list] {
+      lappend y($c) [cv colvar $c value]
+    }
+  }
+  set plothandle [multiplot -title "Colvars trajectory" -xlabel "Frame" -ylabel "Colvar value"]
+  foreach c [cv list] {
+    $plothandle add $x $y($c) -legend $c
+  }
+  $plothandle replot
+}
