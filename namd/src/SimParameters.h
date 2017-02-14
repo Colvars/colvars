@@ -7,8 +7,8 @@
 /*****************************************************************************
  * $Source: /namd/cvsroot/namd2/src/SimParameters.h,v $
  * $Author: jim $
- * $Date: 2016/11/14 20:24:41 $
- * $Revision: 1.1245 $
+ * $Date: 2017/02/03 21:39:23 $
+ * $Revision: 1.1246 $
  *****************************************************************************/
 
 #ifndef SIMPARAMETERS_H
@@ -568,6 +568,18 @@ public:
         BigReal accelMDalpha;           //  aMD alpha
         BigReal accelMDTE;              //  E for total potential in the dual boost mode
         BigReal accelMDTalpha;          //  alpha for total potential in the dual boost mode
+
+	Bool accelMDG;                  //  Perform Gaussian accelMD calculation
+	int accelMDGiE;                 //  Flag to set the mode iE in Gaussian accelMD
+	int accelMDGcMDSteps;           //  No. of cMD steps
+	int accelMDGEquiSteps;		//  No. of quilibration steps after adding boost potential
+	int accelMDGcMDPrepSteps;	//  No. of preparation cMD steps
+	int accelMDGEquiPrepSteps;	//  No. of preparation equilibration steps
+	BigReal accelMDGSigma0P;	//  upper limit of std of total potential
+	BigReal accelMDGSigma0D;	//  upper limit of std of dihedral potential
+	Bool accelMDGRestart;		//  Flag to set use restart file in Gaussian accelMD
+	char accelMDGRestartFile[128];	//  restart file name
+	Bool accelMDGresetVaftercmd;	//  Flag to reset potential after first accelMDGcMDSteps steps
 
         /* Begin Adaptive Temperature Sampling */
         Bool adaptTempOn;                      //  is adaptTempOn

@@ -7,8 +7,8 @@
 /*****************************************************************************
  * $Source: /namd/cvsroot/namd2/src/SimParameters.C,v $
  * $Author: jim $
- * $Date: 2016/11/14 20:24:41 $
- * $Revision: 1.1475 $
+ * $Date: 2017/02/03 21:39:23 $
+ * $Revision: 1.1476 $
  *****************************************************************************/
 
 /** \file SimParameters.C
@@ -249,6 +249,9 @@ void SimParameters::scriptSet(const char *param, const char *value) {
   SCRIPT_PARSE_FLOAT("accelMDalpha",accelMDalpha)
   SCRIPT_PARSE_FLOAT("accelMDTE",accelMDTE)
   SCRIPT_PARSE_FLOAT("accelMDTalpha",accelMDTalpha)
+  SCRIPT_PARSE_FLOAT("accelMDGSigma0P",accelMDGSigma0P) 
+  SCRIPT_PARSE_FLOAT("accelMDGSigma0D",accelMDGSigma0D) 
+  SCRIPT_PARSE_STRING("accelMDGRestartFile",accelMDGRestartFile)
   SCRIPT_PARSE_VECTOR("stirAxis",stirAxis)
   SCRIPT_PARSE_VECTOR("stirPivot",stirPivot)
   if ( ! strncasecmp(param,"mgridforcescale",MAX_SCRIPT_PARAM_SIZE) ) {
@@ -1375,17 +1378,38 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
    opts.range("accelMDOutFreq", POSITIVE);
    opts.optionalB("accelMD", "accelMDdihe", "Apply boost to dihedral potential", &accelMDdihe, TRUE);
    opts.optionalB("accelMD", "accelMDDebugOn", "Debugging accelMD", &accelMDDebugOn, FALSE);
-   opts.require("accelMD", "accelMDE","E for AMD", &accelMDE);
+   opts.optional("accelMD", "accelMDE","E for AMD", &accelMDE);
    opts.units("accelMDE", N_KCAL);
-   opts.require("accelMD", "accelMDalpha","alpha for AMD", &accelMDalpha);
+   opts.optional("accelMD", "accelMDalpha","alpha for AMD", &accelMDalpha);
    opts.units("accelMDalpha", N_KCAL);
    opts.range("accelMDalpha", POSITIVE);
    opts.optionalB("accelMD", "accelMDdual", "Apply dual boost", &accelMDdual, FALSE);
-   opts.require("accelMDdual", "accelMDTE","E for total potential under accelMDdual mode", &accelMDTE);
+   opts.optional("accelMDdual", "accelMDTE","E for total potential under accelMDdual mode", &accelMDTE);
    opts.units("accelMDTE", N_KCAL);
-   opts.require("accelMDdual", "accelMDTalpha","alpha for total potential under accelMDdual mode", &accelMDTalpha);
+   opts.optional("accelMDdual", "accelMDTalpha","alpha for total potential under accelMDdual mode", &accelMDTalpha);
    opts.units("accelMDTalpha", N_KCAL);
    opts.range("accelMDTalpha", POSITIVE);
+   // GaMD parameters
+   opts.optionalB("accelMD", "accelMDG", "Perform Gaussian accelMD calculation?", &accelMDG, FALSE);
+   opts.optional("accelMDG", "accelMDGiE", "Flag to set the mode iE in Gaussian accelMD", &accelMDGiE, 1);
+   opts.optional("accelMDG", "accelMDGcMDSteps", "No. of cMD steps", &accelMDGcMDSteps, 1000000);
+   opts.range("accelMDGcMDSteps", NOT_NEGATIVE);
+   opts.optional("accelMDG", "accelMDGEquiSteps", "No. of equilibration steps after adding boost potential", &accelMDGEquiSteps, 1000000);
+   opts.range("accelMDGEquiSteps", NOT_NEGATIVE);
+   opts.require("accelMDG", "accelMDGcMDPrepSteps", "No. of preparation cMD steps", &accelMDGcMDPrepSteps, 200000);
+   opts.range("accelMDGcMDPrepSteps", NOT_NEGATIVE);
+   opts.require("accelMDG", "accelMDGEquiPrepSteps", "No. of preparation equilibration steps", &accelMDGEquiPrepSteps, 200000);
+   opts.range("accelMDGEquiPrepSteps", NOT_NEGATIVE);
+   opts.optional("accelMDG", "accelMDGSigma0P", "Upper limit of std of total potential", &accelMDGSigma0P, 6.0);
+   opts.units("accelMDGSigma0P", N_KCAL);
+   opts.range("accelMDGSigma0P", NOT_NEGATIVE);
+   opts.optional("accelMDG", "accelMDGSigma0D", "Upper limit of std of dihedral potential", &accelMDGSigma0D, 6.0);
+   opts.units("accelMDGSigma0D", N_KCAL);
+   opts.range("accelMDGSigma0D", NOT_NEGATIVE);
+   opts.optionalB("accelMDG", "accelMDGRestart", "Flag to set use restart file in Gaussian accelMD", &accelMDGRestart, FALSE);
+   opts.require("accelMDGRestart", "accelMDGRestartFile", "Restart file name for Gaussian accelMD", accelMDGRestartFile);
+   opts.optionalB("accelMDG", "accelMDGresetVaftercmd", "Flag to reset potential after accelMDGcMDSteps steps", 
+	   &accelMDGresetVaftercmd, FALSE);
 
    // Adaptive Temperature Sampling (adaptTemp) parameters
    opts.optionalB("main", "adaptTempMD", "Perform adaptive temperature sampling", &adaptTempOn, FALSE);
@@ -3139,6 +3163,47 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
    if (splitPatch == SPLIT_PATCH_POSITION && rigidBonds != RIGID_NONE)
    {
       NAMD_die("splitPatch hydrogen is required for rigidBonds");
+   }
+
+   if (accelMDOn) {
+       if(accelMDG){
+	   char msg[128];
+	   if(accelMDGiE < 1 || accelMDGiE > 2){
+	       sprintf(msg, "accelMDGiE was set to %d but it should be 1 or 2", accelMDGiE);
+	       NAMD_die(msg);
+	   }
+	   if(accelMDGRestart && accelMDGcMDSteps == 0)
+	       accelMDGcMDPrepSteps = 0;
+	   else if(accelMDGcMDSteps - accelMDGcMDPrepSteps < 2)
+	       NAMD_die("'accelMDGcMDSteps' should be larger than 'accelMDGcMDPrepSteps'");
+
+	   if(accelMDGEquiSteps == 0)
+	       accelMDGEquiPrepSteps = 0;
+	   else if(accelMDGresetVaftercmd){
+	       if(accelMDGEquiPrepSteps <= 0)
+		   NAMD_die("'accelMDGEquiPrepSteps' should be non-zero");
+	       if(accelMDGEquiSteps - accelMDGEquiPrepSteps < 1)
+		   NAMD_die("'accelMDGEquiSteps' should be larger than 'accelMDGEquiPrepSteps'");
+	   }
+
+	   //warn user that accelMD params will be ignored
+	   if(opts.defined("accelMDE"))
+	       iout << iWARN << "accelMDE will be ignored with accelMDG on.\n" << endi;
+	   if(opts.defined("accelMDalpha"))
+	       iout << iWARN << "accelMDalpha will be ignored with accelMDG on.\n" << endi;
+	   if(opts.defined("accelMDTE"))
+	       iout << iWARN << "accelMDTE will be ignored with accelMDG on.\n" << endi;
+	   if(opts.defined("accelMDTalpha"))
+	       iout << iWARN << "accelMDTalpha will be ignored with accelMDG on.\n" << endi;
+       }
+       else{
+	   if(!opts.defined("accelMDE") || !opts.defined("accelMDalpha"))
+	       NAMD_die("accelMDE and accelMDalpha are required for accelMD with accelMDG off");
+
+	   if(accelMDdual && (!opts.defined("accelMDTE") || !opts.defined("accelMDTalpha"))){
+	       NAMD_die("accelMDTE and accelMDTalpha are required for accelMDdual with accelMDG off");
+	   }
+       }
    }
 
    //  Set the default value for the maximum movement parameter
@@ -5605,9 +5670,44 @@ if ( openatomOn )
         iout << iINFO << "BOOSTING TOTAL POTENTIAL\n";
      }
 
+     if(accelMDG){
+	 switch(accelMDGiE) {
+	     case 1:
+		 iout << iINFO << "accelMDG THRESHOLD ENERGY SET TO LOWER BOUND Vmax\n";
+		 break;
+	     case 2:
+		 iout << iINFO << "accelMDG THRESHOLD ENERGY SET TO UPPER BOUND Vmin+(Vmax-Vmin)/k0\n";
+		 break;
+	 }
+	 if(accelMDGRestart)
+	     iout << iINFO << "accelMDG USING RESTART FILE " << accelMDGRestartFile << "\n";
+	 if(accelMDGresetVaftercmd)
+	     iout << iINFO << "accelMDG WILL RESET STATISTICS AFTER FIRST CMD STEPS\n";
+
+	 iout << iINFO << "accelMDG " << accelMDGcMDSteps << " CONVENTIONAL MD STEPS "
+	     << "(WITH " << accelMDGcMDPrepSteps << " PREPARATION STEPS)\n";
+	 if(accelMDGcMDSteps == 0)
+		 iout << iINFO << "(accelMDGcMDPrepSteps is set to zero automatically)\n";
+
+	 iout << iINFO << "accelMDG " << accelMDGEquiSteps << " EQUILIBRATION STEPS "
+	     << "(WITH " << accelMDGEquiPrepSteps << " PREPARATION STEPS)\n";
+	 if(accelMDGEquiSteps == 0)
+		 iout << iINFO << "(accelMDGEquiPrepSteps is set to zero automatically)\n";
+
+	 if(accelMDdihe)
+	     iout << iINFO << "accelMDGSigma0D: " << accelMDGSigma0D << " KCAL/MOL\n";
+	 else if(accelMDdual)
+	     iout << iINFO << "accelMDGSigma0P: " << accelMDGSigma0P << " KCAL/MOL, "
+		 << "accelMDGSigma0D: " << accelMDGSigma0D << " KCAL/MOL\n";
+	 else
+	     iout << iINFO << "accelMDGSigma0P: " << accelMDGSigma0P << " KCAL/MOL\n";
+     }
+     else{
      iout << iINFO << "accelMDE: " << accelMDE << " KCAL/MOL, accelMDalpha: " << accelMDalpha << " KCAL/MOL\n";
      if (accelMDdual) {
-        iout << iINFO << "accelMDTE: " << accelMDTE << " KCAL/MOL, accelMDTalpha: " << accelMDTalpha << " KCAL/MOL\n";
+	     iout << iINFO << "accelMDTE: " << accelMDTE << " KCAL/MOL, "
+		 << "accelMDTalpha: " << accelMDTalpha << " KCAL/MOL\n";
+	 }
      }
      if ( accelMDLastStep > 0) {
         iout << iINFO << "accelMD WILL BE DONE FROM STEP " << accelMDFirstStep << " TO STEP " << accelMDLastStep << "\n";

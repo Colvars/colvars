@@ -4785,7 +4785,6 @@ obj/colvarbias_alb.o: \
 	src/colvar.h \
 	src/colvarparse.h \
 	src/colvardeps.h \
-	src/colvarbias_restraint.h \
 	src/colvarbias.h
 	$(CXX) $(CXXCOLVARFLAGS) $(COPTO)obj/colvarbias_alb.o $(COPTC) src/colvarbias_alb.C
 obj/colvarbias_histogram.o: \
@@ -4957,9 +4956,9 @@ obj/colvarmodule.o: \
 	src/colvarbias_abf.h \
 	src/colvargrid.h \
 	src/colvarbias_alb.h \
-	src/colvarbias_restraint.h \
 	src/colvarbias_histogram.h \
 	src/colvarbias_meta.h \
+	src/colvarbias_restraint.h \
 	src/colvarscript.h
 	$(CXX) $(CXXCOLVARFLAGS) $(COPTO)obj/colvarmodule.o $(COPTC) src/colvarmodule.C
 obj/colvarparse.o: \
