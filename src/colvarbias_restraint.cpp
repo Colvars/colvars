@@ -528,9 +528,9 @@ int colvarbias_restraint_k_moving::update()
         }
         force_k = starting_force_k + (target_force_k - starting_force_k)
           * std::pow(lambda, force_k_exp);
-        cvm::log("Restraint " + this->name + ", stage " +
-                 cvm::to_str(stage) + " : lambda = " + cvm::to_str(lambda));
-        cvm::log("Setting force constant to " + cvm::to_str(force_k));
+          cvm::log("Restraint " + this->name + ", stage " + cvm::to_str(stage)
+                  + " : lambda = " + cvm::to_str(lambda)
+                  + ", k = " + cvm::to_str(force_k));
       }
 
       // TI calculation: estimate free energy derivative
@@ -558,7 +558,8 @@ int colvarbias_restraint_k_moving::update()
       if (cvm::step_absolute() % target_nsteps == 0 &&
           cvm::step_absolute() > 0) {
 
-        cvm::log("Lambda= " + cvm::to_str(lambda) + " dA/dLambda= "
+        cvm::log("Restraint " + this->name + " Lambda= "
+                 + cvm::to_str(lambda) + " dA/dLambda= "
                  + cvm::to_str(restraint_FE / cvm::real(target_nsteps - target_equil_steps)));
 
         //  ...and move on to the next one
@@ -573,9 +574,9 @@ int colvarbias_restraint_k_moving::update()
           }
           force_k = starting_force_k + (target_force_k - starting_force_k)
             * std::pow(lambda, force_k_exp);
-          cvm::log("Restraint " + this->name + ", stage " +
-                   cvm::to_str(stage) + " : lambda = " + cvm::to_str(lambda));
-          cvm::log("Setting force constant to " + cvm::to_str(force_k));
+          cvm::log("Restraint " + this->name + ", stage " + cvm::to_str(stage)
+                  + " : lambda = " + cvm::to_str(lambda)
+                  + ", k = " + cvm::to_str(force_k));
         }
       }
 
