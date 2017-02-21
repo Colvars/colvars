@@ -399,7 +399,7 @@ CUDAOBJSRAWSTATIC = $(CUDAOBJSRAW) \
 	$(DSTDIR)/CudaPmeSolverUtilKernel_dlink.o
 
 $(DSTDIR)/CudaPmeSolverUtilKernel_dlink.o: $(DSTDIR)/CudaPmeSolverUtilKernel.o
-	$(CUDACC) $(CUDACCOPTS) -v -lcufft_static -dlink $(DSTDIR)/CudaPmeSolverUtilKernel.o $(COPTO)$@
+	$(CUDACC) $(CUDADLINKOPTS) -v -lcufft_static -dlink $(DSTDIR)/CudaPmeSolverUtilKernel.o $(COPTO)$@
 
 SBOBJS = $(DSTDIR)/tcl_main.o $(SBLIB)
 
