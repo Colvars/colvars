@@ -949,7 +949,6 @@ int colvar::collect_cvc_values()
               cvm::to_str(x, cvm::cv_width, cvm::cv_prec)+".\n");
 
   if (after_restart) {
-    after_restart = false;
     if (cvm::proxy->simulation_running()) {
       cvm::real const jump2 = dist2(x, x_restart) / (width*width);
       if (jump2 > 0.25) {
@@ -1179,8 +1178,7 @@ int colvar::calc_colvar_properties()
 
     // initialize the restraint center in the first step to the value
     // just calculated from the cvcs
-    // TODO: put it in the restart information
-    if (cvm::step_relative() == 0) {
+    if (cvm::step_relative() == 0 && !after_restart) {
       xr = x;
       vr.reset(); // (already 0; added for clarity)
     }
@@ -1205,6 +1203,8 @@ int colvar::calc_colvar_properties()
     ft_reported = ft;
   }
 
+  // At the end of the first update after a restart, we can reset the flag
+  after_restart = false;
   return COLVARS_OK;
 }
 
@@ -1236,11 +1236,11 @@ cvm::real colvar::update_forces_energy()
   if (is_enabled(f_cv_extended_Lagrangian)) {
 
     if (cvm::debug()) {
-      cvm::log("Updating extended-Lagrangian degrees of freedom.\n");
+      cvm::log("Updating extended-Lagrangian degree of freedom.\n");
     }
 
     cvm::real dt = cvm::dt();
-    colvarvalue f_ext(fr.type());
+    colvarvalue f_ext(fr.type()); // force acting on the extended variable
     f_ext.reset();
 
     // the total force is applied to the fictitious mass, while the
