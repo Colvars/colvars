@@ -3958,7 +3958,7 @@ The force constant of the harmonic restraint may also be changed to equilibrate 
 \cvsubsec{Harmonic wall restraints}
 \label{sec:colvarbias_harmonic_walls}
 
-The \texttt{harmonicWalls~\{...\}} bias is closely related to the harmonic bias (see \ref{sec:colvarbias_harmonic}), with the following two differences: \emph{(i)} instead of a center a \emph{lower wall} and/or an \emph{upper wall} are defined, outside odf which the bias implements a half-harmonic potential;
+The \texttt{harmonicWalls~\{...\}} bias is closely related to the harmonic bias (see \ref{sec:colvarbias_harmonic}), with the following two differences: \emph{(i)} instead of a center a \emph{lower wall} and/or an \emph{upper wall} are defined, outside of which the bias implements a half-harmonic potential;
 \begin{equation}
   \label{eq:colvarbias_harmonic_walls}
   V(\xi) = \left\{
@@ -3969,7 +3969,7 @@ The \texttt{harmonicWalls~\{...\}} bias is closely related to the harmonic bias 
     \end{array}
   \right.
 \end{equation}
-where $\xi_{\mathrm{lower}}$ and $\xi_{\mathrm{upper}}$ are the lower and upper wall thresholds, respectively; \emph{(ii)} because an interval between two walls is defined, only scalar variables can be used (but any number of variables can be deined, and the wall bias is intrinsically multi-dimensional).
+where $\xi_{\mathrm{lower}}$ and $\xi_{\mathrm{upper}}$ are the lower and upper wall thresholds, respectively; \emph{(ii)} because an interval between two walls is defined, only scalar variables can be used (but any number of variables can be defined, and the wall bias is intrinsically multi-dimensional).
 
 \textbf{Note:} this bias replaces the keywords \texttt{lowerWall}, \texttt{lowerWallConstant}, \texttt{upperWall} and \texttt{upperWallConstant} defined in the \texttt{colvar} context (see \ref{sec:colvar}).
 These keywords are still supported, but will be deprecated in the future.
