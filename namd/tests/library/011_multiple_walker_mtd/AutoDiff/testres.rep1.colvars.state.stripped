@@ -69,7 +69,7 @@ grid_parameters {
 restraint {
   configuration {
     step 200
-    name duw
+    name dw
   }
 }
 

@@ -830,6 +830,8 @@ colvarbias_restraint_harmonic_walls::colvarbias_restraint_harmonic_walls(char co
     colvarbias_restraint_moving(key),
     colvarbias_restraint_k_moving(key)
 {
+  lower_wall_k = 0.0;
+  upper_wall_k = 0.0;
 }
 
 
@@ -838,6 +840,11 @@ int colvarbias_restraint_harmonic_walls::init(std::string const &conf)
   colvarbias_restraint::init(conf);
   colvarbias_restraint_moving::init(conf);
   colvarbias_restraint_k_moving::init(conf);
+
+  get_keyval(conf, "lowerWallConstant", lower_wall_k,
+             (lower_wall_k > 0.0) ? lower_wall_k : force_k);
+  get_keyval(conf, "upperWallConstant", upper_wall_k,
+             (upper_wall_k > 0.0) ? upper_wall_k : force_k);
 
   provide(f_cvb_scalar_variables);
   enable(f_cvb_scalar_variables);
@@ -883,7 +890,7 @@ int colvarbias_restraint_harmonic_walls::init(std::string const &conf)
     for (i = 0; i < num_variables(); i++) {
       if (variables(i)->is_enabled(f_cv_periodic)) {
         cvm::error("Error: at least one variable is periodic, "
-                   "both walls must be provided .\n", INPUT_ERROR);
+                   "both walls must be provided.\n", INPUT_ERROR);
         return INPUT_ERROR;
       }
     }
@@ -899,6 +906,17 @@ int colvarbias_restraint_harmonic_walls::init(std::string const &conf)
                    INPUT_ERROR);
       }
     }
+    if (lower_wall_k * upper_wall_k == 0.0) {
+      cvm::error("Error: lowerWallConstant and upperWallConstant, "
+                 "when defined, must both be positive.\n",
+                 INPUT_ERROR);
+      return INPUT_ERROR;
+    }
+    force_k = lower_wall_k * upper_wall_k;
+    // transform the two constants to relative values
+    // (allow changing both via force_k)
+    lower_wall_k /= force_k;
+    upper_wall_k /= force_k;
   }
 
   for (i = 0; i < num_variables(); i++) {
@@ -971,7 +989,8 @@ cvm::real colvarbias_restraint_harmonic_walls::colvar_distance(size_t i) const
 cvm::real colvarbias_restraint_harmonic_walls::restraint_potential(size_t i) const
 {
   cvm::real const dist = colvar_distance(i);
-  return 0.5 * force_k / (variables(i)->width * variables(i)->width) *
+  cvm::real const scale = dist > 0.0 ? upper_wall_k : lower_wall_k;
+  return 0.5 * force_k * scale / (variables(i)->width * variables(i)->width) *
     dist * dist;
 }
 
@@ -979,14 +998,16 @@ cvm::real colvarbias_restraint_harmonic_walls::restraint_potential(size_t i) con
 colvarvalue const colvarbias_restraint_harmonic_walls::restraint_force(size_t i) const
 {
   cvm::real const dist = colvar_distance(i);
-  return - force_k / (variables(i)->width * variables(i)->width) * dist;
+  cvm::real const scale = dist > 0.0 ? upper_wall_k : lower_wall_k;
+  return - force_k * scale / (variables(i)->width * variables(i)->width) * dist;
 }
 
 
 cvm::real colvarbias_restraint_harmonic_walls::d_restraint_potential_dk(size_t i) const
 {
   cvm::real const dist = colvar_distance(i);
-  return 0.5 / (variables(i)->width * variables(i)->width) *
+  cvm::real const scale = dist > 0.0 ? upper_wall_k : lower_wall_k;
+  return 0.5 * scale / (variables(i)->width * variables(i)->width) *
     dist * dist;
 }
 

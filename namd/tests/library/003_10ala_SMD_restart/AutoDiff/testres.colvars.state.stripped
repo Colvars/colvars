@@ -20,7 +20,7 @@ restraint {
 restraint {
   configuration {
     step 20
-    name rmsduw
+    name rmsdw
   }
 }
 

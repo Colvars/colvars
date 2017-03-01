@@ -288,13 +288,8 @@ int colvar::init_grid_parameters(std::string const &conf)
       lower_wall.type(value());
       get_keyval(conf, "lowerWall", lower_wall, lower_boundary);
       lw_conf = std::string("\n\
-harmonicWalls {\n\
-    name "+this->name+"lw\n\
-    colvars "+this->name+"\n\
-    forceConstant "+cvm::to_str(lower_wall_k*width*width)+"\n\
-    lowerWalls "+cvm::to_str(lower_wall)+"\n\
-}\n");
-      cv->append_new_config(lw_conf);
+    lowerWallConstant "+cvm::to_str(lower_wall_k*width*width)+"\n\
+    lowerWalls "+cvm::to_str(lower_wall)+"\n");
     }
 
     if (get_keyval(conf, "upperBoundary", upper_boundary, upper_boundary)) {
@@ -308,13 +303,8 @@ harmonicWalls {\n\
       upper_wall.type(value());
       get_keyval(conf, "upperWall", upper_wall, upper_boundary);
       uw_conf = std::string("\n\
-harmonicWalls {\n\
-    name "+this->name+"uw\n\
-    colvars "+this->name+"\n\
-    forceConstant "+cvm::to_str(upper_wall_k*width*width)+"\n\
-    upperWalls "+cvm::to_str(upper_wall)+"\n\
-}\n");
-      cv->append_new_config(uw_conf);
+    upperWallConstant "+cvm::to_str(upper_wall_k*width*width)+"\n\
+    upperWalls "+cvm::to_str(upper_wall)+"\n");
     }
 
     if (lw_conf.size() && uw_conf.size()) {
@@ -326,6 +316,16 @@ harmonicWalls {\n\
                    INPUT_ERROR);
         return INPUT_ERROR;
       }
+    }
+
+    if (lw_conf.size() || uw_conf.size()) {
+      cvm::log("Generating a new harmonicWalls bias for compatibility purposes.\n");
+      std::string const walls_conf("\n\
+harmonicWalls {\n\
+    name "+this->name+"w\n\
+    colvars "+this->name+"\n"+lw_conf+uw_conf+
+                             "}\n");
+      cv->append_new_config(walls_conf);
     }
   }
 

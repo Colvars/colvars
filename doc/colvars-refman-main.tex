@@ -3997,7 +3997,21 @@ The \texttt{harmonicWalls} bias implements the following options:
     Defines the values $\xi_{\mathrm{upper}}$ ve which a confining restraint on the colvar is applied to each colvar $\xi$.}
 
 \item \dupkey{forceConstant}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{Harmonic restraints}
-  \textbf{Note:} if two distinct force constants are needed for the two walls, it is possible to define a \texttt{harmonicWalls} instance for each.
+%  \textbf{Note:} if two distinct force constants are needed for the two walls, it is possible to define a \texttt{harmonicWalls} instance for each.
+
+\item %
+  \keydef
+    {lowerWallConstant}{%
+    \texttt{harmonicWalls}}{%
+    Force constant for the lower wall}{%
+    positive decimal}{%
+    \texttt{forceConstant}}{%
+    When both sets of walls are defined (lower and upper), this keyword allows setting different force constants for them.
+    The force constant reported in the output as ``$k$'', and used in the change of force constant scheme, is the geometric mean of the two.
+  }
+
+\item %
+  \simkey{upperWallConstant}{\texttt{harmonicWalls}}{lowerWallConstant}
 
 \item \dupkey{targetForceConstant}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{Harmonic restraints}
 \item \dupkey{targetNumSteps}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{Harmonic restraints}

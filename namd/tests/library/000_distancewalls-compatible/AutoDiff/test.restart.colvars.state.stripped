@@ -11,13 +11,7 @@ colvar {
 restraint {
   configuration {
     step 40
-    name onelw
+    name onew
   }
 }
 
-restraint {
-  configuration {
-    step 40
-    name oneuw
-  }
-}
