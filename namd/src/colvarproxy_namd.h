@@ -16,7 +16,7 @@
 #include "colvarvalue.h"
 
 #ifndef COLVARPROXY_VERSION
-#define COLVARPROXY_VERSION "2017-01-09"
+#define COLVARPROXY_VERSION "2017-03-13"
 #endif
 
 // For replica exchange
@@ -214,6 +214,16 @@ public:
     return msg_len;
   }
 
+  int replica_comm_send()
+  {
+    return COLVARS_OK;
+  }
+
+  int replica_comm_async_send()
+  {
+    return COLVARS_OK;
+  }
+
   inline size_t restart_frequency()
   {
     return restart_frequency_s;
@@ -270,6 +280,8 @@ public:
   std::ostream * output_stream(std::string const &output_name);
   int close_output_stream(std::string const &output_name);
   int backup_file(char const *filename);
+
+  char const *script_obj_to_str(unsigned char const *obj);
 };
 
 

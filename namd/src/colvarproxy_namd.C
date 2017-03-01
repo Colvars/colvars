@@ -955,6 +955,16 @@ int colvarproxy_namd::backup_file(char const *filename)
 }
 
 
+char const *colvarproxy_namd::script_obj_to_str(unsigned char const *obj)
+{
+#ifdef NAMD_TCL
+  return Tcl_GetString(reinterpret_cast<Tcl_Obj *>(const_cast<unsigned char *>(obj)));
+#else
+  // This is most likely not going to be executed
+  return colvarproxy::script_obj_to_str(obj);
+#endif
+}
+
 int colvarproxy_namd::init_atom_group(std::vector<int> const &atoms_ids)
 {
   if (cvm::debug())

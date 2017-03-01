@@ -134,6 +134,11 @@ protected:
 
 public:
 
+  virtual char const *script_obj_to_str(unsigned char const *obj)
+  {
+    return reinterpret_cast<char const *>(obj);
+  }
+
   // ***************** SHARED-MEMORY PARALLELIZATION *****************
 
   /// Whether threaded parallelization is available (TODO: make this a cvm::deps feature)

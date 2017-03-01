@@ -18,16 +18,18 @@
 #include "colvarproxy_vmd.h"
 
 
-int tcl_colvars(ClientData clientdata, Tcl_Interp *interp, int argc, const char *argv[]) {
 
+int tcl_colvars(ClientData clientdata, Tcl_Interp *interp,
+                int objc, Tcl_Obj *const objv[])
+{
   static colvarproxy_vmd *proxy = NULL;
   static std::string tcl_result;
   int script_retval;
 
   if (proxy != NULL) {
 
-    if ( argc >= 3 ) {
-      if (!strcmp(argv[1], "molid")) {
+    if (objc >= 3) {
+      if (!strcmp(Tcl_GetString(objv[1]), "molid")) {
         Tcl_SetResult(interp, (char *) (std::string("Colvars module already created: type \"cv\" for a list of arguments.").c_str()), TCL_STATIC);
         return TCL_ERROR;
       }
@@ -38,7 +40,7 @@ int tcl_colvars(ClientData clientdata, Tcl_Interp *interp, int argc, const char 
     proxy->error_output.clear();
     tcl_result.clear();
 
-    script_retval = proxy->script->run(argc, argv);
+    script_retval = proxy->script->run(objc, reinterpret_cast<unsigned char *const *>(objv));
     // append the error messages from colvarscript to the error messages caught by the proxy
     tcl_result = proxy->error_output + proxy->script->result;
     Tcl_SetResult(interp, (char *) tcl_result.c_str(), TCL_STATIC);
@@ -70,14 +72,14 @@ int tcl_colvars(ClientData clientdata, Tcl_Interp *interp, int argc, const char 
       return TCL_ERROR;
     }
 
-    if ( argc >= 3 ) {
+    if (objc >= 3) {
       // require a molid to create the module
-      if (!strcmp(argv[1], "molid")) {
+      if (!strcmp(Tcl_GetString(objv[1]), "molid")) {
         int molid = -1;
-        if (!strcmp(argv[2], "top")) {
+        if (!strcmp(Tcl_GetString(objv[2]), "top")) {
           molid = vmd->molecule_top();
         } else {
-          Tcl_GetInt(interp, argv[2], &molid);
+          Tcl_GetIntFromObj(interp, objv[2], &molid);
         }
         if (vmd->molecule_valid_id(molid)) {
           proxy = new colvarproxy_vmd(interp, vmd, molid);
@@ -373,6 +375,18 @@ int colvarproxy_vmd::run_colvar_gradient_callback(std::string const &name,
 void colvarproxy_vmd::add_energy(cvm::real energy)
 {
 }
+
+
+char const *colvarproxy_vmd::script_obj_to_str(unsigned char const *obj)
+{
+#ifdef VMDTCL // is it ever off?
+  return Tcl_GetString(reinterpret_cast<Tcl_Obj *>(const_cast<unsigned char *>(obj)));
+#else
+  // This is most likely not going to be executed
+  return colvarproxy::script_obj_to_str(obj);
+#endif
+}
+
 
 
 enum e_pdb_field {

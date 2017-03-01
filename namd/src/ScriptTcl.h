@@ -95,7 +95,7 @@ private:
   static int Tcl_measure(ClientData, Tcl_Interp *, int, char **);
   static int Tcl_colvarbias(ClientData, Tcl_Interp *, int, char **);
   static int Tcl_colvarvalue(ClientData, Tcl_Interp *, int, char **);
-  static int Tcl_colvars(ClientData, Tcl_Interp *, int, char **);
+  static int Tcl_colvars(ClientData, Tcl_Interp *, int, Tcl_Obj *const objv[]);
   static int Tcl_colvarfreq(ClientData, Tcl_Interp *, int, char **);
   static int Tcl_checkpoint(ClientData, Tcl_Interp *, int, char **);
   static int Tcl_revert(ClientData, Tcl_Interp *, int, char **);
