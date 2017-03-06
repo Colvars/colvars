@@ -411,7 +411,7 @@ int cvm::atom_group::parse(std::string const &conf)
   // We need to know the fitting options to decide whether the group is scalable
   parse_error |= parse_fitting_options(group_conf);
 
-  if (is_available(f_ag_scalable_com) && !b_rotate) {
+  if (is_available(f_ag_scalable_com) && !b_rotate && !b_center) {
     enable(f_ag_scalable_com);
     enable(f_ag_scalable);
   }

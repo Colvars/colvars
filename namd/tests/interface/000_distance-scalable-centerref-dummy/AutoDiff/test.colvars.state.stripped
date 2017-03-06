@@ -1,0 +1,10 @@
+configuration {
+  step           20
+  dt 1.000000e+00
+}
+
+colvar {
+  name one
+  x  3.07066293659175e+00
+}
+
