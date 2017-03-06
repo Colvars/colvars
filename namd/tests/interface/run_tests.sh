@@ -6,7 +6,4 @@ fi
 
 ../library/run_tests.sh "$@"
 
-if [ $? -eq 0 ] ; then
-  rm -f Common
-fi
 
