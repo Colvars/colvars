@@ -46,9 +46,13 @@ public:
     // bool enabledOnce; // this should trigger an update when object is evaluated
   };
 
+
+private:
   /// List of the state of all features
   std::vector<feature_state> feature_states;
 
+
+public:
   /// Describes a feature and its dependecies
   /// used in a static array within each subclass
   class feature {
@@ -134,10 +138,15 @@ public:
 
   void provide(int feature_id); // set the feature's flag to available in local object
 
+  /// Set the feature's enabled flag, without dependency check or resolution
+  /// To be used for static and user properties
+  /// Checking for availability is up to the caller
+  void set_enabled(int feature_id, bool truefalse);
+
 protected:
 
   void set_available(int feature_id, bool truefalse); // set the feature's available flag, without checking
-  void set_enabled(int feature_id, bool truefalse); // set the feature's enabled flag, without checking
+
 
   /// Parse a keyword and enable a feature accordingly
   bool get_keyval_feature(colvarparse *cvp,

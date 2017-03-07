@@ -665,8 +665,8 @@ int colvarmodule::calc_colvars()
   variables_active()->resize(0);
   variables_active()->reserve(variables()->size());
   for (cvi = variables()->begin(); cvi != variables()->end(); cvi++) {
-    (*cvi)->feature_states[colvardeps::f_cv_active].enabled =
-      (step_absolute() % (*cvi)->get_time_step_factor() == 0);
+    (*cvi)->set_enabled(colvardeps::f_cv_active,
+      step_absolute() % (*cvi)->get_time_step_factor() == 0);
     variables_active()->push_back(*cvi);
   }
 
