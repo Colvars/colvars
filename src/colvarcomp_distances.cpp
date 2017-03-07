@@ -522,6 +522,27 @@ void colvar::distance_dir::apply_force(colvarvalue const &force)
 }
 
 
+cvm::real colvar::distance_dir::dist2(colvarvalue const &x1,
+                                      colvarvalue const &x2) const
+{
+  return (x1.rvector_value - x2.rvector_value).norm2();
+}
+
+
+colvarvalue colvar::distance_dir::dist2_lgrad(colvarvalue const &x1,
+                                              colvarvalue const &x2) const
+{
+  return colvarvalue((x1.rvector_value - x2.rvector_value), colvarvalue::type_unit3vector);
+}
+
+
+colvarvalue colvar::distance_dir::dist2_rgrad(colvarvalue const &x1,
+                                              colvarvalue const &x2) const
+{
+  return colvarvalue((x2.rvector_value - x1.rvector_value), colvarvalue::type_unit3vector);
+}
+
+
 
 colvar::distance_inv::distance_inv(std::string const &conf)
   : distance(conf)

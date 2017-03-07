@@ -160,6 +160,10 @@ if [ -f ${colvar}-fitgroup.in ] ; then
     write_colvars_config ${colvar}-refposgroup ${bias} ${dirname}/test.legacy.in
 fi
 
+colvar="distancedir"
+bias="harmonic-ddir-fixed"
+create_test_dir ${colvar}_${bias}
+write_colvars_config ${colvar} ${bias} ${dirname}/test.in
 
 # TODO uncomment this and the add two-dimensional regtests
 # # Generate two-variables versions of bias configurations
