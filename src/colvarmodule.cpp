@@ -203,6 +203,7 @@ int colvarmodule::parse_config(std::string &conf)
     catch_input_errors(parse_global_params(extra_conf));
     catch_input_errors(parse_colvars(extra_conf));
     catch_input_errors(parse_biases(extra_conf));
+    parse->check_keywords(extra_conf, "colvarmodule");
     extra_conf.clear();
     if (get_error() != COLVARS_OK) return get_error();
   }
