@@ -506,7 +506,7 @@ int colvarscript::proc_features(colvardeps *obj,
             // TODO disable() function does not exist yet,
             // dependencies will not be resolved
             // obj->disable(fid);
-            obj->feature_states[fid]->enabled = false;
+            obj->feature_states[fid].enabled = false;
             return COLVARS_OK;
           }
         }

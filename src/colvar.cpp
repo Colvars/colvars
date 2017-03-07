@@ -159,7 +159,7 @@ int colvar::init(std::string const &conf)
         }
       }
     }
-    feature_states[f_cv_linear]->enabled = lin;
+    feature_states[f_cv_linear].enabled = lin;
   }
 
   // Colvar is homogeneous if:
@@ -173,7 +173,7 @@ int colvar::init(std::string const &conf)
         homogeneous = false;
       }
     }
-    feature_states[f_cv_homogeneous]->enabled = homogeneous;
+    feature_states[f_cv_homogeneous].enabled = homogeneous;
   }
 
   // Colvar is deemed periodic if:
@@ -193,7 +193,7 @@ int colvar::init(std::string const &conf)
                  "Make sure that you know what you are doing!");
       }
     }
-    feature_states[f_cv_periodic]->enabled = b_periodic;
+    feature_states[f_cv_periodic].enabled = b_periodic;
   }
 
   // check that cvcs are compatible
@@ -272,7 +272,7 @@ int colvar::init_grid_parameters(std::string const &conf)
   upper_boundary.type(value());
   upper_wall.type(value());
 
-  feature_states[f_cv_scalar]->enabled = (value().type() == colvarvalue::type_scalar);
+  feature_states[f_cv_scalar].enabled = (value().type() == colvarvalue::type_scalar);
 
   if (is_enabled(f_cv_scalar)) {
 
@@ -1387,7 +1387,7 @@ int colvar::update_cvc_flags()
     active_cvc_square_norm = 0.;
 
     for (size_t i = 0; i < cvcs.size(); i++) {
-      cvcs[i]->feature_states[f_cvc_active]->enabled = cvc_flags[i];
+      cvcs[i]->feature_states[f_cvc_active].enabled = cvc_flags[i];
       if (cvcs[i]->is_enabled()) {
         n_active_cvcs++;
         active_cvc_square_norm += cvcs[i]->sup_coeff * cvcs[i]->sup_coeff;

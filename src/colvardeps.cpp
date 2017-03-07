@@ -7,9 +7,6 @@
 colvardeps::~colvardeps() {
   size_t i;
 
-  for (i=0; i<feature_states.size(); i++) {
-    if (feature_states[i] != NULL) delete feature_states[i];
-  }
       // Do not delete features if it's static
 //     for (i=0; i<features.size(); i++) {
 //       if (features[i] != NULL) delete features[i];
@@ -28,17 +25,17 @@ colvardeps::~colvardeps() {
 
 
 void colvardeps::provide(int feature_id) {
-  feature_states[feature_id]->available = true;
+  feature_states[feature_id].available = true;
 }
 
 
 void colvardeps::set_available(int feature_id, bool truefalse) {
-  feature_states[feature_id]->available = truefalse;
+  feature_states[feature_id].available = truefalse;
 }
 
 
 void colvardeps::set_enabled(int feature_id, bool truefalse) {
-  feature_states[feature_id]->enabled = truefalse;
+  feature_states[feature_id].enabled = truefalse;
 }
 
 
@@ -67,7 +64,7 @@ int colvardeps::enable(int feature_id,
   size_t i, j;
   bool ok;
   feature *f = features()[feature_id];
-  feature_state *fs = feature_states[feature_id];
+  feature_state *fs = &feature_states[feature_id];
 
   if (cvm::debug()) {
     cvm::log("DEPS: " + description +
@@ -241,19 +238,19 @@ void colvardeps::init_cvb_requires() {
   // Initialize feature_states for each instance
   feature_states.reserve(f_cvb_ntot);
   for (i = 0; i < f_cvb_ntot; i++) {
-    feature_states.push_back(new feature_state(true, false));
+    feature_states.push_back(feature_state(true, false));
     // Most features are available, so we set them so
     // and list exceptions below
   }
 
   // some biases are not history-dependent
-  feature_states[f_cvb_history_dependent]->available = false;
+  feature_states[f_cvb_history_dependent].available = false;
 
   // some biases do not compute a PMF
-  feature_states[f_cvb_calc_pmf]->available = false;
+  feature_states[f_cvb_calc_pmf].available = false;
 
   // by default, biases should work with vector variables, too
-  feature_states[f_cvb_scalar_variables]->available = false;
+  feature_states[f_cvb_scalar_variables].available = false;
 }
 
 
@@ -347,7 +344,7 @@ void colvardeps::init_cv_requires() {
   // Initialize feature_states for each instance
   feature_states.reserve(f_cv_ntot);
   for (i = 0; i < f_cv_ntot; i++) {
-    feature_states.push_back(new feature_state(true, false));
+    feature_states.push_back(feature_state(true, false));
     // Most features are available, so we set them so
     // and list exceptions below
    }
@@ -365,7 +362,7 @@ void colvardeps::init_cv_requires() {
     f_cv_homogeneous
   };
   for (i = 0; i < sizeof(unavailable_deps) / sizeof(unavailable_deps[0]); i++) {
-    feature_states[unavailable_deps[i]]->available = false;
+    feature_states[unavailable_deps[i]].available = false;
   }
 }
 
@@ -418,20 +415,20 @@ void colvardeps::init_cvc_requires() {
   // default as unavailable, not enabled
   feature_states.reserve(f_cvc_ntot);
   for (i = 0; i < colvardeps::f_cvc_ntot; i++) {
-    feature_states.push_back(new feature_state(false, false));
+    feature_states.push_back(feature_state(false, false));
   }
 
   // Features that are implemented by all cvcs by default
   // Each cvc specifies what other features are available
-  feature_states[f_cvc_active]->available = true;
-  feature_states[f_cvc_gradient]->available = true;
+  feature_states[f_cvc_active].available = true;
+  feature_states[f_cvc_gradient].available = true;
 
   // Features that are implemented by default if their requirements are
-  feature_states[f_cvc_one_site_total_force]->available = true;
+  feature_states[f_cvc_one_site_total_force].available = true;
 
   // Features That are implemented only for certain simulation engine configurations
-  feature_states[f_cvc_scalable_com]->available = (cvm::proxy->scalable_group_coms() == COLVARS_OK);
-  feature_states[f_cvc_scalable]->available = feature_states[f_cvc_scalable_com]->available;
+  feature_states[f_cvc_scalable_com].available = (cvm::proxy->scalable_group_coms() == COLVARS_OK);
+  feature_states[f_cvc_scalable].available = feature_states[f_cvc_scalable_com].available;
 }
 
 
@@ -467,15 +464,15 @@ void colvardeps::init_ag_requires() {
   // default as unavailable, not enabled
   feature_states.reserve(f_ag_ntot);
   for (i = 0; i < colvardeps::f_ag_ntot; i++) {
-    feature_states.push_back(new feature_state(false, false));
+    feature_states.push_back(feature_state(false, false));
   }
 
   // Features that are implemented (or not) by all atom groups
-  feature_states[f_ag_active]->available = true;
+  feature_states[f_ag_active].available = true;
   // f_ag_scalable_com is provided by the CVC iff it is COM-based
-  feature_states[f_ag_scalable_com]->available = false;
+  feature_states[f_ag_scalable_com].available = false;
   // TODO make f_ag_scalable depend on f_ag_scalable_com (or something else)
-  feature_states[f_ag_scalable]->available = true;
+  feature_states[f_ag_scalable].available = true;
 }
 
 
@@ -483,7 +480,7 @@ void colvardeps::print_state() {
   size_t i;
   cvm::log("Enabled features of " + description);
   for (i = 0; i < feature_states.size(); i++) {
-    if (feature_states[i]->enabled)
+    if (feature_states[i].enabled)
       cvm::log("- " + features()[i]->description);
   }
   for (i=0; i<children.size(); i++) {
