@@ -926,7 +926,7 @@ $cuda_defines     = "-DVMDCUDA -DMSMPOT_CUDA";
 $cuda_dir         = "/usr/local/cuda-8.0";
 $cuda_include     = "";
 $cuda_library     = "";
-$cuda_libs        = "-Wl,-rpath -Wl,\$\$ORIGIN/ -lcudart_static";
+$cuda_libs        = "-Wl,-rpath -Wl,\$\$ORIGIN/ -lcudart_static -lrt";
 @cuda_cc          = ();
 @cuda_cu	  = ('msmpot_cuda.cu',
                      'msmpot_cuda_latcut.cu',
