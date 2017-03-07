@@ -4,7 +4,7 @@
 #define COLVARMODULE_H
 
 #ifndef COLVARS_VERSION
-#define COLVARS_VERSION "2017-03-06"
+#define COLVARS_VERSION "2017-03-07"
 #endif
 
 #ifndef COLVARS_DEBUG
@@ -207,6 +207,9 @@ public:
 
   /// Array of collective variable biases
   std::vector<colvarbias *> biases;
+
+  /// Energy of built-in and scripted biases, summed per time-step
+  real total_bias_energy;
 
 private:
 

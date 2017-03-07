@@ -33,6 +33,7 @@ All subcommands of \texttt{cv} are documented below.
 \item \texttt{load} \emph{$<$prefix$>$}: same as above, but without the \texttt{.colvars.state} suffix;
 \item \texttt{save} \emph{$<$prefix$>$}: save the current state in a file whose name begins with the given argument; if any of the biases have additional output files defined, those are saved as well using the same prefix;
 \item \texttt{update}: recalculate all colvars and biases based on the current atomic coordinates;
+\item \texttt{addenergy} \emph{$<$E$>$}: add value \emph{E} to the total bias energy; this must be used within \texttt{calc\_colvar\_forces};
 \item \texttt{printframe}: return a summary of the current frame, in a format equivalent to a line of the collective variables trajectory file;
 \item \texttt{printframelabels}: return text labels for the columns of \texttt{printframe}'s output;
 \cvvmdonly{

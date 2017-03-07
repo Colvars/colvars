@@ -215,6 +215,16 @@ int colvarscript::run(int argc, char const *argv[]) {
     }
   }
 
+  if (cmd == "addenergy") {
+    if (argc == 3) {
+      colvars->total_bias_energy += strtod(argv[2], NULL);
+      return COLVARS_OK;
+    } else {
+      result = "Wrong arguments to command \"addenergy\"\n" + help_string();
+      return COLVARSCRIPT_ERROR;
+    }
+  }
+
   result = "Syntax error\n" + help_string();
   return COLVARSCRIPT_ERROR;
 }
@@ -529,6 +539,7 @@ Input and output:\n\
   load <file name>            -- load a state file (requires configuration)\n\
   save <file name>            -- save a state file (requires configuration)\n\
   update                      -- recalculate colvars and biases\n\
+  addenergy <E>               -- add <E> to the total bias energy\n\
   printframe                  -- return a summary of the current frame\n\
   printframelabels            -- return labels to annotate printframe's output\n";
 
