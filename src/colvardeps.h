@@ -6,16 +6,18 @@
 #include "colvarmodule.h"
 #include "colvarparse.h"
 
-/// Parent class for a member object of a bias, cv or cvc etc. containing dependencies
-/// (features) and handling dependency resolution
 
-// Some features like colvar::f_linear have no dependencies, require() doesn't enable anything but fails if unavailable
-// Policy: those features are unavailable at all times
-// Other features are under user control
-// They are unavailable unless requested by the user, then they may be enabled subject to
-// satisfied dependencies
+/// \brief Parent class for a member object of a bias, cv or cvc etc. containing features and
+/// their dependencies, and handling dependency resolution
 
-// It seems important to have available default to false (for safety) and enabled to false (for efficiency)
+/// There are 3 kinds of features:
+/// 1) Mutable features are entirely under the control of the dependency resolution
+/// system. They are disabled by default, and enabled dynamically on demand
+/// 2) user features are enabled based on user input (they may trigger a failure upon
+///   dependency resolution, though)
+/// 3)other immutable features are static properties of the object, determined
+///   programatically at initialization time.
+
 
 class colvardeps {
 public:
@@ -32,12 +34,7 @@ public:
     feature_state(bool a, bool e)
     : available(a), enabled(e) {}
 
-    /// Available means: supported, subject to dependencies as listed,
-    /// MAY BE ENABLED AS A RESULT OF DEPENDENCY SOLVING
-    /// Remains false for passive flags that are set based on other object properties,
-    /// eg. f_cv_linear
-    /// Is set to true upon user request for features that are implemented by the user
-    /// or under his/her direct control, e.g. f_cv_scripted or f_cv_extended_Lagrangian
+    /// Feature may be enabled, subject to possible dependencies
     bool available;
     /// Currently enabled - this flag is subject to change dynamically
     /// TODO consider implications for dependency solving: anyone who disables
@@ -48,11 +45,21 @@ public:
 
 
 private:
-  /// List of the state of all features
+  /// List of the states of all features
   std::vector<feature_state> feature_states;
 
+  /// Enum of possible feature types
+  enum feature_type {
+    f_type_not_set,
+    f_type_mutable,
+    f_type_user,
+    f_type_static
+  };
 
 public:
+  /// Pair a numerical feature ID with a description and type
+  void init_feature(int feature_id, const char *description, feature_type type = f_type_not_set);
+
   /// Describes a feature and its dependecies
   /// used in a static array within each subclass
   class feature {
@@ -80,6 +87,13 @@ public:
 
     // features that this feature requires in children
     std::vector<int> requires_children;
+
+    inline bool is_mutable() { return type == f_type_mutable; }
+    inline bool is_static() { return type == f_type_static; }
+    inline bool is_user() { return type == f_type_user; }
+
+    /// Type of this feature, from the enum feature_type
+    feature_type type;
   };
 
   // Accessor to array of all features with deps, static in most derived classes
@@ -97,9 +111,8 @@ public:
   /// (useful for cvcs because their children are member objects)
   void remove_all_children();
 
-
-
 private:
+
   // pointers to objects this object depends on
   // list should be maintained by any code that modifies the object
   // this could be secured by making lists of colvars / cvcs / atom groups private and modified through accessor functions
