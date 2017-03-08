@@ -24,12 +24,7 @@ colvardeps::~colvardeps() {
 }
 
 
-void colvardeps::provide(int feature_id) {
-  feature_states[feature_id].available = true;
-}
-
-
-void colvardeps::set_available(int feature_id, bool truefalse) {
+void colvardeps::provide(int feature_id, bool truefalse) {
   feature_states[feature_id].available = truefalse;
 }
 
@@ -234,6 +229,8 @@ void colvardeps::init_cvb_requires() {
 
   f_description(f_cvb_calc_pmf, "calculate a PMF");
   // TODO define requirements?
+  // This has become a static property, using set_enabled. Move back to enable if
+  // adding requirements
 
   // Initialize feature_states for each instance
   feature_states.reserve(f_cvb_ntot);

@@ -136,16 +136,18 @@ public:
     return feature_states[f].available;
   }
 
-  void provide(int feature_id); // set the feature's flag to available in local object
+  /// Set the feature's available flag, without checking
+  /// To be used for dynamic properties
+  /// dependencies will be checked by enable()
+  void provide(int feature_id, bool truefalse = true);
 
   /// Set the feature's enabled flag, without dependency check or resolution
-  /// To be used for static and user properties
+  /// To be used for static properties only
   /// Checking for availability is up to the caller
-  void set_enabled(int feature_id, bool truefalse);
+  void set_enabled(int feature_id, bool truefalse = true);
 
 protected:
 
-  void set_available(int feature_id, bool truefalse); // set the feature's available flag, without checking
 
 
   /// Parse a keyword and enable a feature accordingly

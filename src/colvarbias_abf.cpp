@@ -26,10 +26,7 @@ int colvarbias_abf::init(std::string const &conf)
   provide(f_cvb_scalar_variables);
   enable(f_cvb_scalar_variables);
 
-  provide(f_cvb_history_dependent);
-
-  provide(f_cvb_calc_pmf);
-  enable(f_cvb_calc_pmf);
+  set_enabled(f_cvb_calc_pmf);
 
   // TODO relax this in case of VMD plugin
   if (cvm::temperature() == 0.0)
@@ -44,7 +41,7 @@ int colvarbias_abf::init(std::string const &conf)
 
   get_keyval(conf, "updateBias",  update_bias, true);
   if (update_bias) {
-    enable(f_cvb_history_dependent);
+    set_enabled(f_cvb_history_dependent);
   } else {
     cvm::log("WARNING: ABF biases will *not* be updated!\n");
   }

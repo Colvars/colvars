@@ -16,7 +16,7 @@ colvar::distance::distance(std::string const &conf)
   function_type = "distance";
   provide(f_cvc_inv_gradient);
   provide(f_cvc_Jacobian);
-  provide(f_cvc_com_based);
+  set_enabled(f_cvc_com_based);
 
   group1 = parse_group(conf, "group1");
   group2 = parse_group(conf, "group2");
@@ -37,7 +37,7 @@ colvar::distance::distance()
   function_type = "distance";
   provide(f_cvc_inv_gradient);
   provide(f_cvc_Jacobian);
-  provide(f_cvc_com_based);
+  set_enabled(f_cvc_com_based);
   b_no_PBC = false;
   x.type(colvarvalue::type_scalar);
 }
@@ -99,7 +99,7 @@ colvar::distance_vec::distance_vec(std::string const &conf)
   : distance(conf)
 {
   function_type = "distance_vec";
-  provide(f_cvc_com_based);
+  set_enabled(f_cvc_com_based);
   x.type(colvarvalue::type_3vector);
 }
 
@@ -108,7 +108,7 @@ colvar::distance_vec::distance_vec()
   : distance()
 {
   function_type = "distance_vec";
-  provide(f_cvc_com_based);
+  set_enabled(f_cvc_com_based);
   x.type(colvarvalue::type_3vector);
 }
 
@@ -169,7 +169,7 @@ colvar::distance_z::distance_z(std::string const &conf)
   function_type = "distance_z";
   provide(f_cvc_inv_gradient);
   provide(f_cvc_Jacobian);
-  provide(f_cvc_com_based);
+  set_enabled(f_cvc_com_based);
   x.type(colvarvalue::type_scalar);
 
   // TODO detect PBC from MD engine (in simple cases)
@@ -221,7 +221,7 @@ colvar::distance_z::distance_z()
   function_type = "distance_z";
   provide(f_cvc_inv_gradient);
   provide(f_cvc_Jacobian);
-  provide(f_cvc_com_based);
+  set_enabled(f_cvc_com_based);
   x.type(colvarvalue::type_scalar);
 }
 
@@ -365,7 +365,7 @@ colvar::distance_xy::distance_xy(std::string const &conf)
   function_type = "distance_xy";
   provide(f_cvc_inv_gradient);
   provide(f_cvc_Jacobian);
-  provide(f_cvc_com_based);
+  set_enabled(f_cvc_com_based);
   x.type(colvarvalue::type_scalar);
 }
 
@@ -376,7 +376,7 @@ colvar::distance_xy::distance_xy()
   function_type = "distance_xy";
   provide(f_cvc_inv_gradient);
   provide(f_cvc_Jacobian);
-  provide(f_cvc_com_based);
+  set_enabled(f_cvc_com_based);
   x.type(colvarvalue::type_scalar);
 }
 
@@ -472,7 +472,7 @@ colvar::distance_dir::distance_dir(std::string const &conf)
   : distance(conf)
 {
   function_type = "distance_dir";
-  provide(f_cvc_com_based);
+  set_enabled(f_cvc_com_based);
   x.type(colvarvalue::type_unit3vector);
 }
 
@@ -481,7 +481,7 @@ colvar::distance_dir::distance_dir()
   : distance()
 {
   function_type = "distance_dir";
-  provide(f_cvc_com_based);
+  set_enabled(f_cvc_com_based);
   x.type(colvarvalue::type_unit3vector);
 }
 

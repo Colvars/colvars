@@ -74,8 +74,8 @@ int colvar::cvc::init_total_force_params(std::string const &conf)
     agi++;
     for ( ; agi != atom_groups.end(); agi++) {
       if ((*agi)->b_dummy) {
-        set_available(f_cvc_inv_gradient, false);
-        set_available(f_cvc_Jacobian, false);
+        provide(f_cvc_inv_gradient, false);
+        provide(f_cvc_Jacobian, false);
       }
     }
   }
@@ -95,8 +95,7 @@ cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
     group->key = group_key;
 
     if (b_try_scalable) {
-      // TODO rewrite this logic in terms of dependencies
-      if (is_available(f_cvc_scalable_com) && is_available(f_cvc_com_based)) {
+      if (is_available(f_cvc_scalable_com) && is_enabled(f_cvc_com_based)) {
         enable(f_cvc_scalable_com);
         enable(f_cvc_scalable);
         // The CVC makes the feature available;

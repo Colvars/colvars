@@ -36,8 +36,6 @@ int colvarbias_alb::init(std::string const &conf)
   provide(f_cvb_scalar_variables);
   enable(f_cvb_scalar_variables);
 
-  provide(f_cvb_history_dependent);
-
   size_t i;
 
   // get the initial restraint centers
@@ -87,7 +85,7 @@ int colvarbias_alb::init(std::string const &conf)
   if (update_freq <= 1)
     cvm::fatal_error("Error: must set updateFrequency to greater than 2.\n");
 
-  enable(f_cvb_history_dependent);
+  set_enabled(f_cvb_history_dependent);
 
   get_keyval(conf, "outputCenters", b_output_centers, false);
   get_keyval(conf, "outputGradient", b_output_grad, false);

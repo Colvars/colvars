@@ -846,8 +846,7 @@ int colvarbias_restraint_harmonic_walls::init(std::string const &conf)
   get_keyval(conf, "upperWallConstant", upper_wall_k,
              (upper_wall_k > 0.0) ? upper_wall_k : force_k);
 
-  provide(f_cvb_scalar_variables);
-  enable(f_cvb_scalar_variables);
+  set_enabled(f_cvb_scalar_variables);
 
   size_t i;
 

@@ -666,6 +666,8 @@ int colvarmodule::calc_colvars()
   variables_active()->resize(0);
   variables_active()->reserve(variables()->size());
   for (cvi = variables()->begin(); cvi != variables()->end(); cvi++) {
+    // This is a dynamic feature - the next call should be to enable()
+    // or disable() when dynamic dependency resolution is fully implemented
     (*cvi)->set_enabled(colvardeps::f_cv_active,
       step_absolute() % (*cvi)->get_time_step_factor() == 0);
     variables_active()->push_back(*cvi);
