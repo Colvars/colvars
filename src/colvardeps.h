@@ -6,16 +6,16 @@
 #include "colvarmodule.h"
 #include "colvarparse.h"
 
-
+/// \file colvardeps.h
 /// \brief Parent class for a member object of a bias, cv or cvc etc. containing features and
 /// their dependencies, and handling dependency resolution
-
+///
 /// There are 3 kinds of features:
-/// 1) Mutable features are entirely under the control of the dependency resolution
+/// 1. Mutable features are entirely under the control of the dependency resolution
 /// system. They are disabled by default, and enabled dynamically on demand
-/// 2) user features are enabled based on user input (they may trigger a failure upon
+/// 2. user features are enabled based on user input (they may trigger a failure upon
 ///   dependency resolution, though)
-/// 3)other immutable features are static properties of the object, determined
+/// 3. Static features are static properties of the object, determined
 ///   programatically at initialization time.
 
 
