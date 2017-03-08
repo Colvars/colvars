@@ -227,10 +227,10 @@ void colvardeps::init_cvb_requires() {
 
   init_feature(f_cvb_history_dependent, "history-dependent", f_type_static);
 
-  init_feature(f_cvb_scalar_variables, "require scalar variables");
+  init_feature(f_cvb_scalar_variables, "require scalar variables", f_type_static);
   f_req_children(f_cvb_scalar_variables, f_cv_scalar);
 
-  init_feature(f_cvb_calc_pmf, "calculate a PMF");
+  init_feature(f_cvb_calc_pmf, "calculate a PMF", f_type_static);
   // TODO define requirements?
   // This has become a static property, using set_enabled. Move back to enable if
   // adding requirements
@@ -261,84 +261,83 @@ void colvardeps::init_cv_requires() {
       features().push_back(new feature);
     }
 
-    init_feature(f_cv_active, "active");
+    init_feature(f_cv_active, "active", f_type_mutable);
     f_req_children(f_cv_active, f_cvc_active);
     // Colvars must be either a linear combination, or scalar (and polynomial) or scripted
     f_req_alt3(f_cv_active, f_cv_scalar, f_cv_linear, f_cv_scripted);
 
-    init_feature(f_cv_gradient, "gradient");
+    init_feature(f_cv_gradient, "gradient", f_type_mutable);
     f_req_children(f_cv_gradient, f_cvc_gradient);
 
-    init_feature(f_cv_collect_gradient, "collect gradient");
+    init_feature(f_cv_collect_gradient, "collect gradient", f_type_mutable);
     f_req_self(f_cv_collect_gradient, f_cv_gradient);
     f_req_self(f_cv_collect_gradient, f_cv_scalar);
 
-    init_feature(f_cv_fdiff_velocity, "fdiff_velocity");
+    init_feature(f_cv_fdiff_velocity, "fdiff_velocity", f_type_mutable);
 
     // System force: either trivial (spring force); through extended Lagrangian, or calculated explicitly
-    init_feature(f_cv_total_force, "total force");
+    init_feature(f_cv_total_force, "total force", f_type_mutable);
     f_req_alt2(f_cv_total_force, f_cv_extended_Lagrangian, f_cv_total_force_calc);
 
     // Deps for explicit total force calculation
-    init_feature(f_cv_total_force_calc, "total force calculation");
+    init_feature(f_cv_total_force_calc, "total force calculation", f_type_mutable);
     f_req_self(f_cv_total_force_calc, f_cv_scalar);
     f_req_self(f_cv_total_force_calc, f_cv_linear);
     f_req_children(f_cv_total_force_calc, f_cvc_inv_gradient);
     f_req_self(f_cv_total_force_calc, f_cv_Jacobian);
 
-    init_feature(f_cv_Jacobian, "Jacobian derivative");
+    init_feature(f_cv_Jacobian, "Jacobian derivative", f_type_mutable);
     f_req_self(f_cv_Jacobian, f_cv_scalar);
     f_req_self(f_cv_Jacobian, f_cv_linear);
     f_req_children(f_cv_Jacobian, f_cvc_Jacobian);
 
-    init_feature(f_cv_hide_Jacobian, "hide Jacobian force");
+    init_feature(f_cv_hide_Jacobian, "hide Jacobian force", f_type_user);
     f_req_self(f_cv_hide_Jacobian, f_cv_Jacobian); // can only hide if calculated
 
-    init_feature(f_cv_extended_Lagrangian, "extended Lagrangian");
+    init_feature(f_cv_extended_Lagrangian, "extended Lagrangian", f_type_user);
 
-    init_feature(f_cv_Langevin, "Langevin dynamics");
+    init_feature(f_cv_Langevin, "Langevin dynamics", f_type_user);
     f_req_self(f_cv_Langevin, f_cv_extended_Lagrangian);
 
-    init_feature(f_cv_linear, "linear");
+    init_feature(f_cv_linear, "linear", f_type_static);
 
-    init_feature(f_cv_scalar, "scalar");
+    init_feature(f_cv_scalar, "scalar", f_type_static);
 
-    init_feature(f_cv_output_energy, "output energy");
+    init_feature(f_cv_output_energy, "output energy", f_type_user);
 
-    init_feature(f_cv_output_value, "output value");
+    init_feature(f_cv_output_value, "output value", f_type_user);
 
-    init_feature(f_cv_output_velocity, "output velocity");
+    init_feature(f_cv_output_velocity, "output velocity", f_type_user);
     f_req_self(f_cv_output_velocity, f_cv_fdiff_velocity);
 
-    init_feature(f_cv_output_applied_force, "output applied force");
+    init_feature(f_cv_output_applied_force, "output applied force", f_type_user);
 
-    init_feature(f_cv_output_total_force, "output total force");
+    init_feature(f_cv_output_total_force, "output total force", f_type_user);
     f_req_self(f_cv_output_total_force, f_cv_total_force);
 
-    init_feature(f_cv_subtract_applied_force, "subtract applied force from total force");
+    init_feature(f_cv_subtract_applied_force, "subtract applied force from total force", f_type_user);
     f_req_self(f_cv_subtract_applied_force, f_cv_total_force);
 
-    init_feature(f_cv_lower_boundary, "lower boundary");
+    init_feature(f_cv_lower_boundary, "lower boundary", f_type_user);
     f_req_self(f_cv_lower_boundary, f_cv_scalar);
 
-    init_feature(f_cv_upper_boundary, "upper boundary");
+    init_feature(f_cv_upper_boundary, "upper boundary", f_type_user);
     f_req_self(f_cv_upper_boundary, f_cv_scalar);
 
-    init_feature(f_cv_grid, "grid");
+    init_feature(f_cv_grid, "grid", f_type_user);
     f_req_self(f_cv_grid, f_cv_lower_boundary);
     f_req_self(f_cv_grid, f_cv_upper_boundary);
 
-    init_feature(f_cv_runave, "running average");
+    init_feature(f_cv_runave, "running average", f_type_user);
 
-    init_feature(f_cv_corrfunc, "correlation function");
+    init_feature(f_cv_corrfunc, "correlation function", f_type_user);
 
-    // The features below are set programmatically
-    init_feature(f_cv_scripted, "scripted");
-    init_feature(f_cv_periodic, "periodic");
+    init_feature(f_cv_scripted, "scripted", f_type_static);
+    init_feature(f_cv_periodic, "periodic", f_type_static);
     f_req_self(f_cv_periodic, f_cv_homogeneous);
-    init_feature(f_cv_scalar, "scalar");
-    init_feature(f_cv_linear, "linear");
-    init_feature(f_cv_homogeneous, "homogeneous");
+    init_feature(f_cv_scalar, "scalar", f_type_static);
+    init_feature(f_cv_linear, "linear", f_type_static);
+    init_feature(f_cv_homogeneous, "homogeneous", f_type_static);
   }
 
   // Initialize feature_states for each instance
@@ -350,6 +349,7 @@ void colvardeps::init_cv_requires() {
    }
 
   // properties that may NOT be enabled as a dependency
+  // This will be deprecated by feature types
   int unavailable_deps[] = {
     f_cv_lower_boundary,
     f_cv_upper_boundary,
@@ -375,34 +375,34 @@ void colvardeps::init_cvc_requires() {
       features().push_back(new feature);
     }
 
-    init_feature(f_cvc_active, "active");
+    init_feature(f_cvc_active, "active", f_type_mutable);
 //     The dependency below may become useful if we use dynamic atom groups
 //     f_req_children(f_cvc_active, f_ag_active);
 
-    init_feature(f_cvc_scalar, "scalar");
+    init_feature(f_cvc_scalar, "scalar", f_type_static);
 
-    init_feature(f_cvc_gradient, "gradient");
+    init_feature(f_cvc_gradient, "gradient", f_type_mutable);
 
-    init_feature(f_cvc_inv_gradient, "inverse gradient");
+    init_feature(f_cvc_inv_gradient, "inverse gradient", f_type_mutable);
     f_req_self(f_cvc_inv_gradient, f_cvc_gradient);
 
-    init_feature(f_cvc_debug_gradient, "debug gradient");
+    init_feature(f_cvc_debug_gradient, "debug gradient", f_type_user);
     f_req_self(f_cvc_debug_gradient, f_cvc_gradient);
 
-    init_feature(f_cvc_Jacobian, "Jacobian derivative");
+    init_feature(f_cvc_Jacobian, "Jacobian derivative", f_type_mutable);
     f_req_self(f_cvc_Jacobian, f_cvc_inv_gradient);
 
-    init_feature(f_cvc_com_based, "depends on group centers of mass");
+    init_feature(f_cvc_com_based, "depends on group centers of mass", f_type_static);
 
     // Compute total force on first site only to avoid unwanted
     // coupling to other colvars (see e.g. Ciccotti et al., 2005)
-    init_feature(f_cvc_one_site_total_force, "compute total collective force only from one group center");
+    init_feature(f_cvc_one_site_total_force, "compute total collective force only from one group center", f_type_user);
     f_req_self(f_cvc_one_site_total_force, f_cvc_com_based);
 
-    init_feature(f_cvc_scalable, "scalable calculation");
+    init_feature(f_cvc_scalable, "scalable calculation", f_type_static);
     f_req_self(f_cvc_scalable, f_cvc_scalable_com);
 
-    init_feature(f_cvc_scalable_com, "scalable calculation of centers of mass");
+    init_feature(f_cvc_scalable_com, "scalable calculation of centers of mass", f_type_static);
     f_req_self(f_cvc_scalable_com, f_cvc_com_based);
 
 
@@ -440,18 +440,18 @@ void colvardeps::init_ag_requires() {
       features().push_back(new feature);
     }
 
-    init_feature(f_ag_active, "active");
-    init_feature(f_ag_center, "translational fit");
-    init_feature(f_ag_rotate, "rotational fit");
-    init_feature(f_ag_fitting_group, "reference positions group");
-    init_feature(f_ag_fit_gradient_group, "fit gradient for main group");
-    init_feature(f_ag_fit_gradient_ref, "fit gradient for reference group");
-    init_feature(f_ag_atom_forces, "atomic forces");
+    init_feature(f_ag_active, "active", f_type_mutable);
+    init_feature(f_ag_center, "translational fit", f_type_static);
+    init_feature(f_ag_rotate, "rotational fit", f_type_static);
+    init_feature(f_ag_fitting_group, "reference positions group", f_type_static);
+    init_feature(f_ag_fit_gradient_group, "fit gradient for main group", f_type_static);
+    init_feature(f_ag_fit_gradient_ref, "fit gradient for reference group", f_type_static);
+    init_feature(f_ag_atom_forces, "atomic forces", f_type_mutable);
 
     // parallel calculation implies that we have at least a scalable center of mass,
     // but f_ag_scalable is kept as a separate feature to deal with future dependencies
-    init_feature(f_ag_scalable, "scalable group calculation");
-    init_feature(f_ag_scalable_com, "scalable group center of mass calculation");
+    init_feature(f_ag_scalable, "scalable group calculation", f_type_static);
+    init_feature(f_ag_scalable_com, "scalable group center of mass calculation", f_type_static);
     f_req_self(f_ag_scalable, f_ag_scalable_com);
 
 //     init_feature(f_ag_min_msd_fit, "minimum MSD fit")
