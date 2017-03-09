@@ -17,10 +17,8 @@ int colvarbias_histogram::init(std::string const &conf)
 {
   colvarbias::init(conf);
 
-  provide(f_cvb_scalar_variables);
   enable(f_cvb_scalar_variables);
-
-  set_enabled(f_cvb_history_dependent);
+  enable(f_cvb_history_dependent);
 
   size_t i;
 

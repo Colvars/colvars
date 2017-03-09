@@ -63,8 +63,6 @@ int colvar::init(std::string const &conf)
   if (get_keyval(conf, "scriptedFunction", scripted_function,
     "", colvarparse::parse_silent)) {
 
-    // Make feature available only on user request
-    provide(f_cv_scripted);
     enable(f_cv_scripted);
     cvm::log("This colvar uses scripted function \"" + scripted_function + "\".");
 
@@ -277,7 +275,6 @@ int colvar::init_grid_parameters(std::string const &conf)
   if (is_enabled(f_cv_scalar)) {
 
     if (get_keyval(conf, "lowerBoundary", lower_boundary, lower_boundary)) {
-      provide(f_cv_lower_boundary);
       enable(f_cv_lower_boundary);
     }
     std::string lw_conf, uw_conf;
@@ -293,7 +290,6 @@ int colvar::init_grid_parameters(std::string const &conf)
     }
 
     if (get_keyval(conf, "upperBoundary", upper_boundary, upper_boundary)) {
-      provide(f_cv_upper_boundary);
       enable(f_cv_upper_boundary);
     }
 
@@ -378,13 +374,7 @@ int colvar::init_extended_Lagrangian(std::string const &conf)
     cvm::log("Enabling the extended Lagrangian term for colvar \""+
              this->name+"\".\n");
 
-    // Make feature available only on user request
-    provide(f_cv_extended_Lagrangian);
     enable(f_cv_extended_Lagrangian);
-    provide(f_cv_Langevin);
-
-    // The extended mass will apply forces
-    enable(f_cv_gradient);
 
     xr.type(value());
     vr.type(value());

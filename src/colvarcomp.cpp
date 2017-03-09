@@ -41,8 +41,6 @@ colvar::cvc::cvc(std::string const &conf)
   get_keyval(conf, "period", period, 0.0);
   get_keyval(conf, "wrapAround", wrap_center, 0.0);
 
-  // All cvcs implement this
-  provide(f_cvc_debug_gradient);
   get_keyval_feature((colvarparse *)this, conf, "debugGradients",
                      f_cvc_debug_gradient, false, parse_silent);
 

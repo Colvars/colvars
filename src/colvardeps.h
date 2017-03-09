@@ -10,7 +10,7 @@
 /// their dependencies, and handling dependency resolution
 ///
 /// There are 3 kinds of features:
-/// 1. Mutable features are under the control of the dependency resolution
+/// 1. Dynamic features are under the control of the dependency resolution
 /// system. They may be enabled or disabled depending on dependencies.
 /// 2. User features may be enabled based on user input (they may trigger a failure upon dependency resolution, though)
 /// 3. Static features are static properties of the object, determined
@@ -48,7 +48,7 @@ private:
   /// Enum of possible feature types
   enum feature_type {
     f_type_not_set,
-    f_type_mutable,
+    f_type_dynamic,
     f_type_user,
     f_type_static
   };
@@ -85,14 +85,14 @@ public:
     // features that this feature requires in children
     std::vector<int> requires_children;
 
-    inline bool is_mutable() { return type == f_type_mutable; }
+    inline bool is_dynamic() { return type == f_type_dynamic; }
     inline bool is_static() { return type == f_type_static; }
     inline bool is_user() { return type == f_type_user; }
     /// Type of this feature, from the enum feature_type
     feature_type type;
   };
 
-  inline bool is_mutable(int id) { return features()[id]->type == f_type_mutable; }
+  inline bool is_dynamic(int id) { return features()[id]->type == f_type_dynamic; }
   inline bool is_static(int id) { return features()[id]->type == f_type_static; }
   inline bool is_user(int id) { return features()[id]->type == f_type_user; }
 

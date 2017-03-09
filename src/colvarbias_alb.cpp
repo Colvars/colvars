@@ -33,7 +33,6 @@ int colvarbias_alb::init(std::string const &conf)
 {
   colvarbias::init(conf);
 
-  provide(f_cvb_scalar_variables);
   enable(f_cvb_scalar_variables);
 
   size_t i;
@@ -85,7 +84,7 @@ int colvarbias_alb::init(std::string const &conf)
   if (update_freq <= 1)
     cvm::fatal_error("Error: must set updateFrequency to greater than 2.\n");
 
-  set_enabled(f_cvb_history_dependent);
+  enable(f_cvb_history_dependent);
 
   get_keyval(conf, "outputCenters", b_output_centers, false);
   get_keyval(conf, "outputGradient", b_output_grad, false);

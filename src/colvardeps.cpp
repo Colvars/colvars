@@ -96,9 +96,9 @@ int colvardeps::enable(int feature_id,
     return COLVARS_ERROR;
   }
 
-  if (!toplevel && !is_mutable(feature_id)) {
+  if (!toplevel && !is_dynamic(feature_id)) {
     if (!dry_run) {
-      cvm::log("Non-mutable feature : \"" + f->description
+      cvm::log("Non-dynamic feature : \"" + f->description
         + "\" in " + description + " may not be enabled as a dependency.\n");
     }
     return COLVARS_ERROR;
@@ -237,7 +237,7 @@ void colvardeps::init_cvb_requires() {
     }
   }
 
-  init_feature(f_cvb_active, "active", f_type_mutable);
+  init_feature(f_cvb_active, "active", f_type_dynamic);
   f_req_children(f_cvb_active, f_cv_active);
 
   init_feature(f_cvb_apply_force, "apply force", f_type_user);
@@ -263,15 +263,6 @@ void colvardeps::init_cvb_requires() {
     // Most features are available, so we set them so
     // and list exceptions below
   }
-
-  // some biases are not history-dependent
-  feature_states[f_cvb_history_dependent].available = false;
-
-  // some biases do not compute a PMF
-  feature_states[f_cvb_calc_pmf].available = false;
-
-  // by default, biases should work with vector variables, too
-  feature_states[f_cvb_scalar_variables].available = false;
 }
 
 
@@ -282,32 +273,32 @@ void colvardeps::init_cv_requires() {
       features().push_back(new feature);
     }
 
-    init_feature(f_cv_active, "active", f_type_mutable);
+    init_feature(f_cv_active, "active", f_type_dynamic);
     f_req_children(f_cv_active, f_cvc_active);
     // Colvars must be either a linear combination, or scalar (and polynomial) or scripted
     f_req_alt3(f_cv_active, f_cv_scalar, f_cv_linear, f_cv_scripted);
 
-    init_feature(f_cv_gradient, "gradient", f_type_mutable);
+    init_feature(f_cv_gradient, "gradient", f_type_dynamic);
     f_req_children(f_cv_gradient, f_cvc_gradient);
 
-    init_feature(f_cv_collect_gradient, "collect gradient", f_type_mutable);
+    init_feature(f_cv_collect_gradient, "collect gradient", f_type_dynamic);
     f_req_self(f_cv_collect_gradient, f_cv_gradient);
     f_req_self(f_cv_collect_gradient, f_cv_scalar);
 
-    init_feature(f_cv_fdiff_velocity, "fdiff_velocity", f_type_mutable);
+    init_feature(f_cv_fdiff_velocity, "fdiff_velocity", f_type_dynamic);
 
     // System force: either trivial (spring force); through extended Lagrangian, or calculated explicitly
-    init_feature(f_cv_total_force, "total force", f_type_mutable);
+    init_feature(f_cv_total_force, "total force", f_type_dynamic);
     f_req_alt2(f_cv_total_force, f_cv_extended_Lagrangian, f_cv_total_force_calc);
 
     // Deps for explicit total force calculation
-    init_feature(f_cv_total_force_calc, "total force calculation", f_type_mutable);
+    init_feature(f_cv_total_force_calc, "total force calculation", f_type_dynamic);
     f_req_self(f_cv_total_force_calc, f_cv_scalar);
     f_req_self(f_cv_total_force_calc, f_cv_linear);
     f_req_children(f_cv_total_force_calc, f_cvc_inv_gradient);
     f_req_self(f_cv_total_force_calc, f_cv_Jacobian);
 
-    init_feature(f_cv_Jacobian, "Jacobian derivative", f_type_mutable);
+    init_feature(f_cv_Jacobian, "Jacobian derivative", f_type_dynamic);
     f_req_self(f_cv_Jacobian, f_cv_scalar);
     f_req_self(f_cv_Jacobian, f_cv_linear);
     f_req_children(f_cv_Jacobian, f_cvc_Jacobian);
@@ -316,6 +307,8 @@ void colvardeps::init_cv_requires() {
     f_req_self(f_cv_hide_Jacobian, f_cv_Jacobian); // can only hide if calculated
 
     init_feature(f_cv_extended_Lagrangian, "extended Lagrangian", f_type_user);
+    f_req_self(f_cv_extended_Lagrangian, f_cv_scalar);
+    f_req_self(f_cv_extended_Lagrangian, f_cv_gradient);
 
     init_feature(f_cv_Langevin, "Langevin dynamics", f_type_user);
     f_req_self(f_cv_Langevin, f_cv_extended_Lagrangian);
@@ -396,21 +389,21 @@ void colvardeps::init_cvc_requires() {
       features().push_back(new feature);
     }
 
-    init_feature(f_cvc_active, "active", f_type_mutable);
+    init_feature(f_cvc_active, "active", f_type_dynamic);
 //     The dependency below may become useful if we use dynamic atom groups
 //     f_req_children(f_cvc_active, f_ag_active);
 
     init_feature(f_cvc_scalar, "scalar", f_type_static);
 
-    init_feature(f_cvc_gradient, "gradient", f_type_mutable);
+    init_feature(f_cvc_gradient, "gradient", f_type_dynamic);
 
-    init_feature(f_cvc_inv_gradient, "inverse gradient", f_type_mutable);
+    init_feature(f_cvc_inv_gradient, "inverse gradient", f_type_dynamic);
     f_req_self(f_cvc_inv_gradient, f_cvc_gradient);
 
     init_feature(f_cvc_debug_gradient, "debug gradient", f_type_user);
     f_req_self(f_cvc_debug_gradient, f_cvc_gradient);
 
-    init_feature(f_cvc_Jacobian, "Jacobian derivative", f_type_mutable);
+    init_feature(f_cvc_Jacobian, "Jacobian derivative", f_type_dynamic);
     f_req_self(f_cvc_Jacobian, f_cvc_inv_gradient);
 
     init_feature(f_cvc_com_based, "depends on group centers of mass", f_type_static);
@@ -433,10 +426,11 @@ void colvardeps::init_cvc_requires() {
   }
 
   // Initialize feature_states for each instance
-  // default as unavailable, not enabled
+  // default as available, not enabled
+  // except dynamic features which default as unavailable
   feature_states.reserve(f_cvc_ntot);
   for (i = 0; i < colvardeps::f_cvc_ntot; i++) {
-    bool avail = is_static(i) ? true : false;
+    bool avail = is_dynamic(i) ? false : true;
     feature_states.push_back(feature_state(avail, false));
   }
 
@@ -462,13 +456,13 @@ void colvardeps::init_ag_requires() {
       features().push_back(new feature);
     }
 
-    init_feature(f_ag_active, "active", f_type_mutable);
+    init_feature(f_ag_active, "active", f_type_dynamic);
     init_feature(f_ag_center, "translational fit", f_type_static);
     init_feature(f_ag_rotate, "rotational fit", f_type_static);
     init_feature(f_ag_fitting_group, "reference positions group", f_type_static);
     init_feature(f_ag_fit_gradient_group, "fit gradient for main group", f_type_static);
     init_feature(f_ag_fit_gradient_ref, "fit gradient for reference group", f_type_static);
-    init_feature(f_ag_atom_forces, "atomic forces", f_type_mutable);
+    init_feature(f_ag_atom_forces, "atomic forces", f_type_dynamic);
 
     // parallel calculation implies that we have at least a scalable center of mass,
     // but f_ag_scalable is kept as a separate feature to deal with future dependencies

@@ -36,7 +36,7 @@ int colvarbias_meta::init(std::string const &conf)
 {
   colvarbias::init(conf);
 
-  set_enabled(f_cvb_calc_pmf);
+  enable(f_cvb_calc_pmf);
 
   get_keyval(conf, "hillWeight", hill_weight, 0.0);
   if (hill_weight > 0.0) {
@@ -47,7 +47,7 @@ int colvarbias_meta::init(std::string const &conf)
 
   get_keyval(conf, "newHillFrequency", new_hill_freq, 1000);
   if (new_hill_freq > 0) {
-    set_enabled(f_cvb_history_dependent);
+    enable(f_cvb_history_dependent);
   }
 
   get_keyval(conf, "hillWidth", hill_width, std::sqrt(2.0 * PI) / 2.0);
