@@ -235,26 +235,23 @@ void colvardeps::init_cvb_requires() {
     for (i = 0; i < f_cvb_ntot; i++) {
       features().push_back(new feature);
     }
+
+    init_feature(f_cvb_active, "active", f_type_dynamic);
+    f_req_children(f_cvb_active, f_cv_active);
+
+    init_feature(f_cvb_apply_force, "apply force", f_type_user);
+    f_req_children(f_cvb_apply_force, f_cv_gradient);
+
+    init_feature(f_cvb_get_total_force, "obtain total force");
+    f_req_children(f_cvb_get_total_force, f_cv_total_force);
+
+    init_feature(f_cvb_history_dependent, "history-dependent", f_type_static);
+
+    init_feature(f_cvb_scalar_variables, "require scalar variables", f_type_static);
+    f_req_children(f_cvb_scalar_variables, f_cv_scalar);
+
+    init_feature(f_cvb_calc_pmf, "calculate a PMF", f_type_static);
   }
-
-  init_feature(f_cvb_active, "active", f_type_dynamic);
-  f_req_children(f_cvb_active, f_cv_active);
-
-  init_feature(f_cvb_apply_force, "apply force", f_type_user);
-  f_req_children(f_cvb_apply_force, f_cv_gradient);
-
-  init_feature(f_cvb_get_total_force, "obtain total force");
-  f_req_children(f_cvb_get_total_force, f_cv_total_force);
-
-  init_feature(f_cvb_history_dependent, "history-dependent", f_type_static);
-
-  init_feature(f_cvb_scalar_variables, "require scalar variables", f_type_static);
-  f_req_children(f_cvb_scalar_variables, f_cv_scalar);
-
-  init_feature(f_cvb_calc_pmf, "calculate a PMF", f_type_static);
-  // TODO define requirements?
-  // This has become a static property, using set_enabled. Move back to enable if
-  // adding requirements
 
   // Initialize feature_states for each instance
   feature_states.reserve(f_cvb_ntot);
