@@ -238,7 +238,6 @@ int colvardeps::disable(int feature_id) {
   feature *f = features()[feature_id];
   feature_state *fs = &feature_states[feature_id];
 
-  cvm::log("DEPS: " + description + " disabling \"" + f->description +"\"");
   if (fs->enabled == false) {
     return COLVARS_OK;
   }
@@ -253,23 +252,19 @@ int colvardeps::disable(int feature_id) {
 
   // internal deps (self)
   for (i=0; i<f->requires_self.size(); i++) {
-    cvm::log("self " + cvm::to_str(i));
     decr_ref_count(f->requires_self[i]);
   }
 
   // alternates
   for (i=0; i<fs->alternate_refs.size(); i++) {
-    cvm::log("alt " + cvm::to_str(i));
     decr_ref_count(fs->alternate_refs[i]);
   }
 
   // deps in children
   for (i=0; i<f->requires_children.size(); i++) {
     int g = f->requires_children[i];
-    cvm::log("feature " + cvm::to_str(i) + " : " + cvm::to_str(g));
     for (j=0; j<children.size(); j++) {
       cvm::increase_depth();
-      cvm::log("child " +  cvm::to_str(j) + " " + children[j]->description);
       children[j]->decr_ref_count(g);
       cvm::decrease_depth();
     }
