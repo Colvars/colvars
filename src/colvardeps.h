@@ -6,19 +6,16 @@
 #include "colvarmodule.h"
 #include "colvarparse.h"
 
-/// \file colvardeps.h
 /// \brief Parent class for a member object of a bias, cv or cvc etc. containing features and
 /// their dependencies, and handling dependency resolution
 ///
 /// There are 3 kinds of features:
-/// 1. Mutable features are entirely under the control of the dependency resolution
-/// system. They are disabled by default, and enabled dynamically on demand
-/// 2. user features are enabled based on user input (they may trigger a failure upon
-///   dependency resolution, though)
+/// 1. Mutable features are under the control of the dependency resolution
+/// system. They may be enabled or disabled depending on dependencies.
+/// 2. User features may be enabled based on user input (they may trigger a failure upon dependency resolution, though)
 /// 3. Static features are static properties of the object, determined
 ///   programatically at initialization time.
-
-
+///
 class colvardeps {
 public:
 
@@ -91,10 +88,13 @@ public:
     inline bool is_mutable() { return type == f_type_mutable; }
     inline bool is_static() { return type == f_type_static; }
     inline bool is_user() { return type == f_type_user; }
-
     /// Type of this feature, from the enum feature_type
     feature_type type;
   };
+
+  inline bool is_mutable(int id) { return features()[id]->type == f_type_mutable; }
+  inline bool is_static(int id) { return features()[id]->type == f_type_static; }
+  inline bool is_user(int id) { return features()[id]->type == f_type_user; }
 
   // Accessor to array of all features with deps, static in most derived classes
   // Subclasses with dynamic dependency trees may override this

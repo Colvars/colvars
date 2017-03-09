@@ -30,7 +30,16 @@ void colvardeps::provide(int feature_id, bool truefalse) {
 
 
 void colvardeps::set_enabled(int feature_id, bool truefalse) {
-  feature_states[feature_id].enabled = truefalse;
+//   if (!is_static(feature_id)) {
+//     cvm::error("Cannot set feature " + features()[feature_id]->description + " statically in " + description + ".\n");
+//     return;
+//   }
+  if (truefalse) {
+    // Resolve dependencies too
+    enable(feature_id);
+  } else {
+    feature_states[feature_id].enabled = false;
+  }
 }
 
 
@@ -39,6 +48,10 @@ bool colvardeps::get_keyval_feature(colvarparse *cvp,
                                     int feature_id, bool const &def_value,
                                     colvarparse::Parse_Mode const parse_mode)
 {
+  if (!is_user(feature_id)) {
+    cvm::error("Cannot set feature " + features()[feature_id]->description + " from user input in " + description + ".\n");
+    return false;
+  }
   bool value;
   bool const found = cvp->get_keyval(conf, key, value, def_value, parse_mode);
   if (value) enable(feature_id);
@@ -79,6 +92,14 @@ int colvardeps::enable(int feature_id,
       } else {
         cvm::log("Feature unavailable: \"" + f->description + "\" in " + description);
       }
+    }
+    return COLVARS_ERROR;
+  }
+
+  if (!toplevel && !is_mutable(feature_id)) {
+    if (!dry_run) {
+      cvm::log("Non-mutable feature : \"" + f->description
+        + "\" in " + description + " may not be enabled as a dependency.\n");
     }
     return COLVARS_ERROR;
   }
@@ -219,7 +240,7 @@ void colvardeps::init_cvb_requires() {
   init_feature(f_cvb_active, "active", f_type_mutable);
   f_req_children(f_cvb_active, f_cv_active);
 
-  init_feature(f_cvb_apply_force, "apply force", f_type_static);
+  init_feature(f_cvb_apply_force, "apply force", f_type_user);
   f_req_children(f_cvb_apply_force, f_cv_gradient);
 
   init_feature(f_cvb_get_total_force, "obtain total force");
@@ -348,22 +369,22 @@ void colvardeps::init_cv_requires() {
     // and list exceptions below
    }
 
-  // properties that may NOT be enabled as a dependency
-  // This will be deprecated by feature types
-  int unavailable_deps[] = {
-    f_cv_lower_boundary,
-    f_cv_upper_boundary,
-    f_cv_extended_Lagrangian,
-    f_cv_Langevin,
-    f_cv_scripted,
-    f_cv_periodic,
-    f_cv_scalar,
-    f_cv_linear,
-    f_cv_homogeneous
-  };
-  for (i = 0; i < sizeof(unavailable_deps) / sizeof(unavailable_deps[0]); i++) {
-    feature_states[unavailable_deps[i]].available = false;
-  }
+//   // properties that may NOT be enabled as a dependency
+//   // This will be deprecated by feature types
+//   int unavailable_deps[] = {
+//     f_cv_lower_boundary,
+//     f_cv_upper_boundary,
+//     f_cv_extended_Lagrangian,
+//     f_cv_Langevin,
+//     f_cv_scripted,
+//     f_cv_periodic,
+//     f_cv_scalar,
+//     f_cv_linear,
+//     f_cv_homogeneous
+//   };
+//   for (i = 0; i < sizeof(unavailable_deps) / sizeof(unavailable_deps[0]); i++) {
+//     feature_states[unavailable_deps[i]].available = false;
+//   }
 }
 
 
@@ -415,7 +436,8 @@ void colvardeps::init_cvc_requires() {
   // default as unavailable, not enabled
   feature_states.reserve(f_cvc_ntot);
   for (i = 0; i < colvardeps::f_cvc_ntot; i++) {
-    feature_states.push_back(feature_state(false, false));
+    bool avail = is_static(i) ? true : false;
+    feature_states.push_back(feature_state(avail, false));
   }
 
   // Features that are implemented by all cvcs by default
