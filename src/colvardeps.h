@@ -27,9 +27,10 @@ public:
   std::string description; // reference to object name (cv, cvc etc.)
 
   /// This contains the current state of each feature for each object
+  // since the feature class only contains static properties
   struct feature_state {
     feature_state(bool a, bool e)
-    : available(a), enabled(e) {}
+    : available(a), enabled(e), ref_count(0) {}
 
     /// Feature may be enabled, subject to possible dependencies
     bool available;
@@ -37,7 +38,19 @@ public:
     /// TODO consider implications for dependency solving: anyone who disables
     /// it should trigger a refresh of parent objects
     bool enabled;     // see if this should be private depending on implementation
+
     // bool enabledOnce; // this should trigger an update when object is evaluated
+
+    /// Number of features requiring this one as a dependency
+    /// When it falls to zero:
+    ///  - a dynamic feature is disabled automatically
+    ///  - other features may be disabled statically
+    int ref_count;
+    /// List of features that were enabled by this one
+    /// as part of an alternate requirement (for ref counting purposes)
+    /// This is necessary because we don't know which feature in the list
+    /// we enabled, otherwise
+    std::vector<int> alternate_refs;
   };
 
 
@@ -113,13 +126,13 @@ public:
 
 private:
 
-  // pointers to objects this object depends on
-  // list should be maintained by any code that modifies the object
-  // this could be secured by making lists of colvars / cvcs / atom groups private and modified through accessor functions
+  /// pointers to objects this object depends on
+  /// list should be maintained by any code that modifies the object
+  /// this could be secured by making lists of colvars / cvcs / atom groups private and modified through accessor functions
   std::vector<colvardeps *> children;
 
-  // pointers to objects that depend on this object
-  // the size of this array is in effect a reference counter
+  /// pointers to objects that depend on this object
+  /// the size of this array is in effect a reference counter
   std::vector<colvardeps *> parents;
 
 public:
@@ -154,9 +167,7 @@ public:
   /// dependencies will be checked by enable()
   void provide(int feature_id, bool truefalse = true);
 
-  /// Set the feature's enabled flag, without dependency check or resolution
-  /// To be used for static properties only
-  /// Checking for availability is up to the caller
+  /// Enable or disable, depending on flag value
   void set_enabled(int feature_id, bool truefalse = true);
 
 protected:
@@ -171,15 +182,29 @@ protected:
 
 public:
 
-  int enable(int f, bool dry_run = false, bool toplevel = true);  // enable a feature and recursively solve its dependencies
-  // dry_run is set to true to recursively test if a feature is available, without enabling it
-//     int disable(int f);
+  /// enable a feature and recursively solve its dependencies
+  /// for proper reference counting, one should not add
+  /// spurious calls to enable()
+  /// dry_run is set to true to recursively test if a feature is available, without enabling it
+  int enable(int f, bool dry_run = false, bool toplevel = true);
 
+  /// Disable a feature, decrease the reference count of its dependencies
+  /// and recursively disable them as applicable
+  int disable(int f);
 
-  /// This function is called whenever feature states are changed outside
-  /// of the object's control, that is, by parents
-  /// Eventually it may also be used when properties of children change
-  virtual int refresh_deps() { return COLVARS_OK; }
+  /// disable all enabled features to free their dependencies
+  /// to be done when deleting the object
+  /// Cannot be in the base class destructor because it needs the derived class features()
+  void disable_all_features();
+
+  /// Decrement the reference count of a feature
+  /// disabling it if it's dynamic and count reaches zero
+  int decr_ref_count(int f);
+
+  /// Implements possible actions to be carried out
+  /// when a given feature is enabled
+  /// Base function does nothing, can be overloaded
+  virtual void do_feature_side_effects(int id) {}
 
   // NOTE that all feature enums should start with f_*_active
   enum features_biases {

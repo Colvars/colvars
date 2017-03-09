@@ -243,8 +243,6 @@ int colvar::init(std::string const &conf)
 
   // Start in active state by default
   enable(f_cv_active);
-  // Make sure dependency side-effects are correct
-  refresh_deps();
 
   if (cvm::b_analysis)
     parse_analysis(conf);
@@ -614,16 +612,19 @@ int colvar::init_components(std::string const &conf)
 }
 
 
-int colvar::refresh_deps()
+void colvar::do_feature_side_effects(int id)
 {
   // If enabled features are changed upstream, the features below should be refreshed
-  if (is_enabled(f_cv_total_force_calc)) {
-    cvm::request_total_force();
+  switch (id) {
+    case f_cv_total_force_calc:
+      cvm::request_total_force();
+      break;
+    case f_cv_collect_gradient:
+      if (atom_ids.size() == 0) {
+        build_atom_list();
+      }
+      break;
   }
-  if (is_enabled(f_cv_collect_gradient) && atom_ids.size() == 0) {
-    build_atom_list();
-  }
-  return COLVARS_OK;
 }
 
 
@@ -764,6 +765,7 @@ void colvar::setup() {
 
 colvar::~colvar()
 {
+  disable_all_features();
 //   Clear references to this colvar's cvcs as children
 //   for dependency purposes
   remove_all_children();

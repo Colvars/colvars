@@ -16,9 +16,7 @@ colvarbias::colvarbias(char const *key)
   b_output_energy = false;
   reset();
   state_file_step = 0;
-
-  // Start in active state by default
-  enable(f_cvb_active);
+  description = "uninitialized " + cvm::to_str(key) + " bias";
 }
 
 
@@ -68,6 +66,8 @@ int colvarbias::init(std::string const &conf)
       return INPUT_ERROR;
     }
 
+    // Start in active state by default
+    enable(f_cvb_active);
   } else {
     cvm::log("Reinitializing bias \""+name+"\".\n");
   }
@@ -103,6 +103,8 @@ colvarbias::~colvarbias()
 
 int colvarbias::clear()
 {
+  disable_all_features();
+
   // Remove references to this bias from colvars
   for (std::vector<colvar *>::iterator cvi = colvars.begin();
        cvi != colvars.end();

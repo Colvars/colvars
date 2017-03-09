@@ -151,6 +151,7 @@ int colvar::cvc::setup()
 
 colvar::cvc::~cvc()
 {
+  disable_all_features();
   remove_all_children();
   for (size_t i = 0; i < atom_groups.size(); i++) {
     if (atom_groups[i] != NULL) delete atom_groups[i];

@@ -82,7 +82,10 @@ public:
     return cv_features;
   }
 
-  int refresh_deps();
+  /// Implements possible actions to be carried out
+  /// when a given feature is enabled
+  /// This overloads the base function in colvardeps
+  void do_feature_side_effects(int id);
 
   /// List of biases that depend on this colvar
   std::vector<colvarbias *> biases;
