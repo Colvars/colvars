@@ -377,10 +377,10 @@ void colvarproxy_vmd::add_energy(cvm::real energy)
 }
 
 
-char const *colvarproxy_vmd::script_obj_to_str(unsigned char const *obj)
+char *colvarproxy_vmd::script_obj_to_str(unsigned char *obj)
 {
-#ifdef VMDTCL // is it ever off?
-  return Tcl_GetString(reinterpret_cast<Tcl_Obj *>(const_cast<unsigned char *>(obj)));
+#ifdef VMDTCL // is TCL ever off?
+  return Tcl_GetString(reinterpret_cast<Tcl_Obj *>(obj));
 #else
   // This is most likely not going to be executed
   return colvarproxy::script_obj_to_str(obj);

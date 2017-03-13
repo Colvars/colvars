@@ -134,9 +134,9 @@ protected:
 
 public:
 
-  virtual char const *script_obj_to_str(unsigned char const *obj)
+  virtual char *script_obj_to_str(unsigned char *obj)
   {
-    return reinterpret_cast<char const *>(obj);
+    return reinterpret_cast<char *>(obj);
   }
 
   // ***************** SHARED-MEMORY PARALLELIZATION *****************

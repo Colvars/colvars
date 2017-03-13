@@ -281,7 +281,7 @@ public:
   int close_output_stream(std::string const &output_name);
   int backup_file(char const *filename);
 
-  char const *script_obj_to_str(unsigned char const *obj);
+  char *script_obj_to_str(unsigned char *obj);
 };
 
 
