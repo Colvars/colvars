@@ -365,16 +365,13 @@ harmonicWalls {\n\
 
 int colvar::init_extended_Lagrangian(std::string const &conf)
 {
-  bool b_extended_Lagrangian;
-  get_keyval(conf, "extendedLagrangian", b_extended_Lagrangian, false);
+  get_keyval_feature(this, conf, "extendedLagrangian", f_cv_extended_Lagrangian, false);
 
-  if (b_extended_Lagrangian) {
+  if (is_enabled(f_cv_extended_Lagrangian)) {
     cvm::real temp, tolerance, period;
 
     cvm::log("Enabling the extended Lagrangian term for colvar \""+
              this->name+"\".\n");
-
-    enable(f_cv_extended_Lagrangian);
 
     xr.type(value());
     vr.type(value());
