@@ -506,10 +506,7 @@ int colvarscript::proc_features(colvardeps *obj,
           } else if ((yesno == std::string("no")) ||
               (yesno == std::string("off")) ||
               (yesno == std::string("0"))) {
-            // TODO disable() function does not exist yet,
-            // dependencies will not be resolved
-            // obj->disable(fid);
-            obj->set_enabled(fid, false);
+            obj->disable(fid);
             return COLVARS_OK;
           }
         }

@@ -16,10 +16,14 @@
 /// 3. Static features are static properties of the object, determined
 ///   programatically at initialization time.
 ///
+/// In all classes, feature 0 is active. When an object is inactivated
+/// all its children dependencies are dereferenced (free_children_deps)
+/// While the object is inactive, no dependency solving is done on children
+/// it is done when the object is activated back (restore_children_deps)
 class colvardeps {
 public:
 
-  colvardeps() {}
+  colvardeps();
   virtual ~colvardeps();
 
   // Subclasses should initialize the following members:
@@ -53,6 +57,14 @@ public:
     std::vector<int> alternate_refs;
   };
 
+protected:
+  /// Time step multiplier (for coarse-time-step colvars)
+  /// Colvar will only be calculated at those times; biases may ignore the information and
+  /// always update their own forces (which is typically inexpensive) especially if
+  /// they rely on other colvars. In this case, the colvar will accumulate forces applied between
+  /// colvar updates. Alternately they may use it to calculate "impulse" biasing
+  /// forces at longer intervals. Impulse forces must be multiplied by the timestep factor.
+  int   time_step_factor;
 
 private:
   /// List of the states of all features
@@ -67,10 +79,13 @@ private:
   };
 
 public:
+  /// \brief returns time_step_factor
+  inline int get_time_step_factor() const {return time_step_factor;}
+
   /// Pair a numerical feature ID with a description and type
   void init_feature(int feature_id, const char *description, feature_type type = f_type_not_set);
 
-  /// Describes a feature and its dependecies
+  /// Describes a feature and its dependencies
   /// used in a static array within each subclass
   class feature {
 
@@ -195,7 +210,10 @@ public:
   /// disable all enabled features to free their dependencies
   /// to be done when deleting the object
   /// Cannot be in the base class destructor because it needs the derived class features()
-  void disable_all_features();
+  void free_children_deps();
+
+  /// re-enable children features (to be used when object becomes active)
+  void restore_children_deps();
 
   /// Decrement the reference count of a feature
   /// disabling it if it's dynamic and count reaches zero
@@ -210,6 +228,8 @@ public:
   enum features_biases {
     /// \brief Bias is active
     f_cvb_active,
+    /// \brief Bias is awake (active on its own accord) this timestep
+    f_cvb_awake,
     f_cvb_apply_force, // will apply forces
     f_cvb_get_total_force, // requires total forces
     f_cvb_history_dependent, // depends on simulation history
@@ -221,6 +241,8 @@ public:
   enum features_colvar {
     /// \brief Calculate colvar
     f_cv_active,
+    /// \brief Colvar is awake (active on its own accord) this timestep
+    f_cv_awake,
     /// \brief Gradients are calculated and temporarily stored, so
     /// that external forces can be applied
     f_cv_gradient,

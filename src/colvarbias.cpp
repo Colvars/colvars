@@ -65,9 +65,6 @@ int colvarbias::init(std::string const &conf)
       cvm::error("Error: no collective variables specified.\n", INPUT_ERROR);
       return INPUT_ERROR;
     }
-
-    // Start in active state by default
-    enable(f_cvb_active);
   } else {
     cvm::log("Reinitializing bias \""+name+"\".\n");
   }
@@ -75,6 +72,10 @@ int colvarbias::init(std::string const &conf)
   output_prefix = cvm::output_prefix();
 
   get_keyval(conf, "outputEnergy", b_output_energy, b_output_energy);
+
+  // Now that children are defined, we can solve dependencies
+  enable(f_cvb_active);
+  if (cvm::debug()) print_state();
 
   return COLVARS_OK;
 }
@@ -103,7 +104,7 @@ colvarbias::~colvarbias()
 
 int colvarbias::clear()
 {
-  disable_all_features();
+  free_children_deps();
 
   // Remove references to this bias from colvars
   for (std::vector<colvar *>::iterator cvi = colvars.begin();

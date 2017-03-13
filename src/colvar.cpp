@@ -236,12 +236,12 @@ int colvar::init(std::string const &conf)
   // TODO use here information from the CVCs' own natural boundaries
   error_code |= init_grid_parameters(conf);
 
-  get_keyval(conf, "timeStepFactor", time_step_factor, 1);
+  get_keyval(conf, "timeStepFactor", time_step_factor, 1, parse_silent);
 
   error_code |= init_extended_Lagrangian(conf);
   error_code |= init_output_flags(conf);
 
-  // Start in active state by default
+  // Now that the children are defined we can solve dependencies
   enable(f_cv_active);
 
   if (cvm::b_analysis)
@@ -765,7 +765,10 @@ void colvar::setup() {
 
 colvar::~colvar()
 {
-  disable_all_features();
+  // There is no need to call free_children_deps() here
+  // because the children are cvcs and will be deleted
+  // just below
+
 //   Clear references to this colvar's cvcs as children
 //   for dependency purposes
   remove_all_children();

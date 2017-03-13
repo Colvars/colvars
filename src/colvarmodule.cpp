@@ -402,12 +402,6 @@ int colvarmodule::parse_biases(std::string const &conf)
 
   size_t i;
 
-  for (i = 0; i < biases.size(); i++) {
-    biases[i]->enable(colvardeps::f_cvb_active);
-    if (cvm::debug())
-      biases[i]->print_state();
-  }
-
   size_t n_hist_dep_biases = 0;
   std::vector<std::string> hist_dep_biases_names;
   for (i = 0; i < biases.size(); i++) {
@@ -659,6 +653,17 @@ int colvarmodule::calc_colvars()
     cvm::log("Calculating collective variables.\n");
   // calculate collective variables and their gradients
 
+  // First, decide which biases are awake
+  std::vector<colvarbias *>::iterator bi;
+  for (bi = biases.begin(); bi != biases.end(); bi++) {
+    int tsf = (*bi)->get_time_step_factor();
+    if (tsf > 0 && step_absolute() % tsf == 0) {
+      (*bi)->enable(colvardeps::f_cvb_awake);
+    } else {
+      (*bi)->disable(colvardeps::f_cvb_awake);
+    }
+  }
+
   int error_code = COLVARS_OK;
   std::vector<colvar *>::iterator cvi;
 
@@ -666,11 +671,16 @@ int colvarmodule::calc_colvars()
   variables_active()->resize(0);
   variables_active()->reserve(variables()->size());
   for (cvi = variables()->begin(); cvi != variables()->end(); cvi++) {
-    // FIXME: For now there is a redundancy between variables_active()
-    // and the f_cv_active features - could be better integrated.
-    if (step_absolute() % (*cvi)->get_time_step_factor() == 0) {
+    // Wake up or put to sleep variables
+    int tsf = (*cvi)->get_time_step_factor();
+    if (tsf > 0 && step_absolute() % tsf == 0) {
+      (*cvi)->enable(colvardeps::f_cv_awake);
+    } else {
+      (*cvi)->disable(colvardeps::f_cv_awake);
+    }
+
+    if ((*cvi)->is_enabled()) {
       variables_active()->push_back(*cvi);
-      if (!(*cvi)->is_enabled()) (*cvi)->enable(colvardeps::f_cv_active);
     }
   }
 

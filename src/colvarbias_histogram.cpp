@@ -26,6 +26,8 @@ int colvarbias_histogram::init(std::string const &conf)
   get_keyval(conf, "outputFileDX", out_name_dx, std::string(""));
   get_keyval(conf, "outputFreq", output_freq, cvm::restart_out_freq);
 
+  get_keyval(conf, "timeStepFactor", time_step_factor, 1, parse_silent);
+
   /// with VMD, this may not be an error
   // if ( output_freq == 0 ) {
   //   cvm::error("User required histogram with zero output frequency");
