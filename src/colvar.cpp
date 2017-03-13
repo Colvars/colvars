@@ -394,7 +394,7 @@ int colvar::init_extended_Lagrangian(std::string const &conf)
       return INPUT_ERROR;
     }
     ext_force_k = cvm::boltzmann() * temp / (tolerance * tolerance);
-    cvm::log("Computed extended system force constant: " + cvm::to_str(ext_force_k) + " kcal/mol/U^2");
+    cvm::log("Computed extended system force constant: " + cvm::to_str(ext_force_k) + " [E]/U^2");
 
     get_keyval(conf, "extendedTimeConstant", period, 200.0);
     if (period <= 0.0) {
@@ -402,7 +402,7 @@ int colvar::init_extended_Lagrangian(std::string const &conf)
     }
     ext_mass = (cvm::boltzmann() * temp * period * period)
       / (4.0 * PI * PI * tolerance * tolerance);
-    cvm::log("Computed fictitious mass: " + cvm::to_str(ext_mass) + " kcal/mol/(U/fs)^2   (U: colvar unit)");
+    cvm::log("Computed fictitious mass: " + cvm::to_str(ext_mass) + " [E]/(U/fs)^2   (U: colvar unit)");
 
     {
       bool b_output_energy;
@@ -419,7 +419,7 @@ int colvar::init_extended_Lagrangian(std::string const &conf)
     }
     if (ext_gamma != 0.0) {
       enable(f_cv_Langevin);
-      ext_gamma *= 1.0e-3; // convert from ps-1 to fs-1
+      ext_gamma *= 1.0e-3; // correct as long as input is required in ps-1 and cvm::dt() is in fs
       ext_sigma = std::sqrt(2.0 * cvm::boltzmann() * temp * ext_gamma * ext_mass / cvm::dt());
     }
   }
