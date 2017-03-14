@@ -15,7 +15,7 @@
 #include "colvaratoms.h"
 
 #ifndef COLVARPROXY_VERSION
-#define COLVARPROXY_VERSION "2016-12-23"
+#define COLVARPROXY_VERSION "2017-03-14"
 #endif
 
 
@@ -136,7 +136,7 @@ public:
                           colvarvalue &value);
   int run_colvar_gradient_callback(std::string const &name,
                                    std::vector<const colvarvalue *> const &cvcs,
-                                   std::vector<colvarvalue> &gradient);
+                                   std::vector<cvm::matrix2d<cvm::real> > &gradient);
 
   int load_atoms(char const *filename,
                  cvm::atom_group &atoms,

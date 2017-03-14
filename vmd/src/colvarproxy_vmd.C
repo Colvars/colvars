@@ -332,8 +332,8 @@ int colvarproxy_vmd::run_colvar_callback(std::string const &name,
 
 
 int colvarproxy_vmd::run_colvar_gradient_callback(std::string const &name,
-                                                  std::vector<const colvarvalue *> const &cvc_values,
-                                                  std::vector<colvarvalue> &gradient)
+                                                   std::vector<const colvarvalue *> const &cvc_values,
+                                                   std::vector<cvm::matrix2d<cvm::real> > &gradient)
 {
   size_t i;
   std::string cmd = std::string("calc_") + name + "_gradient";
@@ -342,8 +342,8 @@ int colvarproxy_vmd::run_colvar_gradient_callback(std::string const &name,
   }
   int err = Tcl_Eval(interp, cmd.c_str());
   if (err != TCL_OK) {
-    cvm::log(std::string("Error while executing ")
-             + cmd + std::string(":\n"));
+    log(std::string("Error while executing ")
+        + cmd + std::string(":\n"));
     cvm::error(Tcl_GetStringResult(interp));
     return COLVARS_ERROR;
   }
@@ -352,14 +352,15 @@ int colvarproxy_vmd::run_colvar_gradient_callback(std::string const &name,
   Tcl_ListObjGetElements(interp, Tcl_GetObjResult(interp),
                          &n, &list);
   if (n != int(gradient.size())) {
-    cvm::error("Error parsing list of gradient values from script");
+    cvm::error("Error parsing list of gradient values from script: found "
+               + cvm::to_str(n) + " values instead of " + cvm::to_str(gradient.size()));
     return COLVARS_ERROR;
   }
   for (i = 0; i < gradient.size(); i++) {
     std::istringstream is(Tcl_GetString(list[i]));
-    gradient[i].type(*(cvc_values[i]));
-    gradient[i].is_derivative();
     if (gradient[i].from_simple_string(is.str()) != COLVARS_OK) {
+      log("Gradient matrix size: " + cvm::to_str(gradient[i].size()));
+      log("Gradient string: " + cvm::to_str(Tcl_GetString(list[i])));
       cvm::error("Error parsing gradient value from script");
       return COLVARS_ERROR;
     }
