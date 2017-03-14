@@ -330,9 +330,6 @@ protected:
   /// Sum of square coefficients for active cvcs
   cvm::real active_cvc_square_norm;
 
-  /// Biasing force collected between updates, to be applied at next update for coarse-time-step colvars
-  colvarvalue f_accumulated;
-
 public:
   /// \brief Return the number of CVC objects with an active flag (as set by update_cvc_flags)
   inline size_t num_active_cvcs() const { return n_active_cvcs; }

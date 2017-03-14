@@ -217,7 +217,6 @@ int colvar::init(std::string const &conf)
 
   // at this point, the colvar's type is defined
   f.type(value());
-  f_accumulated.type(value());
 
   x_old.type(value());
   v_fdiff.type(value());
@@ -1284,9 +1283,6 @@ cvm::real colvar::update_forces_energy()
   // bypass the extended Lagrangian mass)
   f += fb_actual;
 
-  // Store force to be applied, possibly summed over several timesteps
-  f_accumulated += f;
-
   if (is_enabled(f_cv_fdiff_velocity)) {
     // set it for the next step
     x_old = x;
@@ -1307,7 +1303,7 @@ void colvar::communicate_forces()
   size_t i;
   if (cvm::debug()) {
     cvm::log("Communicating forces from colvar \""+this->name+"\".\n");
-    cvm::log("Force to be applied: " + cvm::to_str(f_accumulated) + "\n");
+    cvm::log("Force to be applied: " + cvm::to_str(f) + "\n");
   }
 
   if (is_enabled(f_cv_scripted)) {
@@ -1334,14 +1330,14 @@ void colvar::communicate_forces()
       if (!cvcs[i]->is_enabled()) continue;
       // cvc force is colvar force times colvar/cvc Jacobian
       // (vector-matrix product)
-      (cvcs[i])->apply_force(colvarvalue(f_accumulated.as_vector() * func_grads[grad_index++],
+      (cvcs[i])->apply_force(colvarvalue(f.as_vector() * func_grads[grad_index++],
                              cvcs[i]->value().type()));
     }
   } else if (x.type() == colvarvalue::type_scalar) {
 
     for (i = 0; i < cvcs.size(); i++) {
       if (!cvcs[i]->is_enabled()) continue;
-      (cvcs[i])->apply_force(f_accumulated * (cvcs[i])->sup_coeff *
+      (cvcs[i])->apply_force(f * (cvcs[i])->sup_coeff *
                               cvm::real((cvcs[i])->sup_np) *
                               (std::pow((cvcs[i])->value().real_value,
                                       (cvcs[i])->sup_np-1)) );
@@ -1351,13 +1347,9 @@ void colvar::communicate_forces()
 
     for (i = 0; i < cvcs.size(); i++) {
       if (!cvcs[i]->is_enabled()) continue;
-      (cvcs[i])->apply_force(f_accumulated * (cvcs[i])->sup_coeff);
+      (cvcs[i])->apply_force(f * (cvcs[i])->sup_coeff);
     }
   }
-
-  // Accumulated forces have been applied, impulse-style
-  // Reset to start accumulating again
-  f_accumulated.reset();
 
   if (cvm::debug())
     cvm::log("Done communicating forces from colvar \""+this->name+"\".\n");
