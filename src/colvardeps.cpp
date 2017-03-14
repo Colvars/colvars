@@ -434,6 +434,8 @@ void colvardeps::init_cv_requires() {
     init_feature(f_cv_collect_gradient, "collect gradient", f_type_dynamic);
     f_req_self(f_cv_collect_gradient, f_cv_gradient);
     f_req_self(f_cv_collect_gradient, f_cv_scalar);
+    // The following exlusion could be lifted by implementing the feature
+    f_req_exclude(f_cv_collect_gradient, f_cv_scripted);
 
     init_feature(f_cv_fdiff_velocity, "fdiff_velocity", f_type_dynamic);
 

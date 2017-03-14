@@ -1011,13 +1011,6 @@ int colvar::collect_cvc_gradients()
   size_t i;
 
   if (is_enabled(f_cv_collect_gradient)) {
-
-    if (is_enabled(f_cv_scripted)) {
-      cvm::error("Collecting atomic gradients is not implemented for "
-                 "scripted colvars.", COLVARS_NOT_IMPLEMENTED);
-      return COLVARS_NOT_IMPLEMENTED;
-    }
-
     // Collect the atomic gradients inside colvar object
     for (unsigned int a = 0; a < atomic_gradients.size(); a++) {
       atomic_gradients[a].reset();
