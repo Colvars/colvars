@@ -153,7 +153,7 @@ int colvardeps::enable(int feature_id,
 
   if (!toplevel && !is_dynamic(feature_id)) {
     if (!dry_run) {
-      cvm::log("Non-dynamic feature : \"" + f->description
+      cvm::log("Non-dynamic feature \"" + f->description
         + "\" in " + description + " may not be enabled as a dependency.\n");
     }
     return COLVARS_ERROR;
@@ -305,6 +305,8 @@ int colvardeps::disable(int feature_id) {
       + features()[fs->alternate_refs[i]]->description);
     decr_ref_count(fs->alternate_refs[i]);
   }
+  // Forget these, now that they are dereferenced
+  fs->alternate_refs.clear();
 
   // deps in children
   // except if the object is inactive, then children dependencies
