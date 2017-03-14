@@ -668,7 +668,7 @@ int colvarmodule::calc_colvars()
   std::vector<colvar *>::iterator cvi;
 
   // Determine which colvars are active at this iteration
-  variables_active()->resize(0);
+  variables_active()->clear();
   variables_active()->reserve(variables()->size());
   for (cvi = variables()->begin(); cvi != variables()->end(); cvi++) {
     // Wake up or put to sleep variables
@@ -689,8 +689,8 @@ int colvarmodule::calc_colvars()
 
     // first, calculate how much work (currently, how many active CVCs) each colvar has
 
-    variables_active_smp()->resize(0);
-    variables_active_smp_items()->resize(0);
+    variables_active_smp()->clear();
+    variables_active_smp_items()->clear();
 
     variables_active_smp()->reserve(variables_active()->size());
     variables_active_smp_items()->reserve(variables_active()->size());
@@ -752,7 +752,7 @@ int colvarmodule::calc_biases()
   total_bias_energy = 0.0;
 
   // update the list of active biases
-  biases_active()->resize(0);
+  biases_active()->clear();
   biases_active()->reserve(biases.size());
   for (bi = biases.begin(); bi != biases.end(); bi++) {
     if ((*bi)->is_enabled()) {

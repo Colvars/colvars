@@ -284,7 +284,7 @@ int colvarscript::proc_colvar(colvar *cv, int objc, unsigned char *const objv[])
     for (i = 0; i < cv->biases.size(); i++) {
       delete cv->biases[i];
     }
-    cv->biases.resize(0);
+    cv->biases.clear();
     // colvar destructor is tasked with the cleanup
     delete cv;
     // TODO this could be done by the destructors

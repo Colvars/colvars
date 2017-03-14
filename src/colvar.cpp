@@ -1380,7 +1380,7 @@ int colvar::update_cvc_flags()
       cvm::error("ERROR: All CVCs are disabled for colvar " + this->name +"\n");
       return COLVARS_ERROR;
     }
-    cvc_flags.resize(0);
+    cvc_flags.clear();
   }
 
   return COLVARS_OK;

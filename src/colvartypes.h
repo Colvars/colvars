@@ -84,6 +84,11 @@ public:
     data.resize(n);
   }
 
+  inline void clear()
+  {
+    data.clear();
+  }
+
   inline T & operator [] (size_t const i) {
     return data[i];
   }
