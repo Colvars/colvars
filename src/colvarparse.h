@@ -17,7 +17,7 @@
 /// need to parse input inherit from this
 class colvarparse {
 
-protected:
+private:
 
   /// \brief List of legal keywords for this object: this is updated
   /// by each call to colvarparse::get_keyval() or
@@ -34,14 +34,6 @@ protected:
   /// values before the keyword check is performed
   std::list<size_t>      data_end_pos;
 
-  /// \brief Whether or not to accumulate data_begin_pos and
-  /// data_end_pos in key_lookup(); it may be useful to disable
-  /// this after the constructor is called, because other files may be
-  /// read (e.g. restart) that would mess up the registry; in any
-  /// case, nothing serious happens until check_keywords() is invoked
-  /// (which should happen only right after construction)
-  bool save_delimiters;
-
   /// \brief Add a new valid keyword to the list
   void add_keyword(char const *key);
 
@@ -55,14 +47,12 @@ public:
 
 
   inline colvarparse()
-    : save_delimiters(true)
   {
     init();
   }
 
   /// Constructor that stores the object's config string
   inline colvarparse(const std::string& conf)
-    : save_delimiters(true)
   {
     init(conf);
   }
@@ -107,8 +97,6 @@ public:
 
   /// \brief Use this after parsing a config string (note that check_keywords() calls it already)
   void clear_keyword_registry();
-
-public:
 
   /// \fn get_keyval bool const get_keyval (std::string const &conf,
   /// char const *key, _type_ &value, _type_ const &def_value,

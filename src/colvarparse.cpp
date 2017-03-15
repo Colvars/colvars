@@ -713,7 +713,7 @@ bool colvarparse::key_lookup(std::string const &conf,
         cvm::log("Keyword value = \""+*data+"\".\n");
       }
 
-      if (data->size() && save_delimiters) {
+      if (data->size()) {
         data_begin_pos.push_back(conf.find(*data, pos+key.size()));
         data_end_pos.push_back(data_begin_pos.back()+data->size());
       }
