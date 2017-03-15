@@ -15,12 +15,12 @@
 #include "colvaratoms.h"
 
 #ifndef COLVARPROXY_VERSION
-#define COLVARPROXY_VERSION "2017-03-14"
+#define COLVARPROXY_VERSION "2017-03-13"
 #endif
 
 
-int tcl_colvars(ClientData clientdata, Tcl_Interp *interp, int argc, const char *argv[]);
-
+int tcl_colvars(ClientData clientData, Tcl_Interp *interp,
+                int objc, Tcl_Obj *const objv[]);
 
 /// \brief Communication between colvars and VMD (implementation of
 /// \link colvarproxy \endlink)
@@ -108,6 +108,8 @@ public:
     return output_prefix_str;
   }
 
+  char *script_obj_to_str(unsigned char *obj);
+
   void add_energy(cvm::real energy);
 
 private:
@@ -136,7 +138,7 @@ public:
                           colvarvalue &value);
   int run_colvar_gradient_callback(std::string const &name,
                                    std::vector<const colvarvalue *> const &cvcs,
-                                   std::vector<cvm::matrix2d<cvm::real> > &gradient);
+                                   std::vector<colvarvalue> &gradient);
 
   int load_atoms(char const *filename,
                  cvm::atom_group &atoms,
