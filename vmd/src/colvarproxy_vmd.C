@@ -334,8 +334,8 @@ int colvarproxy_vmd::run_colvar_callback(std::string const &name,
 
 
 int colvarproxy_vmd::run_colvar_gradient_callback(std::string const &name,
-                                                   std::vector<const colvarvalue *> const &cvc_values,
-                                                   std::vector<cvm::matrix2d<cvm::real> > &gradient)
+                                                  std::vector<const colvarvalue *> const &cvc_values,
+                                                  std::vector<cvm::matrix2d<cvm::real> > &gradient)
 {
   size_t i;
   std::string cmd = std::string("calc_") + name + "_gradient";
