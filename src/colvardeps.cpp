@@ -140,12 +140,17 @@ int colvardeps::enable(int feature_id,
     return COLVARS_OK;
   }
 
+  std::string feature_type_descr = is_static(feature_id) ? "Static" :
+    (is_dynamic(feature_id) ? "Dynamic" : "User-controlled");
+
   if (!fs->available) {
     if (!dry_run) {
       if (toplevel) {
-        cvm::error("Error: Feature unavailable: \"" + f->description + "\" in " + description + ".");
+        cvm::error("Error: " + feature_type_descr + " feature unavailable: \""
+          + f->description + "\" in " + description + ".");
       } else {
-        cvm::log("Feature unavailable: \"" + f->description + "\" in " + description);
+        cvm::log(feature_type_descr + " feature unavailable: \""
+          + f->description + "\" in " + description);
       }
     }
     return COLVARS_ERROR;
@@ -153,7 +158,7 @@ int colvardeps::enable(int feature_id,
 
   if (!toplevel && !is_dynamic(feature_id)) {
     if (!dry_run) {
-      cvm::log("Non-dynamic feature \"" + f->description
+      cvm::log(feature_type_descr + " feature \"" + f->description
         + "\" in " + description + " may not be enabled as a dependency.\n");
     }
     return COLVARS_ERROR;
