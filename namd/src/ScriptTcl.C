@@ -1380,10 +1380,7 @@ int ScriptTcl::Tcl_colvarfreq(ClientData clientData,
 }
 
 int ScriptTcl::Tcl_colvars(ClientData clientData,
-                           Tcl_Interp *interp,
-                           int objc,
-                           Tcl_Obj *const objv[])
-{
+        Tcl_Interp *interp, int argc, char *argv[]) {
   ScriptTcl *script = (ScriptTcl *) clientData;
   script->initcheck();
   colvarmodule *colvars = Node::Object()->colvars;
@@ -1391,22 +1388,22 @@ int ScriptTcl::Tcl_colvars(ClientData clientData,
     Tcl_SetResult(interp,"colvars module not active",TCL_VOLATILE);
     return TCL_ERROR;
   }
-  colvarscript *cvscript = colvars->proxy->script;
-  int retval = cvscript->run(objc, reinterpret_cast<unsigned char * const *>(objv));
+  int retval = colvars->proxy->script->run(argc, (char const **) argv);
+  // use Tcl dynamic allocation to prevent having to copy the buffer
+  // *twice* just because Tcl is missing const qualifiers for strings
+  char *buf = Tcl_Alloc(colvars->proxy->script->result.length() + 1);
+  strncpy(buf, colvars->proxy->script->result.c_str(), colvars->proxy->script->result.length() + 1);
+  Tcl_SetResult(interp, buf, TCL_DYNAMIC);
+  // Note: sometimes Tcl 8.5 will segfault here
+  // (only on error conditions, apparently)
+  // http://sourceforge.net/p/tcl/bugs/4677/
+  // Fixed in Tcl 8.6
 
-  bool const no_errors = (retval == COLVARSCRIPT_OK) &&
-    (cvm::get_error() == COLVARS_OK);
-
-  Tcl_Obj *obj = Tcl_NewStringObj(cvscript->result.c_str(),
-                                  cvscript->result.length() + 1);
-  Tcl_SetObjResult(interp, obj);
-
-  if (no_errors) {
+  if (retval == COLVARSCRIPT_OK && !cvm::get_error())
     return TCL_OK;
-  } else {
+  else
     return TCL_ERROR;
   }
-}
 
 int ScriptTcl::Tcl_checkpoint(ClientData clientData,
         Tcl_Interp *interp, int argc, char *argv[]) {
@@ -2038,7 +2035,7 @@ ScriptTcl::ScriptTcl() : scriptBarrier(scriptBarrierTag) {
     (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
   Tcl_CreateCommand(interp, "colvarvalue", Tcl_colvarvalue,
     (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
-  Tcl_CreateObjCommand(interp, "cv", Tcl_colvars,
+  Tcl_CreateCommand(interp, "cv", Tcl_colvars,
     (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
   Tcl_CreateCommand(interp, "colvarfreq", Tcl_colvarfreq,
     (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
