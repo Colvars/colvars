@@ -143,12 +143,18 @@ class colvarmodule::atom_group
 {
 public:
 
-  /// \brief Initialize the group by looking up its configuration
-  /// string in conf and parsing it; this is actually done by parse(),
-  /// which is a member function so that a group can be initialized
-  /// also after construction
-  atom_group(std::string const &conf,
-             char const        *key);
+
+  /// \brief Default constructor
+  atom_group();
+
+  /// \brief Create a group object, assign a name to it
+  atom_group(char const *key);
+
+  /// \brief Initialize the group after a (temporary) vector of atoms
+  atom_group(std::vector<cvm::atom> const &atoms_in);
+
+  /// \brief Destructor
+  ~atom_group();
 
   /// \brief Keyword used to define the group
   // TODO Make this field part of the data structures that link a group to a CVC
@@ -171,9 +177,6 @@ public:
                                   std::string const &range_conf);
   int parse_fitting_options(std::string const &group_conf);
 
-  /// \brief Initialize the group after a (temporary) vector of atoms
-  atom_group(std::vector<cvm::atom> const &atoms_in);
-
   /// \brief Add an atom object to this group
   int add_atom(cvm::atom const &a);
 
@@ -195,12 +198,6 @@ public:
   virtual std::vector<feature *> &features() {
     return ag_features;
   }
-
-  /// \brief Default constructor
-  atom_group();
-
-  /// \brief Destructor
-  ~atom_group();
 
 protected:
 

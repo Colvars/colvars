@@ -476,8 +476,8 @@ template<typename def_class_name> int colvar::init_components_type(std::string c
   size_t pos = 0;
   while ( this->key_lookup(conf,
                            def_config_key,
-                           def_conf,
-                           pos) ) {
+                           &def_conf,
+                           &pos) ) {
     if (!def_conf.size()) continue;
     cvm::log("Initializing "
              "a new \""+std::string(def_config_key)+"\" component"+

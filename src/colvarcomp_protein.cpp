@@ -37,7 +37,7 @@ colvar::alpha_angles::alpha_angles(std::string const &conf)
   std::vector<int> residues;
   {
     std::string residues_conf = "";
-    key_lookup(conf, "residueRange", residues_conf);
+    key_lookup(conf, "residueRange", &residues_conf);
     if (residues_conf.size()) {
       std::istringstream is(residues_conf);
       int initial, final;
@@ -256,7 +256,7 @@ colvar::dihedPC::dihedPC(std::string const &conf)
   std::vector<int> residues;
   {
     std::string residues_conf = "";
-    key_lookup(conf, "residueRange", residues_conf);
+    key_lookup(conf, "residueRange", &residues_conf);
     if (residues_conf.size()) {
       std::istringstream is(residues_conf);
       int initial, final;

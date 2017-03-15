@@ -60,18 +60,16 @@ cvm::atom::~atom()
 
 
 
-// TODO change this arrangement
-// Note: "conf" is the configuration of the cvc who is using this atom group;
-// "key" is the name of the atom group (e.g. "atoms", "group1", "group2", ...)
-cvm::atom_group::atom_group(std::string const &conf,
-                            char const        *key_in)
+cvm::atom_group::atom_group()
+{
+  init();
+}
+
+
+cvm::atom_group::atom_group(char const *key_in)
 {
   key = key_in;
-  cvm::log("Defining atom group \"" + key + "\".\n");
   init();
-  // real work is done by parse
-  parse(conf);
-  setup();
 }
 
 
@@ -80,12 +78,6 @@ cvm::atom_group::atom_group(std::vector<cvm::atom> const &atoms_in)
   init();
   atoms = atoms_in;
   setup();
-}
-
-
-cvm::atom_group::atom_group()
-{
-  init();
 }
 
 
@@ -258,33 +250,9 @@ void cvm::atom_group::update_total_charge()
 }
 
 
-int cvm::atom_group::parse(std::string const &conf)
+int cvm::atom_group::parse(std::string const &group_conf)
 {
-  std::string group_conf;
-
-  // TODO move this to the cvc class constructor/init
-
-  // save_delimiters is set to false for this call, because "conf" is
-  // not the config string of this group, but of its parent object
-  // (which has already taken care of the delimiters)
-  save_delimiters = false;
-  key_lookup(conf, key.c_str(), group_conf, dummy_pos);
-  // restoring the normal value, because we do want keywords checked
-  // inside "group_conf"
-  save_delimiters = true;
-
-  if (group_conf.size() == 0) {
-    cvm::error("Error: atom group \""+key+
-               "\" is set, but has no definition.\n",
-               INPUT_ERROR);
-    return COLVARS_ERROR;
-  }
-
-  cvm::increase_depth();
-
   cvm::log("Initializing atom group \""+key+"\".\n");
-
-  description = "atom group " + key;
 
   // whether or not to include messages in the log
   // colvarparse::Parse_Mode mode = parse_silent;
@@ -300,7 +268,7 @@ int cvm::atom_group::parse(std::string const &conf)
   {
     std::string numbers_conf = "";
     size_t pos = 0;
-    while (key_lookup(group_conf, "atomNumbers", numbers_conf, pos)) {
+    while (key_lookup(group_conf, "atomNumbers", &numbers_conf, &pos)) {
       parse_error |= add_atom_numbers(numbers_conf);
       numbers_conf = "";
     }
@@ -318,7 +286,7 @@ int cvm::atom_group::parse(std::string const &conf)
     std::string range_conf = "";
     size_t pos = 0;
     while (key_lookup(group_conf, "atomNumbersRange",
-                      range_conf, pos)) {
+                      &range_conf, &pos)) {
       parse_error |= add_atom_numbers_range(range_conf);
       range_conf = "";
     }
@@ -340,7 +308,7 @@ int cvm::atom_group::parse(std::string const &conf)
     size_t range_count = 0;
     psii = psf_segids.begin();
     while (key_lookup(group_conf, "atomNameResidueRange",
-                      range_conf, pos)) {
+                      &range_conf, &pos)) {
       range_count++;
       if (psf_segids.size() && (range_count > psf_segids.size())) {
         cvm::error("Error: more instances of \"atomNameResidueRange\" than "
@@ -424,13 +392,6 @@ int cvm::atom_group::parse(std::string const &conf)
   bool b_print_atom_ids = false;
   get_keyval(group_conf, "printAtomIDs", b_print_atom_ids, false, colvarparse::parse_silent);
 
-  // TODO move this to colvarparse object
-  check_keywords(group_conf, key.c_str());
-  if (cvm::get_error()) {
-    cvm::error("Error setting up atom group \""+key+"\".");
-    return COLVARS_ERROR;
-  }
-
   // Calculate all required properties (such as total mass)
   setup();
 
@@ -446,8 +407,6 @@ int cvm::atom_group::parse(std::string const &conf)
     cvm::log("Internal definition of the atom group:\n");
     cvm::log(print_atom_ids());
   }
-
-  cvm::decrease_depth();
 
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
 }
@@ -636,24 +595,31 @@ int cvm::atom_group::parse_fitting_options(std::string const &group_conf)
                  "cannot be defined for a dummy atom.\n");
 
     bool b_ref_pos_group = false;
-    if (key_lookup(group_conf, "refPositionsGroup")) {
+    std::string fitting_group_conf;
+    if (key_lookup(group_conf, "refPositionsGroup", &fitting_group_conf)) {
       b_ref_pos_group = true;
       cvm::log("Warning: keyword \"refPositionsGroup\" is deprecated: please use \"fittingGroup\" instead.\n");
     }
 
-    if (b_ref_pos_group || key_lookup(group_conf, "fittingGroup")) {
+    if (b_ref_pos_group || key_lookup(group_conf, "fittingGroup", &fitting_group_conf)) {
       // instead of this group, define another group to compute the fit
       if (fitting_group) {
         cvm::error("Error: the atom group \""+
                    key+"\" has already a reference group "
                    "for the rototranslational fit, which was communicated by the "
                    "colvar component.  You should not use fittingGroup "
-                   "in this case.\n");
+                   "in this case.\n", INPUT_ERROR);
+        return INPUT_ERROR;
       }
       cvm::log("Within atom group \""+key+"\":\n");
-      fitting_group = b_ref_pos_group ?
-        new atom_group(group_conf, "refPositionsGroup") :
-        new atom_group(group_conf, "fittingGroup");
+      fitting_group = new atom_group("fittingGroup");
+      if (fitting_group->parse(fitting_group_conf) == COLVARS_OK) {
+        fitting_group->check_keywords(fitting_group_conf, "fittingGroup");
+        if (cvm::get_error()) {
+          cvm::error("Error setting up atom group \"fittingGroup\".", INPUT_ERROR);
+          return INPUT_ERROR;
+        }
+      }
 
       // regardless of the configuration, fit gradients must be calculated by fittingGroup
       fitting_group->b_fit_gradients = this->b_fit_gradients;

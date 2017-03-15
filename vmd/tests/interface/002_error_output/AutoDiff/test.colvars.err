@@ -4,7 +4,6 @@ Error parsing configuration string
 
 Command "cv" returned the following errors:
 Error: atom group "group1" is set, but has no definition.
-Error parsing definition for atom group "group1".
 Error: definition for atom group "group2" not found.
 Error: in setting up component "distance".
 Error: no valid components were provided for this collective variable.

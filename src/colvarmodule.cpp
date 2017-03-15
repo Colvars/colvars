@@ -288,7 +288,7 @@ int colvarmodule::parse_colvars(std::string const &conf)
 
   std::string colvar_conf = "";
   size_t pos = 0;
-  while (parse->key_lookup(conf, "colvar", colvar_conf, pos)) {
+  while (parse->key_lookup(conf, "colvar", &colvar_conf, &pos)) {
 
     if (colvar_conf.size()) {
       cvm::log(cvm::line_marker);
@@ -343,7 +343,7 @@ int colvarmodule::parse_biases_type(std::string const &conf,
 {
   std::string bias_conf = "";
   size_t conf_saved_pos = 0;
-  while (parse->key_lookup(conf, keyword, bias_conf, conf_saved_pos)) {
+  while (parse->key_lookup(conf, keyword, &bias_conf, &conf_saved_pos)) {
     if (bias_conf.size()) {
       cvm::log(cvm::line_marker);
       cvm::increase_depth();

@@ -1414,7 +1414,7 @@ std::istream & colvarbias_meta::read_hill(std::istream &is)
     // it is safer to read colvarvalue objects one at a time;
     // TODO: change this it later
     std::string centers_input;
-    key_lookup(data, "centers", centers_input);
+    key_lookup(data, "centers", &centers_input);
     std::istringstream centers_is(centers_input);
     for (size_t i = 0; i < num_variables(); i++) {
       centers_is >> h_centers[i];

@@ -275,7 +275,7 @@ public:
 
 
   /// Accepted white space delimiters, used in key_lookup()
-  static std::string const white_space;
+  static const char * const white_space;
 
   /// \brief Low-level function for parsing configuration strings;
   /// automatically adds the requested keyword to the list of valid
@@ -286,13 +286,8 @@ public:
   /// within "conf", useful when doing multiple calls
   bool key_lookup(std::string const &conf,
                   char const *key,
-                  std::string &data = dummy_string,
-                  size_t &save_pos = dummy_pos);
-
-  /// Used as a default argument by key_lookup
-  static std::string dummy_string;
-  /// Used as a default argument by key_lookup
-  static size_t dummy_pos;
+                  std::string *data = NULL,
+                  size_t *save_pos = NULL);
 
   /// \brief Works as std::getline() but also removes everything
   /// between a comment character and the following newline
