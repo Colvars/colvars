@@ -101,10 +101,25 @@ condcopy() {
   then
     a=$2
     b=$1
+    PATCH_OPT="-R"
   else
     a=$1
     b=$2
+    PATCH_OPT=""
   fi
+
+  TMPFILE=`mktemp`
+
+  # if a patch file is available, apply it to the source file
+  # (reversed if necessary)
+  if [ "x$3" != "x" ] ; then
+    if [ -f "$3" ] ; then
+      patch $PATCH_OPT < $3 $a -o $TMPFILE > /dev/null
+      # Patched file is new source
+      a=$TMPFILE
+    fi
+  fi
+
   if [ -d $(dirname "$b") ]
   then
     if [ $checkonly -eq 1 ]
@@ -116,12 +131,7 @@ condcopy() {
     fi
   fi
 
-  # if a patch file is available, apply it
-  if [ "x$3" != "x" ] ; then
-    if [ -f "$3" ] ; then
-      patch < $3 $2 > /dev/null
-    fi
-  fi
+  rm -f $TMPFILE
 }
 
 # check files related to, but not part of the colvars module
