@@ -328,6 +328,9 @@ void colvardeps::init_cv_requires() {
 
     init_feature(f_cv_subtract_applied_force, "subtract applied force from total force", f_type_user);
     f_req_self(f_cv_subtract_applied_force, f_cv_total_force);
+    // There is no well-defined way to implement f_cv_subtract_applied_force
+    // in the case of extended-Lagrangian colvars
+    f_req_exclude(f_cv_subtract_applied_force, f_cv_extended_Lagrangian);
 
     init_feature(f_cv_lower_boundary, "lower boundary", f_type_user);
     f_req_self(f_cv_lower_boundary, f_cv_scalar);
