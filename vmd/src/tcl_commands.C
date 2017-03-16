@@ -286,8 +286,8 @@ int Vmd_Init(Tcl_Interp *interp) {
 #endif
 
 #if defined(VMDCOLVARS)
-  Tcl_CreateCommand (interp, "colvars", tcl_colvars, (ClientData) app, (Tcl_CmdDeleteProc*) NULL);
-  Tcl_CreateCommand (interp, "cv", tcl_colvars, (ClientData) app, (Tcl_CmdDeleteProc*) NULL);
+  Tcl_CreateObjCommand(interp, "colvars", tcl_colvars, (ClientData) app, (Tcl_CmdDeleteProc*) NULL);
+  Tcl_CreateObjCommand(interp, "cv", tcl_colvars, (ClientData) app, (Tcl_CmdDeleteProc*) NULL);
   Tcl_PkgProvide(interp, "colvars", COLVARS_VERSION);
 #endif
 
