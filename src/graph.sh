@@ -1,6 +1,7 @@
 #!/bin/sh
 
-echo 'digraph d {\n  rankdir = "LR";' > deps.gv
+echo 'digraph d {
+rankdir = "LR";' > deps.gv
 
 # create nodes and edges
 sed -f deps.sed < colvardeps.cpp >> deps.gv
