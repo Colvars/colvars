@@ -9,6 +9,11 @@
 if git status --porcelain | grep -q '^M \+src/'
 then
   datestr=$(date +'%Y-%m-%d')
+  branch=`git rev-parse --abbrev-ref HEAD`
+  if test "${branch}" != "master"
+  then
+    datestr="${datestr}_${branch}"
+  fi
   prevstr=$(sed -n -e 's/^#define COLVARS_VERSION "\(.*\)".*/\1/p' src/colvarmodule.h)
   if test "${prevstr}" = "${datestr}"
   then
@@ -29,6 +34,11 @@ fi
 if git status --porcelain | grep -q '^M \+lammps/src/'
 then
   datestr=$(date +'%Y-%m-%d')
+  branch=`git rev-parse --abbrev-ref HEAD`
+  if test "${branch}" != "master"
+  then
+    datestr="${datestr}_${branch}"
+  fi
   prevstr=$(sed -n -e 's/^#define COLVARPROXY_VERSION "\(.*\)".*/\1/p' \
             lammps/src/USER-COLVARS/colvarproxy_lammps.h)
   if test "${prevstr}" = "${datestr}"
@@ -45,6 +55,11 @@ fi
 if git status --porcelain | grep -q '^M \+namd/src/'
 then
   datestr=$(date +'%Y-%m-%d')
+  branch=`git rev-parse --abbrev-ref HEAD`
+  if test "${branch}" != "master"
+  then
+    datestr="${datestr}_${branch}"
+  fi
   prevstr=$(sed -n -e 's/^#define COLVARPROXY_VERSION "\(.*\)".*/\1/p' \
             namd/src/colvarproxy_namd.h)
   if test "${prevstr}" = "${datestr}"
@@ -61,6 +76,11 @@ fi
 if git status --porcelain | grep -q '^M \+vmd/src/'
 then
   datestr=$(date +'%Y-%m-%d')
+  branch=`git rev-parse --abbrev-ref HEAD`
+  if test "${branch}" != "master"
+  then
+    datestr="${datestr}_${branch}"
+  fi
   prevstr=$(sed -n -e 's/^#define COLVARPROXY_VERSION "\(.*\)".*/\1/p' \
             vmd/src/colvarproxy_vmd.h)
   if test "${prevstr}" = "${datestr}"
