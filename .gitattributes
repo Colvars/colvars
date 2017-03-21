@@ -1,0 +1,4 @@
+src/colvars_version.h merge=ours
+lammps/src/USER-COLVARS/colvarproxy_lammps_version.h merge=ours
+namd/src/colvarproxy_namd_version.h merge=ours
+vmd/src/colvarproxy_vmd_version.h merge=ours
