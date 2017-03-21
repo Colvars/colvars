@@ -3,6 +3,8 @@
 #ifndef COLVARPROXY_VMD_H
 #define COLVARPROXY_VMD_H
 
+#include "colvarproxy_vmd_version.h"
+
 #include <tcl.h>
 
 #include "DrawMolecule.h"
@@ -13,10 +15,6 @@
 #include "colvarproxy.h"
 #include "colvartypes.h"
 #include "colvaratoms.h"
-
-#ifndef COLVARPROXY_VERSION
-#define COLVARPROXY_VERSION "2017-03-15"
-#endif
 
 
 int tcl_colvars(ClientData clientData, Tcl_Interp *interp,

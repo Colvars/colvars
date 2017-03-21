@@ -3,9 +3,7 @@
 #ifndef COLVARMODULE_H
 #define COLVARMODULE_H
 
-#ifndef COLVARS_VERSION
-#define COLVARS_VERSION "2017-03-20"
-#endif
+#include "colvars_version.h"
 
 #ifndef COLVARS_DEBUG
 #define COLVARS_DEBUG false

@@ -3,7 +3,7 @@
 # This hook will do some automatic checks and updates before a commit.
 
 ################################################################################
-# Task 1a: update the colvar module version string if a file in the src/
+# Task 1a: update the Colvars module version string if a file in the src/
 #          directory is about to be committed. Do not update it, if current.
 
 if git status --porcelain | grep -q '^M \+src/'
@@ -14,20 +14,20 @@ then
   then
     datestr="${datestr}_${branch}"
   fi
-  prevstr=$(sed -n -e 's/^#define COLVARS_VERSION "\(.*\)".*/\1/p' src/colvarmodule.h)
+  prevstr=$(sed -n -e 's/^#define COLVARS_VERSION "\(.*\)".*/\1/p' src/colvars_version.h)
   if test "${prevstr}" = "${datestr}"
   then
-    echo "Keeping colvars version string at: ${prevstr}"
+    echo "Keeping Colvars version string at: ${prevstr}"
   else
-    echo "Updating colvars version string from ${prevstr} to ${datestr}"
-    sed -i -e "s/^#define COLVARS_VERSION.*/#define COLVARS_VERSION \"${datestr}\"/" src/colvarmodule.h
+    echo "Updating Colvars version string from ${prevstr} to ${datestr}"
+    sed -i -e "s/^#define COLVARS_VERSION.*/#define COLVARS_VERSION \"${datestr}\"/" src/colvars_version.h
     echo -E "\newcommand{\cvversion}{${datestr}}" > doc/cv_version.tex
-    git add src/colvarmodule.h doc/cv_version.tex
+    git add src/colvars_version.h doc/cv_version.tex
   fi
 fi
 
 ################################################################################
-# Task 1b: update the respective colvar proxy version string if a file in the
+# Task 1b: update the respective colvarproxy version string if a file in the
 #          vmd/src, namd/src, or lammps/src directory is about to be committed.
 #          Do not update it, if current.
 
@@ -40,15 +40,15 @@ then
     datestr="${datestr}_${branch}"
   fi
   prevstr=$(sed -n -e 's/^#define COLVARPROXY_VERSION "\(.*\)".*/\1/p' \
-            lammps/src/USER-COLVARS/colvarproxy_lammps.h)
+            lammps/src/USER-COLVARS/colvarproxy_lammps_version.h)
   if test "${prevstr}" = "${datestr}"
   then
-    echo "Keeping LAMMPS colvars interface version string at: ${prevstr}"
+    echo "Keeping LAMMPS Colvars interface version string at: ${prevstr}"
   else
-    echo "Updating LAMMPS colvars interface version string from ${prevstr} to ${datestr}"
+    echo "Updating LAMMPS Colvars interface version string from ${prevstr} to ${datestr}"
     sed -i -e "s/^#define COLVARPROXY_VERSION.*/#define COLVARPROXY_VERSION \"${datestr}\"/" \
-       lammps/src/USER-COLVARS/colvarproxy_lammps.h
-    git add lammps/src/USER-COLVARS/colvarproxy_lammps.h
+       lammps/src/USER-COLVARS/colvarproxy_lammps_version.h
+    git add lammps/src/USER-COLVARS/colvarproxy_lammps_version.h
   fi
 fi
 
@@ -61,15 +61,15 @@ then
     datestr="${datestr}_${branch}"
   fi
   prevstr=$(sed -n -e 's/^#define COLVARPROXY_VERSION "\(.*\)".*/\1/p' \
-            namd/src/colvarproxy_namd.h)
+            namd/src/colvarproxy_namd_version.h)
   if test "${prevstr}" = "${datestr}"
   then
-    echo "Keeping NAMD colvars interface version string at: ${prevstr}"
+    echo "Keeping NAMD Colvars interface version string at: ${prevstr}"
   else
-    echo "Updating NAMD colvars interface version string from ${prevstr} to ${datestr}"
+    echo "Updating NAMD Colvars interface version string from ${prevstr} to ${datestr}"
     sed -i -e "s/^#define COLVARPROXY_VERSION.*/#define COLVARPROXY_VERSION \"${datestr}\"/" \
-       namd/src/colvarproxy_namd.h
-    git add namd/src/colvarproxy_namd.h
+       namd/src/colvarproxy_namd_version.h
+    git add namd/src/colvarproxy_namd_version.h
   fi
 fi
 
@@ -82,15 +82,15 @@ then
     datestr="${datestr}_${branch}"
   fi
   prevstr=$(sed -n -e 's/^#define COLVARPROXY_VERSION "\(.*\)".*/\1/p' \
-            vmd/src/colvarproxy_vmd.h)
+            vmd/src/colvarproxy_vmd_version.h)
   if test "${prevstr}" = "${datestr}"
   then
-    echo "Keeping VMD colvars interface version string at: ${prevstr}"
+    echo "Keeping VMD Colvars interface version string at: ${prevstr}"
   else
-    echo "Updating VMD colvars interface version string from ${prevstr} to ${datestr}"
+    echo "Updating VMD Colvars interface version string from ${prevstr} to ${datestr}"
     sed -i -e "s/^#define COLVARPROXY_VERSION.*/#define COLVARPROXY_VERSION \"${datestr}\"/" \
-       vmd/src/colvarproxy_vmd.h
-    git add vmd/src/colvarproxy_vmd.h
+       vmd/src/colvarproxy_vmd_version.h
+    git add vmd/src/colvarproxy_vmd_version.h
   fi
 fi
 

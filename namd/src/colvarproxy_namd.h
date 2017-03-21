@@ -3,6 +3,8 @@
 #ifndef COLVARPROXY_NAMD_H
 #define COLVARPROXY_NAMD_H
 
+#include "colvarproxy_namd_version.h"
+
 #include "Vector.h"
 #include "ResizeArray.h"
 #include "NamdTypes.h"
@@ -14,10 +16,6 @@
 #include "colvarmodule.h"
 #include "colvarproxy.h"
 #include "colvarvalue.h"
-
-#ifndef COLVARPROXY_VERSION
-#define COLVARPROXY_VERSION "2017-03-13"
-#endif
 
 // For replica exchange
 #include "converse.h"

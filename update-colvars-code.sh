@@ -187,6 +187,7 @@ then
     # versions before 2016-04-22, using old pseudo random number generators
     for src in ${source}/lammps/src/USER-COLVARS/colvarproxy_lammps.cpp \
                ${source}/lammps/src/USER-COLVARS/colvarproxy_lammps.h \
+               ${source}/lammps/src/USER-COLVARS/colvarproxy_lammps_version.h \
                ${source}/lammps/src/USER-COLVARS/fix_colvars.cpp \
                ${source}/lammps/src/USER-COLVARS/fix_colvars.h
     do \
@@ -248,7 +249,10 @@ then
   done
 
   # update NAMD interface files
-  for src in ${source}/namd/src/colvarproxy_namd.h ${source}/namd/src/colvarproxy_namd.C
+  for src in \
+      ${source}/namd/src/colvarproxy_namd.h \
+      ${source}/namd/src/colvarproxy_namd_version.h \
+      ${source}/namd/src/colvarproxy_namd.C
   do \
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/src/${tgt}" "${cpp_patch}"
@@ -310,7 +314,10 @@ then
   condcopy "${source}/doc/colvars_diagram.eps" "${target}/doc/pictures/colvars_diagram.eps"
 
   # update VMD interface files
-  for src in ${source}/vmd/src/colvarproxy_vmd.h ${source}/vmd/src/colvarproxy_vmd.C  
+  for src in \
+      ${source}/vmd/src/colvarproxy_vmd.h \
+      ${source}/vmd/src/colvarproxy_vmd_version.h \
+      ${source}/vmd/src/colvarproxy_vmd.C  
   do \
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/src/${tgt}" "${cpp_patch}"
@@ -337,6 +344,10 @@ fi
 # update GROMACS tree
 if [ ${code} = GROMACS ]
 then
+
+  echo "Error: the GROMACS implementation of Colvars is not under active development."
+  exit 1
+
   # Copy the colvars source code into gromacs/pulling
   for src in colvaratoms.cpp colvarbias_abf.cpp colvarbias_alb.cpp colvarbias.cpp colvarbias_meta.cpp colvarbias_restraint.cpp colvarcomp_angles.cpp colvarcomp_coordnums.cpp colvarcomp.cpp colvarcomp_distances.cpp colvarcomp_protein.cpp colvarcomp_rotations.cpp colvar.cpp colvargrid.cpp colvarmodule.cpp colvarparse.cpp colvarscript.cpp colvartypes.cpp colvarvalue.cpp colvaratoms.h colvarbias_abf.h colvarbias_alb.h colvarbias.h colvarbias_meta.h colvarbias_restraint.h colvarcomp.h colvargrid.h colvar.h colvarmodule.h colvarparse.h colvarproxy.h colvarscript.h colvartypes.h colvarvalue.h
   do \
