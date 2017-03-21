@@ -7,8 +7,8 @@
 /*****************************************************************************
  * $Source: /namd/cvsroot/namd2/src/SimParameters.C,v $
  * $Author: jim $
- * $Date: 2017/02/03 21:39:23 $
- * $Revision: 1.1476 $
+ * $Date: 2017/03/20 19:52:17 $
+ * $Revision: 1.1477 $
  *****************************************************************************/
 
 /** \file SimParameters.C
@@ -249,8 +249,8 @@ void SimParameters::scriptSet(const char *param, const char *value) {
   SCRIPT_PARSE_FLOAT("accelMDalpha",accelMDalpha)
   SCRIPT_PARSE_FLOAT("accelMDTE",accelMDTE)
   SCRIPT_PARSE_FLOAT("accelMDTalpha",accelMDTalpha)
-  SCRIPT_PARSE_FLOAT("accelMDGSigma0P",accelMDGSigma0P) 
-  SCRIPT_PARSE_FLOAT("accelMDGSigma0D",accelMDGSigma0D) 
+  SCRIPT_PARSE_FLOAT("accelMDGSigma0P",accelMDGSigma0P)
+  SCRIPT_PARSE_FLOAT("accelMDGSigma0D",accelMDGSigma0D)
   SCRIPT_PARSE_STRING("accelMDGRestartFile",accelMDGRestartFile)
   SCRIPT_PARSE_VECTOR("stirAxis",stirAxis)
   SCRIPT_PARSE_VECTOR("stirPivot",stirPivot)
@@ -1408,7 +1408,7 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
    opts.range("accelMDGSigma0D", NOT_NEGATIVE);
    opts.optionalB("accelMDG", "accelMDGRestart", "Flag to set use restart file in Gaussian accelMD", &accelMDGRestart, FALSE);
    opts.require("accelMDGRestart", "accelMDGRestartFile", "Restart file name for Gaussian accelMD", accelMDGRestartFile);
-   opts.optionalB("accelMDG", "accelMDGresetVaftercmd", "Flag to reset potential after accelMDGcMDSteps steps", 
+   opts.optionalB("accelMDG", "accelMDGresetVaftercmd", "Flag to reset potential after accelMDGcMDSteps steps",
 	   &accelMDGresetVaftercmd, FALSE);
 
    // Adaptive Temperature Sampling (adaptTemp) parameters
@@ -2156,9 +2156,10 @@ void SimParameters::config_parser_misc(ParseOptions &opts) {
    opts.range("IMDfreq",POSITIVE);
    opts.optionalB("IMDon","IMDwait","Pause until IMD connection?",&IMDwait,
      FALSE);
-   opts.optionalB("IMDon","IMDignore","Ignore forces, etc.?",&IMDignore,
+   opts.optionalB("IMDon","IMDignore","Ignore any user input?",&IMDignore,
      FALSE);
-
+   opts.optionalB("IMDon","IMDignoreForces","Ignore forces ONLY?",&IMDignoreForces,
+     FALSE);
    // Maximum Partition options
    opts.optional("ldBalancer", "maxSelfPart",
      "maximum number of self partitions in one patch", &maxSelfPart, 20);
@@ -5194,7 +5195,7 @@ if ( openatomOn )
    // Global forces configuration
 
    globalForcesOn = ( tclForcesOn || freeEnergyOn || miscForcesOn ||
-                      (IMDon && ! IMDignore) || SMDOn || TMDOn ||
+                      (IMDon && ! (IMDignore || IMDignoreForces)) || SMDOn || TMDOn ||
                       colvarsOn || symmetryOn || qmForcesOn );
 
 
@@ -5288,6 +5289,11 @@ if ( openatomOn )
      if (IMDignore) {
         iout << iINFO << "INTERACTIVE MD WILL NOT INFLUENCE SIMULATION\n";
      } else {
+       if (IMDignoreForces)
+         {
+            iout << iINFO << "INTERACTIVE FORCES ARE DISABLED\n";
+            iout << iINFO << "PAUSE, RESUME, DETACH AND FINISH INTERACTIVE MD ARE ENABLED\n";
+         }
        if (IMDwait) iout << iINFO << "WILL AWAIT INTERACTIVE MD CONNECTION\n";
      }
      iout << endi;
