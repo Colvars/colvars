@@ -274,47 +274,47 @@ obj/msm.o: \
 	src/msm_defn.h \
 	src/msm.h \
 	src/wkfutils.h
-	$(CXX) $(CXXFLAGS) $(COPTO)obj/msm.o $(COPTC) src/msm.c
+	$(CC) $(CXXFLAGS) $(COPTO)obj/msm.o $(COPTC) src/msm.c
 obj/msm_longrng.o: \
 	obj/.exists \
 	src/msm_longrng.c \
 	src/msm_defn.h \
 	src/msm.h \
 	src/wkfutils.h
-	$(CXX) $(CXXFLAGS) $(COPTO)obj/msm_longrng.o $(COPTC) src/msm_longrng.c
+	$(CC) $(CXXFLAGS) $(COPTO)obj/msm_longrng.o $(COPTC) src/msm_longrng.c
 obj/msm_longrng_sprec.o: \
 	obj/.exists \
 	src/msm_longrng_sprec.c \
 	src/msm_defn.h \
 	src/msm.h \
 	src/wkfutils.h
-	$(CXX) $(CXXFLAGS) $(COPTO)obj/msm_longrng_sprec.o $(COPTC) src/msm_longrng_sprec.c
+	$(CC) $(CXXFLAGS) $(COPTO)obj/msm_longrng_sprec.o $(COPTC) src/msm_longrng_sprec.c
 obj/msm_setup.o: \
 	obj/.exists \
 	src/msm_setup.c \
 	src/msm_defn.h \
 	src/msm.h \
 	src/wkfutils.h
-	$(CXX) $(CXXFLAGS) $(COPTO)obj/msm_setup.o $(COPTC) src/msm_setup.c
+	$(CC) $(CXXFLAGS) $(COPTO)obj/msm_setup.o $(COPTC) src/msm_setup.c
 obj/msm_shortrng.o: \
 	obj/.exists \
 	src/msm_shortrng.c \
 	src/msm_defn.h \
 	src/msm.h \
 	src/wkfutils.h
-	$(CXX) $(CXXFLAGS) $(COPTO)obj/msm_shortrng.o $(COPTC) src/msm_shortrng.c
+	$(CC) $(CXXFLAGS) $(COPTO)obj/msm_shortrng.o $(COPTC) src/msm_shortrng.c
 obj/msm_shortrng_sprec.o: \
 	obj/.exists \
 	src/msm_shortrng_sprec.c \
 	src/msm_defn.h \
 	src/msm.h \
 	src/wkfutils.h
-	$(CXX) $(CXXFLAGS) $(COPTO)obj/msm_shortrng_sprec.o $(COPTC) src/msm_shortrng_sprec.c
+	$(CC) $(CXXFLAGS) $(COPTO)obj/msm_shortrng_sprec.o $(COPTC) src/msm_shortrng_sprec.c
 obj/wkfutils.o: \
 	obj/.exists \
 	src/wkfutils.c \
 	src/wkfutils.h
-	$(CXX) $(CXXFLAGS) $(COPTO)obj/wkfutils.o $(COPTC) src/wkfutils.c
+	$(CC) $(CXXFLAGS) $(COPTO)obj/wkfutils.o $(COPTC) src/wkfutils.c
 obj/common.o: \
 	obj/.exists \
 	src/common.C \

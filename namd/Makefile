@@ -694,13 +694,15 @@ depends: $(MKINCDIR) $(CIFILES) $(MKDSTDIR) $(DEPENDFILE)
 	touch $(DEPENDFILE); \
 	for i in $(OBJS) ; do \
 	      SRCFILE=$(SRCDIR)/`basename $$i .o`.C ; \
+	      COMPILER='$$(CXX)' ; \
 	      if [ ! -f $$SRCFILE ]; then \
 	            SRCFILE=$(SRCDIR)/`basename $$i .o`.c ; \
+	            COMPILER='$$(CC)' ; \
               fi; \
 	      $(ECHO) "checking dependencies for $$SRCFILE" ; \
 	      g++ -MM $(GXXFLAGS) $$SRCFILE | \
 	      perl $(SRCDIR)/dc.pl $(CHARMINC) $(TCLDIR) $(FFTDIR) /usr/include /usr/local $(CUDADIR) >> $(DEPENDFILE); \
-	      $(ECHO) '	$$(CXX) $$(CXXFLAGS) $$(COPTO)'$$i '$$(COPTC)' \
+	      $(ECHO) '	'$$COMPILER '$$(CXXFLAGS) $$(COPTO)'$$i '$$(COPTC)' \
 		$$SRCFILE >> $(DEPENDFILE) ; \
 	done; \
 	for i in $(CUDAOBJSRAW) ; do \
