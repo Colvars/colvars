@@ -6125,6 +6125,14 @@ obj/Node.o: \
 	inc/ComputePmeMgr.decl.h \
 	inc/ComputeCUDAMgr.decl.h \
 	inc/ComputePmeCUDAMgr.decl.h \
+	src/ComputePmeCUDAMgr.h \
+	src/PmeBase.h \
+	src/MathArray.h \
+	src/Array.h \
+	src/PmeSolver.h \
+	src/ReductionMgr.h \
+	src/PmeSolverUtil.h \
+	inc/PmeSolver.decl.h \
 	inc/ComputeGridForceMgr.decl.h \
 	inc/OptPmeMgr.decl.h \
 	src/Sync.h \
