@@ -532,14 +532,14 @@ cvm::real colvar::distance_dir::dist2(colvarvalue const &x1,
 colvarvalue colvar::distance_dir::dist2_lgrad(colvarvalue const &x1,
                                               colvarvalue const &x2) const
 {
-  return colvarvalue((x1.rvector_value - x2.rvector_value), colvarvalue::type_unit3vector);
+  return colvarvalue((x1.rvector_value - x2.rvector_value), colvarvalue::type_unit3vectorderiv);
 }
 
 
 colvarvalue colvar::distance_dir::dist2_rgrad(colvarvalue const &x1,
                                               colvarvalue const &x2) const
 {
-  return colvarvalue((x2.rvector_value - x1.rvector_value), colvarvalue::type_unit3vector);
+  return colvarvalue((x2.rvector_value - x1.rvector_value), colvarvalue::type_unit3vectorderiv);
 }
 
 
