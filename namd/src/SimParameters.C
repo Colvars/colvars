@@ -7,8 +7,8 @@
 /*****************************************************************************
  * $Source: /namd/cvsroot/namd2/src/SimParameters.C,v $
  * $Author: jim $
- * $Date: 2017/03/20 19:52:17 $
- * $Revision: 1.1477 $
+ * $Date: 2017/03/30 20:06:17 $
+ * $Revision: 1.1478 $
  *****************************************************************************/
 
 /** \file SimParameters.C
@@ -2195,6 +2195,9 @@ void SimParameters::config_parser_misc(ParseOptions &opts) {
      "maximum number of exclusion flags per atom", &maxExclusionFlags, 256);
    opts.range("maxExclusionFlags",POSITIVE);
 
+   // Bonded interactions on GPU
+   opts.optional("main", "bondedCUDA", "Bitmask for calculating bonded interactions on GPU", &bondedCUDA, 255);
+
    // MIC specific parameters
    opts.optional("main", "mic_unloadMICPEs", "Indicates whether or not the load balancer should unload PEs driving Xeon Phi cards", &mic_unloadMICPEs, 1);
    opts.optional("main", "mic_singleKernel", "Set to non-zero to have all MIC work to be placed in a single kernel", &mic_singleKernel, 1);
@@ -3764,21 +3767,21 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
        usePMECUDA = 0;
        iout << iWARN << "Disabling usePMECUDA because multiple CUDA devices per process requires useCUDA2.\n" << endi;
      }
-     if ( cellBasisVector1.y != 0 ||
-          cellBasisVector1.z != 0 ||
-          cellBasisVector2.x != 0 ||
-          cellBasisVector2.z != 0 ||
-          cellBasisVector3.x != 0 ||
-          cellBasisVector3.y != 0    ) {
-       if ( useCUDA2 ) {
-         useCUDA2 = 0;
-         iout << iWARN << "Disabling useCUDA2 because of non-orthorhombic periodic cell.\n" << endi;
-       }
-       if ( usePMECUDA ) {
-         usePMECUDA = 0;
-         iout << iWARN << "Disabling usePMECUDA because of non-orthorhombic periodic cell.\n" << endi;
-       }
-     }
+     // if ( cellBasisVector1.y != 0 ||
+     //      cellBasisVector1.z != 0 ||
+     //      cellBasisVector2.x != 0 ||
+     //      cellBasisVector2.z != 0 ||
+     //      cellBasisVector3.x != 0 ||
+     //      cellBasisVector3.y != 0    ) {
+     //   if ( useCUDA2 ) {
+     //     useCUDA2 = 0;
+     //     iout << iWARN << "Disabling useCUDA2 because of non-orthorhombic periodic cell.\n" << endi;
+     //   }
+     //   if ( usePMECUDA ) {
+     //     usePMECUDA = 0;
+     //     iout << iWARN << "Disabling usePMECUDA because of non-orthorhombic periodic cell.\n" << endi;
+     //   }
+     // }
 #else
      PMEOffload = 0;
 #endif

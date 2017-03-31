@@ -907,6 +907,9 @@ obj/ComputeAngles.o: \
 	src/PatchMap.inl \
 	src/AtomMap.h \
 	src/PatchMgr.h \
+	src/ProxyMgr.h \
+	src/UniqueSetIter.h \
+	inc/ProxyMgr.decl.h \
 	src/Molecule.h \
 	src/parm.h \
 	src/ConfigList.h \
@@ -917,7 +920,6 @@ obj/ComputeAngles.o: \
 	plugins/include/vmdplugin.h \
 	src/Parameters.h \
 	src/ReductionMgr.h \
-	src/UniqueSetIter.h \
 	src/Priorities.h \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
@@ -974,6 +976,9 @@ obj/ComputeAniso.o: \
 	src/PatchMap.inl \
 	src/AtomMap.h \
 	src/PatchMgr.h \
+	src/ProxyMgr.h \
+	src/UniqueSetIter.h \
+	inc/ProxyMgr.decl.h \
 	src/Molecule.h \
 	src/parm.h \
 	src/ConfigList.h \
@@ -984,7 +989,6 @@ obj/ComputeAniso.o: \
 	plugins/include/vmdplugin.h \
 	src/Parameters.h \
 	src/ReductionMgr.h \
-	src/UniqueSetIter.h \
 	src/Priorities.h \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
@@ -1050,8 +1054,10 @@ obj/ComputeBonds.o: \
 	src/PatchMap.inl \
 	src/AtomMap.h \
 	src/PatchMgr.h \
-	src/Parameters.h \
+	src/ProxyMgr.h \
 	src/UniqueSetIter.h \
+	inc/ProxyMgr.decl.h \
+	src/Parameters.h \
 	src/Priorities.h \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
@@ -1064,6 +1070,94 @@ obj/ComputeBonds.o: \
 	src/PressureProfile.h \
 	src/Debug.h
 	$(CXX) $(CXXFLAGS) $(COPTO)obj/ComputeBonds.o $(COPTC) src/ComputeBonds.C
+obj/ComputeBondedCUDA.o: \
+	obj/.exists \
+	src/ComputeBondedCUDA.C \
+	src/NamdTypes.h \
+	src/common.h \
+	src/Vector.h \
+	src/ResizeArray.h \
+	src/ResizeArrayRaw.h \
+	src/ComputeMgr.h \
+	src/main.h \
+	src/BOCgroup.h \
+	src/GlobalMaster.h \
+	src/GlobalMasterServer.h \
+	src/Lattice.h \
+	src/Tensor.h \
+	inc/ComputeMgr.decl.h \
+	src/WorkDistrib.h \
+	src/ComputeMap.h \
+	src/ProcessorPrivate.h \
+	inc/WorkDistrib.decl.h \
+	src/ProxyMgr.h \
+	src/PatchTypes.h \
+	src/UniqueSet.h \
+	src/UniqueSetRaw.h \
+	src/UniqueSetIter.h \
+	src/InfoStream.h \
+	inc/ProxyMgr.decl.h \
+	src/CudaUtils.h \
+	src/ComputeBonds.h \
+	src/Molecule.h \
+	src/parm.h \
+	src/structures.h \
+	src/ConfigList.h \
+	src/Hydrogen.h \
+	src/SortableResizeArray.h \
+	src/GromacsTopFile.h \
+	src/GridForceGrid.h \
+	src/SimParameters.h \
+	src/MGridforceParams.h \
+	src/strlib.h \
+	src/MStream.h \
+	plugins/include/molfile_plugin.h \
+	plugins/include/vmdplugin.h \
+	src/ReductionMgr.h \
+	src/ComputeHomeTuples.h \
+	src/Compute.h \
+	src/HomePatch.h \
+	src/Patch.h \
+	src/OwnerBox.h \
+	src/Box.h \
+	src/UniqueSortedArray.h \
+	src/SortedArray.h \
+	src/PatchMap.h \
+	src/HomePatchList.h \
+	src/ResizeArrayIter.h \
+	src/MigrateAtomsMsg.h \
+	src/Migration.h \
+	inc/PatchMgr.decl.h \
+	src/Settle.h \
+	src/Node.h \
+	inc/Node.decl.h \
+	src/PatchMap.inl \
+	src/AtomMap.h \
+	src/PatchMgr.h \
+	src/Parameters.h \
+	src/Priorities.h \
+	src/LdbCoordinator.h \
+	inc/LdbCoordinator.decl.h \
+	inc/NamdCentLB.decl.h \
+	inc/NamdNborLB.decl.h \
+	inc/NamdHybridLB.decl.h \
+	inc/NamdDummyLB.decl.h \
+	src/ComputeSelfTuples.h \
+	src/ComputeBonds.inl \
+	src/ComputeAngles.h \
+	src/ComputeAngles.inl \
+	src/ComputeDihedrals.h \
+	src/ComputeDihedrals.inl \
+	src/ComputeImpropers.h \
+	src/ComputeCrossterms.h \
+	src/ComputeNonbondedCUDAExcl.h \
+	src/ComputeNonbondedUtil.h \
+	src/ComputeNonbondedCUDAExcl.inl \
+	src/ComputeBondedCUDA.h \
+	src/CudaNonbondedTables.h \
+	src/ComputeBondedCUDAKernel.h \
+	src/TupleTypesCUDA.h
+	$(CXX) $(CXXFLAGS) $(COPTO)obj/ComputeBondedCUDA.o $(COPTC) src/ComputeBondedCUDA.C
 obj/ComputeConsForce.o: \
 	obj/.exists \
 	src/ComputeConsForce.C \
@@ -1171,6 +1265,9 @@ obj/ComputeCrossterms.o: \
 	src/PatchMap.inl \
 	src/AtomMap.h \
 	src/PatchMgr.h \
+	src/ProxyMgr.h \
+	src/UniqueSetIter.h \
+	inc/ProxyMgr.decl.h \
 	src/Molecule.h \
 	src/parm.h \
 	src/ConfigList.h \
@@ -1181,7 +1278,6 @@ obj/ComputeCrossterms.o: \
 	plugins/include/vmdplugin.h \
 	src/Parameters.h \
 	src/ReductionMgr.h \
-	src/UniqueSetIter.h \
 	src/Priorities.h \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
@@ -1209,6 +1305,7 @@ obj/ComputeCUDAMgr.o: \
 	src/ComputeCUDAMgr.h \
 	src/CudaUtils.h \
 	inc/ComputeCUDAMgr.decl.h \
+	src/CudaNonbondedTables.h \
 	src/CudaComputeNonbonded.h \
 	src/Compute.h \
 	src/Box.h \
@@ -1242,6 +1339,36 @@ obj/ComputeCUDAMgr.o: \
 	src/GlobalMaster.h \
 	src/GlobalMasterServer.h \
 	inc/ComputeMgr.decl.h \
+	src/ComputeBondedCUDA.h \
+	src/ComputeMap.h \
+	src/ComputeBondedCUDAKernel.h \
+	src/TupleTypesCUDA.h \
+	src/ComputeHomeTuples.h \
+	src/HomePatch.h \
+	src/Patch.h \
+	src/UniqueSortedArray.h \
+	src/SortedArray.h \
+	src/PatchMap.h \
+	src/HomePatchList.h \
+	src/ResizeArrayIter.h \
+	src/MigrateAtomsMsg.h \
+	src/Migration.h \
+	inc/PatchMgr.decl.h \
+	src/Settle.h \
+	src/PatchMap.inl \
+	src/AtomMap.h \
+	src/PatchMgr.h \
+	src/ProxyMgr.h \
+	src/UniqueSetIter.h \
+	inc/ProxyMgr.decl.h \
+	src/Parameters.h \
+	src/Priorities.h \
+	src/LdbCoordinator.h \
+	inc/LdbCoordinator.decl.h \
+	inc/NamdCentLB.decl.h \
+	inc/NamdNborLB.decl.h \
+	inc/NamdHybridLB.decl.h \
+	inc/NamdDummyLB.decl.h \
 	src/DeviceCUDA.h \
 	inc/ComputeCUDAMgr.def.h
 	$(CXX) $(CXXFLAGS) $(COPTO)obj/ComputeCUDAMgr.o $(COPTC) src/ComputeCUDAMgr.C
@@ -1321,6 +1448,9 @@ obj/ComputeDihedrals.o: \
 	src/PatchMap.inl \
 	src/AtomMap.h \
 	src/PatchMgr.h \
+	src/ProxyMgr.h \
+	src/UniqueSetIter.h \
+	inc/ProxyMgr.decl.h \
 	src/Molecule.h \
 	src/parm.h \
 	src/ConfigList.h \
@@ -1331,7 +1461,6 @@ obj/ComputeDihedrals.o: \
 	plugins/include/vmdplugin.h \
 	src/Parameters.h \
 	src/ReductionMgr.h \
-	src/UniqueSetIter.h \
 	src/Priorities.h \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
@@ -1868,8 +1997,10 @@ obj/ComputeGromacsPair.o: \
 	src/PatchMap.inl \
 	src/AtomMap.h \
 	src/PatchMgr.h \
-	src/Parameters.h \
+	src/ProxyMgr.h \
 	src/UniqueSetIter.h \
+	inc/ProxyMgr.decl.h \
+	src/Parameters.h \
 	src/Priorities.h \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
@@ -2138,6 +2269,9 @@ obj/ComputeImpropers.o: \
 	src/PatchMap.inl \
 	src/AtomMap.h \
 	src/PatchMgr.h \
+	src/ProxyMgr.h \
+	src/UniqueSetIter.h \
+	inc/ProxyMgr.decl.h \
 	src/Molecule.h \
 	src/parm.h \
 	src/ConfigList.h \
@@ -2148,7 +2282,6 @@ obj/ComputeImpropers.o: \
 	plugins/include/vmdplugin.h \
 	src/Parameters.h \
 	src/ReductionMgr.h \
-	src/UniqueSetIter.h \
 	src/Priorities.h \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
@@ -2426,10 +2559,14 @@ obj/ComputeMgr.o: \
 	src/ComputeCUDAMgr.h \
 	src/CudaUtils.h \
 	inc/ComputeCUDAMgr.decl.h \
+	src/CudaNonbondedTables.h \
 	src/CudaComputeNonbonded.h \
 	src/CudaTileListKernel.h \
 	src/CudaComputeNonbondedKernel.h \
 	src/CudaComputeGBISKernel.h \
+	src/ComputeBondedCUDA.h \
+	src/ComputeBondedCUDAKernel.h \
+	src/TupleTypesCUDA.h \
 	src/ComputePmeCUDAMgr.h \
 	src/PmeSolver.h \
 	src/PmeSolverUtil.h \
@@ -3088,8 +3225,10 @@ obj/ComputeNonbondedCUDAExcl.o: \
 	src/PatchMap.inl \
 	src/AtomMap.h \
 	src/PatchMgr.h \
-	src/Parameters.h \
+	src/ProxyMgr.h \
 	src/UniqueSetIter.h \
+	inc/ProxyMgr.decl.h \
+	src/Parameters.h \
 	src/Priorities.h \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
@@ -3781,6 +3920,9 @@ obj/ComputeThole.o: \
 	src/PatchMap.inl \
 	src/AtomMap.h \
 	src/PatchMgr.h \
+	src/ProxyMgr.h \
+	src/UniqueSetIter.h \
+	inc/ProxyMgr.decl.h \
 	src/Molecule.h \
 	src/parm.h \
 	src/ConfigList.h \
@@ -3791,7 +3933,6 @@ obj/ComputeThole.o: \
 	plugins/include/vmdplugin.h \
 	src/Parameters.h \
 	src/ReductionMgr.h \
-	src/UniqueSetIter.h \
 	src/Priorities.h \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
@@ -3947,6 +4088,7 @@ obj/CudaComputeNonbonded.o: \
 	src/MStream.h \
 	plugins/include/molfile_plugin.h \
 	plugins/include/vmdplugin.h \
+	src/CudaNonbondedTables.h \
 	src/CudaTileListKernel.h \
 	src/CudaComputeNonbondedKernel.h \
 	src/CudaComputeGBISKernel.h \
@@ -3975,6 +4117,42 @@ obj/CudaComputeNonbonded.o: \
 	inc/PmeSolver.decl.h \
 	src/DeviceCUDA.h
 	$(CXX) $(CXXFLAGS) $(COPTO)obj/CudaComputeNonbonded.o $(COPTC) src/CudaComputeNonbonded.C
+obj/CudaNonbondedTables.o: \
+	obj/.exists \
+	src/CudaNonbondedTables.C \
+	src/NamdTypes.h \
+	src/common.h \
+	src/Vector.h \
+	src/ResizeArray.h \
+	src/ResizeArrayRaw.h \
+	src/ComputeNonbondedUtil.h \
+	src/ReductionMgr.h \
+	src/main.h \
+	src/BOCgroup.h \
+	src/ProcessorPrivate.h \
+	src/Molecule.h \
+	src/parm.h \
+	src/structures.h \
+	src/ConfigList.h \
+	src/UniqueSet.h \
+	src/UniqueSetRaw.h \
+	src/Hydrogen.h \
+	src/SortableResizeArray.h \
+	src/GromacsTopFile.h \
+	src/GridForceGrid.h \
+	src/Tensor.h \
+	src/SimParameters.h \
+	src/Lattice.h \
+	src/MGridforceParams.h \
+	src/strlib.h \
+	src/InfoStream.h \
+	src/MStream.h \
+	plugins/include/molfile_plugin.h \
+	plugins/include/vmdplugin.h \
+	src/LJTable.h \
+	src/CudaUtils.h \
+	src/CudaNonbondedTables.h
+	$(CXX) $(CXXFLAGS) $(COPTO)obj/CudaNonbondedTables.o $(COPTC) src/CudaNonbondedTables.C
 obj/CudaPmeSolver.o: \
 	obj/.exists \
 	src/CudaPmeSolver.C \
@@ -7448,6 +7626,15 @@ obj/ParallelIOMgr.o: \
 	src/Random.h \
 	inc/ParallelIOMgr.def.h
 	$(CXX) $(CXXFLAGS) $(COPTO)obj/ParallelIOMgr.o $(COPTC) src/ParallelIOMgr.C
+obj/ComputeBondedCUDAKernel.o: \
+	obj/.exists \
+	src/ComputeBondedCUDAKernel.cu \
+	src/ComputeBondedCUDAKernel.h \
+	src/CudaUtils.h \
+	src/TupleTypesCUDA.h \
+	src/CudaNonbondedTables.h \
+	src/DeviceCUDA.h
+	$(CUDACC) $(CUDACCOPTS) -Xptxas -v $(COPTO)obj/ComputeBondedCUDAKernel.o $(COPTC) `$(NATIVEPATH) src/`ComputeBondedCUDAKernel.cu
 obj/ComputeNonbondedCUDAKernel.o: \
 	obj/.exists \
 	src/ComputeNonbondedCUDAKernel.cu \
@@ -7477,6 +7664,7 @@ obj/CudaComputeNonbondedKernel.o: \
 	src/CudaComputeNonbondedKernel.h \
 	src/CudaUtils.h \
 	src/CudaTileListKernel.h \
+	src/CudaNonbondedTables.h \
 	src/DeviceCUDA.h
 	$(CUDACC) $(CUDACCOPTS) -Xptxas -v $(COPTO)obj/CudaComputeNonbondedKernel.o $(COPTC) `$(NATIVEPATH) src/`CudaComputeNonbondedKernel.cu
 obj/CudaPmeSolverUtilKernel.o: \
@@ -7492,11 +7680,6 @@ obj/CudaTileListKernel.o: \
 	src/CudaTileListKernel.h \
 	src/DeviceCUDA.h
 	$(CUDACC) $(CUDACCOPTS) -Xptxas -v $(COPTO)obj/CudaTileListKernel.o $(COPTC) `$(NATIVEPATH) src/`CudaTileListKernel.cu
-obj/DeviceCUDAkernel.o: \
-	obj/.exists \
-	src/DeviceCUDAkernel.cu \
-	src/CudaUtils.h
-	$(CUDACC) $(CUDACCOPTS) -Xptxas -v $(COPTO)obj/DeviceCUDAkernel.o $(COPTC) `$(NATIVEPATH) src/`DeviceCUDAkernel.cu
 obj/dcdplugin.o: \
 	obj/.exists \
 	plugins/molfile_plugin/src/dcdplugin.c \

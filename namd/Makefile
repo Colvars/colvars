@@ -66,7 +66,7 @@ MKINCDIR = $(INCDIR)/.exists
 # to compile version that uses node-aware proxy send/recv spanning tree,
 # add -DNODEAWARE_PROXY_SPANNINGTREE to the variable EXTRADEFINES
 #EXTRADEFINES=-DREMOVE_PROXYDATAMSG_EXTRACOPY -DREMOVE_PROXYRESULTMSG_EXTRACOPY
-EXTRADEFINES=-DREMOVE_PROXYRESULTMSG_EXTRACOPY -DNODEAWARE_PROXY_SPANNINGTREE -DUSE_NODEPATCHMGR
+EXTRADEFINES=-DREMOVE_PROXYRESULTMSG_EXTRACOPY -DNODEAWARE_PROXY_SPANNINGTREE -DUSE_NODEPATCHMGR -DBONDED_CUDA -DUSE_HOMETUPLES
 EXTRAINCS=
 EXTRALINKLIBS=
 # to compile namd using PAPI counters to measure flops and modify include and library path
@@ -136,6 +136,7 @@ OBJS = \
 	$(DSTDIR)/ComputeAngles.o \
 	$(DSTDIR)/ComputeAniso.o \
 	$(DSTDIR)/ComputeBonds.o \
+	$(DSTDIR)/ComputeBondedCUDA.o \
 	$(DSTDIR)/ComputeConsForce.o \
 	$(DSTDIR)/ComputeConsForceMsgs.o \
 	$(DSTDIR)/ComputeCrossterms.o \
@@ -191,6 +192,7 @@ OBJS = \
 	$(DSTDIR)/ConfigList.o \
 	$(DSTDIR)/Controller.o \
 	$(DSTDIR)/CudaComputeNonbonded.o \
+	$(DSTDIR)/CudaNonbondedTables.o \
 	$(DSTDIR)/CudaPmeSolver.o \
 	$(DSTDIR)/CudaPmeSolverUtil.o \
 	$(DSTDIR)/CudaUtils.o \
@@ -387,13 +389,13 @@ PLUGINOBJS = \
 PLUGINLIB = $(PLUGINOBJS)
 
 CUDAOBJSRAW = \
+	$(DSTDIR)/ComputeBondedCUDAKernel.o \
 	$(DSTDIR)/ComputeNonbondedCUDAKernel.o \
 	$(DSTDIR)/ComputePmeCUDAKernel.o \
 	$(DSTDIR)/CudaComputeGBISKernel.o \
 	$(DSTDIR)/CudaComputeNonbondedKernel.o \
 	$(DSTDIR)/CudaPmeSolverUtilKernel.o \
-	$(DSTDIR)/CudaTileListKernel.o \
-	$(DSTDIR)/DeviceCUDAkernel.o
+	$(DSTDIR)/CudaTileListKernel.o
 
 CUDAOBJSRAWSTATIC = $(CUDAOBJSRAW) \
 	$(DSTDIR)/CudaPmeSolverUtilKernel_dlink.o
@@ -450,7 +452,7 @@ SBCFLAGS = $(COPTI)$(SBSRCDIR) $(COPTI)$(PLUGININCDIR) $(COPTD)STATIC_PLUGIN -DP
 SBGCCFLAGS = $(COPTI)$(SBSRCDIR) $(COPTI)$(PLUGININCDIR) $(COPTD)STATIC_PLUGIN -DPSFGEN_USEPLUGINS $(TCL) $(RELEASE) $(EXTRADEFINES) $(TRACEOBJDEF)
 
 # .ci preprocessing flags
-CIPPFLAGS = $(CUDAFLAGS)
+CIPPFLAGS = $(CUDAFLAGS) -DBONDED_CUDA
 
 # Add new executables here.
 

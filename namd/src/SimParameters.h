@@ -7,8 +7,8 @@
 /*****************************************************************************
  * $Source: /namd/cvsroot/namd2/src/SimParameters.h,v $
  * $Author: jim $
- * $Date: 2017/03/20 19:52:17 $
- * $Revision: 1.1247 $
+ * $Date: 2017/03/30 20:06:17 $
+ * $Revision: 1.1248 $
  *****************************************************************************/
 
 #ifndef SIMPARAMETERS_H
@@ -734,6 +734,7 @@ public:
 	Bool useDPME;			//  Flag TRUE -> old DPME code
 	Bool usePMECUDA;                //  Flag TRUE -> use the PME CUDA version
 	Bool useCUDA2;                  //  Flag TRUE -> use ComputeNonbondedCUDA2
+  int bondedCUDA;                 //  Bitmask for calculating bonded interactions on GPU
 	Bool useOptPME;                 //  Flag TRUE -> use the scalable version of PME
 	Bool useManyToMany;             //  Flag TRUE -> use the manytomany optimization of PME.
 	                                //  This flag requres useOptPME to be set.
