@@ -504,6 +504,7 @@ template<typename def_class_name> int colvar::init_components_type(std::string c
     if ( (cvcp->period != 0.0) || (cvcp->wrap_center != 0.0) ) {
       if ( (cvcp->function_type != std::string("distance_z")) &&
            (cvcp->function_type != std::string("dihedral")) &&
+           (cvcp->function_type != std::string("polar_phi")) &&
            (cvcp->function_type != std::string("spin_angle")) ) {
         cvm::error("Error: invalid use of period and/or "
                    "wrapAround in a \""+
@@ -556,6 +557,10 @@ int colvar::init_components(std::string const &conf)
     "on an axis", "distanceZ");
   error_code |= init_components_type<distance_xy>(conf, "distance projection "
     "on a plane", "distanceXY");
+  error_code |= init_components_type<polar_theta>(conf, "spherical polar angle theta",
+    "polarTheta");
+  error_code |= init_components_type<polar_phi>(conf, "spherical azimuthal angle phi",
+    "polarPhi");
   error_code |= init_components_type<distance_inv>(conf, "average distance "
     "weighted by inverse power", "distanceInv");
   error_code |= init_components_type<distance_pairs>(conf, "N1xN2-long vector "

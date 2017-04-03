@@ -501,6 +501,8 @@ public:
   class distance;
   class distance_z;
   class distance_xy;
+  class polar_theta;
+  class polar_phi;
   class distance_inv;
   class distance_pairs;
   class angle;

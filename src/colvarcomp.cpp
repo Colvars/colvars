@@ -94,7 +94,9 @@ cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
     group->key = group_key;
 
     if (b_try_scalable) {
-      if (is_available(f_cvc_scalable_com) && is_enabled(f_cvc_com_based)) {
+      if (is_available(f_cvc_scalable_com)
+          && is_enabled(f_cvc_com_based)
+          && !is_enabled(f_cvc_debug_gradient)) {
         enable(f_cvc_scalable_com);
         enable(f_cvc_scalable);
         // The CVC makes the feature available;

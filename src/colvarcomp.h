@@ -420,6 +420,62 @@ public:
 };
 
 
+/// \brief Colvar component: polar coordinate phi of a group
+/// (colvarvalue::type_scalar type, range [-180:180])
+class colvar::polar_phi
+  : public colvar::cvc
+{
+public:
+  polar_phi(std::string const &conf);
+  polar_phi();
+  virtual ~polar_phi() {}
+protected:
+  cvm::atom_group  *atoms;
+  cvm::real r, theta, phi;
+public:
+  virtual void calc_value();
+  virtual void calc_gradients();
+  virtual void apply_force(colvarvalue const &force);
+  /// Redefined to handle the 2*PI periodicity
+  virtual cvm::real dist2(colvarvalue const &x1,
+                          colvarvalue const &x2) const;
+  /// Redefined to handle the 2*PI periodicity
+  virtual colvarvalue dist2_lgrad(colvarvalue const &x1,
+                                  colvarvalue const &x2) const;
+  /// Redefined to handle the 2*PI periodicity
+  virtual colvarvalue dist2_rgrad(colvarvalue const &x1,
+                                  colvarvalue const &x2) const;
+  /// Redefined to handle the 2*PI periodicity
+  virtual void wrap(colvarvalue &x) const;
+};
+
+
+/// \brief Colvar component: polar coordinate theta of a group
+/// (colvarvalue::type_scalar type, range [0:180])
+class colvar::polar_theta
+  : public colvar::cvc
+{
+public:
+  polar_theta(std::string const &conf);
+  polar_theta();
+  virtual ~polar_theta() {}
+protected:
+  cvm::atom_group  *atoms;
+  cvm::real r, theta, phi;
+public:
+  virtual void calc_value();
+  virtual void calc_gradients();
+  virtual void apply_force(colvarvalue const &force);
+  /// Redefined to override the distance ones
+  virtual cvm::real dist2(colvarvalue const &x1,
+                          colvarvalue const &x2) const;
+  /// Redefined to override the distance ones
+  virtual colvarvalue dist2_lgrad(colvarvalue const &x1,
+                                  colvarvalue const &x2) const;
+  /// Redefined to override the distance ones
+  virtual colvarvalue dist2_rgrad(colvarvalue const &x1,
+                                  colvarvalue const &x2) const;
+};
 
 /// \brief Colvar component: average distance between two groups of atoms, weighted as the sixth power,
 /// as in NMR refinements(colvarvalue::type_scalar type, range (0:*))

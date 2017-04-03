@@ -503,3 +503,148 @@ void colvar::dihedral::wrap(colvarvalue &x) const
 
   return;
 }
+
+
+colvar::polar_theta::polar_theta(std::string const &conf)
+  : cvc(conf)
+{
+  function_type = "polar_theta";
+  enable(f_cvc_com_based);
+
+  atoms = parse_group(conf, "atoms");
+  init_total_force_params(conf);
+  x.type(colvarvalue::type_scalar);
+}
+
+
+colvar::polar_theta::polar_theta()
+{
+  function_type = "polar_theta";
+  x.type(colvarvalue::type_scalar);
+}
+
+
+void colvar::polar_theta::calc_value()
+{
+  cvm::rvector pos = atoms->center_of_mass();
+  r = atoms->center_of_mass().norm();
+  // Internal values of theta and phi are radians
+  theta = (r > 0.) ? std::acos(pos.z / r) : 0.;
+  phi = std::atan2(pos.x / r, pos.y / r);
+  x.real_value = (180.0/PI) * theta;
+}
+
+
+void colvar::polar_theta::calc_gradients()
+{
+  if (r == 0.)
+    atoms->set_weighted_gradient(cvm::rvector(0., 0., 0.));
+  else
+    atoms->set_weighted_gradient(cvm::rvector(
+      (180.0/PI) *  std::cos(theta) * std::sin(phi) / r,
+      (180.0/PI) *  std::cos(theta) * std::cos(phi) / r,
+      (180.0/PI) * -std::sin(theta) / r));
+}
+
+
+void colvar::polar_theta::apply_force(colvarvalue const &force)
+{
+  if (!atoms->noforce)
+    atoms->apply_colvar_force(force.real_value);
+}
+
+
+simple_scalar_dist_functions(polar_theta)
+
+
+colvar::polar_phi::polar_phi(std::string const &conf)
+  : cvc(conf)
+{
+  function_type = "polar_phi";
+  period = 360.0;
+  enable(f_cvc_com_based);
+
+  atoms = parse_group(conf, "atoms");
+  init_total_force_params(conf);
+  x.type(colvarvalue::type_scalar);
+}
+
+
+colvar::polar_phi::polar_phi()
+{
+  function_type = "polar_phi";
+  period = 360.0;
+  x.type(colvarvalue::type_scalar);
+}
+
+
+void colvar::polar_phi::calc_value()
+{
+  cvm::rvector pos = atoms->center_of_mass();
+  r = atoms->center_of_mass().norm();
+  // Internal values of theta and phi are radians
+  theta = (r > 0.) ? std::acos(pos.z / r) : 0.;
+  phi = std::atan2(pos.x / r, pos.y / r);
+  x.real_value = (180.0/PI) * phi;
+}
+
+
+void colvar::polar_phi::calc_gradients()
+{
+  atoms->set_weighted_gradient(cvm::rvector(
+    (180.0/PI) *  std::cos(phi) / (r*std::sin(theta)),
+    (180.0/PI) * -std::sin(phi) / (r*std::sin(theta)),
+    0.));
+}
+
+
+void colvar::polar_phi::apply_force(colvarvalue const &force)
+{
+  if (!atoms->noforce)
+    atoms->apply_colvar_force(force.real_value);
+}
+
+
+// Same as dihedral, for polar_phi
+
+cvm::real colvar::polar_phi::dist2(colvarvalue const &x1,
+                                  colvarvalue const &x2) const
+{
+  cvm::real diff = x1.real_value - x2.real_value;
+  diff = (diff < -180.0 ? diff + 360.0 : (diff > 180.0 ? diff - 360.0 : diff));
+  return diff * diff;
+}
+
+
+colvarvalue colvar::polar_phi::dist2_lgrad(colvarvalue const &x1,
+                                          colvarvalue const &x2) const
+{
+  cvm::real diff = x1.real_value - x2.real_value;
+  diff = (diff < -180.0 ? diff + 360.0 : (diff > 180.0 ? diff - 360.0 : diff));
+  return 2.0 * diff;
+}
+
+
+colvarvalue colvar::polar_phi::dist2_rgrad(colvarvalue const &x1,
+                                          colvarvalue const &x2) const
+{
+  cvm::real diff = x1.real_value - x2.real_value;
+  diff = (diff < -180.0 ? diff + 360.0 : (diff > 180.0 ? diff - 360.0 : diff));
+  return (-2.0) * diff;
+}
+
+
+void colvar::polar_phi::wrap(colvarvalue &x) const
+{
+  if ((x.real_value - wrap_center) >= 180.0) {
+    x.real_value -= 360.0;
+    return;
+  }
+
+  if ((x.real_value - wrap_center) < -180.0) {
+    x.real_value += 360.0;
+    return;
+  }
+
+  return;
+}
