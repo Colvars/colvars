@@ -1230,7 +1230,10 @@ one or more instances of the following components:
 \item \texttt{distanceXY}: projection of a distance vector on a plane;
 \item \texttt{distanceInv}: mean distance between two groups of atoms (e.g.~NOE-based distance);
 \item \texttt{angle}: angle between three groups;
+\item \texttt{dihedral}: torsional (dihedral) angle between four groups;
 \item \texttt{dipoleAngle}: angle between two groups and dipole of a third group;
+\item \texttt{polarTheta}: polar angle of a group in spherical coordinates;
+\item \texttt{polarPhi}: azimuthal angle of a group in spherical coordinates;
 \item \texttt{coordNum}: coordination number between two groups;
 \item \texttt{selfCoordNum}: coordination number of atoms within a
   group;
@@ -1597,6 +1600,50 @@ boundaries can be defined by using any real number of choice.
   \dupkey{oneSiteTotalForce}{\texttt{dihedral}}{colvar|distance|oneSiteTotalForce}{\texttt{distance} component}
 \end{cvcoptions}
 
+\cvsubsubsec{\texttt{polarTheta}: polar angle in
+spherical coordinates.}
+The \texttt{polarTheta~\{...\}} block defines the polar angle in
+spherical coordinates, for the center of mass of a group of atoms 
+described by the block \texttt{atoms}.  It returns an angle
+(in degrees) within the interval $[0:180]$.
+To obtain spherical coordinates in a frame of reference tied to
+another group of atoms, use the \texttt{fittingGroup}\ref{sec:colvar_atom_groups_ref_frame} option
+within the \texttt{atoms} block.
+
+\begin{cvcoptions}
+\item %
+  \labelkey{colvar|polarTheta|atoms}
+  \key
+    {atoms}{%
+    \texttt{polarPhi}}{%
+    Atom group}{%
+    \texttt{atoms~\{...\}} block}{%
+    Defines the group of atoms for the COM of which the angle should be calculated.
+    }
+\end{cvcoptions}
+
+
+\cvsubsubsec{\texttt{polarPhi}: azimuthal angle in
+spherical coordinates.}
+The \texttt{polarPhi~\{...\}} block defines the azimuthal angle in
+spherical coordinates, for the center of mass of a group of atoms 
+described by the block \texttt{atoms}. It returns an angle
+(in degrees) within the interval $[-180:180]$.  The Colvars module
+calculates all the distances between two angles taking into account
+periodicity.  For instance, reference values for restraints or range
+boundaries can be defined by using any real number of choice.
+
+\begin{cvcoptions}
+\item %
+  \labelkey{colvar|polarPhi|atoms}
+  \key
+    {atoms}{%
+    \texttt{polarPhi}}{%
+    Atom group}{%
+    \texttt{atoms~\{...\}} block}{%
+    Defines the group of atoms for the COM of which the angle should be calculated.
+    }
+\end{cvcoptions}
 
 \cvsubsubsec{\texttt{coordNum}: coordination number between two groups.}
 The \texttt{coordNum \{...\}} block defines
