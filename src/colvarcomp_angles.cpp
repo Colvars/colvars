@@ -530,7 +530,7 @@ void colvar::polar_theta::calc_value()
   r = atoms->center_of_mass().norm();
   // Internal values of theta and phi are radians
   theta = (r > 0.) ? std::acos(pos.z / r) : 0.;
-  phi = std::atan2(pos.x / r, pos.y / r);
+  phi = std::atan2(pos.y, pos.x);
   x.real_value = (180.0/PI) * theta;
 }
 
@@ -541,8 +541,8 @@ void colvar::polar_theta::calc_gradients()
     atoms->set_weighted_gradient(cvm::rvector(0., 0., 0.));
   else
     atoms->set_weighted_gradient(cvm::rvector(
-      (180.0/PI) *  std::cos(theta) * std::sin(phi) / r,
       (180.0/PI) *  std::cos(theta) * std::cos(phi) / r,
+      (180.0/PI) *  std::cos(theta) * std::sin(phi) / r,
       (180.0/PI) * -std::sin(theta) / r));
 }
 
@@ -584,7 +584,7 @@ void colvar::polar_phi::calc_value()
   r = atoms->center_of_mass().norm();
   // Internal values of theta and phi are radians
   theta = (r > 0.) ? std::acos(pos.z / r) : 0.;
-  phi = std::atan2(pos.x / r, pos.y / r);
+  phi = std::atan2(pos.y, pos.x);
   x.real_value = (180.0/PI) * phi;
 }
 
@@ -592,8 +592,8 @@ void colvar::polar_phi::calc_value()
 void colvar::polar_phi::calc_gradients()
 {
   atoms->set_weighted_gradient(cvm::rvector(
-    (180.0/PI) *  std::cos(phi) / (r*std::sin(theta)),
     (180.0/PI) * -std::sin(phi) / (r*std::sin(theta)),
+    (180.0/PI) *  std::cos(phi) / (r*std::sin(theta)),
     0.));
 }
 
