@@ -6,6 +6,8 @@
 #include "colvar.h"
 #include "colvarcomp.h"
 #include "colvarscript.h"
+
+// used in build_atom_list()
 #include <algorithm>
 
 
