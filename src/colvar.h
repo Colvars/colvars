@@ -50,7 +50,10 @@ public:
 
   /// \brief Current actual value (not extended DOF)
   colvarvalue const & actual_value() const;
-
+  
+  /// \brief Force constant of the spring
+  cvm::real const & colvar::force_constant() const;
+   
   /// \brief Current velocity (previously set by calc() or by read_traj())
   colvarvalue const & velocity() const;
 
@@ -565,6 +568,10 @@ public:
   }
 };
 
+inline cvm::real const & colvar::force_constant() const
+{
+  return ext_force_k;
+}
 
 inline colvarvalue const & colvar::value() const
 {
