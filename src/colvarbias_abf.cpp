@@ -384,8 +384,8 @@ int colvarbias_abf::update()
 	  std::vector<double> y(colvars.size(),0);
 	  for (int i = 0; i < colvars.size(); i++)
 	  {
-		  x[i] = colvars[i]->actual_value;
-		  y[i] = colvars[i]->value;
+		  x[i] = colvars[i]->actual_value();
+		  y[i] = colvars[i]->value();
 	  }
 	  eabf_UI.update_output_filename(output_prefix);
 	  eabf_UI.update(cvm::step_absolute(), x, y);
