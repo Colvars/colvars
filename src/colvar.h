@@ -52,7 +52,7 @@ public:
   colvarvalue const & actual_value() const;
   
   /// \brief Force constant of the spring
-  cvm::real const & colvar::force_constant() const;
+  cvm::real const & force_constant() const;
    
   /// \brief Current velocity (previously set by calc() or by read_traj())
   colvarvalue const & velocity() const;
