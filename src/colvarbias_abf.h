@@ -10,6 +10,7 @@
 
 #include "colvarbias.h"
 #include "colvargrid.h"
+#include "colvar_UIestimator.h"
 
 typedef cvm::real* gradient_t;
 
@@ -43,6 +44,8 @@ private:
   /// Write CZAR output file for stratified eABF (.zgrad)
   bool      b_czar_window_file;
   size_t    history_freq;
+  /// the umbrella integration estimator of eabf
+  UIestimator::UIestimator eabf_UI;
 
   /// Cap applied biasing force?
   bool                    cap_force;
