@@ -1,4 +1,3 @@
-
 // -*- c++ -*-
 
 #include "colvarmodule.h"
