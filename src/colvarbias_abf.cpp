@@ -14,7 +14,9 @@ colvarbias_abf::colvarbias_abf(char const *key)
     z_samples(NULL),
     czar_gradients(NULL),
     last_gradients(NULL),
-    last_samples(NULL)
+    last_samples(NULL),
+    b_UI_estimator(false),
+    b_CZAR_estimator(false)
 {
 }
 
@@ -152,6 +154,7 @@ int colvarbias_abf::init(std::string const &conf)
 
   // Data for eABF z-based estimator
   if (b_extended) {
+    get_keyval(conf, "CZARestimator", b_CZAR_estimator, true);
     // CZAR output files for stratified eABF
     get_keyval(conf, "writeCZARwindowFile", b_czar_window_file, false,
                colvarparse::parse_silent);
@@ -180,8 +183,38 @@ int colvarbias_abf::init(std::string const &conf)
     read_gradients_samples();
   }
 
-  cvm::log("Finished ABF setup.\n");
+  // if extendedLangrangian is on, then call UI estimator
+  if (b_extended) {
+    get_keyval(conf, "UIestimator", b_UI_estimator, false);
 
+    if (b_UI_estimator) {
+	  std::vector<double> UI_lowerboundary;
+	  std::vector<double> UI_upperboundary;
+	  std::vector<double> UI_width;
+	  std::vector<double> UI_krestr;
+
+	  bool UI_restart = (input_prefix.size() > 0);
+
+	  for (int i = 0; i < colvars.size(); i++)
+	  {
+		  UI_lowerboundary.push_back(colvars[i]->lower_boundary);
+		  UI_upperboundary.push_back(colvars[i]->upper_boundary);
+		  UI_width.push_back(colvars[i]->width);
+		  UI_krestr.push_back(colvars[i]->force_constant());
+	  }
+      eabf_UI = UIestimator::UIestimator(UI_lowerboundary,
+                                         UI_upperboundary,
+                                         UI_width,
+                                         UI_krestr,                // force constant in eABF
+                                         output_prefix,              // the prefix of output files
+                                         cvm::restart_out_freq,
+                                         UI_restart,                    // whether restart from a .count and a .grad file
+                                         input_prefix,   // the prefixes of input files
+                                         cvm::temperature());
+    }
+  }
+
+  cvm::log("Finished ABF setup.\n");
   return COLVARS_OK;
 }
 
@@ -357,6 +390,20 @@ int colvarbias_abf::update()
     cvm::log("Prepared sample and gradient buffers at step "+cvm::to_str(cvm::step_absolute())+".");
   }
 
+  // update UI estimator every step
+  if (b_UI_estimator)
+  {
+	  std::vector<double> x(colvars.size(),0);
+	  std::vector<double> y(colvars.size(),0);
+	  for (int i = 0; i < colvars.size(); i++)
+	  {
+		  x[i] = colvars[i]->actual_value();
+		  y[i] = colvars[i]->value();
+	  }
+	  eabf_UI.update_output_filename(output_prefix);
+	  eabf_UI.update(cvm::step_absolute(), x, y);
+  }
+
   return COLVARS_OK;
 }
 
@@ -472,7 +519,7 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool app
     cvm::proxy->close_output_stream(pmf_out_name);
   }
 
-  if (z_gradients) {
+  if (b_CZAR_estimator) {
     // Write eABF-related quantities
 
     std::string  z_samples_out_name = prefix + ".zcount";
@@ -581,7 +628,7 @@ void colvarbias_abf::read_gradients_samples()
       is.close();
     }
 
-    if (z_gradients) {
+    if (b_CZAR_estimator) {
       // Read eABF z-averaged data for CZAR
       cvm::log("Reading z-histogram from " + z_samples_in_name + " and z-gradient from " + z_gradients_in_name);
 
@@ -614,7 +661,7 @@ std::ostream & colvarbias_abf::write_state_data(std::ostream& os)
   os << "\ngradient\n";
   gradients->write_raw(os, 8);
 
-  if (z_gradients) {
+  if (b_CZAR_estimator) {
     os.setf(std::ios::fmtflags(0), std::ios::floatfield); // default floating-point format
     os << "\nz_samples\n";
     z_samples->write_raw(os, 8);
@@ -648,7 +695,7 @@ std::istream & colvarbias_abf::read_state_data(std::istream& is)
     return is;
   }
 
-  if (z_gradients) {
+  if (b_CZAR_estimator) {
 
     if (! read_state_data_key(is, "z_samples")) {
       return is;

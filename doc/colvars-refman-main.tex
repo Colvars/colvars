@@ -3359,8 +3359,15 @@ where $z=\xi(q)$ is the colvar, $\lambda$ is the extended variable harmonically
 coupled to $z$ with a force constant $k$, and $\tilde\rho (z)$ is the observed
 distribution (histogram) of $z$, affected by the eABF bias.
 
-There is only one optional parameter to the CZAR estimator:
+Parameters for the CZAR estimator are:
 \begin{itemize}
+ \item \keydef{CZARestimator}{\texttt{abf}}{%
+Calculate CZAR estimator of the free energy?}
+  {boolean}
+  {\texttt{yes}}
+{This option is only available when ABF is performed on extended-Lagrangian colvars.
+When enabled, it triggers calculation of the free energy following the CZAR estimator.}
+
  \item \keydef{writeCZARwindowFile}{\texttt{abf}}{%
 Write internal data from CZAR to a separate file?}
   {boolean}
@@ -3419,24 +3426,16 @@ $N(\xi, \lambda)$ is the number of samples collected in a
 $(\xi, \lambda)$ bin, which is assumed to be a Gaussian function
 of $\xi$ with mean $\langle\xi\rangle_{\lambda}$ and standard deviation
 $\sigma_{\lambda}$.
-At the present stage, equation \ref{eq:ZhengYang} is implemented 
-through the scripted Colvars interface (\ref{sec:scripting}) for one-- and 
-two--dimensional free-energy calculations. 
 
-To evaluate the Zheng/Yang estimator in an eABF simulation, one needs to set 
-{\tt scriptedColvarForces on} 
-and source the eabf.tcl file found in the lib/eabf directory.
-Here, an example of a configuration file is supplied
-for an eABF simulation:
-
-{\addtolength{\baselineskip}{0.1\baselineskip}\small \noindent \ttfamily
-source~~~~~~~~~~~~~~~~eabf.tcl~~~~~\#~Enables eABF\\
-set~eabf\_inputname~~~~0~~~~~~~~~~~~\#~Prefix for restart files. '0' is used for new run\\
-set~eabf\_outputname~~~output.eabf~~\#~Prefix for output files\\
-set~eabf\_temperature~~300~~~~~~~~~~\#~Temperature used in the calculation\\
-set~eabf\_outputfreq~~~20000~~~~~~~~\#~Frequency at which eABF data files are updated
-}
-
+The estimator is enabled through the following option:
+\begin{itemize}
+\item \keydef{UIestimator}{\texttt{abf}}{%
+Calculate UI estimator of the free energy?}
+  {boolean}
+  {\texttt{no}}
+{This option is only available when ABF is performed on extended-Lagrangian colvars.
+When enabled, it triggers calculation of the free energy following the UI estimator.}
+\end{itemize}
 
 \paragraph{Usage for multiple--replica eABF.}
 The eABF algorithm can be associated with a multiple--walker strategy \cite{Minoukadeh2010,Comer2014c} (\ref{sec:mw-ABF}).
