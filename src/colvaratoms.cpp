@@ -959,12 +959,12 @@ void cvm::atom_group::set_weighted_gradient(cvm::rvector const &grad)
 
 void cvm::atom_group::calc_fit_gradients()
 {
-  if (b_dummy) return;
+  if (b_dummy || ! b_fit_gradients) return;
 
   if (cvm::debug())
     cvm::log("Calculating fit gradients.\n");
 
-  atom_group *group_for_fit = fitting_group ? fitting_group : this;
+  cvm::atom_group *group_for_fit = fitting_group ? fitting_group : this;
 
   if (b_center) {
     // add the center of geometry contribution to the gradients

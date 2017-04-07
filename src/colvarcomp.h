@@ -139,8 +139,11 @@ public:
   /// order to apply forces
   virtual void calc_gradients() = 0;
 
+  /// \brief Calculate the atomic fit gradients
+  void calc_fit_gradients();
+
   /// \brief Calculate finite-difference gradients alongside the analytical ones, for each Cartesian component
-  virtual void debug_gradients(cvm::atom_group *group);
+  virtual void debug_gradients();
 
   /// \brief Calculate the total force from the system using the
   /// inverse atomic gradients
