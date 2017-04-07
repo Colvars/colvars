@@ -284,10 +284,6 @@ public:
   /// cvc's (eg rmsd, eigenvector) will not override the user's choice
   bool b_user_defined_fit;
 
-  /// \brief Whether or not the derivatives of the roto-translation
-  /// should be included when calculating the colvar's gradients (default: yes)
-  bool b_fit_gradients;
-
   /// \brief use reference coordinates for b_center or b_rotate
   std::vector<cvm::atom_pos> ref_pos;
 
@@ -454,6 +450,10 @@ public:
   /// apply_colvar_force() once that is implemented for non-scalar values
   void apply_force(cvm::rvector const &force);
 
+  /// Implements possible actions to be carried out
+  /// when a given feature is enabled
+  /// This overloads the base function in colvardeps
+  void do_feature_side_effects(int id);
 };
 
 

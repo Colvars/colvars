@@ -622,8 +622,7 @@ void colvardeps::init_ag_requires() {
     init_feature(f_ag_center, "translational fit", f_type_static);
     init_feature(f_ag_rotate, "rotational fit", f_type_static);
     init_feature(f_ag_fitting_group, "reference positions group", f_type_static);
-    init_feature(f_ag_fit_gradient_group, "fit gradient for main group", f_type_static);
-    init_feature(f_ag_fit_gradient_ref, "fit gradient for reference group", f_type_static);
+    init_feature(f_ag_fit_gradients, "fit gradients", f_type_user);
     init_feature(f_ag_atom_forces, "atomic forces", f_type_dynamic);
 
     // parallel calculation implies that we have at least a scalable center of mass,
@@ -651,6 +650,7 @@ void colvardeps::init_ag_requires() {
   feature_states[f_ag_scalable_com].available = false;
   // TODO make f_ag_scalable depend on f_ag_scalable_com (or something else)
   feature_states[f_ag_scalable].available = true;
+  feature_states[f_ag_fit_gradients].available = true;
 }
 
 

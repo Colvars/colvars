@@ -231,7 +231,7 @@ void colvar::cvc::debug_gradients()
 
     // print the values of the fit gradients
     if (group->b_rotate || group->b_center) {
-      if (group->b_fit_gradients) {
+      if (group->is_enabled(f_ag_fit_gradients)) {
         size_t j;
 
         // fit_gradients are in the simulation frame: we should print them in the rotated frame
@@ -278,7 +278,7 @@ void colvar::cvc::debug_gradients()
       }
     }
 
-    if ((group->b_fit_gradients) && (group->fitting_group != NULL)) {
+    if ((group->is_enabled(f_ag_fit_gradients)) && (group->fitting_group != NULL)) {
       cvm::atom_group *ref_group = group->fitting_group;
       group->read_positions();
       group->calc_required_properties();

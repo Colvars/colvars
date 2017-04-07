@@ -178,7 +178,6 @@ int cvm::atom_group::init()
   b_center = false;
   b_rotate = false;
   b_user_defined_fit = false;
-  b_fit_gradients = false;
   fitting_group = NULL;
 
   noforce = false;
@@ -586,8 +585,6 @@ int cvm::atom_group::parse_fitting_options(std::string const &group_conf)
   // is the user setting explicit options?
   b_user_defined_fit = b_defined_center || b_defined_rotate;
 
-  get_keyval(group_conf, "enableFitGradients", b_fit_gradients, true);
-
   if (b_center || b_rotate) {
 
     if (b_dummy)
@@ -622,7 +619,7 @@ int cvm::atom_group::parse_fitting_options(std::string const &group_conf)
       }
 
       // regardless of the configuration, fit gradients must be calculated by fittingGroup
-      fitting_group->b_fit_gradients = this->b_fit_gradients;
+//       fitting_group->b_fit_gradients = this->b_fit_gradients;
     }
 
     atom_group *group_for_fit = fitting_group ? fitting_group : this;
@@ -679,11 +676,6 @@ int cvm::atom_group::parse_fitting_options(std::string const &group_conf)
       return COLVARS_ERROR;
     }
 
-    if (b_fit_gradients) {
-      group_for_fit->fit_gradients.assign(group_for_fit->size(), cvm::atom_pos(0.0, 0.0, 0.0));
-      rot.request_group1_gradients(group_for_fit->size());
-    }
-
     if (b_rotate && !noforce) {
       cvm::log("Warning: atom group \""+key+
                "\" will be aligned to a fixed orientation given by the reference positions provided.  "
@@ -696,7 +688,26 @@ int cvm::atom_group::parse_fitting_options(std::string const &group_conf)
     }
   }
 
+  // This must happen after fitting group is defined so that side-effects are performed
+  // properly (ie. allocating fitting group gradients)
+  get_keyval_feature(this, group_conf, "enableFitGradients", f_ag_fit_gradients, true);
+
   return COLVARS_OK;
+}
+
+
+void cvm::atom_group::do_feature_side_effects(int id)
+{
+  // If enabled features are changed upstream, the features below should be refreshed
+  switch (id) {
+    case f_ag_fit_gradients:
+      if (b_center || b_rotate) {
+        atom_group *group_for_fit = fitting_group ? fitting_group : this;
+        group_for_fit->fit_gradients.assign(group_for_fit->size(), cvm::atom_pos(0.0, 0.0, 0.0));
+        rot.request_group1_gradients(group_for_fit->size());
+      }
+      break;
+  }
 }
 
 
@@ -959,7 +970,7 @@ void cvm::atom_group::set_weighted_gradient(cvm::rvector const &grad)
 
 void cvm::atom_group::calc_fit_gradients()
 {
-  if (b_dummy || ! b_fit_gradients) return;
+  if (b_dummy || ! is_enabled(f_ag_fit_gradients)) return;
 
   if (cvm::debug())
     cvm::log("Calculating fit gradients.\n");
@@ -1149,7 +1160,7 @@ void cvm::atom_group::apply_colvar_force(cvm::real const &force)
     }
   }
 
-  if ((b_center || b_rotate) && b_fit_gradients) {
+  if ((b_center || b_rotate) && is_enabled(f_ag_fit_gradients)) {
 
     atom_group *group_for_fit = fitting_group ? fitting_group : this;
 

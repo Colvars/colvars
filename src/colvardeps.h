@@ -327,9 +327,7 @@ public:
     /// Perform a standard minimum msd fit for given atoms
     /// ie. not using refpositionsgroup
 //     f_ag_min_msd_fit,
-    f_ag_fit_gradient_group,// TODO check that these are sometimes needed separately
-                            // maybe for minimum RMSD?
-    f_ag_fit_gradient_ref,
+    f_ag_fit_gradients,
     f_ag_atom_forces,
     f_ag_scalable,
     f_ag_scalable_com,
