@@ -985,7 +985,6 @@ int colvar::calc_cvc_gradients(int first_cvc, size_t num_cvcs)
       // if requested, propagate (via chain rule) the gradients above
       // to the atoms used to define the roto-translation
      (cvcs[i])->calc_fit_gradients();
-     (cvcs[i])->calc_fit_gradients();
       if ((cvcs[i])->is_enabled(f_cvc_debug_gradient))
         (cvcs[i])->debug_gradients();
     }
