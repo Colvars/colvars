@@ -19,6 +19,7 @@ bool compare(colvar::cvc *i, colvar::cvc *j) {
 
 
 colvar::colvar()
+  : prev_timestep(-1)
 {
   // Initialize static array once and for all
   init_cv_requires();
@@ -236,6 +237,13 @@ int colvar::init(std::string const &conf)
   error_code |= init_grid_parameters(conf);
 
   get_keyval(conf, "timeStepFactor", time_step_factor, 1, parse_silent);
+  if (time_step_factor < 0) {
+    cvm::error("Error: timeStepFactor must be positive.\n");
+    return COLVARS_ERROR;
+  }
+  if (time_step_factor != 1) {
+    enable(f_cv_multiple_ts);
+  }
 
   error_code |= init_extended_Lagrangian(conf);
   error_code |= init_output_flags(conf);
@@ -1201,6 +1209,10 @@ cvm::real colvar::update_forces_energy()
   f.type(value());
   f.reset();
 
+  // If we are not active at this timestep, that's all we have to do
+  // return with energy == zero
+  if (!is_enabled(f_cv_active)) return 0.;
+
   // add the biases' force, which at this point should already have
   // been summed over each bias using this colvar
   f += fb;
@@ -1223,6 +1235,22 @@ cvm::real colvar::update_forces_energy()
     }
 
     cvm::real dt = cvm::dt();
+
+    // Keep track of slow timestep to integrate MTS colvars
+    // the colvar checks the interval after waking up twice
+    int n_timesteps = cvm::step_relative() - prev_timestep;
+    if (prev_timestep > -1 && n_timesteps != time_step_factor) {
+      cvm::error("Error: extended-Lagrangian " + description + " has timeStepFactor " +
+        cvm::to_str(time_step_factor) + ", but was activated after " + cvm::to_str(n_timesteps) +
+        " steps at timestep " + cvm::to_str(cvm::step_absolute()) + ".\n"
+        + "Make sure that this colvar is requested by biases at multiples of timeStepFactor.\n");
+      return 0.;
+    }
+    prev_timestep = cvm::step_relative();
+
+    // Integrate with slow timestep
+    dt *= cvm::real(time_step_factor);
+
     colvarvalue f_ext(fr.type()); // force acting on the extended variable
     f_ext.reset();
 

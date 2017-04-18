@@ -150,7 +150,7 @@ int colvardeps::enable(int feature_id,
           + f->description + "\" in " + description + ".");
       } else {
         cvm::log(feature_type_descr + " feature unavailable: \""
-          + f->description + "\" in " + description);
+          + f->description + "\" in " + description + ".");
       }
     }
     return COLVARS_ERROR;
@@ -159,7 +159,7 @@ int colvardeps::enable(int feature_id,
   if (!toplevel && !is_dynamic(feature_id)) {
     if (!dry_run) {
       cvm::log(feature_type_descr + " feature \"" + f->description
-        + "\" in " + description + " may not be enabled as a dependency.\n");
+        + "\" may not be enabled as a dependency in " + description + ".\n");
     }
     return COLVARS_ERROR;
   }
@@ -172,8 +172,8 @@ int colvardeps::enable(int feature_id,
       cvm::log(f->description + " requires exclude " + g->description);
     if (is_enabled(f->requires_exclude[i])) {
       if (!dry_run) {
-        cvm::log("Features \"" + f->description + "\" is incompatible with \""
-        + g->description + "\" in " + description);
+        cvm::log("Feature \"" + f->description + "\" is incompatible with \""
+        + g->description + "\" in " + description + ".");
         if (toplevel) {
           cvm::error("Error: Failed dependency in " + description + ".");
         }
@@ -514,6 +514,11 @@ void colvardeps::init_cv_requires() {
     init_feature(f_cv_scalar, "scalar", f_type_static);
     init_feature(f_cv_linear, "linear", f_type_static);
     init_feature(f_cv_homogeneous, "homogeneous", f_type_static);
+
+    // because total forces are obtained from the previous time step,
+    // we cannot (currently) have colvar values and total forces for the same timestep
+    init_feature(f_cv_multiple_ts, "multiple timestep colvar");
+    f_req_exclude(f_cv_multiple_ts, f_cv_total_force_calc);
   }
 
   // Initialize feature_states for each instance

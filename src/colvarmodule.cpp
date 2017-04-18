@@ -653,11 +653,12 @@ int colvarmodule::calc_colvars()
     cvm::log("Calculating collective variables.\n");
   // calculate collective variables and their gradients
 
-  // First, decide which biases are awake
+  // First, we need to decide which biases are awake
+  // so they can activate colvars as needed
   std::vector<colvarbias *>::iterator bi;
   for (bi = biases.begin(); bi != biases.end(); bi++) {
     int tsf = (*bi)->get_time_step_factor();
-    if (tsf > 0 && step_absolute() % tsf == 0) {
+    if (tsf > 0 && (step_absolute() % tsf == 0)) {
       (*bi)->enable(colvardeps::f_cvb_awake);
     } else {
       (*bi)->disable(colvardeps::f_cvb_awake);
@@ -673,7 +674,7 @@ int colvarmodule::calc_colvars()
   for (cvi = variables()->begin(); cvi != variables()->end(); cvi++) {
     // Wake up or put to sleep variables
     int tsf = (*cvi)->get_time_step_factor();
-    if (tsf > 0 && step_absolute() % tsf == 0) {
+    if (tsf > 0 && (step_absolute() % tsf == 0)) {
       (*cvi)->enable(colvardeps::f_cv_awake);
     } else {
       (*cvi)->disable(colvardeps::f_cv_awake);
@@ -752,6 +753,7 @@ int colvarmodule::calc_biases()
   total_bias_energy = 0.0;
 
   // update the list of active biases
+  // which may have changed based on f_cvb_awake in calc_colvars()
   biases_active()->clear();
   biases_active()->reserve(biases.size());
   for (bi = biases.begin(); bi != biases.end(); bi++) {
@@ -832,8 +834,7 @@ int colvarmodule::update_colvar_forces()
              "of colvars (if they have any).\n");
   cvm::increase_depth();
   for (cvi = variables()->begin(); cvi != variables()->end(); cvi++) {
-    // Here we call even inactive colvars, so they accumulate biasing forces
-    // as well as update their extended-system dynamics
+    // Inactive colvars will only reset their forces and return 0 energy
     total_colvar_energy += (*cvi)->update_forces_energy();
     if (cvm::get_error()) {
       return COLVARS_ERROR;

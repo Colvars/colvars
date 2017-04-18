@@ -73,6 +73,12 @@ int colvarbias::init(std::string const &conf)
 
   get_keyval(conf, "outputEnergy", b_output_energy, b_output_energy);
 
+  get_keyval(conf, "timeStepFactor", time_step_factor, 1, parse_silent);
+  if (time_step_factor < 1) {
+    cvm::error("Error: timeStepFactor must be 1 or greater.\n");
+    return COLVARS_ERROR;
+  }
+
   // Now that children are defined, we can solve dependencies
   enable(f_cvb_active);
   if (cvm::debug()) print_state();
@@ -196,7 +202,8 @@ void colvarbias::communicate_forces()
       cvm::log("Communicating a force to colvar \""+
                variables(i)->name+"\".\n");
     }
-    variables(i)->add_bias_force(colvar_forces[i]);
+    // Impulse-style multiple timestep
+    variables(i)->add_bias_force(cvm::real(time_step_factor) * colvar_forces[i]);
   }
 }
 

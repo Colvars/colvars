@@ -58,12 +58,11 @@ public:
   };
 
 protected:
-  /// Time step multiplier (for coarse-time-step colvars)
-  /// Colvar will only be calculated at those times; biases may ignore the information and
-  /// always update their own forces (which is typically inexpensive) especially if
-  /// they rely on other colvars. In this case, the colvar will accumulate forces applied between
-  /// colvar updates. Alternately they may use it to calculate "impulse" biasing
-  /// forces at longer intervals. Impulse forces must be multiplied by the timestep factor.
+  /// Time step multiplier (for coarse-timestep biases & colvars)
+  /// Biases and colvars will only be calculated at those times
+  /// (f_cvb_awake and f_cv_awake); a
+  /// Biases use this to apply "impulse" biasing forces at the outer timestep
+  /// Unused by lower-level objects (cvcs and atom groups)
   int   time_step_factor;
 
 private:
@@ -230,11 +229,16 @@ public:
     f_cvb_active,
     /// \brief Bias is awake (active on its own accord) this timestep
     f_cvb_awake,
-    f_cvb_apply_force, // will apply forces
-    f_cvb_get_total_force, // requires total forces
-    f_cvb_history_dependent, // depends on simulation history
-    f_cvb_scalar_variables, // requires scalar colvars
-    f_cvb_calc_pmf, // whether this bias will compute a PMF
+    /// \brief will apply forces
+    f_cvb_apply_force,
+    /// \brief requires total forces
+    f_cvb_get_total_force,
+    /// \brief depends on simulation history
+    f_cvb_history_dependent,
+    /// \brief requires scalar colvars
+    f_cvb_scalar_variables,
+    /// \brief whether this bias will compute a PMF
+    f_cvb_calc_pmf,
     f_cvb_ntot
   };
 
@@ -300,6 +304,8 @@ public:
     f_cv_scalar,
     f_cv_linear,
     f_cv_homogeneous,
+    /// \brief multiple timestep through time_step_factor
+    f_cv_multiple_ts,
     /// \brief Number of colvar features
     f_cv_ntot
   };

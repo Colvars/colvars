@@ -51,12 +51,6 @@ int colvarbias_abf::init(std::string const &conf)
     cvm::log("Jacobian (geometric) forces will be included in reported free energy gradients.\n");
   }
 
-  get_keyval(conf, "timeStepFactor", time_step_factor, 1, parse_silent);
-  if (time_step_factor < 1) {
-    cvm::error("Error: timeStepFactor must be 1 or more.\n");
-    return COLVARS_ERROR;
-  }
-
   get_keyval(conf, "fullSamples", full_samples, 200);
   if ( full_samples <= 1 ) full_samples = 1;
   min_samples = full_samples / 2;
@@ -288,13 +282,12 @@ int colvarbias_abf::update()
   // Compute and apply the new bias, if applicable
   if (is_enabled(f_cvb_apply_force) && samples->index_ok(bin)) {
 
-    size_t  count = samples->value(bin);
-    // Multiply by number of timesteps between updates for MTS
-    cvm::real   fact = 1.0 * time_step_factor;
+    size_t count = samples->value(bin);
+    cvm::real fact = 1.0;
 
     // Factor that ensures smooth introduction of the force
     if ( count < full_samples ) {
-      fact = ( count < min_samples) ? 0.0 :
+      fact = (count < min_samples) ? 0.0 :
         (cvm::real(count - min_samples)) / (cvm::real(full_samples - min_samples));
     }
 

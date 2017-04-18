@@ -330,6 +330,9 @@ protected:
   /// Sum of square coefficients for active cvcs
   cvm::real active_cvc_square_norm;
 
+  /// \brief Absolute timestep number when this colvar was last updated
+  int prev_timestep;
+
 public:
   /// \brief Return the number of CVC objects with an active flag (as set by update_cvc_flags)
   inline size_t num_active_cvcs() const { return n_active_cvcs; }
