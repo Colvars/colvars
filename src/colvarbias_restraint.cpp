@@ -947,7 +947,8 @@ void colvarbias_restraint_harmonic_walls::communicate_forces()
       cvm::log("Communicating a force to colvar \""+
                variables(i)->name+"\".\n");
     }
-    variables(i)->add_bias_force_actual_value(colvar_forces[i]);
+    // Impulse-style multiple timestep
+    variables(i)->add_bias_force_actual_value(cvm::real(time_step_factor) * colvar_forces[i]);
   }
 }
 

@@ -73,7 +73,7 @@ int colvarbias::init(std::string const &conf)
 
   get_keyval(conf, "outputEnergy", b_output_energy, b_output_energy);
 
-  get_keyval(conf, "timeStepFactor", time_step_factor, 1, parse_silent);
+  get_keyval(conf, "timeStepFactor", time_step_factor, 1);
   if (time_step_factor < 1) {
     cvm::error("Error: timeStepFactor must be 1 or greater.\n");
     return COLVARS_ERROR;

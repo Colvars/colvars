@@ -233,10 +233,7 @@ int colvar::init(std::string const &conf)
 
   reset_bias_force();
 
-  // TODO use here information from the CVCs' own natural boundaries
-  error_code |= init_grid_parameters(conf);
-
-  get_keyval(conf, "timeStepFactor", time_step_factor, 1, parse_silent);
+  get_keyval(conf, "timeStepFactor", time_step_factor, 1);
   if (time_step_factor < 0) {
     cvm::error("Error: timeStepFactor must be positive.\n");
     return COLVARS_ERROR;
@@ -244,6 +241,9 @@ int colvar::init(std::string const &conf)
   if (time_step_factor != 1) {
     enable(f_cv_multiple_ts);
   }
+
+  // TODO use here information from the CVCs' own natural boundaries
+  error_code |= init_grid_parameters(conf);
 
   error_code |= init_extended_Lagrangian(conf);
   error_code |= init_output_flags(conf);
@@ -325,7 +325,8 @@ int colvar::init_grid_parameters(std::string const &conf)
       std::string const walls_conf("\n\
 harmonicWalls {\n\
     name "+this->name+"w\n\
-    colvars "+this->name+"\n"+lw_conf+uw_conf+
+    colvars "+this->name+"\n"+lw_conf+uw_conf+"\
+    timeStepFactor "+cvm::to_str(time_step_factor)+"\n"+
                              "}\n");
       cv->append_new_config(walls_conf);
     }
