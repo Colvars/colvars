@@ -156,6 +156,9 @@ public:
   /// \brief Destructor
   ~atom_group();
 
+  /// \brief Optional name to reuse properties of this in other groups
+  std::string name;
+
   /// \brief Keyword used to define the group
   // TODO Make this field part of the data structures that link a group to a CVC
   std::string key;
@@ -171,6 +174,7 @@ public:
   int parse(std::string const &conf);
 
   int add_atom_numbers(std::string const &numbers_conf);
+  int add_atoms_of_group(atom_group const * ag);
   int add_index_group(std::string const &index_group_name);
   int add_atom_numbers_range(std::string const &range_conf);
   int add_atom_name_residue_range(std::string const &psf_segid,

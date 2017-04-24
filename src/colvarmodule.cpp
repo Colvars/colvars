@@ -14,6 +14,7 @@
 #include "colvarbias_meta.h"
 #include "colvarbias_restraint.h"
 #include "colvarscript.h"
+#include "colvaratoms.h"
 
 
 colvarmodule::colvarmodule(colvarproxy *proxy_in)
@@ -474,7 +475,8 @@ int colvarmodule::catch_input_errors(int result)
 }
 
 
-colvarbias * colvarmodule::bias_by_name(std::string const &name) {
+colvarbias * colvarmodule::bias_by_name(std::string const &name)
+{
   colvarmodule *cv = cvm::main();
   for (std::vector<colvarbias *>::iterator bi = cv->biases.begin();
        bi != cv->biases.end();
@@ -487,13 +489,28 @@ colvarbias * colvarmodule::bias_by_name(std::string const &name) {
 }
 
 
-colvar *colvarmodule::colvar_by_name(std::string const &name) {
+colvar *colvarmodule::colvar_by_name(std::string const &name)
+{
   colvarmodule *cv = cvm::main();
   for (std::vector<colvar *>::iterator cvi = cv->colvars.begin();
        cvi != cv->colvars.end();
        cvi++) {
     if ((*cvi)->name == name) {
       return (*cvi);
+    }
+  }
+  return NULL;
+}
+
+
+cvm::atom_group *colvarmodule::atom_group_by_name(std::string const &name)
+{
+  colvarmodule *cv = cvm::main();
+  for (std::vector<cvm::atom_group *>::iterator agi = cv->named_atom_groups.begin();
+       agi != cv->named_atom_groups.end();
+       agi++) {
+    if ((*agi)->name == name) {
+      return (*agi);
     }
   }
   return NULL;
