@@ -264,6 +264,18 @@ int cvm::atom_group::parse(std::string const &group_conf)
 
   int parse_error = COLVARS_OK;
 
+  // We need to know about fitting to decide whether the group is scalable
+  // and we need to know about scalability before adding atoms
+  bool b_defined_center = get_keyval(group_conf, "centerReference", b_center, false);
+  bool b_defined_rotate = get_keyval(group_conf, "rotateReference", b_rotate, false);
+  // is the user setting explicit options?
+  b_user_defined_fit = b_defined_center || b_defined_rotate;
+
+  if (is_available(f_ag_scalable_com) && !b_rotate && !b_center) {
+    enable(f_ag_scalable_com);
+    enable(f_ag_scalable);
+  }
+
   {
     std::string numbers_conf = "";
     size_t pos = 0;
@@ -375,13 +387,8 @@ int cvm::atom_group::parse(std::string const &group_conf)
     }
   }
 
-  // We need to know the fitting options to decide whether the group is scalable
+  // Now that atoms are defined we can parse the detailed fitting options
   parse_error |= parse_fitting_options(group_conf);
-
-  if (is_available(f_ag_scalable_com) && !b_rotate && !b_center) {
-    enable(f_ag_scalable_com);
-    enable(f_ag_scalable);
-  }
 
   if (is_enabled(f_ag_scalable) && !b_dummy) {
     cvm::log("Enabling scalable calculation for group \""+this->key+"\".\n");
@@ -580,11 +587,6 @@ std::string const cvm::atom_group::print_atom_ids() const
 
 int cvm::atom_group::parse_fitting_options(std::string const &group_conf)
 {
-  bool b_defined_center = get_keyval(group_conf, "centerReference", b_center, false);
-  bool b_defined_rotate = get_keyval(group_conf, "rotateReference", b_rotate, false);
-  // is the user setting explicit options?
-  b_user_defined_fit = b_defined_center || b_defined_rotate;
-
   if (b_center || b_rotate) {
 
     if (b_dummy)
