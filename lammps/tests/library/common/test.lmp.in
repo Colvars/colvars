@@ -1,0 +1,18 @@
+# -*- lammps -*-
+
+shell cp -f "../common/da.ndx" "index.ndx"
+shell cp -f "../common/da-Calpha.xyz" "rmsd_atoms_refpos.xyz"
+shell cp -f "../common/da-noh.xyz" "heavy_atoms_refpos.xyz"
+
+include ../common/charmmff.lmp.in
+
+# Contains positions and velocities from da.coor.pdb and da.vel.pdb
+read_data  ../common/da.lmp.data
+
+include ../common/fixes.lmp.in
+
+fix Colvars all colvars test.in output test
+
+include ../common/md.lmp.in
+
+write_data test.lmp.data

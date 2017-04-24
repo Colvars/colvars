@@ -1,0 +1,3 @@
+timestep        1.0
+fix             NVE all nve
+fix             SHAKE all shake 1e-6 500 0 m 1.0

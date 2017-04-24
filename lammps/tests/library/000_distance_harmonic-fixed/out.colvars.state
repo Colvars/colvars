@@ -1,0 +1,18 @@
+configuration {
+  step           20
+  dt 1.000000e+00
+  version 2017-03-09
+}
+
+colvar {
+  name one
+  x  3.21927562629867e+00
+}
+
+restraint {
+  configuration {
+    step 20
+    name harmonic1
+  }
+}
+
