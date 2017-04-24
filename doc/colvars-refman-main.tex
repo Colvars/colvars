@@ -12,7 +12,7 @@
 }
 \label{section:colvars}
 
-In today's molecular dynamics simulations, it is often useful to reduce the large number of degrees of freedom of a physical system into few parameters whose statistical distributions can be analyzed individually, or used to define biasing potentials to alter the dynamics of the system in a controlled manner. 
+In molecular dynamics simulations, it is often useful to reduce the large number of degrees of freedom of a physical system into few parameters whose statistical distributions can be analyzed individually, or used to define biasing potentials to alter the dynamics of the system in a controlled manner.
 These have been called `order parameters', `collective variables', `(surrogate) reaction coordinates', and many other terms.
 
 Here we use primarily the term `collective variable' (shortened to \textit{colvar}), which indicates any differentiable function of atomic Cartesian coordinates, $\bm{x}_{i}$, with $i$ between $1$ and $N$, the total
@@ -847,14 +847,28 @@ deviations are available.
 \cvsec{Selecting atoms for colvars: defining atom groups}
 \label{sec:colvar_atom_groups}
 
+To define collective variables, atoms are usually selected as groups.  Each group is defined using an identifier that is unique in the context of the specific colvar component (e.g.~for a distance component, the two groups are \texttt{group1} and \texttt{group2}).
+The identifier is followed by a brace-delimited block containing selection keywords and other parameters, including an optional \texttt{name}:
+
+\begin{itemize}
+\item \key
+  {name}{%
+  atom group}{%
+  Unique name for the atom group}{%
+  string}{%
+  This parameter defines a unique name for this atom group, which can be referred to
+  in the definition of other atom groups (including in other colvars) by invoking
+  \texttt{atomsOfGroup} as a selection keyword.}
+\end{itemize}
+
+
 \cvsubsec{Selection keywords}
 \label{sec:colvar_atom_groups_sel}
 
-To define collective variables, atoms are usually selected by group.  Each group is identified by a name that is unique in the context of the specific colvar component (e.g.~for a distance component, the names of the two groups are \texttt{group1} and \texttt{group2}).
-The name is followed by a brace-delimited block of selection keywords: these may be used individually or in combination with each other, and each can be repeated any number of times.
+Selection keywords may be used individually or in combination with each other, and each can be repeated any number of times.
 Selection is incremental: each keyword adds the corresponding atoms to the selection, so that different sets of atoms can be combined.
 However, atoms included by multiple keywords are only counted once.
-Below is an example configuration for an atom group named ``\texttt{atoms}'', which uses an unusually varied combination of selection keywords:\\
+Below is an example configuration for an atom group with identifier ``\texttt{atoms}'', which uses an unusually varied combination of selection keywords:\\
 
 {%
 % verbatim can't appear within commands
@@ -902,7 +916,6 @@ The complete list of selection keywords available in \MDENGINE{} is:
     the list.  \emph{The number of the first atom in the system is 1: to convert from a VMD selection, use ``atomselect get serial''.}
   }
 
-
 \item %
   \key
     {indexGroup}{%
@@ -910,6 +923,15 @@ The complete list of selection keywords available in \MDENGINE{} is:
     Name of index group to be used (GROMACS format)}{%
     string}{%
     If the name of an index file has been provided by \texttt{indexFile}, this option allows to select one index group from that file: the atoms from that index group will be used to define the current group.}
+
+\item %
+  \key
+    {atomsOfGroup}{%
+    atom group}{%
+    Name of group defined previously}{%
+    string}{%
+    Refers to a group defined previously using its user-defined \texttt{name}.
+    This adds all atoms of that named group to the current group.}
 
 \item %
   \key
