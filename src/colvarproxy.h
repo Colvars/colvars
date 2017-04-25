@@ -10,6 +10,7 @@
 #include "colvarmodule.h"
 #include "colvarvalue.h"
 #include "colvarproxy_tcl.h"
+#include "colvarproxy_python.h"
 
 /// \file colvarproxy.h
 /// \brief Colvars proxy classes
@@ -567,6 +568,7 @@ class colvarproxy
     public colvarproxy_replicas,
     public colvarproxy_script,
     public colvarproxy_tcl,
+    public colvarproxy_python,
     public colvarproxy_io
 {
 

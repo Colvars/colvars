@@ -18,6 +18,14 @@
 #include <vector>
 #include <iostream>
 
+#if defined(LMP_PYTHON)
+#include "Python.h"
+#endif
+
+#if defined(_OPENMP)
+#include <omp.h>
+#endif
+
 /* struct for packed data communication of coordinates and forces. */
 struct commdata {
   int tag,type;
@@ -131,8 +139,12 @@ class colvarproxy_lammps : public colvarproxy {
 
   inline std::vector<int> *modify_atom_types() { return &atoms_types; }
 
-  // implementation of optional methods from base class
+#if defined(LMP_PYTHON)
  public:
+  char const *script_obj_to_str(unsigned char *obj);
+ private:
+  void init_py_pointers();
+#endif
 
   // Multi-replica support
   // Indicate if multi-replica support is available and active

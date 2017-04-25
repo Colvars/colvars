@@ -55,6 +55,11 @@ protected:
 
   void init_tcl_pointers();
 
+#ifdef NAMD_PYTHON
+
+  void init_py_pointers();
+
+#endif
 #endif
 
 public:

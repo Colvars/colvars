@@ -230,7 +230,7 @@ static PyMethodDef methods[] = {
   {NULL, NULL, 0, NULL}
 };
 
-static void namd_python_initialize(void *interp) {
+void namd_python_initialize(void *interp) {
   if ( static_interp ) return;
   static_interp = (Tcl_Interp*) interp;
   Py_InitializeEx(0);  // do not initialize signal handlers
@@ -351,6 +351,10 @@ int ScriptTcl::Tcl_python(ClientData, Tcl_Interp *interp, int argc, char **argv)
 }
 
 #else // NAMD_PYTHON
+
+void namd_python_initialize(void *interp) {
+  NAMD_die("Python not enabled");
+}
 
 int ScriptTcl::Tcl_python(ClientData, Tcl_Interp *interp, int argc, char **argv) {
   Tcl_SetResult(interp,"python not enabled",TCL_VOLATILE);

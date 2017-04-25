@@ -566,6 +566,42 @@ private:
   /// when using scriptedFunction
   std::vector<const colvarvalue *> sorted_cvc_values;
 
+  /// Gradients of scripted function
+  std::vector<cvm::matrix2d<cvm::real> > *sorted_cvc_grads;
+
+  /// Set up arguments for colvarproxy::py_run_colvar_callback() and call it
+  int py_run_callback(std::string const &func_name,
+                      std::vector<colvarvalue const *> const &cvc_values,
+                      colvarvalue &value);
+
+  /// Pointer to PyObject implementing the scripted function (value)
+  void *py_func;
+
+  /// Set up arguments for colvarproxy::py_run_colvar_gradient_callback() and
+  /// call it
+  int py_run_gradient_callback(
+         std::string const &func_name,
+         std::vector<colvarvalue const *> const &cvc_values,
+         std::vector<cvm::matrix2d<cvm::real> > &sorted_cvc_grads);
+
+  /// Pointer to PyObject implementing the scripted function (gradients)
+  void *py_func_grads;
+
+  /// Pointer to sequence of cvc values (input of py_func)
+  void *py_cvc_values;
+
+  /// If appropriate, cache the CVC values into this vector
+  std::vector<double> py_cvc_values_vec;
+
+  /// Pointer to PyObject of the resulting colvar value (output of py_func)
+  void *py_colvar_value;
+
+  /// Pointer to list of colvar CVC gradients (output of py_func_grads)
+  void *py_colvar_gradients;
+
+  /// If appropriate, cache the gradients into this vector
+  std::vector<double> py_colvar_gradients_vec;
+
 #ifdef LEPTON
   /// Vector of evaluators for custom functions using Lepton
   std::vector<Lepton::CompiledExpression *> value_evaluators;
@@ -590,9 +626,13 @@ public:
   /// For scalar variables only!
   std::vector<cvm::rvector> atomic_gradients;
 
-  inline size_t n_components() const {
+  inline size_t n_components() const
+  {
     return cvcs.size();
   }
+
+  /// Whether all components have the same value type
+  bool components_same_value_type() const;
 };
 
 inline cvm::real const & colvar::force_constant() const
@@ -653,4 +693,3 @@ inline void colvar::reset_bias_force() {
 }
 
 #endif
-

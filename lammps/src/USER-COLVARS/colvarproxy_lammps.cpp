@@ -8,6 +8,11 @@
 #include "output.h"
 #include "random_park.h"
 
+#if defined(LMP_PYTHON)
+#include "Python.h"
+#include "python.h"
+#endif
+
 #include "fix_colvars.h"
 
 #include "colvarmodule.h"
@@ -81,9 +86,13 @@ colvarproxy_lammps::colvarproxy_lammps(LAMMPS_NS::LAMMPS *lmp,
   do_exit=false;
   restart_every=0;
 
-  // User-scripted forces are not available in LAMMPS
+#if defined(LMP_PYTHON)
   force_script_defined = false;
   have_scripts = false;
+#else
+  force_script_defined = true;
+  have_scripts = true;
+#endif
 
   // set input restart name and strip the extension, if present
   input_prefix_str = std::string(inp_name ? inp_name : "");
@@ -158,6 +167,7 @@ void colvarproxy_lammps::init(const char *conf_file)
   }
 }
 
+
 colvarproxy_lammps::~colvarproxy_lammps()
 {
   delete _random;
@@ -167,12 +177,14 @@ colvarproxy_lammps::~colvarproxy_lammps()
   }
 }
 
+
 // re-initialize data where needed
 int colvarproxy_lammps::setup()
 {
   my_timestep  = _lmp->update->dt * _lmp->force->femtosecond;
   return colvars->setup();
 }
+
 
 // trigger colvars computation
 double colvarproxy_lammps::compute()
@@ -231,6 +243,7 @@ double colvarproxy_lammps::compute()
   return bias_energy;
 }
 
+
 void colvarproxy_lammps::serialize_status(std::string &rst)
 {
   std::ostringstream os;
@@ -258,6 +271,7 @@ bool colvarproxy_lammps::deserialize_status(std::string &rst)
   }
 }
 
+
 cvm::rvector colvarproxy_lammps::position_distance(cvm::atom_pos const &pos1,
                                                    cvm::atom_pos const &pos2)
 {
@@ -267,6 +281,7 @@ cvm::rvector colvarproxy_lammps::position_distance(cvm::atom_pos const &pos1,
   _lmp->domain->minimum_image(xtmp,ytmp,ztmp);
   return cvm::rvector(xtmp, ytmp, ztmp);
 }
+
 
 cvm::real colvarproxy_lammps::position_dist2(cvm::atom_pos const &pos1,
                                              cvm::atom_pos const &pos2)
@@ -291,6 +306,7 @@ void colvarproxy_lammps::select_closest_image(cvm::atom_pos &pos,
   pos.z = ref.z + ztmp;
 }
 
+
 void colvarproxy_lammps::log(std::string const &message)
 {
   std::istringstream is(message);
@@ -303,11 +319,13 @@ void colvarproxy_lammps::log(std::string const &message)
   }
 }
 
+
 void colvarproxy_lammps::error(std::string const &message)
 {
   // In LAMMPS, all errors are fatal
   fatal_error(message);
 }
+
 
 void colvarproxy_lammps::fatal_error(std::string const &message)
 {
@@ -315,6 +333,7 @@ void colvarproxy_lammps::fatal_error(std::string const &message)
   _lmp->error->one(FLERR,
                    "Fatal error in the collective variables module.\n");
 }
+
 
 void colvarproxy_lammps::exit(std::string const &message)
 {
@@ -333,6 +352,25 @@ int colvarproxy_lammps::backup_file(char const *filename)
     return my_backup_file(filename, ".BAK");
   }
 }
+
+
+
+#if defined(LMP_PYTHON)
+
+void colvarproxy_lammps::init_py_pointers()
+{
+  cvm::log("Initializing Python interpreter.\n");
+  // Initialize the LAMMPS Python wrapper object (calls Py_Initialize())
+  _lmp->python->init();
+  colvarproxy::init_py_pointers();
+}
+
+char const *colvarproxy_lammps::script_obj_to_str(unsigned char *obj)
+{
+  return colvarproxy::py_obj_to_str(obj);
+}
+
+#endif
 
 
 // multi-replica support
@@ -379,7 +417,7 @@ int colvarproxy_lammps::check_atom_id(int atom_number)
   if ( (aid < 0) ) {
     cvm::error("Error: invalid atom number specified, "+
                cvm::to_str(atom_number)+"\n", INPUT_ERROR);
-    return INPUT_ERROR;
+    return cvm::get_error();
   }
 
   return aid;

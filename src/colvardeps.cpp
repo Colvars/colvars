@@ -538,6 +538,9 @@ void colvardeps::init_cv_requires() {
 
     init_feature(f_cv_scripted, "scripted", f_type_user);
 
+    init_feature(f_cv_scripted_python, "scripted in Python", f_type_user);
+    f_req_self(f_cv_scripted_python, f_cv_scripted);
+
     init_feature(f_cv_custom_function, "custom function", f_type_user);
     f_req_exclude(f_cv_custom_function, f_cv_scripted);
 

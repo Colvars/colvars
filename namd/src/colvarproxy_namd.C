@@ -1,5 +1,9 @@
 // -*- c++ -*-
 
+#if defined(NAMD_TCL) && defined(NAMD_PYTHON)
+#include <Python.h>
+#endif
+
 #include <errno.h>
 
 #include "common.h"
@@ -478,7 +482,19 @@ int colvarproxy_namd::run_colvar_gradient_callback(
   return colvarproxy::tcl_run_colvar_gradient_callback(name, cvc_values,
                                                        gradient);
 }
-#endif
+
+#endif // #ifdef NAMD_TCL
+
+#if defined(NAMD_TCL) && defined(NAMD_PYTHON)
+void colvarproxy_namd::init_py_pointers()
+{
+  cvm::log("Initializing Python interpreter.\n");
+  // Initialize the NAMD Python wrapper (calls Py_Initialize())
+  Tcl_Interp *const tcl_interp = reinterpret_cast<Tcl_Interp *>(_tcl_interp);
+  namd_python_initialize(tcl_interp);
+  colvarproxy::init_py_pointers();
+}
+#endif // #if defined(NAMD_TCL) && defined(NAMD_PYTHON)
 
 
 void colvarproxy_namd::add_energy(cvm::real energy)

@@ -1,5 +1,10 @@
 // -*- c++ -*-
 
+#if defined(VMDPYTHON)
+#define COLVARS_PYTHON
+#include <Python.h>
+#endif
+
 #include <tcl.h>
 
 #include "VMDApp.h"
@@ -354,6 +359,16 @@ char const *colvarproxy_vmd::script_obj_to_str(unsigned char *obj)
   return colvarproxy::script_obj_to_str(obj);
 #endif
 }
+
+
+#if defined(VMDPYTHON)
+void colvarproxy_vmd::init_py_pointers()
+{
+  // TODO Initialize the VMD wrapper object
+  Py_Initialize();
+  colvarproxy::init_py_pointers();
+}
+#endif
 
 
 

@@ -1,5 +1,10 @@
 // -*- c++ -*-
 
+#if defined(LMP_PYTHON) || defined(NAMD_PYTHON) || defined(VMDPYTHON)
+#define COLVARS_PYTHON
+#include "Python.h"
+#endif
+
 #include "colvarmodule.h"
 #include "colvarvalue.h"
 #include "colvarparse.h"
@@ -24,6 +29,14 @@ colvar::colvar()
   // Initialize static array once and for all
   runave_os = NULL;
   init_cv_requires();
+
+  sorted_cvc_grads = NULL;
+
+  py_func = NULL;
+  py_func_grads = NULL;
+  py_cvc_values = NULL;
+  py_colvar_value = NULL;
+  py_colvar_gradients = NULL;
 }
 
 
@@ -111,7 +124,7 @@ int colvar::init(std::string const &conf)
     // Note: default CVC names are in input order for same type of CVC
     std::sort(cvcs.begin(), cvcs.end(), compare);
 
-    if(cvcs.size() > 1) {
+    if (cvcs.size() > 1) {
       cvm::log("Sorted list of components for this scripted colvar:");
       for (i = 0; i < cvcs.size(); i++) {
         cvm::log(cvm::to_str(i+1) + " " + cvcs[i]->name);
@@ -123,6 +136,15 @@ int colvar::init(std::string const &conf)
     for (i = 0; i < cvcs.size(); i++) {
       sorted_cvc_values.push_back(&(cvcs[i]->value()));
     }
+
+    get_keyval_feature(this, conf, "scriptedFunctionPython",
+                       f_cv_scripted_python, false);
+#if !defined(COLVARS_PYTHON)
+    if (is_enabled(f_cv_scripted_python)) {
+      cvm::error("Error: Python is not enabled in this build.\n",
+                 INPUT_ERROR | COLVARS_NOT_IMPLEMENTED);
+    }
+#endif
   }
 
   if (!(is_enabled(f_cv_scripted) || is_enabled(f_cv_custom_function))) {
@@ -936,6 +958,19 @@ colvar::~colvar()
   // because the children are cvcs and will be deleted
   // just below
 
+  if (sorted_cvc_grads) {
+    delete sorted_cvc_grads;
+    sorted_cvc_grads = NULL;
+  }
+
+#if defined(COLVARS_PYTHON)
+  Py_XDECREF(py_func);
+  Py_XDECREF(py_colvar_value);
+  Py_XDECREF(py_cvc_values);
+  Py_XDECREF(py_func_grads);
+  Py_XDECREF(py_colvar_gradients);
+#endif
+
 //   Clear references to this colvar's cvcs as children
 //   for dependency purposes
   remove_all_children();
@@ -1105,8 +1140,16 @@ int colvar::collect_cvc_values()
 
   // combine them appropriately, using either a scripted function or a polynomial
   if (is_enabled(f_cv_scripted)) {
-    // cvcs combined by user script
-    int res = cvm::proxy->run_colvar_callback(scripted_function, sorted_cvc_values, x);
+    int res = COLVARS_OK;
+    if (is_enabled(f_cv_scripted_python)) {
+      res = this->py_run_callback(scripted_function,
+                                  sorted_cvc_values,
+                                  x);
+    } else {
+      res = cvm::proxy->run_colvar_callback(scripted_function,
+                                            sorted_cvc_values,
+                                            x);
+    }
     if (res == COLVARS_NOT_IMPLEMENTED) {
       cvm::error("Scripted colvars are not implemented.");
       return COLVARS_NOT_IMPLEMENTED;
@@ -1527,15 +1570,25 @@ void colvar::communicate_forces()
   }
 
   if (is_enabled(f_cv_scripted)) {
-    std::vector<cvm::matrix2d<cvm::real> > func_grads;
-    func_grads.reserve(cvcs.size());
-    for (i = 0; i < cvcs.size(); i++) {
-      if (!cvcs[i]->is_enabled()) continue;
-      func_grads.push_back(cvm::matrix2d<cvm::real> (x.size(),
-                                                     cvcs[i]->value().size()));
+    if (sorted_cvc_grads == NULL) {
+      sorted_cvc_grads = new std::vector<cvm::matrix2d<cvm::real> >();
+      sorted_cvc_grads->reserve(cvcs.size());
+      for (i = 0; i < cvcs.size(); i++) {
+        if (!cvcs[i]->is_enabled()) continue;
+        sorted_cvc_grads->push_back(cvm::matrix2d<cvm::real>(x.size(),
+                                                             cvcs[i]->value().size()));
+      }
     }
-    int res = cvm::proxy->run_colvar_gradient_callback(scripted_function, sorted_cvc_values, func_grads);
-
+    int res = COLVARS_OK;
+    if (is_enabled(f_cv_scripted_python)) {
+      res = this->py_run_gradient_callback(scripted_function,
+                                           sorted_cvc_values,
+                                           *sorted_cvc_grads);
+    } else {
+      res = cvm::proxy->run_colvar_gradient_callback(scripted_function,
+                                                     sorted_cvc_values,
+                                                     *sorted_cvc_grads);
+    }
     if (res != COLVARS_OK) {
       if (res == COLVARS_NOT_IMPLEMENTED) {
         cvm::error("Colvar gradient scripts are not implemented.", COLVARS_NOT_IMPLEMENTED);
@@ -1550,7 +1603,7 @@ void colvar::communicate_forces()
       if (!cvcs[i]->is_enabled()) continue;
       // cvc force is colvar force times colvar/cvc Jacobian
       // (vector-matrix product)
-      (cvcs[i])->apply_force(colvarvalue(f.as_vector() * func_grads[grad_index++],
+      (cvcs[i])->apply_force(colvarvalue(f.as_vector() * (*sorted_cvc_grads)[grad_index++],
                              cvcs[i]->value().type()));
     }
 
@@ -1640,6 +1693,160 @@ int colvar::update_cvc_flags()
 
   return COLVARS_OK;
 }
+
+
+bool colvar::components_same_value_type() const
+{
+  for (size_t i = 0; i < cvcs.size(); i++) {
+    if (cvcs[i]->value().type() != cvcs[0]->value().type()) {
+      return false;
+    }
+  }
+  return true;
+}
+
+
+#if defined(COLVARS_PYTHON)
+
+int colvar::py_run_callback(std::string const &func_name,
+                            std::vector<colvarvalue const *> const &cvc_values,
+                            colvarvalue &value)
+{
+  if (cvm::debug()) {
+    cvm::log("Running implemented colvar::py_run_callback().\n");
+  }
+
+  if ((cvm::proxy)->py_available() != COLVARS_OK) {
+    return cvm::get_error();
+  }
+
+  PyGILState_STATE py_gil_state = PyGILState_Ensure();
+
+  if (py_func == NULL) {
+    char const *py_func_name =
+      std::string("calc_"+scripted_function).c_str();
+    py_func = (cvm::proxy)->py_get_function(NULL, py_func_name);
+    (cvm::proxy)->py_check_obj(NULL, py_func_name, py_func);
+
+    if (components_same_value_type() &&
+        (cvc_values[0]->type() == colvarvalue::type_scalar) &&
+        (n_components() > 1) // avoid this for a single float
+        ) {
+      py_cvc_values_vec.resize(sorted_cvc_values.size());
+    }
+  }
+
+  if (py_cvc_values_vec.size()) {
+    for (size_t i = 0; i < sorted_cvc_values.size(); i++) {
+      py_cvc_values_vec[i] = (*(sorted_cvc_values[i]))[0];
+    }
+    py_cvc_values =
+      (cvm::proxy)->py_array_from_vector(py_cvc_values_vec,
+                                         py_cvc_values);
+  } else {
+    py_cvc_values =
+      (cvm::proxy)->py_set_colvarvalues(cvc_values, py_cvc_values);
+  }
+
+  py_colvar_value =
+    (cvm::proxy)->py_set_colvarvalue(value, py_colvar_value);
+
+  if ((cvm::proxy)->py_run_colvar_callback(py_func, py_cvc_values, NULL,
+                                           &py_colvar_value) != COLVARS_OK) {
+    cvm::error("Error: in Python function "
+               "calc_"+scripted_function+"().\n", INPUT_ERROR);
+  }
+
+  int result = (cvm::proxy)->py_get_colvarvalue(py_colvar_value, &value);
+  if (result != COLVARS_OK) {
+    cvm::error("Error: expected a sequence of "+cvm::to_str(value.size())+
+               " numbers as output of Python function "
+               "calc_"+scripted_function+"().\n", INPUT_ERROR);
+  }
+  if (cvm::debug()) {
+    unsigned char *obj = reinterpret_cast<unsigned char *>(py_colvar_value);
+    cvm::log("py_colvar_value = "+
+             std::string((cvm::proxy)->py_obj_to_str(obj))+"\n");
+  }
+
+  PyGILState_Release(py_gil_state);
+  return cvm::get_error();
+}
+
+
+int colvar::py_run_gradient_callback(std::string const &func_name,
+                                     std::vector<colvarvalue const *> const &cvc_values,
+                                     std::vector<cvm::matrix2d<cvm::real> > &sorted_cvc_grads)
+{
+  if ((cvm::proxy)->py_available() != COLVARS_OK) {
+    return cvm::get_error();
+  }
+
+  PyGILState_STATE py_gil_state = PyGILState_Ensure();
+
+  if (py_func_grads == NULL) {
+    char const *py_func_name =
+      std::string("calc_"+scripted_function+"_gradient").c_str();
+    py_func_grads = (cvm::proxy)->py_get_function(NULL, py_func_name);
+    (cvm::proxy)->py_check_obj(NULL, py_func_name, py_func_grads);
+
+    if (components_same_value_type() &&
+        (cvc_values[0]->type() == colvarvalue::type_scalar)) {
+      py_colvar_gradients_vec.resize(sorted_cvc_values.size());
+    }
+  }
+
+  if (py_colvar_gradients_vec.size()) {
+    py_colvar_gradients =
+      (cvm::proxy)->py_array_from_vector(py_colvar_gradients_vec,
+                                         py_colvar_gradients);
+  } else {
+    py_colvar_gradients =
+      (cvm::proxy)->py_set_colvar_gradients(sorted_cvc_grads,
+                                            py_colvar_gradients);
+  }
+
+  // py_cvc_values was already set up by py_run_callback()
+
+  if ((cvm::proxy)->py_run_colvar_callback(py_func_grads, py_cvc_values,
+                                           py_colvar_value,
+                                           &py_colvar_gradients) != COLVARS_OK) {
+    cvm::error("Error: in Python function "
+               "calc_"+scripted_function+"_gradient().\n",
+               INPUT_ERROR);
+  }
+
+  if ((cvm::proxy)->py_get_colvar_gradients(py_colvar_gradients,
+                                            &sorted_cvc_grads) !=
+      COLVARS_OK) {
+    cvm::error("Error: expected a sequence of "+
+               cvm::to_str(sorted_cvc_grads.size())+
+               " numbers or matrices as output of Python function "
+               "calc_"+scripted_function+"_gradient().\n",
+               INPUT_ERROR);
+  }
+
+  PyGILState_Release(py_gil_state);
+  return cvm::get_error();
+}
+
+#else
+
+int colvar::py_run_callback(std::string const &func_name,
+                            std::vector<colvarvalue const *> const &cvc_values,
+                            colvarvalue &value)
+{
+  return COLVARS_NOT_IMPLEMENTED;
+}
+
+int colvar::py_run_gradient_callback(std::string const &func_name,
+                                     std::vector<colvarvalue const *> const &cvc_values,
+                                     std::vector<cvm::matrix2d<cvm::real> > &sorted_cvc_grads)
+{
+  return COLVARS_NOT_IMPLEMENTED;
+}
+
+#endif
 
 
 // ******************** METRIC FUNCTIONS ********************

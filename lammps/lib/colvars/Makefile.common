@@ -42,6 +42,7 @@ COLVARS_SRCS = \
         colvarmodule.cpp \
         colvarparse.cpp \
         colvarproxy.cpp \
+        colvarproxy_python.cpp \
         colvarproxy_tcl.cpp \
         colvarscript.cpp \
         colvarscript_commands.cpp \

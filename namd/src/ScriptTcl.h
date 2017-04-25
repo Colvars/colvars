@@ -23,6 +23,10 @@
 class ConfigList;
 class NamdState;
 
+#ifdef NAMD_PYTHON
+void namd_python_initialize(void *interp);
+#endif
+
 class ScriptTcl {
 public:
   ScriptTcl();

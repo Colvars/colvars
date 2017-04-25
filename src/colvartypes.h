@@ -57,8 +57,14 @@ public:
     }
   }
 
-  /// Return a reference to the data
+  /// Return a reference to the array
   inline std::vector<T> &data_array()
+  {
+    return data;
+  }
+
+  /// Return a reference to the array
+  inline std::vector<T> const &data_array() const
   {
     return data;
   }
@@ -467,8 +473,14 @@ public:
     this->clear();
   }
 
-  /// Return a reference to the data
+  /// Return a reference to the flattened array
   inline std::vector<T> &data_array()
+  {
+    return data;
+  }
+
+  /// Return a reference to the flattened array
+  inline std::vector<T> const &data_array() const
   {
     return data;
   }
@@ -625,8 +637,8 @@ public:
                   cvm::to_str(v.size()) + " and " + cvm::to_str(m.outer_length)+"x"+cvm::to_str(m.inner_length) + ".\n");
     } else {
       size_t i, k;
-      for (i = 0; i < m.inner_length; i++) {
-        for (k = 0; k < m.outer_length; k++) {
+      for (k = 0; k < m.outer_length; k++) {
+        for (i = 0; i < m.inner_length; i++) {
           result[i] += m[k][i] * v[k];
         }
       }

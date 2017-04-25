@@ -293,6 +293,8 @@ public:
     f_cv_corrfunc,
     /// \brief Value and gradient computed by user script
     f_cv_scripted,
+    /// \brief Value and gradient computed by Python
+    f_cv_scripted_python,
     /// \brief Value and gradient computed by user function through Lepton
     f_cv_custom_function,
     /// \brief Colvar is periodic
