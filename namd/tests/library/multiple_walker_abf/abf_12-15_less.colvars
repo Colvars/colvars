@@ -12,7 +12,7 @@ colvar {
    upperWallConstant 20.0
 
    outputValue
-   outputSystemForce
+   outputTotalForce
    outputAppliedForce
 
    distance {

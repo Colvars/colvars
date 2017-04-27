@@ -102,7 +102,7 @@ for {set i 0} {$i < $cycleNum} {incr i} {
 	set count0 [localCount $bin $binNum $sampleRad abf]
 	#set count [expr {$count0 - $binLastCount($bin)}]
 	set count $count0
-	print "REP_BIN REP $rep BIN $bin LASTCOUNT $binLastCount($bin) COUNT0 $count COUNT $count"
+#	print "REP_BIN REP $rep BIN $bin LASTCOUNT $binLastCount($bin) COUNT0 $count COUNT $count"
 
 	replicaBarrier
 	if {$rep > 0} {

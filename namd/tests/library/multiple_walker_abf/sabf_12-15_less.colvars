@@ -1,5 +1,6 @@
 colvarsTrajFrequency     500
 colvarsRestartFrequency  20000
+smp off # SMP and multiple-replica are incompatible
 
 colvar {
    name endToEnd
@@ -12,7 +13,7 @@ colvar {
    upperWallConstant 20.0
 
    outputValue
-   outputSystemForce
+   outputTotalForce
    outputAppliedForce
 
    distance {
