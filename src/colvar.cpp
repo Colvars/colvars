@@ -1237,15 +1237,18 @@ cvm::real colvar::update_forces_energy()
 
     cvm::real dt = cvm::dt();
 
-    // Keep track of slow timestep to integrate MTS colvars
-    // the colvar checks the interval after waking up twice
-    int n_timesteps = cvm::step_relative() - prev_timestep;
-    if (prev_timestep > -1 && n_timesteps != time_step_factor) {
-      cvm::error("Error: extended-Lagrangian " + description + " has timeStepFactor " +
-        cvm::to_str(time_step_factor) + ", but was activated after " + cvm::to_str(n_timesteps) +
-        " steps at timestep " + cvm::to_str(cvm::step_absolute()) + ".\n"
-        + "Make sure that this colvar is requested by biases at multiples of timeStepFactor.\n");
-      return 0.;
+    if (prev_timestep > -1) {
+      // Keep track of slow timestep to integrate MTS colvars
+      // the colvar checks the interval after waking up twice
+      int n_timesteps = cvm::step_relative() - prev_timestep;
+      if (n_timesteps != 0 && n_timesteps != time_step_factor) {
+        cvm::error("Error: extended-Lagrangian " + description + " has timeStepFactor " +
+          cvm::to_str(time_step_factor) + ", but was activated after " + cvm::to_str(n_timesteps) +
+          " steps at timestep " + cvm::to_str(cvm::step_absolute()) + " (relative step: " +
+          cvm::to_str(cvm::step_relative()) + ").\n" +
+          "Make sure that this colvar is requested by biases at multiples of timeStepFactor.\n");
+        return 0.;
+      }
     }
     prev_timestep = cvm::step_relative();
 
