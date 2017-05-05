@@ -7,11 +7,11 @@ rankdir = "LR";' > deps.gv
 sed -f deps.sed < colvardeps.cpp >> deps.gv
 
 # set dependencies of the same level objects to the same rank
-awk '/^  cvb_.* \[/{list = list "\"" $1 "\" ; "} END {print "  { rank = same; " list "}"}' deps.gv >> deps.gv
+awk '/^  cvb_/{list = list "\"" $1 "\" ; "} END {print "  { rank = same; " list "}"}' deps.gv >> deps.gv
 # There are too many dependencies within colvars so they get tangled if plotted on one rank
-#awk '/^  cv_.* \[/{list = list "\"" $1 "\" ; "} END {print "  { rank = same; " list "}"}' deps.gv >> deps.gv
-awk '/^  cvc_.* \[/{list = list "\"" $1 "\" ; "} END {print "  { rank = same; " list "}"}' deps.gv >> deps.gv
-awk '/^  ag_.* \[/{list = list "\"" $1 "\" ; "} END {print "  { rank = same; " list "}"}' deps.gv >> deps.gv
+#awk '/^  cv_./{list = list "\"" $1 "\" ; "} END {print "  { rank = same; " list "}"}' deps.gv >> deps.gv
+awk '/^  cvc_./{list = list "\"" $1 "\" ; "} END {print "  { rank = same; " list "}"}' deps.gv >> deps.gv
+awk '/^  ag_./{list = list "\"" $1 "\" ; "} END {print "  { rank = same; " list "}"}' deps.gv >> deps.gv
 echo '}' >> deps.gv
 
 dot deps.gv  -o deps.svg -Tsvg
