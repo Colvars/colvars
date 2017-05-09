@@ -339,9 +339,9 @@ namespace UIestimator
 					y[i] -= 360;
 				}
 
-				if (x[i] < lowerboundary[i] - EXTENDED_X_SIZE * width[i] + 0.0001 || x[i] > upperboundary[i] + EXTENDED_X_SIZE * width[i] - 0.0001 \
-					|| y[i] - x[i] < -HALF_Y_SIZE * width[i] + 0.0001 || y[i] - x[i] > HALF_Y_SIZE * width[i] - 0.0001 \
-					|| y[i] - lowerboundary[i] < -HALF_Y_SIZE * width[i] + 0.0001 || y[i] - upperboundary[i] > HALF_Y_SIZE * width[i] - 0.0001)
+				if (x[i] < lowerboundary[i] - EXTENDED_X_SIZE * width[i] + 0.00001 || x[i] > upperboundary[i] + EXTENDED_X_SIZE * width[i] - 0.00001 \
+					|| y[i] - x[i] < -HALF_Y_SIZE * width[i] + 0.00001 || y[i] - x[i] > HALF_Y_SIZE * width[i] - 0.00001 \
+					|| y[i] - lowerboundary[i] < -HALF_Y_SIZE * width[i] + 0.00001 || y[i] - upperboundary[i] > HALF_Y_SIZE * width[i] - 0.00001)
 					return false;
 			}
 
@@ -362,7 +362,7 @@ namespace UIestimator
 			{
 				//if (x[i] < lowerboundary[i] + 0.000001 || x[i] > upperboundary[i] - 0.000001)
 				// adapt colvars precision
-				if (x[i] < lowerboundary[i] + 0.0001 || x[i] > upperboundary[i] - 0.0001)
+				if (x[i] < lowerboundary[i] + 0.00001 || x[i] > upperboundary[i] - 0.00001)
 					return false;
 			}
 			distribution_x_y.increase_value(x, y, 1);
