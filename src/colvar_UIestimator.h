@@ -434,7 +434,7 @@ namespace UIestimator
 				while (true)
 				{
 					loop_flag[i] += width[i];
-					if (loop_flag[i] > upperboundary[i] + HALF_Y_SIZE * width[i] - 1 + 0.00001)
+					if (loop_flag[i] > upperboundary[i] + HALF_Y_SIZE * width[i] - width[i] + 0.00001)
 					{
 						loop_flag[i] = lowerboundary[i] - HALF_Y_SIZE * width[i];
 						i--;
@@ -484,7 +484,7 @@ namespace UIestimator
 					while (true)
 					{
 						loop_flag_y[i] += width[i];
-						if (loop_flag_y[i] > loop_flag_x[i] + HALF_Y_SIZE * width[i] - 1 + 0.00001)
+						if (loop_flag_y[i] > loop_flag_x[i] + HALF_Y_SIZE * width[i] - width[i] + 0.00001)
 						{
 							loop_flag_y[i] = loop_flag_x[i] - HALF_Y_SIZE * width[i];
 							i--;
