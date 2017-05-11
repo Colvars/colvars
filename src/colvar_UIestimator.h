@@ -55,6 +55,11 @@ namespace UIestimator
 
 		int inline get_value(const std::vector<double> & x, const std::vector<double> & y)
 		{
+			//if (matrix[convert_x(x)][convert_y(x, y)]!=0)
+			//{
+				//std::cout<<convert_x(x)<<" "<<convert_y(x, y)<<" "<<x[0]<<" "<<x[1]<<" "<<y[0]<<" "<<y[1]<<" ";
+				//std::cout<<matrix[convert_x(x)][convert_y(x, y)]<<"sadasfdasaaaaaaaa"<<std::endl;
+			//}
 			return matrix[convert_x(x)][convert_y(x, y)];
 		}
 
@@ -109,7 +114,7 @@ namespace UIestimator
 		{
 			for (int i = 0; i < dimension; i++)
 			{
-				temp[i] = int((int(y[i] / width[i]) - int(x[i] / width[i])) + (y_size - 1) / 2 + 0.000001);
+				temp[i] = round((round(y[i] / width[i] + 0.000001) - round(x[i] / width[i] + 0.000001)) + (y_size - 1) / 2 + 0.000001);
 			}
 
 			int index = 0;
@@ -121,6 +126,11 @@ namespace UIestimator
 					index += temp[i];
 			}
 			return index;
+		}
+
+		double round(double r)  
+		{  
+			return (r > 0.0) ? floor(r + 0.5) : ceil(r - 0.5);  
 		}
 	};
 
@@ -466,10 +476,12 @@ namespace UIestimator
 				{
 					av[i] = 0;
 					diff_av[i] = 0;
+					loop_flag_y[i] = loop_flag_x[i] - HALF_Y_SIZE * width[i];
 				}
 
 				while (true)
 				{
+					//std::cout<<"pppppppppppppppppppppp "<<loop_flag_x[0]<<" "<<loop_flag_x[1]<<" "<<loop_flag_y[0]<<" "<<loop_flag_y[1]<<std::endl;
 					norm += distribution_x_y.get_value(loop_flag_x, loop_flag_y);
 					for (int i = 0; i < dimension; i++)
 					{
