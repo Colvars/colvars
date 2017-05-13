@@ -452,10 +452,10 @@ public:
   static void log(std::string const &message);
 
   /// Print a message to the main log and exit with error code
-  static void fatal_error(std::string const &message);
+  static int fatal_error(std::string const &message);
 
   /// Print a message to the main log and set global error code
-  static void error(std::string const &message, int code = COLVARS_ERROR);
+  static int error(std::string const &message, int code = COLVARS_ERROR);
 
   /// Print a message to the main log and exit normally
   static void exit(std::string const &message);

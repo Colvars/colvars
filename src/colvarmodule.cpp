@@ -1562,19 +1562,21 @@ void colvarmodule::clear_error()
 }
 
 
-void cvm::error(std::string const &message, int code)
+int colvarmodule::error(std::string const &message, int code)
 {
   set_error_bits(code);
   proxy->error(message);
+  return get_error();
 }
 
 
-void cvm::fatal_error(std::string const &message)
+int colvarmodule::fatal_error(std::string const &message)
 {
   // TODO once all non-fatal errors have been set to be handled by error(),
   // set DELETE_COLVARS here for VMD to handle it
   set_error_bits(FATAL_ERROR);
   proxy->fatal_error(message);
+  return get_error();
 }
 
 
