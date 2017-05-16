@@ -444,7 +444,7 @@ void colvardeps::init_cv_requires() {
     // The following exlusion could be lifted by implementing the feature
     f_req_exclude(f_cv_collect_gradient, f_cv_scripted);
 
-    init_feature(f_cv_fdiff_velocity, "fdiff_velocity", f_type_dynamic);
+    init_feature(f_cv_fdiff_velocity, "velocity from finite differences", f_type_dynamic);
 
     // System force: either trivial (spring force); through extended Lagrangian, or calculated explicitly
     init_feature(f_cv_total_force, "total force", f_type_dynamic);
@@ -577,7 +577,7 @@ void colvardeps::init_cvc_requires() {
 
     // Compute total force on first site only to avoid unwanted
     // coupling to other colvars (see e.g. Ciccotti et al., 2005)
-    init_feature(f_cvc_one_site_total_force, "compute total collective force only from one group center", f_type_user);
+    init_feature(f_cvc_one_site_total_force, "compute total force from one group", f_type_user);
     f_req_self(f_cvc_one_site_total_force, f_cvc_com_based);
 
     init_feature(f_cvc_scalable, "scalable calculation", f_type_static);
