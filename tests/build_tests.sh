@@ -116,6 +116,7 @@ for colvar in \
     "angle" \
     "dihedral" \
     "coordnum" \
+    "distanceinv" \
     "gyration" \
     "inertia" \
     "inertiaz" \

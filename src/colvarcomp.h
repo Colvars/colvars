@@ -483,11 +483,17 @@ public:
 /// \brief Colvar component: average distance between two groups of atoms, weighted as the sixth power,
 /// as in NMR refinements(colvarvalue::type_scalar type, range (0:*))
 class colvar::distance_inv
-  : public colvar::distance
+  : public colvar::cvc
 {
 protected:
+  /// First atom group
+  cvm::atom_group  *group1;
+  /// Second atom group
+  cvm::atom_group  *group2;
   /// Components of the distance vector orthogonal to the axis
   int exponent;
+  /// Use absolute positions, ignoring PBCs when present
+  bool b_no_PBC;
 public:
   distance_inv(std::string const &conf);
   distance_inv();

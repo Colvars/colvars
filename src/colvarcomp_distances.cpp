@@ -545,9 +545,17 @@ colvarvalue colvar::distance_dir::dist2_rgrad(colvarvalue const &x1,
 
 
 colvar::distance_inv::distance_inv(std::string const &conf)
-  : distance(conf)
+  : cvc(conf)
 {
   function_type = "distance_inv";
+
+  group1 = parse_group(conf, "group1");
+  group2 = parse_group(conf, "group2");
+
+  if (get_keyval(conf, "forceNoPBC", b_no_PBC, false)) {
+    cvm::log("Computing distance using absolute positions (not minimal-image)");
+  }
+
   get_keyval(conf, "exponent", exponent, 6);
   if (exponent%2) {
     cvm::error("Error: odd exponent provided, can only use even ones.\n");
