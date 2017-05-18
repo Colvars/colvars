@@ -427,7 +427,8 @@ int colvar::init_extended_Lagrangian(std::string const &conf)
     if (ext_gamma != 0.0) {
       enable(f_cv_Langevin);
       ext_gamma *= 1.0e-3; // correct as long as input is required in ps-1 and cvm::dt() is in fs
-      ext_sigma = std::sqrt(2.0 * cvm::boltzmann() * temp * ext_gamma * ext_mass / cvm::dt());
+      // Adjust Langevin sigma for slow time step if time_step_factor != 1
+      ext_sigma = std::sqrt(2.0 * cvm::boltzmann() * temp * ext_gamma * ext_mass / (cvm::dt() * cvm::real(time_step_factor)));
     }
   }
 
@@ -1235,8 +1236,6 @@ cvm::real colvar::update_forces_energy()
       cvm::log("Updating extended-Lagrangian degree of freedom.\n");
     }
 
-    cvm::real dt = cvm::dt();
-
     if (prev_timestep > -1) {
       // Keep track of slow timestep to integrate MTS colvars
       // the colvar checks the interval after waking up twice
@@ -1252,8 +1251,8 @@ cvm::real colvar::update_forces_energy()
     }
     prev_timestep = cvm::step_relative();
 
-    // Integrate with slow timestep
-    dt *= cvm::real(time_step_factor);
+    // Integrate with slow timestep (if time_step_factor != 1)
+    cvm::real dt = cvm::dt() * cvm::real(time_step_factor);
 
     colvarvalue f_ext(fr.type()); // force acting on the extended variable
     f_ext.reset();
@@ -1268,6 +1267,8 @@ cvm::real colvar::update_forces_energy()
     fr    = f;
     f_ext = f + (-0.5 * ext_force_k) * this->dist2_lgrad(xr, x);
     f     =     (-0.5 * ext_force_k) * this->dist2_rgrad(xr, x);
+    // Coupling force is a slow force, to be applied impulse-style
+    f *= cvm::real(time_step_factor);
 
     if (is_enabled(f_cv_subtract_applied_force)) {
       // Report a "system" force without the biases on this colvar
