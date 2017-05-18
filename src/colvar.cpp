@@ -1265,20 +1265,17 @@ cvm::real colvar::update_forces_energy()
     //    - after this code block, colvar force to be applied to atomic coordinates
     //      ie. spring force (fb_actual will be added just below)
     fr    = f;
-    f_ext = f + (-0.5 * ext_force_k) * this->dist2_lgrad(xr, x);
-    f     =     (-0.5 * ext_force_k) * this->dist2_rgrad(xr, x);
-    // Coupling force is a slow force, to be applied impulse-style
+    // External force has been scaled for a 1-timestep impulse, scale it back because we will
+    // integrate it with the colvar's own timestep factor
+    f_ext = f / cvm::real(time_step_factor);
+    f_ext += (-0.5 * ext_force_k) * this->dist2_lgrad(xr, x);
+    f      = (-0.5 * ext_force_k) * this->dist2_rgrad(xr, x);
+    // Coupling force is a slow force, to be applied to atomic coords impulse-style
     f *= cvm::real(time_step_factor);
 
-    if (is_enabled(f_cv_subtract_applied_force)) {
-      // Report a "system" force without the biases on this colvar
-      // that is, just the spring force
-      ft_reported = (-0.5 * ext_force_k) * this->dist2_lgrad(xr, x);
-    } else {
-      // The total force acting on the extended variable is f_ext
-      // This will be used in the next timestep
-      ft_reported = f_ext;
-    }
+    // The total force acting on the extended variable is f_ext
+    // This will be used in the next timestep
+    ft_reported = f_ext;
 
     // leapfrog: starting from x_i, f_i, v_(i-1/2)
     vr  += (0.5 * dt) * f_ext / ext_mass;
@@ -1298,7 +1295,7 @@ cvm::real colvar::update_forces_energy()
     if (this->is_enabled(f_cv_periodic)) this->wrap(xr);
   }
 
-  // Now adding the force on the actual colvar (for those biases who
+  // Now adding the force on the actual colvar (for those biases that
   // bypass the extended Lagrangian mass)
   f += fb_actual;
 

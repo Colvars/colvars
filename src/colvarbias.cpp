@@ -203,6 +203,10 @@ void colvarbias::communicate_forces()
                variables(i)->name+"\".\n");
     }
     // Impulse-style multiple timestep
+    // Note that biases with different values of time_step_factor
+    // may send forces to the same colvar
+    // which is why rescaling has to happen now: the colvar is not
+    // aware of this bias' time_step_factor
     variables(i)->add_bias_force(cvm::real(time_step_factor) * colvar_forces[i]);
   }
 }
