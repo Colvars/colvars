@@ -108,6 +108,16 @@ int colvarbias_abf::init(std::string const &conf)
     if (colvars[i]->is_enabled(f_cv_extended_Lagrangian))
       b_extended = true;
 
+    // Cannot mix and match coarse time steps with ABF because it gives
+    // wrong total force averages - total force needs to be averaged over
+    // every time step
+    if (colvars[i]->get_time_step_factor() != time_step_factor) {
+      cvm::error("Error: " + colvars[i]->description + " has a value of timeStepFactor ("
+        + cvm::to_str(colvars[i]->get_time_step_factor()) + ") different from that of "
+        + description + " (" + cvm::to_str(time_step_factor) + ").\n");
+      return COLVARS_ERROR;
+    }
+
     // Here we could check for orthogonality of the Cartesian coordinates
     // and make it just a warning if some parameter is set?
   }

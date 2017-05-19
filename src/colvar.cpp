@@ -1375,6 +1375,7 @@ cvm::real colvar::update_forces_energy()
   // set to zero the applied force
   f.type(value());
   f.reset();
+  fr.reset();
 
   // If we are not active at this timestep, that's all we have to do
   // return with energy == zero
