@@ -220,8 +220,9 @@ int colvardeps::enable(int feature_id,
     }
     if (!ok) {
       if (!dry_run) {
-        cvm::log("No dependency satisfied among alternates:");
-        cvm::log("-----------------------------------------");
+        cvm::log("\"" + f->description + "\" in " + description + "requires one of\n");
+        cvm::log("the following features, none of which can be enabled:\n");
+        cvm::log("-----------------------------------------\n");
         for (j=0; j<f->requires_alt[i].size(); j++) {
           int g = f->requires_alt[i][j];
           cvm::log(cvm::to_str(j+1) + ". " + features()[g]->description);
@@ -230,7 +231,6 @@ int colvardeps::enable(int feature_id,
           cvm::decrease_depth();
         }
         cvm::log("-----------------------------------------");
-        cvm::log("for \"" + f->description + "\" in " + description);
         if (toplevel) {
           cvm::error("Error: Failed dependency in " + description + ".");
         }
@@ -428,7 +428,7 @@ void colvardeps::init_cv_requires() {
     }
 
     init_feature(f_cv_active, "active", f_type_dynamic);
-    f_req_children(f_cv_active, f_cvc_active);
+    // Do not require f_cvc_active in children, as some components may be disabled
     // Colvars must be either a linear combination, or scalar (and polynomial) or scripted
     f_req_alt3(f_cv_active, f_cv_scalar, f_cv_linear, f_cv_scripted);
 
@@ -600,6 +600,9 @@ void colvardeps::init_cvc_requires() {
     bool avail = is_dynamic(i) ? false : true;
     feature_states.push_back(feature_state(avail, false));
   }
+
+  // CVCs are enabled from the start - get disabled based on flags
+  feature_states[f_cvc_active].enabled = true;
 
   // Features that are implemented by all cvcs by default
   // Each cvc specifies what other features are available
