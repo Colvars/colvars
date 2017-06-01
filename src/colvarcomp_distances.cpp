@@ -1208,8 +1208,9 @@ colvar::eigenvector::eigenvector(std::string const &conf)
     if (b_inline) {
       cvm::log("Using vector components from input file.\n");
       if (eigenvec.size() != atoms->size()) {
-        cvm::fatal_error("Error: vector components do not "
+        cvm::error("Error: vector components do not "
                           "match the number of requested atoms->\n");
+        return;
       }
     }
 

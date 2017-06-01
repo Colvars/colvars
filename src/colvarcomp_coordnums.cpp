@@ -80,8 +80,10 @@ colvar::coordnum::coordnum(std::string const &conf)
   group1 = parse_group(conf, "group1");
   group2 = parse_group(conf, "group2");
 
-  if (group1->b_dummy)
-    cvm::fatal_error("Error: only group2 is allowed to be a dummy atom\n");
+  if (group1->b_dummy) {
+    cvm::error("Error: only group2 is allowed to be a dummy atom\n");
+    return;
+  }
 
   bool const b_isotropic = get_keyval(conf, "cutoff", r0,
                                       cvm::real(4.0 * cvm::unit_angstrom()));
@@ -92,6 +94,7 @@ colvar::coordnum::coordnum(std::string const &conf)
     if (b_isotropic) {
       cvm::error("Error: cannot specify \"cutoff\" and \"cutoff3\" at the same time.\n",
                  INPUT_ERROR);
+      return;
     }
 
     b_anisotropic = true;
@@ -221,7 +224,8 @@ colvar::h_bond::h_bond(std::string const &conf)
   get_keyval(conf, "donor",    d_num, -1);
 
   if ( (a_num == -1) || (d_num == -1) ) {
-    cvm::fatal_error("Error: either acceptor or donor undefined.\n");
+    cvm::error("Error: either acceptor or donor undefined.\n");
+    return;
   }
 
   cvm::atom acceptor = cvm::atom(a_num);
@@ -235,7 +239,8 @@ colvar::h_bond::h_bond(std::string const &conf)
   get_keyval(conf, "expDenom", ed, 8);
 
   if ( (en%2) || (ed%2) ) {
-    cvm::fatal_error("Error: odd exponents provided, can only use even ones.\n");
+    cvm::error("Error: odd exponents provided, can only use even ones.\n");
+    return;
   }
 
   if (cvm::debug())
@@ -306,7 +311,8 @@ colvar::selfcoordnum::selfcoordnum(std::string const &conf)
   get_keyval(conf, "expDenom", ed, int(12));
 
   if ( (en%2) || (ed%2) ) {
-    cvm::fatal_error("Error: odd exponents provided, can only use even ones.\n");
+    cvm::error("Error: odd exponents provided, can only use even ones.\n");
+    return;
   }
 }
 
@@ -357,8 +363,10 @@ colvar::groupcoordnum::groupcoordnum(std::string const &conf)
   x.type(colvarvalue::type_scalar);
 
   // group1 and group2 are already initialized by distance()
-  if (group1->b_dummy || group2->b_dummy)
-    cvm::fatal_error("Error: neither group can be a dummy atom\n");
+  if (group1->b_dummy || group2->b_dummy) {
+    cvm::error("Error: neither group can be a dummy atom\n");
+    return;
+  }
 
   bool const b_scale = get_keyval(conf, "cutoff", r0,
                                   cvm::real(4.0 * cvm::unit_angstrom()));
@@ -366,9 +374,11 @@ colvar::groupcoordnum::groupcoordnum(std::string const &conf)
   if (get_keyval(conf, "cutoff3", r0_vec,
                  cvm::rvector(4.0, 4.0, 4.0), parse_silent)) {
 
-    if (b_scale)
-      cvm::fatal_error("Error: cannot specify \"scale\" and "
+    if (b_scale) {
+      cvm::error("Error: cannot specify \"scale\" and "
                        "\"scale3\" at the same time.\n");
+      return;
+    }
     b_anisotropic = true;
     // remove meaningless negative signs
     if (r0_vec.x < 0.0) r0_vec.x *= -1.0;
@@ -380,7 +390,8 @@ colvar::groupcoordnum::groupcoordnum(std::string const &conf)
   get_keyval(conf, "expDenom", ed, int(12));
 
   if ( (en%2) || (ed%2) ) {
-    cvm::fatal_error("Error: odd exponents provided, can only use even ones.\n");
+    cvm::error("Error: odd exponents provided, can only use even ones.\n");
+    return;
   }
 
 }

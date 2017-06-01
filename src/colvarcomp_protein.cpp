@@ -50,12 +50,14 @@ colvar::alpha_angles::alpha_angles(std::string const &conf)
         }
       }
     } else {
-      cvm::fatal_error("Error: no residues defined in \"residueRange\".\n");
+      cvm::error("Error: no residues defined in \"residueRange\".\n");
+      return;
     }
   }
 
   if (residues.size() < 5) {
-    cvm::fatal_error("Error: not enough residues defined in \"residueRange\".\n");
+    cvm::error("Error: not enough residues defined in \"residueRange\".\n");
+    return;
   }
 
   std::string const &sid    = segment_id;
@@ -64,7 +66,8 @@ colvar::alpha_angles::alpha_angles(std::string const &conf)
 
   get_keyval(conf, "hBondCoeff", hb_coeff, 0.5);
   if ( (hb_coeff < 0.0) || (hb_coeff > 1.0) ) {
-    cvm::fatal_error("Error: hBondCoeff must be defined between 0 and 1.\n");
+    cvm::error("Error: hBondCoeff must be defined between 0 and 1.\n");
+    return;
   }
 
 
@@ -269,12 +272,14 @@ colvar::dihedPC::dihedPC(std::string const &conf)
         }
       }
     } else {
-      cvm::fatal_error("Error: no residues defined in \"residueRange\".\n");
+      cvm::error("Error: no residues defined in \"residueRange\".\n");
+      return;
     }
   }
 
   if (residues.size() < 2) {
-    cvm::fatal_error("Error: dihedralPC requires at least two residues.\n");
+    cvm::error("Error: dihedralPC requires at least two residues.\n");
+    return;
   }
 
   std::string const &sid    = segment_id;
@@ -284,13 +289,16 @@ colvar::dihedPC::dihedPC(std::string const &conf)
   int         vecNumber;
   if (get_keyval(conf, "vectorFile", vecFileName, vecFileName)) {
     get_keyval(conf, "vectorNumber", vecNumber, 0);
-    if (vecNumber < 1)
-      cvm::fatal_error("A positive value of vectorNumber is required.");
+    if (vecNumber < 1) {
+      cvm::error("A positive value of vectorNumber is required.");
+      return;
+    }
 
     std::ifstream vecFile;
     vecFile.open(vecFileName.c_str());
-    if (!vecFile.good())
-      cvm::fatal_error("Error opening dihedral PCA vector file " + vecFileName + " for reading");
+    if (!vecFile.good()) {
+      cvm::error("Error opening dihedral PCA vector file " + vecFileName + " for reading");
+    }
 
     // TODO: adapt to different formats by setting this flag
     bool eigenvectors_as_columns = true;
@@ -314,8 +322,9 @@ colvar::dihedPC::dihedPC(std::string const &conf)
       for (int i = 1; i<vecNumber; i++)
         vecFile.ignore(999999, '\n');
 
-      if (!vecFile.good())
-        cvm::fatal_error("Error reading dihedral PCA vector file " + vecFileName);
+      if (!vecFile.good()) {
+        cvm::error("Error reading dihedral PCA vector file " + vecFileName);
+      }
 
       std::string line;
       getline(vecFile, line);
@@ -334,10 +343,11 @@ colvar::dihedPC::dihedPC(std::string const &conf)
   }
 
   if ( coeffs.size() != 4 * (residues.size() - 1)) {
-    cvm::fatal_error("Error: wrong number of coefficients: " +
+    cvm::error("Error: wrong number of coefficients: " +
         cvm::to_str(coeffs.size()) + ". Expected " +
         cvm::to_str(4 * (residues.size() - 1)) +
         " (4 coeffs per residue, minus one residue).\n");
+    return;
   }
 
   for (size_t i = 0; i < residues.size()-1; i++) {
