@@ -2564,7 +2564,8 @@ The following options can be used for any of the above colvar components in orde
     type of component + numeric id}{%
     The name is an unique case-sensitive string which allows the
     Colvars module to identify this component. This is useful, for example,
-    when combining multiple components via a \texttt{scriptedFunction}.}
+    when combining multiple components via a \texttt{scriptedFunction}.
+    \cvnamdonly{It also defines the variable name representing the component's value in a \texttt{customFunction} expression.}}
 
 \item %
   \keydef
@@ -2734,13 +2735,74 @@ block a series of components of the same type (applied to different
 atom groups), and assign to each component a \texttt{componentCoeff}
 of $1/N$.
 
+\cvnamdonly{
+\cvsubsec{Colvars as custom functions of components}
+
+Collective variables may be defined by specifying a custom function as an analytical
+expression such as \texttt{cos(x) + y\^{}2}.
+The expression is parsed by the Lepton expression parser (written by Peter Eastman),
+which produces efficient evaluation routines for the function itself as well as its derivatives.
+The expression may use the collective variable components as variables, refered to as their \texttt{name} string.
+Scalar elements of vector components may be accessed by appending a 1-based index to their \texttt{name}.
+When implementing generic functions of Cartesian coordinates rather
+than functions of existing components, the \texttt{cartesian} component
+may be particularly useful.
+A vector variable may be defined by specifying the \texttt{customFunction} parameter several times: each expression defines one scalar element of the vector colvar.
+This is illustrated in the example below.
+
+\bigskip
+{%
+% verbatim can't appear within commands
+\noindent\ttfamily colvar \{\\
+\-~~name custom\\
+\\
+\-~~\# A 2-dimensional vector function of a scalar x and a 3-vector r\\
+\-~~customFunction cos(x) * (r1 + r2 + r3)\\
+\-~~customFunction sqrt(r1 * r2)\\
+\\
+\-~~distance \{\\
+\-~~~~name x\\
+\-~~~~group1 \{ atomNumbers 1 \}\\
+\-~~~~group2 \{ atomNumbers 50 \}\\
+\-~~\}\\
+\-~~distanceVec \{\\
+\-~~~~name r\\
+\-~~~~group1 \{ atomNumbers 10 11 12 \}\\
+\-~~~~group2 \{ atomNumbers  20 21 22 \}\\
+\-~~\}\\
+\}}
+
+\begin{itemize}
+\item %
+   \labelkey{colvar|customFunction}
+   \key 
+    {customFunction}{%
+    \texttt{colvar}}{%
+    Compute colvar as a custom function of its components}{%
+    string}{%
+    Defines the colvar as a scalar expression of its colvar components. Multiple mentions can
+    be used to define a vector variable  (as in the example above).}
+
+\item %
+  \keydef
+    {customFunctionType}{%
+    \texttt{colvar}}{%
+    Type of value returned by the scripted colvar}{%
+    string}{%
+    \texttt{scalar}}{%
+    With this flag, the user may specify whether the
+    colvar is a scalar or one of the following vector types: \texttt{vector3}
+    (a 3D vector), \texttt{unit\_vector3} (a normalized 3D vector), or
+    \texttt{unit\_quaternion} (a normalized quaternion), or \texttt{vector}.
+    Note that the scalar and vector cases are not necessary, as they are detected automatically.}
+\end{itemize}
+}
 
 \cvscriptonly{
 \cvsubsec{Colvars as scripted functions of components}
 \label{sec:colvar_scripted}
 When scripting is supported\cvnamdonly{ (default in NAMD)}\cvvmdonly{ (default in VMD)},
-a colvar may be defined as a
-custom function of its components,
+a colvar may be defined as a scripted function of its components,
 rather than a linear or polynomial combination.
 When implementing generic functions of Cartesian coordinates rather
 than functions of existing components, the \texttt{cartesian} component
