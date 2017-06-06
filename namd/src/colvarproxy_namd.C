@@ -619,7 +619,6 @@ int colvarproxy_namd::init_atom(int atom_number)
 }
 
 
-
 int colvarproxy_namd::check_atom_id(cvm::residue_id const &residue,
                                     std::string const     &atom_name,
                                     std::string const     &segment_id)

@@ -61,6 +61,13 @@ int colvar::init(std::string const &conf)
 
   size_t i;
 
+#ifdef LEPTON
+  error_code |= init_custom_function(conf);
+  if (error_code != COLVARS_OK) {
+    return cvm::get_error();
+  }
+#endif
+
   // Setup colvar as scripted function of components
   if (get_keyval(conf, "scriptedFunction", scripted_function,
     "", colvarparse::parse_silent)) {
@@ -117,7 +124,7 @@ int colvar::init(std::string const &conf)
     }
   }
 
-  if (!is_enabled(f_cv_scripted)) {
+  if (!(is_enabled(f_cv_scripted) || is_enabled(f_cv_custom_function))) {
     colvarvalue const &cvc_value = (cvcs[0])->value();
     if (cvm::debug())
       cvm::log ("This collective variable is a "+
@@ -136,7 +143,7 @@ int colvar::init(std::string const &conf)
 
   // check for linear combinations
   {
-    bool lin = !is_enabled(f_cv_scripted);
+    bool lin = !(is_enabled(f_cv_scripted) || is_enabled(f_cv_custom_function));
     for (i = 0; i < cvcs.size(); i++) {
 
   //     FIXME this is a reverse dependency, ie. cv feature depends on cvc flag
@@ -201,7 +208,7 @@ int colvar::init(std::string const &conf)
   for (i = 0; i < cvcs.size(); i++) {
 
     // components may have different types only for scripted functions
-    if (!is_enabled(f_cv_scripted) && (colvarvalue::check_types(cvcs[i]->value(),
+    if (!(is_enabled(f_cv_scripted) || is_enabled(f_cv_custom_function)) && (colvarvalue::check_types(cvcs[i]->value(),
                                                                 cvcs[0]->value())) ) {
       cvm::error("ERROR: you are definining this collective variable "
                  "by using components of different types. "
@@ -260,6 +267,148 @@ int colvar::init(std::string const &conf)
   return error_code;
 }
 
+#ifdef LEPTON
+int colvar::init_custom_function(std::string const &conf)
+{
+  std::string expr;
+  std::vector<Lepton::ParsedExpression> pexprs;
+  Lepton::ParsedExpression pexpr;
+  size_t pos = 0; // current position in config string
+  double *ref;
+
+  if (!key_lookup(conf, "customFunction", &expr, &pos)) {
+    return COLVARS_OK;
+  }
+
+  enable(f_cv_custom_function);
+  cvm::log("This colvar uses a custom function.\n");
+
+  do {
+    if (cvm::debug())
+      cvm::log("Parsing expression \"" + expr + "\".\n");
+    try {
+      pexpr = Lepton::Parser::parse(expr);
+      pexprs.push_back(pexpr);
+    }
+    catch (...) {
+      cvm::error("Error parsing expression \"" + expr + "\".\n", INPUT_ERROR);
+      return INPUT_ERROR;
+    }
+
+    try {
+      value_evaluators.push_back(
+          new Lepton::CompiledExpression(pexpr.createCompiledExpression()));
+      // Define variables for cvc values
+      // Stored in order: expr1, cvc1, cvc2, expr2, cvc1...
+      for (size_t i = 0; i < cvcs.size(); i++) {
+        for (size_t j = 0; j < cvcs[i]->value().size(); j++) {
+          std::string vn = cvcs[i]->name +
+              (cvcs[i]->value().size() > 1 ? cvm::to_str(j+1) : "");
+          try {
+            ref =&value_evaluators.back()->getVariableReference(vn);
+          }
+          catch (...) { // Variable is absent from expression
+            // To keep the same workflow, we use a pointer to a double here
+            // that will receive CVC values - even though none was allocated by Lepton
+            ref = &dev_null;
+            if (cvm::debug())
+              cvm::log("Variable " + vn + " is absent from expression \"" + expr + "\".\n");
+          }
+          value_eval_var_refs.push_back(ref);
+        }
+      }
+    }
+    catch (...) {
+      cvm::error("Error compiling expression \"" + expr + "\".\n", INPUT_ERROR);
+      return INPUT_ERROR;
+    }
+  } while (key_lookup(conf, "customFunction", &expr, &pos));
+
+
+  // Now define derivative with respect to each scalar sub-component
+  for (size_t i = 0; i < cvcs.size(); i++) {
+    for (size_t j = 0; j < cvcs[i]->value().size(); j++) {
+      std::string vn = cvcs[i]->name +
+          (cvcs[i]->value().size() > 1 ? cvm::to_str(j+1) : "");
+      // Element ordering: we want the
+      // gradient vector of derivatives of all elements of the colvar
+      // wrt to a given element of a cvc ([i][j])
+      for (size_t c = 0; c < pexprs.size(); c++) {
+        gradient_evaluators.push_back(
+            new Lepton::CompiledExpression(pexprs[c].differentiate(vn).createCompiledExpression()));
+        // and record the refs to each variable in those expressions
+        for (size_t k = 0; k < cvcs.size(); k++) {
+          for (size_t l = 0; l < cvcs[k]->value().size(); l++) {
+            std::string vvn = cvcs[k]->name +
+                (cvcs[k]->value().size() > 1 ? cvm::to_str(l+1) : "");
+            try {
+              ref = &gradient_evaluators.back()->getVariableReference(vvn);
+            }
+            catch (...) { // Variable is absent from derivative
+              // To keep the same workflow, we use a pointer to a double here
+              // that will receive CVC values - even though none was allocated by Lepton
+              if (cvm::debug())
+                cvm::log("Variable " + vvn + " is absent from derivative of \"" + expr + "\" wrt " + vn + ".\n");
+              ref = &dev_null;
+            }
+            grad_eval_var_refs.push_back(ref);
+          }
+        }
+      }
+    }
+  }
+
+
+  if (value_evaluators.size() == 0) {
+    cvm::error("Error: no custom function defined.\n", INPUT_ERROR);
+    return INPUT_ERROR;
+  }
+
+  std::string type_str;
+  bool b_type_specified = get_keyval(conf, "customFunctionType",
+                                     type_str, "scalar", parse_silent);
+  x.type(colvarvalue::type_notset);
+  int t;
+  for (t = 0; t < colvarvalue::type_all; t++) {
+    if (type_str == colvarvalue::type_keyword(colvarvalue::Type(t))) {
+      x.type(colvarvalue::Type(t));
+      break;
+    }
+  }
+  if (x.type() == colvarvalue::type_notset) {
+    cvm::error("Could not parse custom colvar type.", INPUT_ERROR);
+    return INPUT_ERROR;
+  }
+
+  // Guess type based on number of expressions
+  if (!b_type_specified) {
+    if (value_evaluators.size() == 1) {
+      x.type(colvarvalue::type_scalar);
+    } else {
+      x.type(colvarvalue::type_vector);
+    }
+  }
+
+  if (x.type() == colvarvalue::type_vector) {
+    x.vector1d_value.resize(value_evaluators.size());
+  }
+
+  x_reported.type(x);
+  cvm::log(std::string("Expecting colvar value of type ")
+    + colvarvalue::type_desc(x.type())
+    + (x.type()==colvarvalue::type_vector ? " of size " + cvm::to_str(x.size()) : "")
+    + ".\n");
+
+  if (x.size() != value_evaluators.size()) {
+    cvm::error("Error: based on custom function type, expected "
+        + cvm::to_str(x.size()) + " scalar expressions, but "
+        + cvm::to_str(value_evaluators.size() + " were found.\n"));
+    return INPUT_ERROR;
+  }
+
+  return COLVARS_OK;
+}
+#endif
 
 int colvar::init_grid_parameters(std::string const &conf)
 {
@@ -921,7 +1070,6 @@ int colvar::calc_cvc_values(int first_cvc, size_t num_cvcs)
 int colvar::collect_cvc_values()
 {
   x.reset();
-  size_t i;
 
   // combine them appropriately, using either a scripted function or a polynomial
   if (is_enabled(f_cv_scripted)) {
@@ -935,9 +1083,26 @@ int colvar::collect_cvc_values()
       cvm::error("Error running scripted colvar");
       return COLVARS_OK;
     }
+
+#ifdef LEPTON
+  } else if (is_enabled(f_cv_custom_function)) {
+
+    size_t l = 0; // index in the vector of variable references
+
+    for (size_t i = 0; i < x.size(); i++) {
+      // Fill Lepton evaluator variables with CVC values, serialized into scalars
+      for (size_t j = 0; j < cvcs.size(); j++) {
+        for (size_t k = 0; k < cvcs[j]->value().size(); k++) {
+          *(value_eval_var_refs[l++]) = cvcs[j]->value()[k];
+        }
+      }
+      x[i] = value_evaluators[i]->evaluate();
+    }
+#endif
+
   } else if (x.type() == colvarvalue::type_scalar) {
     // polynomial combination allowed
-    for (i = 0; i < cvcs.size(); i++) {
+    for (size_t i = 0; i < cvcs.size(); i++) {
       if (!cvcs[i]->is_enabled()) continue;
       x += (cvcs[i])->sup_coeff *
       ( ((cvcs[i])->sup_np != 1) ?
@@ -945,7 +1110,7 @@ int colvar::collect_cvc_values()
         (cvcs[i])->value().real_value );
     }
   } else {
-    for (i = 0; i < cvcs.size(); i++) {
+    for (size_t i = 0; i < cvcs.size(); i++) {
       if (!cvcs[i]->is_enabled()) continue;
       x += (cvcs[i])->sup_coeff * (cvcs[i])->value();
     }
@@ -1349,6 +1514,34 @@ void colvar::communicate_forces()
       (cvcs[i])->apply_force(colvarvalue(f.as_vector() * func_grads[grad_index++],
                              cvcs[i]->value().type()));
     }
+
+#ifdef LEPTON
+  } else if (is_enabled(f_cv_custom_function)) {
+
+    size_t r = 0; // index in the vector of variable references
+    size_t e = 0; // index of the gradient evaluator
+
+    for (size_t i = 0; i < cvcs.size(); i++) {  // gradient with respect to cvc i
+      cvm::matrix2d<cvm::real> jacobian (x.size(), cvcs[i]->value().size());
+      for (size_t j = 0; j < cvcs[i]->value().size(); j++) { // j-th element
+        for (size_t c = 0; c < x.size(); c++) { // derivative of scalar element c of the colvarvalue
+
+          // Feed cvc values to the evaluator
+          for (size_t k = 0; k < cvcs.size(); k++) { //
+            for (size_t l = 0; l < cvcs[k]->value().size(); l++) {
+              *(grad_eval_var_refs[r++]) = cvcs[k]->value()[l];
+            }
+          }
+          jacobian[c][j] = gradient_evaluators[e++]->evaluate();
+        }
+      }
+      // cvc force is colvar force times colvar/cvc Jacobian
+      // (vector-matrix product)
+      (cvcs[i])->apply_force(colvarvalue(f.as_vector() * jacobian,
+                             cvcs[i]->value().type()));
+    }
+#endif
+
   } else if (x.type() == colvarvalue::type_scalar) {
 
     for (i = 0; i < cvcs.size(); i++) {
