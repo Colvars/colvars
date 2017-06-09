@@ -5,7 +5,7 @@
 **/
 
 /*****************************************************************************
- * $Source: /namd/cvsroot/namd2/src/SimParameters.h,v $
+ * $Source: /home/cvs/namd/cvsroot/namd2/src/SimParameters.h,v $
  * $Author: jim $
  * $Date: 2017/03/30 20:06:17 $
  * $Revision: 1.1248 $
