@@ -1034,6 +1034,8 @@ int colvarmodule::reset()
   index_groups.clear();
   index_group_names.clear();
 
+  proxy->reset();
+
   if (cv_traj_os.is_open()) {
     // Do not close file here, as we might not be done with it yet.
     cv_traj_os.flush();

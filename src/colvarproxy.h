@@ -57,6 +57,11 @@ public:
     return COLVARS_OK;
   }
 
+  /// \brief Reset proxy state, e.g. requested atoms
+  virtual int reset()
+  {
+    return COLVARS_OK;
+  }
   // **************** SIMULATION PARAMETERS ****************
 
   /// \brief Value of the unit for atomic coordinates with respect to
