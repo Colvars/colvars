@@ -469,7 +469,7 @@ The following options are not required by default; however, the first four are v
     Defines the lowest end of the interval of ``relevant'' values for the colvar.
     This number can be either a true physical boundary, or a user-defined number.  
     Together with \texttt{upperBoundary} and \texttt{width}, it is used to define a grid of values along the colvar (not available for colvars based on \texttt{distanceDir}, \texttt{distanceVec}, and \texttt{orientation}).
-    This option does not affect dynamics: to confine a colvar within a certain interval, the options \texttt{lowerWall} and \texttt{lowerWallConstant} should be used.
+    This option does not affect dynamics: to confine a colvar within a certain interval, use a \texttt{harmonicWalls} bias.
 }
 
 \item %
@@ -2622,12 +2622,9 @@ illegal elsewhere):
     of the wrapping interval for periodic variables}{%
     decimal}{%
     0.0}{%
-    By default, values of the periodic components are centered around
-    zero, ranging from $-P/2$ to $P/2$, where $P$ is the period.
-    Setting this number centers the interval around this value.  This
-    can be useful for convenience of output, or to set
-    \texttt{lowerWall} and \texttt{upperWall} in an order that would
-    not otherwise be allowed.}
+    By default, values of the periodic components are centered around zero, ranging from $-P/2$ to $P/2$, where $P$ is the period.
+    Setting this number centers the interval around this value.
+    This can be useful for convenience of output, or to set the walls for a \texttt{harmonicWalls} in an order that would not otherwise be allowed.}
 \end{itemize}
 Internally, all differences between two values of a periodic colvar
 follow the minimum image convention: they are calculated based on
@@ -3579,7 +3576,7 @@ In these cases, as a measure of fault-tolerance all Gaussian hills near the boun
 To avoid gradual loss of performance and growth of the state file, either one of the following solutions is recommended:
 \begin{itemize}
 \item enabling the option \texttt{expandBoundaries}, so that the grid's boundaries are automatically recalculated whenever necessary; the resulting \texttt{.pmf} will have its abscissas expanded accordingly;
-\item setting \texttt{lowerWall} and \texttt{upperWall} well within the interval delimited by \texttt{lowerBoundary} and \texttt{upperBoundary}.
+\item applying a \texttt{harmonicWalls} bias with the wall locations well within the interval delimited by \texttt{lowerBoundary} and \texttt{upperBoundary}.
 \end{itemize}
 
 
