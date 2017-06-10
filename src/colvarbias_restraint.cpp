@@ -846,6 +846,21 @@ int colvarbias_restraint_harmonic_walls::init(std::string const &conf)
   get_keyval(conf, "upperWallConstant", upper_wall_k,
              (upper_wall_k > 0.0) ? upper_wall_k : force_k);
 
+  if (lower_wall_k * upper_wall_k > 0.0) {
+    for (size_t i = 0; i < num_variables(); i++) {
+      if (variables(i)->width != 1.0)
+        cvm::log("The lower and upper wall force constants for colvar \""+
+                 variables(i)->name+
+                 "\" will be rescaled to "+
+                 cvm::to_str(lower_wall_k /
+                             (variables(i)->width * variables(i)->width))+
+                 " and "+
+                 cvm::to_str(upper_wall_k /
+                             (variables(i)->width * variables(i)->width))+
+                 " according to the specified width.\n");
+    }
+  }
+
   enable(f_cvb_scalar_variables);
 
   size_t i;
