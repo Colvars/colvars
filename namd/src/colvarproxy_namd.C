@@ -222,31 +222,23 @@ int colvarproxy_namd::setup()
   return COLVARS_OK;
 }
 
+
 int colvarproxy_namd::reset()
 {
+  int error_code = COLVARS_OK;
+
   // Unrequest all atoms and group from NAMD
   modifyRequestedAtoms().clear();
   modifyRequestedGroups().clear();
 
-  // Clear internal Proxy records
-  atoms_ids.clear();
-  atoms_ncopies.clear();
-  atoms_masses.clear();
-  atoms_charges.clear();
-  atoms_positions.clear();
-  atoms_total_forces.clear();
-  atoms_new_colvar_forces.clear();
-
   atoms_map.clear();
 
-  atom_groups_ids.clear();
-  atom_groups_ncopies.clear();
-  atom_groups_masses.clear();
-  atom_groups_charges.clear();
-  atom_groups_coms.clear();
-  atom_groups_total_forces.clear();
-  atom_groups_new_colvar_forces.clear();
+  // Clear internal Proxy records
+  error_code |= colvarproxy::reset();
+
+  return error_code;
 }
+
 
 void colvarproxy_namd::calculate()
 {

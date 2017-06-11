@@ -58,10 +58,9 @@ public:
   }
 
   /// \brief Reset proxy state, e.g. requested atoms
-  virtual int reset()
-  {
-    return COLVARS_OK;
-  }
+  virtual int reset();
+
+
   // **************** SIMULATION PARAMETERS ****************
 
   /// \brief Value of the unit for atomic coordinates with respect to
@@ -645,6 +644,28 @@ public:
   }
 
 };
+
+
+inline int colvarproxy::reset()
+{
+  atoms_ids.clear();
+  atoms_ncopies.clear();
+  atoms_masses.clear();
+  atoms_charges.clear();
+  atoms_positions.clear();
+  atoms_total_forces.clear();
+  atoms_new_colvar_forces.clear();
+
+  atom_groups_ids.clear();
+  atom_groups_ncopies.clear();
+  atom_groups_masses.clear();
+  atom_groups_charges.clear();
+  atom_groups_coms.clear();
+  atom_groups_total_forces.clear();
+  atom_groups_new_colvar_forces.clear();
+
+  return COLVARS_OK;
+}
 
 
 #endif
