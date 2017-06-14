@@ -267,6 +267,7 @@ int colvar::init(std::string const &conf)
   return error_code;
 }
 
+
 #ifdef LEPTON
 int colvar::init_custom_function(std::string const &conf)
 {
@@ -408,7 +409,16 @@ int colvar::init_custom_function(std::string const &conf)
 
   return COLVARS_OK;
 }
-#endif
+
+#else
+
+int colvar::init_custom_function(std::string const &conf)
+{
+  return COLVARS_OK;
+}
+
+#endif // #ifdef LEPTON
+
 
 int colvar::init_grid_parameters(std::string const &conf)
 {

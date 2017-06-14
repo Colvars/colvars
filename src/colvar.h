@@ -234,10 +234,8 @@ public:
   /// Parse the CVC configuration and allocate their data
   int init_components(std::string const &conf);
 
-#ifdef LEPTON
   /// Parse parameters for custom function with Lepton
   int init_custom_function(std::string const &conf);
-#endif
 
   /// Init defaults for grid options
   int init_grid_parameters(std::string const &conf);
