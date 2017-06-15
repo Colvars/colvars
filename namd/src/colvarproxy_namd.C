@@ -256,8 +256,8 @@ void colvarproxy_namd::calculate()
   // must delete the forces applied at the previous step: we can do
   // that because they have already been used and copied to other
   // memory locations
-  modifyForcedAtoms().resize(0);
-  modifyAppliedForces().resize(0);
+  modifyForcedAtoms().clear();
+  modifyAppliedForces().clear();
 
   // prepare local arrays
   for (size_t i = 0; i < atoms_ids.size(); i++) {

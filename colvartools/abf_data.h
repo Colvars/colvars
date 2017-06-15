@@ -35,7 +35,7 @@ class ABFdata {
     /// from MtD bias or histogram in standard MC
     double *estimate;
 
-    /// Deviation between starting free energy gradient and 
+    /// Deviation between starting free energy gradient and
     /// estimated one
     double *deviation;
 

@@ -85,7 +85,10 @@ public:
     return cv_features;
   }
 
-  int refresh_deps();
+  /// Implements possible actions to be carried out
+  /// when a given feature is enabled
+  /// This overloads the base function in colvardeps
+  void do_feature_side_effects(int id);
 
   /// List of biases that depend on this colvar
   std::vector<colvarbias *> biases;
@@ -330,23 +333,12 @@ protected:
   /// Sum of square coefficients for active cvcs
   cvm::real active_cvc_square_norm;
 
-  /// Time step multiplier (for coarse-time-step colvars)
-  /// Colvar will only be calculated at those times; biases may ignore the information and
-  /// always update their own forces (which is typically inexpensive) especially if
-  /// they rely on other colvars. In this case, the colvar will accumulate forces applied between
-  /// colvar updates. Alternately they may use it to calculate "impulse" biasing
-  /// forces at longer intervals. Impulse forces must be multiplied by the timestep factor.
-  int   time_step_factor;
-
-  /// Biasing force collected between updates, to be applied at next update for coarse-time-step colvars
-  colvarvalue f_accumulated;
+  /// \brief Absolute timestep number when this colvar was last updated
+  int prev_timestep;
 
 public:
   /// \brief Return the number of CVC objects with an active flag (as set by update_cvc_flags)
   inline size_t num_active_cvcs() const { return n_active_cvcs; }
-
-  /// \brief returns time_step_factor
-  inline int get_time_step_factor() const {return time_step_factor;}
 
   /// \brief Use the internal metrics (as from \link cvc
   /// \endlink objects) to calculate square distances and gradients

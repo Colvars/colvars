@@ -1,0 +1,13 @@
+# -*- lammps -*-
+
+include ../common/charmmff.lmp.in
+
+read_data  test.lmp.data
+
+include ../common/fixes.lmp.in
+
+fix Colvars all colvars test.in input test output test.restart
+
+include ../common/md.lmp.in
+
+write_data test.restart.lmp.data

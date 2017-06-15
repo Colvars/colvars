@@ -1,0 +1,4 @@
+thermo_style    multi
+thermo          1
+reset_timestep  0
+run             20

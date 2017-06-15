@@ -168,7 +168,7 @@ void colvarvalue::type(Type const &vti)
     // reset the value based on the previous type
     reset();
     if ((value_type == type_vector) && (vti != type_vector)) {
-      vector1d_value.resize(0);
+      vector1d_value.clear();
     }
     value_type = vti;
   }
@@ -181,7 +181,7 @@ void colvarvalue::type(colvarvalue const &x)
     // reset the value based on the previous type
     reset();
     if (value_type == type_vector) {
-      vector1d_value.resize(0);
+      vector1d_value.clear();
     }
     value_type = x.type();
   }

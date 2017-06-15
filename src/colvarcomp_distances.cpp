@@ -545,9 +545,17 @@ colvarvalue colvar::distance_dir::dist2_rgrad(colvarvalue const &x1,
 
 
 colvar::distance_inv::distance_inv(std::string const &conf)
-  : distance(conf)
+  : cvc(conf)
 {
   function_type = "distance_inv";
+
+  group1 = parse_group(conf, "group1");
+  group2 = parse_group(conf, "group2");
+
+  if (get_keyval(conf, "forceNoPBC", b_no_PBC, false)) {
+    cvm::log("Computing distance using absolute positions (not minimal-image)");
+  }
+
   get_keyval(conf, "exponent", exponent, 6);
   if (exponent%2) {
     cvm::error("Error: odd exponent provided, can only use even ones.\n");
@@ -992,7 +1000,7 @@ colvar::rmsd::rmsd(std::string const &conf)
 
     cvm::log("This is a standard minimum RMSD, derivatives of the optimal rotation "
               "will not be computed as they cancel out in the gradients.");
-    atoms->b_fit_gradients = false;
+    atoms->disable(f_ag_fit_gradients);
 
     // request the calculation of the derivatives of the rotation defined by the atom group
     atoms->rot.request_group1_gradients(atoms->size());
@@ -1184,8 +1192,8 @@ colvar::eigenvector::eigenvector(std::string const &conf)
     atoms->b_rotate = true;
     atoms->ref_pos = ref_pos;
     atoms->center_ref_pos();
-    atoms->b_fit_gradients = false; // cancel out if group is fitted on itself
-                                    // and cvc is translationally invariant
+    atoms->disable(f_ag_fit_gradients); // cancel out if group is fitted on itself
+                                        // and cvc is translationally invariant
 
     // request the calculation of the derivatives of the rotation defined by the atom group
     atoms->rot.request_group1_gradients(atoms->size());

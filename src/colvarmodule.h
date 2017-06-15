@@ -179,7 +179,13 @@ private:
   /// Indexes of the items to calculate for each colvar
   std::vector<int> colvars_smp_items;
 
+  /// Array of named atom groups
+  std::vector<atom_group *> named_atom_groups;
 public:
+  /// Register a named atom group into named_atom_groups
+  inline void register_named_atom_group(atom_group * ag) {
+    named_atom_groups.push_back(ag);
+  }
 
   /// Array of collective variables
   std::vector<colvar *> *variables();
@@ -345,6 +351,9 @@ public:
   /// Look up a colvar by name; returns NULL if not found
   static colvar * colvar_by_name(std::string const &name);
 
+  /// Look up a named atom group by name; returns NULL if not found
+  static atom_group * atom_group_by_name(std::string const &name);
+
   /// Load new configuration for the given bias -
   /// currently works for harmonic (force constant and/or centers)
   int change_configuration(std::string const &bias_name, std::string const &conf);
@@ -443,10 +452,10 @@ public:
   static void log(std::string const &message);
 
   /// Print a message to the main log and exit with error code
-  static void fatal_error(std::string const &message);
+  static int fatal_error(std::string const &message);
 
   /// Print a message to the main log and set global error code
-  static void error(std::string const &message, int code = COLVARS_ERROR);
+  static int error(std::string const &message, int code = COLVARS_ERROR);
 
   /// Print a message to the main log and exit normally
   static void exit(std::string const &message);

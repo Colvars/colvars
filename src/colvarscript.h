@@ -48,7 +48,7 @@ private:
   int proc_features(colvardeps *obj,
                     int argc, unsigned char *const argv[]);
 
-  /// Builds and return a short help
+  /// Build and return a short help
   std::string help_string(void);
 
 public:

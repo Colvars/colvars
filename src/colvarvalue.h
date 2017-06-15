@@ -272,28 +272,10 @@ public:
   void set_elem(int const icv, colvarvalue const &x);
 
   /// Get a scalar number out of an element of the vector
-  inline cvm::real operator [] (int const i) const
-  {
-    if (vector1d_value.size() > 0) {
-      return vector1d_value[i];
-    } else {
-      cvm::error("Error: trying to use as a vector a variable that is not initialized as such.\n");
-      return 0.0;
-    }
-  }
+  cvm::real operator [] (int const i) const;
 
   /// Use an element of the vector as a scalar number
-  inline cvm::real & operator [] (int const i)
-  {
-    if (vector1d_value.size() > 0) {
-      return vector1d_value[i];
-    } else {
-      cvm::error("Error: trying to use as a vector a variable that is not initialized as such.\n");
-      real_value = 0.0;
-      return real_value;
-    }
-  }
-
+  cvm::real & operator [] (int const i);
 
   /// Ensure that the two types are the same within a binary operator
   int static check_types(colvarvalue const &x1, colvarvalue const &x2);
@@ -375,6 +357,52 @@ inline size_t colvarvalue::size() const
     return 4; break;
   case colvarvalue::type_vector:
     return vector1d_value.size(); break;
+  }
+}
+
+
+inline cvm::real colvarvalue::operator [] (int const i) const
+{
+  switch (value_type) {
+  case colvarvalue::type_notset:
+  default:
+    cvm::error("Error: trying to access a colvar value "
+               "that is not initialized.\n", BUG_ERROR);
+    return 0.0; break;
+  case colvarvalue::type_scalar:
+    return real_value; break;
+  case colvarvalue::type_3vector:
+  case colvarvalue::type_unit3vector:
+  case colvarvalue::type_unit3vectorderiv:
+    return rvector_value[i]; break;
+  case colvarvalue::type_quaternion:
+  case colvarvalue::type_quaternionderiv:
+    return quaternion_value[i]; break;
+  case colvarvalue::type_vector:
+    return vector1d_value[i]; break;
+  }
+}
+
+
+inline cvm::real & colvarvalue::operator [] (int const i)
+{
+  switch (value_type) {
+  case colvarvalue::type_notset:
+  default:
+    cvm::error("Error: trying to access a colvar value "
+               "that is not initialized.\n", BUG_ERROR);
+    return real_value; break;
+  case colvarvalue::type_scalar:
+    return real_value; break;
+  case colvarvalue::type_3vector:
+  case colvarvalue::type_unit3vector:
+  case colvarvalue::type_unit3vectorderiv:
+    return rvector_value[i]; break;
+  case colvarvalue::type_quaternion:
+  case colvarvalue::type_quaternionderiv:
+    return quaternion_value[i]; break;
+  case colvarvalue::type_vector:
+    return vector1d_value[i]; break;
   }
 }
 

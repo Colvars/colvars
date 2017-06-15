@@ -19,6 +19,7 @@ bool compare(colvar::cvc *i, colvar::cvc *j) {
 
 
 colvar::colvar()
+  : prev_timestep(-1)
 {
   // Initialize static array once and for all
   init_cv_requires();
@@ -217,7 +218,6 @@ int colvar::init(std::string const &conf)
 
   // at this point, the colvar's type is defined
   f.type(value());
-  f_accumulated.type(value());
 
   x_old.type(value());
   v_fdiff.type(value());
@@ -233,18 +233,23 @@ int colvar::init(std::string const &conf)
 
   reset_bias_force();
 
+  get_keyval(conf, "timeStepFactor", time_step_factor, 1);
+  if (time_step_factor < 0) {
+    cvm::error("Error: timeStepFactor must be positive.\n");
+    return COLVARS_ERROR;
+  }
+  if (time_step_factor != 1) {
+    enable(f_cv_multiple_ts);
+  }
+
   // TODO use here information from the CVCs' own natural boundaries
   error_code |= init_grid_parameters(conf);
-
-  get_keyval(conf, "timeStepFactor", time_step_factor, 1);
 
   error_code |= init_extended_Lagrangian(conf);
   error_code |= init_output_flags(conf);
 
-  // Start in active state by default
+  // Now that the children are defined we can solve dependencies
   enable(f_cv_active);
-  // Make sure dependency side-effects are correct
-  refresh_deps();
 
   if (cvm::b_analysis)
     parse_analysis(conf);
@@ -320,7 +325,8 @@ int colvar::init_grid_parameters(std::string const &conf)
       std::string const walls_conf("\n\
 harmonicWalls {\n\
     name "+this->name+"w\n\
-    colvars "+this->name+"\n"+lw_conf+uw_conf+
+    colvars "+this->name+"\n"+lw_conf+uw_conf+"\
+    timeStepFactor "+cvm::to_str(time_step_factor)+"\n"+
                              "}\n");
       cv->append_new_config(walls_conf);
     }
@@ -421,7 +427,8 @@ int colvar::init_extended_Lagrangian(std::string const &conf)
     if (ext_gamma != 0.0) {
       enable(f_cv_Langevin);
       ext_gamma *= 1.0e-3; // correct as long as input is required in ps-1 and cvm::dt() is in fs
-      ext_sigma = std::sqrt(2.0 * cvm::boltzmann() * temp * ext_gamma * ext_mass / cvm::dt());
+      // Adjust Langevin sigma for slow time step if time_step_factor != 1
+      ext_sigma = std::sqrt(2.0 * cvm::boltzmann() * temp * ext_gamma * ext_mass / (cvm::dt() * cvm::real(time_step_factor)));
     }
   }
 
@@ -614,16 +621,19 @@ int colvar::init_components(std::string const &conf)
 }
 
 
-int colvar::refresh_deps()
+void colvar::do_feature_side_effects(int id)
 {
   // If enabled features are changed upstream, the features below should be refreshed
-  if (is_enabled(f_cv_total_force_calc)) {
-    cvm::request_total_force();
+  switch (id) {
+    case f_cv_total_force_calc:
+      cvm::request_total_force();
+      break;
+    case f_cv_collect_gradient:
+      if (atom_ids.size() == 0) {
+        build_atom_list();
+      }
+      break;
   }
-  if (is_enabled(f_cv_collect_gradient) && atom_ids.size() == 0) {
-    build_atom_list();
-  }
-  return COLVARS_OK;
 }
 
 
@@ -764,6 +774,10 @@ void colvar::setup() {
 
 colvar::~colvar()
 {
+  // There is no need to call free_children_deps() here
+  // because the children are cvcs and will be deleted
+  // just below
+
 //   Clear references to this colvar's cvcs as children
 //   for dependency purposes
   remove_all_children();
@@ -980,16 +994,9 @@ int colvar::calc_cvc_gradients(int first_cvc, size_t num_cvcs)
       (cvcs[i])->calc_gradients();
       // if requested, propagate (via chain rule) the gradients above
       // to the atoms used to define the roto-translation
-      // This could be integrated in the CVC base class
-      for (size_t ig = 0; ig < cvcs[i]->atom_groups.size(); ig++) {
-        if (cvcs[i]->atom_groups[ig]->b_fit_gradients)
-          cvcs[i]->atom_groups[ig]->calc_fit_gradients();
-
-        if (cvcs[i]->is_enabled(f_cvc_debug_gradient)) {
-          cvm::log("Debugging gradients for " + cvcs[i]->description);
-          cvcs[i]->debug_gradients(cvcs[i]->atom_groups[ig]);
-        }
-      }
+     (cvcs[i])->calc_fit_gradients();
+      if ((cvcs[i])->is_enabled(f_cvc_debug_gradient))
+        (cvcs[i])->debug_gradients();
     }
 
     cvm::decrease_depth();
@@ -1007,13 +1014,6 @@ int colvar::collect_cvc_gradients()
   size_t i;
 
   if (is_enabled(f_cv_collect_gradient)) {
-
-    if (is_enabled(f_cv_scripted)) {
-      cvm::error("Collecting atomic gradients is not implemented for "
-                 "scripted colvars.", COLVARS_NOT_IMPLEMENTED);
-      return COLVARS_NOT_IMPLEMENTED;
-    }
-
     // Collect the atomic gradients inside colvar object
     for (unsigned int a = 0; a < atomic_gradients.size(); a++) {
       atomic_gradients[a].reset();
@@ -1211,6 +1211,10 @@ cvm::real colvar::update_forces_energy()
   f.type(value());
   f.reset();
 
+  // If we are not active at this timestep, that's all we have to do
+  // return with energy == zero
+  if (!is_enabled(f_cv_active)) return 0.;
+
   // add the biases' force, which at this point should already have
   // been summed over each bias using this colvar
   f += fb;
@@ -1232,7 +1236,24 @@ cvm::real colvar::update_forces_energy()
       cvm::log("Updating extended-Lagrangian degree of freedom.\n");
     }
 
-    cvm::real dt = cvm::dt();
+    if (prev_timestep > -1) {
+      // Keep track of slow timestep to integrate MTS colvars
+      // the colvar checks the interval after waking up twice
+      int n_timesteps = cvm::step_relative() - prev_timestep;
+      if (n_timesteps != 0 && n_timesteps != time_step_factor) {
+        cvm::error("Error: extended-Lagrangian " + description + " has timeStepFactor " +
+          cvm::to_str(time_step_factor) + ", but was activated after " + cvm::to_str(n_timesteps) +
+          " steps at timestep " + cvm::to_str(cvm::step_absolute()) + " (relative step: " +
+          cvm::to_str(cvm::step_relative()) + ").\n" +
+          "Make sure that this colvar is requested by biases at multiples of timeStepFactor.\n");
+        return 0.;
+      }
+    }
+    prev_timestep = cvm::step_relative();
+
+    // Integrate with slow timestep (if time_step_factor != 1)
+    cvm::real dt = cvm::dt() * cvm::real(time_step_factor);
+
     colvarvalue f_ext(fr.type()); // force acting on the extended variable
     f_ext.reset();
 
@@ -1244,18 +1265,17 @@ cvm::real colvar::update_forces_energy()
     //    - after this code block, colvar force to be applied to atomic coordinates
     //      ie. spring force (fb_actual will be added just below)
     fr    = f;
-    f_ext = f + (-0.5 * ext_force_k) * this->dist2_lgrad(xr, x);
-    f     =     (-0.5 * ext_force_k) * this->dist2_rgrad(xr, x);
+    // External force has been scaled for a 1-timestep impulse, scale it back because we will
+    // integrate it with the colvar's own timestep factor
+    f_ext = f / cvm::real(time_step_factor);
+    f_ext += (-0.5 * ext_force_k) * this->dist2_lgrad(xr, x);
+    f      = (-0.5 * ext_force_k) * this->dist2_rgrad(xr, x);
+    // Coupling force is a slow force, to be applied to atomic coords impulse-style
+    f *= cvm::real(time_step_factor);
 
-    if (is_enabled(f_cv_subtract_applied_force)) {
-      // Report a "system" force without the biases on this colvar
-      // that is, just the spring force
-      ft_reported = (-0.5 * ext_force_k) * this->dist2_lgrad(xr, x);
-    } else {
-      // The total force acting on the extended variable is f_ext
-      // This will be used in the next timestep
-      ft_reported = f_ext;
-    }
+    // The total force acting on the extended variable is f_ext
+    // This will be used in the next timestep
+    ft_reported = f_ext;
 
     // leapfrog: starting from x_i, f_i, v_(i-1/2)
     vr  += (0.5 * dt) * f_ext / ext_mass;
@@ -1275,12 +1295,9 @@ cvm::real colvar::update_forces_energy()
     if (this->is_enabled(f_cv_periodic)) this->wrap(xr);
   }
 
-  // Now adding the force on the actual colvar (for those biases who
+  // Now adding the force on the actual colvar (for those biases that
   // bypass the extended Lagrangian mass)
   f += fb_actual;
-
-  // Store force to be applied, possibly summed over several timesteps
-  f_accumulated += f;
 
   if (is_enabled(f_cv_fdiff_velocity)) {
     // set it for the next step
@@ -1302,7 +1319,7 @@ void colvar::communicate_forces()
   size_t i;
   if (cvm::debug()) {
     cvm::log("Communicating forces from colvar \""+this->name+"\".\n");
-    cvm::log("Force to be applied: " + cvm::to_str(f_accumulated) + "\n");
+    cvm::log("Force to be applied: " + cvm::to_str(f) + "\n");
   }
 
   if (is_enabled(f_cv_scripted)) {
@@ -1329,14 +1346,14 @@ void colvar::communicate_forces()
       if (!cvcs[i]->is_enabled()) continue;
       // cvc force is colvar force times colvar/cvc Jacobian
       // (vector-matrix product)
-      (cvcs[i])->apply_force(colvarvalue(f_accumulated.as_vector() * func_grads[grad_index++],
+      (cvcs[i])->apply_force(colvarvalue(f.as_vector() * func_grads[grad_index++],
                              cvcs[i]->value().type()));
     }
   } else if (x.type() == colvarvalue::type_scalar) {
 
     for (i = 0; i < cvcs.size(); i++) {
       if (!cvcs[i]->is_enabled()) continue;
-      (cvcs[i])->apply_force(f_accumulated * (cvcs[i])->sup_coeff *
+      (cvcs[i])->apply_force(f * (cvcs[i])->sup_coeff *
                               cvm::real((cvcs[i])->sup_np) *
                               (std::pow((cvcs[i])->value().real_value,
                                       (cvcs[i])->sup_np-1)) );
@@ -1346,13 +1363,9 @@ void colvar::communicate_forces()
 
     for (i = 0; i < cvcs.size(); i++) {
       if (!cvcs[i]->is_enabled()) continue;
-      (cvcs[i])->apply_force(f_accumulated * (cvcs[i])->sup_coeff);
+      (cvcs[i])->apply_force(f * (cvcs[i])->sup_coeff);
     }
   }
-
-  // Accumulated forces have been applied, impulse-style
-  // Reset to start accumulating again
-  f_accumulated.reset();
 
   if (cvm::debug())
     cvm::log("Done communicating forces from colvar \""+this->name+"\".\n");
@@ -1390,7 +1403,7 @@ int colvar::update_cvc_flags()
       cvm::error("ERROR: All CVCs are disabled for colvar " + this->name +"\n");
       return COLVARS_ERROR;
     }
-    cvc_flags.resize(0);
+    cvc_flags.clear();
   }
 
   return COLVARS_OK;

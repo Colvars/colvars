@@ -829,7 +829,7 @@ public:
     // reallocate the array in case the grid params have just changed
     if (new_params) {
       init_from_boundaries();
-      // data.resize(0); // no longer needed: setup calls clear()
+      // data.clear(); // no longer needed: setup calls clear()
       return this->setup(nx, T(), mult);
     }
 

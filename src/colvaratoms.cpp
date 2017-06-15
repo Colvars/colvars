@@ -165,7 +165,7 @@ int cvm::atom_group::init()
 {
   if (!key.size()) key = "unnamed";
   description = "atom group " + key;
-  // These will be overwritten by parse(), if initializing from a config string
+  // These may be overwritten by parse(), if a name is provided
 
   atoms.clear();
 
@@ -178,7 +178,6 @@ int cvm::atom_group::init()
   b_center = false;
   b_rotate = false;
   b_user_defined_fit = false;
-  b_fit_gradients = false;
   fitting_group = NULL;
 
   noforce = false;
@@ -264,6 +263,49 @@ int cvm::atom_group::parse(std::string const &group_conf)
   // colvarparse::Parse_Mode mode = parse_normal;
 
   int parse_error = COLVARS_OK;
+
+  // Optional group name will let other groups reuse atom definition
+  if (get_keyval(group_conf, "name", name)) {
+    if ((cvm::atom_group_by_name(this->name) != NULL) &&
+        (cvm::atom_group_by_name(this->name) != this)) {
+      cvm::error("Error: this atom group cannot have the same name, \""+this->name+
+                        "\", as another atom group.\n",
+                INPUT_ERROR);
+      return INPUT_ERROR;
+    }
+    cvm::main()->register_named_atom_group(this);
+    description = "atom group " + name;
+  }
+
+  // We need to know about fitting to decide whether the group is scalable
+  // and we need to know about scalability before adding atoms
+  bool b_defined_center = get_keyval(group_conf, "centerReference", b_center, false);
+  bool b_defined_rotate = get_keyval(group_conf, "rotateReference", b_rotate, false);
+  // is the user setting explicit options?
+  b_user_defined_fit = b_defined_center || b_defined_rotate;
+
+  if (is_available(f_ag_scalable_com) && !b_rotate && !b_center) {
+    enable(f_ag_scalable_com);
+    enable(f_ag_scalable);
+  }
+
+  {
+    std::string atoms_of = "";
+    if (get_keyval(group_conf, "atomsOfGroup", atoms_of)) {
+      atom_group * ag = atom_group_by_name(atoms_of);
+      if (ag == NULL) {
+        cvm::error("Error: cannot find atom group with name " + atoms_of + ".\n");
+        return COLVARS_ERROR;
+      }
+      parse_error |= add_atoms_of_group(ag);
+    }
+  }
+
+//   if (get_keyval(group_conf, "copyOfGroup", source)) {
+//     // Goal: Initialize this as a full copy
+//     // for this we'll need an atom_group copy constructor
+//     return COLVARS_OK;
+//   }
 
   {
     std::string numbers_conf = "";
@@ -376,13 +418,8 @@ int cvm::atom_group::parse(std::string const &group_conf)
     }
   }
 
-  // We need to know the fitting options to decide whether the group is scalable
+  // Now that atoms are defined we can parse the detailed fitting options
   parse_error |= parse_fitting_options(group_conf);
-
-  if (is_available(f_ag_scalable_com) && !b_rotate && !b_center) {
-    enable(f_ag_scalable_com);
-    enable(f_ag_scalable);
-  }
 
   if (is_enabled(f_ag_scalable) && !b_dummy) {
     cvm::log("Enabling scalable calculation for group \""+this->key+"\".\n");
@@ -409,6 +446,37 @@ int cvm::atom_group::parse(std::string const &group_conf)
   }
 
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
+}
+
+
+int cvm::atom_group::add_atoms_of_group(atom_group const * ag)
+{
+  std::vector<int> const &source_ids = ag->atoms_ids;
+
+  if (source_ids.size()) {
+    atoms_ids.reserve(atoms_ids.size()+source_ids.size());
+
+    if (is_enabled(f_ag_scalable)) {
+      for (size_t i = 0; i < source_ids.size(); i++) {
+        add_atom_id(source_ids[i]);
+      }
+    } else {
+      atoms.reserve(atoms.size()+source_ids.size());
+      for (size_t i = 0; i < source_ids.size(); i++) {
+        // We could use the atom copy constructor, but only if the source
+        // group is not scalable - whereas this works in both cases
+        // atom constructor expects 1-based atom number
+        add_atom(cvm::atom(source_ids[i] + 1));
+      }
+    }
+
+    if (cvm::get_error()) return COLVARS_ERROR;
+  } else {
+    cvm::error("Error: source atom group contains no atoms\".\n", INPUT_ERROR);
+    return COLVARS_ERROR;
+  }
+
+  return COLVARS_OK;
 }
 
 
@@ -581,13 +649,6 @@ std::string const cvm::atom_group::print_atom_ids() const
 
 int cvm::atom_group::parse_fitting_options(std::string const &group_conf)
 {
-  bool b_defined_center = get_keyval(group_conf, "centerReference", b_center, false);
-  bool b_defined_rotate = get_keyval(group_conf, "rotateReference", b_rotate, false);
-  // is the user setting explicit options?
-  b_user_defined_fit = b_defined_center || b_defined_rotate;
-
-  get_keyval(group_conf, "enableFitGradients", b_fit_gradients, true);
-
   if (b_center || b_rotate) {
 
     if (b_dummy)
@@ -622,7 +683,7 @@ int cvm::atom_group::parse_fitting_options(std::string const &group_conf)
       }
 
       // regardless of the configuration, fit gradients must be calculated by fittingGroup
-      fitting_group->b_fit_gradients = this->b_fit_gradients;
+//       fitting_group->b_fit_gradients = this->b_fit_gradients;
     }
 
     atom_group *group_for_fit = fitting_group ? fitting_group : this;
@@ -679,11 +740,6 @@ int cvm::atom_group::parse_fitting_options(std::string const &group_conf)
       return COLVARS_ERROR;
     }
 
-    if (b_fit_gradients) {
-      group_for_fit->fit_gradients.assign(group_for_fit->size(), cvm::atom_pos(0.0, 0.0, 0.0));
-      rot.request_group1_gradients(group_for_fit->size());
-    }
-
     if (b_rotate && !noforce) {
       cvm::log("Warning: atom group \""+key+
                "\" will be aligned to a fixed orientation given by the reference positions provided.  "
@@ -696,7 +752,26 @@ int cvm::atom_group::parse_fitting_options(std::string const &group_conf)
     }
   }
 
+  // This must happen after fitting group is defined so that side-effects are performed
+  // properly (ie. allocating fitting group gradients)
+  get_keyval_feature(this, group_conf, "enableFitGradients", f_ag_fit_gradients, true);
+
   return COLVARS_OK;
+}
+
+
+void cvm::atom_group::do_feature_side_effects(int id)
+{
+  // If enabled features are changed upstream, the features below should be refreshed
+  switch (id) {
+    case f_ag_fit_gradients:
+      if (b_center || b_rotate) {
+        atom_group *group_for_fit = fitting_group ? fitting_group : this;
+        group_for_fit->fit_gradients.assign(group_for_fit->size(), cvm::atom_pos(0.0, 0.0, 0.0));
+        rot.request_group1_gradients(group_for_fit->size());
+      }
+      break;
+  }
 }
 
 
@@ -959,12 +1034,12 @@ void cvm::atom_group::set_weighted_gradient(cvm::rvector const &grad)
 
 void cvm::atom_group::calc_fit_gradients()
 {
-  if (b_dummy) return;
+  if (b_dummy || ! is_enabled(f_ag_fit_gradients)) return;
 
   if (cvm::debug())
     cvm::log("Calculating fit gradients.\n");
 
-  atom_group *group_for_fit = fitting_group ? fitting_group : this;
+  cvm::atom_group *group_for_fit = fitting_group ? fitting_group : this;
 
   if (b_center) {
     // add the center of geometry contribution to the gradients
@@ -1149,7 +1224,7 @@ void cvm::atom_group::apply_colvar_force(cvm::real const &force)
     }
   }
 
-  if ((b_center || b_rotate) && b_fit_gradients) {
+  if ((b_center || b_rotate) && is_enabled(f_ag_fit_gradients)) {
 
     atom_group *group_for_fit = fitting_group ? fitting_group : this;
 

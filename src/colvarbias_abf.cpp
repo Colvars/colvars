@@ -65,16 +65,18 @@ int colvarbias_abf::init(std::string const &conf)
   // shared ABF
   get_keyval(conf, "shared", shared_on, false);
   if (shared_on) {
-    if (!cvm::replica_enabled() || cvm::replica_num() <= 1)
+    if (!cvm::replica_enabled() || cvm::replica_num() <= 1) {
       cvm::error("Error: shared ABF requires more than one replica.");
-    else
-      cvm::log("shared ABF will be applied among "+ cvm::to_str(cvm::replica_num()) + " replicas.\n");
+      return COLVARS_ERROR;
+    }
+    cvm::log("shared ABF will be applied among "+ cvm::to_str(cvm::replica_num()) + " replicas.\n");
     if (cvm::proxy->smp_enabled() == COLVARS_OK) {
       cvm::error("Error: shared ABF is currently not available with SMP parallelism; "
                  "please set \"SMP off\" at the top of the Colvars configuration file.\n",
                  COLVARS_NOT_IMPLEMENTED);
       return COLVARS_NOT_IMPLEMENTED;
     }
+
     // If shared_freq is not set, we default to output_freq
     get_keyval(conf, "sharedFreq", shared_freq, output_freq);
   }
@@ -83,11 +85,11 @@ int colvarbias_abf::init(std::string const &conf)
 
   if (colvars.size() == 0) {
     cvm::error("Error: no collective variables specified for the ABF bias.\n");
+    return COLVARS_ERROR;
   }
 
   if (update_bias) {
-  // Request calculation of total force (which also checks for availability)
-  // TODO - change this to a dependency - needs ABF-specific features
+    // Request calculation of total force
     if(enable(f_cvb_get_total_force)) return cvm::get_error();
   }
 
@@ -312,12 +314,12 @@ int colvarbias_abf::update()
   // Compute and apply the new bias, if applicable
   if (is_enabled(f_cvb_apply_force) && samples->index_ok(bin)) {
 
-    size_t  count = samples->value(bin);
-    cvm::real	fact = 1.0;
+    size_t count = samples->value(bin);
+    cvm::real fact = 1.0;
 
     // Factor that ensures smooth introduction of the force
     if ( count < full_samples ) {
-      fact = ( count < min_samples) ? 0.0 :
+      fact = (count < min_samples) ? 0.0 :
         (cvm::real(count - min_samples)) / (cvm::real(full_samples - min_samples));
     }
 
