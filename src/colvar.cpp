@@ -961,6 +961,20 @@ colvar::~colvar()
       break;
     }
   }
+
+  for (std::vector<Lepton::CompiledExpression *>::iterator cei = value_evaluators.begin();
+       cei != value_evaluators.end();
+       ++cei) {
+    if (*cei != NULL) delete (*cei);
+  }
+  value_evaluators.clear();
+
+  for (std::vector<Lepton::CompiledExpression *>::iterator gei = gradient_evaluators.begin();
+       gei != gradient_evaluators.end();
+       ++gei) {
+    if (*gei != NULL) delete (*gei);
+  }
+  gradient_evaluators.clear();
 }
 
 
