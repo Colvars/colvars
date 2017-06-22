@@ -675,8 +675,26 @@ void colvardeps::print_state() {
 
 
 void colvardeps::add_child(colvardeps *child) {
+
   children.push_back(child);
   child->parents.push_back((colvardeps *)this);
+
+  // Solve dependencies of already enabled parent features
+  // in the new child
+
+  size_t i, fid;
+  cvm::increase_depth();
+  for (fid = 0; fid < feature_states.size(); fid++) {
+    if (is_enabled(fid)) {
+      for (i=0; i<features()[fid]->requires_children.size(); i++) {
+        int g = features()[fid]->requires_children[i];
+        if (cvm::debug()) cvm::log("DEPS: re-enabling children's "
+          + child->features()[g]->description);
+        child->enable(g, false, false);
+      }
+    }
+  }
+  cvm::decrease_depth();
 }
 
 
