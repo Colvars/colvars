@@ -150,20 +150,6 @@ private:
   std::vector<colvardeps *> parents;
 
 public:
-  // disabling a feature f:
-  // if parents depend on f, tell them to refresh / check that they are ok?
-  // if children provide features to satisfy f ONLY, disable that
-
-  // When the state of this object has changed, recursively tell parents
-  // to enforce their dependencies
-//   void refresh_parents() {
-//
-//   }
-
-  // std::vector<colvardeps *> parents; // Needed to trigger a refresh if capabilities of this object change
-
-  // End of members to be initialized by subclasses
-
   // Checks whether given feature is enabled
   // Defaults to querying f_*_active
   inline bool is_enabled(int f = f_cv_active) const {
