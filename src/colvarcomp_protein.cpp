@@ -13,15 +13,6 @@
 // alpha component
 //////////////////////////////////////////////////////////////////////
 
-    // FIXME: this will not make collect_gradients work
-    // because gradients in individual atom groups
-    // are those of the sub-cvcs (angle, hb), not those
-    // of this cvc (alpha)
-    // This is true of all cvcs with sub-cvcs, and those
-    // that do not calculate explicit gradients
-    // SO: we need a flag giving the availability of
-    // atomic gradients
-
 colvar::alpha_angles::alpha_angles(std::string const &conf)
   : cvc(conf)
 {
@@ -29,6 +20,7 @@ colvar::alpha_angles::alpha_angles(std::string const &conf)
     cvm::log("Initializing alpha_angles object.\n");
 
   function_type = "alpha_angles";
+  enable(f_cvc_implicit_gradient);
   x.type(colvarvalue::type_scalar);
 
   std::string segment_id;
@@ -80,9 +72,9 @@ colvar::alpha_angles::alpha_angles(std::string const &conf)
       theta.push_back(new colvar::angle(cvm::atom(r[i  ], "CA", sid),
                                         cvm::atom(r[i+1], "CA", sid),
                                         cvm::atom(r[i+2], "CA", sid)));
-      atom_groups.push_back(theta.back()->atom_groups[0]);
-      atom_groups.push_back(theta.back()->atom_groups[1]);
-      atom_groups.push_back(theta.back()->atom_groups[2]);
+      register_atom_group(theta.back()->atom_groups[0]);
+      register_atom_group(theta.back()->atom_groups[1]);
+      register_atom_group(theta.back()->atom_groups[2]);
     }
 
   } else {
@@ -102,7 +94,7 @@ colvar::alpha_angles::alpha_angles(std::string const &conf)
         hb.push_back(new colvar::h_bond(cvm::atom(r[i  ], "O",  sid),
                                         cvm::atom(r[i+4], "N",  sid),
                                         r0, en, ed));
-        atom_groups.push_back(hb.back()->atom_groups[0]);
+        register_atom_group(hb.back()->atom_groups[0]);
       }
 
     } else {
@@ -119,6 +111,7 @@ colvar::alpha_angles::alpha_angles()
   : cvc()
 {
   function_type = "alpha_angles";
+  enable(f_cvc_implicit_gradient);
   x.type(colvarvalue::type_scalar);
 }
 
@@ -235,15 +228,6 @@ simple_scalar_dist_functions(alpha_angles)
 // dihedral principal component
 //////////////////////////////////////////////////////////////////////
 
-    // FIXME: this will not make collect_gradients work
-    // because gradients in individual atom groups
-    // are those of the sub-cvcs (dihedral), not those
-    // of this cvc
-    // This is true of all cvcs with sub-cvcs, and those
-    // that do not calculate explicit gradients
-    // SO: we need a flag giving the availability of
-    // atomic gradients
-
 colvar::dihedPC::dihedPC(std::string const &conf)
   : cvc(conf)
 {
@@ -251,6 +235,7 @@ colvar::dihedPC::dihedPC(std::string const &conf)
     cvm::log("Initializing dihedral PC object.\n");
 
   function_type = "dihedPC";
+  enable(f_cvc_implicit_gradient);
   x.type(colvarvalue::type_scalar);
 
   std::string segment_id;
@@ -356,19 +341,19 @@ colvar::dihedPC::dihedPC(std::string const &conf)
                                          cvm::atom(r[i  ], "CA", sid),
                                          cvm::atom(r[i  ], "C", sid),
                                          cvm::atom(r[i+1], "N", sid)));
-    atom_groups.push_back(theta.back()->atom_groups[0]);
-    atom_groups.push_back(theta.back()->atom_groups[1]);
-    atom_groups.push_back(theta.back()->atom_groups[2]);
-    atom_groups.push_back(theta.back()->atom_groups[3]);
+    register_atom_group(theta.back()->atom_groups[0]);
+    register_atom_group(theta.back()->atom_groups[1]);
+    register_atom_group(theta.back()->atom_groups[2]);
+    register_atom_group(theta.back()->atom_groups[3]);
     // Phi (next res)
     theta.push_back(new colvar::dihedral(cvm::atom(r[i  ], "C", sid),
                                          cvm::atom(r[i+1], "N", sid),
                                          cvm::atom(r[i+1], "CA", sid),
                                          cvm::atom(r[i+1], "C", sid)));
-    atom_groups.push_back(theta.back()->atom_groups[0]);
-    atom_groups.push_back(theta.back()->atom_groups[1]);
-    atom_groups.push_back(theta.back()->atom_groups[2]);
-    atom_groups.push_back(theta.back()->atom_groups[3]);
+    register_atom_group(theta.back()->atom_groups[0]);
+    register_atom_group(theta.back()->atom_groups[1]);
+    register_atom_group(theta.back()->atom_groups[2]);
+    register_atom_group(theta.back()->atom_groups[3]);
   }
 
   if (cvm::debug())
@@ -380,6 +365,7 @@ colvar::dihedPC::dihedPC()
   : cvc()
 {
   function_type = "dihedPC";
+  enable(f_cvc_implicit_gradient);
   x.type(colvarvalue::type_scalar);
 }
 

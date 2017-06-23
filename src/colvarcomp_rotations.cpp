@@ -15,6 +15,7 @@ colvar::orientation::orientation(std::string const &conf)
 {
   function_type = "orientation";
   atoms = parse_group(conf, "atoms");
+  enable(f_cvc_implicit_gradient);
   x.type(colvarvalue::type_quaternion);
 
   ref_pos.reserve(atoms->size());
@@ -85,6 +86,7 @@ colvar::orientation::orientation()
   : cvc()
 {
   function_type = "orientation";
+  enable(f_cvc_implicit_gradient);
   x.type(colvarvalue::type_quaternion);
 }
 

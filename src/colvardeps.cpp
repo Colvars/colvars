@@ -558,11 +558,15 @@ void colvardeps::init_cvc_requires() {
 
     init_feature(f_cvc_gradient, "gradient", f_type_dynamic);
 
+    init_feature(f_cvc_implicit_gradient, "implicit gradient", f_type_static);
+    f_req_children(f_cvc_implicit_gradient, f_ag_implicit_gradient);
+
     init_feature(f_cvc_inv_gradient, "inverse gradient", f_type_dynamic);
     f_req_self(f_cvc_inv_gradient, f_cvc_gradient);
 
     init_feature(f_cvc_debug_gradient, "debug gradient", f_type_user);
     f_req_self(f_cvc_debug_gradient, f_cvc_gradient);
+    f_req_exclude(f_cvc_debug_gradient, f_cvc_implicit_gradient);
 
     init_feature(f_cvc_Jacobian, "Jacobian derivative", f_type_dynamic);
     f_req_self(f_cvc_Jacobian, f_cvc_inv_gradient);
@@ -624,7 +628,10 @@ void colvardeps::init_ag_requires() {
     init_feature(f_ag_center, "translational fit", f_type_static);
     init_feature(f_ag_rotate, "rotational fit", f_type_static);
     init_feature(f_ag_fitting_group, "reference positions group", f_type_static);
+    init_feature(f_ag_implicit_gradient, "implicit atom gradient", f_type_dynamic);
     init_feature(f_ag_fit_gradients, "fit gradients", f_type_user);
+    f_req_exclude(f_ag_fit_gradients, f_ag_implicit_gradient);
+
     init_feature(f_ag_atom_forces, "atomic forces", f_type_dynamic);
 
     // parallel calculation implies that we have at least a scalable center of mass,
@@ -653,6 +660,7 @@ void colvardeps::init_ag_requires() {
   // TODO make f_ag_scalable depend on f_ag_scalable_com (or something else)
   feature_states[f_ag_scalable].available = true;
   feature_states[f_ag_fit_gradients].available = true;
+  feature_states[f_ag_implicit_gradient].available = true;
 }
 
 

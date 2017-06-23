@@ -782,7 +782,6 @@ int colvar::init_components(std::string const &conf)
 
 void colvar::do_feature_side_effects(int id)
 {
-  // If enabled features are changed upstream, the features below should be refreshed
   switch (id) {
     case f_cv_total_force_calc:
       cvm::request_total_force();

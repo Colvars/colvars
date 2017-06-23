@@ -38,9 +38,9 @@ colvar::angle::angle(cvm::atom const &a1,
   group1 = new cvm::atom_group(std::vector<cvm::atom>(1, a1));
   group2 = new cvm::atom_group(std::vector<cvm::atom>(1, a2));
   group3 = new cvm::atom_group(std::vector<cvm::atom>(1, a3));
-  atom_groups.push_back(group1);
-  atom_groups.push_back(group2);
-  atom_groups.push_back(group3);
+  register_atom_group(group1);
+  register_atom_group(group2);
+  register_atom_group(group3);
 
   x.type(colvarvalue::type_scalar);
 }
@@ -159,9 +159,9 @@ colvar::dipole_angle::dipole_angle(cvm::atom const &a1,
   group1 = new cvm::atom_group(std::vector<cvm::atom>(1, a1));
   group2 = new cvm::atom_group(std::vector<cvm::atom>(1, a2));
   group3 = new cvm::atom_group(std::vector<cvm::atom>(1, a3));
-  atom_groups.push_back(group1);
-  atom_groups.push_back(group2);
-  atom_groups.push_back(group3);
+  register_atom_group(group1);
+  register_atom_group(group2);
+  register_atom_group(group3);
 
   x.type(colvarvalue::type_scalar);
 }
@@ -286,10 +286,10 @@ colvar::dihedral::dihedral(cvm::atom const &a1,
   group2 = new cvm::atom_group(std::vector<cvm::atom>(1, a2));
   group3 = new cvm::atom_group(std::vector<cvm::atom>(1, a3));
   group4 = new cvm::atom_group(std::vector<cvm::atom>(1, a4));
-  atom_groups.push_back(group1);
-  atom_groups.push_back(group2);
-  atom_groups.push_back(group3);
-  atom_groups.push_back(group4);
+  register_atom_group(group1);
+  register_atom_group(group2);
+  register_atom_group(group3);
+  register_atom_group(group4);
 
   x.type(colvarvalue::type_scalar);
 

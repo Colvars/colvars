@@ -302,6 +302,8 @@ public:
     f_cvc_active,
     f_cvc_scalar,
     f_cvc_gradient,
+    /// \brief CVC doesn't calculate and store explicit atom gradients
+    f_cvc_implicit_gradient,
     f_cvc_inv_gradient,
     /// \brief If enabled, calc_gradients() will call debug_gradients() for every group needed
     f_cvc_debug_gradient,
@@ -321,6 +323,8 @@ public:
     /// Perform a standard minimum msd fit for given atoms
     /// ie. not using refpositionsgroup
 //     f_ag_min_msd_fit,
+    /// \brief Does not have explicit atom gradients from parent CVC
+    f_ag_implicit_gradient,
     f_ag_fit_gradients,
     f_ag_atom_forces,
     f_ag_scalable,

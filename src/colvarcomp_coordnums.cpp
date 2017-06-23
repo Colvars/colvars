@@ -230,7 +230,7 @@ colvar::h_bond::h_bond(std::string const &conf)
 
   cvm::atom acceptor = cvm::atom(a_num);
   cvm::atom donor    = cvm::atom(d_num);
-  atom_groups.push_back(new cvm::atom_group);
+  register_atom_group(new cvm::atom_group);
   atom_groups[0]->add_atom(acceptor);
   atom_groups[0]->add_atom(donor);
 
@@ -256,7 +256,7 @@ colvar::h_bond::h_bond(cvm::atom const &acceptor,
   function_type = "h_bond";
   x.type(colvarvalue::type_scalar);
 
-  atom_groups.push_back(new cvm::atom_group);
+  register_atom_group(new cvm::atom_group);
   atom_groups[0]->add_atom(acceptor);
   atom_groups[0]->add_atom(donor);
 }

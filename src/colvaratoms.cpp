@@ -681,9 +681,6 @@ int cvm::atom_group::parse_fitting_options(std::string const &group_conf)
           return INPUT_ERROR;
         }
       }
-
-      // regardless of the configuration, fit gradients must be calculated by fittingGroup
-//       fitting_group->b_fit_gradients = this->b_fit_gradients;
     }
 
     atom_group *group_for_fit = fitting_group ? fitting_group : this;
@@ -752,9 +749,17 @@ int cvm::atom_group::parse_fitting_options(std::string const &group_conf)
     }
   }
 
+  // Enable fit gradient calculation only if necessary, and not disabled by the user
   // This must happen after fitting group is defined so that side-effects are performed
   // properly (ie. allocating fitting group gradients)
-  get_keyval_feature(this, group_conf, "enableFitGradients", f_ag_fit_gradients, true);
+  {
+    bool b_fit_gradients;
+    get_keyval(group_conf, "enableFitGradients", b_fit_gradients, true);
+
+    if (b_fit_gradients && (b_center || b_rotate)) {
+      enable(f_ag_fit_gradients);
+    }
+  }
 
   return COLVARS_OK;
 }
