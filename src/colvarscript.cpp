@@ -194,7 +194,7 @@ int colvarscript::run(int objc, unsigned char *const objv[])
       result = "Missing arguments";
       return COLVARSCRIPT_ERROR;
     }
-    proxy->output_prefix_str = obj_to_str(objv[2]);
+    proxy->output_prefix() = obj_to_str(objv[2]);
     int error = 0;
     error |= colvars->setup_output();
     error |= colvars->write_output_files();
