@@ -403,7 +403,7 @@ $def_title="ON";
 $def_imageviewer="display %s";
 
 # program version number
-$progversion="1.9.4a5";
+$progversion="1.9.4a6";
 
 # text prompt string
 $promptstring="vmd > ";
@@ -1045,7 +1045,9 @@ if ($config_opengl) {
 # $liboptix_dir         = "/usr/local/encap/NVIDIA-OptiX-SDK-3.6.3-linux64";
 # $liboptix_dir         = "/usr/local/encap/NVIDIA-OptiX-SDK-3.8.0-linux64";
 # $liboptix_dir         = "/usr/local/encap/NVIDIA-OptiX-SDK-3.9.0-linux64";
-$liboptix_dir         = "/usr/local/encap/NVIDIA-OptiX-SDK-4.0.1-linux64";
+# $liboptix_dir         = "/usr/local/encap/NVIDIA-OptiX-SDK-4.0.1-linux64";
+# $liboptix_dir         = "/usr/local/encap/NVIDIA-OptiX-SDK-4.0.2-linux64";
+$liboptix_dir         = "/usr/local/encap/NVIDIA-OptiX-SDK-4.1.0-linux64";
 # NCSA Blue Waters
 # $liboptix_dir         = "/u/sciteam/stonej/local/NVIDIA-OptiX-SDK-3.6.3-linux64";
 # $liboptix_dir         = "/u/sciteam/stonej/local/NVIDIA-OptiX-SDK-3.8.0-linux64";
