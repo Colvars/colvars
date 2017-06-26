@@ -9,9 +9,11 @@
 if git status --porcelain | grep -q '^M \+src/'
 then
   datestr=$(date +'%Y-%m-%d')
+  datestrtex=$(date +'%Y-%m-%d')
   branch=`git rev-parse --abbrev-ref HEAD`
   if test "${branch}" != "master"
   then
+    datestrtex="${datestr}\\_${branch}"
     datestr="${datestr}_${branch}"
   fi
   prevstr=$(sed -n -e 's/^#define COLVARS_VERSION "\(.*\)".*/\1/p' src/colvars_version.h)
@@ -21,7 +23,7 @@ then
   else
     echo "Updating Colvars version string from ${prevstr} to ${datestr}"
     sed -i -e "s/^#define COLVARS_VERSION.*/#define COLVARS_VERSION \"${datestr}\"/" src/colvars_version.h
-    echo -E "\newcommand{\cvversion}{${datestr}}" > doc/cv_version.tex
+    echo -E "\newcommand{\cvversion}{${datestrtex}}" > doc/cv_version.tex
     git add src/colvars_version.h doc/cv_version.tex
   fi
 fi
