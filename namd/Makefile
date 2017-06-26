@@ -241,6 +241,7 @@ OBJS = \
 	$(DSTDIR)/colvargrid.o \
 	$(DSTDIR)/colvarmodule.o \
 	$(DSTDIR)/colvarparse.o \
+	$(DSTDIR)/colvarproxy.o \
 	$(DSTDIR)/colvarproxy_namd.o \
 	$(DSTDIR)/colvarscript.o \
 	$(DSTDIR)/colvartypes.o \

@@ -29,16 +29,59 @@
 class colvarscript;
 
 
+class colvarproxy_system {
+
+public:
+
+  /// Constructor
+  colvarproxy_system();
+
+  /// Destructor
+  virtual ~colvarproxy_system();
+
+  /// Pass restraint energy value for current timestep to MD engine
+  virtual void add_energy(cvm::real energy) = 0;
+
+  /// Tell the proxy whether total forces are needed (may not always be available)
+  virtual void request_total_force(bool yesno);
+
+  /// Are total forces being used?
+  virtual bool total_forces_enabled() const;
+
+  /// \brief Get the PBC-aware distance vector between two positions
+  virtual cvm::rvector position_distance(cvm::atom_pos const &pos1,
+                                         cvm::atom_pos const &pos2) = 0;
+
+  /// \brief Get the PBC-aware square distance between two positions;
+  /// may need to be reimplemented independently from position_distance() for optimization purposes
+  virtual cvm::real position_dist2(cvm::atom_pos const &pos1,
+                                   cvm::atom_pos const &pos2);
+
+  /// \brief Get the closest periodic image to a reference position
+  /// \param pos The position to look for the closest periodic image
+  /// \param ref_pos The reference position
+  virtual void select_closest_image(cvm::atom_pos &pos,
+                                    cvm::atom_pos const &ref_pos);
+
+  /// \brief Perform select_closest_image() on a set of atomic positions
+  ///
+  /// After that, distance vectors can then be calculated directly,
+  /// without using position_distance()
+  void select_closest_images(std::vector<cvm::atom_pos> &pos,
+                             cvm::atom_pos const &ref_pos);
+};
+
+
 /// \brief Container of atomic data for serial processing by Colvars
 class colvarproxy_atoms {
 
 public:
 
+  /// Constructor
+  colvarproxy_atoms();
+
   /// Destructor
-  virtual ~colvarproxy_atoms()
-  {
-    reset();
-  }
+  virtual ~colvarproxy_atoms();
 
   /// Prepare this atom for collective variables calculation, selecting it by
   /// numeric index (1-based)
@@ -53,37 +96,16 @@ public:
   /// is in those cases.
   virtual int init_atom(cvm::residue_id const &residue,
                         std::string const     &atom_name,
-                        std::string const     &segment_id)
-  {
-    cvm::error("Error: initializing an atom by name and "
-               "residue number is currently not supported.\n",
-               COLVARS_NOT_IMPLEMENTED);
-    return COLVARS_NOT_IMPLEMENTED;
-  }
+                        std::string const     &segment_id);
 
   /// Check that this atom is valid, but do not initialize it yet
   virtual int check_atom_id(cvm::residue_id const &residue,
                             std::string const     &atom_name,
-                            std::string const     &segment_id)
-  {
-    cvm::error("Error: initializing an atom by name and "
-               "residue number is currently not supported.\n",
-               COLVARS_NOT_IMPLEMENTED);
-    return COLVARS_NOT_IMPLEMENTED;
-  }
+                            std::string const     &segment_id);
 
   /// \brief Used by the atom class destructor: rather than deleting the array slot
   /// (costly) set the corresponding atoms_ncopies to zero
-  virtual void clear_atom(int index)
-  {
-    if (((size_t) index) >= atoms_ids.size()) {
-      cvm::error("Error: trying to disable an atom that was not previously requested.\n",
-                 INPUT_ERROR);
-    }
-    if (atoms_ncopies[index] > 0) {
-      atoms_ncopies[index] -= 1;
-    }
-  }
+  virtual void clear_atom(int index);
 
   /// \brief Read atom identifiers from a file \param filename name of
   /// the file (usually a PDB) \param atoms array to which atoms read
@@ -93,12 +115,7 @@ public:
   virtual int load_atoms(char const *filename,
                          cvm::atom_group &atoms,
                          std::string const &pdb_field,
-                         double const pdb_field_value = 0.0)
-  {
-    cvm::error("Error: loading atom identifiers from a file is currently not implemented.\n",
-               COLVARS_NOT_IMPLEMENTED);
-    return COLVARS_NOT_IMPLEMENTED;
-  }
+                         double const pdb_field_value = 0.0);
 
   /// \brief Load the coordinates for a group of atoms from a file
   /// (usually a PDB); if "pos" is already allocated, the number of its
@@ -107,23 +124,10 @@ public:
                           std::vector<cvm::atom_pos> &pos,
                           const std::vector<int> &indices,
                           std::string const &pdb_field,
-                          double const pdb_field_value = 0.0)
-  {
-    cvm::error("Error: loading atomic coordinates from a file is currently not implemented.\n");
-    return COLVARS_NOT_IMPLEMENTED;
-  }
+                          double const pdb_field_value = 0.0);
 
-  inline int reset()
-  {
-    atoms_ids.clear();
-    atoms_ncopies.clear();
-    atoms_masses.clear();
-    atoms_charges.clear();
-    atoms_positions.clear();
-    atoms_total_forces.clear();
-    atoms_new_colvar_forces.clear();
-    return COLVARS_OK;
-  }
+  /// Clear atomic data
+  int reset();
 
   /// Get the numeric ID of the given atom (for the program)
   inline int get_atom_id(int index) const
@@ -218,18 +222,9 @@ protected:
   /// \brief Forces applied from colvars, to be communicated to the MD integrator
   std::vector<cvm::rvector> atoms_new_colvar_forces;
 
-  /// Used by all init_atom() functions: create a slot for an atom not requested yet
-  inline int add_atom_slot(int atom_id)
-  {
-    atoms_ids.push_back(atom_id);
-    atoms_ncopies.push_back(1);
-    atoms_masses.push_back(1.0);
-    atoms_charges.push_back(0.0);
-    atoms_positions.push_back(cvm::rvector(0.0, 0.0, 0.0));
-    atoms_total_forces.push_back(cvm::rvector(0.0, 0.0, 0.0));
-    atoms_new_colvar_forces.push_back(cvm::rvector(0.0, 0.0, 0.0));
-    return (atoms_ids.size() - 1);
-  }
+  /// Used by all init_atom() functions: create a slot for an atom not
+  /// requested yet; returns the index in the arrays
+  int add_atom_slot(int atom_id);
 
 };
 
@@ -240,50 +235,23 @@ class colvarproxy_atom_groups {
 
 public:
 
+  /// Contructor
+  colvarproxy_atom_groups();
+
   /// Destructor
-  virtual ~colvarproxy_atom_groups()
-  {
-    reset();
-  }
+  virtual ~colvarproxy_atom_groups();
+
+  /// Clear atom group data
+  int reset();
 
   /// \brief Whether this proxy implementation has capability for scalable groups
-  virtual int scalable_group_coms()
-  {
-    return COLVARS_NOT_IMPLEMENTED;
-  }
+  virtual int scalable_group_coms();
 
   /// Prepare this group for collective variables calculation, selecting atoms by internal ids (0-based)
-  virtual int init_atom_group(std::vector<int> const &atoms_ids) // TODO Add a handle to cvc objects
-  {
-    cvm::error("Error: initializing a group outside of the colvars module is currently not supported.\n",
-               COLVARS_NOT_IMPLEMENTED);
-    return COLVARS_NOT_IMPLEMENTED;
-  }
+  virtual int init_atom_group(std::vector<int> const &atoms_ids);
 
   /// \brief Used by the atom_group class destructor
-  virtual void clear_atom_group(int index)
-  {
-    if (((size_t) index) >= atom_groups_ids.size()) {
-      cvm::error("Error: trying to disable an atom group that was not previously requested.\n",
-                 INPUT_ERROR);
-    }
-
-    if (atom_groups_ncopies[index] > 0) {
-      atom_groups_ncopies[index] -= 1;
-    }
-  }
-
-  inline int reset()
-  {
-    atom_groups_ids.clear();
-    atom_groups_ncopies.clear();
-    atom_groups_masses.clear();
-    atom_groups_charges.clear();
-    atom_groups_coms.clear();
-    atom_groups_total_forces.clear();
-    atom_groups_new_colvar_forces.clear();
-    return COLVARS_OK;
-  }
+  virtual void clear_atom_group(int index);
 
   /// Get the numeric ID of the given atom group (for the MD program)
   inline int get_atom_group_id(int index) const
@@ -348,19 +316,7 @@ protected:
   std::vector<cvm::rvector> atom_groups_new_colvar_forces;
 
   /// Used by all init_atom_group() functions: create a slot for an atom group not requested yet
-  // TODO Add a handle to cvc objects
-  inline int add_atom_group_slot(int atom_group_id)
-  {
-    atom_groups_ids.push_back(atom_group_id);
-    atom_groups_ncopies.push_back(1);
-    atom_groups_masses.push_back(1.0);
-    atom_groups_charges.push_back(0.0);
-    atom_groups_coms.push_back(cvm::rvector(0.0, 0.0, 0.0));
-    atom_groups_total_forces.push_back(cvm::rvector(0.0, 0.0, 0.0));
-    atom_groups_new_colvar_forces.push_back(cvm::rvector(0.0, 0.0, 0.0));
-    return (atom_groups_ids.size() - 1);
-  }
-
+  int add_atom_group_slot(int atom_group_id);
 };
 
 
@@ -369,68 +325,42 @@ class colvarproxy_smp {
 
 public:
 
+  /// Constructor
+  colvarproxy_smp();
+
+  /// Destructor
+  virtual ~colvarproxy_smp();
+
   /// Whether threaded parallelization should be used (TODO: make this a
   /// cvm::deps feature)
   bool b_smp_active;
 
-  colvarproxy_smp()
-  {
-    b_smp_active = true;
-  }
-
   /// Whether threaded parallelization is available (TODO: make this a cvm::deps feature)
-  virtual int smp_enabled()
-  {
-    return COLVARS_NOT_IMPLEMENTED;
-  }
+  virtual int smp_enabled();
 
   /// Distribute calculation of colvars (and their components) across threads
-  virtual int smp_colvars_loop()
-  {
-    return COLVARS_NOT_IMPLEMENTED;
-  }
+  virtual int smp_colvars_loop();
 
   /// Distribute calculation of biases across threads
-  virtual int smp_biases_loop()
-  {
-    return COLVARS_NOT_IMPLEMENTED;
-  }
+  virtual int smp_biases_loop();
 
   /// Distribute calculation of biases across threads 2nd through last, with all scripted biased on 1st thread
-  virtual int smp_biases_script_loop()
-  {
-    return COLVARS_NOT_IMPLEMENTED;
-  }
+  virtual int smp_biases_script_loop();
 
   /// Index of this thread
-  virtual int smp_thread_id()
-  {
-    return COLVARS_NOT_IMPLEMENTED;
-  }
+  virtual int smp_thread_id();
 
   /// Number of threads sharing this address space
-  virtual int smp_num_threads()
-  {
-    return COLVARS_NOT_IMPLEMENTED;
-  }
+  virtual int smp_num_threads();
 
   /// Lock the proxy's shared data for access by a thread, if threads are implemented; if not implemented, does nothing
-  virtual int smp_lock()
-  {
-    return COLVARS_OK;
-  }
+  virtual int smp_lock();
 
   /// Attempt to lock the proxy's shared data
-  virtual int smp_trylock()
-  {
-    return COLVARS_OK;
-  }
+  virtual int smp_trylock();
 
   /// Release the lock
-  virtual int smp_unlock()
-  {
-    return COLVARS_OK;
-  }
+  virtual int smp_unlock();
 };
 
 
@@ -439,27 +369,29 @@ class colvarproxy_replicas {
 
 public:
 
+  /// Constructor
+  colvarproxy_replicas();
+
+  /// Destructor
+  virtual ~colvarproxy_replicas();
+
   /// \brief Indicate if multi-replica support is available and active
-  virtual bool replica_enabled() { return false; }
+  virtual bool replica_enabled();
 
   /// \brief Index of this replica
-  virtual int replica_index() { return 0; }
+  virtual int replica_index();
 
   /// \brief Total number of replica
-  virtual int replica_num() { return 1; }
+  virtual int replica_num();
 
   /// \brief Synchronize replica
-  virtual void replica_comm_barrier() {}
+  virtual void replica_comm_barrier();
 
   /// \brief Receive data from other replica
-  virtual int replica_comm_recv(char* msg_data, int buf_len, int src_rep) {
-    return COLVARS_NOT_IMPLEMENTED;
-  }
+  virtual int replica_comm_recv(char* msg_data, int buf_len, int src_rep);
 
   /// \brief Send data to other replica
-  virtual int replica_comm_send(char* msg_data, int msg_len, int dest_rep) {
-    return COLVARS_NOT_IMPLEMENTED;
-  }
+  virtual int replica_comm_send(char* msg_data, int msg_len, int dest_rep);
 
 };
 
@@ -469,18 +401,14 @@ class colvarproxy_script {
 
 public:
 
-  colvarproxy_script()
-  {
-    script = NULL;
-  }
+  /// Constructor
+  colvarproxy_script();
 
-  virtual ~colvarproxy_script() {}
+  /// Destructor
+  virtual ~colvarproxy_script();
 
   /// Convert a script object (Tcl or Python call argument) to a C string
-  virtual char *script_obj_to_str(unsigned char *obj)
-  {
-    return reinterpret_cast<char *>(obj);
-  }
+  virtual char *script_obj_to_str(unsigned char *obj);
 
   /// Pointer to the scripting interface object
   /// (does not need to be allocated in a new interface)
@@ -493,18 +421,17 @@ public:
   bool have_scripts;
 
   /// Run a user-defined colvar forces script
-  virtual int run_force_callback() { return COLVARS_NOT_IMPLEMENTED; }
+  virtual int run_force_callback();
 
-  virtual int run_colvar_callback(std::string const &name,
-                                  std::vector<const colvarvalue *> const &cvcs,
-                                  colvarvalue &value)
-  { return COLVARS_NOT_IMPLEMENTED; }
+  virtual int run_colvar_callback(
+                std::string const &name,
+                std::vector<const colvarvalue *> const &cvcs,
+                colvarvalue &value);
 
-  virtual int run_colvar_gradient_callback(std::string const &name,
-                                           std::vector<const colvarvalue *> const &cvcs,
-                                           std::vector<cvm::matrix2d<cvm::real> > &gradient)
-  { return COLVARS_NOT_IMPLEMENTED; }
-
+  virtual int run_colvar_gradient_callback(
+                std::string const &name,
+                std::vector<const colvarvalue *> const &cvcs,
+                std::vector<cvm::matrix2d<cvm::real> > &gradient);
 };
 
 
@@ -513,62 +440,29 @@ class colvarproxy_io {
 
 public:
 
-  // **************** INPUT/OUTPUT ****************
+  /// Constructor
+  colvarproxy_io();
 
-  /// \brief Get the current frame number
+  /// Destructor
+  virtual ~colvarproxy_io();
+
+  /// \brief Save the current frame number in the argument given
   // Returns error code
-  virtual int get_frame(long int&) { return COLVARS_NOT_IMPLEMENTED; }
+  virtual int get_frame(long int &);
 
   /// \brief Set the current frame number (as well as colvarmodule::it)
   // Returns error code
-  virtual int set_frame(long int) { return COLVARS_NOT_IMPLEMENTED; }
-
-  // TODO the following definitions may be moved to a .cpp file
+  virtual int set_frame(long int);
 
   /// \brief Returns a reference to the given output channel;
   /// if this is not open already, then open it
-  virtual std::ostream * output_stream(std::string const &output_name)
-  {
-    std::list<std::ostream *>::iterator osi  = output_files.begin();
-    std::list<std::string>::iterator    osni = output_stream_names.begin();
-    for ( ; osi != output_files.end(); osi++, osni++) {
-      if (*osni == output_name) {
-        return *osi;
-      }
-    }
-    output_stream_names.push_back(output_name);
-    std::ofstream * os = new std::ofstream(output_name.c_str());
-    if (!os->is_open()) {
-      cvm::error("Error: cannot write to file \""+output_name+"\".\n",
-                 FILE_ERROR);
-    }
-    output_files.push_back(os);
-    return os;
-  }
+  virtual std::ostream *output_stream(std::string const &output_name);
 
   /// \brief Closes the given output channel
-  virtual int close_output_stream(std::string const &output_name)
-  {
-    std::list<std::ostream *>::iterator osi  = output_files.begin();
-    std::list<std::string>::iterator    osni = output_stream_names.begin();
-    for ( ; osi != output_files.end(); osi++, osni++) {
-      if (*osni == output_name) {
-        ((std::ofstream *) (*osi))->close();
-        output_files.erase(osi);
-        output_stream_names.erase(osni);
-        return COLVARS_OK;
-      }
-    }
-    cvm::error("Error: trying to close an output file or stream that wasn't open.\n",
-               BUG_ERROR);
-    return COLVARS_ERROR;
-  }
+  virtual int close_output_stream(std::string const &output_name);
 
   /// \brief Rename the given file, before overwriting it
-  virtual int backup_file(char const *filename)
-  {
-    return COLVARS_NOT_IMPLEMENTED;
-  }
+  virtual int backup_file(char const *filename);
 
   /// \brief Prefix of the input state file
   inline std::string & input_prefix()
@@ -604,12 +498,14 @@ protected:
 };
 
 
+
 /// \brief Interface between the collective variables module and
 /// the simulation or analysis program (NAMD, VMD, LAMMPS...).
 /// This is the base class: each interfaced program is supported by a derived class.
 /// Only pure virtual functions ("= 0") must be reimplemented to ensure baseline functionality.
 class colvarproxy
-  : public colvarproxy_atoms,
+  : public colvarproxy_system,
+    public colvarproxy_atoms,
     public colvarproxy_atom_groups,
     public colvarproxy_smp,
     public colvarproxy_replicas,
@@ -623,43 +519,24 @@ public:
   colvarmodule *colvars;
 
   /// Constructor
-  colvarproxy()
-  {
-    colvars = NULL;
-    b_simulation_running = true;
-  }
+  colvarproxy();
 
   /// Destructor
-  virtual ~colvarproxy()
-  {
-    reset();
-  }
-
-  /// (Re)initialize required member data after construction
-  virtual int setup()
-  {
-    return COLVARS_OK;
-  }
-
-  /// \brief Update data required by the colvars module (e.g. cache atom positions)
-  ///
-  /// TODO Break up colvarproxy_namd and colvarproxy_lammps function into these
-  virtual int update_input()
-  {
-    return COLVARS_OK;
-  }
-
-  /// \brief Update data based from the results of a module update (e.g. send forces)
-  virtual int update_output()
-  {
-    return COLVARS_OK;
-  }
+  virtual ~colvarproxy();
 
   /// \brief Reset proxy state, e.g. requested atoms
   virtual int reset();
 
+  /// (Re)initialize required member data after construction
+  virtual int setup();
 
-  // **************** SIMULATION PARAMETERS ****************
+  /// \brief Update data required by the colvars module (e.g. cache atom positions)
+  ///
+  /// TODO Break up colvarproxy_namd and colvarproxy_lammps function into these
+  virtual int update_input();
+
+  /// \brief Update data based from the results of a module update (e.g. send forces)
+  virtual int update_output();
 
   /// \brief Value of the unit for atomic coordinates with respect to
   /// angstroms (used by some variables for hard-coded default values)
@@ -677,7 +554,6 @@ public:
   /// \brief Pseudo-random number with Gaussian distribution
   virtual cvm::real rand_gaussian(void) = 0;
 
-
   /// Print a message to the main log
   virtual void log(std::string const &message) = 0;
 
@@ -687,94 +563,21 @@ public:
   /// Print a message to the main log and exit with error code
   virtual void fatal_error(std::string const &message) = 0;
 
-  /// Print a message to the main log and exit normally
-  virtual void exit(std::string const &message)
-  {
-    cvm::error("Error: exiting without error is not implemented, returning error code.\n",
-               COLVARS_NOT_IMPLEMENTED);
-  }
-
   /// \brief Restarts will be written each time this number of steps has passed
-  virtual size_t restart_frequency()
-  {
-    return 0;
-  }
+  virtual size_t restart_frequency();
 
-protected:
-
-  /// Whether a simulation is running (and try to prevent irrecovarable errors)
-  bool b_simulation_running;
-
-public:
-
-  /// Whether a simulation is running (and try to prevent irrecovarable errors)
-  virtual bool simulation_running() const
+  /// Whether a simulation is running (warn against irrecovarable errors)
+  inline bool simulation_running() const
   {
     return b_simulation_running;
   }
 
-  // **************** ACCESS SYSTEM DATA ****************
+protected:
 
-  /// Pass restraint energy value for current timestep to MD engine
-  virtual void add_energy(cvm::real energy) = 0;
+  /// Whether a simulation is running (warn against irrecovarable errors)
+  bool b_simulation_running;
 
-  /// Tell the proxy whether total forces are needed (may not always be available)
-  virtual void request_total_force(bool yesno)
-  {
-    if (yesno == true)
-      cvm::error("Error: total forces are currently not implemented.\n",
-                 COLVARS_NOT_IMPLEMENTED);
-  }
-
-  /// Are total forces being used?
-  virtual bool total_forces_enabled() const
-  {
-    return false;
-  }
-
-  /// \brief Get the PBC-aware distance vector between two positions
-  virtual cvm::rvector position_distance(cvm::atom_pos const &pos1,
-                                         cvm::atom_pos const &pos2) = 0;
-
-  /// \brief Get the PBC-aware square distance between two positions;
-  /// may need to be reimplemented independently from position_distance() for optimization purposes
-  virtual cvm::real position_dist2(cvm::atom_pos const &pos1,
-                                   cvm::atom_pos const &pos2)
-  {
-    return (position_distance(pos1, pos2)).norm2();
-  }
-
-  /// \brief Get the closest periodic image to a reference position
-  /// \param pos The position to look for the closest periodic image
-  /// \param ref_pos The reference position
-  virtual void select_closest_image(cvm::atom_pos &pos,
-                                    cvm::atom_pos const &ref_pos)
-  {
-    pos = position_distance(ref_pos, pos) + ref_pos;
-  }
-
-  /// \brief Perform select_closest_image() on a set of atomic positions
-  ///
-  /// After that, distance vectors can then be calculated directly,
-  /// without using position_distance()
-  void select_closest_images(std::vector<cvm::atom_pos> &pos,
-                             cvm::atom_pos const &ref_pos)
-  {
-    for (std::vector<cvm::atom_pos>::iterator pi = pos.begin();
-         pi != pos.end(); ++pi) {
-      select_closest_image(*pi, ref_pos);
-    }
-  }
 };
-
-
-inline int colvarproxy::reset()
-{
-  int error_code = COLVARS_OK;
-  error_code |= colvarproxy_atoms::reset();
-  error_code |= colvarproxy_atom_groups::reset();
-  return error_code;
-}
 
 
 #endif

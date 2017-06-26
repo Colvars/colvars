@@ -820,6 +820,7 @@ if ($config_colvars) {
                       'colvargrid.C',
                       'colvarmodule.C',
                       'colvarparse.C',
+                      'colvarproxy.C',
                       'colvarproxy_vmd.C',
                       'colvarscript.C',
                       'colvartypes.C',

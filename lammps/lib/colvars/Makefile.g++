@@ -19,7 +19,7 @@ SRC = colvaratoms.cpp colvarbias_abf.cpp colvarbias_alb.cpp colvarbias.cpp  \
  colvarcomp_angles.cpp colvarcomp_coordnums.cpp colvarcomp.cpp              \
  colvarcomp_distances.cpp colvarcomp_protein.cpp colvarcomp_rotations.cpp   \
  colvardeps.cpp colvar.cpp colvargrid.cpp colvarmodule.cpp colvarparse.cpp  \
- colvarscript.cpp colvartypes.cpp colvarvalue.cpp
+ colvarproxy.cpp colvarscript.cpp colvartypes.cpp colvarvalue.cpp
 
 LIB = libcolvars.a
 OBJ = $(SRC:.cpp=.o)

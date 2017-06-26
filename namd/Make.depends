@@ -5170,6 +5170,10 @@ obj/colvarparse.o: \
 	src/colvarvalue.h \
 	src/colvarparse.h
 	$(CXX) $(CXXCOLVARFLAGS) $(COPTO)obj/colvarparse.o $(COPTC) src/colvarparse.C
+obj/colvarproxy.o: \
+	obj/.exists \
+	src/colvarproxy.C
+	$(CXX) $(CXXCOLVARFLAGS) $(COPTO)obj/colvarproxy.o $(COPTC) src/colvarproxy.C
 obj/colvarproxy_namd.o: \
 	obj/.exists \
 	src/colvarproxy_namd.C \

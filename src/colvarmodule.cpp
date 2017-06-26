@@ -1591,12 +1591,6 @@ int colvarmodule::fatal_error(std::string const &message)
 }
 
 
-void cvm::exit(std::string const &message)
-{
-  proxy->exit(message);
-}
-
-
 int cvm::read_index_file(char const *filename)
 {
   std::ifstream is(filename, std::ios::binary);
