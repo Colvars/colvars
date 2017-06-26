@@ -961,6 +961,7 @@ colvar::~colvar()
     }
   }
 
+#ifdef LEPTON
   for (std::vector<Lepton::CompiledExpression *>::iterator cei = value_evaluators.begin();
        cei != value_evaluators.end();
        ++cei) {
@@ -974,6 +975,7 @@ colvar::~colvar()
     if (*gei != NULL) delete (*gei);
   }
   gradient_evaluators.clear();
+#endif
 }
 
 
