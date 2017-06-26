@@ -40,23 +40,6 @@ cvm::real colvarproxy_system::position_dist2(cvm::atom_pos const &pos1,
 }
 
 
-void colvarproxy_system::select_closest_image(cvm::atom_pos &pos,
-                                              cvm::atom_pos const &ref_pos)
-{
-  pos = position_distance(ref_pos, pos) + ref_pos;
-}
-
-
-void colvarproxy_system::select_closest_images(std::vector<cvm::atom_pos> &pos,
-                                               cvm::atom_pos const &ref_pos)
-{
-  for (std::vector<cvm::atom_pos>::iterator pi = pos.begin();
-       pi != pos.end(); ++pi) {
-    select_closest_image(*pi, ref_pos);
-  }
-}
-
-
 
 colvarproxy_atoms::colvarproxy_atoms() {}
 
@@ -67,7 +50,7 @@ colvarproxy_atoms::~colvarproxy_atoms()
 }
 
 
-int colvarproxy_atoms::reset()  
+int colvarproxy_atoms::reset()
 {
   atoms_ids.clear();
   atoms_ncopies.clear();
@@ -304,16 +287,16 @@ int colvarproxy_replicas::replica_num()
 void colvarproxy_replicas::replica_comm_barrier() {}
 
 
-int colvarproxy_replicas::replica_comm_recv(char* msg_data, 
-                                            int buf_len, 
+int colvarproxy_replicas::replica_comm_recv(char* msg_data,
+                                            int buf_len,
                                             int src_rep)
 {
   return COLVARS_NOT_IMPLEMENTED;
 }
 
 
-int colvarproxy_replicas::replica_comm_send(char* msg_data, 
-                                            int msg_len, 
+int colvarproxy_replicas::replica_comm_send(char* msg_data,
+                                            int msg_len,
                                             int dest_rep)
 {
   return COLVARS_NOT_IMPLEMENTED;
@@ -371,13 +354,13 @@ colvarproxy_io::~colvarproxy_io() {}
 
 int colvarproxy_io::get_frame(long int&)
 {
-  return COLVARS_NOT_IMPLEMENTED; 
+  return COLVARS_NOT_IMPLEMENTED;
 }
 
 
 int colvarproxy_io::set_frame(long int)
 {
-  return COLVARS_NOT_IMPLEMENTED; 
+  return COLVARS_NOT_IMPLEMENTED;
 }
 
 

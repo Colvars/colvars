@@ -29,6 +29,7 @@
 class colvarscript;
 
 
+/// Methods for accessing the simulation system (PBCs, integrator, etc)
 class colvarproxy_system {
 
 public:
@@ -39,14 +40,24 @@ public:
   /// Destructor
   virtual ~colvarproxy_system();
 
+  /// \brief Value of the unit for atomic coordinates with respect to
+  /// angstroms (used by some variables for hard-coded default values)
+  virtual cvm::real unit_angstrom() = 0;
+
+  /// \brief Boltzmann constant
+  virtual cvm::real boltzmann() = 0;
+
+  /// \brief Target temperature of the simulation (K units)
+  virtual cvm::real temperature() = 0;
+
+  /// \brief Time step of the simulation (fs)
+  virtual cvm::real dt() = 0;
+
+  /// \brief Pseudo-random number with Gaussian distribution
+  virtual cvm::real rand_gaussian(void) = 0;
+
   /// Pass restraint energy value for current timestep to MD engine
   virtual void add_energy(cvm::real energy) = 0;
-
-  /// Tell the proxy whether total forces are needed (may not always be available)
-  virtual void request_total_force(bool yesno);
-
-  /// Are total forces being used?
-  virtual bool total_forces_enabled() const;
 
   /// \brief Get the PBC-aware distance vector between two positions
   virtual cvm::rvector position_distance(cvm::atom_pos const &pos1,
@@ -57,22 +68,15 @@ public:
   virtual cvm::real position_dist2(cvm::atom_pos const &pos1,
                                    cvm::atom_pos const &pos2);
 
-  /// \brief Get the closest periodic image to a reference position
-  /// \param pos The position to look for the closest periodic image
-  /// \param ref_pos The reference position
-  virtual void select_closest_image(cvm::atom_pos &pos,
-                                    cvm::atom_pos const &ref_pos);
+  /// Tell the proxy whether total forces are needed (may not always be available)
+  virtual void request_total_force(bool yesno);
 
-  /// \brief Perform select_closest_image() on a set of atomic positions
-  ///
-  /// After that, distance vectors can then be calculated directly,
-  /// without using position_distance()
-  void select_closest_images(std::vector<cvm::atom_pos> &pos,
-                             cvm::atom_pos const &ref_pos);
+  /// Are total forces being used?
+  virtual bool total_forces_enabled() const;
 };
 
 
-/// \brief Container of atomic data for serial processing by Colvars
+/// \brief Container of atomic data for processing by Colvars
 class colvarproxy_atoms {
 
 public:
@@ -537,22 +541,6 @@ public:
 
   /// \brief Update data based from the results of a module update (e.g. send forces)
   virtual int update_output();
-
-  /// \brief Value of the unit for atomic coordinates with respect to
-  /// angstroms (used by some variables for hard-coded default values)
-  virtual cvm::real unit_angstrom() = 0;
-
-  /// \brief Boltzmann constant
-  virtual cvm::real boltzmann() = 0;
-
-  /// \brief Target temperature of the simulation (K units)
-  virtual cvm::real temperature() = 0;
-
-  /// \brief Time step of the simulation (fs)
-  virtual cvm::real dt() = 0;
-
-  /// \brief Pseudo-random number with Gaussian distribution
-  virtual cvm::real rand_gaussian(void) = 0;
 
   /// Print a message to the main log
   virtual void log(std::string const &message) = 0;
