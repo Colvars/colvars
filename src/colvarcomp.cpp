@@ -44,6 +44,17 @@ colvar::cvc::cvc(std::string const &conf)
   get_keyval_feature((colvarparse *)this, conf, "debugGradients",
                      f_cvc_debug_gradient, false, parse_silent);
 
+  {
+    bool b_no_PBC = false;
+    get_keyval(conf, "forceNoPBC", b_no_PBC, false);
+    if (b_no_PBC) {
+      disable(f_cvc_pbc_minimum_image);
+    } else {
+      enable(f_cvc_pbc_minimum_image);
+    }
+    // this does not use get_keyval_feature() only for backward compatibility
+  }
+
   // Attempt scalable calculations when in parallel? (By default yes, if available)
   get_keyval(conf, "scalable", b_try_scalable, true);
 

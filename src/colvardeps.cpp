@@ -573,6 +573,8 @@ void colvardeps::init_cvc_requires() {
 
     init_feature(f_cvc_com_based, "depends on group centers of mass", f_type_static);
 
+    // init_feature(f_cvc_pbc_minimum_image, "use minimum-image distances with PBCs", f_type_user);
+
     // Compute total force on first site only to avoid unwanted
     // coupling to other colvars (see e.g. Ciccotti et al., 2005)
     init_feature(f_cvc_one_site_total_force, "compute total force from one group", f_type_user);
@@ -606,6 +608,9 @@ void colvardeps::init_cvc_requires() {
   // Each cvc specifies what other features are available
   feature_states[f_cvc_active].available = true;
   feature_states[f_cvc_gradient].available = true;
+
+  // Use minimum-image distances by default
+  feature_states[f_cvc_pbc_minimum_image].enabled = true;
 
   // Features that are implemented by default if their requirements are
   feature_states[f_cvc_one_site_total_force].available = true;

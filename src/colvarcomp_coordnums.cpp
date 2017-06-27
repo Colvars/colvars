@@ -111,6 +111,10 @@ colvar::coordnum::coordnum(std::string const &conf)
     cvm::error("Error: odd exponents provided, can only use even ones.\n", INPUT_ERROR);
   }
 
+  if (!is_enabled(f_cvc_pbc_minimum_image)) {
+    cvm::log("Warning: only minimum-image distances are used by this variable.\n");
+  }
+
   get_keyval(conf, "group2CenterOnly", b_group2_center_only, group2->b_dummy);
 }
 
@@ -314,6 +318,10 @@ colvar::selfcoordnum::selfcoordnum(std::string const &conf)
     cvm::error("Error: odd exponents provided, can only use even ones.\n");
     return;
   }
+
+  if (!is_enabled(f_cvc_pbc_minimum_image)) {
+    cvm::log("Warning: only minimum-image distances are used by this variable.\n");
+  }
 }
 
 
@@ -392,6 +400,10 @@ colvar::groupcoordnum::groupcoordnum(std::string const &conf)
   if ( (en%2) || (ed%2) ) {
     cvm::error("Error: odd exponents provided, can only use even ones.\n");
     return;
+  }
+
+  if (!is_enabled(f_cvc_pbc_minimum_image)) {
+    cvm::log("Warning: only minimum-image distances are used by this variable.\n");
   }
 
 }

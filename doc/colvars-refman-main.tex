@@ -1461,7 +1461,7 @@ defined using the \texttt{axis} parameter or as the vector joining
 \item %
   \dupkey{axis}{\texttt{distanceXY}}{colvar|distanceZ|axis}{\texttt{distanceZ} component}
 \item %
-  \dupkey{forceNoPBC}{\texttt{distanceZ}}{colvar|distance|forceNoPBC}{\texttt{distance} component}
+  \dupkey{forceNoPBC}{\texttt{distanceXY}}{colvar|distance|forceNoPBC}{\texttt{distance} component}
 \item %
   \dupkey{oneSiteTotalForce}{\texttt{distanceZ}}{colvar|distance|oneSiteTotalForce}{\texttt{distance} component}
 \end{cvcoptions}
@@ -1481,6 +1481,8 @@ of mass of \texttt{group1} and \texttt{group2}.
 \item %
   \simkey{group2}{\texttt{distanceVec}}{group1}
 \item %
+  \dupkey{forceNoPBC}{\texttt{distanceVec}}{colvar|distance|forceNoPBC}{\texttt{distance} component}
+\item %
   \dupkey{oneSiteTotalForce}{\texttt{distanceVec}}{colvar|distance|oneSiteTotalForce}{\texttt{distance} component}
 \end{cvcoptions}
 
@@ -1499,6 +1501,8 @@ $|\mathbf{d}| = 1$.
   \dupkey{group1}{\texttt{distanceDir}}{colvar|distance|group1}{\texttt{distance} component}
 \item %
   \simkey{group2}{\texttt{distanceDir}}{group1}
+\item %
+  \dupkey{forceNoPBC}{\texttt{distanceDir}}{colvar|distance|forceNoPBC}{\texttt{distance} component}
 \item %
   \dupkey{oneSiteTotalForce}{\texttt{distanceDir}}{colvar|distance|oneSiteTotalForce}{\texttt{distance} component}
 \end{cvcoptions}
@@ -1536,11 +1540,11 @@ This can be useful, for example, to develop a new variable defined over two grou
 
 \begin{cvcoptions}
 \item %
-  \dupkey{group1}{\texttt{distanceInv}}{colvar|distance|group1}{\texttt{distance} component}
+  \dupkey{group1}{\texttt{distancePairs}}{colvar|distance|group1}{\texttt{distance} component}
 \item %
-  \simkey{group2}{\texttt{distanceInv}}{group1}
+  \simkey{group2}{\texttt{distancePairs}}{group1}
 \item %
-  \dupkey{forceNoPBC}{\texttt{distanceInv}}{colvar|distance|forceNoPBC}{\texttt{distance} component}
+  \dupkey{forceNoPBC}{\texttt{distancePairs}}{colvar|distance|forceNoPBC}{\texttt{distance} component}
 \end{cvcoptions}
 This component returns a $N_{\mathrm{1}}\times{}N_{\mathrm{2}}$-dimensional vector of numbers, each ranging from $0$ to the largest possible distance within the chosen boundary conditions.
 
@@ -1577,6 +1581,8 @@ interval $[0:180]$.
 \item %
   \simkey{group3}{\texttt{angle}}{group1}
 \item %
+  \dupkey{forceNoPBC}{\texttt{angle}}{colvar|distance|forceNoPBC}{\texttt{distance} component}
+\item %
   \dupkey{oneSiteTotalForce}{\texttt{angle}}{colvar|distance|oneSiteTotalForce}{\texttt{distance} component}
 \end{cvcoptions}
 
@@ -1595,6 +1601,8 @@ It returns an angle (in degrees) within the interval $[0:180]$.
   \simkey{group2}{\texttt{dipoleAngle}}{group1}
 \item %
   \simkey{group3}{\texttt{dipoleAngle}}{group1}
+\item %
+  \dupkey{forceNoPBC}{\texttt{dipoleAngle}}{colvar|distance|forceNoPBC}{\texttt{distance} component}
 \item %
   \dupkey{oneSiteTotalForce}{\texttt{dipoleAngle}}{colvar|distance|oneSiteTotalForce}{\texttt{distance} component}
 \end{cvcoptions}
@@ -1618,6 +1626,8 @@ boundaries can be defined by using any real number of choice.
   \simkey{group3}{\texttt{dihedral}}{group1}
 \item %
   \simkey{group4}{\texttt{dihedral}}{group1}
+\item %
+  \dupkey{forceNoPBC}{\texttt{dihedral}}{colvar|distance|forceNoPBC}{\texttt{distance} component}
 \item %
   \dupkey{oneSiteTotalForce}{\texttt{dihedral}}{colvar|distance|oneSiteTotalForce}{\texttt{distance} component}
 \end{cvcoptions}
