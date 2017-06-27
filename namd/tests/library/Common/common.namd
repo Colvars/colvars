@@ -62,7 +62,7 @@ zeroMomentum            yes
 timestep                1.0
 
 outputName              ${output_name}
-restartName             ${output_name}.restart
+restartName             ${output_name}.tmp
 restartFreq             100
 if { [info exists pdb_restart] > 0 } {
     binaryRestart       no
