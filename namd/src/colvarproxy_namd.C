@@ -938,6 +938,20 @@ std::ostream * colvarproxy_namd::output_stream(std::string const &output_name)
 }
 
 
+int colvarproxy_namd::flush_output_stream(std::ostream *os)
+{
+  std::list<std::ostream *>::iterator osi  = output_files.begin();
+  std::list<std::string>::iterator    osni = output_stream_names.begin();
+  for ( ; osi != output_files.end(); osi++, osni++) {
+    if (*osi == os) {
+      ((ofstream_namd *) *osi)->flush();
+      return COLVARS_OK;
+    }
+  }
+  return COLVARS_ERROR;
+}
+
+
 int colvarproxy_namd::close_output_stream(std::string const &output_name)
 {
   std::list<std::ostream *>::iterator osi  = output_files.begin();

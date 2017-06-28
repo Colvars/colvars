@@ -462,6 +462,9 @@ public:
   /// if this is not open already, then open it
   virtual std::ostream *output_stream(std::string const &output_name);
 
+  /// \brief Flushes the given output channel
+  virtual int flush_output_stream(std::ostream *os);
+
   /// \brief Closes the given output channel
   virtual int close_output_stream(std::string const &output_name);
 

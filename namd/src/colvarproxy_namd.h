@@ -277,6 +277,7 @@ public:
   int update_group_properties(int index);
 
   std::ostream * output_stream(std::string const &output_name);
+  int flush_output_stream(std::ostream *os);
   int close_output_stream(std::string const &output_name);
   int backup_file(char const *filename);
 
