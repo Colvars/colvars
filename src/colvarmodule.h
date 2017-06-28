@@ -329,7 +329,7 @@ public:
 
   /// Open a trajectory file if requested (and leave it open)
   int open_traj_file(std::string const &file_name);
-  /// Close it
+  /// Close it (note: currently unused)
   int close_traj_file();
   /// Write in the trajectory file
   std::ostream & write_traj(std::ostream &os);
@@ -541,7 +541,7 @@ protected:
   std::string cv_traj_name;
 
   /// Collective variables output trajectory file
-  colvarmodule::ofstream cv_traj_os;
+  std::ostream *cv_traj_os;
 
   /// Appending to the existing trajectory file?
   bool cv_traj_append;
