@@ -1,1 +1,1 @@
-#define COLVARS_VERSION "2017-06-27_namd-colvars-folder"
+#define COLVARS_VERSION "2017-06-27_HEAD"

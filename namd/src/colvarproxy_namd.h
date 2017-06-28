@@ -276,7 +276,8 @@ public:
   void clear_atom_group(int index);
   int update_group_properties(int index);
 
-  std::ostream * output_stream(std::string const &output_name);
+  std::ostream * output_stream(std::string const &output_name,
+                               std::ios_base::openmode mode);
   int flush_output_stream(std::ostream *os);
   int close_output_stream(std::string const &output_name);
   int backup_file(char const *filename);

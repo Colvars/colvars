@@ -917,7 +917,8 @@ int colvarproxy_namd::load_atoms(char const *pdb_filename,
 }
 
 
-std::ostream * colvarproxy_namd::output_stream(std::string const &output_name)
+std::ostream * colvarproxy_namd::output_stream(std::string const &output_name,
+                                               std::ios_base::openmode mode)
 {
   std::list<std::ostream *>::iterator osi  = output_files.begin();
   std::list<std::string>::iterator    osni = output_stream_names.begin();
@@ -926,13 +927,14 @@ std::ostream * colvarproxy_namd::output_stream(std::string const &output_name)
       return *osi;
     }
   }
-  output_stream_names.push_back(output_name);
   backup_file(output_name.c_str());
-  ofstream_namd * os = new ofstream_namd(output_name.c_str());
+  ofstream_namd *os = new ofstream_namd(output_name.c_str(), mode);
   if (!os->is_open()) {
     cvm::error("Error: cannot write to file \""+output_name+"\".\n",
                FILE_ERROR);
+    return NULL;
   }
+  output_stream_names.push_back(output_name);
   output_files.push_back(os);
   return os;
 }

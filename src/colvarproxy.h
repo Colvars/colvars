@@ -460,7 +460,9 @@ public:
 
   /// \brief Returns a reference to the given output channel;
   /// if this is not open already, then open it
-  virtual std::ostream *output_stream(std::string const &output_name);
+  virtual std::ostream *output_stream(std::string const &output_name,
+                                      std::ios_base::openmode mode =
+                                        std::ios_base::out);
 
   /// \brief Flushes the given output channel
   virtual int flush_output_stream(std::ostream *os);
@@ -470,6 +472,12 @@ public:
 
   /// \brief Rename the given file, before overwriting it
   virtual int backup_file(char const *filename);
+
+  /// \brief Rename the given file, before overwriting it
+  inline int backup_file(std::string const &filename)
+  {
+    return backup_file(filename.c_str());
+  }
 
   /// \brief Prefix of the input state file
   inline std::string & input_prefix()
