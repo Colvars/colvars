@@ -2611,7 +2611,6 @@ obj/ComputeMgr.o: \
 	src/GlobalMasterColvars.h \
 	src/colvarmodule.h \
 	src/colvars_version.h \
-	src/fstream_namd.h \
 	src/colvartypes.h \
 	src/colvarproxy.h \
 	src/colvarvalue.h \
@@ -4902,7 +4901,6 @@ obj/colvar.o: \
 	src/colvar.C \
 	src/colvarmodule.h \
 	src/colvars_version.h \
-	src/fstream_namd.h \
 	src/colvartypes.h \
 	src/colvarproxy.h \
 	src/colvarvalue.h \
@@ -4919,7 +4917,6 @@ obj/colvaratoms.o: \
 	src/colvaratoms.C \
 	src/colvarmodule.h \
 	src/colvars_version.h \
-	src/fstream_namd.h \
 	src/colvartypes.h \
 	src/colvarproxy.h \
 	src/colvarvalue.h \
@@ -4932,7 +4929,6 @@ obj/colvarbias.o: \
 	src/colvarbias.C \
 	src/colvarmodule.h \
 	src/colvars_version.h \
-	src/fstream_namd.h \
 	src/colvartypes.h \
 	src/colvarproxy.h \
 	src/colvarvalue.h \
@@ -4946,7 +4942,6 @@ obj/colvarbias_abf.o: \
 	src/colvarbias_abf.C \
 	src/colvarmodule.h \
 	src/colvars_version.h \
-	src/fstream_namd.h \
 	src/colvartypes.h \
 	src/colvarproxy.h \
 	src/colvarvalue.h \
@@ -4962,7 +4957,6 @@ obj/colvarbias_alb.o: \
 	src/colvarbias_alb.C \
 	src/colvarmodule.h \
 	src/colvars_version.h \
-	src/fstream_namd.h \
 	src/colvartypes.h \
 	src/colvarproxy.h \
 	src/colvarvalue.h \
@@ -4977,7 +4971,6 @@ obj/colvarbias_histogram.o: \
 	src/colvarbias_histogram.C \
 	src/colvarmodule.h \
 	src/colvars_version.h \
-	src/fstream_namd.h \
 	src/colvartypes.h \
 	src/colvarproxy.h \
 	src/colvarvalue.h \
@@ -4994,7 +4987,6 @@ obj/colvarbias_meta.o: \
 	src/colvar.h \
 	src/colvarmodule.h \
 	src/colvars_version.h \
-	src/fstream_namd.h \
 	src/colvartypes.h \
 	src/colvarproxy.h \
 	src/colvarvalue.h \
@@ -5009,7 +5001,6 @@ obj/colvarbias_restraint.o: \
 	src/colvarbias_restraint.C \
 	src/colvarmodule.h \
 	src/colvars_version.h \
-	src/fstream_namd.h \
 	src/colvartypes.h \
 	src/colvarproxy.h \
 	src/colvarvalue.h \
@@ -5024,7 +5015,6 @@ obj/colvarcomp.o: \
 	src/colvarcomp.C \
 	src/colvarmodule.h \
 	src/colvars_version.h \
-	src/fstream_namd.h \
 	src/colvartypes.h \
 	src/colvarproxy.h \
 	src/colvarvalue.h \
@@ -5039,7 +5029,6 @@ obj/colvarcomp_angles.o: \
 	src/colvarcomp_angles.C \
 	src/colvarmodule.h \
 	src/colvars_version.h \
-	src/fstream_namd.h \
 	src/colvartypes.h \
 	src/colvarproxy.h \
 	src/colvarvalue.h \
@@ -5054,7 +5043,6 @@ obj/colvarcomp_coordnums.o: \
 	src/colvarcomp_coordnums.C \
 	src/colvarmodule.h \
 	src/colvars_version.h \
-	src/fstream_namd.h \
 	src/colvartypes.h \
 	src/colvarproxy.h \
 	src/colvarvalue.h \
@@ -5069,7 +5057,6 @@ obj/colvarcomp_distances.o: \
 	src/colvarcomp_distances.C \
 	src/colvarmodule.h \
 	src/colvars_version.h \
-	src/fstream_namd.h \
 	src/colvartypes.h \
 	src/colvarproxy.h \
 	src/colvarvalue.h \
@@ -5084,7 +5071,6 @@ obj/colvarcomp_protein.o: \
 	src/colvarcomp_protein.C \
 	src/colvarmodule.h \
 	src/colvars_version.h \
-	src/fstream_namd.h \
 	src/colvartypes.h \
 	src/colvarproxy.h \
 	src/colvarvalue.h \
@@ -5099,7 +5085,6 @@ obj/colvarcomp_rotations.o: \
 	src/colvarcomp_rotations.C \
 	src/colvarmodule.h \
 	src/colvars_version.h \
-	src/fstream_namd.h \
 	src/colvartypes.h \
 	src/colvarproxy.h \
 	src/colvarvalue.h \
@@ -5115,7 +5100,6 @@ obj/colvardeps.o: \
 	src/colvardeps.h \
 	src/colvarmodule.h \
 	src/colvars_version.h \
-	src/fstream_namd.h \
 	src/colvartypes.h \
 	src/colvarproxy.h \
 	src/colvarvalue.h \
@@ -5126,7 +5110,6 @@ obj/colvargrid.o: \
 	src/colvargrid.C \
 	src/colvarmodule.h \
 	src/colvars_version.h \
-	src/fstream_namd.h \
 	src/colvartypes.h \
 	src/colvarproxy.h \
 	src/colvarvalue.h \
@@ -5142,7 +5125,6 @@ obj/colvarmodule.o: \
 	src/colvarmodule.C \
 	src/colvarmodule.h \
 	src/colvars_version.h \
-	src/fstream_namd.h \
 	src/colvartypes.h \
 	src/colvarproxy.h \
 	src/colvarvalue.h \
@@ -5164,7 +5146,6 @@ obj/colvarparse.o: \
 	src/colvarparse.C \
 	src/colvarmodule.h \
 	src/colvars_version.h \
-	src/fstream_namd.h \
 	src/colvartypes.h \
 	src/colvarproxy.h \
 	src/colvarvalue.h \
@@ -5172,7 +5153,18 @@ obj/colvarparse.o: \
 	$(CXX) $(CXXCOLVARFLAGS) $(COPTO)obj/colvarparse.o $(COPTC) src/colvarparse.C
 obj/colvarproxy.o: \
 	obj/.exists \
-	src/colvarproxy.C
+	src/colvarproxy.C \
+	src/colvarmodule.h \
+	src/colvars_version.h \
+	src/colvartypes.h \
+	src/colvarproxy.h \
+	src/colvarvalue.h \
+	src/colvarscript.h \
+	src/colvarbias.h \
+	src/colvar.h \
+	src/colvarparse.h \
+	src/colvardeps.h \
+	src/colvaratoms.h
 	$(CXX) $(CXXCOLVARFLAGS) $(COPTO)obj/colvarproxy.o $(COPTC) src/colvarproxy.C
 obj/colvarproxy_namd.o: \
 	obj/.exists \
@@ -5249,7 +5241,6 @@ obj/colvarscript.o: \
 	src/colvarscript.h \
 	src/colvarmodule.h \
 	src/colvars_version.h \
-	src/fstream_namd.h \
 	src/colvartypes.h \
 	src/colvarproxy.h \
 	src/colvarvalue.h \
@@ -5263,7 +5254,6 @@ obj/colvartypes.o: \
 	src/colvartypes.C \
 	src/colvarmodule.h \
 	src/colvars_version.h \
-	src/fstream_namd.h \
 	src/colvartypes.h \
 	src/colvarproxy.h \
 	src/colvarvalue.h \
@@ -5274,7 +5264,6 @@ obj/colvarvalue.o: \
 	src/colvarvalue.C \
 	src/colvarmodule.h \
 	src/colvars_version.h \
-	src/fstream_namd.h \
 	src/colvartypes.h \
 	src/colvarproxy.h \
 	src/colvarvalue.h

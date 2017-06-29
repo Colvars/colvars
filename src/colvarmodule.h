@@ -45,11 +45,6 @@ You can browse the class hierarchy or the list of source files.
 #include <vector>
 #include <list>
 
-#ifdef NAMD_VERSION
-// use Lustre-friendly wrapper to POSIX write()
-#include "fstream_namd.h"
-#endif
-
 class colvarparse;
 class colvar;
 class colvarbias;
@@ -315,12 +310,6 @@ public:
 
   /// (Re)initialize the output trajectory and state file (does not write it yet)
   int setup_output();
-
-#ifdef NAMD_VERSION
-  typedef ofstream_namd ofstream;
-#else
-  typedef std::ofstream ofstream;
-#endif
 
   /// Read the input restart file
   std::istream & read_restart(std::istream &is);

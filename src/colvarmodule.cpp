@@ -1301,7 +1301,7 @@ int colvarmodule::write_output_files()
   cvm::decrease_depth();
 
   if (cv_traj_os != NULL) {
-    // do not close to avoid problems with multiple NAMD runs
+    // do not close, there may be another run command
     proxy->flush_output_stream(cv_traj_os);
   }
 
