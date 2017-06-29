@@ -927,7 +927,8 @@ std::ostream * colvarproxy_namd::output_stream(std::string const &output_name,
       return *osi;
     }
   }
-  backup_file(output_name.c_str());
+  if (!(mode & (std::ios_base::app | std::ios_base::ate)))
+    backup_file(output_name.c_str());
   ofstream_namd *os = new ofstream_namd(output_name.c_str(), mode);
   if (!os->is_open()) {
     cvm::error("Error: cannot write to file \""+output_name+"\".\n",
