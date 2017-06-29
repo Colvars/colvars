@@ -444,7 +444,6 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool app
   std::string  gradients_out_name = prefix + ".grad";
   std::ios::openmode mode = (append ? std::ios::app : std::ios::out);
 
-  if (!append) cvm::proxy->backup_file(samples_out_name);
   std::ostream *samples_os =
     cvm::proxy->output_stream(samples_out_name, mode);
   if (!samples_os) {
@@ -453,7 +452,6 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool app
   samples->write_multicol(*samples_os);
   cvm::proxy->close_output_stream(samples_out_name);
 
-  if (!append) cvm::proxy->backup_file(gradients_out_name);
   std::ostream *gradients_os =
     cvm::proxy->output_stream(gradients_out_name, mode);
   if (!gradients_os) {
@@ -465,7 +463,6 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool app
   if (colvars.size() == 1) {
     // Do numerical integration and output a PMF
     std::string  pmf_out_name = prefix + ".pmf";
-    if (!append) cvm::proxy->backup_file(pmf_out_name);
     std::ostream *pmf_os = cvm::proxy->output_stream(pmf_out_name, mode);
     if (!pmf_os) {
       cvm::error("Error opening pmf file " + pmf_out_name + " for writing");
@@ -480,7 +477,6 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool app
 
     std::string  z_samples_out_name = prefix + ".zcount";
 
-    if (!append) cvm::proxy->backup_file(z_samples_out_name);
     std::ostream *z_samples_os =
       cvm::proxy->output_stream(z_samples_out_name, mode);
     if (!z_samples_os) {
@@ -492,7 +488,6 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool app
     if (b_czar_window_file) {
       std::string  z_gradients_out_name = prefix + ".zgrad";
 
-      if (!append) cvm::proxy->backup_file(z_gradients_out_name);
       std::ostream *z_gradients_os =
         cvm::proxy->output_stream(z_gradients_out_name, mode);
       if (!z_gradients_os) {
@@ -514,7 +509,6 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool app
 
     std::string  czar_gradients_out_name = prefix + ".czar.grad";
 
-    if (!append) cvm::proxy->backup_file(czar_gradients_out_name);
     std::ostream *czar_gradients_os =
       cvm::proxy->output_stream(czar_gradients_out_name, mode);
     if (!czar_gradients_os) {
@@ -526,7 +520,6 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool app
     if (colvars.size() == 1) {
       // Do numerical integration and output a PMF
       std::string  czar_pmf_out_name = prefix + ".czar.pmf";
-      if (!append) cvm::proxy->backup_file(czar_pmf_out_name);
       std::ostream *czar_pmf_os =
         cvm::proxy->output_stream(czar_pmf_out_name, mode);
       if (!czar_pmf_os)  cvm::error("Error opening CZAR pmf file " + czar_pmf_out_name + " for writing");
