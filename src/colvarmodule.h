@@ -546,9 +546,6 @@ protected:
   /// Appending to the existing trajectory file?
   bool cv_traj_append;
 
-  /// Output restart file
-  colvarmodule::ofstream restart_out_os;
-
 private:
 
   /// Counter for the current depth in the object hierarchy (useg e.g. in output)

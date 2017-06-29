@@ -19,6 +19,9 @@
 
 colvarmodule::colvarmodule(colvarproxy *proxy_in)
 {
+  depth_s = 0;
+  cv_traj_os = NULL;
+
   // pointer to the proxy object
   if (proxy == NULL) {
     proxy = proxy_in;
@@ -27,11 +30,9 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
     // TODO relax this error to handle multiple molecules in VMD
     // once the module is not static anymore
     cvm::error("Error: trying to allocate the collective "
-               "variable module twice.\n");
+               "variable module twice.\n", BUG_ERROR);
     return;
   }
-
-  depth_s = 0;
 
   cvm::log(cvm::line_marker);
   cvm::log("Initializing the collective variables module, version "+
@@ -45,8 +46,6 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
   }
 
   // set initial default values
-
-  cv_traj_os = NULL;
 
   // "it_restart" will be set by the input state file, if any;
   // "it" should be updated by the proxy
@@ -916,11 +915,13 @@ int colvarmodule::write_restart_files()
        ((cvm::step_absolute() % restart_out_freq) == 0) ) {
     cvm::log("Writing the state file \""+
              restart_out_name+"\".\n");
-    proxy->backup_file(restart_out_name.c_str());
-    restart_out_os.open(restart_out_name.c_str());
-    if (!restart_out_os.is_open() || !write_restart(restart_out_os))
-      cvm::error("Error: in writing restart file.\n");
-    restart_out_os.close();
+    proxy->backup_file(restart_out_name);
+    std::ostream *restart_out_os = proxy->output_stream(restart_out_name);
+    if (!restart_out_os) return cvm::get_error();
+    if (!write_restart(*restart_out_os)) {
+      return cvm::error("Error: in writing restart file.\n", FILE_ERROR);
+    }
+    proxy->close_output_stream(restart_out_name);
   }
 
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);

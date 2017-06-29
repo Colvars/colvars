@@ -29,6 +29,8 @@ colvarbias_meta::colvarbias_meta(char const *key)
   : colvarbias(key)
 {
   new_hills_begin = hills.end();
+  hills_traj_os = NULL;
+  replica_hills_os = NULL;
 }
 
 
@@ -231,11 +233,15 @@ colvarbias_meta::~colvarbias_meta()
     hills_energy_gradients = NULL;
   }
 
-  if (replica_hills_os.is_open())
-    replica_hills_os.close();
+  if (replica_hills_os) {
+    cvm::proxy->close_output_stream(replica_hills_file);
+    replica_hills_os = NULL;
+  }
 
-  if (hills_traj_os.is_open())
-    hills_traj_os.close();
+  if (hills_traj_os) {
+    cvm::proxy->close_output_stream(hills_traj_file_name());
+    hills_traj_os = NULL;
+  }
 
   if(target_dist) {
     delete target_dist;
@@ -272,9 +278,9 @@ colvarbias_meta::create_hill(colvarbias_meta::hill const &h)
   }
 
   // output to trajectory (if specified)
-  if (hills_traj_os.is_open()) {
-    hills_traj_os << (hills.back()).output_traj();
-    hills_traj_os.flush();
+  if (hills_traj_os) {
+    *hills_traj_os << (hills.back()).output_traj();
+    cvm::proxy->flush_output_stream(hills_traj_os);
   }
 
   has_data = true;
@@ -304,12 +310,12 @@ colvarbias_meta::delete_hill(hill_iter &h)
     }
   }
 
-  if (hills_traj_os.is_open()) {
+  if (hills_traj_os) {
     // output to the trajectory
-    hills_traj_os << "# DELETED this hill: "
-                  << (hills.back()).output_traj()
-                  << "\n";
-    hills_traj_os.flush();
+    *hills_traj_os << "# DELETED this hill: "
+                   << (hills.back()).output_traj()
+                   << "\n";
+    cvm::proxy->flush_output_stream(hills_traj_os);
   }
 
   return hills.erase(h);
@@ -493,12 +499,12 @@ int colvarbias_meta::update_bias()
 
     case multiple_replicas:
       create_hill(hill(hill_weight*hills_scale, colvars, hill_width, replica_id));
-      if (replica_hills_os.is_open()) {
-        replica_hills_os << hills.back();
+      if (replica_hills_os) {
+        *replica_hills_os << hills.back();
       } else {
-        cvm::fatal_error("Error: in metadynamics bias \""+this->name+"\""+
-                         ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
-                         " while writing hills for the other replicas.\n");
+        return cvm::error("Error: in metadynamics bias \""+this->name+"\""+
+                          ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
+                          " while writing hills for the other replicas.\n", FILE_ERROR);
       }
       break;
     }
@@ -896,8 +902,9 @@ int colvarbias_meta::replica_share()
     // reread the replicas registry
     update_replicas_registry();
     // empty the output buffer
-    if (replica_hills_os.is_open())
-      replica_hills_os.flush();
+    if (replica_hills_os) {
+      cvm::proxy->flush_output_stream(replica_hills_os);
+    }
     read_replica_files();
   }
   return COLVARS_OK;
@@ -1513,13 +1520,11 @@ int colvarbias_meta::setup_output()
     // for the others to read
 
     // open the "hills" buffer file
-    if (!replica_hills_os.is_open()) {
-      cvm::backup_file(replica_hills_file.c_str());
-      replica_hills_os.open(replica_hills_file.c_str());
-      if (!replica_hills_os.is_open())
-        cvm::error("Error: in opening file \""+
-                   replica_hills_file+"\" for writing.\n", FILE_ERROR);
-      replica_hills_os.setf(std::ios::scientific, std::ios::floatfield);
+    if (!replica_hills_os) {
+      cvm::proxy->backup_file(replica_hills_file);
+      replica_hills_os = cvm::proxy->output_stream(replica_hills_file);
+      if (!replica_hills_os) return cvm::get_error();
+      replica_hills_os->setf(std::ios::scientific, std::ios::floatfield);
     }
 
     // write the state file (so that there is always one available)
@@ -1531,43 +1536,49 @@ int colvarbias_meta::setup_output()
 
     // if we're running without grids, use a growing list of "hills" files
     // otherwise, just one state file and one "hills" file as buffer
-    std::ofstream list_os(replica_list_file.c_str(),
-                          (use_grids ? std::ios::trunc : std::ios::app));
-    if (! list_os.is_open())
-      cvm::fatal_error("Error: in opening file \""+
-                       replica_list_file+"\" for writing.\n");
-    list_os << "stateFile " << replica_state_file << "\n";
-    list_os << "hillsFile " << replica_hills_file << "\n";
-    list_os.close();
+    std::ostream *list_os =
+      cvm::proxy->output_stream(replica_list_file,
+                                (use_grids ? std::ios_base::trunc :
+                                 std::ios_base::app));
+    if (!list_os) {
+      return cvm::get_error();
+    }
+    *list_os << "stateFile " << replica_state_file << "\n";
+    *list_os << "hillsFile " << replica_hills_file << "\n";
+    cvm::proxy->close_output_stream(replica_list_file);
 
-    // finally, if add a new record for this replica to the registry
+    // finally, add a new record for this replica to the registry
     if (! registered_replica) {
-      std::ofstream reg_os(replicas_registry_file.c_str(), std::ios::app);
-      if (! reg_os.is_open())
-        cvm::error("Error: in opening file \""+
-                   replicas_registry_file+"\" for writing.\n", FILE_ERROR);
-      reg_os << replica_id << " " << replica_list_file << "\n";
-      reg_os.close();
+      std::ostream *reg_os =
+        cvm::proxy->output_stream(replicas_registry_file,
+                                  std::ios::app);
+      if (!reg_os) {
+        return cvm::get_error();
+      }
+      *reg_os << replica_id << " " << replica_list_file << "\n";
+      cvm::proxy->close_output_stream(replicas_registry_file);
     }
   }
 
   if (b_hills_traj) {
-    std::string const traj_file_name(cvm::output_prefix()+
-                                     ".colvars."+this->name+
-                                     ( (comm != single_replica) ?
-                                       ("."+replica_id) :
-                                       ("") )+
-                                     ".hills.traj");
-    if (!hills_traj_os.is_open()) {
-      cvm::backup_file(traj_file_name.c_str());
-      hills_traj_os.open(traj_file_name.c_str());
+    if (!hills_traj_os) {
+      hills_traj_os = cvm::proxy->output_stream(hills_traj_file_name());
+      if (!hills_traj_os) return cvm::get_error();
     }
-    if (!hills_traj_os.is_open())
-      cvm::error("Error: in opening hills output file \"" +
-                 traj_file_name+"\".\n", FILE_ERROR);
   }
 
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
+}
+
+
+std::string const colvarbias_meta::hills_traj_file_name() const
+{
+  return std::string(cvm::output_prefix()+
+                     ".colvars."+this->name+
+                     ( (comm != single_replica) ?
+                       ("."+replica_id) :
+                       ("") )+
+                     ".hills.traj");
 }
 
 
@@ -1663,12 +1674,13 @@ void colvarbias_meta::write_pmf()
                                       (dump_fes_save ?
                                        "."+cvm::to_str(cvm::step_absolute()) : "") +
                                       ".pmf");
-      cvm::backup_file(fes_file_name.c_str());
-      cvm::ofstream fes_os(fes_file_name.c_str());
-      pmf->write_multicol(fes_os);
-      fes_os.close();
+      cvm::proxy->backup_file(fes_file_name);
+      std::ostream *fes_os = cvm::proxy->output_stream(fes_file_name);
+      pmf->write_multicol(*fes_os);
+      cvm::proxy->close_output_stream(fes_file_name);
     }
   }
+
   if (comm != single_replica) {
     // output the combined PMF from all replicas
     pmf->reset();
@@ -1687,10 +1699,10 @@ void colvarbias_meta::write_pmf()
                                     (dump_fes_save ?
                                      "."+cvm::to_str(cvm::step_absolute()) : "") +
                                     ".pmf");
-    cvm::backup_file(fes_file_name.c_str());
-    cvm::ofstream fes_os(fes_file_name.c_str());
-    pmf->write_multicol(fes_os);
-    fes_os.close();
+    cvm::proxy->backup_file(fes_file_name);
+    std::ostream *fes_os = cvm::proxy->output_stream(fes_file_name);
+    pmf->write_multicol(*fes_os);
+    cvm::proxy->close_output_stream(fes_file_name);
   }
 
   delete pmf;
@@ -1761,13 +1773,11 @@ int colvarbias_meta::write_replica_state_file()
   // rep_state_os.close();
 
   // reopen the hills file
-  replica_hills_os.close();
-  cvm::backup_file(replica_hills_file.c_str());
-  replica_hills_os.open(replica_hills_file.c_str());
-  if (!replica_hills_os.is_open())
-    cvm::fatal_error("Error: in opening file \""+
-                     replica_hills_file+"\" for writing.\n");
-  replica_hills_os.setf(std::ios::scientific, std::ios::floatfield);
+  cvm::proxy->close_output_stream(replica_hills_file);
+  cvm::proxy->backup_file(replica_hills_file);
+  replica_hills_os = cvm::proxy->output_stream(replica_hills_file);
+  if (!replica_hills_os) return cvm::get_error();
+  replica_hills_os->setf(std::ios::scientific, std::ios::floatfield);
 
   return COLVARS_OK;
 }
