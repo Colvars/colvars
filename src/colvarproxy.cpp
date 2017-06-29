@@ -375,6 +375,9 @@ std::ostream * colvarproxy_io::output_stream(std::string const &output_name,
     }
   }
   std::ofstream *os = new std::ofstream(output_name.c_str(), mode);
+  if (!(mode & (std::ios_base::app | std::ios_base::ate))) {
+    backup_file(output_name);
+  }
   if (!os->is_open()) {
     cvm::error("Error: cannot write to file/channel \""+output_name+"\".\n",
                FILE_ERROR);
