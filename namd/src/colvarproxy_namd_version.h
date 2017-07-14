@@ -1,3 +1,3 @@
 #ifndef COLVARPROXY_VERSION
-#define COLVARPROXY_VERSION "2017-06-28_namd-colvars-folder"
+#define COLVARPROXY_VERSION "2017-07-14"
 #endif
