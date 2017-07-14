@@ -1,4 +1,6 @@
 #!/bin/sh
+# -*- sh-basic-offset: 2; sh-indentation: 2; -*-
+
 # Script to update a NAMD, VMD, LAMMPS, or GROMACS source tree with the latest colvars code.
 
 # enforce using portable C locale
@@ -235,18 +237,30 @@ fi
 if [ ${code} = NAMD ]
 then
 
-  # update code-independent headers
-  for src in ${source}/src/*.h
+  if [ ! -d ${target}/colvars ] ; then
+    # Old layout: copy library files to the "src" folder
+    echo ""
+    if [ $force_update = 1 ] ; then
+      echo "Creating folder containing Colvars library files"
+      mkdir ${target}/colvars
+      mkdir ${target}/colvars/src
+      rm -f ${target}/src/colvar*
+    else
+      echo "Error: Colvars files are now stored in a separate folder."
+      echo "Please upgrade to the latest NAMD version (supported), "
+      echo "or use the -f flag (unsupported)."
+      exit 1
+    fi
+  fi
+  
+  # New layout: copy library files to the "colvars" folder
+  for src in ${source}/src/*.h ${source}/src/*.cpp
   do \
     tgt=$(basename ${src})
-    condcopy "${src}" "${target}/src/${tgt}" "${cpp_patch}"
+    condcopy "${src}" "${target}/colvars/src/${tgt}" "${cpp_patch}"
   done
-  # update code-independent sources
-  for src in ${source}/src/*.cpp
-  do \
-    tgt=$(basename ${src%.cpp})
-    condcopy "${src}" "${target}/src/${tgt}.C" "${cpp_patch}"
-  done
+  condcopy "${source}/namd/colvars/src/Makefile.namd" \
+           "${target}/colvars/src/Makefile.namd"
 
   # update NAMD interface files
   for src in \
@@ -258,12 +272,19 @@ then
     condcopy "${src}" "${target}/src/${tgt}" "${cpp_patch}"
   done
 
-  condcopy "${source}/doc/colvars-refman.bib" "${target}/ug/ug_colvars.bib"
-  condcopy "${source}/doc/colvars-refman-main.tex" "${target}/ug/ug_colvars.tex" "${tex_patch}"
-  condcopy "${source}/doc/colvars-cv.tex" "${target}/ug/ug_colvars-cv.tex" "${tex_patch}"
-  condcopy "${source}/namd/ug/ug_colvars_macros.tex" "${target}/ug/ug_colvars_macros.tex" "${tex_patch}"
-  condcopy "${source}/doc/colvars_diagram.pdf" "${target}/ug/figures/colvars_diagram.pdf"
-  condcopy "${source}/doc/colvars_diagram.eps" "${target}/ug/figures/colvars_diagram.eps"
+  # Copy doc files
+  condcopy "${source}/doc/colvars-refman.bib" \
+           "${target}/ug/ug_colvars.bib"
+  condcopy "${source}/doc/colvars-refman-main.tex" \
+           "${target}/ug/ug_colvars.tex" "${tex_patch}"
+  condcopy "${source}/doc/colvars-cv.tex" \
+           "${target}/ug/ug_colvars-cv.tex" "${tex_patch}"
+  condcopy "${source}/namd/ug/ug_colvars_macros.tex" \
+           "${target}/ug/ug_colvars_macros.tex" "${tex_patch}"
+  condcopy "${source}/doc/colvars_diagram.pdf" \
+           "${target}/ug/figures/colvars_diagram.pdf"
+  condcopy "${source}/doc/colvars_diagram.eps" \
+           "${target}/ug/figures/colvars_diagram.eps"
 
   echo ' done.'
 
@@ -279,7 +300,7 @@ then
     tgt=$(basename ${src})
     checkfile "${src}" "${target}/src/${tgt}"
   done
-  for src in ${source}/namd/Make*
+  for src in ${source}/namd/Make* ${source}/namd/config
   do 
     tgt=$(basename ${src})
     checkfile "${src}" "${target}/${tgt}"
