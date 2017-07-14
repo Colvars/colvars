@@ -241,6 +241,11 @@ void SimParameters::scriptSet(const char *param, const char *value) {
     strcpy(dcdFilename,value);
     return;
   }
+  if ( ! strncasecmp(param,"velDCDfile",MAX_SCRIPT_PARAM_SIZE) ) {
+    close_veldcdfile();  // *** implemented in Output.C ***
+    strcpy(velDcdFilename,value);
+    return;
+  }
   SCRIPT_PARSE_STRING("tclBCArgs",tclBCArgs)
   SCRIPT_PARSE_VECTOR("eField",eField)
   SCRIPT_PARSE_FLOAT("eFieldFreq",eFieldFreq)
@@ -5712,8 +5717,8 @@ if ( openatomOn )
 	     iout << iINFO << "accelMDGSigma0P: " << accelMDGSigma0P << " KCAL/MOL\n";
      }
      else{
-     iout << iINFO << "accelMDE: " << accelMDE << " KCAL/MOL, accelMDalpha: " << accelMDalpha << " KCAL/MOL\n";
-     if (accelMDdual) {
+	 iout << iINFO << "accelMDE: " << accelMDE << " KCAL/MOL, accelMDalpha: " << accelMDalpha << " KCAL/MOL\n";
+	 if (accelMDdual) {
 	     iout << iINFO << "accelMDTE: " << accelMDTE << " KCAL/MOL, "
 		 << "accelMDTalpha: " << accelMDTalpha << " KCAL/MOL\n";
 	 }

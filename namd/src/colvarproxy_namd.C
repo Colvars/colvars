@@ -920,6 +920,9 @@ int colvarproxy_namd::load_atoms(char const *pdb_filename,
 std::ostream * colvarproxy_namd::output_stream(std::string const &output_name,
                                                std::ios_base::openmode mode)
 {
+  if (cvm::debug()) {
+    cvm::log("Using colvarproxy_namd::output_stream()\n");
+  }
   std::list<std::ostream *>::iterator osi  = output_files.begin();
   std::list<std::string>::iterator    osni = output_stream_names.begin();
   for ( ; osi != output_files.end(); osi++, osni++) {

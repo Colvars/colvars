@@ -367,6 +367,9 @@ int colvarproxy_io::set_frame(long int)
 std::ostream * colvarproxy_io::output_stream(std::string const &output_name,
                                              std::ios_base::openmode mode)
 {
+  if (cvm::debug()) {
+    cvm::log("Using colvarproxy::output_stream()\n");
+  }
   std::list<std::ostream *>::iterator osi  = output_files.begin();
   std::list<std::string>::iterator    osni = output_stream_names.begin();
   for ( ; osi != output_files.end(); osi++, osni++) {
@@ -374,10 +377,10 @@ std::ostream * colvarproxy_io::output_stream(std::string const &output_name,
       return *osi;
     }
   }
-  std::ofstream *os = new std::ofstream(output_name.c_str(), mode);
   if (!(mode & (std::ios_base::app | std::ios_base::ate))) {
     backup_file(output_name);
   }
+  std::ofstream *os = new std::ofstream(output_name.c_str(), mode);
   if (!os->is_open()) {
     cvm::error("Error: cannot write to file/channel \""+output_name+"\".\n",
                FILE_ERROR);

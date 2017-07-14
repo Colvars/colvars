@@ -827,7 +827,7 @@ public:
 	MTSChoices MTSAlgorithm;	//  What multiple timestep algorithm
 					//  to use
 
-	int longSplitting;		//  What electrostatic splitting
+	int longSplitting;		//  What electrostatic splitting 
 					//  to use
 
 	Bool ignoreMass;		//  Mass < 3.5 does not indicate hydrogen, etc.
@@ -992,6 +992,7 @@ public:
 	void scriptSet(const char *, const char *);
 					//  Set parameters at run time
 	void close_dcdfile();  // *** implemented in Output.C ***
+	void close_veldcdfile();  // *** implemented in Output.C ***
         static void nonbonded_select();
 
 	int isSendSpanningTreeOn(){ return proxySendSpanningTree == 1; }
