@@ -130,13 +130,18 @@ condcopy() {
     fi
   fi
 
+  updated_file=0
+
   if [ -d $(dirname "$b") ]
   then
     if [ $checkonly -eq 1 ]
     then
       cmp -s "$a" "$b" || diff -uNw "$b" "$a"
     else
-      cmp -s "$a" "$b" || cp "$a" "$b"
+      if ! cmp -s "$a" "$b" ; then
+        cp "$a" "$b"
+        updated_file=1
+      fi
       echo -n '.'
     fi
   fi
@@ -269,6 +274,9 @@ then
   done
   condcopy "${source}/namd/colvars/src/Makefile.namd" \
            "${target}/colvars/src/Makefile.namd"
+  if [ $updated_file = 1 ] ; then
+    updated_makefile=1
+  fi
 
   # Update NAMD interface files
   for src in \
@@ -312,7 +320,17 @@ then
   do 
     tgt=$(basename ${src})
     checkfile "${src}" "${target}/${tgt}"
+    if [ $updated_file = 1 ] ; then
+      updated_makefile=1
+    fi
   done
+
+  if [ $updated_makefile = 1 ] ; then
+    echo ""
+    echo "  *************************************************"
+    echo "    Please run \"make depends\" in the NAMD tree."
+    echo "  *************************************************"
+  fi
 
   exit 0
 fi
