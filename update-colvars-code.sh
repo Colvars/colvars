@@ -1,7 +1,10 @@
 #!/bin/sh
-# Script to update a NAMD, VMD, LAMMPS, or GROMACS source tree with the latest colvars code.
+# -*- sh-basic-offset: 2; sh-indentation: 2; -*-
 
-# enforce using portable C locale
+# Script to update a NAMD, VMD, or LAMMPS source tree with the latest Colvars
+# version.
+
+# Enforce using portable C locale
 LC_ALL=C
 export LC_ALL
 
@@ -21,81 +24,88 @@ EOF
    exit 1
 fi
 
+# Was the target Makefile changed?
+updated_makefile=0
+
+# Was the last file updated?
+updated_file=0
 
 force_update=0
 if [ $1 = "-f" ]
 then
-  echo Forcing update of all files
+  echo "Forcing update of all files"
   force_update=1
   shift
 fi
 
+# Undocumented flag
 reverse=0
 if [ $1 = "-R" ]
 then
-  echo Reverse: updating git tree from downstream tree
+  echo "Reverse: updating git tree from downstream tree"
   reverse=1
   shift
 fi
 
-# infer source path from name of script
+# Infer source path from name of script
 source=$(dirname "$0")
 
 cpp_patch=${source}/devel-tools/update-header-cpp.patch
 tex_patch=${source}/devel-tools/update-header-tex.patch
 
-# check general validity of target path
+# Check general validity of target path
 target="$1"
 if [ ! -d "${target}" ]
 then
-    echo ERROR: Target directory ${target} does not exist
+    echo "ERROR: Target directory ${target} does not exist"
     exit 2
 fi
 
-# undocumented option to only compare trees
+# Undocumented option to only compare trees
 checkonly=0
 [ "$2" = "--diff" ] && checkonly=1
 [ $force_update = 1 ] && checkonly=0
 
-# try to determine what code resides inside the target dir
-code=unkown
+# Try to determine what code resides inside the target dir
+code=unknown
 if [ -f "${target}/src/lammps.h" ]
 then
-  code=LAMMPS
+  code="LAMMPS"
 elif [ -f "${target}/src/NamdTypes.h" ]
 then
-  code=NAMD
+  code="NAMD"
 elif [ -f "${target}/src/VMDApp.h" ]
 then
-  code=VMD
+  code="VMD"
 elif [ -f "${target}/src/gromacs/commandline.h" ]
 then
-  code=GROMACS
+  code="GROMACS"
 else
-  # handle the case if the user points to ${target}/src
+  # Handle the case if the user points to ${target}/src
   target=$(dirname "${target}")
   if [ -f "${target}/src/lammps.h" ]
   then
-    code=LAMMPS
+    code="LAMMPS"
   elif [ -f "${target}/src/NamdTypes.h" ]
   then
-    code=NAMD
+    code="NAMD"
   elif [ -f "${target}/src/VMDApp.h" ]
   then
-    code=VMD
+    code="VMD"
   elif [ -f "${target}/src/gromacs/commandline.h" ]
   then
-    code=GROMACS
+    code="GROMACS"
   else
     echo ERROR: Cannot detect a supported code in the target directory
     exit 3
   fi
 fi
 
-echo Detected ${code} source tree in ${target}
-echo -n Updating
+echo "Detected ${code} source tree in ${target}"
+echo -n "Updating ..."
 
-# conditional file copy
+
+# Conditional file copy
 condcopy() {
   if [ $reverse -eq 1 ]
   then
@@ -110,7 +120,7 @@ condcopy() {
 
   TMPFILE=`mktemp`
 
-  # if a patch file is available, apply it to the source file
+  # If a patch file is available, apply it to the source file
   # (reversed if necessary)
   if [ "x$3" != "x" ] ; then
     if [ -f "$3" ] ; then
@@ -120,13 +130,18 @@ condcopy() {
     fi
   fi
 
+  updated_file=0
+
   if [ -d $(dirname "$b") ]
   then
     if [ $checkonly -eq 1 ]
     then
       cmp -s "$a" "$b" || diff -uNw "$b" "$a"
     else
-      cmp -s "$a" "$b" || cp "$a" "$b"
+      if ! cmp -s "$a" "$b" ; then
+        cp "$a" "$b"
+        updated_file=1
+      fi
       echo -n '.'
     fi
   fi
@@ -134,7 +149,8 @@ condcopy() {
   rm -f $TMPFILE
 }
 
-# check files related to, but not part of the colvars module
+
+# Check files related to, but not part of the Colvars module
 checkfile() {
   if [ $reverse -eq 1 ]
   then
@@ -158,33 +174,29 @@ checkfile() {
   fi
 }
 
-# update LAMMPS tree
-if [ ${code} = LAMMPS ]
+
+# Update LAMMPS tree
+if [ ${code} = "LAMMPS" ]
 then
 
-  # update code-independent headers
-  for src in ${source}/src/*.h
-  do \
-    tgt=$(basename ${src})
-    condcopy "${src}" "${target}/lib/colvars/${tgt}" "${cpp_patch}"
-  done
-  # update code-independent sources
-  for src in ${source}/src/*.cpp
+  # Update code-independent headers and sources
+  for src in ${source}/src/*.h ${source}/src/*.cpp
   do \
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/lib/colvars/${tgt}" "${cpp_patch}"
   done
 
-  # update LAMMPS interface files (library part)
-  for src in ${source}/lammps/lib/colvars/Makefile.* ${source}/lammps/lib/colvars/README
+  # Update LAMMPS interface files (library part)
+  for src in ${source}/lammps/lib/colvars/Makefile.* \
+                      ${source}/lammps/lib/colvars/README
   do \
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/lib/colvars/${tgt}"
   done
-  # update LAMMPS interface files (package part)
+  # Update LAMMPS interface files (package part)
   if [ -f ${target}/src/random_park.h ]
   then
-    # versions before 2016-04-22, using old pseudo random number generators
+    # GitHub version, using old pseudo random number generators
     for src in ${source}/lammps/src/USER-COLVARS/colvarproxy_lammps.cpp \
                ${source}/lammps/src/USER-COLVARS/colvarproxy_lammps.h \
                ${source}/lammps/src/USER-COLVARS/colvarproxy_lammps_version.h \
@@ -209,15 +221,17 @@ then
     exit 2
   fi
 
-  # update LAMMPS documentation
-  # location of documentation has changed with version 10 May 2016
-  test -d "${target}/doc/src/PDF" && docdir="${target}/doc/src" || docdir="${target}/doc"
+  # Update LAMMPS documentation
+  # Location of documentation has changed with version 10 May 2016
+  test -d "${target}/doc/src/PDF" && \
+    docdir="${target}/doc/src" || docdir="${target}/doc"
   for src in ${source}/lammps/doc/*.txt
     do \
       tgt=$(basename ${src})
     condcopy "${src}" "${docdir}/${tgt}"
   done
 
+  # Copy PDF of the user manual
   cd ${source}/doc
   make colvars-refman-lammps.pdf 1> /dev/null 2> /dev/null
   cd - 1> /dev/null 2> /dev/null
@@ -231,24 +245,40 @@ then
   exit 0
 fi
 
-# update NAMD tree
-if [ ${code} = NAMD ]
+
+# Update NAMD tree
+if [ ${code} = "NAMD" ]
 then
 
-  # update code-independent headers
-  for src in ${source}/src/*.h
+  if [ ! -d ${target}/colvars ] ; then
+    # Old layout: copy library files to the "src" folder
+    echo ""
+    if [ $force_update = 1 ] ; then
+      echo "Creating folder containing Colvars library files"
+      mkdir ${target}/colvars
+      mkdir ${target}/colvars/src
+      rm -f ${target}/src/colvar*
+    else
+      echo "Error: Colvars files are now stored in a separate folder."
+      echo "Please upgrade to the latest NAMD version (supported), "
+      echo "or use the -f flag (unsupported)."
+      exit 1
+    fi
+  fi
+  
+  # New layout: copy library files to the "colvars" folder
+  for src in ${source}/src/*.h ${source}/src/*.cpp
   do \
     tgt=$(basename ${src})
-    condcopy "${src}" "${target}/src/${tgt}" "${cpp_patch}"
+    condcopy "${src}" "${target}/colvars/src/${tgt}" "${cpp_patch}"
   done
-  # update code-independent sources
-  for src in ${source}/src/*.cpp
-  do \
-    tgt=$(basename ${src%.cpp})
-    condcopy "${src}" "${target}/src/${tgt}.C" "${cpp_patch}"
-  done
+  condcopy "${source}/namd/colvars/src/Makefile.namd" \
+           "${target}/colvars/src/Makefile.namd"
+  if [ $updated_file = 1 ] ; then
+    updated_makefile=1
+  fi
 
-  # update NAMD interface files
+  # Update NAMD interface files
   for src in \
       ${source}/namd/src/colvarproxy_namd.h \
       ${source}/namd/src/colvarproxy_namd_version.h \
@@ -258,12 +288,19 @@ then
     condcopy "${src}" "${target}/src/${tgt}" "${cpp_patch}"
   done
 
-  condcopy "${source}/doc/colvars-refman.bib" "${target}/ug/ug_colvars.bib"
-  condcopy "${source}/doc/colvars-refman-main.tex" "${target}/ug/ug_colvars.tex" "${tex_patch}"
-  condcopy "${source}/doc/colvars-cv.tex" "${target}/ug/ug_colvars-cv.tex" "${tex_patch}"
-  condcopy "${source}/namd/ug/ug_colvars_macros.tex" "${target}/ug/ug_colvars_macros.tex" "${tex_patch}"
-  condcopy "${source}/doc/colvars_diagram.pdf" "${target}/ug/figures/colvars_diagram.pdf"
-  condcopy "${source}/doc/colvars_diagram.eps" "${target}/ug/figures/colvars_diagram.eps"
+  # Copy doc files
+  condcopy "${source}/doc/colvars-refman.bib" \
+           "${target}/ug/ug_colvars.bib"
+  condcopy "${source}/doc/colvars-refman-main.tex" \
+           "${target}/ug/ug_colvars.tex" "${tex_patch}"
+  condcopy "${source}/doc/colvars-cv.tex" \
+           "${target}/ug/ug_colvars-cv.tex" "${tex_patch}"
+  condcopy "${source}/namd/ug/ug_colvars_macros.tex" \
+           "${target}/ug/ug_colvars_macros.tex" "${tex_patch}"
+  condcopy "${source}/doc/colvars_diagram.pdf" \
+           "${target}/ug/figures/colvars_diagram.pdf"
+  condcopy "${source}/doc/colvars_diagram.eps" \
+           "${target}/ug/figures/colvars_diagram.eps"
 
   echo ' done.'
 
@@ -279,41 +316,57 @@ then
     tgt=$(basename ${src})
     checkfile "${src}" "${target}/src/${tgt}"
   done
-  for src in ${source}/namd/Make*
+  for src in ${source}/namd/Make* ${source}/namd/config
   do 
     tgt=$(basename ${src})
     checkfile "${src}" "${target}/${tgt}"
+    if [ $updated_file = 1 ] ; then
+      updated_makefile=1
+    fi
   done
+
+  if [ $updated_makefile = 1 ] ; then
+    echo ""
+    echo "  *************************************************"
+    echo "    Please run \"make depends\" in the NAMD tree."
+    echo "  *************************************************"
+  fi
 
   exit 0
 fi
 
 
-# update VMD tree
-if [ ${code} = VMD ]
+# Update VMD tree
+if [ ${code} = "VMD" ]
 then
 
-  # update code-independent headers
+  # Update code-independent headers
   for src in ${source}/src/*.h
   do \
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/src/${tgt}" "${cpp_patch}"
   done
-  # update code-independent sources
+  # Update code-independent sources
   for src in ${source}/src/*.cpp
   do \
     tgt=$(basename ${src%.cpp})
     condcopy "${src}" "${target}/src/${tgt}.C" "${cpp_patch}"
   done
 
-  condcopy "${source}/doc/colvars-refman.bib" "${target}/doc/ug_colvars.bib"
-  condcopy "${source}/doc/colvars-refman-main.tex" "${target}/doc/ug_colvars.tex" "${tex_patch}"
-  condcopy "${source}/doc/colvars-cv.tex" "${target}/doc/ug_colvars-cv.tex" "${tex_patch}"
-  condcopy "${source}/vmd/doc/ug_colvars_macros.tex" "${target}/doc/ug_colvars_macros.tex" "${tex_patch}"
-  condcopy "${source}/doc/colvars_diagram.pdf" "${target}/doc/pictures/colvars_diagram.pdf"
-  condcopy "${source}/doc/colvars_diagram.eps" "${target}/doc/pictures/colvars_diagram.eps"
+  condcopy "${source}/doc/colvars-refman.bib" \
+           "${target}/doc/ug_colvars.bib"
+  condcopy "${source}/doc/colvars-refman-main.tex" \
+           "${target}/doc/ug_colvars.tex" "${tex_patch}"
+  condcopy "${source}/doc/colvars-cv.tex" \
+           "${target}/doc/ug_colvars-cv.tex" "${tex_patch}"
+  condcopy "${source}/vmd/doc/ug_colvars_macros.tex" \
+           "${target}/doc/ug_colvars_macros.tex" "${tex_patch}"
+  condcopy "${source}/doc/colvars_diagram.pdf" \
+           "${target}/doc/pictures/colvars_diagram.pdf"
+  condcopy "${source}/doc/colvars_diagram.eps" \
+           "${target}/doc/pictures/colvars_diagram.eps"
 
-  # update VMD interface files
+  # Update VMD interface files
   for src in \
       ${source}/vmd/src/colvarproxy_vmd.h \
       ${source}/vmd/src/colvarproxy_vmd_version.h \
@@ -341,50 +394,9 @@ then
 fi
 
 
-# update GROMACS tree
-if [ ${code} = GROMACS ]
+# Update GROMACS tree
+if [ ${code} = "GROMACS" ]
 then
-
   echo "Error: the GROMACS implementation of Colvars is not under active development."
   exit 1
-
-  # Copy the colvars source code into gromacs/pulling
-  for src in colvaratoms.cpp colvarbias_abf.cpp colvarbias_alb.cpp colvarbias.cpp colvarbias_meta.cpp colvarbias_restraint.cpp colvarcomp_angles.cpp colvarcomp_coordnums.cpp colvarcomp.cpp colvarcomp_distances.cpp colvarcomp_protein.cpp colvarcomp_rotations.cpp colvar.cpp colvargrid.cpp colvarmodule.cpp colvarparse.cpp colvarscript.cpp colvartypes.cpp colvarvalue.cpp colvaratoms.h colvarbias_abf.h colvarbias_alb.h colvarbias.h colvarbias_meta.h colvarbias_restraint.h colvarcomp.h colvargrid.h colvar.h colvarmodule.h colvarparse.h colvarproxy.h colvarscript.h colvartypes.h colvarvalue.h
-  do \
-    condcopy "src/${src}" "${target}/src/gromacs/pulling/${src}"
-  done
-
-  # Copy the GROMACS interface files into gromacs/pulling
-  srcDir=${source}/gromacs/src
-  for src in colvarproxy_gromacs.cpp colvarproxy_gromacs.h colvars_potential.h
-  do \
-      condcopy "$srcDir/${src}" "${target}/src/gromacs/pulling/${src}"
-  done
-
-  # Find the GROMACS sim_util file, which has changed from
-  # sim_util.c to sim_util.cpp between versions.
-  if [ -f ${target}/src/gromacs/mdlib/sim_util.cpp ]
-  then
-      sim_util=${target}/src/gromacs/mdlib/sim_util.cpp
-  elif [ -f ${target}/src/gromacs/mdlib/sim_util.c ]
-  then
-      sim_util=${target}/src/gromacs/mdlib/sim_util.c
-  else
-      echo "ERROR: Cannot find sim_util.c or sim_util.cpp in the GROMACS source"
-      exit 4
-  fi
-  
-  if [ `grep -c colvars $sim_util` -gt 0 ]
-  then
-      echo "$sim_util appears to already have Colvars modifications. Not modifying."
-  else
-      # Backup sim_util.
-      cp $sim_util ${sim_util}.orig
-      
-      # Insert necessary pieces of code into the GROMACS sim_util.c or sim_util.cpp.
-      awk -f ${source}/gromacs/gromacs-insert.awk ${sim_util}.orig > $sim_util
-  fi
-
-  echo ' done.'
-  exit 0
 fi

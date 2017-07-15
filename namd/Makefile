@@ -220,8 +220,8 @@ OBJS = \
 	$(DSTDIR)/GlobalMasterTcl.o \
 	$(DSTDIR)/GlobalMasterSMD.o \
 	$(DSTDIR)/GlobalMasterTMD.o \
-  $(DSTDIR)/Matrix4Symmetry.o \
-  $(DSTDIR)/GlobalMasterSymmetry.o \
+	$(DSTDIR)/Matrix4Symmetry.o \
+	$(DSTDIR)/GlobalMasterSymmetry.o \
 	$(DSTDIR)/GlobalMasterFreeEnergy.o \
 	$(DSTDIR)/GlobalMasterEasy.o \
 	$(DSTDIR)/GlobalMasterMisc.o \
