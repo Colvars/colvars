@@ -573,9 +573,13 @@ void colvarbias_abf::read_gradients_samples()
     is.clear();
 
     is.open(gradients_in_name.c_str());
-    if (!is.is_open())	cvm::error("Error opening ABF gradient file " + gradients_in_name + " for reading");
-    gradients->read_multicol(is, true);
-    is.close();
+    if (!is.is_open()) {
+      cvm::error("Error opening ABF gradient file " +
+                 gradients_in_name + " for reading", INPUT_ERROR);
+    } else {
+      gradients->read_multicol(is, true);
+      is.close();
+    }
 
     if (z_gradients) {
       // Read eABF z-averaged data for CZAR
