@@ -148,9 +148,7 @@ cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
 
 int colvar::cvc::setup()
 {
-  size_t i;
   description = "cvc " + name;
-
   return COLVARS_OK;
 }
 
