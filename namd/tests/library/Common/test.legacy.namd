@@ -16,3 +16,4 @@ if { [file exists test.legacy.postprocess.tcl] > 0 } {
     source test.legacy.postprocess.tcl
 }
 
+source ../Common/delete_tmp_files.tcl
