@@ -17,3 +17,5 @@ run ${numsteps}
 if { [file exists test.postprocess.tcl] > 0 } {
     source test.postprocess.tcl
 }
+
+source ../Common/delete_tmp_files.tcl

@@ -370,10 +370,10 @@ void colvar::dihedral::calc_gradients()
 
     cvm::real const K = (1.0/sin_phi) * (180.0/PI);
 
-	f1 = K * cvm::rvector::outer(r23, dcosdA);
-	f3 = K * cvm::rvector::outer(dcosdB, r23);
-	f2 = K * (cvm::rvector::outer(dcosdA, r12)
-		   +  cvm::rvector::outer(r34, dcosdB));
+        f1 = K * cvm::rvector::outer(r23, dcosdA);
+        f3 = K * cvm::rvector::outer(dcosdB, r23);
+        f2 = K * (cvm::rvector::outer(dcosdA, r12)
+                   +  cvm::rvector::outer(r34, dcosdB));
   }
   else {
     rC = 1.0/rC;
@@ -444,7 +444,7 @@ void colvar::dihedral::calc_force_invgrads()
     // Default case: use groups 1 and 4
     group4->read_total_forces();
     ft.real_value = PI/180.0 * 0.5 * (fact1 * (cross1 * group1->total_force())
-				      + fact4 * (cross4 * group4->total_force()));
+                                      + fact4 * (cross4 * group4->total_force()));
   }
 }
 

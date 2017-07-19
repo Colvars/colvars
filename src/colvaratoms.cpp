@@ -437,7 +437,7 @@ int cvm::atom_group::parse(std::string const &group_conf)
 
   cvm::log("Atom group \""+key+"\" defined, "+
             cvm::to_str(atoms_ids.size())+" atoms initialized: total mass = "+
-	    cvm::to_str(total_mass)+", total charge = "+
+            cvm::to_str(total_mass)+", total charge = "+
             cvm::to_str(total_charge)+".\n");
 
   if (b_print_atom_ids) {

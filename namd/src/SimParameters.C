@@ -241,7 +241,7 @@ void SimParameters::scriptSet(const char *param, const char *value) {
     strcpy(dcdFilename,value);
     return;
   }
-  if ( ! strncasecmp(param,"velDCDfile",MAX_SCRIPT_PARAM_SIZE) ) { 
+  if ( ! strncasecmp(param,"velDCDfile",MAX_SCRIPT_PARAM_SIZE) ) {
     close_veldcdfile();  // *** implemented in Output.C ***
     strcpy(velDcdFilename,value);
     return;
@@ -4137,13 +4137,13 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
                 qmFormat = QMFormatMOPAC;
             if ( strcasecmp(qmSoftware,"custom") == 0 )
                 qmFormat = QMFormatUSR;
-            
+
             if (qmFormat == QMFormatORCA || qmFormat == QMFormatMOPAC) {
-                
+
                 if (! opts.defined("QMConfigLine"))
                     NAMD_die("If the selected QM software is \'mopac\' or \'orca\'\
 , QMConfigLine needs to be defined.");
-                
+
             }
         }
 
@@ -4307,7 +4307,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
 
         if (qmCustomPCSel && qmPCSelFreq > 1)
             NAMD_die("QM Custom PC Selection is incompatible with QMPCStride > 1!");
-        
+
         if (qmCSMD && (! opts.defined("QMCSMDFile") ))
             NAMD_die("QM Conditional SMD is ON, but no CSMD configuration file was profided!");
     }
@@ -5115,13 +5115,13 @@ if ( openatomOn )
             }
 
         }
-        
+
         if (qmChrgFromPSF) {
             iout << iINFO << "QM Will use PSF charges.\n";
         }
-        
+
         iout << iINFO << "QM BASE DIRECTORY: " << qmBaseDir << "\n";
-        
+
         if (qmPrepProcOn) {
             iout << iINFO << "QM PREPARATION PROCESS: " << qmPrepProc << "\n";
         }
@@ -5743,8 +5743,8 @@ if ( openatomOn )
 	     iout << iINFO << "accelMDGSigma0P: " << accelMDGSigma0P << " KCAL/MOL\n";
      }
      else{
-     iout << iINFO << "accelMDE: " << accelMDE << " KCAL/MOL, accelMDalpha: " << accelMDalpha << " KCAL/MOL\n";
-     if (accelMDdual) {
+	 iout << iINFO << "accelMDE: " << accelMDE << " KCAL/MOL, accelMDalpha: " << accelMDalpha << " KCAL/MOL\n";
+	 if (accelMDdual) {
 	     iout << iINFO << "accelMDTE: " << accelMDTE << " KCAL/MOL, "
 		 << "accelMDTalpha: " << accelMDTalpha << " KCAL/MOL\n";
 	 }

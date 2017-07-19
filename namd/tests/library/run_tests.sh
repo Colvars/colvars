@@ -46,12 +46,16 @@ ALL_SUCCESS=1
 
 cleanup_files() {
   for script in test*.namd testres*.namd ; do
+    if test -L ${script} ; then
+      rm -f ${script}
+    fi
     for f in ${script%.namd}.*diff; do if [ ! -s $f ]; then rm -f $f; fi; done # remove empty diffs only
     rm -f ${script%.namd}.*{BAK,old,backup}
     for f in ${script%.namd}.*{state,state.stripped,out,traj,coor,vel,xsc,pmf,hills,grad,count,histogram?.dat,histogram?.dx}
     do
       if [ ! -f "$f.diff" ]; then rm -f $f; fi # keep files that have a non-empty diff
     done
+    rm -f *.out *.out.diff # Delete output files regardless
     rm -f metadynamics1.*.files.txt replicas.registry.txt
   done
 }
@@ -96,6 +100,7 @@ for dir in ${DIRLIST} ; do
     SCRIPTS=`ls -1 *namd | grep -v legacy`
   else
     SCRIPTS="../Common/test.namd ../Common/test.restart.namd"
+    ln -fs ${SCRIPTS} ./
   fi
 
   # run simulation(s)

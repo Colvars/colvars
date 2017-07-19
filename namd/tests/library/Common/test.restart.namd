@@ -22,3 +22,5 @@ run ${numsteps}
 if { [file exists test.restart.postprocess.tcl] > 0 } {
     source test.restart.postprocess.tcl
 }
+
+source ../Common/delete_tmp_files.tcl

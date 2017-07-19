@@ -45,11 +45,6 @@ You can browse the class hierarchy or the list of source files.
 #include <vector>
 #include <list>
 
-#ifdef NAMD_VERSION
-// use Lustre-friendly wrapper to POSIX write()
-#include "fstream_namd.h"
-#endif
-
 class colvarparse;
 class colvar;
 class colvarbias;
@@ -316,12 +311,6 @@ public:
   /// (Re)initialize the output trajectory and state file (does not write it yet)
   int setup_output();
 
-#ifdef NAMD_VERSION
-  typedef ofstream_namd ofstream;
-#else
-  typedef std::ofstream ofstream;
-#endif
-
   /// Read the input restart file
   std::istream & read_restart(std::istream &is);
   /// Write the output restart file
@@ -329,7 +318,7 @@ public:
 
   /// Open a trajectory file if requested (and leave it open)
   int open_traj_file(std::string const &file_name);
-  /// Close it
+  /// Close it (note: currently unused)
   int close_traj_file();
   /// Write in the trajectory file
   std::ostream & write_traj(std::ostream &os);
@@ -541,13 +530,10 @@ protected:
   std::string cv_traj_name;
 
   /// Collective variables output trajectory file
-  colvarmodule::ofstream cv_traj_os;
+  std::ostream *cv_traj_os;
 
   /// Appending to the existing trajectory file?
   bool cv_traj_append;
-
-  /// Output restart file
-  colvarmodule::ofstream restart_out_os;
 
 private:
 

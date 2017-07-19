@@ -479,7 +479,7 @@ public:
 
         Bool qmCSMD;
         char qmCSMDFile[128];
-        
+
         int qmOutFreq ;
         int qmPosOutFreq ;
 
@@ -912,7 +912,7 @@ public:
  	int IMDignore;  // IMD connection does not influence simulation
                         // only sends coordinates and energies to VMD
  	int IMDignoreForces;  // Only the Forces are ignored. Finish, Pause and Resume are enabled
-                
+
 
         // AMBER options
         Bool amberOn; // FLAG TRUE-> amber force field is used
