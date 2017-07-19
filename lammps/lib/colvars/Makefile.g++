@@ -1,5 +1,7 @@
 # -*- makefile -*- to build Colvars module with GNU compiler
 
+EXTRAMAKE = Makefile.lammps.empty
+
 COLVARS_LIB = libcolvars.a
 COLVARS_OBJ_DIR =
 
@@ -17,4 +19,7 @@ default: $(COLVARS_LIB) Makefile.lammps
 
 clean:
 	-rm $(COLVARS_OBJS) $(COLVARS_LIB)
+
+Makefile.lammps:
+	-cp $(EXTRAMAKE) Makefile.lammps
 

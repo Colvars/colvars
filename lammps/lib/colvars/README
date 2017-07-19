@@ -24,6 +24,13 @@ create your own, specific to your compiler and system.  For example:
 
   make -f Makefile.g++
 
+will use the GNU C++ compiler and is a good template to start.
+
+**Optional**: if you use the Install.py script provided in this folder, you
+can give the machine name as the '-m' argument.  This can be the suffix of one
+of the files from either this folder, or from src/MAKE.
+*This is only supported by the Install.py within the lib/colvars folder*.
+
 When you are done building this library, two files should
 exist in this directory:
 

@@ -50,7 +50,7 @@ COLVARS_OBJS = $(COLVARS_SRCS:.cpp=.o)
 .cpp.o:
 	$(CXX) $(CXXFLAGS) $(COLVARS_INCFLAGS) -c $<
 
-$(COLVARS_LIB):	Makefile.deps $(COLVARS_OBJS) makelammps
+$(COLVARS_LIB):	Makefile.deps $(COLVARS_OBJS)
 	$(AR) $(ARFLAGS) $(COLVARS_LIB) $(COLVARS_OBJS)
 
 
@@ -62,10 +62,4 @@ Makefile.deps: $(COLVARS_SRCS)
 	    -MT '$$(COLVARS_OBJ_DIR)'$$obj $$src >> $@ ; \
 	  done
 
-.PHONY: makelammps
-makelammps:
-	@echo "colvars_SYSINC = $(COLVARS_INCFLAGS)" > Makefile.lammps
-	@echo "colvars_SYSLIB =" >> Makefile.lammps
-	@echo "colvars_SYSPATH =" >> Makefile.lammps
-
-sinclude Makefile.deps
+include Makefile.deps

@@ -186,13 +186,16 @@ then
     condcopy "${src}" "${target}/lib/colvars/${tgt}" "${cpp_patch}"
   done
 
-  # Update LAMMPS interface files (library part)
-  for src in ${source}/lammps/lib/colvars/Makefile.* \
-                      ${source}/lammps/lib/colvars/README
+  # Update makefiles for library
+  for src in \
+    ${source}/lammps/lib/colvars/Makefile.* \
+    ${source}/lammps/lib/colvars/Install.py \
+    ${source}/lammps/lib/colvars/README
   do \
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/lib/colvars/${tgt}"
   done
+
   # Update LAMMPS interface files (package part)
   if [ -f ${target}/src/random_park.h ]
   then

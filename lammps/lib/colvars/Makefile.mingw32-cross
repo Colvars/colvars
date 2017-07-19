@@ -1,5 +1,7 @@
 # -*- makefile -*- to build Colvars module with MinGW 32-bit
 
+EXTRAMAKE = Makefile.lammps.empty
+
 COLVARS_LIB = libcolvars.a
 COLVARS_OBJ_DIR = Obj_mingw64/
 
@@ -24,3 +26,6 @@ $(COLVARS_OBJ_DIR):
 clean:
 	-rm $(COLVARS_OBJS) $(COLVARS_LIB)
 	-rmdir $(COLVARS_OBJ_DIR)
+
+Makefile.lammps:
+	-cp $(EXTRAMAKE) Makefile.lammps
