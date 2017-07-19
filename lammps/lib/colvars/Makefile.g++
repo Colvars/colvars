@@ -18,7 +18,7 @@ include Makefile.common
 default: $(COLVARS_LIB) Makefile.lammps
 
 clean:
-	-rm $(COLVARS_OBJS) $(COLVARS_LIB)
+	-rm -f $(COLVARS_OBJS) $(COLVARS_LIB)
 
 Makefile.lammps:
 	-cp $(EXTRAMAKE) Makefile.lammps

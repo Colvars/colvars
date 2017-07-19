@@ -24,7 +24,7 @@ $(COLVARS_OBJ_DIR):
 	mkdir $(COLVARS_OBJ_DIR)
 
 clean:
-	-rm $(COLVARS_OBJS) $(COLVARS_LIB)
+	-rm -f $(COLVARS_OBJS) $(COLVARS_LIB)
 	-rmdir $(COLVARS_OBJ_DIR)
 
 Makefile.lammps:
