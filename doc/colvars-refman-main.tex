@@ -469,7 +469,7 @@ The following options are not required by default; however, the first four are v
     Defines the lowest end of the interval of ``relevant'' values for the colvar.
     This number can be either a true physical boundary, or a user-defined number.  
     Together with \texttt{upperBoundary} and \texttt{width}, it is used to define a grid of values along the colvar (not available for colvars based on \texttt{distanceDir}, \texttt{distanceVec}, and \texttt{orientation}).
-    This option does not affect dynamics: to confine a colvar within a certain interval, the options \texttt{lowerWall} and \texttt{lowerWallConstant} should be used.
+    This option does not affect dynamics: to confine a colvar within a certain interval, use a \texttt{harmonicWalls} bias.
 }
 
 \item %
@@ -1461,7 +1461,7 @@ defined using the \texttt{axis} parameter or as the vector joining
 \item %
   \dupkey{axis}{\texttt{distanceXY}}{colvar|distanceZ|axis}{\texttt{distanceZ} component}
 \item %
-  \dupkey{forceNoPBC}{\texttt{distanceZ}}{colvar|distance|forceNoPBC}{\texttt{distance} component}
+  \dupkey{forceNoPBC}{\texttt{distanceXY}}{colvar|distance|forceNoPBC}{\texttt{distance} component}
 \item %
   \dupkey{oneSiteTotalForce}{\texttt{distanceZ}}{colvar|distance|oneSiteTotalForce}{\texttt{distance} component}
 \end{cvcoptions}
@@ -1481,6 +1481,8 @@ of mass of \texttt{group1} and \texttt{group2}.
 \item %
   \simkey{group2}{\texttt{distanceVec}}{group1}
 \item %
+  \dupkey{forceNoPBC}{\texttt{distanceVec}}{colvar|distance|forceNoPBC}{\texttt{distance} component}
+\item %
   \dupkey{oneSiteTotalForce}{\texttt{distanceVec}}{colvar|distance|oneSiteTotalForce}{\texttt{distance} component}
 \end{cvcoptions}
 
@@ -1499,6 +1501,8 @@ $|\mathbf{d}| = 1$.
   \dupkey{group1}{\texttt{distanceDir}}{colvar|distance|group1}{\texttt{distance} component}
 \item %
   \simkey{group2}{\texttt{distanceDir}}{group1}
+\item %
+  \dupkey{forceNoPBC}{\texttt{distanceDir}}{colvar|distance|forceNoPBC}{\texttt{distance} component}
 \item %
   \dupkey{oneSiteTotalForce}{\texttt{distanceDir}}{colvar|distance|oneSiteTotalForce}{\texttt{distance} component}
 \end{cvcoptions}
@@ -1536,11 +1540,11 @@ This can be useful, for example, to develop a new variable defined over two grou
 
 \begin{cvcoptions}
 \item %
-  \dupkey{group1}{\texttt{distanceInv}}{colvar|distance|group1}{\texttt{distance} component}
+  \dupkey{group1}{\texttt{distancePairs}}{colvar|distance|group1}{\texttt{distance} component}
 \item %
-  \simkey{group2}{\texttt{distanceInv}}{group1}
+  \simkey{group2}{\texttt{distancePairs}}{group1}
 \item %
-  \dupkey{forceNoPBC}{\texttt{distanceInv}}{colvar|distance|forceNoPBC}{\texttt{distance} component}
+  \dupkey{forceNoPBC}{\texttt{distancePairs}}{colvar|distance|forceNoPBC}{\texttt{distance} component}
 \end{cvcoptions}
 This component returns a $N_{\mathrm{1}}\times{}N_{\mathrm{2}}$-dimensional vector of numbers, each ranging from $0$ to the largest possible distance within the chosen boundary conditions.
 
@@ -1577,6 +1581,8 @@ interval $[0:180]$.
 \item %
   \simkey{group3}{\texttt{angle}}{group1}
 \item %
+  \dupkey{forceNoPBC}{\texttt{angle}}{colvar|distance|forceNoPBC}{\texttt{distance} component}
+\item %
   \dupkey{oneSiteTotalForce}{\texttt{angle}}{colvar|distance|oneSiteTotalForce}{\texttt{distance} component}
 \end{cvcoptions}
 
@@ -1595,6 +1601,8 @@ It returns an angle (in degrees) within the interval $[0:180]$.
   \simkey{group2}{\texttt{dipoleAngle}}{group1}
 \item %
   \simkey{group3}{\texttt{dipoleAngle}}{group1}
+\item %
+  \dupkey{forceNoPBC}{\texttt{dipoleAngle}}{colvar|distance|forceNoPBC}{\texttt{distance} component}
 \item %
   \dupkey{oneSiteTotalForce}{\texttt{dipoleAngle}}{colvar|distance|oneSiteTotalForce}{\texttt{distance} component}
 \end{cvcoptions}
@@ -1618,6 +1626,8 @@ boundaries can be defined by using any real number of choice.
   \simkey{group3}{\texttt{dihedral}}{group1}
 \item %
   \simkey{group4}{\texttt{dihedral}}{group1}
+\item %
+  \dupkey{forceNoPBC}{\texttt{dihedral}}{colvar|distance|forceNoPBC}{\texttt{distance} component}
 \item %
   \dupkey{oneSiteTotalForce}{\texttt{dihedral}}{colvar|distance|oneSiteTotalForce}{\texttt{distance} component}
 \end{cvcoptions}
@@ -2564,7 +2574,8 @@ The following options can be used for any of the above colvar components in orde
     type of component + numeric id}{%
     The name is an unique case-sensitive string which allows the
     Colvars module to identify this component. This is useful, for example,
-    when combining multiple components via a \texttt{scriptedFunction}.}
+    when combining multiple components via a \texttt{scriptedFunction}.
+    \cvnamdonly{It also defines the variable name representing the component's value in a \texttt{customFunction} expression.}}
 
 \item %
   \keydef
@@ -2621,12 +2632,9 @@ illegal elsewhere):
     of the wrapping interval for periodic variables}{%
     decimal}{%
     0.0}{%
-    By default, values of the periodic components are centered around
-    zero, ranging from $-P/2$ to $P/2$, where $P$ is the period.
-    Setting this number centers the interval around this value.  This
-    can be useful for convenience of output, or to set
-    \texttt{lowerWall} and \texttt{upperWall} in an order that would
-    not otherwise be allowed.}
+    By default, values of the periodic components are centered around zero, ranging from $-P/2$ to $P/2$, where $P$ is the period.
+    Setting this number centers the interval around this value.
+    This can be useful for convenience of output, or to set the walls for a \texttt{harmonicWalls} in an order that would not otherwise be allowed.}
 \end{itemize}
 Internally, all differences between two values of a periodic colvar
 follow the minimum image convention: they are calculated based on
@@ -2734,13 +2742,74 @@ block a series of components of the same type (applied to different
 atom groups), and assign to each component a \texttt{componentCoeff}
 of $1/N$.
 
+\cvnamdonly{
+\cvsubsec{Colvars as custom functions of components}
+
+Collective variables may be defined by specifying a custom function as an analytical
+expression such as \texttt{cos(x) + y\^{}2}.
+The expression is parsed by the Lepton expression parser (written by Peter Eastman),
+which produces efficient evaluation routines for the function itself as well as its derivatives.
+The expression may use the collective variable components as variables, refered to as their \texttt{name} string.
+Scalar elements of vector components may be accessed by appending a 1-based index to their \texttt{name}.
+When implementing generic functions of Cartesian coordinates rather
+than functions of existing components, the \texttt{cartesian} component
+may be particularly useful.
+A vector variable may be defined by specifying the \texttt{customFunction} parameter several times: each expression defines one scalar element of the vector colvar.
+This is illustrated in the example below.
+
+\bigskip
+{%
+% verbatim can't appear within commands
+\noindent\ttfamily colvar \{\\
+\-~~name custom\\
+\\
+\-~~\# A 2-dimensional vector function of a scalar x and a 3-vector r\\
+\-~~customFunction cos(x) * (r1 + r2 + r3)\\
+\-~~customFunction sqrt(r1 * r2)\\
+\\
+\-~~distance \{\\
+\-~~~~name x\\
+\-~~~~group1 \{ atomNumbers 1 \}\\
+\-~~~~group2 \{ atomNumbers 50 \}\\
+\-~~\}\\
+\-~~distanceVec \{\\
+\-~~~~name r\\
+\-~~~~group1 \{ atomNumbers 10 11 12 \}\\
+\-~~~~group2 \{ atomNumbers  20 21 22 \}\\
+\-~~\}\\
+\}}
+
+\begin{itemize}
+\item %
+   \labelkey{colvar|customFunction}
+   \key 
+    {customFunction}{%
+    \texttt{colvar}}{%
+    Compute colvar as a custom function of its components}{%
+    string}{%
+    Defines the colvar as a scalar expression of its colvar components. Multiple mentions can
+    be used to define a vector variable  (as in the example above).}
+
+\item %
+  \keydef
+    {customFunctionType}{%
+    \texttt{colvar}}{%
+    Type of value returned by the scripted colvar}{%
+    string}{%
+    \texttt{scalar}}{%
+    With this flag, the user may specify whether the
+    colvar is a scalar or one of the following vector types: \texttt{vector3}
+    (a 3D vector), \texttt{unit\_vector3} (a normalized 3D vector), or
+    \texttt{unit\_quaternion} (a normalized quaternion), or \texttt{vector}.
+    Note that the scalar and vector cases are not necessary, as they are detected automatically.}
+\end{itemize}
+}
 
 \cvscriptonly{
 \cvsubsec{Colvars as scripted functions of components}
 \label{sec:colvar_scripted}
 When scripting is supported\cvnamdonly{ (default in NAMD)}\cvvmdonly{ (default in VMD)},
-a colvar may be defined as a
-custom function of its components,
+a colvar may be defined as a scripted function of its components,
 rather than a linear or polynomial combination.
 When implementing generic functions of Cartesian coordinates rather
 than functions of existing components, the \texttt{cartesian} component
@@ -2791,8 +2860,7 @@ The required Tcl procedures are provided in the \texttt{colvartools} directory.
     (a 3D vector), \texttt{unit\_vector3} (a normalized 3D vector), or
     \texttt{unit\_quaternion} (a normalized quaternion), or \texttt{vector}
     (a vector whose size is specified by \texttt{scriptedFunctionVectorSize}).
-    Non-scalar values
-    should be passed as space-separated lists, e.g. ``1. 2. 3.''.}
+    Non-scalar values should be passed as space-separated lists.}
 
  \item %
   \key
@@ -3518,7 +3586,7 @@ In these cases, as a measure of fault-tolerance all Gaussian hills near the boun
 To avoid gradual loss of performance and growth of the state file, either one of the following solutions is recommended:
 \begin{itemize}
 \item enabling the option \texttt{expandBoundaries}, so that the grid's boundaries are automatically recalculated whenever necessary; the resulting \texttt{.pmf} will have its abscissas expanded accordingly;
-\item setting \texttt{lowerWall} and \texttt{upperWall} well within the interval delimited by \texttt{lowerBoundary} and \texttt{upperBoundary}.
+\item applying a \texttt{harmonicWalls} bias with the wall locations well within the interval delimited by \texttt{lowerBoundary} and \texttt{upperBoundary}.
 \end{itemize}
 
 

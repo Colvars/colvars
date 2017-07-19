@@ -223,6 +223,23 @@ int colvarproxy_namd::setup()
 }
 
 
+int colvarproxy_namd::reset()
+{
+  int error_code = COLVARS_OK;
+
+  // Unrequest all atoms and group from NAMD
+  modifyRequestedAtoms().clear();
+  modifyRequestedGroups().clear();
+
+  atoms_map.clear();
+
+  // Clear internal Proxy records
+  error_code |= colvarproxy::reset();
+
+  return error_code;
+}
+
+
 void colvarproxy_namd::calculate()
 {
   if (first_timestep) {
@@ -553,11 +570,8 @@ void colvarproxy_namd::error(std::string const &message)
 void colvarproxy_namd::fatal_error(std::string const &message)
 {
   log(message);
-  if (errno) log(strerror(errno));
-  // if (!cvm::debug())
-  //   log("If this error message is unclear, "
-  //       "try recompiling with -DCOLVARS_DEBUG.\n");
   if (errno) {
+    log(strerror(errno));
     NAMD_err("Error in the collective variables module");
   } else {
     NAMD_die("Error in the collective variables module: exiting.\n");
@@ -570,7 +584,6 @@ void colvarproxy_namd::exit(std::string const &message)
   log(message);
   BackEnd::exit();
 }
-
 
 
 int colvarproxy_namd::check_atom_id(int atom_number)
@@ -617,7 +630,6 @@ int colvarproxy_namd::init_atom(int atom_number)
   update_atom_properties(index);
   return index;
 }
-
 
 
 int colvarproxy_namd::check_atom_id(cvm::residue_id const &residue,

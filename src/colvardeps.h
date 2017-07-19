@@ -150,20 +150,6 @@ private:
   std::vector<colvardeps *> parents;
 
 public:
-  // disabling a feature f:
-  // if parents depend on f, tell them to refresh / check that they are ok?
-  // if children provide features to satisfy f ONLY, disable that
-
-  // When the state of this object has changed, recursively tell parents
-  // to enforce their dependencies
-//   void refresh_parents() {
-//
-//   }
-
-  // std::vector<colvardeps *> parents; // Needed to trigger a refresh if capabilities of this object change
-
-  // End of members to be initialized by subclasses
-
   // Checks whether given feature is enabled
   // Defaults to querying f_*_active
   inline bool is_enabled(int f = f_cv_active) const {
@@ -298,6 +284,8 @@ public:
     f_cv_corrfunc,
     /// \brief Value and gradient computed by user script
     f_cv_scripted,
+    /// \brief Value and gradient computed by user function through Lepton
+    f_cv_custom_function,
     /// \brief Colvar is periodic
     f_cv_periodic,
     /// \brief is scalar
@@ -314,10 +302,13 @@ public:
     f_cvc_active,
     f_cvc_scalar,
     f_cvc_gradient,
+    /// \brief CVC doesn't calculate and store explicit atom gradients
+    f_cvc_implicit_gradient,
     f_cvc_inv_gradient,
     /// \brief If enabled, calc_gradients() will call debug_gradients() for every group needed
     f_cvc_debug_gradient,
     f_cvc_Jacobian,
+    f_cvc_pbc_minimum_image,
     f_cvc_one_site_total_force,
     f_cvc_com_based,
     f_cvc_scalable,
@@ -333,6 +324,8 @@ public:
     /// Perform a standard minimum msd fit for given atoms
     /// ie. not using refpositionsgroup
 //     f_ag_min_msd_fit,
+    /// \brief Does not have explicit atom gradients from parent CVC
+    f_ag_implicit_gradient,
     f_ag_fit_gradients,
     f_ag_atom_forces,
     f_ag_scalable,

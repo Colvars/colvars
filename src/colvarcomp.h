@@ -224,6 +224,12 @@ public:
   /// e.g. atomic gradients
   std::vector<cvm::atom_group *> atom_groups;
 
+  /// \brief Store a pointer to new atom group, and list as child for dependencies
+  inline void register_atom_group(cvm::atom_group *ag) {
+    atom_groups.push_back(ag);
+    add_child((colvardeps *) ag);
+  }
+
   /// \brief Whether or not this CVC will be computed in parallel whenever possible
   bool b_try_scalable;
 

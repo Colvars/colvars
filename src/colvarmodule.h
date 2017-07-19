@@ -471,8 +471,7 @@ public:
   /// \brief Get the distance between two atomic positions with pbcs handled
   /// correctly
   static rvector position_distance(atom_pos const &pos1,
-                                    atom_pos const &pos2);
-
+                                   atom_pos const &pos2);
 
   /// \brief Get the square distance between two positions (with
   /// periodic boundary conditions handled transparently)
@@ -481,21 +480,7 @@ public:
   /// an analytical square distance (while taking the square of
   /// position_distance() would produce leads to a cusp)
   static real position_dist2(atom_pos const &pos1,
-                              atom_pos const &pos2);
-
-  /// \brief Get the closest periodic image to a reference position
-  /// \param pos The position to look for the closest periodic image
-  /// \param ref_pos (optional) The reference position
-  static void select_closest_image(atom_pos &pos,
-                                    atom_pos const &ref_pos);
-
-  /// \brief Perform select_closest_image() on a set of atomic positions
-  ///
-  /// After that, distance vectors can then be calculated directly,
-  /// without using position_distance()
-  static void select_closest_images(std::vector<atom_pos> &pos,
-                                     atom_pos const &ref_pos);
-
+                             atom_pos const &pos2);
 
   /// \brief Names of groups from a Gromacs .ndx file to be read at startup
   std::list<std::string> index_group_names;
@@ -702,18 +687,6 @@ inline int cvm::replica_comm_send(char* msg_data, int msg_len, int dest_rep) {
 inline void cvm::request_total_force()
 {
   proxy->request_total_force(true);
-}
-
-inline void cvm::select_closest_image(atom_pos &pos,
-                                       atom_pos const &ref_pos)
-{
-  proxy->select_closest_image(pos, ref_pos);
-}
-
-inline void cvm::select_closest_images(std::vector<atom_pos> &pos,
-                                        atom_pos const &ref_pos)
-{
-  proxy->select_closest_images(pos, ref_pos);
 }
 
 inline cvm::rvector cvm::position_distance(atom_pos const &pos1,

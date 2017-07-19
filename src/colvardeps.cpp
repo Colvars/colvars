@@ -10,7 +10,6 @@ colvardeps::~colvardeps() {
   size_t i;
 
   // Protest if we are deleting an object while a parent object may still depend on it
-  // Another possible strategy is to have the child unlist itself from the parent's children
   if (parents.size()) {
     cvm::log("Warning: destroying \"" + description + "\" before its parents objects:");
     for (i=0; i<parents.size(); i++) {
@@ -18,7 +17,8 @@ colvardeps::~colvardeps() {
     }
   }
 
-  // Do not delete features if it's static
+  // Do not delete features if it's a static object
+  // may change in the future though
 //     for (i=0; i<features.size(); i++) {
 //       if (features[i] != NULL) delete features[i];
 //     }
@@ -38,20 +38,20 @@ void colvardeps::free_children_deps() {
 
   if (cvm::debug()) cvm::log("DEPS: freeing children deps for " + description);
 
+  cvm::increase_depth();
   for (fid = 0; fid < feature_states.size(); fid++) {
     if (is_enabled(fid)) {
       for (i=0; i<features()[fid]->requires_children.size(); i++) {
         int g = features()[fid]->requires_children[i];
         for (j=0; j<children.size(); j++) {
-          cvm::increase_depth();
           if (cvm::debug()) cvm::log("DEPS: dereferencing children's "
             + children[j]->features()[g]->description);
           children[j]->decr_ref_count(g);
-          cvm::decrease_depth();
         }
       }
     }
   }
+  cvm::decrease_depth();
 }
 
 
@@ -59,20 +59,21 @@ void colvardeps::free_children_deps() {
 // So free_children_deps() can be called whenever an object becomes inactive
 void colvardeps::restore_children_deps() {
   size_t i,j,fid;
+
+  cvm::increase_depth();
   for (fid = 0; fid < feature_states.size(); fid++) {
     if (is_enabled(fid)) {
       for (i=0; i<features()[fid]->requires_children.size(); i++) {
         int g = features()[fid]->requires_children[i];
         for (j=0; j<children.size(); j++) {
-          cvm::increase_depth();
           if (cvm::debug()) cvm::log("DEPS: re-enabling children's "
             + children[j]->features()[g]->description);
           children[j]->enable(g, false, false);
-          cvm::decrease_depth();
         }
       }
     }
   }
+  cvm::decrease_depth();
 }
 
 
@@ -220,17 +221,17 @@ int colvardeps::enable(int feature_id,
     }
     if (!ok) {
       if (!dry_run) {
-        cvm::log("No dependency satisfied among alternates:");
-        cvm::log("-----------------------------------------");
+        cvm::log("\"" + f->description + "\" in " + description
+          + " requires one of the following features, none of which can be enabled:\n");
+        cvm::log("-----------------------------------------\n");
+        cvm::increase_depth();
         for (j=0; j<f->requires_alt[i].size(); j++) {
           int g = f->requires_alt[i][j];
           cvm::log(cvm::to_str(j+1) + ". " + features()[g]->description);
-          cvm::increase_depth();
           enable(g, false, false); // Just for printing error output
-          cvm::decrease_depth();
         }
+        cvm::decrease_depth();
         cvm::log("-----------------------------------------");
-        cvm::log("for \"" + f->description + "\" in " + description);
         if (toplevel) {
           cvm::error("Error: Failed dependency in " + description + ".");
         }
@@ -242,12 +243,11 @@ int colvardeps::enable(int feature_id,
   // 4) solve deps in children
   // if the object is inactive, we solve but do not enable: will be enabled
   // when the object becomes active
+  cvm::increase_depth();
   for (i=0; i<f->requires_children.size(); i++) {
     int g = f->requires_children[i];
     for (j=0; j<children.size(); j++) {
-      cvm::increase_depth();
       res = children[j]->enable(g, dry_run || !is_enabled(), false);
-      cvm::decrease_depth();
       if (res != COLVARS_OK) {
         if (!dry_run) {
           cvm::log("...required by \"" + f->description + "\" in " + description);
@@ -259,6 +259,7 @@ int colvardeps::enable(int feature_id,
       }
     }
   }
+  cvm::decrease_depth();
 
   // Actually enable feature only once everything checks out
   if (!dry_run) {
@@ -319,16 +320,16 @@ int colvardeps::disable(int feature_id) {
   // (or never referenced if feature was enabled while the object
   // was inactive)
   if (is_enabled()) {
+    cvm::increase_depth();
     for (i=0; i<f->requires_children.size(); i++) {
       int g = f->requires_children[i];
       for (j=0; j<children.size(); j++) {
-        cvm::increase_depth();
         if (cvm::debug()) cvm::log("DEPS: dereferencing children's "
           + children[j]->features()[g]->description);
         children[j]->decr_ref_count(g);
-        cvm::decrease_depth();
       }
     }
+    cvm::decrease_depth();
   }
 
   fs->enabled = false;
@@ -346,10 +347,11 @@ int colvardeps::decr_ref_count(int feature_id) {
 
   if (cvm::debug())
       cvm::log("DEPS: decreasing reference count of \"" + f->description
-     + "\" in " + description + ".\n");
+        + "\" in " + description + ".\n");
 
   if (rc <= 0) {
-    cvm::error("Error: cannot decrease reference count of feature \"" + f->description +  "\" in " + description + ", which is " + cvm::to_str(rc) + ".\n");
+    cvm::error("Error: cannot decrease reference count of feature \"" + f->description
+      +  "\" in " + description + ", which is " + cvm::to_str(rc) + ".\n");
     return COLVARS_ERROR;
   }
 
@@ -382,6 +384,11 @@ void colvardeps::init_feature(int feature_id, const char *description, feature_t
   features()[f]->requires_alt.back()[0] = g;                                           \
   features()[f]->requires_alt.back()[1] = h;                                           \
   features()[f]->requires_alt.back()[2] = i
+#define f_req_alt4(f, g, h, i, j) features()[f]->requires_alt.push_back(std::vector<int>(4));\
+  features()[f]->requires_alt.back()[0] = g;                                           \
+  features()[f]->requires_alt.back()[1] = h;                                           \
+  features()[f]->requires_alt.back()[2] = i;                                           \
+  features()[f]->requires_alt.back()[3] = j
 
 void colvardeps::init_cvb_requires() {
   int i;
@@ -428,9 +435,9 @@ void colvardeps::init_cv_requires() {
     }
 
     init_feature(f_cv_active, "active", f_type_dynamic);
-    f_req_children(f_cv_active, f_cvc_active);
-    // Colvars must be either a linear combination, or scalar (and polynomial) or scripted
-    f_req_alt3(f_cv_active, f_cv_scalar, f_cv_linear, f_cv_scripted);
+    // Do not require f_cvc_active in children, as some components may be disabled
+    // Colvars must be either a linear combination, or scalar (and polynomial) or scripted/custom
+    f_req_alt4(f_cv_active, f_cv_scalar, f_cv_linear, f_cv_scripted, f_cv_custom_function);
 
     init_feature(f_cv_awake, "awake", f_type_static);
     f_req_self(f_cv_awake, f_cv_active);
@@ -508,7 +515,11 @@ void colvardeps::init_cv_requires() {
 
     init_feature(f_cv_corrfunc, "correlation function", f_type_user);
 
-    init_feature(f_cv_scripted, "scripted", f_type_static);
+    init_feature(f_cv_scripted, "scripted", f_type_user);
+
+    init_feature(f_cv_custom_function, "custom function", f_type_user);
+    f_req_exclude(f_cv_custom_function, f_cv_scripted);
+
     init_feature(f_cv_periodic, "periodic", f_type_static);
     f_req_self(f_cv_periodic, f_cv_homogeneous);
     init_feature(f_cv_scalar, "scalar", f_type_static);
@@ -528,23 +539,6 @@ void colvardeps::init_cv_requires() {
     // Most features are available, so we set them so
     // and list exceptions below
    }
-
-//   // properties that may NOT be enabled as a dependency
-//   // This will be deprecated by feature types
-//   int unavailable_deps[] = {
-//     f_cv_lower_boundary,
-//     f_cv_upper_boundary,
-//     f_cv_extended_Lagrangian,
-//     f_cv_Langevin,
-//     f_cv_scripted,
-//     f_cv_periodic,
-//     f_cv_scalar,
-//     f_cv_linear,
-//     f_cv_homogeneous
-//   };
-//   for (i = 0; i < sizeof(unavailable_deps) / sizeof(unavailable_deps[0]); i++) {
-//     feature_states[unavailable_deps[i]].available = false;
-//   }
 }
 
 
@@ -564,16 +558,22 @@ void colvardeps::init_cvc_requires() {
 
     init_feature(f_cvc_gradient, "gradient", f_type_dynamic);
 
+    init_feature(f_cvc_implicit_gradient, "implicit gradient", f_type_static);
+    f_req_children(f_cvc_implicit_gradient, f_ag_implicit_gradient);
+
     init_feature(f_cvc_inv_gradient, "inverse gradient", f_type_dynamic);
     f_req_self(f_cvc_inv_gradient, f_cvc_gradient);
 
     init_feature(f_cvc_debug_gradient, "debug gradient", f_type_user);
     f_req_self(f_cvc_debug_gradient, f_cvc_gradient);
+    f_req_exclude(f_cvc_debug_gradient, f_cvc_implicit_gradient);
 
     init_feature(f_cvc_Jacobian, "Jacobian derivative", f_type_dynamic);
     f_req_self(f_cvc_Jacobian, f_cvc_inv_gradient);
 
     init_feature(f_cvc_com_based, "depends on group centers of mass", f_type_static);
+
+    // init_feature(f_cvc_pbc_minimum_image, "use minimum-image distances with PBCs", f_type_user);
 
     // Compute total force on first site only to avoid unwanted
     // coupling to other colvars (see e.g. Ciccotti et al., 2005)
@@ -601,10 +601,16 @@ void colvardeps::init_cvc_requires() {
     feature_states.push_back(feature_state(avail, false));
   }
 
+  // CVCs are enabled from the start - get disabled based on flags
+  feature_states[f_cvc_active].enabled = true;
+
   // Features that are implemented by all cvcs by default
   // Each cvc specifies what other features are available
   feature_states[f_cvc_active].available = true;
   feature_states[f_cvc_gradient].available = true;
+
+  // Use minimum-image distances by default
+  feature_states[f_cvc_pbc_minimum_image].enabled = true;
 
   // Features that are implemented by default if their requirements are
   feature_states[f_cvc_one_site_total_force].available = true;
@@ -627,7 +633,10 @@ void colvardeps::init_ag_requires() {
     init_feature(f_ag_center, "translational fit", f_type_static);
     init_feature(f_ag_rotate, "rotational fit", f_type_static);
     init_feature(f_ag_fitting_group, "reference positions group", f_type_static);
+    init_feature(f_ag_implicit_gradient, "implicit atom gradient", f_type_dynamic);
     init_feature(f_ag_fit_gradients, "fit gradients", f_type_user);
+    f_req_exclude(f_ag_fit_gradients, f_ag_implicit_gradient);
+
     init_feature(f_ag_atom_forces, "atomic forces", f_type_dynamic);
 
     // parallel calculation implies that we have at least a scalable center of mass,
@@ -656,6 +665,7 @@ void colvardeps::init_ag_requires() {
   // TODO make f_ag_scalable depend on f_ag_scalable_com (or something else)
   feature_states[f_ag_scalable].available = true;
   feature_states[f_ag_fit_gradients].available = true;
+  feature_states[f_ag_implicit_gradient].available = true;
 }
 
 
@@ -667,19 +677,37 @@ void colvardeps::print_state() {
       cvm::log("- " + features()[i]->description + " ("
         + cvm::to_str(feature_states[i].ref_count) + ")");
   }
+  cvm::increase_depth();
   for (i=0; i<children.size(); i++) {
     cvm::log("* child " + cvm::to_str(i+1));
-    cvm::increase_depth();
     children[i]->print_state();
-    cvm::decrease_depth();
   }
+  cvm::decrease_depth();
 }
 
 
 
 void colvardeps::add_child(colvardeps *child) {
+
   children.push_back(child);
   child->parents.push_back((colvardeps *)this);
+
+  // Solve dependencies of already enabled parent features
+  // in the new child
+
+  size_t i, fid;
+  cvm::increase_depth();
+  for (fid = 0; fid < feature_states.size(); fid++) {
+    if (is_enabled(fid)) {
+      for (i=0; i<features()[fid]->requires_children.size(); i++) {
+        int g = features()[fid]->requires_children[i];
+        if (cvm::debug()) cvm::log("DEPS: re-enabling children's "
+          + child->features()[g]->description);
+        child->enable(g, false, false);
+      }
+    }
+  }
+  cvm::decrease_depth();
 }
 
 

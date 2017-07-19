@@ -63,6 +63,7 @@ public:
   ~colvarproxy_namd();
 
   int setup();
+  int reset();
 
   // synchronize the local arrays with requested or forced atoms
   int update_atoms_map(AtomIDList::const_iterator begin, AtomIDList::const_iterator end);

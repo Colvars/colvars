@@ -256,10 +256,6 @@ void colvarproxy_vmd::error(std::string const &message)
 {
   error_output += message;
   log(message);
-  if (!cvm::debug()) {
-    log("If this error message is unclear, "
-        "try recompiling VMD with -DCOLVARS_DEBUG.\n");
-  }
 }
 
 

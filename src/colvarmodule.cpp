@@ -525,7 +525,10 @@ int colvarmodule::change_configuration(std::string const &bias_name,
   cvm::increase_depth();
   colvarbias *b;
   b = bias_by_name(bias_name);
-  if (b == NULL) { cvm::error("Error: bias not found: " + bias_name); }
+  if (b == NULL) {
+    cvm::error("Error: bias not found: " + bias_name);
+    return COLVARS_ERROR;
+  }
   b->change_configuration(conf);
   cvm::decrease_depth();
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
@@ -538,7 +541,10 @@ std::string colvarmodule::read_colvar(std::string const &name)
   colvar *c;
   std::stringstream ss;
   c = colvar_by_name(name);
-  if (c == NULL) { cvm::fatal_error("Error: colvar not found: " + name); }
+  if (c == NULL) {
+    cvm::error("Error: colvar not found: " + name);
+    return std::string();
+  }
   ss << c->value();
   cvm::decrease_depth();
   return ss.str();
@@ -551,7 +557,10 @@ cvm::real colvarmodule::energy_difference(std::string const &bias_name,
   colvarbias *b;
   cvm::real energy_diff = 0.;
   b = bias_by_name(bias_name);
-  if (b == NULL) { cvm::fatal_error("Error: bias not found: " + bias_name); }
+  if (b == NULL) {
+    cvm::error("Error: bias not found: " + bias_name);
+    return 0.;
+  }
   energy_diff = b->energy_difference(conf);
   cvm::decrease_depth();
   return energy_diff;
@@ -1024,6 +1033,8 @@ int colvarmodule::reset()
 
   index_groups.clear();
   index_group_names.clear();
+
+  proxy->reset();
 
   if (cv_traj_os.is_open()) {
     // Do not close file here, as we might not be done with it yet.
@@ -1572,17 +1583,9 @@ int colvarmodule::error(std::string const &message, int code)
 
 int colvarmodule::fatal_error(std::string const &message)
 {
-  // TODO once all non-fatal errors have been set to be handled by error(),
-  // set DELETE_COLVARS here for VMD to handle it
   set_error_bits(FATAL_ERROR);
   proxy->fatal_error(message);
   return get_error();
-}
-
-
-void cvm::exit(std::string const &message)
-{
-  proxy->exit(message);
 }
 
 

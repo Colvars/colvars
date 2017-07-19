@@ -5,7 +5,7 @@
 **/
 
 /*****************************************************************************
- * $Source: /namd/cvsroot/namd2/src/SimParameters.h,v $
+ * $Source: /home/cvs/namd/cvsroot/namd2/src/SimParameters.h,v $
  * $Author: jim $
  * $Date: 2017/03/30 20:06:17 $
  * $Revision: 1.1248 $
@@ -436,6 +436,7 @@ public:
         Bool qmForcesOn;               //  Are QM/MM command forces present?
         char qmParamPDB[128];
         Bool qmParamPDBDefined;
+        Bool qmChrgFromPSF;
         char qmExecPath[256];
         char qmSoftware[128];
         char qmChrgModeS[16];
@@ -448,6 +449,7 @@ public:
         Bool qmPrepProcOn;
         int qmFormat ;
         Bool qmReplaceAll ;
+        Bool qmMOPACAddConfigChrg;
 
         Bool qmBondOn;
         char qmBondColumn[16];
@@ -475,6 +477,9 @@ public:
         char qmLSSModeS[16];
         int qmLSSMode;
 
+        Bool qmCSMD;
+        char qmCSMDFile[128];
+        
         int qmOutFreq ;
         int qmPosOutFreq ;
 
@@ -992,6 +997,7 @@ public:
 	void scriptSet(const char *, const char *);
 					//  Set parameters at run time
 	void close_dcdfile();  // *** implemented in Output.C ***
+	void close_veldcdfile();  // *** implemented in Output.C ***
         static void nonbonded_select();
 
 	int isSendSpanningTreeOn(){ return proxySendSpanningTree == 1; }

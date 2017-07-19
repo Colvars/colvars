@@ -5,7 +5,7 @@
 **/
 
 /*****************************************************************************
- * $Source: /namd/cvsroot/namd2/src/SimParameters.C,v $
+ * $Source: /home/cvs/namd/cvsroot/namd2/src/SimParameters.C,v $
  * $Author: jim $
  * $Date: 2017/03/30 20:06:17 $
  * $Revision: 1.1478 $
@@ -239,6 +239,11 @@ void SimParameters::scriptSet(const char *param, const char *value) {
   if ( ! strncasecmp(param,"DCDfile",MAX_SCRIPT_PARAM_SIZE) ) {
     close_dcdfile();  // *** implemented in Output.C ***
     strcpy(dcdFilename,value);
+    return;
+  }
+  if ( ! strncasecmp(param,"velDCDfile",MAX_SCRIPT_PARAM_SIZE) ) { 
+    close_veldcdfile();  // *** implemented in Output.C ***
+    strcpy(velDcdFilename,value);
     return;
   }
   SCRIPT_PARSE_STRING("tclBCArgs",tclBCArgs)
@@ -1559,7 +1564,7 @@ void SimParameters::config_parser_constraints(ParseOptions &opts) {
       "column defining QM and MM regions", qmColumn);
    opts.require("QMForces", "QMBaseDir",
       "base path and name for QM input and output (preferably in memory)", qmBaseDir);
-   opts.require("QMForces", "QMConfigLine",
+   opts.optional("QMForces", "QMConfigLine",
       "Configuration line for QM (multiple inputs allowed)", PARSE_MULTIPLES);
    opts.optional("QMForces", "QMParamPDB",
       "PDB with QM parameters", qmParamPDB);
@@ -1569,6 +1574,8 @@ void SimParameters::config_parser_constraints(ParseOptions &opts) {
       "secondary executable", qmSecProc);
    opts.optional("QMForces", "QMCharge",
       "charge of the QM group", PARSE_MULTIPLES);
+   opts.optionalB("QMForces", "QMChargeFromPSF",
+      "gets charge of the QM group form PSF values", &qmChrgFromPSF, FALSE);
    opts.optional("QMForces", "QMMult",
       "multiplicity of the QM group", PARSE_MULTIPLES);
    opts.optional("QMForces", "QMLinkElement",
@@ -1577,6 +1584,7 @@ void SimParameters::config_parser_constraints(ParseOptions &opts) {
       "replace all NAMD forces with QM forces", &qmReplaceAll, FALSE);
    opts.optional("QMForces", "QMPCStride",
       "frequency of selection of point charges", &qmPCSelFreq, 1);
+   opts.range("QMPCStride", POSITIVE);
    opts.optionalB("QMForces", "QMNoPntChrg",
       "no point charges will be passed to the QM system(s)", &qmNoPC, FALSE);
    opts.optionalB("QMForces", "QMElecEmbed",
@@ -1593,10 +1601,13 @@ void SimParameters::config_parser_constraints(ParseOptions &opts) {
       "type of treatment given to QM-MM bonds.", qmBondSchemeS);
    opts.optional("QMForces", "QMOutStride",
       "frequency of QM specific charge output (every x steps)", &qmOutFreq, 0);
+   opts.range("QMOutStride", NOT_NEGATIVE);
    opts.optional("QMForces", "QMPositionOutStride",
       "frequency of QM specific position output (every x steps)", &qmPosOutFreq, 0);
+   opts.range("QMPositionOutStride", NOT_NEGATIVE);
    opts.optional("QMForces", "QMSimsPerNode",
       "QM executions per node", &qmSimsPerNode, 1);
+   opts.range("QMSimsPerNode", POSITIVE);
    opts.optionalB("QMForces", "QMSwitching",
       "apply switching to point charges.", &qmPCSwitchOn, FALSE);
    opts.optional("QMForces", "QMSwitchingType",
@@ -1611,12 +1622,17 @@ void SimParameters::config_parser_constraints(ParseOptions &opts) {
       "Continuously update the selection of solvent molecules in QM groups", &qmLSSOn, FALSE);
    opts.optional("QMForces", "QMLSSFreq",
       "frequency of QM water selection update", &qmLSSFreq, 100);
+   opts.range("QMLSSFreq", POSITIVE);
    opts.optional("QMForces", "QMLSSResname",
       "residue name for the solvent molecules (TIP3).", qmLSSResname);
    opts.optional("QMForces", "QMLSSMode",
       "mode of selection of point solvent molecules", qmLSSModeS);
    opts.optional("QMForces", "QMLSSRef",
       "for COM mode, defines reference for COM distance calculation", PARSE_MULTIPLES);
+   opts.optionalB("QMForces", "QMCSMD",
+      "Do we use Conditional SMD option?", &qmCSMD, FALSE);
+   opts.optional("QMForces", "QMCSMDFile",
+                "File for Conditional SMD information",qmCSMDFile);
 
    //print which bad contacts are being moved downhill
    opts.optionalB("main", "printBadContacts", "Print atoms with huge forces?",
@@ -4121,6 +4137,14 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
                 qmFormat = QMFormatMOPAC;
             if ( strcasecmp(qmSoftware,"custom") == 0 )
                 qmFormat = QMFormatUSR;
+            
+            if (qmFormat == QMFormatORCA || qmFormat == QMFormatMOPAC) {
+                
+                if (! opts.defined("QMConfigLine"))
+                    NAMD_die("If the selected QM software is \'mopac\' or \'orca\'\
+, QMConfigLine needs to be defined.");
+                
+            }
         }
 
         qmChrgMode = QMCHRGMULLIKEN;
@@ -4283,6 +4307,9 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
 
         if (qmCustomPCSel && qmPCSelFreq > 1)
             NAMD_die("QM Custom PC Selection is incompatible with QMPCStride > 1!");
+        
+        if (qmCSMD && (! opts.defined("QMCSMDFile") ))
+            NAMD_die("QM Conditional SMD is ON, but no CSMD configuration file was profided!");
     }
 }
 
@@ -5088,9 +5115,13 @@ if ( openatomOn )
             }
 
         }
+        
+        if (qmChrgFromPSF) {
+            iout << iINFO << "QM Will use PSF charges.\n";
+        }
+        
         iout << iINFO << "QM BASE DIRECTORY: " << qmBaseDir << "\n";
-//         iout << iINFO << "QM CHARGE: " << qmCharge << "\n";
-//         iout << iINFO << "QM MULTIPLICITY: " << qmMult << "\n";
+        
         if (qmPrepProcOn) {
             iout << iINFO << "QM PREPARATION PROCESS: " << qmPrepProc << "\n";
         }

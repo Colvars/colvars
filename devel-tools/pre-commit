@@ -6,22 +6,33 @@
 # Task 1a: update the Colvars module version string if a file in the src/
 #          directory is about to be committed. Do not update it, if current.
 
+datestr=$(date +'%Y-%m-%d')
+datestrtex=$(date +'%Y-%m-%d')
+branch=$(git rev-parse --abbrev-ref HEAD)
+if test "${branch}" != "master"
+then
+    # Use the date of the last commit to master
+    first_since_master=$(git log --pretty=format:'%h' --date=short master..HEAD | tail -n 1)
+    if [ "x${first_since_master}" != "x" ] ; then
+        last_master=$(git log --pretty=format:'%h' ${first_since_master}^ | head -n 1)
+    else
+        last_master=$(git log --pretty=format:'%h' master | head -n 1)
+    fi
+    datestr=$(git log --pretty=format:'%ad' --date=short ${last_master} | head -n 1)
+    datestrtex="${datestr}\\_${branch}"
+    datestr="${datestr}_${branch}"
+fi
+prevstr=$(sed -n -e 's/^#define COLVARS_VERSION "\(.*\)".*/\1/p' src/colvars_version.h)
+
 if git status --porcelain | grep -q '^M \+src/'
 then
-  datestr=$(date +'%Y-%m-%d')
-  branch=`git rev-parse --abbrev-ref HEAD`
-  if test "${branch}" != "master"
-  then
-    datestr="${datestr}_${branch}"
-  fi
-  prevstr=$(sed -n -e 's/^#define COLVARS_VERSION "\(.*\)".*/\1/p' src/colvars_version.h)
   if test "${prevstr}" = "${datestr}"
   then
     echo "Keeping Colvars version string at: ${prevstr}"
   else
     echo "Updating Colvars version string from ${prevstr} to ${datestr}"
     sed -i -e "s/^#define COLVARS_VERSION.*/#define COLVARS_VERSION \"${datestr}\"/" src/colvars_version.h
-    echo -E "\newcommand{\cvversion}{${datestr}}" > doc/cv_version.tex
+    echo -E "\newcommand{\cvversion}{${datestrtex}}" > doc/cv_version.tex
     git add src/colvars_version.h doc/cv_version.tex
   fi
 fi
@@ -33,14 +44,6 @@ fi
 
 if git status --porcelain | grep -q '^M \+lammps/src/'
 then
-  datestr=$(date +'%Y-%m-%d')
-  branch=`git rev-parse --abbrev-ref HEAD`
-  if test "${branch}" != "master"
-  then
-    datestr="${datestr}_${branch}"
-  fi
-  prevstr=$(sed -n -e 's/^#define COLVARPROXY_VERSION "\(.*\)".*/\1/p' \
-            lammps/src/USER-COLVARS/colvarproxy_lammps_version.h)
   if test "${prevstr}" = "${datestr}"
   then
     echo "Keeping LAMMPS Colvars interface version string at: ${prevstr}"
@@ -54,14 +57,6 @@ fi
 
 if git status --porcelain | grep -q '^M \+namd/src/'
 then
-  datestr=$(date +'%Y-%m-%d')
-  branch=`git rev-parse --abbrev-ref HEAD`
-  if test "${branch}" != "master"
-  then
-    datestr="${datestr}_${branch}"
-  fi
-  prevstr=$(sed -n -e 's/^#define COLVARPROXY_VERSION "\(.*\)".*/\1/p' \
-            namd/src/colvarproxy_namd_version.h)
   if test "${prevstr}" = "${datestr}"
   then
     echo "Keeping NAMD Colvars interface version string at: ${prevstr}"
@@ -75,14 +70,6 @@ fi
 
 if git status --porcelain | grep -q '^M \+vmd/src/'
 then
-  datestr=$(date +'%Y-%m-%d')
-  branch=`git rev-parse --abbrev-ref HEAD`
-  if test "${branch}" != "master"
-  then
-    datestr="${datestr}_${branch}"
-  fi
-  prevstr=$(sed -n -e 's/^#define COLVARPROXY_VERSION "\(.*\)".*/\1/p' \
-            vmd/src/colvarproxy_vmd_version.h)
   if test "${prevstr}" = "${datestr}"
   then
     echo "Keeping VMD Colvars interface version string at: ${prevstr}"

@@ -28,6 +28,10 @@ DPMEDIR=dpme2
 PLUGINSRCDIR= plugins/molfile_plugin/src
 PLUGININCDIR= plugins/include
 SBSRCDIR = sb/src
+COLVARSSRCDIR = colvars/src
+COLVARSINCDIR = colvars/src
+LEPTONSRCDIR = lepton/src
+LEPTONINCDIR = lepton/include
 
 MKDSTDIR = $(DSTDIR)/.exists
 MKINCDIR = $(INCDIR)/.exists
@@ -221,28 +225,7 @@ OBJS = \
 	$(DSTDIR)/GlobalMasterFreeEnergy.o \
 	$(DSTDIR)/GlobalMasterEasy.o \
 	$(DSTDIR)/GlobalMasterMisc.o \
-	$(DSTDIR)/colvar.o \
-	$(DSTDIR)/colvaratoms.o \
-	$(DSTDIR)/colvarbias.o \
-	$(DSTDIR)/colvarbias_abf.o \
-	$(DSTDIR)/colvarbias_alb.o \
-	$(DSTDIR)/colvarbias_histogram.o \
-	$(DSTDIR)/colvarbias_meta.o \
-	$(DSTDIR)/colvarbias_restraint.o \
-	$(DSTDIR)/colvarcomp.o \
-	$(DSTDIR)/colvarcomp_angles.o \
-	$(DSTDIR)/colvarcomp_coordnums.o \
-	$(DSTDIR)/colvarcomp_distances.o \
-	$(DSTDIR)/colvarcomp_protein.o \
-	$(DSTDIR)/colvarcomp_rotations.o \
-	$(DSTDIR)/colvardeps.o \
-	$(DSTDIR)/colvargrid.o \
-	$(DSTDIR)/colvarmodule.o \
-	$(DSTDIR)/colvarparse.o \
 	$(DSTDIR)/colvarproxy_namd.o \
-	$(DSTDIR)/colvarscript.o \
-	$(DSTDIR)/colvartypes.o \
-	$(DSTDIR)/colvarvalue.o \
 	$(DSTDIR)/GridForceGrid.o \
         $(DSTDIR)/GromacsTopFile.o \
 	$(DSTDIR)/heap.o \
@@ -423,6 +406,16 @@ SBLIB = \
 	$(DSTDIR)/topo_mol_pluginio.o \
 	$(DSTDIR)/stringhash.o
 
+include colvars/src/Makefile.namd
+
+LEPTONOBJS = \
+	$(DSTDIR)/CompiledExpression.o \
+	$(DSTDIR)/ExpressionProgram.o \
+	$(DSTDIR)/ExpressionTreeNode.o \
+	$(DSTDIR)/Operation.o \
+	$(DSTDIR)/ParsedExpression.o \
+	$(DSTDIR)/Parser.o 
+
 # definitions for Charm routines
 CHARMC = $(CHARM)/bin/charmc
 CHARMXI = $(CHARM)/bin/charmc
@@ -434,22 +427,25 @@ CHARM_MODULES = -module NeighborLB -module HybridLB -module RefineLB -module Gre
 #MSA = -DCHARM_HAS_MSA
 
 # Libraries we may have changed
-LIBS = $(CUDAOBJS) $(PLUGINLIB) $(SBLIB) $(DPMTALIBS) $(DPMELIBS) $(FMMLIBS) $(TCLDLL)
+LIBS = $(CUDAOBJS) $(PLUGINLIB) $(SBLIB) $(COLVARSLIB) $(DPMTALIBS) $(DPMELIBS) $(FMMLIBS) $(TCLDLL) $(LEPTONOBJS)
 
 # CXX is platform dependent
-CXXBASEFLAGS = $(COPTI)$(CHARMINC) $(COPTI)$(SRCDIR) $(COPTI)$(INCDIR) $(DPMTA) $(DPME) $(FMM) $(COPTI)$(PLUGININCDIR) $(COPTD)STATIC_PLUGIN $(TCL) $(PYTHON) $(FFT) $(CUDA) $(MIC) $(MEMOPT) $(CCS) $(RELEASE) $(EXTRADEFINES) $(TRACEOBJDEF) $(EXTRAINCS) $(MSA) $(CKLOOP)
+CXXBASEFLAGS = $(COPTI)$(CHARMINC) $(COPTI)$(SRCDIR) $(COPTI)$(INCDIR) $(DPMTA) $(DPME) $(FMM) $(COPTI)$(PLUGININCDIR) $(COPTI)$(COLVARSINCDIR) $(COPTD)STATIC_PLUGIN $(TCL) $(PYTHON) $(FFT) $(CUDA) $(MIC) $(MEMOPT) $(CCS) $(RELEASE) $(EXTRADEFINES) $(TRACEOBJDEF) $(EXTRAINCS) $(MSA) $(CKLOOP)
 CXXFLAGS = $(CXXBASEFLAGS) $(CXXOPTS)
 CXXMICFLAGS = $(CXXBASEFLAGS) $(CXXOPTS) $(CXXMICOPTS)
 CXXTHREADFLAGS = $(CXXBASEFLAGS) $(CXXTHREADOPTS)
 CXXSIMPARAMFLAGS = $(CXXBASEFLAGS) $(CXXSIMPARAMOPTS)
 CXXNOALIASFLAGS = $(CXXBASEFLAGS) $(CXXNOALIASOPTS)
-CXXCOLVARFLAGS = $(CXXBASEFLAGS) $(CXXCOLVAROPTS)
+COLVARSCXXFLAGS = $(CXXBASEFLAGS) $(CXXCOLVAROPTS) $(COPTI)$(LEPTONINCDIR) -DLEPTON -DLEPTON_USE_STATIC_LIBRARIES
 GXXFLAGS = $(CXXBASEFLAGS) -DNO_STRSTREAM_H
 CFLAGS = $(COPTI)$(SRCDIR) $(TCL) $(COPTS) $(RELEASE) $(EXTRADEFINES) $(TRACEOBJDEF)
 PLUGINGCCFLAGS = $(COPTI)$(PLUGINSRCDIR) $(COPTI)$(PLUGININCDIR) $(COPTD)STATIC_PLUGIN
 PLUGINCFLAGS = $(PLUGINGCCFLAGS) $(COPTS)
 SBCFLAGS = $(COPTI)$(SBSRCDIR) $(COPTI)$(PLUGININCDIR) $(COPTD)STATIC_PLUGIN -DPSFGEN_USEPLUGINS $(TCL) $(COPTS) $(RELEASE) $(EXTRADEFINES) $(TRACEOBJDEF)
 SBGCCFLAGS = $(COPTI)$(SBSRCDIR) $(COPTI)$(PLUGININCDIR) $(COPTD)STATIC_PLUGIN -DPSFGEN_USEPLUGINS $(TCL) $(RELEASE) $(EXTRADEFINES) $(TRACEOBJDEF)
+COLVARSGXXFLAGS= $(GXXFLAGS)
+LEPTONGCCFLAGS= $(COPTI)$(LEPTONINCDIR)
+LEPTONCXXFLAGS=$(CXXBASEFLAGS) $(COPTI)$(LEPTONINCDIR) -DLEPTON_BUILDING_STATIC_LIBRARY
 
 # .ci preprocessing flags
 CIPPFLAGS = $(CUDAFLAGS) -DBONDED_CUDA
@@ -487,6 +483,8 @@ namd2:	$(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS)
 	$(FFTLIB) \
 	$(PLUGINLIB) \
 	$(SBLIB) \
+	$(COLVARSLIB) \
+	$(LEPTONOBJS) \
 	$(CHARMOPTS) \
 	$(EXTRALINKLIBS) \
 	-lm -o namd2
@@ -520,6 +518,8 @@ namd2.exe:  $(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS) $(TCLDLL)
 	$(FFTLIB) \
 	$(PLUGINLIB) \
 	$(SBLIB) \
+	$(COLVARSLIB) \
+	$(LEPTONOBJS) \
 	$(CHARMOPTS) \
 	-o namd2
 
@@ -595,6 +595,8 @@ tracecomputes: updatefiles $(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS)
 	$(FFTLIB) \
 	$(PLUGINLIB) \
 	$(SBLIB) \
+	$(COLVARSLIB) \
+	$(LEPTONOBJS) \
 	$(CHARMOPTS) \
 	$(EXTRALINKLIBS) \
 	-lm -o namd2.tc.prj
@@ -617,6 +619,8 @@ projections: $(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS)
 	$(FFTLIB) \
 	$(PLUGINLIB) \
 	$(SBLIB) \
+	$(COLVARSLIB) \
+	$(LEPTONOBJS) \
 	$(CHARMOPTS) \
 	$(EXTRALINKLIBS) \
 	-lm -o namd2.prj
@@ -639,6 +643,8 @@ summary: $(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS)
 	$(FFTLIB) \
 	$(PLUGINLIB) \
 	$(SBLIB) \
+	$(COLVARSLIB) \
+	$(LEPTONOBJS) \
 	$(CHARMOPTS) \
 	$(EXTRALINKLIBS) \
 	-lm -o namd2.sum
@@ -733,6 +739,22 @@ depends: $(MKINCDIR) $(CIFILES) $(MKDSTDIR) $(DEPENDFILE)
 	      $(ECHO) '	$$(CC) $$(SBCFLAGS) $$(COPTO)'$$i '$$(COPTC)' \
 		$$SRCFILE >> $(DEPENDFILE) ; \
 	done; \
+	for i in $(COLVARSLIB) ; do \
+	      SRCFILE=$(COLVARSSRCDIR)/`basename $$i .o`.cpp ; \
+	      $(ECHO) "checking dependencies for $$SRCFILE" ; \
+	      gcc -MM $(COLVARSGXXFLAGS) $$SRCFILE | \
+	      perl $(SRCDIR)/dc.pl $(CHARMINC) $(TCLDIR) $(FFTDIR) /usr/include /usr/local >> $(DEPENDFILE); \
+	      $(ECHO) '	$$(CXX) $$(COLVARSCXXFLAGS) $$(COPTO)'$$i '$$(COPTC)' \
+		$$SRCFILE >> $(DEPENDFILE) ; \
+	done; \
+	for i in $(LEPTONOBJS) ; do \
+	      SRCFILE=$(LEPTONSRCDIR)/`basename $$i .o`.cpp ; \
+	      $(ECHO) "checking dependencies for $$SRCFILE" ; \
+	      gcc -MM $(LEPTONGCCFLAGS) $$SRCFILE | \
+	      perl $(SRCDIR)/dc.pl $(CHARMINC) $(TCLDIR) $(FFTDIR) /usr/include /usr/local >> $(DEPENDFILE); \
+	      $(ECHO) '	$$(CXX) $$(LEPTONCXXFLAGS) $$(COPTO)'$$i '$$(COPTC)' \
+		$$SRCFILE >> $(DEPENDFILE) ; \
+	done; \
 	$(RM) $(DEPENDFILE).sed; \
 	sed -e "/obj\/Controller.o/ s/CXXFLAGS/CXXTHREADFLAGS/" \
 	    -e "/obj\/Sequencer.o/ s/CXXFLAGS/CXXTHREADFLAGS/" \
@@ -747,7 +769,7 @@ depends: $(MKINCDIR) $(CIFILES) $(MKDSTDIR) $(DEPENDFILE)
 	    -e "/obj\/ComputeNonbondedTabEnergies.o/ s/CXXFLAGS/CXXNOALIASFLAGS/" \
 	    -e "/obj\/ComputeNonbondedMIC.o/ s/CXXFLAGS/CXXMICFLAGS/" \
 	    -e "/obj\/ComputeNonbondedMICKernel.o/ s/CXXFLAGS/CXXMICFLAGS/" \
-	    -e "/obj\/colvar.*.o/ s/CXXFLAGS/CXXCOLVARFLAGS/" \
+	    -e "/obj\/colvarproxy_namd.o/ s/CXXFLAGS/COLVARSCXXFLAGS/" \
 	    -e "/obj\/memusage.o/ s/CXX/CXXMEMUSAGE/" \
 	    $(DEPENDFILE) > $(DEPENDFILE).sed; \
 	$(MOVE) -f $(DEPENDFILE).sed $(DEPENDFILE);

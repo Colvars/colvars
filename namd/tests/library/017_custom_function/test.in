@@ -1,0 +1,26 @@
+colvarsTrajFrequency 10
+
+colvar {
+  name c
+
+  # This is a 2-vector function of a 4-vector
+  customFunction x
+  customFunction cos(x) + r1 + r3 
+
+  distance {
+    name x
+    group1 { atomNumbers 4 }
+    group2 { atomNumbers 99 }
+  }
+  distanceVec {
+    name r
+    group1 { atomNumbers 50 }
+    group2 { atomNumbers 60 }
+  }
+}
+
+harmonic {
+  colvars c
+  centers (20, -5)
+  forceConstant 100
+}

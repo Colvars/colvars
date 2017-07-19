@@ -15,6 +15,7 @@ colvar {
             indexGroup group1
             centerReference yes
             rotateReference yes
+            enableFitGradients no # Not available because gradients are implicit
             fittingGroup {
                 indexGroup heavy_atoms
             }
@@ -24,6 +25,7 @@ colvar {
             indexGroup group2
             centerReference yes
             rotateReference yes
+            enableFitGradients no # Not available because gradients are implicit
             fittingGroup {
                 indexGroup heavy_atoms
             }

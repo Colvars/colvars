@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# Checkout and add the "ours" version of unmerged files
+
+for file in `git diff --name-only --diff-filter=U` ; do
+    git checkout --ours $file
+    git add $file 
+done

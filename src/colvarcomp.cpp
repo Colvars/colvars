@@ -44,6 +44,17 @@ colvar::cvc::cvc(std::string const &conf)
   get_keyval_feature((colvarparse *)this, conf, "debugGradients",
                      f_cvc_debug_gradient, false, parse_silent);
 
+  {
+    bool b_no_PBC = false;
+    get_keyval(conf, "forceNoPBC", b_no_PBC, false);
+    if (b_no_PBC) {
+      disable(f_cvc_pbc_minimum_image);
+    } else {
+      enable(f_cvc_pbc_minimum_image);
+    }
+    // this does not use get_keyval_feature() only for backward compatibility
+  }
+
   // Attempt scalable calculations when in parallel? (By default yes, if available)
   get_keyval(conf, "scalable", b_try_scalable, true);
 
@@ -90,8 +101,7 @@ cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
   std::string group_conf;
 
   if (key_lookup(conf, group_key, &group_conf)) {
-    group = new cvm::atom_group;
-    group->key = group_key;
+    group = new cvm::atom_group(group_key);
 
     if (b_try_scalable) {
       if (is_available(f_cvc_scalable_com)
@@ -116,7 +126,7 @@ cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
 
     cvm::increase_depth();
     if (group->parse(group_conf) == COLVARS_OK) {
-      atom_groups.push_back(group);
+      register_atom_group(group);
     }
     group->check_keywords(group_conf, group_key);
     if (cvm::get_error()) {
@@ -141,10 +151,6 @@ int colvar::cvc::setup()
   size_t i;
   description = "cvc " + name;
 
-  for (i = 0; i < atom_groups.size(); i++) {
-    add_child((colvardeps *) atom_groups[i]);
-  }
-
   return COLVARS_OK;
 }
 
@@ -157,7 +163,6 @@ colvar::cvc::~cvc()
     if (atom_groups[i] != NULL) delete atom_groups[i];
   }
 }
-
 
 void colvar::cvc::read_data()
 {

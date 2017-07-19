@@ -31,6 +31,7 @@
   depstyle["children"] = ""
   depstyle["alt2"] = "[style = dashed]"
   depstyle["alt3"] = "[style = dashed]"
+  depstyle["alt4"] = "[style = dashed]"
 
 
   print "  " id " [label = \"" label "\" fontcolor = \"" color[obj] "\" color = \"" \

@@ -38,9 +38,9 @@ colvar::angle::angle(cvm::atom const &a1,
   group1 = new cvm::atom_group(std::vector<cvm::atom>(1, a1));
   group2 = new cvm::atom_group(std::vector<cvm::atom>(1, a2));
   group3 = new cvm::atom_group(std::vector<cvm::atom>(1, a3));
-  atom_groups.push_back(group1);
-  atom_groups.push_back(group2);
-  atom_groups.push_back(group3);
+  register_atom_group(group1);
+  register_atom_group(group2);
+  register_atom_group(group3);
 
   x.type(colvarvalue::type_scalar);
 }
@@ -59,12 +59,16 @@ void colvar::angle::calc_value()
   cvm::atom_pos const g2_pos = group2->center_of_mass();
   cvm::atom_pos const g3_pos = group3->center_of_mass();
 
-  r21  = cvm::position_distance(g2_pos, g1_pos);
+  r21  = is_enabled(f_cvc_pbc_minimum_image) ?
+    cvm::position_distance(g2_pos, g1_pos) :
+    g1_pos - g2_pos;
   r21l = r21.norm();
-  r23  = cvm::position_distance(g2_pos, g3_pos);
+  r23  = is_enabled(f_cvc_pbc_minimum_image) ?
+    cvm::position_distance(g2_pos, g3_pos) :
+    g3_pos - g2_pos;
   r23l = r23.norm();
 
-  cvm::real     const cos_theta = (r21*r23)/(r21l*r23l);
+  cvm::real const cos_theta = (r21*r23)/(r21l*r23l);
 
   x.real_value = (180.0/PI) * std::acos(cos_theta);
 }
@@ -159,9 +163,9 @@ colvar::dipole_angle::dipole_angle(cvm::atom const &a1,
   group1 = new cvm::atom_group(std::vector<cvm::atom>(1, a1));
   group2 = new cvm::atom_group(std::vector<cvm::atom>(1, a2));
   group3 = new cvm::atom_group(std::vector<cvm::atom>(1, a3));
-  atom_groups.push_back(group1);
-  atom_groups.push_back(group2);
-  atom_groups.push_back(group3);
+  register_atom_group(group1);
+  register_atom_group(group2);
+  register_atom_group(group3);
 
   x.type(colvarvalue::type_scalar);
 }
@@ -184,10 +188,12 @@ void colvar::dipole_angle::calc_value()
 
   r21 = group1->dipole();
   r21l = r21.norm();
-  r23  = cvm::position_distance(g2_pos, g3_pos);
+  r23  = is_enabled(f_cvc_pbc_minimum_image) ?
+    cvm::position_distance(g2_pos, g3_pos) :
+    g3_pos - g2_pos;
   r23l = r23.norm();
 
-  cvm::real     const cos_theta = (r21*r23)/(r21l*r23l);
+  cvm::real const cos_theta = (r21*r23)/(r21l*r23l);
 
   x.real_value = (180.0/PI) * std::acos(cos_theta);
 }
@@ -286,10 +292,10 @@ colvar::dihedral::dihedral(cvm::atom const &a1,
   group2 = new cvm::atom_group(std::vector<cvm::atom>(1, a2));
   group3 = new cvm::atom_group(std::vector<cvm::atom>(1, a3));
   group4 = new cvm::atom_group(std::vector<cvm::atom>(1, a4));
-  atom_groups.push_back(group1);
-  atom_groups.push_back(group2);
-  atom_groups.push_back(group3);
-  atom_groups.push_back(group4);
+  register_atom_group(group1);
+  register_atom_group(group2);
+  register_atom_group(group3);
+  register_atom_group(group4);
 
   x.type(colvarvalue::type_scalar);
 
@@ -317,9 +323,15 @@ void colvar::dihedral::calc_value()
   cvm::atom_pos const g4_pos = group4->center_of_mass();
 
   // Usual sign convention: r12 = r2 - r1
-  r12 = cvm::position_distance(g1_pos, g2_pos);
-  r23 = cvm::position_distance(g2_pos, g3_pos);
-  r34 = cvm::position_distance(g3_pos, g4_pos);
+  r12 = is_enabled(f_cvc_pbc_minimum_image) ?
+    cvm::position_distance(g1_pos, g2_pos) :
+    g2_pos - g1_pos;
+  r23 = is_enabled(f_cvc_pbc_minimum_image) ?
+    cvm::position_distance(g2_pos, g3_pos) :
+    g3_pos - g2_pos;
+  r34 = is_enabled(f_cvc_pbc_minimum_image) ?
+    cvm::position_distance(g3_pos, g4_pos) :
+    g4_pos - g3_pos;
 
   cvm::rvector const n1 = cvm::rvector::outer(r12, r23);
   cvm::rvector const n2 = cvm::rvector::outer(r23, r34);
