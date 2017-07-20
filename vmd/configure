@@ -403,7 +403,7 @@ $def_title="ON";
 $def_imageviewer="display %s";
 
 # program version number
-$progversion="1.9.4a6";
+$progversion="1.9.4a7";
 
 # text prompt string
 $promptstring="vmd > ";
