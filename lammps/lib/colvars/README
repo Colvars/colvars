@@ -46,13 +46,13 @@ settings in Makefile.common should work.
 
 ## Documentation
 
-For the reference manual see:
+For a HTML version of the reference manual see:
   http://colvars.github.io/colvars-refman-lammps
 
-A copy of reference manual is also in:
+A PDF copy of the reference manual is also included:
   doc/PDF/colvars-refman-lammps.pdf
 
-Also included is a Doxygen-based developer documentation:
+Also available is a Doxygen-based developer documentation:
   http://colvars.github.io/doxygen/html/
 
 The reference article is:
@@ -74,5 +74,5 @@ LAMMPS source tree:
   ./update-colvars-code.sh /path/to/lammps/folder
 
 Please report bugs and request new features at:
-https://github.com/colvars/colvars/issues
+  https://github.com/colvars/colvars/issues
 
