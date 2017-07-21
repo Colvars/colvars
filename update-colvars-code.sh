@@ -379,6 +379,8 @@ then
     condcopy "${src}" "${target}/src/${tgt}" "${cpp_patch}"
   done
 
+  condcopy "${source}/vmd/src/colvars_files.pl" "${target}/src/"
+
   echo ' done.'
 
   # Check for changes in related VMD files

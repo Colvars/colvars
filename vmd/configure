@@ -799,50 +799,13 @@ if ($config_colvars) {
     die "Error, COLVARS option requires Tcl\n";
   }
 
-  $colvars_defines = " -DVMDCOLVARS";
-  @colvars_cc      = ();
-  @colvars_cu      = ();
-  @colvars_ccpp    = ('colvaratoms.C',
-                      'colvarbias.C',
-                      'colvarbias_abf.C',
-                      'colvarbias_alb.C',
-                      'colvarbias_histogram.C',
-                      'colvarbias_meta.C',
-                      'colvarbias_restraint.C',
-                      'colvar.C',
-                      'colvarcomp.C',
-                      'colvarcomp_angles.C',
-                      'colvarcomp_coordnums.C',
-                      'colvarcomp_distances.C',
-                      'colvarcomp_protein.C',
-                      'colvarcomp_rotations.C',
-                      'colvardeps.C',
-                      'colvargrid.C',
-                      'colvarmodule.C',
-                      'colvarparse.C',
-                      'colvarproxy.C',
-                      'colvarproxy_vmd.C',
-                      'colvarscript.C',
-                      'colvartypes.C',
-                      'colvarvalue.C');
-  @colvars_h    =    ('colvaratoms.h',
-                      'colvarbias.h',
-                      'colvarbias_abf.h',
-                      'colvarbias_alb.h',
-                      'colvarbias_histogram.h',
-                      'colvarbias_meta.h',
-                      'colvarbias_restraint.h',
-                      'colvarcomp.h',
-                      'colvardeps.h',
-                      'colvargrid.h',
-                      'colvar.h',
-                      'colvarmodule.h',
-                      'colvarparse.h',
-                      'colvarproxy.h',
-                      'colvarproxy_vmd.h',
-                      'colvarscript.h',
-                      'colvartypes.h',
-                      'colvarvalue.h');
+  our ( $colvars_defines );
+  our ( @colvars_cc );
+  our ( @colvars_cu );
+  our ( @colvars_ccpp );
+  our ( @colvars_h );
+
+  require "./src/colvars_files.pl";
 }
 
 
