@@ -11,6 +11,7 @@ colvar {
             indexGroup RMSD_atoms
             centerReference yes
             rotateReference yes
+            enableFitGradients no # Not available because gradients are implicit
             fittingGroup {
                 indexGroup heavy_atoms
             }
