@@ -379,7 +379,7 @@ then
     condcopy "${src}" "${target}/src/${tgt}" "${cpp_patch}"
   done
 
-  condcopy "${source}/vmd/src/colvars_files.pl" "${target}/src/"
+  condcopy "${source}/vmd/src/colvars_files.pl" "${target}/src/colvars_files.pl"
 
   echo ' done.'
 
