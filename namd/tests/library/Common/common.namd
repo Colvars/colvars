@@ -12,6 +12,7 @@ if { [info exists mol_name] == 0 } {
     proc num_atoms {} {
         return 104
     }
+    source ../Common/delete_tmp_files.tcl
     file link "index.ndx" "../Common/da.ndx"
     file link "rmsd_atoms_refpos.xyz" "../Common/da-Calpha.xyz"
     file link "heavy_atoms_refpos.xyz" "../Common/da-noh.xyz"

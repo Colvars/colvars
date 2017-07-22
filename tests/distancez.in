@@ -1,0 +1,20 @@
+colvar {
+
+    name one
+
+    outputAppliedForce on
+
+    width 0.5
+
+    distanceZ {
+        main {
+            indexGroup group5
+        }
+        ref {
+            indexGroup group1
+        }
+        ref2 {
+            indexGroup group10
+        }
+    }
+} 

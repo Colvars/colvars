@@ -112,10 +112,19 @@ done
 create_test_dir "distance-grid-expand_metadynamics"
 write_colvars_config "distance-grid-expand" "metadynamics" ${dirname}/test.in
 
+m4 -Daxis < distancez.in.m4 > distancez-axis.in
+m4 -Daxis -Dfitgroup < distancez.in.m4 > distancez-axis-fitgroup.in
+m4 < distancez.in.m4 > distancez.in
+m4 -Dfitgroup < distancez.in.m4 > distancez-fitgroup.in
+m4 -Daxis -DdistanceZ=distanceXY < distancez.in.m4 > distancexy-axis.in
+
 for colvar in \
     "angle" \
     "dihedral" \
     "coordnum" \
+    "distancez" "distancez-fitgroup" \
+    "distancez-axis" "distancez-axis-fitgroup" \
+    "distancexy-axis" \
     "distanceinv" \
     "gyration" \
     "inertia" \
