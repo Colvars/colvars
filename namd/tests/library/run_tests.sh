@@ -62,6 +62,11 @@ cleanup_files() {
 
 
 for dir in ${DIRLIST} ; do
+
+  if [ -f ${dir}/disabled ] ; then
+    continue
+  fi
+
   echo -ne "Entering $(${TPUT_BLUE})${dir}$(${TPUT_CLEAR}) ..."
   cd $dir
 
