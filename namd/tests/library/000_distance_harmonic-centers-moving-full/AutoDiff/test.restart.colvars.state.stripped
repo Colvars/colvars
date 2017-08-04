@@ -5,16 +5,16 @@ configuration {
 
 colvar {
   name one
-  x  3.21397324486436e+00
+  x  3.21397283843462e+00
 }
 
 restraint {
   configuration {
     step 40
     name harmonic1
-    centers  2.00000000000000e-01
-    centers_raw  2.00000000000000e-01
-    accumulatedWork -2.44284973243464e-03
+    centers   2.00000000000000e-01
+    centers_raw   2.00000000000000e-01
+    accumulatedWork -2.44992600636291e-03
   }
 }
 

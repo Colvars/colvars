@@ -149,9 +149,15 @@ protected:
   /// \brief New restraint centers
   std::vector<colvarvalue> target_centers;
 
+  /// \brief Initial value of the restraint centers
+  std::vector<colvarvalue> initial_centers;
+
   /// \brief Amplitude of the restraint centers' increment at each step
-  /// (or stage) towards the new values (calculated from target_nsteps)
+  /// towards the new values (calculated from target_nsteps)
   std::vector<colvarvalue> centers_incr;
+
+  /// \brief Update the centers by interpolating between initial and target
+  virtual int update_centers(cvm::real lambda);
 
   /// Whether to write the current restraint centers to the trajectory file
   bool b_output_centers;

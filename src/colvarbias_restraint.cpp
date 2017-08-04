@@ -258,28 +258,61 @@ int colvarbias_restraint_centers_moving::init(std::string const &conf)
 
   size_t i;
   if (get_keyval(conf, "targetCenters", target_centers, colvar_centers)) {
-    if (colvar_centers.size() != num_variables()) {
+    if (target_centers.size() != num_variables()) {
       cvm::error("Error: number of target centers does not match "
-                 "that of collective variables.\n");
+                 "that of collective variables.\n", INPUT_ERROR);
     }
     b_chg_centers = true;
     for (i = 0; i < target_centers.size(); i++) {
       target_centers[i].apply_constraints();
+      centers_incr.push_back(colvar_centers[i]);
+      centers_incr[i].reset();
     }
   }
 
   if (b_chg_centers) {
-    // parse moving restraint options
+    // parse moving schedule options
     colvarbias_restraint_moving::init(conf);
+    if (initial_centers.size() == 0) {
+      initial_centers = colvar_centers;
+
+      // Check that the definition is correct
+      update_centers(0.0);
+   }
   } else {
     target_centers.clear();
     return COLVARS_OK;
   }
 
   get_keyval(conf, "outputCenters", b_output_centers, b_output_centers);
-  get_keyval(conf, "outputAccumulatedWork", b_output_acc_work, b_output_acc_work);
+  get_keyval(conf, "outputAccumulatedWork", b_output_acc_work,
+             b_output_acc_work); // TODO this conflicts with stages
 
   return COLVARS_OK;
+}
+
+
+int colvarbias_restraint_centers_moving::update_centers(cvm::real lambda)
+{
+  if (cvm::debug()) {
+    cvm::log("Updating centers for the restraint bias \""+
+             this->name+"\": "+cvm::to_str(colvar_centers)+".\n");
+  }
+  size_t i;
+  for (i = 0; i < num_variables(); i++) {
+    colvarvalue const c_new = colvarvalue::interpolate(initial_centers[i],
+                                                       target_centers[i],
+                                                       lambda);
+    centers_incr[i] = (c_new).dist2_grad(colvar_centers[i]);
+    colvar_centers[i] = c_new;
+    colvar_centers_raw[i] = c_new;
+    variables(i)->wrap(colvar_centers[i]);
+  }
+  if (cvm::debug()) {
+    cvm::log("New centers for the restraint bias \""+
+             this->name+"\": "+cvm::to_str(colvar_centers)+".\n");
+  }
+  return cvm::get_error();
 }
 
 
@@ -287,71 +320,60 @@ int colvarbias_restraint_centers_moving::update()
 {
   if (b_chg_centers) {
 
-    if (cvm::debug()) {
-      cvm::log("Updating centers for the restraint bias \""+
-               this->name+"\": "+cvm::to_str(colvar_centers)+".\n");
-    }
-
-    if (!centers_incr.size()) {
-      // if this is the first calculation, calculate the advancement
-      // at each simulation step (or stage, if applicable)
-      // (take current stage into account: it can be non-zero
-      //  if we are restarting a staged calculation)
-      centers_incr.resize(num_variables());
-      for (size_t i = 0; i < num_variables(); i++) {
-        centers_incr[i].type(variables(i)->value());
-        centers_incr[i] = (target_centers[i] - colvar_centers_raw[i]) /
-          cvm::real( target_nstages ? (target_nstages - stage) :
-                     (target_nsteps - cvm::step_absolute()));
-      }
-      if (cvm::debug()) {
-        cvm::log("Center increment for the restraint bias \""+
-                 this->name+"\": "+cvm::to_str(centers_incr)+" at stage "+cvm::to_str(stage)+ ".\n");
-      }
-    }
-
     if (target_nstages) {
-      if ((cvm::step_relative() > 0)
-          && (cvm::step_absolute() % target_nsteps) == 0
-          && stage < target_nstages) {
-
-        for (size_t i = 0; i < num_variables(); i++) {
-          colvar_centers_raw[i] += centers_incr[i];
-          colvar_centers[i] = colvar_centers_raw[i];
-          variables(i)->wrap(colvar_centers[i]);
-          colvar_centers[i].apply_constraints();
+      // Staged update
+      if (stage < target_nstages) {
+        if ((cvm::step_absolute() % target_nsteps) == 0) {
+          cvm::real const lambda =
+            cvm::real(stage)/cvm::real(target_nstages);
+          update_centers(lambda);
+          stage++;
+          cvm::log("Moving restraint \"" + this->name +
+                   "\" stage " + cvm::to_str(stage) +
+                   " : setting centers to " + cvm::to_str(colvar_centers) +
+                   " at step " +  cvm::to_str(cvm::step_absolute()));
+        } else {
+          for (size_t i = 0; i < num_variables(); i++) {
+            centers_incr[i].reset();
+          }
         }
-        stage++;
-        cvm::log("Moving restraint \"" + this->name +
-                 "\" stage " + cvm::to_str(stage) +
-                 " : setting centers to " + cvm::to_str(colvar_centers) +
-                 " at step " +  cvm::to_str(cvm::step_absolute()));
       }
-    } else if ((cvm::step_relative() > 0) && (cvm::step_absolute() <= target_nsteps)) {
-      // move the restraint centers in the direction of the targets
-      // (slow growth)
+    } else {
+      // Continuous update
+      if (cvm::step_absolute() <= target_nsteps) {
+        cvm::real const lambda =
+          cvm::real(cvm::step_absolute())/cvm::real(target_nsteps);
+        update_centers(lambda);
+      } else {
+        for (size_t i = 0; i < num_variables(); i++) {
+          centers_incr[i].reset();
+        }
+      }
+    }
+
+    if (cvm::step_relative() == 0) {
       for (size_t i = 0; i < num_variables(); i++) {
-        colvar_centers_raw[i] += centers_incr[i];
-        colvar_centers[i] = colvar_centers_raw[i];
-        variables(i)->wrap(colvar_centers[i]);
-        colvar_centers[i].apply_constraints();
+        // finite differences are undefined when restarting
+        centers_incr[i].reset();
       }
     }
 
     if (cvm::debug()) {
-      cvm::log("New centers for the restraint bias \""+
-               this->name+"\": "+cvm::to_str(colvar_centers)+".\n");
+      cvm::log("Center increment for the restraint bias \""+
+               this->name+"\": "+cvm::to_str(centers_incr)+
+               " at stage "+cvm::to_str(stage)+ ".\n");
     }
   }
 
-  return COLVARS_OK;
+  return cvm::get_error();
 }
 
 
 int colvarbias_restraint_centers_moving::update_acc_work()
 {
   if (b_output_acc_work) {
-    if ((cvm::step_relative() > 0) || (cvm::step_absolute() == 0)) {
+    if ((cvm::step_relative() > 0) &&
+        (cvm::step_absolute() <= target_nsteps)) {
       for (size_t i = 0; i < num_variables(); i++) {
         // project forces on the calculated increments at this step
         acc_work += colvar_forces[i] * centers_incr[i];

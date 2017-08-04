@@ -1,0 +1,12 @@
+harmonic {
+    colvars        one
+    centers        0.1
+    forceConstant  0.001
+
+    targetCenters  0.2
+    targetNumSteps 20
+
+    outputEnergy   yes
+    outputCenters  yes
+    outputAccumulatedWork yes
+}

@@ -54,10 +54,17 @@ write_colvars_config() {
 dirname=''
 n_test=0
 
+m4 < harmonic.in.m4 > harmonic-fixed.in
+m4 -Dcenters_moving_half < harmonic.in.m4 > harmonic-centers-moving.in
+m4 -Dcenters_moving_full < harmonic.in.m4 > harmonic-centers-moving-full.in
+m4 -Dcenters_moving_stages < harmonic.in.m4 > harmonic-centers-moving-stages.in
+
 for colvar in "distance" ; do
     for bias in \
         "harmonic-fixed" \
         "harmonic-centers-moving" \
+        "harmonic-centers-moving-full" \
+        "harmonic-centers-moving-stages" \
         "harmonic-k-moving" \
         "linear-fixed" \
         ; do

@@ -1,0 +1,7 @@
+
+    targetCenters  0.2
+    targetNumSteps 20
+
+    outputEnergy   yes
+    outputCenters  yes
+    outputAccumulatedWork yes

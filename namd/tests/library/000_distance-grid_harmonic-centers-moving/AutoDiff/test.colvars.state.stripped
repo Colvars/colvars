@@ -14,7 +14,7 @@ restraint {
     name harmonic1
     centers  2.00000000000000e-01
     centers_raw  2.00000000000000e-01
-    accumulatedWork -2.55414794203680e-03
+    accumulatedWork -2.44284973243464e-03
   }
 }
 

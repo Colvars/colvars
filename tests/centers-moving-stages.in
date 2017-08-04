@@ -1,0 +1,7 @@
+
+    targetCenters  0.2
+    targetNumSteps 8
+    targetNumStages 4
+
+    outputEnergy   yes
+    outputCenters  yes
