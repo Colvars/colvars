@@ -67,9 +67,6 @@ protected:
 
   /// \brief Restraint centers
   std::vector<colvarvalue> colvar_centers;
-
-  /// \brief Restraint centers outside the domain of the colvars (no wrapping or constraints applied)
-  std::vector<colvarvalue> colvar_centers_raw;
 };
 
 

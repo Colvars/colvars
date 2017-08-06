@@ -12,7 +12,6 @@ restraint {
   configuration {
     name harmonic1
     centers  1.50000000000000e-01
-    centers_raw  1.50000000000000e-01
     stage            2
   }
 }

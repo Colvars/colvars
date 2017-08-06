@@ -92,12 +92,9 @@ int colvarbias_restraint_centers::init(std::string const &conf)
   if (null_centers) {
     // try to initialize the restraint centers for the first time
     colvar_centers.resize(num_variables());
-    colvar_centers_raw.resize(num_variables());
     for (i = 0; i < num_variables(); i++) {
       colvar_centers[i].type(variables(i)->value());
       colvar_centers[i].reset();
-      colvar_centers_raw[i].type(variables(i)->value());
-      colvar_centers_raw[i].reset();
     }
   }
 
@@ -106,7 +103,6 @@ int colvarbias_restraint_centers::init(std::string const &conf)
       if (cvm::debug()) {
         cvm::log("colvarbias_restraint: parsing initial centers, i = "+cvm::to_str(i)+".\n");
       }
-      colvar_centers_raw[i] = colvar_centers[i];
       colvar_centers[i].apply_constraints();
     }
     null_centers = false;
@@ -134,8 +130,6 @@ int colvarbias_restraint_centers::change_configuration(std::string const &conf)
     for (size_t i = 0; i < num_variables(); i++) {
       colvar_centers[i].type(variables(i)->value());
       colvar_centers[i].apply_constraints();
-      colvar_centers_raw[i].type(variables(i)->value());
-      colvar_centers_raw[i] = colvar_centers[i];
     }
   }
   return COLVARS_OK;
@@ -305,7 +299,6 @@ int colvarbias_restraint_centers_moving::update_centers(cvm::real lambda)
                                                        lambda);
     centers_incr[i] = (c_new).dist2_grad(colvar_centers[i]);
     colvar_centers[i] = c_new;
-    colvar_centers_raw[i] = c_new;
     variables(i)->wrap(colvar_centers[i]);
   }
   if (cvm::debug()) {
@@ -398,13 +391,6 @@ std::string const colvarbias_restraint_centers_moving::get_state_params() const
          << colvar_centers[i];
     }
     os << "\n";
-    os << "centers_raw ";
-    for (i = 0; i < num_variables(); i++) {
-      os << " "
-         << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width)
-         << colvar_centers_raw[i];
-    }
-    os << "\n";
 
     if (b_output_acc_work) {
       os << "accumulatedWork "
@@ -425,8 +411,6 @@ int colvarbias_restraint_centers_moving::set_state_params(std::string const &con
     //    cvm::log ("Reading the updated restraint centers from the restart.\n");
     if (!get_keyval(conf, "centers", colvar_centers))
       cvm::error("Error: restraint centers are missing from the restart.\n");
-    if (!get_keyval(conf, "centers_raw", colvar_centers_raw))
-      cvm::error("Error: \"raw\" restraint centers are missing from the restart.\n");
     if (b_output_acc_work) {
       if (!get_keyval(conf, "accumulatedWork", acc_work))
         cvm::error("Error: accumulatedWork is missing from the restart.\n");
