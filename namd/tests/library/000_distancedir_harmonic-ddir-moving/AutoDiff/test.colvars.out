@@ -1,0 +1,9 @@
+colvars: ----------------------------------------------------------------------
+colvars: Please cite Fiorin et al, Mol Phys 2013:
+colvars:  http://dx.doi.org/10.1080/00268976.2013.813594
+colvars: in any publication based on this calculation.
+colvars: SMP parallelism is available.
+colvars: ----------------------------------------------------------------------
+colvars: Reading new configuration from file "test.legacy.in":
+colvars: Error: in opening configuration file "test.legacy.in".
+colvars: No such file or directory

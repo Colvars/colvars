@@ -156,7 +156,7 @@ for colvar in \
 done
 
 colvar="orientation"
-bias="harmonic-ori-fixed"
+for bias in "harmonic-ori-fixed" "harmonic-ori-moving" ; do
 create_test_dir ${colvar}_${bias}
 write_colvars_config ${colvar} ${bias} ${dirname}/test.in
 if [ -f ${colvar}-fitgroup.in ] ; then
@@ -165,6 +165,7 @@ if [ -f ${colvar}-fitgroup.in ] ; then
     m4 -DfittingGroup=refPositionsGroup < ${colvar}-fitgroup.in > ${colvar}-refposgroup.in
     write_colvars_config ${colvar}-refposgroup ${bias} ${dirname}/test.legacy.in
 fi
+done
 
 colvar="distancevec"
 bias="harmonic-dvec-fixed"
@@ -178,9 +179,10 @@ if [ -f ${colvar}-fitgroup.in ] ; then
 fi
 
 colvar="distancedir"
-bias="harmonic-ddir-fixed"
+for bias in "harmonic-ddir-fixed" "harmonic-ddir-moving" ; do
 create_test_dir ${colvar}_${bias}
 write_colvars_config ${colvar} ${bias} ${dirname}/test.in
+done
 
 # TODO uncomment this and the add two-dimensional regtests
 # # Generate two-variables versions of bias configurations

@@ -270,6 +270,13 @@ int colvarbias_restraint_centers_moving::init(std::string const &conf)
       // One-time init
       initial_centers = colvar_centers;
     }
+    // Call to check that the definition is correct
+    for (i = 0; i < num_variables(); i++) {
+      colvarvalue const midpoint =
+        colvarvalue::interpolate(initial_centers[i],
+                                 target_centers[i],
+                                 0.5);
+    }
   } else {
     target_centers.clear();
     return COLVARS_OK;

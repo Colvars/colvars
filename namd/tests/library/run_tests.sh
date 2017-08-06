@@ -58,6 +58,7 @@ cleanup_files() {
     rm -f *.out *.out.diff # Delete output files regardless
     rm -f metadynamics1.*.files.txt replicas.registry.txt
   done
+  tclsh ../Common/delete_tmp_files.tcl
 }
 
 
@@ -80,7 +81,7 @@ for dir in ${DIRLIST} ; do
 
     if [ "x${gen_ref_output}" != 'xyes' ]; then
 
-      if ! { ls AutoDiff/ | grep -q traj ; } then
+      if ! { ls AutoDiff/ | grep -q test ; } then
         echo ""
         echo "  Warning: directory AutoDiff empty!"
         cd $BASEDIR
@@ -136,7 +137,7 @@ for dir in ${DIRLIST} ; do
     fi
 
     # Filter out the version number from the state files to allow comparisons
-    grep -v 'version' ${basename}.colvars.state > ${TMPDIR}/${basename}.colvars.state.stripped
+    grep -sv 'version' ${basename}.colvars.state > ${TMPDIR}/${basename}.colvars.state.stripped
     mv -f ${TMPDIR}/${basename}.colvars.state.stripped ${basename}.colvars.state.stripped
 
     # If this test is used to generate the reference output files, copy them
