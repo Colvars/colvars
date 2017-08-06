@@ -219,7 +219,6 @@ int colvarbias_restraint_moving::set_state_params(std::string const &conf)
 {
   if (b_chg_centers || b_chg_force_k) {
     if (target_nstages) {
-      //    cvm::log ("Reading current stage from the restart.\n");
       if (!get_keyval(conf, "stage", stage))
         cvm::error("Error: current stage is missing from the restart.\n");
     }
@@ -268,11 +267,9 @@ int colvarbias_restraint_centers_moving::init(std::string const &conf)
     // parse moving schedule options
     colvarbias_restraint_moving::init(conf);
     if (initial_centers.size() == 0) {
+      // One-time init
       initial_centers = colvar_centers;
-
-      // Check that the definition is correct
-      update_centers(0.0);
-   }
+    }
   } else {
     target_centers.clear();
     return COLVARS_OK;
@@ -315,8 +312,9 @@ int colvarbias_restraint_centers_moving::update()
 
     if (target_nstages) {
       // Staged update
-      if (stage < target_nstages) {
-        if ((cvm::step_absolute() % target_nsteps) == 0) {
+      if (stage <= target_nstages) {
+        if ((cvm::step_relative() > 0) &&
+            ((cvm::step_absolute() % target_nsteps) == 1)) {
           cvm::real const lambda =
             cvm::real(stage)/cvm::real(target_nstages);
           update_centers(lambda);
@@ -399,7 +397,7 @@ std::string const colvarbias_restraint_centers_moving::get_state_params() const
     }
   }
 
-  return colvarbias_restraint_moving::get_state_params() + os.str();
+  return os.str();
 }
 
 
@@ -608,7 +606,7 @@ std::string const colvarbias_restraint_k_moving::get_state_params() const
        << std::setprecision(cvm::en_prec)
        << std::setw(cvm::en_width) << force_k << "\n";
   }
-  return colvarbias_restraint_moving::get_state_params() + os.str();
+  return os.str();
 }
 
 
@@ -769,6 +767,7 @@ cvm::real colvarbias_restraint_harmonic::d_restraint_potential_dk(size_t i) cons
 std::string const colvarbias_restraint_harmonic::get_state_params() const
 {
   return colvarbias_restraint::get_state_params() +
+    colvarbias_restraint_moving::get_state_params() +
     colvarbias_restraint_centers_moving::get_state_params() +
     colvarbias_restraint_k_moving::get_state_params();
 }
@@ -778,6 +777,7 @@ int colvarbias_restraint_harmonic::set_state_params(std::string const &conf)
 {
   int error_code = COLVARS_OK;
   error_code |= colvarbias_restraint::set_state_params(conf);
+  error_code |= colvarbias_restraint_moving::set_state_params(conf);
   error_code |= colvarbias_restraint_centers_moving::set_state_params(conf);
   error_code |= colvarbias_restraint_k_moving::set_state_params(conf);
   return error_code;
@@ -1036,6 +1036,7 @@ cvm::real colvarbias_restraint_harmonic_walls::d_restraint_potential_dk(size_t i
 std::string const colvarbias_restraint_harmonic_walls::get_state_params() const
 {
   return colvarbias_restraint::get_state_params() +
+    colvarbias_restraint_moving::get_state_params() +
     colvarbias_restraint_k_moving::get_state_params();
 }
 
@@ -1044,6 +1045,7 @@ int colvarbias_restraint_harmonic_walls::set_state_params(std::string const &con
 {
   int error_code = COLVARS_OK;
   error_code |= colvarbias_restraint::set_state_params(conf);
+  error_code |= colvarbias_restraint_moving::set_state_params(conf);
   error_code |= colvarbias_restraint_k_moving::set_state_params(conf);
   return error_code;
 }
@@ -1163,6 +1165,7 @@ cvm::real colvarbias_restraint_linear::d_restraint_potential_dk(size_t i) const
 std::string const colvarbias_restraint_linear::get_state_params() const
 {
   return colvarbias_restraint::get_state_params() +
+    colvarbias_restraint_moving::get_state_params() +
     colvarbias_restraint_centers_moving::get_state_params() +
     colvarbias_restraint_k_moving::get_state_params();
 }
@@ -1172,6 +1175,7 @@ int colvarbias_restraint_linear::set_state_params(std::string const &conf)
 {
   int error_code = COLVARS_OK;
   error_code |= colvarbias_restraint::set_state_params(conf);
+  error_code |= colvarbias_restraint_moving::set_state_params(conf);
   error_code |= colvarbias_restraint_centers_moving::set_state_params(conf);
   error_code |= colvarbias_restraint_k_moving::set_state_params(conf);
   return error_code;
