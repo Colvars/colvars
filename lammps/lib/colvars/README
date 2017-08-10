@@ -18,17 +18,21 @@ For a brief description see:
 This directory has source files to build a library that LAMMPS
 links against when using the USER-COLVARS package.
 
-This library must be built with a C++ compiler, *before* LAMMPS is built, so
-that LAMMPS can link against it.  You can use the provided Makefile.* files or
-create your own, specific to your compiler and system.  For example:
+This library must be built with a C++ compiler, *before* LAMMPS is built and
+*after* packages are configured, so that LAMMPS can link against it.
+You can use the provided Makefile.* files or create your own, specific to your
+compiler and system.  For example:
 
+  cd src
+  make yes-user-colvars
+  cd ../lib/colvars
   make -f Makefile.g++
 
-will use the GNU C++ compiler and is a good template to start.
+where Makefile.g++ uses the GNU C++ compiler and is a good template to start.
 
 **Optional**: if you use the Install.py script provided in this folder, you
 can give the machine name as the '-m' argument.  This can be the suffix of one
-of the files from either this folder, or from src/MAKE.
+of the files from either this folder, or from src/MAKE/MACHINES.
 *This is only supported by the Install.py within the lib/colvars folder*.
 
 When you are done building this library, two files should
@@ -46,10 +50,10 @@ settings in Makefile.common should work.
 
 ## Documentation
 
-For a HTML version of the reference manual see:
+For the reference manual see:
   http://colvars.github.io/colvars-refman-lammps
 
-A PDF copy of the reference manual is also included:
+A copy of the reference manual is also in:
   doc/PDF/colvars-refman-lammps.pdf
 
 Also available is a Doxygen-based developer documentation:
@@ -74,5 +78,5 @@ LAMMPS source tree:
   ./update-colvars-code.sh /path/to/lammps/folder
 
 Please report bugs and request new features at:
-  https://github.com/colvars/colvars/issues
+https://github.com/colvars/colvars/issues
 
