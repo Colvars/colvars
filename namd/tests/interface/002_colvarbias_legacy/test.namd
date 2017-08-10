@@ -1,0 +1,32 @@
+# -*- tcl -*-
+
+# Note: see also test.restart.namd, test.legacy.namd, test.restart.legacy.namd
+
+source ../Common/common.namd
+source ../Common/measure_net_force_torque.tcl
+stepspercycle 5
+
+colvars                 on
+colvarsConfig           test.in
+
+if { [file exists test.prerun.tcl] > 0 } {
+    source test.prerun.tcl
+}
+
+run [expr 5]
+
+print [join [list "Energy difference (centers) = " [colvarbias energydiff "h" "centers 0.0"]]]
+
+print [join [list "Energy difference (forceK) = " [colvarbias energydiff "h" "forceConstant 1.0"]]]
+
+run [expr 10]
+
+colvarbias changeconfig "h" "centers 2.0"
+
+run [expr 5]
+
+if { [file exists test.postprocess.tcl] > 0 } {
+    source test.postprocess.tcl
+}
+
+source ../Common/delete_tmp_files.tcl
