@@ -1599,6 +1599,8 @@ void SimParameters::config_parser_constraints(ParseOptions &opts) {
       "type of value in bond column: len or ratio", qmBondValueTypeS);
    opts.optional("QMForces", "QMBondScheme",
       "type of treatment given to QM-MM bonds.", qmBondSchemeS);
+   opts.optional("QMForces", "QMenergyStride",
+      "frequency of QM specific energy output (every x steps)", &qmEnergyOutFreq, 1);
    opts.optional("QMForces", "QMOutStride",
       "frequency of QM specific charge output (every x steps)", &qmOutFreq, 0);
    opts.range("QMOutStride", NOT_NEGATIVE);

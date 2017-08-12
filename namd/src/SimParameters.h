@@ -480,6 +480,7 @@ public:
         Bool qmCSMD;
         char qmCSMDFile[128];
 
+        int qmEnergyOutFreq ;
         int qmOutFreq ;
         int qmPosOutFreq ;
 
