@@ -686,7 +686,6 @@ void colvardeps::print_state() {
 }
 
 
-
 void colvardeps::add_child(colvardeps *child) {
 
   children.push_back(child);

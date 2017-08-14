@@ -367,7 +367,6 @@ int colvarscript::proc_colvar(colvar *cv, int objc, unsigned char *const objv[])
 
 int colvarscript::proc_bias(colvarbias *b, int objc, unsigned char *const objv[]) {
 
-  std::string const key(obj_to_str(objv[0]));
   std::string const subcmd(obj_to_str(objv[2]));
 
   if (subcmd == "energy") {

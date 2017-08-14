@@ -319,7 +319,7 @@ char *parse_cl(int argc, char *argv[], unsigned int *nsteps, double *temp,
                 return NULL;
             break;
         case 'm':
-            if (sscanf(argv[i + 1], "%u", &meta_int) != 1)
+            if (sscanf(argv[i + 1], "%i", &meta_int) != 1)
                 return NULL;
             break;
         case 'h':
