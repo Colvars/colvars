@@ -176,6 +176,12 @@ public:
   {
     return cvb_features;
   }
+  static void delete_features() {
+    for (size_t i=0; i < cvb_features.size(); i++) {
+      delete cvb_features[i];
+    }
+    cvb_features.clear();
+  }
 
 protected:
 

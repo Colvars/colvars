@@ -207,6 +207,12 @@ public:
   {
     return ag_features;
   }
+  static void delete_features() {
+    for (size_t i=0; i < ag_features.size(); i++) {
+      delete ag_features[i];
+    }
+    ag_features.clear();
+  }
 
 protected:
 

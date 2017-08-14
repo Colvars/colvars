@@ -89,6 +89,12 @@ public:
   {
     return cv_features;
   }
+  static void delete_features() {
+    for (size_t i=0; i < cv_features.size(); i++) {
+      delete cv_features[i];
+    }
+    cv_features.clear();
+  }
 
   /// Implements possible actions to be carried out
   /// when a given feature is enabled
