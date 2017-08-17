@@ -279,7 +279,7 @@ int colvarbias_restraint_centers_moving::init(std::string const &conf)
     }
   } else {
     target_centers.clear();
-    return COLVARS_OK;
+    //return COLVARS_OK; //This short circuits parsing outputCenters and outputAccumulatedWork in REUS simulations, and makes scripts fail that didn't use to fail.
   }
 
   get_keyval(conf, "outputCenters", b_output_centers, b_output_centers);
