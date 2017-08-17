@@ -277,14 +277,17 @@ int colvarbias_restraint_centers_moving::init(std::string const &conf)
                                  target_centers[i],
                                  0.5);
     }
+
+    get_keyval(conf, "outputAccumulatedWork", b_output_acc_work,
+               b_output_acc_work); // TODO this conflicts with stages
+
   } else {
     target_centers.clear();
-    return COLVARS_OK;
   }
 
+  // Output restraint centers even when they do not change; some NAMD REUS
+  // scripts expect this behavior
   get_keyval(conf, "outputCenters", b_output_centers, b_output_centers);
-  get_keyval(conf, "outputAccumulatedWork", b_output_acc_work,
-             b_output_acc_work); // TODO this conflicts with stages
 
   return COLVARS_OK;
 }
@@ -301,7 +304,7 @@ int colvarbias_restraint_centers_moving::update_centers(cvm::real lambda)
     colvarvalue const c_new = colvarvalue::interpolate(initial_centers[i],
                                                        target_centers[i],
                                                        lambda);
-    centers_incr[i] = (c_new).dist2_grad(colvar_centers[i]);
+    centers_incr[i] = c_new.dist2_grad(colvar_centers[i]);
     colvar_centers[i] = c_new;
     variables(i)->wrap(colvar_centers[i]);
   }
