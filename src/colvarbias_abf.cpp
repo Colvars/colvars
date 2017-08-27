@@ -3,7 +3,6 @@
 #include "colvarmodule.h"
 #include "colvar.h"
 #include "colvarbias_abf.h"
-#include "colvar_UIestimator.h"
 
 
 colvarbias_abf::colvarbias_abf(char const *key)
