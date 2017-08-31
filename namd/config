@@ -57,8 +57,8 @@ syntax:
           case x86_64:
             set ARCH_PAT = Linux-x86_64
             set ARCH_PAT2 = Linux-KNL
-            grep 'Xeon Phi' /proc/cpuinfo > /dev/null
-            if ( ! $? ) set ARCH_PAT = Linux-KNL
+            grep -q 'Xeon Phi' /proc/cpuinfo
+            if ( ! $status ) set ARCH_PAT = Linux-KNL
             if ( $?CRAY_PRE_COMPILE_OPTS ) then
               switch ( $CRAY_PRE_COMPILE_OPTS )
               case *seastar*:
