@@ -181,6 +181,37 @@ int colvarbias_abf::init(std::string const &conf)
   }
 
   cvm::log("Finished ABF setup.\n");
+  
+  // if extendedLangrangian is on, then call UI estimator
+  if (b_extended) {
+	  std::vector<double> UI_lowerboundary;
+	  std::vector<double> UI_upperboundary;
+	  std::vector<double> UI_width;
+	  std::vector<double> UI_krestr;
+
+	  bool UI_restart = false;
+	  if (input_prefix.size() > 0)
+	  {
+		  UI_restart = true;
+	  }
+
+	  for (int i = 0; i < colvars.size(); i++)
+	  {
+		  UI_lowerboundary.push_back(colvars[i]->lower_boundary);
+		  UI_upperboundary.push_back(colvars[i]->upper_boundary);
+		  UI_width.push_back(colvars[i]->width);
+		  UI_krestr.push_back(colvars[i]->force_constant());
+	  }
+      eabf_UI = UIestimator::UIestimator(UI_lowerboundary,
+                                         UI_upperboundary,
+                                         UI_width,
+                                         UI_krestr,                // force constant in eABF
+                                         output_prefix,              // the prefix of output files
+                                         cvm::restart_out_freq,
+                                         UI_restart,                    // whether restart from a .count and a .grad file
+                                         input_prefix,   // the prefixes of input files
+                                         cvm::temperature());
+  }
 
   return COLVARS_OK;
 }
@@ -355,6 +386,20 @@ int colvarbias_abf::update()
     last_samples->copy_grid(*samples);
     shared_last_step = cvm::step_absolute();
     cvm::log("Prepared sample and gradient buffers at step "+cvm::to_str(cvm::step_absolute())+".");
+  }
+  
+  // update UI estimator every step
+  if (z_gradients)
+  {
+	  std::vector<double> x(colvars.size(),0);
+	  std::vector<double> y(colvars.size(),0);
+	  for (int i = 0; i < colvars.size(); i++)
+	  {
+		  x[i] = colvars[i]->actual_value();
+		  y[i] = colvars[i]->value();
+	  }
+	  eabf_UI.update_output_filename(output_prefix);
+	  eabf_UI.update(cvm::step_absolute(), x, y);
   }
 
   return COLVARS_OK;
