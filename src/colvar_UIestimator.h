@@ -17,10 +17,10 @@
 
 namespace UIestimator {
     const int Y_SIZE = 21;            // defines the range of extended CV with respect to a given CV
-	                                  // For example, CV=10, width=1, Y_SIZE=21, then eCV=[0-20], having a size of 21
+                                      // For example, CV=10, width=1, Y_SIZE=21, then eCV=[0-20], having a size of 21
     const int HALF_Y_SIZE = 10;
     const int EXTENDED_X_SIZE = HALF_Y_SIZE;
-	const double EPSILON = 0.000001;   // for comparison of float numbers
+    const double EPSILON = 0.000001;   // for comparison of float numbers
 
     class n_matrix {   // Stores the distribution matrix of n(x,y)
 
@@ -250,13 +250,13 @@ namespace UIestimator {
                 input_count = n_vector<int>(lowerboundary, upperboundary, width, 1, 0);
 
                 // initialize input_Grad and input_count
-				// the loop_flag is a n-dimensional vector, increae from lowerboundary to upperboundary when looping
+                // the loop_flag is a n-dimensional vector, increae from lowerboundary to upperboundary when looping
                 std::vector<double> loop_flag(dimension, 0);
                 for (int i = 0; i < dimension; i++) {
                     loop_flag[i] = lowerboundary[i];
                 }
 
-				int i = 0;
+                int i = 0;
                 while (i >= 0) {
                     for (int j = 0; j < dimension; j++) {
                         input_grad.set_value(loop_flag, std::vector<double>(dimension,0));
@@ -271,8 +271,8 @@ namespace UIestimator {
                             loop_flag[i] = lowerboundary[i];
                             i--;
                         }
-						else
-							break;
+                        else
+                            break;
                     }
                 }
                 read_inputfiles(input_filename);
@@ -369,7 +369,7 @@ namespace UIestimator {
                 loop_flag[i] = lowerboundary[i] - HALF_Y_SIZE * width[i];
             }
 
-			int i = 0;
+            int i = 0;
             while (i >= 0) {
                 norm = count_y.get_value(loop_flag) > 0 ? count_y.get_value(loop_flag) : 1;
                 for (int j = 0; j < dimension; j++) {
@@ -401,7 +401,7 @@ namespace UIestimator {
                 loop_flag_y[i] = loop_flag_x[i] - HALF_Y_SIZE * width[i];
             }
 
-			i = 0;
+            i = 0;
             while (i >= 0) {
                 norm = 0;
                 for (int i = 0; i < dimension; i++) {
@@ -410,7 +410,7 @@ namespace UIestimator {
                     loop_flag_y[i] = loop_flag_x[i] - HALF_Y_SIZE * width[i];
                 }
 
-				int j = 0;
+                int j = 0;
                 while (j >= 0) {
                     norm += distribution_x_y.get_value(loop_flag_x, loop_flag_y);
                     for (int i = 0; i < dimension; i++) {
@@ -528,7 +528,7 @@ namespace UIestimator {
                 loop_flag[i] = lowerboundary[i];
             }
 
-			int i = 0;
+            int i = 0;
             while (i >= 0) {
                 for (int j = 0; j < dimension; j++) {
                     *ofile_internal << loop_flag[j] + 0.5 * width[j] << " ";
@@ -592,7 +592,7 @@ namespace UIestimator {
                 loop_flag[i] = lowerboundary[i];
             }
 
-			int i = 0;
+            int i = 0;
             while (i >= 0) {
                 for (int j = 0; j < dimension; j++) {
                     *ofile << loop_flag[j] + 0.5 * width[j] << " ";
