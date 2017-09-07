@@ -80,6 +80,16 @@ colvar::coordnum::coordnum(std::string const &conf)
   group1 = parse_group(conf, "group1");
   group2 = parse_group(conf, "group2");
 
+  for (cvm::atom_iter ai1 = group1->begin(); ai1 != group1->end(); ai1++) {
+    for (cvm::atom_iter ai2 = group2->begin(); ai2 != group2->end(); ai2++) {
+      if (ai1->id == ai2->id) {
+        cvm::error("Error: group1 and group2 share a common atom (id: " +
+          cvm::to_str(ai1->id + 1) + ")\n");
+        return;
+      }
+    }
+  }
+
   if (group1->b_dummy) {
     cvm::error("Error: only group2 is allowed to be a dummy atom\n");
     return;
