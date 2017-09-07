@@ -520,7 +520,7 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool app
   }
 
   if (b_CZAR_estimator) {
-    // Write eABF-related quantities
+    // Write eABF CZAR-related quantities
 
     std::string  z_samples_out_name = prefix + ".zcount";
 

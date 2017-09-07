@@ -3439,35 +3439,27 @@ When enabled, it triggers calculation of the free energy following the UI estima
 
 \paragraph{Usage for multiple--replica eABF.}
 The eABF algorithm can be associated with a multiple--walker strategy \cite{Minoukadeh2010,Comer2014c} (\ref{sec:mw-ABF}).
-To run a multiple--replica eABF simulation, start a multiple-replica 
-NAMD run (option \texttt{+replicas}) and set {\tt shared on} in the Colvars config file to enable 
+To run a multiple--replica eABF simulation, start a multiple-replica
+NAMD run (option \texttt{+replicas}) and set {\tt shared on} in the Colvars config file to enable
 the multiple--walker ABF algorithm.
-It should be noted that in contrast with classical MW--ABF simulations, 
-the output files of an MW--eABF simulation only show the free energy estimate of 
+It should be noted that in contrast with classical MW--ABF simulations,
+the output files of an MW--eABF simulation only show the free energy estimate of
 the corresponding replica.
-The output files for the estimator should include the replica number:
-{\small\noindent\ttfamily
-source~eabf.tcl\\
-set~eabf\_inputname~~~~~~0\\
-set~eabf\_outputname~~~~~output.eabf.[myReplica]\\
-set~eabf\_temperature~~~~300\\
-set~eabf\_outputfreq~~~~~20000
-}
 
 One can merge the results, using
-{\ttfamily ./eabf.tcl -mergemwabf [merged\_filename] [eabf\_output1] [eabf\_output2] ...}, 
+{\ttfamily ./eabf.tcl -mergemwabf [merged\_filename] [eabf\_output1] [eabf\_output2] ...},
 e.g.,
-{\ttfamily ./eabf.tcl -mergemwabf merge.eabf eabf.0 eabf.1 eabf.2 eabf.3}.
+{\ttfamily ./eabf.tcl -mergemwabf merge.eabf eabf.0.UI eabf.1.UI eabf.2.UI eabf.3.UI}.
 
 If one runs an ABF--based calculation, breaking the reaction pathway
 into several non--overlapping windows, one can use
 {\ttfamily ./eabf.tcl -mergesplitwindow [merged\_fileprefix] [eabf\_output] [eabf\_output2] ...}
-to merge the data accrued in these non--overlapping windows. 
+to merge the data accrued in these non--overlapping windows.
 This option can be utilized in both eABF and classical ABF simulations, e.g.,
-{\ttfamily ./eabf.tcl -mergesplitwindow merge window0.eabf window1.eabf window2.eabf window3.eabf} or
+{\ttfamily ./eabf.tcl -mergesplitwindow merge window0.czar window1.czar window2.czar window3.czar},
+{\ttfamily ./eabf.tcl -mergesplitwindow merge window0.UI window1.UI window2.UI window3.UI} or
 {\ttfamily ./eabf.tcl -mergesplitwindow merge abf0 abf1 abf2 abf3}.
 }
-
 
 \cvsubsec{Metadynamics}
 \label{sec:colvarbias_meta}
