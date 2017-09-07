@@ -1398,7 +1398,7 @@ int ScriptTcl::Tcl_colvars(ClientData clientData,
     (cvm::get_error() == COLVARS_OK);
 
   Tcl_Obj *obj = Tcl_NewStringObj(cvscript->result.c_str(),
-                                  cvscript->result.length() + 1);
+                                  cvscript->result.length());
   Tcl_SetObjResult(interp, obj);
 
   if (no_errors) {
