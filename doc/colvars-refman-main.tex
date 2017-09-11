@@ -3311,7 +3311,7 @@ $\lambda$ that evolves dynamically according to Newtonian or Langevin dynamics.
 Such an extended coordinate is enabled for a given colvar using the
 \texttt{extendedLagrangian} and associated keywords (\ref{sec:colvar_extended}).
 The theory of eABF and the present implementation are documented in detail
-in reference~\cite{Lesage2016}.
+in reference~\cite{Lesage2017}.
 
 Defining an ABF bias on a colvar wherein the \texttt{extendedLagrangian} option
 is active will perform eABF; there is no dedicated option. 
@@ -3328,7 +3328,7 @@ At long simulation times, eABF produces a flat histogram of the extended variabl
 and a flattened histogram of $\xi$, whose exact shape depends on the strength of the coupling
 as defined by \texttt{extendedFluctuation} in the colvar.
 Coupling should be somewhat loose for faster exploration and convergence, but strong
-enough that the bias does help overcome barriers along the colvar $\xi$.\cite{Lesage2016}
+enough that the bias does help overcome barriers along the colvar $\xi$.\cite{Lesage2017}
 Distribution of the colvar may be assessed by plotting its histogram, which
 is written to the \outputName\texttt{.zcount} file in every eABF simulation.
 Note that a \texttt{histogram} bias (\ref{sec:colvarbias_histogram})
@@ -3344,7 +3344,7 @@ estimator\cvnamdonly{ or the Zheng/Yang estimator}.
 \cvsubsubsec{CZAR estimator of the free energy}
 
 The \emph{corrected z-averaged restraint} (CZAR) estimator
-is described in detail in reference~\cite{Lesage2016}.
+is described in detail in reference~\cite{Lesage2017}.
 It is computed automatically in eABF simulations, 
 regardless of the number of colvars involved.
 Note that ABF may also be applied on a combination of extended and non-extended
