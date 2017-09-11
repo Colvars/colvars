@@ -31,6 +31,8 @@ namespace UIestimator {
             const std::vector<double> & width,           // width of x
             const int y_size) {          // size of y, for example, ysize=7, then when x=1, the distribution of y in [-2,4] is considered
 
+            int i;
+
             this->lowerboundary = lowerboundary;
             this->upperboundary = upperboundary;
             this->width = width;
@@ -40,14 +42,14 @@ namespace UIestimator {
 
             // the range of the matrix is [lowerboundary, upperboundary]
             x_total_size = 1;
-            for (int i = 0; i < dimension; i++) {
+            for (i = 0; i < dimension; i++) {
                 x_size.push_back(int((upperboundary[i] - lowerboundary[i]) / width[i] + EPSILON));
                 x_total_size *= x_size[i];
             }
 
             // initialize the internal matrix
             matrix.reserve(x_total_size);
-            for (int i = 0; i < x_total_size; i++) {
+            for (i = 0; i < x_total_size; i++) {
                 matrix.push_back(std::vector<int>(y_total_size, 0));
             }
 
@@ -80,16 +82,18 @@ namespace UIestimator {
 
         std::vector<int> temp;         // this vector is used in convert_x and convert_y to save computational resource
 
+        int i, j;
+
         int convert_x(const std::vector<double> & x) {       // convert real x value to its interal index
-            for (int i = 0; i < dimension; i++) {
+            for (i = 0; i < dimension; i++) {
                 temp[i] = int((x[i] - lowerboundary[i]) / width[i] + EPSILON);
             }
 
             int index = 0;
-            for (int i = 0; i < dimension; i++) {
+            for (i = 0; i < dimension; i++) {
                 if (i + 1 < dimension) {
                     int x_temp = 1;
-                    for (int j = i + 1; j < dimension; j++)
+                    for (j = i + 1; j < dimension; j++)
                         x_temp *= x_size[j];
                     index += temp[i] * x_temp;
                 }
@@ -100,12 +104,15 @@ namespace UIestimator {
         }
 
         int convert_y(const std::vector<double> & x, const std::vector<double> & y) {       // convert real y value to its interal index
-            for (int i = 0; i < dimension; i++) {
+
+            int i;
+
+            for (i = 0; i < dimension; i++) {
                 temp[i] = round((round(y[i] / width[i] + EPSILON) - round(x[i] / width[i] + EPSILON)) + (y_size - 1) / 2 + EPSILON);
             }
 
             int index = 0;
-            for (int i = 0; i < dimension; i++) {
+            for (i = 0; i < dimension; i++) {
                 if (i + 1 < dimension)
                     index += temp[i] * int(pow(y_size, dimension - i - 1) + EPSILON);
                 else
@@ -174,15 +181,17 @@ namespace UIestimator {
 
         int convert_x(const std::vector<double> & x) {       // convert real x value to its interal index
 
-            for (int i = 0; i < dimension; i++) {
+            int i, j;
+
+            for (i = 0; i < dimension; i++) {
                 temp[i] = int((x[i] - lowerboundary[i]) / width[i] + EPSILON);
             }
 
             int index = 0;
-            for (int i = 0; i < dimension; i++) {
+            for (i = 0; i < dimension; i++) {
                 if (i + 1 < dimension) {
                     int x_temp = 1;
-                    for (int j = i + 1; j < dimension; j++)
+                    for (j = i + 1; j < dimension; j++)
                         x_temp *= x_size[j];
                     index += temp[i] * x_temp;
                 }
@@ -220,9 +229,11 @@ namespace UIestimator {
             this->input_filename = input_filename;
             this->temperature = temperature;
 
+            int i, j;
+
             dimension = lowerboundary.size();
 
-            for (int i = 0; i < dimension; i++) {
+            for (i = 0; i < dimension; i++) {
                 sum_x.push_back(n_vector<double>(lowerboundary, upperboundary, width, Y_SIZE, 0.0));
                 sum_x_square.push_back(n_vector<double>(lowerboundary, upperboundary, width, Y_SIZE, 0.0));
 
@@ -252,13 +263,13 @@ namespace UIestimator {
                 // initialize input_Grad and input_count
                 // the loop_flag is a n-dimensional vector, increae from lowerboundary to upperboundary when looping
                 std::vector<double> loop_flag(dimension, 0);
-                for (int i = 0; i < dimension; i++) {
+                for (i = 0; i < dimension; i++) {
                     loop_flag[i] = lowerboundary[i];
                 }
 
-                int i = 0;
+                i = 0;
                 while (i >= 0) {
-                    for (int j = 0; j < dimension; j++) {
+                    for (j = 0; j < dimension; j++) {
                         input_grad.set_value(loop_flag, std::vector<double>(dimension,0));
                     }
                     input_count.set_value(loop_flag, 0);
@@ -284,13 +295,15 @@ namespace UIestimator {
         // called from MD engine every step
         bool update(const int step, std::vector<double> x, std::vector<double> y) {
 
+            int i;
+
             if (step % output_freq == 0) {
                 calc_pmf();
                 write_files();
                 //write_interal_data();
             }
 
-            for (int i = 0; i < dimension; i++) {
+            for (i = 0; i < dimension; i++) {
                 // for dihedral RC, it is possible that x = 179 and y = -179, should correct it
                 // may have problem, need to fix
                 if (x[i] > 150 && y[i] < -150) {
@@ -306,13 +319,13 @@ namespace UIestimator {
                     return false;
             }
 
-            for (int i = 0; i < dimension; i++) {
+            for (i = 0; i < dimension; i++) {
                 sum_x[i].increase_value(y, x[i]);
                 sum_x_square[i].increase_value(y, x[i] * x[i]);
             }
             count_y.increase_value(y, 1);
 
-            for (int i = 0; i < dimension; i++) {
+            for (i = 0; i < dimension; i++) {
                 // adapt colvars precision
                 if (x[i] < lowerboundary[i] + EPSILON || x[i] > upperboundary[i] - EPSILON)
                     return false;
@@ -363,16 +376,17 @@ namespace UIestimator {
         // calculate gradients from the internal variables
         void calc_pmf() {
             int norm;
+            int i, j, k;
 
             std::vector<double> loop_flag(dimension, 0);
-            for (int i = 0; i < dimension; i++) {
+            for (i = 0; i < dimension; i++) {
                 loop_flag[i] = lowerboundary[i] - HALF_Y_SIZE * width[i];
             }
 
-            int i = 0;
+            i = 0;
             while (i >= 0) {
                 norm = count_y.get_value(loop_flag) > 0 ? count_y.get_value(loop_flag) : 1;
-                for (int j = 0; j < dimension; j++) {
+                for (j = 0; j < dimension; j++) {
                     x_av[j].set_value(loop_flag, sum_x[j].get_value(loop_flag) / norm);
                     sigma_square[j].set_value(loop_flag, sum_x_square[j].get_value(loop_flag) / norm - x_av[j].get_value(loop_flag) * x_av[j].get_value(loop_flag));
                 }
@@ -396,7 +410,7 @@ namespace UIestimator {
 
             std::vector<double> loop_flag_x(dimension, 0);
             std::vector<double> loop_flag_y(dimension, 0);
-            for (int i = 0; i < dimension; i++) {
+            for (i = 0; i < dimension; i++) {
                 loop_flag_x[i] = lowerboundary[i];
                 loop_flag_y[i] = loop_flag_x[i] - HALF_Y_SIZE * width[i];
             }
@@ -404,20 +418,20 @@ namespace UIestimator {
             i = 0;
             while (i >= 0) {
                 norm = 0;
-                for (int i = 0; i < dimension; i++) {
-                    av[i] = 0;
-                    diff_av[i] = 0;
-                    loop_flag_y[i] = loop_flag_x[i] - HALF_Y_SIZE * width[i];
+                for (k = 0; k < dimension; k++) {
+                    av[k] = 0;
+                    diff_av[k] = 0;
+                    loop_flag_y[k] = loop_flag_x[k] - HALF_Y_SIZE * width[k];
                 }
 
                 int j = 0;
                 while (j >= 0) {
                     norm += distribution_x_y.get_value(loop_flag_x, loop_flag_y);
-                    for (int i = 0; i < dimension; i++) {
-                        if (sigma_square[i].get_value(loop_flag_y) > EPSILON || sigma_square[i].get_value(loop_flag_y) < -EPSILON)
-                            av[i] += distribution_x_y.get_value(loop_flag_x, loop_flag_y) * ( (loop_flag_x[i] + 0.5 * width[i]) - x_av[i].get_value(loop_flag_y)) / sigma_square[i].get_value(loop_flag_y);
+                    for (k = 0; k < dimension; k++) {
+                        if (sigma_square[k].get_value(loop_flag_y) > EPSILON || sigma_square[k].get_value(loop_flag_y) < -EPSILON)
+                            av[k] += distribution_x_y.get_value(loop_flag_x, loop_flag_y) * ( (loop_flag_x[k] + 0.5 * width[k]) - x_av[k].get_value(loop_flag_y)) / sigma_square[k].get_value(loop_flag_y);
 
-                        diff_av[i] += distribution_x_y.get_value(loop_flag_x, loop_flag_y) * (loop_flag_x[i] - loop_flag_y[i]);
+                        diff_av[k] += distribution_x_y.get_value(loop_flag_x, loop_flag_y) * (loop_flag_x[k] - loop_flag_y[k]);
                     }
 
                     // iterate over any dimensions
@@ -434,10 +448,10 @@ namespace UIestimator {
                 }
 
                 std::vector<double> grad_temp(dimension, 0);
-                for (int i = 0; i < dimension; i++) {
-                    diff_av[i] /= (norm > 0 ? norm : 1);
-                    av[i] = cvm::boltzmann() * temperature * av[i] / (norm > 0 ? norm : 1);
-                    grad_temp[i] = av[i] - krestr[i] * diff_av[i];
+                for (k = 0; k < dimension; k++) {
+                    diff_av[k] /= (norm > 0 ? norm : 1);
+                    av[k] = cvm::boltzmann() * temperature * av[k] / (norm > 0 ? norm : 1);
+                    grad_temp[k] = av[k] - krestr[k] * diff_av[k];
                 }
                 grad.set_value(loop_flag_x, grad_temp);
                 count.set_value(loop_flag_x, norm);
@@ -465,10 +479,11 @@ namespace UIestimator {
 
             double min = 0;
             double dG = 0;
+            double i;
 
             oneD_pmf.set_value(lowerboundary, 0);
             last_position = lowerboundary;
-            for (double i = lowerboundary[0] + width[0]; i < upperboundary[0] + EPSILON; i += width[0]) {
+            for (i = lowerboundary[0] + width[0]; i < upperboundary[0] + EPSILON; i += width[0]) {
                 position[0] = i + EPSILON;
                 if (restart == false || input_count.get_value(last_position) == 0) {
                     dG = oneD_pmf.get_value(last_position) + grad.get_value(last_position)[0] * width[0];
@@ -482,7 +497,7 @@ namespace UIestimator {
                 last_position[0] = i + EPSILON;
             }
 
-            for (double i = lowerboundary[0]; i < upperboundary[0] + EPSILON; i += width[0]) {
+            for (i = lowerboundary[0]; i < upperboundary[0] + EPSILON; i += width[0]) {
                 position[0] = i + EPSILON;
                 oneD_pmf.set_value(position, oneD_pmf.get_value(position) - min);
             }
@@ -519,17 +534,17 @@ namespace UIestimator {
 
         // write interal data, used for testing
         void write_interal_data() {
-            std::string internal_filaname = output_filename + ".UI.internal";
+            std::string internal_filename = output_filename + ".UI.internal";
 
-            std::ostream* ofile_internal = cvm::proxy->output_stream(internal_filaname.c_str());
+            std::ostream* ofile_internal = cvm::proxy->output_stream(internal_filename.c_str());
 
             std::vector<double> loop_flag(dimension, 0);
             for (int i = 0; i < dimension; i++) {
                 loop_flag[i] = lowerboundary[i];
             }
 
-            int i = 0;
-            while (i >= 0) {
+            int n = 0;
+            while (n >= 0) {
                 for (int j = 0; j < dimension; j++) {
                     *ofile_internal << loop_flag[j] + 0.5 * width[j] << " ";
                 }
@@ -549,18 +564,18 @@ namespace UIestimator {
                 *ofile_internal << std::endl;
 
                 // iterate over any dimensions
-                i = dimension - 1;
-                while (i >= 0) {
-                    loop_flag[i] += width[i];
-                    if (loop_flag[i] > upperboundary[i] - width[i] + EPSILON) {
-                        loop_flag[i] = lowerboundary[i];
-                        i--;
+                n = dimension - 1;
+                while (n >= 0) {
+                    loop_flag[n] += width[n];
+                    if (loop_flag[n] > upperboundary[n] - width[n] + EPSILON) {
+                        loop_flag[n] = lowerboundary[n];
+                        n--;
                     }
                     else
                         break;
                 }
             }
-            cvm::proxy->close_output_stream(internal_filaname.c_str());
+            cvm::proxy->close_output_stream(internal_filename.c_str());
         }
 
         // write output files
@@ -569,6 +584,8 @@ namespace UIestimator {
             std::string hist_filename = output_filename + ".UI.hist.grad";
             std::string count_filename = output_filename + ".UI.count";
 
+            int i, j;
+//
             // only for colvars module!
             if (written) cvm::backup_file(grad_filename.c_str());
             //if (written) cvm::backup_file(hist_filename.c_str());
@@ -588,20 +605,20 @@ namespace UIestimator {
             }
 
             std::vector<double> loop_flag(dimension, 0);
-            for (int i = 0; i < dimension; i++) {
+            for (i = 0; i < dimension; i++) {
                 loop_flag[i] = lowerboundary[i];
             }
 
-            int i = 0;
+            i = 0;
             while (i >= 0) {
-                for (int j = 0; j < dimension; j++) {
+                for (j = 0; j < dimension; j++) {
                     *ofile << loop_flag[j] + 0.5 * width[j] << " ";
                     *ofile_hist << loop_flag[j] + 0.5 * width[j] << " ";
                     *ofile_count << loop_flag[j] + 0.5 * width[j] << " ";
                 }
 
                 if (restart == false) {
-                    for (int j = 0; j < dimension; j++) {
+                    for (j = 0; j < dimension; j++) {
                         *ofile << grad.get_value(loop_flag)[j] << " ";
                         *ofile_hist << grad.get_value(loop_flag)[j] << " ";
                     }
@@ -611,7 +628,7 @@ namespace UIestimator {
                 }
                 else {
                     double final_grad = 0;
-                    for (int j = 0; j < dimension; j++) {
+                    for (j = 0; j < dimension; j++) {
                         int total_count_temp = (count.get_value(loop_flag) + input_count.get_value(loop_flag));
                         if (input_count.get_value(loop_flag) == 0)
                             final_grad = grad.get_value(loop_flag)[j];
@@ -653,12 +670,13 @@ namespace UIestimator {
             char sharp;
             double nothing;
             int dimension_temp;
+            int i, j, k, l, m;
 
             std::vector<double> loop_bin_size(dimension, 0);
             std::vector<double> position_temp(dimension, 0);
             std::vector<double> grad_temp(dimension, 0);
             int count_temp = 0;
-            for (int i = 0; i < input_filename.size(); i++) {
+            for (i = 0; i < input_filename.size(); i++) {
                 int size = 1 , size_temp = 0;
 
                 std::string count_filename = input_filename[i] + ".UI.count";
@@ -670,20 +688,20 @@ namespace UIestimator {
                 count_file >> sharp >> dimension_temp;
                 grad_file >> sharp >> dimension_temp;
 
-                for (int j = 0; j < dimension; j++) {
+                for (j = 0; j < dimension; j++) {
                     count_file >> sharp >> nothing >> nothing >> size_temp >> nothing;
                     grad_file >> sharp >> nothing >> nothing >> nothing >> nothing;
                     size *= size_temp;
                 }
 
-                for (int j = 0; j < size; j++) {
+                for (j = 0; j < size; j++) {
                     do {
-                        for (int k = 0; k < dimension; k++) {
+                        for (k = 0; k < dimension; k++) {
                             count_file >> position_temp[k];
                             grad_file >> nothing;
                         }
 
-                        for (int l = 0; l < dimension; l++) {
+                        for (l = 0; l < dimension; l++) {
                             grad_file >> grad_temp[l];
                         }
                         count_file >> count_temp;
@@ -694,7 +712,7 @@ namespace UIestimator {
                         continue;
                     }
 
-                    for (int m = 0; m < dimension; m++) {
+                    for (m = 0; m < dimension; m++) {
                         grad_temp[m] = (grad_temp[m] * count_temp + input_grad.get_value(position_temp)[m] * input_count.get_value(position_temp)) / (count_temp + input_count.get_value(position_temp));
                     }
                     input_grad.set_value(position_temp, grad_temp);
