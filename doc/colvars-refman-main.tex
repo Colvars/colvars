@@ -42,30 +42,40 @@ The module is designed to perform multiple tasks concurrently during or after a 
 
 \cvvmdonly{\textbf{Note:} although restraints and PMF algorithms are primarily used during simulations, they are also available in VMD to test a new input for a simulation, or to evaluate the relative free energy of a new structure based on data from a previous calculation.  \emph{Options that only have an effect during a simulation are also included for compatibility purposes.}} 
 
-To briefly illustrate the flexibility of the Colvars module, Figure~\ref{fig:colvars_diagram} shows an example of a non-trivial configuration (the corresponding input can be found in \ref{sec:colvars_config}).
-
-% AK: this figure looks a bit misplaced in the LAMMPS version of the
-% AK: documentation. perhaps it can be moved to be define a bit earlier,
-% AK: so that it is show inside the paragraph it refers to and not the
-% AK: next one.
-%
-\begin{figure}[!ht]
-  \centering
-\cvnamdugonly{\includegraphics[width=12cm]{figures/colvars_diagram}}
-\cvvmdugonly{\includegraphics[width=12cm]{pictures/colvars_diagram}}
-\cvrefmanonly{\includegraphics[width=12cm]{colvars_diagram}}
-  \caption[Graphical representation of a Colvars configuration.]{Graphical representation of a Colvars configuration\cvlammpsonly{ \textbf{(note:} \emph{currently, the $\alpha$-helical content colvar is unavailable in LAMMPS)}}.
-    The colvar called ``$d$'' is defined as the difference between two distances: the first distance ($d_{1}$) is taken between the center of mass of atoms 1 and 2 and that of atoms 3 to 5, the second ($d_{2}$) between atom 7 and the center of mass of atoms 8 to 10.
-The difference $d = d_{1} - d_{2}$ is obtained by multiplying the two by a coefficient $C = +1$ or $C = -1$, respectively.
-The colvar called ``$c$'' is the coordination number calculated between atoms 1 to 10 and atoms 11 to 20.  A harmonic restraint is applied to both $d$ and $c$: to allow using the same force constant $K$, both $d$ and $c$ are scaled by their respective fluctuation widths $w_d$ and $w_c$.
-\cvnamebasedonly{A third colvar ``alpha'' is defined as the $\alpha$-helical content of residues 1 to 10.}
-The values of ``$c$''\cvnamebasedonly{ and ``alpha''} are also recorded throughout the simulation as a joint 2-dimensional histogram.
-}
-  \label{fig:colvars_diagram}
-\end{figure}
-
 Detailed explanations of the design of the Colvars module are provided in reference~\cite{Fiorin2013}. Please cite this reference whenever publishing work that makes use of this module.
 
+
+\cvsec{A crash course}
+
+Suppose that we want to run a steered MD experiment where a small molecule is pulled away from a binding site.
+In Colvars terms, this is done by applying a moving restraint to the distance between the two objects.
+The configuration will contain two blocks, one defining the distance \texttt{colvar} and the other, the moving \texttt{harmonic} restraint.
+
+\bigskip
+% verbatim can't appear within commands
+{\noindent\ttfamily
+colvar \{\\
+\-~~name dist\\
+\-~~distance \{\\
+\-~~~~group1 \{ atomNumbersRange 42-55 \}\\
+\-~~~~group2 \{\\
+\-~~~~~~psfSegID  PR\\
+\-~~~~~~atomNameResidueRange  CA 15-30 \}\\
+\-~~~~\}\\
+\-~~\}\\
+\}\\
+\\
+harmonic \{\\
+\-~~colvars dist\\
+\-~~forceConstant 20.0\\
+\-~~centers 4.~~~~~~~~~~\# initial distance\\
+\-~~targetCenters 15.~~~\# final distance\\
+\-~~targetNumSteps 500000\\
+\}\\
+}
+
+Reading this input in plain English: the variable named \texttt{dist} consists in a distance function between the centers of two groups: the ligand (atoms 42 to 55) and the alpha carbon atoms (CA) of residues 15 to 30 in the protein (segment name PR).
+To that variable, we apply a \texttt{harmonic} potential of force constant 20~\cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{energy units}/\AA$^2$, initially centered around a value of 4~\AA, which will increase to 15~\AA{} over 500k MD timesteps.
 
 \cvsec{General parameters and input/output files}
 \label{sec:colvarmodule}
@@ -326,8 +336,25 @@ The following keywords are available in the global context of the colvars config
     
 \end{itemize}
 
-The example below defines the same configuration shown in Fig.~\ref{fig:colvars_diagram}.  The options within the \texttt{colvar} blocks are described in \ref{sec:colvar} and \ref{sec:cvc}, the ones within the \texttt{harmonic} and \texttt{histogram} blocks in \ref{sec:colvarbias}.
+
+To illustrate the flexibility of the Colvars module, a non-trivial setup is represented in Figure~\ref{fig:colvars_diagram}.
+The corresponding configuration is given below. The options within the \texttt{colvar} blocks are described in \ref{sec:colvar} and \ref{sec:cvc}, those within the \texttt{harmonic} and \texttt{histogram} blocks in \ref{sec:colvarbias}.
 \textbf{Note:} \emph{except }\texttt{colvar}\emph{, none of the keywords shown is mandatory}.\\
+
+\begin{figure}[!ht]
+  \centering
+\cvnamdugonly{\includegraphics[width=12cm]{figures/colvars_diagram}}
+\cvvmdugonly{\includegraphics[width=12cm]{pictures/colvars_diagram}}
+\cvrefmanonly{\includegraphics[width=12cm]{colvars_diagram}}
+  \caption[Graphical representation of a Colvars configuration.]{Graphical representation of a Colvars configuration\cvlammpsonly{ \textbf{(note:} \emph{currently, the $\alpha$-helical content colvar is unavailable in LAMMPS)}}.
+    The colvar called ``$d$'' is defined as the difference between two distances: the first distance ($d_{1}$) is taken between the center of mass of atoms 1 and 2 and that of atoms 3 to 5, the second ($d_{2}$) between atom 7 and the center of mass of atoms 8 to 10.
+The difference $d = d_{1} - d_{2}$ is obtained by multiplying the two by a coefficient $C = +1$ or $C = -1$, respectively.
+The colvar called ``$c$'' is the coordination number calculated between atoms 1 to 10 and atoms 11 to 20.  A harmonic restraint is applied to both $d$ and $c$: to allow using the same force constant $K$, both $d$ and $c$ are scaled by their respective fluctuation widths $w_d$ and $w_c$.
+\cvnamebasedonly{A third colvar ``alpha'' is defined as the $\alpha$-helical content of residues 1 to 10.}
+The values of ``$c$''\cvnamebasedonly{ and ``alpha''} are also recorded throughout the simulation as a joint 2-dimensional histogram.
+}
+  \label{fig:colvars_diagram}
+\end{figure}
 
 {%
 % verbatim can't appear within commands
