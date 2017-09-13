@@ -566,6 +566,7 @@ begin:
   if ( $CHARM_ARCH =~ pamilrts-* ) set ARCH_SUFFIX = ${ARCH_SUFFIX}-pamilrts
   if ( $CHARM_ARCH =~ netlrts-* ) set ARCH_SUFFIX = ${ARCH_SUFFIX}-netlrts
   if ( $CHARM_ARCH =~ verbs-* ) set ARCH_SUFFIX = ${ARCH_SUFFIX}-verbs
+  if ( $CHARM_ARCH =~ ofi-* ) set ARCH_SUFFIX = ${ARCH_SUFFIX}-ofi
   if ( $CHARM_ARCH =~ *-vmi* ) set ARCH_SUFFIX = ${ARCH_SUFFIX}-vmi
   if ( $CHARM_ARCH =~ *-tcp* ) set ARCH_SUFFIX = ${ARCH_SUFFIX}-TCP
   if ( $CHARM_ARCH =~ *-gm* ) set ARCH_SUFFIX = ${ARCH_SUFFIX}-gm
