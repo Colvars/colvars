@@ -1,0 +1,52 @@
+# -*- tcl -*-
+
+set out [open "test.colvars.traj" "w"]
+
+proc printframe {} {
+  global out
+
+  puts -nonewline ${out} [cv printframelabels]
+  cv update
+  puts -nonewline ${out} [cv printframe]
+}
+
+mol new ../Common/da.psf type psf
+mol addfile ../Common/da.pdb type pdb waitfor all
+
+cv molid top
+cv configfile test.in
+
+printframe
+
+cv bias h delete
+
+printframe
+
+# add the RMSD of all heavy atoms
+set noh [atomselect top "not hydrogen"]
+cv config "
+colvar {
+    name rmsd-all
+ 
+    rmsd {
+        atoms {
+            atomNumbers { [$noh get serial] }
+        }
+        refpositionsfile ../Common/da.pdb
+    }
+}
+"
+
+printframe
+
+cv colvar d delete
+
+printframe
+
+cv colvar rmsd delete
+cv colvar rmsd-all delete
+
+printframe
+
+close ${out}
+quit
