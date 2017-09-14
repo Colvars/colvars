@@ -288,7 +288,9 @@ int colvarscript::proc_colvar(colvar *cv, int objc, unsigned char *const objv[])
     // colvar destructor is tasked with the cleanup
     delete cv;
     // TODO this could be done by the destructors
-    colvars->write_traj_label(*(colvars->cv_traj_os));
+    if (colvars->cv_traj_os != NULL) {
+      colvars->write_traj_label(*(colvars->cv_traj_os));
+    }
     return COLVARS_OK;
   }
 
@@ -417,7 +419,9 @@ int colvarscript::proc_bias(colvarbias *b, int objc, unsigned char *const objv[]
     // the bias destructor takes care of the cleanup at cvm level
     delete b;
     // TODO this could be done by the destructors
-    colvars->write_traj_label(*(colvars->cv_traj_os));
+    if (colvars->cv_traj_os != NULL) {
+      colvars->write_traj_label(*(colvars->cv_traj_os));
+    }
     return COLVARS_OK;
   }
 
