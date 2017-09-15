@@ -12,10 +12,11 @@ restraint {
   configuration {
     step 10
     name harmonic1
-    centers  1.00000000000000e-01
-    accumulatedWork -3.59699760184206e+03
+    centers   1.00000000000000e-01
+    accumulatedWork -1.79849880092103e+03
   }
 }
+
 restraint {
   configuration {
     step 10

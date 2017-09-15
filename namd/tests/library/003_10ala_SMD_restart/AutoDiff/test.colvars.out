@@ -50,15 +50,18 @@ colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
 colvars:     # scalable = on [default]
 colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "Protein_C-alpha"
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
-colvars:       # centerReference = off [default]
-colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on
 colvars:       Atom group "atoms" defined, 10 atoms initialized: total mass = 120.11, total charge = 0.53.
 colvars:     # refPositions =  [default]
@@ -67,16 +70,16 @@ colvars:     # refPositionsCol = "" [default]
 colvars:     Enabling "centerReference" and "rotateReference", to minimize RMSD before calculating it as a variable: if this is not the desired behavior, disable them explicitly within the "atoms" block.
 colvars:     This is a standard minimum RMSD, derivatives of the optimal rotation will not be computed as they cancel out in the gradients.
 colvars:   All components initialized.
+colvars:   # timeStepFactor = 1 [default]
 colvars:   # width = 0.01
 colvars:   # lowerBoundary = 0
-colvars:   # lowerWallConstant = 0 [default]
 colvars:   # upperBoundary = 0.1
-colvars:   # upperWallConstant = 10
+colvars:   Warning: upperWallConstant and upperWall are deprecated, please define a harmonicWalls bias instead.
 colvars:   # upperWall = 0.1 [default]
+colvars:   Generating a new harmonicWalls bias for compatibility purposes.
 colvars:   # hardLowerBoundary = on
 colvars:   # hardUpperBoundary = off [default]
 colvars:   # expandBoundaries = on
-colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
@@ -90,17 +93,45 @@ colvars:   Initializing a new "harmonic" instance.
 colvars:   # name = "harmonic1" [default]
 colvars:   # colvars = { rmsd }
 colvars:   # outputEnergy = on
+colvars:   # timeStepFactor = 1 [default]
 colvars:   # centers = { 0 }
 colvars:   # targetCenters = { 0.2 }
 colvars:   # targetNumSteps = 20
 colvars:   # targetNumStages = 0 [default]
-colvars:   # outputCenters = on
 colvars:   # outputAccumulatedWork = on
+colvars:   # outputCenters = on
 colvars:   # forceConstant = 1 [default]
 colvars:   # targetForceConstant = 0 [default]
 colvars:   The force constant for colvar "rmsd" will be rescaled to 10000 according to the specified width.
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables biases initialized, 1 in total.
+colvars: # indexFile = "" [default]
+colvars: # smp = on [default]
+colvars: # analysis = off [default]
+colvars: # colvarsTrajFrequency = 1 [default]
+colvars: # colvarsRestartFrequency = 40000 [default]
+colvars: # colvarsTrajAppend = off [default]
+colvars: # scriptedColvarForces = off [default]
+colvars: # scriptingAfterBiases = on [default]
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables initialized, 1 in total.
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new "harmonicwalls" instance.
+colvars:   # name = "rmsdw"
+colvars:   # colvars = { rmsd }
+colvars:   # outputEnergy = off [default]
+colvars:   # timeStepFactor = 1
+colvars:   # forceConstant = 1 [default]
+colvars:   # targetForceConstant = 0 [default]
+colvars:   # lowerWallConstant = 1 [default]
+colvars:   # upperWallConstant = 0.001
+colvars:   The lower and upper wall force constants for colvar "rmsd" will be rescaled to 10000 and 10 according to the specified width.
+colvars:   # lowerWalls = { 0 } [default]
+colvars:   Lower walls were not provided.
+colvars:   # upperWalls = { 0.1 }
+colvars:   The force constant for colvar "rmsd" will be rescaled to 10000 according to the specified width.
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables biases initialized, 2 in total.
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables module (re)initialized.
 colvars: ----------------------------------------------------------------------

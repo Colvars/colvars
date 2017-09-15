@@ -91,8 +91,8 @@ colvars:   # centers = { ( 1 , 0 , 0 , 0 ) }
 colvars:   # targetCenters = { ( 0 , 0 , 1 , 0 ) }
 colvars:   # targetNumSteps = 10
 colvars:   # targetNumStages = 0 [default]
-colvars:   # outputCenters = on
 colvars:   # outputAccumulatedWork = on
+colvars:   # outputCenters = on
 colvars:   # forceConstant = 0.001
 colvars:   # targetForceConstant = 0 [default]
 colvars:   The force constant for colvar "one" will be rescaled to 0.004 according to the specified width.
@@ -112,7 +112,7 @@ colvars: ----------------------------------------------------------------------
 colvars: Restarting from file "test.colvars.state".
 colvars:   Restarting collective variable "one" from value: ( 0.995048 , -0.0894218 , 0.0103502 , -0.0421535 )
 colvars:   # centers = { ( 0 , 0 , 1 , 0 ) }
-colvars:   # accumulatedWork = 0.00452177
+colvars:   # accumulatedWork = 0.00226089
 colvars: ----------------------------------------------------------------------
 colvars: The restart output state file will be "test.restart.tmp.colvars.state".
 colvars: The final output state file will be "test.restart.colvars.state".

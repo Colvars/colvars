@@ -104,8 +104,8 @@ colvars:   # centers = { 0.1 }
 colvars:   # targetCenters = { 0.2 }
 colvars:   # targetNumSteps = 20
 colvars:   # targetNumStages = 0 [default]
-colvars:   # outputCenters = on
 colvars:   # outputAccumulatedWork = on
+colvars:   # outputCenters = on
 colvars:   # forceConstant = 0.001
 colvars:   # targetForceConstant = 0 [default]
 colvars:   The force constant for colvar "one" will be rescaled to 0.004 according to the specified width.
