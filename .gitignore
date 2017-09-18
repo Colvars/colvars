@@ -4,6 +4,8 @@
 *.a
 *.x
 *.exe
+*.pyc
+
 .*.swp
 
 # output files from reg tests

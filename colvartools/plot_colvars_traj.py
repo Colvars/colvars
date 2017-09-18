@@ -120,11 +120,6 @@ class Colvars_traj(object):
         """Names of variables defined"""
         return self._keys[1:] # The first entry is "step"
 
-    @property
-    def frame(self):
-        """"""
-        return self._frame
-
     def parse_comment_line(self, line):
         """
         Read in a comment line from a colvars.traj file and update the names of
@@ -167,8 +162,21 @@ class Colvars_traj(object):
 
         self._count += 1
 
-    def read_files(self, filenames,
+    def read_files(self, filenames, list_variables=False,
                    first=0, last=-1, every=1):
+        """
+        Read a series of colvars.traj files.
+        filenames : list of strings
+            list of file names
+        list_variables : bool
+            list variable names to screen
+        first : int
+            index of first record to read in (see also mol load in VMD)
+        last : int
+            index of last record to read in
+        every : int
+            read every these many records
+        """
         last = np.int64(last)
         if (last == -1):
             last = np.int64(np.iinfo(np.int64).max)
@@ -179,6 +187,10 @@ class Colvars_traj(object):
                 if (line[:1] == "#"):
                     self.parse_comment_line(line)
                     continue
+                if (args.list_variables):
+                    for v in self.variables:
+                        print(v)
+                    return
                 if ((self._frame >= first) and (self._frame <= last) and 
                     (self._frame % every == 0)):
                     self.parse_line(line)
@@ -191,7 +203,7 @@ if (__name__ == '__main__'):
 
     parser = \
         argparse.ArgumentParser(description='Select variables from a Colvars '
-                                'trajectory file and optionally plot them'
+                                'trajectory file and optionally plot them '
                                 'as a 1D graph as a function of time or of '
                                 'one of the variables.', \
             formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -206,13 +218,13 @@ if (__name__ == '__main__'):
     parser.add_argument('--dt',
                         dest='dt',
                         type=float,
-                        help='Integration time step (fs)',
+                        help='Integration time step',
                         default=2.0)
 
     parser.add_argument('--time-unit-shift',
                         dest='time_unit_shift',
                         type=int,
-                        help='Divide time by 10 to this exponent.',
+                        help='Divide time by 10 to this power.',
                         default=6)
 
     parser.add_argument('--first-frame',
@@ -238,8 +250,15 @@ if (__name__ == '__main__'):
                         nargs='*',
                         type=str,
                         help='Space-separated list of names of collective '
-                        'variables (or other entries in trajectory files).',
+                        'variables to write or plot.',
                         default=[])
+
+    parser.add_argument('--list-variables',
+                        dest='list_variables',
+                        action='store_true',
+                        help='List all names of collective variables '
+                        'defined up until the first line of data.',
+                        default=False)
 
     parser.add_argument('--output-file',
                         dest='output_file',
@@ -299,6 +318,7 @@ if (__name__ == '__main__'):
 
     colvars_traj = Colvars_traj()
     colvars_traj.read_files(args.filenames,
+                            list_variables=args.list_variables,
                             first=args.first,
                             last=args.last,
                             every=args.skip)
