@@ -364,6 +364,8 @@ if (__name__ == '__main__'):
 
         pdf = PdfPages(args.plot+'.pdf')
         fig = plt.figure(figsize=(3.0, 3.0))
+        if (args.plot_x_label): plt.xlabel(args.plot_x_label)
+        if (args.plot_y_label): plt.ylabel(args.plot_y_label)
 
         for var in variables:
 
