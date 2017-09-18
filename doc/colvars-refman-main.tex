@@ -49,7 +49,7 @@ Detailed explanations of the design of the Colvars module are provided in refere
 
 Suppose that we want to run a steered MD experiment where a small molecule is pulled away from a binding site.
 In Colvars terms, this is done by applying a moving restraint to the distance between the two objects.
-The configuration will contain two blocks, one defining the distance \texttt{colvar} and the other, the moving \texttt{harmonic} restraint.
+The configuration will contain two blocks, one defining the distance variable (see \ref{sec:colvar}, \ref{sec:cvc}), and the other the moving harmonic restraint (\ref{sec:colvarbias_harmonic}).
 
 \bigskip
 % verbatim can't appear within commands
@@ -74,8 +74,10 @@ harmonic \{\\
 \}\\
 }
 
-Reading this input in plain English: the variable named \texttt{dist} consists in a distance function between the centers of two groups: the ligand (atoms 42 to 55) and the alpha carbon atoms (CA) of residues 15 to 30 in the protein (segment name PR).
-To that variable, we apply a \texttt{harmonic} potential of force constant 20~\cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{energy units}/\AA$^2$, initially centered around a value of 4~\AA, which will increase to 15~\AA{} over 500k MD timesteps.
+Reading this input in plain English: the variable here named \emph{dist} consists in a distance function between the centers of two groups: the ligand (atoms 42 to 55) and the alpha carbon atoms (CA) of residues 15 to 30 in the protein (segment name PR).
+The atom selection syntax is detailed in \ref{sec:colvar_atom_groups}.
+
+To the ``\emph{dist}'' variable, we apply a \texttt{harmonic} potential of force constant 20~\cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{energy units}/\AA$^2$, initially centered around a value of 4~\AA, which will increase to 15~\AA{} over 500,000 simulation steps.
 
 \cvsec{General parameters and input/output files}
 \label{sec:colvarmodule}
