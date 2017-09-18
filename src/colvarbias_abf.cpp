@@ -7,6 +7,8 @@
 
 colvarbias_abf::colvarbias_abf(char const *key)
   : colvarbias(key),
+    b_UI_estimator(false),
+    b_CZAR_estimator(false),
     system_force(NULL),
     gradients(NULL),
     samples(NULL),
@@ -14,9 +16,7 @@ colvarbias_abf::colvarbias_abf(char const *key)
     z_samples(NULL),
     czar_gradients(NULL),
     last_gradients(NULL),
-    last_samples(NULL),
-    b_UI_estimator(false),
-    b_CZAR_estimator(false)
+    last_samples(NULL)
 {
 }
 
@@ -188,20 +188,20 @@ int colvarbias_abf::init(std::string const &conf)
     get_keyval(conf, "UIestimator", b_UI_estimator, false);
 
     if (b_UI_estimator) {
-	  std::vector<double> UI_lowerboundary;
-	  std::vector<double> UI_upperboundary;
-	  std::vector<double> UI_width;
-	  std::vector<double> UI_krestr;
+    std::vector<double> UI_lowerboundary;
+    std::vector<double> UI_upperboundary;
+    std::vector<double> UI_width;
+    std::vector<double> UI_krestr;
 
-	  bool UI_restart = (input_prefix.size() > 0);
+    bool UI_restart = (input_prefix.size() > 0);
 
-	  for (int i = 0; i < colvars.size(); i++)
-	  {
-		  UI_lowerboundary.push_back(colvars[i]->lower_boundary);
-		  UI_upperboundary.push_back(colvars[i]->upper_boundary);
-		  UI_width.push_back(colvars[i]->width);
-		  UI_krestr.push_back(colvars[i]->force_constant());
-	  }
+    for (size_t i = 0; i < colvars.size(); i++)
+    {
+      UI_lowerboundary.push_back(colvars[i]->lower_boundary);
+      UI_upperboundary.push_back(colvars[i]->upper_boundary);
+      UI_width.push_back(colvars[i]->width);
+      UI_krestr.push_back(colvars[i]->force_constant());
+    }
       eabf_UI = UIestimator::UIestimator(UI_lowerboundary,
                                          UI_upperboundary,
                                          UI_width,
@@ -393,15 +393,15 @@ int colvarbias_abf::update()
   // update UI estimator every step
   if (b_UI_estimator)
   {
-	  std::vector<double> x(colvars.size(),0);
-	  std::vector<double> y(colvars.size(),0);
-	  for (int i = 0; i < colvars.size(); i++)
-	  {
-		  x[i] = colvars[i]->actual_value();
-		  y[i] = colvars[i]->value();
-	  }
-	  eabf_UI.update_output_filename(output_prefix);
-	  eabf_UI.update(cvm::step_absolute(), x, y);
+    std::vector<double> x(colvars.size(),0);
+    std::vector<double> y(colvars.size(),0);
+    for (size_t i = 0; i < colvars.size(); i++)
+    {
+      x[i] = colvars[i]->actual_value();
+      y[i] = colvars[i]->value();
+    }
+    eabf_UI.update_output_filename(output_prefix);
+    eabf_UI.update(cvm::step_absolute(), x, y);
   }
 
   return COLVARS_OK;

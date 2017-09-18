@@ -81,7 +81,7 @@ std::ostream & colvarbias_restraint::write_traj(std::ostream &os)
 
 
 colvarbias_restraint_centers::colvarbias_restraint_centers(char const *key)
-  : colvarbias(key), colvarbias_restraint(key), colvarbias_ti(key)
+  : colvarbias(key), colvarbias_ti(key), colvarbias_restraint(key)
 {
 }
 
@@ -140,7 +140,7 @@ int colvarbias_restraint_centers::change_configuration(std::string const &conf)
 
 
 colvarbias_restraint_k::colvarbias_restraint_k(char const *key)
-  : colvarbias(key), colvarbias_restraint(key), colvarbias_ti(key)
+  : colvarbias(key), colvarbias_ti(key), colvarbias_restraint(key)
 {
   force_k = -1.0;
 }
@@ -232,10 +232,10 @@ int colvarbias_restraint_moving::set_state_params(std::string const &conf)
 
 colvarbias_restraint_centers_moving::colvarbias_restraint_centers_moving(char const *key)
   : colvarbias(key),
+    colvarbias_ti(key),
     colvarbias_restraint(key),
     colvarbias_restraint_centers(key),
-    colvarbias_restraint_moving(key),
-    colvarbias_ti(key)
+    colvarbias_restraint_moving(key)
 {
   b_chg_centers = false;
   b_output_centers = false;
@@ -474,10 +474,10 @@ std::ostream & colvarbias_restraint_centers_moving::write_traj(std::ostream &os)
 
 colvarbias_restraint_k_moving::colvarbias_restraint_k_moving(char const *key)
   : colvarbias(key),
+    colvarbias_ti(key),
     colvarbias_restraint(key),
     colvarbias_restraint_k(key),
-    colvarbias_restraint_moving(key),
-    colvarbias_ti(key)
+    colvarbias_restraint_moving(key)
 {
   b_chg_force_k = false;
   target_equil_steps = 0;
@@ -712,13 +712,13 @@ std::ostream & colvarbias_restraint::write_state(std::ostream &os)
 
 colvarbias_restraint_harmonic::colvarbias_restraint_harmonic(char const *key)
   : colvarbias(key),
+    colvarbias_ti(key),
     colvarbias_restraint(key),
     colvarbias_restraint_centers(key),
     colvarbias_restraint_moving(key),
     colvarbias_restraint_k(key),
     colvarbias_restraint_centers_moving(key),
-    colvarbias_restraint_k_moving(key),
-    colvarbias_ti(key)
+    colvarbias_restraint_k_moving(key)
 {
 }
 
@@ -863,11 +863,11 @@ cvm::real colvarbias_restraint_harmonic::energy_difference(std::string const &co
 
 colvarbias_restraint_harmonic_walls::colvarbias_restraint_harmonic_walls(char const *key)
   : colvarbias(key),
+    colvarbias_ti(key),
     colvarbias_restraint(key),
     colvarbias_restraint_k(key),
     colvarbias_restraint_moving(key),
-    colvarbias_restraint_k_moving(key),
-    colvarbias_ti(key)
+    colvarbias_restraint_k_moving(key)
 {
   lower_wall_k = 0.0;
   upper_wall_k = 0.0;
@@ -1119,13 +1119,13 @@ std::ostream & colvarbias_restraint_harmonic_walls::write_traj(std::ostream &os)
 
 colvarbias_restraint_linear::colvarbias_restraint_linear(char const *key)
   : colvarbias(key),
+    colvarbias_ti(key),
     colvarbias_restraint(key),
     colvarbias_restraint_centers(key),
     colvarbias_restraint_moving(key),
     colvarbias_restraint_k(key),
     colvarbias_restraint_centers_moving(key),
-    colvarbias_restraint_k_moving(key),
-    colvarbias_ti(key)
+    colvarbias_restraint_k_moving(key)
 {
 }
 

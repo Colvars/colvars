@@ -425,6 +425,7 @@ int colvarbias_ti::clear_state_data()
     delete ti_count;
     ti_count = NULL;
   }
+  return COLVARS_OK;
 }
 
 

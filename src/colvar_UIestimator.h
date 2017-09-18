@@ -676,7 +676,7 @@ namespace UIestimator {
             std::vector<double> position_temp(dimension, 0);
             std::vector<double> grad_temp(dimension, 0);
             int count_temp = 0;
-            for (i = 0; i < input_filename.size(); i++) {
+            for (i = 0; i < int(input_filename.size()); i++) {
                 int size = 1 , size_temp = 0;
 
                 std::string count_filename = input_filename[i] + ".UI.count";
