@@ -5,6 +5,7 @@
 # the image flags set by s
 # Furthermore, they have to be defined in that order: s then z
 # See example file pathCV_example.namd
+# Contributed by Christophe Chipot <chipot@ks.uiuc.edu>
 #############################################################
 
 namespace eval pathCV {
