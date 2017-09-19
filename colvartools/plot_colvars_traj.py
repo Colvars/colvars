@@ -219,13 +219,7 @@ if (__name__ == '__main__'):
                         dest='dt',
                         type=float,
                         help='Integration time step',
-                        default=2.0)
-
-    parser.add_argument('--time-unit-shift',
-                        dest='time_unit_shift',
-                        type=int,
-                        help='Divide time by 10 to this power.',
-                        default=6)
+                        default=2.0e-6)
 
     parser.add_argument('--first-frame',
                         dest='first',
@@ -334,8 +328,7 @@ if (__name__ == '__main__'):
         else:
             plot_keys = { var: key for (var, key) in zip(variables,
                                                          args.plot_keys) }
-
-    time_unit = args.dt * np.power(10.0, -1*args.time_unit_shift)
+    time_unit = args.dt
 
 
     if (args.output_file):
