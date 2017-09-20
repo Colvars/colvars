@@ -261,7 +261,7 @@ The following rules apply:
 
 \end{itemize}
 
-The following keywords are available in the global context of the colvars configuration, i.e.~they are not nested inside other keywords:
+The following keywords are available in the global context of the Colvars configuration, i.e.~they are not nested inside other keywords:
 \begin{itemize}
 
 \item %
@@ -417,11 +417,11 @@ Finally, section \ref{sec:colvarbias} lists the available methods and algorithms
 \cvsubsec{Input state file (optional)}
 \label{sec:colvars_input}
 
-Aside from the colvars configuration, an optional input state file may be provided to load the relevant data from a previous simulation.
+Aside from the Colvars configuration, an optional input state file may be provided to load the relevant data from a previous simulation.
 \cvnamdonly{The name of this file is provided as a value to the keyword \texttt{colvarsInput}.}
 \cvvmdonly{The name of this file is provided through \texttt{cv load }\emph{$<$file name $>$}.}
 \cvlammpsonly{The name of this file is provided as the argument to the \texttt{input} keyword of the \texttt{fix ID all colvars} command. The same information is stored in the binary restart files of LAMMPS, so it not needed when continuing a calculation from such a restart.}
-
+This file contains information about the current run, including the number of the last computed step.  \cvnamdonly{Within Colvars, this number will be carried over to the new simulation, unless \texttt{firstTimestep} is given: in this case, the value of \texttt{firstTimestep} will always be used as first step by Colvars as well}.
 
 
 \cvsubsec{Output files}
@@ -431,8 +431,7 @@ During a simulation with collective variables defined, the following three outpu
 
 \begin{itemize}
 
-\item a \emph{state file}, named \outputName\texttt{.colvars.state}; this file is in ASCII format\cvnamdonly{
-, regardless of the value of \texttt{binaryOutput} in the NAMD configuration; to continue the simulation, the name of this file must be included in the configuration of the next run using \texttt{colvarsInput}, together with the other NAMD output files};
+\item a \emph{state file}, named \outputName\texttt{.colvars.state}; this file is in ASCII (plain text) format\cvnamdonly{, regardless of the value of \texttt{binaryOutput} in the NAMD configuration}, and is meant to be used as input when continuing a simulation (see \ref{sec:colvars_input}).
 
 \item if \cvnamdonly{the NAMD parameter \texttt{restartFreq} or } the parameter \texttt{colvarsRestartFrequency} is larger than zero, a \emph{restart file} named \restartName\texttt{.colvars.state} is written every that many steps: this file is equivalent to the final state file;
 
@@ -930,7 +929,7 @@ Below is an example configuration for an atom group with identifier ``\texttt{at
 
 The resulting selection includes atoms 1 and 3, those between 20 and 50, and those in the index group called ``Water''; the indices of this group are read from the file provided by \texttt{indexFile}, in the global section of the configuration file.
 
-\cvvmdonly{In the current version, the Colvars module does not manipulate VMD atom selections directly: however, these can be converted to atom groups within the colvars configuration string, using selection keywords such as \texttt{atomNumbers}.}
+\cvvmdonly{In the current version, the Colvars module does not manipulate VMD atom selections directly: however, these can be converted to atom groups within the Colvars configuration string, using selection keywords such as \texttt{atomNumbers}.}
 The complete list of selection keywords available in \MDENGINE{} is:
 
 \begin{itemize}
@@ -3556,7 +3555,7 @@ In typical applications, a good rule of thumb can be to choose the ratio $W/\del
 %In calculations with multiple colvars $\bm{\xi}$, the upper bound is then 
 %$N_{\mathrm{s}}(\xi_{1}) \times N_{\mathrm{s}}(\xi_{2}) \times \ldots \times N_{\mathrm{s}}(\xi_{N_{\mathrm{cv}}}) \times \delta{}t$.
 
-To enable a metadynamics calculation, a \texttt{metadynamics} block must be defined in the colvars configuration file. 
+To enable a metadynamics calculation, a \texttt{metadynamics} block must be defined in the Colvars configuration file. 
 Its mandatory keywords are \texttt{colvars}, which lists all the variables involved, and \texttt{hillWeight}, which specifies the weight parameter $W$.
 The parameters $\delta{}t$ and $\sigma_{\xi}$ specified by the optional keywords \texttt{newHillFrequency} and \texttt{hillWidth}:
 \begin{itemize}
@@ -3984,9 +3983,9 @@ When the centers are changed continuously, a steered MD in a collective variable
     When continuing a simulation
     run, the \texttt{centers} specified in the configuration file
     \texttt{$<$colvarsConfig$>$} are overridden by those saved in
-    the restart file \texttt{$<$colvarsInput$>$}.  To perform Steered
-    MD in an arbitrary space of colvars, it is
-    sufficient to use this option and enable
+    the restart file \texttt{$<$colvarsInput$>$}.
+    To perform Steered MD in an arbitrary space of colvars, it is sufficient
+    to use this option and enable \texttt{outputAccumulatedWork} and/or
     \texttt{outputAppliedForce} within each of the colvars involved.}
 
 \item %
