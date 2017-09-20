@@ -534,7 +534,7 @@ Managing the Colvars module:\n\
   config <string>             -- read configuration from the given string\n\
   reset                       -- delete all internal configuration\n\
   delete                      -- delete this Colvars module instance\n\
-  version                     -- return version of colvars code\n\
+  version                     -- return version of Colvars code\n\
   \n\
 Input and output:\n\
   list                        -- return a list of all variables\n\
@@ -560,6 +560,8 @@ Accessing collective variables:\n\
   colvar <name> type          -- return the type of colvar <name>\n\
   colvar <name> delete        -- delete colvar <name>\n\
   colvar <name> addforce <F>  -- apply given force on colvar <name>\n\
+  colvar <name> getappliedforce -- return applied force of colvar <name>\n\
+  colvar <name> gettotalforce -- return total force of colvar <name>\n\
   colvar <name> getconfig     -- return config string of colvar <name>\n\
   colvar <name> cvcflags <fl> -- enable or disable cvcs according to 0/1 flags\n\
   colvar <name> get <f>       -- get the value of the colvar feature <f>\n\
