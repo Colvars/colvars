@@ -1464,9 +1464,15 @@ cvm::real colvar::update_forces_energy()
     // Coupling force is a slow force, to be applied to atomic coords impulse-style
     f *= cvm::real(time_step_factor);
 
-    // The total force acting on the extended variable is f_ext
-    // This will be used in the next timestep
-    ft_reported = f_ext;
+    if (is_enabled(f_cv_subtract_applied_force)) {
+      // Report a "system" force without the biases on this colvar
+      // that is, just the spring force
+      ft_reported = (-0.5 * ext_force_k) * this->dist2_lgrad(xr, x);
+    } else {
+      // The total force acting on the extended variable is f_ext
+      // This will be used in the next timestep
+      ft_reported = f_ext;
+    }
 
     // leapfrog: starting from x_i, f_i, v_(i-1/2)
     vr  += (0.5 * dt) * f_ext / ext_mass;
