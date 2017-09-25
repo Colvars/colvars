@@ -6,7 +6,7 @@ The module itself implements a variety of functions and algorithms, including fr
 
 ## Obtaining and using
 
-The easiest way to obtain binary versions of Colvars is via the simulation programs [NAMD](http://www.ks.uiuc.edu/Research/namd/) and [LAMMPS](http://lammps.sandia.gov/) and the visualization program [VMD](http://www.ks.uiuc.edu/Research/vmd/).  Please check [here](https://github.com/colvars/colvars/releases) to see which version of Colvars is included with the round-number versions of VMD and NAMD.  Colvars is integrated with LAMMPS on a near-continuous basis, most often immediately after significant code changes.
+The easiest way to obtain binary versions of Colvars is via the simulation programs [NAMD](http://www.ks.uiuc.edu/Research/namd/) and [LAMMPS](http://lammps.sandia.gov/) and the visualization program [VMD](http://www.ks.uiuc.edu/Research/vmd/).  Please check [here](https://github.com/Colvars/colvars/releases) to see which version of Colvars is included with the round-number versions of VMD and NAMD.  Colvars is integrated with LAMMPS on a near-continuous basis, most often immediately after significant code changes.
 
 ## Documentation
 
@@ -14,7 +14,7 @@ The [Colvars webpage](http://colvars.github.io/) includes user documentation for
 
 The reference article is:
 G. Fiorin, M. L. Klein, and J. Hénin, Molecular Physics 111, 3345 (2013).  
-http://dx.doi.org/10.1080/00268976.2013.813594  \[[BibTex file](https://github.com/colvars/colvars/blob/master/doc/ref_Fiorin_2013.bib?raw=true)\] \[[Endnote file](https://github.com/colvars/colvars/blob/master/doc/ref_Fiorin_2013.ciw?raw=true)\]
+http://dx.doi.org/10.1080/00268976.2013.813594  \[[BibTex file](https://github.com/Colvars/colvars/blob/master/doc/ref_Fiorin_2013.bib?raw=true)\] \[[Endnote file](https://github.com/Colvars/colvars/blob/master/doc/ref_Fiorin_2013.ciw?raw=true)\]
 
 ## Example input
 
@@ -50,15 +50,18 @@ harmonic { # Define a harmonic potential, 1/2*K*(d-d0)^2/w_d^2
 }
 ```
 
-Please see the [examples](https://github.com/colvars/colvars/tree/master/examples?raw=true) folder of this repository.  Configuration options (particularly, the selections of atoms) require minimal changes to reflect the specifics of each simulation.
+Complete input decks for some of the most commonly used features are available in the `examples` repository:
+https://github.com/Colvars/examples
 
-The [tests](https://github.com/colvars/colvars/tree/master/tests?raw=true) folder also contains functional segments of Colvars configuration, used to build numerical tests of code accuracy and stability.  Feel free to use these segments in your production runs.
+See also the [examples](https://github.com/Colvars/colvars/tree/master/examples?raw=true) folder of this repository for other examples of configurations.  Configuration options (particularly, the selections of atoms) require minimal changes to reflect the specifics of each simulation.
+
+The [tests](https://github.com/Colvars/colvars/tree/master/tests?raw=true) folder also contains functional segments of Colvars configuration, used to build numerical tests of code accuracy and stability.  Feel free to use these segments in your production runs.
 
 ## Updating to the latest version
 
-To recompile each program with the most recent version of the module, [download](https://github.com/colvars/colvars/archive/master.zip) the `master` branch of this repository, or clone it via git:
+To recompile each program with the most recent version of the module, [download](https://github.com/Colvars/colvars/archive/master.zip) the `master` branch of this repository, or clone it via git:
 ```
-git clone https://github.com/colvars/colvars.git
+git clone https://github.com/Colvars/colvars.git
 ```
 and run the provided `update-colvars-code.sh` script against the unpacked source tree of any of the supported programs:
 ```
