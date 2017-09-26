@@ -1045,6 +1045,9 @@ Other components are instead affected by global rotations or translations: howev
 Finally, a few components are defined by convention using a roto-translated frame (e.g. the minimal RMSD): for these components, \texttt{centerReference} and \texttt{rotateReference} are enabled by default.
 In typical applications, the default settings result in the expected behavior.
 
+Note that \texttt{centerReference} and \texttt{rotateReference} may affect the Jacobian derivative of colvar components in a way that is not taken into account by default.
+Be careful when using these options in ABF simulations or when using total force values.
+At this point, only the RMSD component will correctly adjust the Jacobian derivative computation to all situations.
 
 \begin{itemize}
 
