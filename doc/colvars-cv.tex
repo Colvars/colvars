@@ -4,12 +4,12 @@ use the following syntax: \texttt{set value [cv colvar myVar value]}.
 All subcommands of \texttt{cv} are documented below.
 
 % The NAMD and VMD manuals have this section at different levels
-\newcommand{\cvparagraph}[1]{\cvsubsec{#1}}
+\newcommand{\cvparagraph}[2]{\cvsubsec{#1}{#2}}
 \cvvmdonly{
-\renewcommand{\cvparagraph}[1]{\cvsubsubsec{#1}}
+\renewcommand{\cvparagraph}[2]{\cvsubsubsec{#1}{#2}}
 }
 
-\cvparagraph{Managing the colvars module}
+\cvparagraph{Managing the colvars module}{sec:cv_command_general}
 
 \begin{itemize}
 \cvvmdonly{
@@ -23,7 +23,7 @@ All subcommands of \texttt{cv} are documented below.
 \item \texttt{version}: return the version of the colvars code.
 \end{itemize}
 
-\cvparagraph{Input and output}
+\cvparagraph{Input and output}{sec:cv_command_io}
 
 \begin{itemize}
 \item \texttt{list}: return a list of all currently defined variables;
@@ -42,7 +42,7 @@ All subcommands of \texttt{cv} are documented below.
 }
 \end{itemize}
 
-\cvparagraph{Accessing collective variables}
+\cvparagraph{Accessing collective variables}{sec:cv_command_colvar}
 
 \begin{itemize}
 \item \texttt{colvar} \emph{$<$name$>$} \texttt{value}: return the current value of colvar \emph{$<$name$>$};
@@ -59,7 +59,7 @@ All subcommands of \texttt{cv} are documented below.
 string order), set which cvcs are enabled or disabled in subsequent evaluations according to a list of 0/1 flags (one per cvc).
 \end{itemize}
 
-\cvparagraph{Accessing biases}
+\cvparagraph{Accessing biases}{sec:cv_command_bias}
 
 \begin{itemize}
 \item \texttt{bias} \emph{$<$name$>$} \texttt{energy}: return the current energy of the bias \emph{$<$name$>$};

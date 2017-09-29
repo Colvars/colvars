@@ -14,6 +14,7 @@
 \usepackage{graphicx}
 \usepackage{color}
 \definecolor{background-color}{gray}{0.84}
+\usepackage{transparent}
 
 % for code-specific macros
 \usepackage{comment}
@@ -23,6 +24,7 @@
 
 \usepackage[stable]{footmisc}
 
+\usepackage{cleveref}
 \usepackage[pagebackref,colorlinks,citecolor=blue,hyperfootnotes=false]{hyperref}
 
 \usepackage{array}
@@ -94,9 +96,9 @@
 \newcommand{\vx}{{\mbox{\boldmath{$x$}}}}
 \newcommand{\bm}[1]{{\mbox{\boldmath{$#1$}}}}
 
-\newcommand{\cvsec}[1]{\section{#1}}
-\newcommand{\cvsubsec}[1]{\subsection{#1}}
-\newcommand{\cvsubsubsec}[1]{\subsubsection{#1}}
+\newcommand{\cvsec}[2]{\noindent\hyperlink{#2}{\hrulefill}\hypertarget{#2}{\section{#1}}\label{#2}}
+\newcommand{\cvsubsec}[2]{\noindent\hyperlink{#2}{\hrulefill}\hypertarget{#2}{\subsection{#1}}\label{#2}}
+\newcommand{\cvsubsubsec}[2]{\noindent\hyperlink{#2}{\hrulefill}\hypertarget{#2}{\subsubsection{#1}}\label{#2}}
 
 \cvnamdonly{
 \newcommand{\outputName}{\emph{outputName}}
