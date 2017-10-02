@@ -431,6 +431,9 @@ public:
   /// \brief Temperature of the simulation (K)
   static real temperature();
 
+  /// \brief Temperature factor of the simulation (KT)
+  static real kt();
+
   /// \brief Time step of MD integrator (fs)
   static real dt();
 
@@ -642,6 +645,11 @@ inline cvm::real cvm::boltzmann()
 inline cvm::real cvm::temperature()
 {
   return proxy->temperature();
+}
+
+inline cvm::real cvm::kt()
+{
+  return proxy->boltzmann()*proxy->temperature();
 }
 
 inline cvm::real cvm::dt()

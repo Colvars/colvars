@@ -265,6 +265,9 @@ public:
   /// Make each element a random number in N(0,1)
   void set_random();
 
+  /// Make each element one
+  void set_to_one();
+
   /// Get a single colvarvalue out of elements of the vector
   colvarvalue const get_elem(int const icv) const;
 

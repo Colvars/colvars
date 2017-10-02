@@ -371,6 +371,37 @@ void colvarvalue::set_random()
   }
 }
 
+void colvarvalue::set_to_one()
+{
+  switch (this->type()) {
+  case colvarvalue::type_scalar:
+    this->real_value = 1.0;
+    break;
+  case colvarvalue::type_3vector:
+  case colvarvalue::type_unit3vector:
+  case colvarvalue::type_unit3vectorderiv:
+    this->rvector_value.x = 1.0;
+    this->rvector_value.y = 1.0;
+    this->rvector_value.z = 1.0;
+    break;
+  case colvarvalue::type_quaternion:
+  case colvarvalue::type_quaternionderiv:
+    this->quaternion_value.q0 = 1.0;
+    this->quaternion_value.q1 = 1.0;
+    this->quaternion_value.q2 = 1.0;
+    this->quaternion_value.q3 = 1.0;
+    break;
+  case colvarvalue::type_vector:
+    for (size_t ic = 0; ic < this->vector1d_value.size(); ic++) {
+      this->vector1d_value[ic] = 1.0;
+    }
+    break;
+  case colvarvalue::type_notset:
+  default:
+    undef_op();
+    break;
+  }
+}
 
 void colvarvalue::undef_op() const
 {

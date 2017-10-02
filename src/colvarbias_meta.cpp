@@ -152,7 +152,16 @@ int colvarbias_meta::init(std::string const &conf)
   get_keyval(conf, "writeHillsTrajectory", b_hills_traj, false);
 
   init_well_tempered_params(conf);
+
+  // read hills inversion or reflection
+
+  init_inversion_params(conf);
+  init_reflection_params(conf);
+  init_interval_params(conf);
+
+  // init ebmeta and hills scale kernel
   init_ebmeta_params(conf);
+  init_kernel_params(conf);
 
   if (cvm::debug())
     cvm::log("Done initializing the metadynamics bias \""+this->name+"\""+
@@ -161,6 +170,52 @@ int colvarbias_meta::init(std::string const &conf)
   return COLVARS_OK;
 }
 
+int colvarbias_meta::init_kernel_params(std::string const &conf)
+{
+  // use specified kernel to scale hills
+  kernel_coupling_time = 0.0;
+  kernel_type = kt_none;
+  default_kernel_ebmeta=false;
+  std::string kernel_type_str;
+  get_keyval(conf, "hillsKernel", scale_kernel, false);
+  get_keyval(conf, "hillsKernelType", kernel_type_str, to_lower_cppstr(std::string("inverseSqrtTime")));
+  kernel_type_str = to_lower_cppstr(kernel_type_str);
+  if (kernel_type_str == to_lower_cppstr(std::string("inverseSqrtTime"))) {
+    kernel_type = kt_inv_sqrt_time;
+  } else if (kernel_type_str == to_lower_cppstr(std::string("none"))) {
+    kernel_type = kt_none;
+  }
+
+  if (scale_kernel) {
+    cvm::log("A scaling time kernel for the hills of metadynamics is used.\n");
+    if (well_tempered) {
+      cvm::log("WARNING: you are using a scaling kernel for the hills of metadynamics \n");
+      cvm::log("together with Well-tempered metadynamics; are you sure this is a good idea?\n");
+    }
+    switch (kernel_type) {
+    case kt_none:
+      cvm::error("Error: undefined kernel type.\n", INPUT_ERROR);
+      return INPUT_ERROR;
+      break;
+    case kt_inv_sqrt_time:
+    case kt_ntot:
+      provide(f_cvb_history_dependent);
+      break;
+    }
+  }
+
+  get_keyval(conf, "hillsKernelCouplingTime", kernel_coupling_time, 0.0);
+  if (scale_kernel && kernel_coupling_time <= 0.0) {
+    if (ebmeta) {
+      default_kernel_ebmeta=true;
+      cvm::log("Default ebmeta hillsKernelCouplingTime is used.\n");
+    } else {
+      cvm::error("Error: a positive couplingTime must be provided.\n", INPUT_ERROR);
+      return INPUT_ERROR;
+    }
+  }
+  return COLVARS_OK;
+}
 
 int colvarbias_meta::init_well_tempered_params(std::string const &conf)
 {
@@ -181,7 +236,16 @@ int colvarbias_meta::init_well_tempered_params(std::string const &conf)
 int colvarbias_meta::init_ebmeta_params(std::string const &conf)
 {
   // for ebmeta
+  // calculate gaussian scale factor in units of hills steps
+  gauss_factor = 1.0;
+  for (size_t i = 0; i < num_variables(); i++) {
+      cvm:: real sigma=0.5*variables(i)->width*hill_width;
+      gauss_factor*=sigma*std::sqrt(2.0 * PI);
+  } 
+  gauss_factor = cvm::kt()/(hill_weight*gauss_factor);
+  
   target_dist = NULL;
+  target_error = NULL;
   get_keyval(conf, "ebMeta", ebmeta, false);
   if(ebmeta){
     if (use_grids && expand_grids) {
@@ -192,34 +256,817 @@ int colvarbias_meta::init_ebmeta_params(std::string const &conf)
     }
     target_dist = new colvar_grid_scalar();
     target_dist->init_from_colvars(colvars);
-    get_keyval(conf, "targetdistfile", target_dist_file);
-    std::ifstream targetdiststream(target_dist_file.c_str());
-    target_dist->read_multicol(targetdiststream);
+    if (get_keyval(conf, "targetDistFile", target_dist_file)) {
+      std::ifstream targetdiststream(target_dist_file.c_str());
+      target_dist->read_multicol(targetdiststream);
+    } else {
+      cvm::log("NOTE: targetDistFile not found; using uniform target distribution by default .\n");
+      int nt_points=target_dist->number_of_points();
+      for (size_t i = 0; i < nt_points; i++) { 
+         target_dist->set_array_value(i,1.0);
+      }
+    }
     cvm::real min_val = target_dist->minimum_value();
     if(min_val<0){
       cvm::error("Error: Target distribution of ebMeta "
                  "has negative values!.\n", INPUT_ERROR);
     }
-    cvm::real min_pos_val = target_dist->minimum_pos_value();
+    get_keyval(conf, "ebmetaLowLimitNCVs", nebmvarsl, 0);
+    get_keyval(conf, "ebmetaUpLimitNCVs", nebmvarsu, 0);
+
+    if (nebmvarsl>0) {
+      if (ebmeta_llimit_cv.size()==0) {
+        ebmeta_llimit_cv.resize(nebmvarsl);
+      }
+      if (get_keyval(conf, "ebmetaLowLimitUseCVs", ebmeta_llimit_cv, ebmeta_llimit_cv)) {
+        if (ebmeta_llimit.size()==0) {
+          ebmeta_llimit.resize(nebmvarsl);
+        }
+      } else {
+        cvm::error("Error in ebmeta input: which CVs have a lower limit not provided.\n", INPUT_ERROR);
+        return INPUT_ERROR;        
+      }
+      if (get_keyval(conf, "ebmetaLowLimit", ebmeta_llimit, ebmeta_llimit)) {
+        for (size_t i = 0; i < nebmvarsl; i++) {
+           if (ebmeta_llimit_cv[i]>=num_variables() || ebmeta_llimit_cv[i]<0) {
+             cvm::error("Error: CV number is negative or >= num_variables  \n", INPUT_ERROR);
+             return INPUT_ERROR;
+           }
+           cvm::log("ebmeta is applied with a lower limit for CV "+cvm::to_str(ebmeta_llimit_cv[i])+".\n");
+           cvm::log("ebmeta lower limit for this CV is "+cvm::to_str(ebmeta_llimit[i])+".\n");
+        }
+      } else {
+        cvm::error("Error: Lower limits for ebmeta CVs not provided.\n", INPUT_ERROR);
+        return INPUT_ERROR;
+      }
+    }
+
+    if (nebmvarsu>0) {
+      if (ebmeta_ulimit_cv.size()==0) {
+        ebmeta_ulimit_cv.resize(nebmvarsu);
+      }
+      if (get_keyval(conf, "ebmetaUpLimitUseCVs", ebmeta_ulimit_cv, ebmeta_ulimit_cv)) {
+        if (ebmeta_ulimit.size()==0) {
+          ebmeta_ulimit.resize(nebmvarsu);
+        }
+      } else {
+        cvm::error("Error in ebmeta input: which CVs have a upper limit not provided.\n", INPUT_ERROR);
+        return INPUT_ERROR;
+      }
+      if (get_keyval(conf, "ebmetaUpLimit", ebmeta_ulimit, ebmeta_ulimit)) {
+        for (size_t i = 0; i < nebmvarsu; i++) {
+           if (ebmeta_ulimit_cv[i]>=num_variables() || ebmeta_ulimit_cv[i]<0) {
+             cvm::error("Error: CV number is negative or >= num_variables  \n", INPUT_ERROR);
+             return INPUT_ERROR;
+           }
+           cvm::log("ebmeta is applied with a upper limit for CV "+cvm::to_str(ebmeta_ulimit_cv[i])+".\n");
+           cvm::log("ebmeta upper limit for this CV is "+cvm::to_str(ebmeta_ulimit[i])+".\n");
+        }
+      } else {
+        cvm::error("Error: Upper limits for ebmeta CVs not provided.\n", INPUT_ERROR);
+        return INPUT_ERROR;
+      }
+    }
+
+    if (nebmvarsl>0 && nrefvarsl>0 ){
+      cvm::log("NOTE: please verify that ebmeta and reflection lower limits are the same for the same CV \n");      
+    }
+
+    if (nebmvarsu>0 && nrefvarsu>0 ){
+      cvm::log("NOTE: please verify that ebmeta and reflection upper limits are the same for the same CV \n");
+    }
+
+    // filter target distribution according to selected limits
+
+    for (size_t j = 0; j < nebmvarsl; j++) {
+      size_t i=ebmeta_llimit_cv[j];
+      for (std::vector<int> ix = target_dist->new_index(); target_dist->index_ok(ix); target_dist->incr(ix) ) {
+         cvm::real cv_value=target_dist->bin_to_value_scalar(ix[i], i);
+         if (cv_value < ebmeta_llimit[j]){
+           target_dist->set_value(ix, 0.0, 0);
+         }
+      }
+    }
+
+    for (size_t j = 0; j < nebmvarsu; j++) {
+      size_t i=ebmeta_ulimit_cv[j];
+      for (std::vector<int> ix = target_dist->new_index(); target_dist->index_ok(ix); target_dist->incr(ix) ) {
+         cvm::real cv_value=target_dist->bin_to_value_scalar(ix[i], i);
+         if (cv_value > ebmeta_ulimit[j]){
+           target_dist->set_value(ix, 0.0, 0);
+         }
+      }
+    }
+
+    // filter target distribution according to reflection boundaries
+
+    for (size_t j = 0; j < nrefvarsl; j++) {
+      size_t i=reflection_llimit_cv[j];
+      for (std::vector<int> ix = target_dist->new_index(); target_dist->index_ok(ix); target_dist->incr(ix) ) {
+         cvm::real cv_value=target_dist->bin_to_value_scalar(ix[i], i);
+         if (cv_value < reflection_llimit[j]){
+           target_dist->set_value(ix, 0.0, 0); 
+         } 
+      }
+    }
+
+    for (size_t j = 0; j < nrefvarsu; j++) {
+      size_t i=reflection_ulimit_cv[j];
+      for (std::vector<int> ix = target_dist->new_index(); target_dist->index_ok(ix); target_dist->incr(ix) ) {
+         cvm::real cv_value=target_dist->bin_to_value_scalar(ix[i], i);
+         if (cv_value > reflection_ulimit[j]){
+           target_dist->set_value(ix, 0.0, 0);
+         }
+      }
+    }
+
+    // normalize target distribution
+    cvm::real intval = 1.0/target_dist->integral();
+    target_dist->multiply_constant(intval);
+    get_keyval(conf, "ebMetaEquilSteps", ebmeta_equil_steps, 0);
+    get_keyval(conf, "ebMetaError", ebmetaerror, false);
+    if(ebmetaerror){
+      ebmeta_out=false;
+      if(get_keyval(conf, "ebmetaOutFile", ebmeta_out_file)){
+        ebmetaoutfile.open (ebmeta_out_file);
+        ebmeta_out=true;
+      } 
+      ebmeta_nconst=0.0;
+      get_keyval(conf, "ebMetaFixErrorBound", ebmeta_fix_bound, 1.5);
+      int const npoints=target_dist->number_of_points();
+      target_error = new colvar_grid_scalar();
+      target_error->init_from_colvars(colvars);
+      if (get_keyval(conf, "targetErrorFile", target_error_file)) {
+        std::ifstream targeterrorstream(target_error_file.c_str());
+        target_error->read_multicol(targeterrorstream);
+      } else {
+        cvm::log("NOTE: targetErrorFile not found; using 0.25*target_dist as default error .\n");
+        int nt_points=target_error->number_of_points();
+        for (size_t i = 0; i < nt_points; i++) {
+           cvm:: real error_val=0.25*target_dist->array_value(i)/intval; 
+           target_error->set_array_value(i,error_val);
+        }
+      }
+      
+      cvm::real error_min = target_error->minimum_value();
+      if(error_min<0){
+        cvm::error("Error: Target error of ebMeta "
+                   "has negative values!.\n", INPUT_ERROR);
+
+      }
+
+      // filter target error according to selected limits
+      for (size_t j = 0; j < nebmvarsl; j++) {
+        size_t i=ebmeta_llimit_cv[j];
+        for (std::vector<int> ix = target_error->new_index(); target_error->index_ok(ix); target_error->incr(ix) ) {
+           cvm::real cv_value=target_error->bin_to_value_scalar(ix[i], i);
+           if (cv_value < ebmeta_llimit[j]){
+             target_error->set_value(ix, 0.0, 0);
+           }
+        }
+      }
+   
+      for (size_t j = 0; j < nebmvarsu; j++) {
+        size_t i=ebmeta_ulimit_cv[j];
+        for (std::vector<int> ix = target_error->new_index(); target_error->index_ok(ix); target_error->incr(ix) ) {
+           cvm::real cv_value=target_error->bin_to_value_scalar(ix[i], i);
+           if (cv_value > ebmeta_ulimit[j]){
+             target_error->set_value(ix , 0.0, 0);
+           }
+        }
+      }
+
+      // filter target error according to reflection boundaries
+      for (size_t j = 0; j < nrefvarsl; j++) {
+        size_t i=reflection_llimit_cv[j];
+        for (std::vector<int> ix = target_error->new_index(); target_error->index_ok(ix); target_error->incr(ix) ) {
+           cvm::real cv_value=target_error->bin_to_value_scalar(ix[i], i);
+           if (cv_value < reflection_llimit[j]){
+             target_error->set_value(ix, 0.0, 0);
+           }
+        }
+      }
+
+      for (size_t j = 0; j < nrefvarsu; j++) {
+        size_t i=reflection_ulimit_cv[j];
+        for (std::vector<int> ix = target_error->new_index(); target_error->index_ok(ix); target_error->incr(ix) ) {
+           cvm::real cv_value=target_error->bin_to_value_scalar(ix[i], i);
+           if (cv_value > reflection_ulimit[j]){
+             target_error->set_value(ix, 0.0, 0);
+           }
+        }
+      }
+
+      target_error->multiply_constant(intval);
+
+      if (!use_grids) { 
+        cvm::error("Error: You must enable grids when using ebMeta with error"
+                   "on the target distribution ", INPUT_ERROR);
+      }
+      bin_volume = 1.0;
+      for (size_t i = 0; i < num_variables(); i++) {
+          bin_volume*=variables(i)->width;
+      }
+      target_error->multiply_constant(bin_volume);
+
+      eff_error_points=0;
+      for (size_t i = 0; i < npoints; i++) {
+         if ( target_error->array_value(i)>0 || target_dist->array_value(i)>0 ) {
+           eff_error_points++;
+         } 
+      }
+      if (which_error_point.size()==0) {
+        which_error_point.resize(eff_error_points);
+      }
+      eff_error_points=0;
+      for (size_t i = 0; i < npoints; i++) {
+         if ( target_error->array_value(i)>0 || target_dist->array_value(i)>0 ) {
+           which_error_point[eff_error_points]=i;
+           eff_error_points++;
+         }         
+      }
+
+      gamma_vec.resize(eff_error_points);
+      gamma_vec.assign(eff_error_points, 1.0);
+      if (target_prob.size()==0) {
+        target_prob.resize(eff_error_points);
+      }
+
+      if (target_dist_eff.size()==0) {
+        target_dist_eff.resize(eff_error_points);
+      }
+
+      if (target_error_orig.size()==0) {
+        target_error_orig.resize(eff_error_points);
+      }
+
+      if (target_prob_orig.size()==0) {
+        target_prob_orig.resize(eff_error_points);
+      }
+
+      for (size_t j = 0; j < eff_error_points; j++) {
+         size_t i=which_error_point[j];
+         target_prob[j]=target_dist->array_value(i)*bin_volume;
+         target_dist_eff[j]=target_prob[j];
+         target_prob_orig[j]=target_prob[j];
+         target_error_orig[j]=target_error->array_value(i);  
+      }
+    }
+    // multiply by effective volume = exp(differential entropy)
+    cvm::real volume = std::exp(target_dist->entropy());
+    ebmeta_tau0 = gauss_factor*volume;
+    target_dist->multiply_constant(volume);
+    // get and check minimum positive value
+    min_pos_val = target_dist->minimum_pos_value();
     if(min_pos_val<=0){
       cvm::error("Error: Target distribution of ebMeta has negative "
                  "or zero minimum positive value!.\n", INPUT_ERROR);
     }
-    if(min_val==0){
-      cvm::log("WARNING: Target distribution has zero values.\n");
-      cvm::log("Zeros will be converted to the minimum positive value.\n");
-      target_dist->remove_zeros(min_pos_val);
+    get_keyval(conf, "ebMetaMaxScaleF", ebmeta_max_scale_f, 1.0/min_pos_val);
+    get_keyval(conf, "ebMetaUpdateScaleF", ebmeta_factp, 1.0);
+    if (ebmeta_factp/ebmeta_tau0>=1.0) {
+      cvm::error("Error: Overall scale factor for target distribution update" 
+                 "(ebMetaUpdateScaleF/ebmeta_tau0) is larger than 1.0 please" 
+                 "reduce ebMetaUpdateScaleF !.\n", INPUT_ERROR);       
     }
-    // normalize target distribution and multiply by effective volume = exp(differential entropy)
-    target_dist->multiply_constant(1.0/target_dist->integral());
-    cvm::real volume = std::exp(target_dist->entropy());
-    target_dist->multiply_constant(volume);
-    get_keyval(conf, "ebMetaEquilSteps", ebmeta_equil_steps, 0);
+    get_keyval(conf, "ebMetaNormConstToll", ebmeta_nconst_toll, 0.000001);
+    get_keyval(conf, "ebMetaNormConstMaxSteps", ebmeta_nconst_maxsteps, 1000);
+    get_keyval(conf, "ebMetaUpdateTargets", update_targets, false);
+    get_keyval(conf, "ebMetaForgetTargets", forget_targets, false);
+    ebmeta_ftarget=1;
+    if (forget_targets) {
+      update_targets=true;
+      ebmeta_ftarget=-1; 
+      get_keyval(conf, "ebMetaMaxErrorScale",ebmeta_maxerror_s, 4.0);
+    }
+    if (update_targets) {
+      get_keyval(conf, "ebMetaUpdateErrorScale", update_error_s, 0.1);
+      get_keyval(conf, "ebMetaUpdateProbScale", update_prob_s, 0.01);
+      get_keyval(conf, "ebMetaMinErrorScale",ebmeta_minerror_s, 0.25);
+      ebmeta_minerror=ebmeta_minerror_s*bin_volume/(volume); 
+    }    
   }
 
   return COLVARS_OK;
 }
 
+int colvarbias_meta::init_inversion_params(std::string const &conf)
+{
+  bool use_inversion;
+  get_keyval(conf, "useHillsInversion", use_inversion, false);
+  ninvvarsl=0;
+  ninvvarsu=0;
+  if (use_inversion) {
+    inversion_type = it_monod;
+    std::string inversion_type_str;
+    get_keyval(conf, "inversionType", inversion_type_str, to_lower_cppstr(std::string("monoDimensional")));
+    inversion_type_str = to_lower_cppstr(inversion_type_str);
+    if (inversion_type_str == to_lower_cppstr(std::string("monoDimensional"))) {
+      inversion_type = it_monod;
+    } else if (inversion_type_str == to_lower_cppstr(std::string("multiDimensional"))) {
+      inversion_type = it_multid;
+    }
+
+    get_keyval(conf, "inversionMaxHillsWeight", inv_max_ww, 5.0);
+    get_keyval(conf, "inversionLowLimitNCVs", ninvvarsl, num_variables());
+    get_keyval(conf, "inversionUpLimitNCVs", ninvvarsu, num_variables());
+    if (inversion_llimit_cv.size()==0) {
+      inversion_llimit_cv.resize(ninvvarsl);
+      for (size_t i = 0; i < ninvvarsl; i++) {
+         inversion_llimit_cv[i]=i;
+      }
+    }
+    if (inversion_ulimit_cv.size()==0) {
+      inversion_ulimit_cv.resize(ninvvarsu);
+      for (size_t i = 0; i < ninvvarsu; i++) {
+         inversion_ulimit_cv[i]=i;
+      }
+    }
+    if(ninvvarsl>0) {
+      if (get_keyval(conf, "inversionLowLimitUseCVs", inversion_llimit_cv, inversion_llimit_cv)) {
+        if (inversion_llimit.size()==0) {
+          inversion_llimit.resize(ninvvarsl);
+        }
+      } else {
+        cvm::log("Using all variables for lower limits of inversion \n");
+      }
+      if (get_keyval(conf, "inversionLowLimit", inversion_llimit, inversion_llimit)) {
+
+        if (inversion_intl.size()==0) {
+          inversion_intl.resize(ninvvarsl);
+        }
+        if (!get_keyval(conf, "inversionLowLimitRange", inversion_intl, inversion_intl)) {
+          inversion_intl.assign(ninvvarsl,6.0);
+        }
+
+        if (inversion_ref_intl.size()==0) {
+          inversion_ref_intl.resize(ninvvarsl);
+        }
+        if (!get_keyval(conf, "inversionRefLLimitRange", inversion_ref_intl, inversion_ref_intl)) {
+          inversion_ref_intl.assign(ninvvarsl,1.6);
+        }
+
+        for (size_t i = 0; i < ninvvarsl; i++) {
+           if (use_grids) {
+             size_t ii=inversion_llimit_cv[i];
+             cvm:: real sigma=0.5*variables(ii)->width*hill_width;
+             cvm:: real bound=variables(ii)->lower_boundary;
+             cvm:: real inv_r=inversion_llimit[i]-inversion_intl[i]*sigma;
+             if (inv_r < bound) {
+               cvm::error("Error: When using grids, lower boundary for CV"+cvm::to_str(ii)+" must be smaller than"+cvm::to_str(inv_r)+".\n", INPUT_ERROR);
+             }
+           }
+           cvm::log("Inversion condition is applied on a lower limit for CV "+cvm::to_str(inversion_llimit_cv[i])+".\n");
+           cvm::log("Inversion condition lower limit for this CV is "+cvm::to_str(inversion_llimit[i])+".\n");
+           cvm::log("Inversion condition lower range for this CV is "+cvm::to_str(inversion_intl[i])+".\n");
+           cvm::log("Inversion condition lower reflection range for this CV is "+cvm::to_str(inversion_ref_intl[i])+".\n");
+        }      
+      } else {
+        cvm::error("Error: Lower limits for inversion not provided.\n", INPUT_ERROR);
+        return INPUT_ERROR;
+      }
+    }
+    
+    if(ninvvarsu>0) {
+      if (get_keyval(conf, "inversionUpLimitUseCVs", inversion_ulimit_cv, inversion_ulimit_cv)) {
+        if (inversion_ulimit.size()==0) {
+          inversion_ulimit.resize(ninvvarsu);
+        }
+      } else {
+        cvm::log("Using all variables for upper limits of inversion \n");
+      }
+
+      if (get_keyval(conf, "inversionUpLimit", inversion_ulimit, inversion_ulimit)) {
+        if (inversion_intu.size()==0) {
+          inversion_intu.resize(ninvvarsu);
+        }
+        if (!get_keyval(conf, "inversionUpLimitRange", inversion_intu, inversion_intu)) {
+          inversion_intu.assign(ninvvarsu,6.0);
+        } 
+
+        if (inversion_ref_intu.size()==0) {
+          inversion_ref_intu.resize(ninvvarsu);
+        }
+        if (!get_keyval(conf, "inversionRefULimitRange", inversion_ref_intu, inversion_ref_intu)) {
+          inversion_ref_intu.assign(ninvvarsu,1.6);
+        }
+
+
+        for (size_t i = 0; i < ninvvarsu; i++) {
+           if (use_grids) {
+             size_t ii=inversion_ulimit_cv[i];
+             cvm:: real sigma=0.5*variables(ii)->width*hill_width;
+             cvm:: real bound=variables(ii)->upper_boundary;
+             cvm:: real inv_r=inversion_ulimit[i]+inversion_intu[i]*sigma;
+             if (inv_r > bound) {
+               cvm::error("Error: When using grids, upper boundary for CV"+cvm::to_str(ii)+" must be larger than"+cvm::to_str(inv_r)+".\n", INPUT_ERROR);
+             }
+           }
+
+           cvm::log("Inversion condition is applied on an upper limit for CV "+cvm::to_str(inversion_ulimit_cv[i])+".\n");
+           cvm::log("Inversion condition upper limit for this CV is "+cvm::to_str(inversion_ulimit[i])+".\n");
+           cvm::log("Inversion condition upper range for this CV is "+cvm::to_str(inversion_intu[i])+".\n");
+           cvm::log("Inversion condition upper reflection range for this CV is "+cvm::to_str(inversion_ref_intu[i])+".\n");
+        }
+      } else {
+        cvm::error("Error: Upper limits for inversion not provided.\n", INPUT_ERROR); 
+        return INPUT_ERROR;
+      }
+    }
+  }
+  // use inversion only for scalar variables
+
+  for (size_t i = 0; i < ninvvarsl; i++) {
+     if (inversion_llimit_cv[i]>=num_variables() || inversion_llimit_cv[i]<0) {
+       cvm::error("Error: CV number is negative or >= num_variables  \n", INPUT_ERROR);
+       return INPUT_ERROR;
+     }
+     int j=inversion_llimit_cv[i];
+     if (variables(j)->value().type()!=colvarvalue::type_scalar) {
+       cvm::error("Error: Hills inversion can be used only with scalar variables.\n", INPUT_ERROR);
+       return INPUT_ERROR;
+     }
+  } 
+
+  for (size_t i = 0; i < ninvvarsu; i++) {
+     if (inversion_ulimit_cv[i]>=num_variables() || inversion_ulimit_cv[i]<0) {
+       cvm::error("Error: CV number is negative or >= num_variables  \n", INPUT_ERROR);
+       return INPUT_ERROR;
+     }
+     int j=inversion_ulimit_cv[i];
+     if (variables(j)->value().type()!=colvarvalue::type_scalar) {
+       cvm::error("Error: Hills inversion can be used only with scalar variables.\n", INPUT_ERROR);
+       return INPUT_ERROR;
+     }
+  }
+
+  // mono vs multimensional inversion
+
+  switch (inversion_type) {
+  case it_monod:
+    cvm::log("Using monodimensional inversion \n");
+    break;
+  case it_multid:
+    cvm::log("Using multidimensional inversion \n");
+    int sum=1;
+    int nstates;
+    if (inv_state_ll.size()==0) {
+      inv_state_ll.resize(ninvvarsl,std::vector<int>(1));
+    }
+    inv_state_ll[0][0]=1;
+    for (size_t j = 1; j < ninvvarsl; j++) {
+      sum*=10;
+      nstates=0;
+      for (size_t jj = 0; jj < j; jj++) {
+            nstates+=inv_state_ll[j].size();
+      }
+      nstates++;
+      inv_state_ll[j].resize(nstates);
+      inv_state_ll[j][0]=sum;
+      int count=0;
+      for (size_t jj = 0; jj < j; jj++) {
+         for (size_t ii = 0; ii < inv_state_ll[jj].size(); ii++) {
+            count++;
+            inv_state_ll[j][count]=inv_state_ll[j][0]+inv_state_ll[jj][ii];
+         }
+      }
+    }
+
+    sum=1;
+    if (inv_state_ul.size()==0) {
+      inv_state_ul.resize(ninvvarsu,std::vector<int>(1));
+    }
+    inv_state_ul[0][0]=1;
+    for (size_t j = 1; j < ninvvarsu; j++) {
+      sum*=10;
+      nstates=0;
+      for (size_t jj = 0; jj < j; jj++) {
+            nstates+=inv_state_ul[j].size();
+      }
+      nstates++;
+      inv_state_ul[j].resize(nstates);
+      inv_state_ul[j][0]=sum;
+      int count=0;
+      for (size_t jj = 0; jj < j; jj++) {
+         for (size_t ii = 0; ii < inv_state_ul[jj].size(); ii++) {
+            count++;
+            inv_state_ul[j][count]=inv_state_ul[j][0]+inv_state_ul[jj][ii];
+         }
+      }
+    }
+    break;
+  }
+
+
+  return COLVARS_OK;
+}
+
+int colvarbias_meta::init_reflection_params(std::string const &conf)
+{
+  bool use_reflection;
+  nrefvarsl=0;
+  nrefvarsu=0;
+  get_keyval(conf, "useHillsReflection", use_reflection, false); 
+  if (use_reflection) {
+
+    reflection_type = rt_monod;
+    std::string reflection_type_str;
+    get_keyval(conf, "reflectionType", reflection_type_str, to_lower_cppstr(std::string("monoDimensional")));
+    reflection_type_str = to_lower_cppstr(reflection_type_str);
+    if (reflection_type_str == to_lower_cppstr(std::string("monoDimensional"))) {
+      reflection_type = rt_monod;
+    } else if (reflection_type_str == to_lower_cppstr(std::string("multiDimensional"))) {
+      reflection_type = rt_multid;
+    }
+
+    get_keyval(conf, "reflectionLowLimitNCVs", nrefvarsl, num_variables());
+    get_keyval(conf, "reflectionUpLimitNCVs", nrefvarsu, num_variables());
+    if (reflection_llimit_cv.size()==0) {
+      reflection_llimit_cv.resize(nrefvarsl);
+      for (size_t i = 0; i < nrefvarsl; i++) {
+         reflection_llimit_cv[i]=i;
+      }
+    }
+    if (reflection_ulimit_cv.size()==0) {
+      reflection_ulimit_cv.resize(nrefvarsu);
+      for (size_t i = 0; i < nrefvarsu; i++) {
+         reflection_ulimit_cv[i]=i;
+      }
+    }
+    if(nrefvarsl>0) {
+      if (get_keyval(conf, "reflectionLowLimitUseCVs", reflection_llimit_cv, reflection_llimit_cv)) {
+        if (reflection_llimit.size()==0) {
+          reflection_llimit.resize(nrefvarsl);
+        }
+      } else {
+        cvm::log("Using all variables for lower limits of reflection \n");
+      } 
+      if (get_keyval(conf, "reflectionLowLimit", reflection_llimit, reflection_llimit)) {
+        if (reflection_intl.size()==0) {
+          reflection_intl.resize(nrefvarsl);
+        }
+        if (!get_keyval(conf, "reflectionLowLimitRange", reflection_intl, reflection_intl)) {
+          reflection_intl.assign(nrefvarsl,6.0);
+        }
+        for (size_t i = 0; i < nrefvarsl; i++) {
+           cvm::log("Reflection condition is applied on a lower limit for CV "+cvm::to_str(reflection_llimit_cv[i])+".\n");
+           cvm::log("Reflection condition lower limit for this CV is "+cvm::to_str(reflection_llimit[i])+".\n");
+           cvm::log("Reflection lower limit range for this CV is "+cvm::to_str(reflection_intl[i])+".\n");
+        }
+      } else {
+        cvm::error("Error: Lower limits for reflection not provided.\n", INPUT_ERROR);
+        return INPUT_ERROR;
+      }
+    } 
+    
+    if(nrefvarsu>0) {
+      if (get_keyval(conf, "reflectionUpLimitUseCVs", reflection_ulimit_cv, reflection_ulimit_cv)) {
+        if (reflection_ulimit.size()==0) {
+          reflection_ulimit.resize(nrefvarsu);
+        }
+      } else {
+        cvm::log("Using all variables for upper limits of reflection \n");
+      }
+  
+      if (get_keyval(conf, "reflectionUpLimit", reflection_ulimit, reflection_ulimit)) {
+        if (reflection_intu.size()==0) {
+          reflection_intu.resize(nrefvarsu);
+        }
+        if (!get_keyval(conf, "reflectionUpLimitRange", reflection_intu, reflection_intu)){
+          reflection_intu.assign(nrefvarsu,6.0);   
+        }
+        for (size_t i = 0; i < nrefvarsu; i++) {
+           cvm::log("Reflection condition is applied on an upper limit for CV "+cvm::to_str(reflection_ulimit_cv[i])+".\n");
+           cvm::log("Reflection condition upper limit for this CV is "+cvm::to_str(reflection_ulimit[i])+".\n");
+           cvm::log("Reflection upper limit range for this CV is "+cvm::to_str(reflection_intu[i])+".\n");
+        }
+      } else {
+        cvm::error("Error: Upper limits for reflection not provided.\n", INPUT_ERROR);
+        return INPUT_ERROR; 
+      }
+    }
+  }
+  // use reflection only with scalar variables
+
+  for (size_t i = 0; i < nrefvarsl; i++) {
+     if (reflection_llimit_cv[i]>=num_variables() || reflection_llimit_cv[i]<0) {
+       cvm::error("Error: CV number is negative or >= num_variables  \n", INPUT_ERROR);
+       return INPUT_ERROR;
+     }
+     int j=reflection_llimit_cv[i];
+     if (variables(j)->value().type()!=colvarvalue::type_scalar) {
+       cvm::error("Error: Hills reflection can be used only with scalar variables.\n", INPUT_ERROR);
+       return INPUT_ERROR;
+     }
+  }
+
+  for (size_t i = 0; i < nrefvarsu; i++) {
+     if (reflection_ulimit_cv[i]>=num_variables() || reflection_ulimit_cv[i]<0) {
+       cvm::error("Error: CV number is negative or >= num_variables  \n", INPUT_ERROR);
+       return INPUT_ERROR;
+     }
+     int j=reflection_ulimit_cv[i];
+     if (variables(j)->value().type()!=colvarvalue::type_scalar) {
+       cvm::error("Error: Hills reflection can be used only with scalar variables.\n", INPUT_ERROR);
+       return INPUT_ERROR;
+     }
+  }
+
+  // mono vs multimensional reflection
+
+  switch (reflection_type) {
+  case rt_monod:
+    cvm::log("Using monodimensional reflection \n");
+    break;
+  case rt_multid:
+    // generate reflection states
+    cvm::log("Using multidimensional reflection \n");
+    int sum=1;
+    int nstates;
+    if (ref_state_ll.size()==0) {
+      ref_state_ll.resize(nrefvarsl,std::vector<int>(1));
+    } 
+    ref_state_ll[0][0]=1;
+    for (size_t j = 1; j < nrefvarsl; j++) {
+      sum*=10;
+      nstates=0;
+      for (size_t jj = 0; jj < j; jj++) {
+            nstates+=ref_state_ll[j].size();
+      }
+      nstates++;
+      ref_state_ll[j].resize(nstates);
+      ref_state_ll[j][0]=sum;
+      int count=0;
+      for (size_t jj = 0; jj < j; jj++) {
+         for (size_t ii = 0; ii < ref_state_ll[jj].size(); ii++) {
+            count++;
+            ref_state_ll[j][count]=ref_state_ll[j][0]+ref_state_ll[jj][ii];
+         }
+      }
+    }
+
+    sum=1;
+    if (ref_state_ul.size()==0) {
+      ref_state_ul.resize(nrefvarsu,std::vector<int>(1));
+    }
+    ref_state_ul[0][0]=1;
+    for (size_t j = 1; j < nrefvarsu; j++) {
+      sum*=10;
+      nstates=0;
+      for (size_t jj = 0; jj < j; jj++) {
+            nstates+=ref_state_ul[j].size();
+      }
+      nstates++;
+      ref_state_ul[j].resize(nstates);
+      ref_state_ul[j][0]=sum;
+      int count=0;
+      for (size_t jj = 0; jj < j; jj++) {
+         for (size_t ii = 0; ii < ref_state_ul[jj].size(); ii++) {
+            count++;
+            ref_state_ul[j][count]=ref_state_ul[j][0]+ref_state_ul[jj][ii];
+         }
+      }
+    }
+
+    break;
+  }
+
+  return COLVARS_OK;
+}
+
+int colvarbias_meta::init_interval_params(std::string const &conf)
+{
+  bool use_interval;
+  use_interval=false;
+  nintvarsl=0;
+  nintvarsu=0;
+  std::vector<int> interval_llimit_cv;
+  std::vector<int> interval_ulimit_cv;
+  if (get_keyval(conf, "useHillsInterval", use_interval, use_interval)) {
+    if (use_interval) {
+      get_keyval(conf, "intervalLowLimitNCVs", nintvarsl, num_variables());
+      get_keyval(conf, "intervalUpLimitNCVs", nintvarsu, num_variables());
+      interval_llimit_cv.resize(nintvarsl); 
+      for (size_t i = 0; i < nintvarsl; i++) {
+         interval_llimit_cv[i]=i;
+      }
+      interval_ulimit_cv.resize(nintvarsu);
+      for (size_t i = 0; i < nintvarsu; i++) {
+         interval_ulimit_cv[i]=i;
+      }
+      if(nintvarsl>0) {
+        if (get_keyval(conf, "intervalLowLimitUseCVs", interval_llimit_cv, interval_llimit_cv)) {
+          if (interval_llimit.size()==0) {
+            interval_llimit.resize(nintvarsl);
+          }
+        } else {
+          cvm::log("Using all variables for lower limits of interval \n");
+        }
+        if (get_keyval(conf, "intervalLowLimit", interval_llimit, interval_llimit)) {
+          for (size_t i = 0; i < nintvarsl; i++) {
+             cvm::log("Hills forces will be removed beyond a lower limit for CV "+cvm::to_str(interval_llimit_cv[i])+".\n");
+             cvm::log("Interval condition lower limit for this CV is "+cvm::to_str(interval_llimit[i])+".\n");
+          }     
+        } else {
+          cvm::error("Error: Lower limits for interval not provided.\n", INPUT_ERROR);
+          return INPUT_ERROR;
+        }
+      }
+   
+      if(nintvarsu>0) {
+        if (get_keyval(conf, "intervalUpLimitUseCVs", interval_ulimit_cv, interval_ulimit_cv)) {
+          if (interval_ulimit.size()==0) {
+            interval_ulimit.resize(nintvarsu);
+          }
+        } else {
+          cvm::log("Using all variables for upper limits of interval \n");
+        }
+   
+        if (get_keyval(conf, "intervalUpLimit", interval_ulimit, interval_ulimit)) {
+          for (size_t i = 0; i < nintvarsu; i++) {
+             cvm::log("Hills forces will be removed beyond an upper limit for CV "+cvm::to_str(interval_ulimit_cv[i])+".\n");
+             cvm::log("Interval condition upper limit for this CV is "+cvm::to_str(interval_ulimit[i])+".\n");
+          }
+        } else {
+          cvm::error("Error: Upper limits for interval not provided.\n", INPUT_ERROR);
+          return INPUT_ERROR;
+        }
+      }
+    }
+  } else {
+    if (nrefvarsl>0 || nrefvarsu>0) {
+      cvm::log("Reflection active: Using by default reflection variables and limits for interval \n");
+      nintvarsl=nrefvarsl;
+      nintvarsu=nrefvarsu;
+      interval_llimit_cv.resize(nintvarsl);
+      if (interval_llimit.size()==0) {
+        interval_llimit.resize(nintvarsl);
+      }
+      for (size_t i = 0; i < nintvarsl; i++) {
+         interval_llimit_cv[i]=reflection_llimit_cv[i];
+         interval_llimit[i]=reflection_llimit[i];
+      }
+      interval_ulimit_cv.resize(nintvarsu);
+      if (interval_ulimit.size()==0) {
+        interval_ulimit.resize(nintvarsu);
+      }
+      for (size_t i = 0; i < nintvarsu; i++) {
+         interval_ulimit_cv[i]=reflection_ulimit_cv[i];
+         interval_ulimit[i]=reflection_ulimit[i];
+      }
+    }     
+  }
+
+  if (which_int_llimit_cv.size()==0) {
+    which_int_llimit_cv.resize(num_variables());
+  }
+  for (size_t i = 0; i < num_variables(); i++) { 
+     which_int_llimit_cv[i]=-1;
+  }
+  for (size_t i = 0; i < nintvarsl; i++) { 
+     int j=interval_llimit_cv[i];
+     which_int_llimit_cv[j]=i;
+  }
+
+  if (which_int_ulimit_cv.size()==0) { 
+    which_int_ulimit_cv.resize(num_variables());
+  }
+  for (size_t i = 0; i < num_variables(); i++) { 
+     which_int_ulimit_cv[i]=-1;
+  }
+  for (size_t i = 0; i < nintvarsu; i++) { 
+     int j=interval_ulimit_cv[i];
+     which_int_ulimit_cv[j]=i;
+  }
+
+  // use interval only with scalar variables
+
+  for (size_t i = 0; i < nintvarsl; i++) {
+     if (interval_llimit_cv[i]>=num_variables() || interval_llimit_cv[i]<0) {
+       cvm::error("Error: CV number is negative or >= num_variables  \n", INPUT_ERROR);
+       return INPUT_ERROR;
+     }
+     int j=interval_llimit_cv[i];
+     if (variables(j)->value().type()!=colvarvalue::type_scalar) {
+       cvm::error("Error: Hills interval can be used only with scalar variables.\n", INPUT_ERROR);
+       return INPUT_ERROR;
+     }
+  }
+
+  for (size_t i = 0; i < nintvarsu; i++) {
+     if (interval_ulimit_cv[i]>=num_variables() || interval_ulimit_cv[i]<0) {
+       cvm::error("Error: CV number is negative or >= num_variables  \n", INPUT_ERROR);
+       return INPUT_ERROR;
+     }
+     int j=interval_ulimit_cv[i];
+     if (variables(j)->value().type()!=colvarvalue::type_scalar) {
+       cvm::error("Error: Hills interval can be used only with scalar variables.\n", INPUT_ERROR);
+       return INPUT_ERROR;
+     }
+  }
+
+  return COLVARS_OK;
+}
 
 colvarbias_meta::~colvarbias_meta()
 {
@@ -247,6 +1094,15 @@ colvarbias_meta::~colvarbias_meta()
     delete target_dist;
     target_dist = NULL;
   }
+
+  if(target_error) {
+    delete target_error;
+    target_error = NULL;
+  }
+
+  if (ebmeta_out && ebmetaoutfile.is_open())
+    ebmetaoutfile.close();
+
 }
 
 
@@ -285,6 +1141,381 @@ colvarbias_meta::create_hill(colvarbias_meta::hill const &h)
 
   has_data = true;
   return hills.end();
+}
+
+bool colvarbias_meta::check_reflection_limits(bool &ah)
+{
+  for (size_t i = 0; i < nrefvarsl; i++) {
+     int ii=reflection_llimit_cv[i];
+     cvm:: real cv_value=variables(ii)->value();
+     if (cv_value<reflection_llimit[i]) {
+       ah=false;
+     }
+  }
+  for (size_t i = 0; i < nrefvarsu; i++) {
+     int ii=reflection_ulimit_cv[i];
+     cvm:: real cv_value=variables(ii)->value();
+     if (cv_value>reflection_ulimit[i]) {
+       ah=false;
+     } 
+  }
+  return ah;  
+}
+
+bool colvarbias_meta::check_inversion_limits(bool &ah)
+{
+  for (size_t i = 0; i < ninvvarsl; i++) {
+     int ii=inversion_llimit_cv[i];
+     cvm:: real cv_value=variables(ii)->value();
+     if (cv_value<inversion_llimit[i]) {
+       ah=false;
+     }
+  }
+
+  for (size_t i = 0; i < ninvvarsu; i++) {
+     int ii=inversion_ulimit_cv[i];
+     cvm:: real cv_value=variables(ii)->value();
+     if (cv_value>inversion_ulimit[i]) {
+       ah=false;
+     }
+  }
+  return ah;
+}
+
+int colvarbias_meta::reflect_hill_multid(int const &aa,
+                                     cvm::real const &h_scale, 
+                                     std::vector<std::vector<int>> const &ref_state,
+                                     std::vector<int> const &ref_lim_cv,
+                                     std::vector<cvm::real> const &ref_lim,
+                                     std::vector<cvm::real> const &ref_int)
+{
+  size_t i = 0;
+  std::vector<colvarvalue> curr_cv_values(num_variables());
+  for (i = 0; i < num_variables(); i++) {
+    curr_cv_values[i].type(variables(i)->value());
+  }
+  std::vector<cvm::real> h_w(num_variables());
+  for (i = 0; i < num_variables(); i++) {
+      curr_cv_values[i] = variables(i)->value();
+      h_w[i]=variables(i)->width*hill_width;
+  }
+  for (size_t j = 0; j < aa; j++) {
+     int startsum=1;
+     for (size_t i = 0; i < j; i++) {
+        startsum*=10;
+     }
+     for (size_t jj = 0; jj < ref_state[j].size(); jj++) {
+        bool hill_add=false;
+        int getsum=startsum;
+        int countstate=0;
+        int check_val=ref_state[j][jj];
+        for (size_t i = 0; i <= j; i++) {
+           int upordown=std::floor(check_val/getsum);
+           int state=aa-1-j+countstate;
+           countstate++;
+           check_val=check_val-getsum;
+           getsum=getsum/10;
+
+           size_t ii=ref_lim_cv[state];
+           cvm:: real tmps=0.5*h_w[ii];
+           colvarvalue tmp=curr_cv_values[ii]; // store original current cv value
+           colvarvalue unitary=curr_cv_values[ii];
+           unitary.set_to_one();
+           cvm:: real tmpd=ref_lim[state]-cvm::real(curr_cv_values[ii]);
+           tmpd=std::sqrt(tmpd*tmpd);
+           if (tmpd<ref_int[state]*tmps*upordown ) { // do mirror within selected range in case upordown=1
+             hill_add=true;
+             curr_cv_values[ii]=2.0*ref_lim[state]*unitary-tmp; // reflected cv value
+           }
+        }
+        if (hill_add) {
+          std::string h_replica = "";
+          switch (comm) {
+       
+          case single_replica:
+       
+            create_hill(hill(cvm::step_absolute(), hill_weight*h_scale, curr_cv_values, h_w, h_replica));
+       
+            break;
+       
+          case multiple_replicas:
+            h_replica=replica_id;
+            create_hill(hill(cvm::step_absolute(), hill_weight*h_scale, curr_cv_values, h_w, replica_id));
+            if (replica_hills_os) {
+              *replica_hills_os << hills.back();
+            } else {
+              return cvm::error("Error: in metadynamics bias \""+this->name+"\""+
+                                ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
+                                " while writing hills for the other replicas.\n", FILE_ERROR);
+            }
+            break;
+          }
+       
+          for (size_t i = 0; i < num_variables(); i++) {
+             curr_cv_values[i] = variables(i)->value(); // go back to previous values
+          }
+        }  
+     }
+  }
+  return COLVARS_OK;
+}
+
+int colvarbias_meta::reflect_hill_monod(int const &aa,
+                                   cvm::real const &h_scale,
+                                   cvm::real const &ref_lim,
+                                   cvm::real const &ref_int)
+
+{
+  size_t i = 0;
+  std::vector<colvarvalue> curr_cv_values(num_variables());
+  for (i = 0; i < num_variables(); i++) {
+    curr_cv_values[i].type(variables(i)->value());
+  }
+  std::vector<cvm::real> h_w(num_variables());
+  for (i = 0; i < num_variables(); i++) {
+      curr_cv_values[i] = variables(i)->value();
+      h_w[i]=variables(i)->width*hill_width;
+  }
+  cvm:: real tmps=0.5*h_w[aa];
+  colvarvalue tmp=curr_cv_values[aa]; // store original current cv value
+  colvarvalue unitary=curr_cv_values[aa];
+  unitary.set_to_one();
+  cvm:: real tmpd=ref_lim-cvm::real(curr_cv_values[aa]);
+  tmpd=std::sqrt(tmpd*tmpd);
+  if (tmpd<ref_int*tmps ) { // do mirror within selected range
+    curr_cv_values[aa]=2.0*ref_lim*unitary-tmp; // reflected cv value
+    std::string h_replica = "";
+    switch (comm) {
+
+    case single_replica:
+
+      create_hill(hill(cvm::step_absolute(), hill_weight*h_scale, curr_cv_values, h_w, h_replica));
+
+      break;
+
+    case multiple_replicas:
+      h_replica=replica_id;
+      create_hill(hill(cvm::step_absolute(), hill_weight*h_scale, curr_cv_values, h_w, h_replica));
+      if (replica_hills_os) {
+        *replica_hills_os << hills.back();
+      } else {
+        return cvm::error("Error: in metadynamics bias \""+this->name+"\""+
+                          ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
+                          " while writing hills for the other replicas.\n", FILE_ERROR);
+      }
+      break;
+    }
+    curr_cv_values[aa]=tmp; // go back to previous value
+  }
+  return COLVARS_OK;
+}
+
+int colvarbias_meta::invert_hill_multid(int const &aa,
+                                     cvm::real const &h_scale,
+                                     std::vector<std::vector<int>> const &inv_state,
+                                     std::vector<int> const &inv_lim_cv,
+                                     std::vector<cvm::real> const &inv_lim,
+                                     std::vector<cvm::real> const &ref_int,
+                                     std::vector<cvm::real> const &inv_int)
+{
+  size_t i = 0;
+  std::vector<colvarvalue> curr_cv_values(num_variables());
+  std::vector<colvarvalue> ref_cv_values(num_variables());
+  std::vector<colvarvalue> curr_bound(num_variables());
+  for (i = 0; i < num_variables(); i++) {
+    curr_cv_values[i].type(variables(i)->value());
+    ref_cv_values[i].type(variables(i)->value());
+    curr_bound[i].type(variables(i)->value());
+  }
+  std::vector<cvm::real> h_w(num_variables());
+  for (i = 0; i < num_variables(); i++) {
+      curr_cv_values[i] = variables(i)->value();
+      ref_cv_values[i] = curr_cv_values[i];
+      curr_bound[i] = curr_cv_values[i];
+      h_w[i]=variables(i)->width*hill_width;
+  }
+  cvm:: real smooth_func=0;
+  for (size_t j = 0; j < aa; j++) {
+     int startsum=1;
+     for (size_t i = 0; i < j; i++) {
+        startsum*=10;
+     }
+     for (size_t jj = 0; jj < inv_state[j].size(); jj++) {
+        bool hill_add=false;
+        bool add_invert=false; 
+        cvm:: real hills_ww=hill_weight*h_scale;
+        int getsum=startsum;
+        int countstate=0;
+        int check_val=inv_state[j][jj];
+        for (size_t i = 0; i <= j; i++) {
+           int upordown=std::floor(check_val/getsum);
+           int state=aa-1-j+countstate;
+           countstate++;
+           check_val=check_val-getsum;
+           getsum=getsum/10;
+           size_t ii=inv_lim_cv[state];
+           cvm:: real tmps=0.5*h_w[ii];
+           colvarvalue tmp=ref_cv_values[ii]; // store original current cv value
+           colvarvalue unitary=ref_cv_values[ii];
+           unitary.set_to_one(); 
+           cvm:: real tmpd=inv_lim[state]-cvm::real(ref_cv_values[ii]);
+           tmpd=std::sqrt(tmpd*tmpd);
+           smooth_func=1/(1+pow(tmpd/(inv_int[state]*ref_int[state]*tmps),10)); 
+           if (tmpd<ref_int[state]*tmps*upordown ) { // do mirror within selected range in case upordown=1
+             ref_cv_values[ii]=2.0*inv_lim[state]*unitary-tmp; // reflected cv value
+             curr_bound[ii]=inv_lim[state]*unitary; //boundary cv value
+	   } else if (smooth_func*upordown >= 0.01) {
+             add_invert=true;     
+             ref_cv_values[ii]=2.0*inv_lim[state]*unitary-tmp; // reflected cv value
+             curr_bound[ii]=inv_lim[state]*unitary; //boundary cv value              
+           }
+        }
+        if (add_invert) {
+          cvm::real tmpF1 = 0.0; // Bias potential in current position
+          if (use_grids) {
+            std::vector<int> curr_bin_inv = hills_energy->get_colvars_index(curr_cv_values);
+            tmpF1 = hills_energy->value(curr_bin_inv);
+          } else {
+            calc_hills(new_hills_begin, hills.end(), tmpF1, curr_cv_values);
+          }
+          cvm::real tmpF2 = 0.0; // Bias potential at the border
+          if (use_grids) {
+            std::vector<int> curr_bin_inv = hills_energy->get_colvars_index(curr_bound);
+            tmpF2 = hills_energy->value(curr_bin_inv);
+          } else {
+            calc_hills(new_hills_begin, hills.end(), tmpF2, curr_bound);
+          }
+          cvm::real tmpF3 = 0.0; // Bias potential on symmetric position
+          if (use_grids) {
+            std::vector<int> curr_bin_inv = hills_energy->get_colvars_index(ref_cv_values);
+            tmpF3 = hills_energy->value(curr_bin_inv);
+          } else {
+            calc_hills(new_hills_begin, hills.end(), tmpF3, ref_cv_values);
+          }
+          hills_ww = (2.*tmpF2-tmpF1-tmpF3)*smooth_func;
+          if (std::sqrt(hills_ww*hills_ww)>inv_max_ww*hill_weight) {
+            hills_ww = inv_max_ww*hill_weight*(std::sqrt(hills_ww*hills_ww))/hills_ww;
+          }
+                    
+        }
+        if (hill_add) {
+          std::string h_replica = "";
+          switch (comm) {
+   
+          case single_replica:
+   
+            create_hill(hill(cvm::step_absolute(), hills_ww, ref_cv_values, h_w, h_replica));
+   
+            break;
+   
+          case multiple_replicas:
+            h_replica = replica_id;
+            create_hill(hill(cvm::step_absolute(), hills_ww, ref_cv_values, h_w, h_replica));
+            if (replica_hills_os) {
+              *replica_hills_os << hills.back();
+            } else {
+              return cvm::error("Error: in metadynamics bias \""+this->name+"\""+
+                                ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
+                                " while writing hills for the other replicas.\n", FILE_ERROR);
+            }
+            break;
+          }
+   
+          for (size_t i = 0; i < num_variables(); i++) {
+             ref_cv_values[i] = variables(i)->value(); // go back to previous values
+             curr_bound[i] = ref_cv_values[i];
+          }
+        }
+     }
+  }
+  return COLVARS_OK;
+}
+
+
+int colvarbias_meta::invert_hill_monod(int const &aa,
+                                   cvm::real const &h_scale,
+                                   cvm::real const &inv_lim,
+                                   cvm::real const &ref_int,
+                                   cvm::real const &inv_int)
+{
+  size_t i = 0;
+  std::vector<colvarvalue> curr_cv_values(num_variables());
+  for (i = 0; i < num_variables(); i++) {
+    curr_cv_values[i].type(variables(i)->value());
+  }
+  std::vector<cvm::real> h_w(num_variables());
+  for (i = 0; i < num_variables(); i++) {
+      curr_cv_values[i] = variables(i)->value();
+      h_w[i]=variables(i)->width*hill_width;
+  }
+
+  cvm:: real tmps=0.5*h_w[aa];
+  colvarvalue tmp=curr_cv_values[aa]; // store original current cv value
+  colvarvalue unitary=curr_cv_values[aa];
+  unitary.set_to_one();
+  cvm:: real tmpd=inv_lim-cvm::real(curr_cv_values[aa]);
+  tmpd=std::sqrt(tmpd*tmpd);
+  cvm:: real smooth_func=1/(1+pow(tmpd/(inv_int*ref_int*tmps),10));
+  cvm:: real hills_ww=hill_weight*h_scale;
+  bool hill_add=false;
+  if ( tmpd < ref_int*tmps ) { // just mirror ..
+    hill_add=true;
+    curr_cv_values[aa]=2.0*inv_lim*unitary-tmp; // reflected cv value
+  } else if (smooth_func >= 0.01) { // do inversion condition     
+    hill_add=true;
+    cvm::real tmpF1 = 0.0; // Bias potential in current position
+    if (use_grids) {
+      std::vector<int> curr_bin_inv = hills_energy->get_colvars_index(curr_cv_values);
+      tmpF1 = hills_energy->value(curr_bin_inv);
+    } else {
+      calc_hills(new_hills_begin, hills.end(), tmpF1, curr_cv_values);
+    }
+    curr_cv_values[aa]=inv_lim*unitary;
+    cvm::real tmpF2 = 0.0; // Bias potential at the border
+    if (use_grids) {
+      std::vector<int> curr_bin_inv = hills_energy->get_colvars_index(curr_cv_values);
+      tmpF2 = hills_energy->value(curr_bin_inv);
+    } else {
+      calc_hills(new_hills_begin, hills.end(), tmpF2, curr_cv_values);
+    }
+    curr_cv_values[aa]=2.0*inv_lim*unitary-tmp; // reflected cv value
+    cvm::real tmpF3 = 0.0; // Bias potential on symmetric position
+    if (use_grids) {
+      std::vector<int> curr_bin_inv = hills_energy->get_colvars_index(curr_cv_values);
+      tmpF3 = hills_energy->value(curr_bin_inv);
+    } else {
+      calc_hills(new_hills_begin, hills.end(), tmpF3, curr_cv_values);
+    }
+    hills_ww = (2.*tmpF2-tmpF1-tmpF3)*smooth_func;
+    if (std::sqrt(hills_ww*hills_ww)>inv_max_ww*hill_weight) {
+      hills_ww = inv_max_ww*hill_weight*(std::sqrt(hills_ww*hills_ww))/hills_ww;
+    }
+  } 
+  if (hill_add) {
+    std::string h_replica = ""; 
+    switch (comm) {
+     
+    case single_replica:
+   
+      create_hill(hill(cvm::step_absolute(), hills_ww, curr_cv_values, h_w, h_replica));
+   
+      break;
+   
+    case multiple_replicas:
+      h_replica = replica_id;
+      create_hill(hill(cvm::step_absolute(), hills_ww, curr_cv_values, h_w, h_replica));
+      if (replica_hills_os) {
+        *replica_hills_os << hills.back();
+      } else {
+        return cvm::error("Error: in metadynamics bias \""+this->name+"\""+
+                          ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
+                          " while writing hills for the other replicas.\n", FILE_ERROR);
+      }
+      break;
+    }
+    curr_cv_values[aa]=tmp; // go back to previous value
+  }
+  return COLVARS_OK;
 }
 
 
@@ -467,15 +1698,214 @@ int colvarbias_meta::update_bias()
     }
 
     cvm::real hills_scale=1.0;
+    cvm::real volume=0.0; // volume of ebmeta target_dist (in case ebmeta=true)  
 
     if (ebmeta) {
-      hills_scale *= 1.0/target_dist->value(target_dist->get_colvars_index());
+      cvm:: real scale_fact = target_dist->value(target_dist->get_colvars_index());
+      if (scale_fact<=0) {
+        scale_fact=min_pos_val;
+      }
+      if (scale_fact*ebmeta_max_scale_f<1) {
+        scale_fact=1.0/ebmeta_max_scale_f;
+      } 
+      hills_scale *= 1.0/scale_fact;
       if(cvm::step_absolute() <= long(ebmeta_equil_steps)) {
         cvm::real const hills_lambda =
           (cvm::real(long(ebmeta_equil_steps) - cvm::step_absolute())) /
           (cvm::real(ebmeta_equil_steps));
         hills_scale = hills_lambda + (1-hills_lambda)*hills_scale;
       }
+    }
+
+    if (ebmetaerror && cvm::step_absolute() > long(ebmeta_equil_steps)) {
+
+       // Update probability distribution according to the error
+       // todo this first loop on indices to calculate
+       // average bias potential
+
+       cvm::real ave_bias=0.0;
+       cvm::real hills_energy_sum_rvalues;
+       cvm::real norm_val=0.0;
+       
+       for (size_t j = 0; j < eff_error_points ; j++) {
+         size_t i = which_error_point[j];
+         hills_energy_sum_rvalues = 0.0;
+         cvm:: real prob_val=target_dist->array_value(i);
+         hills_energy_sum_rvalues = hills_energy->array_value(i);
+         ave_bias+=hills_energy_sum_rvalues*prob_val;
+         norm_val+=prob_val;
+       }
+       ave_bias=ave_bias/norm_val;
+
+       // Now update target distribution
+
+       for (size_t kk = 0; kk < ebmeta_nconst_maxsteps ; kk++) { // loop to calculate scale factor ebmeta_nconst
+          cvm::real sumup=0;
+          cvm::real sumdown=0;
+          for (size_t j = 0; j < eff_error_points ; j++) {
+            size_t i = which_error_point[j];
+            cvm::real prob_old=target_dist->array_value(i);
+            hills_energy_sum_rvalues = hills_energy->array_value(i);
+            cvm::real lambda_e = -(hills_energy_sum_rvalues-ave_bias)/(cvm::kt());
+            cvm::real lambda_f = lambda_e-ebmeta_nconst;
+            cvm::real exp_prob_value = target_prob[j];
+            cvm::real error_val = target_error->array_value(i);
+            cvm::real sigma_sqe = error_val*error_val/gamma_vec[j];
+            if ( prob_old>0 ) { // update scale factor ebmeta_nconst
+              sumup+=sigma_sqe*lambda_e-exp_prob_value+prob_old;
+              sumdown+=sigma_sqe;
+            }
+            cvm::real dev=sigma_sqe*lambda_f;
+            if ((std::sqrt(dev*dev))/error_val>ebmeta_fix_bound) {
+              dev=error_val*ebmeta_fix_bound*(std::sqrt(dev*dev))/dev;
+            }
+            cvm::real prob_value = exp_prob_value-dev;
+            target_dist->set_array_value(i,prob_value);
+          }
+
+          // now we must project the updated probability distribution
+          // into the probability simplex (positive and normalized to 1)
+          // using algorithm from from Wang, Perpinan 2003
+                   
+          target_dist->simplexproj(eff_error_points, which_error_point);
+
+          // update scale factor ebmeta_nconst
+
+          cvm::real new_ebmeta_nconst=sumup/sumdown;
+          cvm::real ave_nconst=std::sqrt(ebmeta_nconst*ebmeta_nconst);
+          cvm::real nconst_toll=(ebmeta_nconst-new_ebmeta_nconst)/ave_nconst;
+          nconst_toll=std::sqrt(nconst_toll*nconst_toll);
+          if (nconst_toll<=ebmeta_nconst_toll) break;
+          ebmeta_nconst=new_ebmeta_nconst;        
+       }
+       // update gammav
+       for (size_t j = 0; j < eff_error_points ; j++) {
+          size_t i = which_error_point[j];
+          hills_energy_sum_rvalues = hills_energy->array_value(i);
+          cvm::real error_val = target_error->array_value(i);
+          cvm::real lambda_e = -(hills_energy_sum_rvalues-ave_bias)/(cvm::kt());
+          cvm::real lambda_f = lambda_e-ebmeta_nconst;
+          cvm::real gammaold = gamma_vec[j];
+          cvm::real gammanew = error_val*std::sqrt(lambda_f*lambda_f);
+          cvm::real deltagamma=gammanew-gammaold;
+          gamma_vec[j] = gammaold+ebmeta_factp*(deltagamma/ebmeta_tau0);
+          if(gamma_vec[j]<=0.0) gamma_vec[j]=1.0;
+       } 
+       // update target dist
+       for (size_t j = 0; j < eff_error_points ; j++) {
+          size_t i = which_error_point[j];
+          cvm:: real probo=target_dist_eff[j];
+          cvm:: real probn=target_dist->array_value(i);
+          cvm:: real deltaprob=probn-probo;
+          target_dist_eff[j]=probo+ebmeta_factp*(deltaprob/ebmeta_tau0);
+          target_dist->set_array_value(i,target_dist_eff[j]);
+       }
+       // update error and central distribution
+
+       if (update_targets) {
+         for (size_t j = 0; j < eff_error_points ; j++) {
+            size_t i = which_error_point[j];
+            cvm::real deltaprob=target_dist_eff[j]-target_prob[j]; 
+            deltaprob=std::sqrt(deltaprob*deltaprob);
+            cvm::real oerror=target_error->array_value(i);
+            cvm::real derror=ebmeta_fix_bound*deltaprob-oerror;
+            cvm::real minerror=ebmeta_minerror;
+            if(ebmeta_ftarget*minerror>target_error_orig[j]) minerror=target_error_orig[j]; 
+            cvm::real nerror=oerror+update_error_s*ebmeta_factp*(derror/ebmeta_tau0);
+            if(nerror<minerror) nerror=minerror;
+            if(target_error_orig[j]<=0.0) nerror=0.0;
+            if(ebmeta_ftarget*nerror>target_error_orig[j]) nerror=target_error_orig[j];
+            target_error->set_array_value(i,nerror);
+            deltaprob=target_prob_orig[j]-target_dist_eff[j];
+            deltaprob=std::sqrt(deltaprob*deltaprob);
+            cvm::real deltaprobexp=target_dist_eff[j]-target_prob[j];
+            if(ebmeta_ftarget*deltaprob>target_error_orig[j]) deltaprobexp=target_prob_orig[j]-target_prob[j];
+            target_prob[j]=target_prob[j]+update_prob_s*ebmeta_factp*(deltaprobexp/ebmeta_tau0);      
+         }
+       }
+
+       if (forget_targets) {
+         cvm::real ebmeta_maxerror=ebmeta_maxerror_s*ebmeta_minerror;
+         for (size_t j = 0; j < eff_error_points ; j++) {
+            size_t i = which_error_point[j];
+            cvm::real nerror=target_error->array_value(i);
+            if(nerror>ebmeta_maxerror) target_error->set_array_value(i,ebmeta_maxerror); 
+         }    
+       }
+
+       // now normalize reference distribution and multiply by effective volume
+
+       cvm::real intval = 1.0/target_dist->integral(eff_error_points, which_error_point);
+       target_dist->multiply_constant(eff_error_points, which_error_point, intval);
+
+       volume = std::exp(target_dist->entropy(eff_error_points, which_error_point));
+       ebmeta_tau0 = gauss_factor*volume;
+       if (ebmeta_factp/ebmeta_tau0>=1) {
+         cvm::error("Error: Overall scale factor for target distribution update"
+                    "(ebMetaUpdateScaleF/ebmeta_tau0) is larger than 1.0 please"
+                    "reduce ebMetaUpdateScaleF !.\n", INPUT_ERROR);
+       }
+       target_dist->multiply_constant(eff_error_points, which_error_point, volume);
+       min_pos_val = target_dist->minimum_pos_value(eff_error_points, which_error_point);
+       if (update_targets) ebmeta_minerror=ebmeta_minerror_s*bin_volume/volume;
+
+
+       // DEBUG print updated distribution and average deviation from experimental value  
+
+       cvm:: real averdev=0.0;
+       norm_val=0.0;
+       for (size_t j = 0; j < eff_error_points ; j++) {
+          size_t i = which_error_point[j];
+          cvm::real prob_val=target_dist_eff[j];
+          cvm::real error_val = target_error->array_value(i);
+          cvm:: real dev=(prob_val-target_prob[j])/error_val;
+          dev=std::sqrt(dev*dev);
+          averdev+=dev*prob_val;
+          norm_val+=prob_val;
+       }
+       averdev=averdev/norm_val;
+       if (ebmeta_out) { 
+         if (ebmetaoutfile.is_open()){
+           for (size_t j = 0; j < eff_error_points ; j++) {
+             size_t i = which_error_point[j];  
+             ebmetaoutfile << "EBMetaDdist: ";
+             ebmetaoutfile << " ";
+             ebmetaoutfile << cvm::step_absolute();
+             ebmetaoutfile << " ";
+             ebmetaoutfile << target_dist_eff[j];       
+             ebmetaoutfile << " ";
+             ebmetaoutfile << target_error->array_value(i);
+             ebmetaoutfile << " ";
+             ebmetaoutfile << target_prob[j];
+             ebmetaoutfile << " ";
+             ebmetaoutfile << gamma_vec[j];
+             ebmetaoutfile << " " << "\n";        
+        
+             //printf("EBMetaD_error: %i %f %f %f %f %f %f \n",cvm::step_absolute(),target_dist->array_value(i),averdev,gamma_vec[j],target_error->array_value(i),target_prob[j],ebmeta_nconst);    
+
+           }
+           ebmetaoutfile << "EBMetaDdata: ";
+           ebmetaoutfile << " ";
+           ebmetaoutfile << cvm::step_absolute();
+           ebmetaoutfile << " ";         
+           ebmetaoutfile << averdev;
+           ebmetaoutfile << " ";
+           ebmetaoutfile << ebmeta_nconst;
+           ebmetaoutfile << " ";
+           ebmetaoutfile << min_pos_val;
+           ebmetaoutfile << " ";
+           ebmetaoutfile << intval;
+           ebmetaoutfile << " ";
+           ebmetaoutfile << ebmeta_minerror/bin_volume;
+           ebmetaoutfile << " ";
+           ebmetaoutfile << volume;
+           ebmetaoutfile << " "<< "\n" ;
+           ebmetaoutfile.flush();
+         }
+       }
+
+       //printf("MinPosVal: %i %f %f %f %f \n",cvm::step_absolute(),min_pos_val,intval,volume,gauss_factor);
+
     }
 
     if (well_tempered) {
@@ -489,27 +1919,97 @@ int colvarbias_meta::update_bias()
       hills_scale *= std::exp(-1.0*hills_energy_sum_here/(bias_temperature*cvm::boltzmann()));
     }
 
-    switch (comm) {
-
-    case single_replica:
-
-      create_hill(hill(hill_weight*hills_scale, colvars, hill_width));
-
-      break;
-
-    case multiple_replicas:
-      create_hill(hill(hill_weight*hills_scale, colvars, hill_width, replica_id));
-      if (replica_hills_os) {
-        *replica_hills_os << hills.back();
-      } else {
-        return cvm::error("Error: in metadynamics bias \""+this->name+"\""+
-                          ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
-                          " while writing hills for the other replicas.\n", FILE_ERROR);
+    if (scale_kernel) {
+      if (ebmeta && default_kernel_ebmeta) { 
+        kernel_coupling_time=cvm::dt() * new_hill_freq*ebmeta_tau0;    
       }
-      break;
+      switch (kernel_type) {
+      case kt_inv_sqrt_time:
+        hills_scale*= 1.0/std::sqrt(1.0 + (cvm::dt()*cvm::step_absolute()/kernel_coupling_time));
+        break;
+      case kt_none:
+      case kt_ntot:
+        break;
+      }
     }
-  }
 
+    // Whether add a hill
+    bool add_hill=true;
+
+    // Do not add hills beyond inversion or reflection borders
+    // as just reflected or inverted hills must be present
+    // beyond those boundaries
+
+    // Check reflection borders: if beyond borders do not add hill
+
+    add_hill=check_reflection_limits(add_hill);
+
+    // Check inversion borders: if beyond borders do not add hill
+    
+    add_hill=check_inversion_limits(add_hill);
+
+    if (add_hill) {
+      switch (comm) {
+   
+      case single_replica:
+   
+        create_hill(hill(hill_weight*hills_scale, colvars, hill_width));
+   
+        break;
+   
+      case multiple_replicas:
+        create_hill(hill(hill_weight*hills_scale, colvars, hill_width, replica_id));
+        if (replica_hills_os) {
+          *replica_hills_os << hills.back();
+        } else {
+          return cvm::error("Error: in metadynamics bias \""+this->name+"\""+
+                            ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
+                            " while writing hills for the other replicas.\n", FILE_ERROR);
+        }
+        break;
+      }
+   
+      // add reflected and/or inverted hills if required
+
+      switch (reflection_type) {
+      case rt_monod: 
+        for (size_t i = 0; i < nrefvarsl; i++) {
+           size_t ii=reflection_llimit_cv[i];
+           reflect_hill_monod(ii, hills_scale, reflection_llimit[i], reflection_intl[i]);
+        }     
+     
+        for (size_t i = 0; i < nrefvarsu; i++) {
+           size_t ii=reflection_ulimit_cv[i];
+           reflect_hill_monod(ii, hills_scale, reflection_ulimit[i], reflection_intu[i]);
+        }
+        break;
+      case rt_multid:
+        reflect_hill_multid(nrefvarsl, hills_scale, ref_state_ll, reflection_llimit_cv, reflection_llimit, reflection_intl);
+        reflect_hill_multid(nrefvarsu, hills_scale, ref_state_ul, reflection_ulimit_cv ,reflection_ulimit, reflection_intu);
+        break;
+      }  
+      
+      switch (inversion_type) {
+      case it_monod: 
+        for (size_t i = 0; i < ninvvarsl; i++) {
+           size_t ii=inversion_llimit_cv[i];
+           invert_hill_monod(ii, hills_scale, inversion_llimit[i], inversion_ref_intl[i], inversion_intl[i]);  
+        }
+     
+        for (size_t i = 0; i < ninvvarsu; i++) {
+           size_t ii=inversion_ulimit_cv[i];
+           invert_hill_monod(ii, hills_scale, inversion_ulimit[i], inversion_ref_intu[i], inversion_intu[i]);   
+        }
+        break;
+      case it_multid:
+        invert_hill_multid(ninvvarsl, hills_scale, inv_state_ll, inversion_llimit_cv, inversion_llimit, inversion_ref_intl, inversion_intl);
+        invert_hill_multid(ninvvarsu, hills_scale, inv_state_ul, inversion_ulimit_cv, inversion_ulimit, inversion_ref_intu, inversion_intu);
+        break;
+      }
+      
+    }
+
+  }
   return COLVARS_OK;
 }
 
@@ -716,9 +2216,21 @@ void colvarbias_meta::calc_hills_force(size_t const &i,
       if (h->value() == 0.0) continue;
       colvarvalue const &center = h->centers[i];
       cvm::real const    half_width = 0.5 * h->widths[i];
-      forces[i].real_value +=
-        ( h->weight() * h->value() * (0.5 / (half_width*half_width)) *
-          (variables(i)->dist2_lgrad(x, center)).real_value );
+      // if outside interval boundaries do not add force
+      bool add_force=true;
+      int ii=which_int_llimit_cv[i];
+      if (ii>-1 && x[i]<interval_llimit[ii] ) {
+        add_force=false;
+      }  
+      ii=which_int_ulimit_cv[i];
+      if (ii>-1 && x[i]>interval_ulimit[ii] ) {
+        add_force=false;
+      }
+      if (add_force) {
+        forces[i].real_value +=
+          ( h->weight() * h->value() * (0.5 / (half_width*half_width)) *
+            (variables(i)->dist2_lgrad(x, center)).real_value );
+      }
     }
     break;
 
@@ -1367,6 +2879,10 @@ std::istream & colvarbias_meta::read_state_data(std::istream& is)
     }
   }
 
+  if (ebmeta && ebmetaerror) {
+    read_ebmetaerror(is);
+  }
+
   if (cvm::debug())
     cvm::log("colvarbias_meta::read_restart() done\n");
 
@@ -1383,7 +2899,6 @@ std::istream & colvarbias_meta::read_state_data(std::istream& is)
 
   return is;
 }
-
 
 std::istream & colvarbias_meta::read_hill(std::istream &is)
 {
@@ -1463,6 +2978,56 @@ std::istream & colvarbias_meta::read_hill(std::istream &is)
   return is;
 }
 
+std::istream & colvarbias_meta::read_ebmetaerror(std::istream &is)
+{
+  if (!is) return is; // do nothing if failbit is set
+
+  size_t const start_pos = is.tellg();
+
+  std::string data;
+  if ( !(is >> read_block("ebmeta", data)) ) {
+    is.clear();
+    is.seekg(start_pos, std::ios::beg);
+    is.setstate(std::ios::failbit);
+    return is;
+  }
+
+  if (!get_keyval(data, "ebmetaNconst", ebmeta_nconst))
+    cvm::error("Error: ebmetaNconst missing from the restart.\n");
+  if (!get_keyval(data, "targetDist", target_dist_eff))
+    cvm::error("Error: targetDist missing from the restart.\n");
+  for (size_t j = 0; j < eff_error_points; j++) {
+     size_t i = which_error_point[j];
+     target_dist->set_array_value(i,target_dist_eff[j]);
+  }
+  cvm::real intval = 1.0/target_dist->integral(eff_error_points, which_error_point);
+  target_dist->multiply_constant(eff_error_points, which_error_point, intval);
+
+  cvm::real volume = std::exp(target_dist->entropy(eff_error_points, which_error_point));
+  ebmeta_tau0 = gauss_factor*volume;
+  if (ebmeta_factp/ebmeta_tau0>=1) {
+    cvm::error("Error: Overall scale factor for target distribution update"
+               "(ebMetaUpdateScaleF/ebmeta_tau0) is larger than 1.0 please"
+               "reduce ebMetaUpdateScaleF !.\n", INPUT_ERROR);
+  }
+  target_dist->multiply_constant(eff_error_points, which_error_point, volume);
+  min_pos_val = target_dist->minimum_pos_value(eff_error_points, which_error_point);
+  if (!get_keyval(data, "gammaVec", gamma_vec))
+    cvm::error("Error: gammaVec missing from the restart.\n");
+  if (update_targets) {
+    std::vector<cvm::real> target_error_tmp(eff_error_points);
+    if (!get_keyval(data, "targetError", target_error_tmp))
+      cvm::error("Error: targetError missing from the restart.\n");
+      for (size_t j = 0; j < eff_error_points; j++) {
+         size_t i = which_error_point[j];
+         target_error->set_array_value(i,target_error_tmp[j]);
+      }
+    if (!get_keyval(data, "targetProb", target_prob))
+      cvm::error("Error: targetProb missing from the restart.\n");
+    ebmeta_minerror=ebmeta_minerror_s*bin_volume/volume;
+  }
+  return is;
+}
 
 int colvarbias_meta::setup_output()
 {
@@ -1622,6 +3187,39 @@ std::ostream & colvarbias_meta::write_state_data(std::ostream& os)
          h++) {
       os << *h;
     }
+  }
+  if (ebmeta && ebmetaerror) {
+    os << "ebmeta {\n";
+    os << "    ebmetaNconst " << ebmeta_nconst << "\n"; 
+    os << "    targetDist ";
+    for (size_t j = 0; j < eff_error_points; j++) {
+       os << target_dist_eff[j];
+       os << " ";
+    }
+    os << "\n";
+    os << "    gammaVec ";
+    for (size_t j = 0; j < eff_error_points; j++) {
+       os << gamma_vec[j];
+       os << " ";
+    }
+    os << "\n";
+    if (update_targets) { 
+      os << "    targetError ";
+      for (size_t j = 0; j < eff_error_points; j++) {
+         size_t i = which_error_point[j];
+         os << target_error->array_value(i);
+         os << " ";
+      }
+      os << "\n";
+      os << "    targetProb ";
+      for (size_t j = 0; j < eff_error_points; j++) {
+         os << target_prob[j];
+         os << " ";
+      }
+      os << "\n"; 
+    }
+    os << "\n";
+    os << "}\n";
   }
 
   return os;

@@ -89,6 +89,25 @@ cvm::real colvar_grid_scalar::minimum_pos_value() const
   return minpos;
 }
 
+cvm::real colvar_grid_scalar::minimum_pos_value(int const &ndata, std::vector<int> const &which) const
+{
+  size_t i;
+  size_t j;
+  cvm::real minpos = data[which[0]];
+  for (j = 0; j < ndata; j++) {
+    i=which[j];
+    if(data[i] > 0) {
+      minpos = data[i];
+      break;
+    }
+  }
+  for (j = 0; j < ndata; j++) {
+    i=which[j];
+    if (data[i] > 0 && data[i] < minpos) minpos = data[i];
+  }
+  return minpos;
+}
+
 cvm::real colvar_grid_scalar::integral() const
 {
   cvm::real sum = 0.0;
@@ -102,12 +121,12 @@ cvm::real colvar_grid_scalar::integral() const
   return bin_volume * sum;
 }
 
-
-cvm::real colvar_grid_scalar::entropy() const
+cvm::real colvar_grid_scalar::integral(int const &ndata, std::vector<int> const &which) const
 {
   cvm::real sum = 0.0;
-  for (size_t i = 0; i < nt; i++) {
-    sum += -1.0 * data[i] * std::log(data[i]);
+  for (size_t j = 0; j < ndata; j++) {
+    size_t i=which[j];
+    sum += data[i];
   }
   cvm::real bin_volume = 1.0;
   for (size_t id = 0; id < widths.size(); id++) {
@@ -116,6 +135,156 @@ cvm::real colvar_grid_scalar::entropy() const
   return bin_volume * sum;
 }
 
+cvm::real colvar_grid_scalar::entropy() const
+{
+  cvm::real sum = 0.0;
+  for (size_t i = 0; i < nt; i++) {
+    if (data[i] >0) {
+      sum += -1.0 * data[i] * std::log(data[i]);
+    } 
+  }
+  cvm::real bin_volume = 1.0;
+  for (size_t id = 0; id < widths.size(); id++) {
+    bin_volume *= widths[id];
+  }
+  return bin_volume * sum;
+}
+
+cvm::real colvar_grid_scalar::entropy(int const &ndata, std::vector<int> const &which) const
+{
+  cvm::real sum = 0.0;
+  for (size_t j = 0; j < ndata; j++) {
+    size_t i=which[j];
+    if (data[i] >0) {
+      sum += -1.0 * data[i] * std::log(data[i]);
+    }
+  }
+  cvm::real bin_volume = 1.0;
+  for (size_t id = 0; id < widths.size(); id++) {
+    bin_volume *= widths[id];
+  }
+  return bin_volume * sum;
+}
+
+void colvar_grid_scalar::simplexproj()
+{
+  // remove zeros and assign probability vectors
+  int countbins=0;
+  for (size_t i = 0; i < nt; i++) {
+    if (data[i]!=0.0) {
+      countbins++;
+    }
+  }
+  std::vector<cvm::real> prob(countbins);
+  std::vector<cvm::real> probold(countbins);
+
+  countbins=0;
+  for (size_t i = 0; i < nt; i++) {
+    if (data[i]!=0.0) {
+      prob[countbins]=data[i];
+      probold[countbins]=data[i];
+      countbins++;
+    }
+  }
+
+  // Now use algorithm from Wang, Perpinan 2003
+
+  std::sort(prob.begin(), prob.end());
+  std::reverse(prob.begin(), prob.end());
+
+  cvm::real sump=0.0;
+  int rho=0;
+  cvm::real rhovec=0.0;
+  cvm::real lambdav=0.0;
+  for (size_t i = 0; i < countbins; i++) {
+    sump=sump+prob[i];
+    rhovec=prob[i]+(1.0/(i+1))*(1.0-sump);
+    if (rhovec>0) {
+      rho=i+1;
+    }
+  }
+  sump=0.0;
+  for (size_t i = 0; i < rho; i++) {
+    sump=sump+prob[i];
+  }
+  lambdav=(1.0/rho)*(1.0-sump);
+  for (size_t i = 0; i < countbins; i++) {
+    prob[i]=probold[i]+lambdav;
+    if (prob[i]<0) {
+      prob[i]=0.0;
+    }
+  }
+
+  countbins=0;
+  for (size_t i = 0; i < nt; i++) {
+    if (data[i]!=0.0) {
+      data[i]=prob[countbins];
+      countbins++;
+    }
+  }
+
+}
+
+void colvar_grid_scalar::simplexproj(int const &ndata, std::vector<int> const &which)
+{
+  size_t i;
+  int countbins=0;
+  for (size_t j = 0; j < ndata; j++) {
+    i=which[j];
+    if (data[i]!=0.0) {
+      countbins++;
+    }
+  }
+  std::vector<cvm::real> prob(countbins);
+  std::vector<cvm::real> probold(countbins);
+
+  countbins=0;
+  for (size_t j = 0; j < ndata; j++) {
+    i=which[j];
+    if (data[i]!=0.0) {
+      prob[countbins]=data[i];
+      probold[countbins]=data[i];
+      countbins++;
+    }
+  }
+
+
+  std::sort(prob.begin(), prob.end());
+  std::reverse(prob.begin(), prob.end());
+
+  cvm::real sump=0.0;
+  int rho=0;
+  cvm::real rhovec=0.0;
+  cvm::real lambdav=0.0;
+  for (i = 0; i < countbins; i++) {
+    sump=sump+prob[i];
+    rhovec=prob[i]+(1.0/(i+1))*(1.0-sump);
+    if (rhovec>0) {
+      rho=i+1;
+    }
+  }
+  sump=0.0;
+  for (i = 0; i < rho; i++) {
+    sump=sump+prob[i];
+  }
+  lambdav=(1.0/rho)*(1.0-sump);
+  for (i = 0; i < countbins; i++) {
+    prob[i]=probold[i]+lambdav;
+    if (prob[i]<0) {
+      prob[i]=0.0;
+    }
+  }
+
+  countbins=0;
+  for (size_t j = 0; j < ndata; j++) {
+    i=which[j];
+    if (data[i]!=0.0) {
+      data[i]=prob[countbins];
+      countbins++;
+    }
+  }
+
+}
 
 colvar_grid_gradient::colvar_grid_gradient()
   : colvar_grid<cvm::real>(), samples(NULL)

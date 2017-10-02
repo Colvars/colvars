@@ -438,6 +438,14 @@ public:
     has_data = true;
   }
 
+  /// Set the value from the internal array
+  inline void set_array_value(int i,
+                              T const &t)
+  {
+    data[i] = t;
+    has_data = true;
+  }
+
   /// \brief Get the change from this to other_grid
   /// and store the result in this.
   /// this_grid := other_grid - this_grid
@@ -512,6 +520,12 @@ public:
   }
 
 
+  /// \brief Get the value from the internal array
+  inline T const & array_value(int i) const
+  {
+    return data[i];
+  }
+
   /// \brief Add a constant to all elements (fast loop)
   inline void add_constant(T const &t)
   {
@@ -525,6 +539,15 @@ public:
   {
     for (size_t i = 0; i < nt; i++)
       data[i] *= a;
+  }
+
+  /// \brief Multiply all elements of a subset map by a scalar constant (fast loop)
+  inline void multiply_constant(int const &ndata, std::vector<int> const which, cvm::real const &a)
+  {
+    for (size_t j = 0; j < ndata; j++) {
+      size_t i=which[j];
+      data[i] *= a;
+    }
   }
 
   /// \brief Assign all zero elements a scalar constant (fast loop)
@@ -1360,12 +1383,29 @@ public:
   /// \brief Return the lowest positive value
   cvm::real minimum_pos_value() const;
 
+  /// \brief Return the lowest positive value on a subset of grid points
+  cvm::real minimum_pos_value(int const &ndata, std::vector<int> const &which) const;
+
   /// \brief Calculates the integral of the map (uses widths if they are defined)
   cvm::real integral() const;
+
+  /// \brief Calculates the integral of the map on a subset of grid points (uses widths if they are defined)
+  cvm::real integral(int const &ndata, std::vector<int> const &which) const;
 
   /// \brief Assuming that the map is a normalized probability density,
   ///        calculates the entropy (uses widths if they are defined)
   cvm::real entropy() const;
+
+  /// \brief Assuming that the map is a normalized probability density,
+  ///        calculates the entropy on a subset of grid points (uses widths if they are defined)    
+  cvm::real entropy(int const &ndata, std::vector<int> const &which) const;
+
+  /// \brief Project target dist into normalized probability space (p_i >0; sum_i p_i = 1)
+  void simplexproj();
+
+  /// \brief Project target dist into normalized probability space (p_i >0; sum_i p_i = 1)
+  ///        using a subset of grid points 
+  void simplexproj(int const &ndata, std::vector<int> const &which);
 
 private:
   // gradient

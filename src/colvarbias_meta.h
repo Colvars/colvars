@@ -31,6 +31,10 @@ public:
   virtual int init(std::string const &conf);
   virtual int init_well_tempered_params(std::string const &conf);
   virtual int init_ebmeta_params(std::string const &conf);
+  virtual int init_kernel_params(std::string const &conf);
+  virtual int init_inversion_params(std::string const &conf);
+  virtual int init_reflection_params(std::string const &conf);
+  virtual int init_interval_params(std::string const &conf);
   virtual ~colvarbias_meta();
 
   virtual int update();
@@ -103,6 +107,42 @@ protected:
   /// it to the others
   virtual std::list<hill>::const_iterator create_hill(hill const &h);
 
+  /// \brief Check is current colvar value is within inversion or 
+  /// reflection limits to assess whether to add a hill
+  bool check_reflection_limits(bool &ah);
+  bool check_inversion_limits(bool &ah);
+
+  /// \brief Multidimensional routine to reflect hills
+  int reflect_hill_multid(int const &aa,
+                          cvm::real const &h_scale,
+                          std::vector<std::vector<int>> const &ref_state,
+                          std::vector<int> const &ref_lim_cv,
+                          std::vector<cvm::real> const &ref_lim,
+                          std::vector<cvm::real> const &ref_int);
+
+  /// \brief Monodimensional routine to reflect hills
+  int reflect_hill_monod(int const &aa,
+                         cvm::real const &h_scale,
+                         cvm::real const &ref_lim,
+                         cvm::real const &ref_int);
+
+  /// \brief Multidimensional routine to invert hills
+  int invert_hill_multid(int const &aa,
+                         cvm::real const &h_scale,
+                         std::vector<std::vector<int>> const &inv_state,
+                         std::vector<int> const &inv_lim_cv,
+                         std::vector<cvm::real> const &inv_lim,
+                         std::vector<cvm::real> const &ref_int,
+                         std::vector<cvm::real> const &inv_int);
+
+  /// \brief Monodimensional routine to invert hills
+  int invert_hill_monod(int const &aa,
+                        cvm::real const &h_scale,
+                        cvm::real const &inv_lim,
+                        cvm::real const &ref_int,
+                        cvm::real const &inv_int);
+
+
   /// \brief Remove a previously saved hill (returns an iterator for
   /// the next hill in the list)
   virtual std::list<hill>::const_iterator delete_hill(hill_iter &h);
@@ -161,13 +201,120 @@ protected:
   /// \brief Biasing temperature in well-tempered metadynamics
   cvm::real  bias_temperature;
 
+  // hills inversion or reflection 
+
+  /// \brief For which variables reflection or inversion limits are on  
+  std::vector<int> inversion_llimit_cv;
+  std::vector<int> inversion_ulimit_cv;
+  std::vector<cvm::real> inversion_intl;
+  std::vector<cvm::real> inversion_intu;
+  std::vector<cvm::real> inversion_ref_intl;
+  std::vector<cvm::real> inversion_ref_intu;
+  int ninvvarsl;
+  int ninvvarsu;
+  
+  std::vector<int> reflection_llimit_cv;
+  std::vector<int> reflection_ulimit_cv;
+  std::vector<cvm::real> reflection_intl;
+  std::vector<cvm::real> reflection_intu;
+  int nrefvarsl;
+  int nrefvarsu;
+
+  /// \brief Limits for reflection and inversion
+  std::vector<cvm::real> inversion_llimit;
+  std::vector<cvm::real> inversion_ulimit;
+  std::vector<cvm::real> reflection_llimit;     
+  std::vector<cvm::real> reflection_ulimit;
+
+  /// \brief Whether reflection or inversion are of mono or multidimensional type
+  enum reflection_type_e {
+    rt_monod,
+    rt_multid
+  };
+  int reflection_type;
+
+  enum inversion_type_e {
+    it_monod,
+    it_multid
+  };
+  int inversion_type;
+
+  /// \brief max hills weight for inversion (in units of hillsweight)
+  cvm::real inv_max_ww;
+
+  /// \brief Multidimensional reflection states
+  std::vector<std::vector<int> > ref_state_ll;
+  std::vector<std::vector<int> > ref_state_ul;
+
+  /// \brief Multidimensional inversion states
+  std::vector<std::vector<int> > inv_state_ll;
+  std::vector<std::vector<int> > inv_state_ul;  
+
+  /// \brief For which variables hills forces beyond the boundaries(interval) must be removed
+
+  std::vector<int> which_int_llimit_cv;
+  std::vector<int> which_int_ulimit_cv;
+  int nintvarsl;
+  int nintvarsu;
+  /// \brief Limits for interval 
+  std::vector<cvm::real> interval_llimit;
+  std::vector<cvm::real> interval_ulimit;
+
   // EBmeta parameters
   bool       ebmeta;
+  bool       ebmetaerror;
   colvar_grid_scalar* target_dist;
+  colvar_grid_scalar* target_error;
+  std::vector<cvm::real> target_prob;
+  std::vector<cvm::real> target_prob_orig;
+  std::vector<cvm::real> target_error_orig;
+  std::vector<cvm::real> target_dist_eff;
+  std::vector<cvm::real> gamma_vec;
+  std::vector<int> which_error_point;
+  int nebmvarsl;
+  int nebmvarsu;
+  std::vector<int> ebmeta_llimit_cv;
+  std::vector<int> ebmeta_ulimit_cv;  
+  std::vector<cvm::real> ebmeta_llimit;
+  std::vector<cvm::real> ebmeta_ulimit;
+  
+  int eff_error_points;
   std::string target_dist_file;
-  cvm::real target_dist_volume;
+  std::string target_error_file;
+  cvm::real min_pos_val;
+  cvm::real ebmeta_fix_bound;
+  cvm::real ebmeta_max_scale_f;
+  cvm::real ebmeta_factp;
+  cvm::real ebmeta_tau0;
+  cvm::real update_error_s;
+  cvm::real update_prob_s;
+  cvm::real ebmeta_ftarget;
+  cvm::real ebmeta_nconst;
+  cvm::real ebmeta_nconst_toll;
+  cvm::real ebmeta_nconst_maxsteps;
+  cvm::real bin_volume;
+  cvm::real ebmeta_minerror;
+  cvm::real ebmeta_minerror_s;
+  cvm::real ebmeta_maxerror_s; 
+  bool update_targets;
+  bool forget_targets;
+  bool ebmeta_out;
   size_t ebmeta_equil_steps;
+  std::istream & read_ebmetaerror(std::istream &is);
+  std::ofstream ebmetaoutfile;
+  std::string ebmeta_out_file;
+  // scaling time kernel parameters
 
+  bool scale_kernel;
+  bool default_kernel_ebmeta;
+  enum kernel_type_e {
+    kt_none,
+    kt_inv_sqrt_time,
+    kt_ntot
+  };
+  int kernel_type;
+  cvm::real kernel_coupling_time;
+  cvm::real gauss_factor;
 
   /// \brief Try to read the restart information by allocating new
   /// grids before replacing the current ones (used e.g. in
