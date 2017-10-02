@@ -270,16 +270,16 @@ The following keywords are available in the global context of the Colvars config
     If the value is \texttt{0}, such trajectory file is not written.
     For optimization the output is buffered, and synchronized with the disk only when the restart file is being written.}
 
-\item %
-  \keydef
-    {colvarsTrajAppend}{%
-    global}{%
-    Append to trajectory file?}{%
-    boolean}{%
-    \texttt{off}}{%
-    If this flag is enabled, and a file with the same name as the trajectory file is already present, new data is appended to that file.
-    Otherwise, a new file is created with the same name that overwrites the previous file.
-\cvnamdonly{\textbf{Note:} \emph{when running consecutive simulations with the same \outputName{} (e.g.~in FEP calculations), you should enable this option to preserve the previous contents of the trajectory file.}}}
+% \item %
+%   \keydef
+%     {colvarsTrajAppend}{%
+%     global}{%
+%     Append to trajectory file?}{%
+%     boolean}{%
+%     \texttt{off}}{%
+%     If this flag is enabled, and a file with the same name as the trajectory file is already present, new data is appended to that file.
+%     Otherwise, a new file is created with the same name that overwrites the previous file.
+% \cvnamdonly{\textbf{Note:} \emph{when running consecutive simulations with the same \outputName{} (e.g.~in FEP calculations), you should enable this option to preserve the previous contents of the trajectory file.}}}
 
 \item %
   \keydef

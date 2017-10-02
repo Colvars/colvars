@@ -267,9 +267,9 @@ int colvarmodule::parse_global_params(std::string const &conf)
   parse->get_keyval(conf, "colvarsRestartFrequency",
                     restart_out_freq, restart_out_freq);
 
-  // if this is true when initializing, it means
-  // we are continuing after a reset(): default to true
-  parse->get_keyval(conf, "colvarsTrajAppend", cv_traj_append, cv_traj_append);
+  // Deprecate append flag
+  parse->get_keyval(conf, "colvarsTrajAppend", 
+                    cv_traj_append, cv_traj_append, colvarparse::parse_silent);
 
   parse->get_keyval(conf, "scriptedColvarForces", use_scripted_forces, false);
 
