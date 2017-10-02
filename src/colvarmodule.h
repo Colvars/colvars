@@ -330,9 +330,9 @@ public:
 
   /// Write all trajectory files
   int write_traj_files();
-  /// Write all restart files
-  int write_restart_files();
-  /// Write all FINAL output files
+  /// Write a state file useful to resume the simulation
+  int write_restart_file(std::string const &out_name);
+  /// Write all other output files
   int write_output_files();
   /// Backup a file before writing it
   static int backup_file(char const *filename);

@@ -197,6 +197,8 @@ int colvarscript::run(int objc, unsigned char *const objv[])
     proxy->output_prefix() = obj_to_str(objv[2]);
     int error = 0;
     error |= colvars->setup_output();
+    error |= colvars->write_restart_file(colvars->output_prefix()+
+                                         ".colvars.state");
     error |= colvars->write_output_files();
     return error ? COLVARSCRIPT_ERROR : COLVARS_OK;
   }

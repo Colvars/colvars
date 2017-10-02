@@ -268,7 +268,7 @@ int colvarmodule::parse_global_params(std::string const &conf)
                     restart_out_freq, restart_out_freq);
 
   // Deprecate append flag
-  parse->get_keyval(conf, "colvarsTrajAppend", 
+  parse->get_keyval(conf, "colvarsTrajAppend",
                     cv_traj_append, cv_traj_append, colvarparse::parse_silent);
 
   parse->get_keyval(conf, "scriptedColvarForces", use_scripted_forces, false);
@@ -672,8 +672,15 @@ int colvarmodule::calc()
   }
 
   // write restart files, if needed
-  if (restart_out_freq && restart_out_name.size()) {
-    error_code |= write_restart_files();
+  if (restart_out_freq && (cvm::step_relative() > 0) &&
+      ((cvm::step_absolute() % restart_out_freq) == 0) ) {
+    if (restart_out_name.size()) {
+      // Write restart file, if different from main output
+      error_code |= write_restart_file(restart_out_name);
+    } else {
+      error_code |= write_restart_file(output_prefix()+".colvars.state");
+    }
+    write_output_files();
   }
 
   return error_code;
@@ -915,21 +922,16 @@ int colvarmodule::calc_scripted_forces()
 }
 
 
-int colvarmodule::write_restart_files()
+int colvarmodule::write_restart_file(std::string const &out_name)
 {
-  if ( (cvm::step_relative() > 0) &&
-       ((cvm::step_absolute() % restart_out_freq) == 0) ) {
-    cvm::log("Writing the state file \""+
-             restart_out_name+"\".\n");
-    proxy->backup_file(restart_out_name);
-    std::ostream *restart_out_os = proxy->output_stream(restart_out_name);
-    if (!restart_out_os) return cvm::get_error();
-    if (!write_restart(*restart_out_os)) {
-      return cvm::error("Error: in writing restart file.\n", FILE_ERROR);
-    }
-    proxy->close_output_stream(restart_out_name);
+  cvm::log("Saving collective variables state to \""+out_name+"\".\n");
+  proxy->backup_file(out_name);
+  std::ostream *restart_out_os = proxy->output_stream(out_name);
+  if (!restart_out_os) return cvm::get_error();
+  if (!write_restart(*restart_out_os)) {
+    return cvm::error("Error: in writing restart file.\n", FILE_ERROR);
   }
-
+  proxy->close_output_stream(out_name);
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
 }
 
@@ -1268,7 +1270,7 @@ continue the previous simulation.\n\n");
 to:\n\
 \""+ proxy->input_prefix()+".colvars.state\"\n");
     output_prefix() = output_prefix()+".tmp";
-    write_output_files();
+    write_restart_file(output_prefix()+".colvars.state");
     cvm::error("Exiting with error until issue is addressed.\n", FATAL_ERROR);
   }
 
@@ -1284,24 +1286,13 @@ int colvarmodule::backup_file(char const *filename)
 
 int colvarmodule::write_output_files()
 {
-  // if this is a simulation run (i.e. not a postprocessing), output data
-  // must be written to be able to restart the simulation
-  std::string const out_name =
-    (output_prefix().size() ?
-     std::string(output_prefix()+".colvars.state") :
-     std::string("colvars.state"));
-  cvm::log("Saving collective variables state to \""+out_name+"\".\n");
-
-  std::ostream * os = proxy->output_stream(out_name);
-  os->setf(std::ios::scientific, std::ios::floatfield);
-  this->write_restart(*os);
-  proxy->close_output_stream(out_name);
+  int error_code = COLVARS_OK;
 
   cvm::increase_depth();
   for (std::vector<colvar *>::iterator cvi = colvars.begin();
        cvi != colvars.end();
        cvi++) {
-    (*cvi)->write_output_files();
+    error_code |= (*cvi)->write_output_files();
   }
   cvm::decrease_depth();
 
@@ -1309,8 +1300,8 @@ int colvarmodule::write_output_files()
   for (std::vector<colvarbias *>::iterator bi = biases.begin();
        bi != biases.end();
        bi++) {
-    (*bi)->write_output_files();
-    (*bi)->write_state_to_replicas();
+    error_code |= (*bi)->write_output_files();
+    error_code |= (*bi)->write_state_to_replicas();
   }
   cvm::decrease_depth();
 

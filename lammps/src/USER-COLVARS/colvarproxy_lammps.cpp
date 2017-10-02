@@ -232,6 +232,9 @@ void colvarproxy_lammps::serialize_status(std::string &rst)
   std::ostringstream os;
   colvars->write_restart(os);
   rst = os.str();
+
+  // TODO separate this as its own function?
+  colvars->write_output_files();
 }
 
 // set status from string
