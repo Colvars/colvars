@@ -9,17 +9,17 @@ All subcommands of \texttt{cv} are documented below.
 \renewcommand{\cvparagraph}[2]{\cvsubsubsec{#1}{#2}}
 }
 
-\cvparagraph{Managing the colvars module}{sec:cv_command_general}
+\cvparagraph{Managing the Colvars module}{sec:cv_command_general}
 
 \begin{itemize}
 \cvvmdonly{
-\item \texttt{molid} \emph{$<$molid$>$}: setup the colvars module for the given molecule; \emph{$<$molid$>$} is the identifier of a valid VMD molecule, either an integer or \texttt{top} for the top molecule;
-\item \texttt{delete}: delete the colvars module; after this, the module can be setup again using \texttt{cv molid};
+\item \texttt{molid} \emph{$<$molid$>$}: setup the Colvars module for the given molecule; \emph{$<$molid$>$} is the identifier of a valid VMD molecule, either an integer or \texttt{top} for the top molecule;
+\item \texttt{delete}: delete the Colvars module; after this, the module can be setup again using \texttt{cv molid};
 }
 \item \texttt{configfile} \emph{$<$file name$>$}: read configuration from a file;
 \item \texttt{config} \emph{$<$string$>$}: read configuration from the given string; both \texttt{config} and \texttt{configfile} subcommands may be invoked multiple times;
 \cvvmdonly{see \ref{sec:colvars_config} for the configuration syntax;}
-\item \texttt{reset}: delete all internal configuration of the colvars module;
+\item \texttt{reset}: delete all internal configuration of the Colvars module;
 \item \texttt{version}: return the version of the colvars code.
 \end{itemize}
 

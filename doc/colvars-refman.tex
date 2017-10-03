@@ -96,9 +96,9 @@
 \newcommand{\vx}{{\mbox{\boldmath{$x$}}}}
 \newcommand{\bm}[1]{{\mbox{\boldmath{$#1$}}}}
 
-\newcommand{\cvsec}[2]{\noindent\hyperlink{#2}{\hrulefill}\hypertarget{#2}{\section{#1}}\label{#2}}
-\newcommand{\cvsubsec}[2]{\noindent\hyperlink{#2}{\hrulefill}\hypertarget{#2}{\subsection{#1}}\label{#2}}
-\newcommand{\cvsubsubsec}[2]{\noindent\hyperlink{#2}{\hrulefill}\hypertarget{#2}{\subsubsection{#1}}\label{#2}}
+\newcommand{\cvsec}[2]{\noindent\hrulefill\section{#1}\label{#2}\ifdefined\HCode\HCode{<selfref>}\ref{#2}\HCode{</selfref>}\fi}
+\newcommand{\cvsubsec}[2]{\noindent\hrulefill\subsection{#1}\label{#2}\ifdefined\HCode\HCode{<selfref>}\ref{#2}\HCode{</selfref>}\fi}
+\newcommand{\cvsubsubsec}[2]{\noindent\hrulefill\subsubsection{#1}\label{#2}\ifdefined\HCode\HCode{<selfref>}\ref{#2}\HCode{</selfref>}\fi}
 
 \cvnamdonly{
 \newcommand{\outputName}{\emph{outputName}}
