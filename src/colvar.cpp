@@ -1036,6 +1036,7 @@ int colvar::collect_cvc_data()
 
   if (cvm::step_relative() > 0) {
     // Total force depends on Jacobian derivative from previous timestep
+    // collect_cvc_total_forces() uses the previous value of jd
     error_code |= collect_cvc_total_forces();
   }
   error_code |= collect_cvc_values();
