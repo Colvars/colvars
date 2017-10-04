@@ -323,7 +323,7 @@ The following keywords are available in the global context of the Colvars config
     Whether SMP parallelism should be used}{%
     boolean}{%
     \texttt{on}}{%
-    If this flag is enabled (default), SMP parallelism over threads will be used to compute variables and biases, provided that this is supported by \MDENGINE{}.}
+    If this flag is enabled (default), SMP parallelism over threads will be used to compute variables and biases, provided that this is supported by the \MDENGINE{} build in use.}
 
 \item %
   \keydef
@@ -1267,7 +1267,7 @@ Performance can be improved in multiple ways:
   The performance of simulations that use many colvars or components is improved automatically.
   For simulations that use a single large colvar, it may be advisable to partition it in multiple components, which will be then distributed across the available cores.
   \cvnamdonly{In NAMD, this feature is enabled in all binaries compiled using SMP builds of Charm++ with the CkLoop extension.}
-  \cvlammpsonly{In LAMMPS, this feature is supported automatically.}
+  \cvlammpsonly{In LAMMPS, this feature is supported automatically when LAMMPS is compiled with OpenMP support.}
   If printed, the message ``SMP parallelism is available.'' indicates the availability of the option\cvvmdonly{ (will be supported in a future relase of VMD)}.
   If available, the option is turned on by default, but may be disabled using the keyword \refkey{smp}{Colvars-global|smp} if required for debugging.
 
