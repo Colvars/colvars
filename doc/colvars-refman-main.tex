@@ -49,7 +49,7 @@ Detailed explanations of the design of the Colvars module are provided in refere
 
 Suppose that we want to run a steered MD experiment where a small molecule is pulled away from a binding site.
 In Colvars terms, this is done by applying a moving restraint to the distance between the two objects.
-The configuration will contain two blocks, one defining the distance variable (see \ref{sec:colvar}, \ref{sec:cvc}), and the other the moving harmonic restraint (\ref{sec:colvarbias_harmonic}).
+The configuration will contain two blocks, one defining the distance variable (see sections \ref{sec:colvar} and \ref{sec:cvc}), and the other the moving harmonic restraint (\ref{sec:colvarbias_harmonic}).
 
 \bigskip
 % verbatim can't appear within commands
@@ -75,9 +75,10 @@ harmonic \{\\
 }
 
 Reading this input in plain English: the variable here named \emph{dist} consists in a distance function between the centers of two groups: the ligand (atoms 42 to 55) and the alpha carbon atoms (CA) of residues 15 to 30 in the protein (segment name PR).
-The atom selection syntax is detailed in \ref{sec:colvar_atom_groups}.
+The atom selection syntax is detailed in section \ref{sec:colvar_atom_groups}.
 
 To the ``\emph{dist}'' variable, we apply a \texttt{harmonic} potential of force constant 20~\cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{energy units}/\AA$^2$, initially centered around a value of 4~\AA, which will increase to 15~\AA{} over 500,000 simulation steps.
+
 
 \cvsec{General parameters and input/output files}{sec:colvarmodule}
 
@@ -261,6 +262,7 @@ The following keywords are available in the global context of the Colvars config
 \begin{itemize}
 
 \item %
+  \labelkey{Colvars-global|colvarsTrajFrequency}
   \keydef
     {colvarsTrajFrequency}{%
     global}{%
@@ -283,6 +285,7 @@ The following keywords are available in the global context of the Colvars config
 % \cvnamdonly{\textbf{Note:} \emph{when running consecutive simulations with the same \outputName{} (e.g.~in FEP calculations), you should enable this option to preserve the previous contents of the trajectory file.}}}
 
 \item %
+  \labelkey{Colvars-global|colvarsRestartFrequency}
   \keydef
     {colvarsRestartFrequency}{%
     global}{%
@@ -295,6 +298,7 @@ The following keywords are available in the global context of the Colvars config
     trajectory file for reasons of disk space.}
 
 \item %
+  \labelkey{Colvars-global|indexFile}
   \key
     {indexFile}{%
     global}{%
@@ -312,6 +316,7 @@ The following keywords are available in the global context of the Colvars config
   }
 
 \item %
+  \labelkey{Colvars-global|smp}
   \keydef
     {smp}{%
     global}{%
@@ -440,20 +445,43 @@ All such files' names also begin with the prefix \outputName\texttt{}.
 \cvnamdonly{Finally, the total energy of all biases or restraints applied to the colvars appears under the NAMD standard output, under the MISC column.}
 
 
-\cvsec{Defining collective variables and their properties}{sec:colvar}
+\cvsec{Defining collective variables and their physical properties}{sec:colvar}
 
-In the configuration file each colvar is defined by the keyword
-\texttt{colvar}, followed by its configuration options within curly braces: \texttt{colvar~\{~...~\}}.  One of these options is the name of a colvar component: for example, including \texttt{rmsd \{~...~\}} defines the colvar as a RMSD function.  \emph{In most applications, only one component is used, and the component is equal to the colvar.}
+A collective variable is defined by the keyword \texttt{colvar} followed by its configuration options contained within curly braces:
 
-The full list of colvar components can be found in Section~\ref{sec:cvc}, with the syntax to select atoms in Section~\ref{sec:colvar_atom_groups}. 
-The following section lists several options to control the behavior of a single colvar, regardless of its type.
+{\bigskip\noindent\ttfamily
+colvar \{\\
+\-~~name xi\\
+\-~~<other options>\\
+\-~~\ldots\\
+\}\\
+}
+
+There are multiple ways of defining a variable:
+\begin{itemize}
+\item The \emph{simplest and most common way} way is using one of the precompiled functions (here called ``components''), which are listed in section~\ref{sec:cvc}.  For example, using the keyword \texttt{rmsd} (section \ref{sec:cvc_rmsd}) defines the variable as the root mean squared deviation (RMSD) of the selected atoms.
+\item A new variable may also be constructed as a linear or polynomial combination of the components listed in section~\ref{sec:cvc} (see \ref{sec:cvc_superp} for details).
+\cvnamdonly{
+\item A user-defined mathematical function of the existing components (see list in section~\ref{sec:cvc}), or of the atomic coordinates directly (see the \texttt{cartesian} keyword in \ref{sec:cvc_cartesian}).
+The function is defined through the keyword \refkey{customFunction}{colvar|customFunction} (see \ref{sec:colvar_custom_function} for details).
+}
+\cvscriptonly{
+\item A user-defined Tcl function of the existing components (see list in section~\ref{sec:cvc}), or of the atomic coordinates directly (see the \texttt{cartesian} keyword in \ref{sec:cvc_cartesian}).
+The function is provided by a separate Tcl script, and referenced through the keyword \refkey{scriptedFunction}{colvar|scriptedFunction} (see \ref{sec:colvar_scripted} for details).
+}
+\end{itemize}
+
+All components listed in section~\ref{sec:cvc}, including the \texttt{cartesian} component make use of atom selection keyword described in section~\ref{sec:colvar_atom_groups}.
+
+The remainder of this section lists options to control the behavior of a variable, regardless of how it was defined.
+Only the options \texttt{name}, \texttt{width}, \texttt{lowerBoundary} and \texttt{upperBoundary} are the most commonly used (\ref{sec:colvar_general}).
 
 \cvsubsec{General options for a collective variable}{sec:colvar_general}
 
-The following options are not required by default; however, the first four are very  frequently used:
 \begin{itemize}
 
 \item %
+  \labelkey{colvar|name}
   \keydef
     {name}{%
     \texttt{colvar}}{%
@@ -466,6 +494,7 @@ The following options are not required by default; however, the first four are v
     to this colvar.}
 
 \item %
+  \labelkey{colvar|name}
   \keydef
     {width}{%
     \texttt{colvar}}{%
@@ -473,15 +502,15 @@ The following options are not required by default; however, the first four are v
     positive decimal}{%
     1.0}{%
     This number has the same physical unit as the colvar value and defines an effective colvar unit.
-    Biasing algorithms use it for different purposes.
-    Harmonic restraints (\ref{sec:colvarbias_harmonic}) use it to set the physical unit of the force constant, which is useful for multidimensional restraints involving colvars with different units or scale which may then be defined by a single, scaled force constant.
-    Histogram (\ref{sec:colvarbias_histogram}) and ABF biases (\ref{sec:colvarbias_abf}) interpret it as the grid spacing in the direction of this variable.
-    Metadynamics (\ref{sec:colvarbias_meta}) uses it to set the width of newly added hills.
-    In other cases, it is simplest to keep the default value of 1, so that harmonic force constants are provided in their usual physical unit.
-    When a non-unity width is required by the application, the optimal value is application-dependent, but can often be thought of as a user-provided estimate of the fluctuation amplitude for the colvar.
-    In those cases, it should generally be set smaller than or equal to the standard deviation of the colvar during a very short simulation run.}
+%    Biasing algorithms use it for different purposes.
+    Harmonic restraints (\ref{sec:colvarbias_harmonic}) use it to set the physical unit of the force constant, which is useful for multidimensional restraints involving variables with very different units (for examples, $\AA$ or degrees $^\circ$) with a single, scaled force constant.
+    Histograms (\ref{sec:colvarbias_histogram}), ABF (\ref{sec:colvarbias_abf}) and metadynamics (\ref{sec:colvarbias_meta}) all use this number as the initial choice for the grid spacing along this variable: for this reason, \texttt{width} should generally be no larger than the standard deviation of the colvar in an unbiased simulation.
+%    When a non-unity width is required by the application, the optimal value is application-dependent, but can often be thought of as a user-provided estimate of the fluctuation amplitude for the colvar.
+    Unless it is required to control the spacing, it is usually simplest to keep the default value of 1, so that restraint force constants are provided in more intuitive units.
+  }
 
 \item %
+  \labelkey{colvar|lowerBoundary}
   \key
     {lowerBoundary}{%
     \texttt{colvar}}{%
@@ -880,12 +909,13 @@ The identifier is followed by a brace-delimited block containing selection keywo
 \end{itemize}
 
 
-\cvsubsec{Selection keywords}{sec:colvar_atom_groups_sel}
+\cvsubsec{Atom selection keywords}{sec:colvar_atom_groups_sel}
 
 Selection keywords may be used individually or in combination with each other, and each can be repeated any number of times.
 Selection is incremental: each keyword adds the corresponding atoms to the selection, so that different sets of atoms can be combined.
 However, atoms included by multiple keywords are only counted once.
-Below is an example configuration for an atom group with identifier ``\texttt{atoms}'', which uses an unusually varied combination of selection keywords:\\
+Below is an example configuration for an atom group called ``\texttt{atoms}''.
+\textbf{Note: }\emph{this is unusually varied combination of selection keywords, demonstrating how they can be combined together: most simulations only use one of them.}\\
 
 {%
 % verbatim can't appear within commands
@@ -898,9 +928,6 @@ Below is an example configuration for an atom group with identifier ``\texttt{at
 \\
 \-~~\# add atoms starting from 20 up to and including 50\\
 \-~~atomNumbersRange  20-50\\
-\\
-\-~~\# add index group (requires a .ndx file to be provided globally)\\
-\-~~indexGroup Water\\
 }
 \cvnamebasedonly{{%
 \noindent\ttfamily\\
@@ -914,9 +941,14 @@ Below is an example configuration for an atom group with identifier ``\texttt{at
 \-~~atomNameResidueRange  CA 11-20\\
 \-~~atomNameResidueRange  CA 11-20\\
 }}
-{\noindent\ttfamily\}\\}
+{\noindent\ttfamily\\
+\-~~\# add index group (requires a .ndx file to be provided globally)\\
+\-~~indexGroup Water\\
+\}\\}
 
-The resulting selection includes atoms 1 and 3, those between 20 and 50, and those in the index group called ``Water''; the indices of this group are read from the file provided by \texttt{indexFile}, in the global section of the configuration file.
+
+The resulting selection includes atoms 1 and 3, those between 20 and 50,\cvnamebasedonly{ the $\mathrm{C}_{\alpha}$ atoms between residues 11 and 20 of the two segments \texttt{PR1} and \texttt{PR2},} and those in the index group called ``Water''.
+The indices of this group are read from the file provided by the global keyword \refkey{indexFile}{Colvars-global|indexFile}.
 
 \cvvmdonly{In the current version, the Colvars module does not manipulate VMD atom selections directly: however, these can be converted to atom groups within the Colvars configuration string, using selection keywords such as \texttt{atomNumbers}.}
 The complete list of selection keywords available in \MDENGINE{} is:
@@ -1188,13 +1220,14 @@ The following two options have default values appropriate for the vast majority 
   the coordinates of all the atoms within a molecule contiguous to
   each other (i.e.~there are no spurious ``jumps'' in the molecular
   bonds).  The Colvars module relies on this when calculating a group's
-  center of geometry, but the condition may fail if the group spans
-  different molecules: in that case, writing the NAMD output files
-  \texttt{wrapAll} or \texttt{wrapWater} could produce wrong results
+  center of geometry, but this condition may fail if the group spans
+  different molecules.  In that case, writing the NAMD output and restart files
+  using \texttt{wrapAll} or \texttt{wrapWater} could produce wrong results
   when a simulation run is continued from a previous one.  
   The user should then determine, according to which
   type of colvars are being calculated, whether \texttt{wrapAll} or
   \texttt{wrapWater} can be enabled.
+
   In general, internal coordinate wrapping by NAMD does not affect the calculation of colvars if each atom group satisfies one or more of the following:
 }
 \cvlammpsonly{
@@ -1236,6 +1269,7 @@ Performance can be improved in multiple ways:
   \cvnamdonly{In NAMD, this feature is enabled in all binaries compiled using SMP builds of Charm++ with the CkLoop extension.}
   \cvlammpsonly{In LAMMPS, this feature is supported automatically.}
   If printed, the message ``SMP parallelism is available.'' indicates the availability of the option\cvvmdonly{ (will be supported in a future relase of VMD)}.
+  If available, the option is turned on by default, but may be disabled using the keyword \refkey{smp}{Colvars-global|smp} if required for debugging.
 
 \cvnamdonly{
   % Use the following command to identify them:
@@ -2580,7 +2614,7 @@ The following options can be used for any of the above colvar components in orde
     The name is an unique case-sensitive string which allows the
     Colvars module to identify this component. This is useful, for example,
     when combining multiple components via a \texttt{scriptedFunction}.
-    \cvnamdonly{It also defines the variable name representing the component's value in a \texttt{customFunction} expression.}}
+    \cvnamdonly{It also defines the variable name representing the component's value in a \refkey{customFunction}{colvar|customFunction} expression.}}
 
 \item %
   \keydef
