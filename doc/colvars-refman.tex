@@ -96,8 +96,8 @@
 \newcommand{\vx}{{\mbox{\boldmath{$x$}}}}
 \newcommand{\bm}[1]{{\mbox{\boldmath{$#1$}}}}
 
-\newcommand{\cvsec}[2]{\noindent\ifdefined\HCode\section{#1}\label{#2}\HCode{<selfref>}\ref{#2}\HCode{</selfref>}\else \hrulefill\section{#1}\label{#2} \fi}
-\newcommand{\cvsubsec}[2]{\noindent\ifdefined\HCode\HCode{<selfref>}\ref{#2}\HCode{</selfref>}\else \hrulefill\subsection{#1}\label{#2} \fi}
+\newcommand{\cvsec}[2]{\noindent\section{#1}\label{#2}\ifdefined\HCode\HCode{<selfref>}\ref{#2}\HCode{</selfref>}\fi}
+\newcommand{\cvsubsec}[2]{\noindent\subsection{#1}\label{#2}\ifdefined\HCode\HCode{<selfref>}\ref{#2}\HCode{</selfref>}\fi}
 \newcommand{\cvsubsubsec}[2]{\noindent\subsubsection{#1}\label{#2}\ifdefined\HCode\HCode{<selfref>}\ref{#2}\HCode{</selfref>}\fi}
 
 \cvnamdonly{
