@@ -229,13 +229,15 @@ protected:
   /// \brief Whether reflection or inversion are of mono or multidimensional type
   enum reflection_type_e {
     rt_monod,
-    rt_multid
+    rt_multid,
+    rt_none
   };
   int reflection_type;
 
   enum inversion_type_e {
     it_monod,
-    it_multid
+    it_multid,
+    it_none
   };
   int inversion_type;
 

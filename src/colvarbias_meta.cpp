@@ -553,6 +553,7 @@ int colvarbias_meta::init_ebmeta_params(std::string const &conf)
 int colvarbias_meta::init_inversion_params(std::string const &conf)
 {
   bool use_inversion;
+  inversion_type = it_none;
   get_keyval(conf, "useHillsInversion", use_inversion, false);
   ninvvarsl=0;
   ninvvarsu=0;
@@ -703,6 +704,8 @@ int colvarbias_meta::init_inversion_params(std::string const &conf)
   // mono vs multimensional inversion
 
   switch (inversion_type) {
+  case it_none:
+    break;
   case it_monod:
     cvm::log("Using monodimensional inversion \n");
     break;
@@ -766,6 +769,7 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
   bool use_reflection;
   nrefvarsl=0;
   nrefvarsu=0;
+  reflection_type = rt_none;
   get_keyval(conf, "useHillsReflection", use_reflection, false); 
   if (use_reflection) {
 
@@ -875,6 +879,8 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
   // mono vs multimensional reflection
 
   switch (reflection_type) {
+  case rt_none:
+    break;
   case rt_monod:
     cvm::log("Using monodimensional reflection \n");
     break;
@@ -1972,6 +1978,8 @@ int colvarbias_meta::update_bias()
       // add reflected and/or inverted hills if required
 
       switch (reflection_type) {
+      case rt_none:
+        break;
       case rt_monod: 
         for (size_t i = 0; i < nrefvarsl; i++) {
            size_t ii=reflection_llimit_cv[i];
@@ -1990,6 +1998,8 @@ int colvarbias_meta::update_bias()
       }  
       
       switch (inversion_type) {
+      case it_none:
+        break;
       case it_monod: 
         for (size_t i = 0; i < ninvvarsl; i++) {
            size_t ii=inversion_llimit_cv[i];
