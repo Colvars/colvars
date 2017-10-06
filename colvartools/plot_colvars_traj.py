@@ -320,6 +320,9 @@ if (__name__ == '__main__'):
                             last=args.last,
                             every=args.skip)
 
+    if (args.list_variables):
+        sys.exit()
+
     variables = args.variables
     if (len(variables) == 0): variables = colvars_traj.variables
 
