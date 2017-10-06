@@ -142,7 +142,6 @@ class Colvars_traj(object):
     def parse_line(self, line):
         """
         Read in a data line from a colvars.traj file
-        only variables corresponding to the given keys are read
         """
 
         step = np.int64(line[0:self._end['step']])
@@ -180,6 +179,7 @@ class Colvars_traj(object):
         last = np.int64(last)
         if (last == -1):
             last = np.int64(np.iinfo(np.int64).max)
+        last_step = -1
         for f in filenames:
             for line in f:
                 if (len(line) == 0): continue
@@ -191,10 +191,13 @@ class Colvars_traj(object):
                     for v in self.variables:
                         print(v)
                     return
+                step = np.int64(line[0:self._end['step']])
+                if (step == last_step): continue
                 if ((self._frame >= first) and (self._frame <= last) and 
                     (self._frame % every == 0)):
                     self.parse_line(line)
                 self._frame += 1
+                last_step = step
 
 
 if (__name__ == '__main__'):
