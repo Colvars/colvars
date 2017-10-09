@@ -461,7 +461,7 @@ There are multiple ways of defining a variable:
 \begin{itemize}
 \item The \emph{simplest and most common way} way is using one of the precompiled functions (here called ``components''), which are listed in section~\ref{sec:cvc}.  For example, using the keyword \texttt{rmsd} (section \ref{sec:cvc_rmsd}) defines the variable as the root mean squared deviation (RMSD) of the selected atoms.
 \item A new variable may also be constructed as a linear or polynomial combination of the components listed in section~\ref{sec:cvc} (see \ref{sec:cvc_superp} for details).
-\cvnamdonly{
+\cvleptononly{
 \item A user-defined mathematical function of the existing components (see list in section~\ref{sec:cvc}), or of the atomic coordinates directly (see the \texttt{cartesian} keyword in \ref{sec:cvc_cartesian}).
 The function is defined through the keyword \refkey{customFunction}{colvar|customFunction} (see \ref{sec:colvar_custom_function} for details).
 }
@@ -2777,7 +2777,8 @@ block a series of components of the same type (applied to different
 atom groups), and assign to each component a \texttt{componentCoeff}
 of $1/N$.
 
-\cvnamdonly{
+
+\cvleptononly{
 \cvsubsec{Colvars as custom functions of components}{sec:colvar_custom_function}
 
 Collective variables may be defined by specifying a custom function as an analytical
@@ -2839,6 +2840,7 @@ This is illustrated in the example below.
     Note that the scalar and vector cases are not necessary, as they are detected automatically.}
 \end{itemize}
 }
+
 
 \cvscriptonly{
 \cvsubsec{Colvars as scripted functions of components}{sec:colvar_scripted}
