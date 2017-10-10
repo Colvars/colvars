@@ -165,17 +165,17 @@ update_all_versions() {
                           COLVARS_VERSION \
                           src/colvars_version.h 
     update_version_string "LAMMPS interface" \
-                          '^lammps/src/USER-COLVARS/colvarproxy\|^lammps/src/USER-COLVARS/fix_colvars\|^src/colvarproxy\|^src/colvarscript' \
+                          '^lammps/src/USER-COLVARS/colvarproxy\|^lammps/src/USER-COLVARS/fix_colvars\|^src/colvarproxy' \
                           get_colvarproxy_lammps_version \
                           COLVARPROXY_VERSION \
                           lammps/src/USER-COLVARS/colvarproxy_lammps_version.h
     update_version_string "NAMD interface" \
-                          '^namd/src/colvarproxy\|^src/colvarproxy\|^src/colvarscript' \
+                          '^namd/src/colvarproxy\|^src/colvarproxy' \
                           get_colvarproxy_namd_version \
                           COLVARPROXY_VERSION \
                           namd/src/colvarproxy_namd_version.h
     update_version_string "VMD interface" \
-                          '^vmd/src/colvarproxy\|^src/colvarproxy\|^src/colvarscript' \
+                          '^vmd/src/colvarproxy\|^src/colvarproxy' \
                           get_colvarproxy_vmd_version \
                           COLVARPROXY_VERSION \
                           vmd/src/colvarproxy_vmd_version.h
