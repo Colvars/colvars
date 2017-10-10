@@ -576,7 +576,7 @@ public:
   /// from static functions in the colvarmodule class
   static colvarproxy *proxy;
 
-  /// \brief Accessor for the above
+  /// \brief Access the one instance of the Colvars module
   static colvarmodule *main();
 
 };

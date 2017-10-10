@@ -4,7 +4,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define COLVARSCRIPT_CPP
 #include "colvarscript.h"
+#undef COLVARSCRIPT_CPP
+
 #include "colvarproxy.h"
 #include "colvardeps.h"
 
@@ -14,6 +17,11 @@ colvarscript::colvarscript(colvarproxy *p)
    colvars(p->colvars),
    proxy_error(0)
 {
+  comm_help.resize(colvarscript::cv_n_commands);
+  comm_fns.resize(colvarscript::cv_n_commands);
+#define COLVARSCRIPT_INIT_FN
+#include "colvarscript.h"
+#undef COLVARSCRIPT_INIT_FN
 }
 
 
@@ -59,8 +67,7 @@ int colvarscript::run(int objc, unsigned char *const objv[])
   }
 
   if (objc < 2) {
-    result = help_string();
-    return COLVARS_OK;
+    return exec_command(cv_help, NULL, objc, objv);
   }
 
   std::string const cmd(obj_to_str(objv[1]));
@@ -160,17 +167,7 @@ int colvarscript::run(int objc, unsigned char *const objv[])
 
   /// Parse config from string
   if (cmd == "config") {
-    if (objc < 3) {
-      result = "Missing arguments\n" + help_string();
-      return COLVARSCRIPT_ERROR;
-    }
-    std::string const conf(obj_to_str(objv[2]));
-    if (colvars->read_config_string(conf) == COLVARS_OK) {
-      return COLVARS_OK;
-    } else {
-      result = "Error parsing configuration string";
-      return COLVARSCRIPT_ERROR;
-    }
+    return exec_command(cv_config, NULL, objc, objv);
   }
 
   /// Load an input state file
@@ -248,6 +245,10 @@ int colvarscript::run(int objc, unsigned char *const objv[])
       result = "Wrong arguments to command \"addenergy\"\n" + help_string();
       return COLVARSCRIPT_ERROR;
     }
+  }
+
+  if (cmd == "help") {
+    return exec_command(cv_help, NULL, objc, objv);
   }
 
   result = "Syntax error\n" + help_string();
@@ -526,7 +527,7 @@ int colvarscript::proc_features(colvardeps *obj,
 }
 
 
-std::string colvarscript::help_string()
+std::string colvarscript::help_string() const
 {
   std::string buf;
   buf = "Usage: cv <subcommand> [args...]\n\
