@@ -33,6 +33,12 @@ bool colvarproxy_system::total_forces_enabled() const
 }
 
 
+bool colvarproxy_system::total_forces_same_step() const
+{
+  return false;
+}
+
+
 cvm::real colvarproxy_system::position_dist2(cvm::atom_pos const &pos1,
                                              cvm::atom_pos const &pos2)
 {

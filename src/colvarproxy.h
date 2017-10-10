@@ -73,6 +73,9 @@ public:
 
   /// Are total forces being used?
   virtual bool total_forces_enabled() const;
+
+  /// Are total forces from the current step available?
+  virtual bool total_forces_same_step() const;
 };
 
 

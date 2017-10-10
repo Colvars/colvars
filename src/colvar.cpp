@@ -1001,6 +1001,8 @@ int colvar::calc()
 
 int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
 {
+  colvarproxy *proxy = cvm::main()->proxy;
+
   int error_code = COLVARS_OK;
   if (cvm::debug())
     cvm::log("Calculating colvar \""+this->name+"\", components "+
@@ -1011,14 +1013,18 @@ int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
     return error_code;
   }
 
-  if (cvm::step_relative() > 0) {
-    // Total force depends on Jacobian derivative from previous timestep
+  if ((cvm::step_relative() > 0) && (!proxy->total_forces_same_step())){
+    // Use Jacobian derivative from previous timestep
     error_code |= calc_cvc_total_force(first_cvc, num_cvcs);
   }
   // atom coordinates are updated by the next line
   error_code |= calc_cvc_values(first_cvc, num_cvcs);
   error_code |= calc_cvc_gradients(first_cvc, num_cvcs);
   error_code |= calc_cvc_Jacobians(first_cvc, num_cvcs);
+  if (proxy->total_forces_same_step()){
+    // Use Jacobian derivative from this timestep
+    error_code |= calc_cvc_total_force(first_cvc, num_cvcs);
+  }
 
   if (cvm::debug())
     cvm::log("Done calculating colvar \""+this->name+"\".\n");
