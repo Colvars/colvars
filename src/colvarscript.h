@@ -206,9 +206,7 @@ inline static colvarbias *colvarbias_obj(void *pobj)
 
 
 #ifdef COLVARSCRIPT_INIT_FN
-#define CVSCRIPT_COMM_INIT(COMM,HELP,ARGS) {      \
-    size_t const n = ((COMM+1) > comm_fns.size()) ?             \
-      (COMM+1) : comm_fns.size();                               \
+#define CVSCRIPT_COMM_INIT(COMM,HELP,ARGS) {                    \
     comm_str_map[#COMM] = COMM;                                 \
     comm_help[COMM] = HELP;                                     \
     comm_fns[COMM] = &(CVSCRIPT_COMM_FNAME(COMM));              \
