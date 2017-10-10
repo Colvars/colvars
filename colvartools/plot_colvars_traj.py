@@ -21,7 +21,7 @@ import numpy as np
 class Colvar_traj(object):
     """
     Class to store the trajectory of a collective variable.
-    The series of step numbers are included, because collective 
+    The series of step numbers are included, because collective
     variables may be added or deleted during the simulation.
     """
 
@@ -65,7 +65,7 @@ class Colvar_traj(object):
             self._colvar.resize((n, self._colvar.shape[1]))
         else:
             self._colvar.resize((n))
-            
+
 
     @property
     def name(self):
@@ -193,7 +193,7 @@ class Colvars_traj(object):
                     return
                 step = np.int64(line[0:self._end['step']])
                 if (step == last_step): continue
-                if ((self._frame >= first) and (self._frame <= last) and 
+                if ((self._frame >= first) and (self._frame <= last) and
                     (self._frame % every == 0)):
                     self.parse_line(line)
                 self._frame += 1
@@ -326,19 +326,18 @@ if (__name__ == '__main__'):
     variables = args.variables
     if (len(variables) == 0): variables = colvars_traj.variables
 
-    plot_keys = { var: var for var in variables }
+    plot_keys = dict(zip(variables, variables))
     if (len(args.plot_keys)):
         if (len(args.plot_keys) != len(variables)):
             raise KeyError("--plot-keys must be as long "
                            "as the number of variables.")
         else:
-            plot_keys = { var: key for (var, key) in zip(variables,
-                                                         args.plot_keys) }
+            plot_keys = dict(zip(variables, args.plot_keys))
     time_unit = args.dt
 
 
     if (args.output_file):
-        
+
         fmt = " %12d"
         columns = [colvars_traj[variables[0]].steps]
         for var in variables:
@@ -385,7 +384,7 @@ if (__name__ == '__main__'):
                 plt.plot(x, y, '-',
                          label=plot_keys[var],
                          alpha=0.5)
-            
+
         plt.legend(loc='upper left')
         plt.tight_layout()
 
