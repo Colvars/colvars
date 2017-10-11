@@ -18,10 +18,6 @@
 #include <vector>
 #include <iostream>
 
-#if defined(_OPENMP)
-#include <omp.h>
-#endif
-
 /* struct for packed data communication of coordinates and forces. */
 struct commdata {
   int tag,type;
@@ -133,21 +129,6 @@ class colvarproxy_lammps : public colvarproxy {
 
   // implementation of optional methods from base class
  public:
-
-#if defined(_OPENMP)
-  // SMP support
-  int smp_enabled();
-  int smp_colvars_loop();
-  int smp_biases_loop();
-  int smp_thread_id();
-  int smp_num_threads();
-protected:
-  omp_lock_t smp_lock_state;
-public:
-  int smp_lock();
-  int smp_trylock();
-  int smp_unlock();
-#endif
 
   // Multi-replica support
   // Indicate if multi-replica support is available and active

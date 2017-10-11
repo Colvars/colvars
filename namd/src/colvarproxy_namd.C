@@ -1101,6 +1101,7 @@ int colvarproxy_namd::update_group_properties(int index)
   return COLVARS_OK;
 }
 
+
 #if CMK_SMP && USE_CKLOOP // SMP only
 
 void calc_colvars_items_smp(int first, int last, void *result, int paramNum, void *param)
@@ -1185,4 +1186,4 @@ int colvarproxy_namd::smp_biases_script_loop()
   return cvm::get_error();
 }
 
-#endif  // SMP section
+#endif  // #if CMK_SMP && USE_CKLOOP

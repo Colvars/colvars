@@ -368,6 +368,11 @@ public:
 
   /// Release the lock
   virtual int smp_unlock();
+
+protected:
+
+  /// Lock state for OpenMP
+  void *omp_lock_state;
 };
 
 
