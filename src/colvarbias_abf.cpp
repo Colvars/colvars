@@ -170,6 +170,19 @@ int colvarbias_abf::init(std::string const &conf)
     czar_gradients = new colvar_grid_gradient(colvars);
   }
 
+  // For now, we integrate on-the-fly iff the grid is 2D
+  if ( colvars.size() == 2) {
+    // requesting margins: PMF grid is wider than gradient grid
+    pmf = new integrate_potential(colvars);
+    b_integrate = true;
+    // FIXME FIXME
+    integrate_freq = 4;
+    // FIXME FIXME
+    cvm::log("Integrating PMF on-the-fly.\n");
+  } else {
+    b_integrate = false;
+  }
+
   // For shared ABF, we store a second set of grids.
   // This used to be only if "shared" was defined,
   // but now we allow calling share externally (e.g. from Tcl).
@@ -232,6 +245,11 @@ colvarbias_abf::~colvarbias_abf()
     gradients = NULL;
   }
 
+  if (pmf) {
+    delete pmf;
+    pmf = NULL;
+  }
+
   if (z_samples) {
     delete z_samples;
     z_samples = NULL;
@@ -272,15 +290,30 @@ colvarbias_abf::~colvarbias_abf()
 
 int colvarbias_abf::update()
 {
+  cvm::real err;
+  int       iter;
+
   if (cvm::debug()) cvm::log("Updating ABF bias " + this->name);
 
-  for (size_t i = 0; i < colvars.size(); i++) {
-    bin[i] = samples->current_bin_scalar(i);
-  }
-  if (cvm::proxy->total_forces_same_step()) {
-    // e.g. in LAMMPS, total forces are current
-    force_bin = bin;
-  }
+  if (cvm::step_relative() == 0) {
+
+    // At first timestep, do only:
+    // initialization stuff (file operations relying on n_abf_biases
+    // compute current value of colvars
+
+    for (size_t i = 0; i < colvars.size(); i++) {
+      bin[i] = samples->current_bin_scalar(i);
+    }
+
+    if (b_integrate) {
+      pmf->set_div(gradients);
+      pmf->integrate(10, 1e-15, err);
+      // Initial values...
+      // write_gradients_samples(output_prefix);
+    }
+
+    // End of timestep 0-only actions
+  } else {
 
   if (cvm::step_relative() > 0 || cvm::proxy->total_forces_same_step()) {
 
@@ -305,6 +338,20 @@ int colvarbias_abf::update()
           update_system_force(i);
         }
         z_gradients->acc_force(z_bin, system_force);
+      }
+
+      // Integrate if possible
+      if ( b_integrate ) {
+        pmf->update_div(gradients, force_bin);
+        if ( cvm::step_relative() % integrate_freq == 0 ) {
+          iter = pmf->integrate(1000, 1e-5, err);
+          //cvm::log ("Number of iterations: " + cvm::to_str(iter));
+          if (iter == 1000) {
+            // linear solver might be unstable, reset
+            cvm::log ("Warning, unable to reach desired accuracy in integration");
+            pmf->multiply_constant (0.0);
+          }
+        }
       }
     }
   }
@@ -332,17 +379,26 @@ int colvarbias_abf::update()
         (cvm::real(count - min_samples)) / (cvm::real(full_samples - min_samples));
     }
 
-    const cvm::real * grad  = &(gradients->value(bin));
+    const cvm::real * grad;
+    cvm::real         inv_count;
+
+    if (b_integrate) {
+      grad  = pmf->gradient_finite_diff(bin);
+      inv_count = 1.0;
+    } else {
+      grad  = &(gradients->value(bin));
+      inv_count = 1.0 / cvm::real(count);
+    }
 
     if ( fact != 0.0 ) {
       if ( (colvars.size() == 1) && colvars[0]->periodic_boundaries() ) {
         // Enforce a zero-mean bias on periodic, 1D coordinates
         // in other words: boundary condition is that the biasing potential is periodic
-        colvar_forces[0].real_value = fact * (grad[0] / cvm::real(count) - gradients->average());
+        colvar_forces[0].real_value = fact * (inv_count * grad[0] - gradients->average ());
       } else {
         for (size_t i = 0; i < colvars.size(); i++) {
           // subtracting the mean force (opposite of the FE gradient) means adding the gradient
-          colvar_forces[i].real_value = fact * grad[i] / cvm::real(count);
+          colvar_forces[i].real_value = fact * inv_count * grad[i];
         }
       }
       if (cap_force) {
@@ -505,14 +561,19 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool app
   gradients->write_multicol(*gradients_os);
   cvm::proxy->close_output_stream(gradients_out_name);
 
-  if (colvars.size() == 1) {
+  if (colvars.size() == 1 || b_integrate) {
     // Do numerical integration and output a PMF
     std::string  pmf_out_name = prefix + ".pmf";
     std::ostream *pmf_os = cvm::proxy->output_stream(pmf_out_name, mode);
     if (!pmf_os) {
       cvm::error("Error opening pmf file " + pmf_out_name + " for writing");
     }
-    gradients->write_1D_integral(*pmf_os);
+    if (colvars.size() == 1) {
+      gradients->write_1D_integral(*pmf_os);
+    } else {
+      pmf->add_constant(-1.0 * pmf->minimum_value());
+      pmf->write_multicol(*pmf_os);
+    }
     *pmf_os << std::endl;
     cvm::proxy->close_output_stream(pmf_out_name);
   }

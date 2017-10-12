@@ -1491,5 +1491,75 @@ public:
 };
 
 
+
+/// Integrate (2D) gradients
+
+// Parameters:
+// b (divergence + BC): member of class integrate_cg; updated locally every ts
+// x (solution PMF): reference to pmf object? or copy of the vector if more efficient
+// atimes, asolve: member functions of class integrate_cg, relying on
+// laplacian: member data (vector) of integrate_cg; sparse matrix representation of
+// finite diff.
+// Laplacian, defined implicitly by functions atimes and asolve (based on boundary conditions).
+// Most of the data needs complete updates if the grid size changes...
+//
+class integrate_potential : public colvar_grid_scalar
+{
+  public:
+
+  integrate_potential();
+
+  virtual ~integrate_potential()
+  {}
+
+  /// Constructor from a vector of colvars
+  integrate_potential (std::vector<colvar *> &colvars);
+
+  /// \brief Calculate potential from divergence (in 2D); return number of steps
+  int integrate (const int itmax, const cvm::real tol, cvm::real & err);
+
+  /// \brief Update matrix containing divergence and boundary conditions
+  /// based on new gradient point value
+  void update_div(colvar_grid_gradient * gradient, const std::vector<int> &ix);
+
+  /// \brief Set matrix containing divergence and boundary conditions
+  /// based on complete gradient grid
+  void set_div(colvar_grid_gradient * gradient);
+
+  protected:
+  // Array holding divergence + boundary terms (von Neumann if not periodic)
+  std::vector<cvm::real> divergence;
+
+  // gradients at grid points surrounding the current scalar grid point
+  cvm::real g00[2];
+  cvm::real g01[2];
+  cvm::real g10[2];
+  cvm::real g11[2];
+
+  // update local gradients above
+  void get_local_grads(colvar_grid_gradient * gradient, const std::vector<int> &ix);
+
+  /// \brief Update matrix containing divergence and boundary conditions
+  /// called by update_div
+  void update_div_local(colvar_grid_gradient * gradient, const std::vector<int> &ix);
+
+  /// \brief Solve linear system based on biconjugate gradient algorithm
+  void nr_linbcg(const std::vector<cvm::real> &b, std::vector<cvm::real> &x, const int itol, const cvm::real tol,
+                const int itmax, int &iter, cvm::real &err);
+
+  /// data needed by conjugate gradient solver
+  std::vector<cvm::real> p, pp, r, rr, z, zz;
+
+  /// Norm(s) of a vector
+  cvm::real nr_snrm(const std::vector<cvm::real> &sx, const int itol);
+
+  /// Multiplication by sparse matrix representing Lagrangian (or its transpose)
+  void atimes(const std::vector<cvm::real> &x, std::vector<cvm::real> &r, const int itrnsp);
+
+  /// Inversion of preconditioner matrix
+  void asolve(const std::vector<cvm::real> &b, std::vector<cvm::real> &x, const int itrnsp);
+};
+
+
 #endif
 

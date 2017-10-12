@@ -35,6 +35,8 @@ private:
 
   bool		update_bias;
   bool		hide_Jacobian;
+  bool    b_integrate;
+
   size_t	full_samples;
   size_t	min_samples;
   /// frequency for updating output files
@@ -55,6 +57,13 @@ private:
   bool                    cap_force;
   std::vector<cvm::real>  max_force;
 
+  // Frequency for updating 2D gradients
+  int integrate_freq;
+
+  // below: stuff for force histograms
+  //float	fMax;
+  //float	df;
+
   // Internal data and methods
 
   std::vector<int>  bin, force_bin, z_bin;
@@ -64,6 +73,8 @@ private:
   colvar_grid_gradient  *gradients;
   /// n-dim grid of number of samples
   colvar_grid_count     *samples;
+  /// n-dim grid of pmf (so far, only in dimension 2)
+  integrate_potential   *pmf;
   /// n-dim grid: average force on "real" coordinate for eABF z-based estimator
   colvar_grid_gradient  *z_gradients;
   /// n-dim grid of number of samples on "real" coordinate for eABF z-based estimator
