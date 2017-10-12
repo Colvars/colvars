@@ -308,8 +308,8 @@ int colvarbias_abf::update()
     if (b_integrate) {
       pmf->set_div(gradients);
       pmf->integrate(10, 1e-15, err);
-      // Initial values...
-      // write_gradients_samples(output_prefix);
+      // Write integrated PMF for intial gradient
+      write_gradients_samples(output_prefix);
     }
 
     // End of timestep 0-only actions
@@ -327,6 +327,7 @@ int colvarbias_abf::update()
       }
       gradients->acc_force(force_bin, system_force);
     }
+
     if ( z_gradients && update_bias ) {
       for (size_t i = 0; i < colvars.size(); i++) {
         z_bin[i] = z_samples->current_bin_scalar(i);
@@ -339,18 +340,18 @@ int colvarbias_abf::update()
         }
         z_gradients->acc_force(z_bin, system_force);
       }
+    }
 
-      // Integrate if possible
-      if ( b_integrate ) {
-        pmf->update_div(gradients, force_bin);
-        if ( cvm::step_relative() % integrate_freq == 0 ) {
-          iter = pmf->integrate(1000, 1e-5, err);
-          //cvm::log ("Number of iterations: " + cvm::to_str(iter));
-          if (iter == 1000) {
-            // linear solver might be unstable, reset
-            cvm::log ("Warning, unable to reach desired accuracy in integration");
-            pmf->multiply_constant (0.0);
-          }
+    // Integrate if possible
+    if ( b_integrate ) {
+      pmf->update_div(gradients, force_bin);
+      if ( cvm::step_relative() % integrate_freq == 0 ) {
+        iter = pmf->integrate(1000, 1e-5, err);
+        cvm::log ("Number of iterations: " + cvm::to_str(iter));
+        if (iter == 1000) {
+          // linear solver might be unstable, reset
+          cvm::log ("Warning, unable to reach desired accuracy in integration");
+          pmf->multiply_constant (0.0);
         }
       }
     }
@@ -394,6 +395,7 @@ int colvarbias_abf::update()
       if ( (colvars.size() == 1) && colvars[0]->periodic_boundaries() ) {
         // Enforce a zero-mean bias on periodic, 1D coordinates
         // in other words: boundary condition is that the biasing potential is periodic
+        // This is enforced naturally if using integrated PMF
         colvar_forces[0].real_value = fact * (inv_count * grad[0] - gradients->average ());
       } else {
         for (size_t i = 0; i < colvars.size(); i++) {

@@ -223,8 +223,22 @@ int integrate_potential::integrate(const int itmax, const cvm::real tol, cvm::re
   int iter;
 
   nr_linbcg(divergence, data, 1, tol, itmax, iter, err);
-//  cvm::log ("Completed integration in " + cvm::to_str (iter) + " steps with"
-//      + " error " + cvm::to_str (err));
+  cvm::log ("Completed integration in " + cvm::to_str (iter) + " steps with"
+     + " error " + cvm::to_str (err));
+
+  // TODO remove this test of laplacian calcs
+  std::ofstream p("pmf.dat");
+  write_multicol(p);
+  std::vector<cvm::real> lap = std::vector<cvm::real>(data.size());
+  atimes(data, lap, 0);
+  data = lap;
+  std::ofstream l("laplacian.dat");
+  write_multicol(l);
+  data = divergence;
+  std::ofstream d("divergence.dat");
+  write_multicol(d);
+  // TODO TODO TODO
+
   return iter;
 }
 
@@ -236,7 +250,7 @@ void integrate_potential::get_local_grads(colvar_grid_gradient * gradient, const
   const cvm::real   * g;
   std::vector<int> ix = ix0;
 
-  gradient->wrap (ix);
+  gradient->wrap(ix);
   count = gradient->samples->value (ix);
   if (count) {
     g = &(gradient->value (ix));
@@ -258,7 +272,7 @@ void integrate_potential::get_local_grads(colvar_grid_gradient * gradient, const
     g01[0] = g01[1] = 0.0;
 
   ix[1] = ix0[1] - 1;
-  gradient->wrap (ix);
+  gradient->wrap(ix);
   count = gradient->samples->value(ix);
   if (count) {
     g = & (gradient->value(ix));
@@ -269,7 +283,7 @@ void integrate_potential::get_local_grads(colvar_grid_gradient * gradient, const
     g00[0] = g00[1] = 0.0;
 
   ix[0] = ix0[0];
-  gradient->wrap (ix);
+  gradient->wrap(ix);
   count = gradient->samples->value(ix);
   if (count) {
     g = & (gradient->value(ix));
@@ -282,10 +296,6 @@ void integrate_potential::get_local_grads(colvar_grid_gradient * gradient, const
 
 void integrate_potential::set_div(colvar_grid_gradient * gradient)
 {
-  if (nd != 2) {
-    cvm::fatal_error ("On-the fly integration is limited to 2D grids!\n");
-  }
-
   for (std::vector<int> ix = new_index(); index_ok (ix); incr (ix)) {
     update_div_local(gradient, ix);
   }
@@ -294,7 +304,7 @@ void integrate_potential::set_div(colvar_grid_gradient * gradient)
   if (cvm::debug()) {
     for (int i=0; i<nx[0]; i++) {
       for (int j=0; j<nx[1]; j++) {
-        printf("%8.3f ", divergence[index++]);
+        printf("%i %i %8.3f\n", i, j, divergence[index++]);
       }
       printf("\n");
     }
@@ -317,41 +327,45 @@ void integrate_potential::update_div(colvar_grid_gradient * gradient, const std:
 void integrate_potential::update_div_local(colvar_grid_gradient * gradient, const std::vector<int> &ix0)
 {
   std::vector<int> ix (2);
+  const int linear_index = nx[1] * ix0[0] + ix0[1];
 
+  // 4 corners in non-periodic grids have divergence set to 0
   if ( ! (periodic[0] || periodic[1])
       && (ix0[0] == 0 || ix0[0] == nx[0]-1)
       && (ix0[1] == 0 || ix0[1] == nx[1]-1) ) {
-    divergence[nx[1] * ix0[0] + ix0[1]] = 0.0;
+    divergence[linear_index] = 0.0;
     return;
   }
 
   // if ix[i] = 0 or max, update edge...
-  // FIXME
   if ((ix0[0] == 0 || ix0[0] == nx[0]-1) && !periodic[0]) {
+    // NOTE gradient grid is smaller than divergence grid by 1
     ix[0] = ix0[0] == 0 ? 0 : nx[0] - 2;
     ix[1] = ix0[1]-1;
-    g00[0] = gradient->value_output (ix, 0);
+    g00[1] = gradient->value_output(ix, 1);
     ix[1] = ix0[1];
-    g01[0] = gradient->value_output (ix, 0);
-    divergence[nx[1] * ix0[0] + ix0[1]] = 0.5 * (g00[0] + g01[0]);
+    g01[1] = gradient->value_output(ix, 1);
+    divergence[linear_index] = (g01[1]-g00[1]) / widths[1];
     return;
   }
 
-  // FIXME
   if ((ix0[1] == 0 || ix0[1] == nx[1]-1) && !periodic[1])  {
     ix[0] = ix0[0]-1;
+    // NOTE gradient grid is smaller than divergence grid by 1
     ix[1] = ix0[1] == 0 ? 0 : nx[1] - 2;
-    g00[1] = gradient->value_output (ix, 1);
+    g00[0] = gradient->value_output(ix, 0);
     ix[0] = ix0[0];
-    g01[1] = gradient->value_output (ix, 1);
-    divergence[nx[1] * ix0[0] + ix0[1]] = 0.5 * (g00[1] + g01[1]);
+    g10[0] = gradient->value_output(ix, 0);
+    divergence[linear_index] = (g10[0]-g00[0]) / widths[0];
     return;
   }
 
-  // otherwise update "center"
+  // FIXME: missing case of edges in semi-periodic case
+
+  // otherwise update "center" (if periodic, everything is in the center)
   get_local_grads(gradient, ix0);
-  divergence[nx[1]*ix0[0]+ix0[1]] = (g10[0]-g00[0] + g11[0]-g01[0]) * 0.5 / widths[0]
-                                  + (g01[1]-g00[1] + g11[1]-g10[1]) * 0.5 / widths[1];
+  divergence[linear_index] = (g10[0]-g00[0] + g11[0]-g01[0]) * 0.5 / widths[0]
+                           + (g01[1]-g00[1] + g11[1]-g10[1]) * 0.5 / widths[1];
  }
 
 
@@ -449,7 +463,6 @@ void integrate_potential::atimes (const std::vector<cvm::real> &x, std::vector<c
     r[index] = ffx * (x[index - xm] + x[index - xp] - 2.0 * x[index])
              + ffy * (x[index - ym] + x[index - yp] - 2.0 * x[index]);
   }
-
 }
 
 /// Inversion of preconditioner matrix (e.g. diagonal of the Laplacian)
@@ -559,7 +572,7 @@ void integrate_potential::nr_linbcg(const std::vector<cvm::real> &b, std::vector
         continue;
       }
     }
-    //std::cout << "iter=" << std::setw(4) << iter+1 << std::setw(12) << err << std::endl;
+    std::cout << "iter=" << std::setw(4) << iter+1 << std::setw(12) << err << std::endl;
     if (err <= tol)
       break;
   }
