@@ -172,11 +172,10 @@ int colvarbias_abf::init(std::string const &conf)
 
   // For now, we integrate on-the-fly iff the grid is 2D
   if ( colvars.size() == 2) {
-    // requesting margins: PMF grid is wider than gradient grid
     pmf = new integrate_potential(colvars);
     b_integrate = true;
-    // FIXME FIXME
-    integrate_freq = 4;
+    // FIXME FIXME MAGIC NUMBERS
+    integrate_freq = 100;
     // FIXME FIXME
     cvm::log("Integrating PMF on-the-fly.\n");
   } else {
@@ -307,7 +306,8 @@ int colvarbias_abf::update()
 
     if (b_integrate) {
       pmf->set_div(gradients);
-      pmf->integrate(10, 1e-15, err);
+      // FIXME FIXME MAGIC NUMBERS
+      pmf->integrate(1000, 1e-4, err);
       // Write integrated PMF for intial gradient
       write_gradients_samples(output_prefix);
     }
@@ -346,13 +346,9 @@ int colvarbias_abf::update()
     if ( b_integrate ) {
       pmf->update_div(gradients, force_bin);
       if ( cvm::step_relative() % integrate_freq == 0 ) {
-        iter = pmf->integrate(1000, 1e-5, err);
+        // FIXME FIXME MAGIC NUMBERS
+        iter = pmf->integrate(10, 1e-4, err);
         cvm::log ("Number of iterations: " + cvm::to_str(iter));
-        if (iter == 1000) {
-          // linear solver might be unstable, reset
-          cvm::log ("Warning, unable to reach desired accuracy in integration");
-          pmf->multiply_constant (0.0);
-        }
       }
     }
   }

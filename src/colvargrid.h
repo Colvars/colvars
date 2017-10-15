@@ -367,6 +367,20 @@ public:
     }
   }
 
+  /// Wrap an index vector around periodic boundary conditions
+  /// or falls back to edges if non-periodic
+  inline bool wrap_edge(std::vector<int> & ix) const
+  {
+    bool edge = false;
+    for (size_t i = 0; i < nd; i++) {
+      if (periodic[i]) {
+        ix[i] = (ix[i] + nx[i]) % nx[i]; //to ensure non-negative result
+      } else if (ix[i] == -1 || ix[i] == nx[i]) {
+        edge = true;
+      }
+    }
+    return edge;
+  }
 
   /// \brief Report the bin corresponding to the current value of variable i
   inline int current_bin_scalar(int const i) const
@@ -1203,6 +1217,7 @@ public:
     int A0, A1, A2;
     std::vector<int> ix = ix0;
 
+    // FIXME this can be rewritten more concisely with wrap_edge()
     if (periodic[n]) {
       ix[n]--; wrap(ix);
       A0 = data[address(ix)];
@@ -1544,7 +1559,11 @@ class integrate_potential : public colvar_grid_scalar
   void update_div_local(colvar_grid_gradient * gradient, const std::vector<int> &ix);
 
   /// \brief Solve linear system based on biconjugate gradient algorithm
-  void nr_linbcg(const std::vector<cvm::real> &b, std::vector<cvm::real> &x, const int itol, const cvm::real tol,
+  void nr_linbcg_asym(const std::vector<cvm::real> &b, std::vector<cvm::real> &x, const int itol, const cvm::real tol,
+                const int itmax, int &iter, cvm::real &err);
+
+  /// \brief Solve linear system based on CG, valid for symmetric matrices only
+  void nr_linbcg_sym(const std::vector<cvm::real> &b, std::vector<cvm::real> &x, const int itol, const cvm::real tol,
                 const int itmax, int &iter, cvm::real &err);
 
   /// data needed by conjugate gradient solver

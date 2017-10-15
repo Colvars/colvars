@@ -199,6 +199,8 @@ void colvar_grid_gradient::write_1D_integral(std::ostream &os)
 integrate_potential::integrate_potential(std::vector<colvar *> &colvars)
   : colvar_grid_scalar (colvars, true)
 {
+  // parent class colvar_grid_scalar is constructed with margin option set to true
+  // hence PMF grid is wider than gradient grid if non-PBC
 
   // length of "vectors" is number of points in potential (data) and divergence grids
   p.reserve(nt);
@@ -222,12 +224,30 @@ int integrate_potential::integrate(const int itmax, const cvm::real tol, cvm::re
 {
   int iter;
 
-  nr_linbcg(divergence, data, 1, tol, itmax, iter, err);
+  if (nx[0]*nx[1] <= 100) {
+    // Write explicit Laplacian FIXME debug output
+    std::ofstream lap_out("lap_op.dat");
+    std::vector<cvm::real> id(nx[0]*nx[1]), lap_col(nx[0]*nx[1]);
+    for (int i = 0; i < nx[0] * nx[1]; i++) {
+      id[i] = 1.;
+      atimes(id, lap_col, 0);
+      id[i] = 0.;
+      for (int j = 0; j < nx[0] * nx[1]; j++) {
+        lap_out << cvm::to_str(i) + " " + cvm::to_str(j) + " " + cvm::to_str(lap_col[j]) << std::endl;
+      }
+      lap_out << std::endl;
+    }
+  }
+  // FIXME
+
+  nr_linbcg_sym(divergence, data, 1, tol, itmax, iter, err);
   cvm::log ("Completed integration in " + cvm::to_str (iter) + " steps with"
      + " error " + cvm::to_str (err));
 
   // TODO remove this test of laplacian calcs
+  std::vector<cvm::real> backup (data);
   std::ofstream p("pmf.dat");
+  add_constant(-1.0 * minimum_value());
   write_multicol(p);
   std::vector<cvm::real> lap = std::vector<cvm::real>(data.size());
   atimes(data, lap, 0);
@@ -237,6 +257,7 @@ int integrate_potential::integrate(const int itmax, const cvm::real tol, cvm::re
   data = divergence;
   std::ofstream d("divergence.dat");
   write_multicol(d);
+  data = backup;
   // TODO TODO TODO
 
   return iter;
@@ -245,14 +266,13 @@ int integrate_potential::integrate(const int itmax, const cvm::real tol, cvm::re
 
 void integrate_potential::get_local_grads(colvar_grid_gradient * gradient, const std::vector<int> & ix0)
 {
-  size_t      count;
   cvm::real   fact;
   const cvm::real   * g;
   std::vector<int> ix = ix0;
+  bool edge;
 
-  gradient->wrap(ix);
-  count = gradient->samples->value (ix);
-  if (count) {
+  edge = gradient->wrap_edge(ix);
+  if (!edge && gradient->samples->value (ix)) {
     g = &(gradient->value (ix));
     fact = 1.0 / count;
     g11[0] = fact * g[0];
@@ -261,9 +281,8 @@ void integrate_potential::get_local_grads(colvar_grid_gradient * gradient, const
     g11[0] = g11[1] = 0.0;
 
   ix[0] = ix0[0] - 1;
-  gradient->wrap(ix);
-  count = gradient->samples->value(ix);
-  if (count) {
+  edge = gradient->wrap_edge(ix);
+  if (!edge && gradient->samples->value (ix)) {
     g = & (gradient->value(ix));
     fact = 1.0 / count;
     g01[0] = fact * g[0];
@@ -272,9 +291,8 @@ void integrate_potential::get_local_grads(colvar_grid_gradient * gradient, const
     g01[0] = g01[1] = 0.0;
 
   ix[1] = ix0[1] - 1;
-  gradient->wrap(ix);
-  count = gradient->samples->value(ix);
-  if (count) {
+  edge = gradient->wrap_edge(ix);
+  if (!edge && gradient->samples->value (ix)) {
     g = & (gradient->value(ix));
     fact = 1.0 / count;
     g00[0] = fact * g[0];
@@ -283,9 +301,8 @@ void integrate_potential::get_local_grads(colvar_grid_gradient * gradient, const
     g00[0] = g00[1] = 0.0;
 
   ix[0] = ix0[0];
-  gradient->wrap(ix);
-  count = gradient->samples->value(ix);
-  if (count) {
+  edge = gradient->wrap_edge(ix);
+  if (!edge && gradient->samples->value (ix)) {
     g = & (gradient->value(ix));
     fact = 1.0 / count;
     g10[0] = fact * g[0];
@@ -299,22 +316,13 @@ void integrate_potential::set_div(colvar_grid_gradient * gradient)
   for (std::vector<int> ix = new_index(); index_ok (ix); incr (ix)) {
     update_div_local(gradient, ix);
   }
-
-  int index = 0;
-  if (cvm::debug()) {
-    for (int i=0; i<nx[0]; i++) {
-      for (int j=0; j<nx[1]; j++) {
-        printf("%i %i %8.3f\n", i, j, divergence[index++]);
-      }
-      printf("\n");
-    }
-  }
 }
 
 void integrate_potential::update_div(colvar_grid_gradient * gradient, const std::vector<int> &ix0)
 {
   std::vector<int> ix (ix0);
 
+  // If not periodic, expanded grid ensures that neighbors of ix0 are valid grid points
   update_div_local(gradient, ix);
   ix[0]++; wrap(ix);
   update_div_local(gradient, ix);
@@ -328,8 +336,8 @@ void integrate_potential::update_div_local(colvar_grid_gradient * gradient, cons
 {
   std::vector<int> ix (2);
   const int linear_index = nx[1] * ix0[0] + ix0[1];
-
-  // 4 corners in non-periodic grids have divergence set to 0
+/*
+  // 4 corners in non-periodic grids have divergence set to 0 FIXME
   if ( ! (periodic[0] || periodic[1])
       && (ix0[0] == 0 || ix0[0] == nx[0]-1)
       && (ix0[1] == 0 || ix0[1] == nx[1]-1) ) {
@@ -341,11 +349,15 @@ void integrate_potential::update_div_local(colvar_grid_gradient * gradient, cons
   if ((ix0[0] == 0 || ix0[0] == nx[0]-1) && !periodic[0]) {
     // NOTE gradient grid is smaller than divergence grid by 1
     ix[0] = ix0[0] == 0 ? 0 : nx[0] - 2;
+    const cvm::real sign = ix0[0] == 0 ? 1. : -1.;
     ix[1] = ix0[1]-1;
+    g00[0] = gradient->value_output(ix, 0);
     g00[1] = gradient->value_output(ix, 1);
     ix[1] = ix0[1];
+    g01[0] = gradient->value_output(ix, 0);
     g01[1] = gradient->value_output(ix, 1);
-    divergence[linear_index] = (g01[1]-g00[1]) / widths[1];
+    divergence[linear_index] = (g01[1]-g00[1]) / widths[1]
+            + .5 * sign * (g01[0]+g00[0])/widths[0]; // divergence in y plus gradient in x
     return;
   }
 
@@ -353,25 +365,34 @@ void integrate_potential::update_div_local(colvar_grid_gradient * gradient, cons
     ix[0] = ix0[0]-1;
     // NOTE gradient grid is smaller than divergence grid by 1
     ix[1] = ix0[1] == 0 ? 0 : nx[1] - 2;
+    const cvm::real sign = ix0[0] == 0 ? 1. : -1.;
     g00[0] = gradient->value_output(ix, 0);
+    g00[1] = gradient->value_output(ix, 1);
     ix[0] = ix0[0];
     g10[0] = gradient->value_output(ix, 0);
-    divergence[linear_index] = (g10[0]-g00[0]) / widths[0];
+    g10[1] = gradient->value_output(ix, 1);
+    divergence[linear_index] = (g10[0]-g00[0]) / widths[0]
+          + .5 * sign * (g10[1]+g00[1])/widths[1]; // divergence in x plus gradient in y
     return;
-  }
+  }*/
 
   // FIXME: missing case of edges in semi-periodic case
 
   // otherwise update "center" (if periodic, everything is in the center)
   get_local_grads(gradient, ix0);
-  divergence[linear_index] = (g10[0]-g00[0] + g11[0]-g01[0]) * 0.5 / widths[0]
-                           + (g01[1]-g00[1] + g11[1]-g10[1]) * 0.5 / widths[1];
+  // Special case of corners: there is only one value of the gradient to average
+  cvm::real fact_corner = 0.5;
+  if (!periodic[0] && !periodic[1] && (ix0[0] == 0 || ix0[0] == nx[0]-1) && (ix0[1] == 0 || ix0[1] == nx[1]-1)) {
+    fact_corner = 1.0;
+  }
+  divergence[linear_index] = (g10[0]-g00[0] + g11[0]-g01[0]) * fact_corner / widths[0]
+                           + (g01[1]-g00[1] + g11[1]-g10[1]) * fact_corner / widths[1];
  }
 
 
 
 /// Multiplication by sparse matrix representing Laplacian (or its transpose)
-void integrate_potential::atimes (const std::vector<cvm::real> &x, std::vector<cvm::real> &r, const int transpose)
+void integrate_potential::atimes (const std::vector<cvm::real> &p, std::vector<cvm::real> &l, const int transpose)
 {
   size_t index, index2;
 
@@ -381,97 +402,134 @@ void integrate_potential::atimes (const std::vector<cvm::real> &x, std::vector<c
   const cvm::real fy = 1.0/widths[1];
   const cvm::real ffx = fx * fx;
   const cvm::real ffy = fy * fy;
-  // offsets for 4 reference points of the Laplacian
-  int xm = -nx[1];
-  int xp =  nx[1];
+  // offsets for 4 reference points of the Laplacian stencil
+
+  const int h = nx[1];
+  const int w = nx[0];
+  int xm = -h;
+  int xp =  h;
   int ym = -1;
   int yp =  1;
 
-  index = nx[1] + 1;
-  for (int i=1; i<nx[0]-1; i++) {
-    for (int j=1; j<nx[1]-1; j++) {
-      r[index] = ffx * (x[index + xm] + x[index + xp] - 2.0 * x[index])
-               + ffy * (x[index + ym] + x[index + yp] - 2.0 * x[index]);
+  index = h + 1;
+  for (int i=1; i<w-1; i++) {
+    for (int j=1; j<h-1; j++) {
+      l[index] = ffx * (p[index + xm] + p[index + xp] - 2.0 * p[index])
+               + ffy * (p[index + ym] + p[index + yp] - 2.0 * p[index]);
       index++;
     }
-    index += 2;
+    index += 2; // skip the edges and move to next column
   }
 
   // then, edges depending on BC
   if (periodic[0]) {
-    // i = 0 and i = nx[0] are periodic images
-    xm =  nx[1] * (nx[0] - 1);
-    xp =  nx[1];
+    // i = 0 and i = w are periodic images
+    xm =  h * (w - 1);
+    xp =  h;
     ym = -1;
     yp =  1;
-    index = 1;
-    index2 = nx[1] * (nx[0] - 1) + 1;
-    for (int j=1; j<nx[1]-1; j++) {
-      r[index] = ffx * (x[index + xm] + x[index + xp] - 2.0 * x[index])
-               + ffy * (x[index + ym] + x[index + yp] - 2.0 * x[index]);
-      r[index2] = ffx * (x[index2 - xp] + x[index2 - xm] - 2.0 * x[index2])
-                + ffy * (x[index2 + ym] + x[index2 + yp] - 2.0 * x[index2]);
+    index = 1; // Follows left edge
+    index2 = h * (w - 1) + 1; // Follows right edge
+    for (int j=1; j<h-1; j++) {
+      l[index] = ffx * (p[index + xm] + p[index + xp] - 2.0 * p[index])
+               + ffy * (p[index + ym] + p[index + yp] - 2.0 * p[index]);
+      l[index2] = ffx * (p[index2 - xp] + p[index2 - xm] - 2.0 * p[index2])
+                + ffy * (p[index2 + ym] + p[index2 + yp] - 2.0 * p[index2]);
       index++;
       index2++;
     }
   } else {
-    //TODO
-  }
-  if (periodic[1]) {
-    // j = 0 and j = nx[1] are periodic images
-    xm = -nx[1];
-    xp =  nx[1];
-    ym =  nx[1] - 1;
+    xm =  -h;
+    xp =  h;
+    ym = -1;
     yp =  1;
-    index = nx[1];
-    index2 = 2 * nx[1] - 1;
-    for (int i=1; i<nx[0]-1; i++) {
-      r[index] = ffx * (x[index + xm] + x[index + xp] - 2.0 * x[index])
-               + ffy * (x[index + ym] + x[index + yp] - 2.0 * x[index]);
-      r[index2] = ffx * (x[index2 + xm] + x[index2 + xp] - 2.0 * x[index2])
-                + ffy * (x[index2 - yp] + x[index2 - ym] - 2.0 * x[index2]);
-      index  += nx[1];
-      index2 += nx[1];
+    index = 1; // Follows left edge
+    index2 = h * (w - 1) + 1; // Follows right edge
+    for (int j=1; j<h-1; j++) {
+      // x gradient beyond the edge is taken to be zero
+      // alternate: x gradient + y term of laplacian
+      l[index] = ffx * (p[index + xp] - p[index])
+               + ffy * (p[index + ym] + p[index + yp] - 2.0 * p[index]);
+      l[index2] = ffx * (p[index2 + xm] - p[index2])
+                + ffy * (p[index2 + ym] + p[index2 + yp] - 2.0 * p[index2]);
+      index++;
+      index2++;
+    }
+  }
+
+  if (periodic[1]) {
+    // j = 0 and j = h are periodic images
+    xm = -h;
+    xp =  h;
+    ym =  h - 1;
+    yp =  1;
+    index = h; // Follows bottom edge
+    index2 = 2 * h - 1; // Follows top edge
+    for (int i=1; i<w-1; i++) {
+      l[index] = ffx * (p[index + xm] + p[index + xp] - 2.0 * p[index])
+               + ffy * (p[index + ym] + p[index + yp] - 2.0 * p[index]);
+      l[index2] = ffx * (p[index2 + xm] + p[index2 + xp] - 2.0 * p[index2])
+                + ffy * (p[index2 - yp] + p[index2 - ym] - 2.0 * p[index2]);
+      index  += h;
+      index2 += h;
     }
   } else {
-    //TODO
+    xm = -h;
+    xp =  h;
+    ym =  -1;
+    yp =  1;
+    index = h; // Follows bottom edge
+    index2 = 2 * h - 1; // Follows top edge
+    for (int i=1; i<w-1; i++) {
+      // alternate: y gradient + x term of laplacian
+      l[index] = ffx * (p[index + xm] + p[index + xp] - 2.0 * p[index])
+             +ffy * (p[index + yp] - p[index]);
+      l[index2] = ffx * (p[index2 + xm] + p[index2 + xp] - 2.0 * p[index2])
+             +ffy * (p[index2 + ym] - p[index2]);
+      index  += h;
+      index2 += h;
+    }
   }
 
   //FIXME
   if (! (periodic[0] || periodic[1])) {
-    r[0] = 0.0;
-    r[nx[1]-1] = 0.0;
-    r[nx[1] * (nx[0]-1)] = 0.0;
-    r[nx[1] * nx[0] - 1] = 0.0;
+    xm = -h;
+    xp =  h;
+    ym =  -1;
+    yp =  1;
+    l[0] = ffx *(p[xp] - p[0]) + ffy * (p[yp] - p[0]);
+    l[h-1] = ffx *(p[h-1+xp] - p[h-1]) + ffy * (p[h-1+ym] - p[h-1]);
+    l[h * (w-1)] = ffx *(p[h * (w-1) + xm] - p[h * (w-1)]) + ffy * (p[h * (w-1) + yp] - p[h * (w-1)]);
+    l[h * w - 1] = ffx *(p[h * w - 1 + xm] - p[h*w - 1]) + ffy * (p[h*w-1+ym] - p[h*w-1]);
   }
   // TODO: corners in semi-PBC
   if (periodic[0] && periodic[1]) {
-    xm = nx[1];
-    xp = nx[1] * (nx[0] - 1);
+    xm = h;
+    xp = h * (w - 1);
     ym = 1;
-    yp = nx[1] - 1;
+    yp = h - 1;
     index = 0;
-    r[index] = ffx * (x[xp] + x[xm] - 2.0 * x[0])
-             + ffy * (x[yp] + x[ym] - 2.0 * x[0]);
-    index = nx[1]-1;
-    r[index] = ffx * (x[index + xp] + x[index + xm] - 2.0 * x[index])
-             + ffy * (x[index - ym] + x[index - yp] - 2.0 * x[index]);
-    index = nx[1] * (nx[0]-1);
-    r[index] = ffx * (x[index - xm] + x[index - xp] - 2.0 * x[index])
-             + ffy * (x[index + yp] + x[index + ym] - 2.0 * x[index]);
-    index = nx[1] * nx[0] - 1;
-    r[index] = ffx * (x[index - xm] + x[index - xp] - 2.0 * x[index])
-             + ffy * (x[index - ym] + x[index - yp] - 2.0 * x[index]);
+    l[index] = ffx * (p[xp] + p[xm] - 2.0 * p[0])
+             + ffy * (p[yp] + p[ym] - 2.0 * p[0]);
+    index = h-1;
+    l[index] = ffx * (p[index + xp] + p[index + xm] - 2.0 * p[index])
+             + ffy * (p[index - ym] + p[index - yp] - 2.0 * p[index]);
+    index = h * (w-1);
+    l[index] = ffx * (p[index - xm] + p[index - xp] - 2.0 * p[index])
+             + ffy * (p[index + yp] + p[index + ym] - 2.0 * p[index]);
+    index = h * w - 1;
+    l[index] = ffx * (p[index - xm] + p[index - xp] - 2.0 * p[index])
+             + ffy * (p[index - ym] + p[index - yp] - 2.0 * p[index]);
   }
 }
 
 /// Inversion of preconditioner matrix (e.g. diagonal of the Laplacian)
 void integrate_potential::asolve(const std::vector<cvm::real> &b, std::vector<cvm::real> &x, const int itrnsp)
 {
-  //cvm::real inv_diag = - 1.0 / (2.0 / (widths[0] * widths[0]) + 2.0 / (widths[1] * widths[1]));
+//   cvm::real inv_diag = - 1.0 / (2.0 / (widths[0] * widths[0]) + 2.0 / (widths[1] * widths[1]));
   // Identity works, so we leave it at that for now.
   for (size_t i=0; i<x.size(); i++) {
-    //x[i] = inv_diag * b[i];
+//     x[i] = inv_diag * b[i];
     x[i] = b[i];
   }
   return;
@@ -481,7 +539,104 @@ void integrate_potential::asolve(const std::vector<cvm::real> &b, std::vector<cv
 // b : RHS of equation
 // x : initial guess for the solution; output is solution
 // itol : convergence criterion
-void integrate_potential::nr_linbcg(const std::vector<cvm::real> &b, std::vector<cvm::real> &x, const int itol, const cvm::real tol,
+void integrate_potential::nr_linbcg_asym(const std::vector<cvm::real> &b, std::vector<cvm::real> &x,
+              const int itol, const cvm::real tol, const int itmax, int &iter, cvm::real &err)
+{
+  cvm::real ak,akden,bk,bkden=1.0,bknum,bnrm,dxnrm,xnrm,zm1nrm,znrm;
+  const cvm::real EPS=1.0e-14;
+  int j;
+
+  iter=0;
+  atimes(x,r,0);
+  for (j=0;j<nt;j++) {
+    r[j]=b[j]-r[j];
+    rr[j]=r[j];
+  }
+  //atimes(r,rr,0);   // uncomment for minimum residual algorithm
+  if (itol == 1) {
+    bnrm=nr_snrm(b,itol);
+    if (bnrm < EPS) {// Target is zero - somehow this is a problem
+      return;
+    }
+    asolve(r,z,0);
+  }
+  else if (itol == 2) {
+    asolve(b,z,0);
+    bnrm=nr_snrm(z,itol);
+    asolve(r,z,0);
+  }
+  else if (itol == 3 || itol == 4) {
+    asolve(b,z,0);
+    bnrm=nr_snrm(z,itol);
+    asolve(r,z,0);
+    znrm=nr_snrm(z,itol);
+  } else {
+    cvm::fatal_error("Illegal itol in linbcg");
+  }
+  //std::cout << std::fixed << std::setprecision(6);
+  while (iter < itmax) {
+    ++iter;
+    asolve(rr,zz,1);
+    for (bknum=0.0,j=0;j<nt;j++) {
+      bknum += z[j]*rr[j];
+    }
+    if (iter == 1) {
+      for (j=0;j<nt;j++) {
+        p[j]  = z[j];
+        pp[j] = zz[j];
+      }
+    } else {
+      bk=bknum/bkden;
+      for (j=0;j<nt;j++) {
+        p[j]  = bk*p[j]  + z[j];
+        pp[j] = bk*pp[j] + zz[j];
+      }
+    }
+    bkden = bknum;
+    atimes(p,z,0);
+    for (akden=0.0,j=0;j<nt;j++) {
+      akden += z[j]*pp[j];
+    }
+    ak = bknum/akden;
+    atimes(pp,zz,1);
+    for (j=0;j<nt;j++) {
+      x[j]  += ak*p[j];
+      r[j]  -= ak*z[j];
+      rr[j] -= ak*zz[j];
+    }
+    asolve(r,z,0);
+    if (itol == 1)
+      err = nr_snrm(r,itol)/bnrm;
+    else if (itol == 2)
+      err = nr_snrm(z,itol)/bnrm;
+    else if (itol == 3 || itol == 4) {
+      zm1nrm = znrm;
+      znrm = nr_snrm(z,itol);
+      if (fabs(zm1nrm-znrm) > EPS*znrm) {
+        dxnrm = fabs(ak)*nr_snrm(p,itol);
+        err = znrm/fabs(zm1nrm-znrm)*dxnrm;
+      } else {
+        err = znrm/bnrm;
+        continue;
+      }
+      xnrm = nr_snrm(x,itol);
+      if (err <= 0.5*xnrm) err /= xnrm;
+      else {
+        err = znrm/bnrm;
+        continue;
+      }
+    }
+    std::cout << "iter=" << std::setw(4) << iter << std::setw(12) << err << std::endl;
+    if (err <= tol)
+      break;
+  }
+}
+
+
+// b : RHS of equation
+// x : initial guess for the solution; output is solution
+// itol : convergence criterion
+void integrate_potential::nr_linbcg_sym(const std::vector<cvm::real> &b, std::vector<cvm::real> &x, const int itol, const cvm::real tol,
   const int itmax, int &iter, cvm::real &err)
 {
   cvm::real ak,akden,bk,bkden=1.0,bknum,bnrm,dxnrm,xnrm,zm1nrm,znrm;
