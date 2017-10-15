@@ -175,7 +175,7 @@ int colvarbias_abf::init(std::string const &conf)
     pmf = new integrate_potential(colvars);
     b_integrate = true;
     // FIXME FIXME MAGIC NUMBERS
-    integrate_freq = 100;
+    integrate_freq = 10;
     // FIXME FIXME
     cvm::log("Integrating PMF on-the-fly.\n");
   } else {

@@ -1558,10 +1558,6 @@ class integrate_potential : public colvar_grid_scalar
   /// called by update_div
   void update_div_local(colvar_grid_gradient * gradient, const std::vector<int> &ix);
 
-  /// \brief Solve linear system based on biconjugate gradient algorithm
-  void nr_linbcg_asym(const std::vector<cvm::real> &b, std::vector<cvm::real> &x, const int itol, const cvm::real tol,
-                const int itmax, int &iter, cvm::real &err);
-
   /// \brief Solve linear system based on CG, valid for symmetric matrices only
   void nr_linbcg_sym(const std::vector<cvm::real> &b, std::vector<cvm::real> &x, const int itol, const cvm::real tol,
                 const int itmax, int &iter, cvm::real &err);
@@ -1573,7 +1569,7 @@ class integrate_potential : public colvar_grid_scalar
   cvm::real nr_snrm(const std::vector<cvm::real> &sx, const int itol);
 
   /// Multiplication by sparse matrix representing Lagrangian (or its transpose)
-  void atimes(const std::vector<cvm::real> &x, std::vector<cvm::real> &r, const int itrnsp);
+  void atimes(const std::vector<cvm::real> &x, std::vector<cvm::real> &r);
 
   /// Inversion of preconditioner matrix
   void asolve(const std::vector<cvm::real> &b, std::vector<cvm::real> &x, const int itrnsp);
