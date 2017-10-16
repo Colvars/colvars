@@ -94,6 +94,10 @@ CUDACC = $(CXX)
 CUDAOBJS =
 NATIVEPATH = echo
 
+# Math library needs to be redefined for Sameer's POWER-xlC build.
+# The default below should be correct for everything else.
+MATHLIBS = -lm
+
 include Make.config
 
 # define below Make.config so Win32 can change default target to winall
@@ -487,7 +491,7 @@ namd2:	$(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS)
 	$(LEPTONOBJS) \
 	$(CHARMOPTS) \
 	$(EXTRALINKLIBS) \
-	-lm -o namd2
+	$(MATHLIBS) -o namd2
 
 charmrun: $(CHARM)/bin/charmrun # XXX
 	$(COPY) $(CHARM)/bin/charmrun $@
@@ -599,7 +603,7 @@ tracecomputes: updatefiles $(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS)
 	$(LEPTONOBJS) \
 	$(CHARMOPTS) \
 	$(EXTRALINKLIBS) \
-	-lm -o namd2.tc.prj
+	$(MATHLIBS) -o namd2.tc.prj
 
 projections: $(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS)
 	$(MAKEBUILDINFO)
@@ -623,7 +627,7 @@ projections: $(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS)
 	$(LEPTONOBJS) \
 	$(CHARMOPTS) \
 	$(EXTRALINKLIBS) \
-	-lm -o namd2.prj
+	$(MATHLIBS) -o namd2.prj
 
 summary: $(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS)
 	$(MAKEBUILDINFO)
@@ -647,7 +651,7 @@ summary: $(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS)
 	$(LEPTONOBJS) \
 	$(CHARMOPTS) \
 	$(EXTRALINKLIBS) \
-	-lm -o namd2.sum
+	$(MATHLIBS) -o namd2.sum
 
 $(DPMTADIR)/mpole/libmpole.a: $(DPMTADIR)/src/libdpmta2.a
 
