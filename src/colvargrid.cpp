@@ -190,7 +190,7 @@ void colvar_grid_gradient::write_1D_integral(std::ostream &os)
 
 // Parameters:
 // b (divergence + BC): member of class integrate_cg; updated locally every ts
-// x (solution PMF): reference to pmf object? or copy of the vector if more efficient
+// x (solution PMF): reference to pmf object? or copy of thestd::vector if more efficient
 // atimes, asolve: member functions of class integrate_cg, relying on
 // laplacian: member data (vector) of integrate_cg; sparse matrix representation of
 // finite diff. Laplacian, defined once and for all at construction time.
@@ -202,20 +202,6 @@ integrate_potential::integrate_potential(std::vector<colvar *> &colvars)
   // parent class colvar_grid_scalar is constructed with margin option set to true
   // hence PMF grid is wider than gradient grid if non-PBC
 
-  // length of "vectors" is number of points in potential (data) and divergence grids
-  p.reserve(nt);
-  p.assign(nt, 0.0);
-  pp.reserve(nt);
-  pp.assign(nt, 0.0);
-  r.reserve(nt);
-  r.assign(nt, 0.0);
-  rr.reserve(nt);
-  rr.assign(nt, 0.0);
-  z.reserve(nt);
-  z.assign(nt, 0.0);
-  zz.reserve(nt);
-  zz.assign(nt, 0.0);
-
   divergence.resize(nt);
 }
 
@@ -223,26 +209,27 @@ integrate_potential::integrate_potential(std::vector<colvar *> &colvars)
 int integrate_potential::integrate(const int itmax, const cvm::real tol, cvm::real & err)
 {
   int iter;
-/*
-  if (nx[0]*nx[1] <= 100) {
-    // Write explicit Laplacian FIXME debug output
-    std::ofstream lap_out("lap_op.dat");
-    std::vector<cvm::real> id(nx[0]*nx[1]), lap_col(nx[0]*nx[1]);
-    for (int i = 0; i < nx[0] * nx[1]; i++) {
-      id[i] = 1.;
-      atimes(id, lap_col);
-      id[i] = 0.;
-      for (int j = 0; j < nx[0] * nx[1]; j++) {
-        lap_out << cvm::to_str(i) + " " + cvm::to_str(j) + " " + cvm::to_str(lap_col[j]) << std::endl;
-      }
-      lap_out << std::endl;
-    }
-  }
-  // FIXME*/
 
-  nr_linbcg_sym(divergence, data, 1, tol, itmax, iter, err);
+//   if (nx[0]*nx[1] <= 100) {
+//     // Write explicit Laplacian FIXME debug output
+//     std::ofstream lap_out("lap_op.dat");
+//     std::vector<cvm::real> id(nx[0]*nx[1]), lap_col(nx[0]*nx[1]);
+//     for (int i = 0; i < nx[0] * nx[1]; i++) {
+//       id[i] = 1.;
+//       atimes(id, lap_col);
+//       id[i] = 0.;
+//       for (int j = 0; j < nx[0] * nx[1]; j++) {
+//         lap_out << cvm::to_str(i) + " " + cvm::to_str(j) + " " + cvm::to_str(lap_col[j]) << std::endl;
+//       }
+//       lap_out << std::endl;
+//     }
+//   }
+//   // FIXME
+
+  nr_linbcg_sym(divergence, data, tol, itmax, iter, err);
   cvm::log ("Completed integration in " + cvm::to_str (iter) + " steps with"
      + " error " + cvm::to_str (err));
+
 /*
   // TODO remove this test of laplacian calcs
   std::vector<cvm::real> backup (data);
@@ -264,7 +251,7 @@ int integrate_potential::integrate(const int itmax, const cvm::real tol, cvm::re
 }
 
 
-void integrate_potential::get_local_grads(colvar_grid_gradient * gradient, const std::vector<int> & ix0)
+void integrate_potential::get_local_grads(const colvar_grid_gradient &gradient, const std::vector<int> & ix0)
 {
   int count;
   cvm::real   fact;
@@ -272,9 +259,9 @@ void integrate_potential::get_local_grads(colvar_grid_gradient * gradient, const
   std::vector<int> ix = ix0;
   bool edge;
 
-  edge = gradient->wrap_edge(ix);
-  if (!edge && (count = gradient->samples->value (ix))) {
-    g = &(gradient->value (ix));
+  edge = gradient.wrap_edge(ix);
+  if (!edge && (count = gradient.samples->value (ix))) {
+    g = &(gradient.value (ix));
     fact = 1.0 / count;
     g11[0] = fact * g[0];
     g11[1] = fact * g[1];
@@ -282,9 +269,9 @@ void integrate_potential::get_local_grads(colvar_grid_gradient * gradient, const
     g11[0] = g11[1] = 0.0;
 
   ix[0] = ix0[0] - 1;
-  edge = gradient->wrap_edge(ix);
-  if (!edge && (count = gradient->samples->value (ix))) {
-    g = & (gradient->value(ix));
+  edge = gradient.wrap_edge(ix);
+  if (!edge && (count = gradient.samples->value (ix))) {
+    g = & (gradient.value(ix));
     fact = 1.0 / count;
     g01[0] = fact * g[0];
     g01[1] = fact * g[1];
@@ -292,9 +279,9 @@ void integrate_potential::get_local_grads(colvar_grid_gradient * gradient, const
     g01[0] = g01[1] = 0.0;
 
   ix[1] = ix0[1] - 1;
-  edge = gradient->wrap_edge(ix);
-  if (!edge && (count = gradient->samples->value (ix))) {
-    g = & (gradient->value(ix));
+  edge = gradient.wrap_edge(ix);
+  if (!edge && (count = gradient.samples->value (ix))) {
+    g = & (gradient.value(ix));
     fact = 1.0 / count;
     g00[0] = fact * g[0];
     g00[1] = fact * g[1];
@@ -302,9 +289,9 @@ void integrate_potential::get_local_grads(colvar_grid_gradient * gradient, const
     g00[0] = g00[1] = 0.0;
 
   ix[0] = ix0[0];
-  edge = gradient->wrap_edge(ix);
-  if (!edge && (count = gradient->samples->value (ix))) {
-    g = & (gradient->value(ix));
+  edge = gradient.wrap_edge(ix);
+  if (!edge && (count = gradient.samples->value (ix))) {
+    g = & (gradient.value(ix));
     fact = 1.0 / count;
     g10[0] = fact * g[0];
     g10[1] = fact * g[1];
@@ -312,14 +299,14 @@ void integrate_potential::get_local_grads(colvar_grid_gradient * gradient, const
     g10[0] = g10[1] = 0.0;
 }
 
-void integrate_potential::set_div(colvar_grid_gradient * gradient)
+void integrate_potential::set_div(const colvar_grid_gradient &gradient)
 {
   for (std::vector<int> ix = new_index(); index_ok (ix); incr (ix)) {
     update_div_local(gradient, ix);
   }
 }
 
-void integrate_potential::update_div(colvar_grid_gradient * gradient, const std::vector<int> &ix0)
+void integrate_potential::update_div(const colvar_grid_gradient &gradient, const std::vector<int> &ix0)
 {
   std::vector<int> ix (ix0);
 
@@ -334,7 +321,7 @@ void integrate_potential::update_div(colvar_grid_gradient * gradient, const std:
 }
 
 
-void integrate_potential::update_div_local(colvar_grid_gradient * gradient, const std::vector<int> &ix0)
+void integrate_potential::update_div_local(const colvar_grid_gradient &gradient, const std::vector<int> &ix0)
 {
   std::vector<int> ix (2);
   const int linear_index = nx[1] * ix0[0] + ix0[1];
@@ -347,7 +334,7 @@ void integrate_potential::update_div_local(colvar_grid_gradient * gradient, cons
   }
   divergence[linear_index] = (g10[0]-g00[0] + g11[0]-g01[0]) * fact_corner / widths[0]
                            + (g01[1]-g00[1] + g11[1]-g10[1]) * fact_corner / widths[1];
- }
+}
 
 
 /// Multiplication by sparse matrix representing Laplacian
@@ -440,9 +427,9 @@ void integrate_potential::atimes(const std::vector<cvm::real> &p, std::vector<cv
     for (int i=1; i<w-1; i++) {
       // alternate: y gradient + x term of laplacian
       l[index] = ffx * (p[index + xm] + p[index + xp] - 2.0 * p[index])
-             +ffy * (p[index + yp] - p[index]);
+               + ffy * (p[index + yp] - p[index]);
       l[index2] = ffx * (p[index2 + xm] + p[index2 + xp] - 2.0 * p[index2])
-             +ffy * (p[index2 + ym] - p[index2]);
+                + ffy * (p[index2 + ym] - p[index2]);
       index  += h;
       index2 += h;
     }
@@ -493,98 +480,53 @@ void integrate_potential::asolve(const std::vector<cvm::real> &b, std::vector<cv
 // b : RHS of equation
 // x : initial guess for the solution; output is solution
 // itol : convergence criterion
-void integrate_potential::nr_linbcg_sym(const std::vector<cvm::real> &b, std::vector<cvm::real> &x, const int itol, const cvm::real tol,
+void integrate_potential::nr_linbcg_sym(const std::vector<cvm::real> &b, std::vector<cvm::real> &x, const cvm::real tol,
   const int itmax, int &iter, cvm::real &err)
 {
   cvm::real ak,akden,bk,bkden=1.0,bknum,bnrm,dxnrm,xnrm,zm1nrm,znrm;
   const cvm::real EPS=1.0e-14;
   int j;
-
-  // Making it symmetric
+  const int itol = 1; // Use L2 norm as target
+  std::vector<cvm::real> p(nt), r(nt), z(nt);
 
   iter=0;
   atimes(x,r);
   for (j=0;j<nt;j++) {
     r[j]=b[j]-r[j];
-    // SYM rr[j]=r[j];
   }
-  //atimes(r,rr,0);   // uncomment for minimum residual algorithm
-  if (itol == 1) {
-    bnrm=nr_snrm(b,itol);
-    if (bnrm < EPS) {// Target is zero - somehow this is a problem
-      return;
-    }
-    asolve(r,z,0);
+  bnrm=nr_snrm(b,itol);
+  if (bnrm < EPS) {
+    return; // Target is zero
   }
-  else if (itol == 2) {
-    asolve(b,z,0);
-    bnrm=nr_snrm(z,itol);
-    asolve(r,z,0);
-  }
-  else if (itol == 3 || itol == 4) {
-    asolve(b,z,0);
-    bnrm=nr_snrm(z,itol);
-    asolve(r,z,0);
-    znrm=nr_snrm(z,itol);
-  } else {
-    cvm::fatal_error("Illegal itol in linbcg");
-  }
-  //std::cout << std::fixed << std::setprecision(6);
+  asolve(r,z,0);
   while (iter < itmax) {
     ++iter;
-    // SYM asolve(rr,zz,1);
     for (bknum=0.0,j=0;j<nt;j++) {
-      // SYM bknum += z[j]*rr[j];
       bknum += z[j]*r[j];
     }
     if (iter == 1) {
       for (j=0;j<nt;j++) {
         p[j]  = z[j];
-        // SYM pp[j] = zz[j];
       }
     } else {
       bk=bknum/bkden;
       for (j=0;j<nt;j++) {
-        p[j]  = bk*p[j]  + z[j];
-        // SYM pp[j] = bk*pp[j] + zz[j];
+        p[j]  = bk*p[j] + z[j];
       }
     }
     bkden = bknum;
     atimes(p,z);
     for (akden=0.0,j=0;j<nt;j++) {
-      // SYM akden += z[j]*pp[j];
       akden += z[j]*p[j];
     }
     ak = bknum/akden;
-    // SYM atimes(pp,zz,1);
     for (j=0;j<nt;j++) {
-      x[j]  += ak*p[j];
-      r[j]  -= ak*z[j];
-      // SYM rr[j] -= ak*zz[j];
+      x[j] += ak*p[j];
+      r[j] -= ak*z[j];
     }
     asolve(r,z,0);
-    if (itol == 1)
-      err = nr_snrm(r,itol)/bnrm;
-    else if (itol == 2)
-      err = nr_snrm(z,itol)/bnrm;
-    else if (itol == 3 || itol == 4) {
-      zm1nrm = znrm;
-      znrm = nr_snrm(z,itol);
-      if (fabs(zm1nrm-znrm) > EPS*znrm) {
-        dxnrm = fabs(ak)*nr_snrm(p,itol);
-        err = znrm/fabs(zm1nrm-znrm)*dxnrm;
-      } else {
-        err = znrm/bnrm;
-        continue;
-      }
-      xnrm = nr_snrm(x,itol);
-      if (err <= 0.5*xnrm) err /= xnrm;
-      else {
-        err = znrm/bnrm;
-        continue;
-      }
-    }
-//     std::cout << "iter=" << std::setw(4) << iter+1 << std::setw(12) << err << std::endl;
+    err = nr_snrm(r,itol)/bnrm;
+//  std::cout << "iter=" << std::setw(4) << iter+1 << std::setw(12) << err << std::endl;
     if (err <= tol)
       break;
   }

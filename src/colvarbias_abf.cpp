@@ -305,7 +305,7 @@ int colvarbias_abf::update()
     }
 
     if (b_integrate) {
-      pmf->set_div(gradients);
+      pmf->set_div(*gradients);
       // FIXME FIXME MAGIC NUMBERS
       pmf->integrate(1000, 1e-4, err);
       // Write integrated PMF for intial gradient
@@ -344,7 +344,7 @@ int colvarbias_abf::update()
 
     // Integrate if possible
     if ( b_integrate ) {
-      pmf->update_div(gradients, force_bin);
+      pmf->update_div(*gradients, force_bin);
       if ( cvm::step_relative() % integrate_freq == 0 ) {
         // FIXME FIXME MAGIC NUMBERS
         iter = pmf->integrate(10, 1e-4, err);

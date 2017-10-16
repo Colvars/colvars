@@ -1535,11 +1535,11 @@ class integrate_potential : public colvar_grid_scalar
 
   /// \brief Update matrix containing divergence and boundary conditions
   /// based on new gradient point value
-  void update_div(colvar_grid_gradient * gradient, const std::vector<int> &ix);
+  void update_div(const colvar_grid_gradient &gradient, const std::vector<int> &ix);
 
   /// \brief Set matrix containing divergence and boundary conditions
   /// based on complete gradient grid
-  void set_div(colvar_grid_gradient * gradient);
+  void set_div(const colvar_grid_gradient &gradient);
 
   protected:
   // Array holding divergence + boundary terms (von Neumann if not periodic)
@@ -1552,18 +1552,15 @@ class integrate_potential : public colvar_grid_scalar
   cvm::real g11[2];
 
   // update local gradients above
-  void get_local_grads(colvar_grid_gradient * gradient, const std::vector<int> &ix);
+  void get_local_grads(const colvar_grid_gradient &gradient, const std::vector<int> &ix);
 
   /// \brief Update matrix containing divergence and boundary conditions
   /// called by update_div
-  void update_div_local(colvar_grid_gradient * gradient, const std::vector<int> &ix);
+  void update_div_local(const colvar_grid_gradient &gradient, const std::vector<int> &ix);
 
   /// \brief Solve linear system based on CG, valid for symmetric matrices only
-  void nr_linbcg_sym(const std::vector<cvm::real> &b, std::vector<cvm::real> &x, const int itol, const cvm::real tol,
-                const int itmax, int &iter, cvm::real &err);
-
-  /// data needed by conjugate gradient solver
-  std::vector<cvm::real> p, pp, r, rr, z, zz;
+  void nr_linbcg_sym(const std::vector<cvm::real> &b, std::vector<cvm::real> &x,
+                     const cvm::real tol, const int itmax, int &iter, cvm::real &err);
 
   /// Norm(s) of a vector
   cvm::real nr_snrm(const std::vector<cvm::real> &sx, const int itol);
@@ -1574,7 +1571,6 @@ class integrate_potential : public colvar_grid_scalar
   /// Inversion of preconditioner matrix
   void asolve(const std::vector<cvm::real> &b, std::vector<cvm::real> &x, const int itrnsp);
 };
-
 
 #endif
 
