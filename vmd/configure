@@ -910,7 +910,8 @@ $cuda_libs        = "-Wl,-rpath -Wl,\$\$ORIGIN/ -lcudart_static -lrt";
                      'CUDASpatialSearch.cu',
                      'CUDAUtil.cu',
                      'CUDAVolCPotential.cu',
-                     'CUDAVolMapCreateILS.cu');
+                     'CUDAVolMapCreateILS.cu',
+                     'CUDAWatershed.cu');
 @cuda_ccpp        = ();
 @cuda_h           = ('CUDAKernels.h');
 @cuda_extra       = ();
@@ -1582,6 +1583,7 @@ $vmd_libs          = "$tcl_libs";
                    'VolumeTexture.C',
 		   'VrmlDisplayDevice.C', 
 		   'Vrml2DisplayDevice.C', 
+		   'Watershed.C', 
 		   'WavefrontDisplayDevice.C', 
 		   'WKFThreads.C',
 		   'WKFUtils.C',
@@ -1734,6 +1736,7 @@ $vmd_libs          = "$tcl_libs";
               'VolumeTexture.h',
 	      'VrmlDisplayDevice.h', 
 	      'Vrml2DisplayDevice.h', 
+	      'Watershed.h', 
 	      'WavefrontDisplayDevice.h', 
 	      'X3DDisplayDevice.h',
 	      'utilities.h',
