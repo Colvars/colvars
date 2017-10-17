@@ -6,6 +6,15 @@
 #include "colvarbias_abf.h"
 
 
+// FIXME FIXME MAGIC NUMBERS: integration parameters
+#define INTEGRATE_FREQ 10
+#define INITIAL_STEPS 10000
+#define INITIAL_TOL 1e-6
+#define STEPS 100
+#define TOL 1e-2
+// FIXME FIXME
+
+
 colvarbias_abf::colvarbias_abf(char const *key)
   : colvarbias(key),
     b_UI_estimator(false),
@@ -20,7 +29,6 @@ colvarbias_abf::colvarbias_abf(char const *key)
     last_samples(NULL)
 {
 }
-
 
 int colvarbias_abf::init(std::string const &conf)
 {
@@ -174,9 +182,7 @@ int colvarbias_abf::init(std::string const &conf)
   if ( colvars.size() == 2) {
     pmf = new integrate_potential(colvars);
     b_integrate = true;
-    // FIXME FIXME MAGIC NUMBERS
-    integrate_freq = 10;
-    // FIXME FIXME
+    integrate_freq = INTEGRATE_FREQ;
     cvm::log("Integrating PMF on-the-fly.\n");
   } else {
     b_integrate = false;
@@ -306,8 +312,7 @@ int colvarbias_abf::update()
 
     if (b_integrate) {
       pmf->set_div(*gradients);
-      // FIXME FIXME MAGIC NUMBERS
-      pmf->integrate(1000, 1e-4, err);
+      pmf->integrate(INITIAL_STEPS, INITIAL_TOL, err);
       // Write integrated PMF for intial gradient
       write_gradients_samples(output_prefix);
     }
@@ -346,9 +351,7 @@ int colvarbias_abf::update()
     if ( b_integrate ) {
       pmf->update_div(*gradients, force_bin);
       if ( cvm::step_relative() % integrate_freq == 0 ) {
-        // FIXME FIXME MAGIC NUMBERS
-        iter = pmf->integrate(10, 1e-4, err);
-        cvm::log ("Number of iterations: " + cvm::to_str(iter));
+        iter = pmf->integrate(STEPS, TOL, err);
       }
     }
   }

@@ -7,6 +7,7 @@
 #include "colvarcomp.h"
 #include "colvargrid.h"
 
+#include <ctime>
 
 colvar_grid_count::colvar_grid_count()
   : colvar_grid<size_t>()
@@ -226,9 +227,13 @@ int integrate_potential::integrate(const int itmax, const cvm::real tol, cvm::re
 //   }
 //   // FIXME
 
+  clock_t t1 = clock();
   nr_linbcg_sym(divergence, data, tol, itmax, iter, err);
-  cvm::log ("Completed integration in " + cvm::to_str (iter) + " steps with"
-     + " error " + cvm::to_str (err));
+  clock_t t2 = clock();
+  cvm::log ("Completed integration in " + cvm::to_str(iter) + " steps with"
+     + " error " + cvm::to_str(err)
+     + " in " + cvm::to_str((double) (t2 - t1) * 1000. / (double) CLOCKS_PER_SEC)
+     + " ms");
 
 /*
   // TODO remove this test of laplacian calcs
