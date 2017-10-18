@@ -17,8 +17,10 @@ syntax:
   echo '  --tcl-prefix <directory containing Tcl lib and include>'
   echo '      (defaults to ./tcl or ~/tcl)'
   echo '  --without-python (default)  --with-python (requires Tcl)'
+  echo '      (only Python 2.x is supported currently)'
   echo '  --python-prefix <directory containing Python lib and include>'
-  echo '      (defaults to /usr)'
+  echo '      (defaults to the output of python-config --prefix'
+  echo '       if available, or to /usr if not)'
   echo '  --with-fftw (default)  --without-fftw'
   echo '  --with-fftw3 (use fftw3 API, your fftw-prefix should match) '
   echo '  --fftw-prefix <directory containing FFTW lib and include>'
@@ -215,7 +217,7 @@ begin:
     shift
   endif
 
-  set PYTHON_PREFIX="/usr"
+  set PYTHON_PREFIX = ""
   set CUDA_GENCODE = ""
   set CUDA_DLINK = ""
 
@@ -454,17 +456,51 @@ begin:
       echo ''
       exit 1
     endif
+
+
+    set PYTHON_LDFLAGS = ""
+    set PYTHON_INCFLAGS = ""
+
+    if ( XX$PYTHON_PREFIX == XX ) then
+
+      echo 'Trying to autodetect Python installation:'
+      if ( XX`which python-config` != XX ) then
+        # Use python-config
+        echo 'autodetected.'
+        set PYTHON_PREFIX = `python-config --prefix`
+        set PYTHON_INCFLAGS = `python-config --includes`
+        set PYTHON_LDFLAGS = `python-config --ldflags`
+        echo $PYTHON_LDFLAGS | grep -q -- '-L'
+        if ( $status ) then
+          echo 'python-config did not return a -L flag: using Anaconda?'
+          if ( -d $PYTHON_PREFIX/lib ) then
+            set PYTHON_LDFLAGS = "-L$PYTHON_PREFIX/lib $PYTHON_LDFLAGS"
+          else if ( -d $PYTHON_PREFIX/lib64 ) then
+            set PYTHON_LDFLAGS = "-L$PYTHON_PREFIX/lib64 $PYTHON_LDFLAGS"
+          else
+            echo "Unable to detect local Python; please edit Make.config file."
+          endif
+        endif
+      else
+        set PYTHON_PREFIX = "/usr"
+      endif
+    endif
+
+    if ( XX"$PYTHON_LDFLAGS" == XX ) then
+      # We only have prefix, fall back to old method for the rest
     foreach python_include ( $PYTHON_PREFIX/include/python2.[0-9] )
       set python_lib = $python_include:t
     end
     if ( $?python_lib ) then
       echo "Using $python_lib with include files in $python_include"
+        set PYTHON_INCFLAGS = "-I$python_include"
+        set PYTHON_LDFLAGS = "-L$PYTHON_PREFIX/lib64 -l$python_lib -ldl -lutil"
     else
-      set python_include = $PYTHON_PREFIX/include/python
-      set python_lib = python
-      echo "Unable to local Python; please edit Make.config file."
+        echo "Unable to detect local Python; please edit Make.config file."
     endif
   endif
+
+  endif # end Python
 
   if ( $?CHARM_BASE ) then
     if ( $CHARM_BASE !~ /* ) set CHARM_BASE = .rootdir/$CHARM_BASE
@@ -639,8 +675,8 @@ begin:
   endif
 
   if ( $use_python ) then
-    echo "PYTHON = -DNAMD_PYTHON -I$python_include" >> Make.config
-    echo "PYTHONLIB = -L$PYTHON_PREFIX/lib64 -l$python_lib -ldl -lutil" >> Make.config
+    echo "PYTHON = -DNAMD_PYTHON $PYTHON_INCFLAGS" >> Make.config
+    echo "PYTHONLIB = $PYTHON_LDFLAGS" >> Make.config
   endif
 
   if ( $use_mkl ) then
