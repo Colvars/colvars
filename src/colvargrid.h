@@ -1551,6 +1551,8 @@ class integrate_potential : public colvar_grid_scalar
   cvm::real g10[2];
   cvm::real g11[2];
 
+//   std::vector<cvm::real> inv_lap_diag; // Inverse of the diagonal of the Laplacian
+
   // update local gradients above
   void get_local_grads(const colvar_grid_gradient &gradient, const std::vector<int> &ix);
 

@@ -204,6 +204,16 @@ integrate_potential::integrate_potential(std::vector<colvar *> &colvars)
   // hence PMF grid is wider than gradient grid if non-PBC
 
   divergence.resize(nt);
+
+//   // Compute inverse of Laplacian diagonal for Jacobi preconditioning
+//   inv_lap_diag.resize(nt);
+//   std::vector<cvm::real> id(nt), lap_col(nt);
+//   for (int i = 0; i < nt; i++) {
+//     id[i] = 1.;
+//     atimes(id, lap_col);
+//     id[i] = 0.;
+//     inv_lap_diag[i] = 1. / lap_col[i];
+//   }
 }
 
 
@@ -211,46 +221,9 @@ int integrate_potential::integrate(const int itmax, const cvm::real tol, cvm::re
 {
   int iter;
 
-//   if (nx[0]*nx[1] <= 100) {
-//     // Write explicit Laplacian FIXME debug output
-//     std::ofstream lap_out("lap_op.dat");
-//     std::vector<cvm::real> id(nx[0]*nx[1]), lap_col(nx[0]*nx[1]);
-//     for (int i = 0; i < nx[0] * nx[1]; i++) {
-//       id[i] = 1.;
-//       atimes(id, lap_col);
-//       id[i] = 0.;
-//       for (int j = 0; j < nx[0] * nx[1]; j++) {
-//         lap_out << cvm::to_str(i) + " " + cvm::to_str(j) + " " + cvm::to_str(lap_col[j]) << std::endl;
-//       }
-//       lap_out << std::endl;
-//     }
-//   }
-//   // FIXME
-
-  clock_t t1 = clock();
   nr_linbcg_sym(divergence, data, tol, itmax, iter, err);
-  clock_t t2 = clock();
   cvm::log ("Completed integration in " + cvm::to_str(iter) + " steps with"
-     + " error " + cvm::to_str(err)
-     + " in " + cvm::to_str((double) (t2 - t1) * 1000. / (double) CLOCKS_PER_SEC)
-     + " ms");
-
-/*
-  // TODO remove this test of laplacian calcs
-  std::vector<cvm::real> backup (data);
-  std::ofstream p("pmf.dat");
-  add_constant(-1.0 * minimum_value());
-  write_multicol(p);
-  std::vector<cvm::real> lap = std::vector<cvm::real>(data.size());
-  atimes(data, lap);
-  data = lap;
-  std::ofstream l("laplacian.dat");
-  write_multicol(l);
-  data = divergence;
-  std::ofstream d("divergence.dat");
-  write_multicol(d);
-  data = backup;
-  // TODO TODO TODO*/
+     + " error " + cvm::to_str(err));
 
   return iter;
 }
@@ -347,14 +320,13 @@ void integrate_potential::atimes(const std::vector<cvm::real> &p, std::vector<cv
 {
   size_t index, index2;
 
-  const cvm::real fx = 1.0/widths[0];
-  const cvm::real fy = 1.0/widths[1];
-  const cvm::real ffx = fx * fx;
-  const cvm::real ffy = fy * fy;
-  // offsets for 4 reference points of the Laplacian stencil
+  const cvm::real ffx = 1.0 / (widths[0] * widths[0]);
+  const cvm::real ffy = 1.0 / (widths[1] * widths[1]);
 
   const int h = nx[1];
   const int w = nx[0];
+
+  // offsets for 4 reference points of the Laplacian stencil
   int xm = -h;
   int xp =  h;
   int ym = -1;
@@ -468,14 +440,12 @@ void integrate_potential::atimes(const std::vector<cvm::real> &p, std::vector<cv
   l[index] = ffx * lx + ffy * ly;
 }
 
-// TODO remove if unused
+
 /// Inversion of preconditioner matrix (e.g. diagonal of the Laplacian)
 void integrate_potential::asolve(const std::vector<cvm::real> &b, std::vector<cvm::real> &x, const int itrnsp)
 {
-//   cvm::real inv_diag = - 1.0 / (2.0 / (widths[0] * widths[0]) + 2.0 / (widths[1] * widths[1]));
-  // Identity works, so we leave it at that for now.
-  for (size_t i=0; i<x.size(); i++) {
-//     x[i] = inv_diag * b[i];
+  for (size_t i=0; i<nt; i++) {
+    // x[i] = b[i] * inv_lap_diag[i]; // Jacobi preconditioner - no benefit in tests
     x[i] = b[i];
   }
   return;
