@@ -866,6 +866,30 @@ public:
 };
 
 
+
+class colvarmodule::rvector_array
+{
+public:
+
+  rvector_array();
+
+  ~rvector_array();
+
+  inline cvm::vector1d<cvm::real> * get_array(int i)
+  {
+    if (i < 0 || i > 2) {
+      cvm::error("Error: invalid index in cvm::rvector_array::get_array().\n",
+                 BUG_ERROR);
+    }
+    return array[i];
+  }
+
+protected:
+
+  cvm::vector1d<cvm::real> * array[3];
+};
+
+
 /// \brief 2-dimensional array of real numbers with three components
 /// along each dimension (works with colvarmodule::rvector)
 class colvarmodule::rmatrix

@@ -11,8 +11,9 @@
 
 #include "colvarmodule.h"
 #include "colvarvalue.h"
-#include "colvar.h"
 #include "colvarcomp.h"
+#include "colvaratoms.h"
+#include "colvar.h"
 
 
 
@@ -26,6 +27,8 @@ colvar::cvc::cvc()
   wrap_center = 0.0;
   width = 0.0;
   init_dependencies();
+  axis_used[0] = axis_used[1] = axis_used[2] = 1;
+  n_colvar_dim = -1;
 }
 
 
@@ -39,12 +42,16 @@ colvar::cvc::cvc(std::string const &conf)
   wrap_center = 0.0;
   width = 0.0;
   init_dependencies();
+  axis_used[0] = axis_used[1] = axis_used[2] = 1;
+  n_colvar_dim = -1;
   init(conf);
 }
 
 
 int colvar::cvc::init(std::string const &conf)
 {
+  int error_code = COLVARS_OK;
+
   if (cvm::debug())
     cvm::log("Initializing cvc base object.\n");
 
@@ -66,6 +73,19 @@ int colvar::cvc::init(std::string const &conf)
                  INPUT_ERROR);
       name = old_name;
     }
+  }
+
+  // TODO use the CVC to set defaults for these
+  bool use_x = true, use_y = true, use_z = true;
+  get_keyval(conf, "useX", use_x, axis_used[0] ? 1 : 0);
+  get_keyval(conf, "useY", use_y, axis_used[1] ? 1 : 0);
+  get_keyval(conf, "useZ", use_z, axis_used[2] ? 1 : 0);
+  axis_used[0] = use_x ? 1 : 0;
+  axis_used[1] = use_y ? 1 : 0;
+  axis_used[2] = use_z ? 1 : 0;
+  if (number_of_axes() == 0) {
+    error_code |= cvm::error("Error: at least one axis must be enabled.",
+                             INPUT_ERROR);
   }
 
   get_keyval(conf, "componentCoeff", sup_coeff, sup_coeff);
@@ -176,7 +196,7 @@ cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
   } else {
     if (! optional) {
       cvm::error("Error: definition for atom group \""+
-                 std::string(group_key)+"\" not found.\n");
+                 std::string(group_key)+"\" not found.\n", INPUT_ERROR);
     }
   }
 
@@ -184,6 +204,7 @@ cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
 }
 
 
+<<<<<<< HEAD
 int colvar::cvc::init_dependencies() {
   size_t i;
   // Initialize static array once and for all
@@ -245,10 +266,24 @@ int colvar::cvc::init_dependencies() {
     for (i = 0; i < colvardeps::f_cvc_ntot; i++) {
       if (is_not_set(i)) {
         cvm::error("Uninitialized feature " + cvm::to_str(i) + " in " + description);
+=======
+int colvar::cvc::init_colvar_gradients(size_t n_dim)
+{
+  n_colvar_dim = n_dim;
+
+  if (gradients_vec.size() == 0) {
+    gradients_vec.resize(n_dim * number_of_groups());
+    size_t igrad = 0;
+    for (size_t i = 0; i < number_of_groups(); i++) {
+      for (size_t id = 0; id < n_dim; id++, igrad++) {
+        gradients_vec[igrad].allocate(axis_used,
+                                      atom_groups[i]->size());
+>>>>>>> WIP
       }
     }
   }
 
+<<<<<<< HEAD
   // Initialize feature_states for each instance
   // default as available, not enabled
   // except dynamic features which default as unavailable
@@ -282,10 +317,16 @@ int colvar::cvc::init_dependencies() {
   feature_states[f_cvc_scalable_com].available = (cvm::proxy->scalable_group_coms() == COLVARS_OK);
   feature_states[f_cvc_scalable].available = feature_states[f_cvc_scalable_com].available;
 
+=======
+>>>>>>> WIP
   return COLVARS_OK;
 }
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> WIP
 int colvar::cvc::setup()
 {
   description = "cvc " + name;
@@ -303,6 +344,7 @@ colvar::cvc::~cvc()
 }
 
 
+<<<<<<< HEAD
 void colvar::cvc::init_as_distance()
 {
   x.type(colvarvalue::type_scalar);
@@ -374,6 +416,8 @@ int colvar::cvc::set_param(std::string const &param_name,
 }
 
 
+=======
+>>>>>>> WIP
 void colvar::cvc::read_data()
 {
   size_t ig;
@@ -477,6 +521,66 @@ void colvar::cvc::calc_fit_gradients()
   for (size_t ig = 0; ig < atom_groups.size(); ig++) {
     atom_groups[ig]->calc_fit_gradients();
   }
+}
+
+
+template<bool applying_force>
+void colvar::cvc::process_colvar_gradients(cvm::vector1d<cvm::real> const *dxi_dx,
+                                           colvarvalue const *cvforce)
+{
+  size_t const n_atom_axes = number_of_axes();
+  size_t const n_colvar_axes = n_colvar_dim;
+  size_t const n_groups = number_of_groups();
+
+  size_t igrad = 0, igrad_global_offset = 0;
+  for (size_t i = 0; i < n_groups; i++) {
+
+    cvm::atom_group * const atoms = applying_force ? atom_groups[i] : NULL;
+    size_t const n_atoms = atoms->size();
+
+    for (size_t id = 0; id < n_colvar_axesx; id++, igrad++) {
+
+      cvm::real const cvforce_comp = applying_force ? (*cvforce)[id] : 0.0;
+
+      size_t axis_count = 0;
+      for (size_t d = 0; d < 3; d++) {
+
+        if (!axis_used[d]) continue;
+
+        cvm::vector1d<cvm::real> const *grad_out_vec =
+          applying_force ? gradients_vec[igrad].get_array(d) : NULL;
+        cvm::vector1d<cvm::real> *grad_in_vec =
+          applying_force ? NULL : gradients_vec[igrad].get_array(d);
+
+        for (size_t ia = 0; ia < n_atoms; ia++) {
+          if (applying_force) {
+            cvm::rvector atom_force(0.0);
+            atom_force[d] = (*grad_out_vec)[ia] * cvforce_comp;
+            // Apply only d-th component of force (multiple calls allowed)
+            (*atoms)[ia].apply_force(atom_force);
+          } else {
+            (*grad_in_vec)[ia] =
+              (*dxi_dx)[igrad_global_offset + ia*n_atom_axes + axis_count];
+          }
+        }
+        axis_count++;
+      } // for (size_t d = 0; d < 3; d++)
+
+      igrad_global_offset += n_atom_axes * n_atoms;
+    } // for (size_t id = 0; id < n_colvar_dim; id++, ig++)
+  } // for (size_t i = 0; i < number_of_groups(); i++)
+}
+
+
+void colvar::cvc::set_colvar_gradients(cvm::vector1d<cvm::real> const *dxi_dx)
+{
+  process_colvar_gradients<false>(dxi_dx, NULL);
+}
+
+
+void colvar::cvc::apply_force(colvarvalue const &force)
+{
+  process_colvar_gradients<true>(NULL, &force);
 }
 
 
@@ -629,3 +733,78 @@ void colvar::cvc::wrap(colvarvalue & /* x_unwrapped */) const
 // Static members
 
 std::vector<colvardeps::feature *> colvar::cvc::cvc_features;
+
+
+
+colvar::cartesian::cartesian()
+{
+  function_type = "cartesian";
+  x.type(colvarvalue::type_vector);
+  enable(f_cvc_implicit_gradient);
+}
+
+
+colvar::cartesian::~cartesian()
+{
+  for (size_t i = 0; i < gradients_vec.size(); i++) {
+    delete gradients_vec[i];
+    gradients_vec[i] = NULL;
+  }
+}
+
+
+// TODO Soon we'll hopefully use constructor delegation
+colvar::cartesian::cartesian(std::string const &conf)
+{
+  function_type = "cartesian";
+  x.type(colvarvalue::type_vector);
+  enable(f_cvc_implicit_gradient);
+  init(conf);
+}
+
+
+int colvar::cartesian::init(std::string const &conf)
+{
+  int error_code = COLVARS_OK;
+
+  error_code |= colvar::cvc::init(conf);
+
+  atoms = parse_group(conf, "atoms");
+
+  x.vector1d_value.resize(atoms->size() * number_of_axes());
+}
+
+
+void colvar::cartesian::calc_value()
+{
+  size_t const dim = number_of_axes();
+  size_t const n_atoms = atoms->size();
+  for (size_t ia = 0; ia < n_atoms; ia++) {
+    size_t ax_c = 0;
+    for (size_t d = 0; d < 3; d++) {
+      if (!axis_used[d]) continue;
+      x.vector1d_value[dim*ia + ax_c] = (*atoms)[ia].pos[d];
+      ax_c++;
+    }
+  }
+}
+
+
+void colvar::cartesian::calc_gradients()
+{
+  // Compatibility code: copy the vector of gradients in the
+  TODO gradients_vec
+  if (!is_enabled(f_cvc_implicit_gradient)) {
+    cvm::vector1d<cvm::real> const *grad_vec = gradients(0);
+    size_t const dim = number_of_axes();
+    size_t const n_atoms = atoms->size();
+    for (size_t ia = 0; ia < n_atoms; ia++) {
+      size_t ax_c = 0;
+      for (size_t d = 0; d < 3; d++) {
+        if (!axis_used[d]) continue;
+        (*atoms)[ia].grad[d] = (*grad_vec)[dim*ia + ax_c];
+        ax_c++;
+      }
+    }
+  }
+}

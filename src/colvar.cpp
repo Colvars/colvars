@@ -299,6 +299,18 @@ int colvar::init(std::string const &conf)
   // Now that the children are defined we can solve dependencies
   enable(f_cv_active);
 
+  // Solve dependencies that require function calls
+  if (is_enabled(f_cv_gradient)) {
+    for (i = 0; i < cvcs.size(); i++) {
+      if ((cvcs[i])->function_type == "cartesian") {
+        (cvcs[i])->init_colvar_gradients(value().size());
+        if (!is_enabled(f_cv_scalar)) {
+          (cvcs[i])->enable(f_cvc_implicit_gradient);
+        }
+      }
+    }
+  }
+
   error_code |= parse_analysis(conf);
 
   if (cvm::debug())
@@ -1468,7 +1480,7 @@ int colvar::calc_cvc_gradients(int first_cvc, size_t num_cvcs)
       (cvcs[i])->calc_gradients();
       // if requested, propagate (via chain rule) the gradients above
       // to the atoms used to define the roto-translation
-     (cvcs[i])->calc_fit_gradients();
+      (cvcs[i])->calc_fit_gradients();
       if ((cvcs[i])->is_enabled(f_cvc_debug_gradient))
         (cvcs[i])->debug_gradients();
     }
@@ -1885,6 +1897,7 @@ void colvar::communicate_forces()
                              cvm::real((cvcs[i])->sup_np) *
                              (cvm::integer_power((cvcs[i])->value().real_value,
                                                  (cvcs[i])->sup_np-1)) );
+      // TODO Exception
     }
 
   } else {
@@ -1892,6 +1905,7 @@ void colvar::communicate_forces()
     for (i = 0; i < cvcs.size(); i++) {
       if (!cvcs[i]->is_enabled()) continue;
       (cvcs[i])->apply_force(f * (cvcs[i])->sup_coeff);
+      // TODO Exception
     }
   }
 

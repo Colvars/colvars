@@ -94,6 +94,15 @@ public:
   /// Keyword used in the input to denote this CVC
   std::string config_key;
 
+  /// Which Cartesian coordinates are included by this component
+  int axis_used[3];
+
+  /// How many Cartesian coordinates are included by this component
+  inline int number_of_axes() const
+  {
+    return axis_used[0] + axis_used[1] + axis_used[2];
+  }
+
   /// \brief Coefficient in the polynomial combination (default: 1.0)
   cvm::real sup_coeff;
   /// \brief Exponent in the polynomial combination (default: 1)
@@ -128,6 +137,17 @@ public:
   /// \brief Parse options pertaining to total force calculation
   virtual int init_total_force_params(std::string const &conf);
 
+  /// Initialize arrays for the gradients of the collective variables
+  /// \param Dimensionality of the variable (may or may not be equal to the
+  /// one of this CVC)
+  virtual int init_colvar_gradients(size_t n_dim);
+
+  /// Set the gradients of the collective variable from a flattened vector
+  /// \param dxi_dx Array of gradients with loops in the following order
+  /// (outer to inner): atom group, scalar component of the variable, atom,
+  /// Cartesian component of the atom position
+  virtual void set_colvar_gradients(cvm::vector1d<cvm::real> const *dxi_dx);
+
   /// \brief After construction, set data related to dependency handling
   int setup();
 
@@ -146,11 +166,14 @@ public:
   {
     return cvc_features;
   }
+
   virtual std::vector<feature *> &modify_features()
   {
     return cvc_features;
   }
-  static void delete_features() {
+
+  static void delete_features()
+  {
     for (size_t i=0; i < cvc_features.size(); i++) {
       delete cvc_features[i];
     }
@@ -207,7 +230,7 @@ public:
   /// collective variable force, usually coming from the biases and
   /// eventually manipulated by the parent \link colvar \endlink
   /// object
-  virtual void apply_force(colvarvalue const &cvforce) = 0;
+  virtual void apply_force(colvarvalue const &cvforce);
 
   /// \brief Square distance between x1 and x2 (can be redefined to
   /// transparently implement constraints, symmetries and
@@ -255,6 +278,12 @@ public:
   /// \brief Wrap value (for periodic/symmetric cvcs)
   virtual void wrap(colvarvalue &x_unwrapped) const;
 
+  /// Number of groups used by this object
+  inline int number_of_groups() const
+  {
+    return atom_groups.size();
+  }
+
   /// \brief Pointers to all atom groups, to let colvars collect info
   /// e.g. atomic gradients
   std::vector<cvm::atom_group *> atom_groups;
@@ -270,6 +299,13 @@ public:
 
   /// \brief Whether or not this CVC will be computed in parallel whenever possible
   bool b_try_scalable;
+
+  /// Vector holding the atomic gradients of the i-th scalar component
+  /// of the collective variable as a flattened array
+  inline cvm::vector1d<cvm::real> * gradients(size_t i = 0)
+  {
+    return gradients_vec[i];
+  }
 
 protected:
 
@@ -306,6 +342,20 @@ protected:
 
   /// \brief CVC-specific default colvar width
   cvm::real width;
+
+  /// Dimensionality of the associated variable (default: dimensionality of
+  /// this function)
+  int n_colvar_dim;
+
+  /// Function used to copy the atomic gradients from a vector or to apply
+  /// forces to atoms
+  template<bool applying_force>
+  void process_colvar_gradients(cvm::vector1d<cvm::real> const *dxi_dx,
+                                colvarvalue const *force);
+
+  /// Vectors holding the atomic gradients of each scalar component of the
+  /// collective variable as a flattened array (DIM*N)
+  std::vector<cvm::rvector_array> gradients_vec;
 };
 
 
@@ -1391,18 +1441,19 @@ public:
 class colvar::cartesian
   : public colvar::cvc
 {
-protected:
-  /// Atom group
-  cvm::atom_group  *atoms;
-  /// Which Cartesian coordinates to include
-  std::vector<size_t> axes;
 public:
+
   cartesian(std::string const &conf);
   cartesian();
-  virtual ~cartesian() {}
+  virtual ~cartesian();
+  virtual int init(std::string const &conf);
   virtual void calc_value();
   virtual void calc_gradients();
-  virtual void apply_force(colvarvalue const &force);
+
+protected:
+
+  /// Atom group
+  cvm::atom_group *atoms;
 };
 
 

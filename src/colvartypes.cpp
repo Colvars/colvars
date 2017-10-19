@@ -88,6 +88,40 @@ std::istream & operator >> (std::istream &is, colvarmodule::rvector &v)
   return is;
 }
 
+
+
+cvm::rvector_array::rvector_array()
+{
+  array[0] = array[1] = array[2] = NULL;
+}
+
+
+cvm::rvector_array::~rvector_array()
+{
+  for (size_t i = 0; i < 3; i++) {
+    if (array[i]) {
+      delete array[i];
+      array[i] = NULL;
+    }
+  }
+}
+
+
+void cvm::rvector_array::allocate(int axis_used[3], size_t size)
+{
+  for (size_t i = 0; i < 3; i++) {
+    if (!axis_used[i]) continue;
+    if (array[i] == NULL) {
+      array[i] = new cvm::vector1d<cvm::real>(size);
+    }
+    array[i]->resize(size);
+  } else {
+    cvm::error("Error: out of bound index in cvm::rvector_array::allocate.\n",
+               BUG_ERROR);
+  }
+}
+
+
 std::string cvm::quaternion::to_simple_string() const
 {
   std::ostringstream os;
@@ -96,6 +130,7 @@ std::string cvm::quaternion::to_simple_string() const
   os << q0 << " " << q1 << " " << q2 << " " << q3;
   return os.str();
 }
+
 
 int cvm::quaternion::from_simple_string(std::string const &s)
 {
@@ -108,6 +143,7 @@ int cvm::quaternion::from_simple_string(std::string const &s)
   }
   return COLVARS_OK;
 }
+
 
 std::ostream & operator << (std::ostream &os, colvarmodule::quaternion const &q)
 {
