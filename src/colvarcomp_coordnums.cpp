@@ -11,6 +11,7 @@
 
 
 
+
 template<bool calculate_gradients>
 cvm::real colvar::coordnum::switching_function(cvm::real const &r0,
                                                int const &en,
@@ -25,8 +26,8 @@ cvm::real colvar::coordnum::switching_function(cvm::real const &r0,
   int const en2 = en/2;
   int const ed2 = ed/2;
 
-  cvm::real const xn = std::pow(l2, en2);
-  cvm::real const xd = std::pow(l2, ed2);
+  cvm::real const xn = cvm::integer_power(l2, en2);
+  cvm::real const xd = cvm::integer_power(l2, ed2);
   cvm::real const func = (1.0-xn)/(1.0-xd);
 
   if (calculate_gradients) {
@@ -55,8 +56,8 @@ cvm::real colvar::coordnum::switching_function(cvm::rvector const &r0_vec,
   int const en2 = en/2;
   int const ed2 = ed/2;
 
-  cvm::real const xn = std::pow(l2, en2);
-  cvm::real const xd = std::pow(l2, ed2);
+  cvm::real const xn = cvm::integer_power(l2, en2);
+  cvm::real const xd = cvm::integer_power(l2, ed2);
   cvm::real const func = (1.0-xn)/(1.0-xd);
 
   if (calculate_gradients) {
@@ -110,11 +111,17 @@ colvar::coordnum::coordnum(std::string const &conf)
     if (r0_vec.z < 0.0) r0_vec.z *= -1.0;
   }
 
-  get_keyval(conf, "expNumer", en, int(6) );
-  get_keyval(conf, "expDenom", ed, int(12));
+  get_keyval(conf, "expNumer", en, 6);
+  get_keyval(conf, "expDenom", ed, 12);
 
   if ( (en%2) || (ed%2) ) {
-    cvm::error("Error: odd exponents provided, can only use even ones.\n", INPUT_ERROR);
+    cvm::error("Error: odd exponent(s) provided, can only use even ones.\n",
+               INPUT_ERROR);
+  }
+
+  if ( (en <= 0) || (ed <= 0) ) {
+    cvm::error("Error: negative exponent(s) provided.\n",
+               INPUT_ERROR);
   }
 
   if (!is_enabled(f_cvc_pbc_minimum_image)) {
@@ -249,8 +256,13 @@ colvar::h_bond::h_bond(std::string const &conf)
   get_keyval(conf, "expDenom", ed, 8);
 
   if ( (en%2) || (ed%2) ) {
-    cvm::error("Error: odd exponents provided, can only use even ones.\n");
-    return;
+    cvm::error("Error: odd exponent(s) provided, can only use even ones.\n",
+               INPUT_ERROR);
+  }
+
+  if ( (en <= 0) || (ed <= 0) ) {
+    cvm::error("Error: negative exponent(s) provided.\n",
+               INPUT_ERROR);
   }
 
   if (cvm::debug())
@@ -317,12 +329,18 @@ colvar::selfcoordnum::selfcoordnum(std::string const &conf)
   group1 = parse_group(conf, "group1");
 
   get_keyval(conf, "cutoff", r0, cvm::real(4.0 * cvm::unit_angstrom()));
-  get_keyval(conf, "expNumer", en, int(6) );
-  get_keyval(conf, "expDenom", ed, int(12));
+  get_keyval(conf, "expNumer", en, 6);
+  get_keyval(conf, "expDenom", ed, 12);
+
 
   if ( (en%2) || (ed%2) ) {
-    cvm::error("Error: odd exponents provided, can only use even ones.\n");
-    return;
+    cvm::error("Error: odd exponent(s) provided, can only use even ones.\n",
+               INPUT_ERROR);
+  }
+
+  if ( (en <= 0) || (ed <= 0) ) {
+    cvm::error("Error: negative exponent(s) provided.\n",
+               INPUT_ERROR);
   }
 
   if (!is_enabled(f_cvc_pbc_minimum_image)) {
@@ -400,12 +418,17 @@ colvar::groupcoordnum::groupcoordnum(std::string const &conf)
     if (r0_vec.z < 0.0) r0_vec.z *= -1.0;
   }
 
-  get_keyval(conf, "expNumer", en, int(6) );
-  get_keyval(conf, "expDenom", ed, int(12));
+  get_keyval(conf, "expNumer", en, 6);
+  get_keyval(conf, "expDenom", ed, 12);
 
   if ( (en%2) || (ed%2) ) {
-    cvm::error("Error: odd exponents provided, can only use even ones.\n");
-    return;
+    cvm::error("Error: odd exponent(s) provided, can only use even ones.\n",
+               INPUT_ERROR);
+  }
+
+  if ( (en <= 0) || (ed <= 0) ) {
+    cvm::error("Error: negative exponent(s) provided.\n",
+               INPUT_ERROR);
   }
 
   if (!is_enabled(f_cvc_pbc_minimum_image)) {
@@ -437,8 +460,8 @@ cvm::real colvar::groupcoordnum::switching_function(cvm::real const &r0,
   int const en2 = en/2;
   int const ed2 = ed/2;
 
-  cvm::real const xn = std::pow(l2, en2);
-  cvm::real const xd = std::pow(l2, ed2);
+  cvm::real const xn = cvm::integer_power(l2, en2);
+  cvm::real const xd = cvm::integer_power(l2, ed2);
   cvm::real const func = (1.0-xn)/(1.0-xd);
 
   if (calculate_gradients) {
@@ -470,8 +493,8 @@ cvm::real colvar::groupcoordnum::switching_function(cvm::rvector const &r0_vec,
   int const en2 = en/2;
   int const ed2 = ed/2;
 
-  cvm::real const xn = std::pow(l2, en2);
-  cvm::real const xd = std::pow(l2, ed2);
+  cvm::real const xn = cvm::integer_power(l2, en2);
+  cvm::real const xd = cvm::integer_power(l2, ed2);
   cvm::real const func = (1.0-xn)/(1.0-xd);
 
   if (calculate_gradients) {
