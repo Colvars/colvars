@@ -75,12 +75,18 @@ public:
   /// Defining an abstract real number allows to switch precision
   typedef  double    real;
 
-  /// Override std::pow with a product for n positive integer
-  static inline real integer_power(real x, int n)
+  /// Override std::pow with a product for n integer
+  static inline real integer_power(real const &x, int const n)
   {
-    real result = 1.0;
-    for (int i = 0; i < n; i++) result *= x;
-    return result;
+    // Original code: math_special.h in LAMMPS
+    double yy, ww;
+    if (x == 0.0) return 0.0;
+    int nn = (n > 0) ? n : -n;
+    ww = x;
+    for (yy = 1.0; nn != 0; nn >>= 1, ww *=ww) {
+      if (nn & 1) yy *= ww;
+    }
+    return (n > 0) ? yy : 1.0/yy;
   }
 
   /// Residue identifier
