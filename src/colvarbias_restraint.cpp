@@ -1,5 +1,7 @@
 // -*- c++ -*-
 
+#include <cmath>
+
 #include "colvarmodule.h"
 #include "colvarvalue.h"
 #include "colvarbias_restraint.h"

@@ -37,11 +37,9 @@ You can browse the class hierarchy or the list of source files.
 
 #include <iostream>
 #include <iomanip>
-#include <string>
-#include <cstring>
-#include <sstream>
 #include <fstream>
-#include <cmath>
+#include <sstream>
+#include <string>
 #include <vector>
 #include <list>
 
@@ -595,16 +593,14 @@ public:
 typedef colvarmodule cvm;
 
 
-#include "colvartypes.h"
-
 
 std::ostream & operator << (std::ostream &os, cvm::rvector const &v);
 std::istream & operator >> (std::istream &is, cvm::rvector &v);
 
 
 template<typename T> std::string cvm::to_str(T const &x,
-                                              size_t const &width,
-                                              size_t const &prec) {
+                                             size_t const &width,
+                                             size_t const &prec) {
   std::ostringstream os;
   if (width) os.width(width);
   if (prec) {
@@ -615,9 +611,10 @@ template<typename T> std::string cvm::to_str(T const &x,
   return os.str();
 }
 
+
 template<typename T> std::string cvm::to_str(std::vector<T> const &x,
-                                              size_t const &width,
-                                              size_t const &prec) {
+                                             size_t const &width,
+                                             size_t const &prec) {
   if (!x.size()) return std::string("");
   std::ostringstream os;
   if (prec) {

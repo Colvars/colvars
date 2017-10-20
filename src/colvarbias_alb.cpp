@@ -1,12 +1,8 @@
 // -*- c++ -*-
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-
 #include "colvarmodule.h"
-#include "colvarbias_alb.h"
 #include "colvarbias.h"
+#include "colvarbias_alb.h"
 
 #ifdef _MSC_VER
 #if _MSC_VER <= 1700
@@ -161,7 +157,9 @@ int colvarbias_alb::update()
 
     } else {
       //check if we've reached the setpoint
-      if (coupling_rate[i] == 0 || pow(current_coupling[i] - set_coupling[i],2)  < pow(coupling_rate[i],2)) {
+      cvm::real const coupling_diff = current_coupling[i] - set_coupling[i];
+      if ((coupling_rate[i] == 0) ||
+          ((coupling_diff*coupling_diff) < (coupling_rate[i]*coupling_rate[i]))) {
         finished_equil_flag &= 1; //we continue equilibrating as long as we haven't reached all the set points
       }
       else {

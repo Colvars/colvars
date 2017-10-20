@@ -4,8 +4,6 @@
 #define COLVAR_H
 
 #include <iostream>
-#include <iomanip>
-#include <cmath>
 
 #include "colvarmodule.h"
 #include "colvarvalue.h"
@@ -53,10 +51,10 @@ public:
 
   /// \brief Current actual value (not extended DOF)
   colvarvalue const & actual_value() const;
-  
+
   /// \brief Force constant of the spring
   cvm::real const & force_constant() const;
-   
+
   /// \brief Current velocity (previously set by calc() or by read_traj())
   colvarvalue const & velocity() const;
 

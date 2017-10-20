@@ -13,10 +13,6 @@
 // simple_scalar_dist_functions (derived_class)
 
 
-#include <fstream>
-#include <cmath>
-
-
 #include "colvarmodule.h"
 #include "colvar.h"
 #include "colvaratoms.h"

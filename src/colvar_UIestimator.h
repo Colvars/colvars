@@ -38,7 +38,7 @@ namespace UIestimator {
             this->width = width;
             this->dimension = lowerboundary.size();
             this->y_size = y_size;     // keep in mind the internal (spare) matrix is stored in diagonal form
-            this->y_total_size = int(pow(double(y_size), dimension) + EPSILON);
+            this->y_total_size = int(std::pow(double(y_size), dimension) + EPSILON);
 
             // the range of the matrix is [lowerboundary, upperboundary]
             x_total_size = 1;
@@ -114,7 +114,7 @@ namespace UIestimator {
             int index = 0;
             for (i = 0; i < dimension; i++) {
                 if (i + 1 < dimension)
-                    index += temp[i] * int(pow(double(y_size), dimension - i - 1) + EPSILON);
+                    index += temp[i] * int(std::pow(double(y_size), dimension - i - 1) + EPSILON);
                 else
                     index += temp[i];
             }
