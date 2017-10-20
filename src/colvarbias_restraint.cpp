@@ -3,6 +3,7 @@
 #include <cmath>
 
 #include "colvarmodule.h"
+#include "colvarproxy.h"
 #include "colvarvalue.h"
 #include "colvarbias_restraint.h"
 

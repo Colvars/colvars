@@ -17,6 +17,7 @@
 #include "colvaratoms.h"
 #include "colvarcomp.h"
 
+
 colvarmodule::colvarmodule(colvarproxy *proxy_in)
 {
   depth_s = 0;
@@ -1729,6 +1730,89 @@ int cvm::load_coords_xyz(char const *filename,
   }
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
 }
+
+
+
+// Wrappers to proxy functions: these may go in the future
+
+cvm::real cvm::unit_angstrom()
+{
+  return proxy->unit_angstrom();
+}
+
+
+cvm::real cvm::boltzmann()
+{
+  return proxy->boltzmann();
+}
+
+
+cvm::real cvm::temperature()
+{
+  return proxy->temperature();
+}
+
+
+cvm::real cvm::dt()
+{
+  return proxy->dt();
+}
+
+
+void cvm::request_total_force()
+{
+  proxy->request_total_force(true);
+}
+
+cvm::rvector cvm::position_distance(atom_pos const &pos1,
+                                            atom_pos const &pos2)
+{
+  return proxy->position_distance(pos1, pos2);
+}
+
+cvm::real cvm::position_dist2(cvm::atom_pos const &pos1,
+                                      cvm::atom_pos const &pos2)
+{
+  return proxy->position_dist2(pos1, pos2);
+}
+
+cvm::real cvm::rand_gaussian(void)
+{
+  return proxy->rand_gaussian();
+}
+
+
+
+bool cvm::replica_enabled()
+{
+  return proxy->replica_enabled();
+}
+
+int cvm::replica_index()
+{
+  return proxy->replica_index();
+}
+
+int cvm::replica_num()
+{
+  return proxy->replica_num();
+}
+
+void cvm::replica_comm_barrier()
+{
+  return proxy->replica_comm_barrier();
+}
+
+int cvm::replica_comm_recv(char* msg_data, int buf_len, int src_rep)
+{
+  return proxy->replica_comm_recv(msg_data,buf_len,src_rep);
+}
+
+int cvm::replica_comm_send(char* msg_data, int msg_len, int dest_rep)
+{
+  return proxy->replica_comm_send(msg_data,msg_len,dest_rep);
+}
+
 
 
 // shared pointer to the proxy object

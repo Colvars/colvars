@@ -4,6 +4,7 @@
 #define COLVARATOMS_H
 
 #include "colvarmodule.h"
+#include "colvarproxy.h"
 #include "colvarparse.h"
 #include "colvardeps.h"
 

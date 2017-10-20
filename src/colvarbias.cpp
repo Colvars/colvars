@@ -1,6 +1,7 @@
 // -*- c++ -*-
 
 #include "colvarmodule.h"
+#include "colvarproxy.h"
 #include "colvarvalue.h"
 #include "colvarbias.h"
 #include "colvargrid.h"

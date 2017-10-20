@@ -1,10 +1,10 @@
 // -*- c++ -*-
 
 #include "colvarmodule.h"
+#include "colvarproxy.h"
 #include "colvar.h"
 #include "colvarbias_histogram.h"
 
-/// Histogram "bias" constructor
 
 colvarbias_histogram::colvarbias_histogram(char const *key)
   : colvarbias(key),

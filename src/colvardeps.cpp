@@ -1,10 +1,16 @@
 // -*- c++ -*-
 
 
+#include "colvarmodule.h"
+#include "colvarproxy.h"
 #include "colvardeps.h"
 
+
 colvardeps::colvardeps()
-  : time_step_factor (1) {}
+{
+  time_step_factor = 1;
+}
+
 
 colvardeps::~colvardeps() {
   size_t i;
