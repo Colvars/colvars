@@ -159,7 +159,6 @@ colvarproxy_lammps::~colvarproxy_lammps()
 {
   delete _random;
   if (colvars != NULL) {
-    colvars->write_output_files();
     delete colvars;
     colvars = NULL;
   }
@@ -175,6 +174,14 @@ int colvarproxy_lammps::setup()
 // trigger colvars computation
 double colvarproxy_lammps::compute()
 {
+  if (cvm::debug()) {
+    log(std::string(cvm::line_marker)+
+        "colvarproxy_lammps step no. "+
+        cvm::to_str(_lmp->update->ntimestep)+" [first - last = "+
+        cvm::to_str(_lmp->update->firststep)+" - "+
+        cvm::to_str(_lmp->update->laststep)+"]\n");
+  }
+
   if (first_timestep) {
     first_timestep = false;
   } else {
@@ -210,6 +217,11 @@ double colvarproxy_lammps::compute()
 
   // call the collective variable module
   colvars->calc();
+
+  if (_lmp->update->ntimestep == _lmp->update->laststep) {
+    colvars->write_restart_file(cvm::output_prefix()+".colvars.state");
+    colvars->write_output_files();
+  }
 
   if (cvm::debug()) {
     log("atoms_ids = "+cvm::to_str(atoms_ids)+"\n");
