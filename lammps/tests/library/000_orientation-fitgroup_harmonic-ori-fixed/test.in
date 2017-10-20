@@ -15,6 +15,7 @@ colvar {
             indexGroup RMSD_atoms
             centerReference yes
             rotateReference yes
+            enableFitGradients no
             fittingGroup {
                 indexGroup heavy_atoms
             }
