@@ -22,7 +22,7 @@ if ! { echo ${DIRLIST} | grep -q 0 ; } then
 fi
 
 DIFF=spiff
-DIFFOPTS="-r 1e-7" 
+DIFFOPTS="-r 1e-6  -a 1e-8"
 TPUT_RED='true'
 TPUT_GREEN='true'
 TPUT_BLUE='true'
