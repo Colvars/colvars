@@ -219,11 +219,6 @@ double colvarproxy_lammps::compute()
   // call the collective variable module
   colvars->calc();
 
-  if (_lmp->update->ntimestep == _lmp->update->endstep) {
-    colvars->write_restart_file(cvm::output_prefix()+".colvars.state");
-    colvars->write_output_files();
-  }
-
   if (cvm::debug()) {
     log("atoms_ids = "+cvm::to_str(atoms_ids)+"\n");
     log("atoms_ncopies = "+cvm::to_str(atoms_ncopies)+"\n");
@@ -239,8 +234,12 @@ void colvarproxy_lammps::serialize_status(std::string &rst)
   std::ostringstream os;
   colvars->write_restart(os);
   rst = os.str();
+}
 
-  // TODO separate this as its own function?
+void colvarproxy_lammps::write_output_files()
+{
+  // TODO skip output if undefined
+  colvars->write_restart_file(cvm::output_prefix()+".colvars.state");
   colvars->write_output_files();
 }
 

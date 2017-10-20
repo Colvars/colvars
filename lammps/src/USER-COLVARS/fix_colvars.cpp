@@ -372,6 +372,7 @@ int FixColvars::setmask()
   mask |= POST_FORCE;
   mask |= POST_FORCE_RESPA;
   mask |= END_OF_STEP;
+  mask |= POST_RUN;
   return mask;
 }
 
@@ -923,6 +924,15 @@ void FixColvars::restart(char *buf)
   if (me == 0) {
     std::string rest_text(buf);
     proxy->deserialize_status(rest_text);
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+
+void FixColvars::post_run()
+{
+  if (me == 0) {
+    proxy->write_output_files();
   }
 }
 
