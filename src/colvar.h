@@ -507,7 +507,7 @@ public:
   // collective variable component base class
   class cvc;
 
-  // currently available collective variable components
+  // list of available collective variable components
 
   // scalar colvar components
   class distance;
