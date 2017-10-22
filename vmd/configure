@@ -1481,6 +1481,7 @@ $vmd_libs          = "$tcl_libs";
 		   'FileRenderList.C', 
 		   'FileRenderer.C', 
 		   'FPS.C',
+		   'GaussianBlur.C', 
 		   'GelatoDisplayDevice.C',
 		   'GeometryAngle.C', 
 		   'GeometryAtom.C', 
