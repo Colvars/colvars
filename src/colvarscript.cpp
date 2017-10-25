@@ -265,6 +265,11 @@ int colvarscript::proc_colvar(colvar *cv, int objc, unsigned char *const objv[])
     return COLVARS_OK;
   }
 
+  if (subcmd == "run_ave") {
+    result = (cv->run_ave()).to_simple_string();
+    return COLVARS_OK;
+  }
+
   if (subcmd == "width") {
     result = cvm::to_str(cv->width, 0, cvm::cv_prec);
     return COLVARS_OK;

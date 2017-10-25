@@ -52,6 +52,9 @@ public:
   /// \brief Current actual value (not extended DOF)
   colvarvalue const & actual_value() const;
 
+  /// \brief Current running average (if calculated as set by analysis flag)
+  colvarvalue const & run_ave() const;
+
   /// \brief Force constant of the spring
   cvm::real const & force_constant() const;
 
@@ -602,12 +605,15 @@ inline colvarvalue const & colvar::value() const
   return x_reported;
 }
 
-
 inline colvarvalue const & colvar::actual_value() const
 {
   return x;
 }
 
+inline colvarvalue const & colvar::run_ave() const
+{
+  return runave;
+}
 
 inline colvarvalue const & colvar::velocity() const
 {
