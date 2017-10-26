@@ -712,7 +712,7 @@ depends: $(MKINCDIR) $(CIFILES) $(MKDSTDIR) $(DEPENDFILE)
 	            COMPILER='$$(CC)' ; \
               fi; \
 	      $(ECHO) "checking dependencies for $$SRCFILE" ; \
-	      g++ -MM $(GXXFLAGS) $$SRCFILE | \
+	      g++ -std=c++0x -MM $(GXXFLAGS) $$SRCFILE | \
 	      perl $(SRCDIR)/dc.pl $(CHARMINC) $(TCLDIR) $(FFTDIR) /usr/include /usr/local $(CUDADIR) >> $(DEPENDFILE); \
 	      $(ECHO) '	'$$COMPILER '$$(CXXFLAGS) $$(COPTO)'$$i '$$(COPTC)' \
 		$$SRCFILE >> $(DEPENDFILE) ; \
@@ -720,7 +720,7 @@ depends: $(MKINCDIR) $(CIFILES) $(MKDSTDIR) $(DEPENDFILE)
 	for i in $(CUDAOBJSRAW) ; do \
 	      SRCFILE=`basename $$i .o`.cu ; \
 	      $(ECHO) "checking dependencies for $(SRCDIR)/$$SRCFILE" ; \
-	      g++ -x c++ -MM $(CUDA) $(SRCDIR)/$$SRCFILE | \
+	      g++ -x c++ -std=c++0x -MM $(CUDA) $(SRCDIR)/$$SRCFILE | \
 	      perl $(SRCDIR)/dc.pl $(CHARMINC) $(TCLDIR) $(FFTDIR) /usr/include /usr/local $(CUDADIR) $(CUBDIR) >> $(DEPENDFILE); \
 	      $(ECHO) '	$$(CUDACC) $$(CUDACCOPTS) -Xptxas -v $$(COPTO)'$$i '$$(COPTC)' \
 		'`$$(NATIVEPATH) $(SRCDIR)/`'$$SRCFILE >> $(DEPENDFILE) ; \

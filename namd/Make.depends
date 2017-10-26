@@ -7345,7 +7345,8 @@ obj/ComputeNonbondedCUDAKernel.o: \
 obj/ComputePmeCUDAKernel.o: \
 	obj/.exists \
 	src/ComputePmeCUDAKernel.cu \
-	src/ComputePmeCUDAKernel.h
+	src/ComputePmeCUDAKernel.h \
+	src/CudaUtils.h
 	$(CUDACC) $(CUDACCOPTS) -Xptxas -v $(COPTO)obj/ComputePmeCUDAKernel.o $(COPTC) `$(NATIVEPATH) src/`ComputePmeCUDAKernel.cu
 obj/CudaComputeGBISKernel.o: \
 	obj/.exists \
@@ -7604,7 +7605,8 @@ obj/colvarbias.o: \
 	colvars/src/colvarbias.h \
 	colvars/src/colvar.h \
 	colvars/src/colvarparse.h \
-	colvars/src/colvardeps.h
+	colvars/src/colvardeps.h \
+	colvars/src/colvargrid.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarbias.o $(COPTC) colvars/src/colvarbias.cpp
 obj/colvarbias_abf.o: \
 	obj/.exists \
@@ -7619,7 +7621,8 @@ obj/colvarbias_abf.o: \
 	colvars/src/colvardeps.h \
 	colvars/src/colvarbias_abf.h \
 	colvars/src/colvarbias.h \
-	colvars/src/colvargrid.h
+	colvars/src/colvargrid.h \
+	colvars/src/colvar_UIestimator.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarbias_abf.o $(COPTC) colvars/src/colvarbias_abf.cpp
 obj/colvarbias_alb.o: \
 	obj/.exists \
@@ -7803,12 +7806,14 @@ obj/colvarmodule.o: \
 	colvars/src/colvarbias.h \
 	colvars/src/colvarbias_abf.h \
 	colvars/src/colvargrid.h \
+	colvars/src/colvar_UIestimator.h \
 	colvars/src/colvarbias_alb.h \
 	colvars/src/colvarbias_histogram.h \
 	colvars/src/colvarbias_meta.h \
 	colvars/src/colvarbias_restraint.h \
 	colvars/src/colvarscript.h \
-	colvars/src/colvaratoms.h
+	colvars/src/colvaratoms.h \
+	colvars/src/colvarcomp.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarmodule.o $(COPTC) colvars/src/colvarmodule.cpp
 obj/colvarparse.o: \
 	obj/.exists \
