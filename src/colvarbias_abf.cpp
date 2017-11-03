@@ -322,13 +322,21 @@ int colvarbias_abf::update()
 
   if (cvm::step_relative() > 0 || cvm::proxy->total_forces_same_step()) {
 
-    if ( update_bias && samples->index_ok(force_bin) ) {
-      // Only if requested and within bounds of the grid...
+    if (update_bias) {
+//       if (b_adiabatic_reweighting) {
+//         // Update gradients non-locally based on conditional distribution of
+//         // fictitious variable TODO
+//
+//       } else
+      if (samples->index_ok(force_bin)) {
+        // Only if requested and within bounds of the grid...
 
-      for (size_t i = 0; i < colvars.size(); i++) {
-        // get total forces (lagging by 1 timestep) from colvars
-        // and subtract previous ABF force if necessary
-        update_system_force(i);
+        for (size_t i = 0; i < colvars.size(); i++) {
+          // get total forces (lagging by 1 timestep) from colvars
+          // and subtract previous ABF force if necessary
+          update_system_force(i);
+        }
+        gradients->acc_force(force_bin, system_force);
       }
       gradients->acc_force(force_bin, system_force);
     }
@@ -370,7 +378,7 @@ int colvarbias_abf::update()
   // Compute and apply the new bias, if applicable
   if (is_enabled(f_cvb_apply_force) && samples->index_ok(bin)) {
 
-    size_t count = samples->value(bin);
+    cvm::real count = samples->value(bin);
     cvm::real fact = 1.0;
 
     // Factor that ensures smooth introduction of the force
@@ -390,6 +398,10 @@ int colvarbias_abf::update()
       inv_count = 1.0 / cvm::real(count);
     }
 
+//     if ( b_adiabatic_reweighting) {
+//       // Average of force according to conditional distribution of fictitious variable
+//       // need freshly integrated PMF, gradient TODO
+//     } else
     if ( fact != 0.0 ) {
       if ( (colvars.size() == 1) && colvars[0]->periodic_boundaries() ) {
         // Enforce a zero-mean bias on periodic, 1D coordinates

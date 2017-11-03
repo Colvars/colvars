@@ -229,6 +229,46 @@ int integrate_potential::integrate(const int itmax, const cvm::real tol, cvm::re
 }
 
 
+void integrate_potential::set_div(const colvar_grid_gradient &gradient)
+{
+  for (std::vector<int> ix = new_index(); index_ok(ix); incr(ix)) {
+    update_div_local(gradient, ix);
+  }
+}
+
+
+void integrate_potential::update_div(const colvar_grid_gradient &gradient, const std::vector<int> &ix0)
+{
+  std::vector<int> ix(ix0);
+  size_t il;
+
+  // If not periodic, expanded grid ensures that neighbors of ix0 are valid grid points
+  update_div_local(gradient, ix);
+  ix[0]++; wrap(ix);
+  update_div_local(gradient, ix);
+  ix[1]++; wrap(ix);
+  update_div_local(gradient, ix);
+  ix[0]--; wrap(ix);
+  update_div_local(gradient, ix);
+}
+
+
+void integrate_potential::update_div_local(const colvar_grid_gradient &gradient, const std::vector<int> &ix0)
+{
+  std::vector<int> ix(2);
+  const int linear_index = address(ix0);
+
+  get_local_grads(gradient, ix0);
+  // Special case of corners: there is only one value of the gradient to average
+  cvm::real fact_corner = 0.5;
+  if (!periodic[0] && !periodic[1] && (ix0[0] == 0 || ix0[0] == nx[0]-1) && (ix0[1] == 0 || ix0[1] == nx[1]-1)) {
+    fact_corner = 1.0;
+  }
+  divergence[linear_index] = (g10[0]-g00[0] + g11[0]-g01[0]) * fact_corner / widths[0]
+                           + (g01[1]-g00[1] + g11[1]-g10[1]) * fact_corner / widths[1];
+}
+
+
 void integrate_potential::get_local_grads(const colvar_grid_gradient &gradient, const std::vector<int> & ix0)
 {
   int count;
@@ -277,55 +317,17 @@ void integrate_potential::get_local_grads(const colvar_grid_gradient &gradient, 
     g10[0] = g10[1] = 0.0;
 }
 
-void integrate_potential::set_div(const colvar_grid_gradient &gradient)
-{
-  for (std::vector<int> ix = new_index(); index_ok (ix); incr (ix)) {
-    update_div_local(gradient, ix);
-  }
-}
-
-void integrate_potential::update_div(const colvar_grid_gradient &gradient, const std::vector<int> &ix0)
-{
-  std::vector<int> ix (ix0);
-
-  // If not periodic, expanded grid ensures that neighbors of ix0 are valid grid points
-  update_div_local(gradient, ix);
-  ix[0]++; wrap(ix);
-  update_div_local(gradient, ix);
-  ix[1]++; wrap(ix);
-  update_div_local(gradient, ix);
-  ix[0]--; wrap(ix);
-  update_div_local(gradient, ix);
-}
-
-
-void integrate_potential::update_div_local(const colvar_grid_gradient &gradient, const std::vector<int> &ix0)
-{
-  std::vector<int> ix (2);
-  const int linear_index = nx[1] * ix0[0] + ix0[1];
-
-  get_local_grads(gradient, ix0);
-  // Special case of corners: there is only one value of the gradient to average
-  cvm::real fact_corner = 0.5;
-  if (!periodic[0] && !periodic[1] && (ix0[0] == 0 || ix0[0] == nx[0]-1) && (ix0[1] == 0 || ix0[1] == nx[1]-1)) {
-    fact_corner = 1.0;
-  }
-  divergence[linear_index] = (g10[0]-g00[0] + g11[0]-g01[0]) * fact_corner / widths[0]
-                           + (g01[1]-g00[1] + g11[1]-g10[1]) * fact_corner / widths[1];
-}
-
 
 /// Multiplication by sparse matrix representing Laplacian
-void integrate_potential::atimes(const std::vector<cvm::real> &p, std::vector<cvm::real> &l)
+void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cvm::real> &LA)
 {
   size_t index, index2;
-
+  const cvm::real fx = 1.0 / widths[0];
+  const cvm::real fy = 1.0 / widths[1];
   const cvm::real ffx = 1.0 / (widths[0] * widths[0]);
   const cvm::real ffy = 1.0 / (widths[1] * widths[1]);
-
   const int h = nx[1];
   const int w = nx[0];
-
   // offsets for 4 reference points of the Laplacian stencil
   int xm = -h;
   int xp =  h;
@@ -335,8 +337,8 @@ void integrate_potential::atimes(const std::vector<cvm::real> &p, std::vector<cv
   index = h + 1;
   for (int i=1; i<w-1; i++) {
     for (int j=1; j<h-1; j++) {
-      l[index] = ffx * (p[index + xm] + p[index + xp] - 2.0 * p[index])
-               + ffy * (p[index + ym] + p[index + yp] - 2.0 * p[index]);
+      LA[index] = ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index])
+                + ffy * (A[index + ym] + A[index + yp] - 2.0 * A[index]);
       index++;
     }
     index += 2; // skip the edges and move to next column
@@ -352,10 +354,10 @@ void integrate_potential::atimes(const std::vector<cvm::real> &p, std::vector<cv
     index = 1; // Follows left edge
     index2 = h * (w - 1) + 1; // Follows right edge
     for (int j=1; j<h-1; j++) {
-      l[index] = ffx * (p[index + xm] + p[index + xp] - 2.0 * p[index])
-               + ffy * (p[index + ym] + p[index + yp] - 2.0 * p[index]);
-      l[index2] = ffx * (p[index2 - xp] + p[index2 - xm] - 2.0 * p[index2])
-                + ffy * (p[index2 + ym] + p[index2 + yp] - 2.0 * p[index2]);
+      LA[index] = ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index])
+                + ffy * (A[index + ym] + A[index + yp] - 2.0 * A[index]);
+      LA[index2] = ffx * (A[index2 - xp] + A[index2 - xm] - 2.0 * A[index2])
+                 + ffy * (A[index2 + ym] + A[index2 + yp] - 2.0 * A[index2]);
       index++;
       index2++;
     }
@@ -369,10 +371,10 @@ void integrate_potential::atimes(const std::vector<cvm::real> &p, std::vector<cv
     for (int j=1; j<h-1; j++) {
       // x gradient beyond the edge is taken to be zero
       // alternate: x gradient + y term of laplacian
-      l[index] = ffx * (p[index + xp] - p[index])
-               + ffy * (p[index + ym] + p[index + yp] - 2.0 * p[index]);
-      l[index2] = ffx * (p[index2 + xm] - p[index2])
-                + ffy * (p[index2 + ym] + p[index2 + yp] - 2.0 * p[index2]);
+      LA[index] = ffx * (A[index + xp] - A[index])
+                + ffy * (A[index + ym] + A[index + yp] - 2.0 * A[index]);
+      LA[index2] = ffx * (A[index2 + xm] - A[index2])
+                 + ffy * (A[index2 + ym] + A[index2 + yp] - 2.0 * A[index2]);
       index++;
       index2++;
     }
@@ -387,10 +389,10 @@ void integrate_potential::atimes(const std::vector<cvm::real> &p, std::vector<cv
     index = h; // Follows bottom edge
     index2 = 2 * h - 1; // Follows top edge
     for (int i=1; i<w-1; i++) {
-      l[index] = ffx * (p[index + xm] + p[index + xp] - 2.0 * p[index])
-               + ffy * (p[index + ym] + p[index + yp] - 2.0 * p[index]);
-      l[index2] = ffx * (p[index2 + xm] + p[index2 + xp] - 2.0 * p[index2])
-                + ffy * (p[index2 - yp] + p[index2 - ym] - 2.0 * p[index2]);
+      LA[index] = ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index])
+                + ffy * (A[index + ym] + A[index + yp] - 2.0 * A[index]);
+      LA[index2] = ffx * (A[index2 + xm] + A[index2 + xp] - 2.0 * A[index2])
+                 + ffy * (A[index2 - yp] + A[index2 - ym] - 2.0 * A[index2]);
       index  += h;
       index2 += h;
     }
@@ -403,10 +405,10 @@ void integrate_potential::atimes(const std::vector<cvm::real> &p, std::vector<cv
     index2 = 2 * h - 1; // Follows top edge
     for (int i=1; i<w-1; i++) {
       // alternate: y gradient + x term of laplacian
-      l[index] = ffx * (p[index + xm] + p[index + xp] - 2.0 * p[index])
-               + ffy * (p[index + yp] - p[index]);
-      l[index2] = ffx * (p[index2 + xm] + p[index2 + xp] - 2.0 * p[index2])
-                + ffy * (p[index2 + ym] - p[index2]);
+      LA[index] = ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index])
+                + ffy * (A[index + yp] - A[index]);
+      LA[index2] = ffx * (A[index2 + xm] + A[index2 + xp] - 2.0 * A[index2])
+                 + ffy * (A[index2 + ym] - A[index2]);
       index  += h;
       index2 += h;
     }
@@ -420,24 +422,24 @@ void integrate_potential::atimes(const std::vector<cvm::real> &p, std::vector<cv
   cvm::real lx, ly;
 
   index = 0;
-  lx = periodic[0] ? (p[xp] + p[xm] - 2.0 * p[0]) : (p[h] - p[0]);
-  ly = periodic[1] ?  (p[yp] + p[ym] - 2.0 * p[0]) : (p[1] - p[0]);
-  l[index] = ffx * lx + ffy * ly;
+  lx = periodic[0] ? (A[xp] + A[xm] - 2.0 * A[0]) : (A[h] - A[0]);
+  ly = periodic[1] ? (A[yp] + A[ym] - 2.0 * A[0]) : (A[1] - A[0]);
+  LA[index] = ffx * lx + ffy * ly;
 
   index = h-1;
-  lx = periodic[0] ? (p[index + xp] + p[index + xm] - 2.0 * p[index]) : (p[index + h] - p[index]);
-  ly = periodic[1] ? (p[index - ym] + p[index - yp] - 2.0 * p[index]) : (p[index - 1] - p[index]);
-  l[index] = ffx * lx + ffy * ly;
+  lx = periodic[0] ? (A[index + xp] + A[index + xm] - 2.0 * A[index]) : (A[index + h] - A[index]);
+  ly = periodic[1] ? (A[index - ym] + A[index - yp] - 2.0 * A[index]) : (A[index - 1] - A[index]);
+  LA[index] = ffx * lx + ffy * ly;
 
   index = h * (w-1);
-  lx = periodic[0] ? (p[index - xm] + p[index - xp] - 2.0 * p[index]) : (p[index - h] - p[index]);
-  ly = periodic[1] ? (p[index + yp] + p[index + ym] - 2.0 * p[index]) : (p[index + 1] - p[index]);
-  l[index] = ffx * lx + ffy * ly;
+  lx = periodic[0] ? (A[index - xm] + A[index - xp] - 2.0 * A[index]) : (A[index - h] - A[index]);
+  ly = periodic[1] ? (A[index + yp] + A[index + ym] - 2.0 * A[index]) : (A[index + 1] - A[index]);
+  LA[index] = ffx * lx + ffy * ly;
 
   index = h * w - 1;
-  lx = periodic[0] ? (p[index - xm] + p[index - xp] - 2.0 * p[index]) : (p[index - h] - p[index]);
-  ly = periodic[1] ? (p[index - ym] + p[index - yp] - 2.0 * p[index]) : (p[index - 1] - p[index]);
-  l[index] = ffx * lx + ffy * ly;
+  lx = periodic[0] ? (A[index - xm] + A[index - xp] - 2.0 * A[index]) : (A[index - h] - A[index]);
+  ly = periodic[1] ? (A[index - ym] + A[index - yp] - 2.0 * A[index]) : (A[index - 1] - A[index]);
+  LA[index] = ffx * lx + ffy * ly;
 }
 
 

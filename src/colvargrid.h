@@ -1217,13 +1217,13 @@ public:
     int A0, A1, A2;
     std::vector<int> ix = ix0;
 
-    // FIXME this can be rewritten more concisely with wrap_edge()
+    // TODO this can be rewritten more concisely with wrap_edge()
     if (periodic[n]) {
       ix[n]--; wrap(ix);
-      A0 = data[address(ix)];
+      A0 = value(ix);
       ix = ix0;
       ix[n]++; wrap(ix);
-      A1 = data[address(ix)];
+      A1 = value(ix);
       if (A0 * A1 == 0) {
         return 0.; // can't handle empty bins
       } else {
@@ -1232,10 +1232,10 @@ public:
       }
     } else if (ix[n] > 0 && ix[n] < nx[n]-1) { // not an edge
       ix[n]--;
-      A0 = data[address(ix)];
+      A0 = value(ix);
       ix = ix0;
       ix[n]++;
-      A1 = data[address(ix)];
+      A1 = value(ix);
       if (A0 * A1 == 0) {
         return 0.; // can't handle empty bins
       } else {
@@ -1246,15 +1246,58 @@ public:
       // edge: use 2nd order derivative
       int increment = (ix[n] == 0 ? 1 : -1);
       // move right from left edge, or the other way around
-      A0 = data[address(ix)];
-      ix[n] += increment; A1 = data[address(ix)];
-      ix[n] += increment; A2 = data[address(ix)];
+      A0 = value(ix);
+      ix[n] += increment; A1 = value(ix);
+      ix[n] += increment; A2 = value(ix);
       if (A0 * A1 * A2 == 0) {
         return 0.; // can't handle empty bins
       } else {
         return (-1.5 * std::log((cvm::real)A0) + 2. * std::log((cvm::real)A1)
           - 0.5 * std::log((cvm::real)A2)) * increment / widths[n];
       }
+    }
+  }
+
+  /// \brief Return the gradient from finite differences
+  /// on the *same* grid for dimension n
+  inline cvm::real gradient_finite_diff(const std::vector<int> &ix0,
+                                            int n = 0)
+  {
+    int A0, A1, A2;
+    std::vector<int> ix = ix0;
+
+    // FIXME this can be rewritten more concisely with wrap_edge()
+    if (periodic[n]) {
+      ix[n]--; wrap(ix);
+      A0 = value(ix);
+      ix = ix0;
+      ix[n]++; wrap(ix);
+      A1 = value(ix);
+      if (A0 * A1 == 0) {
+        return 0.; // can't handle empty bins
+      } else {
+        return cvm::real(A1 - A0) / (widths[n] * 2.);
+      }
+    } else if (ix[n] > 0 && ix[n] < nx[n]-1) { // not an edge
+      ix[n]--;
+      A0 = value(ix);
+      ix = ix0;
+      ix[n]++;
+      A1 = value(ix);
+      if (A0 * A1 == 0) {
+        return 0.; // can't handle empty bins
+      } else {
+        return cvm::real(A1 - A0) / (widths[n] * 2.);
+      }
+    } else {
+      // edge: use 2nd order derivative
+      int increment = (ix[n] == 0 ? 1 : -1);
+      // move right from left edge, or the other way around
+      A0 = value(ix);
+      ix[n] += increment; A1 = value(ix);
+      ix[n] += increment; A2 = value(ix);
+      return (-1.5 * cvm::real(A0) + 2. * cvm::real(A1)
+          - 0.5 * cvm::real(A2)) * increment / widths[n];
     }
   }
 };
@@ -1298,6 +1341,9 @@ public:
   }
 
   /// Return the gradient of the scalar field from finite differences
+  // TODO - check if useful
+  //: dimension two only; returns zero at edges
+  // Unused in branch master
   inline const cvm::real * gradient_finite_diff( const std::vector<int> &ix0 )
   {
     cvm::real A0, A1;
@@ -1308,13 +1354,13 @@ public:
     }
     for (unsigned int n = 0; n < nd; n++) {
       ix = ix0;
-      A0 = data[address(ix)];
+      A0 = value(ix);
       ix[n]++; wrap(ix);
-      A1 = data[address(ix)];
+      A1 = value(ix);
       ix[1-n]++; wrap(ix);
-      A1 += data[address(ix)];
+      A1 += value(ix);
       ix[n]--; wrap(ix);
-      A0 += data[address(ix)];
+      A0 += value(ix);
       grad[n] = 0.5 * (A1 - A0) / widths[n];
     }
     return grad;
@@ -1398,6 +1444,10 @@ public:
   /// should be divided
   colvar_grid_count *samples;
 
+  /// \brief Provide the floating point weights by which each binned value
+  /// should be divided (alternate to samples, only one should be non-null)
+  colvar_grid_scalar *weights;
+
   /// Default constructor
   colvar_grid_gradient();
 
@@ -1420,15 +1470,6 @@ public:
       samples->incr_count(ix);
   }
 
-  /// \brief Accumulate the gradient
-  inline void acc_grad(std::vector<int> const &ix, cvm::real const *grads) {
-    for (size_t imult = 0; imult < mult; imult++) {
-      data[address(ix) + imult] += grads[imult];
-    }
-    if (samples)
-      samples->incr_count(ix);
-  }
-
   /// \brief Accumulate the gradient based on the force (i.e. sums the
   /// opposite of the force)
   inline void acc_force(std::vector<int> const &ix, cvm::real const *forces) {
@@ -1437,6 +1478,17 @@ public:
     }
     if (samples)
       samples->incr_count(ix);
+  }
+
+  /// \brief Accumulate the gradient based on the force (i.e. sums the
+  /// opposite of the force) with a non-integer weight
+  inline void acc_force_weighted(std::vector<int> const &ix,
+                                 cvm::real const *forces,
+                                 cvm::real weight) {
+    for (size_t imult = 0; imult < mult; imult++) {
+      data[address(ix) + imult] -= forces[imult] * weight;
+    }
+    weights->acc_value(ix, weight);
   }
 
   /// \brief Return the value of the function at ix divided by its
@@ -1542,14 +1594,11 @@ class integrate_potential : public colvar_grid_scalar
   void set_div(const colvar_grid_gradient &gradient);
 
   protected:
-  // Array holding divergence + boundary terms (von Neumann if not periodic)
+  /// Array holding divergence + boundary terms (modified Neumann) if not periodic
   std::vector<cvm::real> divergence;
 
   // gradients at grid points surrounding the current scalar grid point
-  cvm::real g00[2];
-  cvm::real g01[2];
-  cvm::real g10[2];
-  cvm::real g11[2];
+  cvm::real g00[2], g01[2], g10[2], g11[2];
 
 //   std::vector<cvm::real> inv_lap_diag; // Inverse of the diagonal of the Laplacian
 
