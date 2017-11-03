@@ -106,7 +106,12 @@ public:
     return output_prefix_str;
   }
 
-  char *script_obj_to_str(unsigned char *obj);
+
+#if defined(VMDTCL)
+  void init_tcl_pointers();
+#endif
+
+  char const *script_obj_to_str(unsigned char *obj);
 
   void add_energy(cvm::real energy);
 

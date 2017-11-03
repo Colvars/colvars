@@ -408,7 +408,7 @@ public:
 };
 
 
-/// Method for scripting language interface (Tcl or Python)
+/// Methods for scripting language interface (Tcl or Python)
 class colvarproxy_script {
 
 public:
@@ -420,7 +420,7 @@ public:
   virtual ~colvarproxy_script();
 
   /// Convert a script object (Tcl or Python call argument) to a C string
-  virtual char *script_obj_to_str(unsigned char *obj);
+  virtual char const *script_obj_to_str(unsigned char *obj);
 
   /// Pointer to the scripting interface object
   /// (does not need to be allocated in a new interface)
@@ -444,6 +444,46 @@ public:
                 std::string const &name,
                 std::vector<const colvarvalue *> const &cvcs,
                 std::vector<cvm::matrix2d<cvm::real> > &gradient);
+};
+
+
+/// Methods for using Tcl within Colvars
+class colvarproxy_tcl {
+
+public:
+
+  /// Constructor
+  colvarproxy_tcl();
+
+  /// Destructor
+  virtual ~colvarproxy_tcl();
+
+  /// Is Tcl available? (trigger initialization if needed)
+  int tcl_available();
+
+  /// Tcl implementation of script_obj_to_str()
+  char const *tcl_obj_to_str(unsigned char *obj);
+
+  /// Run a user-defined colvar forces script
+  int tcl_run_force_callback();
+
+  int tcl_run_colvar_callback(
+              std::string const &name,
+              std::vector<const colvarvalue *> const &cvcs,
+              colvarvalue &value);
+
+  int tcl_run_colvar_gradient_callback(
+              std::string const &name,
+              std::vector<const colvarvalue *> const &cvcs,
+              std::vector<cvm::matrix2d<cvm::real> > &gradient);
+
+protected:
+
+  /// Pointer to Tcl interpreter object
+  void *_tcl_interp;
+
+  /// Set Tcl pointers
+  virtual void init_tcl_pointers();
 };
 
 
@@ -533,6 +573,7 @@ class colvarproxy
     public colvarproxy_smp,
     public colvarproxy_replicas,
     public colvarproxy_script,
+    public colvarproxy_tcl,
     public colvarproxy_io
 {
 

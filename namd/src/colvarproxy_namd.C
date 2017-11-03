@@ -78,11 +78,12 @@ colvarproxy_namd::colvarproxy_namd()
 
 #ifdef NAMD_TCL
   have_scripts = true;
-  // Store pointer to NAMD's Tcl interpreter
-  interp = Node::Object()->getScript()->interp;
+
+  init_tcl_pointers();
 
   // See is user-scripted forces are defined
-  if (Tcl_FindCommand(interp, "calc_colvar_forces", NULL, 0) == NULL) {
+  if (Tcl_FindCommand(reinterpret_cast<Tcl_Interp *>(_tcl_interp),
+                      "calc_colvar_forces", NULL, 0) == NULL) {
     force_script_defined = false;
   } else {
     force_script_defined = true;
@@ -447,92 +448,36 @@ void colvarproxy_namd::calculate()
 
 // Callback functions
 
-int colvarproxy_namd::run_force_callback() {
 #ifdef NAMD_TCL
-  std::string cmd = std::string("calc_colvar_forces ")
-    + cvm::to_str(cvm::step_absolute());
-  int err = Tcl_Eval(interp, cmd.c_str());
-  if (err != TCL_OK) {
-    log(std::string("Error while executing calc_colvar_forces:\n"));
-    cvm::error(Tcl_GetStringResult(interp));
-    return COLVARS_ERROR;
-  }
-  return COLVARS_OK;
-#else
-  return COLVARS_NOT_IMPLEMENTED;
-#endif
+
+void colvarproxy_namd::init_tcl_pointers()
+{
+  // Store pointer to NAMD's Tcl interpreter
+  _tcl_interp = reinterpret_cast<void *>(Node::Object()->getScript()->interp);
 }
 
-int colvarproxy_namd::run_colvar_callback(std::string const &name,
-                                          std::vector<const colvarvalue *> const &cvc_values,
-                                          colvarvalue &value)
+int colvarproxy_namd::run_force_callback()
 {
-#ifdef NAMD_TCL
-  size_t i;
-  std::string cmd = std::string("calc_") + name;
-  for (i = 0; i < cvc_values.size(); i++) {
-    cmd += std::string(" {") +  (*(cvc_values[i])).to_simple_string() + std::string("}");
-  }
-  int err = Tcl_Eval(interp, cmd.c_str());
-  const char *result = Tcl_GetStringResult(interp);
-  if (err != TCL_OK) {
-    log(std::string("Error while executing ")
-        + cmd + std::string(":\n"));
-    cvm::error(result);
-    return COLVARS_ERROR;
-  }
-  std::istringstream is(result);
-  if (value.from_simple_string(is.str()) != COLVARS_OK) {
-    log("Error parsing colvar value from script:");
-    cvm::error(result);
-    return COLVARS_ERROR;
-  }
-  return COLVARS_OK;
-#else
-  return COLVARS_NOT_IMPLEMENTED;
-#endif
+  return colvarproxy::tcl_run_force_callback();
 }
 
-int colvarproxy_namd::run_colvar_gradient_callback(std::string const &name,
-                                                   std::vector<const colvarvalue *> const &cvc_values,
-                                                   std::vector<cvm::matrix2d<cvm::real> > &gradient)
+int colvarproxy_namd::run_colvar_callback(
+                          std::string const &name,
+                          std::vector<const colvarvalue *> const &cvc_values,
+                          colvarvalue &value)
 {
-#ifdef NAMD_TCL
-  size_t i;
-  std::string cmd = std::string("calc_") + name + "_gradient";
-  for (i = 0; i < cvc_values.size(); i++) {
-    cmd += std::string(" {") +  (*(cvc_values[i])).to_simple_string() + std::string("}");
-  }
-  int err = Tcl_Eval(interp, cmd.c_str());
-  if (err != TCL_OK) {
-    log(std::string("Error while executing ")
-        + cmd + std::string(":\n"));
-    cvm::error(Tcl_GetStringResult(interp));
-    return COLVARS_ERROR;
-  }
-  Tcl_Obj **list;
-  int n;
-  Tcl_ListObjGetElements(interp, Tcl_GetObjResult(interp),
-                         &n, &list);
-  if (n != int(gradient.size())) {
-    cvm::error("Error parsing list of gradient values from script: found "
-               + cvm::to_str(n) + " values instead of " + cvm::to_str(gradient.size()));
-    return COLVARS_ERROR;
-  }
-  for (i = 0; i < gradient.size(); i++) {
-    std::istringstream is(Tcl_GetString(list[i]));
-    if (gradient[i].from_simple_string(is.str()) != COLVARS_OK) {
-      log("Gradient matrix size: " + cvm::to_str(gradient[i].size()));
-      log("Gradient string: " + cvm::to_str(Tcl_GetString(list[i])));
-      cvm::error("Error parsing gradient value from script");
-      return COLVARS_ERROR;
-    }
-  }
-  return (err == TCL_OK) ? COLVARS_OK : COLVARS_ERROR;
-#else
-  return COLVARS_NOT_IMPLEMENTED;
-#endif
+  return colvarproxy::tcl_run_colvar_callback(name, cvc_values, value);
 }
+
+int colvarproxy_namd::run_colvar_gradient_callback(
+                          std::string const &name,
+                          std::vector<const colvarvalue *> const &cvc_values,
+                          std::vector<cvm::matrix2d<cvm::real> > &gradient)
+{
+  return colvarproxy::tcl_run_colvar_gradient_callback(name, cvc_values,
+                                                       gradient);
+}
+#endif
 
 
 void colvarproxy_namd::add_energy(cvm::real energy)
@@ -989,8 +934,11 @@ int colvarproxy_namd::backup_file(char const *filename)
 }
 
 
-char *colvarproxy_namd::script_obj_to_str(unsigned char *obj)
+char const *colvarproxy_namd::script_obj_to_str(unsigned char *obj)
 {
+  if (cvm::debug()) {
+    cvm::log("Called colvarproxy_namd::script_obj_to_str().\n");
+  }
 #ifdef NAMD_TCL
   return Tcl_GetString(reinterpret_cast<Tcl_Obj *>(obj));
 #else
