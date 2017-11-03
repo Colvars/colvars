@@ -16,13 +16,14 @@ colvar_grid_count::colvar_grid_count()
 }
 
 colvar_grid_count::colvar_grid_count(std::vector<int> const &nx_i,
-                                     size_t const           &def_count)
+                                     size_t const &def_count)
   : colvar_grid<size_t>(nx_i, def_count, 1)
 {}
 
 colvar_grid_count::colvar_grid_count(std::vector<colvar *>  &colvars,
-                                     size_t const           &def_count)
-  : colvar_grid<size_t>(colvars, def_count, 1)
+                                     size_t const &def_count,
+                                     bool margin)
+  : colvar_grid<size_t>(colvars, def_count, 1, margin)
 {}
 
 colvar_grid_scalar::colvar_grid_scalar()
@@ -198,12 +199,17 @@ void colvar_grid_gradient::write_1D_integral(std::ostream &os)
 // NOTE: most of the data needs complete updates if the grid size changes...
 
 integrate_potential::integrate_potential(std::vector<colvar *> &colvars)
-  : colvar_grid_scalar (colvars, true)
+  : colvar_grid_scalar(colvars, true)
 {
   // parent class colvar_grid_scalar is constructed with margin option set to true
   // hence PMF grid is wider than gradient grid if non-PBC
 
   divergence.resize(nt);
+
+  // Weighted Poisson
+  div_weights = colvar_grid_count(colvars, 0, true); // enable margin
+  div_weights_gradx.resize(nt);
+  div_weights_grady.resize(nt);
 
 //   // Compute inverse of Laplacian diagonal for Jacobi preconditioning
 //   inv_lap_diag.resize(nt);
@@ -225,6 +231,38 @@ int integrate_potential::integrate(const int itmax, const cvm::real tol, cvm::re
   cvm::log ("Completed integration in " + cvm::to_str(iter) + " steps with"
      + " error " + cvm::to_str(err));
 
+  // TODO remove this test of laplacian calcs
+  std::vector<cvm::real> backup (data);
+  std::ofstream p("pmf.dat");
+  add_constant(-1.0 * minimum_value());
+  write_multicol(p);
+  std::vector<cvm::real> lap = std::vector<cvm::real>(data.size());
+  atimes(data, lap);
+  data = lap;
+  std::ofstream l("laplacian.dat");
+  write_multicol(l);
+  data = divergence;
+  std::ofstream d("divergence.dat");
+  write_multicol(d);
+  data = backup;
+  std::ofstream dw("div_weights.dat");
+  div_weights.write_multicol(dw);
+
+  if (nx[0]*nx[1] <= 100) {
+    // Write explicit Laplacian FIXME debug output
+    std::ofstream lap_out("lap_op.dat");
+    std::vector<cvm::real> id(nx[0]*nx[1]), lap_col(nx[0]*nx[1]);
+    for (int i = 0; i < nx[0] * nx[1]; i++) {
+      id[i] = 1.;
+      atimes(id, lap_col);
+      id[i] = 0.;
+      for (int j = 0; j < nx[0] * nx[1]; j++) {
+        lap_out << cvm::to_str(i) + " " + cvm::to_str(j) + " " + cvm::to_str(lap_col[j]) << std::endl;
+      }
+      lap_out << std::endl;
+    }
+  }
+  // TODO TODO TODO
   return iter;
 }
 
@@ -233,6 +271,12 @@ void integrate_potential::set_div(const colvar_grid_gradient &gradient)
 {
   for (std::vector<int> ix = new_index(); index_ok(ix); incr(ix)) {
     update_div_local(gradient, ix);
+  }
+  // Weighted Poisson
+  size_t il = 0;
+  for (std::vector<int> ix = new_index(); index_ok(ix); incr(ix), il++) {
+    div_weights_gradx[il] = div_weights.gradient_finite_diff(ix, 0);
+    div_weights_grady[il] = div_weights.gradient_finite_diff(ix, 1);
   }
 }
 
@@ -250,6 +294,24 @@ void integrate_potential::update_div(const colvar_grid_gradient &gradient, const
   update_div_local(gradient, ix);
   ix[0]--; wrap(ix);
   update_div_local(gradient, ix);
+
+  // Weighted Poisson
+  ix = ix0;
+  il = address(ix); // linear index
+  div_weights_gradx[il] = div_weights.gradient_finite_diff(ix, 0);
+  div_weights_grady[il] = div_weights.gradient_finite_diff(ix, 1);
+  ix[0]++; wrap(ix);
+  il = address(ix);
+  div_weights_gradx[il] = div_weights.gradient_finite_diff(ix, 0);
+  div_weights_grady[il] = div_weights.gradient_finite_diff(ix, 1);
+  ix[1]++; wrap(ix);
+  il = address(ix);
+  div_weights_gradx[il] = div_weights.gradient_finite_diff(ix, 0);
+  div_weights_grady[il] = div_weights.gradient_finite_diff(ix, 1);
+  ix[0]--; wrap(ix);
+  il = address(ix);
+  div_weights_gradx[il] = div_weights.gradient_finite_diff(ix, 0);
+  div_weights_grady[il] = div_weights.gradient_finite_diff(ix, 1);
 }
 
 
@@ -266,21 +328,23 @@ void integrate_potential::update_div_local(const colvar_grid_gradient &gradient,
   }
   divergence[linear_index] = (g10[0]-g00[0] + g11[0]-g01[0]) * fact_corner / widths[0]
                            + (g01[1]-g00[1] + g11[1]-g10[1]) * fact_corner / widths[1];
+  // Weight is just the combined number of samples in given bins
+  div_weights.set_value(linear_index, n00 + n01 + n10 + n11);
 }
 
 
 void integrate_potential::get_local_grads(const colvar_grid_gradient &gradient, const std::vector<int> & ix0)
 {
-  int count;
   cvm::real   fact;
   const cvm::real   * g;
   std::vector<int> ix = ix0;
   bool edge;
+  n00 = n01 = n10 = n11 = 0;
 
   edge = gradient.wrap_edge(ix);
-  if (!edge && (count = gradient.samples->value (ix))) {
-    g = &(gradient.value (ix));
-    fact = 1.0 / count;
+  if (!edge && (n11 = gradient.samples->value(ix))) {
+    g = &(gradient.value(ix));
+    fact = 1.0; // / count; // weighted Poisson
     g11[0] = fact * g[0];
     g11[1] = fact * g[1];
   } else
@@ -288,9 +352,9 @@ void integrate_potential::get_local_grads(const colvar_grid_gradient &gradient, 
 
   ix[0] = ix0[0] - 1;
   edge = gradient.wrap_edge(ix);
-  if (!edge && (count = gradient.samples->value (ix))) {
+  if (!edge && (n01 = gradient.samples->value(ix))) {
     g = & (gradient.value(ix));
-    fact = 1.0 / count;
+    fact = 1.0; // / count; // weighted Poisson
     g01[0] = fact * g[0];
     g01[1] = fact * g[1];
   } else
@@ -298,9 +362,9 @@ void integrate_potential::get_local_grads(const colvar_grid_gradient &gradient, 
 
   ix[1] = ix0[1] - 1;
   edge = gradient.wrap_edge(ix);
-  if (!edge && (count = gradient.samples->value (ix))) {
+  if (!edge && (n00 = gradient.samples->value(ix))) {
     g = & (gradient.value(ix));
-    fact = 1.0 / count;
+    fact = 1.0; //  / count; // weighted Poisson
     g00[0] = fact * g[0];
     g00[1] = fact * g[1];
   } else
@@ -308,9 +372,9 @@ void integrate_potential::get_local_grads(const colvar_grid_gradient &gradient, 
 
   ix[0] = ix0[0];
   edge = gradient.wrap_edge(ix);
-  if (!edge && (count = gradient.samples->value (ix))) {
+  if (!edge && (n10 = gradient.samples->value(ix))) {
     g = & (gradient.value(ix));
-    fact = 1.0 / count;
+    fact = 1.0; //  / count; // weighted Poisson
     g10[0] = fact * g[0];
     g10[1] = fact * g[1];
   } else
@@ -339,6 +403,9 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
     for (int j=1; j<h-1; j++) {
       LA[index] = ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index])
                 + ffy * (A[index + ym] + A[index + yp] - 2.0 * A[index]);
+      LA[index] *= div_weights.value(index); // Divergence of weighted gradient
+      LA[index] += .5 * fx * (A[index + xp] - A[index + xm]) * div_weights_gradx[index]
+                 + .5 * fy * (A[index + yp] - A[index + ym]) * div_weights_grady[index];
       index++;
     }
     index += 2; // skip the edges and move to next column
@@ -356,13 +423,20 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
     for (int j=1; j<h-1; j++) {
       LA[index] = ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index])
                 + ffy * (A[index + ym] + A[index + yp] - 2.0 * A[index]);
+      LA[index] *= div_weights.value(index); // Divergence of weighted gradient
+      LA[index] += .5 * fx * (A[index + xp] - A[index + xm]) * div_weights_gradx[index]
+                 + .5 * fy * (A[index + yp] - A[index + ym]) * div_weights_grady[index];
+
       LA[index2] = ffx * (A[index2 - xp] + A[index2 - xm] - 2.0 * A[index2])
                  + ffy * (A[index2 + ym] + A[index2 + yp] - 2.0 * A[index2]);
+      LA[index2] *= div_weights.value(index2); // Divergence of weighted gradient
+      LA[index2] += .5 * fx * (A[index2 - xm] - A[index2 - xp]) * div_weights_gradx[index2]
+                  + .5 * fy * (A[index2 + yp] - A[index2 + ym]) * div_weights_grady[index2];
       index++;
       index2++;
     }
   } else {
-    xm =  -h;
+    xm = -h;
     xp =  h;
     ym = -1;
     yp =  1;
@@ -373,8 +447,15 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
       // alternate: x gradient + y term of laplacian
       LA[index] = ffx * (A[index + xp] - A[index])
                 + ffy * (A[index + ym] + A[index + yp] - 2.0 * A[index]);
+      LA[index] *= div_weights.value(index2); // Divergence of weighted gradient
+      LA[index] += fx * (A[index + xp] - A[index]) * div_weights_gradx[index]
+                 + .5 * fy * (A[index + yp] - A[index + ym]) * div_weights_grady[index];
+
       LA[index2] = ffx * (A[index2 + xm] - A[index2])
                  + ffy * (A[index2 + ym] + A[index2 + yp] - 2.0 * A[index2]);
+      LA[index2] *= div_weights.value(index2); // Divergence of weighted gradient
+      LA[index2] += fx * (A[index2] - A[index2 + xm]) * div_weights_gradx[index2]
+                 + .5 * fy * (A[index2 + yp] - A[index2 + ym]) * div_weights_grady[index2];
       index++;
       index2++;
     }
@@ -391,8 +472,15 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
     for (int i=1; i<w-1; i++) {
       LA[index] = ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index])
                 + ffy * (A[index + ym] + A[index + yp] - 2.0 * A[index]);
+      LA[index] *= div_weights.value(index); // Divergence of weighted gradient
+      LA[index] += .5 * fx * (A[index + xp] - A[index + xm]) * div_weights_gradx[index]
+                 + .5 * fy * (A[index + yp] - A[index + ym]) * div_weights_grady[index];
+
       LA[index2] = ffx * (A[index2 + xm] + A[index2 + xp] - 2.0 * A[index2])
                  + ffy * (A[index2 - yp] + A[index2 - ym] - 2.0 * A[index2]);
+      LA[index2] *= div_weights.value(index2); // Divergence of weighted gradient
+      LA[index2] += .5 * fx * (A[index2 + xp] - A[index2 + xm]) * div_weights_gradx[index2]
+                  + .5 * fy * (A[index2 - ym] - A[index2 - yp]) * div_weights_grady[index2];
       index  += h;
       index2 += h;
     }
@@ -407,8 +495,15 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
       // alternate: y gradient + x term of laplacian
       LA[index] = ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index])
                 + ffy * (A[index + yp] - A[index]);
+      LA[index] *= div_weights.value(index); // Divergence of weighted gradient
+      LA[index] += .5 * fx * (A[index + xp] - A[index + xm]) * div_weights_gradx[index]
+                 + fy * (A[index + yp] - A[index]) * div_weights_grady[index];
+
       LA[index2] = ffx * (A[index2 + xm] + A[index2 + xp] - 2.0 * A[index2])
                  + ffy * (A[index2 + ym] - A[index2]);
+      LA[index2] *= div_weights.value(index2); // Divergence of weighted gradient
+      LA[index2] += .5 * fx * (A[index2 + xp] - A[index2 + xm]) * div_weights_gradx[index2]
+                  + fy * (A[index2] - A[index2 + ym]) * div_weights_grady[index2];
       index  += h;
       index2 += h;
     }

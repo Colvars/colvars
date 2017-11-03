@@ -368,7 +368,7 @@ public:
   }
 
   /// Wrap an index vector around periodic boundary conditions
-  /// or falls back to edges if non-periodic
+  /// or detects edges if non-periodic
   inline bool wrap_edge(std::vector<int> & ix) const
   {
     bool edge = false;
@@ -452,6 +452,12 @@ public:
     has_data = true;
   }
 
+  /// Set the value at the point with linear address i (for speed)
+  inline void set_value(size_t i, T const &t)
+  {
+    data[i] = t;
+  }
+
   /// \brief Get the change from this to other_grid
   /// and store the result in this.
   /// this_grid := other_grid - this_grid
@@ -525,6 +531,11 @@ public:
     return data[this->address(ix) + imult];
   }
 
+  /// \brief Get the binned value indexed by linear address i
+  inline T const & value(size_t i) const
+  {
+    return data[i];
+  }
 
   /// \brief Add a constant to all elements (fast loop)
   inline void add_constant(T const &t)
@@ -1174,7 +1185,8 @@ public:
 
   /// Constructor from a vector of colvars
   colvar_grid_count(std::vector<colvar *>  &colvars,
-                    size_t const           &def_count = 0);
+                    size_t const           &def_count = 0,
+                    bool                   margin = false);
 
   /// Increment the counter at given position
   inline void incr_count(std::vector<int> const &ix)
@@ -1258,9 +1270,9 @@ public:
     }
   }
 
-  /// \brief Return the gradient from finite differences
+  /// \brief Return the gradient of discrete count from finite differences
   /// on the *same* grid for dimension n
-  inline cvm::real gradient_finite_diff(const std::vector<int> &ix0,
+  inline const cvm::real gradient_finite_diff(const std::vector<int> &ix0,
                                             int n = 0)
   {
     int A0, A1, A2;
@@ -1341,9 +1353,8 @@ public:
   }
 
   /// Return the gradient of the scalar field from finite differences
-  // TODO - check if useful
-  //: dimension two only; returns zero at edges
-  // Unused in branch master
+  // dimension two only; returns zero at edges
+  // Unused in branch master; used to obtain biasing force in pABF
   inline const cvm::real * gradient_finite_diff( const std::vector<int> &ix0 )
   {
     cvm::real A0, A1;
@@ -1597,10 +1608,21 @@ class integrate_potential : public colvar_grid_scalar
   /// Array holding divergence + boundary terms (modified Neumann) if not periodic
   std::vector<cvm::real> divergence;
 
+  /// Weights of divergence values in the free energy reconstruction
+  /// Essentially the same as 'samples', but binned on PMF grid instead of gradient grid
+  /// used for solving weighted Poisson problem
+  colvar_grid_count div_weights;
+
+  /// Gradients of weights of divergence values in the free energy reconstruction
+  std::vector<cvm::real> div_weights_gradx;
+  std::vector<cvm::real> div_weights_grady;
+
   // gradients at grid points surrounding the current scalar grid point
   cvm::real g00[2], g01[2], g10[2], g11[2];
+  // Number of samples associated with those gradients
+  size_t n00, n01, n10, n11;
 
-//   std::vector<cvm::real> inv_lap_diag; // Inverse of the diagonal of the Laplacian
+//   std::vector<cvm::real> inv_lap_diag; // Inverse of the diagonal of the Laplacian; for conditioning
 
   // update local gradients above
   void get_local_grads(const colvar_grid_gradient &gradient, const std::vector<int> &ix);
