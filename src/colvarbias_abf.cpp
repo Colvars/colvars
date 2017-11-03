@@ -6,11 +6,11 @@
 #include "colvarbias_abf.h"
 
 
-// FIXME FIXME MAGIC NUMBERS: integration parameters
+// FIXME FIXME MAGIC NUMBERS: integration parameters for pABF
 #define INTEGRATE_FREQ 10
-#define INITIAL_STEPS 10000
+#define INITIAL_STEPS 10000 // for integrating initial gradient data
 #define INITIAL_TOL 1e-6
-#define STEPS 100
+#define STEPS 100 // for updating the integrated PMF on the fly
 #define TOL 1e-2
 // FIXME FIXME
 

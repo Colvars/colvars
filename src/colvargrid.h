@@ -1608,19 +1608,8 @@ class integrate_potential : public colvar_grid_scalar
   /// Array holding divergence + boundary terms (modified Neumann) if not periodic
   std::vector<cvm::real> divergence;
 
-  /// Weights of divergence values in the free energy reconstruction
-  /// Essentially the same as 'samples', but binned on PMF grid instead of gradient grid
-  /// used for solving weighted Poisson problem
-  colvar_grid_count div_weights;
-
-  /// Gradients of weights of divergence values in the free energy reconstruction
-  std::vector<cvm::real> div_weights_gradx;
-  std::vector<cvm::real> div_weights_grady;
-
   // gradients at grid points surrounding the current scalar grid point
   cvm::real g00[2], g01[2], g10[2], g11[2];
-  // Number of samples associated with those gradients
-  size_t n00, n01, n10, n11;
 
 //   std::vector<cvm::real> inv_lap_diag; // Inverse of the diagonal of the Laplacian; for conditioning
 
