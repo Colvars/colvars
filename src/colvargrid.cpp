@@ -222,9 +222,19 @@ int integrate_potential::integrate(const int itmax, const cvm::real tol, cvm::re
 {
   int iter;
 
+  // TODO - in the fully periodic case, thanks to translational invariance, the space of
+  // gradient fields can be mapped onto a basis of just 2 vectors (one per colvar)
+  // then solutions of the Poisson equation could be precomputed for those, and just
+  // combined, either on-the-fly with each new sample, or for the whole grid
+  // In the non-periodic case, the dimension of the problem can be high
+
+  clock_t t1 = clock();
   nr_linbcg_sym(divergence, data, tol, itmax, iter, err);
-  cvm::log ("Completed integration in " + cvm::to_str(iter) + " steps with"
+  cvm::log("Completed integration in " + cvm::to_str(iter) + " steps with"
      + " error " + cvm::to_str(err));
+  clock_t t2 = clock();
+  cvm::log("Completed integration in " +
+     cvm::to_str((double) (t2 - t1) * 1000. / (double) CLOCKS_PER_SEC) + " ms");
 
 /*  // Debug output for Poisson integration
   std::vector<cvm::real> backup (data);
@@ -349,11 +359,10 @@ void integrate_potential::get_local_grads(const colvar_grid_gradient &gradient, 
 
 
 /// Multiplication by sparse matrix representing Laplacian
+/// NOTE: Laplacian must be symmetric for solving with CG
 void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cvm::real> &LA)
 {
   size_t index, index2;
-  const cvm::real fx = 1.0 / widths[0];
-  const cvm::real fy = 1.0 / widths[1];
   const cvm::real ffx = 1.0 / (widths[0] * widths[0]);
   const cvm::real ffy = 1.0 / (widths[1] * widths[1]);
   const int h = nx[1];
@@ -364,112 +373,76 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
   int ym = -1;
   int yp =  1;
 
-  index = h + 1;
+  // NOTE on performance: this version is slightly sub-optimal because
+  // it contains two double loops on the core of the array (for x and y terms)
+  // The slightly faster version is in commit 0254cb5a2958cb2e135f268371c4b45fad34866b
+  // yet it is much uglier, and probably horrible to extend to dimension 3
+
+  // All x components except on x edges
+  index = h; // Skip first column
   for (int i=1; i<w-1; i++) {
+    for (int j=0; j<h; j++) { // full range of y
+      LA[index] = ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index]);
+      index++;
+    }
+  }
+  // Edges along x (x components only)
+  index = 0; // Follows left edge
+  index2 = h * (w - 1); // Follows right edge
+  if (periodic[0]) {
+    xm =  h * (w - 1);
+    xp =  h;
+    for (int j=0; j<h; j++) {
+      LA[index]  = ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index]);
+      LA[index2] = ffx * (A[index2 - xp] + A[index2 - xm] - 2.0 * A[index2]);
+      index++;
+      index2++;
+    }
+  } else {
+    xm = -h;
+    xp =  h;
+    for (int j=0; j<h; j++) {
+      // x gradient (+ y term of laplacian, calculated above)
+      LA[index]  = ffx * (A[index + xp] - A[index]);
+      LA[index2] = ffx * (A[index2 + xm] - A[index2]);
+      index++;
+      index2++;
+    }
+  }
+
+  // Now adding all y components
+  // All y components except on y edges
+  index = 1; // Skip first element (in first row)
+  for (int i=0; i<w; i++) { // full range of x
     for (int j=1; j<h-1; j++) {
-      LA[index] = ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index])
-                + ffy * (A[index + ym] + A[index + yp] - 2.0 * A[index]);
+      LA[index] += ffy * (A[index + ym] + A[index + yp] - 2.0 * A[index]);
       index++;
     }
     index += 2; // skip the edges and move to next column
   }
-
-  // then, edges depending on BC
-  if (periodic[0]) {
-    // i = 0 and i = w are periodic images
-    xm =  h * (w - 1);
-    xp =  h;
-    ym = -1;
-    yp =  1;
-    index = 1; // Follows left edge
-    index2 = h * (w - 1) + 1; // Follows right edge
-    for (int j=1; j<h-1; j++) {
-      LA[index] = ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index])
-                + ffy * (A[index + ym] + A[index + yp] - 2.0 * A[index]);
-      LA[index2] = ffx * (A[index2 - xp] + A[index2 - xm] - 2.0 * A[index2])
-                 + ffy * (A[index2 + ym] + A[index2 + yp] - 2.0 * A[index2]);
-      index++;
-      index2++;
-    }
-  } else {
-    xm = -h;
-    xp =  h;
-    ym = -1;
-    yp =  1;
-    index = 1; // Follows left edge
-    index2 = h * (w - 1) + 1; // Follows right edge
-    for (int j=1; j<h-1; j++) {
-      // x gradient beyond the edge is taken to be zero
-      // alternate: x gradient + y term of laplacian
-      LA[index] = ffx * (A[index + xp] - A[index])
-                + ffy * (A[index + ym] + A[index + yp] - 2.0 * A[index]);
-      LA[index2] = ffx * (A[index2 + xm] - A[index2])
-                 + ffy * (A[index2 + ym] + A[index2 + yp] - 2.0 * A[index2]);
-      index++;
-      index2++;
-    }
-  }
-
+  // Edges along y (y components only)
+  index = 0; // Follows bottom edge
+  index2 = h - 1; // Follows top edge
   if (periodic[1]) {
-    // j = 0 and j = h are periodic images
-    xm = -h;
-    xp =  h;
-    ym =  h - 1;
-    yp =  1;
-    index = h; // Follows bottom edge
-    index2 = 2 * h - 1; // Follows top edge
-    for (int i=1; i<w-1; i++) {
-      LA[index] = ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index])
-                + ffy * (A[index + ym] + A[index + yp] - 2.0 * A[index]);
-      LA[index2] = ffx * (A[index2 + xm] + A[index2 + xp] - 2.0 * A[index2])
-                 + ffy * (A[index2 - yp] + A[index2 - ym] - 2.0 * A[index2]);
+    ym = h - 1;
+    yp = 1;
+    for (int i=0; i<w; i++) {
+      LA[index]  += ffy * (A[index + ym] + A[index + yp] - 2.0 * A[index]);
+      LA[index2] += ffy * (A[index2 - yp] + A[index2 - ym] - 2.0 * A[index2]);
       index  += h;
       index2 += h;
     }
   } else {
-    xm = -h;
-    xp =  h;
-    ym =  -1;
-    yp =  1;
-    index = h; // Follows bottom edge
-    index2 = 2 * h - 1; // Follows top edge
-    for (int i=1; i<w-1; i++) {
-      // alternate: y gradient + x term of laplacian
-      LA[index] = ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index])
-                + ffy * (A[index + yp] - A[index]);
-      LA[index2] = ffx * (A[index2 + xm] + A[index2 + xp] - 2.0 * A[index2])
-                 + ffy * (A[index2 + ym] - A[index2]);
+    ym = -1;
+    yp = 1;
+    for (int i=0; i<w; i++) {
+      // y gradient (+ x term of laplacian, calculated above)
+      LA[index]  += ffy * (A[index + yp] - A[index]);
+      LA[index2] += ffy * (A[index2 + ym] - A[index2]);
       index  += h;
       index2 += h;
     }
   }
-
-  // 4 corners
-  xm = h;
-  xp = h * (w - 1);
-  ym = 1;
-  yp = h - 1;
-  cvm::real lx, ly;
-
-  index = 0;
-  lx = periodic[0] ? (A[xp] + A[xm] - 2.0 * A[0]) : (A[h] - A[0]);
-  ly = periodic[1] ? (A[yp] + A[ym] - 2.0 * A[0]) : (A[1] - A[0]);
-  LA[index] = ffx * lx + ffy * ly;
-
-  index = h-1;
-  lx = periodic[0] ? (A[index + xp] + A[index + xm] - 2.0 * A[index]) : (A[index + h] - A[index]);
-  ly = periodic[1] ? (A[index - ym] + A[index - yp] - 2.0 * A[index]) : (A[index - 1] - A[index]);
-  LA[index] = ffx * lx + ffy * ly;
-
-  index = h * (w-1);
-  lx = periodic[0] ? (A[index - xm] + A[index - xp] - 2.0 * A[index]) : (A[index - h] - A[index]);
-  ly = periodic[1] ? (A[index + yp] + A[index + ym] - 2.0 * A[index]) : (A[index + 1] - A[index]);
-  LA[index] = ffx * lx + ffy * ly;
-
-  index = h * w - 1;
-  lx = periodic[0] ? (A[index - xm] + A[index - xp] - 2.0 * A[index]) : (A[index - h] - A[index]);
-  ly = periodic[1] ? (A[index - ym] + A[index - yp] - 2.0 * A[index]) : (A[index - 1] - A[index]);
-  LA[index] = ffx * lx + ffy * ly;
 }
 
 

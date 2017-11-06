@@ -1,3 +1,3 @@
 #ifndef COLVARPROXY_VERSION
-#define COLVARPROXY_VERSION "2017-10-20_poisson"
+#define COLVARPROXY_VERSION "2017-11-03_poisson"
 #endif
