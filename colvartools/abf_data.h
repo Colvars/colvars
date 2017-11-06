@@ -90,5 +90,5 @@ inline bool ABFdata::wrap(int &pos, int i)
 }
 
 inline bool ABFdata::allowed(unsigned int offset) {
-    return count[offset] > MIN_SAMPLES;
+    return count[offset] >= MIN_SAMPLES;
 }
