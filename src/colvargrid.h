@@ -1594,7 +1594,7 @@ class integrate_potential : public colvar_grid_scalar
   integrate_potential (std::vector<colvar *> &colvars);
 
   /// \brief Calculate potential from divergence (in 2D); return number of steps
-  int integrate (const int itmax, const cvm::real tol, cvm::real & err);
+  int integrate (const int itmax, const cvm::real & tol, cvm::real & err);
 
   /// \brief Update matrix containing divergence and boundary conditions
   /// based on new gradient point value
@@ -1622,16 +1622,16 @@ class integrate_potential : public colvar_grid_scalar
 
   /// \brief Solve linear system based on CG, valid for symmetric matrices only
   void nr_linbcg_sym(const std::vector<cvm::real> &b, std::vector<cvm::real> &x,
-                     const cvm::real tol, const int itmax, int &iter, cvm::real &err);
+                     const cvm::real &tol, const int itmax, int &iter, cvm::real &err);
 
-  /// Norm(s) of a vector
-  cvm::real nr_snrm(const std::vector<cvm::real> &sx, const int itol);
+  /// l2 norm of a vector
+  cvm::real l2norm(const std::vector<cvm::real> &x);
 
   /// Multiplication by sparse matrix representing Lagrangian (or its transpose)
   void atimes(const std::vector<cvm::real> &x, std::vector<cvm::real> &r);
 
-  /// Inversion of preconditioner matrix
-  void asolve(const std::vector<cvm::real> &b, std::vector<cvm::real> &x, const int itrnsp);
+//   /// Inversion of preconditioner matrix
+//   void asolve(const std::vector<cvm::real> &b, std::vector<cvm::real> &x);
 };
 
 #endif

@@ -205,20 +205,22 @@ integrate_potential::integrate_potential(std::vector<colvar *> &colvars)
   // hence PMF grid is wider than gradient grid if non-PBC
 
   divergence.resize(nt);
-
-//   // Compute inverse of Laplacian diagonal for Jacobi preconditioning
-//   inv_lap_diag.resize(nt);
-//   std::vector<cvm::real> id(nt), lap_col(nt);
-//   for (int i = 0; i < nt; i++) {
-//     id[i] = 1.;
-//     atimes(id, lap_col);
-//     id[i] = 0.;
-//     inv_lap_diag[i] = 1. / lap_col[i];
-//   }
+/*
+  // Compute inverse of Laplacian diagonal for Jacobi preconditioning
+  // For now all code related to preconditioning is commented out
+  // until a method better than Jacobi is implemented
+  inv_lap_diag.resize(nt);
+  std::vector<cvm::real> id(nt), lap_col(nt);
+  for (int i = 0; i < nt; i++) {
+    id[i] = 1.;
+    atimes(id, lap_col);
+    id[i] = 0.;
+    inv_lap_diag[i] = 1. / lap_col[i];
+  }*/
 }
 
 
-int integrate_potential::integrate(const int itmax, const cvm::real tol, cvm::real & err)
+int integrate_potential::integrate(const int itmax, const cvm::real &tol, cvm::real & err)
 {
   int iter;
 
@@ -228,15 +230,15 @@ int integrate_potential::integrate(const int itmax, const cvm::real tol, cvm::re
   // combined, either on-the-fly with each new sample, or for the whole grid
   // In the non-periodic case, the dimension of the problem can be high
 
-  clock_t t1 = clock();
+//   clock_t t1 = clock();
   nr_linbcg_sym(divergence, data, tol, itmax, iter, err);
   cvm::log("Completed integration in " + cvm::to_str(iter) + " steps with"
      + " error " + cvm::to_str(err));
-  clock_t t2 = clock();
-  cvm::log("Completed integration in " +
-     cvm::to_str((double) (t2 - t1) * 1000. / (double) CLOCKS_PER_SEC) + " ms");
-
-/*  // Debug output for Poisson integration
+//   clock_t t2 = clock();
+//   cvm::log("Completed integration in " +
+//      cvm::to_str((double) (t2 - t1) * 1000. / (double) CLOCKS_PER_SEC) + " ms");
+/*
+  // Debug output for Poisson integration
   std::vector<cvm::real> backup (data);
   std::ofstream p("pmf.dat");
   add_constant(-1.0 * minimum_value());
@@ -249,8 +251,8 @@ int integrate_potential::integrate(const int itmax, const cvm::real tol, cvm::re
   data = divergence;
   std::ofstream d("divergence.dat");
   write_multicol(d);
-  data = backup;
-
+  data = backup;*/
+/*
   if (nx[0]*nx[1] <= 100) {
     // Write explicit Laplacian operator
     std::ofstream lap_out("lap_op.dat");
@@ -280,7 +282,6 @@ void integrate_potential::set_div(const colvar_grid_gradient &gradient)
 void integrate_potential::update_div(const colvar_grid_gradient &gradient, const std::vector<int> &ix0)
 {
   std::vector<int> ix(ix0);
-  size_t il;
 
   // If not periodic, expanded grid ensures that neighbors of ix0 are valid grid points
   update_div_local(gradient, ix);
@@ -295,13 +296,14 @@ void integrate_potential::update_div(const colvar_grid_gradient &gradient, const
 
 void integrate_potential::update_div_local(const colvar_grid_gradient &gradient, const std::vector<int> &ix0)
 {
-  std::vector<int> ix(2);
   const int linear_index = address(ix0);
 
   get_local_grads(gradient, ix0);
   // Special case of corners: there is only one value of the gradient to average
   cvm::real fact_corner = 0.5;
-  if (!periodic[0] && !periodic[1] && (ix0[0] == 0 || ix0[0] == nx[0]-1) && (ix0[1] == 0 || ix0[1] == nx[1]-1)) {
+  if (!periodic[0] && !periodic[1] &&
+      (ix0[0] == 0 || ix0[0] == nx[0]-1) &&
+      (ix0[1] == 0 || ix0[1] == nx[1]-1)) {
     fact_corner = 1.0;
   }
   divergence[linear_index] = (g10[0]-g00[0] + g11[0]-g01[0]) * fact_corner / widths[0]
@@ -362,111 +364,257 @@ void integrate_potential::get_local_grads(const colvar_grid_gradient &gradient, 
 /// NOTE: Laplacian must be symmetric for solving with CG
 void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cvm::real> &LA)
 {
-  size_t index, index2;
-  const cvm::real ffx = 1.0 / (widths[0] * widths[0]);
-  const cvm::real ffy = 1.0 / (widths[1] * widths[1]);
-  const int h = nx[1];
-  const int w = nx[0];
-  // offsets for 4 reference points of the Laplacian stencil
-  int xm = -h;
-  int xp =  h;
-  int ym = -1;
-  int yp =  1;
+  if (nd == 2) {
+    // DIMENSION 2
 
-  // NOTE on performance: this version is slightly sub-optimal because
-  // it contains two double loops on the core of the array (for x and y terms)
-  // The slightly faster version is in commit 0254cb5a2958cb2e135f268371c4b45fad34866b
-  // yet it is much uglier, and probably horrible to extend to dimension 3
+    size_t index, index2;
+    const cvm::real ffx = 1.0 / (widths[0] * widths[0]);
+    const cvm::real ffy = 1.0 / (widths[1] * widths[1]);
+    const int h = nx[1];
+    const int w = nx[0];
+    // offsets for 4 reference points of the Laplacian stencil
+    int xm = -h;
+    int xp =  h;
+    int ym = -1;
+    int yp =  1;
 
-  // All x components except on x edges
-  index = h; // Skip first column
-  for (int i=1; i<w-1; i++) {
-    for (int j=0; j<h; j++) { // full range of y
-      LA[index] = ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index]);
-      index++;
-    }
-  }
-  // Edges along x (x components only)
-  index = 0; // Follows left edge
-  index2 = h * (w - 1); // Follows right edge
-  if (periodic[0]) {
-    xm =  h * (w - 1);
-    xp =  h;
-    for (int j=0; j<h; j++) {
-      LA[index]  = ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index]);
-      LA[index2] = ffx * (A[index2 - xp] + A[index2 - xm] - 2.0 * A[index2]);
-      index++;
-      index2++;
-    }
-  } else {
-    xm = -h;
-    xp =  h;
-    for (int j=0; j<h; j++) {
-      // x gradient (+ y term of laplacian, calculated above)
-      LA[index]  = ffx * (A[index + xp] - A[index]);
-      LA[index2] = ffx * (A[index2 + xm] - A[index2]);
-      index++;
-      index2++;
-    }
-  }
+    // NOTE on performance: this version is slightly sub-optimal because
+    // it contains two double loops on the core of the array (for x and y terms)
+    // The slightly faster version is in commit 0254cb5a2958cb2e135f268371c4b45fad34866b
+    // yet it is much uglier, and probably horrible to extend to dimension 3
+    // All terms in the matrix are assigned (=) during the x loops, then updated (+=)
+    // with the y (and z) contributions
 
-  // Now adding all y components
-  // All y components except on y edges
-  index = 1; // Skip first element (in first row)
-  for (int i=0; i<w; i++) { // full range of x
-    for (int j=1; j<h-1; j++) {
-      LA[index] += ffy * (A[index + ym] + A[index + yp] - 2.0 * A[index]);
-      index++;
+
+    // All x components except on x edges
+    index = h; // Skip first column
+    for (int i=1; i<w-1; i++) {
+      for (int j=0; j<h; j++) { // full range of y
+        LA[index] = ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index]);
+        index++;
+      }
     }
-    index += 2; // skip the edges and move to next column
-  }
-  // Edges along y (y components only)
-  index = 0; // Follows bottom edge
-  index2 = h - 1; // Follows top edge
-  if (periodic[1]) {
-    ym = h - 1;
-    yp = 1;
-    for (int i=0; i<w; i++) {
-      LA[index]  += ffy * (A[index + ym] + A[index + yp] - 2.0 * A[index]);
-      LA[index2] += ffy * (A[index2 - yp] + A[index2 - ym] - 2.0 * A[index2]);
-      index  += h;
-      index2 += h;
+    // Edges along x (x components only)
+    index = 0; // Follows left edge
+    index2 = h * (w - 1); // Follows right edge
+    if (periodic[0]) {
+      xm =  h * (w - 1);
+      xp =  h;
+      for (int j=0; j<h; j++) {
+        LA[index]  = ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index]);
+        LA[index2] = ffx * (A[index2 - xp] + A[index2 - xm] - 2.0 * A[index2]);
+        index++;
+        index2++;
+      }
+    } else {
+      xm = -h;
+      xp =  h;
+      for (int j=0; j<h; j++) {
+        // x gradient (+ y term of laplacian, calculated above)
+        LA[index]  = ffx * (A[index + xp] - A[index]);
+        LA[index2] = ffx * (A[index2 + xm] - A[index2]);
+        index++;
+        index2++;
+      }
     }
-  } else {
-    ym = -1;
-    yp = 1;
-    for (int i=0; i<w; i++) {
-      // y gradient (+ x term of laplacian, calculated above)
-      LA[index]  += ffy * (A[index + yp] - A[index]);
-      LA[index2] += ffy * (A[index2 + ym] - A[index2]);
-      index  += h;
-      index2 += h;
+
+    // Now adding all y components
+    // All y components except on y edges
+    index = 1; // Skip first element (in first row)
+    for (int i=0; i<w; i++) { // full range of x
+      for (int j=1; j<h-1; j++) {
+        LA[index] += ffy * (A[index + ym] + A[index + yp] - 2.0 * A[index]);
+        index++;
+      }
+      index += 2; // skip the edges and move to next column
+    }
+    // Edges along y (y components only)
+    index = 0; // Follows bottom edge
+    index2 = h - 1; // Follows top edge
+    if (periodic[1]) {
+      ym = h - 1;
+      yp = 1;
+      for (int i=0; i<w; i++) {
+        LA[index]  += ffy * (A[index + ym] + A[index + yp] - 2.0 * A[index]);
+        LA[index2] += ffy * (A[index2 - yp] + A[index2 - ym] - 2.0 * A[index2]);
+        index  += h;
+        index2 += h;
+      }
+    } else {
+      ym = -1;
+      yp = 1;
+      for (int i=0; i<w; i++) {
+        // y gradient (+ x term of laplacian, calculated above)
+        LA[index]  += ffy * (A[index + yp] - A[index]);
+        LA[index2] += ffy * (A[index2 + ym] - A[index2]);
+        index  += h;
+        index2 += h;
+      }
+    }
+
+
+  } else if (nd == 3) {
+    // DIMENSION 3
+
+    size_t index, index2;
+    const cvm::real ffx = 1.0 / (widths[0] * widths[0]);
+    const cvm::real ffy = 1.0 / (widths[1] * widths[1]);
+    const cvm::real ffz = 1.0 / (widths[2] * widths[2]);
+    const int h = nx[2]; // height
+    const int d = nx[1]; // depth
+    const int w = nx[0]; // width
+    // offsets for 6 reference points of the Laplacian stencil
+    int xm = -d * h;
+    int xp =  d * h;
+    int ym = -h;
+    int yp =  h;
+    int zm = -1;
+    int zp =  1;
+
+    // All x components except on x edges
+    index = d * h; // Skip left slab
+    for (int i=1; i<w-1; i++) {
+      for (int j=0; j<d; j++) { // full range of y
+        for (int k=0; k<h; k++) { // full range of z
+          LA[index] = ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index]);
+          index++;
+        }
+      }
+    }
+    // Edges along x (x components only)
+    index = 0; // Follows left slab
+    index2 = d * h * (w - 1); // Follows right slab
+    if (periodic[0]) {
+      xm =  d * h * (w - 1);
+      xp =  d * h;
+      for (int j=0; j<d; j++) {
+        for (int k=0; k<h; k++) {
+          LA[index]  = ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index]);
+          LA[index2] = ffx * (A[index2 - xp] + A[index2 - xm] - 2.0 * A[index2]);
+          index++;
+          index2++;
+        }
+      }
+    } else {
+      xm = -d * h;
+      xp =  d * h;
+      for (int j=1; j<d-1; j++) {
+        for (int k=0; k<h; k++) {
+          // x gradient (+ y, z terms of laplacian, calculated below)
+          LA[index]  = ffx * (A[index + xp] - A[index]);
+          LA[index2] = ffx * (A[index2 + xm] - A[index2]);
+          index++;
+          index2++;
+        }
+      }
+    }
+
+    // Now adding all y components
+    // All y components except on y edges
+    index = h; // Skip first column (in front slab)
+    for (int i=0; i<w; i++) { // full range of x
+      for (int j=1; j<d-1; j++) {
+        for (int k=0; k<h; k++) {
+          LA[index] += ffy * (A[index + ym] + A[index + yp] - 2.0 * A[index]);
+          index++;
+        }
+      }
+      index += 2 * h; // skip columns in front and back slabs
+    }
+    // Edges along y (y components only)
+    index = 0; // Follows front slab
+    index2 = h * (d - 1); // Follows back slab
+    if (periodic[1]) {
+      ym = h - 1;
+      yp = 1;
+      for (int i=0; i<w; i++) {
+        for (int k=0; k<h; k++) {
+          LA[index]  += ffy * (A[index + ym] + A[index + yp] - 2.0 * A[index]);
+          LA[index2] += ffy * (A[index2 - yp] + A[index2 - ym] - 2.0 * A[index2]);
+          index++;
+          index2++;
+        }
+        index  += h * (d - 1);
+        index2 += h * (d - 1);
+      }
+    } else {
+      ym = -h;
+      yp =  h;
+      for (int i=0; i<w; i++) {
+        for (int k=0; k<h; k++) {
+          // y gradient (+ x, z terms of laplacian, calculated above and below)
+          LA[index]  += ffy * (A[index + yp] - A[index]);
+          LA[index2] += ffy * (A[index2 + ym] - A[index2]);
+          index++;
+          index2++;
+        }
+        index  += h * (d - 1);
+        index2 += h * (d - 1);
+      }
+    }
+
+    // Now adding all z components
+    // All z components except on z edges
+    index = 1; // Skip first element (in bottom slab)
+    for (int i=0; i<w; i++) { // full range of x
+      for (int j=0; j<d; j++) { // full range of y
+        for (int k=1; k<h-1; k++) {
+          LA[index] += ffz * (A[index + zm] + A[index + zp] - 2.0 * A[index]);
+          index++;
+        }
+        index += 2; // skip edge slabs
+      }
+    }
+    // Edges along z (z components onlz)
+    index = 0; // Follows bottom slab
+    index2 = h - 1; // Follows top slab
+    if (periodic[2]) {
+      zm = h - 1;
+      zp = 1;
+      for (int i=0; i<w; i++) {
+        for (int j=0; j<d; j++) {
+          LA[index]  += ffz * (A[index + zm] + A[index + zp] - 2.0 * A[index]);
+          LA[index2] += ffz * (A[index2 - zp] + A[index2 - zm] - 2.0 * A[index2]);
+          index  += h;
+          index2 += h;
+        }
+      }
+    } else {
+      zm = -1;
+      zp = 1;
+      for (int i=0; i<w; i++) {
+        for (int j=0; j<d; j++) {
+          // z gradient (+ x, y terms of laplacian, calculated above)
+          LA[index]  += ffz * (A[index + zp] - A[index]);
+          LA[index2] += ffz * (A[index2 + zm] - A[index2]);
+          index  += h;
+          index2 += h;
+        }
+      }
     }
   }
 }
 
-
+/*
 /// Inversion of preconditioner matrix (e.g. diagonal of the Laplacian)
-void integrate_potential::asolve(const std::vector<cvm::real> &b, std::vector<cvm::real> &x, const int itrnsp)
+void integrate_potential::asolve(const std::vector<cvm::real> &b, std::vector<cvm::real> &x)
 {
   for (size_t i=0; i<nt; i++) {
-    // x[i] = b[i] * inv_lap_diag[i]; // Jacobi preconditioner - no benefit in tests
-    x[i] = b[i];
+    x[i] = b[i] * inv_lap_diag[i]; // Jacobi preconditioner - no benefit in tests
   }
   return;
-}
+}*/
 
 
 // b : RHS of equation
 // x : initial guess for the solution; output is solution
 // itol : convergence criterion
-void integrate_potential::nr_linbcg_sym(const std::vector<cvm::real> &b, std::vector<cvm::real> &x, const cvm::real tol,
+void integrate_potential::nr_linbcg_sym(const std::vector<cvm::real> &b, std::vector<cvm::real> &x, const cvm::real &tol,
   const int itmax, int &iter, cvm::real &err)
 {
-  cvm::real ak,akden,bk,bkden=1.0,bknum,bnrm,dxnrm,xnrm,zm1nrm,znrm;
+  cvm::real ak,akden,bk,bkden=1.0,bknum,bnrm;
   const cvm::real EPS=1.0e-14;
   int j;
-  const int itol = 1; // Use L2 norm as target
   std::vector<cvm::real> p(nt), r(nt), z(nt);
 
   iter=0;
@@ -474,24 +622,24 @@ void integrate_potential::nr_linbcg_sym(const std::vector<cvm::real> &b, std::ve
   for (j=0;j<nt;j++) {
     r[j]=b[j]-r[j];
   }
-  bnrm=nr_snrm(b,itol);
+  bnrm=l2norm(b);
   if (bnrm < EPS) {
-    return; // Target is zero
+    return; // Target is zero, will break relative error calc
   }
-  asolve(r,z,0);
+//   asolve(r,z); // precon
   while (iter < itmax) {
     ++iter;
     for (bknum=0.0,j=0;j<nt;j++) {
-      bknum += z[j]*r[j];
+      bknum += r[j]*r[j];  // precon: z[j]*r[j]
     }
     if (iter == 1) {
       for (j=0;j<nt;j++) {
-        p[j]  = z[j];
+        p[j] = r[j];  // precon: p[j] = z[j]
       }
     } else {
       bk=bknum/bkden;
       for (j=0;j<nt;j++) {
-        p[j]  = bk*p[j] + z[j];
+        p[j] = bk*p[j] + r[j];  // precon:  bk*p[j] + z[j]
       }
     }
     bkden = bknum;
@@ -504,29 +652,19 @@ void integrate_potential::nr_linbcg_sym(const std::vector<cvm::real> &b, std::ve
       x[j] += ak*p[j];
       r[j] -= ak*z[j];
     }
-    asolve(r,z,0);
-    err = nr_snrm(r,itol)/bnrm;
-//  std::cout << "iter=" << std::setw(4) << iter+1 << std::setw(12) << err << std::endl;
+//     asolve(r,z);  // precon
+    err = l2norm(r)/bnrm;
+ std::cout << "iter=" << std::setw(4) << iter+1 << std::setw(12) << err << std::endl;
     if (err <= tol)
       break;
   }
 }
 
-cvm::real integrate_potential::nr_snrm(const std::vector<cvm::real> &sx, const int itol)
+cvm::real integrate_potential::l2norm(const std::vector<cvm::real> &x)
 {
-  int i,isamax;
-  cvm::real ans;
-
-  int n=sx.size();
-  if (itol <= 3) {
-    ans = 0.0;
-    for (i=0;i<n;i++) ans += sx[i]*sx[i];
-    return ::sqrt(ans);
-  } else {
-    isamax=0;
-    for (i=0;i<n;i++) {
-      if (::fabs(sx[i]) > ::fabs(sx[isamax])) isamax=i;
-    }
-    return ::fabs(sx[isamax]);
-  }
+  size_t i;
+  cvm::real sum = 0.0;
+  for (i=0;i<x.size();i++)
+    sum += x[i]*x[i];
+  return sqrt(sum);
 }
