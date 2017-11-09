@@ -33,8 +33,10 @@ $colvars_defines = " -DVMDCOLVARS";
                     'colvarparse.C',
                     'colvarproxy.C',
                     'colvarproxy_replicas.C',
+                    'colvarproxy_tcl.C',
                     'colvarproxy_vmd.C',
                     'colvarscript.C',
+                    'colvarscript_commands.C',
                     'colvartypes.C',
                     'colvarvalue.C');
 @colvars_h    =    ('colvar_UIestimator.h',
@@ -54,8 +56,10 @@ $colvars_defines = " -DVMDCOLVARS";
                     'colvarmodule.h',
                     'colvarparse.h',
                     'colvarproxy.h',
+                    'colvarproxy_tcl.h',
                     'colvarproxy_vmd.h',
                     'colvarscript.h',
-                    'colvars_version.h',
+                    'colvarscript_commands.h',
+                    'colvarscript_commands_util.h',
                     'colvartypes.h',
                     'colvarvalue.h');

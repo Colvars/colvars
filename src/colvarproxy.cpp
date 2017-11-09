@@ -20,11 +20,6 @@
 #include <omp.h>
 #endif
 
-#if defined(NAMD_TCL) || defined(VMDTCL)
-#define COLVARS_TCL
-#include <tcl.h>
-#endif
-
 #include "colvarmodule.h"
 #include "colvarproxy.h"
 #include "colvarscript.h"

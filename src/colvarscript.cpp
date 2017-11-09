@@ -10,12 +10,16 @@
 #include <cstdlib>
 #include <cstring>
 
-#define COLVARSCRIPT_CPP
-#include "colvarscript.h"
-#undef COLVARSCRIPT_CPP
+#if defined(NAMD_TCL) || defined(VMDTCL)
+#define COLVARS_TCL
+#include <tcl.h>
+#endif
 
 #include "colvarproxy.h"
 #include "colvardeps.h"
+#include "colvarscript.h"
+#include "colvarscript_commands.h"
+
 
 
 colvarscript::colvarscript(colvarproxy *p)
@@ -23,46 +27,92 @@ colvarscript::colvarscript(colvarproxy *p)
    colvars(p->colvars),
    proxy_error(0)
 {
+  comm_names = NULL;
+  init_commands();
+}
+
+
+colvarscript::~colvarscript()
+{
+  if (comm_names) {
+    delete [] comm_names;
+    comm_names = NULL;
+  }
+}
+
+
+int colvarscript::init_commands()
+{
   comm_help.resize(colvarscript::cv_n_commands);
+  comm_n_args_min.resize(colvarscript::cv_n_commands);
+  comm_n_args_max.resize(colvarscript::cv_n_commands);
+  comm_arghelp.resize(colvarscript::cv_n_commands);
   comm_fns.resize(colvarscript::cv_n_commands);
-#define COLVARSCRIPT_INIT_FN
-#include "colvarscript.h"
-#undef COLVARSCRIPT_INIT_FN
+
+  if (comm_names) {
+    delete [] comm_names;
+    comm_names = NULL;
+  }
+  comm_names = new char const * [colvarscript::cv_n_commands];
+
+#undef COLVARSCRIPT_COMMANDS_H // disable include guard
+#if defined(CVSCRIPT)
+#undef CVSCRIPT // disable default macro
+#endif
+#define CVSCRIPT_COMM_INIT(COMM,HELP,N_ARGS_MIN,N_ARGS_MAX,ARGS) {      \
+    comm_str_map[#COMM] = COMM;                                         \
+    comm_names[COMM] = #COMM;                                           \
+    comm_help[COMM] = HELP;                                             \
+    comm_n_args_min[COMM] = N_ARGS_MIN;                                 \
+    comm_n_args_max[COMM] = N_ARGS_MAX;                                 \
+    comm_arghelp[COMM] = ARGS;                                          \
+    comm_fns[COMM] = &(CVSCRIPT_COMM_FNAME(COMM));                      \
+  }
+#define CVSCRIPT(COMM,HELP,N_ARGS_MIN,N_ARGS_MAX,ARGS,FN_BODY)  \
+  CVSCRIPT_COMM_INIT(COMM,HELP,N_ARGS_MIN,N_ARGS_MAX,ARGS)
+
+#include "colvarscript_commands.h"
+
+#undef CVSCRIPT_COMM_INIT
+#undef CVSCRIPT
+
+  return COLVARS_OK;
 }
 
 
-extern "C" {
-
-  // Generic hooks; NAMD and VMD have Tcl-specific versions in the respective proxies
-
-  int run_colvarscript_command(int objc, unsigned char *const objv[])
-  {
-    colvarproxy *cvp = cvm::proxy;
-    if (!cvp) {
-      return -1;
+std::string colvarscript::get_command_help(char const *cmd)
+{
+  if (comm_str_map.count(cmd) > 0) {
+    colvarscript::command const c = comm_str_map[std::string(cmd)];
+    std::string result(comm_help[c]+"\n");
+    for (size_t i = 0; i < comm_n_args_max[c]; i++) {
+      result += comm_arghelp[c][i]+"\n";
     }
-    if (!cvp->script) {
-      cvm::error("Called run_colvarscript_command without a script object initialized.\n");
-      return -1;
-    }
-    return cvp->script->run(objc, objv);
+    return result;
   }
 
-  const char * get_colvarscript_result()
-  {
-    colvarproxy *cvp = cvm::proxy;
-    if (!cvp->script) {
-      cvm::error("Called run_colvarscript_command without a script object initialized.\n");
-      return "";
-    }
-    return cvp->script->result.c_str();
-  }
+  cvm::error("Error: command "+std::string(cmd)+
+             " is not implemented.\n", INPUT_ERROR);
+  return std::string("");
 }
 
 
-/// Run method based on given arguments
+// int (*colvarscript::get_command(colvarscript::command c))(
+//    void *, int, unsigned char * const *)
+// {
+//   return comm_fns[c];
+// }
+
+
 int colvarscript::run(int objc, unsigned char *const objv[])
 {
+  colvarscript *script = this;
+  colvarproxy *proxy = cvm::main()->proxy;
+#if defined(COLVARS_TCL)
+  Tcl_Interp *interp =
+    reinterpret_cast<Tcl_Interp *>(proxy->get_tcl_interp());
+#endif
+
   result.clear();
 
   if (cvm::debug()) {
@@ -73,7 +123,7 @@ int colvarscript::run(int objc, unsigned char *const objv[])
   }
 
   if (objc < 2) {
-    set_str_result("No commands given: use \"cv help\" "
+    set_result_str("No commands given: use \"cv help\" "
                    "for a list of commands.");
     return COLVARSCRIPT_ERROR;
   }
@@ -88,6 +138,16 @@ int colvarscript::run(int objc, unsigned char *const objv[])
     error_code |= (*(comm_fns[comm_str_map[cmd_key]]))(
                       reinterpret_cast<void *>(this), objc, objv);
     return error_code;
+  }
+
+  if (cmd == "multiscript") {
+#if defined(COLVARS_TCL)
+    Tcl_DeleteCommand(interp, "cv");
+    Tcl_CreateObjCommand(interp, "cv", tcl_run_colvarscript_command,
+                         (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
+    cvm::log("Switching to multi-language scripting interface.");
+#endif
+    return COLVARS_OK;
   }
 
   if (cmd == "colvar") {
@@ -675,3 +735,423 @@ Accessing biases:\n\
 
   return buf;
 }
+
+
+int colvarscript::unsupported_op()
+{
+  return cvm::error("Error: unsupported script operation.\n",
+                    COLVARS_NOT_IMPLEMENTED);
+}
+
+
+int colvarscript::set_result_obj_external(unsigned char *obj)
+{
+  if (obj) {
+    *(modify_obj_result()) = obj;
+    *(modify_obj_result_size()) = -1;
+    return COLVARS_OK;
+  } else {
+    return cvm::error("Error: in setting script result to object.\n",
+                      COLVARSCRIPT_ERROR);
+  }
+}
+
+
+int colvarscript::set_result_str(std::string const &s)
+{
+  result = s;
+  return COLVARS_OK;
+}
+
+
+int colvarscript::clear_str_result()
+{
+  result.clear();
+  return COLVARS_OK;
+}
+
+
+// TODO After C++11 is the baseline, many of the following template
+// specializations can be condensed via std::is_same
+
+template<typename T> int colvarscript::set_result_text(T const &x,
+                                                       unsigned char *obj)
+{
+  std::string const x_str = cvm::to_str(x, cvm::cv_width, cvm::cv_prec);
+  if (obj) {
+    char *obj_str = reinterpret_cast<char *>(obj);
+    strcpy(obj_str, x_str.c_str());
+  } else {
+    set_result_str(x_str);
+  }
+  return COLVARS_OK;
+}
+
+
+template<typename T>
+int colvarscript::set_obj_from_variable(T const &x, unsigned char *obj)
+{
+  if (obj) {
+    T *y = reinterpret_cast<T *>(obj);
+    *y = x;
+    return COLVARS_OK;
+  }
+  return unsupported_op();
+}
+
+
+template<typename T>
+int colvarscript::set_array_from_vector(std::vector<T> const &x,
+                                        unsigned char *obj)
+{
+  if (obj) {
+    T *out = reinterpret_cast<T *>(obj);
+    for (size_t i = 0; i < x.size(); i++) {
+      out[i] = x[i];
+    }
+    return COLVARS_OK;
+  }
+  return unsupported_op();
+}
+
+
+template<>
+int colvarscript::set_array_from_vector(std::vector<cvm::real> const &x,
+                                        unsigned char *obj)
+{
+  if (obj) {
+    double *out = reinterpret_cast<double *>(obj);
+    for (size_t i = 0; i < x.size(); i++) {
+      out[i] = x[i];
+    }
+    return COLVARS_OK;
+  }
+  return unsupported_op();
+}
+
+
+template<>
+int colvarscript::set_array_from_vector(std::vector<cvm::rvector> const &x,
+                                        unsigned char *obj)
+{
+  if (obj) {
+    double *out = reinterpret_cast<double *>(obj);
+    for (size_t i = 0; i < x.size(); i++) {
+      out[3*i+0] = x[i].x;
+      out[3*i+1] = x[i].y;
+      out[3*i+2] = x[i].z;
+    }
+    return COLVARS_OK;
+  }
+  return unsupported_op();
+}
+
+
+template<typename T>
+int colvarscript::set_tcl_obj_from_variable(T const &x, unsigned char *obj)
+{
+  // Initializing Tcl objects require specific API calls
+  return unsupported_op();
+}
+
+
+template<>
+int colvarscript::set_tcl_obj_from_variable(int const &x,
+                                            unsigned char *obj)
+{
+#if defined(COLVARS_TCL)
+  colvarproxy *proxy = cvm::main()->proxy;
+  unsigned char *tcl_x =
+    reinterpret_cast<unsigned char *>(proxy->tcl_set_int(x, obj));
+  return set_result_obj_external(tcl_x);
+#else
+  return unsupported_op();
+#endif
+}
+
+
+template<>
+int colvarscript::set_tcl_obj_from_variable(cvm::real const &x,
+                                            unsigned char *obj)
+{
+#if defined(COLVARS_TCL)
+  colvarproxy *proxy = cvm::main()->proxy;
+  unsigned char *tcl_x =
+    reinterpret_cast<unsigned char *>(proxy->tcl_set_real(x, obj));
+  return set_result_obj_external(tcl_x);
+#else
+  return unsupported_op();
+#endif
+}
+
+
+template<typename T>
+int colvarscript::set_tcl_obj_from_vector(std::vector<T> const &x,
+                                          unsigned char *obj)
+{
+  // Initializing Tcl objects require specific API calls
+  return unsupported_op();
+}
+
+
+template<>
+int colvarscript::set_tcl_obj_from_vector(std::vector<int> const &x,
+                                          unsigned char *obj)
+{
+#if defined(COLVARS_TCL)
+  if (!obj) {
+    colvarproxy *proxy = cvm::main()->proxy;
+    unsigned char *tcl_x =
+      reinterpret_cast<unsigned char *>(proxy->tcl_list_from_int_vec(x));
+    return set_result_obj_external(tcl_x);
+  } else {
+    return unsupported_op();
+  }
+#else
+  return unsupported_op();
+#endif
+}
+
+
+template<>
+int colvarscript::set_tcl_obj_from_vector(std::vector<cvm::real> const &x,
+                                          unsigned char *obj)
+{
+#if defined(COLVARS_TCL)
+  if (!obj) {
+    colvarproxy *proxy = cvm::main()->proxy;
+    unsigned char *tcl_x =
+      reinterpret_cast<unsigned char *>(proxy->tcl_list_from_real_vec(x));
+    return set_result_obj_external(tcl_x);
+  } else {
+    return unsupported_op();
+  }
+#else
+  return unsupported_op();
+#endif
+}
+
+
+template<>
+int colvarscript::set_tcl_obj_from_vector(std::vector<cvm::rvector> const &x,
+                                          unsigned char *obj)
+{
+#if defined(COLVARS_TCL)
+  if (!obj) {
+    colvarproxy *proxy = cvm::main()->proxy;
+    unsigned char *tcl_x =
+      reinterpret_cast<unsigned char *>(proxy->tcl_list_from_rvector_vec(x));
+    return set_result_obj_external(tcl_x);
+  } else {
+    return unsupported_op();
+  }
+#else
+  return unsupported_op();
+#endif
+}
+
+
+int colvarscript::set_result_int(int x, unsigned char *obj)
+{
+  switch (interp_type_list.back()) {
+
+  case cv_text:
+    return set_result_text<int>(x, obj);
+    break;
+
+  case cv_nointerp:
+    return set_obj_from_variable<int>(x, obj);
+    break;
+
+  case cv_tcl:
+    return set_tcl_obj_from_variable<int>(x, obj);
+    break;
+
+  default:
+    return unsupported_op();
+    break;
+  }
+
+  return COLVARS_OK;
+}
+
+
+int colvarscript::set_result_real(cvm::real x, unsigned char *obj)
+{
+  switch (interp_type_list.back()) {
+
+  case cv_text:
+    return set_result_text<cvm::real>(x, obj);
+    break;
+
+  case cv_nointerp:
+    return set_obj_from_variable<cvm::real>(x, obj);
+    break;
+
+  case cv_tcl:
+    return set_tcl_obj_from_variable<cvm::real>(x, obj);
+    break;
+
+  default:
+    return unsupported_op();
+    break;
+  }
+
+  return COLVARS_OK;
+}
+
+
+int colvarscript::set_result_int_vec(std::vector<int> const &x,
+                                     unsigned char *obj)
+{
+  switch (interp_type_list.back()) {
+
+  case cv_text:
+    return set_result_text< std::vector<int> >(x, obj);
+    break;
+
+  case cv_nointerp:
+    return set_array_from_vector<int>(x, obj);
+    break;
+
+  case cv_tcl:
+    return set_tcl_obj_from_vector<int>(x, obj);
+    break;
+
+  default:
+    return unsupported_op();
+    break;
+  }
+
+  return COLVARS_OK;
+}
+
+
+int colvarscript::set_result_real_vec(std::vector<cvm::real> const &x,
+                                      unsigned char *obj)
+{
+  switch (interp_type_list.back()) {
+
+  case cv_text:
+    return set_result_text< std::vector<cvm::real> >(x, obj);
+    break;
+
+  case cv_nointerp:
+    return set_array_from_vector<cvm::real>(x, obj);
+    break;
+
+  case cv_tcl:
+    return set_tcl_obj_from_vector<cvm::real>(x, obj);
+    break;
+
+  default:
+    return unsupported_op();
+    break;
+  }
+
+  return COLVARS_OK;
+}
+
+
+int colvarscript::set_result_rvector_vec(std::vector<cvm::rvector> const &x,
+                                         unsigned char *obj)
+{
+  switch (interp_type_list.back()) {
+
+  case cv_text:
+    return set_result_text< std::vector<cvm::rvector> >(x, obj);
+    break;
+
+  case cv_nointerp:
+    return set_array_from_vector<cvm::rvector>(x, obj);
+    break;
+
+  case cv_tcl:
+    return set_tcl_obj_from_vector<cvm::rvector>(x, obj);
+    break;
+
+  default:
+    return unsupported_op();
+    break;
+  }
+
+  return COLVARS_OK;
+}
+
+
+/// Run the script API via text interface
+extern "C"
+int run_colvarscript_command(int objc, unsigned char *const objv[])
+{
+  colvarmodule *cv = cvm::main();
+  colvarscript *script = cv ? cv->proxy->script : NULL;
+  if (!script) {
+    cvm::error("Called run_colvarscript_command without a script object.\n",
+               BUG_ERROR);
+    return -1;
+  }
+  script->enter_interp_call(colvarscript::cv_text);
+  int retval = script->run(objc, objv);
+  script->exit_interp_call();
+  return retval;
+}
+
+
+/// Get the string result of the call to run_colvarscript_command()
+extern "C"
+const char * get_colvarscript_result()
+{
+  colvarscript *script = colvarscript_obj();
+  if (!script) {
+    cvm::error("Called get_colvarscript_result without a script object.\n");
+    return NULL;
+  }
+  return script->str_result().c_str();
+}
+
+
+#if defined(COLVARS_TCL)
+
+/// Run the script API via Tcl interface, set object result to interpreter
+/// \param clientData Not used \param my_interp Pointer to a Tcl_Interp object
+/// (will be read from Colvars module if NULL) \param objc Number of Tcl
+/// command parameters \param objv Array of command parameters
+extern "C"
+int tcl_run_colvarscript_command(ClientData clientData,
+                                 Tcl_Interp *my_interp,
+                                 int objc, Tcl_Obj *const objv[])
+{
+  colvarmodule *colvars = cvm::main();
+
+  if (!colvars) {
+    Tcl_SetResult(my_interp, const_cast<char *>("Colvars module not active"),
+                  TCL_VOLATILE);
+    return TCL_ERROR;
+  }
+
+  colvarproxy *proxy = colvars->proxy;
+  Tcl_Interp *interp = my_interp ? my_interp :
+    reinterpret_cast<Tcl_Interp *>(proxy->get_tcl_interp());
+  colvarscript *script = colvarscript_obj();
+  if (!script) {
+    char const *errstr = "Called tcl_run_colvarscript_command "
+      "without a Colvars script interface set up.\n";
+    Tcl_SetResult(interp, const_cast<char *>(errstr), TCL_VOLATILE);
+    return TCL_ERROR;
+  }
+
+  script->enter_interp_call(colvarscript::cv_tcl);
+  int retval = script->run(objc,
+                           reinterpret_cast<unsigned char * const *>(objv));
+  Tcl_Obj *obj = reinterpret_cast<Tcl_Obj *>(script->obj_result());
+  std::string const &str_result = script->str_result();
+  if (obj == NULL) {
+    obj = Tcl_NewStringObj(str_result.c_str(), str_result.length());
+  }
+  Tcl_SetObjResult(interp, obj);
+  script->exit_interp_call();
+
+  return (retval == COLVARS_OK) ? TCL_OK : TCL_ERROR;
+}
+
+#endif // #if defined(COLVARS_TCL)
