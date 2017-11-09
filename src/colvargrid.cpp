@@ -198,8 +198,9 @@ void colvar_grid_gradient::write_1D_integral(std::ostream &os)
 // finite diff. Laplacian, defined once and for all at construction time.
 // NOTE: most of the data needs complete updates if the grid size changes...
 
-integrate_potential::integrate_potential(std::vector<colvar *> &colvars)
-  : colvar_grid_scalar(colvars, true)
+integrate_potential::integrate_potential(std::vector<colvar *> &colvars, colvar_grid_gradient * gradients)
+  : colvar_grid_scalar(colvars, true),
+    gradients(gradients)
 {
   // parent class colvar_grid_scalar is constructed with margin option set to true
   // hence PMF grid is wider than gradient grid if non-PBC
@@ -237,126 +238,170 @@ int integrate_potential::integrate(const int itmax, const cvm::real &tol, cvm::r
 //   clock_t t2 = clock();
 //   cvm::log("Completed integration in " +
 //      cvm::to_str((double) (t2 - t1) * 1000. / (double) CLOCKS_PER_SEC) + " ms");
-/*
+
   // Debug output for Poisson integration
   std::vector<cvm::real> backup (data);
   std::ofstream p("pmf.dat");
   add_constant(-1.0 * minimum_value());
-  write_multicol(p);
+  if (nd <= 2) {
+    write_multicol(p);
+  } else write_opendx(p);
   std::vector<cvm::real> lap = std::vector<cvm::real>(data.size());
   atimes(data, lap);
   data = lap;
   std::ofstream l("laplacian.dat");
-  write_multicol(l);
+  if (nd <= 2) {
+    write_multicol(l);
+  } else write_opendx(l);
   data = divergence;
   std::ofstream d("divergence.dat");
-  write_multicol(d);
-  data = backup;*/
-/*
-  if (nx[0]*nx[1] <= 100) {
-    // Write explicit Laplacian operator
+  if (nd <= 2) {
+    write_multicol(d);
+  } else write_opendx(d);
+  data = backup;
+
+  if (nt <= 200) {
+    // Write explicit Laplacian operator if small enough
+    cvm::log("Writing discrete Laplacian to lap_op.dat");
     std::ofstream lap_out("lap_op.dat");
-    std::vector<cvm::real> id(nx[0]*nx[1]), lap_col(nx[0]*nx[1]);
-    for (int i = 0; i < nx[0] * nx[1]; i++) {
+    std::vector<cvm::real> id(nt), lap_col(nt);
+    for (int i = 0; i <nt; i++) {
       id[i] = 1.;
       atimes(id, lap_col);
       id[i] = 0.;
-      for (int j = 0; j < nx[0] * nx[1]; j++) {
-        lap_out << cvm::to_str(i) + " " + cvm::to_str(j) + " " + cvm::to_str(lap_col[j]) << std::endl;
+      for (int j = 0; j < nt; j++) {
+        lap_out << cvm::to_str(i) + " " + cvm::to_str(j)
+        + " " + cvm::to_str(lap_col[j]) << std::endl;
       }
       lap_out << std::endl;
     }
-  }*/
+  }
   return iter;
 }
 
 
-void integrate_potential::set_div(const colvar_grid_gradient &gradient)
+void integrate_potential::set_div()
 {
   for (std::vector<int> ix = new_index(); index_ok(ix); incr(ix)) {
-    update_div_local(gradient, ix);
+    update_div_local(ix);
   }
 }
 
 
-void integrate_potential::update_div(const colvar_grid_gradient &gradient, const std::vector<int> &ix0)
+void integrate_potential::update_div_neighbors(const std::vector<int> &ix0)
 {
   std::vector<int> ix(ix0);
+  int i, j, k;
 
   // If not periodic, expanded grid ensures that neighbors of ix0 are valid grid points
-  update_div_local(gradient, ix);
-  ix[0]++; wrap(ix);
-  update_div_local(gradient, ix);
-  ix[1]++; wrap(ix);
-  update_div_local(gradient, ix);
-  ix[0]--; wrap(ix);
-  update_div_local(gradient, ix);
+  if (nd == 2) {
+
+    update_div_local(ix);
+    ix[0]++; wrap(ix);
+    update_div_local(ix);
+    ix[1]++; wrap(ix);
+    update_div_local(ix);
+    ix[0]--; wrap(ix);
+    update_div_local(ix);
+
+  } else if (nd == 3) {
+
+    for (i = 0; i<2; i++) {
+      ix[1] = ix0[1];
+      for (j = 0; j<2; j++) {
+        ix[2] = ix0[2];
+        for (k = 0; k<2; k++) {
+          wrap(ix);
+          update_div_local(ix);
+          ix[2]++;
+        }
+        ix[1]++;
+      }
+      ix[0]++;
+    }
+  }
 }
 
+void integrate_potential::get_grad(cvm::real * g, std::vector<int> &ix)
+{
+  size_t count, i;
+  bool edge = gradients->wrap_edge(ix); // Detect edge if non-PBC
 
-void integrate_potential::update_div_local(const colvar_grid_gradient &gradient, const std::vector<int> &ix0)
+  if (!edge && (count = gradients->samples->value(ix))) {
+    cvm::real const *grad = &(gradients->value(ix));
+    cvm::real const fact = 1.0 / count;
+    for ( i = 0; i<nd; i++ ) {
+      g[i] = fact * grad[i];
+    }
+  } else {
+    for ( i = 0; i<nd; i++ ) {
+      g[i] = 0.0;
+    }
+  }
+}
+
+void integrate_potential::update_div_local(const std::vector<int> &ix0)
 {
   const int linear_index = address(ix0);
-
-  get_local_grads(gradient, ix0);
-  // Special case of corners: there is only one value of the gradient to average
-  cvm::real fact_corner = 0.5;
-  if (!periodic[0] && !periodic[1] &&
-      (ix0[0] == 0 || ix0[0] == nx[0]-1) &&
-      (ix0[1] == 0 || ix0[1] == nx[1]-1)) {
-    fact_corner = 1.0;
-  }
-  divergence[linear_index] = (g10[0]-g00[0] + g11[0]-g01[0]) * fact_corner / widths[0]
-                           + (g01[1]-g00[1] + g11[1]-g10[1]) * fact_corner / widths[1];
-}
-
-
-void integrate_potential::get_local_grads(const colvar_grid_gradient &gradient, const std::vector<int> & ix0)
-{
-  cvm::real  fact;
-  size_t count;
-  const cvm::real * g;
+  int i, j, k;
   std::vector<int> ix = ix0;
-  bool edge;
+  const cvm::real * g;
 
-  edge = gradient.wrap_edge(ix);
-  if (!edge && (count = gradient.samples->value(ix))) {
-    g = &(gradient.value(ix));
-    fact = 1.0 / count;
-    g11[0] = fact * g[0];
-    g11[1] = fact * g[1];
-  } else
-    g11[0] = g11[1] = 0.0;
+  if (nd == 2) {
+    // gradients at grid points surrounding the current scalar grid point
+    cvm::real g00[2], g01[2], g10[2], g11[2];
 
-  ix[0] = ix0[0] - 1;
-  edge = gradient.wrap_edge(ix);
-  if (!edge && (count = gradient.samples->value(ix))) {
-    g = & (gradient.value(ix));
-    fact = 1.0 / count;
-    g01[0] = fact * g[0];
-    g01[1] = fact * g[1];
-  } else
-    g01[0] = g01[1] = 0.0;
+    get_grad(g11, ix);
+    ix[0] = ix0[0] - 1;
+    get_grad(g01, ix);
+    ix[1] = ix0[1] - 1;
+    get_grad(g00, ix);
+    ix[0] = ix0[0];
+    get_grad(g10, ix);
 
-  ix[1] = ix0[1] - 1;
-  edge = gradient.wrap_edge(ix);
-  if (!edge && (count = gradient.samples->value(ix))) {
-    g = & (gradient.value(ix));
-    fact = 1.0 / count;
-    g00[0] = fact * g[0];
-    g00[1] = fact * g[1];
-  } else
-    g00[0] = g00[1] = 0.0;
+    // Special case of corners: there is only one value of the gradient to average
+    cvm::real fact_corner = 0.5;
+    if (!periodic[0] && !periodic[1] &&
+        (ix0[0] == 0 || ix0[0] == nx[0]-1) &&
+        (ix0[1] == 0 || ix0[1] == nx[1]-1)) {
+      fact_corner = 1.0;
+    }
+    divergence[linear_index] = (g10[0]-g00[0] + g11[0]-g01[0]) * fact_corner / widths[0]
+                             + (g01[1]-g00[1] + g11[1]-g10[1]) * fact_corner / widths[1];
+  } else if (nd == 3) {
+    cvm::real gc[24]; // stores 3d gradients in 8 contiguous bins
+    int index = 0;
 
-  ix[0] = ix0[0];
-  edge = gradient.wrap_edge(ix);
-  if (!edge && (count = gradient.samples->value(ix))) {
-    g = & (gradient.value(ix));
-    fact = 1.0 / count;
-    g10[0] = fact * g[0];
-    g10[1] = fact * g[1];
-  } else
-    g10[0] = g10[1] = 0.0;
+    ix[0] = ix0[0] - 1;
+    for (i = 0; i<2; i++) {
+      ix[1] = ix0[1] - 1;
+      for (j = 0; j<2; j++) {
+        ix[2] = ix0[2] - 1;
+        for (k = 0; k<2; k++) {
+          get_grad(gc + index, ix);
+          index += 3;
+          ix[2]++;
+        }
+        ix[1]++;
+      }
+      ix[0]++;
+    }
+    // Special case of corners: there is only one value of the gradient to average
+    cvm::real fact_corner = 0.25;
+    if (!periodic[0] && !periodic[1] && !periodic[2] &&
+        (ix0[0] == 0 || ix0[0] == nx[0]-1) &&
+        (ix0[1] == 0 || ix0[1] == nx[1]-1) &&
+        (ix0[2] == 0 || ix0[2] == nx[2]-1)) {
+      fact_corner = 1.0;
+    }
+    divergence[linear_index] =
+      (gc[3*4]-gc[0] + gc[3*5]-gc[3*1] + gc[3*6]-gc[3*2] + gc[3*7]-gc[3*3])
+      * fact_corner / widths[0]
+    + (gc[3*2+1]-gc[0+1] + gc[3*3+1]-gc[3*1+1] + gc[3*6+1]-gc[3*4+1] + gc[3*7+1]-gc[3*5+1])
+      * fact_corner / widths[1]
+    + (gc[3*1+2]-gc[0+2] + gc[3*3+2]-gc[3*2+2] + gc[3*5+2]-gc[3*4+2] + gc[3*7+2]-gc[3*6+2])
+      * fact_corner / widths[2];
+  }
 }
 
 
@@ -498,7 +543,7 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
     } else {
       xm = -d * h;
       xp =  d * h;
-      for (int j=1; j<d-1; j++) {
+      for (int j=0; j<d; j++) {
         for (int k=0; k<h; k++) {
           // x gradient (+ y, z terms of laplacian, calculated below)
           LA[index]  = ffx * (A[index + xp] - A[index]);
@@ -612,7 +657,7 @@ void integrate_potential::asolve(const std::vector<cvm::real> &b, std::vector<cv
 void integrate_potential::nr_linbcg_sym(const std::vector<cvm::real> &b, std::vector<cvm::real> &x, const cvm::real &tol,
   const int itmax, int &iter, cvm::real &err)
 {
-  cvm::real ak,akden,bk,bkden=1.0,bknum,bnrm;
+  cvm::real ak,akden,bk,bkden,bknum,bnrm;
   const cvm::real EPS=1.0e-14;
   int j;
   std::vector<cvm::real> p(nt), r(nt), z(nt);
@@ -627,6 +672,7 @@ void integrate_potential::nr_linbcg_sym(const std::vector<cvm::real> &b, std::ve
     return; // Target is zero, will break relative error calc
   }
 //   asolve(r,z); // precon
+  bkden = 1.0;
   while (iter < itmax) {
     ++iter;
     for (bknum=0.0,j=0;j<nt;j++) {
@@ -658,6 +704,14 @@ void integrate_potential::nr_linbcg_sym(const std::vector<cvm::real> &b, std::ve
     if (err <= tol)
       break;
   }
+  // Final check for actual error
+  atimes(x,r);
+  for (j=0;j<nt;j++) {
+    r[j]=b[j]-r[j];
+  }
+  err = l2norm(r)/bnrm;
+  std::cout << "Final error calculated as |B - Ax| / |B|: " << std::setw(12) << err
+  << std::endl;
 }
 
 cvm::real integrate_potential::l2norm(const std::vector<cvm::real> &x)

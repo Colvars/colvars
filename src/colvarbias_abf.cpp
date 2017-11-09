@@ -8,7 +8,7 @@
 
 // FIXME FIXME MAGIC NUMBERS: integration parameters for pABF
 #define INTEGRATE_FREQ 10
-#define INITIAL_STEPS 10000 // for integrating initial gradient data
+#define INITIAL_STEPS 100// for integrating initial gradient data
 #define INITIAL_TOL 1e-8
 #define STEPS 100 // for updating the integrated PMF on the fly
 #define TOL 1e-2
@@ -178,9 +178,9 @@ int colvarbias_abf::init(std::string const &conf)
     czar_gradients = new colvar_grid_gradient(colvars);
   }
 
-  // For now, we integrate on-the-fly iff the grid is 2D
-  if ( colvars.size() == 2) {
-    pmf = new integrate_potential(colvars);
+  // For now, we integrate on-the-fly iff the grid is 2D / 3D
+  if ( colvars.size() == 2 || colvars.size() == 3 ) {
+    pmf = new integrate_potential(colvars, gradients);
     b_integrate = true;
     integrate_freq = INTEGRATE_FREQ;
     cvm::log("Integrating PMF on-the-fly.\n");
@@ -311,7 +311,7 @@ int colvarbias_abf::update()
     }
 
     if (b_integrate) {
-      pmf->set_div(*gradients);
+      pmf->set_div();
       pmf->integrate(INITIAL_STEPS, INITIAL_TOL, err);
       // Write integrated PMF for intial gradient
       write_gradients_samples(output_prefix);
@@ -357,7 +357,7 @@ int colvarbias_abf::update()
 
     // Integrate if possible
     if ( b_integrate ) {
-      pmf->update_div(*gradients, force_bin);
+      pmf->update_div_neighbors(force_bin);
       if ( cvm::step_relative() % integrate_freq == 0 ) {
         iter = pmf->integrate(STEPS, TOL, err);
       }

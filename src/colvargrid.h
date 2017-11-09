@@ -1590,35 +1590,38 @@ class integrate_potential : public colvar_grid_scalar
   virtual ~integrate_potential()
   {}
 
-  /// Constructor from a vector of colvars
-  integrate_potential (std::vector<colvar *> &colvars);
+  /// Constructor from a vector of colvars + gradient grid
+  integrate_potential (std::vector<colvar *> &colvars, colvar_grid_gradient * gradients);
 
   /// \brief Calculate potential from divergence (in 2D); return number of steps
   int integrate (const int itmax, const cvm::real & tol, cvm::real & err);
 
   /// \brief Update matrix containing divergence and boundary conditions
-  /// based on new gradient point value
-  void update_div(const colvar_grid_gradient &gradient, const std::vector<int> &ix);
+  /// based on new gradient point value, in neighboring bins
+  void update_div_neighbors(const std::vector<int> &ix);
 
   /// \brief Set matrix containing divergence and boundary conditions
   /// based on complete gradient grid
-  void set_div(const colvar_grid_gradient &gradient);
+  void set_div();
 
   protected:
+
+  // Reference to gradient grid
+  colvar_grid_gradient *gradients;
+
   /// Array holding divergence + boundary terms (modified Neumann) if not periodic
   std::vector<cvm::real> divergence;
 
-  // gradients at grid points surrounding the current scalar grid point
-  cvm::real g00[2], g01[2], g10[2], g11[2];
-
 //   std::vector<cvm::real> inv_lap_diag; // Inverse of the diagonal of the Laplacian; for conditioning
 
-  // update local gradients above
-  void get_local_grads(const colvar_grid_gradient &gradient, const std::vector<int> &ix);
-
   /// \brief Update matrix containing divergence and boundary conditions
-  /// called by update_div
-  void update_div_local(const colvar_grid_gradient &gradient, const std::vector<int> &ix);
+  /// called by update_div_neighbors
+  void update_div_local(const std::vector<int> &ix);
+
+  /// Obtain the gradient vector at given location ix, if available
+  /// or zero if it is on the edge of the gradient grid
+  /// ix gets wrapped in PBC
+  void get_grad(cvm::real * g, std::vector<int> &ix);
 
   /// \brief Solve linear system based on CG, valid for symmetric matrices only
   void nr_linbcg_sym(const std::vector<cvm::real> &b, std::vector<cvm::real> &x,
