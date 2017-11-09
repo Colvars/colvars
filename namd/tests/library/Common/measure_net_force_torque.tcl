@@ -38,6 +38,16 @@ tclForcesScript {
       #      print "[expr $t-1]   Force: ( $tot )   Torque: ( $torque )"
       print "TOTAL FORCE: ( $tot )"
       print "TOTAL TORQUE: ( $torque )"
+      # print ""
+      # print "Colvars energy: [cv getenergy]"
+      # print ""
+      # print "Colvars atom IDs: [cv getatomids]"
+      # print "Colvars atom positions: [cv getpositions]"
+      # print "Colvars atom forces: [cv getappliedforces]"
+      # print ""
+      # print "Colvars atom group IDs: [cv getatomgroupids]"
+      # print "Colvars group positions: [cv getgrouppositions]"
+      # print "Colvars group forces: [cv getgroupappliedforces]"
       array set prev_c [array get c]
     }
     incr t

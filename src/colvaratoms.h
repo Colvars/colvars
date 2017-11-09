@@ -174,12 +174,26 @@ public:
   /// string in conf and parsing it
   int parse(std::string const &conf);
 
-  int add_atom_numbers(std::string const &numbers_conf);
-  int add_atoms_of_group(atom_group const * ag);
-  int add_index_group(std::string const &index_group_name);
+  /// Add the atoms whose numbers (1-based) are in the given vector
+  int add_atom_numbers(std::vector<int> const &numbers);
+
+  /// Read the atom numbers from the given string
+  int add_atom_numbers_conf(std::string const &numbers_conf);
+
+  /// Add the indices of another group to this one (storage is separate)
+  int add_atoms_of_group(atom_group const *ag);
+
+  /// Add atoms with numbers (1-based) in the given range
   int add_atom_numbers_range(std::string const &range_conf);
+
+  /// Add atoms from the PSF segid and the range of residues given
   int add_atom_name_residue_range(std::string const &psf_segid,
                                   std::string const &range_conf);
+
+  /// Add a GROMACS-style index group to this group
+  int add_index_group(std::string const &index_group_name);
+
+  /// Read options regarding to roto-translations
   int parse_fitting_options(std::string const &group_conf);
 
   /// \brief Add an atom object to this group

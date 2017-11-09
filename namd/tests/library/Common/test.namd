@@ -12,6 +12,7 @@ if { [file exists test.prerun.tcl] > 0 } {
     source test.prerun.tcl
 }
 
+# cv newstyle
 run ${numsteps}
 
 if { [file exists test.postprocess.tcl] > 0 } {

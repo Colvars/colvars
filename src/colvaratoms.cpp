@@ -313,7 +313,7 @@ int cvm::atom_group::parse(std::string const &group_conf)
     std::string numbers_conf = "";
     size_t pos = 0;
     while (key_lookup(group_conf, "atomNumbers", &numbers_conf, &pos)) {
-      parse_error |= add_atom_numbers(numbers_conf);
+      parse_error |= add_atom_numbers_conf(numbers_conf);
       numbers_conf = "";
     }
   }
@@ -482,7 +482,28 @@ int cvm::atom_group::add_atoms_of_group(atom_group const * ag)
 }
 
 
-int cvm::atom_group::add_atom_numbers(std::string const &numbers_conf)
+int cvm::atom_group::add_atom_numbers(std::vector<int> const &atom_indexes)
+{
+  atoms_ids.reserve(atoms_ids.size()+atom_indexes.size());
+
+  if (is_enabled(f_ag_scalable)) {
+    for (size_t i = 0; i < atom_indexes.size(); i++) {
+      add_atom_id((cvm::proxy)->check_atom_id(atom_indexes[i]));
+    }
+  } else {
+    // if we are handling the group on rank 0, better allocate the vector in
+    // one shot
+    atoms.reserve(atoms.size()+atom_indexes.size());
+    for (size_t i = 0; i < atom_indexes.size(); i++) {
+      add_atom(cvm::atom(atom_indexes[i]));
+    }
+  }
+
+  return COLVARS_OK;
+}
+
+
+int cvm::atom_group::add_atom_numbers_conf(std::string const &numbers_conf)
 {
   std::vector<int> atom_indexes;
 
@@ -495,20 +516,7 @@ int cvm::atom_group::add_atom_numbers(std::string const &numbers_conf)
   }
 
   if (atom_indexes.size()) {
-    atoms_ids.reserve(atoms_ids.size()+atom_indexes.size());
-
-    if (is_enabled(f_ag_scalable)) {
-      for (size_t i = 0; i < atom_indexes.size(); i++) {
-        add_atom_id((cvm::proxy)->check_atom_id(atom_indexes[i]));
-      }
-    } else {
-      // if we are handling the group on rank 0, better allocate the vector in one shot
-      atoms.reserve(atoms.size()+atom_indexes.size());
-      for (size_t i = 0; i < atom_indexes.size(); i++) {
-        add_atom(cvm::atom(atom_indexes[i]));
-      }
-    }
-
+    add_atom_numbers(atom_indexes);
     if (cvm::get_error()) return COLVARS_ERROR;
   } else {
     cvm::error("Error: no numbers provided for \""

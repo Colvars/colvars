@@ -2613,11 +2613,11 @@ obj/ComputeMgr.o: \
 	src/GlobalMasterColvars.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
-	colvars/src/colvartypes.h \
+	colvars/src/colvarproxy.h \
 	colvars/src/colvarmodule.h \
-	colvars/src/colvarproxy.h \
 	colvars/src/colvarvalue.h \
-	colvars/src/colvarproxy.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarproxy_tcl.h \
 	src/colvarproxy_namd.h \
 	src/colvarproxy_namd_version.h \
 	src/Random.h \
@@ -4953,11 +4953,12 @@ obj/colvarproxy_namd.o: \
 	inc/NamdDummyLB.decl.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
-	colvars/src/colvartypes.h \
+	colvars/src/colvaratoms.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvarproxy.h \
 	colvars/src/colvarvalue.h \
-	colvars/src/colvaratoms.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarparse.h \
 	colvars/src/colvardeps.h \
 	colvars/src/colvarproxy.h \
@@ -4971,7 +4972,8 @@ obj/colvarproxy_namd.o: \
 	src/Pointer.h \
 	colvars/src/colvarscript.h \
 	colvars/src/colvarbias.h \
-	colvars/src/colvar.h
+	colvars/src/colvar.h \
+	colvars/src/colvarscript_commands.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarproxy_namd.o $(COPTC) src/colvarproxy_namd.C
 obj/GridForceGrid.o: \
 	obj/.exists \
@@ -6768,15 +6770,17 @@ obj/ScriptTcl.o: \
 	src/Measure.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
-	colvars/src/colvartypes.h \
-	colvars/src/colvarmodule.h \
-	colvars/src/colvarproxy.h \
-	colvars/src/colvarvalue.h \
 	colvars/src/colvarscript.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarvalue.h \
+	colvars/src/colvartypes.h \
 	colvars/src/colvarbias.h \
 	colvars/src/colvar.h \
 	colvars/src/colvarparse.h \
 	colvars/src/colvardeps.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarscript_commands.h \
 	src/DumpBench.h \
 	src/TclCommands.h \
 	src/DataExchanger.h \
@@ -7581,25 +7585,28 @@ obj/colvar.o: \
 	colvars/src/colvar.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
-	colvars/src/colvartypes.h \
-	colvars/src/colvarproxy.h \
 	colvars/src/colvarvalue.h \
+	colvars/src/colvartypes.h \
 	colvars/src/colvarparse.h \
 	colvars/src/colvar.h \
 	colvars/src/colvardeps.h \
 	colvars/src/colvarcomp.h \
 	colvars/src/colvaratoms.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarscript.h \
-	colvars/src/colvarbias.h
+	colvars/src/colvarbias.h \
+	colvars/src/colvarscript_commands.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvar.o $(COPTC) colvars/src/colvar.cpp
 obj/colvaratoms.o: \
 	obj/.exists \
 	colvars/src/colvaratoms.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
-	colvars/src/colvartypes.h \
 	colvars/src/colvarproxy.h \
 	colvars/src/colvarvalue.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarparse.h \
 	colvars/src/colvaratoms.h \
 	colvars/src/colvardeps.h
@@ -7609,9 +7616,10 @@ obj/colvarbias.o: \
 	colvars/src/colvarbias.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
-	colvars/src/colvartypes.h \
 	colvars/src/colvarproxy.h \
 	colvars/src/colvarvalue.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarbias.h \
 	colvars/src/colvar.h \
 	colvars/src/colvarparse.h \
@@ -7623,9 +7631,10 @@ obj/colvarbias_abf.o: \
 	colvars/src/colvarbias_abf.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
-	colvars/src/colvartypes.h \
 	colvars/src/colvarproxy.h \
 	colvars/src/colvarvalue.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvar.h \
 	colvars/src/colvarparse.h \
 	colvars/src/colvardeps.h \
@@ -7639,23 +7648,23 @@ obj/colvarbias_alb.o: \
 	colvars/src/colvarbias_alb.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
-	colvars/src/colvartypes.h \
-	colvars/src/colvarproxy.h \
-	colvars/src/colvarvalue.h \
-	colvars/src/colvarbias_alb.h \
+	colvars/src/colvarbias.h \
 	colvars/src/colvar.h \
+	colvars/src/colvarvalue.h \
+	colvars/src/colvartypes.h \
 	colvars/src/colvarparse.h \
 	colvars/src/colvardeps.h \
-	colvars/src/colvarbias.h
+	colvars/src/colvarbias_alb.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarbias_alb.o $(COPTC) colvars/src/colvarbias_alb.cpp
 obj/colvarbias_histogram.o: \
 	obj/.exists \
 	colvars/src/colvarbias_histogram.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
-	colvars/src/colvartypes.h \
 	colvars/src/colvarproxy.h \
 	colvars/src/colvarvalue.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvar.h \
 	colvars/src/colvarparse.h \
 	colvars/src/colvardeps.h \
@@ -7666,12 +7675,13 @@ obj/colvarbias_histogram.o: \
 obj/colvarbias_meta.o: \
 	obj/.exists \
 	colvars/src/colvarbias_meta.cpp \
-	colvars/src/colvar.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
-	colvars/src/colvartypes.h \
 	colvars/src/colvarproxy.h \
 	colvars/src/colvarvalue.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvar.h \
 	colvars/src/colvarparse.h \
 	colvars/src/colvardeps.h \
 	colvars/src/colvarbias_meta.h \
@@ -7683,9 +7693,10 @@ obj/colvarbias_restraint.o: \
 	colvars/src/colvarbias_restraint.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
-	colvars/src/colvartypes.h \
 	colvars/src/colvarproxy.h \
 	colvars/src/colvarvalue.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarbias_restraint.h \
 	colvars/src/colvarbias.h \
 	colvars/src/colvar.h \
@@ -7697,39 +7708,42 @@ obj/colvarcomp.o: \
 	colvars/src/colvarcomp.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
-	colvars/src/colvartypes.h \
-	colvars/src/colvarproxy.h \
 	colvars/src/colvarvalue.h \
+	colvars/src/colvartypes.h \
 	colvars/src/colvar.h \
 	colvars/src/colvarparse.h \
 	colvars/src/colvardeps.h \
 	colvars/src/colvarcomp.h \
-	colvars/src/colvaratoms.h
+	colvars/src/colvaratoms.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_tcl.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp.o $(COPTC) colvars/src/colvarcomp.cpp
 obj/colvarcomp_angles.o: \
 	obj/.exists \
 	colvars/src/colvarcomp_angles.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
-	colvars/src/colvartypes.h \
-	colvars/src/colvarproxy.h \
-	colvars/src/colvarvalue.h \
 	colvars/src/colvar.h \
+	colvars/src/colvarvalue.h \
+	colvars/src/colvartypes.h \
 	colvars/src/colvarparse.h \
 	colvars/src/colvardeps.h \
 	colvars/src/colvarcomp.h \
-	colvars/src/colvaratoms.h
+	colvars/src/colvaratoms.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_tcl.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_angles.o $(COPTC) colvars/src/colvarcomp_angles.cpp
 obj/colvarcomp_coordnums.o: \
 	obj/.exists \
 	colvars/src/colvarcomp_coordnums.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
-	colvars/src/colvartypes.h \
-	colvars/src/colvarproxy.h \
-	colvars/src/colvarvalue.h \
 	colvars/src/colvarparse.h \
+	colvars/src/colvarvalue.h \
+	colvars/src/colvartypes.h \
 	colvars/src/colvaratoms.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvardeps.h \
 	colvars/src/colvar.h \
 	colvars/src/colvarcomp.h
@@ -7739,52 +7753,56 @@ obj/colvarcomp_distances.o: \
 	colvars/src/colvarcomp_distances.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
-	colvars/src/colvartypes.h \
-	colvars/src/colvarproxy.h \
 	colvars/src/colvarvalue.h \
+	colvars/src/colvartypes.h \
 	colvars/src/colvarparse.h \
 	colvars/src/colvar.h \
 	colvars/src/colvardeps.h \
 	colvars/src/colvarcomp.h \
-	colvars/src/colvaratoms.h
+	colvars/src/colvaratoms.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_tcl.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_distances.o $(COPTC) colvars/src/colvarcomp_distances.cpp
 obj/colvarcomp_protein.o: \
 	obj/.exists \
 	colvars/src/colvarcomp_protein.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
-	colvars/src/colvartypes.h \
-	colvars/src/colvarproxy.h \
 	colvars/src/colvarvalue.h \
+	colvars/src/colvartypes.h \
 	colvars/src/colvarparse.h \
 	colvars/src/colvar.h \
 	colvars/src/colvardeps.h \
 	colvars/src/colvarcomp.h \
-	colvars/src/colvaratoms.h
+	colvars/src/colvaratoms.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_tcl.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_protein.o $(COPTC) colvars/src/colvarcomp_protein.cpp
 obj/colvarcomp_rotations.o: \
 	obj/.exists \
 	colvars/src/colvarcomp_rotations.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
-	colvars/src/colvartypes.h \
-	colvars/src/colvarproxy.h \
 	colvars/src/colvarvalue.h \
+	colvars/src/colvartypes.h \
 	colvars/src/colvarparse.h \
 	colvars/src/colvar.h \
 	colvars/src/colvardeps.h \
 	colvars/src/colvarcomp.h \
-	colvars/src/colvaratoms.h
+	colvars/src/colvaratoms.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_tcl.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_rotations.o $(COPTC) colvars/src/colvarcomp_rotations.cpp
 obj/colvardeps.o: \
 	obj/.exists \
 	colvars/src/colvardeps.cpp \
-	colvars/src/colvardeps.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
-	colvars/src/colvartypes.h \
 	colvars/src/colvarproxy.h \
 	colvars/src/colvarvalue.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvardeps.h \
 	colvars/src/colvarparse.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvardeps.o $(COPTC) colvars/src/colvardeps.cpp
 obj/colvargrid.o: \
@@ -7792,14 +7810,15 @@ obj/colvargrid.o: \
 	colvars/src/colvargrid.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
-	colvars/src/colvartypes.h \
-	colvars/src/colvarproxy.h \
 	colvars/src/colvarvalue.h \
+	colvars/src/colvartypes.h \
 	colvars/src/colvarparse.h \
 	colvars/src/colvar.h \
 	colvars/src/colvardeps.h \
 	colvars/src/colvarcomp.h \
 	colvars/src/colvaratoms.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvargrid.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvargrid.o $(COPTC) colvars/src/colvargrid.cpp
 obj/colvarmodule.o: \
@@ -7807,10 +7826,11 @@ obj/colvarmodule.o: \
 	colvars/src/colvarmodule.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarvalue.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarproxy.h \
-	colvars/src/colvarvalue.h \
-	colvars/src/colvarparse.h \
+	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvar.h \
 	colvars/src/colvardeps.h \
 	colvars/src/colvarbias.h \
@@ -7822,6 +7842,7 @@ obj/colvarmodule.o: \
 	colvars/src/colvarbias_meta.h \
 	colvars/src/colvarbias_restraint.h \
 	colvars/src/colvarscript.h \
+	colvars/src/colvarscript_commands.h \
 	colvars/src/colvaratoms.h \
 	colvars/src/colvarcomp.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarmodule.o $(COPTC) colvars/src/colvarmodule.cpp
@@ -7830,9 +7851,8 @@ obj/colvarparse.o: \
 	colvars/src/colvarparse.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
-	colvars/src/colvartypes.h \
-	colvars/src/colvarproxy.h \
 	colvars/src/colvarvalue.h \
+	colvars/src/colvartypes.h \
 	colvars/src/colvarparse.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarparse.o $(COPTC) colvars/src/colvarparse.cpp
 obj/colvarproxy.o: \
@@ -7840,48 +7860,79 @@ obj/colvarproxy.o: \
 	colvars/src/colvarproxy.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
-	colvars/src/colvartypes.h \
 	colvars/src/colvarproxy.h \
 	colvars/src/colvarvalue.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarscript.h \
 	colvars/src/colvarbias.h \
 	colvars/src/colvar.h \
 	colvars/src/colvarparse.h \
 	colvars/src/colvardeps.h \
+	colvars/src/colvarscript_commands.h \
 	colvars/src/colvaratoms.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarproxy.o $(COPTC) colvars/src/colvarproxy.cpp
+obj/colvarproxy_tcl.o: \
+	obj/.exists \
+	colvars/src/colvarproxy_tcl.cpp \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarvalue.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvaratoms.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvardeps.h
+	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarproxy_tcl.o $(COPTC) colvars/src/colvarproxy_tcl.cpp
 obj/colvarscript.o: \
 	obj/.exists \
 	colvars/src/colvarscript.cpp \
-	colvars/src/colvarscript.h \
+	colvars/src/colvarproxy.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
-	colvars/src/colvartypes.h \
-	colvars/src/colvarproxy.h \
 	colvars/src/colvarvalue.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarscript.h \
 	colvars/src/colvarbias.h \
 	colvars/src/colvar.h \
-	colvars/src/colvarparse.h \
-	colvars/src/colvardeps.h
+	colvars/src/colvarscript_commands.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarscript.o $(COPTC) colvars/src/colvarscript.cpp
+obj/colvarscript_commands.o: \
+	obj/.exists \
+	colvars/src/colvarscript_commands.cpp \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvarvalue.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarscript.h \
+	colvars/src/colvarbias.h \
+	colvars/src/colvar.h \
+	colvars/src/colvarscript_commands.h
+	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarscript_commands.o $(COPTC) colvars/src/colvarscript_commands.cpp
 obj/colvartypes.o: \
 	obj/.exists \
 	colvars/src/colvartypes.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvartypes.h \
-	colvars/src/colvarproxy.h \
-	colvars/src/colvarvalue.h \
-	colvars/src/colvarparse.h
+	colvars/src/colvarparse.h \
+	colvars/src/colvarvalue.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvartypes.o $(COPTC) colvars/src/colvartypes.cpp
 obj/colvarvalue.o: \
 	obj/.exists \
 	colvars/src/colvarvalue.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
-	colvars/src/colvartypes.h \
-	colvars/src/colvarproxy.h \
-	colvars/src/colvarvalue.h
+	colvars/src/colvarvalue.h \
+	colvars/src/colvartypes.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarvalue.o $(COPTC) colvars/src/colvarvalue.cpp
 obj/CompiledExpression.o: \
 	obj/.exists \
