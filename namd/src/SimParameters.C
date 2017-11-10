@@ -617,7 +617,7 @@ void SimParameters::config_parser_basic(ParseOptions &opts) {
       &staticAtomAssignment, FALSE);
    opts.optionalB("main", "replicaUniformPatchGrids", "same patch grid size on all replicas",
       &replicaUniformPatchGrids, FALSE);
-   opts.optionalB("main", "lonePairs", "Enable lone pairs", &lonepairs, FALSE);
+   opts.optionalB("main", "lonePairs", "Enable lone pairs", &lonepairs, TRUE);
    opts.optional("main", "waterModel", "Water model to use", PARSE_STRING);
    opts.optionalB("main", "LJcorrection", "Apply analytical tail corrections for energy and virial", &LJcorrection, FALSE);
 }
