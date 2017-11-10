@@ -387,20 +387,25 @@ void integrate_potential::update_div_local(const std::vector<int> &ix0)
       ix[0]++;
     }
     // Special case of corners: there is only one value of the gradient to average
-    cvm::real fact_corner = 0.25;
-    if (!periodic[0] && !periodic[1] && !periodic[2] &&
-        (ix0[0] == 0 || ix0[0] == nx[0]-1) &&
-        (ix0[1] == 0 || ix0[1] == nx[1]-1) &&
-        (ix0[2] == 0 || ix0[2] == nx[2]-1)) {
-      fact_corner = 1.0;
+    // linear edges have only two values - need to count the edge order
+    cvm::real fact_edge = 0.25;
+    int edge_order = 0;
+    for (i = 0; i<3; i++) {
+       if (!periodic[i] && (ix0[i] == 0 || ix0[i] == nx[i]-1)) {
+         edge_order++;
+         if (edge_order > 1) { // this is at least a linear edge
+           fact_edge *= 2.0;
+         }
+       }
     }
+
     divergence[linear_index] =
       (gc[3*4]-gc[0] + gc[3*5]-gc[3*1] + gc[3*6]-gc[3*2] + gc[3*7]-gc[3*3])
-      * fact_corner / widths[0]
+      * fact_edge / widths[0]
     + (gc[3*2+1]-gc[0+1] + gc[3*3+1]-gc[3*1+1] + gc[3*6+1]-gc[3*4+1] + gc[3*7+1]-gc[3*5+1])
-      * fact_corner / widths[1]
+      * fact_edge / widths[1]
     + (gc[3*1+2]-gc[0+2] + gc[3*3+2]-gc[3*2+2] + gc[3*5+2]-gc[3*4+2] + gc[3*7+2]-gc[3*6+2])
-      * fact_corner / widths[2];
+      * fact_edge / widths[2];
   }
 }
 
