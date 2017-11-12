@@ -617,7 +617,15 @@ void SimParameters::config_parser_basic(ParseOptions &opts) {
       &staticAtomAssignment, FALSE);
    opts.optionalB("main", "replicaUniformPatchGrids", "same patch grid size on all replicas",
       &replicaUniformPatchGrids, FALSE);
+#ifndef MEM_OPT_VERSION
+   // in standard (non-mem-opt) version, enable lone pairs by default
+   // for compatibility with recent force fields
    opts.optionalB("main", "lonePairs", "Enable lone pairs", &lonepairs, TRUE);
+#else
+   // in mem-opt version, disable lone pairs by default
+   // because they are not supported
+   opts.optionalB("main", "lonePairs", "Enable lone pairs", &lonepairs, FALSE);
+#endif
    opts.optional("main", "waterModel", "Water model to use", PARSE_STRING);
    opts.optionalB("main", "LJcorrection", "Apply analytical tail corrections for energy and virial", &LJcorrection, FALSE);
 }
