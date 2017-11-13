@@ -1,5 +1,7 @@
 // -*- c++ -*-
 
+#include <cstdlib>
+
 #include "colvarmodule.h"
 #include "colvarbias.h"
 #include "colvarbias_alb.h"
