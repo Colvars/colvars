@@ -206,7 +206,7 @@ integrate_potential::integrate_potential(std::vector<colvar *> &colvars, colvar_
   // hence PMF grid is wider than gradient grid if non-PBC
 
   divergence.resize(nt);
-/*
+
   // Compute inverse of Laplacian diagonal for Jacobi preconditioning
   // For now all code related to preconditioning is commented out
   // until a method better than Jacobi is implemented
@@ -217,7 +217,7 @@ integrate_potential::integrate_potential(std::vector<colvar *> &colvars, colvar_
     atimes(id, lap_col);
     id[i] = 0.;
     inv_lap_diag[i] = 1. / lap_col[i];
-  }*/
+  }
 }
 
 
@@ -239,42 +239,42 @@ int integrate_potential::integrate(const int itmax, const cvm::real &tol, cvm::r
 //   cvm::log("Completed integration in " +
 //      cvm::to_str((double) (t2 - t1) * 1000. / (double) CLOCKS_PER_SEC) + " ms");
 
-  // Debug output for Poisson integration
-  std::vector<cvm::real> backup (data);
-  std::ofstream p("pmf.dat");
-  add_constant(-1.0 * minimum_value());
-  if (nd <= 2) {
-    write_multicol(p);
-  } else write_opendx(p);
-  std::vector<cvm::real> lap = std::vector<cvm::real>(data.size());
-  atimes(data, lap);
-  data = lap;
-  std::ofstream l("laplacian.dat");
-  if (nd <= 2) {
-    write_multicol(l);
-  } else write_opendx(l);
-  data = divergence;
-  std::ofstream d("divergence.dat");
-  if (nd <= 2) {
-    write_multicol(d);
-  } else write_opendx(d);
-  data = backup;
+//   // Debug output for Poisson integration
+//   std::vector<cvm::real> backup (data);
+//   std::ofstream p("pmf.dat");
+//   add_constant(-1.0 * minimum_value());
+//   if (nd <= 2) {
+//     write_multicol(p);
+//   } else write_opendx(p);
+//   std::vector<cvm::real> lap = std::vector<cvm::real>(data.size());
+//   atimes(data, lap);
+//   data = lap;
+//   std::ofstream l("laplacian.dat");
+//   if (nd <= 2) {
+//     write_multicol(l);
+//   } else write_opendx(l);
+//   data = divergence;
+//   std::ofstream d("divergence.dat");
+//   if (nd <= 2) {
+//     write_multicol(d);
+//   } else write_opendx(d);
+//   data = backup;
 
-  if (nt <= 200) {
-    // Write explicit Laplacian operator if small enough
-    cvm::log("Writing discrete Laplacian to lap_op.dat");
-    std::ofstream lap_out("lap_op.dat");
-    std::vector<cvm::real> id(nt), lap_col(nt);
-    for (int i = 0; i <nt; i++) {
-      id[i] = 1.;
-      atimes(id, lap_col);
-      id[i] = 0.;
-      for (int j = 0; j < nt; j++) {
-        lap_out << cvm::to_str(i) + " " + cvm::to_str(j)
-        + " " + cvm::to_str(lap_col[nt-j-1]) << std::endl;
-      }
-      lap_out << std::endl;
-    }
+//   if (nt <= 200) {
+//     // Write explicit Laplacian operator if small enough
+//     cvm::log("Writing discrete Laplacian to lap_op.dat");
+//     std::ofstream lap_out("lap_op.dat");
+//     std::vector<cvm::real> id(nt), lap_col(nt);
+//     for (int i = 0; i <nt; i++) {
+//       id[i] = 1.;
+//       atimes(id, lap_col);
+//       id[i] = 0.;
+//       for (int j = 0; j < nt; j++) {
+//         lap_out << cvm::to_str(i) + " " + cvm::to_str(j)
+//         + " " + cvm::to_str(lap_col[nt-j-1]) << std::endl;
+//       }
+//       lap_out << std::endl;
+//     }
 
 //     // Write explicit divergence of gradient (nd == 2 only)
 //     colvar_grid_gradient g(*gradients);
@@ -306,9 +306,8 @@ int integrate_potential::integrate(const int itmax, const cvm::real &tol, cvm::r
 //       data[i] = 0;
 //     }
 //     gradients = g_backup;
-  }
-
-  data = backup;
+//   }
+//   data = backup;
   return iter;
 }
 
@@ -412,26 +411,14 @@ void integrate_potential::update_div_local(const std::vector<int> &ix0)
       }
       ix[0]++;
     }
-    // Special case of corners: there is only one value of the gradient to average
-    // linear edges have only two values - need to count the edge order
-    cvm::real fact_edge = 0.25;
-    int edge_order = 0;
-    for (i = 0; i<3; i++) {
-      if (!periodic[i] && (ix0[i] == 0 || ix0[i] == nx[i]-1)) {
-        edge_order++;
-        if (edge_order > 1) { // this is at least a linear edge
-          fact_edge *= 2.0;
-        }
-      }
-    }
 
     divergence[linear_index] =
-      (gc[3*4]-gc[0] + gc[3*5]-gc[3*1] + gc[3*6]-gc[3*2] + gc[3*7]-gc[3*3])
-      * fact_edge / widths[0]
+     ((gc[3*4]-gc[0] + gc[3*5]-gc[3*1] + gc[3*6]-gc[3*2] + gc[3*7]-gc[3*3])
+      / widths[0]
     + (gc[3*2+1]-gc[0+1] + gc[3*3+1]-gc[3*1+1] + gc[3*6+1]-gc[3*4+1] + gc[3*7+1]-gc[3*5+1])
-      * fact_edge / widths[1]
+      / widths[1]
     + (gc[3*1+2]-gc[0+2] + gc[3*3+2]-gc[3*2+2] + gc[3*5+2]-gc[3*4+2] + gc[3*7+2]-gc[3*6+2])
-      * fact_edge / widths[2];
+      / widths[2]) / 4.0;
   }
 }
 
@@ -553,6 +540,7 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
     // DIMENSION 3
 
     size_t index, index2;
+    cvm::real fact = 1.0;
     const cvm::real ffx = 1.0 / (widths[0] * widths[0]);
     const cvm::real ffy = 1.0 / (widths[1] * widths[1]);
     const cvm::real ffz = 1.0 / (widths[2] * widths[2]);
@@ -569,10 +557,15 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
 
     // All x components except on x edges
     index = d * h; // Skip left slab
+    fact = 0.25;
     for (int i=1; i<w-1; i++) {
       for (int j=0; j<d; j++) { // full range of y
+        if (j == 1) fact *= 2.0;
+        if (j == d-1) fact /= 2.0;
         for (int k=0; k<h; k++) { // full range of z
-          LA[index] = ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index]);
+          if (k == 1) fact *= 2.0;
+          if (k == h-1) fact /= 2.0;
+          LA[index] = fact * ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index]);
           index++;
         }
       }
@@ -594,11 +587,16 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
     } else {
       xm = -d * h;
       xp =  d * h;
+      fact = 0.25;
       for (int j=0; j<d; j++) {
+        if (j == 1) fact *= 2.0;
+        if (j == d-1) fact /= 2.0;
         for (int k=0; k<h; k++) {
+          if (k == 1) fact *= 2.0;
+          if (k == h-1) fact /= 2.0;
           // x gradient (+ y, z terms of laplacian, calculated below)
-          LA[index]  = ffx * (A[index + xp] - A[index]);
-          LA[index2] = ffx * (A[index2 + xm] - A[index2]);
+          LA[index]  = fact * ffx * (A[index + xp] - A[index]);
+          LA[index2] = fact * ffx * (A[index2 + xm] - A[index2]);
           index++;
           index2++;
         }
@@ -608,10 +606,15 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
     // Now adding all y components
     // All y components except on y edges
     index = h; // Skip first column (in front slab)
+    fact = 0.25;
     for (int i=0; i<w; i++) { // full range of x
+      if (i == 1) fact *= 2.0;
+      if (i == w-1) fact /= 2.0;
       for (int j=1; j<d-1; j++) {
         for (int k=0; k<h; k++) {
-          LA[index] += ffy * (A[index + ym] + A[index + yp] - 2.0 * A[index]);
+          if (k == 1) fact *= 2.0;
+          if (k == h-1) fact /= 2.0;
+          LA[index] += fact * ffy * (A[index + ym] + A[index + yp] - 2.0 * A[index]);
           index++;
         }
       }
@@ -636,11 +639,16 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
     } else {
       ym = -h;
       yp =  h;
+      fact = 0.25;
       for (int i=0; i<w; i++) {
+        if (i == 1) fact *= 2.0;
+        if (i == w-1) fact /= 2.0;
         for (int k=0; k<h; k++) {
+          if (k == 1) fact *= 2.0;
+          if (k == h-1) fact /= 2.0;
           // y gradient (+ x, z terms of laplacian, calculated above and below)
-          LA[index]  += ffy * (A[index + yp] - A[index]);
-          LA[index2] += ffy * (A[index2 + ym] - A[index2]);
+          LA[index]  += fact * ffy * (A[index + yp] - A[index]);
+          LA[index2] += fact * ffy * (A[index2 + ym] - A[index2]);
           index++;
           index2++;
         }
@@ -652,10 +660,15 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
     // Now adding all z components
     // All z components except on z edges
     index = 1; // Skip first element (in bottom slab)
+    fact = 0.25;
     for (int i=0; i<w; i++) { // full range of x
+      if (i == 1) fact *= 2.0;
+      if (i == w-1) fact /= 2.0;
       for (int j=0; j<d; j++) { // full range of y
+        if (j == 1) fact *= 2.0;
+        if (j == d-1) fact /= 2.0;
         for (int k=1; k<h-1; k++) {
-          LA[index] += ffz * (A[index + zm] + A[index + zp] - 2.0 * A[index]);
+          LA[index] += fact * ffz * (A[index + zm] + A[index + zp] - 2.0 * A[index]);
           index++;
         }
         index += 2; // skip edge slabs
@@ -678,11 +691,16 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
     } else {
       zm = -1;
       zp = 1;
+      fact = 0.25;
       for (int i=0; i<w; i++) {
+      if (i == 1) fact *= 2.0;
+      if (i == w-1) fact /= 2.0;
         for (int j=0; j<d; j++) {
+          if (j == 1) fact *= 2.0;
+          if (j == d-1) fact /= 2.0;
           // z gradient (+ x, y terms of laplacian, calculated above)
-          LA[index]  += ffz * (A[index + zp] - A[index]);
-          LA[index2] += ffz * (A[index2 + zm] - A[index2]);
+          LA[index]  += fact * ffz * (A[index + zp] - A[index]);
+          LA[index2] += fact * ffz * (A[index2 + zm] - A[index2]);
           index  += h;
           index2 += h;
         }
@@ -691,7 +709,7 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
   }
 }
 
-/*
+
 /// Inversion of preconditioner matrix (e.g. diagonal of the Laplacian)
 void integrate_potential::asolve(const std::vector<cvm::real> &b, std::vector<cvm::real> &x)
 {
@@ -699,7 +717,7 @@ void integrate_potential::asolve(const std::vector<cvm::real> &b, std::vector<cv
     x[i] = b[i] * inv_lap_diag[i]; // Jacobi preconditioner - no benefit in tests
   }
   return;
-}*/
+}
 
 
 // b : RHS of equation
@@ -722,21 +740,21 @@ void integrate_potential::nr_linbcg_sym(const std::vector<cvm::real> &b, std::ve
   if (bnrm < EPS) {
     return; // Target is zero, will break relative error calc
   }
-//   asolve(r,z); // precon
+  asolve(r,z); // precon
   bkden = 1.0;
   while (iter < itmax) {
     ++iter;
     for (bknum=0.0,j=0;j<nt;j++) {
-      bknum += r[j]*r[j];  // precon: z[j]*r[j]
+      bknum += z[j]*r[j];
     }
     if (iter == 1) {
       for (j=0;j<nt;j++) {
-        p[j] = r[j];  // precon: p[j] = z[j]
+        p[j] = z[j];
       }
     } else {
       bk=bknum/bkden;
       for (j=0;j<nt;j++) {
-        p[j] = bk*p[j] + r[j];  // precon:  bk*p[j] + z[j]
+        p[j] = bk*p[j] + z[j];
       }
     }
     bkden = bknum;
@@ -749,7 +767,7 @@ void integrate_potential::nr_linbcg_sym(const std::vector<cvm::real> &b, std::ve
       x[j] += ak*p[j];
       r[j] -= ak*z[j];
     }
-//     asolve(r,z);  // precon
+    asolve(r,z);  // precon
     err = l2norm(r)/bnrm;
  std::cout << "iter=" << std::setw(4) << iter+1 << std::setw(12) << err << std::endl;
     if (err <= tol)

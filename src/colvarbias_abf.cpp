@@ -390,13 +390,14 @@ int colvarbias_abf::update()
     const cvm::real * grad;
     cvm::real         inv_count;
 
-    if (b_integrate) {
-      grad  = pmf->gradient_finite_diff(bin);
-      inv_count = 1.0;
-    } else {
+    // TODO write interface for pABF - include dimension 3 case
+//     if (b_integrate) {
+//       grad  = pmf->gradient_finite_diff(bin);
+//       inv_count = 1.0;
+//     } else {
       grad  = &(gradients->value(bin));
       inv_count = 1.0 / cvm::real(count);
-    }
+//     }
 
 //     if ( b_adiabatic_reweighting) {
 //       // Average of force according to conditional distribution of fictitious variable
