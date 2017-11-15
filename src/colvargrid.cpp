@@ -281,17 +281,17 @@ int integrate_potential::integrate(const int itmax, const cvm::real &tol, cvm::r
 //     g.setup();
 //     colvar_grid_gradient *g_backup = gradients;
 //     gradients = &g; // replace our gradients with temporary grid
-// 
-// 
+//
+//
 //     cvm::log("Writing div of grad operator to divgrad.dat");
 //     std::ofstream divgrad_out("divgrad.dat");
-// 
+//
 //     for (int i = 0; i <nt; i++) data[i] = 0.0;
-// 
+//
 //     for (int i = 0; i <nt; i++) {
 //       data[i] = 1; // Unit vector in PMF space
 //       std::vector<int> ix = new_index(); // index in (smaller) gradient grid
-// 
+//
 //       for (int j = 0; j < g.number_of_points() / nd; j++, g.incr(ix)) {
 //         cvm::real const *grad = gradient_finite_diff(ix);
 //         for (int k = 0; k < nd; k++) {
@@ -392,15 +392,8 @@ void integrate_potential::update_div_local(const std::vector<int> &ix0)
     ix[0] = ix0[0];
     get_grad(g10, ix);
 
-    // Special case of corners: there is only one value of the gradient to average
-    cvm::real fact_corner = 0.5;
-    if (!periodic[0] && !periodic[1] &&
-        (ix0[0] == 0 || ix0[0] == nx[0]-1) &&
-        (ix0[1] == 0 || ix0[1] == nx[1]-1)) {
-      fact_corner = 1.0;
-    }
-    divergence[linear_index] = (g10[0]-g00[0] + g11[0]-g01[0]) * fact_corner / widths[0]
-                             + (g01[1]-g00[1] + g11[1]-g10[1]) * fact_corner / widths[1];
+    divergence[linear_index] = ((g10[0]-g00[0] + g11[0]-g01[0]) / widths[0]
+                              + (g01[1]-g00[1] + g11[1]-g10[1]) / widths[1]) / 2.0;
   } else if (nd == 3) {
     cvm::real gc[24]; // stores 3d gradients in 8 contiguous bins
     int index = 0;
@@ -451,6 +444,7 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
     // DIMENSION 2
 
     size_t index, index2;
+    cvm::real fact;
     const cvm::real ffx = 1.0 / (widths[0] * widths[0]);
     const cvm::real ffy = 1.0 / (widths[1] * widths[1]);
     const int h = nx[1];
@@ -471,11 +465,20 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
 
     // All x components except on x edges
     index = h; // Skip first column
+
+    // Halve the term on x edges to preserve symmetry of the Laplacian matrix
+    // (Long Chen, Finite Difference Methods, UCI, 2017)
+    fact = periodic[0] ? 1.0 : 0.5;
+
     for (int i=1; i<w-1; i++) {
-      for (int j=0; j<h; j++) { // full range of y
+      LA[index] = fact * ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index]);
+      index++;
+      for (int j=1; j<h-1; j++) {
         LA[index] = ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index]);
         index++;
       }
+      LA[index] = fact * ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index]);
+      index++;
     }
     // Edges along x (x components only)
     index = 0; // Follows left edge
@@ -492,10 +495,13 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
     } else {
       xm = -h;
       xp =  h;
+      fact = 0.5;
       for (int j=0; j<h; j++) {
         // x gradient (+ y term of laplacian, calculated below)
-        LA[index]  = ffx * (A[index + xp] - A[index]);
-        LA[index2] = ffx * (A[index2 + xm] - A[index2]);
+        if (j == 1) fact = 1.0; // Not corner
+        if (j == h - 1) fact = 0.5; // Corner
+        LA[index]  = fact * ffx * (A[index + xp] - A[index]);
+        LA[index2] = fact * ffx * (A[index2 + xm] - A[index2]);
         index++;
         index2++;
       }
@@ -504,9 +510,14 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
     // Now adding all y components
     // All y components except on y edges
     index = 1; // Skip first element (in first row)
-    for (int i=0; i<w; i++) { // full range of x
+
+    fact = periodic[1] ? 1.0 : 0.5; // for i == 0
+    for (int i=0; i<w; i++) {
+      // Factor of 1/2 on y edges if non-periodic
+      if (i == 1) fact = 1.0;
+      if (i == w - 1) fact = periodic[1] ? 1.0 : 0.5;
       for (int j=1; j<h-1; j++) {
-        LA[index] += ffy * (A[index + ym] + A[index + yp] - 2.0 * A[index]);
+        LA[index] += fact * ffy * (A[index + ym] + A[index + yp] - 2.0 * A[index]);
         index++;
       }
       index += 2; // skip the edges and move to next column
@@ -526,10 +537,13 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
     } else {
       ym = -1;
       yp = 1;
+      fact = 0.5;
       for (int i=0; i<w; i++) {
         // y gradient (+ x term of laplacian, calculated above)
-        LA[index]  += ffy * (A[index + yp] - A[index]);
-        LA[index2] += ffy * (A[index2 + ym] - A[index2]);
+        if (i == 1) fact = 1.0;
+        if (i == w - 1) fact = 0.5;
+        LA[index]  += fact * ffy * (A[index + yp] - A[index]);
+        LA[index2] += fact * ffy * (A[index2 + ym] - A[index2]);
         index  += h;
         index2 += h;
       }
