@@ -271,11 +271,44 @@ int integrate_potential::integrate(const int itmax, const cvm::real &tol, cvm::r
       id[i] = 0.;
       for (int j = 0; j < nt; j++) {
         lap_out << cvm::to_str(i) + " " + cvm::to_str(j)
-        + " " + cvm::to_str(lap_col[j]) << std::endl;
+        + " " + cvm::to_str(lap_col[nt-j-1]) << std::endl;
       }
       lap_out << std::endl;
     }
+
+//     // Write explicit divergence of gradient (nd == 2 only)
+//     colvar_grid_gradient g(*gradients);
+//     g.setup();
+//     colvar_grid_gradient *g_backup = gradients;
+//     gradients = &g; // replace our gradients with temporary grid
+// 
+// 
+//     cvm::log("Writing div of grad operator to divgrad.dat");
+//     std::ofstream divgrad_out("divgrad.dat");
+// 
+//     for (int i = 0; i <nt; i++) data[i] = 0.0;
+// 
+//     for (int i = 0; i <nt; i++) {
+//       data[i] = 1; // Unit vector in PMF space
+//       std::vector<int> ix = new_index(); // index in (smaller) gradient grid
+// 
+//       for (int j = 0; j < g.number_of_points() / nd; j++, g.incr(ix)) {
+//         cvm::real const *grad = gradient_finite_diff(ix);
+//         for (int k = 0; k < nd; k++) {
+//           g.set_value(2 * j + k, grad[k]);
+//         }
+//       }
+//       set_div();
+//       for (int j = 0; j < nt; j++) {
+//         divgrad_out << cvm::to_str(i) + " " + cvm::to_str(j)
+//         + " " + cvm::to_str(divergence[nt-j-1]) << std::endl;
+//       }
+//       data[i] = 0;
+//     }
+//     gradients = g_backup;
   }
+
+  data = backup;
   return iter;
 }
 
@@ -391,12 +424,12 @@ void integrate_potential::update_div_local(const std::vector<int> &ix0)
     cvm::real fact_edge = 0.25;
     int edge_order = 0;
     for (i = 0; i<3; i++) {
-       if (!periodic[i] && (ix0[i] == 0 || ix0[i] == nx[i]-1)) {
-         edge_order++;
-         if (edge_order > 1) { // this is at least a linear edge
-           fact_edge *= 2.0;
-         }
-       }
+      if (!periodic[i] && (ix0[i] == 0 || ix0[i] == nx[i]-1)) {
+        edge_order++;
+        if (edge_order > 1) { // this is at least a linear edge
+          fact_edge *= 2.0;
+        }
+      }
     }
 
     divergence[linear_index] =
@@ -460,7 +493,7 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
       xm = -h;
       xp =  h;
       for (int j=0; j<h; j++) {
-        // x gradient (+ y term of laplacian, calculated above)
+        // x gradient (+ y term of laplacian, calculated below)
         LA[index]  = ffx * (A[index + xp] - A[index]);
         LA[index2] = ffx * (A[index2 + xm] - A[index2]);
         index++;
@@ -501,7 +534,6 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
         index2 += h;
       }
     }
-
 
   } else if (nd == 3) {
     // DIMENSION 3

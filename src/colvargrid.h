@@ -1353,17 +1353,20 @@ public:
   }
 
   /// Return the gradient of the scalar field from finite differences
-  // dimension two only; returns zero at edges
+  // dimension two only
+  // Should not be called on edges of scalar grid, provided it has margins
+  // wrt gradient grid
   // Unused in branch master; used to obtain biasing force in pABF
   inline const cvm::real * gradient_finite_diff( const std::vector<int> &ix0 )
   {
     cvm::real A0, A1;
     std::vector<int> ix;
+
     if (nd != 2) {
       cvm::error("Finite differences available in dimension 2 only.");
       return grad;
     }
-    for (unsigned int n = 0; n < nd; n++) {
+    for (unsigned int n = 0; n < 2; n++) {
       ix = ix0;
       A0 = value(ix);
       ix[n]++; wrap(ix);
