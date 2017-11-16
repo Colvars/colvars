@@ -138,18 +138,18 @@ void colvar_grid_gradient::write_1D_integral(std::ostream &os)
 
   os << "#       xi            A(xi)\n";
 
-  if ( cv.size() != 1 ) {
+  if (cv.size() != 1) {
     cvm::error("Cannot write integral for multi-dimensional gradient grids.");
     return;
   }
 
   integral = 0.0;
-  int_vals.push_back( 0.0 );
+  int_vals.push_back(0.0);
   min = 0.0;
 
   // correction for periodic colvars, so that the PMF is periodic
   cvm::real corr;
-  if ( periodic[0] ) {
+  if (periodic[0]) {
     corr = average();
   } else {
     corr = 0.0;
@@ -166,7 +166,7 @@ void colvar_grid_gradient::write_1D_integral(std::ostream &os)
     }
 
     if ( integral < min ) min = integral;
-    int_vals.push_back( integral );
+    int_vals.push_back(integral);
   }
 
   bin = 0.0;
@@ -187,17 +187,6 @@ void colvar_grid_gradient::write_1D_integral(std::ostream &os)
 
 
 
-
-
-
-// Parameters:
-// b (divergence + BC): member of class integrate_cg; updated locally every ts
-// x (solution PMF): reference to pmf object? or copy of thestd::vector if more efficient
-// atimes, asolve: member functions of class integrate_cg, relying on
-// laplacian: member data (vector) of integrate_cg; sparse matrix representation of
-// finite diff. Laplacian, defined once and for all at construction time.
-// NOTE: most of the data needs complete updates if the grid size changes...
-
 integrate_potential::integrate_potential(std::vector<colvar *> &colvars, colvar_grid_gradient * gradients)
   : colvar_grid_scalar(colvars, true),
     gradients(gradients)
@@ -205,115 +194,66 @@ integrate_potential::integrate_potential(std::vector<colvar *> &colvars, colvar_
   // parent class colvar_grid_scalar is constructed with margin option set to true
   // hence PMF grid is wider than gradient grid if non-PBC
 
-  divergence.resize(nt);
+  if (nd > 1) {
+    divergence.resize(nt);
 
-  // Compute inverse of Laplacian diagonal for Jacobi preconditioning
-  // For now all code related to preconditioning is commented out
-  // until a method better than Jacobi is implemented
-  inv_lap_diag.resize(nt);
-  std::vector<cvm::real> id(nt), lap_col(nt);
-  for (int i = 0; i < nt; i++) {
-    id[i] = 1.;
-    atimes(id, lap_col);
-    id[i] = 0.;
-    inv_lap_diag[i] = 1. / lap_col[i];
+    // Compute inverse of Laplacian diagonal for Jacobi preconditioning
+    // For now all code related to preconditioning is commented out
+    // until a method better than Jacobi is implemented
+    inv_lap_diag.resize(nt);
+    std::vector<cvm::real> id(nt), lap_col(nt);
+    for (int i = 0; i < nt; i++) {
+      id[i] = 1.;
+      atimes(id, lap_col);
+      id[i] = 0.;
+      inv_lap_diag[i] = 1. / lap_col[i];
+    }
   }
 }
 
 
 int integrate_potential::integrate(const int itmax, const cvm::real &tol, cvm::real & err)
 {
-  int iter;
+  int iter = 0;
 
-  // TODO - in the fully periodic case, thanks to translational invariance, the space of
-  // gradient fields can be mapped onto a basis of just 2 vectors (one per colvar)
-  // then solutions of the Poisson equation could be precomputed for those, and just
-  // combined, either on-the-fly with each new sample, or for the whole grid
-  // In the non-periodic case, the dimension of the problem can be high
+  if (nd == 1) {
 
-//   clock_t t1 = clock();
-  nr_linbcg_sym(divergence, data, tol, itmax, iter, err);
-  cvm::log("Completed integration in " + cvm::to_str(iter) + " steps with"
-     + " error " + cvm::to_str(err));
-//   clock_t t2 = clock();
-//   cvm::log("Completed integration in " +
-//      cvm::to_str((double) (t2 - t1) * 1000. / (double) CLOCKS_PER_SEC) + " ms");
+    cvm::real sum = 0.0;
+    cvm::real corr;
+    if ( periodic[0] ) {
+      corr = gradients->average(); // Enforce PBC by subtracting average gradient
+    } else {
+      corr = 0.0;
+    }
 
-//   // Debug output for Poisson integration
-//   std::vector<cvm::real> backup (data);
-//   std::ofstream p("pmf.dat");
-//   add_constant(-1.0 * minimum_value());
-//   if (nd <= 2) {
-//     write_multicol(p);
-//   } else write_opendx(p);
-//   std::vector<cvm::real> lap = std::vector<cvm::real>(data.size());
-//   atimes(data, lap);
-//   data = lap;
-//   std::ofstream l("laplacian.dat");
-//   if (nd <= 2) {
-//     write_multicol(l);
-//   } else write_opendx(l);
-//   data = divergence;
-//   std::ofstream d("divergence.dat");
-//   if (nd <= 2) {
-//     write_multicol(d);
-//   } else write_opendx(d);
-//   data = backup;
+    std::vector<int> ix;
+    // Iterate over valid indices in gradient grid
+    for (ix = new_index(); gradients->index_ok(ix); incr(ix)) {
+      set_value(ix, sum);
+      sum += (gradients->value_output(ix) - corr) * widths[0];
+    }
+    if (index_ok(ix)) {
+      // This will happen if non-periodic: then PMF grid has one extra bin wrt gradient grid
+      set_value(ix, sum);
+    }
 
-//   if (nt <= 200) {
-//     // Write explicit Laplacian operator if small enough
-//     cvm::log("Writing discrete Laplacian to lap_op.dat");
-//     std::ofstream lap_out("lap_op.dat");
-//     std::vector<cvm::real> id(nt), lap_col(nt);
-//     for (int i = 0; i <nt; i++) {
-//       id[i] = 1.;
-//       atimes(id, lap_col);
-//       id[i] = 0.;
-//       for (int j = 0; j < nt; j++) {
-//         lap_out << cvm::to_str(i) + " " + cvm::to_str(j)
-//         + " " + cvm::to_str(lap_col[nt-j-1]) << std::endl;
-//       }
-//       lap_out << std::endl;
-//     }
+  } else if (nd <= 3) {
 
-//     // Write explicit divergence of gradient (nd == 2 only)
-//     colvar_grid_gradient g(*gradients);
-//     g.setup();
-//     colvar_grid_gradient *g_backup = gradients;
-//     gradients = &g; // replace our gradients with temporary grid
-//
-//
-//     cvm::log("Writing div of grad operator to divgrad.dat");
-//     std::ofstream divgrad_out("divgrad.dat");
-//
-//     for (int i = 0; i <nt; i++) data[i] = 0.0;
-//
-//     for (int i = 0; i <nt; i++) {
-//       data[i] = 1; // Unit vector in PMF space
-//       std::vector<int> ix = new_index(); // index in (smaller) gradient grid
-//
-//       for (int j = 0; j < g.number_of_points() / nd; j++, g.incr(ix)) {
-//         cvm::real const *grad = gradient_finite_diff(ix);
-//         for (int k = 0; k < nd; k++) {
-//           g.set_value(2 * j + k, grad[k]);
-//         }
-//       }
-//       set_div();
-//       for (int j = 0; j < nt; j++) {
-//         divgrad_out << cvm::to_str(i) + " " + cvm::to_str(j)
-//         + " " + cvm::to_str(divergence[nt-j-1]) << std::endl;
-//       }
-//       data[i] = 0;
-//     }
-//     gradients = g_backup;
-//   }
-//   data = backup;
+    nr_linbcg_sym(divergence, data, tol, itmax, iter, err);
+    cvm::log("Completed integration in " + cvm::to_str(iter) + " steps with"
+      + " error " + cvm::to_str(err));
+  }
+
+  // PMF anchored at 0 at its minimum
+  add_constant(-1.0 * minimum_value());
+
   return iter;
 }
 
 
 void integrate_potential::set_div()
 {
+  if (nd == 1) return;
   for (std::vector<int> ix = new_index(); index_ok(ix); incr(ix)) {
     update_div_local(ix);
   }
@@ -326,7 +266,10 @@ void integrate_potential::update_div_neighbors(const std::vector<int> &ix0)
   int i, j, k;
 
   // If not periodic, expanded grid ensures that neighbors of ix0 are valid grid points
-  if (nd == 2) {
+  if (nd == 1) {
+    return;
+
+  } else if (nd == 2) {
 
     update_div_local(ix);
     ix[0]++; wrap(ix);
@@ -379,7 +322,10 @@ void integrate_potential::update_div_local(const std::vector<int> &ix0)
   std::vector<int> ix = ix0;
   const cvm::real * g;
 
-  if (nd == 2) {
+  if (nd == 1) {
+    // Not used in 1D
+    return;
+  } else if (nd == 2) {
     // gradients at grid points surrounding the current scalar grid point
     cvm::real g00[2], g01[2], g10[2], g11[2];
 

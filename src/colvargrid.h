@@ -1573,17 +1573,8 @@ public:
 
 
 
-/// Integrate (2D) gradients
+/// Integrate (1D, 2D or 3D) gradients
 
-// Parameters:
-// b (divergence + BC): member of class integrate_cg; updated locally every ts
-// x (solution PMF): reference to pmf object? or copy of the vector if more efficient
-// atimes, asolve: member functions of class integrate_cg, relying on
-// laplacian: member data (vector) of integrate_cg; sparse matrix representation of
-// finite diff.
-// Laplacian, defined implicitly by functions atimes and asolve (based on boundary conditions).
-// Most of the data needs complete updates if the grid size changes...
-//
 class integrate_potential : public colvar_grid_scalar
 {
   public:
