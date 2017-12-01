@@ -30,10 +30,9 @@ int tcl_colvars(ClientData clientdata, Tcl_Interp *interp,
 
     if (objc >= 3) {
       if (!strcmp(Tcl_GetString(objv[1]), "molid")) {
-        Tcl_SetResult(interp, const_cast<char *>(
-                                  std::string("Colvars module already created:"
-                                              " type \"cv\" for a list of "
-                                              "arguments.").c_str()),
+        Tcl_SetResult(interp, (char *) "Colvars module already created:"
+                                       " type \"cv\" for a list of "
+                                       "arguments.",
                       TCL_STATIC);
         return TCL_ERROR;
       }
@@ -50,7 +49,7 @@ int tcl_colvars(ClientData clientdata, Tcl_Interp *interp,
     // append the error messages from colvarscript to the error messages
     // caught by the proxy
     tcl_result = proxy->error_output + proxy->script->result;
-    Tcl_SetResult(interp, (char *) tcl_result.c_str(), TCL_STATIC);
+    Tcl_SetResult(interp, (char *) tcl_result.c_str(), TCL_VOLATILE);
 
     if (proxy->delete_requested()) {
       delete proxy;
@@ -75,9 +74,7 @@ int tcl_colvars(ClientData clientdata, Tcl_Interp *interp,
 
     VMDApp *vmd = (VMDApp *) clientdata;
     if (vmd == NULL) {
-      Tcl_SetResult(interp,
-                    const_cast<char *>(std::string("Error: cannot find VMD "
-                                                   "main object.").c_str()),
+      Tcl_SetResult(interp, (char *) "Error: cannot find VMD main object.",
                     TCL_STATIC);
       return TCL_ERROR;
     }
@@ -95,14 +92,16 @@ int tcl_colvars(ClientData clientdata, Tcl_Interp *interp,
           proxy = new colvarproxy_vmd(interp, vmd, molid);
           return TCL_OK;
         } else {
-          Tcl_SetResult(interp, (char *) (std::string("Error: molecule not found.").c_str()), TCL_STATIC);
+          Tcl_SetResult(interp, (char *) "Error: molecule not found.",
+                        TCL_STATIC);
           return TCL_ERROR;
         }
       }
     }
   }
 
-  Tcl_SetResult(interp, (char *) (std::string("First, setup the colvars module with: cv molid <molecule id>").c_str()), TCL_STATIC);
+  Tcl_SetResult(interp, (char *) "First, setup the Colvars module with: "
+                                 "cv molid <molecule id>", TCL_STATIC);
   return TCL_ERROR;
 }
 

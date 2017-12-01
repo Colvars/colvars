@@ -67,7 +67,9 @@ int colvarscript::run(int objc, unsigned char *const objv[])
   }
 
   if (objc < 2) {
-    return exec_command(cv_help, NULL, objc, objv);
+    set_str_result("No commands given: use \"cv help\" "
+                   "for a list of commands.");
+    return COLVARSCRIPT_ERROR;
   }
 
   std::string const cmd(obj_to_str(objv[1]));
