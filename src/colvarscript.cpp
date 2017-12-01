@@ -116,8 +116,7 @@ int colvarscript::run(int objc, unsigned char *const objv[])
   if (cmd == "delete") {
     // Note: the delete bit may be ignored by some backends
     // it is mostly useful in VMD
-    colvars->set_error_bits(DELETE_COLVARS);
-    return COLVARS_OK;
+    return proxy->request_deletion();
   }
 
   if (cmd == "update") {

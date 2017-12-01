@@ -52,7 +52,7 @@ int tcl_colvars(ClientData clientdata, Tcl_Interp *interp,
     tcl_result = proxy->error_output + proxy->script->result;
     Tcl_SetResult(interp, (char *) tcl_result.c_str(), TCL_STATIC);
 
-    if (cvm::get_error_bit(DELETE_COLVARS)) {
+    if (proxy->delete_requested()) {
       delete proxy;
       proxy = NULL;
       return TCL_OK;
@@ -170,6 +170,12 @@ colvarproxy_vmd::~colvarproxy_vmd()
     delete colvars;
     colvars = NULL;
   }
+}
+
+
+int colvarproxy_vmd::request_deletion()
+{
+  b_delete_requested = true;
 }
 
 

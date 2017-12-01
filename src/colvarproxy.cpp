@@ -675,6 +675,7 @@ colvarproxy::colvarproxy()
 {
   colvars = NULL;
   b_simulation_running = true;
+  b_delete_requested = false;
 }
 
 
@@ -687,6 +688,14 @@ int colvarproxy::reset()
   error_code |= colvarproxy_atoms::reset();
   error_code |= colvarproxy_atom_groups::reset();
   return error_code;
+}
+
+
+int colvarproxy::request_deletion()
+{
+  return cvm::error("Error: \"delete\" command is only available in VMD; "
+                    "please use \"reset\" instead.\n",
+                    COLVARS_NOT_IMPLEMENTED);
 }
 
 

@@ -46,6 +46,7 @@ public:
 
   colvarproxy_vmd(Tcl_Interp *interp, VMDApp *vmd, int molid);
   ~colvarproxy_vmd();
+  int request_deletion();
 
   int setup();
 

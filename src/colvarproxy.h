@@ -588,6 +588,15 @@ public:
   /// Destructor
   virtual ~colvarproxy();
 
+  /// Request deallocation of the module (currently only implemented by VMD)
+  virtual int request_deletion();
+
+  /// Whether deallocation was requested
+  inline bool delete_requested()
+  {
+    return b_delete_requested;
+  }
+
   /// \brief Reset proxy state, e.g. requested atoms
   virtual int reset();
 
@@ -624,6 +633,9 @@ protected:
 
   /// Whether a simulation is running (warn against irrecovarable errors)
   bool b_simulation_running;
+
+  /// Whether the entire module should be deallocated by the host engine
+  bool b_delete_requested;
 
 };
 
