@@ -52,6 +52,10 @@ int tcl_colvars(ClientData clientdata, Tcl_Interp *interp,
     Tcl_SetResult(interp, (char *) tcl_result.c_str(), TCL_VOLATILE);
 
     if (proxy->delete_requested()) {
+      Tcl_SetResult(interp,
+                    (char *) "Deleting Colvars instance: to recreate, "
+                    "use cv molid <molecule id>",
+                    TCL_STATIC);
       delete proxy;
       proxy = NULL;
       return TCL_OK;
