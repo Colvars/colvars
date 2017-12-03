@@ -1067,8 +1067,6 @@ int colvarmodule::reset()
 
 int colvarmodule::setup_input()
 {
-  if (this->size() == 0) return cvm::get_error();
-
   std::string restart_in_name("");
 
   // read the restart configuration, if available
@@ -1101,14 +1099,12 @@ int colvarmodule::setup_input()
     }
   }
 
-  return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
+  return cvm::get_error();
 }
 
 
 int colvarmodule::setup_output()
 {
-  if (this->size() == 0) return cvm::get_error();
-
   int error_code = COLVARS_OK;
 
   // output state file (restart)
@@ -1117,7 +1113,8 @@ int colvarmodule::setup_output()
     std::string("");
 
   if (restart_out_name.size()) {
-    cvm::log("The restart output state file will be \""+restart_out_name+"\".\n");
+    cvm::log("The restart output state file will be \""+
+             restart_out_name+"\".\n");
   }
 
   output_prefix() = proxy->output_prefix();
@@ -1148,7 +1145,7 @@ int colvarmodule::setup_output()
     set_error_bits(FILE_ERROR);
   }
 
-  return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
+  return cvm::get_error();
 }
 
 
