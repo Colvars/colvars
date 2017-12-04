@@ -349,7 +349,9 @@ if (__name__ == '__main__'):
                 columns += [y]
                 fmt += " %21.14f"
         columns = tuple(columns)
-        np.savetxt(fname=args.output_file,
+        output_file = args.output_file
+        if (output_file == '-'): output_file = sys.stdout
+        np.savetxt(fname=output_file,
                    X=list(zip(*columns)),
                    fmt=str(fmt))
 
