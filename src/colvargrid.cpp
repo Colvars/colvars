@@ -378,6 +378,7 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
     // DIMENSION 2
 
     size_t index, index2;
+    int i, j;
     cvm::real fact;
     const cvm::real ffx = 1.0 / (widths[0] * widths[0]);
     const cvm::real ffy = 1.0 / (widths[1] * widths[1]);
@@ -404,10 +405,10 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
     // (Long Chen, Finite Difference Methods, UCI, 2017)
     fact = periodic[0] ? 1.0 : 0.5;
 
-    for (int i=1; i<w-1; i++) {
+    for (i=1; i<w-1; i++) {
       LA[index] = fact * ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index]);
       index++;
-      for (int j=1; j<h-1; j++) {
+      for (j=1; j<h-1; j++) {
         LA[index] = ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index]);
         index++;
       }
@@ -420,7 +421,7 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
     if (periodic[0]) {
       xm =  h * (w - 1);
       xp =  h;
-      for (int j=0; j<h; j++) {
+      for (j=0; j<h; j++) {
         LA[index]  = ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index]);
         LA[index2] = ffx * (A[index2 - xp] + A[index2 - xm] - 2.0 * A[index2]);
         index++;
@@ -430,7 +431,7 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
       xm = -h;
       xp =  h;
       fact = 0.5;
-      for (int j=0; j<h; j++) {
+      for (j=0; j<h; j++) {
         // x gradient (+ y term of laplacian, calculated below)
         if (j == 1) fact = 1.0; // Not corner
         if (j == h - 1) fact = 0.5; // Corner
@@ -446,11 +447,11 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
     index = 1; // Skip first element (in first row)
 
     fact = periodic[1] ? 1.0 : 0.5; // for i == 0
-    for (int i=0; i<w; i++) {
+    for (i=0; i<w; i++) {
       // Factor of 1/2 on y edges if non-periodic
       if (i == 1) fact = 1.0;
       if (i == w - 1) fact = periodic[1] ? 1.0 : 0.5;
-      for (int j=1; j<h-1; j++) {
+      for (j=1; j<h-1; j++) {
         LA[index] += fact * ffy * (A[index + ym] + A[index + yp] - 2.0 * A[index]);
         index++;
       }
@@ -462,7 +463,7 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
     if (periodic[1]) {
       ym = h - 1;
       yp = 1;
-      for (int i=0; i<w; i++) {
+      for (i=0; i<w; i++) {
         LA[index]  += ffy * (A[index + ym] + A[index + yp] - 2.0 * A[index]);
         LA[index2] += ffy * (A[index2 - yp] + A[index2 - ym] - 2.0 * A[index2]);
         index  += h;
@@ -472,7 +473,7 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
       ym = -1;
       yp = 1;
       fact = 0.5;
-      for (int i=0; i<w; i++) {
+      for (i=0; i<w; i++) {
         // y gradient (+ x term of laplacian, calculated above)
         if (i == 1) fact = 1.0;
         if (i == w - 1) fact = 0.5;
@@ -486,6 +487,7 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
   } else if (nd == 3) {
     // DIMENSION 3
 
+    int i, j, k;
     size_t index, index2;
     cvm::real fact = 1.0;
     const cvm::real ffx = 1.0 / (widths[0] * widths[0]);
@@ -505,11 +507,11 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
     // All x components except on x edges
     index = d * h; // Skip left slab
     fact = 0.25;
-    for (int i=1; i<w-1; i++) {
-      for (int j=0; j<d; j++) { // full range of y
+    for (i=1; i<w-1; i++) {
+      for (j=0; j<d; j++) { // full range of y
         if (j == 1) fact *= 2.0;
         if (j == d-1) fact /= 2.0;
-        for (int k=0; k<h; k++) { // full range of z
+        for (k=0; k<h; k++) { // full range of z
           if (k == 1) fact *= 2.0;
           if (k == h-1) fact /= 2.0;
           LA[index] = fact * ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index]);
@@ -523,8 +525,8 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
     if (periodic[0]) {
       xm =  d * h * (w - 1);
       xp =  d * h;
-      for (int j=0; j<d; j++) {
-        for (int k=0; k<h; k++) {
+      for (j=0; j<d; j++) {
+        for (k=0; k<h; k++) {
           LA[index]  = ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index]);
           LA[index2] = ffx * (A[index2 - xp] + A[index2 - xm] - 2.0 * A[index2]);
           index++;
@@ -535,10 +537,10 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
       xm = -d * h;
       xp =  d * h;
       fact = 0.25;
-      for (int j=0; j<d; j++) {
+      for (j=0; j<d; j++) {
         if (j == 1) fact *= 2.0;
         if (j == d-1) fact /= 2.0;
-        for (int k=0; k<h; k++) {
+        for (k=0; k<h; k++) {
           if (k == 1) fact *= 2.0;
           if (k == h-1) fact /= 2.0;
           // x gradient (+ y, z terms of laplacian, calculated below)
@@ -554,11 +556,11 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
     // All y components except on y edges
     index = h; // Skip first column (in front slab)
     fact = 0.25;
-    for (int i=0; i<w; i++) { // full range of x
+    for (i=0; i<w; i++) { // full range of x
       if (i == 1) fact *= 2.0;
       if (i == w-1) fact /= 2.0;
-      for (int j=1; j<d-1; j++) {
-        for (int k=0; k<h; k++) {
+      for (j=1; j<d-1; j++) {
+        for (k=0; k<h; k++) {
           if (k == 1) fact *= 2.0;
           if (k == h-1) fact /= 2.0;
           LA[index] += fact * ffy * (A[index + ym] + A[index + yp] - 2.0 * A[index]);
@@ -573,8 +575,8 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
     if (periodic[1]) {
       ym = h - 1;
       yp = 1;
-      for (int i=0; i<w; i++) {
-        for (int k=0; k<h; k++) {
+      for (i=0; i<w; i++) {
+        for (k=0; k<h; k++) {
           LA[index]  += ffy * (A[index + ym] + A[index + yp] - 2.0 * A[index]);
           LA[index2] += ffy * (A[index2 - yp] + A[index2 - ym] - 2.0 * A[index2]);
           index++;
@@ -587,10 +589,10 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
       ym = -h;
       yp =  h;
       fact = 0.25;
-      for (int i=0; i<w; i++) {
+      for (i=0; i<w; i++) {
         if (i == 1) fact *= 2.0;
         if (i == w-1) fact /= 2.0;
-        for (int k=0; k<h; k++) {
+        for (k=0; k<h; k++) {
           if (k == 1) fact *= 2.0;
           if (k == h-1) fact /= 2.0;
           // y gradient (+ x, z terms of laplacian, calculated above and below)
@@ -608,13 +610,13 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
     // All z components except on z edges
     index = 1; // Skip first element (in bottom slab)
     fact = 0.25;
-    for (int i=0; i<w; i++) { // full range of x
+    for (i=0; i<w; i++) { // full range of x
       if (i == 1) fact *= 2.0;
       if (i == w-1) fact /= 2.0;
-      for (int j=0; j<d; j++) { // full range of y
+      for (j=0; j<d; j++) { // full range of y
         if (j == 1) fact *= 2.0;
         if (j == d-1) fact /= 2.0;
-        for (int k=1; k<h-1; k++) {
+        for (k=1; k<h-1; k++) {
           LA[index] += fact * ffz * (A[index + zm] + A[index + zp] - 2.0 * A[index]);
           index++;
         }
@@ -627,8 +629,8 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
     if (periodic[2]) {
       zm = h - 1;
       zp = 1;
-      for (int i=0; i<w; i++) {
-        for (int j=0; j<d; j++) {
+      for (i=0; i<w; i++) {
+        for (j=0; j<d; j++) {
           LA[index]  += ffz * (A[index + zm] + A[index + zp] - 2.0 * A[index]);
           LA[index2] += ffz * (A[index2 - zp] + A[index2 - zm] - 2.0 * A[index2]);
           index  += h;
@@ -639,10 +641,10 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
       zm = -1;
       zp = 1;
       fact = 0.25;
-      for (int i=0; i<w; i++) {
+      for (i=0; i<w; i++) {
       if (i == 1) fact *= 2.0;
       if (i == w-1) fact /= 2.0;
-        for (int j=0; j<d; j++) {
+        for (j=0; j<d; j++) {
           if (j == 1) fact *= 2.0;
           if (j == d-1) fact /= 2.0;
           // z gradient (+ x, y terms of laplacian, calculated above)
