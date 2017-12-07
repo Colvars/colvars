@@ -1598,6 +1598,12 @@ class integrate_potential : public colvar_grid_scalar
   /// based on complete gradient grid
   void set_div();
 
+  /// \brief Add constant to potential so that its minimum value is zero
+  /// Useful e.g. for output
+  inline void set_zero_minimum() {
+    add_constant(-1.0 * minimum_value());
+  }
+
   protected:
 
   // Reference to gradient grid

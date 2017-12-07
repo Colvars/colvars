@@ -248,9 +248,6 @@ int integrate_potential::integrate(const int itmax, const cvm::real &tol, cvm::r
       + " error " + cvm::to_str(err));
   }
 
-  // PMF anchored at 0 at its minimum
-  add_constant(-1.0 * minimum_value());
-
   return iter;
 }
 
