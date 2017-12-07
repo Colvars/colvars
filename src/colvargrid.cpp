@@ -200,14 +200,18 @@ integrate_potential::integrate_potential(std::vector<colvar *> &colvars, colvar_
     // Compute inverse of Laplacian diagonal for Jacobi preconditioning
     // For now all code related to preconditioning is commented out
     // until a method better than Jacobi is implemented
-    inv_lap_diag.resize(nt);
-    std::vector<cvm::real> id(nt), lap_col(nt);
-    for (int i = 0; i < nt; i++) {
-      id[i] = 1.;
-      atimes(id, lap_col);
-      id[i] = 0.;
-      inv_lap_diag[i] = 1. / lap_col[i];
-    }
+//     cvm::log("Preparing inverse diagonal for preconditioning...");
+//     inv_lap_diag.resize(nt);
+//     std::vector<cvm::real> id(nt), lap_col(nt);
+//     for (int i = 0; i < nt; i++) {
+//       if (i % (nt / 100) == 0)
+//         cvm::log(cvm::to_str(i));
+//       id[i] = 1.;
+//       atimes(id, lap_col);
+//       id[i] = 0.;
+//       inv_lap_diag[i] = 1. / lap_col[i];
+//     }
+//     cvm::log("Done.");
   }
 }
 
@@ -656,14 +660,15 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
 }
 
 
+/*
 /// Inversion of preconditioner matrix (e.g. diagonal of the Laplacian)
 void integrate_potential::asolve(const std::vector<cvm::real> &b, std::vector<cvm::real> &x)
 {
   for (size_t i=0; i<nt; i++) {
-    x[i] = b[i] * inv_lap_diag[i]; // Jacobi preconditioner - no benefit in tests
+    x[i] = b[i] * inv_lap_diag[i]; // Jacobi preconditioner - little benefit in tests so far
   }
   return;
-}
+}*/
 
 
 // b : RHS of equation
@@ -686,21 +691,21 @@ void integrate_potential::nr_linbcg_sym(const std::vector<cvm::real> &b, std::ve
   if (bnrm < EPS) {
     return; // Target is zero, will break relative error calc
   }
-  asolve(r,z); // precon
+//   asolve(r,z); // precon
   bkden = 1.0;
   while (iter < itmax) {
     ++iter;
     for (bknum=0.0,j=0;j<nt;j++) {
-      bknum += z[j]*r[j];
+      bknum += r[j]*r[j];  // precon: z[j]*r[j]
     }
     if (iter == 1) {
       for (j=0;j<nt;j++) {
-        p[j] = z[j];
+        p[j] = r[j];  // precon: p[j] = z[j]
       }
     } else {
       bk=bknum/bkden;
       for (j=0;j<nt;j++) {
-        p[j] = bk*p[j] + z[j];
+        p[j] = bk*p[j] + r[j];  // precon:  bk*p[j] + z[j]
       }
     }
     bkden = bknum;
@@ -713,7 +718,7 @@ void integrate_potential::nr_linbcg_sym(const std::vector<cvm::real> &b, std::ve
       x[j] += ak*p[j];
       r[j] -= ak*z[j];
     }
-    asolve(r,z);  // precon
+//     asolve(r,z);  // precon
     err = l2norm(r)/bnrm;
  std::cout << "iter=" << std::setw(4) << iter+1 << std::setw(12) << err << std::endl;
     if (err <= tol)

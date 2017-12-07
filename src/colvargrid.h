@@ -1606,7 +1606,7 @@ class integrate_potential : public colvar_grid_scalar
   /// Array holding divergence + boundary terms (modified Neumann) if not periodic
   std::vector<cvm::real> divergence;
 
-  std::vector<cvm::real> inv_lap_diag; // Inverse of the diagonal of the Laplacian; for conditioning
+//   std::vector<cvm::real> inv_lap_diag; // Inverse of the diagonal of the Laplacian; for conditioning
 
   /// \brief Update matrix containing divergence and boundary conditions
   /// called by update_div_neighbors
@@ -1627,8 +1627,8 @@ class integrate_potential : public colvar_grid_scalar
   /// Multiplication by sparse matrix representing Lagrangian (or its transpose)
   void atimes(const std::vector<cvm::real> &x, std::vector<cvm::real> &r);
 
-  /// Inversion of preconditioner matrix
-  void asolve(const std::vector<cvm::real> &b, std::vector<cvm::real> &x);
+//   /// Inversion of preconditioner matrix
+//   void asolve(const std::vector<cvm::real> &b, std::vector<cvm::real> &x);
 };
 
 #endif
