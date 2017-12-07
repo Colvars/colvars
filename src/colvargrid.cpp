@@ -248,6 +248,75 @@ int integrate_potential::integrate(const int itmax, const cvm::real &tol, cvm::r
       + " error " + cvm::to_str(err));
   }
 
+  // Debug output for Poisson integration
+  std::vector<cvm::real> backup (data);
+  std::ofstream p("pmf.dat");
+  if (nd <= 2) {
+    write_multicol(p);
+  } else write_opendx(p);
+  std::vector<cvm::real> lap = std::vector<cvm::real>(data.size());
+  atimes(data, lap);
+  data = lap;
+  std::ofstream l("laplacian.dat");
+  if (nd <= 2) {
+    write_multicol(l);
+  } else write_opendx(l);
+  data = divergence;
+  std::ofstream d("divergence.dat");
+  if (nd <= 2) {
+    write_multicol(d);
+  } else write_opendx(d);
+  data = backup;
+
+  if (nt <= 200) {
+    // Write explicit Laplacian operator if small enough
+    cvm::log("Writing discrete Laplacian to lap_op.dat");
+    std::ofstream lap_out("lap_op.dat");
+    std::vector<cvm::real> id(nt), lap_col(nt);
+    for (int i = 0; i <nt; i++) {
+      id[i] = 1.;
+      atimes(id, lap_col);
+      id[i] = 0.;
+      for (int j = 0; j < nt; j++) {
+        lap_out << cvm::to_str(i) + " " + cvm::to_str(j)
+        + " " + cvm::to_str(lap_col[nt-j-1]) << std::endl;
+      }
+      lap_out << std::endl;
+    }
+/*
+    // Write explicit divergence of gradient (nd == 2 only)
+    colvar_grid_gradient g(*gradients);
+    g.setup();
+    colvar_grid_gradient *g_backup = gradients;
+    gradients = &g; // replace our gradients with temporary grid
+
+
+    cvm::log("Writing div of grad operator to divgrad.dat");
+    std::ofstream divgrad_out("divgrad.dat");
+
+    for (int i = 0; i <nt; i++) data[i] = 0.0;
+
+    for (int i = 0; i <nt; i++) {
+      data[i] = 1; // Unit vector in PMF space
+      std::vector<int> ix = new_index(); // index in (smaller) gradient grid
+
+      for (int j = 0; j < g.number_of_points() / nd; j++, g.incr(ix)) {
+        cvm::real const *grad = gradient_finite_diff(ix);
+        for (int k = 0; k < nd; k++) {
+          g.set_value(2 * j + k, grad[k]);
+        }
+      }
+      set_div();
+      for (int j = 0; j < nt; j++) {
+        divgrad_out << cvm::to_str(i) + " " + cvm::to_str(j)
+        + " " + cvm::to_str(divergence[nt-j-1]) << std::endl;
+      }
+      data[i] = 0;
+    }
+    gradients = g_backup;*/
+  }
+  data = backup;
+
   return iter;
 }
 
