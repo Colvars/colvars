@@ -275,6 +275,7 @@ int integrate_potential::integrate(const int itmax, const cvm::real &tol, cvm::r
     std::vector<cvm::real> id(nt), lap_col(nt);
     for (int i = 0; i <nt; i++) {
       id[i] = 1.;
+      lap_col.assign(nt, 0.); // Useful when running partial Laplacian calc for debugging
       atimes(id, lap_col);
       id[i] = 0.;
       for (int j = 0; j < nt; j++) {
@@ -408,7 +409,7 @@ void integrate_potential::update_div_local(const std::vector<int> &ix0)
     get_grad(g10, ix);
 
     divergence[linear_index] = ((g10[0]-g00[0] + g11[0]-g01[0]) / widths[0]
-                              + (g01[1]-g00[1] + g11[1]-g10[1]) / widths[1]) / 2.0;
+                              + (g01[1]-g00[1] + g11[1]-g10[1]) / widths[1]) * 0.5;
   } else if (nd == 3) {
     cvm::real gc[24]; // stores 3d gradients in 8 contiguous bins
     int index = 0;
@@ -434,7 +435,7 @@ void integrate_potential::update_div_local(const std::vector<int> &ix0)
     + (gc[3*2+1]-gc[0+1] + gc[3*3+1]-gc[3*1+1] + gc[3*6+1]-gc[3*4+1] + gc[3*7+1]-gc[3*5+1])
       / widths[1]
     + (gc[3*1+2]-gc[0+2] + gc[3*3+2]-gc[3*2+2] + gc[3*5+2]-gc[3*4+2] + gc[3*7+2]-gc[3*6+2])
-      / widths[2]) / 4.0;
+      / widths[2]) * 0.25;
   }
 }
 
@@ -470,11 +471,12 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
     // All x components except on x edges
     index = h; // Skip first column
 
-    // Halve the term on x edges to preserve symmetry of the Laplacian matrix
+    // Halve the term on y edges (if any) to preserve symmetry of the Laplacian matrix
     // (Long Chen, Finite Difference Methods, UCI, 2017)
-    fact = periodic[0] ? 1.0 : 0.5;
+    fact = periodic[1] ? 1.0 : 0.5;
 
     for (i=1; i<w-1; i++) {
+      // Full range of j, but factor may change on y edges (j == 0 and j == h-1)
       LA[index] = fact * ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index]);
       index++;
       for (j=1; j<h-1; j++) {
@@ -490,36 +492,49 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
     if (periodic[0]) {
       xm =  h * (w - 1);
       xp =  h;
-      for (j=0; j<h; j++) {
+      fact = periodic[1] ? 1.0 : 0.5;
+      LA[index]  = fact * ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index]);
+      LA[index2] = fact * ffx * (A[index2 - xp] + A[index2 - xm] - 2.0 * A[index2]);
+      index++;
+      index2++;
+      for (j=1; j<h-1; j++) {
         LA[index]  = ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index]);
         LA[index2] = ffx * (A[index2 - xp] + A[index2 - xm] - 2.0 * A[index2]);
         index++;
         index2++;
       }
+      LA[index]  = fact * ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index]);
+      LA[index2] = fact * ffx * (A[index2 - xp] + A[index2 - xm] - 2.0 * A[index2]);
     } else {
       xm = -h;
       xp =  h;
-      fact = 0.5;
-      for (j=0; j<h; j++) {
+      fact = periodic[1] ? 1.0 : 0.5; // Halve in corners in full PBC only
+      // lower corner, "j == 0"
+      LA[index]  = fact * ffx * (A[index + xp] - A[index]);
+      LA[index2] = fact * ffx * (A[index2 + xm] - A[index2]);
+      index++;
+      index2++;
+      for (j=1; j<h-1; j++) {
         // x gradient (+ y term of laplacian, calculated below)
-        if (j == 1) fact = 1.0; // Not corner
-        if (j == h - 1) fact = 0.5; // Corner
-        LA[index]  = fact * ffx * (A[index + xp] - A[index]);
-        LA[index2] = fact * ffx * (A[index2 + xm] - A[index2]);
+        LA[index]  = ffx * (A[index + xp] - A[index]);
+        LA[index2] = ffx * (A[index2 + xm] - A[index2]);
         index++;
         index2++;
       }
+      // upper corner, j == h-1
+      LA[index]  = fact * ffx * (A[index + xp] - A[index]);
+      LA[index2] = fact * ffx * (A[index2 + xm] - A[index2]);
     }
 
     // Now adding all y components
     // All y components except on y edges
     index = 1; // Skip first element (in first row)
 
-    fact = periodic[1] ? 1.0 : 0.5; // for i == 0
+    fact = periodic[0] ? 1.0 : 0.5; // for i == 0
     for (i=0; i<w; i++) {
-      // Factor of 1/2 on y edges if non-periodic
+      // Factor of 1/2 on x edges if non-periodic
       if (i == 1) fact = 1.0;
-      if (i == w - 1) fact = periodic[1] ? 1.0 : 0.5;
+      if (i == w - 1) fact = periodic[0] ? 1.0 : 0.5;
       for (j=1; j<h-1; j++) {
         LA[index] += fact * ffy * (A[index + ym] + A[index + yp] - 2.0 * A[index]);
         index++;
@@ -530,27 +545,40 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
     index = 0; // Follows bottom edge
     index2 = h - 1; // Follows top edge
     if (periodic[1]) {
+      fact = periodic[0] ? 1.0 : 0.5;
       ym = h - 1;
       yp = 1;
-      for (i=0; i<w; i++) {
+      LA[index]  += fact * ffy * (A[index + ym] + A[index + yp] - 2.0 * A[index]);
+      LA[index2] += fact * ffy * (A[index2 - yp] + A[index2 - ym] - 2.0 * A[index2]);
+      index  += h;
+      index2 += h;
+      for (i=1; i<w-1; i++) {
         LA[index]  += ffy * (A[index + ym] + A[index + yp] - 2.0 * A[index]);
         LA[index2] += ffy * (A[index2 - yp] + A[index2 - ym] - 2.0 * A[index2]);
         index  += h;
         index2 += h;
       }
+      LA[index]  += fact * ffy * (A[index + ym] + A[index + yp] - 2.0 * A[index]);
+      LA[index2] += fact * ffy * (A[index2 - yp] + A[index2 - ym] - 2.0 * A[index2]);
     } else {
       ym = -1;
       yp = 1;
-      fact = 0.5;
-      for (i=0; i<w; i++) {
+      fact = periodic[0] ? 1.0 : 0.5; // Halve in corners in full PBC only
+      // Left corner
+      LA[index]  += fact * ffy * (A[index + yp] - A[index]);
+      LA[index2] += fact * ffy * (A[index2 + ym] - A[index2]);
+      index  += h;
+      index2 += h;
+      for (i=1; i<w-1; i++) {
         // y gradient (+ x term of laplacian, calculated above)
-        if (i == 1) fact = 1.0;
-        if (i == w - 1) fact = 0.5;
-        LA[index]  += fact * ffy * (A[index + yp] - A[index]);
-        LA[index2] += fact * ffy * (A[index2 + ym] - A[index2]);
+        LA[index]  += ffy * (A[index + yp] - A[index]);
+        LA[index2] += ffy * (A[index2 + ym] - A[index2]);
         index  += h;
         index2 += h;
       }
+      // Right corner
+      LA[index]  += fact * ffy * (A[index + yp] - A[index]);
+      LA[index2] += fact * ffy * (A[index2 + ym] - A[index2]);
     }
 
   } else if (nd == 3) {
@@ -575,11 +603,11 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
 
     // All x components except on x edges
     index = d * h; // Skip left slab
-    fact = 0.25;
+    fact = periodic[0] ? 1 : 0.25;
     for (i=1; i<w-1; i++) {
       for (j=0; j<d; j++) { // full range of y
-        if (j == 1) fact *= 2.0;
-        if (j == d-1) fact /= 2.0;
+        if (j == 1 && periodic[0]) fact *= 2.0;
+        if (j == d-1 && periodic[0]) fact *= 0.5;
         for (k=0; k<h; k++) { // full range of z
           if (k == 1) fact *= 2.0;
           if (k == h-1) fact /= 2.0;
