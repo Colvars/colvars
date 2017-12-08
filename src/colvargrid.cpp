@@ -908,14 +908,14 @@ void integrate_potential::nr_linbcg_sym(const std::vector<cvm::real> &b, std::ve
     if (err <= tol)
       break;
   }
-  // Final check for actual error
-  atimes(x,r);
-  for (j=0;j<nt;j++) {
-    r[j]=b[j]-r[j];
-  }
-  err = l2norm(r)/bnrm;
-  std::cout << "Final error calculated as |B - Ax| / |B|: " << std::setw(12) << err
-  << std::endl;
+//   // Final check for actual error
+//   atimes(x,r);
+//   for (j=0;j<nt;j++) {
+//     r[j]=b[j]-r[j];
+//   }
+//   err = l2norm(r)/bnrm;
+//   std::cout << "Final error calculated as |B - Ax| / |B|: " << std::setw(12) << err
+//   << std::endl;
 }
 
 cvm::real integrate_potential::l2norm(const std::vector<cvm::real> &x)

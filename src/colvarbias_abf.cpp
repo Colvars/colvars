@@ -300,25 +300,21 @@ int colvarbias_abf::update()
 
   if (cvm::debug()) cvm::log("Updating ABF bias " + this->name);
 
-  if (cvm::step_relative() == 0) {
+  for (size_t i = 0; i < colvars.size(); i++) {
+    bin[i] = samples->current_bin_scalar(i);
+  }
+  if (cvm::proxy->total_forces_same_step()) {
+    // e.g. in LAMMPS, total forces are current
+    force_bin = bin;
+  }
 
-    // At first timestep, do only:
-    // initialization stuff (file operations relying on n_abf_biases
-    // compute current value of colvars
-
-    for (size_t i = 0; i < colvars.size(); i++) {
-      bin[i] = samples->current_bin_scalar(i);
-    }
-
-    if (b_integrate) {
+  if (cvm::step_relative() == 0 && b_integrate) {
       pmf->set_div();
       pmf->integrate(INITIAL_STEPS, INITIAL_TOL, err);
+      pmf->set_zero_minimum(); // For output purposes
       // Write integrated PMF for intial gradient
       write_gradients_samples(output_prefix);
-    }
-
-    // End of timestep 0-only actions
-  } else {
+  }
 
   if (cvm::step_relative() > 0 || cvm::proxy->total_forces_same_step()) {
 
@@ -337,8 +333,10 @@ int colvarbias_abf::update()
           update_system_force(i);
         }
         gradients->acc_force(force_bin, system_force);
+        if ( b_integrate ) {
+          pmf->update_div_neighbors(force_bin);
+        }
       }
-      gradients->acc_force(force_bin, system_force);
     }
 
     if ( z_gradients && update_bias ) {
@@ -355,11 +353,10 @@ int colvarbias_abf::update()
       }
     }
 
-    // Integrate if possible
     if ( b_integrate ) {
-      pmf->update_div_neighbors(force_bin);
       if ( cvm::step_relative() % integrate_freq == 0 ) {
         iter = pmf->integrate(STEPS, TOL, err);
+        pmf->set_zero_minimum(); // TODO: do this only when necessary
       }
     }
   }
