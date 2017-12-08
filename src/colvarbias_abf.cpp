@@ -274,21 +274,15 @@ int colvarbias_abf::update()
 {
   if (cvm::debug()) cvm::log("Updating ABF bias " + this->name);
 
-  if (cvm::step_relative() == 0) {
+  for (size_t i = 0; i < colvars.size(); i++) {
+    bin[i] = samples->current_bin_scalar(i);
+  }
+  if (cvm::proxy->total_forces_same_step()) {
+    // e.g. in LAMMPS, total forces are current
+    force_bin = bin;
+  }
 
-    // At first timestep, do only:
-    // initialization stuff (file operations relying on n_abf_biases
-    // compute current value of colvars
-
-    for (size_t i = 0; i < colvars.size(); i++) {
-      bin[i] = samples->current_bin_scalar(i);
-    }
-
-  } else {
-
-    for (size_t i = 0; i < colvars.size(); i++) {
-      bin[i] = samples->current_bin_scalar(i);
-    }
+  if (cvm::step_relative() > 0 || cvm::proxy->total_forces_same_step()) {
 
     if ( update_bias && samples->index_ok(force_bin) ) {
       // Only if requested and within bounds of the grid...
@@ -297,10 +291,6 @@ int colvarbias_abf::update()
         // get total forces (lagging by 1 timestep) from colvars
         // and subtract previous ABF force if necessary
         update_system_force(i);
-      }
-      if (cvm::proxy->total_forces_same_step()) {
-        // e.g. in LAMMPS, total forces are current
-        force_bin = bin;
       }
       gradients->acc_force(force_bin, system_force);
     }
