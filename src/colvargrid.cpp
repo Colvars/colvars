@@ -283,8 +283,9 @@ int integrate_potential::integrate(const int itmax, const cvm::real &tol, cvm::r
         + " " + cvm::to_str(lap_col[nt-j-1]) << std::endl;
       }
       lap_out << std::endl;
-    }
+    }*/
 
+    /*
     // Write explicit divergence of gradient (nd == 2 only)
     colvar_grid_gradient g(*gradients);
     g.setup();
@@ -314,10 +315,10 @@ int integrate_potential::integrate(const int itmax, const cvm::real &tol, cvm::r
       }
       data[i] = 0;
     }
-    gradients = g_backup;
+    gradients = g_backup;*/
   }
   data = backup;
-*/
+
   return iter;
 }
 
@@ -706,8 +707,8 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
     index = 0; // Follows front slab
     index2 = h * (d - 1); // Follows back slab
     if (periodic[1]) {
-      ym = h - 1;
-      yp = 1;
+      ym = h * (d - 1);
+      yp = h;
       fact = factx * factz;
       for (i=0; i<w; i++) {
         if (i == 1) fact *= ifactx;
