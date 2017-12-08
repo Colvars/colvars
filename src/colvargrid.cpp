@@ -247,7 +247,7 @@ int integrate_potential::integrate(const int itmax, const cvm::real &tol, cvm::r
     cvm::log("Completed integration in " + cvm::to_str(iter) + " steps with"
       + " error " + cvm::to_str(err));
   }
-
+/*
   // Debug output for Poisson integration
   std::vector<cvm::real> backup (data);
   std::ofstream p("pmf.dat");
@@ -284,7 +284,7 @@ int integrate_potential::integrate(const int itmax, const cvm::real &tol, cvm::r
       }
       lap_out << std::endl;
     }
-/*
+
     // Write explicit divergence of gradient (nd == 2 only)
     colvar_grid_gradient g(*gradients);
     g.setup();
@@ -314,10 +314,10 @@ int integrate_potential::integrate(const int itmax, const cvm::real &tol, cvm::r
       }
       data[i] = 0;
     }
-    gradients = g_backup;*/
+    gradients = g_backup;
   }
   data = backup;
-
+*/
   return iter;
 }
 
@@ -601,19 +601,30 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
     int zm = -1;
     int zp =  1;
 
+    cvm::real factx = periodic[0] ? 1 : 0.5; // factor to be applied on x edges
+    cvm::real facty = periodic[1] ? 1 : 0.5; // same for y
+    cvm::real factz = periodic[2] ? 1 : 0.5; // same for z
+    cvm::real ifactx = 1 / factx;
+    cvm::real ifacty = 1 / facty;
+    cvm::real ifactz = 1 / factz;
+
     // All x components except on x edges
     index = d * h; // Skip left slab
-    fact = periodic[0] ? 1 : 0.25;
+    fact = facty * factz;
     for (i=1; i<w-1; i++) {
       for (j=0; j<d; j++) { // full range of y
-        if (j == 1 && periodic[0]) fact *= 2.0;
-        if (j == d-1 && periodic[0]) fact *= 0.5;
-        for (k=0; k<h; k++) { // full range of z
-          if (k == 1) fact *= 2.0;
-          if (k == h-1) fact /= 2.0;
+        if (j == 1) fact *= ifacty;
+        if (j == d-1) fact *= facty;
+        LA[index] = fact * ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index]);
+        index++;
+        fact *= ifactz;
+        for (k=1; k<h-1; k++) { // full range of z
           LA[index] = fact * ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index]);
           index++;
         }
+        fact *= factz;
+        LA[index] = fact * ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index]);
+        index++;
       }
     }
     // Edges along x (x components only)
@@ -622,47 +633,72 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
     if (periodic[0]) {
       xm =  d * h * (w - 1);
       xp =  d * h;
+      fact = facty * factz;
       for (j=0; j<d; j++) {
-        for (k=0; k<h; k++) {
-          LA[index]  = ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index]);
-          LA[index2] = ffx * (A[index2 - xp] + A[index2 - xm] - 2.0 * A[index2]);
+        if (j == 1) fact *= ifacty;
+        if (j == d-1) fact *= facty;
+        LA[index]  = fact * ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index]);
+        LA[index2] = fact * ffx * (A[index2 - xp] + A[index2 - xm] - 2.0 * A[index2]);
+        index++;
+        index2++;
+        fact *= ifactz;
+        for (k=1; k<h-1; k++) {
+          LA[index]  = fact * ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index]);
+          LA[index2] = fact * ffx * (A[index2 - xp] + A[index2 - xm] - 2.0 * A[index2]);
           index++;
           index2++;
         }
+        fact *= factz;
+        LA[index]  = fact * ffx * (A[index + xm] + A[index + xp] - 2.0 * A[index]);
+        LA[index2] = fact * ffx * (A[index2 - xp] + A[index2 - xm] - 2.0 * A[index2]);
+        index++;
+        index2++;
       }
     } else {
       xm = -d * h;
       xp =  d * h;
-      fact = 0.25;
+      fact = facty * factz;
       for (j=0; j<d; j++) {
-        if (j == 1) fact *= 2.0;
-        if (j == d-1) fact /= 2.0;
-        for (k=0; k<h; k++) {
-          if (k == 1) fact *= 2.0;
-          if (k == h-1) fact /= 2.0;
+        if (j == 1) fact *= ifacty;
+        if (j == d-1) fact *= facty;
+        LA[index]  = fact * ffx * (A[index + xp] - A[index]);
+        LA[index2] = fact * ffx * (A[index2 + xm] - A[index2]);
+        index++;
+        index2++;
+        fact *= ifactz;
+        for (k=1; k<h-1; k++) {
           // x gradient (+ y, z terms of laplacian, calculated below)
           LA[index]  = fact * ffx * (A[index + xp] - A[index]);
           LA[index2] = fact * ffx * (A[index2 + xm] - A[index2]);
           index++;
           index2++;
         }
+        fact *= factz;
+        LA[index]  = fact * ffx * (A[index + xp] - A[index]);
+        LA[index2] = fact * ffx * (A[index2 + xm] - A[index2]);
+        index++;
+        index2++;
       }
     }
 
     // Now adding all y components
     // All y components except on y edges
     index = h; // Skip first column (in front slab)
-    fact = 0.25;
+    fact = factx * factz;
     for (i=0; i<w; i++) { // full range of x
-      if (i == 1) fact *= 2.0;
-      if (i == w-1) fact /= 2.0;
+      if (i == 1) fact *= ifactx;
+      if (i == w-1) fact *= factx;
       for (j=1; j<d-1; j++) {
-        for (k=0; k<h; k++) {
-          if (k == 1) fact *= 2.0;
-          if (k == h-1) fact /= 2.0;
+        LA[index] += fact * ffy * (A[index + ym] + A[index + yp] - 2.0 * A[index]);
+        index++;
+        fact *= ifactz;
+        for (k=1; k<h-1; k++) {
           LA[index] += fact * ffy * (A[index + ym] + A[index + yp] - 2.0 * A[index]);
           index++;
         }
+        fact *= factz;
+        LA[index] += fact * ffy * (A[index + ym] + A[index + yp] - 2.0 * A[index]);
+        index++;
       }
       index += 2 * h; // skip columns in front and back slabs
     }
@@ -672,53 +708,84 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
     if (periodic[1]) {
       ym = h - 1;
       yp = 1;
+      fact = factx * factz;
       for (i=0; i<w; i++) {
-        for (k=0; k<h; k++) {
-          LA[index]  += ffy * (A[index + ym] + A[index + yp] - 2.0 * A[index]);
-          LA[index2] += ffy * (A[index2 - yp] + A[index2 - ym] - 2.0 * A[index2]);
+        if (i == 1) fact *= ifactx;
+        if (i == w-1) fact *= factx;
+        LA[index]  += fact * ffy * (A[index + ym] + A[index + yp] - 2.0 * A[index]);
+        LA[index2] += fact * ffy * (A[index2 - yp] + A[index2 - ym] - 2.0 * A[index2]);
+        index++;
+        index2++;
+        fact *= ifactz;
+        for (k=1; k<h-1; k++) {
+          LA[index]  += fact * ffy * (A[index + ym] + A[index + yp] - 2.0 * A[index]);
+          LA[index2] += fact * ffy * (A[index2 - yp] + A[index2 - ym] - 2.0 * A[index2]);
           index++;
           index2++;
         }
+        fact *= factz;
+        LA[index]  += fact * ffy * (A[index + ym] + A[index + yp] - 2.0 * A[index]);
+        LA[index2] += fact * ffy * (A[index2 - yp] + A[index2 - ym] - 2.0 * A[index2]);
+        index++;
+        index2++;
         index  += h * (d - 1);
         index2 += h * (d - 1);
       }
     } else {
       ym = -h;
       yp =  h;
-      fact = 0.25;
+      fact = factx * factz;
       for (i=0; i<w; i++) {
-        if (i == 1) fact *= 2.0;
-        if (i == w-1) fact /= 2.0;
-        for (k=0; k<h; k++) {
-          if (k == 1) fact *= 2.0;
-          if (k == h-1) fact /= 2.0;
+        if (i == 1) fact *= ifactx;
+        if (i == w-1) fact *= factx;
+        LA[index]  += fact * ffy * (A[index + yp] - A[index]);
+        LA[index2] += fact * ffy * (A[index2 + ym] - A[index2]);
+        index++;
+        index2++;
+        fact *= ifactz;
+        for (k=1; k<h-1; k++) {
           // y gradient (+ x, z terms of laplacian, calculated above and below)
           LA[index]  += fact * ffy * (A[index + yp] - A[index]);
           LA[index2] += fact * ffy * (A[index2 + ym] - A[index2]);
           index++;
           index2++;
         }
+        fact *= factz;
+        LA[index]  += fact * ffy * (A[index + yp] - A[index]);
+        LA[index2] += fact * ffy * (A[index2 + ym] - A[index2]);
+        index++;
+        index2++;
         index  += h * (d - 1);
         index2 += h * (d - 1);
       }
     }
 
-    // Now adding all z components
+  // Now adding all z components
     // All z components except on z edges
     index = 1; // Skip first element (in bottom slab)
-    fact = 0.25;
+    fact = factx * facty;
     for (i=0; i<w; i++) { // full range of x
-      if (i == 1) fact *= 2.0;
-      if (i == w-1) fact /= 2.0;
-      for (j=0; j<d; j++) { // full range of y
-        if (j == 1) fact *= 2.0;
-        if (j == d-1) fact /= 2.0;
+      if (i == 1) fact *= ifactx;
+      if (i == w-1) fact *= factx;
+      for (k=1; k<h-1; k++) {
+        LA[index] += fact * ffz * (A[index + zm] + A[index + zp] - 2.0 * A[index]);
+        index++;
+      }
+      fact *= ifacty;
+      index += 2; // skip edge slabs
+      for (j=1; j<d-1; j++) { // full range of y
         for (k=1; k<h-1; k++) {
           LA[index] += fact * ffz * (A[index + zm] + A[index + zp] - 2.0 * A[index]);
           index++;
         }
         index += 2; // skip edge slabs
       }
+      fact *= facty;
+      for (k=1; k<h-1; k++) {
+        LA[index] += fact * ffz * (A[index + zm] + A[index + zp] - 2.0 * A[index]);
+        index++;
+      }
+      index += 2; // skip edge slabs
     }
     // Edges along z (z components onlz)
     index = 0; // Follows bottom slab
@@ -726,30 +793,51 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
     if (periodic[2]) {
       zm = h - 1;
       zp = 1;
+      fact = factx * facty;
       for (i=0; i<w; i++) {
-        for (j=0; j<d; j++) {
-          LA[index]  += ffz * (A[index + zm] + A[index + zp] - 2.0 * A[index]);
-          LA[index2] += ffz * (A[index2 - zp] + A[index2 - zm] - 2.0 * A[index2]);
+        if (i == 1) fact *= ifactx;
+        if (i == w-1) fact *= factx;
+        LA[index]  += fact * ffz * (A[index + zm] + A[index + zp] - 2.0 * A[index]);
+        LA[index2] += fact * ffz * (A[index2 - zp] + A[index2 - zm] - 2.0 * A[index2]);
+        index  += h;
+        index2 += h;
+        fact *= ifacty;
+        for (j=1; j<d-1; j++) {
+          LA[index]  += fact * ffz * (A[index + zm] + A[index + zp] - 2.0 * A[index]);
+          LA[index2] += fact * ffz * (A[index2 - zp] + A[index2 - zm] - 2.0 * A[index2]);
           index  += h;
           index2 += h;
         }
+        fact *= facty;
+        LA[index]  += fact * ffz * (A[index + zm] + A[index + zp] - 2.0 * A[index]);
+        LA[index2] += fact * ffz * (A[index2 - zp] + A[index2 - zm] - 2.0 * A[index2]);
+        index  += h;
+        index2 += h;
       }
     } else {
       zm = -1;
       zp = 1;
-      fact = 0.25;
+      fact = factx * facty;
       for (i=0; i<w; i++) {
-      if (i == 1) fact *= 2.0;
-      if (i == w-1) fact /= 2.0;
-        for (j=0; j<d; j++) {
-          if (j == 1) fact *= 2.0;
-          if (j == d-1) fact /= 2.0;
+        if (i == 1) fact *= ifactx;
+        if (i == w-1) fact *= factx;
+        LA[index]  += fact * ffz * (A[index + zp] - A[index]);
+        LA[index2] += fact * ffz * (A[index2 + zm] - A[index2]);
+        index  += h;
+        index2 += h;
+        fact *= ifacty;
+        for (j=1; j<d-1; j++) {
           // z gradient (+ x, y terms of laplacian, calculated above)
           LA[index]  += fact * ffz * (A[index + zp] - A[index]);
           LA[index2] += fact * ffz * (A[index2 + zm] - A[index2]);
           index  += h;
           index2 += h;
         }
+        fact *= facty;
+        LA[index]  += fact * ffz * (A[index + zp] - A[index]);
+        LA[index2] += fact * ffz * (A[index2 + zm] - A[index2]);
+        index  += h;
+        index2 += h;
       }
     }
   }

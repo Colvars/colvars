@@ -7,11 +7,11 @@
 
 
 // FIXME FIXME MAGIC NUMBERS: integration parameters for pABF
-#define INTEGRATE_FREQ 10
+#define INTEGRATE_FREQ 10000
 #define INITIAL_STEPS 10000// for integrating initial gradient data
 #define INITIAL_TOL 1e-8
 #define STEPS 100 // for updating the integrated PMF on the fly
-#define TOL 1e-2
+#define TOL 1e-4
 // FIXME FIXME
 
 
