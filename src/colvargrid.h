@@ -1352,32 +1352,57 @@ public:
     has_data = true;
   }
 
-  /// Return the gradient of the scalar field from finite differences
-  // dimension two only
-  // Should not be called on edges of scalar grid, provided it has margins
-  // wrt gradient grid
-  // Unused in branch master; used to obtain biasing force in pABF
-  inline const cvm::real * gradient_finite_diff( const std::vector<int> &ix0 )
+  /// \brief Return the gradient of the scalar field from finite differences
+  /// Input coordinates are those of gradient grid, shifted wrt scalar grid
+  /// Should not be called on edges of scalar grid, provided the latter has margins
+  /// wrt gradient grid
+  inline void vector_gradient_finite_diff( const std::vector<int> &ix0, std::vector<cvm::real> &grad)
   {
     cvm::real A0, A1;
     std::vector<int> ix;
+    size_t i, j, k, n;
 
-    if (nd != 2) {
-      cvm::error("Finite differences available in dimension 2 only.");
-      return grad;
-    }
-    for (unsigned int n = 0; n < 2; n++) {
+    if (nd == 2) {
+      for (n = 0; n < 2; n++) {
+        ix = ix0;
+        A0 = value(ix);
+        ix[n]++; wrap(ix);
+        A1 = value(ix);
+        ix[1-n]++; wrap(ix);
+        A1 += value(ix);
+        ix[n]--; wrap(ix);
+        A0 += value(ix);
+        grad[n] = 0.5 * (A1 - A0) / widths[n];
+      }
+    } else if (nd == 3) {
+
+      cvm::real p[8]; // potential values within cube, indexed in binary (4 i + 2 j + k)
       ix = ix0;
-      A0 = value(ix);
-      ix[n]++; wrap(ix);
-      A1 = value(ix);
-      ix[1-n]++; wrap(ix);
-      A1 += value(ix);
-      ix[n]--; wrap(ix);
-      A0 += value(ix);
-      grad[n] = 0.5 * (A1 - A0) / widths[n];
+      int index = 0;
+      for (i = 0; i<2; i++) {
+        ix[1] = ix0[1];
+        for (j = 0; j<2; j++) {
+          ix[2] = ix0[2];
+          for (k = 0; k<2; k++) {
+            wrap(ix);
+            p[index++] = value(ix);
+            ix[2]++;
+          }
+          ix[1]++;
+        }
+        ix[0]++;
+      }
+
+      // The following would be easier to read using binary literals
+      //                  100    101    110    111      000    001    010   011
+      grad[0] = 0.25 * ((p[4] + p[5] + p[6] + p[7]) - (p[0] + p[1] + p[2] + p[3])) / widths[0];
+      //                  010     011    110   111      000    001    100   101
+      grad[1] = 0.25 * ((p[2] + p[3] + p[6] + p[7]) - (p[0] + p[1] + p[4] + p[5])) / widths[0];
+      //                  001    011     101   111      000    010   100    110
+      grad[2] = 0.25 * ((p[1] + p[3] + p[5] + p[7]) - (p[0] + p[2] + p[4] + p[6])) / widths[0];
+    } else {
+      cvm::error("Finite differences available in dimension 2 and 3 only.");
     }
-    return grad;
   }
 
   /// \brief Return the value of the function at ix divided by its
@@ -1441,10 +1466,6 @@ public:
   /// \brief Assuming that the map is a normalized probability density,
   ///        calculates the entropy (uses widths if they are defined)
   cvm::real entropy() const;
-
-private:
-  // gradient
-  cvm::real * grad;
 };
 
 
@@ -1474,6 +1495,29 @@ public:
 
   /// Constructor from a vector of colvars
   colvar_grid_gradient(std::vector<colvar *>  &colvars);
+
+  /// \brief Get a vector with the binned value(s) indexed by ix, normalized if applicable
+  inline void vector_value(std::vector<int> const &ix, std::vector<cvm::real> &v) const
+  {
+    cvm::real const * p = &value(ix);
+    if (samples) {
+      int count = samples->value(ix);
+      if (count) {
+        cvm::real invcount = 1.0 / count;
+        for (size_t i = 0; i < mult; i++) {
+          v[i] = invcount * p[i];
+        }
+      } else {
+        for (size_t i = 0; i < mult; i++) {
+          v[i] = 0.0;
+        }
+      }
+    } else {
+      for (size_t i = 0; i < mult; i++) {
+        v[i] = p[i];
+      }
+    }
+  }
 
   /// \brief Accumulate the value
   inline void acc_value(std::vector<int> const &ix, std::vector<colvarvalue> const &values) {

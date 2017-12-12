@@ -27,33 +27,26 @@ colvar_grid_count::colvar_grid_count(std::vector<colvar *>  &colvars,
 {}
 
 colvar_grid_scalar::colvar_grid_scalar()
-  : colvar_grid<cvm::real>(), samples(NULL), grad(NULL)
+  : colvar_grid<cvm::real>(), samples(NULL)
 {}
 
 colvar_grid_scalar::colvar_grid_scalar(colvar_grid_scalar const &g)
-  : colvar_grid<cvm::real>(g), samples(NULL), grad(NULL)
+  : colvar_grid<cvm::real>(g), samples(NULL)
 {
-  grad = new cvm::real[nd];
 }
 
 colvar_grid_scalar::colvar_grid_scalar(std::vector<int> const &nx_i)
-  : colvar_grid<cvm::real>(nx_i, 0.0, 1), samples(NULL), grad(NULL)
+  : colvar_grid<cvm::real>(nx_i, 0.0, 1), samples(NULL)
 {
-  grad = new cvm::real[nd];
 }
 
 colvar_grid_scalar::colvar_grid_scalar(std::vector<colvar *> &colvars, bool margin)
-  : colvar_grid<cvm::real>(colvars, 0.0, 1, margin), samples(NULL), grad(NULL)
+  : colvar_grid<cvm::real>(colvars, 0.0, 1, margin), samples(NULL)
 {
-  grad = new cvm::real[nd];
 }
 
 colvar_grid_scalar::~colvar_grid_scalar()
 {
-  if (grad) {
-    delete [] grad;
-    grad = NULL;
-  }
 }
 
 cvm::real colvar_grid_scalar::maximum_value() const
@@ -244,80 +237,11 @@ int integrate_potential::integrate(const int itmax, const cvm::real &tol, cvm::r
   } else if (nd <= 3) {
 
     nr_linbcg_sym(divergence, data, tol, itmax, iter, err);
-    cvm::log("Completed integration in " + cvm::to_str(iter) + " steps with"
-      + " error " + cvm::to_str(err));
+    cvm::log("Integrated in " + cvm::to_str(iter) + " steps, error: " + cvm::to_str(err));
+
+  } else {
+    cvm::error("Cannot integrate PMF in dimension > 3\n");
   }
-/*
-  // Debug output for Poisson integration
-  std::vector<cvm::real> backup (data);
-  std::ofstream p("pmf.dat");
-  if (nd <= 2) {
-    write_multicol(p);
-  } else write_opendx(p);
-  std::vector<cvm::real> lap = std::vector<cvm::real>(data.size());
-  atimes(data, lap);
-  data = lap;
-  std::ofstream l("laplacian.dat");
-  if (nd <= 2) {
-    write_multicol(l);
-  } else write_opendx(l);
-  data = divergence;
-  std::ofstream d("divergence.dat");
-  if (nd <= 2) {
-    write_multicol(d);
-  } else write_opendx(d);
-  data = backup;
-
-  if (nt <= 200) {
-    // Write explicit Laplacian operator if small enough
-    cvm::log("Writing discrete Laplacian to lap_op.dat");
-    std::ofstream lap_out("lap_op.dat");
-    std::vector<cvm::real> id(nt), lap_col(nt);
-    for (int i = 0; i <nt; i++) {
-      id[i] = 1.;
-      lap_col.assign(nt, 0.); // Useful when running partial Laplacian calc for debugging
-      atimes(id, lap_col);
-      id[i] = 0.;
-      for (int j = 0; j < nt; j++) {
-        lap_out << cvm::to_str(i) + " " + cvm::to_str(j)
-        + " " + cvm::to_str(lap_col[nt-j-1]) << std::endl;
-      }
-      lap_out << std::endl;
-    }*/
-
-    /*
-    // Write explicit divergence of gradient (nd == 2 only)
-    colvar_grid_gradient g(*gradients);
-    g.setup();
-    colvar_grid_gradient *g_backup = gradients;
-    gradients = &g; // replace our gradients with temporary grid
-
-
-    cvm::log("Writing div of grad operator to divgrad.dat");
-    std::ofstream divgrad_out("divgrad.dat");
-
-    for (int i = 0; i <nt; i++) data[i] = 0.0;
-
-    for (int i = 0; i <nt; i++) {
-      data[i] = 1; // Unit vector in PMF space
-      std::vector<int> ix = new_index(); // index in (smaller) gradient grid
-
-      for (int j = 0; j < g.number_of_points() / nd; j++, g.incr(ix)) {
-        cvm::real const *grad = gradient_finite_diff(ix);
-        for (int k = 0; k < nd; k++) {
-          g.set_value(2 * j + k, grad[k]);
-        }
-      }
-      set_div();
-      for (int j = 0; j < nt; j++) {
-        divgrad_out << cvm::to_str(i) + " " + cvm::to_str(j)
-        + " " + cvm::to_str(divergence[nt-j-1]) << std::endl;
-      }
-      data[i] = 0;
-    }
-    gradients = g_backup;*/
-  }
-  data = backup;
 
   return iter;
 }
@@ -374,7 +298,13 @@ void integrate_potential::get_grad(cvm::real * g, std::vector<int> &ix)
   size_t count, i;
   bool edge = gradients->wrap_edge(ix); // Detect edge if non-PBC
 
-  if (!edge && (count = gradients->samples->value(ix))) {
+  if (gradients->samples) {
+    count = gradients->samples->value(ix);
+  } else {
+    count = 1;
+  }
+
+  if (!edge && count) {
     cvm::real const *grad = &(gradients->value(ix));
     cvm::real const fact = 1.0 / count;
     for ( i = 0; i<nd; i++ ) {
@@ -394,10 +324,7 @@ void integrate_potential::update_div_local(const std::vector<int> &ix0)
   std::vector<int> ix = ix0;
   const cvm::real * g;
 
-  if (nd == 1) {
-    // Not used in 1D
-    return;
-  } else if (nd == 2) {
+  if (nd == 2) {
     // gradients at grid points surrounding the current scalar grid point
     cvm::real g00[2], g01[2], g10[2], g11[2];
 
@@ -905,18 +832,11 @@ void integrate_potential::nr_linbcg_sym(const std::vector<cvm::real> &b, std::ve
     }
 //     asolve(r,z);  // precon
     err = l2norm(r)/bnrm;
- std::cout << "iter=" << std::setw(4) << iter+1 << std::setw(12) << err << std::endl;
+    if (cvm::debug())
+      std::cout << "iter=" << std::setw(4) << iter+1 << std::setw(12) << err << std::endl;
     if (err <= tol)
       break;
   }
-//   // Final check for actual error
-//   atimes(x,r);
-//   for (j=0;j<nt;j++) {
-//     r[j]=b[j]-r[j];
-//   }
-//   err = l2norm(r)/bnrm;
-//   std::cout << "Final error calculated as |B - Ax| / |B|: " << std::setw(12) << err
-//   << std::endl;
 }
 
 cvm::real integrate_potential::l2norm(const std::vector<cvm::real> &x)
