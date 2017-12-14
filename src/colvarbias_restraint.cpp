@@ -174,6 +174,7 @@ colvarbias_restraint_moving::colvarbias_restraint_moving(char const *key)
   target_nstages = 0;
   target_nsteps = 0;
   stage = 0;
+  acc_work = 0.0;
   b_chg_centers = false;
   b_chg_force_k = false;
 }
@@ -199,6 +200,14 @@ int colvarbias_restraint_moving::init(std::string const &conf)
         lambda_schedule.size()) {
       cvm::error("Error: targetNumStages and lambdaSchedule are incompatible.\n", INPUT_ERROR);
       return cvm::get_error();
+    }
+
+    get_keyval_feature(this, conf, "outputAccumulatedWork",
+                       f_cvb_output_acc_work,
+                       is_enabled(f_cvb_output_acc_work));
+    if (is_enabled(f_cvb_output_acc_work) && (target_nstages > 0)) {
+      return cvm::error("Error: outputAccumulatedWork and targetNumStages "
+                        "are incompatible.\n", INPUT_ERROR);
     }
   }
 
@@ -243,8 +252,6 @@ colvarbias_restraint_centers_moving::colvarbias_restraint_centers_moving(char co
 {
   b_chg_centers = false;
   b_output_centers = false;
-  b_output_acc_work = false;
-  acc_work = 0.0;
 }
 
 
@@ -284,9 +291,6 @@ int colvarbias_restraint_centers_moving::init(std::string const &conf)
                                  target_centers[i],
                                  0.5);
     }
-
-    get_keyval(conf, "outputAccumulatedWork", b_output_acc_work,
-               b_output_acc_work); // TODO this conflicts with stages
 
   } else {
     target_centers.clear();
@@ -379,12 +383,14 @@ int colvarbias_restraint_centers_moving::update()
 
 int colvarbias_restraint_centers_moving::update_acc_work()
 {
-  if (b_output_acc_work) {
-    if ((cvm::step_relative() > 0) &&
-        (cvm::step_absolute() <= target_nsteps)) {
-      for (size_t i = 0; i < num_variables(); i++) {
-        // project forces on the calculated increments at this step
-        acc_work += colvar_forces[i] * centers_incr[i];
+  if (b_chg_centers) {
+    if (is_enabled(f_cvb_output_acc_work)) {
+      if ((cvm::step_relative() > 0) &&
+          (cvm::step_absolute() <= target_nsteps)) {
+        for (size_t i = 0; i < num_variables(); i++) {
+          // project forces on the calculated increments at this step
+          acc_work += colvar_forces[i] * centers_incr[i];
+        }
       }
     }
   }
@@ -407,7 +413,7 @@ std::string const colvarbias_restraint_centers_moving::get_state_params() const
     }
     os << "\n";
 
-    if (b_output_acc_work) {
+    if (is_enabled(f_cvb_output_acc_work)) {
       os << "accumulatedWork "
          << std::setprecision(cvm::en_prec) << std::setw(cvm::en_width)
          << acc_work << "\n";
@@ -426,7 +432,7 @@ int colvarbias_restraint_centers_moving::set_state_params(std::string const &con
     //    cvm::log ("Reading the updated restraint centers from the restart.\n");
     if (!get_keyval(conf, "centers", colvar_centers))
       cvm::error("Error: restraint centers are missing from the restart.\n");
-    if (b_output_acc_work) {
+    if (is_enabled(f_cvb_output_acc_work)) {
       if (!get_keyval(conf, "accumulatedWork", acc_work))
         cvm::error("Error: accumulatedWork is missing from the restart.\n");
     }
@@ -446,7 +452,7 @@ std::ostream & colvarbias_restraint_centers_moving::write_traj_label(std::ostrea
     }
   }
 
-  if (b_output_acc_work) {
+  if (b_chg_centers && is_enabled(f_cvb_output_acc_work)) {
     os << " W_"
        << cvm::wrap_string(this->name, cvm::en_width-2);
   }
@@ -465,7 +471,7 @@ std::ostream & colvarbias_restraint_centers_moving::write_traj(std::ostream &os)
     }
   }
 
-  if (b_output_acc_work) {
+  if (b_chg_centers && is_enabled(f_cvb_output_acc_work)) {
     os << " "
        << std::setprecision(cvm::en_prec) << std::setw(cvm::en_width)
        << acc_work;
@@ -489,6 +495,7 @@ colvarbias_restraint_k_moving::colvarbias_restraint_k_moving(char const *key)
   starting_force_k = 0.0;
   force_k_exp = 1.0;
   restraint_FE = 0.0;
+  force_k_incr = 0.0;
 }
 
 
@@ -566,14 +573,13 @@ int colvarbias_restraint_k_moving::update()
       if (target_equil_steps == 0 || cvm::step_absolute() % target_nsteps >= target_equil_steps) {
         // Start averaging after equilibration period, if requested
 
-        // Square distance normalized by square colvar width
-        cvm::real dist_sq = 0.0;
+        // Derivative of energy with respect to force_k
+        cvm::real dU_dk = 0.0;
         for (size_t i = 0; i < num_variables(); i++) {
-          dist_sq += d_restraint_potential_dk(i);
+          dU_dk += d_restraint_potential_dk(i);
         }
-
-        restraint_FE += 0.5 * force_k_exp * std::pow(lambda, force_k_exp - 1.0)
-          * (target_force_k - starting_force_k) * dist_sq;
+        restraint_FE += force_k_exp * std::pow(lambda, force_k_exp - 1.0)
+          * (target_force_k - starting_force_k) * dU_dk;
       }
 
       // Finish current stage...
@@ -604,13 +610,33 @@ int colvarbias_restraint_k_moving::update()
 
     } else if (cvm::step_absolute() <= target_nsteps) {
 
+
       // update force constant (slow growth)
       lambda = cvm::real(cvm::step_absolute()) / cvm::real(target_nsteps);
+      cvm::real const force_k_old = force_k;
       force_k = starting_force_k + (target_force_k - starting_force_k)
         * std::pow(lambda, force_k_exp);
+      force_k_incr = force_k - force_k_old;
     }
   }
 
+  return COLVARS_OK;
+}
+
+
+int colvarbias_restraint_k_moving::update_acc_work()
+{
+  if (b_chg_force_k) {
+    if (is_enabled(f_cvb_output_acc_work)) {
+      if (cvm::step_relative() > 0) {
+        cvm::real dU_dk = 0.0;
+        for (size_t i = 0; i < num_variables(); i++) {
+          dU_dk += d_restraint_potential_dk(i);
+        }
+        acc_work += dU_dk * force_k_incr;
+      }
+    }
+  }
   return COLVARS_OK;
 }
 
@@ -623,6 +649,12 @@ std::string const colvarbias_restraint_k_moving::get_state_params() const
     os << "forceConstant "
        << std::setprecision(cvm::en_prec)
        << std::setw(cvm::en_width) << force_k << "\n";
+
+    if (is_enabled(f_cvb_output_acc_work)) {
+      os << "accumulatedWork "
+         << std::setprecision(cvm::en_prec) << std::setw(cvm::en_width)
+         << acc_work << "\n";
+    }
   }
   return os.str();
 }
@@ -636,6 +668,10 @@ int colvarbias_restraint_k_moving::set_state_params(std::string const &conf)
     //    cvm::log ("Reading the updated force constant from the restart.\n");
     if (!get_keyval(conf, "forceConstant", force_k, force_k))
       cvm::error("Error: force constant is missing from the restart.\n");
+    if (is_enabled(f_cvb_output_acc_work)) {
+      if (!get_keyval(conf, "accumulatedWork", acc_work))
+        cvm::error("Error: accumulatedWork is missing from the restart.\n");
+    }
   }
 
   return COLVARS_OK;
@@ -644,12 +680,21 @@ int colvarbias_restraint_k_moving::set_state_params(std::string const &conf)
 
 std::ostream & colvarbias_restraint_k_moving::write_traj_label(std::ostream &os)
 {
+  if (b_chg_force_k && is_enabled(f_cvb_output_acc_work)) {
+    os << " W_"
+       << cvm::wrap_string(this->name, cvm::en_width-2);
+  }
   return os;
 }
 
 
 std::ostream & colvarbias_restraint_k_moving::write_traj(std::ostream &os)
 {
+  if (b_chg_force_k && is_enabled(f_cvb_output_acc_work)) {
+    os << " "
+       << std::setprecision(cvm::en_prec) << std::setw(cvm::en_width)
+       << acc_work;
+  }
   return os;
 }
 
@@ -762,6 +807,7 @@ int colvarbias_restraint_harmonic::update()
 
   // update accumulated work using the current forces
   error_code |= colvarbias_restraint_centers_moving::update_acc_work();
+  error_code |= colvarbias_restraint_k_moving::update_acc_work();
 
   return error_code;
 }
@@ -998,6 +1044,8 @@ int colvarbias_restraint_harmonic_walls::update()
 
   error_code |= colvarbias_restraint::update();
 
+  error_code |= colvarbias_restraint_k_moving::update_acc_work();
+
   return error_code;
 }
 
@@ -1175,6 +1223,7 @@ int colvarbias_restraint_linear::update()
 
   // update accumulated work using the current forces
   error_code |= colvarbias_restraint_centers_moving::update_acc_work();
+  error_code |= colvarbias_restraint_k_moving::update_acc_work();
 
   return error_code;
 }

@@ -4013,18 +4013,6 @@ When the centers are changed continuously, a steered MD in a collective variable
     This option allows to conveniently extract the PMF from the colvars trajectory files in a steered MD calculation.
 }
 
-\item %
-  \keydef
-    {outputAccumulatedWork}{%
-    \texttt{harmonic}}{%
-    Write the accumulated work of the moving restraint to the trajectory file}{%
-    boolean}{%
-    \texttt{off}}{%
-    If this option is chosen, \texttt{targetCenters} is defined, and \texttt{colvarsTrajFrequency} is not zero, the accumulated work from the beginning of the simulation will be written to the trajectory file.
-    If the simulation has been continued from a previous state file, the previously accumulated work is included in the integral.
-    This option allows to conveniently extract the PMF from the colvars trajectory files in a steered MD calculation.
-}
-
 \end{itemize}
 
 \textbf{Note on restarting moving restraint simulations:} Information
@@ -4140,6 +4128,24 @@ The force constant of the harmonic restraint may also be changed to equilibrate 
 \end{itemize}
 
 
+\cvsubsec{Computing the work of a changing restraint}{sec:colvarbias_acc_work}
+
+If the restraint centers or force constant are changed continuosly (\texttt{targetNumStages} undefined) it is possible to record the net work performed by the changing restraint:
+\begin{itemize}
+\item %
+  \keydef
+    {outputAccumulatedWork}{%
+    \texttt{harmonic}}{%
+    Write the accumulated work of the changing restraint to the Colvars trajectory file}{%
+    boolean}{%
+    \texttt{off}}{%
+    If \texttt{targetCenters} or \texttt{targetForceConstant} are defined and this option is enabled, the accumulated work from the beginning of the simulation will be written to the trajectory file (\texttt{colvarsTrajFrequency} must be non-zero).
+    When the simulation is continued from a state file, the previously accumulated work is included in the integral.
+    This option allows to conveniently extract the estimated PMF of a steered MD calculation (when \texttt{targetCenters} is used), or of other simulation protocols.
+}
+\end{itemize}
+
+
 \cvsubsec{Harmonic wall restraints}{sec:colvarbias_harmonic_walls}
 
 The \texttt{harmonicWalls~\{...\}} bias is closely related to the harmonic bias (see \ref{sec:colvarbias_harmonic}), with the following two differences: \emph{(i)} instead of a center a \emph{lower wall} and/or an \emph{upper wall} are defined, outside of which the bias implements a half-harmonic potential;
@@ -4156,7 +4162,7 @@ The \texttt{harmonicWalls~\{...\}} bias is closely related to the harmonic bias 
 where $\xi_{\mathrm{lower}}$ and $\xi_{\mathrm{upper}}$ are the lower and upper wall thresholds, respectively; \emph{(ii)} because an interval between two walls is defined, only scalar variables can be used (but any number of variables can be defined, and the wall bias is intrinsically multi-dimensional).
 
 \textbf{Note:} this bias replaces the keywords \texttt{lowerWall}, \texttt{lowerWallConstant}, \texttt{upperWall} and \texttt{upperWallConstant} defined in the \texttt{colvar} context (see \ref{sec:colvar}).
-These keywords are still supported, but will be deprecated in the future.
+These keywords are still supported, but are deprecated for future uses.
 
 The \texttt{harmonicWalls} bias implements the following options:
 \begin{itemize}
@@ -4203,6 +4209,7 @@ The \texttt{harmonicWalls} bias implements the following options:
 \item \dupkey{targetEquilSteps}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{Harmonic restraints}
 \item \dupkey{targetNumStages}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{Harmonic restraints}
 \item \dupkey{lambdaSchedule}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{Harmonic restraints}
+\item \dupkey{outputAccumulatedWork}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{Harmonic restraints}
 
 \end{itemize}
 
@@ -4245,6 +4252,14 @@ using \cite{Pitera2012}.
     space-separated list of colvar values}{%
     These are analogous to the \refkey{centers}{harmonic|centers} keyword of the harmonic restraint.
     Although they do not affect dynamics, they are here necessary to ensure a well-defined energy for the linear bias.}
+
+\item \dupkey{targetForceConstant}{\texttt{linear}}{sec:colvarbias_harmonic}{Harmonic restraints}
+\item \dupkey{targetNumSteps}{\texttt{linear}}{sec:colvarbias_harmonic}{Harmonic restraints}
+\item \dupkey{targetForceExponent}{\texttt{linear}}{sec:colvarbias_harmonic}{Harmonic restraints}
+\item \dupkey{targetEquilSteps}{\texttt{linear}}{sec:colvarbias_harmonic}{Harmonic restraints}
+\item \dupkey{targetNumStages}{\texttt{linear}}{sec:colvarbias_harmonic}{Harmonic restraints}
+\item \dupkey{lambdaSchedule}{\texttt{linear}}{sec:colvarbias_harmonic}{Harmonic restraints}
+\item \dupkey{outputAccumulatedWork}{\texttt{linear}}{sec:colvarbias_harmonic}{Harmonic restraints}
 
 \end{itemize}
 
