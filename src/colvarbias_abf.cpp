@@ -19,7 +19,8 @@ colvarbias_abf::colvarbias_abf(char const *key)
     czar_gradients(NULL),
     czar_pmf(NULL),
     last_gradients(NULL),
-    last_samples(NULL)
+    last_samples(NULL),
+    pabf_freq(0)
 {
 }
 
