@@ -146,13 +146,14 @@ colvarbias_restraint_k::colvarbias_restraint_k(char const *key)
   : colvarbias(key), colvarbias_ti(key), colvarbias_restraint(key)
 {
   force_k = -1.0;
+  check_positive_k = true;
 }
 
 
 int colvarbias_restraint_k::init(std::string const &conf)
 {
   get_keyval(conf, "forceConstant", force_k, (force_k > 0.0 ? force_k : 1.0));
-  if (force_k < 0.0) {
+  if (check_positive_k && (force_k < 0.0)) {
     cvm::error("Error: undefined or invalid force constant.\n", INPUT_ERROR);
     return INPUT_ERROR;
   }
@@ -1130,6 +1131,7 @@ colvarbias_restraint_linear::colvarbias_restraint_linear(char const *key)
     colvarbias_restraint_centers_moving(key),
     colvarbias_restraint_k_moving(key)
 {
+  check_positive_k = false;
 }
 
 

@@ -82,8 +82,12 @@ public:
   virtual int change_configuration(std::string const &conf);
 
 protected:
+
   /// \brief Restraint force constant
   cvm::real force_k;
+
+  /// \brief Whether the force constant should be positive
+  bool check_positive_k;
 };
 
 

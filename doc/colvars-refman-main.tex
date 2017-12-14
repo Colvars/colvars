@@ -3931,6 +3931,7 @@ block, which may contain (in addition to the standard option
     40~kcal/mol/\AA$^2$ for the distance.}
 
 \item %
+  \labelkey{harmonic|centers}
   \key
     {centers}{%
     \texttt{harmonic}}{%
@@ -4232,7 +4233,7 @@ using \cite{Pitera2012}.
     \texttt{1.0}}{%
     This defines a scaled force constant for the linear bias.
     To ensure consistency for multidimensional restraints, it is
-    divided internally by  the specific \texttt{width}
+    divided internally by the specific \texttt{width}
     for each colvar involved (which is 1 by default), so that all colvars
     are effectively dimensionless and of commensurate size.}
 
@@ -4242,14 +4243,9 @@ using \cite{Pitera2012}.
     \texttt{linear}}{%
     Initial linear restraint centers}{%
     space-separated list of colvar values}{%
-    The centers (equilibrium values) of the restraint are entered here.
-    The number of values must be the number of requested colvars.
-    Each value is a decimal number if the corresponding colvar returns
-    a scalar, a ``\texttt{(x, y, z)}'' triplet if it returns a unit
-    vector or a vector, and a ``\texttt{q0, q1, q2, q3)}'' quadruplet
-    if it returns a rotational quaternion.  If a colvar has
-    periodicities or symmetries, its closest image to the restraint
-    center is considered when calculating the linear potential.}
+    These are analogous to the \refkey{centers}{harmonic|centers} keyword of the harmonic restraint.
+    Although they do not affect dynamics, they are here necessary to ensure a well-defined energy for the linear bias.}
+
 \end{itemize}
 
 \cvsubsec{Adaptive Linear Bias/Experiment Directed Simulation}{sec:colvarbias_alb}
