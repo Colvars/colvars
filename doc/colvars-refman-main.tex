@@ -445,7 +445,7 @@ All such files' names also begin with the prefix \outputName\texttt{}.
 \cvnamdonly{Finally, the total energy of all biases or restraints applied to the colvars appears under the NAMD standard output, under the MISC column.}
 
 
-\cvsec{Defining collective variables and their physical properties}{sec:colvar}
+\cvsec{Defining and setting up collective variables}{sec:colvar}
 
 A collective variable is defined by the keyword \texttt{colvar} followed by its configuration options contained within curly braces:
 
@@ -892,7 +892,7 @@ deviations are available.
 \end{itemize}
 
 
-\cvsec{Selecting atoms for colvars: defining atom groups}{sec:colvar_atom_groups}
+\cvsec{Selecting atoms}{sec:colvar_atom_groups}
 
 To define collective variables, atoms are usually selected as groups.  Each group is defined using an identifier that is unique in the context of the specific colvar component (e.g.~for a distance component, the two groups are \texttt{group1} and \texttt{group2}).
 The identifier is followed by a brace-delimited block containing selection keywords and other parameters, including an optional \texttt{name}:
@@ -1284,18 +1284,15 @@ To gain an estimate of the computational cost of a large colvar, one can use a t
 \end{itemize}
 
 
-\cvsec{Collective variable components (basis functions)}{sec:cvc}
+\cvsec{Collective variable types (available functions)}{sec:cvc}
 
-Each colvar is defined by one or more \emph{components} (typically
-only one).  Each component consists of a keyword identifying a
-functional form, and a definition block following that keyword,
-specifying the atoms involved and any additional parameters (cutoffs,
-``reference'' values, \ldots).
+In this context, the function that computes a colvar is here called a \emph{component}.
+A component's choice and definition consists of a keyword indicating the
+type of function (e.g.{} \texttt{rmsd}), followed by a definition block
+specifying the atoms involved (see \ref{sec:colvar_atom_groups}) and any additional parameters (cutoffs, ``reference'' values, \ldots).
+At least one component must be chosen: if none of the keywords listed below is found, an error is raised.
 
-The types of the components used in a colvar determine the properties
-of that colvar, and which biasing or analysis methods can be applied.
-In most cases, the colvar returns a real number, which is computed by
-one or more instances of the following components:
+Most components return a scalar value (i.e.{} a real number):
 \begin{itemize}
 \item \texttt{distance}: distance between two groups;
 \item \texttt{distanceZ}: projection of a distance vector on an axis;
@@ -1330,29 +1327,34 @@ one or more instances of the following components:
 }
 \end{itemize}
 
-Some components do not return scalar, but vector values.
-They can only be combined with vector values of the same
-type\cvscriptonly{, except within a scripted collective variable}.
+Some components do not return scalar, but vector values:
 \begin{itemize}
-\item \texttt{distanceVec}: distance vector between two groups;
-\item \texttt{distanceDir}: unit vector parallel to distanceVec;
-\item \texttt{cartesian}: vector of atomic Cartesian coordinates;
-\item \texttt{orientation}: best-fit rotation, expressed as a unit quaternion.
+\item \texttt{distanceVec}: distance vector between two groups (length: 3);
+\item \texttt{distanceDir}: unit vector parallel to distanceVec (length: 3);
+\item \texttt{cartesian}: vector of atomic Cartesian coordinates (length: $N$);
+\item \texttt{distancePairs}: vector of mutual distances (length: $N_{\mathrm{1}}\times{}N_{\mathrm{2}}$);
+\item \texttt{orientation}: best-fit rotation, expressed as a unit quaternion (length: 4).
 \end{itemize}
 
+The types of components used in a colvar (scalar or not) determine the
+properties of that colvar, and particularly which biasing or analysis methods
+can be applied.
 
-In the following, all the available component types are listed, along
-with their physical units and the limiting values, if any.  Such
+\textbf{What if ``X'' is not listed?} If a function type is not available on this list, it may be possible to define it as a polynomial superposition of existing ones (see \ref{sec:cvc_superp})\cvleptononly{, a custom function (see \ref{sec:colvar_custom_function})}\cvscriptonly{, or a scripted function (see \ref{sec:colvar_scripted})}.
+
+
+
+\cvsubsec{List of available colvar components}{sec:cvc_list}
+
+In this section, all available component types are listed, along
+with their physical units and the ranges of values, if limited.  Such
 limiting values can be used to define \texttt{lowerBoundary} and
 \texttt{upperBoundary} in the parent colvar.
 
 For each type of component, the available configurations keywords are listed:
-when two components share certain keywords, the second component simply references
-to the documentation of the first regarding that keyword.
-The keywords that are available for all types of components are listed at the end (see \
-
-
-\cvsubsec{List of available colvar components}{sec:cvc_list}
+when two components share certain keywords, the second component references to
+the documentation of the first one that uses that keyword.
+The very few keywords that are available for all types of components are listed in a separate section \ref{sec:cvc_common}.
 
 \newenvironment{cvcoptions}%
   {\noindent\textbf{List of keywords} (see also \ref{sec:cvc_superp} for additional options):
@@ -4348,8 +4350,6 @@ an optimization algorithm until the bias has converged}.
 
 The \texttt{histogram} feature is used to record the distribution of a set of collective
 variables in the form of a N-dimensional histogram.
-It functions as a ``collective variable bias'', and is invoked by adding a
-\texttt{histogram} block to the Colvars configuration file.
 
 As with any other biasing and analysis method, when a histogram is applied to
 an extended-system colvar (\ref{sec:colvar_extended}), it accesses the value
@@ -4359,8 +4359,7 @@ may be obtained by specifying the colvar name twice in a row
 in the \texttt{colvars} parameter: the first instance will be understood as the
 ``true'' colvar, and the second, as the fictitious coordinate.
 
-In addition to the common parameters \texttt{name} and \texttt{colvars}
-described above, a \texttt{histogram} block may define the following parameter:
+A \texttt{histogram} block may define the following parameters:
 
 \begin{itemize}
 
