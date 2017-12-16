@@ -6076,7 +6076,7 @@ if ( openatomOn )
        iout << iINFO
          << "PERFORMING SERIAL MSM CALCULATION FOR LONG-RANGE PART\n";
      }
-     char *approx_str, *split_str;
+     const char *approx_str, *split_str;
      switch (MSMApprox) {
        case CUBIC:    approx_str = "C1 CUBIC";   break;
        case QUINTIC:  approx_str = "C1 QUINTIC"; break;
@@ -6331,7 +6331,7 @@ void SimParameters::parse_mgrid_params(ConfigList *config)
   // If the old gridforce commands are still in use, parse them too.
   if (gridforceOn) {
     mgridforceOn = TRUE;
-    char *default_key = MGRIDFORCEPARAMS_DEFAULTKEY;
+    const char *default_key = MGRIDFORCEPARAMS_DEFAULTKEY;
     MGridforceParams* mgfp = NULL;
     mgfp = mgridforcelist.find_key(default_key);
     if (mgfp != NULL) {
@@ -6774,7 +6774,7 @@ void SimParameters::print_mgrid_params()
     iout << iINFO << "           Col " << params->gridforceCol
       << "\n" << endi;
 
-    char *qcol_msg = "Use atom charge";
+    const char *qcol_msg = "Use atom charge";
     if (params->gridforceQcol != NULL) {
       qcol_msg = params->gridforceQcol;
     }
