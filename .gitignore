@@ -27,3 +27,8 @@
 *.rep?.files.txt
 replicas.registry.txt
 *.rep?.hills
+
+# Compiled documentation
+colvars-refman-lammps.pdf
+colvars-refman-namd.pdf
+colvars-refman-vmd.pdf
