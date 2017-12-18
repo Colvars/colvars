@@ -123,20 +123,16 @@ class Colvars_traj(object):
     def parse_comment_line(self, line):
         """
         Read in a comment line from a colvars.traj file and update the names of
-        collective variables if needed.
+        collective variables according to the contents of the comment line.
         """
-        new_keys = (line[1:]).split() # skip the hash char
-        if (not self._keys == ['step'] and self._colvars != {}):
-            if (new_keys != self._keys):
-                print("Info: Configuration changed; the new entries are: ")
-                print(new_keys)
-        self._keys = new_keys
-        if (self._keys[0] != 'step'):
+        new_keys = (line[1:]).split() # Skip the hash char at position 0
+        if (new_keys[0] != 'step'):
             raise KeyError("Error: file format incompatible with colvars.traj")
+        self._keys = new_keys
         # Find the boundaries of each column
         for i in range(1, len(self._keys)):
-            self._start[self._keys[i]] = line.find(' '+self._keys[i])
-            self._end[self._keys[i-1]] = line.find(' '+self._keys[i])
+            self._start[self._keys[i]] = line.find(' '+self._keys[i]+' ')
+            self._end[self._keys[i-1]] = line.find(' '+self._keys[i]+' ')
             self._end[self._keys[-1]] = -1
 
     def parse_line(self, line):
