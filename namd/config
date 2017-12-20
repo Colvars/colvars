@@ -635,7 +635,29 @@ begin:
     echo 'include .rootdir/arch/$(NAMD_ARCH).fftw3' >> Make.config
   else if ( $use_fftw ) echo 'include .rootdir/arch/$(NAMD_ARCH).fftw' >> Make.config
   endif
-  if ( $use_cuda ) echo 'include .rootdir/arch/$(NAMD_ARCH).cuda' >> Make.config
+  if ( $use_cuda ) then
+    if ( $?CUDA_PREFIX ) then
+      set cuda_ver=`${CUDA_PREFIX}/bin/nvcc --version | grep release | cut -d " " -f5 | cut -d "," -f1`
+    else
+      set cuda_ver=`nvcc --version | grep release | cut -d " " -f5 | cut -d "," -f1`
+    endif
+    if ( "x$cuda_ver" == x ) then
+      echo "Did not find CUDA installation, set --cuda-prefix to directory"
+      exit 1
+    else if ( $cuda_ver =~ 9.* ) then
+      echo "CUDA 9 is detected: version $cuda_ver"
+      echo 'include .rootdir/arch/$(NAMD_ARCH).cuda9' >> Make.config
+    else if ( $cuda_ver =~ 8.* ) then
+      echo "CUDA 8 is detected: version $cuda_ver"
+      echo 'include .rootdir/arch/$(NAMD_ARCH).cuda' >> Make.config
+    else if ( $cuda_ver =~ 7.5* ) then
+      echo "CUDA 7 is detected: version $cuda_ver"
+      echo 'include .rootdir/arch/$(NAMD_ARCH).cuda75' >> Make.config
+    else
+      echo "CUDA version $cuda_ver is not supported!"
+      exit 1
+    endif
+  endif
   if ( $use_cuda && "x$CUDA_GENCODE" != x ) then
     echo "CUDAGENCODE = $CUDA_GENCODE" >> Make.config
     if ( "x$CUDA_DLINK" != x ) then
