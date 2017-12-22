@@ -2435,6 +2435,7 @@ obj/ComputeMap.o: \
 	src/BOCgroup.h \
 	src/Compute.h \
 	src/main.h \
+	src/MStream.h \
 	src/Debug.h \
 	src/ComputeNonbondedMICKernel.h
 	$(CXX) $(CXXFLAGS) $(COPTO)obj/ComputeMap.o $(COPTC) src/ComputeMap.C
