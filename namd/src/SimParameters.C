@@ -4312,8 +4312,8 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
         if (qmCustomPCSel && qmNoPC)
             NAMD_die("QM Custom PC Selection is incompatible with QMNoPntChrg!");
 
-        if (qmCustomPCSel && qmPCSwitchOn)
-            NAMD_die("QM Custom PC Selection is incompatible with QMSwitching!");
+//         if (qmCustomPCSel && qmPCSwitchOn)
+//             NAMD_die("QM Custom PC Selection is incompatible with QMSwitching!");
 
         if (qmCustomPCSel && qmPCSelFreq > 1)
             NAMD_die("QM Custom PC Selection is incompatible with QMPCStride > 1!");
