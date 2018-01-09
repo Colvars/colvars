@@ -1015,11 +1015,22 @@ int colvarbias_restraint_harmonic_walls::init(std::string const &conf)
                  INPUT_ERROR);
       return INPUT_ERROR;
     }
-    force_k = lower_wall_k * upper_wall_k;
-    // transform the two constants to relative values
+    force_k = std::sqrt(lower_wall_k * upper_wall_k);
+    // transform the two constants to relative values using gemetric mean as ref
+    // to preserve force_k if provided as single parameter
     // (allow changing both via force_k)
     lower_wall_k /= force_k;
     upper_wall_k /= force_k;
+  } else {
+    // If only one wall is defined, need to rescale as well
+    if (lower_walls.size() > 0) {
+      force_k = lower_wall_k;
+      lower_wall_k = 1.0;
+    }
+    if (upper_walls.size() > 0) {
+      force_k = upper_wall_k;
+      upper_wall_k = 1.0;
+    }
   }
 
   for (i = 0; i < num_variables(); i++) {
