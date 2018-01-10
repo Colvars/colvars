@@ -1,0 +1,11 @@
+harmonicWalls {
+    colvars        one
+
+    upperWalls     0.2
+    upperWallConstant  0.001
+
+    targetForceconstant 0.0001
+    targetNumSteps 10
+    outputEnergy   yes
+    outputAccumulatedWork yes
+}

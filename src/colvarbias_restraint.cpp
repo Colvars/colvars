@@ -491,8 +491,8 @@ colvarbias_restraint_k_moving::colvarbias_restraint_k_moving(char const *key)
 {
   b_chg_force_k = false;
   target_equil_steps = 0;
-  target_force_k = 0.0;
-  starting_force_k = 0.0;
+  target_force_k = -1.0;
+  starting_force_k = -1.0;
   force_k_exp = 1.0;
   restraint_FE = 0.0;
   force_k_incr = 0.0;
@@ -919,8 +919,8 @@ colvarbias_restraint_harmonic_walls::colvarbias_restraint_harmonic_walls(char co
     colvarbias_restraint_moving(key),
     colvarbias_restraint_k_moving(key)
 {
-  lower_wall_k = 0.0;
-  upper_wall_k = 0.0;
+  lower_wall_k = -1.0;
+  upper_wall_k = -1.0;
 }
 
 
@@ -929,26 +929,6 @@ int colvarbias_restraint_harmonic_walls::init(std::string const &conf)
   colvarbias_restraint::init(conf);
   colvarbias_restraint_moving::init(conf);
   colvarbias_restraint_k_moving::init(conf);
-
-  get_keyval(conf, "lowerWallConstant", lower_wall_k,
-             (lower_wall_k > 0.0) ? lower_wall_k : force_k);
-  get_keyval(conf, "upperWallConstant", upper_wall_k,
-             (upper_wall_k > 0.0) ? upper_wall_k : force_k);
-
-  if (lower_wall_k * upper_wall_k > 0.0) {
-    for (size_t i = 0; i < num_variables(); i++) {
-      if (variables(i)->width != 1.0)
-        cvm::log("The lower and upper wall force constants for colvar \""+
-                 variables(i)->name+
-                 "\" will be rescaled to "+
-                 cvm::to_str(lower_wall_k /
-                             (variables(i)->width * variables(i)->width))+
-                 " and "+
-                 cvm::to_str(upper_wall_k /
-                             (variables(i)->width * variables(i)->width))+
-                 " according to the specified width.\n");
-    }
-  }
 
   enable(f_cvb_scalar_variables);
 
@@ -985,16 +965,23 @@ int colvarbias_restraint_harmonic_walls::init(std::string const &conf)
   }
 
   if ((lower_walls.size() == 0) && (upper_walls.size() == 0)) {
-    cvm::error("Error: no walls provided.\n", INPUT_ERROR);
-    return INPUT_ERROR;
+    return cvm::error("Error: no walls provided.\n", INPUT_ERROR);
+  }
+
+  if (lower_walls.size() > 0) {
+    get_keyval(conf, "lowerWallConstant", lower_wall_k,
+               (lower_wall_k > 0.0) ? lower_wall_k : force_k);
+  }
+  if (upper_walls.size() > 0) {
+    get_keyval(conf, "upperWallConstant", upper_wall_k,
+               (upper_wall_k > 0.0) ? upper_wall_k : force_k);
   }
 
   if ((lower_walls.size() == 0) || (upper_walls.size() == 0)) {
     for (i = 0; i < num_variables(); i++) {
       if (variables(i)->is_enabled(f_cv_periodic)) {
-        cvm::error("Error: at least one variable is periodic, "
-                   "both walls must be provided.\n", INPUT_ERROR);
-        return INPUT_ERROR;
+        return cvm::error("Error: at least one variable is periodic, "
+                          "both walls must be provided.\n", INPUT_ERROR);
       }
     }
   }
@@ -1033,12 +1020,31 @@ int colvarbias_restraint_harmonic_walls::init(std::string const &conf)
     }
   }
 
-  for (i = 0; i < num_variables(); i++) {
-    if (variables(i)->width != 1.0)
-      cvm::log("The force constant for colvar \""+variables(i)->name+
-               "\" will be rescaled to "+
-               cvm::to_str(force_k / (variables(i)->width * variables(i)->width))+
-               " according to the specified width.\n");
+  // Initialize starting value of the force constant (in case it's changing)
+  starting_force_k = force_k;
+
+  if (lower_walls.size() > 0) {
+    for (i = 0; i < num_variables(); i++) {
+      if (variables(i)->width != 1.0)
+        cvm::log("The lower wall force constant for colvar \""+
+                 variables(i)->name+
+                 "\" will be rescaled to "+
+                 cvm::to_str(lower_wall_k * force_k /
+                             (variables(i)->width * variables(i)->width))+
+                 " according to the specified width.\n");
+    }
+  }
+
+  if (upper_walls.size() > 0) {
+    for (i = 0; i < num_variables(); i++) {
+      if (variables(i)->width != 1.0)
+        cvm::log("The upper wall force constant for colvar \""+
+                 variables(i)->name+
+                 "\" will be rescaled to "+
+                 cvm::to_str(upper_wall_k * force_k /
+                             (variables(i)->width * variables(i)->width))+
+                 " according to the specified width.\n");
+    }
   }
 
   return COLVARS_OK;

@@ -1,0 +1,7 @@
+harmonicWalls {
+    colvars        one
+    lowerWalls     0.1
+    lowerWallConstant  0.002
+    upperWalls     0.2
+    upperWallConstant  0.001
+}

@@ -71,7 +71,13 @@ for colvar in "distance" ; do
         "harmonic-centers-moving-full" \
         "harmonic-centers-moving-stages" \
         "harmonic-k-moving" \
+        "harmonicwalls-upper-fixed" \
+        "harmonicwalls-both-fixed" \
+        "harmonicwalls-k-moving" \
+        "harmonicwalls-upper-k-moving" \
+        "harmonicwalls-both-k-moving" \
         "linear-fixed" \
+        "linear-k-moving" \
         ; do
         create_test_dir ${colvar}_${bias}
         write_colvars_config ${colvar} ${bias} ${dirname}/test.in

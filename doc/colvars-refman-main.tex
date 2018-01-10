@@ -4059,6 +4059,7 @@ The force constant of the harmonic restraint may also be changed to equilibrate 
 \begin{itemize}
 
 \item %
+  \labelkey{harmonic|targetForceConstant}
   \key
     {targetForceConstant}{%
     \texttt{harmonic}}{%
@@ -4189,7 +4190,6 @@ The \texttt{harmonicWalls} bias implements the following options:
     Defines the values $\xi_{\mathrm{upper}}$ above which a confining restraint on the colvar is applied to each colvar $\xi$.}
 
 \item \dupkey{forceConstant}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{Harmonic restraints}
-%  \textbf{Note:} if two distinct force constants are needed for the two walls, it is possible to define a \texttt{harmonicWalls} instance for each.
 
 \item %
   \keydef
@@ -4206,6 +4206,19 @@ The \texttt{harmonicWalls} bias implements the following options:
   \simkey{upperWallConstant}{\texttt{harmonicWalls}}{lowerWallConstant}
 
 \item \dupkey{targetForceConstant}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{Harmonic restraints}
+
+\item %
+  \key
+    {targetForceConstant}{%
+    \texttt{harmonicWalls}}{%
+    Change the force constant(s) towards this value}{%
+    positive decimal}{%
+    This keyword allows changing either one or both of the wall force constants over time.
+    In the case that \texttt{lowerWallConstant} and \texttt{upperWallConstant} have the same value, the behavior of this keyword is identical to the corresponding keyword in the \texttt{harmonic} restraint; otherwise, the change schedule is applied to the geometric mean of the two constant.
+    When only one set of walls is defined (\texttt{lowerWall} or \texttt{upperWalls}), only the respective force constant is changed.
+    \textbf{Note:} if only one of the two force constants is meant to change over time, it is possible to use two instances of \texttt{harmonicWalls}, and apply the changing schedule only to one of them.
+  }
+
 \item \dupkey{targetNumSteps}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{Harmonic restraints}
 \item \dupkey{targetForceExponent}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{Harmonic restraints}
 \item \dupkey{targetEquilSteps}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{Harmonic restraints}

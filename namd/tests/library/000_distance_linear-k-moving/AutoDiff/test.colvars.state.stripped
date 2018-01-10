@@ -1,0 +1,19 @@
+configuration {
+  step           20
+  dt 1.000000e+00
+}
+
+colvar {
+  name one
+  x  3.21716984778310e+00
+}
+
+restraint {
+  configuration {
+    step 20
+    name linear1
+    forceConstant -1.00000000000000e-01
+    accumulatedWork -1.25846317032503e+00
+  }
+}
+
