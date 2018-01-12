@@ -1272,7 +1272,7 @@ public:
 
   /// \brief Return the gradient of discrete count from finite differences
   /// on the *same* grid for dimension n
-  inline const cvm::real gradient_finite_diff(const std::vector<int> &ix0,
+  inline cvm::real gradient_finite_diff(const std::vector<int> &ix0,
                                             int n = 0)
   {
     int A0, A1, A2;

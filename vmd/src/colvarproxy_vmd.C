@@ -179,6 +179,7 @@ colvarproxy_vmd::~colvarproxy_vmd()
 int colvarproxy_vmd::request_deletion()
 {
   b_delete_requested = true;
+  return 0;
 }
 
 
