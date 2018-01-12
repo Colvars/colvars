@@ -87,7 +87,7 @@ int colvarbias_abf::init(std::string const &conf)
 
   // ************* checking the associated colvars *******************
 
-  if (colvars.size() == 0) {
+  if (num_variables() == 0) {
     cvm::error("Error: no collective variables specified for the ABF bias.\n");
     return COLVARS_ERROR;
   }
@@ -98,7 +98,8 @@ int colvarbias_abf::init(std::string const &conf)
   }
 
   bool b_extended = false;
-  for (size_t i = 0; i < colvars.size(); i++) {
+  size_t i;
+  for (i = 0; i < num_variables(); i++) {
 
     if (colvars[i]->value().type() != colvarvalue::type_scalar) {
       cvm::error("Error: ABF bias can only use scalar-type variables.\n");
@@ -128,10 +129,10 @@ int colvarbias_abf::init(std::string const &conf)
   }
 
   if (get_keyval(conf, "maxForce", max_force)) {
-    if (max_force.size() != colvars.size()) {
+    if (max_force.size() != num_variables()) {
       cvm::error("Error: Number of parameters to maxForce does not match number of colvars.");
     }
-    for (size_t i = 0; i < colvars.size(); i++) {
+    for (i = 0; i < num_variables(); i++) {
       if (max_force[i] < 0.0) {
         cvm::error("Error: maxForce should be non-negative.");
       }
@@ -141,9 +142,9 @@ int colvarbias_abf::init(std::string const &conf)
     cap_force = false;
   }
 
-  bin.assign(colvars.size(), 0);
-  force_bin.assign(colvars.size(), 0);
-  system_force = new cvm::real [colvars.size()];
+  bin.assign(num_variables(), 0);
+  force_bin.assign(num_variables(), 0);
+  system_force = new cvm::real [num_variables()];
 
   // Construct empty grids based on the colvars
   if (cvm::debug()) {
@@ -162,7 +163,7 @@ int colvarbias_abf::init(std::string const &conf)
     get_keyval(conf, "writeCZARwindowFile", b_czar_window_file, false,
                colvarparse::parse_silent);
 
-    z_bin.assign(colvars.size(), 0);
+    z_bin.assign(num_variables(), 0);
     z_samples   = new colvar_grid_count(colvars);
     z_samples->request_actual_value();
     z_gradients = new colvar_grid_gradient(colvars);
@@ -173,13 +174,13 @@ int colvarbias_abf::init(std::string const &conf)
   }
 
   // For now, we integrate on-the-fly iff the grid is < 3D
-  if ( colvars.size() <= 3 ) {
+  if ( num_variables() <= 3 ) {
     pmf = new integrate_potential(colvars, gradients);
     if ( b_CZAR_estimator ) {
       czar_pmf = new integrate_potential(colvars, czar_gradients);
     }
     get_keyval(conf, "integrate", b_integrate, true); // Integrate for output
-    if ( colvars.size() > 1 ) {
+    if ( num_variables() > 1 ) {
       // Projected ABF
       get_keyval(conf, "pABFintegrateFreq", pabf_freq, 0);
       // Parameters for integrating initial (and final) gradient data
@@ -221,7 +222,7 @@ int colvarbias_abf::init(std::string const &conf)
 
     bool UI_restart = (input_prefix.size() > 0);
 
-    for (size_t i = 0; i < colvars.size(); i++)
+    for (i = 0; i < num_variables(); i++)
     {
       UI_lowerboundary.push_back(colvars[i]->lower_boundary);
       UI_upperboundary.push_back(colvars[i]->upper_boundary);
@@ -311,7 +312,8 @@ int colvarbias_abf::update()
 
   if (cvm::debug()) cvm::log("Updating ABF bias " + this->name);
 
-  for (size_t i = 0; i < colvars.size(); i++) {
+  size_t i;
+  for (i = 0; i < num_variables(); i++) {
     bin[i] = samples->current_bin_scalar(i);
   }
   if (cvm::proxy->total_forces_same_step()) {
@@ -330,7 +332,7 @@ int colvarbias_abf::update()
       if (samples->index_ok(force_bin)) {
         // Only if requested and within bounds of the grid...
 
-        for (size_t i = 0; i < colvars.size(); i++) {
+        for (i = 0; i < num_variables(); i++) {
           // get total forces (lagging by 1 timestep) from colvars
           // and subtract previous ABF force if necessary
           update_system_force(i);
@@ -343,11 +345,11 @@ int colvarbias_abf::update()
     }
 
     if ( z_gradients && update_bias ) {
-      for (size_t i = 0; i < colvars.size(); i++) {
+      for (i = 0; i < num_variables(); i++) {
         z_bin[i] = z_samples->current_bin_scalar(i);
       }
       if ( z_samples->index_ok(z_bin) ) {
-        for (size_t i = 0; i < colvars.size(); i++) {
+        for (i = 0; i < num_variables(); i++) {
           // If we are outside the range of xi, the force has not been obtained above
           // the function is just an accessor, so cheap to call again anyway
           update_system_force(i);
@@ -372,7 +374,7 @@ int colvarbias_abf::update()
   }
 
   // Reset biasing forces from previous timestep
-  for (size_t i = 0; i < colvars.size(); i++) {
+  for (i = 0; i < num_variables(); i++) {
     colvar_forces[i].reset();
   }
 
@@ -388,7 +390,7 @@ int colvarbias_abf::update()
         (cvm::real(count - min_samples)) / (cvm::real(full_samples - min_samples));
     }
 
-    std::vector<cvm::real>  grad(colvars.size());
+    std::vector<cvm::real>  grad(num_variables());
 
     if ( pabf_freq ) {
       // In projected ABF, the force is the PMF gradient estimate
@@ -403,19 +405,19 @@ int colvarbias_abf::update()
 //       // need freshly integrated PMF, gradient TODO
 //     } else
     if ( fact != 0.0 ) {
-      if ( (colvars.size() == 1) && colvars[0]->periodic_boundaries() ) {
+      if ( (num_variables() == 1) && colvars[0]->periodic_boundaries() ) {
         // Enforce a zero-mean bias on periodic, 1D coordinates
         // in other words: boundary condition is that the biasing potential is periodic
         // This is enforced naturally if using integrated PMF
         colvar_forces[0].real_value = fact * (grad[0] - gradients->average ());
       } else {
-        for (size_t i = 0; i < colvars.size(); i++) {
+        for (size_t i = 0; i < num_variables(); i++) {
           // subtracting the mean force (opposite of the FE gradient) means adding the gradient
           colvar_forces[i].real_value = fact * grad[i];
         }
       }
       if (cap_force) {
-        for (size_t i = 0; i < colvars.size(); i++) {
+        for (size_t i = 0; i < num_variables(); i++) {
           if ( colvar_forces[i].real_value * colvar_forces[i].real_value > max_force[i] * max_force[i] ) {
             colvar_forces[i].real_value = (colvar_forces[i].real_value > 0 ? max_force[i] : -1.0 * max_force[i]);
           }
@@ -460,9 +462,9 @@ int colvarbias_abf::update()
   // update UI estimator every step
   if (b_UI_estimator)
   {
-    std::vector<double> x(colvars.size(),0);
-    std::vector<double> y(colvars.size(),0);
-    for (size_t i = 0; i < colvars.size(); i++)
+    std::vector<double> x(num_variables(),0);
+    std::vector<double> y(num_variables(),0);
+    for (size_t i = 0; i < num_variables(); i++)
     {
       x[i] = colvars[i]->actual_value();
       y[i] = colvars[i]->value();
@@ -568,7 +570,7 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool app
   cvm::proxy->close_output_stream(samples_out_name);
 
   // In dimension higher than 2, dx is easier to handle and visualize
-  if (colvars.size() > 2) {
+  if (num_variables() > 2) {
     std::string  samples_dx_out_name = prefix + ".count.dx";
     std::ostream *samples_dx_os = cvm::proxy->output_stream(samples_dx_out_name, mode);
     if (!samples_os) {
@@ -604,7 +606,7 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool app
     pmf->write_multicol(*pmf_os);
 
     // In dimension higher than 2, dx is easier to handle and visualize
-    if (colvars.size() > 2) {
+    if (num_variables() > 2) {
       std::string  pmf_dx_out_name = prefix + ".pmf.dx";
       std::ostream *pmf_dx_os = cvm::proxy->output_stream(pmf_dx_out_name, mode);
       if (!pmf_dx_os) {
@@ -683,7 +685,7 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool app
       czar_pmf->write_multicol(*czar_pmf_os);
 
       // In dimension higher than 2, dx is easier to handle and visualize
-      if (colvars.size() > 2) {
+      if (num_variables() > 2) {
         std::string  czar_pmf_dx_out_name = prefix + ".czar.pmf.dx";
         std::ostream *czar_pmf_dx_os = cvm::proxy->output_stream(czar_pmf_dx_out_name, mode);
         if (!czar_pmf_dx_os) {
