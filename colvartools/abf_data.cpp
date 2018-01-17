@@ -16,10 +16,16 @@ ABFdata::ABFdata(const char *gradFileName)
     double xi;
     char *countFileName;
 
-    countFileName = new char[strlen (gradFileName) + 2];
-    strcpy (countFileName, gradFileName);
-    countFileName[strlen (gradFileName) - 4] = '\0';
-    strcat (countFileName, "count");
+    countFileName = new char[strlen(gradFileName) + 2];
+    strcpy(countFileName, gradFileName);
+    countFileName[strlen(gradFileName) - 4] = '\0';
+    int len = strlen(countFileName);
+    if (len >= 5 && !strcmp(countFileName + len - 5, "czar.")) { // this is a CZAR gradient
+      countFileName[len - 5] = '\0';
+      strcat(countFileName, "zcount");
+    } else {
+      strcat(countFileName, "count");
+    }
 
     std::cout << "Opening file " << gradFileName << " for reading\n";
     gradFile.open(gradFileName);
@@ -89,7 +95,7 @@ ABFdata::ABFdata(const char *gradFileName)
                 pos[k - 1]++;
             }
         }
-        for (unsigned int j = 0; j < Nvars; j++) {
+        for (int j = 0; j < Nvars; j++) {
             // Read values of the collective variables only to check for consistency with grid
             gradFile >> xi;
 
@@ -100,7 +106,7 @@ ABFdata::ABFdata(const char *gradFileName)
                 exit(1);
             }
         }
-        for (unsigned int j = 0; j < Nvars; j++) {
+        for (int j = 0; j < Nvars; j++) {
             // Read and store gradients
             if ( ! (gradFile >> gradients[i * Nvars + j]) ) {
                 std::cout << "\nERROR: could not read gradient data\n";
@@ -142,7 +148,7 @@ ABFdata::ABFdata(const char *gradFileName)
     }
 
     for (unsigned int i = 0; i < scalar_dim; i++) {
-        for (unsigned int j = 0; j < Nvars; j++) {
+        for (int j = 0; j < Nvars; j++) {
             // Read and ignore values of the collective variables
             countFile >> xi;
         }

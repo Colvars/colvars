@@ -281,6 +281,15 @@ then
     updated_makefile=1
   fi
 
+  # Update abf_integrate
+  for src in ${source}/colvartools/*h ${source}/colvartools/*cpp
+  do \
+    tgt=$(basename ${src})
+    condcopy "${src}" "${target}/lib/abf_integrate/${tgt}" "${cpp_patch}"
+  done
+  condcopy "${source}/colvartools/Makefile" \
+           "${target}/lib/abf_integrate/Makefile"
+
   # Update NAMD interface files
   for src in \
       ${source}/namd/src/colvarproxy_namd.h \
