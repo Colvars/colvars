@@ -90,8 +90,8 @@ public:
   /// Whether this grid has been filled with data or is still empty
   bool has_data;
 
-  /// Return the number of colvars
-  inline size_t number_of_colvars() const
+  /// Return the number of colvar objects
+  inline size_t num_variables() const
   {
     return nd;
   }
@@ -1128,20 +1128,20 @@ public:
     // write the header
     os << "object 1 class gridpositions counts";
     size_t icv;
-    for (icv = 0; icv < number_of_colvars(); icv++) {
+    for (icv = 0; icv < num_variables(); icv++) {
       os << " " << number_of_points(icv);
     }
     os << "\n";
 
     os << "origin";
-    for (icv = 0; icv < number_of_colvars(); icv++) {
+    for (icv = 0; icv < num_variables(); icv++) {
       os << " " << (lower_boundaries[icv].real_value + 0.5 * widths[icv]);
     }
     os << "\n";
 
-    for (icv = 0; icv < number_of_colvars(); icv++) {
+    for (icv = 0; icv < num_variables(); icv++) {
       os << "delta";
-      for (size_t icv2 = 0; icv2 < number_of_colvars(); icv2++) {
+      for (size_t icv2 = 0; icv2 < num_variables(); icv2++) {
         if (icv == icv2) os << " " << widths[icv];
         else os << " " << 0.0;
       }
@@ -1149,7 +1149,7 @@ public:
     }
 
     os << "object 2 class gridconnections counts";
-    for (icv = 0; icv < number_of_colvars(); icv++) {
+    for (icv = 0; icv < num_variables(); icv++) {
       os << " " << number_of_points(icv);
     }
     os << "\n";

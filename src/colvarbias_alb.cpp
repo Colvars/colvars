@@ -36,22 +36,22 @@ int colvarbias_alb::init(std::string const &conf)
   size_t i;
 
   // get the initial restraint centers
-  colvar_centers.resize(colvars.size());
+  colvar_centers.resize(num_variables());
 
-  means.resize(colvars.size());
-  ssd.resize(colvars.size()); //sum of squares of differences from mean
+  means.resize(num_variables());
+  ssd.resize(num_variables()); //sum of squares of differences from mean
 
   //setup force vectors
-  max_coupling_range.resize(colvars.size());
-  max_coupling_rate.resize(colvars.size());
-  coupling_accum.resize(colvars.size());
-  set_coupling.resize(colvars.size());
-  current_coupling.resize(colvars.size());
-  coupling_rate.resize(colvars.size());
+  max_coupling_range.resize(num_variables());
+  max_coupling_rate.resize(num_variables());
+  coupling_accum.resize(num_variables());
+  set_coupling.resize(num_variables());
+  current_coupling.resize(num_variables());
+  coupling_rate.resize(num_variables());
 
   enable(f_cvb_apply_force);
 
-  for (i = 0; i < colvars.size(); i++) {
+  for (i = 0; i < num_variables(); i++) {
     colvar_centers[i].type(colvars[i]->value());
     //zero moments
     means[i] = ssd[i] = 0;
@@ -61,7 +61,7 @@ int colvarbias_alb::init(std::string const &conf)
 
   }
   if (get_keyval(conf, "centers", colvar_centers, colvar_centers)) {
-    for (i = 0; i < colvars.size(); i++) {
+    for (i = 0; i < num_variables(); i++) {
       colvar_centers[i].apply_constraints();
     }
   } else {
@@ -69,7 +69,7 @@ int colvarbias_alb::init(std::string const &conf)
     cvm::fatal_error("Error: must define the initial centers of adaptive linear bias .\n");
   }
 
-  if (colvar_centers.size() != colvars.size())
+  if (colvar_centers.size() != num_variables())
     cvm::fatal_error("Error: number of centers does not match "
                       "that of collective variables.\n");
 
@@ -91,17 +91,17 @@ int colvarbias_alb::init(std::string const &conf)
 
   //initial guess
   if (!get_keyval(conf, "forceConstant", set_coupling, set_coupling))
-    for (i =0 ; i < colvars.size(); i++)
+    for (i =0 ; i < num_variables(); i++)
       set_coupling[i] = 0.;
 
   //how we're going to increase to that point
-  for (i = 0; i < colvars.size(); i++)
+  for (i = 0; i < num_variables(); i++)
     coupling_rate[i] = (set_coupling[i] - current_coupling[i]) / update_freq;
 
 
   if (!get_keyval(conf, "forceRange", max_coupling_range, max_coupling_range)) {
     //set to default
-    for (i = 0; i < colvars.size(); i++) {
+    for (i = 0; i < num_variables(); i++) {
       if (cvm::temperature() > 0)
         max_coupling_range[i] =   3 * cvm::temperature() * cvm::boltzmann();
       else
@@ -111,7 +111,7 @@ int colvarbias_alb::init(std::string const &conf)
 
   if (!get_keyval(conf, "rateMax", max_coupling_rate, max_coupling_rate)) {
     //set to default
-    for (i = 0; i < colvars.size(); i++) {
+    for (i = 0; i < num_variables(); i++) {
       max_coupling_rate[i] =   max_coupling_range[i] / (10 * update_freq);
     }
   }
@@ -142,7 +142,7 @@ int colvarbias_alb::update()
   // Force and energy calculation
   bool finished_equil_flag = 1;
   cvm::real delta;
-  for (size_t i = 0; i < colvars.size(); i++) {
+  for (size_t i = 0; i < num_variables(); i++) {
     colvar_forces[i] = -1.0 * restraint_force(restraint_convert_k(current_coupling[i], colvars[i]->width),
                                               colvars[i],
                                               colvar_centers[i]);
@@ -202,7 +202,7 @@ int colvarbias_alb::update()
     cvm::real temp;
 
     //reset means and sum of squares of differences
-    for (size_t i = 0; i < colvars.size(); i++) {
+    for (size_t i = 0; i < num_variables(); i++) {
 
       temp = 2. * (means[i] / (static_cast<cvm::real> (colvar_centers[i])) - 1) * ssd[i] / (update_calls - 1);
 
@@ -215,7 +215,7 @@ int colvarbias_alb::update()
       ssd[i] = 0;
 
       //stochastic if we do that update or not
-      if (colvars.size() == 1 || rand() < RAND_MAX / ((int) colvars.size())) {
+      if (num_variables() == 1 || rand() < RAND_MAX / ((int) num_variables())) {
         coupling_accum[i] += step_size * step_size;
         current_coupling[i] = set_coupling[i];
         set_coupling[i] += max_coupling_range[i] / sqrt(coupling_accum[i]) * step_size;
@@ -277,37 +277,37 @@ std::string const colvarbias_alb::get_state_params() const
   std::ostringstream os;
   os << "    setCoupling ";
   size_t i;
-  for (i = 0; i < colvars.size(); i++) {
+  for (i = 0; i < num_variables(); i++) {
     os << std::setprecision(cvm::en_prec)
        << std::setw(cvm::en_width) << set_coupling[i] << "\n";
   }
   os << "    currentCoupling ";
-  for (i = 0; i < colvars.size(); i++) {
+  for (i = 0; i < num_variables(); i++) {
     os << std::setprecision(cvm::en_prec)
        << std::setw(cvm::en_width) << current_coupling[i] << "\n";
   }
   os << "    maxCouplingRange ";
-  for (i = 0; i < colvars.size(); i++) {
+  for (i = 0; i < num_variables(); i++) {
     os << std::setprecision(cvm::en_prec)
        << std::setw(cvm::en_width) << max_coupling_range[i] << "\n";
   }
   os << "    couplingRate ";
-  for (i = 0; i < colvars.size(); i++) {
+  for (i = 0; i < num_variables(); i++) {
     os << std::setprecision(cvm::en_prec)
        << std::setw(cvm::en_width) << coupling_rate[i] << "\n";
   }
   os << "    couplingAccum ";
-  for (i = 0; i < colvars.size(); i++) {
+  for (i = 0; i < num_variables(); i++) {
     os << std::setprecision(cvm::en_prec)
        << std::setw(cvm::en_width) << coupling_accum[i] << "\n";
   }
   os << "    mean ";
-  for (i = 0; i < colvars.size(); i++) {
+  for (i = 0; i < num_variables(); i++) {
     os << std::setprecision(cvm::en_prec)
        << std::setw(cvm::en_width) << means[i] << "\n";
   }
   os << "    ssd ";
-  for (i = 0; i < colvars.size(); i++) {
+  for (i = 0; i < num_variables(); i++) {
     os << std::setprecision(cvm::en_prec)
        << std::setw(cvm::en_width) << ssd[i] << "\n";
   }
@@ -343,7 +343,7 @@ std::ostream & colvarbias_alb::write_traj_label(std::ostream &os)
     }
 
   if (b_output_centers)
-    for (size_t i = 0; i < colvars.size(); i++) {
+    for (size_t i = 0; i < num_variables(); i++) {
       size_t const this_cv_width = (colvars[i]->value()).output_width(cvm::cv_width);
       os << " x0_"
          << cvm::wrap_string(colvars[i]->name, this_cv_width-3);
@@ -371,7 +371,7 @@ std::ostream & colvarbias_alb::write_traj(std::ostream &os)
 
 
   if (b_output_centers)
-    for (size_t i = 0; i < colvars.size(); i++) {
+    for (size_t i = 0; i < num_variables(); i++) {
       os << " "
          << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width)
          << colvar_centers[i];

@@ -411,10 +411,10 @@ int colvarmodule::parse_biases(std::string const &conf)
              "Please ensure that their forces do not counteract each other.\n");
   }
 
-  if (biases.size() || use_scripted_forces) {
+  if (num_biases() || use_scripted_forces) {
     cvm::log(cvm::line_marker);
     cvm::log("Collective variables biases initialized, "+
-             cvm::to_str(biases.size())+" in total.\n");
+             cvm::to_str(num_biases())+" in total.\n");
   } else {
     if (!use_scripted_forces) {
       cvm::log("No collective variables biases were defined.\n");
@@ -425,12 +425,37 @@ int colvarmodule::parse_biases(std::string const &conf)
 }
 
 
+int colvarmodule::num_variables() const
+{
+  return colvars.size();
+}
+
+
+int colvarmodule::num_variables_feature(int feature_id) const
+{
+  size_t n = 0;
+  for (std::vector<colvar *>::const_iterator cvi = colvars.begin();
+       cvi != colvars.end();
+       cvi++) {
+    if ((*cvi)->is_enabled(feature_id)) {
+      n++;
+    }
+  }
+  return n;
+}
+
+
+int colvarmodule::num_biases() const
+{
+  return biases.size();
+}
+
+
 int colvarmodule::num_biases_feature(int feature_id) const
 {
-  colvarmodule *cv = cvm::main();
   size_t n = 0;
-  for (std::vector<colvarbias *>::iterator bi = cv->biases.begin();
-       bi != cv->biases.end();
+  for (std::vector<colvarbias *>::const_iterator bi = biases.begin();
+       bi != biases.end();
        bi++) {
     if ((*bi)->is_enabled(feature_id)) {
       n++;
@@ -442,10 +467,9 @@ int colvarmodule::num_biases_feature(int feature_id) const
 
 int colvarmodule::num_biases_type(std::string const &type) const
 {
-  colvarmodule *cv = cvm::main();
   size_t n = 0;
-  for (std::vector<colvarbias *>::iterator bi = cv->biases.begin();
-       bi != cv->biases.end();
+  for (std::vector<colvarbias *>::const_iterator bi = biases.begin();
+       bi != biases.end();
        bi++) {
     if ((*bi)->bias_type == type) {
       n++;
@@ -459,7 +483,7 @@ std::vector<std::string> const colvarmodule::time_dependent_biases() const
 {
   size_t i;
   std::vector<std::string> biases_names;
-  for (i = 0; i < biases.size(); i++) {
+  for (i = 0; i < num_biases(); i++) {
     if (biases[i]->is_enabled(colvardeps::f_cvb_apply_force) &&
         biases[i]->is_enabled(colvardeps::f_cvb_active) &&
         (biases[i]->is_enabled(colvardeps::f_cvb_history_dependent) ||
@@ -784,7 +808,7 @@ int colvarmodule::calc_biases()
 {
   // update the biases and communicate their forces to the collective
   // variables
-  if (cvm::debug() && biases.size())
+  if (cvm::debug() && num_biases())
     cvm::log("Updating collective variable biases.\n");
 
   std::vector<colvarbias *>::iterator bi;
@@ -846,7 +870,7 @@ int colvarmodule::update_colvar_forces()
   std::vector<colvarbias *>::iterator bi;
 
   // sum the forces from all biases for each collective variable
-  if (cvm::debug() && biases.size())
+  if (cvm::debug() && num_biases())
     cvm::log("Collecting forces from all biases.\n");
   cvm::increase_depth();
   for (bi = biases_active()->begin(); bi != biases_active()->end(); bi++) {
