@@ -103,7 +103,6 @@ colvarproxy_namd::colvarproxy_namd()
     colvars->read_config_file(config->data);
   }
 
-  setup();
   colvars->setup();
   colvars->setup_input();
   colvars->setup_output();
