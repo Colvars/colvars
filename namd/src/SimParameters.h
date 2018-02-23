@@ -373,6 +373,8 @@ public:
 
 //fepb
   Bool alchOnAtStartup;     //  Ensure that alchemy is set up properly
+  Bool alchFepOnAtStartup;
+  Bool alchThermIntOnAtStartup;
   Bool alchOn;              //  Doing alchemical simulation?
   Bool alchFepOn;           //  Doing alchemical simulation?
   Bool alchThermIntOn;      //  Doing thermodynamic integration?
@@ -1000,6 +1002,7 @@ public:
 	void close_dcdfile();  // *** implemented in Output.C ***
 	void close_veldcdfile();  // *** implemented in Output.C ***
         static void nonbonded_select();
+        static void pme_select();
 
 	int isSendSpanningTreeOn(){ return proxySendSpanningTree == 1; }
 	int isSendSpanningTreeUnset() { return proxySendSpanningTree == -1; }

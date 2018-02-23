@@ -19,6 +19,7 @@
 
 #include "InfoStream.h"
 #include "ComputeNonbondedUtil.h"
+#include "ComputePme.h"
 #include "ConfigList.h"
 #include "SimParameters.h"
 #include "ParseOptions.h"
@@ -283,7 +284,10 @@ void SimParameters::scriptSet(const char *param, const char *value) {
     if ( alchOn && ! alchOnAtStartup ) {
        NAMD_die("Alchemy must be enabled at startup to disable and re-enable in script.");
     }
+    alchFepOn = alchOn && alchFepOnAtStartup;
+    alchThermIntOn = alchOn && alchThermIntOnAtStartup;
     ComputeNonbondedUtil::select();
+    if ( PMEOn ) ComputePmeUtil::select();
     return;
   }
   SCRIPT_PARSE_INT("alchEquilSteps",alchEquilSteps)
@@ -336,12 +340,18 @@ void SimParameters::scriptSet(const char *param, const char *value) {
 
   if ( ! strncasecmp(param,"alchLambda",MAX_SCRIPT_PARAM_SIZE) ) {
     alchLambda = atof(value);
+    if ( alchLambda < 0.0 || 1.0 < alchLambda ) {
+      NAMD_die("Alchemical lambda values should be in the range [0.0, 1.0]\n");
+    }
     ComputeNonbondedUtil::select();
     return;
   }
 
   if ( ! strncasecmp(param,"alchLambda2",MAX_SCRIPT_PARAM_SIZE) ) {
     alchLambda2 = atof(value);
+    if ( alchLambda2 < 0.0 || 1.0 < alchLambda2 ) {
+      NAMD_die("Alchemical lambda values should be in the range [0.0, 1.0]\n");
+    }
     ComputeNonbondedUtil::select();
     return;
   }
@@ -372,6 +382,10 @@ void SimParameters::scriptSet(const char *param, const char *value) {
 
 void SimParameters::nonbonded_select() {
     ComputeNonbondedUtil::select();
+}
+
+void SimParameters::pme_select() {
+  ComputePmeUtil::select();
 }
 
 /************************************************************************/
@@ -1026,8 +1040,9 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
 //fepb
    opts.optionalB("main", "alch", "Is achemical simulation being performed?",
      &alchOn, FALSE);
-   opts.require("alch", "alchLambda", "Coupling parameter value",
+   opts.require("alch", "alchLambda", "Alchemical coupling parameter value",
      &alchLambda);
+   opts.range("alchLambda", NOT_NEGATIVE);
 
    opts.optional("alch", "alchFile", "PDB file with perturbation flags "
      "default is the input PDB file", PARSE_STRING);
@@ -1066,8 +1081,8 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
    // parameters for alchemical analysis options
    opts.optional("alch", "alchType", "Which alchemical method to use?",
      PARSE_STRING);
-   opts.optional("alch", "alchLambda2", "Coupling comparison value",
-     &alchLambda2);
+   opts.optional("alch", "alchLambda2", "Alchemical coupling comparison value",
+     &alchLambda2, -1);
    opts.optional("alch", "alchLambdaFreq",
      "Frequency of increasing coupling parameter value", &alchLambdaFreq, 0);
    opts.range("alchLambdaFreq", NOT_NEGATIVE);
@@ -3359,8 +3374,8 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
    }
 
 //fepb
-   alchFepOn = FALSE;
-   alchThermIntOn = FALSE;
+   alchFepOnAtStartup = alchFepOn = FALSE;
+   alchThermIntOnAtStartup = alchThermIntOn = FALSE;
    alchOnAtStartup = alchOn;
 
    if (alchOn) {
@@ -3379,10 +3394,10 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
      else {
        opts.get("alchType",s);
        if (!strcasecmp(s, "fep")) {
-         alchFepOn = TRUE;
+         alchFepOnAtStartup = alchFepOn = TRUE;
        }
        else if (!strcasecmp(s, "ti")) {
-         alchThermIntOn = TRUE;
+         alchThermIntOnAtStartup = alchThermIntOn = TRUE;
        }
        else {
          NAMD_die("Unknown type of alchemical simulation; choices are fep or ti\n");
@@ -3398,9 +3413,8 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
      if (reassignFreq > 0 && reassignIncr != 0)
 	NAMD_die("reassignIncr cannot be used in alchemical simulations\n");
 
-     if (alchLambda < 0.0 || alchLambda > 1.0 ||
-         alchLambda2 < 0.0 || alchLambda2 > 1.0)
-        NAMD_die("Alchemical lambda values should be in the range [0.0, 1.0]\n");
+     if (alchLambda < 0.0 || alchLambda > 1.0)
+       NAMD_die("alchLambda values should be in the range [0.0, 1.0]\n");
 
      if (alchVdwLambdaEnd > 1.0)
         NAMD_die("Gosh tiny Elvis, you kicked soft-core in the van der Waals! alchVdwLambdaEnd should be in the range [0.0, 1.0]\n");
@@ -3412,6 +3426,9 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
         NAMD_die("alchElecLambdaStart should be in the range [0.0, 1.0]\n");
 
      if (alchFepOn) {
+       if (alchLambda2 < 0.0 || alchLambda2 > 1.0)
+         NAMD_die("alchLambda2 values should be in the range [0.0, 1.0]\n");
+
        if (!opts.defined("alchoutfile")) {
          strcpy(alchOutFile, outputFilename);
          strcat(alchOutFile, ".fep");
@@ -3470,6 +3487,10 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
        }
      }
      else if (alchThermIntOn) {
+       // alchLambda2 is only needed for nonequilibrium switching
+       if (alchLambdaFreq && (alchLambda2 < 0.0 || alchLambda2 > 1.0))
+         NAMD_die("alchLambda2 values should be in the range [0.0, 1.0]\n");
+
        if (!opts.defined("alchoutfile")) {
          strcpy(alchOutFile, outputFilename);
          strcat(alchOutFile, ".ti");

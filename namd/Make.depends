@@ -6915,6 +6915,14 @@ obj/SimParameters.o: \
 	src/MStream.h \
 	plugins/include/molfile_plugin.h \
 	plugins/include/vmdplugin.h \
+	src/ComputePme.h \
+	src/Compute.h \
+	src/PmeBase.h \
+	src/MathArray.h \
+	src/Array.h \
+	src/PatchTypes.h \
+	src/Box.h \
+	src/OwnerBox.h \
 	src/ParseOptions.h \
 	src/Communicate.h \
 	src/Output.h \

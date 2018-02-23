@@ -1,7 +1,7 @@
-#!/bin/csh -f
-set CHARM_VERSION = 6.8.1
-goto begin
-syntax:
+#!/bin/bash
+CHARM_VERSION=6.8.2
+
+function error_syntax {
   echo ''
   echo 'This script will create a build directory for NAMD.'
   echo ''
@@ -11,7 +11,7 @@ syntax:
   echo '  --charm-base <Charm++ base build directory containing src>'
   echo "      (defaults to ./charm-$CHARM_VERSION or ./charm)"
   echo '  --charm-arch <subdirectory of Charm++ base build directory>'
-  echo '      (such as mpi-linux-x86_64-mpicxx or multicore-linux64)'
+  echo '      (such as mpi-linux-x86_64-mpicxx or multicore-linux-x86_64)'
   echo '  --charm-opts <options to pass to charmc (quote list)>'
   echo '  --with-tcl (default)  --without-tcl'
   echo '  --tcl-prefix <directory containing Tcl lib and include>'
@@ -46,757 +46,747 @@ syntax:
   echo '  --cuda-gencode arch=<arch>,code=<code> (may be repeated)'
   echo '  --cuda-dlink arch=<arch>,code=<code> (for cuFFT, may be repeated)'
   echo ''
-  if ( $?PRINT_ARCH_LIST ) then
-    set ARCH_PAT = ''
-    set ARCH_PAT2 = 'XXX'
-    switch ( `uname -s` )
-      case Linux:
-        set ARCH_PAT = Linux
-        switch ( `uname -p` )
-          case i686:
-            set ARCH_PAT = Linux-x86
-          breaksw
-          case x86_64:
-            set ARCH_PAT = Linux-x86_64
-            set ARCH_PAT2 = Linux-KNL
-            grep -q 'Xeon Phi' /proc/cpuinfo
-            if ( ! $status ) set ARCH_PAT = Linux-KNL
-            if ( $?CRAY_PRE_COMPILE_OPTS ) then
-              switch ( $CRAY_PRE_COMPILE_OPTS )
-              case *seastar*:
-                set ARCH_PAT2 = CRAY-XT
-              breaksw
-              case *gemini*:
-                set ARCH_PAT2 = CRAY-XE
-              breaksw
-              case *aries*:
-                set ARCH_PAT2 = CRAY-XC
-              breaksw
-              default:
-                set ARCH_PAT2 = CRAY
-              endsw
-            endif
-          breaksw
-          case ppc:
-            set ARCH_PAT = Linux-P
-            set ARCH_PAT2 = BlueGene
-          breaksw
-          case ppc64:
-            set ARCH_PAT = Linux-P
-            set ARCH_PAT2 = BlueGene
-          breaksw
-        endsw
-      breaksw
-      case AIX:
-        set ARCH_PAT = AIX
-      breaksw
-      case SunOS:
-        set ARCH_PAT = Solaris
-        switch ( `uname -p` )
-          case sparc:
-            set ARCH_PAT = Solaris-Sparc
-          breaksw
-        endsw
-      breaksw
-      case Darwin:
-        set ARCH_PAT = MacOSX
-      breaksw
-      case CYGWIN*:
-        set ARCH_PAT = Win
-        set ARCH_PAT2 = Cygwin
-      breaksw
-    endsw
-    if ( XX$ARCH_PAT == XX$ARCH_PAT2 ) set ARCH_PAT = XXXXXX
+  if [ -n "${PRINT_ARCH_LIST+set}" ]; then
+    ARCH_PAT=''
+    ARCH_PAT2='XXX'
+    case "$(uname -s)" in
+      Linux)
+        ARCH_PAT=Linux
+        case "$(uname -p)" in
+          i686)
+            ARCH_PAT=Linux-x86
+          ;;
+          x86_64)
+            ARCH_PAT=Linux-x86_64
+            ARCH_PAT2=Linux-KNL
+            if grep -q 'Xeon Phi' /proc/cpuinfo; then
+              ARCH_PAT=Linux-KNL
+            fi
+            if [ -n "${CRAY_PRE_COMPILE_OPTS+set}" ]; then
+              case "$CRAY_PRE_COMPILE_OPTS" in
+              *seastar*)
+                ARCH_PAT2=CRAY-XT
+              ;;
+              *gemini*)
+                ARCH_PAT2=CRAY-XE
+              ;;
+              *aries*)
+                ARCH_PAT2=CRAY-XC
+              ;;
+              *)
+                ARCH_PAT2=CRAY
+              ;;
+              esac
+            fi
+          ;;
+          ppc)
+            ARCH_PAT=Linux-P
+            ARCH_PAT2=BlueGene
+          ;;
+          ppc64)
+            ARCH_PAT=Linux-P
+            ARCH_PAT2=BlueGene
+          ;;
+        esac
+      ;;
+      AIX)
+        ARCH_PAT=AIX
+      ;;
+      SunOS)
+        ARCH_PAT=Solaris
+        case "$(uname -p)" in
+          sparc)
+            ARCH_PAT=Solaris-Sparc
+          ;;
+        esac
+      ;;
+      Darwin)
+        ARCH_PAT=MacOSX
+      ;;
+      CYGWIN*)
+        ARCH_PAT=Win
+        ARCH_PAT2=Cygwin
+      ;;
+    esac
+    if [[ "$ARCH_PAT" == "$ARCH_PAT2" ]]; then ARCH_PAT=XXXXXX; fi
     echo 'Possible options for <arch> on this machine based on uname: ' 
     ( cd arch ; ls -1 $ARCH_PAT*.arch $ARCH_PAT2*.arch |sed -e 's/\.arch//' | egrep -v 'template' | pr -2 -t)
-    if ( XX$ARCH_PAT != XX ) then
+    if [ -n "$ARCH_PAT" ]; then
       echo ''
       echo 'ls arch/*.arch to see all known platforms.  Options such as'
       echo 'MPI are controlled by the choice of Charm++ architecture. '
       echo 'Please see .txt files for Charm++ and NAMD build instructions.'
-    endif
+    fi
   else
     echo 'config with no arguments lists available <arch> options.'
-  endif
+  fi
   echo ''
   exit 1
+}
 
-exists:
+function error_exists {
   echo ''
   echo 'directory already exists'
   echo ''
   exit 1
-
-begin:
+}
 
   # defaults
-  set use_debug = 0
-  set use_tcl = 1
-  set use_python = 0
-  set use_fftw = 1
-  set use_fftw3 = 0
-  set use_mkl = 0
-  set use_cuda = 0
-  set use_memopt = 0
-  set use_mic = 0
-  set use_spec = 0
+  use_debug=0
+  use_tcl=1
+  use_python=0
+  use_fftw=1
+  use_fftw3=0
+  use_mkl=0
+  use_cuda=0
+  use_memopt=0
+  use_mic=0
+  use_spec=0
 
-  if ($#argv < 1) then
-    set PRINT_ARCH_LIST
-    goto syntax
-  endif
+  if (( $# < 1 )); then
+    PRINT_ARCH_LIST=1
+    error_syntax
+  fi
 
-  if ( $1 == debug ) then
-    set use_debug = 1
+  if [ "$1" == debug ]; then
+    use_debug=1
     shift
-  endif
+  fi
 
-  if ($#argv < 1) goto syntax
-  if ( $1 == tcl ) then
+  if (( $# < 1 )); then error_syntax; fi
+  if [ "$1" == tcl ]; then
     echo 'The "tcl" flag is not needed; use of tcl is assumed.'
     shift
-  endif
+  fi
 
-  if ($#argv < 1) goto syntax
-  if ( $1 == fftw ) then
+  if (( $# < 1 )); then error_syntax; fi
+  if [ "$1" == fftw ]; then
     echo 'The "fftw" flag is not needed; use of fftw is assumed.'
     shift
-  endif
+  fi
 
-  if ($#argv < 1) goto syntax
-  if ( $1 == plugins ) then
+  if (( $# < 1 )); then error_syntax; fi
+  if [ "$1" == plugins ]; then
     echo 'The "plugins" flag is not needed; plugins are built automatically.'
     shift
-  endif
+  fi
 
-  if ($#argv < 1) goto syntax
-  if ( $1 == cuda ) then
-    set use_cuda = 1
+  if (( $# < 1 )); then error_syntax; fi
+  if [ "$1" == cuda ]; then
+    use_cuda=1
     shift
-  endif
+  fi
 
-  if ($#argv < 1) goto syntax
-  if ( $1 == memopt ) then
-    set use_memopt = 1
+  if (( $# < 1 )); then error_syntax; fi
+  if [ "$1" == memopt ]; then
+    use_memopt=1
     shift
-  endif
+  fi
 
-  if ($#argv < 1) goto syntax
-  if ( $1 == mic ) then
-    set use_mic = 1
+  if (( $# < 1 )); then error_syntax; fi
+  if [ "$1" == mic ]; then
+    use_mic=1
     shift
-  endif
+  fi
 
-  if ($#argv < 1) goto syntax
-  if ( $1 =~ --* ) goto syntax
+  if (( $# < 1 )); then error_syntax; fi
+  if [[ "$1" == --* ]]; then error_syntax; fi
 
-  set BUILD_DIR=$1 ; shift
-  if ( x$BUILD_DIR == x ) goto syntax
+  BUILD_DIR=$1 ; shift
+  if [ -z "$BUILD_DIR" ]; then error_syntax; fi
 
-  if ( -e $BUILD_DIR ) goto exists
+  if [ -e "$BUILD_DIR" ]; then error_exists; fi
+  if [ -h "$BUILD_DIR" ]; then error_exists; fi
 
-  set ARCH=$BUILD_DIR:t
-  if ( ! -f arch/$ARCH.arch ) set ARCH=$ARCH:r
-  if ( ! -f arch/$ARCH.arch ) then
+  ARCH=${BUILD_DIR##*/}
+  if [ ! -f "arch/$ARCH.arch" ]; then ARCH=${ARCH%.*}; fi
+  if [ ! -f "arch/$ARCH.arch" ]; then
     echo "ERROR: Platform $ARCH not found in directory arch"
-    set PRINT_ARCH_LIST
-    goto syntax
+    PRINT_ARCH_LIST=1
+    error_syntax
   else
     echo ''
     echo "Selected arch file arch/$ARCH.arch contains:"
     echo ''
     cat arch/$ARCH.arch
-  endif
+  fi
 
-  endif
+  ARCH_SUFFIX_ARG=""
 
-  set ARCH_SUFFIX_ARG = ""
-
-  if ( $#argv > 0 && $1 !~ --* ) then
-    set ARCH_SUFFIX_ARG = ${ARCH_SUFFIX_ARG}-$1
+  if [[ $# -gt 0 && "$1" != --* ]]; then
+    ARCH_SUFFIX_ARG=$ARCH_SUFFIX_ARG-$1
     shift
-  endif
+  fi
 
-  set PYTHON_PREFIX = ""
-  set CUDA_GENCODE = ""
-  set CUDA_DLINK = ""
+  PYTHON_PREFIX=""
+  CUDA_GENCODE=""
+  CUDA_DLINK=""
 
-  while ( $#argv > 0 )
-    if ( $1 !~ --* ) then
+  while (( $# > 0 )); do
+    if [[ "$1" != --* ]]; then
       echo "ERROR: Expected an option beginning with -- but found $1"
-      goto syntax
-    endif
-    switch ( $1 )
+      error_syntax
+    fi
+    case "$1" in
 
-      case --arch-suffix:
+      --arch-suffix)
         shift
-        set ARCH_SUFFIX_ARG = ${ARCH_SUFFIX_ARG}-$1
-      breaksw
+        ARCH_SUFFIX_ARG=$ARCH_SUFFIX_ARG-$1
+      ;;
 
-      case --with-debug:
-        set use_debug = 1
-      breaksw
+      --with-debug)
+        use_debug=1
+      ;;
 
-      case --with-tcl:
-        set use_tcl = 1
-      breaksw
-      case --without-tcl:
-        set use_tcl = 0
-      breaksw
-      case --tcl-prefix:
+      --with-tcl)
+        use_tcl=1
+      ;;
+      --without-tcl)
+        use_tcl=0
+      ;;
+      --tcl-prefix)
         shift
-        if ( ! -d $1 ) then
+        if [ ! -d "$1" ]; then
           echo "ERROR: No such directory $1"
-          goto syntax
-        endif
-        set TCL_PREFIX=$1
-      breaksw
+          error_syntax
+        fi
+        TCL_PREFIX=$1
+      ;;
 
-      case --with-python:
-        set use_python = 1
-      breaksw
-      case --without-python:
-        set use_python = 0
-      breaksw
-      case --python-prefix:
+      --with-python)
+        use_python=1
+      ;;
+      --without-python)
+        use_python=0
+      ;;
+      --python-prefix)
         shift
-        if ( ! -d $1 ) then
+        if [ ! -d "$1" ]; then
           echo "ERROR: No such directory $1"
-          goto syntax
-        endif
-        set PYTHON_PREFIX=$1
-      breaksw
+          error_syntax
+        fi
+        PYTHON_PREFIX=$1
+      ;;
 
-      case --with-fftw:
-        set use_fftw = 1
-      breaksw
-      case --with-fftw3:
-        set use_fftw3 = 1
-      breaksw
-      case --without-fftw:
-        set use_fftw = 0
-        set use_fftw3 = 0
-      breaksw
-      case --fftw-prefix:
+      --with-fftw)
+        use_fftw=1
+      ;;
+      --with-fftw3)
+        use_fftw3=1
+      ;;
+      --without-fftw)
+        use_fftw=0
+        use_fftw3=0
+      ;;
+      --fftw-prefix)
         shift
-        if ( ! -d $1 ) then
+        if [ ! -d "$1" ]; then
           echo "ERROR: No such directory $1"
-          goto syntax
-        endif
-        set FFTW_PREFIX=$1
-      breaksw
-      case --with-mkl
-        set use_mkl = 1
-        set use_fftw = 0
-        set use_fftw3 = 0
-      breaksw
-      case --mkl-prefix:
+          error_syntax
+        fi
+        FFTW_PREFIX=$1
+      ;;
+      --with-mkl)
+        use_mkl=1
+        use_fftw=0
+        use_fftw3=0
+      ;;
+      --mkl-prefix)
         shift
-        if ( ! -d $1 ) then
+        if [ ! -d "$1" ]; then
           echo "ERROR: No such directory $1"
-          goto syntax
-        endif
-        set MKL_PREFIX=$1
-      breaksw
+          error_syntax
+        fi
+        MKL_PREFIX=$1
+      ;;
 
-      case --with-cuda:
-        set use_cuda = 1
-      breaksw
-      case --without-cuda:
-        set use_cuda = 0
-      breaksw
-      case --cuda-prefix:
-        if ( $?CRAY_CUDATOOLKIT_DIR ) then
+      --with-cuda)
+        use_cuda=1
+      ;;
+      --without-cuda)
+        use_cuda=0
+      ;;
+      --cuda-prefix)
+        if [ -n "${CRAY_CUDATOOLKIT_DIR+set}" ]; then
           echo "ERROR: Do not specify --cuda-prefix when CRAY cudatoolkit module is loaded"
-          goto syntax
-        endif
+          error_syntax
+        fi
         shift
-        if ( ! -d "$1" ) then
+        if [ ! -d "$1" ]; then
           echo "ERROR: No such directory $1"
-          goto syntax
-        endif
-        set CUDA_PREFIX="$1"
-      breaksw
-      case --cuda-gencode:
+          error_syntax
+        fi
+        CUDA_PREFIX=$1
+      ;;
+      --cuda-gencode)
         shift
-        if ( ! $#argv  ) then
+        if (( ! $# )); then
           echo "ERROR: --cuda-gencode requires an argument"
-          goto syntax
-        endif
-        set CUDA_GENCODE = ( $CUDA_GENCODE -gencode $1 )
-      breaksw
-      case --cuda-dlink:
+          error_syntax
+        fi
+        CUDA_GENCODE="$CUDA_GENCODE -gencode $1"
+      ;;
+      --cuda-dlink)
         shift
-        if ( ! $#argv  ) then
+        if (( ! $# )); then
           echo "ERROR: --cuda-dlink requires an argument"
-          goto syntax
-        endif
-        set CUDA_DLINK = ( $CUDA_DLINK -gencode $1 )
-      breaksw
+          error_syntax
+        fi
+        CUDA_DLINK="$CUDA_DLINK -gencode $1"
+      ;;
 
-      case --with-memopt:
-        set use_memopt = 1
-      breaksw
+      --with-memopt)
+         use_memopt=1
+      ;;
 
-      case --with-mic:
-        set use_mic = 1
-      breaksw
-      case --without-mic:
-        set use_mic = 0
-      breaksw
+      --with-mic)
+         use_mic=1
+      ;;
+      --without-mic)
+         use_mic=0
+      ;;
 
-      case --with-spec:
-        set use_spec = 1
-      breaksw
+      --with-spec)
+         use_spec=1
+      ;;
 
-      case --charm-base:
+      --charm-base)
         shift
-        if ( ! -d $1 ) then
+        if [ ! -d "$1" ]; then
           echo "ERROR: No such directory $1"
-          goto syntax
-        endif
-        set CHARM_BASE=$1
-      breaksw
-      case --charm-arch:
+          error_syntax
+        fi
+        CHARM_BASE=$1
+      ;;
+      --charm-arch)
         shift
-        set CHARM_ARCH=$1
-      breaksw
-      case --charm-opts:
+        CHARM_ARCH=$1
+      ;;
+      --charm-opts)
         shift
-        set CHARM_OPTS="$1"
-      breaksw
+        CHARM_OPTS=$1
+      ;;
 
-      case --cxx:
+      --cxx)
         shift
-        set CXX_COMMAND="$1"
-      breaksw
-      case --cxx-opts:
+        CXX_COMMAND=$1
+      ;;
+      --cxx-opts)
         shift
-        set CXX_OPTS="$1"
-      breaksw
-      case --cxx-noalias-opts:
+        CXX_OPTS=$1
+      ;;
+      --cxx-noalias-opts)
         shift
-        set CXX_NOALIAS_OPTS="$1"
-      breaksw
-      case --cxx-thread-opts:
+        CXX_NOALIAS_OPTS=$1
+      ;;
+      --cxx-thread-opts)
         shift
-        set CXX_THREAD_OPTS="$1"
-      breaksw
-      case --cc:
+        CXX_THREAD_OPTS=$1
+      ;;
+      --cc)
         shift
-        set CC_COMMAND="$1"
-      breaksw
-      case --cc-opts:
+        CC_COMMAND=$1
+      ;;
+      --cc-opts)
         shift
-        set CC_OPTS="$1"
-      breaksw
+        CC_OPTS=$1
+      ;;
 
-      default
+      *)
         echo "ERROR: unknown option $1"
-        goto syntax
-      breaksw
-    endsw
+        error_syntax
+      ;;
+    esac
 
     shift
-  end
+  done
 
-  if ( $?CHARM_BASE && $?CHARM_ARCH ) then
-    if ( ! -d $CHARM_BASE/$CHARM_ARCH ) then
+  if [[ -n "$CHARM_BASE" && -n "$CHARM_ARCH" ]]; then
+    if [ ! -d "$CHARM_BASE/$CHARM_ARCH" ]; then
       echo "ERROR: No such directory $CHARM_BASE/$CHARM_ARCH"
-      goto syntax
-    endif
-  endif
+      error_syntax
+    fi
+  fi
 
-  if ( $use_fftw && $use_mkl ) then
+  if (( $use_fftw && $use_mkl )); then
     echo "ERROR: Do not specify both FFTW and Intel MKL"
-    goto syntax
-  endif
+    error_syntax
+  fi
 
-  if ( $use_cuda || $use_mic ) then
+  if (( $use_cuda || $use_mic )); then
 
-    if ( $?CHARM_ARCH ) then
-      set CHARM_ARCH_TEST = $CHARM_ARCH
+    if [ -n "$CHARM_ARCH" ]; then
+       CHARM_ARCH_TEST=$CHARM_ARCH
     else
-      set CHARM_ARCH_TEST = `awk '/^CHARMARCH =/ {print $3}' arch/$ARCH.arch`
-    endif
+       CHARM_ARCH_TEST=$(awk '/^CHARMARCH =/ {print $3}' arch/$ARCH.arch)
+    fi
 
-    if ( $CHARM_ARCH_TEST =~ mpi-* ) then
-      set charm_arch_mpi = 1
-      if ( $CHARM_ARCH_TEST =~ *-win32* || $CHARM_ARCH_TEST =~ *-win64* ) then
-        set charm_arch_mpi = 0
-      endif
+    if [[ "$CHARM_ARCH_TEST" == mpi-* ]]; then
+      charm_arch_mpi=1
+      if [[ "$CHARM_ARCH_TEST" == *-win32* || "$CHARM_ARCH_TEST" == *-win64* ]]; then
+        charm_arch_mpi=0
+      fi
     else
-      set charm_arch_mpi = 0
-    endif
+      charm_arch_mpi=0
+    fi
 
-    if ( $CHARM_ARCH_TEST =~ *-smp* || $CHARM_ARCH_TEST =~ multicore-* ) then
-      set charm_arch_smp = 1
+    if [[ "$CHARM_ARCH_TEST" == *-smp* || "$CHARM_ARCH_TEST" == multicore-* ]]; then
+      charm_arch_smp=1
     else
-      set charm_arch_smp = 0
-    endif
+      charm_arch_smp=0
+    fi
 
-    if ( $use_cuda ) set ERRTYPE = "CUDA"
-    if ( $use_mic ) set ERRTYPE = "MIC"
+    if (( $use_cuda )); then ERRTYPE="CUDA"; fi
+    if (( $use_mic )); then ERRTYPE="MIC"; fi
 
-    if ( $charm_arch_mpi || ! $charm_arch_smp ) then
+    if (( $charm_arch_mpi || ! $charm_arch_smp )); then
       echo ''
       echo "ERROR: $ERRTYPE builds require non-MPI SMP or multicore Charm++ arch for reasonable performance."
       echo ''
       echo "Consider ibverbs-smp or verbs-smp (InfiniBand), gni-smp (Cray), or multicore (single node)."
       echo ''
       exit 1
-    endif
+    fi
 
-  endif
+  fi
 
-  if ( $use_python ) then
-    if ( ! $use_tcl ) then
+  if (( $use_python )); then
+    if (( ! $use_tcl )); then
       echo ''
       echo "ERROR: Python interface requires Tcl."
       echo ''
       exit 1
-    endif
+    fi
 
 
-    set PYTHON_LDFLAGS = ""
-    set PYTHON_INCFLAGS = ""
+    PYTHON_LDFLAGS=""
+    PYTHON_INCFLAGS=""
 
-    if ( XX$PYTHON_PREFIX == XX ) then
+    if [ -z "$PYTHON_PREFIX" ]; then
 
       echo 'Trying to autodetect Python installation:'
-      if ( XX`which python-config` != XX ) then
+      if [ -n "$(which python-config)" ]; then
         # Use python-config
         echo 'autodetected.'
-        set PYTHON_PREFIX = `python-config --prefix`
-        set PYTHON_INCFLAGS = `python-config --includes`
-        set PYTHON_LDFLAGS = `python-config --ldflags`
-        echo $PYTHON_LDFLAGS | grep -q -- '-L'
-        if ( $status ) then
+        PYTHON_PREFIX=$(python-config --prefix)
+        PYTHON_INCFLAGS=$(python-config --includes)
+        PYTHON_LDFLAGS=$(python-config --ldflags)
+        if ! echo "$PYTHON_LDFLAGS" | grep -q -- '-L'; then
           echo 'python-config did not return a -L flag: using Anaconda?'
-          if ( -d $PYTHON_PREFIX/lib ) then
-            set PYTHON_LDFLAGS = "-L$PYTHON_PREFIX/lib $PYTHON_LDFLAGS"
-          else if ( -d $PYTHON_PREFIX/lib64 ) then
-            set PYTHON_LDFLAGS = "-L$PYTHON_PREFIX/lib64 $PYTHON_LDFLAGS"
+          if [ -d "$PYTHON_PREFIX/lib" ]; then
+            PYTHON_LDFLAGS="-L$PYTHON_PREFIX/lib $PYTHON_LDFLAGS"
+          elif [ -d "$PYTHON_PREFIX/lib64" ]; then
+            PYTHON_LDFLAGS="-L$PYTHON_PREFIX/lib64 $PYTHON_LDFLAGS"
           else
             echo "Unable to detect local Python; please edit Make.config file."
-          endif
-        endif
+          fi
+        fi
       else
-        set PYTHON_PREFIX = "/usr"
-      endif
-    endif
+        PYTHON_PREFIX="/usr"
+      fi
+    fi
 
-    if ( XX"$PYTHON_LDFLAGS" == XX ) then
+    if [ -z "$PYTHON_LDFLAGS" ]; then
       # We only have prefix, fall back to old method for the rest
-    foreach python_include ( $PYTHON_PREFIX/include/python2.[0-9] )
-      set python_lib = $python_include:t
-    end
-    if ( $?python_lib ) then
+      for python_include in $PYTHON_PREFIX/include/python2.[0-9]; do
+        python_lib=${python_include##*/}
+      done
+      if [ -n "${python_lib+set}" ]; then
       echo "Using $python_lib with include files in $python_include"
-        set PYTHON_INCFLAGS = "-I$python_include"
-        set PYTHON_LDFLAGS = "-L$PYTHON_PREFIX/lib64 -l$python_lib -ldl -lutil"
+        PYTHON_INCFLAGS="-I$python_include"
+        PYTHON_LDFLAGS="-L$PYTHON_PREFIX/lib64 -l$python_lib -ldl -lutil"
     else
         echo "Unable to detect local Python; please edit Make.config file."
-    endif
-  endif
+      fi
+    fi
 
-  endif # end Python
+  fi # end Python
 
-  if ( $?CHARM_BASE ) then
-    if ( $CHARM_BASE !~ /* ) set CHARM_BASE = .rootdir/$CHARM_BASE
-  endif
+  if [ -n "$CHARM_BASE" ]; then
+    [[ "$CHARM_BASE" != /* ]] && CHARM_BASE=.rootdir/$CHARM_BASE
+  fi
 
-  set DIR=`pwd`;
+  DIR=$(pwd)
 
-  set BUILD_LINK = $BUILD_DIR
+  BUILD_LINK=$BUILD_DIR
   # Environment variable NAMD_BUILD_BASE may point to scratch directory.
-  if ( $BUILD_DIR:t == $BUILD_DIR && $?NAMD_BUILD_BASE ) then
-    if ( -e $BUILD_DIR ) goto exists
-    set UNIQ = `date '+%Y-%b-%d'`-$$
-    set BUILD_DIR = $NAMD_BUILD_BASE/${UNIQ}_$BUILD_DIR
+  if [[ "${BUILD_DIR##*/}" == "$BUILD_DIR" && -n "$NAMD_BUILD_BASE" ]]; then
+    if [ -e "$BUILD_DIR" ]; then error_exists; fi
+    UNIQ=$(date '+%Y-%b-%d')-$$
+    BUILD_DIR="$NAMD_BUILD_BASE/${UNIQ}_$BUILD_DIR"
     echo "Creating link: $BUILD_DIR to $BUILD_LINK"
-    ln -s $BUILD_DIR $BUILD_LINK
-  endif
+    ln -s "$BUILD_DIR" "$BUILD_LINK"
+  fi
 
-  if ( -e $BUILD_DIR ) goto exists
+  if [ -e "$BUILD_DIR" ]; then error_exists; fi
+  if [ -h "$BUILD_DIR" ]; then error_exists; fi
   echo "Creating directory: $BUILD_DIR"
-  mkdir $BUILD_DIR
-  cd $BUILD_DIR
+  mkdir "$BUILD_DIR"
+  cd "$BUILD_DIR"
 
-  set ROOTDIR=$DIR
-  if ( $BUILD_DIR:t == $BUILD_DIR ) set ROOTDIR='..'
-  if ( ./$BUILD_DIR:t == $BUILD_DIR ) set ROOTDIR='..'
+  ROOTDIR=$DIR
+  if [[ "${BUILD_DIR##*/}" == "$BUILD_DIR" ]]; then ROOTDIR='..'; fi
+  if [[ "./${BUILD_DIR##*/}" == "$BUILD_DIR" ]]; then ROOTDIR='..'; fi
 
   echo "Creating link: $ROOTDIR to .rootdir"
-  ln -s $ROOTDIR .rootdir
+  ln -s "$ROOTDIR" .rootdir
 
-  if ( $use_fftw ) then
-    if ( ! $?FFTW_PREFIX ) then
-      if ( -d .rootdir/fftw/lib && -d .rootdir/fftw/include ) then
+  if (( $use_fftw )); then
+    if [ -z "$FFTW_PREFIX" ]; then
+      if [[ -d .rootdir/fftw/lib && -d .rootdir/fftw/include ]]; then
         echo "Using FFTW build found in main build directory"
-        set FFTW_PREFIX = .rootdir/fftw
-      else if ( -d $HOME/fftw/lib && -d $HOME/fftw/include ) then
+        FFTW_PREFIX=.rootdir/fftw
+      elif [[ -d "$HOME/fftw/lib" && -d "$HOME/fftw/include" ]]; then
         echo "Using FFTW build found in $HOME/fftw"
-        set FFTW_PREFIX = $HOME/fftw
-      endif
-    endif
-    if ( $?FFTW_PREFIX && ! $use_fftw3 ) then
-      if ( -e $FFTW_PREFIX/include/fftw3.h ) then
+        FFTW_PREFIX=$HOME/fftw
+      fi
+    fi
+    if [[ -n "$FFTW_PREFIX" && $use_fftw3 -eq 0 ]]; then
+      if [ -e "$FFTW_PREFIX/include/fftw3.h" ]; then
         echo "Using FFTW3 build found in $FFTW_PREFIX"
-        set use_fftw3 = 1
-      endif
-    endif
-  endif
+        use_fftw3=1
+      fi
+    fi
+  fi
 
   echo "Writing build options to $BUILD_LINK/Make.config"
 
-  set noclobber
+  set -o noclobber
 
-  if ( $?CHARM_BASE ) then
+  if [ -n "$CHARM_BASE" ]; then
     echo "CHARMBASE = $CHARM_BASE" > Make.config
-  else if ( -d .rootdir/charm-$CHARM_VERSION ) then
-    set CHARM_BASE = .rootdir/charm-$CHARM_VERSION
+  elif [ -d ".rootdir/charm-$CHARM_VERSION" ]; then
+    CHARM_BASE=.rootdir/charm-$CHARM_VERSION
     echo "Using Charm++ $CHARM_VERSION build found in main build directory"
     echo "CHARMBASE = .rootdir/charm-$CHARM_VERSION" > Make.config
-  else if ( -d .rootdir/charm ) then
-    set CHARM_BASE = .rootdir/charm
+  elif [ -d .rootdir/charm ]; then
+    CHARM_BASE=.rootdir/charm
     echo "Using Charm++ build found in main build directory"
     echo 'CHARMBASE = .rootdir/charm' > Make.config
   else
-    set CHARM_BASE = `awk '/^CHARMBASE =/ {print $3}' .rootdir/Make.charm`
+    CHARM_BASE=$(awk '/^CHARMBASE =/ {print $3}' .rootdir/Make.charm)
     echo "Using Charm++ build found in Make.charm: $CHARM_BASE"
     echo include .rootdir/Make.charm > Make.config
-  endif
+  fi
 
   echo include .rootdir/arch/$ARCH.arch >> Make.config
 
-  if ( $?CHARM_ARCH ) then
+  if [ -n "$CHARM_ARCH" ]; then
     echo "CHARMARCH = $CHARM_ARCH" >> Make.config
   else
-    set CHARM_ARCH = `awk '/^CHARMARCH =/ {print $3}' .rootdir/arch/$ARCH.arch`
-  endif
-  if ( ! -d $CHARM_BASE/$CHARM_ARCH ) then
+     CHARM_ARCH=$(awk '/^CHARMARCH =/ {print $3}' .rootdir/arch/$ARCH.arch)
+  fi
+  if [ ! -d "$CHARM_BASE/$CHARM_ARCH" ]; then
     echo "Warning: No such directory $CHARM_BASE/$CHARM_ARCH"
-  endif
-  if ( $?CHARM_OPTS ) then
+  fi
+  if [ -n "$CHARM_OPTS" ]; then
     echo "CHARMOPTS = $CHARM_OPTS" >> Make.config
-  endif
+  fi
   echo 'CHARM = $(CHARMBASE)/$(CHARMARCH)' >> Make.config
-  set ARCH_SUFFIX = ""
-  if ( $CHARM_ARCH =~ *-scyld* ) set ARCH_SUFFIX = ${ARCH_SUFFIX}-Scyld
-  if ( $CHARM_ARCH =~ *-clustermatic* ) then
-    set SUF = "-Clustermatic"
-    if ( "$ARCH_SUFFIX_ARG" =~ *-Clustermatic* ) set SUF = ""
-    set ARCH_SUFFIX = ${ARCH_SUFFIX}${SUF}
-  endif
-  if ( $CHARM_ARCH =~ mpi-* ) then
-    set SUF = "-MPI"
-    if ( "$ARCH_SUFFIX_ARG" =~ *-MVAPICH* ) set SUF = ""
-    if ( "$ARCH_SUFFIX_ARG" =~ *-OpenMPI* ) set SUF = ""
-    set ARCH_SUFFIX = ${ARCH_SUFFIX}${SUF}
-  endif
-  if ( $CHARM_ARCH =~ gemini_gni-* ) set ARCH_SUFFIX = ${ARCH_SUFFIX}-ugni
-  if ( $CHARM_ARCH =~ gni-* ) set ARCH_SUFFIX = ${ARCH_SUFFIX}-ugni
-  if ( $CHARM_ARCH =~ lapi-* ) set ARCH_SUFFIX = ${ARCH_SUFFIX}-lapi
-  if ( $CHARM_ARCH =~ pami-* ) set ARCH_SUFFIX = ${ARCH_SUFFIX}-pami
-  if ( $CHARM_ARCH =~ pamilrts-* ) set ARCH_SUFFIX = ${ARCH_SUFFIX}-pamilrts
-  if ( $CHARM_ARCH =~ netlrts-* ) set ARCH_SUFFIX = ${ARCH_SUFFIX}-netlrts
-  if ( $CHARM_ARCH =~ verbs-* ) set ARCH_SUFFIX = ${ARCH_SUFFIX}-verbs
-  if ( $CHARM_ARCH =~ ofi-* ) set ARCH_SUFFIX = ${ARCH_SUFFIX}-ofi
-  if ( $CHARM_ARCH =~ *-vmi* ) set ARCH_SUFFIX = ${ARCH_SUFFIX}-vmi
-  if ( $CHARM_ARCH =~ *-tcp* ) set ARCH_SUFFIX = ${ARCH_SUFFIX}-TCP
-  if ( $CHARM_ARCH =~ *-gm* ) set ARCH_SUFFIX = ${ARCH_SUFFIX}-gm
-  if ( $CHARM_ARCH =~ *-mx* ) set ARCH_SUFFIX = ${ARCH_SUFFIX}-mx
-  if ( $CHARM_ARCH =~ *-elan* ) set ARCH_SUFFIX = ${ARCH_SUFFIX}-Elan
-  if ( $CHARM_ARCH =~ *-ibverbs* ) set ARCH_SUFFIX = ${ARCH_SUFFIX}-ibverbs
-  if ( $CHARM_ARCH =~ *-ofi* ) set ARCH_SUFFIX = ${ARCH_SUFFIX}-ofi
-  if ( $CHARM_ARCH =~ *-smp* ) set ARCH_SUFFIX = ${ARCH_SUFFIX}-smp
-  if ( $CHARM_ARCH =~ *multicore-* ) set ARCH_SUFFIX = ${ARCH_SUFFIX}-multicore
-  set ARCH_SUFFIX = ${ARCH_SUFFIX}${ARCH_SUFFIX_ARG}
-  if ( $use_cuda ) then
-    set SUF = "-CUDA"
-    if ( "$ARCH_SUFFIX_ARG" =~ *CUDA* ) set SUF = ""
-    set ARCH_SUFFIX = ${ARCH_SUFFIX}${SUF}
-  endif
-  if ( $use_mic ) then
-    set SUF = "-MIC"
-    if ( "$ARCH_SUFFIX_ARG" =~ *MIC* ) set SUF = ""
-    set ARCH_SUFFIX = ${ARCH_SUFFIX}${SUF}
-  endif
-  if ( $use_memopt ) set ARCH_SUFFIX = ${ARCH_SUFFIX}-memopt
-  if ( $use_spec ) set ARCH_SUFFIX = ${ARCH_SUFFIX}-SPEC
+  ARCH_SUFFIX=""
+  [[ "$CHARM_ARCH" == *-scyld* ]] && ARCH_SUFFIX=${ARCH_SUFFIX}-Scyld
+  if [[ "$CHARM_ARCH" == *-clustermatic* ]]; then
+    SUF="-Clustermatic"
+    [[ "$ARCH_SUFFIX_ARG" == *-Clustermatic* ]] && SUF=""
+    ARCH_SUFFIX=${ARCH_SUFFIX}${SUF}
+  fi
+  if [[ "$CHARM_ARCH" == mpi-* ]]; then
+    SUF="-MPI"
+    [[ "$ARCH_SUFFIX_ARG" == *-MVAPICH* ]] && SUF=""
+    [[ "$ARCH_SUFFIX_ARG" == *-OpenMPI* ]] && SUF=""
+    ARCH_SUFFIX=${ARCH_SUFFIX}${SUF}
+  fi
+  [[ "$CHARM_ARCH" == gemini_gni-* ]] && ARCH_SUFFIX=${ARCH_SUFFIX}-ugni
+  [[ "$CHARM_ARCH" == gni-* ]] && ARCH_SUFFIX=${ARCH_SUFFIX}-ugni
+  [[ "$CHARM_ARCH" == lapi-* ]] && ARCH_SUFFIX=${ARCH_SUFFIX}-lapi
+  [[ "$CHARM_ARCH" == pami-* ]] && ARCH_SUFFIX=${ARCH_SUFFIX}-pami
+  [[ "$CHARM_ARCH" == pamilrts-* ]] && ARCH_SUFFIX=${ARCH_SUFFIX}-pamilrts
+  [[ "$CHARM_ARCH" == netlrts-* ]] && ARCH_SUFFIX=${ARCH_SUFFIX}-netlrts
+  [[ "$CHARM_ARCH" == verbs-* ]] && ARCH_SUFFIX=${ARCH_SUFFIX}-verbs
+  [[ "$CHARM_ARCH" == ofi-* ]] && ARCH_SUFFIX=${ARCH_SUFFIX}-ofi
+  [[ "$CHARM_ARCH" == *-vmi* ]] && ARCH_SUFFIX=${ARCH_SUFFIX}-vmi
+  [[ "$CHARM_ARCH" == *-tcp* ]] && ARCH_SUFFIX=${ARCH_SUFFIX}-TCP
+  [[ "$CHARM_ARCH" == *-gm* ]] && ARCH_SUFFIX=${ARCH_SUFFIX}-gm
+  [[ "$CHARM_ARCH" == *-mx* ]] && ARCH_SUFFIX=${ARCH_SUFFIX}-mx
+  [[ "$CHARM_ARCH" == *-elan* ]] && ARCH_SUFFIX=${ARCH_SUFFIX}-Elan
+  [[ "$CHARM_ARCH" == *-ibverbs* ]] && ARCH_SUFFIX=${ARCH_SUFFIX}-ibverbs
+  [[ "$CHARM_ARCH" == *-ofi* ]] && ARCH_SUFFIX=${ARCH_SUFFIX}-ofi
+  [[ "$CHARM_ARCH" == *-smp* ]] && ARCH_SUFFIX=${ARCH_SUFFIX}-smp
+  [[ "$CHARM_ARCH" == *multicore-* ]] && ARCH_SUFFIX=${ARCH_SUFFIX}-multicore
+  ARCH_SUFFIX=${ARCH_SUFFIX}${ARCH_SUFFIX_ARG}
+  if (( $use_cuda )); then
+    SUF="-CUDA"
+    [[ "$ARCH_SUFFIX_ARG" == *CUDA* ]] && SUF=""
+    ARCH_SUFFIX=${ARCH_SUFFIX}${SUF}
+  fi
+  if (( $use_mic )); then
+    SUF="-MIC"
+    [[ "$ARCH_SUFFIX_ARG" == *MIC* ]] && SUF=""
+    ARCH_SUFFIX=${ARCH_SUFFIX}${SUF}
+  fi
+  (( $use_memopt )) && ARCH_SUFFIX=${ARCH_SUFFIX}-memopt
+  (( $use_spec )) && ARCH_SUFFIX=${ARCH_SUFFIX}-SPEC
   echo NAMD_PLATFORM = \$\(NAMD_ARCH\)${ARCH_SUFFIX} >> Make.config
 
   echo 'include .rootdir/arch/$(NAMD_ARCH).base' >> Make.config
-  if ( $use_tcl ) echo 'include .rootdir/arch/$(NAMD_ARCH).tcl' >> Make.config
-  if ( $use_mkl ) then
+  (( $use_tcl )) && echo 'include .rootdir/arch/$(NAMD_ARCH).tcl' >> Make.config
+  if (( $use_mkl )); then
     echo 'include .rootdir/arch/$(NAMD_ARCH).mkl' >> Make.config
-  else if ( $use_fftw3 ) then
+  elif (( $use_fftw3 )); then
     echo 'include .rootdir/arch/$(NAMD_ARCH).fftw3' >> Make.config
-  else if ( $use_fftw ) echo 'include .rootdir/arch/$(NAMD_ARCH).fftw' >> Make.config
-  endif
-  if ( $use_cuda ) then
-    if ( $?CUDA_PREFIX ) then
-      set cuda_ver=`${CUDA_PREFIX}/bin/nvcc --version | grep release | cut -d " " -f5 | cut -d "," -f1`
-    else
-      set cuda_ver=`nvcc --version | grep release | cut -d " " -f5 | cut -d "," -f1`
-    endif
-    if ( "x$cuda_ver" == x ) then
-      echo "Did not find CUDA installation, set --cuda-prefix to directory"
-      exit 1
-    else if ( $cuda_ver =~ 9.* ) then
-      echo "CUDA 9 is detected: version $cuda_ver"
-      echo 'include .rootdir/arch/$(NAMD_ARCH).cuda9' >> Make.config
-    else if ( $cuda_ver =~ 8.* ) then
-      echo "CUDA 8 is detected: version $cuda_ver"
-      echo 'include .rootdir/arch/$(NAMD_ARCH).cuda' >> Make.config
-    else if ( $cuda_ver =~ 7.5* ) then
-      echo "CUDA 7 is detected: version $cuda_ver"
-      echo 'include .rootdir/arch/$(NAMD_ARCH).cuda75' >> Make.config
-    else
-      echo "CUDA version $cuda_ver is not supported!"
-      exit 1
-    endif
-  endif
-  if ( $use_cuda && "x$CUDA_GENCODE" != x ) then
+  elif (( $use_fftw )); then
+    echo 'include .rootdir/arch/$(NAMD_ARCH).fftw' >> Make.config
+  fi
+
+  (( $use_memopt )) && echo 'MEMOPT=-DMEM_OPT_VERSION' >> Make.config
+
+  (( $use_mic )) && echo 'include .rootdir/arch/$(NAMD_ARCH).mic' >> Make.config
+
+  (( $use_spec )) && echo 'RELEASEFLAGS=-DSPEC_DISABLED_VERSION' >> Make.config
+
+  threaded=0
+  [[ "$CHARM_ARCH" == *-smp* ]] && threaded=1
+  [[ "$CHARM_ARCH" == *multicore-* ]] && threaded=1
+
+  if (( $use_tcl )); then
+    if [ -n "$TCL_PREFIX" ]; then
+      echo "TCLDIR = $TCL_PREFIX" >> Make.config
+    elif [[ $threaded -ne 0 && -d .rootdir/tcl-threaded/lib && -d .rootdir/tcl-threaded/include ]]; then
+      echo "Using Tcl build found in main build directory"
+      echo 'TCLDIR = .rootdir/tcl-threaded' >> Make.config
+    elif [[ $threaded -ne 0 && -d "$HOME/tcl-threaded/lib" && -d "$HOME/tcl-threaded/include" ]]; then
+      echo "Using Tcl build found in $HOME/tcl-threaded"
+      echo 'TCLDIR = $(HOME)/tcl-threaded' >> Make.config
+    elif [[ -d .rootdir/tcl/lib && -d .rootdir/tcl/include ]]; then
+      echo "Using Tcl build found in main build directory"
+      echo 'TCLDIR = .rootdir/tcl' >> Make.config
+    elif [[ -d "$HOME/tcl/lib" && -d "$HOME/tcl/include" ]]; then
+      echo "Using Tcl build found in $HOME/tcl"
+      echo 'TCLDIR = $(HOME)/tcl' >> Make.config
+    fi
+  fi
+
+  if (( $use_python )); then
+    echo "PYTHON = -DNAMD_PYTHON $PYTHON_INCFLAGS" >> Make.config
+    echo "PYTHONLIB = $PYTHON_LDFLAGS" >> Make.config
+  fi
+
+  if (( $use_mkl )); then
+    if [ -n "$MKL_PREFIX" ]; then
+      echo "FFTDIR = $MKL_PREFIX" >> Make.config
+    fi
+  elif (( $use_fftw )); then
+    if [ -n "$FFTW_PREFIX" ]; then
+      echo "FFTDIR = $FFTW_PREFIX" >> Make.config
+    elif [[ -d .rootdir/fftw/lib && -d .rootdir/fftw/include ]]; then
+      echo "Using FFTW build found in main build directory"
+      echo 'FFTDIR = .rootdir/fftw' >> Make.config
+    elif [[ -d "$HOME/fftw/lib" && -d "$HOME/fftw/include" ]]; then
+      echo "Using FFTW build found in $HOME/fftw"
+      echo 'FFTDIR = $(HOME)/fftw' >> Make.config
+    fi
+  fi
+
+  if (( $use_cuda )); then
+    echo 'include .rootdir/arch/$(NAMD_ARCH).cuda' >> Make.config
+    CUDART_SO_PAT='lib64/libcudart.so.[1-9]*'
+    CUFFT_SO_PAT='lib64/libcufft.so.[1-9]*'
+    case "$(uname -s)" in
+      Darwin)
+        CUDART_SO_PAT='lib/libcudart.dylib'
+        CUFFT_SO_PAT='lib/libcufft.dylib'
+      ;;
+      CYGWIN*)
+        CUDART_SO_PAT='bin/cudart64_*.dll'
+        CUFFT_SO_PAT='bin/cufft64_*.dll'
+      ;;
+    esac
+    if [ -n "$CUDA_PREFIX" ]; then
+      if [[ "$(uname -s)" == CYGWIN* ]]; then
+        CUDA_PREFIX=$(cygpath -d "$CUDA_PREFIX")
+        CUDA_PREFIX=$(cygpath "$CUDA_PREFIX")
+      fi
+    elif [[ -d .rootdir/cuda/lib && -d .rootdir/cuda/include ]]; then
+      echo "Using CUDA build found in main build directory"
+      CUDA_PREFIX=.rootdir/cuda
+    elif [[ -d "$HOME/cuda/lib" && -d "$HOME/cuda/include" ]]; then
+      echo "Using CUDA build found in $HOME/cuda"
+      CUDA_PREFIX=$HOME/cuda
+    fi
+    if [ -n "$CUDA_PREFIX" ]; then
+      cuda_ver=$(${CUDA_PREFIX}/bin/nvcc --version | grep release | cut -d " " -f5 | cut -d "," -f1)
+      NAMD_ARCH=$(awk '/^NAMD_ARCH =/ {print $3}' .rootdir/arch/$ARCH.arch)
+      if [ -z "$cuda_ver" ]; then
+        echo "Warning: Did not find CUDA installation in $CUDA_PREFIX"
+      elif [[ "$cuda_ver" == 9.* && -f ".rootdir/arch/$NAMD_ARCH.cuda9" ]]; then
+        echo "CUDA 9 is detected: version $cuda_ver"
+        echo 'include .rootdir/arch/$(NAMD_ARCH).cuda9' >> Make.config
+      elif [[ "$cuda_ver" == 8.* && -f ".rootdir/arch/$NAMD_ARCH.cuda8" ]]; then
+        echo "CUDA 8 is detected: version $cuda_ver"
+        echo 'include .rootdir/arch/$(NAMD_ARCH).cuda8' >> Make.config
+      elif [[ "$cuda_ver" == 7.5* && -f ".rootdir/arch/$NAMD_ARCH.cuda75" ]]; then
+        echo "CUDA 7 is detected: version $cuda_ver"
+        echo 'include .rootdir/arch/$(NAMD_ARCH).cuda75' >> Make.config
+      fi
+      echo "CUDADIR = $CUDA_PREFIX" >> Make.config
+    fi
+    if [ -n "$CUDA_PREFIX" ]; then
+      CUDART_SO_FULL=( "$CUDA_PREFIX"/$CUDART_SO_PAT )
+      [[ -z "$CUDART_SO_FULL" || "$CUDART_SO_FULL" != */* ]] && unset CUDART_SO_FULL
+      CUFFT_SO_FULL=( "$CUDA_PREFIX"/$CUFFT_SO_PAT )
+      [[ -z "$CUFFT_SO_FULL" || "$CUFFT_SO_FULL" != */* ]] && unset CUFFT_SO_FULL
+    fi
+    if [ -n "$CUDART_SO_FULL" ]; then
+      CUDART_SO_FULL="$CUDART_SO_FULL"
+      echo "CUDASODIR = ${CUDART_SO_FULL%/*}" >> Make.config
+      echo "LIBCUDARTSO = ${CUDART_SO_FULL##*/}" >> Make.config
+      if [ -n "$CUFFT_SO_FULL" ]; then
+        CUFFT_SO_FULL="$CUFFT_SO_FULL"
+        if [[ "${CUDART_SO_FULL%/*}" != "${CUFFT_SO_FULL%/*}" ]]; then
+          echo "Warning: Found $CUDART_SO_FULL and $CUFFT_SO_FULL in different directories"
+        fi
+        echo "LIBCUFFTSO = ${CUFFT_SO_FULL##*/}" >> Make.config
+      else
+        echo "Warning: Found $CUDART_SO_FULL but no cufft"
+      fi
+    fi
+  fi
+  if [[ $use_cuda -ne 0 && -n "$CUDA_GENCODE" ]]; then
     echo "CUDAGENCODE = $CUDA_GENCODE" >> Make.config
-    if ( "x$CUDA_DLINK" != x ) then
+    if [[ -n "$CUDA_DLINK" ]]; then
       echo "CUDADLINKOPTS = $CUDA_DLINK" >> Make.config
     else
       echo "# runtime error if dlink architectures not available in libcufft_static" >> Make.config
       echo "CUDADLINKOPTS = $CUDA_GENCODE" >> Make.config
-    endif
-  endif
+    fi
+  fi
 
-  if ( $use_memopt ) echo 'MEMOPT=-DMEM_OPT_VERSION' >> Make.config
-
-  if ( $use_mic ) echo 'include .rootdir/arch/$(NAMD_ARCH).mic' >> Make.config
-
-  if ( $use_spec ) echo 'RELEASEFLAGS=-DSPEC_DISABLED_VERSION' >> Make.config
-
-  set threaded = 0
-  if ( $CHARM_ARCH =~ *-smp* ) set threaded = 1
-  if ( $CHARM_ARCH =~ *multicore-* ) set threaded = 1
-
-  if ( $use_tcl ) then
-    if ( $?TCL_PREFIX ) then
-      echo "TCLDIR = $TCL_PREFIX" >> Make.config
-    else if ( $threaded && -d .rootdir/tcl-threaded/lib && -d .rootdir/tcl-threaded/include ) then
-      echo "Using Tcl build found in main build directory"
-      echo 'TCLDIR = .rootdir/tcl-threaded' >> Make.config
-    else if ( $threaded && -d $HOME/tcl-threaded/lib && -d $HOME/tcl-threaded/include ) then
-      echo "Using Tcl build found in $HOME/tcl-threaded"
-      echo 'TCLDIR = $(HOME)/tcl-threaded' >> Make.config
-    else if ( -d .rootdir/tcl/lib && -d .rootdir/tcl/include ) then
-      echo "Using Tcl build found in main build directory"
-      echo 'TCLDIR = .rootdir/tcl' >> Make.config
-    else if ( -d $HOME/tcl/lib && -d $HOME/tcl/include ) then
-      echo "Using Tcl build found in $HOME/tcl"
-      echo 'TCLDIR = $(HOME)/tcl' >> Make.config
-    endif
-  endif
-
-  if ( $use_python ) then
-    echo "PYTHON = -DNAMD_PYTHON $PYTHON_INCFLAGS" >> Make.config
-    echo "PYTHONLIB = $PYTHON_LDFLAGS" >> Make.config
-  endif
-
-  if ( $use_mkl ) then
-    if ( $?MKL_PREFIX ) then
-      echo "FFTDIR = $MKL_PREFIX" >> Make.config
-    endif
-  else if ( $use_fftw ) then
-    if ( $?FFTW_PREFIX ) then
-      echo "FFTDIR = $FFTW_PREFIX" >> Make.config
-    else if ( -d .rootdir/fftw/lib && -d .rootdir/fftw/include ) then
-      echo "Using FFTW build found in main build directory"
-      echo 'FFTDIR = .rootdir/fftw' >> Make.config
-    else if ( -d $HOME/fftw/lib && -d $HOME/fftw/include ) then
-      echo "Using FFTW build found in $HOME/fftw"
-      echo 'FFTDIR = $(HOME)/fftw' >> Make.config
-    endif
-  endif
-
-  if ( $use_cuda ) then
-    set CUDART_SO_PAT = 'lib64/libcudart.so.[1-9]'
-    set CUFFT_SO_PAT = 'lib64/libcufft.so.[1-9]'
-    switch ( `uname -s` )
-      case Darwin:
-        set CUDART_SO_PAT = 'lib/libcudart.dylib'
-        set CUFFT_SO_PAT = 'lib/libcufft.dylib'
-      breaksw
-      case CYGWIN*:
-        set CUDART_SO_PAT = 'bin/cudart64_*.dll'
-        set CUFFT_SO_PAT = 'bin/cufft64_*.dll'
-      breaksw
-    endsw
-    if ( $?CUDA_PREFIX ) then
-      if ( `uname -s` =~ 'CYGWIN*' ) then
-        set CUDA_PREFIX=`cygpath -d "$CUDA_PREFIX"`
-        set CUDA_PREFIX=`cygpath "$CUDA_PREFIX"`
-      endif
-      echo "CUDADIR = $CUDA_PREFIX" >> Make.config
-    else if ( -d .rootdir/cuda/lib && -d .rootdir/cuda/include ) then
-      echo "Using CUDA build found in main build directory"
-      echo 'CUDADIR = .rootdir/cuda' >> Make.config
-      set CUDA_PREFIX = .rootdir/cuda
-    else if ( -d $HOME/cuda/lib && -d $HOME/cuda/include ) then
-      echo "Using CUDA build found in $HOME/cuda"
-      echo 'CUDADIR = $(HOME)/cuda' >> Make.config
-      set CUDA_PREFIX = $HOME/cuda
-    endif
-    if ( $?CUDA_PREFIX ) then
-      set CUDART_SO_FULL=`glob "$CUDA_PREFIX"/$CUDART_SO_PAT`
-      if ( "x$CUDART_SO_FULL" == x ) set CUDART_SO_FULL=`glob "$CUDA_PREFIX"/$CUDART_SO_PAT.[0-9]`
-      if ( "x$CUDART_SO_FULL" == x ) set CUDART_SO_FULL=`glob "$CUDA_PREFIX"/$CUDART_SO_PAT.[0-9].[0-9]`
-      if ( "x$CUDART_SO_FULL" == x || "$CUDART_SO_FULL" !~ */* ) unset CUDART_SO_FULL
-      set CUFFT_SO_FULL=`glob "$CUDA_PREFIX"/$CUFFT_SO_PAT`
-      if ( "x$CUFFT_SO_FULL" == x ) set CUFFT_SO_FULL=`glob "$CUDA_PREFIX"/$CUFFT_SO_PAT.[0-9]`
-      if ( "x$CUFFT_SO_FULL" == x ) set CUFFT_SO_FULL=`glob "$CUDA_PREFIX"/$CUFFT_SO_PAT.[0-9].[0-9]`
-      if ( "x$CUFFT_SO_FULL" == x || "$CUFFT_SO_FULL" !~ */* ) unset CUFFT_SO_FULL
-    endif
-    if ( $?CUDART_SO_FULL ) then
-      set CUDART_SO_FULL="$CUDART_SO_FULL"
-      echo "CUDASODIR = $CUDART_SO_FULL:h" >> Make.config
-      echo "LIBCUDARTSO = $CUDART_SO_FULL:t" >> Make.config
-      if ( $?CUFFT_SO_FULL ) then
-        set CUFFT_SO_FULL="$CUFFT_SO_FULL"
-        if ( "x$CUDART_SO_FULL:h" != "x$CUFFT_SO_FULL:h" ) then
-          echo "Warning: Found $CUDART_SO_FULL and $CUFFT_SO_FULL in different directories"
-        endif
-        echo "LIBCUFFTSO = $CUFFT_SO_FULL:t" >> Make.config
-      else
-        echo "Warning: Found $CUDART_SO_FULL but no cufft"
-      endif
-    endif
-  endif
-
-  if ( $?CXX_COMMAND ) then
+  if [ -n "$CXX_COMMAND" ]; then
     echo "CXX = $CXX_COMMAND" >> Make.config
-  endif
-  if ( $?CXX_OPTS ) then
+  fi
+  if [ -n "$CXX_OPTS" ]; then
     echo "CXXOPTS = $CXX_OPTS" >> Make.config
-  endif
-  if ( $?CXX_NOALIAS_OPTS ) then
+  fi
+  if [ -n "$CXX_NOALIAS_OPTS" ]; then
     echo "CXXNOALIASOPTS = $CXX_NOALIAS_OPTS" >> Make.config
-  endif
-  if ( $?CXX_THREAD_OPTS ) then
+  fi
+  if [ -n "$CXX_THREAD_OPTS" ]; then
     echo "CXXTHREADOPTS = $CXX_THREAD_OPTS" >> Make.config
-  endif
-  if ( $?CC_COMMAND ) then
+  fi
+  if [ -n "$CC_COMMAND" ]; then
     echo "CC = $CC_COMMAND" >> Make.config
-  endif
-  if ( $?CC_OPTS ) then
+  fi
+  if [ -n "$CC_OPTS" ]; then
     echo "COPTS = $CC_OPTS" >> Make.config
-  endif
+  fi
 
-  if ( $use_debug ) then
+  if (( $use_debug )); then
     echo 'CXXOPTS = -g' >> Make.config
     echo 'CXXTHREADOPTS = -g' >> Make.config
     echo 'CXXSIMPARAMOPTS = -g' >> Make.config
     echo 'CXXNOALIASOPTS = -g' >> Make.config
     echo 'COPTS = -g' >> Make.config
-  endif
+  fi
 
   echo "Linking Makefile"
   ln -s .rootdir/Makefile ./Makefile
