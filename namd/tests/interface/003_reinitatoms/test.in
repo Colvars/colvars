@@ -1,0 +1,17 @@
+colvar {
+    name rgyr
+    outputAppliedForce on
+    outputTotalForce on
+    gyration {
+        atoms {
+            psfSegID HA
+            atomNameResidueRange CA 1-15
+        }
+    }
+} 
+
+harmonic {
+    colvars rgyr
+    forceConstant 1.0
+    centers 6.0
+}

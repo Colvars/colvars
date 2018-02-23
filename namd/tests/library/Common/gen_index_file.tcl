@@ -26,27 +26,43 @@ if { [info exists mol_name] == 0 } {
 }
 
 
-if { ${mol_name} == "da" } {
+set protein_sel "((protein) or (segid BH HA HB))" 
+set protein [atomselect top "${protein_sel}"]
+set segnames [lsort -unique [${protein} get segname]]
+${protein} delete
 
-set protein_sel "((protein) or (segid BH))" 
+set sel_strings [${protein_sel}]
+set sel_labels [""]
+if { [llength ${segnames}] > 1 } {
+    foreach segname ${segnames} {
+        lappend sel_strings "(segname ${segname})"
+        lappend sel_labels "_${segname}"
+    }
+}
 
-set index_file [open "da.ndx" "w"]
+
+set index_file [open "${mol_name}.ndx" "w"]
+
+foreach sel_string ${sel_strings} sel_label ${sel_labels} {
 
 write_index_group ${index_file} \
-    [atomselect top "${protein_sel}"] \
-    "Protein"
+    [atomselect top "${sel_string}"] \
+    "Protein${sel_label}"
 write_index_group ${index_file} \
-    [atomselect top "(${protein_sel} and (noh))"]\
-    "Protein_noH"
+    [atomselect top "(${sel_string} and (noh))"]\
+    "Protein_noH${sel_label}"
 write_index_group ${index_file} \
-    [atomselect top "(${protein_sel} and (backbone))"] \
-    "Protein_Backbone"
+    [atomselect top "(${sel_string} and (backbone))"] \
+    "Protein_Backbone${sel_label}"
 write_index_group ${index_file} \
-    [atomselect top "(${protein_sel} and (alpha))"] \
-    "Protein_C-alpha"
+    [atomselect top "(${sel_string} and (alpha))"] \
+    "Protein_C-alpha${sel_label}"
 write_index_group ${index_file} \
-    [atomselect top "(${protein_sel} and (alpha))"] \
-    "RMSD_atoms"
+    [atomselect top "(${sel_string} and (alpha))"] \
+    "RMSD_atoms${sel_label}"
+
+}
+
 
 write_index_group ${index_file} \
     [atomselect top "(${protein_sel} and (alpha) and resid 1 2)"] \
@@ -69,9 +85,10 @@ write_index_group ${index_file} \
     [atomselect top "(${protein_sel} and (not hydrogen))"] \
     "heavy_atoms"
 
+
+
 close ${index_file}
 
-}
 
 quit
 

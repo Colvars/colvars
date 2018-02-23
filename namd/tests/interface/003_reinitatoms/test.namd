@@ -1,0 +1,39 @@
+# -*- tcl -*-
+
+set mol_name "15ala2x"
+set pbc "no"
+set coor_pdb_file "../Common/${mol_name}.pdb"
+set coor_bin_file "../Common/${mol_name}.init.coor"
+set vel_bin_file "../Common/${mol_name}.init.vel"
+set xsc_file "../Common/${mol_name}.init.xsc"
+set par_files [list "../Common/par_all36_prot.prm"]
+
+proc num_atoms {} {
+    if { ${mol_name} == "15ala2x" } {
+        return 324
+    }
+    if { ${mol_name} == "15leu2x" } {
+        return 594
+    }
+    return -1
+}
+
+source ../Common/delete_tmp_files.tcl
+
+source ../Common/common.namd
+
+colvars on
+
+run 0
+
+foreach mol_name [list "15ala2x" "15leu2x"] {
+    structure "../Common/${mol_name}.psf" pdb "../Common/${mol_name}.pdb"
+    reinitvels 300.0
+    reinitatoms "../Common/${mol_name}.init"
+    cv reset
+    cv config "colvarsTrajFrequency 1"
+    cv configfile test.in
+    run ${numsteps}
+}
+
+source ../Common/delete_tmp_files.tcl
