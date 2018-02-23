@@ -151,10 +151,6 @@ public:
     return it;
   }
 
-  /// If true, get it_restart from the state file; if set to false,
-  /// the MD program is providing it
-  bool it_restart_from_state_file;
-
   /// \brief Finite difference step size (if there is no dynamics, or
   /// if gradients need to be tested independently from the size of
   /// dt)
@@ -560,6 +556,9 @@ protected:
 
   /// Appending to the existing trajectory file?
   bool cv_traj_append;
+
+  /// Write labels at the next iteration
+  bool cv_traj_write_labels;
 
 private:
 

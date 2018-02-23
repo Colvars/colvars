@@ -51,22 +51,23 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
   // "it_restart" will be set by the input state file, if any;
   // "it" should be updated by the proxy
   colvarmodule::it = colvarmodule::it_restart = 0;
-  colvarmodule::it_restart_from_state_file = true;
 
-  colvarmodule::use_scripted_forces = false;
+  use_scripted_forces = false;
 
-  colvarmodule::b_analysis = false;
+  b_analysis = false;
 
   colvarmodule::debug_gradients_step_size = 1.0e-07;
 
   colvarmodule::rotation::monitor_crossings = false;
   colvarmodule::rotation::crossing_threshold = 1.0e-02;
 
-  colvarmodule::cv_traj_freq = 100;
-  colvarmodule::restart_out_freq = proxy->restart_frequency();
+  cv_traj_freq = 100;
+  restart_out_freq = proxy->restart_frequency();
 
   // by default overwrite the existing trajectory file
-  colvarmodule::cv_traj_append = false;
+  cv_traj_append = false;
+
+  cv_traj_write_labels = true;
 }
 
 
@@ -182,26 +183,27 @@ int colvarmodule::parse_config(std::string &conf)
 {
   extra_conf.clear();
 
-  // parse global options
+  // Parse global options
   if (catch_input_errors(parse_global_params(conf))) {
     return get_error();
   }
 
-  // parse the options for collective variables
+  // Parse the options for collective variables
   if (catch_input_errors(parse_colvars(conf))) {
     return get_error();
   }
 
-  // parse the options for biases
+  // Parse the options for biases
   if (catch_input_errors(parse_biases(conf))) {
     return get_error();
   }
 
-  // done parsing known keywords, check that all keywords found were valid ones
+  // Done parsing known keywords, check that all keywords found were valid ones
   if (catch_input_errors(parse->check_keywords(conf, "colvarmodule"))) {
     return get_error();
   }
 
+  // Parse auto-generated configuration (e.g. for back-compatibility)
   if (extra_conf.size()) {
     catch_input_errors(parse_global_params(extra_conf));
     catch_input_errors(parse_colvars(extra_conf));
@@ -215,13 +217,11 @@ int colvarmodule::parse_config(std::string &conf)
   cvm::log("Collective variables module (re)initialized.\n");
   cvm::log(cvm::line_marker);
 
-  // update any necessary proxy data
+  // Update any necessary proxy data
   proxy->setup();
 
-  if (cv_traj_os != NULL) {
-    // configuration might have changed, better redo the labels
-    write_traj_label(*cv_traj_os);
-  }
+  // configuration might have changed, better redo the labels
+  cv_traj_write_labels = true;
 
   return get_error();
 }
@@ -964,13 +964,20 @@ int colvarmodule::write_restart_file(std::string const &out_name)
 int colvarmodule::write_traj_files()
 {
   if (cv_traj_os == NULL) {
-    open_traj_file(cv_traj_name);
+    if (open_traj_file(cv_traj_name) != COLVARS_OK) {
+      return cvm::get_error();
+    } else {
+      cv_traj_write_labels = true;
+    }
   }
 
   // write labels in the traj file every 1000 lines and at first timestep
-  if ((cvm::step_absolute() % (cv_traj_freq * 1000)) == 0 || cvm::step_relative() == 0) {
+  if ((cvm::step_absolute() % (cv_traj_freq * 1000)) == 0 ||
+      cvm::step_relative() == 0 ||
+      cv_traj_write_labels) {
     write_traj_label(*cv_traj_os);
   }
+  cv_traj_write_labels = false;
 
   if ((cvm::step_absolute() % cv_traj_freq) == 0) {
     write_traj(*cv_traj_os);
@@ -1057,7 +1064,7 @@ int colvarmodule::reset()
 {
   parse->init();
 
-  cvm::log("Resetting the Collective Variables Module.\n");
+  cvm::log("Resetting the Collective Variables module.\n");
 
   // Iterate backwards because we are deleting the elements as we go
   for (std::vector<colvarbias *>::reverse_iterator bi = biases.rbegin();
@@ -1066,6 +1073,7 @@ int colvarmodule::reset()
     delete *bi; // the bias destructor updates the biases array
   }
   biases.clear();
+  biases_active_.clear();
 
   // Iterate backwards because we are deleting the elements as we go
   for (std::vector<colvar *>::reverse_iterator cvi = colvars.rbegin();
@@ -1081,7 +1089,7 @@ int colvarmodule::reset()
   proxy->reset();
 
   if (cv_traj_os != NULL) {
-    // Do not close file here, as we might not be done with it yet.
+    // Do not close traj file here, as we might not be done with it yet.
     proxy->flush_output_stream(cv_traj_os);
   }
 
@@ -1181,12 +1189,10 @@ std::istream & colvarmodule::read_restart(std::istream &is)
     // read global restart information
     std::string restart_conf;
     if (is >> colvarparse::read_block("configuration", restart_conf)) {
-      if (it_restart_from_state_file) {
-        parse->get_keyval(restart_conf, "step",
-                          it_restart, (size_t) 0,
-                          colvarparse::parse_silent);
+      parse->get_keyval(restart_conf, "step",
+                        it_restart, (size_t) 0,
+                        colvarparse::parse_silent);
         it = it_restart;
-      }
       std::string restart_version;
       parse->get_keyval(restart_conf, "version",
                         restart_version, std::string(""),
