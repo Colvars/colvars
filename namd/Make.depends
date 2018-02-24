@@ -1098,6 +1098,7 @@ obj/ComputeBondedCUDA.o: \
 	src/InfoStream.h \
 	inc/ProxyMgr.decl.h \
 	src/CudaUtils.h \
+	src/DeviceCUDA.h \
 	src/ComputeBonds.h \
 	src/Molecule.h \
 	src/parm.h \
