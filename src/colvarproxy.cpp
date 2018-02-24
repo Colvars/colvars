@@ -722,3 +722,13 @@ size_t colvarproxy::restart_frequency()
   return 0;
 }
 
+
+int colvarproxy::get_version_from_string(char const *version_string)
+{
+  std::string const v(version_string);
+  std::istringstream is(v.substr(0, 4) + v.substr(5, 2) + v.substr(8, 2));
+  int newint;
+  is >> newint;
+  return newint;
+}
+

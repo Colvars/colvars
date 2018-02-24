@@ -23,10 +23,10 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
   depth_s = 0;
   cv_traj_os = NULL;
 
-  // pointer to the proxy object
   if (proxy == NULL) {
-    proxy = proxy_in;
-    parse = new colvarparse();
+    proxy = proxy_in; // Pointer to the proxy object
+    parse = new colvarparse(); // Parsing object for global options
+    version_int = proxy->get_version_from_string(COLVARS_VERSION);
   } else {
     // TODO relax this error to handle multiple molecules in VMD
     // once the module is not static anymore

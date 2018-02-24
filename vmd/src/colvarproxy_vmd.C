@@ -120,17 +120,16 @@ colvarproxy_vmd::colvarproxy_vmd(Tcl_Interp *interp, VMDApp *v, int molid)
 #endif
     input_prefix_str(""), output_prefix_str("")
 {
+  version_int = get_version_from_string(COLVARPROXY_VERSION);
   b_simulation_running = false;
 
-  // The module is only allocated here: it will be configured
-  // through the "configfile" and "configstring" commands of colvarscript.
   colvars = new colvarmodule(this);
   cvm::log("Using VMD interface, version "+
            cvm::to_str(COLVARPROXY_VERSION)+".\n");
 
-  colvars->cv_traj_freq = 0;
+  colvars->cv_traj_freq = 0; // I/O will be handled explicitly
   colvars->restart_out_freq = 0;
-  cvm::rotation::monitor_crossings = false;
+  cvm::rotation::monitor_crossings = false; // Avoid unnecessary error messages
 
   total_force_requested = false;
 

@@ -66,7 +66,16 @@ private:
   /// Impossible to initialize the main object without arguments
   colvarmodule();
 
+  /// Integer representing the version string (allows comparisons)
+  int version_int;
+
 public:
+
+  /// Get the version number (higher = more recent)
+  int version_number() const
+  {
+    return version_int;
+  }
 
   friend class colvarproxy;
   // TODO colvarscript should be unaware of colvarmodule's internals

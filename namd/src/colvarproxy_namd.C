@@ -26,6 +26,8 @@
 
 colvarproxy_namd::colvarproxy_namd()
 {
+  version_int = get_version_from_string(COLVARPROXY_VERSION);
+
   first_timestep = true;
   total_force_requested = false;
   requestTotalForce(total_force_requested);

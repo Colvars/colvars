@@ -126,6 +126,8 @@ colvarproxy_lammps::colvarproxy_lammps(LAMMPS_NS::LAMMPS *lmp,
 
 void colvarproxy_lammps::init(const char *conf_file)
 {
+  version_int = get_version_from_string(COLVARPROXY_VERSION);
+
   // create the colvarmodule instance
   colvars = new colvarmodule(this);
 

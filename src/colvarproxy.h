@@ -629,6 +629,15 @@ public:
     return b_simulation_running;
   }
 
+  /// Convert a version string "YYYY-MM-DD" into an integer
+  int get_version_from_string(char const *version_string);
+
+  /// Get the version number (higher = more recent)
+  int version_number() const
+  {
+    return version_int;
+  }
+
 protected:
 
   /// Whether a simulation is running (warn against irrecovarable errors)
@@ -636,6 +645,9 @@ protected:
 
   /// Whether the entire module should be deallocated by the host engine
   bool b_delete_requested;
+
+  /// Integer representing the version string (allows comparisons)
+  int version_int;
 
 };
 
