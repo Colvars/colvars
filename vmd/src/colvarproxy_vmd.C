@@ -1,5 +1,7 @@
 // -*- c++ -*-
 
+#include <cmath>
+
 #include <tcl.h>
 
 #include "VMDApp.h"
@@ -158,6 +160,9 @@ colvarproxy_vmd::colvarproxy_vmd(Tcl_Interp *interp, VMDApp *v, int molid)
   have_scripts = false;
 #endif
 
+  // set the same seed as in Measure.C
+  vmd_srandom(38572111);
+
   this->setup();
 }
 
@@ -192,9 +197,6 @@ int colvarproxy_vmd::setup()
     return COLVARS_ERROR;
   }
 
-  // set the same seed as in Measure.C
-  vmd_srandom(38572111);
-
   if (colvars) {
     return colvars->setup();
   }
@@ -217,6 +219,36 @@ int colvarproxy_vmd::update_input()
     atoms_positions[i] = cvm::atom_pos(vmdpos[atoms_ids[i]*3+0],
                                        vmdpos[atoms_ids[i]*3+1],
                                        vmdpos[atoms_ids[i]*3+2]);
+  }
+
+
+  Timestep const *ts = vmdmol->get_frame(vmdmol_frame);
+  {
+    // Get lattice vectors
+    float A[3];
+    float B[3];
+    float C[3];
+    ts->get_transform_vectors(A, B, C);
+    unit_cell_x.set(A[0], A[1], A[2]);
+    unit_cell_y.set(B[0], B[1], B[2]);
+    unit_cell_z.set(C[0], C[1], C[2]);
+  }
+
+  if (ts->a_length + ts->b_length + ts->c_length < 1.0e-12) {
+    boundaries_type = boundaries_non_periodic;
+    reset_pbc_lattice();
+  } else if ((ts->a_length > 1.0e-12) && (ts->b_length > 1.0e-12) &&
+             (ts->c_length > 1.0e-12)) {
+    if (((ts->alpha-90.0)*(ts->alpha-90.0)) +
+        ((ts->beta-90.0)*(ts->beta-90.0)) +
+        ((ts->gamma-90.0)*(ts->gamma-90.0)) < 1.0e-12) {
+      boundaries_type = boundaries_pbc_ortho;
+    } else {
+      boundaries_type = boundaries_pbc_triclinic;
+    }
+    colvarproxy_system::update_pbc_lattice();
+  } else {
+    boundaries_type = boundaries_unsupported;
   }
 
   return error_code;
@@ -293,18 +325,15 @@ void colvarproxy_vmd::fatal_error(std::string const &message)
 }
 
 
-void colvarproxy_vmd::exit(std::string const &message)
-{
-  error("Error: requested VMD shutdown.\n");
-}
-
-
 int colvarproxy_vmd::set_frame(long int f)
 {
   if (vmdmol->get_frame(f) != NULL) {
+
     vmdmol_frame = f;
     colvars->it = f;
+
     update_input();
+
     return COLVARS_OK;
   } else {
     return COLVARS_NO_SUCH_FRAME;

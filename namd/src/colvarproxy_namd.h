@@ -68,7 +68,8 @@ public:
   int reset();
 
   // synchronize the local arrays with requested or forced atoms
-  int update_atoms_map(AtomIDList::const_iterator begin, AtomIDList::const_iterator end);
+  int update_atoms_map(AtomIDList::const_iterator begin,
+                       AtomIDList::const_iterator end);
 
   void calculate();
 
@@ -246,13 +247,7 @@ public:
   }
 
   cvm::rvector position_distance(cvm::atom_pos const &pos1,
-                                 cvm::atom_pos const &pos2);
-  cvm::real position_dist2(cvm::atom_pos const &pos1,
-                           cvm::atom_pos const &pos2);
-
-  void select_closest_image(cvm::atom_pos &pos,
-                            cvm::atom_pos const &ref_pos);
-
+                                 cvm::atom_pos const &pos2) const;
 
   int load_atoms(char const *filename,
                  cvm::atom_group &atoms,
@@ -282,42 +277,6 @@ public:
 
   char const *script_obj_to_str(unsigned char *obj);
 };
-
-
-inline cvm::rvector colvarproxy_namd::position_distance(cvm::atom_pos const &pos1,
-                                                        cvm::atom_pos const &pos2)
-{
-  Position const p1(pos1.x, pos1.y, pos1.z);
-  Position const p2(pos2.x, pos2.y, pos2.z);
-  // return p2 - p1
-  Vector const d = this->lattice->delta(p2, p1);
-  return cvm::rvector(d.x, d.y, d.z);
-}
-
-
-inline cvm::real colvarproxy_namd::position_dist2(cvm::atom_pos const &pos1,
-                                                  cvm::atom_pos const &pos2)
-{
-  Lattice const *l = this->lattice;
-  Vector const p1(pos1.x, pos1.y, pos1.z);
-  Vector const p2(pos2.x, pos2.y, pos2.z);
-  Vector const d = l->delta(p1, p2);
-  return cvm::real(d.x*d.x + d.y*d.y + d.z*d.z);
-}
-
-
-inline void colvarproxy_namd::select_closest_image(cvm::atom_pos &pos,
-                                                   cvm::atom_pos const &ref_pos)
-{
-  Position const p(pos.x, pos.y, pos.z);
-  Position const rp(ref_pos.x, ref_pos.y, ref_pos.z);
-  ScaledPosition const srp = this->lattice->scale(rp);
-  Position const np = this->lattice->nearest(p, srp);
-  pos.x = np.x;
-  pos.y = np.y;
-  pos.z = np.z;
-}
-
 
 
 #endif

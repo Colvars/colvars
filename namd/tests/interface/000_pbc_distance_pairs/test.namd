@@ -1,0 +1,62 @@
+# -*- tcl -*-
+
+set mol_name "15ala2x"
+set pbc "no"
+set coor_pdb_file "../Common/${mol_name}.pdb"
+set coor_bin_file "../Common/${mol_name}.init.coor"
+set vel_bin_file "../Common/${mol_name}.init.vel"
+set xsc_file "../Common/${mol_name}.init.xsc"
+set par_files [list "../Common/par_all36_prot.prm"]
+
+proc num_atoms {} {
+    if { ${mol_name} == "15ala2x" } {
+        return 324
+    }
+    if { ${mol_name} == "15leu2x" } {
+        return 594
+    }
+    return -1
+}
+
+if { [llength [info commands print]] > 0 } {
+
+    # NAMD
+    source ../Common/common.namd
+
+    DCDfile test.dcd
+    DCDfreq 1
+    DCDUnitCell yes
+
+    colvars on
+
+} else {
+
+    # VMD
+
+    mol new ../Common/${mol_name}.psf type psf
+    mol addfile ${coor_bin_file} type namdbin waitfor all
+    mol addfile test.dcd type dcd waitfor all
+    cv molid top
+}
+
+
+cv config "indexFile ../Common/${mol_name}.ndx"
+cv configfile test.in
+
+
+if { [llength [info commands print]] > 0 } {
+    # NAMD
+    run ${numsteps}
+} else {
+    # VMD
+    set out [open "test.colvars.traj" "w"]
+    puts -nonewline ${out} [cv printframelabels]
+    for { set fr 0 } { ${fr} < [molinfo top get numframes] } { incr fr } {
+        cv frame ${fr}
+        cv update
+        puts -nonewline ${out} [cv printframe]
+    }
+    close ${out}
+    quit
+}
+

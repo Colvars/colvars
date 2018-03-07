@@ -7,6 +7,7 @@
 #include <list>
 
 #include "colvarmodule.h"
+#include "colvartypes.h"
 #include "colvarvalue.h"
 
 
@@ -22,7 +23,7 @@
 /// To interface to a new MD engine, the simplest solution is to derive a new
 /// class from \link colvarproxy \endlink.  Currently implemented are: \link
 /// colvarproxy_lammps, \endlink, \link colvarproxy_namd, \endlink, \link
-/// colvarproxy_vmd, \endlink.
+/// colvarproxy_vmd \endlink.
 
 
 // forward declarations
@@ -61,14 +62,16 @@ public:
 
   /// \brief Get the PBC-aware distance vector between two positions
   virtual cvm::rvector position_distance(cvm::atom_pos const &pos1,
-                                         cvm::atom_pos const &pos2) = 0;
+                                         cvm::atom_pos const &pos2) const;
 
-  /// \brief Get the PBC-aware square distance between two positions;
-  /// may need to be reimplemented independently from position_distance() for optimization purposes
-  virtual cvm::real position_dist2(cvm::atom_pos const &pos1,
-                                   cvm::atom_pos const &pos2);
+  /// Recompute PBC reciprocal lattice (assumes XYZ periodicity)
+  void update_pbc_lattice();
 
-  /// Tell the proxy whether total forces are needed (may not always be available)
+  /// Set the lattice vectors to zero
+  void reset_pbc_lattice();
+
+  /// \brief Tell the proxy whether total forces are needed (they may not
+  /// always be available)
   virtual void request_total_force(bool yesno);
 
   /// Are total forces being used?
@@ -76,6 +79,29 @@ public:
 
   /// Are total forces from the current step available?
   virtual bool total_forces_same_step() const;
+
+protected:
+
+  /// \brief Type of boundary conditions
+  ///
+  /// Orthogonal and triclinic cells are made available to objects.
+  /// For any other conditions (mixed periodicity, triclinic cells in LAMMPS)
+  /// minimum-image distances are computed by the host engine regardless.
+  enum Boundaries_type {
+    boundaries_non_periodic,
+    boundaries_pbc_ortho,
+    boundaries_pbc_triclinic,
+    boundaries_unsupported
+  };
+
+  /// Type of boundary conditions
+  Boundaries_type boundaries_type;
+
+  /// Bravais lattice vectors
+  cvm::rvector unit_cell_x, unit_cell_y, unit_cell_z;
+
+  /// Reciprocal lattice vectors
+  cvm::rvector reciprocal_cell_x, reciprocal_cell_y, reciprocal_cell_z;
 };
 
 

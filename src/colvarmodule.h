@@ -477,9 +477,6 @@ public:
   /// Print a message to the main log and set global error code
   static int error(std::string const &message, int code = COLVARS_ERROR);
 
-  /// Print a message to the main log and exit normally
-  static void exit(std::string const &message);
-
   // Replica exchange commands.
   static bool replica_enabled();
   static int replica_index();
@@ -492,15 +489,6 @@ public:
   /// correctly
   static rvector position_distance(atom_pos const &pos1,
                                    atom_pos const &pos2);
-
-  /// \brief Get the square distance between two positions (with
-  /// periodic boundary conditions handled transparently)
-  ///
-  /// Note: in the case of periodic boundary conditions, this provides
-  /// an analytical square distance (while taking the square of
-  /// position_distance() would produce leads to a cusp)
-  static real position_dist2(atom_pos const &pos1,
-                             atom_pos const &pos2);
 
   /// \brief Names of groups from a Gromacs .ndx file to be read at startup
   std::list<std::string> index_group_names;

@@ -1,0 +1,25 @@
+colvarsTrajFrequency    1
+
+colvar {
+    name dmat
+
+    width 0.2
+
+    distancePairs {
+        group1 {
+            indexGroup Protein_C-alpha_1
+        }
+        group2 {
+            indexGroup Protein_C-alpha_2
+        }
+    }
+} 
+
+
+harmonic {
+    colvars        dmat
+    forceConstant  0.01
+    centers        (5.0, 120.0, 150.0, 5.0)
+    targetCenters  (5.0, 5.0, 5.0, 5.0)
+    targetNumSteps 1000
+}

@@ -1791,17 +1791,13 @@ void cvm::request_total_force()
   proxy->request_total_force(true);
 }
 
-cvm::rvector cvm::position_distance(atom_pos const &pos1,
-                                            atom_pos const &pos2)
+
+cvm::rvector cvm::position_distance(cvm::atom_pos const &pos1,
+                                    cvm::atom_pos const &pos2)
 {
   return proxy->position_distance(pos1, pos2);
 }
 
-cvm::real cvm::position_dist2(cvm::atom_pos const &pos1,
-                                      cvm::atom_pos const &pos2)
-{
-  return proxy->position_dist2(pos1, pos2);
-}
 
 cvm::real cvm::rand_gaussian(void)
 {

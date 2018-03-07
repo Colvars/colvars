@@ -141,7 +141,7 @@ void colvar::distance_vec::apply_force(colvarvalue const &force)
 cvm::real colvar::distance_vec::dist2(colvarvalue const &x1,
                                       colvarvalue const &x2) const
 {
-  return cvm::position_dist2(x1.rvector_value, x2.rvector_value);
+  return (cvm::position_distance(x1.rvector_value, x2.rvector_value)).norm2();
 }
 
 
