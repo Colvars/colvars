@@ -1,0 +1,177 @@
+colvars: ----------------------------------------------------------------------
+colvars: Please cite Fiorin et al, Mol Phys 2013:
+colvars:  http://dx.doi.org/10.1080/00268976.2013.813594
+colvars: in any publication based on this calculation.
+colvars: SMP parallelism is available.
+colvars: The restart output state file will be "test.tmp.colvars.state".
+colvars: The final output state file will be "test.colvars.state".
+colvars: Writing to colvar trajectory file "test.colvars.traj".
+colvars: The restart output state file will be "test.tmp.colvars.state".
+colvars: The final output state file will be "test.colvars.state".
+colvars: Saving collective variables state to "test.colvars.state".
+colvars: Resetting the Collective Variables module.
+colvars: ----------------------------------------------------------------------
+colvars: Reading new configuration:
+colvars: # indexFile = "" [default]
+colvars: # smp = on [default]
+colvars: # analysis = off [default]
+colvars: # colvarsTrajFrequency = 1
+colvars: # colvarsRestartFrequency = 100 [default]
+colvars: # scriptedColvarForces = off [default]
+colvars: # scriptingAfterBiases = on [default]
+colvars: Warning: no collective variables defined.
+colvars: Collective variables initialized, 0 in total.
+colvars: No collective variables biases were defined.
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables module (re)initialized.
+colvars: ----------------------------------------------------------------------
+colvars: ----------------------------------------------------------------------
+colvars: Reading new configuration from file "test.in":
+colvars: # indexFile = "" [default]
+colvars: # smp = on [default]
+colvars: # analysis = off [default]
+colvars: # colvarsTrajFrequency = 1 [default]
+colvars: # colvarsRestartFrequency = 100 [default]
+colvars: # scriptedColvarForces = off [default]
+colvars: # scriptingAfterBiases = on [default]
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = "rgyr"
+colvars:   Initializing a new "gyration" component.
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID = { HA }
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Atom group "atoms" defined, 15 atoms initialized: total mass = 180.165, total charge = 1.05.
+colvars:   All components initialized.
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # width = 1 [default]
+colvars:   # lowerBoundary = 0 [default]
+colvars:   # upperBoundary = 0 [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = off [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputTotalForce = on
+colvars:   # outputAppliedForce = on
+colvars:   # subtractAppliedForce = off [default]
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables initialized, 1 in total.
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new "harmonic" instance.
+colvars:   # name = "harmonic1" [default]
+colvars:   # colvars = { rgyr }
+colvars:   # outputEnergy = off [default]
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # writeTISamples = off [default]
+colvars:   # writeTIPMF = off [default]
+colvars:   # centers = { 6 }
+colvars:   # targetCenters = { 6 } [default]
+colvars:   # outputCenters = off [default]
+colvars:   # forceConstant = 1
+colvars:   # targetForceConstant = -1 [default]
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables biases initialized, 1 in total.
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables module (re)initialized.
+colvars: ----------------------------------------------------------------------
+colvars: Updating NAMD interface:
+colvars: updating atomic data (15 atoms).
+colvars: updating group data (0 scalable groups, 0 atoms in total).
+colvars: Saving collective variables state to "test.colvars.state".
+colvars: Resetting the Collective Variables module.
+colvars: ----------------------------------------------------------------------
+colvars: Reading new configuration:
+colvars: # indexFile = "" [default]
+colvars: # smp = on [default]
+colvars: # analysis = off [default]
+colvars: # colvarsTrajFrequency = 1
+colvars: # colvarsRestartFrequency = 100 [default]
+colvars: # scriptedColvarForces = off [default]
+colvars: # scriptingAfterBiases = on [default]
+colvars: Warning: no collective variables defined.
+colvars: Collective variables initialized, 0 in total.
+colvars: No collective variables biases were defined.
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables module (re)initialized.
+colvars: ----------------------------------------------------------------------
+colvars: ----------------------------------------------------------------------
+colvars: Reading new configuration from file "test.in":
+colvars: # indexFile = "" [default]
+colvars: # smp = on [default]
+colvars: # analysis = off [default]
+colvars: # colvarsTrajFrequency = 1 [default]
+colvars: # colvarsRestartFrequency = 100 [default]
+colvars: # scriptedColvarForces = off [default]
+colvars: # scriptingAfterBiases = on [default]
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = "rgyr"
+colvars:   Initializing a new "gyration" component.
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID = { HA }
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Atom group "atoms" defined, 15 atoms initialized: total mass = 180.165, total charge = 1.05.
+colvars:   All components initialized.
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # width = 1 [default]
+colvars:   # lowerBoundary = 0 [default]
+colvars:   # upperBoundary = 0 [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = off [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputTotalForce = on
+colvars:   # outputAppliedForce = on
+colvars:   # subtractAppliedForce = off [default]
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables initialized, 1 in total.
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new "harmonic" instance.
+colvars:   # name = "harmonic1" [default]
+colvars:   # colvars = { rgyr }
+colvars:   # outputEnergy = off [default]
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # writeTISamples = off [default]
+colvars:   # writeTIPMF = off [default]
+colvars:   # centers = { 6 }
+colvars:   # targetCenters = { 6 } [default]
+colvars:   # outputCenters = off [default]
+colvars:   # forceConstant = 1
+colvars:   # targetForceConstant = -1 [default]
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables biases initialized, 1 in total.
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables module (re)initialized.
+colvars: ----------------------------------------------------------------------
+colvars: Updating NAMD interface:
+colvars: updating atomic data (15 atoms).
+colvars: updating group data (0 scalable groups, 0 atoms in total).
+colvars: Saving collective variables state to "test.colvars.state".

@@ -28,7 +28,6 @@ run 0
 
 foreach mol_name [list "15ala2x" "15leu2x"] {
     structure "../Common/${mol_name}.psf" pdb "../Common/${mol_name}.pdb"
-    reinitvels 300.0
     reinitatoms "../Common/${mol_name}.init"
     cv reset
     cv config "colvarsTrajFrequency 1"

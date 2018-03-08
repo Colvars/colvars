@@ -143,6 +143,8 @@ for dir in ${DIRLIST} ; do
     # If this test is used to generate the reference output files, copy them
     if [ "x${gen_ref_output}" = 'xyes' ]; then
       grep 'NAMD' ${basename}.out | head -n 1 > namd-version.txt
+      grep 'Initializing the collective variables module, version' ${basename}.out | head -n 1 >> namd-version.txt
+      grep 'Using NAMD interface, version' ${basename}.out | head -n 1 >> namd-version.txt
       cp ${basename}.colvars.state.stripped AutoDiff/
       cp ${basename}.colvars.traj           AutoDiff/
       cp ${basename}.colvars.out            AutoDiff/
