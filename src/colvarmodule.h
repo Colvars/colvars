@@ -304,19 +304,19 @@ private:
 public:
 
   /// Return how many variables are defined
-  int num_variables() const;
+  size_t num_variables() const;
 
   /// Return how many variables have this feature enabled
-  int num_variables_feature(int feature_id) const;
+  size_t num_variables_feature(int feature_id) const;
 
   /// Return how many biases are defined
-  int num_biases() const;
+  size_t num_biases() const;
 
   /// Return how many biases have this feature enabled
-  int num_biases_feature(int feature_id) const;
+  size_t num_biases_feature(int feature_id) const;
 
   /// Return how many biases of this type are defined
-  int num_biases_type(std::string const &type) const;
+  size_t num_biases_type(std::string const &type) const;
 
   /// Return the names of time-dependent biases with forces enabled (ABF,
   /// metadynamics, etc)

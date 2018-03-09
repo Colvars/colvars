@@ -425,13 +425,13 @@ int colvarmodule::parse_biases(std::string const &conf)
 }
 
 
-int colvarmodule::num_variables() const
+size_t colvarmodule::num_variables() const
 {
   return colvars.size();
 }
 
 
-int colvarmodule::num_variables_feature(int feature_id) const
+size_t colvarmodule::num_variables_feature(int feature_id) const
 {
   size_t n = 0;
   for (std::vector<colvar *>::const_iterator cvi = colvars.begin();
@@ -445,13 +445,13 @@ int colvarmodule::num_variables_feature(int feature_id) const
 }
 
 
-int colvarmodule::num_biases() const
+size_t colvarmodule::num_biases() const
 {
   return biases.size();
 }
 
 
-int colvarmodule::num_biases_feature(int feature_id) const
+size_t colvarmodule::num_biases_feature(int feature_id) const
 {
   size_t n = 0;
   for (std::vector<colvarbias *>::const_iterator bi = biases.begin();
@@ -465,7 +465,7 @@ int colvarmodule::num_biases_feature(int feature_id) const
 }
 
 
-int colvarmodule::num_biases_type(std::string const &type) const
+size_t colvarmodule::num_biases_type(std::string const &type) const
 {
   size_t n = 0;
   for (std::vector<colvarbias *>::const_iterator bi = biases.begin();
