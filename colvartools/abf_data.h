@@ -50,7 +50,7 @@ class ABFdata {
     int *PBC;
 
     /// Constructor: reads from a file
-     ABFdata(const char *gradFileName);
+    explicit ABFdata(const char *gradFileName);
     ~ABFdata();
 
     /// \brief Returns an offset for scalar fields based on a n-index.
