@@ -140,24 +140,30 @@ public:
   /// (costly) set the corresponding atoms_ncopies to zero
   virtual void clear_atom(int index);
 
-  /// \brief Read atom identifiers from a file \param filename name of
-  /// the file (usually a PDB) \param atoms array to which atoms read
-  /// from "filename" will be appended \param pdb_field (optiona) if
-  /// "filename" is a PDB file, use this field to determine which are
-  /// the atoms to be set
+  /// \brief Select atom IDs from a file (usually PDB) \param filename name of
+  /// the file \param atoms array to which atoms read from "filename" will be
+  /// appended \param pdb_field (optional) if the file is a PDB and this
+  /// string is non-empty, select atoms for which this field is non-zero
+  /// \param pdb_field_value (optional) if non-zero, select only atoms whose
+  /// pdb_field equals this
   virtual int load_atoms(char const *filename,
                          cvm::atom_group &atoms,
                          std::string const &pdb_field,
-                         double const pdb_field_value = 0.0);
+                         double pdb_field_value = 0.0);
 
-  /// \brief Load the coordinates for a group of atoms from a file
-  /// (usually a PDB); if "pos" is already allocated, the number of its
-  /// elements must match the number of atoms in "filename"
+  /// \brief Load a set of coordinates from a file (usually PDB); if "pos" is
+  /// already allocated, the number of its elements must match the number of
+  /// entries in "filename" \param filename name of the file \param pos array
+  /// of coordinates \param sorted_ids array of sorted internal IDs, used to
+  /// loop through the file only once \param pdb_field (optional) if the file
+  /// is a PDB and this string is non-empty, select atoms for which this field
+  /// is non-zero \param pdb_field_value (optional) if non-zero, select only
+  /// atoms whose pdb_field equals this
   virtual int load_coords(char const *filename,
                           std::vector<cvm::atom_pos> &pos,
-                          const std::vector<int> &indices,
+                          std::vector<int> const &sorted_ids,
                           std::string const &pdb_field,
-                          double const pdb_field_value = 0.0);
+                          double pdb_field_value = 0.0);
 
   /// Clear atomic data
   int reset();

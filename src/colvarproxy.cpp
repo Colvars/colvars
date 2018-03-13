@@ -191,7 +191,7 @@ void colvarproxy_atoms::clear_atom(int index)
 int colvarproxy_atoms::load_atoms(char const *filename,
                                   cvm::atom_group &atoms,
                                   std::string const &pdb_field,
-                                  double const)
+                                  double)
 {
   return cvm::error("Error: loading atom identifiers from a file "
                     "is currently not implemented.\n",
@@ -201,9 +201,9 @@ int colvarproxy_atoms::load_atoms(char const *filename,
 
 int colvarproxy_atoms::load_coords(char const *filename,
                                    std::vector<cvm::atom_pos> &pos,
-                                   const std::vector<int> &indices,
+                                   std::vector<int> const &sorted_ids,
                                    std::string const &pdb_field,
-                                   double const)
+                                   double)
 {
   return cvm::error("Error: loading atomic coordinates from a file "
                     "is currently not implemented.\n",

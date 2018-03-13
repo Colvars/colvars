@@ -972,14 +972,12 @@ colvar::rmsd::rmsd(std::string const &conf)
                      "if provided, must be non-zero.\n");
           return;
         }
-      } else {
-        // if not, rely on existing atom indices for the group
-        atoms->create_sorted_ids();
-        ref_pos.resize(atoms->size());
       }
 
-      cvm::load_coords(ref_pos_file.c_str(), ref_pos, atoms->sorted_ids,
-                        ref_pos_col, ref_pos_col_value);
+      ref_pos.resize(atoms->size());
+
+      cvm::load_coords(ref_pos_file.c_str(), &ref_pos, atoms,
+                       ref_pos_col, ref_pos_col_value);
     }
   }
 
@@ -1165,13 +1163,11 @@ colvar::eigenvector::eigenvector(std::string const &conf)
                             "if provided, must be non-zero.\n");
           return;
         }
-      } else {
-        // if not, use atom indices
-        atoms->create_sorted_ids();
       }
 
       ref_pos.resize(atoms->size());
-      cvm::load_coords(file_name.c_str(), ref_pos, atoms->sorted_ids, file_col, file_col_value);
+      cvm::load_coords(file_name.c_str(), &ref_pos, atoms,
+                       file_col, file_col_value);
     }
   }
 
@@ -1242,13 +1238,11 @@ colvar::eigenvector::eigenvector(std::string const &conf)
           cvm::error("Error: vectorColValue, if provided, must be non-zero.\n");
           return;
         }
-      } else {
-        // if not, use atom indices
-        atoms->create_sorted_ids();
       }
 
       eigenvec.resize(atoms->size());
-      cvm::load_coords(file_name.c_str(), eigenvec, atoms->sorted_ids, file_col, file_col_value);
+      cvm::load_coords(file_name.c_str(), &eigenvec, atoms,
+                       file_col, file_col_value);
     }
   }
 

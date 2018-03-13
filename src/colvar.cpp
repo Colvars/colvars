@@ -1,5 +1,9 @@
 // -*- c++ -*-
 
+#include <list>
+#include <vector>
+#include <algorithm>
+
 #include "colvarmodule.h"
 #include "colvarvalue.h"
 #include "colvarparse.h"
@@ -7,15 +11,6 @@
 #include "colvarcomp.h"
 #include "colvarscript.h"
 
-// used in build_atom_list()
-#include <algorithm>
-
-
-/// Compare two cvcs using their names
-/// Used to sort CVC array in scripted coordinates
-bool compare(colvar::cvc *i, colvar::cvc *j) {
-  return i->name < j->name;
-}
 
 
 colvar::colvar()
@@ -26,6 +21,15 @@ colvar::colvar()
   init_cv_requires();
 }
 
+
+namespace {
+  /// Compare two cvcs using their names
+  /// Used to sort CVC array in scripted coordinates
+  bool compare(colvar::cvc *i, colvar::cvc *j)
+  {
+    return i->name < j->name;
+  }
+}
 
 int colvar::init(std::string const &conf)
 {

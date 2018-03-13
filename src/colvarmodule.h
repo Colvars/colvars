@@ -499,29 +499,36 @@ public:
   /// \brief Read a Gromacs .ndx file
   int read_index_file(char const *filename);
 
-
-  /// \brief Create atoms from a file \param filename name of the file
-  /// (usually a PDB) \param atoms array of the atoms to be allocated
-  /// \param pdb_field (optiona) if "filename" is a PDB file, use this
-  /// field to determine which are the atoms to be set
+  /// \brief Select atom IDs from a file (usually PDB) \param filename name of
+  /// the file \param atoms array into which atoms read from "filename" will be
+  /// appended \param pdb_field (optional) if the file is a PDB and this
+  /// string is non-empty, select atoms for which this field is non-zero
+  /// \param pdb_field_value (optional) if non-zero, select only atoms whose
+  /// pdb_field equals this
   static int load_atoms(char const *filename,
                         atom_group &atoms,
                         std::string const &pdb_field,
-                        double const pdb_field_value = 0.0);
+                        double pdb_field_value = 0.0);
 
-  /// \brief Load the coordinates for a group of atoms from a file
-  /// (PDB or XYZ)
+  /// \brief Load coordinates for a group of atoms from a file (PDB or XYZ);
+  /// if "pos" is already allocated, the number of its elements must match the
+  /// number of entries in "filename" \param filename name of the file \param
+  /// pos array of coordinates \param atoms group containing the atoms (used
+  /// to obtain internal IDs) \param pdb_field (optional) if the file is a PDB
+  /// and this string is non-empty, select atoms for which this field is
+  /// non-zero \param pdb_field_value (optional) if non-zero, select only
+  /// atoms whose pdb_field equals this
   static int load_coords(char const *filename,
-                         std::vector<atom_pos> &pos,
-                         const std::vector<int> &indices,
+                         std::vector<rvector> *pos,
+                         atom_group *atoms,
                          std::string const &pdb_field,
-                         double const pdb_field_value = 0.0);
+                         double pdb_field_value = 0.0);
 
   /// \brief Load the coordinates for a group of atoms from an
   /// XYZ file
   static int load_coords_xyz(char const *filename,
-                              std::vector<atom_pos> &pos,
-                              const std::vector<int> &indices);
+                             std::vector<rvector> *pos,
+                             atom_group *atoms);
 
   /// Frequency for collective variables trajectory output
   static size_t cv_traj_freq;

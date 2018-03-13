@@ -1010,7 +1010,7 @@ The complete list of selection keywords available in \MDENGINE{} is:
     This option sets the PSF segment identifier for
     \texttt{atomNameResidueRange}.  Multiple values may be provided,
     which correspond to multiple instances of
-    \texttt{atomNameResidueRange}, in the order of their occurrence.
+    \texttt{atomNameResidueRange}, in order of their occurrence.
     This option is only necessary if a PSF topology file is used.}
 
 \item %
@@ -1091,37 +1091,41 @@ At this point, only the RMSD component will correctly adjust the Jacobian deriva
     boolean}{%
     \texttt{off}}{%
     If this option is \texttt{on}, the coordinates of this group will be optimally superimposed to the reference positions provided by \cvnamebasedonly{either} \texttt{refPositions} or \texttt{refPositionsFile}.
-    The rotation will be performed around the center of geometry if \texttt{centerReference} is \texttt{on}, around the origin otherwise.
+    The rotation will be performed around the center of geometry if \texttt{centerReference} is \texttt{on}, or around the origin otherwise.
     The algorithm used is the same employed by the \texttt{orientation} colvar component~\cite{Coutsias2004}.
     Forces applied to the atoms of this group will also be implicitly rotated back to the original frame.
     \textbf{Note}: unless otherwise specified, \texttt{rmsd} and \texttt{eigenvector} set this option to \texttt{on} \emph{by default}.
 }
 
 \item %
+  \labelkey{atom-group|refPositions}
   \key
     {refPositions}{%
     atom group}{%
     Reference positions for fitting (\AA)}{%
     space-separated list of \texttt{(x, y, z)} triplets}{%
     \label{key:colvars:atom_group:refPositions}
-    This option provides a list of reference coordinates for \texttt{centerReference} or \texttt{rotateReference}.
-    If only \texttt{centerReference} is \texttt{on}, the list may contain a single (x, y, z) triplet; if also \texttt{rotateReference} is \texttt{on}, the list should be as long as the atom group.
+    This option provides a list of reference coordinates for \texttt{centerReference} and/or \texttt{rotateReference}, and is mutually exclusive with \texttt{refPositionsFile}.
+    If only \texttt{centerReference} is \texttt{on}, the list may contain a single (x, y, z) triplet; if also \texttt{rotateReference} is \texttt{on}, the list should be as long as the atom group, and \emph{its order must match the order in which atoms were defined}.
 }
 
 \item %
+  \labelkey{atom-group|refPositionsFile}
   \key
     {refPositionsFile}{%
     atom group}{%
     File containing the reference positions for fitting}{%
     UNIX filename}{%
     \label{key:colvars:atom_group:refPositionsFile}
-    This keyword provides the reference coordinates for fitting from the given file, and is mutually exclusive with \texttt{refPositions}.
-    The acceptable file format is XYZ\cvnamebasedonly{or PDB}.
-    Atomic positions are read differently depending on the three following scenarios:
-    \emph{i)} the file contains exactly as many records as the atoms in the group: all positions are read in sequence;
-    \emph{ii)} the file contains coordinates for the entire system: only the positions corresponding to the numeric indices of the atom group are read\cvnamebasedonly{;
-    \emph{iii)} if the file is a PDB file and \texttt{refPositionsCol} is specified, positions are read according to the value of the column \texttt{refPositionsCol} (which may be the same as \texttt{atomsCol})}.
+    This option provides a list of reference coordinates for \texttt{centerReference} and/or \texttt{rotateReference}, and is mutually exclusive with \texttt{refPositions}.
+    The acceptable file format is XYZ, which is read in double precision\cvnamebasedonly{, or PDB; \emph{the latter is discouraged if the precision of the reference coordinates is a concern}}.
+    Atomic positions are read differently depending on the following scenarios:
+    \textbf{(i)} the file contains exactly as many records as the atoms in the group: all positions are read in sequence;
+    \textbf{(ii)} (most common case) the file contains coordinates for the entire system: only the positions corresponding to the numeric indices of the atom group are read\cvnamebasedonly{;
+      \textbf{(iii)} if the file is a PDB file and \texttt{refPositionsCol} is specified, positions are read according to the value of the column \texttt{refPositionsCol} (which may be the same as \texttt{atomsCol})}.
+    In each case, atoms are read from the file \emph{in order of increasing number}.
 }
+
 
 \cvnamebasedonly{
 \item %
@@ -1204,8 +1208,8 @@ The following two options have default values appropriate for the vast majority 
     Apply forces from this colvar to this group}{%
     boolean}{%
     \texttt{on}}{%
-    If this option is \texttt{off}, no forces are applied from this
-    colvar to this group. Other forces are not affected (i.e. those
+    If this option is \texttt{off}, no forces are applied the atoms in the group.
+    Other forces are not affected (i.e. those
     from the MD engine, from other colvars, and other external forces).
     For dummy atoms, this option is \texttt{off} by default.
  }
@@ -1232,8 +1236,8 @@ The following two options have default values appropriate for the vast majority 
 }
 \cvlammpsonly{
 In simulations with periodic boundary conditions, many of the implemented colvar components rely on the fact that each position within a group of atoms is at the nearest periodic image from the center of geometry of the group itself.
-However, due to the internal wrapping of individual atomic positions done by LAMMPS, this assumption is inaccurate if groups lies at one of the unit cell's boundaries.
-For this reason, within the Colvars module coordinates are unwrapped by default to avoid discontinuities due to coordinate wrapping (see \texttt{unwrap} keyword in \ref{sec:colvars_mdengine_parameters}).
+However, due to the internal wrapping of individual atomic positions done by LAMMPS, this assumption is broken if the group straddles one of the unit cell's boundaries.
+For this reason, within the Colvars module all coordinates are unwrapped by default to avoid discontinuities (see \texttt{unwrap} keyword in \ref{sec:colvars_mdengine_parameters}).
 
 The user should determine whether maintaining the default value of \texttt{unwrap}, depending on the specifics of each system.
 In general, internal coordinate wrapping by LAMMPS does not affect the calculation of colvars if each atom group satisfies one or more of the following:
@@ -1955,11 +1959,8 @@ with respect to $\{\mathbf{x}_{i}(t)\}$.
     \texttt{rmsd}}{%
     Reference coordinates}{%
     space-separated list of \texttt{(x, y, z)} triplets}{%
-    This option (mutually exclusive with \texttt{refPositionsFile}) sets the reference coordinates.  If only \texttt{centerReference} is \texttt{on}, the list can be a single (x, y, z) triplet; if also \texttt{rotateReference} is \texttt{on}, the list should be as long as the atom group.  This option 
-    is independent from that with the same keyword within the
-    \texttt{atoms~\{...\}} block (see \ref{key:colvars:atom_group:refPositions}).  The latter (and related fitting
-    options for the atom group) are normally not needed,
-    and should be omitted altogether except for advanced usage cases.
+    This option (mutually exclusive with \texttt{refPositionsFile}) sets the reference coordinates for RMSD calculation, and uses these to compute the roto-translational fit.  
+    It is functionally equivalent to the option \refkey{refPositions}{atom-group|refPositions} in the atom group definition, which also supports more advanced fitting options.
     }
 
 \item %
@@ -1969,7 +1970,8 @@ with respect to $\{\mathbf{x}_{i}(t)\}$.
     \texttt{rmsd}}{%
     Reference coordinates file}{%
     UNIX filename}{%
-    This option (mutually exclusive with \texttt{refPositions}) sets the file name for the reference coordinates to be compared with.  The format is the same as that provided by \texttt{refPositionsFile} within an atom group's definition (see \ref{key:colvars:atom_group:refPositionsFile}).
+    This option (mutually exclusive with \texttt{refPositions}) sets the reference coordinates for RMSD calculation, and uses these to compute the roto-translational fit.  
+    It is functionally equivalent to the option \refkey{refPositionsFile}{atom-group|refPositionsFile} in the atom group definition, which also supports more advanced fitting options.
     }
 
 \cvnamebasedonly{
@@ -2079,23 +2081,20 @@ automatically when reading them from the configuration.
     \texttt{eigenvector}}{%
     Vector components}{%
     space-separated list of \texttt{(x, y, z)} triplets}{%
-    This option \cvnamebasedonly{(mutually exclusive with \texttt{vectorFile})} sets the values of the vector components.}
+    This option (mutually exclusive with \texttt{vectorFile}) sets the values of the vector components.}
 
-\cvnamebasedonly{
 \item %
   \key
     {vectorFile}{%
     \texttt{eigenvector}}{%
-    PDB file containing vector components}{%
+    file containing vector components}{%
     UNIX filename}{%
-    This option (mutually exclusive with \texttt{vector}) sets the
-    name of a PDB file where the vector components will be read from the
-    X, Y, and Z fields.
-    \textbf{Note:} \emph{The PDB file has limited precision and fixed
-      point numbers: in some cases, the vector may not be
-      accurately represented, and }\texttt{vector}\emph{ should be
-      used instead.}}
+    This option (mutually exclusive with \texttt{vector}) sets the name of a coordinate file containing the vector components; the file is read according to the same format used for \texttt{refPositionsFile}.
+    \cvnamebasedonly{For a PDB file specifically, the components are read from the X, Y and Z fields.
+      \textbf{Note:} \emph{The PDB file has limited precision and fixed-point numbers: in some cases, the vector components may not be accurately represented; a XYZ file should be used instead, containing floating-point numbers.}}
+  }
 
+\cvnamebasedonly{
 \item %
   \key
     {vectorCol}{%
