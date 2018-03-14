@@ -62,7 +62,8 @@ if ($ENV{VMDINSTALLLIBRARYDIR}) {
 # SOLARIS2_64   - compile on a Solaris machine, 64-bit ABI
 # SOLARISX86    - compile on a Solaris x86 machine
 # SOLARISX86_64 - compile on a Solaris x86 machine
-# SUMMIT        - compile for DOE/ORNL Summit 
+# SUMMITDEV     - compile for DOE/ORNL Summit P8 Development Platform
+# SUMMIT        - compile for DOE/ORNL Summit P9+Volta
 # WIN32         - compile on a Win32 machine (NT, 95, 98, etc)
 # WIN64         - compile on a Win64 machine (Windows XP x64)
 #
@@ -112,6 +113,7 @@ if ($ENV{VMDINSTALLLIBRARYDIR}) {
 # ---------------------------------------------------------------
 # STATIC       - link to static libraries only
 # LP64         - compile for a 64-bit ABI instead of 32-bit if possible
+# CLANG        - compile with clang (LLVM)
 # GCC          - compile with gcc (instead of the vendor supplied one)
 # ICC          - compile with Intel C/C++ v12 (or later) compilers
 # PGCC         - compile with Portland Group compilers
@@ -160,7 +162,7 @@ if (!(-e "plugins")) {
 
 #################### Parse command line options   ###########
 # list of allowed architectures
-@archlist=('AIX6_64', 'ANDROIDARMV7A', 'BLUEGENEQ', 'BLUEWATERS', 'CRAY_XC', 'CRAY_XK', 'FREEBSD', 'FREEBSDAMD64', 'LINUX', 'LINUXAMD64', 'LINUXCARMA', 'LINUXPPC64', 'MACOSX', 'MACOSXX86', 'MACOSXX86_64', 'OPENPOWER', 'SUMMIT', 'SOLARIS2', 'SOLARIS2_64', 'SOLARISX86', 'SOLARISX86_64', 'WIN32', 'WIN64');
+@archlist=('AIX6_64', 'ANDROIDARMV7A', 'BLUEGENEQ', 'BLUEWATERS', 'CRAY_XC', 'CRAY_XK', 'FREEBSD', 'FREEBSDAMD64', 'LINUX', 'LINUXAMD64', 'LINUXCARMA', 'LINUXPPC64', 'MACOSX', 'MACOSXX86', 'MACOSXX86_64', 'OPENPOWER', 'SUMMIT', 'SUMMITDEV', 'SOLARIS2', 'SOLARIS2_64', 'SOLARISX86', 'SOLARISX86_64', 'WIN32', 'WIN64');
 
 if ($#ARGV == -1) {
     $text = `cat configure.options`;
@@ -201,6 +203,7 @@ $config_imd             = 0;  # interactive MD sockets code etc.
 $config_libsball        = 0;  # Direct I/O Spaceball 6DOF input support 
 $config_mpi             = 0;  # MPI parallel message passing
 $config_nvenc           = 0;  # NVENC hardware H.26[45] video encoder
+$config_nvtx            = 0;  # NVTX software profiling APIs
 $config_xinerama        = 0;  # X-Windows Xinerama full-screen mode support 
 $config_xinput          = 0;  # X-Windows Xinput Spaceball 6DOF input support 
 $config_tdconnexion     = 0;  # Direct I/O Spaceball 6DOF input support 
@@ -251,6 +254,7 @@ foreach $term (@ARGV) {
     if ($term eq "OPENCL")          { $config_opencl          = 1; next; }
     if ($term eq "MPI")             { $config_mpi             = 1; next; }
     if ($term eq "NVENC")           { $config_nvenc           = 1; next; }
+    if ($term eq "NVTX")            { $config_nvtx            = 1; next; }
     if ($term eq "IMD")             { $config_imd             = 1; next; }
     if ($term eq "LIBSBALL")        { $config_libsball        = 1; next; }
     if ($term eq "XINERAMA")        { 
@@ -299,6 +303,7 @@ foreach $term (@ARGV) {
     if ($term eq "NOSILENT")        { $config_silent          = 0; next; }
     if ($term eq "STATIC")          { $config_static          = 1; next; }
     if ($term eq "LP64")            { $config_lp64            = 1; next; }
+    if ($term eq "CLANG")           { $config_clang           = 1; next; }
     if ($term eq "GCC")             { $config_gcc             = 1; next; }
     if ($term eq "ICC")             { $config_icc             = 1; next; }
     if ($term eq "PGCC")            { $config_pgcc            = 1; next; }
@@ -333,6 +338,7 @@ if ($config_cuda)            { $config_string .= " CUDA"            }
 if ($config_opencl)          { $config_string .= " OPENCL"          }
 if ($config_mpi)             { $config_string .= " MPI"             }
 if ($config_nvenc)           { $config_string .= " NVENC"           }
+if ($config_nvtx)            { $config_string .= " NVTX"            }
 if ($config_imd)             { $config_string .= " IMD"             }
 if ($config_libsball)        { $config_string .= " LIBSBALL"        }
 if ($config_xinerama)        { $config_string .= " XINERAMA"        }
@@ -360,6 +366,7 @@ if ($config_silent)          { $config_string .= " SILENT"          }
 if ($config_static)          { $config_string .= " STATIC"          }
 if ($config_lp64)            { $config_string .= " LP64"            }
 
+if ($config_clang)           { $config_string .= " CLANG"           }
 if ($config_gcc)             { $config_string .= " GCC"             }
 if ($config_icc)             { $config_string .= " ICC"             }
 if ($config_pgcc)            { $config_string .= " PGCC"            }
@@ -403,7 +410,7 @@ $def_title="ON";
 $def_imageviewer="display %s";
 
 # program version number
-$progversion="1.9.4a12";
+$progversion="1.9.4a16";
 
 # text prompt string
 $promptstring="vmd > ";
@@ -467,7 +474,7 @@ $arch_rcflags     = "No resource compiler required on this platform.";
 $arch_cc          = "cc";
 $arch_ccpp        = "CC";
 $arch_nvcc        = "/usr/local/cuda-9.0/bin/nvcc";
-$arch_nvccflags   = "--ptxas-options=-v " . 
+$arch_nvccflags   = "-lineinfo --ptxas-options=-v " . 
                     "-gencode arch=compute_30,code=compute_30 " .
                     "-gencode arch=compute_30,code=sm_35 " .
                     "-gencode arch=compute_30,code=sm_37 " .
@@ -745,6 +752,7 @@ if ($config_tk) { $tcl_libs = "-ltk8.5 -lX11 " . $tcl_libs; }
 		     'TclTextInterp.C',
                      'TclVec.C',
 		     'TclGraphics.C', 
+		     'TclSegmentation.C',
 		     'TclVolMap.C',
 		     'cmd_animate.C',
                      'cmd_collab.C',
@@ -759,6 +767,7 @@ if ($config_tk) { $tcl_libs = "-ltk8.5 -lX11 " . $tcl_libs; }
 		     'cmd_mouse.C',
 		     'cmd_parallel.C',
 		     'cmd_plugin.C',
+		     'cmd_profile.C',
 		     'cmd_render.C',
 		     'cmd_spaceball.C',
 		     'cmd_tool.C',
@@ -856,7 +865,9 @@ $system_dir           = "";
 $system_include       = "-I.";
 $system_library       = "";
 if ( $config_gcc ) {
-  $system_libs        = "-ll -lm";
+  ## Note: some old commercial versions of Unix require -ll for lex internals
+  ## now that we've been using flex for years, -ll should be moot.
+  $system_libs        = "-lm";
 } else {
   $system_libs        = "-lm";
 }
@@ -901,12 +912,15 @@ $cuda_libs        = "-Wl,-rpath -Wl,\$\$ORIGIN/ -lcudart_static -lrt";
                      'CUDAClearDevice.cu',
                      'CUDADispCmds.cu',
                      'CUDAFastPBC.cu',
+                     'CUDAGaussianBlur.cu',
                      'CUDAMarchingCubes.cu',
                      'CUDAMDFF.cu',
                      'CUDAMeasureRDF.cu',
                      'CUDAMeasureQCP.cu',
                      'CUDAOrbital.cu',
+                     'CUDAParPrefixOps.cu',
                      'CUDAQuickSurf.cu',
+                     'CUDASegmentation.cu',
                      'CUDASpatialSearch.cu',
                      'CUDAUtil.cu',
                      'CUDAVolCPotential.cu',
@@ -982,6 +996,21 @@ $nvenc_libs        = "-lcuda"; # XXX need to eliminate via dlopen()/dlsym()
 @nvenc_extra       = ();
 
 
+#######################
+# OPTIONAL COMPONENT: NVTX profiling interfaces
+#######################
+$nvtx_defines     = "-DVMDNVTX ";
+$nvtx_dir         = "";
+$nvtx_include     = "";
+$nvtx_library     = "";
+$nvtx_libs        = "-lnvToolsExt"; 
+@nvtx_cc          = ();
+@nvtx_cu          = ();
+@nvtx_ccpp        = ();
+@nvtx_h           = ();
+@nvtx_extra       = ();
+
+
 ################ LIBGELATO
 # OPTIONAL COMPONENT: Built-in NVIDIA Gelato rendering support 
 # The GELATOHOME environment variable must be set in order to 
@@ -1053,7 +1082,7 @@ if ($config_opengl) {
 } else {
   $libospray_defines     = "-DVMDLIBOSPRAY ";
 }
-$libospray_dir         = "/usr/local/ospray-1.4.0.x86_64.linux";
+$libospray_dir         = "/usr/local/ospray-1.4.3.x86_64.linux";
 $libospray_include     = "-I$libospray_dir/include -I$libospray_dir/ospray/include ";
 $libospray_library     = "-L$libospray_dir/lib ";
 $libospray_libs        = "-lospray -lospray_common -lembree -ltbb -ltbbmalloc ";
@@ -1511,6 +1540,7 @@ $vmd_libs          = "$tcl_libs";
 		   'MeasureQCP.C',
 		   'MeasureSurface.C',
 		   'MeasureSymmetry.C',
+		   'MeasureVolInterior.C',
 		   'MobileInterface.C', 
 		   'MobileButtons.C', 
 		   'MobileTracker.C', 
@@ -1556,6 +1586,8 @@ $vmd_libs          = "$tcl_libs";
 		   'R3dDisplayDevice.C', 
 		   'RenderManDisplayDevice.C',
 		   'Scene.C', 
+		   'ScaleSpaceFilter.C',
+                   'Segmentation.C',
 		   'SnapshotDisplayDevice.C', 
 		   'Spaceball.C',
 		   'SpaceballButtons.C',
@@ -1825,8 +1857,8 @@ if ($config_arch eq "ANDROIDARMV7A") {
   $androidabi = "arm-linux-androideabi-";
   $arch_cc       = $androidbins . $androidabi . "gcc";
   $arch_ccpp     = $androidbins . $androidabi . "g++";
-  $arch_copts       = "-Wall -Wno-psabi -MMD -MP -fpic -ffunction-sections -funwind-tables -fstack-protector -D__ARM_ARCH_5__ -D__ARM_ARCH_5T__ -D__ARM_ARCH_5E__ -D__ARM_ARCH_5TE__ -march=armv7-a -msoft-float -mfpu=vfp -fno-exceptions -mthumb -Os -fomit-frame-pointer -fno-strict-aliasing -finline-limit=64 -Wa,--noexecstac";
-  $arch_opt_flag    = "-Wall -Wno-psabi -MMD -MP -fpic -ffunction-sections -funwind-tables -fstack-protector -D__ARM_ARCH_5__ -D__ARM_ARCH_5T__ -D__ARM_ARCH_5E__ -D__ARM_ARCH_5TE__ -march=armv7-a -msoft-float -mfpu=vfp -fno-exceptions -mthumb -Os -fomit-frame-pointer -fno-strict-aliasing -finline-limit=64 -Wa,--noexecstac";
+  $arch_copts       = "-Wall -Wno-unknown-pragmas -Wno-psabi -MMD -MP -fpic -ffunction-sections -funwind-tables -fstack-protector -D__ARM_ARCH_5__ -D__ARM_ARCH_5T__ -D__ARM_ARCH_5E__ -D__ARM_ARCH_5TE__ -march=armv7-a -msoft-float -mfpu=vfp -fno-exceptions -mthumb -Os -fomit-frame-pointer -fno-strict-aliasing -finline-limit=64 -Wa,--noexecstac";
+  $arch_opt_flag    = "-Wall -Wno-unknown-pragmas -Wno-psabi -MMD -MP -fpic -ffunction-sections -funwind-tables -fstack-protector -D__ARM_ARCH_5__ -D__ARM_ARCH_5T__ -D__ARM_ARCH_5E__ -D__ARM_ARCH_5TE__ -march=armv7-a -msoft-float -mfpu=vfp -fno-exceptions -mthumb -Os -fomit-frame-pointer -fno-strict-aliasing -finline-limit=64 -Wa,--noexecstac";
   $arch_copts    = $androidincs;
   $arch_cppopts  = $androidincs;
   $arch_lex      = "flex";
@@ -1878,8 +1910,8 @@ if ($config_arch eq "BLUEWATERS" ||
     # for compiling with Intel C/C++:
     $arch_cc          = "cc";
     $arch_ccpp        = "CC";
-    $arch_copts       = "-Wall -m64 -msse2 -O3";
-    $arch_opt_flag    = "-Wall -m64 -msse2 -O3";
+    $arch_copts       = "-Wall -Wno-unknown-pragmas -m64 -msse2 -O3";
+    $arch_opt_flag    = "-Wall -Wno-unknown-pragmas -m64 -msse2 -O3";
 
     if ($config_static) {
       # link everything statically (this won't work due to libGL issues)
@@ -1895,8 +1927,8 @@ if ($config_arch eq "BLUEWATERS" ||
     # Assume GCC 
     $arch_cc          = "cc";
     $arch_ccpp        = "CC";
-    $arch_copts       = "-m64 -Wall -O6 -ffast-math";
-    $arch_opt_flag    = "-m64 -fno-for-scope -Wno-deprecated -Wall -O6 -ffast-math";
+    $arch_copts       = "-m64 -Wall -Wno-unknown-pragmas -O6 -ffast-math";
+    $arch_opt_flag    = "-m64 -fno-for-scope -Wno-deprecated -Wall -Wno-unknown-pragmas -O6 -ffast-math";
   }
 
   if ($config_mpi) {
@@ -2005,8 +2037,8 @@ if ($config_arch eq "FREEBSD") {
     $arch_shcppopts   = "-fPIC";
     $arch_shldopts    = "-L/usr/local/lib";
 
-    $arch_opt_flag    = "-m32 -fno-for-scope -Wno-deprecated -Wall -O3";
-    $arch_copts       = "-m32 -Wall -O3";
+    $arch_opt_flag    = "-m32 -fno-for-scope -Wno-deprecated -Wall -Wno-unknown-pragmas -O3";
+    $arch_copts       = "-m32 -Wall -Wno-unknown-pragmas -O3";
 
     if ($config_static) {
       $arch_lopts       = "-static";
@@ -2020,9 +2052,6 @@ if ($config_arch eq "FREEBSD") {
       $arch_lopts       = "-shared";
       $arch_cppopts .= " -DVMD_SHARED";
     }
-
-    # a hack - to be removed, just keeps make happy
-    $arch_template_repository = "foobar";
 
     # this is to make tcl happy,
     # also needed for plugins
@@ -2064,8 +2093,8 @@ if ($config_arch eq "FREEBSDAMD64") {
     $arch_shcppopts   = "-fPIC";
     $arch_shldopts    = "-L/usr/local/lib -L/usr/local/lib";
 
-    $arch_opt_flag	= "-m64 -Wall -O3 -ffast-math";
-    $arch_copts	        = "-m64 -Wall -O3 -ffast-math";
+    $arch_opt_flag	= "-m64 -Wall -Wno-unknown-pragmas -O3 -ffast-math";
+    $arch_copts	        = "-m64 -Wall -Wno-unknown-pragmas -O3 -ffast-math";
 
     if ($config_static) {
       $arch_lopts       = "-static";
@@ -2078,9 +2107,6 @@ if ($config_arch eq "FREEBSDAMD64") {
     if ($config_shared) {
       $arch_lopts       = "-shared";
     }
-
-    # a hack - to be removed, just keeps make happy
-    $arch_template_repository = "foobar";
 
     # this is to make tcl happy,
     # also needed for plugins
@@ -2119,10 +2145,9 @@ if ($config_arch eq "LINUX") {
       # version supporting RHEL 4.x
       $arch_cc          = "/usr/local/encap/intel-cc-12.2011.2.137/bin/icc";
       $arch_ccpp        = "/usr/local/encap/intel-cc-12.2011.2.137/bin/icpc";
-      $arch_opt_flag    = "-Wall -m32 -msse2 -O3";
+      $arch_opt_flag    = "-Wall -Wno-unknown-pragmas -m32 -msse2 -O3";
       $arch_depend_flag = "-MM";
-      $arch_copts       = "-Wall -m32 -msse2 -O3";
-      $arch_template_repository = "foobar";
+      $arch_copts       = "-Wall -Wno-unknown-pragmas -m32 -msse2 -O3";
       $arch_shlibname   = "so";
       $arch_shcppopts   = "-fPIC";
       $arch_shldopts    = "";
@@ -2146,8 +2171,8 @@ if ($config_arch eq "LINUX") {
       $arch_shlibname   = "so";
       $arch_shcppopts   = "-fPIC";
       $arch_shldopts    = "";
-      $arch_opt_flag    = "-m32 -fno-for-scope -Wno-deprecated -Wall -O3";
-      $arch_copts       = "-m32 -Wall -O3";
+      $arch_opt_flag    = "-m32 -fno-for-scope -Wno-deprecated -Wall -Wno-unknown-pragmas -O3";
+      $arch_copts       = "-m32 -Wall -Wno-unknown-pragmas -O3";
 
       if ($config_static) {
         $arch_lopts       = "-static";
@@ -2175,9 +2200,6 @@ if ($config_arch eq "LINUX") {
       $cuda_library     = "-L/usr/local/cuda-4.0/lib";
       $cuda_libs       = "-Wl,-rpath -Wl,\$\$ORIGIN/ -lcudart";
     }
-    # a hack - to be removed, just keeps make happy
-    $arch_template_repository = "foobar";
-
     # this is to make tcl happy
     # also needed for plugins
     $system_libs .= " -ldl";
@@ -2212,14 +2234,13 @@ if ($config_arch eq "LINUXAMD64") {
       $arch_cc          = "icc";
       $arch_ccpp        = "icpc";
       if ($config_avx512) {
-        $arch_opt_flag    = "-Wall -m64 -xMIC-AVX512 -O3";
-        $arch_copts       = "-Wall -m64 -xMIC-AVX512 -O3";
+        $arch_opt_flag    = "-Wall -Wno-unknown-pragmas -m64 -xMIC-AVX512 -O3";
+        $arch_copts       = "-Wall -Wno-unknown-pragmas -m64 -xMIC-AVX512 -O3";
       } else {
-        $arch_opt_flag    = "-Wall -m64 -msse2 -O3";
-        $arch_copts       = "-Wall -m64 -msse2 -O3";
+        $arch_opt_flag    = "-Wall -Wno-unknown-pragmas -m64 -msse2 -O3";
+        $arch_copts       = "-Wall -Wno-unknown-pragmas -m64 -msse2 -O3";
       }
       $arch_depend_flag = "-MM";
-      $arch_template_repository = "foobar";
       $arch_shlibname   = "so";
       $arch_shcppopts   = "-fPIC";
       $arch_shldopts    = "";
@@ -2241,7 +2262,6 @@ if ($config_arch eq "LINUXAMD64") {
       $arch_opt_flag    = "-m64 ";
       $arch_depend_flag = "-MM";
       $arch_copts       = "-m64 ";
-      $arch_template_repository = "foobar";
       $arch_shlibname   = "so";
       $arch_shcppopts   = "-fPIC";
       $arch_shldopts    = "";
@@ -2256,10 +2276,9 @@ if ($config_arch eq "LINUXAMD64") {
       # for compiling with g++:
       $arch_cc		= "gcc";
       $arch_ccpp  	= "g++";
-      $arch_opt_flag	= "-m64 -fno-for-scope -Wno-deprecated -Wall -O6 -ffast-math";
+      $arch_opt_flag	= "-m64 -fno-for-scope -Wno-deprecated -Wall -Wno-unknown-pragmas -O6 -ffast-math";
       $arch_depend_flag   = "-MM";
-      $arch_copts	        = "-m64 -Wall -O6 -ffast-math";
-      $arch_template_repository = "foobar";
+      $arch_copts       = "-m64 -Wall -Wno-unknown-pragmas -O6 -ffast-math";
 
       # so far only STATIC version tested
       if ($config_static) {
@@ -2319,8 +2338,8 @@ if ($config_arch eq "LINUXCARMA") {
   $cuda_library     = "-L/usr/local/cuda/lib";
   $arch_cc       = "cc";
   $arch_ccpp     = "c++";
-  $arch_copts       = "-Wall -march=armv7-a -mcpu=cortex-a9 -mtune=cortex-a9 -mfpu=vfpv3-d16 -ffast-math -fomit-frame-pointer -fno-strict-aliasing -O3";
-  $arch_opt_flag    = "-Wall -march=armv7-a -mcpu=cortex-a9 -mtune=cortex-a9 -mfpu=vfpv3-d16 -ffast-math -fomit-frame-pointer -fno-strict-aliasing -O3";
+  $arch_copts       = "-Wall -Wno-unknown-pragmas -march=armv7-a -mcpu=cortex-a9 -mtune=cortex-a9 -mfpu=vfpv3-d16 -ffast-math -fomit-frame-pointer -fno-strict-aliasing -O3";
+  $arch_opt_flag    = "-Wall -Wno-unknown-pragmas -march=armv7-a -mcpu=cortex-a9 -mtune=cortex-a9 -mfpu=vfpv3-d16 -ffast-math -fomit-frame-pointer -fno-strict-aliasing -O3";
   $arch_lex      = "flex";
 
   # needed for plugins
@@ -2338,8 +2357,8 @@ if ($config_arch eq "LINUXPPC64") {
     $arch_cc          = "gcc";
     $arch_ccpp        = "g++";
     $arch_depend_flag = "-MM";
-    $arch_opt_flag    = "-m64 -Wall -O3 -ffast-math";
-    $arch_copts       = "-m64 -Wall -O3 -ffast-math";
+    $arch_opt_flag    = "-m64 -Wall -Wno-unknown-pragmas -O3 -ffast-math";
+    $arch_copts       = "-m64 -Wall -Wno-unknown-pragmas -O3 -ffast-math";
 
     if ($config_static) {
       $arch_lopts       = "-static"
@@ -2350,9 +2369,6 @@ if ($config_arch eq "LINUXPPC64") {
     $opengl_dep_libs  = "-L/usr/X11R6/lib -lGL -lXext -lX11";
     $mesa_libs        = "-lMesaGL -L/usr/X11R6/lib -lXext -lX11";
     $arch_cppopts     = "";
-
-    # a hack - to be removed, just keeps make happy
-    $arch_template_repository = "foobar";
 
     # this is to make tcl happy
     # also needed for plugins
@@ -2440,9 +2456,6 @@ if ($config_arch eq "MACOSX") {
 
     $mesa_include     = $mesa_include . " -I/usr/X11R6/include";
     $mesa_libs        = "-lMesaGL -L/usr/X11R6/lib -lXext -lX11";
-
-    # a hack - to be removed, just keeps make happy
-    $arch_template_repository = "foobar";
 
     # no libm.a on MacOS-X
     $system_include   = $system_include;
@@ -2583,9 +2596,6 @@ if ($config_arch eq "MACOSXX86" || $config_arch eq "MACOSXX86_64") {
       $opencl_libs        = "-framework OpenCL";
     }
 
-    # a hack - to be removed, just keeps make happy
-    $arch_template_repository = "foobar";
-
     # no libm.a on MacOS-X
     $system_include   = $system_include;
     if ($config_lp64) {
@@ -2596,21 +2606,33 @@ if ($config_arch eq "MACOSXX86" || $config_arch eq "MACOSXX86_64") {
 }
 
 
-if ($config_arch eq "OPENPOWER" || $config_arch eq "SUMMIT") {
+if ($config_arch eq "SUMMIT") {
     $def_imageviewer="display %s";
+
+    # XXX currently the Summit EGL/GL install is broken, so we use hacks...
+    $egl_pbuffer_dir         = "";
+    $egl_pbuffer_library     = "-L/usr/lib64/nvidia";
+    $egl_pbuffer_include     = "-I/usr/include/nvidia";
+    $egl_pbuffer_libs        = "-lEGL";
 
     if ($config_xlc) {
       $arch_cc          = "xlc";
       $arch_ccpp        = "xlC";
-      $arch_copts       = "-O4 -q64 -qarch=pwr8 -qtune=pwr8 -qmaxmem=-1 -qnoipa -qignerrno -qfloat=rsqrt -qnostrict";
-      $arch_opt_flag    = "-O4 -q64 -qarch=pwr8 -qtune=pwr8 -qmaxmem=-1 -qnoipa -qignerrno -qfloat=rsqrt -qnostrict";
+      $arch_copts       = "-O4 -qsuppress=1500-036 -q64 -qarch=pwr9 -qtune=pwr9 -qmaxmem=-1 -qnoipa -qignerrno -qfloat=rsqrt -qnostrict";
+      $arch_opt_flag    = "-O4 -qsuppress=1500-036 -q64 -qarch=pwr9 -qtune=pwr9 -qmaxmem=-1 -qnoipa -qignerrno -qfloat=rsqrt -qnostrict";
 #      $arch_cppopts     = "-D_H_ACCESS=1";
       $arch_depend_flag = "-MM";
-    } else {
+    } elsif ($config_gcc) {
       $arch_cc          = "gcc";
       $arch_ccpp        = "g++";
-      $arch_opt_flag    = "-m64 -Wall -O3 -ffast-math -mtune=power8";
-      $arch_copts       = "-m64 -Wall -O3 -ffast-math -mtune=power8";
+      $arch_opt_flag    = "-m64 -Wall -Wno-unknown-pragmas -O3 -ffast-math -mtune=power8";
+      $arch_copts       = "-m64 -Wall -Wno-unknown-pragmas -O3 -ffast-math -mtune=power8";
+      $arch_depend_flag = "-MM";
+    } elsif ($config_clang) {
+      $arch_cc          = "clang";
+      $arch_ccpp        = "clang++";
+      $arch_opt_flag    = "-m64 -Wall -Wno-unknown-pragmas -O3 -ffast-math -mtune=power9";
+      $arch_copts       = "-m64 -Wall -Wno-unknown-pragmas -O3 -ffast-math -mtune=power9";
       $arch_depend_flag = "-MM";
     }
 
@@ -2630,8 +2652,68 @@ if ($config_arch eq "OPENPOWER" || $config_arch eq "SUMMIT") {
 
     $arch_cppopts     = "";
 
-    # a hack - to be removed, just keeps make happy
-    $arch_template_repository = "foobar";
+    # this is to make tcl happy
+    # also needed for plugins
+    $system_libs .= " -ldl";
+
+    if ($config_cuda) {
+      $arch_nvcc        = "/sw/summit/cuda/9.1.85/bin/nvcc";
+      $cuda_library     = "-L/sw/summit/cuda/9.1.85/lib64";
+      $cuda_libs        = "-Wl,-rpath -Wl,\$\$ORIGIN/ -lcudart_static -lrt";
+  
+      # Only generate code for SM 7.0 on Summit
+      $arch_nvccflags   = "--ptxas-options=-v " .
+                      "-gencode arch=compute_30,code=compute_30 " .
+                      "-gencode arch=compute_70,code=sm_70 " .
+                      "--ftz=true ";
+      $arch_nvccflags   .= " --machine 64 -O3 $cuda_include";
+    }
+
+    if ($config_mpi) {
+      $arch_copts       .= " -DUSE_MPI_IN_PLACE";
+      $arch_opt_flag    .= " -DUSE_MPI_IN_PLACE";
+      $mpi_libs        = "";
+      $mpi_dir         = "/sw/summit/.swci/1-compute/opt/spack/20171006/linux-rhel7-ppc64le/xl-20180223-beta/spectrum-mpi-10.2.0.0-20180110-bybgigxu6ksueoxu3tngxf7yqn7tzrz3";
+      $mpi_include     = "-I$mpi_dir/include";
+      $mpi_library     = "-L$mpi_dir/lib -L$mpi_dir/lib/pami_414";
+      $mpi_libs        = "-lmpi_ibm -lpami_cudahook -lpami -lhwloc -levent -levent_pthreads -lopen-rte -lopen-pal ";
+    }
+}
+
+
+if ($config_arch eq "OPENPOWER" || $config_arch eq "SUMMITDEV") {
+    $def_imageviewer="display %s";
+
+    if ($config_xlc) {
+      $arch_cc          = "xlc";
+      $arch_ccpp        = "xlC";
+      $arch_copts       = "-O4 -q64 -qarch=pwr8 -qtune=pwr8 -qmaxmem=-1 -qnoipa -qignerrno -qfloat=rsqrt -qnostrict";
+      $arch_opt_flag    = "-O4 -q64 -qarch=pwr8 -qtune=pwr8 -qmaxmem=-1 -qnoipa -qignerrno -qfloat=rsqrt -qnostrict";
+#      $arch_cppopts     = "-D_H_ACCESS=1";
+      $arch_depend_flag = "-MM";
+    } else {
+      $arch_cc          = "gcc";
+      $arch_ccpp        = "g++";
+      $arch_opt_flag    = "-m64 -Wall -Wno-unknown-pragmas -O3 -ffast-math -mtune=power8";
+      $arch_copts       = "-m64 -Wall -Wno-unknown-pragmas -O3 -ffast-math -mtune=power8";
+      $arch_depend_flag = "-MM";
+    }
+
+    if ($config_static) {
+      $arch_lopts       = "-static"
+    } else {
+      $arch_lopts       = "-Wl,-rpath,/usr/X11R6/lib -Wl,-rpath,/usr/local/lib";
+    }
+
+    # added a test so that EGL support works for now, but these bits of
+    # override code probably date back to RHEL4.x or earlier, and
+    # they likely serve no useful purpose going forward.
+    if (!$config_opengl_dispatch) {
+      $opengl_dep_libs  = "-L/usr/X11R6/lib -lGL -lXext -lX11";
+      $mesa_libs        = "-lMesaGL -L/usr/X11R6/lib -lXext -lX11";
+    }
+
+    $arch_cppopts     = "";
 
     # this is to make tcl happy
     # also needed for plugins
@@ -2682,7 +2764,6 @@ if ($config_arch eq "SOLARIS2" || $config_arch eq "SOLARIS2_64") {
         }
         $arch_debug_flag  = "-g";
         $arch_depend_flag = "-xM";
-        $arch_template_repository = "SunWS_cache";
       } else {
         print "Configured for a 32-bit build.\n";
         $arch_ccpp        = "CC -D__EXTENSIONS__";
@@ -2696,7 +2777,6 @@ if ($config_arch eq "SOLARIS2" || $config_arch eq "SOLARIS2_64") {
         }
         $arch_debug_flag  = "-g";
         $arch_depend_flag = "-xM";
-        $arch_template_repository = "SunWS_cache";
       }
     }
 
@@ -2742,11 +2822,10 @@ if ($config_arch eq "SOLARISX86" || $config_arch eq "SOLARISX86_64") {
 # on Solaris (and other systems) are broken and still assume that missing
 # types will default to int....  When they fix this in future revs of Solaris,
 # we can remove this flag.  See: http://gcc.gnu.org/fom_serv/cache/25.html
-      $arch_opt_flag    = "-Wall -O -fpermissive";
-      $arch_copts       = "-Wall -O";
+      $arch_opt_flag    = "-Wall -Wno-unknown-pragmas -O -fpermissive";
+      $arch_copts       = "-Wall -Wno-unknown-pragmas -O";
       $arch_debug_flag  = "-g";
       $arch_depend_flag = "-M";
-      $arch_template_repository = "foobar";
     } else {
       # Using Sun's compilers
       if ($config_lp64) {
@@ -2762,7 +2841,6 @@ if ($config_arch eq "SOLARISX86" || $config_arch eq "SOLARISX86_64") {
         }
         $arch_debug_flag  = "-g";
         $arch_depend_flag = "-xM";
-        $arch_template_repository = "SunWS_cache";
 
         if ($config_cuda) {
           # This is a hack since we don't have a unified nvcc front-end install yet
@@ -2784,7 +2862,6 @@ if ($config_arch eq "SOLARISX86" || $config_arch eq "SOLARISX86_64") {
         }
         $arch_debug_flag  = "-g";
         $arch_depend_flag = "-xM";
-        $arch_template_repository = "SunWS_cache";
       }
     }
 
@@ -3019,6 +3096,7 @@ $if_statements .= &create_config_option('cuda');
 $if_statements .= &create_config_option('opencl');
 $if_statements .= &create_config_option('mpi');
 $if_statements .= &create_config_option('nvenc');
+$if_statements .= &create_config_option('nvtx');
 $if_statements .= &create_config_option('imd');
 $if_statements .= &create_config_option('libsball');
 $if_statements .= &create_config_option('xinerama');
@@ -3219,9 +3297,6 @@ all default:   $config_progname
 $config_progname: y.tab.h \$(VMD_OBJS) \$(VMD_PTX)
 	\$(ECHO) "Linking " \$\@ "..."; \\
 	\$(CD) $vmd_arch_dir ; \\
-	if [ ! -r ./$arch_template_repository ]; then \\
-	  ln -s $vmd_src_dir/$arch_template_repository ./$arch_template_repository ; \\
-	fi; \\
 	\$(CCPP) \$(CPPFLAGS) -I$vmd_src_dir -o \$\@ \$(VMD_OBJS) \$(LOADLIBES) ; 
 	\$(COMPILERC) \$(RCFLAGS)
 
@@ -3284,15 +3359,13 @@ install:
 ##### remove most of the cruft
 clean:
 	\$(CD) $vmd_arch_dir ; \\
-		\$(DELETE) *.ptx *.o *.warnings *.depend.old core
+		\$(DELETE) *.ptx *.o *.lst *.warnings *.depend.old core
 
 veryclean: clean
 	\$(CD) $vmd_arch_dir ; \\
-	  \$(DELETEDIR) $arch_template_repository; \\
 	  \$(DELETE) $config_progname
 	\$(CD) $vmd_src_dir ; \\
-	  \$(DELETE) *.ptx *.o *.a *~ core; \\
-	  \$(DELETEDIR) $arch_template_repository; \\
+	  \$(DELETE) *.ptx *.o *.lst *.a *~ core; \\
 	  \$(DELETE) $config_progname
 	\$(CD) $vmd_doc_dir ; \\
 	  \$(DELETE) *~ core

@@ -11,7 +11,7 @@
  *
  *      $RCSfile: tcl_commands.C,v $
  *      $Author: johns $        $Locker:  $             $State: Exp $
- *      $Revision: 1.50 $       $Date: 2017/04/02 03:00:20 $
+ *      $Revision: 1.53 $       $Date: 2018/02/14 20:07:24 $
  *
  ***************************************************************************
  * DESCRIPTION:
@@ -161,19 +161,16 @@ static int vmdinfo_tcl(ClientData, Tcl_Interp *interp,
 int Vmd_Init(Tcl_Interp *interp) {
   VMDApp *app = (VMDApp *)Tcl_GetAssocData(interp, "VMDApp", NULL);
 
-  Tcl_CreateCommand(interp,  "vmdinfo", vmdinfo_tcl,
-        (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
-
-  Tcl_CreateCommand(interp,  "vmdbench", text_cmd_vmdbench,
-        (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
-
+  //
+  // Tcl string-based command bindings  
+  // 
   Tcl_CreateCommand(interp, "animate", text_cmd_animate,
         (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
 
-  Tcl_CreateCommand(interp, "color", text_cmd_color,
+  Tcl_CreateCommand(interp, "axes", text_cmd_axes,
         (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
 
-  Tcl_CreateCommand(interp, "axes", text_cmd_axes,
+  Tcl_CreateCommand(interp, "color", text_cmd_color,
         (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
 
   Tcl_CreateCommand(interp, "display", text_cmd_display,
@@ -182,31 +179,18 @@ int Vmd_Init(Tcl_Interp *interp) {
   Tcl_CreateCommand(interp, "imd", text_cmd_imd,
         (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
 
-  Tcl_CreateCommand(interp, "vmdcollab", text_cmd_collab,
-        (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
-
-  Tcl_CreateCommand(interp, "vmd_label", text_cmd_label,
-        (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
-
   Tcl_CreateCommand(interp, "light", text_cmd_light,
         (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
 
-  Tcl_CreateCommand(interp, "pointlight", text_cmd_point_light,
+#ifdef VMDPYTHON
+  Tcl_CreateCommand(interp, "gopython", text_cmd_gopython,
         (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
+#endif
 
   Tcl_CreateCommand(interp, "material", text_cmd_material,
         (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
 
-  Tcl_CreateCommand(interp, "vmd_menu", text_cmd_menu,
-        (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
-
-  Tcl_CreateCommand(interp, "stage", text_cmd_stage,
-        (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
-
-  Tcl_CreateCommand(interp, "light", text_cmd_light,
-        (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
-
-  Tcl_CreateCommand(interp, "user", text_cmd_user,
+  Tcl_CreateCommand(interp, "mobile", text_cmd_mobile,
         (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
 
   Tcl_CreateCommand(interp, "mol", text_cmd_mol,
@@ -218,22 +202,20 @@ int Vmd_Init(Tcl_Interp *interp) {
   Tcl_CreateCommand(interp, "mouse", text_cmd_mouse,
         (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
 
-  Tcl_CreateCommand(interp, "mobile", text_cmd_mobile,
-        (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
-
-  Tcl_CreateCommand(interp, "spaceball", text_cmd_spaceball,
+  Tcl_CreateCommand(interp, "parallel", text_cmd_parallel,
         (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
 
   Tcl_CreateCommand(interp, "plugin", text_cmd_plugin,
         (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
 
-  Tcl_CreateCommand(interp, "render", text_cmd_render,
+  Tcl_CreateCommand(interp, "pointlight", text_cmd_point_light,
         (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
 
-#if defined(VMDTK) && !defined(_MSC_VER)
-  Tcl_CreateCommand(interp, "tkrender", text_cmd_tkrender,
+  Tcl_CreateCommand(interp, "profile", text_cmd_profile,
         (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
-#endif
+
+  Tcl_CreateCommand(interp, "render", text_cmd_render,
+        (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
 
   Tcl_CreateCommand(interp, "rock", text_cmd_rock,
         (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
@@ -244,26 +226,66 @@ int Vmd_Init(Tcl_Interp *interp) {
   Tcl_CreateCommand(interp, "rotmat", text_cmd_rotmat,
         (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
 
-  Tcl_CreateCommand(interp, "vmd_scale", text_cmd_scale,
+  Tcl_CreateCommand(interp, "sleep", text_cmd_sleep,
+        (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
+
+  Tcl_CreateCommand(interp, "spaceball", text_cmd_spaceball,
+        (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
+
+  Tcl_CreateCommand(interp, "stage", text_cmd_stage,
+        (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
+
+#if defined(VMDTK) && !defined(_MSC_VER)
+  Tcl_CreateCommand(interp, "tkrender", text_cmd_tkrender,
+        (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
+#endif
+
+  Tcl_CreateCommand(interp, "tool", text_cmd_tool,
         (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
 
   Tcl_CreateCommand(interp, "translate", text_cmd_translate,
         (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
 
-  Tcl_CreateCommand(interp, "sleep", text_cmd_sleep,
+  Tcl_CreateCommand(interp, "user", text_cmd_user,
         (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
 
-#if 1
-  Tcl_CreateObjCommand(interp, "mdffi", obj_mdff_cc,
+  Tcl_CreateCommand(interp, "vmd_label", text_cmd_label,
         (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
+
+  Tcl_CreateCommand(interp, "vmd_menu", text_cmd_menu,
+        (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
+
+  Tcl_CreateCommand(interp, "vmd_scale", text_cmd_scale,
+        (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
+
+  Tcl_CreateCommand(interp, "vmdbench", text_cmd_vmdbench,
+        (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
+
+  Tcl_CreateCommand(interp, "vmdcollab", text_cmd_collab,
+        (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
+
+  Tcl_CreateCommand(interp, "vmdinfo", vmdinfo_tcl,
+        (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+
+  
+  //
+  // Tcl object-based command bindings  
+  //
+#if defined(VMDCOLVARS)
+  Tcl_CreateObjCommand(interp, "colvars", tcl_colvars, (ClientData) app, (Tcl_CmdDeleteProc*) NULL);
+  Tcl_CreateObjCommand(interp, "cv", tcl_colvars, (ClientData) app, (Tcl_CmdDeleteProc*) NULL);
+  Tcl_PkgProvide (interp, "colvars", COLVARS_VERSION);
 #endif
 
 #if 0
-  Tcl_CreateObjCommand(interp, "volgradient", obj_volgradient,
+  Tcl_CreateObjCommand(interp, "fastpbc", obj_fastpbc,
         (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
 #endif
 
-  Tcl_CreateCommand(interp, "tool", text_cmd_tool,
+  Tcl_CreateObjCommand(interp,  "gettimestep", cmd_gettimestep,
+                       (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
+
+  Tcl_CreateObjCommand(interp, "mdffi", obj_mdff_cc,
         (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
 
   Tcl_CreateObjCommand(interp,  "measure", obj_measure,
@@ -272,35 +294,21 @@ int Vmd_Init(Tcl_Interp *interp) {
   Tcl_CreateObjCommand(interp,  "rawtimestep", cmd_rawtimestep,
                     (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
 
-  Tcl_CreateObjCommand(interp,  "gettimestep", cmd_gettimestep,
+  Tcl_CreateObjCommand(interp,  "segmentation", obj_segmentation,
                     (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
-
-#ifdef VMDPYTHON
-  Tcl_CreateCommand(interp, "gopython", text_cmd_gopython,
-        (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
-#endif
 
 #if defined(VMDTKCON)
   Tcl_CreateObjCommand(interp,"vmdcon",tcl_vmdcon,
         (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
 #endif
 
-#if defined(VMDCOLVARS)
-  Tcl_CreateObjCommand(interp, "colvars", tcl_colvars, (ClientData) app, (Tcl_CmdDeleteProc*) NULL);
-  Tcl_CreateObjCommand(interp, "cv", tcl_colvars, (ClientData) app, (Tcl_CmdDeleteProc*) NULL);
-  Tcl_PkgProvide(interp, "colvars", COLVARS_VERSION);
+#if 0
+  Tcl_CreateObjCommand(interp, "volgradient", obj_volgradient,
+                       (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
 #endif
 
   Tcl_CreateObjCommand(interp,  "volmap", obj_volmap,
                     (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
-
-  Tcl_CreateCommand(interp, "parallel", text_cmd_parallel,
-        (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
-
-#if 0
-  Tcl_CreateObjCommand(interp, "fastpbc", obj_fastpbc,
-                    (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
-#endif
 
   return TCL_OK;
 }
