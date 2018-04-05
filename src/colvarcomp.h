@@ -91,11 +91,13 @@ public:
 
   /// \brief Constructor
   ///
-  /// At least one constructor which reads a string should be defined
-  /// for every class inheriting from cvc \param conf Contents
-  /// of the configuration file pertaining to this \link cvc
-  /// \endlink
+  /// Calls the init() function of the class
   cvc(std::string const &conf);
+
+  /// An init function should be defined for every class inheriting from cvc
+  /// \param conf Contents of the configuration file pertaining to this \link
+  /// cvc \endlink
+  virtual int init(std::string const &conf);
 
   /// \brief Within the constructor, make a group parse its own
   /// options from the provided configuration string
