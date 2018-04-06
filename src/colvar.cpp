@@ -140,6 +140,9 @@ int colvar::init(std::string const &conf)
     x.type(cvc_value);
     x_reported.type(cvc_value);
   }
+
+  set_enabled(f_cv_scalar, (value().type() == colvarvalue::type_scalar));
+
   // If using scripted biases, any colvar may receive bias forces
   // and will need its gradient
   if (cvm::scripted_forces()) {
@@ -195,6 +198,7 @@ int colvar::init(std::string const &conf)
   if (is_enabled(f_cv_homogeneous) && cvcs[0]->b_periodic) { // TODO make this a CVC feature
     bool b_periodic = true;
     period = cvcs[0]->period;
+    wrap_center = cvcs[0]->wrap_center;
     for (i = 1; i < cvcs.size(); i++) {
       if (!cvcs[i]->b_periodic || cvcs[i]->period != period) {
         b_periodic = false;
@@ -206,6 +210,14 @@ int colvar::init(std::string const &conf)
       }
     }
     set_enabled(f_cv_periodic, b_periodic);
+  }
+
+  // Allow scripted/custom functions to be defined as periodic
+  if ( (is_enabled(f_cv_scripted) || is_enabled(f_cv_custom_function)) && is_enabled(f_cv_scalar) ) {
+    if (get_keyval(conf, "period", period, 0.)) {
+      set_enabled(f_cv_periodic, true);
+      get_keyval(conf, "wrapAround", wrap_center, 0.);
+    }
   }
 
   // check that cvcs are compatible
@@ -439,8 +451,6 @@ int colvar::init_grid_parameters(std::string const &conf)
 
   upper_boundary.type(value());
   upper_wall.type(value());
-
-  set_enabled(f_cv_scalar, (value().type() == colvarvalue::type_scalar));
 
   if (is_enabled(f_cv_scalar)) {
 
@@ -1500,7 +1510,7 @@ cvm::real colvar::update_forces_energy()
     vr  += (0.5 * dt) * f_ext / ext_mass;
     xr  += dt * vr;
     xr.apply_constraints();
-    if (this->is_enabled(f_cv_periodic)) this->wrap(xr);
+    this->wrap(xr);
   }
 
   // Now adding the force on the actual colvar (for those biases that
@@ -1711,9 +1721,18 @@ colvarvalue colvar::dist2_rgrad(colvarvalue const &x1,
 
 void colvar::wrap(colvarvalue &x) const
 {
-  if (is_enabled(f_cv_homogeneous)) {
-    (cvcs[0])->wrap(x);
+  if ( !is_enabled(f_cv_periodic) ) {
+    return;
   }
+
+  if ( is_enabled(f_cv_scripted) || is_enabled(f_cv_custom_function) ) {
+    // Scripted functions do their own wrapping, as cvcs might not be periodic
+    cvm::real shift = std::floor((x.real_value - wrap_center) / period + 0.5);
+    x.real_value -= shift * period;
+  } else {
+    cvcs[0]->wrap(x);
+  }
+
   return;
 }
 
@@ -2241,7 +2260,7 @@ void colvar::calc_runave()
     runave.type(value().type());
     runave.reset();
 
-    // first-step operations
+    // first-step operationsf
 
     if (cvm::debug())
       cvm::log("Colvar \""+this->name+
