@@ -27,8 +27,12 @@ if ! { echo ${DIRLIST} | grep -q 0 ; } then
   DIRLIST=`eval ls -d [0-9][0-9][0-9]_*`
 fi
 
-DIFF=spiff
-DIFFOPTS="-r 1e-7" 
+NUM_THREADS=3
+NUM_CPUS=$(nproc)
+if [ ${NUM_THREADS} -gt ${NUM_CPUS} ] ; then
+  NUM_THREADS=${NUM_CPUS}
+fi
+
 TPUT_RED='true'
 TPUT_GREEN='true'
 TPUT_BLUE='true'
@@ -118,11 +122,15 @@ for dir in ${DIRLIST} ; do
     # Try running the test (use a subshell to avoid cluttering stdout)
     # Use --source to avoid letting NAMD change its working directory
     # Use multiple threads to test SMP code (TODO: move SMP tests to interface?)
-    if ! ( $BINARY +p 3 --source $script > ${basename}.out || false ) > /dev/null 2>&1 ; then
+    if ! ( $BINARY +p ${NUM_THREADS} \
+                   --source $script > ${basename}.out || \
+             false ) > /dev/null 2>&1 ; then
       # This test may be using syntax that changed between versions
       if [ -f ${script%.namd}.legacy.namd ] ; then
         # Try a legacy input
-        ( $BINARY +p 3 --source ${script%.namd}.legacy.namd > ${basename}.out || false ) > /dev/null 2>&1
+        ( $BINARY +p ${NUM_THREADS} \
+                  --source ${script%.namd}.legacy.namd > ${basename}.out || \
+            false ) > /dev/null 2>&1
       fi
     fi
 
@@ -136,9 +144,11 @@ for dir in ${DIRLIST} ; do
       rm -f ${basename}.Tcl.out
     fi
 
-    # Filter out the version number from the state files to allow comparisons
-    grep -sv 'version' ${basename}.colvars.state > ${TMPDIR}/${basename}.colvars.state.stripped
-    mv -f ${TMPDIR}/${basename}.colvars.state.stripped ${basename}.colvars.state.stripped
+    if [ -f ${basename}.colvars.state ] ; then
+      # Filter out the version number from the state files to allow comparisons
+      grep -sv 'version' ${basename}.colvars.state > ${TMPDIR}/${basename}.colvars.state.stripped
+      mv -f ${TMPDIR}/${basename}.colvars.state.stripped ${basename}.colvars.state.stripped
+    fi
 
     # If this test is used to generate the reference output files, copy them
     if [ "x${gen_ref_output}" = 'xyes' ]; then
@@ -168,16 +178,29 @@ for dir in ${DIRLIST} ; do
   for f in AutoDiff/*
   do
     base=`basename $f`
+    if [ ! -f $base ] ; then
+      echo -e "\n*** File $(${TPUT_RED})$base$(${TPUT_CLEAR}) is missing. ***"
+      SUCCESS=0
+      ALL_SUCCESS=0
+      break
+    fi
+
     if [ "${base}" != "${base%.traj}" ] ; then
       # System force is now total force
       sed 's/fs_/ft_/g' < ${base} > ${TMPDIR}/${base}
       mv -f ${TMPDIR}/${base} ${base}
     fi
-    $DIFF $DIFFOPTS $f $base > "$base.diff"
-    RETVAL=$?
+    if [ ${base} != ${base%.out} ] ; then
+      # Lots of text confuse spiff
+      diff $f $base > "$base.diff"
+      RETVAL=$?
+    else
+      spiff -r 1e-7 $f $base > "$base.diff"
+      RETVAL=$?
+    fi
     if [ $RETVAL -ne 0 ]
     then
-      if [ ${base##*\.} = 'out' ]
+      if [ ${base} != ${base%.out} ]
       then
         echo -n "(warning: differences in log file $base) "
       else
