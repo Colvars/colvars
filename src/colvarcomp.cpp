@@ -30,6 +30,7 @@ colvar::cvc::cvc(std::string const &conf)
   sup_coeff = 1.0;
   period = 0.0;
   wrap_center = 0.0;
+  init(conf);
 }
 
 
