@@ -2791,6 +2791,9 @@ Scalar elements of vector components may be accessed by appending a 1-based inde
 When implementing generic functions of Cartesian coordinates rather
 than functions of existing components, the \texttt{cartesian} component
 may be particularly useful.
+A scalar-valued custom variable may be manually defined as periodic by providing
+the keyword \texttt{period}, and the optional keyword \texttt{wrapAround}, with the
+same meaning as in periodic components (see \ref{sec:cvc_periodic} for details).
 A vector variable may be defined by specifying the \texttt{customFunction} parameter several times: each expression defines one scalar element of the vector colvar.
 This is illustrated in the example below.
 
@@ -2851,6 +2854,9 @@ rather than a linear or polynomial combination.
 When implementing generic functions of Cartesian coordinates rather
 than functions of existing components, the \texttt{cartesian} component
 may be particularly useful.
+A scalar-valued scripted variable may be manually defined as periodic by providing
+the keyword \texttt{period}, and the optional keyword \texttt{wrapAround}, with the
+same meaning as in periodic components (see \ref{sec:cvc_periodic} for details).
 
 An example of elaborate scripted colvar is given in example 10, in the
 form of path-based collective variables as defined by Branduardi et al\cite{Branduardi2007}.
