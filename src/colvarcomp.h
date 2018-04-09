@@ -226,7 +226,7 @@ public:
   virtual colvarvalue dist2_rgrad(colvarvalue const &x1,
                                   colvarvalue const &x2) const;
 
-  /// \brief Wrapp value (for periodic/symmetric cvcs)
+  /// \brief Wrap value (for periodic/symmetric cvcs)
   virtual void wrap(colvarvalue &x) const;
 
   /// \brief Pointers to all atom groups, to let colvars collect info
