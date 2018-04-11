@@ -1,0 +1,22 @@
+configuration {
+  step           40
+  dt 5.000000e-01
+}
+
+colvar {
+  name ds
+  x  1.91635808809730e+01
+}
+
+colvar {
+  name vec
+  x (  1.91635808809730e+01 ,  9.74600371909626e-01 ,  2.12939348547346e-01 , -1.24954463323046e-03 , -6.93497480317003e-02 )
+}
+
+restraint {
+  configuration {
+    step 40
+    name dsw
+  }
+}
+

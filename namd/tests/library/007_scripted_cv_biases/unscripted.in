@@ -8,6 +8,10 @@ colvar {
     name d
     outputAppliedForce
 
+    upperBoundary 1000.0
+    upperWall 1000.0 # Very high to not affect dynamics
+    upperWallConstant 1.0
+
     distance {
         group1 { atomnumbers 4 }
         group2 { atomnumbers 99 }

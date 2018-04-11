@@ -53,6 +53,7 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
   colvarmodule::it = colvarmodule::it_restart = 0;
 
   use_scripted_forces = false;
+  scripting_after_biases = false;
 
   b_analysis = false;
 
@@ -272,15 +273,18 @@ int colvarmodule::parse_global_params(std::string const &conf)
   parse->get_keyval(conf, "colvarsTrajAppend",
                     cv_traj_append, cv_traj_append, colvarparse::parse_silent);
 
-  parse->get_keyval(conf, "scriptedColvarForces", use_scripted_forces, false);
+  parse->get_keyval(conf, "scriptedColvarForces",
+                    use_scripted_forces, use_scripted_forces);
 
-  parse->get_keyval(conf, "scriptingAfterBiases", scripting_after_biases, true);
+  parse->get_keyval(conf, "scriptingAfterBiases",
+                    scripting_after_biases, scripting_after_biases);
 
   if (use_scripted_forces && !proxy->force_script_defined) {
-    cvm::error("User script for scripted colvar forces not found.", INPUT_ERROR);
+    return cvm::error("User script for scripted colvar forces not found.",
+                      INPUT_ERROR);
   }
 
-  return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
+  return cvm::get_error();
 }
 
 
