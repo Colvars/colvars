@@ -5,7 +5,8 @@
 # the image flags set by s
 # Furthermore, they have to be defined in that order: s then z
 # See example file pathCV_example.namd
-# Contributed by Christophe Chipot <chipot@ks.uiuc.edu>
+# Contributed by Christophe Chipot <chipot@ks.uiuc.edu>
+# and Jérôme Hénin <henin@ibpc.fr>
 #############################################################
 
 namespace eval pathCV {
@@ -58,7 +59,7 @@ proc calc_pathCVs { args } {
            incr n_nonzero $flag
            lappend flags_next $flag
         }
-        if { $n_nonzero < $min_images } { 
+        if { $n_nonzero < $min_images } {
           puts "PathCV WARNING: less than $min_images RMSDs are above threshold, selecting $min_images closest images"
           set sorted [lsort -real $args]
           set max [expr {[lindex $sorted [expr {$min_images - 1}]] + 1e-12}]
@@ -93,7 +94,7 @@ proc calc_pathCVs { args } {
 
     set s [expr {1.0 / ($N - 1.0) * $u / $v}]
 
-    return $s 
+    return $s
 }
 
 
@@ -107,10 +108,10 @@ proc calc_pathCVs_gradient { args } {
     upvar pathCV::u u
     upvar pathCV::v v
     upvar pathCV::flags flags
-    
+
     set grad {}
     set N [llength $args]
-   
+
     set i -1
     foreach x $args c $flags {
        incr i
