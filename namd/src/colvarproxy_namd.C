@@ -951,6 +951,7 @@ int colvarproxy_namd::close_output_stream(std::string const &output_name)
       if (((ofstream_namd *) *osi)->is_open()) {
         ((ofstream_namd *) *osi)->close();
       }
+      delete *osi;
       output_files.erase(osi);
       output_stream_names.erase(osni);
       return COLVARS_OK;

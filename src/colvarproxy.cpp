@@ -720,6 +720,7 @@ int colvarproxy_io::close_output_stream(std::string const &output_name)
   for ( ; osi != output_files.end(); osi++, osni++) {
     if (*osni == output_name) {
       ((std::ofstream *) (*osi))->close();
+      delete *osi;
       output_files.erase(osi);
       output_stream_names.erase(osni);
       return COLVARS_OK;
