@@ -69,7 +69,8 @@ if ($ENV{VMDINSTALLLIBRARYDIR}) {
 #
 # Hardware Accelerated (hopefully) Graphics Libraries:
 # ---------------------------------------------------------------
-# OPENGL        - use OpenGL for graphics
+# VULKAN        - use Vulkan for interactive graphics (in-development)
+# OPENGL        - use OpenGL for interactive graphics
 # OPENGLPBUFFER - support off-screen OpenGL rendering for graphics
 # EGLPBUFFER    - support off-screen OpenGL rendering for graphics
 # FLTKOPENGL    - use FLTK to create an OpenGL window for graphics
@@ -101,6 +102,7 @@ if ($ENV{VMDINSTALLLIBRARYDIR}) {
 # LIBOSPRAY    - built-in accelerated ray tracing for Intel CPUs
 # LIBTACHYON   - built-in raytracing via Tachyon (on CPUs)
 # LIBPNG       - PNG image output support
+# ZLIB         - ZLIB compression library
 # NETCDF       - NetCDF file I/O library
 # NOSTATICPLUGINS - disable use of statically linked molfile plugins
 # CONTRIB      - user contributed code for VMD which has restrictions
@@ -179,9 +181,10 @@ if ( ! grep( $_ eq $config_arch , @archlist)) {
     die "Architecture $config_arch not supported (@archlist)\n";
 }
 
+$config_vulkan          = 0;  # Vulkan
+$config_opengl          = 0;  # OpenGL
 $config_opengl_dep      = 0;  # OpenGL-related source files and dependencies
 $config_opengl_dispatch = 0;  # Use libglvnd or dispatch-capable GL, via EGL
-$config_opengl          = 0;  # OpenGL
 $config_opengl_pbuffer  = 0;  # OpenGL off-screen rendering support
 $config_egl_pbuffer     = 0;  # EGL off-screen rendering support
 $config_mesa            = 0;  # Mesa (OpenGL workalike)
@@ -226,6 +229,7 @@ $config_staticplugin    = 1;  # on by default
 
 foreach $term (@ARGV) {
     # graphics/windowing library
+    if ($term eq "VULKAN")          { $config_vulkan          = 1; next; }
     if ($term eq "OPENGL")          { $config_opengl          = 1; 
                                       $config_opengl_dep      = 1; next; }
     if ($term eq "OPENGLPBUFFER")   { $config_opengl_pbuffer  = 1; 
@@ -279,6 +283,7 @@ foreach $term (@ARGV) {
     if ($term eq "LIBOSPRAY" )      { $config_libospray       = 1; next; }
     if ($term eq "LIBTACHYON")      { $config_libtachyon      = 1; next; }
     if ($term eq "LIBPNG")          { $config_libpng          = 1; next; }
+    if ($term eq "ZLIB")            { $config_zlib            = 1; next; }
     if ($term eq "OPENHMD" )        { $config_openhmd         = 1; next; }
     if ($term eq "VRPN")            { $config_vrpn            = 1; next; }
     if ($term eq "NETCDF")          { $config_netcdf          = 1; next; }
@@ -320,6 +325,7 @@ foreach $term (@ARGV) {
 
 # convert back to a string and save
 $config_string = "$config_arch";
+if ($config_vulkan)          { $config_string .= " VULKAN"          }
 if ($config_opengl)          { $config_string .= " OPENGL"          }
 if ($config_opengl_pbuffer)  { $config_string .= " OPENGLPBUFFER"   }
 if ($config_egl_pbuffer)     { $config_string .= " EGLPBUFFER"      }
@@ -349,6 +355,7 @@ if ($config_liboptix)        { $config_string .= " LIBOPTIX"        }
 if ($config_libospray)       { $config_string .= " LIBOSPRAY"       }
 if ($config_libtachyon)      { $config_string .= " LIBTACHYON"      }
 if ($config_libpng)          { $config_string .= " LIBPNG"          }
+if ($config_zlib)            { $config_string .= " ZLIB"            }
 if ($config_openhmd)         { $config_string .= " OPENHMD"         }
 if ($config_vrpn)            { $config_string .= " VRPN"            }
 if ($config_netcdf)          { $config_string .= " NETCDF"          }
@@ -410,7 +417,7 @@ $def_title="ON";
 $def_imageviewer="display %s";
 
 # program version number
-$progversion="1.9.4a16";
+$progversion="1.9.4a17";
 
 # text prompt string
 $promptstring="vmd > ";
@@ -539,6 +546,24 @@ if ($config_staticplugin) {
   @plugin_ccpp    = ();
   push (@plugin_h, 'libmolfile_plugin.h');
 }
+
+
+################ Vulkan location
+# location of Vulkan library and include files.
+# This also specifies the names of the Vulkan libraries.
+$vulkan_dir         = "/home/johns/graphics/vulkan/VulkanSDK/1.1.70.1";
+$vulkan_include     = "-I$vulkan_dir/x86_64/include ";
+$vulkan_library     = "-L$vulkan_dir/x86_64/lib ";
+$vulkan_libs        = "-lvulkan";
+$vulkan_defines     = "-DVMDOPENGL";
+@vulkan_cc          = ();
+@vulkan_cu          = ();
+@vulkan_ccpp        = ('VulkanDisplayDevice.C',
+                       'VulkanRenderer.C');
+@vulkan_h           = ('VulkanDisplayDevice.h',
+                       'VulkanRenderer.h');
+@vulkan_extra       = ();
+
 
 ################ OpenGL location
 # location of OpenGL library and include files; if OPENGL is not being used,
@@ -1034,7 +1059,7 @@ $libgelato_libs        = "-lgelato";
 if ($config_opengl) {
   $liboptix_defines     = "-DVMDLIBOPTIX -DVMDOPTIX_INTERACTIVE_OPENGL";
 } else {
-  $liboptix_defines     = "-DVMDLIBOPTIX -DVMDOPTIX_INTERACTIVE_OPENGL";
+  $liboptix_defines     = "-DVMDLIBOPTIX ";
 }
 
 # Standard builds
@@ -1043,8 +1068,9 @@ if ($config_opengl) {
 # $liboptix_dir         = "/usr/local/encap/NVIDIA-OptiX-SDK-3.9.0-linux64";
 # $liboptix_dir         = "/usr/local/encap/NVIDIA-OptiX-SDK-4.0.1-linux64";
 # $liboptix_dir         = "/usr/local/encap/NVIDIA-OptiX-SDK-4.0.2-linux64";
-$liboptix_dir         = "/usr/local/encap/NVIDIA-OptiX-SDK-4.1.1-linux64";
+# $liboptix_dir         = "/usr/local/encap/NVIDIA-OptiX-SDK-4.1.1-linux64";
 # $liboptix_dir         = "/usr/local/encap/NVIDIA-OptiX-SDK-5.0.0-linux64";
+$liboptix_dir         = "/usr/local/encap/NVIDIA-OptiX-SDK-5.0.1-linux64";
 
 # NCSA Blue Waters
 # $liboptix_dir         = "/u/sciteam/stonej/local/NVIDIA-OptiX-SDK-3.6.3-linux64";
@@ -1121,15 +1147,33 @@ $libtachyon_libs        = "-ltachyon";
 ################ LIBPNG
 # OPTIONAL COMPONENT: PNG image I/O
 # This may be commented out if not required.
+if ( $config_libpng && !$config_zlib) {
+  die "LIBPNG option requires ZLIB!";
+}
 $libpng_defines     = "-DVMDLIBPNG";
-$libpng_dir         = "";
-$libpng_include     = "";
-$libpng_library     = "";
-$libpng_libs        = "-lpng -lz";
+$libpng_dir         = "/Projects/vmd/vmd/lib/libpng";
+$libpng_include     = "-I$libpng_dir/include";
+$libpng_library     = "-L$libpng_dir/lib_$config_arch";
+$libpng_libs        = "-lpng16";
 @libpng_cc          = ();
 @libpng_cu          = ();
 @libpng_ccpp        = ();
 @libpng_h           = ();
+
+
+################ ZLIB
+# OPTIONAL COMPONENT: Data compresssion library 
+# This may be commented out if not required.
+$zlib_defines     = "-DVMDZLIB";
+$zlib_dir         = "/Projects/vmd/vmd/lib/zlib";
+$zlib_include     = "-I$zlib_dir/include";
+$zlib_library     = "-L$zlib_dir/lib_$config_arch";
+$zlib_libs        = "-lz";
+@zlib_cc          = ();
+@zlib_cu          = ();
+@zlib_ccpp        = ();
+@zlib_h           = ();
+
 
 ################ OPENHMD
 # OPTIONAL COMPONENT: Head mounted display driver for Windows/Linux
@@ -2272,6 +2316,12 @@ if ($config_arch eq "LINUXAMD64") {
       } else {
         $arch_lopts     = "-rdynamic ";
       }
+    } elsif ($config_clang) {
+      $arch_cc          = "clang";
+      $arch_ccpp        = "clang++";
+      $arch_opt_flag    = "-m64 -Wall -Wno-unknown-pragmas -O3 -ffast-math ";
+      $arch_copts       = "-m64 -Wall -Wno-unknown-pragmas -O3 -ffast-math ";
+      $arch_depend_flag = "-MM";
     } else {
       # for compiling with g++:
       $arch_cc		= "gcc";
@@ -3078,7 +3128,7 @@ END_OF_IF
 
 $if_statements = '';
 
-$if_statements .= &create_config_option('gl');
+$if_statements .= &create_config_option('vulkan');
 $if_statements .= &create_config_option('opengl');
 $if_statements .= &create_config_option('opengl_pbuffer');
 $if_statements .= &create_config_option('egl_pbuffer');
@@ -3113,6 +3163,7 @@ $if_statements .= &create_config_option('contrib');
 $if_statements .= &create_config_option('python');
 $if_statements .= &create_config_option('pthreads');
 $if_statements .= &create_config_option('numeric');
+$if_statements .= &create_config_option('zlib');
 
 # all of the default stuff, tcl, etc..
 $if_statements .= &create_config_option('vmd');
