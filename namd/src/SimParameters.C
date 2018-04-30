@@ -204,6 +204,8 @@ void SimParameters::scriptSet(const char *param, const char *value) {
   SCRIPT_PARSE_FLOAT("langevinTemp",langevinTemp)
   SCRIPT_PARSE_BOOL("langevinBAOAB",langevin_useBAOAB) // [!!] Use the BAOAB integrator or not
   SCRIPT_PARSE_FLOAT("loweAndersenTemp",loweAndersenTemp) // BEGIN LA, END LA
+  SCRIPT_PARSE_BOOL("stochRescale",stochRescaleOn)
+  SCRIPT_PARSE_FLOAT("stochRescaleTemp",stochRescaleTemp)
   SCRIPT_PARSE_FLOAT("initialTemp",initialTemp)
   SCRIPT_PARSE_BOOL("useGroupPressure",useGroupPressure)
   SCRIPT_PARSE_BOOL("useFlexibleCell",useFlexibleCell)
@@ -1207,6 +1209,23 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
    opts.optional("tCouple", "tCoupleCol", "Column in the tCoupleFile "
      "containing the temperature coupling term B(i);\n"
      "default is 'O'", PARSE_STRING);
+
+   opts.optionalB("main", "stochRescale",
+      "Should stochastic velocity rescaling be performed?",
+      &stochRescaleOn, FALSE);
+   opts.require("stochRescale", "stochRescaleTemp",
+      "Temperature for stochastic velocity rescaling",
+       &stochRescaleTemp);
+   opts.range("stochRescaleTemp", NOT_NEGATIVE);
+   opts.units("stochRescaleTemp", N_KELVIN);
+   opts.require("stochRescale", "stochRescalePeriod",
+      "Time scale for stochastic velocity rescaling (ps)",
+       &stochRescalePeriod);
+   opts.range("stochRescalePeriod", POSITIVE);
+   opts.optional("stochRescale", "stochRescaleFreq",
+       "Number of steps between stochastic rescalings",
+        &stochRescaleFreq);
+   opts.range("stochRescaleFreq", POSITIVE);
 
    opts.optional("main", "rescaleFreq", "Number of steps between "
     "velocity rescaling", &rescaleFreq);
@@ -3288,6 +3307,15 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
    }
    // END LA
 
+   // BKR - stochastic velocity rescaling
+   if (stochRescaleOn) {
+     if (langevinOn || loweAndersenOn || tCoupleOn ||
+         opts.defined("rescaleFreq") || opts.defined("reassignFreq"))
+       NAMD_die("Stochastic velocity rescaling is incompatible with other temperature control methods");
+     // This is largely the same default used in GROMACS.
+     if (!opts.defined("stochRescaleFreq")) stochRescaleFreq = stepsPerCycle;
+   }
+
    if (opts.defined("rescaleFreq"))
    {
   if (!opts.defined("rescaleTemp"))
@@ -3407,6 +3435,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
      if	     (rescaleFreq > 0) 	alchTemp = rescaleTemp;
      else if (reassignFreq > 0)	alchTemp = reassignTemp;
      else if (langevinOn) 	alchTemp = langevinTemp;
+     else if (stochRescaleOn)	alchTemp = stochRescaleTemp;
      else if (tCoupleOn) 	alchTemp = tCoupleTemp;
      else NAMD_die("Alchemical FEP can be performed only in constant temperature simulations\n");
 
@@ -5553,6 +5582,18 @@ if ( openatomOn )
       iout << iINFO << "TEMPERATURE COUPLING ACTIVE\n";
       iout << iINFO << "COUPLING TEMPERATURE   "
          << tCoupleTemp << "\n";
+      iout << endi;
+   }
+
+   if (stochRescaleOn)
+   {
+      iout << iINFO << "STOCHASTIC RESCALING ACTIVE\n";
+      iout << iINFO << "STOCHASTIC RESCALING TEMPERATURE "
+           << stochRescaleTemp << " K\n";
+      iout << iINFO << "STOCHASTIC RESCALING PERIOD "
+           << stochRescalePeriod << " PS\n";
+      iout << iINFO << "STOCHASTIC RESCALING WILL OCCUR EVERY "
+           << stochRescaleFreq << " STEPS\n";
       iout << endi;
    }
 

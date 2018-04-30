@@ -38,7 +38,6 @@
 #include "qd.h"
 
 #ifdef NAMD_TCL
-#define USE_COMPAT_CONST
 #include <tcl.h>
 #endif
 #include "TclCommands.h"
@@ -268,7 +267,7 @@ static void namd_python_initialize(void *interp) {
   }
 }
 
-int ScriptTcl::Tcl_python(ClientData, Tcl_Interp *interp, int argc, char **argv) {
+int ScriptTcl::Tcl_python(ClientData, Tcl_Interp *interp, int argc, const char **argv) {
   if ( argc < 2 ) {
     Tcl_SetResult(interp,"args: script",TCL_VOLATILE);
     return TCL_ERROR;
@@ -352,7 +351,7 @@ int ScriptTcl::Tcl_python(ClientData, Tcl_Interp *interp, int argc, char **argv)
 
 #else // NAMD_PYTHON
 
-int ScriptTcl::Tcl_python(ClientData, Tcl_Interp *interp, int argc, char **argv) {
+int ScriptTcl::Tcl_python(ClientData, Tcl_Interp *interp, int argc, const char **argv) {
   Tcl_SetResult(interp,"python not enabled",TCL_VOLATILE);
   return TCL_ERROR;
 }
@@ -360,7 +359,7 @@ int ScriptTcl::Tcl_python(ClientData, Tcl_Interp *interp, int argc, char **argv)
 #endif // NAMD_PYTHON
 
 int ScriptTcl::Tcl_startup(ClientData clientData,
-	Tcl_Interp *interp, int argc, char *argv[]) {
+	Tcl_Interp *interp, int argc, const char *argv[]) {
   if ( argc > 1 ) {
     Tcl_SetResult(interp,"no arguments needed",TCL_VOLATILE);
     return TCL_ERROR;
@@ -371,7 +370,7 @@ int ScriptTcl::Tcl_startup(ClientData clientData,
 }
 
 int ScriptTcl::Tcl_exit(ClientData clientData,
-	Tcl_Interp *, int argc, char *argv[]) {
+	Tcl_Interp *, int argc, const char *argv[]) {
   ScriptTcl *script = (ScriptTcl *)clientData;
   if ( CmiNumPartitions() > 1 ) {
     if ( ! script->initWasCalled ) CkPrintf("TCL: Running startup before exit due to replicas.\n");
@@ -387,7 +386,7 @@ int ScriptTcl::Tcl_exit(ClientData clientData,
 }
 
 int ScriptTcl::Tcl_abort(ClientData,
-	Tcl_Interp *, int argc, char *argv[]) {
+	Tcl_Interp *, int argc, const char *argv[]) {
   Tcl_DString msg;
   Tcl_DStringInit(&msg);
   Tcl_DStringAppend(&msg,"TCL:",-1);
@@ -400,7 +399,7 @@ int ScriptTcl::Tcl_abort(ClientData,
   return TCL_OK;
 }
 
-int ScriptTcl::Tcl_numPes(ClientData, Tcl_Interp *interp, int argc, char **) {
+int ScriptTcl::Tcl_numPes(ClientData, Tcl_Interp *interp, int argc, const char **) {
   if ( argc > 1 ) {
     Tcl_SetResult(interp,"no arguments needed",TCL_VOLATILE);
     return TCL_ERROR;
@@ -409,7 +408,7 @@ int ScriptTcl::Tcl_numPes(ClientData, Tcl_Interp *interp, int argc, char **) {
   return TCL_OK;
 }
 
-int ScriptTcl::Tcl_numNodes(ClientData, Tcl_Interp *interp, int argc, char **) {
+int ScriptTcl::Tcl_numNodes(ClientData, Tcl_Interp *interp, int argc, const char **) {
   if ( argc > 1 ) {
     Tcl_SetResult(interp,"no arguments needed",TCL_VOLATILE);
     return TCL_ERROR;
@@ -418,7 +417,7 @@ int ScriptTcl::Tcl_numNodes(ClientData, Tcl_Interp *interp, int argc, char **) {
   return TCL_OK;
 }
 
-int ScriptTcl::Tcl_numPhysicalNodes(ClientData, Tcl_Interp *interp, int argc, char **) {
+int ScriptTcl::Tcl_numPhysicalNodes(ClientData, Tcl_Interp *interp, int argc, const char **) {
   if ( argc > 1 ) {
     Tcl_SetResult(interp,"no arguments needed",TCL_VOLATILE);
     return TCL_ERROR;
@@ -427,7 +426,7 @@ int ScriptTcl::Tcl_numPhysicalNodes(ClientData, Tcl_Interp *interp, int argc, ch
   return TCL_OK;
 }
 
-int ScriptTcl::Tcl_numReplicas(ClientData, Tcl_Interp *interp, int argc, char **) {
+int ScriptTcl::Tcl_numReplicas(ClientData, Tcl_Interp *interp, int argc, const char **) {
   if ( argc > 1 ) {
     Tcl_SetResult(interp,"no arguments needed",TCL_VOLATILE);
     return TCL_ERROR;
@@ -436,7 +435,7 @@ int ScriptTcl::Tcl_numReplicas(ClientData, Tcl_Interp *interp, int argc, char **
   return TCL_OK;
 }
 
-int ScriptTcl::Tcl_myReplica(ClientData, Tcl_Interp *interp, int argc, char **) {
+int ScriptTcl::Tcl_myReplica(ClientData, Tcl_Interp *interp, int argc, const char **) {
   if ( argc > 1 ) {
     Tcl_SetResult(interp,"no arguments needed",TCL_VOLATILE);
     return TCL_ERROR;
@@ -456,7 +455,7 @@ int ScriptTcl::Tcl_myReplica(ClientData, Tcl_Interp *interp, int argc, char **) 
   } \
 } while ( 0 )
 
-int ScriptTcl::Tcl_replicaEval(ClientData, Tcl_Interp *interp, int argc, char **argv) {
+int ScriptTcl::Tcl_replicaEval(ClientData, Tcl_Interp *interp, int argc, const char **argv) {
   if ( argc != 3 ) {
     Tcl_SetResult(interp,"args: dest script",TCL_VOLATILE);
     return TCL_ERROR;
@@ -480,7 +479,7 @@ int ScriptTcl::Tcl_replicaEval(ClientData, Tcl_Interp *interp, int argc, char **
 #endif
 }
 
-int ScriptTcl::Tcl_replicaYield(ClientData, Tcl_Interp *interp, int argc, char **argv) {
+int ScriptTcl::Tcl_replicaYield(ClientData, Tcl_Interp *interp, int argc, const char **argv) {
   if ( argc > 2 ) {
     Tcl_SetResult(interp,"args: ?seconds?",TCL_VOLATILE);
     return TCL_ERROR;
@@ -502,7 +501,7 @@ int ScriptTcl::Tcl_replicaYield(ClientData, Tcl_Interp *interp, int argc, char *
 }
 
 
-int ScriptTcl::Tcl_replicaSendrecv(ClientData, Tcl_Interp *interp, int argc, char **argv) {
+int ScriptTcl::Tcl_replicaSendrecv(ClientData, Tcl_Interp *interp, int argc, const char **argv) {
   if ( argc < 3 || argc > 4 ) {
     Tcl_SetResult(interp,"args: data dest ?source?",TCL_VOLATILE);
     return TCL_ERROR;
@@ -531,7 +530,7 @@ int ScriptTcl::Tcl_replicaSendrecv(ClientData, Tcl_Interp *interp, int argc, cha
   return TCL_OK;
 }
 
-int ScriptTcl::Tcl_replicaSend(ClientData, Tcl_Interp *interp, int argc, char **argv) {
+int ScriptTcl::Tcl_replicaSend(ClientData, Tcl_Interp *interp, int argc, const char **argv) {
   if ( argc != 3 ) {
     Tcl_SetResult(interp,"args: data dest",TCL_VOLATILE);
     return TCL_ERROR;
@@ -544,7 +543,7 @@ int ScriptTcl::Tcl_replicaSend(ClientData, Tcl_Interp *interp, int argc, char **
   return TCL_OK;
 }
 
-int ScriptTcl::Tcl_replicaRecv(ClientData, Tcl_Interp *interp, int argc, char **argv) {
+int ScriptTcl::Tcl_replicaRecv(ClientData, Tcl_Interp *interp, int argc, const char **argv) {
   if (argc != 2 ) {
     Tcl_SetResult(interp,"args: source",TCL_VOLATILE);
     return TCL_ERROR;
@@ -565,7 +564,7 @@ int ScriptTcl::Tcl_replicaRecv(ClientData, Tcl_Interp *interp, int argc, char **
   return TCL_OK;
 }
 
-int ScriptTcl::Tcl_replicaBarrier(ClientData, Tcl_Interp *interp, int argc, char **) {
+int ScriptTcl::Tcl_replicaBarrier(ClientData, Tcl_Interp *interp, int argc, const char **) {
   if ( argc > 1 ) {
     Tcl_SetResult(interp,"no arguments needed",TCL_VOLATILE);
     return TCL_ERROR;
@@ -576,7 +575,7 @@ int ScriptTcl::Tcl_replicaBarrier(ClientData, Tcl_Interp *interp, int argc, char
   return TCL_OK;
 }
 
-int ScriptTcl::Tcl_replicaAtomSendrecv(ClientData clientData, Tcl_Interp *interp, int argc, char **argv) {
+int ScriptTcl::Tcl_replicaAtomSendrecv(ClientData clientData, Tcl_Interp *interp, int argc, const char **argv) {
   ScriptTcl *script = (ScriptTcl *)clientData;
   script->initcheck();
   if ( ! Node::Object()->simParameters->replicaUniformPatchGrids ) {
@@ -634,7 +633,7 @@ int ScriptTcl::Tcl_replicaAtomSendrecv(ClientData clientData, Tcl_Interp *interp
   return TCL_OK;
 }
 
-int ScriptTcl::Tcl_replicaAtomSend(ClientData clientData, Tcl_Interp *interp, int argc, char **argv) {
+int ScriptTcl::Tcl_replicaAtomSend(ClientData clientData, Tcl_Interp *interp, int argc, const char **argv) {
   ScriptTcl *script = (ScriptTcl *)clientData;
   script->initcheck();
   if ( ! Node::Object()->simParameters->replicaUniformPatchGrids ) {
@@ -671,7 +670,7 @@ int ScriptTcl::Tcl_replicaAtomSend(ClientData clientData, Tcl_Interp *interp, in
   return TCL_OK;
 }
 
-int ScriptTcl::Tcl_replicaAtomRecv(ClientData clientData, Tcl_Interp *interp, int argc, char **argv) {
+int ScriptTcl::Tcl_replicaAtomRecv(ClientData clientData, Tcl_Interp *interp, int argc, const char **argv) {
   ScriptTcl *script = (ScriptTcl *)clientData;
   script->initcheck();
   if ( ! Node::Object()->simParameters->replicaUniformPatchGrids ) {
@@ -720,13 +719,13 @@ int ScriptTcl::Tcl_replicaAtomRecv(ClientData clientData, Tcl_Interp *interp, in
 
 
 int ScriptTcl::Tcl_stdout(ClientData,
-	Tcl_Interp *interp, int argc, char *argv[]) {
+	Tcl_Interp *interp, int argc, const char *argv[]) {
   if (argc != 2) {
     Tcl_SetResult(interp, "wrong # args", TCL_VOLATILE);
     return TCL_ERROR;
   }
 
-  char *filename= argv[1];
+  const char *filename= argv[1];
   CkPrintf("TCL: redirecting stdout to file %s\n", filename);
 
   if ( ! freopen(filename, "a", stdout) ) {
@@ -737,7 +736,7 @@ int ScriptTcl::Tcl_stdout(ClientData,
 }
 
 int ScriptTcl::Tcl_print(ClientData,
-	Tcl_Interp *, int argc, char *argv[]) {
+	Tcl_Interp *, int argc, const char *argv[]) {
   Tcl_DString msg;
   Tcl_DStringInit(&msg);
   for ( int i = 1; i < argc; ++i ) {
@@ -750,7 +749,7 @@ int ScriptTcl::Tcl_print(ClientData,
 }
 
 int ScriptTcl::Tcl_config(ClientData clientData,
-	Tcl_Interp *interp, int argc, char *argv[]) {
+	Tcl_Interp *interp, int argc, const char *argv[]) {
 
 // Needs to handle the following cases as passed in by Tcl:
 //    name data #comment
@@ -775,18 +774,20 @@ int ScriptTcl::Tcl_config(ClientData clientData,
   int arglen = 1;  int ai;
   for (ai=1; ai<argc; ++ai) { arglen += strlen(argv[ai]) + 1; }
   char *data = new char[arglen];  *data = 0;
+  char *name = new char[arglen];  *name = 0;
 
   // find the end of the name
-  char *name, *s;
-  name = argv[1];
-  for ( s = name; *s && *s != '='; ++s );
+  const char *s = argv[1];
+  char *sn = name;
+  for ( ; *s && *s != '='; *(sn++) = *(s++) );
+  *sn = 0;
 
   // eliminate any comment
   for (ai=2; ai<argc; ++ai) { if (argv[ai][0] == '#') argc = ai; }
 
   // concatenate all the data items
   ai = 2;
-  if ( *s ) { *s = 0; ++s; strcat(data,s); }  // name=data or name=
+  if ( *s ) { ++s; strcat(data,s); }  // name=data or name=
   else if ( ai < argc && argv[ai][0] == '=' ) {  // name =data or name =
     strcat(data,argv[ai]+1);
     ++ai;
@@ -798,6 +799,7 @@ int ScriptTcl::Tcl_config(ClientData clientData,
 
   if ( ! *name ) {
     delete [] data;
+    delete [] name;
     Tcl_SetResult(interp,"error parsing config file",TCL_VOLATILE);
     return TCL_ERROR;
   }
@@ -807,9 +809,11 @@ int ScriptTcl::Tcl_config(ClientData clientData,
   if ( *data ) {
     script->config->add_element( name, strlen(name), data, strlen(data) );
     delete [] data;
+    delete [] name;
     return TCL_OK;
   }
   delete [] data;
+  delete [] name;
 
   StringList *strlist = script->config->find(name);
   if ( ! strlist ) {
@@ -821,13 +825,13 @@ int ScriptTcl::Tcl_config(ClientData clientData,
 }
 
 int ScriptTcl::Tcl_isset_config(ClientData clientData,
-	Tcl_Interp *interp, int argc, char *argv[]) {
+	Tcl_Interp *interp, int argc, const char *argv[]) {
   if (argc != 2) {
     Tcl_SetResult(interp,"wrong # args",TCL_VOLATILE);
     return TCL_ERROR;
   }
 
-  char *param = argv[1];
+  const char *param = argv[1];
   ScriptTcl *script = (ScriptTcl *)clientData;
   StringList *strlist = script->config->find(param);
   Tcl_SetResult(interp, (char*)(strlist ? "1" : "0"), TCL_VOLATILE);
@@ -848,13 +852,13 @@ static int atoBool(const char *s)
 }
 
 int ScriptTcl::Tcl_istrue_config(ClientData clientData,
-	Tcl_Interp *interp, int argc, char *argv[]) {
+	Tcl_Interp *interp, int argc, const char *argv[]) {
   if (argc != 2) {
     Tcl_SetResult(interp,"wrong # args",TCL_VOLATILE);
     return TCL_ERROR;
   }
 
-  char *param = argv[1];
+  const char *param = argv[1];
   ScriptTcl *script = (ScriptTcl *)clientData;
   StringList *strlist = script->config->find(param);
   if ( ! strlist ) {
@@ -871,13 +875,13 @@ int ScriptTcl::Tcl_istrue_config(ClientData clientData,
 }
 
 int ScriptTcl::Tcl_istrue_param(ClientData clientData,
-	Tcl_Interp *interp, int argc, char *argv[]) {
+	Tcl_Interp *interp, int argc, const char *argv[]) {
   if (argc != 2) {
     Tcl_SetResult(interp,"wrong # args",TCL_VOLATILE);
     return TCL_ERROR;
   }
 
-  char *param = argv[1];
+  const char *param = argv[1];
   SimParameters *simParams = Node::Object()->simParameters;
   int val = simParams->istrueinparseopts(param);
   if ( val == -1 ) {
@@ -901,13 +905,13 @@ int ScriptTcl::Tcl_istrue_param(ClientData clientData,
 }
 
 int ScriptTcl::Tcl_isset_param(ClientData clientData,
-	Tcl_Interp *interp, int argc, char *argv[]) {
+	Tcl_Interp *interp, int argc, const char *argv[]) {
   if (argc != 2) {
     Tcl_SetResult(interp,"wrong # args",TCL_VOLATILE);
     return TCL_ERROR;
   }
 
-  char *param = argv[1];
+  const char *param = argv[1];
   SimParameters *simParams = Node::Object()->simParameters;
   int val = simParams->issetinparseopts(param);
   if ( val < 0 ) {
@@ -919,13 +923,13 @@ int ScriptTcl::Tcl_isset_param(ClientData clientData,
 }
 
 int ScriptTcl::Tcl_param(ClientData clientData,
-        Tcl_Interp *interp, int argc, char *argv[]) {
+        Tcl_Interp *interp, int argc, const char *argv[]) {
   if (argc != 2 && argc != 3 && argc != 5) {
     Tcl_SetResult(interp,"wrong # args for NAMD config parameter",TCL_VOLATILE);
     return TCL_ERROR;
   }
 
-  char *param = argv[1];
+  const char *param = argv[1];
   if ( strlen(param) + 1 > MAX_SCRIPT_PARAM_SIZE ) {
     Tcl_SetResult(interp,"parameter name too long for NAMD config parameter",TCL_VOLATILE);
     return TCL_ERROR;
@@ -963,14 +967,14 @@ int ScriptTcl::Tcl_param(ClientData clientData,
 }
 
 int ScriptTcl::Tcl_reinitvels(ClientData clientData,
-        Tcl_Interp *interp, int argc, char *argv[]) {
+        Tcl_Interp *interp, int argc, const char *argv[]) {
   ScriptTcl *script = (ScriptTcl *)clientData;
   script->initcheck();
   if (argc != 2) {
     Tcl_SetResult(interp,"wrong # args",TCL_VOLATILE);
     return TCL_ERROR;
   }
-  char *temp = argv[1];
+  const char *temp = argv[1];
 
   script->setParameter("initialTemp",temp);
 
@@ -980,14 +984,14 @@ int ScriptTcl::Tcl_reinitvels(ClientData clientData,
 }
 
 int ScriptTcl::Tcl_rescalevels(ClientData clientData,
-        Tcl_Interp *interp, int argc, char *argv[]) {
+        Tcl_Interp *interp, int argc, const char *argv[]) {
   ScriptTcl *script = (ScriptTcl *)clientData;
   script->initcheck();
   if (argc != 2) {
     Tcl_SetResult(interp,"wrong # args",TCL_VOLATILE);
     return TCL_ERROR;
   }
-  char *factor = argv[1];
+  const char *factor = argv[1];
 
   script->setParameter("scriptArg1",factor);
 
@@ -997,7 +1001,7 @@ int ScriptTcl::Tcl_rescalevels(ClientData clientData,
 }
 
 int ScriptTcl::Tcl_run(ClientData clientData,
-	Tcl_Interp *interp, int argc, char *argv[]) {
+	Tcl_Interp *interp, int argc, const char *argv[]) {
   ScriptTcl *script = (ScriptTcl *)clientData;
   script->initcheck();
   if (argc < 2) {
@@ -1059,7 +1063,7 @@ int ScriptTcl::Tcl_run(ClientData clientData,
 }
 
 int ScriptTcl::Tcl_minimize(ClientData clientData,
-	Tcl_Interp *interp, int argc, char *argv[]) {
+	Tcl_Interp *interp, int argc, const char *argv[]) {
   ScriptTcl *script = (ScriptTcl *)clientData;
   script->initcheck();
   if (argc != 2) {
@@ -1101,14 +1105,14 @@ int ScriptTcl::Tcl_minimize(ClientData clientData,
 
 // move all atoms by a given vector
 int ScriptTcl::Tcl_moveallby(ClientData clientData,
-	Tcl_Interp *interp, int argc, char *argv[]) {
+	Tcl_Interp *interp, int argc, const char *argv[]) {
   ScriptTcl *script = (ScriptTcl *)clientData;
   script->initcheck();
   if (argc != 2) {
     Tcl_SetResult(interp, "wrong # args", TCL_VOLATILE);
     return TCL_ERROR;
   }
-  char **fstring;
+  const char **fstring;
   int fnum;
   double x, y, z;
   if (Tcl_SplitList(interp, argv[1], &fnum, &fstring) != TCL_OK)
@@ -1132,14 +1136,14 @@ int ScriptTcl::Tcl_moveallby(ClientData clientData,
 }
 
 int ScriptTcl::Tcl_move(ClientData clientData,
-	Tcl_Interp *interp, int argc, char *argv[]) {
+	Tcl_Interp *interp, int argc, const char *argv[]) {
   ScriptTcl *script = (ScriptTcl *)clientData;
   script->initcheck();
   if (argc != 4) {
     Tcl_SetResult(interp,"wrong # args",TCL_VOLATILE);
     return TCL_ERROR;
   }
-  char **fstring;  int fnum;  int atomid;  int moveto;  double x, y, z;
+  const char **fstring;  int fnum;  int atomid;  int moveto;  double x, y, z;
   if (Tcl_GetInt(interp,argv[1],&atomid) != TCL_OK) return TCL_ERROR;
   if (argv[2][0]=='t' && argv[2][1]=='o' && argv[2][2]==0) moveto = 1;
   else if (argv[2][0]=='b' && argv[2][1]=='y' && argv[2][2]==0) moveto = 0;
@@ -1178,7 +1182,7 @@ int ScriptTcl::Tcl_move(ClientData clientData,
 }
 
 int ScriptTcl::Tcl_output(ClientData clientData,
-        Tcl_Interp *interp, int argc, char *argv[]) {
+        Tcl_Interp *interp, int argc, const char *argv[]) {
   ScriptTcl *script = (ScriptTcl *)clientData;
   script->initcheck();
   if (argc < 2) {
@@ -1239,7 +1243,7 @@ void ScriptTcl::measure(Vector *c) {
 }
 
 int ScriptTcl::Tcl_measure(ClientData clientData,
-        Tcl_Interp *interp, int argc, char *argv[]) {
+        Tcl_Interp *interp, int argc, const char *argv[]) {
   ScriptTcl *script = (ScriptTcl *)clientData;
   script->initcheck();
   if (argc != 2) {
@@ -1266,7 +1270,7 @@ int ScriptTcl::Tcl_measure(ClientData clientData,
 // cv bias tempBias delete
 
 int ScriptTcl::Tcl_colvarbias(ClientData clientData,
-        Tcl_Interp *interp, int argc, char *argv[]) {
+        Tcl_Interp *interp, int argc, const char *argv[]) {
   ScriptTcl *script = (ScriptTcl *)clientData;
   script->initcheck();
   if (argc < 4 || argc % 2) {
@@ -1308,7 +1312,7 @@ int ScriptTcl::Tcl_colvarbias(ClientData clientData,
 // Please use the "cv colvar" interface instead
 
 int ScriptTcl::Tcl_colvarvalue(ClientData clientData,
-        Tcl_Interp *interp, int argc, char *argv[]) {
+        Tcl_Interp *interp, int argc, const char *argv[]) {
   ScriptTcl *script = (ScriptTcl *)clientData;
   script->initcheck();
   if (argc != 2) {
@@ -1359,7 +1363,7 @@ int ScriptTcl::Tcl_colvarvalue(ClientData clientData,
 }
 
 int ScriptTcl::Tcl_colvarfreq(ClientData clientData,
-        Tcl_Interp *interp, int argc, char *argv[]) {
+        Tcl_Interp *interp, int argc, const char *argv[]) {
   ScriptTcl *script = (ScriptTcl *)clientData;
   script->initcheck();
   if (argc != 2) {
@@ -1409,7 +1413,7 @@ int ScriptTcl::Tcl_colvars(ClientData clientData,
 }
 
 int ScriptTcl::Tcl_checkpoint(ClientData clientData,
-        Tcl_Interp *interp, int argc, char *argv[]) {
+        Tcl_Interp *interp, int argc, const char *argv[]) {
   ScriptTcl *script = (ScriptTcl *)clientData;
   script->initcheck();
   if (argc != 1) {
@@ -1423,7 +1427,7 @@ int ScriptTcl::Tcl_checkpoint(ClientData clientData,
 }
 
 int ScriptTcl::Tcl_revert(ClientData clientData,
-        Tcl_Interp *interp, int argc, char *argv[]) {
+        Tcl_Interp *interp, int argc, const char *argv[]) {
   ScriptTcl *script = (ScriptTcl *)clientData;
   script->initcheck();
   if (argc != 1) {
@@ -1448,7 +1452,7 @@ static int replica_hash(const char *key) {
 }
 
 int ScriptTcl::Tcl_checkpointReplica(ClientData clientData,
-        Tcl_Interp *interp, int argc, char *argv[]) {
+        Tcl_Interp *interp, int argc, const char *argv[]) {
   ScriptTcl *script = (ScriptTcl *)clientData;
   script->initcheck();
   if (argc < 2 || argc > 3) {
@@ -1493,7 +1497,7 @@ int ScriptTcl::Tcl_checkpointReplica(ClientData clientData,
 }
 
 int ScriptTcl::Tcl_replicaDcdFile(ClientData clientData,
-        Tcl_Interp *interp, int argc, char *argv[]) {
+        Tcl_Interp *interp, int argc, const char *argv[]) {
 #ifdef MEM_OPT_VERSION
   Tcl_SetResult(interp,"replicaDcdFile not supported in memory-optimized builds",TCL_VOLATILE);
   return TCL_ERROR;
@@ -1517,7 +1521,7 @@ int ScriptTcl::Tcl_replicaDcdFile(ClientData clientData,
 }
 
 int ScriptTcl::Tcl_callback(ClientData clientData,
-	Tcl_Interp *interp, int argc, char *argv[]) {
+	Tcl_Interp *interp, int argc, const char *argv[]) {
   ScriptTcl *script = (ScriptTcl *)clientData;
   if (argc != 2) {
     Tcl_SetResult(interp,"wrong # args",TCL_VOLATILE);
@@ -1550,7 +1554,7 @@ void ScriptTcl::doCallback(const char *labels, const char *data) {
 extern void read_binary_coors(char *fname, PDB *pdbobj);
 
 int ScriptTcl::Tcl_reinitatoms(ClientData clientData,
-        Tcl_Interp *interp, int argc, char *argv[]) {
+        Tcl_Interp *interp, int argc, const char *argv[]) {
   ScriptTcl *script = (ScriptTcl *)clientData;
   script->initcheck();
   if (argc > 2) {
@@ -1648,7 +1652,7 @@ static int get_lattice_from_ts(Lattice *lattice, const molfile_timestep_t *ts)
 }
 
 int ScriptTcl::Tcl_coorfile(ClientData clientData,
-	Tcl_Interp *interp, int argc, char *argv[]) {
+	Tcl_Interp *interp, int argc, const char *argv[]) {
   ScriptTcl *script = (ScriptTcl *)clientData;
   script->initcheck();
   if (argc == 4 && !strcmp(argv[1], "open")) {
@@ -1741,7 +1745,7 @@ int ScriptTcl::Tcl_coorfile(ClientData clientData,
 }
 
 int ScriptTcl::Tcl_dumpbench(ClientData clientData,
-	Tcl_Interp *interp, int argc, char *argv[]) {
+	Tcl_Interp *interp, int argc, const char *argv[]) {
   ScriptTcl *script = (ScriptTcl *)clientData;
   script->initcheck();
   if (argc != 2) {
@@ -1822,7 +1826,7 @@ int ScriptTcl::Tcl_consForceConfig(ClientData clientData,
 }
 
 int ScriptTcl::Tcl_reloadCharges(ClientData clientData,
-	Tcl_Interp *interp, int argc, char *argv[]) {
+	Tcl_Interp *interp, int argc, const char *argv[]) {
   ScriptTcl *script = (ScriptTcl *)clientData;
   script->initcheck();
   if (argc != 2) {
@@ -1839,11 +1843,11 @@ int ScriptTcl::Tcl_reloadCharges(ClientData clientData,
 
 // BEGIN gf
 int ScriptTcl::Tcl_reloadGridforceGrid(ClientData clientData,
-	Tcl_Interp *interp, int argc, char *argv[]) {
+	Tcl_Interp *interp, int argc, const char *argv[]) {
   ScriptTcl *script = (ScriptTcl *)clientData;
   script->initcheck();
 
-  char *key = NULL;
+  const char *key = NULL;
   if (argc == 1) {
       // nothing ... key is NULL, then Node::reloadGridforceGrid uses the
       // default key, which is used internally when the gridforce*
@@ -1863,12 +1867,12 @@ int ScriptTcl::Tcl_reloadGridforceGrid(ClientData clientData,
 }
 
 int ScriptTcl::Tcl_updateGridScale(ClientData clientData,
-	Tcl_Interp *interp, int argc, char *argv[]) {
+	Tcl_Interp *interp, int argc, const char *argv[]) {
   ScriptTcl *script = (ScriptTcl *)clientData;
   script->initcheck();
 
   Vector scale(1.0f,1.0f,1.0f);
-  char *key = NULL;
+  const char *key = NULL;
   if (argc == 4) {
       // nothing ... key is NULL, then Node::updateGridScale uses the
       // default key, which is used internally when the gridforce*
@@ -1895,7 +1899,7 @@ int ScriptTcl::Tcl_updateGridScale(ClientData clientData,
 // END gf
 
 int ScriptTcl::Tcl_reloadStructure(ClientData clientData,
-	Tcl_Interp *interp, int argc, char *argv[]) {
+	Tcl_Interp *interp, int argc, const char *argv[]) {
   ScriptTcl *script = (ScriptTcl *)clientData;
   script->initcheck();
 
