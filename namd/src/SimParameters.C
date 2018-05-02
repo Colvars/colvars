@@ -19,6 +19,7 @@
 
 #include "InfoStream.h"
 #include "ComputeNonbondedUtil.h"
+#include "LJTable.h"
 #include "ComputePme.h"
 #include "ConfigList.h"
 #include "SimParameters.h"
@@ -370,9 +371,42 @@ void SimParameters::scriptSet(const char *param, const char *value) {
     ComputeNonbondedUtil::select();
     return;
   }
+
   if ( ! strncasecmp(param,"commOnly",MAX_SCRIPT_PARAM_SIZE) ) {
     commOnly = atobool(value);
     ComputeNonbondedUtil::select();
+    return;
+  }
+
+  // REST2 - We don't have to make any changes to ComputeNonbondedUtil
+  // other than recalculating the LJTable.  Skip doing the other stuff.
+  if ( ! strncasecmp(param,"soluteScalingFactor",MAX_SCRIPT_PARAM_SIZE)) {
+    soluteScalingFactor = atof(value);
+    if (soluteScalingFactor < 0.0) {
+      NAMD_die("Solute scaling factor should be non-negative\n");
+    }
+    soluteScalingFactorCharge = soluteScalingFactor;
+    soluteScalingFactorVdw = soluteScalingFactor;
+    if ( ComputeNonbondedUtil::ljTable ) delete ComputeNonbondedUtil::ljTable;
+    ComputeNonbondedUtil::ljTable = new LJTable;
+    return;
+  }
+  if ( ! strncasecmp(param,"soluteScalingFactorVdw",MAX_SCRIPT_PARAM_SIZE)) {
+    soluteScalingFactorVdw = atof(value);
+    if (soluteScalingFactorVdw < 0.0) {
+      NAMD_die("Solute scaling factor for van der Waals "
+          "should be non-negative\n");
+    }
+    if ( ComputeNonbondedUtil::ljTable ) delete ComputeNonbondedUtil::ljTable;
+    ComputeNonbondedUtil::ljTable = new LJTable;
+    return;
+  }
+  if ( ! strncasecmp(param,"soluteScalingFactorCharge",MAX_SCRIPT_PARAM_SIZE)) {
+    soluteScalingFactorCharge = atof(value);
+    if (soluteScalingFactorCharge < 0.0) {
+      NAMD_die("Solute scaling factor for electrostatics "
+          "should be non-negative\n");
+    }
     return;
   }
 
@@ -1136,6 +1170,32 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
      &lesReduceTemp, FALSE);
    opts.optionalB("les", "lesReduceMass", "Reduce enhanced atom mass?",
      &lesReduceMass, FALSE);
+
+   // REST2 (replica exchange solute tempering) parameters
+   opts.optionalB("main", "soluteScaling",
+       "Is replica exchange solute tempering enabled?",
+       &soluteScalingOn, FALSE);
+   opts.require("soluteScaling", "soluteScalingFactor",
+       "Solute scaling factor",
+       &soluteScalingFactor);
+   opts.range("soluteScalingFactor", NOT_NEGATIVE);
+   opts.optional("soluteScaling", "soluteScalingFactorCharge",
+       "Solute scaling factor for electrostatic interactions",
+       &soluteScalingFactorCharge);
+   opts.range("soluteScalingFactorVdw", NOT_NEGATIVE);
+   opts.optional("soluteScaling", "soluteScalingFactorVdw",
+       "Solute scaling factor for van der Waals interactions",
+       &soluteScalingFactorVdw);
+   opts.range("soluteScalingFactorVdw", NOT_NEGATIVE);
+   opts.optional("soluteScaling", "ssFile",
+       "PDB file with scaling flags; if undefined, defaults to main PDB file",
+       PARSE_STRING);
+   opts.optional("soluteScaling", "ssCol",
+       "Column in the ssFile providing the scaling flag",
+       PARSE_STRING);
+   opts.optionalB("main", "soluteScalingAll",
+       "Apply scaling also to bond and angle interactions?",
+       &soluteScalingAll, TRUE);
 
    // Drude oscillators
    opts.optionalB("main", "drude", "Perform integration of Drude oscillators?",
@@ -3401,6 +3461,19 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
       randomSeed = (unsigned int) time(NULL) + 31530001 * CmiMyPartition();
    }
 
+   // REST2
+   if (opts.defined("soluteScaling")) {
+     // Parameters soluteScalingFactorCharge and soluteScalingFactorVdw
+     // allow independent scaling of electrostatics and van der Waals.
+     // Initialize with soluteScalingFactor if either is not already set.
+     if ( ! opts.defined("soluteScalingFactorCharge") ) {
+       soluteScalingFactorCharge = soluteScalingFactor;
+     }
+     if ( ! opts.defined("soluteScalingFactorVdw") ) {
+       soluteScalingFactorVdw = soluteScalingFactor;
+     }
+   }
+
 //fepb
    alchFepOnAtStartup = alchFepOn = FALSE;
    alchThermIntOnAtStartup = alchThermIntOn = FALSE;
@@ -5097,6 +5170,26 @@ if ( openatomOn )
        << "SCALING ENHANCED ATOM MASS BY 1/" << lesFactor << "\n";
    }
 
+   // REST2
+   if ( soluteScalingOn ) {
+     iout << iINFO << "SOLUTE SCALING IS ACTIVE\n";
+     if (soluteScalingFactorCharge != soluteScalingFactorVdw) {
+       iout << iINFO << "SCALING FOR ELECTROSTATIC INTERACTIONS IS "
+            << soluteScalingFactorCharge << "\n";
+       iout << iINFO << "SCALING FOR VAN DER WAALS INTERACTIONS IS "
+            << soluteScalingFactorVdw << "\n";
+       iout << iINFO << "SCALING FOR BONDED INTERACTIONS IS "
+            << soluteScalingFactor << "\n";
+     }
+     else {
+       iout << iINFO << "SOLUTE SCALING FACTOR IS "
+            << soluteScalingFactor << "\n";
+     }
+     if ( ! soluteScalingAll ) {
+       iout << iINFO << "SOLUTE SCALING DISABLED FOR BONDS AND ANGLES\n";
+     }
+   }
+   
    if ( pairInteractionOn ) {
      iout << iINFO << "PAIR INTERACTION CALCULATIONS ACTIVE\n";
      iout << iINFO << "USING FLAG " << pairInteractionGroup1

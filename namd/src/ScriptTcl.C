@@ -963,6 +963,12 @@ int ScriptTcl::Tcl_param(ClientData clientData,
   ScriptTcl *script = (ScriptTcl *)clientData;
   script->setParameter(param,value);
 
+  // deal with some possible specifics
+  if ( ! strncasecmp(param,"soluteScalingFactor",MAX_SCRIPT_PARAM_SIZE) ||
+       ! strncasecmp(param,"soluteScalingFactorCharge",MAX_SCRIPT_PARAM_SIZE)) {
+    script->runController(SCRIPT_RESCALESOLUTECHARGES);
+  }
+
   return TCL_OK;
 }
 

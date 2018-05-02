@@ -428,6 +428,20 @@ public:
 	Bool lesReduceTemp;		//  Reduce enhanced atom temperature?
 	Bool lesReduceMass;		//  Reduce enhanced atom mass?
 
+  // REST2
+  Bool soluteScalingOn;
+  /**< REST2 (replica exchange solute tempering) on? */
+  BigReal soluteScalingFactor;
+  /**< scaling factor for solute interactions */
+  BigReal soluteScalingFactorCharge;
+  /**< optional independent control over scaling factor for
+   * electrostatic interactions of solute */
+  BigReal soluteScalingFactorVdw;
+  /**< optional independent control over scaling factor for
+   * van der Waals interactions of solute */
+  Bool soluteScalingAll;
+  /**< enables scaling for bond and angle terms (default is off) */
+
         Bool extForcesOn;		//  Are ext command forces present?
         char extForcesCommand[256];
         char extCoordFilename[128];
