@@ -1,7 +1,6 @@
 // -*- c++ -*-
 
 #include <cstdlib>
-#include <cstdlib>
 #include <cstring>
 
 #define COLVARSCRIPT_CPP

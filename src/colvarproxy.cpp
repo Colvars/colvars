@@ -1,7 +1,7 @@
 // -*- c++ -*-
 
 #include <sstream>
-#include <string.h>
+#include <cstring>
 
 #if defined(_OPENMP)
 #include <omp.h>
