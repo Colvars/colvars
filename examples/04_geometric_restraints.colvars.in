@@ -63,7 +63,7 @@ harmonic {                # Define a moving harmonic restraint
   colvars d RMSD Orient   # acting on 3 colvars
 
   centers 0 0 (1, 0, 0, 0)  # centered around zero displacement, zero RMSD, and no rotation
-  forceConstant 0.01       # unit is kcal/mol/[width]^2
+  forceConstant 1.          # unit is kcal/mol/[width]^2
   # where the width parameter is adapted to the dimension of each colvar
 }
 
