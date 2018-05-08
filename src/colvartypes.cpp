@@ -1,7 +1,7 @@
 // -*- c++ -*-
 
-#include <stdlib.h>
-#include <string.h>
+#include <cstdlib>
+#include <cstring>
 
 #include "colvarmodule.h"
 #include "colvartypes.h"
