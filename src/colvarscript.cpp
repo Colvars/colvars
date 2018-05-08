@@ -1,8 +1,8 @@
 // -*- c++ -*-
 
 #include <cstdlib>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdlib>
+#include <cstring>
 
 #define COLVARSCRIPT_CPP
 #include "colvarscript.h"
