@@ -18,6 +18,6 @@ harmonic {             # Define a harmonic restraint
   colvars Orient       # acting on colvar "Orient"
 
   centers  (1.0, 0.0, 0.0, 0.0)  # restraint center is the unit quaternion (no rotation)
-  forceConstant 10.              # unit is kcal/mol because quaternions are dimensionless
+  forceConstant 500.             # unit is kcal/mol because quaternions are dimensionless
 }
 
