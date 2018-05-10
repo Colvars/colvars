@@ -837,11 +837,15 @@ protected:
   /// \brief If true, group2 will be treated as a single atom
   /// (default: loop over all pairs of atoms in group1 and group2)
   bool b_group2_center_only;
+  cvm::real tolerance;
+  long stepcount;
+  int pairlist_freq;
+  bool *pairlist = NULL;
 public:
   /// Constructor
   coordnum(std::string const &conf);
   coordnum();
-  virtual ~coordnum() {}
+  ~coordnum();
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void apply_force(colvarvalue const &force);

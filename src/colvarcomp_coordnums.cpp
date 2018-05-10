@@ -129,6 +129,18 @@ colvar::coordnum::coordnum(std::string const &conf)
   }
 
   get_keyval(conf, "group2CenterOnly", b_group2_center_only, group2->b_dummy);
+  get_keyval(conf, "tolerance", tolerance, 0.0);
+  if (tolerance > 0) {
+    stepcount = 0;
+    get_keyval(conf, "pairlistfrequency", pairlist_freq, 100);
+    if (b_group2_center_only) {
+      pairlist = new bool[group1->size()];
+    }
+    else {
+      pairlist = new bool[group1->size() * group2->size()];
+    }
+  }
+  
 }
 
 
@@ -139,37 +151,109 @@ colvar::coordnum::coordnum()
   x.type(colvarvalue::type_scalar);
 }
 
+colvar::coordnum::~coordnum()
+{
+  if (pairlist != NULL) {
+    delete pairlist;
+  }
+}
 
 void colvar::coordnum::calc_value()
 {
   x.real_value = 0.0;
+  //Determine the pairlist occasionally, and in between these steps use the pairlist.
+  if (tolerance > 0) {
+    long i = 0;
+    cvm::real tmp;
+    if (b_group2_center_only) {
 
-  if (b_group2_center_only) {
+      // create a fake atom to hold the group2 com coordinates
+      cvm::atom group2_com_atom;
+      group2_com_atom.pos = group2->center_of_mass();
 
-    // create a fake atom to hold the group2 com coordinates
-    cvm::atom group2_com_atom;
-    group2_com_atom.pos = group2->center_of_mass();
+      if (b_anisotropic) {
+        for (cvm::atom_iter ai1 = group1->begin(); ai1 != group1->end(); ai1++, i++) {
+          if (stepcount % pairlist_freq == 0) {
+            tmp = switching_function<false>(r0_vec, en, ed, *ai1, group2_com_atom);
+            pairlist[i] = tmp > tolerance;
+            x.real_value += tmp;
+          }
+          else if (pairlist[i]) {
+            x.real_value += switching_function<false>(r0_vec, en, ed, *ai1, group2_com_atom);
+          }
+        }
+      } else {
+        for (cvm::atom_iter ai1 = group1->begin(); ai1 != group1->end(); ai1++, i++) {
+          if (stepcount % pairlist_freq == 0) {
+            tmp = switching_function<false>(r0, en, ed, *ai1, group2_com_atom);
+            pairlist[i] = tmp > tolerance;
+            x.real_value += tmp;
+          }
+          else if (pairlist[i]) {
+            x.real_value += switching_function<false>(r0, en, ed, *ai1, group2_com_atom);
+          }
+        }
+      }
 
-    if (b_anisotropic) {
-      for (cvm::atom_iter ai1 = group1->begin(); ai1 != group1->end(); ai1++)
-        x.real_value += switching_function<false>(r0_vec, en, ed, *ai1, group2_com_atom);
     } else {
-      for (cvm::atom_iter ai1 = group1->begin(); ai1 != group1->end(); ai1++)
-        x.real_value += switching_function<false>(r0, en, ed, *ai1, group2_com_atom);
+
+      if (b_anisotropic) {
+        for (cvm::atom_iter ai1 = group1->begin(); ai1 != group1->end(); ai1++)
+          for (cvm::atom_iter ai2 = group2->begin(); ai2 != group2->end(); ai2++, i++) {
+            if (stepcount % pairlist_freq == 0) {
+              tmp = switching_function<false>(r0_vec, en, ed, *ai1, *ai2);
+              pairlist[i] = tmp > tolerance;
+              x.real_value += tmp;
+            }
+            else if (pairlist[i]) {
+              x.real_value += switching_function<false>(r0, en, ed, *ai1, *ai2);
+            }
+          }
+      } else {
+        for (cvm::atom_iter ai1 = group1->begin(); ai1 != group1->end(); ai1++)
+          for (cvm::atom_iter ai2 = group2->begin(); ai2 != group2->end(); ai2++, i++) {
+            if (stepcount % pairlist_freq == 0) {
+              tmp = switching_function<false>(r0_vec, en, ed, *ai1, *ai2);
+              pairlist[i] = tmp > tolerance;
+              x.real_value += tmp;
+            }
+            else if (pairlist[i]) {
+              x.real_value += switching_function<false>(r0, en, ed, *ai1, *ai2);
+            }
+          }
+      }
     }
+    stepcount ++;
+  }
+  //All pairs all the time.
+  else {
+    if (b_group2_center_only) {
 
-  } else {
+      // create a fake atom to hold the group2 com coordinates
+      cvm::atom group2_com_atom;
+      group2_com_atom.pos = group2->center_of_mass();
 
-    if (b_anisotropic) {
-      for (cvm::atom_iter ai1 = group1->begin(); ai1 != group1->end(); ai1++)
-        for (cvm::atom_iter ai2 = group2->begin(); ai2 != group2->end(); ai2++) {
-          x.real_value += switching_function<false>(r0_vec, en, ed, *ai1, *ai2);
-        }
+      if (b_anisotropic) {
+        for (cvm::atom_iter ai1 = group1->begin(); ai1 != group1->end(); ai1++)
+          x.real_value += switching_function<false>(r0_vec, en, ed, *ai1, group2_com_atom);
+      } else {
+        for (cvm::atom_iter ai1 = group1->begin(); ai1 != group1->end(); ai1++)
+          x.real_value += switching_function<false>(r0, en, ed, *ai1, group2_com_atom);
+      }
+
     } else {
-      for (cvm::atom_iter ai1 = group1->begin(); ai1 != group1->end(); ai1++)
-        for (cvm::atom_iter ai2 = group2->begin(); ai2 != group2->end(); ai2++) {
-          x.real_value += switching_function<false>(r0, en, ed, *ai1, *ai2);
-        }
+
+      if (b_anisotropic) {
+        for (cvm::atom_iter ai1 = group1->begin(); ai1 != group1->end(); ai1++)
+          for (cvm::atom_iter ai2 = group2->begin(); ai2 != group2->end(); ai2++) {
+            x.real_value += switching_function<false>(r0_vec, en, ed, *ai1, *ai2);
+          }
+      } else {
+        for (cvm::atom_iter ai1 = group1->begin(); ai1 != group1->end(); ai1++)
+          for (cvm::atom_iter ai2 = group2->begin(); ai2 != group2->end(); ai2++) {
+            x.real_value += switching_function<false>(r0, en, ed, *ai1, *ai2);
+          }
+      }
     }
   }
 }
@@ -177,35 +261,79 @@ void colvar::coordnum::calc_value()
 
 void colvar::coordnum::calc_gradients()
 {
-  if (b_group2_center_only) {
+  if (tolerance > 0) {
+    //Pairlists are computed by calc_value, so we can just use them here.
+    long i = 0;
+    if (b_group2_center_only) {
 
-    // create a fake atom to hold the group2 com coordinates
-    cvm::atom group2_com_atom;
-    group2_com_atom.pos = group2->center_of_mass();
+      // create a fake atom to hold the group2 com coordinates
+      cvm::atom group2_com_atom;
+      group2_com_atom.pos = group2->center_of_mass();
 
 
-    if (b_anisotropic) {
-      for (cvm::atom_iter ai1 = group1->begin(); ai1 != group1->end(); ai1++)
-        switching_function<true>(r0_vec, en, ed, *ai1, group2_com_atom);
+      if (b_anisotropic) {
+        for (cvm::atom_iter ai1 = group1->begin(); ai1 != group1->end(); ai1++, i++)
+          if (pairlist[i]) {
+            switching_function<true>(r0_vec, en, ed, *ai1, group2_com_atom);
+          }
+      } else {
+        for (cvm::atom_iter ai1 = group1->begin(); ai1 != group1->end(); ai1++, i++)
+          if (pairlist[i]) {
+            switching_function<true>(r0, en, ed, *ai1, group2_com_atom);
+          }
+      }
+
+      group2->set_weighted_gradient(group2_com_atom.grad);
+
     } else {
-      for (cvm::atom_iter ai1 = group1->begin(); ai1 != group1->end(); ai1++)
-        switching_function<true>(r0, en, ed, *ai1, group2_com_atom);
+      if (b_anisotropic) {
+        for (cvm::atom_iter ai1 = group1->begin(); ai1 != group1->end(); ai1++)
+          for (cvm::atom_iter ai2 = group2->begin(); ai2 != group2->end(); ai2++, i++) {
+            if (pairlist[i]) {
+              switching_function<true>(r0_vec, en, ed, *ai1, *ai2);
+            }
+          }
+      } else {
+        for (cvm::atom_iter ai1 = group1->begin(); ai1 != group1->end(); ai1++)
+          for (cvm::atom_iter ai2 = group2->begin(); ai2 != group2->end(); ai2++, i++) {
+            if (pairlist[i]) {
+              switching_function<true>(r0, en, ed, *ai1, *ai2);
+            }
+          }
+      }
     }
-
-    group2->set_weighted_gradient(group2_com_atom.grad);
-
+    //No pairlists
   } else {
+    if (b_group2_center_only) {
 
-    if (b_anisotropic) {
-      for (cvm::atom_iter ai1 = group1->begin(); ai1 != group1->end(); ai1++)
-        for (cvm::atom_iter ai2 = group2->begin(); ai2 != group2->end(); ai2++) {
-          switching_function<true>(r0_vec, en, ed, *ai1, *ai2);
-        }
+      // create a fake atom to hold the group2 com coordinates
+      cvm::atom group2_com_atom;
+      group2_com_atom.pos = group2->center_of_mass();
+
+
+      if (b_anisotropic) {
+        for (cvm::atom_iter ai1 = group1->begin(); ai1 != group1->end(); ai1++)
+          switching_function<true>(r0_vec, en, ed, *ai1, group2_com_atom);
+      } else {
+        for (cvm::atom_iter ai1 = group1->begin(); ai1 != group1->end(); ai1++)
+          switching_function<true>(r0, en, ed, *ai1, group2_com_atom);
+      }
+
+      group2->set_weighted_gradient(group2_com_atom.grad);
+
     } else {
-      for (cvm::atom_iter ai1 = group1->begin(); ai1 != group1->end(); ai1++)
-        for (cvm::atom_iter ai2 = group2->begin(); ai2 != group2->end(); ai2++) {
-          switching_function<true>(r0, en, ed, *ai1, *ai2);
-        }
+
+      if (b_anisotropic) {
+        for (cvm::atom_iter ai1 = group1->begin(); ai1 != group1->end(); ai1++)
+          for (cvm::atom_iter ai2 = group2->begin(); ai2 != group2->end(); ai2++) {
+            switching_function<true>(r0_vec, en, ed, *ai1, *ai2);
+          }
+      } else {
+        for (cvm::atom_iter ai1 = group1->begin(); ai1 != group1->end(); ai1++)
+          for (cvm::atom_iter ai2 = group2->begin(); ai2 != group2->end(); ai2++) {
+            switching_function<true>(r0, en, ed, *ai1, *ai2);
+          }
+      }
     }
   }
 }
