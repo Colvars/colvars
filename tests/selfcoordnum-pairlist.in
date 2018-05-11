@@ -10,6 +10,6 @@ colvar {
         group1 {
             indexGroup group1
         }
-        tolerance 0.5
+        tolerance 0.9
     }
 } 
