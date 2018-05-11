@@ -14,6 +14,8 @@ cvm::atom::atom()
 {
   index = -1;
   id = -1;
+  mass = 1.0;
+  charge = 1.0;
   reset_data();
 }
 
