@@ -1821,6 +1821,26 @@ function is summed over all pairs of atoms in \texttt{group1} and
     If this option is \texttt{on}, only contacts between each atoms in \texttt{group1} and the center of mass of     \texttt{group2} are calculated (by default, the sum extends over all pairs of atoms in \texttt{group1} and \texttt{group2}).
 If \texttt{group2} is a \texttt{dummyAtom}, this option is set to \texttt{yes} by default.
 }
+
+\item %
+    \labelkey{colvar|coordNum|tolerance}
+    \keydef
+     {tolerance}{%
+     \texttt{coordNum}}{%
+     Pairlist control}{%
+    decimal}{%
+    0.0}{This controls the pairlist feature, dictating the minimum value for each summation element in Eq.~\ref{eq:cvc_coordNum} such that the pair that contributed the summation element is included in subsequent simulation timesteps until the next pairlist recalculation. For most applications, this value should be small (eg. 0.001) to avoid missing important contributions to the overall sum. Higher values will improve performance, although values above 1 will exclude all possible pair interactions. Similarly, values below 0 will never exclude a pair from consideration.
+}
+
+\item %
+    \labelkey{colvar|coordNum|pairListFrequency}
+    \keydef
+     {pairListFrequency}{%
+     \texttt{coordNum}}{%
+     Pairlist regeneration frequency}{%
+    positive integer}{%
+    100}{This controls the pairlist feature, dictating how many steps are taken between regenerating pairlists if the tolerance is greater than 0. At this interval, the colvar defined will be exact, as though it was the all-to-all pair summation defined in Eq.~\ref{eq:cvc_coordNum}. All other steps will report only values and gradients from pairs in the pairlist.
+}
 \end{cvcoptions}
 
 This component returns a dimensionless number, which ranges from
@@ -1860,6 +1880,10 @@ those accepted by \texttt{coordNum}, namely \texttt{group1}
   \dupkey{expNumer}{\texttt{selfCoordNum}}{colvar|coordNum|expNumer}{\texttt{coordNum} component}
 \item %
   \dupkey{expDenom}{\texttt{selfCoordNum}}{colvar|coordNum|expDenom}{\texttt{coordNum} component}
+\item %
+  \dupkey{tolerance}{\texttt{selfCoordNum}}{colvar|coordNum|tolerance}{\texttt{coordNum} component}
+\item %
+  \dupkey{pairListFrequency}{\texttt{selfCoordNum}}{colvar|coordNum|pairListFrequency}{\texttt{coordNum} component}
 \end{cvcoptions}
 
 This component returns a dimensionless number, which ranges from
