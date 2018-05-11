@@ -147,6 +147,7 @@ for colvar in \
     "angle" \
     "dihedral" \
     "coordnum" \
+    "coordnum-pairlist" \
     "distancez" "distancez-fitgroup" \
     "distancez-axis" "distancez-axis-fitgroup" \
     "distancexy-axis" \
@@ -156,7 +157,7 @@ for colvar in \
     "inertiaz" \
     "rmsd" \
     "tilt" \
-    "selfcoordnum" \
+    "selfcoordnum" "selfcoordnum-pairlist" \
     "spinangle" \
    ; do
     for bias in \
