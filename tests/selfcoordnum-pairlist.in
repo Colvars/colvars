@@ -1,0 +1,15 @@
+colvar {
+
+    name one
+
+    outputAppliedForce on
+
+    width 0.5
+
+    selfCoordNum {
+        group1 {
+            indexGroup group1
+        }
+        tolerance 0.5
+    }
+} 

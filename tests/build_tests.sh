@@ -157,7 +157,7 @@ for colvar in \
     "inertiaz" \
     "rmsd" \
     "tilt" \
-    "selfcoordnum" \
+    "selfcoordnum" "selfcoordnum-pairlist" \
     "spinangle" \
    ; do
     for bias in \
