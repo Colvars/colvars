@@ -139,6 +139,11 @@ colvar::coordnum::coordnum(std::string const &conf)
   get_keyval(conf, "tolerance", tolerance, 0.0);
   if (tolerance > 0) {
     get_keyval(conf, "pairListFrequency", pairlist_freq, 100);
+    if ( ! (pairlist_freq > 0) ) {
+      cvm::error("Error: non-positive pairlistfrequency provided.\n",
+                 INPUT_ERROR);
+      return; // and do not allocate the pairlists below
+    }
     if (b_group2_center_only) {
       pairlist = new bool[group1->size()];
     }
@@ -157,12 +162,14 @@ colvar::coordnum::coordnum()
   x.type(colvarvalue::type_scalar);
 }
 
+
 colvar::coordnum::~coordnum()
 {
   if (pairlist != NULL) {
-    delete pairlist;
+    delete [] pairlist;
   }
 }
+
 
 void colvar::coordnum::calc_value()
 {
@@ -388,6 +395,11 @@ colvar::selfcoordnum::selfcoordnum(std::string const &conf)
   get_keyval(conf, "tolerance", tolerance, 0.0);
   if (tolerance > 0) {
     get_keyval(conf, "pairListFrequency", pairlist_freq, 100);
+    if ( ! (pairlist_freq > 0) ) {
+      cvm::error("Error: non-positive pairlistfrequency provided.\n",
+                 INPUT_ERROR);
+      return;
+    }
     pairlist = new bool[(group1->size()-1) * (group1->size()-1)];
   }
 }
@@ -401,7 +413,7 @@ colvar::selfcoordnum::selfcoordnum()
 colvar::selfcoordnum::~selfcoordnum()
 {
   if (pairlist != NULL) {
-    delete pairlist;
+    delete [] pairlist;
   }
 }
 
@@ -443,6 +455,7 @@ void colvar::selfcoordnum::apply_force(colvarvalue const &force)
 
 
 simple_scalar_dist_functions(selfcoordnum)
+
 
 
 // groupcoordnum member functions
@@ -517,7 +530,7 @@ void colvar::groupcoordnum::calc_value()
                                                      group1_com_atom, group2_com_atom, true);
   else
     x.real_value = coordnum::switching_function<false>(r0, en, ed,
-                                                     group1_com_atom, group2_com_atom, true);
+                                                       group1_com_atom, group2_com_atom, true);
 }
 
 
