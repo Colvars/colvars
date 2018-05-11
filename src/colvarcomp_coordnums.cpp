@@ -1,5 +1,12 @@
 // -*- c++ -*-
 
+// This file is part of the Collective Variables module (Colvars).
+// The original version of Colvars and its updates are located at:
+// https://github.com/colvars/colvars
+// Please update all Colvars source files before making any changes.
+// If you wish to distribute your changes, please submit them to the
+// Colvars repository at GitHub.
+
 #include <cmath>
 
 #include "colvarmodule.h"
@@ -169,7 +176,7 @@ void colvar::coordnum::calc_value()
   x.real_value = 0.0;
   size_t i = 0;
   cvm::real tmp;
-  bool recalcpairs = pairlist!=NULL && step_relative() % pairlist_freq == 0;
+  bool recalcpairs = pairlist!=NULL && cvm::step_relative() % pairlist_freq == 0;
   bool pairok = pairlist==NULL || recalcpairs;
   if (b_group2_center_only) {
     // create a fake atom to hold the group2 com coordinates
@@ -410,7 +417,7 @@ void colvar::selfcoordnum::calc_value()
   x.real_value = 0.0;
   size_t k = 0;
   cvm::real tmp;
-  bool recalcpairs = pairlist!=NULL && step_relative() % pairlist_freq == 0;
+  bool recalcpairs = pairlist!=NULL && cvm::step_relative() % pairlist_freq == 0;
   bool pairok = pairlist==NULL || recalcpairs;
   for (size_t i = 0; i < group1->size() - 1; i++) {
     for (size_t j = i + 1; j < group1->size(); j++, k++) {
@@ -425,9 +432,10 @@ void colvar::selfcoordnum::calc_value()
 
 void colvar::selfcoordnum::calc_gradients()
 {
+  size_t k = 0;
   bool pairok = pairlist==NULL;
   for (size_t i = 0; i < group1->size() - 1; i++) {
-    for (size_t j = i + 1; j < group1->size(); j++) {
+    for (size_t j = i + 1; j < group1->size(); j++, k++) {
       colvar::coordnum::switching_function<true>(r0, en, ed, (*group1)[i], (*group1)[j], pairok || pairlist[k]);
     }
   }
@@ -591,9 +599,9 @@ void colvar::groupcoordnum::calc_gradients()
   group1_com_atom.pos = group1->center_of_mass();
   group2_com_atom.pos = group2->center_of_mass();
   if (b_anisotropic)
-    coordnum::switching_function<true><true>(r0_vec, en, ed, group1_com_atom, group2_com_atom);
+    coordnum::switching_function<true>(r0_vec, en, ed, group1_com_atom, group2_com_atom, true);
   else
-    coordnum::switching_function<true><true>(r0, en, ed, group1_com_atom, group2_com_atom);
+    coordnum::switching_function<true>(r0, en, ed, group1_com_atom, group2_com_atom, true);
   group1->set_weighted_gradient(group1_com_atom.grad);
   group2->set_weighted_gradient(group2_com_atom.grad);
 
