@@ -1,3 +1,7 @@
+colvarsTrajFrequency 1
+colvarsRestartFrequency 10
+indexFile index.ndx
+
 colvar {
 
     name one
@@ -13,3 +17,9 @@ colvar {
         tolerance 0.01
     }
 } 
+
+harmonic {
+    colvars        one
+    centers        0.1
+    forceConstant  0.001
+}
