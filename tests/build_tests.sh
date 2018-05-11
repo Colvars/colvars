@@ -147,6 +147,7 @@ for colvar in \
     "angle" \
     "dihedral" \
     "coordnum" \
+    "coordnum-pairlist" \
     "distancez" "distancez-fitgroup" \
     "distancez-axis" "distancez-axis-fitgroup" \
     "distancexy-axis" \
