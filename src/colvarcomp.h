@@ -902,14 +902,6 @@ public:
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void apply_force(colvarvalue const &force);
-  // template<bool b_gradients><bool in_pairlist>
-  // /// \brief Calculate a coordination number through the function
-  // /// (1-x**n)/(1-x**m), x = |A1-A2|/r0 \param r0 "cutoff" for the
-  // /// coordination number \param exp_num \i n exponent \param exp_den
-  // /// \i m exponent \param A1 atom \param A2 atom
-  // static cvm::real switching_function(cvm::real const &r0,
-  //                                     int const &exp_num, int const &exp_den,
-  //                                     cvm::atom &A1, cvm::atom &A2);
 
   virtual cvm::real dist2(colvarvalue const &x1,
                           colvarvalue const &x2) const;
@@ -946,26 +938,6 @@ public:
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void apply_force(colvarvalue const &force);
-  // template<bool b_gradients>
-  // /// \brief Calculate a coordination number through the function
-  // /// (1-x**n)/(1-x**m), x = |A1-A2|/r0 \param r0 "cutoff" for the
-  // /// coordination number \param exp_num \i n exponent \param exp_den
-  // /// \i m exponent \param A1 atom \param A2 atom
-  // static cvm::real switching_function(cvm::real const &r0,
-  //                                     int const &exp_num, int const &exp_den,
-  //                                     cvm::atom &A1, cvm::atom &A2);
-
-  /*
-  template<bool b_gradients>
-  /// \brief Calculate a coordination number through the function
-  /// (1-x**n)/(1-x**m), x = |(A1-A2)*(r0_vec)^-|1 \param r0_vec
-  /// vector of different cutoffs in the three directions \param
-  /// exp_num \i n exponent \param exp_den \i m exponent \param A1
-  /// atom \param A2 atom
-  static cvm::real switching_function(cvm::rvector const &r0_vec,
-                                      int const &exp_num, int const &exp_den,
-                                      cvm::atom &A1, cvm::atom &A2);
-  */
 
   virtual cvm::real dist2(colvarvalue const &x1,
                           colvarvalue const &x2) const;
