@@ -1,12 +1,5 @@
 // -*- c++ -*-
 
-// This file is part of the Collective Variables module (Colvars).
-// The original version of Colvars and its updates are located at:
-// https://github.com/colvars/colvars
-// Please update all Colvars source files before making any changes.
-// If you wish to distribute your changes, please submit them to the
-// Colvars repository at GitHub.
-
 #include <cmath>
 
 #include "colvarmodule.h"
@@ -146,6 +139,10 @@ colvar::coordnum::coordnum(std::string const &conf)
   get_keyval(conf, "tolerance", tolerance, 0.0);
   if (tolerance > 0) {
     get_keyval(conf, "pairListFrequency", pairlist_freq, 100);
+    if ( ! (pairlist_freq > 0) ) {
+      cvm::error("Error: non-positive pairlistfrequency provided.\n",
+                 INPUT_ERROR);
+    }
     if (b_group2_center_only) {
       pairlist = new bool[group1->size()];
     }
@@ -395,6 +392,10 @@ colvar::selfcoordnum::selfcoordnum(std::string const &conf)
   get_keyval(conf, "tolerance", tolerance, 0.0);
   if (tolerance > 0) {
     get_keyval(conf, "pairListFrequency", pairlist_freq, 100);
+    if ( ! (pairlist_freq > 0) ) {
+      cvm::error("Error: non-positive pairlistfrequency provided.\n",
+                 INPUT_ERROR);
+    }
     pairlist = new bool[(group1->size()-1) * (group1->size()-1)];
   }
 }
