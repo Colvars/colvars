@@ -275,8 +275,6 @@ void colvar::coordnum::calc_value()
       int const flags = ef_null;
       for (ai1 = group1->begin(); ai1 != ai1_end; ai1++) {
         for (ai2 = group2->begin(); ai2 != ai2_end; ai2++) {
-          std::cerr << "ai1 = " << &(*ai1) << ", ai1_end = " << &(*ai1_end) << std::endl;
-          std::cerr << "pair = " << ai1->id << ", " << ai2->id << std::endl;
           x.real_value += switching_function<flags>(r0, r0_vec, en, ed,
                                                     *ai1, *ai2,
                                                     NULL, 0.0);
