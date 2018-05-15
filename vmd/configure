@@ -417,7 +417,7 @@ $def_title="ON";
 $def_imageviewer="display %s";
 
 # program version number
-$progversion="1.9.4a18";
+$progversion="1.9.4a19";
 
 # text prompt string
 $promptstring="vmd > ";
@@ -1494,7 +1494,7 @@ if ( $config_rpm ) {
 }
 
 ################### standard sources
-$vmd_defines       = "-DVMDQUICKSURF -DVMDWITHCARBS -DVMDPOLYHEDRA -DVMDSURF -DVMDMSMS -DVMDNANOSHAPER $tcl_defines";
+$vmd_defines       = "-DVMDQUICKSURF -DVMDWITHCARBS -DVMDPOLYHEDRA -DVMDSURF -DVMDMSMS -DVMDNANOSHAPER -DVMDLATTICECUBES $tcl_defines";
 $vmd_include       = "$tcl_include";
 $vmd_library       = "$tcl_library";
 $vmd_libs          = "$tcl_libs";
