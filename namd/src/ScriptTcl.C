@@ -813,11 +813,12 @@ int ScriptTcl::Tcl_config(ClientData clientData,
     return TCL_OK;
   }
   delete [] data;
-  delete [] name;
 
   StringList *strlist = script->config->find(name);
+  delete [] name;
+
   if ( ! strlist ) {
-    Tcl_SetResult(interp,"error parsing config file",TCL_VOLATILE);
+    Tcl_SetResult(interp,"tried before startup to read config file parameter that was not set",TCL_VOLATILE);
     return TCL_ERROR;
   }
   Tcl_SetResult(interp,strlist->data,TCL_VOLATILE);

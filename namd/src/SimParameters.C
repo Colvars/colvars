@@ -1182,7 +1182,7 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
    opts.optional("soluteScaling", "soluteScalingFactorCharge",
        "Solute scaling factor for electrostatic interactions",
        &soluteScalingFactorCharge);
-   opts.range("soluteScalingFactorVdw", NOT_NEGATIVE);
+   opts.range("soluteScalingFactorCharge", NOT_NEGATIVE);
    opts.optional("soluteScaling", "soluteScalingFactorVdw",
        "Solute scaling factor for van der Waals interactions",
        &soluteScalingFactorVdw);
