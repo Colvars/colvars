@@ -22,8 +22,9 @@ cvm::real colvar::coordnum::switching_function(cvm::real const &r0,
                                                cvm::real pairlist_tol)
 {
   if ((flags & ef_use_pairlist) && !(flags & ef_rebuild_pairlist)) {
-    if (!**pairlist_elem) {
-      (*pairlist_elem)++;
+    bool const within = **pairlist_elem;
+    (*pairlist_elem)++;
+    if (!within) {
       return 0.0;
     }
   }
