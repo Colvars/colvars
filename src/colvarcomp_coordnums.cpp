@@ -180,10 +180,8 @@ colvar::coordnum::~coordnum()
 }
 
 
-void colvar::coordnum::calc_value()
+template<int compute_flags> int colvar::coordnum::compute_coordnum()
 {
-  x.real_value = 0.0;
-
   if (group2_center) {
     (*group2_center)[0].pos = group2->center_of_mass();
     group2_center->calc_required_properties();
@@ -199,14 +197,13 @@ void colvar::coordnum::calc_value()
   cvm::atom_iter const ai1_end = group1->end();
   cvm::atom_iter const ai2_end = group2p->end();
 
-
   if (b_anisotropic) {
 
     if (use_pairlist) {
 
       if (rebuild_pairlist) {
 
-        int const flags = ef_anisotropic | ef_use_pairlist |
+        int const flags = compute_flags | ef_anisotropic | ef_use_pairlist |
           ef_rebuild_pairlist;
         for (ai1 = group1->begin(); ai1 != ai1_end; ai1++) {
           for (ai2 = group2->begin(); ai2 != ai2_end; ai2++) {
@@ -219,7 +216,7 @@ void colvar::coordnum::calc_value()
 
       } else {
 
-        int const flags = ef_anisotropic | ef_use_pairlist;
+        int const flags = compute_flags | ef_anisotropic | ef_use_pairlist;
         for (ai1 = group1->begin(); ai1 != ai1_end; ai1++) {
           for (ai2 = group2->begin(); ai2 != ai2_end; ai2++) {
             x.real_value += switching_function<flags>(r0, r0_vec, en, ed,
@@ -232,7 +229,7 @@ void colvar::coordnum::calc_value()
 
     } else { // if (use_pairlist) {
 
-      int const flags = ef_anisotropic;
+      int const flags = compute_flags | ef_anisotropic;
       for (ai1 = group1->begin(); ai1 != ai1_end; ai1++) {
         for (ai2 = group2->begin(); ai2 != ai2_end; ai2++) {
           x.real_value += switching_function<flags>(r0, r0_vec, en, ed,
@@ -248,7 +245,7 @@ void colvar::coordnum::calc_value()
 
       if (rebuild_pairlist) {
 
-        int const flags = ef_use_pairlist | ef_rebuild_pairlist;
+        int const flags = compute_flags | ef_use_pairlist | ef_rebuild_pairlist;
         for (ai1 = group1->begin(); ai1 != ai1_end; ai1++) {
           for (ai2 = group2->begin(); ai2 != ai2_end; ai2++) {
             x.real_value += switching_function<flags>(r0, r0_vec, en, ed,
@@ -260,7 +257,7 @@ void colvar::coordnum::calc_value()
 
       } else {
 
-        int const flags = ef_use_pairlist;
+        int const flags = compute_flags | ef_use_pairlist;
         for (ai1 = group1->begin(); ai1 != ai1_end; ai1++) {
           for (ai2 = group2->begin(); ai2 != ai2_end; ai2++) {
             x.real_value += switching_function<flags>(r0, r0_vec, en, ed,
@@ -273,7 +270,7 @@ void colvar::coordnum::calc_value()
 
     } else { // if (use_pairlist) {
 
-      int const flags = ef_null;
+      int const flags = compute_flags;
       for (ai1 = group1->begin(); ai1 != ai1_end; ai1++) {
         for (ai2 = group2->begin(); ai2 != ai2_end; ai2++) {
           x.real_value += switching_function<flags>(r0, r0_vec, en, ed,
@@ -283,78 +280,31 @@ void colvar::coordnum::calc_value()
       }
     }
   }
+
+  if (compute_flags & ef_gradients) {
+    if (group2_center) {
+      group2->set_weighted_gradient((*group2_center)[0].grad);
+    }
+  }
+
+  return COLVARS_OK;
+}
+
+
+void colvar::coordnum::calc_value()
+{
+  x.real_value = 0.0;
+  if (is_enabled(f_cvc_gradient)) {
+    compute_coordnum<ef_gradients>();
+  } else {
+    compute_coordnum<ef_null>();
+  }
 }
 
 
 void colvar::coordnum::calc_gradients()
 {
-  // Its properties were already computed by calc_value()
-  cvm::atom_group *group2p = group2_center ? group2_center : group2;
-
-  bool const use_pairlist = (pairlist != NULL);
-  // Don't rebuild pairlist, already done at calc_value()
-
-  bool *pairlist_elem = use_pairlist ? pairlist : NULL;
-  cvm::atom_iter ai1 = group1->begin(), ai2 = group2p->begin();
-  cvm::atom_iter const ai1_end = group1->end();
-  cvm::atom_iter const ai2_end = group2p->end();
-
-  if (b_anisotropic) {
-
-    if (use_pairlist) {
-
-      int const flags = ef_anisotropic | ef_use_pairlist | ef_gradients;
-      for (ai1 = group1->begin(); ai1 != ai1_end; ai1++) {
-        for (ai2 = group2->begin(); ai2 != ai2_end; ai2++) {
-          switching_function<flags>(r0, r0_vec, en, ed,
-                                    *ai1, *ai2,
-                                    &pairlist_elem,
-                                    tolerance);
-        }
-      }
-
-    } else { // if (use_pairlist) {
-
-      int const flags = ef_anisotropic | ef_gradients;
-      for (ai1 = group1->begin(); ai1 != ai1_end; ai1++) {
-        for (ai2 = group2->begin(); ai2 != ai2_end; ai2++) {
-          switching_function<flags>(r0, r0_vec, en, ed,
-                                    *ai1, *ai2,
-                                    NULL, 0.0);
-        }
-      }
-    }
-
-  } else {
-
-    if (use_pairlist) {
-
-      int const flags = ef_use_pairlist | ef_gradients;
-      for (ai1 = group1->begin(); ai1 != ai1_end; ai1++) {
-        for (ai2 = group2->begin(); ai2 != ai2_end; ai2++) {
-          switching_function<flags>(r0, r0_vec, en, ed,
-                                    *ai1, *ai2,
-                                    &pairlist_elem,
-                                    tolerance);
-        }
-      }
-
-    } else { // if (use_pairlist) {
-
-      int const flags = ef_gradients;
-      for (ai1 = group1->begin(); ai1 != ai1_end; ai1++) {
-        for (ai2 = group2->begin(); ai2 != ai2_end; ai2++) {
-          switching_function<flags>(r0, r0_vec, en, ed,
-                                    *ai1, *ai2,
-                                    NULL, 0.0);
-        }
-      }
-    }
-  }
-
-  if (group2_center) {
-    group2->set_weighted_gradient((*group2_center)[0].grad);
-  }
+  // Gradients are computed by calc_value() if f_cvc_gradients is enabled
 }
 
 
@@ -533,10 +483,8 @@ colvar::selfcoordnum::~selfcoordnum()
 }
 
 
-void colvar::selfcoordnum::calc_value()
+template<int compute_flags> int colvar::selfcoordnum::compute_selfcoordnum()
 {
-  x.real_value = 0.0;
-
   cvm::rvector const r0_vec(0.0); // TODO enable the flag?
 
   bool const use_pairlist = (pairlist != NULL);
@@ -552,7 +500,7 @@ void colvar::selfcoordnum::calc_value()
   if (use_pairlist) {
 
     if (rebuild_pairlist) {
-      int const flags = coordnum::ef_use_pairlist |
+      int const flags = compute_flags | coordnum::ef_use_pairlist |
         coordnum::ef_rebuild_pairlist;
       for (i = 0; i < n - 1; i++) {
         for (j = i + 1; j < n; j++) {
@@ -565,7 +513,7 @@ void colvar::selfcoordnum::calc_value()
         }
       }
     } else {
-      int const flags = coordnum::ef_use_pairlist;
+      int const flags = compute_flags | coordnum::ef_use_pairlist;
       for (i = 0; i < n - 1; i++) {
         for (j = i + 1; j < n; j++) {
           x.real_value +=
@@ -580,7 +528,7 @@ void colvar::selfcoordnum::calc_value()
 
   } else { // if (use_pairlist) {
 
-    int const flags = coordnum::ef_null;
+    int const flags = compute_flags | coordnum::ef_null;
     for (i = 0; i < n - 1; i++) {
       for (j = i + 1; j < n; j++) {
         x.real_value +=
@@ -592,45 +540,25 @@ void colvar::selfcoordnum::calc_value()
       }
     }
   }
+
+  return COLVARS_OK;
+}
+
+
+void colvar::selfcoordnum::calc_value()
+{
+  x.real_value = 0.0;
+  if (is_enabled(f_cvc_gradient)) {
+    compute_selfcoordnum<coordnum::ef_gradients>();
+  } else {
+    compute_selfcoordnum<coordnum::ef_null>();
+  }
 }
 
 
 void colvar::selfcoordnum::calc_gradients()
 {
-  cvm::rvector const r0_vec(0.0); // TODO enable the flag?
-
-  bool const use_pairlist = (pairlist != NULL);
-
-  bool *pairlist_elem = use_pairlist ? pairlist : NULL;
-  size_t i = 0, j = 0;
-  size_t const n = group1->size();
-
-  if (use_pairlist) {
-
-    int const flags = coordnum::ef_gradients | coordnum::ef_use_pairlist;
-    for (i = 0; i < n - 1; i++) {
-      for (j = i + 1; j < n; j++) {
-        coordnum::switching_function<flags>(r0, r0_vec, en, ed,
-                                            (*group1)[i],
-                                            (*group1)[j],
-                                            &pairlist_elem,
-                                            tolerance);
-      }
-    }
-
-  } else { // if (use_pairlist) {
-
-    int const flags = coordnum::ef_gradients;
-    for (i = 0; i < n - 1; i++) {
-      for (j = i + 1; j < n; j++) {
-        coordnum::switching_function<flags>(r0, r0_vec, en, ed,
-                                            (*group1)[i],
-                                            (*group1)[j],
-                                            &pairlist_elem,
-                                            tolerance);
-      }
-    }
-  }
+  // Gradients are computed by calc_value() if f_cvc_gradients is enabled
 }
 
 

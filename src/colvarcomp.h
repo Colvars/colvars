@@ -887,6 +887,10 @@ public:
                                       cvm::atom &A2,
                                       bool **pairlist_elem,
                                       cvm::real tolerance);
+
+  /// Main workhorse function
+  template<int flags> int compute_coordnum();
+
 };
 
 
@@ -897,7 +901,8 @@ class colvar::selfcoordnum
   : public colvar::cvc
 {
 protected:
-  /// First atom group
+
+  /// Selected atoms
   cvm::atom_group  *group1;
   /// \brief "Cutoff" for isotropic calculation (default)
   cvm::real     r0;
@@ -908,8 +913,9 @@ protected:
   cvm::real tolerance;
   int pairlist_freq;
   bool *pairlist = NULL;
+
 public:
-  /// Constructor
+
   selfcoordnum(std::string const &conf);
   selfcoordnum();
   ~selfcoordnum();
@@ -923,6 +929,9 @@ public:
                                   colvarvalue const &x2) const;
   virtual colvarvalue dist2_rgrad(colvarvalue const &x1,
                                   colvarvalue const &x2) const;
+
+  /// Main workhorse function
+  template<int flags> int compute_selfcoordnum();
 };
 
 
