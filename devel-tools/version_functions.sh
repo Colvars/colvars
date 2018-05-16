@@ -75,8 +75,6 @@ get_last_master_commit() {
 
 get_branch_name() {
     local branch=$(git rev-parse --abbrev-ref HEAD)
-    local macro=${1}
-    local file=${2}
     echo ${branch}
 }
 
@@ -118,10 +116,13 @@ update_version_string() {
     local function_name=${3}
     local macro=${4}
     local file=${5}
+    local branch=${6}
     
     local version_str=$(date +'%Y-%m-%d')
 
-    local branch=$(get_branch_name COLVARS_VERSION src/colvars_version.h)
+    if [ "x${branch}" = "x" ] ; then
+        branch=$(get_branch_name)
+    fi
     # echo "Current branch = ${branch}"
 
     # Get the version string from the last commit on master
@@ -139,7 +140,7 @@ update_version_string() {
             version_str=$(date +'%Y-%m-%d')
         fi
     fi
-    
+     
     # Modify files only when not rebasing
     if [ "${branch}" != "HEAD" ] ; then
         echo "Setting ${name} version string to ${version_str}"
@@ -159,26 +160,31 @@ get_all_versions() {
 
 
 update_all_versions() {
+    local branch="${1}"
     update_version_string "Colvars" \
                           '^src/colvar' \
                           get_colvarmodule_version \
                           COLVARS_VERSION \
-                          src/colvars_version.h 
+                          src/colvars_version.h \
+                          ${branch}
     update_version_string "LAMMPS interface" \
                           '^lammps/src/USER-COLVARS/colvarproxy\|^lammps/src/USER-COLVARS/fix_colvars\|^src/colvarproxy' \
                           get_colvarproxy_lammps_version \
                           COLVARPROXY_VERSION \
-                          lammps/src/USER-COLVARS/colvarproxy_lammps_version.h
+                          lammps/src/USER-COLVARS/colvarproxy_lammps_version.h \
+                          ${branch}
     update_version_string "NAMD interface" \
                           '^namd/src/colvarproxy\|^src/colvarproxy' \
                           get_colvarproxy_namd_version \
                           COLVARPROXY_VERSION \
-                          namd/src/colvarproxy_namd_version.h
+                          namd/src/colvarproxy_namd_version.h \
+                          ${branch}
     update_version_string "VMD interface" \
                           '^vmd/src/colvarproxy\|^src/colvarproxy' \
                           get_colvarproxy_vmd_version \
                           COLVARPROXY_VERSION \
-                          vmd/src/colvarproxy_vmd_version.h
+                          vmd/src/colvarproxy_vmd_version.h \
+                          ${branch}
 }
 
 
