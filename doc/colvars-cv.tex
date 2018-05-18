@@ -9,6 +9,33 @@ All subcommands of \texttt{cv} are documented below.
 \renewcommand{\cvparagraph}[2]{\cvsubsubsec{#1}{#2}}
 }
 
+\cvvmdonly{
+\cvparagraph{Example use of the \texttt{cv} command: analyze a trajectory}{sec:cv_command_example}
+
+By far the most typical use of Colvars in VMD is computing the values of one or more variables along an existing trajectory:
+\bigskip
+{\noindent\ttfamily\\
+\-{\bfseries\# Activate the module on the current VMD molecule}\\
+\-cv molid top\\
+\-{\bfseries\# Load a Colvars config file}\\
+\-cv configfile test.in\\
+\-set out [open "test.colvars.traj" "w"]\\
+\-{\bfseries\# Write the labels to the file}\\
+\-puts -nonewline \$\{out\} [cv printframelabels]\\
+\-for \{ set fr 0 \} \{ \$\{fr\} < [molinfo top get numframes] \} \{ incr fr \} \{\\
+\-~~{\bfseries\# Point Colvars to this trajectory frame}\\
+\-~~cv frame \$\{fr\}\\
+\-~~{\bfseries\# Recompute variables and biases}\\
+\-~~cv update\\
+\-~~{\bfseries\# Print variables and biases to the file}\\
+\-~~puts -nonewline \$\{out\} [cv printframe]\\
+\-\}\\
+\-close \$\{out\}\\
+}
+
+The following sections explain the syntax of the various sub-commands of \texttt{cv}.
+}
+
 \cvparagraph{Managing the Colvars module}{sec:cv_command_general}
 
 \begin{itemize}
