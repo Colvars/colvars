@@ -39,12 +39,20 @@ int colvar::cvc::init(std::string const &conf)
   if (cvm::debug())
     cvm::log("Initializing cvc base object.\n");
 
-  get_keyval(conf, "name", this->name, this->name);
-  if (name.size() > 0) {
-    // Temporary description until child object is initialized
-    description = "cvc " + name;
-  } else {
-    description = "uninitialized cvc";
+  std::string const old_name(name);
+
+  if (get_keyval(conf, "name", name, name)) {
+    if (name.size() > 0) {
+      description = "cvc \"" + name + "\" of type " + function_type;
+    } else {
+      description = "unnamed cvc";
+    }
+    if ((name != old_name) && (old_name.size() > 0)) {
+      cvm::error("Error: cannot rename component \""+old_name+
+                 "\" after initialization (new name = \""+name+"\")",
+                 INPUT_ERROR);
+      name = old_name;
+    }
   }
 
   get_keyval(conf, "componentCoeff", sup_coeff, sup_coeff);
