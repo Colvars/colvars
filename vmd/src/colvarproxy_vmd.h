@@ -113,6 +113,7 @@ public:
 #endif
 
   char const *script_obj_to_str(unsigned char *obj);
+  std::vector<std::string> script_obj_to_str_vector(unsigned char *obj);
 
   void add_energy(cvm::real energy);
 

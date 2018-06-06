@@ -492,6 +492,14 @@ char const *colvarproxy_script::script_obj_to_str(unsigned char *obj)
 }
 
 
+std::vector<std::string> colvarproxy_script::script_obj_to_str_vector(unsigned char *obj)
+{
+  cvm::error("Error: trying to print a script object without a scripting "
+             "language interface.\n", BUG_ERROR);
+  return std::vector<std::string>();
+}
+
+
 int colvarproxy_script::run_force_callback()
 {
   return COLVARS_NOT_IMPLEMENTED;
