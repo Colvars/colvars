@@ -41,6 +41,10 @@ int colvar::cvc::init(std::string const &conf)
 
   std::string const old_name(name);
 
+  if (name.size() > 0) {
+    cvm::log("Updating configuration for component \""+name+"\"");
+  }
+
   if (get_keyval(conf, "name", name, name)) {
     if (name.size() > 0) {
       description = "cvc \"" + name + "\" of type " + function_type;

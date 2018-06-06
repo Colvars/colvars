@@ -75,6 +75,9 @@ public:
   /// this variable definition should be set within the constructor.
   std::string function_type;
 
+  /// Keyword used in the input to denote this CVC
+  std::string config_key;
+
   /// \brief Coefficient in the polynomial combination (default: 1.0)
   cvm::real sup_coeff;
   /// \brief Exponent in the polynomial combination (default: 1)

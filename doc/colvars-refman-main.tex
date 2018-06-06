@@ -2690,23 +2690,19 @@ illegal elsewhere):
   \keydef
     {wrapAround}{%
     \texttt{distanceZ}, \texttt{dihedral} or \texttt{spinAngle}}{%
-    Center
-    of the wrapping interval for periodic variables}{%
+    Center of the wrapping interval for periodic variables}{%
     decimal}{%
     0.0}{%
     By default, values of the periodic components are centered around zero, ranging from $-P/2$ to $P/2$, where $P$ is the period.
     Setting this number centers the interval around this value.
     This can be useful for convenience of output, or to set the walls for a \texttt{harmonicWalls} in an order that would not otherwise be allowed.}
 \end{itemize}
+
 Internally, all differences between two values of a periodic colvar
 follow the minimum image convention: they are calculated based on
 the two periodic images that are closest to each other.
 
-\emph{Note: linear or polynomial combinations of periodic components
-  may become meaningless when components cross the periodic boundary.
-  Use such combinations carefully: estimate the range of possible values
-  of each component in a given simulation, and make use of
-  \texttt{wrapAround} to limit this problem whenever possible.}
+\emph{Note: linear or polynomial combinations of periodic components (see \ref{sec:cvc_superp}) may become meaningless when components cross the periodic boundary.  Use such combinations carefully: estimate the range of possible values of each component in a given simulation, and make use of \texttt{wrapAround} to limit this problem whenever possible.}
 
 
 \cvsubsubsec{Non-scalar components.}{sec:cvc_non_scalar}

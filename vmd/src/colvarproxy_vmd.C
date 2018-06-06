@@ -403,7 +403,7 @@ std::vector<std::string> colvarproxy_vmd::script_obj_to_str_vector(unsigned char
       result.push_back(Tcl_GetString(tcl_list_elems[i]));
     }
   } else {
-    Tcl_SetResult(_tcl_interp,
+    Tcl_SetResult(interp,
                   const_cast<char *>("Cannot parse Tcl list."), TCL_STATIC);
   }
 #endif

@@ -670,6 +670,7 @@ template<typename def_class_name> int colvar::init_components_type(std::string c
     if (cvcp != NULL) {
       cvcs.push_back(cvcp);
       cvcp->check_keywords(def_conf, def_config_key);
+      cvcp->config_key = def_config_key;
       if (cvm::get_error()) {
         cvm::error("Error: in setting up component \""+
                    std::string(def_config_key)+"\".\n", INPUT_ERROR);
@@ -1015,12 +1016,12 @@ int colvar::calc()
 
 int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
 {
-  colvarproxy *proxy = cvm::main()->proxy;
-
-  int error_code = COLVARS_OK;
   if (cvm::debug())
     cvm::log("Calculating colvar \""+this->name+"\", components "+
              cvm::to_str(first_cvc)+" through "+cvm::to_str(first_cvc+num_cvcs)+".\n");
+
+  colvarproxy *proxy = cvm::main()->proxy;
+  int error_code = COLVARS_OK;
 
   error_code |= check_cvc_range(first_cvc, num_cvcs);
   if (error_code != COLVARS_OK) {
@@ -1052,6 +1053,7 @@ int colvar::collect_cvc_data()
   if (cvm::debug())
     cvm::log("Calculating colvar \""+this->name+"\"'s properties.\n");
 
+  colvarproxy *proxy = cvm::main()->proxy;
   int error_code = COLVARS_OK;
 
   if ((cvm::step_relative() > 0) && (!proxy->total_forces_same_step())){
@@ -1635,18 +1637,26 @@ int colvar::set_cvc_flags(std::vector<bool> const &flags)
 }
 
 
+void colvar::update_active_cvc_square_norm()
+{
+  active_cvc_square_norm = 0.0;
+  for (size_t i = 0; i < cvcs.size(); i++) {
+    if (cvcs[i]->is_enabled()) {
+      active_cvc_square_norm += cvcs[i]->sup_coeff * cvcs[i]->sup_coeff;
+    }
+  }
+}
+
+
 int colvar::update_cvc_flags()
 {
   // Update the enabled/disabled status of cvcs if necessary
   if (cvc_flags.size()) {
     n_active_cvcs = 0;
-    active_cvc_square_norm = 0.;
-
     for (size_t i = 0; i < cvcs.size(); i++) {
       cvcs[i]->set_enabled(f_cvc_active, cvc_flags[i]);
       if (cvcs[i]->is_enabled()) {
         n_active_cvcs++;
-        active_cvc_square_norm += cvcs[i]->sup_coeff * cvcs[i]->sup_coeff;
       }
     }
     if (!n_active_cvcs) {
@@ -1654,9 +1664,46 @@ int colvar::update_cvc_flags()
       return COLVARS_ERROR;
     }
     cvc_flags.clear();
+
+    update_active_cvc_square_norm();
   }
 
   return COLVARS_OK;
+}
+
+
+int colvar::update_cvc_config(std::vector<std::string> const &confs)
+{
+  cvm::log("Updating configuration for colvar \""+name+"\"");
+
+  if (confs.size() != cvcs.size()) {
+    return cvm::error("Error: Wrong number of CVC config strings.  "
+                      "For those CVCs that are not being changed, try passing "
+                      "an empty string.", INPUT_ERROR);
+  }
+
+  int error_code = COLVARS_OK;
+  int num_changes = 0;
+  for (size_t i = 0; i < cvcs.size(); i++) {
+    if (confs[i].size()) {
+      std::string conf(confs[i]);
+      cvm::increase_depth();
+      error_code |= cvcs[i]->colvar::cvc::init(conf);
+      error_code |= cvcs[i]->check_keywords(conf,
+                                            cvcs[i]->config_key.c_str());
+      cvm::decrease_depth();
+      num_changes++;
+    }
+  }
+
+  if (num_changes == 0) {
+    cvm::log("Warning: no changes were applied through modifycvcs; "
+             "please check that its argument is a list of strings.\n");
+  }
+
+  update_active_cvc_square_norm();
+
+  return error_code;
 }
 
 

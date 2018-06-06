@@ -366,6 +366,23 @@ int colvarscript::proc_colvar(colvar *cv, int objc, unsigned char *const objv[])
     return COLVARS_OK;
   }
 
+  if (subcmd == "modifycvcs") {
+    if (objc < 4) {
+      result = "cvcflags: missing parameter: vector of strings";
+      return COLVARSCRIPT_ERROR;
+    }
+    std::vector<std::string> const confs(proxy->script_obj_to_str_vector(objv[3]));
+    cvm::increase_depth();
+    int res = cv->update_cvc_config(confs);
+    cvm::decrease_depth();
+    if (res != COLVARS_OK) {
+      result = "Error setting CVC flags";
+      return COLVARSCRIPT_ERROR;
+    }
+    result = "0";
+    return COLVARS_OK;
+  }
+
   if ((subcmd == "get") || (subcmd == "set") || (subcmd == "state")) {
     return proc_features(cv, objc, objv);
   }
@@ -572,6 +589,7 @@ Accessing collective variables:\n\
   colvar <name> gettotalforce -- return total force of colvar <name>\n\
   colvar <name> getconfig     -- return config string of colvar <name>\n\
   colvar <name> cvcflags <fl> -- enable or disable cvcs according to 0/1 flags\n\
+  colvar <name> modifycvcs <str> -- pass new config strings to each CVC\n\
   colvar <name> get <f>       -- get the value of the colvar feature <f>\n\
   colvar <name> set <f> <val> -- set the value of the colvar feature <f>\n\
 \n\

@@ -1,0 +1,17 @@
+# -*- tcl -*-
+
+# Note: see also test.restart.namd, test.legacy.namd, test.restart.legacy.namd
+
+source ../Common/common.namd
+source ../Common/measure_net_force_torque.tcl
+
+colvars                 on
+colvarsConfig           test.in
+
+run ${numsteps}
+
+cv colvar one modifycvcs { "componentCoeff 0.6" "period 0.15" }
+
+run ${numsteps}
+
+source ../Common/delete_tmp_files.tcl

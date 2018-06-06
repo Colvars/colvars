@@ -84,8 +84,11 @@ The following sections explain the syntax of the various sub-commands of \texttt
 \item \texttt{colvar} \emph{$<$name$>$} \texttt{gettotalforce}: get the total force acting on colvar \emph{$<$name$>$} at the previous step (see \ref{sec:cvc_sys_forces});
 }
 \item \texttt{colvar} \emph{$<$name$>$} \texttt{getconfig}: return config string of colvar \emph{$<$name$>$}.
-\item \texttt{colvar} \emph{$<$name$>$} \texttt{cvcflags} \emph{$<$flags$>$}: for a colvar with several cvcs (numbered according to their name
-string order), set which cvcs are enabled or disabled in subsequent evaluations according to a list of 0/1 flags (one per cvc).
+\item \texttt{colvar} \emph{$<$name$>$} \texttt{cvcflags} \emph{$<$flags$>$}: for a colvar with several CVCs (numbered according to their name string order), set which CVCs are enabled or disabled in subsequent evaluations according to a list of 0/1 flags (one per CVC).
+\item \texttt{colvar} \emph{$<$name$>$} \texttt{modifycvcs} \emph{$<$strings$>$}: for a colvar with one or more CVCs (numbered according to their name string order), pass a list of new configuration strings to modify each CVC without needing to delete the colvar.
+This option is currently limited to changing the values of \refkey{componentCoeff}{sec:cvc_superp} and \refkey{componentExp}{sec:cvc_superp} (e.g.{} to update the polynomial superposition parameters on the fly), of \refkey{period}{sec:cvc_periodic} and \refkey{wrapAround}{sec:cvc_periodic} (e.g.{} to update the period of variables such as \texttt{distanceZ}), and of the \texttt{forceNoPBC} option for those CVCs that support it.
+Changes in configuration done by this command are not saved to state files, and are lost when restarting a simulation, deleting the parent colvar, or resetting the module with \cvvmdonly{\texttt{cv delete} or} \texttt{cv reset}.
+
 \end{itemize}
 
 \cvparagraph{Accessing biases}{sec:cv_command_bias}

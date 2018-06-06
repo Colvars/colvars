@@ -143,15 +143,17 @@ m4 < distancez.in.m4 > distancez.in
 m4 -Dfitgroup < distancez.in.m4 > distancez-fitgroup.in
 m4 -Daxis -DdistanceZ=distanceXY < distancez.in.m4 > distancexy-axis.in
 
+
+# Tests of individual collective variables
 for colvar in \
     "angle" \
     "dihedral" \
-    "coordnum" \
-    "coordnum-pairlist" \
+    "coordnum" "coordnum-pairlist" \
     "distancez" "distancez-fitgroup" \
     "distancez-axis" "distancez-axis-fitgroup" \
     "distancexy-axis" \
     "distanceinv" \
+    "distance-coeffs" \
     "gyration" \
     "inertia" \
     "inertiaz" \
