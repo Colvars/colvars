@@ -1089,6 +1089,10 @@ $liboptix_dir         = "/usr/local/encap/NVIDIA-OptiX-SDK-5.0.1-linux64";
 # $liboptix_dir         = "/users/stonej/local/NVIDIA-OptiX-SDK-4.0.1-linux64";
 # IU Big Red 2
 # $liboptix_dir         = "/N/u/johstone/BigRed2/local/NVIDIA-OptiX-SDK-3.5.0-linux64";
+
+# IBM Poughkeepsie cluster center
+# $liboptix_dir         = "/gpfs/gpfs_gl4_16mb/b8p148/b8p148aa/local/NVIDIA-OptiX-SDK-5.0.0-DEV-ppc64le-linux64";
+
 $liboptix_include     = "-I$liboptix_dir/include -I$cuda_dir/include";
 $liboptix_library     = "-L$liboptix_dir/lib64";
 $liboptix_libs        = "-loptixu -loptix";
@@ -2775,8 +2779,10 @@ if ($config_arch eq "OPENPOWER" || $config_arch eq "SUMMITDEV") {
     $system_libs .= " -ldl";
 
    if ($config_cuda) {
-     $arch_nvcc        = "/usr/local/cuda-8.0/bin/nvcc";
-     $cuda_library     = "-L/usr/local/cuda-8.0/lib64";
+     $arch_nvcc        = "/usr/local/cuda-9.2/bin/nvcc";
+     $cuda_library     = "-L/usr/local/cuda-9.2/lib64";
+     #$arch_nvcc        = "/usr/local/cuda-8.0/bin/nvcc";
+     #$cuda_library     = "-L/usr/local/cuda-8.0/lib64";
      $cuda_libs        = "-Wl,-rpath -Wl,\$\$ORIGIN/ -lcudart_static -lrt";
  
      # Only generate code for SM 3.5 or higher on IBM machines
@@ -2784,6 +2790,7 @@ if ($config_arch eq "OPENPOWER" || $config_arch eq "SUMMITDEV") {
                      "-gencode arch=compute_35,code=sm_35 " .
                      "-gencode arch=compute_50,code=sm_50 " .
                      "-gencode arch=compute_60,code=sm_60 " .
+                     "-gencode arch=compute_70,code=sm_70 " .
                      "--ftz=true ";
      $arch_nvccflags   .= " --machine 64 -O3 $cuda_include";
    }
