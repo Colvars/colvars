@@ -164,8 +164,12 @@ protected:
   // Options for extended_lagrangian
   /// Restraint center
   colvarvalue xr;
+  /// Previous value of the restraint center;
+  colvarvalue prev_xr;
   /// Velocity of the restraint center
   colvarvalue vr;
+  /// Previous velocity of the restraint center
+  colvarvalue prev_vr;
   /// Mass of the restraint center
   cvm::real ext_mass;
   /// Restraint force constant

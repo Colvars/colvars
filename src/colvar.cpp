@@ -1393,6 +1393,13 @@ int colvar::calc_colvar_properties()
       vr.reset(); // (already 0; added for clarity)
     }
 
+    // Special case of a repeated timestep (eg. multiple NAMD "run" statements)
+    // revert values of the extended coordinate and velocity prior to latest integration
+    if (cvm::step_relative() == prev_timestep) {
+      xr = prev_xr;
+      vr = prev_vr;
+    }
+
     // report the restraint center as "value"
     x_reported = xr;
     v_reported = vr;
@@ -1449,7 +1456,6 @@ cvm::real colvar::update_forces_energy()
   // extended variable if there is one
 
   if (is_enabled(f_cv_extended_Lagrangian)) {
-
     if (cvm::debug()) {
       cvm::log("Updating extended-Lagrangian degree of freedom.\n");
     }
@@ -1500,6 +1506,11 @@ cvm::real colvar::update_forces_energy()
       // This will be used in the next timestep
       ft_reported = f_ext;
     }
+
+    // backup in case we need to revert this integration timestep
+    // if the same MD timestep is re-run
+    prev_xr = xr;
+    prev_vr = vr;
 
     // leapfrog: starting from x_i, f_i, v_(i-1/2)
     vr  += (0.5 * dt) * f_ext / ext_mass;
