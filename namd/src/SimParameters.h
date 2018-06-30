@@ -385,9 +385,12 @@ public:
   int alchMethod;           //  Which alchemical method to use? fep or ti
   BigReal alchLambda;       //  lambda for dynamics
   BigReal alchLambda2;      //  lambda for comparison
+  BigReal alchLambdaIDWS;   //  alternate lambda for interleaved double-wide sampling
+  int alchIDWSfreq;         //  freq with which lambda2 changes to lambdaIDWS
   int alchLambdaFreq;       //  freq. (in steps) with which lambda changes
                             //  from alchLambda to alchLambda2
   BigReal getCurrentLambda(const int); // getter for changing lambda
+  BigReal getCurrentLambda2(const int); // getter for alternating lambda2 in IDWS
   BigReal getLambdaDelta(void); // getter for lambda increment
   BigReal alchRepLambda;    //  lambda for WCA repulsive interaction
   BigReal alchDispLambda;   //  lambda for WCA dispersion interaction

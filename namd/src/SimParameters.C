@@ -359,8 +359,26 @@ void SimParameters::scriptSet(const char *param, const char *value) {
     return;
   }
 
+  if ( ! strncasecmp(param,"alchLambdaIDWS",MAX_SCRIPT_PARAM_SIZE) ) {
+    alchLambdaIDWS = atof(value);
+    if ( alchLambdaIDWS > 1. ) {
+      NAMD_die("alchLambdaIDWS should be either in the range [0.0, 1.0], or negative (disabled).\n");
+    }
+    // Switch lambda2 every other cycle of fullElectFrequency steps
+    // or every other nonbondedFrequency steps if undefined
+    // or every alchOutFreq steps if larger (no need to switch faster that we output)
+    alchIDWSfreq = fullElectFrequency > 0 ? fullElectFrequency : nonbondedFrequency;
+    if ( alchOutFreq > alchIDWSfreq )
+      alchIDWSfreq = alchOutFreq;
+    ComputeNonbondedUtil::select();
+    return;
+  }
+
   if ( ! strncasecmp(param,"alchLambdaFreq",MAX_SCRIPT_PARAM_SIZE) ) {
     alchLambdaFreq = atoi(value);
+    if ( alchLambdaIDWS >= 0 ) {
+      NAMD_die("alchLambdaIDWS and alchLambdaFreq are not compatible.\n");
+    }
     ComputeNonbondedUtil::select();
     return;
   }
@@ -1119,6 +1137,8 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
      PARSE_STRING);
    opts.optional("alch", "alchLambda2", "Alchemical coupling comparison value",
      &alchLambda2, -1);
+   opts.optional("alch", "alchLambdaIDWS", "Alchemical coupling comparison value for interleaved double-wide sampling",
+     &alchLambdaIDWS, -1);
    opts.optional("alch", "alchLambdaFreq",
      "Frequency of increasing coupling parameter value", &alchLambdaFreq, 0);
    opts.range("alchLambdaFreq", NOT_NEGATIVE);
@@ -3598,7 +3618,19 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
          strcat(alchOutFile, ".ti");
        }
      }
+     if (alchLambdaIDWS >= 0.) {
+       if ( alchLambdaIDWS > 1. ) {
+         NAMD_die("alchLambdaIDWS should be either in the range [0.0, 1.0], or negative (disabled).\n");
+      }
+       // Switch lambda2 every other cycle of fullElectFrequency steps
+       // or every other nonbondedFrequency steps if undefined
+       // or every alchOutFreq steps if larger (no need to switch faster that we output)
+       alchIDWSfreq = fullElectFrequency > 0 ? fullElectFrequency : nonbondedFrequency;
+       if ( alchOutFreq > alchIDWSfreq )
+         alchIDWSfreq = alchOutFreq;
+     }
    }
+        
 //fepe
 
    if ( alchOn && alchFepOn && alchThermIntOn )
@@ -5059,6 +5091,10 @@ if ( openatomOn )
           << alchLambda << "\n";
      iout << iINFO << "FEP COMPARISON LAMBDA VALUE  "
           << alchLambda2 << "\n";
+     if (alchLambdaIDWS >= 0.) {
+        iout << iINFO << "FEP ALTERNATE COMPARISON LAMBDA VALUE  "
+          << alchLambdaIDWS << "\n";
+     }
      if (alchLambdaFreq > 0) {
        iout << iINFO << "FEP CURRENT LAMBDA VALUE SET TO INCREASE IN EVERY  "
             << alchLambdaFreq << " STEPS\n";
@@ -7086,6 +7122,19 @@ void SimParameters::receive_SimParameters(MIStream *msg)
   delete msg;
 }
 /*      END OF FUNCTION receive_SimParameters  */
+
+
+//fepb IDWS
+BigReal SimParameters::getCurrentLambda2(const int step) {
+  if ( alchLambdaIDWS >= 0. ) {
+    const BigReal lambda2 = ( (step / alchIDWSfreq) % 2 == 1 ) ? alchLambda2 : alchLambdaIDWS;
+    return lambda2;
+  } else {
+    return alchLambda2;
+  }
+}
+//fepe IDWS
+
 
 //fepb BKR
 BigReal SimParameters::getCurrentLambda(const int step) {
