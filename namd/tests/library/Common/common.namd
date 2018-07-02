@@ -42,6 +42,14 @@ pairlistdist            14.0
 fullElectFrequency      1
 nonbondedFreq           1
 
+seed                    87654321
+
+if { [info exists NVT ] } {
+  langevin on
+  langevinTemp 300
+  langevinDamping 10
+}
+
 coordinates             ${coor_pdb_file}
 if { [info exists coor_bin_file] > 0 } {
     binCoordinates      ${coor_bin_file}
@@ -52,7 +60,6 @@ if { [info exists vel_bin_file] > 0 } {
     if { [info exists vel_pdb_file] > 0 } {
         velocities      ${vel_pdb_file}
     } else {
-        seed            87654321
         temperature     300.0
     }
 }
