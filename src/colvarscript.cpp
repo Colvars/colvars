@@ -288,11 +288,12 @@ int colvarscript::proc_colvar(colvar *cv, int objc, unsigned char *const objv[])
   }
 
   if (subcmd == "delete") {
-    size_t i;
-    for (i = 0; i < cv->biases.size(); i++) {
+    while (cv->biases.size() > 0) {
+      size_t i = cv->biases.size()-1;
+      cvm::log("Warning: before deleting colvar " + cv->name
+        + ", deleting parent bias " + cv->biases[i]->name);
       delete cv->biases[i];
     }
-    cv->biases.clear();
     // colvar destructor is tasked with the cleanup
     delete cv;
     // TODO this could be done by the destructors
