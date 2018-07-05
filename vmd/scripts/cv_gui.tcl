@@ -6,11 +6,12 @@
 
 namespace eval ::cvgui {
   variable current_frame 0
-  variable cv_values [list]
-  variable cvs [list]
+  variable cv_values {}
+  variable cvs {}
   variable track_frame 1 ;# start tracking by default
   variable being_edited
   variable backup_cfg
+  variable plothandle
 }
 
 
@@ -35,7 +36,7 @@ proc ::cvgui::refresh_table {} {
 proc ::cvgui::refresh_values {} {
   run_cv update
   set w .cvgui_window
-  set ::cvgui::cv_values [list]
+  set ::cvgui::cv_values {}
   foreach c [run_cv list] {
     lappend ::cvgui::cv_values [format_value [run_cv colvar $c value] ]
   }
@@ -46,14 +47,28 @@ proc ::cvgui::update_frame { name molid op } {
   # molid == molecule id of the newly changed frame
   # op == w
   global vmd_frame
+  variable ::cvgui::plothandle
 
   if { $molid != [molinfo top] } {
     return
   }
   set f [molinfo $molid get frame]
+
   set ::cvgui::current_frame $f
   run_cv frame $f
   ::cvgui::refresh_values
+
+  if [info exists plothandle] {
+    # detect if plot was closed
+    if [catch {$plothandle getpath}] {
+      unset plothandle
+    } else {
+      # delete previous lines by tinkering with Multiplot's internals
+      set ns [namespace qualifiers $::cvgui::plothandle]
+      set ${ns}::vline {}
+      $plothandle configure -vline [list $f -dash "-"] -plot
+    }
+  }
 }
 
 
@@ -73,7 +88,7 @@ proc ::cvgui::format_value val {
 
 proc ::cvgui::selected {} {
   set w .cvgui_window
-  set l [list]
+  set l {}
   refresh_table ;# to make sure selected colvars haven't been deleted
   foreach i [$w.cvtable curselection] {
     lappend l [lindex $::cvgui::cvs $i]
@@ -110,16 +125,18 @@ proc ::cvgui::save {} {
 
   set path [tk_getSaveFile -filetypes {{"Colvars cfg" .in} {"Colvars cfg" .colvars}}]
 
-  set cfg ""
-  foreach c [run_cv list] {
-      append cfg "colvar {"
-      append cfg [run_cv colvar $c getconfig]
-      append cfg "}\n\n"
-  }
+  if [string compare $path ""] {
+    set cfg ""
+    foreach c [run_cv list] {
+        append cfg "colvar {"
+        append cfg [run_cv colvar $c getconfig]
+        append cfg "}\n\n"
+    }
 
-  set o [open $path w]
-  puts $o $cfg
-  close $o
+    set o [open $path w]
+    puts $o $cfg
+    close $o
+  }
 }
 
 
@@ -142,7 +159,7 @@ proc ::cvgui::edit { {add false} } {
 
   if $add {
     # do not remove existing vars
-    set cvs [list]
+    set cvs {}
     set cfg "colvar {\n  name <x>\n  <component> {\n    <atomGroup> { }\n  }\n}\n"
   } else {
     set cvs [selected]
@@ -186,7 +203,7 @@ proc ::cvgui::edit_apply {} {
       run_cv config $::cvgui::backup_cfg
     }
   }
-  set ::cvgui::being_edited [list]
+  set ::cvgui::being_edited {}
   destroy $w.editor
   refresh_table
 }
@@ -200,14 +217,15 @@ proc ::cvgui::reset {} {
 
 proc ::cvgui::edit_cancel {} {
   set w .cvgui_window
-  set ::cvgui::being_edited [list]
+  set ::cvgui::being_edited {}
   destroy $w.editor
 }
 
 
 proc ::cvgui::plot {} {
+  variable ::cvgui::plothandle
   set nf [molinfo top get numframes]
-  set x [list]
+  set x {}
   for {set f 0} {$f < $nf} {incr f} { lappend x $f }
 
   set cvs [selected]
@@ -224,12 +242,12 @@ proc ::cvgui::plot {} {
     set size [llength $val]
     if { $size == 1 } {
       set names($c) $c
-      set y($c) [list]
+      set y($c) {}
     } else {
       for {set i 1} {$i <= $size} {incr i} {
         set n $c; append n "_$i"
         lappend names($c) $n
-        set y($n) [list]
+        set y($n) {}
       }
     }
   }
@@ -249,6 +267,7 @@ proc ::cvgui::plot {} {
       $plothandle add $x $y($n) -legend $n
     }
   }
+  $plothandle configure -vline [list $::cvgui::current_frame -dash "-"] -plot
   $plothandle replot
 }
 
