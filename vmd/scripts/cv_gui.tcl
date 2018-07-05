@@ -170,7 +170,7 @@ proc ::cvgui::edit { {add false} } {
   if $add {
     # do not remove existing vars
     set cvs {}
-    set cfg "colvar {\n  name <x>\n  <component> {\n    <atomGroup> { }\n  }\n}\n"
+    set cfg "colvar {\n  name d\n  distance {\n    group1 { atomNumbers 1 2 }\n    group2 { atomNumbers 3 4 }\n  }\n}\n"
   } else {
     set cvs [selected]
     foreach c $cvs {
