@@ -63,10 +63,20 @@ proc ::cvgui::update_frame { name molid op } {
     if [catch {$plothandle getpath}] {
       unset plothandle
     } else {
-      # delete previous lines by tinkering with Multiplot's internals
-      set ns [namespace qualifiers $::cvgui::plothandle]
-      set ${ns}::vline {}
-      $plothandle configure -vline [list $f -dash "-"] -plot
+      # we tinker a little with Multiplot's internals to get access to its Tk canvas
+      # necessary because Multiplot does not expose an interface to draw & delete
+      # objects without redrawing the whole plot - which takes too long for this
+      set ns [namespace qualifiers $plothandle]
+      set y1 [set ${ns}::yplotmin]
+      set y2 [set ${ns}::yplotmax]
+      set xplotmin [set ${ns}::xplotmin]
+      set scalex [set ${ns}::scalex]
+      set xmin [set ${ns}::xmin]
+      set x [expr $xplotmin+($scalex*($f-$xmin))]
+
+      set canv "[set ${ns}::w].f.cf"
+      $canv delete step_line
+      $canv create line  $x $y1 $x $y2 -fill blue -tags step_line
     }
   }
 }
@@ -224,6 +234,7 @@ proc ::cvgui::edit_cancel {} {
 
 proc ::cvgui::plot {} {
   variable ::cvgui::plothandle
+
   set nf [molinfo top get numframes]
   set x {}
   for {set f 0} {$f < $nf} {incr f} { lappend x $f }
@@ -261,20 +272,52 @@ proc ::cvgui::plot {} {
       }
     }
   }
-  set plothandle [multiplot -title "Colvars trajectory" -xlabel "Frame" -ylabel "Colvar value"]
+  set plothandle [multiplot -title "Colvars trajectory" -xlabel "Frame" -ylabel "Value" -nostats]
   foreach c $cvs {
     foreach n $names($c) {
       $plothandle add $x $y($n) -legend $n
     }
   }
-  $plothandle configure -vline [list $::cvgui::current_frame -dash "-"] -plot
   $plothandle replot
+
+  # bind the plot window to a callback that will change the frame whenever the user clicks the plot
+  set plot_ns [namespace qualifiers $::cvgui::plothandle]
+  bind [set ${plot_ns}::w] <Button-1> { ::cvgui::plot_clicked %x %y }
+}
+
+
+proc ::cvgui::plot_clicked { x y } {
+
+  set ns [namespace qualifiers $::cvgui::plothandle]
+  set xplotmin [set ${ns}::xplotmin]
+  set xplotmax [set ${ns}::xplotmax]
+  set yplotmin [set ${ns}::yplotmin]
+  set yplotmax [set ${ns}::yplotmax]
+  set scalex [set ${ns}::scalex]
+  set xmin [set ${ns}::xmin]
+
+  # note: ymax < ymin because of weird screen convention
+  if { [expr {($x < $xplotmin) || ($x > $xplotmax) || ($y > $yplotmin) || ($y < $yplotmax)}] } {
+    return
+  }
+
+  animate goto [expr { ($x - $xplotmin) / $scalex + $xmin}]
+  refresh_table
 }
 
 
 # The main window
 proc ::cvgui::createWindow {} {
   set w [toplevel .cvgui_window]
+
+  wm title $w "Colvars dashboard"
+  wm protocol $w WM_DELETE_WINDOW {
+    # window destructor that removes the trace we put in place, so they don't accumulate
+    # if loaded multiple times
+    set molid [molinfo top]
+    trace remove variable vmd_frame($molid) write ::cvgui::update_frame
+    destroy .cvgui_window
+  }
 
   # setup Colvars if not already there
   if [catch { cv version}] {
@@ -320,4 +363,6 @@ proc ::cvgui::createWindow {} {
   grid columnconfigure $w 2 -weight 1
 }
 
+# If window already exists, destroy it
+catch { destroy .cvgui_window }
 ::cvgui::createWindow
