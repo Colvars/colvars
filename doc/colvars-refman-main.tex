@@ -2058,6 +2058,13 @@ reflects the deviation from reference coordinates in a separate, moving
 reference frame.
 \end{enumerate}
 
+\cvscriptonly{
+\cvsubsubsec{Path collective variables}{sec:pathcv}
+
+An application of the \texttt{rmsd} component is "path collective variables",\cite{Branduardi2007}
+which are implemented as Tcl-scripted combinations or RMSDs.
+The implementation is available as file \texttt{colvartools/pathCV.tcl} in the Colvars distribution.
+An example is provided in file \texttt{examples/10\_pathCV.namd}.}
 
 \cvsubsubsec{\texttt{eigenvector}: projection of the atomic  coordinates on a vector.}{sec:cvc_eigenvector}
 The block \texttt{eigenvector~\{...\}} defines the projection of the coordinates
@@ -2879,8 +2886,8 @@ the keyword \texttt{period}, and the optional keyword \texttt{wrapAround}, with 
 same meaning as in periodic components (see \ref{sec:cvc_periodic} for details).
 
 An example of elaborate scripted colvar is given in example 10, in the
-form of path-based collective variables as defined by Branduardi et al\cite{Branduardi2007}.
-The required Tcl procedures are provided in the \texttt{colvartools} directory.
+form of path-based collective variables as defined by Branduardi et al\cite{Branduardi2007}
+(\ref{sec:pathcv}).
 
 \begin{itemize}
  \item %
