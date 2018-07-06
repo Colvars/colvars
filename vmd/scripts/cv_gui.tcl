@@ -18,8 +18,8 @@ namespace eval ::cvgui {
 # Call the "cv" interface to Colvars, catching errors and displaying them to the user
 proc run_cv args  {
   if [ catch { cv {*}$args } res ] {
-    tk_messageBox -icon error -title "Error" -parent .cvgui_window\
-      -message "Error running command:\n\n$args\n\n$res"
+    tk_messageBox -icon error -title "Colvars error" -parent .cvgui_window\
+      -message "Error running command:\n\n$args" -detail "$res"
     return -1
   }
   return $res
@@ -56,7 +56,7 @@ proc ::cvgui::update_frame { name molid op } {
 
   set ::cvgui::current_frame $f
   run_cv frame $f
-  ::cvgui::refresh_values
+  refresh_values
 
   if [info exists plothandle] {
     # detect if plot was closed
@@ -151,7 +151,17 @@ proc ::cvgui::save {} {
 
 
 proc ::cvgui::del {} {
+
   foreach c [selected] {
+    # workaround bug in colvars pre-2018-07-02
+    if {[string compare [run_cv version] "2018-07-02"] == -1} {
+      foreach b [run_cv list biases] {
+        if [string match *colvars*$c* [run_cv bias $b getconfig]] {
+          puts "Bug workaround: deleting bias $b"
+          run_cv bias $b delete
+        }
+      }
+    }
     run_cv colvar $c delete
   }
   refresh_table
@@ -272,7 +282,8 @@ proc ::cvgui::plot {} {
       }
     }
   }
-  set plothandle [multiplot -title "Colvars trajectory" -xlabel "Frame" -ylabel "Value" -nostats]
+  set plothandle [multiplot -title {Colvars trajectory   [left-click, arrows (+ Shift/Ctrl) to navigate & zoom, v/h to fit vert/horizontally]} \
+      -xlabel "Frame" -ylabel "Value" -nostats]
   foreach c $cvs {
     foreach n $names($c) {
       $plothandle add $x $y($n) -legend $n
@@ -283,6 +294,18 @@ proc ::cvgui::plot {} {
   # bind the plot window to a callback that will change the frame whenever the user clicks the plot
   set plot_ns [namespace qualifiers $::cvgui::plothandle]
   bind [set ${plot_ns}::w] <Button-1> { ::cvgui::plot_clicked %x %y }
+  bind [set ${plot_ns}::w] <Left> { ::cvgui::chg_frame -1 }
+  bind [set ${plot_ns}::w] <Right> { ::cvgui::chg_frame 1 }
+  bind [set ${plot_ns}::w] <Shift-Left> { ::cvgui::chg_frame -10 }
+  bind [set ${plot_ns}::w] <Shift-Right> { ::cvgui::chg_frame 10 }
+  bind [set ${plot_ns}::w] <Control-Left> { ::cvgui::chg_frame -50 }
+  bind [set ${plot_ns}::w] <Control-Right> { ::cvgui::chg_frame 50 }
+  bind [set ${plot_ns}::w] <Up>  { ::cvgui::zoom 0.25 }
+  bind [set ${plot_ns}::w] <Down>  { ::cvgui::zoom 4 }
+  bind [set ${plot_ns}::w] <Shift-Up>  { ::cvgui::zoom 0.0625 }
+  bind [set ${plot_ns}::w] <Shift-Down>  { ::cvgui::zoom 16 }
+  bind [set ${plot_ns}::w] <v> { ::cvgui::fit_vertically }
+  bind [set ${plot_ns}::w] <h> { ::cvgui::fit_horizontally }
 }
 
 
@@ -303,6 +326,71 @@ proc ::cvgui::plot_clicked { x y } {
 
   animate goto [expr { ($x - $xplotmin) / $scalex + $xmin}]
   refresh_table
+}
+
+proc ::cvgui::chg_frame { shift } {
+  set f [expr $::cvgui::current_frame + $shift]
+  catch "animate goto $f"
+  refresh_table
+}
+
+
+proc ::cvgui::zoom { factor } {
+  variable ::cvgui::plothandle
+
+  set ns [namespace qualifiers $plothandle]
+  set xmin [set ${ns}::xmin]
+  set xmax [set ${ns}::xmax]
+
+  set f $::cvgui::current_frame
+  # rescale current half-width
+  set half_width [expr { int (($xmax - $xmin) * $factor / 2)}]
+  if { $half_width < 1 } {
+    # Don't collapse the x axis to a single point
+    return
+  }
+  set fmin [expr { $f - $half_width }]
+  if {$fmin < 0} { set fmin 0 }
+
+  set fmax [expr { $f + $half_width }]
+  set max_f [expr [molinfo top get numframes] - 1]
+  if {$fmax > $max_f} { set fmax $max_f }
+
+  $plothandle configure -xmin $fmin -xmax $fmax -plot
+  update_frame vmd_frame [molinfo top] w
+}
+
+
+proc ::cvgui::fit_vertically {} {
+  variable ::cvgui::plothandle
+
+  set ns [namespace qualifiers $plothandle]
+  set xmin [set ${ns}::xmin]
+  set xmax [set ${ns}::xmax]
+  set ydata [$plothandle ydata]
+  set ymin [lindex [lindex $ydata 0] $xmin]
+  set ymax $ymin
+  foreach yset $ydata {
+    for { set f $xmin } { $f <= $xmax } { incr f } {
+      set y [lindex $yset $f]
+      if { $y > $ymax } { set ymax $y }
+      if { $y < $ymin } { set ymin $y }
+    }
+  }
+  $plothandle configure -ymin $ymin -ymax $ymax -plot
+  update_frame vmd_frame [molinfo top] w
+}
+
+
+proc ::cvgui::fit_horizontally {} {
+  variable ::cvgui::plothandle
+
+  set ns [namespace qualifiers $plothandle]
+  set xdata [$plothandle xdata]
+  set xmax [lindex [lindex $xdata 0] end]
+  $plothandle configure -xmin 0 -xmax $xmax -plot
+  fit_vertically
+  update_frame vmd_frame [molinfo top] w
 }
 
 
