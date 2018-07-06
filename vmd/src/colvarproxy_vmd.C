@@ -234,14 +234,15 @@ int colvarproxy_vmd::update_input()
     unit_cell_z.set(C[0], C[1], C[2]);
   }
 
-  if (ts->a_length + ts->b_length + ts->c_length < 1.0e-12) {
+  if (ts->a_length + ts->b_length + ts->c_length < 1.0e-6) {
     boundaries_type = boundaries_non_periodic;
     reset_pbc_lattice();
-  } else if ((ts->a_length > 1.0e-12) && (ts->b_length > 1.0e-12) &&
-             (ts->c_length > 1.0e-12)) {
+  } else if ((ts->a_length > 1.0e-6) &&
+             (ts->b_length > 1.0e-6) &&
+             (ts->c_length > 1.0e-6)) {
     if (((ts->alpha-90.0)*(ts->alpha-90.0)) +
         ((ts->beta-90.0)*(ts->beta-90.0)) +
-        ((ts->gamma-90.0)*(ts->gamma-90.0)) < 1.0e-12) {
+        ((ts->gamma-90.0)*(ts->gamma-90.0)) < 1.0e-6) {
       boundaries_type = boundaries_pbc_ortho;
     } else {
       boundaries_type = boundaries_pbc_triclinic;
