@@ -603,8 +603,15 @@ int colvarproxy_vmd::load_atoms(char const *pdb_filename,
   FileSpec *tmpspec = new FileSpec();
   tmpspec->autobonds = 0;
   int tmpmolid = vmd->molecule_load(-1, pdb_filename, "pdb", tmpspec);
-  DrawMolecule *tmpmol = vmd->moleculeList->mol_from_id(tmpmolid);
   delete tmpspec;
+
+  if (tmpmolid < 0) {
+    cvm::error("Error: VMD could not read file \""+std::string(pdb_filename)+"\".\n",
+               FILE_ERROR);
+    return COLVARS_ERROR;
+  }
+  DrawMolecule *tmpmol = vmd->moleculeList->mol_from_id(tmpmolid);
+
   vmd->molecule_make_top(vmdmolid);
   size_t const pdb_natoms = tmpmol->nAtoms;
 
