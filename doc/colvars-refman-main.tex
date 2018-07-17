@@ -1697,8 +1697,9 @@ spherical coordinates, for the center of mass of a group of atoms
 described by the block \texttt{atoms}.  It returns an angle
 (in degrees) within the interval $[0:180]$.
 To obtain spherical coordinates in a frame of reference tied to
-another group of atoms, use the \texttt{fittingGroup}\ref{sec:colvar_atom_groups_ref_frame} option
+another group of atoms, use the \texttt{fittingGroup} (\ref{sec:colvar_atom_groups_ref_frame}) option
 within the \texttt{atoms} block.
+An example is provided in file \texttt{examples/11\_polar\_angles.in} of the Colvars public repository.
 
 \begin{cvcoptions}
 \item %
@@ -1721,6 +1722,11 @@ described by the block \texttt{atoms}. It returns an angle
 calculates all the distances between two angles taking into account
 periodicity.  For instance, reference values for restraints or range
 boundaries can be defined by using any real number of choice.
+To obtain spherical coordinates in a frame of reference tied to
+another group of atoms, use the \texttt{fittingGroup} (\ref{sec:colvar_atom_groups_ref_frame}) option
+within the \texttt{atoms} block.
+An example is provided in file \texttt{examples/11\_polar\_angles.in} of the Colvars public repository.
+
 
 \begin{cvcoptions}
 \item %
@@ -2063,8 +2069,8 @@ reference frame.
 
 An application of the \texttt{rmsd} component is "path collective variables",\cite{Branduardi2007}
 which are implemented as Tcl-scripted combinations or RMSDs.
-The implementation is available as file \texttt{colvartools/pathCV.tcl} in the Colvars distribution.
-An example is provided in file \texttt{examples/10\_pathCV.namd}.}
+The implementation is available as file \texttt{colvartools/pathCV.tcl}, and
+an example is provided in file \texttt{examples/10\_pathCV.namd} of the Colvars public repository.}
 
 \cvsubsubsec{\texttt{eigenvector}: projection of the atomic  coordinates on a vector.}{sec:cvc_eigenvector}
 The block \texttt{eigenvector~\{...\}} defines the projection of the coordinates

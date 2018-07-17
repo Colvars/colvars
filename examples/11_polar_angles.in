@@ -1,0 +1,49 @@
+# This creates a colvar describing a spherical polar angle
+# for the position of a group (e.g. a ligand)
+# in a frame of reference tied to another group (e.g. a receptor)
+# The same PDB file "systempdb" contains reference coordinates for
+# the receptor and flags to identify receptor (1) and ligand atoms (2).
+
+colvar {
+  name theta
+
+  polarTheta {
+
+    atoms {
+      atomsfile  system.pdb    # Ligand has flag 2
+      atomsCol   B
+      atomsColValue 2
+
+      rotateReference
+      centerReference
+      fittingGroup {
+        atomsfile  system.pdb   # Receptor has flag 1
+        atomsCol   B
+        atomsColValue 1
+      }
+      refPositionsFile     system.pdb
+    }
+  }
+}
+
+colvar {
+  name phi
+
+  polarPhi {
+
+    atoms {
+      atomsfile  system.pdb    # Ligand has flag 2
+      atomsCol   B
+      atomsColValue 2
+
+      rotateReference
+      centerReference
+      fittingGroup {
+        atomsfile  system.pdb   # Receptor has flag 1
+        atomsCol   B
+        atomsColValue 1
+      }
+      refPositionsFile     system.pdb
+    }
+  }
+}
