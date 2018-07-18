@@ -1,8 +1,19 @@
 # Colvars Dashboard -- based on the Colvars Module for VMD
 # Jérôme Hénin <henin@ibpc.fr> 2018
 
-# At this stage, only acts on the "top" molecule
-# could query cvm to know what molecule is concerned
+# Design principles:
+# - take advantage of colvars/VMD binding for maximum user interaction
+# - hide the colvars config text from user, instead expose colvar, names and values
+# - do not try to parse the colvars config (let the Colvars Module do it)
+#   to avoid coming up with an incompatible parser
+
+# This plugin only acts on the "top" molecule
+# which is most consistent for trajectory animation (determined by the frame number of top mol)
+
+# TODO:
+# - histograms
+# - graphical representations such as rotation_display
+# - show atom groups as representations
 
 namespace eval ::cv_dashboard {
   variable current_frame 0
@@ -173,7 +184,25 @@ proc ::cv_dashboard::add {} {
 }
 
 
-# Enable or disable real-time tracking of VMD frame
+proc ::cv_dashboard::atoms_from_sel {} {
+  set w .cv_dashboard_window
+
+  set seltext [$w.editor.f_buttons.seltext get]
+  if {[llength $seltext] == 0 } {
+    return
+  }
+  set sel [atomselect top $seltext]
+  set serials [$sel get serial]
+  $sel delete
+
+  if {[llength $serials] == 0 } {
+    return
+  }
+  $w.editor.f_text.text insert insert "\n      # $seltext\n      atomNumbers $serials\n"
+}
+
+
+# Colvar config editor window
 proc ::cv_dashboard::edit { {add false} } {
   set cfg ""
 
@@ -181,7 +210,8 @@ proc ::cv_dashboard::edit { {add false} } {
     # do not remove existing vars
     set cvs {}
     # Provide simple template
-    set cfg "colvar {\n  name d\n  distance {\n    group1 { atomNumbers 1 2 }\n    group2 { atomNumbers 3 4 }\n  }\n}\n"
+    set cfg "# You can edit or replace the example colvar config below.\n\
+colvar {\n  name d\n  distance {\n    group1 { atomNumbers 1 2 }\n    group2 { atomNumbers 3 4 }\n  }\n}\n"
   } else {
     set cvs [selected]
     if {[llength $cvs] == 0} {
@@ -198,38 +228,51 @@ proc ::cv_dashboard::edit { {add false} } {
   set w .cv_dashboard_window
   set editor [toplevel $w.editor]
   wm title $editor "Colvar config editor"
-  tk::text $w.editor.text -undo 1 -yscrollcommand [list $w.editor.vsb set]
-  ttk::scrollbar $w.editor.vsb -orient vertical -command [list $w.editor.text yview]
 
-  $w.editor.text insert 1.0 $cfg
+  # Left pane with utility buttons
+  frame $w.editor.f_buttons
+  set gridrow 0
+  tk::label $w.editor.f_buttons.seltext_label -text "Selection text:"
+  tk::entry $w.editor.f_buttons.seltext -bg white
+  # Bind Return key in seltext entry to proc creating the atomNumbers line
+  bind $w.editor.f_buttons.seltext <Return> { ::cv_dashboard::atoms_from_sel }
+  ttk::button $w.editor.f_buttons.fromsel -text "Insert atoms at cursor" -command ::cv_dashboard::atoms_from_sel -padding "2 0 2 0"
+
+  grid $w.editor.f_buttons.seltext_label -row $gridrow -column 0 -pady 5 -padx 2
+  grid $w.editor.f_buttons.seltext -row $gridrow -column 1 -sticky ew -pady 5 -padx 2
+  grid $w.editor.f_buttons.fromsel -row $gridrow -column 2 -pady 5 -padx 2
+
+
+  # The text widget w scrollbar and Apply/Cancel buttons
+  frame $w.editor.f_text
+  tk::text $w.editor.f_text.text -undo 1 -yscrollcommand [list $w.editor.f_text.vsb set] -background white
+  ttk::scrollbar $w.editor.f_text.vsb -orient vertical -command [list $w.editor.f_text.text yview]
+  $w.editor.f_text.text insert 1.0 $cfg
   set ::cv_dashboard::being_edited $cvs
-
-  grid $w.editor.text -row 0 -columnspan 2 -sticky nsew
-  grid $w.editor.vsb -row 0 -column 2 -sticky ns
+  grid $w.editor.f_text.text -row 0 -columnspan 2 -sticky nsew
+  grid $w.editor.f_text.vsb -row 0 -column 2 -sticky nsew
 
   set gridrow 1
+  ttk::button $w.editor.f_text.apply -text "Apply" -command ::cv_dashboard::edit_apply -padding "2 0 2 0"
+  ttk::button $w.editor.f_text.cancel -text "Cancel" -command ::cv_dashboard::edit_cancel -padding "2 0 2 0"
+  grid $w.editor.f_text.apply -row $gridrow -column 0 -sticky e -pady 5 -padx 2
+  grid $w.editor.f_text.cancel -row $gridrow -column 1 -sticky w -pady 5 -padx 2
 
-  ttk::button $w.editor.apply -text "Apply" -command ::cv_dashboard::edit_apply
-  ttk::button $w.editor.cancel -text "Cancel" -command ::cv_dashboard::edit_cancel
-  grid $w.editor.apply -row $gridrow -column 0 -sticky e
-  grid $w.editor.cancel -row $gridrow -column 1 -sticky w
+  grid columnconfigure $w.editor.f_text 0 -weight 1
+  grid columnconfigure $w.editor.f_text 1 -weight 1
+  grid rowconfigure $w.editor.f_text 0 -weight 1
 
-  grid columnconfigure $w.editor 0 -weight 1
-  grid columnconfigure $w.editor 1 -weight 1
-  grid rowconfigure $w.editor 0 -weight 1
-
-
+  pack $w.editor.f_buttons -fill both -side left
+  pack $w.editor.f_text -fill both -side left
 }
 
 
 proc ::cv_dashboard::edit_apply {} {
   set w .cv_dashboard_window
   foreach c $::cv_dashboard::being_edited {
-    puts "Deleting $c"
     run_cv colvar $c delete
-    puts [cv list]
   }
-  set cfg [$w.editor.text get 1.0 end-1c]
+  set cfg [$w.editor.f_text.text get 1.0 end-1c]
   if { $cfg != "" } {
     set res [run_cv config $cfg]
     if { [string compare $res ""] } {
@@ -258,6 +301,12 @@ proc ::cv_dashboard::edit_cancel {} {
 
 proc ::cv_dashboard::plot {} {
   variable ::cv_dashboard::plothandle
+
+  # Remove existing plot, if any
+  if { [info exists plothandle] } {
+    catch {$plothandle quit}
+    unset plothandle
+  }
 
   set nf [molinfo top get numframes]
   set x {}
@@ -426,9 +475,9 @@ proc ::cv_dashboard::createWindow {} {
     run_cv molid top
   }
   set gridrow 0
-  grid [ttk::button $w.load -text "Load file" -command ::cv_dashboard::load -padding "2 0 2 0"] -row $gridrow -column 0 -pady 5 -padx 2 -sticky nsew
-  grid [ttk::button $w.save -text "Save colvars" -command ::cv_dashboard::save -padding "2 0 2 0"] -row $gridrow -column 1 -pady 5 -padx 2 -sticky nsew
-  grid [ttk::button $w.reset -text "Reset" -command ::cv_dashboard::reset -padding "2 0 2 0"] -row $gridrow -column 2 -pady 5 -padx 2 -sticky nsew
+  grid [ttk::button $w.load -text "Load config file" -command ::cv_dashboard::load -padding "2 0 2 0"] -row $gridrow -column 0 -pady 5 -padx 2 -sticky nsew
+  grid [ttk::button $w.save -text "Save colvars config" -command ::cv_dashboard::save -padding "2 0 2 0"] -row $gridrow -column 1 -pady 5 -padx 2 -sticky nsew
+  grid [ttk::button $w.reset -text "Reset Colvars Module" -command ::cv_dashboard::reset -padding "2 0 2 0"] -row $gridrow -column 2 -pady 5 -padx 2 -sticky nsew
 
   tablelist::tablelist $w.cvtable -columns {
     0 Colvars
@@ -446,12 +495,12 @@ proc ::cv_dashboard::createWindow {} {
 
   incr gridrow
   grid [ttk::button $w.edit -text "Edit" -command ::cv_dashboard::edit -padding "2 0 2 0"] -row $gridrow -column 0 -pady 5 -padx 2 -sticky nsew
-  grid [ttk::button $w.add -text "Add" -command ::cv_dashboard::add -padding "2 0 2 0"] -row $gridrow -column 1 -pady 5 -padx 2 -sticky nsew
+  grid [ttk::button $w.add -text "New" -command ::cv_dashboard::add -padding "2 0 2 0"] -row $gridrow -column 1 -pady 5 -padx 2 -sticky nsew
   grid [ttk::button $w.del -text "Delete" -command ::cv_dashboard::del -padding "2 0 2 0"] -row $gridrow -column 2 -pady 5 -padx 2 -sticky nsew
 
   incr gridrow
   grid [ttk::button $w.plot -text "Interactive plot" -command ::cv_dashboard::plot -padding "2 0 2 0"] -row $gridrow -column 0 -pady 5 -padx 2 -sticky nsew
-  grid [ttk::button $w.refresh -text "Refresh" -command ::cv_dashboard::refresh_table -padding "2 0 2 0"] -row $gridrow -column 1 -pady 5 -padx 2 -sticky nsew
+  grid [ttk::button $w.refresh -text "Refresh table" -command ::cv_dashboard::refresh_table -padding "2 0 2 0"] -row $gridrow -column 1 -pady 5 -padx 2 -sticky nsew
 
   incr gridrow
   grid [label $w.frameTxt -text "Frame:"] -row $gridrow -column 0 -pady 5 -padx 2 -sticky nsew
