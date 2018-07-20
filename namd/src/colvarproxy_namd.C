@@ -820,13 +820,14 @@ int colvarproxy_namd::load_coords(char const *pdb_filename,
         break;
     }
 
-    if ((ipos < pos.size()) || (current_index != indices.end()))
-      cvm::error("Error: the number of records in the PDB file \""+
-                 std::string(pdb_filename)+
-                 "\" does not appear to match either the total number of atoms,"+
-                 " or the number of coordinates requested at this point("+
-                 cvm::to_str(pos.size())+").\n", BUG_ERROR);
-
+    if (ipos < pos.size() || (!use_pdb_field && current_index != indices.end())) {
+      size_t n_requested = use_pdb_field ? pos.size() : indices.size();
+      cvm::error("Error: number of matching records in the PDB file \""+
+                 std::string(pdb_filename)+"\" ("+cvm::to_str(ipos)+
+                 ") does not match the number of requested coordinates ("+
+                 cvm::to_str(n_requested)+").\n", INPUT_ERROR);
+      return COLVARS_ERROR;
+    }
   } else {
 
     // when the PDB contains exactly the number of atoms of the array,
