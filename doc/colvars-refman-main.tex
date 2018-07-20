@@ -1065,9 +1065,15 @@ Other components are instead affected by global rotations or translations: howev
 Finally, a few components are defined by convention using a roto-translated frame (e.g. the minimal RMSD): for these components, \texttt{centerReference} and \texttt{rotateReference} are enabled by default.
 In typical applications, the default settings result in the expected behavior.
 
+\paragraph*{Warning on rotating frames of reference and periodic boundary conditions.}
+\texttt{rotateReference} affects coordinates that depend on minimum-image distances in periodic boundary conditions (PBC).
+After rotation of the coordinates, the periodic cell vectors become irrelevant: the rotated system is effectively non-periodic.
+A safe way to handle this is to ensure that the relevant inter-group distance vectors remain smaller than the half-size of the periodic cell.
+If this is not desirable, one should avoid the rotating frame of reference, and apply orientational restraints to the reference group instead, in order to keep the orientation of the reference group consistent with the orientation of the periodic cell.
+
+\paragraph*{Warning on rotating frames of reference and ABF.}
 Note that \texttt{centerReference} and \texttt{rotateReference} may affect the Jacobian derivative of colvar components in a way that is not taken into account by default.
 Be careful when using these options in ABF simulations or when using total force values.
-At this point, only the RMSD component will correctly adjust the Jacobian derivative computation to all situations.
 
 \begin{itemize}
 
@@ -3541,7 +3547,7 @@ Calculate UI estimator of the free energy?}
 When enabled, it triggers calculation of the free energy following the UI estimator.}
 \end{itemize}
 
-\paragraph{Usage for multiple--replica eABF.}
+\paragraph*{Usage for multiple--replica eABF.}
 The eABF algorithm can be associated with a multiple--walker strategy \cite{Minoukadeh2010,Comer2014c} (\ref{sec:mw-ABF}).
 To run a multiple--replica eABF simulation, start a multiple-replica
 NAMD run (option \texttt{+replicas}) and set {\tt shared on} in the Colvars config file to enable
