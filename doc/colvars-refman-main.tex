@@ -1337,6 +1337,7 @@ Some components do not return scalar, but vector values:
 \item \texttt{distanceDir}: unit vector parallel to distanceVec (length: 3);
 \item \texttt{cartesian}: vector of atomic Cartesian coordinates (length: $N$);
 \item \texttt{distancePairs}: vector of mutual distances (length: $N_{\mathrm{1}}\times{}N_{\mathrm{2}}$);
+\item \texttt{dipoleMagnitude}: magnitude of the dipole of a group of atoms;
 \item \texttt{orientation}: best-fit rotation, expressed as a unit quaternion (length: 4).
 \end{itemize}
 
@@ -1607,6 +1608,17 @@ This can be useful, for example, to develop a new variable defined over two grou
 This component returns a $N_{\mathrm{1}}\times{}N_{\mathrm{2}}$-dimensional vector of numbers, each ranging from $0$ to the largest possible distance within the chosen boundary conditions.
 
 
+\cvsubsubsec{\texttt{dipoleMagnitude}: dipole magnitude of a group of atoms.}{sec:cvc_dipoleMagnitude}
+The \texttt{dipoleMagnitude~\{...\}} block defines the dipole magnitude 
+of a group of atoms, being \texttt{atoms} the group where dipole magnitude is calculated. 
+It returns the magnitude in elementary charge times angstrom.
+
+\begin{cvcoptions}
+\item %
+  \dupkey{atoms}{\texttt{dipoleAngle}}{colvar|distance|group1}{\texttt{distance} component}
+\end{cvcoptions}
+
+
 \cvsubsubsec{\texttt{cartesian}: vector of atomic Cartesian coordinates.}{sec:cvc_cartesian}
 The \texttt{cartesian~\{...\}} block defines a component returning a flat vector containing
 the Cartesian coordinates of all participating atoms, in the order
@@ -1643,7 +1655,6 @@ interval $[0:180]$.
 \item %
   \dupkey{oneSiteTotalForce}{\texttt{angle}}{colvar|distance|oneSiteTotalForce}{\texttt{distance} component}
 \end{cvcoptions}
-
 
 
 \cvsubsubsec{\texttt{dipoleAngle}: angle between two groups and dipole of a third group.}{sec:cvc_dipoleAngle}
