@@ -1151,7 +1151,7 @@ If \texttt{group2} is a \texttt{dummyAtom}, this option is set to \texttt{yes} b
      Pairlist control}{%
     decimal}{%
     0.0}{This controls the pairlist feature, dictating the minimum value for each summation element in Eq.~\ref{eq:cvc_coordNum} such that the pair that contributed the summation element is included in subsequent simulation timesteps until the next pairlist recalculation. For most applications, this value should be small (eg. 0.001) to avoid missing important contributions to the overall sum. Higher values will improve performance, although values above 1 will exclude all possible pair interactions. Similarly, values below 0 will never exclude a pair from consideration.
-}
+  }
 
 \item %
     \labelkey{colvar|coordNum|pairListFrequency}
@@ -1160,8 +1160,8 @@ If \texttt{group2} is a \texttt{dummyAtom}, this option is set to \texttt{yes} b
      \texttt{coordNum}}{%
      Pairlist regeneration frequency}{%
     positive integer}{%
-    100}{This controls the pairlist feature, dictating how many steps are taken between regenerating pairlists if the tolerance is greater than 0. At this interval, the colvar defined will be exact, as though it was the all-to-all pair summation defined in Eq.~\ref{eq:cvc_coordNum}. All other steps will report only values and gradients from pairs in the pairlist.
-}
+    100}{This controls the pairlist feature, dictating how many steps are taken between regenerating pairlists if the tolerance is greater than 0.
+  }
 \end{cvcoptions}
 
 This component returns a dimensionless number, which ranges from

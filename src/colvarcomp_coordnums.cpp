@@ -51,6 +51,15 @@ cvm::real colvar::coordnum::switching_function(cvm::real const &r0,
   cvm::real const xd = cvm::integer_power(l2, ed2);
   cvm::real const func = (1.0-xn)/(1.0-xd);
 
+  if (flags & ef_rebuild_pairlist) {
+    **pairlist_elem = (func > pairlist_tol) ? true : false;
+    (*pairlist_elem)++;
+    // If the value is too small while rebuilding the pairlist, we need to exclude it, rather than compute the value exactly.
+    // Otherwise, biased simulations won't be accurate, since at intermediate steps we are effectively truncating the function tail.
+    if (! (func > pairlist_tol))
+      return 0.0;
+  }
+  
   if (flags & ef_gradients) {
     cvm::real const dFdl2 = (1.0/(1.0-xd))*(en2*(xn/l2) -
                                             func*ed2*(xd/l2))*(-1.0);
@@ -62,11 +71,6 @@ cvm::real colvar::coordnum::switching_function(cvm::real const &r0,
                                    r0*r0)) * diff.z);
     A1.grad += (-1.0)*dFdl2*dl2dx;
     A2.grad +=        dFdl2*dl2dx;
-  }
-
-  if (flags & ef_rebuild_pairlist) {
-    **pairlist_elem = (func > pairlist_tol) ? true : false;
-    (*pairlist_elem)++;
   }
 
   return func;
