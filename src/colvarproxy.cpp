@@ -282,13 +282,17 @@ colvarproxy_smp::colvarproxy_smp()
   omp_lock_state = NULL;
 #if defined(_OPENMP)
   if (smp_thread_id() == 0) {
+    omp_lock_state = reinterpret_cast<void *>(new omp_lock_t);
     omp_init_lock(reinterpret_cast<omp_lock_t *>(omp_lock_state));
   }
 #endif
 }
 
 
-colvarproxy_smp::~colvarproxy_smp() {}
+colvarproxy_smp::~colvarproxy_smp() 
+{
+  if (omp_lock_state) delete omp_lock_state;
+}
 
 
 int colvarproxy_smp::smp_enabled()
