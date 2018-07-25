@@ -1,5 +1,12 @@
 // -*- c++ -*-
 
+// This file is part of the Collective Variables module (Colvars).
+// The original version of Colvars and its updates are located at:
+// https://github.com/colvars/colvars
+// Please update all Colvars source files before making any changes.
+// If you wish to distribute your changes, please submit them to the
+// Colvars repository at GitHub.
+
 #include <cmath>
 
 #include "colvarmodule.h"
@@ -59,7 +66,7 @@ cvm::real colvar::coordnum::switching_function(cvm::real const &r0,
     if (! (func > pairlist_tol))
       return 0.0;
   }
-  
+
   if (flags & ef_gradients) {
     cvm::real const dFdl2 = (1.0/(1.0-xd))*(en2*(xn/l2) -
                                             func*ed2*(xd/l2))*(-1.0);
