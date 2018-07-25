@@ -135,7 +135,7 @@ update_version_string() {
     else
         version_str="${version_str%%_*}"
         if git diff --name-only HEAD . | \
-                grep -q "${grep_pattern}" ; then
+                grep -q "${grep_pattern}" | grep -v ${file} ; then
             # For changes to master, always bump up
             version_str=$(date +'%Y-%m-%d')
         fi
