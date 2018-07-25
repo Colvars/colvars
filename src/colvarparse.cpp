@@ -600,7 +600,7 @@ bool colvarparse::key_lookup(std::string const &conf,
     }
 
     // check that there are matching braces between here and the end of conf
-    bool const b_not_within_block = brace_check(conf, pos);
+    bool const b_not_within_block = (check_braces(conf, pos) == COLVARS_OK);
 
     bool const b_isolated = (b_isolated_left && b_isolated_right &&
                              b_not_within_block);
@@ -774,19 +774,15 @@ std::istream & operator>> (std::istream &is, colvarparse::read_block const &rb)
 }
 
 
-bool colvarparse::brace_check(std::string const &conf,
+int colvarparse::check_braces(std::string const &conf,
                               size_t const start_pos)
 {
-  size_t brace_count = 0;
+  int brace_count = 0;
   size_t brace = start_pos;
-  while ( (brace = conf.find_first_of("{}", brace)) != std::string::npos) {
+  while ((brace = conf.find_first_of("{}", brace)) != std::string::npos) {
     if (conf[brace] == '{') brace_count++;
     if (conf[brace] == '}') brace_count--;
     brace++;
   }
-
-  if (brace_count != 0)
-    return false;
-  else
-    return true;
+  return (brace_count != 0) ? INPUT_ERROR : COLVARS_OK;
 }

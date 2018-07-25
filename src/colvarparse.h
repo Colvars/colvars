@@ -282,9 +282,11 @@ public:
   static std::istream & getline_nocomments(std::istream &is,
                                            std::string &s);
 
-  /// Check if the content of the file has matching braces
-  bool brace_check(std::string const &conf,
-                   size_t const start_pos = 0);
+  /// \brief Check if the content of a config string has matching braces
+  /// \param conf The configuration string \param start_pos Start the count
+  /// from this position
+  static int check_braces(std::string const &conf,
+                          size_t const start_pos);
 
 };
 

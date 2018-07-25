@@ -184,6 +184,12 @@ int colvarmodule::parse_config(std::string &conf)
 {
   extra_conf.clear();
 
+  // Check that the input has matching braces
+  if (colvarparse::check_braces(conf, 0) != COLVARS_OK) {
+    return cvm::error("Error: unmatched curly braces in configuration.\n",
+                      INPUT_ERROR);
+  }
+
   // Parse global options
   if (catch_input_errors(parse_global_params(conf))) {
     return get_error();
