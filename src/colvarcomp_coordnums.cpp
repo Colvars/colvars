@@ -1,12 +1,5 @@
 // -*- c++ -*-
 
-// This file is part of the Collective Variables module (Colvars).
-// The original version of Colvars and its updates are located at:
-// https://github.com/colvars/colvars
-// Please update all Colvars source files before making any changes.
-// If you wish to distribute your changes, please submit them to the
-// Colvars repository at GitHub.
-
 #include <cmath>
 
 #include "colvarmodule.h"
@@ -26,7 +19,7 @@ cvm::real colvar::coordnum::switching_function(cvm::real const &r0,
                                                cvm::atom &A1,
                                                cvm::atom &A2,
                                                bool **pairlist_elem,
-                                               cvm::real pairlist_tol)
+                                               cvm::real pairlist_tol, cvm::real sum_tol)
 {
   if ((flags & ef_use_pairlist) && !(flags & ef_rebuild_pairlist)) {
     bool const within = **pairlist_elem;
@@ -61,15 +54,20 @@ cvm::real colvar::coordnum::switching_function(cvm::real const &r0,
   if (flags & ef_rebuild_pairlist) {
     **pairlist_elem = (func > pairlist_tol) ? true : false;
     (*pairlist_elem)++;
-    // If the value is too small while rebuilding the pairlist, we need to exclude it, rather than compute the value exactly.
-    // Otherwise, biased simulations won't be accurate, since at intermediate steps we are effectively truncating the function tail.
-    if (! (func > pairlist_tol))
-      return 0.0;
   }
-
+  //If the value is too small, we need to exclude it, rather than let it contribute to the sum or the gradients.
+  if (func < sum_tol)
+    return 0;
   if (flags & ef_gradients) {
-    cvm::real const dFdl2 = (1.0/(1.0-xd))*(en2*(xn/l2) -
-                                            func*ed2*(xd/l2))*(-1.0);
+    //This is the old, completely correct expression for dFdl2:
+    //cvm::real const dFdl2 = (1.0/(1.0-xd))*(en2*(xn/l2) -
+    //                                        func*ed2*(xd/l2))*(-1.0);
+    //This can become:
+    //cvm::real const dFdl2 = (1.0/(1.0-xd))*(en2*(xn/l2)*(1.0-xn)/(1.0-xn) -
+    //                                        func*ed2*(xd/l2))*(-1.0);
+    //Recognizing that func = (1.0-xn)/(1.0-xd), we can group together the "func" and get a version of dFdl2 that is 0
+    //when func=0, which lets us skip this gradient calculation when func=0.
+    cvm::real const dFdl2 = func * ((ed2*xd/((1.0-xd)*l2)) - (en2*xn/((1.0-xn)*l2)));
     cvm::rvector const dl2dx((2.0/((flags & ef_anisotropic) ? r0sq_vec.x :
                                    r0*r0)) * diff.x,
                              (2.0/((flags & ef_anisotropic) ? r0sq_vec.y :
@@ -161,6 +159,12 @@ colvar::coordnum::coordnum(std::string const &conf)
                  INPUT_ERROR);
       return; // and do not allocate the pairlists below
     }
+    get_keyval(conf, "pairListTolerance", pair_tolerance, tolerance*0.5);
+    if (pair_tolerance > tolerance) {
+      cvm::error("Error: pairlist tolerance > summation tolerance.\n",
+                 INPUT_ERROR);
+      return; // and do not allocate the pairlists below
+    }
     if (b_group2_center_only) {
       pairlist = new bool[group1->size()];
     }
@@ -221,7 +225,7 @@ template<int compute_flags> int colvar::coordnum::compute_coordnum()
             x.real_value += switching_function<flags>(r0, r0_vec, en, ed,
                                                       *ai1, *ai2,
                                                       &pairlist_elem,
-                                                      tolerance);
+                                                      pair_tolerance, tolerance);
           }
         }
 
@@ -233,7 +237,7 @@ template<int compute_flags> int colvar::coordnum::compute_coordnum()
             x.real_value += switching_function<flags>(r0, r0_vec, en, ed,
                                                       *ai1, *ai2,
                                                       &pairlist_elem,
-                                                      tolerance);
+                                                      pair_tolerance, tolerance);
           }
         }
       }
@@ -245,7 +249,7 @@ template<int compute_flags> int colvar::coordnum::compute_coordnum()
         for (ai2 = group2->begin(); ai2 != ai2_end; ai2++) {
           x.real_value += switching_function<flags>(r0, r0_vec, en, ed,
                                                     *ai1, *ai2,
-                                                    NULL, 0.0);
+                                                    NULL, 0.0, 0.0);
         }
       }
     }
@@ -262,7 +266,7 @@ template<int compute_flags> int colvar::coordnum::compute_coordnum()
             x.real_value += switching_function<flags>(r0, r0_vec, en, ed,
                                                       *ai1, *ai2,
                                                       &pairlist_elem,
-                                                      tolerance);
+                                                      pair_tolerance, tolerance);
           }
         }
 
@@ -274,7 +278,7 @@ template<int compute_flags> int colvar::coordnum::compute_coordnum()
             x.real_value += switching_function<flags>(r0, r0_vec, en, ed,
                                                       *ai1, *ai2,
                                                       &pairlist_elem,
-                                                      tolerance);
+                                                      pair_tolerance, tolerance);
           }
         }
       }
@@ -286,7 +290,7 @@ template<int compute_flags> int colvar::coordnum::compute_coordnum()
         for (ai2 = group2->begin(); ai2 != ai2_end; ai2++) {
           x.real_value += switching_function<flags>(r0, r0_vec, en, ed,
                                                     *ai1, *ai2,
-                                                    NULL, 0.0);
+                                                    NULL, 0.0, 0.0);
         }
       }
     }
@@ -414,7 +418,7 @@ void colvar::h_bond::calc_value()
     coordnum::switching_function<flags>(r0, r0_vec, en, ed,
                                         (*atom_groups[0])[0],
                                         (*atom_groups[0])[1],
-                                        NULL, 0.0);
+                                        NULL, 0.0, 0.0);
 }
 
 
@@ -425,7 +429,7 @@ void colvar::h_bond::calc_gradients()
   coordnum::switching_function<flags>(r0, r0_vec, en, ed,
                                       (*atom_groups[0])[0],
                                       (*atom_groups[0])[1],
-                                      NULL, 0.0);
+                                      NULL, 0.0, 0.0);
 }
 
 
@@ -474,6 +478,12 @@ colvar::selfcoordnum::selfcoordnum(std::string const &conf)
                  INPUT_ERROR);
       return;
     }
+    get_keyval(conf, "pairListTolerance", pair_tolerance, tolerance*0.5);
+    if (pair_tolerance > tolerance) {
+      cvm::error("Error: pairlist tolerance > summation tolerance.\n",
+                 INPUT_ERROR);
+      return; // and do not allocate the pairlists below
+    }
     pairlist = new bool[(group1->size()-1) * (group1->size()-1)];
   }
 }
@@ -521,7 +531,7 @@ template<int compute_flags> int colvar::selfcoordnum::compute_selfcoordnum()
                                                 (*group1)[i],
                                                 (*group1)[j],
                                                 &pairlist_elem,
-                                                tolerance);
+                                                pair_tolerance, tolerance);
         }
       }
     } else {
@@ -533,7 +543,7 @@ template<int compute_flags> int colvar::selfcoordnum::compute_selfcoordnum()
                                                 (*group1)[i],
                                                 (*group1)[j],
                                                 &pairlist_elem,
-                                                tolerance);
+                                                pair_tolerance, tolerance);
         }
       }
     }
@@ -547,8 +557,8 @@ template<int compute_flags> int colvar::selfcoordnum::compute_selfcoordnum()
           coordnum::switching_function<flags>(r0, r0_vec, en, ed,
                                               (*group1)[i],
                                               (*group1)[j],
-                                              &pairlist_elem,
-                                              tolerance);
+                                              NULL,
+                                              0.0,0.0);
       }
     }
   }
@@ -659,13 +669,13 @@ void colvar::groupcoordnum::calc_value()
     x.real_value = coordnum::switching_function<flags>(r0, r0_vec, en, ed,
                                                        group1_com_atom,
                                                        group2_com_atom,
-                                                       NULL, 0.0);
+                                                       NULL, 0.0, 0.0);
   } else {
     int const flags = coordnum::ef_null;
     x.real_value = coordnum::switching_function<flags>(r0, r0_vec, en, ed,
                                                        group1_com_atom,
                                                        group2_com_atom,
-                                                       NULL, 0.0);
+                                                       NULL, 0.0, 0.0);
   }
 }
 
@@ -684,13 +694,13 @@ void colvar::groupcoordnum::calc_gradients()
     coordnum::switching_function<flags>(r0, r0_vec, en, ed,
                                         group1_com_atom,
                                         group2_com_atom,
-                                        NULL, 0.0);
+                                        NULL, 0.0, 0.0);
   } else {
     int const flags = coordnum::ef_gradients;
     coordnum::switching_function<flags>(r0, r0_vec, en, ed,
                                         group1_com_atom,
                                         group2_com_atom,
-                                        NULL, 0.0);
+                                        NULL, 0.0, 0.0);
   }
 
   group1->set_weighted_gradient(group1_com_atom.grad);
