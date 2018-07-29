@@ -21,6 +21,7 @@
 #include "ComputeNonbondedUtil.h"
 #include "LJTable.h"
 #include "ComputePme.h"
+#include "ComputeCUDAMgr.h"
 #include "ConfigList.h"
 #include "SimParameters.h"
 #include "ParseOptions.h"
@@ -405,8 +406,12 @@ void SimParameters::scriptSet(const char *param, const char *value) {
     }
     soluteScalingFactorCharge = soluteScalingFactor;
     soluteScalingFactorVdw = soluteScalingFactor;
-    if ( ComputeNonbondedUtil::ljTable ) delete ComputeNonbondedUtil::ljTable;
-    ComputeNonbondedUtil::ljTable = new LJTable;
+    // update LJTable for CPU
+    ComputeNonbondedUtil::select();
+#ifdef NAMD_CUDA
+    // update LJTable for GPU, needs CPU update first
+    ComputeCUDAMgr::getComputeCUDAMgr()->update();
+#endif
     return;
   }
   if ( ! strncasecmp(param,"soluteScalingFactorVdw",MAX_SCRIPT_PARAM_SIZE)) {
@@ -415,8 +420,12 @@ void SimParameters::scriptSet(const char *param, const char *value) {
       NAMD_die("Solute scaling factor for van der Waals "
           "should be non-negative\n");
     }
-    if ( ComputeNonbondedUtil::ljTable ) delete ComputeNonbondedUtil::ljTable;
-    ComputeNonbondedUtil::ljTable = new LJTable;
+    // update LJTable for CPU
+    ComputeNonbondedUtil::select();
+#ifdef NAMD_CUDA
+    // update LJTable for GPU, needs CPU update first
+    ComputeCUDAMgr::getComputeCUDAMgr()->update();
+#endif
     return;
   }
   if ( ! strncasecmp(param,"soluteScalingFactorCharge",MAX_SCRIPT_PARAM_SIZE)) {
