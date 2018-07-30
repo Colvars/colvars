@@ -2688,14 +2688,20 @@ In certain conditions, \texttt{distanceZ} can also be periodic, namely
 when periodic boundary conditions (PBCs) are defined in the simulation
 and \texttt{distanceZ}'s axis is parallel to a unit cell vector.
 
-The following keywords can be used within periodic components (and are
-illegal elsewhere):
+In addition, a custom \cvscriptonly{or scripted}, scalar colvar may be periodic
+depending on its user-defined expression. It will only be treated as such by
+the Colvars Module if the period is specified using the \texttt{period} keyword,
+while \texttt{wrapAround} is optional.
+
+The following keywords can be used within periodic components, and within
+custom \cvscriptonly{or scripted} colvars (\ref{sec:colvar_custom_function}
+\cvscriptonly{, \ref{sec::colvar_scripted}}).
 
 \begin{itemize}
 \item %
   \keydef
     {period}{%
-    \texttt{distanceZ}}{%
+    \texttt{distanceZ}, custom colvars}{%
     Period of the component}{%
     positive decimal}{%
     0.0}{%
@@ -2708,7 +2714,7 @@ illegal elsewhere):
 \item %
   \keydef
     {wrapAround}{%
-    \texttt{distanceZ}, \texttt{dihedral} or \texttt{spinAngle}}{%
+    \texttt{distanceZ}, \texttt{dihedral}, \texttt{spinAngle}, custom colvars}{%
     Center of the wrapping interval for periodic variables}{%
     decimal}{%
     0.0}{%
