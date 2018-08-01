@@ -2978,8 +2978,10 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
        watmodel = WAT_TIP4;
      } else if (!strncasecmp(s, "tip3", 4)) {
        iout << iINFO << "Using TIP3P water model.\n" << endi;
+       watmodel = WAT_TIP3;
      } else if (!strncasecmp(s, "swm4", 4)) {
        iout << iINFO << "Using SWM4-DP water model.\n" << endi;
+       watmodel = WAT_SWM4;
      } else {
        char err_msg[128];
        sprintf(err_msg,
@@ -3125,6 +3127,16 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
           "Illegal value '%s' for 'rigidBonds' in configuration file", s);
         NAMD_die(err_msg);
       }
+   }
+
+   // TIP4P and SWM4-DP water models require rigid water
+   if ((watmodel == WAT_TIP4 || watmodel == WAT_SWM4)
+       && rigidBonds == RIGID_NONE) {
+     char err_msg[256];
+     sprintf(err_msg,
+         "Water model %s requires rigidBonds set to \"all\" or \"water\"",
+         (watmodel == WAT_TIP4 ? "TIP4P" : "SWM4-DP"));
+     NAMD_die(err_msg);
    }
 
    //  Take care of switching stuff
