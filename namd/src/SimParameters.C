@@ -2347,6 +2347,11 @@ void SimParameters::config_parser_misc(ParseOptions &opts) {
    // Bonded interactions on GPU
    opts.optional("main", "bondedCUDA", "Bitmask for calculating bonded interactions on GPU", &bondedCUDA, 255);
 
+   // Automatically disable individual CUDA kernels that are
+   // incompatible with simulation options.
+   // Set FALSE to manually control kernel use for development.
+   opts.optionalB("main", "useCUDAdisable", "Disable kernels to maintain feature compatibility with CUDA", &useCUDAdisable, TRUE);
+
    // MIC specific parameters
    opts.optional("main", "mic_unloadMICPEs", "Indicates whether or not the load balancer should unload PEs driving Xeon Phi cards", &mic_unloadMICPEs, 1);
    opts.optional("main", "mic_singleKernel", "Set to non-zero to have all MIC work to be placed in a single kernel", &mic_singleKernel, 1);
@@ -3984,6 +3989,10 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
      //     iout << iWARN << "Disabling usePMECUDA because of non-orthorhombic periodic cell.\n" << endi;
      //   }
      // }
+     if ( usePMECUDA && soluteScalingOn && useCUDAdisable ) {
+       usePMECUDA = 0;
+       iout << iWARN << "Disabling usePMECUDA due to incompatibility with soluteScaling.\n" << endi;
+     }
 #else
      PMEOffload = 0;
 #endif
@@ -4497,6 +4506,23 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
         if (qmCSMD && (! opts.defined("QMCSMDFile") ))
             NAMD_die("QM Conditional SMD is ON, but no CSMD configuration file was profided!");
     }
+
+#ifdef NAMD_CUDA
+    // Disable various CUDA kernels if they do not fully support
+    // or are otherwise incompatible with simulation options.
+    if ( useCUDAdisable ) {
+      if ( drudeOn && useCUDA2 && (bondedCUDA & 0x0001) ) {
+        // disable CUDA kernels for spring bonds
+        bondedCUDA &= ~0x0001;
+        iout << iWARN << "Disabling CUDA kernel for bonds due to incompatibility with Drude oscillators.\n";
+      }
+      if ( accelMDOn && (accelMDdihe || accelMDdual) && useCUDA2 && (bondedCUDA & (0x0004 | 0x0020)) ) {
+        // disable CUDA kernels for dihedrals and crossterms
+        bondedCUDA &= ~(0x0004 | 0x0020);
+        iout << iWARN << "Disabling CUDA kernels for dihedrals and crossterms due to incompatibility with accelerated MD options.\n";
+      }
+    }
+#endif
 }
 
 void SimParameters::print_config(ParseOptions &opts, ConfigList *config, char *&cwd) {

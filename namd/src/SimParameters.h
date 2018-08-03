@@ -773,9 +773,30 @@ public:
         Bool PMEOffload;		//  Offload reciprocal sum to accelerator
 
 	Bool useDPME;			//  Flag TRUE -> old DPME code
-	Bool usePMECUDA;                //  Flag TRUE -> use the PME CUDA version
-	Bool useCUDA2;                  //  Flag TRUE -> use ComputeNonbondedCUDA2
-  int bondedCUDA;                 //  Bitmask for calculating bonded interactions on GPU
+
+	Bool usePMECUDA;
+        /**< Flag TRUE to use the PME CUDA version.
+         * Default is TRUE if running on 4 nodes or less. */
+
+	Bool useCUDA2;
+        /**< Flag TRUE to use the second generation nonbonded
+         * CUDA kernels developed by Antti-Pekka Hynninen.
+         * Default is TRUE. */
+
+        int bondedCUDA;
+        /**< Bitmask for calculating bonded interactions on GPU.
+         * Default is 255, with the following bit position settings:
+         * 1 -> bonds, 2 -> angles, 4 -> dihedrals, 8 -> impropers,
+         * 16 -> exclusions, 32 -> crossterms. */
+
+        Bool useCUDAdisable;
+        /**< Flag TRUE to automatically disable individual CUDA kernels that
+         * are incompatible with simulation options.  Default is TRUE.
+         * Specifically, disable CUDA bonds for Drude oscillator simulation
+         * and disable CUDA dihedral and CUDA crossterms kernels for
+         * accelMDdihe and accelMDdual simulation.
+         * Set FALSE to manually control kernel use for development. */
+
 	Bool useOptPME;                 //  Flag TRUE -> use the scalable version of PME
 	Bool useManyToMany;             //  Flag TRUE -> use the manytomany optimization of PME.
 	                                //  This flag requres useOptPME to be set.
