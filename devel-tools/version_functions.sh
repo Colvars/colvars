@@ -123,20 +123,14 @@ update_version_string() {
     if [ "x${branch}" = "x" ] ; then
         branch=$(get_branch_name)
     fi
-    # echo "Current branch = ${branch}"
 
     # Get the version string from the last commit on master
     local master_commit=$(get_last_master_commit "${grep_pattern}")
-    # echo "Master branch commit = ${master_commit}"
     version_str=$(${function_name} ${master_commit})
-    # echo "Master branch date = ${version_str}"
-    if [ "${branch}" != "master" ] ; then
-        version_str="${version_str%%_*}_${branch}"
-    else
-        version_str="${version_str%%_*}"
+    if [ "${branch}" = "master" ] ; then
         if git diff --name-only HEAD . | \
                 grep -q "${grep_pattern}" | grep -v ${file} ; then
-            # For changes to master, always bump up
+            # Bump up version when on master and files were modified
             version_str=$(date +'%Y-%m-%d')
         fi
     fi
