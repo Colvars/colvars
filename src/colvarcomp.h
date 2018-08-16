@@ -845,10 +845,8 @@ protected:
   /// accessory group
   cvm::atom_group *group2_center;
 
-  /// Tolerance for the summation
+  /// Tolerance for the pair list
   cvm::real tolerance;
-  /// Tolerance for the pairlist itself. Must be <= tolerance.
-  cvm::real pair_tolerance
 
   /// Frequency of update of the pair list
   int pairlist_freq;
