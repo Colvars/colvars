@@ -36,9 +36,10 @@ template<typename TYPE> bool colvarparse::_get_keyval_scalar_(std::string const 
     }
   } while (b_found);
 
-  if (found_count > 1)
-    cvm::log("Warning: found more than one instance of \""+
-             std::string(key)+"\".\n");
+  if (found_count > 1) {
+    cvm::error("Error: found more than one instance of \""+
+               std::string(key)+"\".\n", INPUT_ERROR);
+  }
 
   if (data.size()) {
     std::istringstream is(data);
@@ -91,9 +92,10 @@ bool colvarparse::_get_keyval_scalar_string_(std::string const &conf,
     }
   } while (b_found);
 
-  if (found_count > 1)
-    cvm::log("Warning: found more than one instance of \""+
-             std::string(key)+"\".\n");
+  if (found_count > 1) {
+    cvm::error("Error: found more than one instance of \""+
+               std::string(key)+"\".\n", INPUT_ERROR);
+  }
 
   if (data.size()) {
     std::istringstream is(data);
@@ -155,9 +157,10 @@ template<typename TYPE> bool colvarparse::_get_keyval_vector_(std::string const 
     }
   } while (b_found);
 
-  if (found_count > 1)
-    cvm::log("Warning: found more than one instance of \""+
-             std::string(key)+"\".\n");
+  if (found_count > 1) {
+    cvm::error("Error: found more than one instance of \""+
+               std::string(key)+"\".\n", INPUT_ERROR);
+  }
 
   if (data.size()) {
     std::istringstream is(data);
@@ -312,9 +315,10 @@ bool colvarparse::get_keyval(std::string const &conf,
     }
   } while (b_found);
 
-  if (found_count > 1)
-    cvm::log("Warning: found more than one instance of \""+
-             std::string(key)+"\".\n");
+  if (found_count > 1) {
+    cvm::error("Error: found more than one instance of \""+
+               std::string(key)+"\".\n", INPUT_ERROR);
+  }
 
   if (data.size()) {
     if ( (data == std::string("on")) ||
