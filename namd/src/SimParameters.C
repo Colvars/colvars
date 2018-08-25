@@ -3974,25 +3974,6 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
        usePMECUDA = 0;
        iout << iWARN << "Disabling usePMECUDA because multiple CUDA devices per process requires useCUDA2.\n" << endi;
      }
-     // if ( cellBasisVector1.y != 0 ||
-     //      cellBasisVector1.z != 0 ||
-     //      cellBasisVector2.x != 0 ||
-     //      cellBasisVector2.z != 0 ||
-     //      cellBasisVector3.x != 0 ||
-     //      cellBasisVector3.y != 0    ) {
-     //   if ( useCUDA2 ) {
-     //     useCUDA2 = 0;
-     //     iout << iWARN << "Disabling useCUDA2 because of non-orthorhombic periodic cell.\n" << endi;
-     //   }
-     //   if ( usePMECUDA ) {
-     //     usePMECUDA = 0;
-     //     iout << iWARN << "Disabling usePMECUDA because of non-orthorhombic periodic cell.\n" << endi;
-     //   }
-     // }
-     if ( usePMECUDA && soluteScalingOn && useCUDAdisable ) {
-       usePMECUDA = 0;
-       iout << iWARN << "Disabling usePMECUDA due to incompatibility with soluteScaling.\n" << endi;
-     }
 #else
      PMEOffload = 0;
 #endif
