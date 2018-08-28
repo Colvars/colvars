@@ -289,9 +289,15 @@ colvarproxy_smp::colvarproxy_smp()
 }
 
 
-colvarproxy_smp::~colvarproxy_smp() 
+colvarproxy_smp::~colvarproxy_smp()
 {
-  if (omp_lock_state) delete omp_lock_state;
+#if defined(_OPENMP)
+  if (smp_thread_id() == 0) {
+    if (omp_lock_state) {
+      delete reinterpret_cast<omp_lock_t *>(omp_lock_state);
+    }
+  }
+#endif
 }
 
 
