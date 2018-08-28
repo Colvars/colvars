@@ -67,6 +67,7 @@ public:
     cv_getconfig,
     cv_configfile,
     cv_reset,
+    cv_resetindexgroups,
     cv_delete,
     cv_list,
     cv_list_biases,
@@ -253,6 +254,15 @@ extern "C" {
            0, 0,
            { },
            script->set_str_result(cvm::main()->get_config());
+           return COLVARS_OK;
+           )
+
+  CVSCRIPT(cv_resetindexgroups,
+           "Clear the index groups loaded so far, allowing to replace them",
+           0, 0,
+           { },
+           cvm::main()->index_group_names.clear();
+           cvm::main()->index_groups.clear();
            return COLVARS_OK;
            )
 

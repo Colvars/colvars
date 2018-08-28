@@ -567,6 +567,8 @@ std::string colvarscript::help_string() const
 Managing the Colvars module:\n\
   configfile <file name>      -- read configuration from a file\n\
   config <string>             -- read configuration from the given string\n\
+  getconfig                   -- get the module's configuration string\n\
+  resetindexgroups            -- clear the index groups loaded so far\n\
   reset                       -- delete all internal configuration\n\
   delete                      -- delete this Colvars module instance\n\
   version                     -- return version of Colvars code\n\
