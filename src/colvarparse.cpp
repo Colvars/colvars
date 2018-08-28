@@ -536,7 +536,7 @@ std::istream & colvarparse::read_config_line(std::istream &is,
                                              std::string &line)
 {
   cvm::getline(is, line);
-  config_string += line;
+  config_string += line+'\n';
   size_t const comment = line.find('#');
   if (comment != std::string::npos) {
     line.erase(comment);
