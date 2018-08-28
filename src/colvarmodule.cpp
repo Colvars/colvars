@@ -252,9 +252,13 @@ int colvarmodule::parse_global_params(std::string const &conf)
 {
   colvarmodule *cvm = cvm::main();
 
-  std::string index_file_name;
-  if (parse->get_keyval(conf, "indexFile", index_file_name)) {
-    cvm->read_index_file(index_file_name.c_str());
+  {
+    std::string index_file_name;
+    size_t pos = 0;
+    while (parse->key_lookup(conf, "indexFile", &index_file_name, &pos)) {
+      cvm->read_index_file(index_file_name.c_str());
+      index_file_name.clear();
+    }
   }
 
   if (parse->get_keyval(conf, "smp", proxy->b_smp_active, proxy->b_smp_active)) {
