@@ -132,7 +132,7 @@ int colvarmodule::read_config_file(char const  *config_filename)
   // read the config file into a string
   std::string conf = "";
   std::string line;
-  while (colvarparse::getline_nocomments(config_s, line)) {
+  while (parse->read_config_line(config_s, line)) {
     // Delete lines that contain only white space after removing comments
     if (line.find_first_not_of(colvarparse::white_space) != std::string::npos)
       conf.append(line+"\n");
@@ -152,11 +152,12 @@ int colvarmodule::read_config_string(std::string const &config_str)
   // strip the comments away
   std::string conf = "";
   std::string line;
-  while (colvarparse::getline_nocomments(config_s, line)) {
+  while (parse->read_config_line(config_s, line)) {
     // Delete lines that contain only white space after removing comments
     if (line.find_first_not_of(colvarparse::white_space) != std::string::npos)
       conf.append(line+"\n");
   }
+
   return parse_config(conf);
 }
 
@@ -231,6 +232,12 @@ int colvarmodule::parse_config(std::string &conf)
   cv_traj_write_labels = true;
 
   return get_error();
+}
+
+
+std::string const & colvarmodule::get_config() const
+{
+  return parse->get_config();
 }
 
 
@@ -1072,9 +1079,9 @@ colvarmodule::~colvarmodule()
 
 int colvarmodule::reset()
 {
-  parse->init();
-
   cvm::log("Resetting the Collective Variables module.\n");
+
+  parse->init();
 
   // Iterate backwards because we are deleting the elements as we go
   for (std::vector<colvarbias *>::reverse_iterator bi = biases.rbegin();

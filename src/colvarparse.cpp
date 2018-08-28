@@ -532,6 +532,19 @@ int colvarparse::check_keywords(std::string &conf, char const *key)
 }
 
 
+std::istream & colvarparse::read_config_line(std::istream &is,
+                                             std::string &line)
+{
+  cvm::getline(is, line);
+  config_string += line;
+  size_t const comment = line.find('#');
+  if (comment != std::string::npos) {
+    line.erase(comment);
+  }
+  return is;
+}
+
+
 std::istream & colvarparse::getline_nocomments(std::istream &is,
                                                std::string &line)
 {

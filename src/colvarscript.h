@@ -64,6 +64,7 @@ public:
     cv_help,
     cv_version,
     cv_config,
+    cv_getconfig,
     cv_configfile,
     cv_reset,
     cv_delete,
@@ -245,6 +246,14 @@ extern "C" {
            }
            script->set_str_result("Error parsing configuration string");
            return COLVARSCRIPT_ERROR;
+           )
+
+  CVSCRIPT(cv_getconfig,
+           "Get the module's configuration string read so far",
+           0, 0,
+           { },
+           script->set_str_result(cvm::main()->get_config());
+           return COLVARS_OK;
            )
 
   CVSCRIPT(cv_addenergy,
