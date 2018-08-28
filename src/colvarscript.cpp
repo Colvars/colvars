@@ -75,6 +75,15 @@ int colvarscript::run(int objc, unsigned char *const objv[])
 
   int error_code = COLVARS_OK;
 
+  // If command is found in map, execute it
+  std::string const cmd_key("cv_"+cmd);
+  if (comm_str_map.count(cmd_key) > 0) {
+  cvm::log("cmd_key = "+cmd_key);
+    error_code |= (*(comm_fns[comm_str_map[cmd_key]]))(
+                      reinterpret_cast<void *>(this), objc, objv);
+    return error_code;
+  }
+
   if (cmd == "colvar") {
     if (objc < 3) {
       result = "Missing parameters\n" + help_string();
