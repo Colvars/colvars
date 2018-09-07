@@ -670,6 +670,22 @@ void colvarproxy_namd::clear_atom(int index)
 }
 
 
+void colvarproxy_namd::update_atom_properties(int index)
+{
+  Molecule *mol = Node::Object()->molecule;
+  // update mass
+  double const mass = mol->atommass(atoms_ids[index]);
+  if (mass <= 0.001) {
+    this->log("Warning: near-zero mass for atom "+
+              cvm::to_str(atoms_ids[index]+1)+
+              "; expect unstable dynamics if you apply forces to it.\n");
+  }
+  atoms_masses[index] = mass;
+  // update charge
+  atoms_charges[index] = mol->atomcharge(atoms_ids[index]);
+}
+
+
 cvm::rvector colvarproxy_namd::position_distance(cvm::atom_pos const &pos1,
                                                  cvm::atom_pos const &pos2)
   const
