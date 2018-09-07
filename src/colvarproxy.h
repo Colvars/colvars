@@ -177,8 +177,7 @@ public:
   /// Get the mass of the given atom
   inline cvm::real get_atom_mass(int index) const
   {
-    cvm::real m = atoms_masses[index];
-    return ( m > 0. ? m : 1.0); // Avoid atoms with zero mass
+    return atoms_masses[index];
   }
 
   /// Get the charge of the given atom
