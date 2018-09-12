@@ -448,36 +448,42 @@ int colvar::init_grid_parameters(std::string const &conf)
   }
 
   lower_boundary.type(value());
-
   upper_boundary.type(value());
-  upper_wall.type(value());
 
   if (is_enabled(f_cv_scalar)) {
 
     if (get_keyval(conf, "lowerBoundary", lower_boundary, lower_boundary)) {
       enable(f_cv_lower_boundary);
     }
-    std::string lw_conf, uw_conf;
-
-    if (get_keyval(conf, "lowerWallConstant", lower_wall_k, 0.0, parse_silent)) {
-      cvm::log("Warning: lowerWallConstant and lowerWall are deprecated, "
-               "please define a harmonicWalls bias instead.\n");
-      lower_wall.type(value());
-      get_keyval(conf, "lowerWall", lower_wall, lower_boundary);
-      lw_conf = std::string("\n\
-    lowerWallConstant "+cvm::to_str(lower_wall_k*width*width)+"\n\
-    lowerWalls "+cvm::to_str(lower_wall)+"\n");
-    }
 
     if (get_keyval(conf, "upperBoundary", upper_boundary, upper_boundary)) {
       enable(f_cv_upper_boundary);
     }
 
-    if (get_keyval(conf, "upperWallConstant", upper_wall_k, 0.0, parse_silent)) {
-      cvm::log("Warning: upperWallConstant and upperWall are deprecated, "
-               "please define a harmonicWalls bias instead.\n");
+    std::string lw_conf, uw_conf;
+    if (get_keyval(conf, "lowerWallConstant", lower_wall_k, 0.0,
+                   parse_silent)) {
+      cvm::log("Reading legacy options lowerWall and lowerWallConstant: "
+               "consider using a harmonicWalls restraint.\n");
+      lower_wall.type(value());
+      if (!get_keyval(conf, "lowerWall", lower_wall, lower_boundary)) {
+        cvm::log("Warning: lowerWall will need to be "
+                 "defined explicitly in the next release.\n");
+      }
+      lw_conf = std::string("\n\
+    lowerWallConstant "+cvm::to_str(lower_wall_k*width*width)+"\n\
+    lowerWalls "+cvm::to_str(lower_wall)+"\n");
+    }
+
+    if (get_keyval(conf, "upperWallConstant", upper_wall_k, 0.0,
+                   parse_silent)) {
+      cvm::log("Reading legacy options upperWall and upperWallConstant: "
+               "consider using a harmonicWalls restraint.\n");
       upper_wall.type(value());
-      get_keyval(conf, "upperWall", upper_wall, upper_boundary);
+      if (!get_keyval(conf, "upperWall", upper_wall, upper_boundary)) {
+        cvm::log("Warning: upperWall will need to be "
+                 "defined explicitly in the next release.\n");
+      }
       uw_conf = std::string("\n\
     upperWallConstant "+cvm::to_str(upper_wall_k*width*width)+"\n\
     upperWalls "+cvm::to_str(upper_wall)+"\n");
