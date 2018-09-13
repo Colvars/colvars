@@ -11,7 +11,7 @@
  *
  *      $RCSfile: tcl_commands.C,v $
  *      $Author: johns $        $Locker:  $             $State: Exp $
- *      $Revision: 1.53 $       $Date: 2018/02/14 20:07:24 $
+ *      $Revision: 1.54 $       $Date: 2018/09/12 14:06:40 $
  *
  ***************************************************************************
  * DESCRIPTION:
@@ -287,6 +287,9 @@ int Vmd_Init(Tcl_Interp *interp) {
 
   Tcl_CreateObjCommand(interp, "mdffi", obj_mdff_cc,
         (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
+
+  Tcl_CreateObjCommand(interp, "voltool", obj_voltool,
+                       (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
 
   Tcl_CreateObjCommand(interp,  "measure", obj_measure,
                     (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
