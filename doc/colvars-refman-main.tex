@@ -228,9 +228,8 @@ Setting this to \emph{no} will use the current local coordinates that are wrappe
 
 \cvsubsec{Configuration syntax for the Colvars module}{sec:colvars_config}
 
-\cvnamdonly{All the parameters defining the colvars and their biasing or analysis algorithms are read from the file specified by the configuration option \texttt{colvarsConfig}, or by the Tcl commands \texttt{cv config} and \texttt{cv configfile}.
-Hence, none of the keywords described in this section and the following ones are available as keywords for the
-NAMD configuration file.}
+\cvnamdonly{All the parameters defining variables and their biasing or analysis algorithms are read from the file specified by the configuration option \texttt{colvarsConfig}, or by the Tcl commands \texttt{cv config} and \texttt{cv configfile}.
+\emph{None of the keywords described in the remainder of this manual are recognized directly in the NAMD configuration file, unless as arguments of \texttt{cv config}.}}
 \cvvmdonly{The Colvars configuration is usually read using the commands \texttt{cv configfile} or \texttt{cv config}.}
 The syntax of the Colvars configuration is ``\texttt{keyword value}'', where the keyword and its value are separated by any white space.
 The following rules apply:
@@ -272,17 +271,6 @@ The following keywords are available in the global context of the Colvars config
     The values of each colvar (and of other related quantities, if requested) are written to the file \outputName\texttt{.colvars.traj} every these many steps throughout the simulation.
     If the value is \texttt{0}, such trajectory file is not written.
     For optimization the output is buffered, and synchronized with the disk only when the restart file is being written.}
-
-% \item %
-%   \keydef
-%     {colvarsTrajAppend}{%
-%     global}{%
-%     Append to trajectory file?}{%
-%     boolean}{%
-%     \texttt{off}}{%
-%     If this flag is enabled, and a file with the same name as the trajectory file is already present, new data is appended to that file.
-%     Otherwise, a new file is created with the same name that overwrites the previous file.
-% \cvnamdonly{\textbf{Note:} \emph{when running consecutive simulations with the same \outputName{} (e.g.~in FEP calculations), you should enable this option to preserve the previous contents of the trajectory file.}}}
 
 \item %
   \labelkey{Colvars-global|colvarsRestartFrequency}
