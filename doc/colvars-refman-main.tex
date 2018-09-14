@@ -539,6 +539,7 @@ See Section~\ref{sec:cvc} for the physical ranges of values of each component.}
     Analogous to \texttt{hardLowerBoundary}.}
 
 \item %
+  \labelkey{expandBoundaries}{colvar|expandBoundaries} %
   \keydef
     {expandBoundaries}{%
     \texttt{colvar}}{%
@@ -613,6 +614,7 @@ See Section~\ref{sec:cvc} for the physical ranges of values of each component.}
     ``\texttt{Ep\_}$<$\texttt{name}$>$''.}
 
 \item %
+  \labelkey{colvar|outputTotalForce}
   \keydef
     {outputTotalForce}{%
     \texttt{colvar}}{%
@@ -1140,6 +1142,7 @@ Be careful when using these options in ABF simulations or when using total force
 }
 
 \item %
+  \labelkey{atom-group|fittingGroup} %
   \keydef
     {fittingGroup}{%
     atom group}{%
@@ -4660,3 +4663,37 @@ The following configuration options can modify the behavior of the scripting int
 
 }
 
+
+\cvsec{Syntax changes from older versions}{sec:colvars_config_changes}
+
+The following is a list of syntax changes in Colvars since its first release.
+Many of the older keywords are still recognized by the current code: the primary purpose of this list is to let you aware of improvements that affect old configuration files.
+
+The syntax of the latest version of Colvars can always be accessed at:\\
+\cvnamdonly{\url{https://colvars.github.io/colvars-refman-namd/colvars-refman-namd.html}}
+\cvlammpsonly{\url{https://colvars.github.io/colvars-refman-lammps/colvars-refman-lammps.html}}
+\cvvmdonly{\url{https://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html}}
+
+If you are using any of the NAMD and VMD tutorials:\\
+\url{https://www.ks.uiuc.edu/Training/Tutorials/}\\
+please be aware that \emph{several of these tutorials have not been actively maintained}: while they are updated, the following list will help you reconcile any inconsistencies.
+
+\begin{itemize}
+
+\item \textbf{Colvars version 2016-06-09 or later \cvnamdonly{(NAMD version 2.12b1 or later)}\cvvmdonly{(VMD version 1.9.3 or later)}\cvlammpsonly{(LAMMPS version 15Sep2016 or later)}.}\\
+  The legacy keyword \texttt{refPositionsGroup} has been renamed \refkey{fittingGroup}{atom-group|fittingGroup} for clarity (the legacy version is still supported).
+
+\item \textbf{Colvars version 2016-08-10 or later \cvnamdonly{(NAMD version 2.12b1 or later)}\cvvmdonly{(VMD version 1.9.3 or later)}\cvlammpsonly{(LAMMPS version 15Sep2016 or later)}.}\\
+  ``System forces'' have been replaced by ``total forces'' (see for example \refkey{outputTotalForce}{colvar|outputTotalForce}).
+  See the following page for more information:\\
+  \url{https://colvars.github.io/README-totalforce.html}
+
+\item \textbf{Colvars version 2017-01-09 or later \cvnamdonly{(NAMD version 2.13b1 or later)}\cvvmdonly{(VMD version 1.9.4 or later)}\cvlammpsonly{(LAMMPS version 10Mar2017 or later)}.}\\
+  A new type of restraint, \texttt{harmonicWalls} (see~\ref{sec:colvarbias_harmonic_walls}), replaces and improves upon the legacy keywords \texttt{lowerWall} and \texttt{upperWall}: these are still supported as short-hands.
+
+\item \textbf{Deprecation warning for calculations including wall potentials.}\\
+  The legacy keywords \texttt{lowerWall} and \texttt{upperWall} will stop having default values and will need to be set explicitly (preferably as part of the \texttt{harmonicWalls} restraint).
+  When using an ABF bias, it is recommended to set the two walls equal to \refkey{lowerBoundary}{colvar|lowerBoundary} and \refkey{upperBoundary}{colvar|upperBoundary}, respectively.
+  When using a metadynamics bias, it is recommended to set the two walls \emph{within} \refkey{lowerBoundary}{colvar|lowerBoundary} and \refkey{upperBoundary}{colvar|upperBoundary}.  This guarantees that the tails of each Gaussian hill are accounted in the region between the grid boundaries and the wall potentials.  See also \refkey{expandBoundaries}{colvar|expandBoundaries} for an automatic definition of the PMF grid boundaries.
+
+\end{itemize}
