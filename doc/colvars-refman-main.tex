@@ -228,9 +228,8 @@ Setting this to \emph{no} will use the current local coordinates that are wrappe
 
 \cvsubsec{Configuration syntax for the Colvars module}{sec:colvars_config}
 
-\cvnamdonly{All the parameters defining the colvars and their biasing or analysis algorithms are read from the file specified by the configuration option \texttt{colvarsConfig}, or by the Tcl commands \texttt{cv config} and \texttt{cv configfile}.
-Hence, none of the keywords described in this section and the following ones are available as keywords for the
-NAMD configuration file.}
+\cvnamdonly{All the parameters defining variables and their biasing or analysis algorithms are read from the file specified by the configuration option \texttt{colvarsConfig}, or by the Tcl commands \texttt{cv config} and \texttt{cv configfile}.
+\emph{None of the keywords described in the remainder of this manual are recognized directly in the NAMD configuration file, unless as arguments of \texttt{cv config}.}}
 \cvvmdonly{The Colvars configuration is usually read using the commands \texttt{cv configfile} or \texttt{cv config}.}
 The syntax of the Colvars configuration is ``\texttt{keyword value}'', where the keyword and its value are separated by any white space.
 The following rules apply:
@@ -272,17 +271,6 @@ The following keywords are available in the global context of the Colvars config
     The values of each colvar (and of other related quantities, if requested) are written to the file \outputName\texttt{.colvars.traj} every these many steps throughout the simulation.
     If the value is \texttt{0}, such trajectory file is not written.
     For optimization the output is buffered, and synchronized with the disk only when the restart file is being written.}
-
-% \item %
-%   \keydef
-%     {colvarsTrajAppend}{%
-%     global}{%
-%     Append to trajectory file?}{%
-%     boolean}{%
-%     \texttt{off}}{%
-%     If this flag is enabled, and a file with the same name as the trajectory file is already present, new data is appended to that file.
-%     Otherwise, a new file is created with the same name that overwrites the previous file.
-% \cvnamdonly{\textbf{Note:} \emph{when running consecutive simulations with the same \outputName{} (e.g.~in FEP calculations), you should enable this option to preserve the previous contents of the trajectory file.}}}
 
 \item %
   \labelkey{Colvars-global|colvarsRestartFrequency}
@@ -551,6 +539,7 @@ See Section~\ref{sec:cvc} for the physical ranges of values of each component.}
     Analogous to \texttt{hardLowerBoundary}.}
 
 \item %
+  \labelkey{expandBoundaries}{colvar|expandBoundaries} %
   \keydef
     {expandBoundaries}{%
     \texttt{colvar}}{%
@@ -625,6 +614,7 @@ See Section~\ref{sec:cvc} for the physical ranges of values of each component.}
     ``\texttt{Ep\_}$<$\texttt{name}$>$''.}
 
 \item %
+  \labelkey{colvar|outputTotalForce}
   \keydef
     {outputTotalForce}{%
     \texttt{colvar}}{%
@@ -1152,6 +1142,7 @@ Be careful when using these options in ABF simulations or when using total force
 }
 
 \item %
+  \labelkey{atom-group|fittingGroup} %
   \keydef
     {fittingGroup}{%
     atom group}{%
@@ -4672,3 +4663,37 @@ The following configuration options can modify the behavior of the scripting int
 
 }
 
+
+\cvsec{Syntax changes from older versions}{sec:colvars_config_changes}
+
+The following is a list of syntax changes in Colvars since its first release.
+Many of the older keywords are still recognized by the current code: the primary purpose of this list is to make you aware of improvements that affect old configuration files.
+
+The syntax of the latest version of Colvars can always be accessed at:\\
+\cvnamdonly{\url{https://colvars.github.io/colvars-refman-namd/colvars-refman-namd.html}}
+\cvlammpsonly{\url{https://colvars.github.io/colvars-refman-lammps/colvars-refman-lammps.html}}
+\cvvmdonly{\url{https://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html}}
+
+If you are using any of the NAMD and VMD tutorials:\\
+\url{https://www.ks.uiuc.edu/Training/Tutorials/}\\
+please be aware that \emph{several of these tutorials are not actively maintained}: for those cases, the following list will help you reconcile any inconsistencies.
+
+\begin{itemize}
+
+\item \textbf{Colvars version 2016-06-09 or later \cvnamdonly{(NAMD version 2.12b1 or later)}\cvvmdonly{(VMD version 1.9.3 or later)}\cvlammpsonly{(LAMMPS version 15Sep2016 or later)}.}\\
+  The legacy keyword \texttt{refPositionsGroup} has been renamed \refkey{fittingGroup}{atom-group|fittingGroup} for clarity (the legacy version is still supported).
+
+\item \textbf{Colvars version 2016-08-10 or later \cvnamdonly{(NAMD version 2.12b1 or later)}\cvvmdonly{(VMD version 1.9.3 or later)}\cvlammpsonly{(LAMMPS version 15Sep2016 or later)}.}\\
+  ``System forces'' have been replaced by ``total forces'' (see for example \refkey{outputTotalForce}{colvar|outputTotalForce}).
+  See the following page for more information:\\
+  \url{https://colvars.github.io/README-totalforce.html}
+
+\item \textbf{Colvars version 2017-01-09 or later \cvnamdonly{(NAMD version 2.13b1 or later)}\cvvmdonly{(VMD version 1.9.4 or later)}\cvlammpsonly{(LAMMPS version 10Mar2017 or later)}.}\\
+  A new type of restraint, \texttt{harmonicWalls} (see~\ref{sec:colvarbias_harmonic_walls}), replaces and improves upon the legacy keywords \texttt{lowerWall} and \texttt{upperWall}: these are still supported as short-hands.
+
+\item \textbf{Deprecation warning for calculations including wall potentials.}\\
+  The legacy keywords \texttt{lowerWall} and \texttt{upperWall} will stop having default values and will need to be set explicitly (preferably as part of the \texttt{harmonicWalls} restraint).
+  When using an ABF bias, it is recommended to set the two walls equal to \refkey{lowerBoundary}{colvar|lowerBoundary} and \refkey{upperBoundary}{colvar|upperBoundary}, respectively.
+  When using a metadynamics bias, it is recommended to set the two walls \emph{within} \refkey{lowerBoundary}{colvar|lowerBoundary} and \refkey{upperBoundary}{colvar|upperBoundary}.  This guarantees that the tails of each Gaussian hill are accounted in the region between the grid boundaries and the wall potentials.  See also \refkey{expandBoundaries}{colvar|expandBoundaries} for an automatic definition of the PMF grid boundaries.
+
+\end{itemize}
