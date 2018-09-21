@@ -224,14 +224,11 @@ then
     exit 2
   fi
 
-  # Update LAMMPS documentation
-  # Location of documentation has changed with version 10 May 2016
-  test -d "${target}/doc/src/PDF" && \
-    docdir="${target}/doc/src" || docdir="${target}/doc"
-  for src in ${source}/lammps/doc/*.txt
+  # Update documentation of LAMMPS fix
+  for src in ${source}/lammps/doc/src/*.txt
     do \
       tgt=$(basename ${src})
-    condcopy "${src}" "${docdir}/${tgt}"
+    condcopy "${src}" "${target}/doc/src/${tgt}"
   done
 
   # Copy PDF of the user manual
