@@ -1216,15 +1216,15 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
        "Solute scaling factor for van der Waals interactions",
        &soluteScalingFactorVdw);
    opts.range("soluteScalingFactorVdw", NOT_NEGATIVE);
-   opts.optional("soluteScaling", "ssFile",
+   opts.optional("soluteScaling", "soluteScalingFile",
        "PDB file with scaling flags; if undefined, defaults to main PDB file",
        PARSE_STRING);
-   opts.optional("soluteScaling", "ssCol",
-       "Column in the ssFile providing the scaling flag",
+   opts.optional("soluteScaling", "soluteScalingCol",
+       "Column in the soluteScalingFile providing the scaling flag",
        PARSE_STRING);
    opts.optionalB("main", "soluteScalingAll",
        "Apply scaling also to bond and angle interactions?",
-       &soluteScalingAll, TRUE);
+       &soluteScalingAll, FALSE);
 
    // Drude oscillators
    opts.optionalB("main", "drude", "Perform integration of Drude oscillators?",
