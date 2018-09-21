@@ -18,7 +18,7 @@ then
         (default: create diff files for inspection --- MD code may be different)
 
    <target source tree> = root directory of the MD code sources
-   supported MD codes: NAMD, VMD, LAMMPS, GROMACS
+   supported MD codes: NAMD, VMD, LAMMPS
 
 EOF
    exit 1
@@ -234,10 +234,29 @@ then
     condcopy "${src}" "${docdir}/${tgt}"
   done
 
+  downloaded_pdf=0
   # Copy PDF of the user manual
-  cd ${source}/doc
-  make colvars-refman-lammps.pdf 1> /dev/null 2> /dev/null
-  cd - 1> /dev/null 2> /dev/null
+  if [ ! -f ${source}/doc/colvars-refman-lammps.pdf ] ; then
+    if curl -L -o ${source}/doc/colvars-refman-lammps.pdf \
+            https://colvars.github.io/pdf/colvars-refman-lammps.pdf \
+        1> /dev/null 2> /dev/null || \
+        wget -O ${source}/doc/colvars-refman-lammps.pdf \
+              https://colvars.github.io/pdf/colvars-refman-lammps.pdf \
+        1> /dev/null 2> /dev/null \
+       ; then
+      downloaded_pdf=1
+      echo -n '.'
+    else
+      echo ""
+      echo "Error: could not download the PDF manual automatically."
+      echo "Please download it manually from:"
+      echo "  https://colvars.github.io/pdf/colvars-refman-lammps.pdf"
+      echo "and copy it into ${source}/doc,"
+      echo "or re-generate it using:"
+      echo "  cd ${source}/doc ; make colvars-refman-lammps.pdf; cd -"
+      exit 1
+    fi
+  fi
   for src in ${source}/doc/colvars-refman-lammps.pdf
   do \
     tgt=$(basename ${src})
@@ -245,6 +264,12 @@ then
   done
 
   echo ' done.'
+  if [ ${downloaded_pdf} = 1 ] ; then
+    echo "Note: the PDF manual for the latest Colvars version was downloaded.  "
+    echo "If you are using an older version, you can generate the corresponding PDF with:"
+    echo "  cd ${source}/doc ; make colvars-refman-lammps.pdf; cd -"
+    echo "and run this script a second time."
+  fi
   exit 0
 fi
 
