@@ -1,16 +1,38 @@
 \cvnamdugonly{
-\section{Collective Variable-based Calculations (Colvars)\footnote{The features described in this section were contributed by Giacomo Fiorin (ICMS, Temple University, Philadelphia, PA, USA) and J\'er\^ome H\'enin (IBPC, CNRS, Paris, France). Please send feedback and suggestions to the NAMD mailing list.}}
+\section{Collective Variable-based Calculations (Colvars)}
 \label{section:colvars}
-\emph{This chapter can also be downloaded as a separate manual (PDF and HTML) at the webpage:\\{\tt http://colvars.github.io}}
+
+The features described in this section were originally contributed to NAMD by Giacomo Fiorin (NIH) and J\'er\^ome H\'enin (CNRS, France) and are currently developed at this external repository:\\
+\cvurl{https://github.com/Colvars/colvars}\\
+An updated version of this section can also be downloaded as a separate manual: \\
+HTML: \cvurl{https://colvars.github.io/colvars-refman-namd/colvars-refman-namd.html} \\
+PDF: \cvurl{https://colvars.github.io/pdf/colvars-refman-namd.pdf}\\
+
+See section~\ref{sec:colvars_config_changes} for specific changes that affect compatibility between versions.
+Please ask any usage questions through the NAMD mailing list, and development questions through GitHub.
+
+\subsection*{Overview}
 }
 
 \cvvmdugonly{
 \chapter{Collective Variables Interface (Colvars)}
 \label{section:colvars}
+
+The features described in this section were originally contributed to VMD by Giacomo Fiorin (NIH) and J\'er\^ome H\'enin (CNRS, France) and are currently developed at this external repository:\\
+\cvurl{https://github.com/Colvars/colvars}\\
+An updated version of this section can also be downloaded as a separate manual: \\
+HTML: \cvurl{https://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html} \\
+PDF: \cvurl{https://colvars.github.io/pdf/colvars-refman-vmd.pdf}\\
+
+See section~\ref{sec:colvars_config_changes} for specific changes that affect compatibility between versions.
+Please ask any usage questions through the VMD mailing list, and development questions through GitHub.
+
+\subsection*{Overview}
 }
 \cvrefmanonly{
-\cvsec{Introduction}{sec:colvars_intro}
+\cvsec{Overview}{sec:colvars_intro}
 }
+
 In molecular dynamics simulations, it is often useful to reduce the large number of degrees of freedom of a physical system into few parameters whose statistical distributions can be analyzed individually, or used to define biasing potentials to alter the dynamics of the system in a controlled manner.
 These have been called `order parameters', `collective variables', `(surrogate) reaction coordinates', and many other terms.
 
