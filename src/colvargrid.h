@@ -5,7 +5,6 @@
 
 #include <iostream>
 #include <iomanip>
-#include <cmath>
 
 #include "colvar.h"
 #include "colvarmodule.h"

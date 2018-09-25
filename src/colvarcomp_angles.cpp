@@ -4,9 +4,6 @@
 #include "colvar.h"
 #include "colvarcomp.h"
 
-#include <cmath>
-
-
 
 colvar::angle::angle(std::string const &conf)
   : cvc(conf)

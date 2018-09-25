@@ -1,7 +1,5 @@
 // -*- c++ -*-
 
-#include <cmath>
-
 #include "colvarmodule.h"
 #include "colvarparse.h"
 #include "colvaratoms.h"

@@ -3,6 +3,8 @@
 #ifndef COLVARMODULE_H
 #define COLVARMODULE_H
 
+#include <cmath>
+
 #include "colvars_version.h"
 
 #ifndef COLVARS_DEBUG

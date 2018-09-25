@@ -3,7 +3,6 @@
 #ifndef COLVARTYPES_H
 #define COLVARTYPES_H
 
-#include <cmath>
 #include <vector>
 
 #include "colvarmodule.h"

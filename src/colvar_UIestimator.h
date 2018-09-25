@@ -3,7 +3,6 @@
 #ifndef COLVAR_UIESTIMATOR_H
 #define COLVAR_UIESTIMATOR_H
 
-#include <cmath>
 #include <vector>
 #include <iostream>
 #include <fstream>
