@@ -156,12 +156,9 @@ public:
   /// at a later time
   static inline real logn(real const &x)
   {
-    return ::logn(static_cast<double>(x));
+    return ::log(static_cast<double>(x));
   }
 
-
-  /// Residue identifier
-  typedef  int       residue_id;
 
   class rvector;
   template <class T> class vector1d;
