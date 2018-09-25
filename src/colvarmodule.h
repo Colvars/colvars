@@ -50,6 +50,7 @@ class colvar;
 class colvarbias;
 class colvarproxy;
 class colvarscript;
+class colvarvalue;
 
 
 /// \brief Collective variables module (main class)
@@ -487,26 +488,92 @@ public:
                 long        traj_read_begin,
                 long        traj_read_end);
 
-  /// Quick conversion of an object to a string
-  template<typename T> static std::string to_str(T const &x,
-                                                  size_t const &width = 0,
-                                                  size_t const &prec = 0);
-  /// Quick conversion of a vector of objects to a string
-  template<typename T> static std::string to_str(std::vector<T> const &x,
-                                                  size_t const &width = 0,
-                                                  size_t const &prec = 0);
+
+  /// Convert to string for output purposes
+  static inline std::string to_str(char const *s)
+  {
+    return std::string(s);
+  }
+
+  /// Convert to string for output purposes
+  static inline std::string to_str(std::string const &s)
+  {
+    return s;
+  }
+
+  /// Convert to string for output purposes
+  static std::string to_str(int const &x,
+                            size_t width = 0, size_t prec = 0);
+
+  /// Convert to string for output purposes
+  static std::string to_str(size_t const &x,
+                            size_t width = 0, size_t prec = 0);
+
+  /// Convert to string for output purposes
+  static std::string to_str(long int const &x,
+                            size_t width = 0, size_t prec = 0);
+
+  /// Convert to string for output purposes
+  static std::string to_str(real const &x,
+                            size_t width = 0, size_t prec = 0);
+
+  /// Convert to string for output purposes
+  static std::string to_str(rvector const &x,
+                            size_t width = 0, size_t prec = 0);
+
+  /// Convert to string for output purposes
+  static std::string to_str(quaternion const &x,
+                            size_t width = 0, size_t prec = 0);
+
+  /// Convert to string for output purposes
+  static std::string to_str(colvarvalue const &x,
+                            size_t width = 0, size_t prec = 0);
+
+  /// Convert to string for output purposes
+  static std::string to_str(vector1d<real> const &x,
+                            size_t width = 0, size_t prec = 0);
+
+  /// Convert to string for output purposes
+  static std::string to_str(matrix2d<real> const &x,
+                            size_t width = 0, size_t prec = 0);
+
+
+  /// Convert to string for output purposes
+  static std::string to_str(std::vector<int> const &x,
+                            size_t width = 0, size_t prec = 0);
+
+  /// Convert to string for output purposes
+  static std::string to_str(std::vector<size_t> const &x,
+                            size_t width = 0, size_t prec = 0);
+
+  /// Convert to string for output purposes
+  static std::string to_str(std::vector<long int> const &x,
+                            size_t width = 0, size_t prec = 0);
+
+  /// Convert to string for output purposes
+  static std::string to_str(std::vector<real> const &x,
+                            size_t width = 0, size_t prec = 0);
+
+  /// Convert to string for output purposes
+  static std::string to_str(std::vector<rvector> const &x,
+                            size_t width = 0, size_t prec = 0);
+
+  /// Convert to string for output purposes
+  static std::string to_str(std::vector<quaternion> const &x,
+                            size_t width = 0, size_t prec = 0);
+
+  /// Convert to string for output purposes
+  static std::string to_str(std::vector<colvarvalue> const &x,
+                            size_t width = 0, size_t prec = 0);
+
+  /// Convert to string for output purposes
+  static std::string to_str(std::vector<std::string> const &x,
+                            size_t width = 0, size_t prec = 0);
+
 
   /// Reduce the number of characters in a string
-  static inline std::string wrap_string(std::string const &s,
-                                         size_t const &nchars)
-  {
-    if (!s.size())
-      return std::string(nchars, ' ');
-    else
-      return ( (s.size() <= size_t(nchars)) ?
-               (s+std::string(nchars-s.size(), ' ')) :
-               (std::string(s, 0, nchars)) );
-  }
+  static std::string wrap_string(std::string const &s,
+                                 size_t nchars);
 
   /// Number of characters to represent a time step
   static size_t const it_width;
@@ -684,43 +751,6 @@ typedef colvarmodule cvm;
 
 std::ostream & operator << (std::ostream &os, cvm::rvector const &v);
 std::istream & operator >> (std::istream &is, cvm::rvector &v);
-
-
-template<typename T> std::string cvm::to_str(T const &x,
-                                             size_t const &width,
-                                             size_t const &prec) {
-  std::ostringstream os;
-  if (width) os.width(width);
-  if (prec) {
-    os.setf(std::ios::scientific, std::ios::floatfield);
-    os.precision(prec);
-  }
-  os << x;
-  return os.str();
-}
-
-
-template<typename T> std::string cvm::to_str(std::vector<T> const &x,
-                                             size_t const &width,
-                                             size_t const &prec) {
-  if (!x.size()) return std::string("");
-  std::ostringstream os;
-  if (prec) {
-    os.setf(std::ios::scientific, std::ios::floatfield);
-  }
-  os << "{ ";
-  if (width) os.width(width);
-  if (prec) os.precision(prec);
-  os << x[0];
-  for (size_t i = 1; i < x.size(); i++) {
-    os << ", ";
-    if (width) os.width(width);
-    if (prec) os.precision(prec);
-    os << x[i];
-  }
-  os << " }";
-  return os.str();
-}
 
 
 #endif

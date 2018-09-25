@@ -1045,7 +1045,8 @@ public:
 
     if ( !(is >> hash) || (hash != "#") ) {
       cvm::error("Error reading grid at position "+
-                 cvm::to_str(is.tellg())+" in stream(read \"" + hash + "\")\n");
+                 cvm::to_str(static_cast<size_t>(is.tellg()))+
+                 " in stream(read \"" + hash + "\")\n");
       return is;
     }
 
@@ -1067,7 +1068,8 @@ public:
     for (size_t i = 0; i < nd; i++ ) {
       if ( !(is >> hash) || (hash != "#") ) {
         cvm::error("Error reading grid at position "+
-                   cvm::to_str(is.tellg())+" in stream(read \"" + hash + "\")\n");
+                   cvm::to_str(static_cast<size_t>(is.tellg()))+
+                   " in stream(read \"" + hash + "\")\n");
         return is;
       }
 

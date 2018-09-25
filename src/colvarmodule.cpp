@@ -1905,6 +1905,159 @@ int cvm::replica_comm_send(char* msg_data, int msg_len, int dest_rep)
 
 
 
+template<typename T> std::string _to_str(T const &x,
+                                         size_t width, size_t prec)
+{
+  std::ostringstream os;
+  if (width) os.width(width);
+  if (prec) {
+    os.setf(std::ios::scientific, std::ios::floatfield);
+    os.precision(prec);
+  }
+  os << x;
+  return os.str();
+}
+
+
+template<typename T> std::string _to_str_vector(std::vector<T> const &x,
+                                                size_t width, size_t prec)
+{
+  if (!x.size()) return std::string("");
+  std::ostringstream os;
+  if (prec) {
+    os.setf(std::ios::scientific, std::ios::floatfield);
+  }
+  os << "{ ";
+  if (width) os.width(width);
+  if (prec) os.precision(prec);
+  os << x[0];
+  for (size_t i = 1; i < x.size(); i++) {
+    os << ", ";
+    if (width) os.width(width);
+    if (prec) os.precision(prec);
+    os << x[i];
+  }
+  os << " }";
+  return os.str();
+}
+
+
+std::string cvm::to_str(int const &x,
+                        size_t width, size_t prec)
+{
+  return _to_str<int>(x, width, prec);
+}
+
+std::string cvm::to_str(size_t const &x,
+                        size_t width, size_t prec)
+{
+  return _to_str<size_t>(x, width, prec);
+}
+
+std::string cvm::to_str(long int const &x,
+                        size_t width, size_t prec)
+{
+  return _to_str<long int>(x, width, prec);
+}
+
+std::string cvm::to_str(cvm::real const &x,
+                        size_t width, size_t prec)
+{
+  return _to_str<cvm::real>(x, width, prec);
+}
+
+std::string cvm::to_str(cvm::rvector const &x,
+                        size_t width, size_t prec)
+{
+  return _to_str<cvm::rvector>(x, width, prec);
+}
+
+std::string cvm::to_str(cvm::quaternion const &x,
+                        size_t width, size_t prec)
+{
+  return _to_str<cvm::quaternion>(x, width, prec);
+}
+
+std::string cvm::to_str(colvarvalue const &x,
+                        size_t width, size_t prec)
+{
+  return _to_str<colvarvalue>(x, width, prec);
+}
+
+std::string cvm::to_str(cvm::vector1d<cvm::real> const &x,
+                        size_t width, size_t prec)
+{
+  return _to_str< cvm::vector1d<cvm::real> >(x, width, prec);
+}
+
+std::string cvm::to_str(cvm::matrix2d<cvm::real> const &x,
+                        size_t width, size_t prec)
+{
+  return _to_str< cvm::matrix2d<cvm::real> >(x, width, prec);
+}
+
+
+std::string cvm::to_str(std::vector<int> const &x,
+                        size_t width, size_t prec)
+{
+  return _to_str_vector<int>(x, width, prec);
+}
+
+std::string cvm::to_str(std::vector<size_t> const &x,
+                        size_t width, size_t prec)
+{
+  return _to_str_vector<size_t>(x, width, prec);
+}
+
+std::string cvm::to_str(std::vector<long int> const &x,
+                        size_t width, size_t prec)
+{
+  return _to_str_vector<long int>(x, width, prec);
+}
+
+std::string cvm::to_str(std::vector<cvm::real> const &x,
+                        size_t width, size_t prec)
+{
+  return _to_str_vector<cvm::real>(x, width, prec);
+}
+
+std::string cvm::to_str(std::vector<cvm::rvector> const &x,
+                        size_t width, size_t prec)
+{
+  return _to_str_vector<cvm::rvector>(x, width, prec);
+}
+
+std::string cvm::to_str(std::vector<cvm::quaternion> const &x,
+                        size_t width, size_t prec)
+{
+  return _to_str_vector<cvm::quaternion>(x, width, prec);
+}
+
+std::string cvm::to_str(std::vector<colvarvalue> const &x,
+                        size_t width, size_t prec)
+{
+  return _to_str_vector<colvarvalue>(x, width, prec);
+}
+
+std::string cvm::to_str(std::vector<std::string> const &x,
+                        size_t width, size_t prec)
+{
+  return _to_str_vector<std::string>(x, width, prec);
+}
+
+
+std::string cvm::wrap_string(std::string const &s, size_t nchars)
+{
+  if (!s.size()) {
+    return std::string(nchars, ' ');
+  } else {
+    return ( (s.size() <= nchars) ?
+             (s+std::string(nchars-s.size(), ' ')) :
+             (std::string(s, 0, nchars)) );
+  }
+}
+
+
 // shared pointer to the proxy object
 colvarproxy *colvarmodule::proxy = NULL;
 

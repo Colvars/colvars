@@ -329,7 +329,8 @@ void colvarmodule::rotation::calc_optimal_rotation(std::vector<cvm::atom_pos> co
   S_backup = S;
 
   if (b_debug_gradients) {
-    cvm::log("S     = "+cvm::to_str(cvm::to_str(S_backup), cvm::cv_width, cvm::cv_prec)+"\n");
+    cvm::log("S     = "+cvm::to_str(S_backup,
+                                    cvm::cv_width, cvm::cv_prec)+"\n");
   }
 
   diagonalize_matrix(S, S_eigval, S_eigvec);
