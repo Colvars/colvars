@@ -1,7 +1,5 @@
 // -*- c++ -*-
 
-#include <cmath>
-
 #include <tcl.h>
 
 #include "VMDApp.h"

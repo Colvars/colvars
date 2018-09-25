@@ -9,8 +9,6 @@
 #include <fstream>
 #include <string>
 
-#include <typeinfo>
-
 // only for colvar module!
 // when integrated into other code, just remove this line and "...cvm::backup_file(...)"
 #include "colvarmodule.h"
