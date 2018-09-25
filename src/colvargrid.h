@@ -329,7 +329,7 @@ public:
                           lower_boundaries[i].real_value ) / widths[i];
       int nbins_round = (int)(nbins+0.5);
 
-      if (std::fabs(nbins - cvm::real(nbins_round)) > 1.0E-10) {
+      if (cvm::fabs(nbins - cvm::real(nbins_round)) > 1.0E-10) {
         cvm::log("Warning: grid interval("+
                  cvm::to_str(lower_boundaries[i], cvm::cv_width, cvm::cv_prec)+" - "+
                  cvm::to_str(upper_boundaries[i], cvm::cv_width, cvm::cv_prec)+
@@ -406,14 +406,14 @@ public:
   /// the provided value is in
   inline int value_to_bin_scalar(colvarvalue const &value, const int i) const
   {
-    return (int) std::floor( (value.real_value - lower_boundaries[i].real_value) / widths[i] );
+    return (int) cvm::floor( (value.real_value - lower_boundaries[i].real_value) / widths[i] );
   }
 
   /// \brief Use the lower boundary and the width to report which bin
   /// the provided value is in and assign first or last bin if out of boundaries
   inline int value_to_bin_scalar_bound(colvarvalue const &value, const int i) const
   {
-    int bin_index = std::floor( (value.real_value - lower_boundaries[i].real_value) / widths[i] );
+    int bin_index = cvm::floor( (value.real_value - lower_boundaries[i].real_value) / widths[i] );
     if (bin_index < 0) bin_index=0;
     if (bin_index >=int(nx[i])) bin_index=int(nx[i])-1;
     return (int) bin_index;
@@ -424,7 +424,7 @@ public:
                                  colvarvalue const &new_offset,
                                  cvm::real   const &new_width) const
   {
-    return (int) std::floor( (value.real_value - new_offset.real_value) / new_width );
+    return (int) cvm::floor( (value.real_value - new_offset.real_value) / new_width );
   }
 
   /// \brief Use the two boundaries and the width to report the
@@ -603,8 +603,8 @@ public:
 
       if (periodic[i]) continue;
 
-      cvm::real dl = std::sqrt(cv[i]->dist2(values[i], lower_boundaries[i])) / widths[i];
-      cvm::real du = std::sqrt(cv[i]->dist2(values[i], upper_boundaries[i])) / widths[i];
+      cvm::real dl = cvm::sqrt(cv[i]->dist2(values[i], lower_boundaries[i])) / widths[i];
+      cvm::real du = cvm::sqrt(cv[i]->dist2(values[i], upper_boundaries[i])) / widths[i];
 
       if (values[i].real_value < lower_boundaries[i])
         dl *= -1.0;
@@ -841,7 +841,7 @@ public:
     if (old_nx.size()) {
       for (size_t i = 0; i < nd; i++) {
         if ( (old_nx[i] != nx[i]) ||
-             (std::sqrt(cv[i]->dist2(old_lb[i],
+             (cvm::sqrt(cv[i]->dist2(old_lb[i],
                                      lower_boundaries[i])) > 1.0E-10) ) {
           new_params = true;
         }
@@ -866,11 +866,11 @@ public:
   void check_consistency()
   {
     for (size_t i = 0; i < nd; i++) {
-      if ( (std::sqrt(cv[i]->dist2(cv[i]->lower_boundary,
+      if ( (cvm::sqrt(cv[i]->dist2(cv[i]->lower_boundary,
                                    lower_boundaries[i])) > 1.0E-10) ||
-           (std::sqrt(cv[i]->dist2(cv[i]->upper_boundary,
+           (cvm::sqrt(cv[i]->dist2(cv[i]->upper_boundary,
                                    upper_boundaries[i])) > 1.0E-10) ||
-           (std::sqrt(cv[i]->dist2(cv[i]->width,
+           (cvm::sqrt(cv[i]->dist2(cv[i]->width,
                                    widths[i])) > 1.0E-10) ) {
         cvm::error("Error: restart information for a grid is "
                    "inconsistent with that of its colvars.\n");
@@ -888,11 +888,11 @@ public:
       // we skip dist2(), because periodicities and the like should
       // matter: boundaries should be EXACTLY the same (otherwise,
       // map_grid() should be used)
-      if ( (std::fabs(other_grid.lower_boundaries[i] -
+      if ( (cvm::fabs(other_grid.lower_boundaries[i] -
                       lower_boundaries[i]) > 1.0E-10) ||
-           (std::fabs(other_grid.upper_boundaries[i] -
+           (cvm::fabs(other_grid.upper_boundaries[i] -
                       upper_boundaries[i]) > 1.0E-10) ||
-           (std::fabs(other_grid.widths[i] -
+           (cvm::fabs(other_grid.widths[i] -
                       widths[i]) > 1.0E-10) ||
            (data.size() != other_grid.data.size()) ) {
         cvm::error("Error: inconsistency between "
@@ -1074,8 +1074,8 @@ public:
       is >> lower >> width >> nx_read[i] >> periodic;
 
 
-      if ( (std::fabs(lower - lower_boundaries[i].real_value) > 1.0e-10) ||
-           (std::fabs(width - widths[i] ) > 1.0e-10) ||
+      if ( (cvm::fabs(lower - lower_boundaries[i].real_value) > 1.0e-10) ||
+           (cvm::fabs(width - widths[i] ) > 1.0e-10) ||
            (nx_read[i] != nx[i]) ) {
         cvm::log("Warning: reading from different grid definition (colvar "
                  + cvm::to_str(i+1) + "); remapping data on new grid.\n");
@@ -1238,7 +1238,7 @@ public:
       if (A0 * A1 == 0) {
         return 0.; // can't handle empty bins
       } else {
-        return (std::log((cvm::real)A1) - std::log((cvm::real)A0))
+        return (cvm::logn((cvm::real)A1) - cvm::logn((cvm::real)A0))
           / (widths[n] * 2.);
       }
     } else if (ix[n] > 0 && ix[n] < nx[n]-1) { // not an edge
@@ -1250,7 +1250,7 @@ public:
       if (A0 * A1 == 0) {
         return 0.; // can't handle empty bins
       } else {
-        return (std::log((cvm::real)A1) - std::log((cvm::real)A0))
+        return (cvm::logn((cvm::real)A1) - cvm::logn((cvm::real)A0))
           / (widths[n] * 2.);
       }
     } else {
@@ -1263,8 +1263,8 @@ public:
       if (A0 * A1 * A2 == 0) {
         return 0.; // can't handle empty bins
       } else {
-        return (-1.5 * std::log((cvm::real)A0) + 2. * std::log((cvm::real)A1)
-          - 0.5 * std::log((cvm::real)A2)) * increment / widths[n];
+        return (-1.5 * cvm::logn((cvm::real)A0) + 2. * cvm::logn((cvm::real)A1)
+          - 0.5 * cvm::logn((cvm::real)A2)) * increment / widths[n];
       }
     }
   }

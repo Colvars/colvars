@@ -177,7 +177,7 @@ public:
   /// Norm of this colvarvalue
   inline cvm::real norm() const
   {
-    return std::sqrt(this->norm2());
+    return cvm::sqrt(this->norm2());
   }
 
   /// Sum of the components of this colvarvalue (if more than one dimension)
@@ -721,7 +721,7 @@ inline cvm::real colvarvalue::dist2(colvarvalue const &x2) const
   case colvarvalue::type_unit3vector:
   case colvarvalue::type_unit3vectorderiv:
     // angle between (*this) and x2 is the distance
-    return std::acos(this->rvector_value * x2.rvector_value) * std::acos(this->rvector_value * x2.rvector_value);
+    return cvm::acos(this->rvector_value * x2.rvector_value) * cvm::acos(this->rvector_value * x2.rvector_value);
   case colvarvalue::type_quaternion:
   case colvarvalue::type_quaternionderiv:
     // angle between (*this) and x2 is the distance, the quaternion
