@@ -4,7 +4,6 @@
 #include <sstream>
 #include <fstream>
 #include <iomanip>
-#include <cmath>
 #include <algorithm>
 
 // used to set the absolute path of a replica file
