@@ -472,12 +472,12 @@ void colvarproxy_namd::calculate()
 
 // Callback functions
 
-#ifdef NAMD_TCL
-
 void colvarproxy_namd::init_tcl_pointers()
 {
+#ifdef NAMD_TCL
   // Store pointer to NAMD's Tcl interpreter
   _tcl_interp = reinterpret_cast<void *>(Node::Object()->getScript()->interp);
+#endif
 }
 
 int colvarproxy_namd::run_force_callback()
@@ -501,7 +501,6 @@ int colvarproxy_namd::run_colvar_gradient_callback(
   return colvarproxy::tcl_run_colvar_gradient_callback(name, cvc_values,
                                                        gradient);
 }
-#endif
 
 
 void colvarproxy_namd::add_energy(cvm::real energy)
