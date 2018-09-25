@@ -710,7 +710,8 @@ std::istream & colvarbias_restraint::read_state(std::istream &is)
        (set_state_params(conf) != COLVARS_OK) ) {
     cvm::error("Error: in reading state configuration for \""+bias_type+"\" bias \""+
                this->name+"\" at position "+
-               cvm::to_str(is.tellg())+" in stream.\n", INPUT_ERROR);
+               cvm::to_str(static_cast<size_t>(is.tellg()))+
+               " in stream.\n", INPUT_ERROR);
     is.clear();
     is.seekg(start_pos, std::ios::beg);
     is.setstate(std::ios::failbit);
@@ -720,7 +721,8 @@ std::istream & colvarbias_restraint::read_state(std::istream &is)
   if (!read_state_data(is)) {
     cvm::error("Error: in reading state data for \""+bias_type+"\" bias \""+
                this->name+"\" at position "+
-               cvm::to_str(is.tellg())+" in stream.\n", INPUT_ERROR);
+               cvm::to_str(static_cast<size_t>(is.tellg()))+
+               " in stream.\n", INPUT_ERROR);
     is.clear();
     is.seekg(start_pos, std::ios::beg);
     is.setstate(std::ios::failbit);
@@ -731,7 +733,7 @@ std::istream & colvarbias_restraint::read_state(std::istream &is)
     cvm::log("brace = "+brace+"\n");
     cvm::error("Error: corrupt restart information for \""+bias_type+"\" bias \""+
                this->name+"\": no matching brace at position "+
-               cvm::to_str(is.tellg())+" in stream.\n");
+               cvm::to_str(static_cast<size_t>(is.tellg()))+" in stream.\n");
     is.setstate(std::ios::failbit);
   }
 
