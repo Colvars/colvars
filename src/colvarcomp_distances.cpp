@@ -311,7 +311,7 @@ cvm::real colvar::distance_z::dist2(colvarvalue const &x1,
 {
   cvm::real diff = x1.real_value - x2.real_value;
   if (b_periodic) {
-    cvm::real shift = std::floor(diff/period + 0.5);
+    cvm::real shift = cvm::floor(diff/period + 0.5);
     diff -= shift * period;
   }
   return diff * diff;
@@ -323,7 +323,7 @@ colvarvalue colvar::distance_z::dist2_lgrad(colvarvalue const &x1,
 {
   cvm::real diff = x1.real_value - x2.real_value;
   if (b_periodic) {
-    cvm::real shift = std::floor(diff/period + 0.5);
+    cvm::real shift = cvm::floor(diff/period + 0.5);
     diff -= shift * period;
   }
   return 2.0 * diff;
@@ -335,7 +335,7 @@ colvarvalue colvar::distance_z::dist2_rgrad(colvarvalue const &x1,
 {
   cvm::real diff = x1.real_value - x2.real_value;
   if (b_periodic) {
-    cvm::real shift = std::floor(diff/period + 0.5);
+    cvm::real shift = cvm::floor(diff/period + 0.5);
     diff -= shift * period;
   }
   return (-2.0) * diff;
@@ -349,7 +349,7 @@ void colvar::distance_z::wrap(colvarvalue &x) const
     return;
   }
 
-  cvm::real shift = std::floor((x.real_value - wrap_center) / period + 0.5);
+  cvm::real shift = cvm::floor((x.real_value - wrap_center) / period + 0.5);
   x.real_value -= shift * period;
   return;
 }
@@ -830,7 +830,7 @@ void colvar::gyration::calc_value()
   for (cvm::atom_iter ai = atoms->begin(); ai != atoms->end(); ai++) {
     x.real_value += (ai->pos).norm2();
   }
-  x.real_value = std::sqrt(x.real_value / cvm::real(atoms->size()));
+  x.real_value = cvm::sqrt(x.real_value / cvm::real(atoms->size()));
 }
 
 
@@ -1077,7 +1077,7 @@ void colvar::rmsd::calc_value()
     x.real_value += ((*atoms)[ia].pos - ref_pos[ia]).norm2();
   }
   x.real_value /= cvm::real(atoms->size()); // MSD
-  x.real_value = std::sqrt(x.real_value);
+  x.real_value = cvm::sqrt(x.real_value);
 }
 
 
@@ -1453,7 +1453,7 @@ void colvar::eigenvector::calc_Jacobian_derivative()
     }
   }
 
-  jd.real_value = sum * std::sqrt(eigenvec_invnorm2);
+  jd.real_value = sum * cvm::sqrt(eigenvec_invnorm2);
 }
 
 

@@ -182,9 +182,9 @@ void colvar::orientation_angle::calc_value()
   rot.calc_optimal_rotation(ref_pos, atoms->positions_shifted(-1.0 * atoms_cog));
 
   if ((rot.q).q0 >= 0.0) {
-    x.real_value = (180.0/PI) * 2.0 * std::acos((rot.q).q0);
+    x.real_value = (180.0/PI) * 2.0 * cvm::acos((rot.q).q0);
   } else {
-    x.real_value = (180.0/PI) * 2.0 * std::acos(-1.0 * (rot.q).q0);
+    x.real_value = (180.0/PI) * 2.0 * cvm::acos(-1.0 * (rot.q).q0);
   }
 }
 
@@ -193,7 +193,7 @@ void colvar::orientation_angle::calc_gradients()
 {
   cvm::real const dxdq0 =
     ( ((rot.q).q0 * (rot.q).q0 < 1.0) ?
-      ((180.0 / PI) * (-2.0) / std::sqrt(1.0 - ((rot.q).q0 * (rot.q).q0))) :
+      ((180.0 / PI) * (-2.0) / cvm::sqrt(1.0 - ((rot.q).q0 * (rot.q).q0))) :
       0.0 );
 
   for (size_t ia = 0; ia < atoms->size(); ia++) {

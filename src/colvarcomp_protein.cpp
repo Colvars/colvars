@@ -383,8 +383,8 @@ void colvar::dihedPC::calc_value()
   for (size_t i = 0; i < theta.size(); i++) {
     theta[i]->calc_value();
     cvm::real const t = (PI / 180.) * theta[i]->value().real_value;
-    x.real_value += coeffs[2*i  ] * std::cos(t)
-                  + coeffs[2*i+1] * std::sin(t);
+    x.real_value += coeffs[2*i  ] * cvm::cos(t)
+                  + coeffs[2*i+1] * cvm::sin(t);
   }
 }
 
@@ -401,8 +401,8 @@ void colvar::dihedPC::apply_force(colvarvalue const &force)
 {
   for (size_t i = 0; i < theta.size(); i++) {
     cvm::real const t = (PI / 180.) * theta[i]->value().real_value;
-    cvm::real const dcosdt = - (PI / 180.) * std::sin(t);
-    cvm::real const dsindt =   (PI / 180.) * std::cos(t);
+    cvm::real const dcosdt = - (PI / 180.) * cvm::sin(t);
+    cvm::real const dsindt =   (PI / 180.) * cvm::cos(t);
 
     theta[i]->apply_force((coeffs[2*i  ] * dcosdt +
                            coeffs[2*i+1] * dsindt) * force);

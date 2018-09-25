@@ -53,7 +53,7 @@ bool colvarproxy_system::total_forces_same_step() const
 
 inline int round_to_integer(cvm::real x)
 {
-  return std::floor(x+0.5);
+  return cvm::floor(x+0.5);
 }
 
 

@@ -1005,7 +1005,7 @@ int colvarbias_restraint_harmonic_walls::init(std::string const &conf)
                  INPUT_ERROR);
       return INPUT_ERROR;
     }
-    force_k = std::sqrt(lower_wall_k * upper_wall_k);
+    force_k = cvm::sqrt(lower_wall_k * upper_wall_k);
     // transform the two constants to relative values using gemetric mean as ref
     // to preserve force_k if provided as single parameter
     // (allow changing both via force_k)
@@ -1381,7 +1381,7 @@ int colvarbias_restraint_histogram::init(std::string const &conf)
   cvm::real const nbins = (upper_boundary - lower_boundary) / width;
   int const nbins_round = (int)(nbins);
 
-  if (std::fabs(nbins - cvm::real(nbins_round)) > 1.0E-10) {
+  if (cvm::fabs(nbins - cvm::real(nbins_round)) > 1.0E-10) {
     cvm::log("Warning: grid interval ("+
              cvm::to_str(lower_boundary, cvm::cv_width, cvm::cv_prec)+" - "+
              cvm::to_str(upper_boundary, cvm::cv_width, cvm::cv_prec)+
@@ -1431,7 +1431,7 @@ int colvarbias_restraint_histogram::init(std::string const &conf)
     }
   }
   cvm::real const ref_integral = ref_p.sum() * width;
-  if (std::fabs(ref_integral - 1.0) > 1.0e-03) {
+  if (cvm::fabs(ref_integral - 1.0) > 1.0e-03) {
     cvm::log("Reference distribution not normalized, normalizing to unity.\n");
     ref_p /= ref_integral;
   }
@@ -1462,7 +1462,7 @@ int colvarbias_restraint_histogram::update()
     vector_size += variables(icv)->value().size();
   }
 
-  cvm::real const norm = 1.0/(std::sqrt(2.0*PI)*gaussian_width*vector_size);
+  cvm::real const norm = 1.0/(cvm::sqrt(2.0*PI)*gaussian_width*vector_size);
 
   // calculate the histogram
   p.reset();
@@ -1473,7 +1473,7 @@ int colvarbias_restraint_histogram::update()
       size_t igrid;
       for (igrid = 0; igrid < p.size(); igrid++) {
         cvm::real const x_grid = (lower_boundary + (igrid+0.5)*width);
-        p[igrid] += norm * std::exp(-1.0 * (x_grid - cv_value) * (x_grid - cv_value) /
+        p[igrid] += norm * cvm::exp(-1.0 * (x_grid - cv_value) * (x_grid - cv_value) /
                                     (2.0 * gaussian_width * gaussian_width));
       }
     } else if (cv.type() == colvarvalue::type_vector) {
@@ -1483,7 +1483,7 @@ int colvarbias_restraint_histogram::update()
         size_t igrid;
         for (igrid = 0; igrid < p.size(); igrid++) {
           cvm::real const x_grid = (lower_boundary + (igrid+0.5)*width);
-          p[igrid] += norm * std::exp(-1.0 * (x_grid - cv_value) * (x_grid - cv_value) /
+          p[igrid] += norm * cvm::exp(-1.0 * (x_grid - cv_value) * (x_grid - cv_value) /
                                       (2.0 * gaussian_width * gaussian_width));
         }
       }
@@ -1514,7 +1514,7 @@ int colvarbias_restraint_histogram::update()
       for (igrid = 0; igrid < p.size(); igrid++) {
         cvm::real const x_grid = (lower_boundary + (igrid+0.5)*width);
         force += force_k_cv * p_diff[igrid] *
-          norm * std::exp(-1.0 * (x_grid - cv_value) * (x_grid - cv_value) /
+          norm * cvm::exp(-1.0 * (x_grid - cv_value) * (x_grid - cv_value) /
                           (2.0 * gaussian_width * gaussian_width)) *
           (-1.0 * (x_grid - cv_value) / (gaussian_width * gaussian_width));
       }
@@ -1527,7 +1527,7 @@ int colvarbias_restraint_histogram::update()
         for (igrid = 0; igrid < p.size(); igrid++) {
           cvm::real const x_grid = (lower_boundary + (igrid+0.5)*width);
           force += force_k_cv * p_diff[igrid] *
-            norm * std::exp(-1.0 * (x_grid - cv_value) * (x_grid - cv_value) /
+            norm * cvm::exp(-1.0 * (x_grid - cv_value) * (x_grid - cv_value) /
                             (2.0 * gaussian_width * gaussian_width)) *
             (-1.0 * (x_grid - cv_value) / (gaussian_width * gaussian_width));
         }

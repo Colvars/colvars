@@ -86,6 +86,9 @@ public:
   /// Defining an abstract real number allows to switch precision
   typedef  double    real;
 
+
+  // Math functions
+
   /// Override std::pow with a product for n integer
   static inline real integer_power(real const &x, int const n)
   {
@@ -100,6 +103,63 @@ public:
     return (n > 0) ? yy : 1.0/yy;
   }
 
+  /// Reimplemented to work around MS compiler issues
+  static inline real floor(real const &x)
+  {
+    return ::floor(static_cast<double>(x));
+  }
+
+  /// Reimplemented to work around MS compiler issues
+  static inline real fabs(real const &x)
+  {
+    return ::fabs(static_cast<double>(x));
+  }
+
+  /// Reimplemented to work around MS compiler issues
+  static inline real sqrt(real const &x)
+  {
+    return ::sqrt(static_cast<double>(x));
+  }
+
+  /// Reimplemented to work around MS compiler issues
+  static inline real sin(real const &x)
+  {
+    return ::sin(static_cast<double>(x));
+  }
+
+  /// Reimplemented to work around MS compiler issues
+  static inline real cos(real const &x)
+  {
+    return ::cos(static_cast<double>(x));
+  }
+
+  /// Reimplemented to work around MS compiler issues
+  static inline real acos(real const &x)
+  {
+    return ::acos(static_cast<double>(x));
+  }
+
+  /// Reimplemented to work around MS compiler issues
+  static inline real atan2(real const &x, real const &y)
+  {
+    return ::atan2(static_cast<double>(x), static_cast<double>(y));
+  }
+
+  /// Reimplemented to work around MS compiler issues
+  static inline real exp(real const &x)
+  {
+    return ::exp(static_cast<double>(x));
+  }
+
+  /// Reimplemented to work around MS compiler issues.  Note: log() is
+  /// currently defined as the text logging function, but this can be changed
+  /// at a later time
+  static inline real logn(real const &x)
+  {
+    return ::logn(static_cast<double>(x));
+  }
+
+
   /// Residue identifier
   typedef  int       residue_id;
 
@@ -108,6 +168,10 @@ public:
   template <class T> class matrix2d;
   class quaternion;
   class rotation;
+
+
+  /// Residue identifier
+  typedef int residue_id;
 
   /// \brief Atom position (different type name from rvector, to make
   /// possible future PBC-transparent implementations)

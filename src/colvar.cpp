@@ -186,7 +186,7 @@ int colvar::init(std::string const &conf)
   {
     bool homogeneous = is_enabled(f_cv_linear);
     for (i = 0; i < cvcs.size(); i++) {
-      if ((std::fabs(cvcs[i]->sup_coeff) - 1.0) > 1.0e-10) {
+      if ((cvm::fabs(cvcs[i]->sup_coeff) - 1.0) > 1.0e-10) {
         homogeneous = false;
       }
     }
@@ -608,7 +608,7 @@ int colvar::init_extended_Lagrangian(std::string const &conf)
       enable(f_cv_Langevin);
       ext_gamma *= 1.0e-3; // correct as long as input is required in ps-1 and cvm::dt() is in fs
       // Adjust Langevin sigma for slow time step if time_step_factor != 1
-      ext_sigma = std::sqrt(2.0 * cvm::boltzmann() * temp * ext_gamma * ext_mass / (cvm::dt() * cvm::real(time_step_factor)));
+      ext_sigma = cvm::sqrt(2.0 * cvm::boltzmann() * temp * ext_gamma * ext_mass / (cvm::dt() * cvm::real(time_step_factor)));
     }
   }
 
@@ -1744,7 +1744,7 @@ bool colvar::periodic_boundaries(colvarvalue const &lb, colvarvalue const &ub) c
   }
 
   if (period > 0.0) {
-    if ( ((std::sqrt(this->dist2(lb, ub))) / this->width)
+    if ( ((cvm::sqrt(this->dist2(lb, ub))) / this->width)
          < 1.0E-10 ) {
       return true;
     }
@@ -1802,7 +1802,7 @@ void colvar::wrap(colvarvalue &x) const
 
   if ( is_enabled(f_cv_scripted) || is_enabled(f_cv_custom_function) ) {
     // Scripted functions do their own wrapping, as cvcs might not be periodic
-    cvm::real shift = std::floor((x.real_value - wrap_center) / period + 0.5);
+    cvm::real shift = cvm::floor((x.real_value - wrap_center) / period + 0.5);
     x.real_value -= shift * period;
   } else {
     cvcs[0]->wrap(x);
@@ -2427,7 +2427,7 @@ int colvar::calc_runave()
                    << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width)
                    << runave << " "
                    << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width)
-                   << std::sqrt(runave_variance) << "\n";
+                   << cvm::sqrt(runave_variance) << "\n";
       }
 
       history_add_value(runave_length, *x_history_p, x);

@@ -299,8 +299,8 @@ void colvar::cvc::debug_gradients()
         cvm::log("dx(interp) = "+cvm::to_str(dx_pred,
                               21, 14)+"\n");
         cvm::log("|dx(actual) - dx(interp)|/|dx(actual)| = "+
-                  cvm::to_str(std::fabs(x_1 - x_0 - dx_pred) /
-                              std::fabs(x_1 - x_0), 12, 5)+"\n");
+                  cvm::to_str(cvm::fabs(x_1 - x_0 - dx_pred) /
+                              cvm::fabs(x_1 - x_0), 12, 5)+"\n");
       }
     }
 
@@ -334,8 +334,8 @@ void colvar::cvc::debug_gradients()
           cvm::log("dx(interp) = "+cvm::to_str (dx_pred,
                                 21, 14)+"\n");
           cvm::log ("|dx(actual) - dx(interp)|/|dx(actual)| = "+
-                    cvm::to_str(std::fabs (x_1 - x_0 - dx_pred) /
-                                std::fabs (x_1 - x_0),
+                    cvm::to_str(cvm::fabs (x_1 - x_0 - dx_pred) /
+                                cvm::fabs (x_1 - x_0),
                                 12, 5)+
                     ".\n");
         }

@@ -307,7 +307,7 @@ void colvarmodule::rotation::diagonalize_matrix(cvm::matrix2d<cvm::real> &S,
     for (i = 0; i < 4; i++) {
       norm2 += S_eigvec[ie][i] * S_eigvec[ie][i];
     }
-    cvm::real const norm = std::sqrt(norm2);
+    cvm::real const norm = cvm::sqrt(norm2);
     for (i = 0; i < 4; i++) {
       S_eigvec[ie][i] /= norm;
     }
@@ -517,7 +517,7 @@ void colvarmodule::rotation::calc_optimal_rotation(std::vector<cvm::atom_pos> co
                                   dq0_2[3][comp] * colvarmodule::debug_gradients_step_size);
 
         cvm::log(  "|(l_0+dl_0) - l_0^new|/l_0 = "+
-                   cvm::to_str(std::fabs(L0+DL0 - L0_new)/L0, cvm::cv_width, cvm::cv_prec)+
+                   cvm::to_str(cvm::fabs(L0+DL0 - L0_new)/L0, cvm::cv_width, cvm::cv_prec)+
                    ", |(q_0+dq_0) - q_0^new| = "+
                    cvm::to_str((Q0+DQ0 - Q0_new).norm(), cvm::cv_width, cvm::cv_prec)+
                    "\n");
@@ -560,7 +560,7 @@ int jacobi(cvm::real **a, cvm::real *d, cvm::real **v, int *nrot)
     sm=0.0;
     for (ip=0;ip<n-1;ip++) {
       for (iq=ip+1;iq<n;iq++)
-        sm += std::fabs(a[ip][iq]);
+        sm += cvm::fabs(a[ip][iq]);
     }
     if (sm == 0.0) {
       return COLVARS_OK;
@@ -571,20 +571,20 @@ int jacobi(cvm::real **a, cvm::real *d, cvm::real **v, int *nrot)
       tresh=0.0;
     for (ip=0;ip<n-1;ip++) {
       for (iq=ip+1;iq<n;iq++) {
-        g=100.0*std::fabs(a[ip][iq]);
-        if (i > 4 && (cvm::real)(std::fabs(d[ip])+g) == (cvm::real)std::fabs(d[ip])
-            && (cvm::real)(std::fabs(d[iq])+g) == (cvm::real)std::fabs(d[iq]))
+        g=100.0*cvm::fabs(a[ip][iq]);
+        if (i > 4 && (cvm::real)(cvm::fabs(d[ip])+g) == (cvm::real)cvm::fabs(d[ip])
+            && (cvm::real)(cvm::fabs(d[iq])+g) == (cvm::real)cvm::fabs(d[iq]))
           a[ip][iq]=0.0;
-        else if (std::fabs(a[ip][iq]) > tresh) {
+        else if (cvm::fabs(a[ip][iq]) > tresh) {
           h=d[iq]-d[ip];
-          if ((cvm::real)(std::fabs(h)+g) == (cvm::real)std::fabs(h))
+          if ((cvm::real)(cvm::fabs(h)+g) == (cvm::real)cvm::fabs(h))
             t=(a[ip][iq])/h;
           else {
             theta=0.5*h/(a[ip][iq]);
-            t=1.0/(std::fabs(theta)+std::sqrt(1.0+theta*theta));
+            t=1.0/(cvm::fabs(theta)+cvm::sqrt(1.0+theta*theta));
             if (theta < 0.0) t = -t;
           }
-          c=1.0/std::sqrt(1+t*t);
+          c=1.0/cvm::sqrt(1+t*t);
           s=t*c;
           tau=s/(1.0+c);
           h=t*a[ip][iq];
