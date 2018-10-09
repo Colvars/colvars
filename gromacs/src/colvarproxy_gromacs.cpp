@@ -9,30 +9,14 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-
-//#include "gromacs/fileio/futil.h"
-//#include "index.h"
-//#include "gromacs/fileio/gmxfio.h"
-#include "gromacs/math/vec.h"
-#include "gromacs/legacyheaders/typedefs.h"
-#include "gromacs/legacyheaders/types/commrec.h"
-#include "gromacs/legacyheaders/types/inputrec.h"
-#include "gromacs/legacyheaders/network.h"
-//#include "gromacs/fileio/filenm.h"
 #include <string.h>
-#include "gromacs/utility/smalloc.h"
-//#include "pull.h"
-//#include "xvgr.h"
-//#include "names.h"
+
+
+#include "gromacs/mdlib/mdatoms.h"
+#include "gromacs/mdtypes/inputrec.h"
+#include "gromacs/mdtypes/forceoutput.h"
 #include "gromacs/pbcutil/pbc.h"
-#include "gromacs/topology/mtop_util.h"
-#include "gromacs/legacyheaders/mdrun.h"
-#include "gromacs/legacyheaders/gmx_ga2la.h"
-#include "gromacs/legacyheaders/copyrite.h"
-#include "gromacs/legacyheaders/macros.h"
-#include "colvars_potential.h"
-#include "colvarproxy_gromacs.h"
-#include "gromacs/random/random.h"
+#include "gromacs/utility/fatalerror.h"
 #include "gromacs/utility/futil.h"
 
 // Jeff Comer's tests to see if he can link GROMACS and Colvars
@@ -46,7 +30,7 @@ bool colvars_global_is_first = true;
 
 
 real colvars_potential(t_inputrec *gmx_inp, t_mdatoms *md, t_pbc *pbc,
-		       gmx_int64_t step, rvec *x, rvec *f, tensor vir) {
+		       gmx_int64_t step, rvec *x, gmx::ForceWithVirial *force) {
 
   // Update some things.
   // Get the current periodic boundary conditions.
@@ -69,7 +53,7 @@ real colvars_potential(t_inputrec *gmx_inp, t_mdatoms *md, t_pbc *pbc,
   }
 
   // colvars computation
-  return colvars_global_proxy.calculate(step, x, f, vir);
+  return colvars_global_proxy.calculate(step, x, force);
 }
 
 // Taken from colvarproxy_lammps.
@@ -119,7 +103,7 @@ void colvarproxy_gromacs::init(t_inputrec *gmx_inp, gmx_int64_t step) {
 
   // GROMACS random number generation.
   // Seed with the mdp parameter ld_seed, the Langevin dynamics seed.
-  rando = gmx_rng_init(gmx_inp->ld_seed);
+  rng.seed(gmx_inp->ld_seed);
 
   // For expediency, we are using a kludgy input/output structure
   //
@@ -226,7 +210,7 @@ cvm::real colvarproxy_gromacs::temperature() {
 cvm::real colvarproxy_gromacs::dt() { return 1000.0*timestep; }
 
 cvm::real colvarproxy_gromacs::rand_gaussian() {
-  return gmx_rng_gaussian_real(rando);
+  return  normal_distribution(rng);
 }
 
 void colvarproxy_gromacs::request_total_force (bool yesno) {
@@ -337,7 +321,12 @@ int colvarproxy_gromacs::backup_file (char const *filename)
 
 
 // trigger colvars computation
-double colvarproxy_gromacs::calculate(gmx_int64_t step, const rvec *x, rvec *f, tensor vir) {
+// TODO: compute the virial contribution
+double colvarproxy_gromacs::calculate(gmx_int64_t step, const rvec *x, gmx::ForceWithVirial *force) {
+
+  //Get only the forces without virial
+  rvec *f = as_rvec_array(force->force_.data());
+
   if (first_timestep) {
     first_timestep = false;
   } else {
@@ -397,7 +386,9 @@ double colvarproxy_gromacs::calculate(gmx_int64_t step, const rvec *x, rvec *f, 
     f[aid][2] -= applied_forces[i].z;
   }
 
-  // We should probably update the virial.
+  // We need to compute and update the virial like this (with virial as a 3x3 matrix):
+  // matrix virial = compute_virial()
+  // force->addVirialContribution(virial);
 
   return bias_energy;
 }

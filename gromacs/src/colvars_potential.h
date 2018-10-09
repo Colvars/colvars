@@ -6,7 +6,7 @@
 extern "C" {
 #endif
 real colvars_potential(t_inputrec *ir, t_mdatoms *md, t_pbc *pbc,
-			 gmx_int64_t step, rvec *x, rvec *f, tensor vir);
+			 gmx_int64_t step, rvec *x, gmx::ForceWithVirial *force);
 #ifdef __cplusplus
 }
 #endif
