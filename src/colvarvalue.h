@@ -180,6 +180,9 @@ public:
     return std::sqrt(this->norm2());
   }
 
+  /// Return a colvarvalue object of the same type and all components set to 1
+  colvarvalue ones() const;
+  
   /// Square distance between this \link colvarvalue \endlink and another
   cvm::real dist2(colvarvalue const &x2) const;
 
@@ -265,17 +268,21 @@ public:
   /// Get a single colvarvalue out of elements of the vector
   colvarvalue const get_elem(int const i_begin, int const i_end, Type const vt) const;
 
+  /// Get a single colvarvalue out of elements of the vector
+  colvarvalue const get_elem(int const icv) const;
+
+  /// Set elements of the vector from a single colvarvalue (uses the rank of x
+  /// to compute the length)
+  void set_elem(int const icv, colvarvalue const &x);
+
   /// Set elements of the vector from a single colvarvalue
   void set_elem(int const i_begin, int const i_end, colvarvalue const &x);
 
   /// Make each element a random number in N(0,1)
   void set_random();
 
-  /// Get a single colvarvalue out of elements of the vector
-  colvarvalue const get_elem(int const icv) const;
-
-  /// Set elements of the vector from a single colvarvalue
-  void set_elem(int const icv, colvarvalue const &x);
+  /// Make each element equal to the given argument
+  void set_ones(cvm::real assigned_value = 1.0);
 
   /// Get a scalar number out of an element of the vector
   cvm::real operator [] (int const i) const;
