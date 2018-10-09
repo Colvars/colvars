@@ -6,11 +6,12 @@
 #include "colvarmodule.h"
 #include "colvaratoms.h"
 #include "colvarproxy.h"
-#include "colvarproxy_gromacs.h"
-#include "gromacs/random/random.h"
+#include "gromacs/random/tabulatednormaldistribution.h"
+#include "gromacs/random/threefry.h"
+#include "gromacs/mdtypes/forceoutput.h"
 
 #ifndef COLVARPROXY_VERSION
-#define COLVARPROXY_VERSION "2014-11-17"
+#define COLVARPROXY_VERSION "2018-10-05"
 #endif
 
 class colvarproxy_gromacs : public colvarproxy {
@@ -37,7 +38,8 @@ protected:
   std::vector<cvm::rvector> total_forces;
   std::vector<cvm::rvector> applied_forces;
   // GROMACS random number generation.
-  gmx_rng_t rando;
+  gmx::DefaultRandomEngine           rng;   // gromacs random number generator
+  gmx::TabulatedNormalDistribution<> normal_distribution;
 
 public:
   friend class cvm::atom;
@@ -47,7 +49,7 @@ public:
   // Initialize colvars.
   void init(t_inputrec *gmx_inp, gmx_int64_t step);
   // Perform colvars computation, return bias energy.
-  double calculate(gmx_int64_t step, const rvec *x, rvec *f, tensor vir);
+  double calculate(gmx_int64_t step, const rvec *x, gmx::ForceWithVirial *force);
   void add_energy (cvm::real energy);
 
   // **************** SYSTEM-WIDE PHYSICAL QUANTITIES ****************
