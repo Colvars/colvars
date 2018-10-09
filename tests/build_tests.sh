@@ -210,6 +210,12 @@ bias="abf2d"
 create_test_dir ${colvar}_${bias}
 write_colvars_config ${colvar} ${bias} ${dirname}/test.in
 
+colvar="distancepairs"
+bias="linear-distancepairs"
+create_test_dir ${colvar}_${bias}
+write_colvars_config ${colvar} ${bias} ${dirname}/test.in
+
+
 # TODO uncomment this and the add two-dimensional regtests
 # # Generate two-variables versions of bias configurations
 # for bias in "harmonic-fixed" \

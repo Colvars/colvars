@@ -1277,13 +1277,16 @@ cvm::real colvarbias_restraint_linear::energy_difference(std::string const &conf
 
 cvm::real colvarbias_restraint_linear::restraint_potential(size_t i) const
 {
-  return force_k / variables(i)->width * (variables(i)->value() - colvar_centers[i]);
+  return force_k / variables(i)->width * (variables(i)->value() -
+                                          colvar_centers[i]).sum();
 }
 
 
 colvarvalue const colvarbias_restraint_linear::restraint_force(size_t i) const
 {
-  return -1.0 * force_k / variables(i)->width;
+  colvarvalue dummy(variables(i)->value());
+  dummy.set_ones();
+  return -1.0 * force_k / variables(i)->width * dummy;
 }
 
 
