@@ -69,7 +69,7 @@ Detailed explanations of the design of the Colvars module are provided in refere
 
 Suppose that we want to run a steered MD experiment where a small molecule is pulled away from a protein binding site.
 In Colvars terms, this is done by applying a moving restraint to the distance between the two objects.
-The configuration will contain two blocks, one defining the distance variable (see sections \ref{sec:colvar} and \ref{sec:cvc}), and the other the moving harmonic restraint (\ref{sec:colvarbias_harmonic}).
+The configuration will contain two blocks, one defining the distance variable (see section \ref{sec:colvar} and \ref{sec:cvc_distance}), and the other the moving harmonic restraint (\ref{sec:colvarbias_harmonic}).
 
 \bigskip
 % verbatim can't appear within commands
@@ -283,7 +283,7 @@ The following sections explain the syntax of the various sub-commands of \texttt
 
 \begin{itemize}
 \item \texttt{list}: return a list of all currently defined variables;
-\cvvmdonly{See \ref{sec:colvar}, \ref{sec:cvc} and \ref{sec:colvar_atom_groups} for how to configure a collective variable;}
+\cvvmdonly{See \ref{sec:colvar} and \ref{sec:colvar_atom_groups} for how to configure a collective variable;}
 \item \texttt{list biases}: return a list of all currently defined biases (i.e.~sampling and analysis algorithms);
 \item \texttt{load} \emph{$<$file name$>$}: load a collective variables state file, typically produced during a previous simulation;
   \cvvmdonly{this parameter requires that the corresponding configuration has already been loaded by \texttt{configfile} or \texttt{config}; see \ref{sec:colvars_output} for a brief description of this file; the contents of this file are not required for as long as the VMD molecule has valid coordinates and \texttt{cv update} is used;}
@@ -440,7 +440,7 @@ The following keywords are available in the global context of the Colvars config
 
 
 To illustrate the flexibility of the Colvars module, a non-trivial setup is represented in Figure~\ref{fig:colvars_diagram}.
-The corresponding configuration is given below. The options within the \texttt{colvar} blocks are described in \ref{sec:colvar} and \ref{sec:cvc}, those within the \texttt{harmonic} and \texttt{histogram} blocks in \ref{sec:colvarbias}.
+The corresponding configuration is given below. The options within the \texttt{colvar} blocks are described in \ref{sec:colvar}, those within the \texttt{harmonic} and \texttt{histogram} blocks in \ref{sec:colvarbias}.
 \textbf{Note:} \emph{except }\texttt{colvar}\emph{, none of the keywords shown is mandatory}.\\
 
 \begin{figure}[!ht]
@@ -510,7 +510,7 @@ harmonic \{\\
 %\cvlammpsonly{\textbf{Note:} \emph{currently, the $\alpha$-helical content colvar is unavailable in LAMMPS, as it requires a name-based topology; future releases will overcome this limitation.}}
 
 Section \ref{sec:colvar} explains how to define a colvar and its behavior, regardless of its specific functional form.
-To define colvars that are appropriate to a specific physical system, Section \ref{sec:colvar_atom_groups} documents how to select atoms, and section \ref{sec:cvc} lists all of the available functional forms, which we call ``colvar components''.
+To define colvars that are appropriate to a specific physical system, Section \ref{sec:colvar_atom_groups} documents how to select atoms, and section \ref{sec:colvar} lists all of the available functional forms, which we call ``colvar components''.
 Finally, section \ref{sec:colvarbias} lists the available methods and algorithms to perform biased simulations and multidimensional analysis of colvars.
 
 
@@ -537,7 +537,7 @@ All such files' names also begin with the prefix \outputName.
 \cvnamdonly{Lastly, the total energy of all biases or restraints applied to the colvars appears under the NAMD standard output, under the MISC column.}
 
 
-\cvsec{Defining and setting up collective variables}{sec:colvar}
+\cvsec{Defining collective variables}{sec:colvar}
 
 A collective variable is defined by the keyword \texttt{colvar} followed by its configuration options contained within curly braces:
 
@@ -545,33 +545,30 @@ A collective variable is defined by the keyword \texttt{colvar} followed by its 
 colvar \{\\
 \-~~name xi\\
 \-~~<other options>\\
-\-~~\ldots\\
+\-~~function\_name \{\\
+\-~~~~<parameters>\\
+\-~~~~<atom selection>\\
+\-~~\}\\
 \}\\
 }
 
-There are multiple ways of defining a variable:
+\noindent{}There are multiple ways of defining a variable:
 \begin{itemize}
-\item The \emph{simplest and most common way} way is using one of the precompiled functions (here called ``components''), which are listed in section~\ref{sec:cvc}.  For example, using the keyword \texttt{rmsd} (section \ref{sec:cvc_rmsd}) defines the variable as the root mean squared deviation (RMSD) of the selected atoms.
-\item A new variable may also be constructed as a linear or polynomial combination of the components listed in section~\ref{sec:cvc} (see \ref{sec:cvc_superp} for details).
+\item The \emph{simplest and most common way} way is using one of the precompiled functions (here called ``components''), which are listed in section~\ref{sec:cvc_list}.  For example, using the keyword \texttt{rmsd} (section \ref{sec:cvc_rmsd}) defines the variable as the root mean squared deviation (RMSD) of the selected atoms.
+\item A new variable may also be constructed as a linear or polynomial combination of the components listed in section~\ref{sec:cvc_list} (see \ref{sec:cvc_superp} for details).
 \cvleptononly{
-\item A user-defined mathematical function of the existing components (see list in section~\ref{sec:cvc}), or of the atomic coordinates directly (see the \texttt{cartesian} keyword in \ref{sec:cvc_cartesian}).
+\item A user-defined mathematical function of the existing components (see list in section~\ref{sec:cvc_list}), or of the atomic coordinates directly (see the \texttt{cartesian} keyword in \ref{sec:cvc_cartesian}).
 The function is defined through the keyword \refkey{customFunction}{colvar|customFunction} (see \ref{sec:colvar_custom_function} for details).
 }
 \cvscriptonly{
-\item A user-defined Tcl function of the existing components (see list in section~\ref{sec:cvc}), or of the atomic coordinates directly (see the \texttt{cartesian} keyword in \ref{sec:cvc_cartesian}).
+\item A user-defined Tcl function of the existing components (see list in section~\ref{sec:cvc_list}), or of the atomic coordinates directly (see the \texttt{cartesian} keyword in \ref{sec:cvc_cartesian}).
 The function is provided by a separate Tcl script, and referenced through the keyword \refkey{scriptedFunction}{colvar|scriptedFunction} (see \ref{sec:colvar_scripted} for details).
 }
 \end{itemize}
-
-All components listed in section~\ref{sec:cvc}, including the \texttt{cartesian} component make use of atom selection keyword described in section~\ref{sec:colvar_atom_groups}.
-
-The remainder of this section lists options to control the behavior of a variable, regardless of how it was defined.
-Only the options \texttt{name}, \texttt{width}, \texttt{lowerBoundary} and \texttt{upperBoundary} are the most commonly used (\ref{sec:colvar_general}).
-
-\cvsubsec{General options for a collective variable}{sec:colvar_general}
-
+Choosing a component (function) is the only parameter strictly required to define a collective variable.
+It is also highly recommended to specify a name for the variable:
 \begin{itemize}
-
+\label{sec:colvar_general}
 \item %
   \labelkey{colvar|name}
   \keydef
@@ -585,821 +582,16 @@ Only the options \texttt{name}, \texttt{width}, \texttt{lowerBoundary} and \text
     used in the trajectory file to label to the columns corresponding
     to this colvar.}
 
-\item %
-  \labelkey{colvar|width}
-  \keydef
-    {width}{%
-    \texttt{colvar}}{%
-    Colvar fluctuation scale, or resolution for grid-based methods}{%
-    positive decimal}{%
-    1.0}{%
-    This number has the same physical unit as the colvar value and defines an effective colvar unit.
-%    Biasing algorithms use it for different purposes.
-    Harmonic restraints (\ref{sec:colvarbias_harmonic}) use it to set the physical unit of the force constant, which is useful for multidimensional restraints involving variables with very different units (for examples, $\AA$ or degrees $^\circ$) with a single, scaled force constant.
-    Histograms (\ref{sec:colvarbias_histogram}), ABF (\ref{sec:colvarbias_abf}) and metadynamics (\ref{sec:colvarbias_meta}) all use this number as the initial choice for the grid spacing along this variable: for this reason, \texttt{width} should generally be no larger than the standard deviation of the colvar in an unbiased simulation.
-%    When a non-unity width is required by the application, the optimal value is application-dependent, but can often be thought of as a user-provided estimate of the fluctuation amplitude for the colvar.
-    Unless it is required to control the spacing, it is usually simplest to keep the default value of 1, so that restraint force constants are provided in more intuitive units.
-  }
-
-\item %
-  \labelkey{colvar|lowerBoundary}
-  \key
-    {lowerBoundary}{%
-    \texttt{colvar}}{%
-    Lower boundary of the colvar}{%
-    decimal}{%
-    Defines the lowest end of the interval of ``relevant'' values for the colvar.
-    This number can be either a true physical boundary, or a user-defined number.  
-    Together with \texttt{upperBoundary} and \texttt{width}, it is used to define a grid of values along the colvar (not available for colvars based on \texttt{distanceDir}, \texttt{distanceVec}, and \texttt{orientation}).
-    This option does not affect dynamics: to confine a colvar within a certain interval, use a \texttt{harmonicWalls} bias.
-}
-
-\item %
-  \labelkey{colvar|upperBoundary} %
-  \key
-    {upperBoundary}{%
-    \texttt{colvar}}{%
-    Upper boundary of the colvar}{%
-    decimal}{%
-    Similarly to \texttt{lowerBoundary}, defines the highest possible or allowed value.}
-
-\item %
-  \keydef
-    {hardLowerBoundary}{%
-    \texttt{colvar}}{%
-    Whether the lower boundary is the physical lower limit}{%
-    boolean}{%
-    \texttt{off}}{%
-    This option does not affect simulation results, but enables some internal optimizations.
-    Depending on its mathematical definition, a colvar may have ``natural'' boundaries: for example, a \texttt{distance} colvar has a ``natural'' lower boundary at 0.  Setting this option instructs the Colvars module that the user-defined lower boundary is ``natural''.
-See Section~\ref{sec:cvc} for the physical ranges of values of each component.}
-
-\item %
-  \keydef
-    {hardUpperBoundary}{%
-    \texttt{colvar}}{%
-    Whether the upper boundary is the physical upper limit of the colvar's values}{%
-    boolean}{%
-    \texttt{off}}{%
-    Analogous to \texttt{hardLowerBoundary}.}
-
-\item %
-  \labelkey{colvar|expandBoundaries} %
-  \keydef
-    {expandBoundaries}{%
-    \texttt{colvar}}{%
-    Allow to expand the two boundaries if needed}{%
-    boolean}{%
-    \texttt{off}}{%
-    If defined, biasing and analysis methods may keep their own copies
-    of \texttt{lowerBoundary} and \texttt{upperBoundary}, and expand
-    them to accommodate values that do not fit in the initial range.
-    Currently, this option is used by the metadynamics bias
-    (\ref{sec:colvarbias_meta}) to keep all of its hills fully within
-    the grid.  This option cannot be used when
-      the initial boundaries already span the full period of a periodic
-      colvar.}
-
-\item %
-  \keydef
-    {subtractAppliedForce}{%
-    \texttt{colvar}}{%
-    Do not include biasing forces in the total force for this colvar}{%
-    boolean}{%
-    \texttt{off}}{%
-    If the colvar supports total force calculation (see \ref{sec:cvc_sys_forces}), all forces applied to this colvar by biases will be removed from the total force.
-    This keyword allows to recover some of the ``system force'' calculation available in the Colvars module     before version 2016-08-10.
-    Please note that removal of \emph{all} other external forces (including biasing forces applied to a         different colvar) is \emph{no longer supported}, due to changes in the underlying simulation engines (primarily NAMD).
-    This option may be useful when continuing a previous simulation where the removal of external/applied forces is essential.
-    \emph{For all new simulations, the use of this option is not recommended.}
-}
-
 \end{itemize}
 
 
-\cvsubsec{Trajectory output}{sec:colvar_traj_output}
+\cvsubsec{Choosing a function}{sec:cvc_summary}
 
-\begin{itemize}
-\item %
-  \keydef
-    {outputValue}{%
-    \texttt{colvar}}{%
-    Output a trajectory for this colvar}{%
-    boolean}{%
-    \texttt{on}}{%
-    If \texttt{colvarsTrajFrequency} is non-zero, the value of this
-    colvar is written to the trajectory file every
-    \texttt{colvarsTrajFrequency} steps in the column labeled
-    ``$<$\texttt{name}$>$''.}
+In this context, the function that computes a colvar is called a \emph{component}.
+A component's choice and definition consists of including in the variable's configuration a keyword indicating the type of function (e.g.{} \texttt{rmsd}), followed by a definition block specifying the atoms involved (see \ref{sec:colvar_atom_groups}) and any additional parameters (cutoffs, ``reference'' values, \ldots).
+\emph{At least one component must be chosen to define a variable:} if none of the keywords listed below is found, an error is raised.
 
-\item %
-  \keydef
-    {outputVelocity}{%
-    \texttt{colvar}}{%
-    Output a velocity trajectory for this colvar}{%
-    boolean}{%
-    \texttt{off}}{%
-    If \texttt{colvarsTrajFrequency} is defined, the
-    finite-difference calculated velocity of this colvar are written
-    to the trajectory file under the label
-    ``\texttt{v\_}$<$\texttt{name}$>$''.}
-
-\item %
-  \keydef
-    {outputEnergy}{%
-    \texttt{colvar}}{%
-    Output an energy trajectory for this colvar}{%
-    boolean}{%
-    \texttt{off}}{%
-    This option applies only to extended Lagrangian colvars. If
-    \texttt{colvarsTrajFrequency} is defined, the kinetic energy of
-    the extended degree and freedom and the potential energy of the
-    restraining spring are are written to the trajectory file under
-    the labels ``\texttt{Ek\_}$<$\texttt{name}$>$'' and
-    ``\texttt{Ep\_}$<$\texttt{name}$>$''.}
-
-\item %
-  \labelkey{colvar|outputTotalForce}
-  \keydef
-    {outputTotalForce}{%
-    \texttt{colvar}}{%
-    Output a total force trajectory for this
-    colvar}{%
-    boolean}{%
-    \texttt{off}}{%
-    If \texttt{colvarsTrajFrequency} is defined, the total force on this
-    colvar (i.e.~the projection of all atomic total forces
-    onto this colvar --- see
-    equation~(\ref{eq:gradient_vector}) in
-    section~\ref{sec:colvarbias_abf}) are written to the trajectory
-    file under the label ``\texttt{fs\_}$<$\texttt{name}$>$''.
-    For extended Lagrangian colvars, the ``total force'' felt by the extended degree of freedom
-    is simply the force from the harmonic spring.
-    \textbf{Note:} not all components support this option.  The
-    physical unit for this force is \cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{the unit of energy specified by \texttt{units}}, divided by the colvar unit U.}
-
-\item %
-  \keydef
-    {outputAppliedForce}{%
-    \texttt{colvar}}{%
-    Output an applied force trajectory for this
-    colvar}{%
-    boolean}{%
-    \texttt{off}}{%
-    If \texttt{colvarsTrajFrequency} is defined, the total force
-    applied on this colvar by Colvars biases are
-    written to the trajectory under the label
-    ``\texttt{fa\_}$<$\texttt{name}$>$''. 
-    For extended Lagrangian colvars, this force is actually applied to the
-    extended degree of freedom rather than the geometric colvar itself.
-    The physical unit for this
-    force is \cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{the unit of energy specified by \texttt{units}} divided by the colvar unit.}
-
-\end{itemize}
-
-
-\cvsubsec{Extended Lagrangian.}{sec:colvar_extended}
-
-The following options enable extended-system
-dynamics, where a colvar is coupled to an additional degree of freedom 
-(fictitious particle) by a harmonic spring.
-All biasing and confining forces are then applied to the extended degree
-of freedom. The ``actual'' geometric colvar (function of Cartesian 
-coordinates) only feels the force from the harmonic spring.
-This is particularly useful when combined with an ABF bias (\ref{sec:colvarbias_abf})
-to perform eABF simulations (\ref{sec:eABF}).
-
-\begin{itemize}
-\item %
-  \keydef
-    {extendedLagrangian}{%
-    \texttt{colvar}}{%
-    Add extended degree of freedom}{%
-    boolean}{%
-    \texttt{off}}{%
-    Adds a fictitious particle to be coupled to the colvar by a harmonic
-    spring. The fictitious mass and the force constant of the coupling
-    potential are derived from the parameters \texttt{extendedTimeConstant}
-    and \texttt{extendedFluctuation}, described below. Biasing forces on the
-    colvar are applied to this fictitious particle, rather than to the
-    atoms directly.  This implements the extended Lagrangian formalism
-    used in some metadynamics simulations~\cite{Iannuzzi2003}.
-    \cvnamdonly{The energy associated with the extended degree of freedom is reported
-    under the MISC title in NAMD's energy output.}
-    }
-
-\item %
-  \key
-    {extendedFluctuation}{%
-    \texttt{colvar}}{%
-    Standard deviation between the colvar and the fictitious
-    particle (colvar unit)}{%
-    positive decimal}{%
-    Defines the spring stiffness for the \texttt{extendedLagrangian}
-    mode, by setting the typical deviation between the colvar and the extended
-    degree of freedom due to thermal fluctuation.
-    The spring force constant is calculated internally as $k_B T / \sigma^2$,
-    where $\sigma$ is the value of \texttt{extendedFluctuation}.}
-
-\item %
-  \keydef
-    {extendedTimeConstant}{%
-    \texttt{colvar}}{%
-    Oscillation period of the fictitious particle (fs)}{%
-    positive decimal}{%
-    \texttt{200}}{%
-    Defines the inertial mass of the fictitious particle, by setting the
-    oscillation period of the harmonic oscillator formed by the fictitious
-    particle and the spring. The period
-    should be much larger than the MD time step to ensure accurate integration
-    of the extended particle's equation of motion.
-    The fictitious mass is calculated internally as $k_B T (\tau/2 \pi \sigma)^2$,
-    where $\tau$ is the period and $\sigma$ is the typical fluctuation (see above).}
-
-\item %
-  \keydef
-    {extendedTemp}{%
-    \texttt{colvar}}{%
-    Temperature for the extended degree of freedom (K)}{%
-    positive decimal}{%
-    thermostat temperature}{%
-    Temperature used for calculating the coupling force constant of the
-    extended variable (see \texttt{extendedFluctuation}) and, if needed, as a
-    target temperature for extended Langevin dynamics (see
-    \texttt{extendedLangevinDamping}). This should normally be left at its
-    default value.}
-
-\item %
-  \keydef
-    {extendedLangevinDamping}{%
-    \texttt{colvar}}{%
-    Damping factor for extended Langevin dynamics
-    (ps$^{-1}$)}{%
-    positive decimal}{%
-    \texttt{1.0}}{%
-    If this is non-zero, the extended degree of freedom undergoes Langevin dynamics
-    at temperature \texttt{extendedTemp}. The friction force is minus
-    \texttt{extendedLangevinDamping} times the velocity. This is useful because
-    the extended dynamics coordinate may heat up in the transient
-    non-equilibrium regime of ABF. Use moderate damping values, to limit
-    viscous friction (potentially slowing down diffusive sampling) and stochastic
-    noise (increasing the variance of statistical measurements). In
-    doubt, use the default value.}
-\end{itemize}
-
-
-\cvsubsec{Statistical analysis of collective variables}{sec:colvar_acf}
-
-When the global keyword \texttt{analysis} is defined in the
-configuration file, run-time calculations of statistical properties for
-individual colvars can be performed.  At the moment, several types of
-time correlation functions, running averages and running standard
-deviations are available.
-
-\begin{itemize}
-
-\item %
-  \keydef
-    {corrFunc}{%
-    \texttt{colvar}}{%
-    Calculate a time correlation function?}{%
-    boolean}{%
-    \texttt{off}}{%
-    Whether or not a time correlaction function should be calculated
-    for this colvar.}
-
-\item %
-  \key
-    {corrFuncWithColvar}{%
-    \texttt{colvar}}{%
-    Colvar name for the correlation function}{%
-    string}{%
-    By default, the auto-correlation function (ACF) of this colvar,
-    $\xi_{i}$, is calculated.  When this option is specified, the
-    correlation function is calculated instead with another colvar,
-    $\xi_{j}$, which must be of the same type (scalar, vector, or
-    quaternion) as $\xi_{i}$.}
-
-\item%
-  \keydef
-    {corrFuncType}{%
-    \texttt{colvar}}{%
-    Type of the correlation function}{%
-    \texttt{velocity}, \texttt{coordinate} or
-    \texttt{coordinate\_p2}}{%
-    \texttt{velocity}}{%
-    With \texttt{coordinate} or \texttt{velocity}, the correlation
-    function $C_{i,j}(t)$~= $\left\langle \Pi\left(\xi_{i}(t_{0}),
-        \xi_{j}(t_{0}+t)\right) \right\rangle$ is calculated between
-    the variables $\xi_{i}$ and $\xi_{j}$, or their velocities.
-    $\Pi(\xi_{i}, \xi_{j})$ is the scalar product when calculated
-    between scalar or vector values, whereas for quaternions it is the
-    cosine between the two corresponding rotation axes.  With
-    \texttt{coordinate\_p2}, the second order Legendre polynomial,
-    $(3\cos(\theta)^{2}-1)/2$, is used instead of the cosine.}
-
-\item %
-  \keydef
-    {corrFuncNormalize}{%
-    \texttt{colvar}}{%
-    Normalize the time correlation function?}{%
-    boolean}{%
-    \texttt{on}}{%
-    If enabled, the value of the correlation function at $t$~= 0
-    is normalized to 1; otherwise, it equals to $\left\langle
-      O\left(\xi_{i}, \xi_{j}\right) \right\rangle$.}
-
-\item %
-  \keydef
-    {corrFuncLength}{%
-    \texttt{colvar}}{%
-    Length of the time correlation function}{%
-    positive integer}{%
-    \texttt{1000}}{%
-    Length (in number of points) of the time correlation function.}
-
-\item %
-  \keydef
-    {corrFuncStride}{%
-    \texttt{colvar}}{%
-    Stride of the time correlation function}{%
-    positive integer}{%
-    \texttt{1}}{%
-    Number of steps between two values of the time correlation function.}
-
-\item %
-  \keydef
-    {corrFuncOffset}{%
-    \texttt{colvar}}{%
-    Offset of the time correlation function}{%
-    positive integer}{%
-    \texttt{0}}{%
-    The starting time (in number of steps) of the time correlation
-    function (default: $t$~= 0).  \textbf{Note:} \emph{the value at $t$~= 0 is always
-    used for the normalization}.}
-
-\item %
-  \keydef
-    {corrFuncOutputFile}{%
-    \texttt{colvar}}{%
-    Output file for the time correlation function}{%
-    UNIX filename}{%
-    \texttt{$<$name$>$.corrfunc.dat}}{%
-    The time correlation function is saved in this file.}
-
-\item %
-  \keydef
-    {runAve}{%
-    \texttt{colvar}}{%
-    Calculate the running average and standard deviation}{%
-    boolean}{%
-    \texttt{off}}{%
-    Whether or not the running average and standard deviation should
-    be calculated for this colvar.}
-
-\item %
-  \keydef
-    {runAveLength}{%
-    \texttt{colvar}}{%
-    Length of the running average window}{%
-    positive integer}{%
-    \texttt{1000}}{%
-    Length (in number of points) of the running average window.}
-
-\item %
-  \keydef
-    {runAveStride}{%
-    \texttt{colvar}}{%
-    Stride of the running average window values}{%
-    positive integer}{%
-    \texttt{1}}{%
-    Number of steps between two values within the running average window.}
-
-\item %
-  \keydef
-    {runAveOutputFile}{%
-    \texttt{colvar}}{%
-    Output file for the running average and standard deviation}{%
-    UNIX filename}{%
-    \texttt{$<$name$>$.runave.dat}}{%
-    The running average and standard deviation are saved in this file.}
-
-\end{itemize}
-
-
-\cvsec{Selecting atoms}{sec:colvar_atom_groups}
-
-To define collective variables, atoms are usually selected as groups.  Each group is defined using an identifier that is unique in the context of the specific colvar component (e.g.~for a distance component, the two groups are \texttt{group1} and \texttt{group2}).
-The identifier is followed by a brace-delimited block containing selection keywords and other parameters, including an optional \texttt{name}:
-
-\begin{itemize}
-\item \key
-  {name}{%
-  atom group}{%
-  Unique name for the atom group}{%
-  string}{%
-  This parameter defines a unique name for this atom group, which can be referred to
-  in the definition of other atom groups (including in other colvars) by invoking
-  \texttt{atomsOfGroup} as a selection keyword.}
-\end{itemize}
-
-
-\cvsubsec{Atom selection keywords}{sec:colvar_atom_groups_sel}
-
-Selection keywords may be used individually or in combination with each other, and each can be repeated any number of times.
-Selection is incremental: each keyword adds the corresponding atoms to the selection, so that different sets of atoms can be combined.
-However, atoms included by multiple keywords are only counted once.
-Below is an example configuration for an atom group called ``\texttt{atoms}''.
-\textbf{Note: }\emph{this is an unusually varied combination of selection keywords, demonstrating how they can be combined together: most simulations only use one of them.}\\
-
-{%
-% verbatim can't appear within commands
-\noindent\ttfamily atoms \{\\
-\\
-\-~~\# add atoms 1 and 3 to this group (note: the first atom in the system is 1)\\
-\-~~atomNumbers \{ \\
-\-~~~~1 3\\
-\-~~\}\\
-\\
-\-~~\# add atoms starting from 20 up to and including 50\\
-\-~~atomNumbersRange  20-50\\
-}
-\cvnamebasedonly{{%
-\noindent\ttfamily\\
-\-~~\# add all the atoms with occupancy 2 in the file atoms.pdb\\
-\-~~atomsFile             atoms.pdb\\
-\-~~atomsCol              O\\
-\-~~atomsColValue         2.0\\
-\\
-\-~~\# add all the C-alphas within residues 11 to 20 of segments "PR1" and "PR2"\\
-\-~~psfSegID              PR1 PR2\\
-\-~~atomNameResidueRange  CA 11-20\\
-\-~~atomNameResidueRange  CA 11-20\\
-}}
-{\noindent\ttfamily\\
-\-~~\# add index group (requires a .ndx file to be provided globally)\\
-\-~~indexGroup Water\\
-\}\\}
-
-
-The resulting selection includes atoms 1 and 3, those between 20 and 50,\cvnamebasedonly{ the $\mathrm{C}_{\alpha}$ atoms between residues 11 and 20 of the two segments \texttt{PR1} and \texttt{PR2},} and those in the index group called ``Water''.
-The indices of this group are read from the file provided by the global keyword \refkey{indexFile}{Colvars-global|indexFile}.
-
-\cvvmdonly{In the current version, the Colvars module does not manipulate VMD atom selections directly: however, these can be converted to atom groups within the Colvars configuration string, using selection keywords such as \texttt{atomNumbers}.}
-The complete list of selection keywords available in \MDENGINE{} is:
-
-\begin{itemize}
-
-\item %
-  \key
-    {atomNumbers}{%
-    atom group}{%
-    List of atom numbers}{%
-    space-separated list of positive integers}{%
-    This option adds to the group all the atoms whose numbers are in
-    the list.  \emph{The number of the first atom in the system is 1: to convert from a VMD selection, use ``atomselect get serial''.}
-  }
-
-\item %
-  \key
-    {indexGroup}{%
-    atom group}{%
-    Name of index group to be used (GROMACS format)}{%
-    string}{%
-    If the name of an index file has been provided by \texttt{indexFile}, this option allows to select one index group from that file: the atoms from that index group will be used to define the current group.}
-
-\item %
-  \key
-    {atomsOfGroup}{%
-    atom group}{%
-    Name of group defined previously}{%
-    string}{%
-    Refers to a group defined previously using its user-defined \texttt{name}.
-    This adds all atoms of that named group to the current group.}
-
-\item %
-  \key
-    {atomNumbersRange}{%
-    atom group}{%
-    Atoms within a number range}{%
-    $<$Starting number$>$-$<$Ending number$>$}{%
-    This option includes in the group all atoms whose numbers are within the range specified.  \emph{The number of the first atom in the system is 1.}
-  }
-
-\cvnamebasedonly{
-\item %
-  \key
-    {atomNameResidueRange}{%
-    atom group}{%
-    Named atoms within a range of residue numbers}{%
-    $<$Atom name$>$ $<$Starting residue$>$-$<$Ending residue$>$}{%
-    This option adds to the group all the atoms with the provided
-    name, within residues in the given range.}
-
-\item %
-  \key
-    {psfSegID}{%
-    atom group}{%
-    PSF segment identifier}{%
-    space-separated list of strings (max 4 characters)}{%
-    This option sets the PSF segment identifier for
-    \texttt{atomNameResidueRange}.  Multiple values may be provided,
-    which correspond to multiple instances of
-    \texttt{atomNameResidueRange}, in order of their occurrence.
-    This option is only necessary if a PSF topology file is used.}
-
-\item %
-  \key
-    {atomsFile}{%
-    atom group}{%
-    PDB file name for atom selection}{%
-    UNIX filename}{%
-    This option selects atoms from the PDB file provided and adds them
-    to the group according to numerical flags in the column
-    \texttt{atomsCol}.  \textbf{Note:} \emph{the sequence of atoms in the PDB file
-    provided must match that in the system's topology}.}
-
-\item %
-  \key
-    {atomsCol}{%
-    atom group}{%
-    PDB column to use for atom selection flags}{%
-    \texttt{O}, \texttt{B}, \texttt{X}, \texttt{Y}, or \texttt{Z}}{%
-    This option specifies which PDB column in \texttt{atomsFile} is used to determine which atoms are to be included in the group.
-  }
-
-\item %
-  \key
-    {atomsColValue}{%
-    atom group}{%
-    Atom selection flag in the PDB column}{%
-    positive decimal}{%
-    If defined, this value in \texttt{atomsCol} identifies atoms in \texttt{atomsFile} that are included in the group.
-    If undefined, all atoms with a non-zero value in \texttt{atomsCol} are included.}
-}
-
-\item %
-  \key
-    {dummyAtom}{%
-    atom group}{%
-    Dummy atom position (\AA{})}{%
-    \texttt{(x, y, z)} triplet}{%
-    Instead of selecting any atom, this option makes the group a virtual particle at a fixed position in space.  This is useful e.g.~to replace a group's center of geometry with a user-defined position.}
-
-\end{itemize}
-
-\cvsubsec{Moving frame of reference.}{sec:colvar_atom_groups_ref_frame}
-
-The following options define an automatic calculation of an optimal translation (\texttt{centerReference}) or optimal rotation (\texttt{rotateReference}), that superimposes the positions of this group to a provided set of reference coordinates.
-This can allow, for example, to effectively remove from certain colvars the effects of molecular tumbling and of diffusion.
-Given the set of atomic positions $\mathbf{x}_{i}$, the colvar $\xi$ can be defined on a set of roto-translated positions $\mathbf{x}_{i}' = R(\mathbf{x}_{i} - \mathbf{x}^{\mathrm{C}}) + \mathbf{x}^{\mathrm{ref}}$.
-$\mathbf{x}^{\mathrm{C}}$ is the geometric center of the $\mathbf{x}_{i}$, $R$ is the optimal rotation matrix to the reference positions and $\mathbf{x}^{\mathrm{ref}}$ is the geometric center of the reference positions.
-
-Components that are defined based on pairwise distances are naturally invariant under global roto-translations.
-Other components are instead affected by global rotations or translations: however, they can be made invariant if they are expressed in the frame of reference of a chosen group of atoms, using the \texttt{centerReference} and \texttt{rotateReference} options.
-Finally, a few components are defined by convention using a roto-translated frame (e.g. the minimal RMSD): for these components, \texttt{centerReference} and \texttt{rotateReference} are enabled by default.
-In typical applications, the default settings result in the expected behavior.
-
-\paragraph*{Warning on rotating frames of reference and periodic boundary conditions.}
-\texttt{rotateReference} affects coordinates that depend on minimum-image distances in periodic boundary conditions (PBC).
-After rotation of the coordinates, the periodic cell vectors become irrelevant: the rotated system is effectively non-periodic.
-A safe way to handle this is to ensure that the relevant inter-group distance vectors remain smaller than the half-size of the periodic cell.
-If this is not desirable, one should avoid the rotating frame of reference, and apply orientational restraints to the reference group instead, in order to keep the orientation of the reference group consistent with the orientation of the periodic cell.
-
-\paragraph*{Warning on rotating frames of reference and ABF.}
-Note that \texttt{centerReference} and \texttt{rotateReference} may affect the Jacobian derivative of colvar components in a way that is not taken into account by default.
-Be careful when using these options in ABF simulations or when using total force values.
-
-\begin{itemize}
-
-\item %
-  \keydef
-    {centerReference}{%
-    atom group}{%
-    Implicitly remove translations for this group}{%
-    boolean}{%
-    \texttt{off}}{%
-    If this option is \texttt{on}, the center of geometry of the group will be aligned with that of the reference positions provided by \cvnamebasedonly{either} \texttt{refPositions} or \texttt{refPositionsFile}.
-    Colvar components will only have access to the aligned positions.
-\textbf{Note}: unless otherwise specified, \texttt{rmsd} and \texttt{eigenvector} set this option to \texttt{on} \emph{by default}.
-}
-
-\item %
-  \keydef
-    {rotateReference}{%
-    atom group}{%
-    Implicitly remove rotations for this group}{%
-    boolean}{%
-    \texttt{off}}{%
-    If this option is \texttt{on}, the coordinates of this group will be optimally superimposed to the reference positions provided by \cvnamebasedonly{either} \texttt{refPositions} or \texttt{refPositionsFile}.
-    The rotation will be performed around the center of geometry if \texttt{centerReference} is \texttt{on}, or around the origin otherwise.
-    The algorithm used is the same employed by the \texttt{orientation} colvar component~\cite{Coutsias2004}.
-    Forces applied to the atoms of this group will also be implicitly rotated back to the original frame.
-    \textbf{Note}: unless otherwise specified, \texttt{rmsd} and \texttt{eigenvector} set this option to \texttt{on} \emph{by default}.
-}
-
-\item %
-  \labelkey{atom-group|refPositions}
-  \key
-    {refPositions}{%
-    atom group}{%
-    Reference positions for fitting (\AA)}{%
-    space-separated list of \texttt{(x, y, z)} triplets}{%
-    \label{key:colvars:atom_group:refPositions}
-    This option provides a list of reference coordinates for \texttt{centerReference} and/or \texttt{rotateReference}, and is mutually exclusive with \texttt{refPositionsFile}.
-    If only \texttt{centerReference} is \texttt{on}, the list may contain a single (x, y, z) triplet; if also \texttt{rotateReference} is \texttt{on}, the list should be as long as the atom group, and \emph{its order must match the order in which atoms were defined}.
-}
-
-\item %
-  \labelkey{atom-group|refPositionsFile}
-  \key
-    {refPositionsFile}{%
-    atom group}{%
-    File containing the reference positions for fitting}{%
-    UNIX filename}{%
-    \label{key:colvars:atom_group:refPositionsFile}
-    This option provides a list of reference coordinates for \texttt{centerReference} and/or \texttt{rotateReference}, and is mutually exclusive with \texttt{refPositions}.
-    The acceptable file format is XYZ, which is read in double precision\cvnamebasedonly{, or PDB; \emph{the latter is discouraged if the precision of the reference coordinates is a concern}}.
-    Atomic positions are read differently depending on the following scenarios:
-    \textbf{(i)} the file contains exactly as many records as the atoms in the group: all positions are read in sequence;
-    \textbf{(ii)} (most common case) the file contains coordinates for the entire system: only the positions corresponding to the numeric indices of the atom group are read\cvnamebasedonly{;
-      \textbf{(iii)} if the file is a PDB file and \texttt{refPositionsCol} is specified, positions are read according to the value of the column \texttt{refPositionsCol} (which may be the same as \texttt{atomsCol})}.
-    In each case, atoms are read from the file \emph{in order of increasing number}.
-}
-
-
-\cvnamebasedonly{
-\item %
-  \key
-    {refPositionsCol}{%
-    atom group}{%
-    PDB column containing atom flags}{%
-    \texttt{O}, \texttt{B}, \texttt{X}, \texttt{Y}, or \texttt{Z}}{%
-    Like \texttt{atomsCol} for \texttt{atomsFile}, indicates which column to use to identify the atoms in \texttt{refPositionsFile} (if this is a PDB file).}
-
-\item %
-  \key
-    {refPositionsColValue}{%
-    atom group}{%
-    Atom selection flag in the PDB column}{%
-    positive decimal}{%
-    Analogous to \texttt{atomsColValue}, but applied to \texttt{refPositionsCol}.}
-}
-
-\item %
-  \labelkey{atom-group|fittingGroup} %
-  \keydef
-    {fittingGroup}{%
-    atom group}{%
-    Use an alternate set of atoms to define the roto-translation}{%
-    Block \texttt{fittingGroup \{ ... \}}}{%
-    This group itself}{%
-    If either \texttt{centerReference} or \texttt{rotateReference} is defined, this keyword defines an alternate atom group to calculate the optimal roto-translation.
-    Use this option to define a continuous rotation if the structure of the group involved changes significantly (a typical symptom would be the message ``Warning: discontinuous rotation!'').
-
-\cvnamebasedonly{
-    The following example illustrates the syntax of \texttt{fittingGroup}: a group called ``\texttt{atoms}'' is defined, including 8 C$_{\alpha}$ atoms of a protein of 100 residues.
-    An optimal roto-translation is calculated automatically by fitting the C$_{\alpha}$ trace of the rest of the protein onto the coordinates provided by a PDB file.}
-
-{%
-\noindent\ttfamily
-\# Example: defining a group "atoms", with its coordinates expressed \\
-\# on a roto-translated frame of reference defined by a second group\\
-atoms \{\\
-\\
-\-~~psfSegID              PROT\\
-\-~~atomNameResidueRange  CA 41-48\\
-\\
-\-~~centerReference yes\\
-\-~~rotateReference yes\\
-\-~~fittingGroup \{\\
-\-~~~~\# define the frame by fitting the rest of the protein\\
-\-~~~~psfSegID              PROT PROT\\
-\-~~~~atomNameResidueRange  CA  1-40\\
-\-~~~~atomNameResidueRange  CA 49-100\\
-\-~~\} \\
-\-~~refPositionsFile all.pdb  \# can be the entire system\\
-\}\\}
-}
-\end{itemize}
-
-The following two options have default values appropriate for the vast majority of applications, and are only provided to support rare, special cases.
-\begin{itemize}
-
-\item %
-  \keydef
-    {enableFitGradients}{%
-    atom group}{%
-    Include the roto-translational contribution to colvar gradients}{%
-    boolean}{%
-    \texttt{on}}{%
-    When either \texttt{centerReference} or \texttt{rotateReference} is on,
-    the gradients of some colvars include terms proportional to
-    $\partial{}R/\partial\mathbf{x}_{i}$ (rotational gradients) and
-    $\partial\mathbf{x}^{\mathrm{C}}/\partial\mathbf{x}_{i}$ (translational gradients).
-    By default, these terms are calculated and included in the total gradients;
-    if this option is set to \texttt{off}, they are neglected.
-    In the case of a minimum RMSD component, this flag is automatically disabled
-    because the contributions of those derivatives to the gradients cancel out.
-}
-
-\item %
-  \keydef
-    {enableForces}{%
-    atom group}{%
-    Apply forces from this colvar to this group}{%
-    boolean}{%
-    \texttt{on}}{%
-    If this option is \texttt{off}, no forces are applied the atoms in the group.
-    Other forces are not affected (i.e. those
-    from the MD engine, from other colvars, and other external forces).
-    For dummy atoms, this option is \texttt{off} by default.
- }
-
-\end{itemize}
-
-
-\cvsubsec{Treatment of periodic boundary conditions.}{sec:colvar_atom_groups_wrapping}
-
-\cvnamdonly{
- In simulations with periodic boundary conditions, NAMD maintains
-  the coordinates of all the atoms within a molecule contiguous to
-  each other (i.e.~there are no spurious ``jumps'' in the molecular
-  bonds).  The Colvars module relies on this when calculating a group's
-  center of geometry, but this condition may fail if the group spans
-  different molecules.  In that case, writing the NAMD output and restart files
-  using \texttt{wrapAll} or \texttt{wrapWater} could produce wrong results
-  when a simulation run is continued from a previous one.  
-  The user should then determine, according to which
-  type of colvars are being calculated, whether \texttt{wrapAll} or
-  \texttt{wrapWater} can be enabled.
-
-  In general, internal coordinate wrapping by NAMD does not affect the calculation of colvars if each atom group satisfies one or more of the following:
-}
-\cvlammpsonly{
-In simulations with periodic boundary conditions, many of the implemented colvar components rely on the fact that each position within a group of atoms is at the nearest periodic image from the center of geometry of the group itself.
-However, due to the internal wrapping of individual atomic positions done by LAMMPS, this assumption is broken if the group straddles one of the unit cell's boundaries.
-For this reason, within the Colvars module all coordinates are unwrapped by default to avoid discontinuities (see \texttt{unwrap} keyword in \ref{sec:colvars_mdengine_parameters}).
-
-The user should determine whether maintaining the default value of \texttt{unwrap}, depending on the specifics of each system.
-In general, internal coordinate wrapping by LAMMPS does not affect the calculation of colvars if each atom group satisfies one or more of the following:
-}
-\cvvmdonly{
-  When periodic boundary conditions are defined, the Colvars module requires that the coordinates of each molecular fragment are contiguous, without ``jumps'' when a fragment is partially wrapped near a periodic boundary.
-  The Colvars module relies on this assumption when calculating a group's center of geometry, but the condition may fail if the group spans different molecules.
-  In general, coordinate wrapping does not affect the calculation of colvars if each atom group satisfies one or more of the following:
-}
-
-\begin{enumerate}
-  \item[\emph{i)}] it is composed by only one atom;
-  \item[\emph{ii)}] it is used by a colvar component which does not make use of its center of geometry, but only of pairwise distances (\texttt{distanceInv}, \texttt{coordNum}, \texttt{hBond}, \texttt{alpha}, \texttt{dihedralPC});
-  \item[\emph{iii)}]  it is used by a colvar component that ignores the ill-defined Cartesian components of its center of mass (such as the $x$ and $y$ components of a membrane's center of mass modeled with \texttt{distanceZ})\cvnamdonly{;
-  \item[\emph{iv)}] it has all of its atoms within the same molecular fragment%
-}.
-\end{enumerate}
-\cvvmdonly{If none of these conditions are met, wrapping may affect the calculation of collective variables: a possible solution is to use \texttt{pbc wrap} or \texttt{pbc unwrap} prior to processing a trajectory with the Colvars module.}
-
-
-\cvsubsec{Performance of a Colvars calculation based on group size.}{sec:colvar_atom_groups_scaling}
-
-In simulations performed with message-passing programs (such as NAMD or LAMMPS), the calculation of energy and forces is distributed (i.e., parallelized) across multiple nodes, as well as over the processor cores of each node.
-When Colvars is enabled, certain atomic coordinates are collected on a single node, where the calculation of collective variables and of their biases is executed.
-This means that for simulations over large numbers of nodes, a Colvars calculation may produce a significant overhead, coming from the costs of transmitting atomic coordinates to one node and of processing them.
-\cvnamdonly{The latency-tolerant design and dynamic load balancing of NAMD may alleviate both factors, but a noticeable performance impact may be observed.}
-
-Performance can be improved in multiple ways:
-\begin{itemize}
-\item The calculation of variables, components and biases can be distributed over the processor cores of the node where the Colvars module is executed.
-  Currently, an equal weight is assigned to each colvar, or to each component of those colvars that include more than one component.
-  The performance of simulations that use many colvars or components is improved automatically.
-  For simulations that use a single large colvar, it may be advisable to partition it in multiple components, which will be then distributed across the available cores.
-  \cvnamdonly{In NAMD, this feature is enabled in all binaries compiled using SMP builds of Charm++ with the CkLoop extension.}
-  \cvlammpsonly{In LAMMPS, this feature is supported automatically when LAMMPS is compiled with OpenMP support.}
-  If printed, the message ``SMP parallelism is available.'' indicates the availability of the option\cvvmdonly{ (will be supported in a future relase of VMD)}.
-  If available, the option is turned on by default, but may be disabled using the keyword \refkey{smp}{Colvars-global|smp} if required for debugging.
-
-\cvnamdonly{
-  % Use the following command to identify them:
-  % grep -B10 'provide(f_cvc_com_based' * |grep '\:\:'|grep '(std::string const &conf)'
-\item NAMD also offers a parallelized calculation of the centers of mass of groups of atoms.
-  This option is on by default for all components that are simple functions of centers of mass, and is controlled by the keyword \refkey{scalable}{sec:cvc_common}.
-  When supported, the message ``Will enable scalable calculation for group \ldots'' is printed for each group.
-}
-
-\item As a general rule, the size of atom groups should be kept relatively small (up to a few thousands of atoms, depending on the size of the entire system in comparison).
-To gain an estimate of the computational cost of a large colvar, one can use a test calculation of the same colvar in VMD (hint: use the \texttt{time} Tcl command to measure the cost of running \texttt{cv update}).
-\end{itemize}
-
-
-\cvsec{Collective variable types (available functions)}{sec:cvc}
-
-In this context, the function that computes a colvar is here called a \emph{component}.
-A component's choice and definition consists of a keyword indicating the
-type of function (e.g.{} \texttt{rmsd}), followed by a definition block
-specifying the atoms involved (see \ref{sec:colvar_atom_groups}) and any additional parameters (cutoffs, ``reference'' values, \ldots).
-At least one component must be chosen: if none of the keywords listed below is found, an error is raised.
-
-Most components return a scalar value (i.e.{} a real number):
+The following components implement functions with a scalar value (i.e.{} a real number):
 \begin{itemize}
 \item \texttt{distance}: distance between two groups;
 \item \texttt{distanceZ}: projection of a distance vector on an axis;
@@ -1450,8 +642,7 @@ can be applied.
 \textbf{What if ``X'' is not listed?} If a function type is not available on this list, it may be possible to define it as a polynomial superposition of existing ones (see \ref{sec:cvc_superp})\cvleptononly{, a custom function (see \ref{sec:colvar_custom_function})}\cvscriptonly{, or a scripted function (see \ref{sec:colvar_scripted})}.
 
 
-
-\cvsubsec{List of available colvar components}{sec:cvc_list}
+\cvsubsec{Available components}{sec:cvc_list}
 
 In this section, all available component types are listed, along
 with their physical units and the ranges of values, if limited.  Such
@@ -2740,8 +1931,7 @@ and \texttt{psfSegID}) in addition to the following:
 } % end of \cvnamebasedonly
 
 
-
-\cvsubsec{Configuration keywords shared by all components}{sec:cvc_common}
+\cvsubsec{Shared keywords for all components}{sec:cvc_common}
 
 The following options can be used for any of the above colvar components in order to obtain a polynomial combination\cvscriptonly{ or any user-supplied function provided by \refkey{scriptedFunction}{sec:cvc_superp}}.
 \begin{itemize}
@@ -2771,9 +1961,7 @@ The following options can be used for any of the above colvar components in orde
 \end{itemize}
 
 
-\cvsubsec{Advanced usage and special considerations}{sec:cvc_advanced}
-
-\cvsubsubsec{Periodic components.}{sec:cvc_periodic}
+\cvsubsec{Periodic components}{sec:cvc_periodic}
 The following components returns
 real numbers that lie in a periodic interval:
 \begin{itemize}
@@ -2825,7 +2013,7 @@ the two periodic images that are closest to each other.
 \emph{Note: linear or polynomial combinations of periodic components (see \ref{sec:cvc_superp}) may become meaningless when components cross the periodic boundary.  Use such combinations carefully: estimate the range of possible values of each component in a given simulation, and make use of \texttt{wrapAround} to limit this problem whenever possible.}
 
 
-\cvsubsubsec{Non-scalar components.}{sec:cvc_non_scalar}
+\cvsubsec{Non-scalar components}{sec:cvc_non_scalar}
 
 When one of the following components are used, the defined colvar returns a value that is not a scalar number:
 \begin{itemize}
@@ -2859,7 +2047,7 @@ Non-scalar components carry the following restrictions:
   of scalar colvars of arbitrary size.}
 
 
-\cvsubsubsec{Calculating total forces.}{sec:cvc_sys_forces}
+\cvsubsubsec{Calculating total forces}{sec:cvc_sys_forces}
 In addition to the restrictions due to the type of value computed (scalar or non-scalar),
 a final restriction can arise when calculating total force
 (\texttt{outputTotalForce} option or application of a \texttt{abf}
@@ -2920,7 +2108,7 @@ of $1/N$.
 
 
 \cvleptononly{
-\cvsubsec{Colvars as custom functions of components}{sec:colvar_custom_function}
+\cvsubsec{Custom functions}{sec:colvar_custom_function}
 
 Collective variables may be defined by specifying a custom function as an analytical
 expression such as \texttt{cos(x) + y\^{}2}.
@@ -2987,7 +2175,7 @@ This is illustrated in the example below.
 
 
 \cvscriptonly{
-\cvsubsec{Colvars as scripted functions of components}{sec:colvar_scripted}
+\cvsubsec{Scripted functions}{sec:colvar_scripted}
 When scripting is supported\cvnamdonly{ (default in NAMD)}\cvvmdonly{ (default in VMD)},
 a colvar may be defined as a scripted function of its components,
 rather than a linear or polynomial combination.
@@ -3056,6 +2244,828 @@ form of path-based collective variables as defined by Branduardi et al\cite{Bran
     returned by the function.}
 \end{itemize}
 } % \cvscriptonly
+
+
+
+\cvsubsec{Defining grid parameters}{sec:colvar_grid_params}
+
+Many algorithms require the definition of boundaries and/or characteristic spacings that can be used to define discrete ``states'' in the collective variable, or to combine variables with very different units.
+The parameters described below offer a way to specify these parameters only once for each variable, while using them multiple times in restraints, time-dependent biases or analysis methods.
+
+\begin{itemize}
+
+\item %
+  \labelkey{colvar|width}
+  \keydef
+    {width}{%
+    \texttt{colvar}}{%
+    Colvar fluctuation scale, or resolution for grid-based methods}{%
+    positive decimal}{%
+    1.0}{%
+    This number has the same physical unit as the colvar value and defines an effective colvar unit.
+%    Biasing algorithms use it for different purposes.
+    Harmonic restraints (\ref{sec:colvarbias_harmonic}) use it to set the physical unit of the force constant, which is useful for multidimensional restraints involving variables with very different units (for examples, $\AA$ or degrees $^\circ$) with a single, scaled force constant.
+    Histograms (\ref{sec:colvarbias_histogram}), ABF (\ref{sec:colvarbias_abf}) and metadynamics (\ref{sec:colvarbias_meta}) all use this number as the initial choice for the grid spacing along this variable: for this reason, \texttt{width} should generally be no larger than the standard deviation of the colvar in an unbiased simulation.
+%    When a non-unity width is required by the application, the optimal value is application-dependent, but can often be thought of as a user-provided estimate of the fluctuation amplitude for the colvar.
+    Unless it is required to control the spacing, it is usually simplest to keep the default value of 1, so that restraint force constants are provided in more intuitive units.
+  }
+
+\item %
+  \labelkey{colvar|lowerBoundary}
+  \key
+    {lowerBoundary}{%
+    \texttt{colvar}}{%
+    Lower boundary of the colvar}{%
+    decimal}{%
+    Defines the lowest end of the interval of ``relevant'' values for the colvar.
+    This number can be either a true physical boundary, or a user-defined number.  
+    Together with \texttt{upperBoundary} and \texttt{width}, it is used to define a grid of values along the colvar (not available for colvars based on \texttt{distanceDir}, \texttt{distanceVec}, and \texttt{orientation}).
+    This option does not affect dynamics: to confine a colvar within a certain interval, use a \texttt{harmonicWalls} bias.
+}
+
+\item %
+  \labelkey{colvar|upperBoundary} %
+  \key
+    {upperBoundary}{%
+    \texttt{colvar}}{%
+    Upper boundary of the colvar}{%
+    decimal}{%
+    Similarly to \texttt{lowerBoundary}, defines the highest possible or allowed value.}
+
+\item %
+  \keydef
+    {hardLowerBoundary}{%
+    \texttt{colvar}}{%
+    Whether the lower boundary is the physical lower limit}{%
+    boolean}{%
+    \texttt{off}}{%
+    This option does not affect simulation results, but enables some internal optimizations.
+    Depending on its mathematical definition, a colvar may have ``natural'' boundaries: for example, a \texttt{distance} colvar has a ``natural'' lower boundary at 0.  Setting this option instructs the Colvars module that the user-defined lower boundary is ``natural''.
+See Section~\ref{sec:cvc_list} for the physical ranges of values of each component.}
+
+\item %
+  \keydef
+    {hardUpperBoundary}{%
+    \texttt{colvar}}{%
+    Whether the upper boundary is the physical upper limit of the colvar's values}{%
+    boolean}{%
+    \texttt{off}}{%
+    Analogous to \texttt{hardLowerBoundary}.}
+
+\item %
+  \labelkey{colvar|expandBoundaries} %
+  \keydef
+    {expandBoundaries}{%
+    \texttt{colvar}}{%
+    Allow to expand the two boundaries if needed}{%
+    boolean}{%
+    \texttt{off}}{%
+    If defined, biasing and analysis methods may keep their own copies
+    of \texttt{lowerBoundary} and \texttt{upperBoundary}, and expand
+    them to accommodate values that do not fit in the initial range.
+    Currently, this option is used by the metadynamics bias
+    (\ref{sec:colvarbias_meta}) to keep all of its hills fully within
+    the grid.  This option cannot be used when
+      the initial boundaries already span the full period of a periodic
+      colvar.}
+
+\end{itemize}
+
+
+
+\cvsubsec{Trajectory output}{sec:colvar_traj_output}
+
+\begin{itemize}
+\item %
+  \keydef
+    {outputValue}{%
+    \texttt{colvar}}{%
+    Output a trajectory for this colvar}{%
+    boolean}{%
+    \texttt{on}}{%
+    If \texttt{colvarsTrajFrequency} is non-zero, the value of this
+    colvar is written to the trajectory file every
+    \texttt{colvarsTrajFrequency} steps in the column labeled
+    ``$<$\texttt{name}$>$''.}
+
+\item %
+  \keydef
+    {outputVelocity}{%
+    \texttt{colvar}}{%
+    Output a velocity trajectory for this colvar}{%
+    boolean}{%
+    \texttt{off}}{%
+    If \texttt{colvarsTrajFrequency} is defined, the
+    finite-difference calculated velocity of this colvar are written
+    to the trajectory file under the label
+    ``\texttt{v\_}$<$\texttt{name}$>$''.}
+
+\item %
+  \keydef
+    {outputEnergy}{%
+    \texttt{colvar}}{%
+    Output an energy trajectory for this colvar}{%
+    boolean}{%
+    \texttt{off}}{%
+    This option applies only to extended Lagrangian colvars. If
+    \texttt{colvarsTrajFrequency} is defined, the kinetic energy of
+    the extended degree and freedom and the potential energy of the
+    restraining spring are are written to the trajectory file under
+    the labels ``\texttt{Ek\_}$<$\texttt{name}$>$'' and
+    ``\texttt{Ep\_}$<$\texttt{name}$>$''.}
+
+\item %
+  \labelkey{colvar|outputTotalForce}
+  \keydef
+    {outputTotalForce}{%
+    \texttt{colvar}}{%
+    Output a total force trajectory for this
+    colvar}{%
+    boolean}{%
+    \texttt{off}}{%
+    If \texttt{colvarsTrajFrequency} is defined, the total force on this
+    colvar (i.e.~the projection of all atomic total forces
+    onto this colvar --- see
+    equation~(\ref{eq:gradient_vector}) in
+    section~\ref{sec:colvarbias_abf}) are written to the trajectory
+    file under the label ``\texttt{fs\_}$<$\texttt{name}$>$''.
+    For extended Lagrangian colvars, the ``total force'' felt by the extended degree of freedom
+    is simply the force from the harmonic spring.
+    \textbf{Note:} not all components support this option.  The
+    physical unit for this force is \cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{the unit of energy specified by \texttt{units}}, divided by the colvar unit U.}
+
+\item %
+  \keydef
+    {outputAppliedForce}{%
+    \texttt{colvar}}{%
+    Output an applied force trajectory for this
+    colvar}{%
+    boolean}{%
+    \texttt{off}}{%
+    If \texttt{colvarsTrajFrequency} is defined, the total force
+    applied on this colvar by Colvars biases are
+    written to the trajectory under the label
+    ``\texttt{fa\_}$<$\texttt{name}$>$''. 
+    For extended Lagrangian colvars, this force is actually applied to the
+    extended degree of freedom rather than the geometric colvar itself.
+    The physical unit for this
+    force is \cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{the unit of energy specified by \texttt{units}} divided by the colvar unit.}
+
+\end{itemize}
+
+
+\cvsubsec{Extended Lagrangian}{sec:colvar_extended}
+
+The following options enable extended-system
+dynamics, where a colvar is coupled to an additional degree of freedom 
+(fictitious particle) by a harmonic spring.
+All biasing and confining forces are then applied to the extended degree
+of freedom. The ``actual'' geometric colvar (function of Cartesian 
+coordinates) only feels the force from the harmonic spring.
+This is particularly useful when combined with an ABF bias (\ref{sec:colvarbias_abf})
+to perform eABF simulations (\ref{sec:eABF}).
+
+\begin{itemize}
+\item %
+  \keydef
+    {extendedLagrangian}{%
+    \texttt{colvar}}{%
+    Add extended degree of freedom}{%
+    boolean}{%
+    \texttt{off}}{%
+    Adds a fictitious particle to be coupled to the colvar by a harmonic
+    spring. The fictitious mass and the force constant of the coupling
+    potential are derived from the parameters \texttt{extendedTimeConstant}
+    and \texttt{extendedFluctuation}, described below. Biasing forces on the
+    colvar are applied to this fictitious particle, rather than to the
+    atoms directly.  This implements the extended Lagrangian formalism
+    used in some metadynamics simulations~\cite{Iannuzzi2003}.
+    \cvnamdonly{The energy associated with the extended degree of freedom is reported
+    under the MISC title in NAMD's energy output.}
+    }
+
+\item %
+  \key
+    {extendedFluctuation}{%
+    \texttt{colvar}}{%
+    Standard deviation between the colvar and the fictitious
+    particle (colvar unit)}{%
+    positive decimal}{%
+    Defines the spring stiffness for the \texttt{extendedLagrangian}
+    mode, by setting the typical deviation between the colvar and the extended
+    degree of freedom due to thermal fluctuation.
+    The spring force constant is calculated internally as $k_B T / \sigma^2$,
+    where $\sigma$ is the value of \texttt{extendedFluctuation}.}
+
+\item %
+  \keydef
+    {extendedTimeConstant}{%
+    \texttt{colvar}}{%
+    Oscillation period of the fictitious particle (fs)}{%
+    positive decimal}{%
+    \texttt{200}}{%
+    Defines the inertial mass of the fictitious particle, by setting the
+    oscillation period of the harmonic oscillator formed by the fictitious
+    particle and the spring. The period
+    should be much larger than the MD time step to ensure accurate integration
+    of the extended particle's equation of motion.
+    The fictitious mass is calculated internally as $k_B T (\tau/2 \pi \sigma)^2$,
+    where $\tau$ is the period and $\sigma$ is the typical fluctuation (see above).}
+
+\item %
+  \keydef
+    {extendedTemp}{%
+    \texttt{colvar}}{%
+    Temperature for the extended degree of freedom (K)}{%
+    positive decimal}{%
+    thermostat temperature}{%
+    Temperature used for calculating the coupling force constant of the
+    extended variable (see \texttt{extendedFluctuation}) and, if needed, as a
+    target temperature for extended Langevin dynamics (see
+    \texttt{extendedLangevinDamping}). This should normally be left at its
+    default value.}
+
+\item %
+  \keydef
+    {extendedLangevinDamping}{%
+    \texttt{colvar}}{%
+    Damping factor for extended Langevin dynamics
+    (ps$^{-1}$)}{%
+    positive decimal}{%
+    \texttt{1.0}}{%
+    If this is non-zero, the extended degree of freedom undergoes Langevin dynamics
+    at temperature \texttt{extendedTemp}. The friction force is minus
+    \texttt{extendedLangevinDamping} times the velocity. This is useful because
+    the extended dynamics coordinate may heat up in the transient
+    non-equilibrium regime of ABF. Use moderate damping values, to limit
+    viscous friction (potentially slowing down diffusive sampling) and stochastic
+    noise (increasing the variance of statistical measurements). In
+    doubt, use the default value.}
+\end{itemize}
+
+
+\cvsubsec{Backward-compatibility}{sec:colvar_compatibility}
+
+\begin{itemize}
+
+\item %
+  \keydef
+    {subtractAppliedForce}{%
+    \texttt{colvar}}{%
+    Do not include biasing forces in the total force for this colvar}{%
+    boolean}{%
+    \texttt{off}}{%
+    If the colvar supports total force calculation (see \ref{sec:cvc_sys_forces}), all forces applied to this colvar by biases will be removed from the total force.
+    This keyword allows to recover some of the ``system force'' calculation available in the Colvars module     before version 2016-08-10.
+    Please note that removal of \emph{all} other external forces (including biasing forces applied to a         different colvar) is \emph{no longer supported}, due to changes in the underlying simulation engines (primarily NAMD).
+    This option may be useful when continuing a previous simulation where the removal of external/applied forces is essential.
+    \emph{For all new simulations, the use of this option is not recommended.}
+}
+
+\end{itemize}
+
+
+\cvsubsec{Statistical analysis}{sec:colvar_acf}
+
+When the global keyword \texttt{analysis} is defined in the
+configuration file, run-time calculations of statistical properties for
+individual colvars can be performed.  At the moment, several types of
+time correlation functions, running averages and running standard
+deviations are available.
+
+\begin{itemize}
+
+\item %
+  \keydef
+    {corrFunc}{%
+    \texttt{colvar}}{%
+    Calculate a time correlation function?}{%
+    boolean}{%
+    \texttt{off}}{%
+    Whether or not a time correlaction function should be calculated
+    for this colvar.}
+
+\item %
+  \key
+    {corrFuncWithColvar}{%
+    \texttt{colvar}}{%
+    Colvar name for the correlation function}{%
+    string}{%
+    By default, the auto-correlation function (ACF) of this colvar,
+    $\xi_{i}$, is calculated.  When this option is specified, the
+    correlation function is calculated instead with another colvar,
+    $\xi_{j}$, which must be of the same type (scalar, vector, or
+    quaternion) as $\xi_{i}$.}
+
+\item%
+  \keydef
+    {corrFuncType}{%
+    \texttt{colvar}}{%
+    Type of the correlation function}{%
+    \texttt{velocity}, \texttt{coordinate} or
+    \texttt{coordinate\_p2}}{%
+    \texttt{velocity}}{%
+    With \texttt{coordinate} or \texttt{velocity}, the correlation
+    function $C_{i,j}(t)$~= $\left\langle \Pi\left(\xi_{i}(t_{0}),
+        \xi_{j}(t_{0}+t)\right) \right\rangle$ is calculated between
+    the variables $\xi_{i}$ and $\xi_{j}$, or their velocities.
+    $\Pi(\xi_{i}, \xi_{j})$ is the scalar product when calculated
+    between scalar or vector values, whereas for quaternions it is the
+    cosine between the two corresponding rotation axes.  With
+    \texttt{coordinate\_p2}, the second order Legendre polynomial,
+    $(3\cos(\theta)^{2}-1)/2$, is used instead of the cosine.}
+
+\item %
+  \keydef
+    {corrFuncNormalize}{%
+    \texttt{colvar}}{%
+    Normalize the time correlation function?}{%
+    boolean}{%
+    \texttt{on}}{%
+    If enabled, the value of the correlation function at $t$~= 0
+    is normalized to 1; otherwise, it equals to $\left\langle
+      O\left(\xi_{i}, \xi_{j}\right) \right\rangle$.}
+
+\item %
+  \keydef
+    {corrFuncLength}{%
+    \texttt{colvar}}{%
+    Length of the time correlation function}{%
+    positive integer}{%
+    \texttt{1000}}{%
+    Length (in number of points) of the time correlation function.}
+
+\item %
+  \keydef
+    {corrFuncStride}{%
+    \texttt{colvar}}{%
+    Stride of the time correlation function}{%
+    positive integer}{%
+    \texttt{1}}{%
+    Number of steps between two values of the time correlation function.}
+
+\item %
+  \keydef
+    {corrFuncOffset}{%
+    \texttt{colvar}}{%
+    Offset of the time correlation function}{%
+    positive integer}{%
+    \texttt{0}}{%
+    The starting time (in number of steps) of the time correlation
+    function (default: $t$~= 0).  \textbf{Note:} \emph{the value at $t$~= 0 is always
+    used for the normalization}.}
+
+\item %
+  \keydef
+    {corrFuncOutputFile}{%
+    \texttt{colvar}}{%
+    Output file for the time correlation function}{%
+    UNIX filename}{%
+    \texttt{$<$name$>$.corrfunc.dat}}{%
+    The time correlation function is saved in this file.}
+
+\item %
+  \keydef
+    {runAve}{%
+    \texttt{colvar}}{%
+    Calculate the running average and standard deviation}{%
+    boolean}{%
+    \texttt{off}}{%
+    Whether or not the running average and standard deviation should
+    be calculated for this colvar.}
+
+\item %
+  \keydef
+    {runAveLength}{%
+    \texttt{colvar}}{%
+    Length of the running average window}{%
+    positive integer}{%
+    \texttt{1000}}{%
+    Length (in number of points) of the running average window.}
+
+\item %
+  \keydef
+    {runAveStride}{%
+    \texttt{colvar}}{%
+    Stride of the running average window values}{%
+    positive integer}{%
+    \texttt{1}}{%
+    Number of steps between two values within the running average window.}
+
+\item %
+  \keydef
+    {runAveOutputFile}{%
+    \texttt{colvar}}{%
+    Output file for the running average and standard deviation}{%
+    UNIX filename}{%
+    \texttt{$<$name$>$.runave.dat}}{%
+    The running average and standard deviation are saved in this file.}
+
+\end{itemize}
+
+
+\cvsec{Selecting atoms}{sec:colvar_atom_groups}
+
+To define collective variables, atoms are usually selected as groups.  Each group is defined using an identifier that is unique in the context of the specific colvar component (e.g.~for a distance component, the two groups are \texttt{group1} and \texttt{group2}).
+The identifier is followed by a brace-delimited block containing selection keywords and other parameters, including an optional \texttt{name}:
+
+\begin{itemize}
+\item \key
+  {name}{%
+  atom group}{%
+  Unique name for the atom group}{%
+  string}{%
+  This parameter defines a unique name for this atom group, which can be referred to
+  in the definition of other atom groups (including in other colvars) by invoking
+  \texttt{atomsOfGroup} as a selection keyword.}
+\end{itemize}
+
+
+\cvsubsec{Atom selection keywords}{sec:colvar_atom_groups_sel}
+
+Selection keywords may be used individually or in combination with each other, and each can be repeated any number of times.
+Selection is incremental: each keyword adds the corresponding atoms to the selection, so that different sets of atoms can be combined.
+However, atoms included by multiple keywords are only counted once.
+Below is an example configuration for an atom group called ``\texttt{atoms}''.
+\textbf{Note: }\emph{this is an unusually varied combination of selection keywords, demonstrating how they can be combined together: most simulations only use one of them.}\\
+
+{%
+% verbatim can't appear within commands
+\noindent\ttfamily atoms \{\\
+\\
+\-~~\# add atoms 1 and 3 to this group (note: the first atom in the system is 1)\\
+\-~~atomNumbers \{ \\
+\-~~~~1 3\\
+\-~~\}\\
+\\
+\-~~\# add atoms starting from 20 up to and including 50\\
+\-~~atomNumbersRange  20-50\\
+}
+\cvnamebasedonly{{%
+\noindent\ttfamily\\
+\-~~\# add all the atoms with occupancy 2 in the file atoms.pdb\\
+\-~~atomsFile             atoms.pdb\\
+\-~~atomsCol              O\\
+\-~~atomsColValue         2.0\\
+\\
+\-~~\# add all the C-alphas within residues 11 to 20 of segments "PR1" and "PR2"\\
+\-~~psfSegID              PR1 PR2\\
+\-~~atomNameResidueRange  CA 11-20\\
+\-~~atomNameResidueRange  CA 11-20\\
+}}
+{\noindent\ttfamily\\
+\-~~\# add index group (requires a .ndx file to be provided globally)\\
+\-~~indexGroup Water\\
+\}\\}
+
+
+The resulting selection includes atoms 1 and 3, those between 20 and 50,\cvnamebasedonly{ the $\mathrm{C}_{\alpha}$ atoms between residues 11 and 20 of the two segments \texttt{PR1} and \texttt{PR2},} and those in the index group called ``Water''.
+The indices of this group are read from the file provided by the global keyword \refkey{indexFile}{Colvars-global|indexFile}.
+
+\cvvmdonly{In the current version, the Colvars module does not manipulate VMD atom selections directly: however, these can be converted to atom groups within the Colvars configuration string, using selection keywords such as \texttt{atomNumbers}.}
+The complete list of selection keywords available in \MDENGINE{} is:
+
+\begin{itemize}
+
+\item %
+  \key
+    {atomNumbers}{%
+    atom group}{%
+    List of atom numbers}{%
+    space-separated list of positive integers}{%
+    This option adds to the group all the atoms whose numbers are in
+    the list.  \emph{The number of the first atom in the system is 1: to convert from a VMD selection, use ``atomselect get serial''.}
+  }
+
+\item %
+  \key
+    {indexGroup}{%
+    atom group}{%
+    Name of index group to be used (GROMACS format)}{%
+    string}{%
+    If the name of an index file has been provided by \texttt{indexFile}, this option allows to select one index group from that file: the atoms from that index group will be used to define the current group.}
+
+\item %
+  \key
+    {atomsOfGroup}{%
+    atom group}{%
+    Name of group defined previously}{%
+    string}{%
+    Refers to a group defined previously using its user-defined \texttt{name}.
+    This adds all atoms of that named group to the current group.}
+
+\item %
+  \key
+    {atomNumbersRange}{%
+    atom group}{%
+    Atoms within a number range}{%
+    $<$Starting number$>$-$<$Ending number$>$}{%
+    This option includes in the group all atoms whose numbers are within the range specified.  \emph{The number of the first atom in the system is 1.}
+  }
+
+\cvnamebasedonly{
+\item %
+  \key
+    {atomNameResidueRange}{%
+    atom group}{%
+    Named atoms within a range of residue numbers}{%
+    $<$Atom name$>$ $<$Starting residue$>$-$<$Ending residue$>$}{%
+    This option adds to the group all the atoms with the provided
+    name, within residues in the given range.}
+
+\item %
+  \key
+    {psfSegID}{%
+    atom group}{%
+    PSF segment identifier}{%
+    space-separated list of strings (max 4 characters)}{%
+    This option sets the PSF segment identifier for
+    \texttt{atomNameResidueRange}.  Multiple values may be provided,
+    which correspond to multiple instances of
+    \texttt{atomNameResidueRange}, in order of their occurrence.
+    This option is only necessary if a PSF topology file is used.}
+
+\item %
+  \key
+    {atomsFile}{%
+    atom group}{%
+    PDB file name for atom selection}{%
+    UNIX filename}{%
+    This option selects atoms from the PDB file provided and adds them
+    to the group according to numerical flags in the column
+    \texttt{atomsCol}.  \textbf{Note:} \emph{the sequence of atoms in the PDB file
+    provided must match that in the system's topology}.}
+
+\item %
+  \key
+    {atomsCol}{%
+    atom group}{%
+    PDB column to use for atom selection flags}{%
+    \texttt{O}, \texttt{B}, \texttt{X}, \texttt{Y}, or \texttt{Z}}{%
+    This option specifies which PDB column in \texttt{atomsFile} is used to determine which atoms are to be included in the group.
+  }
+
+\item %
+  \key
+    {atomsColValue}{%
+    atom group}{%
+    Atom selection flag in the PDB column}{%
+    positive decimal}{%
+    If defined, this value in \texttt{atomsCol} identifies atoms in \texttt{atomsFile} that are included in the group.
+    If undefined, all atoms with a non-zero value in \texttt{atomsCol} are included.}
+}
+
+\item %
+  \key
+    {dummyAtom}{%
+    atom group}{%
+    Dummy atom position (\AA{})}{%
+    \texttt{(x, y, z)} triplet}{%
+    Instead of selecting any atom, this option makes the group a virtual particle at a fixed position in space.  This is useful e.g.~to replace a group's center of geometry with a user-defined position.}
+
+\end{itemize}
+
+\cvsubsec{Moving frame of reference.}{sec:colvar_atom_groups_ref_frame}
+
+The following options define an automatic calculation of an optimal translation (\texttt{centerReference}) or optimal rotation (\texttt{rotateReference}), that superimposes the positions of this group to a provided set of reference coordinates.
+This can allow, for example, to effectively remove from certain colvars the effects of molecular tumbling and of diffusion.
+Given the set of atomic positions $\mathbf{x}_{i}$, the colvar $\xi$ can be defined on a set of roto-translated positions $\mathbf{x}_{i}' = R(\mathbf{x}_{i} - \mathbf{x}^{\mathrm{C}}) + \mathbf{x}^{\mathrm{ref}}$.
+$\mathbf{x}^{\mathrm{C}}$ is the geometric center of the $\mathbf{x}_{i}$, $R$ is the optimal rotation matrix to the reference positions and $\mathbf{x}^{\mathrm{ref}}$ is the geometric center of the reference positions.
+
+Components that are defined based on pairwise distances are naturally invariant under global roto-translations.
+Other components are instead affected by global rotations or translations: however, they can be made invariant if they are expressed in the frame of reference of a chosen group of atoms, using the \texttt{centerReference} and \texttt{rotateReference} options.
+Finally, a few components are defined by convention using a roto-translated frame (e.g. the minimal RMSD): for these components, \texttt{centerReference} and \texttt{rotateReference} are enabled by default.
+In typical applications, the default settings result in the expected behavior.
+
+\paragraph*{Warning on rotating frames of reference and periodic boundary conditions.}
+\texttt{rotateReference} affects coordinates that depend on minimum-image distances in periodic boundary conditions (PBC).
+After rotation of the coordinates, the periodic cell vectors become irrelevant: the rotated system is effectively non-periodic.
+A safe way to handle this is to ensure that the relevant inter-group distance vectors remain smaller than the half-size of the periodic cell.
+If this is not desirable, one should avoid the rotating frame of reference, and apply orientational restraints to the reference group instead, in order to keep the orientation of the reference group consistent with the orientation of the periodic cell.
+
+\paragraph*{Warning on rotating frames of reference and ABF.}
+Note that \texttt{centerReference} and \texttt{rotateReference} may affect the Jacobian derivative of colvar components in a way that is not taken into account by default.
+Be careful when using these options in ABF simulations or when using total force values.
+
+\begin{itemize}
+
+\item %
+  \keydef
+    {centerReference}{%
+    atom group}{%
+    Implicitly remove translations for this group}{%
+    boolean}{%
+    \texttt{off}}{%
+    If this option is \texttt{on}, the center of geometry of the group will be aligned with that of the reference positions provided by \cvnamebasedonly{either} \texttt{refPositions} or \texttt{refPositionsFile}.
+    Colvar components will only have access to the aligned positions.
+\textbf{Note}: unless otherwise specified, \texttt{rmsd} and \texttt{eigenvector} set this option to \texttt{on} \emph{by default}.
+}
+
+\item %
+  \keydef
+    {rotateReference}{%
+    atom group}{%
+    Implicitly remove rotations for this group}{%
+    boolean}{%
+    \texttt{off}}{%
+    If this option is \texttt{on}, the coordinates of this group will be optimally superimposed to the reference positions provided by \cvnamebasedonly{either} \texttt{refPositions} or \texttt{refPositionsFile}.
+    The rotation will be performed around the center of geometry if \texttt{centerReference} is \texttt{on}, or around the origin otherwise.
+    The algorithm used is the same employed by the \texttt{orientation} colvar component~\cite{Coutsias2004}.
+    Forces applied to the atoms of this group will also be implicitly rotated back to the original frame.
+    \textbf{Note}: unless otherwise specified, \texttt{rmsd} and \texttt{eigenvector} set this option to \texttt{on} \emph{by default}.
+}
+
+\item %
+  \labelkey{atom-group|refPositions}
+  \key
+    {refPositions}{%
+    atom group}{%
+    Reference positions for fitting (\AA)}{%
+    space-separated list of \texttt{(x, y, z)} triplets}{%
+    \label{key:colvars:atom_group:refPositions}
+    This option provides a list of reference coordinates for \texttt{centerReference} and/or \texttt{rotateReference}, and is mutually exclusive with \texttt{refPositionsFile}.
+    If only \texttt{centerReference} is \texttt{on}, the list may contain a single (x, y, z) triplet; if also \texttt{rotateReference} is \texttt{on}, the list should be as long as the atom group, and \emph{its order must match the order in which atoms were defined}.
+}
+
+\item %
+  \labelkey{atom-group|refPositionsFile}
+  \key
+    {refPositionsFile}{%
+    atom group}{%
+    File containing the reference positions for fitting}{%
+    UNIX filename}{%
+    \label{key:colvars:atom_group:refPositionsFile}
+    This option provides a list of reference coordinates for \texttt{centerReference} and/or \texttt{rotateReference}, and is mutually exclusive with \texttt{refPositions}.
+    The acceptable file format is XYZ, which is read in double precision\cvnamebasedonly{, or PDB; \emph{the latter is discouraged if the precision of the reference coordinates is a concern}}.
+    Atomic positions are read differently depending on the following scenarios:
+    \textbf{(i)} the file contains exactly as many records as the atoms in the group: all positions are read in sequence;
+    \textbf{(ii)} (most common case) the file contains coordinates for the entire system: only the positions corresponding to the numeric indices of the atom group are read\cvnamebasedonly{;
+      \textbf{(iii)} if the file is a PDB file and \texttt{refPositionsCol} is specified, positions are read according to the value of the column \texttt{refPositionsCol} (which may be the same as \texttt{atomsCol})}.
+    In each case, atoms are read from the file \emph{in order of increasing number}.
+}
+
+
+\cvnamebasedonly{
+\item %
+  \key
+    {refPositionsCol}{%
+    atom group}{%
+    PDB column containing atom flags}{%
+    \texttt{O}, \texttt{B}, \texttt{X}, \texttt{Y}, or \texttt{Z}}{%
+    Like \texttt{atomsCol} for \texttt{atomsFile}, indicates which column to use to identify the atoms in \texttt{refPositionsFile} (if this is a PDB file).}
+
+\item %
+  \key
+    {refPositionsColValue}{%
+    atom group}{%
+    Atom selection flag in the PDB column}{%
+    positive decimal}{%
+    Analogous to \texttt{atomsColValue}, but applied to \texttt{refPositionsCol}.}
+}
+
+\item %
+  \labelkey{atom-group|fittingGroup} %
+  \keydef
+    {fittingGroup}{%
+    atom group}{%
+    Use an alternate set of atoms to define the roto-translation}{%
+    Block \texttt{fittingGroup \{ ... \}}}{%
+    This group itself}{%
+    If either \texttt{centerReference} or \texttt{rotateReference} is defined, this keyword defines an alternate atom group to calculate the optimal roto-translation.
+    Use this option to define a continuous rotation if the structure of the group involved changes significantly (a typical symptom would be the message ``Warning: discontinuous rotation!'').
+
+\cvnamebasedonly{
+    The following example illustrates the syntax of \texttt{fittingGroup}: a group called ``\texttt{atoms}'' is defined, including 8 C$_{\alpha}$ atoms of a protein of 100 residues.
+    An optimal roto-translation is calculated automatically by fitting the C$_{\alpha}$ trace of the rest of the protein onto the coordinates provided by a PDB file.}
+
+{%
+\noindent\ttfamily
+\# Example: defining a group "atoms", with its coordinates expressed \\
+\# on a roto-translated frame of reference defined by a second group\\
+atoms \{\\
+\\
+\-~~psfSegID              PROT\\
+\-~~atomNameResidueRange  CA 41-48\\
+\\
+\-~~centerReference yes\\
+\-~~rotateReference yes\\
+\-~~fittingGroup \{\\
+\-~~~~\# define the frame by fitting the rest of the protein\\
+\-~~~~psfSegID              PROT PROT\\
+\-~~~~atomNameResidueRange  CA  1-40\\
+\-~~~~atomNameResidueRange  CA 49-100\\
+\-~~\} \\
+\-~~refPositionsFile all.pdb  \# can be the entire system\\
+\}\\}
+}
+\end{itemize}
+
+The following two options have default values appropriate for the vast majority of applications, and are only provided to support rare, special cases.
+\begin{itemize}
+
+\item %
+  \keydef
+    {enableFitGradients}{%
+    atom group}{%
+    Include the roto-translational contribution to colvar gradients}{%
+    boolean}{%
+    \texttt{on}}{%
+    When either \texttt{centerReference} or \texttt{rotateReference} is on,
+    the gradients of some colvars include terms proportional to
+    $\partial{}R/\partial\mathbf{x}_{i}$ (rotational gradients) and
+    $\partial\mathbf{x}^{\mathrm{C}}/\partial\mathbf{x}_{i}$ (translational gradients).
+    By default, these terms are calculated and included in the total gradients;
+    if this option is set to \texttt{off}, they are neglected.
+    In the case of a minimum RMSD component, this flag is automatically disabled
+    because the contributions of those derivatives to the gradients cancel out.
+}
+
+\item %
+  \keydef
+    {enableForces}{%
+    atom group}{%
+    Apply forces from this colvar to this group}{%
+    boolean}{%
+    \texttt{on}}{%
+    If this option is \texttt{off}, no forces are applied the atoms in the group.
+    Other forces are not affected (i.e. those
+    from the MD engine, from other colvars, and other external forces).
+    For dummy atoms, this option is \texttt{off} by default.
+ }
+
+\end{itemize}
+
+
+\cvsubsec{Treatment of periodic boundary conditions.}{sec:colvar_atom_groups_wrapping}
+
+\cvnamdonly{
+ In simulations with periodic boundary conditions, NAMD maintains
+  the coordinates of all the atoms within a molecule contiguous to
+  each other (i.e.~there are no spurious ``jumps'' in the molecular
+  bonds).  The Colvars module relies on this when calculating a group's
+  center of geometry, but this condition may fail if the group spans
+  different molecules.  In that case, writing the NAMD output and restart files
+  using \texttt{wrapAll} or \texttt{wrapWater} could produce wrong results
+  when a simulation run is continued from a previous one.  
+  The user should then determine, according to which
+  type of colvars are being calculated, whether \texttt{wrapAll} or
+  \texttt{wrapWater} can be enabled.
+
+  In general, internal coordinate wrapping by NAMD does not affect the calculation of colvars if each atom group satisfies one or more of the following:
+}
+\cvlammpsonly{
+In simulations with periodic boundary conditions, many of the implemented colvar components rely on the fact that each position within a group of atoms is at the nearest periodic image from the center of geometry of the group itself.
+However, due to the internal wrapping of individual atomic positions done by LAMMPS, this assumption is broken if the group straddles one of the unit cell's boundaries.
+For this reason, within the Colvars module all coordinates are unwrapped by default to avoid discontinuities (see \texttt{unwrap} keyword in \ref{sec:colvars_mdengine_parameters}).
+
+The user should determine whether maintaining the default value of \texttt{unwrap}, depending on the specifics of each system.
+In general, internal coordinate wrapping by LAMMPS does not affect the calculation of colvars if each atom group satisfies one or more of the following:
+}
+\cvvmdonly{
+  When periodic boundary conditions are defined, the Colvars module requires that the coordinates of each molecular fragment are contiguous, without ``jumps'' when a fragment is partially wrapped near a periodic boundary.
+  The Colvars module relies on this assumption when calculating a group's center of geometry, but the condition may fail if the group spans different molecules.
+  In general, coordinate wrapping does not affect the calculation of colvars if each atom group satisfies one or more of the following:
+}
+
+\begin{enumerate}
+  \item[\emph{i)}] it is composed by only one atom;
+  \item[\emph{ii)}] it is used by a colvar component which does not make use of its center of geometry, but only of pairwise distances (\texttt{distanceInv}, \texttt{coordNum}, \texttt{hBond}, \texttt{alpha}, \texttt{dihedralPC});
+  \item[\emph{iii)}]  it is used by a colvar component that ignores the ill-defined Cartesian components of its center of mass (such as the $x$ and $y$ components of a membrane's center of mass modeled with \texttt{distanceZ})\cvnamdonly{;
+  \item[\emph{iv)}] it has all of its atoms within the same molecular fragment%
+}.
+\end{enumerate}
+\cvvmdonly{If none of these conditions are met, wrapping may affect the calculation of collective variables: a possible solution is to use \texttt{pbc wrap} or \texttt{pbc unwrap} prior to processing a trajectory with the Colvars module.}
+
+
+\cvsubsec{Performance of a Colvars calculation based on group size.}{sec:colvar_atom_groups_scaling}
+
+In simulations performed with message-passing programs (such as NAMD or LAMMPS), the calculation of energy and forces is distributed (i.e., parallelized) across multiple nodes, as well as over the processor cores of each node.
+When Colvars is enabled, certain atomic coordinates are collected on a single node, where the calculation of collective variables and of their biases is executed.
+This means that for simulations over large numbers of nodes, a Colvars calculation may produce a significant overhead, coming from the costs of transmitting atomic coordinates to one node and of processing them.
+\cvnamdonly{The latency-tolerant design and dynamic load balancing of NAMD may alleviate both factors, but a noticeable performance impact may be observed.}
+
+Performance can be improved in multiple ways:
+\begin{itemize}
+\item The calculation of variables, components and biases can be distributed over the processor cores of the node where the Colvars module is executed.
+  Currently, an equal weight is assigned to each colvar, or to each component of those colvars that include more than one component.
+  The performance of simulations that use many colvars or components is improved automatically.
+  For simulations that use a single large colvar, it may be advisable to partition it in multiple components, which will be then distributed across the available cores.
+  \cvnamdonly{In NAMD, this feature is enabled in all binaries compiled using SMP builds of Charm++ with the CkLoop extension.}
+  \cvlammpsonly{In LAMMPS, this feature is supported automatically when LAMMPS is compiled with OpenMP support.}
+  If printed, the message ``SMP parallelism is available.'' indicates the availability of the option\cvvmdonly{ (will be supported in a future relase of VMD)}.
+  If available, the option is turned on by default, but may be disabled using the keyword \refkey{smp}{Colvars-global|smp} if required for debugging.
+
+\cvnamdonly{
+  % Use the following command to identify them:
+  % grep -B10 'provide(f_cvc_com_based' * |grep '\:\:'|grep '(std::string const &conf)'
+\item NAMD also offers a parallelized calculation of the centers of mass of groups of atoms.
+  This option is on by default for all components that are simple functions of centers of mass, and is controlled by the keyword \refkey{scalable}{sec:cvc_common}.
+  When supported, the message ``Will enable scalable calculation for group \ldots'' is printed for each group.
+}
+
+\item As a general rule, the size of atom groups should be kept relatively small (up to a few thousands of atoms, depending on the size of the entire system in comparison).
+To gain an estimate of the computational cost of a large colvar, one can use a test calculation of the same colvar in VMD (hint: use the \texttt{time} Tcl command to measure the cost of running \texttt{cv update}).
+\end{itemize}
 
 
 \cvsec{Biasing and analysis methods}{sec:colvarbias}
@@ -3287,7 +3297,7 @@ group used in a \texttt{distance} component.
 ABF depends on parameters from collective variables to define the grid on which free
 energy gradients are computed. In the direction of each colvar, the grid ranges from
 \texttt{lowerBoundary} to \texttt{upperBoundary}, and the bin width (grid spacing)
-is set by the \texttt{width} parameter (see~\ref{sec:colvar_general}).
+is set by the \refkey{width}{colvar|width} parameter.
 The following specific parameters can be set in the ABF configuration block:
 
 \begin{itemize}
@@ -3744,7 +3754,7 @@ The parameters $\delta{}t$ and $\sigma_{\xi}$ specified by the optional keywords
     Relative width of a Gaussian hill with respect to the colvar's width}{%
     positive decimal}{%
     $\sqrt{2\pi}/2$}{%
-    The Gaussian width along each colvar, $2\sigma_{\xi_{i}}$, is set as the product between this number and the colvar's parameter $w_{i}$ given by \texttt{width} (see \ref{sec:colvar_general}); such product is printed in the standard output of \MDENGINE{}.
+    The Gaussian width along each colvar, $2\sigma_{\xi_{i}}$, is set as the product between this number and the colvar's parameter $w_{i}$ given by \refkey{width}{colvar|width}; such product is printed in the standard output of \MDENGINE{}.
     The default value of this number gives a Gaussian hill function whose volume is equal to the product of $\prod_{i}w_{i}$, the volume of one \texttt{histogram} bin (see \ref{sec:colvarbias_histogram}), and $W$.
     \textbf{Tip:} \emph{use this property to estimate the fraction of colvar space covered by the Gaussian bias within a given simulation time.}
     When \texttt{useGrids} is on, the default value also gives acceptable discretization errors~\cite{Fiorin2013}: for smoother visualization, this parameter may be increased and the \texttt{width} $w_{i}$ decreased in the same proportion.
@@ -3780,7 +3790,7 @@ The following two options allow to control this behavior and to visually track s
 
 \end{itemize}
 
-\textbf{Note:} when Gaussian hills are deposited near \texttt{lowerBoundary} or \texttt{upperBoundary} (see \ref{sec:colvar_general}) and interpolating grids are used (default behavior), their truncation can give rise to accumulating errors.
+\textbf{Note:} when Gaussian hills are deposited near the \refkey{lowerBoundary}{colvar|lowerBoundary} or \refkey{upperBoundary}{colvar|upperBoundary} and interpolating grids are used (default behavior), their truncation can give rise to accumulating errors.
 In these cases, as a measure of fault-tolerance all Gaussian hills near the boundaries are included in the output state file, and are recalculated analytically whenever the colvar falls outside the grid's boundaries.
 (Such measure protects the accuracy of the calculation, and can only be disabled by \texttt{hardLowerBoundary} or \texttt{hardUpperBoundary}.)
 To avoid gradual loss of performance and growth of the state file, either one of the following solutions is recommended:
@@ -4040,7 +4050,7 @@ Note that this differs from harmonic bond and angle potentials in common
 force fields, where the factor of one half is typically omitted,
 resulting in a non-standard definition of the force constant.
 
-The formula above includes the characteristic length scale $w_{\xi}$ of the colvar $\xi$ (keyword \texttt{width}, see \ref{sec:colvar_general}) to allow the definition of a multi-dimensional restraint with a unified force constant:
+The formula above includes the characteristic length scale $w_{\xi}$ of the colvar $\xi$ (keyword \refkey{lowerBoundary}{colvar|lowerBoundary}) to allow the definition of a multi-dimensional restraint with a unified force constant:
 \begin{equation}
   \label{eq:colvarbias_harmonic_multi}
   V(\xi_{1}, \ldots, \xi_{M}) = \frac{1}{2} k \sum_{i=1}^{M} \left(\frac{\xi_{i} - \xi_0}{w_{\xi}}\right)^2
