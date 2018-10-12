@@ -6,7 +6,7 @@ all: pdf
 
 pdf: $(PDF)
 
-%.pdf: %.tex $(BIBTEX) colvars-refman-main.tex colvars-refman.tex colvars-cv.tex
+%.pdf: %.tex $(BIBTEX) colvars-refman-main.tex colvars-refman.tex
 	pdflatex $<
 	bibtex $(basename $<)
 	makeindex $(basename $<).idx
