@@ -2720,9 +2720,12 @@ if ($config_arch eq "SUMMIT") {
     $system_libs .= " -ldl";
 
     if ($config_cuda) {
-      $arch_nvcc        = "/sw/summit/cuda/9.2.64/bin/nvcc";
-      $cuda_include     = "-I/sw/summit/cuda/9.2.64/include";
-      $cuda_library     = "-L/sw/summit/cuda/9.2.64/lib64";
+#      $arch_nvcc        = "/sw/summit/cuda/9.2.64/bin/nvcc";
+#      $cuda_include     = "-I/sw/summit/cuda/9.2.64/include";
+#      $cuda_library     = "-L/sw/summit/cuda/9.2.64/lib64";
+      $arch_nvcc        = "/sw/summit/cuda/9.2.148/bin/nvcc";
+      $cuda_include     = "-I/sw/summit/cuda/9.2.148/include";
+      $cuda_library     = "-L/sw/summit/cuda/9.2.148/lib64";
       $cuda_libs        = "-Wl,-rpath -Wl,\$\$ORIGIN/ -lcudart_static -lrt";
   
       # Only generate code for SM 7.0 on Summit
