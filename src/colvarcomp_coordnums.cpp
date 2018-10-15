@@ -49,7 +49,7 @@ cvm::real colvar::coordnum::switching_function(cvm::real const &r0,
 
   cvm::real const xn = cvm::integer_power(l2, en2);
   cvm::real const xd = cvm::integer_power(l2, ed2);
-  cvm::real const func = (1.0-xn)/(1.0-xd);
+  cvm::real func = (1.0-xn)/(1.0-xd);
 
   if (flags & ef_rebuild_pairlist) {
     //The pairlist is expressed in terms of half the sum tolerance, so that particles near the edge contribute correctly.
@@ -59,6 +59,9 @@ cvm::real colvar::coordnum::switching_function(cvm::real const &r0,
   //If the value is too small, we need to exclude it, rather than let it contribute to the sum or the gradients.
   if (func < pairlist_tol)
     return 0;
+  //Stretch the values back out to a range from [0,1] through a subtraction and a multiplication.
+  func -= pairlist_tol;
+  func *= 1.0 / (1-pairlist_tol);
   if (flags & ef_gradients) {
     //This is the old, completely correct expression for dFdl2:
     //cvm::real const dFdl2 = (1.0/(1.0-xd))*(en2*(xn/l2) -
