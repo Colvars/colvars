@@ -585,7 +585,7 @@ It is also highly recommended to specify a name for the variable:
 \end{itemize}
 
 
-\cvsubsec{Choosing a function}{sec:cvc_summary}
+\cvsubsec{Choosing a function}{sec:cvc_list}
 
 In this context, the function that computes a colvar is called a \emph{component}.
 A component's choice and definition consists of including in the variable's configuration a keyword indicating the type of function (e.g.{} \texttt{rmsd}), followed by a definition block specifying the atoms involved (see \ref{sec:colvar_atom_groups}) and any additional parameters (cutoffs, ``reference'' values, \ldots).
@@ -593,46 +593,46 @@ A component's choice and definition consists of including in the variable's conf
 
 The following components implement functions with a scalar value (i.e.{} a real number):
 \begin{itemize}
-\item \texttt{distance}: distance between two groups;
-\item \texttt{distanceZ}: projection of a distance vector on an axis;
-\item \texttt{distanceXY}: projection of a distance vector on a plane;
-\item \texttt{distanceInv}: mean distance between two groups of atoms (e.g.~NOE-based distance);
-\item \texttt{angle}: angle between three groups;
-\item \texttt{dihedral}: torsional (dihedral) angle between four groups;
-\item \texttt{dipoleAngle}: angle between two groups and dipole of a third group;
-\item \texttt{polarTheta}: polar angle of a group in spherical coordinates;
-\item \texttt{polarPhi}: azimuthal angle of a group in spherical coordinates;
-\item \texttt{coordNum}: coordination number between two groups;
-\item \texttt{selfCoordNum}: coordination number of atoms within a
+\item \refkey{distance}{colvar|distance}: distance between two groups;
+\item \refkey{distanceZ}{colvar|distanceZ}: projection of a distance vector on an axis;
+\item \refkey{distanceXY}{colvar|distanceXY}: projection of a distance vector on a plane;
+\item \refkey{distanceInv}{colvar|distanceInv}: mean distance between two groups of atoms (e.g.~NOE-based distance);
+\item \refkey{angle}{colvar|angle}: angle between three groups;
+\item \refkey{dihedral}{colvar|dihedral}: torsional (dihedral) angle between four groups;
+\item \refkey{dipoleAngle}{colvar|dipoleAngle}: angle between two groups and dipole of a third group;
+\item \refkey{polarTheta}{colvar|polarTheta}: polar angle of a group in spherical coordinates;
+\item \refkey{polarPhi}{colvar|polarPhi}: azimuthal angle of a group in spherical coordinates;
+\item \refkey{coordNum}{colvar|coordNum}: coordination number between two groups;
+\item \refkey{selfCoordNum}{colvar|selfCoordNum}: coordination number of atoms within a
   group;
-\item \texttt{hBond}: hydrogen bond between two atoms;
-\item \texttt{rmsd}: root mean square deviation (RMSD) from a set of
+\item \refkey{hBond}{colvar|hBond}: hydrogen bond between two atoms;
+\item \refkey{rmsd}{colvar|rmsd}: root mean square deviation (RMSD) from a set of
   reference coordinates;
-\item \texttt{eigenvector}: projection of the atomic coordinates on a
+\item \refkey{eigenvector}{colvar|eigenvector}: projection of the atomic coordinates on a
   vector;
-\item \texttt{orientationAngle}: angle of the best-fit rotation from
+\item \refkey{orientationAngle}{colvar|orientationAngle}: angle of the best-fit rotation from
   a set of reference coordinates;
-\item \texttt{orientationProj}: cosine of \texttt{orientationProj};
-\item \texttt{spinAngle}: projection orthogonal to an axis of the best-fit rotation
+\item \refkey{orientationProj}{colvar|orientationProj}: cosine of \refkey{orientationProj}{colvar|orientationProj};
+\item \refkey{spinAngle}{colvar|spinAngle}: projection orthogonal to an axis of the best-fit rotation
   from a set of reference coordinates;
-\item \texttt{tilt}: projection on an axis of the best-fit rotation
+\item \refkey{tilt}{colvar|tilt}: projection on an axis of the best-fit rotation
   from a set of reference coordinates;
-\item \texttt{gyration}: radius of gyration of a group of atoms;
-\item \texttt{inertia}: moment of inertia of a group of atoms;
-\item \texttt{inertiaZ}: moment of inertia of a group of atoms around a chosen axis;
+\item \refkey{gyration}{colvar|gyration}: radius of gyration of a group of atoms;
+\item \refkey{inertia}{colvar|inertia}: moment of inertia of a group of atoms;
+\item \refkey{inertiaZ}{colvar|inertiaZ}: moment of inertia of a group of atoms around a chosen axis;
 \cvnamebasedonly{
-\item \texttt{alpha}: $\alpha$-helix content of a protein segment.
-\item \texttt{dihedralPC}: projection of protein backbone dihedrals onto a dihedral principal component.
+\item \refkey{alpha}{colvar|alpha}: $\alpha$-helix content of a protein segment.
+\item \refkey{dihedralPC}{colvar|dihedralPC}: projection of protein backbone dihedrals onto a dihedral principal component.
 }
 \end{itemize}
 
 Some components do not return scalar, but vector values:
 \begin{itemize}
-\item \texttt{distanceVec}: distance vector between two groups (length: 3);
-\item \texttt{distanceDir}: unit vector parallel to distanceVec (length: 3);
-\item \texttt{cartesian}: vector of atomic Cartesian coordinates (length: $N$);
-\item \texttt{distancePairs}: vector of mutual distances (length: $N_{\mathrm{1}}\times{}N_{\mathrm{2}}$);
-\item \texttt{orientation}: best-fit rotation, expressed as a unit quaternion (length: 4).
+\item \refkey{distanceVec}{colvar|distanceVec}: distance vector between two groups (length: 3);
+\item \refkey{distanceDir}{colvar|distanceDir}: unit vector parallel to distanceVec (length: 3);
+\item \refkey{cartesian}{colvar|cartesian}: vector of atomic Cartesian coordinates (length: $N$ times the number of Cartesian components requested, X, Y or Z);
+\item \refkey{distancePairs}{colvar|distancePairs}: vector of mutual distances (length: $N_{\mathrm{1}}\times{}N_{\mathrm{2}}$);
+\item \refkey{orientation}{colvar|orientation}: best-fit rotation, expressed as a unit quaternion (length: 4).
 \end{itemize}
 
 The types of components used in a colvar (scalar or not) determine the
@@ -641,13 +641,8 @@ can be applied.
 
 \textbf{What if ``X'' is not listed?} If a function type is not available on this list, it may be possible to define it as a polynomial superposition of existing ones (see \ref{sec:cvc_superp})\cvleptononly{, a custom function (see \ref{sec:colvar_custom_function})}\cvscriptonly{, or a scripted function (see \ref{sec:colvar_scripted})}.
 
-
-\cvsubsec{Available components}{sec:cvc_list}
-
-In this section, all available component types are listed, along
-with their physical units and the ranges of values, if limited.  Such
-limiting values can be used to define \texttt{lowerBoundary} and
-\texttt{upperBoundary} in the parent colvar.
+In the rest of this section, all available component types are listed, along with their physical units and the ranges of values, if limited.
+Such limiting values can be used to define \refkey{lowerBoundary}{colvar|lowerBoundary} and \refkey{upperBoundary}{colvar|upperBoundary} in the parent colvar.
 
 For each type of component, the available configurations keywords are listed:
 when two components share certain keywords, the second component references to
@@ -662,6 +657,7 @@ The very few keywords that are available for all types of components are listed 
 }
 
 \cvsubsubsec{\texttt{distance}: center-of-mass distance between two groups.}{sec:cvc_distance}
+\labelkey{colvar|distance}
 
 The \texttt{distance \{...\}} block defines a distance component between the two atom groups, \texttt{group1} and \texttt{group2}.
 
@@ -721,6 +717,7 @@ unless the \texttt{forceNoPBC} option is set).
 
 
 \cvsubsubsec{\texttt{distanceZ}: projection of a distance vector on an axis.}{sec:cvc_distanceZ}
+\labelkey{colvar|distanceZ}
 
 The \texttt{distanceZ~\{...\}} block defines a distance projection
 component, which can be seen as measuring the distance between two
@@ -794,6 +791,8 @@ along $z$ (this behavior is disabled if \texttt{forceNoPBC} is set).
 
 
 \cvsubsubsec{\texttt{distanceXY}: modulus of the projection of a distance vector on a plane.}{sec:cvc_distanceXY}
+\labelkey{colvar|distanceXY}
+
 The \texttt{distanceXY~\{...\}} block defines a distance projected on
 a plane, and accepts the same keywords as the component \texttt{distanceZ}, i.e.
 \texttt{main}, \texttt{ref}, either \texttt{ref2} or \texttt{axis},
@@ -821,6 +820,8 @@ defined using the \texttt{axis} parameter or as the vector joining
 
 
 \cvsubsubsec{\texttt{distanceVec}: distance vector  between two groups.}{sec:cvc_distanceVec}
+\labelkey{colvar|distanceVec}
+
 The \texttt{distanceVec~\{...\}} block defines
 a distance vector component, which accepts the same keywords as
 the component \texttt{distance}: \texttt{group1}, \texttt{group2}, and
@@ -841,6 +842,8 @@ of mass of \texttt{group1} and \texttt{group2}.
 
 
 \cvsubsubsec{\texttt{distanceDir}: distance unit vector between two groups.}{sec:cvc_distanceDir}
+\labelkey{colvar|distanceDir}
+
 The \texttt{distanceDir~\{...\}} block defines
 a distance unit vector component, which accepts the same keywords as
 the component \texttt{distance}: \texttt{group1}, \texttt{group2}, and
@@ -861,6 +864,8 @@ $|\mathbf{d}| = 1$.
 
 
 \cvsubsubsec{\texttt{distanceInv}: mean distance between two groups of atoms.}{sec:cvc_distanceInv}
+\labelkey{colvar|distanceInv}
+
 The \texttt{distanceInv~\{...\}} block defines a generalized mean distance between two groups of atoms 1 and 2, weighted with exponent $1/n$:
 \begin{equation}
   \label{eq:distanceInv}
@@ -887,6 +892,8 @@ This component returns a number in \AA{}, ranging from $0$ to the largest possib
 
 
 \cvsubsubsec{\texttt{distancePairs}: set of pairwise distances between two groups.}{sec:cvc_distancePairs}
+\labelkey{colvar|distancePairs}
+
 The \texttt{distancePairs~\{...\}} block defines a $N_{\mathrm{1}}\times{}N_{\mathrm{2}}$-dimensional variable that includes all mutual distances between the atoms of two groups.
 This can be useful, for example, to develop a new variable defined over two groups, by using the \texttt{scriptedFunction} feature.
 
@@ -902,6 +909,8 @@ This component returns a $N_{\mathrm{1}}\times{}N_{\mathrm{2}}$-dimensional vect
 
 
 \cvsubsubsec{\texttt{cartesian}: vector of atomic Cartesian coordinates.}{sec:cvc_cartesian}
+\labelkey{colvar|cartesian}
+
 The \texttt{cartesian~\{...\}} block defines a component returning a flat vector containing
 the Cartesian coordinates of all participating atoms, in the order
 $(x_1, y_1, z_1, \cdots, x_n, y_n, z_n)$.
@@ -920,6 +929,8 @@ $(x_1, y_1, z_1, \cdots, x_n, y_n, z_n)$.
 
 
 \cvsubsubsec{\texttt{angle}: angle between three groups.}{sec:cvc_angle}
+\labelkey{colvar|angle}
+
 The \texttt{angle~\{...\}} block defines an angle, and contains the
 three blocks \texttt{group1}, \texttt{group2} and \texttt{group3}, defining
 the three groups.  It returns an angle (in degrees) within the
@@ -941,6 +952,8 @@ interval $[0:180]$.
 
 
 \cvsubsubsec{\texttt{dipoleAngle}: angle between two groups and dipole of a third group.}{sec:cvc_dipoleAngle}
+\labelkey{colvar|dipoleAngle}
+
 The \texttt{dipoleAngle~\{...\}} block defines an angle, and contains the
 three blocks \texttt{group1}, \texttt{group2} and \texttt{group3}, defining
 the three groups, being \texttt{group1} the group where dipole is calculated. 
@@ -961,6 +974,8 @@ It returns an angle (in degrees) within the interval $[0:180]$.
 
 
 \cvsubsubsec{\texttt{dihedral}: torsional angle between four groups.}{sec:cvc_dihedral}
+\labelkey{colvar|dihedral}
+
 The \texttt{dihedral~\{...\}} block defines a torsional angle, and
 contains the blocks \texttt{group1}, \texttt{group2}, \texttt{group3}
 and \texttt{group4}, defining the four groups.  It returns an angle
@@ -986,6 +1001,8 @@ boundaries can be defined by using any real number of choice.
 
 
 \cvsubsubsec{\texttt{polarTheta}: polar angle in spherical coordinates.}{sec:cvc_polarTheta}
+\labelkey{colvar|polarTheta}
+
 The \texttt{polarTheta~\{...\}} block defines the polar angle in
 spherical coordinates, for the center of mass of a group of atoms 
 described by the block \texttt{atoms}.  It returns an angle
@@ -1009,6 +1026,8 @@ An example is provided in file \texttt{examples/11\_polar\_angles.in} of the Col
 
 
 \cvsubsubsec{\texttt{polarPhi}: azimuthal angle in spherical coordinates.}{sec:cvc_polarPhi}
+\labelkey{colvar|polarPhi}
+
 The \texttt{polarPhi~\{...\}} block defines the azimuthal angle in
 spherical coordinates, for the center of mass of a group of atoms 
 described by the block \texttt{atoms}. It returns an angle
@@ -1036,6 +1055,8 @@ An example is provided in file \texttt{examples/11\_polar\_angles.in} of the Col
 
 
 \cvsubsubsec{\texttt{coordNum}: coordination number between two groups.}{sec:cvc_coordNum}
+\labelkey{colvar|coordNum}
+
 The \texttt{coordNum \{...\}} block defines
 a coordination number (or number of contacts), which calculates the
 function $(1-(d/d_0)^{n})/(1-(d/d_0)^{m})$, where $d_0$ is the
@@ -1153,6 +1174,8 @@ one of \texttt{group1} and \texttt{group2} should be of limited size or \texttt{
 
 
 \cvsubsubsec{\texttt{selfCoordNum}: coordination number between atoms within a group.}{sec:cvc_selfCoordNum}
+\labelkey{colvar|selfCoordNum}
+
 The \texttt{selfCoordNum \{...\}} block defines
 a coordination number similarly to the component \texttt{coordNum},
 but the function is summed over atom pairs within \texttt{group1}:
@@ -1196,6 +1219,8 @@ loop over all pairs grows as $N_{\mathtt{group1}}^2$.
 
 
 \cvsubsubsec{\texttt{hBond}: hydrogen bond between two atoms.}{sec:cvc_hBond}
+\labelkey{colvar|hBond}
+
 The \texttt{hBond \{...\}} block defines a hydrogen
 bond, implemented as a coordination number (eq.~\ref{eq:cvc_coordNum})
 between the donor and the acceptor atoms.  Therefore, it accepts the
@@ -1230,6 +1255,8 @@ distance) and 1 (acceptor and donor much closer than the cutoff).
 
 
 \cvsubsubsec{\texttt{rmsd}: root mean square displacement (RMSD) from reference positions.}{sec:cvc_rmsd}
+\labelkey{colvar|rmsd}
+
 The block \texttt{rmsd~\{...\}} defines the root mean square replacement
 (RMSD) of a group of atoms with respect to a reference structure.  For
 each set of coordinates $\{ \mathbf{x}_1(t), \mathbf{x}_2(t), \ldots
@@ -1325,6 +1352,7 @@ with respect to $\{\mathbf{x}_{i}(t)\}$.
 \end{cvcoptions}
 This component returns a positive real number (in \AA).
 
+
 \cvsubsubsec{Advanced usage of the \texttt{rmsd} component.}{sec:cvc_rmsd_advanced}
 In the standard usage as described above, the \texttt{rmsd} component
 calculates a minimum RMSD, that is, current coordinates are optimally
@@ -1358,6 +1386,7 @@ reflects the deviation from reference coordinates in a separate, moving
 reference frame.
 \end{enumerate}
 
+
 \cvscriptonly{
 \cvsubsubsec{Path collective variables}{sec:pathcv}
 
@@ -1366,7 +1395,10 @@ which are implemented as Tcl-scripted combinations or RMSDs.
 The implementation is available as file \texttt{colvartools/pathCV.tcl}, and
 an example is provided in file \texttt{examples/10\_pathCV.namd} of the Colvars public repository.}
 
+
 \cvsubsubsec{\texttt{eigenvector}: projection of the atomic  coordinates on a vector.}{sec:cvc_eigenvector}
+\labelkey{colvar|eigenvector}
+
 The block \texttt{eigenvector~\{...\}} defines the projection of the coordinates
 of a group of atoms (or more precisely, their deviations from the
 reference coordinates) onto a vector in $\mathbb{R}^{3n}$, where $n$ is the
@@ -1463,6 +1495,8 @@ depend on the number of atoms involved.
 
 
 \cvsubsubsec{\texttt{gyration}: radius of gyration of a group  of atoms.}{sec:cvc_gyration}
+\labelkey{colvar|gyration}
+
 The block \texttt{gyration~\{...\}} defines the
 parameters for calculating the radius of gyration of a group of atomic
 positions $\{ \mathbf{x}_1(t), \mathbf{x}_2(t), \ldots \mathbf{x}_N(t)
@@ -1485,6 +1519,8 @@ define the atom group, and returns a positive number, expressed in
 
 
 \cvsubsubsec{\texttt{inertia}: total moment of inertia of a group  of atoms.}{sec:cvc_inertia}
+\labelkey{colvar|inertia}
+
 The block \texttt{inertia~\{...\}} defines the
 parameters for calculating the total moment of inertia of a group of atomic
 positions $\{ \mathbf{x}_1(t), \mathbf{x}_2(t), \ldots \mathbf{x}_N(t)
@@ -1507,6 +1543,8 @@ define the atom group, and returns a positive number, expressed in
 
 
 \cvsubsubsec{\texttt{inertiaZ}: total moment of inertia of a group of atoms around a chosen axis.}{sec:cvc_inertiaZ}
+\labelkey{colvar|inertiaZ}
+
 The block \texttt{inertiaZ~\{...\}} defines the
 parameters for calculating the component along the axis $\mathbf{e}$ of the moment of inertia of a group of atomic
 positions $\{ \mathbf{x}_1(t), \mathbf{x}_2(t), \ldots \mathbf{x}_N(t)
@@ -1538,6 +1576,8 @@ define the atom group, and returns a positive number, expressed in
 
 
 \cvsubsubsec{\texttt{orientation}: orientation from reference coordinates.}{sec:cvc_orientation}
+\labelkey{colvar|orientation}
+
 The block \texttt{orientation~\{...\}} returns the
 same optimal rotation used in the \texttt{rmsd} component to
 superimpose the coordinates $\{\mathbf{x}_{i}(t)\}$ onto a set of
@@ -1604,6 +1644,8 @@ chain, or disable \texttt{wrapAll} otherwise.
 
 
 \cvsubsubsec{\texttt{orientationAngle}: angle of rotation from reference coordinates.}{sec:cvc_orientationAngle}
+\labelkey{colvar|orientationAngle}
+
 The block \texttt{orientationAngle~\{...\}} accepts the same base options as
 the component \texttt{orientation}: \texttt{atoms}, \texttt{refPositions}, \texttt{refPositionsFile}\cvnamebasedonly{, \texttt{refPositionsCol} and \texttt{refPositionsColValue}}.
 The returned value is the angle of rotation $\theta$ between the current and the reference positions.
@@ -1628,6 +1670,8 @@ This angle is expressed in degrees within the range [0$^{\circ}$:180$^{\circ}$].
 
 
 \cvsubsubsec{\texttt{orientationProj}: cosine of the angle of rotation from reference coordinates.}  {sec:cvc_orientationProj}
+\labelkey{colvar|orientationProj}
+
 The block \texttt{orientationProj~\{...\}} accepts the same base options as
 the component \texttt{orientation}: \texttt{atoms}, \texttt{refPositions}, \texttt{refPositionsFile}\cvnamebasedonly{, \texttt{refPositionsCol} and \texttt{refPositionsColValue}}.
 The returned value is the cosine of the angle of rotation $\theta$ between the current and the reference positions.
@@ -1650,6 +1694,8 @@ The range of values is [-1:1].
 
 
 \cvsubsubsec{\texttt{spinAngle}: angle of rotation around a given axis.}{sec:cvc_spinAngle}
+\labelkey{colvar|spinAngle}
+
 The complete rotation described by \texttt{orientation} can optionally be decomposed into two sub-rotations: one is a ``\emph{spin}'' rotation around \textbf{e}, and the other a ``\emph{tilt}'' rotation around an axis orthogonal to \textbf{e}.
 The component \texttt{spinAngle} measures the angle of the ``spin'' sub-rotation around \textbf{e}.
 
@@ -1682,6 +1728,8 @@ The component \texttt{spinAngle} returns an angle (in degrees) within the period
 
 
 \cvsubsubsec{\texttt{tilt}: cosine of the rotation orthogonal to a given axis.}{sec:cvc_tilt}
+\labelkey{colvar|tilt}
+
 The component \texttt{tilt} measures the cosine of the angle of the ``tilt'' sub-rotation, which combined with the ``spin'' sub-rotation provides the complete rotation of a group of atoms.
 The cosine of the tilt angle rather than the tilt angle itself is implemented, because the latter is unevenly distributed even for an isotropic system: consider as an analogy the angle $\theta$ in the spherical coordinate system.
 The component \texttt{tilt} relies on the same options as \texttt{spinAngle}, including the definition of the axis \textbf{e}.
@@ -1708,6 +1756,8 @@ The values of \texttt{tilt} are real numbers in the interval $[-1:1]$: the value
 \cvnamebasedonly{
 
 \cvsubsubsec{\texttt{alpha}: $\alpha$-helix content of a protein segment.}{sec:cvc_alpha}
+\labelkey{colvar|alpha}
+
 The block \texttt{alpha~\{...\}} defines the
 parameters to calculate the helical content of a segment of protein
 residues.  The $\alpha$-helical content across the $N+1$ residues
@@ -1876,6 +1926,8 @@ score).
 
 
 \cvsubsubsec{\texttt{dihedralPC}: protein dihedral pricipal component}{sec:cvc_dihedralPC}
+\labelkey{colvar|dihedralPC}
+
 The block \texttt{dihedralPC~\{...\}} defines the
 parameters to calculate the projection of backbone dihedral angles within
 a protein segment onto a \emph{dihedral principal component}, following
