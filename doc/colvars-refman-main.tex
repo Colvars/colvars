@@ -1666,6 +1666,25 @@ This angle is expressed in degrees within the range [0$^{\circ}$:180$^{\circ}$].
   \dupkey{refPositionsColValue}{\texttt{orientationAngle}}{colvar|rmsd|refPositionsColValue}{\texttt{rmsd} component}
 }
 
+\item
+    \labelkey{colvar|coordNum|tolerance}
+    \keydef
+     {tolerance}{%
+     \texttt{coordNum}}{%
+     Pairlist control}{%
+    decimal}{%
+    0.0}{This controls the pairlist feature, dictating the minimum value for each summation element in Eq.~\ref{eq:cvc_coordNum} such that the pair that contributed the summation element is included in subsequent simulation timesteps until the next pairlist recalculation. For most applications, this value should be small (eg. 0.001) to avoid missing important contributions to the overall sum. Higher values will improve performance, although values above 1 will exclude all possible pair interactions. Similarly, values below 0 will never exclude a pair from consideration.
+  }
+
+\item %
+    \labelkey{colvar|coordNum|pairListFrequency}
+    \keydef
+     {pairListFrequency}{%
+     \texttt{coordNum}}{%
+     Pairlist regeneration frequency}{%
+    positive integer}{%
+    100}{This controls the pairlist feature, dictating how many steps are taken between regenerating pairlists if the tolerance is greater than 0.
+  }
 \end{cvcoptions}
 
 

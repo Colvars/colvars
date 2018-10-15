@@ -59,9 +59,11 @@ cvm::real colvar::coordnum::switching_function(cvm::real const &r0,
   //If the value is too small, we need to exclude it, rather than let it contribute to the sum or the gradients.
   if (func < pairlist_tol)
     return 0;
+
   //Stretch the values back out to a range from [0,1] through a subtraction and a multiplication.
   func -= pairlist_tol;
   func *= 1.0 / (1-pairlist_tol);
+
   if (flags & ef_gradients) {
     //This is the old, completely correct expression for dFdl2:
     //cvm::real const dFdl2 = (1.0/(1.0-xd))*(en2*(xn/l2) -
