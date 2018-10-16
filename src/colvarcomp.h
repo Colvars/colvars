@@ -1,12 +1,5 @@
 // -*- c++ -*-
 
-// This file is part of the Collective Variables module (Colvars).
-// The original version of Colvars and its updates are located at:
-// https://github.com/colvars/colvars
-// Please update all Colvars source files before making any changes.
-// If you wish to distribute your changes, please submit them to the
-// Colvars repository at GitHub.
-
 #ifndef COLVARCOMP_H
 #define COLVARCOMP_H
 
@@ -81,6 +74,9 @@ public:
   /// \endlink is initialized and/or a different constructor is used,
   /// this variable definition should be set within the constructor.
   std::string function_type;
+
+  /// Keyword used in the input to denote this CVC
+  std::string config_key;
 
   /// \brief Coefficient in the polynomial combination (default: 1.0)
   cvm::real sup_coeff;
