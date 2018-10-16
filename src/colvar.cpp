@@ -419,8 +419,8 @@ int colvar::init_custom_function(std::string const &conf)
 
   if (x.size() != value_evaluators.size()) {
     cvm::error("Error: based on custom function type, expected "
-        + cvm::to_str(x.size()) + " scalar expressions, but "
-        + cvm::to_str(value_evaluators.size() + " were found.\n"));
+               + cvm::to_str(x.size()) + " scalar expressions, but "
+               + cvm::to_str(value_evaluators.size()) + " were found.\n");
     return INPUT_ERROR;
   }
 
