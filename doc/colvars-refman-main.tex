@@ -1150,7 +1150,7 @@ If \texttt{group2} is a \texttt{dummyAtom}, this option is set to \texttt{yes} b
      \texttt{coordNum}}{%
      Pairlist control}{%
     decimal}{%
-    0.0}{This controls the pairlist feature, dictating the minimum value for each summation element in Eq.~\ref{eq:cvc_coordNum} such that the pair that contributed the summation element is included in subsequent simulation timesteps until the next pairlist recalculation. For most applications, this value should be small (eg. 0.001) to avoid missing important contributions to the overall sum. Higher values will improve performance, although values above 1 will exclude all possible pair interactions. Similarly, values below 0 will never exclude a pair from consideration.
+    0.0}{This controls the pairlist feature, dictating the minimum value for each summation element in Eq.~\ref{eq:cvc_coordNum} such that the pair that contributed the summation element is included in subsequent simulation timesteps until the next pairlist recalculation. For most applications, this value should be small (eg. 0.001) to avoid missing important contributions to the overall sum. Higher values will improve performance by reducing the number of pairs that contribute to the sum. Values above 1 will exclude all possible pair interactions. Similarly, values below 0 will never exclude a pair from consideration. To ensure continuous forces, Eq.~\ref{eq:cvc_coordNum} is further modified by subtracting the tolerance and then rescaling so that each pair covers the range $\left[0, 1\right]$.
   }
 
 \item %
@@ -1170,6 +1170,7 @@ cutoff) to $N_{\mathtt{group1}} \times N_{\mathtt{group2}}$ (all distances
 are less than the cutoff), or $N_{\mathtt{group1}}$ if
 \texttt{group2CenterOnly} is used.  For performance reasons, at least
 one of \texttt{group1} and \texttt{group2} should be of limited size or \texttt{group2CenterOnly} should be used: the cost of the loop over all pairs grows as $N_{\mathtt{group1}} \times N_{\mathtt{group2}}$.
+Setting $\mathtt{tolerance} > 0$ ameliorates this to some degree, although every pair is still checked to regenerate the pairlist.
 
 
 
