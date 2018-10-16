@@ -49,11 +49,28 @@ cvm::real colvar::coordnum::switching_function(cvm::real const &r0,
 
   cvm::real const xn = cvm::integer_power(l2, en2);
   cvm::real const xd = cvm::integer_power(l2, ed2);
-  cvm::real const func = (1.0-xn)/(1.0-xd);
+  //The subtraction and division stretches the function back to the range of [0,1] from [pairlist_tol,1]
+  cvm::real const func = (((1.0-xn)/(1.0-xd)) - pairlist_tol) / (1.0-pairlist_tol);
+
+  if (flags & ef_rebuild_pairlist) {
+    //Particles just outside of the cutoff also are considered if they come near.
+    **pairlist_elem = (func > (-pairlist_tol * 0.5)) ? true : false;
+    (*pairlist_elem)++;
+  }
+  //If the value is too small, we need to exclude it, rather than let it contribute to the sum or the gradients.
+  if (func < 0)
+    return 0;
 
   if (flags & ef_gradients) {
-    cvm::real const dFdl2 = (1.0/(1.0-xd))*(en2*(xn/l2) -
-                                            func*ed2*(xd/l2))*(-1.0);
+    //This is the old, completely correct expression for dFdl2:
+    //cvm::real const dFdl2 = (1.0/(1.0-xd))*(en2*(xn/l2) -
+    //                                        func*ed2*(xd/l2))*(-1.0);
+    //This can become:
+    //cvm::real const dFdl2 = (1.0/(1.0-xd))*(en2*(xn/l2)*(1.0-xn)/(1.0-xn) -
+    //                                        func*ed2*(xd/l2))*(-1.0);
+    //Recognizing that func = (1.0-xn)/(1.0-xd), we can group together the "func" and get a version of dFdl2 that is 0
+    //when func=0, which lets us skip this gradient calculation when func=0.
+    cvm::real const dFdl2 = func * ((ed2*xd/((1.0-xd)*l2)) - (en2*xn/((1.0-xn)*l2)));
     cvm::rvector const dl2dx((2.0/((flags & ef_anisotropic) ? r0sq_vec.x :
                                    r0*r0)) * diff.x,
                              (2.0/((flags & ef_anisotropic) ? r0sq_vec.y :
@@ -62,11 +79,6 @@ cvm::real colvar::coordnum::switching_function(cvm::real const &r0,
                                    r0*r0)) * diff.z);
     A1.grad += (-1.0)*dFdl2*dl2dx;
     A2.grad +=        dFdl2*dl2dx;
-  }
-
-  if (flags & ef_rebuild_pairlist) {
-    **pairlist_elem = (func > pairlist_tol) ? true : false;
-    (*pairlist_elem)++;
   }
 
   return func;
