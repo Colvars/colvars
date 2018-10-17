@@ -595,6 +595,11 @@ public:
   int stochRescaleFreq;
   /**< How frequently (time steps) stochastic velocity rescaling occurs. */
 
+  Bool stochRescaleHeat;
+  /**< Flag TRUE enables calculation and reporting of heat transfer and work.
+    *  The computation is _cumulative_ from step = firstTimestep.
+    */
+
 	int rescaleFreq;		//  Velocity rescale frequency
 	BigReal rescaleTemp;		//  Temperature to rescale to
 

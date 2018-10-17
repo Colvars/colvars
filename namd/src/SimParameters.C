@@ -1315,6 +1315,8 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
        "Number of steps between stochastic rescalings",
         &stochRescaleFreq);
    opts.range("stochRescaleFreq", POSITIVE);
+   opts.optionalB("stochRescale", "stochRescaleHeat",
+       "Should heat transfer and work be computed?", &stochRescaleHeat, FALSE);
 
    opts.optional("main", "rescaleFreq", "Number of steps between "
     "velocity rescaling", &rescaleFreq);
