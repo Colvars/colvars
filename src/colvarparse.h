@@ -17,35 +17,9 @@
 /// need to parse input inherit from this
 class colvarparse {
 
-protected:
-
-  /// \brief List of legal keywords for this object: this is updated
-  /// by each call to colvarparse::get_keyval() or
-  /// colvarparse::key_lookup()
-  std::list<std::string> allowed_keywords;
-
-  /// \brief List of delimiters for the values of each keyword in the
-  /// configuration string; all keywords will be stripped of their
-  /// values before the keyword check is performed
-  std::list<size_t>      data_begin_pos;
-
-  /// \brief List of delimiters for the values of each keyword in the
-  /// configuration string; all keywords will be stripped of their
-  /// values before the keyword check is performed
-  std::list<size_t>      data_end_pos;
-
-  /// \brief Add a new valid keyword to the list
-  void add_keyword(char const *key);
-
-  /// \brief Remove all the values from the config string
-  void strip_values(std::string &conf);
-
-  /// \brief Configuration string of the object (includes comments)
-  std::string config_string;
-
 public:
 
-
+  /// Default constructor
   inline colvarparse()
   {
     init();
@@ -291,6 +265,32 @@ public:
   /// \param conf The configuration string \param start_pos Start the count
   /// from this position
   static int check_braces(std::string const &conf, size_t const start_pos);
+
+protected:
+
+  /// \brief List of legal keywords for this object: this is updated
+  /// by each call to colvarparse::get_keyval() or
+  /// colvarparse::key_lookup()
+  std::list<std::string> allowed_keywords;
+
+  /// \brief List of delimiters for the values of each keyword in the
+  /// configuration string; all keywords will be stripped of their
+  /// values before the keyword check is performed
+  std::list<size_t>      data_begin_pos;
+
+  /// \brief List of delimiters for the values of each keyword in the
+  /// configuration string; all keywords will be stripped of their
+  /// values before the keyword check is performed
+  std::list<size_t>      data_end_pos;
+
+  /// \brief Add a new valid keyword to the list
+  void add_keyword(char const *key);
+
+  /// \brief Remove all the values from the config string
+  void strip_values(std::string &conf);
+
+  /// \brief Configuration string of the object (includes comments)
+  std::string config_string;
 
 };
 
