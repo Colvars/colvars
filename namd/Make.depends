@@ -861,6 +861,12 @@ obj/Compute.o: \
 	inc/Node.decl.h \
 	src/Compute.h \
 	src/Priorities.h \
+	src/LdbCoordinator.h \
+	inc/LdbCoordinator.decl.h \
+	inc/NamdCentLB.decl.h \
+	inc/NamdNborLB.decl.h \
+	inc/NamdHybridLB.decl.h \
+	inc/NamdDummyLB.decl.h \
 	src/Debug.h
 	$(CXX) $(CXXFLAGS) $(COPTO)obj/Compute.o $(COPTC) src/Compute.C
 obj/ComputeAngles.o: \
@@ -4540,6 +4546,18 @@ obj/GlobalMasterServer.o: \
 	src/MGridforceParams.h \
 	src/strlib.h \
 	src/MStream.h \
+	src/Molecule.h \
+	src/parm.h \
+	src/structures.h \
+	src/ConfigList.h \
+	src/UniqueSet.h \
+	src/UniqueSetRaw.h \
+	src/Hydrogen.h \
+	src/SortableResizeArray.h \
+	src/GromacsTopFile.h \
+	src/GridForceGrid.h \
+	plugins/include/molfile_plugin.h \
+	plugins/include/vmdplugin.h \
 	src/Debug.h
 	$(CXX) $(CXXFLAGS) $(COPTO)obj/GlobalMasterServer.o $(COPTC) src/GlobalMasterServer.C
 obj/GlobalMasterTest.o: \
@@ -5250,7 +5268,16 @@ obj/LJTable.o: \
 	src/Tensor.h \
 	src/MGridforceParams.h \
 	src/GromacsTopFile.h \
-	src/Debug.h
+	src/Debug.h \
+	src/Molecule.h \
+	src/ConfigList.h \
+	src/UniqueSet.h \
+	src/UniqueSetRaw.h \
+	src/Hydrogen.h \
+	src/SortableResizeArray.h \
+	src/GridForceGrid.h \
+	plugins/include/molfile_plugin.h \
+	plugins/include/vmdplugin.h
 	$(CXX) $(CXXFLAGS) $(COPTO)obj/LJTable.o $(COPTC) src/LJTable.C
 obj/Measure.o: \
 	obj/.exists \
@@ -6927,6 +6954,7 @@ obj/SimParameters.o: \
 	src/MStream.h \
 	plugins/include/molfile_plugin.h \
 	plugins/include/vmdplugin.h \
+	src/LJTable.h \
 	src/ComputePme.h \
 	src/Compute.h \
 	src/PmeBase.h \
@@ -6935,6 +6963,50 @@ obj/SimParameters.o: \
 	src/PatchTypes.h \
 	src/Box.h \
 	src/OwnerBox.h \
+	src/ComputeCUDAMgr.h \
+	src/CudaUtils.h \
+	inc/ComputeCUDAMgr.decl.h \
+	src/CudaNonbondedTables.h \
+	src/CudaComputeNonbonded.h \
+	src/CudaTileListKernel.h \
+	src/CudaComputeNonbondedKernel.h \
+	src/CudaComputeGBISKernel.h \
+	src/ComputeMgr.h \
+	src/GlobalMaster.h \
+	src/GlobalMasterServer.h \
+	inc/ComputeMgr.decl.h \
+	src/ComputeBondedCUDA.h \
+	src/ComputeMap.h \
+	src/ComputeBondedCUDAKernel.h \
+	src/TupleTypesCUDA.h \
+	src/ComputeHomeTuples.h \
+	src/HomePatch.h \
+	src/Patch.h \
+	src/UniqueSortedArray.h \
+	src/SortedArray.h \
+	src/PatchMap.h \
+	src/HomePatchList.h \
+	src/ResizeArrayIter.h \
+	src/MigrateAtomsMsg.h \
+	src/Migration.h \
+	inc/PatchMgr.decl.h \
+	src/Settle.h \
+	src/Node.h \
+	inc/Node.decl.h \
+	src/PatchMap.inl \
+	src/AtomMap.h \
+	src/PatchMgr.h \
+	src/ProxyMgr.h \
+	src/UniqueSetIter.h \
+	inc/ProxyMgr.decl.h \
+	src/Parameters.h \
+	src/Priorities.h \
+	src/LdbCoordinator.h \
+	inc/LdbCoordinator.decl.h \
+	inc/NamdCentLB.decl.h \
+	inc/NamdNborLB.decl.h \
+	inc/NamdHybridLB.decl.h \
+	inc/NamdDummyLB.decl.h \
 	src/ParseOptions.h \
 	src/Communicate.h \
 	src/Output.h \
