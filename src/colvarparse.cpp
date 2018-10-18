@@ -50,7 +50,7 @@ template<typename TYPE> bool colvarparse::_get_keyval_scalar_(std::string const 
       cvm::error("Error: in parsing \""+
                  std::string(key)+"\".\n", INPUT_ERROR);
     }
-    if (parse_mode != parse_silent) {
+    if (parse_mode | parse_echo) {
       cvm::log("# "+std::string(key)+" = "+
                cvm::to_str(value)+"\n");
     }
@@ -61,7 +61,7 @@ template<typename TYPE> bool colvarparse::_get_keyval_scalar_(std::string const 
                  "for \""+std::string(key)+"\".\n", INPUT_ERROR);
     }
     value = def_value;
-    if (parse_mode != parse_silent) {
+    if (parse_mode | parse_echo_default) {
       cvm::log("# "+std::string(key)+" = "+
                cvm::to_str(def_value)+" [default]\n");
     }
@@ -113,7 +113,7 @@ bool colvarparse::_get_keyval_scalar_string_(std::string const &conf,
                  "are not allowed for keyword \""+
                  std::string(key)+"\".\n", INPUT_ERROR);
     }
-    if (parse_mode != parse_silent) {
+    if (parse_mode != parse_echo) {
       cvm::log("# "+std::string(key)+" = \""+
                cvm::to_str(value)+"\"\n");
     }
@@ -124,7 +124,7 @@ bool colvarparse::_get_keyval_scalar_string_(std::string const &conf,
                  "for \""+std::string(key)+"\".\n", INPUT_ERROR);
     }
     value = def_value;
-    if (parse_mode != parse_silent) {
+    if (parse_mode != parse_echo_default) {
       cvm::log("# "+std::string(key)+" = \""+
                cvm::to_str(def_value)+"\" [default]\n");
     }
@@ -193,7 +193,7 @@ template<typename TYPE> bool colvarparse::_get_keyval_vector_(std::string const 
       }
     }
 
-    if (parse_mode != parse_silent) {
+    if (parse_mode != parse_echo) {
       cvm::log("# "+std::string(key)+" = "+
                cvm::to_str(values)+"\n");
     }
@@ -208,7 +208,7 @@ template<typename TYPE> bool colvarparse::_get_keyval_vector_(std::string const 
     for (size_t i = 0; i < values.size(); i++)
       values[i] = def_values[ (i > def_values.size()) ? 0 : i ];
 
-    if (parse_mode != parse_silent) {
+    if (parse_mode != parse_echo_default) {
       cvm::log("# "+std::string(key)+" = "+
                cvm::to_str(def_values)+" [default]\n");
     }
@@ -332,20 +332,20 @@ bool colvarparse::get_keyval(std::string const &conf,
     } else
       cvm::error("Error: boolean values only are allowed "
                  "for \""+std::string(key)+"\".\n", INPUT_ERROR);
-    if (parse_mode != parse_silent) {
+    if (parse_mode != parse_echo) {
       cvm::log("# "+std::string(key)+" = "+
                (value ? "on" : "off")+"\n");
     }
   } else {
 
     if (b_found_any) {
-      if (parse_mode != parse_silent) {
+      if (parse_mode != parse_echo) {
         cvm::log("# "+std::string(key)+" = on\n");
       }
       value = true;
     } else {
       value = def_value;
-      if (parse_mode != parse_silent) {
+      if (parse_mode != parse_echo_default) {
         cvm::log("# "+std::string(key)+" = "+
                  (def_value ? "on" : "off")+" [default]\n");
       }

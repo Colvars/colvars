@@ -274,16 +274,16 @@ int colvarmodule::parse_global_params(std::string const &conf)
 
   parse->get_keyval(conf, "debugGradientsStepSize", debug_gradients_step_size,
                     debug_gradients_step_size,
-                    colvarparse::parse_silent);
+                    colvarparse::parse_restart);
 
   parse->get_keyval(conf, "monitorEigenvalueCrossing",
                     colvarmodule::rotation::monitor_crossings,
                     colvarmodule::rotation::monitor_crossings,
-                    colvarparse::parse_silent);
+                    colvarparse::parse_restart);
   parse->get_keyval(conf, "eigenvalueCrossingThreshold",
                     colvarmodule::rotation::crossing_threshold,
                     colvarmodule::rotation::crossing_threshold,
-                    colvarparse::parse_silent);
+                    colvarparse::parse_restart);
 
   parse->get_keyval(conf, "colvarsTrajFrequency", cv_traj_freq, cv_traj_freq);
   parse->get_keyval(conf, "colvarsRestartFrequency",
@@ -291,7 +291,7 @@ int colvarmodule::parse_global_params(std::string const &conf)
 
   // Deprecate append flag
   parse->get_keyval(conf, "colvarsTrajAppend",
-                    cv_traj_append, cv_traj_append, colvarparse::parse_silent);
+                    cv_traj_append, cv_traj_append, colvarparse::parse_restart);
 
   parse->get_keyval(conf, "scriptedColvarForces",
                     use_scripted_forces, use_scripted_forces);
@@ -1238,12 +1238,12 @@ std::istream & colvarmodule::read_restart(std::istream &is)
     if (is >> colvarparse::read_block("configuration", restart_conf)) {
       parse->get_keyval(restart_conf, "step",
                         it_restart, (size_t) 0,
-                        colvarparse::parse_silent);
+                        colvarparse::parse_restart);
         it = it_restart;
       std::string restart_version;
       parse->get_keyval(restart_conf, "version",
                         restart_version, std::string(""),
-                        colvarparse::parse_silent);
+                        colvarparse::parse_restart);
       if (restart_version.size() && (restart_version != std::string(COLVARS_VERSION))) {
         cvm::log("This state file was generated with version "+restart_version+"\n");
       }

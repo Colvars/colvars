@@ -55,14 +55,22 @@ public:
 
   /// How a keyword is parsed in a string
   enum Parse_Mode {
-    /// \brief(default) Read the first instance of a keyword (if
-    /// any), report its value, and print a warning when there is more
-    /// than one
-    parse_normal,
-    /// \brief Like parse_normal, but don't send any message to the log
-    /// (useful e.g. in restart files when such messages are very
-    /// numerous and redundant)
-    parse_silent
+    /// Zero for all other flags
+    parse_null = 0,
+    /// Print the value of a keyword if it is given
+    parse_echo = (1<<1),
+    /// Print the default value of a keyword, if it is NOT given
+    parse_echo_default = (1<<2),
+    /// Print the keyword and its value regardless
+    parse_echo_all = (1<<2) | (1<<1),
+    /// Do not print the keyword
+    parse_silent = 0,
+    /// Raise error if the keyword is not provided
+    parse_required = (1<<16),
+    /// Alias for parse_null (allows to define behavior later)
+    parse_restart = 0,
+    /// Alias for parse_echo_all (should be phased out)
+    parse_normal = (1<<2) | (1<<1)
   };
 
   /// \brief Check that all the keywords within "conf" are in the list
