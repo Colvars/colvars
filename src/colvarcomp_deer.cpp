@@ -9,28 +9,32 @@
 #include "colvarcomp_deer.h"
 
 
+namespace DEER_Kernel {
+
 /* fresnel_c(x) - Fresnel Cosine Integral
  *  * C(x)=fresnel_c(x)=\dint\limits_{0}^{x}\cos (\frac{\pi}{2}t^{2})dt
  *   */
-double fresnel_c(double x);
+static double fresnel_c(double x);
 /* fresnel_s(x) - Fresnel Sine Integral
  *  * S(x)=fresnel_s(x)=\dint\limits_{0}^{x}\sin (\frac{\pi}{2}t^{2})dt
  *   */
-double fresnel_s(double x);
+static double fresnel_s(double x);
 /* Additional functions*/
 /* fresnel_c1(x)
  *  * fresnel_c1(x)=fresnel_c(x*sqrt(2/pi))=
  *   * = \sqrt{\frac{2}{\pi }}\dint\limits_{0}^{x}\cos (t^{2})dt
  *    */
-double fresnel_c2(double x);
+static double fresnel_c2(double x);
 /* fresnel_s1(x)
  *  * fresnel_s1(x)=fresnel_s(x*sqrt(2/pi))=
  *   * = \sqrt{\frac{2}{\pi }}\dint\limits_{0}^{x}\sin (t^{2})dt
  *    */
-double fresnel_s2(double x);
+static double fresnel_s2(double x);
+
+}
 
 
-// deer keernel routine
+// DEER kernel routine
 
 double colvar::deer_kernel::kdeer(cvm::real const &r, cvm::real const &t)
 {
@@ -43,8 +47,8 @@ double colvar::deer_kernel::kdeer(cvm::real const &r, cvm::real const &t)
   double const ht=1.054571800;
   double omed=(g*g)*(ub*ub)*u0/(4*pi*ht*(rc*rc*rc));
   double k=sqrt(6*omed*tc/pi);
-  double c=fresnel_c(k);
-  double s=fresnel_s(k);
+  double c=DEER_Kernel::fresnel_c(k);
+  double s=DEER_Kernel::fresnel_s(k);
   double gdeer=0.;
   if(tc<0) tc=-tc;
   if(rc>0 && tc!=0){
@@ -103,7 +107,8 @@ colvar::deer_kernel::deer_kernel(std::string const &conf)
   for (i=0; i<rpoints; i++){
      cvm::real const rval = deerlower+(i+0.5)*deerwidth;
      for (t=0; t<deersize; t++){
-        deerk[i][t]=kdeer(rval,timesdeer[t])-deerexpvalues[t];
+       deerk[i][t] = static_cast<cvm::real>(kdeer(rval,timesdeer[t])) -
+         deerexpvalues[t];
      }
   }
 
@@ -197,14 +202,16 @@ colvarvalue colvar::deer_kernel::dist2_rgrad(colvarvalue const &x1,
 }
 
 
-/// \brief fresnel integrals (by expansion to Chebyshev series)
+namespace DEER_Kernel {
+
+/// \brief Fresnel integrals (by expansion to Chebyshev series)
 
 static const double sqrt_pi_2_fres   = 1.2533141373155002512078826424; /* sqrt(pi/2) */
 static const double sqrt_2_pi_fres   = 0.7978845608028653558798921199; /* sqrt(2/pi) */
 static const double _1_sqrt_2pi_fres = 0.3989422804014326779399460599; /* 1/sqrt(2*pi) */
 static const double pi_2_fres        = 1.5707963267948966192313216916; /* pi/2 */
 
-static double f_data_fres_a[18] =
+static const double f_data_fres_a[18] =
                 {
                   0.76435138664186000189,
                  -0.43135547547660179313,
@@ -226,7 +233,7 @@ static double f_data_fres_a[18] =
                  -0.00000000000000000004
                 };
 
-static double f_data_fres_b[17] =
+static const double f_data_fres_b[17] =
                 {
                   0.63041404314570539241,
                  -0.42344511405705333544,
@@ -247,7 +254,7 @@ static double f_data_fres_b[17] =
                   0.00000000000000000032
                 };
 
-static double f_data_fres_e[41] =
+static const double f_data_fres_e[41] =
                 {
                     0.97462779093296822410,
                    -0.02424701873969321371,
@@ -292,7 +299,7 @@ static double f_data_fres_e[41] =
                     0.00000000000000000001
         };
 
-static double f_data_fres_f[35] =
+static const double f_data_fres_f[35] =
                 {
                     0.99461545179407928910,
                    -0.00524276766084297210,
@@ -331,9 +338,6 @@ static double f_data_fres_f[35] =
                     0.00000000000000000001
                 };
 
-
-
-// fresnel integrals routines (by expansion to Chebyshev series)
 
 static double fresnel_cos_0_8(double x)
 {
@@ -459,4 +463,5 @@ double fresnel_s1(double x)
   return fresnel_s(x*sqrt_2_pi_fres);
 }
 
-// end fresnel integral routines
+// end Fresnel integral routines
+}
