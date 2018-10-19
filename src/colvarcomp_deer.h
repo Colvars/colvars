@@ -4,6 +4,8 @@
 #define COLVARCOMP_DEER_H
 
 
+class colvar;
+
 /// \brief Colvar deer kernel vector
 class colvar::deer_kernel
   : public colvar::cvc

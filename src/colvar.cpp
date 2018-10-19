@@ -9,6 +9,7 @@
 #include "colvarparse.h"
 #include "colvar.h"
 #include "colvarcomp.h"
+#include "colvarcomp_deer.h"
 #include "colvarscript.h"
 
 
@@ -754,6 +755,8 @@ int colvar::init_components(std::string const &conf)
     "weighted by inverse power", "distanceInv");
   error_code |= init_components_type<distance_pairs>(conf, "N1xN2-long vector "
     "of pairwise distances", "distancePairs");
+  error_code |= init_components_type<deer_kernel>(conf, "DEER time-signal as "
+    "a function of group-group distance", "deerKernel");
   error_code |= init_components_type<coordnum>(conf, "coordination "
     "number", "coordNum");
   error_code |= init_components_type<selfcoordnum>(conf, "self-coordination "

@@ -11,6 +11,7 @@ COLVARSLIB = \
 	$(DSTDIR)/colvarcomp.o \
 	$(DSTDIR)/colvarcomp_angles.o \
 	$(DSTDIR)/colvarcomp_coordnums.o \
+	$(DSTDIR)/colvarcomp_deer.o \
 	$(DSTDIR)/colvarcomp_distances.o \
 	$(DSTDIR)/colvarcomp_protein.o \
 	$(DSTDIR)/colvarcomp_rotations.o \

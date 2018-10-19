@@ -31,9 +31,10 @@ COLVARS_SRCS = \
         colvarbias_meta.cpp \
         colvarbias_rad.cpp \
         colvarbias_restraint.cpp \
+        colvarcomp.cpp \
         colvarcomp_angles.cpp \
         colvarcomp_coordnums.cpp \
-        colvarcomp.cpp \
+        colvarcomp_deer.cpp \
         colvarcomp_distances.cpp \
         colvarcomp_protein.cpp \
         colvarcomp_rotations.cpp \

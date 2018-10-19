@@ -7829,6 +7829,21 @@ obj/colvarcomp_coordnums.o: \
 	colvars/src/colvar.h \
 	colvars/src/colvarcomp.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_coordnums.o $(COPTC) colvars/src/colvarcomp_coordnums.cpp
+obj/colvarcomp_deer.o: \
+	obj/.exists \
+	colvars/src/colvarcomp_deer.cpp \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvarvalue.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvar.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarcomp.h \
+	colvars/src/colvaratoms.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarcomp_deer.h
+	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_deer.o $(COPTC) colvars/src/colvarcomp_deer.cpp
 obj/colvarcomp_distances.o: \
 	obj/.exists \
 	colvars/src/colvarcomp_distances.cpp \
