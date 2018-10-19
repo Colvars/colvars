@@ -6,6 +6,7 @@ COLVARSLIB = \
 	$(DSTDIR)/colvarbias_alb.o \
 	$(DSTDIR)/colvarbias_histogram.o \
 	$(DSTDIR)/colvarbias_meta.o \
+	$(DSTDIR)/colvarbias_rad.o \
 	$(DSTDIR)/colvarbias_restraint.o \
 	$(DSTDIR)/colvarcomp.o \
 	$(DSTDIR)/colvarcomp_angles.o \

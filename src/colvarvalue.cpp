@@ -128,7 +128,7 @@ void colvarvalue::reset()
 }
 
 
-void colvarvalue::apply_constraints()
+colvarvalue const & colvarvalue::apply_constraints()
 {
   switch (value_type) {
   case colvarvalue::type_scalar:
@@ -159,6 +159,8 @@ void colvarvalue::apply_constraints()
   default:
     break;
   }
+
+  return (*this);
 }
 
 

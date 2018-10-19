@@ -153,7 +153,7 @@ public:
   /// quaternion), transform it to satisfy them; this function needs
   /// to be called only when the \link colvarvalue \endlink
   /// is calculated outside of \link cvc \endlink objects
-  void apply_constraints();
+  colvarvalue const & apply_constraints();
 
   /// Get the current type
   inline Type type() const

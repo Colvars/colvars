@@ -29,6 +29,7 @@ COLVARS_SRCS = \
         colvarbias.cpp \
         colvarbias_histogram.cpp \
         colvarbias_meta.cpp \
+        colvarbias_rad.cpp \
         colvarbias_restraint.cpp \
         colvarcomp_angles.cpp \
         colvarcomp_coordnums.cpp \

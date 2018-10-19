@@ -7760,6 +7760,19 @@ obj/colvarbias_meta.o: \
 	colvars/src/colvarbias.h \
 	colvars/src/colvargrid.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarbias_meta.o $(COPTC) colvars/src/colvarbias_meta.cpp
+obj/colvarbias_rad.o: \
+	obj/.exists \
+	colvars/src/colvarbias_rad.cpp \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvarvalue.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarbias_rad.h \
+	colvars/src/colvarbias.h \
+	colvars/src/colvar.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvardeps.h
+	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarbias_rad.o $(COPTC) colvars/src/colvarbias_rad.cpp
 obj/colvarbias_restraint.o: \
 	obj/.exists \
 	colvars/src/colvarbias_restraint.cpp \
@@ -7902,6 +7915,7 @@ obj/colvarmodule.o: \
 	colvars/src/colvarbias_alb.h \
 	colvars/src/colvarbias_histogram.h \
 	colvars/src/colvarbias_meta.h \
+	colvars/src/colvarbias_rad.h \
 	colvars/src/colvarbias_restraint.h \
 	colvars/src/colvarscript.h \
 	colvars/src/colvaratoms.h \

@@ -17,6 +17,7 @@ $colvars_defines = " -DVMDCOLVARS";
                     'colvarbias_alb.C',
                     'colvarbias_histogram.C',
                     'colvarbias_meta.C',
+                    'colvarbias_rad.C',
                     'colvarbias_restraint.C',
                     'colvar.C',
                     'colvarcomp.C',

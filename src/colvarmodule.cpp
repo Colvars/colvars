@@ -12,6 +12,7 @@
 #include "colvarbias_alb.h"
 #include "colvarbias_histogram.h"
 #include "colvarbias_meta.h"
+#include "colvarbias_rad.h"
 #include "colvarbias_restraint.h"
 #include "colvarscript.h"
 #include "colvaratoms.h"
@@ -416,6 +417,9 @@ int colvarmodule::parse_biases(std::string const &conf)
 
   /// initialize metadynamics instances
   parse_biases_type<colvarbias_meta>(conf, "metadynamics");
+
+  /// initialize RAD instances
+  parse_biases_type<colvarbias_rad>(conf, "RAD");
 
   if (use_scripted_forces) {
     cvm::log(cvm::line_marker);
