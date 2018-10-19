@@ -59,12 +59,13 @@ double colvar::deer_kernel::kdeer(cvm::real const &r, cvm::real const &t)
   return gdeer;
 }
 
-// end deer keernel routine
 
 colvar::deer_kernel::deer_kernel(std::string const &conf)
   : cvc(conf)
 {
   function_type = "deer_kernel";
+  x.type(colvarvalue::type_vector);
+
   get_keyval(conf, "deertimefile", deer_time_file);
   int nlines=0;
   int i;
@@ -112,14 +113,9 @@ colvar::deer_kernel::deer_kernel(std::string const &conf)
      }
   }
 
-  if (get_keyval(conf, "forceNoPBC", b_no_PBC, false)) {
-    cvm::log("Computing distance using absolute positions (not minimal-image)");
-  }
-
   group1 = parse_group(conf, "group1");
   group2 = parse_group(conf, "group2");
 
-  x.type(colvarvalue::type_vector);
   x.vector1d_value.resize(deersize);
 }
 
@@ -135,11 +131,11 @@ void colvar::deer_kernel::calc_value()
   x.vector1d_value.resize(deersize);
   deerder.resize(deersize);
 
-  if (b_no_PBC) {
-    dist_v = group2->center_of_mass() - group1->center_of_mass();
-  } else {
+  if (is_enabled(f_cvc_pbc_minimum_image)) {
     dist_v = cvm::position_distance(group1->center_of_mass(),
-                                     group2->center_of_mass());
+                                    group2->center_of_mass());
+  } else {
+    dist_v = group2->center_of_mass() - group1->center_of_mass();
   }
 
   int deerbin=floor( (dist_v.norm()-deerlower) / deerwidth );
@@ -163,10 +159,12 @@ void colvar::deer_kernel::calc_value()
   }
 }
 
+
 void colvar::deer_kernel::calc_gradients()
 {
   // will be calculated on the fly in apply_force()
 }
+
 
 void colvar::deer_kernel::apply_force(colvarvalue const &force)
 {
@@ -180,6 +178,7 @@ void colvar::deer_kernel::apply_force(colvarvalue const &force)
        group2->apply_force(       u * force[t] * deerder[t]);
   }
 }
+
 
 cvm::real colvar::deer_kernel::dist2(colvarvalue const &x1,
                                         colvarvalue const &x2) const

@@ -6,7 +6,8 @@
 
 class colvar;
 
-/// \brief Colvar deer kernel vector
+/// \brief DEER time-signal colvar component
+/// (Marinelli and Fiorin, Structure, 2018)
 class colvar::deer_kernel
   : public colvar::cvc
 {
@@ -36,13 +37,13 @@ protected:
   cvm::atom_group  *group1;
   /// Second atom group
   cvm::atom_group  *group2;
-  /// Use absolute positions, ignoring PBCs when present
-  bool b_no_PBC;
   /// Vector distance, cached to be recycled
   cvm::rvector     dist_v;
   /// Derivatives vector , cached to be recycled
   cvm::vector1d<cvm::real> deerder;
+
 public:
+
   deer_kernel(std::string const &conf);
   deer_kernel();
   virtual ~deer_kernel() {}
