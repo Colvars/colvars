@@ -13,138 +13,6 @@ namespace DEER_Kernel {
 
 /// \brief fresnel integrals (by expansion to Chebyshev series)
 
-static const double sqrt_pi_2_fres   = 1.2533141373155002512078826424; /* sqrt(pi/2) */
-static const double sqrt_2_pi_fres   = 0.7978845608028653558798921199; /* sqrt(2/pi) */
-static const double _1_sqrt_2pi_fres = 0.3989422804014326779399460599; /* 1/sqrt(2*pi) */
-static const double pi_2_fres        = 1.5707963267948966192313216916; /* pi/2 */
-
-static double f_data_fres_a[18] =
-                {
-                  0.76435138664186000189,
-                 -0.43135547547660179313,
-                  0.43288199979726653054,
-                 -0.26973310338387111029,
-                  0.08416045320876935378,
-                 -0.01546524484461381958,
-                  0.00187855423439822018,
-                 -0.00016264977618887547,
-                  0.00001057397656383260,
-                 -0.00000053609339889243,
-                  0.00000002181658454933,
-                 -0.00000000072901621186,
-                  0.00000000002037332546,
-                 -0.00000000000048344033,
-                  0.00000000000000986533,
-                 -0.00000000000000017502,
-                  0.00000000000000000272,
-                 -0.00000000000000000004
-                };
-
-static double f_data_fres_b[17] =
-                {
-                  0.63041404314570539241,
-                 -0.42344511405705333544,
-                  0.37617172643343656625,
-                 -0.16249489154509567415,
-                  0.03822255778633008694,
-                 -0.00564563477132190899,
-                  0.00057454951976897367,
-                 -0.00004287071532102004,
-                  0.00000245120749923299,
-                 -0.00000011098841840868,
-                  0.00000000408249731696,
-                 -0.00000000012449830219,
-                  0.00000000000320048425,
-                 -0.00000000000007032416,
-                  0.00000000000000133638,
-                 -0.00000000000000002219,
-                  0.00000000000000000032
-                };
-
-static double f_data_fres_e[41] =
-                {
-                    0.97462779093296822410,
-                   -0.02424701873969321371,
-                    0.00103400906842977317,
-                   -0.00008052450246908016,
-                    0.00000905962481966582,
-                   -0.00000131016996757743,
-                    0.00000022770820391497,
-                   -0.00000004558623552026,
-                    0.00000001021567537083,
-                   -0.00000000251114508133,
-                    0.00000000066704761275,
-                   -0.00000000018931512852,
-                    0.00000000005689898935,
-                   -0.00000000001798219359,
-                    0.00000000000594162963,
-                   -0.00000000000204285065,
-                    0.00000000000072797580,
-                   -0.00000000000026797428,
-                    0.00000000000010160694,
-                   -0.00000000000003958559,
-                    0.00000000000001581262,
-                   -0.00000000000000646411,
-                    0.00000000000000269981,
-                   -0.00000000000000115038,
-                    0.00000000000000049942,
-                   -0.00000000000000022064,
-                    0.00000000000000009910,
-                   -0.00000000000000004520,
-                    0.00000000000000002092,
-                   -0.00000000000000000982,
-                    0.00000000000000000467,
-                   -0.00000000000000000225,
-                    0.00000000000000000110,
-                   -0.00000000000000000054,
-                    0.00000000000000000027,
-                   -0.00000000000000000014,
-                    0.00000000000000000007,
-                   -0.00000000000000000004,
-                    0.00000000000000000002,
-                   -0.00000000000000000001,
-                    0.00000000000000000001
-        };
-
-static double f_data_fres_f[35] =
-                {
-                    0.99461545179407928910,
-                   -0.00524276766084297210,
-                    0.00013325864229883909,
-                   -0.00000770856452642713,
-                    0.00000070848077032045,
-                   -0.00000008812517411602,
-                    0.00000001359784717148,
-                   -0.00000000246858295747,
-                    0.00000000050925789921,
-                   -0.00000000011653400634,
-                    0.00000000002906578309,
-                   -0.00000000000779847361,
-                    0.00000000000222802542,
-                   -0.00000000000067239338,
-                    0.00000000000021296411,
-                   -0.00000000000007041482,
-                    0.00000000000002419805,
-                   -0.00000000000000861080,
-                    0.00000000000000316287,
-                   -0.00000000000000119596,
-                    0.00000000000000046444,
-                   -0.00000000000000018485,
-                    0.00000000000000007527,
-                   -0.00000000000000003131,
-                    0.00000000000000001328,
-                   -0.00000000000000000574,
-                    0.00000000000000000252,
-                   -0.00000000000000000113,
-                    0.00000000000000000051,
-                   -0.00000000000000000024,
-                    0.00000000000000000011,
-                   -0.00000000000000000005,
-                    0.00000000000000000002,
-                   -0.00000000000000000001,
-                    0.00000000000000000001
-                };
-
 /* fresnel_c(x) - Fresnel Cosine Integral
  *  * C(x)=fresnel_c(x)=\dint\limits_{0}^{x}\cos (\frac{\pi}{2}t^{2})dt
  *   */
@@ -228,13 +96,10 @@ double colvar::deer_kernel::kdeer_der(cvm::real const &r, cvm::real const &t)
 
 // end DEER keernel analytical derivatives routine
 
-
 colvar::deer_kernel::deer_kernel(std::string const &conf)
   : cvc(conf)
 {
   function_type = "deer_kernel";
-  x.type(colvarvalue::type_vector);
-
   get_keyval(conf, "deertimefile", deer_time_file);
   int nlines=0;
   int i;
@@ -263,28 +128,52 @@ colvar::deer_kernel::deer_kernel(std::string const &conf)
         getline (deerfile,line);
     }
     deerfile.close();
+  } else {
+    cvm::error("Unable to open deertimefile");
+    return;
   }
-  // define deer kernel grid
-  get_keyval(conf, "deerWidth", deerwidth, 0.1);
-  get_keyval(conf, "deerLower", deerlower, 0);
-  get_keyval(conf, "deerUpper", deerupper, 100);
-  rpoints=std::floor( (deerupper-deerlower) / deerwidth );
+  if (deersize==0) {
+    cvm::error("deertimefile must contain at least one (non-empty) line");
+    return;
+  }
+  get_keyval(conf, "useDeerGrid", deer_grid, false);
+  if(!deer_grid) deer_anal_der=true;
+  if(deer_grid){
+    // define deer kernel grid
+    get_keyval(conf, "deerWidth", deerwidth, 0.1);
+    get_keyval(conf, "deerLower", deerlower, 0);
+    get_keyval(conf, "deerUpper", deerupper, 160);
+    get_keyval(conf, "useAnalyDer", deer_anal_der, false);
+    rpoints=std::floor( (deerupper-deerlower) / deerwidth );
 
-  deerk.resize(rpoints,deersize);
+    deerk.resize(rpoints,deersize);
+    if(deer_anal_der) deerk_der.resize(rpoints,deersize);
+    // assign deer kernel grid
 
-  // assign deer kernel grid
-
-  for (i=0; i<rpoints; i++){
-     cvm::real const rval = deerlower+(i+0.5)*deerwidth;
-     for (t=0; t<deersize; t++){
-       deerk[i][t] = static_cast<cvm::real>(kdeer(rval,timesdeer[t])) -
-         deerexpvalues[t];
-     }
+    for (i=0; i<rpoints; i++){
+       cvm::real const rval = deerlower+(i+0.5)*deerwidth;
+       for (t=0; t<deersize; t++){
+          //deerk[i][t]=kdeer(rval,timesdeer[t])-deerexpvalues[t];
+          deerk[i][t]=kdeer(rval,timesdeer[t]);
+       }
+    }
+    if(deer_anal_der){
+      for (i=0; i<rpoints; i++){
+         cvm::real const rval = deerlower+(i+0.5)*deerwidth;
+         for (t=0; t<deersize; t++){
+            deerk_der[i][t]=kdeer_der(rval,timesdeer[t]);
+         }
+      }
+    }
+  }
+  if (get_keyval(conf, "forceNoPBC", b_no_PBC, false)) {
+    cvm::log("Computing distance using absolute positions (not minimal-image)");
   }
 
   group1 = parse_group(conf, "group1");
   group2 = parse_group(conf, "group2");
 
+  x.type(colvarvalue::type_vector);
   x.vector1d_value.resize(deersize);
 }
 
@@ -300,54 +189,74 @@ void colvar::deer_kernel::calc_value()
   x.vector1d_value.resize(deersize);
   deerder.resize(deersize);
 
-  if (is_enabled(f_cvc_pbc_minimum_image)) {
-    dist_v = cvm::position_distance(group1->center_of_mass(),
-                                    group2->center_of_mass());
-  } else {
+  if (b_no_PBC) {
     dist_v = group2->center_of_mass() - group1->center_of_mass();
+  } else {
+    dist_v = cvm::position_distance(group1->center_of_mass(),
+                                     group2->center_of_mass());
   }
 
-  int deerbin=floor( (dist_v.norm()-deerlower) / deerwidth );
-
-  if(deerbin<0 || deerbin >=rpoints ){
-    cvm::error("distance out of boundaries, expand deerLower or deerUpper!");
-    return;
+  if(!deer_grid) {
+      for (t=0; t<deersize; t++){
+         //x.vector1d_value[t]=kdeer(dist_v.norm(),timesdeer[t])-deerexpvalues[t]; // value calculated
+         x.vector1d_value[t]=kdeer(dist_v.norm(),timesdeer[t]); // value calculated
+         deerder[t]=kdeer_der(dist_v.norm(),timesdeer[t]);
+         cvm::rvector const u = dist_v.unit();
+      }
   }
 
-  for (t=0; t<deersize; t++){
-     x.vector1d_value[t]=deerk[deerbin][t]; // value calculated
-     // calculate gradients
-     cvm::rvector const u = dist_v.unit();
-     if(deerbin==0) deerder[t] = (deerk[deerbin+1][t]-deerk[deerbin][t])/(deerwidth);
-     if(deerbin==rpoints-1) deerder[t] = (deerk[deerbin][t]-deerk[deerbin-1][t])/(deerwidth);
-     if(deerbin>0 && deerbin<rpoints-1) {
-       deerder[t] = (deerk[deerbin+1][t]-deerk[deerbin-1][t])/(2.*deerwidth);
-     }
-     group1->set_weighted_gradient(-1.0 * u * deerder[t]);
-     group2->set_weighted_gradient(       u * deerder[t]);
+  if(deer_grid) {
+
+    int deerbin=floor( (dist_v.norm()-deerlower) / deerwidth );
+
+    if(deerbin<0 || deerbin >=rpoints ){
+      cvm::error("distance out of boundaries, expand deerLower or deerUpper!");
+      return;
+    }
+
+    if(deer_anal_der) {
+      for (t=0; t<deersize; t++){
+         x.vector1d_value[t]=deerk[deerbin][t]; // value calculated
+         deerder[t]=deerk_der[deerbin][t];
+         cvm::rvector const u = dist_v.unit();
+      }
+    }
+
+    if(!deer_anal_der) {
+      for (t=0; t<deersize; t++){
+         x.vector1d_value[t]=deerk[deerbin][t]; // value calculated
+         cvm::rvector const u = dist_v.unit();
+         if(deerbin==0) deerder[t] = (deerk[deerbin+1][t]-deerk[deerbin][t])/(deerwidth);
+         if(deerbin==rpoints-1) deerder[t] = (deerk[deerbin][t]-deerk[deerbin-1][t])/(deerwidth);
+         if(deerbin>0 && deerbin<rpoints-1) {
+           deerder[t] = (deerk[deerbin+1][t]-deerk[deerbin-1][t])/(2.*deerwidth);
+         }
+      }
+    }
   }
 }
-
 
 void colvar::deer_kernel::calc_gradients()
 {
-  // will be calculated on the fly in apply_force()
+  // calculated on the fly in apply_force() and not stored
 }
-
 
 void colvar::deer_kernel::apply_force(colvarvalue const &force)
 {
   cvm::rvector const u = dist_v.unit();
   int t;
+  cvm::real totdeerforce=0.0;
+
   for (t=0; t<deersize; t++){
-     if (!group1->noforce)
-       group1->apply_force(-1.0 * u * force[t] * deerder[t]);
-
-     if (!group2->noforce)
-       group2->apply_force(       u * force[t] * deerder[t]);
+     totdeerforce=totdeerforce+force[t] * deerder[t];
   }
-}
 
+  if (!group1->noforce)
+    group1->apply_force(-1.0 * u * totdeerforce);
+
+  if (!group2->noforce)
+    group2->apply_force(       u * totdeerforce);
+}
 
 cvm::real colvar::deer_kernel::dist2(colvarvalue const &x1,
                                         colvarvalue const &x2) const
@@ -359,16 +268,15 @@ cvm::real colvar::deer_kernel::dist2(colvarvalue const &x1,
 colvarvalue colvar::deer_kernel::dist2_lgrad(colvarvalue const &x1,
                                                 colvarvalue const &x2) const
 {
-  return colvarvalue((x1.vector1d_value - x2.vector1d_value), colvarvalue::type_vector);
+  return 2.0*colvarvalue((x1.vector1d_value - x2.vector1d_value), colvarvalue::type_vector);
 }
 
 
 colvarvalue colvar::deer_kernel::dist2_rgrad(colvarvalue const &x1,
                                                 colvarvalue const &x2) const
 {
-  return colvarvalue((x2.vector1d_value - x1.vector1d_value), colvarvalue::type_vector);
+  return 2.0*colvarvalue((x2.vector1d_value - x1.vector1d_value), colvarvalue::type_vector);
 }
-
 
 namespace DEER_Kernel {
 
