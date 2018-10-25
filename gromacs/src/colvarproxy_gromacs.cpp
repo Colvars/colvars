@@ -30,7 +30,8 @@ bool colvars_global_is_first = true;
 
 
 real colvars_potential(t_inputrec *gmx_inp, t_mdatoms *md, t_pbc *pbc,
-		       gmx_int64_t step, rvec *x, gmx::ForceWithVirial *force) {
+		                   gmx_int64_t step, rvec *x, gmx::ForceWithVirial *force)
+{
 
   // Update some things.
   // Get the current periodic boundary conditions.
@@ -156,6 +157,7 @@ void colvarproxy_gromacs::init(t_inputrec *gmx_inp, gmx_int64_t step) {
   cvm::log("Using GROMACS interface, version "+
 	   cvm::to_str(COLVARPROXY_VERSION)+".\n");
   colvars->read_config_file(config_file.c_str());
+  colvars->setup();
   colvars->setup_input();
   colvars->setup_output();
 
@@ -165,11 +167,11 @@ void colvarproxy_gromacs::init(t_inputrec *gmx_inp, gmx_int64_t step) {
   }
 
   if (cvm::debug()) {
-    cvm::log ("colvars_atoms = "+cvm::to_str (colvars_atoms)+"\n");
-    cvm::log ("colvars_atoms_ncopies = "+cvm::to_str (colvars_atoms_ncopies)+"\n");
-    cvm::log ("positions = "+cvm::to_str (positions)+"\n");
-    cvm::log ("total_forces = "+cvm::to_str (total_forces)+"\n");
-    cvm::log ("applied_forces = "+cvm::to_str (applied_forces)+"\n");
+    cvm::log ("atoms_ids = "+cvm::to_str (atoms_ids)+"\n");
+    cvm::log ("atoms_ncopies = "+cvm::to_str (atoms_ncopies)+"\n");
+    cvm::log ("positions = "+cvm::to_str (atoms_positions)+"\n");
+    cvm::log ("total_forces = "+cvm::to_str (atoms_total_forces)+"\n");
+    cvm::log ("atoms_new_colvar_forces = "+cvm::to_str (atoms_new_colvar_forces)+"\n");
     cvm::log (cvm::line_marker);
   }
 
@@ -188,7 +190,8 @@ colvarproxy_gromacs::~colvarproxy_gromacs()
   }
 }
 
-void colvarproxy_gromacs::set_temper(double temper) {
+void colvarproxy_gromacs::set_temper(double temper)
+{
   thermostat_temperature = temper;
 }
 
@@ -201,7 +204,8 @@ cvm::real colvarproxy_gromacs::backend_angstrom_value() { return 0.1; }
 cvm::real colvarproxy_gromacs::boltzmann() { return 0.0083144599; }
 
 // Temperature of the simulation (K)
-cvm::real colvarproxy_gromacs::temperature() {
+cvm::real colvarproxy_gromacs::temperature()
+{
   return thermostat_temperature;
 }
 
@@ -209,22 +213,26 @@ cvm::real colvarproxy_gromacs::temperature() {
 // GROMACS uses picoseconds.
 cvm::real colvarproxy_gromacs::dt() { return 1000.0*timestep; }
 
-cvm::real colvarproxy_gromacs::rand_gaussian() {
+cvm::real colvarproxy_gromacs::rand_gaussian()
+{
   return  normal_distribution(rng);
 }
 
-void colvarproxy_gromacs::request_total_force (bool yesno) {
+void colvarproxy_gromacs::request_total_force (bool yesno)
+{
   total_force_requested = yesno;
 }
 
-size_t colvarproxy_gromacs::restart_frequency() {
+size_t colvarproxy_gromacs::restart_frequency()
+{
   return restart_frequency_s;
 }
 
 // **************** PERIODIC BOUNDARY CONDITIONS ****************
 //  Get the PBC-aware distance vector between two positions
 cvm::rvector colvarproxy_gromacs::position_distance (cvm::atom_pos const &pos1,
-				cvm::atom_pos const &pos2) {
+                                                     cvm::atom_pos const &pos2)
+{
   rvec r1, r2, dr;
   r1[0] = pos1.x;
   r1[1] = pos1.y;
@@ -240,7 +248,8 @@ cvm::rvector colvarproxy_gromacs::position_distance (cvm::atom_pos const &pos1,
 // The position to look for the closest periodic image
 // ref_pos The reference position
 void colvarproxy_gromacs::select_closest_image (cvm::atom_pos &pos,
-			   cvm::atom_pos const &ref_pos) {
+                                                cvm::atom_pos const &ref_pos)
+{
   rvec r1, r2, dr;
   r1[0] = pos.x;
   r1[1] = pos.y;
@@ -256,16 +265,19 @@ void colvarproxy_gromacs::select_closest_image (cvm::atom_pos &pos,
   pos.z = r1[2]+dr[2];
 }
 
-void colvarproxy_gromacs::log (std::string const &message) {
+void colvarproxy_gromacs::log (std::string const &message)
+{
   printf("colvars: %s", message.c_str());
 }
 
-void colvarproxy_gromacs::error (std::string const &message) {
+void colvarproxy_gromacs::error (std::string const &message)
+{
   // In GROMACS, all errors are fatal.
   fatal_error (message);
 }
 
-void colvarproxy_gromacs::fatal_error (std::string const &message) {
+void colvarproxy_gromacs::fatal_error (std::string const &message)
+{
   log(message);
   if (!cvm::debug())
     log("If this error message is unclear, "
@@ -273,24 +285,23 @@ void colvarproxy_gromacs::fatal_error (std::string const &message) {
   gmx_fatal(FARGS,"Error in collective variables module.\n");
 }
 
-void colvarproxy_gromacs::exit (std::string const &message) {
+void colvarproxy_gromacs::exit (std::string const &message)
+{
   gmx_fatal(FARGS,"SUCCESS: %s\n", message.c_str());
 }
 
-int colvarproxy_gromacs::load_atoms (char const *filename,
-		std::vector<cvm::atom> &atoms,
-		std::string const &pdb_field,
-		double const pdb_field_value) {
+int colvarproxy_gromacs::load_atoms (char const *filename, std::vector<cvm::atom> &atoms,
+                                     std::string const &pdb_field, double const pdb_field_value)
+{
   cvm::error("Selecting collective variable atoms "
 		   "from a PDB file is currently not supported.\n");
   return COLVARS_NOT_IMPLEMENTED;
 }
 
-int colvarproxy_gromacs::load_coords (char const *filename,
-                                    std::vector<cvm::atom_pos> &pos,
-                                    const std::vector<int> &indices,
-                                    std::string const &pdb_field_str,
-                                    double const pdb_field_value) {
+int colvarproxy_gromacs::load_coords (char const *filename, std::vector<cvm::atom_pos> &pos,
+                                      const std::vector<int> &indices, std::string const &pdb_field_str,
+                                      double const pdb_field_value)
+{
   cvm::error("Selecting collective variable atoms "
 		   "from a PDB file is currently not supported.\n");
   return COLVARS_NOT_IMPLEMENTED;
@@ -322,7 +333,8 @@ int colvarproxy_gromacs::backup_file (char const *filename)
 
 // trigger colvars computation
 // TODO: compute the virial contribution
-double colvarproxy_gromacs::calculate(gmx_int64_t step, const rvec *x, gmx::ForceWithVirial *force) {
+double colvarproxy_gromacs::calculate(gmx_int64_t step, const rvec *x, gmx::ForceWithVirial *force)
+{
 
   //Get only the forces without virial
   rvec *f = as_rvec_array(force->force_.data());
@@ -338,52 +350,53 @@ double colvarproxy_gromacs::calculate(gmx_int64_t step, const rvec *x, gmx::Forc
   previous_gmx_step = step;
 
   if (cvm::debug()) {
-    cvm::log(cvm::line_marker+
-             "colvarproxy_gromacs, step no. "+cvm::to_str(colvars->it)+"\n"+
+    cvm::log(cvm::line_marker);
+    cvm::log("colvarproxy_gromacs, step no. "+cvm::to_str(colvars->it)+"\n"+
              "Updating internal data.\n");
   }
 
   // backup applied forces if necessary to calculate total forces
   //if (total_force_requested)
-  //  previous_applied_forces = applied_forces;
+  //  previous_atoms_new_colvar_forces = atoms_new_colvar_forces;
 
   // Zero the forces on the atoms, so that they can be accumulated by the colvars.
-  for (size_t i = 0; i < applied_forces.size(); i++) {
-    applied_forces[i].x = applied_forces[i].y = applied_forces[i].z = 0.0;
+  for (size_t i = 0; i < atoms_new_colvar_forces.size(); i++) {
+    atoms_new_colvar_forces[i].x = atoms_new_colvar_forces[i].y = atoms_new_colvar_forces[i].z = 0.0;
   }
 
   // Get the atom positions from the Gromacs array.
-  for (size_t i = 0; i < colvars_atoms.size(); i++) {
-    size_t aid = colvars_atoms[i];
+  for (size_t i = 0; i < atoms_ids.size(); i++) {
+    size_t aid = atoms_ids[i];
     if (aid >= gmx_atoms->nr) {
-      cvm::fatal_error("Error: Atom index "+cvm::to_str(aid)+" not found in GROMACS data structure containing "+cvm::to_str(gmx_atoms->nr)+" atoms");
+      cvm::fatal_error("Error: Atom index "+cvm::to_str(aid)+" not found in GROMACS data structure containing "+
+                       cvm::to_str(gmx_atoms->nr)+" atoms");
     }
-    positions[i] = cvm::rvector(x[aid][0], x[aid][1], x[aid][2]);
+    atoms_positions[i] = cvm::rvector(x[aid][0], x[aid][1], x[aid][2]);
   }
 
   // Get total forces if required.
   if (total_force_requested && cvm::step_relative() > 0) {
-     for (size_t i = 0; i < colvars_atoms.size(); i++) {
-       size_t aid = colvars_atoms[i];
+     for (size_t i = 0; i < atoms_ids.size(); i++) {
+       size_t aid = atoms_ids[i];
        // We already checked above that gmx_atoms->nr < aid.
        // The change of sign appears necessary.
-       total_forces[i] = cvm::rvector(-f[aid][0], -f[aid][1], -f[aid][2]);
+       atoms_total_forces[i] = cvm::rvector(-f[aid][0], -f[aid][1], -f[aid][2]);
      }
   }
 
   bias_energy = 0.0;
-  // Call the collective variable module to fill applied_forces
+  // Call the collective variable module to fill atoms_new_colvar_forces
   if (colvars->calc() != COLVARS_OK) {
     cvm::fatal_error("");
   }
 
   // Pass the applied forces back to GROMACS.
-  for (size_t i = 0; i < colvars_atoms.size(); i++) {
-    size_t aid = colvars_atoms[i];
+  for (size_t i = 0; i < atoms_ids.size(); i++) {
+    size_t aid = atoms_ids[i];
     // We already checked above that gmx_atoms->nr < aid.
-    f[aid][0] -= applied_forces[i].x;
-    f[aid][1] -= applied_forces[i].y;
-    f[aid][2] -= applied_forces[i].z;
+    f[aid][0] -= atoms_new_colvar_forces[i].x;
+    f[aid][1] -= atoms_new_colvar_forces[i].y;
+    f[aid][2] -= atoms_new_colvar_forces[i].z;
   }
 
   // We need to compute and update the virial like this (with virial as a 3x3 matrix):
@@ -401,34 +414,59 @@ void colvarproxy_gromacs::add_energy (cvm::real energy)
 }
 
 // **************** ATOMS ****************
-// Most of the following was patterned after colvarproxy_lammps.
 
-int colvarproxy_gromacs::init_gromacs_atom(const int &aid, cvm::atom *atom)
+int colvarproxy_gromacs::check_atom_id(int atom_number)
 {
-  atom->id = aid;
-  atom->mass = gmx_atoms->massT[aid];
+  // GROMACS uses zero-based arrays.
+  int const aid = (atom_number-1);
+
+  if (cvm::debug())
+    log("Adding atom "+cvm::to_str(atom_number)+
+        " for collective variables calculation.\n");
 
   if ( (aid < 0) || (aid >= gmx_atoms->nr) ) {
-    cvm::fatal_error ("Error: invalid atom number specified, "+
-                      cvm::to_str (aid+1)+"\n");
+    cvm::error("Error: invalid atom number specified, "+
+               cvm::to_str(atom_number)+"\n", INPUT_ERROR);
+    return INPUT_ERROR;
   }
 
-  for (size_t i = 0; i < colvars_atoms.size(); i++) {
-    if (colvars_atoms[i] == aid) {
+  return aid;
+}
+
+
+int colvarproxy_gromacs::init_atom(int atom_number)
+{
+  // GROMACS uses zero-based arrays.
+  int aid = atom_number-1;
+
+  for (size_t i = 0; i < atoms_ids.size(); i++) {
+    if (atoms_ids[i] == aid) {
       // this atom id was already recorded
-      colvars_atoms_ncopies[i] += 1;
+      atoms_ncopies[i] += 1;
       return i;
     }
   }
 
-  // allocate a new slot for this atom
-  colvars_atoms_ncopies.push_back(1);
-  colvars_atoms.push_back(aid);
-  positions.push_back(cvm::rvector());
-  total_forces.push_back(cvm::rvector());
-  applied_forces.push_back(cvm::rvector());
+  aid = check_atom_id(atom_number);
 
-  return colvars_atoms.size()-1;
+  int const index = add_atom_slot(aid);
+  update_atom_properties(index);
+  return index;
+}
+
+void colvarproxy_gromacs::update_atom_properties(int index)
+{
+
+  // update mass
+  double const mass = gmx_atoms->massT[index];
+  if (mass <= 0.001) {
+    this->log("Warning: near-zero mass for atom "+
+              cvm::to_str(atoms_ids[index]+1)+
+              "; expect unstable dynamics if you apply forces to it.\n");
+  }
+  atoms_masses[index] = mass;
+  // update charge
+  atoms_charges[index] = gmx_atoms->chargeA[index];
 }
 
 enum e_pdb_field {
@@ -477,79 +515,3 @@ e_pdb_field pdb_field_str2enum(std::string const &pdb_field_str)
 
   return pdb_field;
 }
-
-cvm::atom::atom(const int &atom_number)
-{
-  // GROMACS uses zero-based arrays.
-  int aid = atom_number-1;
-
-  if (cvm::debug())
-    cvm::log ("Adding atom "+cvm::to_str (aid+1)+
-              " for collective variables calculation.\n");
-
-  this->index = ((colvarproxy_gromacs *) cvm::proxy)->init_gromacs_atom (aid,this);
-  if (cvm::debug())
-    cvm::log ("The index of this atom in the colvarproxy_gromacs arrays is "+
-              cvm::to_str (this->index)+".\n");
-  this->reset_data();
-}
-
-/// For AMBER topologies, the segment id is automatically set to
-/// "MAIN" (the segment id assigned by NAMD's AMBER topology parser),
-/// and is therefore optional when an AMBER topology is used
-cvm::atom::atom(cvm::residue_id const &residue,
-                std::string const     &atom_name,
-                std::string const     &segment_id)
-{
-  cvm::fatal_error("Error: Creating collective variable atoms "
-                   "from a PDB file is currently not supported.\n");
-}
-
-// copy constructor
-cvm::atom::atom(cvm::atom const &a)
-  : index(a.index), id(a.id), mass(a.mass)
-{
-  // init_gromacs_atom() has already been called by a's constructor, no
-  // need to call it again
-
-  // need to increment the counter anyway
-  colvarproxy_gromacs *cp = (colvarproxy_gromacs *) cvm::proxy;
-  cp->colvars_atoms_ncopies[this->index] += 1;
-}
-
-cvm::atom::~atom()
-{
-  if (this->index >= 0) {
-    colvarproxy_gromacs *cp = (colvarproxy_gromacs *) cvm::proxy;
-    if (cp->colvars_atoms_ncopies[this->index] > 0)
-      cp->colvars_atoms_ncopies[this->index] -= 1;
-  }
-}
-
-void cvm::atom::read_position()
-{
-  colvarproxy_gromacs const * const cp = (colvarproxy_gromacs *) cvm::proxy;
-  this->pos = cp->positions[this->index];
-}
-
-void cvm::atom::read_velocity()
-{
-  cvm::fatal_error("Error: read_velocity is not yet implemented.\n");
-}
-
-void cvm::atom::read_total_force()
-{
-  colvarproxy_gromacs const * const cp = (colvarproxy_gromacs *) cvm::proxy;
-  this->total_force.x = cp->total_forces[this->index].x;
-  this->total_force.y = cp->total_forces[this->index].y;
-  this->total_force.z = cp->total_forces[this->index].z;
-}
-
-void cvm::atom::apply_force(cvm::rvector const &new_force)
-{
-  colvarproxy_gromacs *cp = (colvarproxy_gromacs *) cvm::proxy;
-  cp->applied_forces[this->index].x += new_force.x;
-  cp->applied_forces[this->index].y += new_force.y;
-  cp->applied_forces[this->index].z += new_force.z;
-}
-

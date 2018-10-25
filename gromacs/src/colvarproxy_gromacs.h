@@ -14,6 +14,8 @@
 #define COLVARPROXY_VERSION "2018-10-05"
 #endif
 
+/// \brief Communication between colvars and Gromacs (implementation of
+/// \link colvarproxy \endlink)
 class colvarproxy_gromacs : public colvarproxy {
 public:
   // GROMACS structures.
@@ -32,11 +34,6 @@ protected:
   bool total_force_requested;
   double bias_energy;
 
-  std::vector<int>          colvars_atoms;
-  std::vector<size_t>       colvars_atoms_ncopies;
-  std::vector<cvm::rvector> positions;
-  std::vector<cvm::rvector> total_forces;
-  std::vector<cvm::rvector> applied_forces;
   // GROMACS random number generation.
   gmx::DefaultRandomEngine           rng;   // gromacs random number generator
   gmx::TabulatedNormalDistribution<> normal_distribution;
@@ -65,7 +62,6 @@ public:
   std::string output_prefix();
   // **************** ACCESS ATOMIC DATA ****************
   void request_total_force (bool yesno);
-  int init_gromacs_atom(const int &aid, cvm::atom *atom);
   // **************** PERIODIC BOUNDARY CONDITIONS ****************
   cvm::rvector position_distance (cvm::atom_pos const &pos1,
 				  cvm::atom_pos const &pos2);
@@ -103,6 +99,11 @@ public:
                             const std::vector<int> &indices,
                             std::string const &pdb_field,
                             double const pdb_field_value = 0.0);
+
+  int init_atom(int atom_number);
+
+  int check_atom_id(int atom_number);
+  void update_atom_properties(int index);
 };
 
 #endif
