@@ -11,7 +11,7 @@
  *
  *      $RCSfile: tcl_commands.C,v $
  *      $Author: johns $        $Locker:  $             $State: Exp $
- *      $Revision: 1.54 $       $Date: 2018/09/12 14:06:40 $
+ *      $Revision: 1.55 $       $Date: 2018/10/24 17:22:07 $
  *
  ***************************************************************************
  * DESCRIPTION:
@@ -256,6 +256,9 @@ int Vmd_Init(Tcl_Interp *interp) {
         (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
 
   Tcl_CreateCommand(interp, "vmd_scale", text_cmd_scale,
+        (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
+
+  Tcl_CreateCommand(interp, "videostream", text_cmd_videostream,
         (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
 
   Tcl_CreateCommand(interp, "vmdbench", text_cmd_vmdbench,

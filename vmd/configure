@@ -206,6 +206,7 @@ $config_imd             = 0;  # interactive MD sockets code etc.
 $config_libsball        = 0;  # Direct I/O Spaceball 6DOF input support 
 $config_mpi             = 0;  # MPI parallel message passing
 $config_nvenc           = 0;  # NVENC hardware H.26[45] video encoder
+$config_nvpipe          = 0;  # NvPipe hardware H.26[45] video streaming
 $config_nvtx            = 0;  # NVTX software profiling APIs
 $config_xinerama        = 0;  # X-Windows Xinerama full-screen mode support 
 $config_xinput          = 0;  # X-Windows Xinput Spaceball 6DOF input support 
@@ -258,6 +259,7 @@ foreach $term (@ARGV) {
     if ($term eq "OPENCL")          { $config_opencl          = 1; next; }
     if ($term eq "MPI")             { $config_mpi             = 1; next; }
     if ($term eq "NVENC")           { $config_nvenc           = 1; next; }
+    if ($term eq "NVPIPE")          { $config_nvpipe          = 1; next; }
     if ($term eq "NVTX")            { $config_nvtx            = 1; next; }
     if ($term eq "IMD")             { $config_imd             = 1; next; }
     if ($term eq "LIBSBALL")        { $config_libsball        = 1; next; }
@@ -344,6 +346,7 @@ if ($config_cuda)            { $config_string .= " CUDA"            }
 if ($config_opencl)          { $config_string .= " OPENCL"          }
 if ($config_mpi)             { $config_string .= " MPI"             }
 if ($config_nvenc)           { $config_string .= " NVENC"           }
+if ($config_nvpipe)          { $config_string .= " NVPIPE"          }
 if ($config_nvtx)            { $config_string .= " NVTX"            }
 if ($config_imd)             { $config_string .= " IMD"             }
 if ($config_libsball)        { $config_string .= " LIBSBALL"        }
@@ -800,6 +803,7 @@ if ($config_tk) { $tcl_libs = "-ltk8.5 -lX11 " . $tcl_libs; }
 		     'cmd_trans.C',
 		     'cmd_user.C',
 		     'cmd_util.C',
+		     'cmd_videostream.C',
 		     'cmd_vmdbench.C',
 		     'tcl_commands.C');
 @tcl_h            = ('TclCommands.h',
@@ -1009,7 +1013,7 @@ $mpi_libs        = "-lmpich";
 
 #######################
 # OPTIONAL COMPONENT: NVENC GPU hardware H.26[45] video encode/decode API
-#   This option enables high performance remote visualization
+#   This option enables high performance hardware video (de)compression
 #######################
 $nvenc_defines     = "-DVMDNVENC ";
 $nvenc_dir         = "";
@@ -1021,6 +1025,23 @@ $nvenc_libs        = "-lcuda"; # XXX need to eliminate via dlopen()/dlsym()
 @nvenc_ccpp        = ('NVENCMgr.C');
 @nvenc_h           = ('NVENCMgr.h');
 @nvenc_extra       = ();
+
+
+#######################
+# OPTIONAL COMPONENT: NVPIPE GPU hardware H.26[45] video encode/decode API
+#   This option enables high performance remote visualization
+#######################
+$nvpipe_defines     = "-DVMDNVPIPE ";
+$nvpipe_dir         = "/home/johns/graphics/nvpipe/nvpipe.2018/NvPipe/build";
+#$nvpipe_dir         = "/ccs/home/stonej1/nvpipe/NvPipe/build";
+$nvpipe_include     = "-I$nvpipe_dir/include";
+$nvpipe_library     = "-L$nvpipe_dir -lNvPipe";
+$nvpipe_libs        = "-lcuda"; # XXX need to eliminate via dlopen()/dlsym()
+@nvpipe_cc          = ();
+@nvpipe_cu          = ();
+@nvpipe_ccpp        = ();
+@nvpipe_h           = ();
+@nvpipe_extra       = ();
 
 
 #######################
@@ -1659,6 +1680,7 @@ $vmd_libs          = "$tcl_libs";
 		   'Timestep.C', 
 		   'UIObject.C', 
 		   'UIText.C', 
+                   'VideoStream.C',
                    'VMDApp.C',
                    'VMDCollab.C',
 		   'VMDDir.C', 
@@ -1815,6 +1837,7 @@ $vmd_libs          = "$tcl_libs";
 	      'Timestep.h', 
 	      'UIObject.h', 
 	      'UIText.h', 
+              'VideoStream.h',
               'VMDApp.h',
 	      'VMDDir.h', 
 	      'VMDDisplayList.h',
@@ -3167,6 +3190,7 @@ $if_statements .= &create_config_option('cuda');
 $if_statements .= &create_config_option('opencl');
 $if_statements .= &create_config_option('mpi');
 $if_statements .= &create_config_option('nvenc');
+$if_statements .= &create_config_option('nvpipe');
 $if_statements .= &create_config_option('nvtx');
 $if_statements .= &create_config_option('imd');
 $if_statements .= &create_config_option('libsball');
