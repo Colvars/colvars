@@ -38,15 +38,6 @@ real colvars_potential(t_inputrec *gmx_inp, t_mdatoms *md, t_pbc *pbc,
   colvars_global_proxy.gmx_pbc = (*pbc);
   colvars_global_proxy.gmx_atoms = md;
 
-  // Get the thermostat temperature.
-  // NOTE: Considers only the first temperature coupling group!
-  // I'm not sure if this can change during the simulation, so
-  // putting it every step to be safe.
-  if (gmx_inp->opts.ref_t[0] > 0)
-    colvars_global_proxy.set_temper(gmx_inp->opts.ref_t[0]);
-  else
-    colvars_global_proxy.set_temper(gmx_inp->opts.ref_t[0]); // FIXME duplicate or 'if' case above
-
   // Initialize if this is the first call.
   if (colvars_global_is_first) {
     colvars_global_proxy.init(gmx_inp, step);
@@ -77,6 +68,9 @@ void colvarproxy_gromacs::init(t_inputrec *gmx_inp, gmx_int64_t step) {
   have_scripts = false;
 
   angstrom_value = 0.1;
+  // Get the thermostat temperature.
+  // NOTE: Considers only the first temperature coupling group!
+  colvars_global_proxy.set_temper(gmx_inp->opts.ref_t[0]);
 
   // GROMACS random number generation.
   // Seed with the mdp parameter ld_seed, the Langevin dynamics seed.
