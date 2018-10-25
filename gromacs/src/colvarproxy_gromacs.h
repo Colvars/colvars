@@ -1,7 +1,11 @@
 /// -*- c++ -*-
+
 // Jeff Comer's tests to see if he can link GROMACS and Colvars
-#ifndef GMX_COLVARS_COLVARPROXY_GROMACS_H
-#define GMX_COLVARS_COLVARPROXY_GROMACS_H
+
+#ifndef COLVARPROXY_GROMACS_H
+#define COLVARPROXY_GROMACS_H
+
+#include "colvarproxy_gromacs_version.h"
 
 #include "colvarmodule.h"
 #include "colvaratoms.h"
@@ -10,9 +14,6 @@
 #include "gromacs/random/threefry.h"
 #include "gromacs/mdtypes/forceoutput.h"
 
-#ifndef COLVARPROXY_VERSION
-#define COLVARPROXY_VERSION "2018-10-05"
-#endif
 
 /// \brief Communication between colvars and Gromacs (implementation of
 /// \link colvarproxy \endlink)

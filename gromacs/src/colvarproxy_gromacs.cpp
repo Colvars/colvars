@@ -64,6 +64,10 @@ colvarproxy_gromacs::colvarproxy_gromacs() : colvarproxy() {
 
 // Colvars Initialization
 void colvarproxy_gromacs::init(t_inputrec *gmx_inp, gmx_int64_t step) {
+
+  if (cvm::debug())
+    log("Initializing the colvars proxy object.\n");
+
   // Initialize colvars.
   first_timestep = true;
   total_force_requested = false;
