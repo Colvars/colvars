@@ -57,34 +57,6 @@ real colvars_potential(t_inputrec *gmx_inp, t_mdatoms *md, t_pbc *pbc,
   return colvars_global_proxy.calculate(step, x, force);
 }
 
-// Taken from colvarproxy_lammps.
-// safely move filename to filename.extension
-static int my_backup_file(const char *filename, const char *extension)
-{
-  struct stat sbuf;
-  if (stat(filename, &sbuf) == 0) {
-    if (!extension) extension = ".BAK";
-    char *backup = new char[strlen(filename)+strlen(extension)+1];
-    strcpy(backup, filename);
-    strcat(backup, extension);
-#if defined(_WIN32) && !defined(__CYGWIN__)
-    remove(backup);
-#endif
-    if (rename(filename,backup)) {
-      char *sys_err_msg = strerror(errno);
-      if (!sys_err_msg)  sys_err_msg = (char *) "(unknown error)";
-      fprintf(stderr,"Error renaming file %s to %s: %s\n",
-              filename, backup, sys_err_msg);
-      delete [] backup;
-      return COLVARS_ERROR;
-    }
-    delete [] backup;
-  }
-  return COLVARS_OK;
-}
-
-
-
 //************************************************************
 // colvarproxy_gromacs
 colvarproxy_gromacs::colvarproxy_gromacs() : colvarproxy() {
@@ -267,7 +239,8 @@ void colvarproxy_gromacs::select_closest_image (cvm::atom_pos &pos,
 
 void colvarproxy_gromacs::log (std::string const &message)
 {
-  printf("colvars: %s", message.c_str());
+  // Gromacs prints messages on the stderr FILE.
+  fprintf(stderr, "colvars: %s", message.c_str());
 }
 
 void colvarproxy_gromacs::error (std::string const &message)
@@ -318,13 +291,20 @@ int colvarproxy_gromacs::set_unit_system(std::string const &units_in, bool /*che
 
 int colvarproxy_gromacs::backup_file (char const *filename)
 {
-  if (std::string(filename).rfind(std::string(".colvars.state"))
-      != std::string::npos) {
-    return my_backup_file(filename, ".old");
+  if (std::string(filename).rfind(std::string(".colvars.state")) != std::string::npos) {
+
+    //Handle filename of the backup file
+    const char *extension = ".old";
+    char *backup = new char[strlen(filename)+strlen(extension)+1];
+    strcpy(backup, filename);
+    strcat(backup, extension);
+
+    gmx_file_copy(filename, backup, FALSE);
+
+    delete [] backup;
+
   } else {
-    // GROMACS has its own way to avoid overwriting files.
-    //if (make_backup(filename)) return COLVARS_OK;
-    //else return FILE_ERROR;
+    // GROMACS function
     make_backup(filename);
   }
   return COLVARS_OK;
