@@ -3121,12 +3121,11 @@ To gain an estimate of the computational cost of a large colvar, one can use a t
 
 \cvsec{Biasing and analysis methods}{sec:colvarbias}
 
-All of the biasing and analysis methods implemented (\texttt{abf},
-\texttt{harmonic}, \texttt{histogram} and \texttt{metadynamics})
-recognize the following options:
+All of the biasing and analysis methods implemented recognize the following options:
 \begin{itemize}
 
 \item %
+  \labelkey{colvarbias|name}
   \keydef
     {name}{%
     colvar bias}{%
@@ -3137,6 +3136,7 @@ recognize the following options:
     output messages and to name some output files.}
 
 \item %
+  \labelkey{colvarbias|colvars}
   \key
     {colvars}{%
     colvar bias}{%
@@ -3146,6 +3146,7 @@ recognize the following options:
     analysis will be applied.}
 
 \item %
+  \labelkey{colvarbias|outputEnergy}
   \keydef
     {outputEnergy}{%
     colvar bias}{%
@@ -4814,7 +4815,7 @@ The default SMP schedule is the following:
 \item distribute the computation of all components across available threads;
 \item on a single thread, collect the results of multi-component variables using polynomial combinations (see \ref{sec:cvc_superp})\cvleptononly{, or custom functions (see \ref{sec:colvar_custom_function})}\cvscriptonly{, or scripted functions (see \ref{sec:colvar_scripted})};
 \item distribute the computation of all biases across available threads;
-\item compute on a single thread any scripted biases implemented via the keyword \refkey{scriptedColvarForces}.
+\item compute on a single thread any scripted biases implemented via the keyword \refkey{scriptedColvarForces}{Colvars-global|scriptedColvarForces}.
 \item communicate on a single thread forces to \MDENGINE{}.
 \end{enumerate}
 
