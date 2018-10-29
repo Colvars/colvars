@@ -166,9 +166,6 @@ colvar::deer_kernel::deer_kernel(std::string const &conf)
       }
     }
   }
-  if (get_keyval(conf, "forceNoPBC", b_no_PBC, false)) {
-    cvm::log("Computing distance using absolute positions (not minimal-image)");
-  }
 
   group1 = parse_group(conf, "group1");
   group2 = parse_group(conf, "group2");
