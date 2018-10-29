@@ -2311,15 +2311,14 @@ The parameters described below offer a way to specify these parameters only once
   \keydef
     {width}{%
     \texttt{colvar}}{%
-    Colvar fluctuation scale, or resolution for grid-based methods}{%
+    Unit of the variable, or grid spacing}{%
     positive decimal}{%
     1.0}{%
-    This number has the same physical unit as the colvar value and defines an effective colvar unit.
-%    Biasing algorithms use it for different purposes.
-    Harmonic restraints (\ref{sec:colvarbias_harmonic}) use it to set the physical unit of the force constant, which is useful for multidimensional restraints involving variables with very different units (for examples, $\AA$ or degrees $^\circ$) with a single, scaled force constant.
+    This number defines the effective unit of measurement for the collective variable, and is used by the biasing methods for the following purposes.
+    Harmonic (\ref{sec:colvarbias_harmonic}), harmonic walls (\ref{sec:colvarbias_harmonic_walls}) and linear restraints (\ref{sec:colvarbias_linear}) use it to set the physical unit of the force constant, which is useful for multidimensional restraints involving multiple variables with very different units (for examples, $\AA$ or degrees $^\circ$) with a single, scaled force constant.
+    The values of the scaled force constant in the units of each variable are printed at initialization time. 
     Histograms (\ref{sec:colvarbias_histogram}), ABF (\ref{sec:colvarbias_abf}) and metadynamics (\ref{sec:colvarbias_meta}) all use this number as the initial choice for the grid spacing along this variable: for this reason, \texttt{width} should generally be no larger than the standard deviation of the colvar in an unbiased simulation.
-%    When a non-unity width is required by the application, the optimal value is application-dependent, but can often be thought of as a user-provided estimate of the fluctuation amplitude for the colvar.
-    Unless it is required to control the spacing, it is usually simplest to keep the default value of 1, so that restraint force constants are provided in more intuitive units.
+    Unless it is required to control the spacing, it is usually simplest to keep the default value of 1, so that restraint force constants are provided with their full physical unit.
   }
 
 \item %
@@ -2331,8 +2330,8 @@ The parameters described below offer a way to specify these parameters only once
     decimal}{%
     Defines the lowest end of the interval of ``relevant'' values for the colvar.
     This number can be either a true physical boundary, or a user-defined number.  
-    Together with \texttt{upperBoundary} and \texttt{width}, it is used to define a grid of values along the colvar (not available for colvars based on \texttt{distanceDir}, \texttt{distanceVec}, and \texttt{orientation}).
-    This option does not affect dynamics: to confine a colvar within a certain interval, use a \texttt{harmonicWalls} bias.
+    Together with \texttt{upperBoundary} and \texttt{width}, it is used to define a grid of values along the variable (not available for variables with vector values, \ref{sec:cvc_non_scalar}).
+    \emph{This option does not affect dynamics: to confine a colvar within a certain interval, use a \texttt{harmonicWalls} bias.}
 }
 
 \item %
@@ -4128,16 +4127,12 @@ block, which may contain (in addition to the standard option
     Scaled force constant (\cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
     positive decimal}{%
     \texttt{1.0}}{%
-    This defines a scaled force constant $k$ for the harmonic potential (eq.~\ref{eq:colvarbias_harmonic_multi}).
-    To ensure consistency for multidimensional restraints, it is
-    divided internally by the square of the specific \texttt{width}
-    for each colvar involved (which is 1 by default), so that all colvars
-    are effectively dimensionless and of commensurate size.
-    For instance, setting a scaled force constant of 10~kcal/mol acting
-    on two colvars, an angle with a \texttt{width} of 5~degrees and a distance
-    with a width of 0.5~\AA{}, will apply actual force constants of
-    0.4~kcal/mol$\times$degree$^{-2}$ for the angle and
-    40~kcal/mol/\AA$^2$ for the distance.}
+    This option defines a scaled force constant $k$ for the harmonic potential (eq.~\ref{eq:colvarbias_harmonic_multi}).
+    To ensure consistency for multidimensional restraints, it is divided internally by the square of the specific \texttt{width} of each variable (which is 1 by default).
+    This makes all values effectively dimensionless and of commensurate size.
+    For instance, setting a scaled force constant of 10~kcal/mol acting on two variables, an angle with a \texttt{width} of 5~degrees and a distance  with a width of 0.5~\AA{}, will apply actual force constants of 0.4~kcal/mol$\times$degree$^{-2}$ for the angle and 40~kcal/mol/\AA$^2$ for the distance.
+    \emph{The values of the actual force constants are always printed when the restraint is defined.}
+  }
 
 \item %
   \labelkey{harmonic|centers}
@@ -4451,7 +4446,7 @@ using \cite{Pitera2012}.
 
 \item \dupkey{name}{\texttt{linear}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{colvars}{\texttt{linear}}{sec:colvarbias}{biasing and analysis methods}
-%\item \dupkey{outputEnergy}{\texttt{linear}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{outputEnergy}{\texttt{linear}}{sec:colvarbias}{biasing and analysis methods}
 
 \item %
   \keydef
@@ -4460,11 +4455,10 @@ using \cite{Pitera2012}.
     Scaled force constant (\cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
     positive decimal}{%
     \texttt{1.0}}{%
-    This defines a scaled force constant for the linear bias.
-    To ensure consistency for multidimensional restraints, it is
-    divided internally by the specific \texttt{width}
-    for each colvar involved (which is 1 by default), so that all colvars
-    are effectively dimensionless and of commensurate size.}
+    This option defines a scaled force constant for the linear bias.
+    To ensure consistency for multidimensional restraints, it is divided internally by the specific \texttt{width} of each variable (which is 1 by default), so that all variables are effectively dimensionless and of commensurate size.
+    \emph{The values of the actual force constants are always printed when the restraint is defined.}
+}
 
 \item %
   \key
