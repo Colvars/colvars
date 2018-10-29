@@ -3162,6 +3162,7 @@ In addition, restraint biases (\ref{sec:colvarbias_harmonic}, \ref{sec:colvarbia
 \begin{itemize}
 
 \item %
+  \labelkey{writeTIPMF}{colvarbias|writeTIPMF}
   \keydef
     {writeTIPMF}{%
     colvar bias}{%
@@ -3175,6 +3176,7 @@ In addition, restraint biases (\ref{sec:colvarbias_harmonic}, \ref{sec:colvarbia
 
 
 \item %
+  \labelkey{writeTISamples}{colvarbias|writeTISamples}
   \keydef
     {writeTISamples}{%
     colvar bias}{%
@@ -3733,6 +3735,7 @@ This option can be utilized in both eABF and classical ABF simulations, e.g.,
 {\ttfamily ./eabf.tcl -mergesplitwindow merge abf0 abf1 abf2 abf3}.
 }
 
+
 \cvsubsec{Metadynamics}{sec:colvarbias_meta}
 
 The metadynamics method uses a history-dependent potential \cite{Laio2002} that generalizes to any type of colvars the conformational flooding \cite{Grubmuller1995} and local elevation \cite{Huber1994} methods,  originally formulated to use as colvars the principal components of a covariance matrix or a set of dihedral  angles, respectively.
@@ -3775,6 +3778,8 @@ The parameters $\delta{}t$ and $\sigma_{\xi}$ specified by the optional keywords
 \item \dupkey{name}{\texttt{metadynamics}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{colvars}{\texttt{metadynamics}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{outputEnergy}{\texttt{metadynamics}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{writeTIPMF}{\texttt{metadynamics}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{writeTISamples}{\texttt{metadynamics}}{sec:colvarbias}{biasing and analysis methods}
 
 \item %
   \key
@@ -4119,6 +4124,8 @@ block, which may contain (in addition to the standard option
 \item \dupkey{name}{\texttt{harmonic}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{colvars}{\texttt{harmonic}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{outputEnergy}{\texttt{harmonic}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{writeTIPMF}{\texttt{harmonic}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{writeTISamples}{\texttt{harmonic}}{sec:colvarbias}{biasing and analysis methods}
 
 \item %
   \keydef
@@ -4374,6 +4381,8 @@ The \texttt{harmonicWalls} bias implements the following options:
 \item \dupkey{name}{\texttt{harmonicWalls}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{colvars}{\texttt{harmonicWalls}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{outputEnergy}{\texttt{harmonicWalls}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{writeTIPMF}{\texttt{harmonicWalls}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{writeTISamples}{\texttt{harmonicWalls}}{sec:colvarbias}{biasing and analysis methods}
 
 \item %
   \key
@@ -4469,6 +4478,9 @@ using \cite{Pitera2012}.
     These are analogous to the \refkey{centers}{harmonic|centers} keyword of the harmonic restraint.
     Although they do not affect dynamics, they are here necessary to ensure a well-defined energy for the linear bias.}
 
+\item \dupkey{writeTIPMF}{\texttt{linear}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{writeTISamples}{\texttt{linear}}{sec:colvarbias}{biasing and analysis methods}
+
 \item \dupkey{targetForceConstant}{\texttt{linear}}{sec:colvarbias_harmonic}{Harmonic restraints}
 \item \dupkey{targetNumSteps}{\texttt{linear}}{sec:colvarbias_harmonic}{Harmonic restraints}
 \item \dupkey{targetForceExponent}{\texttt{linear}}{sec:colvarbias_harmonic}{Harmonic restraints}
@@ -4559,6 +4571,7 @@ an optimization algorithm until the bias has converged}.
       can lead to instability in the simulation.}
      
 \end{itemize}
+
 
 \cvsubsec{Multidimensional histograms}{sec:colvarbias_histogram}
 
