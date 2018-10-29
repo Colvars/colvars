@@ -3766,13 +3766,12 @@ At that stage the ``effective'' potential of mean force $\tilde{A}(\bm{\xi})$ is
 Assuming that the set of collective variables includes all relevant degrees of freedom, the predicted error of the estimate is a simple function of the correlation times of the colvars $\tau_{\xi_{i}}$, and of the user-defined parameters $W$, $\sigma_{\xi_{i}}$ and $\delta{}t$ \cite{Bussi2006}. 
 In typical applications, a good rule of thumb can be to choose the ratio $W/\delta{}t$ much smaller than $\kappa_{\mathrm{B}}T/\tau_{\bm{\xi}}$, where $\tau_{\bm{\xi}}$ is the longest among $\bm{\xi}$'s correlation times: $\sigma_{\xi_{i}}$ then dictates the resolution of the calculated PMF.
 
-%Given $\Delta\xi$ the length of the relevant region of the colvar $\xi$, and $A^{*}$ the highest free energy that needs to be sampled (e.g.~the higher transition state free energy), the upper bound for the required simulation time is of the order of $N_{\mathrm{s}}(\xi) = (A^{*}\Delta\xi)/(W2\sigma_{\xi})$ multiples of  $\delta{}t$.
-%In calculations with multiple colvars $\bm{\xi}$, the upper bound is then 
-%$N_{\mathrm{s}}(\xi_{1}) \times N_{\mathrm{s}}(\xi_{2}) \times \ldots \times N_{\mathrm{s}}(\xi_{N_{\mathrm{cv}}}) \times \delta{}t$.
 
-To enable a metadynamics calculation, a \texttt{metadynamics} block must be defined in the Colvars configuration file. 
-Its mandatory keywords are \texttt{colvars}, which lists all the variables involved, and \texttt{hillWeight}, which specifies the weight parameter $W$.
-The parameters $\delta{}t$ and $\sigma_{\xi}$ specified by the optional keywords \texttt{newHillFrequency} and \texttt{hillWidth}:
+\cvsubsubsec{Basic syntax}{sec:colvarbias_meta_basics}
+
+To enable a metadynamics calculation, a \texttt{metadynamics \{...\}} block must be defined in the Colvars configuration file.
+Its mandatory keywords are \texttt{colvars}, which lists all the variables involved, \refkey{hillWeight}{metadynamics|hillWeight}, which specifies the weight parameter $W$, and \refkey{hillWidth}{metadynamics|hillWidth}, which defines the Gaussian width $2\sigma_{\xi}$ as a number of grid points.
+
 \begin{itemize}
 
 \item \dupkey{name}{\texttt{metadynamics}}{sec:colvarbias}{biasing and analysis methods}
@@ -3782,6 +3781,7 @@ The parameters $\delta{}t$ and $\sigma_{\xi}$ specified by the optional keywords
 \item \dupkey{writeTISamples}{\texttt{metadynamics}}{sec:colvarbias}{biasing and analysis methods}
 
 \item %
+  \labelkey{metadynamics|hillWeight}
   \key
     {hillWeight}{%
     \texttt{metadynamics}}{%
@@ -3791,36 +3791,36 @@ The parameters $\delta{}t$ and $\sigma_{\xi}$ specified by the optional keywords
     Lower values provide more accurate sampling of the system's degrees of freedom at the price of longer simulation times to complete a PMF calculation based on metadynamics.}
 
 \item %
+  \labelkey{metadynamics|hillWidth}
+  \key
+    {hillWidth}{%
+    \texttt{metadynamics}}{%
+    Width of a Gaussian hill, measured in number of grid points}{%
+    positive decimal}{%
+    The value of this keyword is the Gaussian width $2\sigma_{\xi_{i}}$, expressed in number of grid points: the grid spacing is determined by \refkey{width}{colvar|width}.
+    The values of the parameter $\sigma_{\xi_{i}}$ for each variable $\xi_{i}$ inits physical units are printed by \MDENGINE{} at initialization time.
+    Values between 1 and 3 are recommended: smaller values fail to adequately interpolate each Gaussian \cite{Fiorin2013}, while larger values may be unable to account for steep free-energy gradients.}
+
+\item %
+  \labelkey{metadynamics|newHillFrequency}
   \keydef
     {newHillFrequency}{%
     \texttt{metadynamics}}{%
     Frequency of hill creation}{%
     positive integer}{%
     \texttt{1000}}{%
-    This option sets the number of integration steps after which a new
-    hill is added to the metadynamics potential.  Its value determines
-    the parameter $\delta{}t$ in eq.~\ref{eq:colvars_meta_pot}.  Higher
-    values provide more accurate sampling at the price of longer
-    simulation times to complete a PMF calculation.}
+    This option sets the number of steps after which a new Gaussian hill is added to the metadynamics potential.
+    The product of this number and the integration time-step defines the parameter $\delta{}t$ in eq.~\ref{eq:colvars_meta_pot}.
+    Higher values provide more accurate statistical sampling, at the price of longer simulation times to complete a PMF calculation.
+    \cvvmdonly{When analyzing data from a previous simulation in VMD, the metadynamics potential does not need to be updated, and it is useful to set this number to 0.}}
 
-\item %
-  \keydef
-    {hillWidth}{%
-    \texttt{metadynamics}}{%
-    Relative width of a Gaussian hill with respect to the colvar's width}{%
-    positive decimal}{%
-    $\sqrt{2\pi}/2$}{%
-    The Gaussian width along each colvar, $2\sigma_{\xi_{i}}$, is set as the product between this number and the colvar's parameter $w_{i}$ given by \refkey{width}{colvar|width}; such product is printed in the standard output of \MDENGINE{}.
-    The default value of this number gives a Gaussian hill function whose volume is equal to the product of $\prod_{i}w_{i}$, the volume of one \texttt{histogram} bin (see \ref{sec:colvarbias_histogram}), and $W$.
-    \textbf{Tip:} \emph{use this property to estimate the fraction of colvar space covered by the Gaussian bias within a given simulation time.}
-    When \texttt{useGrids} is on, the default value also gives acceptable discretization errors~\cite{Fiorin2013}: for smoother visualization, this parameter may be increased and the \texttt{width} $w_{i}$ decreased in the same proportion.
-    \textbf{Note:} \emph{values smaller than 1 are not recommended}.}
 \end{itemize}
 
 
 \cvsubsubsec{Output files}{sec:colvarbias_meta_output}
-When interpolating grids are enabled (default behavior), the PMF is written every \texttt{colvarsRestartFrequency} steps to the file \outputName\texttt{.pmf}.
-The following two options allow to control this behavior and to visually track statistical convergence:
+
+When interpolating grids are enabled (default behavior), the PMF is written by default every \texttt{colvarsRestartFrequency} steps to the file \outputName\texttt{.pmf}.
+The following two options allow to disable or control this behavior and to track statistical convergence:
 
 \begin{itemize}
 
@@ -3847,7 +3847,7 @@ The following two options allow to control this behavior and to visually track s
 \end{itemize}
 
 \textbf{Note:} when Gaussian hills are deposited near the \refkey{lowerBoundary}{colvar|lowerBoundary} or \refkey{upperBoundary}{colvar|upperBoundary} and interpolating grids are used (default behavior), their truncation can give rise to accumulating errors.
-In these cases, as a measure of fault-tolerance all Gaussian hills near the boundaries are included in the output state file, and are recalculated analytically whenever the colvar falls outside the grid's boundaries.
+In these cases, as a measure of fault-tolerance all Gaussian hills near the boundaries are included in the output state file, and are recalculated analytically whenever the variable falls outside the grid's boundaries.
 (Such measure protects the accuracy of the calculation, and can only be disabled by \texttt{hardLowerBoundary} or \texttt{hardUpperBoundary}.)
 To avoid gradual loss of performance and growth of the state file, either one of the following solutions is recommended:
 \begin{itemize}
