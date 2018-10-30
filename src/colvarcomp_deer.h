@@ -15,6 +15,12 @@ protected:
 
   /// kernel calculation routine
   double kdeer(cvm::real const &r, cvm::real const &t);
+  /// kernel derivatives calculation routine
+  double kdeer_der(cvm::real const &r, cvm::real const &t);
+
+  /// Derivatives vector, cached to be recycled
+  cvm::vector1d<cvm::real> deerder;
+
   /// deer time trace file
   std::string deer_time_file;
   /// size of deer file
@@ -23,24 +29,31 @@ protected:
   cvm::vector1d<cvm::real> timesdeer;
   /// experimental deer values
   cvm::vector1d<cvm::real> deerexpvalues;
+
+  /// use deer grid
+  bool deer_grid;
   /// width for deer grid
   cvm::real                deerwidth;
   /// lower boundary for deer grid
   cvm::real                deerlower;
   /// upper boundary for deer grid
   cvm::real                deerupper;
+
+  /// use analytical derivatives
+  bool deer_anal_der;
   /// number of points in discretized deer kernel function
   int rpoints;
   /// discretized deer kernel function
   cvm::matrix2d<cvm::real> deerk;
+  /// discretized deer kernel derivatives function
+  cvm::matrix2d<cvm::real> deerk_der;
+
   /// First atom group
   cvm::atom_group  *group1;
   /// Second atom group
   cvm::atom_group  *group2;
   /// Vector distance, cached to be recycled
   cvm::rvector     dist_v;
-  /// Derivatives vector , cached to be recycled
-  cvm::vector1d<cvm::real> deerder;
 
 public:
 
