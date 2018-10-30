@@ -100,6 +100,10 @@ colvar::deer_kernel::deer_kernel(std::string const &conf)
   : cvc(conf)
 {
   function_type = "deer_kernel";
+  x.type(colvarvalue::type_vector);
+
+  deersize = 0;
+
   get_keyval(conf, "deertimefile", deer_time_file);
   int nlines=0;
   int i;
@@ -136,9 +140,10 @@ colvar::deer_kernel::deer_kernel(std::string const &conf)
     cvm::error("deertimefile must contain at least one (non-empty) line");
     return;
   }
+
   get_keyval(conf, "useDeerGrid", deer_grid, false);
-  if(!deer_grid) deer_anal_der=true;
-  if(deer_grid){
+  if (!deer_grid) deer_anal_der=true;
+  if (deer_grid){
     // define deer kernel grid
     get_keyval(conf, "deerWidth", deerwidth, 0.1);
     get_keyval(conf, "deerLower", deerlower, 0);
@@ -147,7 +152,7 @@ colvar::deer_kernel::deer_kernel(std::string const &conf)
     rpoints=std::floor( (deerupper-deerlower) / deerwidth );
 
     deerk.resize(rpoints,deersize);
-    if(deer_anal_der) deerk_der.resize(rpoints,deersize);
+    if (deer_anal_der) deerk_der.resize(rpoints,deersize);
     // assign deer kernel grid
 
     for (i=0; i<rpoints; i++){
@@ -157,7 +162,7 @@ colvar::deer_kernel::deer_kernel(std::string const &conf)
           deerk[i][t]=kdeer(rval,timesdeer[t]);
        }
     }
-    if(deer_anal_der){
+    if (deer_anal_der){
       for (i=0; i<rpoints; i++){
          cvm::real const rval = deerlower+(i+0.5)*deerwidth;
          for (t=0; t<deersize; t++){
@@ -170,15 +175,16 @@ colvar::deer_kernel::deer_kernel(std::string const &conf)
   group1 = parse_group(conf, "group1");
   group2 = parse_group(conf, "group2");
 
-  x.type(colvarvalue::type_vector);
   x.vector1d_value.resize(deersize);
 }
+
 
 colvar::deer_kernel::deer_kernel()
 {
   function_type = "deer_kernel";
   x.type(colvarvalue::type_vector);
 }
+
 
 void colvar::deer_kernel::calc_value()
 {
@@ -190,28 +196,28 @@ void colvar::deer_kernel::calc_value()
     dist_v = group2->center_of_mass() - group1->center_of_mass();
   } else {
     dist_v = cvm::position_distance(group1->center_of_mass(),
-                                     group2->center_of_mass());
+                                    group2->center_of_mass());
   }
 
-  if(!deer_grid) {
-      for (t=0; t<deersize; t++){
-         //x.vector1d_value[t]=kdeer(dist_v.norm(),timesdeer[t])-deerexpvalues[t]; // value calculated
-         x.vector1d_value[t]=kdeer(dist_v.norm(),timesdeer[t]); // value calculated
-         deerder[t]=kdeer_der(dist_v.norm(),timesdeer[t]);
-         cvm::rvector const u = dist_v.unit();
-      }
+  if (!deer_grid) {
+    for (t=0; t<deersize; t++){
+      //x.vector1d_value[t]=kdeer(dist_v.norm(),timesdeer[t])-deerexpvalues[t]; // value calculated
+      x.vector1d_value[t]=kdeer(dist_v.norm(),timesdeer[t]); // value calculated
+      deerder[t]=kdeer_der(dist_v.norm(),timesdeer[t]);
+      cvm::rvector const u = dist_v.unit();
+    }
   }
 
-  if(deer_grid) {
+  if (deer_grid) {
 
     int deerbin=floor( (dist_v.norm()-deerlower) / deerwidth );
 
-    if(deerbin<0 || deerbin >=rpoints ){
+    if (deerbin<0 || deerbin >=rpoints ){
       cvm::error("distance out of boundaries, expand deerLower or deerUpper!");
       return;
     }
 
-    if(deer_anal_der) {
+    if (deer_anal_der) {
       for (t=0; t<deersize; t++){
          x.vector1d_value[t]=deerk[deerbin][t]; // value calculated
          deerder[t]=deerk_der[deerbin][t];
@@ -219,13 +225,13 @@ void colvar::deer_kernel::calc_value()
       }
     }
 
-    if(!deer_anal_der) {
+    if (!deer_anal_der) {
       for (t=0; t<deersize; t++){
          x.vector1d_value[t]=deerk[deerbin][t]; // value calculated
          cvm::rvector const u = dist_v.unit();
-         if(deerbin==0) deerder[t] = (deerk[deerbin+1][t]-deerk[deerbin][t])/(deerwidth);
-         if(deerbin==rpoints-1) deerder[t] = (deerk[deerbin][t]-deerk[deerbin-1][t])/(deerwidth);
-         if(deerbin>0 && deerbin<rpoints-1) {
+         if (deerbin==0) deerder[t] = (deerk[deerbin+1][t]-deerk[deerbin][t])/(deerwidth);
+         if (deerbin==rpoints-1) deerder[t] = (deerk[deerbin][t]-deerk[deerbin-1][t])/(deerwidth);
+         if (deerbin>0 && deerbin<rpoints-1) {
            deerder[t] = (deerk[deerbin+1][t]-deerk[deerbin-1][t])/(2.*deerwidth);
          }
       }
@@ -233,10 +239,12 @@ void colvar::deer_kernel::calc_value()
   }
 }
 
+
 void colvar::deer_kernel::calc_gradients()
 {
   // calculated on the fly in apply_force() and not stored
 }
+
 
 void colvar::deer_kernel::apply_force(colvarvalue const &force)
 {
@@ -256,24 +264,25 @@ void colvar::deer_kernel::apply_force(colvarvalue const &force)
 }
 
 cvm::real colvar::deer_kernel::dist2(colvarvalue const &x1,
-                                        colvarvalue const &x2) const
+                                     colvarvalue const &x2) const
 {
   return (x1.vector1d_value - x2.vector1d_value).norm2();
 }
 
 
 colvarvalue colvar::deer_kernel::dist2_lgrad(colvarvalue const &x1,
-                                                colvarvalue const &x2) const
+                                             colvarvalue const &x2) const
 {
   return 2.0*colvarvalue((x1.vector1d_value - x2.vector1d_value), colvarvalue::type_vector);
 }
 
 
 colvarvalue colvar::deer_kernel::dist2_rgrad(colvarvalue const &x1,
-                                                colvarvalue const &x2) const
+                                             colvarvalue const &x2) const
 {
   return 2.0*colvarvalue((x2.vector1d_value - x1.vector1d_value), colvarvalue::type_vector);
 }
+
 
 namespace DEER_Kernel {
 

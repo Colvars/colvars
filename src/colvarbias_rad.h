@@ -40,7 +40,7 @@ public:
   };
 
   /// Specify which type of averaging is being done
-  int kernel_type;
+  kernel_type_e kernel_type;
 
   /// Characteristic time for the kernel
 
