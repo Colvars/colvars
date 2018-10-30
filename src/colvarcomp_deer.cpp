@@ -192,7 +192,7 @@ void colvar::deer_kernel::calc_value()
   x.vector1d_value.resize(deersize);
   deerder.resize(deersize);
 
-  if (b_no_PBC) {
+  if (!is_enabled(f_cvc_pbc_minimum_image)) {
     dist_v = group2->center_of_mass() - group1->center_of_mass();
   } else {
     dist_v = cvm::position_distance(group1->center_of_mass(),
