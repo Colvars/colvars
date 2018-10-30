@@ -1,5 +1,5 @@
 # pass version/platform information to compile
-NAMD_VERSION = 2.13b2
+NAMD_VERSION = 2.13
 
 # compiler flags (Win32 overrides)
 COPTI = -I
