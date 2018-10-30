@@ -3225,7 +3225,7 @@ $\bm{F}_\xi$ exerted on $\bm{\xi}$, taken over an iso-$\bm{\xi}$ surface:
 
 \begin{equation}
   \label{eq:gradient}
-  \bm{\nabla}_\xi A(\bm{\xi}) = \left\langle -\bm{F}_\xi \right\rangle_\bm{\xi}
+  \bm{\nabla}_\xi A(\bm{\xi}) = \left\langle -\bm{F}_\xi \right\rangle_{\bm{\xi}}
 \end{equation}
 
 Several formulae that take the form of~(\ref{eq:gradient}) have been
@@ -3251,7 +3251,7 @@ then the following holds~\cite{Ciccotti2005}:
 \begin{equation}
 \label{eq:gradient_vector}
 \frac{\partial A}{\partial \xi_{i}} = \left\langle \bm{v}_{i} \cdot \gradx V
-- k_B T \gradx \cdot \bm{v}_{i} \right\rangle_\bm{\xi}
+- k_B T \gradx \cdot \bm{v}_{i} \right\rangle_{\bm{\xi}}
 \end{equation}
 
 where $V$ is the potential energy function.
@@ -3595,7 +3595,7 @@ $(k/2) (z - \lambda)^2$.
 Under eABF dynamics, the adaptive bias on $\lambda$ is
 the running estimate of the average spring force:
 \begin{equation}
-F^\mathrm{bias}(\lambda^*) = \left\langle k(\lambda - z) \right\rangle_{\lambda^*}
+F^{\mathrm{bias}}(\lambda^{*}) = \left\langle k(\lambda{} - z) \right\rangle_{\lambda^{*}}
 \end{equation}
 where the angle brackets indicate a canonical average conditioned by $\lambda=\lambda^*$.
 At long simulation times, eABF produces a flat histogram of the extended variable $\lambda$,
