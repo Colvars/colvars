@@ -39,7 +39,7 @@ static double fresnel_s2(double x);
 // DEER kernel routine
 
 double colvar::deer_kernel::kdeer(cvm::real const &r, cvm::real const &t)
-{ 
+{
   double rc=r; //units of Ångström
   double tc=t; //units of nanoseconds
   tc=sqrt(tc*tc); // deer_kernel is a symmetric function of tc
@@ -50,8 +50,8 @@ double colvar::deer_kernel::kdeer(cvm::real const &r, cvm::real const &t)
   double const ht=1.054571800;
   double omed=(g*g)*(ub*ub)*u0/(4*pi*ht*(rc*rc*rc));
   double k=sqrt(6*omed*tc/pi);
-  double c=fresnel_c(k);
-  double s=fresnel_s(k);
+  double c=DEER_Kernel::fresnel_c(k);
+  double s=DEER_Kernel::fresnel_s(k);
   double gdeer=0.;
   if(rc>0 && tc!=0){
       gdeer=(sqrt(pi*((s*s)+(c*c))/(6*omed*tc)))*(cos(omed*tc-(atan2(s,c))));
@@ -78,8 +78,8 @@ double colvar::deer_kernel::kdeer_der(cvm::real const &r, cvm::real const &t)
   double omed=(g*g)*(ub*ub)*u0/(4*pi*ht*(rc*rc*rc));
   double omedp=-3*(g*g)*(ub*ub)*u0/(4*pi*ht*(rc*rc*rc*rc));
   double k=sqrt(6*omed*tc/pi);
-  double c=fresnel_c(k);
-  double s=fresnel_s(k);
+  double c=DEER_Kernel::fresnel_c(k);
+  double s=DEER_Kernel::fresnel_s(k);
   double sp=0.5*sin(pi*k*k/2)*(6*omedp*tc/pi)/k;
   double cp=0.5*cos(pi*k*k/2)*(6*omedp*tc/pi)/k;
   double gdeerp=0.;
