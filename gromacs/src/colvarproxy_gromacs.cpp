@@ -201,7 +201,7 @@ size_t colvarproxy_gromacs::restart_frequency()
 // **************** PERIODIC BOUNDARY CONDITIONS ****************
 //  Get the PBC-aware distance vector between two positions
 cvm::rvector colvarproxy_gromacs::position_distance (cvm::atom_pos const &pos1,
-                                                     cvm::atom_pos const &pos2)
+                                                     cvm::atom_pos const &pos2) const
 {
   rvec r1, r2, dr;
   r1[0] = pos1.x;
@@ -211,7 +211,7 @@ cvm::rvector colvarproxy_gromacs::position_distance (cvm::atom_pos const &pos1,
   r2[1] = pos2.y;
   r2[2] = pos2.z;
 
-  pbc_dx(&gmx_pbc, r1, r2, dr);
+  pbc_dx(&gmx_pbc, r2, r1, dr);
   return cvm::atom_pos( dr[0], dr[1], dr[2] );
 }
 
