@@ -11,98 +11,10 @@ colvarbias_rad::colvarbias_rad(char const *key)
   kernel_coupling_time = 0.0;
   kernel_type = kt_none;
 
-}
-
-int colvarbias_rad::init_centers(std::string const &conf)
-{
-  size_t i;
-
-  bool null_centers = true;
-  bool read_exp_file = false;
-  // get the initial restraint centers (TODO: move to colvarbias_restraint)
-  if (colvar_centers.size() == 0) {
-    colvar_centers.resize(colvars.size());
-    colvar_orig_centers.resize(colvars.size());
-    for (i = 0; i < colvars.size(); i++) {
-      colvar_centers[i].type(colvars[i]->value());
-      colvar_centers[i].reset();
-      colvar_orig_centers[i].type(colvars[i]->value());
-      colvar_orig_centers[i].reset();
-    }
-  }
-
-  if (time_files.size() == 0) {
-    time_files.resize(colvars.size());
-  }
-
-  if (get_keyval(conf, "expFiles", time_files)) {
-    read_exp_file = true;
-    cvm::log("Initial centers read from expFiles).\n");
-    if (colvar_times.size() == 0) {
-      colvar_times.resize(colvars.size());
-      for (i = 0; i < colvars.size(); i++) {
-        colvar_times[i].type(colvars[i]->value());
-        colvar_times[i].is_derivative(); // constraints are not applied
-        colvar_times[i].reset();
-      }
-    }
-
-    if (colvar_expval.size() == 0) {
-      colvar_expval.resize(colvars.size());
-      for (i = 0; i < colvars.size(); i++) {
-        colvar_expval[i].type(colvars[i]->value());
-        colvar_expval[i].is_derivative(); // constraints are not applied
-        colvar_expval[i].reset();
-      }
-    }
-
-
-    size_t t;
-    std::string line;
-    for (i = 0; i < colvars.size(); i++) {
-       std::ifstream expfile (time_files[i]);
-       if (expfile.is_open()) {
-         for (t=0;t<colvar_centers[i].size();t++) {
-            expfile >> colvar_times[i].vector1d_value[t];
-            expfile >> colvar_expval[i].vector1d_value[t];
-            getline (expfile,line);
-         }
-         expfile.close();
-       } else {
-         cvm::error("Unable to open expFile");
-         return;
-       }
-       colvar_centers[i]=colvar_expval[i];
-    }
-
-  }
-
-  if (get_keyval(conf, "centers", colvar_centers, colvar_centers) && !read_exp_file) {
-    for (i = 0; i < colvars.size(); i++) {
-      if (cvm::debug()) {
-        cvm::log("colvarbias_restraint: parsing initial centers, i = "+cvm::to_str(i)+".\n");
-      }
-      colvar_centers[i].apply_constraints();
-    }
-    null_centers = false;
-  }
-
-  if (null_centers && !read_exp_file) {
-//    colvar_centers.clear();
-    cvm::log("Warning: initial centers of the restraints set to zero (default choice for deerKernel cv).\n");
-  }
-
-  if (colvar_centers.size() != colvars.size()) {
-    cvm::error("Error: number of centers does not match "
-               "that of collective variables.\n", INPUT_ERROR);
-    return INPUT_ERROR;
-  }
-
-  for (i = 0; i < colvars.size(); i++) {
-     colvar_orig_centers[i]=colvar_centers[i]; // assign original centers
-  }
-
-  return COLVARS_OK;
+  colvar_aver_deviation = 0.0;
+  colvar_cum_error = 0.0;
+  colvar_cum_uscale = 0.0;
+  colvar_maxerror_scale = 0.0;
 }
 
 
@@ -112,19 +24,10 @@ int colvarbias_rad::init(std::string const &conf)
 
   enable(f_cvb_apply_force);
   size_t i;
-  // the effective force constant is kT
-  force_k = cvm::boltzmann() * cvm::temperature();
 
-  // TODO move init_centers() to colvarbias_restraint_centers::init()
   if (init_centers(conf) != COLVARS_OK) {
     return cvm::get_error();
   }
-
-  if (colvar_centers_errors.size() == 0) {
-    colvar_centers_errors.resize(colvars.size());
-    colvar_centers_errors.assign(colvars.size(), 0.0);
-  }
-  get_keyval(conf, "centersErrors", colvar_centers_errors, colvar_centers_errors);
 
   cvm::real colvar_single_e;
   if (get_keyval(conf, "oneCenterError", colvar_single_e, colvar_single_e)) {
@@ -272,7 +175,7 @@ int colvarbias_rad::init(std::string const &conf)
   }
 
   std::string kernel_type_str;
-  get_keyval(conf, "kernelType", kernel_type_str, to_lower_cppstr(std::string("inverseSqrtTime")));
+  get_keyval(conf, "kernelType", kernel_type_str, std::string("inverseSqrtTime"));
   kernel_type_str = to_lower_cppstr(kernel_type_str);
   if (kernel_type_str == to_lower_cppstr(std::string("inverseSqrtTime"))) {
     kernel_type = kt_inv_sqrt_time;
@@ -316,14 +219,128 @@ int colvarbias_rad::init(std::string const &conf)
   return COLVARS_OK;
 }
 
+
+int colvarbias_rad::init_centers(std::string const &conf)
+{
+  size_t i;
+
+  bool null_centers = true;
+  bool read_exp_file = false;
+
+  if (colvar_centers.size() == 0) {
+    colvar_centers.resize(colvars.size());
+    colvar_orig_centers.resize(colvars.size());
+    for (i = 0; i < colvars.size(); i++) {
+      colvar_centers[i].type(colvars[i]->value());
+      colvar_centers[i].reset();
+      colvar_orig_centers[i].type(colvars[i]->value());
+      colvar_orig_centers[i].reset();
+    }
+  }
+
+  if (time_files.size() == 0) {
+    time_files.resize(colvars.size());
+  }
+
+  if (get_keyval(conf, "expFiles", time_files)) {
+    read_exp_file = true;
+    cvm::log("Initial centers read from expFiles).\n");
+    if (colvar_times.size() == 0) {
+      colvar_times.resize(colvars.size());
+      for (i = 0; i < colvars.size(); i++) {
+        colvar_times[i].type(colvars[i]->value());
+        colvar_times[i].is_derivative(); // constraints are not applied
+        colvar_times[i].reset();
+      }
+    }
+
+    if (colvar_expval.size() == 0) {
+      colvar_expval.resize(colvars.size());
+      for (i = 0; i < colvars.size(); i++) {
+        colvar_expval[i].type(colvars[i]->value());
+        colvar_expval[i].is_derivative(); // constraints are not applied
+        colvar_expval[i].reset();
+      }
+    }
+
+
+    size_t t;
+    std::string line;
+    for (i = 0; i < colvars.size(); i++) {
+       std::ifstream expfile (time_files[i]);
+       if (expfile.is_open()) {
+         for (t=0;t<colvar_centers[i].size();t++) {
+            expfile >> colvar_times[i].vector1d_value[t];
+            expfile >> colvar_expval[i].vector1d_value[t];
+            getline (expfile,line);
+         }
+         expfile.close();
+       } else {
+         return cvm::error("Unable to open expFile", INPUT_ERROR);
+       }
+       colvar_centers[i]=colvar_expval[i];
+    }
+
+  }
+
+  if (get_keyval(conf, "centers", colvar_centers, colvar_centers) && !read_exp_file) {
+    for (i = 0; i < colvars.size(); i++) {
+      if (cvm::debug()) {
+        cvm::log("colvarbias_restraint: parsing initial centers, i = "+cvm::to_str(i)+".\n");
+      }
+      colvar_centers[i].apply_constraints();
+    }
+    null_centers = false;
+  }
+
+  if (null_centers && !read_exp_file) {
+//    colvar_centers.clear();
+    cvm::log("Warning: initial centers of the restraints set to zero (default choice for deerKernel cv).\n");
+  }
+
+  if (colvar_centers.size() != colvars.size()) {
+    cvm::error("Error: number of centers does not match "
+               "that of collective variables.\n", INPUT_ERROR);
+    return INPUT_ERROR;
+  }
+
+  for (i = 0; i < colvars.size(); i++) {
+     colvar_orig_centers[i]=colvar_centers[i]; // assign original centers
+  }
+
+  if (colvar_centers_errors.size() == 0) {
+    colvar_centers_errors.resize(colvars.size());
+    colvar_centers_errors.assign(colvars.size(), 0.0);
+  }
+  get_keyval(conf, "centersErrors", colvar_centers_errors, colvar_centers_errors);
+
+  return COLVARS_OK;
+}
+
+
+int colvarbias_rad::clear()
+{
+  int error_code = COLVARS_OK;
+  if (rad_out_os) {
+    cvm::proxy->close_output_stream(rad_out_file_name());
+  }
+  if (rad_param_os) {
+    cvm::proxy->close_output_stream(rad_param_file_name());
+  }
+  return error_code | colvarbias::clear();
+}
+
+
+
 int colvarbias_rad::update()
 {
-
-  bias_energy = 0.0;
+  colvarbias::update();
 
   if (cvm::debug())
     cvm::log("Updating the linear optimizer bias \""+this->name+"\".\n");
 
+  cvm::real const kBT = cvm::boltzmann() * cvm::temperature();
+  
   cvm::real weight = 1.0;
   switch (kernel_type) {
   case kt_inv_sqrt_time:
@@ -341,7 +358,7 @@ int colvarbias_rad::update()
   size_t t;
   size_t ii;
 
-  cvm::real colvar_aver_deviation=0.;
+  colvar_aver_deviation = 0.0;
   cvm::real eback;
   cvm::real lambdasum=0.0;
   cvm::real lambda2;
@@ -358,8 +375,8 @@ int colvarbias_rad::update()
         0.5 * colvars[i]->dist2_lgrad(colvars[i]->value(), colvar_centers[i]);
 
       colvar_total_deviations[i] += weight * deviation * cvm::dt();
-      bias_energy += force_k * unit_scale * colvar_total_deviations[i] * deviation;
-      colvar_forces[i] = -1.0 * force_k * unit_scale * colvar_total_deviations[i];
+      bias_energy += kBT * unit_scale * colvar_total_deviations[i] * deviation;
+      colvar_forces[i] = -1.0 * kBT * unit_scale * colvar_total_deviations[i];
 
 
       colvarvalue const error_drift = unit_scale * colvar_total_deviations[i]*error_fact;
@@ -381,8 +398,8 @@ int colvarbias_rad::update()
         0.5 * colvars[i]->dist2_lgrad(colvars[i]->value(), colvar_centers[i]);
 
       colvar_total_deviations[i] += weight * deviation * cvm::dt();
-      bias_energy += force_k * unit_scale * colvar_total_deviations[i] * deviation;
-      colvar_forces[i] = -1.0 * force_k * unit_scale * colvar_total_deviations[i];
+      bias_energy += kBT * unit_scale * colvar_total_deviations[i] * deviation;
+      colvar_forces[i] = -1.0 * kBT * unit_scale * colvar_total_deviations[i];
       cum_err=0.0;
       cvm::real coef_mdepth=0.0;
       cvm::real grad_mdepth=0.0;
@@ -452,8 +469,8 @@ int colvarbias_rad::update()
         0.5 * colvars[i]->dist2_lgrad(colvars[i]->value(), colvar_centers[i]);
 
       colvar_total_deviations[i] += weight * deviation * cvm::dt();
-      bias_energy += force_k * unit_scale * colvar_total_deviations[i] * deviation;
-      colvar_forces[i] = -1.0 * force_k * unit_scale * colvar_total_deviations[i];
+      bias_energy += kBT * unit_scale * colvar_total_deviations[i] * deviation;
+      colvar_forces[i] = -1.0 * kBT * unit_scale * colvar_total_deviations[i];
 
       colvarvalue const error_drift = unit_scale * colvar_total_deviations[i]*error_fact;
       colvar_centers[i] = colvar_orig_centers[i] + error_drift;

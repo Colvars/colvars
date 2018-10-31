@@ -16,6 +16,7 @@ public:
   colvarbias_rad(char const *key);
   virtual int init(std::string const &conf);
   virtual int init_centers(std::string const &conf);
+  virtual int clear();
   virtual int update();
   virtual std::string const get_state_params() const;
   virtual int set_state_params(std::string const &state_conf);
