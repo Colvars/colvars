@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "colvarmodule.h"
+#include "colvar.h"
 #include "colvarvalue.h"
 
 
@@ -191,6 +192,12 @@ void colvarvalue::type(colvarvalue const &x)
   if (x.type() == type_vector) {
     vector1d_value.resize(x.vector1d_value.size());
   }
+}
+
+
+void colvarvalue::type(colvar const *cv)
+{
+  type(cv->value());
 }
 
 

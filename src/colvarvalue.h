@@ -30,6 +30,7 @@
 /// \em Note \em on \em performance: to avoid type checks in a long array of \link
 /// colvarvalue \endlink objects, use one of the existing "_opt" functions or implement a new one
 
+class colvar;
 
 class colvarvalue {
 
@@ -166,6 +167,9 @@ public:
 
   /// Set the type after another \link colvarvalue \endlink
   void type(colvarvalue const &x);
+
+  /// Set the type after a \link colvar \endlink object
+  void type(colvar const *cv);
 
   /// Make the type a derivative of the original type
   /// (so that its constraints do not apply)
