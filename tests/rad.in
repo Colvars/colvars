@@ -1,0 +1,4 @@
+rad {
+    colvars one
+    couplingTime 10.0    
+}
