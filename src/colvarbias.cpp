@@ -14,6 +14,7 @@ colvarbias::colvarbias(char const *key)
 
   rank = 1;
 
+  total_num_dimensions = 0;
   has_data = false;
   b_output_energy = false;
   reset();
@@ -59,8 +60,10 @@ int colvarbias::init(std::string const &conf)
                      INPUT_ERROR);
           return INPUT_ERROR;
         }
+        total_num_dimensions = 0;
         for (i = 0; i < colvar_names.size(); i++) {
           add_colvar(colvar_names[i]);
+          total_num_dimensions += variables(i)->num_dimensions();
         }
       }
     }

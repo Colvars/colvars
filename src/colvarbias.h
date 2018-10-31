@@ -43,6 +43,12 @@ public:
     return colvars[i];
   }
 
+  /// Totalx number of dimensions of all variables
+  inline size_t variables_num_dimensions() const
+  {
+    return total_num_dimensions;
+  }
+
   /// Retrieve colvar values and calculate their biasing forces
   /// Return bias energy
   virtual int update();
@@ -203,6 +209,9 @@ protected:
 
   /// \brief Current forces from this bias to the variables
   std::vector<colvarvalue> colvar_forces;
+
+  /// Total number of dimensions of all variables
+  size_t total_num_dimensions;
 
   /// \brief Forces last applied by this bias to the variables
   std::vector<colvarvalue> previous_colvar_forces;
