@@ -48,16 +48,18 @@ int colvarbias_rad::init(std::string const &conf)
 
   if (colvar_widths_c.size() != num_variables()) {
     colvar_widths_c.resize(num_variables());
-    colvar_widths_c.assign(num_variables(), 1.0);
+    for (i = 0; i < num_variables(); i++) {
+      colvar_widths_c[i] = variables(i)->width;
+    }
   }
 
   get_keyval(conf, "colvarWidths", colvar_widths_c, colvar_widths_c);
 
-  cvm::real colvar_single_w;
-
-  if (get_keyval(conf, "oneColvarWidth", colvar_single_w, colvar_single_w)) {
-    colvar_widths_c.assign(num_variables(), colvar_single_w);
-  }
+  // TODO find a better handling of this
+  // cvm::real colvar_single_w = 0.0;
+  // if (get_keyval(conf, "oneColvarWidth", colvar_single_w, colvar_single_w)) {
+  //   colvar_widths_c.assign(num_variables(), colvar_single_w);
+  // }
 
   colvar_cum_uscale = 0.0;
   for (i = 0; i < num_variables(); i++) {
