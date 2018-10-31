@@ -125,7 +125,7 @@ int colvarbias_rad::init(std::string const &conf)
       for (i = 0; i < numtypes[1]; i++) {
          ii=whichtypes[1][i];
          for (t=0;t<colvar_centers[ii].size();t++) {
-            eback=exp(-alpha_deer[i]*std::sqrt(colvar_times[ii].vector1d_value[t]*colvar_times[ii].vector1d_value[t]));
+            eback=std::exp(-alpha_deer[i]*std::sqrt(colvar_times[ii].vector1d_value[t]*colvar_times[ii].vector1d_value[t]));
             colvar_centers[ii].vector1d_value[t]=(colvar_expval[ii].vector1d_value[t]-(1.0-mdepth_deer[i])*eback)/(eback*mdepth_deer[i]);
          }
          colvar_orig_centers[ii]=colvar_centers[ii];
@@ -385,7 +385,7 @@ int colvarbias_rad::update()
       cvm::real grad_alpha=0.0;
 
       for (t=0;t<colvar_centers[i].size();t++) {
-         eback=exp(-alpha_deer[ii]*std::sqrt(colvar_times[i].vector1d_value[t]*colvar_times[i].vector1d_value[t]));
+         eback=std::exp(-alpha_deer[ii]*std::sqrt(colvar_times[i].vector1d_value[t]*colvar_times[i].vector1d_value[t]));
          colvar_orig_centers[i].vector1d_value[t]=(colvar_expval[i].vector1d_value[t]-(1-mdepth_deer[ii])*eback)/(eback*mdepth_deer[ii]);
          error_fact =colvar_centers_errors[i]/(eback*mdepth_deer[ii]);
          cum_err=cum_err+error_fact*error_fact;
