@@ -65,7 +65,7 @@ public:
   void request_total_force (bool yesno);
   // **************** PERIODIC BOUNDARY CONDITIONS ****************
   cvm::rvector position_distance (cvm::atom_pos const &pos1,
-				  cvm::atom_pos const &pos2);
+                                  cvm::atom_pos const &pos2) const;
   //cvm::real position_dist2 (cvm::atom_pos const &pos1,
   //                                    cvm::atom_pos const &pos2);
   void select_closest_image (cvm::atom_pos &pos,
