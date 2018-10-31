@@ -153,6 +153,14 @@ public:
     return COLVARS_OK;
   }
 
+  /// Write any trajectory/log files that this bias may have
+  ///
+  /// These differ from output files by being incremental
+  virtual int write_traj_files()
+  {
+    return COLVARS_OK;
+  }
+
   /// Use this prefix for all output files
   std::string output_prefix;
 

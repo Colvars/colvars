@@ -1,6 +1,7 @@
 // -*- c++ -*-
 
 #include "colvarmodule.h"
+#include "colvarproxy.h"
 #include "colvarvalue.h"
 #include "colvarbias_rad.h"
 
@@ -101,28 +102,9 @@ int colvarbias_rad::init(std::string const &conf)
 
   // set colvar types done
 
-
-
   get_keyval(conf, "optParams", opt_params, false);
 
-  get_keyval(conf, "writeOreoOut", rad_out, false);
-
-  if (rad_out) {
-    get_keyval(conf, "radOutFreq", rad_out_freq, 1000);
-    if (get_keyval(conf, "radOutFile", rad_out_file)) {
-      radoutfile.open (rad_out_file);
-    } else {
-      cvm::error("Please provide radOutFile");
-    }
-    if (opt_params) {
-      if (get_keyval(conf, "radParFile", rad_par_file)) {
-        radparfile.open (rad_par_file);
-      } else {
-        cvm::error("Please provide radParFile");
-      }
-    }
-  }
-
+  get_keyval(conf, "radOutFreq", rad_out_freq, 1000);
 
   size_t ii;
   size_t t;
@@ -340,7 +322,7 @@ int colvarbias_rad::update()
     cvm::log("Updating the linear optimizer bias \""+this->name+"\".\n");
 
   cvm::real const kBT = cvm::boltzmann() * cvm::temperature();
-  
+
   cvm::real weight = 1.0;
   switch (kernel_type) {
   case kt_inv_sqrt_time:
@@ -447,9 +429,9 @@ int colvarbias_rad::update()
     if (use_norm_1) {
       for (i = 0; i < colvars.size(); i++) {
         cvm::real colvar_local_deviation=0.;
-        colvar_deviation[i].abs_val();
+        colvar_deviation[i].set_absolute_value();
         colvarvalue const save_colvar_value = colvar_deviation[i];
-        colvar_deviation[i].set_to_one();
+        colvar_deviation[i].set_ones();
         colvar_local_deviation=colvar_deviation[i]*save_colvar_value;
         colvar_aver_deviation+=colvar_local_deviation;
       }
@@ -487,9 +469,9 @@ int colvarbias_rad::update()
     if (use_norm_1) {
       for (i = 0; i < colvars.size(); i++) {
         cvm::real colvar_local_deviation=0.;
-        colvar_deviation[i].abs_val();
+        colvar_deviation[i].set_absolute_value();
         colvarvalue const save_colvar_value = colvar_deviation[i];
-        colvar_deviation[i].set_to_one();
+        colvar_deviation[i].set_ones();
         colvar_local_deviation=colvar_deviation[i]*save_colvar_value;
         colvar_aver_deviation+=colvar_local_deviation;
       }
@@ -522,52 +504,86 @@ int colvarbias_rad::update()
 
   }
   // check
-  if (cvm::step_absolute()%rad_out_freq==0&&rad_out) {
-    if (radoutfile.is_open()) {
-       radoutfile << cvm::step_absolute();
-       radoutfile << " ";
-       radoutfile << colvar_aver_deviation;
-       radoutfile << " ";
-       radoutfile << sqrt(colvar_cum_error/colvar_errors_scale);
-       radoutfile << " ";
-       radoutfile << colvar_size_tot;
-       radoutfile << " ";
-       radoutfile << colvar_cum_error << "\n";
-       radoutfile.flush();
-    }
-    //printf("RAD: %i %f %f %i %f \n",cvm::step_absolute(),colvar_aver_deviation,sqrt(colvar_cum_error/colvar_errors_scale),colvar_size_tot,colvar_cum_error);
-    if (opt_params&&rad_out) {
-      if (radparfile.is_open()) {
-         radparfile << cvm::step_absolute();
-         radparfile << " ";
-         for (ii = 0; ii < numtypes[1]; ii++) {
-            radparfile << mdepth_deer[ii];
-            radparfile << " ";
-            radparfile << alpha_deer[ii];
-            radparfile << " ";
-         }
-         radparfile << " " << "\n";
-         radparfile.flush();
-      }
-//      printf("DEERP 1: %i ",cvm::step_absolute());
-//      for (ii = 0; ii < numtypes[1]; ii++) {
-//         std::cout << mdepth_deer[ii];
-//         std::cout << " ";
-//         std::cout << alpha_deer[ii];
-//         std::cout << " ";
-//      }
-//      printf("DEVIATION 1: %s \n","done");
-    }
-//      printf("CENTERS: %i ",cvm::step_absolute());
-//      for (i = 0; i < colvars.size(); i++) {
-//         std::cout << colvar_centers[i];
-//      }
-//      printf("CENTERS: %s \n","done");
-  }
 
   return COLVARS_OK;
-
 }
+
+
+int colvarbias_rad::setup_output()
+{
+  int error_code = COLVARS_OK;
+
+  error_code |= colvarbias::setup_output();
+
+  if (rad_out_os != NULL) {
+    return error_code;
+  }
+
+  if (rad_out_freq) {
+
+    cvm::proxy->backup_file(rad_out_file_name());
+    rad_out_os = cvm::proxy->output_stream(rad_out_file_name());
+    if (!rad_out_os) return FILE_ERROR;
+
+    if (opt_params) {
+      cvm::proxy->backup_file(rad_param_file_name());
+      rad_param_os = cvm::proxy->output_stream(rad_param_file_name());
+      if (!rad_param_os) return FILE_ERROR;
+    }
+  }
+}
+
+
+int colvarbias_rad::write_traj_files()
+{
+  int error_code = COLVARS_OK;
+
+  error_code |= colvarbias::write_traj_files();
+
+  if ((cvm::step_absolute() % rad_out_freq) == 0) {
+    if (rad_out_os) {
+      std::ostream &os = *rad_out_os;
+      os.setf(std::ios::scientific, std::ios::floatfield);
+      os << std::setw(cvm::it_width)
+         << cvm::step_absolute()
+         << "  "
+         << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width)
+         << colvar_aver_deviation
+         << " "
+         << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width)
+         << sqrt(colvar_cum_error/colvar_errors_scale)
+         << " "
+         << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width)
+         << colvar_size_tot
+         << " "
+         << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width)
+         << colvar_cum_error
+         << "\n";
+      error_code |= (os.good() ? COLVARS_OK : FILE_ERROR);
+    }
+
+    if (rad_param_os) {
+      std::ostream &os = *rad_param_os;
+      os.setf(std::ios::scientific, std::ios::floatfield);
+      os << std::setw(cvm::it_width) << cvm::step_absolute()
+         << cvm::step_absolute()
+         << " ";
+      for (int ii = 0; ii < numtypes[1]; ii++) {
+        os << " "
+           << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width)
+           << mdepth_deer[ii]
+           << " "
+           << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width)
+           << alpha_deer[ii];
+      }
+      os << "\n";
+      error_code |= (os.good() ? COLVARS_OK : FILE_ERROR);
+    }
+  }
+
+  return error_code;
+}
+
 
 std::string const colvarbias_rad::get_state_params() const
 {
@@ -613,16 +629,16 @@ int colvarbias_rad::set_state_params(std::string const &state_conf)
   }
 
   if (fix_chi_square_one) {
-    if (!get_keyval(conf, "error_scale", colvar_errors_scale))
+    if (!get_keyval(state_conf, "error_scale", colvar_errors_scale))
       cvm::error("Error: error_scale missing from the restart.\n");
   }
 
   if (opt_params) {
     // read last value of the parameters
     if (numtypes[1]>0) {
-      if (!get_keyval(conf, "deerMdepth", mdepth_deer))
+      if (!get_keyval(state_conf, "deerMdepth", mdepth_deer))
         cvm::error("Error: missing deerMdepth from the restart.\n");
-      if (!get_keyval(conf, "deerBackAlpha", alpha_deer))
+      if (!get_keyval(state_conf, "deerBackAlpha", alpha_deer))
         cvm::error("Error: missing deerBackAlpha from the restart.\n");
     }
   }

@@ -20,6 +20,8 @@ public:
   virtual int update();
   virtual std::string const get_state_params() const;
   virtual int set_state_params(std::string const &state_conf);
+  virtual int setup_output();
+  virtual int write_traj_files();
 
   /// \brief Restraint centers
   std::vector<colvarvalue> colvar_centers;
@@ -33,6 +35,7 @@ public:
   /// \brief Errors associated with the restraint centers
   std::vector<cvm::real> colvar_centers_errors;
 
+  /// Types of averaging
   enum kernel_type_e {
     kt_none,
     kt_uniform,
@@ -76,19 +79,29 @@ public:
   /// optimize paramters
 
   bool opt_params;
+  /// write progressive output of RAD convergence
+  std::ostream *rad_out_os;
 
-  /// write output
+  /// Name of output file
+  inline std::string rad_out_file_name() const 
+  {
+    return cvm::output_prefix() + "." + this->name + ".traj";
+  }
 
   bool rad_out;
+  /// optimize parameters of the associated variables
+  bool opt_params;
 
-  std::ofstream radoutfile;
-  std::ofstream radparfile;
-  std::string rad_out_file;
-  std::string rad_par_file;
-  int rad_out_freq;
+  /// write progressive output of CVC parameter optimization by RAD
+  std::ostream *rad_param_os;
 
-  /// equilibrations steps
+  /// Name of parameter optimization output file
+  inline std::string rad_param_file_name() const 
+  {
+    return cvm::output_prefix() + "." + this->name + ".params.traj";
+  }
 
+  /// equilibration steps
   int equil_steps;
 
   /// whether set starting parameters from initial equilibration
