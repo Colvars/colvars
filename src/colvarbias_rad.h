@@ -47,48 +47,41 @@ public:
   kernel_type_e kernel_type;
 
   /// Characteristic time for the kernel
-
   cvm::real kernel_coupling_time;
 
   /// Characteristic time for parameters optimization
-
   cvm::real params_coupling_time;
 
   /// experimental files for time dependent observables (e.g. DEER)
-
   std::vector<std::string> time_files;
 
   /// experimental times for time dependent variables
-
   std::vector<colvarvalue> colvar_times;
 
   /// experimental values for time dependent variables
-
   std::vector<colvarvalue> colvar_expval;
 
   /// Specify type of colvar for parameters optimization
-
   std::vector<std::string> colvar_types;
 
   /// number of variable of a certain type
-
   std::vector<int> numtypes;
 
   cvm::matrix2d<int> whichtypes;
 
-  /// optimize paramters
 
-  bool opt_params;
+  /// frequency at which to write output
+  int rad_out_freq;
+
   /// write progressive output of RAD convergence
   std::ostream *rad_out_os;
 
   /// Name of output file
-  inline std::string rad_out_file_name() const 
+  inline std::string rad_out_file_name() const
   {
     return cvm::output_prefix() + "." + this->name + ".traj";
   }
 
-  bool rad_out;
   /// optimize parameters of the associated variables
   bool opt_params;
 
@@ -96,7 +89,7 @@ public:
   std::ostream *rad_param_os;
 
   /// Name of parameter optimization output file
-  inline std::string rad_param_file_name() const 
+  inline std::string rad_param_file_name() const
   {
     return cvm::output_prefix() + "." + this->name + ".params.traj";
   }
@@ -105,47 +98,39 @@ public:
   int equil_steps;
 
   /// whether set starting parameters from initial equilibration
-
   bool set_params_equil;
 
   /// mdepth of deer
-
   std::vector<cvm::real> mdepth_deer;
 
   /// backgroud parameter of deer
-
   std::vector<cvm::real> alpha_deer;
 
   /// maximum and minimum values of error scale
-
   cvm::real colvar_maxerror_scale;
 
   /// average experimental error
-
   cvm::real colvar_cum_error;
 
   /// average scale width
-
   cvm::real colvar_cum_uscale;
 
   /// unique error scale
-
   cvm::real colvar_errors_scale;
 
   /// local deviation from experiment
-
   std::vector<colvarvalue> colvar_deviation;
 
-  /// total size of collective variables
+  /// average deviation from experiment
+  cvm::real colvar_aver_deviation;
 
+  /// total dimensionality of all involved collective variables
   int colvar_size_tot;
 
   /// update unique error scale to fix chi to one
-
   bool fix_chi_square_one;
 
   /// update individual error scales to fix chi to one
-
   bool fix_chi_square_multi;
 
   /// use norm 1 to calculate deviation from experiment
