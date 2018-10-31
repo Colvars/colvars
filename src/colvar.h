@@ -367,11 +367,24 @@ protected:
 
 public:
 
-  /// \brief Return the number of CVC objects defined
-  inline size_t num_cvcs() const { return cvcs.size(); }
+  /// \brief Number of dimensions of the value of this colvar
+  inline size_t num_dimensions() const
+  {
+    return value().size();
+  }
 
-  /// \brief Return the number of CVC objects with an active flag (as set by update_cvc_flags)
-  inline size_t num_active_cvcs() const { return n_active_cvcs; }
+  /// \brief Number of CVC objects defined
+  inline size_t num_cvcs() const
+  {
+    return cvcs.size();
+  }
+
+  /// \brief number of CVC objects with an active flag (as set by
+  /// update_cvc_flags)
+  inline size_t num_active_cvcs() const
+  {
+    return n_active_cvcs;
+  }
 
   /// \brief Use the internal metrics (as from \link cvc
   /// \endlink objects) to calculate square distances and gradients
