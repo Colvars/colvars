@@ -11,6 +11,7 @@ colvarbias_rad::colvarbias_rad(char const *key)
 {
   kernel_coupling_time = 0.0;
   kernel_type = kt_none;
+  use_norm_1 = false;
 
   colvar_aver_deviation = 0.0;
   colvar_cum_error = 0.0;
@@ -45,7 +46,7 @@ int colvarbias_rad::init(std::string const &conf)
 
   // colvar_widths_c
 
-  if (colvar_widths_c.size() == 0) {
+  if (colvar_widths_c.size() != num_variables()) {
     colvar_widths_c.resize(num_variables());
     colvar_widths_c.assign(num_variables(), 1.0);
   }
@@ -58,15 +59,14 @@ int colvarbias_rad::init(std::string const &conf)
     colvar_widths_c.assign(num_variables(), colvar_single_w);
   }
 
-  colvar_cum_uscale=0;
-  colvar_size_tot=0;
+  colvar_cum_uscale = 0.0;
   for (i = 0; i < num_variables(); i++) {
      colvar_cum_uscale=colvar_cum_uscale+colvar_widths_c[i]*colvar_widths_c[i];
-     colvar_size_tot+=colvar_centers[i].size();
   }
+  colvar_cum_uscale = colvar_cum_uscale/double(num_variables());
+  colvar_cum_uscale = 1.0/colvar_cum_uscale;
 
-  colvar_cum_uscale=colvar_cum_uscale/double(num_variables());
-  colvar_cum_uscale=1/colvar_cum_uscale;
+
 
   // set colvar types
 
@@ -123,7 +123,7 @@ int colvarbias_rad::init(std::string const &conf)
       for (i = 0; i < numtypes[1]; i++) {
          ii=whichtypes[1][i];
          for (t=0;t<colvar_centers[ii].size();t++) {
-            eback=exp(-alpha_deer[i]*sqrt(colvar_times[ii].vector1d_value[t]*colvar_times[ii].vector1d_value[t]));
+            eback=exp(-alpha_deer[i]*std::sqrt(colvar_times[ii].vector1d_value[t]*colvar_times[ii].vector1d_value[t]));
             colvar_centers[ii].vector1d_value[t]=(colvar_expval[ii].vector1d_value[t]-(1.0-mdepth_deer[i])*eback)/(eback*mdepth_deer[i]);
          }
          colvar_orig_centers[ii]=colvar_centers[ii];
@@ -150,7 +150,7 @@ int colvarbias_rad::init(std::string const &conf)
 
   colvar_errors_scale=1.; // scale factor of the experimental error
 
-  get_keyval(conf, "useNorm1", use_norm_1, false);
+  get_keyval(conf, "useNorm1", use_norm_1, use_norm_1);
 
   if (use_norm_1) {
     cvm::log("Using Norm of type 1 to calculate the deviation from the experimental value\n");
@@ -178,12 +178,13 @@ int colvarbias_rad::init(std::string const &conf)
     provide(f_cvb_history_dependent);
     break;
   }
+
   get_keyval(conf, "couplingTime", kernel_coupling_time, 0.0);
   if (kernel_coupling_time > 0.0) {
     enable(f_cvb_history_dependent);
   } else {
-    cvm::error("Error: a positive couplingTime must be provided.\n", INPUT_ERROR);
-    return INPUT_ERROR;
+    return cvm::error("Error: a positive couplingTime must be provided.\n",
+                      INPUT_ERROR);
   }
 
   get_keyval(conf, "paramsCouplingTime", params_coupling_time, 100.0);
@@ -192,7 +193,7 @@ int colvarbias_rad::init(std::string const &conf)
   if (colvar_total_deviations.size() == 0) {
     colvar_total_deviations.resize(num_variables());
     for (i = 0; i < num_variables(); i++) {
-      colvar_total_deviations[i].type(variables(i)->value());
+      colvar_total_deviations[i].type(variables(i));
       colvar_total_deviations[i].is_derivative(); // constraints are not applied
       colvar_total_deviations[i].reset();
     }
@@ -207,7 +208,6 @@ int colvarbias_rad::init_centers(std::string const &conf)
   size_t i;
 
   bool null_centers = true;
-  bool read_exp_file = false;
 
   if (colvar_centers.size() == 0) {
     colvar_centers.resize(num_variables());
@@ -224,32 +224,25 @@ int colvarbias_rad::init_centers(std::string const &conf)
     time_files.resize(num_variables());
   }
 
-  if (get_keyval(conf, "expFiles", time_files)) {
+  // TODO This part should be replaced by a query to the colvar objects
+  bool read_exp_file = false;
+  if (get_keyval(conf, "expFiles", time_files, time_files)) {
     read_exp_file = true;
-    cvm::log("Initial centers read from expFiles).\n");
+    cvm::log("Initial centers read from expFiles.\n");
     if (colvar_times.size() == 0) {
       colvar_times.resize(num_variables());
-      for (i = 0; i < num_variables(); i++) {
-        colvar_times[i].type(variables(i)->value());
-        colvar_times[i].is_derivative(); // constraints are not applied
-        colvar_times[i].reset();
-      }
-    }
-
-    if (colvar_expval.size() == 0) {
       colvar_expval.resize(num_variables());
       for (i = 0; i < num_variables(); i++) {
-        colvar_expval[i].type(variables(i)->value());
-        colvar_expval[i].is_derivative(); // constraints are not applied
-        colvar_expval[i].reset();
+        colvar_times[i].type(variables(i));
+        colvar_expval[i].type(variables(i));
       }
     }
 
-
+    // TODO This will break for most variables
     size_t t;
     std::string line;
     for (i = 0; i < num_variables(); i++) {
-       std::ifstream expfile (time_files[i]);
+       std::ifstream expfile(time_files[i]);
        if (expfile.is_open()) {
          for (t=0;t<colvar_centers[i].size();t++) {
             expfile >> colvar_times[i].vector1d_value[t];
@@ -278,6 +271,7 @@ int colvarbias_rad::init_centers(std::string const &conf)
   if (null_centers && !read_exp_file) {
 //    colvar_centers.clear();
     cvm::log("Warning: initial centers of the restraints set to zero (default choice for deerKernel cv).\n");
+
   }
 
   if (colvar_centers.size() != num_variables()) {
@@ -369,7 +363,7 @@ int colvarbias_rad::update()
       for (t=0;t<colvar_centers[i].size();t++) {
          lambda2=-unit_scale * colvar_total_deviations[i].vector1d_value[t];
          lambda2=lambda2*lambda2;
-         lambdasum+=colvar_centers_errors[i]*sqrt(lambda2);
+         lambdasum+=colvar_centers_errors[i]*std::sqrt(lambda2);
          lambda2sum+=colvar_centers_errors[i]*colvar_centers_errors[i]*lambda2;;
       }
     }
@@ -389,7 +383,7 @@ int colvarbias_rad::update()
       cvm::real grad_alpha=0.0;
 
       for (t=0;t<colvar_centers[i].size();t++) {
-         eback=exp(-alpha_deer[ii]*sqrt(colvar_times[i].vector1d_value[t]*colvar_times[i].vector1d_value[t]));
+         eback=exp(-alpha_deer[ii]*std::sqrt(colvar_times[i].vector1d_value[t]*colvar_times[i].vector1d_value[t]));
          colvar_orig_centers[i].vector1d_value[t]=(colvar_expval[i].vector1d_value[t]-(1-mdepth_deer[ii])*eback)/(eback*mdepth_deer[ii]);
          error_fact =colvar_centers_errors[i]/(eback*mdepth_deer[ii]);
          cum_err=cum_err+error_fact*error_fact;
@@ -404,13 +398,13 @@ int colvarbias_rad::update()
          //coef_mdepth=coef_mdepth+(der_mdepth*(der_mdepth-(2*lambda2/unit_scale)));
          grad_mdepth=grad_mdepth+lambda2*der_mdepth;
          cvm::real const der_alpha=((1-mdepth_deer[ii])+mdepth_deer[ii]*colvar_centers[i].vector1d_value[t])*
-                  sqrt(colvar_times[i].vector1d_value[t]*colvar_times[i].vector1d_value[t]);
+                  std::sqrt(colvar_times[i].vector1d_value[t]*colvar_times[i].vector1d_value[t]);
          coef_alpha=coef_alpha+(der_alpha*der_alpha);
          //coef_alpha=coef_alpha+(der_alpha*(der_alpha+
-         //          (mdepth_deer[ii]*lambda2*(sqrt(colvar_times[i].vector1d_value[t]*colvar_times[i].vector1d_value[t]))/unit_scale)));
+         //          (mdepth_deer[ii]*lambda2*(std::sqrt(colvar_times[i].vector1d_value[t]*colvar_times[i].vector1d_value[t]))/unit_scale)));
          grad_alpha=grad_alpha+lambda2*der_alpha;
          lambda2=lambda2*lambda2;
-         lambdasum+=(colvar_centers_errors[i]*sqrt(lambda2))/(mdepth_deer[ii]*eback);
+         lambdasum+=(colvar_centers_errors[i]*std::sqrt(lambda2))/(mdepth_deer[ii]*eback);
          lambda2sum+=(colvar_centers_errors[i]*colvar_centers_errors[i]*lambda2)/(mdepth_deer[ii]*eback*mdepth_deer[ii]*eback);
       }
       cum_err=cum_err/colvar_centers[i].size();
@@ -418,8 +412,8 @@ int colvarbias_rad::update()
       colvar_cum_error=colvar_cum_error+cum_err;
       colvar_centers[i].apply_constraints();
       // update alpha_deer and mdepth_deer
-      coef_mdepth=sqrt(coef_mdepth*coef_mdepth);
-      coef_alpha=sqrt(coef_alpha*coef_alpha);
+      coef_mdepth=std::sqrt(coef_mdepth*coef_mdepth);
+      coef_alpha=std::sqrt(coef_alpha*coef_alpha);
 
       mdepth_deer[ii]=mdepth_deer[ii]-params_coupling_time * mdepth_deer[ii] * grad_mdepth * weight  * cvm::dt()/(unit_scale*coef_mdepth);
       alpha_deer[ii]=alpha_deer[ii]-params_coupling_time * mdepth_deer[ii] *  grad_alpha  * weight  * cvm::dt() /(unit_scale*coef_alpha);
@@ -461,7 +455,7 @@ int colvarbias_rad::update()
       for (t=0;t<colvar_centers[i].size();t++) {
          lambda2=-unit_scale * colvar_total_deviations[i].vector1d_value[t];
          lambda2=lambda2*lambda2;
-         lambdasum+=colvar_centers_errors[i]*sqrt(lambda2);
+         lambdasum+=colvar_centers_errors[i]*std::sqrt(lambda2);
          lambda2sum+=colvar_centers_errors[i]*colvar_centers_errors[i]*lambda2;
       }
 
@@ -485,18 +479,18 @@ int colvarbias_rad::update()
   }
 
 
-  colvar_aver_deviation=colvar_aver_deviation/double(colvar_size_tot);
+  colvar_aver_deviation=colvar_aver_deviation/double(variables_num_dimensions());
 
-  lambdasum=lambdasum/double(colvar_size_tot);
-  lambda2sum=sqrt(lambda2sum/double(colvar_size_tot));
+  lambdasum=lambdasum/double(variables_num_dimensions());
+  lambda2sum=std::sqrt(lambda2sum/double(variables_num_dimensions()));
 
   if (!use_norm_1) {
-    colvar_aver_deviation=sqrt(colvar_aver_deviation);
+    colvar_aver_deviation=std::sqrt(colvar_aver_deviation);
   }
 
   if (fix_chi_square_one) {
 
-//    printf("FIX ONE: %i %30.20f %30.20f %30.20f %30.20f %30.20f \n",cvm::step_absolute(),colvar_aver_deviation,colvar_cum_error,colvar_cum_uscale,colvar_errors_scale,double(colvar_size_tot));
+//    printf("FIX ONE: %i %30.20f %30.20f %30.20f %30.20f %30.20f \n",cvm::step_absolute(),colvar_aver_deviation,colvar_cum_error,colvar_cum_uscale,colvar_errors_scale,double(variables_num_dimensions()));
     colvar_errors_scale=lambda2sum;
     if (use_norm_1) colvar_errors_scale=lambdasum;
     if (colvar_errors_scale<1.0/colvar_maxerror_scale) colvar_errors_scale=1.0/colvar_maxerror_scale;
@@ -551,10 +545,10 @@ int colvarbias_rad::write_traj_files()
          << colvar_aver_deviation
          << " "
          << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width)
-         << sqrt(colvar_cum_error/colvar_errors_scale)
+         << std::sqrt(colvar_cum_error/colvar_errors_scale)
          << " "
-         << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width)
-         << colvar_size_tot
+         << std::setprecision(cvm::it_width)
+         << variables_num_dimensions()
          << " "
          << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width)
          << colvar_cum_error

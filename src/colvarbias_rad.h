@@ -29,8 +29,11 @@ public:
   /// \brief Restraint original centers
   std::vector<colvarvalue> colvar_orig_centers;
 
-  /// \brief Restraint widths
+  /// \brief Scale factors for the restraint
   std::vector<cvm::real> colvar_widths_c;
+
+  /// Average of colvar_widths_c
+  cvm::real colvar_cum_uscale;
 
   /// \brief Errors associated with the restraint centers
   std::vector<cvm::real> colvar_centers_errors;
@@ -111,9 +114,6 @@ public:
 
   /// average experimental error
   cvm::real colvar_cum_error;
-
-  /// average scale width
-  cvm::real colvar_cum_uscale;
 
   /// unique error scale
   cvm::real colvar_errors_scale;
