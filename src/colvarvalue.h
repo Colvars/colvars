@@ -287,6 +287,9 @@ public:
   /// Make each element equal to the given argument
   void set_ones(cvm::real assigned_value = 1.0);
 
+  /// Make each element equal to its absolute value
+  void set_absolute_value();
+
   /// Get a scalar number out of an element of the vector
   cvm::real operator [] (int const i) const;
 

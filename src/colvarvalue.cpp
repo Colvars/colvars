@@ -408,6 +408,40 @@ void colvarvalue::set_ones(cvm::real assigned_value)
 }
 
 
+void colvarvalue::set_absolute_value()
+{
+  size_t ic;
+  switch (this->type()) {
+  case colvarvalue::type_scalar:
+    this->real_value = std::fabs(this->real_value);
+    break;
+  case colvarvalue::type_3vector:
+  case colvarvalue::type_unit3vector:
+  case colvarvalue::type_unit3vectorderiv:
+    this->rvector_value.x = std::fabs(this->rvector_value.x);
+    this->rvector_value.y = std::fabs(this->rvector_value.y);
+    this->rvector_value.z = std::fabs(this->rvector_value.z);
+    break;
+  case colvarvalue::type_quaternion:
+  case colvarvalue::type_quaternionderiv:
+    this->quaternion_value.q0 = std::fabs(this->quaternion_value.q0);
+    this->quaternion_value.q1 = std::fabs(this->quaternion_value.q1);
+    this->quaternion_value.q2 = std::fabs(this->quaternion_value.q2);
+    this->quaternion_value.q3 = std::fabs(this->quaternion_value.q3);
+    break;
+  case colvarvalue::type_vector:
+    for (ic = 0; ic < this->vector1d_value.size(); ic++) {
+      this->vector1d_value[ic] = std::fabs(this->vector1d_value[ic]);
+    }
+    break;
+  case colvarvalue::type_notset:
+  default:
+    undef_op();
+    break;
+  }
+}
+
+
 void colvarvalue::undef_op() const
 {
   cvm::error("Error: Undefined operation on a colvar of type \""+
