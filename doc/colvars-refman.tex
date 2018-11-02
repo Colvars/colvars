@@ -35,7 +35,17 @@
 
 \begin{document}
 
+\ifdefined\HCode
+\input{colvars-refman-css.tex}
+\fi
+
 \input{cv_version.tex}
+
+\ifdefined\HCode
+\HCode{<div id="container">
+<div class="inner">
+}
+\fi
 
 \begin{titlepage}
 
@@ -53,7 +63,12 @@
       \end{minipage}}
 %  \noindent\rule{\textwidth}{2pt}
 
+  \ifdefined\HCode
+  \includegraphics{cover-512px.jpg}
+  \\
+  \else
   \includegraphics[width=\textwidth]{cover.jpg}
+  \fi
   \textsf{\large Alejandro Bernardin, Jeffrey R.{} Comer, Giacomo Fiorin, Haohao Fu, J\'er\^ome H\'enin, Axel Kohlmeyer, Fabrizio Marinelli, Joshua V.{} Vermaas, Andrew D.{} White}
 \end{titlepage}
 
@@ -126,6 +141,13 @@
 %\addtocontents{toc}{\contentsline {section}{References}{\thepage}}
 \bibliographystyle{unsrt}
 \bibliography{colvars-refman}
+
+\ifdefined\HCode
+\HCode{</div>
+</div>
+}
+\fi
+
 
 \end{document}
 
