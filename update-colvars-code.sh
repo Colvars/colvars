@@ -1,7 +1,7 @@
 #!/bin/bash
 # -*- sh-basic-offset: 2; sh-indentation: 2; -*-
 
-# Script to update a NAMD, VMD, or LAMMPS source tree with the latest Colvars
+# Script to update a NAMD, VMD, LAMMPS or GROMACS source tree with the latest Colvars
 # version.
 
 # Enforce using portable C locale
@@ -18,7 +18,7 @@ then
         (default: create diff files for inspection --- MD code may be different)
 
    <target source tree> = root directory of the MD code sources
-   supported codes: NAMD, VMD, VMD PLUGINS, LAMMPS
+   supported codes: NAMD, VMD, VMD PLUGINS, LAMMPS, GROMACS
 
 EOF
    exit 1
@@ -102,6 +102,13 @@ else
 fi
 
 echo "Detected ${code} source tree in ${target}"
+if [ ${code} = "GROMACS" ]
+then
+  echo "***********************************************************"
+  echo "Note: The only current GROMACS version supported is 2018.3"
+  echo "All others versions have to be used with caution. "
+  echo "***********************************************************"
+fi
 echo -n "Updating ..."
 
 
@@ -407,6 +414,43 @@ fi
 # Update GROMACS tree
 if [ ${code} = "GROMACS" ]
 then
-  echo "Error: the GROMACS implementation of Colvars is not under active development."
-  exit 1
+  echo ""
+  if [ -d ${target}/src/gromacs/colvars ]
+  then  
+    echo "Your ${target} source tree seems to have already been patched."
+    echo "Update with the last colvars source."
+  else
+    echo "Creating folder containing Colvars library files"
+    mkdir ${target}/src/gromacs/colvars
+  fi
+
+  # copy library files to the "colvars" folder
+  for src in ${source}/src/*.h ${source}/src/*.cpp
+  do \
+    tgt=$(basename ${src})
+    condcopy "${src}" "${target}/src/gromacs/colvars/${tgt}" "${cpp_patch}"
+  done
+
+  #Proxy files
+  for src in ${source}/gromacs/src/*
+  do
+    tgt=$(basename ${src})
+    condcopy "${src}" "${target}/src/gromacs/colvars/${tgt}"
+  done
+
+  # Files related to Gromacs
+  engine="2018.3"
+  dest_files=$(find "${source}/gromacs/gromacs-${engine}" -type f -printf '%P ')
+  for dest in ${dest_files}
+  do
+    condcopy "${source}/gromacs/gromacs-${engine}/${dest}" "${target}/${dest}"
+  done
+
+  echo ' done.'
+  echo ""
+  echo "  *******************************************"
+  echo "    Please create your build with cmake now."
+  echo "  *******************************************"
+
+  exit 0
 fi
