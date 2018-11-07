@@ -1,5 +1,4 @@
 /// -*- c++ -*-
-/* Jeff Comer's tests to see if he can link GROMACS and Colvars */
 
 #include <cmath>
 #include <cstdio>
@@ -11,7 +10,6 @@
 #include <unistd.h>
 #include <string.h>
 
-
 #include "gromacs/mdlib/mdatoms.h"
 #include "gromacs/mdtypes/inputrec.h"
 #include "gromacs/mdtypes/forceoutput.h"
@@ -19,42 +17,33 @@
 #include "gromacs/utility/fatalerror.h"
 #include "gromacs/utility/futil.h"
 
-// Jeff Comer's tests to see if he can link GROMACS and Colvars
 #include "colvars_potential.h"
 #include "colvarproxy_gromacs.h"
 
-// The global colvars proxy object, awkwardly initialized on
-// the first call to colvars_potential.
-colvarproxy_gromacs colvars_global_proxy;
-bool colvars_global_is_first = true;
 
-
-real colvars_potential(t_inputrec *gmx_inp, t_mdatoms *md, t_pbc *pbc,
+real colvars_potential(colvarproxy_gromacs * colvars_proxy, t_mdatoms *md, t_pbc *pbc,
 		                   gmx_int64_t step, rvec *x, gmx::ForceWithVirial *force)
 {
 
   // Update some things.
   // Get the current periodic boundary conditions.
-  colvars_global_proxy.gmx_pbc = (*pbc);
-  colvars_global_proxy.gmx_atoms = md;
+  colvars_proxy->gmx_pbc = (*pbc);
+  colvars_proxy->gmx_atoms = md;
 
-  // Initialize if this is the first call.
-  if (colvars_global_is_first) {
-    colvars_global_proxy.init(gmx_inp, step);
-    colvars_global_is_first = false;
-  }
 
   // colvars computation
-  return colvars_global_proxy.calculate(step, x, force);
+  return colvars_proxy->calculate(step, x, force);
 }
 
 //************************************************************
 // colvarproxy_gromacs
-colvarproxy_gromacs::colvarproxy_gromacs() : colvarproxy() {
-}
+colvarproxy_gromacs::colvarproxy_gromacs() : colvarproxy() {}
 
 // Colvars Initialization
-void colvarproxy_gromacs::init(t_inputrec *gmx_inp, gmx_int64_t step) {
+void colvarproxy_gromacs::init(t_inputrec *ir, gmx_int64_t step,t_mdatoms *md,
+                               const std::string &prefix,
+                               const std::string &filename_config,
+                               const std::string &filename_restart) {
 
   if (cvm::debug())
     log("Initializing the colvars proxy object.\n");
@@ -70,57 +59,47 @@ void colvarproxy_gromacs::init(t_inputrec *gmx_inp, gmx_int64_t step) {
   angstrom_value = 0.1;
   // Get the thermostat temperature.
   // NOTE: Considers only the first temperature coupling group!
-  colvars_global_proxy.set_temper(gmx_inp->opts.ref_t[0]);
+  thermostat_temperature = ir->opts.ref_t[0];
 
   // GROMACS random number generation.
   // Seed with the mdp parameter ld_seed, the Langevin dynamics seed.
-  rng.seed(gmx_inp->ld_seed);
+  rng.seed(ir->ld_seed);
 
-  // For expediency, we are using a kludgy input/output structure
-  //
-  // gmx_inp->userint1 is the colvars state:
-  // 0, no colvars
-  // 1, colvars without restart
-  // 2, colvars with restart (from colvars.state.restart)
-  //
-  // gmx_inp->userint2 is the config file index
-  // the colvars config file is assumed to be called colvars${userint2}.colvars
-  // the output files will have the prefix colvars${userint2}
-  //
-  // gmx_inp->userint3 is the input file index
-  // the input state file is assumed to have the prefix colvars${userint3}
+  /// Handle input filenames and prefix/suffix for colvars files.
+  ///
+  /// filename_config is the colvars configuration file collected from "-colvars" option.
+  /// The output prefix will be the prefix of Gromacs log filename.
+  /// or "output" otherwise.
+  ///
+  /// For restart, 'filename_restart' is the colvars input file for restart,
+  /// set by the "-cv_restart" option. It will be NULL otherwise.
+  /// 
 
-  switch(gmx_inp->userint1) {
-  case 0:
-    gmx_fatal(FARGS,"colvars_potential called for userint1=0\n");
-    break;
-  case 1:
-    colvars_restart = false;
-    break;
-  case 2:
+  config_file = filename_config;
+
+  if(!prefix.empty())
+  {
+    output_prefix_str = prefix;
+  }
+  else {
+    output_prefix_str = "output";
+  }
+
+  restart_output_prefix_str = prefix + ".restart";
+
+  colvars_restart = false;
+
+  if(!filename_restart.empty())
+  {
     colvars_restart = true;
-    break;
-  default:
-    gmx_fatal(FARGS,"userint1 must be 1 (colvars on) or 2 (restarted colvars), not %d\n", gmx_inp->userint1);
-    break;
+    input_prefix_str = filename_restart;
   }
-  // Right now the input/output prefixes almost hardcoded (expect for an integer)
-  char prefix[256];
-  snprintf(prefix,256,"colvars%d",gmx_inp->userint2);
-  config_file = std::string(prefix).append(".colvars");
-  // Output
-  output_prefix_str = std::string(prefix);
-  restart_output_prefix_str = std::string(prefix).append(".restart");
-  // State file
-  if (colvars_restart) {
-    char input_state_prefix[256];
-    snprintf(input_state_prefix,256,"colvars%d",gmx_inp->userint3);
-    input_prefix_str = std::string(input_state_prefix);
-  }
+
 
   // Get some parameters from GROMACS
-  restart_frequency_s = gmx_inp->nstxout;
-  timestep = gmx_inp->delta_t;
+  restart_frequency_s = ir->nstxout;
+  timestep = ir->delta_t;
+  gmx_atoms = md;
 
   // initiate module: this object will be the communication proxy
   colvars = new colvarmodule (this);

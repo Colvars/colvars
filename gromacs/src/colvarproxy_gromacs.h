@@ -1,11 +1,7 @@
 /// -*- c++ -*-
-
-// Jeff Comer's tests to see if he can link GROMACS and Colvars
-
-#ifndef COLVARPROXY_GROMACS_H
-#define COLVARPROXY_GROMACS_H
-
-#include "colvarproxy_gromacs_version.h"
+/* Based on Jeff Comer's old code */
+#ifndef GMX_COLVARS_COLVARPROXY_GROMACS_H
+#define GMX_COLVARS_COLVARPROXY_GROMACS_H
 
 #include "colvarmodule.h"
 #include "colvaratoms.h"
@@ -14,6 +10,7 @@
 #include "gromacs/random/threefry.h"
 #include "gromacs/mdtypes/forceoutput.h"
 
+#include "colvarproxy_gromacs_version.h"
 
 /// \brief Communication between colvars and Gromacs (implementation of
 /// \link colvarproxy \endlink)
@@ -27,7 +24,6 @@ protected:
   cvm::real timestep;
   bool first_timestep;
 
-  int outInd; // Index of the output files.
   bool colvars_restart;
   std::string config_file;
   size_t restart_frequency_s;
@@ -45,7 +41,9 @@ public:
   ~colvarproxy_gromacs();
 
   // Initialize colvars.
-  void init(t_inputrec *gmx_inp, gmx_int64_t step);
+  void init(t_inputrec *gmx_inp, gmx_int64_t step, t_mdatoms *md,
+            const std::string &prefix, const std::string &filename_config,
+            const std::string &filename_restart);
   // Perform colvars computation, return bias energy.
   double calculate(gmx_int64_t step, const rvec *x, gmx::ForceWithVirial *force);
   void add_energy (cvm::real energy);
