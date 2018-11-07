@@ -362,15 +362,7 @@ void SimParameters::scriptSet(const char *param, const char *value) {
 
   if ( ! strncasecmp(param,"alchLambdaIDWS",MAX_SCRIPT_PARAM_SIZE) ) {
     alchLambdaIDWS = atof(value);
-    if ( alchLambdaIDWS > 1. ) {
-      NAMD_die("alchLambdaIDWS should be either in the range [0.0, 1.0], or negative (disabled).\n");
-    }
-    // Switch lambda2 every other cycle of fullElectFrequency steps
-    // or every other nonbondedFrequency steps if undefined
-    // or every alchOutFreq steps if larger (no need to switch faster that we output)
-    alchIDWSfreq = fullElectFrequency > 0 ? fullElectFrequency : nonbondedFrequency;
-    if ( alchOutFreq > alchIDWSfreq )
-      alchIDWSfreq = alchOutFreq;
+    setupIDWS();
     ComputeNonbondedUtil::select();
     return;
   }
@@ -2148,6 +2140,9 @@ void SimParameters::config_parser_boundary(ParseOptions &opts) {
    opts.optional("extraBonds", "extraBondsFile",
 		"file with list of extra bonds",
 		 PARSE_MULTIPLES);
+   opts.optionalB("extraBonds", "extraBondsCosAngles",
+		"Should extra angles be cosine-based to match ancient bug",
+		&extraBondsCosAngles, TRUE);
 
 }
 
@@ -3579,6 +3574,8 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
        if (alchLambda2 < 0.0 || alchLambda2 > 1.0)
          NAMD_die("alchLambda2 values should be in the range [0.0, 1.0]\n");
 
+       setupIDWS(); // setup IDWS if it was activated.
+       
        if (!opts.defined("alchoutfile")) {
          strcpy(alchOutFile, outputFilename);
          strcat(alchOutFile, ".fep");
@@ -3645,17 +3642,6 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
          strcpy(alchOutFile, outputFilename);
          strcat(alchOutFile, ".ti");
        }
-     }
-     if (alchLambdaIDWS >= 0.) {
-       if ( alchLambdaIDWS > 1. ) {
-         NAMD_die("alchLambdaIDWS should be either in the range [0.0, 1.0], or negative (disabled).\n");
-      }
-       // Switch lambda2 every other cycle of fullElectFrequency steps
-       // or every other nonbondedFrequency steps if undefined
-       // or every alchOutFreq steps if larger (no need to switch faster that we output)
-       alchIDWSfreq = fullElectFrequency > 0 ? fullElectFrequency : nonbondedFrequency;
-       if ( alchOutFreq > alchIDWSfreq )
-         alchIDWSfreq = alchOutFreq;
      }
    }
         
@@ -4095,6 +4081,12 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
      parse_mgrid_params(config);
    }
 
+   if ( extraBondsOn ) {
+     extraBondsCosAnglesSetByUser = ! ! config->find("extraBondsCosAngles");
+   } else {
+     extraBondsCosAnglesSetByUser = false;
+   }
+      
    if (!opts.defined("constraints"))
    {
      constraintExp = 0;
@@ -4843,6 +4835,12 @@ if ( openatomOn )
 							<< "\n" << endi;
 
    iout << iINFO << "MARGIN                 " << margin << "\n";
+   if ( margin > 4.0 ) {
+      iout << iWARN << "MARGIN IS UNUSUALLY LARGE AND WILL LOWER PERFORMANCE\n";
+      BigReal f = patchDimension/(patchDimension-margin);
+      f *= f*f;
+      iout << iWARN << "MARGIN INCREASED PATCH VOLUME BY A FACTOR OF " << f << "\n";
+   }
 
    if ( splitPatch == SPLIT_PATCH_HYDROGEN ) {
       iout << iINFO << "HYDROGEN GROUP CUTOFF  " << hgroupCutoff << "\n";
@@ -7157,14 +7155,40 @@ void SimParameters::receive_SimParameters(MIStream *msg)
 //fepb IDWS
 BigReal SimParameters::getCurrentLambda2(const int step) {
   if ( alchLambdaIDWS >= 0. ) {
-    const BigReal lambda2 = ( (step / alchIDWSfreq) % 2 == 1 ) ? alchLambda2 : alchLambdaIDWS;
+    const BigReal lambda2 = ( (step / alchIDWSFreq) % 2 == 1 ) ? alchLambda2 : alchLambdaIDWS;
     return lambda2;
   } else {
     return alchLambda2;
   }
 }
-//fepe IDWS
 
+/* Return true if IDWS is active, else return false. */
+int SimParameters::setupIDWS() {
+  if (alchLambdaIDWS < 0.) return 0;
+  if (alchLambdaIDWS > 1.) {
+    NAMD_die("alchLambdaIDWS should be either in the range [0.0, 1.0], or negative (disabled).\n");
+  }
+ /* 
+  * The internal parameter alchIDWSFreq determines the number of steps of MD
+  * before each switch of the value of alchLambda2. At most this occurs every
+  * time the energy is evaluated and thus the default is the greater of
+  * fullElectFrequency and nonbondedFrequency. However, this choice fails to
+  * report alternating values if output is printed less often than every step
+  * (which is almost certainly true). Thus the frequency is reset to match
+  * alchOutFreq or, if that is zero, outputEnergies. Note that, if 
+  * alchOutFreq > 0 but != outputEnergies, then the data going to stdout
+  * are likely not useful since the comparison value is difficult to infer.
+  */
+  alchIDWSFreq = fullElectFrequency > 0 ? fullElectFrequency : nonbondedFrequency;
+  if ( !alchOutFreq && outputEnergies > alchIDWSFreq ) alchIDWSFreq = outputEnergies;
+  if ( alchOutFreq > alchIDWSFreq ) alchIDWSFreq = alchOutFreq;
+  if ( alchOutFreq && alchOutFreq != outputEnergies) {
+    iout << iWARN << "alchOutFreq and outputEnergies do not match. IDWS ouput"
+         << " to stdout may not be useful!\n" << endi;
+  }
+  return 1;
+}
+//fepe IDWS
 
 //fepb BKR
 BigReal SimParameters::getCurrentLambda(const int step) {
