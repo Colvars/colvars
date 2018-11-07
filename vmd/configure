@@ -483,7 +483,7 @@ $arch_rcflags     = "No resource compiler required on this platform.";
 
 $arch_cc          = "cc";
 $arch_ccpp        = "CC";
-$arch_nvcc        = "/usr/local/cuda-9.2/bin/nvcc";
+$arch_nvcc        = "/usr/local/cuda-9.0/bin/nvcc";
 $arch_nvccflags   = "-lineinfo --ptxas-options=-v " . 
                     "-gencode arch=compute_30,code=compute_30 " .
                     "-gencode arch=compute_30,code=sm_35 " .
@@ -930,7 +930,7 @@ $avx512_libs        = "";
 #   This option enables the use of CUDA GPU acceleration functions.
 #######################
 $cuda_defines     = "-DVMDCUDA -DMSMPOT_CUDA";
-$cuda_dir         = "/usr/local/cuda-9.2";
+$cuda_dir         = "/usr/local/cuda-9.0";
 $cuda_include     = "";
 $cuda_library     = "";
 $cuda_libs        = "-Wl,-rpath -Wl,\$\$ORIGIN/ -lcudart_static -lrt";
@@ -1032,10 +1032,10 @@ $nvenc_libs        = "-lcuda"; # XXX need to eliminate via dlopen()/dlsym()
 #   This option enables high performance remote visualization
 #######################
 $nvpipe_defines     = "-DVMDNVPIPE ";
-$nvpipe_dir         = "/home/johns/graphics/nvpipe/nvpipe.2018/NvPipe/build";
+$nvpipe_dir         = "/home/johns/graphics/nvpipe/nvpipe.2018/NvPipe/c6build";
 #$nvpipe_dir         = "/ccs/home/stonej1/nvpipe/NvPipe/build";
 $nvpipe_include     = "-I$nvpipe_dir/include";
-$nvpipe_library     = "-L$nvpipe_dir -lNvPipe";
+$nvpipe_library     = "-L$nvpipe_dir -lNvPipe -lnvcuvid";
 $nvpipe_libs        = "-lcuda"; # XXX need to eliminate via dlopen()/dlsym()
 @nvpipe_cc          = ();
 @nvpipe_cu          = ();
@@ -2377,7 +2377,7 @@ if ($config_arch eq "LINUXAMD64") {
 
     if ($config_cuda) {
       $arch_nvccflags   .= " --machine 64 -O3 $cuda_include";
-      $cuda_library     = "-L/usr/local/cuda-9.2/lib64";
+      $cuda_library     = "-L/usr/local/cuda-9.0/lib64";
     }
 
     $arch_lex		= "flex"; # has problems with vendor lex
