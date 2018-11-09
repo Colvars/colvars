@@ -415,7 +415,7 @@ void colvarproxy_gromacs::update_atom_properties(int index)
 {
 
   // update mass
-  double const mass = gmx_atoms->massT[index];
+  double const mass = gmx_atoms->massT[atoms_ids[index]];
   if (mass <= 0.001) {
     this->log("Warning: near-zero mass for atom "+
               cvm::to_str(atoms_ids[index]+1)+
@@ -423,7 +423,7 @@ void colvarproxy_gromacs::update_atom_properties(int index)
   }
   atoms_masses[index] = mass;
   // update charge
-  atoms_charges[index] = gmx_atoms->chargeA[index];
+  atoms_charges[index] = gmx_atoms->chargeA[atoms_ids[index]];
 }
 
 enum e_pdb_field {
