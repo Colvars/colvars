@@ -96,18 +96,49 @@ else
   then
     code="GROMACS"
   else
-    echo ERROR: Cannot detect a supported code in the target directory
+    echo "ERROR: Cannot detect a supported code in the target directory."
     exit 3
   fi
 fi
 
+get_gromacs_major_version_cmake() {
+  cat $1 | grep 'set(GMX_VERSION_MAJOR' | \
+    sed -e 's/set(GMX_VERSION_MAJOR //' -e 's/)//'
+}
+
+get_gromacs_minor_version_cmake() {
+  cat $1 | grep 'set(GMX_VERSION_PATCH' | \
+    sed -e 's/set(GMX_VERSION_PATCH //' -e 's/)//'
+}
+
 echo "Detected ${code} source tree in ${target}"
 if [ ${code} = "GROMACS" ]
 then
-  echo "***********************************************************"
-  echo "Note: The only current GROMACS version supported is 2018.3"
-  echo "All others versions have to be used with caution. "
-  echo "***********************************************************"
+  GMX_VERSION_INFO=${target}/cmake/gmxVersionInfo.cmake
+  if [ ! -f ${GMX_VERSION_INFO} ] ; then
+    echo "ERROR: Cannot find file ${GMX_VERSION_INFO}."
+    exit 3
+  fi
+
+  GMX_MAJOR_VERSION=`get_gromacs_major_version_cmake ${GMX_VERSION_INFO}`
+  GMX_MINOR_VERSION=`get_gromacs_minor_version_cmake ${GMX_VERSION_INFO}`
+
+  GMX_VERSION=${GMX_MAJOR_VERSION}.${GMX_MINOR_VERSION}
+
+  case ${GMX_VERSION} in
+    '2018.3')
+      ;;
+    *)
+    if [ $force_update = 0 ] ; then
+      echo " ******************************************************************************"
+      echo "  ERROR: Support for GROMACS version ${GMX_VERSION} has not been tested."
+      echo "  You may override with -f, but be mindful of compilation or runtime problems."
+      echo " ******************************************************************************"
+      exit 3
+    fi
+    ;;
+  esac
+
 fi
 echo -n "Updating ..."
 
@@ -418,9 +449,8 @@ then
   if [ -d ${target}/src/gromacs/colvars ]
   then  
     echo "Your ${target} source tree seems to have already been patched."
-    echo "Update with the last colvars source."
+    echo "Update with the last Colvars source."
   else
-    echo "Creating folder containing Colvars library files"
     mkdir ${target}/src/gromacs/colvars
   fi
 
@@ -439,11 +469,10 @@ then
   done
 
   # Files related to Gromacs
-  engine="2018.3"
-  dest_files=$(find "${source}/gromacs/gromacs-${engine}" -type f -printf '%P ')
+  dest_files=$(find "${source}/gromacs/gromacs-${GMX_VERSION}" -type f -printf '%P ')
   for dest in ${dest_files}
   do
-    condcopy "${source}/gromacs/gromacs-${engine}/${dest}" "${target}/${dest}"
+    condcopy "${source}/gromacs/gromacs-${GMX_VERSION}/${dest}" "${target}/${dest}"
   done
 
   echo ' done.'
