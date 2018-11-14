@@ -133,6 +133,7 @@ void colvarproxy_gromacs::init(t_inputrec *ir, gmx_int64_t step,t_mdatoms *md,
 colvarproxy_gromacs::~colvarproxy_gromacs()
 {
   if (colvars != NULL) {
+    colvars->write_restart_file(output_prefix_str+".colvars.state");
     colvars->write_output_files();
     delete colvars;
     colvars = NULL;
