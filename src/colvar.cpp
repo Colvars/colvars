@@ -883,7 +883,6 @@ int colvar::parse_analysis(std::string const &conf)
 
     enable(f_cv_corrfunc);
 
-    std::string acf_colvar_name;
     get_keyval(conf, "corrFuncWithColvar", acf_colvar_name, this->name);
     if (acf_colvar_name == this->name) {
       cvm::log("Calculating auto-correlation function.\n");
@@ -899,8 +898,7 @@ int colvar::parse_analysis(std::string const &conf)
     } else if (acf_type_str == to_lower_cppstr(std::string("velocity"))) {
       acf_type = acf_vel;
       enable(f_cv_fdiff_velocity);
-      if (acf_colvar_name.size())
-        (cvm::colvar_by_name(acf_colvar_name))->enable(f_cv_fdiff_velocity);
+      (cvm::colvar_by_name(acf_colvar_name))->enable(f_cv_fdiff_velocity);
     } else if (acf_type_str == to_lower_cppstr(std::string("coordinate_p2"))) {
       acf_type = acf_p2coor;
     } else {
@@ -2120,13 +2118,12 @@ int colvar::calc_acf()
   // representation but separated by acf_stride in the time series;
   // the pointer to each vector is changed at every step
 
+  colvar const *cfcv = cvm::colvar_by_name(acf_colvar_name);
+  
   if (acf_x_history.empty() && acf_v_history.empty()) {
 
     // first-step operations
 
-    colvar *cfcv = (acf_colvar_name.size() ?
-                    cvm::colvar_by_name(acf_colvar_name) :
-                    this);
     if (colvarvalue::check_types(cfcv->value(), value())) {
       cvm::error("Error: correlation function between \""+cfcv->name+
                  "\" and \""+this->name+"\" cannot be calculated, "
@@ -2165,10 +2162,6 @@ int colvar::calc_acf()
     }
 
   } else {
-
-    colvar *cfcv = (acf_colvar_name.size() ?
-                    cvm::colvar_by_name(acf_colvar_name) :
-                    this);
 
     switch (acf_type) {
 
