@@ -2059,6 +2059,7 @@ std::ostream & colvar::write_traj(std::ostream &os)
 int colvar::write_output_files()
 {
   if (cvm::b_analysis) {
+  int error_code = COLVARS_OK;
 
     if (acf.size()) {
       if (acf_outfile.size() == 0) {
@@ -2069,27 +2070,31 @@ int colvar::write_output_files()
       cvm::backup_file(acf_outfile.c_str());
       std::ostream *acf_os = cvm::proxy->output_stream(acf_outfile);
       if (!acf_os) return cvm::get_error();
-      write_acf(*acf_os);
+      error_code |= write_acf(*acf_os);
       cvm::proxy->close_output_stream(acf_outfile);
     }
   }
 
-  return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
+  return error_code;
 }
 
 
 
 // ******************** ANALYSIS FUNCTIONS ********************
 
-void colvar::analyze()
+int colvar::analyze()
 {
+  int error_code = COLVARS_OK;
+
   if (is_enabled(f_cv_runave)) {
-    calc_runave();
+    error_code |= calc_runave();
   }
 
   if (is_enabled(f_cv_corrfunc)) {
-    calc_acf();
+    error_code |= calc_acf();
   }
+
+  return error_code;
 }
 
 
@@ -2197,10 +2202,10 @@ int colvar::calc_acf()
 }
 
 
-int colvar::calc_vel_acf(std::list<colvarvalue> &v_list,
-                           colvarvalue const      &v)
+void colvar::calc_vel_acf(std::list<colvarvalue> &v_list,
+                          colvarvalue const      &v)
 {
-  // loop over stored velocities and add to the ACF, but only the
+  // loop over stored velocities and add to the ACF, but only if the
   // length is sufficient to hold an entire row of ACF values
   if (v_list.size() >= acf_length+acf_offset) {
     std::list<colvarvalue>::iterator  vs_i = v_list.begin();
@@ -2219,7 +2224,6 @@ int colvar::calc_vel_acf(std::list<colvarvalue> &v_list,
 
     acf_nframes++;
   }
-  return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
 }
 
 
@@ -2265,10 +2269,12 @@ void colvar::calc_p2coor_acf(std::list<colvarvalue> &x_list,
 }
 
 
-void colvar::write_acf(std::ostream &os)
+int colvar::write_acf(std::ostream &os)
 {
-  if (!acf_nframes)
-    cvm::log("Warning: ACF was not calculated (insufficient frames).\n");
+  if (!acf_nframes) {
+    return COLVARS_OK;
+  }
+
   os.setf(std::ios::scientific, std::ios::floatfield);
   os << "# Autocorrelation function for collective variable \""
      << this->name << "\"\n";
@@ -2289,11 +2295,15 @@ void colvar::write_acf(std::ostream &os)
             (*acf_i)/(acf_norm * cvm::real(acf_nframes)) :
             (*acf_i)/(cvm::real(acf_nframes)) ) << "\n";
   }
+
+  return os.good() ? COLVARS_OK : FILE_ERROR;
 }
 
 
-void colvar::calc_runave()
+int colvar::calc_runave()
 {
+  int error_code = COLVARS_OK;
+
   if (x_history.empty()) {
 
     runave.type(value().type());
@@ -2363,6 +2373,7 @@ void colvar::calc_runave()
     }
   }
 
+  return error_code;
 }
 
 // Static members
