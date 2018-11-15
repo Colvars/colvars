@@ -539,9 +539,6 @@ public:
   /// Frequency for collective variables trajectory output
   static size_t cv_traj_freq;
 
-  /// \brief True if only analysis is performed and not a run
-  static bool   b_analysis;
-
   /// Frequency for saving output restarts
   static size_t restart_out_freq;
   /// Output restart file name

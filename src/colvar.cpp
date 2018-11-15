@@ -275,8 +275,7 @@ int colvar::init(std::string const &conf)
   // Now that the children are defined we can solve dependencies
   enable(f_cv_active);
 
-  if (cvm::b_analysis)
-    parse_analysis(conf);
+  error_code |= parse_analysis(conf);
 
   if (cvm::debug())
     cvm::log("Done initializing collective variable \""+this->name+"\".\n");
@@ -2058,9 +2057,9 @@ std::ostream & colvar::write_traj(std::ostream &os)
 
 int colvar::write_output_files()
 {
-  if (cvm::b_analysis) {
   int error_code = COLVARS_OK;
 
+  if (is_enabled(f_cv_corrfunc)) {
     if (acf.size()) {
       if (acf_outfile.size() == 0) {
         acf_outfile = std::string(cvm::output_prefix()+"."+this->name+
