@@ -1365,9 +1365,9 @@ int colvar::calc_colvar_properties()
 {
   if (is_enabled(f_cv_fdiff_velocity)) {
     // calculate the velocity by finite differences
-    if (cvm::step_relative() == 0)
+    if (cvm::step_relative() == 0) {
       x_old = x;
-    else {
+    } else {
       v_fdiff = fdiff_velocity(x_old, x);
       v_reported = v_fdiff;
     }
@@ -1945,7 +1945,7 @@ std::ostream & colvar::write_restart(std::ostream &os) {
   if (runave_os) {
     cvm::main()->proxy->flush_output_stream(runave_os);
   }
- 
+
   return os;
 }
 
@@ -2055,6 +2055,7 @@ std::ostream & colvar::write_traj(std::ostream &os)
   return os;
 }
 
+
 int colvar::write_output_files()
 {
   int error_code = COLVARS_OK;
@@ -2065,7 +2066,7 @@ int colvar::write_output_files()
         acf_outfile = std::string(cvm::output_prefix()+"."+this->name+
                                   ".corrfunc.dat");
       }
-      cvm::log("Writing acf to file \""+acf_outfile+"\".\n");
+      cvm::log("Writing correlation function to file \""+acf_outfile+"\".\n");
       cvm::backup_file(acf_outfile.c_str());
       std::ostream *acf_os = cvm::proxy->output_stream(acf_outfile);
       if (!acf_os) return cvm::get_error();
@@ -2098,16 +2099,17 @@ int colvar::analyze()
 
 
 inline void history_add_value(size_t const           &history_length,
-                               std::list<colvarvalue> &history,
-                               colvarvalue const      &new_value)
+                              std::list<colvarvalue> &history,
+                              colvarvalue const      &new_value)
 {
   history.push_front(new_value);
   if (history.size() > history_length)
     history.pop_back();
 }
 
+
 inline void history_incr(std::list< std::list<colvarvalue> >           &history,
-                          std::list< std::list<colvarvalue> >::iterator &history_p)
+                         std::list< std::list<colvarvalue> >::iterator &history_p)
 {
   if ((++history_p) == history.end())
     history_p = history.begin();
@@ -2117,13 +2119,13 @@ inline void history_incr(std::list< std::list<colvarvalue> >           &history,
 int colvar::calc_acf()
 {
   // using here an acf_stride-long list of vectors for either
-  // coordinates(acf_x_history) or velocities (acf_v_history); each vector can
+  // coordinates (acf_x_history) or velocities (acf_v_history); each vector can
   // contain up to acf_length values, which are contiguous in memory
   // representation but separated by acf_stride in the time series;
   // the pointer to each vector is changed at every step
 
   colvar const *cfcv = cvm::colvar_by_name(acf_colvar_name);
-  
+
   if (acf_x_history.empty() && acf_v_history.empty()) {
 
     // first-step operations
@@ -2136,7 +2138,8 @@ int colvar::calc_acf()
     }
     acf_nframes = 0;
 
-    cvm::log("Colvar \""+this->name+"\": initializing ACF calculation.\n");
+    cvm::log("Colvar \""+this->name+"\": initializing correlation function "
+             "calculation.\n");
 
     if (acf.size() < acf_length+1)
       acf.resize(acf_length+1, 0.0);
@@ -2172,23 +2175,24 @@ int colvar::calc_acf()
     case acf_vel:
 
       calc_vel_acf((*acf_v_history_p), cfcv->velocity());
-      // store this value in the history
-      history_add_value(acf_length+acf_offset, *acf_v_history_p, cfcv->velocity());
-      // if stride is larger than one, cycle among different histories
+      history_add_value(acf_length+acf_offset, *acf_v_history_p,
+                        cfcv->velocity());
       history_incr(acf_v_history, acf_v_history_p);
       break;
 
     case acf_coor:
 
       calc_coor_acf((*acf_x_history_p), cfcv->value());
-      history_add_value(acf_length+acf_offset, *acf_x_history_p, cfcv->value());
+      history_add_value(acf_length+acf_offset, *acf_x_history_p,
+                        cfcv->value());
       history_incr(acf_x_history, acf_x_history_p);
       break;
 
     case acf_p2coor:
 
       calc_p2coor_acf((*acf_x_history_p), cfcv->value());
-      history_add_value(acf_length+acf_offset, *acf_x_history_p, cfcv->value());
+      history_add_value(acf_length+acf_offset, *acf_x_history_p,
+                        cfcv->value());
       history_incr(acf_x_history, acf_x_history_p);
       break;
 
@@ -2247,7 +2251,7 @@ void colvar::calc_coor_acf(std::list<colvarvalue> &x_list,
 
 
 void colvar::calc_p2coor_acf(std::list<colvarvalue> &x_list,
-                              colvarvalue const      &x)
+                             colvarvalue const      &x)
 {
   // same as above but with second order Legendre polynomial instead
   // of just the scalar product
@@ -2275,15 +2279,38 @@ int colvar::write_acf(std::ostream &os)
   }
 
   os.setf(std::ios::scientific, std::ios::floatfield);
-  os << "# Autocorrelation function for collective variable \""
-     << this->name << "\"\n";
+  os << "# ";
+  switch (acf_type) {
+  case acf_vel:
+    os << "Velocity";
+    break;
+  case acf_coor:
+    os << "Coordinate";
+    break;
+  case acf_p2coor:
+    os << "Coordinate (2nd Legendre poly)";
+    break;
+  }
+
+  if (acf_colvar_name == name) {
+    os << " autocorrelation function for variable \""
+       << this->name << "\"\n";
+  } else {
+    os << " correlation function between variables \"" //
+       << this->name << "\" and \"" << acf_colvar_name << "\"\n";
+  }
+
   // one frame is used for normalization, the statistical sample is
   // hence decreased
-  os << "# nframes = " << (acf_normalize ?
-                           acf_nframes - 1 :
-                           acf_nframes) << "\n";
+  os << "# Number of samples = " << (acf_normalize ?
+                                     acf_nframes - 1 :
+                                     acf_nframes) << "\n";
+
+  os << "# " << cvm::wrap_string("step", cvm::it_width-2) << " "
+     << cvm::wrap_string("corrfunc(step)", cvm::cv_width) << "\n";
 
   cvm::real const acf_norm = acf.front() / cvm::real(acf_nframes);
+
   std::vector<cvm::real>::iterator acf_i;
   size_t it = acf_offset;
   for (acf_i = acf.begin(); acf_i != acf.end(); ++acf_i) {
@@ -2342,7 +2369,7 @@ int colvar::calc_runave()
                      << cvm::wrap_string("running stddev", this_cv_width)
                      << "\n";
         }
-        
+
         runave = x;
         std::list<colvarvalue>::iterator xs_i;
         for (xs_i = (*x_history_p).begin();
