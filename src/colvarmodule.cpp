@@ -55,8 +55,6 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
   use_scripted_forces = false;
   scripting_after_biases = false;
 
-  b_analysis = false;
-
   colvarmodule::debug_gradients_step_size = 1.0e-07;
 
   colvarmodule::rotation::monitor_crossings = false;
@@ -267,7 +265,12 @@ int colvarmodule::parse_global_params(std::string const &conf)
     }
   }
 
-  parse->get_keyval(conf, "analysis", b_analysis, b_analysis);
+  b_analysis = true;
+  if (parse->get_keyval(conf, "analysis", b_analysis, true,
+                        colvarparse::parse_silent)) {
+    cvm::log("Warning: keyword \"analysis\" is deprecated: it is now set "
+             "to true; individual analyses are performed only if requested.");
+  }
 
   parse->get_keyval(conf, "debugGradientsStepSize", debug_gradients_step_size,
                     debug_gradients_step_size,
@@ -708,9 +711,7 @@ int colvarmodule::calc()
   error_code |= calc_biases();
   error_code |= update_colvar_forces();
 
-  if (cvm::b_analysis) {
-    error_code |= analyze();
-  }
+  error_code |= analyze();
 
   // write trajectory files, if needed
   if (cv_traj_freq && cv_traj_name.size()) {
@@ -1888,7 +1889,6 @@ long      colvarmodule::it = 0;
 long      colvarmodule::it_restart = 0;
 size_t    colvarmodule::restart_out_freq = 0;
 size_t    colvarmodule::cv_traj_freq = 0;
-bool      colvarmodule::b_analysis = false;
 bool      colvarmodule::use_scripted_forces = false;
 bool      colvarmodule::scripting_after_biases = true;
 
