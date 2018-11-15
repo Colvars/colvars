@@ -874,19 +874,7 @@ int colvar::parse_analysis(std::string const &conf)
       cvm::error("Error: runAveStride must be commensurate with the restart frequency.\n", INPUT_ERROR);
     }
 
-    get_keyval(conf, "runAveOutputFile", runave_outfile,
-                std::string(cvm::output_prefix()+"."+
-                             this->name+".runave.traj"));
-
-    size_t const this_cv_width = x.output_width(cvm::cv_width);
-    cvm::proxy->backup_file(runave_outfile);
-    runave_os = cvm::proxy->output_stream(runave_outfile);
-    *runave_os << "# " << cvm::wrap_string("step", cvm::it_width-2)
-               << "  "
-               << cvm::wrap_string("running average", this_cv_width)
-               << " "
-               << cvm::wrap_string("running stddev", this_cv_width)
-               << "\n";
+    get_keyval(conf, "runAveOutputFile", runave_outfile, runave_outfile);
   }
 
   acf_length = 0;
@@ -930,9 +918,7 @@ int colvar::parse_analysis(std::string const &conf)
     }
 
     get_keyval(conf, "corrFuncNormalize", acf_normalize, true);
-    get_keyval(conf, "corrFuncOutputFile", acf_outfile,
-                std::string(cvm::output_prefix()+"."+this->name+
-                             ".corrfunc.dat"));
+    get_keyval(conf, "corrFuncOutputFile", acf_outfile, acf_outfile);
   }
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
 }
@@ -1959,6 +1945,10 @@ std::ostream & colvar::write_restart(std::ostream &os) {
 
   os << "}\n\n";
 
+  if (runave_os) {
+    cvm::main()->proxy->flush_output_stream(runave_os);
+  }
+ 
   return os;
 }
 
@@ -2073,20 +2063,19 @@ int colvar::write_output_files()
   if (cvm::b_analysis) {
 
     if (acf.size()) {
+      if (acf_outfile.size() == 0) {
+        acf_outfile = std::string(cvm::output_prefix()+"."+this->name+
+                                  ".corrfunc.dat");
+      }
       cvm::log("Writing acf to file \""+acf_outfile+"\".\n");
-
       cvm::backup_file(acf_outfile.c_str());
       std::ostream *acf_os = cvm::proxy->output_stream(acf_outfile);
       if (!acf_os) return cvm::get_error();
       write_acf(*acf_os);
       cvm::proxy->close_output_stream(acf_outfile);
     }
-
-    if (runave_os) {
-      cvm::proxy->close_output_stream(runave_outfile);
-      runave_os = NULL;
-    }
   }
+
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
 }
 
@@ -2345,6 +2334,24 @@ void colvar::calc_runave()
 
       if ((*x_history_p).size() >= runave_length-1) {
 
+        if (runave_os == NULL) {
+          if (runave_outfile.size() == 0) {
+            runave_outfile = std::string(cvm::output_prefix()+"."+
+                                         this->name+".runave.traj");
+          }
+
+          size_t const this_cv_width = x.output_width(cvm::cv_width);
+          cvm::proxy->backup_file(runave_outfile);
+          runave_os = cvm::proxy->output_stream(runave_outfile);
+          runave_os->setf(std::ios::scientific, std::ios::floatfield);
+          *runave_os << "# " << cvm::wrap_string("step", cvm::it_width-2)
+                     << "   "
+                     << cvm::wrap_string("running average", this_cv_width)
+                     << " "
+                     << cvm::wrap_string("running stddev", this_cv_width)
+                     << "\n";
+        }
+        
         runave = x;
         std::list<colvarvalue>::iterator xs_i;
         for (xs_i = (*x_history_p).begin();
@@ -2363,7 +2370,7 @@ void colvar::calc_runave()
         runave_variance *= 1.0 / cvm::real(runave_length-1);
 
         *runave_os << std::setw(cvm::it_width) << cvm::step_relative()
-                   << "  "
+                   << "   "
                    << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width)
                    << runave << " "
                    << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width)
