@@ -2167,13 +2167,6 @@ int colvar::calc_acf()
 
     case acf_vel:
 
-      if (is_enabled(f_cv_fdiff_velocity)) {
-        // calc() should do this already, but this only happens in a
-        // simulation; better do it again in case a trajectory is
-        // being read
-        v_reported = v_fdiff = fdiff_velocity(x_old, cfcv->value());
-      }
-
       calc_vel_acf((*acf_v_history_p), cfcv->velocity());
       // store this value in the history
       history_add_value(acf_length+acf_offset, *acf_v_history_p, cfcv->velocity());
@@ -2200,11 +2193,7 @@ int colvar::calc_acf()
     }
   }
 
-  if (is_enabled(f_cv_fdiff_velocity)) {
-    // set it for the next step
-    x_old = x;
-  }
-  return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
+  return COLVARS_OK;
 }
 
 
