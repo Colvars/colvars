@@ -423,18 +423,6 @@ The following keywords are available in the global context of the Colvars config
     boolean}{%
     \texttt{on}}{%
     If this flag is enabled (default), SMP parallelism over threads will be used to compute variables and biases, provided that this is supported by the \MDENGINE{} build in use.}
-
-\item %
-  \keydef
-    {analysis}{%
-    global}{%
-    Turn on run-time statistical analysis}{%
-    boolean}{%
-    \texttt{off}}{%
-    If this flag is enabled, each colvar is instructed to perform
-    whatever run-time statistical analysis it is configured to, such as
-    correlation functions, or running averages and standard deviations.
-    See section~\ref{sec:colvar_acf} for details.}
     
 \end{itemize}
 
@@ -2587,6 +2575,7 @@ deviations are available.
 \begin{itemize}
 
 \item %
+  \labelkey{colvar|corrFunc}
   \keydef
     {corrFunc}{%
     \texttt{colvar}}{%
@@ -2676,6 +2665,7 @@ deviations are available.
     The time correlation function is saved in this file.}
 
 \item %
+  \labelkey{colvar|runAve}
   \keydef
     {runAve}{%
     \texttt{colvar}}{%
@@ -4862,6 +4852,9 @@ please be aware that \emph{several of these tutorials are not actively maintaine
 
 \item \textbf{Colvars version 2017-01-09 or later \cvnamdonly{(NAMD version 2.13b1 or later)}\cvvmdonly{(VMD version 1.9.4 or later)}\cvlammpsonly{(LAMMPS version 10Mar2017 or later)}.}\\
   A new type of restraint, \texttt{harmonicWalls} (see~\ref{sec:colvarbias_harmonic_walls}), replaces and improves upon the legacy keywords \texttt{lowerWall} and \texttt{upperWall}: these are still supported as short-hands.
+
+\item \textbf{Colvars version 2018-11-15 or later \cvnamdonly{(NAMD version 2.14b1 or later)}\cvvmdonly{(VMD version 1.9.4 or later)}\cvlammpsonly{(LAMMPS version 23Nov2018 or later)}.}\\
+  The global \texttt{analysis} keyword has been discontinued: specific analysis tasks are controlled directly by the keywords \refkey{corrFunc}{colvar|corrFunc} and \refkey{runAve}{colvar|runAve}, which continue to remain \texttt{off} by default.
 
 \item \textbf{Deprecation warning for calculations including wall potentials.}\\
   The legacy keywords \texttt{lowerWall} and \texttt{upperWall} will stop having default values and will need to be set explicitly (preferably as part of the \texttt{harmonicWalls} restraint).
