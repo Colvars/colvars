@@ -213,6 +213,12 @@ int colvarproxy_vmd::update_input()
 
   error_code |= update_atomic_properties();
 
+  // Do we still have a valid frame?
+  if (error_code || vmdmol->get_frame(vmdmol_frame) == NULL) {
+    error_code |= COLVARS_NO_SUCH_FRAME;
+    return error_code;
+  }
+
   // copy positions in the internal arrays
   float *vmdpos = (vmdmol->get_frame(vmdmol_frame))->pos;
   for (size_t i = 0; i < atoms_positions.size(); i++) {

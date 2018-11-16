@@ -130,6 +130,10 @@ int colvarscript::run(int objc, unsigned char *const objv[])
 
   if (cmd == "update") {
     error_code |= proxy->update_input();
+    if (error_code) {
+      result += "Error updating the Colvars module.\n";
+      return error_code;
+    }
     error_code |= colvars->calc();
     error_code |= proxy->update_output();
     if (error_code) {
