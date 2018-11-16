@@ -1527,7 +1527,7 @@ cvm::real colvar::update_forces_energy()
   // Now adding the force on the actual colvar (for those biases that
   // bypass the extended Lagrangian mass)
   f += fb_actual;
-  
+
   if (cvm::debug())
     cvm::log("Done updating colvar \""+this->name+"\".\n");
   return (potential_energy + kinetic_energy);
@@ -2368,7 +2368,7 @@ int colvar::calc_runave()
 
   } else {
 
-    if ( (cvm::step_relative() % runave_stride) == 0 && 
+    if ( (cvm::step_relative() % runave_stride) == 0 &&
          (cvm::step_relative() > prev_timestep) ) {
 
       if ((*x_history_p).size() >= runave_length-1) {
