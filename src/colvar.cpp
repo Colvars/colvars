@@ -14,10 +14,14 @@
 
 
 colvar::colvar()
-  : prev_timestep(-1)
 {
-  // Initialize static array once and for all
   runave_os = NULL;
+
+  prev_timestep = -1;
+  after_restart = false;
+  kinetic_energy = 0.0;
+  potential_energy = 0.0;
+
   init_cv_requires();
 }
 
@@ -30,6 +34,7 @@ namespace {
     return i->name < j->name;
   }
 }
+
 
 int colvar::init(std::string const &conf)
 {
@@ -55,9 +60,6 @@ int colvar::init(std::string const &conf)
   // Could be a function defined in a different source file, for space?
 
   this->description = "colvar " + this->name;
-
-  kinetic_energy = 0.0;
-  potential_energy = 0.0;
 
   error_code |= init_components(conf);
   if (error_code != COLVARS_OK) {
@@ -253,7 +255,6 @@ int colvar::init(std::string const &conf)
   f_old.reset();
 
   x_restart.type(value());
-  after_restart = false;
 
   reset_bias_force();
 
@@ -1467,7 +1468,6 @@ cvm::real colvar::update_forces_energy()
         return 0.;
       }
     }
-    prev_timestep = cvm::step_relative();
 
     // Integrate with slow timestep (if time_step_factor != 1)
     cvm::real dt = cvm::dt() * cvm::real(time_step_factor);
@@ -1527,9 +1527,19 @@ cvm::real colvar::update_forces_energy()
   // Now adding the force on the actual colvar (for those biases that
   // bypass the extended Lagrangian mass)
   f += fb_actual;
+  
+  if (cvm::debug())
+    cvm::log("Done updating colvar \""+this->name+"\".\n");
+  return (potential_energy + kinetic_energy);
+}
+
+
+int colvar::end_of_step()
+{
+  if (cvm::debug())
+    cvm::log("End of step for colvar \""+this->name+"\".\n");
 
   if (is_enabled(f_cv_fdiff_velocity)) {
-    // set it for the next step
     x_old = x;
   }
 
@@ -1537,9 +1547,9 @@ cvm::real colvar::update_forces_energy()
     f_old = f;
   }
 
-  if (cvm::debug())
-    cvm::log("Done updating colvar \""+this->name+"\".\n");
-  return (potential_energy + kinetic_energy);
+  prev_timestep = cvm::step_relative();
+
+  return COLVARS_OK;
 }
 
 
@@ -2177,7 +2187,7 @@ int colvar::calc_acf()
       break;
     }
 
-  } else {
+  } else if (cvm::step_relative() > prev_timestep) {
 
     switch (acf_type) {
 
@@ -2358,7 +2368,8 @@ int colvar::calc_runave()
 
   } else {
 
-    if ( (cvm::step_relative() % runave_stride) == 0) {
+    if ( (cvm::step_relative() % runave_stride) == 0 && 
+         (cvm::step_relative() > prev_timestep) ) {
 
       if ((*x_history_p).size() >= runave_length-1) {
 

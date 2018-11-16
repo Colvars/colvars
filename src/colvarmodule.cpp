@@ -730,6 +730,8 @@ int colvarmodule::calc()
     write_output_files();
   }
 
+  error_code |= end_of_step();
+
   return error_code;
 }
 
@@ -1043,6 +1045,33 @@ int colvarmodule::analyze()
        bi++) {
     cvm::increase_depth();
     (*bi)->analyze();
+    cvm::decrease_depth();
+  }
+
+  return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
+}
+
+
+int colvarmodule::end_of_step()
+{
+  if (cvm::debug()) {
+    cvm::log("colvarmodule::end_of_step(), step = "+cvm::to_str(it)+".\n");
+  }
+
+  for (std::vector<colvar *>::iterator cvi = variables_active()->begin();
+       cvi != variables_active()->end();
+       cvi++) {
+    cvm::increase_depth();
+    (*cvi)->end_of_step();
+    cvm::decrease_depth();
+  }
+
+  // perform bias-specific analysis
+  for (std::vector<colvarbias *>::iterator bi = biases.begin();
+       bi != biases.end();
+       bi++) {
+    cvm::increase_depth();
+    (*bi)->end_of_step();
     cvm::decrease_depth();
   }
 
