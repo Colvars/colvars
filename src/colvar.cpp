@@ -46,7 +46,7 @@ int colvar::init(std::string const &conf)
   colvarmodule *cv = cvm::main();
 
   get_keyval(conf, "name", this->name,
-             (std::string("colvar")+cvm::to_str(cv->variables()->size()+1)));
+             (std::string("colvar")+cvm::to_str(cv->variables()->size())));
 
   if ((cvm::colvar_by_name(this->name) != NULL) &&
       (cvm::colvar_by_name(this->name) != this)) {
