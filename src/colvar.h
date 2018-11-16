@@ -284,6 +284,9 @@ public:
   /// \brief Calculate the colvar's value and related quantities
   int calc();
 
+  /// Carry out operations needed before next step is run
+  int end_of_step();
+
   /// \brief Calculate a subset of the colvar components (CVCs) currently active
   /// (default: all active CVCs)
   /// Note: both arguments refer to the sect of *active* CVCs, not all CVCs
@@ -403,6 +406,7 @@ public:
 
   /// Read the analysis tasks
   int parse_analysis(std::string const &conf);
+
   /// Perform analysis tasks
   int analyze();
 
