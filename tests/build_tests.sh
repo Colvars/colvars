@@ -112,6 +112,15 @@ done
 create_test_dir "distance-extended"
 write_colvars_config "distance-extended" "" ${dirname}/test.in
 
+create_test_dir "distance-runave"
+write_colvars_config "distance-runave" "" ${dirname}/test.in
+
+create_test_dir "distance-autocorrfunc"
+write_colvars_config "distance-autocorrfunc" "" ${dirname}/test.in
+
+create_test_dir "distance-corrfunc"
+write_colvars_config "distance-corrfunc" "" ${dirname}/test.in
+
 
 m4 < metadynamics.in.m4 > metadynamics.in
 m4 -Dti_pmf < metadynamics.in.m4 > metadynamics-ti.in
