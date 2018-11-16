@@ -265,7 +265,7 @@ int colvarmodule::parse_global_params(std::string const &conf)
     }
   }
 
-  b_analysis = true;
+  bool b_analysis = true;
   if (parse->get_keyval(conf, "analysis", b_analysis, true,
                         colvarparse::parse_silent)) {
     cvm::log("Warning: keyword \"analysis\" is deprecated: it is now set "
