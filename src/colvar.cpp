@@ -897,7 +897,12 @@ int colvar::parse_analysis(std::string const &conf)
     } else if (acf_type_str == to_lower_cppstr(std::string("velocity"))) {
       acf_type = acf_vel;
       enable(f_cv_fdiff_velocity);
-      (cvm::colvar_by_name(acf_colvar_name))->enable(f_cv_fdiff_velocity);
+      colvar *cv2 = cvm::colvar_by_name(acf_colvar_name);
+      if (cv2 == NULL) {
+        return cvm::error("Error: collective variable \""+acf_colvar_name+
+                          "\" is not defined at this time.\n", INPUT_ERROR);
+      }
+      cv2->enable(f_cv_fdiff_velocity);
     } else if (acf_type_str == to_lower_cppstr(std::string("coordinate_p2"))) {
       acf_type = acf_p2coor;
     } else {
@@ -2125,6 +2130,10 @@ int colvar::calc_acf()
   // the pointer to each vector is changed at every step
 
   colvar const *cfcv = cvm::colvar_by_name(acf_colvar_name);
+  if (cfcv == NULL) {
+    return cvm::error("Error: collective variable \""+acf_colvar_name+
+                      "\" is not defined at this time.\n", INPUT_ERROR);
+  }
 
   if (acf_x_history.empty() && acf_v_history.empty()) {
 
