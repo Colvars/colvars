@@ -1,0 +1,9 @@
+# Velocity correlation function between variables "two" and "one"
+# Number of samples = 9 (one DoF is used for normalization)
+# step       corrfunc(step)       
+           0  1.00000000000000e+00
+           2  8.20806874278982e-01
+           4  4.95149538768788e-01
+           6  3.29843664998698e-02
+           8 -5.10193943420893e-01
+          10 -1.03852680015666e+00

@@ -1,0 +1,19 @@
+colvar {
+
+    name one
+
+    outputAppliedForce on
+
+    runAve yes
+    runAveLength 4
+    runAveStride 2
+
+    distance {
+        group1 {
+            indexGroup group1
+        }
+        group2 {
+            indexGroup group2
+        }
+    }
+} 
