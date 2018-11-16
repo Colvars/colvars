@@ -2309,11 +2309,12 @@ int colvar::write_acf(std::ostream &os)
        << this->name << "\" and \"" << acf_colvar_name << "\"\n";
   }
 
-  // one frame is used for normalization, the statistical sample is
-  // hence decreased
-  os << "# Number of samples = " << (acf_normalize ?
-                                     acf_nframes - 1 :
-                                     acf_nframes) << "\n";
+  os << "# Number of samples = ";
+  if (acf_normalize) {
+    os << (acf_nframes-1) << " (one DoF is used for normalization)\n";
+  } else {
+    os << acf_nframes << "\n";
+  }
 
   os << "# " << cvm::wrap_string("step", cvm::it_width-2) << " "
      << cvm::wrap_string("corrfunc(step)", cvm::cv_width) << "\n";
