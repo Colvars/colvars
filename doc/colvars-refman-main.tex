@@ -435,7 +435,7 @@ The corresponding configuration is given below. The options within the \texttt{c
   \centering
 \cvnamdugonly{\includegraphics[width=12cm]{figures/colvars_diagram}}
 \cvvmdugonly{\includegraphics[width=12cm]{pictures/colvars_diagram}}
-\cvrefmanonly{\ifdefined\HCode{<img class="diagram" src="colvars_diagram.png" alt="Colvars diagram">}\else\includegraphics[width=12cm]{colvars_diagram}\fi}
+\cvrefmanonly{\ifdefined\HCode{\HCode{<img class="diagram" src="colvars_diagram.png" alt="Colvars diagram">}}\else\includegraphics[width=12cm]{colvars_diagram}\fi}
   \caption[Graphical representation of a Colvars configuration.]{Graphical representation of a Colvars configuration\cvlammpsonly{ \textbf{(note:} \emph{currently, the $\alpha$-helical content colvar is unavailable in LAMMPS)}}.
     The colvar called ``$d$'' is defined as the difference between two distances: the first distance ($d_{1}$) is taken between the center of mass of atoms 1 and 2 and that of atoms 3 to 5, the second ($d_{2}$) between atom 7 and the center of mass of atoms 8 to 10.
 The difference $d = d_{1} - d_{2}$ is obtained by multiplying the two by a coefficient $C = +1$ or $C = -1$, respectively.
