@@ -146,7 +146,7 @@ bool colvarparse::_get_keyval_scalar_(std::string const &conf,
       }
     }
 
-    mark_key_set_user<TYPE>(key, value, parse_mode);
+    mark_key_set_user<TYPE>(key_str, value, parse_mode);
 
   } else { // No string value
 
@@ -154,15 +154,14 @@ bool colvarparse::_get_keyval_scalar_(std::string const &conf,
       if (TEMPLATE_TYPES_EQUAL(TYPE, bool)) {
         // An empty string counts as a user-provided true value
         set_bool(reinterpret_cast<void *>(&value), true);
-        mark_key_set_user<TYPE>(key, value, parse_mode);
+        mark_key_set_user<TYPE>(key_str, value, parse_mode);
       } else {
         cvm::error("Error: improper or missing value "
                    "for \""+key_str+"\".\n", INPUT_ERROR);
       }
     } else {
 
-      value = def_value;
-      mark_key_set_default<TYPE>(key, value, parse_mode);
+      mark_key_set_default<TYPE>(key_str, value, parse_mode);
     }
   }
 
@@ -214,26 +213,26 @@ bool colvarparse::_get_keyval_vector_(std::string const &conf,
       }
     }
 
-    mark_key_set_user< std::vector<TYPE> >(key, values, parse_mode);
+    mark_key_set_user< std::vector<TYPE> >(key_str, values, parse_mode);
 
   } else {
 
     if (b_found_any) {
       cvm::error("Error: improper or missing values for \""+
                  key_str+"\".\n", INPUT_ERROR);
-    }
+    } else {
 
-    if ((values.size() > 0) && (values.size() != def_values.size())) {
-      cvm::error("Error: the number of default values for \""+
-                 key_str+"\" is different from the number of "
-                 "current values.\n", BUG_ERROR);
-    }
+      if ((values.size() > 0) && (values.size() != def_values.size())) {
+        cvm::error("Error: the number of default values for \""+
+                   key_str+"\" is different from the number of "
+                   "current values.\n", BUG_ERROR);
+      }
 
     for (size_t i = 0; i < values.size(); i++) {
       values[i] = def_values[i];
     }
 
-    mark_key_set_default< std::vector<TYPE> >(key, def_values, parse_mode);
+    mark_key_set_default< std::vector<TYPE> >(key_str, def_values, parse_mode);
   }
 
   return b_found_any;
@@ -402,13 +401,13 @@ bool colvarparse::get_keyval(std::string const &conf,
 
 void colvarparse::add_keyword(char const *key)
 {
-  std::string const key_str(to_lower_cppstr(std::string(key)));
+  std::string const key_str_lower(to_lower_cppstr(std::string(key)));
 
-  if (key_set_modes.find(key_str) != key_set_modes.end()) {
+  if (key_set_modes.find(key_str_lower) != key_set_modes.end()) {
     return;
   }
 
-  key_set_modes[key_str] = key_not_set;
+  key_set_modes[key_str_lower] = key_not_set;
 
   allowed_keywords.push_back(key_str);
 }
@@ -426,22 +425,9 @@ void colvarparse::strip_values(std::string &conf)
   for ( ; (data_begin != data_begin_pos.end()) &&
           (data_end   != data_end_pos.end()) ;
         data_begin++, data_end++) {
-
-    //     std::cerr << "data_begin, data_end "
-    //               << *data_begin << ", " << *data_end
-    //               << "\n";
-
     size_t const nchars = *data_end-*data_begin;
-
-    //     std::cerr << "conf[data_begin:data_end] = \""
-    //               << std::string (conf, *data_begin - offset, nchars)
-    //               << "\"\n";
-
     conf.erase(*data_begin - offset, nchars);
     offset += nchars;
-
-    //     std::cerr << ("Stripped config = \"\n"+conf+"\"\n");
-
   }
 }
 

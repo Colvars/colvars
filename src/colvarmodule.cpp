@@ -292,7 +292,7 @@ int colvarmodule::parse_global_params(std::string const &conf)
 
   // Deprecate append flag
   parse->get_keyval(conf, "colvarsTrajAppend",
-                    cv_traj_append, cv_traj_append, colvarparse::parse_restart);
+                    cv_traj_append, cv_traj_append, colvarparse::parse_silent);
 
   parse->get_keyval(conf, "scriptedColvarForces",
                     use_scripted_forces, use_scripted_forces);

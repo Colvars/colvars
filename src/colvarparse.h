@@ -62,8 +62,6 @@ public:
     parse_echo = (1<<1),
     /// Print the default value of a keyword, if it is NOT given
     parse_echo_default = (1<<2),
-    /// Print the keyword and its value regardless
-    parse_echo_all = (1<<2) | (1<<1),
     /// Do not print the keyword
     parse_silent = 0,
     /// Raise error if the keyword is not provided
@@ -227,7 +225,7 @@ protected:
   /// Record that the keyword has just been set to its default value
   template<typename TYPE>
   void mark_key_set_default(std::string const &key_str,
-                            TYPE const &value,
+                            TYPE const &def_value,
                             Parse_Mode const &parse_mode);
 
 public:
