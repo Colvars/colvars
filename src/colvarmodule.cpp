@@ -254,6 +254,7 @@ int colvarmodule::parse_global_params(std::string const &conf)
     std::string index_file_name;
     size_t pos = 0;
     while (parse->key_lookup(conf, "indexFile", &index_file_name, &pos)) {
+      cvm::log("# indexFile = \""+index_file_name+"\"\n");
       cvm->read_index_file(index_file_name.c_str());
       index_file_name.clear();
     }
