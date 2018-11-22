@@ -95,6 +95,22 @@ void colvarparse::mark_key_set_default(std::string const &key_str,
 }
 
 
+void colvarparse::error_key_required(std::string const &key_str,
+                                     Parse_Mode const &parse_mode)
+{
+  if (key_already_set(key_str)) {
+    return;
+  }
+  if (parse_mode & parse_restart) {
+    cvm::error("Error: keyword \""+key_str+
+               "\" is missing from the restart.\n", INPUT_ERROR);
+  } else {
+    cvm::error("Error: keyword \""+key_str+
+               "\" is required.\n", INPUT_ERROR);
+  }
+}
+
+
 template<typename TYPE>
 bool colvarparse::_get_keyval_scalar_(std::string const &conf,
                                       char const *key,
@@ -161,7 +177,19 @@ bool colvarparse::_get_keyval_scalar_(std::string const &conf,
       }
     } else {
 
-      mark_key_set_default<TYPE>(key_str, value, parse_mode);
+      if (parse_mode & parse_required) {
+        if (cvm::debug()) {
+          cvm::log("get_keyval, parse_required = "+cvm::to_str(parse_mode & parse_required)+
+                   "\n");
+        }
+        error_key_required(key_str, parse_mode);
+        return false;
+      }
+
+      if ( (parse_mode & parse_override) || !(key_already_set(key)) ) {
+        value = def_value;
+        mark_key_set_default<TYPE>(key_str, value, parse_mode);
+      }
     }
   }
 
@@ -228,11 +256,20 @@ bool colvarparse::_get_keyval_vector_(std::string const &conf,
                    "current values.\n", BUG_ERROR);
       }
 
-    for (size_t i = 0; i < values.size(); i++) {
-      values[i] = def_values[i];
-    }
+      if (parse_mode & parse_required) {
+        error_key_required(key_str, parse_mode);
+        return false;
+      }
 
-    mark_key_set_default< std::vector<TYPE> >(key_str, def_values, parse_mode);
+      if ( (parse_mode & parse_override) || !(key_already_set(key)) ) {
+        for (size_t i = 0; i < values.size(); i++) {
+          values[i] = def_values[i];
+        }
+        mark_key_set_default< std::vector<TYPE> >(key_str, def_values,
+                                                  parse_mode);
+      }
+
+    }
   }
 
   return b_found_any;
@@ -409,7 +446,19 @@ void colvarparse::add_keyword(char const *key)
 
   key_set_modes[key_str_lower] = key_not_set;
 
-  allowed_keywords.push_back(key_str);
+  allowed_keywords.push_back(key_str_lower);
+}
+
+
+bool colvarparse::key_already_set(std::string const &key_str)
+{
+  std::string const key_str_lower(to_lower_cppstr(key_str));
+
+  if (key_set_modes.find(key_str_lower) == key_set_modes.end()) {
+    return false;
+  }
+
+  return (key_set_modes[key_str_lower] > 0);
 }
 
 
