@@ -275,16 +275,16 @@ int colvarmodule::parse_global_params(std::string const &conf)
 
   parse->get_keyval(conf, "debugGradientsStepSize", debug_gradients_step_size,
                     debug_gradients_step_size,
-                    colvarparse::parse_restart);
+                    colvarparse::parse_silent);
 
   parse->get_keyval(conf, "monitorEigenvalueCrossing",
                     colvarmodule::rotation::monitor_crossings,
                     colvarmodule::rotation::monitor_crossings,
-                    colvarparse::parse_restart);
+                    colvarparse::parse_silent);
   parse->get_keyval(conf, "eigenvalueCrossingThreshold",
                     colvarmodule::rotation::crossing_threshold,
                     colvarmodule::rotation::crossing_threshold,
-                    colvarparse::parse_restart);
+                    colvarparse::parse_silent);
 
   parse->get_keyval(conf, "colvarsTrajFrequency", cv_traj_freq, cv_traj_freq);
   parse->get_keyval(conf, "colvarsRestartFrequency",
