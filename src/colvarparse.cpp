@@ -15,13 +15,33 @@ char const * const colvarparse::white_space = " \t";
 
 namespace {
 
-  void error_invalid_value(char const *key)
+  // Avoid having to put the bool assignment in the template :-(
+  void set_bool(void *p, bool val)
   {
-    cvm::error("Error: improper or missing value "
-               "for \""+std::string(key)+"\".\n", INPUT_ERROR);
+    bool *v = reinterpret_cast<bool *>(p);
+    *v = val;
   }
 
 }
+
+
+#if (__cplusplus >= 201103L)
+#define TEMPLATE_TYPES_EQUAL(X,Y) (std::is_same<X,Y>::value)
+#else
+// This hack won't need to stick around much longer
+template<typename T, typename U> class TEMPLATE_TYPES_EQUAL
+{
+private:
+  static bool const value = false;
+public:
+  inline operator bool() const { return value; }
+};
+template<typename T> class TEMPLATE_TYPES_EQUAL<T,T>
+{
+private:
+  static bool const value = true;
+};
+#endif
 
 
 bool colvarparse::get_key_string_value(std::string const &conf,
@@ -84,37 +104,62 @@ bool colvarparse::_get_keyval_scalar_(std::string const &conf,
   bool const b_found_any = get_key_string_value(conf, key, data);
 
   if (data.size()) {
-    std::istringstream is(data);
-    size_t value_count = 0;
-    TYPE x(def_value);
 
-    while (is >> x) {
-      value = x;
-      value_count++;
-    }
+    if (TEMPLATE_TYPES_EQUAL(TYPE, bool)) {
+      if ( (data == std::string("on")) ||
+           (data == std::string("yes")) ||
+           (data == std::string("true")) ) {
+        set_bool(reinterpret_cast<void *>(&value), true);
+      } else if ( (data == std::string("off")) ||
+                  (data == std::string("no")) ||
+                  (data == std::string("false")) ) {
+        set_bool(reinterpret_cast<void *>(&value), false);
+      } else {
+        cvm::error("Error: boolean values only are allowed "
+                   "for \""+std::string(key)+"\".\n", INPUT_ERROR);
+      }
 
-    if (value_count == 0) {
-      cvm::error("Error: in parsing \""+
-                 std::string(key)+"\".\n", INPUT_ERROR);
-    }
+    } else {
 
-    if (value_count > 1) {
-      cvm::error("Error: multiple values "
-                 "are not allowed for keyword \""+
-                 std::string(key)+"\".\n", INPUT_ERROR);
+      std::istringstream is(data);
+      size_t value_count = 0;
+      TYPE x(def_value);
+
+      while (is >> x) {
+        value = x;
+        value_count++;
+      }
+
+      if (value_count == 0) {
+        cvm::error("Error: in parsing \""+
+                   std::string(key)+"\".\n", INPUT_ERROR);
+      }
+
+      if (value_count > 1) {
+        cvm::error("Error: multiple values "
+                   "are not allowed for keyword \""+
+                   std::string(key)+"\".\n", INPUT_ERROR);
+      }
     }
 
     echo_key_set_user<TYPE>(key, value, parse_mode);
 
-  } else {
+  } else { // No string value
 
     if (b_found_any) {
-      error_invalid_value(key);
+      if (TEMPLATE_TYPES_EQUAL(TYPE, bool)) {
+        // An empty string counts as a user-provided true value
+        set_bool(reinterpret_cast<void *>(&value), true);
+        echo_key_set_user<TYPE>(key, value, parse_mode);
+      } else {
+        cvm::error("Error: improper or missing value "
+                   "for \""+std::string(key)+"\".\n", INPUT_ERROR);
+      }
+    } else {
+
+      value = def_value;
+      echo_key_set_default<TYPE>(key, value, parse_mode);
     }
-
-    value = def_value;
-
-    echo_key_set_default<TYPE>(key, value, parse_mode);
   }
 
   return b_found_any;
@@ -264,66 +309,13 @@ bool colvarparse::get_keyval(std::string const &conf,
   return _get_keyval_scalar_<colvarvalue>(conf, key, value, def_value, parse_mode);
 }
 
-
 bool colvarparse::get_keyval(std::string const &conf,
                              char const *key,
                              bool &value,
                              bool const &def_value,
                              Parse_Mode const parse_mode)
 {
-  std::string data;
-  bool b_found = false, b_found_any = false;
-  size_t save_pos = 0, found_count = 0;
-
-  do {
-    std::string data_this = "";
-    b_found = key_lookup(conf, key, &data_this, &save_pos);
-    if (b_found) {
-      if (!b_found_any)
-        b_found_any = true;
-      found_count++;
-      data = data_this;
-    }
-  } while (b_found);
-
-  if (found_count > 1) {
-    cvm::error("Error: found more than one instance of \""+
-               std::string(key)+"\".\n", INPUT_ERROR);
-  }
-
-  if (data.size()) {
-    if ( (data == std::string("on")) ||
-         (data == std::string("yes")) ||
-         (data == std::string("true")) ) {
-      value = true;
-    } else if ( (data == std::string("off")) ||
-                (data == std::string("no")) ||
-                (data == std::string("false")) ) {
-      value = false;
-    } else
-      cvm::error("Error: boolean values only are allowed "
-                 "for \""+std::string(key)+"\".\n", INPUT_ERROR);
-    if (parse_mode != parse_echo) {
-      cvm::log("# "+std::string(key)+" = "+
-               (value ? "on" : "off")+"\n");
-    }
-  } else {
-
-    if (b_found_any) {
-      if (parse_mode != parse_echo) {
-        cvm::log("# "+std::string(key)+" = on\n");
-      }
-      value = true;
-    } else {
-      value = def_value;
-      if (parse_mode != parse_echo_default) {
-        cvm::log("# "+std::string(key)+" = "+
-                 (def_value ? "on" : "off")+" [default]\n");
-      }
-    }
-  }
-
-  return b_found_any;
+  return _get_keyval_scalar_<bool>(conf, key, value, def_value, parse_mode);
 }
 
 
