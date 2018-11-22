@@ -13,15 +13,20 @@
 char const * const colvarparse::white_space = " \t";
 
 
-// definition of single-value keyword parsers
+namespace {
 
-template<typename TYPE> bool colvarparse::_get_keyval_scalar_(std::string const &conf,
-                                                              char const *key,
-                                                              TYPE &value,
-                                                              TYPE const &def_value,
-                                                              Parse_Mode const parse_mode)
+  void error_invalid_value(char const *key)
+  {
+    cvm::error("Error: improper or missing value "
+               "for \""+std::string(key)+"\".\n", INPUT_ERROR);
+  }
+
+}
+
+
+bool colvarparse::get_key_string_value(std::string const &conf,
+                                       char const *key, std::string &data)
 {
-  std::string data;
   bool b_found = false, b_found_any = false;
   size_t save_pos = 0, found_count = 0;
 
@@ -39,128 +44,92 @@ template<typename TYPE> bool colvarparse::_get_keyval_scalar_(std::string const 
   if (found_count > 1) {
     cvm::error("Error: found more than one instance of \""+
                std::string(key)+"\".\n", INPUT_ERROR);
-  }
-
-  if (data.size()) {
-    std::istringstream is(data);
-    TYPE x(def_value);
-    if (is >> x) {
-      value = x;
-    } else {
-      cvm::error("Error: in parsing \""+
-                 std::string(key)+"\".\n", INPUT_ERROR);
-    }
-    if (parse_mode | parse_echo) {
-      cvm::log("# "+std::string(key)+" = "+
-               cvm::to_str(value)+"\n");
-    }
-  } else {
-
-    if (b_found_any) {
-      cvm::error("Error: improper or missing value "
-                 "for \""+std::string(key)+"\".\n", INPUT_ERROR);
-    }
-    value = def_value;
-    if (parse_mode | parse_echo_default) {
-      cvm::log("# "+std::string(key)+" = "+
-               cvm::to_str(def_value)+" [default]\n");
-    }
   }
 
   return b_found_any;
 }
 
 
-bool colvarparse::_get_keyval_scalar_string_(std::string const &conf,
-                                             char const *key,
-                                             std::string &value,
-                                             std::string const &def_value,
-                                             Parse_Mode const parse_mode)
+template<typename TYPE>
+void colvarparse::echo_key_set_user(char const *key,
+                                    TYPE const &value,
+                                    Parse_Mode const &parse_mode)
+{
+  if (parse_mode | parse_echo) {
+    cvm::log("# "+std::string(key)+" = "+cvm::to_str(value)+"\n");
+  }
+}
+
+
+template<typename TYPE>
+void colvarparse::echo_key_set_default(char const *key,
+                                       TYPE const &def_value,
+                                       Parse_Mode const &parse_mode)
+{
+  if (parse_mode | parse_echo_default) {
+    cvm::log("# "+std::string(key)+" = "+cvm::to_str(def_value)+
+             " [default]\n");
+  }
+}
+
+
+template<typename TYPE>
+bool colvarparse::_get_keyval_scalar_(std::string const &conf,
+                                      char const *key,
+                                      TYPE &value,
+                                      TYPE const &def_value,
+                                      Parse_Mode const &parse_mode)
 {
   std::string data;
-  bool b_found = false, b_found_any = false;
-  size_t save_pos = 0, found_count = 0;
-
-  do {
-    std::string data_this = "";
-    b_found = key_lookup(conf, key, &data_this, &save_pos);
-    if (b_found) {
-      if (!b_found_any)
-        b_found_any = true;
-      found_count++;
-      data = data_this;
-    }
-  } while (b_found);
-
-  if (found_count > 1) {
-    cvm::error("Error: found more than one instance of \""+
-               std::string(key)+"\".\n", INPUT_ERROR);
-  }
+  bool const b_found_any = get_key_string_value(conf, key, data);
 
   if (data.size()) {
     std::istringstream is(data);
-    size_t data_count = 0;
-    std::string x(def_value);
+    size_t value_count = 0;
+    TYPE x(def_value);
+
     while (is >> x) {
       value = x;
-      data_count++;
+      value_count++;
     }
-    if (data_count == 0)
+
+    if (value_count == 0) {
       cvm::error("Error: in parsing \""+
                  std::string(key)+"\".\n", INPUT_ERROR);
-    if (data_count > 1) {
+    }
+
+    if (value_count > 1) {
       cvm::error("Error: multiple values "
                  "are not allowed for keyword \""+
                  std::string(key)+"\".\n", INPUT_ERROR);
     }
-    if (parse_mode != parse_echo) {
-      cvm::log("# "+std::string(key)+" = \""+
-               cvm::to_str(value)+"\"\n");
-    }
+
+    echo_key_set_user<TYPE>(key, value, parse_mode);
+
   } else {
 
     if (b_found_any) {
-      cvm::error("Error: improper or missing value "
-                 "for \""+std::string(key)+"\".\n", INPUT_ERROR);
+      error_invalid_value(key);
     }
+
     value = def_value;
-    if (parse_mode != parse_echo_default) {
-      cvm::log("# "+std::string(key)+" = \""+
-               cvm::to_str(def_value)+"\" [default]\n");
-    }
+
+    echo_key_set_default<TYPE>(key, value, parse_mode);
   }
 
   return b_found_any;
 }
 
 
-// multiple-value keyword parsers
-
-template<typename TYPE> bool colvarparse::_get_keyval_vector_(std::string const &conf,
-                                                              char const *key,
-                                                              std::vector<TYPE> &values,
-                                                              std::vector<TYPE> const &def_values,
-                                                              Parse_Mode const parse_mode)
+template<typename TYPE>
+bool colvarparse::_get_keyval_vector_(std::string const &conf,
+                                      char const *key,
+                                      std::vector<TYPE> &values,
+                                      std::vector<TYPE> const &def_values,
+                                      Parse_Mode const &parse_mode)
 {
   std::string data;
-  bool b_found = false, b_found_any = false;
-  size_t save_pos = 0, found_count = 0;
-
-  do {
-    std::string data_this = "";
-    b_found = key_lookup(conf, key, &data_this, &save_pos);
-    if (b_found) {
-      if (!b_found_any)
-        b_found_any = true;
-      found_count++;
-      data = data_this;
-    }
-  } while (b_found);
-
-  if (found_count > 1) {
-    cvm::error("Error: found more than one instance of \""+
-               std::string(key)+"\".\n", INPUT_ERROR);
-  }
+  bool const b_found_any = get_key_string_value(conf, key, data);
 
   if (data.size()) {
     std::istringstream is(data);
@@ -168,10 +137,11 @@ template<typename TYPE> bool colvarparse::_get_keyval_vector_(std::string const 
     if (values.size() == 0) {
 
       std::vector<TYPE> x;
-      if (def_values.size())
+      if (def_values.size()) {
         x = def_values;
-      else
+      } else {
         x.assign(1, TYPE());
+      }
 
       for (size_t i = 0;
            ( is >> x[ ((i<x.size()) ? i : x.size()-1) ] );
@@ -193,10 +163,7 @@ template<typename TYPE> bool colvarparse::_get_keyval_vector_(std::string const 
       }
     }
 
-    if (parse_mode != parse_echo) {
-      cvm::log("# "+std::string(key)+" = "+
-               cvm::to_str(values)+"\n");
-    }
+    echo_key_set_user< std::vector<TYPE> >(key, values, parse_mode);
 
   } else {
 
@@ -205,13 +172,17 @@ template<typename TYPE> bool colvarparse::_get_keyval_vector_(std::string const 
                  std::string(key)+"\".\n", INPUT_ERROR);
     }
 
-    for (size_t i = 0; i < values.size(); i++)
-      values[i] = def_values[ (i > def_values.size()) ? 0 : i ];
-
-    if (parse_mode != parse_echo_default) {
-      cvm::log("# "+std::string(key)+" = "+
-               cvm::to_str(def_values)+" [default]\n");
+    if ((values.size() > 0) && (values.size() != def_values.size())) {
+      cvm::error("Error: the number of default values for \""+
+                 std::string(key)+"\" is different from the number of "
+                 "current values.\n", BUG_ERROR);
     }
+
+    for (size_t i = 0; i < values.size(); i++) {
+      values[i] = def_values[i];
+    }
+
+    echo_key_set_default< std::vector<TYPE> >(key, def_values, parse_mode);
   }
 
   return b_found_any;
@@ -254,7 +225,7 @@ bool colvarparse::get_keyval(std::string const &conf,
                              std::string const &def_value,
                              Parse_Mode const parse_mode)
 {
-  return _get_keyval_scalar_string_(conf, key, value, def_value, parse_mode);
+  return _get_keyval_scalar_<std::string>(conf, key, value, def_value, parse_mode);
 }
 
 bool colvarparse::get_keyval(std::string const &conf,

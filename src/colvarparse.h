@@ -194,23 +194,37 @@ public:
 
 protected:
 
-  // Templates
-  template<typename TYPE> bool _get_keyval_scalar_(std::string const &conf,
-                                                   char const *key,
-                                                   TYPE &value,
-                                                   TYPE const &def_value,
-                                                   Parse_Mode const parse_mode);
-  bool _get_keyval_scalar_string_(std::string const &conf,
-                                  char const *key,
-                                  std::string &value,
-                                  std::string const &def_value,
-                                  Parse_Mode const parse_mode);
+  /// Get the string value of a keyword, and save it for later parsing
+  bool get_key_string_value(std::string const &conf,
+                            char const *key, std::string &data);
 
-  template<typename TYPE> bool _get_keyval_vector_(std::string const &conf,
-                                                   char const *key,
-                                                   std::vector<TYPE> &values,
-                                                   std::vector<TYPE> const &def_values,
-                                                   Parse_Mode const parse_mode);
+  /// Template for single-value keyword parsers
+  template<typename TYPE>
+  bool _get_keyval_scalar_(std::string const &conf,
+                           char const *key,
+                           TYPE &value,
+                           TYPE const &def_value,
+                           Parse_Mode const &parse_mode);
+
+  /// Template for multiple-value keyword parsers
+  template<typename TYPE>
+  bool _get_keyval_vector_(std::string const &conf,
+                           char const *key,
+                           std::vector<TYPE> &values,
+                           std::vector<TYPE> const &def_values,
+                           Parse_Mode const &parse_mode);
+
+  /// If parse_mode requires it, print that the keyword has been user-defined
+  template<typename TYPE>
+  void echo_key_set_user(char const *key,
+                         TYPE const &value,
+                         Parse_Mode const &parse_mode);
+
+  /// If parse_mode requires it, print that the keyword has been set by default
+  template<typename TYPE>
+  void echo_key_set_default(char const *key,
+                            TYPE const &value,
+                            Parse_Mode const &parse_mode);
 
 public:
 
