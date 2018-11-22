@@ -69,8 +69,8 @@ public:
     /// Successive calls to get_keyval() will override the previous values
     /// when the keyword is not given any more
     parse_override = (1<<17),
-    /// Alias for parse_null (allows redefining its behavior later)
-    parse_restart = 0,
+    /// The call is being executed from a read_restart() function
+    parse_restart = (1<<18),
     /// Alias for old default behavior (should be phased out)
     parse_normal = (1<<2) | (1<<1) | (1<<17)
   };
@@ -228,6 +228,13 @@ protected:
                             TYPE const &def_value,
                             Parse_Mode const &parse_mode);
 
+  /// Raise error condition due to the keyword being required!
+  void error_key_required(std::string const &key_str,
+                          Parse_Mode const &parse_mode);
+  
+  /// True if the keyword has been set already
+  bool key_already_set(std::string const &key_str);
+  
 public:
 
   /// \brief Return a lowercased copy of the string
