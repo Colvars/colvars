@@ -76,7 +76,7 @@ void colvarparse::mark_key_set_user(std::string const &key_str,
                                     Parse_Mode const &parse_mode)
 {
   key_set_modes[to_lower_cppstr(key_str)] = key_set_user;
-  if (parse_mode | parse_echo) {
+  if (parse_mode & parse_echo) {
     cvm::log("# "+key_str+" = "+cvm::to_str(value)+"\n");
   }
 }
@@ -88,7 +88,7 @@ void colvarparse::mark_key_set_default(std::string const &key_str,
                                        Parse_Mode const &parse_mode)
 {
   key_set_modes[to_lower_cppstr(key_str)] = key_set_default;
-  if (parse_mode | parse_echo_default) {
+  if (parse_mode & parse_echo_default) {
     cvm::log("# "+key_str+" = "+cvm::to_str(def_value)+
              " [default]\n");
   }
