@@ -5,6 +5,7 @@
 
 #include <cstring>
 #include <string>
+#include <map>
 
 #include "colvarmodule.h"
 #include "colvarvalue.h"
@@ -55,7 +56,7 @@ public:
 
   /// How a keyword is parsed in a string
   enum Parse_Mode {
-    /// Zero for all other flags
+    /// Zero for all flags
     parse_null = 0,
     /// Print the value of a keyword if it is given
     parse_echo = (1<<1),
@@ -67,10 +68,13 @@ public:
     parse_silent = 0,
     /// Raise error if the keyword is not provided
     parse_required = (1<<16),
-    /// Alias for parse_null (allows to define behavior later)
+    /// Successive calls to get_keyval() will override the previous values
+    /// when the keyword is not given any more
+    parse_override = (1<<17),
+    /// Alias for parse_null (allows redefining its behavior later)
     parse_restart = 0,
-    /// Alias for parse_echo_all (should be phased out)
-    parse_normal = (1<<2) | (1<<1)
+    /// Alias for old default behavior (should be phased out)
+    parse_normal = (1<<2) | (1<<1) | (1<<17)
   };
 
   /// \brief Check that all the keywords within "conf" are in the list
@@ -214,15 +218,15 @@ protected:
                            std::vector<TYPE> const &def_values,
                            Parse_Mode const &parse_mode);
 
-  /// If parse_mode requires it, print that the keyword has been user-defined
+  /// Record that the keyword has just been user-defined
   template<typename TYPE>
-  void echo_key_set_user(char const *key,
+  void mark_key_set_user(std::string const &key_str,
                          TYPE const &value,
                          Parse_Mode const &parse_mode);
 
-  /// If parse_mode requires it, print that the keyword has been set by default
+  /// Record that the keyword has just been set to its default value
   template<typename TYPE>
-  void echo_key_set_default(char const *key,
+  void mark_key_set_default(std::string const &key_str,
                             TYPE const &value,
                             Parse_Mode const &parse_mode);
 
@@ -294,6 +298,16 @@ protected:
   /// by each call to colvarparse::get_keyval() or
   /// colvarparse::key_lookup()
   std::list<std::string> allowed_keywords;
+
+  /// How a keyword has been set
+  enum key_set_mode {
+    key_not_set = 0,
+    key_set_user = 1,
+    key_set_default = 2
+  };
+
+  /// Track which keywords have been already set, and how
+  std::map<std::string, key_set_mode> key_set_modes;
 
   /// \brief List of delimiters for the values of each keyword in the
   /// configuration string; all keywords will be stripped of their
