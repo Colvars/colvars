@@ -69,6 +69,7 @@ int colvarbias::init(std::string const &conf)
       cvm::error("Error: no collective variables specified.\n", INPUT_ERROR);
       return INPUT_ERROR;
     }
+
   } else {
     cvm::log("Reinitializing bias \""+name+"\".\n");
   }
