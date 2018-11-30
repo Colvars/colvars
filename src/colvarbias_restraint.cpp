@@ -232,8 +232,8 @@ int colvarbias_restraint_moving::set_state_params(std::string const &conf)
 {
   if (b_chg_centers || b_chg_force_k) {
     if (target_nstages) {
-      if (!get_keyval(conf, "stage", stage))
-        cvm::error("Error: current stage is missing from the restart.\n");
+      get_keyval(conf, "stage", stage, stage,
+                 colvarparse::parse_restart | colvarparse::parse_required);
     }
   }
   return COLVARS_OK;
@@ -427,13 +427,13 @@ int colvarbias_restraint_centers_moving::set_state_params(std::string const &con
   colvarbias_restraint::set_state_params(conf);
 
   if (b_chg_centers) {
-    //    cvm::log ("Reading the updated restraint centers from the restart.\n");
-    if (!get_keyval(conf, "centers", colvar_centers))
-      cvm::error("Error: restraint centers are missing from the restart.\n");
-    if (is_enabled(f_cvb_output_acc_work)) {
-      if (!get_keyval(conf, "accumulatedWork", acc_work))
-        cvm::error("Error: accumulatedWork is missing from the restart.\n");
-    }
+    get_keyval(conf, "centers", colvar_centers, colvar_centers,
+               colvarparse::parse_restart | colvarparse::parse_required);
+  }
+
+  if (is_enabled(f_cvb_output_acc_work)) {
+    get_keyval(conf, "accumulatedWork", acc_work, acc_work,
+               colvarparse::parse_restart | colvarparse::parse_required);
   }
 
   return COLVARS_OK;
@@ -663,13 +663,13 @@ int colvarbias_restraint_k_moving::set_state_params(std::string const &conf)
   colvarbias_restraint::set_state_params(conf);
 
   if (b_chg_force_k) {
-    //    cvm::log ("Reading the updated force constant from the restart.\n");
-    if (!get_keyval(conf, "forceConstant", force_k, force_k))
-      cvm::error("Error: force constant is missing from the restart.\n");
-    if (is_enabled(f_cvb_output_acc_work)) {
-      if (!get_keyval(conf, "accumulatedWork", acc_work))
-        cvm::error("Error: accumulatedWork is missing from the restart.\n");
-    }
+    get_keyval(conf, "forceConstant", force_k, force_k,
+               colvarparse::parse_restart | colvarparse::parse_required);
+  }
+
+  if (is_enabled(f_cvb_output_acc_work)) {
+    get_keyval(conf, "accumulatedWork", acc_work, acc_work,
+               colvarparse::parse_restart | colvarparse::parse_required);
   }
 
   return COLVARS_OK;

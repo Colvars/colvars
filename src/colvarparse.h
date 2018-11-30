@@ -231,10 +231,10 @@ protected:
   /// Raise error condition due to the keyword being required!
   void error_key_required(std::string const &key_str,
                           Parse_Mode const &parse_mode);
-  
+
   /// True if the keyword has been set already
   bool key_already_set(std::string const &key_str);
-  
+
 public:
 
   /// \brief Return a lowercased copy of the string
@@ -335,5 +335,13 @@ protected:
 
 };
 
+
+/// Bitwise OR between two Parse_mode flags
+inline colvarparse::Parse_Mode operator | (colvarparse::Parse_Mode const &mode1,
+                                           colvarparse::Parse_Mode const &mode2)
+{
+  return static_cast<colvarparse::Parse_Mode>(static_cast<int>(mode1) |
+                                              static_cast<int>(mode2));
+}
 
 #endif
