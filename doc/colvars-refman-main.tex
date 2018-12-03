@@ -64,8 +64,6 @@ Detailed explanations of the design of the Colvars module are provided in refere
 
 
 \cvsec{A crash course}{sec:colvars_crash_course}
-% FIXME: the example uses NAMD syntax to select Calphas, which may confuse
-% LAMMPS users
 
 Suppose that we want to run a steered MD experiment where a small molecule is pulled away from a protein binding site.
 In Colvars terms, this is done by applying a moving restraint to the distance between the two objects.
@@ -74,30 +72,35 @@ The configuration will contain two blocks, one defining the distance variable (s
 \bigskip
 % verbatim can't appear within commands
 {\noindent\ttfamily
-colvar \{\\
+\cvlammpsonly{indexFile index.ndx\\}colvar \{\\
 \-~~name dist\\
 \-~~distance \{\\
 \-~~~~group1 \{ atomNumbersRange 42-55 \}\\
-\-~~~~group2 \{\\
+\cvnamebasedonly{\-~~~~group2 \{\\
 \-~~~~~~psfSegID  PR\\
-\-~~~~~~atomNameResidueRange  CA 15-30 \}\\
-\-~~~~\}\\
+\-~~~~~~atomNameResidueRange  CA 15-30\\
+\-~~~~\}\\}
+\cvlammpsonly{\-~~~~group2 \{ indexGroup Protein\_Calpha\_15-30 \}\\}
 \-~~\}\\
 \}\\
 \\
 harmonic \{\\
 \-~~colvars dist\\
 \-~~forceConstant 20.0\\
-\-~~centers 4.~~~~~~~~~~\# initial distance\\
-\-~~targetCenters 15.~~~\# final distance\\
+\-~~centers 4.0~~~~~~~~~\# initial distance\\
+\-~~targetCenters 15.0~~\# final distance\\
 \-~~targetNumSteps 500000\\
 \}\\
 }
 
-Reading this input in plain English: the variable here named \emph{dist} consists in a distance function between the centers of two groups: the ligand (atoms 42 to 55) and the alpha carbon atoms (CA) of residues 15 to 30 in the protein (segment name PR).
-The atom selection syntax is detailed in section \ref{sec:colvar_atom_groups}.
-
+Reading this input in plain English: the variable here named \emph{dist} consists in a distance function between the centers of two groups: the ligand (atoms 42 to 55) and the $\alpha$-carbon atoms of residues 15 to 30 in the protein \cvnamebasedonly{(segment name PR)}\cvlammpsonly{(selected from the index group ``\texttt{C-alpha\_15-30}'')}.
 To the ``\emph{dist}'' variable, we apply a \texttt{harmonic} potential of force constant 20~\cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{energy units}/\AA$^2$, initially centered around a value of 4~\AA, which will increase to 15~\AA{} over 500,000 simulation steps.
+
+The atom selection keywords is detailed in section \ref{sec:colvar_atom_groups}.
+\cvlammpsonly{If the selection is too complex to implement only via internal keywords, an external index file may be created following the format used in GROMACS:\\
+\cvurl{http://manual.gromacs.org/documentation/current/user-guide/file-formats.html\#ndx}\\
+or by using the \texttt{group2ndx} LAMMPS command.}
+
 
 
 \cvsec{General parameters}{sec:colvarmodule}
