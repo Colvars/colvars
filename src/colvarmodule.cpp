@@ -21,6 +21,8 @@
 colvarmodule::colvarmodule(colvarproxy *proxy_in)
 {
   depth_s = 0;
+  log_level_ = 10;
+
   cv_traj_os = NULL;
 
   if (proxy == NULL) {
@@ -248,6 +250,9 @@ int colvarmodule::append_new_config(std::string const &new_conf)
 
 int colvarmodule::parse_global_params(std::string const &conf)
 {
+  // TODO document and then echo this keyword
+  parse->get_keyval(conf, "logLevel", log_level_, log_level_,
+                    colvarparse::parse_silent);
 
   {
     std::string index_file_name;
@@ -1590,14 +1595,16 @@ std::ostream & colvarmodule::write_traj(std::ostream &os)
 }
 
 
-void cvm::log(std::string const &message)
+void cvm::log(std::string const &message, int min_log_level)
 {
+  if (cvm::log_level() < min_log_level) return;
   // allow logging when the module is not fully initialized
   size_t const d = (cvm::main() != NULL) ? depth() : 0;
-  if (d > 0)
+  if (d > 0) {
     proxy->log((std::string(2*d, ' '))+message);
-  else
+  } else {
     proxy->log(message);
+  }
 }
 
 
@@ -2080,6 +2087,7 @@ colvarproxy *colvarmodule::proxy = NULL;
 // static runtime data
 cvm::real colvarmodule::debug_gradients_step_size = 1.0e-07;
 int       colvarmodule::errorCode = 0;
+int       colvarmodule::log_level_ = 10;
 long      colvarmodule::it = 0;
 long      colvarmodule::it_restart = 0;
 size_t    colvarmodule::restart_out_freq = 0;

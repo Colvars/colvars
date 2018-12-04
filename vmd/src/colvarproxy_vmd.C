@@ -763,11 +763,11 @@ int colvarproxy_vmd::init_atom(cvm::residue_id const &resid,
   }
 
   if (cvm::debug())
-    log("Adding atom \""+
-        atom_name+"\" in residue "+
-        cvm::to_str(resid)+
-        " (index "+cvm::to_str(aid)+
-        ") for collective variables calculation.\n");
+    cvm::log("Adding atom \""+
+             atom_name+"\" in residue "+
+             cvm::to_str(resid)+
+             " (index "+cvm::to_str(aid)+
+             ") for collective variables calculation.\n");
 
   int const index = add_atom_slot(aid);
 
