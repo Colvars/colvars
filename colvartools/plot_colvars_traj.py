@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
-# Select variables from a Colvars trajectory file and optionally plot them as
-# a 1D graph as a function of time or of one of the variables.
+# Select variables from a Colvars trajectory file and plot them as
+# a 1D graph as a function of time or of one of the variables, or
+# optionally save them to a new text file
 
-# Source: https://github.com/colvars/colvars/blob/master/colvartools/plot_colvars_traj.py?raw=true
+# Download link: https://github.com/Colvars/colvars/blob/master/colvartools/plot_colvars_traj.py?raw=true
+# Contact: giacomo.fiorin@gmail.com
 
 from __future__ import print_function
 
@@ -204,7 +206,8 @@ if (__name__ == '__main__'):
         argparse.ArgumentParser(description='Select variables from a Colvars '
                                 'trajectory file and optionally plot them '
                                 'as a 1D graph as a function of time or of '
-                                'one of the variables.', \
+                                'one of the variables.'
+                                'Plotting functions require Matplotlib.', \
             formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument(dest='filenames',
@@ -263,17 +266,16 @@ if (__name__ == '__main__'):
                         default=None)
 
     try:
-        import matplotlib
-        matplotlib.use('Agg')
-        import matplotlib.pyplot as plt
-        from matplotlib.backends.backend_pdf import PdfPages
-        matplotlib.rcParams['font.size'] = 10
 
-        parser.add_argument('--plot',
-                            dest='plot',
+        import matplotlib
+
+        parser.add_argument('--plot-file',
+                            dest='plot_file',
                             type=str,
-                            help='Plot the variables in a PDF file '
-                            'prefixed by this string.',
+                            help='Plot into a file with this name if the '
+                            'extension is one of "png", "pdf", "ps", "eps", '
+                            'or "svg", or to the screen if not given '
+                            'and --output-file is also not given.',
                             default=None)
 
         parser.add_argument('--plot-x-axis',
@@ -301,8 +303,8 @@ if (__name__ == '__main__'):
                             help='Alternative names for the legend',
                             default=[])
 
-    except:
-        pass
+    except ImportError:
+        matplotlib = None
 
     args = parser.parse_args()
 
@@ -351,17 +353,31 @@ if (__name__ == '__main__'):
                    X=list(zip(*columns)),
                    fmt=str(fmt))
 
+    else:
 
-    if (args.plot):
+        plot_filename = None
+        if (args.plot_file):
+            plot_filename = args.plot_file
+            if (not args.plot_file.lower().endswith(('png', 'pdf',
+                                                     'ps', 'eps', 'svg'))):
+                plot_filename = args.plot_file+".pdf"
 
-        lowercase = args.plot.lower()
-        if (lowercase[-4:] == '.pdf'):
-            args.plot = args.plot[:-4]
+        if (plot_filename): matplotlib.use('Agg')
 
-        pdf = PdfPages(args.plot+'.pdf')
+        import matplotlib.pyplot as plt
+        from matplotlib.backends.backend_pdf import PdfPages
+        matplotlib.rcParams['font.size'] = 10
+
         fig = plt.figure(figsize=(3.0, 3.0))
-        if (args.plot_x_label): plt.xlabel(args.plot_x_label)
-        if (args.plot_y_label): plt.ylabel(args.plot_y_label)
+        if (args.plot_x_label):
+            plt.xlabel(args.plot_x_label)
+        else:
+            plt.xlabel(args.plot_x_axis)
+
+        if (args.plot_y_label):
+            plt.ylabel(args.plot_y_label)
+        else:
+            plt.ylabel('Variables')
 
         for var in variables:
 
@@ -386,6 +402,8 @@ if (__name__ == '__main__'):
         plt.legend(loc='upper left')
         plt.tight_layout()
 
-        pdf.savefig()
-        pdf.close()
+        if (plot_filename):
+            plt.savefig(plot_filename)
+        else:
+            plt.show()
 
