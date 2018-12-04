@@ -206,8 +206,9 @@ if (__name__ == '__main__'):
         argparse.ArgumentParser(description='Select variables from a Colvars '
                                 'trajectory file and optionally plot them '
                                 'as a 1D graph as a function of time or of '
-                                'one of the variables.'
-                                'Plotting functions require Matplotlib.', \
+                                'one of the variables.'+os.linesep+
+                                'Plotting functions are enabled when '
+                                'Matplotlib is available.', \
             formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument(dest='filenames',
