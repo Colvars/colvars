@@ -150,11 +150,11 @@ void colvarproxy_lammps::init(const char *conf_file)
   }
 
   if (cvm::debug()) {
-    log("atoms_ids = "+cvm::to_str(atoms_ids)+"\n");
-    log("atoms_ncopies = "+cvm::to_str(atoms_ncopies)+"\n");
-    log("atoms_positions = "+cvm::to_str(atoms_positions)+"\n");
-    log(cvm::line_marker);
-    log("Info: done initializing the colvars proxy object.\n");
+    cvm::log("atoms_ids = "+cvm::to_str(atoms_ids)+"\n");
+    cvm::log("atoms_ncopies = "+cvm::to_str(atoms_ncopies)+"\n");
+    cvm::log("atoms_positions = "+cvm::to_str(atoms_positions)+"\n");
+    cvm::log(cvm::line_marker);
+    cvm::log("Info: done initializing the colvars proxy object.\n");
   }
 }
 
@@ -178,7 +178,7 @@ int colvarproxy_lammps::setup()
 double colvarproxy_lammps::compute()
 {
   if (cvm::debug()) {
-    log(std::string(cvm::line_marker)+
+    cvm::log(std::string(cvm::line_marker)+
         "colvarproxy_lammps step no. "+
         cvm::to_str(_lmp->update->ntimestep)+" [first - last = "+
         cvm::to_str(_lmp->update->beginstep)+" - "+
@@ -231,20 +231,20 @@ double colvarproxy_lammps::compute()
   bias_energy = 0.0;
 
   if (cvm::debug()) {
-    log("atoms_ids = "+cvm::to_str(atoms_ids)+"\n");
-    log("atoms_ncopies = "+cvm::to_str(atoms_ncopies)+"\n");
-    log("atoms_positions = "+cvm::to_str(atoms_positions)+"\n");
-    log("atoms_new_colvar_forces = "+cvm::to_str(atoms_new_colvar_forces)+"\n");
+    cvm::log("atoms_ids = "+cvm::to_str(atoms_ids)+"\n");
+    cvm::log("atoms_ncopies = "+cvm::to_str(atoms_ncopies)+"\n");
+    cvm::log("atoms_positions = "+cvm::to_str(atoms_positions)+"\n");
+    cvm::log("atoms_new_colvar_forces = "+cvm::to_str(atoms_new_colvar_forces)+"\n");
   }
 
   // call the collective variable module
   colvars->calc();
 
   if (cvm::debug()) {
-    log("atoms_ids = "+cvm::to_str(atoms_ids)+"\n");
-    log("atoms_ncopies = "+cvm::to_str(atoms_ncopies)+"\n");
-    log("atoms_positions = "+cvm::to_str(atoms_positions)+"\n");
-    log("atoms_new_colvar_forces = "+cvm::to_str(atoms_new_colvar_forces)+"\n");
+    cvm::log("atoms_ids = "+cvm::to_str(atoms_ids)+"\n");
+    cvm::log("atoms_ncopies = "+cvm::to_str(atoms_ncopies)+"\n");
+    cvm::log("atoms_positions = "+cvm::to_str(atoms_positions)+"\n");
+    cvm::log("atoms_new_colvar_forces = "+cvm::to_str(atoms_new_colvar_forces)+"\n");
   }
 
   return bias_energy;

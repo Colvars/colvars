@@ -610,13 +610,59 @@ public:
   static void request_total_force();
 
   /// Print a message to the main log
-  static void log(std::string const &message);
+  /// \param message Message to print
+  /// \param min_log_level Only print if cvm::log_level() >= min_log_level
+  static void log(std::string const &message, int min_log_level = 10);
 
   /// Print a message to the main log and exit with error code
   static int fatal_error(std::string const &message);
 
   /// Print a message to the main log and set global error code
   static int error(std::string const &message, int code = COLVARS_ERROR);
+
+private:
+
+  /// Level of logging requested by the user
+  static int log_level_;
+
+public:
+
+  /// Level of logging requested by the user
+  static inline int log_level()
+  {
+    return log_level_;
+  }
+
+  /// Level at which initialization messages are logged
+  static inline int log_init_messages()
+  {
+    return 1;
+  }
+
+  /// Level at which a keyword's user-provided value is logged
+  static inline int log_user_params()
+  {
+    return 2;
+  }
+
+  /// Level at which a keyword's default value is logged
+  static inline int log_default_params()
+  {
+    return 3;
+  }
+
+  /// Level at which output-file operations are logged
+  static inline int log_output_files()
+  {
+    return 4;
+  }
+
+  /// Level at which input-file operations (configuration, state) are logged
+  static inline int log_input_files()
+  {
+    return 5;
+  }
+
 
   // Replica exchange commands.
   static bool replica_enabled();
