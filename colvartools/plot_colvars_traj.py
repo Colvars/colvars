@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
-# Select variables from a Colvars trajectory file and plot them as
-# a 1D graph as a function of time or of one of the variables, or
-# optionally save them to a new text file
+# Invoke this script with --help for documentation.
 
 # Download link: https://github.com/Colvars/colvars/blob/master/colvartools/plot_colvars_traj.py?raw=true
 # Contact: giacomo.fiorin@gmail.com
@@ -203,18 +201,19 @@ if (__name__ == '__main__'):
     import argparse
 
     parser = \
-        argparse.ArgumentParser(description='Select variables from a Colvars '
-                                'trajectory file and optionally plot them '
-                                'as a 1D graph as a function of time or of '
+        argparse.ArgumentParser(description='Select variables from one or more '
+                                'Colvars trajectory files, and write them to '
+                                'a concatenated file, or optionally plot them '
+                                '(1D graph) as a function of time or of '
                                 'one of the variables.'+os.linesep+
-                                'Plotting functions are enabled when '
+                                'Plotting functions are only available when '
                                 'Matplotlib is available.', \
             formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument(dest='filenames',
                         nargs='*',
                         type=argparse.FileType('r'),
-                        help='Space-separated list of input files '
+                        help='Space-separated list of .colvars.traj files '
                         '(will be concatenated)',
                         default=[])
 
@@ -326,13 +325,6 @@ if (__name__ == '__main__'):
     if (len(variables) == 0): variables = colvars_traj.variables
 
     plot_keys = dict(zip(variables, variables))
-    if (len(args.plot_keys)):
-        if (len(args.plot_keys) != len(variables)):
-            raise KeyError("--plot-keys must be as long "
-                           "as the number of variables.")
-        else:
-            plot_keys = dict(zip(variables, args.plot_keys))
-    time_unit = args.dt
 
 
     if (args.output_file):
@@ -379,6 +371,15 @@ if (__name__ == '__main__'):
             plt.ylabel(args.plot_y_label)
         else:
             plt.ylabel('Variables')
+
+        if (len(args.plot_keys)):
+            if (len(args.plot_keys) != len(variables)):
+                raise KeyError("--plot-keys must be as long "
+                               "as the number of variables.")
+            else:
+                plot_keys = dict(zip(variables, args.plot_keys))
+
+        time_unit = args.dt
 
         for var in variables:
 
