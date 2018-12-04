@@ -397,8 +397,6 @@ obj/main.o: \
 	inc/CudaPmeSolver.decl.h \
 	inc/PmeSolver.decl.h \
 	inc/ComputeCUDAMgr.decl.h \
-	inc/OptPmeMgr.decl.h \
-	inc/PmeFFTLib.decl.h \
 	inc/ComputeExtMgr.decl.h \
 	inc/ComputeQMMgr.decl.h \
 	inc/ComputeGBISserMgr.decl.h \
@@ -614,8 +612,6 @@ obj/BackEnd.o: \
 	inc/CudaPmeSolver.decl.h \
 	inc/PmeSolver.decl.h \
 	inc/ComputeCUDAMgr.decl.h \
-	inc/OptPmeMgr.decl.h \
-	inc/PmeFFTLib.decl.h \
 	inc/ComputeExtMgr.decl.h \
 	inc/ComputeQMMgr.decl.h \
 	inc/ComputeGBISserMgr.decl.h \
@@ -2579,10 +2575,6 @@ obj/ComputeMgr.o: \
 	src/PmeSolver.h \
 	src/PmeSolverUtil.h \
 	inc/PmeSolver.decl.h \
-	src/OptPme.h \
-	inc/OptPmeMgr.decl.h \
-	inc/PmeFFTLib.decl.h \
-	src/OptPmeRealSpace.h \
 	src/ComputeEwald.h \
 	src/ComputeEField.h \
 	src/ComputeHomePatch.h \
@@ -3611,96 +3603,6 @@ obj/ComputePmeCUDAMgr.o: \
 	src/DeviceCUDA.h \
 	inc/ComputePmeCUDAMgr.def.h
 	$(CXX) $(CXXFLAGS) $(COPTO)obj/ComputePmeCUDAMgr.o $(COPTC) src/ComputePmeCUDAMgr.C
-obj/OptPme.o: \
-	obj/.exists \
-	src/OptPme.C \
-	src/InfoStream.h \
-	src/Node.h \
-	src/main.h \
-	src/ProcessorPrivate.h \
-	src/BOCgroup.h \
-	inc/Node.decl.h \
-	src/PatchMap.h \
-	src/NamdTypes.h \
-	src/common.h \
-	src/Vector.h \
-	src/ResizeArray.h \
-	src/ResizeArrayRaw.h \
-	src/HomePatchList.h \
-	src/SortedArray.h \
-	src/SortableResizeArray.h \
-	src/ResizeArrayIter.h \
-	src/Lattice.h \
-	src/Tensor.h \
-	src/PatchMap.inl \
-	src/AtomMap.h \
-	src/OptPme.h \
-	src/ComputeHomePatches.h \
-	src/Compute.h \
-	src/HomePatch.h \
-	src/Patch.h \
-	src/OwnerBox.h \
-	src/Box.h \
-	src/UniqueSortedArray.h \
-	src/PatchTypes.h \
-	src/MigrateAtomsMsg.h \
-	src/Migration.h \
-	inc/PatchMgr.decl.h \
-	src/Settle.h \
-	src/PmeBase.h \
-	src/MathArray.h \
-	src/Array.h \
-	src/SimParameters.h \
-	src/MGridforceParams.h \
-	src/strlib.h \
-	src/MStream.h \
-	inc/OptPmeMgr.decl.h \
-	inc/PmeFFTLib.decl.h \
-	src/OptPmeRealSpace.h \
-	src/PmeKSpace.h \
-	src/ComputeMoa.h \
-	inc/ComputeMoaMgr.decl.h \
-	src/ComputeNonbondedUtil.h \
-	src/ReductionMgr.h \
-	src/Molecule.h \
-	src/parm.h \
-	src/structures.h \
-	src/ConfigList.h \
-	src/UniqueSet.h \
-	src/UniqueSetRaw.h \
-	src/Hydrogen.h \
-	src/GromacsTopFile.h \
-	src/GridForceGrid.h \
-	plugins/include/molfile_plugin.h \
-	plugins/include/vmdplugin.h \
-	src/PatchMgr.h \
-	inc/ComputeMgr.decl.h \
-	src/Debug.h \
-	src/WorkDistrib.h \
-	src/ComputeMap.h \
-	inc/WorkDistrib.decl.h \
-	src/varsizemsg.h \
-	src/Random.h \
-	src/Priorities.h \
-	src/PmeBase.inl \
-	src/fftlib.h \
-	src/fftmap.h \
-	src/PatchMap.h \
-	src/fftlib.h \
-	src/fftlib.C \
-	inc/PmeFFTLib.def.h \
-	inc/OptPmeMgr.def.h
-	$(CXX) $(CXXFLAGS) $(COPTO)obj/OptPme.o $(COPTC) src/OptPme.C
-obj/OptPmeRealSpace.o: \
-	obj/.exists \
-	src/OptPmeRealSpace.C \
-	src/OptPmeRealSpace.h \
-	src/PmeBase.h \
-	src/MathArray.h \
-	src/Array.h \
-	src/Vector.h \
-	src/common.h
-	$(CXX) $(CXXFLAGS) $(COPTO)obj/OptPmeRealSpace.o $(COPTC) src/OptPmeRealSpace.C
 obj/ComputeRestraints.o: \
 	obj/.exists \
 	src/ComputeRestraints.C \
@@ -5966,8 +5868,6 @@ obj/Node.o: \
 	inc/CudaPmeSolver.decl.h \
 	inc/PmeSolver.decl.h \
 	inc/ComputeCUDAMgr.decl.h \
-	inc/OptPmeMgr.decl.h \
-	inc/PmeFFTLib.decl.h \
 	inc/ComputeExtMgr.decl.h \
 	inc/ComputeQMMgr.decl.h \
 	inc/ComputeGBISserMgr.decl.h \
@@ -6049,7 +5949,6 @@ obj/Node.o: \
 	src/PmeSolverUtil.h \
 	inc/PmeSolver.decl.h \
 	inc/ComputeGridForceMgr.decl.h \
-	inc/OptPmeMgr.decl.h \
 	src/Sync.h \
 	inc/Sync.decl.h \
 	src/BackEnd.h \
@@ -6265,8 +6164,6 @@ obj/PatchMgr.o: \
 	inc/CudaPmeSolver.decl.h \
 	inc/PmeSolver.decl.h \
 	inc/ComputeCUDAMgr.decl.h \
-	inc/OptPmeMgr.decl.h \
-	inc/PmeFFTLib.decl.h \
 	inc/ComputeExtMgr.decl.h \
 	inc/ComputeQMMgr.decl.h \
 	inc/ComputeGBISserMgr.decl.h \
@@ -6543,8 +6440,6 @@ obj/ProxyPatch.o: \
 	inc/CudaPmeSolver.decl.h \
 	inc/PmeSolver.decl.h \
 	inc/ComputeCUDAMgr.decl.h \
-	inc/OptPmeMgr.decl.h \
-	inc/PmeFFTLib.decl.h \
 	inc/ComputeExtMgr.decl.h \
 	inc/ComputeQMMgr.decl.h \
 	inc/ComputeGBISserMgr.decl.h \
@@ -7137,8 +7032,6 @@ obj/WorkDistrib.o: \
 	inc/CudaPmeSolver.decl.h \
 	inc/PmeSolver.decl.h \
 	inc/ComputeCUDAMgr.decl.h \
-	inc/OptPmeMgr.decl.h \
-	inc/PmeFFTLib.decl.h \
 	inc/ComputeExtMgr.decl.h \
 	inc/ComputeQMMgr.decl.h \
 	inc/ComputeGBISserMgr.decl.h \

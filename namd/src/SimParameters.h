@@ -803,10 +803,6 @@ public:
          * accelMDdihe and accelMDdual simulation.
          * Set FALSE to manually control kernel use for development. */
 
-	Bool useOptPME;                 //  Flag TRUE -> use the scalable version of PME
-	Bool useManyToMany;             //  Flag TRUE -> use the manytomany optimization of PME.
-	                                //  This flag requres useOptPME to be set.
-
 	Bool FFTWEstimate;
 	Bool FFTWPatient;
 	Bool FFTWUseWisdom;

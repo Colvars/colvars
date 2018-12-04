@@ -995,10 +995,6 @@ void SimParameters::config_parser_fullelect(ParseOptions &opts) {
 	&PMEOffload);
 
    opts.optionalB("PME", "usePMECUDA", "Use the PME CUDA version", &usePMECUDA, CmiNumPhysicalNodes() < 5);
-   opts.optionalB("PME", "useOptPME", "Use the new scalable PME optimization", &useOptPME, FALSE);
-   opts.optionalB("PME", "useManyToMany", "Use the many-to-many PME optimization", &useManyToMany, FALSE);
-   if (PMEOn && !useOptPME)
-     useManyToMany = false;
 
 #ifdef DPME
    opts.optionalB("PME", "useDPME", "Use old DPME code?", &useDPME, FALSE);
