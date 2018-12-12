@@ -472,12 +472,12 @@ void colvarproxy_namd::calculate()
 
 // Callback functions
 
-#ifdef NAMD_TCL
-
 void colvarproxy_namd::init_tcl_pointers()
 {
+#ifdef NAMD_TCL
   // Store pointer to NAMD's Tcl interpreter
   _tcl_interp = reinterpret_cast<void *>(Node::Object()->getScript()->interp);
+#endif
 }
 
 int colvarproxy_namd::run_force_callback()
@@ -501,7 +501,6 @@ int colvarproxy_namd::run_colvar_gradient_callback(
   return colvarproxy::tcl_run_colvar_gradient_callback(name, cvc_values,
                                                        gradient);
 }
-#endif
 
 
 void colvarproxy_namd::add_energy(cvm::real energy)
@@ -670,6 +669,22 @@ void colvarproxy_namd::clear_atom(int index)
 }
 
 
+void colvarproxy_namd::update_atom_properties(int index)
+{
+  Molecule *mol = Node::Object()->molecule;
+  // update mass
+  double const mass = mol->atommass(atoms_ids[index]);
+  if (mass <= 0.001) {
+    this->log("Warning: near-zero mass for atom "+
+              cvm::to_str(atoms_ids[index]+1)+
+              "; expect unstable dynamics if you apply forces to it.\n");
+  }
+  atoms_masses[index] = mass;
+  // update charge
+  atoms_charges[index] = mol->atomcharge(atoms_ids[index]);
+}
+
+
 cvm::rvector colvarproxy_namd::position_distance(cvm::atom_pos const &pos1,
                                                  cvm::atom_pos const &pos2)
   const
@@ -820,13 +835,14 @@ int colvarproxy_namd::load_coords(char const *pdb_filename,
         break;
     }
 
-    if ((ipos < pos.size()) || (current_index != indices.end()))
-      cvm::error("Error: the number of records in the PDB file \""+
-                 std::string(pdb_filename)+
-                 "\" does not appear to match either the total number of atoms,"+
-                 " or the number of coordinates requested at this point("+
-                 cvm::to_str(pos.size())+").\n", BUG_ERROR);
-
+    if (ipos < pos.size() || (!use_pdb_field && current_index != indices.end())) {
+      size_t n_requested = use_pdb_field ? pos.size() : indices.size();
+      cvm::error("Error: number of matching records in the PDB file \""+
+                 std::string(pdb_filename)+"\" ("+cvm::to_str(ipos)+
+                 ") does not match the number of requested coordinates ("+
+                 cvm::to_str(n_requested)+").\n", INPUT_ERROR);
+      return COLVARS_ERROR;
+    }
   } else {
 
     // when the PDB contains exactly the number of atoms of the array,

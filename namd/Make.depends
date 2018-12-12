@@ -397,8 +397,6 @@ obj/main.o: \
 	inc/CudaPmeSolver.decl.h \
 	inc/PmeSolver.decl.h \
 	inc/ComputeCUDAMgr.decl.h \
-	inc/OptPmeMgr.decl.h \
-	inc/PmeFFTLib.decl.h \
 	inc/ComputeExtMgr.decl.h \
 	inc/ComputeQMMgr.decl.h \
 	inc/ComputeGBISserMgr.decl.h \
@@ -614,8 +612,6 @@ obj/BackEnd.o: \
 	inc/CudaPmeSolver.decl.h \
 	inc/PmeSolver.decl.h \
 	inc/ComputeCUDAMgr.decl.h \
-	inc/OptPmeMgr.decl.h \
-	inc/PmeFFTLib.decl.h \
 	inc/ComputeExtMgr.decl.h \
 	inc/ComputeQMMgr.decl.h \
 	inc/ComputeGBISserMgr.decl.h \
@@ -861,6 +857,12 @@ obj/Compute.o: \
 	inc/Node.decl.h \
 	src/Compute.h \
 	src/Priorities.h \
+	src/LdbCoordinator.h \
+	inc/LdbCoordinator.decl.h \
+	inc/NamdCentLB.decl.h \
+	inc/NamdNborLB.decl.h \
+	inc/NamdHybridLB.decl.h \
+	inc/NamdDummyLB.decl.h \
 	src/Debug.h
 	$(CXX) $(CXXFLAGS) $(COPTO)obj/Compute.o $(COPTC) src/Compute.C
 obj/ComputeAngles.o: \
@@ -2573,10 +2575,6 @@ obj/ComputeMgr.o: \
 	src/PmeSolver.h \
 	src/PmeSolverUtil.h \
 	inc/PmeSolver.decl.h \
-	src/OptPme.h \
-	inc/OptPmeMgr.decl.h \
-	inc/PmeFFTLib.decl.h \
-	src/OptPmeRealSpace.h \
 	src/ComputeEwald.h \
 	src/ComputeEField.h \
 	src/ComputeHomePatch.h \
@@ -3605,96 +3603,6 @@ obj/ComputePmeCUDAMgr.o: \
 	src/DeviceCUDA.h \
 	inc/ComputePmeCUDAMgr.def.h
 	$(CXX) $(CXXFLAGS) $(COPTO)obj/ComputePmeCUDAMgr.o $(COPTC) src/ComputePmeCUDAMgr.C
-obj/OptPme.o: \
-	obj/.exists \
-	src/OptPme.C \
-	src/InfoStream.h \
-	src/Node.h \
-	src/main.h \
-	src/ProcessorPrivate.h \
-	src/BOCgroup.h \
-	inc/Node.decl.h \
-	src/PatchMap.h \
-	src/NamdTypes.h \
-	src/common.h \
-	src/Vector.h \
-	src/ResizeArray.h \
-	src/ResizeArrayRaw.h \
-	src/HomePatchList.h \
-	src/SortedArray.h \
-	src/SortableResizeArray.h \
-	src/ResizeArrayIter.h \
-	src/Lattice.h \
-	src/Tensor.h \
-	src/PatchMap.inl \
-	src/AtomMap.h \
-	src/OptPme.h \
-	src/ComputeHomePatches.h \
-	src/Compute.h \
-	src/HomePatch.h \
-	src/Patch.h \
-	src/OwnerBox.h \
-	src/Box.h \
-	src/UniqueSortedArray.h \
-	src/PatchTypes.h \
-	src/MigrateAtomsMsg.h \
-	src/Migration.h \
-	inc/PatchMgr.decl.h \
-	src/Settle.h \
-	src/PmeBase.h \
-	src/MathArray.h \
-	src/Array.h \
-	src/SimParameters.h \
-	src/MGridforceParams.h \
-	src/strlib.h \
-	src/MStream.h \
-	inc/OptPmeMgr.decl.h \
-	inc/PmeFFTLib.decl.h \
-	src/OptPmeRealSpace.h \
-	src/PmeKSpace.h \
-	src/ComputeMoa.h \
-	inc/ComputeMoaMgr.decl.h \
-	src/ComputeNonbondedUtil.h \
-	src/ReductionMgr.h \
-	src/Molecule.h \
-	src/parm.h \
-	src/structures.h \
-	src/ConfigList.h \
-	src/UniqueSet.h \
-	src/UniqueSetRaw.h \
-	src/Hydrogen.h \
-	src/GromacsTopFile.h \
-	src/GridForceGrid.h \
-	plugins/include/molfile_plugin.h \
-	plugins/include/vmdplugin.h \
-	src/PatchMgr.h \
-	inc/ComputeMgr.decl.h \
-	src/Debug.h \
-	src/WorkDistrib.h \
-	src/ComputeMap.h \
-	inc/WorkDistrib.decl.h \
-	src/varsizemsg.h \
-	src/Random.h \
-	src/Priorities.h \
-	src/PmeBase.inl \
-	src/fftlib.h \
-	src/fftmap.h \
-	src/PatchMap.h \
-	src/fftlib.h \
-	src/fftlib.C \
-	inc/PmeFFTLib.def.h \
-	inc/OptPmeMgr.def.h
-	$(CXX) $(CXXFLAGS) $(COPTO)obj/OptPme.o $(COPTC) src/OptPme.C
-obj/OptPmeRealSpace.o: \
-	obj/.exists \
-	src/OptPmeRealSpace.C \
-	src/OptPmeRealSpace.h \
-	src/PmeBase.h \
-	src/MathArray.h \
-	src/Array.h \
-	src/Vector.h \
-	src/common.h
-	$(CXX) $(CXXFLAGS) $(COPTO)obj/OptPmeRealSpace.o $(COPTC) src/OptPmeRealSpace.C
 obj/ComputeRestraints.o: \
 	obj/.exists \
 	src/ComputeRestraints.C \
@@ -4540,6 +4448,18 @@ obj/GlobalMasterServer.o: \
 	src/MGridforceParams.h \
 	src/strlib.h \
 	src/MStream.h \
+	src/Molecule.h \
+	src/parm.h \
+	src/structures.h \
+	src/ConfigList.h \
+	src/UniqueSet.h \
+	src/UniqueSetRaw.h \
+	src/Hydrogen.h \
+	src/SortableResizeArray.h \
+	src/GromacsTopFile.h \
+	src/GridForceGrid.h \
+	plugins/include/molfile_plugin.h \
+	plugins/include/vmdplugin.h \
 	src/Debug.h
 	$(CXX) $(CXXFLAGS) $(COPTO)obj/GlobalMasterServer.o $(COPTC) src/GlobalMasterServer.C
 obj/GlobalMasterTest.o: \
@@ -5250,7 +5170,16 @@ obj/LJTable.o: \
 	src/Tensor.h \
 	src/MGridforceParams.h \
 	src/GromacsTopFile.h \
-	src/Debug.h
+	src/Debug.h \
+	src/Molecule.h \
+	src/ConfigList.h \
+	src/UniqueSet.h \
+	src/UniqueSetRaw.h \
+	src/Hydrogen.h \
+	src/SortableResizeArray.h \
+	src/GridForceGrid.h \
+	plugins/include/molfile_plugin.h \
+	plugins/include/vmdplugin.h
 	$(CXX) $(CXXFLAGS) $(COPTO)obj/LJTable.o $(COPTC) src/LJTable.C
 obj/Measure.o: \
 	obj/.exists \
@@ -5939,8 +5868,6 @@ obj/Node.o: \
 	inc/CudaPmeSolver.decl.h \
 	inc/PmeSolver.decl.h \
 	inc/ComputeCUDAMgr.decl.h \
-	inc/OptPmeMgr.decl.h \
-	inc/PmeFFTLib.decl.h \
 	inc/ComputeExtMgr.decl.h \
 	inc/ComputeQMMgr.decl.h \
 	inc/ComputeGBISserMgr.decl.h \
@@ -6022,7 +5949,6 @@ obj/Node.o: \
 	src/PmeSolverUtil.h \
 	inc/PmeSolver.decl.h \
 	inc/ComputeGridForceMgr.decl.h \
-	inc/OptPmeMgr.decl.h \
 	src/Sync.h \
 	inc/Sync.decl.h \
 	src/BackEnd.h \
@@ -6238,8 +6164,6 @@ obj/PatchMgr.o: \
 	inc/CudaPmeSolver.decl.h \
 	inc/PmeSolver.decl.h \
 	inc/ComputeCUDAMgr.decl.h \
-	inc/OptPmeMgr.decl.h \
-	inc/PmeFFTLib.decl.h \
 	inc/ComputeExtMgr.decl.h \
 	inc/ComputeQMMgr.decl.h \
 	inc/ComputeGBISserMgr.decl.h \
@@ -6516,8 +6440,6 @@ obj/ProxyPatch.o: \
 	inc/CudaPmeSolver.decl.h \
 	inc/PmeSolver.decl.h \
 	inc/ComputeCUDAMgr.decl.h \
-	inc/OptPmeMgr.decl.h \
-	inc/PmeFFTLib.decl.h \
 	inc/ComputeExtMgr.decl.h \
 	inc/ComputeQMMgr.decl.h \
 	inc/ComputeGBISserMgr.decl.h \
@@ -6927,6 +6849,7 @@ obj/SimParameters.o: \
 	src/MStream.h \
 	plugins/include/molfile_plugin.h \
 	plugins/include/vmdplugin.h \
+	src/LJTable.h \
 	src/ComputePme.h \
 	src/Compute.h \
 	src/PmeBase.h \
@@ -6935,6 +6858,50 @@ obj/SimParameters.o: \
 	src/PatchTypes.h \
 	src/Box.h \
 	src/OwnerBox.h \
+	src/ComputeCUDAMgr.h \
+	src/CudaUtils.h \
+	inc/ComputeCUDAMgr.decl.h \
+	src/CudaNonbondedTables.h \
+	src/CudaComputeNonbonded.h \
+	src/CudaTileListKernel.h \
+	src/CudaComputeNonbondedKernel.h \
+	src/CudaComputeGBISKernel.h \
+	src/ComputeMgr.h \
+	src/GlobalMaster.h \
+	src/GlobalMasterServer.h \
+	inc/ComputeMgr.decl.h \
+	src/ComputeBondedCUDA.h \
+	src/ComputeMap.h \
+	src/ComputeBondedCUDAKernel.h \
+	src/TupleTypesCUDA.h \
+	src/ComputeHomeTuples.h \
+	src/HomePatch.h \
+	src/Patch.h \
+	src/UniqueSortedArray.h \
+	src/SortedArray.h \
+	src/PatchMap.h \
+	src/HomePatchList.h \
+	src/ResizeArrayIter.h \
+	src/MigrateAtomsMsg.h \
+	src/Migration.h \
+	inc/PatchMgr.decl.h \
+	src/Settle.h \
+	src/Node.h \
+	inc/Node.decl.h \
+	src/PatchMap.inl \
+	src/AtomMap.h \
+	src/PatchMgr.h \
+	src/ProxyMgr.h \
+	src/UniqueSetIter.h \
+	inc/ProxyMgr.decl.h \
+	src/Parameters.h \
+	src/Priorities.h \
+	src/LdbCoordinator.h \
+	inc/LdbCoordinator.decl.h \
+	inc/NamdCentLB.decl.h \
+	inc/NamdNborLB.decl.h \
+	inc/NamdHybridLB.decl.h \
+	inc/NamdDummyLB.decl.h \
 	src/ParseOptions.h \
 	src/Communicate.h \
 	src/Output.h \
@@ -7065,8 +7032,6 @@ obj/WorkDistrib.o: \
 	inc/CudaPmeSolver.decl.h \
 	inc/PmeSolver.decl.h \
 	inc/ComputeCUDAMgr.decl.h \
-	inc/OptPmeMgr.decl.h \
-	inc/PmeFFTLib.decl.h \
 	inc/ComputeExtMgr.decl.h \
 	inc/ComputeQMMgr.decl.h \
 	inc/ComputeGBISserMgr.decl.h \

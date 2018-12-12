@@ -213,6 +213,12 @@ int colvarproxy_vmd::update_input()
 
   error_code |= update_atomic_properties();
 
+  // Do we still have a valid frame?
+  if (error_code || vmdmol->get_frame(vmdmol_frame) == NULL) {
+    error_code |= COLVARS_NO_SUCH_FRAME;
+    return error_code;
+  }
+
   // copy positions in the internal arrays
   float *vmdpos = (vmdmol->get_frame(vmdmol_frame))->pos;
   for (size_t i = 0; i < atoms_positions.size(); i++) {
@@ -563,15 +569,14 @@ int colvarproxy_vmd::load_coords(char const *pdb_filename,
         break;
     }
 
-    if ((ipos < pos.size()) || (current_index != indices.end())) {
-      cvm::error("Error: the number of records in the PDB file \""+
-                 std::string(pdb_filename)+
-                 "\" does not appear to match either the total number of atoms,"+
-                 " or the number of coordinates requested at this point("+
-                 cvm::to_str(pos.size())+").\n", INPUT_ERROR);
+    if (ipos < pos.size() || (!use_pdb_field && current_index != indices.end())) {
+      size_t n_requested = use_pdb_field ? pos.size() : indices.size();
+      cvm::error("Error: number of matching records in the PDB file \""+
+                 std::string(pdb_filename)+"\" ("+cvm::to_str(ipos)+
+                 ") does not match the number of requested coordinates ("+
+                 cvm::to_str(n_requested)+").\n", INPUT_ERROR);
       return COLVARS_ERROR;
     }
-
   } else {
 
     // when the PDB contains exactly the number of atoms of the array,
@@ -603,8 +608,15 @@ int colvarproxy_vmd::load_atoms(char const *pdb_filename,
   FileSpec *tmpspec = new FileSpec();
   tmpspec->autobonds = 0;
   int tmpmolid = vmd->molecule_load(-1, pdb_filename, "pdb", tmpspec);
-  DrawMolecule *tmpmol = vmd->moleculeList->mol_from_id(tmpmolid);
   delete tmpspec;
+
+  if (tmpmolid < 0) {
+    cvm::error("Error: VMD could not read file \""+std::string(pdb_filename)+"\".\n",
+               FILE_ERROR);
+    return COLVARS_ERROR;
+  }
+  DrawMolecule *tmpmol = vmd->moleculeList->mol_from_id(tmpmolid);
+
   vmd->molecule_make_top(vmdmolid);
   size_t const pdb_natoms = tmpmol->nAtoms;
 

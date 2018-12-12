@@ -1,5 +1,5 @@
 # pass version/platform information to compile
-NAMD_VERSION = 2.12
+NAMD_VERSION = 2.13
 
 # compiler flags (Win32 overrides)
 COPTI = -I
@@ -190,8 +190,6 @@ OBJS = \
 	$(DSTDIR)/ComputePme.o \
 	$(DSTDIR)/ComputePmeCUDA.o \
 	$(DSTDIR)/ComputePmeCUDAMgr.o \
-	$(DSTDIR)/OptPme.o \
-	$(DSTDIR)/OptPmeRealSpace.o \
 	$(DSTDIR)/ComputeRestraints.o \
 	$(DSTDIR)/ComputeSphericalBC.o \
 	$(DSTDIR)/ComputeStir.o \
@@ -323,10 +321,6 @@ CIFILES = 	\
 		$(INCDIR)/ComputePmeCUDAMgr.def.h \
 		$(INCDIR)/CudaPmeSolver.decl.h \
 		$(INCDIR)/CudaPmeSolver.def.h \
-		$(INCDIR)/OptPmeMgr.decl.h \
-		$(INCDIR)/OptPmeMgr.def.h \
-		$(INCDIR)/PmeFFTLib.decl.h \
-		$(INCDIR)/PmeFFTLib.def.h \
 		$(INCDIR)/PmeSolver.decl.h \
 		$(INCDIR)/PmeSolver.def.h \
 		$(INCDIR)/ComputeExtMgr.decl.h \
@@ -578,7 +572,6 @@ updatefiles:
 	rm -f obj/ComputeNonbondedPair.o
 	rm -f obj/ComputeNonbondedSelf.o
 	rm -f obj/ComputePme.o
-	rm -f obj/OptPme.o
 
 #To compile tracecomputes, type the command "make tracecomputes TRACEOBJDEF=-DTRACE_COMPUTE_OBJECTS"
 tracecomputes: updatefiles $(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS)
@@ -680,21 +673,6 @@ $(INCDIR)/%.decl.h $(INCDIR)/%.def.h: $(MKINCDIR) $(SRCDIR)/%.ci
 
 # Explicit rules for modules that don't match their file names.
 # Multiple targets must be a pattern to execute recipe only once.
-
-$(INCDIR)/PmeFF%Lib.decl.h $(INCDIR)/PmeFF%Lib.def.h: $(MKINCDIR) $(SRCDIR)/fftlib.ci
-	$(COPY) $(SRCDIR)/fftlib.ci $(INCDIR)
-	$(CHARMXI) $(INCDIR)/fftlib.ci
-	$(RM) $(INCDIR)/fftlib.ci
-	$(MOVE) PmeFFTLib.def.h $(INCDIR)
-	$(MOVE) PmeFFTLib.decl.h $(INCDIR)
-
-$(INCDIR)/OptPm%Mgr.decl.h $(INCDIR)/OptPm%Mgr.def.h: $(MKINCDIR) $(SRCDIR)/OptPme.ci
-	$(COPY) $(SRCDIR)/OptPme.ci $(INCDIR)
-	$(CHARMXI) $(INCDIR)/OptPme.ci
-	$(RM) $(INCDIR)/OptPme.ci
-	$(MOVE) OptPmeMgr.def.h $(INCDIR)
-	$(MOVE) OptPmeMgr.decl.h $(INCDIR)
-
 DEPENDFILE = .rootdir/Make.depends
 
 # This is a CPU killer...  Don't make depends if you don't need to.

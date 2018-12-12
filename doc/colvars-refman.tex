@@ -35,7 +35,17 @@
 
 \begin{document}
 
+\ifdefined\HCode
+\input{colvars-refman-css.tex}
+\fi
+
 \input{cv_version.tex}
+
+\ifdefined\HCode
+\HCode{<div id="container">
+<div class="inner">
+}
+\fi
 
 \begin{titlepage}
 
@@ -53,7 +63,12 @@
       \end{minipage}}
 %  \noindent\rule{\textwidth}{2pt}
 
+  \ifdefined\HCode
+  \HCode{<img class="cover_picture" src="cover-512px.jpg" alt="Colvars logo">}
+  \\
+  \else
   \includegraphics[width=\textwidth]{cover.jpg}
+  \fi
   \textsf{\large Alejandro Bernardin, Jeffrey R.{} Comer, Giacomo Fiorin, Haohao Fu, J\'er\^ome H\'enin, Axel Kohlmeyer, Fabrizio Marinelli, Joshua V.{} Vermaas, Andrew D.{} White}
 \end{titlepage}
 
@@ -94,9 +109,10 @@
 \newcommand{\vx}{{\mbox{\boldmath{$x$}}}}
 \newcommand{\bm}[1]{{\mbox{\boldmath{$#1$}}}}
 
-\newcommand{\cvsec}[2]{\noindent\hypertarget{#2}{\section{#1}}\label{#2}\ifdefined\HCode\HCode{<selfref>}\ref{#2}\HCode{</selfref>}\fi}
+\newcommand{\cvsec}[2]{\newpage\noindent\hypertarget{#2}{\section{#1}}\label{#2}\ifdefined\HCode\HCode{<selfref>}\ref{#2}\HCode{</selfref>}\fi}
 \newcommand{\cvsubsec}[2]{\noindent\hypertarget{#2}{\subsection{#1}}\label{#2}\ifdefined\HCode\HCode{<selfref>}\ref{#2}\HCode{</selfref>}\fi}
 \newcommand{\cvsubsubsec}[2]{\noindent\hypertarget{#2}{\subsubsection{#1}}\label{#2}\ifdefined\HCode\HCode{<selfref>}\ref{#2}\HCode{</selfref>}\fi}
+\newcommand{\cvurl}[1]{\url{#1}}
 
 \cvnamdonly{
 \newcommand{\outputName}{\emph{outputName}}
@@ -125,6 +141,13 @@
 %\addtocontents{toc}{\contentsline {section}{References}{\thepage}}
 \bibliographystyle{unsrt}
 \bibliography{colvars-refman}
+
+\ifdefined\HCode
+\HCode{</div>
+</div>
+}
+\fi
+
 
 \end{document}
 

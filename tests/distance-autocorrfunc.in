@@ -1,0 +1,20 @@
+colvar {
+
+    name one
+
+    outputAppliedForce on
+
+    corrFunc yes
+    corrFuncType velocity
+    corrFuncLength 5
+    corrFuncStride 2
+
+    distance {
+        group1 {
+            indexGroup group1
+        }
+        group2 {
+            indexGroup group2
+        }
+    }
+} 

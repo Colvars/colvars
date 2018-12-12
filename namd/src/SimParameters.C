@@ -21,6 +21,7 @@
 #include "ComputeNonbondedUtil.h"
 #include "LJTable.h"
 #include "ComputePme.h"
+#include "ComputeCUDAMgr.h"
 #include "ConfigList.h"
 #include "SimParameters.h"
 #include "ParseOptions.h"
@@ -361,15 +362,7 @@ void SimParameters::scriptSet(const char *param, const char *value) {
 
   if ( ! strncasecmp(param,"alchLambdaIDWS",MAX_SCRIPT_PARAM_SIZE) ) {
     alchLambdaIDWS = atof(value);
-    if ( alchLambdaIDWS > 1. ) {
-      NAMD_die("alchLambdaIDWS should be either in the range [0.0, 1.0], or negative (disabled).\n");
-    }
-    // Switch lambda2 every other cycle of fullElectFrequency steps
-    // or every other nonbondedFrequency steps if undefined
-    // or every alchOutFreq steps if larger (no need to switch faster that we output)
-    alchIDWSfreq = fullElectFrequency > 0 ? fullElectFrequency : nonbondedFrequency;
-    if ( alchOutFreq > alchIDWSfreq )
-      alchIDWSfreq = alchOutFreq;
+    setupIDWS();
     ComputeNonbondedUtil::select();
     return;
   }
@@ -405,8 +398,12 @@ void SimParameters::scriptSet(const char *param, const char *value) {
     }
     soluteScalingFactorCharge = soluteScalingFactor;
     soluteScalingFactorVdw = soluteScalingFactor;
-    if ( ComputeNonbondedUtil::ljTable ) delete ComputeNonbondedUtil::ljTable;
-    ComputeNonbondedUtil::ljTable = new LJTable;
+    // update LJTable for CPU
+    ComputeNonbondedUtil::select();
+#ifdef NAMD_CUDA
+    // update LJTable for GPU, needs CPU update first
+    ComputeCUDAMgr::getComputeCUDAMgr()->update();
+#endif
     return;
   }
   if ( ! strncasecmp(param,"soluteScalingFactorVdw",MAX_SCRIPT_PARAM_SIZE)) {
@@ -415,8 +412,12 @@ void SimParameters::scriptSet(const char *param, const char *value) {
       NAMD_die("Solute scaling factor for van der Waals "
           "should be non-negative\n");
     }
-    if ( ComputeNonbondedUtil::ljTable ) delete ComputeNonbondedUtil::ljTable;
-    ComputeNonbondedUtil::ljTable = new LJTable;
+    // update LJTable for CPU
+    ComputeNonbondedUtil::select();
+#ifdef NAMD_CUDA
+    // update LJTable for GPU, needs CPU update first
+    ComputeCUDAMgr::getComputeCUDAMgr()->update();
+#endif
     return;
   }
   if ( ! strncasecmp(param,"soluteScalingFactorCharge",MAX_SCRIPT_PARAM_SIZE)) {
@@ -994,10 +995,6 @@ void SimParameters::config_parser_fullelect(ParseOptions &opts) {
 	&PMEOffload);
 
    opts.optionalB("PME", "usePMECUDA", "Use the PME CUDA version", &usePMECUDA, CmiNumPhysicalNodes() < 5);
-   opts.optionalB("PME", "useOptPME", "Use the new scalable PME optimization", &useOptPME, FALSE);
-   opts.optionalB("PME", "useManyToMany", "Use the many-to-many PME optimization", &useManyToMany, FALSE);
-   if (PMEOn && !useOptPME)
-     useManyToMany = false;
 
 #ifdef DPME
    opts.optionalB("PME", "useDPME", "Use old DPME code?", &useDPME, FALSE);
@@ -1207,15 +1204,15 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
        "Solute scaling factor for van der Waals interactions",
        &soluteScalingFactorVdw);
    opts.range("soluteScalingFactorVdw", NOT_NEGATIVE);
-   opts.optional("soluteScaling", "ssFile",
+   opts.optional("soluteScaling", "soluteScalingFile",
        "PDB file with scaling flags; if undefined, defaults to main PDB file",
        PARSE_STRING);
-   opts.optional("soluteScaling", "ssCol",
-       "Column in the ssFile providing the scaling flag",
+   opts.optional("soluteScaling", "soluteScalingCol",
+       "Column in the soluteScalingFile providing the scaling flag",
        PARSE_STRING);
    opts.optionalB("main", "soluteScalingAll",
        "Apply scaling also to bond and angle interactions?",
-       &soluteScalingAll, TRUE);
+       &soluteScalingAll, FALSE);
 
    // Drude oscillators
    opts.optionalB("main", "drude", "Perform integration of Drude oscillators?",
@@ -1306,6 +1303,8 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
        "Number of steps between stochastic rescalings",
         &stochRescaleFreq);
    opts.range("stochRescaleFreq", POSITIVE);
+   opts.optionalB("stochRescale", "stochRescaleHeat",
+       "Should heat transfer and work be computed?", &stochRescaleHeat, FALSE);
 
    opts.optional("main", "rescaleFreq", "Number of steps between "
     "velocity rescaling", &rescaleFreq);
@@ -2137,6 +2136,9 @@ void SimParameters::config_parser_boundary(ParseOptions &opts) {
    opts.optional("extraBonds", "extraBondsFile",
 		"file with list of extra bonds",
 		 PARSE_MULTIPLES);
+   opts.optionalB("extraBonds", "extraBondsCosAngles",
+		"Should extra angles be cosine-based to match ancient bug",
+		&extraBondsCosAngles, TRUE);
 
 }
 
@@ -2337,6 +2339,11 @@ void SimParameters::config_parser_misc(ParseOptions &opts) {
 
    // Bonded interactions on GPU
    opts.optional("main", "bondedCUDA", "Bitmask for calculating bonded interactions on GPU", &bondedCUDA, 255);
+
+   // Automatically disable individual CUDA kernels that are
+   // incompatible with simulation options.
+   // Set FALSE to manually control kernel use for development.
+   opts.optionalB("main", "useCUDAdisable", "Disable kernels to maintain feature compatibility with CUDA", &useCUDAdisable, TRUE);
 
    // MIC specific parameters
    opts.optional("main", "mic_unloadMICPEs", "Indicates whether or not the load balancer should unload PEs driving Xeon Phi cards", &mic_unloadMICPEs, 1);
@@ -2969,8 +2976,10 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
        watmodel = WAT_TIP4;
      } else if (!strncasecmp(s, "tip3", 4)) {
        iout << iINFO << "Using TIP3P water model.\n" << endi;
+       watmodel = WAT_TIP3;
      } else if (!strncasecmp(s, "swm4", 4)) {
        iout << iINFO << "Using SWM4-DP water model.\n" << endi;
+       watmodel = WAT_SWM4;
      } else {
        char err_msg[128];
        sprintf(err_msg,
@@ -3116,6 +3125,16 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
           "Illegal value '%s' for 'rigidBonds' in configuration file", s);
         NAMD_die(err_msg);
       }
+   }
+
+   // TIP4P and SWM4-DP water models require rigid water
+   if ((watmodel == WAT_TIP4 || watmodel == WAT_SWM4)
+       && rigidBonds == RIGID_NONE) {
+     char err_msg[256];
+     sprintf(err_msg,
+         "Water model %s requires rigidBonds set to \"all\" or \"water\"",
+         (watmodel == WAT_TIP4 ? "TIP4P" : "SWM4-DP"));
+     NAMD_die(err_msg);
    }
 
    //  Take care of switching stuff
@@ -3551,6 +3570,8 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
        if (alchLambda2 < 0.0 || alchLambda2 > 1.0)
          NAMD_die("alchLambda2 values should be in the range [0.0, 1.0]\n");
 
+       setupIDWS(); // setup IDWS if it was activated.
+       
        if (!opts.defined("alchoutfile")) {
          strcpy(alchOutFile, outputFilename);
          strcat(alchOutFile, ".fep");
@@ -3617,17 +3638,6 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
          strcpy(alchOutFile, outputFilename);
          strcat(alchOutFile, ".ti");
        }
-     }
-     if (alchLambdaIDWS >= 0.) {
-       if ( alchLambdaIDWS > 1. ) {
-         NAMD_die("alchLambdaIDWS should be either in the range [0.0, 1.0], or negative (disabled).\n");
-      }
-       // Switch lambda2 every other cycle of fullElectFrequency steps
-       // or every other nonbondedFrequency steps if undefined
-       // or every alchOutFreq steps if larger (no need to switch faster that we output)
-       alchIDWSfreq = fullElectFrequency > 0 ? fullElectFrequency : nonbondedFrequency;
-       if ( alchOutFreq > alchIDWSfreq )
-         alchIDWSfreq = alchOutFreq;
      }
    }
         
@@ -3948,21 +3958,6 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
        usePMECUDA = 0;
        iout << iWARN << "Disabling usePMECUDA because multiple CUDA devices per process requires useCUDA2.\n" << endi;
      }
-     // if ( cellBasisVector1.y != 0 ||
-     //      cellBasisVector1.z != 0 ||
-     //      cellBasisVector2.x != 0 ||
-     //      cellBasisVector2.z != 0 ||
-     //      cellBasisVector3.x != 0 ||
-     //      cellBasisVector3.y != 0    ) {
-     //   if ( useCUDA2 ) {
-     //     useCUDA2 = 0;
-     //     iout << iWARN << "Disabling useCUDA2 because of non-orthorhombic periodic cell.\n" << endi;
-     //   }
-     //   if ( usePMECUDA ) {
-     //     usePMECUDA = 0;
-     //     iout << iWARN << "Disabling usePMECUDA because of non-orthorhombic periodic cell.\n" << endi;
-     //   }
-     // }
 #else
      PMEOffload = 0;
 #endif
@@ -4082,6 +4077,12 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
      parse_mgrid_params(config);
    }
 
+   if ( extraBondsOn ) {
+     extraBondsCosAnglesSetByUser = ! ! config->find("extraBondsCosAngles");
+   } else {
+     extraBondsCosAnglesSetByUser = false;
+   }
+      
    if (!opts.defined("constraints"))
    {
      constraintExp = 0;
@@ -4476,6 +4477,23 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
         if (qmCSMD && (! opts.defined("QMCSMDFile") ))
             NAMD_die("QM Conditional SMD is ON, but no CSMD configuration file was profided!");
     }
+
+#ifdef NAMD_CUDA
+    // Disable various CUDA kernels if they do not fully support
+    // or are otherwise incompatible with simulation options.
+    if ( useCUDAdisable ) {
+      if ( drudeOn && useCUDA2 && (bondedCUDA & 0x0001) ) {
+        // disable CUDA kernels for spring bonds
+        bondedCUDA &= ~0x0001;
+        iout << iWARN << "Disabling CUDA kernel for bonds due to incompatibility with Drude oscillators.\n";
+      }
+      if ( accelMDOn && (accelMDdihe || accelMDdual) && useCUDA2 && (bondedCUDA & (0x0004 | 0x0020)) ) {
+        // disable CUDA kernels for dihedrals and crossterms
+        bondedCUDA &= ~(0x0004 | 0x0020);
+        iout << iWARN << "Disabling CUDA kernels for dihedrals and crossterms due to incompatibility with accelerated MD options.\n";
+      }
+    }
+#endif
 }
 
 void SimParameters::print_config(ParseOptions &opts, ConfigList *config, char *&cwd) {
@@ -4813,6 +4831,12 @@ if ( openatomOn )
 							<< "\n" << endi;
 
    iout << iINFO << "MARGIN                 " << margin << "\n";
+   if ( margin > 4.0 ) {
+      iout << iWARN << "MARGIN IS UNUSUALLY LARGE AND WILL LOWER PERFORMANCE\n";
+      BigReal f = patchDimension/(patchDimension-margin);
+      f *= f*f;
+      iout << iWARN << "MARGIN INCREASED PATCH VOLUME BY A FACTOR OF " << f << "\n";
+   }
 
    if ( splitPatch == SPLIT_PATCH_HYDROGEN ) {
       iout << iINFO << "HYDROGEN GROUP CUTOFF  " << hgroupCutoff << "\n";
@@ -7127,14 +7151,40 @@ void SimParameters::receive_SimParameters(MIStream *msg)
 //fepb IDWS
 BigReal SimParameters::getCurrentLambda2(const int step) {
   if ( alchLambdaIDWS >= 0. ) {
-    const BigReal lambda2 = ( (step / alchIDWSfreq) % 2 == 1 ) ? alchLambda2 : alchLambdaIDWS;
+    const BigReal lambda2 = ( (step / alchIDWSFreq) % 2 == 1 ) ? alchLambda2 : alchLambdaIDWS;
     return lambda2;
   } else {
     return alchLambda2;
   }
 }
-//fepe IDWS
 
+/* Return true if IDWS is active, else return false. */
+int SimParameters::setupIDWS() {
+  if (alchLambdaIDWS < 0.) return 0;
+  if (alchLambdaIDWS > 1.) {
+    NAMD_die("alchLambdaIDWS should be either in the range [0.0, 1.0], or negative (disabled).\n");
+  }
+ /* 
+  * The internal parameter alchIDWSFreq determines the number of steps of MD
+  * before each switch of the value of alchLambda2. At most this occurs every
+  * time the energy is evaluated and thus the default is the greater of
+  * fullElectFrequency and nonbondedFrequency. However, this choice fails to
+  * report alternating values if output is printed less often than every step
+  * (which is almost certainly true). Thus the frequency is reset to match
+  * alchOutFreq or, if that is zero, outputEnergies. Note that, if 
+  * alchOutFreq > 0 but != outputEnergies, then the data going to stdout
+  * are likely not useful since the comparison value is difficult to infer.
+  */
+  alchIDWSFreq = fullElectFrequency > 0 ? fullElectFrequency : nonbondedFrequency;
+  if ( !alchOutFreq && outputEnergies > alchIDWSFreq ) alchIDWSFreq = outputEnergies;
+  if ( alchOutFreq > alchIDWSFreq ) alchIDWSFreq = alchOutFreq;
+  if ( alchOutFreq && alchOutFreq != outputEnergies) {
+    iout << iWARN << "alchOutFreq and outputEnergies do not match. IDWS ouput"
+         << " to stdout may not be useful!\n" << endi;
+  }
+  return 1;
+}
+//fepe IDWS
 
 //fepb BKR
 BigReal SimParameters::getCurrentLambda(const int step) {

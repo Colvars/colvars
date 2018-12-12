@@ -124,7 +124,7 @@ public:
 
   /// Module-wide error state
   /// see constants at the top of this file
-protected:
+private:
 
   static int errorCode;
 
@@ -267,6 +267,9 @@ public:
   /// \brief Parse a "clean" config string (no comments)
   int parse_config(std::string &conf);
 
+  /// Get the configuration string read so far (includes comments)
+  std::string const & get_config() const;
+
   // Parse functions (setup internal data based on a string)
 
   /// Allow reading from Windows text files using using std::getline
@@ -288,6 +291,9 @@ public:
   int append_new_config(std::string const &conf);
 
 private:
+
+  /// Configuration string read so far by the module (includes comments)
+  std::string config_string;
 
   /// Auto-generated configuration during parsing (e.g. to implement
   /// back-compatibility)
@@ -408,6 +414,9 @@ public:
 
   /// Perform analysis
   int analyze();
+
+  /// Carry out operations needed before next step is run
+  int end_of_step();
 
   /// \brief Read a collective variable trajectory (post-processing
   /// only, not called at runtime)
@@ -532,9 +541,6 @@ public:
 
   /// Frequency for collective variables trajectory output
   static size_t cv_traj_freq;
-
-  /// \brief True if only analysis is performed and not a run
-  static bool   b_analysis;
 
   /// Frequency for saving output restarts
   static size_t restart_out_freq;

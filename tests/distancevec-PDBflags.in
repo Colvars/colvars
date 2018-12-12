@@ -1,0 +1,72 @@
+# colvar one uses pdb with all atoms and redundant flags for coords
+# colvar two uses partial pdb file for coords
+
+colvar {
+
+    name one
+
+    outputAppliedForce on
+
+    width 0.5
+
+    distanceVec {
+        group1 {
+            atomsFile ../Common/da-flags.pdb
+            atomsCol B
+            atomsColValue 1
+
+            centerReference yes
+            rotateReference yes
+            enableFitGradients no # Not available because gradients are implicit
+            refPositionsFile ../Common/da-flags.pdb
+            refPositionsCol B
+            refPositionsColValue 1
+        }
+        group2 {
+            atomsFile ../Common/da-flags.pdb
+            atomsCol B
+            atomsColValue 2
+
+            centerReference yes
+            rotateReference yes
+            enableFitGradients no # Not available because gradients are implicit
+            refPositionsFile ../Common/da-flags.pdb
+            refPositionsCol B
+            refPositionsColValue 2
+        }
+    }
+} 
+
+colvar {
+
+    name two
+
+    outputAppliedForce on
+
+    width 0.5
+
+    distanceVec {
+        group1 {
+            atomsFile ../Common/da-flags.pdb
+            atomsCol B
+            atomsColValue 1
+
+            centerReference yes
+            rotateReference yes
+            enableFitGradients no # Not available because gradients are implicit
+            refPositionsFile ../Common/da-partial.pdb
+        }
+        group2 {
+            atomsFile ../Common/da-flags.pdb
+            atomsCol B
+            atomsColValue 2
+
+            centerReference yes
+            rotateReference yes
+            enableFitGradients no # Not available because gradients are implicit
+            refPositionsFile ../Common/da-flags.pdb
+            refPositionsCol B
+            refPositionsColValue 2
+        }
+    }
+} 

@@ -1,19 +1,6 @@
 #!/bin/bash
 #
-# This hook will do some automatic checks and updates before a commit.
-
-################################################################################
-# Task 1a: update the Colvars module version string if a file in the src/
-#          directory is about to be committed. Do not update it, if current.
-
-if [ ! -f devel-tools/version_functions.sh ] ; then
-    git checkout master devel-tools/version_functions.sh
-fi
-source devel-tools/version_functions.sh
-update_all_versions
-
-################################################################################
-# Task 2: remove all trailing whitespace in the files about to be committed.
+# Remove all trailing whitespace in the files about to be committed.
 
 for f in $(git status --porcelain | \
                   sed -n -e 's/^M \+\(.*\.\(cpp\|h\|C\)\)/\1/p')

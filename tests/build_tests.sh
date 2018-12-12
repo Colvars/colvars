@@ -112,6 +112,15 @@ done
 create_test_dir "distance-extended"
 write_colvars_config "distance-extended" "" ${dirname}/test.in
 
+create_test_dir "distance-runave"
+write_colvars_config "distance-runave" "" ${dirname}/test.in
+
+create_test_dir "distance-autocorrfunc"
+write_colvars_config "distance-autocorrfunc" "" ${dirname}/test.in
+
+create_test_dir "distance-corrfunc"
+write_colvars_config "distance-corrfunc" "" ${dirname}/test.in
+
 
 m4 < metadynamics.in.m4 > metadynamics.in
 m4 -Dti_pmf < metadynamics.in.m4 > metadynamics-ti.in
@@ -204,6 +213,17 @@ for bias in "harmonic-ddir-fixed" "harmonic-ddir-moving" ; do
 create_test_dir ${colvar}_${bias}
 write_colvars_config ${colvar} ${bias} ${dirname}/test.in
 done
+
+colvar="dihedralPC"
+bias="abf2d"
+create_test_dir ${colvar}_${bias}
+write_colvars_config ${colvar} ${bias} ${dirname}/test.in
+
+colvar="distancepairs"
+bias="linear-distancepairs"
+create_test_dir ${colvar}_${bias}
+write_colvars_config ${colvar} ${bias} ${dirname}/test.in
+
 
 # TODO uncomment this and the add two-dimensional regtests
 # # Generate two-variables versions of bias configurations

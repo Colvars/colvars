@@ -386,11 +386,12 @@ public:
   BigReal alchLambda;       //  lambda for dynamics
   BigReal alchLambda2;      //  lambda for comparison
   BigReal alchLambdaIDWS;   //  alternate lambda for interleaved double-wide sampling
-  int alchIDWSfreq;         //  freq with which lambda2 changes to lambdaIDWS
+  int alchIDWSFreq;         //  freq with which lambda2 changes to lambdaIDWS
   int alchLambdaFreq;       //  freq. (in steps) with which lambda changes
                             //  from alchLambda to alchLambda2
   BigReal getCurrentLambda(const int); // getter for changing lambda
   BigReal getCurrentLambda2(const int); // getter for alternating lambda2 in IDWS
+  int setupIDWS();          //  activates IDWS and sets alchIDWSFreq
   BigReal getLambdaDelta(void); // getter for lambda increment
   BigReal alchRepLambda;    //  lambda for WCA repulsive interaction
   BigReal alchDispLambda;   //  lambda for WCA dispersion interaction
@@ -595,6 +596,11 @@ public:
   int stochRescaleFreq;
   /**< How frequently (time steps) stochastic velocity rescaling occurs. */
 
+  Bool stochRescaleHeat;
+  /**< Flag TRUE enables calculation and reporting of heat transfer and work.
+    *  The computation is _cumulative_ from step = firstTimestep.
+    */
+
 	int rescaleFreq;		//  Velocity rescale frequency
 	BigReal rescaleTemp;		//  Temperature to rescale to
 
@@ -773,12 +779,29 @@ public:
         Bool PMEOffload;		//  Offload reciprocal sum to accelerator
 
 	Bool useDPME;			//  Flag TRUE -> old DPME code
-	Bool usePMECUDA;                //  Flag TRUE -> use the PME CUDA version
-	Bool useCUDA2;                  //  Flag TRUE -> use ComputeNonbondedCUDA2
-  int bondedCUDA;                 //  Bitmask for calculating bonded interactions on GPU
-	Bool useOptPME;                 //  Flag TRUE -> use the scalable version of PME
-	Bool useManyToMany;             //  Flag TRUE -> use the manytomany optimization of PME.
-	                                //  This flag requres useOptPME to be set.
+
+	Bool usePMECUDA;
+        /**< Flag TRUE to use the PME CUDA version.
+         * Default is TRUE if running on 4 nodes or less. */
+
+	Bool useCUDA2;
+        /**< Flag TRUE to use the second generation nonbonded
+         * CUDA kernels developed by Antti-Pekka Hynninen.
+         * Default is TRUE. */
+
+        int bondedCUDA;
+        /**< Bitmask for calculating bonded interactions on GPU.
+         * Default is 255, with the following bit position settings:
+         * 1 -> bonds, 2 -> angles, 4 -> dihedrals, 8 -> impropers,
+         * 16 -> exclusions, 32 -> crossterms. */
+
+        Bool useCUDAdisable;
+        /**< Flag TRUE to automatically disable individual CUDA kernels that
+         * are incompatible with simulation options.  Default is TRUE.
+         * Specifically, disable CUDA bonds for Drude oscillator simulation
+         * and disable CUDA dihedral and CUDA crossterms kernels for
+         * accelMDdihe and accelMDdual simulation.
+         * Set FALSE to manually control kernel use for development. */
 
 	Bool FFTWEstimate;
 	Bool FFTWPatient;
@@ -840,6 +863,8 @@ public:
         zVector stirPivot;             // Pivot point of stir axis
 
 	Bool extraBondsOn;		// read extra bonded forces
+	Bool extraBondsCosAngles;       // extra angles are cosine-based
+	Bool extraBondsCosAnglesSetByUser; // did the user set this explicitly
 
 	Bool consForceOn;		//  Should constant force be applied
   char consForceFile[128];

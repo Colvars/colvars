@@ -75,6 +75,14 @@ int colvarscript::run(int objc, unsigned char *const objv[])
 
   int error_code = COLVARS_OK;
 
+  // If command is found in map, execute it
+  std::string const cmd_key("cv_"+cmd);
+  if (comm_str_map.count(cmd_key) > 0) {
+    error_code |= (*(comm_fns[comm_str_map[cmd_key]]))(
+                      reinterpret_cast<void *>(this), objc, objv);
+    return error_code;
+  }
+
   if (cmd == "colvar") {
     if (objc < 3) {
       result = "Missing parameters\n" + help_string();
@@ -122,6 +130,10 @@ int colvarscript::run(int objc, unsigned char *const objv[])
 
   if (cmd == "update") {
     error_code |= proxy->update_input();
+    if (error_code) {
+      result += "Error updating the Colvars module.\n";
+      return error_code;
+    }
     error_code |= colvars->calc();
     error_code |= proxy->update_output();
     if (error_code) {
@@ -558,6 +570,8 @@ std::string colvarscript::help_string() const
 Managing the Colvars module:\n\
   configfile <file name>      -- read configuration from a file\n\
   config <string>             -- read configuration from the given string\n\
+  getconfig                   -- get the module's configuration string\n\
+  resetindexgroups            -- clear the index groups loaded so far\n\
   reset                       -- delete all internal configuration\n\
   delete                      -- delete this Colvars module instance\n\
   version                     -- return version of Colvars code\n\

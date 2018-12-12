@@ -18,7 +18,7 @@ then
         (default: create diff files for inspection --- MD code may be different)
 
    <target source tree> = root directory of the MD code sources
-   supported MD codes: NAMD, VMD, LAMMPS, GROMACS
+   supported MD codes: NAMD, VMD, LAMMPS
 
 EOF
    exit 1
@@ -224,27 +224,49 @@ then
     exit 2
   fi
 
-  # Update LAMMPS documentation
-  # Location of documentation has changed with version 10 May 2016
-  test -d "${target}/doc/src/PDF" && \
-    docdir="${target}/doc/src" || docdir="${target}/doc"
-  for src in ${source}/lammps/doc/*.txt
+  # Update documentation of LAMMPS fix
+  for src in ${source}/lammps/doc/src/*.txt
     do \
       tgt=$(basename ${src})
-    condcopy "${src}" "${docdir}/${tgt}"
+    condcopy "${src}" "${target}/doc/src/${tgt}"
   done
 
+  downloaded_pdf=0
   # Copy PDF of the user manual
-  cd ${source}/doc
-  make colvars-refman-lammps.pdf 1> /dev/null 2> /dev/null
-  cd - 1> /dev/null 2> /dev/null
+  if [ ! -f ${source}/doc/colvars-refman-lammps.pdf ] ; then
+    if curl -L -o ${source}/doc/colvars-refman-lammps.pdf \
+            https://colvars.github.io/pdf/colvars-refman-lammps.pdf \
+        1> /dev/null 2> /dev/null || \
+        wget -O ${source}/doc/colvars-refman-lammps.pdf \
+              https://colvars.github.io/pdf/colvars-refman-lammps.pdf \
+        1> /dev/null 2> /dev/null \
+       ; then
+      downloaded_pdf=1
+      echo -n '.'
+    else
+      echo ""
+      echo "Error: could not download the PDF manual automatically."
+      echo "Please download it manually from:"
+      echo "  https://colvars.github.io/pdf/colvars-refman-lammps.pdf"
+      echo "and copy it into ${source}/doc,"
+      echo "or re-generate it using:"
+      echo "  cd ${source}/doc ; make colvars-refman-lammps.pdf; cd -"
+      exit 1
+    fi
+  fi
   for src in ${source}/doc/colvars-refman-lammps.pdf
   do \
     tgt=$(basename ${src})
-    condcopy "${src}" "${docdir}/PDF/${tgt}"
+    condcopy "${src}" "${docdir}/src/PDF/${tgt}"
   done
 
   echo ' done.'
+  if [ ${downloaded_pdf} = 1 ] ; then
+    echo "Note: the PDF manual for the latest Colvars version was downloaded.  "
+    echo "If you are using an older version, you can generate the corresponding PDF with:"
+    echo "  cd ${source}/doc ; make colvars-refman-lammps.pdf; cd -"
+    echo "and run this script a second time."
+  fi
   exit 0
 fi
 
@@ -305,8 +327,6 @@ then
            "${target}/ug/ug_colvars.bib"
   condcopy "${source}/doc/colvars-refman-main.tex" \
            "${target}/ug/ug_colvars.tex" "${tex_patch}"
-  condcopy "${source}/doc/colvars-cv.tex" \
-           "${target}/ug/ug_colvars-cv.tex" "${tex_patch}"
   condcopy "${source}/namd/ug/ug_colvars_macros.tex" \
            "${target}/ug/ug_colvars_macros.tex" "${tex_patch}"
   condcopy "${source}/doc/colvars_diagram.pdf" \
@@ -369,8 +389,6 @@ then
            "${target}/doc/ug_colvars.bib"
   condcopy "${source}/doc/colvars-refman-main.tex" \
            "${target}/doc/ug_colvars.tex" "${tex_patch}"
-  condcopy "${source}/doc/colvars-cv.tex" \
-           "${target}/doc/ug_colvars-cv.tex" "${tex_patch}"
   condcopy "${source}/vmd/doc/ug_colvars_macros.tex" \
            "${target}/doc/ug_colvars_macros.tex" "${tex_patch}"
   condcopy "${source}/doc/colvars_diagram.pdf" \

@@ -116,33 +116,28 @@ update_version_string() {
     local function_name=${3}
     local macro=${4}
     local file=${5}
-    local branch=${6}
+    local last_commit=${6}
     
+    local branch=$(get_branch_name)
     local version_str=$(date +'%Y-%m-%d')
 
-    if [ "x${branch}" = "x" ] ; then
-        branch=$(get_branch_name)
-    fi
-    # echo "Current branch = ${branch}"
-
-    # Get the version string from the last commit on master
-    local master_commit=$(get_last_master_commit "${grep_pattern}")
-    # echo "Master branch commit = ${master_commit}"
-    version_str=$(${function_name} ${master_commit})
-    # echo "Master branch date = ${version_str}"
-    if [ "${branch}" != "master" ] ; then
-        version_str="${version_str%%_*}_${branch}"
-    else
-        version_str="${version_str%%_*}"
-        if git diff --name-only HEAD . | \
-                grep -q "${grep_pattern}" ; then
-            # For changes to master, always bump up
-            version_str=$(date +'%Y-%m-%d')
+    if [ "x${last_commit}" = "x" ] ; then
+        if [ "${branch}" = "master" ] ; then
+            # Just use previous commit
+            last_commit=$(git rev-list HEAD^ |head -1)
+        else
+            # Get the version string from the last commit on master
+            last_commit=$(get_last_master_commit "${grep_pattern}")
         fi
     fi
-     
-    # Modify files only when not rebasing
-    if [ "${branch}" != "HEAD" ] ; then
+    
+    version_str=$(${function_name} ${last_commit})
+    if [ "${branch}" = "master" ] ; then
+        # Bump up version when on master and files were modified
+        if git diff --name-only ${last_commit} . | \
+                grep -q "${grep_pattern}" ; then
+            version_str=$(date +'%Y-%m-%d')
+        fi
         echo "Setting ${name} version string to ${version_str}"
         write_version_string ${macro} ${file} ${version_str}
         git add ${file}

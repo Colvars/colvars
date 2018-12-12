@@ -237,14 +237,7 @@ public:
                     std::string const     &segment_id);
   void clear_atom(int index);
 
-  inline void update_atom_properties(int index)
-  {
-    Molecule *mol = Node::Object()->molecule;
-    // update mass
-    atoms_masses[index] = mol->atommass(atoms_ids[index]);
-    // update charge
-    atoms_charges[index] = mol->atomcharge(atoms_ids[index]);
-  }
+  void update_atom_properties(int index);
 
   cvm::rvector position_distance(cvm::atom_pos const &pos1,
                                  cvm::atom_pos const &pos2) const;
