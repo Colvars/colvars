@@ -2183,6 +2183,7 @@ int colvar::calc_acf()
       acf_x_history_p = acf_x_history.begin();
       break;
 
+    case acf_notset:
     default:
       break;
     }
@@ -2215,6 +2216,7 @@ int colvar::calc_acf()
       history_incr(acf_x_history, acf_x_history_p);
       break;
 
+    case acf_notset:
     default:
       break;
     }
@@ -2308,6 +2310,9 @@ int colvar::write_acf(std::ostream &os)
     break;
   case acf_p2coor:
     os << "Coordinate (2nd Legendre poly)";
+    break;
+  case acf_notset:
+  default:
     break;
   }
 
