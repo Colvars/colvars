@@ -152,6 +152,10 @@ m4 < distancez.in.m4 > distancez.in
 m4 -Dfitgroup < distancez.in.m4 > distancez-fitgroup.in
 m4 -Daxis -DdistanceZ=distanceXY < distancez.in.m4 > distancexy-axis.in
 
+m4 -Dorientation=orientationAngle < orientation.in > orientationangle.in
+m4 -Dorientation=orientationAngle < orientation-fitgroup.in > orientationangle-fitgroup.in
+m4 -Dorientation=orientationProj < orientation.in > orientationproj.in
+m4 -Dorientation=orientationProj < orientation-fitgroup.in > orientationproj-fitgroup.in
 
 # Tests of individual collective variables
 for colvar in \
@@ -168,8 +172,9 @@ for colvar in \
     "inertiaz" \
     "rmsd" \
     "tilt" \
-    "selfcoordnum" "selfcoordnum-pairlist" \
     "spinangle" \
+    "selfcoordnum" "selfcoordnum-pairlist" \
+    "orientationangle" "orientationproj" \
    ; do
     for bias in \
         "harmonic-fixed" \
@@ -210,9 +215,13 @@ fi
 
 colvar="distancedir"
 for bias in "harmonic-ddir-fixed" "harmonic-ddir-moving" ; do
-create_test_dir ${colvar}_${bias}
-write_colvars_config ${colvar} ${bias} ${dirname}/test.in
+    create_test_dir ${colvar}_${bias}
+    write_colvars_config ${colvar} ${bias} ${dirname}/test.in
 done
+bias="harmonic-ddir-fixed"
+create_test_dir ${colvar}-fitgroup_${bias}
+write_colvars_config ${colvar}-fitgroup ${bias} ${dirname}/test.in
+
 
 colvar="dihedralPC"
 bias="abf2d"

@@ -1,0 +1,15 @@
+colvar {
+
+    name one
+
+    outputAppliedForce on
+
+    width 0.5
+
+    orientationAngle {
+        atoms {
+            indexGroup RMSD_atoms
+        }
+        refPositionsFile rmsd_atoms_refpos.xyz
+    }
+} 
