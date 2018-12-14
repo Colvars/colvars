@@ -1152,6 +1152,7 @@ public:
 
   orientation(std::string const &conf);
   orientation();
+  virtual int init(std::string const &conf);
   virtual ~orientation() {}
   virtual void calc_value();
   virtual void calc_gradients();
@@ -1176,6 +1177,7 @@ public:
 
   orientation_angle(std::string const &conf);
   orientation_angle();
+  virtual int init(std::string const &conf);
   virtual ~orientation_angle() {}
   virtual void calc_value();
   virtual void calc_gradients();
@@ -1200,6 +1202,7 @@ public:
 
   orientation_proj(std::string const &conf);
   orientation_proj();
+  virtual int init(std::string const &conf);
   virtual ~orientation_proj() {}
   virtual void calc_value();
   virtual void calc_gradients();
@@ -1227,6 +1230,7 @@ public:
 
   tilt(std::string const &conf);
   tilt();
+  virtual int init(std::string const &conf);
   virtual ~tilt() {}
   virtual void calc_value();
   virtual void calc_gradients();
@@ -1254,6 +1258,7 @@ public:
 
   spin_angle(std::string const &conf);
   spin_angle();
+  virtual int init(std::string const &conf);
   virtual ~spin_angle() {}
   virtual void calc_value();
   virtual void calc_gradients();
