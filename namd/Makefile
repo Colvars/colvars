@@ -452,6 +452,8 @@ CIPPFLAGS = $(CUDAFLAGS) -DBONDED_CUDA
 
 BINARIES = namd2 psfgen sortreplicas flipdcd flipbinpdb charmrun
 
+NAMDUTILS = diffbinpdb dumpdcd loaddcd fixdcd
+
 # This should be rebuilt at every compile, but not on Win32.
 BUILDINFO = $(DSTDIR)/buildinfo
 MAKEBUILDINFO = \
@@ -463,6 +465,8 @@ MAKEBUILDINFO = \
 	$(CXX) $(CXXFLAGS) $(COPTO)$(BUILDINFO).o $(COPTC) $(BUILDINFO).C
 
 all:	$(BINARIES) $(LIBCUDARTSO) $(LIBCUFFTSO)
+
+utils:	$(NAMDUTILS)
 
 namd2:	$(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS)
 	$(MAKEBUILDINFO)
@@ -773,7 +777,7 @@ clean:
 	rm -rf ptrepository Templates.DB SunWS_cache $(DSTDIR) $(INCDIR)
 
 veryclean:	clean
-	rm -f $(BINARIES)
+	rm -f $(BINARIES) $(NAMDUTILS)
 
 RELEASE_DIR_NAME = NAMD_$(NAMD_VERSION)_$(NAMD_PLATFORM)
 
