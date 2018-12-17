@@ -96,53 +96,64 @@ double colvar::deer_kernel::kdeer_der(cvm::real const &r, cvm::real const &t)
 
 // end DEER keernel analytical derivatives routine
 
+
 colvar::deer_kernel::deer_kernel(std::string const &conf)
-  : cvc(conf)
+  : cvc()
 {
   function_type = "deer_kernel";
+  enable(f_cvc_implicit_gradient);
   x.type(colvarvalue::type_vector);
+  init(conf);
+}
 
-  deersize = 0;
 
-  get_keyval(conf, "deertimefile", deer_time_file);
-  int nlines=0;
-  int i;
-  int t;
-  // read deertimefile
-  std::string line;
-  std::ifstream deerfile (deer_time_file);
-  if (deerfile.is_open()){
-    while ( getline (deerfile,line) )
-    {
-       if (line.size() == 0)
-         continue;
-       nlines++;
-    }
-    deersize=nlines;
-    // allocations
-    timesdeer.resize(deersize);
-    deerexpvalues.resize(deersize);
-    // read file again
-    deerfile.clear();
-    deerfile.seekg(0);
-    // assign times and experimental values
-    for (t=0; t<deersize; t++){
+int colvar::deer_kernel::init(std::string const &conf)
+{
+  int error_code = COLVARS_OK;
+
+  error_code |= cvc::init(conf);
+
+  if (get_keyval(conf, "deertimefile", deer_time_file)) {
+    int nlines=0;
+    int i;
+    int t;
+    // read deertimefile
+    std::string line;
+    std::ifstream deerfile (deer_time_file);
+    if (deerfile.is_open()){
+      // count the lines
+      while ( cvm::getline(deerfile, line) )
+        {
+          if (line.size() == 0)
+            continue;
+          nlines++;
+        }
+      // allocations
+      timesdeer.resize(nlines);
+      deerexpvalues.resize(nlines);
+      // read file again
+      deerfile.clear();
+      deerfile.seekg(0);
+      // assign times and experimental values
+      for (t=0; t< nlines; t++){
         deerfile >> timesdeer[t];
         deerfile >> deerexpvalues[t];
         getline (deerfile,line);
+      }
+      deerfile.close();
+    } else {
+      return cvm::error("Unable to open deerTimeFile", INPUT_ERROR);
     }
-    deerfile.close();
-  } else {
-    cvm::error("Unable to open deertimefile");
-    return;
-  }
-  if (deersize==0) {
-    cvm::error("deertimefile must contain at least one (non-empty) line");
-    return;
   }
 
-  get_keyval(conf, "useDeerGrid", deer_grid, false);
+  if (timesdeer.size() == 0) {
+    return cvm::error("Must provide a deerTimeFile with at least one "
+                      "non-empty line.\m", INPUT_ERROR);
+  }
+  
+  get_keyval(conf, "useDEERGrid", deer_grid, false);
   if (!deer_grid) deer_anal_der=true;
+
   if (deer_grid){
     // define deer kernel grid
     get_keyval(conf, "deerWidth", deerwidth, 0.1);
@@ -151,13 +162,13 @@ colvar::deer_kernel::deer_kernel(std::string const &conf)
     get_keyval(conf, "useAnalyDer", deer_anal_der, false);
     rpoints=std::floor( (deerupper-deerlower) / deerwidth );
 
-    deerk.resize(rpoints,deersize);
-    if (deer_anal_der) deerk_der.resize(rpoints,deersize);
+    deerk.resize(rpoints, times.size());
+    if (deer_anal_der) deerk_der.resize(rpoints, timesdeer.size());
     // assign deer kernel grid
 
     for (i=0; i<rpoints; i++){
        cvm::real const rval = deerlower+(i+0.5)*deerwidth;
-       for (t=0; t<deersize; t++){
+       for (t=0; t<timesdeer.size(); t++){
           //deerk[i][t]=kdeer(rval,timesdeer[t])-deerexpvalues[t];
           deerk[i][t]=kdeer(rval,timesdeer[t]);
        }
@@ -165,7 +176,7 @@ colvar::deer_kernel::deer_kernel(std::string const &conf)
     if (deer_anal_der){
       for (i=0; i<rpoints; i++){
          cvm::real const rval = deerlower+(i+0.5)*deerwidth;
-         for (t=0; t<deersize; t++){
+         for (t=0; t<timesdeer.size(); t++){
             deerk_der[i][t]=kdeer_der(rval,timesdeer[t]);
          }
       }
@@ -175,13 +186,16 @@ colvar::deer_kernel::deer_kernel(std::string const &conf)
   group1 = parse_group(conf, "group1");
   group2 = parse_group(conf, "group2");
 
-  x.vector1d_value.resize(deersize);
+  x.vector1d_value.resize(timesdeer.size());
+
+  return error_code;
 }
 
 
 colvar::deer_kernel::deer_kernel()
 {
   function_type = "deer_kernel";
+  enable(f_cvc_implicit_gradient);
   x.type(colvarvalue::type_vector);
 }
 
@@ -213,8 +227,9 @@ void colvar::deer_kernel::calc_value()
     int deerbin=floor( (dist_v.norm()-deerlower) / deerwidth );
 
     if (deerbin<0 || deerbin >=rpoints ){
-      cvm::error("distance out of boundaries, expand deerLower or deerUpper!");
-      return;
+      return cvm::error("distance out of boundaries for DEER component \""+name+
+                        "\", please expand deerLower and/or deerUpper.", 
+                        INPUT_ERROR);
     }
 
     if (deer_anal_der) {

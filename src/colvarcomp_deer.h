@@ -59,6 +59,7 @@ public:
 
   deer_kernel(std::string const &conf);
   deer_kernel();
+  virtual int init(std::string const &conf);
   virtual ~deer_kernel() {}
   virtual void calc_value();
   virtual void calc_gradients();
