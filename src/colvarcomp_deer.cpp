@@ -150,7 +150,7 @@ int colvar::deer_kernel::init(std::string const &conf)
     return cvm::error("Must provide a deerTimeFile with at least one "
                       "non-empty line.\m", INPUT_ERROR);
   }
-  
+
   get_keyval(conf, "useDEERGrid", deer_grid, false);
   if (!deer_grid) deer_anal_der=true;
 
@@ -225,7 +225,7 @@ int colvar::deer_kernel::compute_deer_kernel(cvm::vector1d<cvm::real> &kernel,
 
     if (deerbin < 0 || deerbin >= rpoints ){
       return cvm::error("distance out of boundaries for DEER component \""+name+
-                        "\", please expand deerLower and/or deerUpper.", 
+                        "\", please expand deerLower and/or deerUpper.",
                         INPUT_ERROR);
     }
 
@@ -579,4 +579,100 @@ double fresnel_s1(double x)
 }
 
 // end Fresnel integral routines
+}
+
+
+
+colvar::deer::deer(std::string const &conf)
+  : deer_kernel()
+{
+  function_type = "deer";
+  mdepth = 1.0;
+  alpha = 0.0;
+  sample_dimensionality = 3;
+  init(conf);
+}
+
+
+colvar::deer::deer()
+  : deer_kernel()
+{
+  function_type = "deer";
+  sample_dimensionality = 3;
+  mdepth = 1.0;
+  alpha = 0.0;
+}
+
+
+int colvar::deer::init(std::string const &conf)
+{
+  int error_code = COLVARS_OK;
+
+  error_code |= deer_kernel::init(conf);
+
+  get_keyval(conf, "deerMdepth", mdepth, mdepth);
+  get_keyval(conf, "deerBackAlpha", alpha_deer, alpha);
+
+  if (is_enabled(f_cvc_gradient)) {
+    deriv_signal.resize(timesdeer.size());
+    deer_signal_force.type(colvarvalue::type_vector);
+    deer_signal_force.resize(timesdeer.size());
+  }
+
+  return error_code;
+}
+
+
+template<bool gradients, size_t deer_dim>
+int colvar::deer::compute_exp_signal(cvm::vector1d<cvm::real> &kernel,
+                                     cvm::vector1d<cvm::real> &kernel_deriv,
+                                     cvm::vector1d<cvm::real> const &times,
+                                     cvm::real deer_mdepth,
+                                     cvm::real deer_alpha)
+{
+  size_t const nt = times.size();
+  for (size_t it = 0; it < nt; it++) {
+    cvm::real const t = times[it];
+    cvm::real const exp_background = (deer_dim == 3) ?
+      std::exp(-1.0 * deer_alpha*std::fabs(t)) :
+      std::exp(-1.0 * std::pow(deer_alpha*std::fabs(t),
+                               static_cast<cvm::real>(deer_dim)/3.0));
+    cvm::real const k_t = kernel[it];
+    if (gradients) {
+      cvm::real const dk_t = kernel_deriv[it];
+      cvm::real &dF_t = kernel_deriv[it];
+      dF_t = deer_mdepth * exp_alpha * dk_t;
+    }
+    cvm::real &F_t = kernel[it];
+    F_t = ((1.0 - deer_mdepth) + deer_mdepth*k_t) * exp_background;
+  }
+  return COLVARS_OK;
+}
+
+
+void colvar::deer::calc_value()
+{
+  deer_kernel::calc_value();
+  size_t const dim = sample_dimensionality;
+  // Compute in-place the experimental signal from the kernel
+  if (is_enabled(f_cvc_gradient)) {
+    compute_exp_signal<true, dim>(x.vector1d_value, deer_deriv, timesdeer,
+                                  mdepth, alpha);
+  } else {
+    compute_exp_signal<false, dim>(x.vector1d_value, deer_deriv, timesdeer,
+                                   mdepth, alpha);
+  }
+}
+
+
+void colvar::deer::calc_gradients()
+{
+  // calculated on the fly in apply_force() and not stored
+}
+
+
+void colvar::deer::apply_force(colvarvalue const &force)
+{
+  // The signal's derivative has been already computed in deer_deriv
+  deer_kernel::apply_force(force);
 }

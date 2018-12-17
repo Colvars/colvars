@@ -6,8 +6,11 @@
 
 class colvar;
 
-/// \brief DEER time-signal colvar component
+/// \brief DEER kernel colvar component
 /// (Marinelli and Fiorin, Structure, 2018)
+///
+/// Computes the experimental time-signal in the limit of no background and
+/// modulation depth equal to 1
 class colvar::deer_kernel
   : public colvar::cvc
 {
@@ -18,8 +21,8 @@ protected:
   /// Compute the kernel's derivative at a single time point t
   double kdeer_der(cvm::real const &r, cvm::real const &t);
 
-  /// Compute kernel over 
-  template<bool gradients> 
+  /// Compute kernel over
+  template<bool gradients>
   int compute_deer_kernel(cvm::vector1d<cvm::real> &kernel,
                           cvm::vector1d<cvm::real> &kernel_deriv,
                           cvm::vector1d<cvm::real> const &times);
@@ -76,6 +79,44 @@ public:
                                   colvarvalue const &x2) const;
   virtual colvarvalue dist2_rgrad(colvarvalue const &x1,
                                   colvarvalue const &x2) const;
+};
+
+
+/// \brief DEER time-signal colvar component
+/// (Marinelli and Fiorin, Structure, 2018)
+///
+/// Incorporates non-trivial background and modulation depth to compute the
+/// DEER experimental signal
+class colvar::deer
+  : public colvar::deer_kernel
+{
+protected;
+
+  /// Compute the experimental signal
+  template<bool gradients, size_t deer_dim>
+  int compute_exp_signal(cvm::vector1d<cvm::real> &kernel,
+                         cvm::vector1d<cvm::real> &kernel_deriv,
+                         cvm::vector1d<cvm::real> const &times,
+                         cvm::real deer_mdepth,
+                         cvm::real deer_alpha);
+
+  /// DEER time-signal modulation depth (\Lambda_1)
+  cvm::real mdepth;
+
+  /// DEER time-signal background term (\Lambda_2)
+  cvm::real alpha;
+
+  /// The dimensionality of the sample for background calculation (default: 3)
+  size_t sample_dimensionality;
+
+public:
+
+  deer_kernel(std::string const &conf);
+  deer_kernel();
+  virtual int init(std::string const &conf);
+  virtual ~deer_kernel() {}
+  virtual void calc_value();
+  virtual void calc_gradients();
 };
 
 

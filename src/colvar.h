@@ -549,6 +549,7 @@ public:
   class distance_inv;
   class distance_pairs;
   class deer_kernel;
+  class deer;
   class angle;
   class dipole_angle;
   class dihedral;
