@@ -591,6 +591,7 @@ The following components implement functions with a scalar value (i.e.{} a real 
 \item \refkey{angle}{colvar|angle}: angle between three groups;
 \item \refkey{dihedral}{colvar|dihedral}: torsional (dihedral) angle between four groups;
 \item \refkey{dipoleAngle}{colvar|dipoleAngle}: angle between two groups and dipole of a third group;
+\item \refkey{dipoleMagnitude}: magnitude of the dipole of a group of atoms;
 \item \refkey{polarTheta}{colvar|polarTheta}: polar angle of a group in spherical coordinates;
 \item \refkey{polarPhi}{colvar|polarPhi}: azimuthal angle of a group in spherical coordinates;
 \item \refkey{coordNum}{colvar|coordNum}: coordination number between two groups;
@@ -623,7 +624,6 @@ Some components do not return scalar, but vector values:
 \item \refkey{distanceDir}{colvar|distanceDir}: unit vector parallel to distanceVec (length: 3);
 \item \refkey{cartesian}{colvar|cartesian}: vector of atomic Cartesian coordinates (length: $N$ times the number of Cartesian components requested, X, Y or Z);
 \item \refkey{distancePairs}{colvar|distancePairs}: vector of mutual distances (length: $N_{\mathrm{1}}\times{}N_{\mathrm{2}}$);
-\item \refkey{dipoleMagnitude}: magnitude of the dipole of a group of atoms;
 \item \refkey{orientation}{colvar|orientation}: best-fit rotation, expressed as a unit quaternion (length: 4).
 \end{itemize}
 
@@ -1542,7 +1542,7 @@ It returns the magnitude in elementary charge times angstrom.
 
 \begin{cvcoptions}
 \item %
-  \dupkey{atoms}{\texttt{dipoleAngle}}{colvar|distance|group1}{\texttt{distance} component}
+  \dupkey{atoms}{\texttt{dipoleMagnitude}}{colvar|distance|group1}{\texttt{distance} component}
 \end{cvcoptions}
 
 
@@ -1653,12 +1653,6 @@ should also take care that the macromolecule is composed by a single
 chain, or disable \texttt{wrapAll} otherwise.
 
 
-
-\cvsubsubsec{\texttt{dipoleAngle}: angle between two groups and dipole of a third group.}{sec:cvc_dipoleAngle}
-The \texttt{dipoleAngle~\{...\}} block defines an angle, and contains the
-three blocks \texttt{group1}, \texttt{group2} and \texttt{group3}, defining
-the three groups, being \texttt{group1} the group where dipole is calculated. 
-It returns an angle (in degrees) within the interval $[0:180]$.
 
 \cvsubsubsec{\texttt{orientationAngle}: angle of rotation from reference coordinates.}{sec:cvc_orientationAngle}
 \labelkey{colvar|orientationAngle}
