@@ -279,12 +279,13 @@ void colvar::deer_kernel::calc_gradients()
 
 void colvar::deer_kernel::apply_force(colvarvalue const &force)
 {
+  size_t const deersize = times.size();
   cvm::rvector const u = dist_v.unit();
-  int t;
-  cvm::real totdeerforce=0.0;
+  cvm::vector1d<cvm::real> const &fv = force.vector1d_value;
 
-  for (t=0; t<deersize; t++){
-     totdeerforce=totdeerforce+force[t] * deerder[t];
+  cvm::real totdeerforce = 0.0;
+  for (int t = 0; t < deersize; t++){
+     totdeerforce += fv[t] * deer_deriv[t];
   }
 
   if (!group1->noforce)
@@ -293,6 +294,7 @@ void colvar::deer_kernel::apply_force(colvarvalue const &force)
   if (!group2->noforce)
     group2->apply_force(       u * totdeerforce);
 }
+
 
 cvm::real colvar::deer_kernel::dist2(colvarvalue const &x1,
                                      colvarvalue const &x2) const

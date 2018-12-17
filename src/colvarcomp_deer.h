@@ -13,9 +13,9 @@ class colvar::deer_kernel
 {
 protected:
 
-  /// kernel calculation routine
+  /// Compute the kernel's value at a single time point t
   double kdeer(cvm::real const &r, cvm::real const &t);
-  /// kernel derivatives calculation routine
+  /// Compute the kernel's derivative at a single time point t
   double kdeer_der(cvm::real const &r, cvm::real const &t);
 
   /// Compute kernel over 
@@ -36,17 +36,17 @@ protected:
   /// experimental deer values
   cvm::vector1d<cvm::real> deerexpvalues;
 
-  /// use deer grid
+  /// Use analytical derivatives
+  bool deer_anal_der;
+
+  /// Use discretized/tabulated function
   bool deer_grid;
   /// width for deer grid
-  cvm::real                deerwidth;
+  cvm::real deerwidth;
   /// lower boundary for deer grid
-  cvm::real                deerlower;
+  cvm::real deerlower;
   /// upper boundary for deer grid
-  cvm::real                deerupper;
-
-  /// use analytical derivatives
-  bool deer_anal_der;
+  cvm::real deerupper;
   /// number of points in discretized deer kernel function
   int rpoints;
   /// discretized deer kernel function
@@ -55,11 +55,11 @@ protected:
   cvm::matrix2d<cvm::real> deerk_der;
 
   /// First atom group
-  cvm::atom_group  *group1;
+  cvm::atom_group *group1;
   /// Second atom group
-  cvm::atom_group  *group2;
+  cvm::atom_group *group2;
   /// Vector distance, cached to be recycled
-  cvm::rvector     dist_v;
+  cvm::rvector dist_v;
 
 public:
 
