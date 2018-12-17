@@ -18,8 +18,14 @@ protected:
   /// kernel derivatives calculation routine
   double kdeer_der(cvm::real const &r, cvm::real const &t);
 
-  /// Derivatives vector, cached to be recycled
-  cvm::vector1d<cvm::real> deerder;
+  /// Compute kernel over 
+  template<bool gradients> 
+  int compute_deer_kernel(cvm::vector1d<cvm::real> &kernel,
+                          cvm::vector1d<cvm::real> &kernel_deriv,
+                          cvm::vector1d<cvm::real> const &times);
+
+  /// Derivative of the DEER kernels/signal wrt the group-distance
+  cvm::vector1d<cvm::real> deer_deriv;
 
   /// deer time trace file
   std::string deer_time_file;

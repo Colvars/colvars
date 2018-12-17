@@ -200,11 +200,61 @@ colvar::deer_kernel::deer_kernel()
 }
 
 
-void colvar::deer_kernel::calc_value()
+template<bool gradients>
+int colvar::deer_kernel::compute_deer_kernel(cvm::vector1d<cvm::real> &kernel,
+                                             cvm::vector1d<cvm::real> &kernel_deriv,
+                                             cvm::vector1d<cvm::real> const &times)
 {
   int t;
-  x.vector1d_value.resize(deersize);
-  deerder.resize(deersize);
+
+  size_t const deersize = times.size();
+
+  cvm::real const r = dist_v.norm();
+
+  if (!deer_grid) {
+
+    // Compute k(t) explicitly for each t
+    for (t = 0; t < deersize; t++){
+      kernel[t] = kdeer(r, times[t]);
+      if (gradients) kernel_deriv[t] = kdeer_der(r, times[t]);
+    }
+
+  } else {
+
+    int const deerbin = std::floor( (r-deerlower) / deerwidth );
+
+    if (deerbin < 0 || deerbin >= rpoints ){
+      return cvm::error("distance out of boundaries for DEER component \""+name+
+                        "\", please expand deerLower and/or deerUpper.", 
+                        INPUT_ERROR);
+    }
+
+    if (deer_anal_der) {
+      for (t=0; t<deersize; t++){
+        kernel[t]=deerk[deerbin][t]; // value calculated
+        if (gradients) kernel_deriv[t]=deerk_der[deerbin][t];
+      }
+    } else {
+      for (t=0; t<deersize; t++){
+        kernel[t]=deerk[deerbin][t]; // value calculated
+        if (gradients) {
+          if (deerbin==0) kernel_deriv[t] = (deerk[deerbin+1][t]-deerk[deerbin][t])/(deerwidth);
+          if (deerbin==rpoints-1) kernel_deriv[t] = (deerk[deerbin][t]-deerk[deerbin-1][t])/(deerwidth);
+          if (deerbin>0 && deerbin<rpoints-1) {
+            kernel_deriv[t] = (deerk[deerbin+1][t]-deerk[deerbin-1][t])/(2.*deerwidth);
+          }
+        }
+      }
+    }
+  }
+  return COLVARS_OK;
+}
+
+
+void colvar::deer_kernel::calc_value()
+{
+  size_t const deersize = timesdeer.size();
+  kernel_deriv.resize(deersize);
 
   if (!is_enabled(f_cvc_pbc_minimum_image)) {
     dist_v = group2->center_of_mass() - group1->center_of_mass();
@@ -213,44 +263,10 @@ void colvar::deer_kernel::calc_value()
                                     group2->center_of_mass());
   }
 
-  if (!deer_grid) {
-    for (t=0; t<deersize; t++){
-      //x.vector1d_value[t]=kdeer(dist_v.norm(),timesdeer[t])-deerexpvalues[t]; // value calculated
-      x.vector1d_value[t]=kdeer(dist_v.norm(),timesdeer[t]); // value calculated
-      deerder[t]=kdeer_der(dist_v.norm(),timesdeer[t]);
-      cvm::rvector const u = dist_v.unit();
-    }
-  }
-
-  if (deer_grid) {
-
-    int deerbin=floor( (dist_v.norm()-deerlower) / deerwidth );
-
-    if (deerbin<0 || deerbin >=rpoints ){
-      return cvm::error("distance out of boundaries for DEER component \""+name+
-                        "\", please expand deerLower and/or deerUpper.", 
-                        INPUT_ERROR);
-    }
-
-    if (deer_anal_der) {
-      for (t=0; t<deersize; t++){
-         x.vector1d_value[t]=deerk[deerbin][t]; // value calculated
-         deerder[t]=deerk_der[deerbin][t];
-         cvm::rvector const u = dist_v.unit();
-      }
-    }
-
-    if (!deer_anal_der) {
-      for (t=0; t<deersize; t++){
-         x.vector1d_value[t]=deerk[deerbin][t]; // value calculated
-         cvm::rvector const u = dist_v.unit();
-         if (deerbin==0) deerder[t] = (deerk[deerbin+1][t]-deerk[deerbin][t])/(deerwidth);
-         if (deerbin==rpoints-1) deerder[t] = (deerk[deerbin][t]-deerk[deerbin-1][t])/(deerwidth);
-         if (deerbin>0 && deerbin<rpoints-1) {
-           deerder[t] = (deerk[deerbin+1][t]-deerk[deerbin-1][t])/(2.*deerwidth);
-         }
-      }
-    }
+  if (is_enabled(f_cvc_gradient)) {
+    compute_deer_kernel<true>(x.vector1d_value, deer_deriv, timesdeer);
+  } else {
+    compute_deer_kernel<false>(x.vector1d_value, deer_deriv, timesdeer);
   }
 }
 
