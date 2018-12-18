@@ -539,6 +539,7 @@ public:
   class polar_phi;
   class distance_inv;
   class distance_pairs;
+  class dipole_magnitude;
   class angle;
   class dipole_angle;
   class dihedral;

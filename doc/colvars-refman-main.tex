@@ -591,6 +591,7 @@ The following components implement functions with a scalar value (i.e.{} a real 
 \item \refkey{angle}{colvar|angle}: angle between three groups;
 \item \refkey{dihedral}{colvar|dihedral}: torsional (dihedral) angle between four groups;
 \item \refkey{dipoleAngle}{colvar|dipoleAngle}: angle between two groups and dipole of a third group;
+\item \refkey{dipoleMagnitude}: magnitude of the dipole of a group of atoms;
 \item \refkey{polarTheta}{colvar|polarTheta}: polar angle of a group in spherical coordinates;
 \item \refkey{polarPhi}{colvar|polarPhi}: azimuthal angle of a group in spherical coordinates;
 \item \refkey{coordNum}{colvar|coordNum}: coordination number between two groups;
@@ -1534,6 +1535,23 @@ define the atom group, and returns a positive number, expressed in
 \end{cvcoptions}
 
 
+\cvsubsubsec{\texttt{dipoleMagnitude}: dipole magnitude of a group of atoms.}{sec:cvc_dipoleMagnitude}
+The \texttt{dipoleMagnitude~\{...\}} block defines the dipole magnitude 
+of a group of atoms, being \texttt{atoms} the group where dipole magnitude is calculated. 
+It returns the magnitude in elementary charge times angstrom.
+
+\begin{cvcoptions}
+\item %
+  \dupkey{atoms}{\texttt{dipoleMagnitude}}{colvar|rmsd|atoms}{\texttt{rmsd} component}
+\end{cvcoptions}
+
+
+\cvsubsubsec{\texttt{cartesian}: vector of atomic Cartesian coordinates.}{sec:cvc_cartesian}
+The \texttt{cartesian~\{...\}} block defines a component returning a flat vector containing
+the Cartesian coordinates of all participating atoms, in the order
+$(x_1, y_1, z_1, \cdots, x_n, y_n, z_n)$.
+
+
 \cvsubsubsec{\texttt{inertiaZ}: total moment of inertia of a group of atoms around a chosen axis.}{sec:cvc_inertiaZ}
 \labelkey{colvar|inertiaZ}
 
@@ -1551,6 +1569,7 @@ $\mathbf{x}_{\mathrm{cog}}(t)$:
 This component must contain one \texttt{atoms~\{...\}} block to
 define the atom group, and returns a positive number, expressed in
 \AA{}$^{2}$.
+
 
 \begin{cvcoptions}
 \item %

@@ -740,6 +740,63 @@ void colvar::distance_pairs::apply_force(colvarvalue const &force)
 
 
 
+colvar::dipole_magnitude::dipole_magnitude(std::string const &conf)
+  : cvc(conf)
+{
+  function_type = "dipole_magnitude";
+  atoms = parse_group(conf, "atoms");
+  init_total_force_params(conf);
+  x.type(colvarvalue::type_scalar);
+}
+
+colvar::dipole_magnitude::dipole_magnitude(cvm::atom const &a1)
+{
+  atoms = new cvm::atom_group(std::vector<cvm::atom>(1, a1));
+  register_atom_group(atoms);
+  x.type(colvarvalue::type_scalar);
+}
+
+
+colvar::dipole_magnitude::dipole_magnitude()
+{
+  function_type = "dipole_magnitude";
+  x.type(colvarvalue::type_scalar);
+}
+
+
+void colvar::dipole_magnitude::calc_value()
+{
+  cvm::atom_pos const atomsCom = atoms->center_of_mass();
+  atoms->calc_dipole(atomsCom);
+  dipoleV = atoms->dipole();
+  x.real_value = dipoleV.norm();
+}
+
+void colvar::dipole_magnitude::calc_gradients()
+{
+  cvm::real const      aux1 = atoms->total_charge/atoms->total_mass;
+  cvm::atom_pos const  dipVunit= dipoleV.unit();
+    
+  for (cvm::atom_iter ai = atoms->begin(); ai != atoms->end(); ai++) {
+    ai->grad = (ai->charge - aux1*ai->mass) * dipVunit;
+  }
+}
+
+void colvar::dipole_magnitude::apply_force (colvarvalue const &force)
+{
+  if (!atoms->noforce) {
+    atoms->apply_colvar_force (force.real_value);
+    for (cvm::atom_iter ai = atoms->begin(); ai != atoms->end(); ai++) {
+      cvm::atom_pos forceV=force.real_value*ai->grad;
+    }
+  }
+}
+
+
+simple_scalar_dist_functions(dipole_magnitude)
+
+
+
 colvar::gyration::gyration(std::string const &conf)
   : cvc(conf)
 {

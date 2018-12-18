@@ -754,6 +754,8 @@ int colvar::init_components(std::string const &conf)
     "weighted by inverse power", "distanceInv");
   error_code |= init_components_type<distance_pairs>(conf, "N1xN2-long vector "
     "of pairwise distances", "distancePairs");
+  error_code |= init_components_type<dipole_magnitude>(conf, "dipole magnitude",
+    "dipoleMagnitude");
   error_code |= init_components_type<coordnum>(conf, "coordination "
     "number", "coordNum");
   error_code |= init_components_type<selfcoordnum>(conf, "self-coordination "
