@@ -401,7 +401,7 @@ public:
   /// \endlink objects) to wrap a value into a standard interval
   ///
   /// Handles correctly symmetries and periodic boundary conditions
-  void wrap(colvarvalue &x) const;
+  void wrap(colvarvalue &x_unwrapped) const;
 
 
   /// Read the analysis tasks

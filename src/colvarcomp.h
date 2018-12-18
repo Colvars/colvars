@@ -230,7 +230,7 @@ public:
                                   colvarvalue const &x2) const;
 
   /// \brief Wrap value (for periodic/symmetric cvcs)
-  virtual void wrap(colvarvalue &x) const;
+  virtual void wrap(colvarvalue &x_unwrapped) const;
 
   /// \brief Pointers to all atom groups, to let colvars collect info
   /// e.g. atomic gradients
@@ -408,7 +408,7 @@ public:
   virtual colvarvalue dist2_rgrad(colvarvalue const &x1,
                                   colvarvalue const &x2) const;
   /// \brief Redefined to make use of the user-provided period
-  virtual void wrap(colvarvalue &x) const;
+  virtual void wrap(colvarvalue &x_unwrapped) const;
 };
 
 
@@ -467,7 +467,7 @@ public:
   virtual colvarvalue dist2_rgrad(colvarvalue const &x1,
                                   colvarvalue const &x2) const;
   /// Redefined to handle the 2*PI periodicity
-  virtual void wrap(colvarvalue &x) const;
+  virtual void wrap(colvarvalue &x_unwrapped) const;
 };
 
 
@@ -840,7 +840,7 @@ public:
   virtual colvarvalue dist2_rgrad(colvarvalue const &x1,
                                   colvarvalue const &x2) const;
   /// Redefined to handle the 2*PI periodicity
-  virtual void wrap(colvarvalue &x) const;
+  virtual void wrap(colvarvalue &x_unwrapped) const;
 };
 
 
@@ -1302,7 +1302,7 @@ public:
   virtual colvarvalue dist2_rgrad(colvarvalue const &x1,
                                   colvarvalue const &x2) const;
   /// Redefined to handle the 2*PI periodicity
-  virtual void wrap(colvarvalue &x) const;
+  virtual void wrap(colvarvalue &x_unwrapped) const;
 };
 
 
