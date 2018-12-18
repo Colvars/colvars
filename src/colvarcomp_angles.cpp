@@ -498,19 +498,17 @@ colvarvalue colvar::dihedral::dist2_rgrad(colvarvalue const &x1,
 }
 
 
-void colvar::dihedral::wrap(colvarvalue &x) const
+void colvar::dihedral::wrap(colvarvalue &x_unwrapped) const
 {
-  if ((x.real_value - wrap_center) >= 180.0) {
-    x.real_value -= 360.0;
+  if ((x_unwrapped.real_value - wrap_center) >= 180.0) {
+    x_unwrapped.real_value -= 360.0;
     return;
   }
 
-  if ((x.real_value - wrap_center) < -180.0) {
-    x.real_value += 360.0;
+  if ((x_unwrapped.real_value - wrap_center) < -180.0) {
+    x_unwrapped.real_value += 360.0;
     return;
   }
-
-  return;
 }
 
 
@@ -643,15 +641,15 @@ colvarvalue colvar::polar_phi::dist2_rgrad(colvarvalue const &x1,
 }
 
 
-void colvar::polar_phi::wrap(colvarvalue &x) const
+void colvar::polar_phi::wrap(colvarvalue &x_unwrapped) const
 {
-  if ((x.real_value - wrap_center) >= 180.0) {
-    x.real_value -= 360.0;
+  if ((x_unwrapped.real_value - wrap_center) >= 180.0) {
+    x_unwrapped.real_value -= 360.0;
     return;
   }
 
-  if ((x.real_value - wrap_center) < -180.0) {
-    x.real_value += 360.0;
+  if ((x_unwrapped.real_value - wrap_center) < -180.0) {
+    x_unwrapped.real_value += 360.0;
     return;
   }
 

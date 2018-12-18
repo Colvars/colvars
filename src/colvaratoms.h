@@ -194,7 +194,7 @@ public:
   /// \brief Re-initialize the total mass of a group.
   /// This is needed in case the hosting MD code has an option to
   /// change atom masses after their initialization.
-  void reset_mass(std::string &name, int i, int j);
+  void reset_mass(std::string const &colvar_name, int i, int j);
 
   /// \brief Implementation of the feature list for atom group
   static std::vector<feature *> ag_features;
@@ -437,10 +437,15 @@ public:
   std::vector<cvm::rvector> velocities() const;
 
   ///\brief Calculate the dipole of the atom group around the specified center
-  int calc_dipole(cvm::atom_pos const &com);
+  int calc_dipole(cvm::atom_pos const &dipole_center);
+
 private:
+
+  /// Dipole moment of the atom group
   cvm::rvector dip;
+
 public:
+
   ///\brief Return the (previously calculated) dipole of the atom group
   inline cvm::rvector dipole() const
   {

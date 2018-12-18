@@ -230,10 +230,11 @@ void cvm::atom_group::update_total_mass()
 }
 
 
-void cvm::atom_group::reset_mass(std::string &name, int i, int j)
+void cvm::atom_group::reset_mass(std::string const &colvar_name, int i, int j)
 {
   update_total_mass();
-  cvm::log("Re-initialized atom group "+name+":"+cvm::to_str(i)+"/"+
+  cvm::log("Re-initialized atom group for variable \""+colvar_name+"\":"+
+           cvm::to_str(i)+"/"+
            cvm::to_str(j)+". "+ cvm::to_str(atoms_ids.size())+
            " atoms: total mass = "+cvm::to_str(total_mass)+".\n");
 }
@@ -1031,15 +1032,15 @@ int cvm::atom_group::calc_center_of_mass()
 }
 
 
-int cvm::atom_group::calc_dipole(cvm::atom_pos const &com)
+int cvm::atom_group::calc_dipole(cvm::atom_pos const &dipole_center)
 {
   if (b_dummy) {
-    cvm::error("Error: trying to compute the dipole of an empty group.\n", INPUT_ERROR);
-    return COLVARS_ERROR;
+    return cvm::error("Error: trying to compute the dipole "
+                      "of a dummy group.\n", INPUT_ERROR);
   }
   dip.reset();
   for (cvm::atom_const_iter ai = this->begin(); ai != this->end(); ai++) {
-    dip += ai->charge * (ai->pos - com);
+    dip += ai->charge * (ai->pos - dipole_center);
   }
   return COLVARS_OK;
 }

@@ -555,7 +555,7 @@ int colvar::init_extended_Lagrangian(std::string const &conf)
   get_keyval_feature(this, conf, "extendedLagrangian", f_cv_extended_Lagrangian, false);
 
   if (is_enabled(f_cv_extended_Lagrangian)) {
-    cvm::real temp, tolerance, period;
+    cvm::real temp, tolerance, extended_period;
 
     cvm::log("Enabling the extended Lagrangian term for colvar \""+
              this->name+"\".\n");
@@ -583,11 +583,11 @@ int colvar::init_extended_Lagrangian(std::string const &conf)
     ext_force_k = cvm::boltzmann() * temp / (tolerance * tolerance);
     cvm::log("Computed extended system force constant: " + cvm::to_str(ext_force_k) + " [E]/U^2");
 
-    get_keyval(conf, "extendedTimeConstant", period, 200.0);
-    if (period <= 0.0) {
+    get_keyval(conf, "extendedTimeConstant", extended_period, 200.0);
+    if (extended_period <= 0.0) {
       cvm::error("Error: \"extendedTimeConstant\" must be positive.\n", INPUT_ERROR);
     }
-    ext_mass = (cvm::boltzmann() * temp * period * period)
+    ext_mass = (cvm::boltzmann() * temp * extended_period * extended_period)
       / (4.0 * PI * PI * tolerance * tolerance);
     cvm::log("Computed fictitious mass: " + cvm::to_str(ext_mass) + " [E]/(U/fs)^2   (U: colvar unit)");
 
@@ -935,7 +935,7 @@ void colvar::setup() {
     for (size_t ig = 0; ig < cvcs[i]->atom_groups.size(); ig++) {
       cvm::atom_group &atoms = *(cvcs[i]->atom_groups[ig]);
       atoms.setup();
-      atoms.reset_mass(name,i,ig);
+      atoms.reset_mass(name, i, ig);
       atoms.read_positions();
     }
   }
@@ -1794,21 +1794,21 @@ colvarvalue colvar::dist2_rgrad(colvarvalue const &x1,
   }
 }
 
-void colvar::wrap(colvarvalue &x) const
+
+void colvar::wrap(colvarvalue &x_unwrapped) const
 {
-  if ( !is_enabled(f_cv_periodic) ) {
+  if (!is_enabled(f_cv_periodic)) {
     return;
   }
 
   if ( is_enabled(f_cv_scripted) || is_enabled(f_cv_custom_function) ) {
     // Scripted functions do their own wrapping, as cvcs might not be periodic
-    cvm::real shift = cvm::floor((x.real_value - wrap_center) / period + 0.5);
-    x.real_value -= shift * period;
+    cvm::real shift = cvm::floor((x_unwrapped.real_value - wrap_center) /
+                                 period + 0.5);
+    x_unwrapped.real_value -= shift * period;
   } else {
-    cvcs[0]->wrap(x);
+    cvcs[0]->wrap(x_unwrapped);
   }
-
-  return;
 }
 
 
@@ -2261,7 +2261,7 @@ void colvar::calc_vel_acf(std::list<colvarvalue> &v_list,
 
 
 void colvar::calc_coor_acf(std::list<colvarvalue> &x_list,
-                            colvarvalue const      &x)
+                           colvarvalue const &x_now)
 {
   // same as above but for coordinates
   if (x_list.size() >= acf_length+acf_offset) {
@@ -2273,7 +2273,7 @@ void colvar::calc_coor_acf(std::list<colvarvalue> &x_list,
 
     *(acf_i++) += x.norm2();
 
-    colvarvalue::inner_opt(x, xs_i, x_list.end(), acf_i);
+    colvarvalue::inner_opt(x_now, xs_i, x_list.end(), acf_i);
 
     acf_nframes++;
   }
@@ -2281,7 +2281,7 @@ void colvar::calc_coor_acf(std::list<colvarvalue> &x_list,
 
 
 void colvar::calc_p2coor_acf(std::list<colvarvalue> &x_list,
-                             colvarvalue const      &x)
+                             colvarvalue const &x_now)
 {
   // same as above but with second order Legendre polynomial instead
   // of just the scalar product
@@ -2295,7 +2295,7 @@ void colvar::calc_p2coor_acf(std::list<colvarvalue> &x_list,
     // value of P2(0) = 1
     *(acf_i++) += 1.0;
 
-    colvarvalue::p2leg_opt(x, xs_i, x_list.end(), acf_i);
+    colvarvalue::p2leg_opt(x_now, xs_i, x_list.end(), acf_i);
 
     acf_nframes++;
   }
