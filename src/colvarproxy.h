@@ -515,7 +515,7 @@ public:
 protected:
 
   /// Pointer to Tcl interpreter object
-  void *_tcl_interp;
+  void *tcl_interp_;
 
   /// Set Tcl pointers
   virtual void init_tcl_pointers();

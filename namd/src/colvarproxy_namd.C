@@ -84,7 +84,7 @@ colvarproxy_namd::colvarproxy_namd()
   init_tcl_pointers();
 
   // See is user-scripted forces are defined
-  if (Tcl_FindCommand(reinterpret_cast<Tcl_Interp *>(_tcl_interp),
+  if (Tcl_FindCommand(reinterpret_cast<Tcl_Interp *>(tcl_interp_),
                       "calc_colvar_forces", NULL, 0) == NULL) {
     force_script_defined = false;
   } else {
@@ -476,7 +476,7 @@ void colvarproxy_namd::init_tcl_pointers()
 {
 #ifdef NAMD_TCL
   // Store pointer to NAMD's Tcl interpreter
-  _tcl_interp = reinterpret_cast<void *>(Node::Object()->getScript()->interp);
+  tcl_interp_ = reinterpret_cast<void *>(Node::Object()->getScript()->interp);
 #endif
 }
 
@@ -1009,7 +1009,7 @@ std::vector<std::string> colvarproxy_namd::script_obj_to_str_vector(unsigned cha
   }
   std::vector<std::string> result;
 #ifdef NAMD_TCL
-  Tcl_Interp *interp = reinterpret_cast<Tcl_Interp *>(_tcl_interp);
+  Tcl_Interp *interp = reinterpret_cast<Tcl_Interp *>(tcl_interp_);
   Tcl_Obj *tcl_obj = reinterpret_cast<Tcl_Obj *>(obj);
   Tcl_Obj **tcl_list_elems = NULL;
   int count = 0;

@@ -147,7 +147,7 @@ colvarproxy_vmd::colvarproxy_vmd(Tcl_Interp *interp, VMDApp *v, int molid)
 #if defined(VMDTCL)
   have_scripts = true;
 
-  _tcl_interp = reinterpret_cast<void *>(interp);
+  tcl_interp_ = reinterpret_cast<void *>(interp);
 
   // User-scripted forces are not really useful in VMD, but we accept them
   // for compatibility with NAMD scripts
@@ -399,7 +399,7 @@ std::vector<std::string> colvarproxy_vmd::script_obj_to_str_vector(unsigned char
   }
   std::vector<std::string> result;
 #ifdef VMDTCL
-  Tcl_Interp *interp = reinterpret_cast<Tcl_Interp *>(_tcl_interp);
+  Tcl_Interp *interp = reinterpret_cast<Tcl_Interp *>(tcl_interp_);
   Tcl_Obj *tcl_obj = reinterpret_cast<Tcl_Obj *>(obj);
   Tcl_Obj **tcl_list_elems = NULL;
   int count = 0;
