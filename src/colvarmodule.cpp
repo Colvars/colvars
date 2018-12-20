@@ -1027,9 +1027,6 @@ int colvarmodule::analyze()
     cvm::log("colvarmodule::analyze(), step = "+cvm::to_str(it)+".\n");
   }
 
-  if (cvm::step_relative() == 0)
-    cvm::log("Performing analysis.\n");
-
   // perform colvar-specific analysis
   for (std::vector<colvar *>::iterator cvi = variables_active()->begin();
        cvi != variables_active()->end();
