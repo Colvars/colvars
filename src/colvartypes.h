@@ -1330,14 +1330,16 @@ public:
   /// \brief Perform gradient tests
   bool b_debug_gradients;
 
-  /// \brief Positions to superimpose: the rotation should brings pos1
-  /// into pos2
-  std::vector<cvm::atom_pos> pos1, pos2;
-
+  /// Correlation matrix C (3, 3)
   cvm::rmatrix C;
 
+  /// Overlap matrix S (4, 4)
   cvm::matrix2d<cvm::real> S;
+
+  /// Eigenvalues of S
   cvm::vector1d<cvm::real> S_eigval;
+
+  /// Eigenvectors of S
   cvm::matrix2d<cvm::real> S_eigvec;
 
   /// Used for debugging gradients
@@ -1521,15 +1523,17 @@ protected:
   /// eigenvalue crossing)
   cvm::quaternion q_old;
 
-  /// Build the overlap matrix S (used by calc_optimal_rotation())
-  void build_matrix(std::vector<cvm::atom_pos> const &pos1,
-                    std::vector<cvm::atom_pos> const &pos2,
-                    cvm::matrix2d<cvm::real>         &S);
+  /// Build the correlation matrix C (used by calc_optimal_rotation())
+  void build_correlation_matrix(std::vector<cvm::atom_pos> const &pos1,
+                                std::vector<cvm::atom_pos> const &pos2);
 
-  /// Diagonalize the overlap matrix S (used by calc_optimal_rotation())
-  void diagonalize_matrix(cvm::matrix2d<cvm::real> &S,
-                          cvm::vector1d<cvm::real> &S_eigval,
-                          cvm::matrix2d<cvm::real> &S_eigvec);
+  /// Compute the overlap matrix S (used by calc_optimal_rotation())
+  void compute_overlap_matrix();
+
+  /// Diagonalize a given matrix m (used by calc_optimal_rotation())
+  static void diagonalize_matrix(cvm::matrix2d<cvm::real> &m,
+                                 cvm::vector1d<cvm::real> &eigval,
+                                 cvm::matrix2d<cvm::real> &eigvec);
 };
 
 
