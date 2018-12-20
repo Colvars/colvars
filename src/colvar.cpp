@@ -1453,77 +1453,84 @@ cvm::real colvar::update_forces_energy()
   // extended variable if there is one
 
   if (is_enabled(f_cv_extended_Lagrangian)) {
-    if (cvm::debug()) {
-      cvm::log("Updating extended-Lagrangian degree of freedom.\n");
-    }
-
-    if (prev_timestep > -1) {
-      // Keep track of slow timestep to integrate MTS colvars
-      // the colvar checks the interval after waking up twice
-      int n_timesteps = cvm::step_relative() - prev_timestep;
-      if (n_timesteps != 0 && n_timesteps != time_step_factor) {
-        cvm::error("Error: extended-Lagrangian " + description + " has timeStepFactor " +
-          cvm::to_str(time_step_factor) + ", but was activated after " + cvm::to_str(n_timesteps) +
-          " steps at timestep " + cvm::to_str(cvm::step_absolute()) + " (relative step: " +
-          cvm::to_str(cvm::step_relative()) + ").\n" +
-          "Make sure that this colvar is requested by biases at multiples of timeStepFactor.\n");
-        return 0.;
+    if (cvm::proxy->simulation_running()) {
+      // Only integrate the extended equations of motion in running MD simulations
+      if (cvm::debug()) {
+        cvm::log("Updating extended-Lagrangian degree of freedom.\n");
       }
-    }
 
-    // Integrate with slow timestep (if time_step_factor != 1)
-    cvm::real dt = cvm::dt() * cvm::real(time_step_factor);
+      if (prev_timestep > -1) {
+        // Keep track of slow timestep to integrate MTS colvars
+        // the colvar checks the interval after waking up twice
+        int n_timesteps = cvm::step_relative() - prev_timestep;
+        if (n_timesteps != 0 && n_timesteps != time_step_factor) {
+          cvm::error("Error: extended-Lagrangian " + description + " has timeStepFactor " +
+            cvm::to_str(time_step_factor) + ", but was activated after " + cvm::to_str(n_timesteps) +
+            " steps at timestep " + cvm::to_str(cvm::step_absolute()) + " (relative step: " +
+            cvm::to_str(cvm::step_relative()) + ").\n" +
+            "Make sure that this colvar is requested by biases at multiples of timeStepFactor.\n");
+          return 0.;
+        }
+      }
 
-    colvarvalue f_ext(fr.type()); // force acting on the extended variable
-    f_ext.reset();
+      // Integrate with slow timestep (if time_step_factor != 1)
+      cvm::real dt = cvm::dt() * cvm::real(time_step_factor);
 
-    // the total force is applied to the fictitious mass, while the
-    // atoms only feel the harmonic force + wall force
-    // fr: bias force on extended variable (without harmonic spring), for output in trajectory
-    // f_ext: total force on extended variable (including harmonic spring)
-    // f: - initially, external biasing force
-    //    - after this code block, colvar force to be applied to atomic coordinates
-    //      ie. spring force (fb_actual will be added just below)
-    fr    = f;
-    // External force has been scaled for a 1-timestep impulse, scale it back because we will
-    // integrate it with the colvar's own timestep factor
-    f_ext = f / cvm::real(time_step_factor);
-    f_ext += (-0.5 * ext_force_k) * this->dist2_lgrad(xr, x);
-    f      = (-0.5 * ext_force_k) * this->dist2_rgrad(xr, x);
-    // Coupling force is a slow force, to be applied to atomic coords impulse-style
-    f *= cvm::real(time_step_factor);
+      colvarvalue f_ext(fr.type()); // force acting on the extended variable
+      f_ext.reset();
 
-    if (is_enabled(f_cv_subtract_applied_force)) {
-      // Report a "system" force without the biases on this colvar
-      // that is, just the spring force
-      ft_reported = (-0.5 * ext_force_k) * this->dist2_lgrad(xr, x);
+      // the total force is applied to the fictitious mass, while the
+      // atoms only feel the harmonic force + wall force
+      // fr: bias force on extended variable (without harmonic spring), for output in trajectory
+      // f_ext: total force on extended variable (including harmonic spring)
+      // f: - initially, external biasing force
+      //    - after this code block, colvar force to be applied to atomic coordinates
+      //      ie. spring force (fb_actual will be added just below)
+      fr    = f;
+      // External force has been scaled for a 1-timestep impulse, scale it back because we will
+      // integrate it with the colvar's own timestep factor
+      f_ext = f / cvm::real(time_step_factor);
+      f_ext += (-0.5 * ext_force_k) * this->dist2_lgrad(xr, x);
+      f      = (-0.5 * ext_force_k) * this->dist2_rgrad(xr, x);
+      // Coupling force is a slow force, to be applied to atomic coords impulse-style
+      f *= cvm::real(time_step_factor);
+
+      if (is_enabled(f_cv_subtract_applied_force)) {
+        // Report a "system" force without the biases on this colvar
+        // that is, just the spring force
+        ft_reported = (-0.5 * ext_force_k) * this->dist2_lgrad(xr, x);
+      } else {
+        // The total force acting on the extended variable is f_ext
+        // This will be used in the next timestep
+        ft_reported = f_ext;
+      }
+
+      // backup in case we need to revert this integration timestep
+      // if the same MD timestep is re-run
+      prev_xr = xr;
+      prev_vr = vr;
+
+      // leapfrog: starting from x_i, f_i, v_(i-1/2)
+      vr  += (0.5 * dt) * f_ext / ext_mass;
+      // Because of leapfrog, kinetic energy at time i is approximate
+      kinetic_energy = 0.5 * ext_mass * vr * vr;
+      potential_energy = 0.5 * ext_force_k * this->dist2(xr, x);
+      // leap to v_(i+1/2)
+      if (is_enabled(f_cv_Langevin)) {
+        vr -= dt * ext_gamma * vr;
+        colvarvalue rnd(x);
+        rnd.set_random();
+        vr += dt * ext_sigma * rnd / ext_mass;
+      }
+      vr  += (0.5 * dt) * f_ext / ext_mass;
+      xr  += dt * vr;
+      xr.apply_constraints();
+      this->wrap(xr);
     } else {
-      // The total force acting on the extended variable is f_ext
-      // This will be used in the next timestep
-      ft_reported = f_ext;
+      // If this is a postprocessing run (eg. in VMD), the extended DOF
+      // is equal to the actual coordinate
+      xr = x;
     }
-
-    // backup in case we need to revert this integration timestep
-    // if the same MD timestep is re-run
-    prev_xr = xr;
-    prev_vr = vr;
-
-    // leapfrog: starting from x_i, f_i, v_(i-1/2)
-    vr  += (0.5 * dt) * f_ext / ext_mass;
-    // Because of leapfrog, kinetic energy at time i is approximate
-    kinetic_energy = 0.5 * ext_mass * vr * vr;
-    potential_energy = 0.5 * ext_force_k * this->dist2(xr, x);
-    // leap to v_(i+1/2)
-    if (is_enabled(f_cv_Langevin)) {
-      vr -= dt * ext_gamma * vr;
-      colvarvalue rnd(x);
-      rnd.set_random();
-      vr += dt * ext_sigma * rnd / ext_mass;
-    }
-    vr  += (0.5 * dt) * f_ext / ext_mass;
-    xr  += dt * vr;
-    xr.apply_constraints();
-    this->wrap(xr);
   }
 
   // Now adding the force on the actual colvar (for those biases that
