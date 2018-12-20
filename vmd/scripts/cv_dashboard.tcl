@@ -1,6 +1,10 @@
 # Colvars Dashboard -- based on the Colvars Module for VMD
 # Jérôme Hénin <henin@ibpc.fr> 2018
 
+# Usage:
+# source cv_dashboard.tcl
+# cv_dashboard (to reopen window)
+
 # Design principles:
 # - take advantage of colvars/VMD binding for maximum user interaction
 # - hide the colvars config text from user, instead expose colvar, names and values
@@ -14,6 +18,9 @@
 # - histograms
 # - graphical representations such as rotation_display
 # - show atom groups as representations
+
+package provide cv_dashboard 1.0
+
 
 namespace eval ::cv_dashboard {
   # General UI state
@@ -29,6 +36,7 @@ namespace eval ::cv_dashboard {
 
   # Handle to keep track of a single interactive plot
   variable plothandle
+  variable plottype         ;# either timeline or 2cv
 }
 
 
@@ -37,12 +45,25 @@ namespace eval ::cv_dashboard {
 #################################################################
 
 
+proc cv_dashboard {} {
+  # If window already exists, destroy it
+  catch { destroy .cv_dashboard_window }
+  ::cv_dashboard::createWindow
+}
+
+
 # Creat main window
 proc ::cv_dashboard::createWindow {} {
 
   package require tablelist
-  set w [toplevel .cv_dashboard_window]
 
+  if {[molinfo num] == 0 } {
+    tk_messageBox -icon error -title "Colvars Dashboard Error"\
+      -message "No molecule loaded. Please load a molecule before running Colvars Dashboard.\n"
+    return -1
+  }
+
+  set w [toplevel .cv_dashboard_window]
   wm title $w "Colvars dashboard"
   wm protocol $w WM_DELETE_WINDOW {
     # window destructor that removes the trace we put in place, so they don't accumulate
@@ -58,11 +79,11 @@ proc ::cv_dashboard::createWindow {} {
   }
   set gridrow 0
   grid [ttk::button $w.load -text "Load config file" -command ::cv_dashboard::load -padding "2 0 2 0"] \
-    -row $gridrow -column 0 -pady 5 -padx 2 -sticky nsew
+    -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $w.save -text "Save colvars config" -command ::cv_dashboard::save -padding "2 0 2 0"] \
-    -row $gridrow -column 1 -pady 5 -padx 2 -sticky nsew
+    -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $w.reset -text "Reset Colvars Module" -command ::cv_dashboard::reset -padding "2 0 2 0"] \
-    -row $gridrow -column 2 -pady 5 -padx 2 -sticky nsew
+    -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
   tablelist::tablelist $w.cvtable -columns {
     0 Colvars
@@ -81,21 +102,22 @@ proc ::cv_dashboard::createWindow {} {
 
   incr gridrow
   grid [ttk::button $w.edit -text "Edit \[dbl-click\]" -command ::cv_dashboard::edit -padding "2 0 2 0"] \
-    -row $gridrow -column 0 -pady 5 -padx 2 -sticky nsew
+    -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $w.add -text "New" -command ::cv_dashboard::add -padding "2 0 2 0"] \
-    -row $gridrow -column 1 -pady 5 -padx 2 -sticky nsew
+    -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $w.del -text "Delete" -command ::cv_dashboard::del -padding "2 0 2 0"] \
-    -row $gridrow -column 2 -pady 5 -padx 2 -sticky nsew
+    -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
   incr gridrow
-  grid [ttk::button $w.plot -text "Interactive plot" -command ::cv_dashboard::plot -padding "2 0 2 0"] -row $gridrow -column 0 -pady 5 -padx 2 -sticky nsew
-  grid [ttk::button $w.refresh -text "Refresh table" -command ::cv_dashboard::refresh_table -padding "2 0 2 0"] -row $gridrow -column 1 -pady 5 -padx 2 -sticky nsew
+  grid [ttk::button $w.plot -text "Timeline plot" -command ::cv_dashboard::plot -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $w.plot2cv -text "2d plot" -command {::cv_dashboard::plot 2cv} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $w.refresh -text "Refresh table" -command ::cv_dashboard::refresh_table -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
   incr gridrow
-  grid [label $w.frameTxt -text "Frame:"] -row $gridrow -column 0 -pady 5 -padx 2 -sticky nsew
-  grid [label $w.frame -textvariable ::cv_dashboard::current_frame] -row $gridrow -column 1 -pady 5 -padx 2 -sticky nsew
+  grid [label $w.frameTxt -text "Frame:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [label $w.frame -textvariable ::cv_dashboard::current_frame] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   grid [ttk::checkbutton $w.trackFrame -text "Track" -command ::cv_dashboard::change_track_frame -variable ::cv_dashboard::track_frame] \
-    -row $gridrow -column 2  -pady 5 -padx 2 -sticky nsew
+    -row $gridrow -column 2  -pady 2 -padx 2 -sticky nsew
   change_track_frame ;# activate tracking if necessary
 
   grid columnconfigure $w 0 -weight 1
@@ -306,36 +328,57 @@ colvar {\n  name d\n  distance {\n    group1 { atomNumbers 1 2 }\n    group2 { a
   ttk::button $w.editor.fl.onlinedoc3 -text "Online doc: types of variables (components)" -padding "4 2 4 2"\
     -command [list ::cv_dashboard::invokeBrowser "http://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html#sec:cvc"]
 
-  grid $w.editor.fl.onlinedoc1 -row $gridrow -column 0 -columnspan 3 -pady 10
+  grid $w.editor.fl.onlinedoc1 -row $gridrow -column 0 -columnspan 3 -pady 5
   incr gridrow
-  grid $w.editor.fl.onlinedoc2 -row $gridrow -column 0 -columnspan 3 -pady 10
+  grid $w.editor.fl.onlinedoc2 -row $gridrow -column 0 -columnspan 3 -pady 5
   incr gridrow
-  grid $w.editor.fl.onlinedoc3 -row $gridrow -column 0 -columnspan 3 -pady 10
+  grid $w.editor.fl.onlinedoc3 -row $gridrow -column 0 -columnspan 3 -pady 5
   incr gridrow
+
 
   tk::label $w.editor.fl.seltext_label -text "Selection text:"
   tk::entry $w.editor.fl.seltext -bg white
   # Bind Return key in seltext entry to proc creating the atomNumbers line
-  bind $w.editor.fl.seltext <Return> ::cv_dashboard::atoms_from_sel
+  bind $w.editor.fl.seltext <Return> "::cv_dashboard::atoms_from_sel textbox"
   ttk::button $w.editor.fl.fromsel -text "Insert atoms \[Enter\]" \
-    -command ::cv_dashboard::atoms_from_sel -padding "2 0 2 0"
+    -command "::cv_dashboard::atoms_from_sel textbox" -padding "2 0 2 0"
 
-  grid $w.editor.fl.seltext_label -row $gridrow -column 0 -pady 5 -padx 2
-  grid $w.editor.fl.seltext -row $gridrow -column 1 -sticky ew -pady 5 -padx 2
-  grid $w.editor.fl.fromsel -row $gridrow -column 2 -pady 5 -padx 2
+  grid $w.editor.fl.seltext_label -row $gridrow -column 0 -pady 2 -padx 2
+  grid $w.editor.fl.seltext -row $gridrow -column 1 -sticky ew -pady 2 -padx 2
+  grid $w.editor.fl.fromsel -row $gridrow -column 2 -pady 2 -padx 2
   incr gridrow
+
+
+  # Double click or Enter to insert
+  ttk::button $w.editor.fl.refresh_reps -text "Refresh list" -command ::cv_dashboard::refresh_reps
+  tk::listbox $w.editor.fl.reps -selectmode browse
+  bind $w.editor.fl.reps <Return> "::cv_dashboard::atoms_from_sel reps"
+  bind $w.editor.fl.reps <Double-1> "::cv_dashboard::atoms_from_sel reps"
+
+  grid $w.editor.fl.refresh_reps -row $gridrow -column 0 -pady 2 -padx 2
+  grid $w.editor.fl.reps -row $gridrow -column 1 -columnspan 2 -pady 2 -padx 2 -sticky nsew
+  incr gridrow
+
+  # Populate initial list of selection texts from reps
+  refresh_reps
 
   ttk::radiobutton $w.editor.fl.files1 -variable ::cv_dashboard::filetype -text "atomsFile" -value "atomsFile"
   ttk::radiobutton $w.editor.fl.files2 -variable ::cv_dashboard::filetype -text "refPositionsFile" -value "refPositionsFile"
   ttk::button $w.editor.fl.insert_file -text "Pick file" \
     -command [list ::cv_dashboard::insert_filename] -padding "2 0 2 0"
 
-  grid $w.editor.fl.files1 -row $gridrow -column 0 -pady 5 -padx 2
-  grid $w.editor.fl.files2 -row $gridrow -column 1 -pady 5 -padx 2
-  grid $w.editor.fl.insert_file -row $gridrow -column 2 -pady 5 -padx 2
+  grid $w.editor.fl.files1 -row $gridrow -column 0 -pady 2 -padx 2
+  grid $w.editor.fl.files2 -row $gridrow -column 1 -pady 2 -padx 2
+  grid $w.editor.fl.insert_file -row $gridrow -column 2 -pady 2 -padx 2
+  incr gridrow
 
 
-  # Roght frame: text widget w scrollbar and Apply/Cancel buttons
+  grid columnconfigure $w.editor.fl 0 -weight 1
+  grid columnconfigure $w.editor.fl 1 -weight 1
+  grid columnconfigure $w.editor.fl 2 -weight 1
+
+
+  # Right frame: text widget w scrollbar and Apply/Cancel buttons
   frame $w.editor.fr
   tk::text $w.editor.fr.text -undo 1 -yscrollcommand [list $w.editor.fr.vsb set] -background white
   ttk::scrollbar $w.editor.fr.vsb -orient vertical -command [list $w.editor.fr.text yview]
@@ -344,13 +387,14 @@ colvar {\n  name d\n  distance {\n    group1 { atomNumbers 1 2 }\n    group2 { a
   grid $w.editor.fr.text -row 0 -columnspan 2 -sticky nsew
   grid $w.editor.fr.vsb -row 0 -column 2 -sticky nsew
 
-  bind $w.editor.fr.text <Control-s> ::cv_dashboard::edit_apply
+  # Ctrl-s anywhere in the window saves/applies
+  bind $w.editor <Control-s> ::cv_dashboard::edit_apply
 
   set gridrow 1
   ttk::button $w.editor.fr.apply -text "Apply \[Ctrl-s\]" -command ::cv_dashboard::edit_apply -padding "2 0 2 0"
   ttk::button $w.editor.fr.cancel -text "Cancel" -command ::cv_dashboard::edit_cancel -padding "2 0 2 0"
-  grid $w.editor.fr.apply -row $gridrow -column 0 -sticky e -pady 5 -padx 2
-  grid $w.editor.fr.cancel -row $gridrow -column 1 -sticky w -pady 5 -padx 2
+  grid $w.editor.fr.apply -row $gridrow -column 0 -sticky e -pady 2 -padx 2
+  grid $w.editor.fr.cancel -row $gridrow -column 1 -sticky w -pady 2 -padx 2
 
   grid columnconfigure $w.editor.fr 0 -weight 1
   grid columnconfigure $w.editor.fr 1 -weight 1
@@ -379,6 +423,7 @@ proc ::cv_dashboard::invokeBrowser {url} {
   if {[string length $command] == 0} {
     return -code error "couldn't find browser"
   }
+  puts "$command $url"
   if {[catch {exec {*}$command $url &} error]} {
     return -code error "couldn't execute '$command': $error"
   }
@@ -386,10 +431,16 @@ proc ::cv_dashboard::invokeBrowser {url} {
 
 
 # Insert atomNumbers command for given selection text
-proc ::cv_dashboard::atoms_from_sel {} {
+proc ::cv_dashboard::atoms_from_sel { source } {
   set w .cv_dashboard_window
 
-  set seltext [$w.editor.fl.seltext get]
+  # Called from textbox
+  if { $source == "textbox" } {
+    set seltext [$w.editor.fl.seltext get]
+  } elseif { $source == "reps" } {
+    set seltext [$w.editor.fl.reps get active]
+  }
+
   if {[llength $seltext] == 0 } {
     return
   }
@@ -431,6 +482,9 @@ proc ::cv_dashboard::edit_apply {} {
     if { [string compare $res ""] } {
       # error: restore backed up cfg
       run_cv config $::cv_dashboard::backup_cfg
+      refresh_table
+      # Do not destroy editor window (give user a chance to fix input)
+      return
     }
   }
   set ::cv_dashboard::being_edited {}
@@ -446,6 +500,16 @@ proc ::cv_dashboard::edit_cancel {} {
   destroy $w.editor
 }
 
+proc ::cv_dashboard::refresh_reps {} {
+  set w .cv_dashboard_window
+  set numreps [molinfo top get numreps]
+  set reps [list]
+  for {set i 0} {$i < $numreps} {incr i} {
+    lappend reps [lindex [molinfo top get [list [list selection $i]]] 0]
+  }
+  $w.editor.fl.reps delete 0 end
+  $w.editor.fl.reps insert 0 {*}$reps
+}
 
 #################################################################
 # Interactive plot window
@@ -453,18 +517,15 @@ proc ::cv_dashboard::edit_cancel {} {
 
 
 # Create plot window
-proc ::cv_dashboard::plot {} {
+proc ::cv_dashboard::plot { { type timeline } } {
   variable ::cv_dashboard::plothandle
+  set ::cv_dashboard::plottype $type
 
   # Remove existing plot, if any
   if { [info exists plothandle] } {
     catch {$plothandle quit}
     unset plothandle
   }
-
-  set nf [molinfo top get numframes]
-  set x {}
-  for {set f 0} {$f < $nf} {incr f} { lappend x $f }
 
   set cvs [selected]
   if { [llength $cvs] == 0 } {
@@ -477,21 +538,37 @@ proc ::cv_dashboard::plot {} {
 
   # Analyze colvar values to split vector values into scalars with numeric index
   # store array of names for each scalar value
+  set total_dim 0
+  set name_list {}
   foreach c $cvs {
     set val [run_cv colvar $c update]
     set size [llength $val]
+    incr total_dim $size
     if { $size == 1 } {
       set names($c) $c
+      lappend name_list $c
       set y($c) {}
     } else {
       for {set i 1} {$i <= $size} {incr i} {
         set n $c; append n "_$i"
         lappend names($c) $n
+        lappend name_list $n
         set y($n) {}
       }
     }
   }
 
+  if { $type == "2cv" } {
+    if { $total_dim > 2 } {
+      puts "Warning: 2d plot will use the first 2 of $total_dim scalar dimensions in selection."
+    } elseif { $total_dim < 2 } {
+      tk_messageBox -icon error -title "Colvars Dashboard Error"\
+        -message "Not enough data selected. 2 scalar sets are needed for 2d plot.\n"
+      return
+    }
+  }
+
+  set nf [molinfo top get numframes]
   # Get list of values for all frames
   for {set f 0} {$f< $nf} {incr f} {
     run_cv frame $f
@@ -502,30 +579,43 @@ proc ::cv_dashboard::plot {} {
       }
     }
   }
-  set plothandle [multiplot -title {Colvars trajectory   [left-click, keyb arrows (+ Shift/Ctrl) to navigate & zoom, v/h to fit vert/horizontally]} \
+
+  if { $type == "timeline"} {
+    set plothandle [multiplot \
+      -title {Colvars trajectory   [left-click, keyb arrows (+ Shift/Ctrl) to navigate & zoom, v/h to fit vert/horizontally]} \
       -xlabel "Frame" -ylabel "Value" -nostats]
-  foreach c $cvs {
-    foreach n $names($c) {
+    set x {}
+    for {set f 0} {$f < $nf} {incr f} { lappend x $f }
+    foreach n $name_list {
       $plothandle add $x $y($n) -legend $n
     }
+  } elseif { $type == "2cv"} {
+    set xname [lindex $name_list 0]
+    set yname [lindex $name_list 1]
+    set plothandle [multiplot -title {Colvars trajectory} \
+    -xlabel $xname -ylabel $yname -nostats -marker circle]
+    $plothandle add $y($xname) $y($yname)
   }
+
   $plothandle replot
 
-  # bind mouse and keyboard events to callbacks
-  set plot_ns [namespace qualifiers $::cv_dashboard::plothandle]
-  bind [set ${plot_ns}::w] <Button-1>       { ::cv_dashboard::plot_clicked %x %y }
-  bind [set ${plot_ns}::w] <Left>           { ::cv_dashboard::chg_frame -1 }
-  bind [set ${plot_ns}::w] <Right>          { ::cv_dashboard::chg_frame 1 }
-  bind [set ${plot_ns}::w] <Shift-Left>     { ::cv_dashboard::chg_frame -10 }
-  bind [set ${plot_ns}::w] <Shift-Right>    { ::cv_dashboard::chg_frame 10 }
-  bind [set ${plot_ns}::w] <Control-Left>   { ::cv_dashboard::chg_frame -50 }
-  bind [set ${plot_ns}::w] <Control-Right>  { ::cv_dashboard::chg_frame 50 }
-  bind [set ${plot_ns}::w] <Up>             { ::cv_dashboard::zoom 0.25 }
-  bind [set ${plot_ns}::w] <Down>           { ::cv_dashboard::zoom 4 }
-  bind [set ${plot_ns}::w] <Shift-Up>       { ::cv_dashboard::zoom 0.0625 }
-  bind [set ${plot_ns}::w] <Shift-Down>     { ::cv_dashboard::zoom 16 }
-  bind [set ${plot_ns}::w] <v>              { ::cv_dashboard::fit_vertically }
-  bind [set ${plot_ns}::w] <h>              { ::cv_dashboard::fit_horizontally }
+  if { $type == "timeline" } {
+    # bind mouse and keyboard events to callbacks
+    set plot_ns [namespace qualifiers $::cv_dashboard::plothandle]
+    bind [set ${plot_ns}::w] <Button-1>       { ::cv_dashboard::plot_clicked %x %y }
+    bind [set ${plot_ns}::w] <Left>           { ::cv_dashboard::chg_frame -1 }
+    bind [set ${plot_ns}::w] <Right>          { ::cv_dashboard::chg_frame 1 }
+    bind [set ${plot_ns}::w] <Shift-Left>     { ::cv_dashboard::chg_frame -10 }
+    bind [set ${plot_ns}::w] <Shift-Right>    { ::cv_dashboard::chg_frame 10 }
+    bind [set ${plot_ns}::w] <Control-Left>   { ::cv_dashboard::chg_frame -50 }
+    bind [set ${plot_ns}::w] <Control-Right>  { ::cv_dashboard::chg_frame 50 }
+    bind [set ${plot_ns}::w] <Up>             { ::cv_dashboard::zoom 0.25 }
+    bind [set ${plot_ns}::w] <Down>           { ::cv_dashboard::zoom 4 }
+    bind [set ${plot_ns}::w] <Shift-Up>       { ::cv_dashboard::zoom 0.0625 }
+    bind [set ${plot_ns}::w] <Shift-Down>     { ::cv_dashboard::zoom 16 }
+    bind [set ${plot_ns}::w] <v>              { ::cv_dashboard::fit_vertically }
+    bind [set ${plot_ns}::w] <h>              { ::cv_dashboard::fit_horizontally }
+  }
 }
 
 
@@ -597,7 +687,7 @@ proc ::cv_dashboard::zoom { factor } {
 }
 
 
-# Fit vertical axis to values within the current horizontal range
+# Fit vertical axis to y values within the current x range
 proc ::cv_dashboard::fit_vertically {} {
   variable ::cv_dashboard::plothandle
 
@@ -619,7 +709,7 @@ proc ::cv_dashboard::fit_vertically {} {
 }
 
 
-# Fit all values within horizontal range, then fit vertically
+# Fit all x values within horizontal range, then fit vertically
 proc ::cv_dashboard::fit_horizontally {} {
   variable ::cv_dashboard::plothandle
 
@@ -641,38 +731,42 @@ proc ::cv_dashboard::display_marker { f } {
       # objects without redrawing the whole plot - which takes too long for this
       set ns [namespace qualifiers $plothandle]
 
-      set xmin [set ${ns}::xmin]
-      set xmax [set ${ns}::xmax]
-      # Move plot boundaries if necessary
-      if { $f < $xmin } {
-        set xmax [expr { $xmax + $f - $xmin }]
-        set xmin $f
-        $plothandle configure -xmin $xmin -xmax $xmax -plot
-      }
-      if { $f > $xmax } {
-        set xmin [expr { $xmin + $f - $xmax }]
-        set xmax $f
-        $plothandle configure -xmin $xmin -xmax $xmax -plot
-      }
+      if { $::cv_dashboard::plottype == "timeline" } {
 
-      set y1 [set ${ns}::yplotmin]
-      set y2 [set ${ns}::yplotmax]
-      set xplotmin [set ${ns}::xplotmin]
-      set scalex [set ${ns}::scalex]
-      set x [expr $xplotmin+($scalex*($f-$xmin))]
+        set xmin [set ${ns}::xmin]
+        set xmax [set ${ns}::xmax]
+        # Move plot boundaries if necessary
+        if { $f < $xmin } {
+          set xmax [expr { $xmax + $f - $xmin }]
+          set xmin $f
+          $plothandle configure -xmin $xmin -xmax $xmax -plot
+        }
+        if { $f > $xmax } {
+          set xmin [expr { $xmin + $f - $xmax }]
+          set xmax $f
+          $plothandle configure -xmin $xmin -xmax $xmax -plot
+        }
 
-      set canv "[set ${ns}::w].f.cf"
-      $canv delete frame_marker
-      $canv create line  $x $y1 $x $y2 -fill blue -tags frame_marker
+        set y1 [set ${ns}::yplotmin]
+        set y2 [set ${ns}::yplotmax]
+        set xplotmin [set ${ns}::xplotmin]
+        set scalex [set ${ns}::scalex]
+        set x [expr $xplotmin+($scalex*($f-$xmin))]
+
+        set canv "[set ${ns}::w].f.cf"
+        $canv delete frame_marker
+        $canv create line  $x $y1 $x $y2 -fill blue -tags frame_marker
+      } elseif { $::cv_dashboard::plottype == "2cv" } {
+#         set xmin [set ${ns}::xmin]
+#         set xmax [set ${ns}::xmax]
+#         set ymin [set ${ns}::ymin]
+#         set ymax [set ${ns}::ymax]
+#         set x [lindex set ${ns}::]
+#         set y2 [set ${ns}::yplotmax]
+      }
     }
   }
-}
+} 
 
-
-#################################################################
-# Toplevel script
-#################################################################
-
-# If window already exists, destroy it
-catch { destroy .cv_dashboard_window }
-::cv_dashboard::createWindow
+# Create a window to begin with - until we have a menu entry
+cv_dashboard
