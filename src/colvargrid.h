@@ -1028,11 +1028,11 @@ public:
   std::istream & read_multicol(std::istream &is, bool add = false)
   {
     // Data in the header: nColvars, then for each
-    // xiMin, dXi, nPoints, periodic
+    // xiMin, dXi, nPoints, periodic flag
 
     std::string   hash;
     cvm::real     lower, width, x;
-    size_t        n, periodic;
+    size_t        n, periodic_flag;
     bool          remap;
     std::vector<T>        new_value;
     std::vector<int>      nx_read;
@@ -1073,7 +1073,7 @@ public:
         return is;
       }
 
-      is >> lower >> width >> nx_read[i] >> periodic;
+      is >> lower >> width >> nx_read[i] >> periodic_flag;
 
 
       if ( (cvm::fabs(lower - lower_boundaries[i].real_value) > 1.0e-10) ||

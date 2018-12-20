@@ -342,15 +342,16 @@ colvarvalue colvar::distance_z::dist2_rgrad(colvarvalue const &x1,
 }
 
 
-void colvar::distance_z::wrap(colvarvalue &x) const
+void colvar::distance_z::wrap(colvarvalue &x_unwrapped) const
 {
   if (!b_periodic) {
     // don't wrap if the period has not been set
     return;
   }
 
-  cvm::real shift = cvm::floor((x.real_value - wrap_center) / period + 0.5);
-  x.real_value -= shift * period;
+  cvm::real shift =
+    cvm::floor((x_unwrapped.real_value - wrap_center) / period + 0.5);
+  x_unwrapped.real_value -= shift * period;
   return;
 }
 

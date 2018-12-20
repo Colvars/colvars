@@ -26,8 +26,6 @@ class colvarproxy_vmd : public colvarproxy {
 
 protected:
 
-  /// pointer to the VMD Tcl interpreter
-  Tcl_Interp *interp;
   /// pointer to the VMD main object
   VMDApp *vmd;
   /// VMD molecule id being used (must be provided at construction)
