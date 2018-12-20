@@ -648,8 +648,6 @@ colvar::groupcoordnum::groupcoordnum()
 
 void colvar::groupcoordnum::calc_value()
 {
-  cvm::rvector const r0_vec(0.0); // TODO enable the flag?
-
   // create fake atoms to hold the com coordinates
   cvm::atom group1_com_atom;
   cvm::atom group2_com_atom;
@@ -673,8 +671,6 @@ void colvar::groupcoordnum::calc_value()
 
 void colvar::groupcoordnum::calc_gradients()
 {
-  cvm::rvector const r0_vec(0.0); // TODO enable the flag?
-
   cvm::atom group1_com_atom;
   cvm::atom group2_com_atom;
   group1_com_atom.pos = group1->center_of_mass();
