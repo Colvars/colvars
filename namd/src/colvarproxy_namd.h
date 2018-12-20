@@ -51,11 +51,7 @@ protected:
   /// Used to submit restraint energy as MISC
   SubmitReduction *reduction;
 
-#ifdef NAMD_TCL
-
   void init_tcl_pointers();
-
-#endif
 
 public:
 
