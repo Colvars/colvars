@@ -776,7 +776,7 @@ void colvar::dipole_magnitude::calc_gradients()
 {
   cvm::real const      aux1 = atoms->total_charge/atoms->total_mass;
   cvm::atom_pos const  dipVunit= dipoleV.unit();
-    
+
   for (cvm::atom_iter ai = atoms->begin(); ai != atoms->end(); ai++) {
     ai->grad = (ai->charge - aux1*ai->mass) * dipVunit;
   }
