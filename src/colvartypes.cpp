@@ -12,6 +12,8 @@ bool      colvarmodule::rotation::monitor_crossings = false;
 cvm::real colvarmodule::rotation::crossing_threshold = 1.0E-02;
 
 
+namespace  {
+
 /// Numerical recipes diagonalization
 static int jacobi(cvm::real **a, cvm::real *d, cvm::real **v, int *nrot);
 
@@ -21,6 +23,7 @@ static int eigsrt(cvm::real *d, cvm::real **v);
 /// Transpose the matrix
 static int transpose(cvm::real **v);
 
+}
 
 
 std::string cvm::rvector::to_simple_string() const
@@ -544,6 +547,9 @@ void colvarmodule::rotation::calc_optimal_rotation(
 
 #define n 4
 
+
+namespace {
+
 int jacobi(cvm::real **a, cvm::real *d, cvm::real **v, int *nrot)
 {
   int j,iq,ip,i;
@@ -661,6 +667,8 @@ int transpose(cvm::real **v)
     }
   }
   return COLVARS_OK;
+}
+
 }
 
 #undef n
