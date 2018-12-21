@@ -21,8 +21,13 @@ if ! { echo ${DIRLIST} | grep -q 0 ; } then
   DIRLIST=`eval ls -d [0-9][0-9][0-9]_*`
 fi
 
-DIFF=spiff
-DIFFOPTS="-r 1e-6  -a 1e-8"
+# Precision requested to pass (negative powers of ten)
+DIFF_PREC=6
+# Minimum precision to be tested
+MIN_PREC=1
+# Absolute precision (fixed)
+ABS_PREC=8
+
 TPUT_RED='true'
 TPUT_GREEN='true'
 TPUT_BLUE='true'
@@ -36,7 +41,6 @@ fi
 
 BASEDIR=$PWD
 ALL_SUCCESS=1
-
 
 cleanup_files() {
   for script in test*.lmp.in testres*.lmp.in ; do
@@ -153,7 +157,7 @@ for dir in ${DIRLIST} ; do
       sed 's/fs_/ft_/g' < ${base} > ${TMPDIR}/${base}
       mv -f ${TMPDIR}/${base} ${base}
     fi
-    $DIFF $DIFFOPTS $f $base > "$base.diff"
+    spiff -r 1e-${DIFF_PREC} -a 1e-${ABS_PREC} $f $base > "$base.diff"
     RETVAL=$?
     if [ $RETVAL -ne 0 ]
     then
@@ -164,6 +168,20 @@ for dir in ${DIRLIST} ; do
         echo -e "\n*** Failure for file $(${TPUT_RED})$base$(${TPUT_CLEAR}): see `pwd`/$base.diff "
         SUCCESS=0
         ALL_SUCCESS=0
+        LOW_PREC=${DIFF_PREC}
+        RETVAL=1
+        while [ $RETVAL -ne 0 ] && [ $LOW_PREC -gt $MIN_PREC ]
+        do
+          LOW_PREC=$((${LOW_PREC} - 1))
+          spiff -r 1e-${LOW_PREC} $f $base > /dev/null
+          RETVAL=$?
+        done
+        if [ $RETVAL -eq 0 ]
+        then
+          echo " --> Passes at reduced precision 1e-${LOW_PREC}"
+        else
+          echo " --> Fails at minimum tested precision 1e-${LOW_PREC}"
+        fi
       fi
     fi
   done

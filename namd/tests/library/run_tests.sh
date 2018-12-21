@@ -47,6 +47,10 @@ fi
 BASEDIR=$PWD
 ALL_SUCCESS=1
 
+# Precision requested to pass (negative powers of ten)
+DIFF_PREC=7
+# Minimum precision to be tested
+MIN_PREC=1
 
 cleanup_files() {
   for script in test*.namd testres*.namd ; do
@@ -195,7 +199,7 @@ for dir in ${DIRLIST} ; do
       diff $f $base > "$base.diff"
       RETVAL=$?
     else
-      spiff -r 1e-7 $f $base > "$base.diff"
+      spiff -r 1e-${DIFF_PREC} $f $base > "$base.diff"
       RETVAL=$?
     fi
     if [ $RETVAL -ne 0 ]
@@ -207,6 +211,20 @@ for dir in ${DIRLIST} ; do
         echo -e "\n*** Failure for file $(${TPUT_RED})$base$(${TPUT_CLEAR}): see `pwd`/$base.diff "
         SUCCESS=0
         ALL_SUCCESS=0
+        LOW_PREC=${DIFF_PREC}
+        RETVAL=1
+        while [ $RETVAL -ne 0 ] && [ $LOW_PREC -gt $MIN_PREC ]
+        do
+          LOW_PREC=$((${LOW_PREC} - 1))
+          spiff -r 1e-${LOW_PREC} $f $base > /dev/null
+          RETVAL=$?
+        done
+        if [ $RETVAL -eq 0 ]
+        then
+          echo " --> Passes at reduced precision 1e-${LOW_PREC}"
+        else
+          echo " --> Fails at minimum tested precision 1e-${LOW_PREC}"
+        fi
       fi
     fi
   done
