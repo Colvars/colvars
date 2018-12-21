@@ -90,7 +90,7 @@ public:
 
   // Math functions
 
-  /// Override std::pow with a product for n integer
+  /// Override the STL pow() with a product for n integer
   static inline real integer_power(real const &x, int const n)
   {
     // Original code: math_special.h in LAMMPS
@@ -102,6 +102,12 @@ public:
       if (nn & 1) yy *= ww;
     }
     return (n > 0) ? yy : 1.0/yy;
+  }
+
+  /// Reimplemented to work around MS compiler issues
+  static inline real pow(real const &x, real const &y)
+  {
+    return ::pow(static_cast<double>(x), static_cast<double>(y));
   }
 
   /// Reimplemented to work around MS compiler issues

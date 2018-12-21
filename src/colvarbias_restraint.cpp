@@ -554,7 +554,7 @@ int colvarbias_restraint_k_moving::update()
           lambda = 0.0;
         }
         force_k = starting_force_k + (target_force_k - starting_force_k)
-          * std::pow(lambda, force_k_exp);
+          * cvm::pow(lambda, force_k_exp);
           cvm::log("Restraint " + this->name + ", stage " + cvm::to_str(stage)
                   + " : lambda = " + cvm::to_str(lambda)
                   + ", k = " + cvm::to_str(force_k));
@@ -576,7 +576,7 @@ int colvarbias_restraint_k_moving::update()
         for (size_t i = 0; i < num_variables(); i++) {
           dU_dk += d_restraint_potential_dk(i);
         }
-        restraint_FE += force_k_exp * std::pow(lambda, force_k_exp - 1.0)
+        restraint_FE += force_k_exp * cvm::pow(lambda, force_k_exp - 1.0)
           * (target_force_k - starting_force_k) * dU_dk;
       }
 
@@ -599,7 +599,7 @@ int colvarbias_restraint_k_moving::update()
             lambda = cvm::real(stage) / cvm::real(target_nstages);
           }
           force_k = starting_force_k + (target_force_k - starting_force_k)
-            * std::pow(lambda, force_k_exp);
+            * cvm::pow(lambda, force_k_exp);
           cvm::log("Restraint " + this->name + ", stage " + cvm::to_str(stage)
                   + " : lambda = " + cvm::to_str(lambda)
                   + ", k = " + cvm::to_str(force_k));
@@ -613,7 +613,7 @@ int colvarbias_restraint_k_moving::update()
       lambda = cvm::real(cvm::step_absolute()) / cvm::real(target_nsteps);
       cvm::real const force_k_old = force_k;
       force_k = starting_force_k + (target_force_k - starting_force_k)
-        * std::pow(lambda, force_k_exp);
+        * cvm::pow(lambda, force_k_exp);
       force_k_incr = force_k - force_k_old;
     }
   }

@@ -621,7 +621,7 @@ void colvar::distance_inv::calc_value()
   }
 
   x.real_value *= 1.0 / cvm::real(group1->size() * group2->size());
-  x.real_value = std::pow(x.real_value, -1.0/cvm::real(exponent));
+  x.real_value = cvm::pow(x.real_value, -1.0/cvm::real(exponent));
 
   cvm::real const dxdsum = (-1.0/(cvm::real(exponent))) *
     cvm::integer_power(x.real_value, exponent+1) /
