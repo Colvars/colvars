@@ -648,6 +648,9 @@ The very few keywords that are available for all types of components are listed 
   \end{itemize}
 }
 
+\cvsubsec{Distances}{sec:cvc_distances}
+
+
 \cvsubsubsec{\texttt{distance}: center-of-mass distance between two groups.}{sec:cvc_distance}
 \labelkey{colvar|distance}
 
@@ -883,41 +886,7 @@ where $\Vert\mathbf{d}^{ij}\Vert$ is the distance between atoms $i$ and $j$ in g
 This component returns a number in \AA{}, ranging from $0$ to the largest possible distance within the chosen boundary conditions.
 
 
-\cvsubsubsec{\texttt{distancePairs}: set of pairwise distances between two groups.}{sec:cvc_distancePairs}
-\labelkey{colvar|distancePairs}
-
-The \texttt{distancePairs~\{...\}} block defines a $N_{\mathrm{1}}\times{}N_{\mathrm{2}}$-dimensional variable that includes all mutual distances between the atoms of two groups.
-This can be useful, for example, to develop a new variable defined over two groups, by using the \texttt{scriptedFunction} feature.
-
-\begin{cvcoptions}
-\item %
-  \dupkey{group1}{\texttt{distancePairs}}{colvar|distance|group1}{\texttt{distance} component}
-\item %
-  \simkey{group2}{\texttt{distancePairs}}{group1}
-\item %
-  \dupkey{forceNoPBC}{\texttt{distancePairs}}{colvar|distance|forceNoPBC}{\texttt{distance} component}
-\end{cvcoptions}
-This component returns a $N_{\mathrm{1}}\times{}N_{\mathrm{2}}$-dimensional vector of numbers, each ranging from $0$ to the largest possible distance within the chosen boundary conditions.
-
-
-\cvsubsubsec{\texttt{cartesian}: vector of atomic Cartesian coordinates.}{sec:cvc_cartesian}
-\labelkey{colvar|cartesian}
-
-The \texttt{cartesian~\{...\}} block defines a component returning a flat vector containing
-the Cartesian coordinates of all participating atoms, in the order
-$(x_1, y_1, z_1, \cdots, x_n, y_n, z_n)$.
-
-\begin{cvcoptions}
-\item %
-  \key
-    {atoms}{%
-    \texttt{cartesian}}{%
-    Group of atoms}{%
-    Block \texttt{atoms \{...\}}}{%
-    Defines the atoms whose coordinates make up the value of the component.
-    If \texttt{rotateReference} or \texttt{centerReference} are defined, coordinates
-    are evaluated within the moving frame of reference.}
-\end{cvcoptions}
+\cvsubsec{Angles}{sec:cvc_angles}
 
 
 \cvsubsubsec{\texttt{angle}: angle between three groups.}{sec:cvc_angle}
@@ -1044,6 +1013,9 @@ An example is provided in file \texttt{examples/11\_polar\_angles.in} of the Col
     Defines the group of atoms for the COM of which the angle should be calculated.
     }
 \end{cvcoptions}
+
+
+\cvsubsec{Contacts}{sec:cvc_contacts}
 
 
 \cvsubsubsec{\texttt{coordNum}: coordination number between two groups.}{sec:cvc_coordNum}
@@ -1245,6 +1217,9 @@ distance) and 1 (acceptor and donor much closer than the cutoff).
   \dupkey{expDenom}{\texttt{hBond}}{colvar|coordNum|expDenom}{\texttt{coordNum} component}\\
   \textbf{Note:} default value is 8.
 \end{cvcoptions}
+
+
+\cvsubsec{Collective metrics}{sec:cvc_collective}
 
 
 \cvsubsubsec{\texttt{rmsd}: root mean square displacement (RMSD) from reference positions.}{sec:cvc_rmsd}
@@ -1545,12 +1520,6 @@ It returns the magnitude in elementary charge $e$ times \cvnamdonly{\AA}\cvvmdon
 \end{cvcoptions}
 
 
-\cvsubsubsec{\texttt{cartesian}: vector of atomic Cartesian coordinates.}{sec:cvc_cartesian}
-The \texttt{cartesian~\{...\}} block defines a component returning a flat vector containing
-the Cartesian coordinates of all participating atoms, in the order
-$(x_1, y_1, z_1, \cdots, x_n, y_n, z_n)$.
-
-
 \cvsubsubsec{\texttt{inertiaZ}: total moment of inertia of a group of atoms around a chosen axis.}{sec:cvc_inertiaZ}
 \labelkey{colvar|inertiaZ}
 
@@ -1583,6 +1552,9 @@ define the atom group, and returns a positive number, expressed in
     The three components of this vector define (when normalized) the
     projection axis $\mathbf{e}$.}
 \end{cvcoptions}
+
+
+\cvsubsec{Rotations}{sec:cvc_rotations}
 
 
 \cvsubsubsec{\texttt{orientation}: orientation from reference coordinates.}{sec:cvc_orientation}
@@ -1763,6 +1735,8 @@ The values of \texttt{tilt} are real numbers in the interval $[-1:1]$: the value
  
 
 \cvnamebasedonly{
+
+\cvsubsec{Protein structure descriptors}{sec:cvc_protein}
 
 \cvsubsubsec{\texttt{alpha}: $\alpha$-helix content of a protein segment.}{sec:cvc_alpha}
 \labelkey{colvar|alpha}
@@ -1990,6 +1964,46 @@ and \texttt{psfSegID}) in addition to the following:
 \end{cvcoptions}
 
 } % end of \cvnamebasedonly
+
+
+\cvsubsec{Raw data: building blocks for custom functions}{sec:cvc_raw}
+
+\cvsubsubsec{\texttt{cartesian}: vector of atomic Cartesian coordinates.}{sec:cvc_cartesian}
+\labelkey{colvar|cartesian}
+
+The \texttt{cartesian~\{...\}} block defines a component returning a flat vector containing
+the Cartesian coordinates of all participating atoms, in the order
+$(x_1, y_1, z_1, \cdots, x_n, y_n, z_n)$.
+
+\begin{cvcoptions}
+\item %
+  \key
+    {atoms}{%
+    \texttt{cartesian}}{%
+    Group of atoms}{%
+    Block \texttt{atoms \{...\}}}{%
+    Defines the atoms whose coordinates make up the value of the component.
+    If \texttt{rotateReference} or \texttt{centerReference} are defined, coordinates
+    are evaluated within the moving frame of reference.}
+\end{cvcoptions}
+
+
+\cvsubsubsec{\texttt{distancePairs}: set of pairwise distances between two groups.}{sec:cvc_distancePairs}
+\labelkey{colvar|distancePairs}
+
+The \texttt{distancePairs~\{...\}} block defines a $N_{\mathrm{1}}\times{}N_{\mathrm{2}}$-dimensional variable that includes all mutual distances between the atoms of two groups.
+This can be useful, for example, to develop a new variable defined over two groups, by using the \texttt{scriptedFunction} feature.
+
+\begin{cvcoptions}
+\item %
+  \dupkey{group1}{\texttt{distancePairs}}{colvar|distance|group1}{\texttt{distance} component}
+\item %
+  \simkey{group2}{\texttt{distancePairs}}{group1}
+\item %
+  \dupkey{forceNoPBC}{\texttt{distancePairs}}{colvar|distance|forceNoPBC}{\texttt{distance} component}
+\end{cvcoptions}
+This component returns a $N_{\mathrm{1}}\times{}N_{\mathrm{2}}$-dimensional vector of numbers, each ranging from $0$ to the largest possible distance within the chosen boundary conditions.
+
 
 
 \cvsubsec{Shared keywords for all components}{sec:cvc_common}
