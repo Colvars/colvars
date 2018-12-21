@@ -78,6 +78,7 @@ int colvar::orientation::init(std::string const &conf)
     rot.request_group2_gradients(atoms->size());
   }
 
+  return COLVARS_OK;
 }
 
 
