@@ -372,8 +372,8 @@ int colvardeps::decr_ref_count(int feature_id) {
   return COLVARS_OK;
 }
 
-void colvardeps::init_feature(int feature_id, const char *description, feature_type type) {
-  modify_features()[feature_id]->description = description;
+void colvardeps::init_feature(int feature_id, const char *description_in, feature_type type) {
+  modify_features()[feature_id]->description = description_in;
   modify_features()[feature_id]->type = type;
 }
 
