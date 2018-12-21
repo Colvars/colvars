@@ -443,15 +443,15 @@ colvarvalue colvar::spin_angle::dist2_rgrad(colvarvalue const &x1,
 }
 
 
-void colvar::spin_angle::wrap(colvarvalue &x) const
+void colvar::spin_angle::wrap(colvarvalue &x_unwrapped) const
 {
-  if ((x.real_value - wrap_center) >= 180.0) {
-    x.real_value -= 360.0;
+  if ((x_unwrapped.real_value - wrap_center) >= 180.0) {
+    x_unwrapped.real_value -= 360.0;
     return;
   }
 
-  if ((x.real_value - wrap_center) < -180.0) {
-    x.real_value += 360.0;
+  if ((x_unwrapped.real_value - wrap_center) < -180.0) {
+    x_unwrapped.real_value += 360.0;
     return;
   }
 

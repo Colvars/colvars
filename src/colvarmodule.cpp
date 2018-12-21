@@ -145,12 +145,12 @@ int colvarmodule::read_config_string(std::string const &config_str)
 {
   cvm::log(cvm::line_marker);
   cvm::log("Reading new configuration:\n");
-  std::istringstream config_s(config_str);
+  std::istringstream new_config_s(config_str);
 
   // strip the comments away
   std::string conf = "";
   std::string line;
-  while (parse->read_config_line(config_s, line)) {
+  while (parse->read_config_line(new_config_s, line)) {
     // Delete lines that contain only white space after removing comments
     if (line.find_first_not_of(colvarparse::white_space) != std::string::npos)
       conf.append(line+"\n");
