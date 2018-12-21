@@ -162,6 +162,7 @@ for colvar in \
     "angle" \
     "dihedral" \
     "coordnum" "coordnum-pairlist" \
+    "coordnum-aniso" "groupcoord" "groupcoord-aniso" "hbond" \
     "distancez" "distancez-fitgroup" \
     "distancez-axis" "distancez-axis-fitgroup" \
     "distancexy-axis" \
