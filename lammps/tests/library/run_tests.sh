@@ -21,13 +21,6 @@ if ! { echo ${DIRLIST} | grep -q 0 ; } then
   DIRLIST=`eval ls -d [0-9][0-9][0-9]_*`
 fi
 
-# Precision requested to pass (negative powers of ten)
-DIFF_PREC=6
-# Minimum precision to be tested
-MIN_PREC=1
-# Absolute precision (fixed)
-ABS_PREC=8
-
 TPUT_RED='true'
 TPUT_GREEN='true'
 TPUT_BLUE='true'
@@ -41,6 +34,11 @@ fi
 
 BASEDIR=$PWD
 ALL_SUCCESS=1
+
+# Precision requested to pass (negative powers of ten)
+DIFF_PREC=6
+# Minimum precision to be tested
+MIN_PREC=1
 
 cleanup_files() {
   for script in test*.lmp.in testres*.lmp.in ; do
@@ -157,7 +155,7 @@ for dir in ${DIRLIST} ; do
       sed 's/fs_/ft_/g' < ${base} > ${TMPDIR}/${base}
       mv -f ${TMPDIR}/${base} ${base}
     fi
-    spiff -r 1e-${DIFF_PREC} -a 1e-${ABS_PREC} $f $base > "$base.diff"
+    spiff -r 1e-${DIFF_PREC} $f $base > "$base.diff"
     RETVAL=$?
     if [ $RETVAL -ne 0 ]
     then

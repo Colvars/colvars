@@ -48,7 +48,7 @@ BASEDIR=$PWD
 ALL_SUCCESS=1
 
 # Precision requested to pass (negative powers of ten)
-DIFF_PREC=7
+DIFF_PREC=6
 # Minimum precision to be tested
 MIN_PREC=1
 
