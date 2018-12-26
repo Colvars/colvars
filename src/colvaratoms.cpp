@@ -15,7 +15,7 @@ cvm::atom::atom()
   index = -1;
   id = -1;
   mass = 1.0;
-  charge = 1.0;
+  charge = 0.0;
   reset_data();
 }
 
@@ -230,16 +230,6 @@ void cvm::atom_group::update_total_mass()
 }
 
 
-void cvm::atom_group::reset_mass(std::string const &colvar_name, int i, int j)
-{
-  update_total_mass();
-  cvm::log("Re-initialized atom group for variable \""+colvar_name+"\":"+
-           cvm::to_str(i)+"/"+
-           cvm::to_str(j)+". "+ cvm::to_str(atoms_ids.size())+
-           " atoms: total mass = "+cvm::to_str(total_mass)+".\n");
-}
-
-
 void cvm::atom_group::update_total_charge()
 {
   if (b_dummy) {
@@ -254,6 +244,19 @@ void cvm::atom_group::update_total_charge()
     for (cvm::atom_iter ai = this->begin(); ai != this->end(); ai++) {
       total_charge += ai->charge;
     }
+  }
+}
+
+
+void cvm::atom_group::print_properties(std::string const &colvar_name,
+                                       int i, int j)
+{
+  if (cvm::proxy->updated_masses() && cvm::proxy->updated_charges()) {
+    cvm::log("Re-initialized atom group for variable \""+colvar_name+"\":"+
+             cvm::to_str(i)+"/"+
+             cvm::to_str(j)+". "+ cvm::to_str(atoms_ids.size())+
+             " atoms: total mass = "+cvm::to_str(total_mass)+
+             ", total charge = "+cvm::to_str(total_charge)+".\n");
   }
 }
 
@@ -444,10 +447,21 @@ int cvm::atom_group::parse(std::string const &group_conf)
   if (cvm::debug())
     cvm::log("Done initializing atom group \""+key+"\".\n");
 
-  cvm::log("Atom group \""+key+"\" defined, "+
-            cvm::to_str(atoms_ids.size())+" atoms initialized: total mass = "+
-            cvm::to_str(total_mass)+", total charge = "+
-            cvm::to_str(total_charge)+".\n");
+  {
+    std::string init_msg;
+    init_msg.append("Atom group \""+key+"\" defined with "+
+                    cvm::to_str(atoms_ids.size())+" atoms requested");
+    if ((cvm::proxy)->updated_masses()) {
+      init_msg.append(": total mass = "+
+                      cvm::to_str(total_mass));
+      if ((cvm::proxy)->updated_charges()) {
+        init_msg.append(", total charge = "+
+                        cvm::to_str(total_charge));
+      }
+    }
+    init_msg.append(".\n");
+    cvm::log(init_msg);
+  }
 
   if (b_print_atom_ids) {
     cvm::log("Internal definition of the atom group:\n");
@@ -458,7 +472,7 @@ int cvm::atom_group::parse(std::string const &group_conf)
 }
 
 
-int cvm::atom_group::add_atoms_of_group(atom_group const * ag)
+int cvm::atom_group::add_atoms_of_group(atom_group const *ag)
 {
   std::vector<int> const &source_ids = ag->atoms_ids;
 

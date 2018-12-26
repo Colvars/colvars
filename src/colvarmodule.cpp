@@ -1079,7 +1079,6 @@ int colvarmodule::end_of_step()
 int colvarmodule::setup()
 {
   if (this->size() == 0) return cvm::get_error();
-  // loop over all components of all colvars to reset masses of all groups
   for (std::vector<colvar *>::iterator cvi = variables()->begin();
        cvi != variables()->end();  cvi++) {
     (*cvi)->setup();

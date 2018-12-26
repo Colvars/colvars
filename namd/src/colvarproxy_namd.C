@@ -66,6 +66,9 @@ colvarproxy_namd::colvarproxy_namd()
 
   random = Random(simparams->randomSeed);
 
+  // both fields are taken from data structures already available
+  updated_masses_ = updated_charges_ = true;
+
   // take the output prefixes from the namd input
   output_prefix_str = std::string(simparams->outputFilename);
   restart_output_prefix_str = std::string(simparams->restartFilename);
@@ -96,10 +99,10 @@ colvarproxy_namd::colvarproxy_namd()
 #endif
 
 
-  // initiate module: this object will be the communication proxy
+  // initialize module: this object will be the communication proxy
   colvars = new colvarmodule(this);
-  log("Using NAMD interface, version "+
-      cvm::to_str(COLVARPROXY_VERSION)+".\n");
+  cvm::log("Using NAMD interface, version "+
+           cvm::to_str(COLVARPROXY_VERSION)+".\n");
 
   if (config) {
     colvars->read_config_file(config->data);
