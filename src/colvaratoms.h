@@ -93,13 +93,19 @@ public:
   /// Get the latest value of the mass
   inline void update_mass()
   {
-    mass = (cvm::proxy)->get_atom_mass(index);
+    colvarproxy *p = cvm::proxy;
+    if (p->updated_masses()) {
+      mass = p->get_atom_mass(index);
+    }
   }
 
   /// Get the latest value of the charge
   inline void update_charge()
   {
-    charge = (cvm::proxy)->get_atom_charge(index);
+    colvarproxy *p = cvm::proxy;
+    if (p->updated_charges()) {
+      charge = p->get_atom_charge(index);
+    }
   }
 
   /// Get the current position
@@ -191,10 +197,10 @@ public:
   /// \brief Remove an atom object from this group
   int remove_atom(cvm::atom_iter ai);
 
-  /// \brief Re-initialize the total mass of a group.
+  /// \brief Print the updated the total mass and charge of a group.
   /// This is needed in case the hosting MD code has an option to
   /// change atom masses after their initialization.
-  void reset_mass(std::string const &colvar_name, int i, int j);
+  void print_properties(std::string const &colvar_name, int i, int j);
 
   /// \brief Implementation of the feature list for atom group
   static std::vector<feature *> ag_features;
@@ -340,15 +346,19 @@ public:
 
   /// Total mass of the atom group
   cvm::real total_mass;
+
+  /// Update the total mass of the atom group
   void update_total_mass();
 
   /// Total charge of the atom group
   cvm::real total_charge;
+
+  /// Update the total mass of the group
   void update_total_charge();
 
   /// \brief Don't apply any force on this group (use its coordinates
   /// only to calculate a colvar)
-  bool        noforce;
+  bool noforce;
 
   /// \brief Get the current positions
   void read_positions();

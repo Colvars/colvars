@@ -220,11 +220,15 @@ public:
 
   inline std::vector<cvm::real> *modify_atom_masses()
   {
+    // assume that we are requesting masses to change them
+    updated_masses_ = true;
     return &atoms_masses;
   }
 
   inline std::vector<cvm::real> *modify_atom_charges()
   {
+    // assume that we are requesting charges to change them
+    updated_charges_ = true;
     return &atoms_charges;
   }
 
@@ -241,6 +245,18 @@ public:
   inline std::vector<cvm::rvector> *modify_atom_new_colvar_forces()
   {
     return &atoms_new_colvar_forces;
+  }
+
+  /// Record whether masses have been updated
+  inline bool updated_masses() const
+  {
+    return updated_masses_;
+  }
+
+  /// Record whether masses have been updated
+  inline bool updated_charges() const
+  {
+    return updated_charges_;
   }
 
 protected:
@@ -260,6 +276,9 @@ protected:
   std::vector<cvm::rvector> atoms_total_forces;
   /// \brief Forces applied from colvars, to be communicated to the MD integrator
   std::vector<cvm::rvector> atoms_new_colvar_forces;
+
+  /// Whether the masses and charges have been updated from the host code
+  bool updated_masses_, updated_charges_;
 
   /// Used by all init_atom() functions: create a slot for an atom not
   /// requested yet; returns the index in the arrays
