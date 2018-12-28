@@ -494,18 +494,14 @@ public:
                 long        traj_read_begin,
                 long        traj_read_end);
 
+  /// Convert to string for output purposes
+  static std::string to_str(char const *s);
 
   /// Convert to string for output purposes
-  static inline std::string to_str(char const *s)
-  {
-    return std::string(s);
-  }
+  static std::string to_str(std::string const &s);
 
   /// Convert to string for output purposes
-  static inline std::string to_str(std::string const &s)
-  {
-    return s;
-  }
+  static std::string to_str(bool x);
 
   /// Convert to string for output purposes
   static std::string to_str(int const &x,

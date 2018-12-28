@@ -1944,6 +1944,21 @@ template<typename T> std::string _to_str_vector(std::vector<T> const &x,
 
 
 
+std::string colvarmodule::to_str(std::string const &x)
+{
+  return std::string("\"")+x+std::string("\"");
+}
+
+std::string colvarmodule::to_str(char const *x)
+{
+  return std::string("\"")+std::string(x)+std::string("\"");
+}
+
+std::string colvarmodule::to_str(bool x)
+{
+  return (x ? "on" : "off");
+}
+
 std::string colvarmodule::to_str(int const &x,
                                  size_t width, size_t prec)
 {
