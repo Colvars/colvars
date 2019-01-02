@@ -1,0 +1,14 @@
+colvar {
+
+    name one
+
+    outputAppliedForce on
+
+    width 0.5
+
+    dipoleMagnitude {
+        atoms {
+            indexGroup RMSD_atoms
+        }
+    }
+} 
