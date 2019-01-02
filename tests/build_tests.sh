@@ -162,13 +162,15 @@ for colvar in \
     "angle" \
     "dihedral" \
     "coordnum" "coordnum-pairlist" \
-    "coordnum-aniso" "groupcoord" "groupcoord-aniso" "hbond" \
+    "coordnum-aniso" "groupcoord" "groupcoord-aniso" \
+    "dipoleangle" "dipolemagnitude" \
     "distancez" "distancez-fitgroup" \
     "distancez-axis" "distancez-axis-fitgroup" \
     "distancexy-axis" \
     "distanceinv" \
     "distance-coeffs" \
     "gyration" \
+    "hbond" \
     "inertia" \
     "inertiaz" \
     "rmsd" \
