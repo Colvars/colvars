@@ -4130,7 +4130,7 @@ Note that this differs from harmonic bond and angle potentials in common
 force fields, where the factor of one half is typically omitted,
 resulting in a non-standard definition of the force constant.
 
-The formula above includes the characteristic length scale $w_{\xi}$ of the colvar $\xi$ (keyword \refkey{lowerBoundary}{colvar|lowerBoundary}) to allow the definition of a multi-dimensional restraint with a unified force constant:
+The formula above includes the characteristic length scale $w_{\xi}$ of the colvar $\xi$ (keyword \refkey{width}{colvar|width}) to allow the definition of a multi-dimensional restraint with a unified force constant:
 \begin{equation}
   \label{eq:colvarbias_harmonic_multi}
   V(\xi_{1}, \ldots, \xi_{M}) = \frac{1}{2} k \sum_{i=1}^{M} \left(\frac{\xi_{i} - \xi_0}{w_{\xi}}\right)^2
