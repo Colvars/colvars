@@ -4136,13 +4136,11 @@ The formula above includes the characteristic length scale $w_{\xi}$ of the colv
   V(\xi_{1}, \ldots, \xi_{M}) = \frac{1}{2} k \sum_{i=1}^{M} \left(\frac{\xi_{i} - \xi_0}{w_{\xi}}\right)^2
 \end{equation}
 
-If one-dimensional or homogeneous multi-dimensional restraints are defined, and there are no other uses for the parameter $w_{\xi}$, \emph{the parameter} \texttt{width} \emph{can be left at its default value of $1$}.
-
+If one-dimensional or homogeneous multi-dimensional restraints are defined, and there are no other uses for the parameter $w_{\xi}$, \texttt{width} \emph{can be left at its default value of $1$}.
 
 \cvnamdonly{The restraint energy is reported by NAMD under the MISC title.}
-A harmonic restraint is set up by a \texttt{harmonic~\{...\}}
-block, which may contain (in addition to the standard option
-\texttt{colvars}) the following keywords:
+
+A harmonic restraint is set up by a \texttt{harmonic~\{...\}} block, which may contain the following keywords:
 \begin{itemize}
 
 \item \dupkey{name}{\texttt{harmonic}}{sec:colvarbias}{biasing and analysis methods}
