@@ -16,6 +16,7 @@
 
 # TODO:
 # - histograms
+# - properly calculate position of cursor in plot when not all the plot is visible (resized window)
 # - graphical representations such as rotation_display
 # - show atom groups as representations
 
@@ -34,9 +35,9 @@ namespace eval ::cv_dashboard {
   variable backup_cfg
   variable filetype "atomsFile"
 
-  # Handle to keep track of a single interactive plot
+  # Handle to keep track of interactive plot
   variable plothandle
-  variable plottype         ;# either timeline or 2cv
+  variable plottype     ;# either timeline or 2cv
 }
 
 
@@ -592,16 +593,16 @@ proc ::cv_dashboard::plot { { type timeline } } {
   } elseif { $type == "2cv"} {
     set xname [lindex $name_list 0]
     set yname [lindex $name_list 1]
-    set plothandle [multiplot -title {Colvars trajectory} \
-    -xlabel $xname -ylabel $yname -nostats -marker circle]
+    set plothandle [multiplot -title {Colvars trajectory   [left-click on markers, keyb arrows (+ Shift/Ctrl) to navigate]} \
+    -xlabel $xname -ylabel $yname -nostats -marker circle -fill white -radius 4 -callback ::cv_dashboard::marker_clicked]
     $plothandle add $y($xname) $y($yname)
   }
 
   $plothandle replot
+  # bind mouse and keyboard events to callbacks
+  set plot_ns [namespace qualifiers $::cv_dashboard::plothandle]
 
   if { $type == "timeline" } {
-    # bind mouse and keyboard events to callbacks
-    set plot_ns [namespace qualifiers $::cv_dashboard::plothandle]
     bind [set ${plot_ns}::w] <Button-1>       { ::cv_dashboard::plot_clicked %x %y }
     bind [set ${plot_ns}::w] <Left>           { ::cv_dashboard::chg_frame -1 }
     bind [set ${plot_ns}::w] <Right>          { ::cv_dashboard::chg_frame 1 }
@@ -615,6 +616,13 @@ proc ::cv_dashboard::plot { { type timeline } } {
     bind [set ${plot_ns}::w] <Shift-Down>     { ::cv_dashboard::zoom 16 }
     bind [set ${plot_ns}::w] <v>              { ::cv_dashboard::fit_vertically }
     bind [set ${plot_ns}::w] <h>              { ::cv_dashboard::fit_horizontally }
+  } elseif { $type == "2cv"} {
+    bind [set ${plot_ns}::w] <Left>           { ::cv_dashboard::chg_frame -1 }
+    bind [set ${plot_ns}::w] <Right>          { ::cv_dashboard::chg_frame 1 }
+    bind [set ${plot_ns}::w] <Shift-Left>     { ::cv_dashboard::chg_frame -10 }
+    bind [set ${plot_ns}::w] <Shift-Right>    { ::cv_dashboard::chg_frame 10 }
+    bind [set ${plot_ns}::w] <Control-Left>   { ::cv_dashboard::chg_frame -50 }
+    bind [set ${plot_ns}::w] <Control-Right>  { ::cv_dashboard::chg_frame 50 }
   }
 }
 
@@ -636,6 +644,17 @@ proc ::cv_dashboard::plot_clicked { x y } {
   }
 
   animate goto [expr { ($x - $xplotmin) / $scalex + $xmin}]
+  if { $::cv_dashboard::track_frame == 0 } {
+    # frame change doesn't trigger refresh, so we refresh manually
+    refresh_table
+  }
+}
+
+
+# Callback for click on marker in 2 cv plot
+proc ::cv_dashboard::marker_clicked { index x y color marker } {
+
+  animate goto [expr {$index - 1 }]
   if { $::cv_dashboard::track_frame == 0 } {
     # frame change doesn't trigger refresh, so we refresh manually
     refresh_table
@@ -730,7 +749,6 @@ proc ::cv_dashboard::display_marker { f } {
       # necessary because Multiplot does not expose an interface to draw & delete
       # objects without redrawing the whole plot - which takes too long for this
       set ns [namespace qualifiers $plothandle]
-
       if { $::cv_dashboard::plottype == "timeline" } {
 
         set xmin [set ${ns}::xmin]
@@ -757,12 +775,28 @@ proc ::cv_dashboard::display_marker { f } {
         $canv delete frame_marker
         $canv create line  $x $y1 $x $y2 -fill blue -tags frame_marker
       } elseif { $::cv_dashboard::plottype == "2cv" } {
-#         set xmin [set ${ns}::xmin]
-#         set xmax [set ${ns}::xmax]
-#         set ymin [set ${ns}::ymin]
-#         set ymax [set ${ns}::ymax]
-#         set x [lindex set ${ns}::]
-#         set y2 [set ${ns}::yplotmax]
+        set x [lindex [ lindex [$plothandle xdata] 0] $f]
+        set y [lindex [ lindex [$plothandle ydata] 0] $f]
+
+        set xmin [set ${ns}::xmin]
+        set xmax [set ${ns}::xmax]
+        set ymin [set ${ns}::ymin]
+        set ymax [set ${ns}::ymax]
+
+        set radius 5
+        set xplotmin [set ${ns}::xplotmin]
+        set scalex [set ${ns}::scalex]
+        set x1 [expr {$xplotmin+$scalex*($x-$xmin) - $radius}]
+        set x2 [expr {$xplotmin+$scalex*($x-$xmin) + $radius}]
+
+        set yplotmin [set ${ns}::yplotmin]
+        set scaley [set ${ns}::scaley]
+        set y1 [expr {$yplotmin+$scaley*($y-$ymin) - $radius}]
+        set y2 [expr {$yplotmin+$scaley*($y-$ymin) + $radius}]
+
+        set canv "[set ${ns}::w].f.cf"
+        $canv delete frame_marker
+        $canv create oval $x1 $y1 $x2 $y2 -outline white -fill blue -tags frame_marker
       }
     }
   }
