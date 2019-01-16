@@ -126,7 +126,7 @@ protected:
 
     Here:
     S(x(t)) = x
-    s(t)    = xr
+    s(t)    = x_ext
     DS = Ds = delta
   */
 
@@ -163,13 +163,13 @@ protected:
 
   // Options for extended_lagrangian
   /// Restraint center
-  colvarvalue xr;
+  colvarvalue x_ext;
   /// Previous value of the restraint center;
-  colvarvalue prev_xr;
+  colvarvalue prev_x_ext;
   /// Velocity of the restraint center
-  colvarvalue vr;
+  colvarvalue v_ext;
   /// Previous velocity of the restraint center
-  colvarvalue prev_vr;
+  colvarvalue prev_v_ext;
   /// Mass of the restraint center
   cvm::real ext_mass;
   /// Restraint force constant

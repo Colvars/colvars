@@ -131,7 +131,7 @@ proc ::cv_dashboard::createWindow {} {
 proc ::cv_dashboard::refresh_table {} {
   set w .cv_dashboard_window
   set ::cv_dashboard::cvs [run_cv list]
-  update_frame vmd_frame [molinfo top] w
+  update_frame internal [molinfo top] w
 }
 
 
@@ -180,7 +180,7 @@ proc ::cv_dashboard::change_track_frame {} {
   set molid [molinfo top]
   if {$::cv_dashboard::track_frame} {
     trace add variable vmd_frame($molid) write ::cv_dashboard::update_frame
-    update_frame vmd_frame [molinfo top] w
+    update_frame internal [molinfo top] w
   } else {
     trace remove variable vmd_frame($molid) write ::cv_dashboard::update_frame
   }
@@ -624,6 +624,9 @@ proc ::cv_dashboard::plot { { type timeline } } {
     bind [set ${plot_ns}::w] <Control-Left>   { ::cv_dashboard::chg_frame -50 }
     bind [set ${plot_ns}::w] <Control-Right>  { ::cv_dashboard::chg_frame 50 }
   }
+
+  # Update frame to display frame marker in new plot
+  update_frame internal [molinfo top] w
 }
 
 
@@ -702,7 +705,7 @@ proc ::cv_dashboard::zoom { factor } {
   if {$fmax > $max_f} { set fmax $max_f }
 
   $plothandle configure -xmin $fmin -xmax $fmax -plot
-  update_frame vmd_frame [molinfo top] w
+  update_frame internal [molinfo top] w
 }
 
 
@@ -724,7 +727,7 @@ proc ::cv_dashboard::fit_vertically {} {
     }
   }
   $plothandle configure -ymin $ymin -ymax $ymax -plot
-  update_frame vmd_frame [molinfo top] w
+  update_frame internal [molinfo top] w
 }
 
 
@@ -733,7 +736,7 @@ proc ::cv_dashboard::fit_horizontally {} {
   variable ::cv_dashboard::plothandle
 
   $plothandle configure -xmin auto -xmax auto -ymin auto -ymax auto -plot
-  update_frame vmd_frame [molinfo top] w
+  update_frame internal [molinfo top] w
 }
 
 
@@ -779,9 +782,7 @@ proc ::cv_dashboard::display_marker { f } {
         set y [lindex [ lindex [$plothandle ydata] 0] $f]
 
         set xmin [set ${ns}::xmin]
-        set xmax [set ${ns}::xmax]
         set ymin [set ${ns}::ymin]
-        set ymax [set ${ns}::ymax]
 
         set radius 5
         set xplotmin [set ${ns}::xplotmin]

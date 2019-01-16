@@ -560,8 +560,8 @@ int colvar::init_extended_Lagrangian(std::string const &conf)
     cvm::log("Enabling the extended Lagrangian term for colvar \""+
              this->name+"\".\n");
 
-    xr.type(value());
-    vr.type(value());
+    x_ext.type(value());
+    v_ext.type(value());
     fr.type(value());
 
     const bool found = get_keyval(conf, "extendedTemp", temp, cvm::temperature());
@@ -1387,20 +1387,20 @@ int colvar::calc_colvar_properties()
     // initialize the restraint center in the first step to the value
     // just calculated from the cvcs
     if (cvm::step_relative() == 0 && !after_restart) {
-      xr = x;
-      vr.reset(); // (already 0; added for clarity)
+      x_ext = x;
+      v_ext.reset(); // (already 0; added for clarity)
     }
 
     // Special case of a repeated timestep (eg. multiple NAMD "run" statements)
     // revert values of the extended coordinate and velocity prior to latest integration
-    if (cvm::step_relative() == prev_timestep) {
-      xr = prev_xr;
-      vr = prev_vr;
+    if (cvm::proxy->simulation_running() && cvm::step_relative() == prev_timestep) {
+      x_ext = prev_x_ext;
+      v_ext = prev_v_ext;
     }
 
     // report the restraint center as "value"
-    x_reported = xr;
-    v_reported = vr;
+    x_reported = x_ext;
+    v_reported = v_ext;
     // the "total force" with the extended Lagrangian is
     // calculated in update_forces_energy() below
 
@@ -1491,15 +1491,15 @@ cvm::real colvar::update_forces_energy()
       // External force has been scaled for a 1-timestep impulse, scale it back because we will
       // integrate it with the colvar's own timestep factor
       f_ext = f / cvm::real(time_step_factor);
-      f_ext += (-0.5 * ext_force_k) * this->dist2_lgrad(xr, x);
-      f      = (-0.5 * ext_force_k) * this->dist2_rgrad(xr, x);
+      f_ext += (-0.5 * ext_force_k) * this->dist2_lgrad(x_ext, x);
+      f      = (-0.5 * ext_force_k) * this->dist2_rgrad(x_ext, x);
       // Coupling force is a slow force, to be applied to atomic coords impulse-style
       f *= cvm::real(time_step_factor);
 
       if (is_enabled(f_cv_subtract_applied_force)) {
         // Report a "system" force without the biases on this colvar
         // that is, just the spring force
-        ft_reported = (-0.5 * ext_force_k) * this->dist2_lgrad(xr, x);
+        ft_reported = (-0.5 * ext_force_k) * this->dist2_lgrad(x_ext, x);
       } else {
         // The total force acting on the extended variable is f_ext
         // This will be used in the next timestep
@@ -1508,30 +1508,32 @@ cvm::real colvar::update_forces_energy()
 
       // backup in case we need to revert this integration timestep
       // if the same MD timestep is re-run
-      prev_xr = xr;
-      prev_vr = vr;
+      prev_x_ext = x_ext;
+      prev_v_ext = v_ext;
 
       // leapfrog: starting from x_i, f_i, v_(i-1/2)
-      vr  += (0.5 * dt) * f_ext / ext_mass;
+      v_ext  += (0.5 * dt) * f_ext / ext_mass;
       // Because of leapfrog, kinetic energy at time i is approximate
-      kinetic_energy = 0.5 * ext_mass * vr * vr;
-      potential_energy = 0.5 * ext_force_k * this->dist2(xr, x);
+      kinetic_energy = 0.5 * ext_mass * v_ext * v_ext;
+      potential_energy = 0.5 * ext_force_k * this->dist2(x_ext, x);
       // leap to v_(i+1/2)
       if (is_enabled(f_cv_Langevin)) {
-        vr -= dt * ext_gamma * vr;
+        v_ext -= dt * ext_gamma * v_ext;
         colvarvalue rnd(x);
         rnd.set_random();
-        vr += dt * ext_sigma * rnd / ext_mass;
+        v_ext += dt * ext_sigma * rnd / ext_mass;
       }
-      vr  += (0.5 * dt) * f_ext / ext_mass;
-      xr  += dt * vr;
-      xr.apply_constraints();
-      this->wrap(xr);
+      v_ext  += (0.5 * dt) * f_ext / ext_mass;
+      x_ext  += dt * v_ext;
+      x_ext.apply_constraints();
+      this->wrap(x_ext);
     } else {
       // If this is a postprocessing run (eg. in VMD), the extended DOF
       // is equal to the actual coordinate
-      xr = x;
+      x_ext = x;
     }
+    // Report extended value
+    x_reported = x_ext;
   }
 
   // Now adding the force on the actual colvar (for those biases that
@@ -1855,15 +1857,15 @@ std::istream & colvar::read_restart(std::istream &is)
 
   if (is_enabled(f_cv_extended_Lagrangian)) {
 
-    if ( !(get_keyval(conf, "extended_x", xr,
+    if ( !(get_keyval(conf, "extended_x", x_ext,
                       colvarvalue(x.type()), colvarparse::parse_silent)) &&
-         !(get_keyval(conf, "extended_v", vr,
+         !(get_keyval(conf, "extended_v", v_ext,
                       colvarvalue(x.type()), colvarparse::parse_silent)) ) {
       cvm::log("Error: restart file does not contain "
                "\"extended_x\" or \"extended_v\" for the colvar \""+
                name+"\", but you requested \"extendedLagrangian\".\n");
     }
-    x_reported = xr;
+    x_reported = x_ext;
   } else {
     x_reported = x;
   }
@@ -1878,7 +1880,7 @@ std::istream & colvar::read_restart(std::istream &is)
     }
 
     if (is_enabled(f_cv_extended_Lagrangian)) {
-      v_reported = vr;
+      v_reported = v_ext;
     } else {
       v_reported = v_fdiff;
     }
@@ -1904,8 +1906,8 @@ std::istream & colvar::read_traj(std::istream &is)
     }
 
     if (is_enabled(f_cv_extended_Lagrangian)) {
-      is >> xr;
-      x_reported = xr;
+      is >> x_ext;
+      x_reported = x_ext;
     } else {
       x_reported = x;
     }
@@ -1916,8 +1918,8 @@ std::istream & colvar::read_traj(std::istream &is)
     is >> v_fdiff;
 
     if (is_enabled(f_cv_extended_Lagrangian)) {
-      is >> vr;
-      v_reported = vr;
+      is >> v_ext;
+      v_reported = v_ext;
     } else {
       v_reported = v_fdiff;
     }
@@ -1958,11 +1960,11 @@ std::ostream & colvar::write_restart(std::ostream &os) {
     os << "  extended_x "
        << std::setprecision(cvm::cv_prec)
        << std::setw(cvm::cv_width)
-       << xr << "\n"
+       << x_ext << "\n"
        << "  extended_v "
        << std::setprecision(cvm::cv_prec)
        << std::setw(cvm::cv_width)
-       << vr << "\n";
+       << v_ext << "\n";
   }
 
   os << "}\n\n";
