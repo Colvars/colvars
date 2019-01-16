@@ -270,6 +270,10 @@ int colvarscript::run(int objc, unsigned char *const objv[])
 
 int colvarscript::proc_colvar(colvar *cv, int objc, unsigned char *const objv[]) {
 
+  if (objc < 3) {
+    result = "Missing arguments";
+    return COLVARSCRIPT_ERROR;
+  }
   std::string const subcmd(obj_to_str(objv[2]));
 
   if (subcmd == "value") {
@@ -407,6 +411,10 @@ int colvarscript::proc_colvar(colvar *cv, int objc, unsigned char *const objv[])
 
 int colvarscript::proc_bias(colvarbias *b, int objc, unsigned char *const objv[]) {
 
+  if (objc < 3) {
+    result = "Missing arguments";
+    return COLVARSCRIPT_ERROR;
+  }
   std::string const subcmd(obj_to_str(objv[2]));
 
   if (subcmd == "energy") {
