@@ -279,7 +279,7 @@ public:
                   size_t *save_pos = NULL);
 
   /// \brief Reads a configuration line, adds it to config_string, and returns
-  /// the stream \param is Input stream \param s String that will hold the
+  /// the stream \param is Input stream \param line String that will hold the
   /// configuration line, with comments stripped
   std::istream & read_config_line(std::istream &is, std::string &line);
 
