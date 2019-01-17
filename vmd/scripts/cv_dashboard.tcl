@@ -111,13 +111,13 @@ proc ::cv_dashboard::createWindow {} {
 
   incr gridrow
   grid [ttk::button $w.plot -text "Timeline plot" -command ::cv_dashboard::plot -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::button $w.plot2cv -text "2d plot" -command {::cv_dashboard::plot 2cv} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $w.plot2cv -text "Pairwise plot" -command {::cv_dashboard::plot 2cv} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $w.refresh -text "Refresh table" -command ::cv_dashboard::refresh_table -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
   incr gridrow
   grid [label $w.frameTxt -text "Frame:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [label $w.frame -textvariable ::cv_dashboard::current_frame] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::checkbutton $w.trackFrame -text "Track" -command ::cv_dashboard::change_track_frame -variable ::cv_dashboard::track_frame] \
+  grid [ttk::checkbutton $w.trackFrame -text "Track VMD frame" -command ::cv_dashboard::change_track_frame -variable ::cv_dashboard::track_frame] \
     -row $gridrow -column 2  -pady 2 -padx 2 -sticky nsew
   change_track_frame ;# activate tracking if necessary
 
@@ -327,7 +327,7 @@ colvar {\n  name d\n  distance {\n    group1 { atomNumbers 1 2 }\n    group2 { a
   ttk::button $w.editor.fl.onlinedoc2 -text "Online doc: defining atom groups" -padding "4 2 4 2"\
     -command [list ::cv_dashboard::invokeBrowser "http://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html#sec:colvar_atom_groups"]
   ttk::button $w.editor.fl.onlinedoc3 -text "Online doc: types of variables (components)" -padding "4 2 4 2"\
-    -command [list ::cv_dashboard::invokeBrowser "http://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html#sec:cvc"]
+    -command [list ::cv_dashboard::invokeBrowser "http://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html#sec:cvc_list"]
 
   grid $w.editor.fl.onlinedoc1 -row $gridrow -column 0 -columnspan 3 -pady 5
   incr gridrow
@@ -561,10 +561,10 @@ proc ::cv_dashboard::plot { { type timeline } } {
 
   if { $type == "2cv" } {
     if { $total_dim > 2 } {
-      puts "Warning: 2d plot will use the first 2 of $total_dim scalar dimensions in selection."
+      puts "Warning: pairwise plot will use the first 2 of $total_dim scalar dimensions in selection."
     } elseif { $total_dim < 2 } {
       tk_messageBox -icon error -title "Colvars Dashboard Error"\
-        -message "Not enough data selected. 2 scalar sets are needed for 2d plot.\n"
+        -message "Not enough data selected. 2 scalar sets are needed for pairwise plot.\n"
       return
     }
   }
@@ -583,7 +583,7 @@ proc ::cv_dashboard::plot { { type timeline } } {
 
   if { $type == "timeline"} {
     set plothandle [multiplot \
-      -title {Colvars trajectory   [left-click, keyb arrows (+ Shift/Ctrl) to navigate & zoom, v/h to fit vert/horizontally]} \
+      -title {Colvars trajectory   [click, keyb arrows (+ Shift/Ctrl) to navigate & zoom, v/h to fit vert/horizontally]} \
       -xlabel "Frame" -ylabel "Value" -nostats]
     set x {}
     for {set f 0} {$f < $nf} {incr f} { lappend x $f }
@@ -593,7 +593,7 @@ proc ::cv_dashboard::plot { { type timeline } } {
   } elseif { $type == "2cv"} {
     set xname [lindex $name_list 0]
     set yname [lindex $name_list 1]
-    set plothandle [multiplot -title {Colvars trajectory   [left-click on markers, keyb arrows (+ Shift/Ctrl) to navigate]} \
+    set plothandle [multiplot -title {Colvars trajectory   [click on markers, keyb arrows (+ Shift/Ctrl) to navigate]} \
     -xlabel $xname -ylabel $yname -nostats -marker circle -fill white -radius 4 -callback ::cv_dashboard::marker_clicked]
     $plothandle add $y($xname) $y($yname)
   }
