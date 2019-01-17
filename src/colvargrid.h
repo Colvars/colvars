@@ -311,8 +311,7 @@ public:
     return this->setup();
   }
 
-  int init_from_boundaries(T const &t = T(),
-                           size_t const &mult_i = 1)
+  int init_from_boundaries()
   {
     if (cvm::debug()) {
       cvm::log("Configuring grid dimensions from colvars boundaries.\n");

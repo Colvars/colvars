@@ -317,8 +317,7 @@ public:
   /// \brief How many objects are configured yet?
   size_t size() const;
 
-  /// \brief Constructor \param config_name Configuration file name
-  /// \param restart_name (optional) Restart file name
+  /// \brief Constructor
   colvarmodule(colvarproxy *proxy);
 
   /// Destructor
@@ -328,6 +327,7 @@ public:
   int reset();
 
   /// Open a config file, load its contents, and pass it to config_string()
+  /// \param config_file_name Configuration file name
   int read_config_file(char const *config_file_name);
 
   /// \brief Parse a config string assuming it is a complete configuration
