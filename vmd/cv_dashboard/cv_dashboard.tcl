@@ -22,7 +22,6 @@
 
 package provide cv_dashboard 1.0
 
-
 namespace eval ::cv_dashboard {
   # General UI state
   variable current_frame 0  ;# linked to frame display
@@ -38,6 +37,8 @@ namespace eval ::cv_dashboard {
   # Handle to keep track of interactive plot
   variable plothandle
   variable plottype     ;# either timeline or 2cv
+
+  variable dir ${::env(CV_DASHBOARD_DIR)}
 }
 
 
@@ -79,11 +80,11 @@ proc ::cv_dashboard::createWindow {} {
     run_cv molid top
   }
   set gridrow 0
-  grid [ttk::button $w.load -text "Load config file" -command ::cv_dashboard::load -padding "2 0 2 0"] \
+  grid [ttk::button $w.load -text "Load" -command ::cv_dashboard::load -padding "2 0 2 0"] \
     -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::button $w.save -text "Save colvars config" -command ::cv_dashboard::save -padding "2 0 2 0"] \
+  grid [ttk::button $w.save -text "Save" -command ::cv_dashboard::save -padding "2 0 2 0"] \
     -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::button $w.reset -text "Reset Colvars Module" -command ::cv_dashboard::reset -padding "2 0 2 0"] \
+  grid [ttk::button $w.reset -text "Reset" -command ::cv_dashboard::reset -padding "2 0 2 0"] \
     -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
   tablelist::tablelist $w.cvtable -columns {
@@ -189,20 +190,35 @@ proc ::cv_dashboard::change_track_frame {} {
 
 # Load config from file
 proc ::cv_dashboard::load {} {
-  set path [tk_getOpenFile -filetypes {{"Colvars cfg" .in} {"Colvars cfg" .colvars} {"All files" *}}]
+  if { [info exists ::cv_dashboard::config_dir] } {
+    set path [tk_getOpenFile -filetypes {{"Colvars cfg" .in} {"Colvars cfg" .colvars} {"All files" *}} \
+        -initialdir $::cv_dashboard::config_dir]
+  } else {
+    set path [tk_getOpenFile -filetypes {{"Colvars cfg" .in} {"Colvars cfg" .colvars} {"All files" *}} \
+        -initialdir [pwd]]
+  }
   if [string compare $path ""] {
     run_cv configfile $path
     refresh_table
+    # Save directory for next invocation of this dialog
+    set ::cv_dashboard::config_dir [file dirname $path]
   }
 }
 
 
 # Save config of colvars to file (can we do it w/ biases ? need bias type keyword)
 proc ::cv_dashboard::save {} {
-
-  set path [tk_getSaveFile -filetypes {{"Colvars cfg" .in} {"Colvars cfg" .colvars} {"All files" *}}]
+  if { [info exists ::cv_dashboard::config_dir] } {
+    set path [tk_getSaveFile -filetypes {{"Colvars cfg" .in} {"Colvars cfg" .colvars} {"All files" *}} \
+        -initialdir $::cv_dashboard::config_dir]
+  } else {
+    set path [tk_getSaveFile -filetypes {{"Colvars cfg" .in} {"Colvars cfg" .colvars} {"All files" *}} \
+        -initialdir [pwd]]
+  }
 
   if [string compare $path ""] {
+    # Save directory for next invocation of this dialog
+    set ::cv_dashboard::config_dir [file dirname $path]
     set cfg ""
     foreach c [run_cv list] {
         append cfg "colvar {"
@@ -336,12 +352,21 @@ colvar {\n  name d\n  distance {\n    group1 { atomNumbers 1 2 }\n    group2 { a
   grid $w.editor.fl.onlinedoc3 -row $gridrow -column 0 -columnspan 3 -pady 5
   incr gridrow
 
+  ############# Templates #########################################
+  tk::label $w.editor.fl.template_label -text "Insert template:"
+  ttk::button $w.editor.fl.insert_template -text "Pick template file" \
+    -command [list ::cv_dashboard::insert_template] -padding "2 0 2 0"
 
-  tk::label $w.editor.fl.seltext_label -text "Selection text:"
+  grid $w.editor.fl.template_label -row $gridrow -column 0 -pady 2 -padx 2
+  grid $w.editor.fl.insert_template -row $gridrow -column 1 -sticky ew -pady 2 -padx 2
+  incr gridrow
+
+  ############# Atoms from seltext ################################
+  tk::label $w.editor.fl.seltext_label -text "Atoms from selection text:"
   tk::entry $w.editor.fl.seltext -bg white
   # Bind Return key in seltext entry to proc creating the atomNumbers line
   bind $w.editor.fl.seltext <Return> "::cv_dashboard::atoms_from_sel textbox"
-  ttk::button $w.editor.fl.fromsel -text "Insert atoms \[Enter\]" \
+  ttk::button $w.editor.fl.fromsel -text "Insert \[Enter\]" \
     -command "::cv_dashboard::atoms_from_sel textbox" -padding "2 0 2 0"
 
   grid $w.editor.fl.seltext_label -row $gridrow -column 0 -pady 2 -padx 2
@@ -349,20 +374,22 @@ colvar {\n  name d\n  distance {\n    group1 { atomNumbers 1 2 }\n    group2 { a
   grid $w.editor.fl.fromsel -row $gridrow -column 2 -pady 2 -padx 2
   incr gridrow
 
-
+  ############# Atoms from representation ################################
   # Double click or Enter to insert
+  tk::label $w.editor.fl.rep_label -text "Atoms from representation:"
+  ttk::combobox $w.editor.fl.reps -justify left -state readonly
   ttk::button $w.editor.fl.refresh_reps -text "Refresh list" -command ::cv_dashboard::refresh_reps
-  tk::listbox $w.editor.fl.reps -selectmode browse
-  bind $w.editor.fl.reps <Return> "::cv_dashboard::atoms_from_sel reps"
-  bind $w.editor.fl.reps <Double-1> "::cv_dashboard::atoms_from_sel reps"
+  bind $w.editor.fl.reps <<ComboboxSelected>> "::cv_dashboard::atoms_from_sel reps"
 
-  grid $w.editor.fl.refresh_reps -row $gridrow -column 0 -pady 2 -padx 2
-  grid $w.editor.fl.reps -row $gridrow -column 1 -columnspan 2 -pady 2 -padx 2 -sticky nsew
+  grid $w.editor.fl.rep_label -row $gridrow -column 0 -pady 2 -padx 2
+  grid $w.editor.fl.reps -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  grid $w.editor.fl.refresh_reps -row $gridrow -column 2 -pady 2 -padx 2
   incr gridrow
 
   # Populate initial list of selection texts from reps
   refresh_reps
 
+  ################# Insert file name from file picker ###########################
   ttk::radiobutton $w.editor.fl.files1 -variable ::cv_dashboard::filetype -text "atomsFile" -value "atomsFile"
   ttk::radiobutton $w.editor.fl.files2 -variable ::cv_dashboard::filetype -text "refPositionsFile" -value "refPositionsFile"
   ttk::button $w.editor.fl.insert_file -text "Pick file" \
@@ -385,20 +412,25 @@ colvar {\n  name d\n  distance {\n    group1 { atomNumbers 1 2 }\n    group2 { a
   ttk::scrollbar $w.editor.fr.vsb -orient vertical -command [list $w.editor.fr.text yview]
   $w.editor.fr.text insert 1.0 $cfg
   set ::cv_dashboard::being_edited $cvs
-  grid $w.editor.fr.text -row 0 -columnspan 2 -sticky nsew
-  grid $w.editor.fr.vsb -row 0 -column 2 -sticky nsew
+  grid $w.editor.fr.text -row 0 -columnspan 3 -sticky nsew
+  grid $w.editor.fr.vsb -row 0 -column 3 -sticky nsew
 
   # Ctrl-s anywhere in the window saves/applies
   bind $w.editor <Control-s> ::cv_dashboard::edit_apply
+  bind $w.editor <Control-a> "$w.editor.fr.text tag add sel 1.0 end-1c"
 
   set gridrow 1
   ttk::button $w.editor.fr.apply -text "Apply \[Ctrl-s\]" -command ::cv_dashboard::edit_apply -padding "2 0 2 0"
   ttk::button $w.editor.fr.cancel -text "Cancel" -command ::cv_dashboard::edit_cancel -padding "2 0 2 0"
+  ttk::button $w.editor.fr.clear -text "Clear" -command "$w.editor.fr.text delete 1.0 end" -padding "2 0 2 0"
+
   grid $w.editor.fr.apply -row $gridrow -column 0 -sticky e -pady 2 -padx 2
   grid $w.editor.fr.cancel -row $gridrow -column 1 -sticky w -pady 2 -padx 2
+  grid $w.editor.fr.clear -row $gridrow -column 2 -sticky w -pady 2 -padx 2
 
   grid columnconfigure $w.editor.fr 0 -weight 1
   grid columnconfigure $w.editor.fr 1 -weight 1
+  grid columnconfigure $w.editor.fr 2 -weight 1
   grid rowconfigure $w.editor.fr 0 -weight 1
 
   pack $w.editor.fl -fill both -side left
@@ -424,7 +456,6 @@ proc ::cv_dashboard::invokeBrowser {url} {
   if {[string length $command] == 0} {
     return -code error "couldn't find browser"
   }
-  puts "$command $url"
   if {[catch {exec {*}$command $url &} error]} {
     return -code error "couldn't execute '$command': $error"
   }
@@ -439,7 +470,7 @@ proc ::cv_dashboard::atoms_from_sel { source } {
   if { $source == "textbox" } {
     set seltext [$w.editor.fl.seltext get]
   } elseif { $source == "reps" } {
-    set seltext [$w.editor.fl.reps get active]
+    set seltext [$w.editor.fl.reps get]
   }
 
   if {[llength $seltext] == 0 } {
@@ -454,7 +485,25 @@ proc ::cv_dashboard::atoms_from_sel { source } {
       -message "Selection text matches zero atoms"
     return
   }
-  $w.editor.fr.text insert insert "      # $seltext\n      atomNumbers $serials\n"
+  $w.editor.fr.text insert insert "      # Selection: \"$seltext\"\n      atomNumbers $serials\n"
+}
+
+
+# Insert contents of template file
+proc ::cv_dashboard::insert_template {} {
+  set w .cv_dashboard_window
+  if { [info exists ::cv_dashboard::template_dir] } {
+    set path [tk_getOpenFile -initialdir $::cv_dashboard::template_dir]
+  } else {
+    set path [tk_getOpenFile -initialdir ${::cv_dashboard::dir}/templates]
+  }
+  if [string compare $path ""] {
+    # Save directory for next invocation of this dialog
+    set ::cv_dashboard::template_dir [file dirname $path]
+    set in [open $path r]
+    $w.editor.fr.text insert insert [read $in]
+    close $in
+  }
 }
 
 
@@ -462,12 +511,19 @@ proc ::cv_dashboard::atoms_from_sel { source } {
 proc ::cv_dashboard::insert_filename {} {
   variable ::cv_dashboard::filetype
   set w .cv_dashboard_window
-  set path [tk_getOpenFile -filetypes {{"PDB" .pdb} {"All files" *}}]
-  if { ![string compare $path ""] } {
-    return
+
+  if { [info exists ::cv_dashboard::atomfile_dir] } {
+    set path [tk_getOpenFile -filetypes {{"PDB" .pdb} {"All files" *}} \
+        -initialdir $::cv_dashboard::atomfile_dir]
+  } else {
+    set path [tk_getOpenFile -filetypes {{"PDB" .pdb} {"All files" *}} -initialdir [pwd]]
   }
-  set coltype [string range $filetype 0 end-4]
-  $w.editor.fr.text insert insert "    $filetype $path\n    ${coltype}Col O\n    ${coltype}ColValue 1\n"
+  if [string compare $path ""] {
+    # Save directory for next invocation of this dialog
+    set ::cv_dashboard::atomfile_dir [file dirname $path]
+    set coltype [string range $filetype 0 end-4]
+    $w.editor.fr.text insert insert "    $filetype $path\n    ${coltype}Col O\n    ${coltype}ColValue 1\n"
+  }
 }
 
 
@@ -501,6 +557,7 @@ proc ::cv_dashboard::edit_cancel {} {
   destroy $w.editor
 }
 
+
 proc ::cv_dashboard::refresh_reps {} {
   set w .cv_dashboard_window
   set numreps [molinfo top get numreps]
@@ -508,8 +565,9 @@ proc ::cv_dashboard::refresh_reps {} {
   for {set i 0} {$i < $numreps} {incr i} {
     lappend reps [lindex [molinfo top get [list [list selection $i]]] 0]
   }
-  $w.editor.fl.reps delete 0 end
-  $w.editor.fl.reps insert 0 {*}$reps
+  $w.editor.fl.reps configure -values $reps
+  # $w.editor.fl.reps delete 0 end
+  # $w.editor.fl.reps insert 0 {*}$reps
 }
 
 #################################################################
