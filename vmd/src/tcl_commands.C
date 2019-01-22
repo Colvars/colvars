@@ -9,9 +9,9 @@
 /***************************************************************************
  * RCS INFORMATION:
  *
- *      $RCSfile: tcl_commands.C,v $
- *      $Author: johns $        $Locker:  $             $State: Exp $
- *      $Revision: 1.56 $       $Date: 2019/01/17 21:21:03 $
+ *      $RCSfile$
+ *      $Author$        $Locker$             $State$
+ *      $Revision$       $Date$
  *
  ***************************************************************************
  * DESCRIPTION:
