@@ -117,6 +117,10 @@ public:
   virtual ~deer_kernel() {}
   virtual void calc_value();
   virtual void calc_gradients();
+  /// Calculate the variance of the deer variable as the variance of the deer kernel
+  /// scaled by the actual value of the parameters
+  virtual void scaledvariance(cvm::real const &refwidth, 
+                              colvarvalue* result) const;
 };
 
 

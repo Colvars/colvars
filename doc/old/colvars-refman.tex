@@ -1,0 +1,135 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+
+\usepackage[english]{babel}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathrsfs}
+
+\usepackage{times}
+\usepackage{inconsolata}
+\usepackage{mathptmx}
+
+\usepackage{graphicx}
+\usepackage{color}
+\definecolor{background-color}{gray}{0.84}
+\usepackage{transparent}
+
+% for code-specific macros
+\usepackage{comment}
+
+\usepackage{makeidx}
+\makeindex
+
+\usepackage[stable]{footmisc}
+
+\usepackage[pagebackref,colorlinks,citecolor=blue,hyperfootnotes=false]{hyperref}
+
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{booktabs}
+
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{5}
+
+\begin{document}
+
+\input{cv_version.tex}
+
+\begin{titlepage}
+
+  \noindent\colorbox{background-color}{
+    \begin{minipage}{1.0\textwidth}
+
+        $\,$\\
+        
+        \noindent\textsf{\bfseries\Huge COLLECTIVE VARIABLES MODULE\\}
+        
+        \noindent\textsf{\bfseries\Huge Reference manual for \MDENGINE{} }
+
+        \noindent\textsf{\\Code version: \cvversion\\}
+
+      \end{minipage}}
+%  \noindent\rule{\textwidth}{2pt}
+
+  \includegraphics[width=\textwidth]{cover.jpg}
+  \textsf{\large Alejandro Bernardin, Jeffrey R.{} Comer, Giacomo Fiorin, Haohao Fu, J\'er\^ome H\'enin, Axel Kohlmeyer, Fabrizio Marinelli, Joshua V.{} Vermaas, Andrew D.{} White}
+\end{titlepage}
+
+\newpage
+\tableofcontents
+\newpage
+
+% compiling the standalone reference manual
+
+% use macros with context field to document keywords
+\newcommand{\key}[5]{%
+  \index{#2!\texttt{#1}}
+  {\bf \large \tt #1 } $\langle\,$#3$\,\rangle$ \\%
+  {\bf Context: } #2 \\%
+  {\bf Acceptable values: } #4 \\%
+  {\bf Description: } #5%
+}
+\newcommand{\keydef}[6]{%
+  \index{#2!\texttt{#1}}
+  {\bf \large \tt #1 } $\langle\,$#3$\,\rangle$ \\%
+  {\bf Context: } #2 \\%
+  {\bf Acceptable values: } #4 \\%
+  {\bf Default value: } #5 \\%
+  {\bf Description: } #6
+}
+\newcommand{\labelkey}[1]{\hypertarget{#1}{}\label{#1}}
+\newcommand{\refkey}[2]{\hyperlink{#2}{\texttt{#1}}}
+\newcommand{\dupkey}[4]{%
+  \index{#2!\texttt{#1}}
+  {\bf \large \tt #1:} see definition of \hyperlink{#3}{\texttt{#1}} in sec.~\ref{#3} (#4)%
+}
+\newcommand{\simkey}[3]{%
+  \index{#2!\texttt{#1}}
+  {\bf \large \tt #1:} analogous to \texttt{#3}%
+}
+
+\newcommand{\gradx}{\mbox{\boldmath$\nabla_{\!\!x}\,$}}
+\newcommand{\vx}{{\mbox{\boldmath{$x$}}}}
+\newcommand{\bm}[1]{{\mbox{\boldmath{$#1$}}}}
+
+\newcommand{\cvsec}[2]{\newpage\noindent\hypertarget{#2}{\section{#1}}\label{#2}\ifdefined\HCode\HCode{<selfref>}\ref{#2}\HCode{</selfref>}\fi}
+\newcommand{\cvsubsec}[2]{\noindent\hypertarget{#2}{\subsection{#1}}\label{#2}\ifdefined\HCode\HCode{<selfref>}\ref{#2}\HCode{</selfref>}\fi}
+\newcommand{\cvsubsubsec}[2]{\noindent\hypertarget{#2}{\subsubsection{#1}}\label{#2}\ifdefined\HCode\HCode{<selfref>}\ref{#2}\HCode{</selfref>}\fi}
+\newcommand{\cvurl}[1]{\url{#1}}
+
+\cvnamdonly{
+\newcommand{\outputName}{\emph{outputName}}
+\newcommand{\restartName}{\emph{restartName}}
+\newcommand{\inputName}{\emph{inputName}}
+}
+
+\cvvmdonly{
+\newcommand{\outputName}{\emph{outputName}}
+\newcommand{\restartName}{\emph{restartName}}
+\newcommand{\inputName}{\emph{inputName}}
+}
+
+\cvlammpsonly{
+\newcommand{\outputName}{\emph{output}}
+\newcommand{\restartName}{\emph{restart}}
+\newcommand{\inputName}{\emph{input}}
+}
+
+\input{colvars-refman-main}
+
+\newpage
+\printindex
+
+\newpage
+%\addtocontents{toc}{\contentsline {section}{References}{\thepage}}
+\bibliographystyle{unsrt}
+\bibliography{colvars-refman}
+
+\end{document}
+
+% Emacs
+% Local Variables:
+% TeX-PDF-mode: t
+% End:

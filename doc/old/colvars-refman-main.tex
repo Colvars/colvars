@@ -908,69 +908,6 @@ This can be useful, for example, to develop a new variable defined over two grou
 This component returns a $N_{\mathrm{1}}\times{}N_{\mathrm{2}}$-dimensional vector of numbers, each ranging from $0$ to the largest possible distance within the chosen boundary conditions.
 
 
-\cvsubsubsec{\texttt{deerkernel}: Double Electron-Electron Resonance (DEER) kernel function.}{sec:cvc_deerkernel}
-\labelkey{colvar|deerkernel}
-
-The \texttt{deerkernel \{...\}} block defines a DEER kernel function component that depends on the distance between the centers-of-mass of two atom groups, \texttt{group1} and \texttt{group2}.
-The DEER kernel function reflects the intra-molecular component of the DEER time-signal associated to the dipolar interaction between the electron spin-labels attached to a biomolecule. In this case we refer to a dilute solution of a biomolecule with two attached spin-labels, for which the DEER kernel can be experessed as a function of the distance between the centers-of-mass of the spin-labels radical groups (e.g. the nitroxide groups of MTSSL spin-labels) \cite{Milov1997}:
-
-\begin{equation}
-\label{eq:deerkernel}
-k(t_{d},r) = \sqrt{\pi[C(z)^{2}+S(z)^{2}]}
-\end{equation}
-
-
-\begin{cvcoptions}
-\item %
-  \labelkey{colvar|deerkernel|group1}
-  \key
-    {group1}{%
-    \texttt{deerkernel}}{%
-    First group of atoms}{%
-    Block \texttt{group1 \{...\}}}{%
-    First group of atoms.}
-
-\item %
-  \labelkey{colvar|deerkernel|group2}
-  \simkey{group2}{\texttt{deerkernel}}{group1}
-
-\item %
-  \labelkey{colvar|deerkernel|forceNoPBC}
-  \keydef
-    {forceNoPBC}{%
-    \texttt{deerkernel}}{%
-    Calculate absolute rather than minimum-image distance?}{%
-    boolean}{%
-    \texttt{no}}{%
-    By default, in calculations with periodic boundary conditions, the
-    \texttt{deerkernel} component returns the distance according to the
-    minimum-image convention. If this parameter is set to \texttt{yes},
-    PBC will be ignored and the distance between the coordinates as maintained
-    internally will be used. This is only useful in a limited number of
-    special cases, e.g. to describe the distance between remote points
-    of a single macromolecule, which cannot be split across periodic cell
-    boundaries, and for which the minimum-image distance might give the
-    wrong result because of a relatively small periodic cell.}
-
-\item %
-  \labelkey{colvar|deerkernel|oneSiteTotalForce}
-  \keydef
-    {oneSiteTotalForce}{%
-    \texttt{angle}, \texttt{dipoleAngle}, \texttt{dihedral}}{%
-    Measure total force on group 1 only?}{%
-    boolean}{%
-    \texttt{no}}{%
-    If this is set to \texttt{yes}, the total force is measured along
-    a vector field (see equation~(\ref{eq:gradient_vector}) in
-    section~\ref{sec:colvarbias_abf}) that only involves atoms of
-    \texttt{group1}.  This option is only useful for ABF, or custom
-    biases that compute total forces.  See
-    section~\ref{sec:colvarbias_abf} for details.}
-
-\end{cvcoptions}
-
-
-
 \cvsubsubsec{\texttt{cartesian}: vector of atomic Cartesian coordinates.}{sec:cvc_cartesian}
 \labelkey{colvar|cartesian}
 

@@ -295,7 +295,6 @@ void colvar::deer_kernel::apply_force(colvarvalue const &force)
     group2->apply_force(       u * totdeerforce);
 }
 
-
 cvm::real colvar::deer_kernel::dist2(colvarvalue const &x1,
                                      colvarvalue const &x2) const
 {
@@ -611,7 +610,8 @@ int colvar::deer::init(std::string const &conf)
   error_code |= deer_kernel::init(conf);
 
   get_keyval(conf, "deerMdepth", mdepth, mdepth);
-  get_keyval(conf, "deerBackAlpha", alpha_deer, alpha);
+  get_keyval(conf, "deerBackAlpha", alpha, alpha);
+  get_keyval(conf, "sampleDimensionality", sample_dimensionality, sample_dimensionality);
 
   if (is_enabled(f_cvc_gradient)) {
     deriv_signal.resize(timesdeer.size());
@@ -641,14 +641,13 @@ int colvar::deer::compute_exp_signal(cvm::vector1d<cvm::real> &kernel,
     if (gradients) {
       cvm::real const dk_t = kernel_deriv[it];
       cvm::real &dF_t = kernel_deriv[it];
-      dF_t = deer_mdepth * exp_alpha * dk_t;
+      dF_t = deer_mdepth * exp_background * dk_t;
     }
     cvm::real &F_t = kernel[it];
     F_t = ((1.0 - deer_mdepth) + deer_mdepth*k_t) * exp_background;
   }
   return COLVARS_OK;
 }
-
 
 void colvar::deer::calc_value()
 {
@@ -664,7 +663,6 @@ void colvar::deer::calc_value()
   }
 }
 
-
 void colvar::deer::calc_gradients()
 {
   // calculated on the fly in apply_force() and not stored
@@ -675,4 +673,20 @@ void colvar::deer::apply_force(colvarvalue const &force)
 {
   // The signal's derivative has been already computed in deer_deriv
   deer_kernel::apply_force(force);
+}
+
+void colvar::deer::scaledvariance(cvm::real const &refwidth, colvarvalue* result) const
+{
+  size_t const varsize = result->vector1d_value.size();
+  cvm::vector1d<cvm::real> &widths=result->vector1d_value;
+  for (int it = 0; it < varsize; it++){
+    cvm::real const t = timesdeer[it];
+    cvm::real const exp_background = (sample_dimensionality == 3) ?
+      std::exp(-1.0 * alpha*std::fabs(t)) :
+      std::exp(-1.0 * std::pow(alpha*std::fabs(t),
+                               static_cast<cvm::real>(sample_dimensionality)/3.0));
+    widths[it]=refwidth*exp_background*mdepth;
+    widths[it]=widths[it]*widths[it];
+  }
+  return ;
 }

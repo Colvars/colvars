@@ -236,6 +236,10 @@ public:
   /// e.g. atomic gradients
   std::vector<cvm::atom_group *> atom_groups;
 
+  /// \brief Calculate the variance of each component from the standard deviation
+  virtual void scaledvariance(cvm::real const &refwidth, 
+                              colvarvalue* result) const;
+
   /// \brief Store a pointer to new atom group, and list as child for dependencies
   inline void register_atom_group(cvm::atom_group *ag) {
     atom_groups.push_back(ag);

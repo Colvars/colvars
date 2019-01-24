@@ -376,6 +376,15 @@ void colvar::cvc::wrap(colvarvalue &x) const
   return;
 }
 
+void colvar::cvc::scaledvariance(cvm::real const &refwidth, colvarvalue* result) const
+{
+  size_t const varsize = result->vector1d_value.size();
+  cvm::vector1d<cvm::real> &widths=result->vector1d_value;
+  for (int it = 0; it < varsize; it++){
+    widths[it]=widths[it]*widths[it];
+  }
+  return ;
+}
 
 // Static members
 
