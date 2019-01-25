@@ -641,7 +641,10 @@ int colvar::deer::compute_exp_signal(cvm::vector1d<cvm::real> &kernel,
     if (gradients) {
       cvm::real const dk_t = kernel_deriv[it];
       cvm::real &dF_t = kernel_deriv[it];
-      dF_t = deer_mdepth * exp_background * dk_t;
+      #dF_t = deer_mdepth * exp_background * dk_t;
+      dF_t = dk_t # assign same gradient of deer_kernel 
+                  # as dF_t is proportional to deer_kernel
+                  # forces, appropriately scaled, are added only to latter
     }
     cvm::real &F_t = kernel[it];
     F_t = ((1.0 - deer_mdepth) + deer_mdepth*k_t) * exp_background;
@@ -685,8 +688,7 @@ void colvar::deer::scaledvariance(cvm::real const &refwidth, colvarvalue* result
       std::exp(-1.0 * alpha*std::fabs(t)) :
       std::exp(-1.0 * std::pow(alpha*std::fabs(t),
                                static_cast<cvm::real>(sample_dimensionality)/3.0));
-    widths[it]=refwidth*exp_background*mdepth;
-    widths[it]=widths[it]*widths[it];
+    widths[it]=refwidth*refwidth*exp_background*mdepth;
   }
   return ;
 }
