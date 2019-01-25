@@ -38,7 +38,13 @@ namespace eval ::cv_dashboard {
   variable plothandle
   variable plottype     ;# either timeline or 2cv
 
-  variable dir ${::env(CV_DASHBOARD_DIR)}
+  variable template_dir
+  # Use template dir if full distribution is provided and path is known
+  if [info exists ::env(CV_DASHBOARD_DIR)] {
+    set template_dir ${::env(CV_DASHBOARD_DIR)}/templates
+  } else {
+    set template_dir [pwd]
+  }
 }
 
 
@@ -495,7 +501,7 @@ proc ::cv_dashboard::insert_template {} {
   if { [info exists ::cv_dashboard::template_dir] } {
     set path [tk_getOpenFile -initialdir $::cv_dashboard::template_dir]
   } else {
-    set path [tk_getOpenFile -initialdir ${::cv_dashboard::dir}/templates]
+    set path [tk_getOpenFile -initialdir [pwd]]
   }
   if [string compare $path ""] {
     # Save directory for next invocation of this dialog
