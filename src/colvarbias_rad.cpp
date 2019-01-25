@@ -68,40 +68,6 @@ int colvarbias_rad::init(std::string const &conf)
   colvar_cum_uscale = colvar_cum_uscale/double(num_variables());
   colvar_cum_uscale = 1.0/colvar_cum_uscale;
 
-
-
-  // set colvar types
-
-  if (colvar_types.size() == 0) {
-    colvar_types.resize(num_variables());
-    for (i = 0; i < num_variables(); i++) {
-       colvar_types[i]=to_lower_cppstr(std::string("generic"));
-    }
-  }
-
-  int num_types_cvs=2; // just deer variables and generic for now
-
-  if (numtypes.size() == 0) {
-    numtypes.resize(num_types_cvs);
-    for (i = 0; i < num_types_cvs; i++) {
-       numtypes[i]=0;
-    }
-  }
-
-  whichtypes.resize(num_types_cvs,num_variables());
-
-  get_keyval(conf, "colvarTypes", colvar_types, colvar_types);
-  for (i = 0; i < num_variables(); i++) {
-     if (colvar_types[i]==to_lower_cppstr(std::string("generic"))) {
-       numtypes[0]++;
-       whichtypes[0][numtypes[0]]=i;
-     }
-     if (colvar_types[i]==to_lower_cppstr(std::string("deer"))) {
-       numtypes[1]++;
-       whichtypes[1][numtypes[1]]=i;
-     }
-  }
-
   // set colvar types done
 
   get_keyval(conf, "optParams", opt_params, false);
@@ -351,11 +317,11 @@ int colvarbias_rad::update()
       error_fact = colvar_centers_errors[i]*colvar_centers_errors[i]/colvar_errors_scale;
       colvarvalue const deviation =
         0.5 * variables(i)->dist2_lgrad(variables(i)->value(), colvar_centers[i]);
-
-      colvar_total_deviations[i] += weight * deviation * cvm::dt();
-      bias_energy += kBT * unit_scale * colvar_total_deviations[i] * deviation;
-      colvar_forces[i] = -1.0 * kBT * unit_scale * colvar_total_deviations[i];
-
+      
+      colvar_total_deviations[i] += weight * variables(i)->paramscale(deviation) * cvm::dt();
+      bias_energy += kBT * unit_scale * variables(i)->paramscale(colvar_total_deviations[i]) * 
+        variables(i)->paramscale(deviation);
+      colvar_forces[i] = -1.0 * kBT * unit_scale * variables(i)->paramscale(colvar_total_deviations[i]);
 
       colvarvalue const error_drift = unit_scale * colvar_total_deviations[i]*error_fact;
       colvar_centers[i] = colvar_orig_centers[i] + error_drift;

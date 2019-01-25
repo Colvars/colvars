@@ -117,10 +117,22 @@ public:
   virtual ~deer_kernel() {}
   virtual void calc_value();
   virtual void calc_gradients();
-  /// Calculate the variance of the deer variable as the variance of the deer kernel
-  /// scaled by the actual value of the parameters
-  virtual void scaledvariance(cvm::real const &refwidth, 
-                              colvarvalue* result) const;
+
+  /// scale by a factor to account for experimental parameters
+  virtual colvarvalue paramscale(colvarvalue const &inputvector) const;
+
+  /// get number experimental parameters 
+  virtual size_t numparams() const;
+  
+  /// get value of experimental parameters
+  virtual void get_params(vector1d<cvm::real> &vectorparams) const;
+  
+  /// update the value of the experimental parameters after optimization
+  virtual void update_params(vector1d<cvm::real> const &vectorparams) const;
+
+  /// get experimental values 
+  virtual void get_exp_val(colvarvalue &vectorexpval) const;
+
 };
 
 

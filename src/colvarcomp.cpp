@@ -376,15 +376,36 @@ void colvar::cvc::wrap(colvarvalue &x) const
   return;
 }
 
-void colvar::cvc::scaledvariance(cvm::real const &refwidth, colvarvalue* result) const
+colvarvalue colvar::paramscale(colvarvalue const &inputvector) const
 {
-  size_t const varsize = result->vector1d_value.size();
-  cvm::vector1d<cvm::real> &widths=result->vector1d_value;
+  size_t const varsize = inputvector.vector1d_value.size();
+  cvm::vector1d<cvm::real> result=inputvector.vector1d_value;
   for (int it = 0; it < varsize; it++){
-    widths[it]=widths[it]*widths[it];
+    result[it]=inputvector.vector1d_value[it]; # no scaling
   }
-  return ;
+  return result;
 }
+
+size_t colvar::numparams() const
+{
+  return 0;
+}
+
+void colvar::get_params(vector1d<cvm::real> &vectorparams) const
+{
+  return;
+}
+
+void colvar::update_params(vector1d<cvm::real> const &vectorparams) const
+{
+  return;
+}
+
+void colvar::get_exp_val(colvarvalue &vectorexpval) const
+{
+  return;
+}
+
 
 // Static members
 

@@ -169,7 +169,6 @@ int colvar::deer_kernel::init(std::string const &conf)
     for (i=0; i<rpoints; i++){
        cvm::real const rval = deerlower+(i+0.5)*deerwidth;
        for (t=0; t<timesdeer.size(); t++){
-          //deerk[i][t]=kdeer(rval,timesdeer[t])-deerexpvalues[t];
           deerk[i][t]=kdeer(rval,timesdeer[t]);
        }
     }
@@ -641,10 +640,7 @@ int colvar::deer::compute_exp_signal(cvm::vector1d<cvm::real> &kernel,
     if (gradients) {
       cvm::real const dk_t = kernel_deriv[it];
       cvm::real &dF_t = kernel_deriv[it];
-      #dF_t = deer_mdepth * exp_background * dk_t;
-      dF_t = dk_t # assign same gradient of deer_kernel 
-                  # as dF_t is proportional to deer_kernel
-                  # forces, appropriately scaled, are added only to latter
+      dF_t = deer_mdepth * exp_background * dk_t;
     }
     cvm::real &F_t = kernel[it];
     F_t = ((1.0 - deer_mdepth) + deer_mdepth*k_t) * exp_background;
@@ -678,17 +674,46 @@ void colvar::deer::apply_force(colvarvalue const &force)
   deer_kernel::apply_force(force);
 }
 
-void colvar::deer::scaledvariance(cvm::real const &refwidth, colvarvalue* result) const
+colvarvalue colvar::deer::paramscale(colvarvalue const &inputvector) const
 {
-  size_t const varsize = result->vector1d_value.size();
-  cvm::vector1d<cvm::real> &widths=result->vector1d_value;
+  size_t const varsize = inputvector.vector1d_value.size();
+  cvm::vector1d<cvm::real> result=inputvector.vector1d_value;  
   for (int it = 0; it < varsize; it++){
     cvm::real const t = timesdeer[it];
     cvm::real const exp_background = (sample_dimensionality == 3) ?
       std::exp(-1.0 * alpha*std::fabs(t)) :
       std::exp(-1.0 * std::pow(alpha*std::fabs(t),
                                static_cast<cvm::real>(sample_dimensionality)/3.0));
-    widths[it]=refwidth*refwidth*exp_background*mdepth;
+    result[it]=inputvector.vector1d_value[it]/(exp_background*mdepth);
   }
-  return ;
+  return result;
 }
+
+size_t colvar::deer::numparams() const
+{
+  return 2;
+}
+
+void colvar::deer::get_params(vector1d<cvm::real> &vectorparams) const
+{
+  vectorparams[0]=mdepth;
+  vectorparams[1]=alpha;
+  return;
+}
+
+void colvar::deer::update_params(vector1d<cvm::real> const &vectorparams) const
+{
+  mdepth=vectorparams[0];
+  alpha=vectorparams[1];
+  return;
+}
+
+void colvar::deer_kernel::get_exp_val(colvarvalue &vectorexpval) const
+{
+  size_t const varsize = vectorexpval.vector1d_value.size();
+  for (int it = 0; it < varsize; it++){
+     vectorexpval.vector1d_value[it]=deerexpvalues[it]
+  }
+  return;
+}
+

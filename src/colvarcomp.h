@@ -236,9 +236,20 @@ public:
   /// e.g. atomic gradients
   std::vector<cvm::atom_group *> atom_groups;
 
-  /// \brief Calculate the variance of each component from the standard deviation
-  virtual void scaledvariance(cvm::real const &refwidth, 
-                              colvarvalue* result) const;
+  /// \brief scale by a factor to account for experimental parameters
+  virtual colvarvalue paramscale(colvarvalue const &inputvector) const;
+
+  /// \brief get number experimental parameters for a CV
+  virtual size_t numparams() const;
+
+  /// \brief get value of experimental parameters for a CV
+  virtual void get_params(vector1d<cvm::real> &vectorparams) const;
+
+  /// \brief update the value of the experimental parameters for a CV after optimization
+  virtual void update_params(vector1d<cvm::real> const &vectorparams) const;
+
+  /// \brief get experimental values for a CV
+  virtual void get_exp_val(colvarvalue &vectorexpval) const;
 
   /// \brief Store a pointer to new atom group, and list as child for dependencies
   inline void register_atom_group(cvm::atom_group *ag) {
