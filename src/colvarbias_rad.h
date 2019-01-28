@@ -27,7 +27,7 @@ public:
   std::vector<colvarvalue> colvar_centers;
 
   /// \brief Restraint original centers
-  std::vector<colvarvalue> colvar_orig_centers;
+  std::vector<colvarvalue> colvar_exp_centers;
 
   /// \brief Scale factors for the restraint
   std::vector<cvm::real> colvar_widths_c;
@@ -37,6 +37,10 @@ public:
 
   /// \brief Errors associated with the restraint centers
   std::vector<cvm::real> colvar_centers_errors;
+
+  /// \brief value of the experimental parameters associated to each CV
+
+  std::vector<cvm::vector1d<cvm::real> > val_params;
 
   /// Types of averaging
   enum kernel_type_e {
@@ -54,24 +58,6 @@ public:
 
   /// Characteristic time for parameters optimization
   cvm::real params_coupling_time;
-
-  /// experimental files for time dependent observables (e.g. DEER)
-  std::vector<std::string> time_files;
-
-  /// experimental times for time dependent variables
-  std::vector<colvarvalue> colvar_times;
-
-  /// experimental values for time dependent variables
-  std::vector<colvarvalue> colvar_expval;
-
-  /// Specify type of colvar for parameters optimization
-  std::vector<std::string> colvar_types;
-
-  /// number of variable of a certain type
-  std::vector<int> numtypes;
-
-  cvm::matrix2d<int> whichtypes;
-
 
   /// frequency at which to write output
   int rad_out_freq;

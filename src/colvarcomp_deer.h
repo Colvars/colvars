@@ -119,16 +119,13 @@ public:
   virtual void calc_gradients();
 
   /// scale by a factor to account for experimental parameters
-  virtual colvarvalue paramscale(colvarvalue const &inputvector) const;
+  virtual colvarvalue rad_paramscale(colvarvalue const &inputvector) const;
 
-  /// get number experimental parameters 
-  virtual size_t numparams() const;
-  
   /// get value of experimental parameters
   virtual void get_params(vector1d<cvm::real> &vectorparams) const;
   
   /// update the value of the experimental parameters after optimization
-  virtual void update_params(vector1d<cvm::real> const &vectorparams) const;
+  virtual void set_params(vector1d<cvm::real> const &vectorparams) const;
 
   /// get experimental values 
   virtual void get_exp_val(colvarvalue &vectorexpval) const;

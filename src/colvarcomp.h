@@ -237,16 +237,13 @@ public:
   std::vector<cvm::atom_group *> atom_groups;
 
   /// \brief scale by a factor to account for experimental parameters
-  virtual colvarvalue paramscale(colvarvalue const &inputvector) const;
-
-  /// \brief get number experimental parameters for a CV
-  virtual size_t numparams() const;
+  virtual colvarvalue rad_paramscale(colvarvalue const &inputvector) const;
 
   /// \brief get value of experimental parameters for a CV
   virtual void get_params(vector1d<cvm::real> &vectorparams) const;
 
   /// \brief update the value of the experimental parameters for a CV after optimization
-  virtual void update_params(vector1d<cvm::real> const &vectorparams) const;
+  virtual void set_params(vector1d<cvm::real> const &vectorparams) const;
 
   /// \brief get experimental values for a CV
   virtual void get_exp_val(colvarvalue &vectorexpval) const;

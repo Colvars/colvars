@@ -376,7 +376,7 @@ void colvar::cvc::wrap(colvarvalue &x) const
   return;
 }
 
-colvarvalue colvar::paramscale(colvarvalue const &inputvector) const
+colvarvalue colvar::rad_paramscale(colvarvalue const &inputvector) const
 {
   size_t const varsize = inputvector.vector1d_value.size();
   cvm::vector1d<cvm::real> result=inputvector.vector1d_value;
@@ -386,17 +386,13 @@ colvarvalue colvar::paramscale(colvarvalue const &inputvector) const
   return result;
 }
 
-size_t colvar::numparams() const
-{
-  return 0;
-}
-
 void colvar::get_params(vector1d<cvm::real> &vectorparams) const
 {
+  vectorparams.resize(0) 
   return;
 }
 
-void colvar::update_params(vector1d<cvm::real> const &vectorparams) const
+void colvar::set_params(vector1d<cvm::real> const &vectorparams) const
 {
   return;
 }

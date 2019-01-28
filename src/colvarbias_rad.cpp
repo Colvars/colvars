@@ -31,19 +31,6 @@ int colvarbias_rad::init(std::string const &conf)
     return cvm::get_error();
   }
 
-  cvm::real colvar_single_e;
-  if (get_keyval(conf, "oneCenterError", colvar_single_e, colvar_single_e)) {
-    colvar_centers_errors.assign(num_variables(), colvar_single_e);
-  }
-
-  // calc average error
-
-  colvar_cum_error=0;
-  for (i = 0; i < num_variables(); i++) {
-     colvar_cum_error=colvar_cum_error+colvar_centers_errors[i]*colvar_centers_errors[i];
-  }
-  colvar_cum_error=colvar_cum_error/double(num_variables());
-
   // colvar_widths_c
 
   if (colvar_widths_c.size() != num_variables()) {
@@ -78,29 +65,17 @@ int colvarbias_rad::init(std::string const &conf)
   size_t t;
   cvm::real eback;
   if (opt_params) {
-    // read initial value of the parameters
-    if (numtypes[1]>0) {
-      mdepth_deer.resize(numtypes[1]);
-      alpha_deer.resize(numtypes[1]);
-      for (i = 0; i < numtypes[1]; i++) {
-         mdepth_deer[i]=0.02; //default value
-         alpha_deer[i]=0.0001; //default value
-      }
-      get_keyval(conf, "deerMdepth", mdepth_deer, mdepth_deer);
-      get_keyval(conf, "deerBackAlpha", alpha_deer, alpha_deer);
-      for (i = 0; i < numtypes[1]; i++) {
-         ii=whichtypes[1][i];
-         for (t=0;t<colvar_centers[ii].size();t++) {
-            eback=std::exp(-alpha_deer[i]*std::sqrt(colvar_times[ii].vector1d_value[t]*colvar_times[ii].vector1d_value[t]));
-            colvar_centers[ii].vector1d_value[t]=(colvar_expval[ii].vector1d_value[t]-(1.0-mdepth_deer[i])*eback)/(eback*mdepth_deer[i]);
-         }
-         colvar_orig_centers[ii]=colvar_centers[ii];
-      }
+    // initialize and get number of parameters and values of parameters for each set of CVs
+
+    if (val_params.size()==0) {
+      val_params.resize(colvars.size());
     }
-    // to add other variables with parameters to be optimized
-    // if (numtypes[2]>0) {
-    // ....
-    // }
+
+    // read value of the parameters
+    
+    for (i = 0; i < num_variables(); i++) {
+       variables(i)->get_params(val_params[i]);
+    } 
   }
 
   if (colvar_deviation.size() == 0) {
@@ -155,7 +130,7 @@ int colvarbias_rad::init(std::string const &conf)
                       INPUT_ERROR);
   }
 
-  get_keyval(conf, "paramsCouplingTime", params_coupling_time, 100.0);
+  get_keyval(conf, "paramsCouplingTime", params_coupling_time, 1.0);
 
   // set up the total deviations
   if (colvar_total_deviations.size() == 0) {
@@ -175,71 +150,37 @@ int colvarbias_rad::init_centers(std::string const &conf)
 {
   size_t i;
 
-  bool null_centers = true;
-
   if (colvar_centers.size() == 0) {
     colvar_centers.resize(num_variables());
-    colvar_orig_centers.resize(num_variables());
+    colvar_exp_centers.resize(num_variables());
     for (i = 0; i < num_variables(); i++) {
       colvar_centers[i].type(variables(i)->value());
       colvar_centers[i].reset();
-      colvar_orig_centers[i].type(variables(i)->value());
-      colvar_orig_centers[i].reset();
+      colvar_exp_centers[i].type(variables(i)->value());
+      colvar_exp_centers[i].reset();
     }
   }
 
-  if (time_files.size() == 0) {
-    time_files.resize(num_variables());
+  \\ get centers from variables
+
+  for (i = 0; i < num_variables(); i++) {
+     variables(i)->get_exp_val(colvar_exp_centers[i]);
+     colvar_centers[i]=colvar_exp_centers[i];
   }
 
-  // TODO This part should be replaced by a query to the colvar objects
-  bool read_exp_file = false;
-  if (get_keyval(conf, "expFiles", time_files, time_files)) {
-    read_exp_file = true;
-    cvm::log("Initial centers read from expFiles.\n");
-    if (colvar_times.size() == 0) {
-      colvar_times.resize(num_variables());
-      colvar_expval.resize(num_variables());
-      for (i = 0; i < num_variables(); i++) {
-        colvar_times[i].type(variables(i));
-        colvar_expval[i].type(variables(i));
-      }
-    }
+  \\ read centers from input
 
-    // TODO This will break for most variables
-    size_t t;
-    std::string line;
-    for (i = 0; i < num_variables(); i++) {
-       std::ifstream expfile(time_files[i]);
-       if (expfile.is_open()) {
-         for (t=0;t<colvar_centers[i].size();t++) {
-            expfile >> colvar_times[i].vector1d_value[t];
-            expfile >> colvar_expval[i].vector1d_value[t];
-            getline (expfile,line);
-         }
-         expfile.close();
-       } else {
-         return cvm::error("Unable to open expFile", INPUT_ERROR);
-       }
-       colvar_centers[i]=colvar_expval[i];
-    }
+  get_keyval(conf, "expCenters", colvar_exp_centers, colvar_exp_centers);
 
+  for (i = 0; i < num_variables(); i++) {
+     colvar_centers[i]=colvar_exp_centers[i]; // assign initial centers (or optimal values)
   }
 
-  if (get_keyval(conf, "centers", colvar_centers, colvar_centers) && !read_exp_file) {
-    for (i = 0; i < num_variables(); i++) {
-      if (cvm::debug()) {
-        cvm::log("colvarbias_restraint: parsing initial centers, i = "+cvm::to_str(i)+".\n");
-      }
-      colvar_centers[i].apply_constraints();
+  for (i = 0; i < num_variables(); i++) {
+    if (cvm::debug()) {
+      cvm::log("colvarbias_restraint: parsing initial centers, i = "+cvm::to_str(i)+".\n");
     }
-    null_centers = false;
-  }
-
-  if (null_centers && !read_exp_file) {
-//    colvar_centers.clear();
-    cvm::log("Warning: initial centers of the restraints set to zero (default choice for deerKernel cv).\n");
-
+    colvar_centers[i].apply_constraints();
   }
 
   if (colvar_centers.size() != num_variables()) {
@@ -248,15 +189,19 @@ int colvarbias_rad::init_centers(std::string const &conf)
     return INPUT_ERROR;
   }
 
-  for (i = 0; i < num_variables(); i++) {
-     colvar_orig_centers[i]=colvar_centers[i]; // assign original centers
-  }
-
   if (colvar_centers_errors.size() == 0) {
-    colvar_centers_errors.resize(num_variables());
-    colvar_centers_errors.assign(num_variables(), 0.0);
+    colvar_centers_errors.resize(colvars.size());
+    colvar_centers_errors.assign(colvars.size(), 0.0);
   }
   get_keyval(conf, "centersErrors", colvar_centers_errors, colvar_centers_errors);
+
+  // calc average error
+
+  colvar_cum_error=0;
+  for (i = 0; i < num_variables(); i++) {
+     colvar_cum_error=colvar_cum_error+colvar_centers_errors[i]*colvar_centers_errors[i];
+  }
+  colvar_cum_error=colvar_cum_error/double(num_variables());
 
   return COLVARS_OK;
 }
@@ -303,146 +248,55 @@ int colvarbias_rad::update()
   size_t ii;
 
   colvar_aver_deviation = 0.0;
-  cvm::real eback;
   cvm::real lambdasum=0.0;
   cvm::real lambda2;
   cvm::real lambda2sum=0.0;
+  cvm::real error_fact;
+  for (i = 0; i < num_variables(); i++) {
+    cvm::real const unit_scale = 1.0/(colvar_widths_c[i] * colvar_widths_c[i]);
+    error_fact = colvar_centers_errors[i]*colvar_centers_errors[i]/colvar_errors_scale;
+    colvarvalue const deviation =
+      0.5 * variables(i)->dist2_lgrad(variables(i)->value(), colvar_centers[i]);
+    
+    colvar_total_deviations[i] += weight * variables(i)->paramscale(deviation) * cvm::dt();
+    colvar_forces[i] = -1.0 * kBT * unit_scale * variables(i)->paramscale(colvar_total_deviations[i]);
+    bias_energy += -colvar_forces[i]*variables(i)->paramscale(deviation);
+
+    colvarvalue const error_drift = -(colvar_forces[i]/kBT)*error_fact;
+    colvar_centers[i] = colvar_exp_centers[i] + error_drift;
+    colvar_centers[i].apply_constraints();
+    colvar_deviation[i]=error_drift/colvar_centers_errors[i];
+    for (t=0;t<colvar_centers[i].size();t++) {
+       lambda2=colvar_forces[i].vector1d_value[t]/kBT;
+       lambda2=lambda2*lambda2;
+       lambdasum+=colvar_centers_errors[i]*std::sqrt(lambda2);
+       lambda2sum+=colvar_centers_errors[i]*colvar_centers_errors[i]*lambda2;;
+    }
+  }
+
   if (opt_params) {
-    cvm::real error_fact;
-    colvar_cum_error=0;
-    cvm::real cum_err;
-    for (ii = 0; ii < numtypes[0]; ii++) {
-      i=whichtypes[0][ii];
-      cvm::real const unit_scale = 1.0/(colvar_widths_c[i] * colvar_widths_c[i]);
-      error_fact = colvar_centers_errors[i]*colvar_centers_errors[i]/colvar_errors_scale;
-      colvarvalue const deviation =
-        0.5 * variables(i)->dist2_lgrad(variables(i)->value(), colvar_centers[i]);
-      
-      colvar_total_deviations[i] += weight * variables(i)->paramscale(deviation) * cvm::dt();
-      bias_energy += kBT * unit_scale * variables(i)->paramscale(colvar_total_deviations[i]) * 
-        variables(i)->paramscale(deviation);
-      colvar_forces[i] = -1.0 * kBT * unit_scale * variables(i)->paramscale(colvar_total_deviations[i]);
-
-      colvarvalue const error_drift = unit_scale * colvar_total_deviations[i]*error_fact;
-      colvar_centers[i] = colvar_orig_centers[i] + error_drift;
-      colvar_centers[i].apply_constraints();
-      colvar_deviation[i]=error_drift/colvar_centers_errors[i];
-      colvar_cum_error=colvar_cum_error+colvar_centers_errors[i]*colvar_centers_errors[i];
-      for (t=0;t<colvar_centers[i].size();t++) {
-         lambda2=-unit_scale * colvar_total_deviations[i].vector1d_value[t];
-         lambda2=lambda2*lambda2;
-         lambdasum+=colvar_centers_errors[i]*std::sqrt(lambda2);
-         lambda2sum+=colvar_centers_errors[i]*colvar_centers_errors[i]*lambda2;;
-      }
+    for (i = 0; i < num_variables(); i++) {
+       variables(i)->update_params_rad(colvar_forces[i]/kBT, colvar_centers[i],
+                                        params_coupling_time, weight, unit_scale,
+                                        colvar_widths_c[i]);
     }
-    for (ii = 0; ii < numtypes[1]; ii++) {
-      i=whichtypes[1][ii];
-      cvm::real const unit_scale = 1.0/(colvar_widths_c[i] * colvar_widths_c[i]);
-      colvarvalue const deviation =
-        0.5 * variables(i)->dist2_lgrad(variables(i)->value(), colvar_centers[i]);
+  }
 
-      colvar_total_deviations[i] += weight * deviation * cvm::dt();
-      bias_energy += kBT * unit_scale * colvar_total_deviations[i] * deviation;
-      colvar_forces[i] = -1.0 * kBT * unit_scale * colvar_total_deviations[i];
-      cum_err=0.0;
-      cvm::real coef_mdepth=0.0;
-      cvm::real grad_mdepth=0.0;
-      cvm::real coef_alpha=0.0;
-      cvm::real grad_alpha=0.0;
-
-      for (t=0;t<colvar_centers[i].size();t++) {
-         eback=std::exp(-alpha_deer[ii]*std::sqrt(colvar_times[i].vector1d_value[t]*colvar_times[i].vector1d_value[t]));
-         colvar_orig_centers[i].vector1d_value[t]=(colvar_expval[i].vector1d_value[t]-(1-mdepth_deer[ii])*eback)/(eback*mdepth_deer[ii]);
-         error_fact =colvar_centers_errors[i]/(eback*mdepth_deer[ii]);
-         cum_err=cum_err+error_fact*error_fact;
-         error_fact = error_fact*error_fact/colvar_errors_scale;
-         lambda2=-unit_scale * colvar_total_deviations[i].vector1d_value[t];
-         cvm::real const drift=-lambda2*error_fact;
-         colvar_centers[i].vector1d_value[t]=colvar_orig_centers[i].vector1d_value[t]+drift;
-         colvar_deviation[i].vector1d_value[t]=drift*eback*mdepth_deer[ii]/colvar_centers_errors[i];
-         //calculate derivatives of alpha_deer and mdepth_deer
-         cvm::real const der_mdepth=(1-colvar_centers[i].vector1d_value[t]);
-         coef_mdepth=coef_mdepth+(der_mdepth*der_mdepth);
-         //coef_mdepth=coef_mdepth+(der_mdepth*(der_mdepth-(2*lambda2/unit_scale)));
-         grad_mdepth=grad_mdepth+lambda2*der_mdepth;
-         cvm::real const der_alpha=((1-mdepth_deer[ii])+mdepth_deer[ii]*colvar_centers[i].vector1d_value[t])*
-                  std::sqrt(colvar_times[i].vector1d_value[t]*colvar_times[i].vector1d_value[t]);
-         coef_alpha=coef_alpha+(der_alpha*der_alpha);
-         //coef_alpha=coef_alpha+(der_alpha*(der_alpha+
-         //          (mdepth_deer[ii]*lambda2*(std::sqrt(colvar_times[i].vector1d_value[t]*colvar_times[i].vector1d_value[t]))/unit_scale)));
-         grad_alpha=grad_alpha+lambda2*der_alpha;
-         lambda2=lambda2*lambda2;
-         lambdasum+=(colvar_centers_errors[i]*std::sqrt(lambda2))/(mdepth_deer[ii]*eback);
-         lambda2sum+=(colvar_centers_errors[i]*colvar_centers_errors[i]*lambda2)/(mdepth_deer[ii]*eback*mdepth_deer[ii]*eback);
-      }
-      cum_err=cum_err/colvar_centers[i].size();
-
-      colvar_cum_error=colvar_cum_error+cum_err;
-      colvar_centers[i].apply_constraints();
-      // update alpha_deer and mdepth_deer
-      coef_mdepth=std::sqrt(coef_mdepth*coef_mdepth);
-      coef_alpha=std::sqrt(coef_alpha*coef_alpha);
-
-      mdepth_deer[ii]=mdepth_deer[ii]-params_coupling_time * mdepth_deer[ii] * grad_mdepth * weight  * cvm::dt()/(unit_scale*coef_mdepth);
-      alpha_deer[ii]=alpha_deer[ii]-params_coupling_time * mdepth_deer[ii] *  grad_alpha  * weight  * cvm::dt() /(unit_scale*coef_alpha);
-
+ 
+  if (use_norm_1) {
+    for (i = 0; i < num_variables(); i++) {
+      cvm::real colvar_local_deviation=0.;
+      colvar_deviation[i].set_absolute_value();
+      colvarvalue const save_colvar_value = colvar_deviation[i];
+      colvar_deviation[i].set_ones();
+      colvar_local_deviation=colvar_deviation[i]*save_colvar_value;
+      colvar_aver_deviation+=colvar_local_deviation;
     }
-    colvar_cum_error=colvar_cum_error/double(num_variables());
-    if (use_norm_1) {
-      for (i = 0; i < num_variables(); i++) {
-        cvm::real colvar_local_deviation=0.;
-        colvar_deviation[i].set_absolute_value();
-        colvarvalue const save_colvar_value = colvar_deviation[i];
-        colvar_deviation[i].set_ones();
-        colvar_local_deviation=colvar_deviation[i]*save_colvar_value;
-        colvar_aver_deviation+=colvar_local_deviation;
-      }
-    } else {
-      for (i = 0; i < num_variables(); i++) {
-        cvm::real colvar_local_deviation=0.;
-        colvar_local_deviation=colvar_deviation[i]*colvar_deviation[i];
-        colvar_aver_deviation+=colvar_local_deviation;
-      }
-    }
-    // now update mdepth_deer and alpha_deer
   } else {
     for (i = 0; i < num_variables(); i++) {
-      cvm::real const unit_scale = 1.0/(colvar_widths_c[i] * colvar_widths_c[i]);
-      cvm::real const error_fact = colvar_centers_errors[i]*colvar_centers_errors[i]/colvar_errors_scale;
-      colvarvalue const deviation =
-        0.5 * variables(i)->dist2_lgrad(variables(i)->value(), colvar_centers[i]);
-
-      colvar_total_deviations[i] += weight * deviation * cvm::dt();
-      bias_energy += kBT * unit_scale * colvar_total_deviations[i] * deviation;
-      colvar_forces[i] = -1.0 * kBT * unit_scale * colvar_total_deviations[i];
-
-      colvarvalue const error_drift = unit_scale * colvar_total_deviations[i]*error_fact;
-      colvar_centers[i] = colvar_orig_centers[i] + error_drift;
-      colvar_centers[i].apply_constraints();
-      colvar_deviation[i]=error_drift/colvar_centers_errors[i];
-      for (t=0;t<colvar_centers[i].size();t++) {
-         lambda2=-unit_scale * colvar_total_deviations[i].vector1d_value[t];
-         lambda2=lambda2*lambda2;
-         lambdasum+=colvar_centers_errors[i]*std::sqrt(lambda2);
-         lambda2sum+=colvar_centers_errors[i]*colvar_centers_errors[i]*lambda2;
-      }
-
-    }
-    if (use_norm_1) {
-      for (i = 0; i < num_variables(); i++) {
-        cvm::real colvar_local_deviation=0.;
-        colvar_deviation[i].set_absolute_value();
-        colvarvalue const save_colvar_value = colvar_deviation[i];
-        colvar_deviation[i].set_ones();
-        colvar_local_deviation=colvar_deviation[i]*save_colvar_value;
-        colvar_aver_deviation+=colvar_local_deviation;
-      }
-    } else {
-      for (i = 0; i < num_variables(); i++) {
-        cvm::real colvar_local_deviation=0.;
-        colvar_local_deviation=colvar_deviation[i]*colvar_deviation[i];
-        colvar_aver_deviation+=colvar_local_deviation;
-      }
+      cvm::real colvar_local_deviation=0.;
+      colvar_local_deviation=colvar_deviation[i]*colvar_deviation[i];
+      colvar_aver_deviation+=colvar_local_deviation;
     }
   }
 
@@ -458,7 +312,6 @@ int colvarbias_rad::update()
 
   if (fix_chi_square_one) {
 
-//    printf("FIX ONE: %i %30.20f %30.20f %30.20f %30.20f %30.20f \n",cvm::step_absolute(),colvar_aver_deviation,colvar_cum_error,colvar_cum_uscale,colvar_errors_scale,double(variables_num_dimensions()));
     colvar_errors_scale=lambda2sum;
     if (use_norm_1) colvar_errors_scale=lambdasum;
     if (colvar_errors_scale<1.0/colvar_maxerror_scale) colvar_errors_scale=1.0/colvar_maxerror_scale;
@@ -527,16 +380,13 @@ int colvarbias_rad::write_traj_files()
     if (rad_param_os) {
       std::ostream &os = *rad_param_os;
       os.setf(std::ios::scientific, std::ios::floatfield);
-      os << std::setw(cvm::it_width) << cvm::step_absolute()
-         << cvm::step_absolute()
-         << " ";
-      for (int ii = 0; ii < numtypes[1]; ii++) {
-        os << " "
-           << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width)
-           << mdepth_deer[ii]
-           << " "
-           << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width)
-           << alpha_deer[ii];
+      for (int i = 0; i < num_variables(); i++) {
+         os << std::setw(cvm::it_width) << cvm::step_absolute()
+            << cvm::step_absolute()
+            << " "; 
+         os << variables(i)->name
+            << " ";
+         variables(i)->write_params_rad(os);
       }
       os << "\n";
       error_code |= (os.good() ? COLVARS_OK : FILE_ERROR);
@@ -559,20 +409,10 @@ std::string const colvarbias_rad::get_state_params() const
   }
 
   if (opt_params) {
-    if (numtypes[1]>0) {
-      os << "    deerMdepth ";
-      for (size_t i = 0; i < numtypes[1]; i++) {
-         os << mdepth_deer[i];
-         os << " ";
-      }
-      os << "\n";
-      os << "    deerBackAlpha ";
-      for (size_t i = 0; i < numtypes[1]; i++) {
-         os << alpha_deer[i];
-         os << " ";
-      }
-      os << "\n";
-    }
+    os << "    radExpParams ";
+    for (size_t i = 0; i < num_variables(); i++) {
+       variables(i)->get_rad_state_params_exp_par(); 
+    } 
   }
   os << "\n";
   return (colvarbias::get_state_params() + os.str());
@@ -597,6 +437,7 @@ int colvarbias_rad::set_state_params(std::string const &state_conf)
 
   if (opt_params) {
     // read last value of the parameters
+    
     if (numtypes[1]>0) {
       if (!get_keyval(state_conf, "deerMdepth", mdepth_deer))
         cvm::error("Error: missing deerMdepth from the restart.\n");
