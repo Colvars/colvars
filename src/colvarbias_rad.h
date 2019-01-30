@@ -71,8 +71,32 @@ public:
     return cvm::output_prefix() + "." + this->name + ".traj";
   }
 
-  /// optimize parameters of the associated variables
+  /// Whether optimize parameters of the associated variables
   bool opt_params;
+
+  /// Types of parameters optimization of the associated variables
+
+  enum opt_type_e {
+    opt_none,
+    opt_lambda,
+    opt_chiquare
+  };
+
+  /// Number of optimization steps for parameters optimization using chisquare minimization
+  size_t colvar_chisquare_opt_steps; 
+
+  size_t colvar_rad_steps; // XXX just for checking to be deleted after debugging
+ 
+  /// Mean total deviation respect to the experimental values: 
+  /// useful to optimize the parameters by gradient based 
+  /// minimization of the chisquare function
+  std::vector<colvarvalue> colvar_total_chideviations;
+
+  /// lambda based parameters optimization
+  bool lambda_par_opt;
+  
+  /// parameters optimization based on chi square minimization 
+  bool chi_square_par_opt;
 
   /// write progressive output of CVC parameter optimization by RAD
   std::ostream *rad_param_os;
@@ -85,18 +109,6 @@ public:
 
   /// equilibration steps
   int equil_steps;
-
-  /// whether set starting parameters from initial equilibration
-  bool set_params_equil;
-
-  /// mdepth of deer
-  std::vector<cvm::real> mdepth_deer;
-
-  /// backgroud parameter of deer
-  std::vector<cvm::real> alpha_deer;
-
-  /// maximum and minimum values of error scale
-  cvm::real colvar_maxerror_scale;
 
   /// average experimental error
   cvm::real colvar_cum_error;
