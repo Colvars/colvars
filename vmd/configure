@@ -1049,9 +1049,11 @@ $nvpipe_libs        = "-lcuda"; # XXX need to eliminate via dlopen()/dlsym()
 #######################
 $nvtx_defines     = "-DVMDNVTX ";
 $nvtx_dir         = "";
-$nvtx_include     = "";
+$nvtx_include     = ""; # CUDA <= 9 have NVTX V2
+#$nvtx_include     = "-I$cuda_dir/include/nvtx3 "; # CUDA >= 10 have NVTX V3
 $nvtx_library     = "";
-$nvtx_libs        = "-lnvToolsExt"; 
+$nvtx_libs        = "-lnvToolsExt"; # CUDA <= 9 have NVTX V2
+#$nvtx_libs        = ""; # CUDA >= 10 have NVTX V3
 @nvtx_cc          = ();
 @nvtx_cu          = ();
 @nvtx_ccpp        = ();
