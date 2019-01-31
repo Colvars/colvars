@@ -1,0 +1,6 @@
+    hBond {
+        donor 1
+        acceptor 2
+        cutoff 5.0
+    }
+

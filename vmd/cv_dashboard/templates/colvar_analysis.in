@@ -1,0 +1,33 @@
+colvar {
+    name <name>
+
+    ## Uncomment optional parameters as needed, replace '@' with value
+    # width @
+    # lowerBoundary @
+    # upperBoundary @
+
+    ## (auto-)correlation function
+    # corrFunc yes
+    # corrFuncType velocity
+    # corrFuncLength @
+    # corrFuncStride @
+    # corrFuncWithColvar @
+
+    ## running average
+    # runAve yes
+    # runAveLength 4
+    # runAveStride 2
+    
+    ## Insert one or several components below
+    # (see templates in components directory)
+
+    distance {
+      ## Optional coeff and exponent for polynomial combinations
+      # componentCoeff @
+      # componentExp @
+      group1 { atomNumbers 1 2 }
+      group2 { atomNumbers 3 4 }
+    }
+}
+
+

@@ -102,6 +102,31 @@ The atom selection keywords is detailed in section \ref{sec:colvar_atom_groups}.
 or by using the \texttt{group2ndx} LAMMPS command.}
 
 
+\cvvmdonly{
+\cvsec{The Colvars dashboard}{sec:dashboard}
+
+The Colvars dashboard is a graphical interface for interactive visualization and refinement of collective variables aided by molecular structures and trajectories.
+
+\cvsubsec{Main panel}{sec:dashboard_main}
+
+If several molecules are loaded, the dashboard only interacts with the molecule labeled "top" (T in VMD's main window).
+If the top molecule is changed, the Colvas Module needs to be reset unsing the Reset button. This will remove all current definitions, so make sure to save any useful configuration to a file beforehand.
+
+\cvsubsec{Loading / Saving configuration}{sec:dashboard_load_save}
+
+This saves only the variables to a file.
+General parameters and biases are not saved; editing them is beyond the scope of the dashboard.
+They can be kept in separate configuration files, and read separately in biased MD simulations.
+
+\cvsubsec{Configuration editor}{sec:dashboard_config_editor}
+
+\cvsubsubsec{Using templates}{sec:dashboard_templates}
+Configuration snippets can be inserted from a collection of template files.
+Parameters that must be supplied are indicated by the symbol @.
+Templates are indented using 4 spaces per level to indicate their position in the nested structure of the configuration: general options, colvars and biases at level 0,
+bias and colvar parameters like components at level 1, component parameters such as atom groups at level 2, and atom group parameters at level 3.
+}
+
 
 \cvsec{General parameters}{sec:colvarmodule}
 

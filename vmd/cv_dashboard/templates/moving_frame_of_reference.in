@@ -1,0 +1,17 @@
+
+            ## This belongs inside an atom group block
+
+            ## Atom definitions
+            # atomNumbers @
+            # indexGroup @
+
+            centerReference yes
+            rotateReference yes
+            ## Atoms defining the moving frame of reference
+            ## if fittingGroup is omitted, atoms defined above are fitted
+            fittingGroup {
+                # atomNumbers @
+                # indexGroup @
+            }
+            ## Reference positions for the atoms defined above
+            refPositionsFile @ # PDB or XYZ

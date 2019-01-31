@@ -1,0 +1,15 @@
+
+    orientation {
+        atoms {
+            indexGroup @
+            # centerReference yes
+            # rotateReference yes
+            # enableFitGradients no # Not available because gradients are implicit
+            # fittingGroup {
+            #     indexGroup @
+            # }
+            # refPositionsFile @
+        }
+        refPositionsFile @
+    }
+

@@ -1,0 +1,21 @@
+colvar {
+    name <name>
+
+    ## Uncomment optional parameters as needed, replace '@' with value
+    # width @
+    # lowerBoundary @
+    # upperBoundary @
+
+    ## Insert one or several components below
+    # (see templates in components directory)
+
+    distance {
+      ## Optional coeff and exponent for polynomial combinations
+      # componentCoeff @
+      # componentExp @
+      group1 { atomNumbers 1 2 }
+      group2 { atomNumbers 3 4 }
+    }
+}
+
+

@@ -1,0 +1,14 @@
+    dihedral {
+        group1 {
+            atomNumbers 1
+        }
+        group2 {
+            atomNumbers 2
+        }
+        group3 {
+            atomNumbers 3
+        }
+        group4 {
+            atomNumbers 4
+        }
+    }

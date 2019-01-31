@@ -14,11 +14,28 @@
 # This plugin only acts on the "top" molecule
 # which is most consistent for trajectory animation (determined by the frame number of top mol)
 
+# TODO PRIORITY:
+# - currently only way to handle harmonic walls is legacy, bc separate biases are not accessible!
+# - documentation -> link to section in HTML VMD/Covlars on github.io
+
 # TODO:
-# - histograms
 # - properly calculate position of cursor in plot when not all the plot is visible (resized window)
-# - graphical representations such as rotation_display
+# - retain comments in config strings (needs upstream support in colvars)
+# - Retain the whole config string minus colvars, copy to output? Problem: not visible in interface
+# - histograms - either directly from plot window
+
+# TODO Multiplot:
+# - handle several windows at once - at least one pairwise, one timeline
+# - integrate interactive hacks into interface
+# - display pairwise traj on top of known 2D data (eg. FE surface)
+# - embed inside main window?
+# - select scalar components of vector colvars
+
+# TODO maybe:
 # - show atom groups as representations
+# - index group builder
+# - graphical representations such as rotation_display
+
 
 package provide cv_dashboard 1.0
 
@@ -197,10 +214,10 @@ proc ::cv_dashboard::change_track_frame {} {
 # Load config from file
 proc ::cv_dashboard::load {} {
   if { [info exists ::cv_dashboard::config_dir] } {
-    set path [tk_getOpenFile -filetypes {{"Colvars cfg" .in} {"Colvars cfg" .colvars} {"All files" *}} \
+    set path [tk_getOpenFile -filetypes {{"Colvars cfg" .in} {"Colvars cfg" .colvars} {"Gromacs Colvars cfg" .dat} {"All files" *}} \
         -initialdir $::cv_dashboard::config_dir]
   } else {
-    set path [tk_getOpenFile -filetypes {{"Colvars cfg" .in} {"Colvars cfg" .colvars} {"All files" *}} \
+    set path [tk_getOpenFile -filetypes {{"Colvars cfg" .in} {"Colvars cfg" .colvars} {"Gromacs Colvars cfg" .dat} {"All files" *}} \
         -initialdir [pwd]]
   }
   if [string compare $path ""] {
@@ -215,10 +232,10 @@ proc ::cv_dashboard::load {} {
 # Save config of colvars to file (can we do it w/ biases ? need bias type keyword)
 proc ::cv_dashboard::save {} {
   if { [info exists ::cv_dashboard::config_dir] } {
-    set path [tk_getSaveFile -filetypes {{"Colvars cfg" .in} {"Colvars cfg" .colvars} {"All files" *}} \
+    set path [tk_getSaveFile -filetypes {{"Colvars cfg" .in} {"Colvars cfg" .colvars} {"Gromacs Colvars cfg" .dat} {"All files" *}} \
         -initialdir $::cv_dashboard::config_dir]
   } else {
-    set path [tk_getSaveFile -filetypes {{"Colvars cfg" .in} {"Colvars cfg" .colvars} {"All files" *}} \
+    set path [tk_getSaveFile -filetypes {{"Colvars cfg" .in} {"Colvars cfg" .colvars} {"Gromacs Colvars cfg" .dat} {"All files" *}} \
         -initialdir [pwd]]
   }
 
@@ -257,9 +274,10 @@ proc ::cv_dashboard::del {} {
 }
 
 
-# Reset cvm
+# Reset cvm: hard delete allows for reconstructing the module after changing top molecule.
 proc ::cv_dashboard::reset {} {
-  run_cv reset
+  run_cv delete
+  run_cv molid top
   refresh_table
 }
 
@@ -320,9 +338,16 @@ proc ::cv_dashboard::edit { {add false} } {
   if $add {
     # do not remove existing vars
     set cvs {}
-    # Provide simple template
-    set cfg "# You can edit or replace the example colvar config below.\n\
-colvar {\n  name d\n  distance {\n    group1 { atomNumbers 1 2 }\n    group2 { atomNumbers 3 4 }\n  }\n}\n"
+    if { [info exists ::cv_dashboard::template_dir] } {
+      # Open "official" colvar template
+      set in [open ${::cv_dashboard::template_dir}/colvar.in r]
+      set cfg [read $in]
+      close $in
+    } else {
+      # Provide simple template
+      set cfg "# You can edit or replace the example colvar config below.\n\
+  colvar {\n  name d\n  distance {\n    group1 { atomNumbers 1 2 }\n    group2 { atomNumbers 3 4 }\n  }\n}\n"
+    }
   } else {
     set cvs [selected]
     if {[llength $cvs] == 0} {
@@ -519,10 +544,10 @@ proc ::cv_dashboard::insert_filename {} {
   set w .cv_dashboard_window
 
   if { [info exists ::cv_dashboard::atomfile_dir] } {
-    set path [tk_getOpenFile -filetypes {{"PDB" .pdb} {"All files" *}} \
+    set path [tk_getOpenFile -filetypes {{"PDB" .pdb} {"XYZ" .xyz} {"All files" *}} \
         -initialdir $::cv_dashboard::atomfile_dir]
   } else {
-    set path [tk_getOpenFile -filetypes {{"PDB" .pdb} {"All files" *}} -initialdir [pwd]]
+    set path [tk_getOpenFile -filetypes {{"PDB" .pdb} {"XYZ" .xyz} {"All files" *}} -initialdir [pwd]]
   }
   if [string compare $path ""] {
     # Save directory for next invocation of this dialog

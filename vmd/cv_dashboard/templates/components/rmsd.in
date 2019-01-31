@@ -1,0 +1,13 @@
+    rmsd {
+        atoms {
+            indexGroup @
+        #    centerReference yes
+        #    rotateReference yes
+        #    fittingGroup {
+        #        indexGroup @
+        #    }
+        #    refPositionsFile @
+        }
+        refPositionsFile @
+    }
+

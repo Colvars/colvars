@@ -1,0 +1,6 @@
+    dihedralPC {
+        psfSegID @
+        residueRange @-@
+        vectorFile @
+        vectorNumber @
+    }
