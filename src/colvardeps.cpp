@@ -425,6 +425,10 @@ void colvardeps::init_cvb_requires() {
     init_feature(f_cvb_scalar_variables, "require scalar variables", f_type_static);
     f_req_children(f_cvb_scalar_variables, f_cv_scalar);
 
+    init_feature(f_cvb_opt_cv_params, "variables parameters optimization", f_type_dynamic);
+    f_req_children(f_cvb_opt_cv_params, f_cv_opt_params);
+    f_req_children(f_cvb_opt_cv_params, f_cv_single_component);
+
     init_feature(f_cvb_calc_pmf, "calculate a PMF", f_type_static);
 
     init_feature(f_cvb_calc_ti_samples, "calculate TI samples", f_type_dynamic);
@@ -448,6 +452,8 @@ void colvardeps::init_cvb_requires() {
 
   // only compute TI samples when deriving from colvarbias_ti
   feature_states[f_cvb_calc_ti_samples].available = false;
+  // only rad can optimize cv parameters so far if specified
+  feature_states[f_cvb_opt_cv_params].available = false;
 }
 
 
@@ -505,6 +511,8 @@ void colvardeps::init_cv_requires() {
 
     init_feature(f_cv_linear, "linear", f_type_static);
 
+    init_feature(f_cv_single_component, "single component", f_type_static);
+
     init_feature(f_cv_scalar, "scalar", f_type_static);
 
     init_feature(f_cv_output_energy, "output energy", f_type_user);
@@ -521,6 +529,9 @@ void colvardeps::init_cv_requires() {
 
     init_feature(f_cv_subtract_applied_force, "subtract applied force from total force", f_type_user);
     f_req_self(f_cv_subtract_applied_force, f_cv_total_force);
+
+    init_feature(f_cv_opt_params, "parameters optimization", f_type_dynamic);
+    f_req_children(f_cv_opt_params, f_cvc_opt_params);
 
     init_feature(f_cv_lower_boundary, "lower boundary", f_type_user);
     f_req_self(f_cv_lower_boundary, f_cv_scalar);
@@ -560,6 +571,10 @@ void colvardeps::init_cv_requires() {
     // Most features are available, so we set them so
     // and list exceptions below
    }
+
+   // There could be more than one component 
+   feature_states[f_cv_single_component].available = false;     
+
 }
 
 

@@ -226,6 +226,8 @@ public:
     f_cvb_time_dependent,
     /// \brief requires scalar colvars
     f_cvb_scalar_variables,
+    /// \brief Whether optimize variable parameters 
+    f_cvb_opt_cv_params,
     /// \brief whether this bias will compute a PMF
     f_cvb_calc_pmf,
     /// \brief whether this bias will compute TI samples
@@ -279,6 +281,8 @@ public:
     f_cv_output_applied_force,
     /// \brief Output the total force to the trajectory file
     f_cv_output_total_force,
+    /// \brief The variable has parameters that change on time
+    f_cv_opt_params,
     /// \brief A lower boundary is defined
     f_cv_lower_boundary,
     /// \brief An upper boundary is defined
@@ -297,6 +301,8 @@ public:
     f_cv_custom_function,
     /// \brief Colvar is periodic
     f_cv_periodic,
+    /// \brief The colvar has only one component 
+    f_cv_single_component,
     /// \brief is scalar
     f_cv_scalar,
     f_cv_linear,
@@ -314,6 +320,8 @@ public:
     /// \brief CVC doesn't calculate and store explicit atom gradients
     f_cvc_implicit_gradient,
     f_cvc_inv_gradient,
+    /// \brief The component has parameters that change on time
+    f_cvc_opt_params,
     /// \brief If enabled, calc_gradients() will call debug_gradients() for every group needed
     f_cvc_debug_gradient,
     f_cvc_Jacobian,

@@ -464,12 +464,6 @@ std::string const colvarbias_rad::get_state_params() const
     os << "    error_scale " << colvar_errors_scale << "\n";
   }
 
-  if (opt_params) {
-    os << "    radExpParams ";
-    for (size_t i = 0; i < num_variables(); i++) {
-       variables(i)->get_rad_state_params_exp_par(); 
-    } 
-  }
   os << "\n";
   return (colvarbias::get_state_params() + os.str());
 }
@@ -489,17 +483,6 @@ int colvarbias_rad::set_state_params(std::string const &state_conf)
   if (fix_chi_square_one) {
     if (!get_keyval(state_conf, "error_scale", colvar_errors_scale))
       cvm::error("Error: error_scale missing from the restart.\n");
-  }
-
-  if (opt_params) {
-    // read last value of the parameters
-    
-    if (numtypes[1]>0) {
-      if (!get_keyval(state_conf, "deerMdepth", mdepth_deer))
-        cvm::error("Error: missing deerMdepth from the restart.\n");
-      if (!get_keyval(state_conf, "deerBackAlpha", alpha_deer))
-        cvm::error("Error: missing deerBackAlpha from the restart.\n");
-    }
   }
 
   return error_code;
