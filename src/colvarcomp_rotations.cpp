@@ -9,7 +9,7 @@
 
 
 colvar::orientation::orientation(std::string const &conf)
-  : cvc(conf)
+  : cvc()
 {
   function_type = "orientation";
   enable(f_cvc_implicit_gradient);
@@ -20,6 +20,8 @@ colvar::orientation::orientation(std::string const &conf)
 
 int colvar::orientation::init(std::string const &conf)
 {
+  int error_code = cvc::init(conf);
+
   atoms = parse_group(conf, "atoms");
   ref_pos.reserve(atoms->size());
 
@@ -78,7 +80,7 @@ int colvar::orientation::init(std::string const &conf)
     rot.request_group2_gradients(atoms->size());
   }
 
-  return COLVARS_OK;
+  return error_code;
 }
 
 
