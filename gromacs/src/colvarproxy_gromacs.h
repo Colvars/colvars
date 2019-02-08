@@ -64,10 +64,6 @@ public:
   // **************** PERIODIC BOUNDARY CONDITIONS ****************
   cvm::rvector position_distance (cvm::atom_pos const &pos1,
                                   cvm::atom_pos const &pos2) const;
-  //cvm::real position_dist2 (cvm::atom_pos const &pos1,
-  //                                    cvm::atom_pos const &pos2);
-  void select_closest_image (cvm::atom_pos &pos,
-                             cvm::atom_pos const &ref_pos);
 
   // **************** INPUT/OUTPUT ****************
   /// Print a message to the main log
