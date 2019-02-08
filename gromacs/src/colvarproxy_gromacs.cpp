@@ -318,8 +318,7 @@ double colvarproxy_gromacs::calculate(gmx_int64_t step, const rvec *x, gmx::Forc
      for (size_t i = 0; i < atoms_ids.size(); i++) {
        size_t aid = atoms_ids[i];
        // We already checked above that gmx_atoms->nr < aid.
-       // The change of sign appears necessary.
-       atoms_total_forces[i] = cvm::rvector(-f[aid][0], -f[aid][1], -f[aid][2]);
+       atoms_total_forces[i] = cvm::rvector(f[aid][0], f[aid][1], f[aid][2]);
      }
   }
 
@@ -333,9 +332,9 @@ double colvarproxy_gromacs::calculate(gmx_int64_t step, const rvec *x, gmx::Forc
   for (size_t i = 0; i < atoms_ids.size(); i++) {
     size_t aid = atoms_ids[i];
     // We already checked above that gmx_atoms->nr < aid.
-    f[aid][0] -= atoms_new_colvar_forces[i].x;
-    f[aid][1] -= atoms_new_colvar_forces[i].y;
-    f[aid][2] -= atoms_new_colvar_forces[i].z;
+    f[aid][0] += atoms_new_colvar_forces[i].x;
+    f[aid][1] += atoms_new_colvar_forces[i].y;
+    f[aid][2] += atoms_new_colvar_forces[i].z;
   }
 
   // We need to compute and update the virial like this (with virial as a 3x3 matrix):
