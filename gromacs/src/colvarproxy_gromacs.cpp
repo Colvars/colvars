@@ -73,7 +73,7 @@ void colvarproxy_gromacs::init(t_inputrec *ir, gmx_int64_t step,t_mdatoms *md,
   ///
   /// For restart, 'filename_restart' is the colvars input file for restart,
   /// set by the "-cv_restart" option. It will be NULL otherwise.
-  /// 
+  ///
 
   config_file = filename_config;
 
@@ -195,25 +195,6 @@ cvm::rvector colvarproxy_gromacs::position_distance (cvm::atom_pos const &pos1,
   return cvm::atom_pos( dr[0], dr[1], dr[2] );
 }
 
-// The position to look for the closest periodic image
-// ref_pos The reference position
-void colvarproxy_gromacs::select_closest_image (cvm::atom_pos &pos,
-                                                cvm::atom_pos const &ref_pos)
-{
-  rvec r1, r2, dr;
-  r1[0] = pos.x;
-  r1[1] = pos.y;
-  r1[2] = pos.z;
-  r2[0] = ref_pos.x;
-  r2[1] = ref_pos.y;
-  r2[2] = ref_pos.z;
-  pbc_dx_aiuc(&gmx_pbc, r1, r2, dr);
-
-  // dr is the closest distance vector.
-  pos.x = r2[0]+dr[0];
-  pos.y = r1[1]+dr[1];
-  pos.z = r1[2]+dr[2];
-}
 
 void colvarproxy_gromacs::log (std::string const &message)
 {
