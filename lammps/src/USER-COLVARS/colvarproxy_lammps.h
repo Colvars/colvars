@@ -96,6 +96,8 @@ class colvarproxy_lammps : public colvarproxy {
   // Write files expected from Colvars (called by post_run())
   void write_output_files();
 
+  // read additional config file
+  void add_config_file(char const *config_filename);
 
   // implementation of pure methods from base class
  public:
