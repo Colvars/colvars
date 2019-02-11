@@ -163,6 +163,11 @@ void colvarproxy_lammps::add_config_file(const char *conf_file)
   colvars->read_config_file(conf_file);
 }
 
+void colvarproxy_lammps::add_config_string(const std::string &conf)
+{
+  colvars->read_config_string(conf);
+}
+
 colvarproxy_lammps::~colvarproxy_lammps()
 {
   delete _random;
