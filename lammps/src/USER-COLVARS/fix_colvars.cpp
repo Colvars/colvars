@@ -475,9 +475,22 @@ void FixColvars::one_time_init()
 
 int FixColvars::modify_param(int narg, char **arg)
 {
-  if (strcmp(arg[0],"add_config") == 0) {
+  if (strcmp(arg[0],"configfile") == 0) {
     if (narg < 2) error->all(FLERR,"Illegal fix_modify command");
-    if (me == 0) proxy->add_config_file(arg[1]);
+    if (me == 0) {
+      if (! proxy)
+        error->one(FLERR,"Cannot use fix_modify before initialization");
+      proxy->add_config_file(arg[1]);
+    }
+    return 2;
+  } else if (strcmp(arg[0],"config") == 0) {
+    if (narg < 2) error->all(FLERR,"Illegal fix_modify command");
+    if (me == 0) {
+      if (! proxy)
+        error->one(FLERR,"Cannot use fix_modify before initialization");
+      std::string conf(arg[1]);
+      proxy->add_config_string(conf);
+    }
     return 2;
   }
   return 0;
