@@ -473,6 +473,18 @@ void FixColvars::one_time_init()
 
 /* ---------------------------------------------------------------------- */
 
+int FixColvars::modify_param(int narg, char **arg)
+{
+  if (strcmp(arg[0],"add_config") == 0) {
+    if (narg < 2) error->all(FLERR,"Illegal fix_modify command");
+    if (me == 0) proxy->add_config_file(arg[1]);
+    return 2;
+  }
+  return 0;
+}
+
+/* ---------------------------------------------------------------------- */
+
 void FixColvars::setup(int vflag)
 {
   const tagint * const tag  = atom->tag;
