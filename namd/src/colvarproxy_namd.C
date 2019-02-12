@@ -57,10 +57,12 @@ colvarproxy_namd::colvarproxy_namd()
     thermostat_temperature = simparams->reassignTemp;
   else if (simparams->langevinOn)
     thermostat_temperature = simparams->langevinTemp;
+  else if (simparams->stochRescaleOn)
+    thermostat_temperature = simparams->stochRescaleTemp;
   else if (simparams->tCoupleOn)
     thermostat_temperature = simparams->tCoupleTemp;
-  //else if (simparams->loweAndersenOn)
-  //  thermostat_temperature = simparams->loweAndersenTemp;
+  else if (simparams->loweAndersenOn)
+    thermostat_temperature = simparams->loweAndersenTemp;
   else
     thermostat_temperature = 0.0;
 
