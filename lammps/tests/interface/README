@@ -1,3 +1,4 @@
 The tests in this directory are meant to test and document the behavior
 of the LAMMPS interface to the colvars library.
 Group 01: fix colvars command options
+Group 02: fix_modify

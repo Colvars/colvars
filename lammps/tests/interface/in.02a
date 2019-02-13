@@ -1,0 +1,10 @@
+# LAMMPS test 02a: redefining already existing colvar
+# Validated: 13 February 2019-IBPC
+include inc.minimal
+fix f1 all colvars minimal.cfg unwrap yes output 02a
+
+run 0 post no
+
+fix_modify f1 configfile minimal.cfg # redefining same colvar, should fail
+
+run 0 post no
