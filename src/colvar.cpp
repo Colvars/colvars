@@ -464,7 +464,7 @@ int colvar::init_grid_parameters(std::string const &conf)
     if (get_keyval(conf, "lowerWallConstant", lower_wall_k, 0.0,
                    parse_silent)) {
       cvm::log("Reading legacy options lowerWall and lowerWallConstant: "
-               "consider using a harmonicWalls restraint.\n");
+               "consider using a harmonicWalls restraint\n(caution: force constant would then be scaled by width^2).\n");
       lower_wall.type(value());
       if (!get_keyval(conf, "lowerWall", lower_wall, lower_boundary)) {
         cvm::log("Warning: lowerWall will need to be "
@@ -478,7 +478,7 @@ int colvar::init_grid_parameters(std::string const &conf)
     if (get_keyval(conf, "upperWallConstant", upper_wall_k, 0.0,
                    parse_silent)) {
       cvm::log("Reading legacy options upperWall and upperWallConstant: "
-               "consider using a harmonicWalls restraint.\n");
+               "consider using a harmonicWalls restraint\n(caution: force constant would then be scaled by width^2).\n");
       upper_wall.type(value());
       if (!get_keyval(conf, "upperWall", upper_wall, upper_boundary)) {
         cvm::log("Warning: upperWall will need to be "
