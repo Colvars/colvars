@@ -141,6 +141,9 @@ public:
     cvc_features.clear();
   }
 
+  /// \brief Get vector of vectors of atom IDs for all atom groups
+  virtual std::vector<std::vector<int> > get_atom_lists();
+
   /// \brief Obtain data needed for the calculation for the backend
   virtual void read_data();
 

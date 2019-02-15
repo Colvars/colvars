@@ -808,24 +808,24 @@ int cvm::atom_group::create_sorted_ids()
 
   // Sort the internal IDs
   std::list<int> sorted_atoms_ids_list;
-  for (size_t i = 0; i < this->size(); i++) {
+  for (size_t i = 0; i < atoms_ids.size(); i++) {
     sorted_atoms_ids_list.push_back(atoms_ids[i]);
   }
   sorted_atoms_ids_list.sort();
   sorted_atoms_ids_list.unique();
-  if (sorted_atoms_ids_list.size() != this->size()) {
+  if (sorted_atoms_ids_list.size() != atoms_ids.size()) {
     return cvm::error("Error: duplicate atom IDs in atom group? (found " +
                       cvm::to_str(sorted_atoms_ids_list.size()) +
                       " unique atom IDs instead of " +
-                      cvm::to_str(this->size()) + ").\n", BUG_ERROR);
+                      cvm::to_str(atoms_ids.size()) + ").\n", BUG_ERROR);
   }
 
   // Compute map between sorted and unsorted elements
-  sorted_atoms_ids.resize(this->size());
-  sorted_atoms_ids_map.resize(this->size());
+  sorted_atoms_ids.resize(atoms_ids.size());
+  sorted_atoms_ids_map.resize(atoms_ids.size());
   std::list<int>::iterator lsii = sorted_atoms_ids_list.begin();
   size_t ii = 0;
-  for ( ; ii < this->size(); lsii++, ii++) {
+  for ( ; ii < atoms_ids.size(); lsii++, ii++) {
     sorted_atoms_ids[ii] = *lsii;
     size_t const pos = std::find(atoms_ids.begin(), atoms_ids.end(), *lsii) -
       atoms_ids.begin();

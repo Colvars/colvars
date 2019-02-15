@@ -943,6 +943,17 @@ void colvar::setup()
 }
 
 
+std::vector<std::vector<int> > colvar::get_atom_lists()
+{
+  std::vector<std::vector<int> > lists;
+  for (size_t i = 0; i < cvcs.size(); i++) {
+    std::vector<std::vector<int> > li = cvcs[i]->get_atom_lists();
+    lists.insert(lists.end(), li.begin(), li.end());
+  }
+  return lists;
+}
+
+
 colvar::~colvar()
 {
   // There is no need to call free_children_deps() here

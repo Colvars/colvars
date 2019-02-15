@@ -185,6 +185,7 @@ colvar::cvc::~cvc()
   }
 }
 
+
 void colvar::cvc::read_data()
 {
   size_t ig;
@@ -204,6 +205,19 @@ void colvar::cvc::read_data()
 //       }
 //     }
 //   }
+}
+
+
+std::vector<std::vector<int> > colvar::cvc::get_atom_lists()
+{
+  std::vector<std::vector<int> > lists;
+
+  std::vector<cvm::atom_group *>::iterator agi = atom_groups.begin();
+  for ( ; agi != atom_groups.end(); ++agi) {
+    (*agi)->create_sorted_ids();
+    lists.push_back((*agi)->sorted_ids());
+  }
+  return lists;
 }
 
 

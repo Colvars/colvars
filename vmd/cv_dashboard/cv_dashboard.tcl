@@ -136,6 +136,9 @@ proc ::cv_dashboard::createWindow {} {
   incr gridrow
   grid [ttk::button $w.plot -text "Timeline plot" -command ::cv_dashboard::plot -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $w.plot2cv -text "Pairwise plot" -command {::cv_dashboard::plot 2cv} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $w.show_atoms -text "Show atoms" -command {::cv_dashboard::show_atoms} -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+
+  incr gridrow
   grid [ttk::button $w.refresh -text "Refresh table" -command ::cv_dashboard::refresh_table -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
   incr gridrow
@@ -271,6 +274,27 @@ proc ::cv_dashboard::del {} {
     run_cv colvar $c delete
   }
   refresh_table
+}
+
+
+# Display atoms in groups for selected colvars
+proc ::cv_dashboard::show_atoms {} {
+  set color 0
+  foreach c [selected] {
+    set all_groups [run_cv colvar $c getatoms]
+    foreach list $all_groups {
+      # dummyAtoms will return empty lists
+      if {[llength $list] > 0} {
+        mol color ColorID $color
+        mol representation VDW 1.000000 12.000000
+        mol selection index $list
+        mol material Opaque
+        mol addrep top
+        incr color
+      }
+    }
+  }
+  return
 }
 
 
