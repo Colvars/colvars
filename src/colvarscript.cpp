@@ -324,6 +324,22 @@ int colvarscript::proc_colvar(colvar *cv, int objc, unsigned char *const objv[])
     return COLVARS_OK;
   }
 
+  if (subcmd == "getatoms") {
+    std::vector<std::vector<int> > lists = cv->get_atom_lists();
+    std::vector<std::vector<int> >::iterator li = lists.begin();
+
+    for ( ; li != lists.end(); ++li) {
+      result += "{";
+      std::vector<int>::iterator lj = (*li).begin();
+      for ( ; lj != (*li).end(); ++lj) {
+        result += cvm::to_str(*lj);
+        result += " ";
+      }
+      result += "} ";
+    }
+    return COLVARS_OK;
+  }
+
   if (subcmd == "getappliedforce") {
     result = (cv->applied_force()).to_simple_string();
     return COLVARS_OK;

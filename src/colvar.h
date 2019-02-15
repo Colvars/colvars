@@ -613,6 +613,9 @@ public:
   inline size_t n_components() const {
     return cvcs.size();
   }
+
+  /// \brief Get vector of vectors of atom IDs for all atom groups
+  virtual std::vector<std::vector<int> > get_atom_lists();
 };
 
 inline cvm::real const & colvar::force_constant() const
