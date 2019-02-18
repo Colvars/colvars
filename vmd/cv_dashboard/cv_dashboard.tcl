@@ -56,7 +56,7 @@ namespace eval ::cv_dashboard {
   variable plottype     ;# either timeline or 2cv
 
   variable template_dir
-  # Use template dir if full distribution is provided and path is known
+  # Use template dir if full distribution is provided and path is known
   if [info exists ::env(CV_DASHBOARD_DIR)] {
     set template_dir ${::env(CV_DASHBOARD_DIR)}/templates
   } else {
@@ -77,7 +77,7 @@ proc cv_dashboard {} {
 }
 
 
-# Creat main window
+# Create main window
 proc ::cv_dashboard::createWindow {} {
 
   package require tablelist
@@ -283,7 +283,7 @@ proc ::cv_dashboard::show_atoms {} {
   foreach c [selected] {
     set all_groups [run_cv colvar $c getatoms]
     foreach list $all_groups {
-      # dummyAtoms will return empty lists
+      # dummyAtoms will return empty lists
       if {[llength $list] > 0} {
         mol color ColorID $color
         mol representation VDW 1.000000 12.000000
@@ -430,7 +430,6 @@ proc ::cv_dashboard::edit { {add false} } {
   incr gridrow
 
   ############# Atoms from representation ################################
-  # Double click or Enter to insert
   tk::label $w.editor.fl.rep_label -text "Atoms from representation:"
   ttk::combobox $w.editor.fl.reps -justify left -state readonly
   ttk::button $w.editor.fl.refresh_reps -text "Refresh list" -command ::cv_dashboard::refresh_reps
@@ -444,6 +443,18 @@ proc ::cv_dashboard::edit { {add false} } {
   # Populate initial list of selection texts from reps
   refresh_reps
 
+  ############# Atoms from atom, bond, angle, dihedral labels ####################
+  ttk::button $w.editor.fl.labeled_atoms -text "Insert labeled atoms" -command {::cv_dashboard::insert_labels Atoms}
+  ttk::button $w.editor.fl.labeled_var -text "Insert labeled..." -command {::cv_dashboard::insert_labels combo}
+  ttk::combobox $w.editor.fl.labels -justify left -state readonly
+  $w.editor.fl.labels configure -values [list Bonds Angles Dihedrals]
+  $w.editor.fl.labels set Bonds
+
+  grid $w.editor.fl.labeled_atoms -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid $w.editor.fl.labeled_var -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  grid $w.editor.fl.labels -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+  incr gridrow
+
   ################# Insert file name from file picker ###########################
   ttk::radiobutton $w.editor.fl.files1 -variable ::cv_dashboard::filetype -text "atomsFile" -value "atomsFile"
   ttk::radiobutton $w.editor.fl.files2 -variable ::cv_dashboard::filetype -text "refPositionsFile" -value "refPositionsFile"
@@ -454,7 +465,6 @@ proc ::cv_dashboard::edit { {add false} } {
   grid $w.editor.fl.files2 -row $gridrow -column 1 -pady 2 -padx 2
   grid $w.editor.fl.insert_file -row $gridrow -column 2 -pady 2 -padx 2
   incr gridrow
-
 
   grid columnconfigure $w.editor.fl 0 -weight 1
   grid columnconfigure $w.editor.fl 1 -weight 1
@@ -540,9 +550,45 @@ proc ::cv_dashboard::atoms_from_sel { source } {
       -message "Selection text matches zero atoms"
     return
   }
-  $w.editor.fr.text insert insert "      # Selection: \"$seltext\"\n      atomNumbers $serials\n"
+  $w.editor.fr.text insert insert "        # Selection: \"$seltext\"\n        atomNumbers $serials\n"
 }
 
+
+# Insert atom numbers or components from currently labeled objects in VMD
+proc ::cv_dashboard::insert_labels {obj} {
+  set w .cv_dashboard_window
+  if {$obj == "combo"} {
+    set obj [$w.editor.fl.labels get]
+  }
+
+  if { $obj == "Atoms" } {
+    set serials [list]
+    foreach l [label list $obj] {
+      set a [lindex $l 0]
+      lappend serials [expr [lindex $a 1] + 1] ;# going from VMD 0-based to 1-based atomNumbers
+    }
+    if {[llength $serials] > 0} {
+      $w.editor.fr.text insert insert "        # Atom labels\n        atomNumbers $serials\n"
+    }
+  } else {
+    set n(Bonds) 2
+    set n(Angles) 3
+    set n(Dihedrals) 4
+    set cvc(Bonds) distance
+    set cvc(Angles) angle
+    set cvc(Dihedrals) dihedral
+    foreach l [label list $obj] {
+      set cfg "    $cvc($obj) \{\n"
+      for {set i 0} { $i < $n($obj) } {incr i} {
+        set a [lindex $l $i]
+        set serial [expr [lindex $a 1] + 1]
+        append cfg "        group[expr $i+1] \{\n            atomNumbers $serial\n        \}\n" 
+      }
+      append cfg "    \}\n"
+      $w.editor.fr.text insert insert $cfg
+    }
+  }
+}
 
 # Insert contents of template file
 proc ::cv_dashboard::insert_template {} {
@@ -738,7 +784,7 @@ proc ::cv_dashboard::plot { { type timeline } } {
     bind [set ${plot_ns}::w] <Control-Right>  { ::cv_dashboard::chg_frame 50 }
   }
 
-  # Update frame to display frame marker in new plot
+  # Update frame to display frame marker in new plot
   update_frame internal [molinfo top] w
 }
 
@@ -914,7 +960,7 @@ proc ::cv_dashboard::display_marker { f } {
       }
     }
   }
-} 
+}
 
 # Create a window to begin with - until we have a menu entry
 cv_dashboard
