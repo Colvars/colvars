@@ -376,7 +376,8 @@ void colvar::cvc::wrap(colvarvalue &x) const
   return;
 }
 
-colvarvalue colvar::rad_paramscale(colvarvalue const &inputvector) const
+
+colvarvalue colvar::cvc::rad_paramscale(colvarvalue const &inputvector) const
 {
   size_t const varsize = inputvector.vector1d_value.size();
   cvm::vector1d<cvm::real> result=inputvector.vector1d_value;
@@ -386,20 +387,43 @@ colvarvalue colvar::rad_paramscale(colvarvalue const &inputvector) const
   return result;
 }
 
-void colvar::get_params(vector1d<cvm::real> &vectorparams) const
+
+void colvar::cvc::get_params(vector1d<cvm::real> &vectorparams) const
 {
-  vectorparams.resize(0) 
+  vectorparams.resize(0)
   return;
 }
 
-void colvar::set_params(vector1d<cvm::real> const &vectorparams) const
+
+void colvar::cvc::set_params(vector1d<cvm::real> const &vectorparams) const
 {
   return;
 }
 
-void colvar::get_exp_val(colvarvalue &vectorexpval) const
+
+void colvar::cvc::get_exp_val(colvarvalue &vectorexpval) const
 {
   return;
+}
+
+
+int colvar::cvc::update_params_rad(colvarvalue const &lambdavector,
+                                   colvarvalue const &centersvector,
+                                   cvm::real const &coupling_time,
+                                   cvm::real const &wt,
+                                   cvm::real const &us,
+                                   cvm::real const &width)
+{
+  return COLVARS_NOT_IMPLEMENTED;
+}
+
+
+int colvar::cvc::update_params_rad_chis(colvarvalue const &aver_dev,
+                                        colvarvalue const &exp_centers,
+                                        size_t *nsteps,
+                                        cvm::real *toll)
+{
+  return COLVARS_NOT_IMPLEMENTED;
 }
 
 

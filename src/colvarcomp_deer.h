@@ -123,13 +123,25 @@ public:
 
   /// get value of experimental parameters
   virtual void get_params(vector1d<cvm::real> &vectorparams) const;
-  
+
   /// update the value of the experimental parameters after optimization
   virtual void set_params(vector1d<cvm::real> const &vectorparams) const;
 
-  /// get experimental values 
+  /// get experimental values
   virtual void get_exp_val(colvarvalue &vectorexpval) const;
 
+  /// Update the values of the CVC parameters using the RAD method
+  virtual int update_params_rad(colvarvalue const &lambdavector,
+                                colvarvalue const &centersvector,
+                                cvm::real const &coupling_time,
+                                cvm::real const &wt,
+                                cvm::real const &us,
+                                cvm::real const &width);
+
+  /// Update the values of the CVC parameters by optimizing the chi-squared
+  virtual int update_params_rad_chis(colvarvalue const &aver_dev,
+                                     colvarvalue const &exp_centers,
+                                     size_t nsteps, cvm::real toll);
 };
 
 

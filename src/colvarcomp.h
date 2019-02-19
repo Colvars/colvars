@@ -248,6 +248,19 @@ public:
   /// \brief get experimental values for a CV
   virtual void get_exp_val(colvarvalue &vectorexpval) const;
 
+  /// Update the values of the CVC parameters using the RAD method
+  virtual int update_params_rad(colvarvalue const &lambdavector,
+                                colvarvalue const &centersvector, 
+                                cvm::real const &coupling_time,
+                                cvm::real const &wt,
+                                cvm::real const &us,
+                                cvm::real const &width);
+
+  /// Update the values of the CVC parameters by optimizing the chi-squared
+  virtual int update_params_rad_chis(colvarvalue const &aver_dev,
+                                     colvarvalue const &exp_centers,
+                                     size_t nsteps, cvm::real toll);
+
   /// \brief Store a pointer to new atom group, and list as child for dependencies
   inline void register_atom_group(cvm::atom_group *ag) {
     atom_groups.push_back(ag);

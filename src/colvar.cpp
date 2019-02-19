@@ -1815,6 +1815,28 @@ void colvar::wrap(colvarvalue &x) const
 }
 
 
+int colvar::update_params_rad(colvarvalue const &lambdavector,
+                              colvarvalue const &centersvector,
+                              cvm::real const &coupling_time,
+                              cvm::real const &wt,
+                              cvm::real const &us,
+                              cvm::real const &width)
+{
+  return cvcs[0]->update_params_rad(lambdavector, centersvector,
+                                    coupling_time, wt, us, width);
+}
+
+
+int colvar::update_params_rad_chis(colvarvalue const &aver_dev,
+                                   colvarvalue const &exp_centers,
+                                   size_t nsteps, cvm::real toll)
+{
+  return cvcs[0]->update_params_rad_chis(aver_dev, exp_centers, nsteps, toll);
+}
+
+
+
+
 // ******************** INPUT FUNCTIONS ********************
 
 std::istream & colvar::read_restart(std::istream &is)

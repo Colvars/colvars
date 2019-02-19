@@ -352,6 +352,19 @@ public:
   /// \brief Modify the configuration of CVCs (currently, only base class data)
   int update_cvc_config(std::vector<std::string> const &confs);
 
+  /// Update the values of the CVC parameters using the RAD method
+  int update_params_rad(colvarvalue const &lambdavector,
+                        colvarvalue const &centersvector,
+                        cvm::real const &coupling_time,
+                        cvm::real const &wt,
+                        cvm::real const &us,
+                        cvm::real const &width);
+
+  /// Update the values of the CVC parameters by optimizing the chi-squared
+  int update_params_rad_chis(colvarvalue const &aver_dev,
+                             colvarvalue const &exp_centers,
+                             size_t nsteps, cvm::real toll);
+
 protected:
   /// \brief Number of CVC objects with an active flag
   size_t n_active_cvcs;
