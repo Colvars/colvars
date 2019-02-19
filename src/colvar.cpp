@@ -798,6 +798,11 @@ int colvar::init_components(std::string const &conf)
 
   cvm::log("All components initialized.\n");
 
+  if (cvcs.size() == 1) {
+    provide(f_cv_single_component);
+    enable(f_cv_single_component);
+  }
+
   // Store list of children cvcs for dependency checking purposes
   for (size_t i = 0; i < cvcs.size(); i++) {
     add_child(cvcs[i]);
