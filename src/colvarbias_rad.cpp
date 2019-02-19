@@ -18,8 +18,9 @@ colvarbias_rad::colvarbias_rad(char const *key)
   colvar_cum_error = 0.0;
   colvar_cum_uscale = 0.0;
 
-  colvar_rad_steps = 0; // XXX to be deleted 
+  colvar_rad_steps = 0; // XXX to be deleted
 
+  provide(f_cvb_opt_cv_params);
 }
 
 
@@ -52,9 +53,10 @@ int colvarbias_rad::init(std::string const &conf)
   colvar_cum_uscale = colvar_cum_uscale/double(num_variables());
   colvar_cum_uscale = 1.0/colvar_cum_uscale;
 
-  get_keyval(conf, "optParams", opt_params, false);
+  get_keyval_feature(this, conf, "optParams",
+                     f_cvb_opt_cv_params, is_enabled(f_cvb_opt_cv_params));
 
-  if (opt_params) {
+  if (is_enabled(f_cvb_opt_cv_params)) {
     cvm::log("NOTE: parameters optimization assumes linear parameters functions or linear approximations \n");
     std::string opt_type_str;
     get_keyval(conf, "ParOptType", opt_type_str, std::string("chisquare"));
@@ -66,7 +68,7 @@ int colvarbias_rad::init(std::string const &conf)
     } else if (opt_type_str == to_lower_cppstr(std::string("none"))) {
       opt_type = opt_none;
     }
-   
+
     switch (opt_type) {
     case opt_none:
       cvm::error("Error: undefined parameters optimization type.\n", INPUT_ERROR);
@@ -97,7 +99,7 @@ int colvarbias_rad::init(std::string const &conf)
   size_t t;
   cvm::real eback;
 
-//  if (opt_params) {
+//  if (is_enabled(f_cvb_opt_cv_params)) {
 //    // initialize and get number of parameters and values of parameters for each set of CVs
 
 //    if (val_params.size()==0) {
@@ -105,10 +107,10 @@ int colvarbias_rad::init(std::string const &conf)
 //    }
 
 //    // read value of the parameters
-    
+
 //    for (i = 0; i < num_variables(); i++) {
 //       variables(i)->get_params(val_params[i]);
-//    } 
+//    }
 //  }
 
   if (colvar_deviation.size() == 0) {
@@ -289,7 +291,7 @@ int colvarbias_rad::update()
     error_fact = colvar_centers_errors[i]*colvar_centers_errors[i]/colvar_errors_scale;
     colvarvalue const deviation =
       0.5 * variables(i)->dist2_lgrad(variables(i)->value(), colvar_centers[i]);
-    
+
     colvar_total_deviations[i] += weight * variables(i)->paramscale(deviation) * cvm::dt();
     colvar_forces[i] = -1.0 * kBT * unit_scale * variables(i)->paramscale(colvar_total_deviations[i]);
     bias_energy += -colvar_forces[i]*variables(i)->paramscale(deviation);
@@ -327,20 +329,20 @@ int colvarbias_rad::update()
   }
 
 
-  if (opt_params) {
+  if (is_enabled(f_cvb_opt_cv_params)) {
     for (i = 0; i < num_variables(); i++) {
        variables(i)->update_params_rad(colvar_forces[i]/kBT, colvar_centers[i],
-                                        params_coupling_time, weight, unit_scale,
-                                        colvar_widths_c[i]);
+                                       params_coupling_time, weight, unit_scale,
+                                       colvar_widths_c[i]);
        // get running average for optimizing the parameters by minimizing the chisquare
        colvarvalue const chideviation =
          0.5 * variables(i)->dist2_lgrad(variables(i)->value(), colvar_exp_centers[i]);
-       
-        
+
+
     }
   }
 
- 
+
   if (use_norm_1) {
     for (i = 0; i < num_variables(); i++) {
       cvm::real colvar_local_deviation=0.;
@@ -396,7 +398,7 @@ int colvarbias_rad::setup_output()
     rad_out_os = cvm::proxy->output_stream(rad_out_file_name());
     if (!rad_out_os) return FILE_ERROR;
 
-    if (opt_params) {
+    if (is_enabled(f_cvb_opt_cv_params)) {
       cvm::proxy->backup_file(rad_param_file_name());
       rad_param_os = cvm::proxy->output_stream(rad_param_file_name());
       if (!rad_param_os) return FILE_ERROR;
@@ -439,7 +441,7 @@ int colvarbias_rad::write_traj_files()
       for (int i = 0; i < num_variables(); i++) {
          os << std::setw(cvm::it_width) << cvm::step_absolute()
             << cvm::step_absolute()
-            << " "; 
+            << " ";
          os << variables(i)->name
             << " ";
          variables(i)->write_params_rad(os);
