@@ -4150,6 +4150,7 @@ A harmonic restraint is set up by a \texttt{harmonic~\{...\}} block, which may c
 \item \dupkey{writeTISamples}{\texttt{harmonic}}{sec:colvarbias}{biasing and analysis methods}
 
 \item %
+  \labelkey{harmonic|forceConstant}
   \keydef
     {forceConstant}{%
     \texttt{harmonic}}{%
@@ -4159,10 +4160,9 @@ A harmonic restraint is set up by a \texttt{harmonic~\{...\}} block, which may c
     This option defines a \emph{scaled} force constant $k$ for the harmonic potential (eq.~\ref{eq:colvarbias_harmonic_multi}).
     To ensure consistency for multidimensional restraints, it is divided internally by the square of the specific \texttt{width} of each variable (which is 1 by default).
     This makes all values effectively dimensionless and of commensurate size.
-    For instance, if this force constant is set to $RT$, then the thermal fluctuations of each variable will be on the order of its \texttt{width}.
-    % Setting a scaled force constant of 10~kcal/mol acting on two variables, an angle with a \texttt{width} of 5~degrees and a distance  with a width of 0.5~\AA{},
-    % will apply actual force constants of 0.4~kcal/mol$\times$degree$^{-2}$ for the angle and 40~kcal/mol/\AA$^2$ for the distance.
-    \emph{The values of the actual force constants are always printed when the restraint is defined.}
+    For instance, if this force constant is set to the thermal energy $\kappa_{\mathrm{B}}T$ (equal to $RT$ if kcal/mol units are used), then the amplitude of the thermal fluctuations of each variable $\xi$ will be on the order of its \texttt{width}, $w_{\xi}$.
+    This can be used to estimate the optimal spacing of umbrella-sampling windows (under the assumption that the force constant is larger than the curvature of the underlying free energy).
+    \emph{The values of the actual force constants $k/w_{\xi}^2$ are always printed when the restraint is defined.}
   }
 
 \item %
@@ -4434,8 +4434,8 @@ The \texttt{harmonicWalls} bias implements the following options:
     positive decimal}{%
     \texttt{forceConstant}}{%
     When both sets of walls are defined (lower and upper), this keyword allows setting different force constants for them.
-    As with \texttt{forceConstant}, the specified constant is divided internally by the square of the specific \texttt{width} of each variable (which is 1 by default).
-    The force constant reported in the output as ``$k$'', and used in the change of force constant scheme, is the geometric mean of the two.
+    As with \texttt{forceConstant}, the specified constant is divided internally by the square of the specific \texttt{width} of each variable (see also the equivalent keyword for the harmonic restraint, \refkey{forceConstant}{harmonic|forceConstant}).
+    The force constant reported in the output as ``$k$'', and used in the change of force constant scheme, is the geometric mean of \texttt{upperWallConstant} and \texttt{upperWallConstant}.
   }
 
 \item %
@@ -4491,7 +4491,8 @@ using \cite{Pitera2012}.
     \texttt{1.0}}{%
     This option defines a \emph{scaled} force constant for the linear bias.
     To ensure consistency for multidimensional restraints, it is divided internally by the specific \texttt{width} of each variable (which is 1 by default), so that all variables are effectively dimensionless and of commensurate size.
-    \emph{The values of the actual force constants are always printed when the restraint is defined.}
+    See also the equivalent keyword for the harmonic restraint, \refkey{forceConstant}{harmonic|forceConstant}.
+    \emph{The values of the actual force constants $k/w_{\xi}$ are always printed when the restraint is defined.}
 }
 
 \item %
