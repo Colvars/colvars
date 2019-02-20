@@ -4160,7 +4160,7 @@ A harmonic restraint is set up by a \texttt{harmonic~\{...\}} block, which may c
     This option defines a \emph{scaled} force constant $k$ for the harmonic potential (eq.~\ref{eq:colvarbias_harmonic_multi}).
     To ensure consistency for multidimensional restraints, it is divided internally by the square of the specific \texttt{width} of each variable (which is 1 by default).
     This makes all values effectively dimensionless and of commensurate size.
-    For instance, if this force constant is set to the thermal energy $\kappa_{\mathrm{B}}T$ (equal to $RT$ if kcal/mol units are used), then the amplitude of the thermal fluctuations of each variable $\xi$ will be on the order of its \texttt{width}, $w_{\xi}$.
+    For instance, if this force constant is set to the thermal energy $\kappa_{\mathrm{B}}T$ (equal to $RT$ if molar units are used), then the amplitude of the thermal fluctuations of each variable $\xi$ will be on the order of its \texttt{width}, $w_{\xi}$.
     This can be used to estimate the optimal spacing of umbrella-sampling windows (under the assumption that the force constant is larger than the curvature of the underlying free energy).
     \emph{The values of the actual force constants $k/w_{\xi}^2$ are always printed when the restraint is defined.}
   }
