@@ -681,7 +681,7 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool app
 
 
 // For Tcl implementation of selection rules.
-/// Give the total number of bins for a given bias.
+/// Give the total number of bins for the bias.
 int colvarbias_abf::bin_num() {
   return samples->number_of_points(0);
 }
@@ -695,10 +695,65 @@ int colvarbias_abf::bin_count(int bin_index) {
     cvm::error("Error: Tried to get bin count from invalid bin index "+cvm::to_str(bin_index));
     return -1;
   }
-  std::vector<int> ix(1,(int)bin_index);
+  std::vector<int> ix(1,bin_index);
   return samples->value(ix);
 }
+/// Give the gradient at a given bin index.
+cvm::real colvarbias_abf::bin_gradient(int bin_index) {
+  if (bin_index < 0 || bin_index >= bin_num()) {
+    cvm::error("Error: Tried to get bin gradient from invalid bin index "+cvm::to_str(bin_index));
+    return -1;
+  }
+  std::vector<int> ix(1,bin_index);
+  return -gradients->value(ix)/samples->value(ix);
+}
 
+/// Give the free energy from grid edge 0 to current position.
+cvm::real colvarbias_abf::delta_free_energy(cvm::real x) {
+  // Get the home bin.
+  int home = gradients->value_to_bin_scalar(x, 0);
+  // There is nothing to integrate if x is before the start of the grid.
+  if (home < 0) return 0.0;
+  // Get the distance that the position is beyond the home bin.
+  cvm::real home_x = (cvm::real)gradients->bin_to_value_scalar(home, 0) - 0.5*gradients->widths[0];
+  cvm::real beyond = x - home_x;
+  // The adaptive biasing force is not applied beyond the end of the grid.
+  if (home >= gradients->number_of_points(0)) {
+    home = gradients->number_of_points(0)-1;
+    beyond = gradients->widths[0];
+  }
+  
+  // Integrate the gradient up to the home bin.
+  cvm::real sum = 0.0;
+  for (int i = 0; i < home; i++) {
+    std::vector<int> ix(1,i);
+
+    // Include the full_samples factor if necessary.
+    int count = samples->value(ix);
+    // This factor accounts for the effect of full_samples on the applied force
+    cvm::real fact = 1.0;
+    if ( count < full_samples ) {
+      fact = (count < min_samples) ? 0.0 :
+        (cvm::real(count - min_samples)) / (cvm::real(full_samples - min_samples));
+    }
+    // Add the contribution of this bin.
+    if (count > 0) sum += fact*gradients->value(ix)/count*gradients->widths[0];
+  }
+
+  // Integrate the gradient from the start of the home bin up to x.
+  std::vector<int> ix(1,home);
+  int count = samples->value(ix);
+  // This factor accounts for the effect of full_samples on the applied force
+  cvm::real fact = 1.0;
+  if ( count < full_samples ) {
+    fact = (count < min_samples) ? 0.0 :
+      (cvm::real(count - min_samples)) / (cvm::real(full_samples - min_samples));
+  }
+  // Add the contribution of the last piece of fractional bin.
+  if (count > 0) sum += fact*gradients->value(ix)/count*beyond;
+  
+  return sum;
+}
 
 void colvarbias_abf::read_gradients_samples()
 {

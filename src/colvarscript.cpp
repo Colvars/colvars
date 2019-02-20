@@ -450,6 +450,7 @@ int colvarscript::proc_bias(colvarbias *b, int objc, unsigned char *const objv[]
     return COLVARS_OK;
   }
 
+  
   if (subcmd == "share") {
     int r = b->replica_share();
     if (r < 0) {
@@ -480,10 +481,33 @@ int colvarscript::proc_bias(colvarbias *b, int objc, unsigned char *const objv[]
     if (subcmd == "count") {
       int index;
       if (!(std::istringstream(param) >> index)) {
-        result = "bin_count: error parsing bin index";
+        result = "bias count: error parsing bin index";
         return COLVARSCRIPT_ERROR;
       }
       result = cvm::to_str(b->bin_count(index));
+      return COLVARS_OK;
+    }
+
+    // Get ABF gradient
+    if (subcmd == "gradient") {
+      int index;
+      if (!(std::istringstream(param) >> index)) {
+	result = "bias gradient: error parsing bin index";
+	return COLVARSCRIPT_ERROR;
+      }
+      result = cvm::to_str(-b->bin_gradient(index));
+      return COLVARS_OK;
+    }
+
+    // Get free energy by integrating over gradients
+    if (subcmd == "freeenergy") {
+      cvm::real x;
+      if (!(std::istringstream(param) >> x)) {
+	result = "bias freeenergy: error parsing colvar value";
+	return COLVARSCRIPT_ERROR;
+      }
+      cvm::real dg = b->delta_free_energy(x);
+      result = cvm::to_str(dg);
       return COLVARS_OK;
     }
 

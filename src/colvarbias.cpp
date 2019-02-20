@@ -69,7 +69,6 @@ int colvarbias::init(std::string const &conf)
       cvm::error("Error: no collective variables specified.\n", INPUT_ERROR);
       return INPUT_ERROR;
     }
-
   } else {
     cvm::log("Reinitializing bias \""+name+"\".\n");
   }
@@ -266,6 +265,16 @@ int colvarbias::current_bin()
 int colvarbias::bin_count(int bin_index)
 {
   cvm::error("Error: bin_count() not implemented.\n");
+  return COLVARS_NOT_IMPLEMENTED;
+}
+cvm::real colvarbias::bin_gradient(int bin_index)
+{
+  cvm::error("Error: bin_gradient() not implemented.\n");
+  return COLVARS_NOT_IMPLEMENTED;
+}
+cvm::real colvarbias::delta_free_energy(cvm::real x)
+{
+  cvm::error("Error: delta_free_energy() not implemented.\n");
   return COLVARS_NOT_IMPLEMENTED;
 }
 int colvarbias::replica_share()

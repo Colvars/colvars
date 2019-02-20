@@ -124,8 +124,12 @@ private:
   virtual int bin_num();
   /// Calculate the bin index for a given bias.
   virtual int current_bin();
-  //// Give the count at a given bin index.
+  /// Give the count at a given bin index.
   virtual int bin_count(int bin_index);
+  /// Give the gradient at a given bin index.
+  virtual cvm::real bin_gradient(int bin_index);
+  /// Give the free energy from grid edge 0 to current position.
+  virtual cvm::real delta_free_energy(cvm::real x);
 
   /// Write human-readable FE gradients and sample count, and DX file in dim > 2
   void write_gradients_samples(const std::string &prefix, bool append = false);
