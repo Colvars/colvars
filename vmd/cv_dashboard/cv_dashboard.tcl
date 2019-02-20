@@ -55,6 +55,8 @@ namespace eval ::cv_dashboard {
   variable plothandle
   variable plottype     ;# either timeline or 2cv
 
+  variable repnames {}      ;# representations created by us
+
   variable template_dir
   # Use template dir if full distribution is provided and path is known
   if [info exists ::env(CV_DASHBOARD_DIR)] {
@@ -136,10 +138,11 @@ proc ::cv_dashboard::createWindow {} {
   incr gridrow
   grid [ttk::button $w.plot -text "Timeline plot" -command ::cv_dashboard::plot -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $w.plot2cv -text "Pairwise plot" -command {::cv_dashboard::plot 2cv} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::button $w.show_atoms -text "Show atoms" -command {::cv_dashboard::show_atoms} -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $w.refresh -text "Refresh table" -command ::cv_dashboard::refresh_table -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
   incr gridrow
-  grid [ttk::button $w.refresh -text "Refresh table" -command ::cv_dashboard::refresh_table -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $w.show_atoms -text "Show atoms" -command {::cv_dashboard::show_atoms} -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $w.hide_atoms -text "Hide atoms" -command {::cv_dashboard::hide_atoms} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
 
   incr gridrow
   grid [label $w.frameTxt -text "Frame:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
@@ -188,15 +191,20 @@ proc ::cv_dashboard::format_value val {
 }
 
 
-# Return list of selected colvars in the table
+# Return list of selected colvars in the table, or the lone colvar if there is just one
 proc ::cv_dashboard::selected {} {
   set w .cv_dashboard_window
   set l {}
   refresh_table ;# to make sure selected colvars haven't been deleted
-  foreach i [$w.cvtable curselection] {
-    lappend l [lindex $::cv_dashboard::cvs $i]
+
+  if { [llength $::cv_dashboard::cvs] == 1 } {
+    return [lindex $::cv_dashboard::cvs 0]
+  } else {
+    foreach i [$w.cvtable curselection] {
+      lappend l [lindex $::cv_dashboard::cvs $i]
+    }
+    return $l
   }
-  return $l
 }
 
 
@@ -290,11 +298,20 @@ proc ::cv_dashboard::show_atoms {} {
         mol selection index $list
         mol material Opaque
         mol addrep top
+        set repid [expr [molinfo top get numreps] - 1]
+        lappend ::cv_dashboard::repnames [mol repname top $repid]
         incr color
       }
     }
   }
-  return
+}
+
+
+# Remove atom representations
+proc ::cv_dashboard::hide_atoms {} {
+  foreach r $::cv_dashboard::repnames {
+    mol delrep [mol repindex top $r] top
+  }
 }
 
 
