@@ -581,6 +581,7 @@ proc ::cv_dashboard::insert_labels {obj} {
   if { $obj == "Atoms" } {
     set serials [list]
     foreach l [label list $obj] {
+      if { [lindex $l 2] == "hide" } { continue }
       set a [lindex $l 0]
       lappend serials [expr [lindex $a 1] + 1] ;# going from VMD 0-based to 1-based atomNumbers
     }
@@ -595,6 +596,7 @@ proc ::cv_dashboard::insert_labels {obj} {
     set cvc(Angles) angle
     set cvc(Dihedrals) dihedral
     foreach l [label list $obj] {
+      if { [lindex $l 2] == "hide" } { continue }
       set cfg "    $cvc($obj) \{\n"
       for {set i 0} { $i < $n($obj) } {incr i} {
         set a [lindex $l $i]
