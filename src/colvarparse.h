@@ -216,6 +216,19 @@ protected:
                            std::vector<TYPE> const &def_values,
                            Parse_Mode const &parse_mode);
 
+  /// Extract the value of a variable from a string
+  template<typename TYPE>
+  int _get_keyval_scalar_value_(std::string const &key_str,
+                                std::string const &data,
+                                TYPE &value,
+                                TYPE const &def_value);
+
+  /// Handle the case where the user provides a keyword without value
+  template<typename TYPE>
+  int _get_keyval_scalar_novalue_(std::string const &key_str,
+                                  TYPE &value,
+                                  Parse_Mode const &parse_mode);
+
   /// Record that the keyword has just been user-defined
   template<typename TYPE>
   void mark_key_set_user(std::string const &key_str,
