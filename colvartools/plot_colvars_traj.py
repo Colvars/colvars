@@ -336,7 +336,7 @@ if (__name__ == '__main__'):
             for ic in range(cv.num_dimensions):
                 y = cv.values
                 if (cv.num_dimensions > 1):
-                    y = cv.values[ic]
+                    y = cv.values[:,ic]
                 columns += [y]
                 fmt += " %21.14f"
         columns = tuple(columns)
@@ -396,7 +396,7 @@ if (__name__ == '__main__'):
             for ic in range(cv.num_dimensions):
                 y = cv.values
                 if (cv.num_dimensions > 1):
-                    y = cv.values[ic]
+                    y = cv.values[:,ic]
                 plt.plot(x, y, '-',
                          label=plot_keys[var],
                          alpha=0.5)
