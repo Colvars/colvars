@@ -58,9 +58,11 @@ namespace eval ::cv_dashboard {
   variable repnames {}      ;# representations created by us
 
   variable template_dir
+  variable template_base_dir
   # Use template dir if full distribution is provided and path is known
   if [info exists ::env(CV_DASHBOARD_DIR)] {
-    set template_dir ${::env(CV_DASHBOARD_DIR)}/templates
+    set template_base_dir ${::env(CV_DASHBOARD_DIR)}/templates
+    set template_dir $template_base_dir
   } else {
     set template_dir [pwd]
   }
@@ -379,9 +381,9 @@ proc ::cv_dashboard::edit { {add false} } {
   if $add {
     # do not remove existing vars
     set cvs {}
-    if { [info exists ::cv_dashboard::template_dir] } {
+    if { [info exists ::cv_dashboard::template_base_dir] } {
       # Open "official" colvar template
-      set in [open ${::cv_dashboard::template_dir}/colvar.in r]
+      set in [open ${::cv_dashboard::template_base_dir}/colvar.in r]
       set cfg [read $in]
       close $in
     } else {
