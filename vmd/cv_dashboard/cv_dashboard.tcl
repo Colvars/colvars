@@ -32,7 +32,6 @@
 # - select scalar components of vector colvars
 
 # TODO maybe:
-# - show atom groups as representations
 # - index group builder
 # - graphical representations such as rotation_display
 
@@ -56,6 +55,7 @@ namespace eval ::cv_dashboard {
   variable plottype     ;# either timeline or 2cv
 
   variable repnames {}      ;# representations created by us
+  variable macros {}        ;# macros created by us
 
   variable template_dir
   variable template_base_dir
@@ -290,14 +290,21 @@ proc ::cv_dashboard::del {} {
 # Display atoms in groups for selected colvars
 proc ::cv_dashboard::show_atoms {} {
   set color 0
+  set ci 0
   foreach c [selected] {
+    incr ci
     set all_groups [run_cv colvar $c getatoms]
+    set i 0
     foreach list $all_groups {
+      incr i
       # dummyAtoms will return empty lists
       if {[llength $list] > 0} {
+        set group "colvar_${ci}_group_${i}"
+        atomselect macro $group "index $list"
+        lappend ::cv_dashboard::macros $group
         mol color ColorID $color
         mol representation VDW 1.000000 12.000000
-        mol selection index $list
+        mol selection "$group"
         mol material Opaque
         mol addrep top
         set repid [expr [molinfo top get numreps] - 1]
@@ -314,6 +321,11 @@ proc ::cv_dashboard::hide_atoms {} {
   foreach r $::cv_dashboard::repnames {
     mol delrep [mol repindex top $r] top
   }
+  set ::cv_dashboard::repnames {}
+  foreach m $::cv_dashboard::macros {
+    atomselect delmacro $m
+  }
+  set ::cv_dashboard::macros {}
 }
 
 
