@@ -293,7 +293,7 @@ proc ::cv_dashboard::show_atoms {} {
   set ci 0
   foreach c [selected] {
     incr ci
-    set all_groups [run_cv colvar $c getatoms]
+    set all_groups [run_cv colvar $c getatomids]
     set i 0
     foreach list $all_groups {
       incr i

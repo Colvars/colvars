@@ -324,7 +324,7 @@ int colvarscript::proc_colvar(colvar *cv, int objc, unsigned char *const objv[])
     return COLVARS_OK;
   }
 
-  if (subcmd == "getatoms") {
+  if (subcmd == "getatomids") {
     std::vector<std::vector<int> > lists = cv->get_atom_lists();
     std::vector<std::vector<int> >::iterator li = lists.begin();
 
