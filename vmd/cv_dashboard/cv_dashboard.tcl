@@ -16,7 +16,7 @@
 
 # TODO PRIORITY:
 # - currently only way to handle harmonic walls is legacy, bc separate biases are not accessible!
-# - documentation -> link to section in HTML VMD/Covlars on github.io
+# - documentation -> link to section in HTML VMD/Colvars on github.io
 
 # TODO:
 # - properly calculate position of cursor in plot when not all the plot is visible (resized window)
@@ -29,7 +29,6 @@
 # - integrate interactive hacks into interface
 # - display pairwise traj on top of known 2D data (eg. FE surface)
 # - embed inside main window?
-# - select scalar components of vector colvars
 
 # TODO maybe:
 # - index group builder
@@ -41,7 +40,6 @@ package provide cv_dashboard 1.0
 namespace eval ::cv_dashboard {
   # General UI state
   variable current_frame 0  ;# linked to frame display
-  variable cv_values {}     ;# linked to value table
   variable cvs {}           ;# linked to colvar table
   variable track_frame 1    ;# start tracking by default
 
@@ -84,7 +82,7 @@ proc cv_dashboard {} {
 # Create main window
 proc ::cv_dashboard::createWindow {} {
 
-  package require tablelist
+  # package require tablelist
 
   if {[molinfo num] == 0 } {
     tk_messageBox -icon error -title "Colvars Dashboard Error"\
@@ -114,23 +112,24 @@ proc ::cv_dashboard::createWindow {} {
   grid [ttk::button $w.reset -text "Reset" -command ::cv_dashboard::reset -padding "2 0 2 0"] \
     -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
-  tablelist::tablelist $w.cvtable -columns {
-    0 Colvars
-  } -stretch all -selectmode extended -selecttype row -listvariable ::cv_dashboard::cvs
-  tablelist::tablelist $w.valuetable -columns {
-    0 Values
-  } -stretch all -listvariable ::cv_dashboard::cv_values
+  ttk::treeview $w.cvtable -selectmode extended
+  $w.cvtable configure -column val
+  $w.cvtable column #0 -width 50 -stretch 1 -anchor w
+  $w.cvtable column val -width 150 -stretch 1 -anchor w
 
+  $w.cvtable heading #0 -text "Variable" -anchor center
+  $w.cvtable heading val -text "Value" -anchor center
+  bind $w.cvtable <e> ::cv_dashboard::edit
+  $w.cvtable tag configure parity0 -background white
+  $w.cvtable tag configure parity1 -background grey94
   refresh_table
-  bind [$w.cvtable bodytag] <Double-1> ::cv_dashboard::edit
 
   incr gridrow
-  grid $w.cvtable -row $gridrow -column 0 -sticky news
-  grid $w.valuetable -row $gridrow -column 1 -sticky news -columnspan 2
+  grid $w.cvtable -row $gridrow -column 0 -sticky news -columnspan 3
   grid rowconfigure $w $gridrow -weight 1
 
   incr gridrow
-  grid [ttk::button $w.edit -text "Edit \[dbl-click\]" -command ::cv_dashboard::edit -padding "2 0 2 0"] \
+  grid [ttk::button $w.edit -text "Edit \[e\]" -command ::cv_dashboard::edit -padding "2 0 2 0"] \
     -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $w.add -text "New" -command ::cv_dashboard::add -padding "2 0 2 0"] \
     -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
@@ -142,9 +141,13 @@ proc ::cv_dashboard::createWindow {} {
   grid [ttk::button $w.plot2cv -text "Pairwise plot" -command {::cv_dashboard::plot 2cv} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $w.refresh -text "Refresh table" -command ::cv_dashboard::refresh_table -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
-  incr gridrow
-  grid [ttk::button $w.show_atoms -text "Show atoms" -command {::cv_dashboard::show_atoms} -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::button $w.hide_atoms -text "Hide atoms" -command {::cv_dashboard::hide_atoms} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  # Cannot test directly for the presence of getatomids method in the absence of a defined colvar
+  # so we test the version number instead
+  if {[string compare [run_cv version] "2019-02-27"] >= 0} {
+    incr gridrow
+    grid [ttk::button $w.show_atoms -text "Show atoms" -command {::cv_dashboard::show_atoms} -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+    grid [ttk::button $w.hide_atoms -text "Hide atoms" -command {::cv_dashboard::hide_atoms} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  }
 
   incr gridrow
   grid [label $w.frameTxt -text "Frame:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
@@ -161,8 +164,38 @@ proc ::cv_dashboard::createWindow {} {
 
 # Refresh the table with a list of existing CVs and their values
 proc ::cv_dashboard::refresh_table {} {
+
   set w .cv_dashboard_window
   set ::cv_dashboard::cvs [run_cv list]
+
+  foreach i [$w.cvtable children {}] {
+    $w.cvtable delete $i
+  }
+
+  set parity 1
+  foreach c $::cv_dashboard::cvs {
+    $w.cvtable insert {} end -id $c -text $c
+    $w.cvtable tag add cvname [list $c]
+    # tag odd and even rows for alternating background colors
+    set parity [expr 1-$parity]
+    $w.cvtable tag add "parity$parity" [list $c]
+
+    set val [run_cv colvar $c update]
+    $w.cvtable set $c val [format_value $val]
+
+    set size [llength $val]
+    if { $size > 1 } {
+      for {set i 1} {$i <= $size} {incr i} {
+        set n "${c} ${i}"
+        $w.cvtable insert $c end -id $n -text $n
+        # all colvar/scalar comp items are tagged with tag cvname, to define common bindings on them
+        $w.cvtable tag add cvname [list $n]
+        $w.cvtable tag add "parity$parity" [list $n]
+
+        $w.cvtable set $n val [format_value [lindex $val [expr $i-1]]]
+      }
+    }
+  }
   update_frame internal [molinfo top] w
 }
 
@@ -171,9 +204,18 @@ proc ::cv_dashboard::refresh_table {} {
 proc ::cv_dashboard::refresh_values {} {
   run_cv update
   set w .cv_dashboard_window
-  set ::cv_dashboard::cv_values {}
-  foreach c [run_cv list] {
-    lappend ::cv_dashboard::cv_values [format_value [run_cv colvar $c value] ]
+
+  foreach c [$w.cvtable children {}] {
+    set val [run_cv colvar $c update]
+    $w.cvtable set $c val [format_value $val]
+
+    set size [llength $val]
+    if { $size > 1 } {
+      for {set i 1} {$i <= $size} {incr i} {
+        set n "${c} ${i}"
+        $w.cvtable set $n val [format_value [lindex $val [expr $i-1]]]
+      }
+    }
   }
 }
 
@@ -183,30 +225,59 @@ proc ::cv_dashboard::format_value val {
   if {[llength $val] == 1} {
     return [format "%.4g" $val]
   } else {
-    set s "{("
+    set s "("
     foreach v [lrange $val 0 end-1] {
-      append s "[format_value $v] "
+      append s "[format_value $v], "
     }
-    append s "[format_value [lindex $val end]])}"
+    append s "[format_value [lindex $val end]])"
     return $s
   }
 }
 
 
 # Return list of selected colvars in the table, or the lone colvar if there is just one
-proc ::cv_dashboard::selected {} {
+proc ::cv_dashboard::selected_colvars {} {
   set w .cv_dashboard_window
-  set l {}
-  refresh_table ;# to make sure selected colvars haven't been deleted
 
   if { [llength $::cv_dashboard::cvs] == 1 } {
     return [lindex $::cv_dashboard::cvs 0]
   } else {
-    foreach i [$w.cvtable curselection] {
-      lappend l [lindex $::cv_dashboard::cvs $i]
+    set cvs {}
+    set prev ""
+    foreach i [$w.cvtable selection] {
+      # reduce salar components to their parent CV
+      set cv [lindex $i 0]
+      # Skip series of duplicates
+      if {$cv != $prev} {
+        lappend cvs $cv
+        set prev $cv
+      }
     }
-    return $l
+    return $cvs
   }
+}
+
+
+# Return selected scalar components for a given selected colvar
+proc ::cv_dashboard::selected_comps { cv } {
+  set w .cv_dashboard_window
+  set comps {}
+
+  foreach i [$w.cvtable selection] {
+    # get comp index of matching cv elements
+    if {[lindex $i 0] == $cv && [llength $i] == 2 } {
+      lappend comps [expr [lindex $i 1] - 1]
+    }
+  }
+
+  # If none selected, select all
+  if { [llength $comps] == 0 } {
+    set val [run_cv colvar $cv value]
+    set i 0
+    foreach v $val { lappend comps $i; incr i }
+  }
+  # Order of selected components is not guaranteed
+  return [lsort $comps]
 }
 
 
@@ -271,7 +342,7 @@ proc ::cv_dashboard::save {} {
 
 # Delete currently selected colvars
 proc ::cv_dashboard::del {} {
-  foreach c [selected] {
+  foreach c [selected_colvars] {
     # workaround bug in colvars pre-2018-07-02
     if {[string compare [run_cv version] "2018-07-02"] == -1} {
       foreach b [run_cv list biases] {
@@ -291,15 +362,22 @@ proc ::cv_dashboard::del {} {
 proc ::cv_dashboard::show_atoms {} {
   set color 0
   set ci 0
-  foreach c [selected] {
+  foreach c [selected_colvars] {
     incr ci
     set all_groups [run_cv colvar $c getatomids]
+    # Remove characters such as <> which are parsed as special in VMD selection texts
+    set sanitized_cvname [regsub -all {[^a-zA-Z0-9_@]} $c {} ]
     set i 0
     foreach list $all_groups {
       incr i
       # dummyAtoms will return empty lists
       if {[llength $list] > 0} {
-        set group "colvar_${ci}_group_${i}"
+        set group "${sanitized_cvname}_group_${i}"
+        # resolve ambiguous names due to colvar name sanitization
+        while {[lsearch -sorted $::cv_dashboard::macros $group] > -1} {
+          append sanitized_cvname "_"
+          set group "${sanitized_cvname}_group_${i}"
+        }
         atomselect macro $group "index $list"
         lappend ::cv_dashboard::macros $group
         mol color ColorID $color
@@ -322,6 +400,7 @@ proc ::cv_dashboard::hide_atoms {} {
     mol delrep [mol repindex top $r] top
   }
   set ::cv_dashboard::repnames {}
+  set ::cv_dashboard::macros [lsort -unique $::cv_dashboard::macros]
   foreach m $::cv_dashboard::macros {
     atomselect delmacro $m
   }
@@ -404,7 +483,7 @@ proc ::cv_dashboard::edit { {add false} } {
   colvar {\n  name d\n  distance {\n    group1 { atomNumbers 1 2 }\n    group2 { atomNumbers 3 4 }\n  }\n}\n"
     }
   } else {
-    set cvs [selected]
+    set cvs [selected_colvars]
     if {[llength $cvs] == 0} {
       # If no selection, edit all variables
       set cvs $::cv_dashboard::cvs
@@ -417,6 +496,8 @@ proc ::cv_dashboard::edit { {add false} } {
     set ::cv_dashboard::backup_cfg $cfg
   }
   set w .cv_dashboard_window
+
+  catch { destroy $w.editor }
   set editor [toplevel $w.editor]
   wm title $editor "Colvar config editor"
 
@@ -720,7 +801,7 @@ proc ::cv_dashboard::plot { { type timeline } } {
     unset plothandle
   }
 
-  set cvs [selected]
+  set cvs [selected_colvars]
   if { [llength $cvs] == 0 } {
     # If no selection, plot all variables
     set cvs $::cv_dashboard::cvs
@@ -735,15 +816,17 @@ proc ::cv_dashboard::plot { { type timeline } } {
   set name_list {}
   foreach c $cvs {
     set val [run_cv colvar $c update]
-    set size [llength $val]
+    set comps($c) [selected_comps $c]
+    set size [llength $comps($c)]
     incr total_dim $size
     if { $size == 1 } {
       set names($c) $c
       lappend name_list $c
       set y($c) {}
     } else {
+      set names($c) {}
       for {set i 1} {$i <= $size} {incr i} {
-        set n $c; append n "_$i"
+        set n "${c}_[expr [lindex $comps($c) $i] + 1]"
         lappend names($c) $n
         lappend name_list $n
         set y($n) {}
@@ -751,14 +834,10 @@ proc ::cv_dashboard::plot { { type timeline } } {
     }
   }
 
-  if { $type == "2cv" } {
-    if { $total_dim > 2 } {
-      puts "Warning: pairwise plot will use the first 2 of $total_dim scalar dimensions in selection."
-    } elseif { $total_dim < 2 } {
-      tk_messageBox -icon error -title "Colvars Dashboard Error"\
-        -message "Not enough data selected. 2 scalar sets are needed for pairwise plot.\n"
-      return
-    }
+  if { $type == "2cv" && $total_dim != 2 } {
+    tk_messageBox -icon error -title "Colvars Dashboard Error"\
+      -message "Select exactly 2 scalar quantities for pairwise plot.\n"
+    return
   }
 
   set nf [molinfo top get numframes]
@@ -767,8 +846,8 @@ proc ::cv_dashboard::plot { { type timeline } } {
     run_cv frame $f
     foreach c $cvs {
       set val [run_cv colvar $c update]
-      foreach ni $names($c) vi $val {
-        lappend y($ni) $vi
+      foreach ni $names($c) vi $comps($c) {
+        lappend y($ni) [lindex $val $vi]
       }
     }
   }
