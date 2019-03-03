@@ -366,15 +366,15 @@ Changes in configuration done by this command are not saved to state files, and 
 
 \cvnamdonly{All the parameters defining variables and their biasing or analysis algorithms are read from the file specified by the configuration option \texttt{colvarsConfig}, or by the Tcl commands \texttt{cv config} and \texttt{cv configfile}.
 \emph{None of the keywords described in the remainder of this manual are recognized directly in the NAMD configuration file, unless as arguments of \texttt{cv config}.}}
-\cvvmdonly{The Colvars configuration is usually read using the commands \texttt{cv configfile} or \texttt{cv config}.}
-The syntax of the Colvars configuration is ``\texttt{keyword value}'', where the keyword and its value are separated by any white space.
+\cvvmdonly{The Colvars configuration is usually read using the commands \texttt{cv configfile} (with a filename as argument) or \texttt{cv config} (with the configuration as a string argument).}
+Each configuration line follows the format ``\texttt{keyword value}'', where the keyword and its value are separated by any white space.
 The following rules apply:
 
 \begin{itemize}
 
 \item keywords are case-insensitive (\texttt{upperBoundary} is the same as \texttt{upperboundary} and \texttt{UPPERBOUNDARY}): their string values are however case-sensitive (e.g.~file names);
 
-\item a long value or a list of multiple values can be distributed across multiple lines by using curly braces, ``\texttt{\{}'' and ``\texttt{\}}'': the opening brace ``\texttt{\{}'' must occur on the same line as the keyword, following a space character or other white space; the closing brace ``\texttt{\}}'' can be at any position after that;
+\item a long value, or a list of multiple values, can be distributed across multiple lines by using curly braces, ``\texttt{\{}'' and ``\texttt{\}}'': the opening brace ``\texttt{\{}'' must occur on the same line as the keyword, following a space character or other white space; the closing brace ``\texttt{\}}'' can be at any position after that; any keywords following the closing brace on the same line are not valid (they should appear instead on a different line);
 
 \item many keywords are nested, and are only meaningful within a specific context: for every keyword documented in the following, the ``parent'' keyword that defines such context is also indicated\cvnamdugonly{ in parentheses};
 
