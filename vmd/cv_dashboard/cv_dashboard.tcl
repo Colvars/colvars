@@ -112,13 +112,10 @@ proc ::cv_dashboard::createWindow {} {
   grid [ttk::button $w.reset -text "Reset" -command ::cv_dashboard::reset -padding "2 0 2 0"] \
     -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
-  ttk::treeview $w.cvtable -selectmode extended
+  ttk::treeview $w.cvtable -selectmode extended -show tree
   $w.cvtable configure -column val
   $w.cvtable column #0 -width 50 -stretch 1 -anchor w
   $w.cvtable column val -width 150 -stretch 1 -anchor w
-
-  $w.cvtable heading #0 -text "Variable" -anchor center
-  $w.cvtable heading val -text "Value" -anchor center
   bind $w.cvtable <e> ::cv_dashboard::edit
   $w.cvtable tag configure parity0 -background white
   $w.cvtable tag configure parity1 -background grey94
@@ -143,7 +140,7 @@ proc ::cv_dashboard::createWindow {} {
 
   # Cannot test directly for the presence of getatomids method in the absence of a defined colvar
   # so we test the version number instead
-  if {[string compare [run_cv version] "2019-02-27"] >= 0} {
+  if {[string compare [run_cv version] "2019-02-07"] >= 0} {
     incr gridrow
     grid [ttk::button $w.show_atoms -text "Show atoms" -command {::cv_dashboard::show_atoms} -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
     grid [ttk::button $w.hide_atoms -text "Hide atoms" -command {::cv_dashboard::hide_atoms} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
@@ -171,6 +168,9 @@ proc ::cv_dashboard::refresh_table {} {
   foreach i [$w.cvtable children {}] {
     $w.cvtable delete $i
   }
+
+  # Get fresh coordinates from VMD
+  run_cv update
 
   set parity 1
   foreach c $::cv_dashboard::cvs {
@@ -825,7 +825,7 @@ proc ::cv_dashboard::plot { { type timeline } } {
       set y($c) {}
     } else {
       set names($c) {}
-      for {set i 1} {$i <= $size} {incr i} {
+      for {set i 0} {$i < $size} {incr i} {
         set n "${c}_[expr [lindex $comps($c) $i] + 1]"
         lappend names($c) $n
         lappend name_list $n
@@ -881,6 +881,8 @@ proc ::cv_dashboard::plot { { type timeline } } {
     bind [set ${plot_ns}::w] <Shift-Right>    { ::cv_dashboard::chg_frame 10 }
     bind [set ${plot_ns}::w] <Control-Left>   { ::cv_dashboard::chg_frame -50 }
     bind [set ${plot_ns}::w] <Control-Right>  { ::cv_dashboard::chg_frame 50 }
+    bind [set ${plot_ns}::w] <Home>           { ::cv_dashboard::chg_frame start }
+    bind [set ${plot_ns}::w] <End>            { ::cv_dashboard::chg_frame end }
     bind [set ${plot_ns}::w] <Up>             { ::cv_dashboard::zoom 0.25 }
     bind [set ${plot_ns}::w] <Down>           { ::cv_dashboard::zoom 4 }
     bind [set ${plot_ns}::w] <Shift-Up>       { ::cv_dashboard::zoom 0.0625 }
@@ -894,6 +896,8 @@ proc ::cv_dashboard::plot { { type timeline } } {
     bind [set ${plot_ns}::w] <Shift-Right>    { ::cv_dashboard::chg_frame 10 }
     bind [set ${plot_ns}::w] <Control-Left>   { ::cv_dashboard::chg_frame -50 }
     bind [set ${plot_ns}::w] <Control-Right>  { ::cv_dashboard::chg_frame 50 }
+    bind [set ${plot_ns}::w] <Home>           { ::cv_dashboard::chg_frame start }
+    bind [set ${plot_ns}::w] <End>            { ::cv_dashboard::chg_frame end }
   }
 
   # Update frame to display frame marker in new plot
@@ -938,11 +942,19 @@ proc ::cv_dashboard::marker_clicked { index x y color marker } {
 
 # Change frame in reaction to user input (arrow keys)
 proc ::cv_dashboard::chg_frame { shift } {
-  set f [expr $::cv_dashboard::current_frame + $shift]
+
+  set nf [molinfo top get numframes]
+
+  if { $shift == "start" } {
+    set f 0
+  } elseif { $shift == "end" } {
+    set f [expr $nf - 1]
+  } else {
+    set f [expr $::cv_dashboard::current_frame + $shift]
+  }
 
   # Keep within bounds [[O, numframes[[
   if { $f < 0 } { set f 0 }
-  set nf [molinfo top get numframes]
   if { $f >= $nf } { set f [expr $nf - 1] }
 
   animate goto $f
