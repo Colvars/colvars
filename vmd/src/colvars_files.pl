@@ -51,5 +51,6 @@ $colvars_defines = " -DVMDCOLVARS";
                     'colvarproxy.h',
                     'colvarproxy_vmd.h',
                     'colvarscript.h',
+                    'colvars_version.h',
                     'colvartypes.h',
                     'colvarvalue.h');

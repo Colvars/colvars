@@ -2,8 +2,8 @@ colvar {
     name @
 
     distance {
-      group1 { atomNumbers 1 2 }
-      group2 { atomNumbers 3 4 }
+        group1 { atomNumbers 1 2 }
+        group2 { atomNumbers 3 4 }
     }
 }
 

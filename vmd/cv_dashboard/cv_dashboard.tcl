@@ -505,82 +505,90 @@ proc ::cv_dashboard::edit { {add false} } {
   frame $w.editor.fl
   set gridrow 0
 
-  ttk::button $w.editor.fl.onlinedoc1 -text "Online doc: defining collective variables" -padding "4 2 4 2"\
+  labelframe  $w.editor.fl.docs -bd 2 -text "Online documentation" -padx 2 -pady 2
+  set docs $w.editor.fl.docs
+  ttk::button $docs.onlinedoc1 -text "Collective variables" -padding "4 2 4 2"\
     -command [list ::cv_dashboard::invokeBrowser "http://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html#sec:colvar"]
-  ttk::button $w.editor.fl.onlinedoc2 -text "Online doc: defining atom groups" -padding "4 2 4 2"\
-    -command [list ::cv_dashboard::invokeBrowser "http://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html#sec:colvar_atom_groups"]
-  ttk::button $w.editor.fl.onlinedoc3 -text "Online doc: types of variables (components)" -padding "4 2 4 2"\
+  ttk::button $docs.onlinedoc3 -text "Basis functions (components)" -padding "4 2 4 2"\
     -command [list ::cv_dashboard::invokeBrowser "http://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html#sec:cvc_list"]
+  ttk::button $docs.onlinedoc2 -text "Atom groups" -padding "4 2 4 2"\
+    -command [list ::cv_dashboard::invokeBrowser "http://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html#sec:colvar_atom_groups"]
 
-  grid $w.editor.fl.onlinedoc1 -row $gridrow -column 0 -columnspan 3 -pady 5
-  incr gridrow
-  grid $w.editor.fl.onlinedoc2 -row $gridrow -column 0 -columnspan 3 -pady 5
-  incr gridrow
-  grid $w.editor.fl.onlinedoc3 -row $gridrow -column 0 -columnspan 3 -pady 5
-  incr gridrow
+  grid $docs.onlinedoc1 -row $gridrow -column 0 -pady 5 -padx 2 -sticky nsew
+  grid $docs.onlinedoc2 -row $gridrow -column 1 -pady 5 -padx 2 -sticky nsew
+  grid $docs.onlinedoc3 -row $gridrow -column 2 -pady 5 -padx 2 -sticky nsew
+  grid columnconfigure $docs 0 -weight 1
+  grid columnconfigure $docs 1 -weight 1
+  grid columnconfigure $docs 2 -weight 1
 
+  labelframe  $w.editor.fl.helpers -bd 2 -text "Editing helpers" -padx 2 -pady 2
+  set helpers $w.editor.fl.helpers
   ############# Templates #########################################
-  tk::label $w.editor.fl.template_label -text "Insert template:"
-  ttk::button $w.editor.fl.insert_template -text "Pick template file" \
+  tk::label $helpers.template_label -text "Insert template:"
+  ttk::button $helpers.insert_template -text "Pick template file" \
     -command [list ::cv_dashboard::insert_template] -padding "2 0 2 0"
 
-  grid $w.editor.fl.template_label -row $gridrow -column 0 -pady 2 -padx 2
-  grid $w.editor.fl.insert_template -row $gridrow -column 1 -sticky ew -pady 2 -padx 2
+  grid $helpers.template_label -row $gridrow -column 0 -pady 2 -padx 2
+  grid $helpers.insert_template -row $gridrow -column 1 -columnspan 2 -sticky ew -pady 2 -padx 2
   incr gridrow
 
   ############# Atoms from seltext ################################
-  tk::label $w.editor.fl.seltext_label -text "Atoms from selection text:"
-  tk::entry $w.editor.fl.seltext -bg white
+  tk::label $helpers.seltext_label -text "Atoms from selection text:"
+  tk::entry $helpers.seltext -bg white
   # Bind Return key in seltext entry to proc creating the atomNumbers line
-  bind $w.editor.fl.seltext <Return> "::cv_dashboard::atoms_from_sel textbox"
-  ttk::button $w.editor.fl.fromsel -text "Insert \[Enter\]" \
+  bind $helpers.seltext <Return> "::cv_dashboard::atoms_from_sel textbox"
+  ttk::button $helpers.fromsel -text "Insert \[Enter\]" \
     -command "::cv_dashboard::atoms_from_sel textbox" -padding "2 0 2 0"
 
-  grid $w.editor.fl.seltext_label -row $gridrow -column 0 -pady 2 -padx 2
-  grid $w.editor.fl.seltext -row $gridrow -column 1 -sticky ew -pady 2 -padx 2
-  grid $w.editor.fl.fromsel -row $gridrow -column 2 -pady 2 -padx 2
+  grid $helpers.seltext_label -row $gridrow -column 0 -pady 2 -padx 2
+  grid $helpers.seltext -row $gridrow -column 1 -sticky ew -pady 2 -padx 2
+  grid $helpers.fromsel -row $gridrow -column 2 -pady 2 -padx 2
   incr gridrow
 
   ############# Atoms from representation ################################
-  tk::label $w.editor.fl.rep_label -text "Atoms from representation:"
-  ttk::combobox $w.editor.fl.reps -justify left -state readonly
-  ttk::button $w.editor.fl.refresh_reps -text "Refresh list" -command ::cv_dashboard::refresh_reps
-  bind $w.editor.fl.reps <<ComboboxSelected>> "::cv_dashboard::atoms_from_sel reps"
+  tk::label $helpers.rep_label -text "Atoms from representation:"
+  ttk::combobox $helpers.reps -justify left -state readonly
+  ttk::button $helpers.refresh_reps -text "Refresh list" -command ::cv_dashboard::refresh_reps
+  bind $helpers.reps <<ComboboxSelected>> "::cv_dashboard::atoms_from_sel reps"
 
-  grid $w.editor.fl.rep_label -row $gridrow -column 0 -pady 2 -padx 2
-  grid $w.editor.fl.reps -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  grid $w.editor.fl.refresh_reps -row $gridrow -column 2 -pady 2 -padx 2
+  grid $helpers.rep_label -row $gridrow -column 0 -pady 2 -padx 2
+  grid $helpers.reps -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  grid $helpers.refresh_reps -row $gridrow -column 2 -pady 2 -padx 2
   incr gridrow
 
   # Populate initial list of selection texts from reps
   refresh_reps
 
   ############# Atoms from atom, bond, angle, dihedral labels ####################
-  ttk::button $w.editor.fl.labeled_atoms -text "Insert labeled atoms" -command {::cv_dashboard::insert_labels Atoms}
-  ttk::button $w.editor.fl.labeled_var -text "Insert labeled..." -command {::cv_dashboard::insert_labels combo}
-  ttk::combobox $w.editor.fl.labels -justify left -state readonly
-  $w.editor.fl.labels configure -values [list Bonds Angles Dihedrals]
-  $w.editor.fl.labels set Bonds
+  ttk::button $helpers.labeled_atoms -text "Insert labeled atoms" -command {::cv_dashboard::insert_labels Atoms}
+  ttk::button $helpers.labeled_var -text "Insert labeled..." -command {::cv_dashboard::insert_labels combo}
+  ttk::combobox $helpers.labels -justify left -state readonly
+  $helpers.labels configure -values [list Bonds Angles Dihedrals]
+  $helpers.labels set Bonds
 
-  grid $w.editor.fl.labeled_atoms -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  grid $w.editor.fl.labeled_var -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  grid $w.editor.fl.labels -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+  grid $helpers.labeled_atoms -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid $helpers.labeled_var -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  grid $helpers.labels -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
   incr gridrow
 
   ################# Insert file name from file picker ###########################
-  ttk::radiobutton $w.editor.fl.files1 -variable ::cv_dashboard::filetype -text "atomsFile" -value "atomsFile"
-  ttk::radiobutton $w.editor.fl.files2 -variable ::cv_dashboard::filetype -text "refPositionsFile" -value "refPositionsFile"
-  ttk::button $w.editor.fl.insert_file -text "Pick file" \
+  ttk::radiobutton $helpers.files1 -variable ::cv_dashboard::filetype -text "atomsFile" -value "atomsFile"
+  ttk::radiobutton $helpers.files2 -variable ::cv_dashboard::filetype -text "refPositionsFile" -value "refPositionsFile"
+  ttk::button $helpers.insert_file -text "Pick file" \
     -command [list ::cv_dashboard::insert_filename] -padding "2 0 2 0"
 
-  grid $w.editor.fl.files1 -row $gridrow -column 0 -pady 2 -padx 2
-  grid $w.editor.fl.files2 -row $gridrow -column 1 -pady 2 -padx 2
-  grid $w.editor.fl.insert_file -row $gridrow -column 2 -pady 2 -padx 2
+  grid $helpers.files1 -row $gridrow -column 0 -pady 2 -padx 2
+  grid $helpers.files2 -row $gridrow -column 1 -pady 2 -padx 2
+  grid $helpers.insert_file -row $gridrow -column 2 -pady 2 -padx 2
   incr gridrow
 
+  grid columnconfigure $helpers 0 -weight 1
+  grid columnconfigure $helpers 1 -weight 1
+  grid columnconfigure $helpers 2 -weight 1
+
+  grid $docs -sticky ew
+  grid $helpers -sticky ew
   grid columnconfigure $w.editor.fl 0 -weight 1
-  grid columnconfigure $w.editor.fl 1 -weight 1
-  grid columnconfigure $w.editor.fl 2 -weight 1
 
 
   # Right frame: text widget w scrollbar and Apply/Cancel buttons
@@ -611,7 +619,8 @@ proc ::cv_dashboard::edit { {add false} } {
   grid rowconfigure $w.editor.fr 0 -weight 1
 
   pack $w.editor.fl -fill both -side left
-  pack $w.editor.fr -fill both -side left -expand yes
+  pack $w.editor.fr -fill both -expand yes -padx 2 -pady 2
+  # pack $w.editor.fr -side bottom -fill both -expand yes
 }
 
 
@@ -645,9 +654,9 @@ proc ::cv_dashboard::atoms_from_sel { source } {
 
   # Called from textbox
   if { $source == "textbox" } {
-    set seltext [$w.editor.fl.seltext get]
+    set seltext [$w.editor.fl.helpers.seltext get]
   } elseif { $source == "reps" } {
-    set seltext [$w.editor.fl.reps get]
+    set seltext [$w.editor.fl.helpers.reps get]
   }
 
   if {[llength $seltext] == 0 } {
@@ -662,7 +671,18 @@ proc ::cv_dashboard::atoms_from_sel { source } {
       -message "Selection text matches zero atoms"
     return
   }
-  $w.editor.fr.text insert insert "        # Selection: \"$seltext\"\n        atomNumbers $serials\n"
+  editor_replace "        # Selection: \"$seltext\"\n        atomNumbers $serials\n"
+}
+
+
+# Replace selection in editor with given string
+proc ::cv_dashboard::editor_replace { text } {
+  set t .cv_dashboard_window.editor.fr.text
+
+  if {[$t tag ranges sel] != ""} {
+    $t delete sel.first sel.last
+  }
+  $t insert insert $text
 }
 
 
@@ -670,7 +690,7 @@ proc ::cv_dashboard::atoms_from_sel { source } {
 proc ::cv_dashboard::insert_labels {obj} {
   set w .cv_dashboard_window
   if {$obj == "combo"} {
-    set obj [$w.editor.fl.labels get]
+    set obj [$w.editor.fl.helpers.labels get]
   }
 
   if { $obj == "Atoms" } {
@@ -681,7 +701,7 @@ proc ::cv_dashboard::insert_labels {obj} {
       lappend serials [expr [lindex $a 1] + 1] ;# going from VMD 0-based to 1-based atomNumbers
     }
     if {[llength $serials] > 0} {
-      $w.editor.fr.text insert insert "        # Atom labels\n        atomNumbers $serials\n"
+      editor_replace "        # Atom labels\n        atomNumbers $serials\n"
     }
   } else {
     set n(Bonds) 2
@@ -696,10 +716,10 @@ proc ::cv_dashboard::insert_labels {obj} {
       for {set i 0} { $i < $n($obj) } {incr i} {
         set a [lindex $l $i]
         set serial [expr [lindex $a 1] + 1]
-        append cfg "        group[expr $i+1] \{\n            atomNumbers $serial\n        \}\n" 
+        append cfg "        group[expr $i+1] \{\n            atomNumbers $serial\n        \}\n"
       }
       append cfg "    \}\n"
-      $w.editor.fr.text insert insert $cfg
+      editor_replace $cfg
     }
   }
 }
@@ -716,7 +736,7 @@ proc ::cv_dashboard::insert_template {} {
     # Save directory for next invocation of this dialog
     set ::cv_dashboard::template_dir [file dirname $path]
     set in [open $path r]
-    $w.editor.fr.text insert insert [read $in]
+    editor_replace [read $in]
     close $in
   }
 }
@@ -737,7 +757,7 @@ proc ::cv_dashboard::insert_filename {} {
     # Save directory for next invocation of this dialog
     set ::cv_dashboard::atomfile_dir [file dirname $path]
     set coltype [string range $filetype 0 end-4]
-    $w.editor.fr.text insert insert "    $filetype $path\n    ${coltype}Col O\n    ${coltype}ColValue 1\n"
+    editor_replace "    $filetype $path\n    ${coltype}Col O\n    ${coltype}ColValue 1\n"
   }
 }
 
@@ -780,9 +800,7 @@ proc ::cv_dashboard::refresh_reps {} {
   for {set i 0} {$i < $numreps} {incr i} {
     lappend reps [lindex [molinfo top get [list [list selection $i]]] 0]
   }
-  $w.editor.fl.reps configure -values $reps
-  # $w.editor.fl.reps delete 0 end
-  # $w.editor.fl.reps insert 0 {*}$reps
+  $w.editor.fl.helpers.reps configure -values $reps
 }
 
 #################################################################
