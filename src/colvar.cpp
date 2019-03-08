@@ -960,8 +960,8 @@ colvar::~colvar()
   // because the children are cvcs and will be deleted
   // just below
 
-//   Clear references to this colvar's cvcs as children
-//   for dependency purposes
+  // Clear references to this colvar's cvcs as children
+  // for dependency purposes
   remove_all_children();
 
   for (std::vector<cvc *>::reverse_iterator ci = cvcs.rbegin();

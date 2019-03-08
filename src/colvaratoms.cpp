@@ -100,6 +100,8 @@ cvm::atom_group::~atom_group()
     delete fitting_group;
     fitting_group = NULL;
   }
+
+  cvm::unregister_named_atom_group(this);
 }
 
 
@@ -285,7 +287,7 @@ int cvm::atom_group::parse(std::string const &group_conf)
                 INPUT_ERROR);
       return INPUT_ERROR;
     }
-    cvm::main()->register_named_atom_group(this);
+    cvm::register_named_atom_group(this);
     description = "atom group " + name;
   }
 

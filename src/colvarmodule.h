@@ -266,9 +266,10 @@ private:
   std::vector<atom_group *> named_atom_groups;
 public:
   /// Register a named atom group into named_atom_groups
-  inline void register_named_atom_group(atom_group * ag) {
-    named_atom_groups.push_back(ag);
-  }
+  static void register_named_atom_group(atom_group *ag);
+
+  /// Remove a named atom group from named_atom_groups
+  static void unregister_named_atom_group(atom_group *ag);
 
   /// Array of collective variables
   std::vector<colvar *> *variables();
