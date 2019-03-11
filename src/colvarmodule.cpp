@@ -579,19 +579,17 @@ cvm::atom_group *colvarmodule::atom_group_by_name(std::string const &name)
 
 
 void colvarmodule::register_named_atom_group(atom_group *ag) {
-  colvarmodule *cv = cvm::main();
-  cv->named_atom_groups.push_back(ag);
+  named_atom_groups.push_back(ag);
 }
 
 
 void colvarmodule::unregister_named_atom_group(cvm::atom_group *ag)
 {
-  colvarmodule *cv = cvm::main();
-  for (std::vector<cvm::atom_group *>::iterator agi = cv->named_atom_groups.begin();
-       agi != cv->named_atom_groups.end();
+  for (std::vector<cvm::atom_group *>::iterator agi = named_atom_groups.begin();
+       agi != named_atom_groups.end();
        agi++) {
     if (*agi == ag) {
-      cv->named_atom_groups.erase(agi);
+      named_atom_groups.erase(agi);
       break;
     }
   }
