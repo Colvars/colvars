@@ -3,6 +3,7 @@
 
 #include <sstream>
 #include <iostream>
+#include <algorithm>
 
 #include "colvarmodule.h"
 #include "colvarvalue.h"
@@ -481,6 +482,10 @@ void colvarparse::strip_values(std::string &conf)
   size_t offset = 0;
   data_begin_pos.sort();
   data_end_pos.sort();
+  std::list<size_t>::iterator data_begin_pos_last = std::unique(data_begin_pos.begin(), data_begin_pos.end());
+  data_begin_pos.erase(data_begin_pos_last, data_begin_pos.end());
+  std::list<size_t>::iterator data_end_pos_last = std::unique(data_end_pos.begin(), data_end_pos.end());
+  data_end_pos.erase(data_end_pos_last, data_end_pos.end());
 
   std::list<size_t>::iterator data_begin = data_begin_pos.begin();
   std::list<size_t>::iterator data_end   = data_end_pos.begin();
