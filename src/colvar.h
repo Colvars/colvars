@@ -1,5 +1,12 @@
 // -*- c++ -*-
 
+// This file is part of the Collective Variables module (Colvars).
+// The original version of Colvars and its updates are located at:
+// https://github.com/colvars/colvars
+// Please update all Colvars source files before making any changes.
+// If you wish to distribute your changes, please submit them to the
+// Colvars repository at GitHub.
+
 #ifndef COLVAR_H
 #define COLVAR_H
 
@@ -562,6 +569,8 @@ public:
   class alpha_dihedrals;
   class alpha_angles;
   class dihedPC;
+  class gspath;
+  class gzpath;
 
   // non-scalar components
   class distance_vec;

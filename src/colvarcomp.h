@@ -1,5 +1,12 @@
 // -*- c++ -*-
 
+// This file is part of the Collective Variables module (Colvars).
+// The original version of Colvars and its updates are located at:
+// https://github.com/colvars/colvars
+// Please update all Colvars source files before making any changes.
+// If you wish to distribute your changes, please submit them to the
+// Colvars repository at GitHub.
+
 #ifndef COLVARCOMP_H
 #define COLVARCOMP_H
 
@@ -1365,6 +1372,127 @@ public:
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void apply_force(colvarvalue const &force);
+};
+
+
+
+/// \brief Colvar component: alternative path collective variable using geometry, variable s
+/// For more information see https://plumed.github.io/doc-v2.5/user-doc/html/_p_a_t_h.html
+/// Díaz Leines, G.; Ensing, B. Path Finding on High-Dimensional Free Energy Landscapes. Phys. Rev. Lett. 2012, 109 (2), 020601. https://doi.org/10.1103/PhysRevLett.109.020601.
+class colvar::gspath
+  : public colvar::cvc
+{
+private:
+    void update_distances();
+    // Indices used to sort and find closest image
+    std::vector<size_t> frame_index;
+    // Store v1, v2 and v3
+    std::vector<cvm::atom_pos> v1;
+    std::vector<cvm::atom_pos> v2;
+    std::vector<cvm::atom_pos> v3;
+    // m, M and the sign before f;
+    long sign;
+    double M;
+    double m;
+    // v1v3, v1^2, v2^2, v3^2
+    cvm::real v1v3;
+    cvm::real v1_2;
+    cvm::real v2_2;
+    cvm::real v3_2;
+    // Derivatives
+    std::vector<cvm::atom_pos> dfdv1;
+    std::vector<cvm::atom_pos> dfdv2;
+protected:
+    /// Selected atoms
+    cvm::atom_group *atoms;
+    /// Reference frames
+    std::vector<std::vector<cvm::atom_pos>> reference_frames;
+    /// Current distance to reference frames;
+    std::vector<cvm::real> frame_distances;
+    /// Atom groups for RMSD calculation together with reference frames
+    std::vector<cvm::atom_group*> comp_atoms;
+public:
+    gspath(std::string const &conf);
+    virtual ~gspath() {
+        if (atoms != nullptr) {
+            delete atoms;
+            atoms = nullptr;
+        }
+        for (auto it_comp_atoms = comp_atoms.begin(); it_comp_atoms != comp_atoms.end(); ++it_comp_atoms) {
+            if (*it_comp_atoms != nullptr) {
+                delete (*it_comp_atoms);
+                (*it_comp_atoms) = nullptr;
+            }
+        }
+    }
+    virtual void calc_value();
+    virtual void calc_gradients();
+    virtual void apply_force(colvarvalue const &force);
+};
+
+
+
+/// \brief Colvar component: alternative path collective variable using geometry, variable z
+/// This should be merged with gspath in the same class by class inheritance or something else
+class colvar::gzpath
+  : public colvar::cvc
+{
+private:
+    void update_distances();
+    // Indices used to sort and find closest image
+    std::vector<size_t> frame_index;
+    // Store v1, v2 and v3
+    std::vector<cvm::atom_pos> v1;
+    std::vector<cvm::atom_pos> v2;
+    std::vector<cvm::atom_pos> v3;
+    // For computing z it's convenient to has another vector v4
+    std::vector<cvm::atom_pos> v4;
+    // m, M and the sign before f;
+    long sign;
+    double M;
+    double m;
+    // v1v3, v1^2, v2^2, v3^2, v4^2
+    cvm::real v1v3;
+    cvm::real v1_2;
+    cvm::real v2_2;
+    cvm::real v3_2;
+    cvm::real v4_2;
+    // other intermediate variables
+    cvm::real f;
+    cvm::real dx;
+    cvm::real z;
+    cvm::real v1v4;
+    // Derivatives
+    std::vector<cvm::atom_pos> dfdv1;
+    std::vector<cvm::atom_pos> dfdv2;
+    std::vector<cvm::atom_pos> dzdv1;
+    std::vector<cvm::atom_pos> dzdv2;
+protected:
+    /// Selected atoms
+    cvm::atom_group *atoms;
+    /// Reference frames
+    std::vector<std::vector<cvm::atom_pos>> reference_frames;
+    /// Current distance to reference frames;
+    std::vector<cvm::real> frame_distances;
+    /// Atom groups for RMSD calculation together with reference frames
+    std::vector<cvm::atom_group*> comp_atoms;
+public:
+    gzpath(std::string const &conf);
+    virtual ~gzpath() {
+        if (atoms != nullptr) {
+            delete atoms;
+            atoms = nullptr;
+        }
+        for (auto it_comp_atoms = comp_atoms.begin(); it_comp_atoms != comp_atoms.end(); ++it_comp_atoms) {
+            if (*it_comp_atoms != nullptr) {
+                delete (*it_comp_atoms);
+                (*it_comp_atoms) = nullptr;
+            }
+        }
+    }
+    virtual void calc_value();
+    virtual void calc_gradients();
+    virtual void apply_force(colvarvalue const &force);
 };
 
 
