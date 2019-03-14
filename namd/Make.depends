@@ -7751,6 +7751,20 @@ obj/colvarcomp_rotations.o: \
 	colvars/src/colvaratoms.h \
 	colvars/src/colvarproxy.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_rotations.o $(COPTC) colvars/src/colvarcomp_rotations.cpp
+obj/colvarcomp_gpath.o: \
+	obj/.exists \
+	colvars/src/colvarcomp_gpath.cpp \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvarvalue.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvar.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarcomp.h \
+	colvars/src/colvaratoms.h \
+	colvars/src/colvarproxy.h
+	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_gpath.o $(COPTC) colvars/src/colvarcomp_gpath.cpp
 obj/colvardeps.o: \
 	obj/.exists \
 	colvars/src/colvardeps.cpp \
