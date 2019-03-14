@@ -22,7 +22,7 @@
 ///
 /// To interface to a new MD engine, the simplest solution is to derive a new
 /// class from \link colvarproxy \endlink.  Currently implemented are: \link
-/// colvarproxy_lammps, \endlink, \link colvarproxy_namd, \endlink, \link
+/// colvarproxy_lammps \endlink, \link colvarproxy_namd \endlink, \link
 /// colvarproxy_vmd \endlink.
 
 

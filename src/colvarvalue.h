@@ -10,22 +10,22 @@
 /// \brief Value of a collective variable: this is a metatype which
 /// can be set at runtime.  By default it is set to be a scalar
 /// number, and can be treated as such in all operations (this is
-/// done by most \link cvc \endlink implementations).
+/// done by most \link colvar::cvc \endlink implementations).
 ///
 /// \link colvarvalue \endlink allows \link colvar \endlink to be
 /// treat different data types.  By default, a \link colvarvalue
 /// \endlink variable is a scalar number.  To use it as
 /// another type, declare and initialize it as
-/// \code colvarvalue x(colvarvalue::type_xxx)\endcode, use \link x.type
-/// (colvarvalue::type_xxx) \endlink at a later stage, or if unset,
-///  assign the type with \code x = y; \endcode, provided y is correctly set.
+/// `colvarvalue x(colvarvalue::type_xxx)`, use `x.type (colvarvalue::type_xxx)`
+///  at a later stage, or if unset,
+///  assign the type with `x = y;`, provided y is correctly set.
 ///
 /// All operators (either unary or binary) on a \link
 /// colvarvalue \endlink object performs one or more checks on the
 /// \link Type \endlink, except when reading from a stream, when there is no way to
-/// detect the \link Type \endlink.  To use  \code is >> x; \endcode x \b MUST
+/// detect the \link Type \endlink.  To use  `is >> x;` x \b MUST
 /// already have a type correcly set up for properly parsing the
-/// stream. No problem of course with the output streams: \code os << x; \endcode
+/// stream. No problem of course with the output streams: `os << x;`
 ///
 /// \em Note \em on \em performance: to avoid type checks in a long array of \link
 /// colvarvalue \endlink objects, use one of the existing "_opt" functions or implement a new one
@@ -152,7 +152,7 @@ public:
   /// \brief If the variable has constraints (e.g. unitvector or
   /// quaternion), transform it to satisfy them; this function needs
   /// to be called only when the \link colvarvalue \endlink
-  /// is calculated outside of \link cvc \endlink objects
+  /// is calculated outside of \link colvar::cvc \endlink objects
   void apply_constraints();
 
   /// Get the current type

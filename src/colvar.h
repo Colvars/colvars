@@ -376,28 +376,28 @@ public:
   /// \brief Return the number of CVC objects with an active flag (as set by update_cvc_flags)
   inline size_t num_active_cvcs() const { return n_active_cvcs; }
 
-  /// \brief Use the internal metrics (as from \link cvc
+  /// \brief Use the internal metrics (as from \link colvar::cvc
   /// \endlink objects) to calculate square distances and gradients
   ///
   /// Handles correctly symmetries and periodic boundary conditions
   cvm::real dist2(colvarvalue const &x1,
                   colvarvalue const &x2) const;
 
-  /// \brief Use the internal metrics (as from \link cvc
+  /// \brief Use the internal metrics (as from \link colvar::cvc
   /// \endlink objects) to calculate square distances and gradients
   ///
   /// Handles correctly symmetries and periodic boundary conditions
   colvarvalue dist2_lgrad(colvarvalue const &x1,
                           colvarvalue const &x2) const;
 
-  /// \brief Use the internal metrics (as from \link cvc
+  /// \brief Use the internal metrics (as from \link colvar::cvc
   /// \endlink objects) to calculate square distances and gradients
   ///
   /// Handles correctly symmetries and periodic boundary conditions
   colvarvalue dist2_rgrad(colvarvalue const &x1,
                           colvarvalue const &x2) const;
 
-  /// \brief Use the internal metrics (as from \link cvc
+  /// \brief Use the internal metrics (as from \link colvar::cvc
   /// \endlink objects) to wrap a value into a standard interval
   ///
   /// Handles correctly symmetries and periodic boundary conditions
@@ -568,7 +568,7 @@ public:
 
 protected:
 
-  /// \brief Array of \link cvc \endlink objects
+  /// \brief Array of \link colvar::cvc \endlink objects
   std::vector<cvc *> cvcs;
 
   /// \brief Flags to enable or disable cvcs at next colvar evaluation

@@ -1169,7 +1169,7 @@ public:
   }
 
   /// \brief Provides the quaternion product.  \b NOTE: for the inner
-  /// product use: \code h.inner (q); \endcode
+  /// product use: `h.inner (q);`
   friend inline cvm::quaternion operator * (cvm::quaternion const &h,
                                             cvm::quaternion const &q)
   {

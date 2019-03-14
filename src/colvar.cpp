@@ -1746,7 +1746,7 @@ int colvar::update_cvc_config(std::vector<std::string> const &confs)
 
 
 // ******************** METRIC FUNCTIONS ********************
-// Use the metrics defined by \link cvc \endlink objects
+// Use the metrics defined by \link colvar::cvc \endlink objects
 
 
 bool colvar::periodic_boundaries(colvarvalue const &lb, colvarvalue const &ub) const

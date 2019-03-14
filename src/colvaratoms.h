@@ -10,7 +10,7 @@
 
 
 /// \brief Stores numeric id, mass and all mutable data for an atom,
-/// mostly used by a \link cvc \endlink
+/// mostly used by a \link colvar::cvc \endlink
 ///
 /// This class may be used to keep atomic data such as id, mass,
 /// position and collective variable derivatives) altogether.
@@ -56,7 +56,7 @@ public:
   /// from the \link colvarvalue \endlink class), which is also the
   /// most frequent case. For more complex types of \link
   /// colvarvalue \endlink objects, atomic gradients should be
-  /// defined within the specific \link cvc \endlink
+  /// defined within the specific \link colvar::cvc \endlink
   /// implementation
   cvm::rvector   grad;
 
@@ -144,7 +144,7 @@ public:
 
 
 /// \brief Group of \link atom \endlink objects, mostly used by a
-/// \link cvc \endlink object to gather all atomic data
+/// \link colvar::cvc \endlink object to gather all atomic data
 class colvarmodule::atom_group
   : public colvarparse, public colvardeps
 {

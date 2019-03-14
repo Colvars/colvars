@@ -16,7 +16,11 @@
 /// 3. Static features are static properties of the object, determined
 ///   programatically at initialization time.
 ///
-/// In all classes, feature 0 is active. When an object is inactivated
+/// The following diagram summarizes the dependency tree at the bias, colvar, and colvarcomp levels.
+/// Isolated and atom group features are not shown to save space.
+/// @image html deps_2019.svg
+///
+/// In all classes, feature 0 is `active`. When an object is inactivated
 /// all its children dependencies are dereferenced (free_children_deps)
 /// While the object is inactive, no dependency solving is done on children
 /// it is done when the object is activated back (restore_children_deps)
