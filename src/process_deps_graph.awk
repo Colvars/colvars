@@ -38,8 +38,8 @@
     color[obj] "\" shape = \"" shape[type] "\" style = \"" style[type] "\"];"
 }
 
-/^ *f_req_/ {
-  if (!match($0, /f_req_([^\(]*)/, res)) exit(1)
+/^ *require_feature_/ {
+  if (!match($0, /require_feature_([^\(]*)/, res)) exit(1)
   deptype = res[1]
 
   # extract features

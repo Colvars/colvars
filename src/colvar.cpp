@@ -22,7 +22,7 @@ colvar::colvar()
   kinetic_energy = 0.0;
   potential_energy = 0.0;
 
-  init_cv_requires();
+  init_dependencies();
 }
 
 
@@ -926,6 +926,123 @@ int colvar::parse_analysis(std::string const &conf)
     get_keyval(conf, "corrFuncOutputFile", acf_outfile, acf_outfile);
   }
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
+}
+
+
+int colvar::init_dependencies() {
+  size_t i;
+  if (features().size() == 0) {
+    for (i = 0; i < f_cv_ntot; i++) {
+      modify_features().push_back(new feature);
+    }
+
+    init_feature(f_cv_active, "active", f_type_dynamic);
+    // Do not require f_cvc_active in children, as some components may be disabled
+    // Colvars must be either a linear combination, or scalar (and polynomial) or scripted/custom
+    require_feature_alt(f_cv_active, f_cv_scalar, f_cv_linear, f_cv_scripted, f_cv_custom_function);
+
+    init_feature(f_cv_awake, "awake", f_type_static);
+    require_feature_self(f_cv_awake, f_cv_active);
+
+    init_feature(f_cv_gradient, "gradient", f_type_dynamic);
+    require_feature_children(f_cv_gradient, f_cvc_gradient);
+
+    init_feature(f_cv_collect_gradient, "collect gradient", f_type_dynamic);
+    require_feature_self(f_cv_collect_gradient, f_cv_gradient);
+    require_feature_self(f_cv_collect_gradient, f_cv_scalar);
+    // The following exlusion could be lifted by implementing the feature
+    exclude_feature_self(f_cv_collect_gradient, f_cv_scripted);
+
+    init_feature(f_cv_fdiff_velocity, "velocity from finite differences", f_type_dynamic);
+
+    // System force: either trivial (spring force); through extended Lagrangian, or calculated explicitly
+    init_feature(f_cv_total_force, "total force", f_type_dynamic);
+    require_feature_alt(f_cv_total_force, f_cv_extended_Lagrangian, f_cv_total_force_calc);
+
+    // Deps for explicit total force calculation
+    init_feature(f_cv_total_force_calc, "total force calculation", f_type_dynamic);
+    require_feature_self(f_cv_total_force_calc, f_cv_scalar);
+    require_feature_self(f_cv_total_force_calc, f_cv_linear);
+    require_feature_children(f_cv_total_force_calc, f_cvc_inv_gradient);
+    require_feature_self(f_cv_total_force_calc, f_cv_Jacobian);
+
+    init_feature(f_cv_Jacobian, "Jacobian derivative", f_type_dynamic);
+    require_feature_self(f_cv_Jacobian, f_cv_scalar);
+    require_feature_self(f_cv_Jacobian, f_cv_linear);
+    require_feature_children(f_cv_Jacobian, f_cvc_Jacobian);
+
+    init_feature(f_cv_hide_Jacobian, "hide Jacobian force", f_type_user);
+    require_feature_self(f_cv_hide_Jacobian, f_cv_Jacobian); // can only hide if calculated
+
+    init_feature(f_cv_extended_Lagrangian, "extended Lagrangian", f_type_user);
+    require_feature_self(f_cv_extended_Lagrangian, f_cv_scalar);
+    require_feature_self(f_cv_extended_Lagrangian, f_cv_gradient);
+
+    init_feature(f_cv_Langevin, "Langevin dynamics", f_type_user);
+    require_feature_self(f_cv_Langevin, f_cv_extended_Lagrangian);
+
+    init_feature(f_cv_linear, "linear", f_type_static);
+
+    init_feature(f_cv_scalar, "scalar", f_type_static);
+
+    init_feature(f_cv_output_energy, "output energy", f_type_user);
+
+    init_feature(f_cv_output_value, "output value", f_type_user);
+
+    init_feature(f_cv_output_velocity, "output velocity", f_type_user);
+    require_feature_self(f_cv_output_velocity, f_cv_fdiff_velocity);
+
+    init_feature(f_cv_output_applied_force, "output applied force", f_type_user);
+
+    init_feature(f_cv_output_total_force, "output total force", f_type_user);
+    require_feature_self(f_cv_output_total_force, f_cv_total_force);
+
+    init_feature(f_cv_subtract_applied_force, "subtract applied force from total force", f_type_user);
+    require_feature_self(f_cv_subtract_applied_force, f_cv_total_force);
+
+    init_feature(f_cv_lower_boundary, "lower boundary", f_type_user);
+    require_feature_self(f_cv_lower_boundary, f_cv_scalar);
+
+    init_feature(f_cv_upper_boundary, "upper boundary", f_type_user);
+    require_feature_self(f_cv_upper_boundary, f_cv_scalar);
+
+    init_feature(f_cv_grid, "grid", f_type_dynamic);
+    require_feature_self(f_cv_grid, f_cv_lower_boundary);
+    require_feature_self(f_cv_grid, f_cv_upper_boundary);
+
+    init_feature(f_cv_runave, "running average", f_type_user);
+
+    init_feature(f_cv_corrfunc, "correlation function", f_type_user);
+
+    init_feature(f_cv_scripted, "scripted", f_type_user);
+
+    init_feature(f_cv_custom_function, "custom function", f_type_user);
+    exclude_feature_self(f_cv_custom_function, f_cv_scripted);
+
+    init_feature(f_cv_periodic, "periodic", f_type_static);
+    require_feature_self(f_cv_periodic, f_cv_scalar);
+    init_feature(f_cv_scalar, "scalar", f_type_static);
+    init_feature(f_cv_linear, "linear", f_type_static);
+    init_feature(f_cv_homogeneous, "homogeneous", f_type_static);
+
+    // because total forces are obtained from the previous time step,
+    // we cannot (currently) have colvar values and total forces for the same timestep
+    init_feature(f_cv_multiple_ts, "multiple timestep colvar");
+    exclude_feature_self(f_cv_multiple_ts, f_cv_total_force_calc);
+  }
+
+  // Initialize feature_states for each instance
+  feature_states.reserve(f_cv_ntot);
+  for (i = 0; i < f_cv_ntot; i++) {
+    feature_states.push_back(feature_state(true, false));
+    // Most features are available, so we set them so
+    // and list exceptions below
+   }
+
+  feature_states[f_cv_fdiff_velocity].available =
+    cvm::main()->proxy->simulation_running();
+
+  return COLVARS_OK;
 }
 
 

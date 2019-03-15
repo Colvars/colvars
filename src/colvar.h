@@ -266,6 +266,9 @@ public:
   /// Init output flags
   int init_output_flags(std::string const &conf);
 
+  /// \brief Initialize dependency tree
+  virtual int init_dependencies();
+
 private:
   /// Parse the CVC configuration for all components of a certain type
   template<typename def_class_name> int init_components_type(std::string const &conf,

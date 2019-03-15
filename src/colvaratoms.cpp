@@ -178,10 +178,7 @@ int cvm::atom_group::init()
   // These may be overwritten by parse(), if a name is provided
 
   atoms.clear();
-
-  // TODO: check with proxy whether atom forces etc are available
-  init_ag_requires();
-
+  init_dependencies();
   index = -1;
 
   b_dummy = false;
@@ -197,6 +194,51 @@ int cvm::atom_group::init()
 
   cog.reset();
   com.reset();
+
+  return COLVARS_OK;
+}
+
+
+int cvm::atom_group::init_dependencies() {
+  size_t i;
+  // Initialize static array once and for all
+  if (features().size() == 0) {
+    for (i = 0; i < f_ag_ntot; i++) {
+      modify_features().push_back(new feature);
+    }
+
+    init_feature(f_ag_active, "active", f_type_dynamic);
+    init_feature(f_ag_center, "translational fit", f_type_static);
+    init_feature(f_ag_rotate, "rotational fit", f_type_static);
+    init_feature(f_ag_fitting_group, "reference positions group", f_type_static);
+    init_feature(f_ag_implicit_gradient, "implicit atom gradient", f_type_dynamic);
+    init_feature(f_ag_fit_gradients, "fit gradients", f_type_user);
+    exclude_feature_self(f_ag_fit_gradients, f_ag_implicit_gradient);
+
+    init_feature(f_ag_atom_forces, "atomic forces", f_type_dynamic);
+
+    // parallel calculation implies that we have at least a scalable center of mass,
+    // but f_ag_scalable is kept as a separate feature to deal with future dependencies
+    init_feature(f_ag_scalable, "scalable group calculation", f_type_static);
+    init_feature(f_ag_scalable_com, "scalable group center of mass calculation", f_type_static);
+    require_feature_self(f_ag_scalable, f_ag_scalable_com);
+  }
+
+  // Initialize feature_states for each instance
+  // default as unavailable, not enabled
+  feature_states.reserve(f_ag_ntot);
+  for (i = 0; i < colvardeps::f_ag_ntot; i++) {
+    feature_states.push_back(feature_state(false, false));
+  }
+
+  // Features that are implemented (or not) by all atom groups
+  feature_states[f_ag_active].available = true;
+  // f_ag_scalable_com is provided by the CVC iff it is COM-based
+  feature_states[f_ag_scalable_com].available = false;
+  // TODO make f_ag_scalable depend on f_ag_scalable_com (or something else)
+  feature_states[f_ag_scalable].available = true;
+  feature_states[f_ag_fit_gradients].available = true;
+  feature_states[f_ag_implicit_gradient].available = true;
 
   return COLVARS_OK;
 }
