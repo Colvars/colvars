@@ -69,7 +69,6 @@ protected:
   /// Unused by lower-level objects (cvcs and atom groups)
   int   time_step_factor;
 
-private:
   /// List of the states of all features
   std::vector<feature_state> feature_states;
 
@@ -346,10 +345,26 @@ public:
     f_ag_ntot
   };
 
-  void init_cvb_requires();
-  void init_cv_requires();
-  void init_cvc_requires();
-  void init_ag_requires();
+  /// Initialize dependency tree for object of a derived class
+  virtual int init_dependencies() = 0;
+
+  /// Make feature f require feature g within the same object
+  void require_feature_self(int f, int g);
+
+  /// Make features f and g mutually exclusive within the same object
+  void exclude_feature_self(int f, int g);
+
+  /// Make feature f require feature g within children
+  void require_feature_children(int f, int g);
+
+  /// Make feature f require either g or h within the same object
+  void require_feature_alt(int f, int g, int h);
+
+  /// Make feature f require any of g, h, or i within the same object
+  void require_feature_alt(int f, int g, int h, int i);
+
+  /// Make feature f require any of g, h, i, or j within the same object
+  void require_feature_alt(int f, int g, int h, int i, int j);
 
   /// \brief print all enabled features and those of children, for debugging
   void print_state();

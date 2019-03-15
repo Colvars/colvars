@@ -102,6 +102,9 @@ public:
   /// cvc \endlink
   virtual int init(std::string const &conf);
 
+  /// \brief Initialize dependency tree
+  virtual int init_dependencies();
+
   /// \brief Within the constructor, make a group parse its own
   /// options from the provided configuration string
   /// Returns reference to new group

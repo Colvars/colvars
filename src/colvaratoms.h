@@ -173,6 +173,9 @@ public:
   /// \brief Set default values for common flags
   int init();
 
+  /// \brief Initialize dependency tree
+  virtual int init_dependencies();
+
   /// \brief Update data required to calculate cvc's
   int setup();
 
