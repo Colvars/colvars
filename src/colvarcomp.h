@@ -1390,6 +1390,8 @@ private:
     std::vector<cvm::atom_pos> v1;
     std::vector<cvm::atom_pos> v2;
     std::vector<cvm::atom_pos> v3;
+    // Optimal rotation for compute v3
+    cvm::rotation rot_v3;
     // m, M and the sign before f;
     long sign;
     double M;
@@ -1457,6 +1459,9 @@ private:
     cvm::real v2_2;
     cvm::real v3_2;
     cvm::real v4_2;
+    // Optimal rotation for compute v3, v4
+    cvm::rotation rot_v3;
+    cvm::rotation rot_v4;
     // other intermediate variables
     cvm::real f;
     cvm::real dx;

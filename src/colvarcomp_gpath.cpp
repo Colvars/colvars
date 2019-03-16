@@ -85,8 +85,7 @@ colvar::gspath::gspath(std::string const &conf): cvc(conf), atoms(nullptr), refe
 void colvar::gspath::update_distances() {
     for (size_t i_frame = 0; i_frame < reference_frames.size(); ++i_frame) {
         cvm::real frame_rmsd = 0.0;
-        atoms->ref_pos = reference_frames[i_frame];
-        atoms->calc_apply_roto_translation();
+//         comp_atoms[i_frame]->calc_apply_roto_translation();
         for (size_t i_atom = 0; i_atom < atoms->size(); ++i_atom) {
             frame_rmsd += ((*(comp_atoms[i_frame]))[i_atom].pos - reference_frames[i_frame][i_atom]).norm2();
         }
@@ -123,20 +122,45 @@ void colvar::gspath::calc_value() {
             cvm::log(frame_info_line);
         }
     }
-    const size_t min_frame_index_1 = frame_index[0];
-    const size_t min_frame_index_2 = min_frame_index_1 - sign;
-    const size_t min_frame_index_3 = min_frame_index_1 + sign;
+    const size_t min_frame_index_1 = frame_index[0];            // s_m
+    const size_t min_frame_index_2 = min_frame_index_1 - sign;  // s_(m-1)
+    const size_t min_frame_index_3 = min_frame_index_1 + sign;  // s_(m+1)
+    cvm::atom_pos reference_cog_1 = std::accumulate(reference_frames[min_frame_index_1].begin(), reference_frames[min_frame_index_1].end(), cvm::atom_pos(0.0, 0.0, 0.0));
+    reference_cog_1 /= reference_frames[min_frame_index_1].size();
+    std::vector<cvm::atom_pos> tmp_reference_frame_1(reference_frames[min_frame_index_1].size());
+    std::transform(reference_frames[min_frame_index_1].begin(), reference_frames[min_frame_index_1].end(), tmp_reference_frame_1.begin(), [reference_cog_1](const cvm::atom_pos& ai){
+        return (ai - reference_cog_1);
+    });
+    cvm::atom_pos reference_cog_2 = std::accumulate(reference_frames[min_frame_index_2].begin(), reference_frames[min_frame_index_2].end(), cvm::atom_pos(0.0, 0.0, 0.0));
+    reference_cog_2 /= reference_frames[min_frame_index_2].size();
+    std::vector<cvm::atom_pos> tmp_reference_frame_2(reference_frames[min_frame_index_2].size());
+    std::transform(reference_frames[min_frame_index_2].begin(), reference_frames[min_frame_index_2].end(), tmp_reference_frame_2.begin(), [reference_cog_2](const cvm::atom_pos& ai){
+        return (ai - reference_cog_2);
+    });
     for (size_t i_atom = 0; i_atom < atoms->size(); ++i_atom) {
+        // v1 = s_m - z
         v1[i_atom] = reference_frames[min_frame_index_1][i_atom] - (*(comp_atoms[min_frame_index_1]))[i_atom].pos;
+        // v2 = z - s_(m-1)
         v2[i_atom] = (*(comp_atoms[min_frame_index_2]))[i_atom].pos - reference_frames[min_frame_index_2][i_atom];
     }
     if (min_frame_index_3 < 0 || min_frame_index_3 > M) {
+        // Determine the center of geometry
+        rot_v3.calc_optimal_rotation(tmp_reference_frame_1, tmp_reference_frame_2);
         for (size_t i_atom = 0; i_atom < atoms->size(); ++i_atom) {
-            v3[i_atom] = reference_frames[min_frame_index_1][i_atom] - reference_frames[min_frame_index_2][i_atom];
+//             v3[i_atom] = reference_frames[min_frame_index_1][i_atom] - reference_frames[min_frame_index_2][i_atom];
+            v3[i_atom] = rot_v3.q.rotate(tmp_reference_frame_1[i_atom]) - tmp_reference_frame_2[i_atom];
         }
     } else {
+        cvm::atom_pos reference_cog_3 = std::accumulate(reference_frames[min_frame_index_3].begin(), reference_frames[min_frame_index_3].end(), cvm::atom_pos(0.0, 0.0, 0.0));
+        reference_cog_3 /= reference_frames[min_frame_index_3].size();
+        std::vector<cvm::atom_pos> tmp_reference_frame_3(reference_frames[min_frame_index_3].size());
+        std::transform(reference_frames[min_frame_index_3].begin(), reference_frames[min_frame_index_3].end(), tmp_reference_frame_3.begin(), [reference_cog_3](const cvm::atom_pos& ai){
+            return (ai - reference_cog_3);
+        });
+        rot_v3.calc_optimal_rotation(tmp_reference_frame_1, tmp_reference_frame_3);
         for (size_t i_atom = 0; i_atom < atoms->size(); ++i_atom) {
-            v3[i_atom] = reference_frames[min_frame_index_3][i_atom] - reference_frames[min_frame_index_1][i_atom];
+            // v3 = s_(m+1) - s_m
+            v3[i_atom] = tmp_reference_frame_3[i_atom] - rot_v3.q.rotate(tmp_reference_frame_1[i_atom]);
         }
     }
     // Compute v1v3 and the norm2 of v1, v2 and v3
@@ -273,8 +297,7 @@ colvar::gzpath::gzpath(std::string const &conf): cvc(conf), atoms(nullptr), refe
 void colvar::gzpath::update_distances() {
     for (size_t i_frame = 0; i_frame < reference_frames.size(); ++i_frame) {
         cvm::real frame_rmsd = 0.0;
-        atoms->ref_pos = reference_frames[i_frame];
-        atoms->calc_apply_roto_translation();
+//         comp_atoms[i_frame]->calc_apply_roto_translation();
         for (size_t i_atom = 0; i_atom < atoms->size(); ++i_atom) {
             frame_rmsd += ((*(comp_atoms[i_frame]))[i_atom].pos - reference_frames[i_frame][i_atom]).norm2();
         }
@@ -308,19 +331,44 @@ void colvar::gzpath::calc_value() {
     const size_t min_frame_index_1 = frame_index[0];
     const size_t min_frame_index_2 = min_frame_index_1 - sign;
     const size_t min_frame_index_3 = min_frame_index_1 + sign;
+    cvm::atom_pos reference_cog_1 = std::accumulate(reference_frames[min_frame_index_1].begin(), reference_frames[min_frame_index_1].end(), cvm::atom_pos(0.0, 0.0, 0.0));
+    reference_cog_1 /= reference_frames[min_frame_index_1].size();
+    std::vector<cvm::atom_pos> tmp_reference_frame_1(reference_frames[min_frame_index_1].size());
+    std::transform(reference_frames[min_frame_index_1].begin(), reference_frames[min_frame_index_1].end(), tmp_reference_frame_1.begin(), [reference_cog_1](const cvm::atom_pos& ai){
+        return (ai - reference_cog_1);
+    });
+    cvm::atom_pos reference_cog_2 = std::accumulate(reference_frames[min_frame_index_2].begin(), reference_frames[min_frame_index_2].end(), cvm::atom_pos(0.0, 0.0, 0.0));
+    reference_cog_2 /= reference_frames[min_frame_index_2].size();
+    std::vector<cvm::atom_pos> tmp_reference_frame_2(reference_frames[min_frame_index_2].size());
+    std::transform(reference_frames[min_frame_index_2].begin(), reference_frames[min_frame_index_2].end(), tmp_reference_frame_2.begin(), [reference_cog_2](const cvm::atom_pos& ai){
+        return (ai - reference_cog_2);
+    });
+    rot_v4.calc_optimal_rotation(tmp_reference_frame_1, tmp_reference_frame_2);
     for (size_t i_atom = 0; i_atom < atoms->size(); ++i_atom) {
         v1[i_atom] = reference_frames[min_frame_index_1][i_atom] - (*(comp_atoms[min_frame_index_1]))[i_atom].pos;
         v2[i_atom] = (*(comp_atoms[min_frame_index_2]))[i_atom].pos - reference_frames[min_frame_index_2][i_atom];
         // v4 only computes in gzpath
-        v4[i_atom] = reference_frames[min_frame_index_1][i_atom] - reference_frames[min_frame_index_2][i_atom];
+        // v4 = s_m - s_(m-1)
+        v4[i_atom] = rot_v4.q.rotate(tmp_reference_frame_1[i_atom]) - tmp_reference_frame_2[i_atom];
     }
     if (min_frame_index_3 < 0 || min_frame_index_3 > M) {
+        // Determine the center of geometry
+        rot_v3.calc_optimal_rotation(tmp_reference_frame_1, tmp_reference_frame_2);
         for (size_t i_atom = 0; i_atom < atoms->size(); ++i_atom) {
-            v3[i_atom] = reference_frames[min_frame_index_1][i_atom] - reference_frames[min_frame_index_2][i_atom];
+//             v3[i_atom] = reference_frames[min_frame_index_1][i_atom] - reference_frames[min_frame_index_2][i_atom];
+            v3[i_atom] = rot_v3.q.rotate(tmp_reference_frame_1[i_atom]) - tmp_reference_frame_2[i_atom];
         }
     } else {
+        cvm::atom_pos reference_cog_3 = std::accumulate(reference_frames[min_frame_index_3].begin(), reference_frames[min_frame_index_3].end(), cvm::atom_pos(0.0, 0.0, 0.0));
+        reference_cog_3 /= reference_frames[min_frame_index_3].size();
+        std::vector<cvm::atom_pos> tmp_reference_frame_3(reference_frames[min_frame_index_3].size());
+        std::transform(reference_frames[min_frame_index_3].begin(), reference_frames[min_frame_index_3].end(), tmp_reference_frame_3.begin(), [reference_cog_3](const cvm::atom_pos& ai){
+            return (ai - reference_cog_3);
+        });
+        rot_v3.calc_optimal_rotation(tmp_reference_frame_1, tmp_reference_frame_3);
         for (size_t i_atom = 0; i_atom < atoms->size(); ++i_atom) {
-            v3[i_atom] = reference_frames[min_frame_index_3][i_atom] - reference_frames[min_frame_index_1][i_atom];
+            // v3 = s_(m+1) - s_m
+            v3[i_atom] = tmp_reference_frame_3[i_atom] - rot_v3.q.rotate(tmp_reference_frame_1[i_atom]);
         }
     }
     // Compute v1v3 and the norm2 of v1, v2 and v3
@@ -338,12 +386,21 @@ void colvar::gzpath::calc_value() {
         v3_2 += v3[i_atom] * v3[i_atom];
         v4_2 += v4[i_atom] * v4[i_atom];
     }
+//     std::cout << "|v1| = " << std::sqrt(v1_2) << " ; |v2| = " << std::sqrt(v2_2) << " ; |v3| = " << std::sqrt(v3_2) << " ; |v4| = " << std::sqrt(v4_2) << '\n';
     f = (std::sqrt(v1v3 * v1v3 - v3_2 * (v1_2 - v2_2)) - v1v3) / v3_2;
     dx = 0.5 * (f - 1);
     // z = sqrt((-v1 - dx * v4)^2)
     //   = sqrt(v1^2 + 2dx*(v1⋅v4) + dx * dx * v4^2)
     const cvm::real z_2 = v1_2 + 2 * dx * v1v4 + dx * dx * v4_2;
     z = std::sqrt(z_2);
+//     if (cvm::step_absolute() % 1000 == 0) {
+//         std::cout << "|v1| = " << std::sqrt(v1_2) << " ; |v2| = " << std::sqrt(v2_2) << " ; |v3| = " << std::sqrt(v3_2) << " ; |v4| = " << std::sqrt(v4_2) << '\n';
+//         for (size_t i_frame = 0; i_frame < frame_index.size(); ++i_frame) {
+//             std::string frame_info_line = std::string{"Frame index: "} + std::to_string(frame_index[i_frame]) + std::string{" ; optimal RMSD = "} + std::to_string(frame_distances[frame_index[i_frame]]) + std::string{"\n"};
+//             cvm::log(frame_info_line);
+//         }
+//         std::cout << "f = " << f << " ; sign = " << sign << " ; z = " << z << '\n';
+//     }
     x = z;
 }
 
