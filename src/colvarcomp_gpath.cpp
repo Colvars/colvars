@@ -77,6 +77,18 @@ colvar::gspath::gspath(std::string const &conf): cvc(conf), atoms(nullptr), refe
     bool debug_gradients = false;
     get_keyval(conf, "debugGradients", debug_gradients, false);
     if (debug_gradients) enable(f_cvc_debug_gradient);
+    get_keyval(conf, "useSecondClosestFrame", use_second_closest_frame, true);
+    if (use_second_closest_frame == true) {
+        cvm::log(std::string("Geometrical path s(σ) will use the second closest frame to compute s_(m-1)\n"));
+    } else {
+        cvm::log(std::string("Geometrical path s(σ) will use the neighbouring frame to compute s_(m-1)\n"));
+    }
+    get_keyval(conf, "useThirdClosestFrame", use_third_closest_frame, false);
+    if (use_third_closest_frame == true) {
+        cvm::log(std::string("Geometrical path s(σ) will use the third closest frame to compute s_(m+1)\n"));
+    } else {
+        cvm::log(std::string("Geometrical path s(σ) will use the neighbouring frame to compute s_(m+1)\n"));
+    }
     // Logging
     cvm::log(std::string("Geometrical pathCV(s) is initialized.\n"));
     cvm::log(std::string("Geometrical pathCV(s) loaded ") + std::to_string(reference_frames.size()) + std::string(" frames.\n"));
@@ -122,9 +134,9 @@ void colvar::gspath::calc_value() {
             cvm::log(frame_info_line);
         }
     }
-    const size_t min_frame_index_1 = frame_index[0];            // s_m
-    const size_t min_frame_index_2 = min_frame_index_1 - sign;  // s_(m-1)
-    const size_t min_frame_index_3 = min_frame_index_1 + sign;  // s_(m+1)
+    min_frame_index_1 = frame_index[0];                                                         // s_m
+    min_frame_index_2 = use_second_closest_frame ? frame_index[1] : min_frame_index_1 - sign;   // s_(m-1)
+    min_frame_index_3 = use_third_closest_frame ? frame_index[2] : min_frame_index_1 + sign;    // s_(m+1)
     cvm::atom_pos reference_cog_1 = std::accumulate(reference_frames[min_frame_index_1].begin(), reference_frames[min_frame_index_1].end(), cvm::atom_pos(0.0, 0.0, 0.0));
     reference_cog_1 /= reference_frames[min_frame_index_1].size();
     std::vector<cvm::atom_pos> tmp_reference_frame_1(reference_frames[min_frame_index_1].size());
@@ -147,7 +159,6 @@ void colvar::gspath::calc_value() {
         // Determine the center of geometry
         rot_v3.calc_optimal_rotation(tmp_reference_frame_1, tmp_reference_frame_2);
         for (size_t i_atom = 0; i_atom < atoms->size(); ++i_atom) {
-//             v3[i_atom] = reference_frames[min_frame_index_1][i_atom] - reference_frames[min_frame_index_2][i_atom];
             v3[i_atom] = rot_v3.q.rotate(tmp_reference_frame_1[i_atom]) - tmp_reference_frame_2[i_atom];
         }
     } else {
@@ -195,8 +206,6 @@ void colvar::gspath::calc_gradients() {
         return (factor1 * (2.0 * v3_2 * v2atom));
     });
     cvm::rvector tmp_atom_grad_v1, tmp_atom_grad_v2;
-    const size_t min_frame_index_1 = frame_index[0];
-    const size_t min_frame_index_2 = min_frame_index_1 - sign;
     // dS(v1, v2(r), v3) / dr = ∂S/∂v1 * dv1/dr + ∂S/∂v2 * dv2/dr
     // dv1/dr = [fitting matrix 1][-1, ..., -1]
     // dv2/dr = [fitting matrix 2][1, ..., 1]
@@ -218,8 +227,6 @@ void colvar::gspath::calc_gradients() {
 void colvar::gspath::apply_force(colvarvalue const &force) {
     // The force applied to this CV is scalar type
     cvm::real const &F = force.real_value;
-    const size_t min_frame_index_1 = frame_index[0];
-    const size_t min_frame_index_2 = min_frame_index_1 - sign;
     (*(comp_atoms[min_frame_index_1])).apply_colvar_force(F);
     (*(comp_atoms[min_frame_index_2])).apply_colvar_force(F);
 }
@@ -289,6 +296,18 @@ colvar::gzpath::gzpath(std::string const &conf): cvc(conf), atoms(nullptr), refe
     bool debug_gradients = false;
     get_keyval(conf, "debugGradients", debug_gradients, false);
     if (debug_gradients) enable(f_cvc_debug_gradient);
+    get_keyval(conf, "useSecondClosestFrame", use_second_closest_frame, true);
+    if (use_second_closest_frame == true) {
+        cvm::log(std::string("Geometrical path z(σ) will use the second closest frame to compute s_(m-1)\n"));
+    } else {
+        cvm::log(std::string("Geometrical path z(σ) will use the neighbouring frame to compute s_(m-1)\n"));
+    }
+    get_keyval(conf, "useThirdClosestFrame", use_third_closest_frame, false);
+    if (use_third_closest_frame == true) {
+        cvm::log(std::string("Geometrical path z(σ) will use the third closest frame to compute s_(m+1)\n"));
+    } else {
+        cvm::log(std::string("Geometrical path z(σ) will use the neighbouring frame to compute s_(m+1)\n"));
+    }
     // Logging
     cvm::log(std::string("Geometrical pathCV(z) is initialized.\n"));
     cvm::log(std::string("Geometrical pathCV(z) loaded ") + std::to_string(reference_frames.size()) + std::string(" frames.\n"));
@@ -297,7 +316,6 @@ colvar::gzpath::gzpath(std::string const &conf): cvc(conf), atoms(nullptr), refe
 void colvar::gzpath::update_distances() {
     for (size_t i_frame = 0; i_frame < reference_frames.size(); ++i_frame) {
         cvm::real frame_rmsd = 0.0;
-//         comp_atoms[i_frame]->calc_apply_roto_translation();
         for (size_t i_atom = 0; i_atom < atoms->size(); ++i_atom) {
             frame_rmsd += ((*(comp_atoms[i_frame]))[i_atom].pos - reference_frames[i_frame][i_atom]).norm2();
         }
@@ -328,9 +346,9 @@ void colvar::gzpath::calc_value() {
         //       the second closest frame is the neibouring frame, which is not 
         //       always true.
     }
-    const size_t min_frame_index_1 = frame_index[0];
-    const size_t min_frame_index_2 = min_frame_index_1 - sign;
-    const size_t min_frame_index_3 = min_frame_index_1 + sign;
+    min_frame_index_1 = frame_index[0];                                                         // s_m
+    min_frame_index_2 = use_second_closest_frame ? frame_index[1] : min_frame_index_1 - sign;   // s_(m-1)
+    min_frame_index_3 = use_third_closest_frame ? frame_index[2] : min_frame_index_1 + sign;    // s_(m+1)
     cvm::atom_pos reference_cog_1 = std::accumulate(reference_frames[min_frame_index_1].begin(), reference_frames[min_frame_index_1].end(), cvm::atom_pos(0.0, 0.0, 0.0));
     reference_cog_1 /= reference_frames[min_frame_index_1].size();
     std::vector<cvm::atom_pos> tmp_reference_frame_1(reference_frames[min_frame_index_1].size());
@@ -355,7 +373,6 @@ void colvar::gzpath::calc_value() {
         // Determine the center of geometry
         rot_v3.calc_optimal_rotation(tmp_reference_frame_1, tmp_reference_frame_2);
         for (size_t i_atom = 0; i_atom < atoms->size(); ++i_atom) {
-//             v3[i_atom] = reference_frames[min_frame_index_1][i_atom] - reference_frames[min_frame_index_2][i_atom];
             v3[i_atom] = rot_v3.q.rotate(tmp_reference_frame_1[i_atom]) - tmp_reference_frame_2[i_atom];
         }
     } else {
@@ -386,21 +403,22 @@ void colvar::gzpath::calc_value() {
         v3_2 += v3[i_atom] * v3[i_atom];
         v4_2 += v4[i_atom] * v4[i_atom];
     }
-//     std::cout << "|v1| = " << std::sqrt(v1_2) << " ; |v2| = " << std::sqrt(v2_2) << " ; |v3| = " << std::sqrt(v3_2) << " ; |v4| = " << std::sqrt(v4_2) << '\n';
     f = (std::sqrt(v1v3 * v1v3 - v3_2 * (v1_2 - v2_2)) - v1v3) / v3_2;
     dx = 0.5 * (f - 1);
     // z = sqrt((-v1 - dx * v4)^2)
     //   = sqrt(v1^2 + 2dx*(v1⋅v4) + dx * dx * v4^2)
     const cvm::real z_2 = v1_2 + 2 * dx * v1v4 + dx * dx * v4_2;
     z = std::sqrt(z_2);
-//     if (cvm::step_absolute() % 1000 == 0) {
-//         std::cout << "|v1| = " << std::sqrt(v1_2) << " ; |v2| = " << std::sqrt(v2_2) << " ; |v3| = " << std::sqrt(v3_2) << " ; |v4| = " << std::sqrt(v4_2) << '\n';
-//         for (size_t i_frame = 0; i_frame < frame_index.size(); ++i_frame) {
-//             std::string frame_info_line = std::string{"Frame index: "} + std::to_string(frame_index[i_frame]) + std::string{" ; optimal RMSD = "} + std::to_string(frame_distances[frame_index[i_frame]]) + std::string{"\n"};
-//             cvm::log(frame_info_line);
-//         }
-//         std::cout << "f = " << f << " ; sign = " << sign << " ; z = " << z << '\n';
-//     }
+#ifdef DEBUG_COLVARS_GPATH
+    if (cvm::step_absolute() % 1000 == 0) {
+        std::cout << "|v1| = " << std::sqrt(v1_2) << " ; |v2| = " << std::sqrt(v2_2) << " ; |v3| = " << std::sqrt(v3_2) << " ; |v4| = " << std::sqrt(v4_2) << '\n';
+        for (size_t i_frame = 0; i_frame < frame_index.size(); ++i_frame) {
+            std::string frame_info_line = std::string{"Frame index: "} + std::to_string(frame_index[i_frame]) + std::string{" ; optimal RMSD = "} + std::to_string(frame_distances[frame_index[i_frame]]) + std::string{"\n"};
+            cvm::log(frame_info_line);
+        }
+        std::cout << "f = " << f << " ; sign = " << sign << " ; z = " << z << '\n';
+    }
+#endif
     x = z;
 }
 
@@ -422,8 +440,6 @@ void colvar::gzpath::calc_gradients() {
     // ∂Z/∂v1 = 1/(2*z) * (2v1 + (f-1)v4 + (v1⋅v4)∂f/∂v1 + v4^2 * 1/4 * 2(f-1) * ∂f/∂v1)
     // ∂Z/∂v2 = 1/(2*z) * ((v1⋅v4)∂f/∂v2 + v4^2 * 1/4 * 2(f-1) * ∂f/∂v2)
     cvm::rvector tmp_atom_grad_v1, tmp_atom_grad_v2;
-    const size_t min_frame_index_1 = frame_index[0];
-    const size_t min_frame_index_2 = min_frame_index_1 - sign;
     for (size_t i_atom = 0; i_atom < atoms->size(); ++i_atom) {
         tmp_atom_grad_v1[0] = -1.0 * (1.0 / (2.0 * z)) * (2.0 * v1[i_atom][0] + (f-1) * v4[i_atom][0] + v1v4 * dfdv1[i_atom][0] + v4_2 * 0.25 * 2.0 * (f-1) * dfdv1[i_atom][0]);
         tmp_atom_grad_v1[1] = -1.0 * (1.0 / (2.0 * z)) * (2.0 * v1[i_atom][1] + (f-1) * v4[i_atom][1] + v1v4 * dfdv1[i_atom][1] + v4_2 * 0.25 * 2.0 * (f-1) * dfdv1[i_atom][1]);
@@ -439,8 +455,6 @@ void colvar::gzpath::calc_gradients() {
 void colvar::gzpath::apply_force(colvarvalue const &force) {
     // The force applied to this CV is scalar type
     cvm::real const &F = force.real_value;
-    const size_t min_frame_index_1 = frame_index[0];
-    const size_t min_frame_index_2 = min_frame_index_1 - sign;
     (*(comp_atoms[min_frame_index_1])).apply_colvar_force(F);
     (*(comp_atoms[min_frame_index_2])).apply_colvar_force(F);
 }
