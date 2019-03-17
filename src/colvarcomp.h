@@ -1386,6 +1386,11 @@ private:
     void update_distances();
     // Indices used to sort and find closest image
     std::vector<size_t> frame_index;
+    bool use_second_closest_frame;
+    bool use_third_closest_frame;
+    long min_frame_index_1;
+    long min_frame_index_2;
+    long min_frame_index_3;
     // Store v1, v2 and v3
     std::vector<cvm::atom_pos> v1;
     std::vector<cvm::atom_pos> v2;
@@ -1443,6 +1448,11 @@ private:
     void update_distances();
     // Indices used to sort and find closest image
     std::vector<size_t> frame_index;
+    bool use_second_closest_frame;
+    bool use_third_closest_frame;
+    long min_frame_index_1;
+    long min_frame_index_2;
+    long min_frame_index_3;
     // Store v1, v2 and v3
     std::vector<cvm::atom_pos> v1;
     std::vector<cvm::atom_pos> v2;
