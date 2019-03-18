@@ -211,9 +211,9 @@ int cvm::atom_group::init_dependencies() {
     init_feature(f_ag_center, "translational fit", f_type_static);
     init_feature(f_ag_rotate, "rotational fit", f_type_static);
     init_feature(f_ag_fitting_group, "reference positions group", f_type_static);
-    init_feature(f_ag_implicit_gradient, "implicit atom gradient", f_type_dynamic);
+    init_feature(f_ag_explicit_gradient, "explicit atom gradient", f_type_dynamic);
     init_feature(f_ag_fit_gradients, "fit gradients", f_type_user);
-    exclude_feature_self(f_ag_fit_gradients, f_ag_implicit_gradient);
+    require_feature_self(f_ag_fit_gradients, f_ag_explicit_gradient);
 
     init_feature(f_ag_atom_forces, "atomic forces", f_type_dynamic);
 
@@ -238,7 +238,7 @@ int cvm::atom_group::init_dependencies() {
   // TODO make f_ag_scalable depend on f_ag_scalable_com (or something else)
   feature_states[f_ag_scalable].available = true;
   feature_states[f_ag_fit_gradients].available = true;
-  feature_states[f_ag_implicit_gradient].available = true;
+  feature_states[f_ag_explicit_gradient].available = true;
 
   return COLVARS_OK;
 }

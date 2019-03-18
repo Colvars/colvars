@@ -93,7 +93,7 @@ colvar::distance_vec::distance_vec(std::string const &conf)
 {
   function_type = "distance_vec";
   enable(f_cvc_com_based);
-  enable(f_cvc_implicit_gradient);
+  disable(f_cvc_explicit_gradient);
   x.type(colvarvalue::type_3vector);
 }
 
@@ -103,7 +103,7 @@ colvar::distance_vec::distance_vec()
 {
   function_type = "distance_vec";
   enable(f_cvc_com_based);
-  enable(f_cvc_implicit_gradient);
+  disable(f_cvc_explicit_gradient);
   x.type(colvarvalue::type_3vector);
 }
 
@@ -473,7 +473,7 @@ colvar::distance_dir::distance_dir(std::string const &conf)
 {
   function_type = "distance_dir";
   enable(f_cvc_com_based);
-  enable(f_cvc_implicit_gradient);
+  disable(f_cvc_explicit_gradient);
   x.type(colvarvalue::type_unit3vector);
 }
 
@@ -483,7 +483,7 @@ colvar::distance_dir::distance_dir()
 {
   function_type = "distance_dir";
   enable(f_cvc_com_based);
-  enable(f_cvc_implicit_gradient);
+  disable(f_cvc_explicit_gradient);
   x.type(colvarvalue::type_unit3vector);
 }
 
@@ -663,7 +663,7 @@ colvar::distance_pairs::distance_pairs(std::string const &conf)
   group2 = parse_group(conf, "group2");
 
   x.type(colvarvalue::type_vector);
-  enable(f_cvc_implicit_gradient);
+  disable(f_cvc_explicit_gradient);
   x.vector1d_value.resize(group1->size() * group2->size());
 }
 
@@ -671,7 +671,7 @@ colvar::distance_pairs::distance_pairs(std::string const &conf)
 colvar::distance_pairs::distance_pairs()
 {
   function_type = "distance_pairs";
-  enable(f_cvc_implicit_gradient);
+  disable(f_cvc_explicit_gradient);
   x.type(colvarvalue::type_vector);
 }
 
@@ -1485,7 +1485,7 @@ colvar::cartesian::cartesian(std::string const &conf)
   }
 
   x.type(colvarvalue::type_vector);
-  enable(f_cvc_implicit_gradient);
+  disable(f_cvc_explicit_gradient);
   x.vector1d_value.resize(atoms->size() * axes.size());
 }
 

@@ -836,12 +836,9 @@ void colvar::build_atom_list(void)
   temp_id_list.sort();
   temp_id_list.unique();
 
-  // atom_ids = std::vector<int> (temp_id_list.begin(), temp_id_list.end());
-  unsigned int id_i = 0;
   std::list<int>::iterator li;
   for (li = temp_id_list.begin(); li != temp_id_list.end(); ++li) {
-    atom_ids[id_i] = *li;
-    id_i++;
+    atom_ids.push_back(*li);
   }
 
   temp_id_list.clear();
@@ -952,6 +949,7 @@ int colvar::init_dependencies() {
     require_feature_self(f_cv_collect_gradient, f_cv_scalar);
     // The following exlusion could be lifted by implementing the feature
     exclude_feature_self(f_cv_collect_gradient, f_cv_scripted);
+    require_feature_children(f_cv_collect_gradient, f_cvc_explicit_gradient);
 
     init_feature(f_cv_fdiff_velocity, "velocity from finite differences", f_type_dynamic);
 

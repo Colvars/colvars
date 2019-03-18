@@ -54,6 +54,8 @@ namespace eval ::cv_dashboard {
 
   variable repnames {}      ;# representations created by us
   variable macros {}        ;# macros created by us
+  variable grad_objects {}  ;# ids of graphical objects displaying gradients
+  variable grad_cvs {}      ;# cvs whose gradients are shown
 
   variable template_dir
   variable template_base_dir
@@ -73,16 +75,17 @@ namespace eval ::cv_dashboard {
 
 
 proc cv_dashboard {} {
-  # If window already exists, destroy it
-  catch { destroy .cv_dashboard_window }
-  ::cv_dashboard::createWindow
+  return [eval ::cv_dashboard::createWindow]
 }
 
 
 # Create main window
 proc ::cv_dashboard::createWindow {} {
 
-  # package require tablelist
+  if {[winfo exists .cv_dashboard_window]} {
+    wm deiconify .cv_dashboard_window
+    return
+  }
 
   if {[molinfo num] == 0 } {
     tk_messageBox -icon error -title "Colvars Dashboard Error"\
@@ -97,7 +100,7 @@ proc ::cv_dashboard::createWindow {} {
     # if loaded multiple times
     set molid [molinfo top]
     trace remove variable vmd_frame($molid) write ::cv_dashboard::update_frame
-    destroy .cv_dashboard_window
+    wm destroy .cv_dashboard_window
   }
 
   # setup Colvars if not already there
@@ -117,6 +120,8 @@ proc ::cv_dashboard::createWindow {} {
   $w.cvtable column #0 -width 50 -stretch 1 -anchor w
   $w.cvtable column val -width 150 -stretch 1 -anchor w
   bind $w.cvtable <e> ::cv_dashboard::edit
+  bind $w <Control-a> { .cv_dashboard_window.cvtable selection set $::cv_dashboard::cvs }
+
   $w.cvtable tag configure parity0 -background white
   $w.cvtable tag configure parity1 -background grey94
   refresh_table
@@ -143,7 +148,15 @@ proc ::cv_dashboard::createWindow {} {
   if {[string compare [run_cv version] "2019-02-07"] >= 0} {
     incr gridrow
     grid [ttk::button $w.show_atoms -text "Show atoms" -command {::cv_dashboard::show_atoms} -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-    grid [ttk::button $w.hide_atoms -text "Hide atoms" -command {::cv_dashboard::hide_atoms} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+    grid [ttk::button $w.hide_atoms -text "Hide all" -command {::cv_dashboard::hide_atoms} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  }
+
+  if {[string compare [run_cv version] "2019-03-18"] >= 0} {
+    incr gridrow
+    grid [ttk::button $w.show_gradients -text "Show gradients" -command {::cv_dashboard::show_gradients} -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+    grid [ttk::button $w.hide_gradients -text "Hide all" -command {::cv_dashboard::hide_gradients} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+    grid [label $w.gradfactor -textvariable ::cv_dashboard::grad_factor] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+    # TODO add labek and text frame within 3rd column (sub frame?)
   }
 
   incr gridrow
@@ -156,6 +169,8 @@ proc ::cv_dashboard::createWindow {} {
   grid columnconfigure $w 0 -weight 1
   grid columnconfigure $w 1 -weight 1
   grid columnconfigure $w 2 -weight 1
+
+  return $w
 }
 
 
@@ -358,6 +373,19 @@ proc ::cv_dashboard::del {} {
 }
 
 
+# Reset cvm: hard delete allows for reconstructing the module after changing top molecule.
+proc ::cv_dashboard::reset {} {
+  run_cv delete
+  run_cv molid top
+  refresh_table
+}
+
+
+#################################################################
+# Display atoms
+#################################################################
+
+
 # Display atoms in groups for selected colvars
 proc ::cv_dashboard::show_atoms {} {
   set color 0
@@ -408,11 +436,77 @@ proc ::cv_dashboard::hide_atoms {} {
 }
 
 
-# Reset cvm: hard delete allows for reconstructing the module after changing top molecule.
-proc ::cv_dashboard::reset {} {
-  run_cv delete
-  run_cv molid top
-  refresh_table
+#################################################################
+# Show Colvar gradients
+#################################################################
+
+
+proc draw_arrow {mol start end} {
+  set middle [vecadd $start [vecscale 0.9 [vecsub $end $start]]]
+  set ids [list [graphics $mol cylinder $start $middle radius 0.15]]
+  lappend ids [graphics $mol cone $middle $end radius 0.25]
+  return $ids
+}
+
+
+proc ::cv_dashboard::show_gradients {} {
+
+  foreach cv [selected_colvars] {
+    if { [lsearch $::cv_dashboard::grad_cvs $cv] > -1 } { continue }
+    run_cv colvar $cv set "collect gradient" 1
+    run_cv colvar $cv update ;# required to get inital values of gradients
+    lappend ::cv_dashboard::grad_cvs $cv
+  }
+  update_shown_gradients
+}
+
+
+proc ::cv_dashboard::update_shown_gradients {} {
+
+  foreach i $::cv_dashboard::grad_objects {
+    graphics top delete $i
+  }
+  set colorid 1
+  foreach cv $::cv_dashboard::grad_cvs {
+
+    # For atom groups, could detect identical gradients on atoms, and display based on COM
+    set atomids [run_cv colvar $cv getatomids_flat]
+    set grads [run_cv colvar $cv getgradients]
+    set sel [atomselect top "index $atomids"]
+    set coords [$sel get {x y z}]
+    $sel delete
+
+    set desired_max_length 5.
+    # set colors { yellow red white purple }
+    # graphics top color [lindex $colors [expr $colorid % [llength $colors]]]
+    graphics top color [expr $colorid % 32]
+    incr colorid
+
+    set maxl2 0.
+
+    foreach g $grads {
+      set l2 [veclength2 $g]
+      if { $l2 > $maxl2 } { set maxl2 $l2 }
+    }
+    if {$maxl2 < 1e-10} { continue }
+    set fact [expr {$desired_max_length / sqrt($maxl2)}]
+
+    foreach i $atomids r $coords g $grads {
+      set end [vecadd $r [vecscale $fact $g]]
+      set ids [draw_arrow top $r $end]
+      lappend ::cv_dashboard::grad_objects {*}$ids
+    }
+  }
+}
+
+
+proc ::cv_dashboard::hide_gradients {} {
+
+  foreach i $::cv_dashboard::grad_objects {
+    graphics top delete $i
+  }
+  set ::cv_dashboard::grad_objects {}
+  set ::cv_dashboard::grad_cvs {}
 }
 
 
@@ -451,6 +545,8 @@ proc ::cv_dashboard::update_frame { name molid op } {
   refresh_values
   # refresh the frame marker in the plot
   display_marker $f
+  # refresh displayed CV gradients
+  update_shown_gradients
 }
 
 
@@ -1104,5 +1200,3 @@ proc ::cv_dashboard::display_marker { f } {
   }
 }
 
-# Create a window to begin with - until we have a menu entry
-cv_dashboard

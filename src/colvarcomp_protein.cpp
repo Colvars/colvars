@@ -18,7 +18,7 @@ colvar::alpha_angles::alpha_angles(std::string const &conf)
     cvm::log("Initializing alpha_angles object.\n");
 
   function_type = "alpha_angles";
-  enable(f_cvc_implicit_gradient);
+  disable(f_cvc_explicit_gradient);
   x.type(colvarvalue::type_scalar);
 
   std::string segment_id;
@@ -109,7 +109,7 @@ colvar::alpha_angles::alpha_angles()
   : cvc()
 {
   function_type = "alpha_angles";
-  enable(f_cvc_implicit_gradient);
+  disable(f_cvc_explicit_gradient);
   x.type(colvarvalue::type_scalar);
 }
 
@@ -233,7 +233,7 @@ colvar::dihedPC::dihedPC(std::string const &conf)
     cvm::log("Initializing dihedral PC object.\n");
 
   function_type = "dihedPC";
-  enable(f_cvc_implicit_gradient);
+  disable(f_cvc_explicit_gradient);
   x.type(colvarvalue::type_scalar);
 
   std::string segment_id;
@@ -363,7 +363,7 @@ colvar::dihedPC::dihedPC()
   : cvc()
 {
   function_type = "dihedPC";
-  enable(f_cvc_implicit_gradient);
+  disable(f_cvc_explicit_gradient);
   x.type(colvarvalue::type_scalar);
 }
 
