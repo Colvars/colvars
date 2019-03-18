@@ -340,6 +340,31 @@ int colvarscript::proc_colvar(colvar *cv, int objc, unsigned char *const objv[])
     return COLVARS_OK;
   }
 
+  if (subcmd == "getatomids_flat") {
+    std::vector<int>::iterator li = cv->atom_ids.begin();
+
+    for ( ; li != cv->atom_ids.end(); ++li) {
+      result += cvm::to_str(*li);
+      result += " ";
+    }
+    return COLVARS_OK;
+  }
+
+  if (subcmd == "getgradients") {
+    std::vector<cvm::rvector>::iterator li = cv->atomic_gradients.begin();
+
+    for ( ; li != cv->atomic_gradients.end(); ++li) {
+      result += "{";
+      int j;
+      for (j = 0; j < 3; ++j) {
+        result += cvm::to_str((*li)[j]);
+        result += " ";
+      }
+      result += "} ";
+    }
+    return COLVARS_OK;
+  }
+
   if (subcmd == "getappliedforce") {
     result = (cv->applied_force()).to_simple_string();
     return COLVARS_OK;

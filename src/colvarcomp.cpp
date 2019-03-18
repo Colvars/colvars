@@ -187,15 +187,16 @@ int colvar::cvc::init_dependencies() {
 
     init_feature(f_cvc_gradient, "gradient", f_type_dynamic);
 
-    init_feature(f_cvc_implicit_gradient, "implicit gradient", f_type_static);
-    require_feature_children(f_cvc_implicit_gradient, f_ag_implicit_gradient);
+    init_feature(f_cvc_explicit_gradient, "explicit gradient", f_type_static);
+    require_feature_self(f_cvc_explicit_gradient, f_cvc_gradient);
+    require_feature_children(f_cvc_explicit_gradient, f_ag_explicit_gradient);
 
     init_feature(f_cvc_inv_gradient, "inverse gradient", f_type_dynamic);
     require_feature_self(f_cvc_inv_gradient, f_cvc_gradient);
 
     init_feature(f_cvc_debug_gradient, "debug gradient", f_type_user);
     require_feature_self(f_cvc_debug_gradient, f_cvc_gradient);
-    exclude_feature_self(f_cvc_debug_gradient, f_cvc_implicit_gradient);
+    require_feature_self(f_cvc_debug_gradient, f_cvc_explicit_gradient);
 
     init_feature(f_cvc_Jacobian, "Jacobian derivative", f_type_dynamic);
     require_feature_self(f_cvc_Jacobian, f_cvc_inv_gradient);
@@ -230,16 +231,22 @@ int colvar::cvc::init_dependencies() {
     feature_states.push_back(feature_state(avail, false));
   }
 
-  // CVCs are enabled from the start - get disabled based on flags
-  feature_states[f_cvc_active].enabled = true;
-
   // Features that are implemented by all cvcs by default
   // Each cvc specifies what other features are available
   feature_states[f_cvc_active].available = true;
   feature_states[f_cvc_gradient].available = true;
 
+  // CVCs are enabled from the start - get disabled based on flags
+  enable(f_cvc_active);
+  // feature_states[f_cvc_active].enabled = true;
+
+  // Explicit gradients are implemented in mosts CVCs. Exceptions must be specified explicitly.
+  // feature_states[f_cvc_explicit_gradient].enabled = true;
+  enable(f_cvc_explicit_gradient);
+
   // Use minimum-image distances by default
-  feature_states[f_cvc_pbc_minimum_image].enabled = true;
+  // feature_states[f_cvc_pbc_minimum_image].enabled = true;
+  enable(f_cvc_pbc_minimum_image);
 
   // Features that are implemented by default if their requirements are
   feature_states[f_cvc_one_site_total_force].available = true;
