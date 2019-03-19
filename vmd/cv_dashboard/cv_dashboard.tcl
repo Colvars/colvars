@@ -100,7 +100,7 @@ proc ::cv_dashboard::createWindow {} {
     # if loaded multiple times
     set molid [molinfo top]
     trace remove variable vmd_frame($molid) write ::cv_dashboard::update_frame
-    wm destroy .cv_dashboard_window
+    destroy .cv_dashboard_window
   }
 
   # setup Colvars if not already there
@@ -143,7 +143,7 @@ proc ::cv_dashboard::createWindow {} {
   grid [ttk::button $w.plot2cv -text "Pairwise plot" -command {::cv_dashboard::plot 2cv} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $w.refresh -text "Refresh table" -command ::cv_dashboard::refresh_table -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
-  # Cannot test directly for the presence of getatomids method in the absence of a defined colvar
+  # Cannot test directly for the presence of scripting methods in the absence of a defined colvar
   # so we test the version number instead
   if {[string compare [run_cv version] "2019-02-07"] >= 0} {
     incr gridrow
@@ -155,8 +155,6 @@ proc ::cv_dashboard::createWindow {} {
     incr gridrow
     grid [ttk::button $w.show_gradients -text "Show gradients" -command {::cv_dashboard::show_gradients} -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
     grid [ttk::button $w.hide_gradients -text "Hide all" -command {::cv_dashboard::hide_gradients} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-    grid [label $w.gradfactor -textvariable ::cv_dashboard::grad_factor] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
-    # TODO add labek and text frame within 3rd column (sub frame?)
   }
 
   incr gridrow
@@ -400,7 +398,7 @@ proc ::cv_dashboard::show_atoms {} {
   set ci 0
   foreach c [selected_colvars] {
     incr ci
-    set all_groups [run_cv colvar $c getatomids]
+    set all_groups [run_cv colvar $c getatomgroups]
     # Remove characters such as <> which are parsed as special in VMD selection texts
     set sanitized_cvname [regsub -all {[^a-zA-Z0-9_@]} $c {} ]
     set i 0
@@ -449,14 +447,6 @@ proc ::cv_dashboard::hide_atoms {} {
 #################################################################
 
 
-proc draw_arrow {mol start end} {
-  set middle [vecadd $start [vecscale 0.9 [vecsub $end $start]]]
-  set ids [list [graphics $mol cylinder $start $middle radius 0.15]]
-  lappend ids [graphics $mol cone $middle $end radius 0.25]
-  return $ids
-}
-
-
 proc ::cv_dashboard::show_gradients {} {
 
   foreach cv [selected_colvars] {
@@ -473,9 +463,9 @@ proc ::cv_dashboard::update_shown_gradients {} {
   foreach i $::cv_dashboard::grad_objects {
     graphics top delete $i
   }
-  set colorid 1
+  set colorid 3 ;# avoid very common or less visible colors blue, red, gray
   foreach cv $::cv_dashboard::grad_cvs {
-    set atomids [run_cv colvar $cv getatomids_flat]
+    set atomids [run_cv colvar $cv getatomids]
     if { [llength $atomids] == 0 } { continue }
     set grads [run_cv colvar $cv getgradients]
     set sel [atomselect top "index $atomids"]
@@ -483,8 +473,6 @@ proc ::cv_dashboard::update_shown_gradients {} {
     $sel delete
 
     set desired_max_length 5.
-    # set colors { yellow red white purple }
-    # graphics top color [lindex $colors [expr $colorid % [llength $colors]]]
     graphics top color [expr $colorid % 32]
     incr colorid
 
@@ -497,10 +485,13 @@ proc ::cv_dashboard::update_shown_gradients {} {
     if {$maxl2 < 1e-10} { continue }
     set fact [expr {$desired_max_length / sqrt($maxl2)}]
 
-    foreach i $atomids r $coords g $grads {
-      set end [vecadd $r [vecscale $fact $g]]
-      set ids [draw_arrow top $r $end]
-      lappend ::cv_dashboard::grad_objects {*}$ids
+    foreach i $atomids start $coords g $grads {
+      set vec [vecscale $fact $g]
+      set end [vecadd $start $vec]
+      set middle [vecadd $start [vecscale 0.9 $vec]]
+      set cyl [graphics top cylinder $start $middle radius 0.15]
+      set cone [graphics top cone $middle $end radius 0.25]
+      lappend ::cv_dashboard::grad_objects $cyl $cone
     }
   }
 }
