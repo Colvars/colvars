@@ -826,9 +826,15 @@ void colvar::build_atom_list(void)
 
   for (size_t i = 0; i < cvcs.size(); i++) {
     for (size_t j = 0; j < cvcs[i]->atom_groups.size(); j++) {
-      cvm::atom_group &ag = *(cvcs[i]->atom_groups[j]);
+      cvm::atom_group const &ag = *(cvcs[i]->atom_groups[j]);
       for (size_t k = 0; k < ag.size(); k++) {
         temp_id_list.push_back(ag[k].id);
+      }
+      if (ag.is_enabled(f_ag_fitting_group) && ag.is_enabled(f_ag_fit_gradients)) {
+        cvm::atom_group const &fg = *(ag.fitting_group);
+        for (size_t k = 0; k < fg.size(); k++) {
+          temp_id_list.push_back(fg[k].id);
+        }
       }
     }
   }
@@ -1386,6 +1392,15 @@ int colvar::collect_cvc_gradients()
             size_t a = std::lower_bound(atom_ids.begin(), atom_ids.end(),
                                         ag[k].id) - atom_ids.begin();
             atomic_gradients[a] += coeff * ag[k].grad;
+          }
+        }
+        if (ag.is_enabled(f_ag_fitting_group) && ag.is_enabled(f_ag_fit_gradients)) {
+          cvm::atom_group const &fg = *(ag.fitting_group);
+          for (size_t k = 0; k < fg.size(); k++) {
+            size_t a = std::lower_bound(atom_ids.begin(), atom_ids.end(),
+                                        fg[k].id) - atom_ids.begin();
+            // fit gradients are in the unrotated (simulation) frame
+            atomic_gradients[a] += coeff * fg.fit_gradients[k];
           }
         }
       }

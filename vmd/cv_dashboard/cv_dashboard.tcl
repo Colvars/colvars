@@ -460,10 +460,9 @@ proc draw_arrow {mol start end} {
 proc ::cv_dashboard::show_gradients {} {
 
   foreach cv [selected_colvars] {
-    if { [lsearch $::cv_dashboard::grad_cvs $cv] > -1 } { continue }
     if { [run_cv colvar $cv set "collect gradient" 1] == -1 } { continue }
     run_cv colvar $cv update ;# required to get inital values of gradients
-    lappend ::cv_dashboard::grad_cvs $cv
+    if { [lsearch $::cv_dashboard::grad_cvs $cv] == -1 } { lappend ::cv_dashboard::grad_cvs $cv }
   }
   update_shown_gradients
 }
@@ -476,9 +475,8 @@ proc ::cv_dashboard::update_shown_gradients {} {
   }
   set colorid 1
   foreach cv $::cv_dashboard::grad_cvs {
-
-    # For atom groups, could detect identical gradients on atoms, and display based on COM
     set atomids [run_cv colvar $cv getatomids_flat]
+    if { [llength $atomids] == 0 } { continue }
     set grads [run_cv colvar $cv getgradients]
     set sel [atomselect top "index $atomids"]
     set coords [$sel get {x y z}]
