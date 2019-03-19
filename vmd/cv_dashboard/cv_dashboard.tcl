@@ -211,6 +211,14 @@ proc ::cv_dashboard::refresh_table {} {
       }
     }
   }
+
+  # Remove deleted variables from gradient display
+  set tmp {}
+  foreach cv $::cv_dashboard::grad_cvs {
+    if { [lsearch $::cv_dashboard::cvs $cv] > -1 } { lappend tmp $cv }
+  }
+  set ::cv_dashboard::grad_cvs $tmp
+
   update_frame internal [molinfo top] w
 }
 
@@ -402,7 +410,7 @@ proc ::cv_dashboard::show_atoms {} {
       if {[llength $list] > 0} {
         set group "${sanitized_cvname}_group_${i}"
         # resolve ambiguous names due to colvar name sanitization
-        while {[lsearch -sorted $::cv_dashboard::macros $group] > -1} {
+        while {[lsearch $::cv_dashboard::macros $group] > -1} {
           append sanitized_cvname "_"
           set group "${sanitized_cvname}_group_${i}"
         }
@@ -453,7 +461,7 @@ proc ::cv_dashboard::show_gradients {} {
 
   foreach cv [selected_colvars] {
     if { [lsearch $::cv_dashboard::grad_cvs $cv] > -1 } { continue }
-    run_cv colvar $cv set "collect gradient" 1
+    if { [run_cv colvar $cv set "collect gradient" 1] == -1 } { continue }
     run_cv colvar $cv update ;# required to get inital values of gradients
     lappend ::cv_dashboard::grad_cvs $cv
   }
@@ -519,7 +527,7 @@ proc ::cv_dashboard::hide_gradients {} {
 proc run_cv args  {
   if [ catch { cv {*}$args } res ] {
     tk_messageBox -icon error -title "Colvars error" -parent .cv_dashboard_window\
-      -message "Error running command:\n\n$args" -detail "$res"
+      -message "Error running command:\n$args" -detail "$res\n\nSee console for further details."
     return -1
   }
   return $res
