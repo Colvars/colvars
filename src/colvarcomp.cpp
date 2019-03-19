@@ -306,6 +306,11 @@ std::vector<std::vector<int> > colvar::cvc::get_atom_lists()
   for ( ; agi != atom_groups.end(); ++agi) {
     (*agi)->create_sorted_ids();
     lists.push_back((*agi)->sorted_ids());
+    if ((*agi)->is_enabled(f_ag_fitting_group) && (*agi)->is_enabled(f_ag_fit_gradients)) {
+      cvm::atom_group &fg = *((*agi)->fitting_group);
+      fg.create_sorted_ids();
+      lists.push_back(fg.sorted_ids());
+    }
   }
   return lists;
 }

@@ -210,7 +210,7 @@ int cvm::atom_group::init_dependencies() {
     init_feature(f_ag_active, "active", f_type_dynamic);
     init_feature(f_ag_center, "translational fit", f_type_static);
     init_feature(f_ag_rotate, "rotational fit", f_type_static);
-    init_feature(f_ag_fitting_group, "reference positions group", f_type_static);
+    init_feature(f_ag_fitting_group, "fitting group", f_type_static);
     init_feature(f_ag_explicit_gradient, "explicit atom gradient", f_type_dynamic);
     init_feature(f_ag_fit_gradients, "fit gradients", f_type_user);
     require_feature_self(f_ag_fit_gradients, f_ag_explicit_gradient);
@@ -238,6 +238,7 @@ int cvm::atom_group::init_dependencies() {
   // TODO make f_ag_scalable depend on f_ag_scalable_com (or something else)
   feature_states[f_ag_scalable].available = true;
   feature_states[f_ag_fit_gradients].available = true;
+  feature_states[f_ag_fitting_group].available = true;
   feature_states[f_ag_explicit_gradient].available = true;
 
   return COLVARS_OK;
@@ -748,6 +749,7 @@ int cvm::atom_group::parse_fitting_options(std::string const &group_conf)
           return INPUT_ERROR;
         }
       }
+      set_enabled(f_ag_fitting_group);
     }
 
     atom_group *group_for_fit = fitting_group ? fitting_group : this;
