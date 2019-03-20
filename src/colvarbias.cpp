@@ -16,7 +16,7 @@ colvarbias::colvarbias(char const *key)
   has_data = false;
   b_output_energy = false;
   reset();
-  state_file_step = 0;
+  state_file_step = 0L;
   description = "uninitialized " + cvm::to_str(key) + " bias";
 }
 
