@@ -5,6 +5,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <ctime>
+#include <iomanip>
 
 /// Construct gradient field object from an ABF-saved file
 ABFdata::ABFdata(const char *gradFileName)
@@ -258,6 +259,17 @@ void ABFdata::write_bias(const char *fileName)
         std::cerr << "Cannot write to file " << fileName << ", aborting\n";
         exit(1);
     }
+
+    // writing the head of a pmf file as in a standard colvars output
+    os << std::setw(2) << "# " << Nvars << "\n";
+    for (i = 0 ; i < Nvars; i++)
+        os << "# " 
+           << std::setw(10) << mins[i]
+           << std::setw(10) << widths[i]
+           << std::setw(10) << sizes[i] << " "
+           << PBC[i] << "\n";
+    os << "\n";
+
     pos = new int[Nvars];
     for (i = 0; i < Nvars; i++)
         pos[i] = 0;
