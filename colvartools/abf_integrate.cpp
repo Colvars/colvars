@@ -12,6 +12,8 @@
 #include <ctime>
 #include <cmath>
 
+#define ABF_INTEGRATE_VERSION "2018-03-20"
+
 char *parse_cl(int argc, char *argv[], unsigned int *nsteps, double *temp,
                bool * meta, double *hill, double *hill_fact);
 double compute_deviation(ABFdata * data, bool meta, double kT);
@@ -46,7 +48,7 @@ int main(int argc, char *argv[])
 
     if (!(data_file = parse_cl(argc, argv, &nsteps, &temp, &meta, &hill, &hill_fact))) {
         std::cerr << "\nabf_integrate: MC-based integration of multidimensional free energy gradient\n";
-        std::cerr << "Version 20160420\n\n";
+        std::cerr << "Version " << ABF_INTEGRATE_VERSION << "\n\n";
         std::cerr << "Syntax: " << argv[0] <<
             " <filename> [-n <nsteps>] [-t <temp>] [-m [0|1] (metadynamics)]"
             " [-h <hill_height>] [-f <variable_hill_factor>]\n\n";
