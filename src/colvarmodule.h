@@ -84,6 +84,9 @@ public:
   // TODO colvarscript should be unaware of colvarmodule's internals
   friend class colvarscript;
 
+  /// Use a 64-bit integer to store the step number
+  typedef int64_t step_number;
+
   /// Defining an abstract real number allows to switch precision
   typedef  double    real;
 
@@ -213,19 +216,19 @@ public:
 
 
   /// Current step number
-  static long it;
+  static step_number it;
   /// Starting step number for this run
-  static long it_restart;
+  static step_number it_restart;
 
   /// Return the current step number from the beginning of this run
-  static inline long step_relative()
+  static inline step_number step_relative()
   {
     return it - it_restart;
   }
 
   /// Return the current step number from the beginning of the whole
   /// calculation
-  static inline long step_absolute()
+  static inline step_number step_absolute()
   {
     return it;
   }
@@ -514,6 +517,10 @@ public:
 
   /// Convert to string for output purposes
   static std::string to_str(long int const &x,
+                            size_t width = 0, size_t prec = 0);
+
+  /// Convert to string for output purposes
+  static std::string to_str(step_number const &x,
                             size_t width = 0, size_t prec = 0);
 
   /// Convert to string for output purposes
