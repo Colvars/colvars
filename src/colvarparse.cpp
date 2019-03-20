@@ -323,6 +323,15 @@ bool colvarparse::get_keyval(std::string const &conf,
 
 bool colvarparse::get_keyval(std::string const &conf,
                              char const *key,
+                             cvm::step_number &value,
+                             cvm::step_number const &def_value,
+                             Parse_Mode const parse_mode)
+{
+  return _get_keyval_scalar_<cvm::step_number>(conf, key, value, def_value, parse_mode);
+}
+
+bool colvarparse::get_keyval(std::string const &conf,
+                             char const *key,
                              std::string &value,
                              std::string const &def_value,
                              Parse_Mode const parse_mode)

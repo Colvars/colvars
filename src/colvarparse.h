@@ -125,6 +125,11 @@ public:
                   Parse_Mode const parse_mode = parse_normal);
   bool get_keyval(std::string const &conf,
                   char const *key,
+                  cvm::step_number &value,
+                  cvm::step_number const &def_value = 0,
+                  Parse_Mode const parse_mode = parse_normal);
+  bool get_keyval(std::string const &conf,
+                  char const *key,
                   std::string &value,
                   std::string const &def_value = std::string(""),
                   Parse_Mode const parse_mode = parse_normal);

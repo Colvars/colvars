@@ -1260,7 +1260,7 @@ std::istream & colvarmodule::read_restart(std::istream &is)
     std::string restart_conf;
     if (is >> colvarparse::read_block("configuration", restart_conf)) {
       parse->get_keyval(restart_conf, "step",
-                        it_restart, (size_t) 0,
+                        it_restart, (step_number) 0,
                         colvarparse::parse_restart);
         it = it_restart;
       std::string restart_version;
@@ -2000,6 +2000,12 @@ std::string colvarmodule::to_str(long int const &x,
   return _to_str<long int>(x, width, prec);
 }
 
+std::string colvarmodule::to_str(step_number const &x,
+                                 size_t width, size_t prec)
+{
+  return _to_str<step_number>(x, width, prec);
+}
+
 std::string colvarmodule::to_str(cvm::real const &x,
                                  size_t width, size_t prec)
 {
@@ -2105,8 +2111,8 @@ colvarproxy *colvarmodule::proxy = NULL;
 cvm::real colvarmodule::debug_gradients_step_size = 1.0e-07;
 int       colvarmodule::errorCode = 0;
 int       colvarmodule::log_level_ = 10;
-long      colvarmodule::it = 0;
-long      colvarmodule::it_restart = 0;
+cvm::step_number colvarmodule::it = 0;
+cvm::step_number colvarmodule::it_restart = 0;
 size_t    colvarmodule::restart_out_freq = 0;
 size_t    colvarmodule::cv_traj_freq = 0;
 bool      colvarmodule::use_scripted_forces = false;
