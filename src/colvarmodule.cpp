@@ -1260,7 +1260,7 @@ std::istream & colvarmodule::read_restart(std::istream &is)
     std::string restart_conf;
     if (is >> colvarparse::read_block("configuration", restart_conf)) {
       parse->get_keyval(restart_conf, "step",
-                        it_restart, (step_number) 0,
+                        it_restart, static_cast<step_number>(0),
                         colvarparse::parse_restart);
         it = it_restart;
       std::string restart_version;
