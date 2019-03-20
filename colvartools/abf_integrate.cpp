@@ -39,8 +39,10 @@ int main(int argc, char *argv[])
     hill = 0.01;
     hill_fact = 0.5;
     hill_min = 0.0005;
-
     convergence_limit = -0.001;
+
+    // Inverse temperature in (kcal/mol)-1
+    mbeta = -1 / (0.001987 * temp);
 
     if (!(data_file = parse_cl(argc, argv, &nsteps, &temp, &meta, &hill, &hill_fact))) {
         std::cerr << "\nabf_integrate: MC-based integration of multidimensional free energy gradient\n";
@@ -50,6 +52,8 @@ int main(int argc, char *argv[])
             " [-h <hill_height>] [-f <variable_hill_factor>]\n\n";
         exit(1);
     }
+
+    ABFdata data(data_file);
 
     if (meta) {
         std::cout << "\nUsing metadynamics-style sampling with hill height: " << hill << "\n";
@@ -69,14 +73,6 @@ int main(int argc, char *argv[])
         std::cout << "Sampling until convergence at temperature " << temp << "\n\n";
         out_freq = 1000000;
         converged = false;
-    }
-
-    // Inverse temperature in (kcal/mol)-1
-    mbeta = -1 / (0.001987 * temp);
-
-    ABFdata data(data_file);
-
-    if (!nsteps) {
         scale_hill_step = 2000 * data.scalar_dim;
         nsteps = 2 * scale_hill_step;
         std::cout << "Setting minimum number of steps to " << nsteps << "\n";
