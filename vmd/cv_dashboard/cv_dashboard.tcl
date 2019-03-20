@@ -14,26 +14,14 @@
 # This plugin only acts on the "top" molecule
 # which is most consistent for trajectory animation (determined by the frame number of top mol)
 
-# TODO PRIORITY:
-# - currently only way to handle harmonic walls is legacy, bc separate biases are not accessible!
-# - documentation -> link to section in HTML VMD/Colvars on github.io
-
-# TODO:
-# - properly calculate position of cursor in plot when not all the plot is visible (resized window)
-# - retain comments in config strings (needs upstream support in colvars)
-# - Retain the whole config string minus colvars, copy to output? Problem: not visible in interface
-# - histograms - either directly from plot window
-
 # TODO Multiplot:
+# - properly calculate position of cursor in plot when not all the plot is visible (resized window)
 # - handle several windows at once - at least one pairwise, one timeline
 # - integrate interactive hacks into interface
 # - display pairwise traj on top of known 2D data (eg. FE surface)
-# - embed inside main window?
 
 # TODO maybe:
 # - index group builder
-# - graphical representations such as rotation_display
-
 
 package provide cv_dashboard 1.0
 
@@ -153,7 +141,8 @@ proc ::cv_dashboard::createWindow {} {
 
   if {[string compare [run_cv version] "2019-03-18"] >= 0} {
     incr gridrow
-    grid [ttk::button $w.show_gradients -text "Show gradients" -command {::cv_dashboard::show_gradients} -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+    grid [ttk::button $w.show_gradients -text "Show gradients" -command {::cv_dashboard::show_gradients [::cv_dashboard::selected_colvars]} \
+      -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
     grid [ttk::button $w.hide_gradients -text "Hide all" -command {::cv_dashboard::hide_gradients} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   }
 
@@ -216,6 +205,7 @@ proc ::cv_dashboard::refresh_table {} {
     if { [lsearch $::cv_dashboard::cvs $cv] > -1 } { lappend tmp $cv }
   }
   set ::cv_dashboard::grad_cvs $tmp
+  show_gradients $::cv_dashboard::grad_cvs
 
   update_frame internal [molinfo top] w
 }
@@ -447,9 +437,9 @@ proc ::cv_dashboard::hide_atoms {} {
 #################################################################
 
 
-proc ::cv_dashboard::show_gradients {} {
+proc ::cv_dashboard::show_gradients { list } {
 
-  foreach cv [selected_colvars] {
+  foreach cv $list {
     if { [run_cv colvar $cv set "collect gradient" 1] == -1 } { continue }
     run_cv colvar $cv update ;# required to get inital values of gradients
     if { [lsearch $::cv_dashboard::grad_cvs $cv] == -1 } { lappend ::cv_dashboard::grad_cvs $cv }
