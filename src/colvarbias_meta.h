@@ -12,8 +12,8 @@
 #include "colvargrid.h"
 
 /// Metadynamics bias (implementation of \link colvarbias \endlink)
-class colvarbias_meta 
-  : public virtual colvarbias, 
+class colvarbias_meta
+  : public virtual colvarbias,
     public virtual colvarbias_ti
 {
 
@@ -278,7 +278,7 @@ public:
   friend class colvarbias_meta;
 
   /// Time step at which this hill was added
-  size_t      it;
+  cvm::step_number it;
 
   /// Identity of the replica who added this hill (only in multiple replica simulations)
   std::string replica;
@@ -289,9 +289,9 @@ public:
   /// replica (optional) Identity of the replica which creates the
   /// hill
   inline hill(cvm::real             const &W_in,
-               std::vector<colvar *>       &cv,
-               cvm::real             const &hill_width,
-               std::string           const &replica_in = "")
+              std::vector<colvar *>       &cv,
+              cvm::real             const &hill_width,
+              std::string           const &replica_in = "")
     : sW(1.0),
       W(W_in),
       centers(cv.size()),
@@ -318,11 +318,11 @@ public:
   /// weight Weight of the hill \param centers Center of the hill
   /// \param widths Width of the hill around centers \param replica
   /// (optional) Identity of the replica which creates the hill
-  inline hill(size_t                    const &it_in,
-               cvm::real                 const &W_in,
-               std::vector<colvarvalue>  const &centers_in,
-               std::vector<cvm::real>    const &widths_in,
-               std::string               const &replica_in = "")
+  inline hill(cvm::step_number          const &it_in,
+              cvm::real                 const &W_in,
+              std::vector<colvarvalue>  const &centers_in,
+              std::vector<cvm::real>    const &widths_in,
+              std::string               const &replica_in = "")
     : sW(1.0),
       W(W_in),
       centers(centers_in),

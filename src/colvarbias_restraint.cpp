@@ -170,7 +170,7 @@ int colvarbias_restraint_k::change_configuration(std::string const &conf)
 colvarbias_restraint_moving::colvarbias_restraint_moving(char const *key)
 {
   target_nstages = 0;
-  target_nsteps = 0;
+  target_nsteps = 0L;
   stage = 0;
   acc_work = 0.0;
   b_chg_centers = false;

@@ -125,7 +125,7 @@ protected:
 
   /// \brief Number of steps required to reach the target force constant
   /// or restraint centers
-  long target_nsteps;
+  step_number target_nsteps;
 
   /// \brief Accumulated work (computed when outputAccumulatedWork == true)
   cvm::real acc_work;
