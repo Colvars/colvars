@@ -294,7 +294,7 @@ namespace UIestimator {
         ~UIestimator() {}
 
         // called from MD engine every step
-        bool update(const int step, std::vector<double> x, std::vector<double> y) {
+        bool update(cvm::step_number step, std::vector<double> x, std::vector<double> y) {
 
             int i;
 

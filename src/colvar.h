@@ -369,7 +369,7 @@ protected:
   void update_active_cvc_square_norm();
 
   /// \brief Absolute timestep number when this colvar was last updated
-  int prev_timestep;
+  cvm::step_number prev_timestep;
 
 public:
 
