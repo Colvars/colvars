@@ -1419,8 +1419,8 @@ std::istream & colvarbias_meta::read_hill(std::istream &is)
     return is;
   }
 
-  size_t h_it;
-  get_keyval(data, "step", h_it, 0, parse_silent);
+  cvm::step_number h_it;
+  get_keyval(data, "step", h_it, 0L, parse_silent);
   if (h_it <= state_file_step) {
     if (cvm::debug())
       cvm::log("Skipping a hill older than the state file for metadynamics bias \""+
