@@ -17,7 +17,7 @@ colvar::colvar()
 {
   runave_os = NULL;
 
-  prev_timestep = -1;
+  prev_timestep = -1L;
   after_restart = false;
   kinetic_energy = 0.0;
   potential_energy = 0.0;
