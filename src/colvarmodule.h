@@ -85,7 +85,7 @@ public:
   friend class colvarscript;
 
   /// Use a 64-bit integer to store the step number
-  typedef int64_t step_number;
+  typedef long long step_number;
 
   /// Defining an abstract real number allows to switch precision
   typedef  double    real;
