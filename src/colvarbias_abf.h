@@ -127,7 +127,7 @@ private:
   // shared ABF
   bool    shared_on;
   size_t  shared_freq;
-  int     shared_last_step;
+  cvm::step_number shared_last_step;
   // Share between replicas -- may be called independently of update
   virtual int replica_share();
 
