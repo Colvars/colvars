@@ -124,7 +124,8 @@ colvarproxy_namd::colvarproxy_namd()
 
   if (simparams->firstTimestep != 0) {
     cvm::log("Initializing step number as firstTimestep.\n");
-    colvars->it = colvars->it_restart = simparams->firstTimestep;
+    colvars->it = colvars->it_restart =
+      static_cast<cvm::step_number>(simparams->firstTimestep);
   }
 
   reduction = ReductionMgr::Object()->willSubmit(REDUCTIONS_BASIC);
