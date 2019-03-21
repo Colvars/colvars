@@ -95,6 +95,8 @@ void colvarproxy_gromacs::init(t_inputrec *ir, gmx_int64_t step,t_mdatoms *md,
     input_prefix_str = filename_restart;
   }
 
+  // Retrieve masses and charges from input file
+  updated_masses_ = updated_charges_ = true;
 
   // Get some parameters from GROMACS
   restart_frequency_s = ir->nstxout;
