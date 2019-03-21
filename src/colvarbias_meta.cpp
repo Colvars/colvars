@@ -31,6 +31,8 @@ colvarbias_meta::colvarbias_meta(char const *key)
   new_hills_begin = hills.end();
   hills_traj_os = NULL;
   replica_hills_os = NULL;
+
+  ebmeta_equil_steps = 0L;
 }
 
 
@@ -215,7 +217,7 @@ int colvarbias_meta::init_ebmeta_params(std::string const &conf)
     target_dist->multiply_constant(1.0/target_dist->integral());
     cvm::real volume = cvm::exp(target_dist->entropy());
     target_dist->multiply_constant(volume);
-    get_keyval(conf, "ebMetaEquilSteps", ebmeta_equil_steps, 0);
+    get_keyval(conf, "ebMetaEquilSteps", ebmeta_equil_steps, ebmeta_equil_steps);
   }
 
   return COLVARS_OK;
@@ -484,9 +486,9 @@ int colvarbias_meta::update_bias()
 
     if (ebmeta) {
       hills_scale *= 1.0/target_dist->value(target_dist->get_colvars_index());
-      if(cvm::step_absolute() <= long(ebmeta_equil_steps)) {
+      if(cvm::step_absolute() <= ebmeta_equil_steps) {
         cvm::real const hills_lambda =
-          (cvm::real(long(ebmeta_equil_steps) - cvm::step_absolute())) /
+          (cvm::real(ebmeta_equil_steps - cvm::step_absolute())) /
           (cvm::real(ebmeta_equil_steps));
         hills_scale = hills_lambda + (1-hills_lambda)*hills_scale;
       }

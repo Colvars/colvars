@@ -167,12 +167,14 @@ protected:
   /// \brief Biasing temperature in well-tempered metadynamics
   cvm::real  bias_temperature;
 
-  // EBmeta parameters
+  /// Ensemble-biased metadynamics (EBmeta) flag
   bool       ebmeta;
+
+  /// Target distribution for EBmeta
   colvar_grid_scalar* target_dist;
-  std::string target_dist_file;
-  cvm::real target_dist_volume;
-  size_t ebmeta_equil_steps;
+
+  /// Number of equilibration steps for EBmeta
+  cvm::step_number ebmeta_equil_steps;
 
 
   /// \brief Try to read the restart information by allocating new
