@@ -195,6 +195,7 @@ int colvarbias_meta::init_ebmeta_params(std::string const &conf)
     }
     target_dist = new colvar_grid_scalar();
     target_dist->init_from_colvars(colvars);
+    std::string target_dist_file;
     get_keyval(conf, "targetdistfile", target_dist_file);
     std::ifstream targetdiststream(target_dist_file.c_str());
     target_dist->read_multicol(targetdiststream);
