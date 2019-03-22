@@ -13,8 +13,8 @@ colvar::cvc::cvc()
     b_periodic(false),
     b_try_scalable(true)
 {
-  init_dependencies();
   description = "uninitialized colvar component";
+  init_dependencies();
   sup_coeff = 1.0;
   period = 0.0;
   wrap_center = 0.0;
@@ -27,8 +27,8 @@ colvar::cvc::cvc(std::string const &conf)
     b_periodic(false),
     b_try_scalable(true)
 {
-  init_dependencies();
   description = "uninitialized colvar component";
+  init_dependencies();
   sup_coeff = 1.0;
   period = 0.0;
   wrap_center = 0.0;
@@ -220,6 +220,13 @@ int colvar::cvc::init_dependencies() {
     // TODO only enable this when f_ag_scalable can be turned on for a pre-initialized group
     // require_feature_children(f_cvc_scalable, f_ag_scalable);
     // require_feature_children(f_cvc_scalable_com, f_ag_scalable_com);
+
+    // check that everything is initialized
+    for (i = 0; i < colvardeps::f_cvc_ntot; i++) {
+      if (is_not_set(i)) {
+        cvm::error("Uninitialized feature " + cvm::to_str(i) + " in " + description);
+      }
+    }
   }
 
   // Initialize feature_states for each instance

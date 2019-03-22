@@ -115,12 +115,7 @@ bool colvardeps::get_keyval_feature(colvarparse *cvp,
 
 int colvardeps::enable(int feature_id,
                        bool dry_run /* default: false */,
-                       // dry_run: fail silently, do not enable if available
-                       // flag is passed recursively to deps of this feature
                        bool toplevel /* default: true */)
-// toplevel: false if this is called as part of a chain of dependency resolution
-// this is used to diagnose failed dependencies by displaying the full stack
-// only the toplevel dependency will throw a fatal error
 {
   int res;
   size_t i, j;
@@ -136,8 +131,7 @@ int colvardeps::enable(int feature_id,
 
   if (fs->enabled) {
     if (!(dry_run || toplevel)) {
-      // This is a dependency
-      // Prevent disabling this feature as long
+      // This is a dependency: prevent disabling this feature as long
       // as requirement is enabled
       fs->ref_count++;
       if (cvm::debug())
@@ -442,7 +436,7 @@ void colvardeps::print_state() {
 void colvardeps::add_child(colvardeps *child) {
 
   children.push_back(child);
-  child->parents.push_back((colvardeps *)this);
+  child->parents.push_back(this);
 
   // Solve dependencies of already enabled parent features
   // in the new child

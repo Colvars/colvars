@@ -85,14 +85,14 @@ public:
   inline int get_time_step_factor() const {return time_step_factor;}
 
   /// Pair a numerical feature ID with a description and type
-  void init_feature(int feature_id, const char *description, feature_type type = f_type_not_set);
+  void init_feature(int feature_id, const char *description, feature_type type);
 
   /// Describes a feature and its dependencies
   /// used in a static array within each subclass
   class feature {
 
   public:
-    feature() {}
+    feature() : type(f_type_not_set) {}
     ~feature() {}
 
     std::string description; // Set by derived object initializer
@@ -122,6 +122,7 @@ public:
     feature_type type;
   };
 
+  inline bool is_not_set(int id) { return features()[id]->type == f_type_not_set; }
   inline bool is_dynamic(int id) { return features()[id]->type == f_type_dynamic; }
   inline bool is_static(int id) { return features()[id]->type == f_type_static; }
   inline bool is_user(int id) { return features()[id]->type == f_type_user; }
@@ -184,10 +185,12 @@ protected:
 
 public:
 
-  /// enable a feature and recursively solve its dependencies
-  /// for proper reference counting, one should not add
-  /// spurious calls to enable()
-  /// dry_run is set to true to recursively test if a feature is available, without enabling it
+  /// Enable a feature and recursively solve its dependencies.
+  /// For accurate reference counting, do not add spurious calls to enable()
+  /// \param dry_run Recursively test if a feature is available, without enabling it
+  /// \param toplevel False if this is called as part of a chain of dependency resolution.
+  /// This is used to diagnose failed dependencies by displaying the full stack:
+  /// only the toplevel dependency will throw a fatal error.
   int enable(int f, bool dry_run = false, bool toplevel = true);
 
   /// Disable a feature, decrease the reference count of its dependencies

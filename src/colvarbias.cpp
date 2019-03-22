@@ -10,6 +10,7 @@
 colvarbias::colvarbias(char const *key)
   : bias_type(to_lower_cppstr(key))
 {
+  description = "uninitialized " + cvm::to_str(key) + " bias";
   init_dependencies();
   rank = 1;
 
@@ -17,7 +18,6 @@ colvarbias::colvarbias(char const *key)
   b_output_energy = false;
   reset();
   state_file_step = 0L;
-  description = "uninitialized " + cvm::to_str(key) + " bias";
 }
 
 
@@ -131,6 +131,13 @@ int colvarbias::init_dependencies() {
 
     init_feature(f_cvb_write_ti_pmf, "write TI PMF", f_type_user);
     require_feature_self(f_cvb_write_ti_pmf, f_cvb_calc_ti_samples);
+
+    // check that everything is initialized
+    for (i = 0; i < colvardeps::f_cvb_ntot; i++) {
+      if (is_not_set(i)) {
+        cvm::error("Uninitialized feature " + cvm::to_str(i) + " in " + description);
+      }
+    }
   }
 
   // Initialize feature_states for each instance

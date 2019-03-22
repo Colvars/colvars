@@ -22,6 +22,7 @@ colvar::colvar()
   kinetic_energy = 0.0;
   potential_energy = 0.0;
 
+  description = "uninitialized colvar";
   init_dependencies();
 }
 
@@ -217,7 +218,7 @@ int colvar::init(std::string const &conf)
   // Allow scripted/custom functions to be defined as periodic
   if ( (is_enabled(f_cv_scripted) || is_enabled(f_cv_custom_function)) && is_enabled(f_cv_scalar) ) {
     if (get_keyval(conf, "period", period, 0.)) {
-      set_enabled(f_cv_periodic, true);
+      enable(f_cv_periodic);
       get_keyval(conf, "wrapAround", wrap_center, 0.);
     }
   }
@@ -1031,8 +1032,15 @@ int colvar::init_dependencies() {
 
     // because total forces are obtained from the previous time step,
     // we cannot (currently) have colvar values and total forces for the same timestep
-    init_feature(f_cv_multiple_ts, "multiple timestep colvar");
+    init_feature(f_cv_multiple_ts, "multiple timestep colvar", f_type_static);
     exclude_feature_self(f_cv_multiple_ts, f_cv_total_force_calc);
+
+    // check that everything is initialized
+    for (i = 0; i < colvardeps::f_cv_ntot; i++) {
+      if (is_not_set(i)) {
+        cvm::error("Uninitialized feature " + cvm::to_str(i) + " in " + description);
+      }
+    }
   }
 
   // Initialize feature_states for each instance

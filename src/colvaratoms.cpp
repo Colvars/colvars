@@ -222,6 +222,13 @@ int cvm::atom_group::init_dependencies() {
     init_feature(f_ag_scalable, "scalable group calculation", f_type_static);
     init_feature(f_ag_scalable_com, "scalable group center of mass calculation", f_type_static);
     require_feature_self(f_ag_scalable, f_ag_scalable_com);
+
+    // check that everything is initialized
+    for (i = 0; i < colvardeps::f_ag_ntot; i++) {
+      if (is_not_set(i)) {
+        cvm::error("Uninitialized feature " + cvm::to_str(i) + " in " + description);
+      }
+    }
   }
 
   // Initialize feature_states for each instance
@@ -749,7 +756,7 @@ int cvm::atom_group::parse_fitting_options(std::string const &group_conf)
           return INPUT_ERROR;
         }
       }
-      set_enabled(f_ag_fitting_group);
+      enable(f_ag_fitting_group);
     }
 
     atom_group *group_for_fit = fitting_group ? fitting_group : this;
