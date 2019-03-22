@@ -1,12 +1,6 @@
     rmsd {
         atoms {
-            indexGroup @
-        #    centerReference yes
-        #    rotateReference yes
-        #    fittingGroup {
-        #        indexGroup @
-        #    }
-        #    refPositionsFile @
+            atomNumbers 1 2 3
         }
         refPositionsFile @
     }

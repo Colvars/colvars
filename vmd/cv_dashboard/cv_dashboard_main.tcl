@@ -341,7 +341,7 @@ proc ::cv_dashboard::show_atoms {} {
         atomselect macro $group "index $list"
         lappend ::cv_dashboard::macros $group
         mol color ColorID $color
-        mol representation VDW 1.000000 12.000000
+        mol representation VDW 0.5 12.
         mol selection "$group"
         mol material Opaque
         mol addrep top

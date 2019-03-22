@@ -146,7 +146,12 @@ proc ::cv_dashboard::edit { {add false} } {
 
   # Ctrl-s anywhere in the window saves/applies
   bind $w.editor <Control-s> ::cv_dashboard::edit_apply
-  bind $w.editor <Control-a> "$w.editor.fr.text tag add sel 1.0 end-1c"
+  # Custom bindings for the text widget
+  bind $w.editor.fr.text <Control-a> "$w.editor.fr.text tag add sel 1.0 end-1c; break"
+  bind $w.editor.fr.text <Tab> ::cv_dashboard::tab_pressed
+  # Bind several possible mappings for Shift-Tab
+  bind $w.editor.fr.text <ISO_Left_Tab> { ::cv_dashboard::tab_pressed true }
+  bind $w.editor.fr.text <Shift-Tab> { ::cv_dashboard::tab_pressed true }
 
   set gridrow 1
   ttk::button $w.editor.fr.apply -text "Apply \[Ctrl-s\]" -command ::cv_dashboard::edit_apply -padding "2 0 2 0"
@@ -165,6 +170,38 @@ proc ::cv_dashboard::edit { {add false} } {
   pack $w.editor.fl -fill both -side left
   pack $w.editor.fr -fill both -expand yes -padx 2 -pady 2
   # pack $w.editor.fr -side bottom -fill both -expand yes
+}
+
+
+# Process tab presses to indent/unindent text
+
+proc ::cv_dashboard::tab_pressed { {shift false} } {
+  set t .cv_dashboard_window.editor.fr.text
+
+  set s [$t tag ranges sel]
+  if { $s == "" } {
+    # No selection
+    if { $shift == false } {
+      # Just insert spaces at cursor
+      $t insert insert "    "
+      return -code break
+    } else {
+      # Select line of cursor
+      set s [list "insert linestart" "insert lineend"]
+    }
+  } else {
+    # Extend selection to whole lines
+    set s [list "sel.first linestart" "sel.last lineend"]
+  }
+
+  set current_sel [$t get {*}$s]
+  if { $shift } {
+    regsub -all -lineanchor {^    } $current_sel "" new_sel
+  } else {
+    regsub -all -lineanchor {^} $current_sel "    " new_sel
+  }
+  $t replace {*}$s $new_sel sel
+  return -code break
 }
 
 
@@ -301,7 +338,7 @@ proc ::cv_dashboard::insert_filename {} {
     # Save directory for next invocation of this dialog
     set ::cv_dashboard::atomfile_dir [file dirname $path]
     set coltype [string range $filetype 0 end-4]
-    editor_replace "    $filetype $path\n    ${coltype}Col O\n    ${coltype}ColValue 1\n"
+    editor_replace "        $filetype $path\n        # ${coltype}Col O\n        # ${coltype}ColValue 1\n"
   }
 }
 

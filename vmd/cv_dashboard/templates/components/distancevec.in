@@ -1,9 +1,9 @@
     distanceVec {
         group1 {
-            indexGroup group1
+            atomNumbers 1
         }
         group2 {
-            indexGroup group2
+            atomNumbers 2
         }
     }
 
