@@ -137,7 +137,7 @@ proc ::cv_dashboard::edit { {add false} } {
 
   # Right frame: text widget w scrollbar and Apply/Cancel buttons
   frame $w.editor.fr
-  tk::text $w.editor.fr.text -undo 1 -yscrollcommand [list $w.editor.fr.vsb set] -background white
+  tk::text $w.editor.fr.text -undo 1 -yscrollcommand [list $w.editor.fr.vsb set] -background white -font "Helvetica -14"
   ttk::scrollbar $w.editor.fr.vsb -orient vertical -command [list $w.editor.fr.text yview]
   $w.editor.fr.text insert 1.0 $cfg
   set ::cv_dashboard::being_edited $cvs

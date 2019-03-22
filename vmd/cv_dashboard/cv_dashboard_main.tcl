@@ -44,7 +44,10 @@ proc ::cv_dashboard::createWindow {} {
   $w.cvtable column #0 -width 50 -stretch 1 -anchor w
   $w.cvtable column val -width 150 -stretch 1 -anchor w
   bind $w.cvtable <e> ::cv_dashboard::edit
-  bind $w <Control-a> { .cv_dashboard_window.cvtable selection set $::cv_dashboard::cvs }
+  bind $w <Control-a> {
+    puts $::cv_dashboard::cvs
+    .cv_dashboard_window.cvtable selection set $::cv_dashboard::cvs
+  }
 
   $w.cvtable tag configure parity0 -background white
   $w.cvtable tag configure parity1 -background grey94
@@ -65,7 +68,10 @@ proc ::cv_dashboard::createWindow {} {
   incr gridrow
   grid [ttk::button $w.plot -text "Timeline plot" -command ::cv_dashboard::plot -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $w.plot2cv -text "Pairwise plot" -command {::cv_dashboard::plot 2cv} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::button $w.refresh -text "Refresh table" -command ::cv_dashboard::refresh_table -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $w.refresh -text "Refresh (F5)" -command ::cv_dashboard::refresh_table -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+
+  user add key F5 ::cv_dashboard::refresh_table
+  bind $w <F5> ::cv_dashboard::refresh_table
 
   # Cannot test directly for the presence of scripting methods in the absence of a defined colvar
   # so we test the version number instead
@@ -429,5 +435,8 @@ proc ::cv_dashboard::hide_gradients {} {
     graphics top delete $i
   }
   set ::cv_dashboard::grad_objects {}
+  foreach cv $::cv_dashboard::grad_cvs {
+    run_cv colvar $cv set "collect gradient" 0
+  }
   set ::cv_dashboard::grad_cvs {}
 }

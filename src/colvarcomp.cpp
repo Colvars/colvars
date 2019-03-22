@@ -188,7 +188,6 @@ int colvar::cvc::init_dependencies() {
     init_feature(f_cvc_gradient, "gradient", f_type_dynamic);
 
     init_feature(f_cvc_explicit_gradient, "explicit gradient", f_type_static);
-    require_feature_self(f_cvc_explicit_gradient, f_cvc_gradient);
     require_feature_children(f_cvc_explicit_gradient, f_ag_explicit_gradient);
 
     init_feature(f_cvc_inv_gradient, "inverse gradient", f_type_dynamic);
