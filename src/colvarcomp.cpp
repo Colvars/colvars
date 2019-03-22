@@ -203,7 +203,7 @@ int colvar::cvc::init_dependencies() {
 
     init_feature(f_cvc_com_based, "depends on group centers of mass", f_type_static);
 
-    // init_feature(f_cvc_pbc_minimum_image, "use minimum-image distances with PBCs", f_type_user);
+    init_feature(f_cvc_pbc_minimum_image, "use minimum-image distances with PBCs", f_type_user);
 
     // Compute total force on first site only to avoid unwanted
     // coupling to other colvars (see e.g. Ciccotti et al., 2005)
