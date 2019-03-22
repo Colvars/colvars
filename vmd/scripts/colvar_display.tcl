@@ -129,7 +129,7 @@ proc start_rotation_display { cv {color yellow} {position {0 0 0}} {molid top} }
   update_rotation_display vmd_frame $molid w
 
   # set trace
-  global vmd_frame 
+  global vmd_frame
   trace add variable vmd_frame($molid) write update_rotation_display
   return
 }
@@ -175,9 +175,9 @@ proc update_rotation_display {name molid op} {
   set l 5.      ;# length of "clock handles"
   set r 0.5     ;# radius of "clock handles"
   set tip_ratio 4. ;# cone length divided by main radius
-  set res 16    ;# resolution of all objects 
+  set res 16    ;# resolution of all objects
   ######################################################
-  
+
 
   global rot_pos rot_col rot_handle rot_cv M_PI
   set f [molinfo $molid get frame]
@@ -207,9 +207,9 @@ proc update_rotation_display {name molid op} {
       } else {
           set v1 [vecnorm [veccross $u "1. 0. 0."]]
       }
-      set v2 [vectrans [transabout $u $theta] $v1] 
+      set v2 [vectrans [transabout $u $theta] $v1]
 
-      set e1 [vecadd $rot_pos [vecscale $l $v1]] 
+      set e1 [vecadd $rot_pos [vecscale $l $v1]]
       set e2 [vecadd $rot_pos [vecscale $l $v2]]
       lappend  rot_handle [graphics $molid cylinder [vecsub $rot_pos $u] [vecadd $rot_pos $u] radius $R resolution $res filled yes]
       set tip [vecadd [vecadd $rot_pos $u] [vecscale $u [expr {2. * $tip_ratio * $R / $L}]]]

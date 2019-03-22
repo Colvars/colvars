@@ -22,7 +22,7 @@ proc normalizeWeights {weightList} {
 # Weights must be normalized.
 proc resampleWalkers {weightList} {
     set num [llength $weightList]
- 
+
     ## Get the number of clones for each walker.
     set wbar(0) [lindex $weightList 0]
     set u [expr {rand()}]

@@ -263,7 +263,7 @@ void ABFdata::write_bias(const char *fileName)
     // writing the head of a pmf file as in a standard colvars output
     os << std::setw(2) << "# " << Nvars << "\n";
     for (i = 0 ; i < Nvars; i++)
-        os << "# " 
+        os << "# "
            << std::setw(10) << mins[i]
            << std::setw(10) << widths[i]
            << std::setw(10) << sizes[i] << " "

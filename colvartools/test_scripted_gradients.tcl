@@ -3,7 +3,7 @@
 # example usage in tclsh:
 #
 # source test_scripted_gradients.tcl
-# source ../namd/tests/library/007_scripted_cv_biases/procs2.tcl 
+# source ../namd/tests/library/007_scripted_cv_biases/procs2.tcl
 # test_grad vector {{0. 1. 0 0} {1. 2. 3. 4. 5. 6.}}
 
 if { [info tclversion] < 8.5 } {
@@ -73,9 +73,9 @@ proc grad_fdiff {func x0 dx {widths {}}} {
 
         # gradient wrt each cvc's components
         for {set j 0} {$j < $d} {incr j} {
-            set x1 [lreplace $x0 $i $i [lreplace $xi0 $j $j [expr [lindex $xi0 $j] - $dx/2.]]] 
+            set x1 [lreplace $x0 $i $i [lreplace $xi0 $j $j [expr [lindex $xi0 $j] - $dx/2.]]]
             set f1 [calc_${func} {*}$x1]
-            set x2 [lreplace $x0 $i $i [lreplace $xi0 $j $j [expr [lindex $xi0 $j] + $dx/2.]]] 
+            set x2 [lreplace $x0 $i $i [lreplace $xi0 $j $j [expr [lindex $xi0 $j] + $dx/2.]]]
             set f2 [calc_${func} {*}$x2]
 
             # the function value is a vector
