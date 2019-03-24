@@ -169,7 +169,6 @@ proc ::cv_dashboard::edit { {add false} } {
 
   pack $w.editor.fl -fill both -side left
   pack $w.editor.fr -fill both -expand yes -padx 2 -pady 2
-  # pack $w.editor.fr -side bottom -fill both -expand yes
 }
 
 
@@ -234,10 +233,9 @@ proc ::cv_dashboard::atoms_from_sel { source } {
   set w .cv_dashboard_window
 
   # Called from textbox
-  if { $source == "textbox" } {
-    set seltext [$w.editor.fl.helpers.seltext get]
-  } elseif { $source == "reps" } {
-    set seltext [$w.editor.fl.helpers.reps get]
+  switch $source {
+    textbox { set seltext [$w.editor.fl.helpers.seltext get] }
+    reps    { set seltext [$w.editor.fl.helpers.reps get] }
   }
 
   if {[llength $seltext] == 0 } {
@@ -382,4 +380,11 @@ proc ::cv_dashboard::refresh_reps {} {
     lappend reps [lindex [molinfo top get [list [list selection $i]]] 0]
   }
   $w.editor.fl.helpers.reps configure -values $reps
+}
+
+
+proc ::cv_dashboard::editor_help {} {
+  set w .cv_dashboard_window
+  help_window $w.editor "Help on colvars config editor" "Colvars Dashboard: the editor window" \
+{Help text}
 }

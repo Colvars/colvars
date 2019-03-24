@@ -298,4 +298,3 @@ proc ::cv_dashboard::display_marker { f } {
     }
   }
 }
-

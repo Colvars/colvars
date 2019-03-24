@@ -1,9 +1,9 @@
 # Colvars Dashboard -- based on the Colvars Module for VMD
 # Jérôme Hénin <henin@ibpc.fr> 2018
 
-# Usage:
-# source cv_dashboard.tcl
-# cv_dashboard (to reopen window)
+# Usage (after installing):
+# package require cv_dashboard
+# cv_dashboard
 
 # Design principles:
 # - take advantage of colvars/VMD binding for maximum user interaction
@@ -56,9 +56,10 @@ namespace eval ::cv_dashboard {
   }
 }
 
-source [file join $env(CV_DASHBOARD_DIR) cv_dashboard_main.tcl]
-source [file join $env(CV_DASHBOARD_DIR) cv_dashboard_editor.tcl]
-source [file join $env(CV_DASHBOARD_DIR) cv_dashboard_plots.tcl]
+set script_dir [file dirname [info script]]
+source [file join $script_dir cv_dashboard_main.tcl]
+source [file join $script_dir cv_dashboard_editor.tcl]
+source [file join $script_dir cv_dashboard_plots.tcl]
 
 
 proc cv_dashboard {} {
@@ -105,3 +106,23 @@ proc ::cv_dashboard::update_frame { name molid op } {
   update_shown_gradients
 }
 
+
+# Displays a non-blocking help window with the provided info
+proc ::cv_dashboard::help_window { parent wtitle title text } {
+  set h [toplevel $parent.help]
+  wm title $h $wtitle
+  tk::text $h.text -yscrollcommand [list $h.vsb set]
+  ttk::scrollbar $h.vsb -orient vertical -command [list $h.text yview]
+
+  $h.text insert insert ${title}\n\n title
+  $h.text tag configure title -font "Helvetica -14 bold" -justify center
+  $h.text insert insert $text
+  $h.text configure -state disabled
+  ttk::button $h.close -text "Close" -command " destroy $h " -padding "2 0 2 0"
+
+  grid $h.text -row 0 -column 0 -sticky nsew
+  grid $h.vsb -row 0 -column 1 -sticky nsew
+  grid $h.close -row 1 
+  grid columnconfigure $h 0 -weight 1
+  grid rowconfigure $h 0 -weight 1
+}
