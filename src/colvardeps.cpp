@@ -160,7 +160,10 @@ int colvardeps::enable(int feature_id,
   if (!toplevel && !is_dynamic(feature_id)) {
     if (!dry_run) {
       cvm::log(feature_type_descr + " feature \"" + f->description
-        + "\" may not be enabled as a dependency in " + description + ".\n");
+        + "\" cannot be enabled automatically in " + description + ".");
+      if (is_user(feature_id)) {
+        cvm::log("Try setting it manually.\n");
+      }
     }
     return COLVARS_ERROR;
   }
