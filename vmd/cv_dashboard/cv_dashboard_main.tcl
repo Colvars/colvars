@@ -49,8 +49,10 @@ proc ::cv_dashboard::createWindow {} {
     .cv_dashboard_window.cvtable selection set $::cv_dashboard::cvs
   }
 
-  $w.cvtable tag configure parity0 -background white
-  $w.cvtable tag configure parity1 -background grey94
+  if { [info patchlevel] != "8.5.6" } {
+    $w.cvtable tag configure parity0 -background white
+    $w.cvtable tag configure parity1 -background grey94
+  }
   refresh_table
 
   incr gridrow

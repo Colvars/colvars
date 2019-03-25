@@ -52,7 +52,8 @@ namespace eval ::cv_dashboard {
     set template_base_dir ${::env(CV_DASHBOARD_DIR)}/templates
     set template_dir $template_base_dir
   } else {
-    set template_dir [pwd]
+    set script_dir [file dirname [info script]]
+    set template_dir ${script_dir}/templates
   }
 }
 
