@@ -1117,13 +1117,12 @@ void cvm::atom_group::set_weighted_gradient(cvm::rvector const &grad)
 {
   if (b_dummy) return;
 
-  if (is_enabled(f_ag_scalable)) {
-    scalar_com_gradient = grad;
-    return;
-  }
+  scalar_com_gradient = grad;
 
-  for (cvm::atom_iter ai = this->begin(); ai != this->end(); ai++) {
-    ai->grad = (ai->mass/total_mass) * grad;
+  if (!is_enabled(f_ag_scalable)) {
+    for (cvm::atom_iter ai = this->begin(); ai != this->end(); ai++) {
+      ai->grad = (ai->mass/total_mass) * grad;
+    }
   }
 }
 
