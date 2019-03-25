@@ -429,18 +429,30 @@ public:
   /// \brief Calculate the center of mass of the atomic positions, assuming that
   /// they are already pbc-wrapped
   int calc_center_of_mass();
+
 private:
+
   /// \brief Center of mass
   cvm::atom_pos com;
+
   /// \brief The derivative of a scalar variable with respect to the COM
   // TODO for scalable calculations of more complex variables (e.g. rotation),
   // use a colvarvalue of vectors to hold the entire derivative
   cvm::rvector scalar_com_gradient;
+
 public:
-  /// \brief Return the center of mass of the atomic positions
+
+  /// \brief Return the center of mass (COM) of the atomic positions
   inline cvm::atom_pos center_of_mass() const
   {
     return com;
+  }
+
+  /// \brief Return previously gradient of scalar variable with respect to the
+  /// COM
+  inline cvm::rvector center_of_mass_scalar_gradient() const
+  {
+    return scalar_com_gradient;
   }
 
   /// \brief Return a copy of the current atom positions, shifted by a constant vector
