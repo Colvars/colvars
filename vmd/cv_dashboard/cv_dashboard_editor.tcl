@@ -150,7 +150,8 @@ proc ::cv_dashboard::edit { {add false} } {
   bind $w.editor.fr.text <Control-a> "$w.editor.fr.text tag add sel 1.0 end-1c; break"
   bind $w.editor.fr.text <Tab> ::cv_dashboard::tab_pressed
   # Bind several possible mappings for Shift-Tab
-  bind $w.editor.fr.text <ISO_Left_Tab> { ::cv_dashboard::tab_pressed true }
+  # ISO_Left_Tab is undefined on some platforms and will fail
+  catch { bind $w.editor.fr.text <ISO_Left_Tab> { ::cv_dashboard::tab_pressed true } }
   bind $w.editor.fr.text <Shift-Tab> { ::cv_dashboard::tab_pressed true }
 
   set gridrow 1

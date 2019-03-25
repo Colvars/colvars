@@ -118,24 +118,19 @@ proc ::cv_dashboard::refresh_table {} {
 
   set parity 1
   foreach c $::cv_dashboard::cvs {
-    $w.cvtable insert {} end -id $c -text $c
-    $w.cvtable tag add cvname [list $c]
     # tag odd and even rows for alternating background colors
     set parity [expr 1-$parity]
-    $w.cvtable tag add "parity$parity" [list $c]
+    $w.cvtable insert {} end -id $c -text $c -tag parity$parity
 
     set val [run_cv colvar $c update]
     $w.cvtable set $c val [format_value $val]
 
+    # Add sub-elements for vector colvars
     set size [llength $val]
     if { $size > 1 } {
       for {set i 1} {$i <= $size} {incr i} {
         set n "${c} ${i}"
-        $w.cvtable insert $c end -id $n -text $n
-        # all colvar/scalar comp items are tagged with tag cvname, to define common bindings on them
-        $w.cvtable tag add cvname [list $n]
-        $w.cvtable tag add "parity$parity" [list $n]
-
+        $w.cvtable insert $c end -id $n -text $n -tag parity$parity
         $w.cvtable set $n val [format_value [lindex $val [expr $i-1]]]
       }
     }

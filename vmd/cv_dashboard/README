@@ -1,0 +1,11 @@
+Makefile is used to within the VMD plugin distribution, when building VMD.
+To install on top of an existing vmd installation, use Makefile.local:
+
+Edit the PLUGINDIR variable in that file, and run
+make -f Makefile.local install
+
+The Dashboard can be run from any directory, without installing. Just type into
+the VMD console:
+
+source <path/to/cv_dashboard.tcl>
+cv_dashboard
