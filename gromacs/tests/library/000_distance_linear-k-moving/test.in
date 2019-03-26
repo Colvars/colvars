@@ -1,0 +1,33 @@
+colvarsTrajFrequency 1
+colvarsRestartFrequency 10
+indexFile index.ndx
+
+colvar {
+
+    name one
+
+    outputAppliedForce on
+
+    width 0.05
+
+    distance {
+        group1 {
+            indexGroup group1
+        }
+        group2 {
+            indexGroup group2
+        }
+    }
+} 
+
+linear {
+    colvars        one
+    centers        0.01
+    forceConstant  0.004184
+
+    targetForceconstant -0.4184
+    targetNumSteps 10
+
+    outputEnergy   yes
+    outputAccumulatedWork yes
+}

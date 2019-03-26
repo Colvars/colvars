@@ -1,0 +1,53 @@
+;Run control
+integrator               = md
+:time step in picoseconds
+dt                       = 0.001
+;number of steps
+nsteps                   = 20
+;frequency to write coordinates to output trajectory file
+nstxout                  = 1
+nstvout                  = 1
+nstfout                  = 1
+;frequency to write energies to log file
+nstlog                   = 1
+;frequency to write energies to energy file
+nstenergy                = 1
+nstcalcenergy            = 1
+;frequency to write coordinates to xtc trajectory
+nstxout-compressed     = 1
+
+;Frequency to update the neighbor list (and the long-range forces,
+;when using twin-range cut-off's).
+nstlist                  = 10
+ns_type                  = grid
+
+;cut-off distance for the short-range neighbor list
+rlist = 1.4
+cutoff-scheme = group
+
+
+
+;treatment of van der waals interactions
+vdwtype = cut-off
+vdw-modifier = Potential-switch
+rvdw = 1.2
+rvdw-switch = 1.0
+
+;treatment of electrostatic interactions
+coulombtype = Reaction-Field-zero
+rcoulomb-switch = 1.0
+rcoulomb = 1.2
+
+;Constrain h-bonds with SETTLE
+;Match NAMD parameters
+constraints              = h-bonds
+constraint-algorithm     = SHAKE
+
+comm_mode = Angular
+
+; Periodic boudary conditions
+pbc                      = no
+;Temperature coupling
+tcoupl                   = no
+;Velocity generation
+gen_vel                  = no

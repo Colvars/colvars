@@ -1,0 +1,38 @@
+colvarsTrajFrequency 1
+colvarsRestartFrequency 10
+indexFile index.ndx
+
+colvar {
+
+    name one
+
+    outputAppliedForce on
+
+    width 0.05
+
+    rmsd {
+        atoms {
+            indexGroup RMSD_atoms
+        }
+        refPositionsFile rmsd_atoms_refpos.xyz
+    }
+}
+
+
+colvar {
+
+    name two
+
+    cartesian {
+        atoms {
+            indexGroup RMSD_atoms
+        }
+    }
+}
+
+
+harmonic {
+    colvars        one
+    centers        0.01
+    forceConstant  0.004184
+}
