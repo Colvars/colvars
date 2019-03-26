@@ -1,0 +1,24 @@
+colvarsTrajFrequency 1
+colvarsRestartFrequency 10
+indexFile index.ndx
+
+colvar {
+
+    name one
+
+    outputAppliedForce on
+
+    width 0.05
+
+    gyration {
+        atoms {
+            indexGroup RMSD_atoms
+        }
+    }
+} 
+
+harmonic {
+    colvars        one
+    centers        0.01
+    forceConstant  0.004184
+}

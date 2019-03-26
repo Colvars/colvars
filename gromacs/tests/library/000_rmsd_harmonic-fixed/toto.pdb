@@ -1,0 +1,11 @@
+HETATM    1  CA  UNK             7.306   0.408  -0.585  1.00  0.00           C  
+HETATM    2  CA  UNK             6.403   1.216   3.045  1.00  0.00           C  
+HETATM    3  CA  UNK             4.806   4.804   2.871  1.00  0.00           C  
+HETATM    4  CA  UNK             2.244   3.799   0.274  1.00  0.00           C  
+HETATM    5  CA  UNK             1.586   0.197   1.484  1.00  0.00           C  
+HETATM    6  CA  UNK             0.783   1.074   5.133  1.00  0.00           C  
+HETATM    7  CA  UNK            -1.168   4.130   4.258  1.00  0.00           C  
+HETATM    8  CA  UNK            -3.469   2.434   1.737  1.00  0.00           C  
+HETATM    9  CA  UNK            -3.865  -0.250   4.460  1.00  0.00           C  
+HETATM   10  CA  UNK            -4.627   2.188   7.323  1.00  0.00           C  
+END
