@@ -51,6 +51,7 @@ void colvarproxy_gromacs::init(t_inputrec *ir, gmx_int64_t step,t_mdatoms *md,
   // Initialize colvars.
   first_timestep = true;
   total_force_requested = false;
+  restart_frequency_s = 0;
 
   // User-scripted forces are not available in GROMACS
   force_script_defined = false;
@@ -99,7 +100,6 @@ void colvarproxy_gromacs::init(t_inputrec *ir, gmx_int64_t step,t_mdatoms *md,
   updated_masses_ = updated_charges_ = true;
 
   // Get some parameters from GROMACS
-  restart_frequency_s = ir->nstxout;
   timestep = ir->delta_t;
   gmx_atoms = md;
 
@@ -252,7 +252,14 @@ int colvarproxy_gromacs::set_unit_system(std::string const &units_in, bool /*che
 
 int colvarproxy_gromacs::backup_file (char const *filename)
 {
-  if (std::string(filename).rfind(std::string(".colvars.state")) != std::string::npos) {
+  // Incremental gromacs backup system will be use only for those file
+  if (std::string(filename).rfind(std::string(".colvars.traj")) != std::string::npos) {
+
+    // GROMACS function
+    make_backup(filename);
+
+  // Otherwise, just keep one backup.
+  } else {
 
     //Handle filename of the backup file
     const char *extension = ".old";
@@ -264,9 +271,6 @@ int colvarproxy_gromacs::backup_file (char const *filename)
 
     delete [] backup;
 
-  } else {
-    // GROMACS function
-    make_backup(filename);
   }
   return COLVARS_OK;
 }
