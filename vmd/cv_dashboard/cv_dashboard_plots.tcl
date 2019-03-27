@@ -86,36 +86,21 @@ proc ::cv_dashboard::plot { { type timeline } } {
   # bind mouse and keyboard events to callbacks
   set plot_ns [namespace qualifiers $::cv_dashboard::plothandle]
 
+  traj_animation_bindings ${plot_ns}::w
   if { $type == "timeline" } {
     bind [set ${plot_ns}::w] <Button-1>       { ::cv_dashboard::plot_clicked %x %y }
-    bind [set ${plot_ns}::w] <Left>           { ::cv_dashboard::chg_frame -1 }
-    bind [set ${plot_ns}::w] <Right>          { ::cv_dashboard::chg_frame 1 }
-    bind [set ${plot_ns}::w] <Shift-Left>     { ::cv_dashboard::chg_frame -10 }
-    bind [set ${plot_ns}::w] <Shift-Right>    { ::cv_dashboard::chg_frame 10 }
-    bind [set ${plot_ns}::w] <Control-Left>   { ::cv_dashboard::chg_frame -50 }
-    bind [set ${plot_ns}::w] <Control-Right>  { ::cv_dashboard::chg_frame 50 }
-    bind [set ${plot_ns}::w] <Home>           { ::cv_dashboard::chg_frame start }
-    bind [set ${plot_ns}::w] <End>            { ::cv_dashboard::chg_frame end }
     bind [set ${plot_ns}::w] <Up>             { ::cv_dashboard::zoom 0.25 }
     bind [set ${plot_ns}::w] <Down>           { ::cv_dashboard::zoom 4 }
     bind [set ${plot_ns}::w] <Shift-Up>       { ::cv_dashboard::zoom 0.0625 }
     bind [set ${plot_ns}::w] <Shift-Down>     { ::cv_dashboard::zoom 16 }
     bind [set ${plot_ns}::w] <v>              { ::cv_dashboard::fit_vertically }
     bind [set ${plot_ns}::w] <h>              { ::cv_dashboard::fit_horizontally }
-  } elseif { $type == "2cv"} {
-    bind [set ${plot_ns}::w] <Left>           { ::cv_dashboard::chg_frame -1 }
-    bind [set ${plot_ns}::w] <Right>          { ::cv_dashboard::chg_frame 1 }
-    bind [set ${plot_ns}::w] <Shift-Left>     { ::cv_dashboard::chg_frame -10 }
-    bind [set ${plot_ns}::w] <Shift-Right>    { ::cv_dashboard::chg_frame 10 }
-    bind [set ${plot_ns}::w] <Control-Left>   { ::cv_dashboard::chg_frame -50 }
-    bind [set ${plot_ns}::w] <Control-Right>  { ::cv_dashboard::chg_frame 50 }
-    bind [set ${plot_ns}::w] <Home>           { ::cv_dashboard::chg_frame start }
-    bind [set ${plot_ns}::w] <End>            { ::cv_dashboard::chg_frame end }
   }
 
   # Update frame to display frame marker in new plot
   update_frame internal [molinfo top] w
 }
+
 
 
 # Callback for click inside plot window, at coords x y

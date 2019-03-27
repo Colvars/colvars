@@ -75,6 +75,13 @@ proc ::cv_dashboard::createWindow {} {
   user add key F5 ::cv_dashboard::refresh_table
   bind $w <F5> ::cv_dashboard::refresh_table
 
+  # Add trajectory animation bindings to Dashboard and VMD's OpenGL window
+  traj_animation_bindings $w
+  user add key Left  { ::cv_dashboard::chg_frame -1 }
+  user add key Right { ::cv_dashboard::chg_frame 1 }
+  user add key Home  { ::cv_dashboard::chg_frame start }
+  user add key End   { ::cv_dashboard::chg_frame end }
+
   # Cannot test directly for the presence of scripting methods in the absence of a defined colvar
   # so we test the version number instead
   if {[string compare [run_cv version] "2019-02-07"] >= 0} {

@@ -127,3 +127,15 @@ proc ::cv_dashboard::help_window { parent wtitle title text } {
   grid columnconfigure $h 0 -weight 1
   grid rowconfigure $h 0 -weight 1
 }
+
+# Add keyboard bindings for trajectory animation to widget given by path
+proc ::cv_dashboard::traj_animation_bindings { path } {
+  bind $path <Left>           { ::cv_dashboard::chg_frame -1 }
+  bind $path <Right>          { ::cv_dashboard::chg_frame 1 }
+  bind $path <Shift-Left>     { ::cv_dashboard::chg_frame -10 }
+  bind $path <Shift-Right>    { ::cv_dashboard::chg_frame 10 }
+  bind $path <Control-Left>   { ::cv_dashboard::chg_frame -50 }
+  bind $path <Control-Right>  { ::cv_dashboard::chg_frame 50 }
+  bind $path <Home>           { ::cv_dashboard::chg_frame start }
+  bind $path <End>            { ::cv_dashboard::chg_frame end }
+}
