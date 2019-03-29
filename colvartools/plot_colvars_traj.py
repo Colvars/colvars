@@ -218,7 +218,6 @@ if (__name__ == '__main__'):
                         default=[])
 
     parser.add_argument('--dt',
-                        dest='dt',
                         type=float,
                         help='Integration time step',
                         default=2.0e-6)
@@ -242,7 +241,6 @@ if (__name__ == '__main__'):
                         default=1)
 
     parser.add_argument('--variables',
-                        dest='variables',
                         nargs='*',
                         type=str,
                         help='Space-separated list of names of collective '
@@ -250,14 +248,12 @@ if (__name__ == '__main__'):
                         default=[])
 
     parser.add_argument('--list-variables',
-                        dest='list_variables',
                         action='store_true',
                         help='List all names of collective variables '
                         'defined up until the first line of data.',
                         default=False)
 
     parser.add_argument('--output-file',
-                        dest='output_file',
                         type=str,
                         help='Write the selected variables to a text file.  '
                         'The step number is always included as the first '
@@ -270,7 +266,6 @@ if (__name__ == '__main__'):
         import matplotlib
 
         parser.add_argument('--plot-file',
-                            dest='plot_file',
                             type=str,
                             help='Plot into a file with this name if the '
                             'extension is one of "png", "pdf", "ps", "eps", '
@@ -279,29 +274,32 @@ if (__name__ == '__main__'):
                             default=None)
 
         parser.add_argument('--plot-x-axis',
-                            dest='plot_x_axis',
                             type=str,
                             help='Use this variable as X axis in the plot.',
                             default='time')
 
         parser.add_argument('--plot-x-label',
-                            dest='plot_x_label',
                             type=str,
                             help='Use this label for the X axis.',
                             default=None)
 
         parser.add_argument('--plot-y-label',
-                            dest='plot_y_label',
                             type=str,
                             help='Use this label for the Y axis.',
                             default=None)
 
         parser.add_argument('--plot-keys',
-                            dest='plot_keys',
                             nargs='*',
                             type=str,
                             help='Alternative names for the legend',
                             default=[])
+
+        parser.add_argument('--plot-time-factor',
+                            type=int,
+                            help='Average these many consecutive frames '
+                            'together before plotting but after reading '
+                            'from files',
+                            default=1)
 
     except ImportError:
         matplotlib = None
@@ -393,10 +391,22 @@ if (__name__ == '__main__'):
             else:
                 x = colvars_traj[args.plot_x_axis].values
 
+            if (args.plot_time_factor > 1):
+                # Usually 1
+                start_ave = colvars_traj.num_frames % args.plot_time_factor
+                x = x[start_ave:].reshape(x.shape[0]//args.plot_time_factor,
+                                          args.plot_time_factor).mean(1)
+
             for ic in range(cv.num_dimensions):
                 y = cv.values
                 if (cv.num_dimensions > 1):
                     y = cv.values[:,ic]
+
+                if (args.plot_time_factor > 1):
+                    start_ave = colvars_traj.num_frames % args.plot_time_factor
+                    y = y[start_ave:].reshape(y.shape[0]//args.plot_time_factor,
+                                              args.plot_time_factor).mean(1)
+
                 plt.plot(x, y, '-',
                          label=plot_keys[var],
                          alpha=0.5)
