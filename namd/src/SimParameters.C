@@ -1224,17 +1224,17 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
    opts.optional("drude", "drudeDamping", "Damping coefficient (1/ps) for "
        "Drude oscillators", &drudeDamping);
    opts.range("drudeDamping", POSITIVE);
-   opts.optional("drude", "drudeBondLen", "Drude oscillator bond length "
-       "beyond which to apply restraint", &drudeBondLen);
-   opts.range("drudeBondLen", POSITIVE);
-   opts.optional("drude", "drudeBondConst", "Drude oscillator restraining "
-       "force constant", &drudeBondConst);
-   opts.range("drudeBondConst", POSITIVE);
    opts.optional("drude", "drudeNbtholeCut", "Nonbonded Thole interactions "
-       "interaction radius", &drudeNbtholeCut);
+       "interaction radius", &drudeNbtholeCut, 5.0);
    opts.range("drudeNbtholeCut", POSITIVE);
    opts.optionalB("drude", "drudeHardWall", "Apply maximum Drude bond length "
-       "restriction?", &drudeHardWallOn, FALSE);
+       "restriction?", &drudeHardWallOn, TRUE);
+   opts.optional("drude", "drudeBondLen", "Drude oscillator bond length "
+       "beyond which to apply restraint", &drudeBondLen, 0.25);
+   opts.range("drudeBondLen", POSITIVE);
+   opts.optional("drude", "drudeBondConst", "Drude oscillator restraining "
+       "force constant", &drudeBondConst, 40000.0);
+   opts.range("drudeBondConst", POSITIVE);
 
    // Pair interaction calculations
     opts.optionalB("main", "pairInteraction",
@@ -3678,21 +3678,6 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
        iout << iWARN << "Undefined 'drudeDamping' will be set to "
          "value of 'langevinDamping'\n" << endi;
      }
-     if ( ! opts.defined("drudeBondConst")) {
-       drudeBondConst = 0;
-       if (! drudeHardWallOn) {
-         drudeBondLen = 0;
-         if (opts.defined("drudeBondLen")) {
-           iout << iWARN << "Resetting 'drudeBondLen' to 0 "
-             "since 'drudeBondConst' and 'drudeHardWall' are unset\n" << endi;
-         }
-       }
-     }
-     if ( ! opts.defined("drudeNbtholeCut")) {
-       drudeNbtholeCut = 0;
-         iout << iWARN << "Resetting 'drudeNbtholeCut' to 0 "
-           "since 'drudeNbtholeCut' is unset\n" << endi;
-     }
    }
 
    //  Set up load balancing variables
@@ -5669,17 +5654,16 @@ if ( openatomOn )
         iout << iINFO << "DRUDE DAMPING COEFFICIENT IS "
              << drudeDamping << " INVERSE PS\n";
       }
-      if (drudeBondConst > 0.0) {
+      if (drudeHardWallOn) {
+        iout << iINFO << "DRUDE HARD WALL RESTRAINT IS ACTIVE FOR DRUDE BONDS\n";
+        iout << iINFO << "DRUDE MAXIMUM BOND LENGTH BEFORE RESTRAINT IS   "
+             << drudeBondLen << "\n";
+      } else if (drudeBondConst > 0.0) {
         iout << iINFO << "DRUDE QUARTIC RESTRAINT IS ACTIVE FOR DRUDE BONDS\n";
         iout << iINFO << "DRUDE MAXIMUM BOND LENGTH BEFORE RESTRAINT IS   "
              << drudeBondLen << "\n";
         iout << iINFO << "DRUDE BOND RESTRAINT CONSTANT IS                "
              << drudeBondConst << "\n";
-      }
-      if (drudeHardWallOn) {
-        iout << iINFO << "DRUDE HARD WALL RESTRAINT IS ACTIVE FOR DRUDE BONDS\n";
-        iout << iINFO << "DRUDE MAXIMUM BOND LENGTH BEFORE RESTRAINT IS   "
-             << drudeBondLen << "\n";
       }
       if (drudeNbtholeCut > 0.0) {
         iout << iINFO << "DRUDE NBTHOLE IS ACTIVE\n";
