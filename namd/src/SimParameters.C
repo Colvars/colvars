@@ -296,52 +296,6 @@ void SimParameters::scriptSet(const char *param, const char *value) {
   }
   SCRIPT_PARSE_INT("alchEquilSteps",alchEquilSteps)
 
-  if ( ! strncasecmp(param,"alchRepLambda",MAX_SCRIPT_PARAM_SIZE) ) {
-    alchRepLambda = atof(value);
-    alchFepWCARepuOn = true;
-    alchFepWCADispOn = false;
-    alchFepElecOn    = false;
-    ComputeNonbondedUtil::select();
-    return;
-  }
-
-  if ( ! strncasecmp(param,"alchDispLambda",MAX_SCRIPT_PARAM_SIZE) ) {
-    alchDispLambda = atof(value);
-    alchFepWCARepuOn = false;
-    alchFepWCADispOn = true;
-    alchFepElecOn    = false;
-    ComputeNonbondedUtil::select();
-    return;
-  }
-
-  if ( ! strncasecmp(param,"alchElecLambda",MAX_SCRIPT_PARAM_SIZE) ) {
-    alchElecLambda = atof(value);
-    alchFepWCARepuOn = false;
-    alchFepWCADispOn = false;
-    alchFepElecOn    = true;
-    ComputeNonbondedUtil::select();
-    return;
-  }
-
-
-  if ( ! strncasecmp(param,"alchFepWCArcut1",MAX_SCRIPT_PARAM_SIZE) ) {
-    alchFepWCArcut1 = atof(value);
-    ComputeNonbondedUtil::select();
-    return;
-  }
-
-  if ( ! strncasecmp(param,"alchFepWCArcut2",MAX_SCRIPT_PARAM_SIZE) ) {
-    alchFepWCArcut2 = atof(value);
-    ComputeNonbondedUtil::select();
-    return;
-  }
-
-  if ( ! strncasecmp(param,"alchFepWCArcut3",MAX_SCRIPT_PARAM_SIZE) ) {
-    alchFepWCArcut3 = atof(value);
-    ComputeNonbondedUtil::select();
-    return;
-  }
-
   if ( ! strncasecmp(param,"alchLambda",MAX_SCRIPT_PARAM_SIZE) ) {
     alchLambda = atof(value);
     if ( alchLambda < 0.0 || 1.0 < alchLambda ) {
@@ -1111,14 +1065,22 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
      "the altered alchemical vDW interactions", &alchVdwShiftCoeff, 5.);
    opts.range("alchVdwShiftCoeff", NOT_NEGATIVE);
 
+   opts.optionalB("alch", "alchWCA", "Is WCA decomposition being performed?",
+     &alchWCAOn, FALSE);
+
    // scheduling options for different interaction types
    opts.optional("alch", "alchElecLambdaStart", "Lambda at which electrostatic"
       "scaling of exnihilated particles begins", &alchElecLambdaStart, 0.5);
    opts.range("alchElecLambdaStart", NOT_NEGATIVE);
 
    opts.optional("alch", "alchVdwLambdaEnd", "Lambda at which vdW"
-      "scaling of exnihilated particles begins", &alchVdwLambdaEnd, 1.0);
+      "scaling of exnihilated particles ends", &alchVdwLambdaEnd, 1.0);
    opts.range("alchVdwLambdaEnd", NOT_NEGATIVE);
+
+   opts.optional("alch", "alchRepLambdaEnd", "Lambda at which repulsive vdW"
+      "scaling of exnihilated particles ends and attractive vdW scaling"
+      "begins", &alchRepLambdaEnd, 0.5);
+   opts.range("alchRepLambdaEnd", NOT_NEGATIVE);
 
    opts.optional("alch", "alchBondLambdaEnd", "Lambda at which bonded"
       "scaling of exnihilated particles begins", &alchBondLambdaEnd, 0.0);
@@ -1145,35 +1107,8 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
      "data collection in the alchemical window", &alchEquilSteps, 0);
    opts.range("alchEquilSteps", NOT_NEGATIVE);
 
-   // WCA decomposition options
-   opts.optionalB("alch", "alchFepWCARepuOn",
-     "WCA decomposition repu interaction in use?", &alchFepWCARepuOn, FALSE);
-   opts.optionalB("alch", "alchFepWCADispOn",
-     "WCA decomposition disp interaction in use?", &alchFepWCADispOn, FALSE);
    opts.optionalB("alch", "alchEnsembleAvg", "Ensemble Average in use?",
      &alchEnsembleAvg, TRUE);
-   opts.optionalB("alch", "alchFepWhamOn",
-     "Energy output for Wham postprocessing in use?", &alchFepWhamOn, FALSE);
-   opts.optional("alch", "alchFepWCArcut1",
-     "WCA repulsion Coeff1 used for generating the altered alchemical vDW "
-     "interactions", &alchFepWCArcut1, 0.0);
-   opts.range("alchFepWCArcut1", NOT_NEGATIVE);
-   opts.optional("alch", "alchFepWCArcut2", "WCA repulsion Coeff2 used for "
-     "generating the altered alchemical vDW interactions", &alchFepWCArcut2,
-     1.0);
-   opts.range("alchFepWCArcut2", NOT_NEGATIVE);
-   opts.optional("alch", "alchFepWCArcut3",
-     "WCA repulsion Coeff3 used for generating the altered alchemical vDW "
-     "interactions", &alchFepWCArcut3, 1.0);
-   opts.range("alchFepWCArcut3", NOT_NEGATIVE);
-   // These default to invalid lambda values.
-   opts.optional("alch", "alchRepLambda", "Lambda of WCA repulsion"
-     "Coupling parameter value for WCA repulsion", &alchRepLambda, -1.0);
-   opts.optional("alch", "alchDispLambda", "Lambda of WCA dispersion"
-     "Coupling parameter value for WCA dispersion", &alchDispLambda, -1.0);
-   opts.optional("alch", "alchElecLambda", "Lambda of electrostatic "
-     "perturbation Coupling parameter value for electrostatic perturbation",
-     &alchElecLambda, -1.0);
 //fepe
 
    opts.optionalB("main", "les", "Is locally enhanced sampling enabled?",
@@ -3519,10 +3454,6 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
    alchOnAtStartup = alchOn;
 
    if (alchOn) {
-     if (vdwForceSwitching && (alchFepWCARepuOn || alchFepWCADispOn)) {
-       iout << iWARN << "vdwForceSwitching not implemented for alchemical "
-         "interactions when WCA decomposition is on!\n" << endi;
-     }
      if (martiniSwitching) {
        iout << iWARN << "Martini switching disabled for alchemical "
          "interactions.\n" << endi;
@@ -3566,6 +3497,18 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
      if (alchElecLambdaStart > 1.0)
         NAMD_die("alchElecLambdaStart should be in the range [0.0, 1.0]\n");
 
+     if (alchWCAOn) {
+       if (alchRepLambdaEnd > 1.0)
+         NAMD_die("alchRepLambdaEnd should be in the range [0.0, 1.0]\n");
+       if (alchVdwLambdaEnd < alchRepLambdaEnd)
+         NAMD_die("alchVdwLambdaEnd should be greater than alchRepLambdaEnd\n");
+       if (alchVdwShiftCoeff > 0.0) {
+         iout << iWARN << "alchVdwShiftCoeff is non-zero but not used when WCA"
+              << " is active. Setting it to zero now.\n" << endi;
+         alchVdwShiftCoeff = 0.0;
+       }
+     }
+     
      if (alchFepOn) {
        if (alchLambda2 < 0.0 || alchLambda2 > 1.0)
          NAMD_die("alchLambda2 values should be in the range [0.0, 1.0]\n");
@@ -3577,56 +3520,8 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
          strcat(alchOutFile, ".fep");
        }
 
-       if (!alchFepWhamOn &&
-           ((!opts.defined("alchLambda")) || (!opts.defined("alchLambda2")))) {
+       if (!opts.defined("alchLambda") || !opts.defined("alchLambda2")) {
          NAMD_die("alchFepOn is on, but alchLambda or alchLambda2 is not set.");
-       }
-
-       if(alchRepLambda > 1.0)
-         NAMD_die("alchRepLambda should be in the range [0.0, 1.0].");
-       else if(alchRepLambda >= 0.0)
-         alchFepWCARepuOn = true;
-       else
-         alchFepWCARepuOn = false;
-
-       if(alchDispLambda > 1.0)
-         NAMD_die("alchDispLambda should be in the range [0.0, 1.0].");
-       else if(alchDispLambda >= 0.0)
-         alchFepWCADispOn = true;
-       else
-         alchFepWCADispOn = false;
-
-       if(alchElecLambda > 1.0)
-         NAMD_die("alchElecLambda should be in the range [0.0, 1.0].");
-       else if(alchElecLambda >= 0.0)
-         alchFepElecOn = true;
-       else
-         alchFepElecOn = false;
-
-       if ((alchFepWCARepuOn || alchFepWCADispOn || alchFepElecOn) &&
-           !alchFepWhamOn)
-         NAMD_die("alchFepWhamOn has to be on if one of alchFepWCARepuOn/alchFepWCADispOn/alchFepElecOn is set.");
-       if (alchFepWCARepuOn && alchFepWCADispOn)
-          NAMD_die("With WCA decomposition, repulsion and dispersion can NOT be in the same FEP stage");
-       if (alchFepWCARepuOn && alchFepElecOn)
-          NAMD_die("With WCA decomposition, repulsion and electrostatic perturbation can NOT be in the same FEP stage");
-       if (alchFepWCADispOn && alchFepElecOn)
-          NAMD_die("With WCA decomposition, dispersion and electrostatic perturbation can NOT be in the same FEP stage");
-       if (alchFepWCARepuOn &&
-           (!opts.defined("alchFepWCArcut1") ||
-            !opts.defined("alchFepWCArcut2") ||
-            !opts.defined("alchFepWCArcut3") ))
-          NAMD_die("When using WCA repulsion,  alchFepWCArcut1, alchFepWCArcut2, and alchFepWCArcut3 must be defined!");
-       if (alchFepWCARepuOn &&
-           ((alchFepWCArcut1 > alchFepWCArcut2) ||
-            (alchFepWCArcut2 > alchFepWCArcut3) ))
-           NAMD_die("When using WCA repulsion,  alchFepWCArcut2 must be larger than alchFEPWCArcut1, alchFepWCArcut3 must be larger than alchFEPWCArcut2!");
-       if (alchFepWhamOn && (alchRepLambda < 0.0) && (alchDispLambda < 0.0) &&
-           (alchElecLambda < 0.0) )
-       	   NAMD_die("One of alchRepLambda, alchDispLambda and alchElecLambda should be set up when alchFepWhamOn is true!");
-       if (alchFepWhamOn && (!alchFepElecOn)) {
-       	 alchElecLambda = 0.0;
-       	 ComputeNonbondedUtil::alchElecLambda = alchElecLambda;
        }
      }
      else if (alchThermIntOn) {
@@ -3649,6 +3544,12 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
      NAMD_die("Sorry, combined LES with FEP or TI is not implemented.\n");
    if ( alchOn && alchThermIntOn && lesOn )
      NAMD_die("Sorry, combined LES and TI is not implemented.\n");
+   if ( alchWCAOn && !alchOn ) {
+     iout << iWARN << "Alchemical WCA decomposition was requested but \
+       alchemical free energy calculation is not active. Setting \
+       alchWCA to off.\n" << endi;
+     alchWCAOn = FALSE;
+   }
    if ( alchDecouple && !alchOn ) {
          iout << iWARN << "Alchemical decoupling was requested but \
            alchemical free energy calculation is not active. Setting \
@@ -5122,38 +5023,45 @@ if ( openatomOn )
        iout << iINFO << "FEP INTRA-ALCHEMICAL BONDED INTERACTIONS WILL BE "
             << "RETAINED\n";
      }
+     if (alchWCAOn) {
+       iout << iINFO << "FEP WEEKS-CHANDLER-ANDERSEN (WCA) VDW DECOUPLING "
+            << "ACTIVE\n";
+     } else {
      iout << iINFO << "FEP VDW SHIFTING COEFFICIENT "
           << alchVdwShiftCoeff << "\n";
+     }
      iout << iINFO << "FEP ELEC. ACTIVE FOR ANNIHILATED "
           << "PARTICLES BETWEEN LAMBDA = 0 AND LAMBDA = "
           << (1 - alchElecLambdaStart) << "\n";
      iout << iINFO << "FEP ELEC. ACTIVE FOR EXNIHILATED "
           << "PARTICLES BETWEEN LAMBDA = "
           << alchElecLambdaStart << " AND LAMBDA = 1\n";
+     if (alchWCAOn) {
+       iout << iINFO << "FEP VDW-REPU. ACTIVE FOR ANNIHILATED PARTICLES "
+            << "BETWEEN LAMBDA = " << (1 - alchRepLambdaEnd) << " AND LAMBDA "
+            << "= 1\n";
+       iout << iINFO << "FEP VDW-REPU. ACTIVE FOR EXNIHILATED PARTICLES "
+            << "BETWEEN LAMBDA = 0 AND LAMBDA " << alchRepLambdaEnd << "\n";
+       iout << iINFO << "FEP VDW-ATTR. ACTIVE FOR ANNIHILATED PARTICLES "
+            << "BETWEEN LAMBDA = " << (1 - alchVdwLambdaEnd) << " AND LAMBDA = "
+            << (1 - alchRepLambdaEnd) << "\n";
+       iout << iINFO << "FEP VDW-ATTR. ACTIVE FOR EXNIHILATED PARTICLES "
+            << "BETWEEN LAMBDA = " << alchRepLambdaEnd << " AND LAMBDA = "
+            << alchVdwLambdaEnd << "\n";
+     } else {
      iout << iINFO << "FEP VDW ACTIVE FOR ANNIHILATED "
           << "PARTICLES BETWEEN LAMBDA = "
           << (1 - alchVdwLambdaEnd) << " AND LAMBDA = 1\n";
      iout << iINFO << "FEP VDW ACTIVE FOR EXNIHILATED "
           << "PARTICLES BETWEEN LAMBDA = 0 AND LAMBDA = "
           << alchVdwLambdaEnd << "\n";
+     }
      iout << iINFO << "FEP BOND ACTIVE FOR ANNIHILATED "
           << "PARTICLES BETWEEN LAMBDA = "
           << (1 - alchBondLambdaEnd) << " AND LAMBDA = 1\n";
      iout << iINFO << "FEP BOND ACTIVE FOR EXNIHILATED "
           << "PARTICLES BETWEEN LAMBDA = 0 AND LAMBDA = "
           << alchBondLambdaEnd << "\n";
-
-     if (alchFepWCADispOn)
-     {
-       iout << iINFO << "FEP WEEKS-CHANDLER-ANDERSEN DECOMPOSITION (DISPERSION) ON\n";
-     }
-     if (alchFepWCARepuOn)
-     {
-       iout << iINFO << "FEP WEEKS-CHANDLER-ANDERSEN DECOMPOSITION (REPULSION) ON\n";
-       iout << iINFO << "FEP WEEKS-CHANDLER-ANDERSEN RCUT1 = "
-            << alchFepWCArcut1 << " , RCUT2 = "
-            << alchFepWCArcut2  << " AND RCUT3 = " << alchFepWCArcut3 << "\n";
-     }
    }
 //fepe
 
@@ -7219,9 +7127,35 @@ BigReal SimParameters::getElecLambda(const BigReal lambda) {
           : (lambda - alchElecLambdaStart) / (1. - alchElecLambdaStart));
 }
 
+/*
+ * Modifications for WCA decomposition of van der Waal interactions.
+ *
+ * WCA requires that repulsive and attractive components of the vdW 
+ * forces be treated separately. To keep the code clean, the same scaling
+ * function is always used and simply has its behavior modified. However,
+ * the new repluslive scaling only ever gets used when alchWCAOn.
+ */
 BigReal SimParameters::getVdwLambda(const BigReal lambda) {
   // Convenience function for staggered lambda scaling
+  if ( alchWCAOn ) {
+    // Read this with the alias alchRepLambdaEnd --> alchAttLambdaStart.
+    // The second condition is needed when attractive interactions are inactive
+    // for the whole range, otherwise lambda = 0/1 are incorrect.
+    if ( lambda < alchRepLambdaEnd || alchRepLambdaEnd == 1.0 ) {
+      return 0.0;
+    } else if ( lambda >= alchVdwLambdaEnd ) {
+      return 1.0;
+    } else {
+      return (lambda - alchRepLambdaEnd) / (alchVdwLambdaEnd - alchRepLambdaEnd);
+    }
+  } else {
   return (lambda >= alchVdwLambdaEnd ? 1. : lambda / alchVdwLambdaEnd);
+}
+}
+
+BigReal SimParameters::getRepLambda(const BigReal lambda) {
+  // Convenience function for staggered lambda scaling
+  return (lambda >= alchRepLambdaEnd ? 1. : lambda / alchRepLambdaEnd);
 }
 
 BigReal SimParameters::getBondLambda(const BigReal lambda) {

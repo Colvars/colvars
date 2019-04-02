@@ -378,10 +378,7 @@ public:
   Bool alchOn;              //  Doing alchemical simulation?
   Bool alchFepOn;           //  Doing alchemical simulation?
   Bool alchThermIntOn;      //  Doing thermodynamic integration?
-  Bool alchFepWCARepuOn;    //  Doing WCA decomposition repulsion interaction?
-  Bool alchFepWCADispOn;    //  Doing WCA decomposition dispersion interaction?
-  Bool alchFepElecOn;       //  Doing electrostatic interaction perturbation?
-  Bool alchFepWhamOn;       //  Doing Wham postprocessing for FEP?
+  Bool alchWCAOn;           //  Using WCA decomposition for vdWs?
   int alchMethod;           //  Which alchemical method to use? fep or ti
   BigReal alchLambda;       //  lambda for dynamics
   BigReal alchLambda2;      //  lambda for comparison
@@ -393,12 +390,6 @@ public:
   BigReal getCurrentLambda2(const int); // getter for alternating lambda2 in IDWS
   int setupIDWS();          //  activates IDWS and sets alchIDWSFreq
   BigReal getLambdaDelta(void); // getter for lambda increment
-  BigReal alchRepLambda;    //  lambda for WCA repulsive interaction
-  BigReal alchDispLambda;   //  lambda for WCA dispersion interaction
-  BigReal alchElecLambda;   //  lambda for electrostatic perturbation
-  BigReal alchFepWCArcut1;  //  rcut1 of WCA decompistion repulsion
-  BigReal alchFepWCArcut2;  //  rcut2 of WCA decomposition repulsion
-  BigReal alchFepWCArcut3;  //  rcut3 of WCA decomposition repulsion
   BigReal alchTemp;         //  temperature for alchemical calculation
   int alchOutFreq;          //  freq. of alchemical output
   Bool alchEnsembleAvg;      //if do ensemble average for the net free energy difference
@@ -417,6 +408,12 @@ public:
                              //  For annihilated particles the endpoint is
                              //  (1-alchVdwLambdaEnd)
   BigReal getVdwLambda(const BigReal); // return max[1,x/vdwEnd]
+  BigReal alchRepLambdaEnd;  //  lambda value for endpoint of repulsive vdW
+                             //  interactions of exnihilated particles.
+                             //  For annihilated particles the endpoint is 
+                             //  (1-alchRepLambdaEnd). This also implies the
+                             //  START for attractive vdW interactions.
+  BigReal getRepLambda(const BigReal); // return max[1,x/repEnd]
   BigReal alchBondLambdaEnd; //  lambda value for endpoint of bonded
                              //  interactions involving exnihilated particles.
                              //  For annihilated particles the endpoint is
