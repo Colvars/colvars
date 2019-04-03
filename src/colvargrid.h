@@ -45,7 +45,7 @@ protected:
   std::vector<colvar *> cv;
 
   /// Do we request actual value (for extended-system colvars)?
-  std::vector<bool> actual_value;
+  std::vector<bool> use_actual_value;
 
   /// Get the low-level index corresponding to an index
   inline size_t address(std::vector<int> const &ix) const
@@ -128,8 +128,8 @@ public:
   inline void request_actual_value(bool b = true)
   {
     size_t i;
-    for (i = 0; i < actual_value.size(); i++) {
-      actual_value[i] = b;
+    for (i = 0; i < use_actual_value.size(); i++) {
+      use_actual_value[i] = b;
     }
   }
 
@@ -207,7 +207,7 @@ public:
                                          mult(g.mult),
                                          data(),
                                          cv(g.cv),
-                                         actual_value(g.actual_value),
+                                         use_actual_value(g.use_actual_value),
                                          lower_boundaries(g.lower_boundaries),
                                          upper_boundaries(g.upper_boundaries),
                                          periodic(g.periodic),
@@ -282,13 +282,13 @@ public:
       periodic.push_back(cv[i]->periodic_boundaries());
 
       // By default, get reported colvar value (for extended Lagrangian colvars)
-      actual_value.push_back(false);
+      use_actual_value.push_back(false);
 
       // except if a colvar is specified twice in a row
       // then the first instance is the actual value
       // For histograms of extended-system coordinates
       if (i > 0 && cv[i-1] == cv[i]) {
-        actual_value[i-1] = true;
+        use_actual_value[i-1] = true;
       }
 
       if (margin) {
@@ -383,20 +383,20 @@ public:
   /// \brief Report the bin corresponding to the current value of variable i
   inline int current_bin_scalar(int const i) const
   {
-    return value_to_bin_scalar(actual_value[i] ? cv[i]->actual_value() : cv[i]->value(), i);
+    return value_to_bin_scalar(use_actual_value[i] ? cv[i]->actual_value() : cv[i]->value(), i);
   }
 
   /// \brief Report the bin corresponding to the current value of variable i
   /// and assign first or last bin if out of boundaries
   inline int current_bin_scalar_bound(int const i) const
   {
-    return value_to_bin_scalar_bound(actual_value[i] ? cv[i]->actual_value() : cv[i]->value(), i);
+    return value_to_bin_scalar_bound(use_actual_value[i] ? cv[i]->actual_value() : cv[i]->value(), i);
   }
 
   /// \brief Report the bin corresponding to the current value of item iv in variable i
   inline int current_bin_scalar(int const i, int const iv) const
   {
-    return value_to_bin_scalar(actual_value[i] ?
+    return value_to_bin_scalar(use_actual_value[i] ?
                                cv[i]->actual_value().vector1d_value[iv] :
                                cv[i]->value().vector1d_value[iv], i);
   }
@@ -832,7 +832,7 @@ public:
 
     if (nd < lower_boundaries.size()) nd = lower_boundaries.size();
 
-    if (! actual_value.size()) actual_value.assign(nd, false);
+    if (! use_actual_value.size()) use_actual_value.assign(nd, false);
     if (! periodic.size()) periodic.assign(nd, false);
     if (! widths.size()) widths.assign(nd, 1.0);
 
