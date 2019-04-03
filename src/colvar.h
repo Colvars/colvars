@@ -571,6 +571,8 @@ public:
   class dihedPC;
   class gspath;
   class gzpath;
+  class gspathCV;
+  class gzpathCV;
 
   // non-scalar components
   class distance_vec;

@@ -1,5 +1,12 @@
 // -*- c++ -*-
 
+// This file is part of the Collective Variables module (Colvars).
+// The original version of Colvars and its updates are located at:
+// https://github.com/colvars/colvars
+// Please update all Colvars source files before making any changes.
+// If you wish to distribute your changes, please submit them to the
+// Colvars repository at GitHub.
+
 #ifndef COLVARPARSE_H
 #define COLVARPARSE_H
 
@@ -204,6 +211,10 @@ protected:
   /// Get the string value of a keyword, and save it for later parsing
   bool get_key_string_value(std::string const &conf,
                             char const *key, std::string &data);
+
+  /// Get multiple strings of a same keyword
+  bool get_key_string_multi_value(std::string const &conf,
+                                  char const *key, std::vector<std::string>& data);
 
   /// Template for single-value keyword parsers
   template<typename TYPE>

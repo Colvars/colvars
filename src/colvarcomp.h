@@ -23,6 +23,10 @@
 #include "colvarmodule.h"
 #include "colvar.h"
 #include "colvaratoms.h"
+#include "geometric_path.h"
+
+#include <functional>
+#include <map>
 
 
 /// \brief Colvar component (base class for collective variables)
@@ -1380,42 +1384,21 @@ public:
 /// For more information see https://plumed.github.io/doc-v2.5/user-doc/html/_p_a_t_h.html
 /// Díaz Leines, G.; Ensing, B. Path Finding on High-Dimensional Free Energy Landscapes. Phys. Rev. Lett. 2012, 109 (2), 020601. https://doi.org/10.1103/PhysRevLett.109.020601.
 class colvar::gspath
-  : public colvar::cvc
+  : public colvar::cvc, public GeometricPathCV::GeometricPathBase<cvm::atom_pos, cvm::real, GeometricPathCV::path_sz::S>
 {
 private:
-    void update_distances();
-    // Indices used to sort and find closest image
-    std::vector<size_t> frame_index;
-    bool use_second_closest_frame;
-    bool use_third_closest_frame;
-    long min_frame_index_1;
-    long min_frame_index_2;
-    long min_frame_index_3;
-    // Store v1, v2 and v3
-    std::vector<cvm::atom_pos> v1;
-    std::vector<cvm::atom_pos> v2;
-    std::vector<cvm::atom_pos> v3;
     // Optimal rotation for compute v3
     cvm::rotation rot_v3;
     // m, M and the sign before f;
-    long sign;
-    double M;
-    double m;
-    // v1v3, v1^2, v2^2, v3^2
-    cvm::real v1v3;
-    cvm::real v1_2;
-    cvm::real v2_2;
-    cvm::real v3_2;
-    // Derivatives
-    std::vector<cvm::atom_pos> dfdv1;
-    std::vector<cvm::atom_pos> dfdv2;
+    cvm::real m;
+    cvm::real M;
 protected:
+    virtual void updateReferenceDistances();
+    virtual void prepareVectors();
     /// Selected atoms
     cvm::atom_group *atoms;
     /// Reference frames
     std::vector<std::vector<cvm::atom_pos>> reference_frames;
-    /// Current distance to reference frames;
-    std::vector<cvm::real> frame_distances;
     /// Atom groups for RMSD calculation together with reference frames
     std::vector<cvm::atom_group*> comp_atoms;
 public:
@@ -1442,53 +1425,21 @@ public:
 /// \brief Colvar component: alternative path collective variable using geometry, variable z
 /// This should be merged with gspath in the same class by class inheritance or something else
 class colvar::gzpath
-  : public colvar::cvc
+  : public colvar::cvc, public GeometricPathCV::GeometricPathBase<cvm::atom_pos, cvm::real, GeometricPathCV::path_sz::Z>
 {
 private:
-    void update_distances();
-    // Indices used to sort and find closest image
-    std::vector<size_t> frame_index;
-    bool use_second_closest_frame;
-    bool use_third_closest_frame;
-    long min_frame_index_1;
-    long min_frame_index_2;
-    long min_frame_index_3;
-    // Store v1, v2 and v3
-    std::vector<cvm::atom_pos> v1;
-    std::vector<cvm::atom_pos> v2;
-    std::vector<cvm::atom_pos> v3;
-    // For computing z it's convenient to has another vector v4
-    std::vector<cvm::atom_pos> v4;
-    // m, M and the sign before f;
-    long sign;
-    double M;
-    double m;
-    // v1v3, v1^2, v2^2, v3^2, v4^2
-    cvm::real v1v3;
-    cvm::real v1_2;
-    cvm::real v2_2;
-    cvm::real v3_2;
-    cvm::real v4_2;
+    cvm::real M;
+    cvm::real m;
     // Optimal rotation for compute v3, v4
     cvm::rotation rot_v3;
     cvm::rotation rot_v4;
-    // other intermediate variables
-    cvm::real f;
-    cvm::real dx;
-    cvm::real z;
-    cvm::real v1v4;
-    // Derivatives
-    std::vector<cvm::atom_pos> dfdv1;
-    std::vector<cvm::atom_pos> dfdv2;
-    std::vector<cvm::atom_pos> dzdv1;
-    std::vector<cvm::atom_pos> dzdv2;
 protected:
+    virtual void updateReferenceDistances();
+    virtual void prepareVectors();
     /// Selected atoms
     cvm::atom_group *atoms;
     /// Reference frames
     std::vector<std::vector<cvm::atom_pos>> reference_frames;
-    /// Current distance to reference frames;
-    std::vector<cvm::real> frame_distances;
     /// Atom groups for RMSD calculation together with reference frames
     std::vector<cvm::atom_group*> comp_atoms;
 public:
@@ -1505,6 +1456,64 @@ public:
             }
         }
     }
+    virtual void calc_value();
+    virtual void calc_gradients();
+    virtual void apply_force(colvarvalue const &force);
+};
+
+
+
+/// \brief Colvar component: alternative path collective variable using geometry, variable s
+/// Allow any combination of existing (scalar) CVs
+/// For more information see https://plumed.github.io/doc-v2.5/user-doc/html/_p_a_t_h.html
+/// Díaz Leines, G.; Ensing, B. Path Finding on High-Dimensional Free Energy Landscapes. Phys. Rev. Lett. 2012, 109 (2), 020601. https://doi.org/10.1103/PhysRevLett.109.020601.
+class colvar::gspathCV
+  : public colvar::cvc, public GeometricPathCV::GeometricPathBase<colvarvalue, cvm::real, GeometricPathCV::path_sz::S>
+{
+private:
+    /// Map from string to the types of colvar components
+    std::map<std::string, std::function<colvar::cvc* (std::string subcv_conf)>> string_cv_map;
+    /// Sub-colvar components
+    std::vector<colvar::cvc*> cv;
+    /// Refernce colvar values from path
+    std::vector<std::vector<colvarvalue>> ref_cv;
+    cvm::real M;
+    cvm::real m;
+    // If all sub-cvs use explicit gradients then we also use it
+    bool use_explicit_gradients;
+protected:
+    virtual void updateReferenceDistances();
+    virtual void prepareVectors();
+public:
+    gspathCV(std::string const &conf);
+    virtual ~gspathCV();
+    virtual void calc_value();
+    virtual void calc_gradients();
+    virtual void apply_force(colvarvalue const &force);
+};
+
+
+
+class colvar::gzpathCV
+  : public colvar::cvc, public GeometricPathCV::GeometricPathBase<colvarvalue, cvm::real, GeometricPathCV::path_sz::Z>
+{
+private:
+    /// Map from string to the types of colvar components
+    std::map<std::string, std::function<colvar::cvc* (std::string subcv_conf)>> string_cv_map;
+    /// Sub-colvar components
+    std::vector<colvar::cvc*> cv;
+    /// Refernce colvar values from path
+    std::vector<std::vector<colvarvalue>> ref_cv;
+    cvm::real M;
+    cvm::real m;
+    // If all sub-cvs use explicit gradients then we also use it
+    bool use_explicit_gradients;
+protected:
+    virtual void updateReferenceDistances();
+    virtual void prepareVectors();
+public:
+    gzpathCV(std::string const &conf);
+    virtual ~gzpathCV();
     virtual void calc_value();
     virtual void calc_gradients();
     virtual void apply_force(colvarvalue const &force);
