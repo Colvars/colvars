@@ -663,7 +663,7 @@ void FixColvars::setup(int vflag)
 /* ---------------------------------------------------------------------- */
 /* Main colvars handler:
  * Send coodinates and add colvar forces to atoms. */
-void FixColvars::post_force(int /* vflag */)
+void FixColvars::post_force(int /*vflag*/)
 {
   // some housekeeping: update status of the proxy as needed.
   if (me == 0) {
@@ -834,7 +834,7 @@ void FixColvars::min_post_force(int vflag)
 }
 
 /* ---------------------------------------------------------------------- */
-void FixColvars::post_force_respa(int vflag, int ilevel, int iloop)
+void FixColvars::post_force_respa(int vflag, int ilevel, int /*iloop*/)
 {
   /* only process colvar forces on the outmost RESPA level. */
   if (ilevel == nlevels_respa-1) post_force(vflag);
