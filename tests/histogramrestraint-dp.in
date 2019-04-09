@@ -1,0 +1,15 @@
+histogramRestraint {
+
+    name hr
+    colvars one
+
+    refHistogram  1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0
+
+    lowerBoundary    0.0
+    upperBoundary   20.0
+    width            2.0
+    gaussianSigma    1.5
+
+    writeHistogram yes
+    outputEnergy yes
+}
