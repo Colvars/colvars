@@ -1539,7 +1539,7 @@ int colvarbias_restraint_histogram::update()
 }
 
 
-std::ostream & colvarbias_restraint_histogram::write_restart(std::ostream &os)
+int colvarbias_restraint_histogram::write_output_files()
 {
   if (b_write_histogram) {
     std::string file_name(cvm::output_prefix()+"."+this->name+".hist.dat");
@@ -1547,6 +1547,9 @@ std::ostream & colvarbias_restraint_histogram::write_restart(std::ostream &os)
     *os << "# " << cvm::wrap_string(variables(0)->name, cvm::cv_width)
         << "  " << "p(" << cvm::wrap_string(variables(0)->name, cvm::cv_width-3)
         << ")\n";
+
+    os->setf(std::ios::fixed, std::ios::floatfield);
+
     size_t igrid;
     for (igrid = 0; igrid < p.size(); igrid++) {
       cvm::real const x_grid = (lower_boundary + (igrid+1)*width);
@@ -1561,13 +1564,7 @@ std::ostream & colvarbias_restraint_histogram::write_restart(std::ostream &os)
     }
     cvm::proxy->close_output_stream(file_name);
   }
-  return os;
-}
-
-
-std::istream & colvarbias_restraint_histogram::read_restart(std::istream &is)
-{
-  return is;
+  return COLVARS_OK;
 }
 
 
