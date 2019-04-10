@@ -110,7 +110,7 @@ proc ::cv_dashboard::update_frame { name molid op } {
 
 # Displays a non-blocking help window with the provided info
 proc ::cv_dashboard::help_window { parent wtitle title text } {
-  set h [toplevel $parent.help]
+  set h [toplevel $parent.helpWindow]
   wm title $h $wtitle
   tk::text $h.text -yscrollcommand [list $h.vsb set]
   ttk::scrollbar $h.vsb -orient vertical -command [list $h.text yview]
@@ -127,6 +127,7 @@ proc ::cv_dashboard::help_window { parent wtitle title text } {
   grid columnconfigure $h 0 -weight 1
   grid rowconfigure $h 0 -weight 1
 }
+
 
 # Add keyboard bindings for trajectory animation to widget given by path
 proc ::cv_dashboard::traj_animation_bindings { path } {

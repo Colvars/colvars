@@ -32,6 +32,12 @@ proc ::cv_dashboard::createWindow {} {
     run_cv molid top
   }
   set gridrow 0
+  grid [ttk::button $w.helpB -text "Online Help" -command {::cv_dashboard::invokeBrowser "http://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html#sec:dashboard"} -padding "2 0 2 0"] \
+    -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $w.aboutB -text "About" -command ::cv_dashboard::about -padding "2 0 2 0"] \
+    -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+
+  incr gridrow
   grid [ttk::button $w.load -text "Load" -command ::cv_dashboard::load -padding "2 0 2 0"] \
     -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $w.save -text "Save" -command ::cv_dashboard::save -padding "2 0 2 0"] \
@@ -70,7 +76,7 @@ proc ::cv_dashboard::createWindow {} {
   incr gridrow
   grid [ttk::button $w.plot -text "Timeline plot" -command ::cv_dashboard::plot -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $w.plot2cv -text "Pairwise plot" -command {::cv_dashboard::plot 2cv} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::button $w.refresh -text "Refresh (F5)" -command ::cv_dashboard::refresh_table -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $w.refresh -text "Refresh \[F5\]" -command ::cv_dashboard::refresh_table -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
   user add key F5 ::cv_dashboard::refresh_table
   bind $w <F5> ::cv_dashboard::refresh_table
@@ -109,6 +115,21 @@ proc ::cv_dashboard::createWindow {} {
   grid columnconfigure $w 2 -weight 1
 
   return $w
+}
+
+
+# Display help window with basic information
+proc ::cv_dashboard::about {} {
+  help_window .cv_dashboard_window "About the Colvars Dashboard" "About the Colvars Dashboard" \
+"Colvars Dashboard, version [package require cv_dashboard]
+
+Based on the Colvars Module version [run_cv version]
+Running on Tcl/Tk [info patchlevel]
+
+Jérôme Hénin (henin@ibpc.fr) and the Colvars developers.
+
+G. Fiorin, M. L. Klein, and J. Hénin. Using collective variables to drive molecular dynamics simulations. Mol. Phys., 111(22-23):3345–3362, 2013
+"
 }
 
 
@@ -421,7 +442,7 @@ proc ::cv_dashboard::update_shown_gradients {} {
     if {$maxl2 < 1e-10} { continue }
     set fact [expr {$desired_max_length / sqrt($maxl2)}]
 
-    foreach i $atomids start $coords g $grads {
+    foreach start $coords g $grads {
       set vec [vecscale $fact $g]
       set end [vecadd $start $vec]
       set middle [vecadd $start [vecscale 0.9 $vec]]

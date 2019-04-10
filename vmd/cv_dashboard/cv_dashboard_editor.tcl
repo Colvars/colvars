@@ -146,11 +146,11 @@ proc ::cv_dashboard::edit { {add false} } {
 
   # Ctrl-s anywhere in the window saves/applies
   bind $w.editor <Control-s> ::cv_dashboard::edit_apply
-  # Custom bindings for the text widget
+  # Custom bindings for the text widget
   bind $w.editor.fr.text <Control-a> "$w.editor.fr.text tag add sel 1.0 end-1c; break"
   bind $w.editor.fr.text <Tab> ::cv_dashboard::tab_pressed
   # Bind several possible mappings for Shift-Tab
-  # ISO_Left_Tab is undefined on some platforms and will fail
+  # ISO_Left_Tab is undefined on some platforms and will fail
   catch { bind $w.editor.fr.text <ISO_Left_Tab> { ::cv_dashboard::tab_pressed true } }
   bind $w.editor.fr.text <Shift-Tab> { ::cv_dashboard::tab_pressed true }
 
@@ -180,7 +180,7 @@ proc ::cv_dashboard::tab_pressed { {shift false} } {
 
   set s [$t tag ranges sel]
   if { $s == "" } {
-    # No selection
+    # No selection
     if { $shift == false } {
       # Just insert spaces at cursor
       $t insert insert "    "

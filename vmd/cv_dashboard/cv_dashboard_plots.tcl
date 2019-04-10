@@ -86,7 +86,7 @@ proc ::cv_dashboard::plot { { type timeline } } {
   # bind mouse and keyboard events to callbacks
   set plot_ns [namespace qualifiers $::cv_dashboard::plothandle]
 
-  traj_animation_bindings ${plot_ns}::w
+  traj_animation_bindings [set ${plot_ns}::w]
   if { $type == "timeline" } {
     bind [set ${plot_ns}::w] <Button-1>       { ::cv_dashboard::plot_clicked %x %y }
     bind [set ${plot_ns}::w] <Up>             { ::cv_dashboard::zoom 0.25 }
