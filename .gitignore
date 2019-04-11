@@ -8,6 +8,9 @@
 
 .*.swp
 
+# executable
+colvartools/abf_integrate
+
 # output files from reg tests
 *.diff
 *.BAK
