@@ -12,10 +12,10 @@
 #include <ctime>
 #include <cmath>
 
-#define ABF_INTEGRATE_VERSION "2018-03-20"
+#define ABF_INTEGRATE_VERSION "2019-04-11"
 
 char *parse_cl(int argc, char *argv[], unsigned int *nsteps, double *temp,
-               bool * meta, double *hill, double *hill_fact);
+               double *scale, bool * meta, double *hill, double *hill_fact);
 double compute_deviation(ABFdata * data, bool meta, double kT);
 
 int main(int argc, char *argv[])
@@ -28,6 +28,7 @@ int main(int argc, char *argv[])
     double dA;
     double temp;
     double mbeta;
+    double scale;
     bool meta;
     double hill, hill_fact, hill_min;
     double rmsd, rmsd_old, rmsd_rel_change, convergence_limit;
@@ -37,6 +38,7 @@ int main(int argc, char *argv[])
     // Setting default values
     nsteps = 0;
     temp = 500;
+    scale = 1.0;
     meta = true;
     hill = 0.01;
     hill_fact = 0.5;
@@ -46,16 +48,24 @@ int main(int argc, char *argv[])
     // Inverse temperature in (kcal/mol)-1
     mbeta = -1 / (0.001987 * temp);
 
-    if (!(data_file = parse_cl(argc, argv, &nsteps, &temp, &meta, &hill, &hill_fact))) {
+    if (!(data_file = parse_cl(argc, argv, &nsteps, &temp, &scale, &meta, &hill, &hill_fact))) {
         std::cerr << "\nabf_integrate: MC-based integration of multidimensional free energy gradient\n";
         std::cerr << "Version " << ABF_INTEGRATE_VERSION << "\n\n";
         std::cerr << "Syntax: " << argv[0] <<
-            " <filename> [-n <nsteps>] [-t <temp>] [-m [0|1] (metadynamics)]"
+          " <filename> [-n <nsteps>] [-t <temp>] [-s <scale>]" <<
+          " [-m [0|1] (metadynamics)]"
             " [-h <hill_height>] [-f <variable_hill_factor>]\n\n";
         exit(1);
     }
 
     ABFdata data(data_file);
+
+    if (scale != 1.0) {
+        std::cout << "\nScaling gradients file by a factor of: " << scale << "\n";
+        for (size_t i = 0; i < data.vec_dim; i++) {
+          data.gradients[i] *= scale;
+        }
+    }
 
     if (meta) {
         std::cout << "\nUsing metadynamics-style sampling with hill height: " << hill << "\n";
@@ -291,19 +301,20 @@ double compute_deviation(ABFdata * data, bool meta, double kT)
 
 
 char *parse_cl(int argc, char *argv[], unsigned int *nsteps, double *temp,
-               bool * meta, double *hill, double *hill_fact)
+               double *scale, bool * meta, double *hill, double *hill_fact)
 {
     int meta_int;
 
     // getting default value for the integer
     meta_int = (*meta ? 1 : 0);
 
-    // "Syntax: " << argv[0] << " <filename> [-n <nsteps>] [-t <temp>] [-m [0|1] (metadynamics)] [-h <hill_height>]\n";
+    // "Syntax: " << argv[0] << " <filename> [-n <nsteps>] [-t <temp>] [-s <scale>] [-m [0|1] (metadynamics)] [-h <hill_height>]\n";
     if (argc < 2) {
         return NULL;
     }
 
     for (int i = 2; i + 1 < argc; i += 2) {
+
         if (argv[i][0] != '-') {
             return NULL;
         }
@@ -314,6 +325,10 @@ char *parse_cl(int argc, char *argv[], unsigned int *nsteps, double *temp,
             break;
         case 't':
             if (sscanf(argv[i + 1], "%lf", temp) != 1)
+                return NULL;
+            break;
+        case 's':
+            if (sscanf(argv[i + 1], "%lf", scale) != 1)
                 return NULL;
             break;
         case 'm':
