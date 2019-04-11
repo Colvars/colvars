@@ -67,11 +67,11 @@ private:
   /// Frequency for updating pABF PMF (if zero, pABF is not used)
   int   pabf_freq;
   /// Max number of CG iterations for integrating PMF at startup and for file output
-  int       integrate_initial_steps;
+  int       integrate_initial_iterations;
   /// Tolerance for integrating PMF at startup and for file output
   cvm::real integrate_initial_tol;
   /// Max number of CG iterations for integrating PMF at on-the-fly pABF updates
-  int       integrate_steps;
+  int       integrate_iterations;
   /// Tolerance for integrating PMF at on-the-fly pABF updates
   cvm::real integrate_tol;
 
