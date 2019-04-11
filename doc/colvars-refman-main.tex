@@ -2603,6 +2603,26 @@ to perform eABF simulations (\ref{sec:eABF}).
 \end{itemize}
 
 
+\cvsubsec{Multiple time-step variables}{sec:mts_colvar}
+
+\begin{itemize}
+
+  \item %
+    \keydef
+      {timeStepFactor}{%
+      \texttt{colvar}}{%
+      Compute this colvar once in a certain number of timesteps}{%
+      positive integer}{%
+      \texttt{1}}{%
+      Instructs this colvar to activate at a time interval equal to the base (MD)
+      timestep times \texttt{timeStepFactor}.\cite{Ferrarotti2015}
+      At other time steps, the value of the
+      variable is not updated, and no biasing forces are applied.
+      Any forces exerted by biases are accumulated over the given time interval,
+      then applied as an impulse at the next update.
+      }
+\end{itemize}
+
 \cvsubsec{Backward-compatibility}{sec:colvar_compatibility}
 
 \begin{itemize}
