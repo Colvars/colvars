@@ -233,7 +233,8 @@ colvar::dihedPC::dihedPC(std::string const &conf)
     cvm::log("Initializing dihedral PC object.\n");
 
   function_type = "dihedPC";
-  disable(f_cvc_explicit_gradient);
+  // Supported through references to atom groups of children cvcs
+  enable(f_cvc_explicit_gradient);
   x.type(colvarvalue::type_scalar);
 
   std::string segment_id;
@@ -363,7 +364,8 @@ colvar::dihedPC::dihedPC()
   : cvc()
 {
   function_type = "dihedPC";
-  disable(f_cvc_explicit_gradient);
+  // Supported through references to atom groups of children cvcs
+  enable(f_cvc_explicit_gradient);
   x.type(colvarvalue::type_scalar);
 }
 
@@ -374,6 +376,8 @@ colvar::dihedPC::~dihedPC()
     delete theta.back();
     theta.pop_back();
   }
+  // Our references to atom groups have become invalid now that children cvcs are deleted
+  atom_groups.clear();
 }
 
 
@@ -393,6 +397,52 @@ void colvar::dihedPC::calc_gradients()
 {
   for (size_t i = 0; i < theta.size(); i++) {
     theta[i]->calc_gradients();
+  }
+}
+
+
+void colvar::dihedPC::get_gradients(std::vector<int> const &atom_ids, std::vector<cvm::rvector> &atomic_gradients)
+{
+  cvm::real cvc_coeff = sup_coeff * cvm::real(sup_np) * cvm::integer_power(value().real_value, sup_np-1);
+  for (size_t i = 0; i < theta.size(); i++) {
+    cvm::real const t = (PI / 180.) * theta[i]->value().real_value;
+    cvm::real const dcosdt = - (PI / 180.) * cvm::sin(t);
+    cvm::real const dsindt =   (PI / 180.) * cvm::cos(t);
+    // Coeficient of this dihedPC's gradient in the colvar gradient, times coefficient of this
+    // dihedral's gradient in the dihedPC's gradient
+    cvm::real const coeff = cvc_coeff * (coeffs[2*i] * dcosdt + coeffs[2*i+1] * dsindt);
+
+    for (size_t j = 0; j < theta[i]->atom_groups.size(); j++) {
+      cvm::atom_group &ag = *(theta[i]->atom_groups[j]);
+
+      // If necessary, apply inverse rotation to get atomic
+      // gradient in the laboratory frame
+      if (ag.b_rotate) {
+        cvm::rotation const rot_inv = ag.rot.inverse();
+
+        for (size_t k = 0; k < ag.size(); k++) {
+          size_t a = std::lower_bound(atom_ids.begin(), atom_ids.end(),
+                                      ag[k].id) - atom_ids.begin();
+          atomic_gradients[a] += coeff * rot_inv.rotate(ag[k].grad);
+        }
+      } else {
+
+        for (size_t k = 0; k < ag.size(); k++) {
+          size_t a = std::lower_bound(atom_ids.begin(), atom_ids.end(),
+                                      ag[k].id) - atom_ids.begin();
+          atomic_gradients[a] += coeff * ag[k].grad;
+        }
+      }
+      if (ag.is_enabled(f_ag_fitting_group) && ag.is_enabled(f_ag_fit_gradients)) {
+        cvm::atom_group const &fg = *(ag.fitting_group);
+        for (size_t k = 0; k < fg.size(); k++) {
+          size_t a = std::lower_bound(atom_ids.begin(), atom_ids.end(),
+                                      fg[k].id) - atom_ids.begin();
+          // fit gradients are in the unrotated (simulation) frame
+          atomic_gradients[a] += coeff * fg.fit_gradients[k];
+        }
+      }
+    }
   }
 }
 
