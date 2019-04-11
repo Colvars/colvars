@@ -1367,7 +1367,6 @@ int colvar::calc_cvc_gradients(int first_cvc, size_t num_cvcs)
 int colvar::collect_cvc_gradients()
 {
   size_t i;
-
   if (is_enabled(f_cv_collect_gradient)) {
     // Collect the atomic gradients inside colvar object
     for (unsigned int a = 0; a < atomic_gradients.size(); a++) {
@@ -1375,43 +1374,7 @@ int colvar::collect_cvc_gradients()
     }
     for (i = 0; i < cvcs.size(); i++) {
       if (!cvcs[i]->is_enabled()) continue;
-      // Coefficient: d(a * x^n) = a * n * x^(n-1) * dx
-      cvm::real coeff = (cvcs[i])->sup_coeff * cvm::real((cvcs[i])->sup_np) *
-        cvm::integer_power((cvcs[i])->value().real_value, (cvcs[i])->sup_np-1);
-
-      for (size_t j = 0; j < cvcs[i]->atom_groups.size(); j++) {
-
-        cvm::atom_group &ag = *(cvcs[i]->atom_groups[j]);
-
-        // If necessary, apply inverse rotation to get atomic
-        // gradient in the laboratory frame
-        if (ag.b_rotate) {
-          cvm::rotation const rot_inv = ag.rot.inverse();
-
-          for (size_t k = 0; k < ag.size(); k++) {
-            size_t a = std::lower_bound(atom_ids.begin(), atom_ids.end(),
-                                        ag[k].id) - atom_ids.begin();
-            atomic_gradients[a] += coeff * rot_inv.rotate(ag[k].grad);
-          }
-
-        } else {
-
-          for (size_t k = 0; k < ag.size(); k++) {
-            size_t a = std::lower_bound(atom_ids.begin(), atom_ids.end(),
-                                        ag[k].id) - atom_ids.begin();
-            atomic_gradients[a] += coeff * ag[k].grad;
-          }
-        }
-        if (ag.is_enabled(f_ag_fitting_group) && ag.is_enabled(f_ag_fit_gradients)) {
-          cvm::atom_group const &fg = *(ag.fitting_group);
-          for (size_t k = 0; k < fg.size(); k++) {
-            size_t a = std::lower_bound(atom_ids.begin(), atom_ids.end(),
-                                        fg[k].id) - atom_ids.begin();
-            // fit gradients are in the unrotated (simulation) frame
-            atomic_gradients[a] += coeff * fg.fit_gradients[k];
-          }
-        }
-      }
+      cvcs[i]->get_gradients(atom_ids, atomic_gradients);
     }
   }
   return COLVARS_OK;

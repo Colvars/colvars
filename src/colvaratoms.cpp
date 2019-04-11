@@ -254,6 +254,12 @@ int cvm::atom_group::init_dependencies() {
 
 int cvm::atom_group::setup()
 {
+  if (atoms_ids.size() == 0) {
+    atoms_ids.reserve(atoms.size());
+    for (cvm::atom_iter ai = atoms.begin(); ai != atoms.end(); ai++) {
+      atoms_ids.push_back(ai->id);
+    }
+  }
   for (cvm::atom_iter ai = atoms.begin(); ai != atoms.end(); ai++) {
     ai->update_mass();
     ai->update_charge();

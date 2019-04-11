@@ -322,6 +322,48 @@ std::vector<std::vector<int> > colvar::cvc::get_atom_lists()
 }
 
 
+void colvar::cvc::get_gradients(std::vector<int> const &atom_ids, std::vector<cvm::rvector> &atomic_gradients)
+{
+  // Coefficient: d(a * x^n) = a * n * x^(n-1) * dx
+  cvm::real coeff = sup_coeff * cvm::real(sup_np) *
+    cvm::integer_power(value().real_value, sup_np-1);
+
+  for (size_t j = 0; j < atom_groups.size(); j++) {
+
+    cvm::atom_group &ag = *(atom_groups[j]);
+
+    // If necessary, apply inverse rotation to get atomic
+    // gradient in the laboratory frame
+    if (ag.b_rotate) {
+      cvm::rotation const rot_inv = ag.rot.inverse();
+
+      for (size_t k = 0; k < ag.size(); k++) {
+        size_t a = std::lower_bound(atom_ids.begin(), atom_ids.end(),
+                                    ag[k].id) - atom_ids.begin();
+        atomic_gradients[a] += coeff * rot_inv.rotate(ag[k].grad);
+      }
+
+    } else {
+
+      for (size_t k = 0; k < ag.size(); k++) {
+        size_t a = std::lower_bound(atom_ids.begin(), atom_ids.end(),
+                                    ag[k].id) - atom_ids.begin();
+        atomic_gradients[a] += coeff * ag[k].grad;
+      }
+    }
+    if (ag.is_enabled(f_ag_fitting_group) && ag.is_enabled(f_ag_fit_gradients)) {
+      cvm::atom_group const &fg = *(ag.fitting_group);
+      for (size_t k = 0; k < fg.size(); k++) {
+        size_t a = std::lower_bound(atom_ids.begin(), atom_ids.end(),
+                                    fg[k].id) - atom_ids.begin();
+        // fit gradients are in the unrotated (simulation) frame
+        atomic_gradients[a] += coeff * fg.fit_gradients[k];
+      }
+    }
+  }
+}
+
+
 void colvar::cvc::calc_force_invgrads()
 {
   cvm::error("Error: calculation of inverse gradients is not implemented "
