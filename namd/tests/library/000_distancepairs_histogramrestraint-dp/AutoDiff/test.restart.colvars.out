@@ -118,7 +118,7 @@ colvars: Re-initialized atom group for variable "one":0/0. 4 atoms: total mass =
 colvars: Re-initialized atom group for variable "one":0/1. 4 atoms: total mass = 54.028, total charge = -0.4.
 colvars: ----------------------------------------------------------------------
 colvars: Restarting from file "test.colvars.state".
-colvars:   Restarting collective variable "one" from value: ( 3.04635 , 4.49416 , 5.1881 , 6.16608 , 2.49717 , 3.8642 , 4.55733 , 5.34054 , 1.36574 , 2.47048 , 3.12324 , 3.85052 , 2.22194 , 2.73202 , 2.91869 , 3.29092 )
+colvars:   Restarting collective variable "one" from value: ( 3.04651 , 4.49435 , 5.18842 , 6.16646 , 2.49718 , 3.86425 , 4.55751 , 5.34081 , 1.36569 , 2.47047 , 3.12336 , 3.85074 , 2.22179 , 2.73185 , 2.91864 , 3.29101 )
 colvars: ----------------------------------------------------------------------
 colvars: The restart output state file will be "test.restart.tmp.colvars.state".
 colvars: The final output state file will be "test.restart.colvars.state".
