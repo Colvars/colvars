@@ -165,7 +165,7 @@ public:
 
   /// \brief Calculate atomic gradients and add them to the corresponding item in gradient vector
   /// May be overridden by CVCs that do not store their gradients in the classic way, see dihedPC
-  virtual void get_gradients(std::vector<int> const &atom_ids, std::vector<cvm::rvector> &atomic_gradients);
+  virtual void collect_gradients(std::vector<int> const &atom_ids, std::vector<cvm::rvector> &atomic_gradients);
 
   /// \brief Calculate the total force from the system using the
   /// inverse atomic gradients
@@ -1152,8 +1152,8 @@ public:
   virtual  ~dihedPC();
   void calc_value();
   void calc_gradients();
-  /// Re-implementation of cvc::get_gradients() to carry over atomic gradients of sub-cvcs
-  void get_gradients(std::vector<int> const &atom_ids, std::vector<cvm::rvector> &atomic_gradients);
+  /// Re-implementation of cvc::collect_gradients() to carry over atomic gradients of sub-cvcs
+  void collect_gradients(std::vector<int> const &atom_ids, std::vector<cvm::rvector> &atomic_gradients);
   void apply_force(colvarvalue const &force);
   virtual cvm::real dist2(colvarvalue const &x1,
                           colvarvalue const &x2) const;
