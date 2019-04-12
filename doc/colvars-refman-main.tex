@@ -3253,8 +3253,8 @@ In addition, restraint biases (\ref{sec:colvarbias_harmonic}, \ref{sec:colvarbia
     boolean}{%
     \texttt{off}}{%
     This option allows to compute total forces for use with thermodynamic integration as done by the keyword \refkey{writeTIPMF}{sec:colvarbias}.
-    The names of the files containing the variables' histogram and mean thermodynamic forces are \outputName\texttt{.$<$name$>$.ti.count} and \outputName\texttt{.$<$name$>$.ti.grad}, respectively: these can be used by \texttt{abf\_integrate} (see \ref{sec:colvarbias_abf_post}) or similar utility.
-    Note that because this file contains mean forces instead of free-energy gradients, \texttt{abf\_integrate $<$filename$>$ -s -1.0} should be used.
+    The names of the files containing the variables' histogram and mean thermodynamic forces are \outputName\texttt{.$<$name$>$.ti.count} and \outputName\texttt{.$<$name$>$.ti.force}, respectively: these can be used by \texttt{abf\_integrate} (see \ref{sec:colvarbias_abf_post}) or similar utility.
+    Note that because the \texttt{.force} file contains mean forces instead of free-energy gradients, \texttt{abf\_integrate $<$filename$>$ -s -1.0} should be used.
     This option is on by default when \texttt{writeTIPMF} is on, but can be enabled separately if the bias is applied to more than one variable, making not possible the direct integration of the PMF at runtime.
     If any bias applies time-dependent forces besides the one using this option, an error is raised.
 }
@@ -3614,7 +3614,7 @@ steps is chosen based on the size of the grid, and the integration runs until a 
 criterion is satisfied (based on the RMSD between the target gradient and the real PMF gradient)
 \item \texttt{-t}: temperature for M-C sampling (unrelated to the simulation temperature)
   [500~K]
-\item \texttt{-s}: scaling factor for the gradients; when using a histogram of total forces obtained from \refkey{outputTotalForce}{colvar|outputTotalForce} or from the output of \refkey{writeTISamples}{colvarbias|writeTISamples}, a scaling factor of -1 should be used [1.0]
+\item \texttt{-s}: scaling factor for the gradients; when using a histogram of total forces obtained from \refkey{outputTotalForce}{colvar|outputTotalForce} or the \texttt{.force} file written by \refkey{writeTISamples}{colvarbias|writeTISamples}, a scaling factor of -1 should be used [1.0]
 \item \texttt{-m}: use metadynamics-like biased sampling? (0 = false) [1]
 \item \texttt{-h}: increment for the history-dependent bias (``hill height'') [0.01~kcal/mol]
 \item \texttt{-f}: if non-zero, this factor is used to scale the increment stepwise in the 
