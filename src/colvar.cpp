@@ -1374,7 +1374,7 @@ int colvar::collect_cvc_gradients()
     }
     for (i = 0; i < cvcs.size(); i++) {
       if (!cvcs[i]->is_enabled()) continue;
-      cvcs[i]->get_gradients(atom_ids, atomic_gradients);
+      cvcs[i]->collect_gradients(atom_ids, atomic_gradients);
     }
   }
   return COLVARS_OK;

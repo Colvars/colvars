@@ -401,7 +401,7 @@ void colvar::dihedPC::calc_gradients()
 }
 
 
-void colvar::dihedPC::get_gradients(std::vector<int> const &atom_ids, std::vector<cvm::rvector> &atomic_gradients)
+void colvar::dihedPC::collect_gradients(std::vector<int> const &atom_ids, std::vector<cvm::rvector> &atomic_gradients)
 {
   cvm::real cvc_coeff = sup_coeff * cvm::real(sup_np) * cvm::integer_power(value().real_value, sup_np-1);
   for (size_t i = 0; i < theta.size(); i++) {
