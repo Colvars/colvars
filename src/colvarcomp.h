@@ -249,7 +249,7 @@ public:
   /// \brief Store a pointer to new atom group, and list as child for dependencies
   inline void register_atom_group(cvm::atom_group *ag) {
     atom_groups.push_back(ag);
-    add_child((colvardeps *) ag);
+    add_child(ag);
   }
 
   /// \brief Whether or not this CVC will be computed in parallel whenever possible
@@ -1034,7 +1034,7 @@ public:
          cvm::atom const &donor,
          cvm::real r0, int en, int ed);
   h_bond();
-  virtual ~h_bond();
+  virtual ~h_bond() {}
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void apply_force(colvarvalue const &force);
@@ -1122,6 +1122,8 @@ public:
   virtual ~alpha_angles();
   void calc_value();
   void calc_gradients();
+  /// Re-implementation of cvc::collect_gradients() to carry over atomic gradients of sub-cvcs
+  void collect_gradients(std::vector<int> const &atom_ids, std::vector<cvm::rvector> &atomic_gradients);
   void apply_force(colvarvalue const &force);
   virtual cvm::real dist2(colvarvalue const &x1,
                           colvarvalue const &x2) const;
