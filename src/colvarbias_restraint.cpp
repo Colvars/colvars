@@ -1356,6 +1356,7 @@ colvarbias_restraint_histogram::colvarbias_restraint_histogram(char const *key)
 int colvarbias_restraint_histogram::init(std::string const &conf)
 {
   colvarbias::init(conf);
+  enable(f_cvb_apply_force);
 
   get_keyval(conf, "lowerBoundary", lower_boundary, lower_boundary);
   get_keyval(conf, "upperBoundary", upper_boundary, upper_boundary);
