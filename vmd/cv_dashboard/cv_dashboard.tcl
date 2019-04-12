@@ -123,7 +123,7 @@ proc ::cv_dashboard::help_window { parent wtitle title text } {
 
   grid $h.text -row 0 -column 0 -sticky nsew
   grid $h.vsb -row 0 -column 1 -sticky nsew
-  grid $h.close -row 1 
+  grid $h.close -row 1
   grid columnconfigure $h 0 -weight 1
   grid rowconfigure $h 0 -weight 1
 }

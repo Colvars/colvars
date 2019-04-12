@@ -399,12 +399,6 @@ colvar::h_bond::h_bond()
 }
 
 
-colvar::h_bond::~h_bond()
-{
-  delete atom_groups[0];
-}
-
-
 void colvar::h_bond::calc_value()
 {
   int const flags = coordnum::ef_null;
