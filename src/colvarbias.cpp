@@ -701,7 +701,7 @@ int colvarbias_ti::write_output_files()
       cvm::proxy->close_output_stream(ti_count_file_name);
     }
 
-    std::string const ti_grad_file_name(ti_output_prefix+".ti.grad");
+    std::string const ti_grad_file_name(ti_output_prefix+".ti.force");
     os = cvm::proxy->output_stream(ti_grad_file_name);
     if (os) {
       ti_avg_forces->write_multicol(*os);
