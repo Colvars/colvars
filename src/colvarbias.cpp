@@ -274,6 +274,9 @@ int colvarbias::update()
 
 void colvarbias::communicate_forces()
 {
+  if (! is_enabled(f_cvb_apply_force)) {
+    return;
+  }
   size_t i = 0;
   for (i = 0; i < num_variables(); i++) {
     if (cvm::debug()) {
