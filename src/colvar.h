@@ -655,6 +655,10 @@ inline colvarvalue const & colvar::total_force() const
 
 inline void colvar::add_bias_force(colvarvalue const &force)
 {
+  if (! is_enabled(f_cv_gradient)) {
+    cvm::error("Error: applying a force to a variable that does not have "
+               "the gradients' calculation active.\n", BUG_ERROR);
+  }
   if (cvm::debug()) {
     cvm::log("Adding biasing force "+cvm::to_str(force)+" to colvar \""+name+"\".\n");
   }
