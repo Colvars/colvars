@@ -1,12 +1,5 @@
 #include <numeric>
 #include <algorithm>
-// This file is part of the Collective Variables module (Colvars).
-// The original version of Colvars and its updates are located at:
-// https://github.com/colvars/colvars
-// Please update all Colvars source files before making any changes.
-// If you wish to distribute your changes, please submit them to the
-// Colvars repository at GitHub.
-
 #include <cmath>
 #include <cstdlib>
 #include <limits>
@@ -298,6 +291,105 @@ void colvar::gzpath::apply_force(colvarvalue const &force) {
     cvm::real const &F = force.real_value;
     (*(comp_atoms[min_frame_index_1])).apply_colvar_force(F);
     (*(comp_atoms[min_frame_index_2])).apply_colvar_force(F);
+}
+
+colvar::subcolvar::subcolvar(std::string const &conf): cvc(conf) {
+    GeometricPathCV::init_string_cv_map(string_cv_map);
+    // Lookup all available sub-cvcs
+    for (auto it_cv_map = string_cv_map.begin(); it_cv_map != string_cv_map.end(); ++it_cv_map) {
+        if (key_lookup(conf, it_cv_map->first.c_str())) {
+            std::vector<std::string> sub_cvc_confs;
+            get_key_string_multi_value(conf, it_cv_map->first.c_str(), sub_cvc_confs);
+            for (auto it_sub_cvc_conf = sub_cvc_confs.begin(); it_sub_cvc_conf != sub_cvc_confs.end(); ++it_sub_cvc_conf) {
+                cv.push_back((it_cv_map->second)(*(it_sub_cvc_conf)));
+            }
+        }
+    }
+    // Sort all sub CVs by their names
+    std::sort(cv.begin(), cv.end(), [this](colvar::cvc *i, colvar::cvc *j){return i->name < j->name;});
+    for (auto it_sub_cv = cv.begin(); it_sub_cv != cv.end(); ++it_sub_cv) {
+        for (auto it_atom_group = (*it_sub_cv)->atom_groups.begin(); it_atom_group != (*it_sub_cv)->atom_groups.end(); ++it_atom_group) {
+            register_atom_group(*it_atom_group);
+        }
+    }
+    x.type(cv[0]->value().type());
+    use_explicit_gradients = true;
+    for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
+        if (!cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
+            use_explicit_gradients = false;
+        }
+    }
+    if (!use_explicit_gradients) {
+        disable(f_cvc_explicit_gradient);
+    }
+}
+
+cvm::real colvar::subcolvar::getPolynomialFactorOfCVGradient(size_t i_cv) const {
+    cvm::real factor_polynomial = 1.0;
+    if (cv[i_cv]->value().type() == colvarvalue::type_scalar) {
+        factor_polynomial = cv[i_cv]->sup_coeff * cv[i_cv]->sup_np * cvm::pow(cv[i_cv]->value().real_value, cv[i_cv]->sup_np - 1);
+    } else {
+        factor_polynomial = cv[i_cv]->sup_coeff;
+    }
+    return factor_polynomial;
+}
+
+colvar::subcolvar::~subcolvar() {
+    for (auto it = cv.begin(); it != cv.end(); ++it) {
+        delete (*it);
+    }
+}
+
+void colvar::subcolvar::calc_value() {
+    x = colvarvalue(x.type());
+    for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
+        cv[i_cv]->calc_value();
+        colvarvalue current_cv_value(cv[i_cv]->value());
+        // polynomial combination allowed
+        if (current_cv_value.type() == colvarvalue::type_scalar) {
+            x += cv[i_cv]->sup_coeff * (cvm::pow(current_cv_value.real_value, cv[i_cv]->sup_np));
+        } else {
+            x += cv[i_cv]->sup_coeff * current_cv_value;
+        }
+    }
+}
+
+void colvar::subcolvar::calc_gradients() {
+    for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
+        cv[i_cv]->calc_gradients();
+        if ( cv[i_cv]->is_enabled(f_cvc_explicit_gradient) &&
+            !cv[i_cv]->is_enabled(f_cvc_scalable) &&
+            !cv[i_cv]->is_enabled(f_cvc_scalable_com)) {
+            cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);
+            for (size_t j_elem = 0; j_elem < cv[i_cv]->value().size(); ++j_elem) {
+                for (size_t k_ag = 0 ; k_ag < cv[i_cv]->atom_groups.size(); ++k_ag) {
+                    for (size_t l_atom = 0; l_atom < (cv[i_cv]->atom_groups)[k_ag]->size(); ++l_atom) {
+                        (*(cv[i_cv]->atom_groups)[k_ag])[l_atom].grad = factor_polynomial * (*(cv[i_cv]->atom_groups)[k_ag])[l_atom].grad;
+                    }
+                }
+            }
+        }
+    }
+}
+
+void colvar::subcolvar::apply_force(colvarvalue const &force) {
+    for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
+        // If this CV us explicit gradients, then atomic gradients is already calculated
+        // We can apply the force to atom groups directly
+        if ( cv[i_cv]->is_enabled(f_cvc_explicit_gradient) &&
+            !cv[i_cv]->is_enabled(f_cvc_scalable) &&
+            !cv[i_cv]->is_enabled(f_cvc_scalable_com)
+        ) {
+            for (size_t k_ag = 0 ; k_ag < cv[i_cv]->atom_groups.size(); ++k_ag) {
+                (cv[i_cv]->atom_groups)[k_ag]->apply_colvar_force(force.real_value);
+            }
+        } else {
+            // Compute factors for polynomial combinations
+            cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);
+            colvarvalue cv_force = force.real_value * factor_polynomial;
+            cv[i_cv]->apply_force(cv_force);
+        }
+    }
 }
 
 colvar::CVBasedPath::CVBasedPath(std::string const &conf): cvc(conf) {
@@ -694,14 +786,30 @@ void GeometricPathCV::split_string(const std::string& data, const std::string& d
 }
 
 void GeometricPathCV::init_string_cv_map(std::map<std::string, std::function<colvar::cvc* (const std::string& subcv_conf)>>& string_cv_map) {
-    // TODO: copy-and-paste work to support all combinations of sub-CVCs
-    string_cv_map["distance"]       = [](const std::string& conf){return new colvar::distance(conf);};
-    string_cv_map["dihedral"]       = [](const std::string& conf){return new colvar::dihedral(conf);};
-    string_cv_map["angle"]          = [](const std::string& conf){return new colvar::angle(conf);};
-    string_cv_map["rmsd"]           = [](const std::string& conf){return new colvar::rmsd(conf);};
-    string_cv_map["gyration"]       = [](const std::string& conf){return new colvar::gyration(conf);};
-    string_cv_map["inertia"]        = [](const std::string& conf){return new colvar::inertia(conf);};
-    string_cv_map["distanceZ"]      = [](const std::string& conf){return new colvar::distance_z(conf);};
-    string_cv_map["distanceXY"]     = [](const std::string& conf){return new colvar::distance_xy(conf);};
-    string_cv_map["distanceVec"]    = [](const std::string& conf){return new colvar::distance_vec(conf);};
+    string_cv_map["distance"]              = [](const std::string& conf){return new colvar::distance(conf);};
+    string_cv_map["dihedral"]              = [](const std::string& conf){return new colvar::dihedral(conf);};
+    string_cv_map["angle"]                 = [](const std::string& conf){return new colvar::angle(conf);};
+    string_cv_map["rmsd"]                  = [](const std::string& conf){return new colvar::rmsd(conf);};
+    string_cv_map["gyration"]              = [](const std::string& conf){return new colvar::gyration(conf);};
+    string_cv_map["inertia"]               = [](const std::string& conf){return new colvar::inertia(conf);};
+    string_cv_map["inertiaZ"]              = [](const std::string& conf){return new colvar::inertia_z(conf);};
+    string_cv_map["tilt"]                  = [](const std::string& conf){return new colvar::tilt(conf);};
+    string_cv_map["distanceZ"]             = [](const std::string& conf){return new colvar::distance_z(conf);};
+    string_cv_map["distanceXY"]            = [](const std::string& conf){return new colvar::distance_xy(conf);};
+    string_cv_map["polarTheta"]            = [](const std::string& conf){return new colvar::polar_theta(conf);};
+    string_cv_map["polarPhi"]              = [](const std::string& conf){return new colvar::polar_phi(conf);};
+    string_cv_map["distanceVec"]           = [](const std::string& conf){return new colvar::distance_vec(conf);};
+    string_cv_map["orientationAngle"]      = [](const std::string& conf){return new colvar::orientation_angle(conf);};
+    string_cv_map["distancePairs"]         = [](const std::string& conf){return new colvar::distance_pairs(conf);};
+    string_cv_map["dipoleMagnitude"]       = [](const std::string& conf){return new colvar::dipole_magnitude(conf);};
+    string_cv_map["coordNum"]              = [](const std::string& conf){return new colvar::coordnum(conf);};
+    string_cv_map["selfCoordNum"]          = [](const std::string& conf){return new colvar::selfcoordnum(conf);};
+    string_cv_map["dipoleAngle"]           = [](const std::string& conf){return new colvar::dipole_angle(conf);};
+    string_cv_map["orientation"]           = [](const std::string& conf){return new colvar::orientation(conf);};
+    string_cv_map["orientationProj"]       = [](const std::string& conf){return new colvar::orientation_proj(conf);};
+    string_cv_map["eigenvector"]           = [](const std::string& conf){return new colvar::eigenvector(conf);};
+    string_cv_map["cartesian"]             = [](const std::string& conf){return new colvar::cartesian(conf);};
+    string_cv_map["alpha"]                 = [](const std::string& conf){return new colvar::alpha_angles(conf);};
+    string_cv_map["dihedralPC"]            = [](const std::string& conf){return new colvar::dihedPC(conf);};
+    string_cv_map["subColvar"]             = [](const std::string& conf){return new colvar::subcolvar(conf);};
 }

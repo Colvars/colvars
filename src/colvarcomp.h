@@ -1455,6 +1455,27 @@ public:
     virtual void apply_force(colvarvalue const &force);
 };
 
+/// Current only linear combination of sub-CVCs is available
+class colvar::subcolvar
+  : public colvar::cvc
+{
+protected:
+    /// Map from string to the types of colvar components
+    std::map<std::string, std::function<colvar::cvc* (const std::string& subcv_conf)>> string_cv_map;
+    /// Sub-colvar components
+    std::vector<colvar::cvc*> cv;
+    /// If all sub-cvs use explicit gradients then we also use it
+    bool use_explicit_gradients;
+protected:
+    cvm::real getPolynomialFactorOfCVGradient(size_t i_cv) const;
+public:
+    subcolvar(std::string const &conf);
+    virtual ~subcolvar();
+    virtual void calc_value();
+    virtual void calc_gradients();
+    virtual void apply_force(colvarvalue const &force);
+};
+
 
 class colvar::CVBasedPath
   : public colvar::cvc

@@ -579,6 +579,7 @@ public:
   class CartesianBasedPath;
   class gspath;
   class gzpath;
+  class subcolvar;
   class CVBasedPath;
   class gspathCV;
   class gzpathCV;
