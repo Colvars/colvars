@@ -7,6 +7,13 @@
 // If you wish to distribute your changes, please submit them to the
 // Colvars repository at GitHub.
 
+// This file is part of the Collective Variables module (Colvars).
+// The original version of Colvars and its updates are located at:
+// https://github.com/colvars/colvars
+// Please update all Colvars source files before making any changes.
+// If you wish to distribute your changes, please submit them to the
+// Colvars repository at GitHub.
+
 #ifndef COLVARCOMP_H
 #define COLVARCOMP_H
 
@@ -1379,42 +1386,41 @@ public:
 };
 
 
-
-/// \brief Colvar component: alternative path collective variable using geometry, variable s
-/// For more information see https://plumed.github.io/doc-v2.5/user-doc/html/_p_a_t_h.html
-/// Díaz Leines, G.; Ensing, B. Path Finding on High-Dimensional Free Energy Landscapes. Phys. Rev. Lett. 2012, 109 (2), 020601. https://doi.org/10.1103/PhysRevLett.109.020601.
-class colvar::gspath
-  : public colvar::cvc, public GeometricPathCV::GeometricPathBase<cvm::atom_pos, cvm::real, GeometricPathCV::path_sz::S>
+class colvar::CartesianBasedPath
+  : public colvar::cvc
 {
-private:
-    // Optimal rotation for compute v3
-    cvm::rotation rot_v3;
-    // m, M and the sign before f;
-    cvm::real m;
-    cvm::real M;
 protected:
-    virtual void updateReferenceDistances();
-    virtual void prepareVectors();
+    virtual void computeReferenceDistance(std::vector<cvm::real>& result);
     /// Selected atoms
     cvm::atom_group *atoms;
     /// Reference frames
     std::vector<std::vector<cvm::atom_pos>> reference_frames;
     /// Atom groups for RMSD calculation together with reference frames
     std::vector<cvm::atom_group*> comp_atoms;
+    /// Total number of reference frames
+    size_t total_reference_frames;
+public:
+    CartesianBasedPath(std::string const &conf);
+    virtual ~CartesianBasedPath();
+    virtual void calc_value() = 0;
+    virtual void apply_force(colvarvalue const &force) = 0;
+};
+
+/// \brief Colvar component: alternative path collective variable using geometry, variable s
+/// For more information see https://plumed.github.io/doc-v2.5/user-doc/html/_p_a_t_h.html
+/// Díaz Leines, G.; Ensing, B. Path Finding on High-Dimensional Free Energy Landscapes. Phys. Rev. Lett. 2012, 109 (2), 020601. https://doi.org/10.1103/PhysRevLett.109.020601.
+class colvar::gspath
+  : public colvar::CartesianBasedPath, public GeometricPathCV::GeometricPathBase<cvm::atom_pos, cvm::real, GeometricPathCV::path_sz::S>
+{
+private:
+    // Optimal rotation for compute v3
+    cvm::rotation rot_v3;
+protected:
+    virtual void prepareVectors();
+    virtual void updateReferenceDistances();
 public:
     gspath(std::string const &conf);
-    virtual ~gspath() {
-        if (atoms != nullptr) {
-            delete atoms;
-            atoms = nullptr;
-        }
-        for (auto it_comp_atoms = comp_atoms.begin(); it_comp_atoms != comp_atoms.end(); ++it_comp_atoms) {
-            if (*it_comp_atoms != nullptr) {
-                delete (*it_comp_atoms);
-                (*it_comp_atoms) = nullptr;
-            }
-        }
-    }
+    virtual ~gspath() {}
     virtual void calc_value();
     virtual void calc_gradients();
     virtual void apply_force(colvarvalue const &force);
@@ -1425,42 +1431,47 @@ public:
 /// \brief Colvar component: alternative path collective variable using geometry, variable z
 /// This should be merged with gspath in the same class by class inheritance or something else
 class colvar::gzpath
-  : public colvar::cvc, public GeometricPathCV::GeometricPathBase<cvm::atom_pos, cvm::real, GeometricPathCV::path_sz::Z>
+  : public colvar::CartesianBasedPath, public GeometricPathCV::GeometricPathBase<cvm::atom_pos, cvm::real, GeometricPathCV::path_sz::Z>
 {
 private:
-    cvm::real M;
-    cvm::real m;
     // Optimal rotation for compute v3, v4
     cvm::rotation rot_v3;
     cvm::rotation rot_v4;
 protected:
-    virtual void updateReferenceDistances();
     virtual void prepareVectors();
-    /// Selected atoms
-    cvm::atom_group *atoms;
-    /// Reference frames
-    std::vector<std::vector<cvm::atom_pos>> reference_frames;
-    /// Atom groups for RMSD calculation together with reference frames
-    std::vector<cvm::atom_group*> comp_atoms;
+    virtual void updateReferenceDistances();
 public:
     gzpath(std::string const &conf);
-    virtual ~gzpath() {
-        if (atoms != nullptr) {
-            delete atoms;
-            atoms = nullptr;
-        }
-        for (auto it_comp_atoms = comp_atoms.begin(); it_comp_atoms != comp_atoms.end(); ++it_comp_atoms) {
-            if (*it_comp_atoms != nullptr) {
-                delete (*it_comp_atoms);
-                (*it_comp_atoms) = nullptr;
-            }
-        }
-    }
+    virtual ~gzpath() {}
     virtual void calc_value();
     virtual void calc_gradients();
     virtual void apply_force(colvarvalue const &force);
 };
 
+
+class colvar::CVBasedPath
+  : public colvar::cvc
+{
+protected:
+    /// Map from string to the types of colvar components
+    std::map<std::string, std::function<colvar::cvc* (std::string subcv_conf)>> string_cv_map;
+    /// Sub-colvar components
+    std::vector<colvar::cvc*> cv;
+    /// Refernce colvar values from path
+    std::vector<std::vector<colvarvalue>> ref_cv;
+    /// If all sub-cvs use explicit gradients then we also use it
+    bool use_explicit_gradients;
+    /// Total number of reference frames
+    size_t total_reference_frames;
+protected:
+    virtual void computeReferenceDistance(std::vector<cvm::real>& result);
+    cvm::real getPolynomialFactorOfCVGradient(size_t i_cv) const;
+public:
+    CVBasedPath(std::string const &conf);
+    virtual ~CVBasedPath();
+    virtual void calc_value() = 0;
+    virtual void apply_force(colvarvalue const &force) = 0;
+};
 
 
 /// \brief Colvar component: alternative path collective variable using geometry, variable s
@@ -1468,19 +1479,8 @@ public:
 /// For more information see https://plumed.github.io/doc-v2.5/user-doc/html/_p_a_t_h.html
 /// Díaz Leines, G.; Ensing, B. Path Finding on High-Dimensional Free Energy Landscapes. Phys. Rev. Lett. 2012, 109 (2), 020601. https://doi.org/10.1103/PhysRevLett.109.020601.
 class colvar::gspathCV
-  : public colvar::cvc, public GeometricPathCV::GeometricPathBase<colvarvalue, cvm::real, GeometricPathCV::path_sz::S>
+  : public colvar::CVBasedPath, public GeometricPathCV::GeometricPathBase<colvarvalue, cvm::real, GeometricPathCV::path_sz::S>
 {
-private:
-    /// Map from string to the types of colvar components
-    std::map<std::string, std::function<colvar::cvc* (std::string subcv_conf)>> string_cv_map;
-    /// Sub-colvar components
-    std::vector<colvar::cvc*> cv;
-    /// Refernce colvar values from path
-    std::vector<std::vector<colvarvalue>> ref_cv;
-    cvm::real M;
-    cvm::real m;
-    // If all sub-cvs use explicit gradients then we also use it
-    bool use_explicit_gradients;
 protected:
     virtual void updateReferenceDistances();
     virtual void prepareVectors();
@@ -1495,19 +1495,8 @@ public:
 
 
 class colvar::gzpathCV
-  : public colvar::cvc, public GeometricPathCV::GeometricPathBase<colvarvalue, cvm::real, GeometricPathCV::path_sz::Z>
+  : public colvar::CVBasedPath, public GeometricPathCV::GeometricPathBase<colvarvalue, cvm::real, GeometricPathCV::path_sz::Z>
 {
-private:
-    /// Map from string to the types of colvar components
-    std::map<std::string, std::function<colvar::cvc* (std::string subcv_conf)>> string_cv_map;
-    /// Sub-colvar components
-    std::vector<colvar::cvc*> cv;
-    /// Refernce colvar values from path
-    std::vector<std::vector<colvarvalue>> ref_cv;
-    cvm::real M;
-    cvm::real m;
-    // If all sub-cvs use explicit gradients then we also use it
-    bool use_explicit_gradients;
 protected:
     virtual void updateReferenceDistances();
     virtual void prepareVectors();
