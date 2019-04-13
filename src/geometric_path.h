@@ -7,6 +7,13 @@
 // If you wish to distribute your changes, please submit them to the
 // Colvars repository at GitHub.
 
+// This file is part of the Collective Variables module (Colvars).
+// The original version of Colvars and its updates are located at:
+// https://github.com/colvars/colvars
+// Please update all Colvars source files before making any changes.
+// If you wish to distribute your changes, please submit them to the
+// Colvars repository at GitHub.
+
 
 #include <vector>
 #include <cmath>
@@ -33,6 +40,7 @@ protected:
     scalar_type v1v4;
     scalar_type f;
     scalar_type dx;
+    scalar_type s;
     scalar_type z;
     scalar_type zz;
     std::vector<element_type> v1;
@@ -52,6 +60,8 @@ protected:
     long min_frame_index_2;
     long min_frame_index_3;
     long sign;
+    double M;
+    double m;
 public:
     GeometricPathBase(size_t vector_size, const element_type& element = element_type(), size_t total_frames = 1, bool p_use_second_closest_frame = true, bool p_use_third_closest_frame = false, bool p_use_z_square = false);
     GeometricPathBase(size_t vector_size, const std::vector<element_type>& elements, size_t total_frames = 1, bool p_use_second_closest_frame = true, bool p_use_third_closest_frame = false, bool p_use_z_square = false);
@@ -104,6 +114,8 @@ void GeometricPathBase<element_type, scalar_type, path_type>::initialize(size_t 
     use_second_closest_frame = p_use_second_closest_frame;
     use_third_closest_frame = p_use_third_closest_frame;
     use_z_square = p_use_z_square;
+    M = static_cast<scalar_type>(total_frames - 1);
+    m = static_cast<scalar_type>(1.0);
 }
 
 template <typename element_type, typename scalar_type, path_sz path_type>
@@ -133,6 +145,8 @@ void GeometricPathBase<element_type, scalar_type, path_type>::initialize(size_t 
     use_second_closest_frame = p_use_second_closest_frame;
     use_third_closest_frame = p_use_third_closest_frame;
     use_z_square = p_use_z_square;
+    M = static_cast<scalar_type>(total_frames - 1);
+    m = static_cast<scalar_type>(1.0);
 }
 
 template <typename element_type, typename scalar_type, path_sz path_type>
@@ -177,6 +191,7 @@ void GeometricPathBase<element_type, scalar_type, path_type>::determineClosestFr
     min_frame_index_1 = frame_index[0];                                                         // s_m
     min_frame_index_2 = use_second_closest_frame ? frame_index[1] : min_frame_index_1 - sign;   // s_(m-1)
     min_frame_index_3 = use_third_closest_frame ? frame_index[2] : min_frame_index_1 + sign;    // s_(m+1)
+    m = static_cast<double>(frame_index[0]);
 }
 
 template <typename element_type, typename scalar_type, path_sz path_type>
@@ -211,6 +226,9 @@ void GeometricPathBase<element_type, scalar_type, path_type>::computeValue() {
         } else {
             z = std::sqrt(std::fabs(zz));
         }
+    }
+    if (path_type == path_sz::S) {
+        s = m/M + static_cast<double>(sign) * ((f - 1) / (2 * M));
     }
 }
 
