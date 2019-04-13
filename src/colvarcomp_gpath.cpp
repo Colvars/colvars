@@ -7,24 +7,9 @@
 // If you wish to distribute your changes, please submit them to the
 // Colvars repository at GitHub.
 
-// This file is part of the Collective Variables module (Colvars).
-// The original version of Colvars and its updates are located at:
-// https://github.com/colvars/colvars
-// Please update all Colvars source files before making any changes.
-// If you wish to distribute your changes, please submit them to the
-// Colvars repository at GitHub.
-
 #include <cmath>
 #include <cstdlib>
-#include <cfenv>
 #include <limits>
-
-// This file is part of the Collective Variables module (Colvars).
-// The original version of Colvars and its updates are located at:
-// https://github.com/colvars/colvars
-// Please update all Colvars source files before making any changes.
-// If you wish to distribute your changes, please submit them to the
-// Colvars repository at GitHub.
 
 // This file is part of the Collective Variables module (Colvars).
 // The original version of Colvars and its updates are located at:
@@ -41,7 +26,7 @@
 #include "colvarcomp.h"
 
 namespace GeometricPathCV {
-void init_string_cv_map(std::map<std::string, std::function<colvar::cvc* (std::string subcv_conf)>>& string_cv_map);
+void init_string_cv_map(std::map<std::string, std::function<colvar::cvc* (const std::string& conf)>>& string_cv_map);
 }
 
 colvar::CartesianBasedPath::CartesianBasedPath(std::string const &conf): cvc(conf), atoms(nullptr), reference_frames(0) {
@@ -708,9 +693,15 @@ void GeometricPathCV::split_string(const std::string& data, const std::string& d
     }
 }
 
-void GeometricPathCV::init_string_cv_map(std::map<std::string, std::function<colvar::cvc* (std::string subcv_conf)>>& string_cv_map) {
+void GeometricPathCV::init_string_cv_map(std::map<std::string, std::function<colvar::cvc* (const std::string& subcv_conf)>>& string_cv_map) {
     // TODO: copy-and-paste work to support all combinations of sub-CVCs
-    string_cv_map["distance"] = [](std::string conf){return new colvar::distance(conf);};
-    string_cv_map["dihedral"] = [](std::string conf){return new colvar::dihedral(conf);};
-    string_cv_map["angle"] = [](std::string conf){return new colvar::angle(conf);};
+    string_cv_map["distance"]       = [](const std::string& conf){return new colvar::distance(conf);};
+    string_cv_map["dihedral"]       = [](const std::string& conf){return new colvar::dihedral(conf);};
+    string_cv_map["angle"]          = [](const std::string& conf){return new colvar::angle(conf);};
+    string_cv_map["rmsd"]           = [](const std::string& conf){return new colvar::rmsd(conf);};
+    string_cv_map["gyration"]       = [](const std::string& conf){return new colvar::gyration(conf);};
+    string_cv_map["inertia"]        = [](const std::string& conf){return new colvar::inertia(conf);};
+    string_cv_map["distanceZ"]      = [](const std::string& conf){return new colvar::distance_z(conf);};
+    string_cv_map["distanceXY"]     = [](const std::string& conf){return new colvar::distance_xy(conf);};
+    string_cv_map["distanceVec"]    = [](const std::string& conf){return new colvar::distance_vec(conf);};
 }
