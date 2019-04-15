@@ -209,7 +209,7 @@ public:
   static std::vector<feature *> ag_features;
 
   /// \brief Implementation of the feature list accessor for atom group
-  virtual const std::vector<feature *> &features()
+  virtual const std::vector<feature *> &features() const
   {
     return ag_features;
   }
