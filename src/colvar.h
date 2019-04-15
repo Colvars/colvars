@@ -85,7 +85,7 @@ public:
   static std::vector<feature *> cv_features;
 
   /// \brief Implementation of the feature list accessor for colvar
-  virtual const std::vector<feature *> &features()
+  virtual const std::vector<feature *> &features() const
   {
     return cv_features;
   }
@@ -655,10 +655,8 @@ inline colvarvalue const & colvar::total_force() const
 
 inline void colvar::add_bias_force(colvarvalue const &force)
 {
-  if (! is_enabled(f_cv_gradient)) {
-    cvm::error("Error: applying a force to a variable that does not have "
-               "the gradients' calculation active.\n", BUG_ERROR);
-  }
+  check_enabled(f_cv_gradient,
+                std::string("applying a force to the variable \""+name+"\""));
   if (cvm::debug()) {
     cvm::log("Adding biasing force "+cvm::to_str(force)+" to colvar \""+name+"\".\n");
   }

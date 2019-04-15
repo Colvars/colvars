@@ -132,7 +132,7 @@ public:
   // with a non-static array
   // Intermediate classes (colvarbias and colvarcomp, which are also base classes)
   // implement this as virtual to allow overriding
-  virtual const std::vector<feature *>&features() = 0;
+  virtual const std::vector<feature *> &features() const = 0;
   virtual std::vector<feature *>&modify_features() = 0;
 
   void add_child(colvardeps *child);
@@ -371,6 +371,16 @@ public:
 
   /// \brief print all enabled features and those of children, for debugging
   void print_state();
+
+  /// \brief Check that a feature is enabled, raising BUG_ERROR if not
+  inline void check_enabled(int f, std::string const &reason) const
+  {
+    if (! is_enabled(f)) {
+      cvm::error("Error: "+reason+" requires that the feature \""+
+                 features()[f]->description+"\" is active.\n", BUG_ERROR);
+    }
+  }
+
 };
 
 #endif
