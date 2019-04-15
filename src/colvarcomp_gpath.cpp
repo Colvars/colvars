@@ -122,7 +122,8 @@ void colvar::gspath::updateReferenceDistances() {
 }
 
 void colvar::gspath::prepareVectors() {
-    for (size_t i_atom = 0; i_atom < atoms->size(); ++i_atom) {
+    size_t i_atom;
+    for (i_atom = 0; i_atom < atoms->size(); ++i_atom) {
         // v1 = s_m - z
         v1[i_atom] = reference_frames[min_frame_index_1][i_atom] - (*(comp_atoms[min_frame_index_1]))[i_atom].pos;
         // v2 = z - s_(m-1)
@@ -130,7 +131,7 @@ void colvar::gspath::prepareVectors() {
     }
     if (min_frame_index_3 < 0 || min_frame_index_3 > M) {
         cvm::atom_pos reference_cog_1, reference_cog_2;
-        for (size_t i_atom = 0; i_atom < atoms->size(); ++i_atom) {
+        for (i_atom = 0; i_atom < atoms->size(); ++i_atom) {
             reference_cog_1 += reference_frames[min_frame_index_1][i_atom];
             reference_cog_2 += reference_frames[min_frame_index_2][i_atom];
         }
@@ -138,17 +139,17 @@ void colvar::gspath::prepareVectors() {
         reference_cog_2 /= reference_frames[min_frame_index_2].size();
         std::vector<cvm::atom_pos> tmp_reference_frame_1(reference_frames[min_frame_index_1].size());
         std::vector<cvm::atom_pos> tmp_reference_frame_2(reference_frames[min_frame_index_2].size());
-        for (size_t i_atom = 0; i_atom < atoms->size(); ++i_atom) {
+        for (i_atom = 0; i_atom < atoms->size(); ++i_atom) {
             tmp_reference_frame_1[i_atom] = reference_frames[min_frame_index_1][i_atom] - reference_cog_1;
             tmp_reference_frame_2[i_atom] = reference_frames[min_frame_index_2][i_atom] - reference_cog_2;
         }
         rot_v3.calc_optimal_rotation(tmp_reference_frame_1, tmp_reference_frame_2);
-        for (size_t i_atom = 0; i_atom < atoms->size(); ++i_atom) {
+        for (i_atom = 0; i_atom < atoms->size(); ++i_atom) {
             v3[i_atom] = rot_v3.q.rotate(tmp_reference_frame_1[i_atom]) - tmp_reference_frame_2[i_atom];
         }
     } else {
         cvm::atom_pos reference_cog_1, reference_cog_3;
-        for (size_t i_atom = 0; i_atom < atoms->size(); ++i_atom) {
+        for (i_atom = 0; i_atom < atoms->size(); ++i_atom) {
             reference_cog_1 += reference_frames[min_frame_index_1][i_atom];
             reference_cog_3 += reference_frames[min_frame_index_3][i_atom];
         }
@@ -156,12 +157,12 @@ void colvar::gspath::prepareVectors() {
         reference_cog_3 /= reference_frames[min_frame_index_3].size();
         std::vector<cvm::atom_pos> tmp_reference_frame_1(reference_frames[min_frame_index_1].size());
         std::vector<cvm::atom_pos> tmp_reference_frame_3(reference_frames[min_frame_index_3].size());
-        for (size_t i_atom = 0; i_atom < atoms->size(); ++i_atom) {
+        for (i_atom = 0; i_atom < atoms->size(); ++i_atom) {
             tmp_reference_frame_1[i_atom] = reference_frames[min_frame_index_1][i_atom] - reference_cog_1;
             tmp_reference_frame_3[i_atom] = reference_frames[min_frame_index_3][i_atom] - reference_cog_3;
         }
         rot_v3.calc_optimal_rotation(tmp_reference_frame_1, tmp_reference_frame_3);
-        for (size_t i_atom = 0; i_atom < atoms->size(); ++i_atom) {
+        for (i_atom = 0; i_atom < atoms->size(); ++i_atom) {
             // v3 = s_(m+1) - s_m
             v3[i_atom] = tmp_reference_frame_3[i_atom] - rot_v3.q.rotate(tmp_reference_frame_1[i_atom]);
         }
@@ -232,7 +233,8 @@ void colvar::gzpath::updateReferenceDistances() {
 
 void colvar::gzpath::prepareVectors() {
     cvm::atom_pos reference_cog_1, reference_cog_2;
-    for (size_t i_atom = 0; i_atom < atoms->size(); ++i_atom) {
+    size_t i_atom;
+    for (i_atom = 0; i_atom < atoms->size(); ++i_atom) {
         reference_cog_1 += reference_frames[min_frame_index_1][i_atom];
         reference_cog_2 += reference_frames[min_frame_index_2][i_atom];
     }
@@ -240,12 +242,12 @@ void colvar::gzpath::prepareVectors() {
     reference_cog_2 /= reference_frames[min_frame_index_2].size();
     std::vector<cvm::atom_pos> tmp_reference_frame_1(reference_frames[min_frame_index_1].size());
     std::vector<cvm::atom_pos> tmp_reference_frame_2(reference_frames[min_frame_index_2].size());
-    for (size_t i_atom = 0; i_atom < atoms->size(); ++i_atom) {
+    for (i_atom = 0; i_atom < atoms->size(); ++i_atom) {
         tmp_reference_frame_1[i_atom] = reference_frames[min_frame_index_1][i_atom] - reference_cog_1;
         tmp_reference_frame_2[i_atom] = reference_frames[min_frame_index_2][i_atom] - reference_cog_2;
     }
     rot_v4.calc_optimal_rotation(tmp_reference_frame_1, tmp_reference_frame_2);
-    for (size_t i_atom = 0; i_atom < atoms->size(); ++i_atom) {
+    for (i_atom = 0; i_atom < atoms->size(); ++i_atom) {
         v1[i_atom] = reference_frames[min_frame_index_1][i_atom] - (*(comp_atoms[min_frame_index_1]))[i_atom].pos;
         v2[i_atom] = (*(comp_atoms[min_frame_index_2]))[i_atom].pos - reference_frames[min_frame_index_2][i_atom];
         // v4 only computes in gzpath
@@ -256,16 +258,16 @@ void colvar::gzpath::prepareVectors() {
         v3 = v4;
     } else {
         cvm::atom_pos reference_cog_3;
-        for (size_t i_atom = 0; i_atom < atoms->size(); ++i_atom) {
+        for (i_atom = 0; i_atom < atoms->size(); ++i_atom) {
             reference_cog_3 += reference_frames[min_frame_index_3][i_atom];
         }
         reference_cog_3 /= reference_frames[min_frame_index_3].size();
         std::vector<cvm::atom_pos> tmp_reference_frame_3(reference_frames[min_frame_index_3].size());
-        for (size_t i_atom = 0; i_atom < atoms->size(); ++i_atom) {
+        for (i_atom = 0; i_atom < atoms->size(); ++i_atom) {
             tmp_reference_frame_3[i_atom] = reference_frames[min_frame_index_3][i_atom] - reference_cog_3;
         }
         rot_v3.calc_optimal_rotation(tmp_reference_frame_1, tmp_reference_frame_3);
-        for (size_t i_atom = 0; i_atom < atoms->size(); ++i_atom) {
+        for (i_atom = 0; i_atom < atoms->size(); ++i_atom) {
             // v3 = s_(m+1) - s_m
             v3[i_atom] = tmp_reference_frame_3[i_atom] - rot_v3.q.rotate(tmp_reference_frame_1[i_atom]);
         }
@@ -759,7 +761,7 @@ void colvar::gzpathCV::apply_force(colvarvalue const &force) {
             for (size_t k_ag = 0 ; k_ag < cv[i_cv]->atom_groups.size(); ++k_ag) {
                 (cv[i_cv]->atom_groups)[k_ag]->apply_colvar_force(force.real_value);
             }
-        } 
+        }
         else {
             colvarvalue tmp_cv_grad_v1 = -1.0 * dzdv1[i_cv];
             colvarvalue tmp_cv_grad_v2 =  1.0 * dzdv2[i_cv];
