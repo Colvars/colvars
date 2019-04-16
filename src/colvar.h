@@ -576,6 +576,7 @@ public:
   class alpha_dihedrals;
   class alpha_angles;
   class dihedPC;
+#if (__cplusplus >= 201103L)
   class CartesianBasedPath;
   class gspath;
   class gzpath;
@@ -583,6 +584,7 @@ public:
   class CVBasedPath;
   class gspathCV;
   class gzpathCV;
+#endif // C++11 checking
 
   // non-scalar components
   class distance_vec;

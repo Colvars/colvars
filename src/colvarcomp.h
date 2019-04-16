@@ -1401,6 +1401,7 @@ public:
 };
 
 
+#if (__cplusplus >= 201103L)
 class colvar::CartesianBasedPath
   : public colvar::cvc
 {
@@ -1544,6 +1545,7 @@ public:
     virtual void apply_force(colvarvalue const &force);
 };
 
+#endif // C++11 checking
 
 // metrics functions for cvc implementations
 

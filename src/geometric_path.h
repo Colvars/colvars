@@ -1,3 +1,4 @@
+#if (__cplusplus >= 201103L)
 #ifndef GEOMETRICPATHCV_H
 #define GEOMETRICPATHCV_H
 // This file is part of the Collective Variables module (Colvars).
@@ -26,7 +27,7 @@
 
 namespace GeometricPathCV {
 
-enum path_sz {S, Z};
+enum class path_sz {S, Z};
 void split_string(const std::string& data, const std::string& delim, std::vector<std::string>& dest);
 
 template <typename element_type, typename scalar_type, path_sz path_type>
@@ -266,4 +267,5 @@ void GeometricPathBase<element_type, scalar_type, path_type>::computeDerivatives
 
 }
 
-#endif
+#endif // GEOMETRICPATHCV_H
+#endif // C++11 Checking

@@ -1,3 +1,5 @@
+#if (__cplusplus >= 201103L)
+
 #include <numeric>
 #include <algorithm>
 #include <cmath>
@@ -813,3 +815,5 @@ void GeometricPathCV::init_string_cv_map(std::map<std::string, std::function<col
     string_cv_map["dihedralPC"]            = [](const std::string& conf){return new colvar::dihedPC(conf);};
     string_cv_map["subColvar"]             = [](const std::string& conf){return new colvar::subcolvar(conf);};
 }
+
+#endif
