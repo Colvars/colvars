@@ -2030,6 +2030,235 @@ This can be useful, for example, to develop a new variable defined over two grou
 This component returns a $N_{\mathrm{1}}\times{}N_{\mathrm{2}}$-dimensional vector of numbers, each ranging from $0$ to the largest possible distance within the chosen boundary conditions.
 
 
+\cvsubsec{Geometric path collective variables}{sec:cvc_gpath}
+
+The geometric path collective variables define the progress along a path, $s$, and the distance from the path, $z$. These CVs are proposed by Leines and Ensing\cite{Leines2012} , which differ from that\cite{Branduardi2007} proposed by Branduardi et al., and utilize a set of geometric algorithm. The path is defined as a set of frames in the atomic Cartesian coordinate space or the CV space. $s$ and $z$ are computed as
+
+\begin{equation}
+s = \frac{m}{M} \pm \frac{1}{2M} \left( \frac{\sqrt{(\mathbf{v}_1 \cdot \mathbf{v}_3)^2-|\mathbf{v}_3|^2 (|\mathbf{v}_1|^2 - |\mathbf{v}_2|^2)}-(\mathbf{v}_1 \cdot \mathbf{v}_3)}{|\mathbf{v}_3|^2} -1 \right)
+\end{equation}
+
+\begin{equation}
+z = \sqrt{\left(\mathbf{v}_1 + \frac{1}{2}\left(\frac{\sqrt{(\mathbf{v}_1 \cdot \mathbf{v}_3)^2-|\mathbf{v}_3|^2 (|\mathbf{v}_1|^2 - |\mathbf{v}_2|^2)}-(\mathbf{v}_1 \cdot \mathbf{v}_3)}{|\mathbf{v}_3|^2} -1 \right)\mathbf{v}_4 \right)^2}
+\end{equation}
+
+where $\mathbf{v}_1 = \mathbf{s}_{m} - \mathbf{z} $ is the vector connecting the current position to the closest frame, $\mathbf{v}_2 = \mathbf{z} - \mathbf{s}_{m-1}$ is the vector connecting the second closest frame to the current position, $\mathbf{v}_3 = \mathbf{s}_{m+1} - \mathbf{s}_{m}$ is the vector connecting the closest frame to the third closest frame, and $\mathbf{v}_4 = \mathbf{s}_m - \mathbf{s}_{m-1}$ is the vector connecting the second closest frame to the closest frame. $m$ and $M$ are the current index of the closest frame and the total number of frames respectively. If the current position is on the left of the closest reference frame, the $\pm$ in $s$ turns to positive sign. Otherwise it turns to the negative sign.
+
+The equations above assume: (i) the frames are equidistant and (ii) the second and the third closest frames are neighbouring to the closest frame. When these assumptions are not satisfied, this set of path CV should be used carefully.
+
+\cvsubsubsec{\texttt{gspath}: progress along a path defined in atomic Cartesian coordinate space.}{sec:cvc_gspath}
+\labelkey{colvar|gspath}
+
+In the \texttt{gspath~\{...\}} and the \texttt{gzpath~\{...\}} block all vectors, namely $\mathbf{z}$ and $\mathbf{s}_{k}$ are defined in atomic Cartesian coordinate space. More specifically, $\mathbf{z} = \left[\mathbf{r}_{1}, \cdots, \mathbf{r}_{n}\right]$, where $\mathbf{r}_{i}$ is the $i$-th atom specified in the \texttt{atoms} block. $\mathbf{s}_{k} = \left[\mathbf{r}_{k,1}, \cdots, \mathbf{r}_{k,n}\right]$, where $\mathbf{r}_{k,i}$ means the $i$-th atom of the $k$-th reference frame.
+
+\begin{cvcoptions}
+\item %
+  \key
+    {atoms}{%
+    \texttt{gspath} and \texttt{gzpath}}{%
+    Group of atoms}{%
+    Block \texttt{atoms \{...\}}}{%
+    Defines the atoms whose coordinates make up the value of the component.}
+
+\item %
+  \key
+    {refPositionsCol}{%
+    \texttt{gspath} and \texttt{gzpath}}{%
+    PDB column containing atom flags}{%
+    \texttt{O}, \texttt{B}, \texttt{X}, \texttt{Y}, or \texttt{Z}}{%
+    If \texttt{refPositionsFileN} is a PDB file that contains all the atoms in the topology, this option may be provided to set which PDB field is used to flag the reference coordinates for \texttt{atoms}.}
+
+\item %
+  \key
+    {refPositionsFileN}{%
+    \texttt{gspath} and \texttt{gzpath}}{%
+    File containing the reference positions for fitting}{%
+    UNIX filename}{%
+		The path is defined by multiple \texttt{refPositionsFile}s which are similiar to \texttt{refPositionsFile} in the \texttt{rmsd} CV. If your path consists of $10$ nodes, you can list the coordinate file (in PDB or XYZ format) from \texttt{refPositionsFile1} to \texttt{refPositionsFile10}.
+    }
+
+\item %
+  \keydef
+    {useSecondClosestFrame}{%
+    \texttt{gspath} and \texttt{gzpath}}{%
+    Define $\mathbf{s}_{m-1}$ as the second closest frame?}{%
+    boolean}{%
+    \texttt{on}}{%
+    The definition assumes the second closest frame is neighbouring to the closest frame. This is not always true especially when the path is crooked. If this option is set to \texttt{on} (default), $\mathbf{s}_{m-1}$ is defined as the second closest frame. If this option is set to \texttt{off}, $\mathbf{s}_{m-1}$ is defined as the left or right neighbouring frame of the closest frame.
+  }
+
+\item %
+  \keydef
+    {useThirdClosestFrame}{%
+    \texttt{gspath} and \texttt{gzpath}}{%
+    Define $\mathbf{s}_{m+1}$ as the third closest frame?}{%
+    boolean}{%
+    \texttt{off}}{%
+    The definition assumes the third closest frame is neighbouring to the closest frame. This is not always true especially when the path is crooked. If this option is set to \texttt{on}, $\mathbf{s}_{m+1}$ is defined as the second closest frame. If this option is set to \texttt{off} (default), $\mathbf{s}_{m+1}$ is defined as the left or right neighbouring frame of the closest frame.
+  }
+
+\end{cvcoptions}
+
+\cvsubsubsec{\texttt{gzpath}: distance from a path defined in atomic Cartesian coordinate space.}{sec:cvc_gzpath}
+\labelkey{colvar|gzpath}
+
+\begin{cvcoptions}
+
+\item %
+  \keydef
+    {useZsquare}{%
+    \texttt{gzpath}}{%
+    Compute $z^2$ instead of $z$}{%
+    boolean}{%
+    \texttt{off}}{%
+    $z$ is not differentiable when it is zero. This implementation workarounds it by setting the derivative of $z$ to zero when $z = 0$. Another workaround is set this option to \texttt{on}, which computes $z^2$ instead of $z$, and then $z^2$ is differentiable when it is zero.
+  }
+
+\end{cvcoptions}
+
+The usage of \texttt{gzpath} and \texttt{gspath} is illustrated below:
+
+\bigskip
+{%
+% verbatim can't appear within commands
+\noindent\ttfamily colvar \{\\
+\-~~\# Progress along the path\\
+\-~~name gs\\
+\-~~\# The path is defined by 5 reference frames (from string-00.pdb to string-04.pdb)\\
+\-~~\# Use atomic coordinate from atoms 1, 2 and 3 to compute the path\\
+\-~~gspath \{\\
+\-~~~~atoms \{atomnumbers \{ 1 2 3 \}\}\\
+\-~~~~refPositionFile1 string-00.pdb\\
+\-~~~~refPositionFile2 string-01.pdb\\
+\-~~~~refPositionFile3 string-02.pdb\\
+\-~~~~refPositionFile4 string-03.pdb\\
+\-~~~~refPositionFile5 string-04.pdb\\
+\-~~\}\\
+\}\\
+\noindent\ttfamily colvar \{\\
+\-~~\# Distance from the path\\
+\-~~name gz\\
+\-~~\# The path is defined by 5 reference frames (from string-00.pdb to string-04.pdb)\\
+\-~~\# Use atomic coordinate from atoms 1, 2 and 3 to compute the path\\
+\-~~gzpath \{\\
+\-~~~~atoms \{atomnumbers \{ 1 2 3 \}\}\\
+\-~~~~refPositionFile1 string-00.pdb\\
+\-~~~~refPositionFile2 string-01.pdb\\
+\-~~~~refPositionFile3 string-02.pdb\\
+\-~~~~refPositionFile4 string-03.pdb\\
+\-~~~~refPositionFile5 string-04.pdb\\
+\-~~\}\\
+\}}
+
+\cvsubsubsec{\texttt{subColvar}: Helper CV to define a linear combination of other CVs}{sec:cvc_subColvar}
+\labelkey{colvar|subColvar}
+
+This is a helper CV which can be defined as a linear combination of other CVs. It maybe useful when you want to define the \texttt{gspathCV~\{...\}} and the \texttt{gzpathCV~\{...\}} as  combinations of other CVs.
+
+\cvsubsubsec{\texttt{gspathCV}: progress along a path defined in CV space.}{sec:cvc_gspathCV}
+\labelkey{colvar|gspathCV}
+
+In the \texttt{gspathCV~\{...\}} and the \texttt{gzpathCV~\{...\}} block all vectors, namely $\mathbf{z}$ and $\mathbf{s}_{k}$ are defined in CV space.  More specifically, $\mathbf{z} = \left[{\xi}_{1}, \cdots, {\xi}_{n}\right]$, where ${\xi}_{i}$ is the $i$-th CV. $\mathbf{s}_{k} = \left[{\xi}_{k,1}, \cdots, {\xi}_{k,n}\right]$, where ${\xi}_{k,i}$ means the $i$-th CV of the $k$-th reference frame. It should be note that these two CVs requires the \texttt{pathFile} option, which specifies a path file. Each line in the path file contains a set of space-seperated CV value of the reference frame. The sequence of reference frames matches the sequence of the lines.
+
+
+\begin{cvcoptions}
+\item %
+  \keydef
+    {useSecondClosestFrame}{%
+    \texttt{gspathCV} and \texttt{gzpathCV}}{%
+    Define $\mathbf{s}_{m-1}$ as the second closest frame?}{%
+    boolean}{%
+    \texttt{on}}{%
+    The definition assumes the second closest frame is neighbouring to the closest frame. This is not always true especially when the path is crooked. If this option is set to \texttt{on} (default), $\mathbf{s}_{m-1}$ is defined as the second closest frame. If this option is set to \texttt{off}, $\mathbf{s}_{m-1}$ is defined as the left or right neighbouring frame of the closest frame.
+  }
+
+\item %
+  \keydef
+    {useThirdClosestFrame}{%
+    \texttt{gspathCV} and \texttt{gzpathCV}}{%
+    Define $\mathbf{s}_{m+1}$ as the third closest frame?}{%
+    boolean}{%
+    \texttt{off}}{%
+    The definition assumes the third closest frame is neighbouring to the closest frame. This is not always true especially when the path is crooked. If this option is set to \texttt{on}, $\mathbf{s}_{m+1}$ is defined as the second closest frame. If this option is set to \texttt{off} (default), $\mathbf{s}_{m+1}$ is defined as the left or right neighbouring frame of the closest frame.
+  }
+
+\item %
+  \key
+    {pathFile}{%
+    \texttt{gspathCV} and \texttt{gspathCV}}{%
+    The file name of the path file.}{%
+    UNIX filename}{%
+		The path is defined by the \texttt{pathFile}. The lines of the \texttt{pathFile} matches the total number of reference frames. The columns of the \texttt{pathFile} matches the number of CVs in this block and are seperated by space.
+    }
+
+\end{cvcoptions}
+
+\cvsubsubsec{\texttt{gzpathCV}: distance from a path defined in CV space.}{sec:cvc_gzpathCV}
+\labelkey{colvar|gzpathCV}
+
+\begin{cvcoptions}
+
+\item %
+  \keydef
+    {useZsquare}{%
+    \texttt{gzpathCV}}{%
+    Compute $z^2$ instead of $z$}{%
+    boolean}{%
+    \texttt{off}}{%
+    $z$ is not differentiable when it is zero. This implementation workarounds it by setting the derivative of $z$ to zero when $z = 0$. Another workaround is set this option to \texttt{on}, which computes $z^2$ instead of $z$, and then $z^2$ is differentiable when it is zero.
+  }
+
+\end{cvcoptions}
+
+The usage of \texttt{gzpathCV} and \texttt{gspathCV} is illustrated below:
+
+\bigskip
+{%
+% verbatim can't appear within commands
+\noindent\ttfamily colvar \{\\
+\-~~\# Progress along the path\\
+\-~~name gs\\
+\-~~\# Path defined by the CV space of two dihedral angles\\
+\-~~gspathCV \{\\
+\-~~~~pathFile ./path.txt\\
+\-~~~~dihedral \{\\
+\-~~~~~~name 001\\
+\-~~~~~~group1 \{atomNumbers \{5\}\}\\
+\-~~~~~~group2 \{atomNumbers \{7\}\}\\
+\-~~~~~~group3 \{atomNumbers \{9\}\}\\
+\-~~~~~~group4 \{atomNumbers \{15\}\}\\
+\-~~~~\}\\
+\-~~~~dihedral \{\\
+\-~~~~~~name 002\\
+\-~~~~~~group1 \{atomNumbers \{7\}\}\\
+\-~~~~~~group2 \{atomNumbers \{9\}\}\\
+\-~~~~~~group3 \{atomNumbers \{15\}\}\\
+\-~~~~~~group4 \{atomNumbers \{17\}\}\\
+\-~~~~\}\\
+\-~~\}\\
+\}\\
+\noindent\ttfamily colvar \{\\
+\-~~\# Distance from the path\\
+\-~~name gz\\
+\-~~gzpathCV \{\\
+\-~~~~pathFile ./path.txt\\
+\-~~~~dihedral \{\\
+\-~~~~~~name 001\\
+\-~~~~~~group1 \{atomNumbers \{5\}\}\\
+\-~~~~~~group2 \{atomNumbers \{7\}\}\\
+\-~~~~~~group3 \{atomNumbers \{9\}\}\\
+\-~~~~~~group4 \{atomNumbers \{15\}\}\\
+\-~~~~\}\\
+\-~~~~dihedral \{\\
+\-~~~~~~name 002\\
+\-~~~~~~group1 \{atomNumbers \{7\}\}\\
+\-~~~~~~group2 \{atomNumbers \{9\}\}\\
+\-~~~~~~group3 \{atomNumbers \{15\}\}\\
+\-~~~~~~group4 \{atomNumbers \{17\}\}\\
+\-~~~~\}\\
+\-~~\}\\
+\}}
+
 
 \cvsubsec{Shared keywords for all components}{sec:cvc_common}
 
