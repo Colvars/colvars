@@ -1,37 +1,28 @@
-#if (__cplusplus >= 201103L)
 #ifndef GEOMETRICPATHCV_H
 #define GEOMETRICPATHCV_H
-// This file is part of the Collective Variables module (Colvars).
-// The original version of Colvars and its updates are located at:
-// https://github.com/colvars/colvars
-// Please update all Colvars source files before making any changes.
-// If you wish to distribute your changes, please submit them to the
-// Colvars repository at GitHub.
-
-// This file is part of the Collective Variables module (Colvars).
-// The original version of Colvars and its updates are located at:
-// https://github.com/colvars/colvars
-// Please update all Colvars source files before making any changes.
-// If you wish to distribute your changes, please submit them to the
-// Colvars repository at GitHub.
-
 
 #include <vector>
 #include <cmath>
 #include <iostream>
-#include <numeric>
 #include <algorithm>
 #include <string>
-#include <functional>
 #include <map>
 
 namespace GeometricPathCV {
 
-enum class path_sz {S, Z};
+enum path_sz {S, Z};
 void split_string(const std::string& data, const std::string& delim, std::vector<std::string>& dest);
 
 template <typename element_type, typename scalar_type, path_sz path_type>
 class GeometricPathBase {
+private:
+    struct doCompareFrameDistance {
+        doCompareFrameDistance(const GeometricPathBase& obj): m_obj(obj) {}
+        const GeometricPathBase& m_obj;
+        bool operator()(const size_t& i1, const size_t& i2) {
+            return m_obj.frame_distances[i1] < m_obj.frame_distances[i2];
+        }
+    };
 protected:
     scalar_type v1v1;
     scalar_type v2v2;
@@ -111,7 +102,9 @@ void GeometricPathBase<element_type, scalar_type, path_type>::initialize(size_t 
     dzdv2.resize(vector_size, element);
     frame_distances.resize(total_frames);
     frame_index.resize(total_frames);
-    std::iota(frame_index.begin(), frame_index.end(), 0);
+    for (size_t i_frame = 0; i_frame < frame_index.size(); ++i_frame) {
+        frame_index[i_frame] = i_frame;
+    }
     use_second_closest_frame = p_use_second_closest_frame;
     use_third_closest_frame = p_use_third_closest_frame;
     use_z_square = p_use_z_square;
@@ -142,7 +135,9 @@ void GeometricPathBase<element_type, scalar_type, path_type>::initialize(size_t 
     dzdv2 = elements;
     frame_distances.resize(total_frames);
     frame_index.resize(total_frames);
-    std::iota(frame_index.begin(), frame_index.end(), 0);
+    for (size_t i_frame = 0; i_frame < frame_index.size(); ++i_frame) {
+        frame_index[i_frame] = i_frame;
+    }
     use_second_closest_frame = p_use_second_closest_frame;
     use_third_closest_frame = p_use_third_closest_frame;
     use_z_square = p_use_z_square;
@@ -171,7 +166,7 @@ void GeometricPathBase<element_type, scalar_type, path_type>::compute() {
 template <typename element_type, typename scalar_type, path_sz path_type>
 void GeometricPathBase<element_type, scalar_type, path_type>::determineClosestFrames() {
     // Find the closest and the second closest frames
-    std::sort(frame_index.begin(), frame_index.end(), [this](size_t i1, size_t i2){return frame_distances[i1] < frame_distances[i2];});
+    std::sort(frame_index.begin(), frame_index.end(), doCompareFrameDistance(*this));
     // Determine the sign
     sign = static_cast<long>(frame_index[0]) - static_cast<long>(frame_index[1]);
     if (sign > 1) {
@@ -182,11 +177,10 @@ void GeometricPathBase<element_type, scalar_type, path_type>::determineClosestFr
         sign = -1;
     }
     if (std::abs(static_cast<long>(frame_index[0]) - static_cast<long>(frame_index[1])) > 1) {
-        std::cout << "Warning: Geometrical pathCV(s) relies on the assumption that the second closest frame is the neibouring frame\n";
+        std::cout << "Warning: Geometrical pathCV relies on the assumption that the second closest frame is the neighbouring frame\n";
         std::cout << "         Please check your configuration or increase restraint on z(σ)\n";
         for (size_t i_frame = 0; i_frame < frame_index.size(); ++i_frame) {
-            std::string frame_info_line = std::string{"Frame index: "} + std::to_string(frame_index[i_frame]) + std::string{" ; optimal RMSD = "} + std::to_string(frame_distances[frame_index[i_frame]]) + std::string{"\n"};
-            std::cout << frame_info_line;
+            std::cout << "Frame index: " << frame_index[i_frame] << " ; optimal RMSD = " << frame_distances[frame_index[i_frame]] << "\n";
         }
     }
     min_frame_index_1 = frame_index[0];                                                         // s_m
@@ -204,7 +198,7 @@ void GeometricPathBase<element_type, scalar_type, path_type>::computeValue() {
     v2v2 = scalar_type();
     v3v3 = scalar_type();
     v1v3 = scalar_type();
-    if (path_type == path_sz::Z) {
+    if (path_type == Z) {
         v1v4 = scalar_type();
         v4v4 = scalar_type();
     }
@@ -213,13 +207,13 @@ void GeometricPathBase<element_type, scalar_type, path_type>::computeValue() {
         v2v2 += v2[i_elem] * v2[i_elem];
         v3v3 += v3[i_elem] * v3[i_elem];
         v1v3 += v1[i_elem] * v3[i_elem];
-        if (path_type == path_sz::Z) {
+        if (path_type == Z) {
             v1v4 += v1[i_elem] * v4[i_elem];
             v4v4 += v4[i_elem] * v4[i_elem];
         }
     }
     f = (std::sqrt(v1v3 * v1v3 - v3v3 * (v1v1 - v2v2)) - v1v3) / v3v3;
-    if (path_type == path_sz::Z) {
+    if (path_type == Z) {
         dx = 0.5 * (f - 1);
         zz = v1v1 + 2 * dx * v1v4 + dx * dx * v4v4;
         if (use_z_square) {
@@ -228,7 +222,7 @@ void GeometricPathBase<element_type, scalar_type, path_type>::computeValue() {
             z = std::sqrt(std::fabs(zz));
         }
     }
-    if (path_type == path_sz::S) {
+    if (path_type == S) {
         s = m/M + static_cast<double>(sign) * ((f - 1) / (2 * M));
     }
 }
@@ -247,7 +241,7 @@ void GeometricPathBase<element_type, scalar_type, path_type>::computeDerivatives
         // dv2/dr = [fitting matrix 2][1, ..., 1]
         // ∂Z/∂v1 = 1/(2*z) * (2v1 + (f-1)v4 + (v1⋅v4)∂f/∂v1 + v4^2 * 1/4 * 2(f-1) * ∂f/∂v1)
         // ∂Z/∂v2 = 1/(2*z) * ((v1⋅v4)∂f/∂v2 + v4^2 * 1/4 * 2(f-1) * ∂f/∂v2)
-        if (path_type == path_sz::Z) {
+        if (path_type == Z) {
             if (use_z_square) {
                 dzdv1[i_elem] = 2.0 * v1[i_elem] + (f-1) * v4[i_elem] + v1v4 * dfdv1[i_elem] + v4v4 * 0.25 * 2.0 * (f-1) * dfdv1[i_elem];
                 dzdv2[i_elem] = v1v4 * dfdv2[i_elem] + v4v4 * 0.25 * 2.0 * (f-1) * dfdv2[i_elem];
@@ -268,4 +262,3 @@ void GeometricPathBase<element_type, scalar_type, path_type>::computeDerivatives
 }
 
 #endif // GEOMETRICPATHCV_H
-#endif // C++11 Checking
