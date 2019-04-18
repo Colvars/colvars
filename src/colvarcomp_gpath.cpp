@@ -24,6 +24,11 @@ namespace GeometricPathCV {
 void init_string_cv_map(std::map<std::string, std::function<colvar::cvc* (const std::string& conf)>>& string_cv_map);
 }
 
+bool compareColvarComponent(colvar::cvc *i, colvar::cvc *j)
+{
+    return i->name < j->name;
+}
+
 colvar::CartesianBasedPath::CartesianBasedPath(std::string const &conf): cvc(conf), atoms(nullptr), reference_frames(0) {
     // Parse selected atoms
     atoms = parse_group(conf, "atoms");
@@ -43,7 +48,7 @@ colvar::CartesianBasedPath::CartesianBasedPath(std::string const &conf): cvc(con
     bool has_frames = true;
     total_reference_frames = 0;
     while (has_frames) {
-        std::string reference_position_file_lookup = "refPositionFile" + std::to_string(total_reference_frames + 1);
+        std::string reference_position_file_lookup = "refPositionFile" + cvm::to_str(total_reference_frames + 1);
         if (key_lookup(conf, reference_position_file_lookup.c_str())) {
             std::string reference_position_filename;
             get_keyval(conf, reference_position_file_lookup.c_str(), reference_position_filename, std::string(""));
@@ -114,7 +119,7 @@ colvar::gspath::gspath(std::string const &conf): CartesianBasedPath(conf) {
     }
     GeometricPathCV::GeometricPathBase<cvm::atom_pos, cvm::real, GeometricPathCV::path_sz::S>::initialize(atoms->size(), cvm::atom_pos(), total_reference_frames, use_second_closest_frame, use_third_closest_frame);
     cvm::log(std::string("Geometric pathCV(s) is initialized.\n"));
-    cvm::log(std::string("Geometric pathCV(s) loaded ") + std::to_string(reference_frames.size()) + std::string(" frames.\n"));
+    cvm::log(std::string("Geometric pathCV(s) loaded ") + cvm::to_str(reference_frames.size()) + std::string(" frames.\n"));
 }
 
 void colvar::gspath::updateReferenceDistances() {
@@ -224,7 +229,7 @@ colvar::gzpath::gzpath(std::string const &conf): CartesianBasedPath(conf) {
     GeometricPathCV::GeometricPathBase<cvm::atom_pos, cvm::real, GeometricPathCV::path_sz::Z>::initialize(atoms->size(), cvm::atom_pos(), total_reference_frames, use_second_closest_frame, use_third_closest_frame, use_z_square);
     // Logging
     cvm::log(std::string("Geometric pathCV(z) is initialized.\n"));
-    cvm::log(std::string("Geometric pathCV(z) loaded ") + std::to_string(reference_frames.size()) + std::string(" frames.\n"));
+    cvm::log(std::string("Geometric pathCV(z) loaded ") + cvm::to_str(reference_frames.size()) + std::string(" frames.\n"));
 }
 
 void colvar::gzpath::updateReferenceDistances() {
@@ -310,7 +315,7 @@ colvar::subcolvar::subcolvar(std::string const &conf): cvc(conf) {
         }
     }
     // Sort all sub CVs by their names
-    std::sort(cv.begin(), cv.end(), [this](colvar::cvc *i, colvar::cvc *j){return i->name < j->name;});
+    std::sort(cv.begin(), cv.end(), compareColvarComponent);
     for (auto it_sub_cv = cv.begin(); it_sub_cv != cv.end(); ++it_sub_cv) {
         for (auto it_atom_group = (*it_sub_cv)->atom_groups.begin(); it_atom_group != (*it_sub_cv)->atom_groups.end(); ++it_atom_group) {
             register_atom_group(*it_atom_group);
@@ -409,7 +414,7 @@ colvar::CVBasedPath::CVBasedPath(std::string const &conf): cvc(conf) {
         }
     }
     // Sort all sub CVs by their names
-    std::sort(cv.begin(), cv.end(), [this](colvar::cvc *i, colvar::cvc *j){return i->name < j->name;});
+    std::sort(cv.begin(), cv.end(), compareColvarComponent);
     // Register atom groups and determine the colvar type for reference
     std::vector<colvarvalue> tmp_cv;
     for (auto it_sub_cv = cv.begin(); it_sub_cv != cv.end(); ++it_sub_cv) {
@@ -428,7 +433,7 @@ colvar::CVBasedPath::CVBasedPath(std::string const &conf): cvc(conf) {
         cvm::error("Error: failed to open path file.\n");
     }
     std::string line;
-    const std::string token{" "};
+    const std::string token(" ");
     total_reference_frames = 0;
     while (std::getline(ifs_path, line)) {
         std::vector<std::string> fields;
@@ -441,7 +446,7 @@ colvar::CVBasedPath::CVBasedPath(std::string const &conf): cvc(conf) {
             if (num_value_required <= fields.size()) {
                 size_t start_index = num_value_required - value_size;
                 for (size_t i = start_index; i < num_value_required; ++i) {
-                    tmp_cv[i_cv][i] = std::stod(fields[i]);
+                    tmp_cv[i_cv][i] = std::atof(fields[i].c_str());
                     cvm::log(fields[i] + std::string(" "));
                 }
                 cvm::log(std::string("\n"));
