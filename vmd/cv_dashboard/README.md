@@ -3,7 +3,7 @@
 Note that some spiffy Dashboard features are only available in VMD compiled with
 the Colvars Module version 2019-03-21 or later.
 
-## With VMD 1.9.4 or later (when available)
+## With VMD 1.9.4 or later (when available)
 
 The plugin will be available under Extensions/Analysis.
 
