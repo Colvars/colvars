@@ -321,7 +321,8 @@ colvar::subcolvar::subcolvar(std::string const &conf): cvc(conf) {
             register_atom_group(*it_atom_group);
         }
     }
-    x.type(cv[0]->value().type());
+    x.type(cv[0]->value());
+    x.reset();
     use_explicit_gradients = true;
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
         if (!cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
@@ -350,7 +351,7 @@ colvar::subcolvar::~subcolvar() {
 }
 
 void colvar::subcolvar::calc_value() {
-    x = colvarvalue(x.type());
+    x.reset();
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
         cv[i_cv]->calc_value();
         colvarvalue current_cv_value(cv[i_cv]->value());
@@ -421,7 +422,9 @@ colvar::CVBasedPath::CVBasedPath(std::string const &conf): cvc(conf) {
         for (auto it_atom_group = (*it_sub_cv)->atom_groups.begin(); it_atom_group != (*it_sub_cv)->atom_groups.end(); ++it_atom_group) {
             register_atom_group(*it_atom_group);
         }
-        tmp_cv.push_back(colvarvalue((*it_sub_cv)->value().type()));
+        colvarvalue tmp_i_cv((*it_sub_cv)->value());
+        tmp_i_cv.reset();
+        tmp_cv.push_back(tmp_i_cv);
     }
     // Read path file
     // Lookup all reference CV values
