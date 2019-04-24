@@ -5,14 +5,13 @@
  ****************************************************************/
 
 #include "abf_data.h"
+#include "../src/colvars_version.h"
 #include <fstream>
 #include <string>
 #include <cstring>
 #include <cstdlib>
 #include <ctime>
 #include <cmath>
-
-#define ABF_INTEGRATE_VERSION "2019-04-11"
 
 char *parse_cl(int argc, char *argv[], unsigned int *nsteps, double *temp,
                double *scale, bool * meta, double *hill, double *hill_fact);
@@ -50,7 +49,7 @@ int main(int argc, char *argv[])
 
     if (!(data_file = parse_cl(argc, argv, &nsteps, &temp, &scale, &meta, &hill, &hill_fact))) {
         std::cerr << "\nabf_integrate: MC-based integration of multidimensional free energy gradient\n";
-        std::cerr << "Version " << ABF_INTEGRATE_VERSION << "\n\n";
+        std::cerr << "Provided by the Collective Variables Module, version " << COLVARS_VERSION << "\n\n";
         std::cerr << "Syntax: " << argv[0] <<
           " <filename> [-n <nsteps>] [-t <temp>] [-s <scale>]" <<
           " [-m [0|1] (metadynamics)]"
