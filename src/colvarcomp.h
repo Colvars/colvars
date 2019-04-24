@@ -1,26 +1,5 @@
 // -*- c++ -*-
 
-// This file is part of the Collective Variables module (Colvars).
-// The original version of Colvars and its updates are located at:
-// https://github.com/colvars/colvars
-// Please update all Colvars source files before making any changes.
-// If you wish to distribute your changes, please submit them to the
-// Colvars repository at GitHub.
-
-// This file is part of the Collective Variables module (Colvars).
-// The original version of Colvars and its updates are located at:
-// https://github.com/colvars/colvars
-// Please update all Colvars source files before making any changes.
-// If you wish to distribute your changes, please submit them to the
-// Colvars repository at GitHub.
-
-// This file is part of the Collective Variables module (Colvars).
-// The original version of Colvars and its updates are located at:
-// https://github.com/colvars/colvars
-// Please update all Colvars source files before making any changes.
-// If you wish to distribute your changes, please submit them to the
-// Colvars repository at GitHub.
-
 #ifndef COLVARCOMP_H
 #define COLVARCOMP_H
 
@@ -1409,8 +1388,11 @@ protected:
     virtual void computeReferenceDistance(std::vector<cvm::real>& result);
     /// Selected atoms
     cvm::atom_group *atoms;
+    /// Fitting options
+    bool has_user_defined_fitting;
     /// Reference frames
     std::vector<std::vector<cvm::atom_pos>> reference_frames;
+    std::vector<std::vector<cvm::atom_pos>> reference_fitting_frames;
     /// Atom groups for RMSD calculation together with reference frames
     std::vector<cvm::atom_group*> comp_atoms;
     /// Total number of reference frames

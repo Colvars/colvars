@@ -6,14 +6,6 @@
 #include <cstdlib>
 #include <limits>
 
-// This file is part of the Collective Variables module (Colvars).
-// The original version of Colvars and its updates are located at:
-// https://github.com/colvars/colvars
-// Please update all Colvars source files before making any changes.
-// If you wish to distribute your changes, please submit them to the
-// Colvars repository at GitHub.
-
-
 #include "colvarmodule.h"
 #include "colvarvalue.h"
 #include "colvarparse.h"
@@ -32,6 +24,11 @@ bool compareColvarComponent(colvar::cvc *i, colvar::cvc *j)
 colvar::CartesianBasedPath::CartesianBasedPath(std::string const &conf): cvc(conf), atoms(nullptr), reference_frames(0) {
     // Parse selected atoms
     atoms = parse_group(conf, "atoms");
+    has_user_defined_fitting = false;
+    std::string fitting_conf;
+    if (key_lookup(conf, "fittingAtoms", &fitting_conf)) {
+        has_user_defined_fitting = true;
+    }
     // Lookup reference column of PDB
     // Copied from the RMSD class
     std::string reference_column;
@@ -63,15 +60,45 @@ colvar::CartesianBasedPath::CartesianBasedPath(std::string const &conf): cvc(con
     // Setup alignment to compute RMSD with respect to reference frames
     for (size_t i_frame = 0; i_frame < reference_frames.size(); ++i_frame) {
         cvm::atom_group* tmp_atoms = parse_group(conf, "atoms");
-        // Swipe from the rmsd class
-        tmp_atoms->b_center = true;
-        tmp_atoms->b_rotate = true;
-        tmp_atoms->ref_pos = reference_frames[i_frame];
-        tmp_atoms->center_ref_pos();
-        tmp_atoms->enable(f_ag_fit_gradients);
-        tmp_atoms->rot.request_group1_gradients(tmp_atoms->size());
-        tmp_atoms->rot.request_group2_gradients(tmp_atoms->size());
-        comp_atoms.push_back(tmp_atoms);
+        if (!has_user_defined_fitting) {
+            // Swipe from the rmsd class
+            tmp_atoms->b_center = true;
+            tmp_atoms->b_rotate = true;
+            tmp_atoms->ref_pos = reference_frames[i_frame];
+            tmp_atoms->center_ref_pos();
+            tmp_atoms->enable(f_ag_fit_gradients);
+            tmp_atoms->rot.request_group1_gradients(tmp_atoms->size());
+            tmp_atoms->rot.request_group2_gradients(tmp_atoms->size());
+            comp_atoms.push_back(tmp_atoms);
+        } else {
+            // parse a group of atoms for fitting
+            std::string fitting_group_name = std::string("fittingAtoms") + cvm::to_str(i_frame);
+            cvm::atom_group* tmp_fitting_atoms = new cvm::atom_group(fitting_group_name.c_str());
+            tmp_fitting_atoms->parse(fitting_conf);
+            tmp_fitting_atoms->disable(f_ag_scalable);
+            tmp_fitting_atoms->disable(f_ag_scalable_com);
+            tmp_fitting_atoms->fit_gradients.assign(tmp_fitting_atoms->size(), cvm::atom_pos(0.0, 0.0, 0.0));
+            std::string reference_position_file_lookup = "refPositionFile" + cvm::to_str(i_frame + 1);
+            std::string reference_position_filename;
+            get_keyval(conf, reference_position_file_lookup.c_str(), reference_position_filename, std::string(""));
+            std::vector<cvm::atom_pos> reference_fitting_position(tmp_fitting_atoms->size());
+            cvm::load_coords(reference_position_filename.c_str(), &reference_fitting_position, tmp_fitting_atoms, reference_column, reference_column_value);
+            // setup the atom group for calculating
+            tmp_atoms->b_center = true;
+            tmp_atoms->b_rotate = true;
+            tmp_atoms->b_user_defined_fit = true;
+            tmp_atoms->disable(f_ag_scalable);
+            tmp_atoms->disable(f_ag_scalable_com);
+            tmp_atoms->ref_pos = reference_fitting_position;
+            tmp_atoms->center_ref_pos();
+            tmp_atoms->enable(f_ag_fit_gradients);
+            tmp_atoms->enable(f_ag_fitting_group);
+            tmp_atoms->fitting_group = tmp_fitting_atoms;
+            tmp_atoms->rot.request_group1_gradients(tmp_fitting_atoms->size());
+            tmp_atoms->rot.request_group2_gradients(tmp_fitting_atoms->size());
+            reference_fitting_frames.push_back(reference_fitting_position);
+            comp_atoms.push_back(tmp_atoms);
+        }
     }
     x.type(colvarvalue::type_scalar);
     // Don't use implicit gradient
@@ -148,7 +175,24 @@ void colvar::gspath::prepareVectors() {
             tmp_reference_frame_1[i_atom] = reference_frames[min_frame_index_1][i_atom] - reference_cog_1;
             tmp_reference_frame_2[i_atom] = reference_frames[min_frame_index_2][i_atom] - reference_cog_2;
         }
-        rot_v3.calc_optimal_rotation(tmp_reference_frame_1, tmp_reference_frame_2);
+        if (has_user_defined_fitting) {
+            cvm::atom_pos reference_fitting_cog_1, reference_fitting_cog_2;
+            for (i_atom = 0; i_atom < reference_fitting_frames[min_frame_index_1].size(); ++i_atom) {
+                reference_fitting_cog_1 += reference_fitting_frames[min_frame_index_1][i_atom];
+                reference_fitting_cog_2 += reference_fitting_frames[min_frame_index_2][i_atom];
+            }
+            reference_fitting_cog_1 /= reference_fitting_frames[min_frame_index_1].size();
+            reference_fitting_cog_2 /= reference_fitting_frames[min_frame_index_2].size();
+            std::vector<cvm::atom_pos> tmp_reference_fitting_frame_1(reference_fitting_frames[min_frame_index_1].size());
+            std::vector<cvm::atom_pos> tmp_reference_fitting_frame_2(reference_fitting_frames[min_frame_index_2].size());
+            for (i_atom = 0; i_atom < reference_fitting_frames[min_frame_index_1].size(); ++i_atom) {
+                tmp_reference_fitting_frame_1[i_atom] = reference_fitting_frames[min_frame_index_1][i_atom] - reference_fitting_cog_1;
+                tmp_reference_fitting_frame_2[i_atom] = reference_fitting_frames[min_frame_index_2][i_atom] - reference_fitting_cog_2;
+            }
+            rot_v3.calc_optimal_rotation(tmp_reference_fitting_frame_1, tmp_reference_fitting_frame_2);
+        } else {
+            rot_v3.calc_optimal_rotation(tmp_reference_frame_1, tmp_reference_frame_2);
+        }
         for (i_atom = 0; i_atom < atoms->size(); ++i_atom) {
             v3[i_atom] = rot_v3.q.rotate(tmp_reference_frame_1[i_atom]) - tmp_reference_frame_2[i_atom];
         }
@@ -166,7 +210,24 @@ void colvar::gspath::prepareVectors() {
             tmp_reference_frame_1[i_atom] = reference_frames[min_frame_index_1][i_atom] - reference_cog_1;
             tmp_reference_frame_3[i_atom] = reference_frames[min_frame_index_3][i_atom] - reference_cog_3;
         }
-        rot_v3.calc_optimal_rotation(tmp_reference_frame_1, tmp_reference_frame_3);
+        if (has_user_defined_fitting) {
+            cvm::atom_pos reference_fitting_cog_1, reference_fitting_cog_3;
+            for (i_atom = 0; i_atom < reference_fitting_frames[min_frame_index_1].size(); ++i_atom) {
+                reference_fitting_cog_1 += reference_fitting_frames[min_frame_index_1][i_atom];
+                reference_fitting_cog_3 += reference_fitting_frames[min_frame_index_3][i_atom];
+            }
+            reference_fitting_cog_1 /= reference_fitting_frames[min_frame_index_1].size();
+            reference_fitting_cog_3 /= reference_fitting_frames[min_frame_index_3].size();
+            std::vector<cvm::atom_pos> tmp_reference_fitting_frame_1(reference_fitting_frames[min_frame_index_1].size());
+            std::vector<cvm::atom_pos> tmp_reference_fitting_frame_3(reference_fitting_frames[min_frame_index_3].size());
+            for (i_atom = 0; i_atom < reference_fitting_frames[min_frame_index_1].size(); ++i_atom) {
+                tmp_reference_fitting_frame_1[i_atom] = reference_fitting_frames[min_frame_index_1][i_atom] - reference_fitting_cog_1;
+                tmp_reference_fitting_frame_3[i_atom] = reference_fitting_frames[min_frame_index_3][i_atom] - reference_fitting_cog_3;
+            }
+            rot_v3.calc_optimal_rotation(tmp_reference_fitting_frame_1, tmp_reference_fitting_frame_3);
+        } else {
+            rot_v3.calc_optimal_rotation(tmp_reference_frame_1, tmp_reference_frame_3);
+        }
         for (i_atom = 0; i_atom < atoms->size(); ++i_atom) {
             // v3 = s_(m+1) - s_m
             v3[i_atom] = tmp_reference_frame_3[i_atom] - rot_v3.q.rotate(tmp_reference_frame_1[i_atom]);
@@ -251,7 +312,26 @@ void colvar::gzpath::prepareVectors() {
         tmp_reference_frame_1[i_atom] = reference_frames[min_frame_index_1][i_atom] - reference_cog_1;
         tmp_reference_frame_2[i_atom] = reference_frames[min_frame_index_2][i_atom] - reference_cog_2;
     }
-    rot_v4.calc_optimal_rotation(tmp_reference_frame_1, tmp_reference_frame_2);
+    std::vector<cvm::atom_pos> tmp_reference_fitting_frame_1;
+    std::vector<cvm::atom_pos> tmp_reference_fitting_frame_2;
+    if (has_user_defined_fitting) {
+        cvm::atom_pos reference_fitting_cog_1, reference_fitting_cog_2;
+        for (i_atom = 0; i_atom < reference_fitting_frames[min_frame_index_1].size(); ++i_atom) {
+            reference_fitting_cog_1 += reference_fitting_frames[min_frame_index_1][i_atom];
+            reference_fitting_cog_2 += reference_fitting_frames[min_frame_index_2][i_atom];
+        }
+        reference_fitting_cog_1 /= reference_fitting_frames[min_frame_index_1].size();
+        reference_fitting_cog_2 /= reference_fitting_frames[min_frame_index_2].size();
+        tmp_reference_fitting_frame_1.resize(reference_fitting_frames[min_frame_index_1].size());
+        tmp_reference_fitting_frame_2.resize(reference_fitting_frames[min_frame_index_2].size());
+        for (i_atom = 0; i_atom < reference_fitting_frames[min_frame_index_1].size(); ++i_atom) {
+            tmp_reference_fitting_frame_1[i_atom] = reference_fitting_frames[min_frame_index_1][i_atom] - reference_fitting_cog_1;
+            tmp_reference_fitting_frame_2[i_atom] = reference_fitting_frames[min_frame_index_2][i_atom] - reference_fitting_cog_2;
+        }
+        rot_v4.calc_optimal_rotation(tmp_reference_fitting_frame_1, tmp_reference_fitting_frame_2);
+    } else {
+        rot_v4.calc_optimal_rotation(tmp_reference_frame_1, tmp_reference_frame_2);
+    }
     for (i_atom = 0; i_atom < atoms->size(); ++i_atom) {
         v1[i_atom] = reference_frames[min_frame_index_1][i_atom] - (*(comp_atoms[min_frame_index_1]))[i_atom].pos;
         v2[i_atom] = (*(comp_atoms[min_frame_index_2]))[i_atom].pos - reference_frames[min_frame_index_2][i_atom];
@@ -271,7 +351,20 @@ void colvar::gzpath::prepareVectors() {
         for (i_atom = 0; i_atom < atoms->size(); ++i_atom) {
             tmp_reference_frame_3[i_atom] = reference_frames[min_frame_index_3][i_atom] - reference_cog_3;
         }
-        rot_v3.calc_optimal_rotation(tmp_reference_frame_1, tmp_reference_frame_3);
+        if (has_user_defined_fitting) {
+            cvm::atom_pos reference_fitting_cog_3;
+            for (i_atom = 0; i_atom < reference_fitting_frames[min_frame_index_3].size(); ++i_atom) {
+                reference_fitting_cog_3 += reference_fitting_frames[min_frame_index_3][i_atom];
+            }
+            reference_fitting_cog_3 /= reference_fitting_frames[min_frame_index_3].size();
+            std::vector<cvm::atom_pos> tmp_reference_fitting_frame_3(reference_fitting_frames[min_frame_index_3].size());
+            for (i_atom = 0; i_atom < reference_fitting_frames[min_frame_index_3].size(); ++i_atom) {
+                tmp_reference_fitting_frame_3[i_atom] =  reference_fitting_frames[min_frame_index_3][i_atom] - reference_fitting_cog_3;
+            }
+            rot_v3.calc_optimal_rotation(tmp_reference_fitting_frame_1, tmp_reference_fitting_frame_3);
+        } else {
+            rot_v3.calc_optimal_rotation(tmp_reference_frame_1, tmp_reference_frame_3);
+        }
         for (i_atom = 0; i_atom < atoms->size(); ++i_atom) {
             // v3 = s_(m+1) - s_m
             v3[i_atom] = tmp_reference_frame_3[i_atom] - rot_v3.q.rotate(tmp_reference_frame_1[i_atom]);
