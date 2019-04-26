@@ -93,6 +93,12 @@ colvar::coordnum::coordnum(std::string const &conf)
   group1 = parse_group(conf, "group1");
   group2 = parse_group(conf, "group2");
 
+  if (group1 == NULL || group2 == NULL) {
+    cvm::error("Error: failed to initialize atom groups.\n",
+                INPUT_ERROR);
+    return;
+  }
+
   if (int atom_number = cvm::atom_group::overlap(*group1, *group2)) {
     cvm::error("Error: group1 and group2 share a common atom (number: " +
                cvm::to_str(atom_number) + ")\n", INPUT_ERROR);
