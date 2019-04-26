@@ -19,13 +19,7 @@ proc ::cv_dashboard::createWindow {} {
 
   set w [toplevel .cv_dashboard_window]
   wm title $w "Colvars dashboard"
-  wm protocol $w WM_DELETE_WINDOW {
-    # window destructor that removes the trace we put in place, so they don't accumulate
-    # if loaded multiple times
-    set molid [molinfo top]
-    trace remove variable vmd_frame($molid) write ::cv_dashboard::update_frame
-    destroy .cv_dashboard_window
-  }
+  wm protocol $w WM_DELETE_WINDOW { ::cv_dashboard::quit }
 
   # setup Colvars if not already there
   if [catch { cv version}] {
@@ -35,6 +29,8 @@ proc ::cv_dashboard::createWindow {} {
   grid [ttk::button $w.helpB -text "Online Help" -command {::cv_dashboard::invokeBrowser "http://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html#sec:dashboard"} -padding "2 0 2 0"] \
     -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $w.aboutB -text "About" -command ::cv_dashboard::about -padding "2 0 2 0"] \
+    -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $w.quit -text "Quit" -command ::cv_dashboard::quit -padding "2 0 2 0"] \
     -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
   incr gridrow
@@ -93,14 +89,14 @@ proc ::cv_dashboard::createWindow {} {
   if {[string compare [run_cv version] "2019-02-07"] >= 0} {
     incr gridrow
     grid [ttk::button $w.show_atoms -text "Show atoms" -command {::cv_dashboard::show_atoms} -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-    grid [ttk::button $w.hide_atoms -text "Hide all" -command {::cv_dashboard::hide_atoms} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+    grid [ttk::button $w.hide_atoms -text "Hide atoms" -command {::cv_dashboard::hide_atoms} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   }
 
   if {[string compare [run_cv version] "2019-03-18"] >= 0} {
     incr gridrow
     grid [ttk::button $w.show_gradients -text "Show gradients" -command {::cv_dashboard::show_gradients [::cv_dashboard::selected_colvars]} \
       -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-    grid [ttk::button $w.hide_gradients -text "Hide all" -command {::cv_dashboard::hide_gradients} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+    grid [ttk::button $w.hide_gradients -text "Hide gradients" -command {::cv_dashboard::hide_gradients} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   }
 
   incr gridrow
@@ -131,6 +127,15 @@ Jérôme Hénin (henin@ibpc.fr) and the Colvars developers.
 G. Fiorin, M. L. Klein, and J. Hénin. Using collective variables to drive molecular dynamics simulations. Mol. Phys., 111(22-23):3345–3362, 2013
 "
 }
+
+
+proc ::cv_dashboard::quit {} {
+    # window destructor that removes the trace we put in place, so they don't accumulate
+    # if loaded multiple times
+    set molid [molinfo top]
+    trace remove variable ::vmd_frame($molid) write ::cv_dashboard::update_frame
+    destroy .cv_dashboard_window
+  }
 
 
 # Refresh the table with a list of existing CVs and their values
@@ -261,14 +266,12 @@ proc ::cv_dashboard::selected_comps { cv } {
 
 # Enable or disable real-time tracking of VMD frame
 proc ::cv_dashboard::change_track_frame {} {
-  global vmd_frame
-
   set molid [molinfo top]
   if {$::cv_dashboard::track_frame} {
-    trace add variable vmd_frame($molid) write ::cv_dashboard::update_frame
+    trace add variable ::vmd_frame($molid) write ::cv_dashboard::update_frame
     update_frame internal [molinfo top] w
   } else {
-    trace remove variable vmd_frame($molid) write ::cv_dashboard::update_frame
+    trace remove variable ::vmd_frame($molid) write ::cv_dashboard::update_frame
   }
 }
 
@@ -291,7 +294,7 @@ proc ::cv_dashboard::load {} {
 }
 
 
-# Save config of colvars to file (can we do it w/ biases ? need bias type keyword)
+# Save config string of whole Colvars module to file
 proc ::cv_dashboard::save {} {
   if { [info exists ::cv_dashboard::config_dir] } {
     set path [tk_getSaveFile -filetypes {{"Colvars cfg" .in} {"Colvars cfg" .colvars} {"Gromacs Colvars cfg" .dat} {"All files" *}} \
@@ -304,15 +307,8 @@ proc ::cv_dashboard::save {} {
   if [string compare $path ""] {
     # Save directory for next invocation of this dialog
     set ::cv_dashboard::config_dir [file dirname $path]
-    set cfg ""
-    foreach c [run_cv list] {
-        append cfg "colvar {"
-        append cfg [run_cv colvar $c getconfig]
-        append cfg "}\n\n"
-    }
-
     set o [open $path w]
-    puts $o $cfg
+    puts $o [cv getconfig]
     close $o
   }
 }

@@ -350,7 +350,17 @@ proc ::cv_dashboard::edit_apply {} {
   }
   set cfg [$w.editor.fr.text get 1.0 end-1c]
   if { $cfg != "" } {
+    # Dump config for debugging possible crashes
+    set dump [open "_dashboard_saved_config.colvars" w]
+    puts $dump "# Current configuration of Colvars Module\n"
+    puts $dump [cv getconfig]
+    puts $dump "\n# New config string to be applied\n"
+    puts $dump $cfg
+    close $dump
+
+    # Actually submit new config to the Colvars Module
     set res [run_cv config $cfg]
+
     if { [string compare $res ""] } {
       # error: restore backed up cfg
       run_cv config $::cv_dashboard::backup_cfg

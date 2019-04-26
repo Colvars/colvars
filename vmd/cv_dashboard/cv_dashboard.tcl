@@ -89,7 +89,6 @@ proc ::cv_dashboard::update_frame { name molid op } {
   # name == vmd_frame
   # molid == molecule id of the newly changed frame
   # op == w
-  global vmd_frame
 
   if { $molid != [molinfo top] } {
     return
