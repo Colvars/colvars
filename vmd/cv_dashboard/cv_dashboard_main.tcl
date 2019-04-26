@@ -36,7 +36,7 @@ proc ::cv_dashboard::createWindow {} {
   incr gridrow
   grid [ttk::button $w.load -text "Load" -command ::cv_dashboard::load -padding "2 0 2 0"] \
     -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::button $w.save -text "Save" -command ::cv_dashboard::save -padding "2 0 2 0"] \
+  grid [ttk::button $w.save -text "Save all" -command ::cv_dashboard::save -padding "2 0 2 0"] \
     -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $w.reset -text "Reset" -command ::cv_dashboard::reset -padding "2 0 2 0"] \
     -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
@@ -307,8 +307,15 @@ proc ::cv_dashboard::save {} {
   if [string compare $path ""] {
     # Save directory for next invocation of this dialog
     set ::cv_dashboard::config_dir [file dirname $path]
+    set cfg ""
+    foreach c [run_cv list] {
+        append cfg "colvar {"
+        append cfg [run_cv colvar $c getconfig]
+        append cfg "}\n\n"
+    }
+
     set o [open $path w]
-    puts $o [cv getconfig]
+    puts $o $cfg
     close $o
   }
 }
