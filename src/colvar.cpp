@@ -787,7 +787,7 @@ int colvar::init_components(std::string const &conf)
 #if (__cplusplus >= 201103L)
   error_code |= init_components_type<gspath>(conf, "geometrical path collective variables (s)", "gspath");
   error_code |= init_components_type<gzpath>(conf, "geometrical path collective variables (z)", "gzpath");
-  error_code |= init_components_type<subcolvar>(conf, "linear combination of other collective variables", "subColvar");
+  error_code |= init_components_type<linearCombination>(conf, "linear combination of other collective variables", "subColvar");
   error_code |= init_components_type<gspathCV>(conf, "geometrical path collective variables (s) for other CVs", "gspathCV");
   error_code |= init_components_type<gzpathCV>(conf, "geometrical path collective variables (z) for other CVs", "gzpathCV");
 #endif // C++11 checking
