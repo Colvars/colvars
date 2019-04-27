@@ -2110,7 +2110,7 @@ This component returns a $N_{\mathrm{1}}\times{}N_{\mathrm{2}}$-dimensional vect
 
 \cvsubsec{Geometric path collective variables}{sec:cvc_gpath}
 
-The geometric path collective variables define the progress along a path, $s$, and the distance from the path, $z$. These CVs are proposed by Leines and Ensing\cite{Leines2012} , which differ from that\cite{Branduardi2007} proposed by Branduardi et al., and utilize a set of geometric algorithm. The path is defined as a set of frames in the atomic Cartesian coordinate space or the CV space. $s$ and $z$ are computed as
+The geometric path collective variables define the progress along a path, $s$, and the distance from the path, $z$. These CVs are proposed by Leines and Ensing\cite{Leines2012} , which differ from that\cite{Branduardi2007} proposed by Branduardi et al., and utilize a set of geometric algorithms. The path is defined as a series of frames in the atomic Cartesian coordinate space or the CV space. $s$ and $z$ are computed as
 
 \begin{equation}
 s = \frac{m}{M} \pm \frac{1}{2M} \left( \frac{\sqrt{(\mathbf{v}_1 \cdot \mathbf{v}_3)^2-|\mathbf{v}_3|^2 (|\mathbf{v}_1|^2 - |\mathbf{v}_2|^2)}-(\mathbf{v}_1 \cdot \mathbf{v}_3)}{|\mathbf{v}_3|^2} -1 \right)
@@ -2120,7 +2120,7 @@ s = \frac{m}{M} \pm \frac{1}{2M} \left( \frac{\sqrt{(\mathbf{v}_1 \cdot \mathbf{
 z = \sqrt{\left(\mathbf{v}_1 + \frac{1}{2}\left(\frac{\sqrt{(\mathbf{v}_1 \cdot \mathbf{v}_3)^2-|\mathbf{v}_3|^2 (|\mathbf{v}_1|^2 - |\mathbf{v}_2|^2)}-(\mathbf{v}_1 \cdot \mathbf{v}_3)}{|\mathbf{v}_3|^2} -1 \right)\mathbf{v}_4 \right)^2}
 \end{equation}
 
-where $\mathbf{v}_1 = \mathbf{s}_{m} - \mathbf{z} $ is the vector connecting the current position to the closest frame, $\mathbf{v}_2 = \mathbf{z} - \mathbf{s}_{m-1}$ is the vector connecting the second closest frame to the current position, $\mathbf{v}_3 = \mathbf{s}_{m+1} - \mathbf{s}_{m}$ is the vector connecting the closest frame to the third closest frame, and $\mathbf{v}_4 = \mathbf{s}_m - \mathbf{s}_{m-1}$ is the vector connecting the second closest frame to the closest frame. $m$ and $M$ are the current index of the closest frame and the total number of frames respectively. If the current position is on the left of the closest reference frame, the $\pm$ in $s$ turns to positive sign. Otherwise it turns to the negative sign.
+where $\mathbf{v}_1 = \mathbf{s}_{m} - \mathbf{z} $ is the vector connecting the current position to the closest frame, $\mathbf{v}_2 = \mathbf{z} - \mathbf{s}_{m-1}$ is the vector connecting the second closest frame to the current position, $\mathbf{v}_3 = \mathbf{s}_{m+1} - \mathbf{s}_{m}$ is the vector connecting the closest frame to the third closest frame, and $\mathbf{v}_4 = \mathbf{s}_m - \mathbf{s}_{m-1}$ is the vector connecting the second closest frame to the closest frame. $m$ and $M$ are the current index of the closest frame and the total number of frames, respectively. If the current position is on the left of the closest reference frame, the $\pm$ in $s$ turns to the positive sign. Otherwise it turns to the negative sign.
 
 The equations above assume: (i) the frames are equidistant and (ii) the second and the third closest frames are neighbouring to the closest frame. When these assumptions are not satisfied, this set of path CV should be used carefully.
 
@@ -2174,6 +2174,15 @@ In the \texttt{gspath~\{...\}} and the \texttt{gzpath~\{...\}} block all vectors
     \texttt{off}}{%
     The definition assumes the third closest frame is neighbouring to the closest frame. This is not always true especially when the path is crooked. If this option is set to \texttt{on}, $\mathbf{s}_{m+1}$ is defined as the second closest frame. If this option is set to \texttt{off} (default), $\mathbf{s}_{m+1}$ is defined as the left or right neighbouring frame of the closest frame.
   }
+
+\item %
+  \key
+    {fittingAtoms}{%
+    \texttt{gspath} and \texttt{gspath}}{%
+    The atoms that are used for alignment}{%
+    Group of atoms}{%
+		Before calculating $\mathbf{v}_1$, $\mathbf{v}_2$, $\mathbf{v}_3$ and $\mathbf{v}_4$, the current frame need to be aligned to the corresponding reference frames. This option specifies which atoms are used to do alignment.
+    }
 
 \end{cvcoptions}
 
