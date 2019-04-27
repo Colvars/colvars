@@ -16,9 +16,12 @@
 #include "colvarmodule.h"
 #include "colvar.h"
 #include "colvaratoms.h"
-#include "geometric_path.h"
 
+#if (__cplusplus >= 201103L)
+#include "colvar_geometricpath.h"
 #include <functional>
+#endif // C++11 checking
+
 #include <map>
 
 
@@ -1439,7 +1442,7 @@ public:
 };
 
 /// Current only linear combination of sub-CVCs is available
-class colvar::subcolvar
+class colvar::linearCombination
   : public colvar::cvc
 {
 protected:
@@ -1452,8 +1455,8 @@ protected:
 protected:
     cvm::real getPolynomialFactorOfCVGradient(size_t i_cv) const;
 public:
-    subcolvar(std::string const &conf);
-    virtual ~subcolvar();
+    linearCombination(std::string const &conf);
+    virtual ~linearCombination();
     virtual void calc_value();
     virtual void calc_gradients();
     virtual void apply_force(colvarvalue const &force);

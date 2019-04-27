@@ -11,7 +11,6 @@
 namespace GeometricPathCV {
 
 enum path_sz {S, Z};
-void split_string(const std::string& data, const std::string& delim, std::vector<std::string>& dest);
 
 template <typename element_type, typename scalar_type, path_sz path_type>
 class GeometricPathBase {

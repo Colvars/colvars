@@ -395,7 +395,7 @@ void colvar::gzpath::apply_force(colvarvalue const &force) {
     (*(comp_atoms[min_frame_index_2])).apply_colvar_force(F);
 }
 
-colvar::subcolvar::subcolvar(std::string const &conf): cvc(conf) {
+colvar::linearCombination::linearCombination(std::string const &conf): cvc(conf) {
     GeometricPathCV::init_string_cv_map(string_cv_map);
     // Lookup all available sub-cvcs
     for (auto it_cv_map = string_cv_map.begin(); it_cv_map != string_cv_map.end(); ++it_cv_map) {
@@ -427,7 +427,7 @@ colvar::subcolvar::subcolvar(std::string const &conf): cvc(conf) {
     }
 }
 
-cvm::real colvar::subcolvar::getPolynomialFactorOfCVGradient(size_t i_cv) const {
+cvm::real colvar::linearCombination::getPolynomialFactorOfCVGradient(size_t i_cv) const {
     cvm::real factor_polynomial = 1.0;
     if (cv[i_cv]->value().type() == colvarvalue::type_scalar) {
         factor_polynomial = cv[i_cv]->sup_coeff * cv[i_cv]->sup_np * cvm::pow(cv[i_cv]->value().real_value, cv[i_cv]->sup_np - 1);
@@ -437,13 +437,13 @@ cvm::real colvar::subcolvar::getPolynomialFactorOfCVGradient(size_t i_cv) const 
     return factor_polynomial;
 }
 
-colvar::subcolvar::~subcolvar() {
+colvar::linearCombination::~linearCombination() {
     for (auto it = cv.begin(); it != cv.end(); ++it) {
         delete (*it);
     }
 }
 
-void colvar::subcolvar::calc_value() {
+void colvar::linearCombination::calc_value() {
     x.reset();
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
         cv[i_cv]->calc_value();
@@ -457,7 +457,7 @@ void colvar::subcolvar::calc_value() {
     }
 }
 
-void colvar::subcolvar::calc_gradients() {
+void colvar::linearCombination::calc_gradients() {
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
         cv[i_cv]->calc_gradients();
         if ( cv[i_cv]->is_enabled(f_cvc_explicit_gradient) &&
@@ -475,7 +475,7 @@ void colvar::subcolvar::calc_gradients() {
     }
 }
 
-void colvar::subcolvar::apply_force(colvarvalue const &force) {
+void colvar::linearCombination::apply_force(colvarvalue const &force) {
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
         // If this CV us explicit gradients, then atomic gradients is already calculated
         // We can apply the force to atom groups directly
@@ -533,7 +533,7 @@ colvar::CVBasedPath::CVBasedPath(std::string const &conf): cvc(conf) {
     total_reference_frames = 0;
     while (std::getline(ifs_path, line)) {
         std::vector<std::string> fields;
-        GeometricPathCV::split_string(line, token, fields);
+        split_string(line, token, fields);
         size_t num_value_required = 0;
         for (size_t i_cv = 0; i_cv < tmp_cv.size(); ++i_cv) {
             const size_t value_size = tmp_cv[i_cv].size();
@@ -875,21 +875,6 @@ void colvar::gzpathCV::apply_force(colvarvalue const &force) {
     }
 }
 
-void GeometricPathCV::split_string(const std::string& data, const std::string& delim, std::vector<std::string>& dest) {
-    size_t index = 0, new_index = 0;
-    std::string tmpstr;
-    while (index != data.length()) {
-        new_index = data.find(delim, index);
-        if (new_index != std::string::npos) tmpstr = data.substr(index, new_index - index);
-        else tmpstr = data.substr(index, data.length());
-        if (!tmpstr.empty()) {
-            dest.push_back(tmpstr);
-        }
-        if (new_index == std::string::npos) break;
-        index = new_index + 1;
-    }
-}
-
 void GeometricPathCV::init_string_cv_map(std::map<std::string, std::function<colvar::cvc* (const std::string& subcv_conf)>>& string_cv_map) {
     string_cv_map["distance"]              = [](const std::string& conf){return new colvar::distance(conf);};
     string_cv_map["dihedral"]              = [](const std::string& conf){return new colvar::dihedral(conf);};
@@ -916,7 +901,7 @@ void GeometricPathCV::init_string_cv_map(std::map<std::string, std::function<col
     string_cv_map["cartesian"]             = [](const std::string& conf){return new colvar::cartesian(conf);};
     string_cv_map["alpha"]                 = [](const std::string& conf){return new colvar::alpha_angles(conf);};
     string_cv_map["dihedralPC"]            = [](const std::string& conf){return new colvar::dihedPC(conf);};
-    string_cv_map["subColvar"]             = [](const std::string& conf){return new colvar::subcolvar(conf);};
+    string_cv_map["linearCombination"]     = [](const std::string& conf){return new colvar::linearCombination(conf);};
 }
 
 #endif
