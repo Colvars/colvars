@@ -420,7 +420,7 @@ $def_title="ON";
 $def_imageviewer="display %s";
 
 # program version number
-$progversion="1.9.4a31";
+$progversion="1.9.4a32";
 
 # text prompt string
 $promptstring="vmd > ";
@@ -1540,6 +1540,7 @@ $vmd_libs          = "$tcl_libs";
                    'msmpot_setup.c',
                    'vmdsock.c',
                    'vmddlopen.c',
+                   'vmdfsinfo.c',
                    'pcre.c',
                    'fitrms.c',
                    @tcl_cc,
