@@ -42,8 +42,10 @@ colvarproxy_gromacs::colvarproxy_gromacs() : colvarproxy() {}
 // Colvars Initialization
 void colvarproxy_gromacs::init(t_inputrec *ir, gmx_int64_t step,t_mdatoms *md,
                                const std::string &prefix,
-                               const std::string &filename_config,
+                               const std::vector<std::string> &filenames_config,
                                const std::string &filename_restart) {
+
+  version_int = get_version_from_string(COLVARPROXY_VERSION);
 
   if (cvm::debug())
     log("Initializing the colvars proxy object.\n");
@@ -76,8 +78,6 @@ void colvarproxy_gromacs::init(t_inputrec *ir, gmx_int64_t step,t_mdatoms *md,
   /// set by the "-cv_restart" option. It will be NULL otherwise.
   ///
 
-  config_file = filename_config;
-
   if(!prefix.empty())
   {
     output_prefix_str = prefix;
@@ -107,7 +107,12 @@ void colvarproxy_gromacs::init(t_inputrec *ir, gmx_int64_t step,t_mdatoms *md,
   colvars = new colvarmodule (this);
   cvm::log("Using GROMACS interface, version "+
 	   cvm::to_str(COLVARPROXY_VERSION)+".\n");
-  colvars->read_config_file(config_file.c_str());
+
+  std::vector<std::string>::const_iterator i = filenames_config.begin();
+  for(; i != filenames_config.end(); ++i) {
+      colvars->read_config_file(i->c_str());
+  }
+
   colvars->setup();
   colvars->setup_input();
   colvars->setup_output();

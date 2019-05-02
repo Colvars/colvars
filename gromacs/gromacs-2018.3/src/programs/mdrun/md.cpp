@@ -842,28 +842,33 @@ double gmx::do_md(FILE *fplog, t_commrec *cr, const gmx::MDLogger &mdlog,
     /* COLVARS */
     if (opt2bSet("-colvars",nfile,fnm))
     {
-        ir->bColvars = TRUE;
 
-        std::string filename = opt2fn("-colvars",nfile,fnm);
+        char **fnms;
+        int nfile_in;
         std::string filename_restart;
         std::string prefix;
 
+        ir->bColvars = TRUE;
+
+        /* Retrieve filenames */
+        nfile_in = opt2fns(&fnms, "-colvars", nfile, fnm);
+        std::vector< std::string> filenames(fnms, fnms+nfile_in);
 
         if (opt2bSet("-colvars_restart",nfile,fnm))
         {
             filename_restart = opt2fn("-colvars_restart",nfile,fnm);
         }
 
-        // Determine the prefix for the colvars output files, based on the logfile name.
+        /* Determine the prefix for the colvars output files, based on the logfile name. */
         std::string logfile = ftp2fn(efLOG, nfile, fnm);
-        // 4 = ".log".length()
+        /* 4 = ".log".length() */
         if(logfile.length() > 4)
         {
             prefix = logfile.substr(0,logfile.length()-4);
         }
 
         ir->colvars_proxy =  new colvarproxy_gromacs();
-        ir->colvars_proxy->init(ir,ir->init_step,mdatoms, prefix, filename,filename_restart);
+        ir->colvars_proxy->init(ir,ir->init_step,mdatoms, prefix, filenames,filename_restart);
 
     }
     else
