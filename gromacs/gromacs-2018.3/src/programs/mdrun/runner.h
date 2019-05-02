@@ -121,7 +121,7 @@ class Mdrunner
           { efTOP, "-mp",       "membed",    ffOPTRD },
           { efNDX, "-mn",       "membed",    ffOPTRD },
           { efXVG, "-if",       "imdforces", ffOPTWR },
-          { efDAT, "-colvars",  "colvars",   ffOPTRD },   /* COLVARS */
+          { efDAT, "-colvars",  "colvars",   ffOPTRDMULT },   /* COLVARS */
           { efDAT, "-colvars_restart", "colvars",  ffOPTRD },   /* COLVARS */
           { efXVG, "-swap",     "swapions",  ffOPTWR }}};
         /*! \brief Filename arguments.
