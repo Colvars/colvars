@@ -8,4 +8,4 @@
 # script is sourced, the variable $dir must contain the
 # full path name of this file's directory.
 
-package ifneeded cv_dashboard 1.0  "set env(CV_DASHBOARD_DIR) [list $dir]; [list source [file join $dir cv_dashboard.tcl]]"
+package ifneeded cv_dashboard 1.1  "set env(CV_DASHBOARD_DIR) [list $dir]; [list source [file join $dir cv_dashboard.tcl]]"
