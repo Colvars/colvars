@@ -16,6 +16,7 @@ proc ::cv_dashboard::edit { {add false} } {
   if $add {
     # do not remove existing vars
     set cvs {}
+    set ::cv_dashboard::backup_cfg ""
     if { [info exists ::cv_dashboard::template_base_dir] } {
       # Open "official" colvar template
       set in [open ${::cv_dashboard::template_base_dir}/colvar.in r]
@@ -34,7 +35,7 @@ proc ::cv_dashboard::edit { {add false} } {
     }
     foreach c $cvs {
       append cfg "colvar {"
-      append cfg [run_cv colvar $c getconfig]
+      append cfg [get_config $c]
       append cfg "}\n\n"
     }
     set ::cv_dashboard::backup_cfg $cfg
@@ -349,29 +350,19 @@ proc ::cv_dashboard::edit_apply {} {
     run_cv colvar $c delete
   }
   set cfg [$w.editor.fr.text get 1.0 end-1c]
-  if { $cfg != "" } {
-    # Dump config for debugging possible crashes
-    set dump [open "_dashboard_saved_config.colvars" w]
-    puts $dump "# Current configuration of Colvars Module\n"
-    puts $dump [cv getconfig]
-    puts $dump "\n# New config string to be applied\n"
-    puts $dump $cfg
-    close $dump
-
-    # Actually submit new config to the Colvars Module
-    set res [run_cv config $cfg]
-
-    if { [string compare $res ""] } {
-      # error: restore backed up cfg
-      run_cv config $::cv_dashboard::backup_cfg
-      refresh_table
-      # Do not destroy editor window (give user a chance to fix input)
-      return
-    }
+  set res [apply_config $cfg]
+  if { [string compare $res ""] } {
+    # error: restore backed up cfg
+    # For extra graceful behavior, we could apply only the config of those colvars
+    # that are not there - excluding those that were successfully redefined
+    # for that, backup_cfg could be a name -> config map as used by apply_config
+    apply_config $::cv_dashboard::backup_cfg
+    refresh_table
+    # Do not destroy editor window (give user a chance to fix input)
+    return
   }
   set ::cv_dashboard::being_edited {}
   destroy $w.editor
-  refresh_table
 }
 
 

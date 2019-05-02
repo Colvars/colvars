@@ -35,6 +35,8 @@ namespace eval ::cv_dashboard {
   variable being_edited
   variable backup_cfg
   variable filetype "atomsFile"
+  variable colvar_configs  ;# dictionary mapping names to cfg strings
+  set colvar_configs [dict create]
 
   # Handle to keep track of interactive plot
   variable plothandle
@@ -69,7 +71,7 @@ proc cv_dashboard {} {
 
 
 #################################################################
-# General utilities
+# General utilities, Colvars Module related
 #################################################################
 
 
@@ -82,6 +84,135 @@ proc run_cv args  {
   }
   return $res
 }
+
+
+# Apply a new config string:
+# - dump a file with debug information to help if an wrong config causes a crash
+# - save list of existing colvars
+# - submit to Colvars module for parsing
+# - extract config strings of individual colvars
+# - keep full config string with comments for any newly added colvar
+proc ::cv_dashboard::apply_config { cfg } {
+  if { $cfg == "" } {
+    return ""
+  }
+  # Dump config for debugging possible crashes
+  set dump [open "_dashboard_saved_config.colvars" w]
+  puts $dump "# Current configuration of Colvars Module\n"
+  foreach c [run_cv list] {
+      puts $dump "colvar {"
+      puts $dump [get_config $c]
+      puts $dump "}\n\n"
+  }
+  puts $dump "\n# New config string to be applied\n"
+  puts $dump $cfg
+  close $dump
+
+  set cvs_before [run_cv list]
+  # Actually submit new config to the Colvars Module
+  set res [run_cv config $cfg]
+  set cvs_after [run_cv list]
+
+  # Extract config for individual colvars
+  set cv_configs [extract_colvar_configs $cfg]
+
+  # Completely update the map of colvar configs
+  set new_map [dict create]
+  dict for { name cfg } $cv_configs {
+    # Only record config for cvs that actually appeared just now
+    if { ([lsearch $cvs_after $name] > -1) && ([lsearch $cvs_before $name] == -1) } {
+      dict set new_map $name $cfg
+    }
+  }
+  # Look for others in the old map
+  foreach cv $cvs_after {
+    catch {
+      dict set new_map $cv [dict get $::cv_dashboard::colvar_configs $cv]
+    }
+  }
+  # Overwrite old map
+  set ::cv_dashboard::colvar_configs $new_map
+  refresh_table
+  return $res
+}
+
+
+# Parse config string to extract colvar blocks
+# Return dictionary of colvar names -> config strings
+# Needs to fail gracefully upon unmatched braces
+proc ::cv_dashboard::extract_colvar_configs { cfg_in } {
+  set lines [split $cfg_in "\n"]
+  set in_cv 0
+  set brace_depth 0
+  set map [dict create]
+  set name ""
+  foreach line $lines {
+    # because of unmatched braces, line cannot be parsed as a Tcl list
+    # so finding the keyword takes a little work
+    set words [split $line " \t"]
+    # initial blanks create empty entries in list
+    set keyword ""
+    foreach w $words {
+      if { $w != {} } {
+        set keyword $w
+        break
+      }
+    }
+    if { $keyword == "colvar" } {
+      set in_cv 1
+      set cv_cfg ""
+    }
+    if { ($keyword == "name") && $in_cv } {
+      # line with name may not contain braces, can be parsed as a Tcl list
+      set name [lindex $line 1]
+    }
+    set chars [split $line ""]
+    set cur_line ""
+    foreach c $chars {
+      switch $c {
+        "#" { break }
+        "{" { incr brace_depth }
+        "}" {
+          incr brace_depth -1
+          if { $brace_depth < 0 } {
+            # probably mismatched braces
+            # give up on parsing the rest but try to return any variable already parsed
+            return $map
+          }
+          if { $brace_depth == 0 } {
+            set in_cv 0
+            # End of colvar, save it
+            if { [string length $cur_line] > 0 } {
+              append cv_cfg "\n" $cur_line
+            }
+            dict set map $name $cv_cfg
+            set name ""
+          }
+        }
+      }
+      # keep track of line up to current char
+      append cur_line $c
+    }
+    if { $in_cv && $keyword != "colvar" } { append cv_cfg "\n" $line }
+  }
+  return $map
+}
+
+
+# Looks for config in saved map
+# if not found, queries the colvar itself (get stripped cfg)
+proc ::cv_dashboard::get_config { cv } {
+  if { [dict exists $::cv_dashboard::colvar_configs $cv] } {
+    return [dict get $::cv_dashboard::colvar_configs $cv]
+  } else {
+    return [run_cv colvar $cv getconfig]
+  }
+}
+
+
+#################################################################
+# GUI-related utilities
+#################################################################
 
 
 # Callback to update CV Dashboard when VMD's top molecule changes to new frame

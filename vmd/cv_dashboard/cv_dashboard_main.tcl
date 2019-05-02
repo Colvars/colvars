@@ -286,8 +286,10 @@ proc ::cv_dashboard::load {} {
         -initialdir [pwd]]
   }
   if [string compare $path ""] {
-    run_cv configfile $path
-    refresh_table
+    set in [open $path r]
+    set cfg [read -nonewline $in]
+    close $in
+    apply_config $cfg
     # Save directory for next invocation of this dialog
     set ::cv_dashboard::config_dir [file dirname $path]
   }
@@ -309,11 +311,8 @@ proc ::cv_dashboard::save {} {
     set ::cv_dashboard::config_dir [file dirname $path]
     set cfg ""
     foreach c [run_cv list] {
-        append cfg "colvar {"
-        append cfg [run_cv colvar $c getconfig]
-        append cfg "}\n\n"
+        append cfg "colvar {" [get_config $c] "\n}\n\n"
     }
-
     set o [open $path w]
     puts $o $cfg
     close $o
@@ -343,6 +342,7 @@ proc ::cv_dashboard::del {} {
 proc ::cv_dashboard::reset {} {
   run_cv delete
   run_cv molid top
+  set ::cv_dashboard::colvar_configs [dict create]
   refresh_table
 }
 
