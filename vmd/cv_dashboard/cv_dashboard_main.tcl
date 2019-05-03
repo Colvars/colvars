@@ -311,7 +311,7 @@ proc ::cv_dashboard::save {} {
     set ::cv_dashboard::config_dir [file dirname $path]
     set cfg ""
     foreach c [run_cv list] {
-        append cfg "colvar {" [get_config $c] "\n}\n\n"
+        append cfg "colvar {" [get_config $c] "}\n\n"
     }
     set o [open $path w]
     puts $o $cfg

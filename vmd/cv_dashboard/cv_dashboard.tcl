@@ -160,6 +160,7 @@ proc ::cv_dashboard::extract_colvar_configs { cfg_in } {
     }
     if { $keyword == "colvar" } {
       set in_cv 1
+      set cv_line 0
       set cv_cfg ""
     }
     if { ($keyword == "name") && $in_cv } {
@@ -193,7 +194,15 @@ proc ::cv_dashboard::extract_colvar_configs { cfg_in } {
       # keep track of line up to current char
       append cur_line $c
     }
-    if { $in_cv && $keyword != "colvar" } { append cv_cfg "\n" $line }
+    if { $in_cv } {
+      puts "LINE $cv_line: #${line}#"
+      if { $cv_line == 1 } {
+        append cv_cfg $line
+      } elseif { $cv_line > 1 } {
+        append cv_cfg "\n" $line
+      }
+      incr cv_line
+    }
   }
   return $map
 }
