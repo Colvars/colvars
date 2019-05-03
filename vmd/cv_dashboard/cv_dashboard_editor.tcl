@@ -34,9 +34,7 @@ proc ::cv_dashboard::edit { {add false} } {
       set cvs $::cv_dashboard::cvs
     }
     foreach c $cvs {
-      append cfg "colvar {"
-      append cfg [get_config $c]
-      append cfg "}\n\n"
+      append cfg "colvar {[get_config $c]}\n\n"
     }
     set ::cv_dashboard::backup_cfg $cfg
   }

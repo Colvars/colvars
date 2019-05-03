@@ -100,9 +100,7 @@ proc ::cv_dashboard::apply_config { cfg } {
   set dump [open "_dashboard_saved_config.colvars" w]
   puts $dump "# Current configuration of Colvars Module\n"
   foreach c [run_cv list] {
-      puts $dump "colvar {"
-      puts $dump [get_config $c]
-      puts $dump "}\n\n"
+      puts $dump "colvar {[get_config $c]}\n"
   }
   puts $dump "\n# New config string to be applied\n"
   puts $dump $cfg
@@ -186,6 +184,7 @@ proc ::cv_dashboard::extract_colvar_configs { cfg_in } {
             if { [string length $cur_line] > 0 } {
               append cv_cfg "\n" $cur_line
             }
+            append cv_cfg "\n"
             dict set map $name $cv_cfg
             set name ""
           }
@@ -195,10 +194,7 @@ proc ::cv_dashboard::extract_colvar_configs { cfg_in } {
       append cur_line $c
     }
     if { $in_cv } {
-      puts "LINE $cv_line: #${line}#"
-      if { $cv_line == 1 } {
-        append cv_cfg $line
-      } elseif { $cv_line > 1 } {
+      if { $cv_line >= 1 } {
         append cv_cfg "\n" $line
       }
       incr cv_line

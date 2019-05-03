@@ -46,10 +46,7 @@ proc ::cv_dashboard::createWindow {} {
   $w.cvtable column #0 -width 50 -stretch 1 -anchor w
   $w.cvtable column val -width 150 -stretch 1 -anchor w
   bind $w.cvtable <e> ::cv_dashboard::edit
-  bind $w <Control-a> {
-    puts $::cv_dashboard::cvs
-    .cv_dashboard_window.cvtable selection set $::cv_dashboard::cvs
-  }
+  bind $w <Control-a> { .cv_dashboard_window.cvtable selection set $::cv_dashboard::cvs }
 
   if { [info patchlevel] != "8.5.6" } {
     $w.cvtable tag configure parity0 -background white
@@ -311,7 +308,7 @@ proc ::cv_dashboard::save {} {
     set ::cv_dashboard::config_dir [file dirname $path]
     set cfg ""
     foreach c [run_cv list] {
-        append cfg "colvar {" [get_config $c] "}\n\n"
+        append cfg "colvar {[get_config $c]}\n\n"
     }
     set o [open $path w]
     puts $o $cfg
