@@ -45,8 +45,9 @@ proc ::cv_dashboard::createWindow {} {
   $w.cvtable configure -column val
   $w.cvtable column #0 -width 50 -stretch 1 -anchor w
   $w.cvtable column val -width 150 -stretch 1 -anchor w
-  bind $w.cvtable <e> ::cv_dashboard::edit
+  bind $w <e> ::cv_dashboard::edit
   bind $w <Control-a> { .cv_dashboard_window.cvtable selection set $::cv_dashboard::cvs }
+  bind $w <Control-n> ::cv_dashboard::add
 
   if { [info patchlevel] != "8.5.6" } {
     $w.cvtable tag configure parity0 -background white
@@ -61,7 +62,7 @@ proc ::cv_dashboard::createWindow {} {
   incr gridrow
   grid [ttk::button $w.edit -text "Edit \[e\]" -command ::cv_dashboard::edit -padding "2 0 2 0"] \
     -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::button $w.add -text "New" -command ::cv_dashboard::add -padding "2 0 2 0"] \
+  grid [ttk::button $w.add -text "New \[Ctrl-n\]" -command ::cv_dashboard::add -padding "2 0 2 0"] \
     -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $w.del -text "Delete" -command ::cv_dashboard::del -padding "2 0 2 0"] \
     -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew

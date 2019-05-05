@@ -145,57 +145,61 @@ proc ::cv_dashboard::extract_colvar_configs { cfg_in } {
   set map [dict create]
   set name ""
   foreach line $lines {
-    # because of unmatched braces, line cannot be parsed as a Tcl list
-    # so finding the keyword takes a little work
-    set words [split $line " \t"]
-    # initial blanks create empty entries in list
-    set keyword ""
-    foreach w $words {
-      if { $w != {} } {
-        set keyword $w
-        break
+    if { $in_cv == 0 } {
+      # In main body, just look for colvar definition
+      if { [regexp {^\s*colvar\s+\{\s*(.*)} $line match firstline] } {
+        set in_cv 1
+        set cv_line 1
+        set brace_depth 1
+        set cv_cfg "\n"
+        # The first line may follow the opening brace immediately
+        if { [string length $firstline] } {
+          set line "    ${firstline}"
+        } else {
+          # Nothing more to parse from this line
+          continue
+        }
+      } else {
+        # Don't parse non-colvar data
+        continue
       }
     }
-    if { $keyword == "colvar" } {
-      set in_cv 1
-      set cv_line 0
-      set cv_cfg ""
-    }
-    if { ($keyword == "name") && $in_cv } {
-      # line with name may not contain braces, can be parsed as a Tcl list
-      set name [lindex $line 1]
-    }
-    set chars [split $line ""]
+    # Now we're parsing a line of colvar config, try to get name
+    regexp {^\s*name\s+(\w+)} $line match name
+
+    # Finally, the tedious fishing for braces
+    regexp {^[^#]*} $line nocomments
+    set chars [split $nocomments ""]
     set cur_line ""
     foreach c $chars {
       switch $c {
-        "#" { break }
         "{" { incr brace_depth }
         "}" {
           incr brace_depth -1
           if { $brace_depth < 0 } {
             # probably mismatched braces
             # give up on parsing the rest but try to return any variable already parsed
+            puts "Warning: mismatched braces in configuration line:\n${line}"
             return $map
           }
           if { $brace_depth == 0 } {
-            set in_cv 0
-            # End of colvar, save it
+            # End of colvar block
             if { [string length $cur_line] > 0 } {
-              append cv_cfg "\n" $cur_line
+              append cv_cfg $cur_line "\n"
             }
-            append cv_cfg "\n"
             dict set map $name $cv_cfg
+            set in_cv 0
             set name ""
           }
         }
       }
-      # keep track of line up to current char
+      # keep track of line up to current char to catch the last line
       append cur_line $c
     }
+
     if { $in_cv } {
       if { $cv_line >= 1 } {
-        append cv_cfg "\n" $line
+        append cv_cfg $line "\n"
       }
       incr cv_line
     }
