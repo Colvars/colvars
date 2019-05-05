@@ -16,7 +16,7 @@ Please ask any usage questions through the NAMD mailing list, and development qu
 
 \cvvmdugonly{
 \chapter{Collective Variables Interface (Colvars)}
-\label{section:colvars}
+\label{section:colvars}Colvars
 
 The features described in this section were originally contributed to VMD by Giacomo Fiorin (NIH) and J\'er\^ome H\'enin (CNRS, France) and are currently developed at this external repository:\\
 \cvurl{https://github.com/Colvars/colvars}\\
@@ -63,11 +63,25 @@ The module is designed to perform multiple tasks concurrently during or after a 
 Detailed explanations of the design of the Colvars module are provided in reference~\cite{Fiorin2013}. Please cite this reference whenever publishing work that makes use of this module.
 
 
-\cvsec{A crash course}{sec:colvars_crash_course}
+\cvvmdonly{
+\paragraph{Using the Colvars Module in VMD}
+Within VMD, the Colvars Module can be accessed in two ways:
+\begin{itemize}
+ \item Using the Colvars dashboard, an intuitive, but partial interface to the Colvars module, to easily define and analyze \textbf{collective variables, but not biases} (section~\ref{sec:dashboard}).
+ \item Using the ful-featured Tcl scripting interface as documented in section~\ref{sec:cv_scripting}; see in particular the example in section~\ref{sec:cv_command_example}.
+\end{itemize}
+}
+
+\cvsec{Writing a Colvars configuration: a crash course}{sec:colvars_crash_course}
+
+The Colvars configuration is a plain text file or string that defines collective variables, biases, and general parameters of the Colvars module.
+It is passed to the module using back-end-specific commands documented in section \ref{sec:colvarmodule}.
+\cvvmdonly{Writing the configuration for a collective variable in VMD is made much easier using the Dashboard and its configuration editor (section~\ref{sec:dashboard_config_editor}), however it does not handle biases.}
 
 Suppose that we want to run a steered MD experiment where a small molecule is pulled away from a protein binding site.
 In Colvars terms, this is done by applying a moving restraint to the distance between the two objects.
 The configuration will contain two blocks, one defining the distance variable (see section \ref{sec:colvar} and \ref{sec:cvc_distance}), and the other the moving harmonic restraint (\ref{sec:colvarbias_harmonic}).
+\cvvmdonly{Note that in VMD, no biasing forces are applied, but biases may be useful in the context of an analysis script, e.g. to collect histograms or to compute bias energies.}
 
 \bigskip
 % verbatim can't appear within commands
@@ -106,27 +120,66 @@ or by using the \texttt{group2ndx} LAMMPS command.}
 \cvsec{The Colvars dashboard}{sec:dashboard}
 
 The Colvars dashboard is a graphical interface for interactive visualization and refinement of collective variables aided by molecular structures and trajectories.
+It is accessible in VMD's Main Menu under ``Extensions/Analysis/Colvars Dashboard''.
+Throughout the interface, keyboard shortcuts for common operations are indicated in square brackets.
 
-\cvsubsec{Main panel}{sec:dashboard_main}
+\cvsubsec{Dashboard window}{sec:dashboard_main}
+
+The Dashboard window displays a table listing currently defined variables, and their values for the current frame indicated at the bottom of the window.
+By default the frame is updated to track VMD's currently displayed frame, but that can be changed by toggling the ``Track frame'' checkbox, e.g. to animate the trajectory without recomputing expensive variables.
+Vector-values variables can be expanded to list their scalar components. This is necessary when individual scalar quantities have to be selected for plotting.
+Other operations act on variables as a whole and ignore specific selected scalar components.
+
+Buttons above the table allow for general operations on the state of the Colvars Module.
+Buttons below the table offer operations on selected variables.
 
 If several molecules are loaded, the dashboard only interacts with the molecule labeled "top" (T in VMD's main window).
-If the top molecule is changed, the Colvas Module needs to be reset unsing the Reset button. This will remove all current definitions, so make sure to save any useful configuration to a file beforehand.
+If the top molecule is changed, the Colvars Module needs to be reset using the Reset button.
+This will remove all current definitions, so make sure to save the variables to a file beforehand.
 
-\cvsubsec{Loading / Saving configuration}{sec:dashboard_load_save}
+If variables are modified, added or deleted interactively or by an external script, hit ``Refresh'' or press F5 to update the displayed variables and values.
 
-This saves only the variables to a file.
-General parameters and biases are not saved; editing them is beyond the scope of the dashboard.
-They can be kept in separate configuration files, and read separately in biased MD simulations.
+\cvsubsec{Loading / Saving configuration files}{sec:dashboard_load_save}
+
+This saves the configuration of all defined collective variables to a file.
+Neither biases, nor general parameters of the Colvars Module are saved: editing them is beyond the scope of the dashboard.
+We recommend keeping them in separate configuration files, and reading them separately in biased MD simulations.
 
 \cvsubsec{Configuration editor}{sec:dashboard_config_editor}
 
+The configuration editor can be started with the ``Edit'' button.
+If one or several variables selected, their configuration is loaded, those variables will be replaced when applying the new configuration.
+
+
 \cvsubsubsec{Using templates}{sec:dashboard_templates}
+
 Configuration snippets can be inserted from a collection of template files.
 Parameters that must be supplied are indicated by the symbol @.
 Templates are indented using 4 spaces per level to indicate their position in the nested structure of the configuration: general options, colvars and biases at level 0,
 bias and colvar parameters like components at level 1, component parameters such as atom groups at level 2, and atom group parameters at level 3.
-}
 
+
+\cvsubsec{Plotting collective variable trajectories}{sec:dashboard_plots}
+
+Timeline plots show the selected variables as a function of time. A vertical bar indicates the current frame. it can be changed either using VMD's trajectory animation controls, or directly in the plot window by clicking the mouse inside the graph, or using the keyboard left/right arrows.
+Shift+arrow skips frames for faster animation, and Ctrl+arrow skips more frames.
+The up/down arrows operate a zoom/unzoom along the time axis.
+Visible data can be fitted vertically using the h key. All data can be fitted horizontally using the h key.
+
+Pairwise scatterplots are useful to identify correlation between variables. To create a pairwise plot, select exactly two scalar variables (or scalar components of vector variables), and click ``Pairwise plot''.
+Frames are represented by circles, and lines connect consecutive frames.
+The blue dot tracks the current frame.
+Arrow keys animate the trajectory as in the timeline plot.
+Clicking a circle jumps to the corresponding frame.
+
+\cvsubsec{Visualization tools}{sec:dashboard_visualization}
+
+``Show atoms'' creates representations of the atoms involved in the definition of the selected colvars.
+Each atom group is shown in a different color.
+``Show gradient'' is available for scalar variables only.
+It creates a graphical representation of the atomic gradients of the selected variables, visualizing how the value of the collective variable would vary in response to a change in atomic coordinates.
+
+} % cvvmdonly dashboard
 
 \cvsec{General parameters}{sec:colvarmodule}
 
