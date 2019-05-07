@@ -18,7 +18,7 @@ class colvarproxy_gromacs : public colvarproxy {
 public:
   // GROMACS structures.
   t_pbc gmx_pbc;
-  t_mdatoms *gmx_atoms;
+  const t_mdatoms *gmx_atoms;
 protected:
   cvm::real thermostat_temperature;
   cvm::real timestep;
@@ -44,6 +44,8 @@ public:
   void init(t_inputrec *gmx_inp, gmx_int64_t step, t_mdatoms *md,
             const std::string &prefix, const std::vector<std::string> &filenames_config,
             const std::string &filename_restart);
+  real colvars_potential(const t_mdatoms *md, t_pbc *pbc,
+            int64_t step, rvec *x, gmx::ForceWithVirial *force);
   // Perform colvars computation, return bias energy.
   double calculate(gmx_int64_t step, const rvec *x, gmx::ForceWithVirial *force);
   void add_energy (cvm::real energy);

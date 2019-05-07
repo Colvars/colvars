@@ -461,13 +461,6 @@ then
     condcopy "${src}" "${target}/src/gromacs/colvars/${tgt}" "${cpp_patch}"
   done
 
-  #Proxy files
-  for src in ${source}/gromacs/src/*
-  do
-    tgt=$(basename ${src})
-    condcopy "${src}" "${target}/src/gromacs/colvars/${tgt}"
-  done
-
   # Files related to Gromacs
   dest_files=$(find "${source}/gromacs/gromacs-${GMX_VERSION}" -type f -printf '%P ')
   for dest in ${dest_files}
