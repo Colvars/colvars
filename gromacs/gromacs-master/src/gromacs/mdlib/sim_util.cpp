@@ -163,7 +163,7 @@ static void colvars_potential_wrapper(FILE *fplog, const t_commrec *cr, const t_
     t_pbc pbc;
     wallcycle_start(wcycle, ewcPULLPOT);
     set_pbc(&pbc, ir->ePBC, box);
-    enerd->term[F_COM_PULL] += ir->colvars_proxy->colvars_potential(mdatoms, &pbc, step, x, force);
+    enerd->term[F_COM_PULL] += ir->colvars_proxy->calculate(mdatoms, &pbc, step, x, force);
     wallcycle_stop(wcycle, ewcPULLPOT);
 }
 

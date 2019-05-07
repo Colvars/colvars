@@ -44,10 +44,9 @@ public:
   void init(t_inputrec *gmx_inp, int64_t step, t_mdatoms *md,
             const std::string &prefix, gmx::ArrayRef<const std::string> filenames_config,
             const std::string &filename_restart);
-  real colvars_potential(const t_mdatoms *md, t_pbc *pbc,
+  // Perform colvars computation, add bias forces, return bias energy.
+  real calculate(const t_mdatoms *md, t_pbc *pbc,
             int64_t step, gmx::ArrayRef<const gmx::RVec> x, gmx::ForceWithVirial *force);
-  // Perform colvars computation, return bias energy.
-  double calculate(int64_t step, gmx::ArrayRef<const gmx::RVec> x, gmx::ForceWithVirial *force);
 
   void add_energy (cvm::real energy);
 

@@ -255,22 +255,15 @@ int colvarproxy_gromacs::backup_file (char const *filename)
   return COLVARS_OK;
 }
 
-real colvarproxy_gromacs::colvars_potential(const t_mdatoms *md, t_pbc *pbc,
+// trigger Colvars computation
+// TODO: compute the virial contribution
+real colvarproxy_gromacs::calculate(const t_mdatoms *md, t_pbc *pbc,
 		                   int64_t step, gmx::ArrayRef<const gmx::RVec> x, gmx::ForceWithVirial *force)
 {
   // Update some things.
   // Get the current periodic boundary conditions.
   gmx_pbc = (*pbc);
   gmx_atoms = md;
-
-  // colvars computation
-  return calculate(step, x, force);
-}
-
-// trigger colvars computation
-// TODO: compute the virial contribution
-double colvarproxy_gromacs::calculate(int64_t step, gmx::ArrayRef<const gmx::RVec> x, gmx::ForceWithVirial *force)
-{
 
   //Get only the forces without virial
   rvec *f = as_rvec_array(force->force_.data());
