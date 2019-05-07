@@ -111,7 +111,7 @@
 #include "gromacs/utility/pleasecite.h"
 #include "gromacs/utility/smalloc.h"
 #include "gromacs/utility/sysinfo.h"
-#include "gromacs/colvars/colvars_potential.h"
+#include "gromacs/colvars/colvarproxy_gromacs.h"
 
 #include "nbnxn_gpu.h"
 #include "nbnxn_kernels/nbnxn_kernel_cpu.h"
@@ -276,14 +276,14 @@ static void calc_virial(int start, int homenr, rvec x[], rvec f[],
 }
 
 /* COLVARS */
-static void colvars_potential_wrapper(FILE *fplog,t_commrec *cr, t_inputrec*ir, matrix box, 
+static void colvars_potential_wrapper(FILE *fplog,t_commrec *cr, t_inputrec*ir, matrix box,
                                       rvec x[], ForceWithVirial *force, t_mdatoms *mdatoms,
                                       gmx_enerdata_t *enerd, gmx_int64_t step, gmx_wallcycle_t wcycle)
 {
     t_pbc pbc;
     wallcycle_start(wcycle, ewcPULLPOT);
     set_pbc(&pbc, ir->ePBC, box);
-    enerd->term[F_COM_PULL] += colvars_potential(ir->colvars_proxy, mdatoms, &pbc, step, x, force);
+    enerd->term[F_COM_PULL] += ir->colvars_proxy->colvars_potential(mdatoms, &pbc, step, x, force);
     wallcycle_stop(wcycle, ewcPULLPOT);
 }
 

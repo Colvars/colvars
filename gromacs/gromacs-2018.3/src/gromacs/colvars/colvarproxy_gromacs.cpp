@@ -17,23 +17,8 @@
 #include "gromacs/utility/fatalerror.h"
 #include "gromacs/utility/futil.h"
 
-#include "colvars_potential.h"
 #include "colvarproxy_gromacs.h"
 
-
-real colvars_potential(colvarproxy_gromacs * colvars_proxy, t_mdatoms *md, t_pbc *pbc,
-		                   gmx_int64_t step, rvec *x, gmx::ForceWithVirial *force)
-{
-
-  // Update some things.
-  // Get the current periodic boundary conditions.
-  colvars_proxy->gmx_pbc = (*pbc);
-  colvars_proxy->gmx_atoms = md;
-
-
-  // colvars computation
-  return colvars_proxy->calculate(step, x, force);
-}
 
 //************************************************************
 // colvarproxy_gromacs
@@ -280,6 +265,17 @@ int colvarproxy_gromacs::backup_file (char const *filename)
   return COLVARS_OK;
 }
 
+real colvarproxy_gromacs::colvars_potential(const t_mdatoms *md, t_pbc *pbc,
+		                   int64_t step, rvec *x, gmx::ForceWithVirial *force)
+{
+  // Update some things.
+  // Get the current periodic boundary conditions.
+  gmx_pbc = (*pbc);
+  gmx_atoms = md;
+
+  // colvars computation
+  return calculate(step, x, force);
+}
 
 // trigger colvars computation
 // TODO: compute the virial contribution
