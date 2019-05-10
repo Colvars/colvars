@@ -23,7 +23,7 @@ ns_type                  = grid
 
 ;cut-off distance for the short-range neighbor list
 rlist = 1.4
-cutoff-scheme = group
+cutoff-scheme = verlet
 
 
 
@@ -34,7 +34,7 @@ rvdw = 1.2
 rvdw-switch = 1.0
 
 ;treatment of electrostatic interactions
-coulombtype = Reaction-Field-zero
+;coulombtype = Reaction-Field-zero
 rcoulomb-switch = 1.0
 rcoulomb = 1.2
 
@@ -43,10 +43,10 @@ rcoulomb = 1.2
 constraints              = h-bonds
 constraint-algorithm     = SHAKE
 
-comm_mode = Angular
+; comm_mode = Angular
 
-; Periodic boudary conditions
-pbc                      = no
+; Periodic boundary conditions
+pbc                      = xyz
 ;Temperature coupling
 tcoupl                   = no
 ;Velocity generation
