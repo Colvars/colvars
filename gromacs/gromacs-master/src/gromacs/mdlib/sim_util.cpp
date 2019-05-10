@@ -154,20 +154,6 @@ static void calc_virial(int start, int homenr, const rvec x[], const rvec f[],
     }
 }
 
-/* COLVARS */
-static void colvars_potential_wrapper(FILE *fplog, const t_commrec *cr, const t_inputrec *ir, matrix box,
-                                      gmx::ArrayRef<const gmx::RVec> x,
-                                      gmx::ForceWithVirial *force, const t_mdatoms *mdatoms,
-                                      gmx_enerdata_t *enerd, int64_t step, gmx_wallcycle_t wcycle)
-{
-    t_pbc pbc;
-    wallcycle_start(wcycle, ewcPULLPOT);
-    set_pbc(&pbc, ir->ePBC, box);
-    enerd->term[F_COM_PULL] += ir->colvars_proxy->calculate(mdatoms, &pbc, step, x, force);
-    wallcycle_stop(wcycle, ewcPULLPOT);
-}
-
-
 static void pull_potential_wrapper(const t_commrec *cr,
                                    const t_inputrec *ir,
                                    const matrix box, gmx::ArrayRef<const gmx::RVec> x,
@@ -561,17 +547,20 @@ computeSpecialForces(FILE                          *fplog,
      */
     if (computeForces)
     {
+        /* COLVARS */
+        /* Colvars Module needs some updated data - just PBC & step number - before calling its ForceProvider */
+        if (inputrec->bColvars)
+        {
+            t_pbc pbc;
+            set_pbc(&pbc, inputrec->ePBC, box);
+            inputrec->colvars_proxy->update_data(step, pbc);
+        }
+
         gmx::ForceProviderInput  forceProviderInput(x, *mdatoms, t, box, *cr);
         gmx::ForceProviderOutput forceProviderOutput(forceWithVirial, enerd);
 
         /* Collect forces from modules */
         forceProviders->calculateForces(forceProviderInput, &forceProviderOutput);
-    }
-
-    /* COLVARS */
-    if (inputrec->bColvars)
-    {
-        colvars_potential_wrapper(fplog, cr, inputrec, box, x, forceWithVirial, mdatoms, enerd, step, wcycle);
     }
 
     if (inputrec->bPull && pull_have_potential(pull_work))

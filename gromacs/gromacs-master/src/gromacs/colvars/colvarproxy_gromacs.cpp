@@ -13,12 +13,13 @@
 #include "gromacs/mdlib/mdatoms.h"
 #include "gromacs/mdtypes/inputrec.h"
 #include "gromacs/mdtypes/forceoutput.h"
+#include "gromacs/mdtypes/enerdata.h"
 #include "gromacs/pbcutil/pbc.h"
 #include "gromacs/utility/fatalerror.h"
 #include "gromacs/utility/futil.h"
-
 #include "colvarproxy_gromacs.h"
-
+#include "gromacs/mdtypes/commrec.h"
+#include "gromacs/topology/ifunc.h"
 
 //************************************************************
 // colvarproxy_gromacs
@@ -208,22 +209,22 @@ void colvarproxy_gromacs::fatal_error (std::string const &message)
   gmx_fatal(FARGS,"Error in collective variables module.\n");
 }
 
-void colvarproxy_gromacs::exit (std::string const &message)
+void colvarproxy_gromacs::exit (std::string const gmx_unused &message)
 {
   gmx_fatal(FARGS,"SUCCESS: %s\n", message.c_str());
 }
 
-int colvarproxy_gromacs::load_atoms (char const *filename, std::vector<cvm::atom> &atoms,
-                                     std::string const &pdb_field, double const pdb_field_value)
+int colvarproxy_gromacs::load_atoms (char const gmx_unused *filename, std::vector<cvm::atom> gmx_unused &atoms,
+                                     std::string const gmx_unused &pdb_field, double const gmx_unused pdb_field_value)
 {
   cvm::error("Selecting collective variable atoms "
 		   "from a PDB file is currently not supported.\n");
   return COLVARS_NOT_IMPLEMENTED;
 }
 
-int colvarproxy_gromacs::load_coords (char const *filename, std::vector<cvm::atom_pos> &pos,
-                                      const std::vector<int> &indices, std::string const &pdb_field_str,
-                                      double const pdb_field_value)
+int colvarproxy_gromacs::load_coords (char const gmx_unused *filename, std::vector<cvm::atom_pos> gmx_unused &pos,
+                                      const std::vector<int> gmx_unused &indices, std::string const gmx_unused &pdb_field_str,
+                                      double const gmx_unused pdb_field_value)
 {
   cvm::error("Selecting collective variable atoms "
 		   "from a PDB file is currently not supported.\n");
@@ -255,83 +256,114 @@ int colvarproxy_gromacs::backup_file (char const *filename)
   return COLVARS_OK;
 }
 
-// trigger Colvars computation
-// TODO: compute the virial contribution
-real colvarproxy_gromacs::calculate(const t_mdatoms *md, t_pbc *pbc,
-		                   int64_t step, gmx::ArrayRef<const gmx::RVec> x, gmx::ForceWithVirial *force)
+
+void colvarproxy_gromacs::update_data(int64_t const step, t_pbc const &pbc)
 {
-  // Update some things.
-  // Get the current periodic boundary conditions.
-  gmx_pbc = (*pbc);
-  gmx_atoms = md;
-
-  //Get only the forces without virial
-  rvec *f = as_rvec_array(force->force_.data());
-
-  if (first_timestep) {
-    first_timestep = false;
-  } else {
-    // Use the time step number inherited from GROMACS
-    if ( step - previous_gmx_step == 1 )
-      colvars->it++;
-    // Other cases?
-  }
-  previous_gmx_step = step;
-
-  if (cvm::debug()) {
-    cvm::log(cvm::line_marker);
-    cvm::log("colvarproxy_gromacs, step no. "+cvm::to_str(colvars->it)+"\n"+
-             "Updating internal data.\n");
-  }
-
-  // backup applied forces if necessary to calculate total forces
-  //if (total_force_requested)
-  //  previous_atoms_new_colvar_forces = atoms_new_colvar_forces;
-
-  // Zero the forces on the atoms, so that they can be accumulated by the colvars.
-  for (size_t i = 0; i < atoms_new_colvar_forces.size(); i++) {
-    atoms_new_colvar_forces[i].x = atoms_new_colvar_forces[i].y = atoms_new_colvar_forces[i].z = 0.0;
-  }
-
-  // Get the atom positions from the Gromacs array.
-  for (size_t i = 0; i < atoms_ids.size(); i++) {
-    size_t aid = atoms_ids[i];
-    if (aid >= gmx_atoms->nr) {
-      cvm::fatal_error("Error: Atom index "+cvm::to_str(aid)+" not found in GROMACS data structure containing "+
-                       cvm::to_str(gmx_atoms->nr)+" atoms");
+    if (cvm::debug()) {
+      cvm::log(cvm::line_marker);
+      cvm::log("colvarproxy_gromacs, step no. "+cvm::to_str(colvars->it)+"\n"+
+              "Updating internal data.\n");
     }
-    atoms_positions[i] = cvm::rvector(x[aid][0], x[aid][1], x[aid][2]);
-  }
 
-  // Get total forces if required.
-  if (total_force_requested && cvm::step_relative() > 0) {
-     for (size_t i = 0; i < atoms_ids.size(); i++) {
-       size_t aid = atoms_ids[i];
-       // We already checked above that gmx_atoms->nr < aid.
-       atoms_total_forces[i] = cvm::rvector(f[aid][0], f[aid][1], f[aid][2]);
-     }
-  }
+    gmx_pbc = pbc;
 
-  bias_energy = 0.0;
-  // Call the collective variable module to fill atoms_new_colvar_forces
-  if (colvars->calc() != COLVARS_OK) {
-    cvm::fatal_error("");
-  }
+    if (first_timestep) {
+      first_timestep = false;
+    } else {
+      // Use the time step number inherited from GROMACS
+      if ( step - previous_gmx_step == 1 )
+        colvars->it++;
+      // Other cases?
+    }
+    previous_gmx_step = step;
+  return;
+}
 
-  // Pass the applied forces back to GROMACS.
-  for (size_t i = 0; i < atoms_ids.size(); i++) {
-    size_t aid = atoms_ids[i];
-    // We already checked above that gmx_atoms->nr < aid.
-    f[aid][0] += atoms_new_colvar_forces[i].x;
-    f[aid][1] += atoms_new_colvar_forces[i].y;
-    f[aid][2] += atoms_new_colvar_forces[i].z;
-  }
+void colvarproxy_gromacs::calculateForces(
+                    const gmx::ForceProviderInput &forceProviderInput,
+                    gmx::ForceProviderOutput      *forceProviderOutput)
+{
+  const t_mdatoms &local_atoms  = forceProviderInput.mdatoms_;
+  const t_commrec *cr           = &(forceProviderInput.cr_);
+  const gmx::ArrayRef<const gmx::RVec> x  = forceProviderInput.x_;
+  // const rvec *x_pointer           = x_.data();
+
+  // For now we support non-parallel jobs where all atoms are local
+  const t_mdatoms &gmx_atoms = local_atoms;
+
+  /* Transfer Colvar atom positions to the master node. Every node contributes
+   * its local positions x and stores them in the assembled xa array. */
+  // GMXISSUE We're sending bNS = true because forceProviderInput is missing the info
+  // (not should we have it, probably); IMD gets it from the invocation of run()
+  // Eventually there needs to be an interface to update local data upon neighbor search
+  // We could check if by chance all atoms are in one node, and skip communication
+  // communicate_group_positions(cr, xa, xa_shifts, xa_eshifts,
+  //                             true, x_pointer, nat, nat_loc,
+  //                             ind_loc, xa_ind, xa_old, box);
+
+  // Christian: interface to bookkep local atom sets LocalAtomSet
+  // call member functions, and send to communicate_group_positions
+
+  // Communicate_group_positions takes care of removing shifts (unwrapping)
+  // in single node jobs, communicate_group_positions() is efficient and adds no overhead
+
+  if (MASTER(cr))
+  {
+    // On non-master nodes, jump directly to applying the forces
+
+    // backup applied forces if necessary to calculate total forces
+    //if (total_force_requested)
+    //  previous_atoms_new_colvar_forces = atoms_new_colvar_forces;
+
+    // Zero the forces on the atoms, so that they can be accumulated by the colvars.
+    for (size_t i = 0; i < atoms_new_colvar_forces.size(); i++) {
+      atoms_new_colvar_forces[i].x = atoms_new_colvar_forces[i].y = atoms_new_colvar_forces[i].z = 0.0;
+    }
+
+    // Get the atom positions from the Gromacs array.
+    for (size_t i = 0; i < atoms_ids.size(); i++) {
+      size_t aid = atoms_ids[i];
+      if (aid >= local_atoms.nr) {
+        cvm::fatal_error("Error: Atom index "+cvm::to_str(aid)+" not found in GROMACS data structure containing "+
+                        cvm::to_str(gmx_atoms.nr)+" atoms");
+      }
+      atoms_positions[i] = cvm::rvector(x[aid][0], x[aid][1], x[aid][2]);
+    }
+
+    // // Get total forces if required.
+    // if (total_force_requested && cvm::step_relative() > 0) {
+    //   for (size_t i = 0; i < atoms_ids.size(); i++) {
+    //     size_t aid = atoms_ids[i];
+    //     // We already checked above that gmx_atoms->nr < aid.
+    //     atoms_total_forces[i] = cvm::rvector(f[aid][0], f[aid][1], f[aid][2]);
+    //   }
+    // }
+
+    bias_energy = 0.0;
+    // Call the collective variable module to fill atoms_new_colvar_forces
+    if (colvars->calc() != COLVARS_OK) {
+      cvm::fatal_error("");
+    }
+  } // master node
+
+  const gmx::ArrayRef<gmx::RVec> &f_colvars = forceProviderOutput->forceWithVirial_.force_;
 
   // We need to compute and update the virial like this (with virial as a 3x3 matrix):
   // matrix virial = compute_virial()
   // force->addVirialContribution(virial);
+  // virial is purely local, should be calculated where the atoms live
 
-  return bias_energy;
+  // Pass the applied forces back to GROMACS.
+  for (size_t i = 0; i < atoms_ids.size(); i++) {
+    size_t aid = atoms_ids[i];
+    // We already checked above that gmx_atoms->nr > aid.
+    f_colvars[aid][0] += atoms_new_colvar_forces[i].x;
+    f_colvars[aid][1] += atoms_new_colvar_forces[i].y;
+    f_colvars[aid][2] += atoms_new_colvar_forces[i].z;
+  }
+
+  forceProviderOutput->enerd_.term[F_COM_PULL] += bias_energy;
+  return;
 }
 
 
