@@ -611,7 +611,7 @@ void gmx::Integrator::do_md()
         }
 
         ir->colvars_proxy =  new colvarproxy_gromacs();
-        ir->colvars_proxy->init(ir,ir->init_step,mdatoms, prefix, filenames,filename_restart);
+        ir->colvars_proxy->init(ir,ir->init_step,mdatoms, prefix, filenames,filename_restart, cr);
         fr->forceProviders->addForceProvider(ir->colvars_proxy);
     }
     else

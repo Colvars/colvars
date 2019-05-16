@@ -19,6 +19,7 @@ class colvarproxy_gromacs : public colvarproxy, public gmx::IForceProvider {
 public:
   // GROMACS structures.
   t_pbc gmx_pbc;
+  real (*gmx_box)[3];
   const t_mdatoms *gmx_atoms;
 protected:
   cvm::real thermostat_temperature;
@@ -32,31 +33,33 @@ protected:
   bool total_force_requested;
   double bias_energy;
 
+  bool gmx_bNS; // Is this a neighbor-search step? Eventually will become unnecessary
+
   // GROMACS random number generation.
   gmx::DefaultRandomEngine           rng;   // gromacs random number generator
   gmx::TabulatedNormalDistribution<> normal_distribution;
 
-  // // Node-local bookkepping data passed to communicate_group_positions()
-  // //! Total number of Colvars atoms
-  // int        nat = 0;
-  // //! Part of the atoms that are local.
-  // int        nat_loc = 0;
-  // //! Global indices of the Colvars atoms.
-  // int       *ind = nullptr;
-  // //! Local indices of the Colvars atoms.
-  // int       *ind_loc = nullptr;
-  // //! Allocation size for ind_loc.
-  // int        nalloc_loc = 0;
-  // //! Positions for all Colvars atoms assembled on the master node.
-  // rvec      *xa = nullptr;
-  // //! Shifts for all Colvars atoms, to make molecule(s) whole.
-  // ivec      *xa_shifts = nullptr;
-  // //! Extra shifts since last DD step.
-  // ivec      *xa_eshifts = nullptr;
-  // //! Old positions for all Colvars atoms on master.
-  // rvec      *xa_old = nullptr;
-  // //! Position of each local atom in the collective array.
-  // int       *xa_ind = nullptr;
+  // Node-local bookkepping data passed to communicate_group_positions()
+  //! Total number of Colvars atoms
+  int        nat = 0;
+  //! Part of the atoms that are local.
+  int        nat_loc = 0;
+  //! Global indices of the Colvars atoms.
+  int       *ind = nullptr;
+  //! Local indices of the Colvars atoms.
+  int       *ind_loc = nullptr;
+  //! Allocation size for ind_loc.
+  int        nalloc_loc = 0;
+  //! Positions for all Colvars atoms assembled on the master node.
+  rvec      *xa = nullptr;
+  //! Shifts for all Colvars atoms, to make molecule(s) whole.
+  ivec      *xa_shifts = nullptr;
+  //! Extra shifts since last DD step.
+  ivec      *xa_eshifts = nullptr;
+  //! Old positions for all Colvars atoms on master.
+  rvec      *xa_old = nullptr;
+  //! Position of each local atom in the collective array.
+  int       *xa_ind = nullptr;
 public:
   friend class cvm::atom;
   colvarproxy_gromacs();
@@ -65,10 +68,10 @@ public:
   // Initialize colvars.
   void init(t_inputrec *gmx_inp, int64_t step, t_mdatoms *md,
             const std::string &prefix, gmx::ArrayRef<const std::string> filenames_config,
-            const std::string &filename_restart);
+            const std::string &filename_restart, const t_commrec *cr);
   // Called each step before evaluating the force provider
   // Should eventually be replaced by the MDmodule interface?
-  void update_data(int64_t const step, t_pbc const &pbc);
+  void update_data(const t_commrec *cr, int64_t const step, t_pbc const &pbc, matrix box, bool bNS);
   /*! \brief
     * Computes forces.
     *
