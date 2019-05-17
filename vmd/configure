@@ -947,6 +947,7 @@ $cuda_libs        = "-Wl,-rpath -Wl,\$\$ORIGIN/ -lcudart_static -lrt";
                      'CUDAMDFF.cu',
                      'CUDAMeasureRDF.cu',
                      'CUDAMeasureQCP.cu',
+                     'CUDAWrapNVML.cu',
                      'CUDAOrbital.cu',
                      'CUDAParPrefixOps.cu',
                      'CUDAQuickSurf.cu',
