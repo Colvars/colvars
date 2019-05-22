@@ -1,4 +1,5 @@
     dihedralPC {
+        ## Projection onto a dihedral principal component
         psfSegID @
         residueRange @-@
         vectorFile @

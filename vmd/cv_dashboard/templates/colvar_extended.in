@@ -1,5 +1,5 @@
 colvar {
-    name <name>
+    name myColvar
 
     ## Uncomment optional parameters as needed, replace '@' with value
     # width @
