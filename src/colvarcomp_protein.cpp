@@ -1,5 +1,7 @@
 // -*- c++ -*-
 
+#include <algorithm>
+
 #include "colvarmodule.h"
 #include "colvarvalue.h"
 #include "colvarparse.h"
