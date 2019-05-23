@@ -420,7 +420,7 @@ $def_title="ON";
 $def_imageviewer="display %s";
 
 # program version number
-$progversion="1.9.4a32";
+$progversion="1.9.4a33";
 
 # text prompt string
 $promptstring="vmd > ";
