@@ -14,7 +14,7 @@ proc ::cv_dashboard::createWindow {} {
   if {[molinfo num] == 0 } {
     tk_messageBox -icon error -title "Colvars Dashboard Error"\
       -message "No molecule loaded. Please load a molecule before running Colvars Dashboard.\n"
-    return -1
+    return
   }
 
   set w [toplevel .cv_dashboard_window]
