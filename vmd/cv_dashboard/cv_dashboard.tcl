@@ -122,10 +122,12 @@ proc ::cv_dashboard::apply_config { cfg } {
       dict set new_map $name $cfg
     }
   }
-  # Look for others in the old map
+  # Look for missing cvs in the old map
   foreach cv $cvs_after {
-    catch {
-      dict set new_map $cv [dict get $::cv_dashboard::colvar_configs $cv]
+    if { ! [dict exists $new_map $cv]} {
+      catch {
+        dict set new_map $cv [dict get $::cv_dashboard::colvar_configs $cv]
+      }
     }
   }
   # Overwrite old map
@@ -165,7 +167,7 @@ proc ::cv_dashboard::extract_colvar_configs { cfg_in } {
       }
     }
     # Now we're parsing a line of colvar config, try to get name
-    regexp {^\s*name\s+(\w+)} $line match name
+    regexp {^\s*name\s+([^\s]+)} $line match name
 
     # Finally, the tedious fishing for braces
     regexp {^[^#]*} $line nocomments
