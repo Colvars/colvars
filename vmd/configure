@@ -1480,7 +1480,7 @@ $python_libs        = "-lpython2.5 -lpthread";
                        'VMDTkinterMenu.C',
 		       'py_animate.C',
 		       'py_atomsel.C',
-		       'py_atomselection.C',
+		       'py_selection.C',
 		       'py_axes.C',
 		       'py_color.C',
 		       'py_commands.C',
