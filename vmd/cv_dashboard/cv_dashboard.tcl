@@ -167,7 +167,8 @@ proc ::cv_dashboard::extract_colvar_configs { cfg_in } {
       }
     }
     # Now we're parsing a line of colvar config, try to get name
-    regexp {^\s*name\s+([^\s]+)} $line match name
+    # non-word characters are spaces and {}# (do not use Tcl's restrictive \w)
+    regexp {^\s*name\s+([^\s{}#]+)} $line match name
 
     # Finally, the tedious fishing for braces
     regexp {^[^#]*} $line nocomments
