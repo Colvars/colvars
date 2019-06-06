@@ -1709,7 +1709,7 @@ void colvarbias_meta::write_pmf()
   if (comm != single_replica) {
     // output the combined PMF from all replicas
     pmf->reset();
-    pmf->add_grid(*hills_energy);
+    // current replica already included in the pools of replicas
     for (size_t ir = 0; ir < replicas.size(); ir++) {
       pmf->add_grid(*(replicas[ir]->hills_energy));
     }
