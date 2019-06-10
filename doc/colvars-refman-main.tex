@@ -2508,7 +2508,76 @@ See Section~\ref{sec:cvc_list} for the physical ranges of values of each compone
 
 \end{itemize}
 
+\cvsubsubsec{Multicolumn text format}{sec:colvar_multicolumn_grid}
+Many simulation methods and analysis tools, such as ABF, metadynamics and multidimensional 
+histograms (\ref{sec:colvarbias_abf}, \ref{sec:colvarbias_meta}, \ref{sec:colvarbias_histogram_grid}),
+produce in output and/or read as input functions of the collective variables that are tabulated on a grid (e.g.
+potentials of mean force and multidimentional histograms).
+The paricular binning used in this regard is based on the specific parameters (e.g. \texttt{lowerBoundary}, 
+\texttt{upperBoundary} and \texttt{width}) selected for each variable (see \ref{sec:colvar_grid_params}).
+Such information is typically reported in multicomlun text format files that entails in different columns the binned 
+values for each collective variable and in the last column the value of the function. The multicolumn text format 
+ for a multidimensional function, f($\bm{\xi}_{1}$, $\bm{\xi}_{2}$, ..., $\bm{\xi}_{n}$), looks like:
 
+    \begin{tabular}{l l l l l l}
+    \# \texttt{n} & & & & \\
+    \# $\bm{\xi}^{1}_{1}$-\texttt{$w_{\bm{\xi}_{1}}/2$} &  \texttt{$w_{\bm{\xi}_{1}}$} & \texttt{total-bins$_{\bm{\xi}_{1}}$} & \texttt{periodicity$_{\bm{\xi}_{1}}$}\texttt{(0=off; 1=on)} & \\
+    \# $\bm{\xi}^{1}_{2}$-\texttt{$w_{\bm{\xi}_{2}}/2$} &  \texttt{$w_{\bm{\xi}_{2}}$} & \texttt{total-bins$_{\bm{\xi}_{2}}$} & \texttt{periodicity$_{\bm{\xi}_{2}}$}\texttt{(0=off; 1=on)} & \\
+    ... & ... & ... & ... &  \\
+    \# $\bm{\xi}^{1}_{n}$-\texttt{$w_{\bm{\xi}_{n}}/2$} &  \texttt{$w_{\bm{\xi}_{n}}$} & \texttt{total-bins$_{\bm{\xi}_{n}}$} & \texttt{periodicity$_{\bm{\xi}_{n}}$}\texttt{(0=off; 1=on)} & \\
+    & & & & \\
+    \end{tabular}
+     
+    \begin{tabular}{l l l l l l} 
+    $\bm{\xi}^{1}_{1}$ & $\bm{\xi}^{1}_{2}$ & ... & $\bm{\xi}^{1}_{n}$ & f($\bm{\xi}^{1}_{1}$, $\bm{\xi}^{1}_{2}$, ..., $\bm{\xi}^{1}_{n}$) & \\
+    $\bm{\xi}^{1}_{1}$ & $\bm{\xi}^{1}_{2}$ & ... & $\bm{\xi}^{2}_{n}$ & f($\bm{\xi}^{1}_{1}$, $\bm{\xi}^{1}_{2}$, ..., $\bm{\xi}^{2}_{n}$) & \\
+    ... & ... & ... & ... & ... & \\  
+     & & & & & \\
+    \end{tabular}
+
+    where the notation \texttt{\#} denotes the header of the file in which \texttt{n} is the number
+    of collective variables, $\bm{\xi}^{1}_{i}$ is the minimum value for the collective variable 
+    $\bm{\xi}_{i}$ on the grid and $w_{\bm{\xi}_{i}}$ is its \texttt{width}. The values of the variables 
+    on the file represent the bins centers in which $\bm{\xi}^{j}_{i}$  are ordered values 
+    that increase linearly with the index j such that $\bm{\xi}^{j+1}_{i}-\bm{\xi}^{j}_{i}=w_{\bm{\xi}_{i}}$. A blank row is introduced
+    after the range of values for $\bm{\xi}_{i}$ has been covered down the rows (see two dimensional example below).  
+    Typically, the \texttt{lowerBoundary} of $\bm{\xi}_{i}$ is $\bm{\xi}^{1}_{i}$-\texttt{$w_{\bm{\xi}_{i}}/2$}.
+    If the variable $\bm{\xi}_{i}$ is periodic then its \texttt{lowerBoundary} coincides with $\bm{\xi}^{1}_{i}$ and its
+    minimum and maximum values on the multicolumn file are the edges of the periodicity interval. An example of one dimensional multicolumn text file is the following:
+
+    \begin{tabular}{l l l l l}
+    & & & & \\
+    \# \texttt{1} & & & & \\
+    \#   & \texttt{14.95} & \texttt{0.1} & \texttt{331} & \texttt{0} \\
+     & & & & \\
+    \texttt{15} & \texttt{6.14012e-07} & & & \\
+    \texttt{15.1} & \texttt{7.4764429e-07} & & & \\
+    ... & ... & & & \\
+    \texttt{47.9} &  \texttt{1.659441e-06} & & & \\
+    \texttt{48} & \texttt{1.46712e-06} & & & \\
+     & & & & \\
+    \end{tabular}
+
+   A two dimensional multicolumn text format looks instead as follows:
+
+    \begin{tabular}{l l l l l}
+     & & & & \\
+    \# \texttt{2} & & & & \\
+    \#   & \texttt{14.95} & \texttt{0.1} & \texttt{331} & \texttt{0} \\
+    \#   & \texttt{18.95} & \texttt{0.1} & \texttt{281} & \texttt{0} \\
+     & & & & \\
+    \texttt{15} & \texttt{19} & \texttt{8.97117e-06} & & \\
+    ... & ... & ... & & \\
+    \texttt{15} & \texttt{47} & \texttt{2.04702e-05} & & \\
+    & & & & \\
+    \texttt{15.1} & \texttt{19} & \texttt{1.4693291e-05} & & \\
+    ... & ... & ... & & \\
+    \texttt{15.1} & \texttt{47} & \texttt{2.7378755e-05} & & \\
+    & & & & \\
+    ... & ... & ... & & \\
+    \texttt{48} & \texttt{47} & \texttt{1.659441e-06} & & \\
+
+    \end{tabular}
 
 \cvsubsec{Trajectory output}{sec:colvar_traj_output}
 
@@ -3904,7 +3973,7 @@ $V_{\mathrm{meta}}$ is constructed as a sum of $N_{\mathrm{cv}}$-dimensional rep
 During the simulation, the system evolves towards the nearest minimum of the ``effective'' potential of mean force $\tilde{A}(\bm{\xi})$, which is the sum of the ``real'' underlying potential of mean force $A(\bm{\xi})$  and the the metadynamics potential, $V_{\mathrm{meta}}(\bm{\xi})$.
 Therefore, at any given time the probability of observing the configuration $\bm{\xi^{*}}$ is proportional to $\exp\left(-\tilde{A}(\bm{\xi^{*}})/\kappa_{\mathrm{B}}T\right)$: this is also the probability that a new Gaussian ``hill'' is added at that configuration.
 If the simulation is run for a sufficiently long time, each local minimum is canceled out by the sum of the Gaussian ``hills''.
-At that stage the ``effective'' potential of mean force $\tilde{A}(\bm{\xi})$ is constant, and $-V_{\mathrm{meta}}(\bm{\xi})$ is an accurate estimator of the ``real'' potential of mean force $A(\bm{\xi})$,  save for an additive constant:
+At that stage the ``effective'' potential of mean force $\tilde{A}(\bm{\xi})$ is constant, and $-V_{\mathrm{meta}}(\bm{\xi})$ is an estimator of the ``real'' potential of mean force $A(\bm{\xi})$,  save for an additive constant:
 \begin{equation}
   \label{eq:colvars_meta_fes}
   A(\bm{\xi}) \; \simeq \; {
@@ -3912,9 +3981,26 @@ At that stage the ``effective'' potential of mean force $\tilde{A}(\bm{\xi})$ is
   }
 \end{equation}
 
+Such estimate of the free energy can be provided by enabling \texttt{writeFreeEnergyFile}.
 Assuming that the set of collective variables includes all relevant degrees of freedom, the predicted error of the estimate is a simple function of the correlation times of the colvars $\tau_{\xi_{i}}$, and of the user-defined parameters $W$, $\sigma_{\xi_{i}}$ and $\delta{}t$ \cite{Bussi2006}. 
 In typical applications, a good rule of thumb can be to choose the ratio $W/\delta{}t$ much smaller than $\kappa_{\mathrm{B}}T/\tau_{\bm{\xi}}$, where $\tau_{\bm{\xi}}$ is the longest among $\bm{\xi}$'s correlation times: $\sigma_{\xi_{i}}$ then dictates the resolution of the calculated PMF.
 
+If the metadynamics parameters are chosen correctly, after an equilibration time, $t_{e}$, the estimator provided 
+by eq. \ref{eq:colvars_meta_fes} oscillates on time around the ``real'' free energy, thereby a better estimate of the latter
+ can be obtained as the time average of the bias potential after $t_{e}$ \cite{Marinelli2009,Crespo2010}:
+
+\begin{equation}
+  \label{eq:colvars_meta_fes_av}
+  A(\bm{\xi}) \; = \; {-\frac{1}{t_{tot}-t_{e}} \int_{t_{e}}^{t_{tot}} {
+    V_{\mathrm{meta}}(\bm{\xi},t)dt}
+  }
+\end{equation}
+
+where $t_{e}$ is the time after which the bias potential grows (approximately) evenly during the simulation 
+and $t_{tot}$ is the total simulation time. The free energy calculated according to eq. \ref{eq:colvars_meta_fes_av} 
+can thus be obtained averaging on time mutiple time-dependent free energy estimates, that can be printed out through 
+the keyword \texttt{keepFreeEnergyFiles}. An alternative is to obtain the free energy profiles by summing 
+the hills added during the simulation; the hills trajectory can be printed out by enabling the option \texttt{writeHillsTrajectory}.
 
 \cvsubsubsec{Basic syntax}{sec:colvarbias_meta_basics}
 
@@ -4043,6 +4129,155 @@ Default values are chosen to minimize such cost with no loss of accuracy.
 
 \end{itemize}
 
+\cvsubsubsec{Ensemble-Biased Metadynamics}{sec:colvarbias_ebmeta}
+The ensemble-biased metadynamics (EBMetaD) approach \cite{Marinelli2015} is specifically designed to reproduce 
+a target probability distribution along selected collective variables (standard
+metadynamics leads to a flat distribution). This is achieved by weighting the Gaussian functions
+used in the metadynamics approach by the inverse of the target probability distribution:
+
+\begin{equation}
+  \label{eq:colvars_ebmeta_pot}
+  V_{\mathrm{EBmetaD}}(\bm{\xi}(t)) \; = \; {
+    \sum_{t' = \delta{}t, \\ 2\delta{}t, \\ \ldots}^{t'<t} \frac{W}{\exp\left(S_{\rho}\right)\rho_{exp}(\bm{\xi}(t'))} \: {
+      \prod_{i = 1}^{N_{\mathrm{cv}}}
+      \exp\left(-\frac{(\xi_{i}(t)-\xi_{i}(t'))^{2}}{2\sigma_{\xi_{i}}^{2}}\right)
+    }
+  }\mathrm{,}
+\end{equation}
+
+in which $\rho_{exp}(\bm{\xi})$ is the target probability distribution and 
+$S_{\rho} = - \int  \rho_{exp}(\bm{\xi}) \log \rho_{exp}(\bm{\xi})  \, \mathrm{d}\bm{\xi}$ 
+is the differential entropy of $\rho_{exp}(\bm{\xi})$. 
+The method is designed so that during the simulation the sampling along the collective variables, $\bm{\xi}$,
+converges to $\rho_{exp}(\bm{\xi})$. 
+A practical application of EBMetaD is to reproduce an ``experimental'' probability distribution, 
+for example the distance distribtion between spectroscopic labels inferred from 
+ FRET or DEER data \cite{Marinelli2015}.
+
+   
+The free energy can be estimated from the bias potential and the target ditribution \cite{Marinelli2015}:
+
+\begin{equation}
+  \label{eq:colvars_ebmeta_fes}
+  A(\bm{\xi}) \; \simeq \; {
+    -V_{\mathrm{EBmetaD}}(\bm{\xi}) - \kappa_{\mathrm{B}}T \log \rho_{exp}(\bm{\xi})
+  }
+\end{equation}
+
+Such estimate of the free energy is reliable only in well explored regions of the 
+collective variables and can be provided by enabling \texttt{writeFreeEnergyFile}.
+Similarly to eq. \ref{eq:colvars_meta_fes_av}, a better estimate of the free energy
+can be obtained by averaging (after an equilibration time) multiple time-dependent free energy estimates \cite{Marinelli2015};
+free energy profiles at various time points can be written enabling the keyword \texttt{keepFreeEnergyFiles}.  
+The alternative is to analyze the hills trajectory file that can be written enabling the keyword \texttt{writeHillsTrajectory}. 
+  
+The following options define the configuration for the ensemble-biased metadynamics approach \cite{Marinelli2015}:
+
+\begin{itemize}
+\item %
+  \keydef
+    {ebMeta}{%
+    \texttt{metadynamics}}{%
+    Perform ensemble-biased metadynamics}{%
+    boolean}{%
+    \texttt{off}}{%
+    If enabled, this flag activates the ensemble-biased metadynamics as
+    described by Marinelli et al.\cite{Marinelli2015}. The target distribution file,
+    \texttt{targetdistfile}, is then required. The keywords \texttt{lowerBoundary}, \texttt{upperBoundary}
+    and \texttt{width} for the respective variables are also needed to set the binning (grid) of the target distribution file.}
+
+\item %
+  \key
+    {targetdistfile}{%
+    \texttt{metadynamics}}{%
+    Target probability distribution file for ensemble-biased metadynamics}{%
+    multicolumn text file}{%
+    This file provides the target probability distribution, $\rho_{exp}(\bm{\xi})$, reported in eq. 
+    \ref{eq:colvars_ebmeta_pot}. The latter distribution must be a tabulated function provided in a multicolumn text format (see \ref{sec:colvar_multicolumn_grid}),
+    according to the binning specified by \texttt{lowerBoundary}, \texttt{upperBoundary} and \texttt{width} (see example below).
+    Is not necessary to provide a normalized probability distribution as the normalization is done automatically by the code. 
+    Note that zero values of $\rho_{exp}(\bm{\xi})$ are automatically converted into the smallest positive value of $\rho_{exp}(\bm{\xi})$ (see eq. \ref{eq:colvars_ebmeta_pot})}
+
+\item %
+  \key
+    {ebMetaEquilSteps}{%
+    \texttt{metadynamics}}{%
+    number of equilibration steps for ensemble-biased metadynamics}{%
+    positive integer}{%
+    The EBMetaD approach introduces large hills in regions with small values of the target probability distribution (eq. \ref{eq:colvars_ebmeta_pot}). 
+    In general the target probability density can be very different from the  probability distribution sampled by a conventional molecular dynamics simulation. 
+    This may lead to instabilities at the beginning of the simulation related to large bias potential values. In this case it is useful to introduce an 
+    equilibration stage in which the bias potential gradually switches from standard metadynamics (eq. \ref{eq:colvars_meta_pot}) to EBmetaD 
+    (eq. \ref{eq:colvars_ebmeta_pot}) as $\lambda V_{\mathrm{meta}}(\bm{\xi})+(1-\lambda)V_{\mathrm{EBmetaD}}(\bm{\xi})$, where $\lambda=(nsteps_{equil}-nsteps)/nsteps_{equil}$.
+    $nsteps_{equil}$ and $nsteps$ are the number of equilibration steps and simulation steps respectively.}
+\end{itemize}
+
+An example of input setup for EBMetaD is the following:
+
+{\noindent\ttfamily
+\\
+\-~~~~colvar \{\\
+\-~~~~\-~~name distance1 \\
+\-~~~~\-~~distance \{\\
+\-~~~~\-~~~~group1 \{ atomNumbers 991 992 \}\\
+\-~~~~\-~~~~group2 \{ atomNumbers 1762 1763 \}\\
+\-~~~~\-~~\}\\
+\-~~~~\-~~lowerBoundary    0.05 \\
+\-~~~~\-~~upperBoundary    100.05 \\
+\-~~~~\-~~width            0.1 \\
+\-~~~~\}\\
+\\
+\-~~~~metadynamics \{\\
+\-~~~~\-~~name ebmeta1\\
+\-~~~~\-~~colvars              distance1\\
+\-~~~~\-~~hillWeight           0.01\\
+\-~~~~\-~~hillWidth            10.0\\
+\-~~~~\-~~newHillFrequency     1000\\
+\-~~~~\-~~ebMeta               on\\
+\-~~~~\-~~targetdistfile       targetdist1.dat\\
+\-~~~~\-~~ebMetaEquilSteps     500000\\
+\-~~~~\}\\
+}
+
+The target distribution file (``targetdist1.dat'', see below) entails a header with grid parameters information (\ref{sec:colvar_multicolumn_grid}), 
+such as number of variables, \texttt{lowerBoundary}, \texttt{width}, number of bins and periodicity:
+
+\begin{tabular}{l l l l l}
+& & & & \\
+\# \texttt{1} & & & & \\
+\#   & \texttt{0.05} & \texttt{0.1} & \texttt{1000} & \texttt{0} \\
+ & & & & \\
+\texttt{0.1} & \texttt{4.2377E-74} & & & \\
+\texttt{0.2} & \texttt{1.34471E-73} & & & \\
+... & ... & & & \\
+\texttt{99.9} &  \texttt{1.35489E-79} & & & \\
+\texttt{100.0} & \texttt{5.37786E-80} & & & \\
+ & & & & \\
+\end{tabular}
+ 
+Note that in the target distribution file exemplified above, the values of the variable (first column) are 
+the bins centers while \texttt{lowerBoundary} and \texttt{upperBoundary} are the edges of the 
+interval. Probability values are reported in the second column. The exploration of unphysical low values  
+of the target disrtibution (leading to large hills) can be prevented introducing \texttt{harmonicWalls}
+as in the example below:
+
+{\noindent\ttfamily
+\\
+\-~~~~harmonicWalls \{\\
+\-~~~~\-~~name walls1\\
+\-~~~~\-~~colvars              distance1\\
+\-~~~~\-~~lowerWall 21.8 \\
+\-~~~~\-~~lowerWallConstant 10 \\
+\-~~~~\-~~upperWall 38.6 \\
+\-~~~~\-~~upperWallConstant 10 \\
+\-~~~~\}\\
+}
+
+Multiple probability distributions on different variables can be targeted simultaneously introducing multiple independent \texttt{metadynamics} 
+blocks in the input.
+Multidimensional probability distributions can be instead targeted using a single \texttt{metadynamics}
+block using multiple \texttt{colvars} (e.g. \texttt{colvars    distance1 distance2}) and a multidimensional
+target distribution file (see \ref{sec:colvar_multicolumn_grid}).
 
 \cvsubsubsec{Well-tempered metadynamics}{sec:colvarbias_well_tempered}
 The following options define the configuration for the ``well-tempered'' metadynamics approach \cite{Barducci2008}:

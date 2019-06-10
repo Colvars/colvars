@@ -1686,6 +1686,20 @@ void colvarbias_meta::write_pmf()
     // output the PMF from this instance or replica
     pmf->reset();
     pmf->add_grid(*hills_energy);
+
+    if (ebmeta) {
+      int nt_points=pmf->number_of_points();
+      for (size_t i = 0; i < nt_points; i++) {
+         cvm:: real pmf_val=0.0;
+         cvm:: real target_val=target_dist->value(i);
+         if (target_val>0) {
+           pmf_val=pmf->value(i);
+           pmf_val=pmf_val+cvm::temperature() * cvm::boltzmann() * std::log(target_val);
+         }
+         pmf->set_value(i,pmf_val);
+      }
+    }
+
     cvm::real const max = pmf->maximum_value();
     pmf->add_constant(-1.0 * max);
     pmf->multiply_constant(-1.0);
@@ -1709,10 +1723,24 @@ void colvarbias_meta::write_pmf()
   if (comm != single_replica) {
     // output the combined PMF from all replicas
     pmf->reset();
-    pmf->add_grid(*hills_energy);
+    // current replica already included in the pools of replicas
     for (size_t ir = 0; ir < replicas.size(); ir++) {
       pmf->add_grid(*(replicas[ir]->hills_energy));
     }
+
+    if (ebmeta) {
+      int nt_points=pmf->number_of_points();
+      for (size_t i = 0; i < nt_points; i++) {
+         cvm:: real pmf_val=0.0;
+         cvm:: real target_val=target_dist->value(i);
+         if (target_val>0) {
+           pmf_val=pmf->value(i);
+           pmf_val=pmf_val+cvm::temperature() * cvm::boltzmann() * std::log(target_val);
+         }
+         pmf->set_value(i,pmf_val);
+      }
+    }
+
     cvm::real const max = pmf->maximum_value();
     pmf->add_constant(-1.0 * max);
     pmf->multiply_constant(-1.0);
