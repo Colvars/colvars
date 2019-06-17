@@ -4312,9 +4312,9 @@ The following options define the configuration for the ``well-tempered'' metadyn
 \end{itemize}
 
 
-\cvsubsubsec{Multiple-replicas metadynamics}{sec:colvarbias_meta_mr}
+\cvsubsubsec{Multiple-walker metadynamics}{sec:colvarbias_meta_mr}
 The following options define metadynamics calculations with more than
-one replica:
+one replica (multiple-walker metadynamics) :
 
 \begin{itemize}
 
@@ -4322,12 +4322,12 @@ one replica:
   \keydef
     {multipleReplicas}{%
     \texttt{metadynamics}}{%
-    Multiple replicas metadynamics}{%
+    Enable multiple-walker metadynamics}{%
     boolean}{%
     \texttt{off}}{%
-    If this option is \texttt{on}, multiple (independent) replica of the
-    same system can be run at the same time, and their hills will be
-    combined to obtain a single PMF \cite{Raiteri2005}.  Replicas are
+    If this option is \texttt{on}, multiple replicas of the
+    same system can be run at the same time. Their hills are shared periodically,
+    and combined to obtain a single PMF \cite{Raiteri2006}.  Replicas are
     identified by the value of \texttt{replicaID}.  Communication is
     done by files: each replica must be able to read the files
     created by the others, whose paths are communicated through the file
