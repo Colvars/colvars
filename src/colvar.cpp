@@ -1644,8 +1644,6 @@ cvm::real colvar::update_forces_energy()
       // is equal to the actual coordinate
       x_ext = x;
     }
-    // Report extended value
-    x_reported = x_ext;
   }
 
   // Now adding the force on the actual colvar (for those biases that
