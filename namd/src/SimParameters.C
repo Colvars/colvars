@@ -3507,6 +3507,12 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
               << " is active. Setting it to zero now.\n" << endi;
          alchVdwShiftCoeff = 0.0;
        }
+       if (alchThermIntOn) {
+         NAMD_die("alchWCA is not currently compatible with TI");
+       }
+#ifdef NAMD_CUDA
+       NAMD_die("alchWCA is not currently available with CUDA");
+#endif
      }
      
      if (alchFepOn) {
