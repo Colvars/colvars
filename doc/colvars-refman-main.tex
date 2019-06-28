@@ -4205,12 +4205,11 @@ Default values are chosen to minimize such cost with no loss of accuracy.
 
 \end{itemize}
 
-\cvsubsubsec{Ensemble-Biased Metadynamics}{sec:colvarbias_ebmeta}
-The ensemble-biased metadynamics (EBMetaD) approach \cite{Marinelli2015} is specifically designed to reproduce 
-a target probability distribution along selected collective variables (standard
-metadynamics leads to a flat distribution). This is achieved by weighting the Gaussian functions
-used in the metadynamics approach by the inverse of the target probability distribution:
 
+\cvsubsubsec{Ensemble-Biased Metadynamics}{sec:colvarbias_ebmeta}
+The ensemble-biased metadynamics (EBMetaD) approach \cite{Marinelli2015} is designed to reproduce a target probability distribution along selected collective variables.
+Standard metadynamics can be seen as a special case of EBMetaD with a flat distribution as target.
+This is achieved by weighting the Gaussian functions used in the metadynamics approach by the inverse of the target probability distribution:
 \begin{equation}
   \label{eq:colvars_ebmeta_pot}
   V_{\mathrm{EBmetaD}}(\bm{\xi}(t)) \; = \; {
@@ -4220,7 +4219,6 @@ used in the metadynamics approach by the inverse of the target probability distr
     }
   }\mathrm{,}
 \end{equation}
-
 in which $\rho_{exp}(\bm{\xi})$ is the target probability distribution and 
 $S_{\rho} = - \int  \rho_{exp}(\bm{\xi}) \log \rho_{exp}(\bm{\xi})  \, \mathrm{d}\bm{\xi}$ 
 is the differential entropy of $\rho_{exp}(\bm{\xi})$. 
@@ -4229,26 +4227,22 @@ converges to $\rho_{exp}(\bm{\xi})$.
 A practical application of EBMetaD is to reproduce an ``experimental'' probability distribution, 
 for example the distance distribtion between spectroscopic labels inferred from 
  FRET or DEER data \cite{Marinelli2015}.
-
-   
+  
 The free energy can be estimated from the bias potential and the target ditribution \cite{Marinelli2015}:
-
 \begin{equation}
   \label{eq:colvars_ebmeta_fes}
   A(\bm{\xi}) \; \simeq \; {
     -V_{\mathrm{EBmetaD}}(\bm{\xi}) - \kappa_{\mathrm{B}}T \log \rho_{exp}(\bm{\xi})
   }
 \end{equation}
-
 Such estimate of the free energy is reliable only in well explored regions of the 
 collective variables and can be provided by enabling \texttt{writeFreeEnergyFile}.
 Similarly to eq. \ref{eq:colvars_meta_fes_av}, a better estimate of the free energy
-can be obtained by averaging (after an equilibration time) multiple time-dependent free energy estimates \cite{Marinelli2015};
+can be obtained by averaging (after an equilibration time) multiple time-dependent free energy estimates;
 free energy profiles at various time points can be written enabling the keyword \texttt{keepFreeEnergyFiles}.  
 The alternative is to analyze the hills trajectory file that can be written enabling the keyword \texttt{writeHillsTrajectory}. 
   
-The following options define the configuration for the ensemble-biased metadynamics approach \cite{Marinelli2015}:
-
+The following options define the configuration for the ensemble-biased metadynamics approach:
 \begin{itemize}
 \item %
   \labelkey{metadynamics|ebMeta}
@@ -4289,35 +4283,36 @@ The following options define the configuration for the ensemble-biased metadynam
     $nsteps_{equil}$ and $nsteps$ are the number of equilibration steps and simulation steps respectively.}
 \end{itemize}
 
-An example of input setup for EBMetaD is the following:
+As with standard metadynamics, multiple probability distributions on different variables can be targeted simultaneously introducing multiple independent \texttt{metadynamics} blocks in the input.
+Multidimensional probability distributions can be targeted instead using a single \texttt{metadynamics} block using multiple \texttt{colvars} and a multidimensional target distribution file (see \ref{sec:colvar_multicolumn_grid}).
 
+\noindent\textbf{Example:} EBmetaD configuration for a single variable:
+\\
 {\noindent\ttfamily
 \\
-\-~~~~colvar \{\\
-\-~~~~\-~~name distance1 \\
-\-~~~~\-~~distance \{\\
-\-~~~~\-~~~~group1 \{ atomNumbers 991 992 \}\\
-\-~~~~\-~~~~group2 \{ atomNumbers 1762 1763 \}\\
-\-~~~~\-~~\}\\
-\-~~~~\-~~lowerBoundary    0.05 \\
-\-~~~~\-~~upperBoundary    100.05 \\
-\-~~~~\-~~width            0.1 \\
-\-~~~~\}\\
+\-colvar \{\\
+\-\-~~name r \\
+\-\-~~distance \{\\
+\-\-~~~~group1 \{ atomNumbers 991 992 \}\\
+\-\-~~~~group2 \{ atomNumbers 1762 1763 \}\\
+\-\-~~\}\\
+\-\-~~lowerBoundary    0.0 \\
+\-\-~~upperBoundary  100.0 \\
+\-\-~~width            0.1 \\
+\-\}\\
 \\
-\-~~~~metadynamics \{\\
-\-~~~~\-~~name ebmeta1\\
-\-~~~~\-~~colvars              distance1\\
-\-~~~~\-~~hillWeight           0.01\\
-\-~~~~\-~~hillWidth            10.0\\
-\-~~~~\-~~newHillFrequency     1000\\
-\-~~~~\-~~ebMeta               on\\
-\-~~~~\-~~targetdistfile       targetdist1.dat\\
-\-~~~~\-~~ebMetaEquilSteps     500000\\
-\-~~~~\}\\
+\-metadynamics \{\\
+\-\-~~name              ebmeta\\
+\-\-~~colvars           r\\
+\-\-~~hillWeight        0.01\\
+\-\-~~hillWidth         3.0\\
+\-\-~~ebMeta            on\\
+\-\-~~targetDistFile    targetdist1.dat\\
+\-\-~~ebMetaEquilSteps  500000\\
+\-\}\\
 }
 
-The target distribution file (``targetdist1.dat'', see below) is a text file in ``multicolumn'' format (\ref{sec:colvar_multicolumn_grid}).
-For example, the following defines a one-dimensional histogram ranging from 0.0 to 100.0 with a spacing of 0.1:\\
+\noindent{}The target distribution file (``targetdist1.dat'', see below) is a text file in ``multicolumn'' format (\ref{sec:colvar_multicolumn_grid}) with the same \texttt{width} (0.1 in this case):\\
 \begin{tabular}{l l l l l l}
 \\
 \# & \texttt{1} & & & & \\
@@ -4331,9 +4326,6 @@ For example, the following defines a one-dimensional histogram ranging from 0.0 
 \end{tabular}
 
 \textbf{Tip:} The exploration of unphysically low values of the target distribution (which would lead to very large hills and possibly numerical instabilities) can be prevented by restricting sampling to a given interval, using e.g.{} \texttt{harmonicWalls} restraint (\ref{sec:colvarbias_harmonic_walls}).
-
-As with standard metadynamics, multiple probability distributions on different variables can be targeted simultaneously introducing multiple independent \texttt{metadynamics} blocks in the input.
-Multidimensional probability distributions can be targeted instead using a single \texttt{metadynamics} block using multiple \texttt{colvars} and a multidimensional target distribution file (see \ref{sec:colvar_multicolumn_grid}).
 
 
 
