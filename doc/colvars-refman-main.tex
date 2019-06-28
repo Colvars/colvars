@@ -4157,9 +4157,10 @@ Default values are chosen to minimize such cost with no loss of accuracy.
 
 
 \cvsubsubsec{Ensemble-Biased Metadynamics}{sec:colvarbias_ebmeta}
+
 The ensemble-biased metadynamics (EBMetaD) approach \cite{Marinelli2015} is designed to reproduce a target probability distribution along selected collective variables.
 Standard metadynamics can be seen as a special case of EBMetaD with a flat distribution as target.
-This is achieved by weighting the Gaussian functions used in the metadynamics approach by the inverse of the target probability distribution:
+This is achieved by weighing the Gaussian functions used in the metadynamics approach by the inverse of the target probability distribution:
 \begin{equation}
   \label{eq:colvars_ebmeta_pot}
   V_{\mathrm{EBmetaD}}(\bm{\xi}(t)) \; = \; {
@@ -4169,30 +4170,21 @@ This is achieved by weighting the Gaussian functions used in the metadynamics ap
     }
   }\mathrm{,}
 \end{equation}
-in which $\rho_{exp}(\bm{\xi})$ is the target probability distribution and 
-$S_{\rho} = - \int  \rho_{exp}(\bm{\xi}) \log \rho_{exp}(\bm{\xi})  \, \mathrm{d}\bm{\xi}$ 
-is the differential entropy of $\rho_{exp}(\bm{\xi})$. 
-The method is designed so that during the simulation the sampling along the collective variables, $\bm{\xi}$,
-converges to $\rho_{exp}(\bm{\xi})$. 
-A practical application of EBMetaD is to reproduce an ``experimental'' probability distribution, 
-for example the distance distribtion between spectroscopic labels inferred from 
- FRET or DEER data \cite{Marinelli2015}.
+where $\rho_{exp}(\bm{\xi})$ is the target probability distribution and $S_{\rho} = - \int  \rho_{exp}(\bm{\xi}) \log \rho_{exp}(\bm{\xi})  \, \mathrm{d}\bm{\xi}$ its corresponding differential entropy. 
+The method is designed so that during the simulation the resulting distribution  the collective variable $\bm{\xi}$ converges to $\rho_{exp}(\bm{\xi})$. 
+A practical application of EBMetaD is to reproduce an ``experimental'' probability distribution, for example the distance distribution between spectroscopic labels inferred from F\"orster resonance energy transfer (FRET) or double electron-electron resonance (DEER) experiments \cite{Marinelli2015}.
   
-The free energy can be estimated from the bias potential and the target ditribution \cite{Marinelli2015}:
+The PMF along $\xi$ can be estimated from the bias potential and the target ditribution \cite{Marinelli2015}:
 \begin{equation}
   \label{eq:colvars_ebmeta_fes}
   A(\bm{\xi}) \; \simeq \; {
     -V_{\mathrm{EBmetaD}}(\bm{\xi}) - \kappa_{\mathrm{B}}T \log \rho_{exp}(\bm{\xi})
   }
 \end{equation}
-Such estimate of the free energy is reliable only in well explored regions of the 
-collective variables and can be provided by enabling \texttt{writeFreeEnergyFile}.
-Similarly to eq. \ref{eq:colvars_meta_fes_av}, a better estimate of the free energy
-can be obtained by averaging (after an equilibration time) multiple time-dependent free energy estimates;
-free energy profiles at various time points can be written enabling the keyword \texttt{keepFreeEnergyFiles}.  
-The alternative is to analyze the hills trajectory file that can be written enabling the keyword \texttt{writeHillsTrajectory}. 
+and obtained by enabling \texttt{writeFreeEnergyFile}.
+Similarly to eq.{} \ref{eq:colvars_meta_fes_av}, a more accurate estimate of the free energy can be obtained by averaging (after an equilibration time) multiple time-dependent free energy estimates (see \texttt{keepFreeEnergyFiles}).
   
-The following options define the configuration for the ensemble-biased metadynamics approach:
+The following additional options define the configuration for the ensemble-biased metadynamics approach:
 \begin{itemize}
 \item %
   \labelkey{metadynamics|ebMeta}
@@ -4208,36 +4200,34 @@ The following options define the configuration for the ensemble-biased metadynam
     and \texttt{width} for the respective variables are also needed to set the binning (grid) of the target distribution file.}
 
 \item %
+  \labelkey{metadynamics|targetDistFile}
   \key
-    {targetdistfile}{%
+    {targetDistFile}{%
     \texttt{metadynamics}}{%
     Target probability distribution file for ensemble-biased metadynamics}{%
     multicolumn text file}{%
-    This file provides the target probability distribution, $\rho_{exp}(\bm{\xi})$, reported in eq. 
-    \ref{eq:colvars_ebmeta_pot}. The latter distribution must be a tabulated function provided in a multicolumn text format (see \ref{sec:colvar_multicolumn_grid}),
-    according to the binning specified by \texttt{lowerBoundary}, \texttt{upperBoundary} and \texttt{width} (see example below).
-    Is not necessary to provide a normalized probability distribution as the normalization is done automatically by the code. 
-    Note that zero values of $\rho_{exp}(\bm{\xi})$ are automatically converted into the smallest positive value of $\rho_{exp}(\bm{\xi})$ (see eq. \ref{eq:colvars_ebmeta_pot})}
+    This file provides the target probability distribution, $\rho_{exp}(\bm{\xi})$, reported in eq.{} \ref{eq:colvars_ebmeta_pot}. The latter distribution must be a tabulated function provided in a multicolumn text format (see \ref{sec:colvar_multicolumn_grid}).
+    To avoid divisions by zero (see eq.{} \ref{eq:colvars_ebmeta_pot}), values of $\rho_{exp}$ equal to zero are replaced by the smallest positive value read in the same file.
+    The resulting distribution is then normalized.
+  }
 
 \item %
   \key
     {ebMetaEquilSteps}{%
     \texttt{metadynamics}}{%
-    number of equilibration steps for ensemble-biased metadynamics}{%
+    Number of equilibration steps for ensemble-biased metadynamics}{%
     positive integer}{%
-    The EBMetaD approach introduces large hills in regions with small values of the target probability distribution (eq. \ref{eq:colvars_ebmeta_pot}). 
-    In general the target probability density can be very different from the  probability distribution sampled by a conventional molecular dynamics simulation. 
-    This may lead to instabilities at the beginning of the simulation related to large bias potential values. In this case it is useful to introduce an 
-    equilibration stage in which the bias potential gradually switches from standard metadynamics (eq. \ref{eq:colvars_meta_pot}) to EBmetaD 
-    (eq. \ref{eq:colvars_ebmeta_pot}) as $\lambda V_{\mathrm{meta}}(\bm{\xi})+(1-\lambda)V_{\mathrm{EBmetaD}}(\bm{\xi})$, where $\lambda=(nsteps_{equil}-nsteps)/nsteps_{equil}$.
-    $nsteps_{equil}$ and $nsteps$ are the number of equilibration steps and simulation steps respectively.}
+    The EBMetaD approach may introduces large hills in regions with small values of the target probability distribution (eq.{} \ref{eq:colvars_ebmeta_pot}). 
+    This happens, for example, if the probability distribution sampled by a conventional molecular dynamics simulation is significantly different from the target distribution.
+    This may lead to instabilities at the beginning of the simulation related to large biasing forces.
+    In this case, it is useful to introduce an equilibration stage in which the bias potential gradually switches from standard metadynamics (eq.{} \ref{eq:colvars_meta_pot}) to EBmetaD (eq.{} \ref{eq:colvars_ebmeta_pot}) as $\lambda V_{\mathrm{meta}}(\bm{\xi})+(1-\lambda)V_{\mathrm{EBmetaD}}(\bm{\xi})$, where $\lambda=(\mathtt{ebMetaEquilSteps}-\mathtt{step})/\mathtt{ebMetaEquilSteps}$ and \texttt{step} is the current simulation step number.}
 \end{itemize}
 
 As with standard metadynamics, multiple probability distributions on different variables can be targeted simultaneously introducing multiple independent \texttt{metadynamics} blocks in the input.
 Multidimensional probability distributions can be targeted instead using a single \texttt{metadynamics} block using multiple \texttt{colvars} and a multidimensional target distribution file (see \ref{sec:colvar_multicolumn_grid}).
-
-\noindent\textbf{Example:} EBmetaD configuration for a single variable:
 \\
+
+\noindent\textbf{Example:} EBmetaD configuration for a single variable.
 {\noindent\ttfamily
 \\
 \-colvar \{\\
@@ -4262,16 +4252,16 @@ Multidimensional probability distributions can be targeted instead using a singl
 \-\}\\
 }
 
-\noindent{}The target distribution file (``targetdist1.dat'', see below) is a text file in ``multicolumn'' format (\ref{sec:colvar_multicolumn_grid}) with the same \texttt{width} (0.1 in this case):\\
+\noindent{}where \texttt{targetdist1.dat} is a text file in ``multicolumn'' format (\ref{sec:colvar_multicolumn_grid}) with the same \texttt{width} as the variable \texttt{r} (0.1 in this case):\\
 \begin{tabular}{l l l l l l}
 \\
 \# & \texttt{1} & & & & \\
 \# & \texttt{0.0} & \texttt{0.1} & \texttt{1000} & \texttt{0} \\
 \\
-& \texttt{0.05} & \texttt{4.2377E-74} \\
-& \texttt{0.15} & \texttt{1.34471E-73} \\
+& \texttt{ 0.05} & \texttt{4.23770e-74} \\
+& \texttt{ 0.15} & \texttt{1.34471e-73} \\
 & \ldots & \ldots\\
-& \texttt{99.95} &  \texttt{1.35489E-79} \\
+& \texttt{99.95} &  \texttt{1.35489e-79} \\
 \\
 \end{tabular}
 
