@@ -4273,8 +4273,8 @@ The following additional options define the configuration for the ensemble-biase
     In this case, it is useful to introduce an equilibration stage in which the bias potential gradually switches from standard metadynamics (eq.{} \ref{eq:colvars_meta_pot}) to EBmetaD (eq.{} \ref{eq:colvars_ebmeta_pot}) as $\lambda V_{\mathrm{meta}}(\bm{\xi})+(1-\lambda)V_{\mathrm{EBmetaD}}(\bm{\xi})$, where $\lambda=(\mathtt{ebMetaEquilSteps}-\mathtt{step})/\mathtt{ebMetaEquilSteps}$ and \texttt{step} is the current simulation step number.}
 \end{itemize}
 
-As with standard metadynamics, multiple probability distributions on different variables can be targeted simultaneously introducing multiple independent \texttt{metadynamics} blocks in the input.
-Multidimensional probability distributions can be targeted instead using a single \texttt{metadynamics} block using multiple \texttt{colvars} and a multidimensional target distribution file (see \ref{sec:colvar_multicolumn_grid}).
+As with standard metadynamics, multidimensional probability distributions can be targeted using a single \texttt{metadynamics} block using multiple \texttt{colvars} and a multidimensional target distribution file (see \ref{sec:colvar_multicolumn_grid}).
+Instead, multiple probability distributions on different variables can be targeted separately in the same simulation by introducing multiple \texttt{metadynamics} blocks with the \texttt{ebMeta} option.
 \\
 
 \noindent\textbf{Example:} EBmetaD configuration for a single variable.
