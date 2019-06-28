@@ -3686,7 +3686,7 @@ The following specific parameters can be set in the ABF configuration block:
     support.
     If \texttt{shared} is set to yes, the total force samples will be synchronized among all replicas
     at intervals defined by \texttt{sharedFreq}.
-    This implements the multiple-walkers ABF scheme described in \cite{Minoukadeh2010}; this
+    This implements the multiple-walker ABF scheme described in \cite{Minoukadeh2010}; this
     implementation is documented in \cite{Comer2014c}.
     Thus, it is as if total force samples among all replicas are
     gathered in a single shared buffer, which why the algorithm is referred to as shared ABF.
@@ -4312,8 +4312,8 @@ The following options define the configuration for the ``well-tempered'' metadyn
 \end{itemize}
 
 
-\cvsubsubsec{Multiple-walkers metadynamics}{sec:colvarbias_meta_mr}
-The following options define metadynamics calculations with multiple replicas that share a common history (multiple-walkers metadynamics) \cite{Raiteri2006}:
+\cvsubsubsec{Multiple-walker metadynamics}{sec:colvarbias_meta_mr}
+The following options define metadynamics calculations with multiple replicas that share a common history (multiple-walker metadynamics) \cite{Raiteri2006}:
 
 \begin{itemize}
 
@@ -4321,7 +4321,7 @@ The following options define metadynamics calculations with multiple replicas th
   \keydef
     {multipleReplicas}{%
     \texttt{metadynamics}}{%
-    Enable multiple-walkers metadynamics}{%
+    Enable multiple-walker metadynamics}{%
     boolean}{%
     \texttt{off}}{%
     If this option is \texttt{on}, multiple replicas of the
