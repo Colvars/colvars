@@ -4329,30 +4329,14 @@ For example, the following defines a one-dimensional histogram ranging from 0.0 
 & \texttt{99.95} &  \texttt{1.35489E-79} \\
 \\
 \end{tabular}
-\\
-\noindent{}Note that in the target distribution file exemplified above, the values of the variable (first column) are 
-the bins centers while \texttt{lowerBoundary} and \texttt{upperBoundary} are the edges of the 
-interval. Probability values are reported in the second column. The exploration of unphysical low values  
-of the target disrtibution (leading to large hills) can be prevented introducing \texttt{harmonicWalls}
-as in the example below:
 
-{\noindent\ttfamily
-\\
-\-~~~~harmonicWalls \{\\
-\-~~~~\-~~name walls1\\
-\-~~~~\-~~colvars              distance1\\
-\-~~~~\-~~lowerWall 21.8 \\
-\-~~~~\-~~lowerWallConstant 10 \\
-\-~~~~\-~~upperWall 38.6 \\
-\-~~~~\-~~upperWallConstant 10 \\
-\-~~~~\}\\
-}
+\textbf{Tip:} The exploration of unphysically low values of the target distribution (which would lead to very large hills and possibly numerical instabilities) can be prevented by restricting sampling to a given interval, using e.g.{} \texttt{harmonicWalls} restraint (\ref{sec:colvarbias_harmonic_walls}).
 
-Multiple probability distributions on different variables can be targeted simultaneously introducing multiple independent \texttt{metadynamics} 
-blocks in the input.
-Multidimensional probability distributions can be instead targeted using a single \texttt{metadynamics}
-block using multiple \texttt{colvars} (e.g. \texttt{colvars    distance1 distance2}) and a multidimensional
-target distribution file (see \ref{sec:colvar_multicolumn_grid}).
+As with standard metadynamics, multiple probability distributions on different variables can be targeted simultaneously introducing multiple independent \texttt{metadynamics} blocks in the input.
+Multidimensional probability distributions can be targeted instead using a single \texttt{metadynamics} block using multiple \texttt{colvars} and a multidimensional target distribution file (see \ref{sec:colvar_multicolumn_grid}).
+
+
+
 
 \cvsubsubsec{Well-tempered metadynamics}{sec:colvarbias_well_tempered}
 The following options define the configuration for the ``well-tempered'' metadynamics approach \cite{Barducci2008}:
@@ -4829,7 +4813,7 @@ The \texttt{harmonicWalls~\{...\}} bias is closely related to the harmonic bias 
     \end{array}
   \right.
 \end{equation}
-where $\xi_{\mathrm{lower}}$ and $\xi_{\mathrm{upper}}$ are the lower and upper wall thresholds, respectively; \emph{(ii)} because an interval between two walls is defined, only scalar variables can be used (but any number of variables can be defined, and the wall bias is intrinsically multi-dimensional).
+where $\xi_{\mathrm{lower}}$ and $\xi_{\mathrm{upper}}$ are the lower and upper wall thresholds, respectively; \emph{(ii)} because an interval between two walls is defined, only scalar variables can be used (but any number of variables can be defined, and the wall bias is intrinsically multi-dimensional).\\
 
 \textbf{Note:} this bias replaces the keywords \texttt{lowerWall}, \texttt{lowerWallConstant}, \texttt{upperWall} and \texttt{upperWallConstant} defined in the \texttt{colvar} context.
 Those keywords are deprecated.
@@ -4897,6 +4881,32 @@ The \texttt{harmonicWalls} bias implements the following options:
 \item \dupkey{outputAccumulatedWork}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{Harmonic restraints}
 
 \end{itemize}
+
+\noindent\textbf{Example 1:} harmonic walls for one variable with two different force constants.
+{\noindent\ttfamily
+\\
+\-harmonicWalls \{\\
+\-\-~~name  mywalls\\
+\-\-~~colvars    dist\\
+\-\-~~lowerWall  22.0 \\
+\-\-~~upperWall  38.0 \\
+\-\-~~lowerWallConstant  2.0 \\
+\-\-~~upperWallConstant 10.0 \\
+\-\}\\
+}
+
+\noindent\textbf{Example 2:} harmonic walls for two variables with a single force constant.
+{\noindent\ttfamily
+\\
+\-harmonicWalls \{\\
+\-\-~~name  mywalls\\
+\-\-~~colvars      phi    psi\\
+\-\-~~lowerWall -180.0    0.0\\
+\-\-~~upperWall    0.0  180.0\\
+\-\-~~forceConstant  5.0 \\
+\-\}\\
+}
+
 
 
 
