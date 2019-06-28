@@ -76,7 +76,7 @@ Within VMD, the Colvars Module can be accessed in two ways:
 
 The Colvars configuration is a plain text file or string that defines collective variables, biases, and general parameters of the Colvars module.
 It is passed to the module using back-end-specific commands documented in section \ref{sec:colvarmodule}.
-\cvvmdonly{Writing the configuration for a collective variable in VMD is made much easier using the dashboard and its configuration editor (section~\ref{sec:dashboard}).
+\cvvmdonly{Writing the configuration fora  collective variable in VMD is made much easier using the dashboard and its configuration editor (section~\ref{sec:dashboard}).
 However, note that the dashboard does not handle biases: if necessary, they should be managed separately using the scripting interface.}
 
 Now let us look at a complete, non-trivial configuration.
@@ -2508,75 +2508,83 @@ See Section~\ref{sec:cvc_list} for the physical ranges of values of each compone
 
 \end{itemize}
 
-\cvsubsubsec{Multicolumn text format}{sec:colvar_multicolumn_grid}
-Many simulation methods and analysis tools, such as ABF, metadynamics and multidimensional 
-histograms (\ref{sec:colvarbias_abf}, \ref{sec:colvarbias_meta}, \ref{sec:colvarbias_histogram_grid}),
-produce in output and/or read as input functions of the collective variables that are tabulated on a grid (e.g.
-potentials of mean force and multidimentional histograms).
-The paricular binning used in this regard is based on the specific parameters (e.g. \texttt{lowerBoundary}, 
-\texttt{upperBoundary} and \texttt{width}) selected for each variable (see \ref{sec:colvar_grid_params}).
-Such information is typically reported in multicomlun text format files that entails in different columns the binned 
-values for each collective variable and in the last column the value of the function. The multicolumn text format 
- for a multidimensional function, f($\bm{\xi}_{1}$, $\bm{\xi}_{2}$, ..., $\bm{\xi}_{n}$), looks like:
 
-    \begin{tabular}{l l l l l l}
-    \# \texttt{n} & & & & \\
-    \# $\bm{\xi}^{1}_{1}$-\texttt{$w_{\bm{\xi}_{1}}/2$} &  \texttt{$w_{\bm{\xi}_{1}}$} & \texttt{total-bins$_{\bm{\xi}_{1}}$} & \texttt{periodicity$_{\bm{\xi}_{1}}$}\texttt{(0=off; 1=on)} & \\
-    \# $\bm{\xi}^{1}_{2}$-\texttt{$w_{\bm{\xi}_{2}}/2$} &  \texttt{$w_{\bm{\xi}_{2}}$} & \texttt{total-bins$_{\bm{\xi}_{2}}$} & \texttt{periodicity$_{\bm{\xi}_{2}}$}\texttt{(0=off; 1=on)} & \\
-    ... & ... & ... & ... &  \\
-    \# $\bm{\xi}^{1}_{n}$-\texttt{$w_{\bm{\xi}_{n}}/2$} &  \texttt{$w_{\bm{\xi}_{n}}$} & \texttt{total-bins$_{\bm{\xi}_{n}}$} & \texttt{periodicity$_{\bm{\xi}_{n}}$}\texttt{(0=off; 1=on)} & \\
-    & & & & \\
-    \end{tabular}
-     
-    \begin{tabular}{l l l l l l} 
-    $\bm{\xi}^{1}_{1}$ & $\bm{\xi}^{1}_{2}$ & ... & $\bm{\xi}^{1}_{n}$ & f($\bm{\xi}^{1}_{1}$, $\bm{\xi}^{1}_{2}$, ..., $\bm{\xi}^{1}_{n}$) & \\
-    $\bm{\xi}^{1}_{1}$ & $\bm{\xi}^{1}_{2}$ & ... & $\bm{\xi}^{2}_{n}$ & f($\bm{\xi}^{1}_{1}$, $\bm{\xi}^{1}_{2}$, ..., $\bm{\xi}^{2}_{n}$) & \\
-    ... & ... & ... & ... & ... & \\  
-     & & & & & \\
-    \end{tabular}
+\cvsubsubsec{Grid files: multicolumn text format}{sec:colvar_multicolumn_grid}
 
-    where the notation \texttt{\#} denotes the header of the file in which \texttt{n} is the number
-    of collective variables, $\bm{\xi}^{1}_{i}$ is the minimum value for the collective variable 
-    $\bm{\xi}_{i}$ on the grid and $w_{\bm{\xi}_{i}}$ is its \texttt{width}. The values of the variables 
-    on the file represent the bins centers in which $\bm{\xi}^{j}_{i}$  are ordered values 
-    that increase linearly with the index j such that $\bm{\xi}^{j+1}_{i}-\bm{\xi}^{j}_{i}=w_{\bm{\xi}_{i}}$. A blank row is introduced
-    after the range of values for $\bm{\xi}_{i}$ has been covered down the rows (see two dimensional example below).  
-    Typically, the \texttt{lowerBoundary} of $\bm{\xi}_{i}$ is $\bm{\xi}^{1}_{i}$-\texttt{$w_{\bm{\xi}_{i}}/2$}.
-    An example of one dimensional multicolumn text file is the following:
+Many simulation methods and analysis tools write files that contain functions of the collective variables tabulated on a grid (e.g.{} potentials of mean force or multidimentional histograms) for the purpose of analyzing results.
+Such files are produced by ABF (\ref{sec:colvarbias_abf}), metadynamics (\ref{sec:colvarbias_meta}), multidimensional histograms (\ref{sec:colvarbias_histogram}), as well as any restraint with optional thermodynamic integration support (\ref{sec:colvarbias_ti}).
 
-    \begin{tabular}{l l l l l}
-    & & & & \\
-    \# \texttt{1} & & & & \\
-    \#   & \texttt{14.95} & \texttt{0.1} & \texttt{331} & \texttt{0} \\
-     & & & & \\
-    \texttt{15} & \texttt{6.14012e-07} & & & \\
-    \texttt{15.1} & \texttt{7.4764429e-07} & & & \\
-    ... & ... & & & \\
-    \texttt{47.9} &  \texttt{1.659441e-06} & & & \\
-    \texttt{48} & \texttt{1.46712e-06} & & & \\
-     & & & & \\
-    \end{tabular}
+In some cases, these files may also be read as input of a new simulation.
+Suitable input files for this purpose are typically generated as output files of previous simulations, or directly by the user in the specific case of ensemble-biased metadynamics (\ref{sec:colvarbias_ebmeta}).
+This section explains the ``multicolumn'' format used by these files.
+For a multidimensional function $f(\xi_{1}$, $\xi_{2}$, \ldots $)$ the multicolumn grid format is defined as follows:\\
 
-   A two dimensional multicolumn text format looks instead as follows:
+\begin{tabular}{l l l l l l l}
+\# & $N_{\mathrm{cv}}$ & & & & \\
+\# & $\mathtt{min}(\xi_{1})$ & $\mathtt{width}(\xi_{1})$ & $\mathtt{nbins}({\xi_{1}})$ & $\mathtt{periodic}({\xi_{1}})$ \\
+\# & $\mathtt{min}(\xi_{2})$ & $\mathtt{width}(\xi_{2})$ & $\mathtt{nbins}({\xi_{2}})$ & $\mathtt{periodic}({\xi_{2}})$ \\
+\# & \ldots & \ldots & \ldots & \ldots \\
+\# & $\mathtt{min}(\xi_{N_{\mathrm{cv}}})$ & $\mathtt{width}(\xi_{N_{\mathrm{cv}}})$ & $\mathtt{nbins}({\xi_{N_{\mathrm{cv}}}})$ & $\mathtt{periodic}({\xi_{N_{\mathrm{cv}}}})$ & \\
+\\
+& $\xi^{1}_{1}$ & $\xi^{1}_{2}$ & \ldots & $\xi^{1}_{N_{\mathrm{cv}}}$ & f($\xi^{1}_{1}$, $\xi^{1}_{2}$, \ldots, $\xi^{1}_{N_{\mathrm{cv}}}$) & \\
+& $\xi^{1}_{1}$ & $\xi^{1}_{2}$ & \ldots & $\xi^{2}_{N_{\mathrm{cv}}}$ & f($\xi^{1}_{1}$, $\xi^{1}_{2}$, \ldots, $\xi^{2}_{N_{\mathrm{cv}}}$) \\
+& \ldots & \ldots & \ldots & \ldots & \ldots \\
+\\
+\end{tabular}
 
-    \begin{tabular}{l l l l l}
-     & & & & \\
-    \# \texttt{2} & & & & \\
-    \#   & \texttt{14.95} & \texttt{0.1} & \texttt{331} & \texttt{0} \\
-    \#   & \texttt{18.95} & \texttt{0.1} & \texttt{281} & \texttt{0} \\
-     & & & & \\
-    \texttt{15} & \texttt{19} & \texttt{8.97117e-06} & & \\
-    ... & ... & ... & & \\
-    \texttt{15} & \texttt{47} & \texttt{2.04702e-05} & & \\
-    & & & & \\
-    \texttt{15.1} & \texttt{19} & \texttt{1.4693291e-05} & & \\
-    ... & ... & ... & & \\
-    \texttt{15.1} & \texttt{47} & \texttt{2.7378755e-05} & & \\
-    & & & & \\
-    ... & ... & ... & & \\
-    \texttt{48} & \texttt{47} & \texttt{1.659441e-06} & & \\
+\noindent{}Lines beginning with the character ``\texttt{\#}'' are the header of the file.
+$N_{\mathrm{cv}}$ is the number of collective variables sampled by the grid.
+For each variable $\xi_{i}$, $\mathtt{min}(\xi_{i})$ is the lowest value sampled by the grid (i.e.{} the left-most boundary of the grid along $\xi_{i}$), $\mathtt{width}(\xi_{i})$ is the width of each grid bin along $\xi_{i}$, $\mathtt{nbins}(\xi_{i})$ is the number of bins and $\mathtt{periodic}(\xi_{i})$ is a flag whose value is 1 or 0 depending on whether the grid is periodic along $\xi_{i}$.
+In most situations:
+\begin{itemize}
+\item $\mathtt{min}(\xi_{i})$ is given by the \refkey{lowerBoundary}{colvar|lowerBoundary} keyword of the variable $\xi_{i}$;
+\item $\mathtt{width}(\xi_{i})$ is given by the \refkey{width}{colvar|width} keyword;
+\item $\mathtt{nbins}(\xi_{i})$ is calculated from the two above numbers and the \refkey{upperBoundary}{colvar|upperBoundary} keyword;
+\item $\mathtt{periodic}(\xi_{i})$ is set to 1 if and only if $\xi_{i}$ is periodic and the grids' boundaries cover its period.
+\end{itemize}
+\textbf{Exception:} there is a slightly different header in PMF files computed by ABF (\ref{sec:colvarbias_abf}) or by other biases with an optional thermodynamic integration (TI) estimator (\ref{sec:colvarbias_ti}).
+In this case, free-energy gradients are accumulated on an \texttt{(nbins)}-long grid along each variable $\xi$: after these gradients are integrated, the resulting PMF is binned on a grid that is \texttt{(nbins+1)}-long along $\xi$.
+Therefore, the edges of the PMF's grid extend $\mathtt{width}/2$ above and below the original boundaries (unless these are periodic).  The format of the file's header is otherwise unchanged.
 
-    \end{tabular}
+After the header, the rest of the file contains values of the tabulated function
+$f(\xi_{1}$, $\xi_{2}$, \ldots $\xi_{N_{\mathrm{cv}}})$, one for each line.
+The first $N_{\mathrm{cv}}$ columns contain values of $\xi_{1}$, $\xi_{2}$, \ldots $\xi_{N_{\mathrm{cv}}}$ and the last column contains the value of the function $f$.
+Points are sorted in ascending order with the fastest-changing values at the right (``C-style'' order).
+Each sweep of the right-most variable $\xi_{N_{\mathrm{cv}}}$ is terminated by an empty line.
+For two dimensional grid files, this allows quick visualization by programs such as GNUplot.
+\\
+
+\noindent\textbf{Example 1:} multicolumn text file for a one-dimensional histogram with \texttt{lowerBoundary} = 15, \texttt{upperBoundary} = 48 and \texttt{width} = 0.1.
+
+\begin{tabular}{l l l l l l}
+\\
+\# & \texttt{1} & & & & \\
+\# & \texttt{15} & \texttt{0.1} & \texttt{330} & \texttt{0} \\
+\\
+& \texttt{15.05} & \texttt{6.14012e-07} & & & \\
+& \texttt{15.15} & \texttt{7.47644e-07} & & & \\
+& \ldots & \ldots & & & \\
+& \texttt{47.85} & \texttt{1.65944e-06} & & & \\
+& \texttt{47.95} & \texttt{1.46712e-06} & & & \\
+\\
+\end{tabular}
+
+\noindent\textbf{Example 2:} multicolumn text file for a two-dimensional histogram of two dihedral angles (periodic interval with 6$^\circ$ bins):
+
+\begin{tabular}{l l l l l l}
+& & & & \\
+\# & \texttt{2} & & & & \\
+\# & \texttt{-180.0} & \texttt{6.0} & \texttt{30} & \texttt{1} \\
+\# & \texttt{-180.0} & \texttt{6.0} & \texttt{30} & \texttt{1} \\
+\\
+& \texttt{-177.0} & \texttt{-177.0} & \texttt{8.97117e-06} & & \\
+& \texttt{-177.0} & \texttt{-171.0} & \texttt{1.53525e-06} & & \\
+& \ldots & \ldots & \ldots & & \\
+& \texttt{-177.0} & \texttt{ 177.0} & \texttt{2.442956-06} & & \\
+\\
+& \texttt{-171.0} & \texttt{-177.0} & \texttt{2.04702e-05} & & \\
+& \ldots & \ldots & \ldots & & \\
+\end{tabular}
 
 \cvsubsec{Trajectory output}{sec:colvar_traj_output}
 
@@ -3335,7 +3343,20 @@ To gain an estimate of the computational cost of a large colvar, one can use a t
 
 \cvsec{Biasing and analysis methods}{sec:colvarbias}
 
-All of the biasing and analysis methods implemented recognize the following options:
+A biasing or analysis method can be applied to existing collective variables by using the following configuration:
+
+{\bigskip\noindent\ttfamily
+$<$biastype$>$ \{\\
+\-~~name $<$name$>$ \\
+\-~~colvars $<$xi1$>$ $<$xi2$>$ ...\\
+\-~~$<$parameters$>$\\
+\}\\
+}
+
+\noindent{} The keyword \texttt{$<$biastype$>$} indicates the method of choice.
+There can be multiple instances of the same method, e.g.{} using multiple \texttt{harmonic} blocks allows defining multiple restraints.
+
+All biasing and analysis methods implemented recognize the following options:
 \begin{itemize}
 
 \item %
@@ -3346,8 +3367,9 @@ All of the biasing and analysis methods implemented recognize the following opti
     Identifier for the bias}{%
     string}{%
     \texttt{$<$type of bias$><$bias index$>$}}{%
-    This string is used to identify the bias or analysis method in
-    output messages and to name some output files.}
+    This string is used to identify the bias or analysis method in the output, and to name some output files.
+    \textbf{Tip:} because the default name depends on the order of definition, but the outcome of the simulation does not, it may be convenient to assign consistent names for certain biases; for example, you may want to name a moving harmonic restraint \texttt{smd}, so that it can always be identified regardless of the presence of other restraints.
+    }
 
 \item %
   \labelkey{colvarbias|colvars}
@@ -3356,8 +3378,7 @@ All of the biasing and analysis methods implemented recognize the following opti
     colvar bias}{%
     Collective variables involved}{%
     space-separated list of colvar names}{%
-    This option selects by name all the colvars to which this bias or
-    analysis will be applied.}
+    This option selects by name all the variables to which this bias or analysis will be applied.}
 
 \item %
   \labelkey{colvarbias|outputEnergy}
@@ -3372,7 +3393,13 @@ All of the biasing and analysis methods implemented recognize the following opti
 
 \end{itemize}
 
-In addition, restraint biases (\ref{sec:colvarbias_harmonic}, \ref{sec:colvarbias_harmonic_walls}, \ref{sec:colvarbias_linear}, ...) and metadynamics biases (\ref{sec:colvarbias_meta}) offer the following optional keywords, which allow the use of thermodynamic integration (TI) to compute potentials of mean force (PMFs).  In adaptive biasing force (ABF) biases (\ref{sec:colvarbias_abf}) the same keywords are not recognized because their functionality is always included.
+
+\cvsubsec{Thermodynamic integration}{sec:colvarbias_ti}
+
+Most of the methods here implemented feature a different estimators of free-energies, either at run-time or with the use of post-processing tools.
+The specifics of each estimator are discussed in the documentation of each method.
+
+Additionally, most restraints (\ref{sec:colvarbias_harmonic}, \ref{sec:colvarbias_harmonic_walls}, \ref{sec:colvarbias_linear}, ...) as well as metadynamics (\ref{sec:colvarbias_meta}) offer the following optional keywords, allowing the use of thermodynamic integration (TI) to compute potentials of mean force (PMFs).  In adaptive biasing force (ABF) (\ref{sec:colvarbias_abf}) the same keywords are not recognized, because their functionality is always included.
 
 \begin{itemize}
 
@@ -3384,7 +3411,7 @@ In addition, restraint biases (\ref{sec:colvarbias_harmonic}, \ref{sec:colvarbia
     Write the PMF computed by thermodynamic integration}{%
     boolean}{%
     \texttt{off}}{%
-    If the bias is applied to a variable that supports the calculation of total forces (see \refkey{outputTotalForce}{sec:colvar} and \ref{sec:cvc_sys_forces}), this option allows calculating the corresponding PMF by thermodynanic integration, and writing it to the file \outputName{}\texttt{.$<$name$>$.ti.pmf}, where \texttt{$<$name$>$} is the name of the bias.
+    If the bias is applied to a variable that supports the calculation of total forces (see \refkey{outputotalForce}{sec:colvar} and \ref{sec:cvc_sys_forces}), this option allows calculating the corresponding PMF by thermodynanic integration, and writing it to the file \outputName{}\texttt{.$<$name$>$.ti.pmf}, where \texttt{$<$name$>$} is the name of the bias.
     The total force includes the forces applied to the variable by all bias, except those from this bias itself.
     If any bias applies time-dependent forces besides the one using this option, an error is raised.
 }
@@ -4090,7 +4117,7 @@ To avoid gradual loss of performance and growth of the state file, either one of
 \end{itemize}
 
 
-\cvsubsubsec{Performance tuning}{sec:colvarbias_meta_performance}
+\cvsubsubsec{Performance optimization}{sec:colvarbias_meta_performance}
 The following options control the computational cost of metadynamics calculations, but do not affect results.
 Default values are chosen to minimize such cost with no loss of accuracy.
 
@@ -4174,6 +4201,7 @@ The following options define the configuration for the ensemble-biased metadynam
 
 \begin{itemize}
 \item %
+  \labelkey{metadynamics|ebMeta}
   \keydef
     {ebMeta}{%
     \texttt{metadynamics}}{%
@@ -4238,23 +4266,21 @@ An example of input setup for EBMetaD is the following:
 \-~~~~\}\\
 }
 
-The target distribution file (``targetdist1.dat'', see below) entails a header with grid parameters information (\ref{sec:colvar_multicolumn_grid}), 
-such as number of variables, \texttt{lowerBoundary}, \texttt{width}, number of bins and periodicity:
-
-\begin{tabular}{l l l l l}
-& & & & \\
-\# \texttt{1} & & & & \\
-\#   & \texttt{0.05} & \texttt{0.1} & \texttt{1000} & \texttt{0} \\
- & & & & \\
-\texttt{0.1} & \texttt{4.2377E-74} & & & \\
-\texttt{0.2} & \texttt{1.34471E-73} & & & \\
-... & ... & & & \\
-\texttt{99.9} &  \texttt{1.35489E-79} & & & \\
-\texttt{100.0} & \texttt{5.37786E-80} & & & \\
- & & & & \\
+The target distribution file (``targetdist1.dat'', see below) is a text file in ``multicolumn'' format (\ref{sec:colvar_multicolumn_grid}).
+For example, the following defines a one-dimensional histogram ranging from 0.0 to 100.0 with a spacing of 0.1:\\
+\begin{tabular}{l l l l l l}
+\\
+\# & \texttt{1} & & & & \\
+\# & \texttt{0.0} & \texttt{0.1} & \texttt{1000} & \texttt{0} \\
+\\
+& \texttt{0.05} & \texttt{4.2377E-74} \\
+& \texttt{0.15} & \texttt{1.34471E-73} \\
+& \ldots & \ldots\\
+& \texttt{99.95} &  \texttt{1.35489E-79} \\
+\\
 \end{tabular}
- 
-Note that in the target distribution file exemplified above, the values of the variable (first column) are 
+\\
+\noindent{}Note that in the target distribution file exemplified above, the values of the variable (first column) are 
 the bins centers while \texttt{lowerBoundary} and \texttt{upperBoundary} are the edges of the 
 interval. Probability values are reported in the second column. The exploration of unphysical low values  
 of the target disrtibution (leading to large hills) can be prevented introducing \texttt{harmonicWalls}
