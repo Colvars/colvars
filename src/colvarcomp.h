@@ -1375,6 +1375,22 @@ public:
 };
 
 
+
+class colvar::componentDisabled
+  : public colvar::cvc
+{
+public:
+    componentDisabled(std::string const &conf) {
+        cvm::error("Error: this component is not enabled in the current build; please see https://colvars.github.io/README-c++11.html");
+    }
+    virtual ~componentDisabled() {}
+    virtual void calc_value() {}
+    virtual void calc_gradients() {}
+    virtual void apply_force(colvarvalue const &force) {}
+};
+
+
+
 #if (__cplusplus >= 201103L)
 class colvar::CartesianBasedPath
   : public colvar::cvc
@@ -1520,6 +1536,57 @@ public:
     virtual void calc_value();
     virtual void calc_gradients();
     virtual void apply_force(colvarvalue const &force);
+};
+
+#else // if the compiler doesn't support C++11
+
+class colvar::linearCombination
+  : public colvar::componentDisabled
+{
+public:
+    linearCombination(std::string const &conf) : componentDisabled(conf) {}
+};
+
+class colvar::CartesianBasedPath
+  : public colvar::componentDisabled
+{
+public:
+    CartesianBasedPath(std::string const &conf) : componentDisabled(conf) {}
+};
+
+class colvar::CVBasedPath
+  : public colvar::componentDisabled
+{
+public:
+    CVBasedPath(std::string const &conf) : componentDisabled(conf) {}
+};
+
+class colvar::gspath
+  : public colvar::componentDisabled
+{
+public:
+    gspath(std::string const &conf) : componentDisabled(conf) {}
+};
+
+class colvar::gzpath
+  : public colvar::componentDisabled
+{
+public:
+    gzpath(std::string const &conf) : componentDisabled(conf) {}
+};
+
+class colvar::gspathCV
+  : public colvar::componentDisabled
+{
+public:
+    gspathCV(std::string const &conf) : componentDisabled(conf) {}
+};
+
+class colvar::gzpathCV
+  : public colvar::componentDisabled
+{
+public:
+    gzpathCV(std::string const &conf) : componentDisabled(conf) {}
 };
 
 #endif // C++11 checking

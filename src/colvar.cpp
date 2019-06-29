@@ -784,13 +784,11 @@ int colvar::init_components(std::string const &conf)
     "inertia", "inertia");
   error_code |= init_components_type<inertia_z>(conf, "moment of inertia around an axis", "inertiaZ");
   error_code |= init_components_type<eigenvector>(conf, "eigenvector", "eigenvector");
-#if (__cplusplus >= 201103L)
   error_code |= init_components_type<gspath>(conf, "geometrical path collective variables (s)", "gspath");
   error_code |= init_components_type<gzpath>(conf, "geometrical path collective variables (z)", "gzpath");
   error_code |= init_components_type<linearCombination>(conf, "linear combination of other collective variables", "subColvar");
   error_code |= init_components_type<gspathCV>(conf, "geometrical path collective variables (s) for other CVs", "gspathCV");
   error_code |= init_components_type<gzpathCV>(conf, "geometrical path collective variables (z) for other CVs", "gzpathCV");
-#endif // C++11 checking
 
   if (!cvcs.size() || (error_code != COLVARS_OK)) {
     cvm::error("Error: no valid components were provided "
