@@ -551,10 +551,10 @@ public:
   }
 
   /// \brief Assign all zero elements a scalar constant (fast loop)
-  inline void remove_zeros(cvm::real const &a)
+  inline void remove_small_values(cvm::real const &a)
   {
     for (size_t i = 0; i < nt; i++)
-      if(data[i]==0) data[i] = a;
+      if(data[i]<a) data[i] = a;
   }
 
 

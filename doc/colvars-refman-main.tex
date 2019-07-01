@@ -4271,6 +4271,17 @@ The following additional options define the configuration for the ensemble-biase
     This happens, for example, if the probability distribution sampled by a conventional molecular dynamics simulation is significantly different from the target distribution.
     This may lead to instabilities at the beginning of the simulation related to large biasing forces.
     In this case, it is useful to introduce an equilibration stage in which the bias potential gradually switches from standard metadynamics (eq.{} \ref{eq:colvars_meta_pot}) to EBmetaD (eq.{} \ref{eq:colvars_ebmeta_pot}) as $\lambda V_{\mathrm{meta}}(\bm{\xi})+(1-\lambda)V_{\mathrm{EBmetaD}}(\bm{\xi})$, where $\lambda=(\mathtt{ebMetaEquilSteps}-\mathtt{step})/\mathtt{ebMetaEquilSteps}$ and \texttt{step} is the current simulation step number.}
+
+\item %
+  \key
+    {targetDistMinVal}{%
+    \texttt{metadynamics}}{%
+    Minimum value of the target distribution in reference to its \texttt{maximum value}}{%
+    positive decimal}{%
+    It is useful to set a minimum value of the target probability distribution to avoid values of the latter that are nearly zero, leading to very large hills. 
+    This parameter sets the minimum value of the target probability distribution as \texttt{maximum value}\texttt{ X }\texttt{targetDistMinVal}. This 
+    implies that 0 \texttt{<} \texttt{targetDistMinVal} \texttt{<} 1 and its default value is set to 1/1000000.}
+
 \end{itemize}
 
 As with standard metadynamics, multidimensional probability distributions can be targeted using a single \texttt{metadynamics} block using multiple \texttt{colvars} and a multidimensional target distribution file (see \ref{sec:colvar_multicolumn_grid}).
@@ -4315,7 +4326,7 @@ Instead, multiple probability distributions on different variables can be target
 \\
 \end{tabular}
 
-\textbf{Tip:} The exploration of unphysically low values of the target distribution (which would lead to very large hills and possibly numerical instabilities) can be prevented by restricting sampling to a given interval, using e.g.{} \texttt{harmonicWalls} restraint (\ref{sec:colvarbias_harmonic_walls}).
+\textbf{Tip:} Besides setting a meaninful value for \texttt{targetDistMinVal}, the exploration of unphysically low values of the target distribution (which would lead to very large hills and possibly numerical instabilities) can be also prevented by restricting sampling to a given interval, using e.g.{} \texttt{harmonicWalls} restraint (\ref{sec:colvarbias_harmonic_walls}).
 
 
 
