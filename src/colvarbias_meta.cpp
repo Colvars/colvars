@@ -211,17 +211,21 @@ int colvarbias_meta::init_ebmeta_params(std::string const &conf)
       target_dist_min_val=max_val*target_dist_min_val;
       target_dist->remove_small_values(target_dist_min_val);   
     } else { 
-      cvm::log("WARNING: The selected minimum value of the target distribution (targetDistMinVal) is either <=0 \n"); 
-      cvm::log("or larger than the maximum value; targetDistMinVal will be set as the minimum positive value\n");
-      cvm::real min_pos_val = target_dist->minimum_pos_value();
-      if(min_pos_val<=0){
-        cvm::error("Error: Target distribution of EBMetaD has negative "
-                   "or zero minimum positive value!.\n", INPUT_ERROR);
-      }
-      if(min_val==0){
-        cvm::log("WARNING: Target distribution has zero values.\n");
-        cvm::log("Zeros will be converted to the minimum positive value.\n");
-        target_dist->remove_small_values(min_pos_val);
+      if (target_dist_min_val==0) { 
+        cvm::log("NOTE: The selected minimum value of the target distribution (targetDistMinVal) is zero \n"); 
+        cvm::log("targetDistMinVal will be set as the minimum positive value.\n");
+        cvm::real min_pos_val = target_dist->minimum_pos_value();
+        if(min_pos_val<=0){
+          cvm::error("Error: Target distribution of EBMetaD has negative "
+                     "or zero minimum positive value!.\n", INPUT_ERROR);
+        }
+        if(min_val==0){
+          cvm::log("WARNING: Target distribution has zero values.\n");
+          cvm::log("Zeros will be converted to the minimum positive value.\n");
+          target_dist->remove_small_values(min_pos_val);
+        }
+      } else {
+          cvm::error("Error: targetDistMinVal must be a value between 0 and 1!.\n", INPUT_ERROR);
       }
     }
     // normalize target distribution and multiply by effective volume = exp(differential entropy)
