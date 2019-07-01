@@ -4207,8 +4207,7 @@ The following additional options define the configuration for the ensemble-biase
     Target probability distribution file for ensemble-biased metadynamics}{%
     multicolumn text file}{%
     This file provides the target probability distribution, $\rho_{exp}(\bm{\xi})$, reported in eq.{} \ref{eq:colvars_ebmeta_pot}. The latter distribution must be a tabulated function provided in a multicolumn text format (see \ref{sec:colvar_multicolumn_grid}).
-    To avoid divisions by zero (see eq.{} \ref{eq:colvars_ebmeta_pot}), values of $\rho_{exp}$ equal to zero are replaced by the smallest positive value read in the same file.
-    The resulting distribution is then normalized.
+    The provided distribution is then normalized.
   }
 
 \item %
@@ -4229,8 +4228,11 @@ The following additional options define the configuration for the ensemble-biase
     Minimum value of the target distribution in reference to its \texttt{maximum value}}{%
     positive decimal}{%
     It is useful to set a minimum value of the target probability distribution to avoid values of the latter that are nearly zero, leading to very large hills. 
-    This parameter sets the minimum value of the target probability distribution as \texttt{maximum value}\texttt{ X }\texttt{targetDistMinVal}. This 
-    implies that 0 \texttt{<} \texttt{targetDistMinVal} \texttt{<} 1 and its default value is set to 1/1000000.}
+    This parameter sets the minimum value of the target probability distribution that is expressed as a fraction of its \texttt{maximum value}: \texttt{minumum value = } 
+    \texttt{maximum value}\texttt{ X }\texttt{targetDistMinVal}. This implies that 0 \texttt{<} \texttt{targetDistMinVal} \texttt{<} 1 and its default value is set to 1/1000000.
+    To avoid divisions by zero (see eq.{} \ref{eq:colvars_ebmeta_pot}), if \texttt{targetDistMinVal} is set as zero, values of $\rho_{exp}$ equal to zero are replaced by the 
+    smallest positive value read in the same file.
+}
 
 \end{itemize}
 
@@ -4269,10 +4271,10 @@ Instead, multiple probability distributions on different variables can be target
 \# & \texttt{1} & & & & \\
 \# & \texttt{0.0} & \texttt{0.1} & \texttt{1000} & \texttt{0} \\
 \\
-& \texttt{ 0.05} & \texttt{4.23770e-74} \\
-& \texttt{ 0.15} & \texttt{1.34471e-73} \\
+& \texttt{ 0.05} & \texttt{0.0012} \\
+& \texttt{ 0.15} & \texttt{0.0014} \\
 & \ldots & \ldots\\
-& \texttt{99.95} &  \texttt{1.35489e-79} \\
+& \texttt{99.95} &  \texttt{0.001} \\
 \\
 \end{tabular}
 
