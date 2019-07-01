@@ -2294,6 +2294,33 @@ The expression is parsed by Lepton, the lightweight expression parser written by
 Lepton produces efficient evaluation routines for the function and its derivatives.
 
 
+\begin{itemize}
+\item %
+   \labelkey{colvar|customFunction}
+   \key 
+    {customFunction}{%
+    \texttt{colvar}}{%
+    Compute colvar as a custom function of its components}{%
+    string}{%
+    Mathematical expression to define the colvar as a closed-form function of its colvar components.
+    See below for the detailed syntax of Lepton expressions.
+    Multiple mentions of this keyword can be used to define a vector variable (as in the example below).}
+
+\item %
+  \keydef
+    {customFunctionType}{%
+    \texttt{colvar}}{%
+    Type of value returned by the scripted colvar}{%
+    string}{%
+    \texttt{scalar}}{%
+    With this flag, the user may specify whether the
+    colvar is a scalar or one of the following vector types: \texttt{vector3}
+    (a 3D vector), \texttt{unit\_vector3} (a normalized 3D vector), or
+    \texttt{unit\_quaternion} (a normalized quaternion), or \texttt{vector}.
+    Note that the scalar and vector cases are not necessary, as they are detected automatically.}
+\end{itemize}
+
+
 The expression may use the collective variable components as variables, refered to by their user-defined \texttt{name}.
 Scalar elements of vector components may be accessed by appending a 1-based index to their \texttt{name}, as in the example below.
 When implementing generic functions of Cartesian coordinates rather
@@ -2335,32 +2362,6 @@ is exactly equivalent to:\\
 \texttt{(a1 + a2)\^{}2 + (a1 + a2) * (b1 + b2) + (b1 + b2)\^{}2}.\\
 The definition of an intermediate value may itself involve other intermediate values.
 All uses of a value must appear \textit{before} that value's definition.
-
-
-\begin{itemize}
-\item %
-   \labelkey{colvar|customFunction}
-   \key 
-    {customFunction}{%
-    \texttt{colvar}}{%
-    Compute colvar as a custom function of its components}{%
-    string}{%
-    Defines the colvar as a scalar expression of its colvar components. Multiple mentions can
-    be used to define a vector variable  (as in the example above).}
-
-\item %
-  \keydef
-    {customFunctionType}{%
-    \texttt{colvar}}{%
-    Type of value returned by the scripted colvar}{%
-    string}{%
-    \texttt{scalar}}{%
-    With this flag, the user may specify whether the
-    colvar is a scalar or one of the following vector types: \texttt{vector3}
-    (a 3D vector), \texttt{unit\_vector3} (a normalized 3D vector), or
-    \texttt{unit\_quaternion} (a normalized quaternion), or \texttt{vector}.
-    Note that the scalar and vector cases are not necessary, as they are detected automatically.}
-\end{itemize}
 
 Lepton supports the usual arithmetic operators +, -, *, /, and \^{} (power), as well as the following functions:
 
