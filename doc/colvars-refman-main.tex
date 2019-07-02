@@ -3411,7 +3411,7 @@ Additionally, most restraints (\ref{sec:colvarbias_harmonic}, \ref{sec:colvarbia
     Write the PMF computed by thermodynamic integration}{%
     boolean}{%
     \texttt{off}}{%
-    If the bias is applied to a variable that supports the calculation of total forces (see \refkey{outputotalForce}{sec:colvar} and \ref{sec:cvc_sys_forces}), this option allows calculating the corresponding PMF by thermodynanic integration, and writing it to the file \outputName{}\texttt{.$<$name$>$.ti.pmf}, where \texttt{$<$name$>$} is the name of the bias.
+    If the bias is applied to a variable that supports the calculation of total forces (see \refkey{outputotalForce}{sec:colvar} and \ref{sec:cvc_sys_forces}), this option allows calculating the corresponding PMF by thermodynamic integration, and writing it to the file \outputName{}\texttt{.$<$name$>$.ti.pmf}, where \texttt{$<$name$>$} is the name of the bias and the contents of the file are in multicolumn text format (\ref{sec:colvar_multicolumn_grid}).
     The total force includes the forces applied to the variable by all bias, except those from this bias itself.
     If any bias applies time-dependent forces besides the one using this option, an error is raised.
 }
@@ -4080,7 +4080,7 @@ Its mandatory keywords are \refkey{colvars}{colvarbias|colvars}, which lists all
 
 \cvsubsubsec{Output files}{sec:colvarbias_meta_output}
 
-When interpolating grids are enabled (default behavior), the PMF is written by default every \texttt{colvarsRestartFrequency} steps to the file \outputName\texttt{.pmf}.
+When interpolating grids are enabled (default behavior), the PMF is written by default every \texttt{colvarsRestartFrequency} steps to the file \outputName\texttt{.pmf} in multicolumn text format (\ref{sec:colvar_multicolumn_grid}).
 The following two options allow to disable or control this behavior and to track statistical convergence:
 
 \begin{itemize}
@@ -4274,7 +4274,7 @@ Instead, multiple probability distributions on different variables can be target
 & \texttt{ 0.05} & \texttt{0.0012} \\
 & \texttt{ 0.15} & \texttt{0.0014} \\
 & \ldots & \ldots\\
-& \texttt{99.95} &  \texttt{0.001} \\
+& \texttt{99.95} &  \texttt{0.0010} \\
 \\
 \end{tabular}
 
