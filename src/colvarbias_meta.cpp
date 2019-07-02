@@ -212,8 +212,8 @@ int colvarbias_meta::init_ebmeta_params(std::string const &conf)
       target_dist->remove_small_values(target_dist_min_val);   
     } else { 
       if (target_dist_min_val==0) { 
-        cvm::log("NOTE: The selected minimum value of the target distribution (targetDistMinVal) is zero \n"); 
-        cvm::log("targetDistMinVal will be set as the minimum positive value.\n");
+        cvm::log("NOTE: targetDistMinVal is set to zero, the minimum value of the target \n"); 
+        cvm::log(" distribution will be set as the minimum positive value.\n");
         cvm::real min_pos_val = target_dist->minimum_pos_value();
         if(min_pos_val<=0){
           cvm::error("Error: Target distribution of EBMetaD has negative "

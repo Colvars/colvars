@@ -4221,7 +4221,7 @@ This is achieved by weighing the Gaussian functions used in the metadynamics app
   }\mathrm{,}
 \end{equation}
 where $\rho_{exp}(\bm{\xi})$ is the target probability distribution and $S_{\rho} = - \int  \rho_{exp}(\bm{\xi}) \log \rho_{exp}(\bm{\xi})  \, \mathrm{d}\bm{\xi}$ its corresponding differential entropy. 
-The method is designed so that during the simulation the resulting distribution  the collective variable $\bm{\xi}$ converges to $\rho_{exp}(\bm{\xi})$. 
+The method is designed so that during the simulation the resulting distribution of the collective variable $\bm{\xi}$ converges to $\rho_{exp}(\bm{\xi})$. 
 A practical application of EBMetaD is to reproduce an ``experimental'' probability distribution, for example the distance distribution between spectroscopic labels inferred from F\"orster resonance energy transfer (FRET) or double electron-electron resonance (DEER) experiments \cite{Marinelli2015}.
   
 The PMF along $\xi$ can be estimated from the bias potential and the target ditribution \cite{Marinelli2015}:
@@ -4266,7 +4266,7 @@ The following additional options define the configuration for the ensemble-biase
     \texttt{metadynamics}}{%
     Number of equilibration steps for ensemble-biased metadynamics}{%
     positive integer}{%
-    The EBMetaD approach may introduces large hills in regions with small values of the target probability distribution (eq.{} \ref{eq:colvars_ebmeta_pot}). 
+    The EBMetaD approach may introduce large hills in regions with small values of the target probability distribution (eq.{} \ref{eq:colvars_ebmeta_pot}). 
     This happens, for example, if the probability distribution sampled by a conventional molecular dynamics simulation is significantly different from the target distribution.
     This may lead to instabilities at the beginning of the simulation related to large biasing forces.
     In this case, it is useful to introduce an equilibration stage in which the bias potential gradually switches from standard metadynamics (eq.{} \ref{eq:colvars_meta_pot}) to EBmetaD (eq.{} \ref{eq:colvars_ebmeta_pot}) as $\lambda V_{\mathrm{meta}}(\bm{\xi})+(1-\lambda)V_{\mathrm{EBmetaD}}(\bm{\xi})$, where $\lambda=(\mathtt{ebMetaEquilSteps}-\mathtt{step})/\mathtt{ebMetaEquilSteps}$ and \texttt{step} is the current simulation step number.}
