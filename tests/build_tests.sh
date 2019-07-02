@@ -174,6 +174,7 @@ for colvar in \
     "inertia" \
     "inertiaz" \
     "rmsd" \
+    "eigenvector" \
     "tilt" \
     "spinangle" \
     "selfcoordnum" "selfcoordnum-pairlist" \
