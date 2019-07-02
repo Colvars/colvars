@@ -2521,10 +2521,10 @@ For a multidimensional function $f(\xi_{1}$, $\xi_{2}$, \ldots $)$ the multicolu
 
 \begin{tabular}{l l l l l l l}
 \# & $N_{\mathrm{cv}}$ & & & & \\
-\# & $\mathtt{min}(\xi_{1})$ & $\mathtt{width}(\xi_{1})$ & $\mathtt{nbins}({\xi_{1}})$ & $\mathtt{periodic}({\xi_{1}})$ \\
-\# & $\mathtt{min}(\xi_{2})$ & $\mathtt{width}(\xi_{2})$ & $\mathtt{nbins}({\xi_{2}})$ & $\mathtt{periodic}({\xi_{2}})$ \\
+\# & $\mathtt{min}(\xi_{1})$ & $\mathtt{width}(\xi_{1})$ & $\mathtt{npoints}({\xi_{1}})$ & $\mathtt{periodic}({\xi_{1}})$ \\
+\# & $\mathtt{min}(\xi_{2})$ & $\mathtt{width}(\xi_{2})$ & $\mathtt{npoints}({\xi_{2}})$ & $\mathtt{periodic}({\xi_{2}})$ \\
 \# & \ldots & \ldots & \ldots & \ldots \\
-\# & $\mathtt{min}(\xi_{N_{\mathrm{cv}}})$ & $\mathtt{width}(\xi_{N_{\mathrm{cv}}})$ & $\mathtt{nbins}({\xi_{N_{\mathrm{cv}}}})$ & $\mathtt{periodic}({\xi_{N_{\mathrm{cv}}}})$ & \\
+\# & $\mathtt{min}(\xi_{N_{\mathrm{cv}}})$ & $\mathtt{width}(\xi_{N_{\mathrm{cv}}})$ & $\mathtt{npoints}({\xi_{N_{\mathrm{cv}}}})$ & $\mathtt{periodic}({\xi_{N_{\mathrm{cv}}}})$ & \\
 \\
 & $\xi^{1}_{1}$ & $\xi^{1}_{2}$ & \ldots & $\xi^{1}_{N_{\mathrm{cv}}}$ & f($\xi^{1}_{1}$, $\xi^{1}_{2}$, \ldots, $\xi^{1}_{N_{\mathrm{cv}}}$) & \\
 & $\xi^{1}_{1}$ & $\xi^{1}_{2}$ & \ldots & $\xi^{2}_{N_{\mathrm{cv}}}$ & f($\xi^{1}_{1}$, $\xi^{1}_{2}$, \ldots, $\xi^{2}_{N_{\mathrm{cv}}}$) \\
@@ -2534,16 +2534,16 @@ For a multidimensional function $f(\xi_{1}$, $\xi_{2}$, \ldots $)$ the multicolu
 
 \noindent{}Lines beginning with the character ``\texttt{\#}'' are the header of the file.
 $N_{\mathrm{cv}}$ is the number of collective variables sampled by the grid.
-For each variable $\xi_{i}$, $\mathtt{min}(\xi_{i})$ is the lowest value sampled by the grid (i.e.{} the left-most boundary of the grid along $\xi_{i}$), $\mathtt{width}(\xi_{i})$ is the width of each grid bin along $\xi_{i}$, $\mathtt{nbins}(\xi_{i})$ is the number of bins and $\mathtt{periodic}(\xi_{i})$ is a flag whose value is 1 or 0 depending on whether the grid is periodic along $\xi_{i}$.
+For each variable $\xi_{i}$, $\mathtt{min}(\xi_{i})$ is the lowest value sampled by the grid (i.e.{} the left-most boundary of the grid along $\xi_{i}$), $\mathtt{width}(\xi_{i})$ is the width of each grid step along $\xi_{i}$, $\mathtt{npoints}(\xi_{i})$ is the number of points and $\mathtt{periodic}(\xi_{i})$ is a flag whose value is 1 or 0 depending on whether the grid is periodic along $\xi_{i}$.
 In most situations:
 \begin{itemize}
 \item $\mathtt{min}(\xi_{i})$ is given by the \refkey{lowerBoundary}{colvar|lowerBoundary} keyword of the variable $\xi_{i}$;
 \item $\mathtt{width}(\xi_{i})$ is given by the \refkey{width}{colvar|width} keyword;
-\item $\mathtt{nbins}(\xi_{i})$ is calculated from the two above numbers and the \refkey{upperBoundary}{colvar|upperBoundary} keyword;
+\item $\mathtt{npoints}(\xi_{i})$ is calculated from the two above numbers and the \refkey{upperBoundary}{colvar|upperBoundary} keyword;
 \item $\mathtt{periodic}(\xi_{i})$ is set to 1 if and only if $\xi_{i}$ is periodic and the grids' boundaries cover its period.
 \end{itemize}
 \textbf{Exception:} there is a slightly different header in PMF files computed by ABF (\ref{sec:colvarbias_abf}) or by other biases with an optional thermodynamic integration (TI) estimator (\ref{sec:colvarbias_ti}).
-In this case, free-energy gradients are accumulated on an \texttt{(nbins)}-long grid along each variable $\xi$: after these gradients are integrated, the resulting PMF is binned on a grid that is \texttt{(nbins+1)}-long along $\xi$.
+In this case, free-energy gradients are accumulated on an \texttt{(npoints)}-long grid along each variable $\xi$: after these gradients are integrated, the resulting PMF is discretized on a grid with \texttt{(npoints+1)} points along $\xi$.
 Therefore, the edges of the PMF's grid extend $\mathtt{width}/2$ above and below the original boundaries (unless these are periodic).  The format of the file's header is otherwise unchanged.
 
 After the header, the rest of the file contains values of the tabulated function
