@@ -282,12 +282,12 @@ colvar::gzpath::gzpath(std::string const &conf): CartesianBasedPath(conf) {
     } else {
         cvm::log(std::string("Geometric path z(σ) will use the neighbouring frame to compute s_(m+1)\n"));
     }
-    bool use_z_square = false;
-    get_keyval(conf, "useZsquare", use_z_square, false);
-    if (use_z_square == true) {
+    bool b_use_z_square = false;
+    get_keyval(conf, "useZsquare", b_use_z_square, false);
+    if (b_use_z_square == true) {
         cvm::log(std::string("Geometric path z(σ) will use the square of distance from current frame to path compute z\n"));
     }
-    GeometricPathCV::GeometricPathBase<cvm::atom_pos, cvm::real, GeometricPathCV::path_sz::Z>::initialize(atoms->size(), cvm::atom_pos(), total_reference_frames, use_second_closest_frame, use_third_closest_frame, use_z_square);
+    GeometricPathCV::GeometricPathBase<cvm::atom_pos, cvm::real, GeometricPathCV::path_sz::Z>::initialize(atoms->size(), cvm::atom_pos(), total_reference_frames, use_second_closest_frame, use_third_closest_frame, b_use_z_square);
     // Logging
     cvm::log(std::string("Geometric pathCV(z) is initialized.\n"));
     cvm::log(std::string("Geometric pathCV(z) loaded ") + cvm::to_str(reference_frames.size()) + std::string(" frames.\n"));
@@ -758,12 +758,12 @@ colvar::gzpathCV::gzpathCV(std::string const &conf): CVBasedPath(conf) {
     } else {
         cvm::log(std::string("Geometric path z(σ) will use the neighbouring frame to compute s_(m+1)\n"));
     }
-    bool use_z_square = false;
-    get_keyval(conf, "useZsquare", use_z_square, false);
-    if (use_z_square == true) {
+    bool b_use_z_square = false;
+    get_keyval(conf, "useZsquare", b_use_z_square, false);
+    if (b_use_z_square == true) {
         cvm::log(std::string("Geometric path z(σ) will use the square of distance from current frame to path compute z\n"));
     }
-    GeometricPathCV::GeometricPathBase<colvarvalue, cvm::real, GeometricPathCV::path_sz::Z>::initialize(cv.size(), ref_cv[0], total_reference_frames, use_second_closest_frame, use_third_closest_frame, use_z_square);
+    GeometricPathCV::GeometricPathBase<colvarvalue, cvm::real, GeometricPathCV::path_sz::Z>::initialize(cv.size(), ref_cv[0], total_reference_frames, use_second_closest_frame, use_third_closest_frame, b_use_z_square);
     x.type(colvarvalue::type_scalar);
     use_explicit_gradients = true;
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
