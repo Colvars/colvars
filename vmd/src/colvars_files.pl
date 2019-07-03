@@ -23,6 +23,7 @@ $colvars_defines = " -DVMDCOLVARS";
                     'colvarcomp_angles.C',
                     'colvarcomp_coordnums.C',
                     'colvarcomp_distances.C',
+                    'colvarcomp_gpath.C',
                     'colvarcomp_protein.C',
                     'colvarcomp_rotations.C',
                     'colvardeps.C',
@@ -35,6 +36,7 @@ $colvars_defines = " -DVMDCOLVARS";
                     'colvartypes.C',
                     'colvarvalue.C');
 @colvars_h    =    ('colvar_UIestimator.h',
+                    'colvar_geometricpath.h',
                     'colvaratoms.h',
                     'colvarbias.h',
                     'colvarbias_abf.h',
