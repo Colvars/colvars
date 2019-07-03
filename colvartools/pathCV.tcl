@@ -30,8 +30,12 @@ proc calc_pathCVs { args } {
     upvar pathCV::flags_next flags_next
 
     incr step
+    set N [llength $args]
 
     if { [ expr {($step % $freq) == 0 }]} {
+        # Sanity check for paths with very few images
+        if { $N < $min_images } { set min_images $N }
+
         # Enable all cvcs to allow for selection on next timestep
         set flags_next { }
         foreach x $args {
@@ -80,8 +84,6 @@ proc calc_pathCVs { args } {
         # Only use CVCs selected on previous step
         set flags $flags_next
     }
-
-    set N [llength $args]
 
     set i 0
     set u 0.0
