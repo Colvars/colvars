@@ -1488,6 +1488,8 @@ int colvar::calc_colvar_properties()
     // calculate the velocity by finite differences
     if (cvm::step_relative() == 0) {
       x_old = x;
+      v_fdiff.reset(); // Do not pretend we know anything about the actual velocity
+      // eg. upon restarting. That would require saving v_fdiff or x_old to the state file
     } else {
       v_fdiff = fdiff_velocity(x_old, x);
       v_reported = v_fdiff;
@@ -1509,8 +1511,9 @@ int colvar::calc_colvar_properties()
       x_ext = prev_x_ext;
       v_ext = prev_v_ext;
     }
-
     // report the restraint center as "value"
+    // These position and velocities come from integration at the _previous timestep_ in update_forces_energy()
+    // But we report values at the beginning of the timestep (value at t=0 on the first timestep)
     x_reported = x_ext;
     v_reported = v_ext;
     // the "total force" with the extended Lagrangian is
@@ -1966,9 +1969,8 @@ std::istream & colvar::read_restart(std::istream &is)
   }
 
   if (is_enabled(f_cv_extended_Lagrangian)) {
-
     if ( !(get_keyval(conf, "extended_x", x_ext,
-                      colvarvalue(x.type()), colvarparse::parse_silent)) &&
+                      colvarvalue(x.type()), colvarparse::parse_silent)) ||
          !(get_keyval(conf, "extended_v", v_ext,
                       colvarvalue(x.type()), colvarparse::parse_silent)) ) {
       cvm::log("Error: restart file does not contain "
@@ -2070,11 +2072,11 @@ std::ostream & colvar::write_restart(std::ostream &os) {
     os << "  extended_x "
        << std::setprecision(cvm::cv_prec)
        << std::setw(cvm::cv_width)
-       << x_ext << "\n"
+       << x_reported << "\n"
        << "  extended_v "
        << std::setprecision(cvm::cv_prec)
        << std::setw(cvm::cv_width)
-       << v_ext << "\n";
+       << v_reported << "\n";
   }
 
   os << "}\n\n";
@@ -2141,7 +2143,6 @@ std::ostream & colvar::write_traj_label(std::ostream & os)
 std::ostream & colvar::write_traj(std::ostream &os)
 {
   os << " ";
-
   if (is_enabled(f_cv_output_value)) {
 
     if (is_enabled(f_cv_extended_Lagrangian)) {

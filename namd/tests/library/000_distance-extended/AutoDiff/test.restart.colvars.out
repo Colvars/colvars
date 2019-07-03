@@ -5,6 +5,7 @@ colvars: in any publication based on this calculation.
 colvars: SMP parallelism is available.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
+colvars: # indexFile = "index.ndx"
 colvars: The following index groups were read from the index file "index.ndx":
 colvars:   Protein (104 atoms).
 colvars:   Protein_noH (51 atoms).
@@ -96,7 +97,7 @@ colvars:   Computed fictitious mass: 100672 [E]/(U/fs)^2   (U: colvar unit)
 colvars:   # outputEnergy = off [default]
 colvars:   # extendedLangevinDamping = 0
 colvars:   # outputValue = on [default]
-colvars:   # outputVelocity = off [default]
+colvars:   # outputVelocity = on
 colvars:   # outputTotalForce = off [default]
 colvars:   # outputAppliedForce = on
 colvars:   # subtractAppliedForce = off [default]
