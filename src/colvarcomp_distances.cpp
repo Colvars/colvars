@@ -1239,7 +1239,7 @@ colvar::eigenvector::eigenvector(std::string const &conf)
   }
 
   // save for later the geometric center of the provided positions (may not be the origin)
-  ref_pos_center.reset();
+  cvm::rvector ref_pos_center(0.0, 0.0, 0.0);
   for (size_t i = 0; i < atoms->size(); i++) {
     ref_pos_center += ref_pos[i];
   }
