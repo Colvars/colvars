@@ -15,17 +15,8 @@ colvartools/abf_integrate
 *.diff
 *.BAK
 *.old
-*.coor
-*.vel
-*.xsc
 *.backup
-*.state
-*.traj
-*.out
 *.err
-*.count
-*.grad
-*.pmf
 # output files from file-based mw-metadynamics
 *.rep?.files.txt
 replicas.registry.txt

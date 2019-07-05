@@ -1,0 +1,273 @@
+colvars: ----------------------------------------------------------------------
+colvars: Please cite Fiorin et al, Mol Phys 2013:
+colvars:  http://dx.doi.org/10.1080/00268976.2013.813594
+colvars: in any publication based on this calculation.
+colvars: SMP parallelism is available.
+colvars: The final output state file will be "test.colvars.state".
+colvars: Writing to colvar trajectory file "test.colvars.traj".
+colvars: ----------------------------------------------------------------------
+colvars: Reading new configuration:
+colvars: # smp = on [default]
+colvars: # colvarsTrajFrequency = 1
+colvars: # colvarsRestartFrequency = 0 [default]
+colvars: # scriptedColvarForces = off [default]
+colvars: # scriptingAfterBiases = off [default]
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = "s"
+colvars:   Initializing a new "rmsd" component.
+colvars:     # name = "" [default]
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 104 atoms requested: total mass = 727.821, total charge = 6.70552e-08.
+colvars:     # refPositions =  [default]
+colvars:     # refPositionsFile = "../Common/da.xyz"
+colvars:     # refPositionsCol = "" [default]
+colvars:     Enabling "centerReference" and "rotateReference", to minimize RMSD before calculating it as a variable: if this is not the desired behavior, disable them explicitly within the "atoms" block.
+colvars:     This is a standard minimum RMSD, derivatives of the optimal rotation will not be computed as they cancel out in the gradients.
+colvars:   Initializing a new "rmsd" component.
+colvars:     # name = "" [default]
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 104 atoms requested: total mass = 727.821, total charge = 6.70552e-08.
+colvars:     # refPositions =  [default]
+colvars:     # refPositionsFile = "../Common/310turn-ideal.xyz"
+colvars:     # refPositionsCol = "" [default]
+colvars:     Enabling "centerReference" and "rotateReference", to minimize RMSD before calculating it as a variable: if this is not the desired behavior, disable them explicitly within the "atoms" block.
+colvars:     This is a standard minimum RMSD, derivatives of the optimal rotation will not be computed as they cancel out in the gradients.
+colvars:   All components initialized.
+colvars:   This colvar uses scripted function "pathCVs".
+colvars:   # scriptedFunctionType = "scalar" [default]
+colvars:   Expecting colvar value of type scalar number
+colvars:   Sorted list of components for this scripted colvar:
+colvars:   1 rmsd0001
+colvars:   2 rmsd0002
+colvars:   # period = 0 [default]
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # width = 0.05
+colvars:   # lowerBoundary = -0.2
+colvars:   # upperBoundary = 1.2
+colvars:   Reading legacy options lowerWall and lowerWallConstant: consider using a harmonicWalls restraint
+colvars: (caution: force constant would then be scaled by width^2).
+colvars:   # lowerWall = -0.2 [default]
+colvars:   Warning: lowerWall will need to be defined explicitly in the next release.
+colvars:   Reading legacy options upperWall and upperWallConstant: consider using a harmonicWalls restraint
+colvars: (caution: force constant would then be scaled by width^2).
+colvars:   # upperWall = 1.2 [default]
+colvars:   Warning: upperWall will need to be defined explicitly in the next release.
+colvars:   Generating a new harmonicWalls bias for compatibility purposes.
+colvars:   # hardLowerBoundary = off [default]
+colvars:   # hardUpperBoundary = off [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = on
+colvars:   Enabling the extended Lagrangian term for colvar "s".
+colvars:   # extendedTemp = 300 [default]
+colvars:   # extendedFluctuation = 0.01
+colvars:   Computed extended system force constant: 5961.57 [E]/U^2
+colvars:   # extendedTimeConstant = 200 [default]
+colvars:   Computed fictitious mass: 6.04034e+06 [E]/(U/fs)^2   (U: colvar unit)
+colvars:   # outputEnergy = off [default]
+colvars:   # extendedLangevinDamping = 1 [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputTotalForce = off [default]
+colvars:   # outputAppliedForce = off [default]
+colvars:   # subtractAppliedForce = off [default]
+colvars:   # runAve = off [default]
+colvars:   # corrFunc = off [default]
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = "z"
+colvars:   Initializing a new "rmsd" component.
+colvars:     # name = "" [default]
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 104 atoms requested: total mass = 727.821, total charge = 6.70552e-08.
+colvars:     # refPositions =  [default]
+colvars:     # refPositionsFile = "../Common/da.xyz"
+colvars:     # refPositionsCol = "" [default]
+colvars:     Enabling "centerReference" and "rotateReference", to minimize RMSD before calculating it as a variable: if this is not the desired behavior, disable them explicitly within the "atoms" block.
+colvars:     This is a standard minimum RMSD, derivatives of the optimal rotation will not be computed as they cancel out in the gradients.
+colvars:   Initializing a new "rmsd" component.
+colvars:     # name = "" [default]
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 104 atoms requested: total mass = 727.821, total charge = 6.70552e-08.
+colvars:     # refPositions =  [default]
+colvars:     # refPositionsFile = "../Common/310turn-ideal.xyz"
+colvars:     # refPositionsCol = "" [default]
+colvars:     Enabling "centerReference" and "rotateReference", to minimize RMSD before calculating it as a variable: if this is not the desired behavior, disable them explicitly within the "atoms" block.
+colvars:     This is a standard minimum RMSD, derivatives of the optimal rotation will not be computed as they cancel out in the gradients.
+colvars:   All components initialized.
+colvars:   This colvar uses scripted function "pathCVz".
+colvars:   # scriptedFunctionType = "scalar" [default]
+colvars:   Expecting colvar value of type scalar number
+colvars:   Sorted list of components for this scripted colvar:
+colvars:   1 rmsd0001
+colvars:   2 rmsd0002
+colvars:   # period = 0 [default]
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # width = 0.05
+colvars:   # lowerBoundary = -0.5
+colvars:   # upperBoundary = 1.5
+colvars:   # hardLowerBoundary = off [default]
+colvars:   # hardUpperBoundary = off [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = on
+colvars:   Enabling the extended Lagrangian term for colvar "z".
+colvars:   # extendedTemp = 300 [default]
+colvars:   # extendedFluctuation = 0.01
+colvars:   Computed extended system force constant: 5961.57 [E]/U^2
+colvars:   # extendedTimeConstant = 200 [default]
+colvars:   Computed fictitious mass: 6.04034e+06 [E]/(U/fs)^2   (U: colvar unit)
+colvars:   # outputEnergy = off [default]
+colvars:   # extendedLangevinDamping = 1 [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputTotalForce = off [default]
+colvars:   # outputAppliedForce = off [default]
+colvars:   # subtractAppliedForce = off [default]
+colvars:   # runAve = off [default]
+colvars:   # corrFunc = off [default]
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables initialized, 2 in total.
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new "abf" instance.
+colvars:   # name = "abf1" [default]
+colvars:   # colvars = { s, z }
+colvars:   # outputEnergy = off [default]
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # applyBias = on [default]
+colvars:   # updateBias = on [default]
+colvars:   # hideJacobian = off [default]
+colvars:   Jacobian (geometric) forces will be included in reported free energy gradients.
+colvars:   # fullSamples = 0
+colvars:   # inputPrefix =  [default]
+colvars:   # outputFreq = 0 [default]
+colvars:   # historyFreq = 0 [default]
+colvars:   # shared = off [default]
+colvars:   # maxForce =  [default]
+colvars:   # CZARestimator = on [default]
+colvars:   # integrate = on [default]
+colvars:   # pABFintegrateFreq = 0 [default]
+colvars:   # integrateInitMaxIterations = 10000 [default]
+colvars:   # integrateInitTol = 1e-06 [default]
+colvars:   # integrateMaxIterations = 100 [default]
+colvars:   # integrateTol = 0.0001 [default]
+colvars:   # UIestimator = off [default]
+colvars:   Finished ABF setup.
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables biases initialized, 1 in total.
+colvars: # smp = on [default]
+colvars: # colvarsTrajFrequency = 1 [default]
+colvars: # colvarsRestartFrequency = 0 [default]
+colvars: # scriptedColvarForces = off [default]
+colvars: # scriptingAfterBiases = off [default]
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables initialized, 2 in total.
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new "harmonicwalls" instance.
+colvars:   # name = "sw"
+colvars:   # colvars = { s }
+colvars:   # outputEnergy = off [default]
+colvars:   # timeStepFactor = 1
+colvars:   # writeTISamples = off [default]
+colvars:   # writeTIPMF = off [default]
+colvars:   # forceConstant = 1 [default]
+colvars:   # targetForceConstant = -1 [default]
+colvars:   # lowerWalls = { -0.2 }
+colvars:   # upperWalls = { 1.2 }
+colvars:   # lowerWallConstant = 0.025
+colvars:   # upperWallConstant = 0.025
+colvars:   The lower wall force constant for colvar "s" will be rescaled to 10 according to the specified width (0.05).
+colvars:   The upper wall force constant for colvar "s" will be rescaled to 10 according to the specified width (0.05).
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables biases initialized, 2 in total.
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables module (re)initialized.
+colvars: ----------------------------------------------------------------------
+colvars: Updating NAMD interface:
+colvars: updating atomic data (104 atoms).
+colvars: updating group data (0 scalable groups, 0 atoms in total).
+colvars: Updating NAMD interface:
+colvars: updating atomic data (104 atoms).
+colvars: updating group data (0 scalable groups, 0 atoms in total).
+colvars: Re-initialized atom group for variable "s":0/0. 104 atoms: total mass = 727.821, total charge = 6.70552e-08.
+colvars: Re-initialized atom group for variable "s":1/0. 104 atoms: total mass = 727.821, total charge = 6.70552e-08.
+colvars: Re-initialized atom group for variable "z":0/0. 104 atoms: total mass = 727.821, total charge = 6.70552e-08.
+colvars: Re-initialized atom group for variable "z":1/0. 104 atoms: total mass = 727.821, total charge = 6.70552e-08.
+colvars: The final output state file will be "test.colvars.state".
+colvars: PathCV WARNING: less than 2 RMSDs are above threshold, selecting 2 closest images
+colvars: PathCV STEP 1   next pathCV flags  1 1
+colvars:   Prepared sample and gradient buffers at step 0.
+colvars: PathCV WARNING: less than 2 RMSDs are above threshold, selecting 2 closest images
+colvars: PathCV STEP 6   next pathCV flags  1 1
+colvars: PathCV WARNING: less than 2 RMSDs are above threshold, selecting 2 closest images
+colvars: PathCV STEP 11   next pathCV flags  1 1
+colvars: Saving collective variables state to "test.colvars.state".
+colvars:   Integrated in 143 steps, error: 9.52755e-07
+colvars:   Integrated in 143 steps, error: 8.74992e-07
