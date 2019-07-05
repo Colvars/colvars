@@ -4185,7 +4185,16 @@ The same information is always included in the colvars state file, which is suff
 for restarting an eABF simulation.
 These separate file is only useful when joining adjacent windows from a stratified
 eABF simulation, either to continue the simulation in a broader window or to
-compute a CZAR estimate of the PMF over the full range of the coordinate(s).}
+compute a CZAR estimate of the PMF over the full range of the coordinate(s).
+\textbf{Important warning.} Unbiased free-energy estimators from eABF dynamics rely
+on some form of sampling histogram. When running stratified (windowed) calculations
+this histogram becomes discontinuous, and as a result the free energy gradient estimated
+by CZAR is inaccurate at the window boundary, resulting in visible "blips" in the PMF.
+As a workaround, we recommend manually replacing the two
+free energy gradient values at the boundary, either with the ABF values from .grad files
+(accurate in the limit of tight coupling), or with values interpolated for the neighboring
+values of the CZAR gradient.
+}
 \end{itemize}
 
 Similar to ABF, the CZAR estimator produces two output files in multicolumn text format (\ref{sec:colvar_multicolumn_grid}):
