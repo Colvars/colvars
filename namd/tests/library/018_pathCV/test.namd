@@ -1,0 +1,139 @@
+# FILENAMES
+set outName             [file rootname [file tail [info script]]]
+
+# MD SETUP
+timestep          0.5
+numSteps		  10
+
+# INPUT
+structure               ../Common/da.psf 
+parameters              ../Common/par_all22_prot.inp
+paraTypeCharmm          on
+coordinates             ../Common/da.min.pdb
+
+temperature 250
+
+# OUTPUT
+
+outputname              ${outName}
+outputenergies          100
+outputtiming            2000
+binaryoutput            no
+
+seed		87654321
+
+
+# CONSTANT-T
+langevin                on
+langevinTemp            300.0
+langevinDamping         10.0
+langevinHydrogen        on
+
+# SPACE PARTITIONING
+splitpatch              hydrogen
+hgroupcutoff            2.8
+stepspercycle           20
+margin                  1.0
+
+# CUT-OFFS
+switching               on
+switchdist              9.0
+cutoff                  11.0
+pairlistdist            12.0
+
+# RESPA 
+fullElectFrequency      1
+nonbondedFreq           1
+
+# 1-4 NON-BONDED
+exclude                 scaled1-4
+1-4scaling              1.0
+
+# COM
+commotion               no
+
+# SHAKE
+rigidBonds              none
+
+# This does 2D extended-Lagrangian ABF in path coordinates (s, z)
+# See Branduardi et al. JCP 2007 for details
+
+# Parameters for the path colvars
+
+namespace eval pathCV {
+  set lambda     20.   ;# as in Branduardi et al.: should be 1/d^2 where d is the distance between images
+  set tolerance  1e-4  ;# images whose exponential term is above this are included in the calculation
+  set freq       5     ;# number of timesteps between two updates, where all images are enabled for one
+                       ;# timestep to decide which ones should be disabled next
+  set min_images 2     ;# if all exponential terms are small (moving away from the path), no fewer than
+                       ;# this many images are retained
+}
+source                  ../../../../colvartools/pathCV.tcl
+
+set atoms "atomNumbersRange 1-104"
+
+set images { ../Common/da.xyz ../Common/310turn-ideal.xyz }
+set nImages [llength $images]
+
+set config "
+colvarsTrajFrequency 1
+
+colvar {
+   name                  s
+
+   width                 0.05
+   lowerboundary        -0.2
+   upperboundary         1.2
+   lowerwallconstant     10.0
+   upperwallconstant     10.0
+
+   scriptedFunction      pathCVs
+   extendedLagrangian    on
+   extendedFluctuation   0.01
+"
+
+for {set i 0} {$i < $nImages} {incr i} {
+  append config "rmsd {
+     atoms {
+       $atoms
+     }
+     refpositionsfile    [lindex $images $i]
+   }
+   "
+}
+append config "}"
+
+append config "
+colvar {
+   name                  z
+
+   width                 0.05
+   lowerboundary        -0.5
+   upperboundary         1.5
+
+   scriptedFunction      pathCVz
+   extendedLagrangian    on
+   extendedFluctuation   0.01
+"
+
+for {set i 0} {$i < $nImages} {incr i} {
+  append config "rmsd {
+     atoms {
+       $atoms
+     }
+     refpositionsfile    [lindex $images $i]
+   }
+   "
+}
+append config "}"
+
+append config "
+abf {
+  colvars s z
+  fullSamples 0
+}"
+
+
+colvars	on
+cv config $config
+

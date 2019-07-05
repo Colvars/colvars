@@ -7,12 +7,12 @@
 # Parameters for the path colvars
 
 namespace eval pathCV {
-  set lambda     20.   # as in Branduardi et al.: should be 1/d^2 where d is the distance between images
-  set tolerance  1e-4  # images whose exponential term is above this are included in the calculation
-  set freq       20    # number of timesteps between two updates, where all images are enabled for one
-                       # timestep to decide which ones should be disabled next
-  set min_images 4     # if all exponential terms are small (moving away from the path), no fewer than
-                       # this many images are retained
+  set lambda     20.   ;# as in Branduardi et al.: should be 1/d^2 where d is the distance between images
+  set tolerance  1e-4  ;# images whose exponential term is above this are included in the calculation
+  set freq       20    ;# number of timesteps between two updates, where all images are enabled for one
+                       ;# timestep to decide which ones should be disabled next
+  set min_images 4     ;# if all exponential terms are small (moving away from the path), no fewer than
+                       ;# this many images are retained
 }
 source                  ../colvartools/pathCV.tcl
 
