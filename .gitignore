@@ -1,4 +1,10 @@
+# -*- gitignore -*-
+
+# Editor files
 *~
+.*.swp
+
+# Compiled code
 *.o
 *.so
 *.a
@@ -6,21 +12,32 @@
 *.exe
 *.pyc
 
-.*.swp
-
-# executable
+# Executable
 colvartools/abf_integrate
 
 # output files from reg tests
 *.diff
 *.BAK
 *.old
+*.coor
+*.vel
+*.xsc
 *.backup
 *.err
-# output files from file-based mw-metadynamics
-*.rep?.files.txt
-replicas.registry.txt
-*.rep?.hills
+
+# Output files from reg tests, with exceptions for reference files
+*.state
+!**/AutoDiff/*.state
+*.traj
+!**/AutoDiff/*.traj
+*.out
+!**/AutoDiff/*.out
+*.count
+!**/AutoDiff/*.count
+*.grad
+!**/AutoDiff/*.grad
+*.pmf
+!**/AutoDiff/*.pmf
 
 # Compiled documentation
 colvars-refman-lammps.pdf
