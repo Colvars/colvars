@@ -209,10 +209,10 @@ int colvarbias_meta::init_ebmeta_params(std::string const &conf)
     get_keyval(conf, "targetDistMinVal", target_dist_min_val, 1/1000000.0);
     if(target_dist_min_val>0 && target_dist_min_val<1){
       target_dist_min_val=max_val*target_dist_min_val;
-      target_dist->remove_small_values(target_dist_min_val);   
-    } else { 
-      if (target_dist_min_val==0) { 
-        cvm::log("NOTE: targetDistMinVal is set to zero, the minimum value of the target \n"); 
+      target_dist->remove_small_values(target_dist_min_val);
+    } else {
+      if (target_dist_min_val==0) {
+        cvm::log("NOTE: targetDistMinVal is set to zero, the minimum value of the target \n");
         cvm::log(" distribution will be set as the minimum positive value.\n");
         cvm::real min_pos_val = target_dist->minimum_pos_value();
         if(min_pos_val<=0){
@@ -1703,7 +1703,7 @@ void colvarbias_meta::write_pmf()
 
     if (ebmeta) {
       int nt_points=pmf->number_of_points();
-      for (size_t i = 0; i < nt_points; i++) {
+      for (int i = 0; i < nt_points; i++) {
          cvm:: real pmf_val=0.0;
          cvm:: real target_val=target_dist->value(i);
          if (target_val>0) {
@@ -1744,7 +1744,7 @@ void colvarbias_meta::write_pmf()
 
     if (ebmeta) {
       int nt_points=pmf->number_of_points();
-      for (size_t i = 0; i < nt_points; i++) {
+      for (int i = 0; i < nt_points; i++) {
          cvm:: real pmf_val=0.0;
          cvm:: real target_val=target_dist->value(i);
          if (target_val>0) {
