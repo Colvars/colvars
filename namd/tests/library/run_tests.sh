@@ -64,7 +64,7 @@ cleanup_files() {
       if [ ! -f "$f.diff" ]; then rm -f $f; fi # keep files that have a non-empty diff
     done
     rm -f *.out *.out.diff # Delete output files regardless
-    rm -f metadynamics1.*.files.txt replicas.registry.txt
+    rm -f metadynamics1.*.files.txt metadynamics1.*.files.txt.BAK replicas.registry.txt
   done
   tclsh ../Common/delete_tmp_files.tcl
 }
