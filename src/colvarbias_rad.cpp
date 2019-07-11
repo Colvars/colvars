@@ -287,8 +287,9 @@ int colvarbias_rad::update()
   colvar_rad_steps = colvar_rad_steps+1; // XXX to be deleted
 
   for (i = 0; i < num_variables(); i++) {
-    cvm::real const scaled_width = variables(i)->scale_width(colvar_widths_c[i]);
-    cvm::real const unit_scale = 1.0/(scaled_width * scaled_width);
+    cvm::real square_width = colvar_widths_c[i]*colvar_widths_c[i];
+    square_width = variables(i)->scale_width(square_width);
+    cvm::real const unit_scale = 1.0/(scaled_width);
     error_fact = colvar_centers_errors[i]*colvar_centers_errors[i]/colvar_errors_scale;
     colvarvalue const deviation =
       0.5 * variables(i)->dist2_lgrad(variables(i)->value(), colvar_centers[i]);

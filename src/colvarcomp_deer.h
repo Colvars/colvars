@@ -109,6 +109,10 @@ protected;
   /// The dimensionality of the sample for background calculation (default: 3)
   size_t sample_dimensionality;
 
+  /// Whether the input width is the deer kernel one: correct width is obtained by 
+  /// scaling for the parameters 
+  bool use_kdeer_width; 
+
 public:
 
   deer_kernel(std::string const &conf);
