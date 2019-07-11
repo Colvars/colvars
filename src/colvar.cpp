@@ -1877,6 +1877,10 @@ std::istream & colvar::read_restart(std::istream &is)
     after_restart = true;
   }
 
+  if (is_enabled(f_cv_opt_params)) {
+
+  }
+
   if (is_enabled(f_cv_extended_Lagrangian)) {
 
     if ( !(get_keyval(conf, "extended_x", xr,
