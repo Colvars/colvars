@@ -40,7 +40,7 @@ public:
 
   /// \brief value of the experimental parameters associated to each CV
 
-  std::vector<cvm::vector1d<cvm::real> > val_params;
+  // std::vector<cvm::vector1d<cvm::real> > val_params; // not used to be deleted
 
   /// Types of averaging
   enum kernel_type_e {

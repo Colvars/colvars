@@ -287,14 +287,15 @@ int colvarbias_rad::update()
   colvar_rad_steps = colvar_rad_steps+1; // XXX to be deleted
 
   for (i = 0; i < num_variables(); i++) {
-    cvm::real const unit_scale = 1.0/(colvar_widths_c[i] * colvar_widths_c[i]);
+    cvm::real const scaled_width = variables(i)->scale_width(colvar_widths_c[i]);
+    cvm::real const unit_scale = 1.0/(scaled_width * scaled_width);
     error_fact = colvar_centers_errors[i]*colvar_centers_errors[i]/colvar_errors_scale;
     colvarvalue const deviation =
       0.5 * variables(i)->dist2_lgrad(variables(i)->value(), colvar_centers[i]);
 
     colvar_total_deviations[i] += weight * variables(i)->paramscale(deviation) * cvm::dt();
     colvar_forces[i] = -1.0 * kBT * unit_scale * variables(i)->paramscale(colvar_total_deviations[i]);
-    bias_energy += -colvar_forces[i]*variables(i)->paramscale(deviation);
+    bias_energy += -colvar_forces[i]*deviation;
 
     colvarvalue const error_drift = -(colvar_forces[i]/kBT)*error_fact;
     colvar_centers[i] = colvar_exp_centers[i] + error_drift;
@@ -306,43 +307,24 @@ int colvarbias_rad::update()
        lambdasum+=colvar_centers_errors[i]*std::sqrt(lambda2);
        lambda2sum+=colvar_centers_errors[i]*colvar_centers_errors[i]*lambda2;;
     }
-  }
 
-  switch (opt_type) {
-  case opt_chisquare:
-    for (i = 0; i < num_variables(); i++) {
-       // get running average for optimizing the parameters by minimizing the chisquare
-       colvarvalue const chideviation =
-         0.5 * variables(i)->dist2_lgrad(variables(i)->value(), colvar_exp_centers[i]);
-       colvar_total_chideviations[i] += variables(i)->paramscale(chideviation)
-       variables(i)->update_params_rad_chis(colvar_total_chideviations[i]/colvar_rad_steps, colvar_exp_centers[i],
-                                        colvar_chisquare_opt_steps,colvar_chisquare_opt_toll);
-    }
-  case opt_lambda:
-    for (i = 0; i < num_variables(); i++) {
-       variables(i)->update_params_rad(colvar_forces[i]/kBT, colvar_centers[i],
-                                        params_coupling_time, weight, unit_scale,
-                                        colvar_widths_c[i]);
-    }
-  case opt_none:
-    break;
-  }
-
-
-  if (is_enabled(f_cvb_opt_cv_params)) {
-    for (i = 0; i < num_variables(); i++) {
-       variables(i)->update_params_rad(colvar_forces[i]/kBT, colvar_centers[i],
+    switch (opt_type) {
+    case opt_chisquare:
+      // get running average for optimizing the parameters by minimizing the chisquare
+      colvarvalue const chideviation =
+        0.5 * variables(i)->dist2_lgrad(variables(i)->value(), colvar_exp_centers[i]);
+      colvar_total_chideviations[i] += variables(i)->paramscale(chideviation);
+      variables(i)->update_params_rad_chis(colvar_total_chideviations[i]/colvar_rad_steps, colvar_exp_centers[i],
+                                       colvar_chisquare_opt_steps,colvar_chisquare_opt_toll);
+    case opt_lambda:
+      variables(i)->update_params_rad(colvar_forces[i]/kBT, colvar_centers[i],
                                        params_coupling_time, weight, unit_scale,
                                        colvar_widths_c[i]);
-       // get running average for optimizing the parameters by minimizing the chisquare
-       colvarvalue const chideviation =
-         0.5 * variables(i)->dist2_lgrad(variables(i)->value(), colvar_exp_centers[i]);
-
-
+    case opt_none:
+      break;
     }
   }
-
-
+  
   if (use_norm_1) {
     for (i = 0; i < num_variables(); i++) {
       cvm::real colvar_local_deviation=0.;

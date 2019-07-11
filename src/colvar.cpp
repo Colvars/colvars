@@ -441,8 +441,7 @@ int colvar::init_custom_function(std::string const &conf)
 int colvar::init_grid_parameters(std::string const &conf)
 {
   colvarmodule *cv = cvm::main();
-
-  get_keyval(conf, "width", width, 1.0);
+  get_keyval(conf, "width", width, 1.0); 
   if (width <= 0.0) {
     cvm::error("Error: \"width\" must be positive.\n", INPUT_ERROR);
     return INPUT_ERROR;
@@ -1877,10 +1876,6 @@ std::istream & colvar::read_restart(std::istream &is)
     after_restart = true;
   }
 
-  if (is_enabled(f_cv_opt_params)) {
-
-  }
-
   if (is_enabled(f_cv_extended_Lagrangian)) {
 
     if ( !(get_keyval(conf, "extended_x", xr,
@@ -1909,6 +1904,20 @@ std::istream & colvar::read_restart(std::istream &is)
       v_reported = vr;
     } else {
       v_reported = v_fdiff;
+    }
+  }
+
+  if (is_enabled(f_cv_opt_params)) {
+    cvm::vector1d<cvm::real> val_params;
+    cvcs[0]->get_params(val_params);
+    if ( !(get_keyval(conf, "params", val_params, val_params, colvarparse::parse_silent)) ) {
+      cvm::log("Error: restart file does not contain "
+               "the value of the parameters of the colvar \""+
+               name+"\" .\n");
+    } else {
+      cvm::log("Restarting the parameters of the collective variable \""+name+"\" from value: "+
+               cvm::to_str(val_params)+"\n");
+      cvcs[0]->set_params(val_params);
     }
   }
 
@@ -1991,6 +2000,15 @@ std::ostream & colvar::write_restart(std::ostream &os) {
        << std::setprecision(cvm::cv_prec)
        << std::setw(cvm::cv_width)
        << vr << "\n";
+  }
+
+  if (is_enabled(f_cv_opt_params)) {
+    cvm::vector1d<cvm::real> val_params;
+    cvcs[0]->get_params(val_params);
+    os << "  params "
+    << std::setprecision(cvm::cv_prec)
+    << std::setw(cvm::cv_width)
+    << val_params << "\n";    
   }
 
   os << "}\n\n";
