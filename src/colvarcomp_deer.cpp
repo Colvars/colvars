@@ -714,7 +714,7 @@ void colvar::deer_kernel::get_exp_val(colvarvalue &vectorexpval) const
 }
 
 
-void colvar::deer::update_params_rad(colvarvalue const &lambdavector, colvarvalue const &centersvector,
+int colvar::deer::update_params_rad(colvarvalue const &lambdavector, colvarvalue const &centersvector,
                                      cvm::real const &coupling_time, cvm::real const &wt, cvm::real const &us,
                                      cvm::real const &width)
 {
@@ -758,9 +758,11 @@ void colvar::deer::update_params_rad(colvarvalue const &lambdavector, colvarvalu
   mdepth=mdepth-coupling_time * mdepth * grad_mdepth * wt  * cvm::dt()/(deltainv*us*coef_mdepth);
   alpha=alpha-coupling_time * mdepth *  grad_alpha  * wt  * cvm::dt() /(deltainv*us*coef_alpha);
 
+  return COLVARS_OK;
+
 }
 
-void colvar::deer::update_params_rad_chis(colvarvalue const &aver_dev, colvarvalue const &exp_centers,
+int colvar::deer::update_params_rad_chis(colvarvalue const &aver_dev, colvarvalue const &exp_centers,
                                           size_t nsteps, cvm::real toll)
 {
   size_t const varsize = exp_centers.vector1d_value.size();
@@ -806,6 +808,7 @@ void colvar::deer::update_params_rad_chis(colvarvalue const &aver_dev, colvarval
      cvm::real const deltamalpha=sqrt(grad_alphah*grad_alpha)/hess_alpha;
      if(deltamdepth/mdepth<toll&&deltalalpha/lalpha<toll) break;
   }
+  return COLVARS_OK;
 }
 
 void colvar::deer::write_params_rad(std::ostream &os){
