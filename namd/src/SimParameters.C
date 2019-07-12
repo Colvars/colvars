@@ -651,6 +651,23 @@ void SimParameters::config_parser_basic(ParseOptions &opts) {
 #endif
    opts.optional("main", "waterModel", "Water model to use", PARSE_STRING);
    opts.optionalB("main", "LJcorrection", "Apply analytical tail corrections for energy and virial", &LJcorrection, FALSE);
+#ifdef TIMER_COLLECTION
+   opts.optional("main", "TimerBinWidth",
+       "Bin width of timer histogram collection in microseconds",
+       &timerBinWidth, 1.0);
+#endif
+#if defined(NAMD_NVTX_ENABLED) || defined(NAMD_CMK_TRACE_ENABLED)
+   // default NVTX or Projections profiling is up to the first 1000 patches
+   opts.optional("main", "beginEventPatchID","Beginning patch ID for profiling",
+       &beginEventPatchID, 0);
+   opts.optional("main", "endEventPatchID", "Ending patch ID for profiling",
+       &endEventPatchID, 5000);
+   // default NVTX or Projections profiling is up to the first 1000 time steps
+   opts.optional("main", "beginEventStep", "Beginning time step for profiling",
+       &beginEventStep, 0);
+   opts.optional("main", "endEventStep", "Ending time step for profiling",
+       &endEventStep, 1000);
+#endif
 }
 
 void SimParameters::config_parser_fileio(ParseOptions &opts) {
@@ -4386,7 +4403,8 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
       }
     }
 #endif
-}
+} // check_config()
+
 
 void SimParameters::print_config(ParseOptions &opts, ConfigList *config, char *&cwd) {
 

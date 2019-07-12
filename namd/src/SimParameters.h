@@ -105,6 +105,17 @@ public:
 //  MAKE SURE THAT THIS CLASS CAN BE BIT COPIED OR YOU WILL HAVE TO
 //  ADD SPECIAL CODE TO send_SimParameters() and receive_SimParameters()
 
+#if defined(NAMD_NVTX_ENABLED) || defined(NAMD_CMK_TRACE_ENABLED)
+  int beginEventPatchID;
+  int endEventPatchID;
+  int beginEventStep;
+  int endEventStep;
+#endif
+
+#ifdef TIMER_COLLECTION
+  double timerBinWidth;  // default 1
+#endif
+
   Bool lonepairs;  // enable lone pairs
   int watmodel; // integer code for the water model in use
                 // choices are defined in common.h
