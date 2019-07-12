@@ -441,7 +441,14 @@ int colvar::init_custom_function(std::string const &conf)
 int colvar::init_grid_parameters(std::string const &conf)
 {
   colvarmodule *cv = cvm::main();
-  get_keyval(conf, "width", width, 1.0); 
+  if (!get_keyval(conf, "width", width, 1.0) {
+    if (is_enabled(f_cv_single_component)) {
+      width = cvcs[0]->assign_default();
+    } 
+  }
+  if (is_enabled(f_cv_single_component)) {
+    width = cvcs[0]->scale_width(width);
+  } 
   if (width <= 0.0) {
     cvm::error("Error: \"width\" must be positive.\n", INPUT_ERROR);
     return INPUT_ERROR;

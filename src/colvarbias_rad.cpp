@@ -16,7 +16,6 @@ colvarbias_rad::colvarbias_rad(char const *key)
 
   colvar_aver_deviation = 0.0;
   colvar_cum_error = 0.0;
-  colvar_cum_uscale = 0.0;
 
   colvar_rad_steps = 0; // XXX to be deleted
 
@@ -46,12 +45,11 @@ int colvarbias_rad::init(std::string const &conf)
 
   get_keyval(conf, "colvarWidths", colvar_widths_c, colvar_widths_c);
 
-  colvar_cum_uscale = 0.0;
   for (i = 0; i < num_variables(); i++) {
-     colvar_cum_uscale=colvar_cum_uscale+colvar_widths_c[i]*colvar_widths_c[i];
+     colvar_widths_c[i] = colvar_widths_c[i]*colvar_widths_c[i];
+     // scale according to parameters if defined
+     colvar_widths_c[i] = variables(i)->scale_width(colvar_widths_c[i]);
   }
-  colvar_cum_uscale = colvar_cum_uscale/double(num_variables());
-  colvar_cum_uscale = 1.0/colvar_cum_uscale;
 
   get_keyval_feature(this, conf, "optParams",
                      f_cvb_opt_cv_params, is_enabled(f_cvb_opt_cv_params));
@@ -287,9 +285,7 @@ int colvarbias_rad::update()
   colvar_rad_steps = colvar_rad_steps+1; // XXX to be deleted
 
   for (i = 0; i < num_variables(); i++) {
-    cvm::real square_width = colvar_widths_c[i]*colvar_widths_c[i];
-    square_width = variables(i)->scale_width(square_width);
-    cvm::real const unit_scale = 1.0/(scaled_width);
+    cvm::real const unit_scale = 1.0/colvar_widths_c[i];
     error_fact = colvar_centers_errors[i]*colvar_centers_errors[i]/colvar_errors_scale;
     colvarvalue const deviation =
       0.5 * variables(i)->dist2_lgrad(variables(i)->value(), colvar_centers[i]);

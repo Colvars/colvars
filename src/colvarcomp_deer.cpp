@@ -766,7 +766,7 @@ int colvar::deer::update_params_rad(colvarvalue const &lambdavector, colvarvalue
   }
   lambda2mod=lambda2mod/varsize;
 
-  cvm::real deltainv=width*lambda2mod; // scale factor so that coupling_time~one
+  cvm::real deltainv=std::sqrt(width)*lambda2mod; // scale factor so that coupling_time~one
   if(deltainv==0) deltainv=1.0;
 
   coef_mdepth=std::sqrt(coef_mdepth*coef_mdepth);
