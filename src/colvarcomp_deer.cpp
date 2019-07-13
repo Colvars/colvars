@@ -613,6 +613,9 @@ int colvar::deer::init(std::string const &conf)
   get_keyval(conf, "sampleDimensionality", sample_dimensionality, sample_dimensionality);
   get_keyval(conf, "useDeerKernelWidth", use_kdeer_width, false);
 
+  mdepth_unopt=mdepth; // save unoptimized parameters
+  alpha_unopt=alpha; // save unoptimized parameters
+
   if (is_enabled(f_cvc_gradient)) {
     deriv_signal.resize(timesdeer.size());
     deer_signal_force.type(colvarvalue::type_vector);
@@ -675,6 +678,57 @@ void colvar::deer::apply_force(colvarvalue const &force)
   deer_kernel::apply_force(force);
 }
 
+cvm::real colvar::deer_kernel::default_width() const
+{
+  return 0.1;
+}
+
+cvm::real colvar::deer::default_width() const
+{
+  use_kdeer_width=true;
+  return 0.1;
+}
+
+cvm::real colvar::deer::scale_width(cvm::real const &refwidth) const
+{
+  if (!use_kdeer_width) {
+    return refwidth;
+  } else {
+    cvm::real result = refwidth;
+    size_t const varsize = timesdeer.size();
+    cvm::real scalevalue = 0.0;
+    for (int it = 0; it < varsize; it++){
+      cvm::real const t = timesdeer[it];
+      cvm::real const exp_background = (sample_dimensionality == 3) ?
+        std::exp(-1.0 * alpha_unopt*std::fabs(t)) :
+        std::exp(-1.0 * std::pow(alpha_unopt*std::fabs(t),
+                                 static_cast<cvm::real>(sample_dimensionality)/3.0));
+       scalevalue += (exp_background*exp_background*mdepth_unopt*mdepth_unopt);
+    }
+    scalevalue = std::sqrt(scalevalue/varsize);
+    result = refwidth * scalevalue;
+    return result;   
+  }
+}
+
+cvm::real colvar::deer::rescale_width(cvm::real const &inputvalue) const
+{
+  cvm::real result = inputvalue;
+  size_t const varsize = timesdeer.size();
+  cvm::real scalevalue = 0.0;
+  for (int it = 0; it < varsize; it++){
+    cvm::real const t = timesdeer[it];
+    cvm::real const exp_background = (sample_dimensionality == 3) ?
+      std::exp(-1.0 * alpha_unopt*std::fabs(t)) :
+      std::exp(-1.0 * std::pow(alpha_unopt*std::fabs(t),
+                               static_cast<cvm::real>(sample_dimensionality)/3.0));
+     scalevalue += (exp_background*exp_background*mdepth_unopt*mdepth_unopt);
+  }
+  scalevalue = std::sqrt(scalevalue/varsize);
+  result = inputvalue/scalevalue;
+  return result;
+}
+
 colvarvalue colvar::deer::rad_paramscale(colvarvalue const &inputvector) const
 {
   size_t const varsize = inputvector.vector1d_value.size();
@@ -687,24 +741,6 @@ colvarvalue colvar::deer::rad_paramscale(colvarvalue const &inputvector) const
                                static_cast<cvm::real>(sample_dimensionality)/3.0));
     result[it]=inputvector.vector1d_value[it]/(exp_background*mdepth);
   }
-  return result;
-}
-
-cvm::real colvar::deer::scale_width(cvm::real const &inputvalue) const
-{
-  cvm::real result = inputvalue;
-  size_t const varsize = timesdeer.size();
-  cvm::real scalevalue = 0.0;
-  for (int it = 0; it < varsize; it++){
-    cvm::real const t = timesdeer[it];
-    cvm::real const exp_background = (sample_dimensionality == 3) ?
-      std::exp(-1.0 * alpha*std::fabs(t)) :
-      std::exp(-1.0 * std::pow(alpha*std::fabs(t),
-                               static_cast<cvm::real>(sample_dimensionality)/3.0));
-     scalevalue += 1.0/(exp_background*exp_background*mdepth*mdepth); 
-  }
-  scalevalue = scalevalue/varsize;
-  result = inputvalue * scalevalue;
   return result;
 }
 
@@ -731,7 +767,6 @@ void colvar::deer_kernel::get_exp_val(colvarvalue &vectorexpval) const
   }
   return;
 }
-
 
 int colvar::deer::update_params_rad(colvarvalue const &lambdavector, colvarvalue const &centersvector,
                                      cvm::real const &coupling_time, cvm::real const &wt, cvm::real const &us,

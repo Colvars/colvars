@@ -245,6 +245,15 @@ public:
   /// \brief update the value of the experimental parameters for a CV after optimization
   virtual void set_params(vector1d<cvm::real> const &vectorparams) const;
 
+  ///\brief set the default parameters of aCV
+  virtual cvm::real default_width() const;
+
+  ///\brief scale the width according to parameters if required 
+  virtual cvm::real scale_width(cvm::real const &refwidth) const;
+
+  ///\brief revert parameters scaling if required
+  virtual cvm::real rescale_width(cvm::real const &inputvalue) const;
+
   /// \brief get experimental values for a CV
   virtual void get_exp_val(colvarvalue &vectorexpval) const;
 

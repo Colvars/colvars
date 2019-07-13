@@ -400,6 +400,20 @@ void colvar::cvc::set_params(vector1d<cvm::real> const &vectorparams) const
   return;
 }
 
+cvm::real colvar::cvc::default_width()
+{
+  return 1.0;
+}
+
+cvm::real colvar::cvc::scale_width(cvm::real const &refwidth) const
+{
+  return refwidth;
+}
+
+cvm::real colvar::cvc::rescale_width(cvm::real const &inputvalue) const
+{
+  return inputvalue;
+}
 
 void colvar::cvc::get_exp_val(colvarvalue &vectorexpval) const
 {

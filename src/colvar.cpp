@@ -441,11 +441,7 @@ int colvar::init_custom_function(std::string const &conf)
 int colvar::init_grid_parameters(std::string const &conf)
 {
   colvarmodule *cv = cvm::main();
-  if (!get_keyval(conf, "width", width, 1.0) {
-    if (is_enabled(f_cv_single_component)) {
-      width = cvcs[0]->assign_default();
-    } 
-  }
+  get_keyval(conf, "width", width, is_enabled(f_cv_single_component) ? cvcs[0]->default_width() : 1.0); 
   if (is_enabled(f_cv_single_component)) {
     width = cvcs[0]->scale_width(width);
   } 

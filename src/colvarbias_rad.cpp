@@ -46,9 +46,9 @@ int colvarbias_rad::init(std::string const &conf)
   get_keyval(conf, "colvarWidths", colvar_widths_c, colvar_widths_c);
 
   for (i = 0; i < num_variables(); i++) {
+     // revert width parameters scaling if required
+     colvar_widths_c[i] = variables(i)->rescale_width(colvar_widths_c[i]);
      colvar_widths_c[i] = colvar_widths_c[i]*colvar_widths_c[i];
-     // scale according to parameters if defined
-     colvar_widths_c[i] = variables(i)->scale_width(colvar_widths_c[i]);
   }
 
   get_keyval_feature(this, conf, "optParams",

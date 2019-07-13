@@ -79,6 +79,8 @@ public:
                                   colvarvalue const &x2) const;
   virtual colvarvalue dist2_rgrad(colvarvalue const &x1,
                                   colvarvalue const &x2) const;
+  /// set the default width of the deer observable
+  cvm::real default_width() const;
 };
 
 
@@ -105,6 +107,12 @@ protected;
 
   /// DEER time-signal background term (\Lambda_2)
   cvm::real alpha;
+
+  /// unoptimized value of the parameters 
+
+  cvm::real mdepth_unopt;
+
+  cvm::real alpha_unopt;
 
   /// The dimensionality of the sample for background calculation (default: 3)
   size_t sample_dimensionality;
@@ -146,6 +154,15 @@ public:
   virtual int update_params_rad_chis(colvarvalue const &aver_dev,
                                      colvarvalue const &exp_centers,
                                      size_t nsteps, cvm::real toll);
+  /// set the default width of the deer observable
+  cvm::real default_width() const;
+
+  /// scale the width according to parameters if required
+  cvm::real scale_width(cvm::real const &refwidth) const;  
+
+  /// revert parameters scaling if required
+  cvm::real rescale_width(cvm::real const &inputvalue) const;
+
 };
 
 
