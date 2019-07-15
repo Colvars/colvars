@@ -18,6 +18,12 @@ while [ $# -ge 1 ]; do
     BINARY=$1
   elif [ "x$1" = 'x-g' ]; then
     gen_ref_output='yes'
+  elif [ "x$1" = 'x-h' ]; then
+    echo "Usage: ./run_tests.sh [-h] [-g] [path_to_namd2] [testdir1 [testdir2 ...]]"  >& 2
+    echo "    The -g option (re)generates reference outputs in the given directories" >& 2
+    echo "    If no executable is given, \"namd2\" is used" >& 2
+    echo "    If no directories are given, all matches of [0-9][0-9][0-9]_* are used" >& 2
+    exit 0
   else
     DIRLIST=`echo ${DIRLIST} $1`
   fi
