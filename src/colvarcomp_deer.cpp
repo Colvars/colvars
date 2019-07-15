@@ -768,6 +768,56 @@ void colvar::deer_kernel::get_exp_val(colvarvalue &vectorexpval) const
   return;
 }
 
+int colvar::deer::calc_params_deriv(colvarvalue const &lambdavector, colvarvalue const &centersvector,
+                                     cvm::real const &coupling_time, cvm::real const &wt, cvm::real const &us,
+                                     cvm::real const &width)
+{
+  size_t const varsize = centersvector.vector1d_value.size();
+  cvm::real lambda2mod=0.0;
+  cvm::real coef_mdepth=0.0;
+  cvm::real grad_mdepth=0.0;
+  cvm::real coef_alpha=0.0;
+  cvm::real grad_alpha=0.0;
+  for (size_t t=0;t<varsize;t++) {
+     cvm::real const time = timesdeer[t];
+     cvm::real const exp_background = (sample_dimensionality == 3) ?
+       std::exp(-1.0 * alpha*std::fabs(time)) :
+       std::exp(-1.0 * std::pow(alpha*std::fabs(time),
+                                static_cast<cvm::real>(sample_dimensionality)/3.0));
+     cvm::real const k_centers = 1.0+((centersvector.vector1d_value[t]-exp_background)/(exp_background*mdepth));
+     cvm::real const lambda2=lambdavector.vector1d_value[t];
+     lambda2mod+=std::fabs(exp_background*mdepth*lambda2);
+     cvm::real const der_mdepth=(1.0-k_centers);
+     coef_param[0]=coef_param[0]+(der_mdepth*der_mdepth);
+     //grad_mdepth=grad_mdepth+lambda2*der_mdepth;
+     deriv_param[t,0]=-exp_background*der_mdepth;
+     cvm::real const alphaf = (sample_dimensionality == 3) ?
+       std::fabs(time):
+       (static_cast<cvm::real>(sample_dimensionality)/3.0)*(std::pow(std::fabs(time),
+       static_cast<cvm::real>(sample_dimensionality)/3.0))*(std::pow(alpha,(static_cast<cvm::real>(sample_dimensionality)-3.0)/3.0));
+     cvm::real const der_alpha = ((1-mdepth_deer[ii])+mdepth_deer[ii]*k_centers)*alphaf
+     coef_param[1]=coef_param[1]+(der_alpha*der_alpha);
+     //grad_alpha=grad_alpha+lambda2*der_alpha;
+     deriv_param[t,1]=-exp_background*der_alpha;
+  }
+  lambda2mod=lambda2mod/varsize;
+
+  cvm::real deltainv=std::sqrt(width)*lambda2mod; // scale factor so that coupling_time~one
+  if(deltainv==0) deltainv=1.0;
+
+  coef_param[0]=(mdepth*mdepth)/std::sqrt(coef_mdepth*coef_mdepth);
+  coef_param[1]=(mdepth*mdepth)/std::sqrt(coef_alpha*coef_alpha);
+
+
+
+  //mdepth=mdepth+coupling_time * coef_param[0] * grad_mdepth * wt  * cvm::dt()/(deltainv*us);
+  //alpha=alpha+coupling_time * coef_param[1] * grad_alpha  * wt  * cvm::dt() /(deltainv*us);
+
+  return COLVARS_OK;
+
+}
+
+
 int colvar::deer::update_params_rad(colvarvalue const &lambdavector, colvarvalue const &centersvector,
                                      cvm::real const &coupling_time, cvm::real const &wt, cvm::real const &us,
                                      cvm::real const &width)

@@ -291,7 +291,8 @@ int colvarbias_rad::update()
       0.5 * variables(i)->dist2_lgrad(variables(i)->value(), colvar_centers[i]);
 
     colvar_total_deviations[i] += weight * variables(i)->paramscale(deviation) * cvm::dt();
-    colvar_forces[i] = -1.0 * kBT * unit_scale * variables(i)->paramscale(colvar_total_deviations[i]);
+    // scaling removed to calculate the actual force on the CV 
+    colvar_forces[i] = -1.0 * kBT * variables(i)->paramscale(unit_scale * colvar_total_deviations[i]);
     bias_energy += -colvar_forces[i]*deviation;
 
     colvarvalue const error_drift = -(colvar_forces[i]/kBT)*error_fact;

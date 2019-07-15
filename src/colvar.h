@@ -81,6 +81,15 @@ public:
   /// variable.
   cvm::real width;
 
+  /// \brief Parameters included in the definition of the CV (that can be optimized)
+  cvm::vector1d<cvm::real> cv_exp_parameter; 
+
+  /// \brief Derivative of the cv with respect to the experimental parameters
+  std::vector<colvarvalue> der_cv_exp_parameter;
+
+  /// \brief Scaling coefficient related to cv second derivatives with respect to the parameters  
+  cvm::vector1d<cvm::real> coef_exp_parameter;
+
   /// \brief Implementation of the feature list for colvar
   static std::vector<feature *> cv_features;
 
