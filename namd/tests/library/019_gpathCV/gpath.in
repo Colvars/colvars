@@ -1,0 +1,136 @@
+colvarsTrajFrequency 1
+# colvarsRestartFrequency 500000
+
+colvar {
+    name gpath_s_dihed
+
+#     lowerBoundary         0.025
+#     upperBoundary         0.985
+#     width                 0.005
+#     subtractAppliedForce on
+# 
+#     extendedLagrangian    on
+#     extendedFluctuation   0.005
+#     extendedLangevinDamping 5.0
+
+    gspathCV {
+        dihedral {
+            name 001
+            group1 {atomNumbers {5}}
+            group2 {atomNumbers {7}}
+            group3 {atomNumbers {9}}
+            group4 {atomNumbers {15}}
+        } 
+        dihedral {
+            name 002
+            group1 {atomNumbers {15}}
+            group2 {atomNumbers {17}}
+            group3 {atomNumbers {19}}
+            group4 {atomNumbers {25}}
+        }
+        dihedral {
+            name 003
+            group1 {atomNumbers {25}}
+            group2 {atomNumbers {27}}
+            group3 {atomNumbers {29}}
+            group4 {atomNumbers {35}}
+        }
+        pathFile ./path.txt
+    }
+}
+
+colvar {
+    name gpath_z_dihed
+#    width 0.1
+#    lowerboundary 0.0
+#    upperboundary 2.0
+#    extendedLagrangian    on
+#    extendedFluctuation   0.4
+#    extendedLangevinDamping 5.0
+#    extendedTimeConstant 500
+#    outputAppliedForce on
+#    outputTotalForce on
+#    subtractAppliedForce on
+
+    gzpathCV {
+        useZsquare on
+	debugGradients off
+        dihedral {
+            name 001
+	    scalable off
+            group1 {atomNumbers {5}}
+            group2 {atomNumbers {7}}
+            group3 {atomNumbers {9}}
+            group4 {atomNumbers {15}}
+        } 
+        dihedral {
+            name 002
+	    scalable off
+            group1 {atomNumbers {15}}
+            group2 {atomNumbers {17}}
+            group3 {atomNumbers {19}}
+            group4 {atomNumbers {25}}
+        }
+        dihedral {
+            name 003
+	    scalable off
+            group1 {atomNumbers {25}}
+            group2 {atomNumbers {27}}
+            group3 {atomNumbers {29}}
+            group4 {atomNumbers {35}}
+        }
+        pathFile ./path.txt
+    }
+}
+# 
+# colvar {
+#     name phi1
+#     dihedral {
+#         group1 {atomNumbers {5}}
+#         group2 {atomNumbers {7}}
+#         group3 {atomNumbers {9}}
+#         group4 {atomNumbers {15}}
+#     }
+# }
+# 
+# colvar {
+#     name phi2
+#     dihedral {
+#         group1 {atomNumbers {15}}
+#         group2 {atomNumbers {17}}
+#         group3 {atomNumbers {19}}
+#         group4 {atomNumbers {25}}
+#     }
+# }
+# 
+# colvar {
+#     name phi3
+#     dihedral {
+#         group1 {atomNumbers {25}}
+#         group2 {atomNumbers {27}}
+#         group3 {atomNumbers {29}}
+#         group4 {atomNumbers {35}}
+#     }
+# }
+# 
+# harmonicWalls {
+#     colvars             gpath_z_dihed
+#     lowerWalls          0.0
+#     upperWalls          25.0
+#     forceConstant       0.025
+#     outputenergy        on
+# }
+# 
+# harmonicWalls {
+#     colvars            gpath_s_dihed
+#     lowerWalls         0.025
+#     upperWalls         0.985
+#     forceConstant      20.0
+# }
+# 
+# abf {
+#     colvars gpath_s_dihed 
+#     fullSamples 1000
+#     writeCZARwindowFile yes
+#     integrate on
+# }
