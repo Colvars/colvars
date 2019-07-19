@@ -2855,6 +2855,7 @@ obj/ComputeNonbondedFEP.o: \
 	src/ReserveArray.h \
 	src/PressureProfile.h \
 	src/Random.h \
+	src/ComputeNonbondedAlch.h \
 	src/ComputeNonbondedBase.h \
 	src/Parameters.h \
 	src/PatchMap.h \
@@ -2947,6 +2948,7 @@ obj/ComputeNonbondedTI.o: \
 	src/ReserveArray.h \
 	src/PressureProfile.h \
 	src/Random.h \
+	src/ComputeNonbondedAlch.h \
 	src/ComputeNonbondedBase.h \
 	src/Parameters.h \
 	src/PatchMap.h \
@@ -5038,6 +5040,8 @@ obj/HomePatch.o: \
 	src/ComputeHomePatches.h \
 	src/Compute.h \
 	inc/ComputeQMMgr.decl.h \
+	src/NamdEventsProfiling.h \
+	src/NamdEventsProfiling.def \
 	src/Debug.h \
 	src/ComputeNonbondedMICKernel.h
 	$(CXX) $(CXXFLAGS) $(COPTO)obj/HomePatch.o $(COPTC) src/HomePatch.C
@@ -6800,6 +6804,8 @@ obj/Sequencer.o: \
 	src/ComputeGlobal.h \
 	src/ComputeHomePatches.h \
 	src/Compute.h \
+	src/NamdEventsProfiling.h \
+	src/NamdEventsProfiling.def \
 	src/Debug.h
 	$(CXX) $(CXXTHREADFLAGS) $(COPTO)obj/Sequencer.o $(COPTC) src/Sequencer.C
 obj/Set.o: \
@@ -7751,6 +7757,10 @@ obj/colvarcomp_rotations.o: \
 	colvars/src/colvaratoms.h \
 	colvars/src/colvarproxy.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_rotations.o $(COPTC) colvars/src/colvarcomp_rotations.cpp
+obj/colvarcomp_gpath.o: \
+	obj/.exists \
+	colvars/src/colvarcomp_gpath.cpp
+	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_gpath.o $(COPTC) colvars/src/colvarcomp_gpath.cpp
 obj/colvardeps.o: \
 	obj/.exists \
 	colvars/src/colvardeps.cpp \
