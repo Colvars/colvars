@@ -20,17 +20,10 @@ colvar::colvar()
   // Initialize static array once and for all
   runave_os = NULL;
   init_cv_requires();
+
+  width = 0.0;
 }
 
-
-namespace {
-  /// Compare two cvcs using their names
-  /// Used to sort CVC array in scripted coordinates
-  bool compare(colvar::cvc *i, colvar::cvc *j)
-  {
-    return i->name < j->name;
-  }
-}
 
 int colvar::init(std::string const &conf)
 {
@@ -441,10 +434,10 @@ int colvar::init_custom_function(std::string const &conf)
 int colvar::init_grid_parameters(std::string const &conf)
 {
   colvarmodule *cv = cvm::main();
-  get_keyval(conf, "width", width, is_enabled(f_cv_single_component) ? cvcs[0]->default_width() : 1.0); 
+  get_keyval(conf, "width", width, is_enabled(f_cv_single_component) ? cvcs[0]->default_width() : width);
   if (is_enabled(f_cv_single_component)) {
     width = cvcs[0]->scale_width(width);
-  } 
+  }
   if (width <= 0.0) {
     cvm::error("Error: \"width\" must be positive.\n", INPUT_ERROR);
     return INPUT_ERROR;
@@ -2011,7 +2004,7 @@ std::ostream & colvar::write_restart(std::ostream &os) {
     os << "  params "
     << std::setprecision(cvm::cv_prec)
     << std::setw(cvm::cv_width)
-    << val_params << "\n";    
+    << val_params << "\n";
   }
 
   os << "}\n\n";

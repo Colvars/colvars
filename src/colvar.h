@@ -82,12 +82,12 @@ public:
   cvm::real width;
 
   /// \brief Parameters included in the definition of the CV (that can be optimized)
-  cvm::vector1d<cvm::real> cv_exp_parameter; 
+  cvm::vector1d<cvm::real> cv_exp_parameter;
 
   /// \brief Derivative of the cv with respect to the experimental parameters
   std::vector<colvarvalue> der_cv_exp_parameter;
 
-  /// \brief Scaling coefficient related to cv second derivatives with respect to the parameters  
+  /// \brief Scaling coefficient related to cv second derivatives with respect to the parameters
   cvm::vector1d<cvm::real> coef_exp_parameter;
 
   /// \brief Implementation of the feature list for colvar
@@ -641,31 +641,32 @@ public:
   /// with appropriate components, rotations etc.
   /// For scalar variables only!
   std::vector<cvm::rvector> atomic_gradients;
-
-  inline size_t n_components() const {
-    return cvcs.size();
-  }
 };
+
 
 inline cvm::real const & colvar::force_constant() const
 {
   return ext_force_k;
 }
 
+
 inline colvarvalue const & colvar::value() const
 {
   return x_reported;
 }
+
 
 inline colvarvalue const & colvar::actual_value() const
 {
   return x;
 }
 
+
 inline colvarvalue const & colvar::run_ave() const
 {
   return runave;
 }
+
 
 inline colvarvalue const & colvar::velocity() const
 {
