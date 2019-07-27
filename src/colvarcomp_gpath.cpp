@@ -106,10 +106,6 @@ colvar::CartesianBasedPath::CartesianBasedPath(std::string const &conf): cvc(con
 }
 
 colvar::CartesianBasedPath::~CartesianBasedPath() {
-    if (atoms != nullptr) {
-        delete atoms;
-        atoms = nullptr;
-    }
     for (auto it_comp_atoms = comp_atoms.begin(); it_comp_atoms != comp_atoms.end(); ++it_comp_atoms) {
         if (*it_comp_atoms != nullptr) {
             delete (*it_comp_atoms);
