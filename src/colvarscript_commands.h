@@ -97,8 +97,16 @@ CVSCRIPT(cv_help,
          }
          )
 
+CVSCRIPT(cv_version,
+         "Get the Colvars Module version number",
+         0, 0,
+         {},
+         script->set_result_str(COLVARS_VERSION);
+         return COLVARS_OK;
+         )
+
 CVSCRIPT(cv_listcommands,
-         "Return a list of command names, each prefixed by \"cv_\"",
+         "Return a list of command names",
          0, 0,
          {},
          int const n_commands = cvscript_n_commands();
@@ -126,31 +134,24 @@ CVSCRIPT(cv_config,
          return COLVARSCRIPT_ERROR;
          )
 
+CVSCRIPT(cv_configfile,
+         "Read configuration from a file",
+         1, 1,
+         {"conf_file (str) - Path to configuration file"},
+         if (script->colvars->read_config_file(script->obj_to_str(objv[2])) == COLVARS_OK) {
+           return COLVARS_OK;
+         } else {
+           script->set_error_msg("Error parsing configuration file");
+           return COLVARSCRIPT_ERROR;
+         }
+         )
+
 CVSCRIPT(cv_getconfig,
          "Get the module's configuration string read so far",
          0, 0,
          { },
          script->set_result_str(cvm::main()->get_config());
          return COLVARS_OK;
-         )
-
-CVSCRIPT(cv_resetindexgroups,
-         "Clear the index groups loaded so far, allowing to replace them",
-         0, 0,
-         { },
-         cvm::main()->index_group_names.clear();
-         cvm::main()->index_groups.clear();
-         return COLVARS_OK;
-         )
-
-CVSCRIPT(cv_addenergy,
-         "Add an energy to the MD engine",
-         1, 1,
-         { "E : float - Amount of energy to add" },
-         char const *Earg =
-           script->obj_to_str(script->get_cmd_arg<>(0, objc, objv));
-         cvm::main()->total_bias_energy += strtod(Earg, NULL);
-         return COLVARSCRIPT_ERROR; // TODO Make this multi-language
          )
 
 CVSCRIPT(cv_units,
@@ -163,6 +164,180 @@ CVSCRIPT(cv_units,
            return cvm::proxy->set_unit_system(argstr, false);
          } else {
            script->set_result_str(cvm::proxy->units);
+           return COLVARS_OK;
+         }
+         )
+
+CVSCRIPT(cv_reset,
+         "Delete all internal configuration",
+         0, 0,
+         {},
+         return script->colvars->reset();
+         )
+
+CVSCRIPT(cv_delete,
+         "Delete this Colvars module instance",
+         0, 0,
+         {},
+         return script->proxy->request_deletion();
+         )
+
+CVSCRIPT(cv_resetindexgroups,
+         "Clear the index groups loaded so far, allowing to replace them",
+         0, 0,
+         { },
+         cvm::main()->index_group_names.clear();
+         cvm::main()->index_groups.clear();
+         return COLVARS_OK;
+         )
+
+CVSCRIPT(cv_list,
+         "Return a list of all variables",
+         // For backward compatibility, accept argument "biases"
+         0, 1,
+         {},
+         std::string res;
+         if (objc == 2) {
+           for (std::vector<colvar *>::iterator cvi = script->colvars->colvars.begin();
+                cvi != script->colvars->colvars.end();
+                ++cvi) {
+             res += (cvi == script->colvars->colvars.begin() ? "" : " ") + (*cvi)->name;
+           }
+           script->set_result_str(res);
+           return COLVARS_OK;
+         } else if (!strcmp(script->obj_to_str(objv[2]), "biases")) {
+           for (std::vector<colvarbias *>::iterator bi = script->colvars->biases.begin();
+                bi != script->colvars->biases.end();
+                ++bi) {
+             res += (bi == script->colvars->biases.begin() ? "" : " ") + (*bi)->name;
+           }
+           script->set_result_str(res);
+           return COLVARS_OK;
+         } else {
+           script->set_error_msg("Wrong arguments to command \"list\"\n" + script->help_string());
+           return COLVARSCRIPT_ERROR;
+         }
+         )
+
+CVSCRIPT(cv_list_biases,
+         "Return a list of all biases",
+         0, 0,
+         {},
+         std::string res;
+         for (std::vector<colvarbias *>::iterator bi = script->colvars->biases.begin();
+              bi != script->colvars->biases.end();
+              ++bi) {
+           res += (bi == script->colvars->biases.begin() ? "" : " ") + (*bi)->name;
+         }
+         script->set_result_str(res);
+         return COLVARS_OK;
+         )
+
+CVSCRIPT(cv_load,
+         "Load a state file (requires matching configuration)",
+         1, 1,
+         {"state_file (str) - Path to existing state file"},
+         script->proxy->input_prefix() = script->obj_to_str(objv[2]);
+         if (script->colvars->setup_input() == COLVARS_OK) {
+           return COLVARS_OK;
+         } else {
+           script->set_error_msg("Error loading state file");
+           return COLVARSCRIPT_ERROR;
+         }
+         )
+
+CVSCRIPT(cv_save,
+         "Save state to a file",
+         1, 1,
+         {"state_file (str) - Path to state file"},
+         script->proxy->output_prefix() = script->obj_to_str(objv[2]);
+         int error = 0;
+         error |= script->colvars->setup_output();
+         error |= script->colvars->write_restart_file(script->colvars->output_prefix()+
+                                                      ".colvars.state");
+         error |= script->colvars->write_output_files();
+         return error ? COLVARSCRIPT_ERROR : COLVARS_OK;
+         )
+
+CVSCRIPT(cv_update,
+         "Recalculate colvars and biases",
+         0, 0,
+         {},
+         int error_code = script->proxy->update_input();
+         if (error_code) {
+           script->set_error_msg("Error updating the Colvars module (input)");
+           return error_code;
+         }
+         error_code |= script->colvars->calc();
+         if (error_code) {
+           script->set_error_msg("Error updating the Colvars module (calc)");
+           return error_code;
+         }
+         error_code |= script->proxy->update_output();
+         if (error_code) {
+           script->set_error_msg("Error updating the Colvars module (output)");
+         }
+         return error_code;
+         )
+
+CVSCRIPT(cv_addenergy,
+         "Add an energy to the MD engine",
+         1, 1,
+         { "E : float - Amount of energy to add" },
+         char const *Earg =
+           script->obj_to_str(script->get_cmd_arg<>(0, objc, objv));
+         cvm::main()->total_bias_energy += strtod(Earg, NULL);
+         return COLVARSCRIPT_ERROR; // TODO Make this multi-language
+         )
+
+CVSCRIPT(cv_getenergy,
+         "Get the current Colvars energy",
+         1, 1,
+         { "E (float) - Store the energy in this variable" },
+         double *energy = reinterpret_cast<double *>(objv[2]);
+         *energy = cvm::main()->total_bias_energy;
+         return COLVARS_OK;
+         )
+
+CVSCRIPT(cv_printframelabels,
+         "Print the labels that would be written to colvars.traj",
+         0, 0,
+         { },
+         std::ostringstream os;
+         script->colvars->write_traj_label(os);
+         script->set_result_str(os.str());
+         return COLVARS_OK;
+         )
+
+CVSCRIPT(cv_printframe,
+         "Print the values that would be written to colvars.traj",
+         0, 0,
+         { },
+         std::ostringstream os;
+         script->colvars->write_traj(os);
+         script->set_result_str(os.str());
+         return COLVARS_OK;
+         )
+
+CVSCRIPT(cv_frame,
+         "Get or set current frame number",
+         0, 1,
+         { },
+         if (objc == 2) {
+           long int f;
+           int error = script->proxy->get_frame(f);
+           if (error == COLVARS_OK) {
+             script->set_result_str(cvm::to_str(f));
+             return COLVARS_OK;
+           } else {
+             script->set_error_msg("Frame number is not available");
+             return COLVARSCRIPT_ERROR;
+           }
+         } else if (objc == 3) {
+           // Failure of this function does not trigger an error, but
+           // returns nonzero, to let scripts detect available frames
+           int error = script->proxy->set_frame(strtol(script->obj_to_str(objv[2]), NULL, 10));
+           script->set_result_str(cvm::to_str(error == COLVARS_OK ? 0 : -1));
            return COLVARS_OK;
          }
          )
