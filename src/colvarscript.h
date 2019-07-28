@@ -65,6 +65,12 @@ public:
   /// Clear the string result
   int clear_str_result();
 
+  /// Set the error message of the script interface to the given string
+  inline void set_error_msg(std::string const &s)
+  {
+    result = s;
+  }
+
   /// Build and return a short help
   std::string help_string(void) const;
 
@@ -88,7 +94,7 @@ public:
   enum Object_type {
     use_module,
     use_colvar,
-    use_bias                 
+    use_bias
   };
 
   /// Get a pointer to the i-th argument of the command (NULL if not given)
@@ -97,11 +103,11 @@ public:
 
   /// Check the argument count of the command
   template<Object_type T = use_module>
-  int check_cmd_nargs(char const *cmd, int objc, 
+  int check_cmd_nargs(char const *cmd, int objc,
                       int n_args_min, int n_args_max);
 
   /// Number of positional arguments to shift for each object type
-  template<colvarscript::Object_type T> 
+  template<colvarscript::Object_type T>
   int cmd_arg_shift();
 
   /// Use scripting language to get the string representation of an object
@@ -109,7 +115,7 @@ public:
   {
     return cvm::proxy->script_obj_to_str(obj);
   }
-  
+
   /// Get names of all commands
   inline char const **get_command_names() const
   {
@@ -208,7 +214,7 @@ inline static colvarbias *colvarbias_obj(void *pobj)
 
 
 
-template<colvarscript::Object_type T> 
+template<colvarscript::Object_type T>
 int colvarscript::cmd_arg_shift()
 {
   int shift = 0;
@@ -227,7 +233,7 @@ int colvarscript::cmd_arg_shift()
 
 template<colvarscript::Object_type T>
 unsigned char *colvarscript::get_cmd_arg(int iarg,
-                                         int objc, 
+                                         int objc,
                                          unsigned char *const objv[])
 {
   int const shift = cmd_arg_shift<T>();
