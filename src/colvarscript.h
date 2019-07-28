@@ -29,6 +29,10 @@ class colvarscript  {
 
 private:
 
+// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+// temporary until relevant functions become colvarscript methods
+public:
+
   colvarproxy *proxy;
   colvarmodule *colvars;
 
@@ -58,6 +62,12 @@ public:
     result = s;
   }
 
+  /// Set the error message of the script interface to the given string
+  inline void set_error_msg(std::string const &s)
+  {
+    result = s;
+  }
+
   /// Build and return a short help
   std::string help_string(void) const;
 
@@ -71,8 +81,8 @@ public:
     cv_help,
     cv_version,
     cv_config,
-    cv_getconfig,
     cv_configfile,
+    cv_getconfig,
     cv_reset,
     cv_resetindexgroups,
     cv_delete,
@@ -88,6 +98,9 @@ public:
     cv_frame,
     cv_units,
     cv_colvar,
+    // Should the following subcommands be listed in the enum if they are handled by the cv_colvar function?
+    // do we want a mechanism to keep help strings for subcommands, or one big help string for the
+    // top-level commands colvar and bias?
     cv_colvar_value,
     cv_colvar_update,
     cv_colvar_type,
@@ -100,6 +113,7 @@ public:
     cv_colvar_get,
     cv_colvar_set,
     cv_bias,
+    // Should the following subcommands be listed in the enum if they are handled by the cv_bias function?
     cv_bias_energy,
     cv_bias_update,
     cv_bias_delete,
@@ -130,6 +144,9 @@ public:
   }
 
 private:
+// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+// temporary until relevant functions become colvarscript methods
+public:
 
   /// Run subcommands on colvar
   int proc_colvar(colvar *cv, int argc, unsigned char *const argv[]);
@@ -199,12 +216,12 @@ inline static colvarbias *colvarbias_obj(void *pobj)
     colvarscript *script = colvarscript_obj();                          \
     script->clear_results();                                            \
     if (objc < 2+N_ARGS_MIN) /* "cv" and "COMM" are 1st and 2nd */ {    \
-      script->set_str_result("Missing arguments\n" +                    \
+      script->set_error_msg("Missing arguments\n" +                    \
                              script->command_help(colvarscript::COMM)); \
       return COLVARSCRIPT_ERROR;                                        \
     }                                                                   \
     if (objc > 2+N_ARGS_MAX) {                                          \
-      script->set_str_result("Too many arguments\n" +                   \
+      script->set_error_msg("Too many arguments\n" +                   \
                              script->command_help(colvarscript::COMM)); \
       return COLVARSCRIPT_ERROR;                                        \
     }                                                                   \
@@ -246,6 +263,14 @@ extern "C" {
            return COLVARS_OK;
            )
 
+  CVSCRIPT(cv_version,
+           "Get the Colvars Module version number",
+           0, 0,
+           {},
+           script->set_str_result(COLVARS_VERSION);
+           return COLVARS_OK;
+           )
+
   CVSCRIPT(cv_config,
            "Read configuration from the given string",
            1, 1,
@@ -254,8 +279,20 @@ extern "C" {
            if (cvm::main()->read_config_string(conf) == COLVARS_OK) {
              return COLVARS_OK;
            }
-           script->set_str_result("Error parsing configuration string");
+           script->set_error_msg("Error parsing configuration string");
            return COLVARSCRIPT_ERROR;
+           )
+
+  CVSCRIPT(cv_configfile,
+           "Read configuration from a file",
+           1, 1,
+           {"conf_file (str) - Path to configuration file"},
+            if (script->colvars->read_config_file(script->obj_to_str(objv[2])) == COLVARS_OK) {
+              return COLVARS_OK;
+            } else {
+              script->set_error_msg("Error parsing configuration file");
+              return COLVARSCRIPT_ERROR;
+            }
            )
 
   CVSCRIPT(cv_getconfig,
@@ -266,11 +303,115 @@ extern "C" {
            return COLVARS_OK;
            )
 
+  CVSCRIPT(cv_reset,
+           "Delete all internal configuration",
+           0, 0,
+           {},
+           script->colvars->reset();
+           return COLVARS_OK;
+           )
+
   CVSCRIPT(cv_resetindexgroups,
            "Clear the index groups loaded so far, allowing to replace them",
            0, 0,
            { },
            return cvm::main()->reset_index_groups();
+           )
+
+  CVSCRIPT(cv_delete,
+           "Delete this Colvars module instance",
+           0, 0,
+           {},
+            return script->proxy->request_deletion();
+           )
+
+  CVSCRIPT(cv_list,
+           "Return a list of all variables",
+           // For backward compatibility, accept argument "biases"
+           0, 1,
+           {},
+            std::string res;
+            if (objc == 2) {
+              for (std::vector<colvar *>::iterator cvi = script->colvars->colvars.begin();
+                  cvi != script->colvars->colvars.end();
+                  ++cvi) {
+                res += (cvi == script->colvars->colvars.begin() ? "" : " ") + (*cvi)->name;
+              }
+              script->set_str_result(res);
+              return COLVARS_OK;
+            } else if (!strcmp(script->obj_to_str(objv[2]), "biases")) {
+              for (std::vector<colvarbias *>::iterator bi = script->colvars->biases.begin();
+                  bi != script->colvars->biases.end();
+                  ++bi) {
+                res += (bi == script->colvars->biases.begin() ? "" : " ") + (*bi)->name;
+              }
+              script->set_str_result(res);
+              return COLVARS_OK;
+            } else {
+              script->set_error_msg("Wrong arguments to command \"list\"\n" + script->help_string());
+              return COLVARSCRIPT_ERROR;
+            }
+           )
+
+  CVSCRIPT(cv_list_biases,
+           "Return a list of all biases",
+           0, 0,
+           {},
+            std::string res;
+            for (std::vector<colvarbias *>::iterator bi = script->colvars->biases.begin();
+                bi != script->colvars->biases.end();
+                ++bi) {
+              res += (bi == script->colvars->biases.begin() ? "" : " ") + (*bi)->name;
+            }
+            script->set_str_result(res);
+            return COLVARS_OK;
+           )
+
+  CVSCRIPT(cv_load,
+           "Load a state file (requires matching configuration)",
+           1, 1,
+           {"state_file (str) - Path to existing state file"},
+            script->proxy->input_prefix() = script->obj_to_str(objv[2]);
+            if (script->colvars->setup_input() == COLVARS_OK) {
+              return COLVARS_OK;
+            } else {
+              script->set_error_msg("Error loading state file");
+              return COLVARSCRIPT_ERROR;
+            }
+           )
+
+  CVSCRIPT(cv_save,
+           "Save state to a file",
+           1, 1,
+           {"state_file (str) - Path to state file"},
+            script->proxy->output_prefix() = script->obj_to_str(objv[2]);
+            int error = 0;
+            error |= script->colvars->setup_output();
+            error |= script->colvars->write_restart_file(script->colvars->output_prefix()+
+                                                ".colvars.state");
+            error |= script->colvars->write_output_files();
+            return error ? COLVARSCRIPT_ERROR : COLVARS_OK;
+           )
+
+  CVSCRIPT(cv_update,
+           "Recalculate colvars and biases",
+           0, 0,
+           {},
+            int error_code = script->proxy->update_input();
+            if (error_code) {
+              script->set_error_msg("Error updating the Colvars module (input)");
+              return error_code;
+            }
+            error_code |= script->colvars->calc();
+            if (error_code) {
+              script->set_error_msg("Error updating the Colvars module (calc)");
+              return error_code;
+            }
+            error_code |= script->proxy->update_output();
+            if (error_code) {
+              script->set_error_msg("Error updating the Colvars module (output)");
+            }
+            return error_code;
            )
 
   CVSCRIPT(cv_addenergy,
@@ -302,6 +443,76 @@ extern "C" {
             return cvm::proxy->set_unit_system(script->obj_to_str(objv[2]) , false);
            }
            )
+
+  CVSCRIPT(cv_printframelabels,
+           "Print the labels that would be written to colvars.traj",
+           0, 0,
+           { },
+            std::ostringstream os;
+            script->colvars->write_traj_label(os);
+            script->set_str_result(os.str());
+            return COLVARS_OK;
+           )
+
+  CVSCRIPT(cv_printframe,
+           "Print the values that would be written to colvars.traj",
+           0, 0,
+           { },
+            std::ostringstream os;
+            script->colvars->write_traj(os);
+            script->set_str_result(os.str());
+            return COLVARS_OK;
+           )
+
+  CVSCRIPT(cv_frame,
+           "Get or set current frame number",
+           0, 1,
+           { },
+            if (objc == 2) {
+              long int f;
+              int error = script->proxy->get_frame(f);
+              if (error == COLVARS_OK) {
+                script->set_str_result(cvm::to_str(f));
+                return COLVARS_OK;
+              } else {
+                script->set_error_msg("Frame number is not available");
+                return COLVARSCRIPT_ERROR;
+              }
+            } else if (objc == 3) {
+              // Failure of this function does not trigger an error, but
+              // returns nonzero, to let scripts detect available frames
+              int error = script->proxy->set_frame(strtol(script->obj_to_str(objv[2]), NULL, 10));
+              script->set_str_result(cvm::to_str(error == COLVARS_OK ? 0 : -1));
+              return COLVARS_OK;
+            }
+           )
+
+  CVSCRIPT(cv_colvar,
+           "Access colvar-specific commands: ",
+           2, 4,
+           {"name (str) - colvar name"},
+            std::string const name(script->obj_to_str(objv[2]));
+            colvar *cv = cvm::colvar_by_name(name);
+            if (cv == NULL) {
+              script->set_error_msg("Colvar not found: " + name);
+              return COLVARSCRIPT_ERROR;
+            }
+            return script->proc_colvar(cv, objc-1, &(objv[1]));
+           )
+
+  CVSCRIPT(cv_bias,
+           "Access bias-specific commands: ",
+           2, 4,
+           {"name (str) - bias name"},
+            std::string const name(script->obj_to_str(objv[2]));
+            colvarbias *cvb = cvm::bias_by_name(name);
+            if (cvb == NULL) {
+              script->set_error_msg("Bias not found: " + name);
+              return COLVARSCRIPT_ERROR;
+            }
+            return script->proc_bias(cvb, objc-1, &(objv[1]));
+           )
+
 
 #ifndef COLVARSCRIPT_INIT_FN
 #ifdef __cplusplus

@@ -57,6 +57,17 @@ extern "C" {
     }
     return cvp->script->result.c_str();
   }
+
+// TODO remove error messages from result object
+  const char * get_colvarscript_error()
+  {
+    colvarproxy *cvp = cvm::proxy;
+    if (!cvp->script) {
+      cvm::error("Called run_colvarscript_command without a script object initialized.\n");
+      return "";
+    }
+    return cvp->script->result.c_str();
+  }
 }
 
 
@@ -88,186 +99,6 @@ int colvarscript::run(int objc, unsigned char *const objv[])
     error_code |= (*(comm_fns[comm_str_map[cmd_key]]))(
                       reinterpret_cast<void *>(this), objc, objv);
     return error_code;
-  }
-
-  if (cmd == "colvar") {
-    if (objc < 3) {
-      result = "Missing parameters\n" + help_string();
-      return COLVARSCRIPT_ERROR;
-    }
-    std::string const name(obj_to_str(objv[2]));
-    colvar *cv = cvm::colvar_by_name(name);
-    if (cv == NULL) {
-      result = "Colvar not found: " + name;
-      return COLVARSCRIPT_ERROR;
-    }
-    return proc_colvar(cv, objc-1, &(objv[1]));
-  }
-
-  if (cmd == "bias") {
-    if (objc < 3) {
-      result = "Missing parameters\n" + help_string();
-      return COLVARSCRIPT_ERROR;
-    }
-    std::string const name(obj_to_str(objv[2]));
-    colvarbias *b = cvm::bias_by_name(name);
-    if (b == NULL) {
-      result = "Bias not found: " + name;
-      return COLVARSCRIPT_ERROR;
-    }
-    return proc_bias(b, objc-1, &(objv[1]));
-  }
-
-  if (cmd == "version") {
-    result = COLVARS_VERSION;
-    return COLVARS_OK;
-  }
-
-  if (cmd == "reset") {
-    /// Delete every child object
-    colvars->reset();
-    return COLVARS_OK;
-  }
-
-  if (cmd == "delete") {
-    // Note: the delete bit may be ignored by some backends
-    // it is mostly useful in VMD
-    return proxy->request_deletion();
-  }
-
-  if (cmd == "update") {
-    error_code |= proxy->update_input();
-    if (error_code) {
-      result += "Error updating the Colvars module.\n";
-      return error_code;
-    }
-    error_code |= colvars->calc();
-    error_code |= proxy->update_output();
-    if (error_code) {
-      result += "Error updating the Colvars module.\n";
-    }
-    return error_code;
-  }
-
-  if (cmd == "list") {
-    if (objc == 2) {
-      for (std::vector<colvar *>::iterator cvi = colvars->colvars.begin();
-           cvi != colvars->colvars.end();
-           ++cvi) {
-        result += (cvi == colvars->colvars.begin() ? "" : " ") + (*cvi)->name;
-      }
-      return COLVARS_OK;
-    } else if (objc == 3 && !strcmp(obj_to_str(objv[2]), "biases")) {
-      for (std::vector<colvarbias *>::iterator bi = colvars->biases.begin();
-           bi != colvars->biases.end();
-           ++bi) {
-        result += (bi == colvars->biases.begin() ? "" : " ") + (*bi)->name;
-      }
-      return COLVARS_OK;
-    } else {
-      result = "Wrong arguments to command \"list\"\n" + help_string();
-      return COLVARSCRIPT_ERROR;
-    }
-  }
-
-  /// Parse config from file
-  if (cmd == "configfile") {
-    if (objc < 3) {
-      result = "Missing arguments\n" + help_string();
-      return COLVARSCRIPT_ERROR;
-    }
-    if (colvars->read_config_file(obj_to_str(objv[2])) == COLVARS_OK) {
-      return COLVARS_OK;
-    } else {
-      result = "Error parsing configuration file";
-      return COLVARSCRIPT_ERROR;
-    }
-  }
-
-  /// Parse config from string
-  if (cmd == "config") {
-    return exec_command(cv_config, NULL, objc, objv);
-  }
-
-  /// Load an input state file
-  if (cmd == "load") {
-    if (objc < 3) {
-      result = "Missing arguments\n" + help_string();
-      return COLVARSCRIPT_ERROR;
-    }
-    proxy->input_prefix() = obj_to_str(objv[2]);
-    if (colvars->setup_input() == COLVARS_OK) {
-      return COLVARS_OK;
-    } else {
-      result = "Error loading state file";
-      return COLVARSCRIPT_ERROR;
-    }
-  }
-
-  /// Save to an output state file
-  if (cmd == "save") {
-    if (objc < 3) {
-      result = "Missing arguments";
-      return COLVARSCRIPT_ERROR;
-    }
-    proxy->output_prefix() = obj_to_str(objv[2]);
-    int error = 0;
-    error |= colvars->setup_output();
-    error |= colvars->write_restart_file(colvars->output_prefix()+
-                                         ".colvars.state");
-    error |= colvars->write_output_files();
-    return error ? COLVARSCRIPT_ERROR : COLVARS_OK;
-  }
-
-  /// Print the values that would go on colvars.traj
-  if (cmd == "printframelabels") {
-    std::ostringstream os;
-    colvars->write_traj_label(os);
-    result = os.str();
-    return COLVARS_OK;
-  }
-  if (cmd == "printframe") {
-    std::ostringstream os;
-    colvars->write_traj(os);
-    result = os.str();
-    return COLVARS_OK;
-  }
-
-  if (cmd == "frame") {
-    if (objc == 2) {
-      long int f;
-      int error = proxy->get_frame(f);
-      if (error == COLVARS_OK) {
-        result = cvm::to_str(f);
-        return COLVARS_OK;
-      } else {
-        result = "Frame number is not available";
-        return COLVARSCRIPT_ERROR;
-      }
-    } else if (objc == 3) {
-      // Failure of this function does not trigger an error, but
-      // returns nonzero, to let scripts detect available frames
-      int error = proxy->set_frame(strtol(obj_to_str(objv[2]), NULL, 10));
-      result = cvm::to_str(error == COLVARS_OK ? 0 : -1);
-      return COLVARS_OK;
-    } else {
-      result = "Wrong arguments to command \"frame\"\n" + help_string();
-      return COLVARSCRIPT_ERROR;
-    }
-  }
-
-  if (cmd == "addenergy") {
-    if (objc == 3) {
-      colvars->total_bias_energy += strtod(obj_to_str(objv[2]), NULL);
-      return COLVARS_OK;
-    } else {
-      result = "Wrong arguments to command \"addenergy\"\n" + help_string();
-      return COLVARSCRIPT_ERROR;
-    }
-  }
-
-  if (cmd == "help") {
-    return exec_command(cv_help, NULL, objc, objv);
   }
 
   result = "Syntax error\n" + help_string();
@@ -630,7 +461,7 @@ Managing the Colvars module:\n\
   resetindexgroups            -- clear the index groups loaded so far\n\
   reset                       -- delete all internal configuration\n\
   delete                      -- delete this Colvars module instance\n\
-  version                     -- return version of Colvars code\n\
+  version                     -- return version of Colvars Module\n\
   \n\
 Input and output:\n\
   list                        -- return a list of all variables\n\

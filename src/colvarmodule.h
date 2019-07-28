@@ -259,6 +259,9 @@ public:
   }
 
 private:
+// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+// temporary until relevant script functions become colvarscript methods
+public:
 
   /// Array of collective variables
   std::vector<colvar *> colvars;
@@ -302,6 +305,10 @@ public:
 
   /// Indexes of the items to calculate for each colvar
   std::vector<int> *variables_active_smp_items();
+
+// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+// temporary until relevant script functions become colvarscript methods
+public:
 
   /// Array of collective variable biases
   std::vector<colvarbias *> biases;
