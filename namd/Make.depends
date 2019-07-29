@@ -7761,6 +7761,10 @@ obj/colvarcomp_gpath.o: \
 	obj/.exists \
 	colvars/src/colvarcomp_gpath.cpp
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_gpath.o $(COPTC) colvars/src/colvarcomp_gpath.cpp
+obj/colvarcomp_apath.o: \
+	obj/.exists \
+	colvars/src/colvarcomp_apath.cpp
+	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_gpath.o $(COPTC) colvars/src/colvarcomp_apath.cpp
 obj/colvardeps.o: \
 	obj/.exists \
 	colvars/src/colvardeps.cpp \

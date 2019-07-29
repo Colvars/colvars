@@ -16,6 +16,7 @@
 #include "colvarmodule.h"
 #include "colvar.h"
 #include "colvaratoms.h"
+#include "colvar_arithmeticpath.h"
 
 #if (__cplusplus >= 201103L)
 #include "colvar_geometricpath.h"
@@ -1403,7 +1404,7 @@ class colvar::CartesianBasedPath
   : public colvar::cvc
 {
 protected:
-    virtual void computeReferenceDistance(std::vector<cvm::real>& result);
+    virtual void computeDistanceToReferenceFrames(std::vector<cvm::real>& result);
     /// Selected atoms
     cvm::atom_group *atoms;
     /// Fitting options
@@ -1501,7 +1502,9 @@ protected:
     /// Total number of reference frames
     size_t total_reference_frames;
 protected:
-    virtual void computeReferenceDistance(std::vector<cvm::real>& result);
+    virtual void computeDistanceToReferenceFrames(std::vector<cvm::real>& result);
+    /// Helper function to determine the distance between reference frames
+    virtual void distanceBetweenReferenceFrames(std::vector<cvm::real>& result) const;
     cvm::real getPolynomialFactorOfCVGradient(size_t i_cv) const;
 public:
     CVBasedPath(std::string const &conf);
@@ -1540,6 +1543,35 @@ protected:
 public:
     gzpathCV(std::string const &conf);
     virtual ~gzpathCV();
+    virtual void calc_value();
+    virtual void calc_gradients();
+    virtual void apply_force(colvarvalue const &force);
+};
+
+
+
+class colvar::aspathCV
+  : public colvar::CVBasedPath, public ArithmeticPathCV::ArithmeticPathBase<colvarvalue, cvm::real, ArithmeticPathCV::path_sz::S>
+{
+protected:
+    virtual void updateReferenceDistances();
+public:
+    aspathCV(std::string const &conf);
+    virtual ~aspathCV();
+    virtual void calc_value();
+    virtual void calc_gradients();
+    virtual void apply_force(colvarvalue const &force);
+};
+
+
+class colvar::azpathCV
+  : public colvar::CVBasedPath, public ArithmeticPathCV::ArithmeticPathBase<colvarvalue, cvm::real, ArithmeticPathCV::path_sz::Z>
+{
+protected:
+    virtual void updateReferenceDistances();
+public:
+    azpathCV(std::string const &conf);
+    virtual ~azpathCV();
     virtual void calc_value();
     virtual void calc_gradients();
     virtual void apply_force(colvarvalue const &force);
@@ -1590,6 +1622,20 @@ public:
 };
 
 class colvar::gzpathCV
+  : public colvar::componentDisabled
+{
+public:
+    gzpathCV(std::string const &conf) : componentDisabled(conf) {}
+};
+
+class colvar::aspathCV
+  : public colvar::componentDisabled
+{
+public:
+    gspathCV(std::string const &conf) : componentDisabled(conf) {}
+};
+
+class colvar::azpathCV
   : public colvar::componentDisabled
 {
 public:

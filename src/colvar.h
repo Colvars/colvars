@@ -570,6 +570,8 @@ public:
   class CVBasedPath;
   class gspathCV;
   class gzpathCV;
+  class aspathCV;
+  class azpathCV;
 
   // non-scalar components
   class distance_vec;

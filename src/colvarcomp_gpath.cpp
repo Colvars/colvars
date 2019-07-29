@@ -114,7 +114,7 @@ colvar::CartesianBasedPath::~CartesianBasedPath() {
     }
 }
 
-void colvar::CartesianBasedPath::computeReferenceDistance(std::vector<cvm::real>& result) {
+void colvar::CartesianBasedPath::computeDistanceToReferenceFrames(std::vector<cvm::real>& result) {
     for (size_t i_frame = 0; i_frame < reference_frames.size(); ++i_frame) {
         cvm::real frame_rmsd = 0.0;
         for (size_t i_atom = 0; i_atom < atoms->size(); ++i_atom) {
@@ -146,7 +146,7 @@ colvar::gspath::gspath(std::string const &conf): CartesianBasedPath(conf) {
 }
 
 void colvar::gspath::updateReferenceDistances() {
-    computeReferenceDistance(frame_distances);
+    computeDistanceToReferenceFrames(frame_distances);
 }
 
 void colvar::gspath::prepareVectors() {
@@ -290,7 +290,7 @@ colvar::gzpath::gzpath(std::string const &conf): CartesianBasedPath(conf) {
 }
 
 void colvar::gzpath::updateReferenceDistances() {
-    computeReferenceDistance(frame_distances);
+    computeDistanceToReferenceFrames(frame_distances);
 }
 
 void colvar::gzpath::prepareVectors() {
@@ -531,6 +531,7 @@ colvar::CVBasedPath::CVBasedPath(std::string const &conf): cvc(conf) {
         std::vector<std::string> fields;
         split_string(line, token, fields);
         size_t num_value_required = 0;
+        cvm::log(std::string("Reading reference frame ") + cvm::to_str(total_reference_frames + 1) + std::string("\n"));
         for (size_t i_cv = 0; i_cv < tmp_cv.size(); ++i_cv) {
             const size_t value_size = tmp_cv[i_cv].size();
             num_value_required += value_size;
@@ -541,7 +542,6 @@ colvar::CVBasedPath::CVBasedPath(std::string const &conf): cvc(conf) {
                     tmp_cv[i_cv][i] = std::atof(fields[i].c_str());
                     cvm::log(fields[i] + std::string(" "));
                 }
-                cvm::log(std::string("\n"));
             } else {
                 cvm::error("Error: incorrect format of path file.\n");
             }
@@ -563,7 +563,7 @@ colvar::CVBasedPath::CVBasedPath(std::string const &conf): cvc(conf) {
     }
 }
 
-void colvar::CVBasedPath::computeReferenceDistance(std::vector<cvm::real>& result) {
+void colvar::CVBasedPath::computeDistanceToReferenceFrames(std::vector<cvm::real>& result) {
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
         cv[i_cv]->calc_value();
     }
@@ -583,6 +583,20 @@ void colvar::CVBasedPath::computeReferenceDistance(std::vector<cvm::real>& resul
         rmsd_i /= cvm::real(cv.size());
         rmsd_i = cvm::sqrt(rmsd_i);
         result[i_frame] = rmsd_i;
+    }
+}
+
+void colvar::CVBasedPath::distanceBetweenReferenceFrames(std::vector<cvm::real>& result) const {
+    if (ref_cv.size() < 2) return;
+    for (size_t i_frame = 1; i_frame < ref_cv.size(); ++i_frame) {
+        cvm::real dist_ij = 0.0;
+        for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
+            colvarvalue ref_cv_value(ref_cv[i_frame][i_cv]);
+            colvarvalue prev_ref_cv_value(ref_cv[i_frame-1][i_cv]);
+            dist_ij += cv[i_cv]->dist2(ref_cv_value, prev_ref_cv_value);
+        }
+        dist_ij = cvm::sqrt(dist_ij);
+        result[i_frame-1] = dist_ij;
     }
 }
 
@@ -635,7 +649,7 @@ colvar::gspathCV::gspathCV(std::string const &conf): CVBasedPath(conf) {
 colvar::gspathCV::~gspathCV() {}
 
 void colvar::gspathCV::updateReferenceDistances() {
-    computeReferenceDistance(frame_distances);
+    computeDistanceToReferenceFrames(frame_distances);
 }
 
 void colvar::gspathCV::prepareVectors() {
@@ -777,7 +791,7 @@ colvar::gzpathCV::~gzpathCV() {
 }
 
 void colvar::gzpathCV::updateReferenceDistances() {
-    computeReferenceDistance(frame_distances);
+    computeDistanceToReferenceFrames(frame_distances);
 }
 
 void colvar::gzpathCV::prepareVectors() {
