@@ -11,6 +11,7 @@
 #include "gromacs/mdtypes/forceoutput.h"
 #include "gromacs/mdlib/groupcoord.h"
 #include "gromacs/mdtypes/iforceprovider.h"
+#include "gromacs/topology/atoms.h"
 #include "colvarproxy_gromacs_version.h"
 
 /// \brief Communication between colvars and Gromacs (implementation of
@@ -18,9 +19,12 @@
 class colvarproxy_gromacs : public colvarproxy, public gmx::IForceProvider {
 public:
   // GROMACS structures.
+  //PBC struct
   t_pbc gmx_pbc;
+  //Box
   real (*gmx_box)[3];
-  const t_mdatoms *gmx_atoms;
+  //
+  t_atoms gmx_atoms;
 protected:
   cvm::real thermostat_temperature;
   cvm::real timestep;
@@ -39,7 +43,8 @@ protected:
   gmx::DefaultRandomEngine           rng;   // gromacs random number generator
   gmx::TabulatedNormalDistribution<> normal_distribution;
 
-  // Node-local bookkepping data passed to communicate_group_positions()
+
+  // Node-local bookkepping data
   //! Total number of Colvars atoms
   int        nat = 0;
   //! Part of the atoms that are local.
@@ -60,15 +65,20 @@ protected:
   rvec      *xa_old = nullptr;
   //! Position of each local atom in the collective array.
   int       *xa_ind = nullptr;
+  //! The forces on the colvars.
+  rvec           *f = nullptr;
 public:
   friend class cvm::atom;
   colvarproxy_gromacs();
   ~colvarproxy_gromacs();
 
   // Initialize colvars.
-  void init(t_inputrec *gmx_inp, int64_t step, t_mdatoms *md,
+  void init(t_inputrec *gmx_inp, int64_t step, gmx_mtop_t *mtop,
             const std::string &prefix, gmx::ArrayRef<const std::string> filenames_config,
-            const std::string &filename_restart, const t_commrec *cr);
+            const std::string &filename_restart, const t_commrec *cr,
+            const rvec x[]);
+
+  void dd_make_local_atoms(const t_commrec *cr);
   // Called each step before evaluating the force provider
   // Should eventually be replaced by the MDmodule interface?
   void update_data(const t_commrec *cr, int64_t const step, t_pbc const &pbc, matrix box, bool bNS);
@@ -82,6 +92,7 @@ public:
                                 gmx::ForceProviderOutput      *forceProviderOutput);
 
   void add_energy (cvm::real energy);
+  void finish(const t_commrec *cr);
 
   // **************** SYSTEM-WIDE PHYSICAL QUANTITIES ****************
   cvm::real unit_angstrom();
