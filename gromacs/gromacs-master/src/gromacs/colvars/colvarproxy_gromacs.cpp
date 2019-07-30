@@ -20,24 +20,24 @@
 #include "colvarproxy_gromacs.h"
 #include "gromacs/mdtypes/commrec.h"
 #include "gromacs/domdec/domdec_struct.h"
+#include "gromacs/gmxlib/network.h"
+#include "gromacs/domdec/ga2la.h"
 
 #include "gromacs/topology/ifunc.h"
+#include "gromacs/topology/mtop_util.h"
+#include "gromacs/mdlib/broadcaststructs.h"
 
 //************************************************************
 // colvarproxy_gromacs
 colvarproxy_gromacs::colvarproxy_gromacs() : colvarproxy() {}
 
 // Colvars Initialization
-void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,t_mdatoms *md,
+void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
                                const std::string &prefix,
                                gmx::ArrayRef<const std::string> filenames_config,
                                const std::string &filename_restart,
-                               const t_commrec *cr) {
-
-  version_int = get_version_from_string(COLVARPROXY_VERSION);
-
-  if (cvm::debug())
-    log("Initializing the colvars proxy object.\n");
+                               const t_commrec *cr,
+                               const rvec x[]) {
 
   // Initialize colvars.
   first_timestep = true;
@@ -87,73 +87,134 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,t_mdatoms *md,
   // Retrieve masses and charges from input file
   updated_masses_ = updated_charges_ = true;
 
-  // Get some parameters from GROMACS
+  // GROMACS timestep
   timestep = ir->delta_t;
-  gmx_atoms = md;
+  // Retrieve the topology of all atoms
+  gmx_atoms = gmx_mtop_global_atoms(mtop);
 
   // initiate module: this object will be the communication proxy
   colvars = new colvarmodule(this);
-  cvm::log("Using GROMACS interface, version "+
-	   cvm::to_str(COLVARPROXY_VERSION)+".\n");
 
-  auto i = filenames_config.begin();
-  for(; i != filenames_config.end(); ++i) {
-      colvars->read_config_file(i->c_str());
+  // Read configuration file and set up the proxy only on the master node.
+  if (MASTER(cr))
+  {
+
+    version_int = get_version_from_string(COLVARPROXY_VERSION);
+
+    if (cvm::debug()) {
+      log("Initializing the colvars proxy object.\n");
+    }
+
+    cvm::log("Using GROMACS interface, version "+
+      cvm::to_str(COLVARPROXY_VERSION)+".\n");
+
+    auto i = filenames_config.begin();
+    for(; i != filenames_config.end(); ++i) {
+        colvars->read_config_file(i->c_str());
+    }
+
+    colvars->setup();
+    colvars->setup_input();
+    colvars->setup_output();
+
+    if (step != 0) {
+      cvm::log("Initializing step number to "+cvm::to_str(step)+".\n");
+    }
   }
 
-  colvars->setup();
-  colvars->setup_input();
-  colvars->setup_output();
+  colvars->it = colvars->it_restart = step;
 
-  if (step != 0) {
-    cvm::log("Initializing step number to "+cvm::to_str(step)+".\n");
-    colvars->it = colvars->it_restart = step;
+
+  // MPI initialisation
+
+  // Initialise attributs for the MPI communication
+  if(MASTER(cr)) {
+    // Retrieve the number of colvar atoms
+    nat = atoms_ids.size();
+    // Copy their global indices
+    ind = atoms_ids.data(); // This has to be updated if the vector is reallocated
   }
 
-  size_t nat = atoms_ids.size();
+
+  if(PAR(cr)) {
+    // Let the other nodes know the number of colvar atoms.
+    block_bc(cr, nat);
+
+    // Initialise atoms_new_colvar_forces on non-master nodes
+    if(!MASTER(cr)) {
+      atoms_new_colvar_forces.reserve(nat);
+    }
+  }
+
   snew(xa,         nat);
   snew(xa_ind,     nat);
   snew(xa_shifts,  nat);
   snew(xa_eshifts, nat);
   snew(xa_old,     nat);
-  ind = atoms_ids.data(); // This has to be updated if the vector is reallocated
+  snew(f,          nat);
 
-  if (!PAR(cr))
+  // Prepare data
+
+  // Save the original (whole) set of positions such that later the
+  // molecule can always be made whole again
+  if (MASTER(cr))
   {
-      nat_loc = nat;
-      nalloc_loc = nat;
-      ind_loc = ind;
-
-      /* xa_ind[i] needs to be set to i for serial runs */
-      for (int i = 0; i < nat; i++)
-      {
-          xa_ind[i] = i;
-      }
+    for (int i = 0; i < nat; i++)
+    {
+        int ii = ind[i];
+        copy_rvec(x[ii], xa_old[i]);
+    }
   }
 
+  // Communicate initial coordinates and global indices to all processes
+  if (PAR(cr))
+  {
+    nblock_bc(cr, nat, xa_old);
+    snew_bc(cr, ind, nat);
+    nblock_bc(cr, nat, ind);
+  }
 
-  if (cvm::debug()) {
+  // Serial Run
+  if (!PAR(cr))
+  {
+    nat_loc = nat;
+    nalloc_loc = nat;
+    ind_loc = ind;
+
+    // xa_ind[i] needs to be set to i for serial runs
+    for (int i = 0; i < nat; i++)
+    {
+        xa_ind[i] = i;
+    }
+  }
+
+  if (MASTER(cr) && cvm::debug()) {
     cvm::log ("atoms_ids = "+cvm::to_str (atoms_ids)+"\n");
     cvm::log ("atoms_ncopies = "+cvm::to_str (atoms_ncopies)+"\n");
     cvm::log ("positions = "+cvm::to_str (atoms_positions)+"\n");
     cvm::log ("total_forces = "+cvm::to_str (atoms_total_forces)+"\n");
     cvm::log ("atoms_new_colvar_forces = "+cvm::to_str (atoms_new_colvar_forces)+"\n");
     cvm::log (cvm::line_marker);
+    log("done initializing the colvars proxy object.\n");
   }
 
-  if (cvm::debug())
-    log("done initializing the colvars proxy object.\n");
+
 } // End colvars initialization.
 
-// We don't really know when GROMACS will die, but
-// since the object has file scope, this should get called.
+
 colvarproxy_gromacs::~colvarproxy_gromacs()
 {
   if (colvars != NULL) {
-    colvars->write_restart_file(output_prefix_str+".colvars.state");
-    colvars->write_output_files();
     delete colvars;
     colvars = NULL;
+  }
+}
+
+void colvarproxy_gromacs::finish(const t_commrec *cr)
+{
+  if(MASTER(cr)) {
+    colvars->write_restart_file(output_prefix_str+".colvars.state");
+    colvars->write_output_files();
   }
 }
 
@@ -284,7 +345,7 @@ int colvarproxy_gromacs::backup_file (char const *filename)
 
 void colvarproxy_gromacs::update_data(const t_commrec *cr, int64_t const step, t_pbc const &pbc, matrix box, bool bNS)
 {
-    if (cvm::debug()) {
+    if (MASTER(cr) && cvm::debug()) {
       cvm::log(cvm::line_marker);
       cvm::log("colvarproxy_gromacs, step no. "+cvm::to_str(colvars->it)+"\n"+
               "Updating internal data.\n");
@@ -304,38 +365,26 @@ void colvarproxy_gromacs::update_data(const t_commrec *cr, int64_t const step, t
     }
     previous_gmx_step = step;
 
-    if (PAR(cr) && bNS) {
-      // Update list of local atoms
-      dd_make_local_group_indices(cr->dd->ga2la, nat, ind, &nat_loc, &ind_loc, &nalloc_loc, nullptr);
-// dd_make_local_group_indices(const gmx_ga2la_t *ga2la,
-//                             const int          nr,         /* IN:  Total number of atoms in the group */
-//                             int                anrs[],     /* IN:  Global atom numbers of the groups atoms */
-//                             int               *nr_loc,     /* OUT: Number of group atoms found locally */
-//                             int               *anrs_loc[], /* OUT: Local atom numbers of the group  */
-//                             int               *nalloc_loc, /* IN+OUT: Allocation size of anrs_loc */
-//                             int                coll_ind[]) /* OUT (opt): Where is this position found in the collective array? */
+    // Prepare data for MPI communication
+    if(PAR(cr) && bNS) {
+      dd_make_local_group_indices(cr->dd->ga2la, nat, ind, &nat_loc, &ind_loc, &nalloc_loc, xa_ind);
     }
+
   return;
 }
+
 
 void colvarproxy_gromacs::calculateForces(
                     const gmx::ForceProviderInput &forceProviderInput,
                     gmx::ForceProviderOutput      *forceProviderOutput)
 {
-  const t_mdatoms &local_atoms  = forceProviderInput.mdatoms_;
+
   const t_commrec *cr           = &(forceProviderInput.cr_);
   const gmx::ArrayRef<const gmx::RVec> x  = forceProviderInput.x_;
   // Some gymnastics to coerce new data structures into old types
   const rvec *x_pointer          = &(x.data()->as_vec());
 
-  // For now we support non-parallel jobs where all atoms are local
-  const t_mdatoms &gmx_atoms = local_atoms;
 
-  /* Transfer Colvar atom positions to the master node. Every node contributes
-   * its local positions x and stores them in the assembled xa array. */
-  for (size_t i = 0; i < nat_loc; i++) {
-    copy_rvec(x_pointer[ind_loc[i]], xa[xa_ind[i]]);
-  }
   // Eventually there needs to be an interface to update local data upon neighbor search
   // We could check if by chance all atoms are in one node, and skip communication
   communicate_group_positions(cr, xa, xa_shifts, xa_eshifts,
@@ -378,11 +427,22 @@ void colvarproxy_gromacs::calculateForces(
       cvm::fatal_error("");
     }
 
-    // TODO send forces to nodes
-    // communicate_group_positions(cr, xa, xa_shifts, xa_eshifts,
-    //                           gmx_bNS, x_pointer, nat, nat_loc,
-    //                           ind_loc, xa_ind, xa_old, gmx_box);
+    // Copy the forces to a simplier array for broadcasting
+    for (int i = 0; i < nat; i++)
+    {
+      f[i][0] = atoms_new_colvar_forces[i].x;
+      f[i][1] = atoms_new_colvar_forces[i].y;
+      f[i][2] = atoms_new_colvar_forces[i].z;
+    }
+
   } // master node
+
+  //Broadcast the forces to all the nodes
+  if (PAR(cr))
+  {
+    nblock_bc(cr, nat, f);
+  }
+
 
   const gmx::ArrayRef<gmx::RVec> &f_colvars = forceProviderOutput->forceWithVirial_.force_;
 
@@ -391,13 +451,21 @@ void colvarproxy_gromacs::calculateForces(
   // force->addVirialContribution(virial);
   // virial is purely local, should be calculated where the atoms live
 
-  // Pass the applied forces back to GROMACS.
-  for (size_t i = 0; i < atoms_ids.size(); i++) {
-    size_t aid = atoms_ids[i];
-    // We already checked above that gmx_atoms->nr > aid.
-    f_colvars[aid][0] += atoms_new_colvar_forces[i].x;
-    f_colvars[aid][1] += atoms_new_colvar_forces[i].y;
-    f_colvars[aid][2] += atoms_new_colvar_forces[i].z;
+  // Pass the applied forces back to GROMACS
+  // Parallel version
+  for (int i = 0; i < nat; i++)
+  {
+      // j are the indices in the "System group".
+      int j = ind[i];
+
+      // check if this is a local atom and find out locndx
+      const int       *locndx;
+      if (PAR(cr) && (locndx = cr->dd->ga2la->findHome(j)))
+      {
+          j = *locndx;
+      }
+
+      f_colvars[j] += f[i];
   }
 
   forceProviderOutput->enerd_.term[F_COM_PULL] += bias_energy;
@@ -422,7 +490,7 @@ int colvarproxy_gromacs::check_atom_id(int atom_number)
     log("Adding atom "+cvm::to_str(atom_number)+
         " for collective variables calculation.\n");
 
-  if ( (aid < 0) || (aid >= gmx_atoms->nr) ) {
+  if ( (aid < 0) || (aid >= gmx_atoms.nr) ) {
     cvm::error("Error: invalid atom number specified, "+
                cvm::to_str(atom_number)+"\n", INPUT_ERROR);
     return INPUT_ERROR;
@@ -447,6 +515,10 @@ int colvarproxy_gromacs::init_atom(int atom_number)
 
   aid = check_atom_id(atom_number);
 
+  if(aid < 0) {
+    return INPUT_ERROR;
+  }
+
   int const index = add_atom_slot(aid);
   update_atom_properties(index);
   return index;
@@ -456,7 +528,7 @@ void colvarproxy_gromacs::update_atom_properties(int index)
 {
 
   // update mass
-  double const mass = gmx_atoms->massT[atoms_ids[index]];
+  double const mass = gmx_atoms.atom[atoms_ids[index]].m;
   if (mass <= 0.001) {
     this->log("Warning: near-zero mass for atom "+
               cvm::to_str(atoms_ids[index]+1)+
@@ -464,7 +536,7 @@ void colvarproxy_gromacs::update_atom_properties(int index)
   }
   atoms_masses[index] = mass;
   // update charge
-  atoms_charges[index] = gmx_atoms->chargeA[atoms_ids[index]];
+  atoms_charges[index] = gmx_atoms.atom[atoms_ids[index]].q;
 }
 
 enum e_pdb_field {
