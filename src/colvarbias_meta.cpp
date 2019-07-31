@@ -1781,6 +1781,7 @@ int colvarbias_meta::write_replica_state_file()
   }
 
   std::string const tmp_state_file(replica_state_file+".tmp");
+  std::remove(tmp_state_file.c_str());
   std::ostream *rep_state_os = cvm::proxy->output_stream(tmp_state_file);
   if (rep_state_os == NULL) {
     cvm::error("Error: in opening file \""+
