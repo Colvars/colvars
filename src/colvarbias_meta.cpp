@@ -1805,43 +1805,6 @@ int colvarbias_meta::write_replica_state_file()
   cvm::backup_file(replica_state_file.c_str());
   std::rename(tmp_state_file.c_str(), replica_state_file.c_str());
 
-  // rep_state_os.setf(std::ios::scientific, std::ios::floatfield);
-  // rep_state_os << "\n"
-  //              << "metadynamics {\n"
-  //              << "  configuration {\n"
-  //              << "    name " << this->name << "\n"
-  //              << "    step " << cvm::step_absolute() << "\n";
-  // if (this->comm != single_replica) {
-  //   rep_state_os << "    replicaID " << this->replica_id << "\n";
-  // }
-  // rep_state_os << "  }\n\n";
-  // rep_state_os << "  hills_energy\n";
-  // rep_state_os << std::setprecision(cvm::cv_prec)
-  //              << std::setw(cvm::cv_width);
-  // hills_energy->write_restart(rep_state_os);
-  // rep_state_os << "  hills_energy_gradients\n";
-  // rep_state_os << std::setprecision(cvm::cv_prec)
-  //              << std::setw(cvm::cv_width);
-  // hills_energy_gradients->write_restart(rep_state_os);
-
-  // if ( (!use_grids) || keep_hills ) {
-  //   // write all hills currently in memory
-  //   for (std::list<hill>::const_iterator h = this->hills.begin();
-  //        h != this->hills.end();
-  //        h++) {
-  //     rep_state_os << *h;
-  //   }
-  // } else {
-  //   // write just those that are near the grid boundaries
-  //   for (std::list<hill>::const_iterator h = this->hills_off_grid.begin();
-  //        h != this->hills_off_grid.end();
-  //        h++) {
-  //     rep_state_os << *h;
-  //   }
-  // }
-  // rep_state_os << "}\n\n";
-  // rep_state_os.close();
-
   // reopen the hills file
   cvm::proxy->close_output_stream(replica_hills_file);
   cvm::proxy->backup_file(replica_hills_file);
