@@ -1798,7 +1798,7 @@ int colvarbias_meta::write_replica_state_file()
   }
 
   cvm::proxy->close_output_stream(tmp_state_file);
-  cvm::backup_file(replica_state_file.c_str());
+
   std::rename(tmp_state_file.c_str(), replica_state_file.c_str());
 
   // reopen the hills file
