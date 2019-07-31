@@ -2272,7 +2272,7 @@ In the \texttt{gspathCV~\{...\}} and the \texttt{gzpathCV~\{...\}} block all vec
 \item %
   \key
     {pathFile}{%
-    \texttt{gspathCV} and \texttt{gspathCV}}{%
+    \texttt{gspathCV} and \texttt{gzpathCV}}{%
     The file name of the path file.}{%
     UNIX filename}{%
 		The path is defined by the \texttt{pathFile}. The lines of the \texttt{pathFile} matches the total number of reference frames. The columns of the \texttt{pathFile} matches the number of CVs in this block and are seperated by space.
@@ -2345,6 +2345,116 @@ The usage of \texttt{gzpathCV} and \texttt{gspathCV} is illustrated below:
 \-~~~~\}\\
 \-~~\}\\
 \}}
+
+
+\cvsubsec{Arithmetic path collective variables in CV space}{sec:cvc_apathCV}
+
+The arithmetic path collective variable in CV space uses the same formula as the one proposed by Branduardi\cite{Branduardi2007} et al., except that it computes $s$ and $z$ in CV space instead of RMSDs in Cartesian space. Moreover, this implementation allows different coefficients for each CV components as described in \cite{Hovan2019}. Assuming a path is composed of $N$ reference frames and defined in an $M$-dimensional CV space, then the equations of $s$ and $z$ of the path are 
+
+\begin{equation}
+s = \frac{\sum_{i=1}^{N} i \exp\left(-\lambda\sum_{j=1}^{M} c_j^2 \left(x_j-x_{i,j}\right)^2\right)}{\sum_{i=1}^{N} \exp\left(-\lambda\sum_{j=1}^{M} c_j^2 \left(x_j-x_{i,j}\right)^2\right)}
+\end{equation}
+
+\begin{equation}
+z = -\frac{1}{\lambda} \ln \left(\sum_{i=1}^{N} \exp\left(-\lambda\sum_{j=1}^{M} c_j^2 \left(x_j-x_{i,j}\right) \right)\right)
+\end{equation}
+where $c_j$ is the coefficient(weight) of the $j$-th CV, $x_{i,j}$ is the value of $j$-th CV of $i$-th reference frame and $x_{j}$ is the value of $j$-th CV of current frame. $\lambda$ is a parameter to smooth the variation of $s$ and $z$.
+
+\cvsubsubsec{\texttt{aspathCV}: progress along a path defined in CV space.}{sec:cvc_aspathCV}
+
+This colvar component computes the $s$ variable.
+
+\labelkey{colvar|aspathCV}
+
+\begin{cvcoptions}
+\item %
+  \keydef
+    {weights}{%
+    \texttt{aspathCV} and \texttt{azpathCV}}{%
+    Coefficients of the collective variables}{%
+    space-seperated numbers in a \texttt{\{...\}} block}{%
+    \texttt{\{1.0 ...\}}}{%
+    Define the coefficients. The $j$-th value in the \texttt{\{...\}} block corresponds the $c_{j}$ in the equations.
+  }
+
+\item %
+  \keydef
+    {lambda}{%
+    \texttt{aspathCV} and \texttt{azpathCV}}{%
+    Smoothness of the variation of $s$ and $z$}{%
+    decimal}{%
+    inverse of the mean square displacements of successive reference frames}{%
+    The value of $\lambda$ in the equations.
+  }
+
+\item %
+  \key
+    {pathFile}{%
+    \texttt{aspathCV} and \texttt{azpathCV}}{%
+    The file name of the path file.}{%
+    UNIX filename}{%
+		The path is defined by the \texttt{pathFile}. The lines of the \texttt{pathFile} matches the total number of reference frames. The columns of the \texttt{pathFile} matches the number of CVs in this block and are seperated by space.
+    }
+
+\end{cvcoptions}
+
+\cvsubsubsec{\texttt{azpathCV}: distance from a path defined in CV space.}{sec:cvc_azpathCV}
+
+This colvar component computes the $z$ variable. Options are the same as in \ref{sec:cvc_aspathCV}.
+
+The usage of \texttt{azpathCV} and \texttt{aspathCV} is illustrated below:
+
+\bigskip
+{%
+% verbatim can't appear within commands
+\noindent\ttfamily colvar \{\\
+\-~~\# Progress along the path\\
+\-~~name as\\
+\-~~\# Path defined by the CV space of two dihedral angles\\
+\-~~aspathCV \{\\
+\-~~~~pathFile ./path.txt\\
+\-~~~~weights \{1.0 1.0\}\\
+\-~~~~lambda 0.005\\
+\-~~~~dihedral \{\\
+\-~~~~~~name 001\\
+\-~~~~~~group1 \{atomNumbers \{5\}\}\\
+\-~~~~~~group2 \{atomNumbers \{7\}\}\\
+\-~~~~~~group3 \{atomNumbers \{9\}\}\\
+\-~~~~~~group4 \{atomNumbers \{15\}\}\\
+\-~~~~\}\\
+\-~~~~dihedral \{\\
+\-~~~~~~name 002\\
+\-~~~~~~group1 \{atomNumbers \{7\}\}\\
+\-~~~~~~group2 \{atomNumbers \{9\}\}\\
+\-~~~~~~group3 \{atomNumbers \{15\}\}\\
+\-~~~~~~group4 \{atomNumbers \{17\}\}\\
+\-~~~~\}\\
+\-~~\}\\
+\}\\
+\noindent\ttfamily colvar \{\\
+\-~~\# Distance from the path\\
+\-~~name az\\
+\-~~azpathCV \{\\
+\-~~~~pathFile ./path.txt\\
+\-~~~~weights \{1.0 1.0\}\\
+\-~~~~lambda 0.005\\
+\-~~~~dihedral \{\\
+\-~~~~~~name 001\\
+\-~~~~~~group1 \{atomNumbers \{5\}\}\\
+\-~~~~~~group2 \{atomNumbers \{7\}\}\\
+\-~~~~~~group3 \{atomNumbers \{9\}\}\\
+\-~~~~~~group4 \{atomNumbers \{15\}\}\\
+\-~~~~\}\\
+\-~~~~dihedral \{\\
+\-~~~~~~name 002\\
+\-~~~~~~group1 \{atomNumbers \{7\}\}\\
+\-~~~~~~group2 \{atomNumbers \{9\}\}\\
+\-~~~~~~group3 \{atomNumbers \{15\}\}\\
+\-~~~~~~group4 \{atomNumbers \{17\}\}\\
+\-~~~~\}\\
+\-~~\}\\
+\}}
+
 
 
 \cvsubsec{Shared keywords for all components}{sec:cvc_common}
