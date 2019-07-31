@@ -3,6 +3,7 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <cstdio>
 #include <iomanip>
 #include <algorithm>
 
@@ -1782,12 +1783,12 @@ int colvarbias_meta::write_replica_state_file()
   if (cvm::debug()) {
     cvm::log("Writing replica state file for bias \""+name+"\"\n");
   }
-  // write down also the restart for the other replicas
-  cvm::backup_file(replica_state_file.c_str());
-  std::ostream *rep_state_os = cvm::proxy->output_stream(replica_state_file);
+
+  std::string const tmp_state_file(replica_state_file+".tmp");
+  std::ostream *rep_state_os = cvm::proxy->output_stream(tmp_state_file);
   if (rep_state_os == NULL) {
     cvm::error("Error: in opening file \""+
-               replica_state_file+"\" for writing.\n", FILE_ERROR);
+               tmp_state_file+"\" for writing.\n", FILE_ERROR);
     return FILE_ERROR;
   }
 
@@ -1795,12 +1796,14 @@ int colvarbias_meta::write_replica_state_file()
 
   if (!write_state(*rep_state_os)) {
     cvm::error("Error: in writing to file \""+
-               replica_state_file+"\".\n", FILE_ERROR);
-    cvm::proxy->close_output_stream(replica_state_file);
+               tmp_state_file+"\".\n", FILE_ERROR);
+    cvm::proxy->close_output_stream(tmp_state_file);
     return FILE_ERROR;
   }
 
-  cvm::proxy->close_output_stream(replica_state_file);
+  cvm::proxy->close_output_stream(tmp_state_file);
+  cvm::backup_file(replica_state_file.c_str());
+  std::rename(tmp_state_file.c_str(), replica_state_file.c_str());
 
   // rep_state_os.setf(std::ios::scientific, std::ios::floatfield);
   // rep_state_os << "\n"
