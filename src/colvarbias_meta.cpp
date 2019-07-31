@@ -1097,11 +1097,7 @@ void colvarbias_meta::read_replica_files()
                (replicas[ir])->replica_state_file+"\".\n");
 
       std::ifstream is((replicas[ir])->replica_state_file.c_str());
-      if (! (replicas[ir])->read_state(is)) {
-        cvm::log("Reading from file \""+(replicas[ir])->replica_state_file+
-                 "\" failed or incomplete: will try again in "+
-                 cvm::to_str(replica_update_freq)+" steps.\n");
-      } else {
+      if ((replicas[ir])->read_state(is)) {
         // state file has been read successfully
         (replicas[ir])->replica_state_file_in_sync = true;
         (replicas[ir])->update_status = 0;
