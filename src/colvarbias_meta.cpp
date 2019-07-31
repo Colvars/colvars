@@ -1799,7 +1799,10 @@ int colvarbias_meta::write_replica_state_file()
 
   cvm::proxy->close_output_stream(tmp_state_file);
 
-  std::rename(tmp_state_file.c_str(), replica_state_file.c_str());
+  if (std::rename(tmp_state_file.c_str(), replica_state_file.c_str())) {
+    return cvm::error("Error: failed to write file \""+replica_state_file+
+                      "\".\n", FILE_ERROR);
+  }
 
   // reopen the hills file
   cvm::proxy->close_output_stream(replica_hills_file);
