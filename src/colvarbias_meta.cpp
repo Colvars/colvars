@@ -1558,15 +1558,11 @@ int colvarbias_meta::setup_output()
     // for the others to read
 
     // open the "hills" buffer file
-    if (!replica_hills_os) {
-      cvm::proxy->backup_file(replica_hills_file);
-      replica_hills_os = cvm::proxy->output_stream(replica_hills_file);
-      if (!replica_hills_os) return cvm::get_error();
-      replica_hills_os->setf(std::ios::scientific, std::ios::floatfield);
-    }
+    reopen_replica_buffer_file();
 
     // write the state file (so that there is always one available)
     write_replica_state_file();
+
     // schedule to read the state files of the other replicas
     for (size_t ir = 0; ir < replicas.size(); ir++) {
       (replicas[ir])->replica_state_file_in_sync = false;
@@ -1669,15 +1665,16 @@ std::ostream & colvarbias_meta::write_state_data(std::ostream& os)
 
 int colvarbias_meta::write_state_to_replicas()
 {
+  int error_code = COLVARS_OK;
   if (comm != single_replica) {
-    write_replica_state_file();
-    // schedule to reread the state files of the other replicas (they
-    // have also rewritten them)
+    error_code |= write_replica_state_file();
+    error_code |= reopen_replica_hills_file();
+    // schedule to reread the state files of the other replicas
     for (size_t ir = 0; ir < replicas.size(); ir++) {
       (replicas[ir])->replica_state_file_in_sync = false;
     }
   }
-  return COLVARS_OK;
+  return error_code;
 }
 
 
@@ -1786,39 +1783,41 @@ int colvarbias_meta::write_replica_state_file()
     cvm::log("Writing replica state file for bias \""+name+"\"\n");
   }
 
+  int error_code = COLVARS_OK;
+
+  // Write to temporary state file
   std::string const tmp_state_file(replica_state_file+".tmp");
-  std::remove(tmp_state_file.c_str());
+  error_code |= proxy->remove_file(tmp_state_file);
   std::ostream *rep_state_os = cvm::proxy->output_stream(tmp_state_file);
-  if (rep_state_os == NULL) {
-    cvm::error("Error: in opening file \""+
-               tmp_state_file+"\" for writing.\n", FILE_ERROR);
-    return FILE_ERROR;
+  if (rep_state_os) {
+    if (!write_state(*rep_state_os)) {
+      error_code |= cvm::error("Error: in writing to temporary file \""+
+                               tmp_state_file+"\".\n", FILE_ERROR);
+    }
   }
+  error_code |= proxy->close_output_stream(tmp_state_file);
 
-  rep_state_os->setf(std::ios::scientific, std::ios::floatfield);
+  error_code |= proxy->rename_file(tmp_state_file, replica_state_file);
 
-  if (!write_state(*rep_state_os)) {
-    cvm::error("Error: in writing to file \""+
-               tmp_state_file+"\".\n", FILE_ERROR);
-    cvm::proxy->close_output_stream(tmp_state_file);
-    return FILE_ERROR;
+  return error_code;
+}
+
+
+int colvarbias_meta::reopen_replica_buffer_file()
+{
+  int error_code = COLVARS_OK;
+  colvarproxy *proxy = cvm::proxy;
+  if (proxy->get_output_stream(replica_hills_file) != NULL) {
+    error_code |= proxy->close_output_stream(replica_hills_file);
   }
-
-  cvm::proxy->close_output_stream(tmp_state_file);
-
-  if (std::rename(tmp_state_file.c_str(), replica_state_file.c_str())) {
-    return cvm::error("Error: failed to write file \""+replica_state_file+
-                      "\".\n", FILE_ERROR);
+  error_code |= proxy->remove_file(replica_hills_file);
+  std::ostream *replica_hills_os = proxy->output_stream(replica_hills_file);
+  if (replica_hills_os) {
+    replica_hills_os->setf(std::ios::scientific, std::ios::floatfield);
+  } else {
+    error_code |= FILE_ERROR;
   }
-
-  // reopen the hills file
-  cvm::proxy->close_output_stream(replica_hills_file);
-  cvm::proxy->backup_file(replica_hills_file);
-  replica_hills_os = cvm::proxy->output_stream(replica_hills_file);
-  if (!replica_hills_os) return cvm::get_error();
-  replica_hills_os->setf(std::ios::scientific, std::ios::floatfield);
-
-  return COLVARS_OK;
+  return error_code;
 }
 
 
