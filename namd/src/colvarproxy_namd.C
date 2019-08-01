@@ -936,15 +936,15 @@ std::ostream * colvarproxy_namd::output_stream(std::string const &output_name,
   if (!(mode & (std::ios_base::app | std::ios_base::ate))) {
     colvarproxy::backup_file(output_name);
   }
-  os = new ofstream_namd(output_name.c_str(), mode);
-  if (!os->is_open()) {
+  ofstream_namd *osf = new ofstream_namd(output_name.c_str(), mode);
+  if (!osf->is_open()) {
     cvm::error("Error: cannot write to file \""+output_name+"\".\n",
                FILE_ERROR);
     return NULL;
   }
   output_stream_names.push_back(output_name);
-  output_files.push_back(os);
-  return os;
+  output_files.push_back(osf);
+  return osf;
 }
 
 
