@@ -778,7 +778,7 @@ int colvarproxy_io::backup_file(char const *filename)
 
 int colvarproxy_io::remove_file(char const *filename)
 {
-  if (std::remove(backup)) {
+  if (std::remove(filename)) {
     if (errno != ENOENT) {
       return cvm::error("Error: in removing file \""+std::string(filename)+
                         "\".\n.",
