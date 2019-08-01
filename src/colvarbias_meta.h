@@ -212,7 +212,7 @@ protected:
   virtual int write_replica_state_file();
 
   /// Call this after write_replica_state_file()
-  virtual int reopen_replica_hills_file();
+  virtual int reopen_replica_buffer_file();
 
   /// \brief Additional, "mirror" metadynamics biases, to collect info
   /// from the other replicas
