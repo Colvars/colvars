@@ -564,8 +564,11 @@ public:
   /// if this is not open already, then open it
   virtual std::ostream *output_stream(std::string const &output_name,
                                       std::ios_base::openmode mode =
-                                        std::ios_base::out);
+                                      std::ios_base::out);
 
+  /// Returns a reference to output_name if it exists, NULL otherwise
+  virtual std::ostream *get_output_stream(std::string const &output_name);
+  
   /// \brief Flushes the given output channel
   virtual int flush_output_stream(std::ostream *os);
 

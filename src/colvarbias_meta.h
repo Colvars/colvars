@@ -244,9 +244,6 @@ protected:
   /// This file becomes empty after replica_state_file is rewritten
   std::string            replica_hills_file;
 
-  /// \brief Output stream corresponding to replica_hills_file
-  std::ostream          *replica_hills_os;
-
   /// Position within replica_hills_file (when reading it)
   int                    replica_hills_file_pos;
 
