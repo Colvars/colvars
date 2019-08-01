@@ -31,7 +31,6 @@ colvarbias_meta::colvarbias_meta(char const *key)
 {
   new_hills_begin = hills.end();
   hills_traj_os = NULL;
-  replica_hills_os = NULL;
 
   ebmeta_equil_steps = 0L;
 }
@@ -243,14 +242,14 @@ int colvarbias_meta::init_ebmeta_params(std::string const &conf)
 colvarbias_meta::~colvarbias_meta()
 {
   colvarbias_meta::clear_state_data();
+  colvarproxy *proxy = cvm::proxy;
 
-  if (replica_hills_os) {
-    cvm::proxy->close_output_stream(replica_hills_file);
-    replica_hills_os = NULL;
+  if (proxy->get_output_stream(replica_hills_file)) {
+    proxy->close_output_stream(replica_hills_file);
   }
 
   if (hills_traj_os) {
-    cvm::proxy->close_output_stream(hills_traj_file_name());
+    proxy->close_output_stream(hills_traj_file_name());
     hills_traj_os = NULL;
   }
 
@@ -531,6 +530,8 @@ int colvarbias_meta::update_bias()
 
     case multiple_replicas:
       create_hill(hill(hill_weight*hills_scale, colvars, hill_width, replica_id));
+      std::ostream *replica_hills_os =
+        cvm::proxy->get_output_stream(replica_hills_file);
       if (replica_hills_os) {
         *replica_hills_os << hills.back();
       } else {
@@ -929,13 +930,16 @@ void colvarbias_meta::recount_hills_off_grid(colvarbias_meta::hill_iter  h_first
 
 int colvarbias_meta::replica_share()
 {
+  colvarproxy *proxy = cvm::proxy;
   // sync with the other replicas (if needed)
   if (comm == multiple_replicas) {
     // reread the replicas registry
     update_replicas_registry();
     // empty the output buffer
+    std::ostream *replica_hills_os =
+      proxy->get_output_stream(replica_hills_file);
     if (replica_hills_os) {
-      cvm::proxy->flush_output_stream(replica_hills_os);
+      proxy->flush_output_stream(replica_hills_os);
     }
     read_replica_files();
   }
@@ -1776,6 +1780,8 @@ void colvarbias_meta::write_pmf()
 
 int colvarbias_meta::write_replica_state_file()
 {
+  colvarproxy *proxy = cvm::proxy;
+
   if (cvm::debug()) {
     cvm::log("Writing replica state file for bias \""+name+"\"\n");
   }
@@ -1884,5 +1890,3 @@ std::ostream & operator << (std::ostream &os, colvarbias_meta::hill const &h)
 
   return os;
 }
-
-

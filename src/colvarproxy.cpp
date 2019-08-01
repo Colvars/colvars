@@ -697,17 +697,14 @@ std::ostream * colvarproxy_io::output_stream(std::string const &output_name,
   if (cvm::debug()) {
     cvm::log("Using colvarproxy::output_stream()\n");
   }
-  std::list<std::ostream *>::iterator osi  = output_files.begin();
-  std::list<std::string>::iterator    osni = output_stream_names.begin();
-  for ( ; osi != output_files.end(); osi++, osni++) {
-    if (*osni == output_name) {
-      return *osi;
-    }
-  }
+
+  std::ostream *os = get_output_stream(output_name);
+  if (os != NULL) return os;
+
   if (!(mode & (std::ios_base::app | std::ios_base::ate))) {
     backup_file(output_name);
   }
-  std::ofstream *os = new std::ofstream(output_name.c_str(), mode);
+  os = new std::ofstream(output_name.c_str(), mode);
   if (!os->is_open()) {
     cvm::error("Error: cannot write to file/channel \""+output_name+"\".\n",
                FILE_ERROR);
@@ -717,6 +714,20 @@ std::ostream * colvarproxy_io::output_stream(std::string const &output_name,
   output_files.push_back(os);
   return os;
 }
+
+
+std::ostream *colvarproxy_io::get_output_stream(std::string const &output_name)
+{
+  std::list<std::ostream *>::iterator osi  = output_files.begin();
+  std::list<std::string>::iterator    osni = output_stream_names.begin();
+  for ( ; osi != output_files.end(); osi++, osni++) {
+    if (*osni == output_name) {
+      return *osi;
+    }
+  }
+  return NULL;
+}
+
 
 
 int colvarproxy_io::flush_output_stream(std::ostream *os)
