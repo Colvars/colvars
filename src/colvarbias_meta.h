@@ -208,8 +208,11 @@ protected:
   /// \brief Read new data from replicas' files
   virtual void read_replica_files();
 
-  /// \brief Write data to other replicas
+  /// Write full state information to be read by other replicas
   virtual int write_replica_state_file();
+
+  /// Call this after write_replica_state_file()
+  virtual int reopen_replica_hills_file();
 
   /// \brief Additional, "mirror" metadynamics biases, to collect info
   /// from the other replicas
