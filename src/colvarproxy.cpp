@@ -1,7 +1,13 @@
 // -*- c++ -*-
 
+#if !defined(WIN32) || defined(__CYGWIN__)
+#include <unistd.h>
+#endif
+#include <cerrno>
+
 #include <sstream>
 #include <cstring>
+#include <cstdio>
 
 #if defined(_OPENMP)
 #include <omp.h>
@@ -765,7 +771,42 @@ int colvarproxy_io::close_output_stream(std::string const &output_name)
 
 int colvarproxy_io::backup_file(char const *filename)
 {
+  // TODO implement this using rename_file()
   return COLVARS_NOT_IMPLEMENTED;
+}
+
+
+int colvarproxy_io::remove_file(char const *filename)
+{
+  if (std::remove(backup)) {
+    if (errno != ENOENT) {
+      return cvm::error("Error: in removing file \""+std::string(filename)+
+                        "\".\n.",
+                        FILE_ERROR);
+    }
+  }
+  return COLVARS_OK;
+}
+
+
+int colvarproxy_io::rename_file(char const *filename, char const *newfilename)
+{
+  int error_code = COLVARS_OK;
+#if defined(WIN32) && !defined(__CYGWIN__)
+  // On straight Windows, must remove the destination before renaming it
+  error_code |= remove_file(newfilename);
+#endif
+  int rename_exit_code = 0;
+  while ((rename_exit_code = std::rename(filename, newfilename)) != 0) {
+    if (errno == EINTR) continue;
+    // Call log() instead of error to allow the next try
+    cvm::log("Error: in renaming file \""+std::string(filename)+"\" to \""+
+             std::string(newfilename)+"\".\n.");
+    error_code |= FILE_ERROR;
+    if (errno == EXDEV) continue;
+    break;
+  }
+  return rename_exit_code ? error_code : COLVARS_OK;
 }
 
 
@@ -830,4 +871,3 @@ int colvarproxy::get_version_from_string(char const *version_string)
   is >> newint;
   return newint;
 }
-
