@@ -1668,7 +1668,7 @@ int colvarbias_meta::write_state_to_replicas()
   int error_code = COLVARS_OK;
   if (comm != single_replica) {
     error_code |= write_replica_state_file();
-    error_code |= reopen_replica_hills_file();
+    error_code |= reopen_replica_buffer_file();
     // schedule to reread the state files of the other replicas
     for (size_t ir = 0; ir < replicas.size(); ir++) {
       (replicas[ir])->replica_state_file_in_sync = false;
