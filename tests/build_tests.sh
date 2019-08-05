@@ -161,7 +161,7 @@ m4 -Dorientation=orientationProj < orientation-fitgroup.in > orientationproj-fit
 for colvar in \
     "angle" \
     "dihedral" \
-    "coordnum" "coordnum-pairlist" \
+    "coordnum" "coordnum-group2centeronly" "coordnum-pairlist" \
     "coordnum-aniso" "groupcoord" "groupcoord-aniso" \
     "dipoleangle" "dipolemagnitude" \
     "distancez" "distancez-fitgroup" \
