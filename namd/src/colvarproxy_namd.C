@@ -22,6 +22,8 @@
 #include "PDBData.h"
 #include "ReductionMgr.h"
 #include "ScriptTcl.h"
+#include "NamdState.h"
+#include "Controller.h"
 
 #ifdef NAMD_TCL
 #include <tcl.h>
@@ -90,6 +92,13 @@ colvarproxy_namd::colvarproxy_namd()
   output_prefix_str = std::string(simparams->outputFilename);
   restart_output_prefix_str = std::string(simparams->restartFilename);
   restart_frequency_engine = simparams->restartFrequency;
+
+  if (simparams->accelMDOn) {
+    accelMDOn = true;
+  } else {
+    accelMDOn = false;
+  }
+  amd_weight_factor = 1.0;
 
   // check if it is possible to save output configuration
   if ((!output_prefix_str.size()) && (!restart_output_prefix_str.size())) {
@@ -307,6 +316,7 @@ void colvarproxy_namd::calculate()
   }
 
   previous_NAMD_step = step;
+  update_accelMD_info();
 
   {
     Vector const a = lattice->a();
@@ -560,6 +570,16 @@ void colvarproxy_namd::calculate()
   if (step == simparams->N) {
     post_run();
   }
+}
+
+void colvarproxy_namd::update_accelMD_info() {
+  if (accelMDOn == false) {
+    return;
+  }
+  const Controller& c = Node::Object()->state->getController();
+  // This aMD factor is from previous step!
+  amd_weight_factor = std::exp(c.accelMDdV / (temperature() * boltzmann()));
+//   std::cout << "Step: " << cvm::to_str(colvars->it) << " accelMD dV in colvars: " << c.accelMDdV << std::endl;
 }
 
 

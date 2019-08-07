@@ -12,6 +12,8 @@
 #include "colvar.h"
 #include "colvarbias_histogram.h"
 
+#include <algorithm>
+#include <numeric>
 
 colvarbias_histogram::colvarbias_histogram(char const *key)
   : colvarbias(key),
@@ -227,4 +229,140 @@ std::ostream & colvarbias_histogram::write_state_data(std::ostream& os)
   grid->write_raw(os, 8);
   os.flags(flags);
   return os;
+}
+
+colvarbias_reweightaMD::colvarbias_reweightaMD(char const *key)
+  : colvarbias_histogram(key) 
+{
+}
+
+colvarbias_reweightaMD::~colvarbias_reweightaMD() {}
+
+int colvarbias_reweightaMD::init(std::string const &conf) {
+  if (cvm::proxy->accelMD_enabled() == false) {
+    cvm::error("Error: accelerated MD in your MD engine is not enabled.\n", INPUT_ERROR);
+  }
+  int baseclass_init_code = colvarbias_histogram::init(conf);
+  get_keyval(conf, "CollectAfterSteps", start_after_steps, 0);
+  get_keyval(conf, "outputFilePMF", out_name_pmf, std::string(""));
+  return baseclass_init_code;
+}
+
+int colvarbias_reweightaMD::update() {
+  int error_code = COLVARS_OK;
+  if (cvm::step_relative() >= start_after_steps) {
+    // update base class
+    error_code |= colvarbias::update();
+
+    if (cvm::debug()) {
+      cvm::log("Updating histogram bias " + this->name);
+    }
+
+    previous_bin.assign(num_variables(), 0);
+    if (cvm::step_relative() > 0) {
+      previous_bin = bin;
+    }
+    
+    // assign a valid bin size
+    bin.assign(num_variables(), 0);
+
+    if (out_name.size() == 0) {
+      // At the first timestep, we need to assign out_name since
+      // output_prefix is unset during the constructor
+      out_name = cvm::output_prefix() + "." + this->name + ".dat";
+      cvm::log("Histogram " + this->name + " will be written to file \"" + out_name + "\"");
+    }
+
+    if (out_name_dx.size() == 0) {
+      out_name_dx = cvm::output_prefix() + "." + this->name + ".dx";
+      cvm::log("Histogram " + this->name + " will be written to file \"" + out_name_dx + "\"");
+    }
+
+    if (out_name_pmf.size() == 0) {
+      out_name_pmf = cvm::output_prefix() + "." + this->name + ".aMD.pmf";
+      cvm::log("Histogram " + this->name + " will be written to file \"" + out_name_pmf + "\"");
+    }
+
+    if (colvar_array_size == 0) {
+      // update indices for scalar values
+      size_t i;
+      for (i = 0; i < num_variables(); i++) {
+        bin[i] = grid->current_bin_scalar(i);
+      }
+
+      if (grid->index_ok(previous_bin) && cvm::step_relative() > 0) {
+        grid->acc_value(previous_bin, cvm::proxy->get_accelMD_factor());
+      }
+    } else {
+      // update indices for vector/array values
+      size_t iv, i;
+      for (iv = 0; iv < colvar_array_size; iv++) {
+        for (i = 0; i < num_variables(); i++) {
+          bin[i] = grid->current_bin_scalar(i, iv);
+        }
+
+        if (grid->index_ok(previous_bin) && cvm::step_relative() > 0) {
+          grid->acc_value(previous_bin, cvm::proxy->get_accelMD_factor());
+        }
+      }
+    }
+
+    if (output_freq && (cvm::step_absolute() % output_freq) == 0) {
+      write_output_files();
+    }
+
+    error_code |= cvm::get_error();
+  }
+  return error_code;
+}
+
+int colvarbias_reweightaMD::write_output_files() {
+  int error_code = COLVARS_OK;
+  error_code |= colvarbias_histogram::write_output_files();
+  if (out_name_pmf.size()) {
+    cvm::log("Writing the accelerated MD PMF file \""+out_name_pmf+"\".\n");
+    cvm::backup_file(out_name_pmf.c_str());
+    std::ostream *pmf_grid_os = cvm::proxy->output_stream(out_name_pmf);
+    if (!pmf_grid_os) {
+      return cvm::error("Error opening histogram file "+out_name_pmf+
+                        " for writing.\n", FILE_ERROR);
+    }
+    colvar_grid_scalar pmf_grid(*grid);
+    pmf_grid.setup();
+    pmf_grid.copy_grid(*grid);
+    std::vector<cvm::real> pmf_raw_data(pmf_grid.raw_data_num(), 0);
+    pmf_grid.raw_data_out(pmf_raw_data);
+    counts_to_pmf(pmf_raw_data);
+    pmf_grid.raw_data_in(pmf_raw_data);
+    pmf_grid.write_multicol(*pmf_grid_os);
+    cvm::proxy->close_output_stream(out_name_pmf);
+  } else {
+      std::cout << "HERE!!!!" << std::endl;
+  }
+  error_code |= cvm::get_error();
+  return error_code;
+}
+
+void colvarbias_reweightaMD::counts_to_pmf(std::vector<cvm::real>& counts) const {
+  if (counts.size() == 0) return;
+  std::vector<cvm::real> tmp_counts(counts);
+  const cvm::real total_count = std::accumulate(tmp_counts.begin(), tmp_counts.end(), cvm::real(0));
+  const cvm::real kbt = cvm::boltzmann() * cvm::temperature();
+  std::transform(tmp_counts.begin(), tmp_counts.end(), tmp_counts.begin(), [total_count, kbt](double x){
+    if (x > 0) {
+      return -1.0 * kbt * std::log(x / total_count);
+    } else {
+      return double(0);
+    }
+  });
+  const cvm::real max_pmf = *std::max_element(tmp_counts.begin(), tmp_counts.end());
+  std::transform(counts.begin(), counts.end(), counts.begin(), [total_count, kbt, max_pmf](double x){
+    if (x > 0) {
+      return -1.0 * kbt * std::log(x / total_count);
+    } else {
+      return max_pmf;
+    }
+  });
+  const cvm::real min_pmf = *std::min_element(counts.begin(), counts.end());
+  std::transform(counts.begin(), counts.end(), counts.begin(), [min_pmf](double x){return x - min_pmf;});
 }

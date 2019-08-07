@@ -54,6 +54,11 @@ protected:
   /// Used to submit restraint energy as MISC
   SubmitReduction *reduction;
 
+  /// Accelerated MD reweighting factor
+  bool accelMDOn;
+  cvm::real amd_weight_factor;
+  void update_accelMD_info();
+
   void init_tcl_pointers();
 
 public:
@@ -115,6 +120,14 @@ public:
   cvm::real dt()
   {
     return simparams->dt;
+  }
+
+  cvm::real get_accelMD_factor() const {
+    return amd_weight_factor;
+  }
+
+  bool accelMD_enabled() const {
+    return accelMDOn;
   }
 
 #if CMK_SMP && USE_CKLOOP
