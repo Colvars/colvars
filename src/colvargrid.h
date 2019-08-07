@@ -542,11 +542,19 @@ public:
   {
     for (size_t i = 0; i < data.size(); i++) out_data[i] = data[i];
   }
+  void raw_data_out(std::vector<T>& out_data) const
+  {
+    out_data = data;
+  }
   /// \brief Input the data as they are represented in memory.
   void raw_data_in(const T* in_data)
   {
     for (size_t i = 0; i < data.size(); i++) data[i] = in_data[i];
     has_data = true;
+  }
+  void raw_data_in(const std::vector<T>& in_data)
+  {
+    data = in_data;
   }
   /// \brief Size of the data as they are represented in memory.
   size_t raw_data_num() const { return data.size(); }

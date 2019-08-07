@@ -477,6 +477,9 @@ int colvarmodule::parse_biases(std::string const &conf)
   /// initialize metadynamics instances
   parse_biases_type<colvarbias_meta>(conf, "metadynamics");
 
+  /// initialize reweightaMD instances
+  parse_biases_type<colvarbias_reweightaMD>(conf, "reweightaMD");
+
   if (use_scripted_forces) {
     cvm::log(cvm::line_marker);
     cvm::increase_depth();

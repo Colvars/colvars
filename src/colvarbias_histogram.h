@@ -45,4 +45,21 @@ protected:
   virtual std::ostream & write_state_data(std::ostream &os);
 };
 
+class colvarbias_reweightaMD : public colvarbias_histogram {
+public:
+  colvarbias_reweightaMD(char const *key);
+  ~colvarbias_reweightaMD();
+  virtual int init(std::string const &conf);
+  virtual int update();
+  virtual int write_output_files();
+  void counts_to_pmf(std::vector<cvm::real>& counts) const;
+protected:
+  /// Current accelMD factor is the from previous frame
+  std::vector<int> previous_bin;
+  /// Start collecting samples after N steps
+  size_t start_after_steps;
+  /// PMF output
+  std::string out_name_pmf;
+};
+
 #endif
