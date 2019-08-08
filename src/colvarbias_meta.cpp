@@ -1032,6 +1032,7 @@ void colvarbias_meta::update_replicas_registry()
           (replicas.back())->enable(f_cvb_calc_ti_samples);
           (replicas.back())->colvarbias_ti::init_grids();
         }
+        (replicas.back())->update_status = 1;
       }
     }
   } else {
@@ -1061,7 +1062,6 @@ void colvarbias_meta::update_replicas_registry()
                cvm::to_str(replica_update_freq)+" steps.\n");
       (replicas[ir])->update_status++;
     } else {
-      (replicas[ir])->update_status = 0;
       if (new_state_file != (replicas[ir])->replica_state_file) {
         cvm::log("Metadynamics bias \""+this->name+"\""+
                  ": replica \""+(replicas[ir])->replica_id+
