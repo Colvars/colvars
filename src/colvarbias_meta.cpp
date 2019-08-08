@@ -1085,27 +1085,41 @@ void colvarbias_meta::read_replica_files()
   // Note: we start from the 2nd replica.
   for (size_t ir = 1; ir < replicas.size(); ir++) {
 
-    if (! (replicas[ir])->replica_state_file_in_sync) {
-      // if a new state file is being read, the hills file is also new
-      (replicas[ir])->replica_hills_file_pos = 0;
-    }
-
     // (re)read the state file if necessary
     if ( (! (replicas[ir])->has_data) ||
          (! (replicas[ir])->replica_state_file_in_sync) ) {
-
-      cvm::log("Metadynamics bias \""+this->name+"\""+
-               ": reading the state of replica \""+
-               (replicas[ir])->replica_id+"\" from file \""+
-               (replicas[ir])->replica_state_file+"\".\n");
-
-      std::ifstream is((replicas[ir])->replica_state_file.c_str());
-      if ((replicas[ir])->read_state(is)) {
-        // state file has been read successfully
-        (replicas[ir])->replica_state_file_in_sync = true;
-        (replicas[ir])->update_status = 0;
+      if ((replicas[ir])->replica_state_file.size()) {
+        cvm::log("Metadynamics bias \""+this->name+"\""+
+                 ": reading the state of replica \""+
+                 (replicas[ir])->replica_id+"\" from file \""+
+                 (replicas[ir])->replica_state_file+"\".\n");
+        std::ifstream is((replicas[ir])->replica_state_file.c_str());
+        if ((replicas[ir])->read_state(is)) {
+          // state file has been read successfully
+          (replicas[ir])->replica_state_file_in_sync = true;
+          (replicas[ir])->update_status = 0;
+        } else {
+          cvm::log("Failed to read the file \""+
+                   (replicas[ir])->replica_state_file+
+                   "\": will try again in "+
+                   cvm::to_str(replica_update_freq)+" steps.\n");
+          (replicas[ir])->replica_state_file_in_sync = false;
+          (replicas[ir])->update_status++;
+        }
+        is.close();
+      } else {
+        cvm::log("Metadynamics bias \""+this->name+"\""+
+                 ": the state file of replica \""+
+                 (replicas[ir])->replica_id+"\" is currently undefined: "
+                 "will try again after "+
+                 cvm::to_str(replica_update_freq)+" steps.\n");
+        (replicas[ir])->update_status++;
       }
-      is.close();
+    }
+
+    if (! (replicas[ir])->replica_state_file_in_sync) {
+      // if a new state file is being read, the hills file is also new
+      (replicas[ir])->replica_hills_file_pos = 0;
     }
 
     // now read the hills added after writing the state file
