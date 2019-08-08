@@ -778,12 +778,32 @@ int colvarproxy_io::backup_file(char const *filename)
 
 int colvarproxy_io::remove_file(char const *filename)
 {
+  int error_code = COLVARS_OK;
+#if defined(WIN32) && !defined(__CYGWIN__)
+  // Because the file may be open by other processes, rename it to filename.old
+  std::string const renamed_file(std::string(filename)+".old");
+  // It may still be there from an interrupted run, so remove it to be safe
+  std::remove(renamed_file.c_str());
+  int rename_exit_code = 0;
+  while ((rename_exit_code = std::rename(filename,
+                                         renamed_file.c_str())) != 0) {
+    if (errno == EINTR) continue;
+    error_code |= FILE_ERROR;
+    break;
+  }
+  // Ask to remove filename.old, but ignore any errors raised
+  std::remove(renamed_file.c_str());
+#else
   if (std::remove(filename)) {
     if (errno != ENOENT) {
-      return cvm::error("Error: in removing file \""+std::string(filename)+
-                        "\".\n.",
-                        FILE_ERROR);
+      error_code |= FILE_ERROR;
     }
+  }
+#endif
+  if (error_code != COLVARS_OK) {
+    return cvm::error("Error: in removing file \""+std::string(filename)+
+                      "\".\n.",
+                      error_code);
   }
   return COLVARS_OK;
 }

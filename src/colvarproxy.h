@@ -584,10 +584,10 @@ public:
     return backup_file(filename.c_str());
   }
 
-  /// Remove the given file
+  /// Remove the given file (on Windows only, rename to filename.old)
   int remove_file(char const *filename);
 
-  /// Remove the given file
+  /// Remove the given file (on Windows only, rename to filename.old)
   inline int remove_file(std::string const &filename)
   {
     return remove_file(filename.c_str());
