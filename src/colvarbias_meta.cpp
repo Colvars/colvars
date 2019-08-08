@@ -1036,8 +1036,8 @@ void colvarbias_meta::update_replicas_registry()
       }
     }
   } else {
-    cvm::fatal_error("Error: cannot read the replicas registry file \""+
-                     replicas_registry+"\".\n");
+    cvm::error("Error: cannot read the replicas registry file \""+
+               replicas_registry+"\".\n", FILE_ERROR);
   }
 
   // now (re)read the list file of each replica
@@ -1131,14 +1131,16 @@ void colvarbias_meta::read_replica_files()
                  (replicas[ir])->replica_id+"\" in the file \""+
                  (replicas[ir])->replica_hills_file+"\".\n");
 
-      // read hills from the other replicas' files; for each file, resume
-      // the position recorded previously
+      // read hills from the other replicas' files
 
       std::ifstream is((replicas[ir])->replica_hills_file.c_str());
       if (is.is_open()) {
 
-        // try to resume the previous position
-        is.seekg((replicas[ir])->replica_hills_file_pos, std::ios::beg);
+        // try to resume the previous position (if not the beginning)
+        if ((replicas[ir])->replica_hills_file_pos > 0) {
+          is.seekg((replicas[ir])->replica_hills_file_pos, std::ios::beg);
+        }
+
         if (!is.is_open()){
           // if fail (the file may have been overwritten), reset this
           // position
