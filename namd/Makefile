@@ -728,7 +728,7 @@ depends: $(MKINCDIR) $(CIFILES) $(MKDSTDIR) $(DEPENDFILE)
 	for i in $(COLVARSLIB) ; do \
 	      SRCFILE=$(COLVARSSRCDIR)/`basename $$i .o`.cpp ; \
 	      $(ECHO) "checking dependencies for $$SRCFILE" ; \
-	      gcc -MM $(COLVARSGXXFLAGS) $$SRCFILE | \
+	      g++ -std=c++0x -MM $(COLVARSGXXFLAGS) $$SRCFILE | \
 	      perl $(SRCDIR)/dc.pl $(CHARMINC) $(TCLDIR) $(FFTDIR) /usr/include /usr/local >> $(DEPENDFILE); \
 	      $(ECHO) '	$$(CXX) $$(COLVARSCXXFLAGS) $$(COPTO)'$$i '$$(COPTC)' \
 		$$SRCFILE >> $(DEPENDFILE) ; \
@@ -736,7 +736,7 @@ depends: $(MKINCDIR) $(CIFILES) $(MKDSTDIR) $(DEPENDFILE)
 	for i in $(LEPTONOBJS) ; do \
 	      SRCFILE=$(LEPTONSRCDIR)/`basename $$i .o`.cpp ; \
 	      $(ECHO) "checking dependencies for $$SRCFILE" ; \
-	      gcc -MM $(LEPTONGCCFLAGS) $$SRCFILE | \
+	      g++ -std=c++0x -MM $(LEPTONGCCFLAGS) $$SRCFILE | \
 	      perl $(SRCDIR)/dc.pl $(CHARMINC) $(TCLDIR) $(FFTDIR) /usr/include /usr/local >> $(DEPENDFILE); \
 	      $(ECHO) '	$$(CXX) $$(LEPTONCXXFLAGS) $$(COPTO)'$$i '$$(COPTC)' \
 		$$SRCFILE >> $(DEPENDFILE) ; \
