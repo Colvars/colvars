@@ -53,6 +53,7 @@ public:
   virtual int update();
   virtual int write_output_files();
   void counts_to_pmf(std::vector<cvm::real>& counts) const;
+  std::vector<cvm::real> compute_cumulant_expansion_factor(const std::vector<cvm::real>& dV, const std::vector<cvm::real>& dV_square, const std::vector<cvm::real>& count, cvm::real beta) const;
 protected:
   /// Current accelMD factor is the from previous frame
   std::vector<int> previous_bin;
@@ -60,6 +61,12 @@ protected:
   size_t start_after_steps;
   /// PMF output
   std::string out_name_pmf;
+
+  /// Use cumulant expansion to second order?
+  bool use_cumulant_expansion;
+  colvar_grid_scalar* grid_count;
+  colvar_grid_scalar* grid_dV;
+  colvar_grid_scalar* grid_dV_square;
 };
 
 #endif

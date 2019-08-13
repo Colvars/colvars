@@ -236,7 +236,20 @@ colvarbias_reweightaMD::colvarbias_reweightaMD(char const *key)
 {
 }
 
-colvarbias_reweightaMD::~colvarbias_reweightaMD() {}
+colvarbias_reweightaMD::~colvarbias_reweightaMD() {
+  if (grid_dV) {
+    delete grid_dV;
+    grid_dV = NULL;
+  }
+  if (grid_dV_square) {
+    delete grid_dV_square;
+    grid_dV_square = NULL;
+  }
+  if (grid_count) {
+    delete grid_count;
+    grid_count = NULL;
+  }
+}
 
 int colvarbias_reweightaMD::init(std::string const &conf) {
   if (cvm::proxy->accelMD_enabled() == false) {
@@ -245,6 +258,16 @@ int colvarbias_reweightaMD::init(std::string const &conf) {
   int baseclass_init_code = colvarbias_histogram::init(conf);
   get_keyval(conf, "CollectAfterSteps", start_after_steps, 0);
   get_keyval(conf, "outputFilePMF", out_name_pmf, std::string(""));
+  get_keyval(conf, "CumulantExpansion", use_cumulant_expansion, true);
+  grid_count = new colvar_grid_scalar(colvars);
+  grid_count->request_actual_value();
+  grid->request_actual_value();
+  if (use_cumulant_expansion) {
+    grid_dV = new colvar_grid_scalar(colvars);
+    grid_dV_square = new colvar_grid_scalar(colvars);
+    grid_dV->request_actual_value();
+    grid_dV_square->request_actual_value();
+  }
   return baseclass_init_code;
 }
 
@@ -291,7 +314,14 @@ int colvarbias_reweightaMD::update() {
       }
 
       if (grid->index_ok(previous_bin) && cvm::step_relative() > 0) {
-        grid->acc_value(previous_bin, cvm::proxy->get_accelMD_factor());
+        const cvm::real reweighting_factor = cvm::proxy->get_accelMD_factor();
+        grid_count->acc_value(previous_bin, 1.0);
+        grid->acc_value(previous_bin, reweighting_factor);
+        if (use_cumulant_expansion) {
+          const cvm::real dV = std::log(reweighting_factor) * cvm::temperature() * cvm::boltzmann();
+          grid_dV->acc_value(previous_bin, dV);
+          grid_dV_square->acc_value(previous_bin, dV * dV);
+        }
       }
     } else {
       // update indices for vector/array values
@@ -302,7 +332,14 @@ int colvarbias_reweightaMD::update() {
         }
 
         if (grid->index_ok(previous_bin) && cvm::step_relative() > 0) {
-          grid->acc_value(previous_bin, cvm::proxy->get_accelMD_factor());
+          const cvm::real reweighting_factor = cvm::proxy->get_accelMD_factor();
+          grid_count->acc_value(previous_bin, 1.0);
+          grid->acc_value(previous_bin, reweighting_factor);
+          if (use_cumulant_expansion) {
+            const cvm::real dV = std::log(reweighting_factor) * cvm::temperature() * cvm::boltzmann();
+            grid_count->acc_value(previous_bin, 1.0);
+            grid_dV_square->acc_value(previous_bin, dV * dV);
+          }
         }
       }
     }
@@ -324,18 +361,47 @@ int colvarbias_reweightaMD::write_output_files() {
     cvm::backup_file(out_name_pmf.c_str());
     std::ostream *pmf_grid_os = cvm::proxy->output_stream(out_name_pmf);
     if (!pmf_grid_os) {
-      return cvm::error("Error opening histogram file "+out_name_pmf+
+      return cvm::error("Error opening PMF file "+out_name_pmf+
                         " for writing.\n", FILE_ERROR);
     }
     colvar_grid_scalar pmf_grid(*grid);
     pmf_grid.setup();
     pmf_grid.copy_grid(*grid);
     std::vector<cvm::real> pmf_raw_data(pmf_grid.raw_data_num(), 0);
+    std::vector<cvm::real> count_raw_data(grid_count->raw_data_num(), 0);
+    grid_count->raw_data_out(count_raw_data);
     pmf_grid.raw_data_out(pmf_raw_data);
     counts_to_pmf(pmf_raw_data);
     pmf_grid.raw_data_in(pmf_raw_data);
     pmf_grid.write_multicol(*pmf_grid_os);
     cvm::proxy->close_output_stream(out_name_pmf);
+    if (use_cumulant_expansion) {
+      std::string out_name_pmf_cumulant{out_name_pmf + "2"};
+      cvm::backup_file(out_name_pmf_cumulant.c_str());
+      std::ostream *pmf_grid_cumulant_os = cvm::proxy->output_stream(out_name_pmf_cumulant);
+      if (!pmf_grid_cumulant_os) {
+        return cvm::error("Error opening PMF file "+out_name_pmf_cumulant+
+                          " for writing.\n", FILE_ERROR);
+      }
+      colvar_grid_scalar pmf_grid_cumulant(*grid);
+      pmf_grid_cumulant.setup();
+      std::vector<cvm::real> dV_raw_data(grid_dV->raw_data_num(), 0);
+      std::vector<cvm::real> dV_square_raw_data(grid_dV_square->raw_data_num(), 0);
+      grid_dV->raw_data_out(dV_raw_data);
+      grid_dV_square->raw_data_out(dV_square_raw_data);
+      const cvm::real beta = 1.0 / (cvm::temperature() * cvm::boltzmann());
+      std::vector<cvm::real> factor = compute_cumulant_expansion_factor(dV_raw_data, dV_square_raw_data, count_raw_data, beta);
+//       for (size_t i = 0; i < factor.size(); ++i) {
+//         // compute weighted probabilities
+//         if (count_raw_data[i] > 0) {
+//           factor[i] *= count_raw_data[i];
+//         }
+//       }
+      counts_to_pmf(factor);
+      pmf_grid_cumulant.raw_data_in(factor);
+      pmf_grid_cumulant.write_multicol(*pmf_grid_cumulant_os);
+      cvm::proxy->close_output_stream(out_name_pmf_cumulant);
+    }
   } else {
       std::cout << "HERE!!!!" << std::endl;
   }
@@ -365,4 +431,16 @@ void colvarbias_reweightaMD::counts_to_pmf(std::vector<cvm::real>& counts) const
   });
   const cvm::real min_pmf = *std::min_element(counts.begin(), counts.end());
   std::transform(counts.begin(), counts.end(), counts.begin(), [min_pmf](double x){return x - min_pmf;});
+}
+
+std::vector<cvm::real> colvarbias_reweightaMD::compute_cumulant_expansion_factor(const std::vector<cvm::real>& dV, const std::vector<cvm::real>& dV_square, const std::vector<cvm::real>& count, cvm::real beta) const {
+  std::vector<cvm::real> factor(dV.size(), 0);
+  for (size_t i = 0; i < dV.size(); ++i) {
+    if (count[i] > 0) {
+      const cvm::real dV_avg = dV[i] / count[i];
+      const cvm::real dV_square_avg = dV_square[i] / count[i];
+      factor[i] = beta * dV_avg + 0.5 * beta * beta * (dV_square_avg - dV_avg * dV_avg);
+    }
+  }
+  return factor;
 }
