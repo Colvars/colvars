@@ -561,7 +561,8 @@ int colvar::init_extended_Lagrangian(std::string const &conf)
     cvm::log("Enabling the extended Lagrangian term for colvar \""+
              this->name+"\".\n");
 
-    x_ext.type(value());
+    // Mark x_ext as uninitialized so we can initialize it to the colvar value when updating
+    x_ext.type(colvarvalue::type_notset);
     v_ext.type(value());
     fr.type(value());
 
@@ -1505,7 +1506,7 @@ int colvar::calc_colvar_properties()
 
     // initialize the restraint center in the first step to the value
     // just calculated from the cvcs
-    if (cvm::step_relative() == 0 && !after_restart) {
+    if ((cvm::step_relative() == 0 && !after_restart) || x_ext.type() == colvarvalue::type_notset) {
       x_ext = x;
       v_ext.reset(); // (already 0; added for clarity)
     }
