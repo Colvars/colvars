@@ -50,9 +50,6 @@ fi
 # Infer source path from name of script
 source=$(dirname "$0")
 
-cpp_patch=${source}/devel-tools/update-header-cpp.patch
-tex_patch=${source}/devel-tools/update-header-tex.patch
-
 # Check general validity of target path
 target="$1"
 if [ ! -d "${target}" ]
@@ -183,7 +180,7 @@ then
   for src in ${source}/src/*.h ${source}/src/*.cpp
   do \
     tgt=$(basename ${src})
-    condcopy "${src}" "${target}/lib/colvars/${tgt}" "${cpp_patch}"
+    condcopy "${src}" "${target}/lib/colvars/${tgt}"
   done
 
   # Update makefiles for library
@@ -207,7 +204,7 @@ then
                ${source}/lammps/src/USER-COLVARS/fix_colvars.h
     do \
       tgt=$(basename ${src})
-      condcopy "${src}" "${target}/src/USER-COLVARS/${tgt}" "${cpp_patch}"
+      condcopy "${src}" "${target}/src/USER-COLVARS/${tgt}"
     done
     for src in ${source}/lammps/src/USER-COLVARS/Install.sh \
                ${source}/lammps/src/USER-COLVARS/group_ndx.cpp \
@@ -295,7 +292,7 @@ then
   for src in ${source}/src/*.h ${source}/src/*.cpp
   do \
     tgt=$(basename ${src})
-    condcopy "${src}" "${target}/colvars/src/${tgt}" "${cpp_patch}"
+    condcopy "${src}" "${target}/colvars/src/${tgt}"
   done
   condcopy "${source}/namd/colvars/src/Makefile.namd" \
            "${target}/colvars/src/Makefile.namd"
@@ -307,7 +304,7 @@ then
   for src in ${source}/colvartools/*h ${source}/colvartools/*cpp
   do \
     tgt=$(basename ${src})
-    condcopy "${src}" "${target}/lib/abf_integrate/${tgt}" "${cpp_patch}"
+    condcopy "${src}" "${target}/lib/abf_integrate/${tgt}"
   done
   condcopy "${source}/colvartools/Makefile" \
            "${target}/lib/abf_integrate/Makefile"
@@ -319,16 +316,16 @@ then
       ${source}/namd/src/colvarproxy_namd.C
   do \
     tgt=$(basename ${src})
-    condcopy "${src}" "${target}/src/${tgt}" "${cpp_patch}"
+    condcopy "${src}" "${target}/src/${tgt}"
   done
 
   # Copy doc files
   condcopy "${source}/doc/colvars-refman.bib" \
            "${target}/ug/ug_colvars.bib"
   condcopy "${source}/doc/colvars-refman-main.tex" \
-           "${target}/ug/ug_colvars.tex" "${tex_patch}"
+           "${target}/ug/ug_colvars.tex"
   condcopy "${source}/namd/ug/ug_colvars_macros.tex" \
-           "${target}/ug/ug_colvars_macros.tex" "${tex_patch}"
+           "${target}/ug/ug_colvars_macros.tex"
   condcopy "${source}/doc/colvars_diagram.pdf" \
            "${target}/ug/figures/colvars_diagram.pdf"
   condcopy "${source}/doc/colvars_diagram.eps" \
@@ -376,21 +373,21 @@ then
   for src in ${source}/src/*.h
   do \
     tgt=$(basename ${src})
-    condcopy "${src}" "${target}/src/${tgt}" "${cpp_patch}"
+    condcopy "${src}" "${target}/src/${tgt}"
   done
   # Update code-independent sources
   for src in ${source}/src/*.cpp
   do \
     tgt=$(basename ${src%.cpp})
-    condcopy "${src}" "${target}/src/${tgt}.C" "${cpp_patch}"
+    condcopy "${src}" "${target}/src/${tgt}.C"
   done
 
   condcopy "${source}/doc/colvars-refman.bib" \
            "${target}/doc/ug_colvars.bib"
   condcopy "${source}/doc/colvars-refman-main.tex" \
-           "${target}/doc/ug_colvars.tex" "${tex_patch}"
+           "${target}/doc/ug_colvars.tex"
   condcopy "${source}/vmd/doc/ug_colvars_macros.tex" \
-           "${target}/doc/ug_colvars_macros.tex" "${tex_patch}"
+           "${target}/doc/ug_colvars_macros.tex"
   condcopy "${source}/doc/colvars_diagram.pdf" \
            "${target}/doc/pictures/colvars_diagram.pdf"
   condcopy "${source}/doc/colvars_diagram.eps" \
@@ -403,7 +400,7 @@ then
       ${source}/vmd/src/colvarproxy_vmd.C  
   do \
     tgt=$(basename ${src})
-    condcopy "${src}" "${target}/src/${tgt}" "${cpp_patch}"
+    condcopy "${src}" "${target}/src/${tgt}"
   done
 
   condcopy "${source}/vmd/src/colvars_files.pl" "${target}/src/colvars_files.pl"
