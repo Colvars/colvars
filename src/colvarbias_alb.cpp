@@ -381,7 +381,7 @@ std::ostream & colvarbias_alb::write_traj(std::ostream &os)
     for (size_t i = 0; i < means.size(); i++) {
       os << " "
          << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width)
-         << -2. * (means[i] / (static_cast<cvm::real> (colvar_centers[i])) - 1) * ssd[i] / (fmax(update_calls,2) - 1);
+         << -2.0 * (means[i] / (static_cast<cvm::real>(colvar_centers[i])) - 1) * ssd[i] / (fmax(update_calls, 2.0) - 1);
 
     }
 
