@@ -145,7 +145,7 @@ colvar::gspath::gspath(std::string const &conf): CartesianBasedPath(conf) {
     cvm::log(std::string("Geometric pathCV(s) loaded ") + cvm::to_str(reference_frames.size()) + std::string(" frames.\n"));
 }
 
-void colvar::gspath::updateReferenceDistances() {
+void colvar::gspath::updateDistanceToReferenceFrames() {
     computeDistanceToReferenceFrames(frame_distances);
 }
 
@@ -289,7 +289,7 @@ colvar::gzpath::gzpath(std::string const &conf): CartesianBasedPath(conf) {
     cvm::log(std::string("Geometric pathCV(z) loaded ") + cvm::to_str(reference_frames.size()) + std::string(" frames.\n"));
 }
 
-void colvar::gzpath::updateReferenceDistances() {
+void colvar::gzpath::updateDistanceToReferenceFrames() {
     computeDistanceToReferenceFrames(frame_distances);
 }
 
@@ -551,6 +551,9 @@ colvar::CVBasedPath::CVBasedPath(std::string const &conf): cvc(conf) {
             ++total_reference_frames;
         }
     }
+    if (total_reference_frames <= 1) {
+	cvm::error("Error: there is only 1 or 0 reference frame, which doesn't constitute a path.\n");
+    }
     x.type(colvarvalue::type_scalar);
     use_explicit_gradients = true;
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
@@ -586,7 +589,7 @@ void colvar::CVBasedPath::computeDistanceToReferenceFrames(std::vector<cvm::real
     }
 }
 
-void colvar::CVBasedPath::distanceBetweenReferenceFrames(std::vector<cvm::real>& result) const {
+void colvar::CVBasedPath::computeDistanceBetweenReferenceFrames(std::vector<cvm::real>& result) const {
     if (ref_cv.size() < 2) return;
     for (size_t i_frame = 1; i_frame < ref_cv.size(); ++i_frame) {
         cvm::real dist_ij = 0.0;
@@ -648,7 +651,7 @@ colvar::gspathCV::gspathCV(std::string const &conf): CVBasedPath(conf) {
 
 colvar::gspathCV::~gspathCV() {}
 
-void colvar::gspathCV::updateReferenceDistances() {
+void colvar::gspathCV::updateDistanceToReferenceFrames() {
     computeDistanceToReferenceFrames(frame_distances);
 }
 
@@ -790,7 +793,7 @@ colvar::gzpathCV::gzpathCV(std::string const &conf): CVBasedPath(conf) {
 colvar::gzpathCV::~gzpathCV() {
 }
 
-void colvar::gzpathCV::updateReferenceDistances() {
+void colvar::gzpathCV::updateDistanceToReferenceFrames() {
     computeDistanceToReferenceFrames(frame_distances);
 }
 
