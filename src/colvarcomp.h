@@ -1432,7 +1432,7 @@ private:
     cvm::rotation rot_v3;
 protected:
     virtual void prepareVectors();
-    virtual void updateReferenceDistances();
+    virtual void updateDistanceToReferenceFrames();
 public:
     gspath(std::string const &conf);
     virtual ~gspath() {}
@@ -1454,7 +1454,7 @@ private:
     cvm::rotation rot_v4;
 protected:
     virtual void prepareVectors();
-    virtual void updateReferenceDistances();
+    virtual void updateDistanceToReferenceFrames();
 public:
     gzpath(std::string const &conf);
     virtual ~gzpath() {}
@@ -1502,7 +1502,7 @@ protected:
 protected:
     virtual void computeDistanceToReferenceFrames(std::vector<cvm::real>& result);
     /// Helper function to determine the distance between reference frames
-    virtual void distanceBetweenReferenceFrames(std::vector<cvm::real>& result) const;
+    virtual void computeDistanceBetweenReferenceFrames(std::vector<cvm::real>& result) const;
     cvm::real getPolynomialFactorOfCVGradient(size_t i_cv) const;
 public:
     CVBasedPath(std::string const &conf);
@@ -1520,7 +1520,7 @@ class colvar::gspathCV
   : public colvar::CVBasedPath, public GeometricPathCV::GeometricPathBase<colvarvalue, cvm::real, GeometricPathCV::path_sz::S>
 {
 protected:
-    virtual void updateReferenceDistances();
+    virtual void updateDistanceToReferenceFrames();
     virtual void prepareVectors();
 public:
     gspathCV(std::string const &conf);
@@ -1536,7 +1536,7 @@ class colvar::gzpathCV
   : public colvar::CVBasedPath, public GeometricPathCV::GeometricPathBase<colvarvalue, cvm::real, GeometricPathCV::path_sz::Z>
 {
 protected:
-    virtual void updateReferenceDistances();
+    virtual void updateDistanceToReferenceFrames();
     virtual void prepareVectors();
 public:
     gzpathCV(std::string const &conf);
@@ -1552,7 +1552,7 @@ class colvar::aspathCV
   : public colvar::CVBasedPath, public ArithmeticPathCV::ArithmeticPathBase<colvarvalue, cvm::real, ArithmeticPathCV::path_sz::S>
 {
 protected:
-    virtual void updateReferenceDistances();
+    virtual void updateDistanceToReferenceFrames();
 public:
     aspathCV(std::string const &conf);
     virtual ~aspathCV();
@@ -1566,7 +1566,7 @@ class colvar::azpathCV
   : public colvar::CVBasedPath, public ArithmeticPathCV::ArithmeticPathBase<colvarvalue, cvm::real, ArithmeticPathCV::path_sz::Z>
 {
 protected:
-    virtual void updateReferenceDistances();
+    virtual void updateDistanceToReferenceFrames();
 public:
     azpathCV(std::string const &conf);
     virtual ~azpathCV();

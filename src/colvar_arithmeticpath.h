@@ -1,6 +1,8 @@
 #ifndef ARITHMETICPATHCV_H
 #define ARITHMETICPATHCV_H
 
+#include "colvarmodule.h"
+
 #include <vector>
 #include <cmath>
 #include <iostream>
@@ -18,7 +20,7 @@ public:
     ArithmeticPathBase() {}
     virtual ~ArithmeticPathBase() {}
     virtual void initialize(size_t p_num_elements, size_t p_total_frames, double p_lambda, const vector<element_type>& p_element, const vector<double>& p_weights);
-    virtual void updateReferenceDistances();
+    virtual void updateDistanceToReferenceFrames() = 0;
     virtual void computeValue();
     virtual void computeDerivatives();
     virtual void compute();
@@ -27,7 +29,7 @@ protected:
     vector<scalar_type> weights;
     size_t num_elements;
     size_t total_frames;
-    vector<vector<element_type>> frame_element_distances;
+    vector< vector<element_type> > frame_element_distances;
     scalar_type s;
     scalar_type z;
     vector<element_type> dsdx;
@@ -61,7 +63,7 @@ void ArithmeticPathBase<element_type, scalar_type, path_type>::initialize(size_t
 
 template <typename element_type, typename scalar_type, path_sz path_type>
 void ArithmeticPathBase<element_type, scalar_type, path_type>::computeValue() {
-    updateReferenceDistances();
+    updateDistanceToReferenceFrames();
     numerator_s = scalar_type(0);
     denominator_s = scalar_type(0);
     for (size_t i_frame = 0; i_frame < frame_element_distances.size(); ++i_frame) {
@@ -70,8 +72,9 @@ void ArithmeticPathBase<element_type, scalar_type, path_type>::computeValue() {
             exponent_tmp += weights[j_elem] * frame_element_distances[i_frame][j_elem] * weights[j_elem] * frame_element_distances[i_frame][j_elem];
         }
         exponent_tmp = exponent_tmp * -1.0 * lambda;
+	// prevent underflow if the argument of std::exp is less than -708.4
         if (exponent_tmp > -708.4) {
-            exponent_tmp = std::exp(exponent_tmp);
+            exponent_tmp = cvm::exp(exponent_tmp);
         } else {
             exponent_tmp = 0;
         }
@@ -81,13 +84,7 @@ void ArithmeticPathBase<element_type, scalar_type, path_type>::computeValue() {
         s_denominator_frame[i_frame] = exponent_tmp;
     }
     s = numerator_s / denominator_s * normalization_factor;
-    z = -1.0 / lambda * std::log(denominator_s);
-}
-
-template <typename element_type, typename scalar_type, path_sz path_type>
-void ArithmeticPathBase<element_type, scalar_type, path_type>::updateReferenceDistances() {
-    std::cout << "Warning: you should not call the updateReferenceDistances() in base class!\n";
-    std::cout << std::flush;
+    z = -1.0 / lambda * cvm::logn(denominator_s);
 }
 
 template <typename element_type, typename scalar_type, path_sz path_type>

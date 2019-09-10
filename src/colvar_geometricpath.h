@@ -1,6 +1,8 @@
 #ifndef GEOMETRICPATHCV_H
 #define GEOMETRICPATHCV_H
 
+#include "colvarmodule.h"
+
 #include <vector>
 #include <cmath>
 #include <iostream>
@@ -60,8 +62,8 @@ public:
     virtual ~GeometricPathBase() {}
     virtual void initialize(size_t vector_size, const element_type& element = element_type(), size_t total_frames = 1, bool p_use_second_closest_frame = true, bool p_use_third_closest_frame = false, bool p_use_z_square = false);
     virtual void initialize(size_t vector_size, const std::vector<element_type>& elements, size_t total_frames = 1, bool p_use_second_closest_frame = true, bool p_use_third_closest_frame = false, bool p_use_z_square = false);
-    virtual void prepareVectors();
-    virtual void updateReferenceDistances();
+    virtual void prepareVectors() = 0;
+    virtual void updateDistanceToReferenceFrames() = 0;
     virtual void compute();
     virtual void determineClosestFrames();
     virtual void computeValue();
@@ -145,18 +147,6 @@ void GeometricPathBase<element_type, scalar_type, path_type>::initialize(size_t 
 }
 
 template <typename element_type, typename scalar_type, path_sz path_type>
-void GeometricPathBase<element_type, scalar_type, path_type>::prepareVectors() {
-    std::cout << "Warning: you should not call the prepareVectors() in base class!\n";
-    std::cout << std::flush;
-}
-
-template <typename element_type, typename scalar_type, path_sz path_type>
-void GeometricPathBase<element_type, scalar_type, path_type>::updateReferenceDistances() {
-    std::cout << "Warning: you should not call the updateReferenceDistances() in base class!\n";
-    std::cout << std::flush;
-}
-
-template <typename element_type, typename scalar_type, path_sz path_type>
 void GeometricPathBase<element_type, scalar_type, path_type>::compute() {
     computeValue();
     computeDerivatives();
@@ -190,7 +180,7 @@ void GeometricPathBase<element_type, scalar_type, path_type>::determineClosestFr
 
 template <typename element_type, typename scalar_type, path_sz path_type>
 void GeometricPathBase<element_type, scalar_type, path_type>::computeValue() {
-    updateReferenceDistances();
+    updateDistanceToReferenceFrames();
     determineClosestFrames();
     prepareVectors();
     v1v1 = scalar_type();
@@ -211,14 +201,14 @@ void GeometricPathBase<element_type, scalar_type, path_type>::computeValue() {
             v4v4 += v4[i_elem] * v4[i_elem];
         }
     }
-    f = (std::sqrt(v1v3 * v1v3 - v3v3 * (v1v1 - v2v2)) - v1v3) / v3v3;
+    f = (cvm::sqrt(v1v3 * v1v3 - v3v3 * (v1v1 - v2v2)) - v1v3) / v3v3;
     if (path_type == Z) {
         dx = 0.5 * (f - 1);
         zz = v1v1 + 2 * dx * v1v4 + dx * dx * v4v4;
         if (use_z_square) {
             z = zz;
         } else {
-            z = std::sqrt(std::fabs(zz));
+            z = cvm::sqrt(cvm::fabs(zz));
         }
     }
     if (path_type == S) {
@@ -228,7 +218,7 @@ void GeometricPathBase<element_type, scalar_type, path_type>::computeValue() {
 
 template <typename element_type, typename scalar_type, path_sz path_type>
 void GeometricPathBase<element_type, scalar_type, path_type>::computeDerivatives() {
-    const scalar_type factor1 = 1.0 / (2.0 * v3v3 * std::sqrt(v1v3 * v1v3 - v3v3 * (v1v1 - v2v2)));
+    const scalar_type factor1 = 1.0 / (2.0 * v3v3 * cvm::sqrt(v1v3 * v1v3 - v3v3 * (v1v1 - v2v2)));
     const scalar_type factor2 = 1.0 / v3v3;
     for (size_t i_elem = 0; i_elem < v1.size(); ++i_elem) {
         // Compute the derivative of f with vector v1

@@ -20,7 +20,7 @@ colvar::aspathCV::aspathCV(std::string const &conf): CVBasedPath(conf) {
     x.type(colvarvalue::type_scalar);
     use_explicit_gradients = true;
     std::vector<cvm::real> rmsd_between_refs(total_reference_frames - 1, 0.0);
-    distanceBetweenReferenceFrames(rmsd_between_refs);
+    computeDistanceBetweenReferenceFrames(rmsd_between_refs);
     cvm::real mean_square_displacements = 0.0;
     for (size_t i_frame = 1; i_frame < total_reference_frames; ++i_frame) {
         cvm::log(std::string("Distance between frame ") + cvm::to_str(i_frame) + " and " + cvm::to_str(i_frame + 1) + " is " + cvm::to_str(rmsd_between_refs[i_frame - 1]) + std::string("\n"));
@@ -40,7 +40,7 @@ colvar::aspathCV::aspathCV(std::string const &conf): CVBasedPath(conf) {
     }
 }
 
-void colvar::aspathCV::updateReferenceDistances() {
+void colvar::aspathCV::updateDistanceToReferenceFrames() {
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
         cv[i_cv]->calc_value();
     }
@@ -109,7 +109,7 @@ colvar::azpathCV::azpathCV(std::string const &conf): CVBasedPath(conf) {
     x.type(colvarvalue::type_scalar);
     use_explicit_gradients = true;
     std::vector<cvm::real> rmsd_between_refs(total_reference_frames - 1, 0.0);
-    distanceBetweenReferenceFrames(rmsd_between_refs);
+    computeDistanceBetweenReferenceFrames(rmsd_between_refs);
     cvm::real mean_square_displacements = 0.0;
     for (size_t i_frame = 1; i_frame < total_reference_frames; ++i_frame) {
         cvm::log(std::string("Distance between frame ") + cvm::to_str(i_frame) + " and " + cvm::to_str(i_frame + 1) + " is " + cvm::to_str(rmsd_between_refs[i_frame - 1]) + std::string("\n"));
@@ -129,7 +129,7 @@ colvar::azpathCV::azpathCV(std::string const &conf): CVBasedPath(conf) {
     }
 }
 
-void colvar::azpathCV::updateReferenceDistances() {
+void colvar::azpathCV::updateDistanceToReferenceFrames() {
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
         cv[i_cv]->calc_value();
     }
@@ -182,7 +182,7 @@ void colvar::azpathCV::apply_force(colvarvalue const &force) {
             }
         } else {
             cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);
-            colvarvalue cv_force = dzdx[i_cv] * force.real_value * factor_polynomial;
+            const colvarvalue cv_force = dzdx[i_cv] * force.real_value * factor_polynomial;
             cv[i_cv]->apply_force(cv_force);
         }
     }
