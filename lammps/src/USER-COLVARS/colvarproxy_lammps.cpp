@@ -1,33 +1,29 @@
 // -*- c++ -*-
 
+// This file is part of the Collective Variables module (Colvars).
+// The original version of Colvars and its updates are located at:
+// https://github.com/colvars/colvars
+// Please update all Colvars source files before making any changes.
+// If you wish to distribute your changes, please submit them to the
+// Colvars repository at GitHub.
 
+
+#include "colvarproxy_lammps.h"
 #include <mpi.h>
+#include <sys/stat.h>
+#include <cerrno>
+#include <cstring>
+#include <iostream>
+#include <memory>
+#include <string>
+
 #include "lammps.h"
-#include "atom.h"
 #include "error.h"
 #include "output.h"
 #include "random_park.h"
 
-#include "fix_colvars.h"
-
 #include "colvarmodule.h"
-#include "colvar.h"
-#include "colvarbias.h"
-#include "colvaratoms.h"
 #include "colvarproxy.h"
-#include "colvarproxy_lammps.h"
-
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-
-#include <cerrno>
-#include <cstdio>
-#include <cstring>
-
-#include <iostream>
-#include <sstream>
-#include <string>
 
 #define HASH_FAIL  -1
 
