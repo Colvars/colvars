@@ -626,10 +626,11 @@ public:
 
 	Bool accelMDG;                  //  Perform Gaussian accelMD calculation
 	int accelMDGiE;                 //  Flag to set the mode iE in Gaussian accelMD
-	int accelMDGcMDSteps;           //  No. of cMD steps
-	int accelMDGEquiSteps;		//  No. of quilibration steps after adding boost potential
-	int accelMDGcMDPrepSteps;	//  No. of preparation cMD steps
-	int accelMDGEquiPrepSteps;	//  No. of preparation equilibration steps
+	int accelMDGcMDSteps;           //  Number of cMD steps
+	int accelMDGEquiSteps;		//  Number of quilibration steps after adding boost potential
+	int accelMDGcMDPrepSteps;	//  Number of preparation cMD steps
+	int accelMDGEquiPrepSteps;	//  Number of preparation equilibration steps
+        int accelMDGStatWindow;         //  Number of steps to calc avg and std
 	BigReal accelMDGSigma0P;	//  upper limit of std of total potential
 	BigReal accelMDGSigma0D;	//  upper limit of std of dihedral potential
 	Bool accelMDGRestart;		//  Flag to set use restart file in Gaussian accelMD
