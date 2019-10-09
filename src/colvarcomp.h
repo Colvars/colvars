@@ -1632,14 +1632,14 @@ class colvar::aspathCV
   : public colvar::componentDisabled
 {
 public:
-    gspathCV(std::string const &conf) : componentDisabled(conf) {}
+    aspathCV(std::string const &conf) : componentDisabled(conf) {}
 };
 
 class colvar::azpathCV
   : public colvar::componentDisabled
 {
 public:
-    gzpathCV(std::string const &conf) : componentDisabled(conf) {}
+    azpathCV(std::string const &conf) : componentDisabled(conf) {}
 };
 
 #endif // C++11 checking
