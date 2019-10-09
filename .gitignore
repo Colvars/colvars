@@ -15,6 +15,12 @@
 # Executable
 colvartools/abf_integrate
 
+# Lepton library (copied or symlinked in compilation tests)
+src/lepton
+
+# Dependencies for compilation tests
+src/Makefile.deps
+
 # output files from reg tests
 *.diff
 *.BAK
