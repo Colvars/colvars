@@ -115,18 +115,6 @@ condcopy() {
     PATCH_OPT=""
   fi
 
-  TMPFILE=`mktemp`
-
-  # If a patch file is available, apply it to the source file
-  # (reversed if necessary)
-  if [ "x$3" != "x" ] ; then
-    if [ -f "$3" ] ; then
-      patch $PATCH_OPT < $3 $a -o $TMPFILE > /dev/null
-      # Patched file is new source
-      a=$TMPFILE
-    fi
-  fi
-
   updated_file=0
 
   if [ -d $(dirname "$b") ]
@@ -142,8 +130,6 @@ condcopy() {
       echo -n '.'
     fi
   fi
-
-  rm -f $TMPFILE
 }
 
 
