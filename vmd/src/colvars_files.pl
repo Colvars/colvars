@@ -37,6 +37,7 @@ $colvars_defines = " -DVMDCOLVARS";
                     'colvartypes.C',
                     'colvarvalue.C');
 @colvars_h    =    ('colvar_UIestimator.h',
+                    'colvar_arithmeticpath.h',
                     'colvar_geometricpath.h',
                     'colvaratoms.h',
                     'colvarbias.h',
