@@ -72,7 +72,7 @@ void ArithmeticPathBase<element_type, scalar_type, path_type>::computeValue() {
             exponent_tmp += weights[j_elem] * frame_element_distances[i_frame][j_elem] * weights[j_elem] * frame_element_distances[i_frame][j_elem];
         }
         exponent_tmp = exponent_tmp * -1.0 * lambda;
-	// prevent underflow if the argument of std::exp is less than -708.4
+	// prevent underflow if the argument of cvm::exp is less than -708.4
         if (exponent_tmp > -708.4) {
             exponent_tmp = cvm::exp(exponent_tmp);
         } else {
@@ -107,7 +107,7 @@ void ArithmeticPathBase<element_type, scalar_type, path_type>::computeDerivative
         }
         dsdxj_numerator_part1 *= denominator_s;
         dsdxj_numerator_part2 *= numerator_s;
-        if (std::abs(dsdxj_numerator_part1 - dsdxj_numerator_part2) < std::numeric_limits<scalar_type>::min()) {
+        if (cvm::abs(dsdxj_numerator_part1 - dsdxj_numerator_part2) < std::numeric_limits<scalar_type>::min()) {
             dsdx[j_elem] = 0;
         } else {
             dsdx[j_elem] = (dsdxj_numerator_part1 - dsdxj_numerator_part2) / (denominator_s * denominator_s) * normalization_factor;

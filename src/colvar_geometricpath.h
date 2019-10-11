@@ -172,7 +172,7 @@ void GeometricPathBase<element_type, scalar_type, path_type>::determineClosestFr
         // sigma(z) is on the right side of the closest frame
         sign = -1;
     }
-    if (std::abs(static_cast<long>(frame_index[0]) - static_cast<long>(frame_index[1])) > 1) {
+    if (cvm::abs(static_cast<long>(frame_index[0]) - static_cast<long>(frame_index[1])) > 1) {
         std::cout << "Warning: Geometrical pathCV relies on the assumption that the second closest frame is the neighbouring frame\n";
         std::cout << "         Please check your configuration or increase restraint on z(σ)\n";
         for (size_t i_frame = 0; i_frame < frame_index.size(); ++i_frame) {

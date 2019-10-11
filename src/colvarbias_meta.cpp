@@ -1723,7 +1723,7 @@ void colvarbias_meta::write_pmf()
          cvm:: real target_val=target_dist->value(i);
          if (target_val>0) {
            pmf_val=pmf->value(i);
-           pmf_val=pmf_val+cvm::temperature() * cvm::boltzmann() * std::log(target_val);
+           pmf_val=pmf_val+cvm::temperature() * cvm::boltzmann() * cvm::logn(target_val);
          }
          pmf->set_value(i,pmf_val);
       }
@@ -1764,7 +1764,7 @@ void colvarbias_meta::write_pmf()
          cvm:: real target_val=target_dist->value(i);
          if (target_val>0) {
            pmf_val=pmf->value(i);
-           pmf_val=pmf_val+cvm::temperature() * cvm::boltzmann() * std::log(target_val);
+           pmf_val=pmf_val+cvm::temperature() * cvm::boltzmann() * cvm::logn(target_val);
          }
          pmf->set_value(i,pmf_val);
       }
