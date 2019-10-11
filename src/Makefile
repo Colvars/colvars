@@ -45,13 +45,13 @@ COLVARS_INCFLAGS := $(COLVARS_DEBUG_INCFLAGS)
 COLVARS_SRCS := $(wildcard *.cpp)
 
 # Test if the Lepton source folder is present
-ifneq ($(wildcard lepton/src),)
+ifneq ($(wildcard ../lepton/src),)
 
-LEPTON_SRCS := $(wildcard lepton/src/*.cpp)
+LEPTON_SRCS := $(wildcard ../lepton/src/*.cpp)
 
 LEPTON_OBJS := $(LEPTON_SRCS:.cpp=.o)
 
-LEPTON_INCFLAGS := -Ilepton/include -DLEPTON
+LEPTON_INCFLAGS := -I../lepton/include -DLEPTON
 
 endif
 
