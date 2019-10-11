@@ -13,13 +13,13 @@
 *.pyc
 
 # Executable
-colvartools/abf_integrate
+/colvartools/abf_integrate
 
 # Lepton library (copied or symlinked in compilation tests)
-src/lepton
+/lepton
 
 # Dependencies for compilation tests
-src/Makefile.deps
+/src/Makefile.deps
 
 # output files from reg tests
 *.diff
