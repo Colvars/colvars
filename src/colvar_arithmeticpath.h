@@ -107,7 +107,7 @@ void ArithmeticPathBase<element_type, scalar_type, path_type>::computeDerivative
         }
         dsdxj_numerator_part1 *= denominator_s;
         dsdxj_numerator_part2 *= numerator_s;
-        if (cvm::abs(dsdxj_numerator_part1 - dsdxj_numerator_part2) < std::numeric_limits<scalar_type>::min()) {
+        if (cvm::fabs(dsdxj_numerator_part1 - dsdxj_numerator_part2) < std::numeric_limits<scalar_type>::min()) {
             dsdx[j_elem] = 0;
         } else {
             dsdx[j_elem] = (dsdxj_numerator_part1 - dsdxj_numerator_part2) / (denominator_s * denominator_s) * normalization_factor;
