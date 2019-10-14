@@ -546,8 +546,8 @@ colvar::CVBasedPath::CVBasedPath(std::string const &conf): cvc(conf) {
             if (num_value_required <= fields.size()) {
                 size_t start_index = num_value_required - value_size;
                 for (size_t i = start_index; i < num_value_required; ++i) {
-                    tmp_cv[i_cv][i] = std::atof(fields[i].c_str());
-                    cvm::log(fields[i] + std::string(" "));
+                    tmp_cv[i_cv][i - start_index] = std::atof(fields[i].c_str());
+                    cvm::log(cvm::to_str(tmp_cv[i_cv][i - start_index]));
                 }
             } else {
                 cvm::error("Error: incorrect format of path file.\n");
