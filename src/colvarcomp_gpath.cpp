@@ -624,6 +624,7 @@ colvar::CVBasedPath::~CVBasedPath() {
     for (auto it = cv.begin(); it != cv.end(); ++it) {
         delete (*it);
     }
+    atom_groups.clear();
 }
 
 colvar::gspathCV::gspathCV(std::string const &conf): CVBasedPath(conf) {
