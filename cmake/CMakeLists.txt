@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 2.8.12)
 project(colvars CXX)
 get_filename_component(COLVARS_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/.. ABSOLUTE)
 
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 #set(CMAKE_VERBOSE_MAKEFILE on)
 
 option(ENABLE_LEPTON "Build and link the Lepton library" OFF)
