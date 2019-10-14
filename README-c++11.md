@@ -7,7 +7,10 @@ Because NAMD, LAMMPS or VMD do not support C++11 on all platforms yet, they are 
 
 ### Specific Colvars features that require C++11
 
-Currently, the `gspath`, `gzpath`, `gspathCV` and `gzpathCV` collective variables are only available when the code is built with C++11 standard or higher.
+Currently the following variable types are only available when the code is built with C++11 standard or higher:
+- `gspath` and `gzpath`
+- `gspathCV` and `gzpathCV`
+- `aspathCV` and `azpathCV`
 
 
 ### Status of C++ support in MD engines (as of 2019-07-02)
