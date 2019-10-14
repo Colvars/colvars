@@ -12,6 +12,7 @@ Currently the following variable types are only available when the code is built
 - `gspathCV` and `gzpathCV`
 - `aspathCV` and `azpathCV`
 
+Starting from 2019-06-02 `customFunction` also requires C++11, due to improvements in the Lepton library available from [the OpenMM repository](https://github.com/openmm/openmm).
 
 ### Status of C++ support in MD engines (as of 2019-10-17)
 

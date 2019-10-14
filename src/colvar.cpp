@@ -439,6 +439,21 @@ int colvar::init_custom_function(std::string const &conf)
 
 int colvar::init_custom_function(std::string const &conf)
 {
+
+  std::string expr;
+  size_t pos = 0;
+  if (key_lookup(conf, "customFunction", &expr, &pos)) {
+    std::string msg("Error: customFunction requires the Lepton library.");
+#if (__cplusplus < 201103L)
+    // NOTE: this is not ideal; testing for the Lepton library's version would
+    // be more accurate, but also less portable
+    msg +=
+      std::string("  Note also that recent versions of Lepton require C++11: "
+                  "please see https://colvars.github.io/README-c++11.html.");
+#endif
+    return cvm::error(msg, COLVARS_NOT_IMPLEMENTED);
+  }
+
   return COLVARS_OK;
 }
 
