@@ -60,13 +60,8 @@ int colvarscript::init_commands()
 #undef CVSCRIPT // disable default macro
 #endif
 #define CVSCRIPT_COMM_INIT(COMM,HELP,N_ARGS_MIN,N_ARGS_MAX,ARGS) {      \
-    comm_str_map[#COMM] = COMM;                                         \
-    comm_names[COMM] = #COMM;                                           \
-    comm_help[COMM] = HELP;                                             \
-    comm_n_args_min[COMM] = N_ARGS_MIN;                                 \
-    comm_n_args_max[COMM] = N_ARGS_MAX;                                 \
-    comm_arghelp[COMM] = ARGS;                                          \
-    comm_fns[COMM] = &(CVSCRIPT_COMM_FNAME(COMM));                      \
+    char const *arghelp[1] = { "TEST" };                               \
+    init_command(COMM,#COMM,HELP,N_ARGS_MIN,N_ARGS_MAX,arghelp,&(CVSCRIPT_COMM_FNAME(COMM))); \
   }
 #define CVSCRIPT(COMM,HELP,N_ARGS_MIN,N_ARGS_MAX,ARGS,FN_BODY)  \
   CVSCRIPT_COMM_INIT(COMM,HELP,N_ARGS_MIN,N_ARGS_MAX,ARGS)
@@ -80,15 +75,34 @@ int colvarscript::init_commands()
 }
 
 
+int colvarscript::init_command(colvarscript::command const &comm,
+                               char const *name, char const *help,
+                               int n_args_min, int n_args_max,
+                               char const **arghelp,
+                               int (*fn)(void *, int, unsigned char * const *))
+{
+  comm_str_map[std::string(name)] = comm;
+  comm_names[comm] = name;
+  comm_help[comm] = help;
+  comm_n_args_min[comm] = n_args_min;
+  comm_n_args_max[comm] = n_args_max;
+  for (int iarg = 0; iarg < n_args_max; iarg++) {
+    comm_arghelp[comm].push_back(std::string(arghelp[iarg]));
+  }
+  comm_fns[comm] = fn;
+  return COLVARS_OK;
+}
+
+
 std::string colvarscript::get_command_help(char const *cmd)
 {
   if (comm_str_map.count(cmd) > 0) {
     colvarscript::command const c = comm_str_map[std::string(cmd)];
-    std::string result(comm_help[c]+"\n");
+    std::string new_result(comm_help[c]+"\n");
     for (size_t i = 0; i < comm_n_args_max[c]; i++) {
-      result += comm_arghelp[c][i]+"\n";
+      new_result += comm_arghelp[c][i]+"\n";
     }
-    return result;
+    return new_result;
   }
 
   cvm::error("Error: command "+std::string(cmd)+
@@ -106,8 +120,6 @@ std::string colvarscript::get_command_help(char const *cmd)
 
 int colvarscript::run(int objc, unsigned char *const objv[])
 {
-  colvarscript *script = this;
-  colvarproxy *proxy = cvm::main()->proxy;
 #if defined(COLVARS_TCL)
   Tcl_Interp *interp =
     reinterpret_cast<Tcl_Interp *>(proxy->get_tcl_interp());

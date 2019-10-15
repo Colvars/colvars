@@ -95,6 +95,12 @@ public:
     cv_n_commands
   };
 
+  /// Set up a single script API functions
+  int init_command(colvarscript::command const &comm,
+                   char const *name, char const *help,
+                   int n_args_min, int n_args_max, char const **arghelp,
+                   int (*fn)(void *, int, unsigned char * const *));
+
   /// Use scripting language to get the string representation of an object
   inline char const *obj_to_str(unsigned char *obj)
   {
