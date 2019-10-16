@@ -7,7 +7,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 #set(CMAKE_VERBOSE_MAKEFILE on)
 
-option(ENABLE_LEPTON "Build and link the Lepton library" OFF)
+option(COLVARS_LEPTON "Build and link the Lepton library" OFF)
 
 if(NOT DEFINED LEPTON_DIR)
   set(LEPTON_DIR ${COLVARS_SOURCE_DIR}/lepton)
@@ -17,14 +17,14 @@ else()
   endif()
 endif()
 if(EXISTS ${LEPTON_DIR})
-  set(ENABLE_LEPTON ON)
+  set(COLVARS_LEPTON ON)
 endif()
 
 file(GLOB COLVARS_SOURCES ${COLVARS_SOURCE_DIR}/src/[^.]*.cpp)
 
-if(ENABLE_LEPTON)
+if(COLVARS_LEPTON)
   if(NOT EXISTS ${LEPTON_DIR})
-    message(FATAL_ERROR "With -DENABLE_LEPTON=ON, the lepton folder must be copied into ${COLVARS_SOURCE_DIR} or provided by -DLEPTON_DIR=xxx")
+    message(FATAL_ERROR "With -DCOLVARS_LEPTON=ON, the lepton folder must be copied into ${COLVARS_SOURCE_DIR} or provided by -DLEPTON_DIR=xxx")
   endif()
   set(CMAKE_CXX_STANDARD 11)
   file(GLOB LEPTON_SOURCES ${LEPTON_DIR}/src/[^.]*.cpp)
@@ -40,7 +40,7 @@ target_compile_options(colvars PRIVATE $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COM
 # The following line enables long long, but does so by setting std=c++11...
 #target_compile_features(colvars PRIVATE cxx_long_long_type)
 
-if(ENABLE_LEPTON)
+if(COLVARS_LEPTON)
   target_compile_options(colvars PRIVATE -DLEPTON)
   target_include_directories(colvars PRIVATE ${LEPTON_DIR}/include)
 endif()
