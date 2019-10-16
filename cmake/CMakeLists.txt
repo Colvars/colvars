@@ -34,11 +34,7 @@ endif()
 
 add_library(colvars STATIC ${COLVARS_SOURCES})
 
-# Note: -pedantic will raise at least a warning for long long
-target_compile_options(colvars PRIVATE $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-pedantic -Wall>)
-
-# The following line enables long long, but does so by setting std=c++11...
-#target_compile_features(colvars PRIVATE cxx_long_long_type)
+target_compile_options(colvars PRIVATE $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall -Wpedantic -Wno-long-long>)
 
 if(COLVARS_LEPTON)
   target_compile_options(colvars PRIVATE -DLEPTON)
