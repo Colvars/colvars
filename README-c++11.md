@@ -13,12 +13,12 @@ Currently the following variable types are only available when the code is built
 - `aspathCV` and `azpathCV`
 
 
-### Status of C++ support in MD engines (as of 2019-07-02)
+### Status of C++ support in MD engines (as of 2019-10-17)
 
 - _GROMACS_ already follows the C++11 standard in full.
 
-- _LAMMPS_ can be built for the most part with C++11, and some of the [precompiled builds](https://lammps.sandia.gov/download.html) already support it.  Current build recipes following traditional `make` available in `src/MAKE/MACHINES` require manual edits.  It is often easier to use the [CMake build recipe](https://lammps.sandia.gov/doc/Build_cmake.html), and specify manually the `-std=c++11` compiler flag or simply enable one of the optional packages that require C++11 (e.g. `KOKKOS`).
+- _LAMMPS_ is built by default with C++11, including most of the [precompiled builds](https://lammps.sandia.gov/download.html).  The C++11 transition is best handled through the [CMake build recipe](https://lammps.sandia.gov/doc/Build_cmake.html), which will automatically include or exclude C++11-specific sections of Colvars.  *Tip:* with CMake version 3.1 or later, try using the `-D CMAKE_CXX_STANDARD=11` flag to enable C++11 (if not already the compiler's default).  Build recipes following traditional `make` available in `src/MAKE/MACHINES` may require manual edits; check the README of the Colvars library in the LAMMPS distribution for details.
 
-- _NAMD_ [precompiled builds](http://www.ks.uiuc.edu/Development/Download/download.cgi?PackageName=NAMD) will soon follow the C++11 standard but do not yet at the moment.  Build recipes for the Intel, Cray and IBM compilers in the `arch` folder are already set to require C++11.  Recipes based on `g++` should be adapted by replacing `-std=c++0x` with `-std=c++11` to ensure that the `g++` version being used supports all needed features.
+- _NAMD_ [precompiled builds](http://www.ks.uiuc.edu/Development/Download/download.cgi?PackageName=NAMD) will soon follow the C++11 standard but do not yet at the moment.  Build recipes for the Intel, Cray and IBM compilers in the `arch` folder are already set to require C++11.  Recipes based on `g++` should be adapted by replacing `-std=c++0x` with `-std=c++11`, to ensure that the `g++` version being used supports all needed features (in older GNU compilers, `0x` and `11` are not the same).
 
 - _VMD_ currently does not provide build recipes with C++11 support.  Enabling C++11-dependent features will most likely require a custom build with manual edits to the `configure` script.
