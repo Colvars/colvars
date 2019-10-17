@@ -1,6 +1,6 @@
 ## Availability of Colvars features on different C++ versions
 
-The majority of the Colvars module can be built with all major versions of the C++ language.  A few recent features are an exception, and require an executable built with C++11, which all recent compilers support but none enable by default yet.
+The majority of the Colvars module can be built with all major versions of the C++ language.  A few recent features are an exception, and require an executable built with C++11, which all recent compilers support but not all enable by default yet.
 
 Because NAMD, LAMMPS or VMD do not support C++11 on all platforms yet, they are often built without those features.  This page points to the relevant information to identifying and potentially solving this issue.
 
