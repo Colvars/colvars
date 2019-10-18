@@ -41,6 +41,8 @@ target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:Clang>:-Wno-c++11-lon
 if(COLVARS_LEPTON)
   target_compile_options(colvars PRIVATE -DLEPTON)
   target_include_directories(colvars PRIVATE ${LEPTON_DIR}/include)
+  # Silence warning
+  target_compile_options(lepton PRIVATE $<$<CXX_COMPILER_ID:Clang>:-Wno-tautological-undefined-compare>)
 endif()
 
 message(STATUS "NOTE: this CMake recipe is useful for compilation tests only.")
