@@ -706,8 +706,13 @@ cvm::rvector colvarproxy_namd::position_distance(cvm::atom_pos const &pos1,
   Position const p1(pos1.x, pos1.y, pos1.z);
   Position const p2(pos2.x, pos2.y, pos2.z);
   // return p2 - p1
-  Vector const d = this->lattice->delta(p2, p1);
-  return cvm::rvector(d.x, d.y, d.z);
+  if (this->lattice != NULL) {
+    Vector const d = this->lattice->delta(p2, p1);
+    return cvm::rvector(d.x, d.y, d.z);
+  }
+  else {
+    return colvarproxy_system::position_distance(pos1, pos2);
+  }
 }
 
 
