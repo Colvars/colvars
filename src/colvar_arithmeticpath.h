@@ -49,7 +49,12 @@ void ArithmeticPathBase<element_type, scalar_type, path_type>::initialize(size_t
     weights = p_weights;
     num_elements = p_num_elements;
     total_frames = p_total_frames;
-    frame_element_distances.resize(total_frames, vector<element_type>(num_elements));
+    frame_element_distances.resize(total_frames, p_element);
+    for (size_t i_frame = 0; i_frame < frame_element_distances.size(); ++i_frame) {
+        for (size_t j_elem = 0; j_elem < num_elements; ++j_elem) {
+            frame_element_distances[i_frame][j_elem].reset();
+        }
+    }
     s = scalar_type(0);
     z = scalar_type(0);
     dsdx = p_element;
@@ -96,18 +101,21 @@ void ArithmeticPathBase<element_type, scalar_type, path_type>::compute() {
 template <typename element_type, typename scalar_type, path_sz path_type>
 void ArithmeticPathBase<element_type, scalar_type, path_type>::computeDerivatives() {
     for (size_t j_elem = 0; j_elem < num_elements; ++j_elem) {
-        element_type dsdxj_numerator_part1;
-        element_type dsdxj_numerator_part2;
-        element_type dzdxj_numerator;
+        element_type dsdxj_numerator_part1(dsdx[j_elem]);
+        element_type dsdxj_numerator_part2(dsdx[j_elem]);
+        element_type dzdxj_numerator(dsdx[j_elem]);
+        dsdxj_numerator_part1.reset();
+        dsdxj_numerator_part2.reset();
+        dzdxj_numerator.reset();
         for (size_t i_frame = 0; i_frame < frame_element_distances.size(); ++i_frame) {
-            scalar_type derivative_tmp = -2.0 * lambda * weights[j_elem] * weights[j_elem] * frame_element_distances[i_frame][j_elem];
+            element_type derivative_tmp = -2.0 * lambda * weights[j_elem] * weights[j_elem] * frame_element_distances[i_frame][j_elem];
             dsdxj_numerator_part1 += s_numerator_frame[i_frame] * derivative_tmp;
             dsdxj_numerator_part2 += s_denominator_frame[i_frame] * derivative_tmp;
             dzdxj_numerator += s_denominator_frame[i_frame] * derivative_tmp;
         }
         dsdxj_numerator_part1 *= denominator_s;
         dsdxj_numerator_part2 *= numerator_s;
-        if (cvm::fabs(dsdxj_numerator_part1 - dsdxj_numerator_part2) < std::numeric_limits<scalar_type>::min()) {
+        if ((dsdxj_numerator_part1 - dsdxj_numerator_part2).norm() < std::numeric_limits<scalar_type>::min()) {
             dsdx[j_elem] = 0;
         } else {
             dsdx[j_elem] = (dsdxj_numerator_part1 - dsdxj_numerator_part2) / (denominator_s * denominator_s) * normalization_factor;
