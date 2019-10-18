@@ -1,0 +1,416 @@
+colvarsTrajFrequency 1
+
+colvar {
+    name                    gpath_s_distanceVec
+    gspathCV {
+        pathFile ./path_distanceVec_2.txt
+        distanceVec {
+            name 002
+            forceNoPBC    yes
+            group1 {
+                dummyAtom (0.00, 0.00, 0.00)
+            }
+            group2 {
+                atomNumbers 2
+            }
+        }
+        distanceVec {
+            name 005
+            forceNoPBC    yes
+            group1 {
+                dummyAtom (0.00, 0.00, 0.00)
+            }
+            group2 {
+                atomNumbers 5
+            }
+        }
+        distanceVec {
+            name 006
+            forceNoPBC    yes
+            group1 {
+                dummyAtom (0.00, 0.00, 0.00)
+            }
+            group2 {
+                atomNumbers 6
+            }
+        }
+        distanceVec {
+            name 007
+            forceNoPBC    yes
+            group1 {
+                dummyAtom (0.00, 0.00, 0.00)
+            }
+            group2 {
+                atomNumbers 7
+            }
+        }
+        distanceVec {
+            name 009
+            forceNoPBC    yes
+            group1 {
+                dummyAtom (0.00, 0.00, 0.00)
+            }
+            group2 {
+                atomNumbers 9
+            }
+        }
+        distanceVec {
+            name 011
+            forceNoPBC    yes
+            group1 {
+                dummyAtom (0.00, 0.00, 0.00)
+            }
+            group2 {
+                atomNumbers 11
+            }
+        }
+        distanceVec {
+            name 015
+            forceNoPBC    yes
+            group1 {
+                dummyAtom (0.00, 0.00, 0.00)
+            }
+            group2 {
+                atomNumbers 15
+            }
+        }
+        distanceVec {
+            name 016
+            forceNoPBC    yes
+            group1 {
+                dummyAtom (0.00, 0.00, 0.00)
+            }
+            group2 {
+                atomNumbers 16
+            }
+        }
+        distanceVec {
+            name 017
+            forceNoPBC    yes
+            group1 {
+                dummyAtom (0.00, 0.00, 0.00)
+            }
+            group2 {
+                atomNumbers 17
+            }
+        }
+        distanceVec {
+            name 019
+            forceNoPBC    yes
+            group1 {
+                dummyAtom (0.00, 0.00, 0.00)
+            }
+            group2 {
+                atomNumbers 19
+            }
+        }
+        distanceVec {
+            name 021
+            forceNoPBC    yes
+            group1 {
+                dummyAtom (0.00, 0.00, 0.00)
+            }
+            group2 {
+                atomNumbers 21
+            }
+        }
+        distanceVec {
+            name 025
+            forceNoPBC    yes
+            group1 {
+                dummyAtom (0.00, 0.00, 0.00)
+            }
+            group2 {
+                atomNumbers 25
+            }
+        }
+        distanceVec {
+            name 026
+            forceNoPBC    yes
+            group1 {
+                dummyAtom (0.00, 0.00, 0.00)
+            }
+            group2 {
+                atomNumbers 26
+            }
+        }
+        distanceVec {
+            name 027
+            forceNoPBC    yes
+            group1 {
+                dummyAtom (0.00, 0.00, 0.00)
+            }
+            group2 {
+                atomNumbers 27
+            }
+        }
+        distanceVec {
+            name 029
+            forceNoPBC    yes
+            group1 {
+                dummyAtom (0.00, 0.00, 0.00)
+            }
+            group2 {
+                atomNumbers 29
+            }
+        }
+        distanceVec {
+            name 031
+            forceNoPBC    yes
+            group1 {
+                dummyAtom (0.00, 0.00, 0.00)
+            }
+            group2 {
+                atomNumbers 31
+            }
+        }
+        distanceVec {
+            name 035
+            forceNoPBC    yes
+            group1 {
+                dummyAtom (0.00, 0.00, 0.00)
+            }
+            group2 {
+                atomNumbers 35
+            }
+        }
+        distanceVec {
+            name 036
+            forceNoPBC    yes
+            group1 {
+                dummyAtom (0.00, 0.00, 0.00)
+            }
+            group2 {
+                atomNumbers 36
+            }
+        }
+        distanceVec {
+            name 037
+            forceNoPBC    yes
+            group1 {
+                dummyAtom (0.00, 0.00, 0.00)
+            }
+            group2 {
+                atomNumbers 37
+            }
+        }
+        distanceVec {
+            name 039
+            forceNoPBC    yes
+            group1 {
+                dummyAtom (0.00, 0.00, 0.00)
+            }
+            group2 {
+                atomNumbers 39
+            }
+        }
+    }
+}
+
+colvar {
+    name                    gpath_z_distanceVec
+    gzpathCV {
+        useZsquare on
+        pathFile ./path_distanceVec_2.txt
+        distanceVec {
+            name 002
+            forceNoPBC    yes
+            group1 {
+                dummyAtom (0.00, 0.00, 0.00)
+            }
+            group2 {
+                atomNumbers 2
+            }
+        }
+        distanceVec {
+            name 005
+            forceNoPBC    yes
+            group1 {
+                dummyAtom (0.00, 0.00, 0.00)
+            }
+            group2 {
+                atomNumbers 5
+            }
+        }
+        distanceVec {
+            name 006
+            forceNoPBC    yes
+            group1 {
+                dummyAtom (0.00, 0.00, 0.00)
+            }
+            group2 {
+                atomNumbers 6
+            }
+        }
+        distanceVec {
+            name 007
+            forceNoPBC    yes
+            group1 {
+                dummyAtom (0.00, 0.00, 0.00)
+            }
+            group2 {
+                atomNumbers 7
+            }
+        }
+        distanceVec {
+            name 009
+            forceNoPBC    yes
+            group1 {
+                dummyAtom (0.00, 0.00, 0.00)
+            }
+            group2 {
+                atomNumbers 9
+            }
+        }
+        distanceVec {
+            name 011
+            forceNoPBC    yes
+            group1 {
+                dummyAtom (0.00, 0.00, 0.00)
+            }
+            group2 {
+                atomNumbers 11
+            }
+        }
+        distanceVec {
+            name 015
+            forceNoPBC    yes
+            group1 {
+                dummyAtom (0.00, 0.00, 0.00)
+            }
+            group2 {
+                atomNumbers 15
+            }
+        }
+        distanceVec {
+            name 016
+            forceNoPBC    yes
+            group1 {
+                dummyAtom (0.00, 0.00, 0.00)
+            }
+            group2 {
+                atomNumbers 16
+            }
+        }
+        distanceVec {
+            name 017
+            forceNoPBC    yes
+            group1 {
+                dummyAtom (0.00, 0.00, 0.00)
+            }
+            group2 {
+                atomNumbers 17
+            }
+        }
+        distanceVec {
+            name 019
+            forceNoPBC    yes
+            group1 {
+                dummyAtom (0.00, 0.00, 0.00)
+            }
+            group2 {
+                atomNumbers 19
+            }
+        }
+        distanceVec {
+            name 021
+            forceNoPBC    yes
+            group1 {
+                dummyAtom (0.00, 0.00, 0.00)
+            }
+            group2 {
+                atomNumbers 21
+            }
+        }
+        distanceVec {
+            name 025
+            forceNoPBC    yes
+            group1 {
+                dummyAtom (0.00, 0.00, 0.00)
+            }
+            group2 {
+                atomNumbers 25
+            }
+        }
+        distanceVec {
+            name 026
+            forceNoPBC    yes
+            group1 {
+                dummyAtom (0.00, 0.00, 0.00)
+            }
+            group2 {
+                atomNumbers 26
+            }
+        }
+        distanceVec {
+            name 027
+            forceNoPBC    yes
+            group1 {
+                dummyAtom (0.00, 0.00, 0.00)
+            }
+            group2 {
+                atomNumbers 27
+            }
+        }
+        distanceVec {
+            name 029
+            forceNoPBC    yes
+            group1 {
+                dummyAtom (0.00, 0.00, 0.00)
+            }
+            group2 {
+                atomNumbers 29
+            }
+        }
+        distanceVec {
+            name 031
+            forceNoPBC    yes
+            group1 {
+                dummyAtom (0.00, 0.00, 0.00)
+            }
+            group2 {
+                atomNumbers 31
+            }
+        }
+        distanceVec {
+            name 035
+            forceNoPBC    yes
+            group1 {
+                dummyAtom (0.00, 0.00, 0.00)
+            }
+            group2 {
+                atomNumbers 35
+            }
+        }
+        distanceVec {
+            name 036
+            forceNoPBC    yes
+            group1 {
+                dummyAtom (0.00, 0.00, 0.00)
+            }
+            group2 {
+                atomNumbers 36
+            }
+        }
+        distanceVec {
+            name 037
+            forceNoPBC    yes
+            group1 {
+                dummyAtom (0.00, 0.00, 0.00)
+            }
+            group2 {
+                atomNumbers 37
+            }
+        }
+        distanceVec {
+            name 039
+            forceNoPBC    yes
+            group1 {
+                dummyAtom (0.00, 0.00, 0.00)
+            }
+            group2 {
+                atomNumbers 39
+            }
+        }
+    }
+}
