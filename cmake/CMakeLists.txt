@@ -34,7 +34,8 @@ endif()
 
 add_library(colvars STATIC ${COLVARS_SOURCES})
 
-target_compile_options(colvars PRIVATE $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall -Wpedantic -Wno-long-long>)
+target_compile_options(colvars PRIVATE $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Intel>>:-Wall -pedantic>)
+target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:GNU>:-Wno-long-long>)
 
 if(COLVARS_LEPTON)
   target_compile_options(colvars PRIVATE -DLEPTON)
