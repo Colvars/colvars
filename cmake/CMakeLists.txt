@@ -42,7 +42,7 @@ if(COLVARS_LEPTON)
   target_compile_options(colvars PRIVATE -DLEPTON)
   target_include_directories(colvars PRIVATE ${LEPTON_DIR}/include)
   # Silence warning
-  target_compile_options(lepton PRIVATE $<$<CXX_COMPILER_ID:Clang>:-Wno-tautological-undefined-compare>)
+  target_compile_options(lepton PRIVATE $<$<CXX_COMPILER_ID:Clang>:-Wno-tautological-undefined-compare -Wno-unknown-warning-option>)
 endif()
 
 message(STATUS "NOTE: this CMake recipe is useful for compilation tests only.")
