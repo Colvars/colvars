@@ -1,9 +1,9 @@
 seed 1
 timestep            0.5
 
-parmfile            trialanine.parm7
-coordinates         trialanine_initial.pdb
-bincoordinates      string-15.coor
+parmfile            ../Common/trialanine.parm7
+coordinates         ../Common/../Common/trialanine_initial.pdb
+bincoordinates      ../Common/trialanine_string-15.coor
 temperature         300
 
 outputname          test
