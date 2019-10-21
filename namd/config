@@ -604,6 +604,7 @@ function error_exists {
   [[ "$CHARM_ARCH" == netlrts-* ]] && ARCH_SUFFIX=${ARCH_SUFFIX}-netlrts
   [[ "$CHARM_ARCH" == verbs-* ]] && ARCH_SUFFIX=${ARCH_SUFFIX}-verbs
   [[ "$CHARM_ARCH" == ofi-* ]] && ARCH_SUFFIX=${ARCH_SUFFIX}-ofi
+  [[ "$CHARM_ARCH" == ucx-* ]] && ARCH_SUFFIX=${ARCH_SUFFIX}-ucx
   [[ "$CHARM_ARCH" == *-vmi* ]] && ARCH_SUFFIX=${ARCH_SUFFIX}-vmi
   [[ "$CHARM_ARCH" == *-tcp* ]] && ARCH_SUFFIX=${ARCH_SUFFIX}-TCP
   [[ "$CHARM_ARCH" == *-gm* ]] && ARCH_SUFFIX=${ARCH_SUFFIX}-gm

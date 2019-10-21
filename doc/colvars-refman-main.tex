@@ -1,3 +1,10 @@
+% This file is part of the Collective Variables module (Colvars).
+% The original version of Colvars and its updates are located at:
+% https://github.com/Colvars/colvars
+% Please update all Colvars source files before making any changes.
+% If you wish to distribute your changes, please submit them to the
+% Colvars repository at GitHub.
+
 \cvnamdugonly{
 \section{Collective Variable-based Calculations (Colvars)}
 \label{section:colvars}
@@ -2215,11 +2222,11 @@ The usage of \texttt{gzpath} and \texttt{gspath} is illustrated below:
 \-~~\# Use atomic coordinate from atoms 1, 2 and 3 to compute the path\\
 \-~~gspath \{\\
 \-~~~~atoms \{atomnumbers \{ 1 2 3 \}\}\\
-\-~~~~refPositionFile1 string-00.pdb\\
-\-~~~~refPositionFile2 string-01.pdb\\
-\-~~~~refPositionFile3 string-02.pdb\\
-\-~~~~refPositionFile4 string-03.pdb\\
-\-~~~~refPositionFile5 string-04.pdb\\
+\-~~~~refPositionsFile1 string-00.pdb\\
+\-~~~~refPositionsFile2 string-01.pdb\\
+\-~~~~refPositionsFile3 string-02.pdb\\
+\-~~~~refPositionsFile4 string-03.pdb\\
+\-~~~~refPositionsFile5 string-04.pdb\\
 \-~~\}\\
 \}\\
 \noindent\ttfamily colvar \{\\
@@ -2229,11 +2236,11 @@ The usage of \texttt{gzpath} and \texttt{gspath} is illustrated below:
 \-~~\# Use atomic coordinate from atoms 1, 2 and 3 to compute the path\\
 \-~~gzpath \{\\
 \-~~~~atoms \{atomnumbers \{ 1 2 3 \}\}\\
-\-~~~~refPositionFile1 string-00.pdb\\
-\-~~~~refPositionFile2 string-01.pdb\\
-\-~~~~refPositionFile3 string-02.pdb\\
-\-~~~~refPositionFile4 string-03.pdb\\
-\-~~~~refPositionFile5 string-04.pdb\\
+\-~~~~refPositionsFile1 string-00.pdb\\
+\-~~~~refPositionsFile2 string-01.pdb\\
+\-~~~~refPositionsFile3 string-02.pdb\\
+\-~~~~refPositionsFile4 string-03.pdb\\
+\-~~~~refPositionsFile5 string-04.pdb\\
 \-~~\}\\
 \}}
 
@@ -2272,10 +2279,10 @@ In the \texttt{gspathCV~\{...\}} and the \texttt{gzpathCV~\{...\}} block all vec
 \item %
   \key
     {pathFile}{%
-    \texttt{gspathCV} and \texttt{gspathCV}}{%
+    \texttt{gspathCV} and \texttt{gzpathCV}}{%
     The file name of the path file.}{%
     UNIX filename}{%
-		The path is defined by the \texttt{pathFile}. The lines of the \texttt{pathFile} matches the total number of reference frames. The columns of the \texttt{pathFile} matches the number of CVs in this block and are seperated by space.
+		Defines the nodes or images that constitutes the path in CV space. The CVs of an image are listed in a line of \texttt{pathFile} using space-seperated format. Lines from top to button in \texttt{pathFile} corresponds images from initial to last.
     }
 
 \end{cvcoptions}
@@ -2345,6 +2352,116 @@ The usage of \texttt{gzpathCV} and \texttt{gspathCV} is illustrated below:
 \-~~~~\}\\
 \-~~\}\\
 \}}
+
+
+\cvsubsec{Arithmetic path collective variables in CV space}{sec:cvc_apathCV}
+
+The arithmetic path collective variable in CV space uses the same formula as the one proposed by Branduardi\cite{Branduardi2007} et al., except that it computes $s$ and $z$ in CV space instead of RMSDs in Cartesian space. Moreover, this implementation allows different coefficients for each CV components as described in \cite{Hovan2019}. Assuming a path is composed of $N$ reference frames and defined in an $M$-dimensional CV space, then the equations of $s$ and $z$ of the path are 
+
+\begin{equation}
+s = \frac{\sum_{i=1}^{N} i \exp\left(-\lambda\sum_{j=1}^{M} c_j^2 \left(x_j-x_{i,j}\right)^2\right)}{\sum_{i=1}^{N} \exp\left(-\lambda\sum_{j=1}^{M} c_j^2 \left(x_j-x_{i,j}\right)^2\right)}
+\end{equation}
+
+\begin{equation}
+z = -\frac{1}{\lambda} \ln \left(\sum_{i=1}^{N} \exp\left(-\lambda\sum_{j=1}^{M} c_j^2 \left(x_j-x_{i,j}\right) \right)\right)
+\end{equation}
+where $c_j$ is the coefficient(weight) of the $j$-th CV, $x_{i,j}$ is the value of $j$-th CV of $i$-th reference frame and $x_{j}$ is the value of $j$-th CV of current frame. $\lambda$ is a parameter to smooth the variation of $s$ and $z$.
+
+\cvsubsubsec{\texttt{aspathCV}: progress along a path defined in CV space.}{sec:cvc_aspathCV}
+
+This colvar component computes the $s$ variable.
+
+\labelkey{colvar|aspathCV}
+
+\begin{cvcoptions}
+\item %
+  \keydef
+    {weights}{%
+    \texttt{aspathCV} and \texttt{azpathCV}}{%
+    Coefficients of the collective variables}{%
+    space-seperated numbers in a \texttt{\{...\}} block}{%
+    \texttt{\{1.0 ...\}}}{%
+    Define the coefficients. The $j$-th value in the \texttt{\{...\}} block corresponds the $c_{j}$ in the equations.
+  }
+
+\item %
+  \keydef
+    {lambda}{%
+    \texttt{aspathCV} and \texttt{azpathCV}}{%
+    Smoothness of the variation of $s$ and $z$}{%
+    decimal}{%
+    inverse of the mean square displacements of successive reference frames}{%
+    The value of $\lambda$ in the equations.
+  }
+
+\item %
+  \key
+    {pathFile}{%
+    \texttt{aspathCV} and \texttt{azpathCV}}{%
+    The file name of the path file.}{%
+    UNIX filename}{%
+		Defines the nodes or images that constitutes the path in CV space. The CVs of an image are listed in a line of \texttt{pathFile} using space-seperated format. Lines from top to button in \texttt{pathFile} corresponds images from initial to last.
+    }
+
+\end{cvcoptions}
+
+\cvsubsubsec{\texttt{azpathCV}: distance from a path defined in CV space.}{sec:cvc_azpathCV}
+
+This colvar component computes the $z$ variable. Options are the same as in \ref{sec:cvc_aspathCV}.
+
+The usage of \texttt{azpathCV} and \texttt{aspathCV} is illustrated below:
+
+\bigskip
+{%
+% verbatim can't appear within commands
+\noindent\ttfamily colvar \{\\
+\-~~\# Progress along the path\\
+\-~~name as\\
+\-~~\# Path defined by the CV space of two dihedral angles\\
+\-~~aspathCV \{\\
+\-~~~~pathFile ./path.txt\\
+\-~~~~weights \{1.0 1.0\}\\
+\-~~~~lambda 0.005\\
+\-~~~~dihedral \{\\
+\-~~~~~~name 001\\
+\-~~~~~~group1 \{atomNumbers \{5\}\}\\
+\-~~~~~~group2 \{atomNumbers \{7\}\}\\
+\-~~~~~~group3 \{atomNumbers \{9\}\}\\
+\-~~~~~~group4 \{atomNumbers \{15\}\}\\
+\-~~~~\}\\
+\-~~~~dihedral \{\\
+\-~~~~~~name 002\\
+\-~~~~~~group1 \{atomNumbers \{7\}\}\\
+\-~~~~~~group2 \{atomNumbers \{9\}\}\\
+\-~~~~~~group3 \{atomNumbers \{15\}\}\\
+\-~~~~~~group4 \{atomNumbers \{17\}\}\\
+\-~~~~\}\\
+\-~~\}\\
+\}\\
+\noindent\ttfamily colvar \{\\
+\-~~\# Distance from the path\\
+\-~~name az\\
+\-~~azpathCV \{\\
+\-~~~~pathFile ./path.txt\\
+\-~~~~weights \{1.0 1.0\}\\
+\-~~~~lambda 0.005\\
+\-~~~~dihedral \{\\
+\-~~~~~~name 001\\
+\-~~~~~~group1 \{atomNumbers \{5\}\}\\
+\-~~~~~~group2 \{atomNumbers \{7\}\}\\
+\-~~~~~~group3 \{atomNumbers \{9\}\}\\
+\-~~~~~~group4 \{atomNumbers \{15\}\}\\
+\-~~~~\}\\
+\-~~~~dihedral \{\\
+\-~~~~~~name 002\\
+\-~~~~~~group1 \{atomNumbers \{7\}\}\\
+\-~~~~~~group2 \{atomNumbers \{9\}\}\\
+\-~~~~~~group3 \{atomNumbers \{15\}\}\\
+\-~~~~~~group4 \{atomNumbers \{17\}\}\\
+\-~~~~\}\\
+\-~~\}\\
+\}}
+
 
 
 \cvsubsec{Shared keywords for all components}{sec:cvc_common}
@@ -4185,7 +4302,16 @@ The same information is always included in the colvars state file, which is suff
 for restarting an eABF simulation.
 These separate file is only useful when joining adjacent windows from a stratified
 eABF simulation, either to continue the simulation in a broader window or to
-compute a CZAR estimate of the PMF over the full range of the coordinate(s).}
+compute a CZAR estimate of the PMF over the full range of the coordinate(s).
+\textbf{Important warning.} Unbiased free-energy estimators from eABF dynamics rely
+on some form of sampling histogram. When running stratified (windowed) calculations
+this histogram becomes discontinuous, and as a result the free energy gradient estimated
+by CZAR is inaccurate at the window boundary, resulting in visible "blips" in the PMF.
+As a workaround, we recommend manually replacing the two
+free energy gradient values at the boundary, either with the ABF values from .grad files
+(accurate in the limit of tight coupling), or with values interpolated for the neighboring
+values of the CZAR gradient.
+}
 \end{itemize}
 
 Similar to ABF, the CZAR estimator produces two output files in multicolumn text format (\ref{sec:colvar_multicolumn_grid}):

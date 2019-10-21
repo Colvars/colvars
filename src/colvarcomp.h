@@ -1,5 +1,12 @@
 // -*- c++ -*-
 
+// This file is part of the Collective Variables module (Colvars).
+// The original version of Colvars and its updates are located at:
+// https://github.com/Colvars/colvars
+// Please update all Colvars source files before making any changes.
+// If you wish to distribute your changes, please submit them to the
+// Colvars repository at GitHub.
+
 #ifndef COLVARCOMP_H
 #define COLVARCOMP_H
 
@@ -16,6 +23,7 @@
 #include "colvarmodule.h"
 #include "colvar.h"
 #include "colvaratoms.h"
+#include "colvar_arithmeticpath.h"
 
 #if (__cplusplus >= 201103L)
 #include "colvar_geometricpath.h"
@@ -688,9 +696,6 @@ protected:
   /// Reference coordinates
   std::vector<cvm::atom_pos>  ref_pos;
 
-  /// Geometric center of the reference coordinates
-  cvm::atom_pos                ref_pos_center;
-
   /// Eigenvector (of a normal or essential mode): will always have zero center
   std::vector<cvm::rvector>   eigenvec;
 
@@ -883,9 +888,8 @@ protected:
   /// Integer exponent of the function denominator
   int ed;
 
-  /// \brief If true, group2 will be treated as a single atom, stored in this
-  /// accessory group
-  cvm::atom_group *group2_center;
+  /// If true, group2 will be treated as a single atom
+  bool b_group2_center_only;
 
   /// Tolerance for the pair list
   cvm::real tolerance;
@@ -937,8 +941,11 @@ public:
                                       bool **pairlist_elem,
                                       cvm::real tolerance);
 
-  /// Main workhorse function
+  /// Workhorse function
   template<int flags> int compute_coordnum();
+
+  /// Workhorse function
+  template<int flags> void main_loop(bool **pairlist_elem);
 
 };
 
@@ -1404,7 +1411,7 @@ class colvar::CartesianBasedPath
   : public colvar::cvc
 {
 protected:
-    virtual void computeReferenceDistance(std::vector<cvm::real>& result);
+    virtual void computeDistanceToReferenceFrames(std::vector<cvm::real>& result);
     /// Selected atoms
     cvm::atom_group *atoms;
     /// Fitting options
@@ -1434,7 +1441,7 @@ private:
     cvm::rotation rot_v3;
 protected:
     virtual void prepareVectors();
-    virtual void updateReferenceDistances();
+    virtual void updateDistanceToReferenceFrames();
 public:
     gspath(std::string const &conf);
     virtual ~gspath() {}
@@ -1456,7 +1463,7 @@ private:
     cvm::rotation rot_v4;
 protected:
     virtual void prepareVectors();
-    virtual void updateReferenceDistances();
+    virtual void updateDistanceToReferenceFrames();
 public:
     gzpath(std::string const &conf);
     virtual ~gzpath() {}
@@ -1502,7 +1509,9 @@ protected:
     /// Total number of reference frames
     size_t total_reference_frames;
 protected:
-    virtual void computeReferenceDistance(std::vector<cvm::real>& result);
+    virtual void computeDistanceToReferenceFrames(std::vector<cvm::real>& result);
+    /// Helper function to determine the distance between reference frames
+    virtual void computeDistanceBetweenReferenceFrames(std::vector<cvm::real>& result) const;
     cvm::real getPolynomialFactorOfCVGradient(size_t i_cv) const;
 public:
     CVBasedPath(std::string const &conf);
@@ -1520,7 +1529,7 @@ class colvar::gspathCV
   : public colvar::CVBasedPath, public GeometricPathCV::GeometricPathBase<colvarvalue, cvm::real, GeometricPathCV::path_sz::S>
 {
 protected:
-    virtual void updateReferenceDistances();
+    virtual void updateDistanceToReferenceFrames();
     virtual void prepareVectors();
 public:
     gspathCV(std::string const &conf);
@@ -1536,11 +1545,40 @@ class colvar::gzpathCV
   : public colvar::CVBasedPath, public GeometricPathCV::GeometricPathBase<colvarvalue, cvm::real, GeometricPathCV::path_sz::Z>
 {
 protected:
-    virtual void updateReferenceDistances();
+    virtual void updateDistanceToReferenceFrames();
     virtual void prepareVectors();
 public:
     gzpathCV(std::string const &conf);
     virtual ~gzpathCV();
+    virtual void calc_value();
+    virtual void calc_gradients();
+    virtual void apply_force(colvarvalue const &force);
+};
+
+
+
+class colvar::aspathCV
+  : public colvar::CVBasedPath, public ArithmeticPathCV::ArithmeticPathBase<colvarvalue, cvm::real, ArithmeticPathCV::path_sz::S>
+{
+protected:
+    virtual void updateDistanceToReferenceFrames();
+public:
+    aspathCV(std::string const &conf);
+    virtual ~aspathCV();
+    virtual void calc_value();
+    virtual void calc_gradients();
+    virtual void apply_force(colvarvalue const &force);
+};
+
+
+class colvar::azpathCV
+  : public colvar::CVBasedPath, public ArithmeticPathCV::ArithmeticPathBase<colvarvalue, cvm::real, ArithmeticPathCV::path_sz::Z>
+{
+protected:
+    virtual void updateDistanceToReferenceFrames();
+public:
+    azpathCV(std::string const &conf);
+    virtual ~azpathCV();
     virtual void calc_value();
     virtual void calc_gradients();
     virtual void apply_force(colvarvalue const &force);
@@ -1595,6 +1633,20 @@ class colvar::gzpathCV
 {
 public:
     gzpathCV(std::string const &conf) : componentDisabled(conf) {}
+};
+
+class colvar::aspathCV
+  : public colvar::componentDisabled
+{
+public:
+    aspathCV(std::string const &conf) : componentDisabled(conf) {}
+};
+
+class colvar::azpathCV
+  : public colvar::componentDisabled
+{
+public:
+    azpathCV(std::string const &conf) : componentDisabled(conf) {}
 };
 
 #endif // C++11 checking

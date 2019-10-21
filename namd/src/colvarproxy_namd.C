@@ -1,5 +1,12 @@
 // -*- c++ -*-
 
+// This file is part of the Collective Variables module (Colvars).
+// The original version of Colvars and its updates are located at:
+// https://github.com/Colvars/colvars
+// Please update all Colvars source files before making any changes.
+// If you wish to distribute your changes, please submit them to the
+// Colvars repository at GitHub.
+
 #include <errno.h>
 
 #include "common.h"
@@ -929,25 +936,22 @@ std::ostream * colvarproxy_namd::output_stream(std::string const &output_name,
   if (cvm::debug()) {
     cvm::log("Using colvarproxy_namd::output_stream()\n");
   }
-  std::list<std::ostream *>::iterator osi  = output_files.begin();
-  std::list<std::string>::iterator    osni = output_stream_names.begin();
-  for ( ; osi != output_files.end(); osi++, osni++) {
-    if (*osni == output_name) {
-      return *osi;
-    }
-  }
+
+  std::ostream *os = get_output_stream(output_name);
+  if (os != NULL) return os;
+
   if (!(mode & (std::ios_base::app | std::ios_base::ate))) {
     colvarproxy::backup_file(output_name);
   }
-  ofstream_namd *os = new ofstream_namd(output_name.c_str(), mode);
-  if (!os->is_open()) {
+  ofstream_namd *osf = new ofstream_namd(output_name.c_str(), mode);
+  if (!osf->is_open()) {
     cvm::error("Error: cannot write to file \""+output_name+"\".\n",
                FILE_ERROR);
     return NULL;
   }
   output_stream_names.push_back(output_name);
-  output_files.push_back(os);
-  return os;
+  output_files.push_back(osf);
+  return osf;
 }
 
 

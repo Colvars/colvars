@@ -1,5 +1,12 @@
 // -*- c++ -*-
 
+// This file is part of the Collective Variables module (Colvars).
+// The original version of Colvars and its updates are located at:
+// https://github.com/Colvars/colvars
+// Please update all Colvars source files before making any changes.
+// If you wish to distribute your changes, please submit them to the
+// Colvars repository at GitHub.
+
 #include "colvarmodule.h"
 #include "colvarproxy.h"
 #include "colvarvalue.h"
@@ -1288,7 +1295,8 @@ colvarvalue const colvarbias_restraint_linear::restraint_force(size_t i) const
 
 cvm::real colvarbias_restraint_linear::d_restraint_potential_dk(size_t i) const
 {
-  return 1.0 / variables(i)->width * (variables(i)->value() - colvar_centers[i]);
+  return 1.0 / variables(i)->width * (variables(i)->value() -
+                                      colvar_centers[i]).sum();
 }
 
 

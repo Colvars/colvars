@@ -1,0 +1,16 @@
+colvar {
+
+    name one
+
+    outputAppliedForce on
+
+    width 0.5
+
+    eigenvector {
+        atoms {
+            indexGroup RMSD_atoms
+        }
+        refPositionsFile rmsd_atoms_refpos.xyz
+        vectorFile rmsd_atoms_random.xyz
+    }
+}

@@ -32,57 +32,70 @@ proc calc_pathCVs { args } {
     incr step
     set N [llength $args]
 
-    if { [ expr {($step % $freq) == 0 }]} {
-        # Sanity check for paths with very few images
-        if { $N < $min_images } { set min_images $N }
-
-        # Enable all cvcs to allow for selection on next timestep
-        set flags_next { }
-        foreach x $args {
-           lappend flags_next 1
-        }
-        cv colvar s cvcflags $flags_next
-    }
-
-    if { [ expr {($step % $freq) == 1}] } {
-        # Flags are all set to one from previous timestep
+    if { $step == 1 } {
+        # Flags start at all 1's
         set flags {}
         foreach x $args {
-           lappend flags 1
+            lappend flags 1
         }
-        # Select relevant cvcs with new flags
-        set flags_next {}
-        set n_nonzero 0
-        foreach x $args {
-           set expo [expr {exp(- $lambda * $x * $x)}]
-           if { $expo < $tolerance } {
-              set flag 0
-           } else {
-              set flag 1
-           }
-           incr n_nonzero $flag
-           lappend flags_next $flag
+        if { $N < $min_images } {
+            puts "colvars: PathCV FATAL ERROR: min_images cannot be more ($min_images) than the total number of images ($N)."
+            exit
         }
-        if { $n_nonzero < $min_images } {
-          puts "PathCV WARNING: less than $min_images RMSDs are above threshold, selecting $min_images closest images"
-          set sorted [lsort -real $args]
-          set max [expr {[lindex $sorted [expr {$min_images - 1}]] + 1e-12}]
-          set flags_next {}
-          foreach x $args {
-            if { $x < $max } {
-              lappend flags_next 1
-            } else {
-              lappend flags_next 0
-            }
-          }
-        }
-        cv colvar s cvcflags $flags_next
-        puts "STEP $step   next pathCV flags  $flags_next"
     }
 
-    if { [ expr {$step % $freq} ] == 2 } {
-        # Only use CVCs selected on previous step
-        set flags $flags_next
+    if { $freq > 1 } {
+
+        # Adaptive cvc flags
+        if { [ expr {($step % $freq) == 0 }]} {
+            # Enable all cvcs to allow for selection on next timestep
+            set flags_next { }
+            foreach x $args {
+            lappend flags_next 1
+            }
+            cv colvar s cvcflags $flags_next
+        }
+
+        if { [ expr {($step % $freq) == 1}] } {
+            # Flags are all set to one from previous timestep
+            set flags {}
+            foreach x $args {
+                lappend flags 1
+            }
+            # Select relevant cvcs with new flags
+            set flags_next {}
+            set n_nonzero 0
+            foreach x $args {
+                set expo [expr {exp(- $lambda * $x * $x)}]
+                if { $expo < $tolerance } {
+                    set flag 0
+                } else {
+                    set flag 1
+                }
+                incr n_nonzero $flag
+                lappend flags_next $flag
+            }
+            if { $n_nonzero < $min_images } {
+                puts "colvars: PathCV WARNING: less than $min_images RMSDs are above threshold, selecting $min_images closest images"
+                set sorted [lsort -real $args]
+                set max [expr {[lindex $sorted [expr {$min_images - 1}]] + 1e-12}]
+                set flags_next {}
+                foreach x $args {
+                    if { $x < $max } {
+                        lappend flags_next 1
+                    } else {
+                        lappend flags_next 0
+                    }
+                }
+            }
+            cv colvar s cvcflags $flags_next
+            puts "colvars: PathCV STEP $step   next pathCV flags  $flags_next"
+        }
+
+        if { [ expr {$step % $freq} ] == 2 } {
+            # Only use CVCs selected on previous step
+            set flags $flags_next
+        }
     }
 
     set i 0
@@ -145,10 +158,11 @@ proc calc_pathCVz { args } {
 
     set N [llength $args]
     if { [llength $flags] != $N } {
-        puts "pathCV z ERROR: wrong number of CVC flags ([llength $flags]) for given RMSD values ($N)"
+        puts "colvars: PathCV z ERROR: wrong number of CVC flags ([llength $flags]) for given RMSD values ($N)"
+        exit
     }
 
-    if { [ expr {$step % $freq <= 1}]} {
+    if { [ expr {($freq > 1) && ($step % $freq <= 1)}]} {
         # Re-using the flags calculated by colvar s
         # assuming that s is defined before z, and hence updated first
         cv colvar z cvcflags $flags_next
@@ -178,7 +192,8 @@ proc calc_pathCVz_gradient { args } {
 
     set N [llength $args]
     if { [llength $flags] != $N } {
-        puts "pathCV z gradient ERROR: wrong number of CVC flags ([llength $flags]) for given RMSD values ($N)"
+        puts "colvars: PathCV z gradient ERROR: wrong number of CVC flags ([llength $flags]) for given RMSD values ($N)"
+        exit
     }
 
     set grad {}
