@@ -10,11 +10,13 @@
 
 gen_ref_output=''
 
-TMPDIR=/tmp
+export TMPDIR=${TMPDIR:-/tmp}
+
 DIRLIST=''
 BINARY=namd2
 while [ $# -ge 1 ]; do
   if { echo $1 | grep -q namd2 ; }; then
+    echo "Using NAMD executable from $1"
     BINARY=$1
   elif [ "x$1" = 'x-g' ]; then
     gen_ref_output='yes'
@@ -23,12 +25,30 @@ while [ $# -ge 1 ]; do
     echo "    The -g option (re)generates reference outputs in the given directories" >& 2
     echo "    If no executable is given, \"namd2\" is used" >& 2
     echo "    If no directories are given, all matches of [0-9][0-9][0-9]_* are used" >& 2
+    echo "    This script relies on the executable spiff to be available, and will try to " >& 2
+    echo "    download and build it into $TMPDIR if needed." >& 2
     exit 0
   else
     DIRLIST=`echo ${DIRLIST} $1`
   fi
   shift
 done
+
+TOPDIR=$(git rev-parse --show-toplevel)
+if [ ! -d ${TOPDIR} ] ; then
+  echo "Error: cannot identify top project directory." >& 2
+  exit 1
+fi
+
+SPIFF=$(${TOPDIR}/devel-tools/get_spiff)
+if [ $? != 0 ] ; then
+    echo "Error: spiff is not available and could not be downloaded/built." >& 2
+    exit 1
+else
+    echo "Using spiff executable from $SPIFF"
+    hash -p ${SPIFF} spiff
+fi
+
 if ! { echo ${DIRLIST} | grep -q 0 ; } then
   DIRLIST=`eval ls -d [0-9][0-9][0-9]_*`
 fi
@@ -205,7 +225,7 @@ for dir in ${DIRLIST} ; do
       diff $f $base > "$base.diff"
       RETVAL=$?
     else
-      spiff -r 1e-${DIFF_PREC} $f $base > "$base.diff"
+      ${SPIFF} -r 1e-${DIFF_PREC} $f $base > "$base.diff"
       RETVAL=$?
     fi
     if [ $RETVAL -ne 0 ]
