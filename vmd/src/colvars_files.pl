@@ -21,6 +21,7 @@ $colvars_defines = " -DVMDCOLVARS";
                     'colvar.C',
                     'colvarcomp.C',
                     'colvarcomp_angles.C',
+                    'colvarcomp_apath.C',
                     'colvarcomp_coordnums.C',
                     'colvarcomp_distances.C',
                     'colvarcomp_gpath.C',
@@ -36,6 +37,7 @@ $colvars_defines = " -DVMDCOLVARS";
                     'colvartypes.C',
                     'colvarvalue.C');
 @colvars_h    =    ('colvar_UIestimator.h',
+                    'colvar_arithmeticpath.h',
                     'colvar_geometricpath.h',
                     'colvaratoms.h',
                     'colvarbias.h',

@@ -651,6 +651,23 @@ void SimParameters::config_parser_basic(ParseOptions &opts) {
 #endif
    opts.optional("main", "waterModel", "Water model to use", PARSE_STRING);
    opts.optionalB("main", "LJcorrection", "Apply analytical tail corrections for energy and virial", &LJcorrection, FALSE);
+#ifdef TIMER_COLLECTION
+   opts.optional("main", "TimerBinWidth",
+       "Bin width of timer histogram collection in microseconds",
+       &timerBinWidth, 1.0);
+#endif
+#if defined(NAMD_NVTX_ENABLED) || defined(NAMD_CMK_TRACE_ENABLED)
+   // default NVTX or Projections profiling is up to the first 1000 patches
+   opts.optional("main", "beginEventPatchID","Beginning patch ID for profiling",
+       &beginEventPatchID, 0);
+   opts.optional("main", "endEventPatchID", "Ending patch ID for profiling",
+       &endEventPatchID, 5000);
+   // default NVTX or Projections profiling is up to the first 1000 time steps
+   opts.optional("main", "beginEventStep", "Beginning time step for profiling",
+       &beginEventStep, 0);
+   opts.optional("main", "endEventStep", "Ending time step for profiling",
+       &endEventStep, 1000);
+#endif
 }
 
 void SimParameters::config_parser_fileio(ParseOptions &opts) {
@@ -1453,14 +1470,15 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
    // GaMD parameters
    opts.optionalB("accelMD", "accelMDG", "Perform Gaussian accelMD calculation?", &accelMDG, FALSE);
    opts.optional("accelMDG", "accelMDGiE", "Flag to set the mode iE in Gaussian accelMD", &accelMDGiE, 1);
-   opts.optional("accelMDG", "accelMDGcMDSteps", "No. of cMD steps", &accelMDGcMDSteps, 1000000);
+   opts.optional("accelMDG", "accelMDGcMDSteps", "Number of cMD steps", &accelMDGcMDSteps, 1000000);
    opts.range("accelMDGcMDSteps", NOT_NEGATIVE);
-   opts.optional("accelMDG", "accelMDGEquiSteps", "No. of equilibration steps after adding boost potential", &accelMDGEquiSteps, 1000000);
+   opts.optional("accelMDG", "accelMDGEquiSteps", "Number of equilibration steps after adding boost potential", &accelMDGEquiSteps, 1000000);
    opts.range("accelMDGEquiSteps", NOT_NEGATIVE);
-   opts.require("accelMDG", "accelMDGcMDPrepSteps", "No. of preparation cMD steps", &accelMDGcMDPrepSteps, 200000);
+   opts.require("accelMDG", "accelMDGcMDPrepSteps", "Number of preparation cMD steps", &accelMDGcMDPrepSteps, 200000);
    opts.range("accelMDGcMDPrepSteps", NOT_NEGATIVE);
-   opts.require("accelMDG", "accelMDGEquiPrepSteps", "No. of preparation equilibration steps", &accelMDGEquiPrepSteps, 200000);
+   opts.require("accelMDG", "accelMDGEquiPrepSteps", "Number of preparation equilibration steps", &accelMDGEquiPrepSteps, 200000);
    opts.range("accelMDGEquiPrepSteps", NOT_NEGATIVE);
+   opts.optional("accelMDG", "accelMDGStatWindow", "Number of steps to calculate avg and std", &accelMDGStatWindow, -1);
    opts.optional("accelMDG", "accelMDGSigma0P", "Upper limit of std of total potential", &accelMDGSigma0P, 6.0);
    opts.units("accelMDGSigma0P", N_KCAL);
    opts.range("accelMDGSigma0P", NOT_NEGATIVE);
@@ -3270,6 +3288,16 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
 	       sprintf(msg, "accelMDGiE was set to %d but it should be 1 or 2", accelMDGiE);
 	       NAMD_die(msg);
 	   }
+           if(accelMDGStatWindow > 0){
+               if(accelMDGcMDPrepSteps % accelMDGStatWindow != 0)
+                   NAMD_die("'accelMDGcMDPrepSteps' has to be a multiple of 'accelMDGStatWindow'");
+               if(accelMDGcMDSteps % accelMDGStatWindow != 0)
+                   NAMD_die("'accelMDGcMDSteps' has to be a multiple of 'accelMDGStatWindow'");
+               if(accelMDGEquiPrepSteps % accelMDGStatWindow != 0)
+                   NAMD_die("'accelMDGEquiPrepSteps' has to be a multiple of 'accelMDGStatWindow'");
+               if(accelMDGEquiSteps % accelMDGStatWindow != 0)
+                   NAMD_die("'accelMDGEquiSteps' has to be a multiple of 'accelMDGStatWindow'");
+           }
 	   if(accelMDGRestart && accelMDGcMDSteps == 0)
 	       accelMDGcMDPrepSteps = 0;
 	   else if(accelMDGcMDSteps - accelMDGcMDPrepSteps < 2)
@@ -3514,13 +3542,13 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
        NAMD_die("alchWCA is not currently available with CUDA");
 #endif
      }
-     
+
      if (alchFepOn) {
        if (alchLambda2 < 0.0 || alchLambda2 > 1.0)
          NAMD_die("alchLambda2 values should be in the range [0.0, 1.0]\n");
 
        setupIDWS(); // setup IDWS if it was activated.
-       
+
        if (!opts.defined("alchoutfile")) {
          strcpy(alchOutFile, outputFilename);
          strcat(alchOutFile, ".fep");
@@ -3541,7 +3569,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
        }
      }
    }
-        
+
 //fepe
 
    if ( alchOn && alchFepOn && alchThermIntOn )
@@ -3974,7 +4002,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
    } else {
      extraBondsCosAnglesSetByUser = false;
    }
-      
+
    if (!opts.defined("constraints"))
    {
      constraintExp = 0;
@@ -4386,7 +4414,8 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
       }
     }
 #endif
-}
+} // check_config()
+
 
 void SimParameters::print_config(ParseOptions &opts, ConfigList *config, char *&cwd) {
 
@@ -5148,7 +5177,7 @@ if ( openatomOn )
        iout << iINFO << "SOLUTE SCALING DISABLED FOR BONDS AND ANGLES\n";
      }
    }
-   
+
    if ( pairInteractionOn ) {
      iout << iINFO << "PAIR INTERACTION CALCULATIONS ACTIVE\n";
      iout << iINFO << "USING FLAG " << pairInteractionGroup1
@@ -5856,6 +5885,11 @@ if ( openatomOn )
 	     << "(WITH " << accelMDGEquiPrepSteps << " PREPARATION STEPS)\n";
 	 if(accelMDGEquiSteps == 0)
 		 iout << iINFO << "(accelMDGEquiPrepSteps is set to zero automatically)\n";
+
+         if(accelMDGStatWindow > 0)
+             iout << iINFO << "accelMDG WILL RESET AVERAGE AND STANDARD DEVIATION EVERY " << accelMDGEquiSteps << " STEPS\n";
+         else
+             iout << iINFO << "accelMDG WILL NOT RESET AVERAGE AND STANDARD DEVIATION\n";
 
 	 if(accelMDdihe)
 	     iout << iINFO << "accelMDGSigma0D: " << accelMDGSigma0D << " KCAL/MOL\n";
@@ -7062,14 +7096,14 @@ int SimParameters::setupIDWS() {
   if (alchLambdaIDWS > 1.) {
     NAMD_die("alchLambdaIDWS should be either in the range [0.0, 1.0], or negative (disabled).\n");
   }
- /* 
+ /*
   * The internal parameter alchIDWSFreq determines the number of steps of MD
   * before each switch of the value of alchLambda2. At most this occurs every
   * time the energy is evaluated and thus the default is the greater of
   * fullElectFrequency and nonbondedFrequency. However, this choice fails to
   * report alternating values if output is printed less often than every step
   * (which is almost certainly true). Thus the frequency is reset to match
-  * alchOutFreq or, if that is zero, outputEnergies. Note that, if 
+  * alchOutFreq or, if that is zero, outputEnergies. Note that, if
   * alchOutFreq > 0 but != outputEnergies, then the data going to stdout
   * are likely not useful since the comparison value is difficult to infer.
   */
@@ -7136,7 +7170,7 @@ BigReal SimParameters::getElecLambda(const BigReal lambda) {
 /*
  * Modifications for WCA decomposition of van der Waal interactions.
  *
- * WCA requires that repulsive and attractive components of the vdW 
+ * WCA requires that repulsive and attractive components of the vdW
  * forces be treated separately. To keep the code clean, the same scaling
  * function is always used and simply has its behavior modified. However,
  * the new repluslive scaling only ever gets used when alchWCAOn.

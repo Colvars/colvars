@@ -1,5 +1,12 @@
 #if (__cplusplus >= 201103L)
 
+// This file is part of the Collective Variables module (Colvars).
+// The original version of Colvars and its updates are located at:
+// https://github.com/Colvars/colvars
+// Please update all Colvars source files before making any changes.
+// If you wish to distribute your changes, please submit them to the
+// Colvars repository at GitHub.
+
 #include <numeric>
 #include <algorithm>
 #include <cmath>
@@ -45,7 +52,7 @@ colvar::CartesianBasedPath::CartesianBasedPath(std::string const &conf): cvc(con
     bool has_frames = true;
     total_reference_frames = 0;
     while (has_frames) {
-        std::string reference_position_file_lookup = "refPositionFile" + cvm::to_str(total_reference_frames + 1);
+        std::string reference_position_file_lookup = "refPositionsFile" + cvm::to_str(total_reference_frames + 1);
         if (key_lookup(conf, reference_position_file_lookup.c_str())) {
             std::string reference_position_filename;
             get_keyval(conf, reference_position_file_lookup.c_str(), reference_position_filename, std::string(""));
@@ -78,7 +85,7 @@ colvar::CartesianBasedPath::CartesianBasedPath(std::string const &conf): cvc(con
             tmp_fitting_atoms->disable(f_ag_scalable);
             tmp_fitting_atoms->disable(f_ag_scalable_com);
             tmp_fitting_atoms->fit_gradients.assign(tmp_fitting_atoms->size(), cvm::atom_pos(0.0, 0.0, 0.0));
-            std::string reference_position_file_lookup = "refPositionFile" + cvm::to_str(i_frame + 1);
+            std::string reference_position_file_lookup = "refPositionsFile" + cvm::to_str(i_frame + 1);
             std::string reference_position_filename;
             get_keyval(conf, reference_position_file_lookup.c_str(), reference_position_filename, std::string(""));
             std::vector<cvm::atom_pos> reference_fitting_position(tmp_fitting_atoms->size());
@@ -106,10 +113,6 @@ colvar::CartesianBasedPath::CartesianBasedPath(std::string const &conf): cvc(con
 }
 
 colvar::CartesianBasedPath::~CartesianBasedPath() {
-    if (atoms != nullptr) {
-        delete atoms;
-        atoms = nullptr;
-    }
     for (auto it_comp_atoms = comp_atoms.begin(); it_comp_atoms != comp_atoms.end(); ++it_comp_atoms) {
         if (*it_comp_atoms != nullptr) {
             delete (*it_comp_atoms);
@@ -118,7 +121,7 @@ colvar::CartesianBasedPath::~CartesianBasedPath() {
     }
 }
 
-void colvar::CartesianBasedPath::computeReferenceDistance(std::vector<cvm::real>& result) {
+void colvar::CartesianBasedPath::computeDistanceToReferenceFrames(std::vector<cvm::real>& result) {
     for (size_t i_frame = 0; i_frame < reference_frames.size(); ++i_frame) {
         cvm::real frame_rmsd = 0.0;
         for (size_t i_atom = 0; i_atom < atoms->size(); ++i_atom) {
@@ -149,8 +152,8 @@ colvar::gspath::gspath(std::string const &conf): CartesianBasedPath(conf) {
     cvm::log(std::string("Geometric pathCV(s) loaded ") + cvm::to_str(reference_frames.size()) + std::string(" frames.\n"));
 }
 
-void colvar::gspath::updateReferenceDistances() {
-    computeReferenceDistance(frame_distances);
+void colvar::gspath::updateDistanceToReferenceFrames() {
+    computeDistanceToReferenceFrames(frame_distances);
 }
 
 void colvar::gspath::prepareVectors() {
@@ -293,8 +296,8 @@ colvar::gzpath::gzpath(std::string const &conf): CartesianBasedPath(conf) {
     cvm::log(std::string("Geometric pathCV(z) loaded ") + cvm::to_str(reference_frames.size()) + std::string(" frames.\n"));
 }
 
-void colvar::gzpath::updateReferenceDistances() {
-    computeReferenceDistance(frame_distances);
+void colvar::gzpath::updateDistanceToReferenceFrames() {
+    computeDistanceToReferenceFrames(frame_distances);
 }
 
 void colvar::gzpath::prepareVectors() {
@@ -535,6 +538,7 @@ colvar::CVBasedPath::CVBasedPath(std::string const &conf): cvc(conf) {
         std::vector<std::string> fields;
         split_string(line, token, fields);
         size_t num_value_required = 0;
+        cvm::log(std::string("Reading reference frame ") + cvm::to_str(total_reference_frames + 1) + std::string("\n"));
         for (size_t i_cv = 0; i_cv < tmp_cv.size(); ++i_cv) {
             const size_t value_size = tmp_cv[i_cv].size();
             num_value_required += value_size;
@@ -545,7 +549,6 @@ colvar::CVBasedPath::CVBasedPath(std::string const &conf): cvc(conf) {
                     tmp_cv[i_cv][i] = std::atof(fields[i].c_str());
                     cvm::log(fields[i] + std::string(" "));
                 }
-                cvm::log(std::string("\n"));
             } else {
                 cvm::error("Error: incorrect format of path file.\n");
             }
@@ -554,6 +557,9 @@ colvar::CVBasedPath::CVBasedPath(std::string const &conf): cvc(conf) {
             ref_cv.push_back(tmp_cv);
             ++total_reference_frames;
         }
+    }
+    if (total_reference_frames <= 1) {
+	cvm::error("Error: there is only 1 or 0 reference frame, which doesn't constitute a path.\n");
     }
     x.type(colvarvalue::type_scalar);
     use_explicit_gradients = true;
@@ -567,7 +573,7 @@ colvar::CVBasedPath::CVBasedPath(std::string const &conf): cvc(conf) {
     }
 }
 
-void colvar::CVBasedPath::computeReferenceDistance(std::vector<cvm::real>& result) {
+void colvar::CVBasedPath::computeDistanceToReferenceFrames(std::vector<cvm::real>& result) {
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
         cv[i_cv]->calc_value();
     }
@@ -590,6 +596,20 @@ void colvar::CVBasedPath::computeReferenceDistance(std::vector<cvm::real>& resul
     }
 }
 
+void colvar::CVBasedPath::computeDistanceBetweenReferenceFrames(std::vector<cvm::real>& result) const {
+    if (ref_cv.size() < 2) return;
+    for (size_t i_frame = 1; i_frame < ref_cv.size(); ++i_frame) {
+        cvm::real dist_ij = 0.0;
+        for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
+            colvarvalue ref_cv_value(ref_cv[i_frame][i_cv]);
+            colvarvalue prev_ref_cv_value(ref_cv[i_frame-1][i_cv]);
+            dist_ij += cv[i_cv]->dist2(ref_cv_value, prev_ref_cv_value);
+        }
+        dist_ij = cvm::sqrt(dist_ij);
+        result[i_frame-1] = dist_ij;
+    }
+}
+
 cvm::real colvar::CVBasedPath::getPolynomialFactorOfCVGradient(size_t i_cv) const {
     cvm::real factor_polynomial = 1.0;
     if (cv[i_cv]->value().type() == colvarvalue::type_scalar) {
@@ -604,6 +624,7 @@ colvar::CVBasedPath::~CVBasedPath() {
     for (auto it = cv.begin(); it != cv.end(); ++it) {
         delete (*it);
     }
+    atom_groups.clear();
 }
 
 colvar::gspathCV::gspathCV(std::string const &conf): CVBasedPath(conf) {
@@ -638,8 +659,8 @@ colvar::gspathCV::gspathCV(std::string const &conf): CVBasedPath(conf) {
 
 colvar::gspathCV::~gspathCV() {}
 
-void colvar::gspathCV::updateReferenceDistances() {
-    computeReferenceDistance(frame_distances);
+void colvar::gspathCV::updateDistanceToReferenceFrames() {
+    computeDistanceToReferenceFrames(frame_distances);
 }
 
 void colvar::gspathCV::prepareVectors() {
@@ -780,8 +801,8 @@ colvar::gzpathCV::gzpathCV(std::string const &conf): CVBasedPath(conf) {
 colvar::gzpathCV::~gzpathCV() {
 }
 
-void colvar::gzpathCV::updateReferenceDistances() {
-    computeReferenceDistance(frame_distances);
+void colvar::gzpathCV::updateDistanceToReferenceFrames() {
+    computeDistanceToReferenceFrames(frame_distances);
 }
 
 void colvar::gzpathCV::prepareVectors() {

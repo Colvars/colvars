@@ -6,15 +6,15 @@ configuration {
 colvar {
   name one
   x -1.07125200380591e+00
-  extended_x -1.13949025362870e+00
-  extended_v  5.53785303399100e-03
+  extended_x -1.14502810666269e+00
+  extended_v  4.95564329068073e-03
 }
 
 colvar {
   name two
   x -2.08003771427216e+00
-  extended_x -2.11503223146226e+00
-  extended_v -1.19438397907173e-03
+  extended_x -2.11383784748319e+00
+  extended_v -1.36281501667060e-03
 }
 
 abf {

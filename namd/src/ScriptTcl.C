@@ -141,15 +141,33 @@ void ScriptTcl::reinitAtoms(const char *basename) {
 #ifdef NAMD_PYTHON
 #include <Python.h>
 
+#if PY_MAJOR_VERSION >= 3
+
+#define PYINT_CHECK PyLong_Check
+#define PYINT_ASLONG PyLong_AsLong
+#define PYSTRING_CHECK PyUnicode_Check
+// Encode the string as UTF8, hoping we are in the ASCII region
+#define PYSTRING_ASSTRING PyUnicode_AsUTF8
+
+#else
+
+#define PYINT_CHECK PyInt_Check
+#define PYINT_ASLONG PyInt_AsLong
+#define PYSTRING_CHECK PyString_Check
+#define PYSTRING_ASSTRING PyString_AsString
+
+#endif
+
 static Tcl_Obj* python_tcl_convert(PyObject *obj) {
-  if ( PyInt_Check(obj) ) {
-    return Tcl_NewLongObj(PyInt_AsLong(obj));
+
+  if ( PYINT_CHECK(obj) ) {
+    return Tcl_NewLongObj(PYINT_ASLONG(obj));
   }
   if ( PyFloat_Check(obj) ) {
     return Tcl_NewDoubleObj(PyFloat_AsDouble(obj));
   }
-  if ( PyString_Check(obj) ) {
-    return Tcl_NewStringObj(PyString_AsString(obj), -1);
+  if ( PYSTRING_CHECK(obj) ) {
+    return Tcl_NewStringObj(PYSTRING_ASSTRING(obj), -1);
   }
   if ( PySequence_Check(obj) ) {
     PyObject *iter = PyObject_GetIter(obj);
@@ -163,7 +181,7 @@ static Tcl_Obj* python_tcl_convert(PyObject *obj) {
     return rlist;
   }
   PyObject *str = PyObject_Str(obj);
-  Tcl_Obj *robj = Tcl_NewStringObj(PyString_AsString(str), -1);
+  Tcl_Obj *robj = Tcl_NewStringObj(PYSTRING_ASSTRING(str), -1);
   Py_DECREF(str);
   return robj;
 }
@@ -219,7 +237,7 @@ static PyObject* python_tcl_write(PyObject *self, PyObject *args) {
   return Py_None;
 }
 
-static PyMethodDef methods[] = {
+static PyMethodDef namdPython_methods[] = {
   {"eval", python_tcl_eval, METH_VARARGS,
    "Evaluate string in Tcl interpreter."},
   {"call", python_tcl_call, METH_VARARGS,
@@ -229,11 +247,60 @@ static PyMethodDef methods[] = {
   {NULL, NULL, 0, NULL}
 };
 
+#if PY_MAJOR_VERSION >= 3
+
+struct module_state {
+  PyObject *error;
+};
+
+static int namdPython_traverse(PyObject *m, visitproc visit, void *arg);
+static int namdPython_clear(PyObject *m);
+PyObject *namdPythonModule;
+
+static int namdPython_traverse(PyObject *m, visitproc visit, void *arg) {
+    Py_VISIT(((struct module_state*)PyModule_GetState(m))->error);
+    return 0;
+}
+
+static int namdPython_clear(PyObject *m) {
+    Py_CLEAR(((struct module_state*)PyModule_GetState(m))->error);
+    return 0;
+}
+
+static struct PyModuleDef moduledef = {
+        PyModuleDef_HEAD_INIT,
+        "tcl",
+        NULL,
+        sizeof(struct module_state),
+        namdPython_methods,
+        NULL,
+        namdPython_traverse,
+        namdPython_clear,
+        NULL
+};
+
+static PyObject* PyInit_tcl(void) {
+  PyObject *module;
+  module = PyModule_Create(&moduledef);
+  if (module == NULL) {
+    NAMD_bug("Failed to create Python module");
+  }
+  return module;
+}
+
+#endif // Python 3
+
 static void namd_python_initialize(void *interp) {
   if ( static_interp ) return;
   static_interp = (Tcl_Interp*) interp;
+
+  #if PY_MAJOR_VERSION >= 3
+    PyImport_AppendInittab("tcl", &PyInit_tcl);
   Py_InitializeEx(0);  // do not initialize signal handlers
-  Py_InitModule("tcl", methods);
+  #else
+    Py_InitializeEx(0);  // do not initialize signal handlers
+    Py_InitModule("tcl", namdPython_methods);
+  #endif
 
   const char * python_code = "\n"
 "import sys\n"
@@ -320,7 +387,11 @@ int ScriptTcl::Tcl_python(ClientData, Tcl_Interp *interp, int argc, const char *
     PyObject *func = PyObject_GetAttrString(mod, "format_exception");
     if ( ! func ) return TCL_ERROR;
 
+    // TODO understand why this call fails in Python3 in cases where the
+    // traceback is not None
     PyObject *list = PyObject_CallFunctionObjArgs(func, type, value, traceback, NULL);
+    if ( ! list ) return TCL_ERROR;
+
     Py_DECREF(mod);
     Py_DECREF(func);
     Py_DECREF(type);
@@ -331,7 +402,7 @@ int ScriptTcl::Tcl_python(ClientData, Tcl_Interp *interp, int argc, const char *
     if ( ! iter ) return TCL_ERROR;
     while ( PyObject *item = PyIter_Next(iter) ) {
       str = PyObject_Str(item);
-      Tcl_AppendResult(interp, PyString_AsString(str), "\n", NULL);
+      Tcl_AppendResult(interp, PYSTRING_ASSTRING(str), "\n", NULL);
       Py_DECREF(str);
       Py_DECREF(item);
     }

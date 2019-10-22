@@ -18,6 +18,12 @@ while [ $# -ge 1 ]; do
     BINARY=$1
   elif [ "x$1" = 'x-g' ]; then
     gen_ref_output='yes'
+  elif [ "x$1" = 'x-h' ]; then
+    echo "Usage: ./run_tests.sh [-h] [-g] [path_to_namd2] [testdir1 [testdir2 ...]]"  >& 2
+    echo "    The -g option (re)generates reference outputs in the given directories" >& 2
+    echo "    If no executable is given, \"namd2\" is used" >& 2
+    echo "    If no directories are given, all matches of [0-9][0-9][0-9]_* are used" >& 2
+    exit 0
   else
     DIRLIST=`echo ${DIRLIST} $1`
   fi
@@ -37,7 +43,7 @@ TPUT_RED='true'
 TPUT_GREEN='true'
 TPUT_BLUE='true'
 TPUT_CLEAR='true'
-if which tput >& /dev/null ; then
+if hash tput >& /dev/null ; then
   TPUT_RED='tput setaf 1'
   TPUT_GREEN='tput setaf 2'
   TPUT_BLUE='tput setaf 4'
@@ -64,7 +70,7 @@ cleanup_files() {
       if [ ! -f "$f.diff" ]; then rm -f $f; fi # keep files that have a non-empty diff
     done
     rm -f *.out *.out.diff # Delete output files regardless
-    rm -f metadynamics1.*.files.txt replicas.registry.txt
+    rm -f metadynamics1.*.files.txt metadynamics1.*.files.txt.BAK replicas.registry.txt
   done
   tclsh ../Common/delete_tmp_files.tcl
 }

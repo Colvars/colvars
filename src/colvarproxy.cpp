@@ -1,7 +1,20 @@
 // -*- c++ -*-
 
+// This file is part of the Collective Variables module (Colvars).
+// The original version of Colvars and its updates are located at:
+// https://github.com/Colvars/colvars
+// Please update all Colvars source files before making any changes.
+// If you wish to distribute your changes, please submit them to the
+// Colvars repository at GitHub.
+
+#if !defined(WIN32) || defined(__CYGWIN__)
+#include <unistd.h>
+#endif
+#include <cerrno>
+
 #include <sstream>
 #include <cstring>
+#include <cstdio>
 
 #if defined(_OPENMP)
 #include <omp.h>
@@ -697,6 +710,27 @@ std::ostream * colvarproxy_io::output_stream(std::string const &output_name,
   if (cvm::debug()) {
     cvm::log("Using colvarproxy::output_stream()\n");
   }
+
+  std::ostream *os = get_output_stream(output_name);
+  if (os != NULL) return os;
+
+  if (!(mode & (std::ios_base::app | std::ios_base::ate))) {
+    backup_file(output_name);
+  }
+  std::ofstream *osf = new std::ofstream(output_name.c_str(), mode);
+  if (!osf->is_open()) {
+    cvm::error("Error: cannot write to file/channel \""+output_name+"\".\n",
+               FILE_ERROR);
+    return NULL;
+  }
+  output_stream_names.push_back(output_name);
+  output_files.push_back(osf);
+  return osf;
+}
+
+
+std::ostream *colvarproxy_io::get_output_stream(std::string const &output_name)
+{
   std::list<std::ostream *>::iterator osi  = output_files.begin();
   std::list<std::string>::iterator    osni = output_stream_names.begin();
   for ( ; osi != output_files.end(); osi++, osni++) {
@@ -704,19 +738,9 @@ std::ostream * colvarproxy_io::output_stream(std::string const &output_name,
       return *osi;
     }
   }
-  if (!(mode & (std::ios_base::app | std::ios_base::ate))) {
-    backup_file(output_name);
-  }
-  std::ofstream *os = new std::ofstream(output_name.c_str(), mode);
-  if (!os->is_open()) {
-    cvm::error("Error: cannot write to file/channel \""+output_name+"\".\n",
-               FILE_ERROR);
-    return NULL;
-  }
-  output_stream_names.push_back(output_name);
-  output_files.push_back(os);
-  return os;
+  return NULL;
 }
+
 
 
 int colvarproxy_io::flush_output_stream(std::ostream *os)
@@ -754,7 +778,62 @@ int colvarproxy_io::close_output_stream(std::string const &output_name)
 
 int colvarproxy_io::backup_file(char const *filename)
 {
+  // TODO implement this using rename_file()
   return COLVARS_NOT_IMPLEMENTED;
+}
+
+
+int colvarproxy_io::remove_file(char const *filename)
+{
+  int error_code = COLVARS_OK;
+#if defined(WIN32) && !defined(__CYGWIN__)
+  // Because the file may be open by other processes, rename it to filename.old
+  std::string const renamed_file(std::string(filename)+".old");
+  // It may still be there from an interrupted run, so remove it to be safe
+  std::remove(renamed_file.c_str());
+  int rename_exit_code = 0;
+  while ((rename_exit_code = std::rename(filename,
+                                         renamed_file.c_str())) != 0) {
+    if (errno == EINTR) continue;
+    error_code |= FILE_ERROR;
+    break;
+  }
+  // Ask to remove filename.old, but ignore any errors raised
+  std::remove(renamed_file.c_str());
+#else
+  if (std::remove(filename)) {
+    if (errno != ENOENT) {
+      error_code |= FILE_ERROR;
+    }
+  }
+#endif
+  if (error_code != COLVARS_OK) {
+    return cvm::error("Error: in removing file \""+std::string(filename)+
+                      "\".\n.",
+                      error_code);
+  }
+  return COLVARS_OK;
+}
+
+
+int colvarproxy_io::rename_file(char const *filename, char const *newfilename)
+{
+  int error_code = COLVARS_OK;
+#if defined(WIN32) && !defined(__CYGWIN__)
+  // On straight Windows, must remove the destination before renaming it
+  error_code |= remove_file(newfilename);
+#endif
+  int rename_exit_code = 0;
+  while ((rename_exit_code = std::rename(filename, newfilename)) != 0) {
+    if (errno == EINTR) continue;
+    // Call log() instead of error to allow the next try
+    cvm::log("Error: in renaming file \""+std::string(filename)+"\" to \""+
+             std::string(newfilename)+"\".\n.");
+    error_code |= FILE_ERROR;
+    if (errno == EXDEV) continue;
+    break;
+  }
+  return rename_exit_code ? error_code : COLVARS_OK;
 }
 
 
@@ -819,4 +898,3 @@ int colvarproxy::get_version_from_string(char const *version_string)
   is >> newint;
   return newint;
 }
-

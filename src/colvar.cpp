@@ -1,5 +1,12 @@
 // -*- c++ -*-
 
+// This file is part of the Collective Variables module (Colvars).
+// The original version of Colvars and its updates are located at:
+// https://github.com/Colvars/colvars
+// Please update all Colvars source files before making any changes.
+// If you wish to distribute your changes, please submit them to the
+// Colvars repository at GitHub.
+
 #include <list>
 #include <vector>
 #include <algorithm>
@@ -432,6 +439,21 @@ int colvar::init_custom_function(std::string const &conf)
 
 int colvar::init_custom_function(std::string const &conf)
 {
+
+  std::string expr;
+  size_t pos = 0;
+  if (key_lookup(conf, "customFunction", &expr, &pos)) {
+    std::string msg("Error: customFunction requires the Lepton library.");
+#if (__cplusplus < 201103L)
+    // NOTE: this is not ideal; testing for the Lepton library's version would
+    // be more accurate, but also less portable
+    msg +=
+      std::string("  Note also that recent versions of Lepton require C++11: "
+                  "please see https://colvars.github.io/README-c++11.html.");
+#endif
+    return cvm::error(msg, COLVARS_NOT_IMPLEMENTED);
+  }
+
   return COLVARS_OK;
 }
 
@@ -561,7 +583,8 @@ int colvar::init_extended_Lagrangian(std::string const &conf)
     cvm::log("Enabling the extended Lagrangian term for colvar \""+
              this->name+"\".\n");
 
-    x_ext.type(value());
+    // Mark x_ext as uninitialized so we can initialize it to the colvar value when updating
+    x_ext.type(colvarvalue::type_notset);
     v_ext.type(value());
     fr.type(value());
 
@@ -789,6 +812,8 @@ int colvar::init_components(std::string const &conf)
   error_code |= init_components_type<linearCombination>(conf, "linear combination of other collective variables", "subColvar");
   error_code |= init_components_type<gspathCV>(conf, "geometrical path collective variables (s) for other CVs", "gspathCV");
   error_code |= init_components_type<gzpathCV>(conf, "geometrical path collective variables (z) for other CVs", "gzpathCV");
+  error_code |= init_components_type<aspathCV>(conf, "arithmetic path collective variables (s) for other CVs", "aspathCV");
+  error_code |= init_components_type<azpathCV>(conf, "arithmetic path collective variables (s) for other CVs", "azpathCV");
 
   if (!cvcs.size() || (error_code != COLVARS_OK)) {
     cvm::error("Error: no valid components were provided "
@@ -1505,7 +1530,7 @@ int colvar::calc_colvar_properties()
 
     // initialize the restraint center in the first step to the value
     // just calculated from the cvcs
-    if (cvm::step_relative() == 0 && !after_restart) {
+    if ((cvm::step_relative() == 0 && !after_restart) || x_ext.type() == colvarvalue::type_notset) {
       x_ext = x;
       v_ext.reset(); // (already 0; added for clarity)
     }
