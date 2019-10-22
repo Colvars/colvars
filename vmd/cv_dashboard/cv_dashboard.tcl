@@ -42,10 +42,8 @@ namespace eval ::cv_dashboard {
   variable plothandle
   variable plottype     ;# either timeline or 2cv
 
-  variable repnames {}      ;# representations created by us
-  variable macros {}        ;# macros created by us
-  variable grad_objects {}  ;# ids of graphical objects displaying gradients
-  variable grad_cvs {}      ;# cvs whose gradients are shown
+  variable atom_rep     ;# hash array of: list of macro names, list of atom representations, indexed by colvar name
+  variable grad_objects ;# hash array ids of graphical objects displaying gradients, indexed by colvar name
 
   variable template_dir
   variable template_base_dir

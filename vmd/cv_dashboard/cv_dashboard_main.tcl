@@ -36,7 +36,7 @@ proc ::cv_dashboard::createWindow {} {
   incr gridrow
   grid [ttk::button $w.load -text "Load" -command ::cv_dashboard::load -padding "2 0 2 0"] \
     -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::button $w.save -text "Save all" -command ::cv_dashboard::save -padding "2 0 2 0"] \
+  grid [ttk::button $w.save -text "Save colvars" -command ::cv_dashboard::save -padding "2 0 2 0"] \
     -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $w.reset -text "Reset" -command ::cv_dashboard::reset -padding "2 0 2 0"] \
     -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
@@ -88,6 +88,7 @@ proc ::cv_dashboard::createWindow {} {
     incr gridrow
     grid [ttk::button $w.show_atoms -text "Show atoms" -command {::cv_dashboard::show_atoms} -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
     grid [ttk::button $w.hide_atoms -text "Hide atoms" -command {::cv_dashboard::hide_atoms} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+    grid [ttk::button $w.hide_all_atoms -text "Hide all atoms" -command {::cv_dashboard::hide_all_atoms} -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
   }
 
   if {[string compare [run_cv version] "2019-03-18"] >= 0} {
@@ -95,6 +96,7 @@ proc ::cv_dashboard::createWindow {} {
     grid [ttk::button $w.show_gradients -text "Show gradients" -command {::cv_dashboard::show_gradients [::cv_dashboard::selected_colvars]} \
       -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
     grid [ttk::button $w.hide_gradients -text "Hide gradients" -command {::cv_dashboard::hide_gradients} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+    grid [ttk::button $w.hide_all_gradients -text "Hide all grads" -command {::cv_dashboard::hide_all_gradients} -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
   }
 
   incr gridrow
@@ -150,32 +152,30 @@ proc ::cv_dashboard::refresh_table {} {
   run_cv update
 
   set parity 1
-  foreach c $::cv_dashboard::cvs {
+  foreach cv $::cv_dashboard::cvs {
     # tag odd and even rows for alternating background colors
     set parity [expr 1-$parity]
-    $w.cvtable insert {} end -id $c -text $c -tag parity$parity
+    $w.cvtable insert {} end -id $cv -text $cv -tag parity$parity
 
-    set val [run_cv colvar $c update]
-    $w.cvtable set $c val [format_value $val]
+    set val [run_cv colvar $cv update]
+    $w.cvtable set $cv val [format_value $val]
 
     # Add sub-elements for vector colvars
     set size [llength $val]
     if { $size > 1 } {
       for {set i 1} {$i <= $size} {incr i} {
-        set n "${c} ${i}"
-        $w.cvtable insert $c end -id $n -text $n -tag parity$parity
+        set n "$cv $i"
+        $w.cvtable insert $cv end -id $n -text $n -tag parity$parity
         $w.cvtable set $n val [format_value [lindex $val [expr $i-1]]]
       }
     }
   }
 
   # Remove deleted variables from gradient display
-  set tmp {}
-  foreach cv $::cv_dashboard::grad_cvs {
-    if { [lsearch $::cv_dashboard::cvs $cv] > -1 } { lappend tmp $cv }
+  foreach cv [array names ::cv_dashboard::grad_object] {
+    if { [lsearch $::cv_dashboard::cvs $cv] == -1 } { unset ::cv_dashboard::grad_object($cv) }
   }
-  set ::cv_dashboard::grad_cvs $tmp
-  show_gradients $::cv_dashboard::grad_cvs
+  update_shown_gradients
 
   update_frame internal [molinfo top] w
 }
@@ -186,14 +186,14 @@ proc ::cv_dashboard::refresh_values {} {
   run_cv update
   set w .cv_dashboard_window
 
-  foreach c [$w.cvtable children {}] {
-    set val [run_cv colvar $c update]
-    $w.cvtable set $c val [format_value $val]
+  foreach cv [$w.cvtable children {}] {
+    set val [run_cv colvar $cv update]
+    $w.cvtable set $cv val [format_value $val]
 
     set size [llength $val]
     if { $size > 1 } {
       for {set i 1} {$i <= $size} {incr i} {
-        set n "${c} ${i}"
+        set n "$cv $i"
         $w.cvtable set $n val [format_value [lindex $val [expr $i-1]]]
       }
     }
@@ -308,8 +308,8 @@ proc ::cv_dashboard::save {} {
     # Save directory for next invocation of this dialog
     set ::cv_dashboard::config_dir [file dirname $path]
     set cfg ""
-    foreach c [run_cv list] {
-        append cfg "colvar {[get_config $c]}\n\n"
+    foreach cv [run_cv list] {
+        append cfg "colvar {[get_config $cv]}\n\n"
     }
     set o [open $path w]
     puts $o $cfg
@@ -320,7 +320,7 @@ proc ::cv_dashboard::save {} {
 
 # Delete currently selected colvars
 proc ::cv_dashboard::del {} {
-  foreach c [selected_colvars] {
+  foreach cv [selected_colvars] {
     # workaround bug in colvars pre-2018-07-02
     if {[string compare [run_cv version] "2018-07-02"] == -1} {
       foreach b [run_cv list biases] {
@@ -330,7 +330,7 @@ proc ::cv_dashboard::del {} {
         }
       }
     }
-    run_cv colvar $c delete
+    run_cv colvar $cv delete
   }
   refresh_table
 }
@@ -354,49 +354,70 @@ proc ::cv_dashboard::reset {} {
 proc ::cv_dashboard::show_atoms {} {
   set color 0
   set ci 0
-  foreach c [selected_colvars] {
+  foreach cv [selected_colvars] {
+    if { [info exists ::cv_dashboard::atom_rep($cv)]} { continue }
     incr ci
-    set all_groups [run_cv colvar $c getatomgroups]
+    set all_groups [run_cv colvar $cv getatomgroups]
     # Remove characters such as <> which are parsed as special in VMD selection texts
-    set sanitized_cvname [regsub -all {[^a-zA-Z0-9_@]} $c {} ]
+    set sanitized_cvname [regsub -all {[^a-zA-Z0-9_@]} $cv {} ]
     set i 0
+    set macros {}
+    set repnames {}
     foreach list $all_groups {
       incr i
       # dummyAtoms will return empty lists
       if {[llength $list] > 0} {
         set group "${sanitized_cvname}_group_${i}"
         # resolve ambiguous names due to colvar name sanitization
-        while {[lsearch $::cv_dashboard::macros $group] > -1} {
+        while {[lsearch [array names ::cv_dashboard::atom_rep] $group] > -1} {
           append sanitized_cvname "_"
           set group "${sanitized_cvname}_group_${i}"
         }
+        lappend macros $group
         atomselect macro $group "index $list"
-        lappend ::cv_dashboard::macros $group
         mol color ColorID $color
         mol representation VDW 0.5 12.
         mol selection "$group"
         mol material Opaque
         mol addrep top
         set repid [expr [molinfo top get numreps] - 1]
-        lappend ::cv_dashboard::repnames [mol repname top $repid]
+        lappend repnames [mol repname top $repid]
         incr color
       }
+    }
+    set ::cv_dashboard::atom_rep($cv) [list $macros $repnames]
+  }
+}
+
+# Hide atoms for selected colvars
+proc ::cv_dashboard::hide_atoms {} {
+  foreach cv [selected_colvars] {
+    if { [info exists ::cv_dashboard::atom_rep($cv)] } {
+      #Line below should be lassign but we try to be compatible with old Tcl (pre 8.5)
+      foreach { macros repnames } $::cv_dashboard::atom_rep($cv) {}
+      foreach m $macros {
+        atomselect delmacro $m
+      }
+      foreach r $repnames {
+        mol delrep [mol repindex top $r] top
+      }
+      unset ::cv_dashboard::atom_rep($cv)
     }
   }
 }
 
-
-# Remove atom representations
-proc ::cv_dashboard::hide_atoms {} {
-  foreach r $::cv_dashboard::repnames {
-    mol delrep [mol repindex top $r] top
+# Remove all atom representations
+proc ::cv_dashboard::hide_all_atoms {} {
+  foreach {cv data} [array get ::cv_dashboard::atom_rep] {
+    foreach { macros repnames } $data {}
+    foreach m $macros {
+      atomselect delmacro $m
+    }
+    foreach r $repnames {
+      mol delrep [mol repindex top $r] top
+    }
   }
-  set ::cv_dashboard::repnames {}
-  set ::cv_dashboard::macros [lsort -unique $::cv_dashboard::macros]
-  foreach m $::cv_dashboard::macros {
-    atomselect delmacro $m
-  }
-  set ::cv_dashboard::macros {}
+  array unset ::cv_dashboard::atom_rep *
 }
 
 
@@ -408,9 +429,12 @@ proc ::cv_dashboard::hide_atoms {} {
 proc ::cv_dashboard::show_gradients { list } {
 
   foreach cv $list {
-    if { [run_cv colvar $cv set "collect gradient" 1] == -1 } { continue }
-    run_cv colvar $cv update ;# required to get inital values of gradients
-    if { [lsearch $::cv_dashboard::grad_cvs $cv] == -1 } { lappend ::cv_dashboard::grad_cvs $cv }
+    if { ![info exists ::cv_dashboard::grad_objects($cv)] } {
+      if { [run_cv colvar $cv set "collect gradient" 1] == -1 } { continue }
+      run_cv colvar $cv update ;# required to get inital values of gradients
+      # Associate empty list of objects to cv to request its update
+      set ::cv_dashboard::grad_objects($cv) {}
+    }
   }
   update_shown_gradients
 }
@@ -418,11 +442,15 @@ proc ::cv_dashboard::show_gradients { list } {
 
 proc ::cv_dashboard::update_shown_gradients {} {
 
-  foreach i $::cv_dashboard::grad_objects {
-    graphics top delete $i
-  }
   set colorid 3 ;# avoid very common or less visible colors blue, red, gray
-  foreach cv $::cv_dashboard::grad_cvs {
+
+  foreach { cv objs } [array get ::cv_dashboard::grad_objects] {
+    
+    # Delete out-of-date graphical objects (arrows)
+    foreach obj $objs {
+      graphics top delete $obj
+    }
+
     set atomids [run_cv colvar $cv getatomids]
     if { [llength $atomids] == 0 } { continue }
     set grads [run_cv colvar $cv getgradients]
@@ -443,26 +471,37 @@ proc ::cv_dashboard::update_shown_gradients {} {
     if {$maxl2 < 1e-10} { continue }
     set fact [expr {$desired_max_length / sqrt($maxl2)}]
 
+    # Create new arrows
+    set new_objs {}
     foreach start $coords g $grads {
       set vec [vecscale $fact $g]
       set end [vecadd $start $vec]
       set middle [vecadd $start [vecscale 0.9 $vec]]
       set cyl [graphics top cylinder $start $middle radius 0.15]
       set cone [graphics top cone $middle $end radius 0.25]
-      lappend ::cv_dashboard::grad_objects $cyl $cone
+      lappend new_objs $cyl $cone
+    }
+    set ::cv_dashboard::grad_objects($cv) $new_objs
+  }
+}
+
+proc ::cv_dashboard::hide_gradients {} {
+  foreach cv [selected_colvars] {
+    if [info exists ::cv_dashboard::grad_objects($cv)] {
+      set objs $::cv_dashboard::grad_objects($cv)
+      foreach obj $objs { graphics top delete $obj }
+      run_cv colvar $cv set "collect gradient" 0
+      unset ::cv_dashboard::grad_objects($cv)
     }
   }
 }
 
 
-proc ::cv_dashboard::hide_gradients {} {
+proc ::cv_dashboard::hide_all_gradients {} {
 
-  foreach i $::cv_dashboard::grad_objects {
-    graphics top delete $i
-  }
-  set ::cv_dashboard::grad_objects {}
-  foreach cv $::cv_dashboard::grad_cvs {
+  foreach { cv objs } [array get ::cv_dashboard::grad_objects] {
+    foreach obj $objs { graphics top delete $obj }
     run_cv colvar $cv set "collect gradient" 0
   }
-  set ::cv_dashboard::grad_cvs {}
+  array unset ::cv_dashboard::grad_objects *
 }
