@@ -915,7 +915,7 @@ void colvarbias_meta::project_hills(colvarbias_meta::hill_iter  h_first,
 
 void colvarbias_meta::recount_hills_off_grid(colvarbias_meta::hill_iter  h_first,
                                              colvarbias_meta::hill_iter  h_last,
-                                             colvar_grid_scalar         *he)
+                                             colvar_grid_scalar         * /* he */)
 {
   hills_off_grid.clear();
 

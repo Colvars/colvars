@@ -41,7 +41,7 @@ colvarproxy_system::colvarproxy_system()
 colvarproxy_system::~colvarproxy_system() {}
 
 
-void colvarproxy_system::add_energy(cvm::real energy) {}
+void colvarproxy_system::add_energy(cvm::real /* energy */) {}
 
 
 void colvarproxy_system::request_total_force(bool yesno)
@@ -173,9 +173,9 @@ int colvarproxy_atoms::add_atom_slot(int atom_id)
 }
 
 
-int colvarproxy_atoms::init_atom(cvm::residue_id const &residue,
-                                 std::string const     &atom_name,
-                                 std::string const     &segment_id)
+int colvarproxy_atoms::init_atom(cvm::residue_id const & /* residue */,
+                                 std::string const     & /* atom_name */,
+                                 std::string const     & /* segment_id */)
 {
   cvm::error("Error: initializing an atom by name and residue number is currently not supported.\n",
              COLVARS_NOT_IMPLEMENTED);
@@ -204,9 +204,9 @@ void colvarproxy_atoms::clear_atom(int index)
 }
 
 
-int colvarproxy_atoms::load_atoms(char const *filename,
-                                  cvm::atom_group &atoms,
-                                  std::string const &pdb_field,
+int colvarproxy_atoms::load_atoms(char const * /* filename */,
+                                  cvm::atom_group & /* atoms */,
+                                  std::string const & /* pdb_field */,
                                   double)
 {
   return cvm::error("Error: loading atom identifiers from a file "
@@ -215,10 +215,10 @@ int colvarproxy_atoms::load_atoms(char const *filename,
 }
 
 
-int colvarproxy_atoms::load_coords(char const *filename,
-                                   std::vector<cvm::atom_pos> &pos,
-                                   std::vector<int> const &sorted_ids,
-                                   std::string const &pdb_field,
+int colvarproxy_atoms::load_coords(char const * /* filename */,
+                                   std::vector<cvm::atom_pos> & /* pos */,
+                                   std::vector<int> const & /* sorted_ids */,
+                                   std::string const & /* pdb_field */,
                                    double)
 {
   return cvm::error("Error: loading atomic coordinates from a file "
@@ -269,7 +269,7 @@ int colvarproxy_atom_groups::scalable_group_coms()
 }
 
 
-int colvarproxy_atom_groups::init_atom_group(std::vector<int> const &atoms_ids)
+int colvarproxy_atom_groups::init_atom_group(std::vector<int> const & /* atoms_ids */)
 {
   cvm::error("Error: initializing a group outside of the Colvars module "
              "is currently not supported.\n",
@@ -483,17 +483,17 @@ int colvarproxy_replicas::replica_num()
 void colvarproxy_replicas::replica_comm_barrier() {}
 
 
-int colvarproxy_replicas::replica_comm_recv(char* msg_data,
-                                            int buf_len,
-                                            int src_rep)
+int colvarproxy_replicas::replica_comm_recv(char* /* msg_data */,
+                                            int /* buf_len */,
+                                            int /* src_rep */)
 {
   return COLVARS_NOT_IMPLEMENTED;
 }
 
 
-int colvarproxy_replicas::replica_comm_send(char* msg_data,
-                                            int msg_len,
-                                            int dest_rep)
+int colvarproxy_replicas::replica_comm_send(char* /* msg_data */,
+                                            int /* msg_len */,
+                                            int /* dest_rep */)
 {
   return COLVARS_NOT_IMPLEMENTED;
 }
@@ -518,7 +518,7 @@ char const *colvarproxy_script::script_obj_to_str(unsigned char *obj)
 }
 
 
-std::vector<std::string> colvarproxy_script::script_obj_to_str_vector(unsigned char *obj)
+std::vector<std::string> colvarproxy_script::script_obj_to_str_vector(unsigned char * /* obj */)
 {
   cvm::error("Error: trying to print a script object without a scripting "
              "language interface.\n", BUG_ERROR);
@@ -533,18 +533,18 @@ int colvarproxy_script::run_force_callback()
 
 
 int colvarproxy_script::run_colvar_callback(
-      std::string const &name,
-      std::vector<const colvarvalue *> const &cvcs,
-      colvarvalue &value)
+					    std::string const & /* name */,
+					    std::vector<const colvarvalue *> const & /* cvcs */,
+					    colvarvalue & /* value */)
 {
   return COLVARS_NOT_IMPLEMENTED;
 }
 
 
 int colvarproxy_script::run_colvar_gradient_callback(
-      std::string const &name,
-      std::vector<const colvarvalue *> const &cvcs,
-      std::vector<cvm::matrix2d<cvm::real> > &gradient)
+						     std::string const & /* name */,
+						     std::vector<const colvarvalue *> const & /* cvcs */,
+						     std::vector<cvm::matrix2d<cvm::real> > & /* gradient */)
 {
   return COLVARS_NOT_IMPLEMENTED;
 }
@@ -569,7 +569,7 @@ void colvarproxy_tcl::init_tcl_pointers()
 }
 
 
-char const *colvarproxy_tcl::tcl_obj_to_str(unsigned char *obj)
+char const *colvarproxy_tcl::tcl_obj_to_str(unsigned char * /* obj */)
 {
 #if defined(COLVARS_TCL)
   return Tcl_GetString(reinterpret_cast<Tcl_Obj *>(obj));
@@ -599,9 +599,9 @@ int colvarproxy_tcl::tcl_run_force_callback()
 
 
 int colvarproxy_tcl::tcl_run_colvar_callback(
-                         std::string const &name,
-                         std::vector<const colvarvalue *> const &cvc_values,
-                         colvarvalue &value)
+					     std::string const & /* name */,
+					     std::vector<const colvarvalue *> const & /* cvc_values */,
+					     colvarvalue & /* value */)
 {
 #if defined(COLVARS_TCL)
 
@@ -636,9 +636,9 @@ int colvarproxy_tcl::tcl_run_colvar_callback(
 
 
 int colvarproxy_tcl::tcl_run_colvar_gradient_callback(
-                         std::string const &name,
-                         std::vector<const colvarvalue *> const &cvc_values,
-                         std::vector<cvm::matrix2d<cvm::real> > &gradient)
+						      std::string const & /* name */,
+						      std::vector<const colvarvalue *> const & /* cvc_values */,
+						      std::vector<cvm::matrix2d<cvm::real> > & /* gradient */)
 {
 #if defined(COLVARS_TCL)
 
@@ -776,7 +776,7 @@ int colvarproxy_io::close_output_stream(std::string const &output_name)
 }
 
 
-int colvarproxy_io::backup_file(char const *filename)
+int colvarproxy_io::backup_file(char const * /* filename */)
 {
   // TODO implement this using rename_file()
   return COLVARS_NOT_IMPLEMENTED;

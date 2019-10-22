@@ -156,7 +156,7 @@ template<>
 int colvarparse::_get_keyval_scalar_value_(std::string const &key_str,
                                            std::string const &data,
                                            bool &value,
-                                           bool const &def_value)
+                                           bool const & /* def_value */)
 {
   if ( (data == std::string("on")) ||
        (data == std::string("yes")) ||
@@ -176,8 +176,8 @@ int colvarparse::_get_keyval_scalar_value_(std::string const &key_str,
 
 template<typename TYPE>
 int colvarparse::_get_keyval_scalar_novalue_(std::string const &key_str,
-                                             TYPE &value,
-                                             Parse_Mode const &parse_mode)
+                                             TYPE & /* value */,
+                                             Parse_Mode const & /* parse_mode */)
 {
   return cvm::error("Error: improper or missing value "
                     "for \""+key_str+"\".\n", INPUT_ERROR);
