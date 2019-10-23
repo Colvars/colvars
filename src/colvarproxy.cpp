@@ -532,8 +532,7 @@ int colvarproxy_script::run_force_callback()
 }
 
 
-int colvarproxy_script::run_colvar_callback(
-					    std::string const & /* name */,
+int colvarproxy_script::run_colvar_callback(std::string const & /* name */,
 					    std::vector<const colvarvalue *> const & /* cvcs */,
 					    colvarvalue & /* value */)
 {
@@ -541,8 +540,7 @@ int colvarproxy_script::run_colvar_callback(
 }
 
 
-int colvarproxy_script::run_colvar_gradient_callback(
-						     std::string const & /* name */,
+int colvarproxy_script::run_colvar_gradient_callback(std::string const & /* name */,
 						     std::vector<const colvarvalue *> const & /* cvcs */,
 						     std::vector<cvm::matrix2d<cvm::real> > & /* gradient */)
 {
