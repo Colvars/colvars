@@ -1,15 +1,15 @@
 configuration {
-  step           70
+  step           40
   dt 5.000000e-01
 }
 
 colvar {
   name apath_s_dihed
-  x  7.74662410898353e-01
+  x  7.80351655907967e-01
 }
 
 colvar {
   name apath_z_dihed
-  x  8.20309726458628e+00
+  x  7.76163610265624e+01
 }
 
