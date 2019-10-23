@@ -421,7 +421,7 @@ public:
   BigReal getVdwLambda(const BigReal); // return max[1,x/vdwEnd]
   BigReal alchRepLambdaEnd;  //  lambda value for endpoint of repulsive vdW
                              //  interactions of exnihilated particles.
-                             //  For annihilated particles the endpoint is 
+                             //  For annihilated particles the endpoint is
                              //  (1-alchRepLambdaEnd). This also implies the
                              //  START for attractive vdW interactions.
   BigReal getRepLambda(const BigReal); // return max[1,x/repEnd]

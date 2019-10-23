@@ -1,0 +1,1046 @@
+colvars: ----------------------------------------------------------------------
+colvars: Please cite Fiorin et al, Mol Phys 2013:
+colvars:  http://dx.doi.org/10.1080/00268976.2013.813594
+colvars: in any publication based on this calculation.
+colvars: SMP parallelism is available.
+colvars: ----------------------------------------------------------------------
+colvars: Reading new configuration from file "apath.in":
+colvars: # smp = on [default]
+colvars: # colvarsTrajFrequency = 1
+colvars: # colvarsRestartFrequency = 500000 [default]
+colvars: # scriptedColvarForces = off [default]
+colvars: # scriptingAfterBiases = off [default]
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = "apath_s_dihed"
+colvars:   Initializing a new "aspathCV" component.
+colvars:     # name = "" [default]
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
+colvars:     # name = "001"
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
+colvars:       Initializing atom group "group1".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group1".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group1" defined with 1 atoms requested: total mass = 12.01, total charge = 0.5972.
+colvars:       Initializing atom group "group2".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group2".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group2" defined with 1 atoms requested: total mass = 14.01, total charge = -0.4157.
+colvars:       Initializing atom group "group3".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group3".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group3" defined with 1 atoms requested: total mass = 12.01, total charge = 0.0337.
+colvars:       Initializing atom group "group4".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group4".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group4" defined with 1 atoms requested: total mass = 12.01, total charge = 0.5973.
+colvars:     # oneSiteSystemForce = off [default]
+colvars:     # oneSiteTotalForce = off [default]
+colvars:     # name = "002"
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
+colvars:       Initializing atom group "group1".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group1".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group1" defined with 1 atoms requested: total mass = 12.01, total charge = 0.5973.
+colvars:       Initializing atom group "group2".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group2".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group2" defined with 1 atoms requested: total mass = 14.01, total charge = -0.4157.
+colvars:       Initializing atom group "group3".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group3".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group3" defined with 1 atoms requested: total mass = 12.01, total charge = 0.0337.
+colvars:       Initializing atom group "group4".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group4".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group4" defined with 1 atoms requested: total mass = 12.01, total charge = 0.5973.
+colvars:     # oneSiteSystemForce = off [default]
+colvars:     # oneSiteTotalForce = off [default]
+colvars:     # name = "003"
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
+colvars:       Initializing atom group "group1".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group1".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group1" defined with 1 atoms requested: total mass = 12.01, total charge = 0.5973.
+colvars:       Initializing atom group "group2".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group2".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group2" defined with 1 atoms requested: total mass = 14.01, total charge = -0.4157.
+colvars:       Initializing atom group "group3".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group3".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group3" defined with 1 atoms requested: total mass = 12.01, total charge = 0.0337.
+colvars:       Initializing atom group "group4".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group4".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group4" defined with 1 atoms requested: total mass = 12.01, total charge = 0.5973.
+colvars:     # oneSiteSystemForce = off [default]
+colvars:     # oneSiteTotalForce = off [default]
+colvars:     # pathFile = "./path.txt"
+colvars:     Reading path file: ./path.txt
+colvars:     Reading reference frame 1
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     72.0858
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -77.4186
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     61.4712
+colvars:     Reading reference frame 2
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     58.9044
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -75.2582
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     60.6198
+colvars:     Reading reference frame 3
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     45.723
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -73.0978
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     59.7684
+colvars:     Reading reference frame 4
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     32.3577
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -72.5179
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     60.5877
+colvars:     Reading reference frame 5
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     18.9773
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -72.6535
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     61.5295
+colvars:     Reading reference frame 6
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     5.5867
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -72.248
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     62.0155
+colvars:     Reading reference frame 7
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -7.5481
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -74.2962
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     60.1777
+colvars:     Reading reference frame 8
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -20.8271
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -73.2399
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     59.5144
+colvars:     Reading reference frame 9
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -34.0639
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -71.1964
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     59.9493
+colvars:     Reading reference frame 10
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -46.9102
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -72.1017
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     58.0976
+colvars:     Reading reference frame 11
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -59.9973
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -74.4539
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     56.5706
+colvars:     Reading reference frame 12
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -70.5344
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -73.0333
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     51.0167
+colvars:     Reading reference frame 13
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -70.0332
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -74.564
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     37.8973
+colvars:     Reading reference frame 14
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -68.7569
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -74.7407
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     24.7069
+colvars:     Reading reference frame 15
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -69.0219
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -74.0607
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     11.3097
+colvars:     Reading reference frame 16
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -68.7906
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -73.5269
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     -2.0976
+colvars:     Reading reference frame 17
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -69.1419
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -74.7962
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     -15.4516
+colvars:     Reading reference frame 18
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -68.6102
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -74.1802
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     -28.7701
+colvars:     Reading reference frame 19
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -68.2846
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -70.9148
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     -41.6276
+colvars:     Reading reference frame 20
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -66.0959
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -68.7582
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     -54.3328
+colvars:     Reading reference frame 21
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -64.6886
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -66.1216
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     -67.3451
+colvars:     Reading reference frame 22
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -67.8726
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -57.5609
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     -76.1983
+colvars:     Reading reference frame 23
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -71.1626
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -44.8218
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     -77.3386
+colvars:     Reading reference frame 24
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -72.0087
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -31.537
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     -76.528
+colvars:     Reading reference frame 25
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -71.5635
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -18.153
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     -76.5145
+colvars:     Reading reference frame 26
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -72.6776
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -4.7795
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     -76.5635
+colvars:     Reading reference frame 27
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -71.8974
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     8.6126
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     -76.5628
+colvars:     Reading reference frame 28
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -72.2763
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     21.9694
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     -75.7923
+colvars:     Reading reference frame 29
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -73.4921
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     35.2963
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     -75.4832
+colvars:     Reading reference frame 30
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -73.6703
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     48.3277
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     -73.3626
+colvars:     Reading reference frame 31
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -75.834
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     61.1592
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     -70.8062
+colvars:     Reading reference frame 32
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -77.9977
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     73.9907
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     -68.2498
+colvars:     Total number of frames: 32
+colvars:     # weights = { 1, 1, 1 } [default]
+colvars:     Distance between frame 1 and 2 is 13.3844
+colvars:     Distance between frame 2 and 3 is 13.3844
+colvars:     Distance between frame 3 and 4 is 13.4029
+colvars:     Distance between frame 4 and 5 is 13.4142
+colvars:     Distance between frame 5 and 6 is 13.4056
+colvars:     Distance between frame 6 and 7 is 13.42
+colvars:     Distance between frame 7 and 8 is 13.3375
+colvars:     Distance between frame 8 and 9 is 13.4007
+colvars:     Distance between frame 9 and 10 is 13.0106
+colvars:     Distance between frame 10 and 11 is 13.3842
+colvars:     Distance between frame 11 and 12 is 11.9956
+colvars:     Distance between frame 12 and 13 is 13.2179
+colvars:     Distance between frame 13 and 14 is 13.2532
+colvars:     Distance between frame 14 and 15 is 13.4171
+colvars:     Distance between frame 15 and 16 is 13.4199
+colvars:     Distance between frame 16 and 17 is 13.4188
+colvars:     Distance between frame 17 and 18 is 13.3433
+colvars:     Distance between frame 18 and 19 is 13.2697
+colvars:     Distance between frame 19 and 20 is 13.0715
+colvars:     Distance between frame 20 and 21 is 13.3511
+colvars:     Distance between frame 21 and 22 is 12.7202
+colvars:     Distance between frame 22 and 23 is 13.2064
+colvars:     Distance between frame 23 and 24 is 13.3364
+colvars:     Distance between frame 24 and 25 is 13.3914
+colvars:     Distance between frame 25 and 26 is 13.4199
+colvars:     Distance between frame 26 and 27 is 13.4148
+colvars:     Distance between frame 27 and 28 is 13.3844
+colvars:     Distance between frame 28 and 29 is 13.3858
+colvars:     Distance between frame 29 and 30 is 13.204
+colvars:     Distance between frame 30 and 31 is 13.2614
+colvars:     Distance between frame 31 and 32 is 13.2614
+colvars:     # lambda = 0.006
+colvars:     Lambda is 0.006
+colvars:     The weight of CV 0 is 1
+colvars:     The weight of CV 1 is 1
+colvars:     The weight of CV 2 is 1
+colvars:   All components initialized.
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # width = 1 [default]
+colvars:   # lowerBoundary = 0 [default]
+colvars:   # upperBoundary = 0 [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = off [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputTotalForce = off [default]
+colvars:   # outputAppliedForce = off [default]
+colvars:   # subtractAppliedForce = off [default]
+colvars:   # runAve = off [default]
+colvars:   # corrFunc = off [default]
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = "apath_z_dihed"
+colvars:   Initializing a new "azpathCV" component.
+colvars:     # name = "" [default]
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
+colvars:     # name = "001"
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
+colvars:       Initializing atom group "group1".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group1".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group1" defined with 1 atoms requested: total mass = 12.01, total charge = 0.5972.
+colvars:       Initializing atom group "group2".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group2".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group2" defined with 1 atoms requested: total mass = 14.01, total charge = -0.4157.
+colvars:       Initializing atom group "group3".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group3".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group3" defined with 1 atoms requested: total mass = 12.01, total charge = 0.0337.
+colvars:       Initializing atom group "group4".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group4".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group4" defined with 1 atoms requested: total mass = 12.01, total charge = 0.5973.
+colvars:     # oneSiteSystemForce = off [default]
+colvars:     # oneSiteTotalForce = off [default]
+colvars:     # name = "002"
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
+colvars:       Initializing atom group "group1".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group1".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group1" defined with 1 atoms requested: total mass = 12.01, total charge = 0.5973.
+colvars:       Initializing atom group "group2".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group2".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group2" defined with 1 atoms requested: total mass = 14.01, total charge = -0.4157.
+colvars:       Initializing atom group "group3".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group3".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group3" defined with 1 atoms requested: total mass = 12.01, total charge = 0.0337.
+colvars:       Initializing atom group "group4".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group4".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group4" defined with 1 atoms requested: total mass = 12.01, total charge = 0.5973.
+colvars:     # oneSiteSystemForce = off [default]
+colvars:     # oneSiteTotalForce = off [default]
+colvars:     # name = "003"
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
+colvars:       Initializing atom group "group1".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group1".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group1" defined with 1 atoms requested: total mass = 12.01, total charge = 0.5973.
+colvars:       Initializing atom group "group2".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group2".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group2" defined with 1 atoms requested: total mass = 14.01, total charge = -0.4157.
+colvars:       Initializing atom group "group3".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group3".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group3" defined with 1 atoms requested: total mass = 12.01, total charge = 0.0337.
+colvars:       Initializing atom group "group4".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group4".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group4" defined with 1 atoms requested: total mass = 12.01, total charge = 0.5973.
+colvars:     # oneSiteSystemForce = off [default]
+colvars:     # oneSiteTotalForce = off [default]
+colvars:     # pathFile = "./path.txt"
+colvars:     Reading path file: ./path.txt
+colvars:     Reading reference frame 1
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     72.0858
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -77.4186
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     61.4712
+colvars:     Reading reference frame 2
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     58.9044
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -75.2582
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     60.6198
+colvars:     Reading reference frame 3
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     45.723
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -73.0978
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     59.7684
+colvars:     Reading reference frame 4
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     32.3577
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -72.5179
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     60.5877
+colvars:     Reading reference frame 5
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     18.9773
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -72.6535
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     61.5295
+colvars:     Reading reference frame 6
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     5.5867
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -72.248
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     62.0155
+colvars:     Reading reference frame 7
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -7.5481
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -74.2962
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     60.1777
+colvars:     Reading reference frame 8
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -20.8271
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -73.2399
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     59.5144
+colvars:     Reading reference frame 9
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -34.0639
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -71.1964
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     59.9493
+colvars:     Reading reference frame 10
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -46.9102
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -72.1017
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     58.0976
+colvars:     Reading reference frame 11
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -59.9973
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -74.4539
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     56.5706
+colvars:     Reading reference frame 12
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -70.5344
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -73.0333
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     51.0167
+colvars:     Reading reference frame 13
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -70.0332
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -74.564
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     37.8973
+colvars:     Reading reference frame 14
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -68.7569
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -74.7407
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     24.7069
+colvars:     Reading reference frame 15
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -69.0219
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -74.0607
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     11.3097
+colvars:     Reading reference frame 16
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -68.7906
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -73.5269
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     -2.0976
+colvars:     Reading reference frame 17
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -69.1419
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -74.7962
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     -15.4516
+colvars:     Reading reference frame 18
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -68.6102
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -74.1802
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     -28.7701
+colvars:     Reading reference frame 19
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -68.2846
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -70.9148
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     -41.6276
+colvars:     Reading reference frame 20
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -66.0959
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -68.7582
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     -54.3328
+colvars:     Reading reference frame 21
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -64.6886
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -66.1216
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     -67.3451
+colvars:     Reading reference frame 22
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -67.8726
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -57.5609
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     -76.1983
+colvars:     Reading reference frame 23
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -71.1626
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -44.8218
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     -77.3386
+colvars:     Reading reference frame 24
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -72.0087
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -31.537
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     -76.528
+colvars:     Reading reference frame 25
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -71.5635
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -18.153
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     -76.5145
+colvars:     Reading reference frame 26
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -72.6776
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     -4.7795
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     -76.5635
+colvars:     Reading reference frame 27
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -71.8974
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     8.6126
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     -76.5628
+colvars:     Reading reference frame 28
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -72.2763
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     21.9694
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     -75.7923
+colvars:     Reading reference frame 29
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -73.4921
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     35.2963
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     -75.4832
+colvars:     Reading reference frame 30
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -73.6703
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     48.3277
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     -73.3626
+colvars:     Reading reference frame 31
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -75.834
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     61.1592
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     -70.8062
+colvars:     Reading reference frame 32
+colvars:     Reading CV 001 with 1 value(s)
+colvars:     -77.9977
+colvars:     Reading CV 002 with 1 value(s)
+colvars:     73.9907
+colvars:     Reading CV 003 with 1 value(s)
+colvars:     -68.2498
+colvars:     Total number of frames: 32
+colvars:     # weights = { 1, 1, 1 } [default]
+colvars:     Distance between frame 1 and 2 is 13.3844
+colvars:     Distance between frame 2 and 3 is 13.3844
+colvars:     Distance between frame 3 and 4 is 13.4029
+colvars:     Distance between frame 4 and 5 is 13.4142
+colvars:     Distance between frame 5 and 6 is 13.4056
+colvars:     Distance between frame 6 and 7 is 13.42
+colvars:     Distance between frame 7 and 8 is 13.3375
+colvars:     Distance between frame 8 and 9 is 13.4007
+colvars:     Distance between frame 9 and 10 is 13.0106
+colvars:     Distance between frame 10 and 11 is 13.3842
+colvars:     Distance between frame 11 and 12 is 11.9956
+colvars:     Distance between frame 12 and 13 is 13.2179
+colvars:     Distance between frame 13 and 14 is 13.2532
+colvars:     Distance between frame 14 and 15 is 13.4171
+colvars:     Distance between frame 15 and 16 is 13.4199
+colvars:     Distance between frame 16 and 17 is 13.4188
+colvars:     Distance between frame 17 and 18 is 13.3433
+colvars:     Distance between frame 18 and 19 is 13.2697
+colvars:     Distance between frame 19 and 20 is 13.0715
+colvars:     Distance between frame 20 and 21 is 13.3511
+colvars:     Distance between frame 21 and 22 is 12.7202
+colvars:     Distance between frame 22 and 23 is 13.2064
+colvars:     Distance between frame 23 and 24 is 13.3364
+colvars:     Distance between frame 24 and 25 is 13.3914
+colvars:     Distance between frame 25 and 26 is 13.4199
+colvars:     Distance between frame 26 and 27 is 13.4148
+colvars:     Distance between frame 27 and 28 is 13.3844
+colvars:     Distance between frame 28 and 29 is 13.3858
+colvars:     Distance between frame 29 and 30 is 13.204
+colvars:     Distance between frame 30 and 31 is 13.2614
+colvars:     Distance between frame 31 and 32 is 13.2614
+colvars:     # lambda = 0.006
+colvars:     Lambda is 0.006
+colvars:     The weight of CV 0 is 1
+colvars:     The weight of CV 1 is 1
+colvars:     The weight of CV 2 is 1
+colvars:   All components initialized.
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # width = 1 [default]
+colvars:   # lowerBoundary = 0 [default]
+colvars:   # upperBoundary = 0 [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = off [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputTotalForce = off [default]
+colvars:   # outputAppliedForce = off [default]
+colvars:   # subtractAppliedForce = off [default]
+colvars:   # runAve = off [default]
+colvars:   # corrFunc = off [default]
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables initialized, 2 in total.
+colvars: No collective variables biases were defined.
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables module (re)initialized.
+colvars: ----------------------------------------------------------------------
+colvars: Updating NAMD interface:
+colvars: updating atomic data (0 atoms).
+colvars: updating group data (10 scalable groups, 10 atoms in total).
+colvars: Re-initialized atom group for variable "apath_s_dihed":0/0. 1 atoms: total mass = 12.01, total charge = 0.5972.
+colvars: Re-initialized atom group for variable "apath_s_dihed":0/1. 1 atoms: total mass = 14.01, total charge = -0.4157.
+colvars: Re-initialized atom group for variable "apath_s_dihed":0/2. 1 atoms: total mass = 12.01, total charge = 0.0337.
+colvars: Re-initialized atom group for variable "apath_s_dihed":0/3. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "apath_s_dihed":0/4. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "apath_s_dihed":0/5. 1 atoms: total mass = 14.01, total charge = -0.4157.
+colvars: Re-initialized atom group for variable "apath_s_dihed":0/6. 1 atoms: total mass = 12.01, total charge = 0.0337.
+colvars: Re-initialized atom group for variable "apath_s_dihed":0/7. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "apath_s_dihed":0/8. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "apath_s_dihed":0/9. 1 atoms: total mass = 14.01, total charge = -0.4157.
+colvars: Re-initialized atom group for variable "apath_s_dihed":0/10. 1 atoms: total mass = 12.01, total charge = 0.0337.
+colvars: Re-initialized atom group for variable "apath_s_dihed":0/11. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "apath_z_dihed":0/0. 1 atoms: total mass = 12.01, total charge = 0.5972.
+colvars: Re-initialized atom group for variable "apath_z_dihed":0/1. 1 atoms: total mass = 14.01, total charge = -0.4157.
+colvars: Re-initialized atom group for variable "apath_z_dihed":0/2. 1 atoms: total mass = 12.01, total charge = 0.0337.
+colvars: Re-initialized atom group for variable "apath_z_dihed":0/3. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "apath_z_dihed":0/4. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "apath_z_dihed":0/5. 1 atoms: total mass = 14.01, total charge = -0.4157.
+colvars: Re-initialized atom group for variable "apath_z_dihed":0/6. 1 atoms: total mass = 12.01, total charge = 0.0337.
+colvars: Re-initialized atom group for variable "apath_z_dihed":0/7. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "apath_z_dihed":0/8. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "apath_z_dihed":0/9. 1 atoms: total mass = 14.01, total charge = -0.4157.
+colvars: Re-initialized atom group for variable "apath_z_dihed":0/10. 1 atoms: total mass = 12.01, total charge = 0.0337.
+colvars: Re-initialized atom group for variable "apath_z_dihed":0/11. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: The restart output state file will be "test.restart.colvars.state".
+colvars: The final output state file will be "test.colvars.state".
+colvars: Writing to colvar trajectory file "test.colvars.traj".
+colvars: Updating NAMD interface:
+colvars: updating atomic data (0 atoms).
+colvars: updating group data (10 scalable groups, 10 atoms in total).
+colvars: Re-initialized atom group for variable "apath_s_dihed":0/0. 1 atoms: total mass = 12.01, total charge = 0.5972.
+colvars: Re-initialized atom group for variable "apath_s_dihed":0/1. 1 atoms: total mass = 14.01, total charge = -0.4157.
+colvars: Re-initialized atom group for variable "apath_s_dihed":0/2. 1 atoms: total mass = 12.01, total charge = 0.0337.
+colvars: Re-initialized atom group for variable "apath_s_dihed":0/3. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "apath_s_dihed":0/4. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "apath_s_dihed":0/5. 1 atoms: total mass = 14.01, total charge = -0.4157.
+colvars: Re-initialized atom group for variable "apath_s_dihed":0/6. 1 atoms: total mass = 12.01, total charge = 0.0337.
+colvars: Re-initialized atom group for variable "apath_s_dihed":0/7. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "apath_s_dihed":0/8. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "apath_s_dihed":0/9. 1 atoms: total mass = 14.01, total charge = -0.4157.
+colvars: Re-initialized atom group for variable "apath_s_dihed":0/10. 1 atoms: total mass = 12.01, total charge = 0.0337.
+colvars: Re-initialized atom group for variable "apath_s_dihed":0/11. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "apath_z_dihed":0/0. 1 atoms: total mass = 12.01, total charge = 0.5972.
+colvars: Re-initialized atom group for variable "apath_z_dihed":0/1. 1 atoms: total mass = 14.01, total charge = -0.4157.
+colvars: Re-initialized atom group for variable "apath_z_dihed":0/2. 1 atoms: total mass = 12.01, total charge = 0.0337.
+colvars: Re-initialized atom group for variable "apath_z_dihed":0/3. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "apath_z_dihed":0/4. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "apath_z_dihed":0/5. 1 atoms: total mass = 14.01, total charge = -0.4157.
+colvars: Re-initialized atom group for variable "apath_z_dihed":0/6. 1 atoms: total mass = 12.01, total charge = 0.0337.
+colvars: Re-initialized atom group for variable "apath_z_dihed":0/7. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "apath_z_dihed":0/8. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "apath_z_dihed":0/9. 1 atoms: total mass = 14.01, total charge = -0.4157.
+colvars: Re-initialized atom group for variable "apath_z_dihed":0/10. 1 atoms: total mass = 12.01, total charge = 0.0337.
+colvars: Re-initialized atom group for variable "apath_z_dihed":0/11. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: The restart output state file will be "test.restart.colvars.state".
+colvars: The final output state file will be "test.colvars.state".
+colvars: Saving collective variables state to "test.colvars.state".

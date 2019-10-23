@@ -3542,13 +3542,13 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
        NAMD_die("alchWCA is not currently available with CUDA");
 #endif
      }
-     
+
      if (alchFepOn) {
        if (alchLambda2 < 0.0 || alchLambda2 > 1.0)
          NAMD_die("alchLambda2 values should be in the range [0.0, 1.0]\n");
 
        setupIDWS(); // setup IDWS if it was activated.
-       
+
        if (!opts.defined("alchoutfile")) {
          strcpy(alchOutFile, outputFilename);
          strcat(alchOutFile, ".fep");
@@ -3569,7 +3569,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
        }
      }
    }
-        
+
 //fepe
 
    if ( alchOn && alchFepOn && alchThermIntOn )
@@ -4002,7 +4002,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
    } else {
      extraBondsCosAnglesSetByUser = false;
    }
-      
+
    if (!opts.defined("constraints"))
    {
      constraintExp = 0;
@@ -5177,7 +5177,7 @@ if ( openatomOn )
        iout << iINFO << "SOLUTE SCALING DISABLED FOR BONDS AND ANGLES\n";
      }
    }
-   
+
    if ( pairInteractionOn ) {
      iout << iINFO << "PAIR INTERACTION CALCULATIONS ACTIVE\n";
      iout << iINFO << "USING FLAG " << pairInteractionGroup1
@@ -7096,14 +7096,14 @@ int SimParameters::setupIDWS() {
   if (alchLambdaIDWS > 1.) {
     NAMD_die("alchLambdaIDWS should be either in the range [0.0, 1.0], or negative (disabled).\n");
   }
- /* 
+ /*
   * The internal parameter alchIDWSFreq determines the number of steps of MD
   * before each switch of the value of alchLambda2. At most this occurs every
   * time the energy is evaluated and thus the default is the greater of
   * fullElectFrequency and nonbondedFrequency. However, this choice fails to
   * report alternating values if output is printed less often than every step
   * (which is almost certainly true). Thus the frequency is reset to match
-  * alchOutFreq or, if that is zero, outputEnergies. Note that, if 
+  * alchOutFreq or, if that is zero, outputEnergies. Note that, if
   * alchOutFreq > 0 but != outputEnergies, then the data going to stdout
   * are likely not useful since the comparison value is difficult to infer.
   */
@@ -7170,7 +7170,7 @@ BigReal SimParameters::getElecLambda(const BigReal lambda) {
 /*
  * Modifications for WCA decomposition of van der Waal interactions.
  *
- * WCA requires that repulsive and attractive components of the vdW 
+ * WCA requires that repulsive and attractive components of the vdW
  * forces be treated separately. To keep the code clean, the same scaling
  * function is always used and simply has its behavior modified. However,
  * the new repluslive scaling only ever gets used when alchWCAOn.

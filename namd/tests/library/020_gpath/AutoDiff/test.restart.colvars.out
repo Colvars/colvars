@@ -1,0 +1,1091 @@
+colvars: ----------------------------------------------------------------------
+colvars: Please cite Fiorin et al, Mol Phys 2013:
+colvars:  http://dx.doi.org/10.1080/00268976.2013.813594
+colvars: in any publication based on this calculation.
+colvars: SMP parallelism is available.
+colvars: ----------------------------------------------------------------------
+colvars: Reading new configuration from file "gpath.in":
+colvars: # smp = on [default]
+colvars: # colvarsTrajFrequency = 1
+colvars: # colvarsRestartFrequency = 500000 [default]
+colvars: # scriptedColvarForces = off [default]
+colvars: # scriptingAfterBiases = off [default]
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = "gpath_s_cartesian"
+colvars:   Initializing a new "gspath" component.
+colvars:     # name = "" [default]
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:     # refPositionsCol = "" [default]
+colvars:     # refPositionsFile1 = "string-00.pdb"
+colvars:     # refPositionsFile2 = "string-01.pdb"
+colvars:     # refPositionsFile3 = "string-02.pdb"
+colvars:     # refPositionsFile4 = "string-03.pdb"
+colvars:     # refPositionsFile5 = "string-04.pdb"
+colvars:     # refPositionsFile6 = "string-05.pdb"
+colvars:     # refPositionsFile7 = "string-06.pdb"
+colvars:     # refPositionsFile8 = "string-07.pdb"
+colvars:     # refPositionsFile9 = "string-08.pdb"
+colvars:     # refPositionsFile10 = "string-09.pdb"
+colvars:     # refPositionsFile11 = "string-10.pdb"
+colvars:     # refPositionsFile12 = "string-11.pdb"
+colvars:     # refPositionsFile13 = "string-12.pdb"
+colvars:     # refPositionsFile14 = "string-13.pdb"
+colvars:     # refPositionsFile15 = "string-14.pdb"
+colvars:     # refPositionsFile16 = "string-15.pdb"
+colvars:     # refPositionsFile17 = "string-16.pdb"
+colvars:     # refPositionsFile18 = "string-17.pdb"
+colvars:     # refPositionsFile19 = "string-18.pdb"
+colvars:     # refPositionsFile20 = "string-19.pdb"
+colvars:     # refPositionsFile21 = "string-20.pdb"
+colvars:     # refPositionsFile22 = "string-21.pdb"
+colvars:     # refPositionsFile23 = "string-22.pdb"
+colvars:     # refPositionsFile24 = "string-23.pdb"
+colvars:     # refPositionsFile25 = "string-24.pdb"
+colvars:     # refPositionsFile26 = "string-25.pdb"
+colvars:     # refPositionsFile27 = "string-26.pdb"
+colvars:     # refPositionsFile28 = "string-27.pdb"
+colvars:     # refPositionsFile29 = "string-28.pdb"
+colvars:     # refPositionsFile30 = "string-29.pdb"
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:     # useSecondClosestFrame = on [default]
+colvars:     Geometric path s(σ) will use the second closest frame to compute s_(m-1)
+colvars:     # useThirdClosestFrame = off [default]
+colvars:     Geometric path s(σ) will use the neighbouring frame to compute s_(m+1)
+colvars:     Geometric pathCV(s) is initialized.
+colvars:     Geometric pathCV(s) loaded 30 frames.
+colvars:   All components initialized.
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # width = 1 [default]
+colvars:   # lowerBoundary = 0 [default]
+colvars:   # upperBoundary = 0 [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = off [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputTotalForce = off [default]
+colvars:   # outputAppliedForce = off [default]
+colvars:   # subtractAppliedForce = off [default]
+colvars:   # runAve = off [default]
+colvars:   # corrFunc = off [default]
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = "gpath_z_cartesian"
+colvars:   Initializing a new "gzpath" component.
+colvars:     # name = "" [default]
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:     # refPositionsCol = "" [default]
+colvars:     # refPositionsFile1 = "string-00.pdb"
+colvars:     # refPositionsFile2 = "string-01.pdb"
+colvars:     # refPositionsFile3 = "string-02.pdb"
+colvars:     # refPositionsFile4 = "string-03.pdb"
+colvars:     # refPositionsFile5 = "string-04.pdb"
+colvars:     # refPositionsFile6 = "string-05.pdb"
+colvars:     # refPositionsFile7 = "string-06.pdb"
+colvars:     # refPositionsFile8 = "string-07.pdb"
+colvars:     # refPositionsFile9 = "string-08.pdb"
+colvars:     # refPositionsFile10 = "string-09.pdb"
+colvars:     # refPositionsFile11 = "string-10.pdb"
+colvars:     # refPositionsFile12 = "string-11.pdb"
+colvars:     # refPositionsFile13 = "string-12.pdb"
+colvars:     # refPositionsFile14 = "string-13.pdb"
+colvars:     # refPositionsFile15 = "string-14.pdb"
+colvars:     # refPositionsFile16 = "string-15.pdb"
+colvars:     # refPositionsFile17 = "string-16.pdb"
+colvars:     # refPositionsFile18 = "string-17.pdb"
+colvars:     # refPositionsFile19 = "string-18.pdb"
+colvars:     # refPositionsFile20 = "string-19.pdb"
+colvars:     # refPositionsFile21 = "string-20.pdb"
+colvars:     # refPositionsFile22 = "string-21.pdb"
+colvars:     # refPositionsFile23 = "string-22.pdb"
+colvars:     # refPositionsFile24 = "string-23.pdb"
+colvars:     # refPositionsFile25 = "string-24.pdb"
+colvars:     # refPositionsFile26 = "string-25.pdb"
+colvars:     # refPositionsFile27 = "string-26.pdb"
+colvars:     # refPositionsFile28 = "string-27.pdb"
+colvars:     # refPositionsFile29 = "string-28.pdb"
+colvars:     # refPositionsFile30 = "string-29.pdb"
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 126.1, total charge = 1.2431.
+colvars:     # useSecondClosestFrame = on [default]
+colvars:     Geometric path z(σ) will use the second closest frame to compute s_(m-1)
+colvars:     # useThirdClosestFrame = off [default]
+colvars:     Geometric path z(σ) will use the neighbouring frame to compute s_(m+1)
+colvars:     # useZsquare = on
+colvars:     Geometric path z(σ) will use the square of distance from current frame to path compute z
+colvars:     Geometric pathCV(z) is initialized.
+colvars:     Geometric pathCV(z) loaded 30 frames.
+colvars:   All components initialized.
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # width = 1 [default]
+colvars:   # lowerBoundary = 0 [default]
+colvars:   # upperBoundary = 0 [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = off [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputTotalForce = off [default]
+colvars:   # outputAppliedForce = off [default]
+colvars:   # subtractAppliedForce = off [default]
+colvars:   # runAve = off [default]
+colvars:   # corrFunc = off [default]
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables initialized, 2 in total.
+colvars: No collective variables biases were defined.
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables module (re)initialized.
+colvars: ----------------------------------------------------------------------
+colvars: Updating NAMD interface:
+colvars: updating atomic data (10 atoms).
+colvars: updating group data (0 scalable groups, 0 atoms in total).
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/0. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/1. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/2. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/3. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/4. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/5. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/6. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/7. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/8. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/9. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/10. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/11. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/12. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/13. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/14. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/15. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/16. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/17. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/18. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/19. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/20. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/21. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/22. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/23. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/24. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/25. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/26. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/27. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/28. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/29. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/30. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/0. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/1. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/2. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/3. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/4. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/5. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/6. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/7. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/8. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/9. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/10. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/11. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/12. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/13. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/14. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/15. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/16. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/17. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/18. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/19. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/20. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/21. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/22. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/23. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/24. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/25. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/26. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/27. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/28. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/29. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/30. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: ----------------------------------------------------------------------
+colvars: Restarting from file "test.colvars.state".
+colvars:   Restarting collective variable "gpath_s_cartesian" from value: 0.530302
+colvars:   Restarting collective variable "gpath_z_cartesian" from value: 0.100592
+colvars: ----------------------------------------------------------------------
+colvars: The restart output state file will be "test.restart.restart.colvars.state".
+colvars: The final output state file will be "test.restart.colvars.state".
+colvars: Writing to colvar trajectory file "test.restart.colvars.traj".
+colvars: Updating NAMD interface:
+colvars: updating atomic data (10 atoms).
+colvars: updating group data (0 scalable groups, 0 atoms in total).
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/0. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/1. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/2. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/3. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/4. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/5. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/6. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/7. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/8. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/9. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/10. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/11. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/12. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/13. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/14. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/15. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/16. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/17. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/18. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/19. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/20. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/21. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/22. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/23. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/24. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/25. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/26. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/27. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/28. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/29. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_s_cartesian":0/30. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/0. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/1. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/2. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/3. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/4. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/5. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/6. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/7. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/8. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/9. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/10. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/11. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/12. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/13. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/14. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/15. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/16. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/17. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/18. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/19. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/20. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/21. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/22. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/23. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/24. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/25. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/26. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/27. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/28. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/29. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/30. 10 atoms: total mass = 126.1, total charge = 1.2431.
+colvars: The restart output state file will be "test.restart.restart.colvars.state".
+colvars: The final output state file will be "test.restart.colvars.state".
+colvars: Saving collective variables state to "test.restart.colvars.state".
