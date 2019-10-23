@@ -212,7 +212,7 @@ public:
   }
 
   /// Read the current velocity of the given atom
-  inline cvm::rvector get_atom_velocity(int index)
+  inline cvm::rvector get_atom_velocity(int /* index */)
   {
     cvm::error("Error: reading the current velocity of an atom "
                "is not yet implemented.\n",
@@ -355,7 +355,7 @@ public:
   }
 
   /// Read the current velocity of the given atom group
-  inline cvm::rvector get_atom_group_velocity(int index)
+  inline cvm::rvector get_atom_group_velocity(int /* index */)
   {
     cvm::error("Error: reading the current velocity of an atom group is not yet implemented.\n",
                COLVARS_NOT_IMPLEMENTED);

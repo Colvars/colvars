@@ -680,7 +680,7 @@ int colvar::init_output_flags(std::string const &conf)
 // read the configuration and set up corresponding instances, for
 // each type of component implemented
 template<typename def_class_name> int colvar::init_components_type(std::string const &conf,
-                                                                   char const *def_desc,
+                                                                   char const * /* def_desc */,
                                                                    char const *def_config_key)
 {
   size_t def_count = 0;
@@ -1245,7 +1245,7 @@ int colvar::collect_cvc_data()
 }
 
 
-int colvar::check_cvc_range(int first_cvc, size_t num_cvcs)
+int colvar::check_cvc_range(int first_cvc, size_t /* num_cvcs */)
 {
   if ((first_cvc < 0) || (first_cvc >= ((int) cvcs.size()))) {
     cvm::error("Error: trying to address a component outside the "

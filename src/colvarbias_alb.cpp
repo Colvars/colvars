@@ -405,8 +405,8 @@ cvm::real colvarbias_alb::restraint_potential(cvm::real k,
 
 
 colvarvalue colvarbias_alb::restraint_force(cvm::real k,
-                                            colvar const *x,
-                                            colvarvalue const &xcenter) const
+                                            colvar const * /* x */,
+                                            colvarvalue const & /* xcenter */) const
 {
   return k;
 }

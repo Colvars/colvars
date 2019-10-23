@@ -309,7 +309,7 @@ int colvarbias::end_of_step()
 }
 
 
-int colvarbias::change_configuration(std::string const &conf)
+int colvarbias::change_configuration(std::string const & /* conf */)
 {
   cvm::error("Error: change_configuration() not implemented.\n",
              COLVARS_NOT_IMPLEMENTED);
@@ -317,7 +317,7 @@ int colvarbias::change_configuration(std::string const &conf)
 }
 
 
-cvm::real colvarbias::energy_difference(std::string const &conf)
+cvm::real colvarbias::energy_difference(std::string const & /* conf */)
 {
   cvm::error("Error: energy_difference() not implemented.\n",
              COLVARS_NOT_IMPLEMENTED);
@@ -336,7 +336,7 @@ int colvarbias::current_bin()
   cvm::error("Error: current_bin() not implemented.\n");
   return COLVARS_NOT_IMPLEMENTED;
 }
-int colvarbias::bin_count(int bin_index)
+int colvarbias::bin_count(int /* bin_index */)
 {
   cvm::error("Error: bin_count() not implemented.\n");
   return COLVARS_NOT_IMPLEMENTED;
@@ -646,7 +646,7 @@ std::string const colvarbias_ti::get_state_params() const
 }
 
 
-int colvarbias_ti::set_state_params(std::string const &state_conf)
+int colvarbias_ti::set_state_params(std::string const & /* state_conf */)
 {
   return COLVARS_OK;
 }

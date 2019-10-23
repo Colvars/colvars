@@ -121,7 +121,7 @@ void GeometricPathBase<element_type, scalar_type, path_type>::initialize(size_t 
 }
 
 template <typename element_type, typename scalar_type, path_sz path_type>
-void GeometricPathBase<element_type, scalar_type, path_type>::initialize(size_t vector_size, const std::vector<element_type>& elements, size_t total_frames, bool p_use_second_closest_frame, bool p_use_third_closest_frame, bool p_use_z_square) {
+void GeometricPathBase<element_type, scalar_type, path_type>::initialize(size_t /* vector_size */, const std::vector<element_type>& elements, size_t total_frames, bool p_use_second_closest_frame, bool p_use_third_closest_frame, bool p_use_z_square) {
     v1v1 = scalar_type();
     v2v2 = scalar_type();
     v3v3 = scalar_type();

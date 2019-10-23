@@ -209,7 +209,8 @@ public:
   /// \brief "Almost copy-constructor": only copies configuration
   /// parameters from another grid, but doesn't reallocate stuff;
   /// setup() must be called after that;
-  colvar_grid(colvar_grid<T> const &g) : nd(g.nd),
+  colvar_grid(colvar_grid<T> const &g) : colvarparse(),
+					 nd(g.nd),
                                          nx(g.nx),
                                          mult(g.mult),
                                          data(),

@@ -219,7 +219,7 @@ public:
   /// Implements possible actions to be carried out
   /// when a given feature is enabled
   /// Base function does nothing, can be overloaded
-  virtual void do_feature_side_effects(int id) {}
+  virtual void do_feature_side_effects(int /* id */) {}
 
   // NOTE that all feature enums should start with f_*_active
   enum features_biases {

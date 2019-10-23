@@ -1395,13 +1395,13 @@ class colvar::componentDisabled
   : public colvar::cvc
 {
 public:
-    componentDisabled(std::string const &conf) {
+    componentDisabled(std::string const & /* conf */) {
         cvm::error("Error: this component is not enabled in the current build; please see https://colvars.github.io/README-c++11.html");
     }
     virtual ~componentDisabled() {}
     virtual void calc_value() {}
     virtual void calc_gradients() {}
-    virtual void apply_force(colvarvalue const &force) {}
+    virtual void apply_force(colvarvalue const & /* force */) {}
 };
 
 

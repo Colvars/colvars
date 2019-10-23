@@ -537,7 +537,7 @@ colvarvalue colvar::cvc::dist2_rgrad(colvarvalue const &x1,
 }
 
 
-void colvar::cvc::wrap(colvarvalue &x_unwrapped) const
+void colvar::cvc::wrap(colvarvalue & /* x_unwrapped */) const
 {
   return;
 }
