@@ -1016,7 +1016,7 @@ colvars: Re-initialized atom group for variable "gpath_z_cartesian":0/30. 10 ato
 colvars: ----------------------------------------------------------------------
 colvars: Restarting from file "test.colvars.state".
 colvars:   Restarting collective variable "gpath_s_cartesian" from value: 0.530302
-colvars:   Restarting collective variable "gpath_z_cartesian" from value: 0.100591
+colvars:   Restarting collective variable "gpath_z_cartesian" from value: 0.100592
 colvars: ----------------------------------------------------------------------
 colvars: The restart output state file will be "test.restart.restart.colvars.state".
 colvars: The final output state file will be "test.restart.colvars.state".

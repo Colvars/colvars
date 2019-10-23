@@ -5,11 +5,11 @@ configuration {
 
 colvar {
   name apath_s_distanceVec
-  x  3.77149711722547e-02
+  x  3.77147181394753e-02
 }
 
 colvar {
   name apath_z_distanceVec
-  x  6.77337832865060e+02
+  x  6.77339261019638e+02
 }
 

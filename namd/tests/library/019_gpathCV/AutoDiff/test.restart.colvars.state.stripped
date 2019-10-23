@@ -5,11 +5,11 @@ configuration {
 
 colvar {
   name gpath_s_dihed
-  x  7.80475719448842e-01
+  x  7.80475723743606e-01
 }
 
 colvar {
   name gpath_z_dihed
-  x  1.69989355735709e+02
+  x  1.69997870041256e+02
 }
 

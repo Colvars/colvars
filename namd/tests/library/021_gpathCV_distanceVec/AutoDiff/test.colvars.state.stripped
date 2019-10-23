@@ -5,11 +5,11 @@ configuration {
 
 colvar {
   name gpath_s_distanceVec
-  x  3.84567702007400e-02
+  x  3.84564677858247e-02
 }
 
 colvar {
   name gpath_z_distanceVec
-  x  6.78129983523269e+02
+  x  6.78131404448504e+02
 }
 

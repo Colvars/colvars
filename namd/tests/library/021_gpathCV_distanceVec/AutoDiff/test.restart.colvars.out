@@ -6429,8 +6429,8 @@ colvars: Re-initialized atom group for variable "gpath_z_distanceVec":0/38. 0 at
 colvars: Re-initialized atom group for variable "gpath_z_distanceVec":0/39. 1 atoms: total mass = 12.01, total charge = -0.149.
 colvars: ----------------------------------------------------------------------
 colvars: Restarting from file "test.colvars.state".
-colvars:   Restarting collective variable "gpath_s_distanceVec" from value: 0.0384568
-colvars:   Restarting collective variable "gpath_z_distanceVec" from value: 678.13
+colvars:   Restarting collective variable "gpath_s_distanceVec" from value: 0.0384565
+colvars:   Restarting collective variable "gpath_z_distanceVec" from value: 678.131
 colvars: ----------------------------------------------------------------------
 colvars: The restart output state file will be "test.restart.restart.colvars.state".
 colvars: The final output state file will be "test.restart.colvars.state".
