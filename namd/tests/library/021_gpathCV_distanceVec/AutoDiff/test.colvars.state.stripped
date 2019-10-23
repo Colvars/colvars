@@ -1,15 +1,15 @@
 configuration {
-  step           50
+  step           20
   dt 5.000000e-01
 }
 
 colvar {
   name gpath_s_distanceVec
-  x  3.97990093309974e-02
+  x  3.84567702007400e-02
 }
 
 colvar {
   name gpath_z_distanceVec
-  x  6.79377789572780e+02
+  x  6.78129983523269e+02
 }
 

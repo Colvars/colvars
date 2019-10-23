@@ -43,4 +43,4 @@ langevinDamping     10.0
 langevinTemp        300.0
 
 firsttimestep       0
-run                 50
+run                 20

@@ -4,7 +4,7 @@ colvars:  http://dx.doi.org/10.1080/00268976.2013.813594
 colvars: in any publication based on this calculation.
 colvars: SMP parallelism is available.
 colvars: ----------------------------------------------------------------------
-colvars: Reading new configuration from file "apath.in":
+colvars: Reading new configuration from file "gpath.in":
 colvars: # smp = on [default]
 colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 500000 [default]
@@ -12,8 +12,8 @@ colvars: # scriptedColvarForces = off [default]
 colvars: # scriptingAfterBiases = off [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
-colvars:   # name = "apath_s_dihed"
-colvars:   Initializing a new "aspathCV" component.
+colvars:   # name = "gpath_s_dihed"
+colvars:   Initializing a new "gspathCV" component.
 colvars:     # name = "" [default]
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
@@ -443,43 +443,10 @@ colvars:     73.9907
 colvars:     Reading CV 003 with 1 value(s)
 colvars:     -68.2498
 colvars:     Total number of frames: 32
-colvars:     # weights = { 1, 1, 1 } [default]
-colvars:     Distance between frame 1 and 2 is 13.3844
-colvars:     Distance between frame 2 and 3 is 13.3844
-colvars:     Distance between frame 3 and 4 is 13.4029
-colvars:     Distance between frame 4 and 5 is 13.4142
-colvars:     Distance between frame 5 and 6 is 13.4056
-colvars:     Distance between frame 6 and 7 is 13.42
-colvars:     Distance between frame 7 and 8 is 13.3375
-colvars:     Distance between frame 8 and 9 is 13.4007
-colvars:     Distance between frame 9 and 10 is 13.0106
-colvars:     Distance between frame 10 and 11 is 13.3842
-colvars:     Distance between frame 11 and 12 is 11.9956
-colvars:     Distance between frame 12 and 13 is 13.2179
-colvars:     Distance between frame 13 and 14 is 13.2532
-colvars:     Distance between frame 14 and 15 is 13.4171
-colvars:     Distance between frame 15 and 16 is 13.4199
-colvars:     Distance between frame 16 and 17 is 13.4188
-colvars:     Distance between frame 17 and 18 is 13.3433
-colvars:     Distance between frame 18 and 19 is 13.2697
-colvars:     Distance between frame 19 and 20 is 13.0715
-colvars:     Distance between frame 20 and 21 is 13.3511
-colvars:     Distance between frame 21 and 22 is 12.7202
-colvars:     Distance between frame 22 and 23 is 13.2064
-colvars:     Distance between frame 23 and 24 is 13.3364
-colvars:     Distance between frame 24 and 25 is 13.3914
-colvars:     Distance between frame 25 and 26 is 13.4199
-colvars:     Distance between frame 26 and 27 is 13.4148
-colvars:     Distance between frame 27 and 28 is 13.3844
-colvars:     Distance between frame 28 and 29 is 13.3858
-colvars:     Distance between frame 29 and 30 is 13.204
-colvars:     Distance between frame 30 and 31 is 13.2614
-colvars:     Distance between frame 31 and 32 is 13.2614
-colvars:     # lambda = 0.006
-colvars:     Lambda is 0.006
-colvars:     The weight of CV 0 is 1
-colvars:     The weight of CV 1 is 1
-colvars:     The weight of CV 2 is 1
+colvars:     # useSecondClosestFrame = on [default]
+colvars:     Geometric path s(σ) will use the second closest frame to compute s_(m-1)
+colvars:     # useThirdClosestFrame = off [default]
+colvars:     Geometric path s(σ) will use the neighbouring frame to compute s_(m+1)
 colvars:   All components initialized.
 colvars:   # timeStepFactor = 1 [default]
 colvars:   # width = 1 [default]
@@ -496,8 +463,8 @@ colvars:   # runAve = off [default]
 colvars:   # corrFunc = off [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
-colvars:   # name = "apath_z_dihed"
-colvars:   Initializing a new "azpathCV" component.
+colvars:   # name = "gpath_z_dihed"
+colvars:   Initializing a new "gzpathCV" component.
 colvars:     # name = "" [default]
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
@@ -511,7 +478,7 @@ colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
 colvars:     # forceNoPBC = off [default]
-colvars:     # scalable = on [default]
+colvars:     # scalable = off
 colvars:       Initializing atom group "group1".
 colvars:       # name = "" [default]
 colvars:       # centerReference = off [default]
@@ -523,7 +490,6 @@ colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Enabling scalable calculation for group "group1".
 colvars:       # printAtomIDs = off [default]
 colvars:       Atom group "group1" defined with 1 atoms requested: total mass = 12.01, total charge = 0.5972.
 colvars:       Initializing atom group "group2".
@@ -537,7 +503,6 @@ colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Enabling scalable calculation for group "group2".
 colvars:       # printAtomIDs = off [default]
 colvars:       Atom group "group2" defined with 1 atoms requested: total mass = 14.01, total charge = -0.4157.
 colvars:       Initializing atom group "group3".
@@ -551,7 +516,6 @@ colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Enabling scalable calculation for group "group3".
 colvars:       # printAtomIDs = off [default]
 colvars:       Atom group "group3" defined with 1 atoms requested: total mass = 12.01, total charge = 0.0337.
 colvars:       Initializing atom group "group4".
@@ -565,7 +529,6 @@ colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Enabling scalable calculation for group "group4".
 colvars:       # printAtomIDs = off [default]
 colvars:       Atom group "group4" defined with 1 atoms requested: total mass = 12.01, total charge = 0.5973.
 colvars:     # oneSiteSystemForce = off [default]
@@ -576,7 +539,7 @@ colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
 colvars:     # forceNoPBC = off [default]
-colvars:     # scalable = on [default]
+colvars:     # scalable = off
 colvars:       Initializing atom group "group1".
 colvars:       # name = "" [default]
 colvars:       # centerReference = off [default]
@@ -588,7 +551,6 @@ colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Enabling scalable calculation for group "group1".
 colvars:       # printAtomIDs = off [default]
 colvars:       Atom group "group1" defined with 1 atoms requested: total mass = 12.01, total charge = 0.5973.
 colvars:       Initializing atom group "group2".
@@ -602,7 +564,6 @@ colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Enabling scalable calculation for group "group2".
 colvars:       # printAtomIDs = off [default]
 colvars:       Atom group "group2" defined with 1 atoms requested: total mass = 14.01, total charge = -0.4157.
 colvars:       Initializing atom group "group3".
@@ -616,7 +577,6 @@ colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Enabling scalable calculation for group "group3".
 colvars:       # printAtomIDs = off [default]
 colvars:       Atom group "group3" defined with 1 atoms requested: total mass = 12.01, total charge = 0.0337.
 colvars:       Initializing atom group "group4".
@@ -630,7 +590,6 @@ colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Enabling scalable calculation for group "group4".
 colvars:       # printAtomIDs = off [default]
 colvars:       Atom group "group4" defined with 1 atoms requested: total mass = 12.01, total charge = 0.5973.
 colvars:     # oneSiteSystemForce = off [default]
@@ -641,7 +600,7 @@ colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
 colvars:     # forceNoPBC = off [default]
-colvars:     # scalable = on [default]
+colvars:     # scalable = off
 colvars:       Initializing atom group "group1".
 colvars:       # name = "" [default]
 colvars:       # centerReference = off [default]
@@ -653,7 +612,6 @@ colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Enabling scalable calculation for group "group1".
 colvars:       # printAtomIDs = off [default]
 colvars:       Atom group "group1" defined with 1 atoms requested: total mass = 12.01, total charge = 0.5973.
 colvars:       Initializing atom group "group2".
@@ -667,7 +625,6 @@ colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Enabling scalable calculation for group "group2".
 colvars:       # printAtomIDs = off [default]
 colvars:       Atom group "group2" defined with 1 atoms requested: total mass = 14.01, total charge = -0.4157.
 colvars:       Initializing atom group "group3".
@@ -681,7 +638,6 @@ colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Enabling scalable calculation for group "group3".
 colvars:       # printAtomIDs = off [default]
 colvars:       Atom group "group3" defined with 1 atoms requested: total mass = 12.01, total charge = 0.0337.
 colvars:       Initializing atom group "group4".
@@ -695,7 +651,6 @@ colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Enabling scalable calculation for group "group4".
 colvars:       # printAtomIDs = off [default]
 colvars:       Atom group "group4" defined with 1 atoms requested: total mass = 12.01, total charge = 0.5973.
 colvars:     # oneSiteSystemForce = off [default]
@@ -927,43 +882,12 @@ colvars:     73.9907
 colvars:     Reading CV 003 with 1 value(s)
 colvars:     -68.2498
 colvars:     Total number of frames: 32
-colvars:     # weights = { 1, 1, 1 } [default]
-colvars:     Distance between frame 1 and 2 is 13.3844
-colvars:     Distance between frame 2 and 3 is 13.3844
-colvars:     Distance between frame 3 and 4 is 13.4029
-colvars:     Distance between frame 4 and 5 is 13.4142
-colvars:     Distance between frame 5 and 6 is 13.4056
-colvars:     Distance between frame 6 and 7 is 13.42
-colvars:     Distance between frame 7 and 8 is 13.3375
-colvars:     Distance between frame 8 and 9 is 13.4007
-colvars:     Distance between frame 9 and 10 is 13.0106
-colvars:     Distance between frame 10 and 11 is 13.3842
-colvars:     Distance between frame 11 and 12 is 11.9956
-colvars:     Distance between frame 12 and 13 is 13.2179
-colvars:     Distance between frame 13 and 14 is 13.2532
-colvars:     Distance between frame 14 and 15 is 13.4171
-colvars:     Distance between frame 15 and 16 is 13.4199
-colvars:     Distance between frame 16 and 17 is 13.4188
-colvars:     Distance between frame 17 and 18 is 13.3433
-colvars:     Distance between frame 18 and 19 is 13.2697
-colvars:     Distance between frame 19 and 20 is 13.0715
-colvars:     Distance between frame 20 and 21 is 13.3511
-colvars:     Distance between frame 21 and 22 is 12.7202
-colvars:     Distance between frame 22 and 23 is 13.2064
-colvars:     Distance between frame 23 and 24 is 13.3364
-colvars:     Distance between frame 24 and 25 is 13.3914
-colvars:     Distance between frame 25 and 26 is 13.4199
-colvars:     Distance between frame 26 and 27 is 13.4148
-colvars:     Distance between frame 27 and 28 is 13.3844
-colvars:     Distance between frame 28 and 29 is 13.3858
-colvars:     Distance between frame 29 and 30 is 13.204
-colvars:     Distance between frame 30 and 31 is 13.2614
-colvars:     Distance between frame 31 and 32 is 13.2614
-colvars:     # lambda = 0.006
-colvars:     Lambda is 0.006
-colvars:     The weight of CV 0 is 1
-colvars:     The weight of CV 1 is 1
-colvars:     The weight of CV 2 is 1
+colvars:     # useSecondClosestFrame = on [default]
+colvars:     Geometric path z(σ) will use the second closest frame to compute s_(m-1)
+colvars:     # useThirdClosestFrame = off [default]
+colvars:     Geometric path z(σ) will use the neighbouring frame to compute s_(m+1)
+colvars:     # useZsquare = on
+colvars:     Geometric path z(σ) will use the square of distance from current frame to path compute z
 colvars:   All components initialized.
 colvars:   # timeStepFactor = 1 [default]
 colvars:   # width = 1 [default]
@@ -985,67 +909,62 @@ colvars: ----------------------------------------------------------------------
 colvars: Collective variables module (re)initialized.
 colvars: ----------------------------------------------------------------------
 colvars: Updating NAMD interface:
-colvars: updating atomic data (0 atoms).
+colvars: updating atomic data (10 atoms).
 colvars: updating group data (10 scalable groups, 10 atoms in total).
-colvars: Re-initialized atom group for variable "apath_s_dihed":0/0. 1 atoms: total mass = 12.01, total charge = 0.5972.
-colvars: Re-initialized atom group for variable "apath_s_dihed":0/1. 1 atoms: total mass = 14.01, total charge = -0.4157.
-colvars: Re-initialized atom group for variable "apath_s_dihed":0/2. 1 atoms: total mass = 12.01, total charge = 0.0337.
-colvars: Re-initialized atom group for variable "apath_s_dihed":0/3. 1 atoms: total mass = 12.01, total charge = 0.5973.
-colvars: Re-initialized atom group for variable "apath_s_dihed":0/4. 1 atoms: total mass = 12.01, total charge = 0.5973.
-colvars: Re-initialized atom group for variable "apath_s_dihed":0/5. 1 atoms: total mass = 14.01, total charge = -0.4157.
-colvars: Re-initialized atom group for variable "apath_s_dihed":0/6. 1 atoms: total mass = 12.01, total charge = 0.0337.
-colvars: Re-initialized atom group for variable "apath_s_dihed":0/7. 1 atoms: total mass = 12.01, total charge = 0.5973.
-colvars: Re-initialized atom group for variable "apath_s_dihed":0/8. 1 atoms: total mass = 12.01, total charge = 0.5973.
-colvars: Re-initialized atom group for variable "apath_s_dihed":0/9. 1 atoms: total mass = 14.01, total charge = -0.4157.
-colvars: Re-initialized atom group for variable "apath_s_dihed":0/10. 1 atoms: total mass = 12.01, total charge = 0.0337.
-colvars: Re-initialized atom group for variable "apath_s_dihed":0/11. 1 atoms: total mass = 12.01, total charge = 0.5973.
-colvars: Re-initialized atom group for variable "apath_z_dihed":0/0. 1 atoms: total mass = 12.01, total charge = 0.5972.
-colvars: Re-initialized atom group for variable "apath_z_dihed":0/1. 1 atoms: total mass = 14.01, total charge = -0.4157.
-colvars: Re-initialized atom group for variable "apath_z_dihed":0/2. 1 atoms: total mass = 12.01, total charge = 0.0337.
-colvars: Re-initialized atom group for variable "apath_z_dihed":0/3. 1 atoms: total mass = 12.01, total charge = 0.5973.
-colvars: Re-initialized atom group for variable "apath_z_dihed":0/4. 1 atoms: total mass = 12.01, total charge = 0.5973.
-colvars: Re-initialized atom group for variable "apath_z_dihed":0/5. 1 atoms: total mass = 14.01, total charge = -0.4157.
-colvars: Re-initialized atom group for variable "apath_z_dihed":0/6. 1 atoms: total mass = 12.01, total charge = 0.0337.
-colvars: Re-initialized atom group for variable "apath_z_dihed":0/7. 1 atoms: total mass = 12.01, total charge = 0.5973.
-colvars: Re-initialized atom group for variable "apath_z_dihed":0/8. 1 atoms: total mass = 12.01, total charge = 0.5973.
-colvars: Re-initialized atom group for variable "apath_z_dihed":0/9. 1 atoms: total mass = 14.01, total charge = -0.4157.
-colvars: Re-initialized atom group for variable "apath_z_dihed":0/10. 1 atoms: total mass = 12.01, total charge = 0.0337.
-colvars: Re-initialized atom group for variable "apath_z_dihed":0/11. 1 atoms: total mass = 12.01, total charge = 0.5973.
-colvars: ----------------------------------------------------------------------
-colvars: Restarting from file "test.colvars.state".
-colvars:   Restarting collective variable "apath_s_dihed" from value: 0.781356
-colvars:   Restarting collective variable "apath_z_dihed" from value: 4.36831
-colvars: ----------------------------------------------------------------------
-colvars: The restart output state file will be "test.restart.restart.colvars.state".
-colvars: The final output state file will be "test.restart.colvars.state".
-colvars: Writing to colvar trajectory file "test.restart.colvars.traj".
+colvars: Re-initialized atom group for variable "gpath_s_dihed":0/0. 1 atoms: total mass = 12.01, total charge = 0.5972.
+colvars: Re-initialized atom group for variable "gpath_s_dihed":0/1. 1 atoms: total mass = 14.01, total charge = -0.4157.
+colvars: Re-initialized atom group for variable "gpath_s_dihed":0/2. 1 atoms: total mass = 12.01, total charge = 0.0337.
+colvars: Re-initialized atom group for variable "gpath_s_dihed":0/3. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "gpath_s_dihed":0/4. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "gpath_s_dihed":0/5. 1 atoms: total mass = 14.01, total charge = -0.4157.
+colvars: Re-initialized atom group for variable "gpath_s_dihed":0/6. 1 atoms: total mass = 12.01, total charge = 0.0337.
+colvars: Re-initialized atom group for variable "gpath_s_dihed":0/7. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "gpath_s_dihed":0/8. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "gpath_s_dihed":0/9. 1 atoms: total mass = 14.01, total charge = -0.4157.
+colvars: Re-initialized atom group for variable "gpath_s_dihed":0/10. 1 atoms: total mass = 12.01, total charge = 0.0337.
+colvars: Re-initialized atom group for variable "gpath_s_dihed":0/11. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "gpath_z_dihed":0/0. 1 atoms: total mass = 12.01, total charge = 0.5972.
+colvars: Re-initialized atom group for variable "gpath_z_dihed":0/1. 1 atoms: total mass = 14.01, total charge = -0.4157.
+colvars: Re-initialized atom group for variable "gpath_z_dihed":0/2. 1 atoms: total mass = 12.01, total charge = 0.0337.
+colvars: Re-initialized atom group for variable "gpath_z_dihed":0/3. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "gpath_z_dihed":0/4. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "gpath_z_dihed":0/5. 1 atoms: total mass = 14.01, total charge = -0.4157.
+colvars: Re-initialized atom group for variable "gpath_z_dihed":0/6. 1 atoms: total mass = 12.01, total charge = 0.0337.
+colvars: Re-initialized atom group for variable "gpath_z_dihed":0/7. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "gpath_z_dihed":0/8. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "gpath_z_dihed":0/9. 1 atoms: total mass = 14.01, total charge = -0.4157.
+colvars: Re-initialized atom group for variable "gpath_z_dihed":0/10. 1 atoms: total mass = 12.01, total charge = 0.0337.
+colvars: Re-initialized atom group for variable "gpath_z_dihed":0/11. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: The restart output state file will be "test.restart.colvars.state".
+colvars: The final output state file will be "test.colvars.state".
+colvars: Writing to colvar trajectory file "test.colvars.traj".
 colvars: Updating NAMD interface:
-colvars: updating atomic data (0 atoms).
+colvars: updating atomic data (10 atoms).
 colvars: updating group data (10 scalable groups, 10 atoms in total).
-colvars: Re-initialized atom group for variable "apath_s_dihed":0/0. 1 atoms: total mass = 12.01, total charge = 0.5972.
-colvars: Re-initialized atom group for variable "apath_s_dihed":0/1. 1 atoms: total mass = 14.01, total charge = -0.4157.
-colvars: Re-initialized atom group for variable "apath_s_dihed":0/2. 1 atoms: total mass = 12.01, total charge = 0.0337.
-colvars: Re-initialized atom group for variable "apath_s_dihed":0/3. 1 atoms: total mass = 12.01, total charge = 0.5973.
-colvars: Re-initialized atom group for variable "apath_s_dihed":0/4. 1 atoms: total mass = 12.01, total charge = 0.5973.
-colvars: Re-initialized atom group for variable "apath_s_dihed":0/5. 1 atoms: total mass = 14.01, total charge = -0.4157.
-colvars: Re-initialized atom group for variable "apath_s_dihed":0/6. 1 atoms: total mass = 12.01, total charge = 0.0337.
-colvars: Re-initialized atom group for variable "apath_s_dihed":0/7. 1 atoms: total mass = 12.01, total charge = 0.5973.
-colvars: Re-initialized atom group for variable "apath_s_dihed":0/8. 1 atoms: total mass = 12.01, total charge = 0.5973.
-colvars: Re-initialized atom group for variable "apath_s_dihed":0/9. 1 atoms: total mass = 14.01, total charge = -0.4157.
-colvars: Re-initialized atom group for variable "apath_s_dihed":0/10. 1 atoms: total mass = 12.01, total charge = 0.0337.
-colvars: Re-initialized atom group for variable "apath_s_dihed":0/11. 1 atoms: total mass = 12.01, total charge = 0.5973.
-colvars: Re-initialized atom group for variable "apath_z_dihed":0/0. 1 atoms: total mass = 12.01, total charge = 0.5972.
-colvars: Re-initialized atom group for variable "apath_z_dihed":0/1. 1 atoms: total mass = 14.01, total charge = -0.4157.
-colvars: Re-initialized atom group for variable "apath_z_dihed":0/2. 1 atoms: total mass = 12.01, total charge = 0.0337.
-colvars: Re-initialized atom group for variable "apath_z_dihed":0/3. 1 atoms: total mass = 12.01, total charge = 0.5973.
-colvars: Re-initialized atom group for variable "apath_z_dihed":0/4. 1 atoms: total mass = 12.01, total charge = 0.5973.
-colvars: Re-initialized atom group for variable "apath_z_dihed":0/5. 1 atoms: total mass = 14.01, total charge = -0.4157.
-colvars: Re-initialized atom group for variable "apath_z_dihed":0/6. 1 atoms: total mass = 12.01, total charge = 0.0337.
-colvars: Re-initialized atom group for variable "apath_z_dihed":0/7. 1 atoms: total mass = 12.01, total charge = 0.5973.
-colvars: Re-initialized atom group for variable "apath_z_dihed":0/8. 1 atoms: total mass = 12.01, total charge = 0.5973.
-colvars: Re-initialized atom group for variable "apath_z_dihed":0/9. 1 atoms: total mass = 14.01, total charge = -0.4157.
-colvars: Re-initialized atom group for variable "apath_z_dihed":0/10. 1 atoms: total mass = 12.01, total charge = 0.0337.
-colvars: Re-initialized atom group for variable "apath_z_dihed":0/11. 1 atoms: total mass = 12.01, total charge = 0.5973.
-colvars: The restart output state file will be "test.restart.restart.colvars.state".
-colvars: The final output state file will be "test.restart.colvars.state".
-colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Re-initialized atom group for variable "gpath_s_dihed":0/0. 1 atoms: total mass = 12.01, total charge = 0.5972.
+colvars: Re-initialized atom group for variable "gpath_s_dihed":0/1. 1 atoms: total mass = 14.01, total charge = -0.4157.
+colvars: Re-initialized atom group for variable "gpath_s_dihed":0/2. 1 atoms: total mass = 12.01, total charge = 0.0337.
+colvars: Re-initialized atom group for variable "gpath_s_dihed":0/3. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "gpath_s_dihed":0/4. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "gpath_s_dihed":0/5. 1 atoms: total mass = 14.01, total charge = -0.4157.
+colvars: Re-initialized atom group for variable "gpath_s_dihed":0/6. 1 atoms: total mass = 12.01, total charge = 0.0337.
+colvars: Re-initialized atom group for variable "gpath_s_dihed":0/7. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "gpath_s_dihed":0/8. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "gpath_s_dihed":0/9. 1 atoms: total mass = 14.01, total charge = -0.4157.
+colvars: Re-initialized atom group for variable "gpath_s_dihed":0/10. 1 atoms: total mass = 12.01, total charge = 0.0337.
+colvars: Re-initialized atom group for variable "gpath_s_dihed":0/11. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "gpath_z_dihed":0/0. 1 atoms: total mass = 12.01, total charge = 0.5972.
+colvars: Re-initialized atom group for variable "gpath_z_dihed":0/1. 1 atoms: total mass = 14.01, total charge = -0.4157.
+colvars: Re-initialized atom group for variable "gpath_z_dihed":0/2. 1 atoms: total mass = 12.01, total charge = 0.0337.
+colvars: Re-initialized atom group for variable "gpath_z_dihed":0/3. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "gpath_z_dihed":0/4. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "gpath_z_dihed":0/5. 1 atoms: total mass = 14.01, total charge = -0.4157.
+colvars: Re-initialized atom group for variable "gpath_z_dihed":0/6. 1 atoms: total mass = 12.01, total charge = 0.0337.
+colvars: Re-initialized atom group for variable "gpath_z_dihed":0/7. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "gpath_z_dihed":0/8. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "gpath_z_dihed":0/9. 1 atoms: total mass = 14.01, total charge = -0.4157.
+colvars: Re-initialized atom group for variable "gpath_z_dihed":0/10. 1 atoms: total mass = 12.01, total charge = 0.0337.
+colvars: Re-initialized atom group for variable "gpath_z_dihed":0/11. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: The restart output state file will be "test.restart.colvars.state".
+colvars: The final output state file will be "test.colvars.state".
+colvars: Saving collective variables state to "test.colvars.state".

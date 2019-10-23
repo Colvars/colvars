@@ -1,15 +1,15 @@
 configuration {
-  step          100
+  step           40
   dt 5.000000e-01
 }
 
 colvar {
   name gpath_s_cartesian
-  x  5.30015450486044e-01
+  x  5.30006060235292e-01
 }
 
 colvar {
   name gpath_z_cartesian
-  x  1.58909132966805e-01
+  x  1.00853227636256e-01
 }
 
