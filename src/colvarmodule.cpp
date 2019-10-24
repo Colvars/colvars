@@ -268,6 +268,15 @@ int colvarmodule::parse_global_params(std::string const &conf)
   // TODO document and then echo this keyword
   parse->get_keyval(conf, "logLevel", log_level_, log_level_,
                     colvarparse::parse_silent);
+  {
+    std::string units;
+    if (parse->get_keyval(conf, "units", units)) {
+      int error = proxy->set_unit_system(units, (colvars.size() != 0));
+      if (error) {
+        return error;
+      }
+    }
+  }
 
   {
     std::string index_file_name;
@@ -1868,9 +1877,9 @@ int cvm::load_coords_xyz(char const *filename,
 
 // Wrappers to proxy functions: these may go in the future
 
-cvm::real cvm::unit_angstrom()
+cvm::real cvm::angstrom_value()
 {
-  return proxy->unit_angstrom();
+  return proxy->angstrom_value;
 }
 
 

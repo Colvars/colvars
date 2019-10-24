@@ -91,7 +91,7 @@ colvar::alpha_angles::alpha_angles(std::string const &conf)
   {
     cvm::real r0;
     size_t en, ed;
-    get_keyval(conf, "hBondCutoff",   r0, (3.3 * cvm::unit_angstrom()));
+    get_keyval(conf, "hBondCutoff",   r0, (3.3 * cvm::angstrom_value()));
     get_keyval(conf, "hBondExpNumer", en, 6);
     get_keyval(conf, "hBondExpDenom", ed, 8);
 

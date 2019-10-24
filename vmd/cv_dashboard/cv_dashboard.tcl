@@ -23,7 +23,7 @@
 # TODO maybe:
 # - index group builder
 
-package provide cv_dashboard 1.1
+package provide cv_dashboard 1.2
 
 namespace eval ::cv_dashboard {
   # General UI state
@@ -44,6 +44,16 @@ namespace eval ::cv_dashboard {
 
   variable atom_rep     ;# hash array of: list of macro names, list of atom representations, indexed by colvar name
   variable grad_objects ;# hash array ids of graphical objects displaying gradients, indexed by colvar name
+
+  variable units
+  variable units_to_text
+  variable text_to_units
+  array set text_to_units {"real (Angstrom, kcal/mol)" "real" "Gromacs (nm, kJ/mol)" "gromacs" \
+    "metal (Angstrom, eV)" "metal" "electron (Bohr, Hartree)" "electron"}
+  # Build reverse map
+  foreach { text units } [array get text_to_units] {
+    set units_to_text($units) $text
+  }
 
   variable template_dir
   variable template_base_dir
@@ -69,7 +79,7 @@ proc cv_dashboard {} {
       -message "No molecule loaded. Please load a molecule and use the Reset button.\n"
   } elseif [catch { cv version}] {
     # setup Colvars if not already there
-    run_cv molid top
+    ::cv_dashboard::run_cv molid top
   }
 
   if {[winfo exists .cv_dashboard_window]} {
@@ -87,10 +97,21 @@ proc cv_dashboard {} {
 
 
 # Call the "cv" interface to Colvars, catching errors and displaying them to the user
-proc run_cv args  {
-  if [ catch { cv {*}$args } res ] {
+proc ::cv_dashboard::run_cv args  {
+  if { [lindex $args 0] != "molid" } {
+    # Try to initialize the module if not there yet
+    if [catch {cv version}] {
+      if [catch {cv molid top}] {
+        # If that didn't work, don't try to proceed
+        return
+      }
+    }
+  }
+  if [catch { cv {*}$args } res] {
+    set short_cmd [string range $args 0 200]
+    set short_message [string range $res 0 200]
     tk_messageBox -icon error -title "Colvars error" -parent .cv_dashboard_window\
-      -message "Error running command:\n$args" -detail "$res\n\nSee console for further details."
+      -message "Error running command:\n$short_cmd" -detail "$short_message\n\nSee console for further details."
     return -1
   }
   return $res
@@ -144,6 +165,7 @@ proc ::cv_dashboard::apply_config { cfg } {
   # Overwrite old map
   set ::cv_dashboard::colvar_configs $new_map
   refresh_table
+  refresh_units
   return $res
 }
 
