@@ -119,12 +119,12 @@ colvar::coordnum::coordnum(std::string const &conf)
   }
 
   bool const b_isotropic = get_keyval(conf, "cutoff", r0,
-                                      cvm::real(4.0 * cvm::unit_angstrom()));
+                                      cvm::real(4.0 * cvm::angstrom_value()));
 
   if (get_keyval(conf, "cutoff3", r0_vec,
-                 cvm::rvector(4.0 * cvm::unit_angstrom(),
-                              4.0 * cvm::unit_angstrom(),
-                              4.0 * cvm::unit_angstrom()))) {
+                 cvm::rvector(4.0 * cvm::angstrom_value(),
+                              4.0 * cvm::angstrom_value(),
+                              4.0 * cvm::angstrom_value()))) {
     if (b_isotropic) {
       cvm::error("Error: cannot specify \"cutoff\" and \"cutoff3\" "
                  "at the same time.\n",
@@ -326,7 +326,7 @@ colvar::h_bond::h_bond(std::string const &conf)
   atom_groups[0]->add_atom(acceptor);
   atom_groups[0]->add_atom(donor);
 
-  get_keyval(conf, "cutoff",   r0, (3.3 * cvm::unit_angstrom()));
+  get_keyval(conf, "cutoff",   r0, (3.3 * cvm::angstrom_value()));
   get_keyval(conf, "expNumer", en, 6);
   get_keyval(conf, "expDenom", ed, 8);
 
@@ -408,7 +408,7 @@ colvar::selfcoordnum::selfcoordnum(std::string const &conf)
 
   group1 = parse_group(conf, "group1");
 
-  get_keyval(conf, "cutoff", r0, cvm::real(4.0 * cvm::unit_angstrom()));
+  get_keyval(conf, "cutoff", r0, cvm::real(4.0 * cvm::angstrom_value()));
   get_keyval(conf, "expNumer", en, 6);
   get_keyval(conf, "expDenom", ed, 12);
 
@@ -561,7 +561,7 @@ colvar::groupcoordnum::groupcoordnum(std::string const &conf)
   }
 
   bool const b_scale = get_keyval(conf, "cutoff", r0,
-                                  cvm::real(4.0 * cvm::unit_angstrom()));
+                                  cvm::real(4.0 * cvm::angstrom_value()));
 
   if (get_keyval(conf, "cutoff3", r0_vec,
                  cvm::rvector(4.0, 4.0, 4.0), parse_silent)) {

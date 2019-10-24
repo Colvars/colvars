@@ -86,6 +86,7 @@ public:
     cv_printframe,
     cv_printframelabels,
     cv_frame,
+    cv_units,
     cv_colvar,
     cv_colvar_value,
     cv_colvar_update,
@@ -289,6 +290,14 @@ extern "C" {
            { "E (float) - Store the energy in this variable" },
            double *energy = reinterpret_cast<double *>(objv[2]);
            *energy = cvm::main()->total_bias_energy;
+           return COLVARS_OK;
+           )
+
+  CVSCRIPT(cv_units,
+           "Get the current Colvars unit system",
+           0, 0,
+           { },
+           script->set_str_result(cvm::proxy->units);
            return COLVARS_OK;
            )
 

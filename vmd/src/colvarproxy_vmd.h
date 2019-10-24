@@ -59,10 +59,15 @@ public:
   /// \brief Update mass, charge, etc
   int update_atomic_properties();
 
-  inline cvm::real unit_angstrom()
+  inline cvm::real backend_angstrom_value()
   {
     return 1.0;
   }
+
+  // cvm::real backend_kcal_mol_value()
+  // {
+  //   return 1.0;
+  // }
 
   inline cvm::real boltzmann()
   {
@@ -131,6 +136,7 @@ public:
   void log(std::string const &message);
   void error(std::string const &message);
   void fatal_error(std::string const &message);
+  int set_unit_system(std::string const &units_in, bool colvars_defined);
 
   // Callback functions
   int run_force_callback();

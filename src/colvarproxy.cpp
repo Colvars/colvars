@@ -33,6 +33,7 @@
 
 
 colvarproxy_system::colvarproxy_system()
+  : angstrom_value(0.)
 {
   reset_pbc_lattice();
 }
@@ -132,8 +133,6 @@ cvm::rvector colvarproxy_system::position_distance(cvm::atom_pos const &pos1,
 
   return diff;
 }
-
-
 
 colvarproxy_atoms::colvarproxy_atoms()
 {
@@ -807,6 +806,9 @@ int colvarproxy::reset()
   int error_code = COLVARS_OK;
   error_code |= colvarproxy_atoms::reset();
   error_code |= colvarproxy_atom_groups::reset();
+  units.clear();
+  angstrom_value = 0.;
+  kcal_mol_value = 0.;
   return error_code;
 }
 

@@ -122,7 +122,7 @@ proc ::cv_dashboard::plot_clicked { x y } {
   animate goto [expr { ($x - $xplotmin) / $scalex + $xmin}]
   if { $::cv_dashboard::track_frame == 0 } {
     # frame change doesn't trigger refresh, so we refresh manually
-    refresh_table
+    refresh_values
   }
 }
 
@@ -133,7 +133,7 @@ proc ::cv_dashboard::marker_clicked { index x y color marker } {
   animate goto [expr {$index - 1 }]
   if { $::cv_dashboard::track_frame == 0 } {
     # frame change doesn't trigger refresh, so we refresh manually
-    refresh_table
+    refresh_values
   }
 }
 
@@ -158,7 +158,7 @@ proc ::cv_dashboard::chg_frame { shift } {
   animate goto $f
   if { $::cv_dashboard::track_frame == 0 } {
     # frame change doesn't trigger refresh, so we refresh manually
-    refresh_table
+    refresh_values
   }
 }
 
