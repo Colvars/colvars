@@ -213,6 +213,39 @@ int colvarproxy_vmd::setup()
 }
 
 
+int colvarproxy_vmd::set_unit_system(std::string const &units_in, bool colvars_defined)
+{
+  // If units is defined, units_in should be equal to it
+  // if not, units_in should be "real", the default value
+  if (colvars_defined && ((units.size() && units_in != units) || (units.size()==0 && units_in != "real"))) {
+    cvm::error("Specified unit system \"" + units_in + "\" is incompatible with previous setting \""
+                + units + "\".\nReset the Colvars Module or delete all variables to change the unit.\n");
+    return COLVARS_ERROR;
+  }
+
+  if (units_in == "real") {
+    angstrom_value = 1.;
+    kcal_mol_value = 1.;
+  } else if (units_in == "metal") {
+    angstrom_value = 1.;
+    kcal_mol_value = 0.0433641017; // eV
+    // inverse of LAMMPS value is 1/23.060549 = .043364102
+  } else if (units_in == "electron") {
+    angstrom_value = 1.88972612;    // Bohr
+    kcal_mol_value = 0.00159360144; // Hartree
+  } else if (units_in == "gromacs") {
+    angstrom_value = 0.1;    // nm
+    kcal_mol_value = 4.184;  // kJ/mol
+  } else {
+    cvm::error("Unknown unit system specified: \"" + units_in + "\". Supported are real, metal, electron, and gromacs.\n");
+    return COLVARS_ERROR;
+  }
+
+  units = units_in;
+  return COLVARS_OK;
+}
+
+
 int colvarproxy_vmd::update_input()
 {
   colvarproxy::update_input();
@@ -235,9 +268,9 @@ int colvarproxy_vmd::update_input()
   // copy positions in the internal arrays
   float *vmdpos = (vmdmol->get_frame(vmdmol_frame))->pos;
   for (size_t i = 0; i < atoms_positions.size(); i++) {
-    atoms_positions[i] = cvm::atom_pos(vmdpos[atoms_ids[i]*3+0],
-                                       vmdpos[atoms_ids[i]*3+1],
-                                       vmdpos[atoms_ids[i]*3+2]);
+    atoms_positions[i] = cvm::atom_pos(length_to_internal_unit(vmdpos[atoms_ids[i]*3+0]),
+                                       length_to_internal_unit(vmdpos[atoms_ids[i]*3+1]),
+                                       length_to_internal_unit(vmdpos[atoms_ids[i]*3+2]));
   }
 
 
@@ -248,9 +281,9 @@ int colvarproxy_vmd::update_input()
     float B[3];
     float C[3];
     ts->get_transform_vectors(A, B, C);
-    unit_cell_x.set(A[0], A[1], A[2]);
-    unit_cell_y.set(B[0], B[1], B[2]);
-    unit_cell_z.set(C[0], C[1], C[2]);
+    unit_cell_x.set(length_to_internal_unit(A[0]), length_to_internal_unit(A[1]), length_to_internal_unit(A[2]));
+    unit_cell_y.set(length_to_internal_unit(B[0]), length_to_internal_unit(B[1]), length_to_internal_unit(B[2]));
+    unit_cell_z.set(length_to_internal_unit(C[0]), length_to_internal_unit(C[1]), length_to_internal_unit(C[2]));
   }
 
   if (ts->a_length + ts->b_length + ts->c_length < 1.0e-6) {

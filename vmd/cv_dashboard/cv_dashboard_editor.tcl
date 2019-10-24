@@ -11,7 +11,13 @@ proc ::cv_dashboard::add {} {
 
 # Colvar config editor window
 proc ::cv_dashboard::edit { {add false} } {
-  set cfg ""
+  # If a non-default unit system is in use, recall it in the config string
+  refresh_units
+  if { $::cv_dashboard::units == "" } {
+    set cfg ""
+  } else {
+    set cfg "units $::cv_dashboard::units\n\n"
+  }
 
   if $add {
     # do not remove existing vars
@@ -355,7 +361,6 @@ proc ::cv_dashboard::edit_apply {} {
     # that are not there - excluding those that were successfully redefined
     # for that, backup_cfg could be a name -> config map as used by apply_config
     apply_config $::cv_dashboard::backup_cfg
-    refresh_table
     # Do not destroy editor window (give user a chance to fix input)
     return
   }

@@ -131,6 +131,8 @@ void colvarproxy_lammps::init(const char *conf_file)
            cvm::to_str(COLVARPROXY_VERSION)+".\n");
 
   my_angstrom  = _lmp->force->angstrom;
+  // my_kcal_mol  = _lmp->force->qe2f / 23.060549;
+  // force->qe2f is 1eV expressed in LAMMPS' energy unit (1 if unit is eV, 23 if kcal/mol)
   my_boltzmann = _lmp->force->boltz;
   my_timestep  = _lmp->update->dt * _lmp->force->femtosecond;
 
@@ -322,6 +324,17 @@ void colvarproxy_lammps::fatal_error(std::string const &message)
   log(message);
   _lmp->error->one(FLERR,
                    "Fatal error in the collective variables module.\n");
+}
+
+
+int colvarproxy_lammps::set_unit_system(std::string const &units_in, bool /*colvars_defined*/)
+{
+  std::string lmp_units = _lmp->update->unit_style;
+  if (units_in != lmp_units) {
+    cvm::error("Error: Specified unit system for Colvars \"" + units_in + "\" is incompatible with LAMMPS internal units (" + lmp_units + ").\n");
+    return COLVARS_ERROR;
+  }
+  return COLVARS_OK;
 }
 
 

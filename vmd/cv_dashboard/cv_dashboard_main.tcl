@@ -44,6 +44,7 @@ proc ::cv_dashboard::createWindow {} {
   grid $w.cvtable -row $gridrow -column 0 -sticky news -columnspan 3
   grid rowconfigure $w $gridrow -weight 1
 
+  # Editing
   incr gridrow
   grid [ttk::button $w.edit -text "Edit \[e\]" -command ::cv_dashboard::edit -padding "2 0 2 0"] \
     -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
@@ -52,6 +53,7 @@ proc ::cv_dashboard::createWindow {} {
   grid [ttk::button $w.del -text "Delete" -command ::cv_dashboard::del -padding "2 0 2 0"] \
     -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
+  # Plots
   incr gridrow
   grid [ttk::button $w.plot -text "Timeline plot" -command ::cv_dashboard::plot -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $w.plot2cv -text "Pairwise plot" -command {::cv_dashboard::plot 2cv} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
@@ -67,17 +69,29 @@ proc ::cv_dashboard::createWindow {} {
   user add key Home  { ::cv_dashboard::chg_frame start }
   user add key End   { ::cv_dashboard::chg_frame end }
 
+  # Atom group display
   incr gridrow
   grid [ttk::button $w.show_atoms -text "Show atoms" -command {::cv_dashboard::show_atoms} -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $w.hide_atoms -text "Hide atoms" -command {::cv_dashboard::hide_atoms} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $w.hide_all_atoms -text "Hide all atoms" -command {::cv_dashboard::hide_all_atoms} -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
+  # Gradient display
   incr gridrow
   grid [ttk::button $w.show_gradients -text "Show gradients" -command {::cv_dashboard::show_gradients [::cv_dashboard::selected_colvars]} \
     -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $w.hide_gradients -text "Hide gradients" -command {::cv_dashboard::hide_gradients} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $w.hide_all_gradients -text "Hide all grads" -command {::cv_dashboard::hide_all_gradients} -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
+  # Units
+  incr gridrow
+  grid [label $w.unitTxt -text "Units:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  ttk::combobox $w.units -justify left -state readonly
+  $w.units configure -values [array names ::cv_dashboard::text_to_units]
+  refresh_units
+  grid $w.units -row $gridrow -column 1 -columnspan 2 -pady 2 -padx 2 -sticky nsew
+  bind $w.units <<ComboboxSelected>> ::cv_dashboard::change_units
+
+  # Frame display and track checkbox
   incr gridrow
   grid [label $w.frameTxt -text "Frame:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [label $w.frame -textvariable ::cv_dashboard::current_frame] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
@@ -99,7 +113,8 @@ proc ::cv_dashboard::about {} {
 "Colvars Dashboard, version [package require cv_dashboard]
 
 Based on the Colvars Module version [run_cv version]
-Running on Tcl/Tk [info patchlevel]
+In [vmdinfo versionmsg]
+Running Tcl/Tk [info patchlevel]
 
 Jérôme Hénin (henin@ibpc.fr) and the Colvars developers.
 
@@ -249,6 +264,41 @@ proc ::cv_dashboard::selected_comps { cv } {
 }
 
 
+proc ::cv_dashboard::refresh_units {} {
+  set w .cv_dashboard_window
+  if [catch { set u [cv units] }] {
+    # This catches cases where the module cannot be created because no molecule is loaded
+    set u ""
+  }
+  set ::cv_dashboard::units $u
+  if { $u == "" } {
+    $w.units set $::cv_dashboard::units_to_text(real)
+  } else {
+    $w.units set $::cv_dashboard::units_to_text($u)
+  }
+}
+
+
+# Change units if possible
+proc ::cv_dashboard::change_units {} {
+  set w .cv_dashboard_window
+  set val [$w.units get]
+  if {![info exists ::cv_dashboard::text_to_units($val)]} {
+    puts "Bug error: trying to switch to unknown unit system $val"
+    return
+  }
+  set new $::cv_dashboard::text_to_units($val)
+  # Get up-to-date current setting
+  refresh_units
+  if {$new != $::cv_dashboard::units} {
+    run_cv config "units $new"
+  }
+  # Refresh Combo box
+  refresh_units
+  refresh_values
+}
+
+
 # Enable or disable real-time tracking of VMD frame
 proc ::cv_dashboard::change_track_frame {} {
   set molid [molinfo top]
@@ -295,7 +345,11 @@ proc ::cv_dashboard::save {} {
   if [string compare $path ""] {
     # Save directory for next invocation of this dialog
     set ::cv_dashboard::config_dir [file dirname $path]
-    set cfg ""
+    if {$::cv_dashboard::units == ""} {
+      set cfg ""
+    } else {
+      set cfg "units $::cv_dashboard::units\n\n"
+    }
     foreach cv [run_cv list] {
         append cfg "colvar {[get_config $cv]}\n\n"
     }
@@ -331,6 +385,7 @@ proc ::cv_dashboard::reset {} {
   run_cv molid top
   set ::cv_dashboard::colvar_configs [dict create]
   refresh_table
+  refresh_units
 }
 
 
