@@ -64,6 +64,19 @@ source [file join $script_dir cv_dashboard_plots.tcl]
 
 
 proc cv_dashboard {} {
+  if {[molinfo num] == 0 } {
+    tk_messageBox -icon error -title "Colvars Dashboard Error"\
+      -message "No molecule loaded. Please load a molecule and use the Reset button.\n"
+  } elseif [catch { cv version}] {
+    # setup Colvars if not already there
+    run_cv molid top
+  }
+
+  if {[winfo exists .cv_dashboard_window]} {
+    wm deiconify .cv_dashboard_window
+    return .cv_dashboard_window
+  }
+
   return [eval ::cv_dashboard::createWindow]
 }
 

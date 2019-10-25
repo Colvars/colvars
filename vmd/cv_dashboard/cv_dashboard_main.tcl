@@ -6,25 +6,10 @@
 # Create main window
 proc ::cv_dashboard::createWindow {} {
 
-  if {[winfo exists .cv_dashboard_window]} {
-    wm deiconify .cv_dashboard_window
-    return
-  }
-
-  if {[molinfo num] == 0 } {
-    tk_messageBox -icon error -title "Colvars Dashboard Error"\
-      -message "No molecule loaded. Please load a molecule before running Colvars Dashboard.\n"
-    return
-  }
-
   set w [toplevel .cv_dashboard_window]
   wm title $w "Colvars dashboard"
   wm protocol $w WM_DELETE_WINDOW { ::cv_dashboard::quit }
 
-  # setup Colvars if not already there
-  if [catch { cv version}] {
-    run_cv molid top
-  }
   set gridrow 0
   grid [ttk::button $w.helpB -text "Online Help" -command {::cv_dashboard::invokeBrowser "http://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html#sec:dashboard"} -padding "2 0 2 0"] \
     -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
@@ -82,22 +67,16 @@ proc ::cv_dashboard::createWindow {} {
   user add key Home  { ::cv_dashboard::chg_frame start }
   user add key End   { ::cv_dashboard::chg_frame end }
 
-  # Cannot test directly for the presence of scripting methods in the absence of a defined colvar
-  # so we test the version number instead
-  if {[string compare [run_cv version] "2019-02-07"] >= 0} {
-    incr gridrow
-    grid [ttk::button $w.show_atoms -text "Show atoms" -command {::cv_dashboard::show_atoms} -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-    grid [ttk::button $w.hide_atoms -text "Hide atoms" -command {::cv_dashboard::hide_atoms} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-    grid [ttk::button $w.hide_all_atoms -text "Hide all atoms" -command {::cv_dashboard::hide_all_atoms} -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
-  }
+  incr gridrow
+  grid [ttk::button $w.show_atoms -text "Show atoms" -command {::cv_dashboard::show_atoms} -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $w.hide_atoms -text "Hide atoms" -command {::cv_dashboard::hide_atoms} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $w.hide_all_atoms -text "Hide all atoms" -command {::cv_dashboard::hide_all_atoms} -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
-  if {[string compare [run_cv version] "2019-03-18"] >= 0} {
-    incr gridrow
-    grid [ttk::button $w.show_gradients -text "Show gradients" -command {::cv_dashboard::show_gradients [::cv_dashboard::selected_colvars]} \
-      -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-    grid [ttk::button $w.hide_gradients -text "Hide gradients" -command {::cv_dashboard::hide_gradients} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-    grid [ttk::button $w.hide_all_gradients -text "Hide all grads" -command {::cv_dashboard::hide_all_gradients} -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
-  }
+  incr gridrow
+  grid [ttk::button $w.show_gradients -text "Show gradients" -command {::cv_dashboard::show_gradients [::cv_dashboard::selected_colvars]} \
+    -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $w.hide_gradients -text "Hide gradients" -command {::cv_dashboard::hide_gradients} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $w.hide_all_gradients -text "Hide all grads" -command {::cv_dashboard::hide_all_gradients} -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
   incr gridrow
   grid [label $w.frameTxt -text "Frame:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
@@ -130,11 +109,13 @@ G. Fiorin, M. L. Klein, and J. Hénin. Using collective variables to drive molec
 
 
 proc ::cv_dashboard::quit {} {
-    # window destructor that removes the trace we put in place, so they don't accumulate
+    # remove the trace we put in place, so they don't accumulate
     # if loaded multiple times
     set molid [molinfo top]
-    trace remove variable ::vmd_frame($molid) write ::cv_dashboard::update_frame
-    destroy .cv_dashboard_window
+    if { $molid != -1 } {
+      trace remove variable ::vmd_frame($molid) write ::cv_dashboard::update_frame
+    }
+    wm withdraw .cv_dashboard_window
   }
 
 
@@ -142,10 +123,16 @@ proc ::cv_dashboard::quit {} {
 proc ::cv_dashboard::refresh_table {} {
 
   set w .cv_dashboard_window
-  set ::cv_dashboard::cvs [run_cv list]
 
   foreach i [$w.cvtable children {}] {
     $w.cvtable delete $i
+  }
+
+  if [catch { set ::cv_dashboard::cvs [cv list]}] {
+    # We were unable to fetch the list of colvars
+    # CVM is probably not initialized or there is no molecule loaded
+    set ::cv_dashboard::cvs {}
+    return
   }
 
   # Get fresh coordinates from VMD
@@ -265,6 +252,7 @@ proc ::cv_dashboard::selected_comps { cv } {
 # Enable or disable real-time tracking of VMD frame
 proc ::cv_dashboard::change_track_frame {} {
   set molid [molinfo top]
+  if { $molid == -1 } { return }
   if {$::cv_dashboard::track_frame} {
     trace add variable ::vmd_frame($molid) write ::cv_dashboard::update_frame
     update_frame internal [molinfo top] w
@@ -338,7 +326,8 @@ proc ::cv_dashboard::del {} {
 
 # Reset cvm: hard delete allows for reconstructing the module after changing top molecule.
 proc ::cv_dashboard::reset {} {
-  run_cv delete
+  # Run cv delete silently to be less verbose if module was already deleted
+  catch { cv delete }
   run_cv molid top
   set ::cv_dashboard::colvar_configs [dict create]
   refresh_table
@@ -393,8 +382,7 @@ proc ::cv_dashboard::show_atoms {} {
 proc ::cv_dashboard::hide_atoms {} {
   foreach cv [selected_colvars] {
     if { [info exists ::cv_dashboard::atom_rep($cv)] } {
-      #Line below should be lassign but we try to be compatible with old Tcl (pre 8.5)
-      foreach { macros repnames } $::cv_dashboard::atom_rep($cv) {}
+      lassign $::cv_dashboard::atom_rep($cv) macros repnames
       foreach m $macros {
         atomselect delmacro $m
       }
@@ -409,7 +397,7 @@ proc ::cv_dashboard::hide_atoms {} {
 # Remove all atom representations
 proc ::cv_dashboard::hide_all_atoms {} {
   foreach {cv data} [array get ::cv_dashboard::atom_rep] {
-    foreach { macros repnames } $data {}
+    lassign $data macros repnames
     foreach m $macros {
       atomselect delmacro $m
     }
