@@ -201,7 +201,7 @@ int colvarproxy_vmd::setup()
   if (vmdmol) {
     set_frame(vmdmol->frame());
   } else {
-    error("Error: cannot find the molecule requested("+cvm::to_str(vmdmolid)+").\n");
+    error("Error: requested molecule ("+cvm::to_str(vmdmolid)+") does not exist.\n");
     return COLVARS_ERROR;
   }
 
@@ -219,6 +219,11 @@ int colvarproxy_vmd::update_input()
 
   int error_code = COLVARS_OK;
 
+  // Check that our parent molecule still exists
+  if (vmd->moleculeList->mol_from_id(vmdmolid) == NULL) {
+    error("Error: requested molecule ("+cvm::to_str(vmdmolid)+") does not exist.\n");
+    return COLVARS_ERROR;
+  }
   error_code |= update_atomic_properties();
 
   // Do we still have a valid frame?
