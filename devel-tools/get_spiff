@@ -1,0 +1,21 @@
+#!/bin/bash
+
+if hash spiff >& /dev/null ; then
+    hash -t spiff
+else
+    SPIFFDIR=${TMPDIR:-/tmp}/spiff
+    if [ ! -x ${SPIFFDIR}/spiff ] ; then
+        if git clone --depth 1 https://github.com/jhenin/spiff.git \
+            ${SPIFFDIR} >& /dev/null ; then
+            pushd ${SPIFFDIR} >& /dev/null && \
+                make >& /dev/null
+            popd >& /dev/null
+        fi
+    fi
+    if [ -x ${SPIFFDIR}/spiff ] ; then
+        echo ${SPIFFDIR}/spiff
+        exit 0
+    else
+        exit 1
+    fi
+fi

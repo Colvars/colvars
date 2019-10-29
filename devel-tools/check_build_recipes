@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# TODO check later for headers in the dependencies; conditional compilation
+# may give false results
+
+pushd $(git rev-parse --show-toplevel) 1> /dev/null
+retcode=0
+for f in src/*.cpp ; do
+    f=$(basename $f)
+    namd_target="\$(DSTDIR)/${f%.cpp}.o"
+    if ! grep -q ${namd_target} namd/colvars/src/Makefile.namd ; then
+        echo "Error: ${namd_target} missing from namd/colvars/src/Makefile.namd" >&2
+        retcode=1
+    fi
+    vmd_source=${f%.cpp}.C
+    if ! grep -q ${vmd_source} vmd/src/colvars_files.pl ; then
+        echo "Error: ${vmd_source} missing from vmd/src/colvars_files.pl" >&2
+        retcode=1
+    fi
+    if ! grep -q ${f} lammps/lib/colvars/Makefile.common ; then
+        echo "Error: ${f} missing from lammps/lib/colvars/Makefile.common" >&2
+        retcode=1
+    fi
+done
+popd 1> /dev/null
+exit ${retcode}

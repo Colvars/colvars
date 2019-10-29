@@ -9,4 +9,6 @@ do \
   git add $f
 done
 
+$(git rev-parse --show-toplevel)/devel-tools/check_build_recipes || exit 1
+
 exit 0
