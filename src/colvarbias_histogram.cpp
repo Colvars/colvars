@@ -375,6 +375,15 @@ int colvarbias_reweightaMD::write_output_files() {
     pmf_grid.raw_data_in(pmf_raw_data);
     pmf_grid.write_multicol(*pmf_grid_os);
     cvm::proxy->close_output_stream(out_name_pmf);
+    std::string out_name_prev_count{out_name_pmf + ".count"};
+    cvm::backup_file(out_name_prev_count.c_str());
+    std::ostream *count_prev = cvm::proxy->output_stream(out_name_prev_count);
+    if (!count_prev) {
+        return cvm::error("Error opening count file "+out_name_prev_count+
+                          " for writing.\n", FILE_ERROR);
+    }
+    grid_count->write_multicol(*count_prev);
+    cvm::proxy->close_output_stream(out_name_prev_count);
     if (use_cumulant_expansion) {
       std::string out_name_pmf_cumulant{out_name_pmf + "2"};
       cvm::backup_file(out_name_pmf_cumulant.c_str());
@@ -402,8 +411,6 @@ int colvarbias_reweightaMD::write_output_files() {
       pmf_grid_cumulant.write_multicol(*pmf_grid_cumulant_os);
       cvm::proxy->close_output_stream(out_name_pmf_cumulant);
     }
-  } else {
-      std::cout << "HERE!!!!" << std::endl;
   }
   error_code |= cvm::get_error();
   return error_code;
@@ -439,7 +446,7 @@ std::vector<cvm::real> colvarbias_reweightaMD::compute_cumulant_expansion_factor
     if (count[i] > 0) {
       const cvm::real dV_avg = dV[i] / count[i];
       const cvm::real dV_square_avg = dV_square[i] / count[i];
-      factor[i] = beta * dV_avg + 0.5 * beta * beta * (dV_square_avg - dV_avg * dV_avg);
+      factor[i] = std::exp(beta * dV_avg + 0.5 * beta * beta * (dV_square_avg - dV_avg * dV_avg));
     }
   }
   return factor;
