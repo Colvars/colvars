@@ -159,7 +159,9 @@ private:
   virtual std::istream& read_state_data(std::istream&);
   virtual std::ostream& write_state_data(std::ostream&);
   virtual int write_output_files();
+
+  /// Calculate the bias energy for 1D ABF
+  cvm::real calc_energy();
 };
 
 #endif
-

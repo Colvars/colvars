@@ -416,6 +416,20 @@ public:
     return (int) cvm::floor( (value.real_value - lower_boundaries[i].real_value) / widths[i] );
   }
 
+  /// \brief Report the fraction of bin beyond current_bin_scalar()
+  inline cvm::real current_bin_scalar_fraction(int const i) const
+  {
+    return value_to_bin_scalar_fraction(use_actual_value[i] ? cv[i]->actual_value() : cv[i]->value(), i);
+  }
+
+  /// \brief Use the lower boundary and the width to report which bin
+  /// the provided value is in
+  inline cvm::real value_to_bin_scalar_fraction(colvarvalue const &value, const int i) const
+  {
+    cvm::real x = (value.real_value - lower_boundaries[i].real_value) / widths[i];
+    return x - std::floor(x);
+  }
+  
   /// \brief Use the lower boundary and the width to report which bin
   /// the provided value is in and assign first or last bin if out of boundaries
   inline int value_to_bin_scalar_bound(colvarvalue const &value, const int i) const
