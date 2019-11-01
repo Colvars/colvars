@@ -841,7 +841,7 @@ cvm::real colvarbias_abf::calc_energy()
   if (num_variables() != 1) return 0.0;
   
   // Get the home bin.
-  int home0 = gradients->current_bin_scalar(0);
+  unsigned int home0 = gradients->current_bin_scalar(0);
   if (home0 < 0) return 0.0;
   int home = (home0 < gradients->number_of_points(0))?home0:gradients->number_of_points(0)-1;
  
@@ -851,7 +851,7 @@ cvm::real colvarbias_abf::calc_energy()
     std::vector<int> ix(1,i);
 
     // Include the full_samples factor if necessary.
-    int count = samples->value(ix);
+    unsigned int count = samples->value(ix);
     cvm::real fact = 1.0;
     if ( count < full_samples ) {
       fact = (count < min_samples) ? 0.0 :
@@ -863,7 +863,7 @@ cvm::real colvarbias_abf::calc_energy()
   // Integrate the gradient up to the current position in the home interval, a fractional portion of a bin.
   std::vector<int> ix(1,home);
   cvm::real frac = gradients->current_bin_scalar_fraction(0);
-  int count = samples->value(ix);
+  unsigned int count = samples->value(ix);
   cvm::real fact = 1.0;
   if ( count < full_samples ) {
     fact = (count < min_samples) ? 0.0 :
