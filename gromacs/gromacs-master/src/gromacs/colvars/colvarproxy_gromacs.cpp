@@ -317,6 +317,15 @@ int colvarproxy_gromacs::load_coords (char const gmx_unused *filename, std::vect
   return COLVARS_NOT_IMPLEMENTED;
 }
 
+int colvarproxy_gromacs::set_unit_system(std::string const &units_in, bool /*colvars_defined*/)
+{
+  if (units_in != "gromacs") {
+    cvm::error("Specified unit system \"" + units_in + "\" is unsupported in Gromacs. Supported units are \"gromacs\" (nm, kJ/mol).\n");
+    return COLVARS_ERROR;
+  }
+  return COLVARS_OK;
+}
+
 int colvarproxy_gromacs::backup_file (char const *filename)
 {
   // Incremental gromacs backup system will be use only for those file
