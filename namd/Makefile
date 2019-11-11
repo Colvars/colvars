@@ -245,7 +245,6 @@ OBJS = \
 	$(DSTDIR)/GoMolecule.o \
         $(DSTDIR)/MoleculeQM.o \
 	$(DSTDIR)/NamdCentLB.o \
-	$(DSTDIR)/NamdNborLB.o \
 	$(DSTDIR)/NamdHybridLB.o \
 	$(DSTDIR)/NamdDummyLB.o \
 	$(DSTDIR)/NamdState.o \
@@ -333,8 +332,6 @@ CIFILES = 	\
 		$(INCDIR)/LdbCoordinator.def.h \
 		$(INCDIR)/NamdCentLB.decl.h \
 		$(INCDIR)/NamdCentLB.def.h \
-		$(INCDIR)/NamdNborLB.decl.h \
-		$(INCDIR)/NamdNborLB.def.h \
 		$(INCDIR)/NamdHybridLB.decl.h \
 		$(INCDIR)/NamdHybridLB.def.h \
 		$(INCDIR)/NamdDummyLB.decl.h \
@@ -419,9 +416,9 @@ CHARMC = $(CHARM)/bin/charmc
 CHARMXI = $(CHARM)/bin/charmc
 CHARMINC = $(CHARM)/include $(COPTD)CMK_OPTIMIZE=1
 CHARMLIB = $(CHARM)/lib
-CHARM_MODULES = -module NeighborLB -module HybridLB -module RefineLB -module GreedyLB -module CkMulticast $(CKLOOP_MODULE)
-#CHARM_MODULES = -module NeighborLB -module HybridLB -module RefineLB -module GreedyLB
-#CHARM_MODULES = -module msa -module NeighborLB -module HybridLB -module RefineLB -module GreedyLB
+CHARM_MODULES = -module HybridLB -module RefineLB -module GreedyLB -module CkMulticast $(CKLOOP_MODULE)
+#CHARM_MODULES = -module HybridLB -module RefineLB -module GreedyLB
+#CHARM_MODULES = -module msa -module HybridLB -module RefineLB -module GreedyLB
 #MSA = -DCHARM_HAS_MSA
 
 # Libraries we may have changed
@@ -630,7 +627,7 @@ summary: $(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS)
 	$(MAKEBUILDINFO)
 	$(CHARMC) -verbose -ld++-option \
 	'$(COPTI)$(CHARMINC) $(COPTI)$(INCDIR) $(COPTI)$(SRCDIR) $(CXXOPTS)' \
-	-module NeighborLB -module CkMulticast -language charm++ \
+	-module CkMulticast -language charm++ \
 	-tracemode summary \
 	$(BUILDINFO).o \
 	$(OBJS) \
