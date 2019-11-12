@@ -484,7 +484,7 @@ int colvarbias_abf::update()
   }
 
   /// Add the bias energy for 1D ABF
-  bias_energy = calc_energy();
+  bias_energy = calc_energy(NULL);
 
   return COLVARS_OK;
 }
@@ -836,15 +836,21 @@ int colvarbias_abf::write_output_files()
   return COLVARS_OK;
 }
 
-cvm::real colvarbias_abf::calc_energy()
+int colvarbias_abf::calc_energy(std::vector<colvarvalue> const *values)
 {
+  if (values) {
+    return cvm::error("colvarbias_abf::calc_energy() with an argument "
+                      "is currently not implemented.\n",
+                      COLVARS_NOT_IMPLEMENTED);
+  }
+
   if (num_variables() != 1) return 0.0;
-  
+
   // Get the home bin.
   unsigned int home0 = gradients->current_bin_scalar(0);
   if (home0 < 0) return 0.0;
   int home = (home0 < gradients->number_of_points(0))?home0:gradients->number_of_points(0)-1;
- 
+
   // Integrate the gradient up to the home bin.
   double sum = 0.0;
   for (int i = 0; i < home; i++) {

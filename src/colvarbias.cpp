@@ -268,13 +268,29 @@ int colvarbias::update()
     cvm::log("Updating the "+bias_type+" bias \""+this->name+"\".\n");
   }
 
+  int error_code = COLVARS_OK;
+
   has_data = true;
 
+  error_code |= calc_energy(NULL);
+  error_code |= calc_forces(NULL);
+
+  return COLVARS_OK;
+}
+
+
+int colvarbias::calc_energy(std::vector<colvarvalue> const *)
+{
   bias_energy = 0.0;
+  return COLVARS_OK;
+}
+
+
+int colvarbias::calc_forces(std::vector<colvarvalue> const *)
+{
   for (size_t ir = 0; ir < num_variables(); ir++) {
     colvar_forces[ir].reset();
   }
-
   return COLVARS_OK;
 }
 
