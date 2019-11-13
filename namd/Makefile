@@ -416,9 +416,7 @@ CHARMC = $(CHARM)/bin/charmc
 CHARMXI = $(CHARM)/bin/charmc
 CHARMINC = $(CHARM)/include $(COPTD)CMK_OPTIMIZE=1
 CHARMLIB = $(CHARM)/lib
-CHARM_MODULES = -module HybridLB -module RefineLB -module GreedyLB -module CkMulticast $(CKLOOP_MODULE)
-#CHARM_MODULES = -module HybridLB -module RefineLB -module GreedyLB
-#CHARM_MODULES = -module msa -module HybridLB -module RefineLB -module GreedyLB
+CHARM_MODULES = -module CkMulticast $(CKLOOP_MODULE)
 #MSA = -DCHARM_HAS_MSA
 
 # Libraries we may have changed
