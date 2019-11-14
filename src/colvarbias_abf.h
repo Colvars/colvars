@@ -161,7 +161,7 @@ private:
   virtual int write_output_files();
 
   /// Calculate the bias energy for 1D ABF
-  cvm::real calc_energy();
+  cvm::real calc_abf_energy();
 };
 
 #endif
