@@ -484,7 +484,7 @@ int colvarbias_abf::update()
   }
 
   /// Add the bias energy for 1D ABF
-  bias_energy = calc_abf_energy();
+  bias_energy = calc_energy(NULL);
 
   return COLVARS_OK;
 }
@@ -836,22 +836,28 @@ int colvarbias_abf::write_output_files()
   return COLVARS_OK;
 }
 
-cvm::real colvarbias_abf::calc_abf_energy()
+int colvarbias_abf::calc_energy(std::vector<colvarvalue> const *values)
 {
+  if (values) {
+    return cvm::error("colvarbias_abf::calc_energy() with an argument "
+                      "is currently not implemented.\n",
+                      COLVARS_NOT_IMPLEMENTED);
+  }
+
   if (num_variables() != 1) return 0.0;
-  
+
   // Get the home bin.
-  int home0 = gradients->current_bin_scalar(0);
+  unsigned int home0 = gradients->current_bin_scalar(0);
   if (home0 < 0) return 0.0;
   int home = (home0 < gradients->number_of_points(0))?home0:gradients->number_of_points(0)-1;
- 
+
   // Integrate the gradient up to the home bin.
-  cvm::real sum = 0.0;
+  double sum = 0.0;
   for (int i = 0; i < home; i++) {
     std::vector<int> ix(1,i);
 
     // Include the full_samples factor if necessary.
-    int count = samples->value(ix);
+    unsigned int count = samples->value(ix);
     cvm::real fact = 1.0;
     if ( count < full_samples ) {
       fact = (count < min_samples) ? 0.0 :
@@ -863,7 +869,7 @@ cvm::real colvarbias_abf::calc_abf_energy()
   // Integrate the gradient up to the current position in the home interval, a fractional portion of a bin.
   std::vector<int> ix(1,home);
   cvm::real frac = gradients->current_bin_scalar_fraction(0);
-  int count = samples->value(ix);
+  unsigned int count = samples->value(ix);
   cvm::real fact = 1.0;
   if ( count < full_samples ) {
     fact = (count < min_samples) ? 0.0 :

@@ -379,8 +379,8 @@ int colvarbias_meta::update()
     error_code |= replica_share();
   }
 
-  error_code |= calc_energy();
-  error_code |= calc_forces();
+  error_code |= calc_energy(NULL);
+  error_code |= calc_forces(NULL);
 
   return error_code;
 }
@@ -521,7 +521,7 @@ int colvarbias_meta::update_bias()
         std::vector<int> curr_bin = hills_energy->get_colvars_index();
         hills_energy_sum_here = hills_energy->value(curr_bin);
       } else {
-        calc_hills(new_hills_begin, hills.end(), hills_energy_sum_here);
+        calc_hills(new_hills_begin, hills.end(), hills_energy_sum_here, NULL);
       }
       hills_scale *= cvm::exp(-1.0*hills_energy_sum_here/(bias_temperature*cvm::boltzmann()));
     }
@@ -578,7 +578,7 @@ int colvarbias_meta::update_grid_data()
 }
 
 
-int colvarbias_meta::calc_energy(std::vector<colvarvalue> const &values)
+int colvarbias_meta::calc_energy(std::vector<colvarvalue> const *values)
 {
   size_t ir = 0;
 
@@ -586,8 +586,8 @@ int colvarbias_meta::calc_energy(std::vector<colvarvalue> const &values)
     replicas[ir]->bias_energy = 0.0;
   }
 
-  std::vector<int> const curr_bin = values.size() ?
-    hills_energy->get_colvars_index(values) :
+  std::vector<int> const curr_bin = values ?
+    hills_energy->get_colvars_index(*values) :
     hills_energy->get_colvars_index();
 
   if (hills_energy->index_ok(curr_bin)) {
@@ -619,7 +619,8 @@ int colvarbias_meta::calc_energy(std::vector<colvarvalue> const &values)
   for (ir = 0; ir < replicas.size(); ir++) {
     calc_hills(replicas[ir]->new_hills_begin,
                replicas[ir]->hills.end(),
-               bias_energy);
+               bias_energy,
+               values);
     if (cvm::debug()) {
       cvm::log("Hills energy = "+cvm::to_str(bias_energy)+".\n");
     }
@@ -629,7 +630,7 @@ int colvarbias_meta::calc_energy(std::vector<colvarvalue> const &values)
 }
 
 
-int colvarbias_meta::calc_forces(std::vector<colvarvalue> const &values)
+int colvarbias_meta::calc_forces(std::vector<colvarvalue> const *values)
 {
   size_t ir = 0, ic = 0;
   for (ir = 0; ir < replicas.size(); ir++) {
@@ -638,8 +639,8 @@ int colvarbias_meta::calc_forces(std::vector<colvarvalue> const &values)
     }
   }
 
-  std::vector<int> const curr_bin = values.size() ?
-    hills_energy->get_colvars_index(values) :
+  std::vector<int> const curr_bin = values ?
+    hills_energy->get_colvars_index(*values) :
     hills_energy->get_colvars_index();
 
   if (hills_energy->index_ok(curr_bin)) {
@@ -693,7 +694,7 @@ int colvarbias_meta::calc_forces(std::vector<colvarvalue> const &values)
 void colvarbias_meta::calc_hills(colvarbias_meta::hill_iter      h_first,
                                  colvarbias_meta::hill_iter      h_last,
                                  cvm::real                      &energy,
-                                 std::vector<colvarvalue> const &colvar_values)
+                                 std::vector<colvarvalue> const *values)
 {
   size_t i = 0;
   std::vector<colvarvalue> curr_values(num_variables());
@@ -701,9 +702,9 @@ void colvarbias_meta::calc_hills(colvarbias_meta::hill_iter      h_first,
     curr_values[i].type(variables(i)->value());
   }
 
-  if (colvar_values.size()) {
+  if (values) {
     for (i = 0; i < num_variables(); i++) {
-      curr_values[i] = colvar_values[i];
+      curr_values[i] = (*values)[i];
     }
   } else {
     for (i = 0; i < num_variables(); i++) {
@@ -738,10 +739,10 @@ void colvarbias_meta::calc_hills_force(size_t const &i,
                                        colvarbias_meta::hill_iter      h_first,
                                        colvarbias_meta::hill_iter      h_last,
                                        std::vector<colvarvalue>       &forces,
-                                       std::vector<colvarvalue> const &values)
+                                       std::vector<colvarvalue> const *values)
 {
   // Retrieve the value of the colvar
-  colvarvalue const x(values.size() ? values[i] : variables(i)->value());
+  colvarvalue const x(values ? (*values)[i] : variables(i)->value());
 
   // do the type check only once (all colvarvalues in the hills series
   // were already saved with their types matching those in the
@@ -846,12 +847,12 @@ void colvarbias_meta::project_hills(colvarbias_meta::hill_iter  h_first,
 
       // loop over the hills and increment the energy grid locally
       hills_energy_here = 0.0;
-      calc_hills(h_first, h_last, hills_energy_here, colvar_values);
+      calc_hills(h_first, h_last, hills_energy_here, &colvar_values);
       he->acc_value(he_ix, hills_energy_here);
 
       for (i = 0; i < num_variables(); i++) {
         hills_forces_here[i].reset();
-        calc_hills_force(i, h_first, h_last, hills_forces_here, colvar_values);
+        calc_hills_force(i, h_first, h_last, hills_forces_here, &colvar_values);
         colvar_forces_scalar[i] = hills_forces_here[i].real_value;
       }
       hg->acc_force(hg_ix, &(colvar_forces_scalar.front()));
@@ -883,7 +884,7 @@ void colvarbias_meta::project_hills(colvarbias_meta::hill_iter  h_first,
       }
 
       hills_energy_here = 0.0;
-      calc_hills(h_first, h_last, hills_energy_here, colvar_values);
+      calc_hills(h_first, h_last, hills_energy_here, &colvar_values);
       he->acc_value(he_ix, hills_energy_here);
 
       he->incr(he_ix);
