@@ -847,13 +847,13 @@ int colvarbias_abf::calc_energy(std::vector<colvarvalue> const *values)
   if (num_variables() != 1) return 0.0;
 
   // Get the home bin.
-  unsigned int home0 = gradients->current_bin_scalar(0);
+  int home0 = gradients->current_bin_scalar(0);
   if (home0 < 0) return 0.0;
   int gradient_len = (int)(gradients->number_of_points(0));
   int home = (home0 < gradient_len) ? home0 : (gradient_len-1);
 
   // Integrate the gradient up to the home bin.
-  double sum = 0.0;
+  cvm::real sum = 0.0;
   for (int i = 0; i < home; i++) {
     std::vector<int> ix(1,i);
 
