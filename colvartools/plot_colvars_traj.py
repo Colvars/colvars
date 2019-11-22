@@ -261,48 +261,41 @@ if (__name__ == '__main__'):
                         'must be defined on the same trajectory segments.',
                         default=None)
 
-    try:
+    parser.add_argument('--plot-file',
+                        type=str,
+                        help='Plot into a file with this name if the '
+                        'extension is one of "png", "pdf", "ps", "eps", '
+                        'or "svg", or to the screen if not given '
+                        'and --output-file is also not given.',
+                        default=None)
 
-        import matplotlib
+    parser.add_argument('--plot-x-axis',
+                        type=str,
+                        help='Use this variable as X axis in the plot.',
+                        default='time')
 
-        parser.add_argument('--plot-file',
-                            type=str,
-                            help='Plot into a file with this name if the '
-                            'extension is one of "png", "pdf", "ps", "eps", '
-                            'or "svg", or to the screen if not given '
-                            'and --output-file is also not given.',
-                            default=None)
+    parser.add_argument('--plot-x-label',
+                        type=str,
+                        help='Use this label for the X axis.',
+                        default=None)
 
-        parser.add_argument('--plot-x-axis',
-                            type=str,
-                            help='Use this variable as X axis in the plot.',
-                            default='time')
+    parser.add_argument('--plot-y-label',
+                        type=str,
+                        help='Use this label for the Y axis.',
+                        default=None)
 
-        parser.add_argument('--plot-x-label',
-                            type=str,
-                            help='Use this label for the X axis.',
-                            default=None)
+    parser.add_argument('--plot-keys',
+                        nargs='*',
+                        type=str,
+                        help='Alternative names for the legend',
+                        default=[])
 
-        parser.add_argument('--plot-y-label',
-                            type=str,
-                            help='Use this label for the Y axis.',
-                            default=None)
-
-        parser.add_argument('--plot-keys',
-                            nargs='*',
-                            type=str,
-                            help='Alternative names for the legend',
-                            default=[])
-
-        parser.add_argument('--plot-time-factor',
-                            type=int,
-                            help='Average these many consecutive frames '
-                            'together before plotting but after reading '
-                            'from files',
-                            default=1)
-
-    except ImportError:
-        matplotlib = None
+    parser.add_argument('--plot-time-factor',
+                        type=int,
+                        help='Average these many consecutive frames '
+                        'together before plotting but after reading '
+                        'from files',
+                        default=1)
 
     args = parser.parse_args()
 
@@ -320,6 +313,16 @@ if (__name__ == '__main__'):
         sys.exit()
 
     variables = args.variables
+
+    for var in variables:
+        try:
+            cv = colvars_traj[var]
+        except KeyError:
+            print("ERROR: could not find \""+var+"\"; below are the available "
+                  "fields: ")
+            print("  ", *colvars_traj.variables)
+            raise KeyError
+
     if (len(variables) == 0): variables = colvars_traj.variables
 
     plot_keys = dict(zip(variables, variables))
