@@ -48,12 +48,20 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
   cvm::log("Initializing the collective variables module, version "+
            cvm::to_str(COLVARS_VERSION)+".\n");
   cvm::log("Please cite Fiorin et al, Mol Phys 2013:\n "
-           "http://dx.doi.org/10.1080/00268976.2013.813594\n"
+           "https://dx.doi.org/10.1080/00268976.2013.813594\n"
            "in any publication based on this calculation.\n");
 
   if (proxy->smp_enabled() == COLVARS_OK) {
-    cvm::log("SMP parallelism is available.\n");
+    cvm::log("SMP parallelism is enabled; if needed, use \"smp off\" to override this.\n");
   }
+
+#if (__cplusplus >= 201103L)
+  cvm::log("This version was built with the C++11 standard or higher.");
+#else
+  cvm::log("This version was built without the C++11 standard: some features are disabled.\n"
+    "Please see the following link for details:\n"
+    "https://colvars.github.io/README-c++11.html");
+#endif
 
   // set initial default values
 

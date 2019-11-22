@@ -5707,3 +5707,22 @@ please be aware that \emph{several of these tutorials are not actively maintaine
 \cvnamdonly{\cvurl{https://colvars.github.io/colvars-refman-namd/colvars-refman-namd.html}}
 \cvlammpsonly{\cvurl{https://colvars.github.io/colvars-refman-lammps/colvars-refman-lammps.html}}
 \cvvmdonly{\cvurl{https://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html}}
+
+
+\cvrefmanonly{
+
+\cvsec{Compilation notes}{sec:compilation_notes}
+
+The Colvars module is typically built using the recipes of each supported software package: for this reason, no installation instructions are needed, and the vast majority of the features described in this manual are supported in the most common builds of each package.
+This section lists the few cases where the choice of compilation settings affects features in the Colvars module.
+
+\begin{itemize}
+\item Scripting commands using the Tcl language (\cvurl{https://www.tcl.tk}) are supported in VMD and NAMD.  All precompiled builds of each code include Tcl, and it is highly recommended to enable Tcl support in any custom build, using precompiled Tcl libraries from the UIUC website.
+\item The Lepton library (\cvurl{https://simtk.org/projects/lepton}) used to implement the \texttt{customFunction} feature is currently included only in NAMD (always on) and in LAMMPS (on by default).
+\item Some features require compilation using the C++11 language standard.
+  Although it is becoming commonplace, this standard is not yet available on all scientific computing systems.
+  Deailed information can be found at:\\
+  \cvurl{https://colvars.github.io/README-c++11.html}
+\end{itemize}
+
+}

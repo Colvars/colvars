@@ -662,7 +662,7 @@ int colvar::init_output_flags(std::string const &conf)
     bool temp;
     if (get_keyval(conf, "outputSystemForce", temp, false, colvarparse::parse_silent)) {
       cvm::error("Option outputSystemForce is deprecated: only outputTotalForce is supported instead.\n"
-                 "The two are NOT identical: see http://colvars.github.io/totalforce.html.\n", INPUT_ERROR);
+                 "The two are NOT identical: see https://colvars.github.io/totalforce.html.\n", INPUT_ERROR);
       return INPUT_ERROR;
     }
   }
