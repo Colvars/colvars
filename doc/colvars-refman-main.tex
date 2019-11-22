@@ -4006,7 +4006,7 @@ The following specific parameters can be set in the ABF configuration block:
 
 \item \dupkey{name}{\texttt{abf}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{colvars}{\texttt{abf}}{sec:colvarbias}{biasing and analysis methods}
-%\item \dupkey{outputEnergy}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{outputEnergy}{\texttt{abf}}{sec:colvarbias}{biasing and analysis methods}
 
 \item \keydef{fullSamples}{\texttt{abf}}{%
     Number of samples in a bin prior
@@ -4147,9 +4147,10 @@ The ABF bias produces the following files, all in multicolumn text format (\ref{
 \item \outputName\texttt{.grad}: current estimate of the free energy gradient (grid),
   in multicolumn;
 \item \outputName\texttt{.count}: histogram of samples collected, on the same grid;
-\item \outputName\texttt{.pmf}: only for one-dimensional calculations, integrated
-  free energy profile or PMF.
+\item \outputName\texttt{.pmf}: only for one-dimensional calculations, integrated free energy profile or PMF.
 \end{itemize}
+
+Also in the case of one-dimensional calculations, the ABF bias can report its current energy via \texttt{outputEnergy}; in higher dimensions, such computation is not implemented and the energy reported is zero.
 
 If several ABF biases are defined concurrently, their name is inserted to produce
 unique filenames for output, as in \outputName\texttt{.abf1.grad}.
