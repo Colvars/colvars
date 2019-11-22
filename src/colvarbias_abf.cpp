@@ -483,6 +483,9 @@ int colvarbias_abf::update()
     eabf_UI.update(cvm::step_absolute(), x, y);
   }
 
+  /// Add the bias energy for 1D ABF
+  bias_energy = calc_energy(NULL);
+
   return COLVARS_OK;
 }
 
@@ -831,4 +834,51 @@ int colvarbias_abf::write_output_files()
 {
   write_gradients_samples(output_prefix);
   return COLVARS_OK;
+}
+
+int colvarbias_abf::calc_energy(std::vector<colvarvalue> const *values)
+{
+  if (values) {
+    return cvm::error("colvarbias_abf::calc_energy() with an argument "
+                      "is currently not implemented.\n",
+                      COLVARS_NOT_IMPLEMENTED);
+  }
+
+  if (num_variables() != 1) return 0.0;
+
+  // Get the home bin.
+  int home0 = gradients->current_bin_scalar(0);
+  if (home0 < 0) return 0.0;
+  int gradient_len = (int)(gradients->number_of_points(0));
+  int home = (home0 < gradient_len) ? home0 : (gradient_len-1);
+
+  // Integrate the gradient up to the home bin.
+  cvm::real sum = 0.0;
+  for (int i = 0; i < home; i++) {
+    std::vector<int> ix(1,i);
+
+    // Include the full_samples factor if necessary.
+    unsigned int count = samples->value(ix);
+    cvm::real fact = 1.0;
+    if ( count < full_samples ) {
+      fact = (count < min_samples) ? 0.0 :
+        (cvm::real(count - min_samples)) / (cvm::real(full_samples - min_samples));
+    }
+    if (count > 0) sum += fact*gradients->value(ix)/count*gradients->widths[0];
+  }
+
+  // Integrate the gradient up to the current position in the home interval, a fractional portion of a bin.
+  std::vector<int> ix(1,home);
+  cvm::real frac = gradients->current_bin_scalar_fraction(0);
+  unsigned int count = samples->value(ix);
+  cvm::real fact = 1.0;
+  if ( count < full_samples ) {
+    fact = (count < min_samples) ? 0.0 :
+      (cvm::real(count - min_samples)) / (cvm::real(full_samples - min_samples));
+  }
+  if (count > 0)
+    sum += fact*gradients->value(ix)/count*gradients->widths[0]*frac;
+
+  // The applied potential is the negative integral of force samples.
+  return -sum;
 }
