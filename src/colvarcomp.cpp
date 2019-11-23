@@ -190,6 +190,8 @@ int colvar::cvc::init_dependencies() {
 
     init_feature(f_cvc_active, "active", f_type_dynamic);
 //     The dependency below may become useful if we use dynamic atom groups
+//     but then we need a feature like "awake" for selective activation by cvs (e.g. path cvs)
+//     currently atom groups are only updated if their parent cvc is active anyway
 //     require_feature_children(f_cvc_active, f_ag_active);
 
     init_feature(f_cvc_scalar, "scalar", f_type_static);
@@ -253,7 +255,6 @@ int colvar::cvc::init_dependencies() {
 
   // CVCs are enabled from the start - get disabled based on flags
   enable(f_cvc_active);
-  // feature_states[f_cvc_active].enabled = true;
 
   // Explicit gradients are implemented in mosts CVCs. Exceptions must be specified explicitly.
   // feature_states[f_cvc_explicit_gradient].enabled = true;
@@ -296,12 +297,13 @@ void colvar::cvc::read_data()
   size_t ig;
   for (ig = 0; ig < atom_groups.size(); ig++) {
     cvm::atom_group &atoms = *(atom_groups[ig]);
-    atoms.reset_atoms_data();
-    atoms.read_positions();
-    atoms.calc_required_properties();
-    // each atom group will take care of its own fitting_group, if defined
+    if (atoms.is_enabled(f_ag_active)) {
+      atoms.reset_atoms_data();
+      atoms.read_positions();
+      atoms.calc_required_properties();
+      // each atom group will take care of its own fitting_group, if defined
+    }
   }
-
 ////  Don't try to get atom velocities, as no back-end currently implements it
 //   if (tasks[task_output_velocity] && !tasks[task_fdiff_velocity]) {
 //     for (i = 0; i < cvcs.size(); i++) {

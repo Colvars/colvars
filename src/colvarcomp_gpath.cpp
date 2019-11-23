@@ -36,6 +36,9 @@ colvar::CartesianBasedPath::CartesianBasedPath(std::string const &conf): cvc(con
     if (key_lookup(conf, "fittingAtoms", &fitting_conf)) {
         has_user_defined_fitting = true;
     }
+
+    get_keyval(conf, "checkAllDistancesFreq", check_all_distances_freq, 100);
+
     // Lookup reference column of PDB
     // Copied from the RMSD class
     std::string reference_column;
@@ -124,9 +127,15 @@ colvar::CartesianBasedPath::~CartesianBasedPath() {
 
 void colvar::CartesianBasedPath::computeDistanceToReferenceFrames(std::vector<cvm::real>& result) {
     for (size_t i_frame = 0; i_frame < reference_frames.size(); ++i_frame) {
+        if (!(*comp_atoms[i_frame]).is_enabled(f_ag_active)) {
+            result[i_frame] = -1.0 * (i_frame + 1);
+            // Sign can be tested elsewhere to see if RMSD value is up-to-date
+            // Multiply by (i_frame + 1) to make (bogus) sorting possible
+            continue;
+        }
         cvm::real frame_rmsd = 0.0;
         for (size_t i_atom = 0; i_atom < atoms->size(); ++i_atom) {
-            frame_rmsd += ((*(comp_atoms[i_frame]))[i_atom].pos - reference_frames[i_frame][i_atom]).norm2();
+            frame_rmsd += ((*comp_atoms[i_frame])[i_atom].pos - reference_frames[i_frame][i_atom]).norm2();
         }
         frame_rmsd /= cvm::real(atoms->size());
         frame_rmsd = cvm::sqrt(frame_rmsd);
@@ -136,7 +145,7 @@ void colvar::CartesianBasedPath::computeDistanceToReferenceFrames(std::vector<cv
 
 colvar::gspath::gspath(std::string const &conf): CartesianBasedPath(conf) {
     function_type = "gspath";
-    get_keyval(conf, "useSecondClosestFrame", use_second_closest_frame, true);
+    get_keyval(conf, "useSecondClosestFrame", use_second_closest_frame, false);
     if (use_second_closest_frame == true) {
         cvm::log(std::string("Geometric path s(σ) will use the second closest frame to compute s_(m-1)\n"));
     } else {
@@ -245,6 +254,23 @@ void colvar::gspath::prepareVectors() {
 void colvar::gspath::calc_value() {
     computeValue();
     x = s;
+
+    // Periodically update all distances to look for long-distance jumps - display warning
+    if (cvm::step_absolute() % check_all_distances_freq == 0) {
+        for (size_t i_frame = 0; i_frame < frame_index.size(); ++i_frame) {
+            (*comp_atoms[i_frame]).set_enabled(f_ag_active);
+        }
+    } else {
+        // Activate only the frames we'll need at next timestep
+        // The assumption is that the closest frame will shift by at most one between two evaluations
+        // If it shifts by two, we recover everything at the next timestep
+        // If it shifts by more, we wait at most check_all_distances_freq to find the correct place
+        for (size_t i_frame = 0; i_frame < frame_index.size(); ++i_frame) {
+            // Update up to 5 frames within 2 of the closest one (down to 3 if we are at the end of the string)
+            bool activate = (abs(frame_index[0] - i_frame) <= 2);
+            (*comp_atoms[i_frame]).set_enabled(f_ag_active, activate);
+        }
+    }
 }
 
 void colvar::gspath::calc_gradients() {

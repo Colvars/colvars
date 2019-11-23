@@ -280,6 +280,11 @@ int cvm::atom_group::init_dependencies() {
   feature_states[f_ag_fitting_group].available = true;
   feature_states[f_ag_explicit_gradient].available = true;
 
+  // Atom groups are enabled from the start - get disabled based on flags
+  // Each cvc needs to implement differential treatment of inactive groups, if any
+  // so atom groups should not be disabled from outside the CVC
+  enable(f_ag_active);
+
   return COLVARS_OK;
 }
 

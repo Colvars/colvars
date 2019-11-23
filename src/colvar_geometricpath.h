@@ -28,7 +28,12 @@ private:
         doCompareFrameDistance(const GeometricPathBase& obj): m_obj(obj) {}
         const GeometricPathBase& m_obj;
         bool operator()(const size_t& i1, const size_t& i2) {
-            return m_obj.frame_distances[i1] < m_obj.frame_distances[i2];
+            if (m_obj.frame_distances[i1] < 0 || m_obj.frame_distances[i2] < 0) {
+                // Ensure that negative values (non-computed distances) are sorted after positive ones
+                return m_obj.frame_distances[i1] > m_obj.frame_distances[i2];
+            } else {
+                return m_obj.frame_distances[i1] < m_obj.frame_distances[i2];
+            }
         }
     };
 protected:

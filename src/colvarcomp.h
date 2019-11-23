@@ -1416,6 +1416,8 @@ protected:
     cvm::atom_group *atoms;
     /// Fitting options
     bool has_user_defined_fitting;
+    /// Frequency with which to compute all distances to find the true closest image
+    int check_all_distances_freq;
     /// Reference frames
     std::vector<std::vector<cvm::atom_pos>> reference_frames;
     std::vector<std::vector<cvm::atom_pos>> reference_fitting_frames;
