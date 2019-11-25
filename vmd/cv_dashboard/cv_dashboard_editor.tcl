@@ -247,7 +247,7 @@ proc ::cv_dashboard::atoms_from_sel { source } {
   if {[llength $seltext] == 0 } {
     return
   }
-  set sel [atomselect top $seltext]
+  set sel [atomselect $::cv_dashboard::mol $seltext]
   set serials [$sel get serial]
   $sel delete
 
@@ -379,10 +379,10 @@ proc ::cv_dashboard::edit_cancel {} {
 
 proc ::cv_dashboard::refresh_reps {} {
   set w .cv_dashboard_window
-  set numreps [molinfo top get numreps]
+  set numreps [molinfo $::cv_dashboard::mol get numreps]
   set reps [list]
   for {set i 0} {$i < $numreps} {incr i} {
-    lappend reps [lindex [molinfo top get [list [list selection $i]]] 0]
+    lappend reps [lindex [molinfo $::cv_dashboard::mol get [list [list selection $i]]] 0]
   }
   $w.editor.fl.helpers.reps configure -values $reps
 }

@@ -12,7 +12,7 @@
 #   to avoid coming up with an incompatible parser
 
 # This plugin only acts on the "top" molecule
-# which is most consistent for trajectory animation (determined by the frame number of top mol)
+# which is most consistent for trajectory animation (determined by the frame number of mol)
 
 # TODO Multiplot:
 # - properly calculate position of cursor in plot when not all the plot is visible (resized window)
@@ -44,6 +44,8 @@ namespace eval ::cv_dashboard {
 
   variable atom_rep     ;# hash array of: list of macro names, list of atom representations, indexed by colvar name
   variable grad_objects ;# hash array ids of graphical objects displaying gradients, indexed by colvar name
+
+  variable mol -1       ;# ID of molecule currently associated with Colvars
 
   variable units
   variable units_to_text
@@ -77,9 +79,13 @@ proc cv_dashboard {} {
   if {[molinfo num] == 0 } {
     tk_messageBox -icon error -title "Colvars Dashboard Error"\
       -message "No molecule loaded. Please load a molecule and use the Reset button.\n"
-  } elseif [catch { cv version}] {
-    # setup Colvars if not already there
-    ::cv_dashboard::run_cv molid top
+  } else {
+    set ::cv_dashboard::mol [molinfo top]
+
+    if [catch { cv version }] {
+      # setup Colvars if not already there
+      ::cv_dashboard::run_cv molid $::cv_dashboard::mol
+    }
   }
 
   if {[winfo exists .cv_dashboard_window]} {
@@ -101,7 +107,7 @@ proc ::cv_dashboard::run_cv args  {
   if { [lindex $args 0] != "molid" } {
     # Try to initialize the module if not there yet
     if [catch {cv version}] {
-      if [catch {cv molid top}] {
+      if [catch {cv molid $::cv_dashboard::mol}] {
         # If that didn't work, don't try to proceed
         return
       }
@@ -200,7 +206,7 @@ proc ::cv_dashboard::extract_colvar_configs { cfg_in } {
       }
     }
     # Now we're parsing a line of colvar config, try to get name
-    # non-word characters are spaces and {}# (do not use Tcl's restrictive \w)
+    # non-word characters are spaces and {}# (do not use Tcl's restrictive \w)
     regexp {^\s*name\s+([^\s{}#]+)} $line match name
 
     # Finally, the tedious fishing for braces
@@ -260,13 +266,13 @@ proc ::cv_dashboard::get_config { cv } {
 #################################################################
 
 
-# Callback to update CV Dashboard when VMD's top molecule changes to new frame
+# Callback to update CV Dashboard when VMD's molecule changes to new frame
 proc ::cv_dashboard::update_frame { name molid op } {
   # name == vmd_frame
   # molid == molecule id of the newly changed frame
   # op == w
 
-  if { $molid != [molinfo top] } {
+  if { $molid != $::cv_dashboard::mol } {
     return
   }
   set f [molinfo $molid get frame]
@@ -280,6 +286,54 @@ proc ::cv_dashboard::update_frame { name molid op } {
   display_marker $f
   # refresh displayed CV gradients
   update_shown_gradients
+}
+
+
+# React to molecules being created or deleted
+proc ::cv_dashboard::update_mol_list { name molid op } {
+  # Update mol indices in combobox
+  .cv_dashboard_window.mol configure -values [molinfo list]
+
+  # Did we just lose the molecule Colvars was connected to?
+  if { ($molid == $::cv_dashboard::mol) && ($::vmd_initialize_structure($molid) == 0) } {
+    tk_messageBox -icon error -title "Colvars Dashboard Error"\
+      -message "The molecule associated to the Colvars Module was deleted.\nSave the configuration if necessary, load a molecule and use the Reset button.\n"
+    # remove tracking of deleted molecule
+    trace remove variable ::vmd_frame($molid) write ::cv_dashboard::update_frame
+    set ::cv_dashboard::mol -1
+  }
+
+  # Did we just add a molecule while we had none available? Default to that
+  if { ($::cv_dashboard::mol == -1) && ($::vmd_initialize_structure($molid) == 1)} {
+    set ::cv_dashboard::mol $molid
+    .cv_dashboard_window.mol set $molid
+  }
+}
+
+
+proc ::cv_dashboard::change_mol {} {
+  set newmolid [.cv_dashboard_window.mol get]
+
+  if { $newmolid != $::cv_dashboard::mol } {
+    trace remove variable ::vmd_frame($::cv_dashboard::mol) write ::cv_dashboard::update_frame
+    # Remove all graphical objects which would be orphaned
+    ::cv_dashboard::hide_all_atoms
+    ::cv_dashboard::hide_all_gradients
+  
+    set ::cv_dashboard::mol $newmolid
+    # Remember config
+    if {$::cv_dashboard::units == ""} {
+      set cfg ""
+    } else {
+      set cfg "units $::cv_dashboard::units\n\n"
+    }
+    foreach cv [run_cv list] {
+        append cfg "colvar {[get_config $cv]}\n\n"
+    }
+    reset
+    apply_config $cfg
+    change_track_frame ;# activate tracking of new molecule if requested
+  }
 }
 
 

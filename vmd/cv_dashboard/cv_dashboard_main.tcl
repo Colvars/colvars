@@ -91,6 +91,18 @@ proc ::cv_dashboard::createWindow {} {
   grid $w.units -row $gridrow -column 1 -columnspan 2 -pady 2 -padx 2 -sticky nsew
   bind $w.units <<ComboboxSelected>> ::cv_dashboard::change_units
 
+  # Molecule
+  incr gridrow
+  grid [label $w.molTxt -text "Molecule:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  ttk::combobox $w.mol -justify left -state readonly
+  $w.mol configure -values [molinfo list]
+  if { $::cv_dashboard::mol != -1 } {
+    $w.mol set $::cv_dashboard::mol
+  }
+  trace add variable ::vmd_initialize_structure write ::cv_dashboard::update_mol_list
+  grid $w.mol -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  bind $w.mol <<ComboboxSelected>> ::cv_dashboard::change_mol
+
   # Frame display and track checkbox
   incr gridrow
   grid [label $w.frameTxt -text "Frame:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
@@ -126,9 +138,8 @@ G. Fiorin, M. L. Klein, and J. Hénin. Using collective variables to drive molec
 proc ::cv_dashboard::quit {} {
     # remove the trace we put in place, so they don't accumulate
     # if loaded multiple times
-    set molid [molinfo top]
-    if { $molid != -1 } {
-      trace remove variable ::vmd_frame($molid) write ::cv_dashboard::update_frame
+    catch {
+      trace remove variable ::vmd_frame($::cv_dashboard::mol) write ::cv_dashboard::update_frame
     }
     wm withdraw .cv_dashboard_window
   }
@@ -144,8 +155,8 @@ proc ::cv_dashboard::refresh_table {} {
   }
 
   if [catch { set ::cv_dashboard::cvs [cv list]}] {
-    # We were unable to fetch the list of colvars
-    # CVM is probably not initialized or there is no molecule loaded
+    # We were unable to fetch the list of colvars
+    # CVM is probably not initialized or there is no molecule loaded
     set ::cv_dashboard::cvs {}
     return
   }
@@ -179,7 +190,7 @@ proc ::cv_dashboard::refresh_table {} {
   }
   update_shown_gradients
 
-  update_frame internal [molinfo top] w
+  update_frame internal $::cv_dashboard::mol w
 }
 
 
@@ -267,7 +278,7 @@ proc ::cv_dashboard::selected_comps { cv } {
 proc ::cv_dashboard::refresh_units {} {
   set w .cv_dashboard_window
   if [catch { set u [cv units] }] {
-    # This catches cases where the module cannot be created because no molecule is loaded
+    # This catches cases where the module cannot be created because no molecule is loaded
     set u ""
   }
   set ::cv_dashboard::units $u
@@ -301,11 +312,11 @@ proc ::cv_dashboard::change_units {} {
 
 # Enable or disable real-time tracking of VMD frame
 proc ::cv_dashboard::change_track_frame {} {
-  set molid [molinfo top]
+  set molid $::cv_dashboard::mol
   if { $molid == -1 } { return }
   if {$::cv_dashboard::track_frame} {
     trace add variable ::vmd_frame($molid) write ::cv_dashboard::update_frame
-    update_frame internal [molinfo top] w
+    update_frame internal $molid w
   } else {
     trace remove variable ::vmd_frame($molid) write ::cv_dashboard::update_frame
   }
@@ -378,11 +389,19 @@ proc ::cv_dashboard::del {} {
 }
 
 
-# Reset cvm: hard delete allows for reconstructing the module after changing top molecule.
+# Reset cvm: hard delete
 proc ::cv_dashboard::reset {} {
+  set molid $::cv_dashboard::mol
+  if { $::vmd_initialize_structure($molid) == 1 } {
+    # If our molecule still exists,
+    # remove all graphical objects which would be orphaned
+    ::cv_dashboard::hide_all_atoms
+    ::cv_dashboard::hide_all_gradients
+  }
+
   # Run cv delete silently to be less verbose if module was already deleted
   catch { cv delete }
-  run_cv molid top
+  run_cv molid $molid
   set ::cv_dashboard::colvar_configs [dict create]
   refresh_table
   refresh_units
@@ -423,9 +442,9 @@ proc ::cv_dashboard::show_atoms {} {
         mol representation VDW 0.5 12.
         mol selection "$group"
         mol material Opaque
-        mol addrep top
-        set repid [expr [molinfo top get numreps] - 1]
-        lappend repnames [mol repname top $repid]
+        mol addrep $::cv_dashboard::mol
+        set repid [expr [molinfo $::cv_dashboard::mol get numreps] - 1]
+        lappend repnames [mol repname $::cv_dashboard::mol $repid]
         incr color
       }
     }
@@ -442,7 +461,7 @@ proc ::cv_dashboard::hide_atoms {} {
         atomselect delmacro $m
       }
       foreach r $repnames {
-        mol delrep [mol repindex top $r] top
+        mol delrep [mol repindex $::cv_dashboard::mol $r] $::cv_dashboard::mol
       }
       unset ::cv_dashboard::atom_rep($cv)
     }
@@ -457,7 +476,7 @@ proc ::cv_dashboard::hide_all_atoms {} {
       atomselect delmacro $m
     }
     foreach r $repnames {
-      mol delrep [mol repindex top $r] top
+      mol delrep [mol repindex $::cv_dashboard::mol $r] $::cv_dashboard::mol
     }
   }
   array unset ::cv_dashboard::atom_rep *
@@ -475,7 +494,7 @@ proc ::cv_dashboard::show_gradients { list } {
     if { ![info exists ::cv_dashboard::grad_objects($cv)] } {
       if { [run_cv colvar $cv set "collect gradient" 1] == -1 } { continue }
       run_cv colvar $cv update ;# required to get inital values of gradients
-      # Associate empty list of objects to cv to request its update
+      # Associate empty list of objects to cv to request its update
       set ::cv_dashboard::grad_objects($cv) {}
     }
   }
@@ -486,23 +505,23 @@ proc ::cv_dashboard::show_gradients { list } {
 proc ::cv_dashboard::update_shown_gradients {} {
 
   set colorid 3 ;# avoid very common or less visible colors blue, red, gray
-
+  set molid $::cv_dashboard::mol
   foreach { cv objs } [array get ::cv_dashboard::grad_objects] {
     
     # Delete out-of-date graphical objects (arrows)
     foreach obj $objs {
-      graphics top delete $obj
+      graphics $molid delete $obj
     }
 
     set atomids [run_cv colvar $cv getatomids]
     if { [llength $atomids] == 0 } { continue }
     set grads [run_cv colvar $cv getgradients]
-    set sel [atomselect top "index $atomids"]
+    set sel [atomselect $molid "index $atomids"]
     set coords [$sel get {x y z}]
     $sel delete
 
     set desired_max_length 5.
-    graphics top color [expr $colorid % 32]
+    graphics $molid color [expr $colorid % 32]
     incr colorid
 
     set maxl2 0.
@@ -520,8 +539,8 @@ proc ::cv_dashboard::update_shown_gradients {} {
       set vec [vecscale $fact $g]
       set end [vecadd $start $vec]
       set middle [vecadd $start [vecscale 0.9 $vec]]
-      set cyl [graphics top cylinder $start $middle radius 0.15]
-      set cone [graphics top cone $middle $end radius 0.25]
+      set cyl [graphics $molid cylinder $start $middle radius 0.15]
+      set cone [graphics $molid cone $middle $end radius 0.25]
       lappend new_objs $cyl $cone
     }
     set ::cv_dashboard::grad_objects($cv) $new_objs
@@ -532,7 +551,7 @@ proc ::cv_dashboard::hide_gradients {} {
   foreach cv [selected_colvars] {
     if [info exists ::cv_dashboard::grad_objects($cv)] {
       set objs $::cv_dashboard::grad_objects($cv)
-      foreach obj $objs { graphics top delete $obj }
+      foreach obj $objs { graphics $::cv_dashboard::mol delete $obj }
       run_cv colvar $cv set "collect gradient" 0
       unset ::cv_dashboard::grad_objects($cv)
     }
@@ -543,7 +562,7 @@ proc ::cv_dashboard::hide_gradients {} {
 proc ::cv_dashboard::hide_all_gradients {} {
 
   foreach { cv objs } [array get ::cv_dashboard::grad_objects] {
-    foreach obj $objs { graphics top delete $obj }
+    foreach obj $objs { graphics $::cv_dashboard::mol delete $obj }
     run_cv colvar $cv set "collect gradient" 0
   }
   array unset ::cv_dashboard::grad_objects *
