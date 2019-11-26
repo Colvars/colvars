@@ -1841,6 +1841,7 @@ int cvm::load_coords_xyz(char const *filename,
   unsigned int natoms;
   char symbol[256];
   std::string line;
+  cvm::real x, y, z;
 
   if ( ! (xyz_is >> natoms) ) {
     cvm::error("Error: cannot parse XYZ file "
@@ -1862,12 +1863,19 @@ int cvm::load_coords_xyz(char const *filename,
         next++;
       }
       xyz_is >> symbol;
-      xyz_is >> (*pos_i)[0] >> (*pos_i)[1] >> (*pos_i)[2];
+      xyz_is >> x >> y >> z;
+      // XYZ files are assumed to be in Angstrom (as eg. VMD will)
+      (*pos_i)[0] = proxy->angstrom_to_internal_unit(x);
+      (*pos_i)[1] = proxy->angstrom_to_internal_unit(y);
+      (*pos_i)[2] = proxy->angstrom_to_internal_unit(z);
     }
   } else {          // Use all positions
     for ( ; pos_i != pos->end() ; pos_i++) {
       xyz_is >> symbol;
-      xyz_is >> (*pos_i)[0] >> (*pos_i)[1] >> (*pos_i)[2];
+      xyz_is >> x >> y >> z;
+      (*pos_i)[0] = proxy->angstrom_to_internal_unit(x);
+      (*pos_i)[1] = proxy->angstrom_to_internal_unit(y);
+      (*pos_i)[2] = proxy->angstrom_to_internal_unit(z);
     }
   }
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
