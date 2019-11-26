@@ -83,7 +83,7 @@ public:
   //virtual cvm::real backend_kcal_mol_value() = 0;
 
   /// \brief Convert a length from back-end unit to internal
-  inline cvm::real length_to_internal_unit(cvm::real l) {
+  inline cvm::real angstrom_to_internal_unit(cvm::real l) {
     if (angstrom_value == 0.) { return l; }
     return l * angstrom_value / backend_angstrom_value();
   }

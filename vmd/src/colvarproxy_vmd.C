@@ -268,9 +268,9 @@ int colvarproxy_vmd::update_input()
   // copy positions in the internal arrays
   float *vmdpos = (vmdmol->get_frame(vmdmol_frame))->pos;
   for (size_t i = 0; i < atoms_positions.size(); i++) {
-    atoms_positions[i] = cvm::atom_pos(length_to_internal_unit(vmdpos[atoms_ids[i]*3+0]),
-                                       length_to_internal_unit(vmdpos[atoms_ids[i]*3+1]),
-                                       length_to_internal_unit(vmdpos[atoms_ids[i]*3+2]));
+    atoms_positions[i] = cvm::atom_pos(angstrom_to_internal_unit(vmdpos[atoms_ids[i]*3+0]),
+                                       angstrom_to_internal_unit(vmdpos[atoms_ids[i]*3+1]),
+                                       angstrom_to_internal_unit(vmdpos[atoms_ids[i]*3+2]));
   }
 
 
@@ -281,9 +281,9 @@ int colvarproxy_vmd::update_input()
     float B[3];
     float C[3];
     ts->get_transform_vectors(A, B, C);
-    unit_cell_x.set(length_to_internal_unit(A[0]), length_to_internal_unit(A[1]), length_to_internal_unit(A[2]));
-    unit_cell_y.set(length_to_internal_unit(B[0]), length_to_internal_unit(B[1]), length_to_internal_unit(B[2]));
-    unit_cell_z.set(length_to_internal_unit(C[0]), length_to_internal_unit(C[1]), length_to_internal_unit(C[2]));
+    unit_cell_x.set(angstrom_to_internal_unit(A[0]), angstrom_to_internal_unit(A[1]), angstrom_to_internal_unit(A[2]));
+    unit_cell_y.set(angstrom_to_internal_unit(B[0]), angstrom_to_internal_unit(B[1]), angstrom_to_internal_unit(B[2]));
+    unit_cell_z.set(angstrom_to_internal_unit(C[0]), angstrom_to_internal_unit(C[1]), angstrom_to_internal_unit(C[2]));
   }
 
   if (ts->a_length + ts->b_length + ts->c_length < 1.0e-6) {
