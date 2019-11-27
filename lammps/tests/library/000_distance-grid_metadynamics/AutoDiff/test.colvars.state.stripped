@@ -5,7 +5,7 @@ configuration {
 
 colvar {
   name one
-  x  3.21930521022411e+00
+  x  3.21930510858798e+00
 }
 
 metadynamics {

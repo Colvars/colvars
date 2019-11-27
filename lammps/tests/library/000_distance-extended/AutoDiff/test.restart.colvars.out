@@ -1,11 +1,13 @@
 colvars: Creating proxy instance
 colvars: ----------------------------------------------------------------------
 colvars: Please cite Fiorin et al, Mol Phys 2013:
-colvars:  http://dx.doi.org/10.1080/00268976.2013.813594
+colvars:  https://dx.doi.org/10.1080/00268976.2013.813594
 colvars: in any publication based on this calculation.
-colvars: Using LAMMPS interface, version 2018-08-29.
+colvars: This version was built with the C++11 standard or higher.
+colvars: Using LAMMPS interface, version "2019-08-17".
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
+colvars: # indexFile = "index.ndx"
 colvars: The following index groups were read from the index file "index.ndx":
 colvars:   Protein (104 atoms).
 colvars:   Protein_noH (51 atoms).

@@ -5,7 +5,7 @@ configuration {
 
 colvar {
   name one
-  x  3.21930418203593e+00
+  x  3.21930408039982e+00
 }
 
 histogram {
