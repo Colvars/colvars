@@ -68,9 +68,8 @@ public:
 
   /// \brief Value of 1 Angstrom in the internal (front-end) Colvars unit for atomic coordinates
   /// * This defaults to the back-end unit
-  /// * can be user-specified once, and can only be changed by resetting the module
+  /// * can be user-specified once, and can only be changed when no variables are defined
   /// as user-defined values in composite units must be compatible with that system
-  /// Attempts to change it will raise errors
   cvm::real angstrom_value;
 
   /// \brief Value of 1 Angstrom in the backend's unit for atomic coordinates
@@ -82,11 +81,21 @@ public:
   /// \brief Value of 1 kcal/mol in the backend's unit for energy
   //virtual cvm::real backend_kcal_mol_value() = 0;
 
-  /// \brief Convert a length from back-end unit to internal
+  /// \brief Convert a length from Angstrom to internal
   inline cvm::real angstrom_to_internal_unit(cvm::real l) {
-    if (angstrom_value == 0.) { return l; }
-    return l * angstrom_value / backend_angstrom_value();
+    if (angstrom_value == 0.) {
+      return l;
+    }
+    return l * angstrom_value;
   }
+
+  // /// \brief Convert a length from back-end unit to internal
+  // inline cvm::real back_end_to_internal_unit(cvm::real l) {
+  //   if (angstrom_value == 0.) {
+  //     return l / backend_angstrom_value();
+  //   }
+  //   return l * angstrom_value / backend_angstrom_value();
+  // }
 
   /// \brief Boltzmann constant in internal Colvars units
   virtual cvm::real boltzmann() = 0;

@@ -608,8 +608,7 @@ public:
 
   // proxy functions
 
-  /// \brief Value of the unit for atomic coordinates with respect to
-  /// angstroms (used by some variables for hard-coded default values)
+  /// \brief Value of one Angstrom in the unit for atomic coordinates
   static real angstrom_value();
 
   /// \brief Boltmann constant
