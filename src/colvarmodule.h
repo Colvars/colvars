@@ -716,11 +716,10 @@ public:
                          std::string const &pdb_field,
                          double pdb_field_value = 0.0);
 
-  /// \brief Load the coordinates for a group of atoms from an
-  /// XYZ file
-  static int load_coords_xyz(char const *filename,
-                             std::vector<rvector> *pos,
-                             atom_group *atoms);
+  /// Load coordinates into an atom group from an XYZ file (assumes Angstroms)
+  int load_coords_xyz(char const *filename,
+                      std::vector<rvector> *pos,
+                      atom_group *atoms);
 
   /// Frequency for collective variables trajectory output
   static size_t cv_traj_freq;
@@ -760,6 +759,9 @@ private:
 
   /// Thread-specific depth
   std::vector<size_t> depth_v;
+
+  /// Track how many times the XYZ reader has been used
+  int xyz_reader_use_count;
 
 public:
 
