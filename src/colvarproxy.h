@@ -67,8 +67,8 @@ public:
   virtual int set_unit_system(std::string const &units, bool colvars_defined) = 0;
 
   /// \brief Value of 1 Angstrom in the internal (front-end) Colvars unit for atomic coordinates
-  /// * This defaults to the back-end unit
-  /// * can be user-specified once, and can only be changed when no variables are defined
+  /// * defaults to 0. in the base class; derived proxy classes must set it
+  /// * in VMD proxy, can only be changed when no variables are defined
   /// as user-defined values in composite units must be compatible with that system
   cvm::real angstrom_value;
 
@@ -83,9 +83,6 @@ public:
 
   /// \brief Convert a length from Angstrom to internal
   inline cvm::real angstrom_to_internal_unit(cvm::real l) {
-    if (angstrom_value == 0.) {
-      return l;
-    }
     return l * angstrom_value;
   }
 

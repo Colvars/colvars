@@ -115,6 +115,8 @@ void colvarproxy_gromacs::init(t_inputrec *gmx_inp, gmx_int64_t step) {
   force_script_defined = false;
   have_scripts = false;
 
+  angstrom_value = 0.1;
+
   // GROMACS random number generation.
   // Seed with the mdp parameter ld_seed, the Langevin dynamics seed.
   rando = gmx_rng_init(gmx_inp->ld_seed);
