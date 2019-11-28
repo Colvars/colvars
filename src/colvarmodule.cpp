@@ -1866,17 +1866,17 @@ int cvm::load_coords_xyz(char const *filename,
       xyz_is >> symbol;
       xyz_is >> x >> y >> z;
       // XYZ files are assumed to be in Angstrom (as eg. VMD will)
-      (*pos_i)[0] = proxy->angstrom_to_internal_unit(x);
-      (*pos_i)[1] = proxy->angstrom_to_internal_unit(y);
-      (*pos_i)[2] = proxy->angstrom_to_internal_unit(z);
+      (*pos_i)[0] = proxy->angstrom_to_internal(x);
+      (*pos_i)[1] = proxy->angstrom_to_internal(y);
+      (*pos_i)[2] = proxy->angstrom_to_internal(z);
     }
   } else {          // Use all positions
     for ( ; pos_i != pos->end() ; pos_i++) {
       xyz_is >> symbol;
       xyz_is >> x >> y >> z;
-      (*pos_i)[0] = proxy->angstrom_to_internal_unit(x);
-      (*pos_i)[1] = proxy->angstrom_to_internal_unit(y);
-      (*pos_i)[2] = proxy->angstrom_to_internal_unit(z);
+      (*pos_i)[0] = proxy->angstrom_to_internal(x);
+      (*pos_i)[1] = proxy->angstrom_to_internal(y);
+      (*pos_i)[2] = proxy->angstrom_to_internal(z);
     }
   }
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);

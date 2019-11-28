@@ -143,6 +143,11 @@ colvarproxy_vmd::colvarproxy_vmd(Tcl_Interp *interp, VMDApp *v, int molid)
 
   total_force_requested = false;
 
+  // Default to VMD's native unit system, but do not set the units string
+  // to preserve the native workflow of VMD / NAMD / LAMMPS-real
+  angstrom_value = 1.;
+  kcal_mol_value = 1.;
+
   colvars->setup_input();
   colvars->setup_output();
 
@@ -215,9 +220,8 @@ int colvarproxy_vmd::setup()
 
 int colvarproxy_vmd::set_unit_system(std::string const &units_in, bool colvars_defined)
 {
-  // If units is defined, units_in should be equal to it
-  // if not, units_in should be "real", the default value
-  if (colvars_defined && ((units.size() && units_in != units) || (units.size()==0 && units_in != "real"))) {
+  // if colvars are already defined, just test for compatibility
+  if (colvars_defined && units_in != units) {
     cvm::error("Specified unit system \"" + units_in + "\" is incompatible with previous setting \""
                 + units + "\".\nReset the Colvars Module or delete all variables to change the unit.\n");
     return COLVARS_ERROR;
@@ -268,9 +272,9 @@ int colvarproxy_vmd::update_input()
   // copy positions in the internal arrays
   float *vmdpos = (vmdmol->get_frame(vmdmol_frame))->pos;
   for (size_t i = 0; i < atoms_positions.size(); i++) {
-    atoms_positions[i] = cvm::atom_pos(angstrom_to_internal_unit(vmdpos[atoms_ids[i]*3+0]),
-                                       angstrom_to_internal_unit(vmdpos[atoms_ids[i]*3+1]),
-                                       angstrom_to_internal_unit(vmdpos[atoms_ids[i]*3+2]));
+    atoms_positions[i] = cvm::atom_pos(angstrom_to_internal(vmdpos[atoms_ids[i]*3+0]),
+                                       angstrom_to_internal(vmdpos[atoms_ids[i]*3+1]),
+                                       angstrom_to_internal(vmdpos[atoms_ids[i]*3+2]));
   }
 
 
@@ -281,9 +285,9 @@ int colvarproxy_vmd::update_input()
     float B[3];
     float C[3];
     ts->get_transform_vectors(A, B, C);
-    unit_cell_x.set(angstrom_to_internal_unit(A[0]), angstrom_to_internal_unit(A[1]), angstrom_to_internal_unit(A[2]));
-    unit_cell_y.set(angstrom_to_internal_unit(B[0]), angstrom_to_internal_unit(B[1]), angstrom_to_internal_unit(B[2]));
-    unit_cell_z.set(angstrom_to_internal_unit(C[0]), angstrom_to_internal_unit(C[1]), angstrom_to_internal_unit(C[2]));
+    unit_cell_x.set(angstrom_to_internal(A[0]), angstrom_to_internal(A[1]), angstrom_to_internal(A[2]));
+    unit_cell_y.set(angstrom_to_internal(B[0]), angstrom_to_internal(B[1]), angstrom_to_internal(B[2]));
+    unit_cell_z.set(angstrom_to_internal(C[0]), angstrom_to_internal(C[1]), angstrom_to_internal(C[2]));
   }
 
   if (ts->a_length + ts->b_length + ts->c_length < 1.0e-6) {
@@ -607,9 +611,9 @@ int colvarproxy_vmd::load_coords(char const *pdb_filename,
         return COLVARS_ERROR;
       }
 
-      pos[ipos] = cvm::atom_pos((tmpmol->get_frame(0)->pos)[ipdb*3],
-                                (tmpmol->get_frame(0)->pos)[ipdb*3+1],
-                                (tmpmol->get_frame(0)->pos)[ipdb*3+2]);
+      pos[ipos] = cvm::atom_pos(angstrom_to_internal((tmpmol->get_frame(0)->pos)[ipdb*3]),
+                                angstrom_to_internal((tmpmol->get_frame(0)->pos)[ipdb*3+1]),
+                                angstrom_to_internal((tmpmol->get_frame(0)->pos)[ipdb*3+2]));
       ipos++;
       if (!use_pdb_field && current_index == indices.end())
         break;
@@ -628,9 +632,9 @@ int colvarproxy_vmd::load_coords(char const *pdb_filename,
     // when the PDB contains exactly the number of atoms of the array,
     // ignore the fields and just read coordinates
     for (size_t ia = 0; ia < pos.size(); ia++) {
-      pos[ia] = cvm::atom_pos((tmpmol->get_frame(0)->pos)[ia*3],
-                              (tmpmol->get_frame(0)->pos)[ia*3+1],
-                              (tmpmol->get_frame(0)->pos)[ia*3+2]);
+      pos[ia] = cvm::atom_pos(angstrom_to_internal((tmpmol->get_frame(0)->pos)[ia*3]),
+                              angstrom_to_internal((tmpmol->get_frame(0)->pos)[ia*3+1]),
+                              angstrom_to_internal((tmpmol->get_frame(0)->pos)[ia*3+2]));
     }
   }
 
