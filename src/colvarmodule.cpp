@@ -1,12 +1,5 @@
 // -*- c++ -*-
 
-// This file is part of the Collective Variables module (Colvars).
-// The original version of Colvars and its updates are located at:
-// https://github.com/Colvars/colvars
-// Please update all Colvars source files before making any changes.
-// If you wish to distribute your changes, please submit them to the
-// Colvars repository at GitHub.
-
 #include <sstream>
 #include <cstring>
 
@@ -31,6 +24,8 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
   log_level_ = 10;
 
   cv_traj_os = NULL;
+
+  xyz_reader_use_count = 0;
 
   if (proxy == NULL) {
     proxy = proxy_in; // Pointer to the proxy object
@@ -1816,7 +1811,7 @@ int cvm::load_coords(char const *file_name,
                         "for XYZ coordinate files.\n", INPUT_ERROR);
     }
     // For XYZ files, use internal parser
-    error_code |= cvm::load_coords_xyz(file_name, &sorted_pos, atoms);
+    error_code |= cvm::main()->load_coords_xyz(file_name, &sorted_pos, atoms);
   } else {
     // Otherwise, call proxy function for PDB
     error_code |= proxy->load_coords(file_name,
@@ -1847,6 +1842,12 @@ int cvm::load_coords_xyz(char const *filename,
     cvm::error("Error: cannot parse XYZ file "
                + std::string(filename) + ".\n", INPUT_ERROR);
   }
+
+  ++xyz_reader_use_count;
+  if (xyz_reader_use_count < 2) {
+    cvm::log("Warning: beginning from 2019-11-26 the XYZ file reader assumes Angstrom units.");
+  }
+
   // skip comment line
   cvm::getline(xyz_is, line);
   cvm::getline(xyz_is, line);
