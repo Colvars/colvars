@@ -939,7 +939,7 @@ int colvar::parse_analysis(std::string const &conf)
         return cvm::error("Error: collective variable \""+acf_colvar_name+
                           "\" is not defined at this time.\n", INPUT_ERROR);
       }
-      cv2->enable(f_cv_fdiff_velocity);
+      cv2->enable(f_cv_fdiff_velocity); // Manual dependency to object of same type
     } else if (acf_type_str == to_lower_cppstr(std::string("coordinate_p2"))) {
       acf_type = acf_p2coor;
     } else {

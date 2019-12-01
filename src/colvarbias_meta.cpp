@@ -91,7 +91,7 @@ int colvarbias_meta::init(std::string const &conf)
     expand_grids = false;
     size_t i;
     for (i = 0; i < num_variables(); i++) {
-      variables(i)->enable(f_cv_grid);
+      variables(i)->enable(f_cv_grid); // Could be a child dependency of a f_cvb_use_grids feature
       if (variables(i)->expand_boundaries) {
         expand_grids = true;
         cvm::log("Metadynamics bias \""+this->name+"\""+

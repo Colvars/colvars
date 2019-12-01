@@ -233,24 +233,17 @@ int colvarbias::add_colvar(std::string const &cv_name)
     }
 
     colvars.push_back(cv);
+    cv->biases.push_back(this); // add back-reference to this bias to colvar
+
+    // Add dependency link. All biases need at least the value of each colvar
+    // although possibly not at all timesteps
+    add_child(cv);
 
     colvar_forces.push_back(colvarvalue());
     colvar_forces.back().type(cv->value()); // make sure each force is initialized to zero
     colvar_forces.back().is_derivative(); // colvar constraints are not applied to the force
     colvar_forces.back().reset();
-
     previous_colvar_forces.push_back(colvar_forces.back());
-
-    cv->biases.push_back(this); // add back-reference to this bias to colvar
-
-    if (is_enabled(f_cvb_apply_force)) {
-      cv->enable(f_cv_gradient);
-    }
-
-    // Add dependency link.
-    // All biases need at least the value of each colvar
-    // although possibly not at all timesteps
-    add_child(cv);
 
   } else {
     cvm::error("Error: cannot find a colvar named \""+
@@ -275,7 +268,7 @@ int colvarbias::update()
   error_code |= calc_energy(NULL);
   error_code |= calc_forces(NULL);
 
-  return COLVARS_OK;
+  return error_code;
 }
 
 
