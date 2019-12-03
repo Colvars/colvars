@@ -446,15 +446,15 @@ public:
   virtual ~colvarproxy_replicas();
 
   /// \brief Indicate if multi-replica support is available and active
-  virtual bool replica_enabled();
+  virtual int replica_enabled();
 
   /// \brief Index of this replica
   virtual int replica_index();
 
-  /// \brief Total number of replica
-  virtual int replica_num();
+  /// \brief Total number of replicas
+  virtual int num_replicas();
 
-  /// \brief Synchronize replica
+  /// \brief Synchronize replica with others
   virtual void replica_comm_barrier();
 
   /// \brief Receive data from other replica

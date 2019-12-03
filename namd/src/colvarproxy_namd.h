@@ -24,10 +24,6 @@
 #include "colvarproxy.h"
 #include "colvarvalue.h"
 
-// For replica exchange
-#include "converse.h"
-#include "DataExchanger.h"
-
 /// \brief Communication between colvars and NAMD (implementation of
 /// \link colvarproxy \endlink)
 class colvarproxy_namd : public colvarproxy, public GlobalMaster {
@@ -175,60 +171,12 @@ public:
 
 #endif // #if CMK_SMP && USE_CKLOOP
 
-  // Replica communication functions.
-  bool replica_enabled() {
-#if CMK_HAS_PARTITION
-    return true;
-#else
-    return false;
-#endif
-  }
-
-  int replica_index() {
-    return CmiMyPartition();
-  }
-
-  int replica_num() {
-    return CmiNumPartitions();
-  }
-
-  void replica_comm_barrier() {
-    replica_barrier();
-  }
-
-  int replica_comm_recv(char* msg_data, int buf_len, int src_rep) {
-    DataMessage *recvMsg = NULL;
-    replica_recv(&recvMsg, src_rep, CkMyPe());
-    CmiAssert(recvMsg != NULL);
-    int retval = recvMsg->size;
-    if (buf_len >= retval) {
-      memcpy(msg_data,recvMsg->data,retval);
-    } else {
-      retval = 0;
-    }
-    CmiFree(recvMsg);
-    return retval;
-  }
-
-  int replica_comm_send(char* msg_data, int msg_len, int dest_rep) {
-    replica_send(msg_data, msg_len, dest_rep, CkMyPe());
-    return msg_len;
-  }
-
-  int replica_comm_send()
-  {
-    return COLVARS_OK;
-  }
-
-  int replica_comm_async_send()
-  {
-    return COLVARS_OK;
-  }
-
-  inline size_t restart_frequency()
-  {
-    return restart_frequency_s;
-  }
+  virtual int replica_enabled();
+  virtual int replica_index();
+  virtual int replica_num();
+  virtual void replica_comm_barrier();
+  virtual int replica_comm_recv(char* msg_data, int buf_len, int src_rep);
+  virtual int replica_comm_send(char* msg_data, int msg_len, int dest_rep);
 
   int init_atom(int atom_number);
   int check_atom_id(int atom_number);

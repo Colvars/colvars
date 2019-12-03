@@ -456,51 +456,6 @@ int colvarproxy_smp::smp_unlock()
 
 
 
-colvarproxy_replicas::colvarproxy_replicas() {}
-
-
-colvarproxy_replicas::~colvarproxy_replicas() {}
-
-
-bool colvarproxy_replicas::replica_enabled()
-{
-  return false;
-}
-
-
-int colvarproxy_replicas::replica_index()
-{
-  return 0;
-}
-
-
-int colvarproxy_replicas::replica_num()
-{
-  return 1;
-}
-
-
-void colvarproxy_replicas::replica_comm_barrier() {}
-
-
-int colvarproxy_replicas::replica_comm_recv(char* /* msg_data */,
-                                            int /* buf_len */,
-                                            int /* src_rep */)
-{
-  return COLVARS_NOT_IMPLEMENTED;
-}
-
-
-int colvarproxy_replicas::replica_comm_send(char* /* msg_data */,
-                                            int /* msg_len */,
-                                            int /* dest_rep */)
-{
-  return COLVARS_NOT_IMPLEMENTED;
-}
-
-
-
-
 colvarproxy_script::colvarproxy_script()
 {
   script = NULL;

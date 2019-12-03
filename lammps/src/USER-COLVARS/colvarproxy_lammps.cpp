@@ -110,7 +110,7 @@ colvarproxy_lammps::colvarproxy_lammps(LAMMPS_NS::LAMMPS *lmp,
     restart_output_prefix_str.erase(restart_output_prefix_str.rfind(".*"),2);
 
   // initialize multi-replica support, if available
-  if (replica_enabled()) {
+  if (replica_enabled() == COLVARS_OK) {
     MPI_Comm_rank(inter_comm, &inter_me);
     MPI_Comm_size(inter_comm, &inter_num);
   }
@@ -337,6 +337,24 @@ int colvarproxy_lammps::backup_file(char const *filename)
 
 
 // multi-replica support
+
+int colvarproxy_lammps::replica_enabled()
+{
+  return (inter_comm != MPI_COMM_NULL);
+}
+
+
+int colvarproxy_lammps::replica_index()
+{
+  return inter_me;
+}
+
+
+int colvarproxy_lammps::num_replicas()
+{
+  return inter_num;
+}
+
 
 void colvarproxy_lammps::replica_comm_barrier()
 {

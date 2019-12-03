@@ -32,6 +32,7 @@ $colvars_defines = " -DVMDCOLVARS";
                     'colvarmodule.C',
                     'colvarparse.C',
                     'colvarproxy.C',
+                    'colvarproxy_replicas.C',
                     'colvarproxy_vmd.C',
                     'colvarscript.C',
                     'colvartypes.C',

@@ -35,6 +35,8 @@ int colvarbias_abf::init(std::string const &conf)
 {
   colvarbias::init(conf);
 
+  colvarproxy *proxy = cvm::main()->proxy;
+
   enable(f_cvb_scalar_variables);
   enable(f_cvb_calc_pmf);
 
@@ -76,11 +78,13 @@ int colvarbias_abf::init(std::string const &conf)
   // shared ABF
   get_keyval(conf, "shared", shared_on, false);
   if (shared_on) {
-    if (!cvm::replica_enabled() || cvm::replica_num() <= 1) {
-      cvm::error("Error: shared ABF requires more than one replica.");
-      return COLVARS_ERROR;
+    if ((proxy->replica_enabled() != COLVARS_OK) ||
+        (proxy->num_replicas() <= 1)) {
+      return cvm::error("Error: shared ABF requires more than one replica.",
+                        INPUT_ERROR);
     }
-    cvm::log("shared ABF will be applied among "+ cvm::to_str(cvm::replica_num()) + " replicas.\n");
+    cvm::log("shared ABF will be applied among "+
+             cvm::to_str(proxy->num_replicas()) + " replicas.\n");
     if (cvm::proxy->smp_enabled() == COLVARS_OK) {
       cvm::error("Error: shared ABF is currently not available with SMP parallelism; "
                  "please set \"SMP off\" at the top of the Colvars configuration file.\n",
@@ -492,7 +496,9 @@ int colvarbias_abf::update()
 
 int colvarbias_abf::replica_share() {
 
-  if ( !cvm::replica_enabled() ) {
+  colvarproxy *proxy = cvm::main()->proxy;
+
+  if (proxy->replica_enabled() != COLVARS_OK) {
     cvm::error("Error: shared ABF: No replicas.\n");
     return COLVARS_ERROR;
   }
@@ -511,12 +517,12 @@ int colvarbias_abf::replica_share() {
   size_t msg_total = data_n*sizeof(size_t) + samp_start;
   char* msg_data = new char[msg_total];
 
-  if (cvm::replica_index() == 0) {
+  if (proxy->replica_index() == 0) {
     int p;
     // Replica 0 collects the delta gradient and count from the others.
-    for (p = 1; p < cvm::replica_num(); p++) {
+    for (p = 1; p < proxy->num_replicas(); p++) {
       // Receive the deltas.
-      cvm::replica_comm_recv(msg_data, msg_total, p);
+      proxy->replica_comm_recv(msg_data, msg_total, p);
 
       // Map the deltas from the others into the grids.
       last_gradients->raw_data_in((cvm::real*)(&msg_data[0]));
@@ -531,8 +537,8 @@ int colvarbias_abf::replica_share() {
     // Now we must send the combined gradient to the other replicas.
     gradients->raw_data_out((cvm::real*)(&msg_data[0]));
     samples->raw_data_out((size_t*)(&msg_data[samp_start]));
-    for (p = 1; p < cvm::replica_num(); p++) {
-      cvm::replica_comm_send(msg_data, msg_total, p);
+    for (p = 1; p < proxy->num_replicas(); p++) {
+      proxy->replica_comm_send(msg_data, msg_total, p);
     }
 
   } else {
@@ -544,10 +550,10 @@ int colvarbias_abf::replica_share() {
     // Cast the raw char data to the gradient and samples.
     last_gradients->raw_data_out((cvm::real*)(&msg_data[0]));
     last_samples->raw_data_out((size_t*)(&msg_data[samp_start]));
-    cvm::replica_comm_send(msg_data, msg_total, 0);
+    proxy->replica_comm_send(msg_data, msg_total, 0);
 
     // We now receive the combined gradient from Replica 0.
-    cvm::replica_comm_recv(msg_data, msg_total, 0);
+    proxy->replica_comm_recv(msg_data, msg_total, 0);
     // We sync to the combined gradient computed by Replica 0.
     gradients->raw_data_in((cvm::real*)(&msg_data[0]));
     samples->raw_data_in((size_t*)(&msg_data[samp_start]));
@@ -555,7 +561,7 @@ int colvarbias_abf::replica_share() {
 
   // Without a barrier it's possible that one replica starts
   // share 2 when other replicas haven't finished share 1.
-  cvm::replica_comm_barrier();
+  proxy->replica_comm_barrier();
   // Done syncing the replicas.
   delete[] msg_data;
 

@@ -678,15 +678,6 @@ public:
     return 5;
   }
 
-
-  // Replica exchange commands.
-  static bool replica_enabled();
-  static int replica_index();
-  static int replica_num();
-  static void replica_comm_barrier();
-  static int replica_comm_recv(char* msg_data, int buf_len, int src_rep);
-  static int replica_comm_send(char* msg_data, int msg_len, int dest_rep);
-
   /// \brief Get the distance between two atomic positions with pbcs handled
   /// correctly
   static rvector position_distance(atom_pos const &pos1,

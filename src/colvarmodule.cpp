@@ -1911,39 +1911,6 @@ cvm::real cvm::rand_gaussian(void)
 }
 
 
-
-bool cvm::replica_enabled()
-{
-  return proxy->replica_enabled();
-}
-
-int cvm::replica_index()
-{
-  return proxy->replica_index();
-}
-
-int cvm::replica_num()
-{
-  return proxy->replica_num();
-}
-
-void cvm::replica_comm_barrier()
-{
-  return proxy->replica_comm_barrier();
-}
-
-int cvm::replica_comm_recv(char* msg_data, int buf_len, int src_rep)
-{
-  return proxy->replica_comm_recv(msg_data,buf_len,src_rep);
-}
-
-int cvm::replica_comm_send(char* msg_data, int msg_len, int dest_rep)
-{
-  return proxy->replica_comm_send(msg_data,msg_len,dest_rep);
-}
-
-
-
 template<typename T> std::string _to_str(T const &x,
                                          size_t width, size_t prec)
 {

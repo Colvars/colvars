@@ -44,6 +44,7 @@ COLVARS_SRCS = \
         colvarmodule.cpp \
         colvarparse.cpp \
         colvarproxy.cpp \
+        colvarproxy_replicas.cpp \
         colvarscript.cpp \
         colvartypes.cpp \
         colvarvalue.cpp
