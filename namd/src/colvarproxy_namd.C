@@ -24,6 +24,10 @@
 #include <tcl.h>
 #endif
 
+// For replica exchange
+#include "converse.h"
+#include "DataExchanger.h"
+
 #include "colvarmodule.h"
 #include "colvaratoms.h"
 #include "colvarproxy.h"
@@ -1232,3 +1236,50 @@ int colvarproxy_namd::smp_biases_script_loop()
 }
 
 #endif  // #if CMK_SMP && USE_CKLOOP
+
+
+int colvarproxy_namd::replica_enabled() {
+#if CMK_HAS_PARTITION
+  return COLVARS_OK;
+#else
+  return COLVARS_NOT_IMPLEMENTED;
+#endif
+}
+
+
+int colvarproxy_namd::replica_index() {
+  return CmiMyPartition();
+}
+
+
+int colvarproxy_namd::replica_num() {
+  return CmiNumPartitions();
+}
+
+
+void colvarproxy_namd::replica_comm_barrier() {
+  replica_barrier();
+}
+
+
+int colvarproxy_namd::replica_comm_recv(char* msg_data, int buf_len,
+                                        int src_rep) {
+  DataMessage *recvMsg = NULL;
+  replica_recv(&recvMsg, src_rep, CkMyPe());
+  CmiAssert(recvMsg != NULL);
+  int retval = recvMsg->size;
+  if (buf_len >= retval) {
+    memcpy(msg_data,recvMsg->data,retval);
+  } else {
+    retval = 0;
+  }
+  CmiFree(recvMsg);
+  return retval;
+}
+
+
+int colvarproxy_namd::replica_comm_send(char* msg_data, int msg_len,
+                                        int dest_rep) {
+  replica_send(msg_data, msg_len, dest_rep, CkMyPe());
+  return msg_len;
+}
