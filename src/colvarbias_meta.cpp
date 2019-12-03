@@ -39,6 +39,8 @@ colvarbias_meta::colvarbias_meta(char const *key)
   hills_traj_os = NULL;
 
   ebmeta_equil_steps = 0L;
+
+  replica_id.clear();
 }
 
 
@@ -46,6 +48,8 @@ int colvarbias_meta::init(std::string const &conf)
 {
   colvarbias::init(conf);
   colvarbias_ti::init(conf);
+
+  colvarproxy *proxy = cvm::main()->proxy;
 
   enable(f_cvb_calc_pmf);
 
@@ -137,10 +141,17 @@ int colvarbias_meta::init(std::string const &conf)
       }
     }
 
-    get_keyval(conf, "replicaID", replica_id, std::string(""));
-    if (!replica_id.size())
-      cvm::error("Error: replicaID must be defined "
-                 "when using more than one replica.\n", INPUT_ERROR);
+    get_keyval(conf, "replicaID", replica_id, replica_id);
+    if (!replica_id.size()) {
+      if (proxy->replica_enabled() == COLVARS_OK) {
+        replica_id = cvm::to_str(proxy->replica_index());
+        cvm::log("Setting replicaID from communication layer: replicaID = "+
+                 replica_id+".\n");
+      } else {
+        return cvm::error("Error: using more than one replica, but replicaID "
+                          "could not be obtained.\n", INPUT_ERROR);
+      }
+    }
 
     get_keyval(conf, "replicasRegistry",
                replicas_registry_file,
