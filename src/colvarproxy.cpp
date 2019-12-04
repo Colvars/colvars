@@ -134,6 +134,8 @@ cvm::rvector colvarproxy_system::position_distance(cvm::atom_pos const &pos1,
   return diff;
 }
 
+
+
 colvarproxy_atoms::colvarproxy_atoms()
 {
   updated_masses_ = updated_charges_ = false;
