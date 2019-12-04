@@ -608,9 +608,6 @@ public:
 
   // proxy functions
 
-  /// \brief Value of one Angstrom in the unit for atomic coordinates
-  static real angstrom_value();
-
   /// \brief Boltmann constant
   static real boltzmann();
 

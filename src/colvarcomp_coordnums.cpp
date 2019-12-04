@@ -97,6 +97,8 @@ colvar::coordnum::coordnum(std::string const &conf)
   function_type = "coordnum";
   x.type(colvarvalue::type_scalar);
 
+  colvarproxy *proxy = cvm::main()->proxy;
+
   group1 = parse_group(conf, "group1");
   group2 = parse_group(conf, "group2");
 
@@ -119,12 +121,12 @@ colvar::coordnum::coordnum(std::string const &conf)
   }
 
   bool const b_isotropic = get_keyval(conf, "cutoff", r0,
-                                      cvm::real(4.0 * cvm::angstrom_value()));
+                                      cvm::real(4.0 * proxy->angstrom_value));
 
   if (get_keyval(conf, "cutoff3", r0_vec,
-                 cvm::rvector(4.0 * cvm::angstrom_value(),
-                              4.0 * cvm::angstrom_value(),
-                              4.0 * cvm::angstrom_value()))) {
+                 cvm::rvector(4.0 * proxy->angstrom_value,
+                              4.0 * proxy->angstrom_value,
+                              4.0 * proxy->angstrom_value))) {
     if (b_isotropic) {
       cvm::error("Error: cannot specify \"cutoff\" and \"cutoff3\" "
                  "at the same time.\n",
@@ -311,9 +313,11 @@ colvar::h_bond::h_bond(std::string const &conf)
   function_type = "h_bond";
   x.type(colvarvalue::type_scalar);
 
-  int a_num, d_num;
-  get_keyval(conf, "acceptor", a_num, -1);
-  get_keyval(conf, "donor",    d_num, -1);
+  colvarproxy *proxy = cvm::main()->proxy;
+
+  int a_num = -1, d_num = -1;
+  get_keyval(conf, "acceptor", a_num, a_num);
+  get_keyval(conf, "donor",    d_num, a_num);
 
   if ( (a_num == -1) || (d_num == -1) ) {
     cvm::error("Error: either acceptor or donor undefined.\n");
@@ -326,7 +330,7 @@ colvar::h_bond::h_bond(std::string const &conf)
   atom_groups[0]->add_atom(acceptor);
   atom_groups[0]->add_atom(donor);
 
-  get_keyval(conf, "cutoff",   r0, (3.3 * cvm::angstrom_value()));
+  get_keyval(conf, "cutoff",   r0, (3.3 * proxy->angstrom_value));
   get_keyval(conf, "expNumer", en, 6);
   get_keyval(conf, "expDenom", ed, 8);
 
@@ -408,7 +412,7 @@ colvar::selfcoordnum::selfcoordnum(std::string const &conf)
 
   group1 = parse_group(conf, "group1");
 
-  get_keyval(conf, "cutoff", r0, cvm::real(4.0 * cvm::angstrom_value()));
+  get_keyval(conf, "cutoff", r0, cvm::real(4.0 * proxy->angstrom_value));
   get_keyval(conf, "expNumer", en, 6);
   get_keyval(conf, "expDenom", ed, 12);
 
@@ -561,7 +565,7 @@ colvar::groupcoordnum::groupcoordnum(std::string const &conf)
   }
 
   bool const b_scale = get_keyval(conf, "cutoff", r0,
-                                  cvm::real(4.0 * cvm::angstrom_value()));
+                                  cvm::real(4.0 * proxy->angstrom_value));
 
   if (get_keyval(conf, "cutoff3", r0_vec,
                  cvm::rvector(4.0, 4.0, 4.0), parse_silent)) {
