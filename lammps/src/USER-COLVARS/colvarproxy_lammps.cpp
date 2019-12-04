@@ -340,7 +340,7 @@ int colvarproxy_lammps::backup_file(char const *filename)
 
 int colvarproxy_lammps::replica_enabled()
 {
-  return (inter_comm != MPI_COMM_NULL);
+  return (inter_comm != MPI_COMM_NULL) ? COLVARS_OK : COLVARS_NOT_IMPLEMENTED;
 }
 
 
