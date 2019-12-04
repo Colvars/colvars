@@ -266,9 +266,10 @@ int colvarmodule::parse_global_params(std::string const &conf)
   {
     std::string units;
     if (parse->get_keyval(conf, "units", units)) {
-      int error = proxy->set_unit_system(units, (colvars.size() != 0));
-      if (error) {
-        return error;
+      units = colvarparse::to_lower_cppstr(units);
+      int error_code = proxy->set_unit_system(units, (colvars.size() != 0));
+      if (error_code != COLVARS_OK) {
+        return error_code;
       }
     }
   }
