@@ -280,6 +280,9 @@ protected:
   /// \brief If both walls are defined, use this k for the upper
   cvm::real upper_wall_k;
 
+  /// \brief Whether add biases on the extended DOF
+  bool b_bias_on_extended_value;
+
   virtual cvm::real colvar_distance(size_t i) const;
   virtual cvm::real restraint_potential(size_t i) const;
   virtual colvarvalue const restraint_force(size_t i) const;

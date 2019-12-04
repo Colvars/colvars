@@ -1055,6 +1055,8 @@ int colvarbias_restraint_harmonic_walls::init(std::string const &conf)
     }
   }
 
+  get_keyval(conf, "biasOnExtendedValue", b_bias_on_extended_value, false);
+
   return COLVARS_OK;
 }
 
@@ -1083,7 +1085,11 @@ void colvarbias_restraint_harmonic_walls::communicate_forces()
                variables(i)->name+"\".\n");
     }
     // Impulse-style multiple timestep
-    variables(i)->add_bias_force_actual_value(cvm::real(time_step_factor) * colvar_forces[i]);
+    if (b_bias_on_extended_value) {
+      variables(i)->add_bias_force(cvm::real(time_step_factor) * colvar_forces[i]);
+    } else {
+      variables(i)->add_bias_force_actual_value(cvm::real(time_step_factor) * colvar_forces[i]);
+    }
   }
 }
 
