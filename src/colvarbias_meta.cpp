@@ -38,18 +38,29 @@ colvarbias_meta::colvarbias_meta(char const *key)
   new_hills_begin = hills.end();
   hills_traj_os = NULL;
 
+  use_grids = true;
+  rebin_grids = false;
+  hills_energy = NULL;
+  hills_energy_gradients = NULL;
+
+  dump_fes = true;
+  keep_hills = false;
+  dump_fes_save = false;
+  dump_replica_fes = false;
+
   ebmeta_equil_steps = 0L;
 
+  replica_update_freq = 0;
   replica_id.clear();
 }
 
 
 int colvarbias_meta::init(std::string const &conf)
 {
-  colvarbias::init(conf);
-  colvarbias_ti::init(conf);
+  int error_code = COLVARS_OK;
 
-  colvarproxy *proxy = cvm::main()->proxy;
+  error_code |= colvarbias::init(conf);
+  error_code |= colvarbias_ti::init(conf);
 
   enable(f_cvb_calc_pmf);
 
@@ -81,16 +92,11 @@ int colvarbias_meta::init(std::string const &conf)
       comm = single_replica;
   }
 
-  // in all cases, the first replica is this bias itself
-  if (replicas.size() == 0) {
-    replicas.push_back(this);
-  }
-
-  get_keyval(conf, "useGrids", use_grids, true);
+  get_keyval(conf, "useGrids", use_grids, use_grids);
 
   if (use_grids) {
     get_keyval(conf, "gridsUpdateFrequency", grids_freq, new_hill_freq);
-    get_keyval(conf, "rebinGrids", rebin_grids, false);
+    get_keyval(conf, "rebinGrids", rebin_grids, rebin_grids);
 
     expand_grids = false;
     size_t i;
@@ -105,45 +111,59 @@ int colvarbias_meta::init(std::string const &conf)
       }
     }
 
-    get_keyval(conf, "keepHills", keep_hills, false);
-    if (! get_keyval(conf, "writeFreeEnergyFile", dump_fes, true))
-      get_keyval(conf, "dumpFreeEnergyFile", dump_fes, true, colvarparse::parse_silent);
-    if (get_keyval(conf, "saveFreeEnergyFile", dump_fes_save, false, colvarparse::parse_silent)) {
-      cvm::log("Option \"saveFreeEnergyFile\" is deprecated, "
-               "please use \"keepFreeEnergyFiles\" instead.");
-    }
+    get_keyval(conf, "writeFreeEnergyFile", dump_fes, dump_fes);
+
+    get_keyval(conf, "keepHills", keep_hills, keep_hills);
     get_keyval(conf, "keepFreeEnergyFiles", dump_fes_save, dump_fes_save);
 
     hills_energy           = new colvar_grid_scalar(colvars);
     hills_energy_gradients = new colvar_grid_gradient(colvars);
-  } else {
-    rebin_grids = false;
-    keep_hills = false;
-    dump_fes = false;
-    dump_fes_save = false;
-    dump_replica_fes = false;
 
-    hills_energy           = NULL;
-    hills_energy_gradients = NULL;
+  } else {
+
+    dump_fes = false;
+  }
+
+  get_keyval(conf, "writeHillsTrajectory", b_hills_traj, false);
+
+  error_code |= init_replicas_params(conf);
+  error_code |= init_well_tempered_params(conf);
+  error_code |= init_ebmeta_params(conf);
+
+  if (cvm::debug())
+    cvm::log("Done initializing the metadynamics bias \""+this->name+"\""+
+             ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+".\n");
+
+  return COLVARS_OK;
+}
+
+
+int colvarbias_meta::init_replicas_params(std::string const &conf)
+{
+  colvarproxy *proxy = cvm::main()->proxy;
+
+  // in all cases, the first replica is this bias itself
+  if (replicas.size() == 0) {
+    replicas.push_back(this);
   }
 
   if (comm != single_replica) {
 
-    if (expand_grids)
-      cvm::fatal_error("Error: expandBoundaries is not supported when "
-                       "using more than one replicas; please allocate "
-                       "wide enough boundaries for each colvar"
-                       "ahead of time.\n");
+    if (!get_keyval(conf, "writePartialFreeEnergyFile",
+                    dump_replica_fes, dump_replica_fes)) {
+      get_keyval(conf, "dumpPartialFreeEnergyFile", dump_replica_fes,
+                 dump_replica_fes, colvarparse::parse_silent);
+    }
 
-    if (get_keyval(conf, "dumpPartialFreeEnergyFile", dump_replica_fes, false)) {
-      if (dump_replica_fes && (! dump_fes)) {
-        cvm::log("Enabling \"dumpFreeEnergyFile\".\n");
-      }
+    if (dump_replica_fes && (! dump_fes)) {
+      dump_fes = true;
+      cvm::log("Enabling \"writeFreeEnergyFile\".\n");
     }
 
     get_keyval(conf, "replicaID", replica_id, replica_id);
     if (!replica_id.size()) {
       if (proxy->replica_enabled() == COLVARS_OK) {
+        // Obtain replicaID from the communicator
         replica_id = cvm::to_str(proxy->replica_index());
         cvm::log("Setting replicaID from communication layer: replicaID = "+
                  replica_id+".\n");
@@ -153,30 +173,32 @@ int colvarbias_meta::init(std::string const &conf)
       }
     }
 
-    get_keyval(conf, "replicasRegistry",
-               replicas_registry_file,
-               (this->name+".replicas.registry.txt"));
+    get_keyval(conf, "replicasRegistry", replicas_registry_file,
+               replicas_registry_file);
+    if (!replicas_registry_file.size()) {
+      return cvm::error("Error: the name of the \"replicasRegistry\" file "
+                        "must be provided.\n", INPUT_ERROR);
+    }
 
     get_keyval(conf, "replicaUpdateFrequency",
-               replica_update_freq, new_hill_freq);
+               replica_update_freq, replica_update_freq);
+    if (replica_update_freq == 0) {
+      return cvm::error("Error: replicaUpdateFrequency must be positive.\n",
+                        INPUT_ERROR);
+    }
 
-    if (keep_hills)
-      cvm::log("Warning: in metadynamics bias \""+this->name+"\""+
-               ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
-               ": keepHills with more than one replica can lead to a very "
-               "large amount of input/output and slow down your calculations.  "
-               "Please consider disabling it.\n");
+    if (expand_grids) {
+      return cvm::error("Error: expandBoundaries is not supported when "
+                        "using more than one replicas; please allocate "
+                        "wide enough boundaries for each colvar"
+                        "ahead of time.\n", INPUT_ERROR);
+    }
 
+    if (keep_hills) {
+      return cvm::error("Error: multipleReplicas and keepHills are not "
+                        "supported together.\n", INPUT_ERROR);
+    }
   }
-
-  get_keyval(conf, "writeHillsTrajectory", b_hills_traj, false);
-
-  init_well_tempered_params(conf);
-  init_ebmeta_params(conf);
-
-  if (cvm::debug())
-    cvm::log("Done initializing the metadynamics bias \""+this->name+"\""+
-             ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+".\n");
 
   return COLVARS_OK;
 }

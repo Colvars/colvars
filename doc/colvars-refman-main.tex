@@ -4734,7 +4734,39 @@ The following options define the configuration for the ``well-tempered'' metadyn
 
 
 \cvsubsubsec{Multiple-walker metadynamics}{sec:colvarbias_meta_mr}
-The following options define metadynamics calculations with multiple replicas that share a common history (multiple-walker metadynamics) \cite{Raiteri2006}:
+Metadynamics calculations can be performed concurrently by multiple replicas that share a common history.
+This variant of the method is called multiple-walker metadynamics \cite{Raiteri2006}: the Gaussian hills of all replicas are periodically combined into a single biasing potential, intended to converge to a single PMF.
+
+In the implementation here described~\cite{Fiorin2013}, replicas communicate through files.
+This arrangement allows launching the replicas either (1) as a bundle (i.e.{} a single job in a cluster's queueing system) or (2) as fully independent runs (i.e.{} as separate jobs for the queueing system).
+One advantage of the use case (1) is that an identical Colvars configuration can be used for all replicas (otherwise, \texttt{replicaID} needs to be manually set to a different string for each replica).
+However, the use case (2) is less demanding in terms of high-performance computing resources: a typical scenario would be a computer cluster (including virtual servers from a cloud provider) where not all nodes are connected to each other at high speed, and thus each replica runs on a small group of nodes or a single node.
+
+Whichever way the replicas are started (coupled or not), a shared filesystem is needed so that each replica can read the files created by the others: paths to these files are stored in the shared file \texttt{replicasRegistry}.
+This file, and those listed in it, are read every \texttt{replicaUpdateFrequency} steps.
+Each time the Colvars state file is written (for example, \texttt{colvarsRestartFrequency} steps), the file named:\\
+\outputName\texttt{.colvars.}\emph{name}\texttt{.}\emph{replicaID}\texttt{.state}\\
+is written as well; this file contains only the state of the metadynamics bias, which the other replicas will read in turn.
+In between the times when this file is modified/replaced, new hills are also temporarily written to the file named:\\
+\outputName\texttt{.colvars.}\emph{name}\texttt{.}\emph{replicaID}\texttt{.hills}\\
+Both files are only used for communication, and may be deleted after the replica begins writing files with a new \outputName.\\
+
+\noindent\textbf{Example:} Multiple-walker metadynamics with file-based communication.\\
+{\noindent\ttfamily
+\-metadynamics \{\\
+\-\-~~name mymtd\\
+\-\-~~colvars x\\
+\-\-~~hillWeight 0.001\\
+\-\-~~newHillFrequency 1000\\
+\-\-~~hillWidth 3.0\\
+\-\-~~\\
+\-\-~~multipleReplicas       on\\
+\-\-~~replicasRegistry       /shared-folder/mymtd-replicas.txt\\
+\-\-~~replicaUpdateFrequency 50000  \# Best if larger than newHillFrequency\\
+\-\}\\
+}
+
+The following are the multiple-walkers related options:
 
 \begin{itemize}
 
@@ -4745,88 +4777,51 @@ The following options define metadynamics calculations with multiple replicas th
     Enable multiple-walker metadynamics}{%
     boolean}{%
     \texttt{off}}{%
-    If this option is \texttt{on}, multiple replicas of the
-    same system can be run at the same time. Their hills are shared periodically,
-    and combined to obtain a single PMF.  Replicas are
-    identified by the value of \texttt{replicaID}.  Communication is
-    done by files: each replica must be able to read the files
-    created by the others, whose paths are communicated through the file
-    \texttt{replicasRegistry}.  This file, and the files listed in it,
-    are read every \texttt{replicaUpdateFrequency} steps.  Every time
-    the colvars state file is written
-    (\texttt{colvarsRestartFrequency}), the file:\\
-    ``\outputName\texttt{.colvars.}\emph{name}\texttt{.}\emph{replicaID}\texttt{.state}''
-    is also written, containing
-    the state of the metadynamics bias for \texttt{replicaID}.  In the
-    time steps between \texttt{colvarsRestartFrequency}, new hills are
-    temporarily written to the file:\\
-    ``\outputName\texttt{.colvars.}\emph{name}\texttt{.}\emph{replicaID}\texttt{.hills}'',
-    which serves as communication
-    buffer.  These files are only required for communication, and may be
-    deleted after a new MD run is started with a different
-    \texttt{outputName}.  }
+    This option turns on multiple-walker communication between replicas. }
   
 \item %
   \key
-    {replicaID}{%
-    \texttt{metadynamics}}{%
-    Set the identifier for this replica}{%
-    string}{%
-    If \texttt{multipleReplicas} is \texttt{on}, this option sets a
-    unique identifier for this replica.  All replicas should use
-    identical collective variable configurations, except for the value
-    of this option.}
-  
-\item %
-  \keydef
     {replicasRegistry}{%
     \texttt{metadynamics}}{%
     Multiple replicas database file}{%
     UNIX filename}{%
-    ``\emph{name}\texttt{.replica\_files.txt}''}{%
-    If \texttt{multipleReplicas} is \texttt{on}, this option sets the
-    path to the replicas' database file.
-    % Each line in this file
-    % contains one \texttt{replicaID}, and the absolute path to a file
-    % listing the state file and the hills-file for that replica (see
-    % \texttt{multipleReplicas}).  All these files are generated
-    % automatically, but it is advisable that at least
-    % \texttt{replicasRegistry} is written by hand to avoid race
-    % conditions (multiple replicas writing concurrently to the same
-    % file).
+    If \texttt{multipleReplicas} is \texttt{on}, this option sets the path to the replicas' shared database file.
+    It is best to use an absolute path (especially when running individual replicas in separate folders).
+  }
+
+\item %
+  \key
+    {replicaUpdateFrequency}{%
+    \texttt{metadynamics}}{%
+    How often hills are shared between replicas}{%
+    positive integer}{%
+    If \texttt{multipleReplicas} is \texttt{on}, this option sets the number of steps after which each replica tries to read the other replicas' files.
+    On a networked file system, it is best to use a number of steps that corresponds to at least a minute of wall time.
   }
 
 \item %
   \keydef
-    {replicaUpdateFrequency}{%
+    {replicaID}{%
     \texttt{metadynamics}}{%
-    How often hills are communicated between
-    replicas}{%
-    positive integer}{%
-    \texttt{newHillFrequency}}{%
-    If \texttt{multipleReplicas} is \texttt{on}, this option sets the
-    number of steps after which each replica (re)reads the other
-    replicas' files.  The lowest meaningful value of this number is
-    \texttt{newHillFrequency}.  If access to the file system is
-    significantly affecting the simulation performance, this number can
-    be increased, at the price of reduced synchronization between
-    replicas.  Values higher than \texttt{colvarsRestartFrequency} may
-    not improve performance significantly.}
+    Set the identifier for this replica}{%
+    string}{%
+    replica index (only if a shared communicator is used)}{%
+    If \texttt{multipleReplicas} is \texttt{on}, this option sets a unique identifier for this replicas.
+    When the replicas are launched in a single command (i.e.{} they share a parallel communicator and are tightly synchronized) this value is optional, and defaults to the replica's numeric index (starting at zero).
+    However, when the replicas are launched as independent runs this option is required.
+}
 
 \item %
   \keydef
-    {dumpPartialFreeEnergyFile}{%
+    {writePartialFreeEnergyFile}{%
     \texttt{metadynamics}}{%
     Periodically write the contribution to the
     PMF from this replica}{%
     boolean}{%
-    \texttt{on}}{%
-    When \texttt{multipleReplicas} is \texttt{on}, the file
-    \outputName\texttt{.pmf} contains the combined PMF from all
-    replicas, provided that \texttt{useGrids} is \texttt{on} (default).
-    Enabling this option produces an additional file
-    \outputName\texttt{.partial.pmf}, which can be useful to
-    quickly monitor the contribution of each replica to the PMF.}
+    \texttt{off}}{%
+    If \texttt{multipleReplicas} is \texttt{on}, enabling this option produces  an additional file \outputName\texttt{.partial.pmf}, which can be useful to monitor the contribution of each replica to the total PMF (which is written to the file \outputName\texttt{.pmf}).
+    \textbf{Note:} the name of this file is chosen for consistency and convenience, \emph{but its content is not a PMF} and it is not expected to converge, even if the total PMF does.
+}
 
 \end{itemize}
 
@@ -4834,30 +4829,6 @@ The following options define metadynamics calculations with multiple replicas th
 \cvsubsubsec{Compatibility and post-processing}{sec:colvarbias_meta_post}
 The following options may be useful only for applications that go beyond the calculation of a PMF by metadynamics:
 \begin{itemize}
-
-\item %
-  \keydef
-    {name}{%
-    \texttt{metadynamics}}{%
-    Name of this metadynamics instance}{%
-    string}{%
-    ``\texttt{meta}'' + rank number}{%
-    This option sets the name for this metadynamics instance.  While it
-    is not advisable to use more than one metadynamics instance within
-    the same simulation, this allows to distinguish each instance from
-    the others.  If there is more than one metadynamics instance, the
-    name of this bias is included in the metadynamics output file names, such as e.g.~the \texttt{.pmf} file.}
-
-% \item %
-%   \keydef
-%     {gridsUpdateFrequency}{%
-%     \texttt{metadynamics}}{%
-%  Frequency of update of the grids}{%
-%     positive integer}{%
-%     \texttt{newHillFrequency}}{%
-%     When \texttt{useGrids} is \texttt{on}, all the newly created hills
-%     are projected onto the two grids every
-%     \texttt{gridsUpdateFrequency} steps.}
 
 \item %
   \keydef
@@ -4881,11 +4852,11 @@ The following options may be useful only for applications that go beyond the cal
     boolean}{%
     \texttt{off}}{%
     If this option is \texttt{on}, a logfile is written by the
-    \texttt{metadynamics} bias, with the name
-    ``\outputName\texttt{.colvars.$<$name$>$.hills.traj}'', which
+    \texttt{metadynamics} bias, with the name:\\
+    ``\outputName\texttt{.colvars.$<$name$>$.hills.traj}'',\\ which
     can be useful to follow the time series of the hills.  When
-    \texttt{multipleReplicas} is \texttt{on}, its name changes to\\
-    ``\outputName\texttt{.colvars.$<$name$>$.$<$replicaID$>$.hills.traj}''.
+    \texttt{multipleReplicas} is \texttt{on}, its name changes to:\\
+    ``\outputName\texttt{.colvars.$<$name$>$.$<$replicaID$>$.hills.traj}''.\\
     This file can be used to quickly visualize the positions of all
     added hills, in case \texttt{newHillFrequency} does not coincide
     with \texttt{colvarsRestartFrequency}.}

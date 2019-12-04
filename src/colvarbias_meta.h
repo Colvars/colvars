@@ -41,6 +41,7 @@ public:
   virtual ~colvarbias_meta();
 
   virtual int init(std::string const &conf);
+  virtual int init_replicas_params(std::string const &conf);
   virtual int init_well_tempered_params(std::string const &conf);
   virtual int init_ebmeta_params(std::string const &conf);
 
