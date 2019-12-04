@@ -1837,7 +1837,7 @@ int cvm::load_coords_xyz(char const *filename,
   unsigned int natoms;
   char symbol[256];
   std::string line;
-  cvm::real x, y, z;
+  cvm::real x = 0.0, y = 0.0, z = 0.0;
 
   if ( ! (xyz_is >> natoms) ) {
     cvm::error("Error: cannot parse XYZ file "
@@ -1886,11 +1886,6 @@ int cvm::load_coords_xyz(char const *filename,
 
 
 // Wrappers to proxy functions: these may go in the future
-
-cvm::real cvm::angstrom_value()
-{
-  return proxy->angstrom_value;
-}
 
 
 cvm::real cvm::boltzmann()
