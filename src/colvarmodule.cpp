@@ -1744,15 +1744,13 @@ int cvm::read_index_file(char const *filename)
       size_t i = 0;
       for ( ; i < index_group_names.size(); i++) {
         if (index_group_names[i] == group_name) {
-          cvm::log("Warning: re-defining the index group \""+group_name+
-                   "\"; the new definition will only affect "
-                   "variables defined after this point.\n");
+          // Found a group with the same name
           index_of_group = i;
         }
       }
       if (index_of_group < 0) {
         index_group_names.push_back(group_name);
-        index_groups.push_back(new std::vector<int>());
+        index_groups.push_back(NULL);
         index_of_group = index_groups.size()-1;
       }
     } else {
@@ -1761,15 +1759,35 @@ int cvm::read_index_file(char const *filename)
                         INPUT_ERROR);
     }
 
-    std::vector<int> *index_group = index_groups[index_of_group];
-    index_group->clear();
+    std::vector<int> *old_index_group = index_groups[index_of_group];
+    std::vector<int> *new_index_group = new std::vector<int>();
 
     int atom_number = 1;
     size_t pos = is.tellg();
     while ( (is >> atom_number) && (atom_number > 0) ) {
-      index_group->push_back(atom_number);
+      new_index_group->push_back(atom_number);
       pos = is.tellg();
     }
+
+    if (old_index_group != NULL) {
+      bool equal = false;
+      if (new_index_group->size() == old_index_group->size()) {
+        if (std::equal(new_index_group->begin(), new_index_group->end(),
+                       old_index_group->begin())) {
+          equal = true;
+        }
+      }
+      if (! equal) {
+        cvm::log("Warning: re-defining the index group \""+group_name+
+                 "\"; the new definition will only affect "
+                 "variables defined after this point.\n");
+      }
+      old_index_group->clear();
+      delete old_index_group;
+      old_index_group = NULL;
+    }
+
+    index_groups[index_of_group] = new_index_group;
 
     is.clear();
     is.seekg(pos, std::ios::beg);
