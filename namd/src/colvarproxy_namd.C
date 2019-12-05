@@ -1153,7 +1153,7 @@ int colvarproxy_namd::update_group_properties(int index)
 }
 
 
-int colvarproxy_namd::set_unit_system(std::string const &units_in, bool /*colvars_defined*/)
+int colvarproxy_namd::set_unit_system(std::string const &units_in, bool /*check_only*/)
 {
   if (units_in != "real") {
     cvm::error("Error: Specified unit system \"" + units_in + "\" is unsupported in NAMD. Supported units are \"real\" (A, kcal/mol).\n");

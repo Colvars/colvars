@@ -295,10 +295,14 @@ extern "C" {
 
   CVSCRIPT(cv_units,
            "Get the current Colvars unit system",
-           0, 0,
+           0, 1,
            { },
-           script->set_str_result(cvm::proxy->units);
-           return COLVARS_OK;
+           if (objc < 3) {
+            script->set_str_result(cvm::proxy->units);
+            return COLVARS_OK;
+           } else {
+            return cvm::proxy->set_unit_system(script->obj_to_str(objv[2]) , false);
+           }
            )
 
 #ifndef COLVARSCRIPT_INIT_FN

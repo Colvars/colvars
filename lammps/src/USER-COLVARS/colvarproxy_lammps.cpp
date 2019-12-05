@@ -330,7 +330,7 @@ void colvarproxy_lammps::fatal_error(std::string const &message)
 }
 
 
-int colvarproxy_lammps::set_unit_system(std::string const &units_in, bool /*colvars_defined*/)
+int colvarproxy_lammps::set_unit_system(std::string const &units_in, bool /*check_only*/)
 {
   std::string lmp_units = _lmp->update->unit_style;
   if (units_in != lmp_units) {
