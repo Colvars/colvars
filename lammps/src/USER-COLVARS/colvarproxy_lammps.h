@@ -92,7 +92,7 @@ class colvarproxy_lammps : public colvarproxy {
   void add_config_string(const std::string &config);
 
   // Request to set the units used internally by Colvars
-  int set_unit_system(std::string const &units_in, bool colvars_defined);
+  int set_unit_system(std::string const &units_in, bool check_only);
 
   inline cvm::real backend_angstrom_value() { return my_angstrom; };
 

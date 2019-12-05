@@ -210,7 +210,6 @@ void colvarproxy_gromacs::set_temper(double temper) {
 
 // GROMACS uses nanometers and kJ/mol internally
 cvm::real colvarproxy_gromacs::backend_angstrom_value() { return 0.1; }
-//cvm::real colvarproxy_gromacs::backend_kcal_mol_value() { return 4.184; }
 
 // From Gnu units
 // $ units -ts 'k' 'kJ/mol/K/avogadro'
@@ -313,7 +312,7 @@ int colvarproxy_gromacs::load_coords (char const *filename,
   return COLVARS_NOT_IMPLEMENTED;
 }
 
-int colvarproxy_gromacs::set_unit_system(std::string const &units_in, bool /*colvars_defined*/)
+int colvarproxy_gromacs::set_unit_system(std::string const &units_in, bool /*check_only*/)
 {
   if (units_in != "gromacs") {
     cvm::error("Specified unit system \"" + units_in + "\" is unsupported in Gromacs. Supported units are \"gromacs\" (nm, kJ/mol).\n");

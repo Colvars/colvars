@@ -218,13 +218,18 @@ int colvarproxy_vmd::setup()
 }
 
 
-int colvarproxy_vmd::set_unit_system(std::string const &units_in, bool colvars_defined)
+int colvarproxy_vmd::set_unit_system(std::string const &units_in, bool check_only)
 {
-  // if colvars are already defined, just test for compatibility
-  if (colvars_defined && units_in != units) {
-    cvm::error("Specified unit system \"" + units_in + "\" is incompatible with previous setting \""
-                + units + "\".\nReset the Colvars Module or delete all variables to change the unit.\n");
-    return COLVARS_ERROR;
+  // if check_only is specified, just test for compatibility
+  // cvolvarmodule does that if new units are requested while colvars are already defined
+  if (check_only) {
+    if (units_in != units) {
+      cvm::error("Specified unit system \"" + units_in + "\" is incompatible with previous setting \""
+                  + units + "\".\nReset the Colvars Module or delete all variables to change the unit.\n");
+      return COLVARS_ERROR;
+    } else {
+      return COLVARS_OK;
+    }
   }
 
   if (units_in == "real") {

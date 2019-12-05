@@ -64,11 +64,6 @@ public:
     return 1.0;
   }
 
-  // cvm::real backend_kcal_mol_value()
-  // {
-  //   return 1.0;
-  // }
-
   inline cvm::real boltzmann()
   {
     return 0.001987191;
@@ -136,7 +131,7 @@ public:
   void log(std::string const &message);
   void error(std::string const &message);
   void fatal_error(std::string const &message);
-  int set_unit_system(std::string const &units_in, bool colvars_defined);
+  int set_unit_system(std::string const &units_in, bool check_only);
 
   // Callback functions
   int run_force_callback();

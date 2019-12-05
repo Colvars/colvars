@@ -409,6 +409,7 @@ colvar::selfcoordnum::selfcoordnum(std::string const &conf)
 {
   function_type = "selfcoordnum";
   x.type(colvarvalue::type_scalar);
+  colvarproxy *proxy = cvm::main()->proxy;
 
   group1 = parse_group(conf, "group1");
 
@@ -557,6 +558,7 @@ colvar::groupcoordnum::groupcoordnum(std::string const &conf)
 {
   function_type = "groupcoordnum";
   x.type(colvarvalue::type_scalar);
+  colvarproxy *proxy = cvm::main()->proxy;
 
   // group1 and group2 are already initialized by distance()
   if (group1->b_dummy || group2->b_dummy) {
