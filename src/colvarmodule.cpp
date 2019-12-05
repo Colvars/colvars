@@ -1286,23 +1286,41 @@ std::istream & colvarmodule::read_restart(std::istream &is)
     // read global restart information
     std::string restart_conf;
     if (is >> colvarparse::read_block("configuration", restart_conf)) {
+
       parse->get_keyval(restart_conf, "step",
                         it_restart, static_cast<step_number>(0),
                         colvarparse::parse_restart);
-        it = it_restart;
+      it = it_restart;
+
       std::string restart_version;
       parse->get_keyval(restart_conf, "version",
                         restart_version, std::string(""),
                         colvarparse::parse_restart);
-      if (restart_version.size() && (restart_version != std::string(COLVARS_VERSION))) {
-        cvm::log("This state file was generated with version "+restart_version+"\n");
+      if (restart_version.size() && (restart_version !=
+                                     std::string(COLVARS_VERSION))) {
+        cvm::log("This state file was generated with version "+restart_version+
+                 "\n");
       }
-      if ((restart_version.size() == 0) || (restart_version.compare(std::string(COLVARS_VERSION)) < 0)) {
+      if ((restart_version.size() == 0) ||
+          (restart_version.compare(std::string(COLVARS_VERSION)) < 0)) {
         // check for total force change
         if (proxy->total_forces_enabled()) {
           warn_total_forces = true;
         }
       }
+
+      std::string units_restart;
+      if (parse->get_keyval(restart_conf, "units",
+                            units_restart, std::string(""),
+                            colvarparse::parse_restart)) {
+        units_restart = colvarparse::to_lower_cppstr(units_restart);
+        if ((proxy->units.size() > 0) && (units_restart != proxy->units)) {
+          cvm::error("Error: the state file has units \""+units_restart+
+                     "\", but the current unit system is \""+proxy->units+
+                     "\".\n", INPUT_ERROR);
+        }
+      }
+
     }
     is.clear();
     parse->clear_keyword_registry();
@@ -1516,8 +1534,11 @@ std::ostream & colvarmodule::write_restart(std::ostream &os)
      << "  step " << std::setw(it_width)
      << it << "\n"
      << "  dt " << dt() << "\n"
-     << "  version " << std::string(COLVARS_VERSION) << "\n"
-     << "}\n\n";
+     << "  version " << std::string(COLVARS_VERSION) << "\n";
+  if (proxy->units.size() > 0) {
+    os << "  units " << proxy->units << "\n";
+  }
+  os << "}\n\n";
 
   int error_code = COLVARS_OK;
 

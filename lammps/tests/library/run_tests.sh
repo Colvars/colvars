@@ -146,9 +146,13 @@ for dir in ${DIRLIST} ; do
     #   rm -f ${basename}.Tcl.out
     # fi
 
-    # Filter out the version number from the state files to allow comparisons
-    grep -v 'version' ${basename}.colvars.state > ${TMPDIR}/${basename}.colvars.state.stripped
-    mv -f ${TMPDIR}/${basename}.colvars.state.stripped ${basename}.colvars.state.stripped
+    if [ -f ${basename}.colvars.state ] ; then
+      # Filter out the version number from the state files to allow comparisons
+      grep -sv '^  version' ${basename}.colvars.state | \
+        grep -sv '^  units' | \
+        > ${TMPDIR}/${basename}.colvars.state.stripped
+      mv -f ${TMPDIR}/${basename}.colvars.state.stripped ${basename}.colvars.state.stripped
+    fi
 
     # If this test is used to generate the reference output files, copy them
     if [ "x${gen_ref_output}" = 'xyes' ]; then
