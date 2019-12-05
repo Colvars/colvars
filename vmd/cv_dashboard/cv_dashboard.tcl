@@ -80,12 +80,12 @@ proc cv_dashboard {} {
     tk_messageBox -icon error -title "Colvars Dashboard Error"\
       -message "No molecule loaded. Please load a molecule and use the Reset button.\n"
   } else {
-    set ::cv_dashboard::mol [molinfo top]
 
     if [catch { cv version }] {
-      # setup Colvars if not already there
-      ::cv_dashboard::run_cv molid $::cv_dashboard::mol
+      # if not already there, setup Colvars on top molecule
+      ::cv_dashboard::run_cv molid [molinfo top]
     }
+    set ::cv_dashboard::mol [cv molid]
   }
 
   if {[winfo exists .cv_dashboard_window]} {

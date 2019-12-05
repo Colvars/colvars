@@ -86,6 +86,9 @@ public:
     return vmd_random_gaussian();
   }
 
+  /// Return molid of VMD molecule currently associated with Colvars
+  inline int get_vmdmolid() { return vmdmolid; }
+
   inline int get_frame(long int &f)
   {
     f = vmdmol_frame;

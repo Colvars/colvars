@@ -417,7 +417,7 @@ The following sections explain the syntax of the various sub-commands of \texttt
 
 \begin{itemize}
 \cvvmdonly{
-\item \texttt{molid} \emph{$<$molid$>$}: setup the Colvars module for the given molecule; \emph{$<$molid$>$} is the identifier of a valid VMD molecule, either an integer or \texttt{top} for the top molecule;
+\item \texttt{molid} [\emph{$<$molid$>$}]: setup the Colvars module for the given molecule; \emph{$<$molid$>$} is the identifier of a valid VMD molecule, either an integer or \texttt{top} for the top molecule; without argument, return the molid currently associated with Colvars.
 \item \texttt{delete}: delete the Colvars module; after this, the module can be setup again using \texttt{cv molid};
 }
 \item \texttt{configfile} \emph{$<$file name$>$}: read configuration from a file;
