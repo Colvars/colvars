@@ -168,6 +168,9 @@ If variables are modified, added or deleted interactively or by an external scri
 Starting the dashboard also enables trajectory animation using the left/right arrow keys within VMD's graphical window.
 Atomic coordinates can be modified using VMD's ``Mouse/Move'' functions, and the Colvars Module can then be updated by pressing F5 directly from the graphical window.
 
+A dropdown list allows for changing the current unit system if no variables are defined.
+If some variables are already defined, it is recommended to edit the configuration for all of
+them at once (eg. pressing Ctrl-a, then e), checking that all quantities are expressed in the desired set of units, and adding the \texttt{units} keyword (\ref{sec:units}).
 
 \cvsubsec{Loading / Saving configuration files}{sec:dashboard_load_save}
 
@@ -218,6 +221,38 @@ It creates a graphical representation of the atomic gradients of the selected va
 Here, we document the syntax of the commands and parameters used to set up and use the Colvars module in \MDENGINE{}.
 One of these parameters is the configuration file or the configuration text for the module itself, whose syntax is described in \ref{sec:colvars_config_syntax} and in the following sections.
 
+\cvsubsec{Units in the Colvars module}{sec:units}
+
+The ``internal units'' of the Colvars module are the units in which values are expected to be in the configuration file, and in which collective variable values, energies, etc. are expressed in the output and colvars trajectory files. 
+Generally \textbf{the Colvars module uses internally the same units as its back-end MD engine, with the exception of VMD}, where different unit sets are supported to allow for easy setup, visualization and analysis of Colvars simulations performed with any simulation engine.
+
+Note that \textbf{angles} are expressed in degrees, and derived quantites such as force constants are based on degrees as well. 
+Atomic coordinates read from \textbf{XYZ files} (and PDB files where applicable) are expected to be expressed in \AA{}ngstr\"om, no matter what unit system is in use by the back-end or the Colvars Module.
+
+To avoid errors due to reading configuration files written in a different unit system, it can be specified within the input:
+
+\begin{itemize}
+\item %
+\key
+  {units}{%
+  global}{%
+  Unit system to be used}{%
+  string}{%
+  A string defining the units to be used internally by Colvars.
+  \cvlammpsonly{Allowed values are the following LAMMPS unit styles:
+  \textit{real} (\AA, kcal/mol), \textit{metal} (\AA, eV), and \textit{electron} (Bohr, Hartree).
+  However only the unit system currently in use by LAMMPS is accepted:
+  other values will trigger an error.}
+  \cvnamdonly{In NAMD the only allowed value is NAMD's native units: \textit{real} (\AA, kcal/mol).}
+  \cvvmdonly{Allowed values are:  \textit{real} (\AA, kcal/mol), \textit{gromacs} (nm, kJ/mol), \textit{metal} (\AA, eV), and \textit{electron} (Bohr, Hartree).
+  In VMD, the default system of units for Colvars is VMD's native units: \textit{real} (\AA, kcal/mol).
+  However, the \texttt{units} keyword will switch to a different unit system than the
+  current one if no colvars were defined before reading the current configuration.
+  If colvars are already defined, \texttt{units} will refuse changing the unit system to avoid making the definition of those variables erroneous in the new system of units.
+  If needed this precaution can be overridden using the \texttt{cv units} scripting command
+  (\ref{sec:cv_command_general}).}
+  }
+\end{itemize}
 
 \cvnamdonly{
 \cvsubsec{NAMD parameters}{sec:colvars_mdengine_params}
@@ -389,7 +424,9 @@ The following sections explain the syntax of the various sub-commands of \texttt
 \item \texttt{config} \emph{$<$string$>$}: read configuration from the given string; both \texttt{config} and \texttt{configfile} subcommands may be invoked multiple times;
 \cvvmdonly{see \ref{sec:colvars_config_syntax} for the configuration syntax;}
 \item \texttt{reset}: delete all internal configuration and atom selections of the Colvars module;
+\item \texttt{units} [\emph{$<$style$>$}]: switch internal Colvars units to \emph{style} (see \ref{sec:units}); without argument, return the current style, or an empty string if it is the default.
 \item \texttt{version}: return the version of the Colvars module (see \ref{sec:colvars_config_changes} for any changes to older keywords).
+
 \end{itemize}
 
 \cvsubsubsec{Input and output commands}{sec:cv_command_io}
