@@ -683,14 +683,17 @@ public:
   static rvector position_distance(atom_pos const &pos1,
                                    atom_pos const &pos2);
 
-  /// \brief Names of groups from a Gromacs .ndx file to be read at startup
-  std::list<std::string> index_group_names;
+  /// \brief Names of groups from one or more Gromacs .ndx files
+  std::vector<std::string> index_group_names;
 
-  /// \brief Groups from a Gromacs .ndx file read at startup
-  std::list<std::vector<int> > index_groups;
+  /// \brief Groups from one or more Gromacs .ndx files
+  std::vector<std::vector<int> *> index_groups;
 
   /// \brief Read a Gromacs .ndx file
   int read_index_file(char const *filename);
+
+  /// Clear the index groups loaded so far
+  int reset_index_groups();
 
   /// \brief Select atom IDs from a file (usually PDB) \param filename name of
   /// the file \param atoms array into which atoms read from "filename" will be

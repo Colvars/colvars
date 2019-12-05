@@ -269,9 +269,7 @@ extern "C" {
            "Clear the index groups loaded so far, allowing to replace them",
            0, 0,
            { },
-           cvm::main()->index_group_names.clear();
-           cvm::main()->index_groups.clear();
-           return COLVARS_OK;
+           return cvm::main()->reset_index_groups();
            )
 
   CVSCRIPT(cv_addenergy,
