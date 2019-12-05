@@ -1180,8 +1180,7 @@ int colvarmodule::reset()
   }
   colvars.clear();
 
-  index_groups.clear();
-  index_group_names.clear();
+  reset_index_groups();
 
   proxy->reset();
 
@@ -1738,32 +1737,40 @@ int cvm::read_index_file(char const *filename)
   while (is.good()) {
     char open, close;
     std::string group_name;
+    int index_of_group = -1;
     if ( (is >> open) && (open == '[') &&
          (is >> group_name) &&
          (is >> close) && (close == ']') ) {
-      for (std::list<std::string>::iterator names_i = index_group_names.begin();
-           names_i != index_group_names.end();
-           names_i++) {
-        if (*names_i == group_name) {
-          cvm::error("Error: the group name \""+group_name+
-                     "\" appears in multiple index files.\n",
-                     FILE_ERROR);
+      size_t i = 0;
+      for ( ; i < index_group_names.size(); i++) {
+        if (index_group_names[i] == group_name) {
+          cvm::log("Warning: re-defining the index group \""+group_name+
+                   "\"; the new definition will only affect "
+                   "variables defined after this point.\n");
+          index_of_group = i;
         }
       }
-      index_group_names.push_back(group_name);
-      index_groups.push_back(std::vector<int>());
+      if (index_of_group < 0) {
+        index_group_names.push_back(group_name);
+        index_groups.push_back(new std::vector<int>());
+        index_of_group = index_groups.size()-1;
+      }
     } else {
-      cvm::error("Error: in parsing index file \""+
-                 std::string(filename)+"\".\n",
-                 INPUT_ERROR);
+      return cvm::error("Error: in parsing index file \""+
+                        std::string(filename)+"\".\n",
+                        INPUT_ERROR);
     }
+
+    std::vector<int> *index_group = index_groups[index_of_group];
+    index_group->clear();
 
     int atom_number = 1;
     size_t pos = is.tellg();
     while ( (is >> atom_number) && (atom_number > 0) ) {
-      (index_groups.back()).push_back(atom_number);
+      index_group->push_back(atom_number);
       pos = is.tellg();
     }
+
     is.clear();
     is.seekg(pos, std::ios::beg);
     std::string delim;
@@ -1776,14 +1783,27 @@ int cvm::read_index_file(char const *filename)
     }
   }
 
-  cvm::log("The following index groups were read from the index file \""+
-           std::string(filename)+"\":\n");
-  std::list<std::string>::iterator names_i = index_group_names.begin();
-  std::list<std::vector<int> >::iterator lists_i = index_groups.begin();
-  for ( ; names_i != index_group_names.end() ; names_i++, lists_i++) {
-    cvm::log("  "+(*names_i)+" ("+cvm::to_str(lists_i->size())+" atoms).\n");
+  cvm::log("The following index groups are currently defined:\n");
+  size_t i = 0;
+  for ( ; i < index_group_names.size(); i++) {
+    cvm::log("  "+(index_group_names[i])+" ("+
+             cvm::to_str((index_groups[i])->size())+" atoms)\n");
   }
-  return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
+
+  return COLVARS_OK;
+}
+
+
+int colvarmodule::reset_index_groups()
+{
+  size_t i = 0;
+  for ( ; i < index_groups.size(); i++) {
+    delete index_groups[i];
+    index_groups[i] = NULL;
+  }
+  index_group_names.clear();
+  index_groups.clear();
+  return COLVARS_OK;
 }
 
 
