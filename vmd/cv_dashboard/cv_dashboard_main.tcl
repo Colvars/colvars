@@ -302,7 +302,18 @@ proc ::cv_dashboard::change_units {} {
   # Get up-to-date current setting
   refresh_units
   if {$new != $::cv_dashboard::units} {
-    run_cv config "units $new"
+    if {[run_cv list] == {}} {
+      cv units $new
+    } else {
+      tk_messageBox -icon error -title "Colvars Dashboard Error"\
+        -message "Cannot change units while colvars are defined.
+You can either:
+1) delete all colvars, or
+2) edit their configuration (<Ctrl-a> <e>), checking all parameters \
+for consistency with desired units, and add the following line:
+units $new"
+      return
+    }
   }
   # Refresh Combo box
   refresh_units

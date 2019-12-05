@@ -48,23 +48,17 @@ public:
   /// Destructor
   virtual ~colvarproxy_system();
 
-  // **********************************************************************
-  // TODO FIXME unsolved: calls to back-end PBC functions assume back-end length unit!
-  // We can use different unit from back-end in VMD bc using PBC functions from colvarproxy base class
-  // or test and default to internal PBC functions if we have our own units?
-  // Possible performance cost? a couple floating-point ops per coordinate
-  // **********************************************************************
-
-  // Colvars internal units are user specified, because the module exchanges info in unknown
-  // composite dimensions with user input, while it only exchanges quantities of known
-  // dimension with the back-end (length and forces)
-
   /// \brief Name of the unit system used internally by Colvars (by default, that of the back-end).
   /// Supported depending on the back-end: real (A, kcal/mol), metal (A, eV), electron (Bohr, Hartree), gromacs (nm, kJ/mol)
+  /// Note: calls to back-end PBC functions assume back-end length unit
+  /// We use different unit from back-end in VMD bc using PBC functions from colvarproxy base class
+  /// Colvars internal units are user specified, because the module exchanges info in unknown
+  /// composite dimensions with user input, while it only exchanges quantities of known
+  /// dimension with the back-end (length and forces)
   std::string units;
 
   /// \brief Request to set the units used internally by Colvars
-  virtual int set_unit_system(std::string const &units, bool colvars_defined) = 0;
+  virtual int set_unit_system(std::string const &units, bool check_only) = 0;
 
   /// \brief Value of 1 Angstrom in the internal (front-end) Colvars unit for atomic coordinates
   /// * defaults to 0. in the base class; derived proxy classes must set it
@@ -77,9 +71,6 @@ public:
 
   /// \brief Value of 1 kcal/mol in the internal Colvars unit for energy
   cvm::real kcal_mol_value;
-
-  /// \brief Value of 1 kcal/mol in the backend's unit for energy
-  //virtual cvm::real backend_kcal_mol_value() = 0;
 
   /// \brief Convert a length from Angstrom to internal
   inline cvm::real angstrom_to_internal(cvm::real l) const
