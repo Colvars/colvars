@@ -1778,13 +1778,16 @@ int cvm::read_index_file(char const *filename)
         }
       }
       if (! equal) {
-        cvm::log("Warning: re-defining the index group \""+group_name+
-                 "\"; the new definition will only affect "
-                 "variables defined after this point.\n");
+        new_index_group->clear();
+        delete new_index_group;
+        new_index_group = NULL;
+        return cvm::error("Error: the index group \""+group_name+
+                          "\" was redefined.\n", INPUT_ERROR);
+      } else {
+        old_index_group->clear();
+        delete old_index_group;
+        old_index_group = NULL;
       }
-      old_index_group->clear();
-      delete old_index_group;
-      old_index_group = NULL;
     }
 
     index_groups[index_of_group] = new_index_group;
