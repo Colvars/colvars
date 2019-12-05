@@ -35,8 +35,11 @@ int tcl_colvars(ClientData clientdata, Tcl_Interp *interp,
 
   if (proxy != NULL) {
 
-    if (objc >= 3) {
-      if (!strcmp(Tcl_GetString(objv[1]), "molid")) {
+    if (objc >= 2 && !strcmp(Tcl_GetString(objv[1]), "molid")) {
+       if (objc == 2) {
+        Tcl_SetResult(interp, cvm::to_str(proxy->get_vmdmolid()).c_str(), TCL_VOLATILE);
+        return TCL_OK;
+       } else {
         Tcl_SetResult(interp, (char *) "Colvars module already created:"
                                        " type \"cv\" for a list of "
                                        "arguments.",
