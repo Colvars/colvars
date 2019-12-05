@@ -3949,8 +3949,8 @@ by the adaptive bias, evolution of the system along $\bm{\xi}$
 is governed mainly by diffusion.
 Although this implementation of ABF can in principle be used in 
 arbitrary dimension, a higher-dimension collective variable space is likely
-to result in sampling difficulties.
-Most commonly, the number of variables is one or two.
+to be difficult to sample and visualize.
+Most commonly, the number of variables is one or two, sometimes three.
 
 
 \cvsubsubsec{ABF requirements on collective variables}{sec:colvarbias_abf_req}
@@ -4147,7 +4147,7 @@ The ABF bias produces the following files, all in multicolumn text format (\ref{
 \item \outputName\texttt{.grad}: current estimate of the free energy gradient (grid),
   in multicolumn;
 \item \outputName\texttt{.count}: histogram of samples collected, on the same grid;
-\item \outputName\texttt{.pmf}: only for one-dimensional calculations, integrated free energy profile or PMF.
+\item \outputName\texttt{.pmf}: integrated free energy profile or PMF (for dimensions 1, 2 or 3).
 \end{itemize}
 
 Also in the case of one-dimensional calculations, the ABF bias can report its current energy via \texttt{outputEnergy}; in higher dimensions, such computation is not implemented and the energy reported is zero.
@@ -4162,15 +4162,29 @@ ABF simulations have been run, the resulting data can be merged using the
 \texttt{inputPrefix} option described above (a run of 0 steps is enough).
 
 
-\cvsubsubsec{Post-processing: reconstructing a multidimensional free energy surface}{sec:colvarbias_abf_post}
+
+\cvsubsubsec{Multidimensional free energy surfaces}{sec:colvarbias_abf_post}
 
 If a one-dimensional calculation is performed, the estimated free energy
-gradient is automatically integrated and a potential of mean force is written
-under the file name \texttt{<outputName>.pmf}, in a plain text format that
-can be read by most data plotting and analysis programs (e.g. gnuplot).
+gradient is integrated using a simple rectangle rule.
+In dimension 2 or 3, it is calculated as the solution of a Poisson equation:
+\begin{equation}
+ \Delta A(\xi) = - \nabla \cdot \langle F_\xi \rangle
+\end{equation}
+wehere $\Delta A$ is the Laplacian of the free energy.
+The potential of mean force is written under the file name \texttt{<outputName>.pmf},
+in a plain text format that can be read by most data plotting and analysis programs
+(e.g. gnuplot).
+This applies periodic boundary conditions to periodic coordinates, and Neumann boundary
+conditions otherwise (imposed free energy gradient at the boundary of the domain).
+Note that the grid used for free energy discretization is extended by one point along
+non-periodic coordinates, but not along periodic coordinates.
 
-In dimension 2 or greater, integrating the discretized gradient becomes non-trivial. The
+In dimension 4 or greater, integrating the discretized gradient becomes non-trivial. The
 standalone utility \texttt{abf\_integrate} is provided to perform that task.
+Because 4D ABF calculations are uncommon, this tool is practically deprecated by
+the Poisson integration described above.
+
 \texttt{abf\_integrate} reads the gradient data and uses it to perform a Monte-Carlo (M-C)
 simulation in discretized collective variable space (specifically, on the same grid
 used by ABF to discretize the free energy gradient).
