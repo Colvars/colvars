@@ -53,7 +53,7 @@ if ! { echo ${DIRLIST} | grep -q 0 ; } then
   DIRLIST=`eval ls -d [0-9][0-9][0-9]_*`
 fi
 
-NUM_THREADS=3
+NUM_THREADS=1
 NUM_CPUS=$(nproc)
 if [ ${NUM_THREADS} -gt ${NUM_CPUS} ] ; then
   NUM_THREADS=${NUM_CPUS}
@@ -176,7 +176,9 @@ for dir in ${DIRLIST} ; do
 
     if [ -f ${basename}.colvars.state ] ; then
       # Filter out the version number from the state files to allow comparisons
-      grep -sv 'version' ${basename}.colvars.state > ${TMPDIR}/${basename}.colvars.state.stripped
+      grep -sv '^  version ' ${basename}.colvars.state | \
+        grep -sv '^  units ' \
+        > ${TMPDIR}/${basename}.colvars.state.stripped
       mv -f ${TMPDIR}/${basename}.colvars.state.stripped ${basename}.colvars.state.stripped
     fi
 
