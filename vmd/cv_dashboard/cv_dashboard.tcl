@@ -37,6 +37,7 @@ namespace eval ::cv_dashboard {
   variable filetype "atomsFile"
   variable colvar_configs  ;# dictionary mapping names to cfg strings
   set colvar_configs [dict create]
+  variable non_colvar_config "" ;# config string for everything but colvars
 
   # Handle to keep track of interactive plot
   variable plothandle
@@ -158,7 +159,8 @@ proc ::cv_dashboard::apply_config { cfg } {
   set cvs_after [run_cv list]
 
   # Extract config for individual colvars
-  set cv_configs [extract_colvar_configs $cfg]
+  lassign [extract_colvar_configs $cfg] cv_configs non_colvar
+  append ::cv_dashboard::non_colvar_config $non_colvar
 
   # Completely update the map of colvar configs
   set new_map [dict create]
@@ -178,6 +180,7 @@ proc ::cv_dashboard::apply_config { cfg } {
   }
   # Overwrite old map
   set ::cv_dashboard::colvar_configs $new_map
+
   refresh_table
   refresh_units
   return $res
@@ -186,13 +189,14 @@ proc ::cv_dashboard::apply_config { cfg } {
 
 # Parse config string to extract colvar blocks
 # Return dictionary of colvar names -> config strings
-# Needs to fail gracefully upon unmatched braces
+# and anything that is not a colvar as a separate string
 proc ::cv_dashboard::extract_colvar_configs { cfg_in } {
   set lines [split $cfg_in "\n"]
   set in_cv 0
   set brace_depth 0
   set map [dict create]
   set name ""
+  set non_colvar ""
   foreach line $lines {
     if { $in_cv == 0 } {
       # In main body, just look for colvar definition
@@ -209,7 +213,8 @@ proc ::cv_dashboard::extract_colvar_configs { cfg_in } {
           continue
         }
       } else {
-        # Don't parse non-colvar data
+        # Don't parse non-colvar data, but remember it
+        append non_colvar $line "\n"
         continue
       }
     }
@@ -256,7 +261,8 @@ proc ::cv_dashboard::extract_colvar_configs { cfg_in } {
       incr cv_line
     }
   }
-  return $map
+
+  return [list $map $non_colvar]
 }
 
 
@@ -343,7 +349,8 @@ proc ::cv_dashboard::update_mol_list { name molid op } {
   # Did we just lose the molecule Colvars was connected to?
   if { ($molid == $::cv_dashboard::mol) && ($::vmd_initialize_structure($molid) == 0) } {
     tk_messageBox -icon error -title "Colvars Dashboard Error"\
-      -message "The molecule associated to the Colvars Module was deleted.\nSave the configuration if necessary, load a molecule and use the Reset button.\n"
+      -message "The molecule associated to the Colvars Module was deleted.
+Save the configuration if necessary, load a molecule and use the Reset button."
     # remove tracking of deleted molecule
     trace remove variable ::vmd_frame($molid) write ::cv_dashboard::update_frame
     set ::cv_dashboard::mol -1
@@ -368,6 +375,7 @@ proc ::cv_dashboard::change_mol {} {
 
     set ::cv_dashboard::mol $newmolid
     # Remember config
+    # FIXME: units could be duplicated now that we keep non-cv config
     if {$::cv_dashboard::units == ""} {
       set cfg ""
     } else {
@@ -376,8 +384,11 @@ proc ::cv_dashboard::change_mol {} {
     foreach cv [run_cv list] {
         append cfg "colvar {[get_config $cv]}\n\n"
     }
+    # Attempt to preserve non-colvar config
+    set non_cv_cfg $::cv_dashboard::non_colvar_config
     reset
     apply_config $cfg
+    apply_config $non_cv_cfg
     change_track_frame ;# activate tracking of new molecule if requested
   }
 }

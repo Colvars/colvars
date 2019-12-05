@@ -26,6 +26,15 @@ proc ::cv_dashboard::createWindow {} {
   grid [ttk::button $w.reset -text "Reset" -command ::cv_dashboard::reset -padding "2 0 2 0"] \
     -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
+  # Non-colvar related stuff: general config
+  incr gridrow
+  grid [ttk::button $w.noncv -text "Show non-cv config" -command ::cv_dashboard::show_noncv -padding "2 0 2 0"] \
+    -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  # grid [ttk::button $w.save -text "Save colvars" -command ::cv_dashboard::save -padding "2 0 2 0"] \
+  #   -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  # grid [ttk::button $w.reset -text "Reset" -command ::cv_dashboard::reset -padding "2 0 2 0"] \
+  #   -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+
   ttk::treeview $w.cvtable -selectmode extended -show tree
   $w.cvtable configure -column val
   $w.cvtable column #0 -width 50 -stretch 1 -anchor w
@@ -136,13 +145,19 @@ G. Fiorin, M. L. Klein, and J. Hénin. Using collective variables to drive molec
 
 
 proc ::cv_dashboard::quit {} {
-    # remove the trace we put in place, so they don't accumulate
-    # if loaded multiple times
-    catch {
-      trace remove variable ::vmd_frame($::cv_dashboard::mol) write ::cv_dashboard::update_frame
-    }
-    wm withdraw .cv_dashboard_window
+  # remove the trace we put in place, so they don't accumulate
+  # if loaded multiple times
+  catch {
+    trace remove variable ::vmd_frame($::cv_dashboard::mol) write ::cv_dashboard::update_frame
   }
+  wm withdraw .cv_dashboard_window
+}
+
+
+# Display config string for biases and other general Colvars parameters
+proc ::cv_dashboard::show_noncv {} {
+  help_window .cv_dashboard_window "General configuration" "General configuration" $::cv_dashboard::non_colvar_config
+}
 
 
 # Refresh the table with a list of existing CVs and their values
@@ -419,6 +434,7 @@ proc ::cv_dashboard::reset {} {
   catch { cv delete }
   run_cv molid $molid
   set ::cv_dashboard::colvar_configs [dict create]
+  set ::cv_dashboard::non_colvar_config ""
   refresh_table
   refresh_units
 }
