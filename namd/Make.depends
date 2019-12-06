@@ -388,7 +388,6 @@ obj/main.o: \
 	inc/Node.decl.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
 	inc/ComputeMgr.decl.h \
@@ -440,7 +439,6 @@ obj/mainfunc.o: \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
 	src/NamdState.h \
@@ -603,7 +601,6 @@ obj/BackEnd.o: \
 	inc/Node.decl.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
 	inc/ComputeMgr.decl.h \
@@ -683,7 +680,6 @@ obj/BroadcastMgr.o: \
 	src/ResizeArrayRaw.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
 	src/Debug.h \
@@ -860,7 +856,6 @@ obj/Compute.o: \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
 	src/Debug.h
@@ -926,7 +921,6 @@ obj/ComputeAngles.o: \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
 	src/ComputeSelfTuples.h \
@@ -995,7 +989,6 @@ obj/ComputeAniso.o: \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
 	src/ComputeSelfTuples.h \
@@ -1064,7 +1057,6 @@ obj/ComputeBonds.o: \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
 	src/ComputeSelfTuples.h \
@@ -1142,7 +1134,6 @@ obj/ComputeBondedCUDA.o: \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
 	src/ComputeSelfTuples.h \
@@ -1285,7 +1276,6 @@ obj/ComputeCrossterms.o: \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
 	src/ComputeSelfTuples.h \
@@ -1369,7 +1359,6 @@ obj/ComputeCUDAMgr.o: \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
 	src/DeviceCUDA.h \
@@ -1468,7 +1457,6 @@ obj/ComputeDihedrals.o: \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
 	src/ComputeSelfTuples.h \
@@ -2008,7 +1996,6 @@ obj/ComputeGromacsPair.o: \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
 	src/ComputeSelfTuples.h \
@@ -2075,7 +2062,6 @@ obj/ComputeLCPO.o: \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h
 	$(CXX) $(CXXFLAGS) $(COPTO)obj/ComputeLCPO.o $(COPTC) src/ComputeLCPO.C
@@ -2289,7 +2275,6 @@ obj/ComputeImpropers.o: \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
 	src/ComputeSelfTuples.h \
@@ -2514,7 +2499,6 @@ obj/ComputeMgr.o: \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
 	src/ComputeNonbondedMIC.h \
@@ -2619,6 +2603,9 @@ obj/ComputeMgr.o: \
 	src/colvarproxy_namd_version.h \
 	src/Random.h \
 	colvars/src/colvarvalue.h \
+	src/DataExchanger.h \
+	inc/DataExchanger.decl.h \
+	src/Pointer.h \
 	src/DeviceCUDA.h \
 	inc/ComputeMgr.def.h
 	$(CXX) $(CXXFLAGS) $(COPTO)obj/ComputeMgr.o $(COPTC) src/ComputeMgr.C
@@ -2666,7 +2653,6 @@ obj/ComputeNonbondedSelf.o: \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
 	src/Node.h \
@@ -2717,7 +2703,6 @@ obj/ComputeNonbondedPair.o: \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
 	src/PatchMap.h \
@@ -3163,7 +3148,6 @@ obj/ComputeNonbondedCUDA.o: \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
 	src/LJTable.h \
@@ -3233,7 +3217,6 @@ obj/ComputeNonbondedCUDAExcl.o: \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
 	src/ComputeSelfTuples.h \
@@ -3312,7 +3295,6 @@ obj/ComputeNonbondedMIC.o: \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
 	src/ComputeNonbondedMICKernel.h \
@@ -3364,7 +3346,6 @@ obj/ComputePatch.o: \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
 	src/Debug.h
@@ -3404,7 +3385,6 @@ obj/ComputePatchPair.o: \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
 	src/Debug.h
@@ -3847,7 +3827,6 @@ obj/ComputeThole.o: \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
 	src/ComputeSelfTuples.h \
@@ -3931,7 +3910,6 @@ obj/Controller.o: \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
 	src/ScriptTcl.h \
@@ -4546,7 +4524,6 @@ obj/GlobalMasterTcl.o: \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
 	src/GlobalMaster.h \
@@ -4866,12 +4843,8 @@ obj/colvarproxy_namd.o: \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
-	src/DataExchanger.h \
-	inc/DataExchanger.decl.h \
-	src/Pointer.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvaratoms.h \
@@ -4887,6 +4860,9 @@ obj/colvarproxy_namd.o: \
 	src/GlobalMaster.h \
 	src/Random.h \
 	colvars/src/colvarvalue.h \
+	src/DataExchanger.h \
+	inc/DataExchanger.decl.h \
+	src/Pointer.h \
 	colvars/src/colvarscript.h \
 	colvars/src/colvarbias.h \
 	colvars/src/colvar.h
@@ -5023,7 +4999,6 @@ obj/HomePatch.o: \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
 	src/ReductionMgr.h \
@@ -5109,9 +5084,6 @@ obj/LdbCoordinator.o: \
 	inc/NamdHybridLB.decl.h \
 	src/NamdDummyLB.h \
 	inc/NamdDummyLB.decl.h \
-	src/NamdNborLB.h \
-	inc/NamdNborLB.decl.h \
-	src/AlgNbor.h \
 	src/HomePatch.h \
 	src/Patch.h \
 	src/OwnerBox.h \
@@ -5123,7 +5095,6 @@ obj/LdbCoordinator.o: \
 	src/Settle.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
 	src/LdbCoordinator.h \
@@ -5566,57 +5537,9 @@ obj/NamdCentLB.o: \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h
 	$(CXX) $(CXXFLAGS) $(COPTO)obj/NamdCentLB.o $(COPTC) src/NamdCentLB.C
-obj/NamdNborLB.o: \
-	obj/.exists \
-	src/NamdNborLB.C \
-	src/InfoStream.h \
-	src/NamdNborLB.h \
-	inc/NamdNborLB.decl.h \
-	src/Node.h \
-	src/main.h \
-	src/ProcessorPrivate.h \
-	src/BOCgroup.h \
-	inc/Node.decl.h \
-	src/PatchMap.h \
-	src/NamdTypes.h \
-	src/common.h \
-	src/Vector.h \
-	src/ResizeArray.h \
-	src/ResizeArrayRaw.h \
-	src/HomePatchList.h \
-	src/SortedArray.h \
-	src/SortableResizeArray.h \
-	src/ResizeArrayIter.h \
-	src/Lattice.h \
-	src/Tensor.h \
-	src/SimParameters.h \
-	src/MGridforceParams.h \
-	src/strlib.h \
-	src/MStream.h \
-	src/AlgNbor.h \
-	src/Rebalancer.h \
-	src/elements.h \
-	src/Set.h \
-	src/heap.h \
-	inc/ProxyMgr.decl.h \
-	src/ProxyMgr.h \
-	src/PatchTypes.h \
-	src/UniqueSet.h \
-	src/UniqueSetRaw.h \
-	src/UniqueSetIter.h \
-	inc/NamdNborLB.def.h \
-	src/ComputeMap.h \
-	src/LdbCoordinator.h \
-	inc/LdbCoordinator.decl.h \
-	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
-	inc/NamdHybridLB.decl.h \
-	inc/NamdDummyLB.decl.h
-	$(CXX) $(CXXFLAGS) $(COPTO)obj/NamdNborLB.o $(COPTC) src/NamdNborLB.C
 obj/NamdHybridLB.o: \
 	obj/.exists \
 	src/NamdHybridLB.C \
@@ -5667,7 +5590,6 @@ obj/NamdHybridLB.o: \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
 	inc/NamdHybridLB.def.h
@@ -5719,7 +5641,6 @@ obj/NamdDummyLB.o: \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h
 	$(CXX) $(CXXFLAGS) $(COPTO)obj/NamdDummyLB.o $(COPTC) src/NamdDummyLB.C
@@ -5771,7 +5692,6 @@ obj/NamdState.o: \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
 	src/Debug.h \
@@ -5860,7 +5780,6 @@ obj/Node.o: \
 	inc/Node.decl.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
 	inc/ComputeMgr.decl.h \
@@ -6024,7 +5943,6 @@ obj/Output.o: \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
 	src/DataExchanger.h \
@@ -6156,7 +6074,6 @@ obj/PatchMgr.o: \
 	inc/Node.decl.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
 	inc/ComputeMgr.decl.h \
@@ -6432,7 +6349,6 @@ obj/ProxyPatch.o: \
 	inc/Node.decl.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
 	inc/ComputeMgr.decl.h \
@@ -6511,7 +6427,6 @@ obj/Rebalancer.o: \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
 	src/memusage.h
@@ -6659,7 +6574,6 @@ obj/ScriptTcl.o: \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
 	src/ConfigList.h \
@@ -6771,7 +6685,6 @@ obj/Sequencer.o: \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
 	src/Output.h \
@@ -6902,7 +6815,6 @@ obj/SimParameters.o: \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
 	src/ParseOptions.h \
@@ -7026,7 +6938,6 @@ obj/WorkDistrib.o: \
 	inc/Node.decl.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
 	inc/ComputeMgr.decl.h \
@@ -7239,7 +7150,6 @@ obj/DataExchanger.o: \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
 	inc/NamdCentLB.decl.h \
-	inc/NamdNborLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
 	inc/DataExchanger.def.h
@@ -7555,433 +7465,5 @@ obj/stringhash.o: \
 	sb/src/hasharray.h \
 	sb/src/stringhash.h
 	$(CC) $(SBCFLAGS) $(COPTO)obj/stringhash.o $(COPTC) sb/src/stringhash.c
-obj/colvar.o: \
-	obj/.exists \
-	colvars/src/colvar.cpp \
-	colvars/src/colvarmodule.h \
-	colvars/src/colvars_version.h \
-	colvars/src/colvarvalue.h \
-	colvars/src/colvartypes.h \
-	colvars/src/colvarparse.h \
-	colvars/src/colvar.h \
-	colvars/src/colvardeps.h \
-	colvars/src/colvarcomp.h \
-	colvars/src/colvaratoms.h \
-	colvars/src/colvarproxy.h \
-	colvars/src/colvar_arithmeticpath.h \
-	colvars/src/colvar_geometricpath.h \
-	colvars/src/colvarscript.h \
-	colvars/src/colvarbias.h
-	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvar.o $(COPTC) colvars/src/colvar.cpp
-obj/colvaratoms.o: \
-	obj/.exists \
-	colvars/src/colvaratoms.cpp \
-	colvars/src/colvarmodule.h \
-	colvars/src/colvars_version.h \
-	colvars/src/colvarproxy.h \
-	colvars/src/colvartypes.h \
-	colvars/src/colvarvalue.h \
-	colvars/src/colvarparse.h \
-	colvars/src/colvaratoms.h \
-	colvars/src/colvardeps.h
-	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvaratoms.o $(COPTC) colvars/src/colvaratoms.cpp
-obj/colvarbias.o: \
-	obj/.exists \
-	colvars/src/colvarbias.cpp \
-	colvars/src/colvarmodule.h \
-	colvars/src/colvars_version.h \
-	colvars/src/colvarproxy.h \
-	colvars/src/colvartypes.h \
-	colvars/src/colvarvalue.h \
-	colvars/src/colvarbias.h \
-	colvars/src/colvar.h \
-	colvars/src/colvarparse.h \
-	colvars/src/colvardeps.h \
-	colvars/src/colvargrid.h
-	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarbias.o $(COPTC) colvars/src/colvarbias.cpp
-obj/colvarbias_abf.o: \
-	obj/.exists \
-	colvars/src/colvarbias_abf.cpp \
-	colvars/src/colvarmodule.h \
-	colvars/src/colvars_version.h \
-	colvars/src/colvarproxy.h \
-	colvars/src/colvartypes.h \
-	colvars/src/colvarvalue.h \
-	colvars/src/colvar.h \
-	colvars/src/colvarparse.h \
-	colvars/src/colvardeps.h \
-	colvars/src/colvarbias_abf.h \
-	colvars/src/colvarbias.h \
-	colvars/src/colvargrid.h \
-	colvars/src/colvar_UIestimator.h
-	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarbias_abf.o $(COPTC) colvars/src/colvarbias_abf.cpp
-obj/colvarbias_alb.o: \
-	obj/.exists \
-	colvars/src/colvarbias_alb.cpp \
-	colvars/src/colvarmodule.h \
-	colvars/src/colvars_version.h \
-	colvars/src/colvarbias.h \
-	colvars/src/colvar.h \
-	colvars/src/colvarvalue.h \
-	colvars/src/colvartypes.h \
-	colvars/src/colvarparse.h \
-	colvars/src/colvardeps.h \
-	colvars/src/colvarbias_alb.h
-	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarbias_alb.o $(COPTC) colvars/src/colvarbias_alb.cpp
-obj/colvarbias_histogram.o: \
-	obj/.exists \
-	colvars/src/colvarbias_histogram.cpp \
-	colvars/src/colvarmodule.h \
-	colvars/src/colvars_version.h \
-	colvars/src/colvarproxy.h \
-	colvars/src/colvartypes.h \
-	colvars/src/colvarvalue.h \
-	colvars/src/colvar.h \
-	colvars/src/colvarparse.h \
-	colvars/src/colvardeps.h \
-	colvars/src/colvarbias_histogram.h \
-	colvars/src/colvarbias.h \
-	colvars/src/colvargrid.h
-	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarbias_histogram.o $(COPTC) colvars/src/colvarbias_histogram.cpp
-obj/colvarbias_meta.o: \
-	obj/.exists \
-	colvars/src/colvarbias_meta.cpp \
-	colvars/src/colvarmodule.h \
-	colvars/src/colvars_version.h \
-	colvars/src/colvarproxy.h \
-	colvars/src/colvartypes.h \
-	colvars/src/colvarvalue.h \
-	colvars/src/colvar.h \
-	colvars/src/colvarparse.h \
-	colvars/src/colvardeps.h \
-	colvars/src/colvarbias_meta.h \
-	colvars/src/colvarbias.h \
-	colvars/src/colvargrid.h
-	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarbias_meta.o $(COPTC) colvars/src/colvarbias_meta.cpp
-obj/colvarbias_restraint.o: \
-	obj/.exists \
-	colvars/src/colvarbias_restraint.cpp \
-	colvars/src/colvarmodule.h \
-	colvars/src/colvars_version.h \
-	colvars/src/colvarproxy.h \
-	colvars/src/colvartypes.h \
-	colvars/src/colvarvalue.h \
-	colvars/src/colvarbias_restraint.h \
-	colvars/src/colvarbias.h \
-	colvars/src/colvar.h \
-	colvars/src/colvarparse.h \
-	colvars/src/colvardeps.h
-	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarbias_restraint.o $(COPTC) colvars/src/colvarbias_restraint.cpp
-obj/colvarcomp.o: \
-	obj/.exists \
-	colvars/src/colvarcomp.cpp \
-	colvars/src/colvarmodule.h \
-	colvars/src/colvars_version.h \
-	colvars/src/colvarvalue.h \
-	colvars/src/colvartypes.h \
-	colvars/src/colvar.h \
-	colvars/src/colvarparse.h \
-	colvars/src/colvardeps.h \
-	colvars/src/colvarcomp.h \
-	colvars/src/colvaratoms.h \
-	colvars/src/colvarproxy.h \
-	colvars/src/colvar_arithmeticpath.h \
-	colvars/src/colvar_geometricpath.h
-	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp.o $(COPTC) colvars/src/colvarcomp.cpp
-obj/colvarcomp_angles.o: \
-	obj/.exists \
-	colvars/src/colvarcomp_angles.cpp \
-	colvars/src/colvarmodule.h \
-	colvars/src/colvars_version.h \
-	colvars/src/colvar.h \
-	colvars/src/colvarvalue.h \
-	colvars/src/colvartypes.h \
-	colvars/src/colvarparse.h \
-	colvars/src/colvardeps.h \
-	colvars/src/colvarcomp.h \
-	colvars/src/colvaratoms.h \
-	colvars/src/colvarproxy.h \
-	colvars/src/colvar_arithmeticpath.h \
-	colvars/src/colvar_geometricpath.h
-	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_angles.o $(COPTC) colvars/src/colvarcomp_angles.cpp
-obj/colvarcomp_coordnums.o: \
-	obj/.exists \
-	colvars/src/colvarcomp_coordnums.cpp \
-	colvars/src/colvarmodule.h \
-	colvars/src/colvars_version.h \
-	colvars/src/colvarparse.h \
-	colvars/src/colvarvalue.h \
-	colvars/src/colvartypes.h \
-	colvars/src/colvaratoms.h \
-	colvars/src/colvarproxy.h \
-	colvars/src/colvardeps.h \
-	colvars/src/colvar.h \
-	colvars/src/colvarcomp.h \
-	colvars/src/colvar_arithmeticpath.h \
-	colvars/src/colvar_geometricpath.h
-	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_coordnums.o $(COPTC) colvars/src/colvarcomp_coordnums.cpp
-obj/colvarcomp_distances.o: \
-	obj/.exists \
-	colvars/src/colvarcomp_distances.cpp \
-	colvars/src/colvarmodule.h \
-	colvars/src/colvars_version.h \
-	colvars/src/colvarvalue.h \
-	colvars/src/colvartypes.h \
-	colvars/src/colvarparse.h \
-	colvars/src/colvar.h \
-	colvars/src/colvardeps.h \
-	colvars/src/colvarcomp.h \
-	colvars/src/colvaratoms.h \
-	colvars/src/colvarproxy.h \
-	colvars/src/colvar_arithmeticpath.h \
-	colvars/src/colvar_geometricpath.h
-	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_distances.o $(COPTC) colvars/src/colvarcomp_distances.cpp
-obj/colvarcomp_protein.o: \
-	obj/.exists \
-	colvars/src/colvarcomp_protein.cpp \
-	colvars/src/colvarmodule.h \
-	colvars/src/colvars_version.h \
-	colvars/src/colvarvalue.h \
-	colvars/src/colvartypes.h \
-	colvars/src/colvarparse.h \
-	colvars/src/colvar.h \
-	colvars/src/colvardeps.h \
-	colvars/src/colvarcomp.h \
-	colvars/src/colvaratoms.h \
-	colvars/src/colvarproxy.h \
-	colvars/src/colvar_arithmeticpath.h \
-	colvars/src/colvar_geometricpath.h
-	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_protein.o $(COPTC) colvars/src/colvarcomp_protein.cpp
-obj/colvarcomp_rotations.o: \
-	obj/.exists \
-	colvars/src/colvarcomp_rotations.cpp \
-	colvars/src/colvarmodule.h \
-	colvars/src/colvars_version.h \
-	colvars/src/colvarvalue.h \
-	colvars/src/colvartypes.h \
-	colvars/src/colvarparse.h \
-	colvars/src/colvar.h \
-	colvars/src/colvardeps.h \
-	colvars/src/colvarcomp.h \
-	colvars/src/colvaratoms.h \
-	colvars/src/colvarproxy.h \
-	colvars/src/colvar_arithmeticpath.h \
-	colvars/src/colvar_geometricpath.h
-	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_rotations.o $(COPTC) colvars/src/colvarcomp_rotations.cpp
-obj/colvarcomp_gpath.o: \
-	obj/.exists \
-	colvars/src/colvarcomp_gpath.cpp \
-	colvars/src/colvarmodule.h \
-	colvars/src/colvars_version.h \
-	colvars/src/colvarvalue.h \
-	colvars/src/colvartypes.h \
-	colvars/src/colvarparse.h \
-	colvars/src/colvar.h \
-	colvars/src/colvardeps.h \
-	colvars/src/colvarcomp.h \
-	colvars/src/colvaratoms.h \
-	colvars/src/colvarproxy.h \
-	colvars/src/colvar_arithmeticpath.h \
-	colvars/src/colvar_geometricpath.h
-	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_gpath.o $(COPTC) colvars/src/colvarcomp_gpath.cpp
-obj/colvarcomp_apath.o: \
-	obj/.exists \
-	colvars/src/colvarcomp_apath.cpp \
-	colvars/src/colvarmodule.h \
-	colvars/src/colvars_version.h \
-	colvars/src/colvarvalue.h \
-	colvars/src/colvartypes.h \
-	colvars/src/colvarparse.h \
-	colvars/src/colvar.h \
-	colvars/src/colvardeps.h \
-	colvars/src/colvarcomp.h \
-	colvars/src/colvaratoms.h \
-	colvars/src/colvarproxy.h \
-	colvars/src/colvar_arithmeticpath.h \
-	colvars/src/colvar_geometricpath.h
-	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_apath.o $(COPTC) colvars/src/colvarcomp_apath.cpp
-obj/colvardeps.o: \
-	obj/.exists \
-	colvars/src/colvardeps.cpp \
-	colvars/src/colvarmodule.h \
-	colvars/src/colvars_version.h \
-	colvars/src/colvarproxy.h \
-	colvars/src/colvartypes.h \
-	colvars/src/colvarvalue.h \
-	colvars/src/colvardeps.h \
-	colvars/src/colvarparse.h
-	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvardeps.o $(COPTC) colvars/src/colvardeps.cpp
-obj/colvargrid.o: \
-	obj/.exists \
-	colvars/src/colvargrid.cpp \
-	colvars/src/colvarmodule.h \
-	colvars/src/colvars_version.h \
-	colvars/src/colvarvalue.h \
-	colvars/src/colvartypes.h \
-	colvars/src/colvarparse.h \
-	colvars/src/colvar.h \
-	colvars/src/colvardeps.h \
-	colvars/src/colvarcomp.h \
-	colvars/src/colvaratoms.h \
-	colvars/src/colvarproxy.h \
-	colvars/src/colvar_arithmeticpath.h \
-	colvars/src/colvar_geometricpath.h \
-	colvars/src/colvargrid.h
-	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvargrid.o $(COPTC) colvars/src/colvargrid.cpp
-obj/colvarmodule.o: \
-	obj/.exists \
-	colvars/src/colvarmodule.cpp \
-	colvars/src/colvarmodule.h \
-	colvars/src/colvars_version.h \
-	colvars/src/colvarparse.h \
-	colvars/src/colvarvalue.h \
-	colvars/src/colvartypes.h \
-	colvars/src/colvarproxy.h \
-	colvars/src/colvar.h \
-	colvars/src/colvardeps.h \
-	colvars/src/colvarbias.h \
-	colvars/src/colvarbias_abf.h \
-	colvars/src/colvargrid.h \
-	colvars/src/colvar_UIestimator.h \
-	colvars/src/colvarbias_alb.h \
-	colvars/src/colvarbias_histogram.h \
-	colvars/src/colvarbias_meta.h \
-	colvars/src/colvarbias_restraint.h \
-	colvars/src/colvarscript.h \
-	colvars/src/colvaratoms.h \
-	colvars/src/colvarcomp.h \
-	colvars/src/colvar_arithmeticpath.h \
-	colvars/src/colvar_geometricpath.h
-	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarmodule.o $(COPTC) colvars/src/colvarmodule.cpp
-obj/colvarparse.o: \
-	obj/.exists \
-	colvars/src/colvarparse.cpp \
-	colvars/src/colvarmodule.h \
-	colvars/src/colvars_version.h \
-	colvars/src/colvarvalue.h \
-	colvars/src/colvartypes.h \
-	colvars/src/colvarparse.h
-	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarparse.o $(COPTC) colvars/src/colvarparse.cpp
-obj/colvarproxy.o: \
-	obj/.exists \
-	colvars/src/colvarproxy.cpp \
-	colvars/src/colvarmodule.h \
-	colvars/src/colvars_version.h \
-	colvars/src/colvarproxy.h \
-	colvars/src/colvartypes.h \
-	colvars/src/colvarvalue.h \
-	colvars/src/colvarscript.h \
-	colvars/src/colvarbias.h \
-	colvars/src/colvar.h \
-	colvars/src/colvarparse.h \
-	colvars/src/colvardeps.h \
-	colvars/src/colvaratoms.h
-	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarproxy.o $(COPTC) colvars/src/colvarproxy.cpp
-obj/colvarproxy_replicas.o: \
-	obj/.exists \
-	colvars/src/colvarproxy_replicas.cpp \
-	colvars/src/colvarmodule.h \
-	colvars/src/colvars_version.h \
-	colvars/src/colvarproxy.h \
-	colvars/src/colvartypes.h \
-	colvars/src/colvarvalue.h
-	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarproxy_replicas.o $(COPTC) colvars/src/colvarproxy_replicas.cpp
-obj/colvarscript.o: \
-	obj/.exists \
-	colvars/src/colvarscript.cpp \
-	colvars/src/colvarscript.h \
-	colvars/src/colvarmodule.h \
-	colvars/src/colvars_version.h \
-	colvars/src/colvarvalue.h \
-	colvars/src/colvartypes.h \
-	colvars/src/colvarbias.h \
-	colvars/src/colvar.h \
-	colvars/src/colvarparse.h \
-	colvars/src/colvardeps.h \
-	colvars/src/colvarproxy.h
-	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarscript.o $(COPTC) colvars/src/colvarscript.cpp
-obj/colvartypes.o: \
-	obj/.exists \
-	colvars/src/colvartypes.cpp \
-	colvars/src/colvarmodule.h \
-	colvars/src/colvars_version.h \
-	colvars/src/colvartypes.h \
-	colvars/src/colvarparse.h \
-	colvars/src/colvarvalue.h
-	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvartypes.o $(COPTC) colvars/src/colvartypes.cpp
-obj/colvarvalue.o: \
-	obj/.exists \
-	colvars/src/colvarvalue.cpp \
-	colvars/src/colvarmodule.h \
-	colvars/src/colvars_version.h \
-	colvars/src/colvarvalue.h \
-	colvars/src/colvartypes.h
-	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarvalue.o $(COPTC) colvars/src/colvarvalue.cpp
-obj/CompiledExpression.o: \
-	obj/.exists \
-	lepton/src/CompiledExpression.cpp \
-	lepton/include/lepton/CompiledExpression.h \
-	lepton/include/lepton/ExpressionTreeNode.h \
-	lepton/include/lepton/windowsIncludes.h \
-	lepton/include/lepton/Operation.h \
-	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/Exception.h \
-	lepton/include/lepton/ParsedExpression.h
-	$(CXX) $(LEPTONCXXFLAGS) $(COPTO)obj/CompiledExpression.o $(COPTC) lepton/src/CompiledExpression.cpp
-obj/ExpressionProgram.o: \
-	obj/.exists \
-	lepton/src/ExpressionProgram.cpp \
-	lepton/include/lepton/ExpressionProgram.h \
-	lepton/include/lepton/ExpressionTreeNode.h \
-	lepton/include/lepton/windowsIncludes.h \
-	lepton/include/lepton/Operation.h \
-	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/Exception.h \
-	lepton/include/lepton/ParsedExpression.h
-	$(CXX) $(LEPTONCXXFLAGS) $(COPTO)obj/ExpressionProgram.o $(COPTC) lepton/src/ExpressionProgram.cpp
-obj/ExpressionTreeNode.o: \
-	obj/.exists \
-	lepton/src/ExpressionTreeNode.cpp \
-	lepton/include/lepton/ExpressionTreeNode.h \
-	lepton/include/lepton/windowsIncludes.h \
-	lepton/include/lepton/Exception.h \
-	lepton/include/lepton/Operation.h \
-	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/Exception.h
-	$(CXX) $(LEPTONCXXFLAGS) $(COPTO)obj/ExpressionTreeNode.o $(COPTC) lepton/src/ExpressionTreeNode.cpp
-obj/Operation.o: \
-	obj/.exists \
-	lepton/src/Operation.cpp \
-	lepton/include/lepton/Operation.h \
-	lepton/include/lepton/windowsIncludes.h \
-	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/Exception.h \
-	lepton/include/lepton/ExpressionTreeNode.h \
-	lepton/src/MSVC_erfc.h
-	$(CXX) $(LEPTONCXXFLAGS) $(COPTO)obj/Operation.o $(COPTC) lepton/src/Operation.cpp
-obj/ParsedExpression.o: \
-	obj/.exists \
-	lepton/src/ParsedExpression.cpp \
-	lepton/include/lepton/ParsedExpression.h \
-	lepton/include/lepton/ExpressionTreeNode.h \
-	lepton/include/lepton/windowsIncludes.h \
-	lepton/include/lepton/CompiledExpression.h \
-	lepton/include/lepton/ExpressionProgram.h \
-	lepton/include/lepton/Operation.h \
-	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/Exception.h
-	$(CXX) $(LEPTONCXXFLAGS) $(COPTO)obj/ParsedExpression.o $(COPTC) lepton/src/ParsedExpression.cpp
-obj/Parser.o: \
-	obj/.exists \
-	lepton/src/Parser.cpp \
-	lepton/include/lepton/Parser.h \
-	lepton/include/lepton/windowsIncludes.h \
-	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/Exception.h \
-	lepton/include/lepton/ExpressionTreeNode.h \
-	lepton/include/lepton/Operation.h \
-	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/Exception.h \
-	lepton/include/lepton/ParsedExpression.h \
-	lepton/include/lepton/ExpressionTreeNode.h
-	$(CXX) $(LEPTONCXXFLAGS) $(COPTO)obj/Parser.o $(COPTC) lepton/src/Parser.cpp
+include .rootdir/colvars/Make.depends
+include .rootdir/lepton/Make.depends
