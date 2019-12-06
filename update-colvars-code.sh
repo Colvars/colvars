@@ -258,22 +258,6 @@ fi
 if [ ${code} = "NAMD" ]
 then
 
-  if [ ! -d ${target}/colvars ] ; then
-    # Old layout: copy library files to the "src" folder
-    echo ""
-    if [ $force_update = 1 ] ; then
-      echo "Creating folder containing Colvars library files"
-      mkdir ${target}/colvars
-      mkdir ${target}/colvars/src
-      rm -f ${target}/src/colvar*
-    else
-      echo "Error: Colvars files are now stored in a separate folder."
-      echo "Please upgrade to the latest NAMD version (supported), "
-      echo "or use the -f flag (unsupported)."
-      exit 1
-    fi
-  fi
-  
   # New layout: copy library files to the "colvars" folder
   for src in ${source}/src/*.h ${source}/src/*.cpp
   do \
@@ -285,8 +269,10 @@ then
   if [ $updated_file = 1 ] ; then
     updated_makefile=1
   fi
+  condcopy "${source}/namd/colvars/Make.depends" \
+           "${target}/colvars/Make.depends"
 
-  # Update abf_integrate
+  # Update abf_integrate
   for src in ${source}/colvartools/*h ${source}/colvartools/*cpp
   do \
     tgt=$(basename ${src})
@@ -336,6 +322,18 @@ then
     tgt=$(basename ${src})
     checkfile "${src}" "${target}/${tgt}"
     if [ $updated_file = 1 ] ; then
+      updated_makefile=1
+    fi
+  done
+
+  # One last check that each file is correctly included in the dependencies
+  for file in ${target}/colvars/src/*.{cpp,h} ; do
+    if [ ! -f ${target}/colvars/Make.depends ] || \
+       [ ! -f ${target}/lepton/Make.depends ] ; then
+      updated_makefile=1
+      break
+    fi
+    if ! grep -q ${file} ${target}/colvars/Make.depends ; then
       updated_makefile=1
     fi
   done

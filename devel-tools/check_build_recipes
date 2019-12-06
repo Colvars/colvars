@@ -7,9 +7,12 @@ pushd $(git rev-parse --show-toplevel) 1> /dev/null
 retcode=0
 for f in src/*.cpp ; do
     f=$(basename $f)
-    namd_target="\$(DSTDIR)/${f%.cpp}.o"
-    if ! grep -q ${namd_target} namd/colvars/src/Makefile.namd ; then
-        echo "Error: ${namd_target} missing from namd/colvars/src/Makefile.namd" >&2
+    if ! grep -q "\$(DSTDIR)/${f%.cpp}.o" namd/colvars/src/Makefile.namd ; then
+        echo "Error: ${f%.cpp}.o entry missing from namd/colvars/src/Makefile.namd" >&2
+        retcode=1
+    fi
+    if ! grep -q "obj/${f%.cpp}.o" namd/colvars/Make.depends ; then
+        echo "Error: obj/${f%.cpp}.o missing from namd/colvars/Make.depends" >&2
         retcode=1
     fi
     vmd_source=${f%.cpp}.C

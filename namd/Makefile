@@ -673,6 +673,8 @@ $(INCDIR)/%.decl.h $(INCDIR)/%.def.h: $(MKINCDIR) $(SRCDIR)/%.ci
 # Explicit rules for modules that don't match their file names.
 # Multiple targets must be a pattern to execute recipe only once.
 DEPENDFILE = .rootdir/Make.depends
+DEPENDFILECOLVARS = .rootdir/colvars/Make.depends
+DEPENDFILELEPTON = .rootdir/lepton/Make.depends
 
 # This is a CPU killer...  Don't make depends if you don't need to.
 depends: $(MKINCDIR) $(CIFILES) $(MKDSTDIR) $(DEPENDFILE)
@@ -680,7 +682,15 @@ depends: $(MKINCDIR) $(CIFILES) $(MKDSTDIR) $(DEPENDFILE)
 	if [ -f $(DEPENDFILE) ]; then \
 	   $(MOVE) -f $(DEPENDFILE) $(DEPENDFILE).old; \
 	fi; \
+	if [ -f $(DEPENDFILECOLVARS) ]; then \
+	   $(MOVE) -f $(DEPENDFILECOLVARS) $(DEPENDFILECOLVARS).old; \
+	fi; \
+	if [ -f $(DEPENDFILELEPTON) ]; then \
+	   $(MOVE) -f $(DEPENDFILELEPTON) $(DEPENDFILELEPTON).old; \
+	fi; \
 	touch $(DEPENDFILE); \
+	touch $(DEPENDFILECOLVARS); \
+	touch $(DEPENDFILELEPTON); \
 	for i in $(OBJS) ; do \
 	      SRCFILE=$(SRCDIR)/`basename $$i .o`.C ; \
 	      COMPILER='$$(CXX)' ; \
@@ -724,18 +734,20 @@ depends: $(MKINCDIR) $(CIFILES) $(MKDSTDIR) $(DEPENDFILE)
 	      SRCFILE=$(COLVARSSRCDIR)/`basename $$i .o`.cpp ; \
 	      $(ECHO) "checking dependencies for $$SRCFILE" ; \
 	      g++ -std=c++0x -MM $(COLVARSGXXFLAGS) $$SRCFILE | \
-	      perl $(SRCDIR)/dc.pl $(CHARMINC) $(TCLDIR) $(FFTDIR) /usr/include /usr/local >> $(DEPENDFILE); \
+	      perl $(SRCDIR)/dc.pl $(CHARMINC) $(TCLDIR) $(FFTDIR) /usr/include /usr/local >> $(DEPENDFILECOLVARS) ; \
 	      $(ECHO) '	$$(CXX) $$(COLVARSCXXFLAGS) $$(COPTO)'$$i '$$(COPTC)' \
-		$$SRCFILE >> $(DEPENDFILE) ; \
+		$$SRCFILE >> $(DEPENDFILECOLVARS) ; \
 	done; \
+	$(ECHO) include $(DEPENDFILECOLVARS) >> $(DEPENDFILE) ; \
 	for i in $(LEPTONOBJS) ; do \
 	      SRCFILE=$(LEPTONSRCDIR)/`basename $$i .o`.cpp ; \
 	      $(ECHO) "checking dependencies for $$SRCFILE" ; \
 	      g++ -std=c++0x -MM $(LEPTONGCCFLAGS) $$SRCFILE | \
-	      perl $(SRCDIR)/dc.pl $(CHARMINC) $(TCLDIR) $(FFTDIR) /usr/include /usr/local >> $(DEPENDFILE); \
+	      perl $(SRCDIR)/dc.pl $(CHARMINC) $(TCLDIR) $(FFTDIR) /usr/include /usr/local >> $(DEPENDFILELEPTON); \
 	      $(ECHO) '	$$(CXX) $$(LEPTONCXXFLAGS) $$(COPTO)'$$i '$$(COPTC)' \
-		$$SRCFILE >> $(DEPENDFILE) ; \
+		$$SRCFILE >> $(DEPENDFILELEPTON) ; \
 	done; \
+	$(ECHO) include $(DEPENDFILELEPTON) >> $(DEPENDFILE) ; \
 	$(RM) $(DEPENDFILE).sed; \
 	sed -e "/obj\/Controller.o/ s/CXXFLAGS/CXXTHREADFLAGS/" \
 	    -e "/obj\/Sequencer.o/ s/CXXFLAGS/CXXTHREADFLAGS/" \
