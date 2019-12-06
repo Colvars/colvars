@@ -523,7 +523,7 @@ proc ::cv_dashboard::update_shown_gradients {} {
   set colorid 3 ;# avoid very common or less visible colors blue, red, gray
   set molid $::cv_dashboard::mol
   foreach { cv objs } [array get ::cv_dashboard::grad_objects] {
-    
+
     # Delete out-of-date graphical objects (arrows)
     foreach obj $objs {
       graphics $molid delete $obj

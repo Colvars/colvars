@@ -77,7 +77,6 @@ void colvar::aspathCV::calc_gradients() {
                     }
                 }
             }
-        
         }
     }
 }
@@ -166,7 +165,7 @@ void colvar::azpathCV::calc_gradients() {
                     }
                 }
             }
-        
+
         }
     }
 }

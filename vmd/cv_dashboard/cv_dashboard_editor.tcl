@@ -25,7 +25,7 @@ proc ::cv_dashboard::edit { {add false} } {
     set ::cv_dashboard::backup_cfg ""
     if { [info exists ::cv_dashboard::template_base_dir] } {
       # Open "official" colvar template
-      set in [open ${::cv_dashboard::template_base_dir}/colvar.in r]
+      set in [open ${::cv_dashboard::template_base_dir}/colvar/colvar.in r]
       set cfg [read $in]
       close $in
     } else {
@@ -70,16 +70,40 @@ proc ::cv_dashboard::edit { {add false} } {
   grid columnconfigure $docs 1 -weight 1
   grid columnconfigure $docs 2 -weight 1
 
+  ############# Templates #########################################
+  labelframe  $w.editor.fl.templates -bd 2 -text "Templates" -padx 2 -pady 2
+  set templates $w.editor.fl.templates
+
+  # One line per subdirectory
+  foreach d { colvar component other } {
+    set ::cv_dashboard::templates_$d [dict create]
+
+    foreach f [glob "${::cv_dashboard::template_dir}/$d/*.in"] {
+      # Map pretty template name to file name
+      dict set ::cv_dashboard::templates_$d [regsub -all {_} [file rootname [file tail $f]] " "] $f
+    }
+    tk::label $templates.template_label_$d -text "$d templates:"
+    ttk::combobox $templates.pick_template_$d -justify left -state readonly
+    $templates.pick_template_$d configure -values [dict keys [set ::cv_dashboard::templates_$d]]
+    bind $templates.pick_template_$d <Return> \
+      "::cv_dashboard::insert_template $templates.pick_template_$d [list [set ::cv_dashboard::templates_$d]]"
+    ttk::button $templates.insert_template_$d -text "Insert \[Enter\]" \
+      -command "::cv_dashboard::insert_template $templates.pick_template_$d [list [set ::cv_dashboard::templates_$d]]" \
+      -padding "2 0 2 0"
+
+    grid $templates.template_label_$d -row $gridrow -column 0 -pady 2 -padx 2
+    grid $templates.pick_template_$d -row $gridrow -sticky ew -column 1 -pady 2 -padx 2
+    grid $templates.insert_template_$d -row $gridrow -column 2 -pady 2 -padx 2
+    incr gridrow
+  }
+
+  grid columnconfigure $templates 0 -weight 0
+  grid columnconfigure $templates 1 -weight 1
+  grid columnconfigure $templates 2 -weight 0
+
+  ############# Various helpers ###################################
   labelframe  $w.editor.fl.helpers -bd 2 -text "Editing helpers" -padx 2 -pady 2
   set helpers $w.editor.fl.helpers
-  ############# Templates #########################################
-  tk::label $helpers.template_label -text "Insert template:"
-  ttk::button $helpers.insert_template -text "Pick template file" \
-    -command [list ::cv_dashboard::insert_template] -padding "2 0 2 0"
-
-  grid $helpers.template_label -row $gridrow -column 0 -pady 2 -padx 2
-  grid $helpers.insert_template -row $gridrow -column 1 -columnspan 2 -sticky ew -pady 2 -padx 2
-  incr gridrow
 
   ############# Atoms from seltext ################################
   tk::label $helpers.seltext_label -text "Atoms from selection text:"
@@ -101,7 +125,7 @@ proc ::cv_dashboard::edit { {add false} } {
   bind $helpers.reps <<ComboboxSelected>> "::cv_dashboard::atoms_from_sel reps"
 
   grid $helpers.rep_label -row $gridrow -column 0 -pady 2 -padx 2
-  grid $helpers.reps -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  grid $helpers.reps -row $gridrow -column 1 -pady 2 -padx 2 -sticky ew
   grid $helpers.refresh_reps -row $gridrow -column 2 -pady 2 -padx 2
   incr gridrow
 
@@ -115,9 +139,9 @@ proc ::cv_dashboard::edit { {add false} } {
   $helpers.labels configure -values [list Bonds Angles Dihedrals]
   $helpers.labels set Bonds
 
-  grid $helpers.labeled_atoms -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  grid $helpers.labeled_var -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  grid $helpers.labels -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+  grid $helpers.labeled_atoms -row $gridrow -column 0 -pady 2 -padx 2
+  grid $helpers.labeled_var -row $gridrow -column 1 -pady 2 -padx 2 -sticky ew
+  grid $helpers.labels -row $gridrow -column 2 -pady 2 -padx 2
   incr gridrow
 
   ################# Insert file name from file picker ###########################
@@ -131,11 +155,13 @@ proc ::cv_dashboard::edit { {add false} } {
   grid $helpers.insert_file -row $gridrow -column 2 -pady 2 -padx 2
   incr gridrow
 
-  grid columnconfigure $helpers 0 -weight 1
+  grid columnconfigure $helpers 0 -weight 0
   grid columnconfigure $helpers 1 -weight 1
-  grid columnconfigure $helpers 2 -weight 1
+  grid columnconfigure $helpers 2 -weight 0
 
+  # Layout of all frames
   grid $docs -sticky ew
+  grid $templates -sticky ew
   grid $helpers -sticky ew
   grid columnconfigure $w.editor.fl 0 -weight 1
 
@@ -309,21 +335,13 @@ proc ::cv_dashboard::insert_labels {obj} {
   }
 }
 
+
 # Insert contents of template file
-proc ::cv_dashboard::insert_template {} {
-  set w .cv_dashboard_window
-  if { [info exists ::cv_dashboard::template_dir] } {
-    set path [tk_getOpenFile -initialdir $::cv_dashboard::template_dir]
-  } else {
-    set path [tk_getOpenFile -initialdir [pwd]]
-  }
-  if [string compare $path ""] {
-    # Save directory for next invocation of this dialog
-    set ::cv_dashboard::template_dir [file dirname $path]
-    set in [open $path r]
-    editor_replace [read $in]
-    close $in
-  }
+proc ::cv_dashboard::insert_template { source map } {
+  set path [dict get $map [$source get]]
+  set in [open $path r]
+  editor_replace [read $in]
+  close $in
 }
 
 
