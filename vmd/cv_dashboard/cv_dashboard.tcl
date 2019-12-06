@@ -47,6 +47,8 @@ namespace eval ::cv_dashboard {
 
   variable mol -1       ;# ID of molecule currently associated with Colvars
 
+  variable indent "    " ;# indentation for config strings
+
   variable units
   variable units_to_text
   variable text_to_units
@@ -134,6 +136,9 @@ proc ::cv_dashboard::apply_config { cfg } {
   if { $cfg == "" } {
     return ""
   }
+
+  set cfg [substitute_atomselects $cfg]
+
   # Dump config for debugging possible crashes
   set dump [open "_dashboard_saved_config.colvars" w]
   puts $dump "# Current configuration of Colvars Module\n"
@@ -247,6 +252,42 @@ proc ::cv_dashboard::extract_colvar_configs { cfg_in } {
     }
   }
   return $map
+}
+
+
+# Detect magic comments and update following atom keywords
+proc ::cv_dashboard::substitute_atomselects { cfg_in } {
+  set lines [split $cfg_in "\n"]
+  set cfg ""
+  set seltext ""
+  foreach line $lines {
+    # If we:
+    # 1) remember a seltext from previous line, and
+    # 2) are processing a line starting with "atom" (atom selection keyword)
+    if { $seltext != "" && [regexp -nocase {^(\s*)atom} $line match spaces] } {
+      set sel [atomselect $::cv_dashboard::mol $seltext]
+      set serials [$sel get serial]
+      $sel delete
+      if {[llength $serials] == 0 } {
+        tk_messageBox -icon error -title "Colvars warning" -parent .cv_dashboard_window\
+          -message "Selection text \"${seltext}\" for automatic atom selection matches zero atoms. \
+Keeping atom numbers from existing configuration."
+        # Keep existing atom definition line
+        append cfg $line "\n"
+        # Forget seltext for next lines
+        set seltext ""
+      } else {
+        # Replace keyword, keeping indenting spaces
+        append cfg "${spaces}atomNumbers $serials\n"
+        # Forget seltext for next lines
+        set seltext ""
+      }
+    } else {
+      append cfg $line "\n"
+    }
+    regexp {^\s*# auto-updating selection: "(.*)"} $line match seltext
+  }
+  return $cfg
 }
 
 

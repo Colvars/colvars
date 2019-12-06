@@ -208,13 +208,14 @@ proc ::cv_dashboard::edit { {add false} } {
 
 proc ::cv_dashboard::tab_pressed { {shift false} } {
   set t .cv_dashboard_window.editor.fr.text
-
   set s [$t tag ranges sel]
+  set indent $::cv_dashboard::indent
+
   if { $s == "" } {
     # No selection
     if { $shift == false } {
       # Just insert spaces at cursor
-      $t insert insert "    "
+      $t insert insert $indent
       return -code break
     } else {
       # Select line of cursor
@@ -227,9 +228,9 @@ proc ::cv_dashboard::tab_pressed { {shift false} } {
 
   set current_sel [$t get {*}$s]
   if { $shift } {
-    regsub -all -lineanchor {^    } $current_sel "" new_sel
+    regsub -all -lineanchor "^${indent}" $current_sel "" new_sel
   } else {
-    regsub -all -lineanchor {^} $current_sel "    " new_sel
+    regsub -all -lineanchor "^" $current_sel $indent new_sel
   }
   $t replace {*}$s $new_sel sel
   return -code break
@@ -263,6 +264,8 @@ proc ::cv_dashboard::invokeBrowser {url} {
 # Insert atomNumbers command for given selection text
 proc ::cv_dashboard::atoms_from_sel { source } {
   set w .cv_dashboard_window
+  set indent ${::cv_dashboard::indent}
+  set indent3 "${indent}${indent}${indent}"
 
   # Called from textbox
   switch $source {
@@ -279,10 +282,17 @@ proc ::cv_dashboard::atoms_from_sel { source } {
 
   if {[llength $serials] == 0 } {
     tk_messageBox -icon error -title "Colvars error" -parent .cv_dashboard_window\
-      -message "Selection text matches zero atoms"
+      -message "Selection text \"${seltext}\" matches zero atoms."
     return
   }
-  editor_replace "        # Selection: \"$seltext\"\n        atomNumbers $serials\n"
+  # set auto to "" if not requested
+  set auto " auto-updating"
+  # Insert magic comment line followed by atomNumbers line
+  editor_replace \
+"${indent3}# atom list will be updated when loading into Dashboard or changing molecule
+${indent3}# delete \"auto-updating\" to make the list static
+${indent3}#$auto selection: \"$seltext\"
+${indent3}atomNumbers $serials\n"
 }
 
 
@@ -300,6 +310,9 @@ proc ::cv_dashboard::editor_replace { text } {
 # Insert atom numbers or components from currently labeled objects in VMD
 proc ::cv_dashboard::insert_labels {obj} {
   set w .cv_dashboard_window
+  set indent ${::cv_dashboard::indent}
+  set indent2 "${indent}${indent}"
+
   if {$obj == "combo"} {
     set obj [$w.editor.fl.helpers.labels get]
   }
@@ -307,12 +320,13 @@ proc ::cv_dashboard::insert_labels {obj} {
   if { $obj == "Atoms" } {
     set serials [list]
     foreach l [label list $obj] {
+      # Skip hidden labels
       if { [lindex $l 2] == "hide" } { continue }
       set a [lindex $l 0]
       lappend serials [expr [lindex $a 1] + 1] ;# going from VMD 0-based to 1-based atomNumbers
     }
     if {[llength $serials] > 0} {
-      editor_replace "        # Atom labels\n        atomNumbers $serials\n"
+      editor_replace "${indent2}# Atom labels\n${indent2}atomNumbers $serials\n"
     }
   } else {
     set n(Bonds) 2
@@ -322,14 +336,15 @@ proc ::cv_dashboard::insert_labels {obj} {
     set cvc(Angles) angle
     set cvc(Dihedrals) dihedral
     foreach l [label list $obj] {
+      # Skip hidden labels
       if { [lindex $l 2] == "hide" } { continue }
-      set cfg "    $cvc($obj) \{\n"
+      set cfg "${indent}$cvc($obj) \{\n"
       for {set i 0} { $i < $n($obj) } {incr i} {
         set a [lindex $l $i]
         set serial [expr [lindex $a 1] + 1]
-        append cfg "        group[expr $i+1] \{\n            atomNumbers $serial\n        \}\n"
+        append cfg "${indent2}group[expr $i+1] \{\n${indent2}${indent}atomNumbers $serial\n${indent2}\}\n"
       }
-      append cfg "    \}\n"
+      append cfg "${indent}\}\n"
       editor_replace $cfg
     }
   }
@@ -349,6 +364,8 @@ proc ::cv_dashboard::insert_template { source map } {
 proc ::cv_dashboard::insert_filename {} {
   variable ::cv_dashboard::filetype
   set w .cv_dashboard_window
+  set indent ${::cv_dashboard::indent}
+  set indent2 "${indent}${indent}"
 
   if { [info exists ::cv_dashboard::atomfile_dir] } {
     set path [tk_getOpenFile -filetypes {{"PDB" .pdb} {"XYZ" .xyz} {"All files" *}} \
@@ -360,7 +377,9 @@ proc ::cv_dashboard::insert_filename {} {
     # Save directory for next invocation of this dialog
     set ::cv_dashboard::atomfile_dir [file dirname $path]
     set coltype [string range $filetype 0 end-4]
-    editor_replace "        $filetype $path\n        # ${coltype}Col O\n        # ${coltype}ColValue 1\n"
+    editor_replace "${indent2}$filetype $path
+${indent2}# ${coltype}Col O
+${indent2}# ${coltype}ColValue 1\n"
   }
 }
 
