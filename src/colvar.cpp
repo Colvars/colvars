@@ -809,7 +809,7 @@ int colvar::init_components(std::string const &conf)
   error_code |= init_components_type<eigenvector>(conf, "eigenvector", "eigenvector");
   error_code |= init_components_type<gspath>(conf, "geometrical path collective variables (s)", "gspath");
   error_code |= init_components_type<gzpath>(conf, "geometrical path collective variables (z)", "gzpath");
-  error_code |= init_components_type<linearCombination>(conf, "linear combination of other collective variables", "subColvar");
+  error_code |= init_components_type<linearCombination>(conf, "linear combination of other collective variables", "linearCombination");
   error_code |= init_components_type<gspathCV>(conf, "geometrical path collective variables (s) for other CVs", "gspathCV");
   error_code |= init_components_type<gzpathCV>(conf, "geometrical path collective variables (z) for other CVs", "gzpathCV");
   error_code |= init_components_type<aspathCV>(conf, "arithmetic path collective variables (s) for other CVs", "aspathCV");
