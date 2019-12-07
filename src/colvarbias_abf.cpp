@@ -162,6 +162,7 @@ int colvarbias_abf::init(std::string const &conf)
     for (i = 0; i < num_variables(); i++) {
       if (max_force[i] < 0.0) {
         cvm::error("Error: maxForce should be non-negative.");
+        return COLVARS_ERROR;
       }
     }
     cap_force = true;
@@ -200,25 +201,24 @@ int colvarbias_abf::init(std::string const &conf)
     czar_gradients = new colvar_grid_gradient(colvars);
   }
 
-  // For now, we integrate on-the-fly iff the grid is < 3D
-  if ( num_variables() <= 3 ) {
+  get_keyval(conf, "integrate", b_integrate, num_variables() <= 3); // Integrate for output if d<=3
+  if (b_integrate) {
+    // For now, we integrate on-the-fly iff the grid is < 3D
+    if ( num_variables() > 3 ) {
+      cvm::error("Error: cannot integrate free energy in dimension > 3.\n");
+      return COLVARS_ERROR;
+    }
     pmf = new integrate_potential(colvars, gradients);
     if ( b_CZAR_estimator ) {
       czar_pmf = new integrate_potential(colvars, czar_gradients);
     }
-    get_keyval(conf, "integrate", b_integrate, true); // Integrate for output
-    if ( num_variables() > 1 ) {
-      // Projected ABF
-      get_keyval(conf, "pABFintegrateFreq", pabf_freq, 0);
-      // Parameters for integrating initial (and final) gradient data
-      get_keyval(conf, "integrateInitMaxIterations", integrate_initial_iterations, 10000);
-      get_keyval(conf, "integrateInitTol", integrate_initial_tol, 1e-6);
-      // for updating the integrated PMF on the fly
-      get_keyval(conf, "integrateMaxIterations", integrate_iterations, 100);
-      get_keyval(conf, "integrateTol", integrate_tol, 1e-4);
-    }
-  } else {
-    b_integrate = false;
+    // Parameters for integrating initial (and final) gradient data
+    get_keyval(conf, "integrateMaxIterations", integrate_iterations, 1e4, colvarparse::parse_silent);
+    get_keyval(conf, "integrateTol", integrate_tol, 1e-6, colvarparse::parse_silent);
+    // Projected ABF, updating the integrated PMF on the fly
+    get_keyval(conf, "pABFintegrateFreq", pabf_freq, 0, colvarparse::parse_silent);
+    get_keyval(conf, "pABFintegrateMaxIterations", pabf_integrate_iterations, 100, colvarparse::parse_silent);
+    get_keyval(conf, "pABFintegrateTol", pabf_integrate_tol, 1e-4, colvarparse::parse_silent);
   }
 
   // For shared ABF, we store a second set of grids.
@@ -386,10 +386,10 @@ int colvarbias_abf::update()
     if ( b_integrate ) {
       if ( pabf_freq && cvm::step_relative() % pabf_freq == 0 ) {
         cvm::real err;
-        int iter = pmf->integrate(integrate_iterations, integrate_tol, err);
-        if ( iter == integrate_iterations ) {
-          cvm::log("Warning: PMF integration did not converge to " + cvm::to_str(integrate_tol)
-            + " in " + cvm::to_str(integrate_iterations)
+        int iter = pmf->integrate(pabf_integrate_iterations, pabf_integrate_tol, err);
+        if ( iter == pabf_integrate_iterations ) {
+          cvm::log("Warning: PMF integration did not converge to " + cvm::to_str(pabf_integrate_tol)
+            + " in " + cvm::to_str(pabf_integrate_iterations)
             + " steps. Residual error: " +  cvm::to_str(err));
         }
         pmf->set_zero_minimum(); // TODO: do this only when necessary
@@ -630,7 +630,7 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool clo
   if (b_integrate) {
     // Do numerical integration (to high precision) and output a PMF
     cvm::real err;
-    pmf->integrate(integrate_initial_iterations, integrate_initial_tol, err);
+    pmf->integrate(integrate_iterations, integrate_tol, err);
     pmf->set_zero_minimum();
     write_grid_to_file<colvar_grid_scalar>(pmf, prefix + ".pmf", close);
   }
@@ -656,7 +656,7 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool clo
       // Do numerical integration (to high precision) and output a PMF
       cvm::real err;
       czar_pmf->set_div();
-      czar_pmf->integrate(integrate_initial_iterations, integrate_initial_tol, err);
+      czar_pmf->integrate(integrate_iterations, integrate_tol, err);
       czar_pmf->set_zero_minimum();
       write_grid_to_file<colvar_grid_scalar>(czar_pmf, prefix + ".czar.pmf", close);
     }
