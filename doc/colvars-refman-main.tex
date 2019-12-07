@@ -186,15 +186,21 @@ Using the ``Edit'' button, the configuration of selected variables is loaded, an
 The editor window offers links to online documentation, as well as helpers to write correct configuration files.
 
 As a first step, the most useful helper is the collection of template files.
-Parameters that must be supplied are indicated by the symbol @.
-Colvar templates can be inserted at the beginning of the configuration, whereas ``component'' templates found in the directory of the same name define basis functions that belong inside a colvar block.
+Some parameters that must be supplied are indicated by the symbol @.
+Colvar templates can be inserted at the beginning of the configuration, whereas ``component'' templates define basis functions that belong inside a colvar block.
 Templates are indented using 4 spaces per level to indicate their position in the nested structure of the configuration: general options, colvars and biases at level 0,
 bias and colvar parameters like components at level 1, component parameters such as atom groups at level 2, and atom group parameters at level 3.
 
 The next helper buttons allow importing atom selections from VMD, either typing a VMD atom selection text, by copying the selection of an existing graphical representation, or by inserting the list of atoms currently labeled in VMD using the ``Pick atom'' feature.
 Atom selections should be inserted within an atom group block, within a component block (such as \texttt{distance}).
+By default atom selections are preceded with a comment line marking them as \emph{auto-updating}.
+This instructs the Dashboard to update the list of atoms whenever the configuration is applied, that is, when it is edited, when the file is loaded by the Dashboard, or when changing the molecule linked to Colvars.
+This is useful when working across systems with different atom numberings, but topologies that make atom groups identifiable using VMD selection texts.
+Special fields (O, B, and user) may be used, as well as atom positions (e.g. \texttt{z > 0}).
+Note that the atom selections used by Colvars are not updated when changing frame within the same molecule (animating a trajectory).
 
 The ``Insert labeled...'' button combined with the selection box allows for inserting components matching VMD's geometry measurements: Bonds (distances), angles, and dihedrals.
+Hidden labels are not used for inserting components.
 
 \cvsubsec{Plotting and visualizing collective variables}{sec:dashboard_visualization}
 
