@@ -23,7 +23,7 @@ Colvars requires a configuration file, or alternatively configuration arguments 
 colvars on
 cv configfile <Colvars configuration file>
 ```
-In VMD:
+In VMD (_Tip:_ try also the new "Colvars Dashboard" plugin):
 ```
 cv molid top
 cv configfile <Colvars configuration file>
@@ -67,15 +67,16 @@ and run the provided `update-colvars-code.sh` script against the unpacked source
 ```
 ./update-colvars-code.sh /path/to/NAMD_X.YY_Source ; # updates NAMD
 ./update-colvars-code.sh /path/to/vmd-X.Y.Z        ; # updates VMD
+./update-colvars-code.sh /path/to/vmd-plugins      ; # updates VMD plugins
 ./update-colvars-code.sh /path/to/lammps           ; # updates LAMMPS
 ```
 and recompile them.
 
-The `update-colvars-code.sh` script is synchronized with the latest version of each program: [NAMD nightly build](http://www.ks.uiuc.edu/Development/Download/download.cgi?PackageName=NAMD), [VMD CVS](http://www.ks.uiuc.edu/Research/vmd/doxygen/cvsget.html) and the Github repository of [LAMMPS](https://github.com/lammps/lammps).  Earlier versions are not supported.
+The `update-colvars-code.sh` script and its supporting files are synchronized with the latest version of each program: [NAMD nightly build](http://www.ks.uiuc.edu/Development/Download/download.cgi?PackageName=NAMD), [VMD CVS](http://www.ks.uiuc.edu/Research/vmd/doxygen/cvsget.html) and the Github repository of [LAMMPS](https://github.com/lammps/lammps).  Earlier versions are not supported.
 
 ## Which version is recommended?
 
-All bugfixes are released through the `master` branch, which is to be considered the "*stable*" release at any given time.  The input syntax is *backward-compatible* and output files are *forward-compatible*.  Feel free to download Colvars and update NAMD, VMD or LAMMPS as needed.
+The `master` branch is to be considered the "*stable*" release at any given time; any bugfixes are released through `master` first.  The input syntax is near-completely *backward-compatible* and output files are *forward-compatible*.  Feel free to download Colvars and update NAMD, VMD or LAMMPS as needed.
 
 Other branches are dedicated to the development of specific features: please use them at your own discretion.
 
