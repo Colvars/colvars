@@ -87,7 +87,10 @@ proc cv_dashboard {} {
       # if not already there, setup Colvars on top molecule
       ::cv_dashboard::run_cv molid [molinfo top]
     }
-    set ::cv_dashboard::mol [cv molid]
+    # Try to obtain actual molid, if that fails default to top
+    if [catch { set ::cv_dashboard::mol [cv molid]} ] {
+      set ::cv_dashboard::mol [molinfo top]]
+    }
   }
 
   if {[winfo exists .cv_dashboard_window]} {

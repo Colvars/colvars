@@ -25,7 +25,7 @@ proc ::cv_dashboard::edit { {add false} } {
     set ::cv_dashboard::backup_cfg ""
     if { [info exists ::cv_dashboard::template_base_dir] } {
       # Open "official" colvar template
-      set in [open ${::cv_dashboard::template_base_dir}/colvar/colvar.in r]
+      set in [open ${::cv_dashboard::template_base_dir}/default.in r]
       set cfg [read $in]
       close $in
     } else {
@@ -78,7 +78,7 @@ proc ::cv_dashboard::edit { {add false} } {
   foreach d { colvar component other } {
     set ::cv_dashboard::templates_$d [dict create]
 
-    foreach f [glob "${::cv_dashboard::template_dir}/$d/*.in"] {
+    foreach f [lsort -dictionary [glob -nocomplain "${::cv_dashboard::template_dir}/$d/*.in"]] {
       # Map pretty template name to file name
       dict set ::cv_dashboard::templates_$d [regsub -all {_} [file rootname [file tail $f]] " "] $f
     }
