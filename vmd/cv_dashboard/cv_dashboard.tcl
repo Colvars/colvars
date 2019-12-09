@@ -23,7 +23,7 @@
 # TODO maybe:
 # - index group builder
 
-package provide cv_dashboard 1.2
+package provide cv_dashboard 1.3
 
 namespace eval ::cv_dashboard {
   # General UI state

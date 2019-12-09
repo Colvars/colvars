@@ -18,7 +18,7 @@ then
         (default: create diff files for inspection --- MD code may be different)
 
    <target source tree> = root directory of the MD code sources
-   supported MD codes: NAMD, VMD, LAMMPS
+   supported codes: NAMD, VMD, VMD PLUGINS, LAMMPS
 
 EOF
    exit 1
@@ -74,6 +74,9 @@ then
 elif [ -f "${target}/src/VMDApp.h" ]
 then
   code="VMD"
+elif [ -f "${target}/include/molfile_plugin.h" ]
+then
+  code="VMD-PLUGINS"
 elif [ -f "${target}/src/gromacs/commandline.h" ]
 then
   code="GROMACS"
@@ -406,6 +409,28 @@ then
   exit 0
 fi
 
+
+# Update VMD plugins tree
+if [ ${code} = "VMD-PLUGINS" ]
+then
+
+  # Use the Dashboard's Makefile to patch the plugin tree
+  if pushd ${source}/vmd/cv_dashboard > /dev/null ; then
+    DASHBOARD_VERSION=$(grep ^VERSION Makefile.local | cut -d' ' -f 3)
+    if [ -d ${target}/noarch ] ; then
+      # This is an already-installed plugin tree
+      DASHBOARD_DESTINATION=${target}/noarch/tcl/cv_dashboard${DASHBOARD_VERSION}
+    else
+      # This is the source tree
+      DASHBOARD_DESTINATION=${target}/cv_dashboard
+    fi
+    DESTINATION=${DASHBOARD_DESTINATION} \
+      make --quiet -f Makefile.local > /dev/null
+    echo -n '......'
+    popd > /dev/null
+  fi
+  echo ' done.'
+fi
 
 # Update GROMACS tree
 if [ ${code} = "GROMACS" ]
