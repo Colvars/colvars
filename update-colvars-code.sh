@@ -18,7 +18,7 @@ then
         (default: create diff files for inspection --- MD code may be different)
 
    <target source tree> = root directory of the MD code sources
-   supported MD codes: NAMD, VMD, LAMMPS
+   supported codes: NAMD, VMD, VMD PLUGINS, LAMMPS
 
 EOF
    exit 1
