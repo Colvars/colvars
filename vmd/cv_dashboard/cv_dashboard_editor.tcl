@@ -289,7 +289,7 @@ proc ::cv_dashboard::atoms_from_sel { source } {
   set auto " auto-updating"
   # Insert magic comment line followed by atomNumbers line
   editor_replace \
-"${indent3}# atom list will be updated when loading into Dashboard or changing molecule
+"${indent3}# atom list will be updated when applying changes or changing molecule
 ${indent3}# delete \"auto-updating\" to make the list static
 ${indent3}#$auto selection: \"$seltext\"
 ${indent3}atomNumbers $serials\n"
