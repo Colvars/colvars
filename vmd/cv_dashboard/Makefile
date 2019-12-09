@@ -1,7 +1,7 @@
 .SILENT:
 
 VMFILES = cv_dashboard.tcl cv_dashboard_main.tcl cv_dashboard_editor.tcl cv_dashboard_plots.tcl pkgIndex.tcl templates
-VMVERSION =1.3
+VMVERSION = 1.3
 DIR = $(PLUGINDIR)/noarch/tcl/cv_dashboard$(VMVERSION)
 
 bins:

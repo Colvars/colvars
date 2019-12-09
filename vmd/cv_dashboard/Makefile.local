@@ -1,6 +1,6 @@
 # -*- makefile -*-
 
-VERSION =1.3
+VERSION = 1.3
 ifeq (${DESTINATION},)
 DESTINATION = ${HOME}/lib/vmd/plugins/noarch/tcl/cv_dashboard${VERSION}
 endif
