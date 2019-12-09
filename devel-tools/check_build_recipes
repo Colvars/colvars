@@ -12,8 +12,7 @@ for f in src/*.cpp ; do
         retcode=1
     fi
     if ! grep -q "obj/${f%.cpp}.o" namd/colvars/Make.depends ; then
-        echo "Error: obj/${f%.cpp}.o missing from namd/colvars/Make.depends" >&2
-        retcode=1
+        echo "Warning: obj/${f%.cpp}.o missing from namd/colvars/Make.depends" >&2
     fi
     vmd_source=${f%.cpp}.C
     if ! grep -q ${vmd_source} vmd/src/colvars_files.pl ; then
