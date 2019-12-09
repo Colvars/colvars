@@ -1,0 +1,28 @@
+colvar {
+    # A "distance to bound configuration" (DBC) coordinate for ligand binding restraints
+    # see Salari, Joseph, Lohia, Hénin and Brannigan, J. Chem. Theory Comput. 2018, 14, 12, 6560-6573
+    # https://arxiv.org/abs/1801.04901
+
+    name DBC
+
+    rmsd {
+        # Reference coordinates (for ligand RMSD computation)
+        refpositionsfile reference.pdb # PDB or XYZ file
+
+        atoms {
+            # Define ligand atoms used for RMSD calculation
+             atomNumbers 1 2 3
+
+            # Moving frame of reference is defined below
+            centerReference yes
+            rotateReference yes
+            fittingGroup {
+                # Define binding site atoms used for fitting
+                atomNumbers 6 7 8
+            }
+            # Reference coordinates for binding site atoms
+            # (can be the same file as ligand coordinates above)
+            refPositionsFile reference.pdb # PDB or XYZ file
+        }
+    }
+}
