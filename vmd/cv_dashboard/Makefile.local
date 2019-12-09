@@ -1,8 +1,11 @@
+# -*- makefile -*-
 
-VERSION=1.2
-PLUGINDIR=${HOME}/lib/vmd/plugins/noarch/tcl
+VERSION = 1.2
+ifeq (${DESTINATION},)
+DESTINATION = ${HOME}/lib/vmd/plugins/noarch/tcl/cv_dashboard${VERSION}
+endif
 
 install:
-	mkdir -p ${PLUGINDIR}/cv_dashboard${VERSION} && \
-		rsync -avL --delete *.tcl templates ${PLUGINDIR}/cv_dashboard${VERSION}/. 
+	mkdir -p ${DESTINATION} && \
+	  rsync -avL --delete --exclude=Makefile.local ./ ${DESTINATION}/
 
