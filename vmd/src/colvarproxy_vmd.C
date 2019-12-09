@@ -37,7 +37,7 @@ int tcl_colvars(ClientData clientdata, Tcl_Interp *interp,
 
     if (objc >= 2 && !strcmp(Tcl_GetString(objv[1]), "molid")) {
        if (objc == 2) {
-        Tcl_SetResult(interp, cvm::to_str(proxy->get_vmdmolid()).c_str(), TCL_VOLATILE);
+        Tcl_SetResult(interp, const_cast<char *>(cvm::to_str(proxy->get_vmdmolid()).c_str()), TCL_VOLATILE);
         return TCL_OK;
        } else {
         Tcl_SetResult(interp, (char *) "Colvars module already created:"
