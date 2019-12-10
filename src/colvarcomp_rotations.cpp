@@ -358,7 +358,7 @@ colvar::spin_angle::spin_angle(std::string const &conf)
 {
   function_type = "spin_angle";
   period = 360.0;
-  b_periodic = true;
+  enable(f_cvc_periodic);
   enable(f_cvc_explicit_gradient);
   x.type(colvarvalue::type_scalar);
   init(conf);
@@ -386,7 +386,7 @@ colvar::spin_angle::spin_angle()
 {
   function_type = "spin_angle";
   period = 360.0;
-  b_periodic = true;
+  enable(f_cvc_periodic);
   enable(f_cvc_explicit_gradient);
   x.type(colvarvalue::type_scalar);
 }

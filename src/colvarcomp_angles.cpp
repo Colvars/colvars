@@ -259,7 +259,7 @@ colvar::dihedral::dihedral(std::string const &conf)
 {
   function_type = "dihedral";
   period = 360.0;
-  b_periodic = true;
+  enable(f_cvc_periodic);
   provide(f_cvc_inv_gradient);
   provide(f_cvc_Jacobian);
   enable(f_cvc_com_based);
@@ -285,7 +285,7 @@ colvar::dihedral::dihedral(cvm::atom const &a1,
 
   function_type = "dihedral";
   period = 360.0;
-  b_periodic = true;
+  enable(f_cvc_periodic);
   provide(f_cvc_inv_gradient);
   provide(f_cvc_Jacobian);
   enable(f_cvc_com_based);
@@ -312,7 +312,7 @@ colvar::dihedral::dihedral()
 {
   function_type = "dihedral";
   period = 360.0;
-  b_periodic = true;
+  enable(f_cvc_periodic);
   provide(f_cvc_inv_gradient);
   provide(f_cvc_Jacobian);
   x.type(colvarvalue::type_scalar);
