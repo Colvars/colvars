@@ -325,6 +325,9 @@ public:
   enum features_cvc {
     f_cvc_active,
     f_cvc_scalar,
+    f_cvc_periodic,
+    f_cvc_lower_boundary,
+    f_cvc_upper_boundary,
     f_cvc_gradient,
     /// \brief CVC calculates and stores explicit atom gradients
     f_cvc_explicit_gradient,
