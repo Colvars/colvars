@@ -2919,44 +2919,49 @@ The parameters described below offer a way to specify these parameters only once
 
 \item %
   \labelkey{colvar|lowerBoundary}
-  \key
+  \keydef
     {lowerBoundary}{%
     \texttt{colvar}}{%
     Lower boundary of the colvar}{%
     decimal}{%
-    Defines the lowest end of the interval of ``relevant'' values for the colvar.
-    This number can be either a true physical boundary, or a user-defined number.  
-    Together with \texttt{upperBoundary} and \texttt{width}, it is used to define a grid of values along the variable (not available for variables with vector values, \ref{sec:cvc_non_scalar}).
-    \emph{This option does not affect dynamics: to confine a colvar within a certain interval, use a \texttt{harmonicWalls} bias.}
+    natural boundary of the function}{%
+    Defines the lowest end of the interval of ``relevant'' values for the variable.
+    This number can be, for example, a true physical boundary imposed by the choice of function (e.g.{} the \texttt{distance} function is always larger than zero): if this is the case, and only one function is used to define the variable, tthe default value of this number is set to the lowest end of the range of values of that function, if available (see Section~\ref{sec:cvc_list}).
+    Alternatively, this value may be provided by the user, to represent for example the left-most point of a PMF calculation along this variable.
+    In the latter case, it is the user's responsibility to either \emph{(a)} ensure the variable does not go significantly beyond the boundary (for example by adding a \texttt{harmonicWalls} restraint, \ref{sec:colvarbias_harmonic_walls}), or \emph{(b)} instruct the code that this is a true physical boundary by setting \refkey{hardLowerBoundary}{colvar|hardLowerBoundary}.
 }
 
 \item %
   \labelkey{colvar|upperBoundary} %
-  \key
+  \keydef
     {upperBoundary}{%
     \texttt{colvar}}{%
     Upper boundary of the colvar}{%
     decimal}{%
-    Similarly to \texttt{lowerBoundary}, defines the highest possible or allowed value.}
+    natural boundary of the function}{%
+    Similarly to \texttt{lowerBoundary}, defines the highest of the ``relevant'' values of the variable.}
 
 \item %
+  \labelkey{colvar|hardLowerBoundary} %
   \keydef
     {hardLowerBoundary}{%
     \texttt{colvar}}{%
     Whether the lower boundary is the physical lower limit}{%
     boolean}{%
-    \texttt{off}}{%
-    This option does not affect simulation results, but enables some internal optimizations.
-    Depending on its mathematical definition, a colvar may have ``natural'' boundaries: for example, a \texttt{distance} colvar has a ``natural'' lower boundary at 0.  Setting this option instructs the Colvars module that the user-defined lower boundary is ``natural''.
-See Section~\ref{sec:cvc_list} for the physical ranges of values of each component.}
+    provided by the component}{%
+    When the colvar has a ``natural'' boundary (for example, a \texttt{distance} colvar cannot go below 0) this flag is automatically enabled.
+    For more complex variable definitions, or when \refkey{lowerBoundary}{colvar|lowerBoundary} is provided directly by the user, it may be necessary useful to set this flag explicitly.
+    This option does not affect simulation results, but enables some internal optimizations by letting the code know that the variable is unable to cross the lower boundary, regardless of whether restraints are applied to it.
+}
 
 \item %
+  \labelkey{colvar|hardUpperBoundary} %
   \keydef
     {hardUpperBoundary}{%
     \texttt{colvar}}{%
     Whether the upper boundary is the physical upper limit of the colvar's values}{%
     boolean}{%
-    \texttt{off}}{%
+    provided by the component}{%
     Analogous to \texttt{hardLowerBoundary}.}
 
 \item %
@@ -2967,9 +2972,7 @@ See Section~\ref{sec:cvc_list} for the physical ranges of values of each compone
     Allow to expand the two boundaries if needed}{%
     boolean}{%
     \texttt{off}}{%
-    If defined, biasing and analysis methods may keep their own copies
-    of \texttt{lowerBoundary} and \texttt{upperBoundary}, and expand
-    them to accommodate values that do not fit in the initial range.
+    If defined, \texttt{lowerBoundary} and \texttt{upperBoundary} may be automatically expanded to accommodate colvar values that do not fit in the initial range.
     Currently, this option is used by the metadynamics bias
     (\ref{sec:colvarbias_meta}) to keep all of its hills fully within
     the grid.  This option cannot be used when
