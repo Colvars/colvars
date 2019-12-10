@@ -1892,6 +1892,48 @@ int colvar::update_cvc_config(std::vector<std::string> const &confs)
 }
 
 
+int colvar::cvc_param_exists(std::string const &param_name)
+{
+  if (is_enabled(f_cv_single_component)) {
+    return cvcs[0]->param_exists(param_name);
+  }
+  return cvm::error("Error: calling colvar::cvc_param_exists() for a variable "
+                    "with more than one component.\n", COLVARS_NOT_IMPLEMENTED);
+}
+
+
+void const *colvar::get_cvc_param(std::string const &param_name)
+{
+  if (is_enabled(f_cv_single_component)) {
+    return cvcs[0]->get_param(param_name);
+  }
+  cvm::error("Error: calling colvar::get_cvc_param() for a variable "
+             "with more than one component.\n", COLVARS_NOT_IMPLEMENTED);
+  return NULL;
+}
+
+
+colvarvalue const *colvar::get_cvc_param_grad(std::string const &param_name)
+{
+  if (is_enabled(f_cv_single_component)) {
+    return cvcs[0]->get_param_grad(param_name);
+  }
+  cvm::error("Error: calling colvar::get_cvc_param_grad() for a variable "
+             "with more than one component.\n", COLVARS_NOT_IMPLEMENTED);
+  return NULL;
+}
+
+
+int colvar::set_cvc_param(std::string const &param_name, void const *new_value)
+{
+  if (is_enabled(f_cv_single_component)) {
+    return cvcs[0]->set_param(param_name, new_value);
+  }
+  return cvm::error("Error: calling colvar::set_cvc_param() for a variable "
+                    "with more than one component.\n", COLVARS_NOT_IMPLEMENTED);
+}
+
+
 // ******************** METRIC FUNCTIONS ********************
 // Use the metrics defined by \link colvar::cvc \endlink objects
 
