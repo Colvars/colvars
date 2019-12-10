@@ -356,7 +356,7 @@ public:
   /// colvar::update()) to the external degrees of freedom
   void communicate_forces();
 
-  /// \brief Enables and disables individual CVCs based on flags
+  /// \brief Enables and disables individual CVCs based on the given array
   int set_cvc_flags(std::vector<bool> const &flags);
 
   /// \brief Updates the flags in the CVC objects, and their number
@@ -365,7 +365,20 @@ public:
   /// \brief Modify the configuration of CVCs (currently, only base class data)
   int update_cvc_config(std::vector<std::string> const &confs);
 
+  /// Whether this named parameter exists (in the first and only component)
+  int cvc_param_exists(std::string const &param_name);
+
+  /// Get a pointer to the named parameter (from the first and only component)
+  void const *get_cvc_param(std::string const &param_name);
+
+  /// Pointer to the derivative of the variable with respect to param_name
+  colvarvalue const *get_cvc_param_grad(std::string const &param_name);
+
+  /// Set the named parameter in the first and only component to the given value
+  int set_cvc_param(std::string const &param_name, void const *new_value);
+
 protected:
+
   /// \brief Number of CVC objects with an active flag
   size_t n_active_cvcs;
 
