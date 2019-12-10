@@ -301,12 +301,32 @@ colvar::cvc::~cvc()
 }
 
 
+void colvar::cvc::init_as_distance()
+{
+  x.type(colvarvalue::type_scalar);
+  enable(f_cvc_lower_boundary);
+  lower_boundary.type(colvarvalue::type_scalar);
+  lower_boundary.real_value = 0.0;
+}
+
+
+void colvar::cvc::init_as_angle()
+{
+  x.type(colvarvalue::type_scalar);
+  enable(f_cvc_lower_boundary);
+  lower_boundary.type(colvarvalue::type_scalar);
+  lower_boundary.real_value = 0.0;
+  enable(f_cvc_upper_boundary);
+  upper_boundary.type(colvarvalue::type_scalar);
+  upper_boundary.real_value = 180.0;
+}
+
+
 void colvar::cvc::register_atom_group(cvm::atom_group *ag)
 {
   atom_groups.push_back(ag);
   add_child(ag);
 }
-
 
 
 void colvar::cvc::register_param(std::string const &param_name, void *param_ptr,

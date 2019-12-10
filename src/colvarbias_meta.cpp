@@ -451,7 +451,7 @@ int colvarbias_meta::update_grid_params()
         int       &new_size = new_sizes[i];
         bool changed_lb = false, changed_ub = false;
 
-        if (!variables(i)->hard_lower_boundary)
+        if (!variables(i)->is_enabled(f_cv_hard_lower_boundary))
           if (curr_bin[i] < min_buffer) {
             int const extra_points = (min_buffer - curr_bin[i]);
             new_lb -= extra_points * variables(i)->width;
@@ -468,7 +468,7 @@ int colvarbias_meta::update_grid_params()
                      cvm::to_str(new_lower_boundaries[i])+".\n");
           }
 
-        if (!variables(i)->hard_upper_boundary)
+        if (!variables(i)->is_enabled(f_cv_hard_upper_boundary))
           if (curr_bin[i] > new_size - min_buffer - 1) {
             int const extra_points = (curr_bin[i] - (new_size - 1) + min_buffer);
             new_ub += extra_points * variables(i)->width;

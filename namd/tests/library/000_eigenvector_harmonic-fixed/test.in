@@ -17,7 +17,7 @@ colvar {
         refPositionsFile rmsd_atoms_refpos.xyz
         vectorFile rmsd_atoms_random.xyz
     }
-} 
+}
 
 harmonic {
     colvars        one
