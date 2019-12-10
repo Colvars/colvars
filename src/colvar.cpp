@@ -503,10 +503,14 @@ int colvar::init_grid_parameters(std::string const &conf)
 
     if (get_keyval(conf, "lowerBoundary", lower_boundary, lower_boundary)) {
       enable(f_cv_lower_boundary);
+      // Because this is the user's choice, we cannot assume it is a natural
+      // boundary
+      disable(f_cv_hard_lower_boundary);
     }
 
     if (get_keyval(conf, "upperBoundary", upper_boundary, upper_boundary)) {
       enable(f_cv_upper_boundary);
+      disable(f_cv_hard_upper_boundary);
     }
 
     std::string lw_conf, uw_conf;
