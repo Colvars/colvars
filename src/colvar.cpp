@@ -198,11 +198,20 @@ int colvar::init(std::string const &conf)
   {
     bool homogeneous = is_enabled(f_cv_linear);
     for (i = 0; i < cvcs.size(); i++) {
-      if ((cvm::fabs(cvcs[i]->sup_coeff) - 1.0) > 1.0e-10) {
+      if (cvm::fabs(cvm::fabs(cvcs[i]->sup_coeff) - 1.0) > 1.0e-10) {
         homogeneous = false;
       }
     }
     set_enabled(f_cv_homogeneous, homogeneous);
+  }
+
+  // A single-component variable almost concides with its CVC object
+  if ((cvcs.size() == 1) && is_enabled(f_cv_homogeneous)) {
+    if ( !is_enabled(f_cv_scripted) && !is_enabled(f_cv_custom_function) &&
+         (cvm::fabs(cvcs[0]->sup_coeff - 1.0) < 1.0e-10) &&
+         (cvcs[0]->sup_np == 1) ) {
+      enable(f_cv_single_cvc);
+    }
   }
 
   // Colvar is deemed periodic if:
@@ -840,11 +849,6 @@ int colvar::init_components(std::string const &conf)
 
   n_active_cvcs = cvcs.size();
 
-  if (cvcs.size() == 1) {
-    provide(f_cv_single_component);
-    enable(f_cv_single_component);
-  }
-
   // Store list of children cvcs for dependency checking purposes
   for (i = 0; i < cvcs.size(); i++) {
     add_child(cvcs[i]);
@@ -1037,7 +1041,7 @@ int colvar::init_dependencies() {
     init_feature(f_cv_Langevin, "Langevin dynamics", f_type_user);
     require_feature_self(f_cv_Langevin, f_cv_extended_Lagrangian);
 
-    init_feature(f_cv_single_component, "single component", f_type_static);
+    init_feature(f_cv_single_cvc, "single component", f_type_static);
 
     init_feature(f_cv_linear, "linear", f_type_static);
 
@@ -1106,9 +1110,6 @@ int colvar::init_dependencies() {
 
   feature_states[f_cv_fdiff_velocity].available =
     cvm::main()->proxy->simulation_running();
-
-  // This feature is only available when there is a single component
-  feature_states[f_cv_single_component].available = false;
 
   return COLVARS_OK;
 }
@@ -1905,7 +1906,7 @@ int colvar::update_cvc_config(std::vector<std::string> const &confs)
 
 int colvar::cvc_param_exists(std::string const &param_name)
 {
-  if (is_enabled(f_cv_single_component)) {
+  if (is_enabled(f_cv_single_cvc)) {
     return cvcs[0]->param_exists(param_name);
   }
   return cvm::error("Error: calling colvar::cvc_param_exists() for a variable "
@@ -1915,7 +1916,7 @@ int colvar::cvc_param_exists(std::string const &param_name)
 
 void const *colvar::get_cvc_param(std::string const &param_name)
 {
-  if (is_enabled(f_cv_single_component)) {
+  if (is_enabled(f_cv_single_cvc)) {
     return cvcs[0]->get_param(param_name);
   }
   cvm::error("Error: calling colvar::get_cvc_param() for a variable "
@@ -1926,7 +1927,7 @@ void const *colvar::get_cvc_param(std::string const &param_name)
 
 colvarvalue const *colvar::get_cvc_param_grad(std::string const &param_name)
 {
-  if (is_enabled(f_cv_single_component)) {
+  if (is_enabled(f_cv_single_cvc)) {
     return cvcs[0]->get_param_grad(param_name);
   }
   cvm::error("Error: calling colvar::get_cvc_param_grad() for a variable "
@@ -1937,7 +1938,7 @@ colvarvalue const *colvar::get_cvc_param_grad(std::string const &param_name)
 
 int colvar::set_cvc_param(std::string const &param_name, void const *new_value)
 {
-  if (is_enabled(f_cv_single_component)) {
+  if (is_enabled(f_cv_single_cvc)) {
     return cvcs[0]->set_param(param_name, new_value);
   }
   return cvm::error("Error: calling colvar::set_cvc_param() for a variable "
