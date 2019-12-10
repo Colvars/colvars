@@ -72,9 +72,15 @@ int colvar::cvc::init(std::string const &conf)
 
   get_keyval(conf, "componentCoeff", sup_coeff, sup_coeff);
   get_keyval(conf, "componentExp", sup_np, sup_np);
+  // TODO these could be condensed into get_keyval()
+  register_param("componentCoeff", reinterpret_cast<void *>(&sup_coeff));
+  register_param("componentExp", reinterpret_cast<void *>(&sup_np));
 
   get_keyval(conf, "period", period, period);
   get_keyval(conf, "wrapAround", wrap_center, wrap_center);
+  // TODO when init() is called after all constructors, check periodic flag
+  register_param("period", reinterpret_cast<void *>(&period));
+  register_param("wrapAround", reinterpret_cast<void *>(&wrap_center));
 
   get_keyval_feature(this, conf, "debugGradients",
                      f_cvc_debug_gradient, false, parse_silent);
@@ -288,6 +294,105 @@ colvar::cvc::~cvc()
   for (size_t i = 0; i < atom_groups.size(); i++) {
     if (atom_groups[i] != NULL) delete atom_groups[i];
   }
+}
+
+
+void colvar::cvc::register_atom_group(cvm::atom_group *ag)
+{
+  atom_groups.push_back(ag);
+  add_child(ag);
+}
+
+
+
+void colvar::cvc::register_param(std::string const &param_name, void *param_ptr,
+                                 colvarvalue *param_grad_ptr)
+{
+  param_map[param_name] = param_ptr;
+  if (param_grad_ptr) {
+    param_grad_map[param_name] = param_grad_ptr;
+  }
+}
+
+
+int colvar::cvc::param_exists(std::string const &param_name)
+{
+  if (param_map.count(param_name) > 0) {
+    return COLVARS_OK;
+  }
+  return INPUT_ERROR;
+}
+
+
+void const *colvar::cvc::get_param(std::string const &param_name)
+{
+  if (param_map.count(param_name) > 0) {
+    return param_map[param_name];
+  }
+  cvm::error("Error: parameter \""+param_name+"\" not found.\n", INPUT_ERROR);
+  return NULL;
+}
+
+
+std::vector<std::string> colvar::cvc::get_param_names()
+{
+  std::vector<std::string> result;
+  for (std::map<std::string, void const *>::const_iterator elem =
+         param_map.begin(); elem != param_map.end(); elem++) {
+    result.push_back(elem->first);
+  }
+  return result;
+}
+
+
+colvarvalue const *colvar::cvc::get_param_grad(std::string const &param_name)
+{
+  if (param_grad_map.count(param_name) > 0) {
+    return param_grad_map[param_name];
+  }
+  cvm::error("Error: gradient of parameter \""+param_name+"\" not found.\n",
+             INPUT_ERROR);
+  return NULL;
+}
+
+
+std::vector<std::string> colvar::cvc::get_param_grad_names()
+{
+  std::vector<std::string> result;
+  for (std::map<std::string, colvarvalue const *>::const_iterator elem =
+         param_grad_map.begin(); elem != param_grad_map.end(); elem++) {
+    result.push_back(elem->first);
+  }
+  return result;
+}
+
+
+int colvar::cvc::set_param(std::string const &param_name,
+                           void const *new_value)
+{
+  if (param_map.count(param_name) > 0) {
+
+    // TODO When we can use C++11, make this a proper function map
+    if (param_name.compare("componentCoeff") == 0) {
+      sup_coeff = *(reinterpret_cast<cvm::real const *>(new_value));
+    }
+    if (param_name.compare("componentExp") == 0) {
+      sup_np = *(reinterpret_cast<int const *>(new_value));
+    }
+    if (b_periodic) {
+      if (param_name.compare("period") == 0) {
+        period = *(reinterpret_cast<cvm::real const *>(new_value));
+      }
+      if (param_name.compare("wrapAround") == 0) {
+        wrap_center = *(reinterpret_cast<cvm::real const *>(new_value));
+      }
+    }
+    return cvm::error("Error: parameter \""+param_name+"\" cannot be "
+                      "modified.\n", COLVARS_NOT_IMPLEMENTED);
+  }
+
+  return cvm::error("Error: parameter \""+param_name+"\" not found.\n",
+                    INPUT_ERROR);
 }
 
 
