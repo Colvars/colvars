@@ -19,7 +19,6 @@
 colvar::cvc::cvc()
   : sup_coeff(1.0),
     sup_np(1),
-    b_periodic(false),
     b_try_scalable(true)
 {
   description = "uninitialized colvar component";
@@ -33,7 +32,6 @@ colvar::cvc::cvc()
 colvar::cvc::cvc(std::string const &conf)
   : sup_coeff(1.0),
     sup_np(1),
-    b_periodic(false),
     b_try_scalable(true)
 {
   description = "uninitialized colvar component";
@@ -199,6 +197,12 @@ int colvar::cvc::init_dependencies() {
 //     require_feature_children(f_cvc_active, f_ag_active);
 
     init_feature(f_cvc_scalar, "scalar", f_type_static);
+
+    init_feature(f_cvc_periodic, "periodic", f_type_static);
+
+    init_feature(f_cvc_lower_boundary, "defined lower boundary", f_type_static);
+
+    init_feature(f_cvc_upper_boundary, "defined upper boundary", f_type_static);
 
     init_feature(f_cvc_gradient, "gradient", f_type_dynamic);
 
@@ -379,7 +383,7 @@ int colvar::cvc::set_param(std::string const &param_name,
     if (param_name.compare("componentExp") == 0) {
       sup_np = *(reinterpret_cast<int const *>(new_value));
     }
-    if (b_periodic) {
+    if (is_enabled(f_cvc_periodic)) {
       if (param_name.compare("period") == 0) {
         period = *(reinterpret_cast<cvm::real const *>(new_value));
       }

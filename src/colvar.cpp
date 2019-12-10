@@ -218,12 +218,12 @@ int colvar::init(std::string const &conf)
   // - it is homogeneous
   // - all cvcs are periodic
   // - all cvcs have the same period
-  if (is_enabled(f_cv_homogeneous) && cvcs[0]->b_periodic) { // TODO make this a CVC feature
+  if (is_enabled(f_cv_homogeneous) && cvcs[0]->is_enabled(f_cvc_periodic)) {
     bool b_periodic = true;
     period = cvcs[0]->period;
     wrap_center = cvcs[0]->wrap_center;
     for (i = 1; i < cvcs.size(); i++) {
-      if (!cvcs[i]->b_periodic || cvcs[i]->period != period) {
+      if (!cvcs[i]->is_enabled(f_cvc_periodic) || cvcs[i]->period != period) {
         b_periodic = false;
         period = 0.0;
         cvm::log("Warning: although one component is periodic, this colvar will "

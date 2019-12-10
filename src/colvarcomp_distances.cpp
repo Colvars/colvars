@@ -177,7 +177,7 @@ colvar::distance_z::distance_z(std::string const &conf)
   // TODO detect PBC from MD engine (in simple cases)
   // and then update period in real time
   if (period != 0.0)
-    b_periodic = true;
+    enable(f_cvc_periodic);
 
   if ((wrap_center != 0.0) && (period == 0.0)) {
     cvm::error("Error: wrapAround was defined in a distanceZ component,"
@@ -317,7 +317,7 @@ cvm::real colvar::distance_z::dist2(colvarvalue const &x1,
                                     colvarvalue const &x2) const
 {
   cvm::real diff = x1.real_value - x2.real_value;
-  if (b_periodic) {
+  if (is_enabled(f_cvc_periodic)) {
     cvm::real shift = cvm::floor(diff/period + 0.5);
     diff -= shift * period;
   }
@@ -329,7 +329,7 @@ colvarvalue colvar::distance_z::dist2_lgrad(colvarvalue const &x1,
                                             colvarvalue const &x2) const
 {
   cvm::real diff = x1.real_value - x2.real_value;
-  if (b_periodic) {
+  if (is_enabled(f_cvc_periodic)) {
     cvm::real shift = cvm::floor(diff/period + 0.5);
     diff -= shift * period;
   }
@@ -341,7 +341,7 @@ colvarvalue colvar::distance_z::dist2_rgrad(colvarvalue const &x1,
                                             colvarvalue const &x2) const
 {
   cvm::real diff = x1.real_value - x2.real_value;
-  if (b_periodic) {
+  if (is_enabled(f_cvc_periodic)) {
     cvm::real shift = cvm::floor(diff/period + 0.5);
     diff -= shift * period;
   }
@@ -351,15 +351,13 @@ colvarvalue colvar::distance_z::dist2_rgrad(colvarvalue const &x1,
 
 void colvar::distance_z::wrap(colvarvalue &x_unwrapped) const
 {
-  if (!b_periodic) {
+  if (!is_enabled(f_cvc_periodic)) {
     // don't wrap if the period has not been set
     return;
   }
-
   cvm::real shift =
     cvm::floor((x_unwrapped.real_value - wrap_center) / period + 0.5);
   x_unwrapped.real_value -= shift * period;
-  return;
 }
 
 
