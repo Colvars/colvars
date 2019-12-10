@@ -310,6 +310,8 @@ public:
     f_cv_custom_function,
     /// \brief Colvar is periodic
     f_cv_periodic,
+    /// \brief The colvar has only one component
+    f_cv_single_component,
     /// \brief is scalar
     f_cv_scalar,
     f_cv_linear,

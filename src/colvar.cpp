@@ -29,6 +29,10 @@ colvar::colvar()
   kinetic_energy = 0.0;
   potential_energy = 0.0;
 
+#ifdef LEPTON
+  dev_null = 0.0;
+#endif
+
   description = "uninitialized colvar";
   init_dependencies();
 }
@@ -759,6 +763,7 @@ template<typename def_class_name> int colvar::init_components_type(std::string c
 int colvar::init_components(std::string const &conf)
 {
   int error_code = COLVARS_OK;
+  size_t i = 0;
 
   error_code |= init_components_type<distance>(conf, "distance", "distance");
   error_code |= init_components_type<distance_vec>(conf, "distance vector", "distanceVec");
@@ -835,12 +840,17 @@ int colvar::init_components(std::string const &conf)
 
   n_active_cvcs = cvcs.size();
 
-  cvm::log("All components initialized.\n");
+  if (cvcs.size() == 1) {
+    provide(f_cv_single_component);
+    enable(f_cv_single_component);
+  }
 
   // Store list of children cvcs for dependency checking purposes
   for (i = 0; i < cvcs.size(); i++) {
     add_child(cvcs[i]);
   }
+
+  cvm::log("All components initialized.\n");
 
   return COLVARS_OK;
 }
@@ -1027,6 +1037,8 @@ int colvar::init_dependencies() {
     init_feature(f_cv_Langevin, "Langevin dynamics", f_type_user);
     require_feature_self(f_cv_Langevin, f_cv_extended_Lagrangian);
 
+    init_feature(f_cv_single_component, "single component", f_type_static);
+
     init_feature(f_cv_linear, "linear", f_type_static);
 
     init_feature(f_cv_scalar, "scalar", f_type_static);
@@ -1094,6 +1106,9 @@ int colvar::init_dependencies() {
 
   feature_states[f_cv_fdiff_velocity].available =
     cvm::main()->proxy->simulation_running();
+
+  // This feature is only available when there is a single component
+  feature_states[f_cv_single_component].available = false;
 
   return COLVARS_OK;
 }
