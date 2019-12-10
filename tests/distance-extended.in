@@ -3,6 +3,7 @@ colvar {
     name one
 
     outputAppliedForce on
+    outputVelocity on
 
     width 0.5
     
