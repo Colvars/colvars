@@ -311,7 +311,7 @@ public:
     /// \brief Colvar is periodic
     f_cv_periodic,
     /// \brief The colvar has only one component
-    f_cv_single_component,
+    f_cv_single_cvc,
     /// \brief is scalar
     f_cv_scalar,
     f_cv_linear,
