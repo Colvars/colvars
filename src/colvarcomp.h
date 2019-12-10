@@ -105,10 +105,22 @@ public:
   /// \brief If the component is periodic, wrap around this value (default: 0.0)
   cvm::real wrap_center;
 
+  /// \brief Location of the lower boundary (not defined by user choice)
+  colvarvalue lower_boundary;
+
+  /// \brief Location of the upper boundary (not defined by user choice)
+  colvarvalue upper_boundary;
+
   /// \brief Constructor
   ///
   /// Calls the init() function of the class
   cvc(std::string const &conf);
+
+  /// \brief Set data types for a scalar distance (convenience function)
+  void init_as_distance();
+
+  /// \brief Set data types for a bounded angle (convenience function)
+  void init_as_angle();
 
   /// An init function should be defined for every class inheriting from cvc
   /// \param conf Contents of the configuration file pertaining to this \link
@@ -562,7 +574,6 @@ protected:
   bool b_no_PBC;
 public:
   distance_inv(std::string const &conf);
-  distance_inv();
   virtual ~distance_inv() {}
   virtual void calc_value();
   virtual void calc_gradients();
@@ -638,9 +649,7 @@ protected:
   /// Atoms involved
   cvm::atom_group  *atoms;
 public:
-  /// Constructor
   gyration(std::string const &conf);
-  gyration();
   virtual ~gyration() {}
   virtual void calc_value();
   virtual void calc_gradients();
@@ -776,7 +785,6 @@ public:
   angle(std::string const &conf);
   /// \brief Initialize the three groups after three atoms
   angle(cvm::atom const &a1, cvm::atom const &a2, cvm::atom const &a3);
-  angle();
   virtual ~angle() {}
   virtual void calc_value();
   virtual void calc_gradients();
@@ -926,7 +934,6 @@ protected:
 public:
 
   coordnum(std::string const &conf);
-  coordnum();
   ~coordnum();
 
   virtual void calc_value();
@@ -996,7 +1003,6 @@ protected:
 public:
 
   selfcoordnum(std::string const &conf);
-  selfcoordnum();
   ~selfcoordnum();
   virtual void calc_value();
   virtual void calc_gradients();
@@ -1035,7 +1041,6 @@ protected:
 public:
   /// Constructor
   groupcoordnum(std::string const &conf);
-  groupcoordnum();
   virtual ~groupcoordnum() {}
   virtual void calc_value();
   virtual void calc_gradients();
@@ -1256,7 +1261,6 @@ class colvar::orientation_angle
 public:
 
   orientation_angle(std::string const &conf);
-  orientation_angle();
   virtual int init(std::string const &conf);
   virtual ~orientation_angle() {}
   virtual void calc_value();
@@ -1309,7 +1313,6 @@ protected:
 public:
 
   tilt(std::string const &conf);
-  tilt();
   virtual int init(std::string const &conf);
   virtual ~tilt() {}
   virtual void calc_value();

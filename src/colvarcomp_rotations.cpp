@@ -164,8 +164,8 @@ colvar::orientation_angle::orientation_angle(std::string const &conf)
   : orientation()
 {
   function_type = "orientation_angle";
+  init_as_angle();
   enable(f_cvc_explicit_gradient);
-  x.type(colvarvalue::type_scalar);
   init(conf);
 }
 
@@ -173,15 +173,6 @@ colvar::orientation_angle::orientation_angle(std::string const &conf)
 int colvar::orientation_angle::init(std::string const &conf)
 {
   return orientation::init(conf);
-}
-
-
-colvar::orientation_angle::orientation_angle()
-  : orientation()
-{
-  function_type = "orientation_angle";
-  enable(f_cvc_explicit_gradient);
-  x.type(colvarvalue::type_scalar);
 }
 
 
@@ -231,6 +222,12 @@ colvar::orientation_proj::orientation_proj(std::string const &conf)
   function_type = "orientation_proj";
   enable(f_cvc_explicit_gradient);
   x.type(colvarvalue::type_scalar);
+  enable(f_cvc_lower_boundary);
+  lower_boundary.type(colvarvalue::type_scalar);
+  lower_boundary.real_value = -1.0;
+  enable(f_cvc_upper_boundary);
+  upper_boundary.type(colvarvalue::type_scalar);
+  upper_boundary.real_value = 1.0;
   init(conf);
 }
 
@@ -238,15 +235,6 @@ colvar::orientation_proj::orientation_proj(std::string const &conf)
 int colvar::orientation_proj::init(std::string const &conf)
 {
   return orientation::init(conf);
-}
-
-
-colvar::orientation_proj::orientation_proj()
-  : orientation()
-{
-  function_type = "orientation_proj";
-  enable(f_cvc_explicit_gradient);
-  x.type(colvarvalue::type_scalar);
 }
 
 
@@ -287,6 +275,12 @@ colvar::tilt::tilt(std::string const &conf)
   function_type = "tilt";
   enable(f_cvc_explicit_gradient);
   x.type(colvarvalue::type_scalar);
+  enable(f_cvc_lower_boundary);
+  lower_boundary.type(colvarvalue::type_scalar);
+  lower_boundary.real_value = -1.0;
+  enable(f_cvc_upper_boundary);
+  upper_boundary.type(colvarvalue::type_scalar);
+  upper_boundary.real_value = 1.0;
   init(conf);
 }
 
@@ -304,15 +298,6 @@ int colvar::tilt::init(std::string const &conf)
   }
 
   return error_code;
-}
-
-
-colvar::tilt::tilt()
-  : orientation()
-{
-  function_type = "tilt";
-  enable(f_cvc_explicit_gradient);
-  x.type(colvarvalue::type_scalar);
 }
 
 

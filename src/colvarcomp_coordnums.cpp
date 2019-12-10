@@ -97,6 +97,11 @@ colvar::coordnum::coordnum(std::string const &conf)
   function_type = "coordnum";
   x.type(colvarvalue::type_scalar);
 
+  enable(f_cvc_lower_boundary);
+  lower_boundary.type(colvarvalue::type_scalar);
+  enable(f_cvc_upper_boundary);
+  upper_boundary.type(colvarvalue::type_scalar);
+
   colvarproxy *proxy = cvm::main()->proxy;
 
   group1 = parse_group(conf, "group1");
@@ -176,14 +181,9 @@ colvar::coordnum::coordnum(std::string const &conf)
     }
   }
 
-}
-
-
-colvar::coordnum::coordnum()
-  : b_anisotropic(false), pairlist(NULL)
-{
-  function_type = "coordnum";
-  x.type(colvarvalue::type_scalar);
+  lower_boundary.real_value = 0.0;
+  upper_boundary.real_value =
+    b_group2_center_only ? group1->size() : group1->size() * group2->size();
 }
 
 
@@ -312,6 +312,12 @@ colvar::h_bond::h_bond(std::string const &conf)
 
   function_type = "h_bond";
   x.type(colvarvalue::type_scalar);
+  enable(f_cvc_lower_boundary);
+  lower_boundary.type(colvarvalue::type_scalar);
+  lower_boundary.real_value = 0.0;
+  enable(f_cvc_upper_boundary);
+  upper_boundary.type(colvarvalue::type_scalar);
+  upper_boundary.real_value = 1.0;
 
   colvarproxy *proxy = cvm::main()->proxy;
 
@@ -356,18 +362,16 @@ colvar::h_bond::h_bond(cvm::atom const &acceptor,
 {
   function_type = "h_bond";
   x.type(colvarvalue::type_scalar);
+  enable(f_cvc_lower_boundary);
+  lower_boundary.type(colvarvalue::type_scalar);
+  lower_boundary.real_value = 0.0;
+  enable(f_cvc_upper_boundary);
+  upper_boundary.type(colvarvalue::type_scalar);
+  upper_boundary.real_value = 1.0;
 
   register_atom_group(new cvm::atom_group);
   atom_groups[0]->add_atom(acceptor);
   atom_groups[0]->add_atom(donor);
-}
-
-
-colvar::h_bond::h_bond()
-  : cvc()
-{
-  function_type = "h_bond";
-  x.type(colvarvalue::type_scalar);
 }
 
 
@@ -409,6 +413,12 @@ colvar::selfcoordnum::selfcoordnum(std::string const &conf)
 {
   function_type = "selfcoordnum";
   x.type(colvarvalue::type_scalar);
+
+  enable(f_cvc_lower_boundary);
+  lower_boundary.type(colvarvalue::type_scalar);
+  enable(f_cvc_upper_boundary);
+  upper_boundary.type(colvarvalue::type_scalar);
+
   colvarproxy *proxy = cvm::main()->proxy;
 
   group1 = parse_group(conf, "group1");
@@ -442,14 +452,9 @@ colvar::selfcoordnum::selfcoordnum(std::string const &conf)
     }
     pairlist = new bool[(group1->size()-1) * (group1->size()-1)];
   }
-}
 
-
-colvar::selfcoordnum::selfcoordnum()
-  : pairlist(NULL)
-{
-  function_type = "selfcoordnum";
-  x.type(colvarvalue::type_scalar);
+  lower_boundary.real_value = 0.0;
+  upper_boundary.real_value = (group1->size()-1) * (group1->size()-1);
 }
 
 
@@ -558,6 +563,14 @@ colvar::groupcoordnum::groupcoordnum(std::string const &conf)
 {
   function_type = "groupcoordnum";
   x.type(colvarvalue::type_scalar);
+
+  enable(f_cvc_lower_boundary);
+  lower_boundary.type(colvarvalue::type_scalar);
+  lower_boundary.real_value = 0.0;
+  enable(f_cvc_upper_boundary);
+  upper_boundary.type(colvarvalue::type_scalar);
+  upper_boundary.real_value = 1.0;
+
   colvarproxy *proxy = cvm::main()->proxy;
 
   // group1 and group2 are already initialized by distance()
@@ -601,14 +614,6 @@ colvar::groupcoordnum::groupcoordnum(std::string const &conf)
     cvm::log("Warning: only minimum-image distances are used by this variable.\n");
   }
 
-}
-
-
-colvar::groupcoordnum::groupcoordnum()
-  : b_anisotropic(false)
-{
-  function_type = "groupcoordnum";
-  x.type(colvarvalue::type_scalar);
 }
 
 

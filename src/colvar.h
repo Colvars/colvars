@@ -217,11 +217,11 @@ public:
   /// should equal the system force plus \link f \endlink
   colvarvalue ft;
 
-
   /// Period, if this variable is periodic
   cvm::real period;
-  cvm::real wrap_center;
 
+  /// Center of wrapping, if this variable is periodic
+  cvm::real wrap_center;
 
   /// \brief Expand the boundaries of multiples of width, to keep the
   /// value always within range
@@ -233,8 +233,6 @@ public:
   colvarvalue lower_wall;
   /// \brief Force constant for the lower boundary potential (|x-xb|^2)
   cvm::real   lower_wall_k;
-  /// \brief Whether this colvar has a hard lower boundary
-  bool        hard_lower_boundary;
 
   /// \brief Location of the upper boundary
   colvarvalue upper_boundary;
@@ -242,8 +240,6 @@ public:
   colvarvalue upper_wall;
   /// \brief Force constant for the upper boundary potential (|x-xb|^2)
   cvm::real   upper_wall_k;
-  /// \brief Whether this colvar has a hard upper boundary
-  bool        hard_upper_boundary;
 
   /// \brief Is the interval defined by the two boundaries periodic?
   bool periodic_boundaries() const;

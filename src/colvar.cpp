@@ -487,6 +487,20 @@ int colvar::init_grid_parameters(std::string const &conf)
 
   if (is_enabled(f_cv_scalar)) {
 
+    if (is_enabled(f_cv_single_cvc)) {
+      // Get the boundaries from the component
+      if (cvcs[0]->is_enabled(f_cvc_lower_boundary)) {
+        enable(f_cv_lower_boundary);
+        enable(f_cv_hard_lower_boundary);
+        lower_boundary.real_value = cvcs[0]->lower_boundary;
+      }
+      if (cvcs[0]->is_enabled(f_cvc_upper_boundary)) {
+        enable(f_cv_upper_boundary);
+        enable(f_cv_hard_upper_boundary);
+        upper_boundary.real_value = cvcs[0]->upper_boundary;
+      }
+    }
+
     if (get_keyval(conf, "lowerBoundary", lower_boundary, lower_boundary)) {
       enable(f_cv_lower_boundary);
     }
@@ -547,12 +561,11 @@ harmonicWalls {\n\
     }
   }
 
-  if (is_enabled(f_cv_lower_boundary)) {
-    get_keyval(conf, "hardLowerBoundary", hard_lower_boundary, false);
-  }
-  if (is_enabled(f_cv_upper_boundary)) {
-    get_keyval(conf, "hardUpperBoundary", hard_upper_boundary, false);
-  }
+  get_keyval_feature(this, conf, "hardLowerBoundary", f_cv_hard_lower_boundary,
+                     is_enabled(f_cv_hard_lower_boundary));
+
+  get_keyval_feature(this, conf, "hardUpperBoundary", f_cv_hard_upper_boundary,
+                     is_enabled(f_cv_hard_upper_boundary));
 
   // consistency checks for boundaries and walls
   if (is_enabled(f_cv_lower_boundary) && is_enabled(f_cv_upper_boundary)) {
@@ -573,7 +586,8 @@ harmonicWalls {\n\
                INPUT_ERROR);
     return INPUT_ERROR;
   }
-  if (expand_boundaries && hard_lower_boundary && hard_upper_boundary) {
+  if (expand_boundaries && is_enabled(f_cv_hard_lower_boundary) &&
+      is_enabled(f_cv_hard_upper_boundary)) {
     cvm::error("Error: inconsistent configuration "
                "(trying to expand boundaries with both "
                "hardLowerBoundary and hardUpperBoundary enabled).\n",
@@ -1067,6 +1081,12 @@ int colvar::init_dependencies() {
 
     init_feature(f_cv_upper_boundary, "upper boundary", f_type_user);
     require_feature_self(f_cv_upper_boundary, f_cv_scalar);
+
+    init_feature(f_cv_hard_lower_boundary, "hard lower boundary", f_type_user);
+    require_feature_self(f_cv_hard_lower_boundary, f_cv_lower_boundary);
+
+    init_feature(f_cv_hard_upper_boundary, "hard upper boundary", f_type_user);
+    require_feature_self(f_cv_hard_upper_boundary, f_cv_upper_boundary);
 
     init_feature(f_cv_grid, "grid", f_type_dynamic);
     require_feature_self(f_cv_grid, f_cv_lower_boundary);

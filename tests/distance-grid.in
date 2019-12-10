@@ -6,7 +6,8 @@ colvar {
 
     # use a non-trivial width to test bias behavior
     width 0.5
-    lowerBoundary 0.0
+    # The lower boundary is already defined at 0 for a distance function
+    # lowerBoundary 0.0
     upperBoundary 10.0
 
     distance {
