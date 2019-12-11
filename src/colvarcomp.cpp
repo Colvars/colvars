@@ -309,18 +309,30 @@ void colvar::cvc::init_as_distance()
   enable(f_cvc_lower_boundary);
   lower_boundary.type(colvarvalue::type_scalar);
   lower_boundary.real_value = 0.0;
+  register_param("lowerBoundary", reinterpret_cast<void *>(&lower_boundary),
+                 NULL);
 }
 
 
 void colvar::cvc::init_as_angle()
 {
   x.type(colvarvalue::type_scalar);
+  init_scalar_boundaries(0.0, 180);
+}
+
+
+void colvar::cvc::init_scalar_boundaries(cvm::real lb, cvm::real ub)
+{
   enable(f_cvc_lower_boundary);
   lower_boundary.type(colvarvalue::type_scalar);
-  lower_boundary.real_value = 0.0;
+  lower_boundary.real_value = lb;
   enable(f_cvc_upper_boundary);
   upper_boundary.type(colvarvalue::type_scalar);
-  upper_boundary.real_value = 180.0;
+  upper_boundary.real_value = ub;
+  register_param("lowerBoundary", reinterpret_cast<void *>(&lower_boundary),
+                 NULL);
+  register_param("upperBoundary", reinterpret_cast<void *>(&upper_boundary),
+                 NULL);
 }
 
 

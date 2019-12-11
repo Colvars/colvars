@@ -105,25 +105,10 @@ public:
   /// \brief If the component is periodic, wrap around this value (default: 0.0)
   cvm::real wrap_center;
 
-  /// \brief Location of the lower boundary (not defined by user choice)
-  colvarvalue lower_boundary;
-
-  /// \brief Location of the upper boundary (not defined by user choice)
-  colvarvalue upper_boundary;
-
-  /// \brief CVC-specific default colvar width
-  cvm::real width;
-
   /// \brief Constructor
   ///
   /// Calls the init() function of the class
   cvc(std::string const &conf);
-
-  /// \brief Set data types for a scalar distance (convenience function)
-  void init_as_distance();
-
-  /// \brief Set data types for a bounded angle (convenience function)
-  void init_as_angle();
 
   /// An init function should be defined for every class inheriting from cvc
   /// \param conf Contents of the configuration file pertaining to this \link
@@ -325,6 +310,24 @@ protected:
   /// Register the given parameter (and optionally its gradient as well)
   void register_param(std::string const &param_name, void *param_ptr,
                       colvarvalue *param_grad_ptr = NULL);
+
+  /// \brief Set data types for a scalar distance (convenience function)
+  void init_as_distance();
+
+  /// \brief Set data types for a bounded angle (convenience function)
+  void init_as_angle();
+
+  /// \brief Set two scalar boundaries (convenience function)
+  void init_scalar_boundaries(cvm::real lb, cvm::real ub);
+
+  /// \brief Location of the lower boundary (not defined by user choice)
+  colvarvalue lower_boundary;
+
+  /// \brief Location of the upper boundary (not defined by user choice)
+  colvarvalue upper_boundary;
+
+  /// \brief CVC-specific default colvar width
+  cvm::real width;
 };
 
 
