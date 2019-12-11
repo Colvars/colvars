@@ -476,10 +476,19 @@ int colvar::init_grid_parameters(std::string const &conf)
 {
   colvarmodule *cv = cvm::main();
 
-  get_keyval(conf, "width", width, 
-             (is_enabled(f_cv_single_cvc) && 
-              cvcs[0]->is_enabled(f_cvc_width)) ?
-             cvcs[0]->width : 1.0);
+  cvm::real default_width = width;
+
+  if (!key_already_set("width")) {
+    // The first time, check if the CVC has a width to provide
+    default_width = 1.0;
+    if (is_enabled(f_cv_single_cvc) && cvcs[0]->is_enabled(f_cvc_width)) {
+      cvm::real const cvc_width =
+        *(reinterpret_cast<cvm::real const *>(cvcs[0]->get_param("width")));
+      default_width = cvc_width;
+    }
+  }
+
+  get_keyval(conf, "width", width, default_width);
 
   if (width <= 0.0) {
     cvm::error("Error: \"width\" must be positive.\n", INPUT_ERROR);
@@ -496,12 +505,12 @@ int colvar::init_grid_parameters(std::string const &conf)
       if (cvcs[0]->is_enabled(f_cvc_lower_boundary)) {
         enable(f_cv_lower_boundary);
         enable(f_cv_hard_lower_boundary);
-        lower_boundary.real_value = cvcs[0]->lower_boundary;
+        lower_boundary = *(reinterpret_cast<colvarvalue const *>(cvcs[0]->get_param("lowerBoundary")));
       }
       if (cvcs[0]->is_enabled(f_cvc_upper_boundary)) {
         enable(f_cv_upper_boundary);
         enable(f_cv_hard_upper_boundary);
-        upper_boundary.real_value = cvcs[0]->upper_boundary;
+        upper_boundary = *(reinterpret_cast<colvarvalue const *>(cvcs[0]->get_param("upperBoundary")));
       }
     }
 
