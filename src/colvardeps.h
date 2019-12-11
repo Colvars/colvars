@@ -327,23 +327,40 @@ public:
   };
 
   enum features_cvc {
+    /// Computation of this CVC is enabled
     f_cvc_active,
+    /// This CVC computes a scalar value
     f_cvc_scalar,
+    /// Values of this CVC lie in a periodic interval
     f_cvc_periodic,
+    /// This CVC provides a default value for the colvar's width
+    f_cvc_width,
+    /// This CVC provides a default value for the colvar's lower boundary
     f_cvc_lower_boundary,
+    /// This CVC provides a default value for the colvar's upper boundary
     f_cvc_upper_boundary,
+    /// CVC calculates atom gradients
     f_cvc_gradient,
-    /// \brief CVC calculates and stores explicit atom gradients
+    /// CVC calculates and stores explicit atom gradients
     f_cvc_explicit_gradient,
+    /// CVC calculates and stores inverse atom gradients (used for total force)
     f_cvc_inv_gradient,
-    /// \brief If enabled, calc_gradients() will call debug_gradients() for every group needed
-    f_cvc_debug_gradient,
+    /// CVC calculates the Jacobian term of the total-force expression
     f_cvc_Jacobian,
-    f_cvc_pbc_minimum_image,
+    /// The total force for this CVC will be computed from one group only
     f_cvc_one_site_total_force,
+    /// calc_gradients() will call debug_gradients() for every group needed
+    f_cvc_debug_gradient,
+    /// With PBCs, minimum-image convention will be used for distances
+    /// (does not affect the periodicity of CVC values, e.g. angles)
+    f_cvc_pbc_minimum_image,
+    /// This CVC is a function of centers of mass
     f_cvc_com_based,
+    /// This CVC can be computed in parallel
     f_cvc_scalable,
+    /// Centers-of-mass used in this CVC can be computed in parallel
     f_cvc_scalable_com,
+    /// Number of CVC features
     f_cvc_ntot
   };
 

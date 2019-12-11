@@ -476,7 +476,11 @@ int colvar::init_grid_parameters(std::string const &conf)
 {
   colvarmodule *cv = cvm::main();
 
-  get_keyval(conf, "width", width, 1.0);
+  get_keyval(conf, "width", width, 
+             (is_enabled(f_cv_single_cvc) && 
+              cvcs[0]->is_enabled(f_cvc_width)) ?
+             cvcs[0]->width : 1.0);
+
   if (width <= 0.0) {
     cvm::error("Error: \"width\" must be positive.\n", INPUT_ERROR);
     return INPUT_ERROR;
@@ -488,7 +492,7 @@ int colvar::init_grid_parameters(std::string const &conf)
   if (is_enabled(f_cv_scalar)) {
 
     if (is_enabled(f_cv_single_cvc)) {
-      // Get the boundaries from the component
+      // Get the default boundaries from the component
       if (cvcs[0]->is_enabled(f_cvc_lower_boundary)) {
         enable(f_cv_lower_boundary);
         enable(f_cv_hard_lower_boundary);
@@ -503,8 +507,8 @@ int colvar::init_grid_parameters(std::string const &conf)
 
     if (get_keyval(conf, "lowerBoundary", lower_boundary, lower_boundary)) {
       enable(f_cv_lower_boundary);
-      // Because this is the user's choice, we cannot assume it is a natural
-      // boundary
+      // Because this is the user's choice, we cannot assume it is a true
+      // physical boundary
       disable(f_cv_hard_lower_boundary);
     }
 
