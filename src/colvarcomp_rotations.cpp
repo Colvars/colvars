@@ -222,12 +222,7 @@ colvar::orientation_proj::orientation_proj(std::string const &conf)
   function_type = "orientation_proj";
   enable(f_cvc_explicit_gradient);
   x.type(colvarvalue::type_scalar);
-  enable(f_cvc_lower_boundary);
-  lower_boundary.type(colvarvalue::type_scalar);
-  lower_boundary.real_value = -1.0;
-  enable(f_cvc_upper_boundary);
-  upper_boundary.type(colvarvalue::type_scalar);
-  upper_boundary.real_value = 1.0;
+  init_scalar_boundaries(0.0, 1.0);
   init(conf);
 }
 
@@ -275,12 +270,7 @@ colvar::tilt::tilt(std::string const &conf)
   function_type = "tilt";
   enable(f_cvc_explicit_gradient);
   x.type(colvarvalue::type_scalar);
-  enable(f_cvc_lower_boundary);
-  lower_boundary.type(colvarvalue::type_scalar);
-  lower_boundary.real_value = -1.0;
-  enable(f_cvc_upper_boundary);
-  upper_boundary.type(colvarvalue::type_scalar);
-  upper_boundary.real_value = 1.0;
+  init_scalar_boundaries(-1.0, 1.0);
   init(conf);
 }
 
