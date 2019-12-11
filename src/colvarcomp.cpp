@@ -362,7 +362,15 @@ int colvar::cvc::param_exists(std::string const &param_name)
 }
 
 
-void const *colvar::cvc::get_param(std::string const &param_name)
+cvm::real colvar::cvc::get_param(std::string const &param_name)
+{
+  cvm::real const *ptr =
+    reinterpret_cast<cvm::real const *>(get_param_ptr(param_name));
+  return ptr != NULL ? *ptr : 0.0;
+}
+
+
+void const *colvar::cvc::get_param_ptr(std::string const &param_name)
 {
   if (param_map.count(param_name) > 0) {
     return param_map[param_name];

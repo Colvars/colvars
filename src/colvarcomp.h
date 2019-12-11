@@ -212,8 +212,11 @@ public:
   /// Whether the parameter param_name exists
   virtual int param_exists(std::string const &param_name);
 
-  /// Pointer to the parameter param_name
-  virtual void const *get_param(std::string const &param_name);
+  /// Value of the parameter param_name (must be a scalar)
+  virtual cvm::real get_param(std::string const &param_name);
+
+  /// Pointer to the parameter param_name (when it is an object)
+  virtual void const *get_param_ptr(std::string const &param_name);
 
   /// Get a copy of the names of registered parameters
   virtual std::vector<std::string> get_param_names();
