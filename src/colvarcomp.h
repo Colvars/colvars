@@ -111,6 +111,9 @@ public:
   /// \brief Location of the upper boundary (not defined by user choice)
   colvarvalue upper_boundary;
 
+  /// \brief CVC-specific default colvar width
+  cvm::real width;
+
   /// \brief Constructor
   ///
   /// Calls the init() function of the class

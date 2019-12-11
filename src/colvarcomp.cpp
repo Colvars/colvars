@@ -17,28 +17,28 @@
 
 
 colvar::cvc::cvc()
-  : sup_coeff(1.0),
-    sup_np(1),
-    b_try_scalable(true)
 {
   description = "uninitialized colvar component";
-  init_dependencies();
+  b_try_scalable = true;
   sup_coeff = 1.0;
+  sup_np = 1;
   period = 0.0;
   wrap_center = 0.0;
+  width = 0.0;
+  init_dependencies();
 }
 
 
 colvar::cvc::cvc(std::string const &conf)
-  : sup_coeff(1.0),
-    sup_np(1),
-    b_try_scalable(true)
 {
   description = "uninitialized colvar component";
-  init_dependencies();
+  b_try_scalable = true;
   sup_coeff = 1.0;
+  sup_np = 1;
   period = 0.0;
   wrap_center = 0.0;
+  width = 0.0;
+  init_dependencies();
   init(conf);
 }
 
@@ -200,6 +200,8 @@ int colvar::cvc::init_dependencies() {
 
     init_feature(f_cvc_periodic, "periodic", f_type_static);
 
+    init_feature(f_cvc_width, "defined width", f_type_static);
+
     init_feature(f_cvc_lower_boundary, "defined lower boundary", f_type_static);
 
     init_feature(f_cvc_upper_boundary, "defined upper boundary", f_type_static);
@@ -219,14 +221,14 @@ int colvar::cvc::init_dependencies() {
     init_feature(f_cvc_Jacobian, "Jacobian derivative", f_type_dynamic);
     require_feature_self(f_cvc_Jacobian, f_cvc_inv_gradient);
 
-    init_feature(f_cvc_com_based, "depends on group centers of mass", f_type_static);
-
-    init_feature(f_cvc_pbc_minimum_image, "use minimum-image distances with PBCs", f_type_user);
-
     // Compute total force on first site only to avoid unwanted
     // coupling to other colvars (see e.g. Ciccotti et al., 2005)
     init_feature(f_cvc_one_site_total_force, "compute total force from one group", f_type_user);
     require_feature_self(f_cvc_one_site_total_force, f_cvc_com_based);
+
+    init_feature(f_cvc_com_based, "depends on group centers of mass", f_type_static);
+
+    init_feature(f_cvc_pbc_minimum_image, "use minimum-image distances with PBCs", f_type_user);
 
     init_feature(f_cvc_scalable, "scalable calculation", f_type_static);
     require_feature_self(f_cvc_scalable, f_cvc_scalable_com);
