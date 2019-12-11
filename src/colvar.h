@@ -364,8 +364,11 @@ public:
   /// Whether this named parameter exists (in the first and only component)
   int cvc_param_exists(std::string const &param_name);
 
+  /// Get the value of the named parameter (from the first and only component)
+  cvm::real get_cvc_param(std::string const &param_name);
+
   /// Get a pointer to the named parameter (from the first and only component)
-  void const *get_cvc_param(std::string const &param_name);
+  void const *get_cvc_param_ptr(std::string const &param_name);
 
   /// Pointer to the derivative of the variable with respect to param_name
   colvarvalue const *get_cvc_param_grad(std::string const &param_name);

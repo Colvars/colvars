@@ -482,8 +482,7 @@ int colvar::init_grid_parameters(std::string const &conf)
     // The first time, check if the CVC has a width to provide
     default_width = 1.0;
     if (is_enabled(f_cv_single_cvc) && cvcs[0]->is_enabled(f_cvc_width)) {
-      cvm::real const cvc_width =
-        *(reinterpret_cast<cvm::real const *>(cvcs[0]->get_param("width")));
+      cvm::real const cvc_width = cvcs[0]->get_param("width");
       default_width = cvc_width;
     }
   }
@@ -505,12 +504,14 @@ int colvar::init_grid_parameters(std::string const &conf)
       if (cvcs[0]->is_enabled(f_cvc_lower_boundary)) {
         enable(f_cv_lower_boundary);
         enable(f_cv_hard_lower_boundary);
-        lower_boundary = *(reinterpret_cast<colvarvalue const *>(cvcs[0]->get_param("lowerBoundary")));
+        lower_boundary =
+          *(reinterpret_cast<colvarvalue const *>(cvcs[0]->get_param_ptr("lowerBoundary")));
       }
       if (cvcs[0]->is_enabled(f_cvc_upper_boundary)) {
         enable(f_cv_upper_boundary);
         enable(f_cv_hard_upper_boundary);
-        upper_boundary = *(reinterpret_cast<colvarvalue const *>(cvcs[0]->get_param("upperBoundary")));
+        upper_boundary =
+          *(reinterpret_cast<colvarvalue const *>(cvcs[0]->get_param_ptr("upperBoundary")));
       }
     }
 
@@ -1951,10 +1952,21 @@ int colvar::cvc_param_exists(std::string const &param_name)
 }
 
 
-void const *colvar::get_cvc_param(std::string const &param_name)
+cvm::real colvar::get_cvc_param(std::string const &param_name)
 {
   if (is_enabled(f_cv_single_cvc)) {
     return cvcs[0]->get_param(param_name);
+  }
+  cvm::error("Error: calling colvar::get_cvc_param() for a variable "
+             "with more than one component.\n", COLVARS_NOT_IMPLEMENTED);
+  return 0.0;
+}
+
+
+void const *colvar::get_cvc_param_ptr(std::string const &param_name)
+{
+  if (is_enabled(f_cv_single_cvc)) {
+    return cvcs[0]->get_param_ptr(param_name);
   }
   cvm::error("Error: calling colvar::get_cvc_param() for a variable "
              "with more than one component.\n", COLVARS_NOT_IMPLEMENTED);
