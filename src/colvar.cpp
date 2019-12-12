@@ -821,6 +821,17 @@ int colvar::init_components(std::string const &conf)
     return INPUT_ERROR;
   }
 
+  // Check for uniqueness of CVC names (esp. if user-provided)
+  for (size_t i = 0; i < cvcs.size(); i++) {
+    for (size_t j = i+1; j < cvcs.size(); j++) {
+      if (cvcs[i]->name == cvcs[j]->name) {
+        cvm::error("Components " + cvm::to_str(i) + " and " + cvm::to_str(j) +\
+          " cannot have the same name \"" +  cvcs[i]->name+ "\".\n", INPUT_ERROR);
+        return INPUT_ERROR;
+      }
+    }
+  }
+
   n_active_cvcs = cvcs.size();
 
   cvm::log("All components initialized.\n");
