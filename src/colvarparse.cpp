@@ -33,6 +33,8 @@ namespace {
 
 
 colvarparse::colvarparse()
+  : keyword_delimiters_left("\n"+std::string(white_space)+"}"),
+    keyword_delimiters_right("\n"+std::string(white_space)+"{")
 {
   colvarparse::clear();
 }
@@ -46,6 +48,8 @@ void colvarparse::clear()
 
 
 colvarparse::colvarparse(const std::string& conf)
+  : keyword_delimiters_left("\n"+std::string(white_space)+"}"),
+    keyword_delimiters_right("\n"+std::string(white_space)+"{")
 {
   colvarparse::set_string(conf);
 }
@@ -699,18 +703,26 @@ bool colvarparse::key_lookup(std::string const &conf,
     bool b_isolated_left = true, b_isolated_right = true;
 
     if (pos > 0) {
-      if ( std::string("\n"+std::string(white_space)+
-                       "}").find(conf[pos-1]) ==
-           std::string::npos ) {
+      if (keyword_delimiters_left.find(conf[pos-1]) == std::string::npos) {
         // none of the valid delimiting characters is on the left of key
         b_isolated_left = false;
+      } else {
+        size_t const pl = conf_lower.rfind("\n", pos);
+        size_t const line_begin = (pl == std::string::npos) ? 0 : pl+1;
+        size_t const pchar =
+          conf_lower.find_first_not_of(keyword_delimiters_left, line_begin);
+        size_t const first_text = (pchar == std::string::npos) ? pos : pchar;
+        if (first_text < pos) {
+          // There are some non-delimiting characters to the left of the
+          // keyword on the same line
+          b_isolated_left = false;
+        }
       }
     }
 
     if (pos < conf.size()-key.size()-1) {
-      if ( std::string("\n"+std::string(white_space)+
-                       "{").find(conf[pos+key.size()]) ==
-           std::string::npos ) {
+      if (keyword_delimiters_right.find(conf[pos+key.size()]) ==
+          std::string::npos) {
         // none of the valid delimiting characters is on the right of key
         b_isolated_right = false;
       }
@@ -739,7 +751,7 @@ bool colvarparse::key_lookup(std::string const &conf,
 
   // get the remainder of the line
   size_t pl = conf.rfind("\n", pos);
-  size_t line_begin = (pl == std::string::npos) ? 0 : pos;
+  size_t line_begin = (pl == std::string::npos) ? 0 : pl+1;
   size_t nl = conf.find("\n", pos);
   size_t line_end = (nl == std::string::npos) ? conf.size() : nl;
   std::string line(conf, line_begin, (line_end-line_begin));
