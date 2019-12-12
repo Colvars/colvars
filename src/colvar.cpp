@@ -296,13 +296,13 @@ int colvar::init(std::string const &conf)
 #ifdef LEPTON
 int colvar::init_custom_function(std::string const &conf)
 {
-  std::string expr;
+  std::string expr, expr_in; // expr_in is a buffer to remember expr after unsuccessful parsing
   std::vector<Lepton::ParsedExpression> pexprs;
   Lepton::ParsedExpression pexpr;
   size_t pos = 0; // current position in config string
   double *ref;
 
-  if (!key_lookup(conf, "customFunction", &expr, &pos)) {
+  if (!key_lookup(conf, "customFunction", &expr_in, &pos)) {
     return COLVARS_OK;
   }
 
@@ -310,6 +310,7 @@ int colvar::init_custom_function(std::string const &conf)
   cvm::log("This colvar uses a custom function.\n");
 
   do {
+    expr = expr_in;
     if (cvm::debug())
       cvm::log("Parsing expression \"" + expr + "\".\n");
     try {
@@ -337,8 +338,7 @@ int colvar::init_custom_function(std::string const &conf)
             // To keep the same workflow, we use a pointer to a double here
             // that will receive CVC values - even though none was allocated by Lepton
             ref = &dev_null;
-            if (cvm::debug())
-              cvm::log("Variable " + vn + " is absent from expression \"" + expr + "\".\n");
+            cvm::log("Warning: Variable " + vn + " is absent from expression \"" + expr + "\".\n");
           }
           value_eval_var_refs.push_back(ref);
         }
@@ -348,7 +348,7 @@ int colvar::init_custom_function(std::string const &conf)
       cvm::error("Error compiling expression \"" + expr + "\".\n", INPUT_ERROR);
       return INPUT_ERROR;
     }
-  } while (key_lookup(conf, "customFunction", &expr, &pos));
+  } while (key_lookup(conf, "customFunction", &expr_in, &pos));
 
 
   // Now define derivative with respect to each scalar sub-component
@@ -373,8 +373,7 @@ int colvar::init_custom_function(std::string const &conf)
             catch (...) { // Variable is absent from derivative
               // To keep the same workflow, we use a pointer to a double here
               // that will receive CVC values - even though none was allocated by Lepton
-              if (cvm::debug())
-                cvm::log("Variable " + vvn + " is absent from derivative of \"" + expr + "\" wrt " + vn + ".\n");
+              cvm::log("Warning: Variable " + vvn + " is absent from derivative of \"" + expr + "\" wrt " + vn + ".\n");
               ref = &dev_null;
             }
             grad_eval_var_refs.push_back(ref);
