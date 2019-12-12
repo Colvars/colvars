@@ -1,0 +1,15 @@
+configuration {
+  step           40
+  dt 5.000000e-01
+}
+
+colvar {
+  name apath_s_distanceVec
+  x  3.81323012651889e-02
+}
+
+colvar {
+  name apath_z_distanceVec
+  x  6.78535020169896e+02
+}
+

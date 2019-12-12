@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-# Select variables from a Colvars trajectory file and optionally plot them as
-# a 1D graph as a function of time or of one of the variables.
+# Invoke this script with --help for documentation.
 
-# Source: https://github.com/colvars/colvars/blob/master/colvartools/plot_colvars_traj.py?raw=true
+# Download link: https://github.com/Colvars/colvars/blob/master/colvartools/plot_colvars_traj.py?raw=true
+# Contact: giacomo.fiorin@gmail.com
 
 from __future__ import print_function
 
@@ -201,21 +201,23 @@ if (__name__ == '__main__'):
     import argparse
 
     parser = \
-        argparse.ArgumentParser(description='Select variables from a Colvars '
-                                'trajectory file and optionally plot them '
-                                'as a 1D graph as a function of time or of '
-                                'one of the variables.', \
+        argparse.ArgumentParser(description='Select variables from one or more '
+                                'Colvars trajectory files, and write them to '
+                                'a concatenated file, or optionally plot them '
+                                '(1D graph) as a function of time or of '
+                                'one of the variables.'+os.linesep+
+                                'Plotting functions are only available when '
+                                'Matplotlib is available.', \
             formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument(dest='filenames',
                         nargs='*',
                         type=argparse.FileType('r'),
-                        help='Space-separated list of input files '
+                        help='Space-separated list of .colvars.traj files '
                         '(will be concatenated)',
                         default=[])
 
     parser.add_argument('--dt',
-                        dest='dt',
                         type=float,
                         help='Integration time step',
                         default=2.0e-6)
@@ -239,7 +241,6 @@ if (__name__ == '__main__'):
                         default=1)
 
     parser.add_argument('--variables',
-                        dest='variables',
                         nargs='*',
                         type=str,
                         help='Space-separated list of names of collective '
@@ -247,14 +248,12 @@ if (__name__ == '__main__'):
                         default=[])
 
     parser.add_argument('--list-variables',
-                        dest='list_variables',
                         action='store_true',
                         help='List all names of collective variables '
                         'defined up until the first line of data.',
                         default=False)
 
     parser.add_argument('--output-file',
-                        dest='output_file',
                         type=str,
                         help='Write the selected variables to a text file.  '
                         'The step number is always included as the first '
@@ -262,47 +261,41 @@ if (__name__ == '__main__'):
                         'must be defined on the same trajectory segments.',
                         default=None)
 
-    try:
-        import matplotlib
-        matplotlib.use('Agg')
-        import matplotlib.pyplot as plt
-        from matplotlib.backends.backend_pdf import PdfPages
-        matplotlib.rcParams['font.size'] = 10
+    parser.add_argument('--plot-file',
+                        type=str,
+                        help='Plot into a file with this name if the '
+                        'extension is one of "png", "pdf", "ps", "eps", '
+                        'or "svg", or to the screen if not given '
+                        'and --output-file is also not given.',
+                        default=None)
 
-        parser.add_argument('--plot',
-                            dest='plot',
-                            type=str,
-                            help='Plot the variables in a PDF file '
-                            'prefixed by this string.',
-                            default=None)
+    parser.add_argument('--plot-x-axis',
+                        type=str,
+                        help='Use this variable as X axis in the plot.',
+                        default='time')
 
-        parser.add_argument('--plot-x-axis',
-                            dest='plot_x_axis',
-                            type=str,
-                            help='Use this variable as X axis in the plot.',
-                            default='time')
+    parser.add_argument('--plot-x-label',
+                        type=str,
+                        help='Use this label for the X axis.',
+                        default=None)
 
-        parser.add_argument('--plot-x-label',
-                            dest='plot_x_label',
-                            type=str,
-                            help='Use this label for the X axis.',
-                            default=None)
+    parser.add_argument('--plot-y-label',
+                        type=str,
+                        help='Use this label for the Y axis.',
+                        default=None)
 
-        parser.add_argument('--plot-y-label',
-                            dest='plot_y_label',
-                            type=str,
-                            help='Use this label for the Y axis.',
-                            default=None)
+    parser.add_argument('--plot-keys',
+                        nargs='*',
+                        type=str,
+                        help='Alternative names for the legend',
+                        default=[])
 
-        parser.add_argument('--plot-keys',
-                            dest='plot_keys',
-                            nargs='*',
-                            type=str,
-                            help='Alternative names for the legend',
-                            default=[])
-
-    except:
-        pass
+    parser.add_argument('--plot-time-factor',
+                        type=int,
+                        help='Average these many consecutive frames '
+                        'together before plotting but after reading '
+                        'from files',
+                        default=1)
 
     args = parser.parse_args()
 
@@ -320,16 +313,19 @@ if (__name__ == '__main__'):
         sys.exit()
 
     variables = args.variables
+
+    for var in variables:
+        try:
+            cv = colvars_traj[var]
+        except KeyError:
+            print("ERROR: could not find \""+var+"\"; below are the available "
+                  "fields: ")
+            print("  ", *colvars_traj.variables)
+            raise KeyError
+
     if (len(variables) == 0): variables = colvars_traj.variables
 
     plot_keys = dict(zip(variables, variables))
-    if (len(args.plot_keys)):
-        if (len(args.plot_keys) != len(variables)):
-            raise KeyError("--plot-keys must be as long "
-                           "as the number of variables.")
-        else:
-            plot_keys = dict(zip(variables, args.plot_keys))
-    time_unit = args.dt
 
 
     if (args.output_file):
@@ -341,7 +337,7 @@ if (__name__ == '__main__'):
             for ic in range(cv.num_dimensions):
                 y = cv.values
                 if (cv.num_dimensions > 1):
-                    y = cv.values[ic]
+                    y = cv.values[:,ic]
                 columns += [y]
                 fmt += " %21.14f"
         columns = tuple(columns)
@@ -351,17 +347,40 @@ if (__name__ == '__main__'):
                    X=list(zip(*columns)),
                    fmt=str(fmt))
 
+    else:
 
-    if (args.plot):
+        plot_filename = None
+        if (args.plot_file):
+            plot_filename = args.plot_file
+            if (not args.plot_file.lower().endswith(('png', 'pdf',
+                                                     'ps', 'eps', 'svg'))):
+                plot_filename = args.plot_file+".pdf"
 
-        lowercase = args.plot.lower()
-        if (lowercase[-4:] == '.pdf'):
-            args.plot = args.plot[:-4]
+        if (plot_filename): matplotlib.use('Agg')
 
-        pdf = PdfPages(args.plot+'.pdf')
+        import matplotlib.pyplot as plt
+        from matplotlib.backends.backend_pdf import PdfPages
+        matplotlib.rcParams['font.size'] = 10
+
         fig = plt.figure(figsize=(3.0, 3.0))
-        if (args.plot_x_label): plt.xlabel(args.plot_x_label)
-        if (args.plot_y_label): plt.ylabel(args.plot_y_label)
+        if (args.plot_x_label):
+            plt.xlabel(args.plot_x_label)
+        else:
+            plt.xlabel(args.plot_x_axis)
+
+        if (args.plot_y_label):
+            plt.ylabel(args.plot_y_label)
+        else:
+            plt.ylabel('Variables')
+
+        if (len(args.plot_keys)):
+            if (len(args.plot_keys) != len(variables)):
+                raise KeyError("--plot-keys must be as long "
+                               "as the number of variables.")
+            else:
+                plot_keys = dict(zip(variables, args.plot_keys))
+
+        time_unit = args.dt
 
         for var in variables:
 
@@ -375,10 +394,22 @@ if (__name__ == '__main__'):
             else:
                 x = colvars_traj[args.plot_x_axis].values
 
+            if (args.plot_time_factor > 1):
+                # Usually 1
+                start_ave = colvars_traj.num_frames % args.plot_time_factor
+                x = x[start_ave:].reshape(x.shape[0]//args.plot_time_factor,
+                                          args.plot_time_factor).mean(1)
+
             for ic in range(cv.num_dimensions):
                 y = cv.values
                 if (cv.num_dimensions > 1):
-                    y = cv.values[ic]
+                    y = cv.values[:,ic]
+
+                if (args.plot_time_factor > 1):
+                    start_ave = colvars_traj.num_frames % args.plot_time_factor
+                    y = y[start_ave:].reshape(y.shape[0]//args.plot_time_factor,
+                                              args.plot_time_factor).mean(1)
+
                 plt.plot(x, y, '-',
                          label=plot_keys[var],
                          alpha=0.5)
@@ -386,6 +417,8 @@ if (__name__ == '__main__'):
         plt.legend(loc='upper left')
         plt.tight_layout()
 
-        pdf.savefig()
-        pdf.close()
+        if (plot_filename):
+            plt.savefig(plot_filename)
+        else:
+            plt.show()
 

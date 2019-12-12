@@ -1,0 +1,15 @@
+configuration {
+  step           20
+  dt 5.000000e-01
+}
+
+colvar {
+  name apath_s_dihed
+  x  7.81356397470272e-01
+}
+
+colvar {
+  name apath_z_dihed
+  x  4.37232316380883e+00
+}
+

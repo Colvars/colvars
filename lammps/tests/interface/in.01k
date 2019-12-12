@@ -1,0 +1,7 @@
+# LAMMPS test 01j: unwrap forced off
+# Validated: 27 November 2019-IBPC
+include inc.minimal_units
+fix f1 all colvars minimal_units.cfg unwrap no output 01j
+
+run 0 post no
+

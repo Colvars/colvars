@@ -1,0 +1,31 @@
+colvar {
+    name myColvar
+
+    ## Uncomment optional parameters as needed, replace '@' with value
+    # width @
+    # lowerBoundary @
+    # upperBoundary @
+
+
+    ## The options below are only useful during specific simulations eg. eABF
+    ## they have no effect in VMD analysis
+    extendedLagrangian      on
+    extendedFluctuation     @
+    extendedTimeConstant    200.0
+    extendedTemp            300.0
+    extendedLangevinDamping 0.1
+
+
+    ## Insert one or several components below
+    # (see templates in components directory)
+
+    distance {
+      ## Optional coeff and exponent for polynomial combinations
+      # componentCoeff @
+      # componentExp @
+      group1 { atomNumbers 1 2 }
+      group2 { atomNumbers 3 4 }
+    }
+}
+
+

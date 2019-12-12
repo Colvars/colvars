@@ -1,5 +1,12 @@
 // -*- c++ -*-
 
+// This file is part of the Collective Variables module (Colvars).
+// The original version of Colvars and its updates are located at:
+// https://github.com/Colvars/colvars
+// Please update all Colvars source files before making any changes.
+// If you wish to distribute your changes, please submit them to the
+// Colvars repository at GitHub.
+
 #ifndef COLVARPROXY_VMD_H
 #define COLVARPROXY_VMD_H
 
@@ -26,8 +33,6 @@ class colvarproxy_vmd : public colvarproxy {
 
 protected:
 
-  /// pointer to the VMD Tcl interpreter
-  Tcl_Interp *interp;
   /// pointer to the VMD main object
   VMDApp *vmd;
   /// VMD molecule id being used (must be provided at construction)
@@ -54,7 +59,7 @@ public:
   /// \brief Update mass, charge, etc
   int update_atomic_properties();
 
-  inline cvm::real unit_angstrom()
+  inline cvm::real backend_angstrom_value()
   {
     return 1.0;
   }
@@ -80,6 +85,9 @@ public:
   {
     return vmd_random_gaussian();
   }
+
+  /// Return molid of VMD molecule currently associated with Colvars
+  inline int get_vmdmolid() { return vmdmolid; }
 
   inline int get_frame(long int &f)
   {
@@ -126,6 +134,7 @@ public:
   void log(std::string const &message);
   void error(std::string const &message);
   void fatal_error(std::string const &message);
+  int set_unit_system(std::string const &units_in, bool check_only);
 
   // Callback functions
   int run_force_callback();

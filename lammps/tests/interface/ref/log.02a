@@ -1,0 +1,145 @@
+# Validated:
+include inc.minimal
+# minimal system config: two groups of two atoms
+units real
+atom_style atomic
+atom_modify map array # XXX this should not be needed
+
+pair_style lj/cut 5.0
+read_data data.minimal
+Reading data file ...
+  orthogonal box = (-5 -5 -10) to (5 5 10)
+  reading atoms ...
+  4 atoms
+  reading velocities ...
+  4 velocities
+
+group g1 id 1 2
+2 atoms in group g1
+group g2 id 3 4
+2 atoms in group g2
+
+variable com1z equal xcm(g1,z)
+variable com2z equal xcm(g2,z)
+variable fcm1z equal fcm(g1,z)
+variable fcm2z equal fcm(g2,z)
+variable cveng equal f_f1
+
+thermo_style custom step pe v_com1z v_com2z v_fcm1z v_fcm2z v_cveng
+thermo 1
+
+fix f1 all colvars minimal.cfg unwrap yes output 02a
+
+run 0 post no
+Neighbor list info ...
+  update every 1 steps, delay 10 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  binsize = 3.5, bins = 3 3 6
+  1 neighbor lists, perpetual/occasional/extra = 1 0 0
+  (1) pair lj/cut, perpetual
+      attributes: half, newton on
+      pair build: half/bin/atomonly/newton
+      stencil: half/bin/3d/newton
+      bin: standard
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 0
+  Time step     : 1
+colvars: Creating proxy instance
+colvars: ----------------------------------------------------------------------
+colvars: Please cite Fiorin et al, Mol Phys 2013:
+colvars:  http://dx.doi.org/10.1080/00268976.2013.813594
+colvars: in any publication based on this calculation.
+colvars: ----------------------------------------------------------------------
+colvars: Reading new configuration from file "minimal.cfg":
+colvars: # smp = on [default]
+colvars: # colvarsTrajFrequency = 100 [default]
+colvars: # colvarsRestartFrequency = 0 [default]
+colvars: # scriptedColvarForces = off [default]
+colvars: # scriptingAfterBiases = off [default]
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = "one"
+colvars:   Initializing a new "distance" component.
+colvars:     # name = "" [default]
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
+colvars:       Initializing atom group "group1".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group1" defined with 2 atoms requested.
+colvars:       Initializing atom group "group2".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group2" defined with 2 atoms requested.
+colvars:     # oneSiteSystemForce = off [default]
+colvars:     # oneSiteTotalForce = off [default]
+colvars:   All components initialized.
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # width = 1 [default]
+colvars:   # lowerBoundary = 0 [default]
+colvars:   # upperBoundary = 0 [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = off [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputTotalForce = off [default]
+colvars:   # outputAppliedForce = off [default]
+colvars:   # subtractAppliedForce = off [default]
+colvars:   # runAve = off [default]
+colvars:   # corrFunc = off [default]
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables initialized, 1 in total.
+colvars: No collective variables biases were defined.
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables module (re)initialized.
+colvars: ----------------------------------------------------------------------
+colvars: The restart output state file will be "rest.colvars.state".
+colvars: The final output state file will be "02a.colvars.state".
+colvars: Writing to colvar trajectory file "02a.colvars.traj".
+colvars: Re-initialized atom group for variable "one":0/0. 2 atoms: total mass = 2, total charge = 0.
+colvars: Re-initialized atom group for variable "one":0/1. 2 atoms: total mass = 2, total charge = 0.
+Step PotEng v_com1z v_com2z v_fcm1z v_fcm2z v_cveng 
+       0 -0.0002563444           -7          -13 -2.99925e-05  2.99925e-05            0 
+colvars: Saving collective variables state to "02a.colvars.state".
+
+
+fix_modify f1 configfile minimal.cfg # redefining same colvar, should fail
+colvars: ----------------------------------------------------------------------
+colvars: Reading new configuration from file "minimal.cfg":
+colvars: # smp = on [default]
+colvars: # colvarsTrajFrequency = 100 [default]
+colvars: # colvarsRestartFrequency = 0 [default]
+colvars: # scriptedColvarForces = off [default]
+colvars: # scriptingAfterBiases = off [default]
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = "one"
+colvars: Error: this colvar cannot have the same name, "one", as another colvar.
+ERROR on proc 0: Fatal error in the collective variables module.
+ (../colvarproxy_lammps.cpp)
+Last command: fix_modify f1 configfile minimal.cfg # redefining same colvar, should fail

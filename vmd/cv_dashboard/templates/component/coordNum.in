@@ -1,0 +1,15 @@
+    coordNum {
+        group1 {
+            atomNumbers 1
+        }
+        group2 {
+            atomNumbers 2
+        }
+
+        ## Anisotropic cutoffs
+        # cutoff3 (0.3, 0.6, 0.4)
+
+        ## Pair lists
+        # tolerance 0.01
+        # pairListFrequency 2
+    }

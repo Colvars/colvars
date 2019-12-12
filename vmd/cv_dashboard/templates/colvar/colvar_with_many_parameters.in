@@ -1,0 +1,32 @@
+colvar {
+    name myColvar
+
+    ## Uncomment optional parameters as needed, replace '@' with value
+
+    ## Grid parameters
+    # width @
+    # lowerBoundary @
+    # upperBoundary @
+
+    ## Insert one or several components below
+    # (see templates in components/ directory)
+
+    distance {
+        ## Optional coeff and exponent for polynomial combinations
+        # componentCoeff @
+        # componentExp @
+        group1 {
+            ## The group can be defined by several atom selection keywords
+            atomNumbers 1 2
+            #indexGroup @
+        }
+        group2 {
+            atomNumbers 3 4
+            #indexGroup @
+        }
+    }
+}
+
+## Optionally, import GROMACS-style index file here
+# indexFile @.ndx
+

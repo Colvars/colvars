@@ -1,0 +1,11 @@
+    distanceZ {
+        ## Default axis is z, (0, 0, 1)
+        # axis (0.3, -0.4, 0.5)
+        main {
+            atomNumbers 1
+        }
+        ref {
+            atomNumbers 2
+        }
+    }
+

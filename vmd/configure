@@ -206,6 +206,7 @@ $config_imd             = 0;  # interactive MD sockets code etc.
 $config_libsball        = 0;  # Direct I/O Spaceball 6DOF input support 
 $config_mpi             = 0;  # MPI parallel message passing
 $config_nvenc           = 0;  # NVENC hardware H.26[45] video encoder
+$config_nvpipe          = 0;  # NvPipe hardware H.26[45] video streaming
 $config_nvtx            = 0;  # NVTX software profiling APIs
 $config_xinerama        = 0;  # X-Windows Xinerama full-screen mode support 
 $config_xinput          = 0;  # X-Windows Xinput Spaceball 6DOF input support 
@@ -258,6 +259,7 @@ foreach $term (@ARGV) {
     if ($term eq "OPENCL")          { $config_opencl          = 1; next; }
     if ($term eq "MPI")             { $config_mpi             = 1; next; }
     if ($term eq "NVENC")           { $config_nvenc           = 1; next; }
+    if ($term eq "NVPIPE")          { $config_nvpipe          = 1; next; }
     if ($term eq "NVTX")            { $config_nvtx            = 1; next; }
     if ($term eq "IMD")             { $config_imd             = 1; next; }
     if ($term eq "LIBSBALL")        { $config_libsball        = 1; next; }
@@ -344,6 +346,7 @@ if ($config_cuda)            { $config_string .= " CUDA"            }
 if ($config_opencl)          { $config_string .= " OPENCL"          }
 if ($config_mpi)             { $config_string .= " MPI"             }
 if ($config_nvenc)           { $config_string .= " NVENC"           }
+if ($config_nvpipe)          { $config_string .= " NVPIPE"          }
 if ($config_nvtx)            { $config_string .= " NVTX"            }
 if ($config_imd)             { $config_string .= " IMD"             }
 if ($config_libsball)        { $config_string .= " LIBSBALL"        }
@@ -417,7 +420,7 @@ $def_title="ON";
 $def_imageviewer="display %s";
 
 # program version number
-$progversion="1.9.4a22";
+$progversion="1.9.4a38";
 
 # text prompt string
 $promptstring="vmd > ";
@@ -491,6 +494,7 @@ $arch_nvccflags   = "-lineinfo --ptxas-options=-v " .
                     "-gencode arch=compute_60,code=sm_60 " .
                     "-gencode arch=compute_70,code=compute_70 " .
                     "-gencode arch=compute_70,code=sm_70 " .
+                    "-gencode arch=compute_75,code=sm_75 " .
                     "--ftz=true ";
 $arch_gcc         = "gcc";
 $arch_gccpp       = "g++";
@@ -800,6 +804,7 @@ if ($config_tk) { $tcl_libs = "-ltk8.5 -lX11 " . $tcl_libs; }
 		     'cmd_trans.C',
 		     'cmd_user.C',
 		     'cmd_util.C',
+		     'cmd_videostream.C',
 		     'cmd_vmdbench.C',
 		     'tcl_commands.C');
 @tcl_h            = ('TclCommands.h',
@@ -943,6 +948,7 @@ $cuda_libs        = "-Wl,-rpath -Wl,\$\$ORIGIN/ -lcudart_static -lrt";
                      'CUDAMDFF.cu',
                      'CUDAMeasureRDF.cu',
                      'CUDAMeasureQCP.cu',
+                     'CUDAWrapNVML.cu',
                      'CUDAOrbital.cu',
                      'CUDAParPrefixOps.cu',
                      'CUDAQuickSurf.cu',
@@ -1009,7 +1015,7 @@ $mpi_libs        = "-lmpich";
 
 #######################
 # OPTIONAL COMPONENT: NVENC GPU hardware H.26[45] video encode/decode API
-#   This option enables high performance remote visualization
+#   This option enables high performance hardware video (de)compression
 #######################
 $nvenc_defines     = "-DVMDNVENC ";
 $nvenc_dir         = "";
@@ -1024,13 +1030,32 @@ $nvenc_libs        = "-lcuda"; # XXX need to eliminate via dlopen()/dlsym()
 
 
 #######################
+# OPTIONAL COMPONENT: NVPIPE GPU hardware H.26[45] video encode/decode API
+#   This option enables high performance remote visualization
+#######################
+$nvpipe_defines     = "-DVMDNVPIPE ";
+$nvpipe_dir         = "/home/johns/graphics/nvpipe/nvpipe.2018/NvPipe/c6build";
+#$nvpipe_dir         = "/ccs/home/stonej1/nvpipe/NvPipe/build";
+$nvpipe_include     = "-I$nvpipe_dir/include";
+$nvpipe_library     = "-L$nvpipe_dir -lNvPipe -lnvcuvid";
+$nvpipe_libs        = "-lcuda"; # XXX need to eliminate via dlopen()/dlsym()
+@nvpipe_cc          = ();
+@nvpipe_cu          = ();
+@nvpipe_ccpp        = ();
+@nvpipe_h           = ();
+@nvpipe_extra       = ();
+
+
+#######################
 # OPTIONAL COMPONENT: NVTX profiling interfaces
 #######################
 $nvtx_defines     = "-DVMDNVTX ";
 $nvtx_dir         = "";
-$nvtx_include     = "";
+$nvtx_include     = ""; # CUDA <= 9 have NVTX V2
+#$nvtx_include     = "-I$cuda_dir/include/nvtx3 "; # CUDA >= 10 have NVTX V3
 $nvtx_library     = "";
-$nvtx_libs        = "-lnvToolsExt"; 
+$nvtx_libs        = "-lnvToolsExt"; # CUDA <= 9 have NVTX V2
+#$nvtx_libs        = ""; # CUDA >= 10 have NVTX V3
 @nvtx_cc          = ();
 @nvtx_cu          = ();
 @nvtx_ccpp        = ();
@@ -1073,7 +1098,8 @@ if ($config_opengl) {
 # $liboptix_dir         = "/usr/local/encap/NVIDIA-OptiX-SDK-4.1.1-linux64";
 # $liboptix_dir         = "/usr/local/encap/NVIDIA-OptiX-SDK-5.0.0-linux64";
 # $liboptix_dir         = "/usr/local/encap/NVIDIA-OptiX-SDK-5.0.1-linux64";
-$liboptix_dir         = "/usr/local/encap/NVIDIA-OptiX-SDK-5.2.0-DEV-linux64";
+$liboptix_dir         = "/usr/local/encap/NVIDIA-OptiX-SDK-5.1.0-linux64";
+# $liboptix_dir         = "/usr/local/encap/NVIDIA-OptiX-SDK-6.0.0-linux64";
 
 # NCSA Blue Waters
 # $liboptix_dir         = "/u/sciteam/stonej/local/NVIDIA-OptiX-SDK-3.6.3-linux64";
@@ -1455,7 +1481,7 @@ $python_libs        = "-lpython2.5 -lpthread";
                        'VMDTkinterMenu.C',
 		       'py_animate.C',
 		       'py_atomsel.C',
-		       'py_atomselection.C',
+		       'py_selection.C',
 		       'py_axes.C',
 		       'py_color.C',
 		       'py_commands.C',
@@ -1516,6 +1542,7 @@ $vmd_libs          = "$tcl_libs";
                    'msmpot_setup.c',
                    'vmdsock.c',
                    'vmddlopen.c',
+                   'vmdfsinfo.c',
                    'pcre.c',
                    'fitrms.c',
                    @tcl_cc,
@@ -1658,6 +1685,7 @@ $vmd_libs          = "$tcl_libs";
 		   'Timestep.C', 
 		   'UIObject.C', 
 		   'UIText.C', 
+                   'VideoStream.C',
                    'VMDApp.C',
                    'VMDCollab.C',
 		   'VMDDir.C', 
@@ -1814,6 +1842,7 @@ $vmd_libs          = "$tcl_libs";
 	      'Timestep.h', 
 	      'UIObject.h', 
 	      'UIText.h', 
+              'VideoStream.h',
               'VMDApp.h',
 	      'VMDDir.h', 
 	      'VMDDisplayList.h',
@@ -3166,6 +3195,7 @@ $if_statements .= &create_config_option('cuda');
 $if_statements .= &create_config_option('opencl');
 $if_statements .= &create_config_option('mpi');
 $if_statements .= &create_config_option('nvenc');
+$if_statements .= &create_config_option('nvpipe');
 $if_statements .= &create_config_option('nvtx');
 $if_statements .= &create_config_option('imd');
 $if_statements .= &create_config_option('libsball');

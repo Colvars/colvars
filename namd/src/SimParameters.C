@@ -296,52 +296,6 @@ void SimParameters::scriptSet(const char *param, const char *value) {
   }
   SCRIPT_PARSE_INT("alchEquilSteps",alchEquilSteps)
 
-  if ( ! strncasecmp(param,"alchRepLambda",MAX_SCRIPT_PARAM_SIZE) ) {
-    alchRepLambda = atof(value);
-    alchFepWCARepuOn = true;
-    alchFepWCADispOn = false;
-    alchFepElecOn    = false;
-    ComputeNonbondedUtil::select();
-    return;
-  }
-
-  if ( ! strncasecmp(param,"alchDispLambda",MAX_SCRIPT_PARAM_SIZE) ) {
-    alchDispLambda = atof(value);
-    alchFepWCARepuOn = false;
-    alchFepWCADispOn = true;
-    alchFepElecOn    = false;
-    ComputeNonbondedUtil::select();
-    return;
-  }
-
-  if ( ! strncasecmp(param,"alchElecLambda",MAX_SCRIPT_PARAM_SIZE) ) {
-    alchElecLambda = atof(value);
-    alchFepWCARepuOn = false;
-    alchFepWCADispOn = false;
-    alchFepElecOn    = true;
-    ComputeNonbondedUtil::select();
-    return;
-  }
-
-
-  if ( ! strncasecmp(param,"alchFepWCArcut1",MAX_SCRIPT_PARAM_SIZE) ) {
-    alchFepWCArcut1 = atof(value);
-    ComputeNonbondedUtil::select();
-    return;
-  }
-
-  if ( ! strncasecmp(param,"alchFepWCArcut2",MAX_SCRIPT_PARAM_SIZE) ) {
-    alchFepWCArcut2 = atof(value);
-    ComputeNonbondedUtil::select();
-    return;
-  }
-
-  if ( ! strncasecmp(param,"alchFepWCArcut3",MAX_SCRIPT_PARAM_SIZE) ) {
-    alchFepWCArcut3 = atof(value);
-    ComputeNonbondedUtil::select();
-    return;
-  }
-
   if ( ! strncasecmp(param,"alchLambda",MAX_SCRIPT_PARAM_SIZE) ) {
     alchLambda = atof(value);
     if ( alchLambda < 0.0 || 1.0 < alchLambda ) {
@@ -362,15 +316,7 @@ void SimParameters::scriptSet(const char *param, const char *value) {
 
   if ( ! strncasecmp(param,"alchLambdaIDWS",MAX_SCRIPT_PARAM_SIZE) ) {
     alchLambdaIDWS = atof(value);
-    if ( alchLambdaIDWS > 1. ) {
-      NAMD_die("alchLambdaIDWS should be either in the range [0.0, 1.0], or negative (disabled).\n");
-    }
-    // Switch lambda2 every other cycle of fullElectFrequency steps
-    // or every other nonbondedFrequency steps if undefined
-    // or every alchOutFreq steps if larger (no need to switch faster that we output)
-    alchIDWSfreq = fullElectFrequency > 0 ? fullElectFrequency : nonbondedFrequency;
-    if ( alchOutFreq > alchIDWSfreq )
-      alchIDWSfreq = alchOutFreq;
+    setupIDWS();
     ComputeNonbondedUtil::select();
     return;
   }
@@ -705,6 +651,23 @@ void SimParameters::config_parser_basic(ParseOptions &opts) {
 #endif
    opts.optional("main", "waterModel", "Water model to use", PARSE_STRING);
    opts.optionalB("main", "LJcorrection", "Apply analytical tail corrections for energy and virial", &LJcorrection, FALSE);
+#ifdef TIMER_COLLECTION
+   opts.optional("main", "TimerBinWidth",
+       "Bin width of timer histogram collection in microseconds",
+       &timerBinWidth, 1.0);
+#endif
+#if defined(NAMD_NVTX_ENABLED) || defined(NAMD_CMK_TRACE_ENABLED)
+   // default NVTX or Projections profiling is up to the first 1000 patches
+   opts.optional("main", "beginEventPatchID","Beginning patch ID for profiling",
+       &beginEventPatchID, 0);
+   opts.optional("main", "endEventPatchID", "Ending patch ID for profiling",
+       &endEventPatchID, 5000);
+   // default NVTX or Projections profiling is up to the first 1000 time steps
+   opts.optional("main", "beginEventStep", "Beginning time step for profiling",
+       &beginEventStep, 0);
+   opts.optional("main", "endEventStep", "Ending time step for profiling",
+       &endEventStep, 1000);
+#endif
 }
 
 void SimParameters::config_parser_fileio(ParseOptions &opts) {
@@ -1003,10 +966,6 @@ void SimParameters::config_parser_fullelect(ParseOptions &opts) {
 	&PMEOffload);
 
    opts.optionalB("PME", "usePMECUDA", "Use the PME CUDA version", &usePMECUDA, CmiNumPhysicalNodes() < 5);
-   opts.optionalB("PME", "useOptPME", "Use the new scalable PME optimization", &useOptPME, FALSE);
-   opts.optionalB("PME", "useManyToMany", "Use the many-to-many PME optimization", &useManyToMany, FALSE);
-   if (PMEOn && !useOptPME)
-     useManyToMany = false;
 
 #ifdef DPME
    opts.optionalB("PME", "useDPME", "Use old DPME code?", &useDPME, FALSE);
@@ -1123,14 +1082,22 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
      "the altered alchemical vDW interactions", &alchVdwShiftCoeff, 5.);
    opts.range("alchVdwShiftCoeff", NOT_NEGATIVE);
 
+   opts.optionalB("alch", "alchWCA", "Is WCA decomposition being performed?",
+     &alchWCAOn, FALSE);
+
    // scheduling options for different interaction types
    opts.optional("alch", "alchElecLambdaStart", "Lambda at which electrostatic"
       "scaling of exnihilated particles begins", &alchElecLambdaStart, 0.5);
    opts.range("alchElecLambdaStart", NOT_NEGATIVE);
 
    opts.optional("alch", "alchVdwLambdaEnd", "Lambda at which vdW"
-      "scaling of exnihilated particles begins", &alchVdwLambdaEnd, 1.0);
+      "scaling of exnihilated particles ends", &alchVdwLambdaEnd, 1.0);
    opts.range("alchVdwLambdaEnd", NOT_NEGATIVE);
+
+   opts.optional("alch", "alchRepLambdaEnd", "Lambda at which repulsive vdW"
+      "scaling of exnihilated particles ends and attractive vdW scaling"
+      "begins", &alchRepLambdaEnd, 0.5);
+   opts.range("alchRepLambdaEnd", NOT_NEGATIVE);
 
    opts.optional("alch", "alchBondLambdaEnd", "Lambda at which bonded"
       "scaling of exnihilated particles begins", &alchBondLambdaEnd, 0.0);
@@ -1157,35 +1124,8 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
      "data collection in the alchemical window", &alchEquilSteps, 0);
    opts.range("alchEquilSteps", NOT_NEGATIVE);
 
-   // WCA decomposition options
-   opts.optionalB("alch", "alchFepWCARepuOn",
-     "WCA decomposition repu interaction in use?", &alchFepWCARepuOn, FALSE);
-   opts.optionalB("alch", "alchFepWCADispOn",
-     "WCA decomposition disp interaction in use?", &alchFepWCADispOn, FALSE);
    opts.optionalB("alch", "alchEnsembleAvg", "Ensemble Average in use?",
      &alchEnsembleAvg, TRUE);
-   opts.optionalB("alch", "alchFepWhamOn",
-     "Energy output for Wham postprocessing in use?", &alchFepWhamOn, FALSE);
-   opts.optional("alch", "alchFepWCArcut1",
-     "WCA repulsion Coeff1 used for generating the altered alchemical vDW "
-     "interactions", &alchFepWCArcut1, 0.0);
-   opts.range("alchFepWCArcut1", NOT_NEGATIVE);
-   opts.optional("alch", "alchFepWCArcut2", "WCA repulsion Coeff2 used for "
-     "generating the altered alchemical vDW interactions", &alchFepWCArcut2,
-     1.0);
-   opts.range("alchFepWCArcut2", NOT_NEGATIVE);
-   opts.optional("alch", "alchFepWCArcut3",
-     "WCA repulsion Coeff3 used for generating the altered alchemical vDW "
-     "interactions", &alchFepWCArcut3, 1.0);
-   opts.range("alchFepWCArcut3", NOT_NEGATIVE);
-   // These default to invalid lambda values.
-   opts.optional("alch", "alchRepLambda", "Lambda of WCA repulsion"
-     "Coupling parameter value for WCA repulsion", &alchRepLambda, -1.0);
-   opts.optional("alch", "alchDispLambda", "Lambda of WCA dispersion"
-     "Coupling parameter value for WCA dispersion", &alchDispLambda, -1.0);
-   opts.optional("alch", "alchElecLambda", "Lambda of electrostatic "
-     "perturbation Coupling parameter value for electrostatic perturbation",
-     &alchElecLambda, -1.0);
 //fepe
 
    opts.optionalB("main", "les", "Is locally enhanced sampling enabled?",
@@ -1236,17 +1176,17 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
    opts.optional("drude", "drudeDamping", "Damping coefficient (1/ps) for "
        "Drude oscillators", &drudeDamping);
    opts.range("drudeDamping", POSITIVE);
-   opts.optional("drude", "drudeBondLen", "Drude oscillator bond length "
-       "beyond which to apply restraint", &drudeBondLen);
-   opts.range("drudeBondLen", POSITIVE);
-   opts.optional("drude", "drudeBondConst", "Drude oscillator restraining "
-       "force constant", &drudeBondConst);
-   opts.range("drudeBondConst", POSITIVE);
    opts.optional("drude", "drudeNbtholeCut", "Nonbonded Thole interactions "
-       "interaction radius", &drudeNbtholeCut);
+       "interaction radius", &drudeNbtholeCut, 5.0);
    opts.range("drudeNbtholeCut", POSITIVE);
    opts.optionalB("drude", "drudeHardWall", "Apply maximum Drude bond length "
-       "restriction?", &drudeHardWallOn, FALSE);
+       "restriction?", &drudeHardWallOn, TRUE);
+   opts.optional("drude", "drudeBondLen", "Drude oscillator bond length "
+       "beyond which to apply restraint", &drudeBondLen, 0.25);
+   opts.range("drudeBondLen", POSITIVE);
+   opts.optional("drude", "drudeBondConst", "Drude oscillator restraining "
+       "force constant", &drudeBondConst, 40000.0);
+   opts.range("drudeBondConst", POSITIVE);
 
    // Pair interaction calculations
     opts.optionalB("main", "pairInteraction",
@@ -1530,14 +1470,15 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
    // GaMD parameters
    opts.optionalB("accelMD", "accelMDG", "Perform Gaussian accelMD calculation?", &accelMDG, FALSE);
    opts.optional("accelMDG", "accelMDGiE", "Flag to set the mode iE in Gaussian accelMD", &accelMDGiE, 1);
-   opts.optional("accelMDG", "accelMDGcMDSteps", "No. of cMD steps", &accelMDGcMDSteps, 1000000);
+   opts.optional("accelMDG", "accelMDGcMDSteps", "Number of cMD steps", &accelMDGcMDSteps, 1000000);
    opts.range("accelMDGcMDSteps", NOT_NEGATIVE);
-   opts.optional("accelMDG", "accelMDGEquiSteps", "No. of equilibration steps after adding boost potential", &accelMDGEquiSteps, 1000000);
+   opts.optional("accelMDG", "accelMDGEquiSteps", "Number of equilibration steps after adding boost potential", &accelMDGEquiSteps, 1000000);
    opts.range("accelMDGEquiSteps", NOT_NEGATIVE);
-   opts.require("accelMDG", "accelMDGcMDPrepSteps", "No. of preparation cMD steps", &accelMDGcMDPrepSteps, 200000);
+   opts.require("accelMDG", "accelMDGcMDPrepSteps", "Number of preparation cMD steps", &accelMDGcMDPrepSteps, 200000);
    opts.range("accelMDGcMDPrepSteps", NOT_NEGATIVE);
-   opts.require("accelMDG", "accelMDGEquiPrepSteps", "No. of preparation equilibration steps", &accelMDGEquiPrepSteps, 200000);
+   opts.require("accelMDG", "accelMDGEquiPrepSteps", "Number of preparation equilibration steps", &accelMDGEquiPrepSteps, 200000);
    opts.range("accelMDGEquiPrepSteps", NOT_NEGATIVE);
+   opts.optional("accelMDG", "accelMDGStatWindow", "Number of steps to calculate avg and std", &accelMDGStatWindow, -1);
    opts.optional("accelMDG", "accelMDGSigma0P", "Upper limit of std of total potential", &accelMDGSigma0P, 6.0);
    opts.units("accelMDGSigma0P", N_KCAL);
    opts.range("accelMDGSigma0P", NOT_NEGATIVE);
@@ -2148,6 +2089,9 @@ void SimParameters::config_parser_boundary(ParseOptions &opts) {
    opts.optional("extraBonds", "extraBondsFile",
 		"file with list of extra bonds",
 		 PARSE_MULTIPLES);
+   opts.optionalB("extraBonds", "extraBondsCosAngles",
+		"Should extra angles be cosine-based to match ancient bug",
+		&extraBondsCosAngles, TRUE);
 
 }
 
@@ -3344,6 +3288,16 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
 	       sprintf(msg, "accelMDGiE was set to %d but it should be 1 or 2", accelMDGiE);
 	       NAMD_die(msg);
 	   }
+           if(accelMDGStatWindow > 0){
+               if(accelMDGcMDPrepSteps % accelMDGStatWindow != 0)
+                   NAMD_die("'accelMDGcMDPrepSteps' has to be a multiple of 'accelMDGStatWindow'");
+               if(accelMDGcMDSteps % accelMDGStatWindow != 0)
+                   NAMD_die("'accelMDGcMDSteps' has to be a multiple of 'accelMDGStatWindow'");
+               if(accelMDGEquiPrepSteps % accelMDGStatWindow != 0)
+                   NAMD_die("'accelMDGEquiPrepSteps' has to be a multiple of 'accelMDGStatWindow'");
+               if(accelMDGEquiSteps % accelMDGStatWindow != 0)
+                   NAMD_die("'accelMDGEquiSteps' has to be a multiple of 'accelMDGStatWindow'");
+           }
 	   if(accelMDGRestart && accelMDGcMDSteps == 0)
 	       accelMDGcMDPrepSteps = 0;
 	   else if(accelMDGcMDSteps - accelMDGcMDPrepSteps < 2)
@@ -3528,10 +3482,6 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
    alchOnAtStartup = alchOn;
 
    if (alchOn) {
-     if (vdwForceSwitching && (alchFepWCARepuOn || alchFepWCADispOn)) {
-       iout << iWARN << "vdwForceSwitching not implemented for alchemical "
-         "interactions when WCA decomposition is on!\n" << endi;
-     }
      if (martiniSwitching) {
        iout << iWARN << "Martini switching disabled for alchemical "
          "interactions.\n" << endi;
@@ -3575,65 +3525,37 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
      if (alchElecLambdaStart > 1.0)
         NAMD_die("alchElecLambdaStart should be in the range [0.0, 1.0]\n");
 
+     if (alchWCAOn) {
+       if (alchRepLambdaEnd > 1.0)
+         NAMD_die("alchRepLambdaEnd should be in the range [0.0, 1.0]\n");
+       if (alchVdwLambdaEnd < alchRepLambdaEnd)
+         NAMD_die("alchVdwLambdaEnd should be greater than alchRepLambdaEnd\n");
+       if (alchVdwShiftCoeff > 0.0) {
+         iout << iWARN << "alchVdwShiftCoeff is non-zero but not used when WCA"
+              << " is active. Setting it to zero now.\n" << endi;
+         alchVdwShiftCoeff = 0.0;
+       }
+       if (alchThermIntOn) {
+         NAMD_die("alchWCA is not currently compatible with TI");
+       }
+#ifdef NAMD_CUDA
+       NAMD_die("alchWCA is not currently available with CUDA");
+#endif
+     }
+
      if (alchFepOn) {
        if (alchLambda2 < 0.0 || alchLambda2 > 1.0)
          NAMD_die("alchLambda2 values should be in the range [0.0, 1.0]\n");
+
+       setupIDWS(); // setup IDWS if it was activated.
 
        if (!opts.defined("alchoutfile")) {
          strcpy(alchOutFile, outputFilename);
          strcat(alchOutFile, ".fep");
        }
 
-       if (!alchFepWhamOn &&
-           ((!opts.defined("alchLambda")) || (!opts.defined("alchLambda2")))) {
+       if (!opts.defined("alchLambda") || !opts.defined("alchLambda2")) {
          NAMD_die("alchFepOn is on, but alchLambda or alchLambda2 is not set.");
-       }
-
-       if(alchRepLambda > 1.0)
-         NAMD_die("alchRepLambda should be in the range [0.0, 1.0].");
-       else if(alchRepLambda >= 0.0)
-         alchFepWCARepuOn = true;
-       else
-         alchFepWCARepuOn = false;
-
-       if(alchDispLambda > 1.0)
-         NAMD_die("alchDispLambda should be in the range [0.0, 1.0].");
-       else if(alchDispLambda >= 0.0)
-         alchFepWCADispOn = true;
-       else
-         alchFepWCADispOn = false;
-
-       if(alchElecLambda > 1.0)
-         NAMD_die("alchElecLambda should be in the range [0.0, 1.0].");
-       else if(alchElecLambda >= 0.0)
-         alchFepElecOn = true;
-       else
-         alchFepElecOn = false;
-
-       if ((alchFepWCARepuOn || alchFepWCADispOn || alchFepElecOn) &&
-           !alchFepWhamOn)
-         NAMD_die("alchFepWhamOn has to be on if one of alchFepWCARepuOn/alchFepWCADispOn/alchFepElecOn is set.");
-       if (alchFepWCARepuOn && alchFepWCADispOn)
-          NAMD_die("With WCA decomposition, repulsion and dispersion can NOT be in the same FEP stage");
-       if (alchFepWCARepuOn && alchFepElecOn)
-          NAMD_die("With WCA decomposition, repulsion and electrostatic perturbation can NOT be in the same FEP stage");
-       if (alchFepWCADispOn && alchFepElecOn)
-          NAMD_die("With WCA decomposition, dispersion and electrostatic perturbation can NOT be in the same FEP stage");
-       if (alchFepWCARepuOn &&
-           (!opts.defined("alchFepWCArcut1") ||
-            !opts.defined("alchFepWCArcut2") ||
-            !opts.defined("alchFepWCArcut3") ))
-          NAMD_die("When using WCA repulsion,  alchFepWCArcut1, alchFepWCArcut2, and alchFepWCArcut3 must be defined!");
-       if (alchFepWCARepuOn &&
-           ((alchFepWCArcut1 > alchFepWCArcut2) ||
-            (alchFepWCArcut2 > alchFepWCArcut3) ))
-           NAMD_die("When using WCA repulsion,  alchFepWCArcut2 must be larger than alchFEPWCArcut1, alchFepWCArcut3 must be larger than alchFEPWCArcut2!");
-       if (alchFepWhamOn && (alchRepLambda < 0.0) && (alchDispLambda < 0.0) &&
-           (alchElecLambda < 0.0) )
-       	   NAMD_die("One of alchRepLambda, alchDispLambda and alchElecLambda should be set up when alchFepWhamOn is true!");
-       if (alchFepWhamOn && (!alchFepElecOn)) {
-       	 alchElecLambda = 0.0;
-       	 ComputeNonbondedUtil::alchElecLambda = alchElecLambda;
        }
      }
      else if (alchThermIntOn) {
@@ -3646,19 +3568,8 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
          strcat(alchOutFile, ".ti");
        }
      }
-     if (alchLambdaIDWS >= 0.) {
-       if ( alchLambdaIDWS > 1. ) {
-         NAMD_die("alchLambdaIDWS should be either in the range [0.0, 1.0], or negative (disabled).\n");
-      }
-       // Switch lambda2 every other cycle of fullElectFrequency steps
-       // or every other nonbondedFrequency steps if undefined
-       // or every alchOutFreq steps if larger (no need to switch faster that we output)
-       alchIDWSfreq = fullElectFrequency > 0 ? fullElectFrequency : nonbondedFrequency;
-       if ( alchOutFreq > alchIDWSfreq )
-         alchIDWSfreq = alchOutFreq;
-     }
    }
-        
+
 //fepe
 
    if ( alchOn && alchFepOn && alchThermIntOn )
@@ -3667,6 +3578,12 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
      NAMD_die("Sorry, combined LES with FEP or TI is not implemented.\n");
    if ( alchOn && alchThermIntOn && lesOn )
      NAMD_die("Sorry, combined LES and TI is not implemented.\n");
+   if ( alchWCAOn && !alchOn ) {
+     iout << iWARN << "Alchemical WCA decomposition was requested but \
+       alchemical free energy calculation is not active. Setting \
+       alchWCA to off.\n" << endi;
+     alchWCAOn = FALSE;
+   }
    if ( alchDecouple && !alchOn ) {
          iout << iWARN << "Alchemical decoupling was requested but \
            alchemical free energy calculation is not active. Setting \
@@ -3695,21 +3612,6 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
        drudeDamping = langevinDamping;
        iout << iWARN << "Undefined 'drudeDamping' will be set to "
          "value of 'langevinDamping'\n" << endi;
-     }
-     if ( ! opts.defined("drudeBondConst")) {
-       drudeBondConst = 0;
-       if (! drudeHardWallOn) {
-         drudeBondLen = 0;
-         if (opts.defined("drudeBondLen")) {
-           iout << iWARN << "Resetting 'drudeBondLen' to 0 "
-             "since 'drudeBondConst' and 'drudeHardWall' are unset\n" << endi;
-         }
-       }
-     }
-     if ( ! opts.defined("drudeNbtholeCut")) {
-       drudeNbtholeCut = 0;
-         iout << iWARN << "Resetting 'drudeNbtholeCut' to 0 "
-           "since 'drudeNbtholeCut' is unset\n" << endi;
      }
    }
 
@@ -4093,6 +3995,12 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
 
    if ( gridforceOn || mgridforceOn ) {
      parse_mgrid_params(config);
+   }
+
+   if ( extraBondsOn ) {
+     extraBondsCosAnglesSetByUser = ! ! config->find("extraBondsCosAngles");
+   } else {
+     extraBondsCosAnglesSetByUser = false;
    }
 
    if (!opts.defined("constraints"))
@@ -4506,7 +4414,8 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
       }
     }
 #endif
-}
+} // check_config()
+
 
 void SimParameters::print_config(ParseOptions &opts, ConfigList *config, char *&cwd) {
 
@@ -4843,6 +4752,12 @@ if ( openatomOn )
 							<< "\n" << endi;
 
    iout << iINFO << "MARGIN                 " << margin << "\n";
+   if ( margin > 4.0 ) {
+      iout << iWARN << "MARGIN IS UNUSUALLY LARGE AND WILL LOWER PERFORMANCE\n";
+      BigReal f = patchDimension/(patchDimension-margin);
+      f *= f*f;
+      iout << iWARN << "MARGIN INCREASED PATCH VOLUME BY A FACTOR OF " << f << "\n";
+   }
 
    if ( splitPatch == SPLIT_PATCH_HYDROGEN ) {
       iout << iINFO << "HYDROGEN GROUP CUTOFF  " << hgroupCutoff << "\n";
@@ -5143,38 +5058,45 @@ if ( openatomOn )
        iout << iINFO << "FEP INTRA-ALCHEMICAL BONDED INTERACTIONS WILL BE "
             << "RETAINED\n";
      }
+     if (alchWCAOn) {
+       iout << iINFO << "FEP WEEKS-CHANDLER-ANDERSEN (WCA) VDW DECOUPLING "
+            << "ACTIVE\n";
+     } else {
      iout << iINFO << "FEP VDW SHIFTING COEFFICIENT "
           << alchVdwShiftCoeff << "\n";
+     }
      iout << iINFO << "FEP ELEC. ACTIVE FOR ANNIHILATED "
           << "PARTICLES BETWEEN LAMBDA = 0 AND LAMBDA = "
           << (1 - alchElecLambdaStart) << "\n";
      iout << iINFO << "FEP ELEC. ACTIVE FOR EXNIHILATED "
           << "PARTICLES BETWEEN LAMBDA = "
           << alchElecLambdaStart << " AND LAMBDA = 1\n";
+     if (alchWCAOn) {
+       iout << iINFO << "FEP VDW-REPU. ACTIVE FOR ANNIHILATED PARTICLES "
+            << "BETWEEN LAMBDA = " << (1 - alchRepLambdaEnd) << " AND LAMBDA "
+            << "= 1\n";
+       iout << iINFO << "FEP VDW-REPU. ACTIVE FOR EXNIHILATED PARTICLES "
+            << "BETWEEN LAMBDA = 0 AND LAMBDA " << alchRepLambdaEnd << "\n";
+       iout << iINFO << "FEP VDW-ATTR. ACTIVE FOR ANNIHILATED PARTICLES "
+            << "BETWEEN LAMBDA = " << (1 - alchVdwLambdaEnd) << " AND LAMBDA = "
+            << (1 - alchRepLambdaEnd) << "\n";
+       iout << iINFO << "FEP VDW-ATTR. ACTIVE FOR EXNIHILATED PARTICLES "
+            << "BETWEEN LAMBDA = " << alchRepLambdaEnd << " AND LAMBDA = "
+            << alchVdwLambdaEnd << "\n";
+     } else {
      iout << iINFO << "FEP VDW ACTIVE FOR ANNIHILATED "
           << "PARTICLES BETWEEN LAMBDA = "
           << (1 - alchVdwLambdaEnd) << " AND LAMBDA = 1\n";
      iout << iINFO << "FEP VDW ACTIVE FOR EXNIHILATED "
           << "PARTICLES BETWEEN LAMBDA = 0 AND LAMBDA = "
           << alchVdwLambdaEnd << "\n";
+     }
      iout << iINFO << "FEP BOND ACTIVE FOR ANNIHILATED "
           << "PARTICLES BETWEEN LAMBDA = "
           << (1 - alchBondLambdaEnd) << " AND LAMBDA = 1\n";
      iout << iINFO << "FEP BOND ACTIVE FOR EXNIHILATED "
           << "PARTICLES BETWEEN LAMBDA = 0 AND LAMBDA = "
           << alchBondLambdaEnd << "\n";
-
-     if (alchFepWCADispOn)
-     {
-       iout << iINFO << "FEP WEEKS-CHANDLER-ANDERSEN DECOMPOSITION (DISPERSION) ON\n";
-     }
-     if (alchFepWCARepuOn)
-     {
-       iout << iINFO << "FEP WEEKS-CHANDLER-ANDERSEN DECOMPOSITION (REPULSION) ON\n";
-       iout << iINFO << "FEP WEEKS-CHANDLER-ANDERSEN RCUT1 = "
-            << alchFepWCArcut1 << " , RCUT2 = "
-            << alchFepWCArcut2  << " AND RCUT3 = " << alchFepWCArcut3 << "\n";
-     }
    }
 //fepe
 
@@ -5255,7 +5177,7 @@ if ( openatomOn )
        iout << iINFO << "SOLUTE SCALING DISABLED FOR BONDS AND ANGLES\n";
      }
    }
-   
+
    if ( pairInteractionOn ) {
      iout << iINFO << "PAIR INTERACTION CALCULATIONS ACTIVE\n";
      iout << iINFO << "USING FLAG " << pairInteractionGroup1
@@ -5675,17 +5597,16 @@ if ( openatomOn )
         iout << iINFO << "DRUDE DAMPING COEFFICIENT IS "
              << drudeDamping << " INVERSE PS\n";
       }
-      if (drudeBondConst > 0.0) {
+      if (drudeHardWallOn) {
+        iout << iINFO << "DRUDE HARD WALL RESTRAINT IS ACTIVE FOR DRUDE BONDS\n";
+        iout << iINFO << "DRUDE MAXIMUM BOND LENGTH BEFORE RESTRAINT IS   "
+             << drudeBondLen << "\n";
+      } else if (drudeBondConst > 0.0) {
         iout << iINFO << "DRUDE QUARTIC RESTRAINT IS ACTIVE FOR DRUDE BONDS\n";
         iout << iINFO << "DRUDE MAXIMUM BOND LENGTH BEFORE RESTRAINT IS   "
              << drudeBondLen << "\n";
         iout << iINFO << "DRUDE BOND RESTRAINT CONSTANT IS                "
              << drudeBondConst << "\n";
-      }
-      if (drudeHardWallOn) {
-        iout << iINFO << "DRUDE HARD WALL RESTRAINT IS ACTIVE FOR DRUDE BONDS\n";
-        iout << iINFO << "DRUDE MAXIMUM BOND LENGTH BEFORE RESTRAINT IS   "
-             << drudeBondLen << "\n";
       }
       if (drudeNbtholeCut > 0.0) {
         iout << iINFO << "DRUDE NBTHOLE IS ACTIVE\n";
@@ -5964,6 +5885,11 @@ if ( openatomOn )
 	     << "(WITH " << accelMDGEquiPrepSteps << " PREPARATION STEPS)\n";
 	 if(accelMDGEquiSteps == 0)
 		 iout << iINFO << "(accelMDGEquiPrepSteps is set to zero automatically)\n";
+
+         if(accelMDGStatWindow > 0)
+             iout << iINFO << "accelMDG WILL RESET AVERAGE AND STANDARD DEVIATION EVERY " << accelMDGEquiSteps << " STEPS\n";
+         else
+             iout << iINFO << "accelMDG WILL NOT RESET AVERAGE AND STANDARD DEVIATION\n";
 
 	 if(accelMDdihe)
 	     iout << iINFO << "accelMDGSigma0D: " << accelMDGSigma0D << " KCAL/MOL\n";
@@ -7157,14 +7083,40 @@ void SimParameters::receive_SimParameters(MIStream *msg)
 //fepb IDWS
 BigReal SimParameters::getCurrentLambda2(const int step) {
   if ( alchLambdaIDWS >= 0. ) {
-    const BigReal lambda2 = ( (step / alchIDWSfreq) % 2 == 1 ) ? alchLambda2 : alchLambdaIDWS;
+    const BigReal lambda2 = ( (step / alchIDWSFreq) % 2 == 1 ) ? alchLambda2 : alchLambdaIDWS;
     return lambda2;
   } else {
     return alchLambda2;
   }
 }
-//fepe IDWS
 
+/* Return true if IDWS is active, else return false. */
+int SimParameters::setupIDWS() {
+  if (alchLambdaIDWS < 0.) return 0;
+  if (alchLambdaIDWS > 1.) {
+    NAMD_die("alchLambdaIDWS should be either in the range [0.0, 1.0], or negative (disabled).\n");
+  }
+ /*
+  * The internal parameter alchIDWSFreq determines the number of steps of MD
+  * before each switch of the value of alchLambda2. At most this occurs every
+  * time the energy is evaluated and thus the default is the greater of
+  * fullElectFrequency and nonbondedFrequency. However, this choice fails to
+  * report alternating values if output is printed less often than every step
+  * (which is almost certainly true). Thus the frequency is reset to match
+  * alchOutFreq or, if that is zero, outputEnergies. Note that, if
+  * alchOutFreq > 0 but != outputEnergies, then the data going to stdout
+  * are likely not useful since the comparison value is difficult to infer.
+  */
+  alchIDWSFreq = fullElectFrequency > 0 ? fullElectFrequency : nonbondedFrequency;
+  if ( !alchOutFreq && outputEnergies > alchIDWSFreq ) alchIDWSFreq = outputEnergies;
+  if ( alchOutFreq > alchIDWSFreq ) alchIDWSFreq = alchOutFreq;
+  if ( alchOutFreq && alchOutFreq != outputEnergies) {
+    iout << iWARN << "alchOutFreq and outputEnergies do not match. IDWS ouput"
+         << " to stdout may not be useful!\n" << endi;
+  }
+  return 1;
+}
+//fepe IDWS
 
 //fepb BKR
 BigReal SimParameters::getCurrentLambda(const int step) {
@@ -7215,9 +7167,35 @@ BigReal SimParameters::getElecLambda(const BigReal lambda) {
           : (lambda - alchElecLambdaStart) / (1. - alchElecLambdaStart));
 }
 
+/*
+ * Modifications for WCA decomposition of van der Waal interactions.
+ *
+ * WCA requires that repulsive and attractive components of the vdW
+ * forces be treated separately. To keep the code clean, the same scaling
+ * function is always used and simply has its behavior modified. However,
+ * the new repluslive scaling only ever gets used when alchWCAOn.
+ */
 BigReal SimParameters::getVdwLambda(const BigReal lambda) {
   // Convenience function for staggered lambda scaling
+  if ( alchWCAOn ) {
+    // Read this with the alias alchRepLambdaEnd --> alchAttLambdaStart.
+    // The second condition is needed when attractive interactions are inactive
+    // for the whole range, otherwise lambda = 0/1 are incorrect.
+    if ( lambda < alchRepLambdaEnd || alchRepLambdaEnd == 1.0 ) {
+      return 0.0;
+    } else if ( lambda >= alchVdwLambdaEnd ) {
+      return 1.0;
+    } else {
+      return (lambda - alchRepLambdaEnd) / (alchVdwLambdaEnd - alchRepLambdaEnd);
+    }
+  } else {
   return (lambda >= alchVdwLambdaEnd ? 1. : lambda / alchVdwLambdaEnd);
+}
+}
+
+BigReal SimParameters::getRepLambda(const BigReal lambda) {
+  // Convenience function for staggered lambda scaling
+  return (lambda >= alchRepLambdaEnd ? 1. : lambda / alchRepLambdaEnd);
 }
 
 BigReal SimParameters::getBondLambda(const BigReal lambda) {

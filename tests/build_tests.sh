@@ -112,6 +112,15 @@ done
 create_test_dir "distance-extended"
 write_colvars_config "distance-extended" "" ${dirname}/test.in
 
+create_test_dir "distance-runave"
+write_colvars_config "distance-runave" "" ${dirname}/test.in
+
+create_test_dir "distance-autocorrfunc"
+write_colvars_config "distance-autocorrfunc" "" ${dirname}/test.in
+
+create_test_dir "distance-corrfunc"
+write_colvars_config "distance-corrfunc" "" ${dirname}/test.in
+
 
 m4 < metadynamics.in.m4 > metadynamics.in
 m4 -Dti_pmf < metadynamics.in.m4 > metadynamics-ti.in
@@ -143,24 +152,34 @@ m4 < distancez.in.m4 > distancez.in
 m4 -Dfitgroup < distancez.in.m4 > distancez-fitgroup.in
 m4 -Daxis -DdistanceZ=distanceXY < distancez.in.m4 > distancexy-axis.in
 
+m4 -Dorientation=orientationAngle < orientation.in > orientationangle.in
+m4 -Dorientation=orientationAngle < orientation-fitgroup.in > orientationangle-fitgroup.in
+m4 -Dorientation=orientationProj < orientation.in > orientationproj.in
+m4 -Dorientation=orientationProj < orientation-fitgroup.in > orientationproj-fitgroup.in
 
 # Tests of individual collective variables
 for colvar in \
     "angle" \
     "dihedral" \
-    "coordnum" "coordnum-pairlist" \
+    "coordnum" "coordnum-group2centeronly" "coordnum-pairlist" \
+    "coordnum-aniso" "coordnum-aniso-pairlist" \
+    "groupcoord" "groupcoord-aniso" \
+    "dipoleangle" "dipolemagnitude" \
     "distancez" "distancez-fitgroup" \
     "distancez-axis" "distancez-axis-fitgroup" \
     "distancexy-axis" \
     "distanceinv" \
     "distance-coeffs" \
     "gyration" \
+    "hbond" \
     "inertia" \
     "inertiaz" \
     "rmsd" \
+    "eigenvector" \
     "tilt" \
-    "selfcoordnum" "selfcoordnum-pairlist" \
     "spinangle" \
+    "selfcoordnum" "selfcoordnum-pairlist" \
+    "orientationangle" "orientationproj" \
    ; do
     for bias in \
         "harmonic-fixed" \
@@ -201,9 +220,13 @@ fi
 
 colvar="distancedir"
 for bias in "harmonic-ddir-fixed" "harmonic-ddir-moving" ; do
-create_test_dir ${colvar}_${bias}
-write_colvars_config ${colvar} ${bias} ${dirname}/test.in
+    create_test_dir ${colvar}_${bias}
+    write_colvars_config ${colvar} ${bias} ${dirname}/test.in
 done
+bias="harmonic-ddir-fixed"
+create_test_dir ${colvar}-fitgroup_${bias}
+write_colvars_config ${colvar}-fitgroup ${bias} ${dirname}/test.in
+
 
 colvar="dihedralPC"
 bias="abf2d"
@@ -220,6 +243,12 @@ bias="rad"
 create_test_dir ${colvar}_${bias}
 write_colvars_config ${colvar} ${bias} ${dirname}/test.in
 cp -f deer.dat ${dirname}/
+
+colvar="distancepairs"
+bias="histogramrestraint-dp"
+create_test_dir ${colvar}_${bias}
+write_colvars_config ${colvar} ${bias} ${dirname}/test.in
+
 
 # TODO uncomment this and the add two-dimensional regtests
 # # Generate two-variables versions of bias configurations

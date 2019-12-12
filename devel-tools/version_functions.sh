@@ -132,17 +132,15 @@ update_version_string() {
     fi
     
     version_str=$(${function_name} ${last_commit})
-    if [ "${branch}" = "master" ] ; then
-        # Bump up version when on master and files were modified
-        if git diff --name-only ${last_commit} . | \
-                grep -q "${grep_pattern}" ; then
-            version_str=$(date +'%Y-%m-%d')
-        fi
-        echo "Setting ${name} version string to ${version_str}"
-        write_version_string ${macro} ${file} ${version_str}
-        git add ${file}
-        git add doc/cv_version.tex
+    # Bump up version when files were modified
+    if git diff --name-only ${last_commit} . | \
+        grep -q "${grep_pattern}" ; then
+        version_str=$(date +'%Y-%m-%d')
     fi
+    echo "Setting ${name} version string to ${version_str}"
+    write_version_string ${macro} ${file} ${version_str}
+    git add ${file}
+    git add doc/cv_version.tex
 }
 
 get_all_versions() {

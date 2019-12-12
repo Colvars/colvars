@@ -1,0 +1,60 @@
+# Validated: 26 May 2013-ICMS
+include inc.minimal_units
+# minimal system config: two groups of two atoms
+units electron
+atom_style atomic
+atom_modify map array # XXX this should not be needed
+
+pair_style lj/cut 5.0
+read_data data.minimal
+Reading data file ...
+  orthogonal box = (-5 -5 -10) to (5 5 10)
+  reading atoms ...
+  4 atoms
+  reading velocities ...
+  4 velocities
+
+group g1 id 1 2
+2 atoms in group g1
+group g2 id 3 4
+2 atoms in group g2
+
+variable com1z equal xcm(g1,z)
+variable com2z equal xcm(g2,z)
+variable fcm1z equal fcm(g1,z)
+variable fcm2z equal fcm(g2,z)
+variable cveng equal f_f1
+
+thermo_style custom step pe v_com1z v_com2z v_fcm1z v_fcm2z v_cveng
+thermo 1
+
+fix f1 all colvars minimal_units.cfg unwrap no output 01j
+
+run 0 post no
+Neighbor list info ...
+  update every 1 steps, delay 10 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  binsize = 3.5, bins = 3 3 6
+  1 neighbor lists, perpetual/occasional/extra = 1 0 0
+  (1) pair lj/cut, perpetual
+      attributes: half, newton on
+      pair build: half/bin/atomonly/newton
+      stencil: half/bin/3d/newton
+      bin: standard
+Setting up Verlet run ...
+  Unit style    : electron
+  Current step  : 0
+  Time step     : 0.001
+colvars: Creating proxy instance
+colvars: ----------------------------------------------------------------------
+colvars: Please cite Fiorin et al, Mol Phys 2013:
+colvars:  http://dx.doi.org/10.1080/00268976.2013.813594
+colvars: in any publication based on this calculation.
+colvars: ----------------------------------------------------------------------
+colvars: Reading new configuration from file "minimal_units.cfg":
+colvars: # units = "real"
+ERROR on proc 0: Fatal error in the collective variables module.
+ (../colvarproxy_lammps.cpp)
+Last command: run 0 post no

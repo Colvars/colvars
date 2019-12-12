@@ -1,6 +1,6 @@
 /***************************************************************************
  *cr
- *cr            (C) Copyright 1995-2016 The Board of Trustees of the
+ *cr            (C) Copyright 1995-2019 The Board of Trustees of the
  *cr                        University of Illinois
  *cr                         All Rights Reserved
  *cr
@@ -9,9 +9,9 @@
 /***************************************************************************
  * RCS INFORMATION:
  *
- *      $RCSfile: tcl_commands.C,v $
- *      $Author: johns $        $Locker:  $             $State: Exp $
- *      $Revision: 1.54 $       $Date: 2018/09/12 14:06:40 $
+ *      $RCSfile$
+ *      $Author$        $Locker$             $State$
+ *      $Revision$       $Date$
  *
  ***************************************************************************
  * DESCRIPTION:
@@ -162,8 +162,8 @@ int Vmd_Init(Tcl_Interp *interp) {
   VMDApp *app = (VMDApp *)Tcl_GetAssocData(interp, "VMDApp", NULL);
 
   //
-  // Tcl string-based command bindings  
-  // 
+  // Tcl string-based command bindings
+  //
   Tcl_CreateCommand(interp, "animate", text_cmd_animate,
         (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
 
@@ -258,6 +258,9 @@ int Vmd_Init(Tcl_Interp *interp) {
   Tcl_CreateCommand(interp, "vmd_scale", text_cmd_scale,
         (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
 
+  Tcl_CreateCommand(interp, "videostream", text_cmd_videostream,
+        (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
+
   Tcl_CreateCommand(interp, "vmdbench", text_cmd_vmdbench,
         (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
 
@@ -267,9 +270,9 @@ int Vmd_Init(Tcl_Interp *interp) {
   Tcl_CreateCommand(interp, "vmdinfo", vmdinfo_tcl,
         (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 
-  
+
   //
-  // Tcl object-based command bindings  
+  // Tcl object-based command bindings
   //
 #if defined(VMDCOLVARS)
   Tcl_CreateObjCommand(interp, "colvars", tcl_colvars, (ClientData) app, (Tcl_CmdDeleteProc*) NULL);

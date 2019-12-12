@@ -1,0 +1,64 @@
+colvarsTrajFrequency 1
+
+colvar {
+    name gpath_s_dihed
+
+    gspathCV {
+        dihedral {
+            name 001
+            group1 {atomNumbers {5}}
+            group2 {atomNumbers {7}}
+            group3 {atomNumbers {9}}
+            group4 {atomNumbers {15}}
+        } 
+        dihedral {
+            name 002
+            group1 {atomNumbers {15}}
+            group2 {atomNumbers {17}}
+            group3 {atomNumbers {19}}
+            group4 {atomNumbers {25}}
+        }
+        dihedral {
+            name 003
+            group1 {atomNumbers {25}}
+            group2 {atomNumbers {27}}
+            group3 {atomNumbers {29}}
+            group4 {atomNumbers {35}}
+        }
+        pathFile ./path.txt
+    }
+}
+
+colvar {
+    name gpath_z_dihed
+
+    gzpathCV {
+        useZsquare on
+	debugGradients off
+        dihedral {
+            name 001
+	    scalable off
+            group1 {atomNumbers {5}}
+            group2 {atomNumbers {7}}
+            group3 {atomNumbers {9}}
+            group4 {atomNumbers {15}}
+        } 
+        dihedral {
+            name 002
+	    scalable off
+            group1 {atomNumbers {15}}
+            group2 {atomNumbers {17}}
+            group3 {atomNumbers {19}}
+            group4 {atomNumbers {25}}
+        }
+        dihedral {
+            name 003
+	    scalable off
+            group1 {atomNumbers {25}}
+            group2 {atomNumbers {27}}
+            group3 {atomNumbers {29}}
+            group4 {atomNumbers {35}}
+        }
+        pathFile ./path.txt
+    }
+}

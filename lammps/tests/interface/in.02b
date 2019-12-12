@@ -1,0 +1,10 @@
+# LAMMPS test 02a: fix_modify to add bias acting on existing colvar
+# Validated: 13 February 2019-IBPC
+include inc.minimal
+fix f1 all colvars minimal.cfg unwrap yes output 02b
+
+run 0 post no
+
+fix_modify f1 configfile harmonic.cfg # should work
+
+run 0 post no

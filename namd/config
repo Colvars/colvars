@@ -1,5 +1,5 @@
 #!/bin/bash
-CHARM_VERSION=6.8.2
+CHARM_VERSION=6.10.0
 
 function error_syntax {
   echo ''
@@ -604,6 +604,7 @@ function error_exists {
   [[ "$CHARM_ARCH" == netlrts-* ]] && ARCH_SUFFIX=${ARCH_SUFFIX}-netlrts
   [[ "$CHARM_ARCH" == verbs-* ]] && ARCH_SUFFIX=${ARCH_SUFFIX}-verbs
   [[ "$CHARM_ARCH" == ofi-* ]] && ARCH_SUFFIX=${ARCH_SUFFIX}-ofi
+  [[ "$CHARM_ARCH" == ucx-* ]] && ARCH_SUFFIX=${ARCH_SUFFIX}-ucx
   [[ "$CHARM_ARCH" == *-vmi* ]] && ARCH_SUFFIX=${ARCH_SUFFIX}-vmi
   [[ "$CHARM_ARCH" == *-tcp* ]] && ARCH_SUFFIX=${ARCH_SUFFIX}-TCP
   [[ "$CHARM_ARCH" == *-gm* ]] && ARCH_SUFFIX=${ARCH_SUFFIX}-gm
@@ -718,15 +719,17 @@ function error_exists {
       NAMD_ARCH=$(awk '/^NAMD_ARCH =/ {print $3}' .rootdir/arch/$ARCH.arch)
       if [ -z "$cuda_ver" ]; then
         echo "Warning: Did not find CUDA installation in $CUDA_PREFIX"
-      elif [[ "$cuda_ver" == 9.* && -f ".rootdir/arch/$NAMD_ARCH.cuda9" ]]; then
-        echo "CUDA 9 is detected: version $cuda_ver"
-        echo 'include .rootdir/arch/$(NAMD_ARCH).cuda9' >> Make.config
-      elif [[ "$cuda_ver" == 8.* && -f ".rootdir/arch/$NAMD_ARCH.cuda8" ]]; then
-        echo "CUDA 8 is detected: version $cuda_ver"
-        echo 'include .rootdir/arch/$(NAMD_ARCH).cuda8' >> Make.config
-      elif [[ "$cuda_ver" == 7.5* && -f ".rootdir/arch/$NAMD_ARCH.cuda75" ]]; then
-        echo "CUDA 7 is detected: version $cuda_ver"
-        echo 'include .rootdir/arch/$(NAMD_ARCH).cuda75' >> Make.config
+      else 
+          echo "CUDA detected: version $cuda_ver"
+          cuda_major_ver=$(echo ${cuda_ver} | cut -d "." -f1)
+          while [ ${cuda_major_ver} -ge 7 ]; do
+              if [ -f ".rootdir/arch/${NAMD_ARCH}.cuda${cuda_major_ver}" ]; then
+                  echo "using ${NAMD_ARCH}.cuda${cuda_major_ver}"
+                  echo 'include .rootdir/arch/$(NAMD_ARCH).cuda'${cuda_major_ver} >> Make.config
+                  break
+              fi 
+              cuda_major_ver=$((cuda_major_ver-1))
+          done 
       fi
       echo "CUDADIR = $CUDA_PREFIX" >> Make.config
     fi

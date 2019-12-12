@@ -33,9 +33,11 @@ COLVARS_SRCS = \
         colvarbias_restraint.cpp \
         colvarcomp.cpp \
         colvarcomp_angles.cpp \
+        colvarcomp_apath.cpp \
         colvarcomp_coordnums.cpp \
         colvarcomp_deer.cpp \
         colvarcomp_distances.cpp \
+        colvarcomp_gpath.cpp \
         colvarcomp_protein.cpp \
         colvarcomp_rotations.cpp \
         colvar.cpp \
@@ -44,6 +46,7 @@ COLVARS_SRCS = \
         colvarmodule.cpp \
         colvarparse.cpp \
         colvarproxy.cpp \
+        colvarproxy_replicas.cpp \
         colvarscript.cpp \
         colvartypes.cpp \
         colvarvalue.cpp

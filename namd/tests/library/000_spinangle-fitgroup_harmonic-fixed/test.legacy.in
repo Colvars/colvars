@@ -1,0 +1,32 @@
+colvarsTrajFrequency 1
+colvarsRestartFrequency 10
+indexFile index.ndx
+
+colvar {
+
+    name one
+
+    outputAppliedForce on
+
+    width 0.5
+
+    spinAngle {
+        atoms {
+            indexGroup RMSD_atoms
+            centerReference yes
+            rotateReference yes
+            refPositionsGroup {
+                indexGroup heavy_atoms
+            }
+            refPositionsFile heavy_atoms_refpos.xyz
+        }
+        refPositionsFile rmsd_atoms_refpos.xyz
+        axis (1.0, -3.0, 4.0)
+    }
+} 
+
+harmonic {
+    colvars        one
+    centers        0.1
+    forceConstant  0.001
+}

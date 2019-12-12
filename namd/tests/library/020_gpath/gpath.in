@@ -1,0 +1,79 @@
+colvarsTrajFrequency 1
+
+colvar {
+    name gpath_s_cartesian
+
+    gspath {
+        atoms {atomNumbers {5 7 9 15 17 19 25 27 29 35}}
+        refPositionsFile1 string-00.pdb
+        refPositionsFile2 string-01.pdb
+        refPositionsFile3 string-02.pdb
+        refPositionsFile4 string-03.pdb
+        refPositionsFile5 string-04.pdb
+        refPositionsFile6 string-05.pdb
+        refPositionsFile7 string-06.pdb
+        refPositionsFile8 string-07.pdb
+        refPositionsFile9 string-08.pdb
+        refPositionsFile10 string-09.pdb
+        refPositionsFile11 string-10.pdb
+        refPositionsFile12 string-11.pdb
+        refPositionsFile13 string-12.pdb
+        refPositionsFile14 string-13.pdb
+        refPositionsFile15 string-14.pdb
+        refPositionsFile16 string-15.pdb
+        refPositionsFile17 string-16.pdb
+        refPositionsFile18 string-17.pdb
+        refPositionsFile19 string-18.pdb
+        refPositionsFile20 string-19.pdb
+        refPositionsFile21 string-20.pdb
+        refPositionsFile22 string-21.pdb
+        refPositionsFile23 string-22.pdb
+        refPositionsFile24 string-23.pdb
+        refPositionsFile25 string-24.pdb
+        refPositionsFile26 string-25.pdb
+        refPositionsFile27 string-26.pdb
+        refPositionsFile28 string-27.pdb
+        refPositionsFile29 string-28.pdb
+        refPositionsFile30 string-29.pdb
+    }
+}
+
+colvar {
+    name gpath_z_cartesian
+
+    gzpath {
+        useZsquare on
+        atoms {atomNumbers {5 7 9 15 17 19 25 27 29 35}}
+        refPositionsFile1 string-00.pdb
+        refPositionsFile2 string-01.pdb
+        refPositionsFile3 string-02.pdb
+        refPositionsFile4 string-03.pdb
+        refPositionsFile5 string-04.pdb
+        refPositionsFile6 string-05.pdb
+        refPositionsFile7 string-06.pdb
+        refPositionsFile8 string-07.pdb
+        refPositionsFile9 string-08.pdb
+        refPositionsFile10 string-09.pdb
+        refPositionsFile11 string-10.pdb
+        refPositionsFile12 string-11.pdb
+        refPositionsFile13 string-12.pdb
+        refPositionsFile14 string-13.pdb
+        refPositionsFile15 string-14.pdb
+        refPositionsFile16 string-15.pdb
+        refPositionsFile17 string-16.pdb
+        refPositionsFile18 string-17.pdb
+        refPositionsFile19 string-18.pdb
+        refPositionsFile20 string-19.pdb
+        refPositionsFile21 string-20.pdb
+        refPositionsFile22 string-21.pdb
+        refPositionsFile23 string-22.pdb
+        refPositionsFile24 string-23.pdb
+        refPositionsFile25 string-24.pdb
+        refPositionsFile26 string-25.pdb
+        refPositionsFile27 string-26.pdb
+        refPositionsFile28 string-27.pdb
+        refPositionsFile29 string-28.pdb
+        refPositionsFile30 string-29.pdb
+    }
+}
+

@@ -1,4 +1,10 @@
+# -*- gitignore -*-
+
+# Editor files
 *~
+.*.swp
+
+# Compiled code
 *.o
 *.so
 *.a
@@ -6,7 +12,14 @@
 *.exe
 *.pyc
 
-.*.swp
+# Executable
+/colvartools/abf_integrate
+
+# Lepton library (copied or symlinked in compilation tests)
+/lepton
+
+# Dependencies for compilation tests
+/src/Makefile.deps
 
 # output files from reg tests
 *.diff
@@ -16,17 +29,21 @@
 *.vel
 *.xsc
 *.backup
-*.state
-*.traj
-*.out
 *.err
+
+# Output files from reg tests, with exceptions for reference files
+*.state
+!**/AutoDiff/*.state
+*.traj
+!**/AutoDiff/*.traj
+*.out
+!**/AutoDiff/*.out
 *.count
+!**/AutoDiff/*.count
 *.grad
+!**/AutoDiff/*.grad
 *.pmf
-# output files from file-based mw-metadynamics
-*.rep?.files.txt
-replicas.registry.txt
-*.rep?.hills
+!**/AutoDiff/*.pmf
 
 # Compiled documentation
 colvars-refman-lammps.pdf

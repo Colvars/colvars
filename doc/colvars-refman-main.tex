@@ -1,3 +1,10 @@
+% This file is part of the Collective Variables module (Colvars).
+% The original version of Colvars and its updates are located at:
+% https://github.com/Colvars/colvars
+% Please update all Colvars source files before making any changes.
+% If you wish to distribute your changes, please submit them to the
+% Colvars repository at GitHub.
+
 \cvnamdugonly{
 \section{Collective Variable-based Calculations (Colvars)}
 \label{section:colvars}
@@ -16,7 +23,7 @@ Please ask any usage questions through the NAMD mailing list, and development qu
 
 \cvvmdugonly{
 \chapter{Collective Variables Interface (Colvars)}
-\label{section:colvars}
+\label{section:colvars}Colvars
 
 The features described in this section were originally contributed to VMD by Giacomo Fiorin (NIH) and J\'er\^ome H\'enin (CNRS, France) and are currently developed at this external repository:\\
 \cvurl{https://github.com/Colvars/colvars}\\
@@ -63,48 +70,195 @@ The module is designed to perform multiple tasks concurrently during or after a 
 Detailed explanations of the design of the Colvars module are provided in reference~\cite{Fiorin2013}. Please cite this reference whenever publishing work that makes use of this module.
 
 
-\cvsec{A crash course}{sec:colvars_crash_course}
-% FIXME: the example uses NAMD syntax to select Calphas, which may confuse
-% LAMMPS users
+\cvvmdonly{
+\paragraph{Using the Colvars Module in VMD}
+Within VMD, the Colvars Module can be accessed in two ways:
+\begin{itemize}
+ \item Using the Colvars dashboard, an intuitive, but partial interface to the Colvars module, to easily define and analyze \textbf{collective variables, but not biases} (section~\ref{sec:dashboard}).
+ \item Using the full-featured Tcl scripting interface as documented in section~\ref{sec:cv_scripting}; see in particular the example in section~\ref{sec:cv_command_example}.
+\end{itemize}
+}
 
+\cvsec{Writing a Colvars configuration: a crash course}{sec:colvars_crash_course}
+
+The Colvars configuration is a plain text file or string that defines collective variables, biases, and general parameters of the Colvars module.
+It is passed to the module using back-end-specific commands documented in section \ref{sec:colvarmodule}.
+\cvvmdonly{Writing the configuration fora  collective variable in VMD is made much easier using the dashboard and its configuration editor (section~\ref{sec:dashboard}).
+However, note that the dashboard does not handle biases: if necessary, they should be managed separately using the scripting interface.}
+
+Now let us look at a complete, non-trivial configuration.
 Suppose that we want to run a steered MD experiment where a small molecule is pulled away from a protein binding site.
 In Colvars terms, this is done by applying a moving restraint to the distance between the two objects.
 The configuration will contain two blocks, one defining the distance variable (see section \ref{sec:colvar} and \ref{sec:cvc_distance}), and the other the moving harmonic restraint (\ref{sec:colvarbias_harmonic}).
+\cvvmdonly{Note that in VMD, no biasing forces are applied, but biases may be useful in the context of an analysis script, e.g. to collect histograms or to compute bias energies.}
 
 \bigskip
 % verbatim can't appear within commands
 {\noindent\ttfamily
-colvar \{\\
+\cvlammpsonly{indexFile index.ndx\\}colvar \{\\
 \-~~name dist\\
 \-~~distance \{\\
 \-~~~~group1 \{ atomNumbersRange 42-55 \}\\
-\-~~~~group2 \{\\
+\cvnamebasedonly{\-~~~~group2 \{\\
 \-~~~~~~psfSegID  PR\\
-\-~~~~~~atomNameResidueRange  CA 15-30 \}\\
-\-~~~~\}\\
+\-~~~~~~atomNameResidueRange  CA 15-30\\
+\-~~~~\}\\}
+\cvlammpsonly{\-~~~~group2 \{ indexGroup C-alpha\_15-30 \}\\}
 \-~~\}\\
 \}\\
 \\
 harmonic \{\\
 \-~~colvars dist\\
 \-~~forceConstant 20.0\\
-\-~~centers 4.~~~~~~~~~~\# initial distance\\
-\-~~targetCenters 15.~~~\# final distance\\
+\-~~centers 4.0~~~~~~~~~\# initial distance\\
+\-~~targetCenters 15.0~~\# final distance\\
 \-~~targetNumSteps 500000\\
 \}\\
 }
 
-Reading this input in plain English: the variable here named \emph{dist} consists in a distance function between the centers of two groups: the ligand (atoms 42 to 55) and the alpha carbon atoms (CA) of residues 15 to 30 in the protein (segment name PR).
-The atom selection syntax is detailed in section \ref{sec:colvar_atom_groups}.
+Reading this input in plain English: the variable here named \emph{dist} consists in a distance function between the centers of two groups: the ligand (atoms 42 to 55) and the $\alpha$-carbon atoms of residues 15 to 30 in the protein \cvnamebasedonly{(segment name PR)}\cvlammpsonly{(selected from the index group ``\texttt{C-alpha\_15-30}'')}.
+To the ``\emph{dist}'' variable, we apply a \texttt{harmonic} potential of force constant 20~\cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{(energy unit)}/\cvnamdonly{\AA}\cvvmdonly{\AA}\cvlammpsonly{(length unit)}$^2$, initially centered around a value of 4~\cvnamdonly{\AA}\cvvmdonly{\AA}\cvlammpsonly{(length unit)}, which will increase to 15~\cvnamdonly{\AA}\cvvmdonly{\AA}\cvlammpsonly{(length unit)} over 500,000 simulation steps.
 
-To the ``\emph{dist}'' variable, we apply a \texttt{harmonic} potential of force constant 20~\cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{energy units}/\AA$^2$, initially centered around a value of 4~\AA, which will increase to 15~\AA{} over 500,000 simulation steps.
+The atom selection keywords are detailed in section \ref{sec:colvar_atom_groups}.
+\cvlammpsonly{If the selection is too complex to implement only via internal keywords, an external index file may be created following the NDX format used in GROMACS:\\
+\url{http://manual.gromacs.org/documentation/current/user-guide/file-formats.html}\\
+or by using the \texttt{group2ndx} LAMMPS command.}
 
+
+\cvvmdonly{
+\cvsec{The Colvars dashboard}{sec:dashboard}
+
+The Colvars dashboard is a graphical interface for interactive visualization and refinement of collective variables aided by molecular structures and trajectories.
+It is accessible in VMD's Main Menu under ``Extensions/Analysis/Colvars Dashboard''.
+Throughout the interface, keyboard shortcuts for common operations are indicated in square brackets.
+
+\cvsubsec{A mini-tutorial}{sec:dashboard_tutorial}
+
+Here are the steps for a quick first tour of the Dashboard:
+\begin{enumerate}
+ \item load an MD trajectory into VMD;
+ \item open the Dashboard;
+ \item click ``New'' to create a new collective variable;
+ \item in the Editor window, click ``Apply'' to accept the dein the Dashboard window, fault template;
+ \item in the Dashboard window, click ``Show atoms'' to display the two atom groups involved in this distance coordinate;
+ \item click ``Timeline plot'';
+ \item click anywhere in the timeline plot to navigate in the trajectory.
+\end{enumerate}
+
+Now, clicking ``Edit'' in the Dashboard window, you can modify the collective variable to reflect interesting geometric properties of the system.
+The power of the collective variables approach lies in the variety of geometric functions (``components'') and their combinations.
+The editor window provides a number of helpers to make it easy and quick to define the most relevant variables.
+See section \ref{sec:dashboard_config_editor} for details.
+
+\cvsubsec{The Dashboard window}{sec:dashboard_main}
+
+The Dashboard window displays a table listing currently defined variables, and their values for the current frame indicated at the bottom of the window.
+By default the frame is updated to track VMD's currently displayed frame, but that can be changed by toggling the ``Track frame'' checkbox, e.g. to animate the trajectory without recomputing expensive variables.
+Vector-values variables can be expanded to list their scalar elements. This is necessary when individual scalar quantities have to be selected for plotting.
+Other operations act on variables as a whole and ignore specific selected scalar elements.
+
+Buttons above the table allow for general operations on the state of the Colvars Module.
+Buttons below the table offer operations on selected variables.
+
+If several molecules are loaded, the dashboard only interacts with the molecule labeled "top" (T in VMD's main window).
+If the top molecule is changed, the Colvars Module needs to be reset using the Reset button.
+This will remove all current definitions, so make sure to save the variables to a file beforehand.
+
+If variables are modified, added or deleted interactively or by an external script, hit ``Refresh'' or press F5 to update the displayed variables and values.
+Starting the dashboard also enables trajectory animation using the left/right arrow keys within VMD's graphical window.
+Atomic coordinates can be modified using VMD's ``Mouse/Move'' functions, and the Colvars Module can then be updated by pressing F5 directly from the graphical window.
+
+A dropdown list allows for changing the current unit system if no variables are defined.
+If some variables are already defined, it is recommended to edit the configuration for all of
+them at once (eg. pressing Ctrl-a, then e), checking that all quantities are expressed in the desired set of units, and adding the \texttt{units} keyword (\ref{sec:units}).
+
+\cvsubsec{Loading / Saving configuration files}{sec:dashboard_load_save}
+
+This saves the configuration of all defined collective variables to a file.
+Neither biases, nor general parameters of the Colvars Module are saved: editing them is beyond the scope of the dashboard.
+We recommend keeping them in separate configuration files, and reading them separately in biased MD simulations.
+
+\cvsubsec{The configuration editor}{sec:dashboard_config_editor}
+
+The configuration editor can be started with the ``Edit'' or ``New'' buttons.
+Using the ``Edit'' button, the configuration of selected variables is loaded, and those variables will be replaced when applying the new configuration.
+
+The editor window offers links to online documentation, as well as helpers to write correct configuration files.
+
+As a first step, the most useful helper is the collection of template files.
+Some parameters that must be supplied are indicated by the symbol @.
+Colvar templates can be inserted at the beginning of the configuration, whereas ``component'' templates define basis functions that belong inside a colvar block.
+Templates are indented using 4 spaces per level to indicate their position in the nested structure of the configuration: general options, colvars and biases at level 0,
+bias and colvar parameters like components at level 1, component parameters such as atom groups at level 2, and atom group parameters at level 3.
+
+The next helper buttons allow importing atom selections from VMD, either typing a VMD atom selection text, by copying the selection of an existing graphical representation, or by inserting the list of atoms currently labeled in VMD using the ``Pick atom'' feature.
+Atom selections should be inserted within an atom group block, within a component block (such as \texttt{distance}).
+By default atom selections are preceded with a comment line marking them as \emph{auto-updating}.
+This instructs the Dashboard to update the list of atoms whenever the configuration is applied, that is, when it is edited, when the file is loaded by the Dashboard, or when changing the molecule linked to Colvars.
+This is useful when working across systems with different atom numberings, but topologies that make atom groups identifiable using VMD selection texts.
+Special fields (O, B, and user) may be used, as well as atom positions (e.g. \texttt{z > 0}).
+Note that the atom selections used by Colvars are not updated when changing frame within the same molecule (animating a trajectory).
+
+The ``Insert labeled...'' button combined with the selection box allows for inserting components matching VMD's geometry measurements: Bonds (distances), angles, and dihedrals.
+Hidden labels are not used for inserting components.
+
+\cvsubsec{Plotting and visualizing collective variables}{sec:dashboard_visualization}
+
+Timeline plots show the selected variables as a function of time. A vertical bar indicates the current frame, which can be changed either using VMD's trajectory animation controls, or directly in the plot window by clicking the mouse inside the graph, or using the keyboard left/right arrows.
+Shift+arrow skips frames for faster animation, and Ctrl+arrow skips more frames.
+The up/down arrows operate a zoom/unzoom along the time axis.
+Visible data can be fitted vertically using the h key. All data can be fitted horizontally using the h key.
+
+Pairwise scatterplots are useful to identify correlation between variables. To create a pairwise plot, select exactly two scalar variables (or scalar components of vector variables), and click ``Pairwise plot''.
+Frames are represented by circles, and lines connect consecutive frames.
+The blue dot tracks the current frame.
+Arrow keys animate the trajectory as in the timeline plot.
+Clicking a circle jumps to the corresponding frame.
+
+``Show atoms'' creates representations of the atoms involved in the definition of the selected colvars.
+Each atom group is shown in a different color.
+``Show gradient'' is available for scalar variables only.
+It creates a graphical representation of the atomic gradients of the selected variables, visualizing how the value of the collective variable would vary in response to a change in atomic coordinates.
+
+} % cvvmdonly dashboard
 
 \cvsec{General parameters}{sec:colvarmodule}
 
 Here, we document the syntax of the commands and parameters used to set up and use the Colvars module in \MDENGINE{}.
 One of these parameters is the configuration file or the configuration text for the module itself, whose syntax is described in \ref{sec:colvars_config_syntax} and in the following sections.
 
+\cvsubsec{Units in the Colvars module}{sec:units}
+
+The ``internal units'' of the Colvars module are the units in which values are expected to be in the configuration file, and in which collective variable values, energies, etc. are expressed in the output and colvars trajectory files. 
+Generally \textbf{the Colvars module uses internally the same units as its back-end MD engine, with the exception of VMD}, where different unit sets are supported to allow for easy setup, visualization and analysis of Colvars simulations performed with any simulation engine.
+
+Note that \textbf{angles} are expressed in degrees, and derived quantites such as force constants are based on degrees as well. 
+Atomic coordinates read from \textbf{XYZ files} (and PDB files where applicable) are expected to be expressed in \AA{}ngstr\"om, no matter what unit system is in use by the back-end or the Colvars Module.
+
+To avoid errors due to reading configuration files written in a different unit system, it can be specified within the input:
+
+\begin{itemize}
+\item %
+\key
+  {units}{%
+  global}{%
+  Unit system to be used}{%
+  string}{%
+  A string defining the units to be used internally by Colvars.
+  \cvlammpsonly{Allowed values are the following LAMMPS unit styles:
+  \textit{real} (\AA, kcal/mol), \textit{metal} (\AA, eV), and \textit{electron} (Bohr, Hartree).
+  However only the unit system currently in use by LAMMPS is accepted:
+  other values will trigger an error.}
+  \cvnamdonly{In NAMD the only allowed value is NAMD's native units: \textit{real} (\AA, kcal/mol).}
+  \cvvmdonly{Allowed values are:  \textit{real} (\AA, kcal/mol), \textit{gromacs} (nm, kJ/mol), \textit{metal} (\AA, eV), and \textit{electron} (Bohr, Hartree).
+  In VMD, the default system of units for Colvars is VMD's native units: \textit{real} (\AA, kcal/mol).
+  However, the \texttt{units} keyword will switch to a different unit system than the
+  current one if no colvars were defined before reading the current configuration.
+  If colvars are already defined, \texttt{units} will refuse changing the unit system to avoid making the definition of those variables erroneous in the new system of units.
+  If needed this precaution can be overridden using the \texttt{cv units} scripting command
+  (\ref{sec:cv_command_general}).}
+  }
+\end{itemize}
 
 \cvnamdonly{
 \cvsubsec{NAMD parameters}{sec:colvars_mdengine_params}
@@ -269,14 +423,16 @@ The following sections explain the syntax of the various sub-commands of \texttt
 
 \begin{itemize}
 \cvvmdonly{
-\item \texttt{molid} \emph{$<$molid$>$}: setup the Colvars module for the given molecule; \emph{$<$molid$>$} is the identifier of a valid VMD molecule, either an integer or \texttt{top} for the top molecule;
+\item \texttt{molid} [\emph{$<$molid$>$}]: setup the Colvars module for the given molecule; \emph{$<$molid$>$} is the identifier of a valid VMD molecule, either an integer or \texttt{top} for the top molecule; without argument, return the molid currently associated with Colvars.
 \item \texttt{delete}: delete the Colvars module; after this, the module can be setup again using \texttt{cv molid};
 }
 \item \texttt{configfile} \emph{$<$file name$>$}: read configuration from a file;
 \item \texttt{config} \emph{$<$string$>$}: read configuration from the given string; both \texttt{config} and \texttt{configfile} subcommands may be invoked multiple times;
 \cvvmdonly{see \ref{sec:colvars_config_syntax} for the configuration syntax;}
 \item \texttt{reset}: delete all internal configuration and atom selections of the Colvars module;
+\item \texttt{units} [\emph{$<$style$>$}]: switch internal Colvars units to \emph{style} (see \ref{sec:units}); without argument, return the current style, or an empty string if it is the default.
 \item \texttt{version}: return the version of the Colvars module (see \ref{sec:colvars_config_changes} for any changes to older keywords).
+
 \end{itemize}
 
 \cvsubsubsec{Input and output commands}{sec:cv_command_io}
@@ -338,15 +494,15 @@ Changes in configuration done by this command are not saved to state files, and 
 
 \cvnamdonly{All the parameters defining variables and their biasing or analysis algorithms are read from the file specified by the configuration option \texttt{colvarsConfig}, or by the Tcl commands \texttt{cv config} and \texttt{cv configfile}.
 \emph{None of the keywords described in the remainder of this manual are recognized directly in the NAMD configuration file, unless as arguments of \texttt{cv config}.}}
-\cvvmdonly{The Colvars configuration is usually read using the commands \texttt{cv configfile} or \texttt{cv config}.}
-The syntax of the Colvars configuration is ``\texttt{keyword value}'', where the keyword and its value are separated by any white space.
+\cvvmdonly{The Colvars configuration is usually read using the commands \texttt{cv configfile} (with a filename as argument) or \texttt{cv config} (with the configuration as a string argument).}
+Each configuration line follows the format ``\texttt{keyword value}'', where the keyword and its value are separated by any white space.
 The following rules apply:
 
 \begin{itemize}
 
 \item keywords are case-insensitive (\texttt{upperBoundary} is the same as \texttt{upperboundary} and \texttt{UPPERBOUNDARY}): their string values are however case-sensitive (e.g.~file names);
 
-\item a long value or a list of multiple values can be distributed across multiple lines by using curly braces, ``\texttt{\{}'' and ``\texttt{\}}'': the opening brace ``\texttt{\{}'' must occur on the same line as the keyword, following a space character or other white space; the closing brace ``\texttt{\}}'' can be at any position after that;
+\item a long value, or a list of multiple values, can be distributed across multiple lines by using curly braces, ``\texttt{\{}'' and ``\texttt{\}}'': the opening brace ``\texttt{\{}'' must occur on the same line as the keyword, following a space character or other white space; the closing brace ``\texttt{\}}'' can be at any position after that; any keywords following the closing brace on the same line are not valid (they should appear instead on a different line);
 
 \item many keywords are nested, and are only meaningful within a specific context: for every keyword documented in the following, the ``parent'' keyword that defines such context is also indicated\cvnamdugonly{ in parentheses};
 
@@ -405,7 +561,8 @@ The following keywords are available in the global context of the Colvars config
     UNIX filename}{%
     This option reads an index file (usually with a \texttt{.ndx}
     extension) as produced by the \texttt{make\_ndx} tool of GROMACS.
-    This keyword may be repeated to load multiple index files: the same group name cannot appear in multiple index files.
+    This keyword may be repeated to load multiple index files.
+    A group with the same name may appear multiple times, as long as it contains the same indices in identical order each time: an error is raised otherwise.
     \cvlammpsonly{In LAMMPS, the \texttt{group2ndx} command can be used to generate such file from existing groups.
     Note that the Colvars module reads the indices of atoms from the index file: therefore, the LAMMPS groups do not need to remain active during the simulation, and could be deleted right after issuing \texttt{group2ndx}.
 }
@@ -423,18 +580,6 @@ The following keywords are available in the global context of the Colvars config
     boolean}{%
     \texttt{on}}{%
     If this flag is enabled (default), SMP parallelism over threads will be used to compute variables and biases, provided that this is supported by the \MDENGINE{} build in use.}
-
-\item %
-  \keydef
-    {analysis}{%
-    global}{%
-    Turn on run-time statistical analysis}{%
-    boolean}{%
-    \texttt{off}}{%
-    If this flag is enabled, each colvar is instructed to perform
-    whatever run-time statistical analysis it is configured to, such as
-    correlation functions, or running averages and standard deviations.
-    See section~\ref{sec:colvar_acf} for details.}
     
 \end{itemize}
 
@@ -447,7 +592,7 @@ The corresponding configuration is given below. The options within the \texttt{c
   \centering
 \cvnamdugonly{\includegraphics[width=12cm]{figures/colvars_diagram}}
 \cvvmdugonly{\includegraphics[width=12cm]{pictures/colvars_diagram}}
-\cvrefmanonly{\includegraphics[width=12cm]{colvars_diagram}}
+\cvrefmanonly{\ifdefined\HCode{\HCode{<img class="diagram" src="colvars_diagram.png" alt="Colvars diagram">}}\else\includegraphics[width=12cm]{colvars_diagram}\fi}
   \caption[Graphical representation of a Colvars configuration.]{Graphical representation of a Colvars configuration\cvlammpsonly{ \textbf{(note:} \emph{currently, the $\alpha$-helical content colvar is unavailable in LAMMPS)}}.
     The colvar called ``$d$'' is defined as the difference between two distances: the first distance ($d_{1}$) is taken between the center of mass of atoms 1 and 2 and that of atoms 3 to 5, the second ($d_{2}$) between atom 7 and the center of mass of atoms 8 to 10.
 The difference $d = d_{1} - d_{2}$ is obtained by multiplying the two by a coefficient $C = +1$ or $C = -1$, respectively.
@@ -600,6 +745,7 @@ The following components implement functions with a scalar value (i.e.{} a real 
 \item \refkey{angle}{colvar|angle}: angle between three groups;
 \item \refkey{dihedral}{colvar|dihedral}: torsional (dihedral) angle between four groups;
 \item \refkey{dipoleAngle}{colvar|dipoleAngle}: angle between two groups and dipole of a third group;
+\item \refkey{dipoleMagnitude}: magnitude of the dipole of a group of atoms;
 \item \refkey{polarTheta}{colvar|polarTheta}: polar angle of a group in spherical coordinates;
 \item \refkey{polarPhi}{colvar|polarPhi}: azimuthal angle of a group in spherical coordinates;
 \item \refkey{coordNum}{colvar|coordNum}: coordination number between two groups;
@@ -655,6 +801,9 @@ The very few keywords that are available for all types of components are listed 
   {
   \end{itemize}
 }
+
+\cvsubsec{Distances}{sec:cvc_distances}
+
 
 \cvsubsubsec{\texttt{distance}: center-of-mass distance between two groups.}{sec:cvc_distance}
 \labelkey{colvar|distance}
@@ -990,6 +1139,9 @@ $(x_1, y_1, z_1, \cdots, x_n, y_n, z_n)$.
     are evaluated within the moving frame of reference.}
 \end{cvcoptions}
 
+\cvsubsec{Angles}{sec:cvc_angles}
+
+
 
 \cvsubsubsec{\texttt{angle}: angle between three groups.}{sec:cvc_angle}
 \labelkey{colvar|angle}
@@ -1115,6 +1267,9 @@ An example is provided in file \texttt{examples/11\_polar\_angles.in} of the Col
     Defines the group of atoms for the COM of which the angle should be calculated.
     }
 \end{cvcoptions}
+
+
+\cvsubsec{Contacts}{sec:cvc_contacts}
 
 
 \cvsubsubsec{\texttt{coordNum}: coordination number between two groups.}{sec:cvc_coordNum}
@@ -1318,6 +1473,9 @@ distance) and 1 (acceptor and donor much closer than the cutoff).
 \end{cvcoptions}
 
 
+\cvsubsec{Collective metrics}{sec:cvc_collective}
+
+
 \cvsubsubsec{\texttt{rmsd}: root mean square displacement (RMSD) from reference positions.}{sec:cvc_rmsd}
 \labelkey{colvar|rmsd}
 
@@ -1436,7 +1594,7 @@ atom group block. This allows for the following non-standard cases:
 (\texttt{rotateReference off}), to bias or restrain the shape and
 orientation, but not the position of the atom group;
 \item applying the optimal rotation, but no translation
-(\texttt{translateReference off}), to bias or restrain the shape and
+(\texttt{centerReference off}), to bias or restrain the shape and
 position, but not the orientation of the atom group;
 \item disabling the application of optimal roto-translations, which
 lets the RMSD component decribe the deviation of atoms
@@ -1606,6 +1764,16 @@ define the atom group, and returns a positive number, expressed in
 \end{cvcoptions}
 
 
+\cvsubsubsec{\texttt{dipoleMagnitude}: dipole magnitude of a group of atoms.}{sec:cvc_dipoleMagnitude}
+The \texttt{dipoleMagnitude~\{...\}} block defines the dipole magnitude of a group of atoms (norm of the dipole moment's vector), being \texttt{atoms} the group where dipole magnitude is calculated.
+It returns the magnitude in elementary charge $e$ times \cvnamdonly{\AA}\cvvmdonly{\AA}\cvlammpsonly{(length unit)}.
+
+\begin{cvcoptions}
+\item %
+  \dupkey{atoms}{\texttt{dipoleMagnitude}}{colvar|rmsd|atoms}{\texttt{rmsd} component}
+\end{cvcoptions}
+
+
 \cvsubsubsec{\texttt{inertiaZ}: total moment of inertia of a group of atoms around a chosen axis.}{sec:cvc_inertiaZ}
 \labelkey{colvar|inertiaZ}
 
@@ -1624,6 +1792,7 @@ This component must contain one \texttt{atoms~\{...\}} block to
 define the atom group, and returns a positive number, expressed in
 \AA{}$^{2}$.
 
+
 \begin{cvcoptions}
 \item %
   \dupkey{atoms}{\texttt{inertiaZ}}{colvar|rmsd|atoms}{\texttt{rmsd} component}
@@ -1637,6 +1806,9 @@ define the atom group, and returns a positive number, expressed in
     The three components of this vector define (when normalized) the
     projection axis $\mathbf{e}$.}
 \end{cvcoptions}
+
+
+\cvsubsec{Rotations}{sec:cvc_rotations}
 
 
 \cvsubsubsec{\texttt{orientation}: orientation from reference coordinates.}{sec:cvc_orientation}
@@ -1817,6 +1989,8 @@ The values of \texttt{tilt} are real numbers in the interval $[-1:1]$: the value
  
 
 \cvnamebasedonly{
+
+\cvsubsec{Protein structure descriptors}{sec:cvc_protein}
 
 \cvsubsubsec{\texttt{alpha}: $\alpha$-helix content of a protein segment.}{sec:cvc_alpha}
 \labelkey{colvar|alpha}
@@ -2046,6 +2220,394 @@ and \texttt{psfSegID}) in addition to the following:
 } % end of \cvnamebasedonly
 
 
+\cvsubsec{Raw data: building blocks for custom functions}{sec:cvc_raw}
+
+\cvsubsubsec{\texttt{cartesian}: vector of atomic Cartesian coordinates.}{sec:cvc_cartesian}
+\labelkey{colvar|cartesian}
+
+The \texttt{cartesian~\{...\}} block defines a component returning a flat vector containing
+the Cartesian coordinates of all participating atoms, in the order
+$(x_1, y_1, z_1, \cdots, x_n, y_n, z_n)$.
+
+\begin{cvcoptions}
+\item %
+  \key
+    {atoms}{%
+    \texttt{cartesian}}{%
+    Group of atoms}{%
+    Block \texttt{atoms \{...\}}}{%
+    Defines the atoms whose coordinates make up the value of the component.
+    If \texttt{rotateReference} or \texttt{centerReference} are defined, coordinates
+    are evaluated within the moving frame of reference.}
+\end{cvcoptions}
+
+
+\cvsubsubsec{\texttt{distancePairs}: set of pairwise distances between two groups.}{sec:cvc_distancePairs}
+\labelkey{colvar|distancePairs}
+
+The \texttt{distancePairs~\{...\}} block defines a $N_{\mathrm{1}}\times{}N_{\mathrm{2}}$-dimensional variable that includes all mutual distances between the atoms of two groups.
+This can be useful, for example, to develop a new variable defined over two groups, by using the \texttt{scriptedFunction} feature.
+
+\begin{cvcoptions}
+\item %
+  \dupkey{group1}{\texttt{distancePairs}}{colvar|distance|group1}{\texttt{distance} component}
+\item %
+  \simkey{group2}{\texttt{distancePairs}}{group1}
+\item %
+  \dupkey{forceNoPBC}{\texttt{distancePairs}}{colvar|distance|forceNoPBC}{\texttt{distance} component}
+\end{cvcoptions}
+This component returns a $N_{\mathrm{1}}\times{}N_{\mathrm{2}}$-dimensional vector of numbers, each ranging from $0$ to the largest possible distance within the chosen boundary conditions.
+
+
+\cvsubsec{Geometric path collective variables}{sec:cvc_gpath}
+
+The geometric path collective variables define the progress along a path, $s$, and the distance from the path, $z$. These CVs are proposed by Leines and Ensing\cite{Leines2012} , which differ from that\cite{Branduardi2007} proposed by Branduardi et al., and utilize a set of geometric algorithms. The path is defined as a series of frames in the atomic Cartesian coordinate space or the CV space. $s$ and $z$ are computed as
+
+\begin{equation}
+s = \frac{m}{M} \pm \frac{1}{2M} \left( \frac{\sqrt{(\mathbf{v}_1 \cdot \mathbf{v}_3)^2-|\mathbf{v}_3|^2 (|\mathbf{v}_1|^2 - |\mathbf{v}_2|^2)}-(\mathbf{v}_1 \cdot \mathbf{v}_3)}{|\mathbf{v}_3|^2} -1 \right)
+\end{equation}
+
+\begin{equation}
+z = \sqrt{\left(\mathbf{v}_1 + \frac{1}{2}\left(\frac{\sqrt{(\mathbf{v}_1 \cdot \mathbf{v}_3)^2-|\mathbf{v}_3|^2 (|\mathbf{v}_1|^2 - |\mathbf{v}_2|^2)}-(\mathbf{v}_1 \cdot \mathbf{v}_3)}{|\mathbf{v}_3|^2} -1 \right)\mathbf{v}_4 \right)^2}
+\end{equation}
+
+where $\mathbf{v}_1 = \mathbf{s}_{m} - \mathbf{z} $ is the vector connecting the current position to the closest frame, $\mathbf{v}_2 = \mathbf{z} - \mathbf{s}_{m-1}$ is the vector connecting the second closest frame to the current position, $\mathbf{v}_3 = \mathbf{s}_{m+1} - \mathbf{s}_{m}$ is the vector connecting the closest frame to the third closest frame, and $\mathbf{v}_4 = \mathbf{s}_m - \mathbf{s}_{m-1}$ is the vector connecting the second closest frame to the closest frame. $m$ and $M$ are the current index of the closest frame and the total number of frames, respectively. If the current position is on the left of the closest reference frame, the $\pm$ in $s$ turns to the positive sign. Otherwise it turns to the negative sign.
+
+The equations above assume: (i) the frames are equidistant and (ii) the second and the third closest frames are neighbouring to the closest frame. When these assumptions are not satisfied, this set of path CV should be used carefully.
+
+\cvsubsubsec{\texttt{gspath}: progress along a path defined in atomic Cartesian coordinate space.}{sec:cvc_gspath}
+\labelkey{colvar|gspath}
+
+In the \texttt{gspath~\{...\}} and the \texttt{gzpath~\{...\}} block all vectors, namely $\mathbf{z}$ and $\mathbf{s}_{k}$ are defined in atomic Cartesian coordinate space. More specifically, $\mathbf{z} = \left[\mathbf{r}_{1}, \cdots, \mathbf{r}_{n}\right]$, where $\mathbf{r}_{i}$ is the $i$-th atom specified in the \texttt{atoms} block. $\mathbf{s}_{k} = \left[\mathbf{r}_{k,1}, \cdots, \mathbf{r}_{k,n}\right]$, where $\mathbf{r}_{k,i}$ means the $i$-th atom of the $k$-th reference frame.
+
+\begin{cvcoptions}
+\item %
+  \key
+    {atoms}{%
+    \texttt{gspath} and \texttt{gzpath}}{%
+    Group of atoms}{%
+    Block \texttt{atoms \{...\}}}{%
+    Defines the atoms whose coordinates make up the value of the component.}
+
+\item %
+  \key
+    {refPositionsCol}{%
+    \texttt{gspath} and \texttt{gzpath}}{%
+    PDB column containing atom flags}{%
+    \texttt{O}, \texttt{B}, \texttt{X}, \texttt{Y}, or \texttt{Z}}{%
+    If \texttt{refPositionsFileN} is a PDB file that contains all the atoms in the topology, this option may be provided to set which PDB field is used to flag the reference coordinates for \texttt{atoms}.}
+
+\item %
+  \key
+    {refPositionsFileN}{%
+    \texttt{gspath} and \texttt{gzpath}}{%
+    File containing the reference positions for fitting}{%
+    UNIX filename}{%
+		The path is defined by multiple \texttt{refPositionsFile}s which are similiar to \texttt{refPositionsFile} in the \texttt{rmsd} CV. If your path consists of $10$ nodes, you can list the coordinate file (in PDB or XYZ format) from \texttt{refPositionsFile1} to \texttt{refPositionsFile10}.
+    }
+
+\item %
+  \keydef
+    {useSecondClosestFrame}{%
+    \texttt{gspath} and \texttt{gzpath}}{%
+    Define $\mathbf{s}_{m-1}$ as the second closest frame?}{%
+    boolean}{%
+    \texttt{on}}{%
+    The definition assumes the second closest frame is neighbouring to the closest frame. This is not always true especially when the path is crooked. If this option is set to \texttt{on} (default), $\mathbf{s}_{m-1}$ is defined as the second closest frame. If this option is set to \texttt{off}, $\mathbf{s}_{m-1}$ is defined as the left or right neighbouring frame of the closest frame.
+  }
+
+\item %
+  \keydef
+    {useThirdClosestFrame}{%
+    \texttt{gspath} and \texttt{gzpath}}{%
+    Define $\mathbf{s}_{m+1}$ as the third closest frame?}{%
+    boolean}{%
+    \texttt{off}}{%
+    The definition assumes the third closest frame is neighbouring to the closest frame. This is not always true especially when the path is crooked. If this option is set to \texttt{on}, $\mathbf{s}_{m+1}$ is defined as the third closest frame. If this option is set to \texttt{off} (default), $\mathbf{s}_{m+1}$ is defined as the left or right neighbouring frame of the closest frame.
+  }
+
+\item %
+  \key
+    {fittingAtoms}{%
+    \texttt{gspath} and \texttt{gspath}}{%
+    The atoms that are used for alignment}{%
+    Group of atoms}{%
+		Before calculating $\mathbf{v}_1$, $\mathbf{v}_2$, $\mathbf{v}_3$ and $\mathbf{v}_4$, the current frame need to be aligned to the corresponding reference frames. This option specifies which atoms are used to do alignment.
+    }
+
+\end{cvcoptions}
+
+\cvsubsubsec{\texttt{gzpath}: distance from a path defined in atomic Cartesian coordinate space.}{sec:cvc_gzpath}
+\labelkey{colvar|gzpath}
+
+\begin{cvcoptions}
+
+\item %
+  \keydef
+    {useZsquare}{%
+    \texttt{gzpath}}{%
+    Compute $z^2$ instead of $z$}{%
+    boolean}{%
+    \texttt{off}}{%
+    $z$ is not differentiable when it is zero. This implementation workarounds it by setting the derivative of $z$ to zero when $z = 0$. Another workaround is set this option to \texttt{on}, which computes $z^2$ instead of $z$, and then $z^2$ is differentiable when it is zero.
+  }
+
+\end{cvcoptions}
+
+The usage of \texttt{gzpath} and \texttt{gspath} is illustrated below:
+
+\bigskip
+{%
+% verbatim can't appear within commands
+\noindent\ttfamily colvar \{\\
+\-~~\# Progress along the path\\
+\-~~name gs\\
+\-~~\# The path is defined by 5 reference frames (from string-00.pdb to string-04.pdb)\\
+\-~~\# Use atomic coordinate from atoms 1, 2 and 3 to compute the path\\
+\-~~gspath \{\\
+\-~~~~atoms \{atomnumbers \{ 1 2 3 \}\}\\
+\-~~~~refPositionsFile1 string-00.pdb\\
+\-~~~~refPositionsFile2 string-01.pdb\\
+\-~~~~refPositionsFile3 string-02.pdb\\
+\-~~~~refPositionsFile4 string-03.pdb\\
+\-~~~~refPositionsFile5 string-04.pdb\\
+\-~~\}\\
+\}\\
+\noindent\ttfamily colvar \{\\
+\-~~\# Distance from the path\\
+\-~~name gz\\
+\-~~\# The path is defined by 5 reference frames (from string-00.pdb to string-04.pdb)\\
+\-~~\# Use atomic coordinate from atoms 1, 2 and 3 to compute the path\\
+\-~~gzpath \{\\
+\-~~~~atoms \{atomnumbers \{ 1 2 3 \}\}\\
+\-~~~~refPositionsFile1 string-00.pdb\\
+\-~~~~refPositionsFile2 string-01.pdb\\
+\-~~~~refPositionsFile3 string-02.pdb\\
+\-~~~~refPositionsFile4 string-03.pdb\\
+\-~~~~refPositionsFile5 string-04.pdb\\
+\-~~\}\\
+\}}
+
+\cvsubsubsec{\texttt{linearCombination}: Helper CV to define a linear combination of other CVs}{sec:cvc_linearCombination}
+\labelkey{colvar|linearCombination}
+
+This is a helper CV which can be defined as a linear combination of other CVs. It maybe useful when you want to define the \texttt{gspathCV~\{...\}} and the \texttt{gzpathCV~\{...\}} as  combinations of other CVs.
+
+\cvsubsubsec{\texttt{gspathCV}: progress along a path defined in CV space.}{sec:cvc_gspathCV}
+\labelkey{colvar|gspathCV}
+
+In the \texttt{gspathCV~\{...\}} and the \texttt{gzpathCV~\{...\}} block all vectors, namely $\mathbf{z}$ and $\mathbf{s}_{k}$ are defined in CV space.  More specifically, $\mathbf{z} = \left[{\xi}_{1}, \cdots, {\xi}_{n}\right]$, where ${\xi}_{i}$ is the $i$-th CV. $\mathbf{s}_{k} = \left[{\xi}_{k,1}, \cdots, {\xi}_{k,n}\right]$, where ${\xi}_{k,i}$ means the $i$-th CV of the $k$-th reference frame. It should be note that these two CVs requires the \texttt{pathFile} option, which specifies a path file. Each line in the path file contains a set of space-seperated CV value of the reference frame. The sequence of reference frames matches the sequence of the lines.
+
+
+\begin{cvcoptions}
+\item %
+  \keydef
+    {useSecondClosestFrame}{%
+    \texttt{gspathCV} and \texttt{gzpathCV}}{%
+    Define $\mathbf{s}_{m-1}$ as the second closest frame?}{%
+    boolean}{%
+    \texttt{on}}{%
+    The definition assumes the second closest frame is neighbouring to the closest frame. This is not always true especially when the path is crooked. If this option is set to \texttt{on} (default), $\mathbf{s}_{m-1}$ is defined as the second closest frame. If this option is set to \texttt{off}, $\mathbf{s}_{m-1}$ is defined as the left or right neighbouring frame of the closest frame.
+  }
+
+\item %
+  \keydef
+    {useThirdClosestFrame}{%
+    \texttt{gspathCV} and \texttt{gzpathCV}}{%
+    Define $\mathbf{s}_{m+1}$ as the third closest frame?}{%
+    boolean}{%
+    \texttt{off}}{%
+    The definition assumes the third closest frame is neighbouring to the closest frame. This is not always true especially when the path is crooked. If this option is set to \texttt{on}, $\mathbf{s}_{m+1}$ is defined as the third closest frame. If this option is set to \texttt{off} (default), $\mathbf{s}_{m+1}$ is defined as the left or right neighbouring frame of the closest frame.
+  }
+
+\item %
+  \key
+    {pathFile}{%
+    \texttt{gspathCV} and \texttt{gzpathCV}}{%
+    The file name of the path file.}{%
+    UNIX filename}{%
+		Defines the nodes or images that constitutes the path in CV space. The CVs of an image are listed in a line of \texttt{pathFile} using space-seperated format. Lines from top to button in \texttt{pathFile} corresponds images from initial to last.
+    }
+
+\end{cvcoptions}
+
+\cvsubsubsec{\texttt{gzpathCV}: distance from a path defined in CV space.}{sec:cvc_gzpathCV}
+\labelkey{colvar|gzpathCV}
+
+\begin{cvcoptions}
+
+\item %
+  \keydef
+    {useZsquare}{%
+    \texttt{gzpathCV}}{%
+    Compute $z^2$ instead of $z$}{%
+    boolean}{%
+    \texttt{off}}{%
+    $z$ is not differentiable when it is zero. This implementation workarounds it by setting the derivative of $z$ to zero when $z = 0$. Another workaround is set this option to \texttt{on}, which computes $z^2$ instead of $z$, and then $z^2$ is differentiable when it is zero.
+  }
+
+\end{cvcoptions}
+
+The usage of \texttt{gzpathCV} and \texttt{gspathCV} is illustrated below:
+
+\bigskip
+{%
+% verbatim can't appear within commands
+\noindent\ttfamily colvar \{\\
+\-~~\# Progress along the path\\
+\-~~name gs\\
+\-~~\# Path defined by the CV space of two dihedral angles\\
+\-~~gspathCV \{\\
+\-~~~~pathFile ./path.txt\\
+\-~~~~dihedral \{\\
+\-~~~~~~name 001\\
+\-~~~~~~group1 \{atomNumbers \{5\}\}\\
+\-~~~~~~group2 \{atomNumbers \{7\}\}\\
+\-~~~~~~group3 \{atomNumbers \{9\}\}\\
+\-~~~~~~group4 \{atomNumbers \{15\}\}\\
+\-~~~~\}\\
+\-~~~~dihedral \{\\
+\-~~~~~~name 002\\
+\-~~~~~~group1 \{atomNumbers \{7\}\}\\
+\-~~~~~~group2 \{atomNumbers \{9\}\}\\
+\-~~~~~~group3 \{atomNumbers \{15\}\}\\
+\-~~~~~~group4 \{atomNumbers \{17\}\}\\
+\-~~~~\}\\
+\-~~\}\\
+\}\\
+\noindent\ttfamily colvar \{\\
+\-~~\# Distance from the path\\
+\-~~name gz\\
+\-~~gzpathCV \{\\
+\-~~~~pathFile ./path.txt\\
+\-~~~~dihedral \{\\
+\-~~~~~~name 001\\
+\-~~~~~~group1 \{atomNumbers \{5\}\}\\
+\-~~~~~~group2 \{atomNumbers \{7\}\}\\
+\-~~~~~~group3 \{atomNumbers \{9\}\}\\
+\-~~~~~~group4 \{atomNumbers \{15\}\}\\
+\-~~~~\}\\
+\-~~~~dihedral \{\\
+\-~~~~~~name 002\\
+\-~~~~~~group1 \{atomNumbers \{7\}\}\\
+\-~~~~~~group2 \{atomNumbers \{9\}\}\\
+\-~~~~~~group3 \{atomNumbers \{15\}\}\\
+\-~~~~~~group4 \{atomNumbers \{17\}\}\\
+\-~~~~\}\\
+\-~~\}\\
+\}}
+
+
+\cvsubsec{Arithmetic path collective variables in CV space}{sec:cvc_apathCV}
+
+The arithmetic path collective variable in CV space uses the same formula as the one proposed by Branduardi\cite{Branduardi2007} et al., except that it computes $s$ and $z$ in CV space instead of RMSDs in Cartesian space. Moreover, this implementation allows different coefficients for each CV components as described in \cite{Hovan2019}. Assuming a path is composed of $N$ reference frames and defined in an $M$-dimensional CV space, then the equations of $s$ and $z$ of the path are 
+
+\begin{equation}
+s = \frac{\sum_{i=1}^{N} i \exp\left(-\lambda\sum_{j=1}^{M} c_j^2 \left(x_j-x_{i,j}\right)^2\right)}{\sum_{i=1}^{N} \exp\left(-\lambda\sum_{j=1}^{M} c_j^2 \left(x_j-x_{i,j}\right)^2\right)}
+\end{equation}
+
+\begin{equation}
+z = -\frac{1}{\lambda} \ln \left(\sum_{i=1}^{N} \exp\left(-\lambda\sum_{j=1}^{M} c_j^2 \left(x_j-x_{i,j}\right) \right)\right)
+\end{equation}
+where $c_j$ is the coefficient(weight) of the $j$-th CV, $x_{i,j}$ is the value of $j$-th CV of $i$-th reference frame and $x_{j}$ is the value of $j$-th CV of current frame. $\lambda$ is a parameter to smooth the variation of $s$ and $z$.
+
+\cvsubsubsec{\texttt{aspathCV}: progress along a path defined in CV space.}{sec:cvc_aspathCV}
+
+This colvar component computes the $s$ variable.
+
+\labelkey{colvar|aspathCV}
+
+\begin{cvcoptions}
+\item %
+  \keydef
+    {weights}{%
+    \texttt{aspathCV} and \texttt{azpathCV}}{%
+    Coefficients of the collective variables}{%
+    space-seperated numbers in a \texttt{\{...\}} block}{%
+    \texttt{\{1.0 ...\}}}{%
+    Define the coefficients. The $j$-th value in the \texttt{\{...\}} block corresponds the $c_{j}$ in the equations.
+  }
+
+\item %
+  \keydef
+    {lambda}{%
+    \texttt{aspathCV} and \texttt{azpathCV}}{%
+    Smoothness of the variation of $s$ and $z$}{%
+    decimal}{%
+    inverse of the mean square displacements of successive reference frames}{%
+    The value of $\lambda$ in the equations.
+  }
+
+\item %
+  \key
+    {pathFile}{%
+    \texttt{aspathCV} and \texttt{azpathCV}}{%
+    The file name of the path file.}{%
+    UNIX filename}{%
+		Defines the nodes or images that constitutes the path in CV space. The CVs of an image are listed in a line of \texttt{pathFile} using space-seperated format. Lines from top to button in \texttt{pathFile} corresponds images from initial to last.
+    }
+
+\end{cvcoptions}
+
+\cvsubsubsec{\texttt{azpathCV}: distance from a path defined in CV space.}{sec:cvc_azpathCV}
+
+This colvar component computes the $z$ variable. Options are the same as in \ref{sec:cvc_aspathCV}.
+
+The usage of \texttt{azpathCV} and \texttt{aspathCV} is illustrated below:
+
+\bigskip
+{%
+% verbatim can't appear within commands
+\noindent\ttfamily colvar \{\\
+\-~~\# Progress along the path\\
+\-~~name as\\
+\-~~\# Path defined by the CV space of two dihedral angles\\
+\-~~aspathCV \{\\
+\-~~~~pathFile ./path.txt\\
+\-~~~~weights \{1.0 1.0\}\\
+\-~~~~lambda 0.005\\
+\-~~~~dihedral \{\\
+\-~~~~~~name 001\\
+\-~~~~~~group1 \{atomNumbers \{5\}\}\\
+\-~~~~~~group2 \{atomNumbers \{7\}\}\\
+\-~~~~~~group3 \{atomNumbers \{9\}\}\\
+\-~~~~~~group4 \{atomNumbers \{15\}\}\\
+\-~~~~\}\\
+\-~~~~dihedral \{\\
+\-~~~~~~name 002\\
+\-~~~~~~group1 \{atomNumbers \{7\}\}\\
+\-~~~~~~group2 \{atomNumbers \{9\}\}\\
+\-~~~~~~group3 \{atomNumbers \{15\}\}\\
+\-~~~~~~group4 \{atomNumbers \{17\}\}\\
+\-~~~~\}\\
+\-~~\}\\
+\}\\
+\noindent\ttfamily colvar \{\\
+\-~~\# Distance from the path\\
+\-~~name az\\
+\-~~azpathCV \{\\
+\-~~~~pathFile ./path.txt\\
+\-~~~~weights \{1.0 1.0\}\\
+\-~~~~lambda 0.005\\
+\-~~~~dihedral \{\\
+\-~~~~~~name 001\\
+\-~~~~~~group1 \{atomNumbers \{5\}\}\\
+\-~~~~~~group2 \{atomNumbers \{7\}\}\\
+\-~~~~~~group3 \{atomNumbers \{9\}\}\\
+\-~~~~~~group4 \{atomNumbers \{15\}\}\\
+\-~~~~\}\\
+\-~~~~dihedral \{\\
+\-~~~~~~name 002\\
+\-~~~~~~group1 \{atomNumbers \{7\}\}\\
+\-~~~~~~group2 \{atomNumbers \{9\}\}\\
+\-~~~~~~group3 \{atomNumbers \{15\}\}\\
+\-~~~~~~group4 \{atomNumbers \{17\}\}\\
+\-~~~~\}\\
+\-~~\}\\
+\}}
+
+
+
 \cvsubsec{Shared keywords for all components}{sec:cvc_common}
 
 The following options can be used for any of the above colvar components in order to obtain a polynomial combination\cvscriptonly{ or any user-supplied function provided by \refkey{scriptedFunction}{sec:cvc_superp}}.
@@ -2226,19 +2788,47 @@ of $1/N$.
 \cvsubsec{Custom functions}{sec:colvar_custom_function}
 
 Collective variables may be defined by specifying a custom function as an analytical
-expression such as \texttt{cos(x) + y\^{}2}.
-The expression is parsed by the Lepton expression parser (written by Peter Eastman),
-which produces efficient evaluation routines for the function itself as well as its derivatives.
-The expression may use the collective variable components as variables, refered to as their \texttt{name} string.
-Scalar elements of vector components may be accessed by appending a 1-based index to their \texttt{name}.
+expression.
+The expression is parsed by Lepton, the lightweight expression parser written by Peter Eastman (\cvurl{https://simtk.org/projects/lepton}).
+Lepton produces efficient evaluation routines for the function and its derivatives.
+
+
+\begin{itemize}
+\item %
+   \labelkey{colvar|customFunction}
+   \key 
+    {customFunction}{%
+    \texttt{colvar}}{%
+    Compute colvar as a custom function of its components}{%
+    string}{%
+    Mathematical expression to define the colvar as a closed-form function of its colvar components.
+    See below for the detailed syntax of Lepton expressions.
+    Multiple mentions of this keyword can be used to define a vector variable (as in the example below).}
+
+\item %
+  \keydef
+    {customFunctionType}{%
+    \texttt{colvar}}{%
+    Type of value returned by the scripted colvar}{%
+    string}{%
+    \texttt{scalar}}{%
+    With this flag, the user may specify whether the
+    colvar is a scalar or one of the following vector types: \texttt{vector3}
+    (a 3D vector), \texttt{unit\_vector3} (a normalized 3D vector), or
+    \texttt{unit\_quaternion} (a normalized quaternion), or \texttt{vector}.
+    Note that the scalar and vector cases are not necessary, as they are detected automatically.}
+\end{itemize}
+
+
+The expression may use the collective variable components as variables, refered to by their user-defined \texttt{name}.
+Scalar elements of vector components may be accessed by appending a 1-based index to their \texttt{name}, as in the example below.
 When implementing generic functions of Cartesian coordinates rather
 than functions of existing components, the \texttt{cartesian} component
 may be particularly useful.
 A scalar-valued custom variable may be manually defined as periodic by providing
 the keyword \texttt{period}, and the optional keyword \texttt{wrapAround}, with the
 same meaning as in periodic components (see \ref{sec:cvc_periodic} for details).
-A vector variable may be defined by specifying the \texttt{customFunction} parameter several times: each expression defines one scalar element of the vector colvar.
-This is illustrated in the example below.
+A vector variable may be defined by specifying the \texttt{customFunction} parameter several times: each expression defines one scalar element of the vector colvar, as in this example:
 
 \bigskip
 {%
@@ -2262,30 +2852,53 @@ This is illustrated in the example below.
 \-~~\}\\
 \}}
 
-\begin{itemize}
-\item %
-   \labelkey{colvar|customFunction}
-   \key 
-    {customFunction}{%
-    \texttt{colvar}}{%
-    Compute colvar as a custom function of its components}{%
-    string}{%
-    Defines the colvar as a scalar expression of its colvar components. Multiple mentions can
-    be used to define a vector variable  (as in the example above).}
+Numeric constants may be given in either decimal or exponential form (e.g. 3.12e-2).
+An expression may be followed by definitions for intermediate values that
+appear in the expression, separated by semicolons.
+For example, the expression:\\
+\texttt{a\^{}2 + a*b + b\^{}2; a = a1 + a2; b = b1 + b2}\\
+is exactly equivalent to:\\
+\texttt{(a1 + a2)\^{}2 + (a1 + a2) * (b1 + b2) + (b1 + b2)\^{}2}.\\
+The definition of an intermediate value may itself involve other intermediate values.
+All uses of a value must appear \textit{before} that value's definition.
 
-\item %
-  \keydef
-    {customFunctionType}{%
-    \texttt{colvar}}{%
-    Type of value returned by the scripted colvar}{%
-    string}{%
-    \texttt{scalar}}{%
-    With this flag, the user may specify whether the
-    colvar is a scalar or one of the following vector types: \texttt{vector3}
-    (a 3D vector), \texttt{unit\_vector3} (a normalized 3D vector), or
-    \texttt{unit\_quaternion} (a normalized quaternion), or \texttt{vector}.
-    Note that the scalar and vector cases are not necessary, as they are detected automatically.}
-\end{itemize}
+Lepton supports the usual arithmetic operators +, -, *, /, and \^{} (power), as well as the following functions:
+
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+sqrt & Square root\\
+exp & Exponential\\
+log & Natural logarithm\\
+erf & Error function\\
+erfc & Complementary error function\\
+\hline
+sin & Sine (angle in radians)\\
+cos & Cosine (angle in radians)\\
+sec & Secant (angle in radians)\\
+csc & Cosecant  (angle in radians)\\
+tan & Tangent (angle in radians)\\
+cot & Cotangent (angle in radians)\\
+asin & Inverse sine (in radians)\\
+acos & Inverse cosine (in radians)\\
+atan & Inverse tangent (in radians)\\
+atan2 & Two-argument inverse tangent (in radians)\\
+\hline
+sinh & Hyperbolic sine\\
+cosh & Hyperbolic cosine\\
+tanh & Hyperbolic tangent\\
+\hline
+abs & Absolute value\\
+floor & Floor\\
+ceil & Ceiling\\
+min & Minimum of two values\\
+max & Maximum of two values\\
+delta & $\mathrm{delta}(x) = 1$ if $x=0$, 0 otherwise\\
+step & $\mathrm{step}(x) = 0$ if $x<0$, 1 if $x>=0$\\
+select & $\mathrm{select}(x, y, z) = z$ if $x=0$, $y$ otherwise\\
+\hline
+\end{tabular}
+\end{center}
 }
 
 
@@ -2374,57 +2987,61 @@ The parameters described below offer a way to specify these parameters only once
   \keydef
     {width}{%
     \texttt{colvar}}{%
-    Colvar fluctuation scale, or resolution for grid-based methods}{%
+    Unit of the variable, or grid spacing}{%
     positive decimal}{%
     1.0}{%
-    This number has the same physical unit as the colvar value and defines an effective colvar unit.
-%    Biasing algorithms use it for different purposes.
-    Harmonic restraints (\ref{sec:colvarbias_harmonic}) use it to set the physical unit of the force constant, which is useful for multidimensional restraints involving variables with very different units (for examples, $\AA$ or degrees $^\circ$) with a single, scaled force constant.
+    This number defines the effective unit of measurement for the collective variable, and is used by the biasing methods for the following purposes.
+    Harmonic (\ref{sec:colvarbias_harmonic}), harmonic walls (\ref{sec:colvarbias_harmonic_walls}) and linear restraints (\ref{sec:colvarbias_linear}) use it to set the physical unit of the force constant, which is useful for multidimensional restraints involving multiple variables with very different units (for examples, $\AA$ or degrees $^\circ$) with a single, scaled force constant.
+    The values of the scaled force constant in the units of each variable are printed at initialization time. 
     Histograms (\ref{sec:colvarbias_histogram}), ABF (\ref{sec:colvarbias_abf}) and metadynamics (\ref{sec:colvarbias_meta}) all use this number as the initial choice for the grid spacing along this variable: for this reason, \texttt{width} should generally be no larger than the standard deviation of the colvar in an unbiased simulation.
-%    When a non-unity width is required by the application, the optimal value is application-dependent, but can often be thought of as a user-provided estimate of the fluctuation amplitude for the colvar.
-    Unless it is required to control the spacing, it is usually simplest to keep the default value of 1, so that restraint force constants are provided in more intuitive units.
+    Unless it is required to control the spacing, it is usually simplest to keep the default value of 1, so that restraint force constants are provided with their full physical unit.
   }
 
 \item %
   \labelkey{colvar|lowerBoundary}
-  \key
+  \keydef
     {lowerBoundary}{%
     \texttt{colvar}}{%
     Lower boundary of the colvar}{%
     decimal}{%
-    Defines the lowest end of the interval of ``relevant'' values for the colvar.
-    This number can be either a true physical boundary, or a user-defined number.  
-    Together with \texttt{upperBoundary} and \texttt{width}, it is used to define a grid of values along the colvar (not available for colvars based on \texttt{distanceDir}, \texttt{distanceVec}, and \texttt{orientation}).
-    This option does not affect dynamics: to confine a colvar within a certain interval, use a \texttt{harmonicWalls} bias.
+    natural boundary of the function}{%
+    Defines the lowest end of the interval of ``relevant'' values for the variable.
+    This number can be, for example, a true physical boundary imposed by the choice of function (e.g.{} the \texttt{distance} function is always larger than zero): if this is the case, and only one function is used to define the variable, tthe default value of this number is set to the lowest end of the range of values of that function, if available (see Section~\ref{sec:cvc_list}).
+    Alternatively, this value may be provided by the user, to represent for example the left-most point of a PMF calculation along this variable.
+    In the latter case, it is the user's responsibility to either \emph{(a)} ensure the variable does not go significantly beyond the boundary (for example by adding a \texttt{harmonicWalls} restraint, \ref{sec:colvarbias_harmonic_walls}), or \emph{(b)} instruct the code that this is a true physical boundary by setting \refkey{hardLowerBoundary}{colvar|hardLowerBoundary}.
 }
 
 \item %
   \labelkey{colvar|upperBoundary} %
-  \key
+  \keydef
     {upperBoundary}{%
     \texttt{colvar}}{%
     Upper boundary of the colvar}{%
     decimal}{%
-    Similarly to \texttt{lowerBoundary}, defines the highest possible or allowed value.}
+    natural boundary of the function}{%
+    Similarly to \texttt{lowerBoundary}, defines the highest of the ``relevant'' values of the variable.}
 
 \item %
+  \labelkey{colvar|hardLowerBoundary} %
   \keydef
     {hardLowerBoundary}{%
     \texttt{colvar}}{%
     Whether the lower boundary is the physical lower limit}{%
     boolean}{%
-    \texttt{off}}{%
-    This option does not affect simulation results, but enables some internal optimizations.
-    Depending on its mathematical definition, a colvar may have ``natural'' boundaries: for example, a \texttt{distance} colvar has a ``natural'' lower boundary at 0.  Setting this option instructs the Colvars module that the user-defined lower boundary is ``natural''.
-See Section~\ref{sec:cvc_list} for the physical ranges of values of each component.}
+    provided by the component}{%
+    When the colvar has a ``natural'' boundary (for example, a \texttt{distance} colvar cannot go below 0) this flag is automatically enabled.
+    For more complex variable definitions, or when \refkey{lowerBoundary}{colvar|lowerBoundary} is provided directly by the user, it may be necessary useful to set this flag explicitly.
+    This option does not affect simulation results, but enables some internal optimizations by letting the code know that the variable is unable to cross the lower boundary, regardless of whether restraints are applied to it.
+}
 
 \item %
+  \labelkey{colvar|hardUpperBoundary} %
   \keydef
     {hardUpperBoundary}{%
     \texttt{colvar}}{%
     Whether the upper boundary is the physical upper limit of the colvar's values}{%
     boolean}{%
-    \texttt{off}}{%
+    provided by the component}{%
     Analogous to \texttt{hardLowerBoundary}.}
 
 \item %
@@ -2435,9 +3052,7 @@ See Section~\ref{sec:cvc_list} for the physical ranges of values of each compone
     Allow to expand the two boundaries if needed}{%
     boolean}{%
     \texttt{off}}{%
-    If defined, biasing and analysis methods may keep their own copies
-    of \texttt{lowerBoundary} and \texttt{upperBoundary}, and expand
-    them to accommodate values that do not fit in the initial range.
+    If defined, \texttt{lowerBoundary} and \texttt{upperBoundary} may be automatically expanded to accommodate colvar values that do not fit in the initial range.
     Currently, this option is used by the metadynamics bias
     (\ref{sec:colvarbias_meta}) to keep all of its hills fully within
     the grid.  This option cannot be used when
@@ -2447,6 +3062,82 @@ See Section~\ref{sec:cvc_list} for the physical ranges of values of each compone
 \end{itemize}
 
 
+\cvsubsubsec{Grid files: multicolumn text format}{sec:colvar_multicolumn_grid}
+
+Many simulation methods and analysis tools write files that contain functions of the collective variables tabulated on a grid (e.g.{} potentials of mean force or multidimentional histograms) for the purpose of analyzing results.
+Such files are produced by ABF (\ref{sec:colvarbias_abf}), metadynamics (\ref{sec:colvarbias_meta}), multidimensional histograms (\ref{sec:colvarbias_histogram}), as well as any restraint with optional thermodynamic integration support (\ref{sec:colvarbias_ti}).
+
+In some cases, these files may also be read as input of a new simulation.
+Suitable input files for this purpose are typically generated as output files of previous simulations, or directly by the user in the specific case of ensemble-biased metadynamics (\ref{sec:colvarbias_ebmeta}).
+This section explains the ``multicolumn'' format used by these files.
+For a multidimensional function $f(\xi_{1}$, $\xi_{2}$, \ldots $)$ the multicolumn grid format is defined as follows:\\
+
+\begin{tabular}{l l l l l l l}
+\# & $N_{\mathrm{cv}}$ & & & & \\
+\# & $\mathtt{min}(\xi_{1})$ & $\mathtt{width}(\xi_{1})$ & $\mathtt{npoints}({\xi_{1}})$ & $\mathtt{periodic}({\xi_{1}})$ \\
+\# & $\mathtt{min}(\xi_{2})$ & $\mathtt{width}(\xi_{2})$ & $\mathtt{npoints}({\xi_{2}})$ & $\mathtt{periodic}({\xi_{2}})$ \\
+\# & \ldots & \ldots & \ldots & \ldots \\
+\# & $\mathtt{min}(\xi_{N_{\mathrm{cv}}})$ & $\mathtt{width}(\xi_{N_{\mathrm{cv}}})$ & $\mathtt{npoints}({\xi_{N_{\mathrm{cv}}}})$ & $\mathtt{periodic}({\xi_{N_{\mathrm{cv}}}})$ & \\
+\\
+& $\xi^{1}_{1}$ & $\xi^{1}_{2}$ & \ldots & $\xi^{1}_{N_{\mathrm{cv}}}$ & f($\xi^{1}_{1}$, $\xi^{1}_{2}$, \ldots, $\xi^{1}_{N_{\mathrm{cv}}}$) & \\
+& $\xi^{1}_{1}$ & $\xi^{1}_{2}$ & \ldots & $\xi^{2}_{N_{\mathrm{cv}}}$ & f($\xi^{1}_{1}$, $\xi^{1}_{2}$, \ldots, $\xi^{2}_{N_{\mathrm{cv}}}$) \\
+& \ldots & \ldots & \ldots & \ldots & \ldots \\
+\\
+\end{tabular}
+
+\noindent{}Lines beginning with the character ``\texttt{\#}'' are the header of the file.
+$N_{\mathrm{cv}}$ is the number of collective variables sampled by the grid.
+For each variable $\xi_{i}$, $\mathtt{min}(\xi_{i})$ is the lowest value sampled by the grid (i.e.{} the left-most boundary of the grid along $\xi_{i}$), $\mathtt{width}(\xi_{i})$ is the width of each grid step along $\xi_{i}$, $\mathtt{npoints}(\xi_{i})$ is the number of points and $\mathtt{periodic}(\xi_{i})$ is a flag whose value is 1 or 0 depending on whether the grid is periodic along $\xi_{i}$.
+In most situations:
+\begin{itemize}
+\item $\mathtt{min}(\xi_{i})$ is given by the \refkey{lowerBoundary}{colvar|lowerBoundary} keyword of the variable $\xi_{i}$;
+\item $\mathtt{width}(\xi_{i})$ is given by the \refkey{width}{colvar|width} keyword;
+\item $\mathtt{npoints}(\xi_{i})$ is calculated from the two above numbers and the \refkey{upperBoundary}{colvar|upperBoundary} keyword;
+\item $\mathtt{periodic}(\xi_{i})$ is set to 1 if and only if $\xi_{i}$ is periodic and the grids' boundaries cover its period.
+\end{itemize}
+\textbf{Exception:} there is a slightly different header in PMF files computed by ABF (\ref{sec:colvarbias_abf}) or by other biases with an optional thermodynamic integration (TI) estimator (\ref{sec:colvarbias_ti}).
+In this case, free-energy gradients are accumulated on an \texttt{(npoints)}-long grid along each variable $\xi$: after these gradients are integrated, the resulting PMF is discretized on a grid with \texttt{(npoints+1)} points along $\xi$.
+Therefore, the edges of the PMF's grid extend $\mathtt{width}/2$ above and below the original boundaries (unless these are periodic).  The format of the file's header is otherwise unchanged.
+
+After the header, the rest of the file contains values of the tabulated function
+$f(\xi_{1}$, $\xi_{2}$, \ldots $\xi_{N_{\mathrm{cv}}})$, one for each line.
+The first $N_{\mathrm{cv}}$ columns contain values of $\xi_{1}$, $\xi_{2}$, \ldots $\xi_{N_{\mathrm{cv}}}$ and the last column contains the value of the function $f$.
+Points are sorted in ascending order with the fastest-changing values at the right (``C-style'' order).
+Each sweep of the right-most variable $\xi_{N_{\mathrm{cv}}}$ is terminated by an empty line.
+For two dimensional grid files, this allows quick visualization by programs such as GNUplot.
+\\
+
+\noindent\textbf{Example 1:} multicolumn text file for a one-dimensional histogram with \texttt{lowerBoundary} = 15, \texttt{upperBoundary} = 48 and \texttt{width} = 0.1.
+
+\begin{tabular}{l l l l l l}
+\\
+\# & \texttt{1} & & & & \\
+\# & \texttt{15} & \texttt{0.1} & \texttt{330} & \texttt{0} \\
+\\
+& \texttt{15.05} & \texttt{6.14012e-07} & & & \\
+& \texttt{15.15} & \texttt{7.47644e-07} & & & \\
+& \ldots & \ldots & & & \\
+& \texttt{47.85} & \texttt{1.65944e-06} & & & \\
+& \texttt{47.95} & \texttt{1.46712e-06} & & & \\
+\\
+\end{tabular}
+
+\noindent\textbf{Example 2:} multicolumn text file for a two-dimensional histogram of two dihedral angles (periodic interval with 6$^\circ$ bins):
+
+\begin{tabular}{l l l l l l}
+& & & & \\
+\# & \texttt{2} & & & & \\
+\# & \texttt{-180.0} & \texttt{6.0} & \texttt{30} & \texttt{1} \\
+\# & \texttt{-180.0} & \texttt{6.0} & \texttt{30} & \texttt{1} \\
+\\
+& \texttt{-177.0} & \texttt{-177.0} & \texttt{8.97117e-06} & & \\
+& \texttt{-177.0} & \texttt{-171.0} & \texttt{1.53525e-06} & & \\
+& \ldots & \ldots & \ldots & & \\
+& \texttt{-177.0} & \texttt{ 177.0} & \texttt{2.442956-06} & & \\
+\\
+& \texttt{-171.0} & \texttt{-177.0} & \texttt{2.04702e-05} & & \\
+& \ldots & \ldots & \ldots & & \\
+\end{tabular}
 
 \cvsubsec{Trajectory output}{sec:colvar_traj_output}
 
@@ -2619,6 +3310,26 @@ to perform eABF simulations (\ref{sec:eABF}).
 \end{itemize}
 
 
+\cvsubsec{Multiple time-step variables}{sec:mts_colvar}
+
+\begin{itemize}
+
+  \item %
+    \keydef
+      {timeStepFactor}{%
+      \texttt{colvar}}{%
+      Compute this colvar once in a certain number of timesteps}{%
+      positive integer}{%
+      \texttt{1}}{%
+      Instructs this colvar to activate at a time interval equal to the base (MD)
+      timestep times \texttt{timeStepFactor}.\cite{Ferrarotti2015}
+      At other time steps, the value of the
+      variable is not updated, and no biasing forces are applied.
+      Any forces exerted by biases are accumulated over the given time interval,
+      then applied as an impulse at the next update.
+      }
+\end{itemize}
+
 \cvsubsec{Backward-compatibility}{sec:colvar_compatibility}
 
 \begin{itemize}
@@ -2642,15 +3353,14 @@ to perform eABF simulations (\ref{sec:eABF}).
 
 \cvsubsec{Statistical analysis}{sec:colvar_acf}
 
-When the global keyword \texttt{analysis} is defined in the
-configuration file, run-time calculations of statistical properties for
-individual colvars can be performed.  At the moment, several types of
-time correlation functions, running averages and running standard
-deviations are available.
+Run-time calculations of statistical properties that depend explicitly on time can be performed for individual collective variables.
+Currently, several types of time correlation functions, running averages and running standard deviations are implemented.
+For run-time computation of histograms, please see the histogram bias (\ref{sec:colvarbias_histogram}).
 
 \begin{itemize}
 
 \item %
+  \labelkey{colvar|corrFunc}
   \keydef
     {corrFunc}{%
     \texttt{colvar}}{%
@@ -2736,10 +3446,11 @@ deviations are available.
     \texttt{colvar}}{%
     Output file for the time correlation function}{%
     UNIX filename}{%
-    \texttt{$<$name$>$.corrfunc.dat}}{%
+    \outputName\texttt{.$<$name$>$.corrfunc.dat}}{%
     The time correlation function is saved in this file.}
 
 \item %
+  \labelkey{colvar|runAve}
   \keydef
     {runAve}{%
     \texttt{colvar}}{%
@@ -2773,7 +3484,7 @@ deviations are available.
     \texttt{colvar}}{%
     Output file for the running average and standard deviation}{%
     UNIX filename}{%
-    \texttt{$<$name$>$.runave.dat}}{%
+    \outputName\texttt{.$<$name$>$.runave.traj}}{%
     The running average and standard deviation are saved in this file.}
 
 \end{itemize}
@@ -3185,31 +3896,45 @@ To gain an estimate of the computational cost of a large colvar, one can use a t
 
 \cvsec{Biasing and analysis methods}{sec:colvarbias}
 
-All of the biasing and analysis methods implemented (\texttt{abf},
-\texttt{harmonic}, \texttt{histogram} and \texttt{metadynamics})
-recognize the following options:
+A biasing or analysis method can be applied to existing collective variables by using the following configuration:
+
+{\bigskip\noindent\ttfamily
+$<$biastype$>$ \{\\
+\-~~name $<$name$>$ \\
+\-~~colvars $<$xi1$>$ $<$xi2$>$ ...\\
+\-~~$<$parameters$>$\\
+\}\\
+}
+
+\noindent{} The keyword \texttt{$<$biastype$>$} indicates the method of choice.
+There can be multiple instances of the same method, e.g.{} using multiple \texttt{harmonic} blocks allows defining multiple restraints.
+
+All biasing and analysis methods implemented recognize the following options:
 \begin{itemize}
 
 \item %
+  \labelkey{colvarbias|name}
   \keydef
     {name}{%
     colvar bias}{%
     Identifier for the bias}{%
     string}{%
     \texttt{$<$type of bias$><$bias index$>$}}{%
-    This string is used to identify the bias or analysis method in
-    output messages and to name some output files.}
+    This string is used to identify the bias or analysis method in the output, and to name some output files.
+    \textbf{Tip:} because the default name depends on the order of definition, but the outcome of the simulation does not, it may be convenient to assign consistent names for certain biases; for example, you may want to name a moving harmonic restraint \texttt{smd}, so that it can always be identified regardless of the presence of other restraints.
+    }
 
 \item %
+  \labelkey{colvarbias|colvars}
   \key
     {colvars}{%
     colvar bias}{%
     Collective variables involved}{%
     space-separated list of colvar names}{%
-    This option selects by name all the colvars to which this bias or
-    analysis will be applied.}
+    This option selects by name all the variables to which this bias or analysis will be applied.}
 
 \item %
+  \labelkey{colvarbias|outputEnergy}
   \keydef
     {outputEnergy}{%
     colvar bias}{%
@@ -3221,24 +3946,32 @@ recognize the following options:
 
 \end{itemize}
 
-In addition, restraint biases (\ref{sec:colvarbias_harmonic}, \ref{sec:colvarbias_harmonic_walls}, \ref{sec:colvarbias_linear}, ...) and metadynamics biases (\ref{sec:colvarbias_meta}) offer the following optional keywords, which allow the use of thermodynamic integration (TI) to compute potentials of mean force (PMFs).  In adaptive biasing force (ABF) biases (\ref{sec:colvarbias_abf}) the same keywords are not recognized because their functionality is always included.
+
+\cvsubsec{Thermodynamic integration}{sec:colvarbias_ti}
+
+Most of the methods here implemented feature a different estimators of free-energies, either at run-time or with the use of post-processing tools.
+The specifics of each estimator are discussed in the documentation of each method.
+
+Additionally, most restraints (\ref{sec:colvarbias_harmonic}, \ref{sec:colvarbias_harmonic_walls}, \ref{sec:colvarbias_linear}, ...) as well as metadynamics (\ref{sec:colvarbias_meta}) offer the following optional keywords, allowing the use of thermodynamic integration (TI) to compute potentials of mean force (PMFs).  In adaptive biasing force (ABF) (\ref{sec:colvarbias_abf}) the same keywords are not recognized, because their functionality is always included.
 
 \begin{itemize}
 
 \item %
+  \labelkey{colvarbias|writeTIPMF}
   \keydef
     {writeTIPMF}{%
     colvar bias}{%
     Write the PMF computed by thermodynamic integration}{%
     boolean}{%
     \texttt{off}}{%
-    If the bias is applied to a variable that supports the calculation of total forces (see \refkey{outputTotalForce}{sec:colvar} and \ref{sec:cvc_sys_forces}), this option allows calculating the corresponding PMF by thermodynanic integration, and writing it to the file \outputName{}\texttt{.$<$name$>$.ti.pmf}, where \texttt{$<$name$>$} is the name of the bias.
+    If the bias is applied to a variable that supports the calculation of total forces (see \refkey{outputotalForce}{sec:colvar} and \ref{sec:cvc_sys_forces}), this option allows calculating the corresponding PMF by thermodynamic integration, and writing it to the file \outputName{}\texttt{.$<$name$>$.ti.pmf}, where \texttt{$<$name$>$} is the name of the bias and the contents of the file are in multicolumn text format (\ref{sec:colvar_multicolumn_grid}).
     The total force includes the forces applied to the variable by all bias, except those from this bias itself.
     If any bias applies time-dependent forces besides the one using this option, an error is raised.
 }
 
 
 \item %
+  \labelkey{colvarbias|writeTISamples}
   \keydef
     {writeTISamples}{%
     colvar bias}{%
@@ -3246,8 +3979,9 @@ In addition, restraint biases (\ref{sec:colvarbias_harmonic}, \ref{sec:colvarbia
     boolean}{%
     \texttt{off}}{%
     This option allows to compute total forces for use with thermodynamic integration as done by the keyword \refkey{writeTIPMF}{sec:colvarbias}.
-    The names of the files containing the variables' histogram and mean thermodyunamic forces are \outputName\texttt{.$<$name$>$.ti.count} and \outputName\texttt{.$<$name$>$.ti.grad}, respectively: these can be used by \texttt{abf\_integrate} or similar utility.
-    This option on by default when \texttt{writeTIPMF} is on, but can be enabled separately if the bias is applied to more than one variable, making not possible the direct integration of the PMF at runtime.
+    The names of the files containing the variables' histogram and mean thermodynamic forces are \outputName\texttt{.$<$name$>$.ti.count} and \outputName\texttt{.$<$name$>$.ti.force}, respectively: these can be used by \texttt{abf\_integrate} (see \ref{sec:colvarbias_abf_post}) or similar utility.
+    Note that because the \texttt{.force} file contains mean forces instead of free-energy gradients, \texttt{abf\_integrate $<$filename$>$ -s -1.0} should be used.
+    This option is on by default when \texttt{writeTIPMF} is on, but can be enabled separately if the bias is applied to more than one variable, making not possible the direct integration of the PMF at runtime.
     If any bias applies time-dependent forces besides the one using this option, an error is raised.
 }
 
@@ -3286,7 +4020,7 @@ $\bm{F}_\xi$ exerted on $\bm{\xi}$, taken over an iso-$\bm{\xi}$ surface:
 
 \begin{equation}
   \label{eq:gradient}
-  \bm{\nabla}_\xi A(\bm{\xi}) = \left\langle -\bm{F}_\xi \right\rangle_\bm{\xi}
+  \bm{\nabla}_\xi A(\bm{\xi}) = \left\langle -\bm{F}_\xi \right\rangle_{\bm{\xi}}
 \end{equation}
 
 Several formulae that take the form of~(\ref{eq:gradient}) have been
@@ -3296,7 +4030,7 @@ originating in a work by Ruiz-Montero et al.~\cite{Ruiz-Montero1997},
 generalized by den Otter~\cite{denOtter2000} and extended to multiple
 variables by Ciccotti et al.~\cite{Ciccotti2005}.  Consider a system
 subject to constraints of the form $\sigma_{k}(\vx) = 0$.  Let
-($\bm{v}_{i})_{i\in[1,n]}$ be arbitrarily chosen vector fields
+$(\bm{v}_{i})_{i\in[1,n]}$ be arbitrarily chosen vector fields
 ($\mathbb{R}^{3N}\rightarrow\mathbb{R}^{3N}$) verifying, for all $i$,
 $j$, and $k$:
 
@@ -3312,7 +4046,7 @@ then the following holds~\cite{Ciccotti2005}:
 \begin{equation}
 \label{eq:gradient_vector}
 \frac{\partial A}{\partial \xi_{i}} = \left\langle \bm{v}_{i} \cdot \gradx V
-- k_B T \gradx \cdot \bm{v}_{i} \right\rangle_\bm{\xi}
+- k_B T \gradx \cdot \bm{v}_{i} \right\rangle_{\bm{\xi}}
 \end{equation}
 
 where $V$ is the potential energy function.
@@ -3362,8 +4096,8 @@ by the adaptive bias, evolution of the system along $\bm{\xi}$
 is governed mainly by diffusion.
 Although this implementation of ABF can in principle be used in 
 arbitrary dimension, a higher-dimension collective variable space is likely
-to result in sampling difficulties.
-Most commonly, the number of variables is one or two.
+to be difficult to sample and visualize.
+Most commonly, the number of variables is one or two, sometimes three.
 
 
 \cvsubsubsec{ABF requirements on collective variables}{sec:colvarbias_abf_req}
@@ -3419,7 +4153,7 @@ The following specific parameters can be set in the ABF configuration block:
 
 \item \dupkey{name}{\texttt{abf}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{colvars}{\texttt{abf}}{sec:colvarbias}{biasing and analysis methods}
-%\item \dupkey{outputEnergy}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{outputEnergy}{\texttt{abf}}{sec:colvarbias}{biasing and analysis methods}
 
 \item \keydef{fullSamples}{\texttt{abf}}{%
     Number of samples in a bin prior
@@ -3555,14 +4289,15 @@ The following specific parameters can be set in the ABF configuration block:
 
 \cvsubsubsec{Output files}{sec:colvarbias_abf_output}
 
-The ABF bias produces the following files, all in multicolumn text format:
+The ABF bias produces the following files, all in multicolumn text format (\ref{sec:colvar_multicolumn_grid}):
 \begin{itemize}
 \item \outputName\texttt{.grad}: current estimate of the free energy gradient (grid),
   in multicolumn;
 \item \outputName\texttt{.count}: histogram of samples collected, on the same grid;
-\item \outputName\texttt{.pmf}: only for one-dimensional calculations, integrated
-  free energy profile or PMF.
+\item \outputName\texttt{.pmf}: integrated free energy profile or PMF (for dimensions 1, 2 or 3).
 \end{itemize}
+
+Also in the case of one-dimensional calculations, the ABF bias can report its current energy via \texttt{outputEnergy}; in higher dimensions, such computation is not implemented and the energy reported is zero.
 
 If several ABF biases are defined concurrently, their name is inserted to produce
 unique filenames for output, as in \outputName\texttt{.abf1.grad}.
@@ -3574,15 +4309,28 @@ ABF simulations have been run, the resulting data can be merged using the
 \texttt{inputPrefix} option described above (a run of 0 steps is enough).
 
 
-\cvsubsubsec{Post-processing: reconstructing a multidimensional free energy surface}{sec:colvarbias_abf_post}
+
+\cvsubsubsec{Multidimensional free energy surfaces}{sec:colvarbias_abf_post}
 
 If a one-dimensional calculation is performed, the estimated free energy
-gradient is automatically integrated and a potential of mean force is written
-under the file name \texttt{<outputName>.pmf}, in a plain text format that
-can be read by most data plotting and analysis programs (e.g. gnuplot).
+gradient is integrated using a simple rectangle rule.
+In dimension 2 or 3, it is calculated as the solution of a Poisson equation:
+\begin{equation}
+ \Delta A(\xi) = - \nabla \cdot \langle F_\xi \rangle
+\end{equation}
+wehere $\Delta A$ is the Laplacian of the free energy.
+The potential of mean force is written under the file name \texttt{<outputName>.pmf},
+in a plain text format (see \ref{sec:colvar_multicolumn_grid}) that can be read by most data plotting and analysis programs (e.g.{} Gnuplot).
+This applies periodic boundary conditions to periodic coordinates, and Neumann boundary
+conditions otherwise (imposed free energy gradient at the boundary of the domain).
+Note that the grid used for free energy discretization is extended by one point along
+non-periodic coordinates, but not along periodic coordinates.
 
-In dimension 2 or greater, integrating the discretized gradient becomes non-trivial. The
+In dimension 4 or greater, integrating the discretized gradient becomes non-trivial. The
 standalone utility \texttt{abf\_integrate} is provided to perform that task.
+Because 4D ABF calculations are uncommon, this tool is practically deprecated by
+the Poisson integration described above.
+
 \texttt{abf\_integrate} reads the gradient data and uses it to perform a Monte-Carlo (M-C)
 simulation in discretized collective variable space (specifically, on the same grid
 used by ABF to discretize the free energy gradient).
@@ -3606,6 +4354,7 @@ steps is chosen based on the size of the grid, and the integration runs until a 
 criterion is satisfied (based on the RMSD between the target gradient and the real PMF gradient)
 \item \texttt{-t}: temperature for M-C sampling (unrelated to the simulation temperature)
   [500~K]
+\item \texttt{-s}: scaling factor for the gradients; when using a histogram of total forces obtained from \refkey{outputTotalForce}{colvar|outputTotalForce} or the \texttt{.force} file written by \refkey{writeTISamples}{colvarbias|writeTISamples}, a scaling factor of -1 should be used [1.0]
 \item \texttt{-m}: use metadynamics-like biased sampling? (0 = false) [1]
 \item \texttt{-h}: increment for the history-dependent bias (``hill height'') [0.01~kcal/mol]
 \item \texttt{-f}: if non-zero, this factor is used to scale the increment stepwise in the 
@@ -3656,7 +4405,7 @@ $(k/2) (z - \lambda)^2$.
 Under eABF dynamics, the adaptive bias on $\lambda$ is
 the running estimate of the average spring force:
 \begin{equation}
-F^\mathrm{bias}(\lambda^*) = \left\langle k(\lambda - z) \right\rangle_{\lambda^*}
+F^{\mathrm{bias}}(\lambda^{*}) = \left\langle k(\lambda{} - z) \right\rangle_{\lambda^{*}}
 \end{equation}
 where the angle brackets indicate a canonical average conditioned by $\lambda=\lambda^*$.
 At long simulation times, eABF produces a flat histogram of the extended variable $\lambda$,
@@ -3714,10 +4463,19 @@ The same information is always included in the colvars state file, which is suff
 for restarting an eABF simulation.
 These separate file is only useful when joining adjacent windows from a stratified
 eABF simulation, either to continue the simulation in a broader window or to
-compute a CZAR estimate of the PMF over the full range of the coordinate(s).}
+compute a CZAR estimate of the PMF over the full range of the coordinate(s).
+\textbf{Important warning.} Unbiased free-energy estimators from eABF dynamics rely
+on some form of sampling histogram. When running stratified (windowed) calculations
+this histogram becomes discontinuous, and as a result the free energy gradient estimated
+by CZAR is inaccurate at the window boundary, resulting in visible "blips" in the PMF.
+As a workaround, we recommend manually replacing the two
+free energy gradient values at the boundary, either with the ABF values from .grad files
+(accurate in the limit of tight coupling), or with values interpolated for the neighboring
+values of the CZAR gradient.
+}
 \end{itemize}
 
-Similar to ABF, the CZAR estimator produces two output files in multicolumn text format:
+Similar to ABF, the CZAR estimator produces two output files in multicolumn text format (\ref{sec:colvar_multicolumn_grid}):
 \begin{itemize}
 \item \outputName\texttt{.czar.grad}: current estimate of the free energy gradient (grid),
   in multicolumn;
@@ -3797,6 +4555,7 @@ This option can be utilized in both eABF and classical ABF simulations, e.g.,
 {\ttfamily ./eabf.tcl -mergesplitwindow merge abf0 abf1 abf2 abf3}.
 }
 
+
 \cvsubsec{Metadynamics}{sec:colvarbias_meta}
 
 The metadynamics method uses a history-dependent potential \cite{Laio2002} that generalizes to any type of colvars the conformational flooding \cite{Grubmuller1995} and local elevation \cite{Huber1994} methods,  originally formulated to use as colvars the principal components of a covariance matrix or a set of dihedral  angles, respectively.
@@ -3816,7 +4575,7 @@ $V_{\mathrm{meta}}$ is constructed as a sum of $N_{\mathrm{cv}}$-dimensional rep
 During the simulation, the system evolves towards the nearest minimum of the ``effective'' potential of mean force $\tilde{A}(\bm{\xi})$, which is the sum of the ``real'' underlying potential of mean force $A(\bm{\xi})$  and the the metadynamics potential, $V_{\mathrm{meta}}(\bm{\xi})$.
 Therefore, at any given time the probability of observing the configuration $\bm{\xi^{*}}$ is proportional to $\exp\left(-\tilde{A}(\bm{\xi^{*}})/\kappa_{\mathrm{B}}T\right)$: this is also the probability that a new Gaussian ``hill'' is added at that configuration.
 If the simulation is run for a sufficiently long time, each local minimum is canceled out by the sum of the Gaussian ``hills''.
-At that stage the ``effective'' potential of mean force $\tilde{A}(\bm{\xi})$ is constant, and $-V_{\mathrm{meta}}(\bm{\xi})$ is an accurate estimator of the ``real'' potential of mean force $A(\bm{\xi})$,  save for an additive constant:
+At that stage the ``effective'' potential of mean force $\tilde{A}(\bm{\xi})$ is constant, and $-V_{\mathrm{meta}}(\bm{\xi})$ is an estimator of the ``real'' potential of mean force $A(\bm{\xi})$,  save for an additive constant:
 \begin{equation}
   \label{eq:colvars_meta_fes}
   A(\bm{\xi}) \; \simeq \; {
@@ -3824,23 +4583,42 @@ At that stage the ``effective'' potential of mean force $\tilde{A}(\bm{\xi})$ is
   }
 \end{equation}
 
+Such estimate of the free energy can be provided by enabling \texttt{writeFreeEnergyFile}.
 Assuming that the set of collective variables includes all relevant degrees of freedom, the predicted error of the estimate is a simple function of the correlation times of the colvars $\tau_{\xi_{i}}$, and of the user-defined parameters $W$, $\sigma_{\xi_{i}}$ and $\delta{}t$ \cite{Bussi2006}. 
 In typical applications, a good rule of thumb can be to choose the ratio $W/\delta{}t$ much smaller than $\kappa_{\mathrm{B}}T/\tau_{\bm{\xi}}$, where $\tau_{\bm{\xi}}$ is the longest among $\bm{\xi}$'s correlation times: $\sigma_{\xi_{i}}$ then dictates the resolution of the calculated PMF.
 
-%Given $\Delta\xi$ the length of the relevant region of the colvar $\xi$, and $A^{*}$ the highest free energy that needs to be sampled (e.g.~the higher transition state free energy), the upper bound for the required simulation time is of the order of $N_{\mathrm{s}}(\xi) = (A^{*}\Delta\xi)/(W2\sigma_{\xi})$ multiples of  $\delta{}t$.
-%In calculations with multiple colvars $\bm{\xi}$, the upper bound is then 
-%$N_{\mathrm{s}}(\xi_{1}) \times N_{\mathrm{s}}(\xi_{2}) \times \ldots \times N_{\mathrm{s}}(\xi_{N_{\mathrm{cv}}}) \times \delta{}t$.
+If the metadynamics parameters are chosen correctly, after an equilibration time, $t_{e}$, the estimator provided 
+by eq. \ref{eq:colvars_meta_fes} oscillates on time around the ``real'' free energy, thereby a better estimate of the latter
+ can be obtained as the time average of the bias potential after $t_{e}$ \cite{Marinelli2009,Crespo2010}:
 
-To enable a metadynamics calculation, a \texttt{metadynamics} block must be defined in the Colvars configuration file. 
-Its mandatory keywords are \texttt{colvars}, which lists all the variables involved, and \texttt{hillWeight}, which specifies the weight parameter $W$.
-The parameters $\delta{}t$ and $\sigma_{\xi}$ specified by the optional keywords \texttt{newHillFrequency} and \texttt{hillWidth}:
+\begin{equation}
+  \label{eq:colvars_meta_fes_av}
+  A(\bm{\xi}) \; = \; {-\frac{1}{t_{tot}-t_{e}} \int_{t_{e}}^{t_{tot}} {
+    V_{\mathrm{meta}}(\bm{\xi},t)dt}
+  }
+\end{equation}
+
+where $t_{e}$ is the time after which the bias potential grows (approximately) evenly during the simulation 
+and $t_{tot}$ is the total simulation time. The free energy calculated according to eq. \ref{eq:colvars_meta_fes_av} 
+can thus be obtained averaging on time mutiple time-dependent free energy estimates, that can be printed out through 
+the keyword \texttt{keepFreeEnergyFiles}. An alternative is to obtain the free energy profiles by summing 
+the hills added during the simulation; the hills trajectory can be printed out by enabling the option \texttt{writeHillsTrajectory}.
+
+\cvsubsubsec{Basic syntax}{sec:colvarbias_meta_basics}
+
+To enable a metadynamics calculation, a \texttt{metadynamics \{...\}} block must be defined in the Colvars configuration file.
+Its mandatory keywords are \refkey{colvars}{colvarbias|colvars}, which lists all the variables involved, \refkey{hillWeight}{metadynamics|hillWeight}, which specifies the weight parameter $W$, and \refkey{hillWidth}{metadynamics|hillWidth}, which defines the Gaussian width $2\sigma_{\xi}$ as a number of grid points.
+
 \begin{itemize}
 
 \item \dupkey{name}{\texttt{metadynamics}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{colvars}{\texttt{metadynamics}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{outputEnergy}{\texttt{metadynamics}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{writeTIPMF}{\texttt{metadynamics}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{writeTISamples}{\texttt{metadynamics}}{sec:colvarbias}{biasing and analysis methods}
 
 \item %
+  \labelkey{metadynamics|hillWeight}
   \key
     {hillWeight}{%
     \texttt{metadynamics}}{%
@@ -3850,36 +4628,36 @@ The parameters $\delta{}t$ and $\sigma_{\xi}$ specified by the optional keywords
     Lower values provide more accurate sampling of the system's degrees of freedom at the price of longer simulation times to complete a PMF calculation based on metadynamics.}
 
 \item %
+  \labelkey{metadynamics|hillWidth}
+  \key
+    {hillWidth}{%
+    \texttt{metadynamics}}{%
+    Width of a Gaussian hill, measured in number of grid points}{%
+    positive decimal}{%
+    The value of this keyword is the Gaussian width $2\sigma_{\xi_{i}}$, expressed in number of grid points: the grid spacing is determined by \refkey{width}{colvar|width}.
+    The values of the parameter $\sigma_{\xi_{i}}$ for each variable $\xi_{i}$ inits physical units are printed by \MDENGINE{} at initialization time.
+    Values between 1 and 3 are recommended: smaller values fail to adequately interpolate each Gaussian \cite{Fiorin2013}, while larger values may be unable to account for steep free-energy gradients.}
+
+\item %
+  \labelkey{metadynamics|newHillFrequency}
   \keydef
     {newHillFrequency}{%
     \texttt{metadynamics}}{%
     Frequency of hill creation}{%
     positive integer}{%
     \texttt{1000}}{%
-    This option sets the number of integration steps after which a new
-    hill is added to the metadynamics potential.  Its value determines
-    the parameter $\delta{}t$ in eq.~\ref{eq:colvars_meta_pot}.  Higher
-    values provide more accurate sampling at the price of longer
-    simulation times to complete a PMF calculation.}
+    This option sets the number of steps after which a new Gaussian hill is added to the metadynamics potential.
+    The product of this number and the integration time-step defines the parameter $\delta{}t$ in eq.~\ref{eq:colvars_meta_pot}.
+    Higher values provide more accurate statistical sampling, at the price of longer simulation times to complete a PMF calculation.
+    \cvvmdonly{When analyzing data from a previous simulation in VMD, the metadynamics potential does not need to be updated, and it is useful to set this number to 0.}}
 
-\item %
-  \keydef
-    {hillWidth}{%
-    \texttt{metadynamics}}{%
-    Relative width of a Gaussian hill with respect to the colvar's width}{%
-    positive decimal}{%
-    $\sqrt{2\pi}/2$}{%
-    The Gaussian width along each colvar, $2\sigma_{\xi_{i}}$, is set as the product between this number and the colvar's parameter $w_{i}$ given by \refkey{width}{colvar|width}; such product is printed in the standard output of \MDENGINE{}.
-    The default value of this number gives a Gaussian hill function whose volume is equal to the product of $\prod_{i}w_{i}$, the volume of one \texttt{histogram} bin (see \ref{sec:colvarbias_histogram}), and $W$.
-    \textbf{Tip:} \emph{use this property to estimate the fraction of colvar space covered by the Gaussian bias within a given simulation time.}
-    When \texttt{useGrids} is on, the default value also gives acceptable discretization errors~\cite{Fiorin2013}: for smoother visualization, this parameter may be increased and the \texttt{width} $w_{i}$ decreased in the same proportion.
-    \textbf{Note:} \emph{values smaller than 1 are not recommended}.}
 \end{itemize}
 
 
 \cvsubsubsec{Output files}{sec:colvarbias_meta_output}
-When interpolating grids are enabled (default behavior), the PMF is written every \texttt{colvarsRestartFrequency} steps to the file \outputName\texttt{.pmf}.
-The following two options allow to control this behavior and to visually track statistical convergence:
+
+When interpolating grids are enabled (default behavior), the PMF is written by default every \texttt{colvarsRestartFrequency} steps to the file \outputName\texttt{.pmf} in multicolumn text format (\ref{sec:colvar_multicolumn_grid}).
+The following two options allow to disable or control this behavior and to track statistical convergence:
 
 \begin{itemize}
 
@@ -3906,7 +4684,7 @@ The following two options allow to control this behavior and to visually track s
 \end{itemize}
 
 \textbf{Note:} when Gaussian hills are deposited near the \refkey{lowerBoundary}{colvar|lowerBoundary} or \refkey{upperBoundary}{colvar|upperBoundary} and interpolating grids are used (default behavior), their truncation can give rise to accumulating errors.
-In these cases, as a measure of fault-tolerance all Gaussian hills near the boundaries are included in the output state file, and are recalculated analytically whenever the colvar falls outside the grid's boundaries.
+In these cases, as a measure of fault-tolerance all Gaussian hills near the boundaries are included in the output state file, and are recalculated analytically whenever the variable falls outside the grid's boundaries.
 (Such measure protects the accuracy of the calculation, and can only be disabled by \texttt{hardLowerBoundary} or \texttt{hardUpperBoundary}.)
 To avoid gradual loss of performance and growth of the state file, either one of the following solutions is recommended:
 \begin{itemize}
@@ -3915,7 +4693,7 @@ To avoid gradual loss of performance and growth of the state file, either one of
 \end{itemize}
 
 
-\cvsubsubsec{Performance tuning}{sec:colvarbias_meta_performance}
+\cvsubsubsec{Performance optimization}{sec:colvarbias_meta_performance}
 The following options control the computational cost of metadynamics calculations, but do not affect results.
 Default values are chosen to minimize such cost with no loss of accuracy.
 
@@ -3954,6 +4732,133 @@ Default values are chosen to minimize such cost with no loss of accuracy.
 \end{itemize}
 
 
+\cvsubsubsec{Ensemble-Biased Metadynamics}{sec:colvarbias_ebmeta}
+
+The ensemble-biased metadynamics (EBMetaD) approach \cite{Marinelli2015} is designed to reproduce a target probability distribution along selected collective variables.
+Standard metadynamics can be seen as a special case of EBMetaD with a flat distribution as target.
+This is achieved by weighing the Gaussian functions used in the metadynamics approach by the inverse of the target probability distribution:
+\begin{equation}
+  \label{eq:colvars_ebmeta_pot}
+  V_{\mathrm{EBmetaD}}(\bm{\xi}(t)) \; = \; {
+    \sum_{t' = \delta{}t, \\ 2\delta{}t, \\ \ldots}^{t'<t} \frac{W}{\exp\left(S_{\rho}\right)\rho_{exp}(\bm{\xi}(t'))} \: {
+      \prod_{i = 1}^{N_{\mathrm{cv}}}
+      \exp\left(-\frac{(\xi_{i}(t)-\xi_{i}(t'))^{2}}{2\sigma_{\xi_{i}}^{2}}\right)
+    }
+  }\mathrm{,}
+\end{equation}
+where $\rho_{exp}(\bm{\xi})$ is the target probability distribution and $S_{\rho} = - \int  \rho_{exp}(\bm{\xi}) \log \rho_{exp}(\bm{\xi})  \, \mathrm{d}\bm{\xi}$ its corresponding differential entropy. 
+The method is designed so that during the simulation the resulting distribution of the collective variable $\bm{\xi}$ converges to $\rho_{exp}(\bm{\xi})$. 
+A practical application of EBMetaD is to reproduce an ``experimental'' probability distribution, for example the distance distribution between spectroscopic labels inferred from F\"orster resonance energy transfer (FRET) or double electron-electron resonance (DEER) experiments \cite{Marinelli2015}.
+  
+The PMF along $\xi$ can be estimated from the bias potential and the target ditribution \cite{Marinelli2015}:
+\begin{equation}
+  \label{eq:colvars_ebmeta_fes}
+  A(\bm{\xi}) \; \simeq \; {
+    -V_{\mathrm{EBmetaD}}(\bm{\xi}) - \kappa_{\mathrm{B}}T \log \rho_{exp}(\bm{\xi})
+  }
+\end{equation}
+and obtained by enabling \texttt{writeFreeEnergyFile}.
+Similarly to eq.{} \ref{eq:colvars_meta_fes_av}, a more accurate estimate of the free energy can be obtained by averaging (after an equilibration time) multiple time-dependent free energy estimates (see \texttt{keepFreeEnergyFiles}).
+  
+The following additional options define the configuration for the ensemble-biased metadynamics approach:
+\begin{itemize}
+\item %
+  \labelkey{metadynamics|ebMeta}
+  \keydef
+    {ebMeta}{%
+    \texttt{metadynamics}}{%
+    Perform ensemble-biased metadynamics}{%
+    boolean}{%
+    \texttt{off}}{%
+    If enabled, this flag activates the ensemble-biased metadynamics as
+    described by Marinelli et al.\cite{Marinelli2015}. The target distribution file,
+    \texttt{targetdistfile}, is then required. The keywords \texttt{lowerBoundary}, \texttt{upperBoundary}
+    and \texttt{width} for the respective variables are also needed to set the binning (grid) of the target distribution file.}
+
+\item %
+  \labelkey{metadynamics|targetDistFile}
+  \key
+    {targetDistFile}{%
+    \texttt{metadynamics}}{%
+    Target probability distribution file for ensemble-biased metadynamics}{%
+    multicolumn text file}{%
+    This file provides the target probability distribution, $\rho_{exp}(\bm{\xi})$, reported in eq.{} \ref{eq:colvars_ebmeta_pot}. The latter distribution must be a tabulated function provided in a multicolumn text format (see \ref{sec:colvar_multicolumn_grid}).
+    The provided distribution is then normalized.
+  }
+
+\item %
+  \key
+    {ebMetaEquilSteps}{%
+    \texttt{metadynamics}}{%
+    Number of equilibration steps for ensemble-biased metadynamics}{%
+    positive integer}{%
+    The EBMetaD approach may introduce large hills in regions with small values of the target probability distribution (eq.{} \ref{eq:colvars_ebmeta_pot}). 
+    This happens, for example, if the probability distribution sampled by a conventional molecular dynamics simulation is significantly different from the target distribution.
+    This may lead to instabilities at the beginning of the simulation related to large biasing forces.
+    In this case, it is useful to introduce an equilibration stage in which the bias potential gradually switches from standard metadynamics (eq.{} \ref{eq:colvars_meta_pot}) to EBmetaD (eq.{} \ref{eq:colvars_ebmeta_pot}) as $\lambda V_{\mathrm{meta}}(\bm{\xi})+(1-\lambda)V_{\mathrm{EBmetaD}}(\bm{\xi})$, where $\lambda=(\mathtt{ebMetaEquilSteps}-\mathtt{step})/\mathtt{ebMetaEquilSteps}$ and \texttt{step} is the current simulation step number.}
+
+\item %
+  \key
+    {targetDistMinVal}{%
+    \texttt{metadynamics}}{%
+    Minimum value of the target distribution in reference to its \texttt{maximum value}}{%
+    positive decimal}{%
+    It is useful to set a minimum value of the target probability distribution to avoid values of the latter that are nearly zero, leading to very large hills. 
+    This parameter sets the minimum value of the target probability distribution that is expressed as a fraction of its \texttt{maximum value}: \texttt{minumum value = } 
+    \texttt{maximum value}\texttt{ X }\texttt{targetDistMinVal}. This implies that 0 \texttt{<} \texttt{targetDistMinVal} \texttt{<} 1 and its default value is set to 1/1000000.
+    To avoid divisions by zero (see eq.{} \ref{eq:colvars_ebmeta_pot}), if \texttt{targetDistMinVal} is set as zero, values of $\rho_{exp}$ equal to zero are replaced by the 
+    smallest positive value read in the same file.
+}
+
+\end{itemize}
+
+As with standard metadynamics, multidimensional probability distributions can be targeted using a single \texttt{metadynamics} block using multiple \texttt{colvars} and a multidimensional target distribution file (see \ref{sec:colvar_multicolumn_grid}).
+Instead, multiple probability distributions on different variables can be targeted separately in the same simulation by introducing multiple \texttt{metadynamics} blocks with the \texttt{ebMeta} option.
+\\
+
+\noindent\textbf{Example:} EBmetaD configuration for a single variable.
+{\noindent\ttfamily
+\\
+\-colvar \{\\
+\-\-~~name r \\
+\-\-~~distance \{\\
+\-\-~~~~group1 \{ atomNumbers 991 992 \}\\
+\-\-~~~~group2 \{ atomNumbers 1762 1763 \}\\
+\-\-~~\}\\
+\-\-~~lowerBoundary    0.0 \\
+\-\-~~upperBoundary  100.0 \\
+\-\-~~width            0.1 \\
+\-\}\\
+\\
+\-metadynamics \{\\
+\-\-~~name              ebmeta\\
+\-\-~~colvars           r\\
+\-\-~~hillWeight        0.01\\
+\-\-~~hillWidth         3.0\\
+\-\-~~ebMeta            on\\
+\-\-~~targetDistFile    targetdist1.dat\\
+\-\-~~ebMetaEquilSteps  500000\\
+\-\}\\
+}
+
+\noindent{}where \texttt{targetdist1.dat} is a text file in ``multicolumn'' format (\ref{sec:colvar_multicolumn_grid}) with the same \texttt{width} as the variable \texttt{r} (0.1 in this case):\\
+\begin{tabular}{l l l l l l}
+\\
+\# & \texttt{1} & & & & \\
+\# & \texttt{0.0} & \texttt{0.1} & \texttt{1000} & \texttt{0} \\
+\\
+& \texttt{ 0.05} & \texttt{0.0012} \\
+& \texttt{ 0.15} & \texttt{0.0014} \\
+& \ldots & \ldots\\
+& \texttt{99.95} &  \texttt{0.0010} \\
+\\
+\end{tabular}
+
+\textbf{Tip:} Besides setting a meaninful value for \texttt{targetDistMinVal}, the exploration of unphysically low values of the target distribution (which would lead to very large hills and possibly numerical instabilities) can be also prevented by restricting sampling to a given interval, using e.g.{} \texttt{harmonicWalls} restraint (\ref{sec:colvarbias_harmonic_walls}).
+
+
+
+
 \cvsubsubsec{Well-tempered metadynamics}{sec:colvarbias_well_tempered}
 The following options define the configuration for the ``well-tempered'' metadynamics approach \cite{Barducci2008}:
 
@@ -3988,9 +4893,40 @@ The following options define the configuration for the ``well-tempered'' metadyn
 \end{itemize}
 
 
-\cvsubsubsec{Multiple-replicas metadynamics}{sec:colvarbias_meta_mr}
-The following options define metadynamics calculations with more than
-one replica:
+\cvsubsubsec{Multiple-walker metadynamics}{sec:colvarbias_meta_mr}
+Metadynamics calculations can be performed concurrently by multiple replicas that share a common history.
+This variant of the method is called multiple-walker metadynamics \cite{Raiteri2006}: the Gaussian hills of all replicas are periodically combined into a single biasing potential, intended to converge to a single PMF.
+
+In the implementation here described~\cite{Fiorin2013}, replicas communicate through files.
+This arrangement allows launching the replicas either (1) as a bundle (i.e.{} a single job in a cluster's queueing system) or (2) as fully independent runs (i.e.{} as separate jobs for the queueing system).
+One advantage of the use case (1) is that an identical Colvars configuration can be used for all replicas (otherwise, \texttt{replicaID} needs to be manually set to a different string for each replica).
+However, the use case (2) is less demanding in terms of high-performance computing resources: a typical scenario would be a computer cluster (including virtual servers from a cloud provider) where not all nodes are connected to each other at high speed, and thus each replica runs on a small group of nodes or a single node.
+
+Whichever way the replicas are started (coupled or not), a shared filesystem is needed so that each replica can read the files created by the others: paths to these files are stored in the shared file \texttt{replicasRegistry}.
+This file, and those listed in it, are read every \texttt{replicaUpdateFrequency} steps.
+Each time the Colvars state file is written (for example, \texttt{colvarsRestartFrequency} steps), the file named:\\
+\outputName\texttt{.colvars.}\emph{name}\texttt{.}\emph{replicaID}\texttt{.state}\\
+is written as well; this file contains only the state of the metadynamics bias, which the other replicas will read in turn.
+In between the times when this file is modified/replaced, new hills are also temporarily written to the file named:\\
+\outputName\texttt{.colvars.}\emph{name}\texttt{.}\emph{replicaID}\texttt{.hills}\\
+Both files are only used for communication, and may be deleted after the replica begins writing files with a new \outputName.\\
+
+\noindent\textbf{Example:} Multiple-walker metadynamics with file-based communication.\\
+{\noindent\ttfamily
+\-metadynamics \{\\
+\-\-~~name mymtd\\
+\-\-~~colvars x\\
+\-\-~~hillWeight 0.001\\
+\-\-~~newHillFrequency 1000\\
+\-\-~~hillWidth 3.0\\
+\-\-~~\\
+\-\-~~multipleReplicas       on\\
+\-\-~~replicasRegistry       /shared-folder/mymtd-replicas.txt\\
+\-\-~~replicaUpdateFrequency 50000  \# Best if larger than newHillFrequency\\
+\-\}\\
+}
+
+The following are the multiple-walkers related options:
 
 \begin{itemize}
 
@@ -3998,91 +4934,54 @@ one replica:
   \keydef
     {multipleReplicas}{%
     \texttt{metadynamics}}{%
-    Multiple replicas metadynamics}{%
+    Enable multiple-walker metadynamics}{%
     boolean}{%
     \texttt{off}}{%
-    If this option is \texttt{on}, multiple (independent) replica of the
-    same system can be run at the same time, and their hills will be
-    combined to obtain a single PMF \cite{Raiteri2005}.  Replicas are
-    identified by the value of \texttt{replicaID}.  Communication is
-    done by files: each replica must be able to read the files
-    created by the others, whose paths are communicated through the file
-    \texttt{replicasRegistry}.  This file, and the files listed in it,
-    are read every \texttt{replicaUpdateFrequency} steps.  Every time
-    the colvars state file is written
-    (\texttt{colvarsRestartFrequency}), the file:\\
-    ``\outputName\texttt{.colvars.}\emph{name}\texttt{.}\emph{replicaID}\texttt{.state}''
-    is also written, containing
-    the state of the metadynamics bias for \texttt{replicaID}.  In the
-    time steps between \texttt{colvarsRestartFrequency}, new hills are
-    temporarily written to the file:\\
-    ``\outputName\texttt{.colvars.}\emph{name}\texttt{.}\emph{replicaID}\texttt{.hills}'',
-    which serves as communication
-    buffer.  These files are only required for communication, and may be
-    deleted after a new MD run is started with a different
-    \texttt{outputName}.  }
+    This option turns on multiple-walker communication between replicas. }
   
 \item %
   \key
-    {replicaID}{%
-    \texttt{metadynamics}}{%
-    Set the identifier for this replica}{%
-    string}{%
-    If \texttt{multipleReplicas} is \texttt{on}, this option sets a
-    unique identifier for this replica.  All replicas should use
-    identical collective variable configurations, except for the value
-    of this option.}
-  
-\item %
-  \keydef
     {replicasRegistry}{%
     \texttt{metadynamics}}{%
     Multiple replicas database file}{%
     UNIX filename}{%
-    ``\emph{name}\texttt{.replica\_files.txt}''}{%
-    If \texttt{multipleReplicas} is \texttt{on}, this option sets the
-    path to the replicas' database file.
-    % Each line in this file
-    % contains one \texttt{replicaID}, and the absolute path to a file
-    % listing the state file and the hills-file for that replica (see
-    % \texttt{multipleReplicas}).  All these files are generated
-    % automatically, but it is advisable that at least
-    % \texttt{replicasRegistry} is written by hand to avoid race
-    % conditions (multiple replicas writing concurrently to the same
-    % file).
+    If \texttt{multipleReplicas} is \texttt{on}, this option sets the path to the replicas' shared database file.
+    It is best to use an absolute path (especially when running individual replicas in separate folders).
+  }
+
+\item %
+  \key
+    {replicaUpdateFrequency}{%
+    \texttt{metadynamics}}{%
+    How often hills are shared between replicas}{%
+    positive integer}{%
+    If \texttt{multipleReplicas} is \texttt{on}, this option sets the number of steps after which each replica tries to read the other replicas' files.
+    On a networked file system, it is best to use a number of steps that corresponds to at least a minute of wall time.
   }
 
 \item %
   \keydef
-    {replicaUpdateFrequency}{%
+    {replicaID}{%
     \texttt{metadynamics}}{%
-    How often hills are communicated between
-    replicas}{%
-    positive integer}{%
-    \texttt{newHillFrequency}}{%
-    If \texttt{multipleReplicas} is \texttt{on}, this option sets the
-    number of steps after which each replica (re)reads the other
-    replicas' files.  The lowest meaningful value of this number is
-    \texttt{newHillFrequency}.  If access to the file system is
-    significantly affecting the simulation performance, this number can
-    be increased, at the price of reduced synchronization between
-    replicas.  Values higher than \texttt{colvarsRestartFrequency} may
-    not improve performance significantly.}
+    Set the identifier for this replica}{%
+    string}{%
+    replica index (only if a shared communicator is used)}{%
+    If \texttt{multipleReplicas} is \texttt{on}, this option sets a unique identifier for this replicas.
+    When the replicas are launched in a single command (i.e.{} they share a parallel communicator and are tightly synchronized) this value is optional, and defaults to the replica's numeric index (starting at zero).
+    However, when the replicas are launched as independent runs this option is required.
+}
 
 \item %
   \keydef
-    {dumpPartialFreeEnergyFile}{%
+    {writePartialFreeEnergyFile}{%
     \texttt{metadynamics}}{%
     Periodically write the contribution to the
     PMF from this replica}{%
     boolean}{%
-    \texttt{on}}{%
-    When \texttt{multipleReplicas} is \texttt{on}, the file
-    \outputName\texttt{.pmf} contains the combined PMF from all
-    replicas, provided that \texttt{useGrids} is \texttt{on} (default).
-    Enabling this option produces an additional file
-    \outputName\texttt{.partial.pmf}, which can be useful to
-    quickly monitor the contribution of each replica to the PMF.}
+    \texttt{off}}{%
+    If \texttt{multipleReplicas} is \texttt{on}, enabling this option produces  an additional file \outputName\texttt{.partial.pmf}, which can be useful to monitor the contribution of each replica to the total PMF (which is written to the file \outputName\texttt{.pmf}).
+    \textbf{Note:} the name of this file is chosen for consistency and convenience, \emph{but its content is not a PMF} and it is not expected to converge, even if the total PMF does.
+}
 
 \end{itemize}
 
@@ -4090,30 +4989,6 @@ one replica:
 \cvsubsubsec{Compatibility and post-processing}{sec:colvarbias_meta_post}
 The following options may be useful only for applications that go beyond the calculation of a PMF by metadynamics:
 \begin{itemize}
-
-\item %
-  \keydef
-    {name}{%
-    \texttt{metadynamics}}{%
-    Name of this metadynamics instance}{%
-    string}{%
-    ``\texttt{meta}'' + rank number}{%
-    This option sets the name for this metadynamics instance.  While it
-    is not advisable to use more than one metadynamics instance within
-    the same simulation, this allows to distinguish each instance from
-    the others.  If there is more than one metadynamics instance, the
-    name of this bias is included in the metadynamics output file names, such as e.g.~the \texttt{.pmf} file.}
-
-% \item %
-%   \keydef
-%     {gridsUpdateFrequency}{%
-%     \texttt{metadynamics}}{%
-%  Frequency of update of the grids}{%
-%     positive integer}{%
-%     \texttt{newHillFrequency}}{%
-%     When \texttt{useGrids} is \texttt{on}, all the newly created hills
-%     are projected onto the two grids every
-%     \texttt{gridsUpdateFrequency} steps.}
 
 \item %
   \keydef
@@ -4137,11 +5012,11 @@ The following options may be useful only for applications that go beyond the cal
     boolean}{%
     \texttt{off}}{%
     If this option is \texttt{on}, a logfile is written by the
-    \texttt{metadynamics} bias, with the name
-    ``\outputName\texttt{.colvars.$<$name$>$.hills.traj}'', which
+    \texttt{metadynamics} bias, with the name:\\
+    ``\outputName\texttt{.colvars.$<$name$>$.hills.traj}'',\\ which
     can be useful to follow the time series of the hills.  When
-    \texttt{multipleReplicas} is \texttt{on}, its name changes to\\
-    ``\outputName\texttt{.colvars.$<$name$>$.$<$replicaID$>$.hills.traj}''.
+    \texttt{multipleReplicas} is \texttt{on}, its name changes to:\\
+    ``\outputName\texttt{.colvars.$<$name$>$.$<$replicaID$>$.hills.traj}''.\\
     This file can be used to quickly visualize the positions of all
     added hills, in case \texttt{newHillFrequency} does not coincide
     with \texttt{colvarsRestartFrequency}.}
@@ -4165,42 +5040,40 @@ Note that this differs from harmonic bond and angle potentials in common
 force fields, where the factor of one half is typically omitted,
 resulting in a non-standard definition of the force constant.
 
-The formula above includes the characteristic length scale $w_{\xi}$ of the colvar $\xi$ (keyword \refkey{lowerBoundary}{colvar|lowerBoundary}) to allow the definition of a multi-dimensional restraint with a unified force constant:
+The formula above includes the characteristic length scale $w_{\xi}$ of the colvar $\xi$ (keyword \refkey{width}{colvar|width}) to allow the definition of a multi-dimensional restraint with a unified force constant:
 \begin{equation}
   \label{eq:colvarbias_harmonic_multi}
   V(\xi_{1}, \ldots, \xi_{M}) = \frac{1}{2} k \sum_{i=1}^{M} \left(\frac{\xi_{i} - \xi_0}{w_{\xi}}\right)^2
 \end{equation}
 
-If one-dimensional or homogeneous multi-dimensional restraints are defined, and there are no other uses for the parameter $w_{\xi}$, \emph{the parameter} \texttt{width} \emph{can be left at its default value of $1$}.
-
+If one-dimensional or homogeneous multi-dimensional restraints are defined, and there are no other uses for the parameter $w_{\xi}$, \texttt{width} \emph{can be left at its default value of $1$}.
 
 \cvnamdonly{The restraint energy is reported by NAMD under the MISC title.}
-A harmonic restraint is set up by a \texttt{harmonic~\{...\}}
-block, which may contain (in addition to the standard option
-\texttt{colvars}) the following keywords:
+
+A harmonic restraint is set up by a \texttt{harmonic~\{...\}} block, which may contain the following keywords:
 \begin{itemize}
 
 \item \dupkey{name}{\texttt{harmonic}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{colvars}{\texttt{harmonic}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{outputEnergy}{\texttt{harmonic}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{writeTIPMF}{\texttt{harmonic}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{writeTISamples}{\texttt{harmonic}}{sec:colvarbias}{biasing and analysis methods}
 
 \item %
+  \labelkey{harmonic|forceConstant}
   \keydef
     {forceConstant}{%
     \texttt{harmonic}}{%
     Scaled force constant (\cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
     positive decimal}{%
     \texttt{1.0}}{%
-    This defines a scaled force constant $k$ for the harmonic potential (eq.~\ref{eq:colvarbias_harmonic_multi}).
-    To ensure consistency for multidimensional restraints, it is
-    divided internally by the square of the specific \texttt{width}
-    for each colvar involved (which is 1 by default), so that all colvars
-    are effectively dimensionless and of commensurate size.
-    For instance, setting a scaled force constant of 10~kcal/mol acting
-    on two colvars, an angle with a \texttt{width} of 5~degrees and a distance
-    with a width of 0.5~\AA{}, will apply actual force constants of
-    0.4~kcal/mol$\times$degree$^{-2}$ for the angle and
-    40~kcal/mol/\AA$^2$ for the distance.}
+    This option defines a \emph{scaled} force constant $k$ for the harmonic potential (eq.~\ref{eq:colvarbias_harmonic_multi}).
+    To ensure consistency for multidimensional restraints, it is divided internally by the square of the specific \texttt{width} of each variable (which is 1 by default).
+    This makes all values effectively dimensionless and of commensurate size.
+    For instance, if this force constant is set to the thermal energy $\kappa_{\mathrm{B}}T$ (equal to $RT$ if molar units are used), then the amplitude of the thermal fluctuations of each variable $\xi$ will be on the order of its \texttt{width}, $w_{\xi}$.
+    This can be used to estimate the optimal spacing of umbrella-sampling windows (under the assumption that the force constant is larger than the curvature of the underlying free energy).
+    \emph{The values of the actual force constants $k/w_{\xi}^2$ are always printed when the restraint is defined.}
+  }
 
 \item %
   \labelkey{harmonic|centers}
@@ -4432,16 +5305,18 @@ The \texttt{harmonicWalls~\{...\}} bias is closely related to the harmonic bias 
     \end{array}
   \right.
 \end{equation}
-where $\xi_{\mathrm{lower}}$ and $\xi_{\mathrm{upper}}$ are the lower and upper wall thresholds, respectively; \emph{(ii)} because an interval between two walls is defined, only scalar variables can be used (but any number of variables can be defined, and the wall bias is intrinsically multi-dimensional).
+where $\xi_{\mathrm{lower}}$ and $\xi_{\mathrm{upper}}$ are the lower and upper wall thresholds, respectively; \emph{(ii)} because an interval between two walls is defined, only scalar variables can be used (but any number of variables can be defined, and the wall bias is intrinsically multi-dimensional).\\
 
-\textbf{Note:} this bias replaces the keywords \texttt{lowerWall}, \texttt{lowerWallConstant}, \texttt{upperWall} and \texttt{upperWallConstant} defined in the \texttt{colvar} context (see \ref{sec:colvar}).
-These keywords are still supported, but are deprecated for future uses.
+\textbf{Note:} this bias replaces the keywords \texttt{lowerWall}, \texttt{lowerWallConstant}, \texttt{upperWall} and \texttt{upperWallConstant} defined in the \texttt{colvar} context.
+Those keywords are deprecated.
 
 The \texttt{harmonicWalls} bias implements the following options:
 \begin{itemize}
 \item \dupkey{name}{\texttt{harmonicWalls}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{colvars}{\texttt{harmonicWalls}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{outputEnergy}{\texttt{harmonicWalls}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{writeTIPMF}{\texttt{harmonicWalls}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{writeTISamples}{\texttt{harmonicWalls}}{sec:colvarbias}{biasing and analysis methods}
 
 \item %
   \key
@@ -4469,7 +5344,8 @@ The \texttt{harmonicWalls} bias implements the following options:
     positive decimal}{%
     \texttt{forceConstant}}{%
     When both sets of walls are defined (lower and upper), this keyword allows setting different force constants for them.
-    The force constant reported in the output as ``$k$'', and used in the change of force constant scheme, is the geometric mean of the two.
+    As with \texttt{forceConstant}, the specified constant is divided internally by the square of the specific \texttt{width} of each variable (see also the equivalent keyword for the harmonic restraint, \refkey{forceConstant}{harmonic|forceConstant}).
+    The force constant reported in the output as ``$k$'', and used in the change of force constant scheme, is the geometric mean of \texttt{upperWallConstant} and \texttt{upperWallConstant}.
   }
 
 \item %
@@ -4498,6 +5374,32 @@ The \texttt{harmonicWalls} bias implements the following options:
 
 \end{itemize}
 
+\noindent\textbf{Example 1:} harmonic walls for one variable with two different force constants.
+{\noindent\ttfamily
+\\
+\-harmonicWalls \{\\
+\-\-~~name  mywalls\\
+\-\-~~colvars    dist\\
+\-\-~~lowerWall  22.0 \\
+\-\-~~upperWall  38.0 \\
+\-\-~~lowerWallConstant  2.0 \\
+\-\-~~upperWallConstant 10.0 \\
+\-\}\\
+}
+
+\noindent\textbf{Example 2:} harmonic walls for two variables with a single force constant.
+{\noindent\ttfamily
+\\
+\-harmonicWalls \{\\
+\-\-~~name  mywalls\\
+\-\-~~colvars      phi    psi\\
+\-\-~~lowerWall -180.0    0.0\\
+\-\-~~upperWall    0.0  180.0\\
+\-\-~~forceConstant  5.0 \\
+\-\}\\
+}
+
+
 
 
 \cvsubsec{Linear restraints}{sec:colvarbias_linear}
@@ -4514,7 +5416,7 @@ using \cite{Pitera2012}.
 
 \item \dupkey{name}{\texttt{linear}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{colvars}{\texttt{linear}}{sec:colvarbias}{biasing and analysis methods}
-%\item \dupkey{outputEnergy}{\texttt{linear}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{outputEnergy}{\texttt{linear}}{sec:colvarbias}{biasing and analysis methods}
 
 \item %
   \keydef
@@ -4523,11 +5425,11 @@ using \cite{Pitera2012}.
     Scaled force constant (\cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
     positive decimal}{%
     \texttt{1.0}}{%
-    This defines a scaled force constant for the linear bias.
-    To ensure consistency for multidimensional restraints, it is
-    divided internally by the specific \texttt{width}
-    for each colvar involved (which is 1 by default), so that all colvars
-    are effectively dimensionless and of commensurate size.}
+    This option defines a \emph{scaled} force constant for the linear bias.
+    To ensure consistency for multidimensional restraints, it is divided internally by the specific \texttt{width} of each variable (which is 1 by default), so that all variables are effectively dimensionless and of commensurate size.
+    See also the equivalent keyword for the harmonic restraint, \refkey{forceConstant}{harmonic|forceConstant}.
+    \emph{The values of the actual force constants $k/w_{\xi}$ are always printed when the restraint is defined.}
+}
 
 \item %
   \key
@@ -4537,6 +5439,9 @@ using \cite{Pitera2012}.
     space-separated list of colvar values}{%
     These are analogous to the \refkey{centers}{harmonic|centers} keyword of the harmonic restraint.
     Although they do not affect dynamics, they are here necessary to ensure a well-defined energy for the linear bias.}
+
+\item \dupkey{writeTIPMF}{\texttt{linear}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{writeTISamples}{\texttt{linear}}{sec:colvarbias}{biasing and analysis methods}
 
 \item \dupkey{targetForceConstant}{\texttt{linear}}{sec:colvarbias_harmonic}{Harmonic restraints}
 \item \dupkey{targetNumSteps}{\texttt{linear}}{sec:colvarbias_harmonic}{Harmonic restraints}
@@ -4628,6 +5533,7 @@ an optimization algorithm until the bias has converged}.
       can lead to instability in the simulation.}
      
 \end{itemize}
+
 
 \cvsubsec{Multidimensional histograms}{sec:colvarbias_histogram}
 
@@ -4870,7 +5776,7 @@ The default SMP schedule is the following:
 \item distribute the computation of all components across available threads;
 \item on a single thread, collect the results of multi-component variables using polynomial combinations (see \ref{sec:cvc_superp})\cvleptononly{, or custom functions (see \ref{sec:colvar_custom_function})}\cvscriptonly{, or scripted functions (see \ref{sec:colvar_scripted})};
 \item distribute the computation of all biases across available threads;
-\item compute on a single thread any scripted biases implemented via the keyword \refkey{scriptedColvarForces}.
+\item compute on a single thread any scripted biases implemented via the keyword \refkey{scriptedColvarForces}{Colvars-global|scriptedColvarForces}.
 \item communicate on a single thread forces to \MDENGINE{}.
 \end{enumerate}
 
@@ -4918,6 +5824,9 @@ please be aware that \emph{several of these tutorials are not actively maintaine
 \item \textbf{Colvars version 2017-01-09 or later \cvnamdonly{(NAMD version 2.13b1 or later)}\cvvmdonly{(VMD version 1.9.4 or later)}\cvlammpsonly{(LAMMPS version 10Mar2017 or later)}.}\\
   A new type of restraint, \texttt{harmonicWalls} (see~\ref{sec:colvarbias_harmonic_walls}), replaces and improves upon the legacy keywords \texttt{lowerWall} and \texttt{upperWall}: these are still supported as short-hands.
 
+\item \textbf{Colvars version 2018-11-15 or later \cvnamdonly{(NAMD version 2.14b1 or later)}\cvvmdonly{(VMD version 1.9.4 or later)}\cvlammpsonly{(LAMMPS version 23Nov2018 or later)}.}\\
+  The global \texttt{analysis} keyword has been discontinued: specific analysis tasks are controlled directly by the keywords \refkey{corrFunc}{colvar|corrFunc} and \refkey{runAve}{colvar|runAve}, which continue to remain \texttt{off} by default.
+
 \item \textbf{Deprecation warning for calculations including wall potentials.}\\
   The legacy keywords \texttt{lowerWall} and \texttt{upperWall} will stop having default values and will need to be set explicitly (preferably as part of the \texttt{harmonicWalls} restraint).
   When using an ABF bias, it is recommended to set the two walls equal to \refkey{lowerBoundary}{colvar|lowerBoundary} and \refkey{upperBoundary}{colvar|upperBoundary}, respectively.
@@ -4929,3 +5838,22 @@ please be aware that \emph{several of these tutorials are not actively maintaine
 \cvnamdonly{\cvurl{https://colvars.github.io/colvars-refman-namd/colvars-refman-namd.html}}
 \cvlammpsonly{\cvurl{https://colvars.github.io/colvars-refman-lammps/colvars-refman-lammps.html}}
 \cvvmdonly{\cvurl{https://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html}}
+
+
+\cvrefmanonly{
+
+\cvsec{Compilation notes}{sec:compilation_notes}
+
+The Colvars module is typically built using the recipes of each supported software package: for this reason, no installation instructions are needed, and the vast majority of the features described in this manual are supported in the most common builds of each package.
+This section lists the few cases where the choice of compilation settings affects features in the Colvars module.
+
+\begin{itemize}
+\item Scripting commands using the Tcl language (\cvurl{https://www.tcl.tk}) are supported in VMD and NAMD.  All precompiled builds of each code include Tcl, and it is highly recommended to enable Tcl support in any custom build, using precompiled Tcl libraries from the UIUC website.
+\item The Lepton library (\cvurl{https://simtk.org/projects/lepton}) used to implement the \texttt{customFunction} feature is currently included only in NAMD (always on) and in LAMMPS (on by default).
+\item Some features require compilation using the C++11 language standard.
+  Although it is becoming commonplace, this standard is not yet available on all scientific computing systems.
+  Deailed information can be found at:\\
+  \cvurl{https://colvars.github.io/README-c++11.html}
+\end{itemize}
+
+}

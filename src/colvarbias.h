@@ -1,5 +1,12 @@
 // -*- c++ -*-
 
+// This file is part of the Collective Variables module (Colvars).
+// The original version of Colvars and its updates are located at:
+// https://github.com/Colvars/colvars
+// Please update all Colvars source files before making any changes.
+// If you wish to distribute your changes, please submit them to the
+// Colvars repository at GitHub.
+
 #ifndef COLVARBIAS_H
 #define COLVARBIAS_H
 
@@ -50,20 +57,24 @@ public:
   }
 
   /// Retrieve colvar values and calculate their biasing forces
-  /// Return bias energy
+  /// Some implementations may use calc_energy() and calc_forces()
   virtual int update();
 
-  /// \brief Compute the energy of the bias with alternative values of the
-  /// collective variables (suitable for bias exchange)
-  virtual int calc_energy(std::vector<colvarvalue> const &values =
-                          std::vector<colvarvalue>(0))
-  {
-    cvm::error("Error: calc_energy() not implemented.\n", COLVARS_NOT_IMPLEMENTED);
-    return COLVARS_NOT_IMPLEMENTED;
-  }
+  /// Compute the energy of the bias
+  /// Uses the vector of colvar values provided if not NULL, and the values
+  /// currently cached in the bias instance otherwise
+  virtual int calc_energy(std::vector<colvarvalue> const *values);
+
+  /// Compute the forces due to the bias
+  /// Uses the vector of colvar values provided if not NULL, and the values
+  /// currently cached in the bias instance otherwise
+  virtual int calc_forces(std::vector<colvarvalue> const *values);
 
   /// Send forces to the collective variables
   virtual void communicate_forces();
+
+  /// Carry out operations needed before next step is run
+  virtual int end_of_step();
 
   /// Load new configuration - force constant and/or centers only
   virtual int change_configuration(std::string const &conf);
@@ -91,6 +102,9 @@ public:
 
   /// \brief Parse config string and (re)initialize
   virtual int init(std::string const &conf);
+
+  /// \brief Initialize dependency tree
+  virtual int init_dependencies();
 
   /// \brief Set to zero all mutable data
   virtual int reset();
@@ -185,7 +199,7 @@ public:
   static std::vector<feature *> cvb_features;
 
   /// \brief Implementation of the feature list accessor for colvarbias
-  virtual const std::vector<feature *> &features()
+  virtual const std::vector<feature *> &features() const
   {
     return cvb_features;
   }
@@ -227,7 +241,7 @@ protected:
   bool                     has_data;
 
   /// \brief Step number read from the last state file
-  size_t                   state_file_step;
+  cvm::step_number         state_file_step;
 
 };
 

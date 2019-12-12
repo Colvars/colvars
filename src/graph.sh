@@ -4,7 +4,10 @@ echo 'digraph d {
 rankdir = "LR";' > deps.gv
 
 # create nodes and edges
-gawk -f process_deps_graph.awk colvardeps.cpp >> deps.gv
+gawk -f process_deps_graph.awk colvaratoms.cpp >> deps.gv
+gawk -f process_deps_graph.awk colvarcomp.cpp >> deps.gv
+gawk -f process_deps_graph.awk colvar.cpp >> deps.gv
+gawk -f process_deps_graph.awk colvarbias.cpp >> deps.gv
 
 # set dependencies of the same level objects to the same rank
 awk '/^  cvb_/{list = list "\"" $1 "\" ; "} END {print "  { rank = same; " list "}"}' deps.gv >> deps.gv

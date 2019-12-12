@@ -16,7 +16,7 @@ tclForcesScript {
   proc calcforces {} {
     global t
     global prev_c
-    
+
     if { $t == 0} {
       loadcoords prev_c
     } else {

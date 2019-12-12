@@ -115,6 +115,8 @@ void colvarproxy_gromacs::init(t_inputrec *gmx_inp, gmx_int64_t step) {
   force_script_defined = false;
   have_scripts = false;
 
+  angstrom_value = 0.1;
+
   // GROMACS random number generation.
   // Seed with the mdp parameter ld_seed, the Langevin dynamics seed.
   rando = gmx_rng_init(gmx_inp->ld_seed);
@@ -206,13 +208,13 @@ void colvarproxy_gromacs::set_temper(double temper) {
   thermostat_temperature = temper;
 }
 
-// GROMACS uses nanometers.
-cvm::real colvarproxy_gromacs::unit_angstrom() { return 0.1; }
+// GROMACS uses nanometers and kJ/mol internally
+cvm::real colvarproxy_gromacs::backend_angstrom_value() { return 0.1; }
 
 // From Gnu units
 // $ units -ts 'k' 'kJ/mol/K/avogadro'
-// 0.0083144621
-cvm::real colvarproxy_gromacs::boltzmann() { return 0.0083144621; }
+// 0.0083144599 with v2.16 (older value 0.0083144621)
+cvm::real colvarproxy_gromacs::boltzmann() { return 0.0083144599; }
 
 // Temperature of the simulation (K)
 cvm::real colvarproxy_gromacs::temperature() {
@@ -308,6 +310,15 @@ int colvarproxy_gromacs::load_coords (char const *filename,
   cvm::error("Selecting collective variable atoms "
 		   "from a PDB file is currently not supported.\n");
   return COLVARS_NOT_IMPLEMENTED;
+}
+
+int colvarproxy_gromacs::set_unit_system(std::string const &units_in, bool /*check_only*/)
+{
+  if (units_in != "gromacs") {
+    cvm::error("Specified unit system \"" + units_in + "\" is unsupported in Gromacs. Supported units are \"gromacs\" (nm, kJ/mol).\n");
+    return COLVARS_ERROR;
+  }
+  return COLVARS_OK;
 }
 
 int colvarproxy_gromacs::backup_file (char const *filename)

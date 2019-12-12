@@ -1,5 +1,12 @@
 // -*- c++ -*-
 
+// This file is part of the Collective Variables module (Colvars).
+// The original version of Colvars and its updates are located at:
+// https://github.com/Colvars/colvars
+// Please update all Colvars source files before making any changes.
+// If you wish to distribute your changes, please submit them to the
+// Colvars repository at GitHub.
+
 #ifndef COLVARPROXY_NAMD_H
 #define COLVARPROXY_NAMD_H
 
@@ -16,10 +23,6 @@
 #include "colvarmodule.h"
 #include "colvarproxy.h"
 #include "colvarvalue.h"
-
-// For replica exchange
-#include "converse.h"
-#include "DataExchanger.h"
 
 /// \brief Communication between colvars and NAMD (implementation of
 /// \link colvarproxy \endlink)
@@ -51,11 +54,7 @@ protected:
   /// Used to submit restraint energy as MISC
   SubmitReduction *reduction;
 
-#ifdef NAMD_TCL
-
   void init_tcl_pointers();
-
-#endif
 
 public:
 
@@ -76,6 +75,7 @@ public:
   void log(std::string const &message);
   void error(std::string const &message);
   void fatal_error(std::string const &message);
+  int set_unit_system(std::string const &units_in, bool check_only);
   void exit(std::string const &message);
   void add_energy(cvm::real energy);
   void request_total_force(bool yesno);
@@ -93,7 +93,7 @@ public:
                                    std::vector<const colvarvalue *> const &cvcs,
                                    std::vector<cvm::matrix2d<cvm::real> > &gradient);
 
-  cvm::real unit_angstrom()
+  cvm::real backend_angstrom_value()
   {
     return 1.0;
   }
@@ -172,60 +172,12 @@ public:
 
 #endif // #if CMK_SMP && USE_CKLOOP
 
-  // Replica communication functions.
-  bool replica_enabled() {
-#if CMK_HAS_PARTITION
-    return true;
-#else
-    return false;
-#endif
-  }
-
-  int replica_index() {
-    return CmiMyPartition();
-  }
-
-  int replica_num() {
-    return CmiNumPartitions();
-  }
-
-  void replica_comm_barrier() {
-    replica_barrier();
-  }
-
-  int replica_comm_recv(char* msg_data, int buf_len, int src_rep) {
-    DataMessage *recvMsg = NULL;
-    replica_recv(&recvMsg, src_rep, CkMyPe());
-    CmiAssert(recvMsg != NULL);
-    int retval = recvMsg->size;
-    if (buf_len >= retval) {
-      memcpy(msg_data,recvMsg->data,retval);
-    } else {
-      retval = 0;
-    }
-    CmiFree(recvMsg);
-    return retval;
-  }
-
-  int replica_comm_send(char* msg_data, int msg_len, int dest_rep) {
-    replica_send(msg_data, msg_len, dest_rep, CkMyPe());
-    return msg_len;
-  }
-
-  int replica_comm_send()
-  {
-    return COLVARS_OK;
-  }
-
-  int replica_comm_async_send()
-  {
-    return COLVARS_OK;
-  }
-
-  inline size_t restart_frequency()
-  {
-    return restart_frequency_s;
-  }
+  virtual int replica_enabled();
+  virtual int replica_index();
+  virtual int replica_num();
+  virtual void replica_comm_barrier();
+  virtual int replica_comm_recv(char* msg_data, int buf_len, int src_rep);
+  virtual int replica_comm_send(char* msg_data, int msg_len, int dest_rep);
 
   int init_atom(int atom_number);
   int check_atom_id(int atom_number);

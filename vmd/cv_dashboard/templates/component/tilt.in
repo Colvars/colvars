@@ -1,0 +1,8 @@
+    tilt {
+        atoms {
+            atomNumbers 1 2 3
+        }
+        refPositionsFile @
+        # axis (1.0, -3.0, 4.0)
+    }
+

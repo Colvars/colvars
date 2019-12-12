@@ -51,7 +51,7 @@ public:
   void add_energy (cvm::real energy);
 
   // **************** SYSTEM-WIDE PHYSICAL QUANTITIES ****************
-  cvm::real unit_angstrom();
+  cvm::real backend_angstrom_value();
   cvm::real boltzmann();
   cvm::real temperature();
   cvm::real dt();
@@ -81,6 +81,8 @@ public:
   void fatal_error (std::string const &message);
   /// Print a message to the main log and exit normally
   void exit (std::string const &message);
+  /// Request to set the units used internally by Colvars
+  int set_unit_system(std::string const &units_in, bool check_only);
   int backup_file (char const *filename);
   /// Read atom identifiers from a file \param filename name of
   /// the file (usually a PDB) \param atoms array to which atoms read

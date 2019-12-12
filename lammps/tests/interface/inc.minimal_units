@@ -1,0 +1,20 @@
+# minimal system config: two groups of two atoms
+units electron
+atom_style atomic
+atom_modify map array # XXX this should not be needed
+
+pair_style lj/cut 5.0
+read_data data.minimal
+
+group g1 id 1 2
+group g2 id 3 4
+
+variable com1z equal xcm(g1,z)
+variable com2z equal xcm(g2,z)
+variable fcm1z equal fcm(g1,z)
+variable fcm2z equal fcm(g2,z)
+variable cveng equal f_f1
+
+thermo_style custom step pe v_com1z v_com2z v_fcm1z v_fcm2z v_cveng
+thermo 1
+

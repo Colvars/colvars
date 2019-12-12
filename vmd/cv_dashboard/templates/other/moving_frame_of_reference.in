@@ -1,0 +1,20 @@
+
+            ## This belongs inside an atom group block
+
+            ## Atom definitions
+            atomNumbers 1 2 3 4
+            ## Optionally, use GROMACS-style index groups
+            # indexGroup @
+
+            centerReference yes
+            rotateReference yes
+
+            ## Atoms defining the moving frame of reference
+            ## if fittingGroup is omitted, atoms defined above are fitted
+            fittingGroup {
+                atomNumbers 5 6 7 8
+                # indexGroup @
+            }
+            ## Reference positions for the atoms defined above
+            ## Can be selected using the "Pick file" button
+            refPositionsFile @ # PDB or XYZ file

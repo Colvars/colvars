@@ -26,7 +26,7 @@ if { [info exists mol_name] == 0 } {
 }
 
 
-set protein_sel "((protein) or (segid BH HA HB))" 
+set protein_sel "((protein) or (segid BH HA HB))"
 set protein [atomselect top "${protein_sel}"]
 set segnames [lsort -unique [${protein} get segname]]
 ${protein} delete

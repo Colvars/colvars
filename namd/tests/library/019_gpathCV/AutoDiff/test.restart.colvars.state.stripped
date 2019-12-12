@@ -1,0 +1,15 @@
+configuration {
+  step           40
+  dt 5.000000e-01
+}
+
+colvar {
+  name gpath_s_dihed
+  x  7.80475723743606e-01
+}
+
+colvar {
+  name gpath_z_dihed
+  x  1.69997870041256e+02
+}
+

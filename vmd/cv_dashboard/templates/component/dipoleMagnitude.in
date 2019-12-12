@@ -1,0 +1,5 @@
+    dipoleMagnitude {
+        atoms {
+            atomNumbers 1 2 3
+        }
+    }

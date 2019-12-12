@@ -15,11 +15,14 @@ COLVARSLIB = \
 	$(DSTDIR)/colvarcomp_distances.o \
 	$(DSTDIR)/colvarcomp_protein.o \
 	$(DSTDIR)/colvarcomp_rotations.o \
+	$(DSTDIR)/colvarcomp_gpath.o \
+	$(DSTDIR)/colvarcomp_apath.o \
 	$(DSTDIR)/colvardeps.o \
 	$(DSTDIR)/colvargrid.o \
 	$(DSTDIR)/colvarmodule.o \
 	$(DSTDIR)/colvarparse.o \
 	$(DSTDIR)/colvarproxy.o \
+	$(DSTDIR)/colvarproxy_replicas.o \
 	$(DSTDIR)/colvarscript.o \
 	$(DSTDIR)/colvartypes.o \
 	$(DSTDIR)/colvarvalue.o

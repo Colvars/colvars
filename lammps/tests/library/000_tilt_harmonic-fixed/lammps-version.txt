@@ -1,1 +1,1 @@
-LAMMPS (13 Apr 2017)
+LAMMPS (12 Dec 2018)

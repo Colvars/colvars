@@ -1,0 +1,15 @@
+colvar {
+    name myColvar
+
+    # Insert one or several components below (see templates/components)
+
+    distance {
+        group1 {
+            atomNumbers 1 2
+        }
+        group2 {
+            atomNumbers 3 4
+        }
+    }
+}
+

@@ -17,16 +17,13 @@
 ------------------------------------------------------------------------- */
 
 #include "ndx_group.h"
+#include <mpi.h>
+#include <cstdlib>
+#include <cstring>
 #include "atom.h"
 #include "comm.h"
 #include "group.h"
-#include "memory.h"
-#include "force.h"
 #include "error.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 using namespace LAMMPS_NS;
 #define BUFLEN 4096

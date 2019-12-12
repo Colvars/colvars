@@ -1,6 +1,6 @@
 # VMD tcl code to compute eigenvector with differenceVector
 
-if { 1 } { 
+if { 1 } {
 
     # vmd -e principal_component.tcl \
     #     -f structure_a.pdb \
@@ -27,7 +27,7 @@ if { 1 } {
     set mode_x [vecscale ${diff_x} [expr 1.0/${diff_norm2}]]
     set mode_y [vecscale ${diff_y} [expr 1.0/${diff_norm2}]]
     set mode_z [vecscale ${diff_z} [expr 1.0/${diff_norm2}]]
-    
+
     package require pbctools
 
     set mol_name [molinfo top get name]

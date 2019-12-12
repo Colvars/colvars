@@ -1,3 +1,10 @@
+% This file is part of the Collective Variables module (Colvars).
+% The original version of Colvars and its updates are located at:
+% https://github.com/Colvars/colvars
+% Please update all Colvars source files before making any changes.
+% If you wish to distribute your changes, please submit them to the
+% Colvars repository at GitHub.
+
 \documentclass[11pt]{article}
 \usepackage[margin=1in]{geometry}
 
@@ -35,7 +42,17 @@
 
 \begin{document}
 
+\ifdefined\HCode
+\input{colvars-refman-css.tex}
+\fi
+
 \input{cv_version.tex}
+
+\ifdefined\HCode
+\HCode{<div id="container">
+<div class="inner">
+}
+\fi
 
 \begin{titlepage}
 
@@ -53,8 +70,13 @@
       \end{minipage}}
 %  \noindent\rule{\textwidth}{2pt}
 
+  \ifdefined\HCode
+  \HCode{<img class="cover_picture" src="cover-512px.jpg" alt="Colvars logo">}
+  \\
+  \else
   \includegraphics[width=\textwidth]{cover.jpg}
-  \textsf{\large Alejandro Bernardin, Jeffrey R.{} Comer, Giacomo Fiorin, Haohao Fu, J\'er\^ome H\'enin, Axel Kohlmeyer, Fabrizio Marinelli, Joshua V.{} Vermaas, Andrew D.{} White}
+  \fi
+  \textsf{\large Alejandro Bernardin, Haochuan Chen, Jeffrey R.{} Comer, Giacomo Fiorin, Haohao Fu, J\'er\^ome H\'enin, Axel Kohlmeyer, Fabrizio Marinelli, Joshua V.{} Vermaas, Andrew D.{} White}
 \end{titlepage}
 
 \newpage
@@ -127,9 +149,11 @@
 \bibliographystyle{unsrt}
 \bibliography{colvars-refman}
 
-\end{document}
+\ifdefined\HCode
+\HCode{</div>
+</div>
+}
+\fi
 
-% Emacs
-% Local Variables:
-% TeX-PDF-mode: t
-% End:
+
+\end{document}

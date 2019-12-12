@@ -1,6 +1,11 @@
 // -*- c++ -*-
 
-#include <cmath>
+// This file is part of the Collective Variables module (Colvars).
+// The original version of Colvars and its updates are located at:
+// https://github.com/Colvars/colvars
+// Please update all Colvars source files before making any changes.
+// If you wish to distribute your changes, please submit them to the
+// Colvars repository at GitHub.
 
 #include <tcl.h>
 
@@ -30,8 +35,11 @@ int tcl_colvars(ClientData clientdata, Tcl_Interp *interp,
 
   if (proxy != NULL) {
 
-    if (objc >= 3) {
-      if (!strcmp(Tcl_GetString(objv[1]), "molid")) {
+    if (objc >= 2 && !strcmp(Tcl_GetString(objv[1]), "molid")) {
+       if (objc == 2) {
+        Tcl_SetResult(interp, const_cast<char *>(cvm::to_str(proxy->get_vmdmolid()).c_str()), TCL_VOLATILE);
+        return TCL_OK;
+       } else {
         Tcl_SetResult(interp, (char *) "Colvars module already created:"
                                        " type \"cv\" for a list of "
                                        "arguments.",
@@ -125,6 +133,9 @@ colvarproxy_vmd::colvarproxy_vmd(Tcl_Interp *interp, VMDApp *v, int molid)
   version_int = get_version_from_string(COLVARPROXY_VERSION);
   b_simulation_running = false;
 
+  // both fields are taken from data structures already available
+  updated_masses_ = updated_charges_ = true;
+
   colvars = new colvarmodule(this);
   cvm::log("Using VMD interface, version "+
            cvm::to_str(COLVARPROXY_VERSION)+".\n");
@@ -134,6 +145,11 @@ colvarproxy_vmd::colvarproxy_vmd(Tcl_Interp *interp, VMDApp *v, int molid)
   cvm::rotation::monitor_crossings = false; // Avoid unnecessary error messages
 
   total_force_requested = false;
+
+  // Default to VMD's native unit system, but do not set the units string
+  // to preserve the native workflow of VMD / NAMD / LAMMPS-real
+  angstrom_value = 1.;
+  kcal_mol_value = 1.;
 
   colvars->setup_input();
   colvars->setup_output();
@@ -147,7 +163,7 @@ colvarproxy_vmd::colvarproxy_vmd(Tcl_Interp *interp, VMDApp *v, int molid)
 #if defined(VMDTCL)
   have_scripts = true;
 
-  _tcl_interp = reinterpret_cast<void *>(interp);
+  tcl_interp_ = reinterpret_cast<void *>(interp);
 
   // User-scripted forces are not really useful in VMD, but we accept them
   // for compatibility with NAMD scripts
@@ -193,7 +209,7 @@ int colvarproxy_vmd::setup()
   if (vmdmol) {
     set_frame(vmdmol->frame());
   } else {
-    error("Error: cannot find the molecule requested("+cvm::to_str(vmdmolid)+").\n");
+    error("Error: requested molecule ("+cvm::to_str(vmdmolid)+") does not exist.\n");
     return COLVARS_ERROR;
   }
 
@@ -205,20 +221,68 @@ int colvarproxy_vmd::setup()
 }
 
 
+int colvarproxy_vmd::set_unit_system(std::string const &units_in, bool check_only)
+{
+  // if check_only is specified, just test for compatibility
+  // cvolvarmodule does that if new units are requested while colvars are already defined
+  if (check_only) {
+    if (units_in != units) {
+      cvm::error("Specified unit system \"" + units_in + "\" is incompatible with previous setting \""
+                  + units + "\".\nReset the Colvars Module or delete all variables to change the unit.\n");
+      return COLVARS_ERROR;
+    } else {
+      return COLVARS_OK;
+    }
+  }
+
+  if (units_in == "real") {
+    angstrom_value = 1.;
+    kcal_mol_value = 1.;
+  } else if (units_in == "metal") {
+    angstrom_value = 1.;
+    kcal_mol_value = 0.0433641017; // eV
+    // inverse of LAMMPS value is 1/23.060549 = .043364102
+  } else if (units_in == "electron") {
+    angstrom_value = 1.88972612;    // Bohr
+    kcal_mol_value = 0.00159360144; // Hartree
+  } else if (units_in == "gromacs") {
+    angstrom_value = 0.1;    // nm
+    kcal_mol_value = 4.184;  // kJ/mol
+  } else {
+    cvm::error("Unknown unit system specified: \"" + units_in + "\". Supported are real, metal, electron, and gromacs.\n");
+    return COLVARS_ERROR;
+  }
+
+  units = units_in;
+  return COLVARS_OK;
+}
+
+
 int colvarproxy_vmd::update_input()
 {
   colvarproxy::update_input();
 
   int error_code = COLVARS_OK;
 
+  // Check that our parent molecule still exists
+  if (vmd->moleculeList->mol_from_id(vmdmolid) == NULL) {
+    error("Error: requested molecule ("+cvm::to_str(vmdmolid)+") does not exist.\n");
+    return COLVARS_ERROR;
+  }
   error_code |= update_atomic_properties();
+
+  // Do we still have a valid frame?
+  if (error_code || vmdmol->get_frame(vmdmol_frame) == NULL) {
+    error_code |= COLVARS_NO_SUCH_FRAME;
+    return error_code;
+  }
 
   // copy positions in the internal arrays
   float *vmdpos = (vmdmol->get_frame(vmdmol_frame))->pos;
   for (size_t i = 0; i < atoms_positions.size(); i++) {
-    atoms_positions[i] = cvm::atom_pos(vmdpos[atoms_ids[i]*3+0],
-                                       vmdpos[atoms_ids[i]*3+1],
-                                       vmdpos[atoms_ids[i]*3+2]);
+    atoms_positions[i] = cvm::atom_pos(angstrom_to_internal(vmdpos[atoms_ids[i]*3+0]),
+                                       angstrom_to_internal(vmdpos[atoms_ids[i]*3+1]),
+                                       angstrom_to_internal(vmdpos[atoms_ids[i]*3+2]));
   }
 
 
@@ -229,9 +293,9 @@ int colvarproxy_vmd::update_input()
     float B[3];
     float C[3];
     ts->get_transform_vectors(A, B, C);
-    unit_cell_x.set(A[0], A[1], A[2]);
-    unit_cell_y.set(B[0], B[1], B[2]);
-    unit_cell_z.set(C[0], C[1], C[2]);
+    unit_cell_x.set(angstrom_to_internal(A[0]), angstrom_to_internal(A[1]), angstrom_to_internal(A[2]));
+    unit_cell_y.set(angstrom_to_internal(B[0]), angstrom_to_internal(B[1]), angstrom_to_internal(B[2]));
+    unit_cell_z.set(angstrom_to_internal(C[0]), angstrom_to_internal(C[1]), angstrom_to_internal(C[2]));
   }
 
   if (ts->a_length + ts->b_length + ts->c_length < 1.0e-6) {
@@ -393,7 +457,7 @@ std::vector<std::string> colvarproxy_vmd::script_obj_to_str_vector(unsigned char
   }
   std::vector<std::string> result;
 #ifdef VMDTCL
-  Tcl_Interp *interp = reinterpret_cast<Tcl_Interp *>(_tcl_interp);
+  Tcl_Interp *interp = reinterpret_cast<Tcl_Interp *>(tcl_interp_);
   Tcl_Obj *tcl_obj = reinterpret_cast<Tcl_Obj *>(obj);
   Tcl_Obj **tcl_list_elems = NULL;
   int count = 0;
@@ -555,9 +619,9 @@ int colvarproxy_vmd::load_coords(char const *pdb_filename,
         return COLVARS_ERROR;
       }
 
-      pos[ipos] = cvm::atom_pos((tmpmol->get_frame(0)->pos)[ipdb*3],
-                                (tmpmol->get_frame(0)->pos)[ipdb*3+1],
-                                (tmpmol->get_frame(0)->pos)[ipdb*3+2]);
+      pos[ipos] = cvm::atom_pos(angstrom_to_internal((tmpmol->get_frame(0)->pos)[ipdb*3]),
+                                angstrom_to_internal((tmpmol->get_frame(0)->pos)[ipdb*3+1]),
+                                angstrom_to_internal((tmpmol->get_frame(0)->pos)[ipdb*3+2]));
       ipos++;
       if (!use_pdb_field && current_index == indices.end())
         break;
@@ -576,9 +640,9 @@ int colvarproxy_vmd::load_coords(char const *pdb_filename,
     // when the PDB contains exactly the number of atoms of the array,
     // ignore the fields and just read coordinates
     for (size_t ia = 0; ia < pos.size(); ia++) {
-      pos[ia] = cvm::atom_pos((tmpmol->get_frame(0)->pos)[ia*3],
-                              (tmpmol->get_frame(0)->pos)[ia*3+1],
-                              (tmpmol->get_frame(0)->pos)[ia*3+2]);
+      pos[ia] = cvm::atom_pos(angstrom_to_internal((tmpmol->get_frame(0)->pos)[ia*3]),
+                              angstrom_to_internal((tmpmol->get_frame(0)->pos)[ia*3+1]),
+                              angstrom_to_internal((tmpmol->get_frame(0)->pos)[ia*3+2]));
     }
   }
 
@@ -759,11 +823,11 @@ int colvarproxy_vmd::init_atom(cvm::residue_id const &resid,
   }
 
   if (cvm::debug())
-    log("Adding atom \""+
-        atom_name+"\" in residue "+
-        cvm::to_str(resid)+
-        " (index "+cvm::to_str(aid)+
-        ") for collective variables calculation.\n");
+    cvm::log("Adding atom \""+
+             atom_name+"\" in residue "+
+             cvm::to_str(resid)+
+             " (index "+cvm::to_str(aid)+
+             ") for collective variables calculation.\n");
 
   int const index = add_atom_slot(aid);
 

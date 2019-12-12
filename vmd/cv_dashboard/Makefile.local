@@ -1,0 +1,8 @@
+
+VERSION=1.2
+PLUGINDIR=${HOME}/lib/vmd/plugins/noarch/tcl
+
+install:
+	mkdir -p ${PLUGINDIR}/cv_dashboard${VERSION} && \
+		rsync -avL --delete *.tcl templates ${PLUGINDIR}/cv_dashboard${VERSION}/. 
+
