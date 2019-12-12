@@ -333,6 +333,12 @@ public:
 
 protected:
 
+  /// Characters allowed immediately to the left of a kewyord
+  std::string const keyword_delimiters_left;
+
+  /// Characters allowed immediately to the right of a kewyord
+  std::string const keyword_delimiters_right;
+
   /// \brief List of legal keywords for this object: this is updated
   /// by each call to colvarparse::get_keyval() or
   /// colvarparse::key_lookup()
