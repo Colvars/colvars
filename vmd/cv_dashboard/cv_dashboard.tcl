@@ -195,19 +195,20 @@ proc ::cv_dashboard::extract_colvar_configs { cfg_in } {
   set in_cv 0
   set brace_depth 0
   set map [dict create]
-  set name ""
   set non_colvar ""
   foreach line $lines {
     if { $in_cv == 0 } {
       # In main body, just look for colvar definition
       if { [regexp {^\s*colvar\s+\{\s*(.*)} $line match firstline] } {
         set in_cv 1
+        set name ""
         set cv_line 1
         set brace_depth 1
         set cv_cfg "\n"
-        # The first line may follow the opening brace immediately
-        if { [string length $firstline] } {
-          set line "    ${firstline}"
+        # A first line may follow the opening brace immediately
+        if [regexp {[^\s]} $firstline match] {
+          set line "${::cv_dashboard::indent}${firstline}"
+          # Will be processed below
         } else {
           # Nothing more to parse from this line
           continue
@@ -224,11 +225,13 @@ proc ::cv_dashboard::extract_colvar_configs { cfg_in } {
       regexp {^\s*name\s+([^\s{}#]+)} $line match name
     }
 
-    # Finally, the tedious fishing for braces
+    # Processing a line within a colvar block: track braces to find the end
+    # braces only matter if they aren't in a comment
     regexp {^[^#]*} $line nocomments
-    set chars [split $nocomments ""]
+    set chars_nocomments [split $nocomments ""]
     set cur_line ""
-    foreach c $chars {
+
+    foreach c $chars_nocomments {
       switch $c {
         "{" { incr brace_depth }
         "}" {
@@ -240,13 +243,15 @@ proc ::cv_dashboard::extract_colvar_configs { cfg_in } {
             return $map
           }
           if { $brace_depth == 0 } {
-            # End of colvar block
-            if { [string length $cur_line] > 0 } {
+            # This closing brace ends the colvar block.
+            # Does the line so far have contents? Store it.
+            if [regexp {[^\s]} $cur_line match] {
               append cv_cfg $cur_line "\n"
             }
-            dict set map $name $cv_cfg
+            dict set map $name $cv_cfg ;# Store the colvar config
             set in_cv 0
-            set name ""
+            set cur_line "" ;# Store possible non-colvar contents after closing brace
+            set c "" ;# do not store closing brace
           }
         }
       }
@@ -255,10 +260,14 @@ proc ::cv_dashboard::extract_colvar_configs { cfg_in } {
     }
 
     if { $in_cv } {
+      # Line ended within a colvar block
       if { $cv_line >= 1 } {
         append cv_cfg $line "\n"
       }
       incr cv_line
+    } elseif [regexp {^\s*([^\s]+)} $cur_line match cur_line_nospace] {
+      # Line ended outside a colvars block and end of line contains non-whitespace
+      append non_colvar $cur_line_nospace "\n"
     }
   }
 
