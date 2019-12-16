@@ -85,8 +85,8 @@ proc ::cv_dashboard::edit { {add false} } {
     tk::label $templates.template_label_$d -text "$d templates:"
     ttk::combobox $templates.pick_template_$d -justify left -state readonly
     $templates.pick_template_$d configure -values [dict keys [set ::cv_dashboard::templates_$d]]
-    bind $templates.pick_template_$d <Return> \
-      "::cv_dashboard::insert_template $templates.pick_template_$d [list [set ::cv_dashboard::templates_$d]]"
+    bind $templates.pick_template_$d <<keyb_enter>> \
+      "::cv_dashboard::insert_template $templates.pick_template_$d [list [set ::cv_dashboard::templates_$d]]"  
     ttk::button $templates.insert_template_$d -text "Insert \[Enter\]" \
       -command "::cv_dashboard::insert_template $templates.pick_template_$d [list [set ::cv_dashboard::templates_$d]]" \
       -padding "2 0 2 0"
@@ -109,7 +109,7 @@ proc ::cv_dashboard::edit { {add false} } {
   tk::label $helpers.seltext_label -text "Atoms from selection text:"
   tk::entry $helpers.seltext -bg white
   # Bind Return key in seltext entry to proc creating the atomNumbers line
-  bind $helpers.seltext <Return> "::cv_dashboard::atoms_from_sel textbox"
+  bind $helpers.seltext <<keyb_enter>> "::cv_dashboard::atoms_from_sel textbox"
   ttk::button $helpers.fromsel -text "Insert \[Enter\]" \
     -command "::cv_dashboard::atoms_from_sel textbox" -padding "2 0 2 0"
 

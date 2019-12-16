@@ -44,6 +44,9 @@ namespace eval ::cv_dashboard {
 
   variable atom_rep     ;# hash array of: list of macro names, list of atom representations, indexed by colvar name
   variable grad_objects ;# hash array ids of graphical objects displaying gradients, indexed by colvar name
+  variable grad_scale_choice ;# whether to scale gradients by a fixed factor of to obtain given max norm
+  variable grad_norm 5.0  ;# Default value for gradient max norm
+  variable grad_scale 1.0 ;# Default value for gradient scale factor
 
   variable mol -1       ;# ID of molecule currently associated with Colvars
 
