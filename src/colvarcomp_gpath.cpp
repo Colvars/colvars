@@ -119,6 +119,7 @@ colvar::CartesianBasedPath::~CartesianBasedPath() {
             (*it_comp_atoms) = nullptr;
         }
     }
+    atom_groups.clear();
 }
 
 void colvar::CartesianBasedPath::computeDistanceToReferenceFrames(std::vector<cvm::real>& result) {
