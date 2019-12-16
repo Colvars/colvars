@@ -211,10 +211,6 @@ proc ::cv_dashboard::refresh_table {} {
     }
   }
 
-  # Remove deleted variables from gradient display
-  foreach cv [array names ::cv_dashboard::grad_object] {
-    if { [lsearch $::cv_dashboard::cvs $cv] == -1 } { unset ::cv_dashboard::grad_object($cv) }
-  }
   update_shown_gradients
 
   update_frame internal $::cv_dashboard::mol w
@@ -556,6 +552,12 @@ proc ::cv_dashboard::update_shown_gradients {} {
       graphics $molid delete $obj
     }
 
+    # Forget variables that have been deleted (*after* deleting the graphics above)
+    if { [lsearch $::cv_dashboard::cvs $cv] == -1 } {
+      unset ::cv_dashboard::grad_objects($cv)
+      continue
+    }
+
     set atomids [run_cv colvar $cv getatomids]
     if { [llength $atomids] == 0 } {
       # Variable was reinitialized and lost its gradient feature
@@ -585,7 +587,7 @@ proc ::cv_dashboard::update_shown_gradients {} {
 
     # Get width if provided in colvar config
     set width 1.
-    regexp {^\s*width\s([\d\.e]*)} [get_config $cv] match width
+    regexp -nocase -lineanchor {^\s*width\s([\d\.e]*)} [get_config $cv] match width
 
     set ::tcl_precision 3 ;# Compute scaling factors with few significant figures
     if { $::cv_dashboard::grad_scale_choice == "scale" } {

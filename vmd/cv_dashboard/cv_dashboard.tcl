@@ -199,7 +199,7 @@ proc ::cv_dashboard::extract_colvar_configs { cfg_in } {
   foreach line $lines {
     if { $in_cv == 0 } {
       # In main body, just look for colvar definition
-      if { [regexp {^\s*colvar\s+\{\s*(.*)} $line match firstline] } {
+      if { [regexp -nocase {^\s*colvar\s+\{\s*(.*)} $line match firstline] } {
         set in_cv 1
         set cv_line 1
         set brace_depth 1
@@ -219,7 +219,7 @@ proc ::cv_dashboard::extract_colvar_configs { cfg_in } {
     # Now we're parsing a line of colvar config, try to get name
     # non-word characters are spaces and {}# (do not use Tcl's restrictive \w)
     if { $brace_depth == 1 } {
-      regexp {^\s*name\s+([^\s{}#]+)} $line match name
+      regexp -nocase {^\s*name\s+([^\s{}#]+)} $line match name
     }
 
     # Finally, the tedious fishing for braces
