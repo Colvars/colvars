@@ -257,11 +257,12 @@ int colvarbias_reweightaMD::init(std::string const &conf) {
   }
   int baseclass_init_code = colvarbias_histogram::init(conf);
   get_keyval(conf, "CollectAfterSteps", start_after_steps, 0);
-  get_keyval(conf, "outputFilePMF", out_name_pmf, std::string(""));
   get_keyval(conf, "CumulantExpansion", use_cumulant_expansion, true);
   grid_count = new colvar_grid_scalar(colvars);
   grid_count->request_actual_value();
   grid->request_actual_value();
+  get_keyval(conf, "historyFreq", history_freq, 0);
+  b_history_files = (history_freq > 0);
   if (use_cumulant_expansion) {
     grid_dV = new colvar_grid_scalar(colvars);
     grid_dV_square = new colvar_grid_scalar(colvars);
@@ -299,11 +300,6 @@ int colvarbias_reweightaMD::update() {
     if (out_name_dx.size() == 0) {
       out_name_dx = cvm::output_prefix() + "." + this->name + ".dx";
       cvm::log("Histogram " + this->name + " will be written to file \"" + out_name_dx + "\"");
-    }
-
-    if (out_name_pmf.size() == 0) {
-      out_name_pmf = cvm::output_prefix() + "." + this->name + ".aMD.pmf";
-      cvm::log("Histogram " + this->name + " will be written to file \"" + out_name_pmf + "\"");
     }
 
     if (colvar_array_size == 0) {
@@ -356,64 +352,83 @@ int colvarbias_reweightaMD::update() {
 int colvarbias_reweightaMD::write_output_files() {
   int error_code = COLVARS_OK;
   error_code |= colvarbias_histogram::write_output_files();
-  if (out_name_pmf.size()) {
-    cvm::log("Writing the accelerated MD PMF file \""+out_name_pmf+"\".\n");
-    cvm::backup_file(out_name_pmf.c_str());
-    std::ostream *pmf_grid_os = cvm::proxy->output_stream(out_name_pmf);
-    if (!pmf_grid_os) {
-      return cvm::error("Error opening PMF file "+out_name_pmf+
-                        " for writing.\n", FILE_ERROR);
-    }
-    colvar_grid_scalar pmf_grid(*grid);
-    pmf_grid.setup();
-    pmf_grid.copy_grid(*grid);
-    std::vector<cvm::real> pmf_raw_data(pmf_grid.raw_data_num(), 0);
-    std::vector<cvm::real> count_raw_data(grid_count->raw_data_num(), 0);
-    grid_count->raw_data_out(count_raw_data);
-    pmf_grid.raw_data_out(pmf_raw_data);
-    counts_to_pmf(pmf_raw_data);
-    pmf_grid.raw_data_in(pmf_raw_data);
-    pmf_grid.write_multicol(*pmf_grid_os);
-    cvm::proxy->close_output_stream(out_name_pmf);
-    std::string out_name_prev_count{out_name_pmf + ".count"};
-    cvm::backup_file(out_name_prev_count.c_str());
-    std::ostream *count_prev = cvm::proxy->output_stream(out_name_prev_count);
-    if (!count_prev) {
-        return cvm::error("Error opening count file "+out_name_prev_count+
-                          " for writing.\n", FILE_ERROR);
-    }
-    grid_count->write_multicol(*count_prev);
-    cvm::proxy->close_output_stream(out_name_prev_count);
-    if (use_cumulant_expansion) {
-      std::string out_name_pmf_cumulant{out_name_pmf + "2"};
-      cvm::backup_file(out_name_pmf_cumulant.c_str());
-      std::ostream *pmf_grid_cumulant_os = cvm::proxy->output_stream(out_name_pmf_cumulant);
-      if (!pmf_grid_cumulant_os) {
-        return cvm::error("Error opening PMF file "+out_name_pmf_cumulant+
-                          " for writing.\n", FILE_ERROR);
-      }
-      colvar_grid_scalar pmf_grid_cumulant(*grid);
-      pmf_grid_cumulant.setup();
-      std::vector<cvm::real> dV_raw_data(grid_dV->raw_data_num(), 0);
-      std::vector<cvm::real> dV_square_raw_data(grid_dV_square->raw_data_num(), 0);
-      grid_dV->raw_data_out(dV_raw_data);
-      grid_dV_square->raw_data_out(dV_square_raw_data);
-      const cvm::real beta = 1.0 / (cvm::temperature() * cvm::boltzmann());
-      std::vector<cvm::real> factor = compute_cumulant_expansion_factor(dV_raw_data, dV_square_raw_data, count_raw_data, beta);
-//       for (size_t i = 0; i < factor.size(); ++i) {
-//         // compute weighted probabilities
-//         if (count_raw_data[i] > 0) {
-//           factor[i] *= count_raw_data[i];
-//         }
-//       }
-      counts_to_pmf(factor);
-      pmf_grid_cumulant.raw_data_in(factor);
-      pmf_grid_cumulant.write_multicol(*pmf_grid_cumulant_os);
-      cvm::proxy->close_output_stream(out_name_pmf_cumulant);
+  std::string out_name_pmf = cvm::output_prefix() + "." + this->name + ".reweight.pmf";
+  error_code |= write_exponential_reweighted_pmf(out_name_pmf);
+  std::string out_count_name = cvm::output_prefix() + "." + this->name + ".count";
+  error_code |= write_count(out_count_name);
+  if (b_history_files && (cvm::step_absolute() % history_freq) == 0) {
+    error_code |= write_exponential_reweighted_pmf(out_name_pmf + ".hist", (cvm::step_relative() > 0));
+    error_code |= write_count(out_count_name + ".hist", (cvm::step_relative() > 0));
+  }
+  if (use_cumulant_expansion) {
+    std::string out_name_cumulant_pmf = cvm::output_prefix() + "." + this->name + ".cumulant.pmf";
+    error_code |= write_cumulant_expansion_pmf(out_name_cumulant_pmf);
+    if (b_history_files && (cvm::step_absolute() % history_freq) == 0) {
+      error_code |= write_cumulant_expansion_pmf(out_name_cumulant_pmf + ".hist", (cvm::step_relative() > 0));
     }
   }
   error_code |= cvm::get_error();
   return error_code;
+}
+
+int colvarbias_reweightaMD::write_exponential_reweighted_pmf(const std::string& output_name, bool append) {
+  cvm::log("Writing the accelerated MD PMF file \""+output_name+"\".\n");
+  if (!append) cvm::backup_file(output_name.c_str());
+  std::ios::openmode mode = (append ? std::ios::app : std::ios::out);
+  std::ostream *pmf_grid_os = cvm::proxy->output_stream(output_name, mode);
+  if (!pmf_grid_os) {
+    return cvm::error("Error opening PMF file "+output_name+
+                      " for writing.\n", FILE_ERROR);
+  }
+  colvar_grid_scalar pmf_grid(*grid);
+  pmf_grid.setup();
+  pmf_grid.copy_grid(*grid);
+  std::vector<cvm::real> pmf_raw_data(pmf_grid.raw_data_num(), 0);
+  std::vector<cvm::real> count_raw_data(grid_count->raw_data_num(), 0);
+  grid_count->raw_data_out(count_raw_data);
+  pmf_grid.raw_data_out(pmf_raw_data);
+  counts_to_pmf(pmf_raw_data);
+  pmf_grid.raw_data_in(pmf_raw_data);
+  pmf_grid.write_multicol(*pmf_grid_os);
+  cvm::proxy->close_output_stream(output_name);
+  return COLVARS_OK;
+}
+
+int colvarbias_reweightaMD::write_cumulant_expansion_pmf(const std::string& output_name, bool append) {
+  cvm::log("Writing the accelerated MD PMF file using cumulant expansion: \""+output_name+"\".\n");
+  if (!append) cvm::backup_file(output_name.c_str());
+  std::ios::openmode mode = (append ? std::ios::app : std::ios::out);
+  std::ostream *pmf_grid_cumulant_os = cvm::proxy->output_stream(output_name, mode);
+  if (!pmf_grid_cumulant_os) {
+    return cvm::error("Error opening PMF file "+output_name+
+                      " for writing.\n", FILE_ERROR);
+  }
+  colvar_grid_scalar pmf_grid_cumulant(*grid);
+  pmf_grid_cumulant.setup();
+  std::vector<cvm::real> dV_raw_data(grid_dV->raw_data_num(), 0);
+  std::vector<cvm::real> dV_square_raw_data(grid_dV_square->raw_data_num(), 0);
+  grid_dV->raw_data_out(dV_raw_data);
+  grid_dV_square->raw_data_out(dV_square_raw_data);
+  const cvm::real beta = 1.0 / (cvm::temperature() * cvm::boltzmann());
+  std::vector<cvm::real> count_raw_data(grid_count->raw_data_num(), 0);
+  std::vector<cvm::real> factor = compute_cumulant_expansion_factor(dV_raw_data, dV_square_raw_data, count_raw_data, beta);
+  counts_to_pmf(factor);
+  pmf_grid_cumulant.raw_data_in(factor);
+  pmf_grid_cumulant.write_multicol(*pmf_grid_cumulant_os);
+  return COLVARS_OK;
+}
+
+int colvarbias_reweightaMD::write_count(const std::string& output_name, bool append) {
+  cvm::log("Writing the accelerated MD count file \""+output_name+"\".\n");
+  if (!append) cvm::backup_file(output_name.c_str());
+  std::ios::openmode mode = (append ? std::ios::app : std::ios::out);
+  std::ostream *grid_count_os = cvm::proxy->output_stream(output_name, mode);
+  if (!grid_count_os) {
+    return cvm::error("Error opening count file "+output_name+
+                      " for writing.\n", FILE_ERROR);
+  }
+  grid_count->write_multicol(*grid_count_os);
+  return COLVARS_OK;
 }
 
 void colvarbias_reweightaMD::counts_to_pmf(std::vector<cvm::real>& counts) const {
