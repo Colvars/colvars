@@ -18,6 +18,7 @@ COLVARSLIB = \
 	$(DSTDIR)/colvardeps.o \
 	$(DSTDIR)/colvargrid.o \
 	$(DSTDIR)/colvarmodule.o \
+	$(DSTDIR)/colvarparams.o \
 	$(DSTDIR)/colvarparse.o \
 	$(DSTDIR)/colvarproxy.o \
 	$(DSTDIR)/colvarproxy_replicas.o \

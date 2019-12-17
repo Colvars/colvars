@@ -32,6 +32,41 @@ namespace {
 }
 
 
+colvarparse::colvarparse()
+{
+  init();
+}
+
+
+void colvarparse::init()
+{
+  config_string.clear();
+  clear_keyword_registry();
+}
+
+
+colvarparse::colvarparse(const std::string& conf)
+{
+  init(conf);
+}
+
+
+void colvarparse::init(std::string const &conf)
+{
+  if (! config_string.size()) {
+    init();
+    config_string = conf;
+  }
+}
+
+
+colvarparse::~colvarparse()
+{
+  init();
+}
+
+
+
 bool colvarparse::get_key_string_value(std::string const &conf,
                                        char const *key, std::string &data)
 {
