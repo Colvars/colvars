@@ -84,7 +84,7 @@ int colvarscript::run(int objc, unsigned char *const objv[])
   }
 
   if (objc < 2) {
-    set_str_result("No commands given: use \"cv help\" "
+    set_result_str("No commands given: use \"cv help\" "
                    "for a list of commands.");
     return COLVARSCRIPT_ERROR;
   }

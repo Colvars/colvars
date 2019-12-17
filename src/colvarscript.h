@@ -57,7 +57,7 @@ public:
   int run(int objc, unsigned char *const objv[]);
 
   /// Set the return value of the script command to the given string
-  inline void set_str_result(std::string const &s)
+  inline void set_result_str(std::string const &s)
   {
     result = s;
   }
@@ -259,7 +259,7 @@ extern "C" {
            "Print the help message",
            0, 0,
            {},
-           script->set_str_result(script->help_string());
+           script->set_result_str(script->help_string());
            return COLVARS_OK;
            )
 
@@ -267,7 +267,7 @@ extern "C" {
            "Get the Colvars Module version number",
            0, 0,
            {},
-           script->set_str_result(COLVARS_VERSION);
+           script->set_result_str(COLVARS_VERSION);
            return COLVARS_OK;
            )
 
@@ -299,7 +299,7 @@ extern "C" {
            "Get the module's configuration string read so far",
            0, 0,
            { },
-           script->set_str_result(cvm::main()->get_config());
+           script->set_result_str(cvm::main()->get_config());
            return COLVARS_OK;
            )
 
@@ -337,7 +337,7 @@ extern "C" {
                   ++cvi) {
                 res += (cvi == script->colvars->colvars.begin() ? "" : " ") + (*cvi)->name;
               }
-              script->set_str_result(res);
+              script->set_result_str(res);
               return COLVARS_OK;
             } else if (!strcmp(script->obj_to_str(objv[2]), "biases")) {
               for (std::vector<colvarbias *>::iterator bi = script->colvars->biases.begin();
@@ -345,7 +345,7 @@ extern "C" {
                   ++bi) {
                 res += (bi == script->colvars->biases.begin() ? "" : " ") + (*bi)->name;
               }
-              script->set_str_result(res);
+              script->set_result_str(res);
               return COLVARS_OK;
             } else {
               script->set_error_msg("Wrong arguments to command \"list\"\n" + script->help_string());
@@ -363,7 +363,7 @@ extern "C" {
                 ++bi) {
               res += (bi == script->colvars->biases.begin() ? "" : " ") + (*bi)->name;
             }
-            script->set_str_result(res);
+            script->set_result_str(res);
             return COLVARS_OK;
            )
 
@@ -437,7 +437,7 @@ extern "C" {
            0, 1,
            { },
            if (objc < 3) {
-            script->set_str_result(cvm::proxy->units);
+            script->set_result_str(cvm::proxy->units);
             return COLVARS_OK;
            } else {
             return cvm::proxy->set_unit_system(script->obj_to_str(objv[2]) , false);
@@ -450,7 +450,7 @@ extern "C" {
            { },
             std::ostringstream os;
             script->colvars->write_traj_label(os);
-            script->set_str_result(os.str());
+            script->set_result_str(os.str());
             return COLVARS_OK;
            )
 
@@ -460,7 +460,7 @@ extern "C" {
            { },
             std::ostringstream os;
             script->colvars->write_traj(os);
-            script->set_str_result(os.str());
+            script->set_result_str(os.str());
             return COLVARS_OK;
            )
 
@@ -472,7 +472,7 @@ extern "C" {
               long int f;
               int error = script->proxy->get_frame(f);
               if (error == COLVARS_OK) {
-                script->set_str_result(cvm::to_str(f));
+                script->set_result_str(cvm::to_str(f));
                 return COLVARS_OK;
               } else {
                 script->set_error_msg("Frame number is not available");
@@ -482,7 +482,7 @@ extern "C" {
               // Failure of this function does not trigger an error, but
               // returns nonzero, to let scripts detect available frames
               int error = script->proxy->set_frame(strtol(script->obj_to_str(objv[2]), NULL, 10));
-              script->set_str_result(cvm::to_str(error == COLVARS_OK ? 0 : -1));
+              script->set_result_str(cvm::to_str(error == COLVARS_OK ? 0 : -1));
               return COLVARS_OK;
             }
            )
