@@ -415,6 +415,7 @@ int colvarbias_reweightaMD::write_cumulant_expansion_pmf(const std::string& outp
   counts_to_pmf(factor);
   pmf_grid_cumulant.raw_data_in(factor);
   pmf_grid_cumulant.write_multicol(*pmf_grid_cumulant_os);
+  cvm::proxy->close_output_stream(output_name);
   return COLVARS_OK;
 }
 
@@ -428,6 +429,7 @@ int colvarbias_reweightaMD::write_count(const std::string& output_name, bool app
                       " for writing.\n", FILE_ERROR);
   }
   grid_count->write_multicol(*grid_count_os);
+  cvm::proxy->close_output_stream(output_name);
   return COLVARS_OK;
 }
 
