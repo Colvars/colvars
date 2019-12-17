@@ -44,6 +44,9 @@ namespace eval ::cv_dashboard {
 
   variable atom_rep     ;# hash array of: list of macro names, list of atom representations, indexed by colvar name
   variable grad_objects ;# hash array ids of graphical objects displaying gradients, indexed by colvar name
+  variable grad_scale_choice ;# whether to scale gradients by a fixed factor of to obtain given max norm
+  variable grad_norm 5.0  ;# Default value for gradient max norm
+  variable grad_scale 1.0 ;# Default value for gradient scale factor
 
   variable mol -1       ;# ID of molecule currently associated with Colvars
 
@@ -196,7 +199,7 @@ proc ::cv_dashboard::extract_colvar_configs { cfg_in } {
   foreach line $lines {
     if { $in_cv == 0 } {
       # In main body, just look for colvar definition
-      if { [regexp {^\s*colvar\s+\{\s*(.*)} $line match firstline] } {
+      if { [regexp -nocase {^\s*colvar\s+\{\s*(.*)} $line match firstline] } {
         set in_cv 1
         set cv_line 1
         set brace_depth 1
@@ -216,7 +219,7 @@ proc ::cv_dashboard::extract_colvar_configs { cfg_in } {
     # Now we're parsing a line of colvar config, try to get name
     # non-word characters are spaces and {}# (do not use Tcl's restrictive \w)
     if { $brace_depth == 1 } {
-      regexp {^\s*name\s+([^\s{}#]+)} $line match name
+      regexp -nocase {^\s*name\s+([^\s{}#]+)} $line match name
     }
 
     # Finally, the tedious fishing for braces

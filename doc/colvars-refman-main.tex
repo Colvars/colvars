@@ -170,7 +170,14 @@ Atomic coordinates can be modified using VMD's ``Mouse/Move'' functions, and the
 
 A dropdown list allows for changing the current unit system if no variables are defined.
 If some variables are already defined, it is recommended to edit the configuration for all of
-them at once (eg. pressing Ctrl-a, then e), checking that all quantities are expressed in the desired set of units, and adding the \texttt{units} keyword (\ref{sec:units}).
+them at once (eg. pressing Ctrl-a, then Ctrl-e), checking that all quantities are expressed in the desired set of units, and adding the
+\texttt{units} keyword to the general parameters, outside of \texttt{colvar \{\}} blocks (\ref{sec:units}).
+
+Another dropdown lets the user change which VMD molecule is associated with the Colvars module.
+Internally, this requires recording the configuration of currently defined colvars, deleting the current instance of the Colvars module,
+creating a new one linked to the target molecule, and applying the saved configuration.
+Beware of incompatible colvar definitions, such as atom groups listing atom IDs that exist in one molecule, but not the other.
+Auto-updating selections (see below) can be used to adapt the colvar definitions to a different system using VMD selection texts.
 
 \cvsubsec{Loading / Saving configuration files}{sec:dashboard_load_save}
 
@@ -194,10 +201,17 @@ bias and colvar parameters like components at level 1, component parameters such
 The next helper buttons allow importing atom selections from VMD, either typing a VMD atom selection text, by copying the selection of an existing graphical representation, or by inserting the list of atoms currently labeled in VMD using the ``Pick atom'' feature.
 Atom selections should be inserted within an atom group block, within a component block (such as \texttt{distance}).
 By default atom selections are preceded with a comment line marking them as \emph{auto-updating}.
-This instructs the Dashboard to update the list of atoms whenever the configuration is applied, that is, when it is edited, when the file is loaded by the Dashboard, or when changing the molecule linked to Colvars.
-This is useful when working across systems with different atom numberings, but topologies that make atom groups identifiable using VMD selection texts.
+This instructs the Dashboard to update the list of atoms whenever the configuration is applied, that is, when it is edited, when the file is loaded by the Dashboard, or when changing the VMD molecule linked to Colvars.
+This is useful when working across systems with different atom numberings, but topologies that make the relevant atom groups identifiable using VMD selection texts.
 Special fields (O, B, and user) may be used, as well as atom positions (e.g. \texttt{z > 0}).
-Note that the atom selections used by Colvars are not updated when changing frame within the same molecule (animating a trajectory).
+If the selection text is modified manually, the atom list will be updated when applying the new configuration.
+This auto-updating behavior can be disabled by removing the special comment line or altering the keywords ``auto-updating selection''.
+
+Note that atom lists are \textbf{not auto-updated}:
+\begin{enumerate}
+  \item when changing frame within the same molecule (animating a trajectory);
+  \item when the configuration is read by the Colvars module outside of VMD (eg. within an MD engine).
+\end{enumerate}
 
 The ``Insert labeled...'' button combined with the selection box allows for inserting components matching VMD's geometry measurements: Bonds (distances), angles, and dihedrals.
 Hidden labels are not used for inserting components.
@@ -219,6 +233,12 @@ Clicking a circle jumps to the corresponding frame.
 Each atom group is shown in a different color.
 ``Show gradient'' is available for scalar variables only.
 It creates a graphical representation of the atomic gradients of the selected variables, visualizing how the value of the collective variable would vary in response to a change in atomic coordinates.
+Vectors representing the gradient are rescaled as indicated by the radio buttons \emph{Set max. vector norm} and \emph{Set scaling factor}.
+\emph{Set max. vector norm} rescales gradients so that the largest vector component of each colvar's gradient is represented by an arrow of the specified length, in \AA.
+\emph{Set scaling factor} rescales gradients by the specified factor, divided by the colvar's \texttt{width} parameter (1 by default, see~\ref{sec:colvar_grid_params}).
+This use of \texttt{width} makes it easier to compare the gradients of collective variables that are not commensurate.
+The scaling factor has the unit $\AA * L / (cv / width)$, where $L$ is the current length unit, and $cv$ represents the natural unit of the collective variable.
+By default $width$ is unity, but $(cv / width)$ may be seen as dimensionless if $width$ is expressed in cv units.
 
 } % cvvmdonly dashboard
 

@@ -119,7 +119,8 @@ proc ::cv_dashboard::plot_clicked { x y } {
     return
   }
 
-  animate goto [expr { ($x - $xplotmin) / $scalex + $xmin}]
+  # Round to nearest frame number
+  animate goto [expr { round(($x - $xplotmin) / $scalex + $xmin)}]
   if { $::cv_dashboard::track_frame == 0 } {
     # frame change doesn't trigger refresh, so we refresh manually
     refresh_values

@@ -30,9 +30,13 @@ proc ::cv_dashboard::createWindow {} {
   $w.cvtable configure -column val
   $w.cvtable column #0 -width 50 -stretch 1 -anchor w
   $w.cvtable column val -width 150 -stretch 1 -anchor w
-  bind $w <e> ::cv_dashboard::edit
+
+  bind $w <Control-e> ::cv_dashboard::edit
   bind $w <Control-a> { .cv_dashboard_window.cvtable selection set $::cv_dashboard::cvs }
   bind $w <Control-n> ::cv_dashboard::add
+
+  event add <<keyb_enter>> <Return>   ;# Combine Return and keypad-Enter into a single virtual event
+  event add <<keyb_enter>> <KP_Enter>
 
   if { [info patchlevel] != "8.5.6" } {
     $w.cvtable tag configure parity0 -background white
@@ -46,7 +50,7 @@ proc ::cv_dashboard::createWindow {} {
 
   # Editing
   incr gridrow
-  grid [ttk::button $w.edit -text "Edit \[e\]" -command ::cv_dashboard::edit -padding "2 0 2 0"] \
+  grid [ttk::button $w.edit -text "Edit \[Ctrl-e\]" -command ::cv_dashboard::edit -padding "2 0 2 0"] \
     -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $w.add -text "New \[Ctrl-n\]" -command ::cv_dashboard::add -padding "2 0 2 0"] \
     -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
@@ -75,12 +79,35 @@ proc ::cv_dashboard::createWindow {} {
   grid [ttk::button $w.hide_atoms -text "Hide atoms" -command {::cv_dashboard::hide_atoms} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $w.hide_all_atoms -text "Hide all atoms" -command {::cv_dashboard::hide_all_atoms} -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
+  incr gridrow
+  grid [ttk::separator $w.sep1 -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
+
   # Gradient display
   incr gridrow
   grid [ttk::button $w.show_gradients -text "Show gradients" -command {::cv_dashboard::show_gradients [::cv_dashboard::selected_colvars]} \
     -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $w.hide_gradients -text "Hide gradients" -command {::cv_dashboard::hide_gradients} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $w.hide_all_gradients -text "Hide all grads" -command {::cv_dashboard::hide_all_gradients} -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+
+  incr gridrow
+  grid [ttk::radiobutton $w.grad_scale_choice_norm -text "Set max. vector norm" -value "norm" -variable ::cv_dashboard::grad_scale_choice \
+    -command ::cv_dashboard::update_shown_gradients -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [tk::entry $w.grad_norm -textvariable ::cv_dashboard::grad_norm] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  grid [label $w.grad_norm_unit -text "Angstrom"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+  bind $w.grad_norm <<keyb_enter>> "$w.grad_scale_choice_norm invoke; ::cv_dashboard::update_shown_gradients"
+
+  incr gridrow
+  grid [ttk::radiobutton $w.grad_scale_choice_scale -text "Set scaling factor" -value "scale" -variable ::cv_dashboard::grad_scale_choice \
+    -command ::cv_dashboard::update_shown_gradients -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [tk::entry $w.grad_scale -textvariable ::cv_dashboard::grad_scale] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  grid [label $w.grad_scale_unit -text "A * L / (cv / width)"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+  bind $w.grad_scale <<keyb_enter>> "$w.grad_scale_choice_scale invoke; ::cv_dashboard::update_shown_gradients"
+
+  $w.grad_scale_choice_norm invoke ;# Default to norm
+
+  incr gridrow
+  grid [ttk::separator $w.sep2 -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
+
 
   # Units
   incr gridrow
@@ -184,10 +211,6 @@ proc ::cv_dashboard::refresh_table {} {
     }
   }
 
-  # Remove deleted variables from gradient display
-  foreach cv [array names ::cv_dashboard::grad_object] {
-    if { [lsearch $::cv_dashboard::cvs $cv] == -1 } { unset ::cv_dashboard::grad_object($cv) }
-  }
   update_shown_gradients
 
   update_frame internal $::cv_dashboard::mol w
@@ -529,26 +552,53 @@ proc ::cv_dashboard::update_shown_gradients {} {
       graphics $molid delete $obj
     }
 
+    # Forget variables that have been deleted (*after* deleting the graphics above)
+    if { [lsearch $::cv_dashboard::cvs $cv] == -1 } {
+      unset ::cv_dashboard::grad_objects($cv)
+      continue
+    }
+
     set atomids [run_cv colvar $cv getatomids]
-    if { [llength $atomids] == 0 } { continue }
+    if { [llength $atomids] == 0 } {
+      # Variable was reinitialized and lost its gradient feature
+      if { [run_cv colvar $cv set "collect gradient" 1] == -1 } { continue }
+      # If that didn't work then gradients are not supported
+      if { [llength $atomids] == 0 } { continue }
+      run_cv colvar $cv update
+    }
+
     set grads [run_cv colvar $cv getgradients]
+    if { [llength $grads] == 0 } { continue }
+
     set sel [atomselect $molid "index $atomids"]
     set coords [$sel get {x y z}]
     $sel delete
 
-    set desired_max_length 5.
+    # Loop through colorids (only in this run of the proc though)
     graphics $molid color [expr $colorid % 32]
     incr colorid
 
     set maxl2 0.
-
     foreach g $grads {
       set l2 [veclength2 $g]
       if { $l2 > $maxl2 } { set maxl2 $l2 }
     }
-    if {$maxl2 < 1e-10} { continue }
-    set fact [expr {$desired_max_length / sqrt($maxl2)}]
+    if {$maxl2 < 1e-14} { continue } ;# Zero gradient, don't even try
 
+    # Get width if provided in colvar config
+    set width 1.
+    regexp -nocase -lineanchor {^\s*width\s([\d\.e]*)} [get_config $cv] match width
+
+    set ::tcl_precision 3 ;# Compute scaling factors with few significant figures
+    if { $::cv_dashboard::grad_scale_choice == "scale" } {
+      set fact [expr {$::cv_dashboard::grad_scale / $width}]
+      set ::cv_dashboard::grad_norm [expr {sqrt($maxl2) * $fact}]
+    } else {
+      set fact [expr {$::cv_dashboard::grad_norm / sqrt($maxl2)}]
+      set ::cv_dashboard::grad_scale [expr {$fact * $width}]
+    }
+    unset ::tcl_precision ;# Back to default
+  
     # Create new arrows
     set new_objs {}
     foreach start $coords g $grads {
