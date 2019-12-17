@@ -309,8 +309,7 @@ void colvar::cvc::init_as_distance()
   enable(f_cvc_lower_boundary);
   lower_boundary.type(colvarvalue::type_scalar);
   lower_boundary.real_value = 0.0;
-  register_param("lowerBoundary", reinterpret_cast<void *>(&lower_boundary),
-                 NULL);
+  register_param("lowerBoundary", reinterpret_cast<void *>(&lower_boundary));
 }
 
 
@@ -329,10 +328,8 @@ void colvar::cvc::init_scalar_boundaries(cvm::real lb, cvm::real ub)
   enable(f_cvc_upper_boundary);
   upper_boundary.type(colvarvalue::type_scalar);
   upper_boundary.real_value = ub;
-  register_param("lowerBoundary", reinterpret_cast<void *>(&lower_boundary),
-                 NULL);
-  register_param("upperBoundary", reinterpret_cast<void *>(&upper_boundary),
-                 NULL);
+  register_param("lowerBoundary", reinterpret_cast<void *>(&lower_boundary));
+  register_param("upperBoundary", reinterpret_cast<void *>(&upper_boundary));
 }
 
 
@@ -343,73 +340,11 @@ void colvar::cvc::register_atom_group(cvm::atom_group *ag)
 }
 
 
-void colvar::cvc::register_param(std::string const &param_name, void *param_ptr,
-                                 colvarvalue *param_grad_ptr)
-{
-  param_map[param_name] = param_ptr;
-  if (param_grad_ptr) {
-    param_grad_map[param_name] = param_grad_ptr;
-  }
-}
-
-
-int colvar::cvc::param_exists(std::string const &param_name)
-{
-  if (param_map.count(param_name) > 0) {
-    return COLVARS_OK;
-  }
-  return INPUT_ERROR;
-}
-
-
-cvm::real colvar::cvc::get_param(std::string const &param_name)
-{
-  cvm::real const *ptr =
-    reinterpret_cast<cvm::real const *>(get_param_ptr(param_name));
-  return ptr != NULL ? *ptr : 0.0;
-}
-
-
-void const *colvar::cvc::get_param_ptr(std::string const &param_name)
-{
-  if (param_map.count(param_name) > 0) {
-    return param_map[param_name];
-  }
-  cvm::error("Error: parameter \""+param_name+"\" not found.\n", INPUT_ERROR);
-  return NULL;
-}
-
-
-std::vector<std::string> colvar::cvc::get_param_names()
-{
-  std::vector<std::string> result;
-  for (std::map<std::string, void const *>::const_iterator elem =
-         param_map.begin(); elem != param_map.end(); elem++) {
-    result.push_back(elem->first);
-  }
-  return result;
-}
-
-
 colvarvalue const *colvar::cvc::get_param_grad(std::string const &param_name)
 {
-  if (param_grad_map.count(param_name) > 0) {
-    return param_grad_map[param_name];
-  }
-  cvm::error("Error: gradient of parameter \""+param_name+"\" not found.\n",
-             INPUT_ERROR);
-  return NULL;
-}
-
-
-std::vector<std::string> colvar::cvc::get_param_grad_names()
-{
-  std::vector<std::string> result;
-  for (std::map<std::string, colvarvalue const *>::const_iterator elem =
-         param_grad_map.begin(); elem != param_grad_map.end(); elem++) {
-    result.push_back(elem->first);
-  }
-  return result;
+  colvarvalue const *ptr =
+    reinterpret_cast<colvarvalue const *>(get_param_grad_ptr(param_name));
+  return ptr != NULL ? ptr : NULL;
 }
 
 
@@ -433,12 +368,9 @@ int colvar::cvc::set_param(std::string const &param_name,
         wrap_center = *(reinterpret_cast<cvm::real const *>(new_value));
       }
     }
-    return cvm::error("Error: parameter \""+param_name+"\" cannot be "
-                      "modified.\n", COLVARS_NOT_IMPLEMENTED);
   }
 
-  return cvm::error("Error: parameter \""+param_name+"\" not found.\n",
-                    INPUT_ERROR);
+  return colvarparams::set_param(param_name, new_value);
 }
 
 

@@ -209,27 +209,6 @@ public:
   /// object
   virtual void apply_force(colvarvalue const &cvforce) = 0;
 
-  /// Whether the parameter param_name exists
-  virtual int param_exists(std::string const &param_name);
-
-  /// Value of the parameter param_name (must be a scalar)
-  virtual cvm::real get_param(std::string const &param_name);
-
-  /// Pointer to the parameter param_name (when it is an object)
-  virtual void const *get_param_ptr(std::string const &param_name);
-
-  /// Get a copy of the names of registered parameters
-  virtual std::vector<std::string> get_param_names();
-
-  /// Pointer to the gradients of the variable with respect to param_name
-  virtual colvarvalue const *get_param_grad(std::string const &param_name);
-
-  /// Get a copy of the names of registered parameter gradients
-  virtual std::vector<std::string> get_param_grad_names();
-
-  /// Set the named parameter to the given value
-  virtual int set_param(std::string const &param_name, void const *new_value);
-
   /// \brief Square distance between x1 and x2 (can be redefined to
   /// transparently implement constraints, symmetries and
   /// periodicities)
@@ -283,6 +262,12 @@ public:
   /// \brief Store a pointer to new atom group, and list as child for dependencies
   void register_atom_group(cvm::atom_group *ag);
 
+  /// Pointer to the gradient of parameter param_name
+  virtual colvarvalue const *get_param_grad(std::string const &param_name);
+
+  /// Set the named parameter to the given value
+  virtual int set_param(std::string const &param_name, void const *new_value);
+
   /// \brief Whether or not this CVC will be computed in parallel whenever possible
   bool b_try_scalable;
 
@@ -303,16 +288,6 @@ protected:
   /// \brief Calculated Jacobian derivative (divergence of the inverse
   /// gradients): serves to calculate the phase space correction
   colvarvalue jd;
-
-  /// Pointers to relevant parameters that may be accessed by other objects
-  std::map<std::string, void const *> param_map;
-
-  /// Pointers to derivatives of the variable with respect to those parameters
-  std::map<std::string, colvarvalue const *> param_grad_map;
-
-  /// Register the given parameter (and optionally its gradient as well)
-  void register_param(std::string const &param_name, void *param_ptr,
-                      colvarvalue *param_grad_ptr = NULL);
 
   /// \brief Set data types for a scalar distance (convenience function)
   void init_as_distance();

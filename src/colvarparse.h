@@ -12,10 +12,10 @@
 
 #include <cstring>
 #include <string>
-#include <map>
 
 #include "colvarmodule.h"
 #include "colvarvalue.h"
+#include "colvarparams.h"
 
 
 /// \file colvarparse.h Parsing functions for collective variables
@@ -23,37 +23,24 @@
 
 /// \brief Base class containing parsing functions; all objects which
 /// need to parse input inherit from this
-class colvarparse {
+class colvarparse : public colvarparams {
 
 public:
 
   /// Default constructor
-  inline colvarparse()
-  {
-    init();
-  }
+  colvarparse();
 
   /// Constructor that stores the object's config string
-  inline colvarparse(const std::string& conf)
-  {
-    init(conf);
-  }
+  colvarparse(const std::string& conf);
 
   /// Set the object ready to parse a new configuration string
-  inline void init()
-  {
-    config_string.clear();
-    clear_keyword_registry();
-  }
+  void init();
 
   /// Set a new config string for this object
-  inline void init(std::string const &conf)
-  {
-    if (! config_string.size()) {
-      init();
-      config_string = conf;
-    }
-  }
+  void init(std::string const &conf);
+
+  /// Default destructor
+  virtual ~colvarparse();
 
   /// Get the configuration string (includes comments)
   inline std::string const & get_config() const

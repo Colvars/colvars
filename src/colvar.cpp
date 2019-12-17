@@ -804,7 +804,7 @@ template<typename def_class_name> int colvar::init_components_type(std::string c
 int colvar::init_components(std::string const &conf)
 {
   int error_code = COLVARS_OK;
-  size_t i = 0;
+  size_t i = 0, j = 0;
 
   error_code |= init_components_type<distance>(conf, "distance", "distance");
   error_code |= init_components_type<distance_vec>(conf, "distance vector", "distanceVec");
@@ -867,8 +867,7 @@ int colvar::init_components(std::string const &conf)
     return INPUT_ERROR;
   }
 
-  size_t i, j;
-  // Check for uniqueness of CVC names (esp. if user-provided)
+  // Check for uniqueness of CVC names (esp. if user-provided)
   for (i = 0; i < cvcs.size(); i++) {
     for (j = i+1; j < cvcs.size(); j++) {
       if (cvcs[i]->name == cvcs[j]->name) {

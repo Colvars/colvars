@@ -42,6 +42,7 @@ COLVARS_SRCS = \
         colvardeps.cpp \
         colvargrid.cpp \
         colvarmodule.cpp \
+        colvarparams.cpp \
         colvarparse.cpp \
         colvarproxy.cpp \
         colvarproxy_replicas.cpp \
