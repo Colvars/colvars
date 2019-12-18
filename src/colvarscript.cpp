@@ -10,12 +10,16 @@
 #include <cstdlib>
 #include <cstring>
 
-#define COLVARSCRIPT_CPP
-#include "colvarscript.h"
-#undef COLVARSCRIPT_CPP
+#if defined(NAMD_TCL) || defined(VMDTCL)
+#define COLVARS_TCL
+#include <tcl.h>
+#endif
 
 #include "colvarproxy.h"
 #include "colvardeps.h"
+#include "colvarscript.h"
+#include "colvarscript_commands.h"
+
 
 
 colvarscript::colvarscript(colvarproxy *p)
@@ -23,44 +27,105 @@ colvarscript::colvarscript(colvarproxy *p)
    colvars(p->colvars),
    proxy_error(0)
 {
+  comm_names = NULL;
+  init_commands();
+}
+
+
+colvarscript::~colvarscript()
+{
+  if (comm_names) {
+    delete [] comm_names;
+    comm_names = NULL;
+  }
+}
+
+
+int colvarscript::init_commands()
+{
+  if (cvm::debug()) {
+    cvm::log("Called colvarcript::init_commands()\n");
+  }
+
   comm_help.resize(colvarscript::cv_n_commands);
+  comm_n_args_min.resize(colvarscript::cv_n_commands);
+  comm_n_args_max.resize(colvarscript::cv_n_commands);
+  comm_arghelp.resize(colvarscript::cv_n_commands);
   comm_fns.resize(colvarscript::cv_n_commands);
-#define COLVARSCRIPT_INIT_FN
-#include "colvarscript.h"
-#undef COLVARSCRIPT_INIT_FN
+
+  if (comm_names) {
+    delete [] comm_names;
+    comm_names = NULL;
+  }
+  comm_names = new char const * [colvarscript::cv_n_commands];
+
+#undef COLVARSCRIPT_COMMANDS_H // disable include guard
+#if defined(CVSCRIPT)
+#undef CVSCRIPT // disable default macro
+#endif
+#define CVSCRIPT_COMM_INIT(COMM,HELP,N_ARGS_MIN,N_ARGS_MAX,ARGS) {      \
+    char const *arghelp[N_ARGS_MAX] = ARGS;                             \
+    init_command(COMM,#COMM,HELP,N_ARGS_MIN,N_ARGS_MAX,arghelp,&(CVSCRIPT_COMM_FNAME(COMM))); \
+  }
+#define CVSCRIPT(COMM,HELP,N_ARGS_MIN,N_ARGS_MAX,ARGS,FN_BODY)  \
+  CVSCRIPT_COMM_INIT(COMM,HELP,N_ARGS_MIN,N_ARGS_MAX,ARGS)
+
+#include "colvarscript_commands.h"
+
+#undef CVSCRIPT_COMM_INIT
+#undef CVSCRIPT
+
+  return COLVARS_OK;
 }
 
 
-extern "C" {
-
-  // Generic hooks; NAMD and VMD have Tcl-specific versions in the respective proxies
-
-  int run_colvarscript_command(int objc, unsigned char *const objv[])
-  {
-    colvarproxy *cvp = cvm::proxy;
-    if (!cvp) {
-      return -1;
-    }
-    if (!cvp->script) {
-      cvm::error("Called run_colvarscript_command without a script object initialized.\n");
-      return -1;
-    }
-    return cvp->script->run(objc, objv);
+int colvarscript::init_command(colvarscript::command const &comm,
+                               char const *name, char const *help,
+                               int n_args_min, int n_args_max,
+                               char const **arghelp,
+                               int (*fn)(void *, int, unsigned char * const *))
+{
+  comm_str_map[std::string(name)] = comm;
+  comm_names[comm] = name;
+  comm_help[comm] = help;
+  comm_n_args_min[comm] = n_args_min;
+  comm_n_args_max[comm] = n_args_max;
+  for (int iarg = 0; iarg < n_args_max; iarg++) {
+    comm_arghelp[comm].push_back(std::string(arghelp[iarg]));
   }
-
-  const char * get_colvarscript_result()
-  {
-    colvarproxy *cvp = cvm::proxy;
-    if (!cvp->script) {
-      cvm::error("Called run_colvarscript_command without a script object initialized.\n");
-      return "";
-    }
-    return cvp->script->result.c_str();
+  comm_fns[comm] = fn;
+  if (cvm::debug()) {
+    cvm::log("Defined command \""+std::string(name)+"\", with help string:\n");
+    cvm::log(get_command_help(name));
   }
+  return COLVARS_OK;
 }
 
 
-/// Run method based on given arguments
+std::string colvarscript::get_command_help(char const *cmd)
+{
+  if (comm_str_map.count(cmd) > 0) {
+    colvarscript::command const c = comm_str_map[std::string(cmd)];
+    std::string new_result(comm_help[c]+"\n");
+    if (comm_n_args_max[c] == 0) return new_result;
+    new_result += "\nParameters\n";
+    new_result += "----------\n\n";
+    size_t i;
+    for (i = 0; i < comm_n_args_min[c]; i++) {
+      new_result += comm_arghelp[c][i]+"\n\n";
+    }
+    for (i = comm_n_args_min[c]; i < comm_n_args_max[c]; i++) {
+      new_result += comm_arghelp[c][i]+" (optional)\n\n";
+    }
+    return new_result;
+  }
+
+  cvm::error("Error: command "+std::string(cmd)+
+             " is not implemented.\n", INPUT_ERROR);
+  return std::string("");
+}
+
+
 int colvarscript::run(int objc, unsigned char *const objv[])
 {
   result.clear();
@@ -73,7 +138,7 @@ int colvarscript::run(int objc, unsigned char *const objv[])
   }
 
   if (objc < 2) {
-    set_str_result("No commands given: use \"cv help\" "
+    set_result_str("No commands given: use \"cv help\" "
                    "for a list of commands.");
     return COLVARSCRIPT_ERROR;
   }
@@ -674,4 +739,52 @@ Accessing biases:\n\
 ";
 
   return buf;
+}
+
+
+int colvarscript::unsupported_op()
+{
+  return cvm::error("Error: unsupported script operation.\n",
+                    COLVARS_NOT_IMPLEMENTED);
+}
+
+
+int colvarscript::set_result_str(std::string const &s)
+{
+  result = s;
+  return COLVARS_OK;
+}
+
+
+int colvarscript::clear_str_result()
+{
+  result.clear();
+  return COLVARS_OK;
+}
+
+
+extern "C"
+int run_colvarscript_command(int objc, unsigned char *const objv[])
+{
+  colvarmodule *cv = cvm::main();
+  colvarscript *script = cv ? cv->proxy->script : NULL;
+  if (!script) {
+    cvm::error("Called run_colvarscript_command without a script object.\n",
+               BUG_ERROR);
+    return -1;
+  }
+  int retval = script->run(objc, objv);
+  return retval;
+}
+
+
+extern "C"
+const char * get_colvarscript_result()
+{
+  colvarscript *script = colvarscript_obj();
+  if (!script) {
+    cvm::error("Called get_colvarscript_result without a script object.\n");
+    return NULL;
+  }
+  return script->str_result().c_str();
 }

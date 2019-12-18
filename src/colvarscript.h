@@ -8,7 +8,7 @@
 // Colvars repository at GitHub.
 
 #ifndef COLVARSCRIPT_H
-//#define COLVARSCRIPT_H // Delay definition until later
+#define COLVARSCRIPT_H
 
 #include <string>
 #include <vector>
@@ -38,8 +38,12 @@ public:
 
   friend class colvarproxy;
 
-  colvarscript(colvarproxy * p);
-  inline ~colvarscript() {}
+  colvarscript(colvarproxy *p);
+
+  ~colvarscript();
+
+  /// Set up all script API functions
+  int init_commands();
 
   /// If an error is caught by the proxy through fatal_error(), this is set to
   /// COLVARSCRIPT_ERROR
@@ -52,14 +56,42 @@ public:
   /// Run script command with given positional arguments (objects)
   int run(int objc, unsigned char *const objv[]);
 
-  /// Set the return value of the script command to the given string
-  inline void set_str_result(std::string const &s)
+  /// Get the string result (if given)
+  inline std::string const &str_result()
   {
-    result = s;
+    return result;
   }
+
+  /// Set the return value to the given string
+  int set_result_str(std::string const &s);
+
+  /// Clear the string result
+  int clear_str_result();
 
   /// Build and return a short help
   std::string help_string(void) const;
+
+  /// Commands available
+  enum command {
+#define CVSCRIPT_ENUM_COMM(COMM) COMM,
+#undef CVSCRIPT
+#define CVSCRIPT(COMM,HELP,N_ARGS_MIN,N_ARGS_MAX,ARGS,FN_BODY)  \
+  CVSCRIPT_ENUM_COMM(COMM)
+#ifdef COLVARSCRIPT_COMMANDS_H
+#undef COLVARSCRIPT_COMMANDS_H
+#endif
+#include "colvarscript_commands.h"
+#undef COLVARSCRIPT_COMMANDS_H
+#undef CVSCRIPT
+#undef CVSCRIPT_ENUM_COMM
+    cv_n_commands
+  };
+
+  /// Set up a single script API functions
+  int init_command(colvarscript::command const &comm,
+                   char const *name, char const *help,
+                   int n_args_min, int n_args_max, char const **arghelp,
+                   int (*fn)(void *, int, unsigned char * const *));
 
   /// Use scripting language to get the string representation of an object
   inline char const *obj_to_str(unsigned char *const obj)
@@ -67,47 +99,7 @@ public:
     return cvm::proxy->script_obj_to_str(obj);
   }
 
-  enum command {
-    cv_help,
-    cv_version,
-    cv_config,
-    cv_getconfig,
-    cv_configfile,
-    cv_reset,
-    cv_resetindexgroups,
-    cv_delete,
-    cv_list,
-    cv_list_biases,
-    cv_load,
-    cv_save,
-    cv_update,
-    cv_addenergy,
-    cv_getenergy,
-    cv_printframe,
-    cv_printframelabels,
-    cv_frame,
-    cv_units,
-    cv_colvar,
-    cv_colvar_value,
-    cv_colvar_update,
-    cv_colvar_type,
-    cv_colvar_delete,
-    cv_colvar_addforce,
-    cv_colvar_getappliedforce,
-    cv_colvar_gettotalforce,
-    cv_colvar_cvcflags,
-    cv_colvar_getconfig,
-    cv_colvar_get,
-    cv_colvar_set,
-    cv_bias,
-    cv_bias_energy,
-    cv_bias_update,
-    cv_bias_delete,
-    cv_bias_getconfig,
-    cv_bias_get,
-    cv_bias_set,
-    cv_n_commands
-  };
+private:
 
   /// Execute a script command
   inline int exec_command(command c,
@@ -117,17 +109,19 @@ public:
     return (*(comm_fns[c]))(pobj, objc, objv);
   }
 
-  /// Get help for a command (TODO reformat for each language?)
-  inline std::string command_help(colvarscript::command c) const
+public:
+
+  /// Get names of all commands
+  inline char const **get_command_names() const
   {
-    return comm_help[c];
+    return comm_names;
   }
 
-  /// Clear all object results
-  inline void clear_results()
-  {
-    result.clear();
-  }
+  /// Get help string for a command
+  std::string get_command_help(char const *c);
+
+  /// Set error code for unsupported script operation
+  int unsupported_op();
 
 private:
 
@@ -144,14 +138,20 @@ private:
   /// Internal identifiers of command strings
   std::map<std::string, command> comm_str_map;
 
+  /// Inverse of comm_str_map (to be exported outside this class)
+  char const **comm_names;
+
   /// Help strings for each command
   std::vector<std::string> comm_help;
 
-  /// Number of arguments for each command
-  std::vector<size_t> comm_n_args;
+  /// Minimum number of arguments for each command
+  std::vector<size_t> comm_n_args_min;
 
-  /// Arguments for each command
-  std::vector< std::vector<std::string> > comm_args;
+  /// Maximum number of arguments for each command
+  std::vector<size_t> comm_n_args_max;
+
+  /// Help strings for each command argument
+  std::vector< std::vector<std::string> > comm_arghelp;
 
   /// Implementations of each command
   std::vector<int (*)(void *, int, unsigned char * const *)> comm_fns;
@@ -165,11 +165,13 @@ inline static colvarscript *colvarscript_obj()
   return cvm::main()->proxy->script;
 }
 
+
 /// Get a pointer to the colvar object pointed to by pobj
 inline static colvar *colvar_obj(void *pobj)
 {
   return reinterpret_cast<colvar *>(pobj);
 }
+
 
 /// Get a pointer to the colvarbias object pointed to by pobj
 inline static colvarbias *colvarbias_obj(void *pobj)
@@ -178,137 +180,15 @@ inline static colvarbias *colvarbias_obj(void *pobj)
 }
 
 
-#define CVSCRIPT_COMM_FNAME(COMM) cvscript_ ## COMM
-
-#define CVSCRIPT_COMM_PROTO(COMM)                                       \
-  int CVSCRIPT_COMM_FNAME(COMM)(void *, int, unsigned char *const *);
-
-#define CVSCRIPT(COMM,HELP,N_ARGS_MIN,N_ARGS_MAX,ARGS,FN_BODY)  \
-  CVSCRIPT_COMM_PROTO(COMM)
-
-#undef COLVARSCRIPT_H
-#endif // #ifndef COLVARSCRIPT_H
-
-
-#ifdef COLVARSCRIPT_CPP
-#define CVSCRIPT_COMM_FN(COMM,N_ARGS_MIN,N_ARGS_MAX,ARGS,FN_BODY)       \
-  extern "C" int CVSCRIPT_COMM_FNAME(COMM)(void *pobj,                  \
-                                           int objc,                    \
-                                           unsigned char *const objv[]) \
-  {                                                                     \
-    colvarscript *script = colvarscript_obj();                          \
-    script->clear_results();                                            \
-    if (objc < 2+N_ARGS_MIN) /* "cv" and "COMM" are 1st and 2nd */ {    \
-      script->set_str_result("Missing arguments\n" +                    \
-                             script->command_help(colvarscript::COMM)); \
-      return COLVARSCRIPT_ERROR;                                        \
-    }                                                                   \
-    if (objc > 2+N_ARGS_MAX) {                                          \
-      script->set_str_result("Too many arguments\n" +                   \
-                             script->command_help(colvarscript::COMM)); \
-      return COLVARSCRIPT_ERROR;                                        \
-    }                                                                   \
-    FN_BODY;                                                            \
-  }
-#undef CVSCRIPT
-#define CVSCRIPT(COMM,HELP,N_ARGS_MIN,N_ARGS_MAX,ARGS,FN_BODY) \
-  CVSCRIPT_COMM_FN(COMM,N_ARGS_MIN,N_ARGS_MAX,ARGS,FN_BODY)
-#endif // #ifdef COLVARSCRIPT_CPP
-
-
-#ifdef COLVARSCRIPT_INIT_FN
-#define CVSCRIPT_COMM_INIT(COMM,HELP,ARGS) {                    \
-    comm_str_map[#COMM] = COMM;                                 \
-    comm_help[COMM] = HELP;                                     \
-    comm_fns[COMM] = &(CVSCRIPT_COMM_FNAME(COMM));              \
-  }
-#undef CVSCRIPT
-#define CVSCRIPT(COMM,HELP,N_ARGS_MIN,N_ARGS_MAX,ARGS,FN_BODY)  \
-  CVSCRIPT_COMM_INIT(COMM,HELP,ARGS)
-#endif
-
-
-#if !defined(COLVARSCRIPT_H) || defined(COLVARSCRIPT_INIT_FN)
-#define COLVARSCRIPT_H
-
-#ifndef COLVARSCRIPT_INIT_FN
-#ifdef __cplusplus
 extern "C" {
-#endif
-#endif
 
-  // Add optional arguments for command-specific help?
-  CVSCRIPT(cv_help,
-           "Print the help message",
-           0, 0,
-           {},
-           script->set_str_result(script->help_string());
-           return COLVARS_OK;
-           )
+  /// Generic wrapper for string-based scripting
+  int run_colvarscript_command(int objc, unsigned char *const objv[]);
 
-  CVSCRIPT(cv_config,
-           "Read configuration from the given string",
-           1, 1,
-           { "conf (str) - Configuration string" },
-           std::string const conf(script->obj_to_str(objv[2]));
-           if (cvm::main()->read_config_string(conf) == COLVARS_OK) {
-             return COLVARS_OK;
-           }
-           script->set_str_result("Error parsing configuration string");
-           return COLVARSCRIPT_ERROR;
-           )
+  /// Get the string result of a script call
+  const char * get_colvarscript_result();
 
-  CVSCRIPT(cv_getconfig,
-           "Get the module's configuration string read so far",
-           0, 0,
-           { },
-           script->set_str_result(cvm::main()->get_config());
-           return COLVARS_OK;
-           )
+}
 
-  CVSCRIPT(cv_resetindexgroups,
-           "Clear the index groups loaded so far, allowing to replace them",
-           0, 0,
-           { },
-           return cvm::main()->reset_index_groups();
-           )
-
-  CVSCRIPT(cv_addenergy,
-           "Add an energy to the MD engine",
-           1, 1,
-           { "E (float) - Amount of energy to add" },
-           cvm::main()->total_bias_energy +=
-             strtod(script->obj_to_str(objv[2]), NULL);
-           return COLVARS_OK;
-           )
-
-  CVSCRIPT(cv_getenergy,
-           "Get the current Colvars energy",
-           1, 1,
-           { "E (float) - Store the energy in this variable" },
-           double *energy = reinterpret_cast<double *>(objv[2]);
-           *energy = cvm::main()->total_bias_energy;
-           return COLVARS_OK;
-           )
-
-  CVSCRIPT(cv_units,
-           "Get the current Colvars unit system",
-           0, 1,
-           { },
-           if (objc < 3) {
-            script->set_str_result(cvm::proxy->units);
-            return COLVARS_OK;
-           } else {
-            return cvm::proxy->set_unit_system(script->obj_to_str(objv[2]) , false);
-           }
-           )
-
-#ifndef COLVARSCRIPT_INIT_FN
-#ifdef __cplusplus
-} // extern "C"
-#endif
-#endif
-
-#undef CVSCRIPT
 
 #endif // #ifndef COLVARSCRIPT_H
