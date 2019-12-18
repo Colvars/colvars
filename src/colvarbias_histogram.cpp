@@ -411,6 +411,7 @@ int colvarbias_reweightaMD::write_cumulant_expansion_pmf(const std::string& outp
   grid_dV_square->raw_data_out(dV_square_raw_data);
   const cvm::real beta = 1.0 / (cvm::temperature() * cvm::boltzmann());
   std::vector<cvm::real> count_raw_data(grid_count->raw_data_num(), 0);
+  grid_count->raw_data_out(count_raw_data);
   std::vector<cvm::real> factor = compute_cumulant_expansion_factor(dV_raw_data, dV_square_raw_data, count_raw_data, beta);
   counts_to_pmf(factor);
   pmf_grid_cumulant.raw_data_in(factor);
