@@ -5,22 +5,38 @@
 
 pushd $(git rev-parse --show-toplevel) 1> /dev/null
 retcode=0
-for f in src/*.cpp ; do
+for f in src/*.cpp src/*.h ; do
     f=$(basename $f)
-    if ! grep -q "\$(DSTDIR)/${f%.cpp}.o" namd/colvars/src/Makefile.namd ; then
-        echo "Error: ${f%.cpp}.o entry missing from namd/colvars/src/Makefile.namd" >&2
-        retcode=1
+    extension=${f#*.}
+    if [ ${extension} = 'cpp' ] ; then
+        prefix=${f%.cpp}
+        vmd_source=${prefix}.C
+        if ! grep -q "obj/${prefix}.o" namd/colvars/Make.depends ; then
+            echo "Warning: obj/${prefix}.o missing from namd/colvars/Make.depends" >&2
+        fi
+        if ! grep -q "\$(DSTDIR)/${prefix}.o" namd/colvars/src/Makefile.namd ; then
+            echo "Error: ${prefix}.o entry missing from namd/colvars/src/Makefile.namd" >&2
+            retcode=1
+        fi
+        if ! grep -q ${f} lammps/lib/colvars/Makefile.common ; then
+            echo "Error: ${f} missing from lammps/lib/colvars/Makefile.common" >&2
+            retcode=1
+        fi
+        if ! grep -q "\$(COLVARS_OBJ_DIR)${prefix}.o" lammps/lib/colvars/Makefile.deps ; then
+            echo "Error: \$(COLVARS_OBJ_DIR)${prefix}.o missing from lammps/lib/colvars/Makefile.deps" >&2
+        fi
+    else
+        prefix=${f%.h}
+        vmd_source=${f}
+        if ! grep -q "colvars/src/${f}" namd/colvars/Make.depends ; then
+            echo "Warning: colvars/src/${f} missing from namd/colvars/Make.depends" >&2
+        fi
+        if ! grep -q ${f} lammps/lib/colvars/Makefile.deps ; then
+            echo "Warning: ${f} missing from lammps/lib/colvars/Makefile.deps" >&2
+        fi
     fi
-    if ! grep -q "obj/${f%.cpp}.o" namd/colvars/Make.depends ; then
-        echo "Warning: obj/${f%.cpp}.o missing from namd/colvars/Make.depends" >&2
-    fi
-    vmd_source=${f%.cpp}.C
     if ! grep -q ${vmd_source} vmd/src/colvars_files.pl ; then
         echo "Error: ${vmd_source} missing from vmd/src/colvars_files.pl" >&2
-        retcode=1
-    fi
-    if ! grep -q ${f} lammps/lib/colvars/Makefile.common ; then
-        echo "Error: ${f} missing from lammps/lib/colvars/Makefile.common" >&2
         retcode=1
     fi
 done

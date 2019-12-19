@@ -72,7 +72,8 @@ Makefile.deps: $(COLVARS_SRCS)
 	@echo > $@
 	@for src in $^ ; do \
 	  obj=`basename $$src .cpp`.o ; \
-	  $(CXX) -MM $(COLVARS_INCFLAGS)  -Ilepton/include -DLEPTON \
+	  $(CXX) $(CXXFLAGS) -MM $(COLVARS_INCFLAGS) \
+	    -Ilepton/include -DLEPTON \
 	    -MT '$$(COLVARS_OBJ_DIR)'$$obj $$src >> $@ ; \
 	  done
 
