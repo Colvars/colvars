@@ -255,13 +255,11 @@ int colvarbias_alb::set_state_params(std::string const &conf)
   if (!get_keyval(conf, "maxCouplingRange", max_coupling_range))
     cvm::fatal_error("Error: maxCouplingRange  is missing from the restart.\n");
 
-
   if (!get_keyval(conf, "couplingRate", coupling_rate))
     cvm::fatal_error("Error: current setCoupling  is missing from the restart.\n");
 
   if (!get_keyval(conf, "couplingAccum", coupling_accum))
     cvm::fatal_error("Error: couplingAccum is missing from the restart.\n");
-
 
   if (!get_keyval(conf, "mean", means))
     cvm::fatal_error("Error: current mean is missing from the restart.\n");

@@ -419,6 +419,8 @@ std::istream & colvarbias::read_state(std::istream &is)
        !(is >> brace) || !(brace == "{") ||
        !(is >> colvarparse::read_block("configuration", conf)) ||
        (set_state_params(conf) != COLVARS_OK) ) {
+    if (key != bias_type)
+      cvm::log("Found key \"" + key + "\" instead of \"" + bias_type + "\"\n");
     cvm::error("Error: in reading state configuration for \""+bias_type+"\" bias \""+
                this->name+"\" at position "+
                cvm::to_str(static_cast<size_t>(is.tellg()))+
