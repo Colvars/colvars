@@ -1,0 +1,91 @@
+Usage: cv <subcommand> [args...]
+
+Managing the Colvars module:
+  configfile <file name>      -- read configuration from a file
+  config <string>             -- read configuration from the given string
+  getconfig                   -- get the module's configuration string
+  resetindexgroups            -- clear the index groups loaded so far
+  reset                       -- delete all internal configuration
+  delete                      -- delete this Colvars module instance
+  version                     -- return version of Colvars code
+  
+Input and output:
+  list                        -- return a list of all variables
+  list biases                 -- return a list of all biases
+  load <file name>            -- load a state file (requires configuration)
+  save <file name>            -- save a state file (requires configuration)
+  update                      -- recalculate colvars and biases
+  addenergy <E>               -- add <E> to the total bias energy
+  printframe                  -- return a summary of the current frame
+  printframelabels            -- return labels to annotate printframe's output
+
+Accessing collective variables:
+  colvar <name> value         -- return the current value of colvar <name>
+  colvar <name> update        -- recalculate colvar <name>
+  colvar <name> type          -- return the type of colvar <name>
+  colvar <name> delete        -- delete colvar <name>
+  colvar <name> addforce <F>  -- apply given force on colvar <name>
+  colvar <name> getappliedforce -- return applied force of colvar <name>
+  colvar <name> gettotalforce -- return total force of colvar <name>
+  colvar <name> getconfig     -- return config string of colvar <name>
+  colvar <name> cvcflags <fl> -- enable or disable cvcs according to 0/1 flags
+  colvar <name> modifycvcs <str> -- pass new config strings to each CVC
+  colvar <name> get <f>       -- get the value of the colvar feature <f>
+  colvar <name> set <f> <val> -- set the value of the colvar feature <f>
+
+Accessing biases:
+  bias <name> energy          -- return the current energy of bias <name>
+  bias <name> update          -- recalculate bias <name>
+  bias <name> delete          -- delete bias <name>
+  bias <name> getconfig       -- return config string of bias <name>
+  bias <name> get <f>         -- get the value of the bias feature <f>
+  bias <name> set <f> <val>   -- set the value of the bias feature <f>
+
+List of command descriptions:
+
+======================================================================
+cv help - Get the help string of the Colvars scripting interface
+
+Parameters
+----------
+
+command : str - Get the help string of this specific command (optional)
+
+
+======================================================================
+cv listcommands - Return a list of command names, each prefixed by "cv_"
+
+======================================================================
+cv config - Read configuration from the given string
+
+Parameters
+----------
+
+conf : str - Configuration string
+
+
+======================================================================
+cv getconfig - Get the module's configuration string read so far
+
+======================================================================
+cv resetindexgroups - Clear the index groups loaded so far, allowing to replace them
+
+======================================================================
+cv addenergy - Add an energy to the MD engine
+
+Parameters
+----------
+
+E : float - Amount of energy to add
+
+
+======================================================================
+cv units - Get or set the current Colvars unit system
+
+Parameters
+----------
+
+unit_keyword : str - The new unit system (optional)
+
+
+======================================================================
