@@ -1,0 +1,24 @@
+# -*- tcl -*-
+
+# Note: see also test.restart.namd, test.legacy.namd, test.restart.legacy.namd
+
+source ../Common/common.namd
+
+colvars                 on
+
+run 0
+
+set output [open "test.output.dat" "w"]
+
+puts ${output} [cv help]
+
+puts ${output} "List of command descriptions:"
+puts ${output} ""
+
+foreach cmd [cv listcommands] {
+    puts ${output} ======================================================================
+    puts -nonewline ${output} "cv [string range ${cmd} 3 end] - [cv help ${cmd}]"
+}
+puts ${output} ======================================================================
+
+source ../Common/delete_tmp_files.tcl

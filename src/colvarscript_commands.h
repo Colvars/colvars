@@ -69,12 +69,39 @@ extern "C" {
 #endif
 
 
-// TODO Add optional arguments for command-specific help?
 CVSCRIPT(cv_help,
-         "Print the help message",
+         "Get the help string of the Colvars scripting interface",
+         0, 1,
+         { "command : str - Get the help string of this specific command" },
+         unsigned char *const cmdobj = colvarscript_arg(0, objc, objv);
+         if (cmdobj) {
+           std::string const cmdstr(script->obj_to_str(cmdobj));
+           if (cmdstr.size()) {
+             script->set_result_str(script->get_command_help(cmdstr.c_str())+
+                                    "\n");
+             return COLVARS_OK;
+           } else {
+             return COLVARSCRIPT_ERROR;
+           }
+         } else {
+           // TODO build the global help string from the database
+           script->set_result_str(script->help_string());
+           return COLVARS_OK;
+         }
+         )
+
+CVSCRIPT(cv_listcommands,
+         "Return a list of command names, each prefixed by \"cv_\"",
          0, 0,
          {},
-         script->set_result_str(script->help_string());
+         int const n_commands = cvscript_n_commands();
+         char const **command_names = cvscript_command_names();
+         std::string result;
+         for (int i = 0; i < n_commands; i++) {
+           if (i > 0) result.append(1, ' ');
+           result.append(std::string(command_names[i]));
+         }
+         script->set_result_str(result);
          return COLVARS_OK;
          )
 
