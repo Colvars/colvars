@@ -145,7 +145,7 @@ void colvar::CartesianBasedPath::computeDistanceToReferenceFrames(std::vector<cv
 
 colvar::gspath::gspath(std::string const &conf): CartesianBasedPath(conf) {
     function_type = "gspath";
-    get_keyval(conf, "useSecondClosestFrame", use_second_closest_frame, false);
+    get_keyval(conf, "useSecondClosestFrame", use_second_closest_frame, true);
     if (use_second_closest_frame == true) {
         cvm::log(std::string("Geometric path s(σ) will use the second closest frame to compute s_(m-1)\n"));
     } else {
@@ -255,19 +255,39 @@ void colvar::gspath::calc_value() {
     computeValue();
     x = s;
 
-    // Periodically update all distances to look for long-distance jumps - display warning
+    // Periodically update all distances to look for long-distance jumps
     if (cvm::step_absolute() % check_all_distances_freq == 0) {
         for (size_t i_frame = 0; i_frame < frame_index.size(); ++i_frame) {
             (*comp_atoms[i_frame]).set_enabled(f_ag_active);
         }
     } else {
-        // Activate only the frames we'll need at next timestep
+        // Activate only the frames we may need at next timestep
+        // keep 1 frame on either side of frames that are used for evaluation
+        // except if use_second_closest_frame is false, then keep two
+        // on either side of closest frame
         // The assumption is that the closest frame will shift by at most one between two evaluations
-        // If it shifts by two, we recover everything at the next timestep
-        // If it shifts by more, we wait at most check_all_distances_freq to find the correct place
+        // If it shifts by more, this will drift towards a local minimum in distance
+        // If the the ordering is monotonous, we recover in fewer timesteps than the string length
+        // If first and second neigbors swap, we detect it at once
+        // otherwise, we wait at most check_all_distances_freq to find the new global minimum
         for (size_t i_frame = 0; i_frame < frame_index.size(); ++i_frame) {
-            // Update up to 5 frames within 2 of the closest one (down to 3 if we are at the end of the string)
-            bool activate = (abs(frame_index[0] - i_frame) <= 2);
+            int d_first = static_cast<int>(i_frame) - static_cast<int>(frame_index[0]);
+            int max_dist_to_first;
+            bool activate = false;
+            if (use_second_closest_frame) {
+                int d_second = static_cast<int>(i_frame) - static_cast<int>(frame_index[1]);
+                activate |= abs(d_second) <= 1;
+                max_dist_to_first = 1;
+            } else {
+                // If using second neighbor along the string we need an extra margin
+                max_dist_to_first = 2;
+            }
+            activate |= abs(d_first) <= max_dist_to_first;
+
+            if (use_third_closest_frame) {
+                int d_third = static_cast<int>(i_frame) - static_cast<int>(frame_index[2]);
+                activate |= abs(d_third) <= 1;
+            }
             (*comp_atoms[i_frame]).set_enabled(f_ag_active, activate);
         }
     }
