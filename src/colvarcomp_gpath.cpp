@@ -121,6 +121,40 @@ void colvar::CartesianBasedPath::computeDistanceToReferenceFrames(std::vector<cv
     }
 }
 
+// mainly used for determining the lambda value for arithmetic path
+void colvar::CartesianBasedPath::computeDistanceBetweenReferenceFrames(std::vector<cvm::real>& result) {
+    for (size_t i_frame = 0; i_frame < reference_frames.size() - 1; ++i_frame) {
+        std::vector<cvm::atom_pos> this_frame_atom_pos(reference_frames[i_frame].size());
+        std::vector<cvm::atom_pos> next_frame_atom_pos(reference_frames[i_frame + 1].size());
+        cvm::real frame_rmsd = 0.0;
+        const size_t this_index = i_frame;
+        const size_t next_index = i_frame + 1;
+        // compute COM of two successive images, respectively
+        cvm::atom_pos reference_cog_this, reference_cog_next;
+        for (size_t i_atom = 0; i_atom < atoms->size(); ++i_atom) {
+            reference_cog_this += reference_frames[this_index][i_atom];
+            reference_cog_next += reference_frames[next_index][i_atom];
+        }
+        reference_cog_this /= reference_frames[this_index].size();
+        reference_cog_next /= reference_frames[next_index].size();
+        // move all atoms to COM
+        for (size_t i_atom = 0; i_atom < atoms->size(); ++i_atom) {
+            this_frame_atom_pos[i_atom] = reference_frames[this_index][i_atom] - reference_cog_this;
+            next_frame_atom_pos[i_atom] = reference_frames[next_index][i_atom] - reference_cog_next;
+        }
+        cvm::rotation rot_this_to_next;
+        // compute the optimal rotation
+        rot_this_to_next.calc_optimal_rotation(this_frame_atom_pos, next_frame_atom_pos);
+        // compute rmsd between reference frames
+        for (size_t i_atom = 0; i_atom < atoms->size(); ++i_atom) {
+            frame_rmsd += (rot_this_to_next.q.rotate(this_frame_atom_pos[i_atom]) - next_frame_atom_pos[i_atom]).norm2();
+        }
+        frame_rmsd /= cvm::real(atoms->size());
+        frame_rmsd = cvm::sqrt(frame_rmsd);
+        result[i_frame] = frame_rmsd;
+    }
+}
+
 colvar::gspath::gspath(std::string const &conf): CartesianBasedPath(conf) {
     set_function_type("gspath");
     get_keyval(conf, "useSecondClosestFrame", use_second_closest_frame, true);

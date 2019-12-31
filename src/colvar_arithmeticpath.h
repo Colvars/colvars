@@ -56,6 +56,7 @@ public:
     virtual void updateDistanceToReferenceFrames() = 0;
     virtual void computeValue();
     virtual void computeDerivatives();
+    virtual vector<element_type> computeDerivatives(const size_t frame_index);
     virtual void compute();
     virtual void reComputeLambda(const vector<scalar_type>& rmsd_between_refs);
 protected:
@@ -153,6 +154,33 @@ void ArithmeticPathBase<element_type, scalar_type, path_type>::reComputeLambda(c
     }
     mean_square_displacements /= scalar_type(total_frames - 1);
     lambda = 1.0 / mean_square_displacements;
+}
+
+// frame-wise derivatives for frames using optimal rotation
+template <typename element_type, typename scalar_type, path_sz path_type>
+vector<element_type> ArithmeticPathBase<element_type, scalar_type, path_type>::computeDerivatives(const size_t frame_index) {
+    vector<element_type> result(num_elements);
+    for (size_t j_elem = 0; j_elem < num_elements; ++j_elem) {
+        element_type dsdxj_numerator_part1(dsdx[j_elem]);
+        element_type dsdxj_numerator_part2(dsdx[j_elem]);
+        element_type dzdxj_numerator(dsdx[j_elem]);
+        dsdxj_numerator_part1.reset();
+        dsdxj_numerator_part2.reset();
+        dzdxj_numerator.reset();
+        element_type derivative_tmp = -2.0 * lambda * weights[j_elem] * weights[j_elem] * frame_element_distances[frame_index][j_elem];
+        dsdxj_numerator_part1 += s_numerator_frame[frame_index] * derivative_tmp;
+        dsdxj_numerator_part2 += s_denominator_frame[frame_index] * derivative_tmp;
+        dzdxj_numerator += s_denominator_frame[frame_index] * derivative_tmp;
+        dsdxj_numerator_part1 *= denominator_s;
+        dsdxj_numerator_part2 *= numerator_s;
+        if (path_type == path_sz::S) {
+            result[j_elem] = (dsdxj_numerator_part1 - dsdxj_numerator_part2) / (denominator_s * denominator_s) * normalization_factor;
+        }
+        if (path_type == path_sz::Z) {
+            result[j_elem] = -1.0 / lambda * dzdxj_numerator / denominator_s;
+        }
+    }
+    return result;
 }
 }
 

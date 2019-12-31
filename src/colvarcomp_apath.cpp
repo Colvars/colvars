@@ -19,6 +19,106 @@
 #include "colvar.h"
 #include "colvarcomp.h"
 
+colvar::aspath::aspath(std::string const &conf): CartesianBasedPath(conf) {
+    function_type = "aspath";
+    cvm::log(std::string("Total number of frames: ") + cvm::to_str(total_reference_frames) + std::string("\n"));
+    x.type(colvarvalue::type_scalar);
+    std::vector<cvm::real> rmsd_between_refs(total_reference_frames - 1, 0.0);
+    computeDistanceBetweenReferenceFrames(rmsd_between_refs);
+    cvm::real mean_square_displacements = 0.0;
+    for (size_t i_frame = 1; i_frame < total_reference_frames; ++i_frame) {
+        cvm::log(std::string("Distance between frame ") + cvm::to_str(i_frame) + " and " + cvm::to_str(i_frame + 1) + " is " + cvm::to_str(rmsd_between_refs[i_frame - 1]) + std::string("\n"));
+        mean_square_displacements += rmsd_between_refs[i_frame - 1] * rmsd_between_refs[i_frame - 1];
+    }
+    mean_square_displacements /= cvm::real(total_reference_frames - 1);
+    cvm::real suggested_lambda = 1.0 / mean_square_displacements;
+    cvm::real p_lambda;
+    get_keyval(conf, "lambda", p_lambda, suggested_lambda);
+    const size_t num_elements = atoms->size();
+    std::vector<cvm::real> p_weights(num_elements, std::sqrt(1.0 / num_elements));
+    ArithmeticPathCV::ArithmeticPathBase<cvm::atom_pos, cvm::real, ArithmeticPathCV::path_sz::S>::initialize(num_elements, total_reference_frames, p_lambda, reference_frames[0], p_weights);
+    cvm::log(std::string("Lambda is ") + cvm::to_str(lambda) + std::string("\n"));
+}
+
+void colvar::aspath::updateDistanceToReferenceFrames() {
+    for (size_t i_frame = 0; i_frame < reference_frames.size(); ++i_frame) {
+        for (size_t i_atom = 0; i_atom < atoms->size(); ++i_atom) {
+            frame_element_distances[i_frame][i_atom] = (*(comp_atoms[i_frame]))[i_atom].pos - reference_frames[i_frame][i_atom];
+        }
+    }
+}
+
+void colvar::aspath::calc_value() {
+    computeValue();
+    x = s;
+}
+
+void colvar::aspath::calc_gradients() {
+    for (size_t i_frame = 0; i_frame < reference_frames.size(); ++i_frame) {
+        std::vector<cvm::atom_pos> i_frame_derivatives = computeDerivatives(i_frame);
+        for (size_t i_atom = 0; i_atom < atoms->size(); ++i_atom) {
+            (*(comp_atoms[i_frame]))[i_atom].grad += i_frame_derivatives[i_atom];
+        }
+    }
+}
+
+void colvar::aspath::apply_force(colvarvalue const &force) {
+    cvm::real const &F = force.real_value;
+    for (size_t i_frame = 0; i_frame < reference_frames.size(); ++i_frame) {
+        (*(comp_atoms[i_frame])).apply_colvar_force(F);
+    }
+}
+
+colvar::azpath::azpath(std::string const &conf): CartesianBasedPath(conf) {
+    function_type = "azpath";
+    cvm::log(std::string("Total number of frames: ") + cvm::to_str(total_reference_frames) + std::string("\n"));
+    x.type(colvarvalue::type_scalar);
+    std::vector<cvm::real> rmsd_between_refs(total_reference_frames - 1, 0.0);
+    computeDistanceBetweenReferenceFrames(rmsd_between_refs);
+    cvm::real mean_square_displacements = 0.0;
+    for (size_t i_frame = 1; i_frame < total_reference_frames; ++i_frame) {
+        cvm::log(std::string("Distance between frame ") + cvm::to_str(i_frame) + " and " + cvm::to_str(i_frame + 1) + " is " + cvm::to_str(rmsd_between_refs[i_frame - 1]) + std::string("\n"));
+        mean_square_displacements += rmsd_between_refs[i_frame - 1] * rmsd_between_refs[i_frame - 1];
+    }
+    mean_square_displacements /= cvm::real(total_reference_frames - 1);
+    cvm::real suggested_lambda = 1.0 / mean_square_displacements;
+    cvm::real p_lambda;
+    get_keyval(conf, "lambda", p_lambda, suggested_lambda);
+    const size_t num_elements = atoms->size();
+    std::vector<cvm::real> p_weights(num_elements, std::sqrt(1.0 / num_elements));
+    ArithmeticPathCV::ArithmeticPathBase<cvm::atom_pos, cvm::real, ArithmeticPathCV::path_sz::Z>::initialize(num_elements, total_reference_frames, p_lambda, reference_frames[0], p_weights);
+    cvm::log(std::string("Lambda is ") + cvm::to_str(lambda) + std::string("\n"));
+}
+
+void colvar::azpath::updateDistanceToReferenceFrames() {
+    for (size_t i_frame = 0; i_frame < reference_frames.size(); ++i_frame) {
+        for (size_t i_atom = 0; i_atom < atoms->size(); ++i_atom) {
+            frame_element_distances[i_frame][i_atom] = (*(comp_atoms[i_frame]))[i_atom].pos - reference_frames[i_frame][i_atom];
+        }
+    }
+}
+
+void colvar::azpath::calc_value() {
+    computeValue();
+    x = z;
+}
+
+void colvar::azpath::calc_gradients() {
+    for (size_t i_frame = 0; i_frame < reference_frames.size(); ++i_frame) {
+        std::vector<cvm::atom_pos> i_frame_derivatives = computeDerivatives(i_frame);
+        for (size_t i_atom = 0; i_atom < atoms->size(); ++i_atom) {
+            (*(comp_atoms[i_frame]))[i_atom].grad += i_frame_derivatives[i_atom];
+        }
+    }
+}
+
+void colvar::azpath::apply_force(colvarvalue const &force) {
+    cvm::real const &F = force.real_value;
+    for (size_t i_frame = 0; i_frame < reference_frames.size(); ++i_frame) {
+        (*(comp_atoms[i_frame])).apply_colvar_force(F);
+    }
+}
+
 colvar::aspathCV::aspathCV(std::string const &conf): CVBasedPath(conf) {
     set_function_type("aspathCV");
     cvm::log(std::string("Total number of frames: ") + cvm::to_str(total_reference_frames) + std::string("\n"));
