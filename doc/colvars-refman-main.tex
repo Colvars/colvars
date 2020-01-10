@@ -3866,10 +3866,12 @@ All biasing and analysis methods implemented recognize the following options:
 
 \cvsubsec{Thermodynamic integration}{sec:colvarbias_ti}
 
-Most of the methods here implemented feature a different estimators of free-energies, either at run-time or with the use of post-processing tools.
-The specifics of each estimator are discussed in the documentation of each method.
+The methods implemented here provide a variety of estimators of conformational free-energies.
+These are carried out at run-time, or with the use of post-processing tools over the generated output files.
+The specifics of each estimator are discussed in the documentation of each biasing or analysis method.
 
-Additionally, most restraints (\ref{sec:colvarbias_harmonic}, \ref{sec:colvarbias_harmonic_walls}, \ref{sec:colvarbias_linear}, ...) as well as metadynamics (\ref{sec:colvarbias_meta}) offer the following optional keywords, allowing the use of thermodynamic integration (TI) to compute potentials of mean force (PMFs).  In adaptive biasing force (ABF) (\ref{sec:colvarbias_abf}) the same keywords are not recognized, because their functionality is always included.
+A special case is the traditional thermodynamic integration (TI) method, used for example to compute potentials of mean force (PMFs).
+Most types of restraints (\ref{sec:colvarbias_harmonic}, \ref{sec:colvarbias_harmonic_walls}, \ref{sec:colvarbias_linear}, ...) as well as metadynamics (\ref{sec:colvarbias_meta}) can optionally use TI alongside their own estimator, based on the keywords documented below.
 
 \begin{itemize}
 
@@ -3903,6 +3905,9 @@ Additionally, most restraints (\ref{sec:colvarbias_harmonic}, \ref{sec:colvarbia
 }
 
 \end{itemize}
+
+In adaptive biasing force (ABF) (\ref{sec:colvarbias_abf}) the above keywords are not recognized, because their functionality is either included already (conventional ABF) or not available (extended-system ABF).
+
 
 
 \cvsubsec{Adaptive Biasing Force}{sec:colvarbias_abf}
