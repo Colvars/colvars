@@ -642,6 +642,31 @@ public:
     return result;
   }
 
+  /// matrix multiplication
+  inline friend matrix2d<T> operator * (matrix2d<T> const &m1,
+                                        matrix2d<T> const &m2)
+  {
+    matrix2d<T> result(m1.outer_length, m1.inner_length);
+
+    if (m2.outer_length != m1.inner_length) {
+      cvm::error("Error: trying to multiply matrices "
+                 "of incompatible sizes, "+
+                 cvm::to_str(m1.outer_length)+"x"+cvm::to_str(m1.inner_length) +
+                 cvm::to_str(m2.outer_length)+"x"+cvm::to_str(m2.inner_length) +
+                 ".\n");
+    } else {
+      size_t i, j, k;
+      for (i = 0; i < m1.inner_length; i++) {
+        for (j = 0; j < m2.outer_length; j++) {
+          for (k = 0; k < m1.outer_length; k++) {
+            result[i][j] += m1[i][k] * m2[k][j];
+          }
+        }
+      }
+    }
+    return result;
+  }
+
   /// Formatted output
   friend std::ostream & operator << (std::ostream &os,
                                      matrix2d<T> const &m)
@@ -1391,19 +1416,32 @@ public:
   /// Default constructor
   inline rotation()
     : b_debug_gradients(false)
-  {}
+  {
+    C.resize(3, 3);
+    S.resize(4, 4);
+    S_backup.resize(4, 4);
+    S_eigval.resize(4);
+  }
 
   /// Constructor after a quaternion
   inline rotation(cvm::quaternion const &qi)
     : q(qi),
       b_debug_gradients(false)
   {
+    C.resize(3, 3);
+    S.resize(4, 4);
+    S_backup.resize(4, 4);
+    S_eigval.resize(4);
   }
 
   /// Constructor after an axis of rotation and an angle (in radians)
   inline rotation(cvm::real angle, cvm::rvector const &axis)
     : b_debug_gradients(false)
   {
+    C.resize(3, 3);
+    S.resize(4, 4);
+    S_backup.resize(4, 4);
+    S_eigval.resize(4);
     cvm::rvector const axis_n = axis.unit();
     cvm::real const sina = cvm::sin(angle/2.0);
     q = cvm::quaternion(cvm::cos(angle/2.0),

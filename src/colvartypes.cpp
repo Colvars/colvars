@@ -22,7 +22,7 @@ cvm::real colvarmodule::rotation::crossing_threshold = 1.0E-02;
 namespace  {
 
 /// Numerical recipes diagonalization
-static int jacobi(cvm::real **a, cvm::real *d, cvm::real **v, int *nrot);
+static int jacobi(cvm::real **a, cvm::real *d, cvm::real **v, int *nrot, bool refine = false);
 
 /// Eigenvector sort
 static int eigsrt(cvm::real *d, cvm::real **v);
@@ -254,6 +254,7 @@ void colvarmodule::rotation::build_correlation_matrix(
 {
   // build the correlation matrix
   size_t i;
+  C.reset();
   for (i = 0; i < pos1.size(); i++) {
     C.xx() += pos1[i].x * pos2[i].x;
     C.xy() += pos1[i].x * pos2[i].y;
@@ -296,19 +297,46 @@ void colvarmodule::rotation::diagonalize_matrix(
                                             cvm::vector1d<cvm::real> &eigval,
                                             cvm::matrix2d<cvm::real> &eigvec)
 {
-  eigval.resize(4);
-  eigval.reset();
-  eigvec.resize(4, 4);
-  eigvec.reset();
+  bool refine;
+  if (eigvec.size() == 0) {
+    refine = false;
+    eigvec.resize(4, 4);
+    // Start with identity
+    for (size_t i = 0; i < 4; i++) {
+      for (size_t j = 0; j <= i; j++) {
+        eigvec[i][j] = 0.0;
+      }
+      eigvec[i][i] = 1.0;
+      eigval[i] = m[i][i]; // guess for eigenvals is diagonal
+    }
+  } else {
+    // Provide initial guess from last evaluation
+    refine = true;
+    cvm::matrix2d<cvm::real> m_bak = m;
+
+    // Matrix A within the Jacobi routine has partially-diagonalized terms in the upper triangle only
+    // Reconstruct with new input but old eigenvectors
+    cvm::matrix2d<cvm::real> t_eigvec = eigvec; // What we call eigvec is actually transposed (eigenvecs as rows)
+    transpose(eigvec.c_array()); // Give Jacobi back its eigenvectors as columns
+    m = t_eigvec * m_bak * eigvec; // Approximately diagonalized new matrix with old eigenvectors
+    for (size_t i = 0; i < 4; i++) {
+      // lower triangular terms from original matrix
+      for (size_t j = 0; j <= i; j++) {
+        m[i][j] = m_bak[i][j];
+      }
+    }
+  }
 
   // diagonalize
   int jac_nrot = 0;
-  if (jacobi(m.c_array(), eigval.c_array(), eigvec.c_array(), &jac_nrot) !=
+  if (jacobi(m.c_array(), eigval.c_array(), eigvec.c_array(), &jac_nrot, refine) !=
       COLVARS_OK) {
     cvm::error("Too many iterations in routine jacobi.\n"
                "This is usually the result of an ill-defined set of atoms for "
                "rotational alignment (RMSD, rotateReference, etc).\n");
   }
+  // cvm::log("Jacobi took " + cvm::to_str(jac_nrot) + " iterations.");
+
   eigsrt(eigval.c_array(), eigvec.c_array());
   // jacobi saves eigenvectors by columns
   transpose(eigvec.c_array());
@@ -334,15 +362,8 @@ void colvarmodule::rotation::calc_optimal_rotation(
                                         std::vector<cvm::atom_pos> const &pos1,
                                         std::vector<cvm::atom_pos> const &pos2)
 {
-  C.resize(3, 3);
-  C.reset();
   build_correlation_matrix(pos1, pos2);
-
-  S.resize(4, 4);
-  S.reset();
   compute_overlap_matrix();
-
-  S_backup.resize(4, 4);
   S_backup = S;
 
   if (b_debug_gradients) {
@@ -556,26 +577,25 @@ void colvarmodule::rotation::calc_optimal_rotation(
 
 namespace {
 
-int jacobi(cvm::real **a, cvm::real *d, cvm::real **v, int *nrot)
+int jacobi(cvm::real **a, cvm::real *d, cvm::real **v, int *nrot, bool refine)
 {
   int j,iq,ip,i;
   cvm::real tresh,theta,tau,t,sm,s,h,g,c;
+  const int max_iter = 50;
 
   cvm::vector1d<cvm::real> b(n);
   cvm::vector1d<cvm::real> z(n);
 
+  // We do *not* reset the initial value of v (eigenvectors), or d (eigenvals) as they are a guess
   for (ip=0;ip<n;ip++) {
-    for (iq=0;iq<n;iq++) {
-      v[ip][iq]=0.0;
-    }
-    v[ip][ip]=1.0;
-  }
-  for (ip=0;ip<n;ip++) {
-    b[ip]=d[ip]=a[ip][ip];
+    // b[ip]=d[ip]=a[ip][ip];
+    b[ip]=a[ip][ip];
     z[ip]=0.0;
   }
   *nrot=0;
-  for (i=0;i<=50;i++) {
+  // If we are refine a guess, pretend that we start fro iteration 4
+  i = refine ? 4 : 0;
+  for (;i<=max_iter;i++) {
     sm=0.0;
     for (ip=0;ip<n-1;ip++) {
       for (iq=ip+1;iq<n;iq++)
