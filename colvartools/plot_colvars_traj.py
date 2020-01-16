@@ -176,7 +176,7 @@ class Colvars_traj(object):
         if (last == -1):
             last = np.int64(np.iinfo(np.int64).max)
         last_step = -1
-        for f in filenames:
+        for f in [open(filename) for filename in filenames]:
             for line in f:
                 if (len(line) == 0): continue
                 if (line[:1] == "@"): continue # xmgr file metadata
@@ -212,7 +212,7 @@ if (__name__ == '__main__'):
 
     parser.add_argument(dest='filenames',
                         nargs='*',
-                        type=argparse.FileType('r'),
+                        type=str,
                         help='Space-separated list of .colvars.traj files '
                         '(will be concatenated)',
                         default=[])
