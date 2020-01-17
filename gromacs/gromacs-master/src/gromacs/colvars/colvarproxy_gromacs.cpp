@@ -436,7 +436,7 @@ void colvarproxy_gromacs::calculateForces(
       cvm::fatal_error("");
     }
 
-    // Copy the forces to a simplier array for broadcasting
+    // Copy the forces to a simpler array for broadcasting
     for (int i = 0; i < nat; i++)
     {
       f[i][0] = atoms_new_colvar_forces[i].x;
@@ -464,17 +464,19 @@ void colvarproxy_gromacs::calculateForces(
   // Parallel version
   for (int i = 0; i < nat; i++)
   {
-      // j are the indices in the "System group".
+      // j is the index in the "System group".
       int j = ind[i];
 
       // check if this is a local atom and find out locndx
-      const int       *locndx;
-      if (PAR(cr) && (locndx = cr->dd->ga2la->findHome(j)))
-      {
-          j = *locndx;
+      if (PAR(cr)) {
+        const int *locndx = cr->dd->ga2la->findHome(j);
+        if (locndx) {
+          f_colvars[*locndx] += f[i];
+        }
+        // Do nothing if atom is not local
+      } else { // Non MPI-parallel
+        f_colvars[j] += f[i];
       }
-
-      f_colvars[j] += f[i];
   }
 
   forceProviderOutput->enerd_.term[F_COM_PULL] += bias_energy;
@@ -546,51 +548,4 @@ void colvarproxy_gromacs::update_atom_properties(int index)
   atoms_masses[index] = mass;
   // update charge
   atoms_charges[index] = gmx_atoms.atom[atoms_ids[index]].q;
-}
-
-enum e_pdb_field {
-  e_pdb_none,
-  e_pdb_occ,
-  e_pdb_beta,
-  e_pdb_x,
-  e_pdb_y,
-  e_pdb_z,
-  e_pdb_ntot
-};
-
-e_pdb_field pdb_field_str2enum(std::string const &pdb_field_str)
-{
-  e_pdb_field pdb_field = e_pdb_none;
-
-  if (colvarparse::to_lower_cppstr(pdb_field_str) ==
-      colvarparse::to_lower_cppstr("O")) {
-    pdb_field = e_pdb_occ;
-  }
-
-  if (colvarparse::to_lower_cppstr(pdb_field_str) ==
-      colvarparse::to_lower_cppstr("B")) {
-    pdb_field = e_pdb_beta;
-  }
-
-  if (colvarparse::to_lower_cppstr(pdb_field_str) ==
-      colvarparse::to_lower_cppstr("X")) {
-    pdb_field = e_pdb_x;
-  }
-
-  if (colvarparse::to_lower_cppstr(pdb_field_str) ==
-      colvarparse::to_lower_cppstr("Y")) {
-    pdb_field = e_pdb_y;
-  }
-
-  if (colvarparse::to_lower_cppstr(pdb_field_str) ==
-      colvarparse::to_lower_cppstr("Z")) {
-    pdb_field = e_pdb_z;
-  }
-
-  if (pdb_field == e_pdb_none) {
-    cvm::fatal_error("Error: unsupported PDB field, \""+
-                      pdb_field_str+"\".\n");
-  }
-
-  return pdb_field;
 }
