@@ -1,0 +1,36 @@
+#units gromacs 
+
+colvar {
+    name d_com
+    distance {
+        group1 {
+            atomNumbers 1072
+        }
+        group2 {
+            atomNumbers 673 1801
+        }
+    }
+}
+
+colvar {
+    name d_atoms
+    distance {
+        group1 {
+            atomNumbers 1072
+        }
+        group2 {
+            atomNumbers 673
+        }
+    }
+}
+
+colvar {
+    name xyz
+    cartesian {
+        atoms {
+            atomNumbers 673 1072 1801
+        }
+    }
+}
+
+

@@ -1,0 +1,31 @@
+#units gromacs
+
+colvar {
+    name d_com
+    distance {
+        group1 {
+            atomNumbers 1072
+        }
+        group2 {
+            atomNumbers 673 1801
+        }
+    }
+}
+
+colvar {
+    name d_atoms
+    distance {
+        group1 {
+            atomNumbers 1072
+        }
+        group2 {
+            atomNumbers 673
+        }
+    }
+}
+
+harmonic {
+    colvars d_com
+    forceConstant 20000
+    centers 0.9
+}
