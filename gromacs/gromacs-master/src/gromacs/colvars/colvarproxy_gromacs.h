@@ -95,7 +95,7 @@ public:
   void finish(const t_commrec *cr);
 
   // **************** SYSTEM-WIDE PHYSICAL QUANTITIES ****************
-  cvm::real unit_angstrom();
+  cvm::real backend_angstrom_value();
   cvm::real boltzmann();
   cvm::real temperature();
   cvm::real dt();
