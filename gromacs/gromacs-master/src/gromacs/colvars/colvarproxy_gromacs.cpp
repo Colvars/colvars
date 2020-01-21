@@ -223,8 +223,8 @@ void colvarproxy_gromacs::set_temper(double temper)
   thermostat_temperature = temper;
 }
 
-// GROMACS uses nanometers.
-cvm::real colvarproxy_gromacs::unit_angstrom() { return 0.1; }
+// GROMACS uses nanometers and kJ/mol internally
+cvm::real colvarproxy_gromacs::backend_angstrom_value() { return 0.1; }
 
 // From Gnu units
 // $ units -ts 'k' 'kJ/mol/K/avogadro'
