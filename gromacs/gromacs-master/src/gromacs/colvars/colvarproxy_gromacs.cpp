@@ -92,12 +92,13 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
   // Retrieve the topology of all atoms
   gmx_atoms = gmx_mtop_global_atoms(mtop);
 
-  // initiate module: this object will be the communication proxy
-  colvars = new colvarmodule(this);
-
   // Read configuration file and set up the proxy only on the master node.
   if (MASTER(cr))
   {
+
+    // initiate module: this object will be the communication proxy
+    // colvarmodule pointer is only defined on the Master due to the static pointer to colvarproxy.
+    colvars = new colvarmodule(this);
 
     version_int = get_version_from_string(COLVARPROXY_VERSION);
 
@@ -120,9 +121,10 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
     if (step != 0) {
       cvm::log("Initializing step number to "+cvm::to_str(step)+".\n");
     }
-  }
 
-  colvars->it = colvars->it_restart = step;
+    colvars->it = colvars->it_restart = step;
+
+  } // end master
 
 
   // MPI initialisation
@@ -354,16 +356,16 @@ int colvarproxy_gromacs::backup_file (char const *filename)
 
 void colvarproxy_gromacs::update_data(const t_commrec *cr, int64_t const step, t_pbc const &pbc, matrix box, bool bNS)
 {
-    if (MASTER(cr) && cvm::debug()) {
+
+  if (MASTER(cr)) {
+
+    if(cvm::debug()) {
       cvm::log(cvm::line_marker);
       cvm::log("colvarproxy_gromacs, step no. "+cvm::to_str(colvars->it)+"\n"+
               "Updating internal data.\n");
     }
 
-    gmx_pbc = pbc;
-    gmx_box = box;
-    gmx_bNS = bNS;
-
+    // step update on master only due to the call of colvars pointer.
     if (first_timestep) {
       first_timestep = false;
     } else {
@@ -372,14 +374,18 @@ void colvarproxy_gromacs::update_data(const t_commrec *cr, int64_t const step, t
         colvars->it++;
       // Other cases?
     }
-    previous_gmx_step = step;
+  } // end master
 
-    // Prepare data for MPI communication
-    if(PAR(cr) && bNS) {
-      dd_make_local_group_indices(cr->dd->ga2la, nat, ind, &nat_loc, &ind_loc, &nalloc_loc, xa_ind);
-    }
+  gmx_pbc = pbc;
+  gmx_box = box;
+  gmx_bNS = bNS;
 
-  return;
+  previous_gmx_step = step;
+
+  // Prepare data for MPI communication
+  if(PAR(cr) && bNS) {
+    dd_make_local_group_indices(cr->dd->ga2la, nat, ind, &nat_loc, &ind_loc, &nalloc_loc, xa_ind);
+  }
 }
 
 
