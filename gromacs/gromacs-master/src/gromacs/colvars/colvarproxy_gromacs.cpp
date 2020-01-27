@@ -450,6 +450,7 @@ void colvarproxy_gromacs::calculateForces(
       f[i][2] = atoms_new_colvar_forces[i].z;
     }
 
+    forceProviderOutput->enerd_.term[F_COM_PULL] += bias_energy;
   } // master node
 
   //Broadcast the forces to all the nodes
@@ -485,7 +486,6 @@ void colvarproxy_gromacs::calculateForces(
       }
   }
 
-  forceProviderOutput->enerd_.term[F_COM_PULL] += bias_energy;
   return;
 }
 
