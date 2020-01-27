@@ -25,7 +25,7 @@ proc ::cv_dashboard::edit { {add false} } {
     set ::cv_dashboard::backup_cfg ""
     if { [info exists ::cv_dashboard::template_base_dir] } {
       # Open "official" colvar template
-      set in [open ${::cv_dashboard::template_base_dir}/default.in r]
+      set in [open ${::cv_dashboard::template_base_dir}/colvar/basic_colvar.in r]
       set cfg [read $in]
       close $in
     } else {
@@ -86,7 +86,7 @@ proc ::cv_dashboard::edit { {add false} } {
     ttk::combobox $templates.pick_template_$d -justify left -state readonly
     $templates.pick_template_$d configure -values [dict keys [set ::cv_dashboard::templates_$d]]
     bind $templates.pick_template_$d <<keyb_enter>> \
-      "::cv_dashboard::insert_template $templates.pick_template_$d [list [set ::cv_dashboard::templates_$d]]"  
+      "::cv_dashboard::insert_template $templates.pick_template_$d [list [set ::cv_dashboard::templates_$d]]"
     ttk::button $templates.insert_template_$d -text "Insert \[Enter\]" \
       -command "::cv_dashboard::insert_template $templates.pick_template_$d [list [set ::cv_dashboard::templates_$d]]" \
       -padding "2 0 2 0"

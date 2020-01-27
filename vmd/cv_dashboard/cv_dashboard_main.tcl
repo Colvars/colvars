@@ -75,8 +75,8 @@ proc ::cv_dashboard::createWindow {} {
 
   # Atom group display
   incr gridrow
-  grid [ttk::button $w.show_atoms -text "Show atoms" -command {::cv_dashboard::show_atoms} -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::button $w.hide_atoms -text "Hide atoms" -command {::cv_dashboard::hide_atoms} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $w.show_atoms -text "Show atoms" -command {::cv_dashboard::show_atoms_selected} -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $w.hide_atoms -text "Hide atoms" -command {::cv_dashboard::hide_atoms_selected} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $w.hide_all_atoms -text "Hide all atoms" -command {::cv_dashboard::hide_all_atoms} -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
   incr gridrow
@@ -453,11 +453,20 @@ proc ::cv_dashboard::reset {} {
 
 
 # Display atoms in groups for selected colvars
-proc ::cv_dashboard::show_atoms {} {
+proc ::cv_dashboard::show_atoms_selected {} {
+  show_atoms [selected_colvars]
+}
+
+
+# Display atoms in groups for selected colvars
+proc ::cv_dashboard::show_atoms { colvars } {
   set color 0
   set ci 0
-  foreach cv [selected_colvars] {
-    if { [info exists ::cv_dashboard::atom_rep($cv)]} { continue }
+  foreach cv $colvars {
+    if { [info exists ::cv_dashboard::atom_rep($cv)]} {
+      # Refreshing for this colvar: let's delete and re-create
+      hide_atoms $cv
+    }
     incr ci
     set all_groups [run_cv colvar $cv getatomgroups]
     # Remove characters such as <> which are parsed as special in VMD selection texts
@@ -491,9 +500,16 @@ proc ::cv_dashboard::show_atoms {} {
   }
 }
 
+
 # Hide atoms for selected colvars
-proc ::cv_dashboard::hide_atoms {} {
-  foreach cv [selected_colvars] {
+proc ::cv_dashboard::hide_atoms_selected {} {
+  hide_atoms [selected_colvars]
+}
+
+
+# Hide atoms for colvars given as parameters
+proc ::cv_dashboard::hide_atoms { colvars } {
+  foreach cv $colvars {
     if { [info exists ::cv_dashboard::atom_rep($cv)] } {
       lassign $::cv_dashboard::atom_rep($cv) macros repnames
       foreach m $macros {
@@ -506,6 +522,7 @@ proc ::cv_dashboard::hide_atoms {} {
     }
   }
 }
+
 
 # Remove all atom representations
 proc ::cv_dashboard::hide_all_atoms {} {
@@ -598,7 +615,7 @@ proc ::cv_dashboard::update_shown_gradients {} {
       set ::cv_dashboard::grad_scale [expr {$fact * $width}]
     }
     unset ::tcl_precision ;# Back to default
-  
+
     # Create new arrows
     set new_objs {}
     foreach start $coords g $grads {
