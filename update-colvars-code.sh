@@ -173,10 +173,7 @@ then
   done
 
   # Update makefiles for library
-  for src in \
-    ${source}/lammps/lib/colvars/Makefile.* \
-    ${source}/lammps/lib/colvars/Install.py \
-    ${source}/lammps/lib/colvars/README
+  for src in ${source}/lammps/lib/colvars/Makefile.{common,deps}
   do \
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/lib/colvars/${tgt}"
@@ -195,27 +192,10 @@ then
       tgt=$(basename ${src})
       condcopy "${src}" "${target}/src/USER-COLVARS/${tgt}"
     done
-    for src in ${source}/lammps/src/USER-COLVARS/Install.sh \
-               ${source}/lammps/src/USER-COLVARS/group_ndx.cpp \
-               ${source}/lammps/src/USER-COLVARS/group_ndx.h \
-               ${source}/lammps/src/USER-COLVARS/ndx_group.cpp \
-               ${source}/lammps/src/USER-COLVARS/ndx_group.h \
-               ${source}/lammps/src/USER-COLVARS/README
-    do \
-      tgt=$(basename ${src})
-      condcopy "${src}" "${target}/src/USER-COLVARS/${tgt}"
-    done
   else
     echo "ERROR: Support for the new pRNG (old LAMMPS-ICMS branch) is currently disabled."
     exit 2
   fi
-
-  # Update documentation of LAMMPS fix
-  for src in ${source}/lammps/doc/src/*.txt
-    do \
-      tgt=$(basename ${src})
-    condcopy "${src}" "${target}/doc/src/${tgt}"
-  done
 
   downloaded_pdf=0
   # Copy PDF of the user manual
