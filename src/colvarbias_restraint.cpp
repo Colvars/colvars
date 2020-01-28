@@ -928,6 +928,9 @@ colvarbias_restraint_harmonic_walls::colvarbias_restraint_harmonic_walls(char co
 {
   lower_wall_k = -1.0;
   upper_wall_k = -1.0;
+  // This bias implements the bias_actual_colvar feature (most others do not)
+  provide(f_cvb_bias_actual_colvar);
+  set_enabled(f_cvb_bias_actual_colvar); // Defaults to enabled
 }
 
 
@@ -1083,7 +1086,11 @@ void colvarbias_restraint_harmonic_walls::communicate_forces()
                variables(i)->name+"\".\n");
     }
     // Impulse-style multiple timestep
-    variables(i)->add_bias_force_actual_value(cvm::real(time_step_factor) * colvar_forces[i]);
+    if (is_enabled(f_cvb_bias_actual_colvar)) {
+      variables(i)->add_bias_force_actual_value(cvm::real(time_step_factor) * colvar_forces[i]);
+    } else {
+      variables(i)->add_bias_force(cvm::real(time_step_factor) * colvar_forces[i]);
+    }
   }
 }
 
@@ -1091,7 +1098,10 @@ void colvarbias_restraint_harmonic_walls::communicate_forces()
 cvm::real colvarbias_restraint_harmonic_walls::colvar_distance(size_t i) const
 {
   colvar *cv = variables(i);
-  colvarvalue const &cvv = variables(i)->actual_value();
+
+  colvarvalue const &cvv = is_enabled(f_cvb_bias_actual_colvar) ?
+    variables(i)->actual_value() :
+    variables(i)->value();
 
   // For a periodic colvar, both walls may be applicable at the same time
   // in which case we pick the closer one
