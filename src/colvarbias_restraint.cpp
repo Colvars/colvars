@@ -1078,23 +1078,6 @@ int colvarbias_restraint_harmonic_walls::update()
 }
 
 
-void colvarbias_restraint_harmonic_walls::communicate_forces()
-{
-  for (size_t i = 0; i < num_variables(); i++) {
-    if (cvm::debug()) {
-      cvm::log("Communicating a force to colvar \""+
-               variables(i)->name+"\".\n");
-    }
-    // Impulse-style multiple timestep
-    if (is_enabled(f_cvb_bias_actual_colvar)) {
-      variables(i)->add_bias_force_actual_value(cvm::real(time_step_factor) * colvar_forces[i]);
-    } else {
-      variables(i)->add_bias_force(cvm::real(time_step_factor) * colvar_forces[i]);
-    }
-  }
-}
-
-
 cvm::real colvarbias_restraint_harmonic_walls::colvar_distance(size_t i) const
 {
   colvar *cv = variables(i);
