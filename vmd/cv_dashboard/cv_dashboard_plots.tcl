@@ -256,7 +256,7 @@ proc ::cv_dashboard::display_marker { f } {
         set scalex [set ${ns}::scalex]
         set x [expr $xplotmin+($scalex*($f-$xmin))]
 
-        set canv "[set ${ns}::w].f.cf"
+        set canv "[set ${ns}::w].cf"
         $canv delete frame_marker
         $canv create line  $x $y1 $x $y2 -fill blue -tags frame_marker
       } elseif { $::cv_dashboard::plottype == "2cv" } {
@@ -277,7 +277,7 @@ proc ::cv_dashboard::display_marker { f } {
         set y1 [expr {$yplotmin+$scaley*($y-$ymin) - $radius}]
         set y2 [expr {$yplotmin+$scaley*($y-$ymin) + $radius}]
 
-        set canv "[set ${ns}::w].f.cf"
+        set canv "[set ${ns}::w].cf"
         $canv delete frame_marker
         $canv create oval $x1 $y1 $x2 $y2 -outline white -fill blue -tags frame_marker
       }
