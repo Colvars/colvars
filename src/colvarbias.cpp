@@ -320,8 +320,6 @@ void colvarbias::communicate_forces()
     } else {
       variables(i)->add_bias_force(cvm::real(time_step_factor) * colvar_forces[i]);
     }
-  }
-  for (i = 0; i < num_variables(); i++) {
     previous_colvar_forces[i] = colvar_forces[i];
   }
 }
