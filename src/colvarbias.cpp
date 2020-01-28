@@ -84,6 +84,9 @@ int colvarbias::init(std::string const &conf)
 
   get_keyval(conf, "outputEnergy", b_output_energy, b_output_energy);
 
+  // Disabled by default in base class; default value can be overridden by derived class constructor
+  get_keyval_feature(this, conf, "biasActualColvar", f_cvb_bias_actual_colvar, is_enabled(f_cvb_bias_actual_colvar), parse_silent);
+
   get_keyval(conf, "timeStepFactor", time_step_factor, 1);
   if (time_step_factor < 1) {
     cvm::error("Error: timeStepFactor must be 1 or greater.\n");
@@ -113,6 +116,8 @@ int colvarbias::init_dependencies() {
 
     init_feature(f_cvb_apply_force, "apply force", f_type_user);
     require_feature_children(f_cvb_apply_force, f_cv_gradient);
+
+    init_feature(f_cvb_bias_actual_colvar, "bias actual colvar even if extended-Lagrangian", f_type_user);
 
     init_feature(f_cvb_get_total_force, "obtain total force", f_type_dynamic);
     require_feature_children(f_cvb_get_total_force, f_cv_total_force);
@@ -157,6 +162,12 @@ int colvarbias::init_dependencies() {
 
   // only compute TI samples when deriving from colvarbias_ti
   feature_states[f_cvb_calc_ti_samples].available = false;
+
+  // The feature f_cvb_bias_actual_colvar is only implemented by some derived classes
+  // (initially, harmonicWalls)
+  feature_states[f_cvb_bias_actual_colvar].available = false;
+  // disabled by default; can be changed by derived classes that implement it
+  feature_states[f_cvb_bias_actual_colvar].enabled = false;
 
   return COLVARS_OK;
 }
@@ -304,7 +315,11 @@ void colvarbias::communicate_forces()
     // may send forces to the same colvar
     // which is why rescaling has to happen now: the colvar is not
     // aware of this bias' time_step_factor
-    variables(i)->add_bias_force(cvm::real(time_step_factor) * colvar_forces[i]);
+    if (is_enabled(f_cvb_bias_actual_colvar)) {
+      variables(i)->add_bias_force_actual_value(cvm::real(time_step_factor) * colvar_forces[i]);
+    } else {
+      variables(i)->add_bias_force(cvm::real(time_step_factor) * colvar_forces[i]);
+    }
   }
   for (i = 0; i < num_variables(); i++) {
     previous_colvar_forces[i] = colvar_forces[i];
