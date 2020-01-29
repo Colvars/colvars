@@ -1284,7 +1284,7 @@ std::istream & colvarmodule::read_restart(std::istream &is)
   {
     // read global restart information
     std::string restart_conf;
-    if (is >> colvarparse::read_block("configuration", restart_conf)) {
+    if (is >> colvarparse::read_block("configuration", &restart_conf)) {
 
       parse->get_keyval(restart_conf, "step",
                         it_restart, static_cast<step_number>(0),
@@ -1389,6 +1389,8 @@ std::istream & colvarmodule::read_objects_state(std::istream &is)
       }
 
     }
+
+    if (!is) break;
   }
 
   return is;
