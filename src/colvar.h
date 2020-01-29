@@ -453,9 +453,9 @@ public:
   std::ostream & write_traj_label(std::ostream &os);
 
   /// Read the collective variable from a restart file
-  std::istream & read_restart(std::istream &is);
+  std::istream & read_state(std::istream &is);
   /// Write the collective variable to a restart file
-  std::ostream & write_restart(std::ostream &os);
+  std::ostream & write_state(std::ostream &os);
 
   /// Write output files (if defined, e.g. in analysis mode)
   int write_output_files();
