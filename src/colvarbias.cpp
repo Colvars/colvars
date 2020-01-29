@@ -118,6 +118,9 @@ int colvarbias::init_dependencies() {
     require_feature_children(f_cvb_apply_force, f_cv_gradient);
 
     init_feature(f_cvb_bias_actual_colvar, "bias actual colvar even if extended-Lagrangian", f_type_user);
+    // The exclusion below prevents the inconsistency where biasing forces are applied onto
+    // the actual colvar, while total forces are measured on the extended coordinate
+    exclude_feature_self(f_cvb_bias_actual_colvar, f_cvb_get_total_force);
 
     init_feature(f_cvb_get_total_force, "obtain total force", f_type_dynamic);
     require_feature_children(f_cvb_get_total_force, f_cv_total_force);
