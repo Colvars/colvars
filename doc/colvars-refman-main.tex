@@ -2926,7 +2926,7 @@ The parameters described below offer a way to specify these parameters only once
     decimal}{%
     natural boundary of the function}{%
     Defines the lowest end of the interval of ``relevant'' values for the variable.
-    This number can be, for example, a true physical boundary imposed by the choice of function (e.g.{} the \texttt{distance} function is always larger than zero): if this is the case, and only one function is used to define the variable, tthe default value of this number is set to the lowest end of the range of values of that function, if available (see Section~\ref{sec:cvc_list}).
+    This number can be, for example, a true physical boundary imposed by the choice of function (e.g.{} the \texttt{distance} function is always larger than zero): if this is the case, and only one function is used to define the variable, the default value of this number is set to the lowest end of the range of values of that function, if available (see Section~\ref{sec:cvc_list}).
     Alternatively, this value may be provided by the user, to represent for example the left-most point of a PMF calculation along this variable.
     In the latter case, it is the user's responsibility to either \emph{(a)} ensure the variable does not go significantly beyond the boundary (for example by adding a \texttt{harmonicWalls} restraint, \ref{sec:colvarbias_harmonic_walls}), or \emph{(b)} instruct the code that this is a true physical boundary by setting \refkey{hardLowerBoundary}{colvar|hardLowerBoundary}.
 }
