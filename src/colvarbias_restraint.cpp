@@ -713,7 +713,7 @@ std::istream & colvarbias_restraint::read_state(std::istream &is)
   std::string key, brace, conf;
   if ( !(is >> key)   || !(key == "restraint" || key == "harmonic") ||
        !(is >> brace) || !(brace == "{") ||
-       !(is >> colvarparse::read_block("configuration", conf)) ||
+       !(is >> colvarparse::read_block("configuration", &conf)) ||
        (set_state_params(conf) != COLVARS_OK) ) {
     cvm::error("Error: in reading state configuration for \""+bias_type+"\" bias \""+
                this->name+"\" at position "+

@@ -1481,7 +1481,7 @@ std::istream & colvarbias_meta::read_hill(std::istream &is)
   size_t const start_pos = is.tellg();
 
   std::string data;
-  if ( !(is >> read_block("hill", data)) ) {
+  if ( !(is >> read_block("hill", &data)) ) {
     is.clear();
     is.seekg(start_pos, std::ios::beg);
     is.setstate(std::ios::failbit);

@@ -2082,7 +2082,7 @@ std::istream & colvar::read_state(std::istream &is)
   size_t const start_pos = is.tellg();
 
   std::string conf;
-  if ( !(is >> colvarparse::read_block("colvar", conf)) ) {
+  if ( !(is >> colvarparse::read_block("colvar", &conf)) ) {
     // this is not a colvar block
     is.clear();
     is.seekg(start_pos, std::ios::beg);
