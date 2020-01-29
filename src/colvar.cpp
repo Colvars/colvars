@@ -2077,7 +2077,7 @@ void colvar::wrap(colvarvalue &x_unwrapped) const
 
 // ******************** INPUT FUNCTIONS ********************
 
-std::istream & colvar::read_restart(std::istream &is)
+std::istream & colvar::read_state(std::istream &is)
 {
   size_t const start_pos = is.tellg();
 
@@ -2092,15 +2092,24 @@ std::istream & colvar::read_restart(std::istream &is)
 
   {
     std::string check_name = "";
-    if ( (get_keyval(conf, "name", check_name,
-                     std::string(""), colvarparse::parse_silent)) &&
-         (check_name != name) )  {
-      cvm::error("Error: the state file does not match the "
-                 "configuration file, at colvar \""+name+"\".\n");
-    }
+    get_keyval(conf, "name", check_name,
+               std::string(""), colvarparse::parse_silent);
     if (check_name.size() == 0) {
       cvm::error("Error: Collective variable in the "
-                 "restart file without any identifier.\n");
+                 "restart file without any identifier.\n", INPUT_ERROR);
+      is.clear();
+      is.seekg(start_pos, std::ios::beg);
+      is.setstate(std::ios::failbit);
+      return is;
+    }
+
+    if (check_name != name)  {
+      if (cvm::debug()) {
+        cvm::log("Ignoring state of colvar \""+check_name+
+                 "\": this colvar is named \""+name+"\".\n");
+      }
+      is.seekg(start_pos, std::ios::beg);
+      return is;
     }
   }
 
@@ -2199,7 +2208,7 @@ std::istream & colvar::read_traj(std::istream &is)
 
 // ******************** OUTPUT FUNCTIONS ********************
 
-std::ostream & colvar::write_restart(std::ostream &os) {
+std::ostream & colvar::write_state(std::ostream &os) {
 
   os << "colvar {\n"
      << "  name " << name << "\n"
