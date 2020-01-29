@@ -6,29 +6,35 @@ The module itself implements a variety of functions and algorithms, including fr
 
 ## Obtaining and using
 
-The easiest way to obtain binary versions of Colvars is via the simulation programs [NAMD](http://www.ks.uiuc.edu/Research/namd/) and [LAMMPS](http://lammps.sandia.gov/) and the visualization program [VMD](http://www.ks.uiuc.edu/Research/vmd/).  Please check [here](https://github.com/Colvars/colvars/releases) to see which version of Colvars is included with the round-number versions of VMD and NAMD.  Colvars is integrated with LAMMPS on a near-continuous basis, most often immediately after significant code changes.
+The easiest way to obtain pre-compiled versions of Colvars is via one of following:
+- the molecular simulation program [LAMMPS](https://lammps.sandia.gov/download.html);
+- the molecular simulation program [NAMD](https://www.ks.uiuc.edu/Research/namd/);
+- the molecular visualization program [VMD](https://www.ks.uiuc.edu/Research/vmd/).
+
+Please check [here](https://github.com/Colvars/colvars/releases) to see which version of Colvars is included with the round-number or "stable" versions of each code.
 
 ## Documentation
 
-The [Colvars webpage](http://colvars.github.io/) includes user documentation for the three codes, as well as a Doxygen-based [developer documentation](http://colvars.github.io/doxygen/html/).
+The [Colvars webpage](https://colvars.github.io/) includes user documentation for the three codes, as well as a Doxygen-based [developer documentation](https://colvars.github.io/doxygen/html/).
 
 The reference article is:
 G. Fiorin, M. L. Klein, and J. Hénin, Molecular Physics 111, 3345 (2013).  
-http://dx.doi.org/10.1080/00268976.2013.813594  \[[BibTex file](https://github.com/Colvars/colvars/blob/master/doc/ref_Fiorin_2013.bib?raw=true)\] \[[Endnote file](https://github.com/Colvars/colvars/blob/master/doc/ref_Fiorin_2013.ciw?raw=true)\]
+https://dx.doi.org/10.1080/00268976.2013.813594  \[[BibTex file](https://github.com/Colvars/colvars/blob/master/doc/ref_Fiorin_2013.bib?raw=true)\] \[[Endnote file](https://github.com/Colvars/colvars/blob/master/doc/ref_Fiorin_2013.ciw?raw=true)\]
 
 ## Example input
 
-Colvars requires a configuration file, or alternatively configuration arguments given through scripting commands by the linked program.  In NAMD:
+Colvars requires a configuration file, or alternatively configuration arguments given through scripting commands by the linked program.
+- In NAMD:
 ```
 colvars on
 cv configfile <Colvars configuration file>
 ```
-In VMD (_Tip:_ try also the new "Colvars Dashboard" plugin):
+- In VMD (_Tip:_ try also the new "Colvars Dashboard" plugin):
 ```
 cv molid top
 cv configfile <Colvars configuration file>
 ```
-In LAMMPS:
+- In LAMMPS:
 ```
 fix Colvars all colvars configfile <Colvars configuration file>
 ```
@@ -65,14 +71,19 @@ git clone https://github.com/Colvars/colvars.git
 ```
 and run the provided `update-colvars-code.sh` script against the unpacked source tree of any of the supported programs:
 ```
+./update-colvars-code.sh /path/to/lammps           ; # updates LAMMPS
 ./update-colvars-code.sh /path/to/NAMD_X.YY_Source ; # updates NAMD
 ./update-colvars-code.sh /path/to/vmd-X.Y.Z        ; # updates VMD
 ./update-colvars-code.sh /path/to/vmd-plugins      ; # updates VMD plugins
-./update-colvars-code.sh /path/to/lammps           ; # updates LAMMPS
 ```
 and recompile them.
 
-The `update-colvars-code.sh` script and its supporting files are synchronized with the latest version of each program: [NAMD nightly build](http://www.ks.uiuc.edu/Development/Download/download.cgi?PackageName=NAMD), [VMD CVS](http://www.ks.uiuc.edu/Research/vmd/doxygen/cvsget.html) and the Github repository of [LAMMPS](https://github.com/lammps/lammps).  Earlier versions are not supported.
+The `update-colvars-code.sh` script and its supporting files are synchronized with the latest version of each program:
+- the [LAMMPS Github repository](https://github.com/lammps/lammps);
+- the [NAMD Git repository](https://www.ks.uiuc.edu/Research/namd/development.html);
+- the [CVS repositories of VMD and its plugins](https://www.ks.uiuc.edu/Research/vmd/doxygen/cvsget.html).
+
+Earlier versions are not supported.
 
 ## Which version is recommended?
 
