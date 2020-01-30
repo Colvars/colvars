@@ -35,8 +35,6 @@ public:
   virtual int set_state_params(std::string const &conf);
   // virtual std::ostream & write_state_data(std::ostream &os);
   // virtual std::istream & read_state_data(std::istream &os);
-  virtual std::ostream & write_state(std::ostream &os);
-  virtual std::istream & read_state(std::istream &is);
 
   virtual std::ostream & write_traj_label(std::ostream &os);
   virtual std::ostream & write_traj(std::ostream &os);

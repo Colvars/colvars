@@ -17,6 +17,7 @@
 colvarbias_restraint::colvarbias_restraint(char const *key)
   : colvarbias(key), colvarbias_ti(key)
 {
+  state_keyword = "restraint";
 }
 
 
@@ -700,67 +701,6 @@ std::ostream & colvarbias_restraint_k_moving::write_traj(std::ostream &os)
        << std::setprecision(cvm::en_prec) << std::setw(cvm::en_width)
        << acc_work;
   }
-  return os;
-}
-
-
-
-// redefined due to legacy state file keyword "harmonic"
-std::istream & colvarbias_restraint::read_state(std::istream &is)
-{
-  size_t const start_pos = is.tellg();
-
-  std::string key, brace, conf;
-  if ( !(is >> key)   || !(key == "restraint" || key == "harmonic") ||
-       !(is >> brace) || !(brace == "{") ||
-       !(is >> colvarparse::read_block("configuration", &conf)) ||
-       (set_state_params(conf) != COLVARS_OK) ) {
-    cvm::error("Error: in reading state configuration for \""+bias_type+"\" bias \""+
-               this->name+"\" at position "+
-               cvm::to_str(static_cast<size_t>(is.tellg()))+
-               " in stream.\n", INPUT_ERROR);
-    is.clear();
-    is.seekg(start_pos, std::ios::beg);
-    is.setstate(std::ios::failbit);
-    return is;
-  }
-
-  if (!read_state_data(is)) {
-    cvm::error("Error: in reading state data for \""+bias_type+"\" bias \""+
-               this->name+"\" at position "+
-               cvm::to_str(static_cast<size_t>(is.tellg()))+
-               " in stream.\n", INPUT_ERROR);
-    is.clear();
-    is.seekg(start_pos, std::ios::beg);
-    is.setstate(std::ios::failbit);
-  }
-
-  is >> brace;
-  if (brace != "}") {
-    cvm::log("brace = "+brace+"\n");
-    cvm::error("Error: corrupt restart information for \""+bias_type+"\" bias \""+
-               this->name+"\": no matching brace at position "+
-               cvm::to_str(static_cast<size_t>(is.tellg()))+" in stream.\n");
-    is.setstate(std::ios::failbit);
-  }
-
-  return is;
-}
-
-
-std::ostream & colvarbias_restraint::write_state(std::ostream &os)
-{
-  os.setf(std::ios::scientific, std::ios::floatfield);
-  os << "restraint {\n"
-     << "  configuration {\n";
-  std::istringstream is(get_state_params());
-  std::string line;
-  while (std::getline(is, line)) {
-    os << "    " << line << "\n";
-  }
-  os << "  }\n";
-  write_state_data(os);
-  os << "}\n\n";
   return os;
 }
 

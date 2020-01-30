@@ -1374,8 +1374,9 @@ std::istream & colvarmodule::read_objects_state(std::istream &is)
         for (std::vector<colvarbias *>::iterator bi = biases.begin();
              bi != biases.end();
              bi++) {
-          if ((*bi)->bias_type != word) {
-            // Skip biases of different type
+          if (((*bi)->state_keyword != word) && (*bi)->bias_type != word) {
+            // Skip biases with different type; state_keyword is used to
+            // support different versions of the state file format
             continue;
           }
           if (!((*bi)->read_state(is))) {

@@ -1246,14 +1246,20 @@ void colvarbias_meta::read_replica_files()
 
 int colvarbias_meta::set_state_params(std::string const &state_conf)
 {
-  std::string new_replica = "";
-  if (colvarparse::get_keyval(state_conf, "replicaID", new_replica,
+  int error_code = colvarbias::set_state_params(state_conf);
+
+  if (error_code != COLVARS_OK) {
+    return error_code;
+  }
+
+  std::string check_replica = "";
+  if (colvarparse::get_keyval(state_conf, "replicaID", check_replica,
                               std::string(""), colvarparse::parse_silent) &&
-      (new_replica != this->replica_id)) {
-    cvm::error("Error: in the state file, the "
-               "\"metadynamics\" block has a different replicaID: different system?\n",
-               INPUT_ERROR);
-    return INPUT_ERROR;
+      (check_replica != this->replica_id)) {
+    return cvm::error("Error: in the state file , the "
+                      "\"metadynamics\" block has a different replicaID ("+
+                      check_replica+" instead of "+replica_id+").\n",
+                      INPUT_ERROR);
   }
 
   return COLVARS_OK;
