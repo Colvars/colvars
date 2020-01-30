@@ -462,6 +462,9 @@ std::istream & colvarbias::read_state(std::istream &is)
     return is;
   }
 
+  cvm::log("Restarting "+bias_type+" bias \""+name+"\" from step number "+
+           cvm::to_str(state_file_step)+".\n");
+
   if (!read_state_data(is)) {
     cvm::error("Error: in reading state data for \""+bias_type+"\" bias \""+
                this->name+"\" at position "+
