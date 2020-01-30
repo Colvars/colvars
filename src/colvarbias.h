@@ -23,8 +23,11 @@ public:
   /// Name of this bias
   std::string name;
 
-  /// Type of this bias
+  /// Keyword indicating the type of this bias
   std::string bias_type;
+
+  /// Keyword used in state files (== bias_type most of the time)
+  std::string state_keyword;
 
   /// If there is more than one bias of this type, record its rank
   int rank;
@@ -225,6 +228,9 @@ protected:
 
   /// \brief Step number read from the last state file
   cvm::step_number         state_file_step;
+
+  /// Flag used to tell if the state string being read is for this bias
+  bool matching_state;
 
 };
 
