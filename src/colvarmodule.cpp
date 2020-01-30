@@ -1365,6 +1365,7 @@ std::istream & colvarmodule::read_objects_state(std::istream &is)
                        "collective variable \""+(*cvi)->name+"\".\n",
                        INPUT_ERROR);
           }
+          if (is.tellg() > pos) break; // found it
         }
         cvm::decrease_depth();
 
@@ -1385,10 +1386,17 @@ std::istream & colvarmodule::read_objects_state(std::istream &is)
                        (*bi)->name+"\".\n",
                        INPUT_ERROR);
           }
+          if (is.tellg() > pos) break; // found it
         }
         cvm::decrease_depth();
       }
+    }
 
+    if (is.tellg() == pos) {
+      // This block has not been read by any object: discard it and move on
+      // to the next one
+      std::cerr << "reading empty block at " << is.tellg() << std::endl;
+      is >> colvarparse::read_block(word, NULL);
     }
 
     if (!is) break;

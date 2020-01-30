@@ -27,6 +27,7 @@ colvarbias::colvarbias(char const *key)
   b_output_energy = false;
   reset();
   state_file_step = 0L;
+  matching_state = false;
 }
 
 
@@ -386,6 +387,8 @@ std::string const colvarbias::get_state_params() const
 
 int colvarbias::set_state_params(std::string const &conf)
 {
+  matching_state = false;
+
   std::string check_name = "";
   colvarparse::get_keyval(conf, "name", check_name,
                           std::string(""), colvarparse::parse_silent);
@@ -402,6 +405,8 @@ int colvarbias::set_state_params(std::string const &conf)
     }
     return COLVARS_OK;
   }
+
+  matching_state = true;
 
   colvarparse::get_keyval(conf, "step", state_file_step,
                           cvm::step_absolute(), colvarparse::parse_silent);
@@ -448,6 +453,12 @@ std::istream & colvarbias::read_state(std::istream &is)
     is.clear();
     is.seekg(start_pos, std::ios::beg);
     is.setstate(std::ios::failbit);
+    return is;
+  }
+
+  if (matching_state == false) {
+    // This state is not for this bias
+    is.seekg(start_pos, std::ios::beg);
     return is;
   }
 
