@@ -283,8 +283,9 @@ To avoid errors due to reading configuration files written in a different unit s
 \cvnamdonly{
 \cvsubsec{NAMD parameters}{sec:colvars_mdengine_params}
 
-To enable a Colvars-based calculation, two parameters must be added to the NAMD configuration file, \texttt{colvars} and \texttt{colvarsConfig}.
-An optional third parameter, \texttt{colvarsInput}, can be used to continue a previous simulation.
+To enable a Colvars-based calculation, the \texttt{colvars on} command must be added to the NAMD script.
+Two optional commands, \texttt{colvarsConfig} and \texttt{colvarsInput} can be used to define the module's configuration or continue a previous simulation.
+Because these are static parameters, it is typically more convenient to use the \texttt{cv} command in the rest of the NAMD script.
 
 \begin{itemize}
 %  \setlength{\itemsep}{0.4cm}
@@ -296,9 +297,7 @@ An optional third parameter, \texttt{colvarsInput}, can be used to continue a pr
     Enable the Colvars module}{%
     boolean}{%
     \texttt{off}}{%
-    If this flag is on, the Colvars module within
-    NAMD is enabled; the module requires a separate configuration
-    file, to be provided with \texttt{colvarsConfig}.}
+    If this flag is on, the Colvars module within NAMD is enabled.}
 
 \item %
   \key
@@ -306,9 +305,9 @@ An optional third parameter, \texttt{colvarsInput}, can be used to continue a pr
     NAMD configuration file}{%
     Configuration file for the collective variables}{%
     UNIX filename}{%
-    This file contains the definition of all collective variables and
-    their biasing or analysis methods.
-    This file can also be provided by the Tcl command \texttt{cv configfile}; alternatively, the contents of the file itself can be given as an argument to the command \texttt{cv config}.
+    Name of the Colvars configuration file (\ref{sec:colvars_config_syntax}, \ref{sec:colvars_global} and following sections).
+    This file can also be provided by the Tcl command \texttt{cv configfile}.
+    Alternatively, the contents of the file (as opposed to the file itself) can be given as a string argument to the command \texttt{cv config}.
   }
 
 \item %
@@ -317,13 +316,8 @@ An optional third parameter, \texttt{colvarsInput}, can be used to continue a pr
     NAMD configuration file}{%
     Input state file for the collective variables}{%
     UNIX filename}{%
-    When continuing a previous simulation run, this file contains the current state of all collective variables and of their associated algorithms.
-    It is written automatically at the end of any simulation with collective variables.
-    The step number contained by this file will be used internally by Colvars to control time-dependent biases, unless \texttt{firstTimestep} is given, in which case that value will be used.
-    For each variable or bias currently defined, information is loaded only if it is available; conversely, information about variables or biases not currently defined is silently ignored.
-    \emph{This check is done by matching the names of variables or biases: it is the user's responsibility to ensure that these are consistent between runs.}
-    \cvnamdonly{This file can also be loaded with the Tcl command \texttt{cv load}.}
-    \cvvmdonly{This file can also be loaded with the Tcl command \texttt{cv load}.}
+    Keyword used to specify the input state file's name (\ref{sec:colvars_input}).
+    If the input file is meant to be loaded within a Tcl script section, the \texttt{cv load} command may be used instead.
   }
 
 \end{itemize}
@@ -680,6 +674,29 @@ harmonic \{\\
 Section \ref{sec:colvar} explains how to define a colvar and its behavior, regardless of its specific functional form.
 To define colvars that are appropriate to a specific physical system, Section \ref{sec:colvar_atom_groups} documents how to select atoms, and section \ref{sec:colvar} lists all of the available functional forms, which we call ``colvar components''.
 Finally, section \ref{sec:colvarbias} lists the available methods and algorithms to perform biased simulations and multidimensional analysis of colvars.
+
+
+
+\cvsubsec{Input state file}{sec:colvars_input}
+
+Because many of the methods implemented in Colvars are history-dependent, a \emph{state file} is often needed to continue a long simulation over consecutive runs.
+Such state file is written automatically at the end of any simulation with Colvars, and contains data accumulated during that simulation along with the step number at the end of it.
+The step number read from the state file is then used to control such time-dependent biases: because of this essential role, the step number internal to Colvars may not always match the step number reported by the MD program that carried during the simulation (which may instead restart from zero each time).
+\cvnamdonly{If a state file is not given, the NAMD command \texttt{firstTimestep} may be used to control the Colvars step number.}
+
+Depending on the configuration, a state file may need to be loaded issued at the beginning of a new simulation when time-dependent biasing methods are applied (moving restraints, metadynamics, ABF, ...).
+\cvnamdonly{When the Colvars module is initialized in NAMD, the \texttt{colvarsInput} keyword can be used to give the name of the state file}.
+\cvlammpsonly{When the Colvars fix is defined in LAMMPS, the keyword \texttt{input} can be used to load the state file, although it is typically easier to use the LAMMPS \texttt{read\_restart} to re-initialize Colvars together with other fixes.}
+After initialization, a state file may be loaded at any time \cvnamdonly{with the Tcl command \texttt{cv load}}%
+\cvvmdonly{with the Tcl command \texttt{cv load}}%
+\cvlammpsonly{with the \texttt{fix\_modify <fix-ID> load <filename>} LAMMPS command}.
+
+It is possible to load a state file even if the configuration has changed:
+for example, new variables may be defined or restraints be added in between consecutive runs.
+For each newly defined variable or bias, no information will be read from the state file if this is unavailable: such new objects will remain uninitialized until the first compute step.
+Conversely, any information that the state file has about variables or biases that are not defined any longer is silently ignored.
+\emph{Because these checks are done by the names of variables or biases, it is the user's responsibility to ensure that these are consistent between runs.}
+
 
 
 \cvsubsec{Output files}{sec:colvars_output}
