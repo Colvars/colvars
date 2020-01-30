@@ -1,0 +1,26 @@
+colvarsTrajFrequency 1
+colvarsRestartFrequency 10
+indexFile index.ndx
+
+
+colvar {
+
+    name two
+
+    distance {
+        group1 {
+            indexGroup group3
+        }
+        group2 {
+            indexGroup group4
+        }
+    }
+} 
+
+
+harmonic {
+    name           harmonic_two
+    colvars        two
+    centers        0.1
+    forceConstant  0.001
+}

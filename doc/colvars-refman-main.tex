@@ -320,7 +320,10 @@ An optional third parameter, \texttt{colvarsInput}, can be used to continue a pr
     When continuing a previous simulation run, this file contains the current state of all collective variables and of their associated algorithms.
     It is written automatically at the end of any simulation with collective variables.
     The step number contained by this file will be used internally by Colvars to control time-dependent biases, unless \texttt{firstTimestep} is given, in which case that value will be used.
-    This file can also be loaded with the Tcl command \texttt{cv load}.
+    For each variable or bias currently defined, information is loaded only if it is available; conversely, information about variables or biases not currently defined is silently ignored.
+    \emph{This check is done by matching the names of variables or biases: it is the user's responsibility to ensure that these are consistent between runs.}
+    \cvnamdonly{This file can also be loaded with the Tcl command \texttt{cv load}.}
+    \cvvmdonly{This file can also be loaded with the Tcl command \texttt{cv load}.}
   }
 
 \end{itemize}

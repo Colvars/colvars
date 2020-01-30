@@ -1,0 +1,26 @@
+# -*- tcl -*-
+
+# Note: see also test.restart.legacy.namd
+
+set output_name "test.restart"
+set coor_bin_file "test.coor"
+set vel_bin_file "test.vel"
+
+source ../Common/common.namd
+source ../Common/measure_net_force_torque.tcl
+
+colvars                 on
+colvarsConfig           test.new.in
+colvarsInput            test.colvars.state
+
+if { [file exists test.restart.prerun.tcl] > 0 } {
+    source test.restart.prerun.tcl
+}
+
+run ${numsteps}
+
+if { [file exists test.restart.postprocess.tcl] > 0 } {
+    source test.restart.postprocess.tcl
+}
+
+source ../Common/delete_tmp_files.tcl
