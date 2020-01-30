@@ -144,10 +144,10 @@ public:
   std::istream & read_state_data_key(std::istream &is, char const *key);
 
   /// Write the bias configuration to a restart file or other stream
-  virtual std::ostream & write_state(std::ostream &os);
+  std::ostream & write_state(std::ostream &os);
 
   /// Read the bias configuration from a restart file or other stream
-  virtual std::istream & read_state(std::istream &is);
+  std::istream & read_state(std::istream &is);
 
   /// Write a label to the trajectory file (comment line)
   virtual std::ostream & write_traj_label(std::ostream &os);

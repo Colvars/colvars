@@ -15,8 +15,10 @@
 
 
 colvarbias::colvarbias(char const *key)
-  : bias_type(to_lower_cppstr(key))
 {
+  bias_type = to_lower_cppstr(key);
+  state_keyword = bias_type;
+
   description = "uninitialized " + cvm::to_str(key) + " bias";
   init_dependencies();
   rank = 1;
@@ -384,18 +386,21 @@ std::string const colvarbias::get_state_params() const
 
 int colvarbias::set_state_params(std::string const &conf)
 {
-  std::string new_name = "";
-  if (colvarparse::get_keyval(conf, "name", new_name,
-                              std::string(""), colvarparse::parse_silent) &&
-      (new_name != this->name)) {
-    cvm::error("Error: in the state file, the "
-               "\""+bias_type+"\" block has a different name, \""+new_name+
-               "\": different system?\n", INPUT_ERROR);
-  }
+  std::string check_name = "";
+  colvarparse::get_keyval(conf, "name", check_name,
+                          std::string(""), colvarparse::parse_silent);
 
-  if (name.size() == 0) {
+  if (check_name.size() == 0) {
     cvm::error("Error: \""+bias_type+"\" block within the restart file "
                "has no identifiers.\n", INPUT_ERROR);
+  }
+
+  if (check_name != this->name) {
+    if (cvm::debug()) {
+      cvm::log("Ignoring state of bias \""+check_name+
+               "\": this bias is named \""+name+"\".\n");
+    }
+    return COLVARS_OK;
   }
 
   colvarparse::get_keyval(conf, "step", state_file_step,
@@ -412,7 +417,7 @@ std::ostream & colvarbias::write_state(std::ostream &os)
   }
   os.setf(std::ios::scientific, std::ios::floatfield);
   os.precision(cvm::cv_prec);
-  os << bias_type << " {\n"
+  os << state_keyword << " {\n"
      << "  configuration {\n";
   std::istringstream is(get_state_params());
   std::string line;
@@ -431,13 +436,12 @@ std::istream & colvarbias::read_state(std::istream &is)
   size_t const start_pos = is.tellg();
 
   std::string key, brace, conf;
-  if ( !(is >> key)   || !(key == bias_type) ||
+  if ( !(is >> key)   || !(key == state_keyword || key == bias_type) ||
        !(is >> brace) || !(brace == "{") ||
-       !(is >> colvarparse::read_block("configuration", conf)) ||
+       !(is >> colvarparse::read_block("configuration", &conf)) ||
        (set_state_params(conf) != COLVARS_OK) ) {
-    if (key != bias_type)
-      cvm::log("Found key \"" + key + "\" instead of \"" + bias_type + "\"\n");
-    cvm::error("Error: in reading state configuration for \""+bias_type+"\" bias \""+
+    cvm::error("Error: in reading state configuration for \""+bias_type+
+               "\" bias \""+
                this->name+"\" at position "+
                cvm::to_str(static_cast<size_t>(is.tellg()))+
                " in stream.\n", INPUT_ERROR);
