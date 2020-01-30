@@ -1,0 +1,21 @@
+# -*- tcl -*-
+
+# Note: see also test.restart.namd, test.legacy.namd, test.restart.legacy.namd
+
+source ../Common/common.namd
+source ../Common/measure_net_force_torque.tcl
+
+colvars                 on
+colvarsConfig           test.in
+
+if { [file exists test.prerun.tcl] > 0 } {
+    source test.prerun.tcl
+}
+
+run ${numsteps}
+
+if { [file exists test.postprocess.tcl] > 0 } {
+    source test.postprocess.tcl
+}
+
+source ../Common/delete_tmp_files.tcl

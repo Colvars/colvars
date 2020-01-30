@@ -1,0 +1,42 @@
+colvarsTrajFrequency 1
+colvarsRestartFrequency 10
+indexFile index.ndx
+
+colvar {
+
+    name one
+
+    outputAppliedForce on
+
+    distance {
+        group1 {
+            indexGroup group1
+        }
+        group2 {
+            indexGroup group2
+        }
+    }
+} 
+
+
+colvar {
+
+    name two
+
+    distance {
+        group1 {
+            indexGroup group3
+        }
+        group2 {
+            indexGroup group4
+        }
+    }
+} 
+
+
+harmonic {
+    name           harmonic_one
+    colvars        one
+    centers        0.1
+    forceConstant  0.001
+}
