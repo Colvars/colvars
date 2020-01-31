@@ -35,38 +35,7 @@ char const *cvscript_help(char const *c)
 }
 
 
-// Get a pointer to the i-th argument (NULL if not given)
-inline unsigned char *colvarscript_arg(int iarg,
-                                       int objc, unsigned char *const objv[])
-{
-  // "cv" and "COMM" are 1st and 2nd
-  return (2+iarg < objc) ? objv[2+iarg] : NULL;
-}
-
-
-// Check the argument count
-inline int colvarscript_nargs_check(colvarscript *script,
-                                    char const *comm_str,
-                                    int objc,
-                                    int n_args_min,
-                                    int n_args_max)
-{
-  // "cv" and "COMM" are 1st and 2nd argument
-  if (objc < 2+n_args_min) {
-    script->set_result_str("Missing arguments\n" +
-                           script->get_command_help(comm_str));
-    return COLVARSCRIPT_ERROR;
-  }
-  if (objc > 2+n_args_max) {
-    script->set_result_str("Too many arguments\n" +
-                           script->get_command_help(comm_str));
-    return COLVARSCRIPT_ERROR;
-  }
-  return COLVARSCRIPT_OK;
-}
-
-
-// Now instantiate the body of all script commands
+// Instantiate the body of all script commands
 
 #define CVSCRIPT_COMM_FN(COMM,N_ARGS_MIN,N_ARGS_MAX,ARGS,FN_BODY)       \
   int CVSCRIPT_COMM_FNAME(COMM)(void *pobj,                             \
@@ -74,8 +43,8 @@ inline int colvarscript_nargs_check(colvarscript *script,
   {                                                                     \
     colvarscript *script = colvarscript_obj();                          \
     script->clear_str_result();                                         \
-    if (colvarscript_nargs_check(script, #COMM,                         \
-                                 objc, N_ARGS_MIN, N_ARGS_MAX) !=       \
+    if (script->check_cmd_nargs<>(#COMM,                                \
+                                  objc, N_ARGS_MIN, N_ARGS_MAX) !=      \
         COLVARSCRIPT_OK) {                                              \
       return COLVARSCRIPT_ERROR;                                        \
     }                                                                   \
