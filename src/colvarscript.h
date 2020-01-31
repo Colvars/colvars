@@ -84,6 +84,25 @@ public:
     cv_n_commands
   };
 
+  /// Type of object handling a script command
+  enum Object_type {
+    use_module,
+    use_colvar,
+    use_bias                 
+  };
+
+  /// Get a pointer to the i-th argument of the command (NULL if not given)
+  template<Object_type T = use_module>
+  unsigned char *get_cmd_arg(int iarg, int objc, unsigned char *const objv[]);
+
+  /// Check the argument count of the command
+  template<Object_type T = use_module>
+  int check_cmd_nargs(char const *cmd, int objc, 
+                      int n_args_min, int n_args_max);
+
+  /// Number of positional arguments to shift for each object type
+  template<colvarscript::Object_type T> 
+  int cmd_arg_shift();
 
   /// Use scripting language to get the string representation of an object
   inline char const *obj_to_str(unsigned char *const obj)
@@ -185,6 +204,55 @@ inline static colvar *colvar_obj(void *pobj)
 inline static colvarbias *colvarbias_obj(void *pobj)
 {
   return reinterpret_cast<colvarbias *>(pobj);
+}
+
+
+
+template<colvarscript::Object_type T> 
+int colvarscript::cmd_arg_shift()
+{
+  int shift = 0;
+  if (T == use_module) {
+    // "cv" and "COMMAND" are 1st and 2nd argument, and shift is equal to 2
+    shift = 2;
+  } else if (T == use_colvar) {
+    // Same as above with additional arguments "colvar" and "NAME"
+    shift = 4;
+  } else if (T == use_bias) {
+    shift = 4;
+  }
+  return shift;
+}
+
+
+template<colvarscript::Object_type T>
+unsigned char *colvarscript::get_cmd_arg(int iarg,
+                                         int objc, 
+                                         unsigned char *const objv[])
+{
+  int const shift = cmd_arg_shift<T>();
+  return (shift+iarg < objc) ? objv[shift+iarg] : NULL;
+}
+
+
+template<colvarscript::Object_type T>
+int colvarscript::check_cmd_nargs(char const *cmd,
+                                  int objc,
+                                  int n_args_min,
+                                  int n_args_max)
+{
+  int const shift = cmd_arg_shift<T>();
+  if (objc < shift+n_args_min) {
+    set_result_str("Missing arguments\n" +
+                   get_command_help(cmd));
+    return COLVARSCRIPT_ERROR;
+  }
+  if (objc > shift+n_args_max) {
+    set_result_str("Too many arguments\n" +
+                   get_command_help(cmd));
+    return COLVARSCRIPT_ERROR;
+  }
+  return COLVARSCRIPT_OK;
 }
 
 
