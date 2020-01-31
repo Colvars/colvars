@@ -1,5 +1,12 @@
 // -*- c++ -*-
 
+// This file is part of the Collective Variables module (Colvars).
+// The original version of Colvars and its updates are located at:
+// https://github.com/Colvars/colvars
+// Please update all Colvars source files before making any changes.
+// If you wish to distribute your changes, please submit them to the
+// Colvars repository at GitHub.
+
 #ifndef COLVARSCRIPT_COMMANDS_H
 #define COLVARSCRIPT_COMMANDS_H
 
@@ -109,7 +116,7 @@ CVSCRIPT(cv_config,
          "Read configuration from the given string",
          1, 1,
          { "conf : str - Configuration string" },
-         char const *conf_str = 
+         char const *conf_str =
            script->obj_to_str(script->get_cmd_arg<>(0, objc, objv));
          std::string const conf(conf_str);
          if (cvm::main()->read_config_string(conf) == COLVARS_OK) {
@@ -140,7 +147,7 @@ CVSCRIPT(cv_addenergy,
          "Add an energy to the MD engine",
          1, 1,
          { "E : float - Amount of energy to add" },
-         char const *Earg = 
+         char const *Earg =
            script->obj_to_str(script->get_cmd_arg<>(0, objc, objv));
          cvm::main()->total_bias_energy += strtod(Earg, NULL);
          return COLVARSCRIPT_ERROR; // TODO Make this multi-language
@@ -150,7 +157,7 @@ CVSCRIPT(cv_units,
          "Get or set the current Colvars unit system",
          0, 1,
          { "unit_keyword : str - The new unit system" },
-         char const *argstr = 
+         char const *argstr =
            script->obj_to_str(script->get_cmd_arg<>(0, objc, objv));
          if (argstr) {
            return cvm::proxy->set_unit_system(argstr, false);
