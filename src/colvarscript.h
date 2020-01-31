@@ -156,6 +156,17 @@ private:
   /// Implementations of each command
   std::vector<int (*)(void *, int, unsigned char * const *)> comm_fns;
 
+  /// Get a pointer to the implementation of the given command
+  inline int (*get_comm_fn(std::string const &cmd_key))(void *,
+                                                        int,
+                                                        unsigned char * const *)
+  {
+    if (comm_str_map.count(cmd_key) > 0) {
+      return comm_fns[comm_str_map[cmd_key]];
+    }
+    return NULL;
+  }
+
 };
 
 

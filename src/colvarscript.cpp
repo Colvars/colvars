@@ -149,10 +149,9 @@ int colvarscript::run(int objc, unsigned char *const objv[])
 
   // If command is found in map, execute it
   std::string const cmd_key("cv_"+cmd);
-  if (comm_str_map.count(cmd_key) > 0) {
-    error_code |= (*(comm_fns[comm_str_map[cmd_key]]))(
-                      reinterpret_cast<void *>(this), objc, objv);
-    return error_code;
+  int (*cmd_func)(void *, int, unsigned char * const *) = get_comm_fn(cmd_key);
+  if (cmd_func) {
+    return (*(cmd_func))(reinterpret_cast<void *>(this), objc, objv);
   }
 
   if (cmd == "colvar") {
