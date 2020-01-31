@@ -1,5 +1,13 @@
 // -*- c++ -*-
 
+// This file is part of the Collective Variables module (Colvars).
+// The original version of Colvars and its updates are located at:
+// https://github.com/Colvars/colvars
+// Please update all Colvars source files before making any changes.
+// If you wish to distribute your changes, please submit them to the
+// Colvars repository at GitHub.
+
+
 #include <vector>
 #include <cstdlib>
 #include <stdlib.h>
@@ -12,30 +20,7 @@
 
 
 
-extern "C"
-int cvscript_n_commands()
-{
-  return static_cast<int>(colvarscript::cv_n_commands);
-}
-
-
-extern "C"
-char const **cvscript_command_names()
-{
-  colvarscript *script = colvarscript_obj();
-  return script->get_command_names();
-}
-
-
-extern "C"
-char const *cvscript_help(char const *c)
-{
-  colvarscript *script = colvarscript_obj();
-  return script->get_command_help(c).c_str();
-}
-
-
-// Instantiate the body of all script commands
+// Instantiate the body of all colvar-specific script commands
 
 #define CVSCRIPT_COMM_FN(COMM,N_ARGS_MIN,N_ARGS_MAX,ARGS,FN_BODY)       \
   int CVSCRIPT_COMM_FNAME(COMM)(void *pobj,                             \
@@ -43,22 +28,21 @@ char const *cvscript_help(char const *c)
   {                                                                     \
     colvarscript *script = colvarscript_obj();                          \
     script->clear_str_result();                                         \
-    if (script->check_cmd_nargs<>(#COMM,                                \
-                                  objc, N_ARGS_MIN, N_ARGS_MAX) !=      \
+    if (script->check_cmd_nargs<colvarscript::use_colvar>(#COMM,        \
+                                                          objc,         \
+                                                          N_ARGS_MIN,   \
+                                                          N_ARGS_MAX) != \
         COLVARSCRIPT_OK) {                                              \
       return COLVARSCRIPT_ERROR;                                        \
     }                                                                   \
+    colvar *this_colvar = colvar_obj(pobj);                             \
     FN_BODY;                                                            \
   }
 #undef CVSCRIPT
-#define CVSCRIPT(COMM,HELP,N_ARGS_MIN,N_ARGS_MAX,ARGS,FN_BODY) \
+#define CVSCRIPT(COMM,HELP,N_ARGS_MIN,N_ARGS_MAX,ARGS,FN_BODY)  \
   CVSCRIPT_COMM_FN(COMM,N_ARGS_MIN,N_ARGS_MAX,ARGS,FN_BODY)
 
-// Skips the colvar- and bias- specific commands
-#define COLVARSCRIPT_COMMANDS_GLOBAL
-
-#undef COLVARSCRIPT_COMMANDS_H
-#include "colvarscript_commands.h"
+#include "colvarscript_commands_colvar.h"
 
 #undef CVSCRIPT_COMM_FN
 #undef CVSCRIPT
