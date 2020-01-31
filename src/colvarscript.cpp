@@ -143,42 +143,72 @@ int colvarscript::run(int objc, unsigned char *const objv[])
     return COLVARSCRIPT_ERROR;
   }
 
+  // Name of the (sub)command
   std::string const cmd(obj_to_str(objv[1]));
 
-  int error_code = COLVARS_OK;
+  // Pointer to the function implementing it
+  int (*cmd_fn)(void *, int, unsigned char * const *) = NULL;
 
-  // If command is found in map, execute it
-  std::string const cmd_key("cv_"+cmd);
-  int (*cmd_func)(void *, int, unsigned char * const *) = get_comm_fn(cmd_key);
-  if (cmd_func) {
-    return (*(cmd_func))(reinterpret_cast<void *>(this), objc, objv);
-  }
+  // Pointer to object handling the command (the functions are C)
+  void *obj_for_cmd = NULL;
 
   if (cmd == "colvar") {
-    if (objc < 3) {
+
+    if (objc < 4) {
       result = "Missing parameters\n" + help_string();
       return COLVARSCRIPT_ERROR;
     }
     std::string const name(obj_to_str(objv[2]));
-    colvar *cv = cvm::colvar_by_name(name);
-    if (cv == NULL) {
+    obj_for_cmd = reinterpret_cast<void *>(cvm::colvar_by_name(name));
+    if (obj_for_cmd == NULL) {
       result = "Colvar not found: " + name;
       return COLVARSCRIPT_ERROR;
     }
+    cmd_fn = get_comm_fn(std::string(std::string("colvar_")+
+                                     obj_to_str(objv[3])));
+  } else if (cmd == "bias") {
+
+    if (objc < 4) {
+      result = "Missing parameters\n" + help_string();
+      return COLVARSCRIPT_ERROR;
+    }
+    std::string const name(obj_to_str(objv[2]));
+    obj_for_cmd = reinterpret_cast<void *>(cvm::bias_by_name(name));
+    if (obj_for_cmd == NULL) {
+      result = "Bias not found: " + name;
+      return COLVARSCRIPT_ERROR;
+    }
+    cmd_fn = get_comm_fn(std::string(std::string("bias_")+
+                                     obj_to_str(objv[3])));
+  } else {
+
+    cmd_fn = get_comm_fn(std::string(std::string("cv_"+cmd)));
+    obj_for_cmd = reinterpret_cast<void *>(this);
+  }
+
+  // If command was found in map, execute it
+  if (cmd_fn) {
+    if (cvm::debug()) {
+      cvm::log("Found implementation for command "+cmd+", calling it.\n");
+    }
+    return (*cmd_fn)(obj_for_cmd, objc, objv);
+  }
+
+  // Parse scripting commands not yet in the map
+
+  int error_code = COLVARS_OK;
+
+  if (cvm::debug()) {
+    cvm::log("Looking for an if statement for command "+cmd+".\n");
+  }
+
+  if (cmd == "colvar") {
+    colvar *cv = reinterpret_cast<colvar *>(obj_for_cmd);
     return proc_colvar(cv, objc-1, &(objv[1]));
   }
 
   if (cmd == "bias") {
-    if (objc < 3) {
-      result = "Missing parameters\n" + help_string();
-      return COLVARSCRIPT_ERROR;
-    }
-    std::string const name(obj_to_str(objv[2]));
-    colvarbias *b = cvm::bias_by_name(name);
-    if (b == NULL) {
-      result = "Bias not found: " + name;
-      return COLVARSCRIPT_ERROR;
-    }
+    colvarbias *b = reinterpret_cast<colvarbias *>(obj_for_cmd);
     return proc_bias(b, objc-1, &(objv[1]));
   }
 
