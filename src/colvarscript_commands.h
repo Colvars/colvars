@@ -160,4 +160,10 @@ CVSCRIPT(cv_units,
          }
          )
 
+// This guard avoids compiling the function bodies in colvarscript_commands.o
+#ifndef COLVARSCRIPT_COMMANDS_GLOBAL
+#include "colvarscript_commands_colvar.h"
+#include "colvarscript_commands_bias.h"
+#endif
+
 #endif // #ifndef COLVARSCRIPT_COMMANDS_H

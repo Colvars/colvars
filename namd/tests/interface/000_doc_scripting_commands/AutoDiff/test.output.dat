@@ -89,3 +89,9 @@ unit_keyword : str - The new unit system (optional)
 
 
 ======================================================================
+cv colvar <name> value - Get the current value of this colvar
+
+======================================================================
+cv bias <name> energy - Get the current energy of this bias
+
+======================================================================

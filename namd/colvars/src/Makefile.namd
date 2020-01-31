@@ -24,5 +24,7 @@ COLVARSLIB = \
 	$(DSTDIR)/colvarproxy_replicas.o \
 	$(DSTDIR)/colvarscript.o \
 	$(DSTDIR)/colvarscript_commands.o \
+	$(DSTDIR)/colvarscript_commands_bias.o \
+	$(DSTDIR)/colvarscript_commands_colvar.o \
 	$(DSTDIR)/colvartypes.o \
 	$(DSTDIR)/colvarvalue.o

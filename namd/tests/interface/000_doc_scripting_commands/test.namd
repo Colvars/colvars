@@ -17,7 +17,13 @@ puts ${output} ""
 
 foreach cmd [cv listcommands] {
     puts ${output} ======================================================================
-    puts -nonewline ${output} "cv [string range ${cmd} 3 end] - [cv help ${cmd}]"
+    if { [string range ${cmd} 0 2] == "cv_" } {
+        puts -nonewline ${output} "cv [string range ${cmd} 3 end] - [cv help ${cmd}]"
+    } elseif { [string range ${cmd} 0 4] == "bias_" } {
+        puts -nonewline ${output} "cv bias <name> [string range ${cmd} 5 end] - [cv help ${cmd}]"
+    } elseif { [string range ${cmd} 0 6] == "colvar_" } {
+        puts -nonewline ${output} "cv colvar <name> [string range ${cmd} 7 end] - [cv help ${cmd}]"
+    }
 }
 puts ${output} ======================================================================
 
