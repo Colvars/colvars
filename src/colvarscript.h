@@ -42,9 +42,6 @@ public:
 
   ~colvarscript();
 
-  /// Set up all script API functions
-  int init_commands();
-
   /// If an error is caught by the proxy through fatal_error(), this is set to
   /// COLVARSCRIPT_ERROR
   int proxy_error;
@@ -87,30 +84,13 @@ public:
     cv_n_commands
   };
 
-  /// Set up a single script API functions
-  int init_command(colvarscript::command const &comm,
-                   char const *name, char const *help,
-                   int n_args_min, int n_args_max, char const **arghelp,
-                   int (*fn)(void *, int, unsigned char * const *));
 
   /// Use scripting language to get the string representation of an object
   inline char const *obj_to_str(unsigned char *const obj)
   {
     return cvm::proxy->script_obj_to_str(obj);
   }
-
-private:
-
-  /// Execute a script command
-  inline int exec_command(command c,
-                          void *pobj,
-                          int objc, unsigned char * const *objv)
-  {
-    return (*(comm_fns[c]))(pobj, objc, objv);
-  }
-
-public:
-
+  
   /// Get names of all commands
   inline char const **get_command_names() const
   {
@@ -124,6 +104,23 @@ public:
   int unsupported_op();
 
 private:
+
+  /// Set up all script API functions
+  int init_commands();
+
+  /// Set up a single script API function
+  int init_command(colvarscript::command const &comm,
+                   char const *name, char const *help,
+                   int n_args_min, int n_args_max, char const **arghelp,
+                   int (*fn)(void *, int, unsigned char * const *));
+
+  /// Execute a script command
+  inline int exec_command(command c,
+                          void *pobj,
+                          int objc, unsigned char * const *objv)
+  {
+    return (*(comm_fns[c]))(pobj, objc, objv);
+  }
 
   /// Run subcommands on colvar
   int proc_colvar(colvar *cv, int argc, unsigned char *const argv[]);
