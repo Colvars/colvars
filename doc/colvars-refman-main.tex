@@ -5297,6 +5297,21 @@ The \texttt{harmonicWalls} bias implements the following options:
 \item \dupkey{lambdaSchedule}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{Harmonic restraints}
 \item \dupkey{outputAccumulatedWork}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{Harmonic restraints}
 
+\item %
+  \labelkey{harmonicWalls|biasActualColvar}
+  \keydef
+    {biasActualColvar}{%
+    \texttt{harmonicWalls}}{%
+    Apply bias to extended-Lagrangian colvars, bypassing the extended coordinate}{%
+    boolean}{%
+    \texttt{on}}{%
+    This option is only relevant if the bias is applied to one or several extended-Lagrangian colvars, for example within an eABF (\ref{sec:eABF}) simulation.
+    Usually, biases use the value of the extended coordinate as a proxy for the actual colvar, and their biasing forces are applied to the extended coordinates as well.
+    If \texttt{biasActualColvar} is enabled, the bias behaves as if there were no extended coordinates, and always use the value of the underlying colvars, applying any biasing forces along the gradients of those variables.
+    By default, the \texttt{harmonicWalls} bias applies to the actual colvars, so that the distribution of the colvar between the walls is unaffected by the bias, which then applies a flat-bottom potential \emph{as a function of the colvar value}. This bias will affect the extended coordinate distribution near the walls.
+    If \texttt{biasActualColvar} is disabled, \texttt{harmonicWalls} applies a flat-bottom potential \emph{as a function of the extended coordinate}. Conversely, this bias will then modify the distribution of the actual colvar value near the walls.
+  }
+
 \end{itemize}
 
 \noindent\textbf{Example 1:} harmonic walls for one variable with two different force constants.
