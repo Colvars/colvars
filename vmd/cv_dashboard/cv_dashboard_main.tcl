@@ -440,7 +440,9 @@ proc ::cv_dashboard::reset {} {
 
   # Run cv delete silently to be less verbose if module was already deleted
   catch { cv delete }
-  run_cv molid $molid
+  if { $molid != -1 } {
+    run_cv molid $molid
+  }
   set ::cv_dashboard::colvar_configs [dict create]
   refresh_table
   refresh_units
