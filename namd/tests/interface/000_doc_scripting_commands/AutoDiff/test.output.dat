@@ -49,9 +49,126 @@ bias_energy command:
 Tcl command: cv bias <name> energy - Get the current energy of this bias
 
 ======================================================================
+colvar_addforce command:
+
+Tcl command: cv colvar <name> addforce - Apply the given force onto this colvar and return the same
+
+Parameters
+----------
+
+force : float or array - Applied force; must match colvar dimensionality
+
+
+======================================================================
+colvar_cvcflags command:
+
+Tcl command: cv colvar <name> cvcflags - Enable or disable individual components by setting their active flags
+
+Parameters
+----------
+
+flags : integer array - Zero/nonzero value disables/enables the CVC
+
+
+======================================================================
+colvar_delete command:
+
+Tcl command: cv colvar <name> delete - Delete this colvar, along with all biases that depend on it
+
+======================================================================
+colvar_get command:
+
+Tcl command: cv colvar <name> get - Get the value of the given feature for this colvar
+
+Parameters
+----------
+
+feature : string - Name of the feature
+
+
+======================================================================
+colvar_getappliedforce command:
+
+Tcl command: cv colvar <name> getappliedforce - Return the total of the forces applied to this colvar
+
+======================================================================
+colvar_getatomgroups command:
+
+Tcl command: cv colvar <name> getatomgroups - Return the atom indices used by this colvar as a list of lists
+
+======================================================================
+colvar_getatomids command:
+
+Tcl command: cv colvar <name> getatomids - Return the list of atom indices used by this colvar
+
+======================================================================
+colvar_getconfig command:
+
+Tcl command: cv colvar <name> getconfig - Return the configuration string of this colvar
+
+======================================================================
+colvar_getgradients command:
+
+Tcl command: cv colvar <name> getgradients - Return the atomic gradients of this colvar
+
+======================================================================
+colvar_gettotalforce command:
+
+Tcl command: cv colvar <name> gettotalforce - Return the sum of internal and external forces to this colvar
+
+======================================================================
+colvar_modifycvcs command:
+
+Tcl command: cv colvar <name> modifycvcs - Modify configuration of individual components by passing string arguments
+
+Parameters
+----------
+
+confs : sequence of strings - New configurations; empty strings are skipped
+
+
+======================================================================
+colvar_run_ave command:
+
+Tcl command: cv colvar <name> run_ave - Get the current running average of the value of this colvar
+
+======================================================================
+colvar_set command:
+
+Tcl command: cv colvar <name> set - Set the given feature of this colvar to a new value
+
+Parameters
+----------
+
+feature : string - Name of the feature
+
+value : string - String representation of the new feature value
+
+
+======================================================================
+colvar_state command:
+
+Tcl command: cv colvar <name> state - Return a script representation of the feature state of this colvar
+
+======================================================================
+colvar_type command:
+
+Tcl command: cv colvar <name> type - Get the type description of this colvar
+
+======================================================================
+colvar_update command:
+
+Tcl command: cv colvar <name> update - Recompute this colvar and return its up-to-date value
+
+======================================================================
 colvar_value command:
 
 Tcl command: cv colvar <name> value - Get the current value of this colvar
+
+======================================================================
+colvar_width command:
+
+Tcl command: cv colvar <name> width - Get the width of this colvar
 
 ======================================================================
 cv_addenergy command:
@@ -214,4 +331,3 @@ cv_version command:
 Tcl command: cv version - Get the Colvars Module version number
 
 ======================================================================
-AAA
