@@ -7,8 +7,6 @@
 // If you wish to distribute your changes, please submit them to the
 // Colvars repository at GitHub.
 
-#include <errno.h>
-
 #include "common.h"
 #include "fstream_namd.h"
 #include "BackEnd.h"
@@ -559,12 +557,7 @@ void colvarproxy_namd::error(std::string const &message)
 void colvarproxy_namd::fatal_error(std::string const &message)
 {
   log(message);
-  if (errno) {
-    // log(strerror(errno));
-    NAMD_err("Error in the collective variables module");
-  } else {
-    NAMD_die("Error in the collective variables module: exiting.\n");
-  }
+  NAMD_err("Error in the collective variables module (see above messages for details)");
 }
 
 
