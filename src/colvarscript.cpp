@@ -9,6 +9,7 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <sstream>
 
 #if defined(NAMD_TCL) || defined(VMDTCL)
 #define COLVARS_TCL
@@ -63,9 +64,8 @@ int colvarscript::init_commands()
 #if defined(CVSCRIPT)
 #undef CVSCRIPT // disable default macro
 #endif
-#define CVSCRIPT_COMM_INIT(COMM,HELP,N_ARGS_MIN,N_ARGS_MAX,ARGS) {      \
-    char const *arghelp[N_ARGS_MAX] = ARGS;                             \
-    init_command(COMM,#COMM,HELP,N_ARGS_MIN,N_ARGS_MAX,arghelp,&(CVSCRIPT_COMM_FNAME(COMM))); \
+#define CVSCRIPT_COMM_INIT(COMM,HELP,N_ARGS_MIN,N_ARGS_MAX,ARGHELP) {   \
+    init_command(COMM,#COMM,HELP,N_ARGS_MIN,N_ARGS_MAX,ARGHELP,&(CVSCRIPT_COMM_FNAME(COMM))); \
   }
 #define CVSCRIPT(COMM,HELP,N_ARGS_MIN,N_ARGS_MAX,ARGS,FN_BODY)  \
   CVSCRIPT_COMM_INIT(COMM,HELP,N_ARGS_MIN,N_ARGS_MAX,ARGS)
@@ -82,7 +82,7 @@ int colvarscript::init_commands()
 int colvarscript::init_command(colvarscript::command const &comm,
                                char const *name, char const *help,
                                int n_args_min, int n_args_max,
-                               char const **arghelp,
+                               char const *arghelp,
                                int (*fn)(void *, int, unsigned char * const *))
 {
   comm_str_map[std::string(name)] = comm;
@@ -90,8 +90,15 @@ int colvarscript::init_command(colvarscript::command const &comm,
   comm_help[comm] = help;
   comm_n_args_min[comm] = n_args_min;
   comm_n_args_max[comm] = n_args_max;
+  std::string const arghelp_str(arghelp);
+  std::istringstream is(arghelp_str);
+  std::string line;
   for (int iarg = 0; iarg < n_args_max; iarg++) {
-    comm_arghelp[comm].push_back(std::string(arghelp[iarg]));
+    if (! std::getline(is, line)) {
+      return cvm::error("Error: could not initialize help string for scripting "
+                        "command \""+std::string(name)+"\".\n", BUG_ERROR);
+    }
+    comm_arghelp[comm].push_back(line);
   }
   comm_fns[comm] = fn;
   if (cvm::debug()) {

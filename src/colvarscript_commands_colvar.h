@@ -11,7 +11,7 @@
 CVSCRIPT(colvar_value,
          "Get the current value of this colvar",
          0, 0,
-         {},
+         "",
          script->set_result_str(this_colvar->value().to_simple_string());
          return COLVARS_OK;
          )

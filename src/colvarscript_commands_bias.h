@@ -11,7 +11,7 @@
 CVSCRIPT(bias_energy,
          "Get the current energy of this bias",
          0, 0,
-         {},
+         "",
          script->set_result_str(cvm::to_str(this_bias->get_energy()));
          return COLVARS_OK;
          )
