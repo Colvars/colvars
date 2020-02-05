@@ -245,9 +245,6 @@ int colvarmodule::parse_config(std::string &conf)
   // Update any necessary proxy data
   proxy->setup();
 
-  // configuration might have changed, better redo the labels
-  cv_traj_write_labels = true;
-
   return get_error();
 }
 
@@ -262,6 +259,12 @@ int colvarmodule::append_new_config(std::string const &new_conf)
 {
   extra_conf += new_conf;
   return COLVARS_OK;
+}
+
+
+void colvarmodule::config_changed()
+{
+  cv_traj_write_labels = true;
 }
 
 
@@ -369,6 +372,11 @@ int colvarmodule::parse_colvars(std::string const &conf)
     colvar_conf = "";
   }
 
+  if (pos > 0) {
+    // One or more new variables were added
+    config_changed();
+  }
+
   if (!colvars.size()) {
     cvm::log("Warning: no collective variables defined.\n");
   }
@@ -418,6 +426,10 @@ int colvarmodule::parse_biases_type(std::string const &conf,
       return COLVARS_ERROR;
     }
     bias_conf = "";
+  }
+  if (conf_saved_pos > 0) {
+    // One or more new biases were added
+    config_changed();
   }
   return COLVARS_OK;
 }

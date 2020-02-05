@@ -371,6 +371,9 @@ public:
   /// anything that triggers another call
   int append_new_config(std::string const &conf);
 
+  /// Signals to the module object that the configuration has changed
+  void config_changed();
+
 private:
 
   /// Configuration string read so far by the module (includes comments)

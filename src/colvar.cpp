@@ -1196,8 +1196,17 @@ colvar::~colvar()
     (*ci)->remove_all_children();
     delete *ci;
   }
+  cvcs.clear();
 
-  // remove reference to this colvar from the CVM
+  while (biases.size() > 0) {
+    size_t const i = biases.size()-1;
+    cvm::log("Warning: before deleting colvar " + name
+             + ", deleting related bias " + biases[i]->name);
+    delete biases[i];
+  }
+  biases.clear();
+
+  // remove reference to this colvar from the module
   colvarmodule *cv = cvm::main();
   for (std::vector<colvar *>::iterator cvi = cv->variables()->begin();
        cvi != cv->variables()->end();
@@ -1207,6 +1216,8 @@ colvar::~colvar()
       break;
     }
   }
+
+  cv->config_changed();
 
 #ifdef LEPTON
   for (std::vector<Lepton::CompiledExpression *>::iterator cei = value_evaluators.begin();

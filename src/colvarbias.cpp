@@ -229,6 +229,8 @@ int colvarbias::clear()
     }
   }
 
+  cv->config_changed();
+
   return COLVARS_OK;
 }
 
