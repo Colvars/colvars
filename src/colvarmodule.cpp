@@ -668,6 +668,7 @@ std::string colvarmodule::read_colvar(std::string const &name)
   return ss.str();
 }
 
+
 cvm::real colvarmodule::energy_difference(std::string const &bias_name,
                                           std::string const &conf)
 {
@@ -682,75 +683,6 @@ cvm::real colvarmodule::energy_difference(std::string const &bias_name,
   energy_diff = b->energy_difference(conf);
   cvm::decrease_depth();
   return energy_diff;
-}
-
-int colvarmodule::bias_current_bin(std::string const &bias_name)
-{
-  cvm::increase_depth();
-  int ret;
-  colvarbias *b = bias_by_name(bias_name);
-
-  if (b != NULL) {
-    ret = b->current_bin();
-  } else {
-    cvm::error("Error: bias not found.\n");
-    ret = COLVARS_ERROR;
-  }
-
-  cvm::decrease_depth();
-  return ret;
-}
-
-int colvarmodule::bias_bin_num(std::string const &bias_name)
-{
-  cvm::increase_depth();
-  int ret;
-  colvarbias *b = bias_by_name(bias_name);
-
-  if (b != NULL) {
-    ret = b->bin_num();
-  } else {
-    cvm::error("Error: bias not found.\n");
-    ret = COLVARS_ERROR;
-  }
-
-  cvm::decrease_depth();
-  return ret;
-}
-
-int colvarmodule::bias_bin_count(std::string const &bias_name, size_t bin_index)
-{
-  cvm::increase_depth();
-  int ret;
-  colvarbias *b = bias_by_name(bias_name);
-
-  if (b != NULL) {
-    ret = b->bin_count(bin_index);
-  } else {
-    cvm::error("Error: bias not found.\n");
-    ret = COLVARS_ERROR;
-  }
-
-  cvm::decrease_depth();
-  return ret;
-}
-
-int colvarmodule::bias_share(std::string const &bias_name)
-{
-  cvm::increase_depth();
-  int ret;
-  colvarbias *b = bias_by_name(bias_name);
-
-  if (b != NULL) {
-    b->replica_share();
-    ret = COLVARS_OK;
-  } else {
-    cvm::error("Error: bias not found.\n");
-    ret = COLVARS_ERROR;
-  }
-
-  cvm::decrease_depth();
-  return ret;
 }
 
 

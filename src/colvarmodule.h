@@ -482,15 +482,6 @@ public:
   /// currently works for harmonic (force constant and/or centers)
   real energy_difference(std::string const &bias_name, std::string const &conf);
 
-  /// Give the total number of bins for a given bias.
-  int bias_bin_num(std::string const &bias_name);
-  /// Calculate the bin index for a given bias.
-  int bias_current_bin(std::string const &bias_name);
-  //// Give the count at a given bin index.
-  int bias_bin_count(std::string const &bias_name, size_t bin_index);
-  //// Share among replicas.
-  int bias_share(std::string const &bias_name);
-
   /// Main worker function
   int calc();
 
