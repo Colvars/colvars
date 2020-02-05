@@ -31,8 +31,8 @@
 
 // N_ARGS_MAX = the highest number of arguments allowed
 
-// ARGS = an array of C string literals describing each parameter, with the
-//        format "name : type[, optional] - description"
+// ARGS = multi-line string literal describing each parameter; each line
+//        follows the format "name : type - description"
 
 // FN_BODY = the implementation of the function; this should be a thin layer
 //           over the existing classes; the "script" pointer to the
@@ -79,7 +79,7 @@ extern "C" {
 CVSCRIPT(cv_help,
          "Get the help string of the Colvars scripting interface",
          0, 1,
-         { "command : str - Get the help string of this specific command" },
+         "command : str - Get the help string of this specific command",
          unsigned char *const cmdobj = script->get_cmd_arg<>(0, objc, objv);
          if (cmdobj) {
            std::string const cmdstr(script->obj_to_str(cmdobj));
@@ -100,7 +100,7 @@ CVSCRIPT(cv_help,
 CVSCRIPT(cv_version,
          "Get the Colvars Module version number",
          0, 0,
-         {},
+         "",
          script->set_result_str(COLVARS_VERSION);
          return COLVARS_OK;
          )
@@ -108,7 +108,7 @@ CVSCRIPT(cv_version,
 CVSCRIPT(cv_listcommands,
          "Return a list of command names",
          0, 0,
-         {},
+         "",
          int const n_commands = cvscript_n_commands();
          char const **command_names = cvscript_command_names();
          std::string result;
@@ -123,7 +123,7 @@ CVSCRIPT(cv_listcommands,
 CVSCRIPT(cv_config,
          "Read configuration from the given string",
          1, 1,
-         { "conf : str - Configuration string" },
+         "conf : str - Configuration string",
          char const *conf_str =
            script->obj_to_str(script->get_cmd_arg<>(0, objc, objv));
          std::string const conf(conf_str);
@@ -149,7 +149,7 @@ CVSCRIPT(cv_configfile,
 CVSCRIPT(cv_getconfig,
          "Get the module's configuration string read so far",
          0, 0,
-         { },
+         "",
          script->set_result_str(cvm::main()->get_config());
          return COLVARS_OK;
          )
@@ -157,7 +157,7 @@ CVSCRIPT(cv_getconfig,
 CVSCRIPT(cv_units,
          "Get or set the current Colvars unit system",
          0, 1,
-         { "unit_keyword : str - The new unit system" },
+         "unit_keyword : str - The new unit system",
          char const *argstr =
            script->obj_to_str(script->get_cmd_arg<>(0, objc, objv));
          if (argstr) {
@@ -171,21 +171,21 @@ CVSCRIPT(cv_units,
 CVSCRIPT(cv_reset,
          "Delete all internal configuration",
          0, 0,
-         {},
+         "",
          return script->module()->reset();
          )
 
 CVSCRIPT(cv_delete,
          "Delete this Colvars module instance",
          0, 0,
-         {},
+         "",
          return script->proxy()->request_deletion();
          )
 
 CVSCRIPT(cv_resetindexgroups,
          "Clear the index groups loaded so far, allowing to replace them",
          0, 0,
-         { },
+         "",
          cvm::main()->index_group_names.clear();
          cvm::main()->index_groups.clear();
          return COLVARS_OK;
@@ -195,7 +195,7 @@ CVSCRIPT(cv_list,
          "Return a list of all variables or biases",
          // For backward compatibility, accept argument "biases"
          0, 1,
-         { "keyword : str - \"variables\" (default) or \"biases\"" },
+         "keyword : str - \"variables\" (default) or \"biases\"",
          std::string res;
          unsigned char *const kwarg = script->get_cmd_arg<>(0, objc, objv);
          std::string const kwstr = kwarg ? script->obj_to_str(kwarg) :
@@ -226,7 +226,7 @@ CVSCRIPT(cv_list,
 CVSCRIPT(cv_list_biases,
          "Return a list of all biases",
          0, 0,
-         {},
+         "",
          std::string res;
          for (std::vector<colvarbias *>::iterator bi = script->module()->biases.begin();
               bi != script->module()->biases.end();
@@ -266,7 +266,7 @@ CVSCRIPT(cv_save,
 CVSCRIPT(cv_update,
          "Recalculate colvars and biases",
          0, 0,
-         {},
+         "",
          int error_code = script->proxy()->update_input();
          if (error_code) {
            script->set_error_msg("Error updating the Colvars module (input)");
@@ -287,7 +287,7 @@ CVSCRIPT(cv_update,
 CVSCRIPT(cv_addenergy,
          "Add an energy to the MD engine",
          1, 1,
-         { "E : float - Amount of energy to add" },
+         "E : float - Amount of energy to add",
          char const *Earg =
            script->obj_to_str(script->get_cmd_arg<>(0, objc, objv));
          cvm::main()->total_bias_energy += strtod(Earg, NULL);
@@ -297,7 +297,7 @@ CVSCRIPT(cv_addenergy,
 CVSCRIPT(cv_getenergy,
          "Get the current Colvars energy",
          1, 1,
-         { "E (float) - Store the energy in this variable" },
+         "E (float) - Store the energy in this variable",
          double *energy = reinterpret_cast<double *>(objv[2]);
          *energy = cvm::main()->total_bias_energy;
          return COLVARS_OK;
@@ -306,7 +306,7 @@ CVSCRIPT(cv_getenergy,
 CVSCRIPT(cv_printframelabels,
          "Print the labels that would be written to colvars.traj",
          0, 0,
-         { },
+         "",
          std::ostringstream os;
          script->module()->write_traj_label(os);
          script->set_result_str(os.str());
@@ -316,7 +316,7 @@ CVSCRIPT(cv_printframelabels,
 CVSCRIPT(cv_printframe,
          "Print the values that would be written to colvars.traj",
          0, 0,
-         { },
+         "",
          std::ostringstream os;
          script->module()->write_traj(os);
          script->set_result_str(os.str());
@@ -326,7 +326,7 @@ CVSCRIPT(cv_printframe,
 CVSCRIPT(cv_frame,
          "Get or set current frame number",
          0, 1,
-         { "frame : int - Frame number" },
+         "frame : int - Frame number",
          char *const arg =
            reinterpret_cast<char *>(script->get_cmd_arg<>(0, objc, objv));
          if (arg == NULL) {
