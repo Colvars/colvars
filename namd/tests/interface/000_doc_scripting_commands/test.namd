@@ -27,5 +27,4 @@ foreach cmd [lsort [cv listcommands]] {
 }
 puts ${output} ======================================================================
 
-puts ${output} AAA
 source ../Common/delete_tmp_files.tcl

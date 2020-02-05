@@ -159,15 +159,16 @@ private:
     return (*(comm_fns[c]))(pobj, objc, objv);
   }
 
-  /// Run subcommands on colvar
-  int proc_colvar(colvar *cv, int argc, unsigned char *const argv[]);
-
   /// Run subcommands on bias
   int proc_bias(colvarbias *b, int argc, unsigned char *const argv[]);
+
+public: // TODO this function will be removed soon
 
   /// Run subcommands on base colvardeps object (colvar, bias, ...)
   int proc_features(colvardeps *obj,
                     int argc, unsigned char *const argv[]);
+
+private: // TODO
 
   /// Internal identifiers of command strings
   std::map<std::string, command> comm_str_map;
