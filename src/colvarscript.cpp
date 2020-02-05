@@ -23,7 +23,7 @@
 
 
 colvarscript::colvarscript(colvarproxy *p)
- : proxy(p),
+ : proxy_(p),
    colvars(p->colvars),
    proxy_error(0)
 {
@@ -377,7 +377,7 @@ int colvarscript::proc_colvar(colvar *cv, int objc, unsigned char *const objv[])
       result = "cvcflags: missing parameter: vector of strings";
       return COLVARSCRIPT_ERROR;
     }
-    std::vector<std::string> const confs(proxy->script_obj_to_str_vector(objv[3]));
+    std::vector<std::string> const confs(proxy()->script_obj_to_str_vector(objv[3]));
     cvm::increase_depth();
     int res = cv->update_cvc_config(confs);
     cvm::decrease_depth();
@@ -579,7 +579,7 @@ Input and output:\n\
   printframelabels            -- return labels to annotate printframe's output\n";
 
   long int tmp;
-  if (proxy->get_frame(tmp) != COLVARS_NOT_IMPLEMENTED) {
+  if (proxy_->get_frame(tmp) != COLVARS_NOT_IMPLEMENTED) {
       buf += "\
   frame                       -- return current frame number\n\
   frame <new_frame>           -- set frame number\n";

@@ -29,7 +29,7 @@ class colvarscript  {
 
 private:
 
-  colvarproxy *proxy;
+  colvarproxy *proxy_;
   colvarmodule *colvars;
 
   inline colvarscript() {} // no-argument construction forbidden
@@ -127,6 +127,18 @@ public:
 
   /// Set error code for unsupported script operation
   int unsupported_op();
+
+  /// Pointer to the Colvars main object
+  inline colvarmodule *module()
+  {
+    return this->colvars;
+  }
+
+  /// Pointer to the colvarproxy object (interface with host engine)
+  inline colvarproxy *proxy()
+  {
+    return this->proxy_;
+  }
 
 private:
 

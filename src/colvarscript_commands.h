@@ -138,7 +138,7 @@ CVSCRIPT(cv_configfile,
          "Read configuration from a file",
          1, 1,
          {"conf_file (str) - Path to configuration file"},
-         if (script->colvars->read_config_file(script->obj_to_str(objv[2])) == COLVARS_OK) {
+         if (script->module()->read_config_file(script->obj_to_str(objv[2])) == COLVARS_OK) {
            return COLVARS_OK;
          } else {
            script->set_error_msg("Error parsing configuration file");
@@ -172,14 +172,14 @@ CVSCRIPT(cv_reset,
          "Delete all internal configuration",
          0, 0,
          {},
-         return script->colvars->reset();
+         return script->module()->reset();
          )
 
 CVSCRIPT(cv_delete,
          "Delete this Colvars module instance",
          0, 0,
          {},
-         return script->proxy->request_deletion();
+         return script->proxy()->request_deletion();
          )
 
 CVSCRIPT(cv_resetindexgroups,
@@ -192,29 +192,33 @@ CVSCRIPT(cv_resetindexgroups,
          )
 
 CVSCRIPT(cv_list,
-         "Return a list of all variables",
+         "Return a list of all variables or biases",
          // For backward compatibility, accept argument "biases"
          0, 1,
-         {},
+         { "keyword : str - \"variables\" (default) or \"biases\"" },
          std::string res;
-         if (objc == 2) {
-           for (std::vector<colvar *>::iterator cvi = script->colvars->colvars.begin();
-                cvi != script->colvars->colvars.end();
+         unsigned char *const kwarg = script->get_cmd_arg<>(0, objc, objv);
+         std::string const kwstr = kwarg ? script->obj_to_str(kwarg) :
+           std::string("variables");
+         if (kwstr == "variables") {
+           for (std::vector<colvar *>::iterator cvi = script->module()->variables()->begin();
+                cvi != script->module()->variables()->end();
                 ++cvi) {
-             res += (cvi == script->colvars->colvars.begin() ? "" : " ") + (*cvi)->name;
+             res += (cvi == script->module()->variables()->begin() ? "" : " ") + (*cvi)->name;
            }
            script->set_result_str(res);
            return COLVARS_OK;
-         } else if (!strcmp(script->obj_to_str(objv[2]), "biases")) {
-           for (std::vector<colvarbias *>::iterator bi = script->colvars->biases.begin();
-                bi != script->colvars->biases.end();
+         } else if (kwstr == "biases") {
+           for (std::vector<colvarbias *>::iterator bi = script->module()->biases.begin();
+                bi != script->module()->biases.end();
                 ++bi) {
-             res += (bi == script->colvars->biases.begin() ? "" : " ") + (*bi)->name;
+             res += (bi == script->module()->biases.begin() ? "" : " ") + (*bi)->name;
            }
            script->set_result_str(res);
            return COLVARS_OK;
          } else {
-           script->set_error_msg("Wrong arguments to command \"list\"\n" + script->help_string());
+           script->set_error_msg("Wrong arguments to command \"list\"\n" +
+                                 script->help_string());
            return COLVARSCRIPT_ERROR;
          }
          )
@@ -224,10 +228,10 @@ CVSCRIPT(cv_list_biases,
          0, 0,
          {},
          std::string res;
-         for (std::vector<colvarbias *>::iterator bi = script->colvars->biases.begin();
-              bi != script->colvars->biases.end();
+         for (std::vector<colvarbias *>::iterator bi = script->module()->biases.begin();
+              bi != script->module()->biases.end();
               ++bi) {
-           res += (bi == script->colvars->biases.begin() ? "" : " ") + (*bi)->name;
+           res += (bi == script->module()->biases.begin() ? "" : " ") + (*bi)->name;
          }
          script->set_result_str(res);
          return COLVARS_OK;
@@ -237,8 +241,8 @@ CVSCRIPT(cv_load,
          "Load a state file (requires matching configuration)",
          1, 1,
          {"state_file (str) - Path to existing state file"},
-         script->proxy->input_prefix() = script->obj_to_str(objv[2]);
-         if (script->colvars->setup_input() == COLVARS_OK) {
+         script->proxy()->input_prefix() = script->obj_to_str(objv[2]);
+         if (script->module()->setup_input() == COLVARS_OK) {
            return COLVARS_OK;
          } else {
            script->set_error_msg("Error loading state file");
@@ -250,12 +254,12 @@ CVSCRIPT(cv_save,
          "Save state to a file",
          1, 1,
          {"state_file (str) - Path to state file"},
-         script->proxy->output_prefix() = script->obj_to_str(objv[2]);
+         script->proxy()->output_prefix() = script->obj_to_str(objv[2]);
          int error = 0;
-         error |= script->colvars->setup_output();
-         error |= script->colvars->write_restart_file(script->colvars->output_prefix()+
+         error |= script->module()->setup_output();
+         error |= script->module()->write_restart_file(script->module()->output_prefix()+
                                                       ".colvars.state");
-         error |= script->colvars->write_output_files();
+         error |= script->module()->write_output_files();
          return error ? COLVARSCRIPT_ERROR : COLVARS_OK;
          )
 
@@ -263,17 +267,17 @@ CVSCRIPT(cv_update,
          "Recalculate colvars and biases",
          0, 0,
          {},
-         int error_code = script->proxy->update_input();
+         int error_code = script->proxy()->update_input();
          if (error_code) {
            script->set_error_msg("Error updating the Colvars module (input)");
            return error_code;
          }
-         error_code |= script->colvars->calc();
+         error_code |= script->module()->calc();
          if (error_code) {
            script->set_error_msg("Error updating the Colvars module (calc)");
            return error_code;
          }
-         error_code |= script->proxy->update_output();
+         error_code |= script->proxy()->update_output();
          if (error_code) {
            script->set_error_msg("Error updating the Colvars module (output)");
          }
@@ -304,7 +308,7 @@ CVSCRIPT(cv_printframelabels,
          0, 0,
          { },
          std::ostringstream os;
-         script->colvars->write_traj_label(os);
+         script->module()->write_traj_label(os);
          script->set_result_str(os.str());
          return COLVARS_OK;
          )
@@ -314,7 +318,7 @@ CVSCRIPT(cv_printframe,
          0, 0,
          { },
          std::ostringstream os;
-         script->colvars->write_traj(os);
+         script->module()->write_traj(os);
          script->set_result_str(os.str());
          return COLVARS_OK;
          )
@@ -322,10 +326,12 @@ CVSCRIPT(cv_printframe,
 CVSCRIPT(cv_frame,
          "Get or set current frame number",
          0, 1,
-         { },
-         if (objc == 2) {
+         { "frame : int - Frame number" },
+         char *const arg =
+           reinterpret_cast<char *>(script->get_cmd_arg<>(0, objc, objv));
+         if (arg == NULL) {
            long int f;
-           int error = script->proxy->get_frame(f);
+           int error = script->proxy()->get_frame(f);
            if (error == COLVARS_OK) {
              script->set_result_str(cvm::to_str(f));
              return COLVARS_OK;
@@ -333,10 +339,11 @@ CVSCRIPT(cv_frame,
              script->set_error_msg("Frame number is not available");
              return COLVARSCRIPT_ERROR;
            }
-         } else if (objc == 3) {
+         } else {
            // Failure of this function does not trigger an error, but
            // returns nonzero, to let scripts detect available frames
-           int error = script->proxy->set_frame(strtol(script->obj_to_str(objv[2]), NULL, 10));
+
+           int error = script->proxy()->set_frame(strtol(arg, NULL, 10));
            script->set_result_str(cvm::to_str(error == COLVARS_OK ? 0 : -1));
            return COLVARS_OK;
          }
