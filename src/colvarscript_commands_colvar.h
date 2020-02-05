@@ -60,7 +60,6 @@ CVSCRIPT(colvar_get,
          1, 1,
          "feature : string - Name of the feature",
          return script->proc_features(this_colvar, objc, objv);
-         return COLVARS_OK;
          )
 
 CVSCRIPT(colvar_getappliedforce,
@@ -171,15 +170,13 @@ CVSCRIPT(colvar_set,
          "feature : string - Name of the feature\n"
          "value : string - String representation of the new feature value",
          return script->proc_features(this_colvar, objc, objv);
-         return COLVARS_OK;
          )
 
 CVSCRIPT(colvar_state,
-         "Return a script representation of the feature state of this colvar",
+         "Return a string representation of the feature state of this colvar",
          0, 0,
          "",
          return script->proc_features(this_colvar, objc, objv);
-         return COLVARS_OK;
          )
 
 CVSCRIPT(colvar_type,

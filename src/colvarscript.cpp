@@ -162,13 +162,13 @@ int colvarscript::run(int objc, unsigned char *const objv[])
   if (cmd == "colvar") {
 
     if (objc < 4) {
-      result = "Missing parameters\n" + help_string();
+      set_error_msg("Missing parameters\n" + help_string());
       return COLVARSCRIPT_ERROR;
     }
     std::string const name(obj_to_str(objv[2]));
     obj_for_cmd = reinterpret_cast<void *>(cvm::colvar_by_name(name));
     if (obj_for_cmd == NULL) {
-      result = "Colvar not found: " + name;
+      set_error_msg("Colvar not found: " + name);
       return COLVARSCRIPT_ERROR;
     }
     cmd_fn = get_comm_fn(std::string(std::string("colvar_")+
@@ -176,13 +176,13 @@ int colvarscript::run(int objc, unsigned char *const objv[])
   } else if (cmd == "bias") {
 
     if (objc < 4) {
-      result = "Missing parameters\n" + help_string();
+      set_error_msg("Missing parameters\n" + help_string());
       return COLVARSCRIPT_ERROR;
     }
     std::string const name(obj_to_str(objv[2]));
     obj_for_cmd = reinterpret_cast<void *>(cvm::bias_by_name(name));
     if (obj_for_cmd == NULL) {
-      result = "Bias not found: " + name;
+      set_error_msg("Bias not found: " + name);
       return COLVARSCRIPT_ERROR;
     }
     cmd_fn = get_comm_fn(std::string(std::string("bias_")+
@@ -201,116 +201,28 @@ int colvarscript::run(int objc, unsigned char *const objv[])
     return (*cmd_fn)(obj_for_cmd, objc, objv);
   }
 
-  // Parse scripting commands not yet in the map
-
-  int error_code = COLVARS_OK;
-
-  if (cvm::debug()) {
-    cvm::log("Looking for an if statement for command "+cmd+".\n");
-  }
-
-  if (cmd == "bias") {
-    colvarbias *b = reinterpret_cast<colvarbias *>(obj_for_cmd);
-    return proc_bias(b, objc-1, &(objv[1]));
-  }
-  result = "Syntax error\n" + help_string();
-  return COLVARSCRIPT_ERROR;
-}
-
-
-int colvarscript::proc_bias(colvarbias *b, int objc, unsigned char *const objv[]) {
-
-  if (objc < 3) {
-    result = "Missing arguments";
-    return COLVARSCRIPT_ERROR;
-  }
-  std::string const subcmd(obj_to_str(objv[2]));
-
-  if (subcmd == "update") {
-    b->update();
-    result = cvm::to_str(b->get_energy());
-    return COLVARS_OK;
-  }
-
-  if (subcmd == "getconfig") {
-    result = b->get_config();
-    return COLVARS_OK;
-  }
-
-  // Subcommands for MW ABF
-  if (subcmd == "bin") {
-    int r = b->current_bin();
-    result = cvm::to_str(r);
-    return COLVARS_OK;
-  }
-
-  if (subcmd == "binnum") {
-    int r = b->bin_num();
-    if (r < 0) {
-      result = "Error: calling bin_num() for bias " + b->name;
-      return COLVARSCRIPT_ERROR;
-    }
-    result = cvm::to_str(r);
-    return COLVARS_OK;
-  }
-
-  if (subcmd == "share") {
-    int r = b->replica_share();
-    if (r < 0) {
-      result = "Error: calling replica_share() for bias " + b->name;
-      return COLVARSCRIPT_ERROR;
-    }
-    result = cvm::to_str(r);
-    return COLVARS_OK;
-  }
-  // End commands for MW ABF
-
-  if (subcmd == "delete") {
-    // the bias destructor takes care of the cleanup at cvm level
-    delete b;
-    return COLVARS_OK;
-  }
-
-  if ((subcmd == "get") || (subcmd == "set") || (subcmd == "state")) {
-    return proc_features(b, objc, objv);
-  }
-
-  if (objc >= 4) {
-    std::string const param(obj_to_str(objv[3]));
-    if (subcmd == "count") {
-      int index;
-      if (!(std::istringstream(param) >> index)) {
-        result = "bin_count: error parsing bin index";
-        return COLVARSCRIPT_ERROR;
-      }
-      result = cvm::to_str(b->bin_count(index));
-      return COLVARS_OK;
-    }
-
-    result = "Syntax error\n" + help_string();
-    return COLVARSCRIPT_ERROR;
-  }
-
-  result = "Syntax error\n" + help_string();
+  set_error_msg("Syntax error\n" + help_string());
   return COLVARSCRIPT_ERROR;
 }
 
 
 int colvarscript::proc_features(colvardeps *obj,
                                 int objc, unsigned char *const objv[]) {
+
   // size was already checked before calling
-  std::string const subcmd(obj_to_str(objv[2]));
+  std::string const subcmd(obj_to_str(objv[3]));
 
-  if (objc == 3) {
-    if (subcmd == "state") {
-      // TODO make this returned as result?
-      obj->print_state();
-      return COLVARS_OK;
+  if (cvm::debug()) {
+    cvm::log("Called proc_features() with " + cvm::to_str(objc) + " args:");
+    for (int i = 0; i < objc; i++) {
+      cvm::log(obj_to_str(objv[i]));
     }
+  }
 
-    // get and set commands require more arguments
-    result = "Syntax error\n" + help_string();
-    return COLVARSCRIPT_ERROR;
+  if (subcmd == "state") {
+    // TODO make this returned as result?
+    obj->print_state();
+    return COLVARS_OK;
   }
 
   if ((subcmd == "get") || (subcmd == "set")) {
@@ -328,18 +240,18 @@ int colvarscript::proc_features(colvardeps *obj,
 
     if (f == NULL) {
 
-      result = "Error: feature \""+req_feature+"\" does not exist.\n";
+      set_error_msg("Error: feature \""+req_feature+"\" does not exist.\n");
       return COLVARSCRIPT_ERROR;
 
     } else {
 
       if (! obj->is_available(fid)) {
-        result = "Error: feature \""+req_feature+"\" is unavailable.\n";
+        set_error_msg("Error: feature \""+req_feature+"\" is unavailable.\n");
         return COLVARSCRIPT_ERROR;
       }
 
       if (subcmd == "get") {
-        result = cvm::to_str(obj->is_enabled(fid) ? 1 : 0);
+        set_result_str(cvm::to_str(obj->is_enabled(fid) ? 1 : 0));
         return COLVARS_OK;
       }
 
@@ -359,13 +271,13 @@ int colvarscript::proc_features(colvardeps *obj,
             return COLVARS_OK;
           }
         }
-        result = "Syntax error\n" + help_string();
+        set_error_msg("Syntax error\n" + help_string());
         return COLVARSCRIPT_ERROR;
       }
     }
   }
 
-  result = "Syntax error\n" + help_string();
+  set_error_msg("Syntax error\n" + help_string());
   return COLVARSCRIPT_ERROR;
 }
 
