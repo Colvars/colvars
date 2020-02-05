@@ -7,7 +7,7 @@ Managing the Colvars module:
   resetindexgroups            -- clear the index groups loaded so far
   reset                       -- delete all internal configuration
   delete                      -- delete this Colvars module instance
-  version                     -- return version of Colvars code
+  version                     -- return version of Colvars Module
   
 Input and output:
   list                        -- return a list of all variables
@@ -44,34 +44,19 @@ Accessing biases:
 List of command descriptions:
 
 ======================================================================
-cv help - Get the help string of the Colvars scripting interface
+bias_energy command:
 
-Parameters
-----------
-
-command : str - Get the help string of this specific command (optional)
-
+Tcl command: cv bias <name> energy - Get the current energy of this bias
 
 ======================================================================
-cv listcommands - Return a list of command names, each prefixed by "cv_"
+colvar_value command:
+
+Tcl command: cv colvar <name> value - Get the current value of this colvar
 
 ======================================================================
-cv config - Read configuration from the given string
+cv_addenergy command:
 
-Parameters
-----------
-
-conf : str - Configuration string
-
-
-======================================================================
-cv getconfig - Get the module's configuration string read so far
-
-======================================================================
-cv resetindexgroups - Clear the index groups loaded so far, allowing to replace them
-
-======================================================================
-cv addenergy - Add an energy to the MD engine
+Tcl command: cv addenergy - Add an energy to the MD engine
 
 Parameters
 ----------
@@ -80,7 +65,137 @@ E : float - Amount of energy to add
 
 
 ======================================================================
-cv units - Get or set the current Colvars unit system
+cv_config command:
+
+Tcl command: cv config - Read configuration from the given string
+
+Parameters
+----------
+
+conf : str - Configuration string
+
+
+======================================================================
+cv_configfile command:
+
+Tcl command: cv configfile - Read configuration from a file
+
+Parameters
+----------
+
+conf_file (str) - Path to configuration file
+
+
+======================================================================
+cv_delete command:
+
+Tcl command: cv delete - Delete this Colvars module instance
+
+======================================================================
+cv_frame command:
+
+Tcl command: cv frame - Get or set current frame number
+
+Parameters
+----------
+
+frame : int - Frame number (optional)
+
+
+======================================================================
+cv_getconfig command:
+
+Tcl command: cv getconfig - Get the module's configuration string read so far
+
+======================================================================
+cv_getenergy command:
+
+Tcl command: cv getenergy - Get the current Colvars energy
+
+Parameters
+----------
+
+E (float) - Store the energy in this variable
+
+
+======================================================================
+cv_help command:
+
+Tcl command: cv help - Get the help string of the Colvars scripting interface
+
+Parameters
+----------
+
+command : str - Get the help string of this specific command (optional)
+
+
+======================================================================
+cv_list command:
+
+Tcl command: cv list - Return a list of all variables or biases
+
+Parameters
+----------
+
+keyword : str - "variables" (default) or "biases" (optional)
+
+
+======================================================================
+cv_list_biases command:
+
+Tcl command: cv list_biases - Return a list of all biases
+
+======================================================================
+cv_listcommands command:
+
+Tcl command: cv listcommands - Return a list of command names
+
+======================================================================
+cv_load command:
+
+Tcl command: cv load - Load a state file (requires matching configuration)
+
+Parameters
+----------
+
+state_file (str) - Path to existing state file
+
+
+======================================================================
+cv_printframe command:
+
+Tcl command: cv printframe - Print the values that would be written to colvars.traj
+
+======================================================================
+cv_printframelabels command:
+
+Tcl command: cv printframelabels - Print the labels that would be written to colvars.traj
+
+======================================================================
+cv_reset command:
+
+Tcl command: cv reset - Delete all internal configuration
+
+======================================================================
+cv_resetindexgroups command:
+
+Tcl command: cv resetindexgroups - Clear the index groups loaded so far, allowing to replace them
+
+======================================================================
+cv_save command:
+
+Tcl command: cv save - Save state to a file
+
+Parameters
+----------
+
+state_file (str) - Path to state file
+
+
+======================================================================
+cv_units command:
+
+Tcl command: cv units - Get or set the current Colvars unit system
 
 Parameters
 ----------
@@ -89,9 +204,14 @@ unit_keyword : str - The new unit system (optional)
 
 
 ======================================================================
-cv colvar <name> value - Get the current value of this colvar
+cv_update command:
+
+Tcl command: cv update - Recalculate colvars and biases
 
 ======================================================================
-cv bias <name> energy - Get the current energy of this bias
+cv_version command:
+
+Tcl command: cv version - Get the Colvars Module version number
 
 ======================================================================
+AAA

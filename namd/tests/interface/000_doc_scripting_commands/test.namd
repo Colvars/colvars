@@ -15,16 +15,17 @@ puts ${output} [cv help]
 puts ${output} "List of command descriptions:"
 puts ${output} ""
 
-foreach cmd [cv listcommands] {
+foreach cmd [lsort [cv listcommands]] {
     puts ${output} ======================================================================
     if { [string range ${cmd} 0 2] == "cv_" } {
-        puts -nonewline ${output} "cv [string range ${cmd} 3 end] - [cv help ${cmd}]"
+        puts -nonewline ${output} "${cmd} command:\n\nTcl command: cv [string range ${cmd} 3 end] - [cv help ${cmd}]"
     } elseif { [string range ${cmd} 0 4] == "bias_" } {
-        puts -nonewline ${output} "cv bias <name> [string range ${cmd} 5 end] - [cv help ${cmd}]"
+        puts -nonewline ${output} "${cmd} command:\n\nTcl command: cv bias <name> [string range ${cmd} 5 end] - [cv help ${cmd}]"
     } elseif { [string range ${cmd} 0 6] == "colvar_" } {
-        puts -nonewline ${output} "cv colvar <name> [string range ${cmd} 7 end] - [cv help ${cmd}]"
+        puts -nonewline ${output} "${cmd} command:\n\nTcl command: cv colvar <name> [string range ${cmd} 7 end] - [cv help ${cmd}]"
     }
 }
 puts ${output} ======================================================================
 
+puts ${output} AAA
 source ../Common/delete_tmp_files.tcl
