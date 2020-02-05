@@ -44,9 +44,79 @@ Accessing biases:
 List of command descriptions:
 
 ======================================================================
+bias_bin command:
+
+Tcl command: cv bias <name> bin - Get the current grid bin index (1D ABF only for now)
+
+======================================================================
+bias_bincount command:
+
+Tcl command: cv bias <name> bincount - Get the number of samples at the given grid bin (1D ABF only for now)
+
+Parameters
+----------
+
+index : integer - Grid index; defaults to current bin (optional)
+
+
+======================================================================
+bias_binnum command:
+
+Tcl command: cv bias <name> binnum - Get the total number of grid points of this bias (1D ABF only for now)
+
+======================================================================
+bias_delete command:
+
+Tcl command: cv bias <name> delete - Delete this bias
+
+======================================================================
 bias_energy command:
 
 Tcl command: cv bias <name> energy - Get the current energy of this bias
+
+======================================================================
+bias_get command:
+
+Tcl command: cv bias <name> get - Get the value of the given feature for this bias
+
+Parameters
+----------
+
+feature : string - Name of the feature
+
+
+======================================================================
+bias_getconfig command:
+
+Tcl command: cv bias <name> getconfig - Return the configuration string of this bias
+
+======================================================================
+bias_set command:
+
+Tcl command: cv bias <name> set - Set the given feature of this bias to a new value
+
+Parameters
+----------
+
+feature : string - Name of the feature
+
+value : string - String representation of the new feature value
+
+
+======================================================================
+bias_share command:
+
+Tcl command: cv bias <name> share - Share bias information with other replicas (multiple-walker scheme)
+
+======================================================================
+bias_state command:
+
+Tcl command: cv bias <name> state - Return a string representation of the feature state of this bias
+
+======================================================================
+bias_update command:
+
+Tcl command: cv bias <name> update - Recompute this bias and return its up-to-date energy
 
 ======================================================================
 colvar_addforce command:
@@ -148,7 +218,7 @@ value : string - String representation of the new feature value
 ======================================================================
 colvar_state command:
 
-Tcl command: cv colvar <name> state - Return a script representation of the feature state of this colvar
+Tcl command: cv colvar <name> state - Return a string representation of the feature state of this colvar
 
 ======================================================================
 colvar_type command:

@@ -159,9 +159,6 @@ private:
     return (*(comm_fns[c]))(pobj, objc, objv);
   }
 
-  /// Run subcommands on bias
-  int proc_bias(colvarbias *b, int argc, unsigned char *const argv[]);
-
 public: // TODO this function will be removed soon
 
   /// Run subcommands on base colvardeps object (colvar, bias, ...)
