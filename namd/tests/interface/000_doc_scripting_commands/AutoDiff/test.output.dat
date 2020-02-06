@@ -328,11 +328,6 @@ keyword : str - "variables" (default) or "biases" (optional)
 
 
 ======================================================================
-cv_list_biases command:
-
-Tcl command: cv list_biases - Return a list of all biases
-
-======================================================================
 cv_listcommands command:
 
 Tcl command: cv listcommands - Return a list of command names
