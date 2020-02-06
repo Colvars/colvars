@@ -15,7 +15,10 @@ obj/colvar.o: \
 	colvars/src/colvar_arithmeticpath.h \
 	colvars/src/colvar_geometricpath.h \
 	colvars/src/colvarscript.h \
-	colvars/src/colvarbias.h
+	colvars/src/colvarbias.h \
+	colvars/src/colvarscript_commands.h \
+	colvars/src/colvarscript_commands_colvar.h \
+	colvars/src/colvarscript_commands_bias.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvar.o $(COPTC) colvars/src/colvar.cpp
 obj/colvaratoms.o: \
 	obj/.exists \
@@ -310,6 +313,9 @@ obj/colvarmodule.o: \
 	colvars/src/colvarbias_meta.h \
 	colvars/src/colvarbias_restraint.h \
 	colvars/src/colvarscript.h \
+	colvars/src/colvarscript_commands.h \
+	colvars/src/colvarscript_commands_colvar.h \
+	colvars/src/colvarscript_commands_bias.h \
 	colvars/src/colvaratoms.h \
 	colvars/src/colvarcomp.h \
 	colvars/src/colvar_arithmeticpath.h \
@@ -348,6 +354,9 @@ obj/colvarproxy.o: \
 	colvars/src/colvarparse.h \
 	colvars/src/colvarparams.h \
 	colvars/src/colvardeps.h \
+	colvars/src/colvarscript_commands.h \
+	colvars/src/colvarscript_commands_colvar.h \
+	colvars/src/colvarscript_commands_bias.h \
 	colvars/src/colvaratoms.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarproxy.o $(COPTC) colvars/src/colvarproxy.cpp
 obj/colvarproxy_replicas.o: \
@@ -362,18 +371,75 @@ obj/colvarproxy_replicas.o: \
 obj/colvarscript.o: \
 	obj/.exists \
 	colvars/src/colvarscript.cpp \
-	colvars/src/colvarscript.h \
+	colvars/src/colvarproxy.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
-	colvars/src/colvarvalue.h \
 	colvars/src/colvartypes.h \
-	colvars/src/colvarbias.h \
-	colvars/src/colvar.h \
+	colvars/src/colvarvalue.h \
+	colvars/src/colvardeps.h \
 	colvars/src/colvarparse.h \
 	colvars/src/colvarparams.h \
-	colvars/src/colvardeps.h \
-	colvars/src/colvarproxy.h
+	colvars/src/colvarscript.h \
+	colvars/src/colvarbias.h \
+	colvars/src/colvar.h \
+	colvars/src/colvarscript_commands.h \
+	colvars/src/colvarscript_commands_colvar.h \
+	colvars/src/colvarscript_commands_bias.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarscript.o $(COPTC) colvars/src/colvarscript.cpp
+obj/colvarscript_commands.o: \
+	obj/.exists \
+	colvars/src/colvarscript_commands.cpp \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarscript.h \
+	colvars/src/colvarbias.h \
+	colvars/src/colvar.h \
+	colvars/src/colvarscript_commands.h \
+	colvars/src/colvarscript_commands_colvar.h \
+	colvars/src/colvarscript_commands_bias.h
+	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarscript_commands.o $(COPTC) colvars/src/colvarscript_commands.cpp
+obj/colvarscript_commands_bias.o: \
+	obj/.exists \
+	colvars/src/colvarscript_commands_bias.cpp \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarscript.h \
+	colvars/src/colvarbias.h \
+	colvars/src/colvar.h \
+	colvars/src/colvarscript_commands.h \
+	colvars/src/colvarscript_commands_colvar.h \
+	colvars/src/colvarscript_commands_bias.h
+	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarscript_commands_bias.o $(COPTC) colvars/src/colvarscript_commands_bias.cpp
+obj/colvarscript_commands_colvar.o: \
+	obj/.exists \
+	colvars/src/colvarscript_commands_colvar.cpp \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarscript.h \
+	colvars/src/colvarbias.h \
+	colvars/src/colvar.h \
+	colvars/src/colvarscript_commands.h \
+	colvars/src/colvarscript_commands_colvar.h \
+	colvars/src/colvarscript_commands_bias.h
+	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarscript_commands_colvar.o $(COPTC) colvars/src/colvarscript_commands_colvar.cpp
 obj/colvartypes.o: \
 	obj/.exists \
 	colvars/src/colvartypes.cpp \
