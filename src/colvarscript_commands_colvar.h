@@ -19,7 +19,7 @@ CVSCRIPT(colvar_addforce,
          colvarvalue force(this_colvar->value());
          force.is_derivative();
          if (force.from_simple_string(is.str()) != COLVARS_OK) {
-           script->set_error_msg("addforce : error parsing force value");
+           script->add_error_msg("addforce : error parsing force value");
            return COLVARSCRIPT_ERROR;
          }
          this_colvar->add_bias_force(force);
@@ -40,7 +40,7 @@ CVSCRIPT(colvar_cvcflags,
          }
          int res = this_colvar->set_cvc_flags(flags);
          if (res != COLVARS_OK) {
-           script->set_error_msg("Error setting CVC flags");
+           script->add_error_msg("Error setting CVC flags");
            return COLVARSCRIPT_ERROR;
          }
          script->set_result_str("0");
@@ -149,7 +149,7 @@ CVSCRIPT(colvar_modifycvcs,
          int res = this_colvar->update_cvc_config(confs);
          cvm::decrease_depth();
          if (res != COLVARS_OK) {
-           script->set_error_msg("Error setting CVC flags");
+           script->add_error_msg("Error setting CVC flags");
            return COLVARSCRIPT_ERROR;
          }
          script->set_result_str("0");

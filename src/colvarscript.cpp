@@ -173,13 +173,13 @@ int colvarscript::run(int objc, unsigned char *const objv[])
   if (cmd == "colvar") {
 
     if (objc < 4) {
-      set_error_msg("Missing parameters\n" + help_string());
+      add_error_msg("Missing parameters\n" + help_string());
       return COLVARSCRIPT_ERROR;
     }
     std::string const name(obj_to_str(objv[2]));
     obj_for_cmd = reinterpret_cast<void *>(cvm::colvar_by_name(name));
     if (obj_for_cmd == NULL) {
-      set_error_msg("Colvar not found: " + name);
+      add_error_msg("Colvar not found: " + name);
       return COLVARSCRIPT_ERROR;
     }
     std::string const &subcmd(obj_to_str(objv[3]));
@@ -192,13 +192,13 @@ int colvarscript::run(int objc, unsigned char *const objv[])
   } else if (cmd == "bias") {
 
     if (objc < 4) {
-      set_error_msg("Missing parameters\n" + help_string());
+      add_error_msg("Missing parameters\n" + help_string());
       return COLVARSCRIPT_ERROR;
     }
     std::string const name(obj_to_str(objv[2]));
     obj_for_cmd = reinterpret_cast<void *>(cvm::bias_by_name(name));
     if (obj_for_cmd == NULL) {
-      set_error_msg("Bias not found: " + name);
+      add_error_msg("Bias not found: " + name);
       return COLVARSCRIPT_ERROR;
     }
     std::string const &subcmd(obj_to_str(objv[3]));
@@ -224,10 +224,10 @@ int colvarscript::run(int objc, unsigned char *const objv[])
   if (cmd_fn) {
     error_code = (*cmd_fn)(obj_for_cmd, objc, objv);
   } else {
-    set_error_msg("Syntax error: "+cmdline+"\n"
+    add_error_msg("Syntax error: "+cmdline+"\n"
                   "  Run \"cv listcommands\" or \"cv help <command>\" "
                   "to get the correct syntax.\n");
-    error_code = COLVASCRIPT_ERROR;
+    error_code = COLVARSCRIPT_ERROR;
   }
 
   return error_code;
@@ -262,13 +262,13 @@ int colvarscript::proc_features(colvardeps *obj,
 
     if (f == NULL) {
 
-      set_error_msg("Error: feature \""+req_feature+"\" does not exist.\n");
+      add_error_msg("Error: feature \""+req_feature+"\" does not exist.\n");
       return COLVARSCRIPT_ERROR;
 
     } else {
 
       if (! obj->is_available(fid)) {
-        set_error_msg("Error: feature \""+req_feature+"\" is unavailable.\n");
+        add_error_msg("Error: feature \""+req_feature+"\" is unavailable.\n");
         return COLVARSCRIPT_ERROR;
       }
 
@@ -293,7 +293,7 @@ int colvarscript::proc_features(colvardeps *obj,
             return COLVARS_OK;
           }
         }
-        set_error_msg("Missing value when setting feature \""+req_feature+
+        add_error_msg("Missing value when setting feature \""+req_feature+
                       "\".\n");
         return COLVARSCRIPT_ERROR;
       }
@@ -375,6 +375,16 @@ int colvarscript::set_result_str(std::string const &s)
 {
   result = s;
   return COLVARS_OK;
+}
+
+
+void colvarscript::add_error_msg(std::string const &s)
+{
+  result += s;
+  // Ensure terminating newlines
+  if (s[s.size()-1] != '\n') {
+    result += "\n";
+  }
 }
 
 
