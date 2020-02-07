@@ -69,7 +69,7 @@ These have been called `order parameters', `collective variables', `(surrogate) 
 
 Here we use primarily the term `collective variable', often shortened to \textit{colvar}, to indicate any differentiable function of atomic Cartesian coordinates, $\bm{x}_{i}$, with $i$ between $1$ and $N$, the total
 number of atoms:
-\begin{equation} 
+\begin{equation}
   \label{eq:colvar_basic}
   \xi(t) \; = \xi(\bm{X}(t)) \; = \xi\left(\bm{x}_{i}(t), \bm{x}_{j}(t), \bm{x}_{k}(t),
   \ldots \right)\;, \;\; 1 \leq i,j,k\ldots \leq N
@@ -89,7 +89,7 @@ The module is designed to perform multiple tasks concurrently during or after a 
 
 \end{itemize}
 
-\cvvmdonly{\textbf{Note:} although restraints and PMF algorithms are primarily used during simulations, they are also available in VMD to test a new input for a simulation, or to evaluate the relative free energy of a new structure based on data from a previous calculation.  \emph{Options that only have an effect during a simulation are also included for compatibility purposes.}} 
+\cvvmdonly{\textbf{Note:} although restraints and PMF algorithms are primarily used during simulations, they are also available in VMD to test a new input for a simulation, or to evaluate the relative free energy of a new structure based on data from a previous calculation.  \emph{Options that only have an effect during a simulation are also included for compatibility purposes.}}
 
 Detailed explanations of the design of the Colvars module are provided in reference~\cite{Fiorin2013}. Please cite this reference whenever publishing work that makes use of this module.
 
@@ -142,7 +142,7 @@ The configuration will contain two blocks, one defining the distance variable (s
 \end{cvexampleinput}
 
 Reading this input in plain English: the variable here named \emph{dist} consists in a distance function between the centers of two groups: the ligand (atoms 42 to 55) and the $\alpha$-carbon atoms of residues 15 to 30 in the protein \cvnamebasedonly{(segment name PR)}\cvlammpsonly{(selected from the index group ``\texttt{C-alpha\_15-30}'')}.
-To the ``\emph{dist}'' variable, we apply a \texttt{harmonic} potential of force constant 20~\cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{(energy unit)}/\cvnamdonly{\AA}\cvvmdonly{\AA}\cvlammpsonly{(length unit)}$^2$, initially centered around a value of 4~\cvnamdonly{\AA}\cvvmdonly{\AA}\cvlammpsonly{(length unit)}, which will increase to 15~\cvnamdonly{\AA}\cvvmdonly{\AA}\cvlammpsonly{(length unit)} over 500,000 simulation steps.
+To the ``\emph{dist}'' variable, we apply a \texttt{harmonic} potential of force constant 20~\energyunit/\lengthunit$^2$, initially centered around a value of 4~\lengthunit, which will increase to 15~\lengthunit{} over 500,000 simulation steps.
 
 The atom selection keywords are detailed in section \ref{sec:colvar_atom_groups}.
 \cvlammpsonly{% TODO update URL once they get HTTPS running
@@ -332,11 +332,11 @@ One of these parameters is the configuration file or the configuration text for 
 
 \cvsubsec{Units in the Colvars module}{sec:units}
 
-The ``internal units'' of the Colvars module are the units in which values are expected to be in the configuration file, and in which collective variable values, energies, etc. are expressed in the output and colvars trajectory files. 
+The ``internal units'' of the Colvars module are the units in which values are expected to be in the configuration file, and in which collective variable values, energies, etc. are expressed in the output and colvars trajectory files.
 Generally \textbf{the Colvars module uses internally the same units as its back-end MD engine, with the exception of VMD}, where different unit sets are supported to allow for easy setup, visualization and analysis of Colvars simulations performed with any simulation engine.
 
-Note that \textbf{angles} are expressed in degrees, and derived quantites such as force constants are based on degrees as well. 
-Atomic coordinates read from \textbf{XYZ files} (and PDB files where applicable) are expected to be expressed in \AA{}ngstr\"om, no matter what unit system is in use by the back-end or the Colvars module.
+Note that \textbf{angles} are expressed in degrees, and derived quantites such as force constants are based on degrees as well.
+Atomic coordinates read from \textbf{XYZ files} (and PDB files where applicable) are expected to be expressed in \AA{}ngstr\"om, no matter what unit system is in use by the back-end (\MDENGINE) or the Colvars Module.
 
 To avoid errors due to reading configuration files written in a different unit system, it can be specified within the input:
 
@@ -469,6 +469,18 @@ Setting this to \emph{no} will use the current local coordinates that are wrappe
 
 \end{itemize}
 
+}
+
+
+
+\cvgromacsonly{
+\subsection{Running Colvars in Gromacs}
+\label{sec:colvars_mdengine_parameters}
+
+To enable a Colvars-based calculation, specify one or more Colvars configuration files with the \texttt{-colvars} command-line paramter to \texttt{gmx mdrun}.
+
+
+\textcolor{red}{TODO complete this section.}
 }
 
 
@@ -766,7 +778,7 @@ The following keywords are available in the global context of the Colvars config
     boolean}{%
     \texttt{on}}{%
     If this flag is enabled (default), SMP parallelism over threads will be used to compute variables and biases, provided that this is supported by the \MDENGINE{} build in use.}
-    
+
 \end{itemize}
 
 
@@ -1200,7 +1212,7 @@ interval $[0:180]$.
 
 The \texttt{dipoleAngle~\{...\}} block defines an angle, and contains the
 three blocks \texttt{group1}, \texttt{group2} and \texttt{group3}, defining
-the three groups, being \texttt{group1} the group where dipole is calculated. 
+the three groups, being \texttt{group1} the group where dipole is calculated.
 It returns an angle (in degrees) within the interval $[0:180]$.
 
 \begin{cvcoptions}
@@ -1248,7 +1260,7 @@ boundaries can be defined by using any real number of choice.
 \labelkey{colvar|polarTheta}
 
 The \texttt{polarTheta~\{...\}} block defines the polar angle in
-spherical coordinates, for the center of mass of a group of atoms 
+spherical coordinates, for the center of mass of a group of atoms
 described by the block \texttt{atoms}.  It returns an angle
 (in degrees) within the interval $[0:180]$.
 To obtain spherical coordinates in a frame of reference tied to
@@ -1273,7 +1285,7 @@ An example is provided in file \texttt{examples/11\_polar\_angles.in} of the Col
 \labelkey{colvar|polarPhi}
 
 The \texttt{polarPhi~\{...\}} block defines the azimuthal angle in
-spherical coordinates, for the center of mass of a group of atoms 
+spherical coordinates, for the center of mass of a group of atoms
 described by the block \texttt{atoms}. It returns an angle
 (in degrees) within the interval $[-180:180]$.  The Colvars module
 calculates all the distances between two angles taking into account
@@ -1313,7 +1325,7 @@ function is summed over all pairs of atoms in \texttt{group1} and
 \texttt{group2}:
 \begin{equation}
   \label{eq:cvc_coordNum}
-  C (\mathtt{group1}, \mathtt{group2}) \; = \; 
+  C (\mathtt{group1}, \mathtt{group2}) \; = \;
   \sum_{i\in\mathtt{group1}}\sum_{j\in\mathtt{group2}} {
     \frac{1 - (|\mathbf{x}_{i}-\mathbf{x}_{j}|/d_{0})^{n}}{
       1 - (|\mathbf{x}_{i}-\mathbf{x}_{j}|/d_{0})^{m} }
@@ -1429,7 +1441,7 @@ a coordination number similarly to the component \texttt{coordNum},
 but the function is summed over atom pairs within \texttt{group1}:
 \begin{equation}
   \label{eq:cvc_selfCoordNum}
-  C (\mathtt{group1}) \; = \; 
+  C (\mathtt{group1}) \; = \;
   \sum_{i\in\mathtt{group1}}\sum_{j > i} {
     \frac{1 - (|\mathbf{x}_{i}-\mathbf{x}_{j}|/d_{0})^{n}}{
       1 - (|\mathbf{x}_{i}-\mathbf{x}_{j}|/d_{0})^{m} }
@@ -1561,7 +1573,7 @@ with respect to $\{\mathbf{x}_{i}(t)\}$.
     \texttt{rmsd}}{%
     Reference coordinates}{%
     space-separated list of \texttt{(x, y, z)} triplets}{%
-    This option (mutually exclusive with \texttt{refPositionsFile}) sets the reference coordinates for RMSD calculation, and uses these to compute the roto-translational fit.  
+    This option (mutually exclusive with \texttt{refPositionsFile}) sets the reference coordinates for RMSD calculation, and uses these to compute the roto-translational fit.
     It is functionally equivalent to the option \refkey{refPositions}{atom-group|refPositions} in the atom group definition, which also supports more advanced fitting options.
     }
 
@@ -1572,7 +1584,7 @@ with respect to $\{\mathbf{x}_{i}(t)\}$.
     \texttt{rmsd}}{%
     Reference coordinates file}{%
     UNIX filename}{%
-    This option (mutually exclusive with \texttt{refPositions}) sets the reference coordinates for RMSD calculation, and uses these to compute the roto-translational fit.  
+    This option (mutually exclusive with \texttt{refPositions}) sets the reference coordinates for RMSD calculation, and uses these to compute the roto-translational fit.
     It is functionally equivalent to the option \refkey{refPositionsFile}{atom-group|refPositionsFile} in the atom group definition, which also supports more advanced fitting options.
     }
 
@@ -1631,7 +1643,7 @@ This component returns a positive real number (in \AA).
 \cvsubsubsec{Advanced usage of the \texttt{rmsd} component.}{sec:cvc_rmsd_advanced}
 In the standard usage as described above, the \texttt{rmsd} component
 calculates a minimum RMSD, that is, current coordinates are optimally
-fitted onto the same reference coordinates that are used to 
+fitted onto the same reference coordinates that are used to
 compute the RMSD value. The fit itself is handled by the atom group
 object, whose parameters are automatically set by the \texttt{rmsd}
 component.
@@ -2005,7 +2017,7 @@ The component \texttt{spinAngle} measures the angle of the ``spin'' sub-rotation
     \texttt{(0.0, 0.0, 1.0)}}{%
     The three components of this vector define (when normalized) the special rotation axis used to calculate the \texttt{tilt} and \texttt{spinAngle} components.}
 \end{cvcoptions}
-The component \texttt{spinAngle} returns an angle (in degrees) within the periodic interval $[-180:180]$.  
+The component \texttt{spinAngle} returns an angle (in degrees) within the periodic interval $[-180:180]$.
 
 \textbf{Note:} the value of \texttt{spinAngle} is a continuous function almost everywhere, with the exception of configurations with the corresponding ``tilt'' angle equal to 180$^\circ$ (i.e.~the \texttt{tilt} component is equal to $-1$): in those cases, \texttt{spinAngle} is undefined.  If such configurations are expected, consider defining a \texttt{tilt} colvar using the same axis \textbf{e}, and restraining it with a lower wall away from $-1$.
 
@@ -2034,7 +2046,7 @@ The values of \texttt{tilt} are real numbers in the interval $[-1:1]$: the value
 \item %
   \dupkey{axis}{\texttt{tilt}}{colvar|spinAngle|axis}{\texttt{spinAngle} component}
 \end{cvcoptions}
- 
+
 
 \cvnamebasedonly{
 
@@ -2049,7 +2061,7 @@ residues.  The $\alpha$-helical content across the $N+1$ residues
 $N_{0}$ to $N_{0}+N$ is calculated by the formula:
 \begin{eqnarray}
   \label{eq:colvars_alpha}
-  { 
+  {
     \alpha\left(
       \mathrm{C}_{\alpha}^{(N_{0})},
       \mathrm{O}^{(N_{0})},
@@ -2065,14 +2077,14 @@ $N_{0}$ to $N_{0}+N$ is calculated by the formula:
     \right)
   } \; = \; \; \; \; \\ \; \; \; \; {
     \nonumber
-    \frac{1}{2(N-2)} 
+    \frac{1}{2(N-2)}
     \sum_{n=N_{0}}^{N_{0}+N-2}
     \mathrm{angf}\left(
         \mathrm{C}_{\alpha}^{(n)},
         \mathrm{C}_{\alpha}^{(n+1)},
         \mathrm{C}_{\alpha}^{(n+2)}\right)
   } \; + \; {
-    \frac{1}{2(N-4)} 
+    \frac{1}{2(N-4)}
     \sum_{n=N_{0}}^{N_{0}+N-4}
     \mathrm{hbf}\left(
       \mathrm{O}^{(n)},
@@ -2080,7 +2092,7 @@ $N_{0}$ to $N_{0}+N$ is calculated by the formula:
   } \\
 \end{eqnarray}
 where the score function for the $\mathrm{C}_{\alpha} -
-\mathrm{C}_{\alpha} - \mathrm{C}_{\alpha}$ angle is defined as: 
+\mathrm{C}_{\alpha} - \mathrm{C}_{\alpha}$ angle is defined as:
 \begin{equation}
   \label{eq:colvars_alpha_Calpha}
   {
@@ -2548,7 +2560,7 @@ The usage of \texttt{gzpathCV} and \texttt{gspathCV} is illustrated below:
 
 \cvsubsec{Arithmetic path collective variables}{sec:cvc_apathCV}
 
-The arithmetic path collective variable in CV space uses the same formula as the one proposed by Branduardi\cite{Branduardi2007} et al., except that it computes $s$ and $z$ in CV space instead of RMSDs in Cartesian space. Moreover, this implementation allows different coefficients for each CV components as described in \cite{Hovan2019}. Assuming a path is composed of $N$ reference frames and defined in an $M$-dimensional CV space, then the equations of $s$ and $z$ of the path are 
+The arithmetic path collective variable in CV space uses the same formula as the one proposed by Branduardi\cite{Branduardi2007} et al., except that it computes $s$ and $z$ in CV space instead of RMSDs in Cartesian space. Moreover, this implementation allows different coefficients for each CV components as described in \cite{Hovan2019}. Assuming a path is composed of $N$ reference frames and defined in an $M$-dimensional CV space, then the equations of $s$ and $z$ of the path are
 
 \begin{equation}
 s = \frac{\sum_{i=1}^{N} i \exp\left(-\lambda\sum_{j=1}^{M} c_j^2 \left(x_j-x_{i,j}\right)^2\right)}{\sum_{i=1}^{N} \exp\left(-\lambda\sum_{j=1}^{M} c_j^2 \left(x_j-x_{i,j}\right)^2\right)}
@@ -2995,7 +3007,7 @@ Lepton produces efficient evaluation routines for the function and its derivativ
 \begin{itemize}
 \item %
    \labelkey{colvar|customFunction}
-   \key 
+   \key
     {customFunction}{%
     \texttt{colvar}}{%
     Compute colvar as a custom function of its components}{%
@@ -3119,7 +3131,7 @@ form of path-based collective variables as defined by Branduardi et al\cite{Bran
 \begin{itemize}
  \item %
    \labelkey{colvar|scriptedFunction}
-   \key 
+   \key
     {scriptedFunction}{%
     \texttt{colvar}}{%
     Compute colvar as a scripted function of its components}{%
@@ -3134,11 +3146,11 @@ form of path-based collective variables as defined by Branduardi et al\cite{Bran
     components are of the same type, their default names are sorted in the
     order in which they are defined, so that names need only be specified
     for combinations of components of different types.
-    \texttt{calc\_$<$scriptedFunction$>$} should return one value of 
+    \texttt{calc\_$<$scriptedFunction$>$} should return one value of
     type $<$scriptedFunctionType$>$, corresponding to the colvar value.
     \texttt{calc\_$<$scriptedFunction$>$\_gradient} should return a Tcl list
     containing the derivatives of the function with respect to each
-    component. 
+    component.
     If both the function and some of the components are vectors, the gradient
     is really a Jacobian matrix that should be passed as a linear vector in
     row-major order, i.e. for a function $f_i(x_j)$: $\nabla_x f_1 \nabla_x f_2 \cdots$.
@@ -3189,8 +3201,8 @@ The parameters described below offer a way to specify these parameters only once
     positive decimal}{%
     1.0}{%
     This number defines the effective unit of measurement for the collective variable, and is used by the biasing methods for the following purposes.
-    Harmonic (\ref{sec:colvarbias_harmonic}), harmonic walls (\ref{sec:colvarbias_harmonic_walls}) and linear restraints (\ref{sec:colvarbias_linear}) use it to set the physical unit of the force constant, which is useful for multidimensional restraints involving multiple variables with very different units (for examples, $\AA$ or degrees $^\circ$) with a single, scaled force constant.
-    The values of the scaled force constant in the units of each variable are printed at initialization time. 
+    Harmonic (\ref{sec:colvarbias_harmonic}), harmonic walls (\ref{sec:colvarbias_harmonic_walls}) and linear restraints (\ref{sec:colvarbias_linear}) use it to set the physical unit of the force constant, which is useful for multidimensional restraints involving multiple variables with very different units (for examples, \lengthunit{} or degrees $^\circ$) with a single, scaled force constant.
+    The values of the scaled force constant in the units of each variable are printed at initialization time.
     Histograms (\ref{sec:colvarbias_histogram}), ABF (\ref{sec:colvarbias_abf}) and metadynamics (\ref{sec:colvarbias_meta}) all use this number as the initial choice for the grid spacing along this variable: for this reason, \texttt{width} should generally be no larger than the standard deviation of the colvar in an unbiased simulation.
     Unless it is required to control the spacing, it is usually simplest to keep the default value of 1, so that restraint force constants are provided with their full physical unit.
   }
@@ -3412,7 +3424,7 @@ For two dimensional grid files, this allows quick visualization by programs such
     If \texttt{colvarsTrajFrequency} is defined, the total force
     applied on this colvar by Colvars biases are
     written to the trajectory under the label
-    ``\texttt{fa\_}$<$\texttt{name}$>$''. 
+    ``\texttt{fa\_}$<$\texttt{name}$>$''.
     For extended Lagrangian colvars, this force is actually applied to the
     extended degree of freedom rather than the geometric colvar itself.
     The physical unit for this
@@ -3424,7 +3436,7 @@ For two dimensional grid files, this allows quick visualization by programs such
 \cvsubsec{Extended Lagrangian}{sec:colvar_extended}
 
 The following options enable extended-system
-dynamics, where a colvar is coupled to an additional degree of freedom 
+dynamics, where a colvar is coupled to an additional degree of freedom
 (fictitious particle) by a harmonic spring.
 This extended coordinate masks the colvar and replaces it transparently from
 the perspective of biasing and analysis methods.
@@ -4044,7 +4056,7 @@ The following two options have default values appropriate for the vast majority 
   center of geometry, but this condition may fail if the group spans
   different molecules.  In that case, writing the NAMD output and restart files
   using \texttt{wrapAll} or \texttt{wrapWater} could produce wrong results
-  when a simulation run is continued from a previous one.  
+  when a simulation run is continued from a previous one.
   The user should then determine, according to which
   type of colvars are being calculated, whether \texttt{wrapAll} or
   \texttt{wrapWater} can be enabled.
@@ -4274,7 +4286,7 @@ is defined from the canonical distribution of $\bm{\xi}$, ${\mathcal P}(\bm{\xi}
   A(\bm{\xi}) = -\frac{1}{\beta} \ln {\mathcal P}(\bm{\xi}) + A_0
 \end{equation}
 
-In the TI formalism, the free energy is obtained from its gradient, 
+In the TI formalism, the free energy is obtained from its gradient,
 which is generally calculated in the form of the average of a force
 $\bm{F}_\xi$ exerted on $\bm{\xi}$, taken over an iso-$\bm{\xi}$ surface:
 
@@ -4354,7 +4366,7 @@ the forces acting along the selected collective variables average
 to zero over time. Eventually, as the undelying free energy surface is canceled
 by the adaptive bias, evolution of the system along $\bm{\xi}$
 is governed mainly by diffusion.
-Although this implementation of ABF can in principle be used in 
+Although this implementation of ABF can in principle be used in
 arbitrary dimension, a higher-dimension collective variable space is likely
 to be difficult to sample and visualize.
 Most commonly, the number of variables is one or two, sometimes three.
@@ -4612,7 +4624,7 @@ criterion is satisfied (based on the RMSD between the target gradient and the re
 \item \texttt{-s}: scaling factor for the gradients; when using a histogram of total forces obtained from \refkey{outputTotalForce}{colvar|outputTotalForce} or the \texttt{.force} file written by \refkey{writeTISamples}{colvarbias|writeTISamples}, a scaling factor of -1 should be used [1.0]
 \item \texttt{-m}: use metadynamics-like biased sampling? (0 = false) [1]
 \item \texttt{-h}: increment for the history-dependent bias (``hill height'') [0.01~kcal/mol]
-\item \texttt{-f}: if non-zero, this factor is used to scale the increment stepwise in the 
+\item \texttt{-f}: if non-zero, this factor is used to scale the increment stepwise in the
   second half of the M-C sampling to refine the free energy estimate [0.5]
 \end{itemize}
 
@@ -4685,7 +4697,7 @@ estimator\cvnamdonly{ or the Zheng/Yang estimator}.
 
 The \emph{corrected z-averaged restraint} (CZAR) estimator
 is described in detail in reference~\cite{Lesage2017}.
-It is computed automatically in eABF simulations, 
+It is computed automatically in eABF simulations,
 regardless of the number of colvars involved.
 Note that ABF may also be applied on a combination of extended and non-extended
 colvars; in that case, CZAR still provides an unbiased estimate of the free energy gradient.
@@ -4712,7 +4724,7 @@ When enabled, it triggers calculation of the free energy following the CZAR esti
 Write internal data from CZAR to a separate file?}
   {boolean}
   {\texttt{no}}
-{When this option is enabled, eABF simulations will write a file containing the 
+{When this option is enabled, eABF simulations will write a file containing the
 $z$-averaged restraint force under the name \outputName\texttt{.zgrad}.
 The same information is always included in the colvars state file, which is sufficient
 for restarting an eABF simulation.
@@ -4747,7 +4759,7 @@ This feature has been contributed to NAMD by the following authors:
 
 \begin{quote}
    Haohao Fu and Christophe Chipot                                                               \\[0.4cm]
-   Laboratoire International Associ\'e 
+   Laboratoire International Associ\'e
    Centre National de la Recherche Scientifique et University of Illinois at Urbana--Champaign,   \\
    Unit\'e Mixte de Recherche No. 7565, Universit\'e de Lorraine,                                \\
    B.P. 70239, 54506 Vand\oe uvre-lès-Nancy cedex, France
@@ -4762,8 +4774,8 @@ The free energy gradient is estimated as :
 
 \begin{equation}
 A'(\xi^*) =
-\frac{\displaystyle \sum_{\lambda} N(\xi^*, \lambda) 
-\left[ 
+\frac{\displaystyle \sum_{\lambda} N(\xi^*, \lambda)
+\left[
 \frac{(\xi^* - \langle\xi\rangle_{\lambda})}{\beta \sigma_{\lambda}^2} - k (\xi^* - \lambda)
 \right]}
 {\displaystyle \sum_{\lambda} N(\xi^*, \lambda)}
@@ -4839,10 +4851,10 @@ At that stage the ``effective'' potential of mean force $\tilde{A}(\bm{\xi})$ is
 \end{equation}
 
 Such estimate of the free energy can be provided by enabling \texttt{writeFreeEnergyFile}.
-Assuming that the set of collective variables includes all relevant degrees of freedom, the predicted error of the estimate is a simple function of the correlation times of the colvars $\tau_{\xi_{i}}$, and of the user-defined parameters $W$, $\sigma_{\xi_{i}}$ and $\delta{}t$ \cite{Bussi2006}. 
+Assuming that the set of collective variables includes all relevant degrees of freedom, the predicted error of the estimate is a simple function of the correlation times of the colvars $\tau_{\xi_{i}}$, and of the user-defined parameters $W$, $\sigma_{\xi_{i}}$ and $\delta{}t$ \cite{Bussi2006}.
 In typical applications, a good rule of thumb can be to choose the ratio $W/\delta{}t$ much smaller than $\kappa_{\mathrm{B}}T/\tau_{\bm{\xi}}$, where $\tau_{\bm{\xi}}$ is the longest among $\bm{\xi}$'s correlation times: $\sigma_{\xi_{i}}$ then dictates the resolution of the calculated PMF.
 
-If the metadynamics parameters are chosen correctly, after an equilibration time, $t_{e}$, the estimator provided 
+If the metadynamics parameters are chosen correctly, after an equilibration time, $t_{e}$, the estimator provided
 by eq. \ref{eq:colvars_meta_fes} oscillates on time around the ``real'' free energy, thereby a better estimate of the latter can be obtained as the time average of the bias potential after $t_{e}$ \cite{Marinelli2009,Crespo2010}:
 \begin{equation}
   \label{eq:colvars_meta_fes_av}
@@ -4858,7 +4870,7 @@ In typical scenarios the Gaussian hills of a metadynamics potential are interpol
 This numerical approximation typically yields neglibile errors in the resulting PMF \cite{Fiorin2013}.
 However, due to the finite thickness of the Gaussian function, the metadynamics potential would suddenly vanish each time a variable exceeds its grid boundaries.
 
-To avoid such discontinuity the Colvars metadynamics code will keep an explicit copy of each hill that straddles a grid's boundary, and will use it to compute metadynamics forces outside the grid. 
+To avoid such discontinuity the Colvars metadynamics code will keep an explicit copy of each hill that straddles a grid's boundary, and will use it to compute metadynamics forces outside the grid.
 This measure is taken to protect the accuracy and stability of a metadynamics simulation, except in cases of ``natural'' boundaries (for example, the $[0:180]$ interval of an \texttt{angle} colvar) or when the flags \refkey{hardLowerBoundary}{colvar|hardLowerBoundary} and \refkey{hardUpperBoundary}{colvar|hardUpperBoundary} are explicitly set by the user.
 Unfortunately, processing explicit hills alongside the potential and force grids could easily become inefficient, slowing down the simulation and increasing the state file's size.
 
@@ -5092,10 +5104,10 @@ This is achieved by weighing the Gaussian functions used in the metadynamics app
     }
   }\mathrm{,}
 \end{equation}
-where $\rho_{exp}(\bm{\xi})$ is the target probability distribution and $S_{\rho} = - \int  \rho_{exp}(\bm{\xi}) \log \rho_{exp}(\bm{\xi})  \, \mathrm{d}\bm{\xi}$ its corresponding differential entropy. 
-The method is designed so that during the simulation the resulting distribution of the collective variable $\bm{\xi}$ converges to $\rho_{exp}(\bm{\xi})$. 
+where $\rho_{exp}(\bm{\xi})$ is the target probability distribution and $S_{\rho} = - \int  \rho_{exp}(\bm{\xi}) \log \rho_{exp}(\bm{\xi})  \, \mathrm{d}\bm{\xi}$ its corresponding differential entropy.
+The method is designed so that during the simulation the resulting distribution of the collective variable $\bm{\xi}$ converges to $\rho_{exp}(\bm{\xi})$.
 A practical application of EBMetaD is to reproduce an ``experimental'' probability distribution, for example the distance distribution between spectroscopic labels inferred from F\"orster resonance energy transfer (FRET) or double electron-electron resonance (DEER) experiments \cite{Marinelli2015}.
-  
+
 The PMF along $\xi$ can be estimated from the bias potential and the target ditribution \cite{Marinelli2015}:
 \begin{equation}
   \label{eq:colvars_ebmeta_fes}
@@ -5105,7 +5117,7 @@ The PMF along $\xi$ can be estimated from the bias potential and the target ditr
 \end{equation}
 and obtained by enabling \texttt{writeFreeEnergyFile}.
 Similarly to eq.{} \ref{eq:colvars_meta_fes_av}, a more accurate estimate of the free energy can be obtained by averaging (after an equilibration time) multiple time-dependent free energy estimates (see \texttt{keepFreeEnergyFiles}).
-  
+
 The following additional options define the configuration for the ensemble-biased metadynamics approach:
 \begin{itemize}
 \item %
@@ -5138,7 +5150,7 @@ The following additional options define the configuration for the ensemble-biase
     \texttt{metadynamics}}{%
     Number of equilibration steps for ensemble-biased metadynamics}{%
     positive integer}{%
-    The EBMetaD approach may introduce large hills in regions with small values of the target probability distribution (eq.{} \ref{eq:colvars_ebmeta_pot}). 
+    The EBMetaD approach may introduce large hills in regions with small values of the target probability distribution (eq.{} \ref{eq:colvars_ebmeta_pot}).
     This happens, for example, if the probability distribution sampled by a conventional molecular dynamics simulation is significantly different from the target distribution.
     This may lead to instabilities at the beginning of the simulation related to large biasing forces.
     In this case, it is useful to introduce an equilibration stage in which the bias potential gradually switches from standard metadynamics (eq.{} \ref{eq:colvars_meta_pot}) to EBmetaD (eq.{} \ref{eq:colvars_ebmeta_pot}) as $\lambda V_{\mathrm{meta}}(\bm{\xi})+(1-\lambda)V_{\mathrm{EBmetaD}}(\bm{\xi})$, where $\lambda=(\mathtt{ebMetaEquilSteps}-\mathtt{step})/\mathtt{ebMetaEquilSteps}$ and \texttt{step} is the current simulation step number.}
@@ -5149,10 +5161,10 @@ The following additional options define the configuration for the ensemble-biase
     \texttt{metadynamics}}{%
     Minimum value of the target distribution in reference to its \texttt{maximum value}}{%
     positive decimal}{%
-    It is useful to set a minimum value of the target probability distribution to avoid values of the latter that are nearly zero, leading to very large hills. 
-    This parameter sets the minimum value of the target probability distribution that is expressed as a fraction of its \texttt{maximum value}: \texttt{minimum value = } 
+    It is useful to set a minimum value of the target probability distribution to avoid values of the latter that are nearly zero, leading to very large hills.
+    This parameter sets the minimum value of the target probability distribution that is expressed as a fraction of its \texttt{maximum value}: \texttt{minimum value = }
     \texttt{maximum value}\texttt{ X }\texttt{targetDistMinVal}. This implies that 0 \texttt{<} \texttt{targetDistMinVal} \texttt{<} 1 and its default value is set to 1/1000000.
-    To avoid divisions by zero (see eq.{} \ref{eq:colvars_ebmeta_pot}), if \texttt{targetDistMinVal} is set as zero, values of $\rho_{exp}$ equal to zero are replaced by the 
+    To avoid divisions by zero (see eq.{} \ref{eq:colvars_ebmeta_pot}), if \texttt{targetDistMinVal} is set as zero, values of $\rho_{exp}$ equal to zero are replaced by the
     smallest positive value read in the same file.
 }
 
@@ -5281,7 +5293,7 @@ The following are the multiple-walkers related options:
     boolean}{%
     \texttt{off}}{%
     This option turns on multiple-walker communication between replicas. }
-  
+
 \item %
   \key
     {replicasRegistry}{%
@@ -5335,7 +5347,7 @@ The following are the multiple-walkers related options:
 The harmonic biasing method may be used to enforce fixed or moving restraints,
 including variants of Steered and Targeted MD. Within energy minimization
 runs, it allows for restrained minimization, e.g. to calculate relaxed potential
-energy surfaces. In the context of the Colvars module, 
+energy surfaces. In the context of the Colvars module,
 harmonic potentials are meant according to their textbook definition:
 \begin{equation}
   \label{eq:colvarbias_harmonic}
@@ -5427,7 +5439,7 @@ When the centers are changed continuously, a steered MD in a collective variable
     space-separated list of colvar values}{%
     When defined, the current \texttt{centers} will be moved towards
     these values during the simulation.
-    By default, the centers are moved over a total of 
+    By default, the centers are moved over a total of
     \texttt{targetNumSteps} steps by a linear interpolation, in the
     spirit of Steered MD.
     If \texttt{targetNumStages} is set to a nonzero value, the
@@ -5521,7 +5533,7 @@ The force constant of the harmonic restraint may also be changed to equilibrate 
     When defined, the current \texttt{forceConstant} will be moved towards
     this value during the simulation. Time evolution of the force constant
     is dictated by the \texttt{targetForceExponent} parameter (see below).
-    By default, the force constant is changed smoothly over a total of 
+    By default, the force constant is changed smoothly over a total of
     \texttt{targetNumSteps} steps. This is useful to introduce or
     remove restraints in a progressive manner.
     If \texttt{targetNumStages} is set to a nonzero value, the
@@ -5803,7 +5815,7 @@ an optimization algorithm until the bias has converged}.
       \key{centers}{\texttt{alb}}{%
       Collective variable centers}{%
       space-separated list of colvar values}{%
-      The desired center (equilibrium values) which will be sought during the 
+      The desired center (equilibrium values) which will be sought during the
       adaptive linear biasing.
     The number of values must be the number of requested colvars.
     Each value is a decimal number if the corresponding colvar returns
@@ -5816,19 +5828,19 @@ an optimization algorithm until the bias has converged}.
       \key{updateFrequency}{\texttt{alb}}{%
       The duration of updates}{An integer}{%
       This is, $N$, the number of simulation steps to use for each update to the bias.
-      This determines how long the system requires to equilibrate 
-      after a change in force constant ($N/2$), how long statistics 
-      are collected for an iteration ($N/2$), and how quickly energy is 
-      added to the system (at most, $A/2N$, where $A$ is the \texttt{forceRange}). Until the force 
-      constant has converged, the method as described is an 
-      optimization procedure and not an integration of a particular 
-      statistical ensemble. It is important that each step should be 
-      uncorrelated from the last so that iterations are independent. 
-      Therefore, $N$ should be at least twice the autocorrelation time 
-      of the collective variable. The system should also be able to 
-      dissipate energy as fast as $N/2$, which can be done by adjusting 
-      thermostat parameters. Practically, $N$ has been tested successfully at 
-      significantly shorter than the autocorrelation time of the 
+      This determines how long the system requires to equilibrate
+      after a change in force constant ($N/2$), how long statistics
+      are collected for an iteration ($N/2$), and how quickly energy is
+      added to the system (at most, $A/2N$, where $A$ is the \texttt{forceRange}). Until the force
+      constant has converged, the method as described is an
+      optimization procedure and not an integration of a particular
+      statistical ensemble. It is important that each step should be
+      uncorrelated from the last so that iterations are independent.
+      Therefore, $N$ should be at least twice the autocorrelation time
+      of the collective variable. The system should also be able to
+      dissipate energy as fast as $N/2$, which can be done by adjusting
+      thermostat parameters. Practically, $N$ has been tested successfully at
+      significantly shorter than the autocorrelation time of the
       collective variables being biased and still converge correctly.}
 
 \item %
@@ -5855,7 +5867,7 @@ an optimization algorithm until the bias has converged}.
       and \texttt{forceRange} can allow for large bias changes but
       with a low \texttt{rateMax} prevents large energy changes that
       can lead to instability in the simulation.}
-     
+
 \end{itemize}
 
 
@@ -5923,7 +5935,7 @@ variables in the form of a N-dimensional histogram. A \texttt{histogram} block m
   }
 \end{itemize}
 
-  
+
 As with any other biasing and analysis method, when a histogram is applied to
 an extended-system colvar (\ref{sec:colvar_extended}), it accesses the value
 of the extended coordinate rather than that of the actual colvar.
@@ -5950,7 +5962,7 @@ The options supported inside this configuration block are:
     Lower boundaries of the grid}{%
     list of space-separated decimals}{%
     This option defines the lower boundaries of the grid, overriding any values defined by the \texttt{lowerBoundary} keyword of each colvar.
-    Note that when \texttt{gatherVectorColvars} is \texttt{on}, each vector variable is automatically treated as a scalar, and a single value should be provided for it. 
+    Note that when \texttt{gatherVectorColvars} is \texttt{on}, each vector variable is automatically treated as a scalar, and a single value should be provided for it.
   }
 \item %
   \simkey{upperBoundaries}{\texttt{histogramGrid}}{lowerBoundaries}
@@ -5985,7 +5997,7 @@ The list of options is as follows:
 \item \dupkey{outputEnergy}{\texttt{histogramRestraint}}{sec:colvarbias}{biasing and analysis methods}
 
 \item %
-  \key 
+  \key
     {lowerBoundary}{%
     \texttt{histogramRestraint}}{%
     Lower boundary of the colvar grid}{%
@@ -6070,7 +6082,7 @@ provided at run time as a Tcl script\cvnamdonly{, in the spirit of \texttt{TclFo
 \cvvmdonly{This option, also available in NAMD, can be useful to test a new algorithm to be used in a MD simulation.}
 
 \begin{itemize}
-  
+
 \item %
   \labelkey{Colvars-global|scriptedColvarForces}
   \keydef

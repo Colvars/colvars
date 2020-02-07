@@ -6,40 +6,32 @@
 % Colvars repository at GitHub.
 
 
-\newcommand{\VMD}{}
-\newcommand{\MDENGINE}{VMD}
+\newcommand{\GROMACS}{}
+\newcommand{\MDENGINE}{Gromacs}
 
 % macros to identify the format of this document
 % (section of the NAMD or VMD UG or standalone reference manual)
 \newcommand{\cvnamdugonly}[1]{}
 \newcommand{\cvvmdugonly}[1]{}
-\newcommand{\cvrefmanonly}[1]{#1}
+\newcommand{\cvrefmanonly}[1]{}
 
 % macros to identify which program
 \newcommand{\cvnamdonly}[1]{}
-\newcommand{\cvvmdonly}[1]{#1}
+\newcommand{\cvvmdonly}[1]{}
 \newcommand{\cvlammpsonly}[1]{}
-\newcommand{\cvgromacsonly}[1]{}
+\newcommand{\cvgromacsonly}[1]{#1}
 
-\newcommand{\lengthunit}{\AA{}}
-\newcommand{\energyunit}{kcal/mol}
+\newcommand{\lengthunit}{nm}
+\newcommand{\energyunit}{kJ/mol}
 
 % only in programs were scripting is available
-\newcommand{\cvscriptonly}[1]{#1}
-
-% File containining the (auto-generated) Tcl interface reference doc
-\newcommand{\cvscripttclref}{cvscript-tcl.tex}
+\newcommand{\cvscriptonly}[1]{}
 
 % only in programs were Lepton is available
-\newcommand{\cvleptononly}[1]{}
+\newcommand{\cvleptononly}[1]{#1}
 
 % content that applies only to programs that use atom names (i.e. not LAMMPS)
 \newcommand{\cvnamebasedonly}[1]{#1}
-
-% File output prefixes
-\newcommand{\outputName}{\emph{outputName}}
-\newcommand{\restartName}{\emph{restartName}}
-\newcommand{\inputName}{\emph{inputName}}
 
 
 \input{colvars-refman.tex}
