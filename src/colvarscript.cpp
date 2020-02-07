@@ -161,6 +161,9 @@ int colvarscript::run(int objc, unsigned char *const objv[])
   // Name of the (sub)command
   std::string const cmd(obj_to_str(objv[1]));
 
+  // Build a safe-to-print command line to print in case of error
+  std::string cmdline(std::string(obj_to_str(objv[0]))+std::string(" ")+cmd);
+
   // Pointer to the function implementing it
   int (*cmd_fn)(void *, int, unsigned char * const *) = NULL;
 
@@ -179,8 +182,13 @@ int colvarscript::run(int objc, unsigned char *const objv[])
       set_error_msg("Colvar not found: " + name);
       return COLVARSCRIPT_ERROR;
     }
-    cmd_fn = get_comm_fn(std::string(std::string("colvar_")+
-                                     obj_to_str(objv[3])));
+    std::string const &subcmd(obj_to_str(objv[3]));
+    cmd_fn = get_comm_fn(std::string("colvar_")+subcmd);
+    cmdline += std::string(" <name> ")+subcmd;
+    if (objc > 4) {
+      cmdline += " ...";
+    }
+
   } else if (cmd == "bias") {
 
     if (objc < 4) {
@@ -193,24 +201,36 @@ int colvarscript::run(int objc, unsigned char *const objv[])
       set_error_msg("Bias not found: " + name);
       return COLVARSCRIPT_ERROR;
     }
-    cmd_fn = get_comm_fn(std::string(std::string("bias_")+
-                                     obj_to_str(objv[3])));
+    std::string const &subcmd(obj_to_str(objv[3]));
+    cmd_fn = get_comm_fn(std::string("bias_")+subcmd);
+    cmdline += std::string(" <name> ")+subcmd;
+    if (objc > 4) {
+      cmdline += " ...";
+    }
+
   } else {
 
     cmd_fn = get_comm_fn(std::string(std::string("cv_"+cmd)));
     obj_for_cmd = reinterpret_cast<void *>(this);
+
+    if (objc > 2) {
+      cmdline += " ...";
+    }
   }
+
+  int error_code = COLVARS_OK;
 
   // If command was found in map, execute it
   if (cmd_fn) {
-    if (cvm::debug()) {
-      cvm::log("Found implementation for command "+cmd+", calling it.\n");
-    }
-    return (*cmd_fn)(obj_for_cmd, objc, objv);
+    error_code = (*cmd_fn)(obj_for_cmd, objc, objv);
+  } else {
+    set_error_msg("Syntax error: "+cmdline+"\n"
+                  "  Run \"cv listcommands\" or \"cv help <command>\" "
+                  "to get the correct syntax.\n");
+    error_code = COLVASCRIPT_ERROR;
   }
 
-  set_error_msg("Syntax error\n" + help_string());
-  return COLVARSCRIPT_ERROR;
+  return error_code;
 }
 
 
@@ -273,13 +293,14 @@ int colvarscript::proc_features(colvardeps *obj,
             return COLVARS_OK;
           }
         }
-        set_error_msg("Syntax error\n" + help_string());
+        set_error_msg("Missing value when setting feature \""+req_feature+
+                      "\".\n");
         return COLVARSCRIPT_ERROR;
       }
     }
   }
 
-  set_error_msg("Syntax error\n" + help_string());
+  // This shouldn't be reached any more
   return COLVARSCRIPT_ERROR;
 }
 
@@ -394,7 +415,7 @@ const char * get_colvarscript_result()
 #if defined(COLVARS_TCL)
 
 /// Run the script API via Tcl command-line interface
-/// \param clientData Not used 
+/// \param clientData Not used
 /// \param my_interp Pointer to Tcl_Interp object (read from Colvars if NULL)
 /// \param objc Number of Tcl command parameters
 /// \param objv Array of command parameters
