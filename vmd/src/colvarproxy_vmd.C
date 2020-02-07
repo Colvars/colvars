@@ -442,7 +442,7 @@ int colvarproxy_vmd::run_colvar_gradient_callback(
 char const *colvarproxy_vmd::script_obj_to_str(unsigned char *obj)
 {
 #ifdef VMDTCL // is TCL ever off?
-  return colvarproxy_vmd::tcl_obj_to_str(obj);
+  return colvarproxy_tcl::tcl_get_str(obj);
 #else
   // This is most likely not going to be executed
   return colvarproxy::script_obj_to_str(obj);

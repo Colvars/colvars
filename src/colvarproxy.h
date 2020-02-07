@@ -16,7 +16,7 @@
 #include "colvarmodule.h"
 #include "colvartypes.h"
 #include "colvarvalue.h"
-
+#include "colvarproxy_tcl.h"
 
 /// \file colvarproxy.h
 /// \brief Colvars proxy classes
@@ -29,7 +29,7 @@
 ///
 /// To interface to a new MD engine, the simplest solution is to derive a new
 /// class from \link colvarproxy \endlink.  Currently implemented are: \link
-/// colvarproxy_lammps \endlink, \link colvarproxy_namd \endlink, \link
+/// colvarproxy_lammps, \endlink, \link colvarproxy_namd, \endlink, \link
 /// colvarproxy_vmd \endlink.
 
 
@@ -539,46 +539,6 @@ public:
                 std::string const &name,
                 std::vector<const colvarvalue *> const &cvcs,
                 std::vector<cvm::matrix2d<cvm::real> > &gradient);
-};
-
-
-/// Methods for using Tcl within Colvars
-class colvarproxy_tcl {
-
-public:
-
-  /// Constructor
-  colvarproxy_tcl();
-
-  /// Destructor
-  virtual ~colvarproxy_tcl();
-
-  /// Is Tcl available? (trigger initialization if needed)
-  int tcl_available();
-
-  /// Tcl implementation of script_obj_to_str()
-  char const *tcl_obj_to_str(unsigned char *obj);
-
-  /// Run a user-defined colvar forces script
-  int tcl_run_force_callback();
-
-  int tcl_run_colvar_callback(
-              std::string const &name,
-              std::vector<const colvarvalue *> const &cvcs,
-              colvarvalue &value);
-
-  int tcl_run_colvar_gradient_callback(
-              std::string const &name,
-              std::vector<const colvarvalue *> const &cvcs,
-              std::vector<cvm::matrix2d<cvm::real> > &gradient);
-
-protected:
-
-  /// Pointer to Tcl interpreter object
-  void *tcl_interp_;
-
-  /// Set Tcl pointers
-  virtual void init_tcl_pointers();
 };
 
 

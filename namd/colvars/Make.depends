@@ -12,6 +12,7 @@ obj/colvar.o: \
 	colvars/src/colvarcomp.h \
 	colvars/src/colvaratoms.h \
 	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvar_arithmeticpath.h \
 	colvars/src/colvar_geometricpath.h \
 	colvars/src/colvarscript.h \
@@ -28,6 +29,7 @@ obj/colvaratoms.o: \
 	colvars/src/colvarproxy.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
+	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarparse.h \
 	colvars/src/colvarparams.h \
 	colvars/src/colvaratoms.h \
@@ -41,6 +43,7 @@ obj/colvarbias.o: \
 	colvars/src/colvarproxy.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
+	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarbias.h \
 	colvars/src/colvar.h \
 	colvars/src/colvarparse.h \
@@ -56,6 +59,7 @@ obj/colvarbias_abf.o: \
 	colvars/src/colvarproxy.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
+	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvar.h \
 	colvars/src/colvarparse.h \
 	colvars/src/colvarparams.h \
@@ -87,6 +91,7 @@ obj/colvarbias_histogram.o: \
 	colvars/src/colvarproxy.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
+	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvar.h \
 	colvars/src/colvarparse.h \
 	colvars/src/colvarparams.h \
@@ -103,6 +108,7 @@ obj/colvarbias_meta.o: \
 	colvars/src/colvarproxy.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
+	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvar.h \
 	colvars/src/colvarparse.h \
 	colvars/src/colvarparams.h \
@@ -119,6 +125,7 @@ obj/colvarbias_restraint.o: \
 	colvars/src/colvarproxy.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
+	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarbias_restraint.h \
 	colvars/src/colvarbias.h \
 	colvars/src/colvar.h \
@@ -140,6 +147,7 @@ obj/colvarcomp.o: \
 	colvars/src/colvarcomp.h \
 	colvars/src/colvaratoms.h \
 	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvar_arithmeticpath.h \
 	colvars/src/colvar_geometricpath.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp.o $(COPTC) colvars/src/colvarcomp.cpp
@@ -157,6 +165,7 @@ obj/colvarcomp_angles.o: \
 	colvars/src/colvarcomp.h \
 	colvars/src/colvaratoms.h \
 	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvar_arithmeticpath.h \
 	colvars/src/colvar_geometricpath.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_angles.o $(COPTC) colvars/src/colvarcomp_angles.cpp
@@ -171,6 +180,7 @@ obj/colvarcomp_coordnums.o: \
 	colvars/src/colvarparams.h \
 	colvars/src/colvaratoms.h \
 	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvardeps.h \
 	colvars/src/colvar.h \
 	colvars/src/colvarcomp.h \
@@ -191,6 +201,7 @@ obj/colvarcomp_distances.o: \
 	colvars/src/colvarcomp.h \
 	colvars/src/colvaratoms.h \
 	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvar_arithmeticpath.h \
 	colvars/src/colvar_geometricpath.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_distances.o $(COPTC) colvars/src/colvarcomp_distances.cpp
@@ -208,6 +219,7 @@ obj/colvarcomp_protein.o: \
 	colvars/src/colvarcomp.h \
 	colvars/src/colvaratoms.h \
 	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvar_arithmeticpath.h \
 	colvars/src/colvar_geometricpath.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_protein.o $(COPTC) colvars/src/colvarcomp_protein.cpp
@@ -225,6 +237,7 @@ obj/colvarcomp_rotations.o: \
 	colvars/src/colvarcomp.h \
 	colvars/src/colvaratoms.h \
 	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvar_arithmeticpath.h \
 	colvars/src/colvar_geometricpath.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_rotations.o $(COPTC) colvars/src/colvarcomp_rotations.cpp
@@ -242,6 +255,7 @@ obj/colvarcomp_gpath.o: \
 	colvars/src/colvarcomp.h \
 	colvars/src/colvaratoms.h \
 	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvar_arithmeticpath.h \
 	colvars/src/colvar_geometricpath.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_gpath.o $(COPTC) colvars/src/colvarcomp_gpath.cpp
@@ -259,6 +273,7 @@ obj/colvarcomp_apath.o: \
 	colvars/src/colvarcomp.h \
 	colvars/src/colvaratoms.h \
 	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvar_arithmeticpath.h \
 	colvars/src/colvar_geometricpath.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_apath.o $(COPTC) colvars/src/colvarcomp_apath.cpp
@@ -270,6 +285,7 @@ obj/colvardeps.o: \
 	colvars/src/colvarproxy.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
+	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvardeps.h \
 	colvars/src/colvarparse.h \
 	colvars/src/colvarparams.h
@@ -288,6 +304,7 @@ obj/colvargrid.o: \
 	colvars/src/colvarcomp.h \
 	colvars/src/colvaratoms.h \
 	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvar_arithmeticpath.h \
 	colvars/src/colvar_geometricpath.h \
 	colvars/src/colvargrid.h
@@ -302,6 +319,7 @@ obj/colvarmodule.o: \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarparams.h \
 	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvar.h \
 	colvars/src/colvardeps.h \
 	colvars/src/colvarbias.h \
@@ -348,6 +366,7 @@ obj/colvarproxy.o: \
 	colvars/src/colvarproxy.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
+	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarscript.h \
 	colvars/src/colvarbias.h \
 	colvars/src/colvar.h \
@@ -366,8 +385,23 @@ obj/colvarproxy_replicas.o: \
 	colvars/src/colvars_version.h \
 	colvars/src/colvarproxy.h \
 	colvars/src/colvartypes.h \
-	colvars/src/colvarvalue.h
+	colvars/src/colvarvalue.h \
+	colvars/src/colvarproxy_tcl.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarproxy_replicas.o $(COPTC) colvars/src/colvarproxy_replicas.cpp
+obj/colvarproxy_tcl.o: \
+	obj/.exists \
+	colvars/src/colvarproxy_tcl.cpp \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvaratoms.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvardeps.h
+	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarproxy_tcl.o $(COPTC) colvars/src/colvarproxy_tcl.cpp
 obj/colvarscript.o: \
 	obj/.exists \
 	colvars/src/colvarscript.cpp \
@@ -376,6 +410,7 @@ obj/colvarscript.o: \
 	colvars/src/colvars_version.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
+	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvardeps.h \
 	colvars/src/colvarparse.h \
 	colvars/src/colvarparams.h \
@@ -394,6 +429,7 @@ obj/colvarscript_commands.o: \
 	colvars/src/colvars_version.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
+	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvardeps.h \
 	colvars/src/colvarparse.h \
 	colvars/src/colvarparams.h \
@@ -412,6 +448,7 @@ obj/colvarscript_commands_bias.o: \
 	colvars/src/colvars_version.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
+	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvardeps.h \
 	colvars/src/colvarparse.h \
 	colvars/src/colvarparams.h \
@@ -430,6 +467,7 @@ obj/colvarscript_commands_colvar.o: \
 	colvars/src/colvars_version.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
+	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvardeps.h \
 	colvars/src/colvarparse.h \
 	colvars/src/colvarparams.h \

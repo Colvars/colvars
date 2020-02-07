@@ -30,6 +30,14 @@ colvarscript::colvarscript(colvarproxy *p)
 {
   comm_names = NULL;
   init_commands();
+#ifdef COLVARS_TCL
+  // TODO put this in backend functions so we don't have to delete
+  Tcl_Interp *interp = reinterpret_cast<Tcl_Interp *>(proxy_->get_tcl_interp());
+  Tcl_DeleteCommand(interp, "cv");
+  Tcl_CreateObjCommand(interp, "cv", tcl_run_colvarscript_command,
+                       (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
+  cvm::log("Redefining the Tcl \"cv\" command to the new script interface.");
+#endif
 }
 
 
@@ -387,3 +395,47 @@ const char * get_colvarscript_result()
   }
   return script->str_result().c_str();
 }
+
+
+#if defined(COLVARS_TCL)
+
+/// Run the script API via Tcl command-line interface
+/// \param clientData Not used 
+/// \param my_interp Pointer to Tcl_Interp object (read from Colvars if NULL)
+/// \param objc Number of Tcl command parameters
+/// \param objv Array of command parameters
+/// \return Result of the script command
+extern "C"
+int tcl_run_colvarscript_command(ClientData clientData,
+                                 Tcl_Interp *my_interp,
+                                 int objc, Tcl_Obj *const objv[])
+{
+  colvarmodule *colvars = cvm::main();
+
+  if (!colvars) {
+    Tcl_SetResult(my_interp, const_cast<char *>("Colvars module not active"),
+                  TCL_VOLATILE);
+    return TCL_ERROR;
+  }
+
+  colvarproxy *proxy = colvars->proxy;
+  Tcl_Interp *interp = my_interp ? my_interp :
+    reinterpret_cast<Tcl_Interp *>(proxy->get_tcl_interp());
+  colvarscript *script = colvarscript_obj();
+  if (!script) {
+    char const *errstr = "Called tcl_run_colvarscript_command "
+      "without a Colvars script interface set up.\n";
+    Tcl_SetResult(interp, const_cast<char *>(errstr), TCL_VOLATILE);
+    return TCL_ERROR;
+  }
+
+  int retval = script->run(objc,
+                           reinterpret_cast<unsigned char * const *>(objv));
+
+  Tcl_SetResult(interp, const_cast<char *>(script->result.c_str()),
+                TCL_VOLATILE);
+
+  return (retval == COLVARS_OK) ? TCL_OK : TCL_ERROR;
+}
+
+#endif // #if defined(COLVARS_TCL)

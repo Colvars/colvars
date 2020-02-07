@@ -50,7 +50,7 @@ public:
   /// error message
   std::string result;
 
-  /// Run script command with given positional arguments (objects)
+  /// Run a script command with space-separated positional arguments (objects)
   int run(int objc, unsigned char *const objv[]);
 
   /// Get the string result (if given)
@@ -259,13 +259,13 @@ int colvarscript::check_cmd_nargs(char const *cmd,
 {
   int const shift = cmd_arg_shift<T>();
   if (objc < shift+n_args_min) {
-    set_result_str("Missing arguments\n" +
-                   get_command_help(cmd));
+    set_error_msg("Missing arguments for script function \""+std::string(cmd)+
+                  "\":\n"+get_command_help(cmd));
     return COLVARSCRIPT_ERROR;
   }
   if (objc > shift+n_args_max) {
-    set_result_str("Too many arguments\n" +
-                   get_command_help(cmd));
+    set_error_msg("Too many arguments for script function \""+std::string(cmd)+
+                  "\":\n"+get_command_help(cmd));
     return COLVARSCRIPT_ERROR;
   }
   return COLVARSCRIPT_OK;
@@ -273,6 +273,13 @@ int colvarscript::check_cmd_nargs(char const *cmd,
 
 
 extern "C" {
+
+#if defined(COLVARS_TCL)
+  /// Tcl wrapper
+  int tcl_run_colvarscript_command(ClientData clientData,
+                                   Tcl_Interp *interp_in,
+                                   int objc, Tcl_Obj *const objv[]);
+#endif // #if defined(COLVARS_TCL)
 
   /// Generic wrapper for string-based scripting
   int run_colvarscript_command(int objc, unsigned char *const objv[]);

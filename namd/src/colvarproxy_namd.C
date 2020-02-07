@@ -1005,11 +1005,8 @@ int colvarproxy_namd::backup_file(char const *filename)
 
 char const *colvarproxy_namd::script_obj_to_str(unsigned char *obj)
 {
-  if (cvm::debug()) {
-    cvm::log("Called colvarproxy_namd::script_obj_to_str().\n");
-  }
 #ifdef NAMD_TCL
-  return Tcl_GetString(reinterpret_cast<Tcl_Obj *>(obj));
+  return colvarproxy_tcl::tcl_get_str(obj);
 #else
   // This is most likely not going to be executed
   return colvarproxy::script_obj_to_str(obj);
