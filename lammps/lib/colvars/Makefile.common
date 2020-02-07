@@ -46,6 +46,7 @@ COLVARS_SRCS = \
         colvarparse.cpp \
         colvarproxy.cpp \
         colvarproxy_replicas.cpp \
+        colvarproxy_tcl.cpp \
         colvarscript.cpp \
         colvarscript_commands.cpp \
         colvarscript_commands_bias.cpp \
