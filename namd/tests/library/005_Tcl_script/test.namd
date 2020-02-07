@@ -98,8 +98,14 @@ proc runcmd { cmd } {
   print [eval $cmd]
 }
 
+print "Running Colvars version [cv version]"
+
+runcmd "cv units real"
+
 foreach c [cv list] { print "$c = [cv colvar $c value]"}        
 foreach b [cv list biases] { print "E($b) = [cv bias $b energy]"}
+
+foreach c [cv list] { print "$c = [cv colvar $c update]"}
 
 runcmd "cv update"
 
@@ -132,7 +138,12 @@ cv config "harmonic {
   forceConstant 1.
   outputEnergy yes
 }"
-run 20 
+
+runcmd "cv bias harm2 getconfig"
+
+run 20
+
+runcmd "cv colvar d state"
 
 runcmd "cv bias harmonic1 state"
 runcmd "cv bias harmonic1 delete"
@@ -144,6 +155,41 @@ runcmd "cv bias harm2 energy"
 runcmd "cv bias harm2 state"
 runcmd "cv bias harm2 delete"
 
+
+foreach c [cv list] {
+    print "Summary for collective variable $c:"
+    print "  Type: [cv colvar $c type]"
+    print "  Width: [cv colvar $c width]"
+    print "  Atom groups: [cv colvar $c getatomgroups]"
+
+    print "  Gradients computed? (0/1): [cv colvar $c get gradient]"
+
+    # print "  Collecting gradients? (0/1): [cv colvar $c get \"collect gradient\"]"
+    # if { [cv colvar $c get "collect gradient"] != 0 } {
+    print "  Atom IDs: [cv colvar $c getatomids]"
+    print "  Gradients: [cv colvar $c getgradients]"
+    # }
+
+    print "  Applied force: [cv colvar $c getappliedforce]"
+    print "  Total force: [cv colvar $c gettotalforce]"
+
+    # Test the get/set feature
+    cv colvar $c set active 1
+    cv colvar $c get active
+}
+
+print "Re-saving the state with a prefix:"
+cv save test
+print "Re-saving the state with an explicit name:"
+cv save test.colvars.state
+print "And reload:"
+cv load test.colvars.state
+
 cv reset
 # reinitialize just for the fun of it ;-)
 cv configfile 	  test.in
+
+# ...aaand let's reset again!
+foreach c [cv list] {
+    runcmd "cv colvar $c delete"
+}
