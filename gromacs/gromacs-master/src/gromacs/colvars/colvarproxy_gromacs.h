@@ -22,7 +22,7 @@ public:
   //PBC struct
   t_pbc gmx_pbc;
   //Box
-  real (*gmx_box)[3];
+  const real (*gmx_box)[3];
   //
   t_atoms gmx_atoms;
 protected:
@@ -81,7 +81,7 @@ public:
   void dd_make_local_atoms(const t_commrec *cr);
   // Called each step before evaluating the force provider
   // Should eventually be replaced by the MDmodule interface?
-  void update_data(const t_commrec *cr, int64_t const step, t_pbc const &pbc, matrix box, bool bNS);
+  void update_data(const t_commrec *cr, int64_t const step, t_pbc const &pbc, const matrix box, bool bNS);
   /*! \brief
     * Computes forces.
     *

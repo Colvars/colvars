@@ -354,7 +354,7 @@ int colvarproxy_gromacs::backup_file (char const *filename)
 }
 
 
-void colvarproxy_gromacs::update_data(const t_commrec *cr, int64_t const step, t_pbc const &pbc, matrix box, bool bNS)
+void colvarproxy_gromacs::update_data(const t_commrec *cr, int64_t const step, t_pbc const &pbc, const matrix box, bool bNS)
 {
 
   if (MASTER(cr)) {
@@ -439,7 +439,7 @@ void colvarproxy_gromacs::calculateForces(
     bias_energy = 0.0;
     // Call the collective variable module to fill atoms_new_colvar_forces
     if (colvars->calc() != COLVARS_OK) {
-      cvm::fatal_error("");
+      cvm::fatal_error("Error calling colvars->calc()\n");
     }
 
     // Copy the forces to a simpler array for broadcasting
