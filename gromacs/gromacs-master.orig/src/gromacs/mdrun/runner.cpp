@@ -155,7 +155,6 @@
 #include "gromacs/utility/programcontext.h"
 #include "gromacs/utility/smalloc.h"
 #include "gromacs/utility/stringutil.h"
-#include "gromacs/colvars/colvarproxy_gromacs.h"
 
 #include "isimulator.h"
 #include "replicaexchange.h"
@@ -1555,45 +1554,6 @@ int Mdrunner::mdrunner()
                                MASTER(cr) ? globalState->x.rvec_array() : nullptr, filenames.size(),
                                filenames.data(), oenv, mdrunOptions.imdOptions, startingBehavior);
 
-        /* COLVARS */
-        if (opt2bSet("-colvars",filenames.size(), filenames.data()))
-        {
-
-            gmx::ArrayRef<const std::string> filenames_colvars;
-            std::string filename_restart;
-            std::string prefix;
-
-            inputrec->bColvars = TRUE;
-
-            /* Retrieve filenames */
-            filenames_colvars = opt2fns("-colvars", filenames.size(), filenames.data());
-            if (opt2bSet("-colvars_restart",filenames.size(), filenames.data()))
-            {
-                filename_restart = opt2fn("-colvars_restart",filenames.size(), filenames.data());
-            }
-
-            /* Determine the prefix for the colvars output files, based on the logfile name. */
-            std::string logfile = ftp2fn(efLOG, filenames.size(), filenames.data());
-            /* 4 = ".log".length() */
-            if(logfile.length() > 4)
-            {
-                prefix = logfile.substr(0,logfile.length()-4);
-            }
-
-            inputrec->colvars_proxy =  new colvarproxy_gromacs();
-            inputrec->colvars_proxy->init(inputrec,inputrec->init_step,&mtop, prefix, filenames_colvars,filename_restart, cr, MASTER(cr) ? globalState->x.rvec_array() : nullptr);
-            fr->forceProviders->addForceProvider(inputrec->colvars_proxy);
-        }
-        else
-        {
-            inputrec->bColvars = FALSE;
-            if (opt2bSet("-colvars_restart",filenames.size(), filenames.data()))
-            {
-                gmx_fatal(FARGS, "-colvars_restart can only be used together with the -colvars option.");
-            }
-        }
-
-
         if (DOMAINDECOMP(cr))
         {
             GMX_RELEASE_ASSERT(fr, "fr was NULL while cr->duty was DUTY_PP");
@@ -1745,13 +1705,6 @@ int Mdrunner::mdrunner()
     if (doMembed)
     {
         free_membed(membed);
-    }
-
-    /* COLVARS */
-    if (inputrec->bColvars)
-    {
-        inputrec->colvars_proxy->finish(cr);
-        delete inputrec->colvars_proxy;
     }
 
     /* Does what it says */

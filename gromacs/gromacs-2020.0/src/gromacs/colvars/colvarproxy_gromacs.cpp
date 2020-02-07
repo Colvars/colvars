@@ -376,9 +376,6 @@ void colvarproxy_gromacs::update_data(const t_commrec *cr, int64_t const step, t
     }
   } // end master
 
-
-  std::cerr << "UPDATE DAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAAAAA" << std::endl;
-
   gmx_pbc = pbc;
   gmx_box = box;
   gmx_bNS = bNS;
@@ -396,8 +393,6 @@ void colvarproxy_gromacs::calculateForces(
                     const gmx::ForceProviderInput &forceProviderInput,
                     gmx::ForceProviderOutput      *forceProviderOutput)
 {
-
-  std::cerr << "CALCULATE FOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOORCES" << std::endl;
 
   const t_commrec *cr           = &(forceProviderInput.cr_);
   const gmx::ArrayRef<const gmx::RVec> x  = forceProviderInput.x_;
@@ -444,7 +439,7 @@ void colvarproxy_gromacs::calculateForces(
     bias_energy = 0.0;
     // Call the collective variable module to fill atoms_new_colvar_forces
     if (colvars->calc() != COLVARS_OK) {
-      cvm::fatal_error("SHIIIIIT");
+      cvm::fatal_error("Error calling colvars->calc()\n");
     }
 
     // Copy the forces to a simpler array for broadcasting
@@ -454,22 +449,9 @@ void colvarproxy_gromacs::calculateForces(
       f[i][1] = atoms_new_colvar_forces[i].y;
       f[i][2] = atoms_new_colvar_forces[i].z;
     }
-    std::cout << "Ffffffffffffffffff   " << bias_energy << std::endl;
-
-    if(MASTER(cr))
-    {
-      std::cout << "f : " << std::endl;
-      for (int i = 0; i < nat; i++)
-      {
-        std::cout << "f[" << i << "] = " << f[i][0] << ", " << f[i][1] << ", " << f[i][2] << std::endl;
-      }
-    }
-
 
     forceProviderOutput->enerd_.term[F_COM_PULL] += bias_energy;
   } // master node
-
-
 
   //Broadcast the forces to all the nodes
   if (PAR(cr))
@@ -487,7 +469,6 @@ void colvarproxy_gromacs::calculateForces(
 
   // Pass the applied forces back to GROMACS
   // Parallel version
-  std::cout << "f_colvars : " << std::endl;
   for (int i = 0; i < nat; i++)
   {
       // j is the index in the "System group".
@@ -498,17 +479,10 @@ void colvarproxy_gromacs::calculateForces(
         const int *locndx = cr->dd->ga2la->findHome(j);
         if (locndx) {
           f_colvars[*locndx] += f[i];
-          std::cout << "node(" << cr->nodeid <<") -- f_colvars[" << i << "] = " << f_colvars[*locndx][0] << ", " << f_colvars[*locndx][1] << ", " << f_colvars[*locndx][2] << std::endl;
         }
         // Do nothing if atom is not local
       } else { // Non MPI-parallel
         f_colvars[j] += f[i];
-        // std::cout << "f_colvars : " << std::endl;
-        // for (int i = 0; i < nat; i++)
-        // {
-        //   std::cout << "f_colvars[" << i << "] = " << f_colvars[j][0] << ", " << f_colvars[j][1] << ", " << f_colvars[j][2] << std::endl;
-        // }
-
       }
   }
 
