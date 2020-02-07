@@ -173,10 +173,11 @@ CVSCRIPT(colvar_set,
          )
 
 CVSCRIPT(colvar_state,
-         "Return a string representation of the feature state of this colvar",
+         "Print a string representation of the feature state of this colvar",
          0, 0,
          "",
-         return script->proc_features(this_colvar, objc, objv);
+         this_colvar->print_state();
+         return COLVARS_OK;
          )
 
 CVSCRIPT(colvar_type,

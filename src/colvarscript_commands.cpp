@@ -48,6 +48,9 @@ char const *cvscript_help(char const *c)
   int CVSCRIPT_COMM_FNAME(COMM)(void *pobj,                             \
                                 int objc, unsigned char *const objv[])  \
   {                                                                     \
+    if (cvm::debug()) {                                                 \
+      cvm::log("Executing script function \""+std::string(#COMM)+"\""); \
+    }                                                                   \
     colvarscript *script = colvarscript_obj();                          \
     script->clear_str_result();                                         \
     if (script->check_cmd_nargs<>(#COMM,                                \
