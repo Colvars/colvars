@@ -26,7 +26,7 @@ CVSCRIPT(bias_bincount,
          if (indexarg) {
            std::string const param(indexarg);
            if (!(std::istringstream(param) >> index)) {
-             script->set_error_msg("bincount: error parsing bin index");
+             script->add_error_msg("bincount: error parsing bin index");
              return COLVARSCRIPT_ERROR;
            }
          }
@@ -40,7 +40,7 @@ CVSCRIPT(bias_binnum,
          "",
          int r = this_bias->bin_num();
          if (r < 0) {
-           script->set_error_msg("Error: calling bin_num() for bias " +
+           script->add_error_msg("Error: calling bin_num() for bias " +
                                  this_bias->name);
            return COLVARSCRIPT_ERROR;
          }
@@ -92,7 +92,7 @@ CVSCRIPT(bias_share,
          0, 0,
          "",
          if (this_bias->replica_share() != COLVARS_OK) {
-           script->set_error_msg("Error: calling replica_share() for bias " +
+           script->add_error_msg("Error: calling replica_share() for bias " +
                                  this_bias->name);
            return COLVARSCRIPT_ERROR;
          }

@@ -65,11 +65,8 @@ public:
   /// Clear the string result
   int clear_str_result();
 
-  /// Set the error message of the script interface to the given string
-  inline void set_error_msg(std::string const &s)
-  {
-    result = s;
-  }
+  /// Add the given string to the error message of the script interface
+  void add_error_msg(std::string const &s);
 
   /// Build and return a short help
   std::string help_string(void) const;
@@ -259,12 +256,12 @@ int colvarscript::check_cmd_nargs(char const *cmd,
 {
   int const shift = cmd_arg_shift<T>();
   if (objc < shift+n_args_min) {
-    set_error_msg("Missing arguments for script function \""+std::string(cmd)+
+    add_error_msg("Missing arguments for script function \""+std::string(cmd)+
                   "\":\n"+get_command_help(cmd));
     return COLVARSCRIPT_ERROR;
   }
   if (objc > shift+n_args_max) {
-    set_error_msg("Too many arguments for script function \""+std::string(cmd)+
+    add_error_msg("Too many arguments for script function \""+std::string(cmd)+
                   "\":\n"+get_command_help(cmd));
     return COLVARSCRIPT_ERROR;
   }

@@ -107,7 +107,7 @@ CVSCRIPT(cv_configfile,
          if (script->module()->read_config_file(script->obj_to_str(objv[2])) == COLVARS_OK) {
            return COLVARS_OK;
          } else {
-           script->set_error_msg("Error parsing configuration file");
+           script->add_error_msg("Error parsing configuration file");
            return COLVARSCRIPT_ERROR;
          }
          )
@@ -132,7 +132,7 @@ CVSCRIPT(cv_frame,
              script->set_result_str(cvm::to_str(f));
              return COLVARS_OK;
            } else {
-             script->set_error_msg("Frame number is not available");
+             script->add_error_msg("Frame number is not available");
              return COLVARSCRIPT_ERROR;
            }
          } else {
@@ -208,7 +208,7 @@ CVSCRIPT(cv_list,
            script->set_result_str(res);
            return COLVARS_OK;
          } else {
-           script->set_error_msg("Wrong arguments to command \"list\"\n" +
+           script->add_error_msg("Wrong arguments to command \"list\"\n" +
                                  script->help_string());
            return COLVARSCRIPT_ERROR;
          }
@@ -237,7 +237,7 @@ CVSCRIPT(cv_load,
          if (script->module()->setup_input() == COLVARS_OK) {
            return COLVARS_OK;
          } else {
-           script->set_error_msg("Error loading state file");
+           script->add_error_msg("Error loading state file");
            return COLVARSCRIPT_ERROR;
          }
          )
@@ -311,17 +311,17 @@ CVSCRIPT(cv_update,
          "",
          int error_code = script->proxy()->update_input();
          if (error_code) {
-           script->set_error_msg("Error updating the Colvars module (input)");
+           script->add_error_msg("Error updating the Colvars module (input)");
            return error_code;
          }
          error_code |= script->module()->calc();
          if (error_code) {
-           script->set_error_msg("Error updating the Colvars module (calc)");
+           script->add_error_msg("Error updating the Colvars module (calc)");
            return error_code;
          }
          error_code |= script->proxy()->update_output();
          if (error_code) {
-           script->set_error_msg("Error updating the Colvars module (output)");
+           script->add_error_msg("Error updating the Colvars module (output)");
          }
          return error_code;
          )
