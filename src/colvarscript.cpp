@@ -227,15 +227,9 @@ int colvarscript::proc_features(colvardeps *obj,
     }
   }
 
-  if (subcmd == "state") {
-    // TODO make this returned as result?
-    obj->print_state();
-    return COLVARS_OK;
-  }
-
   if ((subcmd == "get") || (subcmd == "set")) {
     std::vector<colvardeps::feature *> const &features = obj->features();
-    std::string const req_feature(obj_to_str(objv[3]));
+    std::string const req_feature(obj_to_str(objv[4]));
     colvardeps::feature *f = NULL;
     int fid = 0;
     for (fid = 0; fid < int(features.size()); fid++) {
@@ -264,9 +258,9 @@ int colvarscript::proc_features(colvardeps *obj,
       }
 
       if (subcmd == "set") {
-        if (objc == 5) {
+        if (objc == 6) {
           std::string const yesno =
-            colvarparse::to_lower_cppstr(std::string(obj_to_str(objv[4])));
+            colvarparse::to_lower_cppstr(std::string(obj_to_str(objv[5])));
           if ((yesno == std::string("yes")) ||
               (yesno == std::string("on")) ||
               (yesno == std::string("1"))) {

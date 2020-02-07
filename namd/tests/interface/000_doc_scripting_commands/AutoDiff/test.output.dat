@@ -111,7 +111,7 @@ Tcl command: cv bias <name> share - Share bias information with other replicas (
 ======================================================================
 bias_state command:
 
-Tcl command: cv bias <name> state - Return a string representation of the feature state of this bias
+Tcl command: cv bias <name> state - Print a string representation of the feature state of this bias
 
 ======================================================================
 bias_update command:
@@ -218,7 +218,7 @@ value : string - String representation of the new feature value
 ======================================================================
 colvar_state command:
 
-Tcl command: cv colvar <name> state - Return a string representation of the feature state of this colvar
+Tcl command: cv colvar <name> state - Print a string representation of the feature state of this colvar
 
 ======================================================================
 colvar_type command:

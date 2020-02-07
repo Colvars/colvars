@@ -100,10 +100,11 @@ CVSCRIPT(bias_share,
          )
 
 CVSCRIPT(bias_state,
-         "Return a string representation of the feature state of this bias",
+         "Print a string representation of the feature state of this bias",
          0, 0,
          "",
-         return script->proc_features(this_bias, objc, objv);
+         this_bias->print_state();
+         return COLVARS_OK;
          )
 
 CVSCRIPT(bias_update,
