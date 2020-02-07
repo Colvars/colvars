@@ -128,6 +128,8 @@ then
   case ${GMX_VERSION} in
     '2018.3')
       ;;
+    '2020.0')
+      ;;
     *)
     GMX_VERSION="master"
     if [ $force_update = 0 ] ; then
