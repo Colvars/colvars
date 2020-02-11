@@ -37,8 +37,11 @@ int tcl_colvars(ClientData clientdata, Tcl_Interp *interp,
 
     if (objc >= 2 && !strcmp(Tcl_GetString(objv[1]), "molid")) {
        if (objc == 2) {
-        Tcl_SetResult(interp, const_cast<char *>(cvm::to_str(proxy->get_vmdmolid()).c_str()), TCL_VOLATILE);
-        return TCL_OK;
+         int molid = -1;
+         proxy->get_molid(molid);
+         Tcl_SetResult(interp, const_cast<char *>(cvm::to_str(molid).c_str()),
+                       TCL_VOLATILE);
+         return TCL_OK;
        } else {
         Tcl_SetResult(interp, (char *) "Colvars module already created:"
                                        " type \"cv\" for a list of "
@@ -144,8 +147,6 @@ colvarproxy_vmd::colvarproxy_vmd(Tcl_Interp *interp, VMDApp *v, int molid)
   colvars->restart_out_freq = 0;
   cvm::rotation::monitor_crossings = false; // Avoid unnecessary error messages
 
-  total_force_requested = false;
-
   // Default to VMD's native unit system, but do not set the units string
   // to preserve the native workflow of VMD / NAMD / LAMMPS-real
   angstrom_value = 1.;
@@ -218,6 +219,38 @@ int colvarproxy_vmd::setup()
   }
 
   return COLVARS_OK;
+}
+
+
+cvm::real colvarproxy_vmd::backend_angstrom_value()
+{
+  return 1.0;
+}
+
+
+cvm::real colvarproxy_vmd::boltzmann()
+{
+  return 0.001987191;
+}
+
+
+cvm::real colvarproxy_vmd::temperature()
+{
+  // TODO define, document and implement a user method to set the value of this
+  return 300.0;
+}
+
+
+cvm::real colvarproxy_vmd::dt()
+{
+  // TODO define, document and implement a user method to set the value of this
+  return 1.0;
+}
+
+
+cvm::real colvarproxy_vmd::rand_gaussian()
+{
+  return vmd_random_gaussian();
 }
 
 
@@ -387,6 +420,20 @@ void colvarproxy_vmd::fatal_error(std::string const &message)
   // Fatal error bit is already set, will be handled
   // by tcl_colvars() before handing control back to VMD
   error(message);
+}
+
+
+int colvarproxy_vmd::get_molid(int &molid)
+{
+  molid = vmdmolid;
+  return COLVARS_OK;
+}
+
+
+int colvarproxy_vmd::get_frame(long int &f)
+{
+  f = vmdmol_frame;
+  return COLVARS_OK;
 }
 
 

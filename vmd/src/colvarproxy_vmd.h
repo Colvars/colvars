@@ -31,140 +31,110 @@ int tcl_colvars(ClientData clientData, Tcl_Interp *interp,
 /// \link colvarproxy \endlink)
 class colvarproxy_vmd : public colvarproxy {
 
-protected:
-
-  /// pointer to the VMD main object
-  VMDApp *vmd;
-  /// VMD molecule id being used (must be provided at construction)
-  int vmdmolid;
-  /// pointer to VMD molecule (derived from vmdmolid)
-  DrawMolecule *vmdmol;
-  /// current frame (returned by vmdmol->frame())
-  long int vmdmol_frame;
-  /// output object
-  Inform msgColvars;
-
 public:
-
 
   friend class cvm::atom;
 
   colvarproxy_vmd(Tcl_Interp *interp, VMDApp *vmd, int molid);
-  ~colvarproxy_vmd();
-  int request_deletion();
 
-  int setup();
-
-  int update_input();
   /// \brief Update mass, charge, etc
   int update_atomic_properties();
 
-  inline cvm::real backend_angstrom_value()
-  {
-    return 1.0;
-  }
+  virtual ~colvarproxy_vmd();
 
-  inline cvm::real boltzmann()
-  {
-    return 0.001987191;
-  }
+  virtual int request_deletion();
 
-  inline cvm::real temperature()
-  {
-    // TODO define, document and implement a user method to set the value of this
-    return 300.0;
-  }
+  virtual int setup();
 
-  inline cvm::real dt()
-  {
-    // TODO define, document and implement a user method to set the value of this
-    return 1.0;
-  }
+  virtual int update_input();
 
-  inline cvm::real rand_gaussian()
-  {
-    return vmd_random_gaussian();
-  }
+  virtual cvm::real backend_angstrom_value();
 
-  /// Return molid of VMD molecule currently associated with Colvars
-  inline int get_vmdmolid() { return vmdmolid; }
+  virtual cvm::real boltzmann();
 
-  inline int get_frame(long int &f)
-  {
-    f = vmdmol_frame;
-    return COLVARS_OK;
-  }
+  virtual cvm::real temperature();
 
-  int set_frame(long int f);
+  virtual cvm::real dt();
 
-  std::string input_prefix_str;
-  std::string input_prefix()
-  {
-    return input_prefix_str;
-  }
+  virtual cvm::real rand_gaussian();
 
-  std::string restart_output_prefix()
-  {
-    // note: this shouldn't need to be called in VMD anyway
-    return output_prefix_str;
-  }
+  virtual int get_molid(int &molid);
 
-  std::string output_prefix_str;
-  inline std::string output_prefix()
-  {
-    return output_prefix_str;
-  }
+  virtual int get_frame(long int &f);
 
+  virtual int set_frame(long int f);
 
 #if defined(VMDTCL)
-  void init_tcl_pointers();
+  virtual void init_tcl_pointers();
 #endif
 
-  char const *script_obj_to_str(unsigned char *obj);
-  std::vector<std::string> script_obj_to_str_vector(unsigned char *obj);
+  virtual char const *script_obj_to_str(unsigned char *obj);
 
-  void add_energy(cvm::real energy);
+  virtual std::vector<std::string> script_obj_to_str_vector(unsigned char *obj);
 
-private:
-  bool total_force_requested;
-public:
-  void request_total_force(bool yesno);
+  virtual void add_energy(cvm::real energy);
+
+  virtual void request_total_force(bool yesno);
 
   std::string error_output;
-  void log(std::string const &message);
-  void error(std::string const &message);
-  void fatal_error(std::string const &message);
-  int set_unit_system(std::string const &units_in, bool check_only);
 
-  // Callback functions
-  int run_force_callback();
-  int run_colvar_callback(std::string const &name,
-                          std::vector<const colvarvalue *> const &cvcs,
-                          colvarvalue &value);
-  int run_colvar_gradient_callback(std::string const &name,
-                                   std::vector<const colvarvalue *> const &cvc_values,
-                                   std::vector<cvm::matrix2d<cvm::real> > &gradient);
+  virtual void log(std::string const &message);
 
-  int load_atoms(char const *filename,
-                 cvm::atom_group &atoms,
-                 std::string const &pdb_field,
-                 double const pdb_field_value = 0.0);
+  virtual void error(std::string const &message);
 
-  int load_coords(char const *filename,
-                  std::vector<cvm::atom_pos> &pos,
-                  const std::vector<int> &indices,
-                  std::string const &pdb_field,
-                  double const pdb_field_value = 0.0);
+  virtual void fatal_error(std::string const &message);
 
-  int init_atom(int atom_number);
-  int check_atom_id(int atom_number);
-  int init_atom(cvm::residue_id const &residue,
-                std::string const     &atom_name,
-                std::string const     &segment_id);
-  int check_atom_id(cvm::residue_id const &residue,
-                    std::string const     &atom_name,
-                    std::string const     &segment_id);
+  virtual int set_unit_system(std::string const &units_in, bool check_only);
 
+  virtual int run_force_callback();
+
+  virtual int run_colvar_callback(std::string const &name,
+                                  std::vector<const colvarvalue *> const &cvcs,
+                                  colvarvalue &value);
+
+  virtual int run_colvar_gradient_callback(std::string const &name,
+                                           std::vector<const colvarvalue *> const &cvc_values,
+                                           std::vector<cvm::matrix2d<cvm::real> > &gradient);
+
+  virtual int load_atoms(char const *filename,
+                         cvm::atom_group &atoms,
+                         std::string const &pdb_field,
+                         double const pdb_field_value = 0.0);
+
+  virtual int load_coords(char const *filename,
+                          std::vector<cvm::atom_pos> &pos,
+                          const std::vector<int> &indices,
+                          std::string const &pdb_field,
+                          double const pdb_field_value = 0.0);
+
+  virtual int init_atom(int atom_number);
+
+  virtual int check_atom_id(int atom_number);
+
+  virtual int init_atom(cvm::residue_id const &residue,
+                        std::string const     &atom_name,
+                        std::string const     &segment_id);
+
+  virtual int check_atom_id(cvm::residue_id const &residue,
+                            std::string const     &atom_name,
+                            std::string const     &segment_id);
+
+protected:
+
+  /// pointer to the VMD main object
+  VMDApp *vmd;
+
+  /// VMD molecule ID being used (must be provided at construction)
+  int vmdmolid;
+
+  /// pointer to VMD molecule (derived from vmdmolid)
+  DrawMolecule *vmdmol;
+
+  /// current frame (returned by vmdmol->frame())
+  long int vmdmol_frame;
+
+  /// output object
+  Inform msgColvars;
 };
 
 

@@ -49,8 +49,6 @@ protected:
   bool first_timestep;
   size_t previous_NAMD_step;
 
-  bool total_force_requested;
-
   /// Used to submit restraint energy as MISC
   SubmitReduction *reduction;
 

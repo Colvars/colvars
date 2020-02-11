@@ -121,7 +121,14 @@ public:
   /// Are total forces from the current step available?
   virtual bool total_forces_same_step() const;
 
+  /// Get the molecule ID when called in VMD; raise error otherwise
+  /// \param molid Set this argument equal to the current VMD molid
+  virtual int get_molid(int &molid);
+
 protected:
+
+  /// Whether the total forces have been requested
+  bool total_force_requested;
 
   /// \brief Type of boundary conditions
   ///
