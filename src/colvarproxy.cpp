@@ -28,8 +28,9 @@
 
 
 colvarproxy_system::colvarproxy_system()
-  : angstrom_value(0.)
 {
+  angstrom_value = 0.0;
+  total_force_requested = false;
   reset_pbc_lattice();
 }
 
@@ -127,6 +128,14 @@ cvm::rvector colvarproxy_system::position_distance(cvm::atom_pos const &pos1,
     z_shift*unit_cell_z.z;
 
   return diff;
+}
+
+
+int colvarproxy_system::get_molid(int &)
+{
+  cvm::error("Error: only VMD allows the use of multiple \"molecules\", "
+             "i.e. multiple molecular systems.", COLVARS_NOT_IMPLEMENTED);
+  return -1;
 }
 
 

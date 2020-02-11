@@ -45,7 +45,6 @@ class colvarproxy_lammps : public colvarproxy {
   int  previous_step;
 
   bool first_timestep;
-  bool total_force_requested;
   bool do_exit;
 
   std::vector<int>          atoms_types;

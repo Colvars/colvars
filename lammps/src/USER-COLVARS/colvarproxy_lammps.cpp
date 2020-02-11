@@ -71,7 +71,6 @@ colvarproxy_lammps::colvarproxy_lammps(LAMMPS_NS::LAMMPS *lmp,
   _random = new LAMMPS_NS::RanPark(lmp,seed);
 
   first_timestep=true;
-  total_force_requested=false;
   previous_step=-1;
   t_target=temp;
   do_exit=false;
