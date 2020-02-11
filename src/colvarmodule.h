@@ -444,6 +444,9 @@ public:
   /// Write the output restart file
   std::ostream & write_restart(std::ostream &os);
 
+  /// Strips .colvars.state from filename and checks that it is not empty
+  static std::string state_file_prefix(char const *filename);
+
   /// Open a trajectory file if requested (and leave it open)
   int open_traj_file(std::string const &file_name);
   /// Close it (note: currently unused)

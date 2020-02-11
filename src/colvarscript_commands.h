@@ -233,7 +233,8 @@ CVSCRIPT(cv_load,
          "Load data from a state file into all matching colvars and biases",
          1, 1,
          {"prefix : string - Path to existing state file or input prefix"},
-         script->proxy()->input_prefix() = script->obj_to_str(objv[2]);
+         script->proxy()->input_prefix() =
+           cvm::state_file_prefix(script->obj_to_str(objv[2]));
          if (script->module()->setup_input() == COLVARS_OK) {
            return COLVARS_OK;
          } else {
@@ -282,15 +283,15 @@ CVSCRIPT(cv_save,
          "Change the prefix of all output files and save them",
          1, 1,
          {"prefix : string - Output prefix with trailing \".colvars.state\" gets removed)"},
-         std::string const input(script->obj_to_str(objv[2]));
-         script->proxy()->output_prefix() =
-           input.substr(0, input.find(".colvars.state"));
-         int error = 0;
-         error |= script->module()->setup_output();
-         error |= script->module()->write_restart_file(script->module()->output_prefix()+
-                                                      ".colvars.state");
-         error |= script->module()->write_output_files();
-         return error ? COLVARSCRIPT_ERROR : COLVARS_OK;
+         std::string const prefix =
+           cvm::state_file_prefix(script->obj_to_str(objv[2]));
+         script->proxy()->output_prefix() = prefix;
+         int error_code = COLVARS_OK;
+         error_code |= script->module()->setup_output();
+         error_code |= script->module()->write_restart_file(prefix+
+                                                            ".colvars.state");
+         error_code |= script->module()->write_output_files();
+         return error_code;
          )
 
 CVSCRIPT(cv_units,

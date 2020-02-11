@@ -91,6 +91,28 @@ bias_getconfig command:
 Tcl command: cv bias <name> getconfig - Return the configuration string of this bias
 
 ======================================================================
+bias_load command:
+
+Tcl command: cv bias <name> load - Load data into this bias
+
+Parameters
+----------
+
+prefix : string - Read from a file with this name or prefix
+
+
+======================================================================
+bias_save command:
+
+Tcl command: cv bias <name> save - Save data from this bias into a file with the given prefix
+
+Parameters
+----------
+
+prefix : string - Prefix for the state file of this bias
+
+
+======================================================================
 bias_set command:
 
 Tcl command: cv bias <name> set - Set the given feature of this bias to a new value

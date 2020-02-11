@@ -144,13 +144,21 @@ public:
   }
 
   /// Read a keyword from the state data (typically a header)
+  /// \param Input stream
+  /// \param Keyword labeling the header block
   std::istream & read_state_data_key(std::istream &is, char const *key);
 
-  /// Write the bias configuration to a restart file or other stream
+  /// Write the bias configuration to a state file or other stream
   std::ostream & write_state(std::ostream &os);
 
   /// Read the bias configuration from a restart file or other stream
   std::istream & read_state(std::istream &is);
+
+  /// Write the bias state to a file with the given prefix
+  int write_state_prefix(std::string const &prefix);
+
+  /// Read the bias state from a file with this name or prefix
+  int read_state_prefix(std::string const &prefix);
 
   /// Write a label to the trajectory file (comment line)
   virtual std::ostream & write_traj_label(std::ostream &os);

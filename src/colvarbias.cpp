@@ -7,6 +7,8 @@
 // If you wish to distribute your changes, please submit them to the
 // Colvars repository at GitHub.
 
+#include <fstream>
+
 #include "colvarmodule.h"
 #include "colvarproxy.h"
 #include "colvarvalue.h"
@@ -487,6 +489,39 @@ std::istream & colvarbias::read_state(std::istream &is)
   }
 
   return is;
+}
+
+
+int colvarbias::write_state_prefix(std::string const &prefix)
+{
+  std::string const filename =
+    cvm::state_file_prefix(prefix.c_str())+".colvars.state";
+  std::ostream *os = cvm::proxy->output_stream(filename.c_str());
+  int error_code = COLVARS_OK;
+  if (os != NULL) {
+    os->setf(std::ios::scientific, std::ios::floatfield);
+    error_code = write_state(*os).good() ? COLVARS_OK : FILE_ERROR;
+  } else {
+    error_code = FILE_ERROR;
+  }
+  cvm::proxy->close_output_stream(filename.c_str());
+  return error_code;
+}
+
+
+int colvarbias::read_state_prefix(std::string const &prefix)
+{
+  std::string filename((prefix+std::string(".colvars.state")).c_str());
+  std::ifstream is(filename.c_str());
+  if (!is.good()) {
+    // try without the suffix
+    is.clear();
+    filename = prefix;
+    is.open(filename.c_str());
+  }
+  return read_state(is).good() ? COLVARS_OK :
+    cvm::error("Error: in opening input file \""+
+               std::string(filename)+"\".\n", FILE_ERROR);
 }
 
 

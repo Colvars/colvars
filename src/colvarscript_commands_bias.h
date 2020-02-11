@@ -79,6 +79,23 @@ CVSCRIPT(bias_getconfig,
          return COLVARS_OK;
          )
 
+CVSCRIPT(bias_load,
+         "Load data into this bias",
+         1, 1,
+         "prefix : string - Read from a file with this name or prefix",
+         std::string const prefix(script->obj_to_str(objv[2]));
+         return this_bias->read_state_prefix(prefix);
+         )
+
+CVSCRIPT(bias_save,
+         "Save data from this bias into a file with the given prefix",
+         1, 1,
+         "prefix : string - Prefix for the state file of this bias",
+         std::string const prefix =
+           cvm::state_file_prefix(script->obj_to_str(objv[2]));
+         return this_bias->write_state_prefix(prefix);
+         )
+
 CVSCRIPT(bias_set,
          "Set the given feature of this bias to a new value",
          2, 2,
