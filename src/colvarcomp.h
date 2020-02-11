@@ -28,6 +28,7 @@
 #if (__cplusplus >= 201103L)
 // C++11-only functions
 #include "colvar_geometricpath.h"
+#include "colvar_neuralnetworkcompute.h"
 #include <functional>
 #endif
 
@@ -1713,6 +1714,24 @@ public:
     virtual void apply_force(colvarvalue const &force);
 };
 
+class colvar::neuralNetwork
+  : public linearCombination
+{
+protected:
+    /// actual computation happens in this object
+    neuralnetworkCV::neuralNetworkCompute nn;
+    /// the index of nn output components
+    size_t m_output_index;
+    /// input vector of nn
+    std::vector<double> m_nn_input;
+public:
+    neuralNetwork(std::string const &conf);
+    virtual ~neuralNetwork();
+    virtual void calc_value();
+    virtual void calc_gradients();
+    virtual void apply_force(colvarvalue const &force);
+};
+
 #else // if the compiler doesn't support C++11
 
 class colvar::linearCombination
@@ -1776,6 +1795,13 @@ class colvar::azpathCV
 {
 public:
     azpathCV(std::string const &conf) : componentDisabled(conf) {}
+};
+
+class colvar::neuralNetwork
+  : public colvar::componentDisabled
+{
+public:
+    neuralNetwork(std::string const &conf) : componentDisabled(conf) {}
 };
 
 #endif // C++11 checking

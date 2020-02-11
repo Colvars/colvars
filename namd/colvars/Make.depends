@@ -330,6 +330,26 @@ obj/colvarcomp_rotations.o: \
 	colvars/src/colvar_arithmeticpath.h \
 	colvars/src/colvar_geometricpath.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_rotations.o $(COPTC) colvars/src/colvarcomp_rotations.cpp
+obj/colvarcomp_neuralnetwork.o: \
+	obj/.exists \
+	colvars/src/colvarcomp_neuralnetwork.cpp \
+	colvars/src/colvarcomp_neuralnetwork.h \
+	colvars/src/colvar.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarcomp.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarparse.h \
+	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_neuralnetwork.o $(COPTC) colvars/src/colvarcomp_neuralnetwork.cpp
+obj/colvar_neuralnetworkcompute.o: \
+	obj/.exists \
+	colvars/src/colvar_neuralnetworkcompute.cpp \
+	colvars/src/colvar_neuralnetworkcompute.h \
+	colvars/src/colvar.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarcomp.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarparse.h \
+	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvar_neuralnetworkcompute.o $(COPTC) colvars/src/colvar_neuralnetworkcompute.cpp
 obj/colvarcomp_volmaps.o: \
 	obj/.exists \
 	colvars/src/colvarcomp_volmaps.cpp \
