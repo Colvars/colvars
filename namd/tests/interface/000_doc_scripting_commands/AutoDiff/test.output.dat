@@ -259,7 +259,7 @@ Tcl command: cv config - Read configuration from the given string
 Parameters
 ----------
 
-conf : str - Configuration string
+conf : string - Configuration string
 
 
 ======================================================================
@@ -270,7 +270,7 @@ Tcl command: cv configfile - Read configuration from a file
 Parameters
 ----------
 
-conf_file (str) - Path to configuration file
+conf_file : string - Path to configuration file
 
 
 ======================================================================
@@ -313,7 +313,7 @@ Tcl command: cv help - Get the help string of the Colvars scripting interface
 Parameters
 ----------
 
-command : str - Get the help string of this specific command (optional)
+command : string - Get the help string of this specific command (optional)
 
 
 ======================================================================
@@ -324,7 +324,7 @@ Tcl command: cv list - Return a list of all variables or biases
 Parameters
 ----------
 
-keyword : str - "variables" (default) or "biases" (optional)
+param : string - "colvars" (default) or "biases" (optional)
 
 
 ======================================================================
@@ -335,23 +335,23 @@ Tcl command: cv listcommands - Return a list of command names
 ======================================================================
 cv_load command:
 
-Tcl command: cv load - Load a state file (requires matching configuration)
+Tcl command: cv load - Load data from a state file into all matching colvars and biases
 
 Parameters
 ----------
 
-state_file (str) - Path to existing state file
+prefix : string - Path to existing state file or input prefix
 
 
 ======================================================================
 cv_printframe command:
 
-Tcl command: cv printframe - Print the values that would be written to colvars.traj
+Tcl command: cv printframe - Return the values that would be written to colvars.traj
 
 ======================================================================
 cv_printframelabels command:
 
-Tcl command: cv printframelabels - Print the labels that would be written to colvars.traj
+Tcl command: cv printframelabels - Return the labels that would be written to colvars.traj
 
 ======================================================================
 cv_reset command:
@@ -366,12 +366,12 @@ Tcl command: cv resetindexgroups - Clear the index groups loaded so far, allowin
 ======================================================================
 cv_save command:
 
-Tcl command: cv save - Save state to a file
+Tcl command: cv save - Change the prefix of all output files and save them
 
 Parameters
 ----------
 
-state_file (str) - Path to state file
+prefix : string - Output prefix with trailing ".colvars.state" gets removed)
 
 
 ======================================================================
@@ -382,7 +382,7 @@ Tcl command: cv units - Get or set the current Colvars unit system
 Parameters
 ----------
 
-unit_keyword : str - The new unit system (optional)
+units : string - The new unit system (optional)
 
 
 ======================================================================
