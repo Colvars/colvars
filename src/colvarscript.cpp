@@ -28,7 +28,7 @@ colvarscript::colvarscript(colvarproxy *p)
    colvars(p->colvars),
    proxy_error(0)
 {
-  comm_names = NULL;
+  cmd_names = NULL;
   init_commands();
 #ifdef COLVARS_TCL
   // TODO put this in backend functions so we don't have to delete
@@ -43,9 +43,9 @@ colvarscript::colvarscript(colvarproxy *p)
 
 colvarscript::~colvarscript()
 {
-  if (comm_names) {
-    delete [] comm_names;
-    comm_names = NULL;
+  if (cmd_names) {
+    delete [] cmd_names;
+    cmd_names = NULL;
   }
 }
 
@@ -56,17 +56,17 @@ int colvarscript::init_commands()
     cvm::log("Called colvarcript::init_commands()\n");
   }
 
-  comm_help.resize(colvarscript::cv_n_commands);
-  comm_n_args_min.resize(colvarscript::cv_n_commands);
-  comm_n_args_max.resize(colvarscript::cv_n_commands);
-  comm_arghelp.resize(colvarscript::cv_n_commands);
-  comm_fns.resize(colvarscript::cv_n_commands);
+  cmd_help.resize(colvarscript::cv_n_commands);
+  cmd_n_args_min.resize(colvarscript::cv_n_commands);
+  cmd_n_args_max.resize(colvarscript::cv_n_commands);
+  cmd_arghelp.resize(colvarscript::cv_n_commands);
+  cmd_fns.resize(colvarscript::cv_n_commands);
 
-  if (comm_names) {
-    delete [] comm_names;
-    comm_names = NULL;
+  if (cmd_names) {
+    delete [] cmd_names;
+    cmd_names = NULL;
   }
-  comm_names = new char const * [colvarscript::cv_n_commands];
+  cmd_names = new char const * [colvarscript::cv_n_commands];
 
 #undef COLVARSCRIPT_COMMANDS_H // disable include guard
 #if defined(CVSCRIPT)
@@ -93,11 +93,11 @@ int colvarscript::init_command(colvarscript::command const &comm,
                                char const *arghelp,
                                int (*fn)(void *, int, unsigned char * const *))
 {
-  comm_str_map[std::string(name)] = comm;
-  comm_names[comm] = name;
-  comm_help[comm] = help;
-  comm_n_args_min[comm] = n_args_min;
-  comm_n_args_max[comm] = n_args_max;
+  cmd_str_map[std::string(name)] = comm;
+  cmd_names[comm] = name;
+  cmd_help[comm] = help;
+  cmd_n_args_min[comm] = n_args_min;
+  cmd_n_args_max[comm] = n_args_max;
   std::string const arghelp_str(arghelp);
   std::istringstream is(arghelp_str);
   std::string line;
@@ -106,9 +106,9 @@ int colvarscript::init_command(colvarscript::command const &comm,
       return cvm::error("Error: could not initialize help string for scripting "
                         "command \""+std::string(name)+"\".\n", BUG_ERROR);
     }
-    comm_arghelp[comm].push_back(line);
+    cmd_arghelp[comm].push_back(line);
   }
-  comm_fns[comm] = fn;
+  cmd_fns[comm] = fn;
   if (cvm::debug()) {
     cvm::log("Defined command \""+std::string(name)+"\", with help string:\n");
     cvm::log(get_command_help(name));
@@ -119,18 +119,18 @@ int colvarscript::init_command(colvarscript::command const &comm,
 
 std::string colvarscript::get_command_help(char const *cmd)
 {
-  if (comm_str_map.count(cmd) > 0) {
-    colvarscript::command const c = comm_str_map[std::string(cmd)];
-    std::string new_result(comm_help[c]+"\n");
-    if (comm_n_args_max[c] == 0) return new_result;
+  if (cmd_str_map.count(cmd) > 0) {
+    colvarscript::command const c = cmd_str_map[std::string(cmd)];
+    std::string new_result(cmd_help[c]+"\n");
+    if (cmd_n_args_max[c] == 0) return new_result;
     new_result += "\nParameters\n";
     new_result += "----------\n\n";
     size_t i;
-    for (i = 0; i < comm_n_args_min[c]; i++) {
-      new_result += comm_arghelp[c][i]+"\n\n";
+    for (i = 0; i < cmd_n_args_min[c]; i++) {
+      new_result += cmd_arghelp[c][i]+"\n\n";
     }
-    for (i = comm_n_args_min[c]; i < comm_n_args_max[c]; i++) {
-      new_result += comm_arghelp[c][i]+" (optional)\n\n";
+    for (i = cmd_n_args_min[c]; i < cmd_n_args_max[c]; i++) {
+      new_result += cmd_arghelp[c][i]+" (optional)\n\n";
     }
     return new_result;
   }
@@ -183,7 +183,7 @@ int colvarscript::run(int objc, unsigned char *const objv[])
       return COLVARSCRIPT_ERROR;
     }
     std::string const &subcmd(obj_to_str(objv[3]));
-    cmd_fn = get_comm_fn(std::string("colvar_")+subcmd);
+    cmd_fn = get_cmd_fn(std::string("colvar_")+subcmd);
     cmdline += std::string(" <name> ")+subcmd;
     if (objc > 4) {
       cmdline += " ...";
@@ -202,7 +202,7 @@ int colvarscript::run(int objc, unsigned char *const objv[])
       return COLVARSCRIPT_ERROR;
     }
     std::string const &subcmd(obj_to_str(objv[3]));
-    cmd_fn = get_comm_fn(std::string("bias_")+subcmd);
+    cmd_fn = get_cmd_fn(std::string("bias_")+subcmd);
     cmdline += std::string(" <name> ")+subcmd;
     if (objc > 4) {
       cmdline += " ...";
@@ -210,7 +210,7 @@ int colvarscript::run(int objc, unsigned char *const objv[])
 
   } else {
 
-    cmd_fn = get_comm_fn(std::string(std::string("cv_"+cmd)));
+    cmd_fn = get_cmd_fn(std::string(std::string("cv_"+cmd)));
     obj_for_cmd = reinterpret_cast<void *>(this);
 
     if (objc > 2) {
