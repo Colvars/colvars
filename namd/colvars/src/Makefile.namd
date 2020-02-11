@@ -18,6 +18,8 @@ COLVARSLIB = \
 	$(DSTDIR)/colvarcomp_protein.o \
 	$(DSTDIR)/colvarcomp_rotations.o \
 	$(DSTDIR)/colvarcomp_volmaps.o \
+	$(DSTDIR)/colvarcomp_neuralnetwork.o \
+	$(DSTDIR)/colvar_neuralnetworkcompute.o \
 	$(DSTDIR)/colvardeps.o \
 	$(DSTDIR)/colvargrid.o \
 	$(DSTDIR)/colvarmodule.o \
