@@ -154,9 +154,6 @@ colvarproxy_vmd::colvarproxy_vmd(Tcl_Interp *interp, VMDApp *v, int molid)
   colvars->setup_input();
   colvars->setup_output();
 
-  script = new colvarscript(this);
-  script->proxy_error = COLVARSCRIPT_OK;
-
   // Do we have scripts?
   // For now colvars depend on Tcl, but this may not always be the case
   // in the future
@@ -164,6 +161,9 @@ colvarproxy_vmd::colvarproxy_vmd(Tcl_Interp *interp, VMDApp *v, int molid)
   have_scripts = true;
 
   tcl_interp_ = reinterpret_cast<void *>(interp);
+  // Need to set tcl_interp_ before constructing colvarscript
+  script = new colvarscript(this);
+  script->proxy_error = COLVARSCRIPT_OK;
 
   // User-scripted forces are not really useful in VMD, but we accept them
   // for compatibility with NAMD scripts

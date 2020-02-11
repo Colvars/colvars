@@ -92,7 +92,7 @@ proc cv_dashboard {} {
     }
     # Try to obtain actual molid, if that fails default to top
     if [catch { set ::cv_dashboard::mol [cv molid]} ] {
-      set ::cv_dashboard::mol [molinfo top]]
+      set ::cv_dashboard::mol [molinfo top]
     }
   }
 
