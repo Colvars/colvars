@@ -116,7 +116,7 @@ public:
   /// Get names of all commands
   inline char const **get_command_names() const
   {
-    return comm_names;
+    return cmd_names;
   }
 
   /// Get help string for a command
@@ -153,7 +153,7 @@ private:
                           void *pobj,
                           int objc, unsigned char * const *objv)
   {
-    return (*(comm_fns[c]))(pobj, objc, objv);
+    return (*(cmd_fns[c]))(pobj, objc, objv);
   }
 
 public: // TODO this function will be removed soon
@@ -165,33 +165,33 @@ public: // TODO this function will be removed soon
 private: // TODO
 
   /// Internal identifiers of command strings
-  std::map<std::string, command> comm_str_map;
+  std::map<std::string, command> cmd_str_map;
 
-  /// Inverse of comm_str_map (to be exported outside this class)
-  char const **comm_names;
+  /// Inverse of cmd_str_map (to be exported outside this class)
+  char const **cmd_names;
 
   /// Help strings for each command
-  std::vector<std::string> comm_help;
+  std::vector<std::string> cmd_help;
 
   /// Minimum number of arguments for each command
-  std::vector<size_t> comm_n_args_min;
+  std::vector<size_t> cmd_n_args_min;
 
   /// Maximum number of arguments for each command
-  std::vector<size_t> comm_n_args_max;
+  std::vector<size_t> cmd_n_args_max;
 
   /// Help strings for each command argument
-  std::vector< std::vector<std::string> > comm_arghelp;
+  std::vector< std::vector<std::string> > cmd_arghelp;
 
   /// Implementations of each command
-  std::vector<int (*)(void *, int, unsigned char * const *)> comm_fns;
+  std::vector<int (*)(void *, int, unsigned char * const *)> cmd_fns;
 
   /// Get a pointer to the implementation of the given command
-  inline int (*get_comm_fn(std::string const &cmd_key))(void *,
+  inline int (*get_cmd_fn(std::string const &cmd_key))(void *,
                                                         int,
                                                         unsigned char * const *)
   {
-    if (comm_str_map.count(cmd_key) > 0) {
-      return comm_fns[comm_str_map[cmd_key]];
+    if (cmd_str_map.count(cmd_key) > 0) {
+      return cmd_fns[cmd_str_map[cmd_key]];
     }
     return NULL;
   }
