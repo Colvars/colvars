@@ -1139,17 +1139,16 @@ int colvarmodule::reset()
 
 int colvarmodule::setup_input()
 {
-  std::string restart_in_name("");
-
   // read the restart configuration, if available
   if (proxy->input_prefix().size()) {
     // read the restart file
-    restart_in_name = proxy->input_prefix();
+    std::string restart_in_name(proxy->input_prefix()+
+                                std::string(".colvars.state"));
     std::ifstream input_is(restart_in_name.c_str());
     if (!input_is.good()) {
-      // try by adding the suffix
+      // try without the suffix
       input_is.clear();
-      restart_in_name = restart_in_name+std::string(".colvars.state");
+      restart_in_name = proxy->input_prefix();
       input_is.open(restart_in_name.c_str());
     }
 
@@ -1224,7 +1223,7 @@ int colvarmodule::setup_output()
 std::string colvarmodule::state_file_prefix(char const *filename)
 {
   std::string const filename_str(filename);
-  std::string const prefix = 
+  std::string const prefix =
     filename_str.substr(0, filename_str.find(".colvars.state"));
   if (prefix.size() == 0) {
     cvm::error("Error: invalid filename/prefix value \""+filename_str+"\".",
