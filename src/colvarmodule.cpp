@@ -1221,6 +1221,20 @@ int colvarmodule::setup_output()
 }
 
 
+std::string colvarmodule::state_file_prefix(char const *filename)
+{
+  std::string const filename_str(filename);
+  std::string const prefix = 
+    filename_str.substr(0, filename_str.find(".colvars.state"));
+  if (prefix.size() == 0) {
+    cvm::error("Error: invalid filename/prefix value \""+filename_str+"\".",
+               INPUT_ERROR);
+  }
+  return prefix;
+}
+
+
+
 std::istream & colvarmodule::read_restart(std::istream &is)
 {
   bool warn_total_forces = false;
