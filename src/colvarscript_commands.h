@@ -12,7 +12,7 @@
 
 // The following is a complete definition of the scripting API.
 
-// The CVSCRIPT macro is used in four distinct contexts of use of this file:
+// The CVSCRIPT macro is used in four distinct contexts:
 // 1) Expand to the functions' prototypes (when included generically)
 // 2) List colvarscript::command entries (when included in colvarscript.h)
 // 3) Implement colvarscript::init() (when included in colvarscript.cpp)
@@ -34,10 +34,10 @@
 // ARGS = multi-line string literal describing each parameter; each line
 //        follows the format "name : type - description"
 
-// FN_BODY = the implementation of the function; this should be a thin layer
-//           over the existing classes; the "script" pointer to the
-//           colvarscript object is already set by the CVSCRIPT_COMM_FN macro;
-//           see also the functions in colvarscript_commands_util.h.
+// FN_BODY = the implementation of the function; this should be a thin wrapper
+//           over existing functions; the "script" pointer to the colvarscript
+//           object is already set by the CVSCRIPT_COMM_FN macro; see also the
+//           functions in colvarscript_commands.h.
 
 #ifndef CVSCRIPT_COMM_FNAME
 #define CVSCRIPT_COMM_FNAME(COMM) cvscript_ ## COMM
@@ -89,7 +89,7 @@ CVSCRIPT(cv_addenergy,
 CVSCRIPT(cv_config,
          "Read configuration from the given string",
          1, 1,
-         "conf : str - Configuration string",
+         "conf : string - Configuration string",
          char const *conf_str =
            script->obj_to_str(script->get_cmd_arg<>(0, objc, objv));
          std::string const conf(conf_str);
@@ -103,7 +103,7 @@ CVSCRIPT(cv_config,
 CVSCRIPT(cv_configfile,
          "Read configuration from a file",
          1, 1,
-         {"conf_file (str) - Path to configuration file"},
+         {"conf_file : string - Path to configuration file"},
          if (script->module()->read_config_file(script->obj_to_str(objv[2])) == COLVARS_OK) {
            return COLVARS_OK;
          } else {
@@ -165,7 +165,7 @@ CVSCRIPT(cv_getenergy,
 CVSCRIPT(cv_help,
          "Get the help string of the Colvars scripting interface",
          0, 1,
-         "command : str - Get the help string of this specific command",
+         "command : string - Get the help string of this specific command",
          unsigned char *const cmdobj = script->get_cmd_arg<>(0, objc, objv);
          if (cmdobj) {
            std::string const cmdstr(script->obj_to_str(cmdobj));
@@ -186,7 +186,7 @@ CVSCRIPT(cv_help,
 CVSCRIPT(cv_list,
          "Return a list of all variables or biases",
          0, 1,
-         "keyword : str - \"variables\" (default) or \"biases\"",
+         "param : string - \"colvars\" (default) or \"biases\"",
          std::string res;
          unsigned char *const kwarg = script->get_cmd_arg<>(0, objc, objv);
          std::string const kwstr = kwarg ? script->obj_to_str(kwarg) :
@@ -230,9 +230,9 @@ CVSCRIPT(cv_listcommands,
          )
 
 CVSCRIPT(cv_load,
-         "Load a state file (requires matching configuration)",
+         "Load data from a state file into all matching colvars and biases",
          1, 1,
-         {"state_file (str) - Path to existing state file"},
+         {"prefix : string - Path to existing state file or input prefix"},
          script->proxy()->input_prefix() = script->obj_to_str(objv[2]);
          if (script->module()->setup_input() == COLVARS_OK) {
            return COLVARS_OK;
@@ -243,7 +243,7 @@ CVSCRIPT(cv_load,
          )
 
 CVSCRIPT(cv_printframe,
-         "Print the values that would be written to colvars.traj",
+         "Return the values that would be written to colvars.traj",
          0, 0,
          "",
          std::ostringstream os;
@@ -253,7 +253,7 @@ CVSCRIPT(cv_printframe,
          )
 
 CVSCRIPT(cv_printframelabels,
-         "Print the labels that would be written to colvars.traj",
+         "Return the labels that would be written to colvars.traj",
          0, 0,
          "",
          std::ostringstream os;
@@ -279,10 +279,12 @@ CVSCRIPT(cv_resetindexgroups,
          )
 
 CVSCRIPT(cv_save,
-         "Save state to a file",
+         "Change the prefix of all output files and save them",
          1, 1,
-         {"state_file (str) - Path to state file"},
-         script->proxy()->output_prefix() = script->obj_to_str(objv[2]);
+         {"prefix : string - Output prefix with trailing \".colvars.state\" gets removed)"},
+         std::string const input(script->obj_to_str(objv[2]));
+         script->proxy()->output_prefix() =
+           input.substr(0, input.find(".colvars.state"));
          int error = 0;
          error |= script->module()->setup_output();
          error |= script->module()->write_restart_file(script->module()->output_prefix()+
@@ -294,7 +296,7 @@ CVSCRIPT(cv_save,
 CVSCRIPT(cv_units,
          "Get or set the current Colvars unit system",
          0, 1,
-         "unit_keyword : str - The new unit system",
+         "units : string - The new unit system",
          char const *argstr =
            script->obj_to_str(script->get_cmd_arg<>(0, objc, objv));
          if (argstr) {
@@ -333,7 +335,9 @@ CVSCRIPT(cv_version,
          script->set_result_str(COLVARS_VERSION);
          return COLVARS_OK;
          )
-// This guard avoids compiling the function bodies in colvarscript_commands.o
+
+// This guard allows compiling colvar and bias function bodies in their
+// respecitve files instead of colvarscript_commands.o
 #ifndef COLVARSCRIPT_COMMANDS_GLOBAL
 #include "colvarscript_commands_colvar.h"
 #include "colvarscript_commands_bias.h"
