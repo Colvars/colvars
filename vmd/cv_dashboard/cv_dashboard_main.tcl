@@ -211,8 +211,6 @@ proc ::cv_dashboard::refresh_table {} {
     }
   }
 
-  update_shown_gradients
-
   update_frame internal $::cv_dashboard::mol w
 }
 
