@@ -91,7 +91,7 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
 
 colvarmodule * colvarmodule::main()
 {
-  return proxy->colvars;
+  return proxy ? proxy->colvars : NULL;
 }
 
 
