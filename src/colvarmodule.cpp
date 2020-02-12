@@ -1695,6 +1695,7 @@ void colvarmodule::clear_error()
   proxy->smp_lock();
   errorCode = COLVARS_OK;
   proxy->smp_unlock();
+  proxy->clear_error_msgs();
 }
 
 

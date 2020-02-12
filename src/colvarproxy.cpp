@@ -713,6 +713,28 @@ size_t colvarproxy::restart_frequency()
 }
 
 
+void colvarproxy::add_error_msg(std::string const &message)
+{
+  std::istringstream is(message);
+  std::string line;
+  while (std::getline(is, line)) {
+    error_output += line+"\n";
+  }
+}
+
+
+void colvarproxy::clear_error_msgs()
+{
+  error_output.clear();
+}
+
+
+std::string const & colvarproxy::get_error_msgs()
+{
+  return error_output;
+}
+
+
 int colvarproxy::get_version_from_string(char const *version_string)
 {
   std::string const v(version_string);

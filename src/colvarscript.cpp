@@ -454,10 +454,14 @@ int tcl_run_colvarscript_command(ClientData clientData,
     return TCL_ERROR;
   }
 
+  cvm::clear_error();
+
   int retval = script->run(objc,
                            reinterpret_cast<unsigned char * const *>(objv));
 
-  Tcl_SetResult(interp, const_cast<char *>(script->result.c_str()),
+  std::string result = proxy->get_error_msgs() + script->result;
+
+  Tcl_SetResult(interp, const_cast<char *>(result.c_str()),
                 TCL_VOLATILE);
 
   return (retval == COLVARS_OK) ? TCL_OK : TCL_ERROR;

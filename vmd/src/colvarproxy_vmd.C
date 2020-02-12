@@ -53,7 +53,7 @@ int tcl_colvars(ClientData clientdata, Tcl_Interp *interp,
 
     // Clear non-fatal errors from previous commands
     cvm::clear_error();
-    proxy->error_output.clear();
+
     tcl_result.clear();
 
     script_retval =
@@ -61,7 +61,7 @@ int tcl_colvars(ClientData clientdata, Tcl_Interp *interp,
                          reinterpret_cast<unsigned char *const *>(objv));
     // append the error messages from colvarscript to the error messages
     // caught by the proxy
-    tcl_result = proxy->error_output + proxy->script->result;
+    tcl_result = proxy->get_error_msgs() + proxy->script->result;
     Tcl_SetResult(interp, (char *) tcl_result.c_str(), TCL_VOLATILE);
 
     if (proxy->delete_requested()) {
@@ -127,11 +127,10 @@ colvarproxy_vmd::colvarproxy_vmd(Tcl_Interp *interp, VMDApp *v, int molid)
   : vmd(v),
     vmdmolid(molid),
 #if defined(VMDTKCON)
-    msgColvars("colvars: ", VMDCON_INFO),
+    msgColvars("colvars: ", VMDCON_INFO)
 #else
-    msgColvars("colvars: "),
+    msgColvars("colvars: ")
 #endif
-    input_prefix_str(""), output_prefix_str("")
 {
   version_int = get_version_from_string(COLVARPROXY_VERSION);
   b_simulation_running = false;

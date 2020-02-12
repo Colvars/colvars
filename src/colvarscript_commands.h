@@ -138,10 +138,8 @@ CVSCRIPT(cv_frame,
          } else {
            // Failure of this function does not trigger an error, but
            // returns nonzero, to let scripts detect available frames
-
-           int error = script->proxy()->set_frame(strtol(arg, NULL, 10));
-           script->set_result_str(cvm::to_str(error == COLVARS_OK ? 0 : -1));
-           return COLVARS_OK;
+           int const f = strtol(const_cast<char *>(arg), NULL, 10);
+           return script->proxy()->set_frame(f);
          }
          )
 
