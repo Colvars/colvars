@@ -221,7 +221,6 @@ public:
 
   static void clear_error();
 
-
   /// Current step number
   static step_number it;
   /// Starting step number for this run

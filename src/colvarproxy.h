@@ -698,13 +698,11 @@ public:
   /// Print a message to the main log
   virtual void log(std::string const &message) = 0;
 
-  /// Print a message to the main log and let the rest of the program handle the error
+  /// Print a message to the main log and/or let the host code know about it
   virtual void error(std::string const &message) = 0;
 
-  /// Print a message to the main log and exit with error code
-  virtual void fatal_error(std::string const &message) = 0;
 
-  /// \brief Restarts will be written each time this number of steps has passed
+  /// Restarts will be written each time this number of steps has passed
   virtual size_t restart_frequency();
 
   /// Whether a simulation is running (warn against irrecovarable errors)

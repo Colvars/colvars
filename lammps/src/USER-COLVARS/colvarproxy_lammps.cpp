@@ -93,8 +93,8 @@ colvarproxy_lammps::colvarproxy_lammps(LAMMPS_NS::LAMMPS *lmp,
 
   // check if it is possible to save output configuration
   if ((!output_prefix_str.size()) && (!restart_output_prefix_str.size())) {
-    fatal_error("Error: neither the final output state file or "
-                "the output restart file could be defined, exiting.\n");
+    error("Error: neither the final output state file or "
+          "the output restart file could be defined, exiting.\n");
   }
 
   // try to extract a restart prefix from a potential restart command.
@@ -321,13 +321,6 @@ void colvarproxy_lammps::log(std::string const &message)
 
 
 void colvarproxy_lammps::error(std::string const &message)
-{
-  // In LAMMPS, all errors are fatal
-  fatal_error(message);
-}
-
-
-void colvarproxy_lammps::fatal_error(std::string const &message)
 {
   log(message);
   _lmp->error->one(FLERR,
