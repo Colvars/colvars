@@ -53,8 +53,8 @@ char const *cvscript_help(char const *c)
     }                                                                   \
     colvarscript *script = colvarscript_obj();                          \
     script->clear_str_result();                                         \
-    if (script->check_cmd_nargs<>(#COMM,                                \
-                                  objc, N_ARGS_MIN, N_ARGS_MAX) !=      \
+    if (script->check_module_cmd_nargs(#COMM,                           \
+                                       objc, N_ARGS_MIN, N_ARGS_MAX) != \
         COLVARSCRIPT_OK) {                                              \
       return COLVARSCRIPT_ERROR;                                        \
     }                                                                   \

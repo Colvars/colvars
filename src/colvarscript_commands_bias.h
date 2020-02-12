@@ -22,7 +22,7 @@ CVSCRIPT(bias_bincount,
          "index : integer - Grid index; defaults to current bin",
          int index = this_bias->current_bin();
          char const *indexarg =
-           script->obj_to_str(script->get_cmd_arg<colvarscript::use_bias>(0, objc, objv));
+           script->obj_to_str(script->get_bias_cmd_arg(0, objc, objv));
          if (indexarg) {
            std::string const param(indexarg);
            if (!(std::istringstream(param) >> index)) {
