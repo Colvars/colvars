@@ -169,7 +169,7 @@ cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
     group->check_keywords(group_conf, group_key);
     if (cvm::get_error()) {
       cvm::error("Error parsing definition for atom group \""+
-                 std::string(group_key)+"\"\n.", INPUT_ERROR);
+                 std::string(group_key)+"\".", INPUT_ERROR);
     }
     cvm::decrease_depth();
 

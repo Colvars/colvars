@@ -12,7 +12,6 @@ proc run_command { args } {
     set error_code [catch { {*}$args } error_output]
     if { ${error_code} != 0 } {
         puts ${error_log} "Command \"[lindex ${args} 0]\" returned the following errors:\n${error_output}"
-        puts ${error_log} ""
     }
     return ${error_code}
 }
