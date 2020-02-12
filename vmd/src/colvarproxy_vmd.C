@@ -17,6 +17,10 @@
 #include "Inform.h"
 #include "utilities.h"
 
+#if !defined(COLVARS_TCL)
+#define COLVARS_TCL
+#endif
+
 #include "colvarmodule.h"
 #include "colvarscript.h"
 #include "colvaratoms.h"
@@ -25,101 +29,36 @@
 #include "colvarproxy_vmd.h"
 
 
+namespace {
+  // Keep pointers to relevant runtime objects
+  VMDApp *colvars_vmd_ptr = NULL;
+  colvarproxy_vmd *colvarproxy_vmd_ptr = NULL;
+}
 
-int tcl_colvars(ClientData clientdata, Tcl_Interp *interp,
+
+int tcl_colvars(ClientData clientData, Tcl_Interp *interp,
                 int objc, Tcl_Obj *const objv[])
 {
-  static colvarproxy_vmd *proxy = NULL;
-  static std::string tcl_result;
-  int script_retval;
-
-  if (proxy != NULL) {
-
-    if (objc >= 2 && !strcmp(Tcl_GetString(objv[1]), "molid")) {
-       if (objc == 2) {
-         int molid = -1;
-         proxy->get_molid(molid);
-         Tcl_SetResult(interp, const_cast<char *>(cvm::to_str(molid).c_str()),
-                       TCL_VOLATILE);
-         return TCL_OK;
-       } else {
-        Tcl_SetResult(interp, (char *) "Colvars module already created:"
-                                       " type \"cv\" for a list of "
-                                       "arguments.",
-                      TCL_STATIC);
-        return TCL_ERROR;
-      }
-    }
-
-    // Clear non-fatal errors from previous commands
-    cvm::clear_error();
-
-    tcl_result.clear();
-
-    script_retval =
-      proxy->script->run(objc,
-                         reinterpret_cast<unsigned char *const *>(objv));
-    // append the error messages from colvarscript to the error messages
-    // caught by the proxy
-    tcl_result = proxy->get_error_msgs() + proxy->script->result;
-    Tcl_SetResult(interp, (char *) tcl_result.c_str(), TCL_VOLATILE);
-
-    if (proxy->delete_requested()) {
-      Tcl_SetResult(interp,
-                    (char *) "Deleting Colvars instance: to recreate, "
-                    "use cv molid <molecule id>",
-                    TCL_STATIC);
-      delete proxy;
-      proxy = NULL;
-      return TCL_OK;
-    }
-
-    if (cvm::get_error_bit(FATAL_ERROR)) {
-      // Fatal error: clean up cvm object and proxy
-      delete proxy;
-      proxy = NULL;
-      return TCL_ERROR;
-    }
-
-    if (script_retval == COLVARSCRIPT_OK && !cvm::get_error()) {
-      return TCL_OK;
-    } else {
-      return TCL_ERROR;
-    }
-
-  } else {
-
-    VMDApp *vmd = (VMDApp *) clientdata;
-    if (vmd == NULL) {
-      Tcl_SetResult(interp, (char *) "Error: cannot find VMD main object.",
-                    TCL_STATIC);
-      return TCL_ERROR;
-    }
-
-    if (objc >= 3) {
-      // require a molid to create the module
-      if (!strcmp(Tcl_GetString(objv[1]), "molid")) {
-        int molid = -1;
-        if (!strcmp(Tcl_GetString(objv[2]), "top")) {
-          molid = vmd->molecule_top();
-        } else {
-          Tcl_GetIntFromObj(interp, objv[2], &molid);
-        }
-        if (vmd->molecule_valid_id(molid)) {
-          proxy = new colvarproxy_vmd(interp, vmd, molid);
-          return TCL_OK;
-        } else {
-          Tcl_SetResult(interp, (char *) "Error: molecule not found.",
-                        TCL_STATIC);
-          return TCL_ERROR;
-        }
-      }
-    }
+  // Get pointer to VMD object
+  if (colvars_vmd_ptr == NULL) {
+    colvars_vmd_ptr = (VMDApp *) clientData;
   }
+  return tcl_run_colvarscript_command(clientData, interp, objc, objv);
+}
 
-  Tcl_SetResult(interp, (char *) "First, setup the Colvars module with: "
-                                 "cv molid <molecule id>", TCL_STATIC);
-  return TCL_ERROR;
+
+int tcl_colvars_vmd_init(Tcl_Interp *interp, int molid_input)
+{
+  VMDApp *const vmd = colvars_vmd_ptr;
+  int molid = molid_input >= 0 ? molid_input : vmd->molecule_top();
+  if (vmd->molecule_valid_id(molid)) {
+    colvarproxy_vmd_ptr = new colvarproxy_vmd(interp, vmd, molid);
+    return (cvm::get_error() == COLVARS_OK) ? TCL_OK : TCL_ERROR;
+  } else {
+    Tcl_SetResult(interp, (char *) "Error: molecule not found.",
+                  TCL_STATIC);
+    return TCL_ERROR;
+  }
 }
 
 
