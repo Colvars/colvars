@@ -127,37 +127,38 @@ int colvarbias::init_dependencies() {
     init_feature(f_cvb_awake, "awake", f_type_static);
     require_feature_self(f_cvb_awake, f_cvb_active);
 
-    init_feature(f_cvb_apply_force, "apply force", f_type_user);
+    init_feature(f_cvb_apply_force, "apply_force", f_type_user);
     require_feature_children(f_cvb_apply_force, f_cv_gradient);
 
-    init_feature(f_cvb_bypass_ext_lagrangian, "bypass extended-Lagrangian coordinates", f_type_user);
+    init_feature(f_cvb_bypass_ext_lagrangian, "bypass_extended_Lagrangian_coordinates", f_type_user);
+
     // The exclusion below prevents the inconsistency where biasing forces are applied onto
     // the actual colvar, while total forces are measured on the extended coordinate
     exclude_feature_self(f_cvb_bypass_ext_lagrangian, f_cvb_get_total_force);
 
-    init_feature(f_cvb_get_total_force, "obtain total force", f_type_dynamic);
+    init_feature(f_cvb_get_total_force, "obtain_total_force", f_type_dynamic);
     require_feature_children(f_cvb_get_total_force, f_cv_total_force);
 
-    init_feature(f_cvb_output_acc_work, "output accumulated work", f_type_user);
+    init_feature(f_cvb_output_acc_work, "output_accumulated_work", f_type_user);
     require_feature_self(f_cvb_output_acc_work, f_cvb_apply_force);
 
-    init_feature(f_cvb_history_dependent, "history-dependent", f_type_static);
+    init_feature(f_cvb_history_dependent, "history_dependent", f_type_static);
 
-    init_feature(f_cvb_time_dependent, "time-dependent", f_type_static);
+    init_feature(f_cvb_time_dependent, "time_dependent", f_type_static);
 
-    init_feature(f_cvb_scalar_variables, "require scalar variables", f_type_static);
+    init_feature(f_cvb_scalar_variables, "require_scalar_variables", f_type_static);
     require_feature_children(f_cvb_scalar_variables, f_cv_scalar);
 
-    init_feature(f_cvb_calc_pmf, "calculate a PMF", f_type_static);
+    init_feature(f_cvb_calc_pmf, "calculate_a_PMF", f_type_static);
 
-    init_feature(f_cvb_calc_ti_samples, "calculate TI samples", f_type_dynamic);
+    init_feature(f_cvb_calc_ti_samples, "calculate_TI_samples", f_type_dynamic);
     require_feature_self(f_cvb_calc_ti_samples, f_cvb_get_total_force);
     require_feature_children(f_cvb_calc_ti_samples, f_cv_grid);
 
-    init_feature(f_cvb_write_ti_samples, "write TI samples ", f_type_user);
+    init_feature(f_cvb_write_ti_samples, "write_TI_samples_", f_type_user);
     require_feature_self(f_cvb_write_ti_samples, f_cvb_calc_ti_samples);
 
-    init_feature(f_cvb_write_ti_pmf, "write TI PMF", f_type_user);
+    init_feature(f_cvb_write_ti_pmf, "write_TI_PMF", f_type_user);
     require_feature_self(f_cvb_write_ti_pmf, f_cvb_calc_ti_samples);
 
     // check that everything is initialized
