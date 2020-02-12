@@ -240,6 +240,23 @@ CVSCRIPT(cv_load,
          }
          )
 
+CVSCRIPT(cv_molid,
+         "Get or set the molecule ID on which Colvars is defined (VMD only)",
+         0, 1,
+         "molid : integer - Molecule ID; -1 means undefined",
+         char const *arg =
+           script->obj_to_str(script->get_module_cmd_arg(0, objc, objv));
+         if (arg == NULL) {
+           int molid = -1;
+           script->proxy()->get_molid(molid);
+           script->set_result_str(cvm::to_str(molid));
+           return COLVARS_OK;
+         } else {
+           script->add_error_msg("Error: To change the molecule ID in VMD, use cv delete first.");
+           return COLVARS_NOT_IMPLEMENTED;
+         }
+         )
+
 CVSCRIPT(cv_printframe,
          "Return the values that would be written to colvars.traj",
          0, 0,

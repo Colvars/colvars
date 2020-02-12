@@ -424,22 +424,42 @@ const char * get_colvarscript_result()
 
 #if defined(COLVARS_TCL)
 
-/// Run the script API via Tcl command-line interface
-/// \param clientData Not used
-/// \param my_interp Pointer to Tcl_Interp object (read from Colvars if NULL)
-/// \param objc Number of Tcl command parameters
-/// \param objv Array of command parameters
-/// \return Result of the script command
+#if defined(VMDTCL)
+// Function used by VMD to set up the module
+int tcl_colvars_vmd_init(Tcl_Interp *interp, int molid);
+#endif
+
 extern "C"
-int tcl_run_colvarscript_command(ClientData clientData,
+int tcl_run_colvarscript_command(ClientData /* clientData */,
                                  Tcl_Interp *my_interp,
                                  int objc, Tcl_Obj *const objv[])
 {
   colvarmodule *colvars = cvm::main();
 
   if (!colvars) {
-    Tcl_SetResult(my_interp, const_cast<char *>("Colvars module not active"),
-                  TCL_VOLATILE);
+#if defined(VMDTCL)
+    if (objc >= 3) {
+      // require a molid to create the module
+      if (!strcmp(Tcl_GetString(objv[1]), "molid")) {
+        int molid = -1;
+        if (strcmp(Tcl_GetString(objv[2]), "top")) {
+          // If this is not "top", get the integer value
+          Tcl_GetIntFromObj(my_interp, objv[2], &molid);
+        }
+        return tcl_colvars_vmd_init(my_interp, molid);
+      } else {
+        // TODO allow calling cv help after this
+        Tcl_SetResult(my_interp, (char *) "Syntax error.", TCL_STATIC);
+        return TCL_ERROR;
+      }
+    }
+    Tcl_SetResult(my_interp, (char *) "First, setup the Colvars module with: "
+                  "cv molid <molecule id>", TCL_STATIC);
+#else
+    Tcl_SetResult(my_interp,
+                  const_cast<char *>("Error: Colvars module not yet initialized"),
+                  TCL_STATIC);
+#endif
     return TCL_ERROR;
   }
 
@@ -463,6 +483,18 @@ int tcl_run_colvarscript_command(ClientData clientData,
 
   Tcl_SetResult(interp, const_cast<char *>(result.c_str()),
                 TCL_VOLATILE);
+
+  if (proxy->delete_requested() || cvm::get_error_bit(FATAL_ERROR)) {
+    if (proxy->delete_requested() && !proxy->simulation_running()) {
+      // Running in VMD
+      Tcl_SetResult(interp,
+                    const_cast<char *>("Deleting Colvars module"
+                                       ": to recreate, use cv molid <molecule ID>"),
+                    TCL_STATIC);
+    }
+    delete proxy;
+    proxy = NULL;
+  }
 
   return (retval == COLVARS_OK) ? TCL_OK : TCL_ERROR;
 }
