@@ -134,7 +134,7 @@ public:
   /// Use scripting language to get the string representation of an object
   inline char const *obj_to_str(unsigned char *const obj)
   {
-    return proxy_->script_obj_to_str(obj);
+    return (obj == NULL ? NULL : proxy_->script_obj_to_str(obj));
   }
 
   /// Get names of all commands
