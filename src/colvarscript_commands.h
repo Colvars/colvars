@@ -103,7 +103,7 @@ CVSCRIPT(cv_config,
 CVSCRIPT(cv_configfile,
          "Read configuration from a file",
          1, 1,
-         {"conf_file : string - Path to configuration file"},
+         "conf_file : string - Path to configuration file",
          if (script->module()->read_config_file(script->obj_to_str(objv[2])) == COLVARS_OK) {
            return COLVARS_OK;
          } else {
@@ -229,7 +229,7 @@ CVSCRIPT(cv_listcommands,
 CVSCRIPT(cv_load,
          "Load data from a state file into all matching colvars and biases",
          1, 1,
-         {"prefix : string - Path to existing state file or input prefix"},
+         "prefix : string - Path to existing state file or input prefix",
          script->proxy()->input_prefix() =
            cvm::state_file_prefix(script->obj_to_str(objv[2]));
          if (script->module()->setup_input() == COLVARS_OK) {
@@ -279,7 +279,7 @@ CVSCRIPT(cv_resetindexgroups,
 CVSCRIPT(cv_save,
          "Change the prefix of all output files and save them",
          1, 1,
-         {"prefix : string - Output prefix with trailing \".colvars.state\" gets removed)"},
+         "prefix : string - Output prefix with trailing \".colvars.state\" gets removed)",
          std::string const prefix =
            cvm::state_file_prefix(script->obj_to_str(objv[2]));
          script->proxy()->output_prefix() = prefix;
