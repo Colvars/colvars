@@ -3246,6 +3246,113 @@ colvar \{\\
 \}
 \end{cvexampleinput}
 
+\cvsubsec{Dense neural network in CV space}{sec:cvc_neuralNetwork}
+
+This colvar computes a non-linear combination of other scalar colvar components, and the non-linear transformation is defined by a dense neural network.
+
+\begin{figure}[!ht]
+	\centering
+	\cvnamdugonly{\includegraphics[width=9cm]{figures/dense_nn}}
+	\cvvmdugonly{\includegraphics[width=9cm]{pictures/dense_nn}}
+	\cvrefmanonly{\ifdefined\HCode{\HCode{<img class="neural_network" src="dense_nn.png" alt="Dense neural network">}}\else\includegraphics[width=9cm]{dense_nn}\fi}
+	\caption[Graphical representation of an example dense neural network.]{Graphical representation of an example dense neural network with two hidden layers $y_1$ and $y_2$. Both the input layer $x$ and the output layer $z$ have two nodes. The input nodes can be any existing scalar CVs.
+	}
+	\label{fig:dense_nn}
+\end{figure}
+
+The output of the $j$-th node of a $k$-th layer that has $N_k$ nodes is computed by
+
+\begin{equation}
+y_{k,j}=f_{k}\left(\sum_{i=1}^{N_{k-1}} w_{(k,j),(k-1,i)} y_{k-1,i} + b_{k,j}\right),
+\end{equation}
+
+where $f_{k}$ is the activation function of the $k$-th layer, $w_{(k,j),(k-1,i)}$ is the weight of $j$-th node with respect to the $i$-th output of previous layer, and $b_{k,j}$ is the bias of $j$-th node of $k$-th layer.
+
+\cvsubsubsec{\texttt{NeuralNetwork}: Dense neural network.}{sec:cvc_neuralNetwork}
+
+\labelkey{colvar|NeuralNetwork}
+
+\begin{cvcoptions}
+	
+\item %
+\key
+{output\_component}{%
+	\texttt{NeuralNetwork}}{%
+	The $j$-th node of the output or the last layer.}{%
+	integer starting from 0}{%
+	specify the output node to be used as the value of this CV.
+}
+
+\item %
+\key
+{layer$i$\_WeightsFile}{%
+	\texttt{NeuralNetwork}}{%
+	The weights of layer $i$}{%
+	UNIX filename}{%
+	\texttt{layer1\_WeightsFile}, \texttt{layer2\_WeightsFile}, $\cdots$, \texttt{layer$i$\_WeightsFile} are used to specify the weights of the first, second, $\cdots$, $i$-th layers, respectively. The weights are stored in a plain text file, where the number at $k$-th row and $l$-th column represents the weight of $k$-th (output) node at $i$-th layer with respect to the $l$-th (input) node at $i-1$ layer.
+}
+
+\item %
+\key
+{layer$i$\_BiasesFile}{%
+	\texttt{NeuralNetwork}}{%
+	The biases of layer $i$}{%
+	UNIX filename}{%
+	\texttt{layer1\_BiasesFile}, \texttt{layer2\_BiasesFile}, $\cdots$, \texttt{layer$i$\_BiasesFile} are used to specify the biases of the first, second, $\cdots$, $i$-th layers, respectively. The biases are stored in a plain text file with only one column, where the number at $k$-th row represents the bias of $k$-th (output) node at $i$-th layer.
+}
+
+\item %
+\key
+{layer$i$\_activation}{%
+	\texttt{NeuralNetwork}}{%
+	The activation function of layer $i$}{%
+	\texttt{tanh}, \texttt{linear} or \texttt{sigmoid}}{%
+	Select the activation function for $i$-th layer. Available choices for activation function are \texttt{tanh}, \texttt{linear} and \texttt{sigmoid}.
+}
+	
+\end{cvcoptions}
+
+An example of configuration using \texttt{NeuralNetwork} is shown below:
+
+\bigskip
+{%
+% verbatim can't appear within commands
+\noindent\ttfamily colvar \{\\
+\-~~\# Define a neural network with 2 layers\\
+\-~~\# The inputs are two torsion angles\\
+\-~~\# and the first node at the output layer is used as the final CV\\
+\-~~name nn\_output\_1\\
+\-~~NeuralNetwork \{\\
+\-~~~~output\_component 0\\
+\-~~~~layer1\_WeightsFile      dense\_1\_weights.txt\\
+\-~~~~layer1\_BiasesFile       dense\_1\_biases.txt\\
+\-~~~~layer1\_activation       tanh\\
+\-~~~~layer2\_WeightsFile      dense\_2\_weights.txt\\
+\-~~~~layer2\_BiasesFile       dense\_2\_biases.txt\\
+\-~~~~layer2\_activation       tanh\\
+\-~~~~\# The component coefficient is used for normalization\\
+\-~~~~componentCoeff 180.0\\
+\-~~~~dihedral \{\\
+\-~~~~~~name 001\\
+\-~~~~~~\# normalization factor 1.0/180.0\\
+\-~~~~~~componentCoeff 0.00555555555555555556\\
+\-~~~~~~group1 \{atomNumbers \{5\}\}\\
+\-~~~~~~group2 \{atomNumbers \{7\}\}\\
+\-~~~~~~group3 \{atomNumbers \{9\}\}\\
+\-~~~~~~group4 \{atomNumbers \{15\}\}\\
+\-~~~~\}\\
+\-~~~~dihedral \{\\
+\-~~~~~~name 002\\
+\-~~~~~~\# normalization factor 1.0/180.0\\
+\-~~~~~~componentCoeff 0.00555555555555555556\\
+\-~~~~~~group1 \{atomNumbers \{7\}\}\\
+\-~~~~~~group2 \{atomNumbers \{9\}\}\\
+\-~~~~~~group3 \{atomNumbers \{15\}\}\\
+\-~~~~~~group4 \{atomNumbers \{17\}\}\\
+\-~~~~\}\\
+\-~~\}\\
+\}}
+
 
 \ifdefined\cvvmdornamd{
 \cvsubsubsec{Path collective variables in Cartesian coordinates}{sec:apath_scripted}
