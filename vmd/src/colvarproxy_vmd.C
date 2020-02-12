@@ -410,16 +410,8 @@ void colvarproxy_vmd::log(std::string const &message)
 
 void colvarproxy_vmd::error(std::string const &message)
 {
-  error_output += message;
+  add_error_msg(message);
   log(message);
-}
-
-
-void colvarproxy_vmd::fatal_error(std::string const &message)
-{
-  // Fatal error bit is already set, will be handled
-  // by tcl_colvars() before handing control back to VMD
-  error(message);
 }
 
 

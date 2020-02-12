@@ -1625,7 +1625,7 @@ std::ostream & colvarmodule::write_traj(std::ostream &os)
 }
 
 
-void cvm::log(std::string const &message, int min_log_level)
+void colvarmodule::log(std::string const &message, int min_log_level)
 {
   if (cvm::log_level() < min_log_level) return;
   // allow logging when the module is not fully initialized
@@ -1638,13 +1638,13 @@ void cvm::log(std::string const &message, int min_log_level)
 }
 
 
-void cvm::increase_depth()
+void colvarmodule::increase_depth()
 {
   (depth())++;
 }
 
 
-void cvm::decrease_depth()
+void colvarmodule::decrease_depth()
 {
   if (depth() > 0) {
     (depth())--;
@@ -1652,7 +1652,7 @@ void cvm::decrease_depth()
 }
 
 
-size_t & cvm::depth()
+size_t & colvarmodule::depth()
 {
   // NOTE: do not call log() or error() here, to avoid recursion
   colvarmodule *cv = cvm::main();
@@ -1683,10 +1683,12 @@ void colvarmodule::set_error_bits(int code)
   proxy->smp_unlock();
 }
 
+
 bool colvarmodule::get_error_bit(int code)
 {
   return bool(errorCode & code);
 }
+
 
 void colvarmodule::clear_error()
 {
@@ -1706,9 +1708,7 @@ int colvarmodule::error(std::string const &message, int code)
 
 int colvarmodule::fatal_error(std::string const &message)
 {
-  set_error_bits(FATAL_ERROR);
-  proxy->fatal_error(message);
-  return get_error();
+  return error(message, FATAL_ERROR);
 }
 
 

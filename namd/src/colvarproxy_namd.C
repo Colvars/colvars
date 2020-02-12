@@ -88,8 +88,8 @@ colvarproxy_namd::colvarproxy_namd()
 
   // check if it is possible to save output configuration
   if ((!output_prefix_str.size()) && (!restart_output_prefix_str.size())) {
-    fatal_error("Error: neither the final output state file or "
-                "the output restart file could be defined, exiting.\n");
+    error("Error: neither the final output state file or "
+          "the output restart file could be defined, exiting.\n");
   }
 
 
@@ -537,6 +537,7 @@ void colvarproxy_namd::request_total_force(bool yesno)
   }
 }
 
+
 void colvarproxy_namd::log(std::string const &message)
 {
   std::istringstream is(message);
@@ -546,14 +547,8 @@ void colvarproxy_namd::log(std::string const &message)
   iout << endi;
 }
 
+
 void colvarproxy_namd::error(std::string const &message)
-{
-  // In NAMD, all errors are fatal
-  fatal_error(message);
-}
-
-
-void colvarproxy_namd::fatal_error(std::string const &message)
 {
   log(message);
   NAMD_err("Error in the collective variables module (see above messages for details)");

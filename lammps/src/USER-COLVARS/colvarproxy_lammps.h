@@ -109,7 +109,6 @@ class colvarproxy_lammps : public colvarproxy {
 
   void log(std::string const &message);
   void error(std::string const &message);
-  void fatal_error(std::string const &message);
 
   cvm::rvector position_distance(cvm::atom_pos const &pos1,
                                  cvm::atom_pos const &pos2) const;
