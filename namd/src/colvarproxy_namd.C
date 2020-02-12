@@ -7,6 +7,8 @@
 // If you wish to distribute your changes, please submit them to the
 // Colvars repository at GitHub.
 
+#include <errno.h>
+
 #include "common.h"
 #include "fstream_namd.h"
 #include "BackEnd.h"
@@ -116,6 +118,7 @@ colvarproxy_namd::colvarproxy_namd()
   cvm::log("Using NAMD interface, version "+
            cvm::to_str(COLVARPROXY_VERSION)+".\n");
 
+  errno = 0;
   if (config) {
     colvars->read_config_file(config->data);
   }
@@ -200,6 +203,8 @@ int colvarproxy_namd::setup()
 
   cvm::log("Updating NAMD interface:\n");
 
+  errno = 0;
+
   if (simparams->wrapAll) {
     cvm::log("Warning: enabling wrapAll can lead to inconsistent results "
              "for Colvars calculations: please disable wrapAll, "
@@ -261,6 +266,8 @@ int colvarproxy_namd::reset()
 
 void colvarproxy_namd::calculate()
 {
+  errno = 0;
+
   if (first_timestep) {
 
     this->setup();
@@ -551,7 +558,21 @@ void colvarproxy_namd::log(std::string const &message)
 void colvarproxy_namd::error(std::string const &message)
 {
   log(message);
-  NAMD_err("Error in the collective variables module (see above messages for details)");
+  switch (cvm::get_error()) {
+  case FILE_ERROR:
+    errno = EIO; break;
+  case COLVARS_NOT_IMPLEMENTED:
+    errno = ENOSYS; break;
+  case MEMORY_ERROR:
+    errno = ENOMEM; break;
+  }
+  char const *msg = "Error in the collective variables module "
+    "(see above for details)";
+  if (errno) {
+    NAMD_err(msg);
+  } else {
+    NAMD_die(msg);
+  }
 }
 
 
