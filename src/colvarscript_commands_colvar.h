@@ -12,7 +12,7 @@ CVSCRIPT(colvar_addforce,
          "Apply the given force onto this colvar and return the same",
          1, 1,
          "force : float or array - Applied force; must match colvar dimensionality",
-         std::string const f_str(script->obj_to_str(script->get_cmd_arg<colvarscript::use_colvar>(0, objc, objv)));
+         std::string const f_str(script->obj_to_str(script->get_colvar_cmd_arg(0, objc, objv)));
          std::istringstream is(f_str);
          is.width(cvm::cv_width);
          is.precision(cvm::cv_prec);
@@ -31,7 +31,7 @@ CVSCRIPT(colvar_cvcflags,
          "Enable or disable individual components by setting their active flags",
          1, 1,
          "flags : integer array - Zero/nonzero value disables/enables the CVC",
-         std::string const flags_str(script->obj_to_str(script->get_cmd_arg<colvarscript::use_colvar>(0, objc, objv)));
+         std::string const flags_str(script->obj_to_str(script->get_colvar_cmd_arg(0, objc, objv)));
          std::istringstream is(flags_str);
          std::vector<bool> flags;
          int flag;
@@ -144,7 +144,7 @@ CVSCRIPT(colvar_modifycvcs,
          "Modify configuration of individual components by passing string arguments",
          1, 1,
          "confs : sequence of strings - New configurations; empty strings are skipped",
-         std::vector<std::string> const confs(script->proxy()->script_obj_to_str_vector(script->get_cmd_arg<colvarscript::use_colvar>(0, objc, objv)));
+         std::vector<std::string> const confs(script->proxy()->script_obj_to_str_vector(script->get_colvar_cmd_arg(0, objc, objv)));
          cvm::increase_depth();
          int res = this_colvar->update_cvc_config(confs);
          cvm::decrease_depth();

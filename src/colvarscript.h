@@ -95,13 +95,37 @@ public:
   };
 
   /// Get a pointer to the i-th argument of the command (NULL if not given)
-  template<Object_type T = use_module>
+  template<Object_type T>
   unsigned char *get_cmd_arg(int iarg, int objc, unsigned char *const objv[]);
 
+  /// Instantiation of get_cmd_arg<> for module-level commands
+  unsigned char *get_module_cmd_arg(int iarg, int objc,
+                                    unsigned char *const objv[]);
+
+  /// Instantiation of get_cmd_arg<> for colvar-level commands
+  unsigned char *get_colvar_cmd_arg(int iarg, int objc,
+                                    unsigned char *const objv[]);
+
+  /// Instantiation of get_cmd_arg<> for bias-level commands
+  unsigned char *get_bias_cmd_arg(int iarg, int objc,
+                                  unsigned char *const objv[]);
+
   /// Check the argument count of the command
-  template<Object_type T = use_module>
+  template<Object_type T>
   int check_cmd_nargs(char const *cmd, int objc,
                       int n_args_min, int n_args_max);
+
+  /// Instantiation of check_cmd_nargs<> for module-level commands
+  int check_module_cmd_nargs(char const *cmd, int objc,
+                             int n_args_min, int n_args_max);
+
+  /// Instantiation of check_cmd_nargs<> for colvar-level commands
+  int check_colvar_cmd_nargs(char const *cmd, int objc,
+                             int n_args_min, int n_args_max);
+
+  /// Instantiation of get_cmd_arg<> for bias-level commands
+  int check_bias_cmd_nargs(char const *cmd, int objc,
+                           int n_args_min, int n_args_max);
 
   /// Number of positional arguments to shift for each object type
   template<colvarscript::Object_type T>
@@ -110,7 +134,7 @@ public:
   /// Use scripting language to get the string representation of an object
   inline char const *obj_to_str(unsigned char *const obj)
   {
-    return cvm::proxy->script_obj_to_str(obj);
+    return proxy_->script_obj_to_str(obj);
   }
 
   /// Get names of all commands
@@ -187,8 +211,8 @@ private: // TODO
 
   /// Get a pointer to the implementation of the given command
   inline int (*get_cmd_fn(std::string const &cmd_key))(void *,
-                                                        int,
-                                                        unsigned char * const *)
+                                                       int,
+                                                       unsigned char * const *)
   {
     if (cmd_str_map.count(cmd_key) > 0) {
       return cmd_fns[cmd_str_map[cmd_key]];
@@ -222,29 +246,33 @@ inline static colvarbias *colvarbias_obj(void *pobj)
 
 
 template<colvarscript::Object_type T>
-int colvarscript::cmd_arg_shift()
-{
-  int shift = 0;
-  if (T == use_module) {
-    // "cv" and "COMMAND" are 1st and 2nd argument, and shift is equal to 2
-    shift = 2;
-  } else if (T == use_colvar) {
-    // Same as above with additional arguments "colvar" and "NAME"
-    shift = 4;
-  } else if (T == use_bias) {
-    shift = 4;
-  }
-  return shift;
-}
-
-
-template<colvarscript::Object_type T>
 unsigned char *colvarscript::get_cmd_arg(int iarg,
                                          int objc,
                                          unsigned char *const objv[])
 {
   int const shift = cmd_arg_shift<T>();
   return (shift+iarg < objc) ? objv[shift+iarg] : NULL;
+}
+
+
+inline unsigned char *colvarscript::get_module_cmd_arg(int iarg, int objc,
+                                                       unsigned char *const objv[])
+{
+  return get_cmd_arg<use_module>(iarg, objc, objv);
+}
+
+
+inline unsigned char *colvarscript::get_colvar_cmd_arg(int iarg, int objc,
+                                                       unsigned char *const objv[])
+{
+  return get_cmd_arg<use_colvar>(iarg, objc, objv);
+}
+
+
+inline unsigned char *colvarscript::get_bias_cmd_arg(int iarg, int objc,
+                                                     unsigned char *const objv[])
+{
+  return get_cmd_arg<use_bias>(iarg, objc, objv);
 }
 
 
@@ -266,6 +294,50 @@ int colvarscript::check_cmd_nargs(char const *cmd,
     return COLVARSCRIPT_ERROR;
   }
   return COLVARSCRIPT_OK;
+}
+
+
+inline int colvarscript::check_module_cmd_nargs(char const *cmd,
+                                                int objc,
+                                                int n_args_min,
+                                                int n_args_max)
+{
+  return check_cmd_nargs<use_module>(cmd, objc, n_args_min, n_args_max);
+}
+
+
+inline int colvarscript::check_colvar_cmd_nargs(char const *cmd,
+                                                int objc,
+                                                int n_args_min,
+                                                int n_args_max)
+{
+  return check_cmd_nargs<use_colvar>(cmd, objc, n_args_min, n_args_max);
+}
+
+
+inline int colvarscript::check_bias_cmd_nargs(char const *cmd,
+                                              int objc,
+                                              int n_args_min,
+                                              int n_args_max)
+{
+  return check_cmd_nargs<use_bias>(cmd, objc, n_args_min, n_args_max);
+}
+
+
+template<colvarscript::Object_type T>
+int colvarscript::cmd_arg_shift()
+{
+  int shift = 0;
+  if (T == use_module) {
+    // "cv" and "COMMAND" are 1st and 2nd argument, and shift is equal to 2
+    shift = 2;
+  } else if (T == use_colvar) {
+    // Same as above with additional arguments "colvar" and "NAME"
+    shift = 4;
+  } else if (T == use_bias) {
+    shift = 4;
+  }
+  return shift;
 }
 
 

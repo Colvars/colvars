@@ -81,7 +81,7 @@ CVSCRIPT(cv_addenergy,
          1, 1,
          "E : float - Amount of energy to add",
          char const *Earg =
-           script->obj_to_str(script->get_cmd_arg<>(0, objc, objv));
+           script->obj_to_str(script->get_module_cmd_arg(0, objc, objv));
          cvm::main()->total_bias_energy += strtod(Earg, NULL);
          return COLVARSCRIPT_ERROR; // TODO Make this multi-language
          )
@@ -91,12 +91,12 @@ CVSCRIPT(cv_config,
          1, 1,
          "conf : string - Configuration string",
          char const *conf_str =
-           script->obj_to_str(script->get_cmd_arg<>(0, objc, objv));
+           script->obj_to_str(script->get_module_cmd_arg(0, objc, objv));
          std::string const conf(conf_str);
          if (cvm::main()->read_config_string(conf) == COLVARS_OK) {
            return COLVARS_OK;
          }
-         script->set_result_str("Error parsing configuration string");
+         script->add_error_msg("Error parsing configuration string");
          return COLVARSCRIPT_ERROR;
          )
 
@@ -122,13 +122,12 @@ CVSCRIPT(cv_delete,
 CVSCRIPT(cv_frame,
          "Get or set current frame number",
          0, 1,
-         "frame : int - Frame number",
-         char *const arg =
-           reinterpret_cast<char *>(script->get_cmd_arg<>(0, objc, objv));
+         "frame : integer - Frame number",
+         char const *arg =
+           script->obj_to_str(script->get_module_cmd_arg(0, objc, objv));
          if (arg == NULL) {
-           long int f;
-           int error = script->proxy()->get_frame(f);
-           if (error == COLVARS_OK) {
+           long int f = -1;
+           if (script->proxy()->get_frame(f) == COLVARS_OK) {
              script->set_result_str(cvm::to_str(f));
              return COLVARS_OK;
            } else {
@@ -164,7 +163,7 @@ CVSCRIPT(cv_help,
          "Get the help string of the Colvars scripting interface",
          0, 1,
          "command : string - Get the help string of this specific command",
-         unsigned char *const cmdobj = script->get_cmd_arg<>(0, objc, objv);
+         unsigned char *const cmdobj = script->get_module_cmd_arg(0, objc, objv);
          if (cmdobj) {
            std::string const cmdstr(script->obj_to_str(cmdobj));
            if (cmdstr.size()) {
@@ -184,9 +183,9 @@ CVSCRIPT(cv_help,
 CVSCRIPT(cv_list,
          "Return a list of all variables or biases",
          0, 1,
-         "param : string - \"colvars\" (default) or \"biases\"",
+         "param : string - \"colvars\" or \"biases\"; default is \"colvars\"",
          std::string res;
-         unsigned char *const kwarg = script->get_cmd_arg<>(0, objc, objv);
+         unsigned char *const kwarg = script->get_module_cmd_arg(0, objc, objv);
          std::string const kwstr = kwarg ? script->obj_to_str(kwarg) :
            std::string("colvars");
          if (kwstr == "colvars") {
@@ -297,7 +296,7 @@ CVSCRIPT(cv_units,
          0, 1,
          "units : string - The new unit system",
          char const *argstr =
-           script->obj_to_str(script->get_cmd_arg<>(0, objc, objv));
+           script->obj_to_str(script->get_module_cmd_arg(0, objc, objv));
          if (argstr) {
            return cvm::proxy->set_unit_system(argstr, false);
          } else {

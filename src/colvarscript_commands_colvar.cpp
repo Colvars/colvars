@@ -26,12 +26,13 @@
   int CVSCRIPT_COMM_FNAME(COMM)(void *pobj,                             \
                                 int objc, unsigned char *const objv[])  \
   {                                                                     \
+    if (cvm::debug()) {                                                 \
+      cvm::log("Executing script function \""+std::string(#COMM)+"\""); \
+    }                                                                   \
     colvarscript *script = colvarscript_obj();                          \
     script->clear_str_result();                                         \
-    if (script->check_cmd_nargs<colvarscript::use_colvar>(#COMM,        \
-                                                          objc,         \
-                                                          N_ARGS_MIN,   \
-                                                          N_ARGS_MAX) != \
+    if (script->check_colvar_cmd_nargs(#COMM,                           \
+                                       objc, N_ARGS_MIN, N_ARGS_MAX) != \
         COLVARSCRIPT_OK) {                                              \
       return COLVARSCRIPT_ERROR;                                        \
     }                                                                   \
