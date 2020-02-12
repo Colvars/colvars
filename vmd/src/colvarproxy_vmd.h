@@ -76,8 +76,6 @@ public:
 
   virtual void request_total_force(bool yesno);
 
-  std::string error_output;
-
   virtual void log(std::string const &message);
 
   virtual void error(std::string const &message);

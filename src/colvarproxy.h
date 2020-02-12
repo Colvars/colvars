@@ -701,6 +701,14 @@ public:
   /// Print a message to the main log and/or let the host code know about it
   virtual void error(std::string const &message) = 0;
 
+  /// Record error message (used by VMD to collect them after a script call)
+  void add_error_msg(std::string const &message);
+
+  /// Retrieve accumulated error messages
+  std::string const & get_error_msgs();
+
+  /// As the name says
+  void clear_error_msgs();
 
   /// Restarts will be written each time this number of steps has passed
   virtual size_t restart_frequency();
@@ -721,6 +729,9 @@ public:
   }
 
 protected:
+
+  /// Collected error messages
+  std::string error_output;
 
   /// Whether a simulation is running (warn against irrecovarable errors)
   bool b_simulation_running;
