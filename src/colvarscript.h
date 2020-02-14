@@ -144,7 +144,7 @@ public:
   }
 
   /// Get help string for a command (does not specify how it is launched)
-  /// \param cmd Name of the command function (e.g. "cv_units")
+  /// \param cmd Name of the command's function (e.g. "cv_units")
   std::string get_command_help(char const *cmd);
 
   /// Get summary of command line syntax for all commands of a given context
@@ -158,7 +158,7 @@ public:
 
   /// Get the command line syntax following by the help string
   /// \param t One of use_module, use_colvar or use_bias
-  /// \param cmd Name of the command function (e.g. "cv_units")
+  /// \param cmd Name of the subcommand (e.g. "units")
   std::string get_command_cmdline_help(Object_type t, std::string const &cmd);
 
   /// Set error code for unsupported script operation
