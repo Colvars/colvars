@@ -332,7 +332,7 @@ int colvarscript::run(int objc, unsigned char *const objv[])
     error_code = (*cmd_fn)(obj_for_cmd, objc, objv);
   } else {
     add_error_msg("Syntax error: "+cmdline+"\n"
-                  "  Run \"cv listcommands\" or \"cv help <command>\" "
+                  "  Run \"cv help\" or \"cv help <command>\" "
                   "to get the correct syntax.\n");
     error_code = COLVARSCRIPT_ERROR;
   }

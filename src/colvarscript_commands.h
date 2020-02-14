@@ -233,7 +233,7 @@ CVSCRIPT(cv_list,
          )
 
 CVSCRIPT(cv_listcommands,
-         "Return a list of command names",
+         "Get the list of script functions, prefixed with \"cv_\", \"colvar_\" or \"bias_\"",
          0, 0,
          "",
          int const n_commands = cvscript_n_commands();
