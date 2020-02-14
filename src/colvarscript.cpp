@@ -143,10 +143,10 @@ std::string colvarscript::get_command_help(char const *cmd)
     new_result += "----------\n\n";
     size_t i;
     for (i = 0; i < cmd_n_args_min[c]; i++) {
-      new_result += cmd_arghelp[c][i]+"\n\n";
+      new_result += cmd_arghelp[c][i]+"\n";
     }
     for (i = cmd_n_args_min[c]; i < cmd_n_args_max[c]; i++) {
-      new_result += cmd_arghelp[c][i]+" (optional)\n\n";
+      new_result += cmd_arghelp[c][i]+" (optional)\n";
     }
     return new_result;
   }
