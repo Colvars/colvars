@@ -421,7 +421,12 @@ int colvarscript::unsupported_op()
 
 int colvarscript::set_result_str(std::string const &s)
 {
-  result = s;
+  if (cvm::get_error() != COLVARS_OK) {
+    // Avoid overwriting the error message
+    result += s;
+  } else {
+    result = s;
+  }
   return COLVARS_OK;
 }
 
