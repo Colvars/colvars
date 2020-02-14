@@ -548,7 +548,7 @@ proc ::cv_dashboard::show_gradients { list } {
 
   foreach cv $list {
     if { ![info exists ::cv_dashboard::grad_objects($cv)] } {
-      if { [run_cv colvar $cv set "collect gradient" 1] == -1 } { continue }
+      if { [run_cv colvar $cv set collect_gradient 1] == -1 } { continue }
       run_cv colvar $cv update ;# required to get inital values of gradients
       # Associate empty list of objects to cv to request its update
       set ::cv_dashboard::grad_objects($cv) {}
@@ -578,7 +578,7 @@ proc ::cv_dashboard::update_shown_gradients {} {
     set atomids [run_cv colvar $cv getatomids]
     if { [llength $atomids] == 0 } {
       # Variable was reinitialized and lost its gradient feature
-      if { [run_cv colvar $cv set "collect gradient" 1] == -1 } { continue }
+      if { [run_cv colvar $cv set collect_gradient 1] == -1 } { continue }
       # If that didn't work then gradients are not supported
       if { [llength $atomids] == 0 } { continue }
       run_cv colvar $cv update
@@ -635,7 +635,7 @@ proc ::cv_dashboard::hide_gradients {} {
     if [info exists ::cv_dashboard::grad_objects($cv)] {
       set objs $::cv_dashboard::grad_objects($cv)
       foreach obj $objs { graphics $::cv_dashboard::mol delete $obj }
-      run_cv colvar $cv set "collect gradient" 0
+      run_cv colvar $cv set collect_gradient 0
       unset ::cv_dashboard::grad_objects($cv)
     }
   }
@@ -646,7 +646,7 @@ proc ::cv_dashboard::hide_all_gradients {} {
 
   foreach { cv objs } [array get ::cv_dashboard::grad_objects] {
     foreach obj $objs { graphics $::cv_dashboard::mol delete $obj }
-    run_cv colvar $cv set "collect gradient" 0
+    run_cv colvar $cv set collect_gradient 0
   }
   array unset ::cv_dashboard::grad_objects *
 }
