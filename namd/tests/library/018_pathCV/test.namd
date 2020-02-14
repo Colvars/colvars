@@ -84,6 +84,8 @@ colvar {
    width                 0.05
    lowerboundary        -0.2
    upperboundary         1.2
+   lowerwall            -0.2
+   upperwall             1.2
    lowerwallconstant     10.0
    upperwallconstant     10.0
 
