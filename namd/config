@@ -441,9 +441,15 @@ function error_exists {
 
     if (( $charm_arch_mpi || ! $charm_arch_smp )); then
       echo ''
+      if (( $charm_arch_mpi )); then
+        echo "ERROR: MPI-based Charm++ arch $CHARM_ARCH is not compatible with $ERRTYPE NAMD."
+      fi
+      if (( ! $charm_arch_smp )); then
+        echo "ERROR: Non-SMP Charm++ arch $CHARM_ARCH is not compatible with $ERRTYPE NAMD."
+      fi
       echo "ERROR: $ERRTYPE builds require non-MPI SMP or multicore Charm++ arch for reasonable performance."
       echo ''
-      echo "Consider ibverbs-smp or verbs-smp (InfiniBand), gni-smp (Cray), or multicore (single node)."
+      echo "Consider ucx-smp or verbs-smp (InfiniBand), gni-smp (Cray), or multicore (single node)."
       echo ''
       exit 1
     fi
