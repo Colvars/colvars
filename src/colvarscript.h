@@ -68,9 +68,6 @@ public:
   /// Add the given string to the error message of the script interface
   void add_error_msg(std::string const &s);
 
-  /// Build and return a short help
-  std::string help_string(void) const;
-
   /// Commands available
   enum command {
 #define CVSCRIPT_ENUM_COMM(COMM) COMM,
@@ -93,6 +90,9 @@ public:
     use_colvar,
     use_bias
   };
+
+  /// Return the prefix of the individual command for each object function
+  std::string get_cmd_prefix(Object_type t);
 
   /// Get a pointer to the i-th argument of the command (NULL if not given)
   template<Object_type T>
@@ -143,8 +143,23 @@ public:
     return cmd_names;
   }
 
-  /// Get help string for a command
-  std::string get_command_help(char const *c);
+  /// Get help string for a command (does not specify how it is launched)
+  /// \param cmd Name of the command function (e.g. "cv_units")
+  std::string get_command_help(char const *cmd);
+
+  /// Get summary of command line syntax for all commands of a given context
+  /// \param t One of use_module, use_colvar or use_bias
+  std::string get_cmdline_help_summary(Object_type t);
+
+  /// Get a description of how the command should be used in a command line
+  /// \param t One of use_module, use_colvar or use_bias
+  /// \param c Value of the \link command \endlink enum
+  std::string get_command_cmdline_syntax(Object_type t, command c);
+
+  /// Get the command line syntax following by the help string
+  /// \param t One of use_module, use_colvar or use_bias
+  /// \param cmd Name of the command function (e.g. "cv_units")
+  std::string get_command_cmdline_help(Object_type t, std::string const &cmd);
 
   /// Set error code for unsupported script operation
   int unsupported_op();
