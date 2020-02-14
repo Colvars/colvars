@@ -33,6 +33,8 @@ colvar::colvar()
   dev_null = 0.0;
 #endif
 
+  expand_boundaries = false;
+
   description = "uninitialized colvar";
   init_dependencies();
 }
@@ -474,6 +476,8 @@ int colvar::init_custom_function(std::string const &conf)
 
 int colvar::init_grid_parameters(std::string const &conf)
 {
+  int error_code = COLVARS_OK;
+
   colvarmodule *cv = cvm::main();
 
   cvm::real default_width = width;
@@ -527,15 +531,18 @@ int colvar::init_grid_parameters(std::string const &conf)
       disable(f_cv_hard_upper_boundary);
     }
 
+    // Parse legacy wall options and set up a harmonicWalls bias if needed
+    cvm::real lower_wall_k = 0.0, upper_wall_k = 0.0;
+    cvm::real lower_wall = 0.0, upper_wall = 0.0;
     std::string lw_conf, uw_conf;
+
     if (get_keyval(conf, "lowerWallConstant", lower_wall_k, 0.0,
                    parse_silent)) {
       cvm::log("Reading legacy options lowerWall and lowerWallConstant: "
-               "consider using a harmonicWalls restraint\n(caution: force constant would then be scaled by width^2).\n");
-      lower_wall.type(value());
-      if (!get_keyval(conf, "lowerWall", lower_wall, lower_boundary)) {
-        cvm::log("Warning: lowerWall will need to be "
-                 "defined explicitly in the next release.\n");
+               "consider using a harmonicWalls restraint (caution: force constant would then be scaled by width^2).\n");
+      if (!get_keyval(conf, "lowerWall", lower_wall)) {
+        error_code != cvm::error("Error: the value of lowerWall must be set "
+                                 "explicitly.\n", INPUT_ERROR);
       }
       lw_conf = std::string("\n\
     lowerWallConstant "+cvm::to_str(lower_wall_k*width*width)+"\n\
@@ -545,11 +552,10 @@ int colvar::init_grid_parameters(std::string const &conf)
     if (get_keyval(conf, "upperWallConstant", upper_wall_k, 0.0,
                    parse_silent)) {
       cvm::log("Reading legacy options upperWall and upperWallConstant: "
-               "consider using a harmonicWalls restraint\n(caution: force constant would then be scaled by width^2).\n");
-      upper_wall.type(value());
-      if (!get_keyval(conf, "upperWall", upper_wall, upper_boundary)) {
-        cvm::log("Warning: upperWall will need to be "
-                 "defined explicitly in the next release.\n");
+               "consider using a harmonicWalls restraint (caution: force constant would then be scaled by width^2).\n");
+      if (!get_keyval(conf, "upperWall", upper_wall)) {
+        error_code != cvm::error("Error: the value of upperWall must be set "
+                                 "explicitly.\n", INPUT_ERROR);
       }
       uw_conf = std::string("\n\
     upperWallConstant "+cvm::to_str(upper_wall_k*width*width)+"\n\
@@ -558,12 +564,11 @@ int colvar::init_grid_parameters(std::string const &conf)
 
     if (lw_conf.size() && uw_conf.size()) {
       if (lower_wall >= upper_wall) {
-        cvm::error("Error: the upper wall, "+
-                   cvm::to_str(upper_wall)+
-                   ", is not higher than the lower wall, "+
-                   cvm::to_str(lower_wall)+".\n",
-                   INPUT_ERROR);
-        return INPUT_ERROR;
+        error_code |= cvm::error("Error: the upper wall, "+
+                                 cvm::to_str(upper_wall)+
+                                 ", is not higher than the lower wall, "+
+                                 cvm::to_str(lower_wall)+".\n",
+                                 INPUT_ERROR);
       }
     }
 
@@ -575,7 +580,7 @@ harmonicWalls {\n\
     colvars "+this->name+"\n"+lw_conf+uw_conf+"\
     timeStepFactor "+cvm::to_str(time_step_factor)+"\n"+
                              "}\n");
-      cv->append_new_config(walls_conf);
+      error_code |= cv->append_new_config(walls_conf);
     }
   }
 
@@ -588,29 +593,27 @@ harmonicWalls {\n\
   // consistency checks for boundaries and walls
   if (is_enabled(f_cv_lower_boundary) && is_enabled(f_cv_upper_boundary)) {
     if (lower_boundary >= upper_boundary) {
-      cvm::error("Error: the upper boundary, "+
-                        cvm::to_str(upper_boundary)+
-                        ", is not higher than the lower boundary, "+
-                        cvm::to_str(lower_boundary)+".\n",
-                INPUT_ERROR);
-      return INPUT_ERROR;
+      error_code |= cvm::error("Error: the upper boundary, "+
+                               cvm::to_str(upper_boundary)+
+                               ", is not higher than the lower boundary, "+
+                               cvm::to_str(lower_boundary)+".\n",
+                               INPUT_ERROR);
     }
   }
 
-  get_keyval(conf, "expandBoundaries", expand_boundaries, false);
+  get_keyval(conf, "expandBoundaries", expand_boundaries, expand_boundaries);
   if (expand_boundaries && periodic_boundaries()) {
-    cvm::error("Error: trying to expand boundaries that already "
-               "cover a whole period of a periodic colvar.\n",
-               INPUT_ERROR);
-    return INPUT_ERROR;
+    error_code |= cvm::error("Error: trying to expand boundaries that already "
+                             "cover a whole period of a periodic colvar.\n",
+                             INPUT_ERROR);
   }
+
   if (expand_boundaries && is_enabled(f_cv_hard_lower_boundary) &&
       is_enabled(f_cv_hard_upper_boundary)) {
-    cvm::error("Error: inconsistent configuration "
-               "(trying to expand boundaries with both "
-               "hardLowerBoundary and hardUpperBoundary enabled).\n",
-               INPUT_ERROR);
-    return INPUT_ERROR;
+    error_code |= cvm::error("Error: inconsistent configuration "
+                             "(trying to expand boundaries, but both "
+                             "hardLowerBoundary and hardUpperBoundary "
+                             "are enabled).\n", INPUT_ERROR);
   }
 
   return COLVARS_OK;
