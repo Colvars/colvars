@@ -229,17 +229,9 @@ public:
 
   /// \brief Location of the lower boundary
   colvarvalue lower_boundary;
-  /// \brief Location of the lower wall
-  colvarvalue lower_wall;
-  /// \brief Force constant for the lower boundary potential (|x-xb|^2)
-  cvm::real   lower_wall_k;
 
   /// \brief Location of the upper boundary
   colvarvalue upper_boundary;
-  /// \brief Location of the upper wall
-  colvarvalue upper_wall;
-  /// \brief Force constant for the upper boundary potential (|x-xb|^2)
-  cvm::real   upper_wall_k;
 
   /// \brief Is the interval defined by the two boundaries periodic?
   bool periodic_boundaries() const;
