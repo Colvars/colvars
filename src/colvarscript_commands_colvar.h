@@ -140,6 +140,29 @@ CVSCRIPT(colvar_gettotalforce,
          return COLVARS_OK;
          )
 
+CVSCRIPT(colvar_help,
+         "Get a help summary or the help string of one colvar subcommand",
+         0, 1,
+         "command : string - Get the help string of this specific command",
+         unsigned char *const cmdobj =
+           script->get_colvar_cmd_arg(0, objc, objv);
+         if (this_colvar) {
+         }
+         if (cmdobj) {
+           std::string const cmdstr(script->obj_to_str(cmdobj));
+           if (cmdstr.size()) {
+             script->set_result_str(script->get_command_cmdline_help(colvarscript::use_colvar,
+                                                                     cmdstr));
+             return cvm::get_error();
+           } else {
+             return COLVARSCRIPT_ERROR;
+           }
+         } else {
+           script->set_result_str(script->get_cmdline_help_summary(colvarscript::use_colvar));
+           return COLVARS_OK;
+         }
+         )
+
 CVSCRIPT(colvar_modifycvcs,
          "Modify configuration of individual components by passing string arguments",
          1, 1,

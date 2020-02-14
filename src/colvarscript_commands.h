@@ -83,7 +83,23 @@ CVSCRIPT(cv_addenergy,
          char const *Earg =
            script->obj_to_str(script->get_module_cmd_arg(0, objc, objv));
          cvm::main()->total_bias_energy += strtod(Earg, NULL);
-         return COLVARSCRIPT_ERROR; // TODO Make this multi-language
+         return cvm::get_error(); // TODO Make this multi-language
+         )
+
+CVSCRIPT(cv_bias,
+         "Prefix for bias-specific commands",
+         0, 0,
+         "",
+         // This cannot be executed from a command line
+         return COLVARS_OK;
+         )
+
+CVSCRIPT(cv_colvar,
+         "Prefix for colvar-specific commands",
+         0, 0,
+         "",
+         // This cannot be executed from a command line
+         return COLVARS_OK;
          )
 
 CVSCRIPT(cv_config,
@@ -163,19 +179,25 @@ CVSCRIPT(cv_help,
          "Get the help string of the Colvars scripting interface",
          0, 1,
          "command : string - Get the help string of this specific command",
-         unsigned char *const cmdobj = script->get_module_cmd_arg(0, objc, objv);
+         unsigned char *const cmdobj =
+           script->get_module_cmd_arg(0, objc, objv);
          if (cmdobj) {
            std::string const cmdstr(script->obj_to_str(cmdobj));
            if (cmdstr.size()) {
-             script->set_result_str(script->get_command_help(cmdstr.c_str())+
-                                    "\n");
-             return COLVARS_OK;
+             if (cmdstr == std::string("colvar")) {
+               script->set_result_str(script->get_cmdline_help_summary(colvarscript::use_colvar));
+             } else if (cmdstr == std::string("bias")) {
+               script->set_result_str(script->get_cmdline_help_summary(colvarscript::use_bias));
+             } else {
+               script->set_result_str(script->get_command_cmdline_help(colvarscript::use_module,
+                                                                       cmdstr));
+             }
+             return cvm::get_error();
            } else {
              return COLVARSCRIPT_ERROR;
            }
          } else {
-           // TODO build the global help string from the database
-           script->set_result_str(script->help_string());
+           script->set_result_str(script->get_cmdline_help_summary(colvarscript::use_module));
            return COLVARS_OK;
          }
          )
@@ -205,8 +227,7 @@ CVSCRIPT(cv_list,
            script->set_result_str(res);
            return COLVARS_OK;
          } else {
-           script->add_error_msg("Wrong arguments to command \"list\"\n" +
-                                 script->help_string());
+           script->add_error_msg("Wrong arguments to command \"list\"\n");
            return COLVARSCRIPT_ERROR;
          }
          )

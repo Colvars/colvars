@@ -79,6 +79,29 @@ CVSCRIPT(bias_getconfig,
          return COLVARS_OK;
          )
 
+CVSCRIPT(bias_help,
+         "Get a help summary or the help string of one bias subcommand",
+         0, 1,
+         "command : string - Get the help string of this specific command",
+         unsigned char *const cmdobj =
+           script->get_colvar_cmd_arg(0, objc, objv);
+         if (this_bias) {
+         }
+         if (cmdobj) {
+           std::string const cmdstr(script->obj_to_str(cmdobj));
+           if (cmdstr.size()) {
+             script->set_result_str(script->get_command_cmdline_help(colvarscript::use_bias,
+                                                                     cmdstr));
+             return COLVARS_OK;
+           } else {
+             return COLVARSCRIPT_ERROR;
+           }
+         } else {
+           script->set_result_str(script->get_cmdline_help_summary(colvarscript::use_bias));
+           return COLVARS_OK;
+         }
+         )
+
 CVSCRIPT(bias_load,
          "Load data into this bias",
          1, 1,

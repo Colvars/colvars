@@ -117,6 +117,22 @@ int colvarscript::init_command(colvarscript::command const &comm,
 }
 
 
+std::string colvarscript::get_cmd_prefix(colvarscript::Object_type t)
+{
+  switch (t) {
+  case use_module:
+    return std::string("cv_"); break;
+  case use_colvar:
+    return std::string("colvar_"); break;
+  case use_bias:
+    return std::string("bias_"); break;
+  default:
+    cvm::error("Error: undefined colvarscript object type.", BUG_ERROR);
+    return std::string("");
+  }
+}
+
+
 std::string colvarscript::get_command_help(char const *cmd)
 {
   if (cmd_str_map.count(cmd) > 0) {
@@ -141,6 +157,86 @@ std::string colvarscript::get_command_help(char const *cmd)
 }
 
 
+std::string colvarscript::get_command_cmdline_syntax(colvarscript::Object_type t,
+                                                     colvarscript::command cmd)
+{
+  std::string const prefix = get_cmd_prefix(t);
+  std::string const cmdstr(cmd_names[cmd]);
+
+  // Get the sub-command as used in the command line
+  std::string const cmdline_cmd(cmdstr, prefix.size());
+  std::string cmdline_args;
+
+  size_t i;
+  for (i = 0; i < cmd_n_args_min[cmd]; i++) {
+    std::string const &arghelp = cmd_arghelp[cmd][i];
+    size_t space = arghelp.find(" : ");
+    cmdline_args += " "+cmd_arghelp[cmd][i].substr(0, space);
+  }
+  for (i = cmd_n_args_min[cmd]; i < cmd_n_args_max[cmd]; i++) {
+    std::string const &arghelp = cmd_arghelp[cmd][i];
+    size_t space = arghelp.find(" : ");
+    cmdline_args += " ["+cmd_arghelp[cmd][i].substr(0, space)+"]";
+  }
+
+  switch (t) {
+  case use_module:
+    return std::string("cv "+cmdline_cmd+cmdline_args); break;
+  case use_colvar:
+    return std::string("cv colvar name "+cmdline_cmd+cmdline_args); break;
+  case use_bias:
+    return std::string("cv bias name "+cmdline_cmd+cmdline_args); break;
+  default:
+    // Already handled, but silence the warning
+    return std::string("");
+  }
+}
+
+
+std::string colvarscript::get_cmdline_help_summary(colvarscript::Object_type t)
+{
+  std::string result;
+  for (size_t i = 0; i < cmd_help.size(); i++) {
+    std::string const prefix = get_cmd_prefix(t);
+    command const c = cmd_str_map[std::string(cmd_names[i])];
+    if (std::string(cmd_names[i], prefix.size()) == prefix) {
+      result += get_command_cmdline_syntax(t, c)+
+        std::string("\n    ")+cmd_help[i]+std::string("\n");
+    }
+  }
+  if (t == use_module) {
+    result += "\nTo get help on colvar-specific commands use:\n"
+      "    cv help colvar\n";
+    result += "\nTo get help on bias-specific commands use:\n"
+      "    cv help bias\n";
+  }
+  if (t == use_colvar) {
+    result += "\nFor detailed help on each command use:\n"
+      "    cv colvar name help <command> (\"name\" does not need to exist)\n";
+  }
+  if (t == use_bias) {
+    result += "\nFor detailed help on each command use:\n"
+      "    cv bias name help <command> (\"name\" does not need to exist)\n";
+  }
+  return result;
+}
+
+
+std::string colvarscript::get_command_cmdline_help(colvarscript::Object_type t,
+                                                   std::string const &cmd)
+{
+  std::string const cmdkey(get_cmd_prefix(t)+cmd);
+  if (cmd_str_map.count(cmdkey) > 0) {
+    command const c = cmd_str_map[cmdkey];
+    return get_command_cmdline_syntax(t, c)+"\n\n"+
+      get_command_help(cmd_names[c]);
+  }
+  cvm::error("Error: could not find scripting command \""+cmd+"\".",
+             INPUT_ERROR);
+  return std::string("");
+}
+
+
 int colvarscript::run(int objc, unsigned char *const objv[])
 {
   result.clear();
@@ -158,11 +254,14 @@ int colvarscript::run(int objc, unsigned char *const objv[])
     return COLVARSCRIPT_ERROR;
   }
 
+  // Main command; usually "cv"
+  std::string const main_cmd(std::string(obj_to_str(objv[0])));
+
   // Name of the (sub)command
   std::string const cmd(obj_to_str(objv[1]));
 
   // Build a safe-to-print command line to print in case of error
-  std::string cmdline(std::string(obj_to_str(objv[0]))+std::string(" ")+cmd);
+  std::string cmdline(main_cmd+std::string(" ")+cmd);
 
   // Pointer to the function implementing it
   int (*cmd_fn)(void *, int, unsigned char * const *) = NULL;
@@ -173,18 +272,22 @@ int colvarscript::run(int objc, unsigned char *const objv[])
   if (cmd == "colvar") {
 
     if (objc < 4) {
-      add_error_msg("Missing parameters\n" + help_string());
+      add_error_msg("Missing parameters: use \""+main_cmd+
+                    " help colvar\" for a summary");
       return COLVARSCRIPT_ERROR;
     }
     std::string const name(obj_to_str(objv[2]));
+    std::string const subcmd(obj_to_str(objv[3]));
     obj_for_cmd = reinterpret_cast<void *>(cvm::colvar_by_name(name));
     if (obj_for_cmd == NULL) {
-      add_error_msg("Colvar not found: " + name);
-      return COLVARSCRIPT_ERROR;
+      if (subcmd != std::string("help")) {
+        // Unless asking for help, a valid colvar name must be given
+        add_error_msg("Colvar not found: " + name);
+        return COLVARSCRIPT_ERROR;
+      }
     }
-    std::string const &subcmd(obj_to_str(objv[3]));
-    cmd_fn = get_cmd_fn(std::string("colvar_")+subcmd);
-    cmdline += std::string(" <name> ")+subcmd;
+    cmd_fn = get_cmd_fn(get_cmd_prefix(use_colvar)+subcmd);
+    cmdline += std::string(" name ")+subcmd;
     if (objc > 4) {
       cmdline += " ...";
     }
@@ -192,25 +295,29 @@ int colvarscript::run(int objc, unsigned char *const objv[])
   } else if (cmd == "bias") {
 
     if (objc < 4) {
-      add_error_msg("Missing parameters\n" + help_string());
+      add_error_msg("Missing parameters: use \""+main_cmd+
+                    " help bias\" for a summary");
       return COLVARSCRIPT_ERROR;
     }
     std::string const name(obj_to_str(objv[2]));
+    std::string const subcmd(obj_to_str(objv[3]));
     obj_for_cmd = reinterpret_cast<void *>(cvm::bias_by_name(name));
     if (obj_for_cmd == NULL) {
-      add_error_msg("Bias not found: " + name);
-      return COLVARSCRIPT_ERROR;
+      if ((subcmd == "") || (subcmd != std::string("help"))) {
+        // Unless asking for help, a valid bias name must be given
+        add_error_msg("Bias not found: " + name);
+        return COLVARSCRIPT_ERROR;
+      }
     }
-    std::string const &subcmd(obj_to_str(objv[3]));
-    cmd_fn = get_cmd_fn(std::string("bias_")+subcmd);
-    cmdline += std::string(" <name> ")+subcmd;
+    cmd_fn = get_cmd_fn(get_cmd_prefix(use_bias)+subcmd);
+    cmdline += std::string(" name ")+subcmd;
     if (objc > 4) {
       cmdline += " ...";
     }
 
   } else {
 
-    cmd_fn = get_cmd_fn(std::string(std::string("cv_"+cmd)));
+    cmd_fn = get_cmd_fn(get_cmd_prefix(use_module)+cmd);
     obj_for_cmd = reinterpret_cast<void *>(this);
 
     if (objc > 2) {
@@ -302,65 +409,6 @@ int colvarscript::proc_features(colvardeps *obj,
 
   // This shouldn't be reached any more
   return COLVARSCRIPT_ERROR;
-}
-
-
-std::string colvarscript::help_string() const
-{
-  std::string buf;
-  buf = "Usage: cv <subcommand> [args...]\n\
-\n\
-Managing the Colvars module:\n\
-  configfile <file name>      -- read configuration from a file\n\
-  config <string>             -- read configuration from the given string\n\
-  getconfig                   -- get the module's configuration string\n\
-  resetindexgroups            -- clear the index groups loaded so far\n\
-  reset                       -- delete all internal configuration\n\
-  delete                      -- delete this Colvars module instance\n\
-  version                     -- return version of Colvars Module\n\
-  \n\
-Input and output:\n\
-  list                        -- return a list of all variables\n\
-  list biases                 -- return a list of all biases\n\
-  load <file name>            -- load a state file (requires configuration)\n\
-  save <file name>            -- save a state file (requires configuration)\n\
-  update                      -- recalculate colvars and biases\n\
-  addenergy <E>               -- add <E> to the total bias energy\n\
-  printframe                  -- return a summary of the current frame\n\
-  printframelabels            -- return labels to annotate printframe's output\n";
-
-  long int tmp;
-  if (proxy_->get_frame(tmp) != COLVARS_NOT_IMPLEMENTED) {
-      buf += "\
-  frame                       -- return current frame number\n\
-  frame <new_frame>           -- set frame number\n";
-  }
-
-  buf += "\n\
-Accessing collective variables:\n\
-  colvar <name> value         -- return the current value of colvar <name>\n\
-  colvar <name> update        -- recalculate colvar <name>\n\
-  colvar <name> type          -- return the type of colvar <name>\n\
-  colvar <name> delete        -- delete colvar <name>\n\
-  colvar <name> addforce <F>  -- apply given force on colvar <name>\n\
-  colvar <name> getappliedforce -- return applied force of colvar <name>\n\
-  colvar <name> gettotalforce -- return total force of colvar <name>\n\
-  colvar <name> getconfig     -- return config string of colvar <name>\n\
-  colvar <name> cvcflags <fl> -- enable or disable cvcs according to 0/1 flags\n\
-  colvar <name> modifycvcs <str> -- pass new config strings to each CVC\n\
-  colvar <name> get <f>       -- get the value of the colvar feature <f>\n\
-  colvar <name> set <f> <val> -- set the value of the colvar feature <f>\n\
-\n\
-Accessing biases:\n\
-  bias <name> energy          -- return the current energy of bias <name>\n\
-  bias <name> update          -- recalculate bias <name>\n\
-  bias <name> delete          -- delete bias <name>\n\
-  bias <name> getconfig       -- return config string of bias <name>\n\
-  bias <name> get <f>         -- get the value of the bias feature <f>\n\
-  bias <name> set <f> <val>   -- set the value of the bias feature <f>\n\
-";
-
-  return buf;
 }
 
 
