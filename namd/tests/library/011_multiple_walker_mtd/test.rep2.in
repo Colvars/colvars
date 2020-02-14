@@ -13,6 +13,7 @@ colvar {
     lowerBoundary 0.0
     upperBoundary 25.0
 
+    upperWall 25.0
     upperWallConstant 100.0
 
     distance {

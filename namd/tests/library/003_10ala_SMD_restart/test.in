@@ -18,6 +18,7 @@ colvar {
 
 #    lowerWallConstant 10.0
     upperWallConstant 10.0
+    upperWall 0.1
 
     rmsd {
         atoms {

@@ -13,6 +13,9 @@ colvar {
     lowerboundary 0.0
     upperboundary 5.0
 
+    lowerwall 0.0
+    upperwall 5.0
+
     lowerwallconstant 100.0
     upperwallconstant 100.0
 
@@ -34,6 +37,9 @@ colvar {
 
     lowerboundary 0.0
     upperboundary 5.0
+
+    lowerwall 0.0
+    upperwall 5.0
 
     lowerwallconstant 100.0
     upperwallconstant 100.0
