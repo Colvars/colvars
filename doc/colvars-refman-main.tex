@@ -4533,23 +4533,76 @@ Assuming that the set of collective variables includes all relevant degrees of f
 In typical applications, a good rule of thumb can be to choose the ratio $W/\delta{}t$ much smaller than $\kappa_{\mathrm{B}}T/\tau_{\bm{\xi}}$, where $\tau_{\bm{\xi}}$ is the longest among $\bm{\xi}$'s correlation times: $\sigma_{\xi_{i}}$ then dictates the resolution of the calculated PMF.
 
 If the metadynamics parameters are chosen correctly, after an equilibration time, $t_{e}$, the estimator provided 
-by eq. \ref{eq:colvars_meta_fes} oscillates on time around the ``real'' free energy, thereby a better estimate of the latter
- can be obtained as the time average of the bias potential after $t_{e}$ \cite{Marinelli2009,Crespo2010}:
-
+by eq. \ref{eq:colvars_meta_fes} oscillates on time around the ``real'' free energy, thereby a better estimate of the latter can be obtained as the time average of the bias potential after $t_{e}$ \cite{Marinelli2009,Crespo2010}:
 \begin{equation}
   \label{eq:colvars_meta_fes_av}
   A(\bm{\xi}) \; = \; {-\frac{1}{t_{tot}-t_{e}} \int_{t_{e}}^{t_{tot}} {
     V_{\mathrm{meta}}(\bm{\xi},t)dt}
   }
 \end{equation}
+where $t_{e}$ is the time after which the bias potential grows (approximately) evenly during the simulation and $t_{tot}$ is the total simulation time. The free energy calculated according to eq.~\ref{eq:colvars_meta_fes_av} can thus be obtained averaging on time mutiple time-dependent free energy estimates, that can be printed out through the keyword \texttt{keepFreeEnergyFiles}. An alternative is to obtain the free energy profiles by summing the hills added during the simulation; the hills trajectory can be printed out by enabling the option \texttt{writeHillsTrajectory}.
 
-where $t_{e}$ is the time after which the bias potential grows (approximately) evenly during the simulation 
-and $t_{tot}$ is the total simulation time. The free energy calculated according to eq. \ref{eq:colvars_meta_fes_av} 
-can thus be obtained averaging on time mutiple time-dependent free energy estimates, that can be printed out through 
-the keyword \texttt{keepFreeEnergyFiles}. An alternative is to obtain the free energy profiles by summing 
-the hills added during the simulation; the hills trajectory can be printed out by enabling the option \texttt{writeHillsTrajectory}.
+\cvsubsubsec{Treatment of the PMF boundaries}{sec:colvarbias_meta_boundaries}
 
-\cvsubsubsec{Basic syntax}{sec:colvarbias_meta_basics}
+In typical scenarios the Gaussian hills of a metadynamics potential are interpolated and summed together onto a grid, which is much more efficient than computing each hill independently at every step (the keyword \refkey{useGrids}{metadynamics|useGrids} is \texttt{on} by default).
+This numerical approximation typically yields neglibile errors in the resulting PMF \cite{Fiorin2013}.
+However, due to the finite thickness of the Gaussian function, the metadynamics potential would suddenly vanish each time a variable exceeds its grid boundaries.
+
+To avoid such discontinuity the Colvars metadynamics code will keep an explicit copy of each hill that straddles a grid's boundary, and will use it to compute metadynamics forces outside the grid. 
+This measure is taken to protect the accuracy and stability of a metadynamics simulation, except in cases of ``natural'' boundaries (for example, the $[0:180]$ interval of an \texttt{angle} colvar) or when the flags \refkey{hardLowerBoundary}{colvar|hardLowerBoundary} and \refkey{hardUpperBoundary}{colvar|hardUpperBoundary} are explicitly set by the user.
+Unfortunately, processing explicit hills alongside the potential and force grids could easily become inefficient, slowing down the simulation and increasing the state file's size.
+
+In general, it is a good idea to \emph{define a repulsive potential to avoid hills from coming too close to the grid's boundaries}, for example as a \texttt{harmonicWalls} restraint (see \ref{sec:colvarbias_harmonic_walls}).\\
+
+\noindent\textbf{Example:} Using harmonic walls to protect the grid's boundaries.
+{\noindent\ttfamily
+\\
+\-colvar \{\\
+\-\-~~name r\\
+\-\-~~distance \{ ... \}\\
+\-\-~~upperBoundary 15.0\\
+\-\-~~width 0.2\\
+\-\}\\
+\\
+\-metadynamics \{\\
+\-\-~~name meta\_r\\
+\-\-~~colvars r\\
+\-\-~~hillWeight 0.001\\
+\-\-~~hillWidth 2.0\\
+\-\}\\
+\\
+\-harmonicWalls \{\\
+\-\-~~name wall\_r\\
+\-\-~~colvars r\\
+\-\-~~upperWall 13.0\\
+\-\-~~upperWallConstant 2.0\\
+\-\}\\
+}
+
+In the colvar \texttt{r}, the \texttt{distance} function used has a \texttt{lowerBoundary} automatically set to 0~\AA{} by default, thus the keyword \texttt{lowerBoundary} itself is not mandatory and \texttt{hardLowerBoundary} is set to \texttt{yes} internally.
+However, \texttt{upperBoundary} does not have such a ``natural'' choice of value.
+The metadynamics potential \texttt{meta\_r} will individually process any hill whose center is too close to the \texttt{upperBoundary}, more precisely within fewer grid points than 6 times the Gaussian $\sigma$ parameter plus one.
+It goes without saying that if the colvar \texttt{r} represents a distance between two freely-moving molecules, it will cross this ``threshold'' rather frequently.
+
+In this example, where the value of \texttt{hillWidth} ($2\sigma$) amounts to 2 grid points, the threshold is 6+1 = 7 grid points away from \texttt{upperBoundary}: in explicit units, the threshold is 15.0 - 7$\times$0.2 = 13.6~\AA.
+
+The \texttt{wall\_r} restraint included in the example prevents this: the position of its \texttt{upperWall} is 13~\AA{}, i.e.{} 3 grid points below the buffer's threshold (13.6~\AA).
+For the chosen value of \texttt{upperWallConstant}, the energy of the \texttt{wall\_r} bias at \texttt{r} = $r_{\mathrm{upper}}$ = 13.6~\AA{} is:
+\begin{equation*}
+  E(\mathrm{wall\_r}) = \frac{1}{2} \- k \left(\frac{r - r_{\mathrm{upper}}}{\mathtt{width}(r)}\right)^2 = \frac{1}{2} \- 2.0 \left(-3\right)^2 = 9~\mathrm{kcal/mol}
+\end{equation*}
+which results in a relative probability $\exp(-E(\mathrm{wall\_r})/\kappa_{\mathrm{B}}T) \simeq$ $3\times{}10^{-7}$ that \texttt{r} crosses the threshold.
+The probability that \texttt{r} exceeds \texttt{upperBoundary}, which is further away, has also become vanishingly small.
+At that point, you may want to set \texttt{hardUpperBoundary} to \texttt{yes} for \texttt{r}, and let \texttt{meta\_r} know that no special treatment near the grid's boundaries will be needed.
+
+\emph{What is the impact of the wall restraint onto the PMF?} Not a very complicated one: the PMF reconstructed by metadynamics will simply show a sharp increase in free-energy where the wall potential kicks in (\texttt{r}~$>$ 13~\AA{}).
+You may then choose between using the PMF only up until that point and discard the rest, or subtracting the energy of the \texttt{harmonicWalls} restraint from the PMF itself.
+Keep in mind, however, that the statistical convergence of metadynamics may be less accurate where the wall potential is strong.
+
+In summary, although it would be simpler to set the wall's position \texttt{upperWall} and the grid's boundary \texttt{upperBoundary} to the same number, the finite width of the Gaussian hills calls for setting the former strictly within the latter.
+
+
+\cvsubsubsec{Basic configuration keywords}{sec:colvarbias_meta_basics}
 
 To enable a metadynamics calculation, a \texttt{metadynamics \{...\}} block must be defined in the Colvars configuration file.
 Its mandatory keywords are \refkey{colvars}{colvarbias|colvars}, which lists all the variables involved, \refkey{hillWeight}{metadynamics|hillWeight}, which specifies the weight parameter $W$, and \refkey{hillWidth}{metadynamics|hillWidth}, which defines the Gaussian width $2\sigma_{\xi}$ as a number of grid points.
@@ -4628,15 +4681,6 @@ The following two options allow to disable or control this behavior and to track
 
 \end{itemize}
 
-\textbf{Note:} when Gaussian hills are deposited near the \refkey{lowerBoundary}{colvar|lowerBoundary} or \refkey{upperBoundary}{colvar|upperBoundary} and interpolating grids are used (default behavior), their truncation can give rise to accumulating errors.
-In these cases, as a measure of fault-tolerance all Gaussian hills near the boundaries are included in the output state file, and are recalculated analytically whenever the variable falls outside the grid's boundaries.
-(Such measure protects the accuracy of the calculation, and can only be disabled by \texttt{hardLowerBoundary} or \texttt{hardUpperBoundary}.)
-To avoid gradual loss of performance and growth of the state file, either one of the following solutions is recommended:
-\begin{itemize}
-\item enabling the option \texttt{expandBoundaries}, so that the grid's boundaries are automatically recalculated whenever necessary; the resulting \texttt{.pmf} will have its abscissas expanded accordingly;
-\item applying a \texttt{harmonicWalls} bias with the wall locations well within the interval delimited by \texttt{lowerBoundary} and \texttt{upperBoundary}.
-\end{itemize}
-
 
 \cvsubsubsec{Performance optimization}{sec:colvarbias_meta_performance}
 The following options control the computational cost of metadynamics calculations, but do not affect results.
@@ -4645,6 +4689,7 @@ Default values are chosen to minimize such cost with no loss of accuracy.
 \begin{itemize}
 
 \item %
+  \labelkey{metadynamics|useGrids}
   \keydef
     {useGrids}{%
     \texttt{metadynamics}}{%
@@ -4770,7 +4815,6 @@ Instead, multiple probability distributions on different variables can be target
 \-\-~~~~group1 \{ atomNumbers 991 992 \}\\
 \-\-~~~~group2 \{ atomNumbers 1762 1763 \}\\
 \-\-~~\}\\
-\-\-~~lowerBoundary    0.0 \\
 \-\-~~upperBoundary  100.0 \\
 \-\-~~width            0.1 \\
 \-\}\\
@@ -5787,8 +5831,8 @@ please be aware that \emph{several of these tutorials are not actively maintaine
 \item \textbf{Colvars version 2018-11-15 or later \cvnamdonly{(NAMD version 2.14b1 or later)}\cvvmdonly{(VMD version 1.9.4 or later)}\cvlammpsonly{(LAMMPS version 23Nov2018 or later)}.}\\
   The global \texttt{analysis} keyword has been discontinued: specific analysis tasks are controlled directly by the keywords \refkey{corrFunc}{colvar|corrFunc} and \refkey{runAve}{colvar|runAve}, which continue to remain \texttt{off} by default.
 
-\item \textbf{Deprecation warning for calculations including wall potentials.}\\
-  The legacy keywords \texttt{lowerWall} and \texttt{upperWall} will stop having default values and will need to be set explicitly (preferably as part of the \texttt{harmonicWalls} restraint).
+\item \textbf{Colvars version 2020-02-14 or later.}\\
+  The legacy keywords \texttt{lowerWall} and \texttt{upperWall} do not have have default values any longer, and need to be set explicitly (preferably as part of the \texttt{harmonicWalls} restraint).
   When using an ABF bias, it is recommended to set the two walls equal to \refkey{lowerBoundary}{colvar|lowerBoundary} and \refkey{upperBoundary}{colvar|upperBoundary}, respectively.
   When using a metadynamics bias, it is recommended to set the two walls \emph{within} \refkey{lowerBoundary}{colvar|lowerBoundary} and \refkey{upperBoundary}{colvar|upperBoundary}.  This guarantees that the tails of each Gaussian hill are accounted in the region between the grid boundaries and the wall potentials.  See also \refkey{expandBoundaries}{colvar|expandBoundaries} for an automatic definition of the PMF grid boundaries.
 
