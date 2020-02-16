@@ -210,6 +210,9 @@ protected:
   /// through each colvar object
   std::vector<colvar *>    colvars;
 
+  /// \brief Up to date value of each colvar
+  std::vector<colvarvalue> colvar_values;
+
   /// \brief Current forces from this bias to the variables
   std::vector<colvarvalue> colvar_forces;
 

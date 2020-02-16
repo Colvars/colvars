@@ -83,6 +83,14 @@ int colvarbias::init(std::string const &conf)
     cvm::log("Reinitializing bias \""+name+"\".\n");
   }
 
+  colvar_values.resize(num_variables());
+
+  for (i = 0; i < num_variables(); i++) {
+    colvar_values[i].type(colvars[i]->value().type());
+    colvar_forces[i].type(colvar_values[i].type());
+    previous_colvar_forces[i].type(colvar_values[i].type());
+  }
+
   output_prefix = cvm::output_prefix();
 
   get_keyval(conf, "outputEnergy", b_output_energy, b_output_energy);
@@ -281,6 +289,11 @@ int colvarbias::update()
   int error_code = COLVARS_OK;
 
   has_data = true;
+
+  // Update the cached colvar values
+  for (size_t i = 0; i < num_variables(); i++) {
+    colvar_values[i] = colvars[i]->value();
+  }
 
   error_code |= calc_energy(NULL);
   error_code |= calc_forces(NULL);
