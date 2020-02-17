@@ -72,6 +72,10 @@ protected:
   /// Number of timesteps between recording data in history files (if non-zero)
   size_t history_freq;
   bool b_history_files;
+
+  /// save and restore
+  virtual std::istream & read_state_data(std::istream &is) override;
+  virtual std::ostream & write_state_data(std::ostream &os) override;
 };
 
 #endif
