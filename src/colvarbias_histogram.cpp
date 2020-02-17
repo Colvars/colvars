@@ -469,3 +469,48 @@ std::vector<cvm::real> colvarbias_reweightaMD::compute_cumulant_expansion_factor
   }
   return factor;
 }
+
+std::ostream & colvarbias_reweightaMD::write_state_data(std::ostream& os)
+{
+  std::ios::fmtflags flags(os.flags());
+  os.setf(std::ios::fmtflags(0), std::ios::floatfield);
+  os << "grid\n";
+  grid->write_raw(os, 8);
+  os << "grid_count\n";
+  grid_count->write_raw(os, 8);
+  os << "grid_dV\n";
+  grid_dV->write_raw(os, 8);
+  os << "grid_dV_square\n";
+  grid_dV_square->write_raw(os, 8);
+  os.flags(flags);
+  return os;
+}
+
+std::istream & colvarbias_reweightaMD::read_state_data(std::istream& is)
+{
+  if (! read_state_data_key(is, "grid")) {
+    return is;
+  }
+  if (! grid->read_raw(is)) {
+    return is;
+  }
+  if (! read_state_data_key(is, "grid_count")) {
+    return is;
+  }
+  if (! grid_count->read_raw(is)) {
+    return is;
+  }
+  if (! read_state_data_key(is, "grid_dV")) {
+    return is;
+  }
+  if (! grid_dV->read_raw(is)) {
+    return is;
+  }
+  if (! read_state_data_key(is, "grid_dV_square")) {
+    return is;
+  }
+  if (! grid_dV_square->read_raw(is)) {
+    return is;
+  }
+  return is;
+}
