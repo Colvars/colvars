@@ -118,7 +118,7 @@ colvarproxy_vmd::colvarproxy_vmd(Tcl_Interp *interp, VMDApp *v, int molid)
   // set the same seed as in Measure.C
   vmd_srandom(38572111);
 
-  this->setup();
+  colvarproxy_vmd::setup();
 }
 
 
