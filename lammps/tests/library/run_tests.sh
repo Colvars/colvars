@@ -9,7 +9,7 @@ export TMPDIR=${TMPDIR:-/tmp}
 DIRLIST=''
 BINARY=lmp_cpu
 while [ $# -ge 1 ]; do
-  if { echo $1 | grep -q lmp_ ; }; then
+  if [ -x $1 ] && { echo $1 | grep -q lmp ; }; then
     echo "Using LAMMPS executable from $1"
     BINARY=$1
   elif [ "x$1" = 'x-g' ]; then
