@@ -270,7 +270,7 @@ void colvarproxy_namd::calculate()
 
   if (first_timestep) {
 
-    this->setup();
+    colvarproxy_namd::setup();
     colvars->setup();
     colvars->setup_input();
     colvars->setup_output();
