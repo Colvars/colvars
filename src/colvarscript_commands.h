@@ -77,7 +77,7 @@ extern "C" {
 
 
 CVSCRIPT(cv_addenergy,
-         "Add an energy to the MD engine",
+         "Add an energy to the MD engine (no effect in VMD)",
          1, 1,
          "E : float - Amount of energy to add",
          char const *Earg =
@@ -129,14 +129,14 @@ CVSCRIPT(cv_configfile,
          )
 
 CVSCRIPT(cv_delete,
-         "Delete this Colvars module instance",
+         "Delete this Colvars module instance (VMD only)",
          0, 0,
          "",
          return script->proxy()->request_deletion();
          )
 
 CVSCRIPT(cv_frame,
-         "Get or set current frame number",
+         "Get or set current frame number (VMD only)",
          0, 1,
          "frame : integer - Frame number",
          char const *arg =
@@ -168,10 +168,9 @@ CVSCRIPT(cv_getconfig,
 
 CVSCRIPT(cv_getenergy,
          "Get the current Colvars energy",
-         1, 1,
-         "E (float) - Store the energy in this variable",
-         double *energy = reinterpret_cast<double *>(objv[2]);
-         *energy = cvm::main()->total_bias_energy;
+         0, 0,
+         "",
+         script->set_result_str(cvm::to_str(cvm::main()->total_bias_energy));
          return COLVARS_OK;
          )
 
