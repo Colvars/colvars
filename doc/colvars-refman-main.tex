@@ -4656,7 +4656,7 @@ In summary, although it would be simpler to set the wall's position \texttt{uppe
 \cvsubsubsec{Basic configuration keywords}{sec:colvarbias_meta_basics}
 
 To enable a metadynamics calculation, a \texttt{metadynamics \{...\}} block must be defined in the Colvars configuration file.
-Its mandatory keywords are \refkey{colvars}{colvarbias|colvars}, which lists all the variables involved, \refkey{hillWeight}{metadynamics|hillWeight}, which specifies the weight parameter $W$, and \refkey{hillWidth}{metadynamics|hillWidth}, which defines the Gaussian width $2\sigma_{\xi}$ as a number of grid points.
+Its mandatory keywords are \refkey{colvars}{colvarbias|colvars}, the variables involved, \refkey{hillWeight}{metadynamics|hillWeight}, the weight parameter $W$, and the widths $2\sigma$ of the Gaussian hills in each dimension given by the single dimensionless parameter \refkey{hillWidth}{metadynamics|hillWidth}, or more explicitly by the \refkey{gaussianSigmas}{metadynamics|gaussianSigmas}.
 
 \begin{itemize}
 
@@ -4681,11 +4681,24 @@ Its mandatory keywords are \refkey{colvars}{colvarbias|colvars}, which lists all
   \key
     {hillWidth}{%
     \texttt{metadynamics}}{%
-    Width of a Gaussian hill, measured in number of grid points}{%
+    Width $2\sigma$ of a Gaussian hill, measured in number of grid points}{%
     positive decimal}{%
-    The value of this keyword is the Gaussian width $2\sigma_{\xi_{i}}$, expressed in number of grid points: the grid spacing is determined by \refkey{width}{colvar|width}.
-    The values of the parameter $\sigma_{\xi_{i}}$ for each variable $\xi_{i}$ inits physical units are printed by \MDENGINE{} at initialization time.
-    Values between 1 and 3 are recommended: smaller values fail to adequately interpolate each Gaussian \cite{Fiorin2013}, while larger values may be unable to account for steep free-energy gradients.}
+    This keyword sets the Gaussian width $2\sigma_{\xi_{i}}$ for all colvars, expressed in \emph{number of grid points}, with the grid spacing along each colvar $\xi$ determined by the respective value of \refkey{width}{colvar|width}.
+    Values between 1 and 3 are recommended for this option: smaller numbers will fail to adequately interpolate each Gaussian function \cite{Fiorin2013}, while larger values may be unable to account for steep free-energy gradients.
+    The values of each half-width $\sigma_{\xi_{i}}$ in the physical units of $\xi_{i}$ are also printed by \MDENGINE{} at initialization time; alternatively, they may be set explicitly via \refkey{gaussianSigmas}{metadynamics|gaussianSigmas}.
+    }
+
+\item %
+  \labelkey{metadynamics|gaussianSigmas}
+  \key
+    {gaussianSigmas}{%
+    \texttt{metadynamics}}{%
+    Half-widths $\sigma$ of the Gaussian hill (one for each colvar)}{%
+    space-separated list of decimals}{%
+    This option sets the parameters $\sigma_{\xi_i}$ of the Gaussian hills along each colvar $\xi_i$, expressed in \emph{the same unit of $\xi_i$}.
+    No restrictions are placed on each value, but a warning will be printed if \refkey{useGrids}{metadynamics|useGrids} is \texttt{on} and the Gaussian width $2\sigma_{\xi_i}$ is smaller than the corresponding grid spacing, $\mathtt{width}({\xi_i})$.
+    If not given, default values will be computed from the dimensionless number \refkey{hillWidth}{metadynamics|hillWidth}.
+    }
 
 \item %
   \labelkey{metadynamics|newHillFrequency}
@@ -5882,6 +5895,9 @@ please be aware that \emph{several of these tutorials are not actively maintaine
 
 \item \textbf{Colvars version 2018-11-15 or later \cvnamdonly{(NAMD version 2.14b1 or later)}\cvvmdonly{(VMD version 1.9.4 or later)}\cvlammpsonly{(LAMMPS version 23Nov2018 or later)}.}\\
   The global \texttt{analysis} keyword has been discontinued: specific analysis tasks are controlled directly by the keywords \refkey{corrFunc}{colvar|corrFunc} and \refkey{runAve}{colvar|runAve}, which continue to remain \texttt{off} by default.
+
+\item \textbf{Colvars version 2020-02-25 or later\cvnamdonly{ (NAMD version 2.14b1 or later)}\cvvmdonly{ (VMD version 1.9.4 or later)}.}\\
+  The parameter \refkey{hillWidth}{metadynamics|hillWidth} expressing the Gaussian width $\sigma$ does not have a default value any more.  The new parameter \refkey{gaussianSigmas}{metadynamics|gaussianSigmas} also allows setting the $\sigma$ parameters explicitly if more convenient.
 
 \item \textbf{Colvars version 2020-02-25 or later\cvnamdonly{ (NAMD version 2.14b1 or later)}\cvvmdonly{ (VMD version 1.9.4 or later)}.}\\
   The legacy keywords \texttt{lowerWall} and \texttt{upperWall} of a \texttt{colvar} definition block do not have default values any longer, and need to be set explicitly, preferably as part of the \texttt{harmonicWalls} restraint.

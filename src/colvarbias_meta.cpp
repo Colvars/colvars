@@ -38,7 +38,7 @@ colvarbias_meta::colvarbias_meta(char const *key)
   new_hills_begin = hills.end();
   hills_traj_os = NULL;
 
-  hill_width = cvm::sqrt(2.0 * PI) / 2.0;
+  hill_width = 0.0;
 
   use_grids = true;
   rebin_grids = false;
@@ -79,9 +79,7 @@ int colvarbias_meta::init(std::string const &conf)
     enable(f_cvb_history_dependent);
   }
 
-  if (get_keyval(conf, "gaussianSigmas", colvar_sigmas, colvar_sigmas)) {
-    hill_width = 0.0;
-  }
+  get_keyval(conf, "gaussianSigmas", colvar_sigmas, colvar_sigmas);
 
   get_keyval(conf, "hillWidth", hill_width, hill_width);
 
@@ -101,6 +99,12 @@ int colvarbias_meta::init(std::string const &conf)
     }
   }
 
+  if (colvar_sigmas.size() == 0) {
+    error_code |= cvm::error("Error: positive values are required for "
+                             "either hillWidth or gaussianSigmas.",
+                             INPUT_ERROR);
+  }
+
   {
     bool b_replicas = false;
     get_keyval(conf, "multipleReplicas", b_replicas, false);
@@ -113,7 +117,15 @@ int colvarbias_meta::init(std::string const &conf)
   get_keyval(conf, "useGrids", use_grids, use_grids);
 
   if (use_grids) {
-    get_keyval(conf, "gridsUpdateFrequency", grids_freq, new_hill_freq);
+
+    for (i = 0; i < num_variables(); i++) {
+      if (2.0*colvar_sigmas[i] < variables(i)->width) {
+        cvm::log("Warning: gaussianSigmas is too narrow for the grid "
+                 "spacing along "+variables(i)->name+".");
+      }
+    }
+
+    get_keyval(conf, "gridsUpdateFrequency", grids_freq, grids_freq);
     get_keyval(conf, "rebinGrids", rebin_grids, rebin_grids);
 
     expand_grids = false;
