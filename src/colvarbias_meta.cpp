@@ -40,7 +40,10 @@ colvarbias_meta::colvarbias_meta(char const *key)
 
   hill_width = 0.0;
 
+  new_hill_freq = 1000;
+
   use_grids = true;
+  grids_freq = 0;
   rebin_grids = false;
   hills_energy = NULL;
   hills_energy_gradients = NULL;
@@ -49,6 +52,8 @@ colvarbias_meta::colvarbias_meta(char const *key)
   keep_hills = false;
   dump_fes_save = false;
   dump_replica_fes = false;
+
+  b_hills_traj = false;
 
   ebmeta_equil_steps = 0L;
 
@@ -74,9 +79,12 @@ int colvarbias_meta::init(std::string const &conf)
     cvm::error("Error: hillWeight must be provided, and a positive number.\n", INPUT_ERROR);
   }
 
-  get_keyval(conf, "newHillFrequency", new_hill_freq, 1000);
+  get_keyval(conf, "newHillFrequency", new_hill_freq, new_hill_freq);
   if (new_hill_freq > 0) {
     enable(f_cvb_history_dependent);
+    if (grids_freq == 0) {
+      grids_freq = new_hill_freq;
+    }
   }
 
   get_keyval(conf, "gaussianSigmas", colvar_sigmas, colvar_sigmas);
@@ -145,15 +153,17 @@ int colvarbias_meta::init(std::string const &conf)
     get_keyval(conf, "keepHills", keep_hills, keep_hills);
     get_keyval(conf, "keepFreeEnergyFiles", dump_fes_save, dump_fes_save);
 
-    hills_energy           = new colvar_grid_scalar(colvars);
-    hills_energy_gradients = new colvar_grid_gradient(colvars);
+    if (hills_energy == NULL) {
+      hills_energy           = new colvar_grid_scalar(colvars);
+      hills_energy_gradients = new colvar_grid_gradient(colvars);
+    }
 
   } else {
 
     dump_fes = false;
   }
 
-  get_keyval(conf, "writeHillsTrajectory", b_hills_traj, false);
+  get_keyval(conf, "writeHillsTrajectory", b_hills_traj, b_hills_traj);
 
   error_code |= init_replicas_params(conf);
   error_code |= init_well_tempered_params(conf);
