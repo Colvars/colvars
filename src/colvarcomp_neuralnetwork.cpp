@@ -91,7 +91,7 @@ colvar::neuralNetwork::neuralNetwork(std::string const &conf): linearCombination
             cvm::error("Error: error on adding a new dense layer.\n");
         }
     }
-    m_nn_input.resize(cv.size());
+    nn.input().resize(cv.size());
 }
 
 colvar::neuralNetwork::~neuralNetwork() {}
@@ -103,12 +103,13 @@ void colvar::neuralNetwork::calc_value() {
         colvarvalue current_cv_value(cv[i_cv]->value());
         // for current nn implementation we have to assume taht types are always scaler
         if (current_cv_value.type() == colvarvalue::type_scalar) {
-            m_nn_input[i_cv] = cv[i_cv]->sup_coeff * (cvm::pow(current_cv_value.real_value, cv[i_cv]->sup_np));
+            nn.input()[i_cv] = cv[i_cv]->sup_coeff * (cvm::pow(current_cv_value.real_value, cv[i_cv]->sup_np));
         } else {
             cvm::error("Error: using of non-scaler component.\n");
         }
     }
-    x = nn.compute(m_nn_input, m_output_index);
+    nn.compute();
+    x = nn.getOutput(m_output_index);
 }
 
 void colvar::neuralNetwork::calc_gradients() {
@@ -117,7 +118,7 @@ void colvar::neuralNetwork::calc_gradients() {
         if ( cv[i_cv]->is_enabled(f_cvc_explicit_gradient) &&
             !cv[i_cv]->is_enabled(f_cvc_scalable) &&
             !cv[i_cv]->is_enabled(f_cvc_scalable_com)) {
-            const cvm::real factor = nn.computeGradient(m_nn_input, m_output_index, i_cv);
+            const cvm::real factor = nn.getGradient(m_output_index, i_cv);
             const cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);
             for (size_t j_elem = 0; j_elem < cv[i_cv]->value().size(); ++j_elem) {
                 for (size_t k_ag = 0 ; k_ag < cv[i_cv]->atom_groups.size(); ++k_ag) {
@@ -144,7 +145,7 @@ void colvar::neuralNetwork::apply_force(colvarvalue const &force) {
         } else {
             // Compute factors for polynomial combinations
             const cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);
-            const cvm::real factor = nn.computeGradient(m_nn_input, m_output_index, i_cv);
+            const cvm::real factor = nn.getGradient(m_output_index, i_cv);;
             colvarvalue cv_force = force.real_value * factor * factor_polynomial;
             cv[i_cv]->apply_force(cv_force);
         }
