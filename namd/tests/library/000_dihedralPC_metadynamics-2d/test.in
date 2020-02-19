@@ -1,0 +1,49 @@
+colvarsTrajFrequency 1
+colvarsRestartFrequency 10
+indexFile index.ndx
+
+colvar {
+  name one
+  extendedLagrangian
+  extendedFluctuation 0.1
+  extendedTimeConstant 100
+  extendedTemp 300
+
+  width 0.2
+  lowerBoundary -3.5
+  upperBoundary 3.5
+
+  dihedralPC {
+    psfSegID BH
+    residueRange 1-10
+    vectorFile ../Common/eigenvectors-localmin
+    vectorNumber 1
+  }
+}
+
+colvar {
+  name two
+  extendedLagrangian
+  extendedFluctuation 0.1
+  extendedTimeConstant 100
+  extendedTemp 300
+
+  width 0.2
+  lowerBoundary -3.5
+  upperBoundary 3.5
+
+  dihedralPC {
+    psfSegID BH
+    residueRange 1-10
+    vectorFile ../Common/eigenvectors-localmin
+    vectorNumber 2
+  }
+}
+
+
+metadynamics {
+    colvars        one two
+    gaussianSigmas 0.2 0.2
+    hillWeight     0.01
+    #hillWidth 2.0
+}

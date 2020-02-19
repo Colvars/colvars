@@ -1,0 +1,31 @@
+colvarsTrajFrequency 1
+colvarsRestartFrequency 10
+indexFile index.ndx
+
+colvar {
+
+    name one
+
+    outputAppliedForce on
+
+    # use a non-trivial width to test bias behavior
+    width 0.5
+    # The lower boundary is already defined at 0 for a distance function
+    # lowerBoundary 0.0
+    upperBoundary 10.0
+
+    distance {
+        group1 {
+            indexGroup group1
+        }
+        group2 {
+            indexGroup group2
+        }
+    }
+} 
+
+metadynamics {
+    colvars        one
+    gaussianSigmas 0.31332853432887503  # Reproduce default value of hillWidth
+    hillWeight     0.001
+}
