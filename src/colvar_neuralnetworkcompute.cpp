@@ -127,15 +127,28 @@ std::ostream& denseLayer::showInfo(std::ostream& os) {
     return os;
 }
 
+neuralNetworkCompute::neuralNetworkCompute(const std::vector<denseLayer>& dense_layers): m_dense_layers(dense_layers) {
+    m_layers_output.resize(m_dense_layers.size());
+    m_grads_tmp.resize(m_dense_layers.size());
+    for (size_t i_layer = 0; i_layer < m_layers_output.size(); ++i_layer) {
+        m_layers_output[i_layer].assign(m_dense_layers[i_layer].getOutputSize(), 0);
+        m_grads_tmp[i_layer].assign(m_dense_layers[i_layer].getOutputSize(), std::vector<double>(m_dense_layers[i_layer].getInputSize(), 0));
+    }
+}
+
 bool neuralNetworkCompute::addDenseLayer(const denseLayer& layer) {
     if (m_dense_layers.empty()) {
         // add layer to this ann directly if m_dense_layers is empty
         m_dense_layers.push_back(layer);
+        m_layers_output.push_back(std::vector<double>(layer.getOutputSize()));
+        m_grads_tmp.push_back(std::vector<std::vector<double>>(layer.getOutputSize(), std::vector<double>(layer.getInputSize(), 0)));
         return true;
     } else {
         // otherwise, we need to check if the output of last layer in m_dense_layers matches the input of layer to be added
         if (m_dense_layers.back().getOutputSize() == layer.getInputSize()) {
             m_dense_layers.push_back(layer);
+            m_layers_output.push_back(std::vector<double>(layer.getOutputSize()));
+            m_grads_tmp.push_back(std::vector<std::vector<double>>(layer.getOutputSize(), std::vector<double>(layer.getInputSize(), 0)));
             return true;
         } else {
             return false;
@@ -159,6 +172,31 @@ std::vector<std::vector<double>> neuralNetworkCompute::multiply_matrix(const std
         }
     }
     return C;
+}
+
+void neuralNetworkCompute::compute() {
+    if (m_dense_layers.empty()) {
+        return;
+    }
+    m_layers_output[0] = m_dense_layers[0].compute(m_input);
+    for (size_t i_layer = 1; i_layer < m_dense_layers.size(); ++i_layer) {
+        m_layers_output[i_layer] = m_dense_layers[i_layer].compute(m_layers_output[i_layer - 1]);
+    }
+    // gradients of each layer
+//     std::vector<std::vector<std::vector<double>>> grads(m_dense_layers.size());
+    m_grads_tmp[0] = m_dense_layers[0].computeGradient(m_input);
+    for (size_t i_layer = 1; i_layer < m_dense_layers.size(); ++i_layer) {
+        m_grads_tmp[i_layer] = m_dense_layers[i_layer].computeGradient(m_layers_output[i_layer - 1]);
+    }
+    // chain rule
+    if (m_dense_layers.size() > 1) {
+        m_chained_grad = multiply_matrix(m_grads_tmp[1], m_grads_tmp[0]);
+        for (size_t i_layer = 2; i_layer < m_dense_layers.size(); ++i_layer) {
+            m_chained_grad = multiply_matrix(m_grads_tmp[i_layer], m_chained_grad);
+        }
+    } else {
+        m_chained_grad = m_grads_tmp[0];
+    }
 }
 
 std::vector<double> neuralNetworkCompute::compute(const std::vector<double>& input) const {

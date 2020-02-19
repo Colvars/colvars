@@ -69,13 +69,24 @@ public:
 class neuralNetworkCompute {
 private:
     std::vector<denseLayer> m_dense_layers;
+    std::vector<double> m_input;
+    /// temporary output for each layer, useful to speedup the gradients' calculation
+    std::vector<std::vector<double>> m_layers_output;
+    std::vector<std::vector<std::vector<double>>> m_grads_tmp;
+    std::vector<std::vector<double>> m_chained_grad;
 private:
     /// helper function: multiply two matrix constructed from 2D vector
     static std::vector<std::vector<double>> multiply_matrix(const std::vector<std::vector<double>>& A, const std::vector<std::vector<double>>& B);
 public:
-    neuralNetworkCompute(): m_dense_layers(0) {}
-    neuralNetworkCompute(const std::vector<denseLayer>& dense_layers): m_dense_layers(dense_layers) {}
+    neuralNetworkCompute(): m_dense_layers(0), m_layers_output(0) {}
+    neuralNetworkCompute(const std::vector<denseLayer>& dense_layers);
     bool addDenseLayer(const denseLayer& layer);
+    // for faster computation
+    const std::vector<double>& input() const {return m_input;}
+    std::vector<double>& input() {return m_input;}
+    void compute();
+    double getOutput(const size_t i) const {return m_layers_output.back()[i];}
+    double getGradient(const size_t i, const size_t j) const {return m_chained_grad[i][j];}
     /// compute the values of all output nodes
     std::vector<double> compute(const std::vector<double>& input) const;
     /// compute the value of a specified output node
