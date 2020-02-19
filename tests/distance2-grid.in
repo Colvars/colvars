@@ -5,7 +5,6 @@ colvar {
     outputAppliedForce on
 
     width 0.5
-    lowerBoundary 0.0
     upperBoundary 10.0
 
     distance {

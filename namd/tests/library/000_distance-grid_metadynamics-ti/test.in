@@ -27,5 +27,6 @@ colvar {
 metadynamics {
     colvars        one
     hillWeight     0.001
+    hillWidth      1.2533141373155001  # Old default
     writeTIPMF     yes
 }
