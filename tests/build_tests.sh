@@ -125,9 +125,6 @@ create_test_dir "distance-corrfunc"
 write_colvars_config "distance-corrfunc" "" ${dirname}/test.in
 
 
-m4 < metadynamics.in.m4 > metadynamics.in
-m4 -Dti_pmf < metadynamics.in.m4 > metadynamics-ti.in
-
 # NOTE: abf is not included because total/system force calculations
 # should be tested separately
 for colvar in "distance-grid" ; do
@@ -139,6 +136,7 @@ for colvar in "distance-grid" ; do
         "harmonic-k-moving" \
         "histogram" \
         "metadynamics" \
+        "metadynamics-sigmas" \
         "metadynamics-ti" \
         ; do
         create_test_dir ${colvar}_${bias}
@@ -239,6 +237,11 @@ write_colvars_config ${colvar}-fitgroup ${bias} ${dirname}/test.in
 
 colvar="dihedralPC"
 bias="abf2d"
+create_test_dir ${colvar}_${bias}
+write_colvars_config ${colvar} ${bias} ${dirname}/test.in
+
+colvar="dihedralPC"
+bias="metadynamics-2d"
 create_test_dir ${colvar}_${bias}
 write_colvars_config ${colvar} ${bias} ${dirname}/test.in
 

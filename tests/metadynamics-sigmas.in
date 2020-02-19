@@ -1,0 +1,5 @@
+metadynamics {
+    colvars        one
+    gaussianSigmas 0.31332853432887503  # Reproduce default value of hillWidth
+    hillWeight     0.001
+}

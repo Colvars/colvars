@@ -1,0 +1,463 @@
+colvars: ----------------------------------------------------------------------
+colvars: Please cite Fiorin et al, Mol Phys 2013:
+colvars:  https://dx.doi.org/10.1080/00268976.2013.813594
+colvars: in any publication based on this calculation.
+colvars: SMP parallelism is enabled; if needed, use "smp off" to override this.
+colvars: This version was built with the C++11 standard or higher.
+colvars: ----------------------------------------------------------------------
+colvars: Reading new configuration from file "test.in":
+colvars: # units = "" [default]
+colvars: # indexFile = "index.ndx"
+colvars: The following index groups are currently defined:
+colvars:   Protein (104 atoms)
+colvars:   Protein_noH (51 atoms)
+colvars:   Protein_Backbone (40 atoms)
+colvars:   Protein_C-alpha (10 atoms)
+colvars:   RMSD_atoms (10 atoms)
+colvars:   Protein_C-alpha_1_2 (2 atoms)
+colvars:   Protein_C-alpha_9_10 (2 atoms)
+colvars:   Protein_C-alpha_1 (1 atoms)
+colvars:   group1 (4 atoms)
+colvars:   Protein_C-alpha_2 (1 atoms)
+colvars:   group2 (4 atoms)
+colvars:   Protein_C-alpha_3 (1 atoms)
+colvars:   group3 (4 atoms)
+colvars:   Protein_C-alpha_4 (1 atoms)
+colvars:   group4 (4 atoms)
+colvars:   Protein_C-alpha_5 (1 atoms)
+colvars:   group5 (4 atoms)
+colvars:   Protein_C-alpha_6 (1 atoms)
+colvars:   group6 (4 atoms)
+colvars:   Protein_C-alpha_7 (1 atoms)
+colvars:   group7 (4 atoms)
+colvars:   Protein_C-alpha_8 (1 atoms)
+colvars:   group8 (4 atoms)
+colvars:   Protein_C-alpha_9 (1 atoms)
+colvars:   group9 (4 atoms)
+colvars:   Protein_C-alpha_10 (1 atoms)
+colvars:   group10 (4 atoms)
+colvars:   heavy_atoms (51 atoms)
+colvars: # smp = on [default]
+colvars: # colvarsTrajFrequency = 1
+colvars: # colvarsRestartFrequency = 10
+colvars: # scriptedColvarForces = off [default]
+colvars: # scriptingAfterBiases = off [default]
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = "one"
+colvars:   Initializing a new "dihedralPC" component.
+colvars:     # name = "" [default]
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
+colvars:     # psfSegID = "BH"
+colvars:     # vectorFile = "../Common/eigenvectors-localmin"
+colvars:     # vectorNumber = 1
+colvars:   All components initialized.
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # width = 0.2
+colvars:   # lowerBoundary = -3.5
+colvars:   # upperBoundary = 3.5
+colvars:   # hardLowerBoundary = off [default]
+colvars:   # hardUpperBoundary = off [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = on
+colvars:   Enabling the extended Lagrangian term for colvar "one".
+colvars:   # extendedTemp = 300
+colvars:   # extendedFluctuation = 0.1
+colvars:   Computed extended system force constant: 59.6157 [E]/U^2
+colvars:   # extendedTimeConstant = 100
+colvars:   Computed fictitious mass: 15100.8 [E]/(U/fs)^2   (U: colvar unit)
+colvars:   # outputEnergy = off [default]
+colvars:   # extendedLangevinDamping = 1 [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputTotalForce = off [default]
+colvars:   # outputAppliedForce = off [default]
+colvars:   # subtractAppliedForce = off [default]
+colvars:   # runAve = off [default]
+colvars:   # corrFunc = off [default]
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = "two"
+colvars:   Initializing a new "dihedralPC" component.
+colvars:     # name = "" [default]
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
+colvars:     # psfSegID = "BH"
+colvars:     # vectorFile = "../Common/eigenvectors-localmin"
+colvars:     # vectorNumber = 2
+colvars:   All components initialized.
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # width = 0.2
+colvars:   # lowerBoundary = -3.5
+colvars:   # upperBoundary = 3.5
+colvars:   # hardLowerBoundary = off [default]
+colvars:   # hardUpperBoundary = off [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = on
+colvars:   Enabling the extended Lagrangian term for colvar "two".
+colvars:   # extendedTemp = 300
+colvars:   # extendedFluctuation = 0.1
+colvars:   Computed extended system force constant: 59.6157 [E]/U^2
+colvars:   # extendedTimeConstant = 100
+colvars:   Computed fictitious mass: 15100.8 [E]/(U/fs)^2   (U: colvar unit)
+colvars:   # outputEnergy = off [default]
+colvars:   # extendedLangevinDamping = 1 [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputTotalForce = off [default]
+colvars:   # outputAppliedForce = off [default]
+colvars:   # subtractAppliedForce = off [default]
+colvars:   # runAve = off [default]
+colvars:   # corrFunc = off [default]
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables initialized, 2 in total.
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new "metadynamics" instance.
+colvars:   # name = "metadynamics1" [default]
+colvars:   # colvars = { one, two }
+colvars:   # outputEnergy = off [default]
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # writeTISamples = off [default]
+colvars:   # writeTIPMF = off [default]
+colvars:   # hillWeight = 0.01
+colvars:   # newHillFrequency = 1000 [default]
+colvars:   # gaussianSigmas =  [default]
+colvars:   # hillWidth = 2
+colvars:   Half-widths of the Gaussian hills (sigma's):
+colvars:   one: 0.2
+colvars:   two: 0.2
+colvars:   # multipleReplicas = off [default]
+colvars:   # useGrids = on [default]
+colvars:   # gridsUpdateFrequency = 1000 [default]
+colvars:   # rebinGrids = off [default]
+colvars:   # writeFreeEnergyFile = on [default]
+colvars:   # keepHills = off [default]
+colvars:   # keepFreeEnergyFiles = off [default]
+colvars:   # writeHillsTrajectory = off [default]
+colvars:   # wellTempered = off [default]
+colvars:   # biasTemperature = -1 [default]
+colvars:   # ebMeta = off [default]
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables biases initialized, 1 in total.
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables module (re)initialized.
+colvars: ----------------------------------------------------------------------
+colvars: Updating NAMD interface:
+colvars: updating atomic data (30 atoms).
+colvars: updating group data (0 scalable groups, 0 atoms in total).
+colvars: Re-initialized atom group for variable "one":0/0. 1 atoms: total mass = 14.007, total charge = -0.62.
+colvars: Re-initialized atom group for variable "one":0/1. 1 atoms: total mass = 12.011, total charge = -0.1.
+colvars: Re-initialized atom group for variable "one":0/2. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/3. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/4. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/5. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/6. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/7. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/8. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/9. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/10. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/11. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/12. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/13. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/14. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/15. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/16. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/17. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/18. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/19. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/20. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/21. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/22. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/23. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/24. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/25. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/26. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/27. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/28. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/29. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/30. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/31. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/32. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/33. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/34. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/35. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/36. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/37. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/38. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/39. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/40. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/41. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/42. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/43. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/44. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/45. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/46. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/47. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/48. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/49. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/50. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/51. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/52. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/53. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/54. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/55. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/56. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/57. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/58. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/59. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/60. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/61. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/62. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/63. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/64. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/65. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/66. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/67. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/68. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/69. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/70. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/71. 1 atoms: total mass = 12.011, total charge = 0.55.
+colvars: Re-initialized atom group for variable "two":0/0. 1 atoms: total mass = 14.007, total charge = -0.62.
+colvars: Re-initialized atom group for variable "two":0/1. 1 atoms: total mass = 12.011, total charge = -0.1.
+colvars: Re-initialized atom group for variable "two":0/2. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/3. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/4. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/5. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/6. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "two":0/7. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/8. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/9. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "two":0/10. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/11. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/12. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/13. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/14. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "two":0/15. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/16. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/17. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "two":0/18. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/19. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/20. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/21. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/22. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "two":0/23. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/24. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/25. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "two":0/26. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/27. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/28. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/29. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/30. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "two":0/31. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/32. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/33. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "two":0/34. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/35. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/36. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/37. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/38. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "two":0/39. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/40. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/41. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "two":0/42. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/43. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/44. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/45. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/46. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "two":0/47. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/48. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/49. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "two":0/50. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/51. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/52. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/53. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/54. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "two":0/55. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/56. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/57. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "two":0/58. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/59. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/60. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/61. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/62. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "two":0/63. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/64. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/65. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "two":0/66. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/67. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/68. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/69. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/70. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "two":0/71. 1 atoms: total mass = 12.011, total charge = 0.55.
+colvars: ----------------------------------------------------------------------
+colvars: Restarting from file "test.colvars.state".
+colvars:   Restarting collective variable "one" from value: -1.07126
+colvars:   Restarting collective variable "two" from value: -2.08003
+colvars:   Restarting metadynamics bias "metadynamics1" from step number 20.
+colvars: ----------------------------------------------------------------------
+colvars: The restart output state file will be "test.restart.tmp.colvars.state".
+colvars: The final output state file will be "test.restart.colvars.state".
+colvars: Writing to colvar trajectory file "test.restart.colvars.traj".
+colvars: Updating NAMD interface:
+colvars: updating atomic data (30 atoms).
+colvars: updating group data (0 scalable groups, 0 atoms in total).
+colvars: Re-initialized atom group for variable "one":0/0. 1 atoms: total mass = 14.007, total charge = -0.62.
+colvars: Re-initialized atom group for variable "one":0/1. 1 atoms: total mass = 12.011, total charge = -0.1.
+colvars: Re-initialized atom group for variable "one":0/2. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/3. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/4. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/5. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/6. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/7. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/8. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/9. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/10. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/11. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/12. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/13. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/14. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/15. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/16. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/17. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/18. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/19. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/20. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/21. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/22. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/23. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/24. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/25. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/26. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/27. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/28. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/29. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/30. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/31. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/32. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/33. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/34. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/35. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/36. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/37. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/38. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/39. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/40. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/41. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/42. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/43. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/44. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/45. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/46. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/47. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/48. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/49. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/50. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/51. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/52. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/53. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/54. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/55. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/56. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/57. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/58. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/59. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/60. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/61. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/62. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/63. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/64. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/65. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/66. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/67. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/68. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "one":0/69. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "one":0/70. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/71. 1 atoms: total mass = 12.011, total charge = 0.55.
+colvars: Re-initialized atom group for variable "two":0/0. 1 atoms: total mass = 14.007, total charge = -0.62.
+colvars: Re-initialized atom group for variable "two":0/1. 1 atoms: total mass = 12.011, total charge = -0.1.
+colvars: Re-initialized atom group for variable "two":0/2. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/3. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/4. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/5. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/6. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "two":0/7. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/8. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/9. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "two":0/10. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/11. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/12. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/13. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/14. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "two":0/15. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/16. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/17. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "two":0/18. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/19. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/20. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/21. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/22. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "two":0/23. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/24. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/25. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "two":0/26. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/27. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/28. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/29. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/30. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "two":0/31. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/32. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/33. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "two":0/34. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/35. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/36. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/37. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/38. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "two":0/39. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/40. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/41. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "two":0/42. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/43. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/44. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/45. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/46. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "two":0/47. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/48. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/49. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "two":0/50. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/51. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/52. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/53. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/54. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "two":0/55. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/56. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/57. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "two":0/58. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/59. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/60. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/61. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/62. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "two":0/63. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/64. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/65. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "two":0/66. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/67. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/68. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "two":0/69. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "two":0/70. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "two":0/71. 1 atoms: total mass = 12.011, total charge = 0.55.
+colvars: The restart output state file will be "test.restart.tmp.colvars.state".
+colvars: The final output state file will be "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".
+colvars: Saving collective variables state to "test.restart.tmp.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".
+colvars: Saving collective variables state to "test.restart.tmp.colvars.state".
+colvars: Saving collective variables state to "test.restart.colvars.state".
