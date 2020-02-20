@@ -1,0 +1,78 @@
+# This Colvars input defines a distance-to-bound-configuration (DBC) and a center-of-mass distance
+# coordinate, both with flat-well restraints (upperWall)
+# A "distance to bound configuration" (DBC) coordinate for ligand binding restraints
+# see Salari, Joseph, Lohia, Hénin and Brannigan, J. Chem. Theory Comput. 2018, 14, 12, 6560-6573
+# https://arxiv.org/abs/1801.04901
+
+# Selected protein atoms are defined via a PDB file of the whole system (rest_ref.pdb), with
+# occupancy values set to 1 for those atoms, and 0 everywhere else; this can be prepared in VMD
+# with the following two text commands:
+#
+# > [atomselect top all] set occupancy 0
+# > [atomselect top "alpha and within 15 of (resname CHL1 and resid 1)"] set occupancy 1
+
+# For analysis purposes, histograms can be collected with full time resolution
+# by adding "histogram" blocks to this input
+
+colvar {
+    name DBC
+
+    rmsd {
+        # Reference coordinates (for ligand RMSD computation)
+        refpositionsfile reference.pdb # PDB or XYZ file
+
+        atoms {
+            # Define ligand atoms used for RMSD calculation
+              atomNumbers 1 2 3 4
+
+            # Moving frame of reference is defined below
+            centerReference yes
+            rotateReference yes
+            fittingGroup {
+                # Define binding site atoms used for fitting
+                atomNumbers 6 7 8 9
+            }
+            # Reference coordinates for binding site atoms
+            # (can be the same file as ligand coordinates above)
+            refPositionsFile reference.pdb # PDB or XYZ file
+        }
+    }
+}
+
+
+colvar {
+    name distance
+
+    distance {
+
+        group1 { # Ligand positions
+            atomNumbers  1 2 3 4
+
+            # Moving frame of reference is defined below
+            centerReference yes
+            rotateReference yes
+            fittingGroup {
+                # Define binding site atoms used for fitting
+                atomNumbers 6 7 8 9
+            }
+            # Reference coordinates for binding site atoms
+            # (can be the same file as ligand coordinates above)
+            refPositionsFile reference.pdb # PDB or XYZ file
+        }
+      
+        group2 { # Reference ligand COM position
+            dummyAtom (7.346, -4.824, 3.631)
+            # obtained in VMD :
+            # > measure center [atomselect top "serial 1 2 3 4"]
+        }
+    }
+}
+
+
+# Flat-bottom restraint on DBC and center-of-mass distance
+
+harmonicWalls {
+    colvars     DBC  distance
+    upperWalls  0.7  3.0
+    forceConstant 200
+}

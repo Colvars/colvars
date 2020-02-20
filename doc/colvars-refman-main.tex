@@ -1541,11 +1541,13 @@ lets the RMSD component decribe the deviation of atoms
 from fixed positions in the laboratory frame: this allows for custom
 positional restraints within the Colvars module;
 \item fitting the atomic positions to different reference coordinates
-than those used in the RMSD calculation itself;
+than those used in the RMSD calculation itself
+(by specifying \refkey{refPositions}{atom-group|refPositions} or \refkey{refPositionsFile}{atom-group|refPositionsFile}
+within the atom group as well as within the \texttt{rmsd} block);
 \item applying the optimal rotation and/or translation from a separate
-atom group, defined through \texttt{fittingGroup}: the RMSD then
-reflects the deviation from reference coordinates in a separate, moving
-reference frame.
+atom group, defined through \texttt{fittingGroup}:
+the RMSD then reflects the deviation from reference coordinates in a separate, moving
+reference frame (see example in the section on \refkey{fittingGroup}{atom-group|fittingGroup}).
 \end{enumerate}
 
 
@@ -3705,30 +3707,34 @@ Be careful when using these options in ABF simulations or when using total force
     atom group}{%
     Use an alternate set of atoms to define the roto-translation}{%
     Block \texttt{fittingGroup \{ ... \}}}{%
-    This group itself}{%
+    This atom group itself}{%
     If either \texttt{centerReference} or \texttt{rotateReference} is defined, this keyword defines an alternate atom group to calculate the optimal roto-translation.
     Use this option to define a continuous rotation if the structure of the group involved changes significantly (a typical symptom would be the message ``Warning: discontinuous rotation!'').
 
 \cvnamebasedonly{
-    The following example illustrates the syntax of \texttt{fittingGroup}: a group called ``\texttt{atoms}'' is defined, including 8 C$_{\alpha}$ atoms of a protein of 100 residues.
-    An optimal roto-translation is calculated automatically by fitting the C$_{\alpha}$ trace of the rest of the protein onto the coordinates provided by a PDB file.}
+    The following example illustrates the use of \texttt{fittingGroup} as part of a Distance to Bound Configuration (DBC)
+    coordinate for use in ligand restraints for binding affinity calculations.\cite{Salari2018}
+    The group called ``\texttt{atoms}'' describes coordinates of a ligand's atoms, expressed in a moving frame of
+    reference tied to a binding site (here within a protein).
+    An optimal roto-translation is calculated automatically by fitting the C$_{\alpha}$ trace of the rest of the protein onto the coordinates provided by a PDB file.
+    To define a DBC coordinate, this atom group would be used within an \refkey{rmsd}{sec:cvc_rmsd} function.}
 
 {%
 \noindent\ttfamily
-\# Example: defining a group "atoms", with its coordinates expressed \\
-\# on a roto-translated frame of reference defined by a second group\\
+\# Example: defining a group "atoms" (the ligand) whose coordinates are expressed \\
+\# in a roto-translated frame of reference defined by a second group (the receptor)\\
 atoms \{\\
 \\
-\-~~psfSegID              PROT\\
-\-~~atomNameResidueRange  CA 41-48\\
+\-~~atomNumbers 1 2 3 4 5 6 7 \# atoms of the ligand (1-based)\\
 \\
 \-~~centerReference yes\\
 \-~~rotateReference yes\\
 \-~~fittingGroup \{\\
-\-~~~~\# define the frame by fitting the rest of the protein\\
+\-~~~~\# define the frame by fitting alpha carbon atoms\\
+\-~~~~\# in 2 protein segments close to the site\\
 \-~~~~psfSegID              PROT PROT\\
-\-~~~~atomNameResidueRange  CA  1-40\\
-\-~~~~atomNameResidueRange  CA 49-100\\
+\-~~~~atomNameResidueRange  CA 1-40\\
+\-~~~~atomNameResidueRange  CA 59-100\\
 \-~~\} \\
 \-~~refPositionsFile all.pdb  \# can be the entire system\\
 \}\\}

@@ -11,14 +11,14 @@ colvar {
 
         atoms {
             # Define ligand atoms used for RMSD calculation
-             atomNumbers 1 2 3
+            atomNumbers 1 2 3 4
 
             # Moving frame of reference is defined below
             centerReference yes
             rotateReference yes
             fittingGroup {
                 # Define binding site atoms used for fitting
-                atomNumbers 6 7 8
+                atomNumbers 6 7 8 9
             }
             # Reference coordinates for binding site atoms
             # (can be the same file as ligand coordinates above)
