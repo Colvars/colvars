@@ -1,0 +1,260 @@
+\cvsubsec{Commands to manage the Colvars module}{sec:cvscript_tcl_cv}
+\begin{itemize}
+\item \texttt{cv addenergy E}
+\\
+\texttt{Add an energy to the MD engine (no effect in VMD)}
+\\
+\texttt{\textbf{Parameters}}
+\\
+\texttt{E : float - Amount of energy to add}
+\item \texttt{cv config conf}
+\\
+\texttt{Read configuration from the given string}
+\\
+\texttt{\textbf{Parameters}}
+\\
+\texttt{conf : string - Configuration string}
+\item \texttt{cv configfile conf\_file}
+\\
+\texttt{Read configuration from a file}
+\\
+\texttt{\textbf{Parameters}}
+\\
+\texttt{conf\_file : string - Path to configuration file}
+\item \texttt{cv delete}
+\\
+\texttt{Delete this Colvars module instance (VMD only)}
+\item \texttt{cv frame [frame]}
+\\
+\texttt{Get or set current frame number (VMD only)}
+\\
+\texttt{\textbf{Parameters}}
+\\
+\texttt{frame : integer - Frame number (optional)}
+\item \texttt{cv getconfig}
+\\
+\texttt{Get the module's configuration string read so far}
+\item \texttt{cv getenergy}
+\\
+\texttt{Get the current Colvars energy}
+\item \texttt{cv help [command]}
+\\
+\texttt{Get the help string of the Colvars scripting interface}
+\\
+\texttt{\textbf{Parameters}}
+\\
+\texttt{command : string - Get the help string of this specific command (optional)}
+\item \texttt{cv list [param]}
+\\
+\texttt{Return a list of all variables or biases}
+\\
+\texttt{\textbf{Parameters}}
+\\
+\texttt{param : string - "colvars" or "biases"; default is "colvars" (optional)}
+\item \texttt{cv listcommands}
+\\
+\texttt{Get the list of script functions, prefixed with "cv\_", "colvar\_" or "bias\_"}
+\item \texttt{cv load prefix}
+\\
+\texttt{Load data from a state file into all matching colvars and biases}
+\\
+\texttt{\textbf{Parameters}}
+\\
+\texttt{prefix : string - Path to existing state file or input prefix}
+\item \texttt{cv molid [molid]}
+\\
+\texttt{Get or set the molecule ID on which Colvars is defined (VMD only)}
+\\
+\texttt{\textbf{Parameters}}
+\\
+\texttt{molid : integer - Molecule ID; -1 means undefined (optional)}
+\item \texttt{cv printframe}
+\\
+\texttt{Return the values that would be written to colvars.traj}
+\item \texttt{cv printframelabels}
+\\
+\texttt{Return the labels that would be written to colvars.traj}
+\item \texttt{cv reset}
+\\
+\texttt{Delete all internal configuration}
+\item \texttt{cv resetindexgroups}
+\\
+\texttt{Clear the index groups loaded so far, allowing to replace them}
+\item \texttt{cv save prefix}
+\\
+\texttt{Change the prefix of all output files and save them}
+\\
+\texttt{\textbf{Parameters}}
+\\
+\texttt{prefix : string - Output prefix with trailing ".colvars.state" gets removed)}
+\item \texttt{cv units [units]}
+\\
+\texttt{Get or set the current Colvars unit system}
+\\
+\texttt{\textbf{Parameters}}
+\\
+\texttt{units : string - The new unit system (optional)}
+\item \texttt{cv update}
+\\
+\texttt{Recalculate colvars and biases}
+\item \texttt{cv version}
+\\
+\texttt{Get the Colvars Module version number}
+\end{itemize}
+\cvsubsec{Commands to manage individual collective variables}{sec:cvscript_tcl_colvar}
+\begin{itemize}
+\item \texttt{cv colvar name addforce force}
+\\
+\texttt{Apply the given force onto this colvar and return the same}
+\\
+\texttt{\textbf{Parameters}}
+\\
+\texttt{force : float or array - Applied force; must match colvar dimensionality}
+\item \texttt{cv colvar name cvcflags flags}
+\\
+\texttt{Enable or disable individual components by setting their active flags}
+\\
+\texttt{\textbf{Parameters}}
+\\
+\texttt{flags : integer array - Zero/nonzero value disables/enables the CVC}
+\item \texttt{cv colvar name delete}
+\\
+\texttt{Delete this colvar, along with all biases that depend on it}
+\item \texttt{cv colvar name get feature}
+\\
+\texttt{Get the value of the given feature for this colvar}
+\\
+\texttt{\textbf{Parameters}}
+\\
+\texttt{feature : string - Name of the feature}
+\item \texttt{cv colvar name getappliedforce}
+\\
+\texttt{Return the total of the forces applied to this colvar}
+\item \texttt{cv colvar name getatomgroups}
+\\
+\texttt{Return the atom indices used by this colvar as a list of lists}
+\item \texttt{cv colvar name getatomids}
+\\
+\texttt{Return the list of atom indices used by this colvar}
+\item \texttt{cv colvar name getconfig}
+\\
+\texttt{Return the configuration string of this colvar}
+\item \texttt{cv colvar name getgradients}
+\\
+\texttt{Return the atomic gradients of this colvar}
+\item \texttt{cv colvar name gettotalforce}
+\\
+\texttt{Return the sum of internal and external forces to this colvar}
+\item \texttt{cv colvar name help [command]}
+\\
+\texttt{Get a help summary or the help string of one colvar subcommand}
+\\
+\texttt{\textbf{Parameters}}
+\\
+\texttt{command : string - Get the help string of this specific command (optional)}
+\item \texttt{cv colvar name modifycvcs confs}
+\\
+\texttt{Modify configuration of individual components by passing string arguments}
+\\
+\texttt{\textbf{Parameters}}
+\\
+\texttt{confs : sequence of strings - New configurations; empty strings are skipped}
+\item \texttt{cv colvar name run\_ave}
+\\
+\texttt{Get the current running average of the value of this colvar}
+\item \texttt{cv colvar name set feature value}
+\\
+\texttt{Set the given feature of this colvar to a new value}
+\\
+\texttt{\textbf{Parameters}}
+\\
+\texttt{feature : string - Name of the feature}
+\\
+\texttt{value : string - String representation of the new feature value}
+\item \texttt{cv colvar name state}
+\\
+\texttt{Print a string representation of the feature state of this colvar}
+\item \texttt{cv colvar name type}
+\\
+\texttt{Get the type description of this colvar}
+\item \texttt{cv colvar name update}
+\\
+\texttt{Recompute this colvar and return its up-to-date value}
+\item \texttt{cv colvar name value}
+\\
+\texttt{Get the current value of this colvar}
+\item \texttt{cv colvar name width}
+\\
+\texttt{Get the width of this colvar}
+\end{itemize}
+\cvsubsec{Commands to manage individual biases}{sec:cvscript_tcl_bias}
+\begin{itemize}
+\item \texttt{cv bias name bin}
+\\
+\texttt{Get the current grid bin index (1D ABF only for now)}
+\item \texttt{cv bias name bincount [index]}
+\\
+\texttt{Get the number of samples at the given grid bin (1D ABF only for now)}
+\\
+\texttt{\textbf{Parameters}}
+\\
+\texttt{index : integer - Grid index; defaults to current bin (optional)}
+\item \texttt{cv bias name binnum}
+\\
+\texttt{Get the total number of grid points of this bias (1D ABF only for now)}
+\item \texttt{cv bias name delete}
+\\
+\texttt{Delete this bias}
+\item \texttt{cv bias name energy}
+\\
+\texttt{Get the current energy of this bias}
+\item \texttt{cv bias name get feature}
+\\
+\texttt{Get the value of the given feature for this bias}
+\\
+\texttt{\textbf{Parameters}}
+\\
+\texttt{feature : string - Name of the feature}
+\item \texttt{cv bias name getconfig}
+\\
+\texttt{Return the configuration string of this bias}
+\item \texttt{cv bias name help [command]}
+\\
+\texttt{Get a help summary or the help string of one bias subcommand}
+\\
+\texttt{\textbf{Parameters}}
+\\
+\texttt{command : string - Get the help string of this specific command (optional)}
+\item \texttt{cv bias name load prefix}
+\\
+\texttt{Load data into this bias}
+\\
+\texttt{\textbf{Parameters}}
+\\
+\texttt{prefix : string - Read from a file with this name or prefix}
+\item \texttt{cv bias name save prefix}
+\\
+\texttt{Save data from this bias into a file with the given prefix}
+\\
+\texttt{\textbf{Parameters}}
+\\
+\texttt{prefix : string - Prefix for the state file of this bias}
+\item \texttt{cv bias name set feature value}
+\\
+\texttt{Set the given feature of this bias to a new value}
+\\
+\texttt{\textbf{Parameters}}
+\\
+\texttt{feature : string - Name of the feature}
+\\
+\texttt{value : string - String representation of the new feature value}
+\item \texttt{cv bias name share}
+\\
+\texttt{Share bias information with other replicas (multiple-walker scheme)}
+\item \texttt{cv bias name state}
+\\
+\texttt{Print a string representation of the feature state of this bias}
+\item \texttt{cv bias name update}
+\\
+\texttt{Recompute this bias and return its up-to-date energy}
+\end{itemize}
