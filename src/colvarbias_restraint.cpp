@@ -868,9 +868,9 @@ colvarbias_restraint_harmonic_walls::colvarbias_restraint_harmonic_walls(char co
 {
   lower_wall_k = -1.0;
   upper_wall_k = -1.0;
-  // This bias implements the bias_actual_colvar feature (most others do not)
-  provide(f_cvb_bias_actual_colvar);
-  set_enabled(f_cvb_bias_actual_colvar); // Defaults to enabled
+  // This bias implements the bias_actual_colvars feature (most others do not)
+  provide(f_cvb_bypass_ext_lagrangian);
+  set_enabled(f_cvb_bypass_ext_lagrangian); // Defaults to enabled
 }
 
 
@@ -1022,7 +1022,7 @@ cvm::real colvarbias_restraint_harmonic_walls::colvar_distance(size_t i) const
 {
   colvar *cv = variables(i);
 
-  colvarvalue const &cvv = is_enabled(f_cvb_bias_actual_colvar) ?
+  colvarvalue const &cvv = is_enabled(f_cvb_bypass_ext_lagrangian) ?
     variables(i)->actual_value() :
     variables(i)->value();
 

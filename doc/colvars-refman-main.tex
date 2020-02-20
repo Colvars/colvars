@@ -3165,11 +3165,19 @@ For two dimensional grid files, this allows quick visualization by programs such
 The following options enable extended-system
 dynamics, where a colvar is coupled to an additional degree of freedom 
 (fictitious particle) by a harmonic spring.
-All biasing and confining forces are then applied to the extended degree
-of freedom. The ``actual'' geometric colvar (function of Cartesian 
+This extended coordinate masks the colvar and replaces it transparently from
+the perspective of biasing and analysis methods.
+Biasing forces are then applied to the extended degree
+of freedom, and the actual geometric colvar (function of Cartesian
 coordinates) only feels the force from the harmonic spring.
-This is particularly useful when combined with an ABF bias (\ref{sec:colvarbias_abf})
+This is particularly useful when combined with an \refkey{abf}{sec:colvarbias_abf} bias
 to perform eABF simulations (\ref{sec:eABF}).
+
+Note that for some biases (\refkey{harmonicWalls}{sec:colvarbias_harmonic_walls}, \refkey{histogram}{sec:colvarbias_histogram}),
+this masking behavior is controlled by the keyword \refkey{bypassExtendedLagrangian}{colvarbias|bypassExtendedLagrangian}.
+Specifically for \texttt{harmonicWalls}, the default behavior is to bypass extended Lagrangian
+coordinates and act directly on the actual colvars.
+
 
 \begin{itemize}
 \item %
@@ -3187,7 +3195,8 @@ to perform eABF simulations (\ref{sec:eABF}).
     atoms directly.  This implements the extended Lagrangian formalism
     used in some metadynamics simulations~\cite{Iannuzzi2003}.
     \cvnamdonly{The energy associated with the extended degree of freedom is reported
-    under the MISC title in NAMD's energy output.}
+    along with bias energies
+    under the MISC title in NAMD's energy output}.
     }
 
 \item %
@@ -3881,8 +3890,22 @@ All biasing and analysis methods implemented recognize the following options:
     Write the current bias energy to the trajectory file}{%
     boolean}{%
     \texttt{off}}{%
-    If this option is chosen and  \texttt{colvarsTrajFrequency} is not zero, the current value of the biasing energy will be written to the trajectory file during the simulation.
-}
+    If this option is chosen and  \texttt{colvarsTrajFrequency} is not zero, the current value of the biasing energy will be written to the trajectory file during the simulation.}
+
+\item %
+  \labelkey{colvarbias|bypassExtendedLagrangian}
+  \keydef
+    {bypassExtendedLagrangian}{%
+    colvar bias}{%
+    Apply bias to actual colvars, bypassing extended coordinates}{%
+    boolean}{%
+    \texttt{off}}{%
+    This option is implemented by the \refkey{harmonicWalls}{sec:colvarbias_harmonic_walls} and
+    \refkey{histogram}{sec:colvarbias_histogram} biases.
+    It is only relevant if the bias is applied to one or several extended-Lagrangian colvars (\ref{sec:colvar_extended}),
+    for example within an eABF (\ref{sec:eABF}) simulation.
+    Usually, biases use the value of the extended coordinate as a proxy for the actual colvar, and their biasing forces are applied to the extended coordinates as well.
+    If \texttt{bypassExtendedLagrangian} is enabled, the bias behaves as if there were no extended coordinates, and accesses the value of the underlying colvars, applying any biasing forces along the gradients of those variables.}
 
 \end{itemize}
 
@@ -4273,7 +4296,7 @@ non-periodic coordinates, but not along periodic coordinates.
 
 In dimension 4 or greater, integrating the discretized gradient becomes non-trivial. The
 standalone utility \texttt{abf\_integrate} is provided to perform that task.
-Because 4D ABF calculations are uncommon, this tool is practically deprecated by
+Because 4D ABF calculations are uncommon, \textbf{this tool is practically deprecated} by
 the Poisson integration described above.
 
 \texttt{abf\_integrate} reads the gradient data and uses it to perform a Monte-Carlo (M-C)
@@ -4343,7 +4366,7 @@ The theory of eABF and the present implementation are documented in detail
 in reference~\cite{Lesage2017}.
 
 Defining an ABF bias on a colvar wherein the \texttt{extendedLagrangian} option
-is active will perform eABF; there is no dedicated option. 
+is active will perform eABF automatically; there is no dedicated option.
 
 The extended variable $\lambda$ is coupled to the colvar $z=\xi(q)$ by the harmonic potential
 $(k/2) (z - \lambda)^2$.
@@ -5296,7 +5319,7 @@ The \texttt{harmonicWalls} bias implements the following options:
 \item %
   \simkey{upperWallConstant}{\texttt{harmonicWalls}}{lowerWallConstant}
 
-\item \dupkey{targetForceConstant}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{Harmonic restraints}
+\item \dupkey{targetForceConstant}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{harmonic restraints}
 
 \item %
   \key
@@ -5310,27 +5333,25 @@ The \texttt{harmonicWalls} bias implements the following options:
     \textbf{Note:} if only one of the two force constants is meant to change over time, it is possible to use two instances of \texttt{harmonicWalls}, and apply the changing schedule only to one of them.
   }
 
-\item \dupkey{targetNumSteps}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{Harmonic restraints}
-\item \dupkey{targetForceExponent}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{Harmonic restraints}
-\item \dupkey{targetEquilSteps}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{Harmonic restraints}
-\item \dupkey{targetNumStages}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{Harmonic restraints}
-\item \dupkey{lambdaSchedule}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{Harmonic restraints}
-\item \dupkey{outputAccumulatedWork}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{Harmonic restraints}
+\item \dupkey{targetNumSteps}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{harmonic restraints}
+\item \dupkey{targetForceExponent}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{harmonic restraints}
+\item \dupkey{targetEquilSteps}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{harmonic restraints}
+\item \dupkey{targetNumStages}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{harmonic restraints}
+\item \dupkey{lambdaSchedule}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{harmonic restraints}
+\item \dupkey{outputAccumulatedWork}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{harmonic restraints}
 
 \item %
-  \labelkey{harmonicWalls|biasActualColvar}
+  \labelkey{harmonicWalls|bypassExtendedLagrangian}
   \keydef
-    {biasActualColvar}{%
+    {bypassExtendedLagrangian}{%
     \texttt{harmonicWalls}}{%
-    Apply bias to extended-Lagrangian colvars, bypassing the extended coordinate}{%
+    Apply bias to actual colvars, bypassing extended coordinates}{%
     boolean}{%
     \texttt{on}}{%
-    This option is only relevant if the bias is applied to one or several extended-Lagrangian colvars, for example within an eABF (\ref{sec:eABF}) simulation.
-    Usually, biases use the value of the extended coordinate as a proxy for the actual colvar, and their biasing forces are applied to the extended coordinates as well.
-    If \texttt{biasActualColvar} is enabled, the bias behaves as if there were no extended coordinates, and always use the value of the underlying colvars, applying any biasing forces along the gradients of those variables.
-    By default, the \texttt{harmonicWalls} bias applies to the actual colvars, so that the distribution of the colvar between the walls is unaffected by the bias, which then applies a flat-bottom potential \emph{as a function of the colvar value}. This bias will affect the extended coordinate distribution near the walls.
-    If \texttt{biasActualColvar} is disabled, \texttt{harmonicWalls} applies a flat-bottom potential \emph{as a function of the extended coordinate}. Conversely, this bias will then modify the distribution of the actual colvar value near the walls.
-  }
+    This option behaves as \refkey{bypassExtendedLagrangian}{colvarbias|bypassExtendedLagrangian} for other biases,
+    but \textbf{it defaults to \texttt{on}, unlike in the general case}.
+    Thus, by default, the \texttt{harmonicWalls} bias applies to the actual colvars, so that the distribution of the colvar between the walls is unaffected by the bias, which then applies a flat-bottom potential \emph{as a function of the colvar value}. This bias will affect the extended coordinate distribution near the walls.
+    If \texttt{bypassExtendedLagrangian} is disabled, \texttt{harmonicWalls} applies a flat-bottom potential \emph{as a function of the extended coordinate}. Conversely, this bias will then modify the distribution of the actual colvar value near the walls.}
 
 \end{itemize}
 
@@ -5498,17 +5519,7 @@ an optimization algorithm until the bias has converged}.
 \cvsubsec{Multidimensional histograms}{sec:colvarbias_histogram}
 
 The \texttt{histogram} feature is used to record the distribution of a set of collective
-variables in the form of a N-dimensional histogram.
-
-As with any other biasing and analysis method, when a histogram is applied to
-an extended-system colvar (\ref{sec:colvar_extended}), it accesses the value
-of the fictitious coordinate rather than that of the ``true'' colvar.
-A joint histogram of the ``true'' colvar and the fictitious coordinate
-may be obtained by specifying the colvar name twice in a row
-in the \texttt{colvars} parameter: the first instance will be understood as the
-``true'' colvar, and the second, as the fictitious coordinate.
-
-A \texttt{histogram} block may define the following parameters:
+variables in the form of a N-dimensional histogram. A \texttt{histogram} block may define the following parameters:
 
 \begin{itemize}
 
@@ -5572,7 +5583,20 @@ A \texttt{histogram} block may define the following parameters:
     When \texttt{gatherVectorColvars} is \texttt{on}, the components of each multi-dimensional colvar are accumulated with a different weight.
     For example, if $x$ and $y$ are two distinct \texttt{cartesian} variables defined on the same group of atoms, the corresponding 2D histogram can be weighted on a per-atom basis\cvvmdonly{: to compute an electron density map, it is possible to use \texttt{weights [\${sel} get atomicnumber]}} in the definition of \texttt{histogram}.
   }
+\end{itemize}
 
+  
+As with any other biasing and analysis method, when a histogram is applied to
+an extended-system colvar (\ref{sec:colvar_extended}), it accesses the value
+of the extended coordinate rather than that of the actual colvar.
+This can be overridden by enabling the \refkey{bypassExtendedLagrangian}{colvarbias|bypassExtendedLagrangian} option.
+A \emph{joint histogram} of the actual colvar and the extended coordinate
+may be collected by specifying the colvar name twice in a row
+in the \texttt{colvars} parameter (e.g. \texttt{colvars myColvar myColvar}): the first instance will be understood as the
+actual colvar, and the second, as the extended coordinate.
+
+\begin{itemize}
+  \item \dupkey{bypassExtendedLagrangian}{\texttt{histogram}}{colvarbias|bypassExtendedLagrangian}{biasing and analysis methods}
 \end{itemize}
 
 \cvsubsubsec{Grid definition for multidimensional histograms}{sec:colvarbias_histogram_grid}
