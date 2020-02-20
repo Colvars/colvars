@@ -1,0 +1,36 @@
+colvarsTrajFrequency 1
+colvarsRestartFrequency 10
+indexFile index.ndx
+
+colvar {
+
+    name one
+
+    outputAppliedForce on
+    outputVelocity on
+
+    width 0.5
+    
+    extendedLagrangian      on
+    extendedFluctuation     0.1
+    extendedTimeConstant    200.0
+    extendedTemp            500.0
+    extendedLangevinDamping 0.0 # suppress random friction term
+    
+    distance {
+        group1 {
+            indexGroup group1
+        }
+        group2 {
+            indexGroup group2
+        }
+    }
+} 
+
+harmonicWalls {
+    colvars        one
+    lowerWalls     0.1
+    upperWalls     0.2
+    forceConstant  0.001
+    bypassExtendedLagrangian off
+}

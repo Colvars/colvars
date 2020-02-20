@@ -1,0 +1,20 @@
+configuration {
+  step           40
+  dt 1.000000e+00
+}
+
+colvar {
+  name one
+  x  3.21125851653294e+00
+  v  1.03698898251940e-04
+  extended_x  3.20945549117134e+00
+  extended_v  1.03698898251940e-04
+}
+
+restraint {
+  configuration {
+    step 40
+    name harmonicwalls1
+  }
+}
+

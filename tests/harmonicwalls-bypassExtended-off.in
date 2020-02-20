@@ -1,0 +1,7 @@
+harmonicWalls {
+    colvars        one
+    lowerWalls     0.1
+    upperWalls     0.2
+    forceConstant  0.001
+    bypassExtendedLagrangian off
+}

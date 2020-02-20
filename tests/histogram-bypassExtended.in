@@ -1,0 +1,4 @@
+histogram {
+    colvars    one
+    bypassExtendedLagrangian on
+}
