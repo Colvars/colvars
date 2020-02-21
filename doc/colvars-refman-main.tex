@@ -398,7 +398,8 @@ At any moment during the execution of \MDENGINE{}, several options in the Colvar
 \noindent\texttt{cv~$<$subcommand$>$ [args...]}\\
 \noindent{}For example, to record the value of a collective variable named \texttt{myVar} into the Tcl variable \texttt{value}, use the following syntax:\\
 \noindent\texttt{set value [cv colvar myVar value]}\\
-\noindent{}All subcommands of \texttt{cv} are documented below.
+\noindent{}All major subcommands of \texttt{cv} are documented in detail below.
+A complete list of commands is provided in section~\ref{sec:cvscript_tcl}.
 
 \cvvmdonly{
 \textbf{Note:} in VMD, Colvars must be attached to one molecule (system).
@@ -5869,7 +5870,7 @@ The following options allow to fine-tune this schedule:
 
 
 \cvscriptonly{
-\cvsec{Scripting interface (Tcl): list of commands}{sec:cvscript_tcl}"
+\cvsec{Scripting interface (Tcl): list of commands}{sec:cvscript_tcl}
 This section lists all the commands used in \MDENGINE{} to control the behavior of the Colvars module from within a run script.
 \input{cvscript-tcl.tex}
 }
