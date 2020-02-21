@@ -196,18 +196,21 @@ std::string colvarscript::get_command_cmdline_syntax(colvarscript::Object_type t
 std::string colvarscript::get_cmdline_help_summary(colvarscript::Object_type t)
 {
   std::string result;
+  result += "List of commands:\n\n";
+
   for (size_t i = 0; i < cmd_help.size(); i++) {
     std::string const prefix = get_cmd_prefix(t);
     command const c = cmd_str_map[std::string(cmd_names[i])];
     if (std::string(cmd_names[i], prefix.size()) == prefix) {
-      result += get_command_cmdline_syntax(t, c)+
-        std::string("\n    ")+cmd_help[i]+std::string("\n");
+      result += get_command_cmdline_syntax(t, c)+std::string("\n");
     }
   }
   if (t == use_module) {
-    result += "\nTo get help on colvar-specific commands use:\n"
+    result += "\nFor detailed help on each command use:\n"
+      "    cv help <command>\n";
+    result += "\nTo list all commands acting on collective variables use:\n"
       "    cv help colvar\n";
-    result += "\nTo get help on bias-specific commands use:\n"
+    result += "\nTo list all commands acting on biases use:\n"
       "    cv help bias\n";
   }
   if (t == use_colvar) {
