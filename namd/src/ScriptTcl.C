@@ -441,7 +441,7 @@ int ScriptTcl::Tcl_startup(ClientData clientData,
 }
 
 int ScriptTcl::Tcl_exit(ClientData clientData,
-	Tcl_Interp *, int argc, const char *argv[]) {
+	Tcl_Interp *interp, int argc, const char *argv[]) {
   ScriptTcl *script = (ScriptTcl *)clientData;
   if ( CmiNumPartitions() > 1 ) {
     if ( ! script->initWasCalled ) CkPrintf("TCL: Running startup before exit due to replicas.\n");
@@ -452,7 +452,15 @@ int ScriptTcl::Tcl_exit(ClientData clientData,
   replica_barrier();
 #endif
   if ( script->runWasCalled ) script->runController(SCRIPT_END);
-  BackEnd::exit();
+  if (argc > 2) {
+    Tcl_SetResult(interp,(char*)"wrong # args: should be \"exit ?returnCode?\"",TCL_VOLATILE);
+    return TCL_ERROR;
+  }
+  int status = 0;
+  if (argc > 1 && Tcl_GetInt(interp,argv[1],&status) != TCL_OK) {
+    return TCL_ERROR;
+  }
+  BackEnd::exit(status);
   return TCL_OK;
 }
 
@@ -461,6 +469,7 @@ int ScriptTcl::Tcl_abort(ClientData,
   Tcl_DString msg;
   Tcl_DStringInit(&msg);
   Tcl_DStringAppend(&msg,"TCL:",-1);
+  if ( argc == 1 ) Tcl_DStringAppend(&msg," abort called",-1);
   for ( int i = 1; i < argc; ++i ) {
     Tcl_DStringAppend(&msg," ",-1);
     Tcl_DStringAppend(&msg,argv[i],-1);
