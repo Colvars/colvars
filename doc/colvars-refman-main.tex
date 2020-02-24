@@ -4926,9 +4926,8 @@ The following options define the configuration for the ``well-tempered'' metadyn
     If enabled, this flag causes well-tempered metadynamics as
     described by Barducci et al.\cite{Barducci2008}
     to be performed, rather than standard metadynamics.  The parameter
-    \texttt{biasTemperature} is then required.\cvnamdugonly{This feature was contributed by
-    Li Li (Luthey-Schulten group, Departement of Chemistry, UIUC).}\cvrefmanonly{This feature 
-    was contributed by Li Li (Luthey-Schulten group, Departement of Chemistry, UIUC).}}
+    \texttt{biasTemperature} is then required.
+    This feature was contributed by Li Li (Luthey-Schulten group, Department of Chemistry, UIUC).}
 
 \item %
   \key
@@ -5058,21 +5057,20 @@ The following options may be useful only for applications that go beyond the cal
     added hills, \texttt{writeHillsTrajectory} is preferable.}
 
 \item %
+  \labelkey{metadynamics|writeHillsTrajectory}
   \keydef
     {writeHillsTrajectory}{%
     \texttt{metadynamics}}{%
     Write a log of new hills}{%
     boolean}{%
     \texttt{off}}{%
-    If this option is \texttt{on}, a logfile is written by the
-    \texttt{metadynamics} bias, with the name:\\
-    ``\outputName\texttt{.colvars.$<$name$>$.hills.traj}'',\\ which
-    can be useful to follow the time series of the hills.  When
-    \texttt{multipleReplicas} is \texttt{on}, its name changes to:\\
+    If this option is \texttt{on}, a logfile is written by the \texttt{metadynamics} bias, with the name:\\
+    ``\outputName\texttt{.colvars.$<$name$>$.hills.traj}'',\\ which can be useful to post-process the time series of the Gassian hills.
+    When \texttt{multipleReplicas} is \texttt{on}, its name is changed to:\\
     ``\outputName\texttt{.colvars.$<$name$>$.$<$replicaID$>$.hills.traj}''.\\
-    This file can be used to quickly visualize the positions of all
-    added hills, in case \texttt{newHillFrequency} does not coincide
-    with \texttt{colvarsRestartFrequency}.}
+    The columns of this file are the centers of the hills, $\xi_{i}(t')$, followed by the half-widths, $\sigma_{\xi_{i}}$, and the weight, $W$.
+    \textbf{Note:} prior to version 2020-02-24, the full-width $2\sigma$ of the Gaussian was reported in lieu of $\sigma$.
+    }
 
 \end{itemize}
 
@@ -5897,7 +5895,12 @@ please be aware that \emph{several of these tutorials are not actively maintaine
   The global \texttt{analysis} keyword has been discontinued: specific analysis tasks are controlled directly by the keywords \refkey{corrFunc}{colvar|corrFunc} and \refkey{runAve}{colvar|runAve}, which continue to remain \texttt{off} by default.
 
 \item \textbf{Colvars version 2020-02-25 or later\cvnamdonly{ (NAMD version 2.14b1 or later)}\cvvmdonly{ (VMD version 1.9.4 or later)}.}\\
-  The parameter \refkey{hillWidth}{metadynamics|hillWidth} expressing the Gaussian width $\sigma$ does not have a default value any more.  The new parameter \refkey{gaussianSigmas}{metadynamics|gaussianSigmas} also allows setting the $\sigma$ parameters explicitly if more convenient.
+  The parameter \refkey{hillWidth}{metadynamics|hillWidth}, expressing the Gaussian width $2\sigma$ in relative units (number of grid points), does not have a default value any more.
+  A new alternative parameter \refkey{gaussianSigmas}{metadynamics|gaussianSigmas} allows setting the $\sigma$ parameters explicitly for each variable if needed.\\
+  Furthermore, to facilitate the use of other analysis tools such as for example \texttt{sum\_hills}:\\
+\cvurl{https://www.plumed.org/doc-v2.6/user-doc/html/sum_hills.html}\\
+  the format of the file written by \refkey{writeHillsTrajectory}{metadynamics|writeHillsTrajectory} has also been changed to use $\sigma$ instead of $2\sigma$.
+  This change does not affect how the biasing potential is written in the state file, or the simulated trajectory.
 
 \item \textbf{Colvars version 2020-02-25 or later\cvnamdonly{ (NAMD version 2.14b1 or later)}\cvvmdonly{ (VMD version 1.9.4 or later)}.}\\
   The legacy keywords \texttt{lowerWall} and \texttt{upperWall} of a \texttt{colvar} definition block do not have default values any longer, and need to be set explicitly, preferably as part of the \texttt{harmonicWalls} restraint.
