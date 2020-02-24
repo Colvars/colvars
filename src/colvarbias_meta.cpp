@@ -1919,7 +1919,7 @@ std::string colvarbias_meta::hill::output_traj()
   for (i = 0; i < sigmas.size(); i++) {
     os << " ";
     os << std::setprecision(cvm::cv_prec)
-       << std::setw(cvm::cv_width) << 2.0*sigmas[i];
+       << std::setw(cvm::cv_width) << sigmas[i];
   }
 
   os << "  ";
