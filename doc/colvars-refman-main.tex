@@ -1551,14 +1551,6 @@ reference frame (see example in the section on \refkey{fittingGroup}{atom-group|
 \end{enumerate}
 
 
-\cvscriptonly{
-\cvsubsubsec{Path collective variables}{sec:pathcv}
-
-An application of the \texttt{rmsd} component is "path collective variables",\cite{Branduardi2007}
-which are implemented as Tcl-scripted combinations or RMSDs.
-The implementation is available as file \texttt{colvartools/pathCV.tcl}, and
-an example is provided in file \texttt{examples/10\_pathCV.namd} of the Colvars public repository.}
-
 
 \cvsubsubsec{\texttt{eigenvector}: projection of the atomic  coordinates on a vector.}{sec:cvc_eigenvector}
 \labelkey{colvar|eigenvector}
@@ -2440,16 +2432,18 @@ The usage of \texttt{gzpathCV} and \texttt{gspathCV} is illustrated below:
 \}}
 
 
-\cvsubsec{Arithmetic path collective variables in CV space}{sec:cvc_apathCV}
+\cvsubsec{Arithmetic path collective variables}{sec:cvc_apathCV}
 
 The arithmetic path collective variable in CV space uses the same formula as the one proposed by Branduardi\cite{Branduardi2007} et al., except that it computes $s$ and $z$ in CV space instead of RMSDs in Cartesian space. Moreover, this implementation allows different coefficients for each CV components as described in \cite{Hovan2019}. Assuming a path is composed of $N$ reference frames and defined in an $M$-dimensional CV space, then the equations of $s$ and $z$ of the path are 
 
 \begin{equation}
 s = \frac{\sum_{i=1}^{N} i \exp\left(-\lambda\sum_{j=1}^{M} c_j^2 \left(x_j-x_{i,j}\right)^2\right)}{\sum_{i=1}^{N} \exp\left(-\lambda\sum_{j=1}^{M} c_j^2 \left(x_j-x_{i,j}\right)^2\right)}
+\label{eq:apath_s}
 \end{equation}
 
 \begin{equation}
 z = -\frac{1}{\lambda} \ln \left(\sum_{i=1}^{N} \exp\left(-\lambda\sum_{j=1}^{M} c_j^2 \left(x_j-x_{i,j}\right) \right)\right)
+\label{eq:apath_z}
 \end{equation}
 where $c_j$ is the coefficient(weight) of the $j$-th CV, $x_{i,j}$ is the value of $j$-th CV of $i$-th reference frame and $x_{j}$ is the value of $j$-th CV of current frame. $\lambda$ is a parameter to smooth the variation of $s$ and $z$.
 
@@ -2548,6 +2542,34 @@ The usage of \texttt{azpathCV} and \texttt{aspathCV} is illustrated below:
 \-~~\}\\
 \}}
 
+
+
+\cvscriptonly{
+\cvsubsubsec{Path collective variables in Cartesian coordinates}{sec:apath_scripted}
+
+The path collective variables defined by Branduardi et al.~\cite{Branduardi2007}
+are based on RMSDs in Cartesian coordinates.
+Noting $d_i$ the RMSD between the current set of Cartesian coordinates and those of image number $i$ of the path:
+
+\begin{equation}
+s = \frac{1}{N-1} \frac{\sum_{i=1}^{N} (i-1) \exp\left(-\lambda d_i^2\right)}
+{\sum_{i=1}^{N} \exp\left(-\lambda d_i^2\right)}
+\end{equation}
+
+\begin{equation}
+z = -\frac{1}{\lambda} \ln \left(\sum_{i=1}^{N} \exp(-\lambda d_i^2)\right)
+\end{equation}
+
+where $\lambda$ is the smoothing parameter.
+
+
+These coordinates are implemented as Tcl-scripted combinations of \texttt{rmsd} components.
+The implementation is available as file \texttt{colvartools/pathCV.tcl}, and
+an example is provided in file \texttt{examples/10\_pathCV.namd} of the Colvars public repository.
+It implements an optimization procedure, whereby the distance to a given image is only calculated if its contribution
+to the sum is larger than a user-defined \texttt{tolerance} parameter.
+All distances are calculated every \texttt{freq} timesteps to update the list of nearby images.
+}
 
 
 \cvsubsec{Shared keywords for all components}{sec:cvc_common}
@@ -2858,7 +2880,7 @@ same meaning as in periodic components (see \ref{sec:cvc_periodic} for details).
 
 An example of elaborate scripted colvar is given in example 10, in the
 form of path-based collective variables as defined by Branduardi et al\cite{Branduardi2007}
-(\ref{sec:pathcv}).
+(Section~\ref{sec:apath_scripted}).
 
 \begin{itemize}
  \item %
