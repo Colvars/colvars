@@ -1,15 +1,8 @@
-colvarsTrajFrequency 100    # output values every 100 steps
 
 # intramolecular NOE signal
 colvar {
 
     name NOE_1
-
-    # biharmonic potential
-    lowerBoundary      3.5  # experimentally measured distance
-    lowerWallConstant  30.0 # kcal/mol/Angstrom^2
-    upperBoundary      3.5  # experimentally measured distance
-    upperWallConstant  20.0 # kcal/mol/Angstrom^2
 
     distanceInv {
         exponent 6
@@ -29,17 +22,10 @@ colvar {
 }
 
 
-
 # intermolecular NOE signal
 colvar {
 
-    name NOE_1
-
-    # biharmonic potential
-    lowerBoundary      3.5  # experimentally measured distance
-    lowerWallConstant  30.0 # kcal/mol/Angstrom^2
-    upperBoundary      3.5  # experimentally measured distance
-    upperWallConstant  20.0 # kcal/mol/Angstrom^2
+    name NOE_2
 
     distanceInv {
         exponent 6
@@ -58,4 +44,14 @@ colvar {
             atomNameResidueRange  H102 1-1
         }
     }
+}
+
+
+harmonicWalls {
+    name walls_NOE
+    colvars NOE_1 NOE_2
+    lowerWalls 3.5 4.2  # experimentally measured lower bound
+    lowerWallConstant  30.0 # kcal/mol/Angstrom^2
+    upperWalls 4.5 4.9  # experimentally measured upper bound
+    upperWallConstant  20.0 # kcal/mol/Angstrom^2
 }

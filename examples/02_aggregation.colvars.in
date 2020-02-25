@@ -1,19 +1,22 @@
 colvarsTrajFrequency 100
 
 colvar {
-  name aggregation
-  width 1
-
-  upperWall            0.     # forbid significant positive values
-  upperWallConstant    5. 
-  # force constant unit is kcal/mol since colvar is dimensionless
-
-  selfCoordNum {
-    group1 {
-      atomsfile     atoms.pdb  # Select biased atoms from this file
-      atomsCol      B          # based on column beta
-      atomsColValue 1          # atoms flagged with 1
+    name aggregation
+    selfCoordNum {
+        group1 {
+            atomsfile     atoms.pdb  # Select biased atoms from this file
+            atomsCol      B          # based on column beta
+            atomsColValue 1          # atoms flagged with 1
+        }
     }
-  }
 }
 
+
+harmonicWalls {
+    name wall_aggregation
+    centers aggregation
+    # Penalize values above 10
+    upperWall  10.0
+    # force constant unit is kcal/mol since colvar is dimensionless
+    upperWallConstant 5. 
+}
