@@ -5831,10 +5831,10 @@ please be aware that \emph{several of these tutorials are not actively maintaine
 \item \textbf{Colvars version 2018-11-15 or later \cvnamdonly{(NAMD version 2.14b1 or later)}\cvvmdonly{(VMD version 1.9.4 or later)}\cvlammpsonly{(LAMMPS version 23Nov2018 or later)}.}\\
   The global \texttt{analysis} keyword has been discontinued: specific analysis tasks are controlled directly by the keywords \refkey{corrFunc}{colvar|corrFunc} and \refkey{runAve}{colvar|runAve}, which continue to remain \texttt{off} by default.
 
-\item \textbf{Colvars version 2020-02-14 or later.}\\
-  The legacy keywords \texttt{lowerWall} and \texttt{upperWall} do not have have default values any longer, and need to be set explicitly (preferably as part of the \texttt{harmonicWalls} restraint).
+\item \textbf{Colvars version 2020-02-25 or later\cvnamdonly{ (NAMD version 2.14b1 or later)}\cvvmdonly{ (VMD version 1.9.4 or later)}.}\\
+  The legacy keywords \texttt{lowerWall} and \texttt{upperWall} of a \texttt{colvar} definition block do not have default values any longer, and need to be set explicitly, preferably as part of the \texttt{harmonicWalls} restraint.
   When using an ABF bias, it is recommended to set the two walls equal to \refkey{lowerBoundary}{colvar|lowerBoundary} and \refkey{upperBoundary}{colvar|upperBoundary}, respectively.
-  When using a metadynamics bias, it is recommended to set the two walls \emph{within} \refkey{lowerBoundary}{colvar|lowerBoundary} and \refkey{upperBoundary}{colvar|upperBoundary}.  This guarantees that the tails of each Gaussian hill are accounted in the region between the grid boundaries and the wall potentials.  See also \refkey{expandBoundaries}{colvar|expandBoundaries} for an automatic definition of the PMF grid boundaries.
+  When using a metadynamics bias, it is recommended to set the two walls strictly \emph{within} \refkey{lowerBoundary}{colvar|lowerBoundary} and \refkey{upperBoundary}{colvar|upperBoundary}; see \ref{sec:colvarbias_meta_boundaries} for details.
 
 \end{itemize}
 
