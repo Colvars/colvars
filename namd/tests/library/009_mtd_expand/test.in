@@ -20,4 +20,5 @@ colvar {
 metadynamics {
     colvars    d
     hillWeight 0.01
+    hillWidth      1.2533141373155001  # Old default
 }
