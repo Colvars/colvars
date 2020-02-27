@@ -348,18 +348,23 @@ To avoid errors due to reading configuration files written in a different unit s
   Unit system to be used}{%
   string}{%
   A string defining the units to be used internally by Colvars.
-  \cvlammpsonly{Allowed values are the following LAMMPS unit styles:
+  \cvlammpsonly{Supported values are the following LAMMPS unit styles:
   \textit{real} (\AA, kcal/mol), \textit{metal} (\AA, eV), and \textit{electron} (Bohr, Hartree).
   However only the unit system currently in use by LAMMPS is accepted:
   other values will trigger an error.}
-  \cvnamdonly{In NAMD the only allowed value is NAMD's native units: \textit{real} (\AA, kcal/mol).}
-  \cvvmdonly{Allowed values are:  \textit{real} (\AA, kcal/mol), \textit{gromacs} (nm, kJ/mol), \textit{metal} (\AA, eV), and \textit{electron} (Bohr, Hartree).
+  \cvnamdonly{In NAMD the only supported value is NAMD's native units: \textit{real} (\AA, kcal/mol).}
+  \cvvmdonly{Supported values are:  \textit{real} (\AA, kcal/mol), \textit{gromacs} (nm, kJ/mol), \textit{metal} (\AA, eV), and \textit{electron} (Bohr, Hartree).
   In VMD, the default system of units for Colvars is VMD's native units: \textit{real} (\AA, kcal/mol).
   However, the \texttt{units} keyword will switch to a different unit system than the
   current one if no colvars were defined before reading the current configuration.
   If colvars are already defined, \texttt{units} will refuse changing the unit system to avoid making the definition of those variables erroneous in the new system of units.
   If needed this precaution can be overridden using the \texttt{cv units} scripting command
+<<<<<<< HEAD
   (\ref{sec:cvscript_tcl_cv}).}
+=======
+  (\ref{sec:cv_command_general}).}
+  \cvgromacsonly{In Gromacs the only supported value is Gromacs native units: \textit{gromacs} (nm, kJ/mol).}
+>>>>>>> f26408b1... Gromacs doc improvements
   }
 \end{itemize}
 
@@ -472,15 +477,18 @@ Setting this to \emph{no} will use the current local coordinates that are wrappe
 }
 
 
-
 \cvgromacsonly{
 \subsection{Running Colvars in Gromacs}
 \label{sec:colvars_mdengine_parameters}
 
-To enable a Colvars-based calculation, specify one or more Colvars configuration files with the \texttt{-colvars} command-line paramter to \texttt{gmx mdrun}.
+To enable a Colvars-based calculation, just specify one or more Colvars configuration files with the \texttt{-colvars} command-line parameter to \texttt{gmx mdrun}:\\
+\noindent\texttt{gmx mdrun -s test.tpr -colvars variables.colvars.dat biases.colvars.dat}
 
+Restarting from a previous simulation is done using the \texttt{-colvars\_restart} parameter:\\
+\noindent\texttt{gmx mdrun -s test\_restart.tpr -cpi state.cpt -colvars config.colvars.dat
+ -colvars\_restart md.colvars.state.dat}
 
-\textcolor{red}{TODO complete this section.}
+Note that the standard extension of restart files ``\texttt{.colvars.state}'' has to be changed manually to end with  ``\texttt{.dat}'' to satisfy Gromacs requirements on filenames.
 }
 
 
