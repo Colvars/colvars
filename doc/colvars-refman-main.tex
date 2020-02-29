@@ -75,7 +75,7 @@ Detailed explanations of the design of the Colvars module are provided in refere
 Within VMD, the Colvars Module can be accessed in two ways:
 \begin{itemize}
  \item Using the Colvars dashboard, an intuitive, but partial interface to the Colvars module, to easily define and analyze \textbf{collective variables, but not biases} (section~\ref{sec:dashboard}).
- \item Using the full-featured Tcl scripting interface as documented in section~\ref{sec:cv_scripting}; see in particular the example in section~\ref{sec:cv_command_example}.
+ \item Using the full-featured Tcl scripting interface as documented in section~\ref{sec:cv_scripting}; see in particular the example in section~\ref{sec:cv_command_vmd_traj}.
 \end{itemize}
 }
 
@@ -242,7 +242,7 @@ By default $width$ is unity, but $(cv / width)$ may be seen as dimensionless if 
 
 } % cvvmdonly dashboard
 
-\cvsec{General parameters}{sec:colvarmodule}
+\cvsec{Enabling and controlling the Colvars module in \MDENGINE{}}{sec:colvarmodule}
 
 Here, we document the syntax of the commands and parameters used to set up and use the Colvars module in \MDENGINE{}.
 One of these parameters is the configuration file or the configuration text for the module itself, whose syntax is described in \ref{sec:colvars_config_syntax} and in the following sections.
@@ -276,7 +276,7 @@ To avoid errors due to reading configuration files written in a different unit s
   current one if no colvars were defined before reading the current configuration.
   If colvars are already defined, \texttt{units} will refuse changing the unit system to avoid making the definition of those variables erroneous in the new system of units.
   If needed this precaution can be overridden using the \texttt{cv units} scripting command
-  (\ref{sec:cv_command_general}).}
+  (\ref{sec:cvscript_tcl_cv}).}
   }
 \end{itemize}
 
@@ -391,28 +391,97 @@ Setting this to \emph{no} will use the current local coordinates that are wrappe
 
 
 \cvscriptonly{
-\cvsubsec{Using the \texttt{cv} command}{sec:cv_scripting}
+\cvsubsec{Using the \texttt{cv} command to control the Colvars module}{sec:cv_scripting}
 \cvvmdugonly{\index{Colvars!\texttt{cv} command}}
 
-At any moment during the execution of \MDENGINE{}, several options in the Colvars module can be read or modified by the command \texttt{cv} with the following syntax:\\
-\noindent\texttt{cv~$<$subcommand$>$ [args...]}\\
-\noindent{}For example, to record the value of a collective variable named \texttt{myVar} into the Tcl variable \texttt{value}, use the following syntax:\\
-\noindent\texttt{set value [cv colvar myVar value]}\\
-\noindent{}All major subcommands of \texttt{cv} are documented in detail below.
-A complete list of commands is provided in section~\ref{sec:cvscript_tcl}.
+At any moment after the first initialization of the Colvars module, several options can be read or modified by the Tcl command \texttt{cv}, with the following syntax:\\
+\noindent\texttt{cv~$<$subcommand$>$ [args ...]}\\
+\cvvmdonly{The \texttt{cv} command is used by the Dashboard graphical interface,(\ref{sec:dashboard}), but can be also used in scripts or interactively from the command-line terminal (for example, in remote terminal sessions) or in the Tk Console.}
+The most frequent uses of the \texttt{cv} command are discussed here.
+For a complete list of all sub-commands of \texttt{cv}, see section~\ref{sec:cvscript_tcl}.
+
+\cvsubsubsec{Setting up the Colvars module}{sec:cv_command_init}
 
 \cvvmdonly{
-\textbf{Note:} in VMD, Colvars must be attached to one molecule (system).
-Therefore, the \texttt{cv} command must be used for the first time as \texttt{cv molid }\emph{$<$molid$>$} to set up the Colvars module for the molecule identified by \emph{$<$molid$>$}.
-In all following invocations, the \texttt{cv} command will continue operating on the same molecule, regardless of its ``top'' status.
-To use the \texttt{cv} command on a different molecule, use \texttt{cv delete} first and then \texttt{cv molid }\emph{$<$molid$>$}.
-Invoking the \texttt{cv} command with no arguments prints a help screen.
+The first step to using Colvars in VMD is choosing which ``molecule'' (i.e.{} which system): because VMD can handle multiple ``molecules'', the Colvars module needs to remain attached to a specific VMD molecule.  For example:\\
+\noindent\texttt{cv molid top}\\
+\noindent{}will attach the Colvars module onto the molecule currently holding the ``top'' status (alternatively, you can refer to a molecule by its numeric ID in lieu of \texttt{top}).
+All following invocations of the \texttt{cv} command will continue operating on the same molecule, regardless of whether other molecules are loaded, or which one has the ``top'' status.
+The \texttt{cv molid} command without argument will return the molid currently associated with Colvars.
 }
 
-\cvvmdonly{
-\cvsubsubsec{Example use of the \texttt{cv} command: analyze a trajectory}{sec:cv_command_example}
+\cvnamdonly{
+  If the NAMD configuration parameter \texttt{colvars} is on, the \texttt{cv} command can be used anywhere in the NAMD script, and will be invoked as soon as NAMD begin processing Tcl commands.
+}
 
-By far the most typical use of Colvars in VMD is computing the values of one or more variables along an existing trajectory:
+To define collective variables and biases, configuration can be loaded using either:\\
+\noindent\texttt{cv configfile colvars-file.in}\\
+\noindent{}to load configuration from a file, or:\\
+\noindent\texttt{cv config "keyword \{ ... \}"}\\
+\noindent{}to load configuration as a string argument.
+
+The latter version is particularly useful to dynamically define the Colvars configuration.
+\cvnamdonly{For example, when running an ensemble of umbrella sampling simulations in NAMD, it may be convenient to use an identical NAMD script, and let the queuing system assist in defining the window.
+  In this example, in a Slurm array job an environment variable is used to define the window's numeric index (starting at zero), and the umbrella restraint center (starting at 2 for the first window, and increasing in increments of 0.25 for all other windows):\\
+  {\noindent\ttfamily
+    cv configfile colvars-definition.in\\
+    set window \$env(SLURM\_ARRAY\_TASK\_ID)\\
+    cv config "harmonic \{\\
+    \-~~name us\_\$\{window\}\\
+    \-~~colvars xi\\
+    \-~~centers [expr 2.0 + 0.25 * \$\{window\}]\\
+    \-~~...\\
+    \}"\\
+    \\
+  }
+}
+
+\cvsubsubsec{Using the Colvars version in scripts}{sec:cv_command_version}
+
+The vast majority of the syntax in Colvars is backward-compatible, adding keywords when new features are introduced.
+However, when using multiple versions simultaneously it may be useful to test within the script whether the version is recent enough to support the desired feature.
+\texttt{cv version} can be used to get the Colvars version number for this use:
+{\noindent\ttfamily
+  if \{ [cv version] >= "2020-02-25" \} \{\\
+  \-~~cv config "(define a recent feature)"\\
+  \}\\
+}
+
+\cvsubsubsec{Loading and saving the Colvars state and other information}{sec:cv_command_loadsave}
+
+After a configuration is fully defined, \texttt{cv load} may be used to load a state file from a previous simulation that contains e.g.{} data from history-dependent biases), to either continue that simulation or analyze its results:\\
+\noindent\texttt{cv load $<$oldjob$>$.colvars.state}\\
+\noindent{}or more simply using the prefix of the state file itself:\\
+\noindent\texttt{cv load $<$oldjob$>$}\\
+\cvnamdonly{\noindent{}The latter is much more convenient in combination with the NAMD \texttt{reinitatoms} command, for example:\\
+{\noindent\ttfamily
+  reinitatoms $<$oldjob$>$\\
+  cv load $<$oldjob$>$\\
+}
+The step number contained by the loaded file will be used internally by Colvars to control time-dependent biases, unless \texttt{firstTimestep} is issued, in which case that value will be used.}
+
+\cvnamdonly{When the system's topology is changed during simulation via the \texttt{structure} command (e.g.{} in constant-pH simulations), it is generally best to reset and re-initalize the module from scratch before loading the corresponding snapshot:\\
+{\noindent\ttfamily
+  structure newsystem.psf\\
+  reinitatoms $<$snapshot$>$\\
+  cv reset\\
+  cv configfile ...\\
+  cv load $<$snapshot$>$\\
+}
+}
+
+\texttt{cv save}, analogous to \texttt{cv load}, saves all restart information to a state file.
+This is normally not required during a simulation if \refkey{colvarsRestartFrequency}{Colvars-global|colvarsRestartFrequency} is defined (either directly or indirectly by the \MDENGINE{} restart frequency), but it is necessary in post-processing e.g.{} with VMD.
+Because not only a state file (used to continue simulations) but also other data files (used to analyze the trajectory) are written, it is generally clearer to use \texttt{cv save} with a prefix rather than a file name:\\
+\noindent\texttt{cv save $<$job$>$}
+
+See \ref{sec:cvscript_tcl_cv} for a complete list of scripting commands used to manage the Colvars module.
+
+\cvvmdonly{
+\cvsubsubsec{Analyzing a trajectory in VMD}{sec:cv_command_vmd_traj}
+
+One of the typical uses of Colvars in VMD is computing the values of one or more variables along an existing trajectory.
+A complete example input for this use case is shown here.
 \bigskip
 {\noindent\ttfamily\\
 \-{\bfseries\# Activate the module on the current VMD molecule}\\
@@ -425,90 +494,105 @@ By far the most typical use of Colvars in VMD is computing the values of one or 
 \-for \{ set fr 0 \} \{ \$\{fr\} < [molinfo top get numframes] \} \{ incr fr \} \{\\
 \-~~{\bfseries\# Point Colvars to this trajectory frame}\\
 \-~~cv frame \$\{fr\}\\
-\-~~{\bfseries\# Recompute variables and biases}\\
+\-~~{\bfseries\# Recompute variables and biases (required in VMD)}\\
 \-~~cv update\\
 \-~~{\bfseries\# Print variables and biases to the file}\\
 \-~~puts -nonewline \$\{out\} [cv printframe]\\
 \-\}\\
 \-close \$\{out\}\\
 }
-
-The following sections explain the syntax of the various sub-commands of \texttt{cv}.
 }
 
-
-\cvsubsubsec{Managing the Colvars module}{sec:cv_command_general}
-
-\begin{itemize}
-\cvvmdonly{
-\item \texttt{molid} [\emph{$<$molid$>$}]: setup the Colvars module for the given molecule; \emph{$<$molid$>$} is the identifier of a valid VMD molecule, either an integer or \texttt{top} for the top molecule; without argument, return the molid currently associated with Colvars.
-\item \texttt{delete}: delete the Colvars module; after this, the module can be setup again using \texttt{cv molid};
-}
-\item \texttt{configfile} \emph{$<$file name$>$}: read configuration from a file;
-\item \texttt{config} \emph{$<$string$>$}: read configuration from the given string; both \texttt{config} and \texttt{configfile} subcommands may be invoked multiple times;
-\cvvmdonly{see \ref{sec:colvars_config_syntax} for the configuration syntax;}
-\item \texttt{reset}: delete all internal configuration and atom selections of the Colvars module;
-\item \texttt{units} [\emph{$<$style$>$}]: switch internal Colvars units to \emph{style} (see \ref{sec:units}); without argument, return the current style, or an empty string if it is the default.
-\item \texttt{version}: return the version of the Colvars module (see \ref{sec:colvars_config_changes} for any changes to older keywords).
-
-\end{itemize}
-
-\cvsubsubsec{Input and output commands}{sec:cv_command_io}
-
-\begin{itemize}
-\item \texttt{list}: return a list of all currently defined variables;
-\cvvmdonly{See \ref{sec:colvar} and \ref{sec:colvar_atom_groups} for how to configure a collective variable;}
-\item \texttt{list biases}: return a list of all currently defined biases (i.e.~sampling and analysis algorithms);
-\item \texttt{load} \emph{$<$file name$>$}: load a collective variables state file, typically produced during a previous simulation;
-  \cvvmdonly{this parameter requires that the corresponding configuration has already been loaded by \texttt{configfile} or \texttt{config}; see \ref{sec:colvars_output} for a brief description of this file; the contents of this file are not required for as long as the VMD molecule has valid coordinates and \texttt{cv update} is used;}
-  \cvnamdonly{the step number contained by this file will be used internally by Colvars to control time-dependent biases, unless \texttt{firstTimestep} is given, in which case that value will be used;}
-\item \texttt{load} \emph{$<$prefix$>$}: same as above, but without the \texttt{.colvars.state} suffix;
-\item \texttt{save} \emph{$<$prefix$>$}: save the current state in a file whose name begins with the given argument; if any of the biases have additional output files defined, those are saved as well using the same prefix;
-\item \texttt{update}: recalculate all variables and biases based on the current atomic coordinates\cvnamdonly{ (this is typically not needed in NAMD, as these functions are called already during a timestep)};
-\item \texttt{addenergy} \emph{$<$E$>$}: add value \emph{E} to the total bias energy; this can be used within \texttt{calc\_colvar\_forces};
-\item \texttt{printframe}: return a summary of the current frame, in a format equivalent to a line of the collective variables trajectory file;
-\item \texttt{printframelabels}: return text labels for the columns of \texttt{printframe}'s output;
-\cvvmdonly{
-\item \texttt{frame}: return the current frame number, from which colvar values are calculated;
-\item \texttt{frame} \emph{$<$new frame$>$}: set the frame number; returns 0 if successful, nonzero if the requested frame does not exist.
-}
-\end{itemize}
 
 \cvsubsubsec{Managing collective variables}{sec:cv_command_colvar}
 
-\begin{itemize}
-\item \texttt{colvar} \emph{$<$name$>$} \texttt{value}: return the current value of colvar \emph{$<$name$>$};
-\item \texttt{colvar} \emph{$<$name$>$} \texttt{update}: recalculate colvar \emph{$<$name$>$};
-\item \texttt{colvar} \emph{$<$name$>$} \texttt{type}: return the type of colvar \emph{$<$name$>$};
-\cvvmdonly{
-\item \texttt{colvar} \emph{$<$name$>$} \texttt{delete}: delete colvar \emph{$<$name$>$};
+After one or more collective variables are defined, they can be accessed via \texttt{cv colvar [args ...]}.
+For example, to recompute the collective variable \texttt{xi} the following command can be used:\\
+\noindent\texttt{cv colvar xi update}\\
+\noindent{}This ordinarily not needed during a simulation run, where all variables are recomputed at every step (along with biasing forces acting on them).
+However, when analyzing an existing trajectory a call to \texttt{update} is generally required.
+
+While in all typical cases all configuration of the variables is done with \texttt{cv config} or \texttt{cv configfile}, a limited set of changes can be enacted at runtime using \texttt{cv colvar $<$name$>$ modifycvcs [args ...]}.
+Each argument is a string passed to the function or functions (called colvar components, or CVCs \ref{sec:cvc_list}) used to compute the variable.
+For example, the a variable \texttt{DeltaZ} made of a single \texttt{distanceZ} CVC can be made periodic with a period equal to the unit cell dimension along the Z-axis:\\
+\noindent\texttt{cv colvar DeltaZ modifycvcs "period \$Lz"}\\
+\cvvmdonly{\noindent{}where \texttt{\$Lz} may be obtained for example as:\\
+\noindent\texttt{set Lz [molinfo top get c]}.}\\
+\noindent{}This option is currently limited to changing the values of \refkey{componentCoeff}{sec:cvc_superp} and \refkey{componentExp}{sec:cvc_superp} (e.g.{} to update the polynomial superposition parameters on the fly), of \refkey{period}{sec:cvc_periodic} and \refkey{wrapAround}{sec:cvc_periodic}, and of the \texttt{forceNoPBC} option for all components that support it.
+
+If the variable is computed using more than one CVC, it is possible to selectively turn some of them on or off:\\
+\noindent\texttt{cv colvar xi cvcflags $<$flags$>$}\\
+\noindent{}where \texttt{$<$flags$>$} is a list of 0/1 values, one per component.
+This is useful for example when Tcl script-based path collective variables in Cartesian coordinates (\ref{sec:apath_scripted}) are used, to minimize computational cost by disabling the computation of terms that are very close to zero.
+
+\textbf{Important:} None of the changes enacted by \texttt{modifycvcs} or \texttt{cvcflags} will be saved to state files, and will be lost when restarting a simulation, deleting the corresponding collective variable, or resetting the module with \cvvmdonly{\texttt{cv delete} or} \texttt{cv reset}.
+
+\cvsubsubsec{Applying and analyzing forces on collective variables}{sec:cv_command_colvar_force}
+
+As soon as a collective variable is up to date (during a MD run or after \texttt{update} has been called), forces can be applied to it as part e.g.{} of a custom restraint implemented by \refkey{scriptedColvarForces}{Colvars-global|scriptedColvarForces}:\\
+\noindent\texttt{cv colvar xi addforce \$force}\\
+\noindent{}where \texttt{\$force} is a scalar or a vector (depending on the type of variable \texttt{xi}) defined by a user function.
+The force will be physically applied to the corresponding atoms during the simulation after Colvars communicate all forces to the rest of \MDENGINE{}.
+\cvvmdonly{(In VMD, these forces will never have an effect.)}
+Until then, the applied force from all biases can be retrieved by:\\
+\noindent\texttt{cv colvar xi getappliedforce}\\
+\noindent{}(see also the use of the \refkey{outputAppliedForce}{colvar|outputAppliedForce} option).
+
+To obtain the total force projected on the variable \texttt{xi}:\\
+\noindent\texttt{cv colvar xi gettotalforce}\\
+\noindent{}Note that not all types of variable support this option, and the value of the total force may not be available immediately: see \refkey{outputTotalForce}{colvar|outputTotalForce} for more details.
+
+See \ref{sec:cvscript_tcl_colvar} for a complete list of scripting commands used to manage collective variables.
+
+
+\cvsubsubsec{Managing collective variable biases}{sec:cv_command_bias}
+
+Because biases depend only upon data internal to the Colvars module (i.e.{} they do not need atomic coordinates from \MDENGINE{}), it is generally easy to creat them or update their configuration at any time.
+For example, given the most current value of the variable \texttt{xi}, the restraint named \texttt{harmonic\_xi} can be updated as:\\
+\noindent\texttt{cv bias harmonic\_xi update}\\
+Again, this is not generally needed during a running simulation, when an automatic update of each bias is already carried out.
+Instead, calling \texttt{update} is most useful for just-defined biases or when changing their configuration.
+When \texttt{update} is called e.g.{} as part of the function invoked by \refkey{scriptedColvarForces}{Colvars-global|scriptedColvarForces}, it is executed before any biasing forces are applied to the variables, thus allowing to modify them.
+
+A common use for \texttt{update} is part of the definition of bias-exchange algorithms as part of the \MDENGINE{} script.
+Because a bias is a relatively light-weight objects, the easiest way to change the configuration of an existing bias is deleting it and re-creating it:\\
+{\noindent\ttfamily\\
+\-{\bfseries\# Delete the restraint "harmonic\_xi"}\\
+\-cv bias harmonic\_xi delete\\
+\-{\bfseries\# Re-define it, but using an updated restraint center}\\
+\-cv config "harmonic \{\\
+\-~~name harmonic\_xi\\
+\-~~centers \$\{new\_center\}]\\
+\-~~...\\
+\-\}"\\
+\-{\bfseries\# Now update it (based on the current value of "xi")}\\
+\-cv bias harmonic\_xi update\\
 }
-\cvnamdonly{
-\item \texttt{colvar} \emph{$<$name$>$} \texttt{addforce} \emph{$<$F$>$}: apply given force on colvar \emph{$<$name$>$}; this can be used within \texttt{calc\_colvar\_forces}
-\item \texttt{colvar} \emph{$<$name$>$} \texttt{getappliedforce}: get the force currently being applied on colvar \emph{$<$name$>$};
-\item \texttt{colvar} \emph{$<$name$>$} \texttt{gettotalforce}: get the total force acting on colvar \emph{$<$name$>$} at the previous step (see \ref{sec:cvc_sys_forces});
-}
-\item \texttt{colvar} \emph{$<$name$>$} \texttt{getconfig}: return config string of colvar \emph{$<$name$>$}.
-\item \texttt{colvar} \emph{$<$name$>$} \texttt{cvcflags} \emph{$<$flags$>$}: for a colvar with several CVCs (numbered according to their name string order), set which CVCs are enabled or disabled in subsequent evaluations according to a list of 0/1 flags (one per CVC).
-\item \texttt{colvar} \emph{$<$name$>$} \texttt{modifycvcs} \emph{$<$strings$>$}: for a colvar with one or more CVCs (numbered according to their name string order), pass a list of new configuration strings to modify each CVC without needing to delete the colvar.
-This option is currently limited to changing the values of \refkey{componentCoeff}{sec:cvc_superp} and \refkey{componentExp}{sec:cvc_superp} (e.g.{} to update the polynomial superposition parameters on the fly), of \refkey{period}{sec:cvc_periodic} and \refkey{wrapAround}{sec:cvc_periodic} (e.g.{} to update the period of variables such as \texttt{distanceZ}), and of the \texttt{forceNoPBC} option for those CVCs that support it.
-Changes in configuration done by this command are not saved to state files, and are lost when restarting a simulation, deleting the parent colvar, or resetting the module with \cvvmdonly{\texttt{cv delete} or} \texttt{cv reset}.
-
-\end{itemize}
-
-\cvsubsubsec{Managing biases}{sec:cv_command_bias}
-
-\begin{itemize}
-\item \texttt{bias} \emph{$<$name$>$} \texttt{energy}: return the current energy of the bias \emph{$<$name$>$};
-\item \texttt{bias} \emph{$<$name$>$} \texttt{update}: recalculate the bias \emph{$<$name$>$};
-\item \texttt{bias} \emph{$<$name$>$} \texttt{delete}: delete the bias \emph{$<$name$>$};
-\item \texttt{bias} \emph{$<$name$>$} \texttt{getconfig}: return config string of bias \emph{$<$name$>$}.
-\end{itemize}
-
+It is also possible to make the change subject to a condition on the energy of the new bias:
+{\noindent\ttfamily\\
+  \-...\\
+  \-cv bias harmonic\_xi update\\
+  \-if \{ [cv bias harmonic\_xi energy] < \$\{E\_accept\} \} \{\\
+  \-~~~~...\\
+  \-\}\\
 }
 
+\cvsubsubsec{Loading and saving the state of individual biases}{sec:cv_command_bias_loadsave}
 
-\cvsubsec{Configuration syntax}{sec:colvars_config_syntax}
+Some types of bias are history-dependent, and the magnitude of their forces depends not only on the values of their corresponding variables, but also on previous simulation history.
+It is thus useful to load information from a state file that contains information specifically for one bias only, for example:\\
+\noindent\texttt{cv bias metadynamics1 load old.colvars.state}\\
+\noindent{}or alternatively, using the prefix of the file instead of its full name:\\
+\noindent\texttt{cv bias metadynamics1 load old}\\
+A corresponding \texttt{save} function is also available:\\
+\noindent\texttt{cv bias metadynamics1 save new}\\
+This pair of functions is also used internally by Colvars to implement e.g.{} multiple-walker metadynamics (\ref{sec:colvarbias_meta_mr}), but they can be called from a scripted function to implement alternative coupling schemes.
+
+See \ref{sec:cvscript_tcl_bias} for a complete list of scripting commands used to manage biases.
+} % End \cvscriptonly
+
+
+\cvsubsec{Configuration syntax used by the Colvars module}{sec:colvars_config_syntax}
 
 \cvnamdonly{All the parameters defining variables and their biasing or analysis algorithms are read from the file specified by the configuration option \texttt{colvarsConfig}, or by the Tcl commands \texttt{cv config} and \texttt{cv configfile}.
 \emph{None of the keywords described in the remainder of this manual are recognized directly in the NAMD configuration file, unless as arguments of \texttt{cv config}.}}
@@ -3162,10 +3246,13 @@ For two dimensional grid files, this allows quick visualization by programs such
     file under the label ``\texttt{fs\_}$<$\texttt{name}$>$''.
     For extended Lagrangian colvars, the ``total force'' felt by the extended degree of freedom
     is simply the force from the harmonic spring.
+    \cvnamdonly{Due to design constraints, the total force reported by NAMD to Colvars was computed at the previous simulation step.}
+    \cvlammpsonly{This force includes all of the forces computed by the force field, as well as any forces by fixes defined prior to \texttt{fix colvars}.}
     \textbf{Note:} not all components support this option.  The
     physical unit for this force is \cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{the unit of energy specified by \texttt{units}}, divided by the colvar unit U.}
 
 \item %
+  \labelkey{colvar|outputAppliedForce}
   \keydef
     {outputAppliedForce}{%
     \texttt{colvar}}{%
@@ -5828,10 +5915,8 @@ provided at run time as a Tcl script\cvnamdonly{, in the spirit of \texttt{TclFo
     If this flag is enabled, a Tcl procedure named \texttt{calc\_colvar\_forces}
     accepting one parameter should be defined by the user. It is executed
     at each timestep, with the current step number as parameter, between the
-    calculation of colvars and the application of bias forces. This procedure
-    may use\cvnamdonly{ the scripting interface (see \ref{sec:cv_scripting})}\cvvmdonly{ the \texttt{cv} command} to access
-    the values of colvars and apply forces on them, effectively defining custom
-    collective variable biases.}
+    calculation of colvars and the application of bias forces.
+    This procedure may use the \texttt{cv} command to access the values of colvars (e.g.{} \texttt{cv colvar xi value}), apply forces on them (\texttt{cv colvar xi addforce \$F}) or add energy to the simulation system (\texttt{cv addenergy \$E}), effectively defining custom collective variable biases.}
 \end{itemize}
 
 
