@@ -1,5 +1,5 @@
 #!/bin/bash
-CHARM_VERSION=6.10.0
+CHARM_VERSION=6.10.1
 
 function error_syntax {
   echo ''
@@ -565,6 +565,10 @@ function error_exists {
     CHARM_BASE=.rootdir/charm-$CHARM_VERSION
     echo "Using Charm++ $CHARM_VERSION build found in main build directory"
     echo "CHARMBASE = .rootdir/charm-$CHARM_VERSION" > Make.config
+  elif [ -d ".rootdir/charm-$CHARM_VERSION-pre" ]; then
+    CHARM_BASE=.rootdir/charm-$CHARM_VERSION-pre
+    echo "Using Charm++ $CHARM_VERSION-pre build found in main build directory"
+    echo "CHARMBASE = .rootdir/charm-$CHARM_VERSION-pre" > Make.config
   elif [ -d .rootdir/charm ]; then
     CHARM_BASE=.rootdir/charm
     echo "Using Charm++ build found in main build directory"

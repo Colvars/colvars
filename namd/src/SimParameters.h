@@ -388,6 +388,8 @@ public:
   Bool alchThermIntOnAtStartup;
   Bool alchOn;              //  Doing alchemical simulation?
   Bool alchFepOn;           //  Doing alchemical simulation?
+  Bool singleTopology;      //  Using single topology setup? 
+  Bool sdScaling;           //  Scaling S-D bond terms in single topology?
   Bool alchThermIntOn;      //  Doing thermodynamic integration?
   Bool alchWCAOn;           //  Using WCA decomposition for vdWs?
   int alchMethod;           //  Which alchemical method to use? fep or ti

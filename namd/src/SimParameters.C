@@ -1066,10 +1066,19 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
      &alchLambda);
    opts.range("alchLambda", NOT_NEGATIVE);
 
+   opts.optionalB("alch", "singleTopology",
+     "Is single topology used for relative free energy?", &singleTopology, FALSE);
+
+   opts.optionalB("alch", "sdBondScaling",
+     "Is S-D bonded terms scaling for relative free energy?", &sdScaling, FALSE);
+   
    opts.optional("alch", "alchFile", "PDB file with perturbation flags "
      "default is the input PDB file", PARSE_STRING);
    opts.optional("alch", "alchCol", "Column in the alchFile with the "
      "perturbation flag", PARSE_STRING);
+
+   opts.optional("alch", "unperturbedBondFile", "mini psf file with unperturbed bond info"
+     " ", PARSE_STRING);
 
    opts.optional("alch", "alchOutFreq", "Frequency of alchemical energy"
      "output in timesteps", &alchOutFreq, 5);
@@ -3947,6 +3956,9 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
        NAMD_die("fullElectFrequency must be a multiple of nonbondedFreq");
      }
 
+     if (singleTopology && fullElectFrequency > 1) NAMD_die("Single topology free energy calculation discourages multiple timesteps to assure accuracy!");
+     if (singleTopology && alchDecouple) NAMD_die("Single topology free energy calculation can NOT work with alchDecouple on");
+
       if (multigratorOn) {
         if ( (multigratorTemperatureFreq > multigratorPressureFreq) || ( (multigratorPressureFreq % multigratorTemperatureFreq) != 0) )
         {
@@ -5157,6 +5169,10 @@ if ( openatomOn )
      if ( lesReduceMass ) iout << iINFO
        << "SCALING ENHANCED ATOM MASS BY 1/" << lesFactor << "\n";
    }
+
+   if ( singleTopology ) {
+     iout << iINFO << "SINGLE TOPOLOGY IS ON FOR RELATIVE FREE ENERGY CALCULATION\n";
+       }
 
    // REST2
    if ( soluteScalingOn ) {
