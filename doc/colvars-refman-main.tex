@@ -411,7 +411,7 @@ The \texttt{cv molid} command without argument will return the molid currently a
 }
 
 \cvnamdonly{
-  If the NAMD configuration parameter \texttt{colvars} is on, the \texttt{cv} command can be used anywhere in the NAMD script, and will be invoked as soon as NAMD begin processing Tcl commands.
+  If the NAMD configuration parameter \texttt{colvars} is on, the \texttt{cv} command can be used anywhere in the NAMD script, and will be invoked as soon as NAMD begins processing Tcl commands.
 }
 
 To define collective variables and biases, configuration can be loaded using either:\\
@@ -440,10 +440,10 @@ The latter version is particularly useful to dynamically define the Colvars conf
 
 The vast majority of the syntax in Colvars is backward-compatible, adding keywords when new features are introduced.
 However, when using multiple versions simultaneously it may be useful to test within the script whether the version is recent enough to support the desired feature.
-\texttt{cv version} can be used to get the Colvars version number for this use:
+\texttt{cv version} can be used to get the Colvars version for this use:\\
 {\noindent\ttfamily
   if \{ [cv version] >= "2020-02-25" \} \{\\
-  \-~~cv config "(define a recent feature)"\\
+  \-~~cv config "(use a recent feature)"\\
   \}\\
 }
 
@@ -509,15 +509,16 @@ A complete example input for this use case is shown here.
 After one or more collective variables are defined, they can be accessed via \texttt{cv colvar [args ...]}.
 For example, to recompute the collective variable \texttt{xi} the following command can be used:\\
 \noindent\texttt{cv colvar xi update}\\
-\noindent{}This ordinarily not needed during a simulation run, where all variables are recomputed at every step (along with biasing forces acting on them).
+\noindent{}This ordinarily is not needed during a simulation run, where all variables are recomputed at every step (along with biasing forces acting on them).
 However, when analyzing an existing trajectory a call to \texttt{update} is generally required.
 
 While in all typical cases all configuration of the variables is done with \texttt{cv config} or \texttt{cv configfile}, a limited set of changes can be enacted at runtime using \texttt{cv colvar $<$name$>$ modifycvcs [args ...]}.
-Each argument is a string passed to the function or functions (called colvar components, or CVCs \ref{sec:cvc_list}) used to compute the variable.
-For example, the a variable \texttt{DeltaZ} made of a single \texttt{distanceZ} CVC can be made periodic with a period equal to the unit cell dimension along the Z-axis:\\
+Each argument is a string passed to the function or functions that are used to compute the variable, and are called colvar components, or CVCs (\ref{sec:cvc_list}).
+For example, a variable \texttt{DeltaZ} made of a single \texttt{distanceZ} CVC can be made periodic with a period equal to the unit cell dimension along the Z-axis:\\
 \noindent\texttt{cv colvar DeltaZ modifycvcs "period \$Lz"}\\
+\cvnamdonly{\noindent{}where \texttt{\$Lz} is obtained outside Colvars.\\}
 \cvvmdonly{\noindent{}where \texttt{\$Lz} may be obtained for example as:\\
-\noindent\texttt{set Lz [molinfo top get c]}.}\\
+\noindent\texttt{set Lz [molinfo top get c]}.\\}
 \noindent{}This option is currently limited to changing the values of \refkey{componentCoeff}{sec:cvc_superp} and \refkey{componentExp}{sec:cvc_superp} (e.g.{} to update the polynomial superposition parameters on the fly), of \refkey{period}{sec:cvc_periodic} and \refkey{wrapAround}{sec:cvc_periodic}, and of the \texttt{forceNoPBC} option for all components that support it.
 
 If the variable is computed using more than one CVC, it is possible to selectively turn some of them on or off:\\
@@ -529,12 +530,12 @@ This is useful for example when Tcl script-based path collective variables in Ca
 
 \cvsubsubsec{Applying and analyzing forces on collective variables}{sec:cv_command_colvar_force}
 
-As soon as a collective variable is up to date (during a MD run or after \texttt{update} has been called), forces can be applied to it as part e.g.{} of a custom restraint implemented by \refkey{scriptedColvarForces}{Colvars-global|scriptedColvarForces}:\\
+As soon as a collective variable is up to date (during a MD run or after its \texttt{update} method has been called), forces can be applied to it, e.g.{} as part of a custom restraint implemented by \refkey{scriptedColvarForces}{Colvars-global|scriptedColvarForces}:\\
 \noindent\texttt{cv colvar xi addforce \$force}\\
-\noindent{}where \texttt{\$force} is a scalar or a vector (depending on the type of variable \texttt{xi}) defined by a user function.
-The force will be physically applied to the corresponding atoms during the simulation after Colvars communicate all forces to the rest of \MDENGINE{}.
+\noindent{}where \texttt{\$force} is a scalar or a vector (depending on the type of variable \texttt{xi}) and is defined by the user's function.
+The force will be physically applied to the corresponding atoms during the simulation after Colvars communicates all forces to the rest of \MDENGINE{}.
 \cvvmdonly{(In VMD, these forces will never have an effect.)}
-Until then, the applied force from all biases can be retrieved by:\\
+Until then, the total force applied to \texttt{xi} from all biases can be retrieved by:\\
 \noindent\texttt{cv colvar xi getappliedforce}\\
 \noindent{}(see also the use of the \refkey{outputAppliedForce}{colvar|outputAppliedForce} option).
 
@@ -547,15 +548,16 @@ See \ref{sec:cvscript_tcl_colvar} for a complete list of scripting commands used
 
 \cvsubsubsec{Managing collective variable biases}{sec:cv_command_bias}
 
-Because biases depend only upon data internal to the Colvars module (i.e.{} they do not need atomic coordinates from \MDENGINE{}), it is generally easy to creat them or update their configuration at any time.
-For example, given the most current value of the variable \texttt{xi}, the restraint named \texttt{harmonic\_xi} can be updated as:\\
+Because biases depend only upon data internal to the Colvars module (i.e.{} they do not need atomic coordinates from \MDENGINE{}), it is generally easy to create them or update their configuration at any time.
+For example, given the most current value of the variable \texttt{xi}, an already-defined restraint on it named \texttt{harmonic\_xi} can be updated as:\\
 \noindent\texttt{cv bias harmonic\_xi update}\\
-Again, this is not generally needed during a running simulation, when an automatic update of each bias is already carried out.
-Instead, calling \texttt{update} is most useful for just-defined biases or when changing their configuration.
-When \texttt{update} is called e.g.{} as part of the function invoked by \refkey{scriptedColvarForces}{Colvars-global|scriptedColvarForces}, it is executed before any biasing forces are applied to the variables, thus allowing to modify them.
+Again, this is not generally needed during a running simulation, when an automat
+ic update of each bias is already carried out.
 
-A common use for \texttt{update} is part of the definition of bias-exchange algorithms as part of the \MDENGINE{} script.
-Because a bias is a relatively light-weight objects, the easiest way to change the configuration of an existing bias is deleting it and re-creating it:\\
+Calling \texttt{update} for a bias is most useful for just-defined biases or when changing their configuration.
+When \texttt{update} is called e.g.{} as part of the function invoked by \refkey{scriptedColvarForces}{Colvars-global|scriptedColvarForces}, it is executed before any biasing forces are applied to the variables, thus allowing to modify them.
+This use of \texttt{update} is often used e.g.{} in the definition of custom bias-exchange algorithms as part of the \MDENGINE{} script.
+Because a bias is a relatively light-weight object, the easiest way to change the configuration of an existing bias is deleting it and re-creating it:\\
 {\noindent\ttfamily\\
 \-{\bfseries\# Delete the restraint "harmonic\_xi"}\\
 \-cv bias harmonic\_xi delete\\
