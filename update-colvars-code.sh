@@ -279,6 +279,8 @@ then
            "${target}/ug/ug_colvars.bib"
   condcopy "${source}/doc/colvars-refman-main.tex" \
            "${target}/ug/ug_colvars.tex"
+  condcopy "${source}/doc/cvscript-tcl.tex" \
+           "${target}/ug/ug_colvars_tclref_namd.tex"
   condcopy "${source}/namd/ug/ug_colvars_macros.tex" \
            "${target}/ug/ug_colvars_macros.tex"
   condcopy "${source}/doc/colvars_diagram.pdf" \
@@ -353,6 +355,8 @@ then
            "${target}/doc/ug_colvars.bib"
   condcopy "${source}/doc/colvars-refman-main.tex" \
            "${target}/doc/ug_colvars.tex"
+  condcopy "${source}/doc/cvscript-tcl.tex" \
+           "${target}/doc/ug_colvars_tclref_vmd.tex"
   condcopy "${source}/vmd/doc/ug_colvars_macros.tex" \
            "${target}/doc/ug_colvars_macros.tex"
   condcopy "${source}/doc/colvars_diagram.pdf" \
