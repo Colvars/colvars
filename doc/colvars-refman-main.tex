@@ -638,9 +638,9 @@ The following keywords are available in the global context of the Colvars config
     global}{%
   Colvar value trajectory frequency}{%
     positive integer}{%
-    \texttt{100}}{%
+    100}{%
     The values of each colvar (and of other related quantities, if requested) are written to the file \outputName\texttt{.colvars.traj} every these many steps throughout the simulation.
-    If the value is \texttt{0}, such trajectory file is not written.
+    If the value is 0, such trajectory file is not written.
     For optimization the output is buffered, and synchronized with the disk only when the restart file is being written.}
 
 \item %
@@ -650,11 +650,11 @@ The following keywords are available in the global context of the Colvars config
     global}{%
     Colvar module restart frequency}{%
     positive integer}{%
-    \texttt{restartFreq}}{%
-    Allows to choose a different restart frequency for the Colvars module.
-    Redefining it may be useful to trace the time
-    evolution of those few properties which are not written to the
-    trajectory file for reasons of disk space.}
+    \cvnamdonly{NAMD parameter \texttt{restartFreq}}\cvlammpsonly{LAMMPS \texttt{restart} frequency when defined}\cvvmdonly{0}{%
+    The state file and any other output files produced by Colvars are written every these many steps (the trajectory file is still written every \refkey{colvarsTrajFrequency}{Colvars-global|colvarsTrajFrequency} steps).
+    \cvvmdonly{In VMD, the simulation step is not progressed and this parameter is effectively ignored.}
+    It is generally a good idea to leave this parameter at its default value, unless needed for special cases or to disable automatic writing of output files altogether.
+    Writing can still be invoked at any time via the command \texttt{cv save}.}
 
 \item %
   \labelkey{Colvars-global|indexFile}
