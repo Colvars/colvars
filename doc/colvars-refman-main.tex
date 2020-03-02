@@ -4725,14 +4725,15 @@ However, \texttt{upperBoundary} does not have such a ``natural'' choice of value
 The metadynamics potential \texttt{meta\_r} will individually process any hill whose center is too close to the \texttt{upperBoundary}, more precisely within fewer grid points than 6 times the Gaussian $\sigma$ parameter plus one.
 It goes without saying that if the colvar \texttt{r} represents a distance between two freely-moving molecules, it will cross this ``threshold'' rather frequently.
 
-In this example, where the value of \texttt{hillWidth} ($2\sigma$) amounts to 2 grid points, the threshold is 6+1 = 7 grid points away from \texttt{upperBoundary}: in explicit units, the threshold is 15.0 - 7$\times$0.2 = 13.6~\AA.
+In this example, where the value of \texttt{hillWidth} ($2\sigma$) amounts to 2 grid points, the threshold is 6+1 = 7 grid points away from \texttt{upperBoundary}.
+In explicit units, the \texttt{width} of $r$ is $w_r =$ 0.2~\AA, and the threshold is 15.0 - 7$\times$0.2 = 13.6~\AA.
 
 The \texttt{wall\_r} restraint included in the example prevents this: the position of its \texttt{upperWall} is 13~\AA{}, i.e.{} 3 grid points below the buffer's threshold (13.6~\AA).
 For the chosen value of \texttt{upperWallConstant}, the energy of the \texttt{wall\_r} bias at \texttt{r} = $r_{\mathrm{upper}}$ = 13.6~\AA{} is:
 \begin{equation*}
-  E(\mathrm{wall\_r}) = \frac{1}{2} \- k \left(\frac{r - r_{\mathrm{upper}}}{\mathtt{width}(r)}\right)^2 = \frac{1}{2} \- 2.0 \left(-3\right)^2 = 9~\mathrm{kcal/mol}
+  E^* = \frac{1}{2} \- k \left(\frac{r - r_{\mathrm{upper}}}{w_r}\right)^2 = \frac{1}{2} \- 2.0 \left(-3\right)^2 = 9~\mathrm{kcal/mol}
 \end{equation*}
-which results in a relative probability $\exp(-E(\mathrm{wall\_r})/\kappa_{\mathrm{B}}T) \simeq$ $3\times{}10^{-7}$ that \texttt{r} crosses the threshold.
+which results in a relative probability $\exp(-E^*/\kappa_{\mathrm{B}}T) \simeq$ $3\times{}10^{-7}$ that \texttt{r} crosses the threshold.
 The probability that \texttt{r} exceeds \texttt{upperBoundary}, which is further away, has also become vanishingly small.
 At that point, you may want to set \texttt{hardUpperBoundary} to \texttt{yes} for \texttt{r}, and let \texttt{meta\_r} know that no special treatment near the grid's boundaries will be needed.
 
