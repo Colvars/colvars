@@ -1958,11 +1958,12 @@ colvarbias_meta::hill::hill(cvm::step_number it_in,
 
 
 colvarbias_meta::hill::hill(colvarbias_meta::hill const &h)
-  : sW(1.0),
+  : it(h.it),
+    hill_value(0.0),
+    sW(1.0),
     W(h.W),
     centers(h.centers),
     sigmas(h.sigmas),
-    it(h.it),
     replica(h.replica)
 {}
 
