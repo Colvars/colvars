@@ -302,6 +302,10 @@ public:
     f_cv_hard_lower_boundary,
     /// \brief The upper boundary is not defined from user's choice
     f_cv_hard_upper_boundary,
+    /// \brief Reflecting lower boundary condition
+    f_cv_reflecting_lower_boundary,
+    /// \brief Reflecting upper boundary condition
+    f_cv_reflecting_upper_boundary,
     /// \brief Provide a discretization of the values of the colvar to
     /// be used by the biases or in analysis (needs lower and upper
     /// boundary)
