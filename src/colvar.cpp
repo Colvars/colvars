@@ -541,7 +541,7 @@ int colvar::init_grid_parameters(std::string const &conf)
       cvm::log("Reading legacy options lowerWall and lowerWallConstant: "
                "consider using a harmonicWalls restraint (caution: force constant would then be scaled by width^2).\n");
       if (!get_keyval(conf, "lowerWall", lower_wall)) {
-        error_code != cvm::error("Error: the value of lowerWall must be set "
+        error_code |= cvm::error("Error: the value of lowerWall must be set "
                                  "explicitly.\n", INPUT_ERROR);
       }
       lw_conf = std::string("\n\
@@ -554,7 +554,7 @@ int colvar::init_grid_parameters(std::string const &conf)
       cvm::log("Reading legacy options upperWall and upperWallConstant: "
                "consider using a harmonicWalls restraint (caution: force constant would then be scaled by width^2).\n");
       if (!get_keyval(conf, "upperWall", upper_wall)) {
-        error_code != cvm::error("Error: the value of upperWall must be set "
+        error_code |= cvm::error("Error: the value of upperWall must be set "
                                  "explicitly.\n", INPUT_ERROR);
       }
       uw_conf = std::string("\n\
@@ -616,7 +616,7 @@ harmonicWalls {\n\
                              "are enabled).\n", INPUT_ERROR);
   }
 
-  return COLVARS_OK;
+  return error_code;
 }
 
 
