@@ -34,14 +34,6 @@ char const **cvscript_command_names()
 }
 
 
-extern "C"
-char const *cvscript_help(char const *c)
-{
-  colvarscript *script = colvarscript_obj();
-  return script->get_command_help(c).c_str();
-}
-
-
 // Instantiate the body of all script commands
 
 #define CVSCRIPT_COMM_FN(COMM,N_ARGS_MIN,N_ARGS_MAX,ARGS,FN_BODY)       \

@@ -68,9 +68,6 @@ extern "C" {
   /// Get the names of all commands (array of strings)
   char const ** cvscript_command_names();
 
-  /// Get the help string of the given command (split using newlines)
-  char const * cvscript_help(char const *cmd);
-
 }
 
 #endif
