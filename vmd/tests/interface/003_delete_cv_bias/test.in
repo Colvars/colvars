@@ -14,12 +14,6 @@ colvar {
     lowerBoundary 0.0
     upperBoundary 0.1
 
-    hardLowerBoundary yes
-    expandBoundaries yes
-
-    lowerWallConstant 10.0
-    upperWallConstant 10.0
-
     rmsd {
         atoms {
             psfSegID BH
@@ -48,4 +42,11 @@ harmonic {
     outputEnergy   yes
     outputAccumulatedWork  yes
     outputCenters  yes
+}
+
+harmonicWalls {
+    colvars rmsd
+    name wall_rmsd
+    upperWalls 0.1
+    upperWallConstant 10.0
 }
