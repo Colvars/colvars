@@ -3,11 +3,11 @@ General commands
 
 List of commands:
 
-cv addenergy E
+cv addenergy <E>
 cv bias
 cv colvar
-cv config conf
-cv configfile conf_file
+cv config <conf>
+cv configfile <conf_file>
 cv delete
 cv frame [frame]
 cv getconfig
@@ -15,13 +15,13 @@ cv getenergy
 cv help [command]
 cv list [param]
 cv listcommands
-cv load prefix
+cv load <prefix>
 cv molid [molid]
 cv printframe
 cv printframelabels
 cv reset
 cv resetindexgroups
-cv save prefix
+cv save <prefix>
 cv units [units]
 cv update
 cv version
@@ -40,10 +40,10 @@ Colvar commands
 
 List of commands:
 
-cv colvar name addforce force
-cv colvar name cvcflags flags
+cv colvar name addforce <force>
+cv colvar name cvcflags <flags>
 cv colvar name delete
-cv colvar name get feature
+cv colvar name get <feature>
 cv colvar name getappliedforce
 cv colvar name getatomgroups
 cv colvar name getatomids
@@ -51,9 +51,9 @@ cv colvar name getconfig
 cv colvar name getgradients
 cv colvar name gettotalforce
 cv colvar name help [command]
-cv colvar name modifycvcs confs
+cv colvar name modifycvcs <confs>
 cv colvar name run_ave
-cv colvar name set feature value
+cv colvar name set <feature> <value>
 cv colvar name state
 cv colvar name type
 cv colvar name update
@@ -73,12 +73,12 @@ cv bias name bincount [index]
 cv bias name binnum
 cv bias name delete
 cv bias name energy
-cv bias name get feature
+cv bias name get <feature>
 cv bias name getconfig
 cv bias name help [command]
-cv bias name load prefix
-cv bias name save prefix
-cv bias name set feature value
+cv bias name load <prefix>
+cv bias name save <prefix>
+cv bias name set <feature> <value>
 cv bias name share
 cv bias name state
 cv bias name update
@@ -127,7 +127,7 @@ Get the current energy of this bias
 ======================================================================
 Help for script function "bias_get":
 
-cv bias name get feature
+cv bias name get <feature>
 
 Get the value of the given feature for this bias
 
@@ -155,7 +155,7 @@ command : string - Get the help string of this specific command (optional)
 ======================================================================
 Help for script function "bias_load":
 
-cv bias name load prefix
+cv bias name load <prefix>
 
 Load data into this bias
 
@@ -166,7 +166,7 @@ prefix : string - Read from a file with this name or prefix
 ======================================================================
 Help for script function "bias_save":
 
-cv bias name save prefix
+cv bias name save <prefix>
 
 Save data from this bias into a file with the given prefix
 
@@ -177,7 +177,7 @@ prefix : string - Prefix for the state file of this bias
 ======================================================================
 Help for script function "bias_set":
 
-cv bias name set feature value
+cv bias name set <feature> <value>
 
 Set the given feature of this bias to a new value
 
@@ -207,7 +207,7 @@ Recompute this bias and return its up-to-date energy
 ======================================================================
 Help for script function "colvar_addforce":
 
-cv colvar name addforce force
+cv colvar name addforce <force>
 
 Apply the given force onto this colvar and return the same
 
@@ -218,7 +218,7 @@ force : float or array - Applied force; must match colvar dimensionality
 ======================================================================
 Help for script function "colvar_cvcflags":
 
-cv colvar name cvcflags flags
+cv colvar name cvcflags <flags>
 
 Enable or disable individual components by setting their active flags
 
@@ -235,7 +235,7 @@ Delete this colvar, along with all biases that depend on it
 ======================================================================
 Help for script function "colvar_get":
 
-cv colvar name get feature
+cv colvar name get <feature>
 
 Get the value of the given feature for this colvar
 
@@ -293,7 +293,7 @@ command : string - Get the help string of this specific command (optional)
 ======================================================================
 Help for script function "colvar_modifycvcs":
 
-cv colvar name modifycvcs confs
+cv colvar name modifycvcs <confs>
 
 Modify configuration of individual components by passing string arguments
 
@@ -310,7 +310,7 @@ Get the current running average of the value of this colvar
 ======================================================================
 Help for script function "colvar_set":
 
-cv colvar name set feature value
+cv colvar name set <feature> <value>
 
 Set the given feature of this colvar to a new value
 
@@ -352,7 +352,7 @@ Get the width of this colvar
 ======================================================================
 Help for script function "cv_addenergy":
 
-cv addenergy E
+cv addenergy <E>
 
 Add an energy to the MD engine (no effect in VMD)
 
@@ -363,7 +363,7 @@ E : float - Amount of energy to add
 ======================================================================
 Help for script function "cv_config":
 
-cv config conf
+cv config <conf>
 
 Read configuration from the given string
 
@@ -374,7 +374,7 @@ conf : string - Configuration string
 ======================================================================
 Help for script function "cv_configfile":
 
-cv configfile conf_file
+cv configfile <conf_file>
 
 Read configuration from a file
 
@@ -442,7 +442,7 @@ Get the list of script functions, prefixed with "cv_", "colvar_" or "bias_"
 ======================================================================
 Help for script function "cv_load":
 
-cv load prefix
+cv load <prefix>
 
 Load data from a state file into all matching colvars and biases
 
@@ -488,7 +488,7 @@ Clear the index groups loaded so far, allowing to replace them
 ======================================================================
 Help for script function "cv_save":
 
-cv save prefix
+cv save <prefix>
 
 Change the prefix of all output files and save them
 
