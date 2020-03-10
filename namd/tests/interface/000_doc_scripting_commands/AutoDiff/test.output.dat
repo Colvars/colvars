@@ -1,138 +1,93 @@
 ======================================================================
-List of general commands:
+General commands
+
+List of commands:
 
 cv addenergy E
-    Add an energy to the MD engine (no effect in VMD)
 cv bias
-    Prefix for bias-specific commands
 cv colvar
-    Prefix for colvar-specific commands
 cv config conf
-    Read configuration from the given string
 cv configfile conf_file
-    Read configuration from a file
 cv delete
-    Delete this Colvars module instance (VMD only)
 cv frame [frame]
-    Get or set current frame number (VMD only)
 cv getconfig
-    Get the module's configuration string read so far
 cv getenergy
-    Get the current Colvars energy
 cv help [command]
-    Get the help string of the Colvars scripting interface
 cv list [param]
-    Return a list of all variables or biases
 cv listcommands
-    Get the list of script functions, prefixed with "cv_", "colvar_" or "bias_"
 cv load prefix
-    Load data from a state file into all matching colvars and biases
 cv molid [molid]
-    Get or set the molecule ID on which Colvars is defined (VMD only)
 cv printframe
-    Return the values that would be written to colvars.traj
 cv printframelabels
-    Return the labels that would be written to colvars.traj
 cv reset
-    Delete all internal configuration
 cv resetindexgroups
-    Clear the index groups loaded so far, allowing to replace them
 cv save prefix
-    Change the prefix of all output files and save them
 cv units [units]
-    Get or set the current Colvars unit system
 cv update
-    Recalculate colvars and biases
 cv version
-    Get the Colvars Module version number
 
-To get help on colvar-specific commands use:
+For detailed help on each command use:
+    cv help <command>
+
+To list all commands acting on collective variables use:
     cv help colvar
 
-To get help on bias-specific commands use:
+To list all commands acting on biases use:
     cv help bias
 
 ======================================================================
-List of colvar commands:
+Colvar commands
+
+List of commands:
 
 cv colvar name addforce force
-    Apply the given force onto this colvar and return the same
 cv colvar name cvcflags flags
-    Enable or disable individual components by setting their active flags
 cv colvar name delete
-    Delete this colvar, along with all biases that depend on it
 cv colvar name get feature
-    Get the value of the given feature for this colvar
 cv colvar name getappliedforce
-    Return the total of the forces applied to this colvar
 cv colvar name getatomgroups
-    Return the atom indices used by this colvar as a list of lists
 cv colvar name getatomids
-    Return the list of atom indices used by this colvar
 cv colvar name getconfig
-    Return the configuration string of this colvar
 cv colvar name getgradients
-    Return the atomic gradients of this colvar
 cv colvar name gettotalforce
-    Return the sum of internal and external forces to this colvar
 cv colvar name help [command]
-    Get a help summary or the help string of one colvar subcommand
 cv colvar name modifycvcs confs
-    Modify configuration of individual components by passing string arguments
 cv colvar name run_ave
-    Get the current running average of the value of this colvar
 cv colvar name set feature value
-    Set the given feature of this colvar to a new value
 cv colvar name state
-    Print a string representation of the feature state of this colvar
 cv colvar name type
-    Get the type description of this colvar
 cv colvar name update
-    Recompute this colvar and return its up-to-date value
 cv colvar name value
-    Get the current value of this colvar
 cv colvar name width
-    Get the width of this colvar
 
 For detailed help on each command use:
     cv colvar name help <command> ("name" does not need to exist)
 
 ======================================================================
-List of bias commands:
+Bias commands
+
+List of commands:
 
 cv bias name bin
-    Get the current grid bin index (1D ABF only for now)
 cv bias name bincount [index]
-    Get the number of samples at the given grid bin (1D ABF only for now)
 cv bias name binnum
-    Get the total number of grid points of this bias (1D ABF only for now)
 cv bias name delete
-    Delete this bias
 cv bias name energy
-    Get the current energy of this bias
 cv bias name get feature
-    Get the value of the given feature for this bias
 cv bias name getconfig
-    Return the configuration string of this bias
 cv bias name help [command]
-    Get a help summary or the help string of one bias subcommand
 cv bias name load prefix
-    Load data into this bias
 cv bias name save prefix
-    Save data from this bias into a file with the given prefix
 cv bias name set feature value
-    Set the given feature of this bias to a new value
 cv bias name share
-    Share bias information with other replicas (multiple-walker scheme)
 cv bias name state
-    Print a string representation of the feature state of this bias
 cv bias name update
-    Recompute this bias and return its up-to-date energy
 
 For detailed help on each command use:
     cv bias name help <command> ("name" does not need to exist)
 
-List of command descriptions:
+======================================================================
+Detailed help for all script functions
 
 ======================================================================
 Help for script function "bias_bin":
@@ -405,84 +360,6 @@ Parameters
 ----------
 
 E : float - Amount of energy to add
-======================================================================
-Help for script function "cv_bias":
-
-cv bias name bin
-    Get the current grid bin index (1D ABF only for now)
-cv bias name bincount [index]
-    Get the number of samples at the given grid bin (1D ABF only for now)
-cv bias name binnum
-    Get the total number of grid points of this bias (1D ABF only for now)
-cv bias name delete
-    Delete this bias
-cv bias name energy
-    Get the current energy of this bias
-cv bias name get feature
-    Get the value of the given feature for this bias
-cv bias name getconfig
-    Return the configuration string of this bias
-cv bias name help [command]
-    Get a help summary or the help string of one bias subcommand
-cv bias name load prefix
-    Load data into this bias
-cv bias name save prefix
-    Save data from this bias into a file with the given prefix
-cv bias name set feature value
-    Set the given feature of this bias to a new value
-cv bias name share
-    Share bias information with other replicas (multiple-walker scheme)
-cv bias name state
-    Print a string representation of the feature state of this bias
-cv bias name update
-    Recompute this bias and return its up-to-date energy
-
-For detailed help on each command use:
-    cv bias name help <command> ("name" does not need to exist)
-======================================================================
-Help for script function "cv_colvar":
-
-cv colvar name addforce force
-    Apply the given force onto this colvar and return the same
-cv colvar name cvcflags flags
-    Enable or disable individual components by setting their active flags
-cv colvar name delete
-    Delete this colvar, along with all biases that depend on it
-cv colvar name get feature
-    Get the value of the given feature for this colvar
-cv colvar name getappliedforce
-    Return the total of the forces applied to this colvar
-cv colvar name getatomgroups
-    Return the atom indices used by this colvar as a list of lists
-cv colvar name getatomids
-    Return the list of atom indices used by this colvar
-cv colvar name getconfig
-    Return the configuration string of this colvar
-cv colvar name getgradients
-    Return the atomic gradients of this colvar
-cv colvar name gettotalforce
-    Return the sum of internal and external forces to this colvar
-cv colvar name help [command]
-    Get a help summary or the help string of one colvar subcommand
-cv colvar name modifycvcs confs
-    Modify configuration of individual components by passing string arguments
-cv colvar name run_ave
-    Get the current running average of the value of this colvar
-cv colvar name set feature value
-    Set the given feature of this colvar to a new value
-cv colvar name state
-    Print a string representation of the feature state of this colvar
-cv colvar name type
-    Get the type description of this colvar
-cv colvar name update
-    Recompute this colvar and return its up-to-date value
-cv colvar name value
-    Get the current value of this colvar
-cv colvar name width
-    Get the width of this colvar
-
-For detailed help on each command use:
-    cv colvar name help <command> ("name" does not need to exist)
 ======================================================================
 Help for script function "cv_config":
 

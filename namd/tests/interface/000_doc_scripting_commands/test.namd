@@ -11,24 +11,29 @@ run 0
 set output [open "test.output.dat" "w"]
 
 puts ${output} ======================================================================
-puts ${output} "List of general commands:"
+puts ${output} "General commands"
 puts ${output} ""
 puts ${output} [cv help]
 
 puts ${output} ======================================================================
-puts ${output} "List of colvar commands:"
+puts ${output} "Colvar commands"
 puts ${output} ""
 puts ${output} [cv help colvar]
 
 puts ${output} ======================================================================
-puts ${output} "List of bias commands:"
+puts ${output} "Bias commands"
 puts ${output} ""
 puts ${output} [cv help bias]
 
-puts ${output} "List of command descriptions:"
+puts ${output} ======================================================================
+puts ${output} "Detailed help for all script functions"
 puts ${output} ""
 
 foreach cmd [lsort [cv listcommands]] {
+    if { (${cmd} == "cv_colvar") || (${cmd} == "cv_bias") } {
+        # Skip the prefixes
+        continue
+    }
     puts ${output} ======================================================================
     puts ${output} "Help for script function \"${cmd}\":"
     puts ${output} ""
