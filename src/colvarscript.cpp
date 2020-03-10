@@ -171,7 +171,7 @@ std::string colvarscript::get_command_cmdline_syntax(colvarscript::Object_type t
   for (i = 0; i < cmd_n_args_min[cmd]; i++) {
     std::string const &arghelp = cmd_arghelp[cmd][i];
     size_t space = arghelp.find(" : ");
-    cmdline_args += " "+cmd_arghelp[cmd][i].substr(0, space);
+    cmdline_args += " <"+cmd_arghelp[cmd][i].substr(0, space)+">";
   }
   for (i = cmd_n_args_min[cmd]; i < cmd_n_args_max[cmd]; i++) {
     std::string const &arghelp = cmd_arghelp[cmd][i];
