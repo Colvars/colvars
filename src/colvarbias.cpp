@@ -98,7 +98,7 @@ int colvarbias::init(std::string const &conf)
   get_keyval(conf, "outputEnergy", b_output_energy, b_output_energy);
 
   // Disabled by default in base class; default value can be overridden by derived class constructor
-  get_keyval_feature(this, conf, "bypassExtendedLagrangian", f_cvb_bypass_ext_lagrangian, is_enabled(f_cvb_bypass_ext_lagrangian), parse_silent);
+  get_keyval_feature(this, conf, "bypassExtendedLagrangian", f_cvb_bypass_ext_lagrangian, is_enabled(f_cvb_bypass_ext_lagrangian), parse_echo);
 
   get_keyval(conf, "timeStepFactor", time_step_factor, 1);
   if (time_step_factor < 1) {
