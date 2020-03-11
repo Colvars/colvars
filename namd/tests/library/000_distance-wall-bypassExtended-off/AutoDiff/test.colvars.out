@@ -114,6 +114,7 @@ colvars:   Initializing a new "harmonicwalls" instance.
 colvars:   # name = "harmonicwalls1" [default]
 colvars:   # colvars = { one }
 colvars:   # outputEnergy = off [default]
+colvars:   # bypassExtendedLagrangian = off
 colvars:   # timeStepFactor = 1 [default]
 colvars:   # writeTISamples = off [default]
 colvars:   # writeTIPMF = off [default]
@@ -138,6 +139,7 @@ colvars: Re-initialized atom group for variable "one":0/1. 4 atoms: total mass =
 colvars: The restart output state file will be "test.tmp.colvars.state".
 colvars: The final output state file will be "test.colvars.state".
 colvars: Writing to colvar trajectory file "test.colvars.traj".
+colvars: Redefining the Tcl "cv" command to the new script interface.
 colvars: Updating NAMD interface:
 colvars: updating atomic data (0 atoms).
 colvars: updating group data (2 scalable groups, 8 atoms in total).
