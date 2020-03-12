@@ -18,7 +18,7 @@ Starting from 2019-06-02 `customFunction` also requires C++11, due to improvemen
 
 - _GROMACS_ already follows the C++11 standard in full.
 
-- _LAMMPS_ is built by default with C++11, including most of the [precompiled builds](https://lammps.sandia.gov/download.html).  The C++11 transition is best handled through the [CMake build recipe](https://lammps.sandia.gov/doc/Build_cmake.html), which will automatically include or exclude C++11-specific sections of Colvars.  *Tip:* with CMake version 3.1 or later, try using the `-D CMAKE_CXX_STANDARD=11` flag to enable C++11 (if not already the compiler's default).  Build recipes following traditional `make` available in `src/MAKE/MACHINES` may require manual edits; check the README of the Colvars library in the LAMMPS distribution for details.
+- _LAMMPS_ is built by default with C++11, including most of the [precompiled builds](https://lammps.sandia.gov/download.html).  Version 3Mar2020 is the last version where C++11 can be (optionally) disabled: all later versions require C++11.  It is generally recommended to use the [CMake build recipe](https://lammps.sandia.gov/doc/Build_cmake.html).  Build recipes based on traditional `make` in `src/MAKE/MACHINES` may require manual edits.
 
 - _NAMD_ [precompiled builds](http://www.ks.uiuc.edu/Development/Download/download.cgi?PackageName=NAMD) will soon follow the C++11 standard but do not yet at the moment.  Build recipes for the Intel, Cray and IBM compilers in the `arch` folder are already set to require C++11.  Recipes based on `g++` should be adapted by replacing `-std=c++0x` with `-std=c++11`, to ensure that the `g++` version being used supports all needed features (in older GNU compilers, `0x` and `11` are not the same).
 
