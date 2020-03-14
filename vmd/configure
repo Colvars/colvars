@@ -53,6 +53,7 @@ if ($ENV{VMDINSTALLLIBRARYDIR}) {
 # FREEBSDAMD64  - compile on a FreeBSD machine (gcc/g++)
 # LINUX         - compile on a Linux machine (x86 32-bit)
 # LINUXAMD64    - compile on a Linux machine (x86 64-bit AMD64 or EM64T)
+# LINUXARM64    - compile on a Linux machine (64-bit ARM)
 # LINUXPPC64    - compile on a Linux machine (64-bit PowerPC)
 # MACOSX        - compile on a MacOS-X PowerPC machine
 # MACOSXX86     - compile on a MacOS-X x86 machine, 32-bit ABI
@@ -164,7 +165,7 @@ if (!(-e "plugins")) {
 
 #################### Parse command line options   ###########
 # list of allowed architectures
-@archlist=('AIX6_64', 'ANDROIDARMV7A', 'BLUEGENEQ', 'BLUEWATERS', 'CRAY_XC', 'CRAY_XK', 'FREEBSD', 'FREEBSDAMD64', 'LINUX', 'LINUXAMD64', 'LINUXCARMA', 'LINUXPPC64', 'MACOSX', 'MACOSXX86', 'MACOSXX86_64', 'OPENPOWER', 'SUMMIT', 'SUMMITDEV', 'SOLARIS2', 'SOLARIS2_64', 'SOLARISX86', 'SOLARISX86_64', 'WIN32', 'WIN64');
+@archlist=('AIX6_64', 'ANDROIDARMV7A', 'BLUEGENEQ', 'BLUEWATERS', 'CRAY_XC', 'CRAY_XK', 'FREEBSD', 'FREEBSDAMD64', 'LINUX', 'LINUXAMD64', 'LINUXARM64', 'LINUXCARMA', 'LINUXPPC64', 'MACOSX', 'MACOSXX86', 'MACOSXX86_64', 'OPENPOWER', 'SUMMIT', 'SUMMITDEV', 'SOLARIS2', 'SOLARIS2_64', 'SOLARISX86', 'SOLARISX86_64', 'WIN32', 'WIN64');
 
 if ($#ARGV == -1) {
     $text = `cat configure.options`;
@@ -420,7 +421,7 @@ $def_title="ON";
 $def_imageviewer="display %s";
 
 # program version number
-$progversion="1.9.4a38";
+$progversion="1.9.4a39";
 
 # text prompt string
 $promptstring="vmd > ";
@@ -2408,6 +2409,29 @@ if ($config_arch eq "LINUXAMD64") {
       $arch_lopts       = "-shared";
       $arch_cppopts    .= " -DVMD_SHARED";
     }
+}
+
+
+if ($config_arch eq "LINUXARM64") {
+  $tcl_libs         = "-ltcl8.5";
+  if ($config_tk) { $tcl_libs = "-ltk8.5 -lX11 " . $tcl_libs; }
+  $vmd_libs          = "$tcl_libs -lz";
+
+  $arch_nvcc     = "/usr/local/cuda/bin/nvcc";
+  $arch_nvccflags   = "--ptxas-options=-v " .
+                    "-gencode arch=compute_30,code=compute_30 " .
+                    "-gencode arch=compute_70,code=compute_70 " .
+                    "--ftz=true ";
+  $cuda_library     = "-L/usr/local/cuda/lib64";
+  $arch_cc       = "cc";
+  $arch_ccpp     = "c++";
+  $arch_copts       = "-Wall -Wno-unknown-pragmas -ffast-math -fomit-frame-pointer -fno-strict-aliasing -O3";
+  $arch_opt_flag    = "-Wall -Wno-unknown-pragmas -ffast-math -fomit-frame-pointer -fno-strict-aliasing -O3";
+  $arch_lex      = "flex";
+
+  # needed for plugins
+  $arch_lopts       = "-lm";
+  $system_libs .= " -ldl";
 }
 
 
