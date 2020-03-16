@@ -1624,7 +1624,7 @@ orientation, but not the position of the atom group;
 (\texttt{centerReference off}), to bias or restrain the shape and
 position, but not the orientation of the atom group;
 \item disabling the application of optimal roto-translations, which
-lets the RMSD component decribe the deviation of atoms
+lets the RMSD component describe the deviation of atoms
 from fixed positions in the laboratory frame: this allows for custom
 positional restraints within the Colvars module;
 \item fitting the atomic positions to different reference coordinates
@@ -1891,7 +1891,7 @@ As for the component \texttt{rmsd}, the available options are \texttt{atoms}, \t
 \textbf{Tip: stopping the rotation of a protein.}  To stop the
 rotation of an elongated macromolecule in solution (and use an
 anisotropic box to save water molecules), it is possible to define a
-colvar with an \texttt{orientation} component, and restrain it throuh
+colvar with an \texttt{orientation} component, and restrain it through
 the \texttt{harmonic} bias around the identity rotation, \texttt{(1.0,
   0.0, 0.0, 0.0)}.  Only the overall orientation of the macromolecule
 is affected, and \emph{not} its internal degrees of freedom.  The user
@@ -2183,7 +2183,7 @@ This component returns positive values, always comprised between 0
 score).
 
 
-\cvsubsubsec{\texttt{dihedralPC}: protein dihedral pricipal component}{sec:cvc_dihedralPC}
+\cvsubsubsec{\texttt{dihedralPC}: protein dihedral principal component}{sec:cvc_dihedralPC}
 \labelkey{colvar|dihedralPC}
 
 The block \texttt{dihedralPC~\{...\}} defines the
@@ -2546,7 +2546,7 @@ This colvar component computes the $s$ variable.
     {weights}{%
     \texttt{aspathCV} and \texttt{azpathCV}}{%
     Coefficients of the collective variables}{%
-    space-seperated numbers in a \texttt{\{...\}} block}{%
+    space-separated numbers in a \texttt{\{...\}} block}{%
     \texttt{\{1.0 ...\}}}{%
     Define the coefficients. The $j$-th value in the \texttt{\{...\}} block corresponds the $c_{j}$ in the equations.
   }
@@ -2871,7 +2871,7 @@ Lepton produces efficient evaluation routines for the function and its derivativ
 \end{itemize}
 
 
-The expression may use the collective variable components as variables, refered to by their user-defined \texttt{name}.
+The expression may use the collective variable components as variables, referred to by their user-defined \texttt{name}.
 Scalar elements of vector components may be accessed by appending a 1-based index to their \texttt{name}, as in the example below.
 When implementing generic functions of Cartesian coordinates rather
 than functions of existing components, the \texttt{cartesian} component
@@ -3945,7 +3945,7 @@ Performance can be improved in multiple ways:
   For simulations that use a single large colvar, it may be advisable to partition it in multiple components, which will be then distributed across the available cores.
   \cvnamdonly{In NAMD, this feature is enabled in all binaries compiled using SMP builds of Charm++ with the CkLoop extension.}
   \cvlammpsonly{In LAMMPS, this feature is supported automatically when LAMMPS is compiled with OpenMP support.}
-  If printed, the message ``SMP parallelism is available.'' indicates the availability of the option\cvvmdonly{ (will be supported in a future relase of VMD)}.
+  If printed, the message ``SMP parallelism is available.'' indicates the availability of the option\cvvmdonly{ (will be supported in a future release of VMD)}.
   If available, the option is turned on by default, but may be disabled using the keyword \refkey{smp}{Colvars-global|smp} if required for debugging.
 
 \cvnamdonly{
@@ -4949,7 +4949,7 @@ The following additional options define the configuration for the ensemble-biase
     Minimum value of the target distribution in reference to its \texttt{maximum value}}{%
     positive decimal}{%
     It is useful to set a minimum value of the target probability distribution to avoid values of the latter that are nearly zero, leading to very large hills. 
-    This parameter sets the minimum value of the target probability distribution that is expressed as a fraction of its \texttt{maximum value}: \texttt{minumum value = } 
+    This parameter sets the minimum value of the target probability distribution that is expressed as a fraction of its \texttt{maximum value}: \texttt{minimum value = } 
     \texttt{maximum value}\texttt{ X }\texttt{targetDistMinVal}. This implies that 0 \texttt{<} \texttt{targetDistMinVal} \texttt{<} 1 and its default value is set to 1/1000000.
     To avoid divisions by zero (see eq.{} \ref{eq:colvars_ebmeta_pot}), if \texttt{targetDistMinVal} is set as zero, values of $\rho_{exp}$ equal to zero are replaced by the 
     smallest positive value read in the same file.
