@@ -549,7 +549,7 @@ proc ::cv_dashboard::show_gradients { list } {
   foreach cv $list {
     if { ![info exists ::cv_dashboard::grad_objects($cv)] } {
       if { [run_cv colvar $cv set collect_gradient 1] == -1 } { continue }
-      run_cv colvar $cv update ;# required to get inital values of gradients
+      run_cv colvar $cv update ;# required to get initial values of gradients
       # Associate empty list of objects to cv to request its update
       set ::cv_dashboard::grad_objects($cv) {}
     }

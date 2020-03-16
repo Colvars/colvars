@@ -702,10 +702,10 @@ void SimParameters::config_parser_fileio(ParseOptions &opts) {
     PARSE_STRING);
 
 //   opts.require("main", "parameters",
-//"CHARMm 19 or CHARMm 22 compatable force field file (multiple "
+//"CHARMm 19 or CHARMm 22 compatible force field file (multiple "
 //"inputs allowed)", PARSE_MULTIPLES);
    opts.optional("main", "parameters",
-"CHARMm 19 or CHARMm 22 compatable force field file (multiple "
+"CHARMm 19 or CHARMm 22 compatible force field file (multiple "
 "inputs allowed)", PARSE_MULTIPLES);
 
 
@@ -768,7 +768,7 @@ void SimParameters::config_parser_fileio(ParseOptions &opts) {
    opts.optional("main", "XSTfreq", "Frequency of XST trajectory output, in "
     "timesteps", &xstFrequency, 0);
    opts.range("XSTfreq", NOT_NEGATIVE);
-   opts.optional("XSTfreq", "XSTfile", "Extended sytem trajectory output "
+   opts.optional("XSTfreq", "XSTfile", "Extended system trajectory output "
     "file name", xstFilename);
 
    opts.optional("main", "restartfreq", "Frequency of restart file "
@@ -1510,7 +1510,7 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
    opts.optional("adaptTempMD", "adaptTempFreq", "Frequency of writing average energies to adaptTempOutFile", &adaptTempFreq, 10);
    opts.range("adaptTempFreq", POSITIVE);
    opts.optionalB("adaptTempMD", "adaptTempDebug", "Print debug output for adaptTemp", &adaptTempDebug, FALSE);
-   opts.optional("adaptTempMD", "adaptTempTmin","Minimun temperature for adaptTemp", &adaptTempTmin);
+   opts.optional("adaptTempMD", "adaptTempTmin","Minimum temperature for adaptTemp", &adaptTempTmin);
    opts.units("adaptTempTmin", N_KELVIN);
    opts.range("adaptTempTmin", POSITIVE);
    opts.optional("adaptTempMD", "adaptTempTmax","Maximum temperature for adaptTemp", &adaptTempTmax);
@@ -1565,7 +1565,7 @@ void SimParameters::config_parser_constraints(ParseOptions &opts) {
     "positions",
     PARSE_STRING);
    opts.require("constraints", "conskfile", "PDB file containing force "
-    "constaints in one of the columns", PARSE_STRING);
+    "constraints in one of the columns", PARSE_STRING);
    opts.require("constraints", "conskcol", "Column of conskfile to use "
     "for the force constants", PARSE_STRING);
 #else
@@ -1752,7 +1752,7 @@ void SimParameters::config_parser_constraints(ParseOptions &opts) {
    opts.optionalB("main", "SASA", "Use Linear Combination of Pairwise Overlaps (LCPO) for calculating SASA",
       &LCPOOn, FALSE);
    opts.optional("SASA", "surfaceTension",
-      "Surfce Tension for SASA (kcal/mol/Ang^2)", &surface_tension, 0.005);
+      "Surface Tension for SASA (kcal/mol/Ang^2)", &surface_tension, 0.005);
 
    //****** BEGIN SMD constraints changes
 
@@ -1811,7 +1811,7 @@ void SimParameters::config_parser_constraints(ParseOptions &opts) {
    opts.optionalB("main", "symmetryRestraints", "Enable symmetry restraints?", &symmetryOn, FALSE);
    opts.optional("symmetryRestraints", "symmetryk", "Elastic constant for symmetry restraints", &symmetryk, 0);
    opts.range("symmetryk", NOT_NEGATIVE);
-   opts.optional("symmetryRestraints", "symmetrykfile", "PDB file specifying force contants on a per-atom basis", PARSE_MULTIPLES);
+   opts.optional("symmetryRestraints", "symmetrykfile", "PDB file specifying force constants on a per-atom basis", PARSE_MULTIPLES);
    opts.optionalB("symmetryRestraints", "symmetryScaleForces", "Scale applied forces over time?", &symmetryScaleForces, FALSE);
    opts.require("symmetryRestraints", "symmetryFile", "File for symmetry information", PARSE_MULTIPLES);
    opts.optional("symmetryRestraints", "symmetryMatrixFile", "File(s) for transfromation matrices", PARSE_MULTIPLES);
@@ -6865,7 +6865,7 @@ void SimParameters::parse_mgrid_string_param(ConfigList *cl,
   }
 }
 
-//This function is used to create directories when outputing into
+//This function is used to create directories when outputting into
 //multiple files, i.e. used for Parallel IO. -Chao Mei
 void SimParameters::create_output_directories(const char *dirname){
 	//output files organization:
@@ -7027,7 +7027,7 @@ void SimParameters::send_SimParameters(MOStream *msg)
 
   msg->end();
 }
-/*    END OF FUNCITON send_SimParameters    */
+/*    END OF FUNCTION send_SimParameters    */
 
 /****************************************************************/
 /*                */
@@ -7127,7 +7127,7 @@ int SimParameters::setupIDWS() {
   if ( !alchOutFreq && outputEnergies > alchIDWSFreq ) alchIDWSFreq = outputEnergies;
   if ( alchOutFreq > alchIDWSFreq ) alchIDWSFreq = alchOutFreq;
   if ( alchOutFreq && alchOutFreq != outputEnergies) {
-    iout << iWARN << "alchOutFreq and outputEnergies do not match. IDWS ouput"
+    iout << iWARN << "alchOutFreq and outputEnergies do not match. IDWS output"
          << " to stdout may not be useful!\n" << endi;
   }
   return 1;
