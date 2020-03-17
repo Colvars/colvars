@@ -208,7 +208,7 @@ public:
 					//  a force DCD file be updated
 	int xstFrequency;		//  How often (in timesteps) should
 					//  a XST trajectory file be updated
-	char auxFilename[128];		//  auxiliary output filename
+	char auxFilename[128];		//  auxilary output filename
 	char dcdFilename[128];		//  DCD filename
 	char velDcdFilename[128];       //  Velocity DCD filename
 	char forceDcdFilename[128];     //  Force DCD filename
@@ -1060,7 +1060,7 @@ public:
 					//  from the ConfigList object
 	void send_SimParameters(MOStream *);
 					//  Used by the master process
-					//  to send the parameters to
+					//  to send the paramters to
 					//  the other processors
 	void receive_SimParameters(MIStream *);
 					//  Used by the other processors
