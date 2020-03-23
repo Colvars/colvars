@@ -86,7 +86,7 @@ colvarproxy_namd::colvarproxy_namd()
   // take the output prefixes from the namd input
   output_prefix_str = std::string(simparams->outputFilename);
   restart_output_prefix_str = std::string(simparams->restartFilename);
-  restart_frequency_s = simparams->restartFrequency;
+  restart_frequency_engine = simparams->restartFrequency;
 
   // check if it is possible to save output configuration
   if ((!output_prefix_str.size()) && (!restart_output_prefix_str.size())) {

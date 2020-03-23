@@ -623,6 +623,12 @@ public:
     return restart_output_prefix_str;
   }
 
+  /// Default restart frequency (taken from the simulation engine)
+  inline int default_restart_frequency() const
+  {
+    return restart_frequency_engine;
+  }
+
   /// \brief Prefix to be used for output files (final system
   /// configuration)
   inline std::string & output_prefix()
@@ -635,6 +641,9 @@ protected:
   /// \brief Prefix to be used for input files (restarts, not
   /// configuration)
   std::string input_prefix_str, output_prefix_str, restart_output_prefix_str;
+
+  /// How often the simulation engine will write its own restart
+  int restart_frequency_engine;
 
   /// \brief Currently opened output files: by default, these are ofstream objects.
   /// Allows redefinition to implement different output mechanisms
@@ -709,9 +718,6 @@ public:
 
   /// As the name says
   void clear_error_msgs();
-
-  /// Restarts will be written each time this number of steps has passed
-  virtual size_t restart_frequency();
 
   /// Whether a simulation is running (warn against irrecovarable errors)
   inline bool simulation_running() const

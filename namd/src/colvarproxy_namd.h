@@ -43,9 +43,6 @@ protected:
   /// NAMD-style PRNG object
   Random random;
 
-  /// How often NAMD is instructed to write state files
-  size_t restart_frequency_s;
-
   bool first_timestep;
   size_t previous_NAMD_step;
 

@@ -80,7 +80,7 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
   colvarmodule::rotation::crossing_threshold = 1.0e-02;
 
   cv_traj_freq = 100;
-  restart_out_freq = proxy->restart_frequency();
+  restart_out_freq = proxy->default_restart_frequency();
 
   // by default overwrite the existing trajectory file
   cv_traj_append = false;
