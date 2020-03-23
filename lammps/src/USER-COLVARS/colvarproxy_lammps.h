@@ -41,7 +41,6 @@ class colvarproxy_lammps : public colvarproxy {
   // state of LAMMPS properties
   double t_target, my_timestep, my_boltzmann, my_angstrom;
   double bias_energy;
-  int  restart_every;
   int  previous_step;
 
   bool first_timestep;
@@ -101,8 +100,6 @@ class colvarproxy_lammps : public colvarproxy {
   inline cvm::real boltzmann() { return my_boltzmann; };
   inline cvm::real temperature() { return t_target; };
   inline cvm::real dt() { return my_timestep; }; // return _lmp->update->dt * _lmp->force->femtosecond; };
-
-  inline size_t restart_frequency() { return restart_every; };
 
   void add_energy(cvm::real energy) { bias_energy += energy; };
   void request_total_force(bool yesno) { total_force_requested = yesno; };

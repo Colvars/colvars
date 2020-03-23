@@ -707,12 +707,6 @@ int colvarproxy::update_output()
 }
 
 
-size_t colvarproxy::restart_frequency()
-{
-  return 0;
-}
-
-
 void colvarproxy::add_error_msg(std::string const &message)
 {
   std::istringstream is(message);
