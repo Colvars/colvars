@@ -81,7 +81,7 @@ Makefile.deps: $(COLVARS_SRCS)
 	@echo > $@
 	@for src in $^ ; do \
 	  obj=`basename $$src .cpp`.o ; \
-	  $(CXX) -MM $(COLVARS_INCFLAGS)  $(LEPTON_INCFLAGS) \
+	  $(CXX) $(CXXFLAGS) -MM $(COLVARS_INCFLAGS)  $(LEPTON_INCFLAGS) \
 	    -MT '$$(COLVARS_OBJ_DIR)'$$obj $$src >> $@ ; \
 	  done
 
