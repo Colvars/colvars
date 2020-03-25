@@ -626,6 +626,7 @@ void colvar::cvc::wrap(colvarvalue & /* x_unwrapped */) const
 }
 
 
+
 // Static members
 
 std::vector<colvardeps::feature *> colvar::cvc::cvc_features;

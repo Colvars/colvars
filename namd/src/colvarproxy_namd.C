@@ -243,6 +243,12 @@ int colvarproxy_namd::setup()
     atom_groups_new_colvar_forces[ig] = cvm::rvector(0.0, 0.0, 0.0);
   }
 
+  log("updating grid object data ("+cvm::to_str(volmaps_ids.size())+
+      " grid objects in total).\n");
+  for (int imap = 0; imap < modifyGridObjForces().size(); imap++) {
+    volmaps_new_colvar_forces[imap] = 0.0;
+  }
+
   return COLVARS_OK;
 }
 
@@ -254,6 +260,7 @@ int colvarproxy_namd::reset()
   // Unrequest all atoms and group from NAMD
   modifyRequestedAtoms().clear();
   modifyRequestedGroups().clear();
+  modifyRequestedGridObjects().clear();
 
   atoms_map.clear();
 
@@ -335,6 +342,10 @@ void colvarproxy_namd::calculate()
   for (size_t i = 0; i < atom_groups_ids.size(); i++) {
     atom_groups_total_forces[i] = cvm::rvector(0.0, 0.0, 0.0);
     atom_groups_new_colvar_forces[i] = cvm::rvector(0.0, 0.0, 0.0);
+  }
+
+  for (int imap = 0; imap < volmaps_ids.size(); imap++) {
+    volmaps_new_colvar_forces[imap] = 0.0;
   }
 
   // create the atom map if needed
@@ -434,6 +445,24 @@ void colvarproxy_namd::calculate()
     }
   }
 
+  {
+    if (cvm::debug()) {
+      log("Updating grid objects.\n");
+    }
+    // Using a simple nested loop: there probably won't be so many maps that
+    // this becomes performance-limiting
+    IntList::const_iterator goi_i = getGridObjIndexBegin();
+    BigRealList::const_iterator gov_i = getGridObjValueBegin();
+    for ( ; gov_i != getGridObjValueEnd(); goi_i++, gov_i++) {
+      for (size_t imap = 0; imap < volmaps_ids.size(); imap++) {
+        if (volmaps_ids[imap] == *goi_i) {
+          volmaps_values[imap] = *gov_i;
+          break;
+        }
+      }
+    }
+  }
+
   if (cvm::debug()) {
     cvm::log("atoms_ids = "+cvm::to_str(atoms_ids)+"\n");
     cvm::log("atoms_ncopies = "+cvm::to_str(atoms_ncopies)+"\n");
@@ -450,6 +479,10 @@ void colvarproxy_namd::calculate()
     cvm::log("atom_groups_coms = "+cvm::to_str(atom_groups_coms)+"\n");
     cvm::log("atom_groups_total_forces = "+cvm::to_str(atom_groups_total_forces)+"\n");
     cvm::log(cvm::line_marker);
+
+    cvm::log("volmaps_ids = "+cvm::to_str(volmaps_ids)+"\n");
+    cvm::log("volmaps_values = "+cvm::to_str(volmaps_values)+"\n");
+    cvm::log(cvm::line_marker);
   }
 
   // call the collective variable module
@@ -463,6 +496,8 @@ void colvarproxy_namd::calculate()
     cvm::log(cvm::line_marker);
     cvm::log("atom_groups_new_colvar_forces = "+cvm::to_str(atom_groups_new_colvar_forces)+"\n");
     cvm::log(cvm::line_marker);
+    cvm::log("volmaps_new_colvar_forces = "+cvm::to_str(volmaps_new_colvar_forces)+"\n");
+    cvm::log(cvm::line_marker);
   }
 
   // communicate all forces to the MD integrator
@@ -472,13 +507,27 @@ void colvarproxy_namd::calculate()
     modifyAppliedForces().add(Vector(f.x, f.y, f.z));
   }
 
-  {
-    // zero out the applied forces on each group
+  if (atom_groups_new_colvar_forces.size() > 0) {
     modifyGroupForces().resize(requestedGroups().size());
     ForceList::iterator gf_i = modifyGroupForces().begin();
     for (int ig = 0; gf_i != modifyGroupForces().end(); gf_i++, ig++) {
       cvm::rvector const &f = atom_groups_new_colvar_forces[ig];
       *gf_i = Vector(f.x, f.y, f.z);
+    }
+  }
+
+  if (volmaps_new_colvar_forces.size() > 0) {
+    modifyGridObjForces().resize(requestedGridObjs().size());
+    modifyGridObjForces().setall(0.0);
+    IntList::const_iterator goi_i = getGridObjIndexBegin();
+    BigRealList::iterator gof_i = modifyGridObjForces().begin();
+    for ( ; goi_i != getGridObjIndexEnd(); goi_i++, gof_i++) {
+      for (size_t imap = 0; imap < volmaps_ids.size(); imap++) {
+        if (volmaps_ids[imap] == *goi_i) {
+          *gof_i = volmaps_new_colvar_forces[imap];
+          break;
+        }
+      }
     }
   }
 
@@ -1157,6 +1206,7 @@ int colvarproxy_namd::update_group_properties(int index)
 }
 
 
+
 int colvarproxy_namd::set_unit_system(std::string const &units_in, bool /*check_only*/)
 {
   if (units_in != "real") {
@@ -1164,6 +1214,62 @@ int colvarproxy_namd::set_unit_system(std::string const &units_in, bool /*check_
     return COLVARS_ERROR;
   }
   return COLVARS_OK;
+}
+
+
+int colvarproxy_namd::init_volmap(int volmap_id)
+{
+  for (size_t i = 0; i < volmaps_ids.size(); i++) {
+    if (volmaps_ids[i] == volmap_id) {
+      // this map has already been requested
+      volmaps_ncopies[i] += 1;
+      return i;
+    }
+  }
+
+  Molecule *mol = Node::Object()->molecule;
+
+  if ((volmap_id < 0) || (volmap_id >= mol->numGridforceGrids)) {
+    return cvm::error("Error: invalid numeric ID ("+cvm::to_str(volmap_id)+
+                      ") for map.\n", INPUT_ERROR);
+  }
+
+  int const index = add_volmap_slot(volmap_id);
+  modifyRequestedGridObjects().add(volmap_id);
+
+  return index;
+}
+
+
+int colvarproxy_namd::init_volmap(const char *volmap_name)
+{
+  if (volmap_name == NULL) {
+    return cvm::error("Error: no grid object name provided.", INPUT_ERROR);
+  }
+  int volmap_id = simparams->mgridforcelist.index_for_key(volmap_name);
+
+  int error_code = init_volmap(volmap_id);
+
+  if (error_code == COLVARS_OK) {
+    // Check that the scale factor is correctly set to zero
+    Molecule *mol = Node::Object()->molecule;
+    GridforceGrid const *grid = mol->get_gridfrc_grid(volmap_id);
+    Vector const gfScale = grid->get_scale();
+    if ((gfScale.x != 0.0) || (gfScale.y != 0.0) || (gfScale.z != 0.0)) {
+      error_code |= cvm::error("Error: GridForce map \""+
+                               std::string(volmap_name)+
+                               "\" has non-zero scale factors.\n",
+                               INPUT_ERROR);
+    }
+  }
+
+  return error_code;
+}
+
+
+void colvarproxy_namd::clear_volmap(int index)
+{
+  colvarproxy::clear_volmap(index);
 }
 
 

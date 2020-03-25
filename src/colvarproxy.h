@@ -17,6 +17,7 @@
 #include "colvartypes.h"
 #include "colvarvalue.h"
 #include "colvarproxy_tcl.h"
+#include "colvarproxy_volmaps.h"
 
 /// \file colvarproxy.h
 /// \brief Colvars proxy classes
@@ -660,6 +661,7 @@ class colvarproxy
   : public colvarproxy_system,
     public colvarproxy_atoms,
     public colvarproxy_atom_groups,
+    public colvarproxy_volmaps,
     public colvarproxy_smp,
     public colvarproxy_replicas,
     public colvarproxy_script,
