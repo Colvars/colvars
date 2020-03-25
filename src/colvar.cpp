@@ -866,6 +866,8 @@ int colvar::init_components(std::string const &conf)
   error_code |= init_components_type<aspathCV>(conf, "arithmetic path collective variables (s) for other CVs", "aspathCV");
   error_code |= init_components_type<azpathCV>(conf, "arithmetic path collective variables (s) for other CVs", "azpathCV");
 
+  error_code |= init_components_type<map_total>(conf, "total value of atomic map", "mapTotal");
+
   if (!cvcs.size() || (error_code != COLVARS_OK)) {
     cvm::error("Error: no valid components were provided "
                "for this collective variable.\n",

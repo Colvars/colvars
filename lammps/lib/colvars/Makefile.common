@@ -38,6 +38,7 @@ COLVARS_SRCS = \
         colvarcomp_gpath.cpp \
         colvarcomp_protein.cpp \
         colvarcomp_rotations.cpp \
+        colvarcomp_volmaps.cpp \
         colvar.cpp \
         colvardeps.cpp \
         colvargrid.cpp \
@@ -47,6 +48,7 @@ COLVARS_SRCS = \
         colvarproxy.cpp \
         colvarproxy_replicas.cpp \
         colvarproxy_tcl.cpp \
+        colvarproxy_volmaps.cpp \
         colvarscript.cpp \
         colvarscript_commands.cpp \
         colvarscript_commands_bias.cpp \

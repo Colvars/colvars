@@ -35,7 +35,7 @@ protected:
   std::vector<int> atoms_map;
 
   /// Pointer to the NAMD simulation input object
-  SimParameters const *simparams;
+  SimParameters *simparams;
 
   /// Self-explained
   BigReal thermostat_temperature;
@@ -207,6 +207,10 @@ public:
   int init_atom_group(std::vector<int> const &atoms_ids);
   void clear_atom_group(int index);
   int update_group_properties(int index);
+
+  int init_volmap(int volmap_id);
+  int init_volmap(const char *volmap_name);
+  void clear_volmap(int index);
 
   std::ostream * output_stream(std::string const &output_name,
                                std::ios_base::openmode mode);
