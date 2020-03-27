@@ -1,0 +1,14 @@
+# -*- tcl -*-
+
+source ../Common/common.namd
+source ../Common/measure_net_force_torque.tcl
+
+colvars on
+
+source gridforcemaps.tcl
+
+cv configfile test.in
+
+run ${numsteps}
+
+source ../Common/delete_tmp_files.tcl

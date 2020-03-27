@@ -1,0 +1,82 @@
+colvars: ----------------------------------------------------------------------
+colvars: Please cite Fiorin et al, Mol Phys 2013:
+colvars:  https://dx.doi.org/10.1080/00268976.2013.813594
+colvars: in any publication based on this calculation.
+colvars: SMP parallelism is enabled; if needed, use "smp off" to override this.
+colvars: This version was built with the C++11 standard or higher.
+colvars: ----------------------------------------------------------------------
+colvars: Reading new configuration from file "test.in":
+colvars: # units = "" [default]
+colvars: # smp = on [default]
+colvars: # colvarsTrajFrequency = 1
+colvars: # colvarsRestartFrequency = 10 [default]
+colvars: # scriptedColvarForces = off [default]
+colvars: # scriptingAfterBiases = off [default]
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = "map"
+colvars:   Initializing a new "mapTotal" component.
+colvars:     # name = "map"
+colvars:     # componentCoeff = 0.0034027
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
+colvars:     # mapName = "map"
+colvars:   All components initialized.
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # width = 0.02
+colvars:   # lowerBoundary = 0 [default]
+colvars:   # upperBoundary = 0 [default]
+colvars:   # hardLowerBoundary = off [default]
+colvars:   # hardUpperBoundary = off [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = off [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputTotalForce = off [default]
+colvars:   # outputAppliedForce = off [default]
+colvars:   # subtractAppliedForce = off [default]
+colvars:   # runAve = off [default]
+colvars:   # corrFunc = off [default]
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables initialized, 1 in total.
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new "harmonic" instance.
+colvars:   # name = "harmonic1" [default]
+colvars:   # colvars = { map }
+colvars:   # outputEnergy = off [default]
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # writeTISamples = off [default]
+colvars:   # writeTIPMF = off [default]
+colvars:   # centers = { 1 }
+colvars:   # targetCenters = { 1 } [default]
+colvars:   # outputCenters = off [default]
+colvars:   # forceConstant = 0.2
+colvars:   # targetForceConstant = -1 [default]
+colvars:   The force constant for colvar "map" will be rescaled to 500 according to the specified width (0.02).
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables biases initialized, 1 in total.
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables module (re)initialized.
+colvars: ----------------------------------------------------------------------
+colvars: Updating NAMD interface:
+colvars: updating atomic data (0 atoms).
+colvars: updating group data (0 scalable groups, 0 atoms in total).
+colvars: updating grid object data (1 grid objects in total).
+colvars: The restart output state file will be "test.tmp.colvars.state".
+colvars: The final output state file will be "test.colvars.state".
+colvars: Writing to colvar trajectory file "test.colvars.traj".
+colvars: Redefining the Tcl "cv" command to the new script interface.
+colvars: Updating NAMD interface:
+colvars: updating atomic data (0 atoms).
+colvars: updating group data (0 scalable groups, 0 atoms in total).
+colvars: updating grid object data (1 grid objects in total).
+colvars: The restart output state file will be "test.tmp.colvars.state".
+colvars: The final output state file will be "test.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.tmp.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.tmp.colvars.state".
+colvars: Saving collective variables state to "test.colvars.state".

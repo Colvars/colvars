@@ -1,0 +1,51 @@
+# -*- tcl -*-
+
+colvarsTrajFrequency 1
+
+colvar {
+    name multimap
+    width 0.02
+    mapTotal {
+        name map
+        mapName map
+        # Normalize to [0:1] range
+        componentCoeff 0.0034027
+    }
+    mapTotal {
+        name maprot
+        mapName map2
+        # Normalize to [0:1] range and multiply by 2
+        componentCoeff 0.0068054
+    }
+}
+
+harmonic {
+    colvars multimap
+    centers 1.3
+    forceConstant 1.0
+    targetCenters 2.0
+    targetNumsteps 20
+    outputEnergy yes
+}
+
+
+# Define two variables from individual maps for debugging
+colvar {
+    name map
+    mapTotal {
+        name map
+        mapName map
+        # Normalize to [0:1] range
+        componentCoeff 0.0034027
+    }
+}
+
+colvar {
+    name map2
+    mapTotal {
+        name map2
+        mapName map2
+        # Normalize to [0:1] range
+        componentCoeff 0.0034027
+    }
+}

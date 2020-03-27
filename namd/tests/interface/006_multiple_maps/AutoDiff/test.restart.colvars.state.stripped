@@ -1,0 +1,28 @@
+configuration {
+  step           40
+  dt 1.000000e+00
+}
+
+colvar {
+  name multimap
+  x  1.37074503648023e+00
+}
+
+colvar {
+  name map
+  x  7.66575883577770e-01
+}
+
+colvar {
+  name map2
+  x  3.02084576451228e-01
+}
+
+restraint {
+  configuration {
+    step 40
+    name harmonic1
+    centers   2.00000000000000e+00
+  }
+}
+
