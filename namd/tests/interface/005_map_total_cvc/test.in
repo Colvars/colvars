@@ -1,0 +1,18 @@
+colvarsTrajFrequency 1
+
+colvar {
+    name map
+    width 0.02
+    mapTotal {
+        name map
+        mapName map
+        # Normalize to [0:1] range
+        componentCoeff 0.0034027
+    }
+}
+
+harmonic {
+    colvars map
+    centers 1.0
+    forceConstant 0.2
+}
