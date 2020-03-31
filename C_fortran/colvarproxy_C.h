@@ -13,7 +13,9 @@ public:
 private:
   /// \brief Value of the unit for atomic coordinates with respect to
   /// angstroms (used by some variables for hard-coded default values)
-  cvm::real unit_angstrom() { return 0.; }
+  cvm::real backend_angstrom_value() { return 1.; }
+
+  int set_unit_system(std::string const &units, bool check_only) { return 0.; }
 
   /// \brief Boltzmann constant
   cvm::real boltzmann() { return 0.; }

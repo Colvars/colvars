@@ -17,7 +17,7 @@ ifeq ($(CXX),)
 CXX := g++
 endif
 ifeq ($(CXXFLAGS),)
-CXXFLAGS := -std=c++11 -pedantic -g -O2
+CXXFLAGS := -std=c++11 -pedantic -g -O2 -fPIC
 ifneq ($(CXX),"CC")
 CXXFLAGS += -Wall
 endif
