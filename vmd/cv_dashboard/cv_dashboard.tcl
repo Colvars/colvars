@@ -146,14 +146,16 @@ proc ::cv_dashboard::apply_config { cfg } {
   set cfg [substitute_atomselects $cfg]
 
   # Dump config for debugging possible crashes
-  set dump [open "_dashboard_saved_config.colvars" w]
-  puts $dump "# Current configuration of Colvars Module\n"
-  foreach c [run_cv list] {
-      puts $dump "colvar {[get_config $c]}\n"
+  # Skip if we don't have write permission in working directory
+  if ![catch {set dump [open "_dashboard_saved_config.colvars" w]}] {
+    puts $dump "# Current configuration of Colvars Module\n"
+    foreach c [run_cv list] {
+        puts $dump "colvar {[get_config $c]}\n"
+    }
+    puts $dump "\n# New config string to be applied\n"
+    puts $dump $cfg
+    close $dump
   }
-  puts $dump "\n# New config string to be applied\n"
-  puts $dump $cfg
-  close $dump
 
   set cvs_before [run_cv list]
   # Actually submit new config to the Colvars Module
@@ -424,4 +426,16 @@ proc ::cv_dashboard::traj_animation_bindings { path } {
   bind $path <Control-Right>  { ::cv_dashboard::chg_frame 50 }
   bind $path <Home>           { ::cv_dashboard::chg_frame start }
   bind $path <End>            { ::cv_dashboard::chg_frame end }
+}
+
+
+# Round floating-point number to $n significant figures
+# without going to string representation, unlike format
+
+proc ::cv_dashboard::round {x n} {
+  if { $x == 0. } { return 0. }
+  # e = 10^p, where p is the "number of decimal places" to keep
+  # which can be negative
+  set e [expr {pow(10, $n - floor(log10(abs($x))) - 1)}]
+  return [expr {round($x * $e) / double($e)}]
 }

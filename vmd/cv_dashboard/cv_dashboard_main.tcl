@@ -606,15 +606,15 @@ proc ::cv_dashboard::update_shown_gradients {} {
     set width 1.
     regexp -nocase -lineanchor {^\s*width\s([\d\.e]*)} [get_config $cv] match width
 
-    set ::tcl_precision 3 ;# Compute scaling factors with few significant figures
     if { $::cv_dashboard::grad_scale_choice == "scale" } {
       set fact [expr {$::cv_dashboard::grad_scale / $width}]
-      set ::cv_dashboard::grad_norm [expr {sqrt($maxl2) * $fact}]
+      set grad_norm [expr {sqrt($maxl2) * $fact}]
+      set ::cv_dashboard::grad_norm [round $grad_norm 5]
     } else {
       set fact [expr {$::cv_dashboard::grad_norm / sqrt($maxl2)}]
-      set ::cv_dashboard::grad_scale [expr {$fact * $width}]
+      set grad_scale [expr {$fact * $width}]
+      set ::cv_dashboard::grad_scale [round $grad_scale 5]
     }
-    unset ::tcl_precision ;# Back to default
 
     # Create new arrows
     set new_objs {}
@@ -622,8 +622,8 @@ proc ::cv_dashboard::update_shown_gradients {} {
       set vec [vecscale $fact $g]
       set end [vecadd $start $vec]
       set middle [vecadd $start [vecscale 0.9 $vec]]
-      set cyl [graphics $molid cylinder $start $middle radius 0.15]
-      set cone [graphics $molid cone $middle $end radius 0.25]
+      set cyl [graphics $molid cylinder $start $middle radius 0.1 resolution 12]
+      set cone [graphics $molid cone $middle $end radius 0.2 resolution 12]
       lappend new_objs $cyl $cone
     }
     set ::cv_dashboard::grad_objects($cv) $new_objs
