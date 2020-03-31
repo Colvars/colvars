@@ -7,11 +7,11 @@ COLVARS_LIB = ../src/libcolvars.a
 COLVARS_SRC_DIR = ../src
 IF_OBJ = colvarproxy_C.o
 
-CXXFLAGS := -std=c++11 -pedantic -g -O2
+CXXFLAGS := -std=c++11 -pedantic -g -O2 -fPIC
 
 .PHONY: default $(COLVARS_LIB)
 
-default: fortran_test C_test
+default: fortran_test C_test libcolvars_C.so
 
 fortran_test: fortran_test.o $(COLVARS_LIB) $(IF_OBJ)
 	g++ -o $@ $<  $(IF_OBJ) $(COLVARS_LIB) -lgfortran
@@ -31,4 +31,5 @@ $(COLVARS_LIB):
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<  -I$(COLVARS_SRC_DIR)
 
-
+libcolvars_C.so: $(COLVARS_LIB) $(IF_OBJ)
+	g++ -shared -o $@ $(IF_OBJ) $(COLVARS_LIB)
