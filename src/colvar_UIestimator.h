@@ -305,12 +305,6 @@ namespace UIestimator {
 
             int i;
 
-            if (step % output_freq == 0) {
-                calc_pmf();
-                write_files();
-                //write_interal_data();
-            }
-
             for (i = 0; i < dimension; i++) {
                 // for dihedral RC, it is possible that x = 179 and y = -179, should correct it
                 // may have problem, need to fix
@@ -381,6 +375,7 @@ namespace UIestimator {
         bool written;
         bool written_1D;
 
+    public:
         // calculate gradients from the internal variables
         void calc_pmf() {
             int norm;

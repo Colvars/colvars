@@ -4011,6 +4011,18 @@ All biasing and analysis methods implemented recognize the following options:
     If this option is chosen and  \texttt{colvarsTrajFrequency} is not zero, the current value of the biasing energy will be written to the trajectory file during the simulation.}
 
 \item %
+  \labelkey{colvarbias|outputFreq}
+  \keydef{outputFreq}{%
+    colvar bias}{%
+    Frequency (number of steps) at which output files are written}{%
+    positive integer}{%
+    \refkey{colvarsRestartFrequency}{Colvars-global|colvarsRestartFrequency}}{%
+    If this bias produces aggregated data that needs to be written to disk (for example, a PMF), this number specifies the number of steps after which these data are written to files.
+    A value of zero disables writing files for this bias during the simulation (except for \refkey{outputEnergy}{colvarbias|outputEnergy}, which is controlled by \refkey{colvarsTrajFrequency}{Colvars-global|colvarsTrajFrequency}).
+    All output files are also written at the end of a simulation run, regardless of the value of this number.
+    \cvvmdonly{In VMD, this option has no effect.}}
+
+\item %
   \labelkey{colvarbias|bypassExtendedLagrangian}
   \keydef
     {bypassExtendedLagrangian}{%
@@ -4240,6 +4252,7 @@ The following specific parameters can be set in the ABF configuration block:
 \item \dupkey{name}{\texttt{abf}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{colvars}{\texttt{abf}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{outputEnergy}{\texttt{abf}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{outputFreq}{\texttt{abf}}{colvarbias|outputFreq}{biasing and analysis methods}
 
 \item \keydef{fullSamples}{\texttt{abf}}{%
     Number of samples in a bin prior
@@ -4281,23 +4294,16 @@ The following specific parameters can be set in the ABF configuration block:
     applying internally the corresponding correction to ensure uniform sampling.
     It is not allowed for colvars with multiple components.}
 
-\item \keydef{outputFreq}{\texttt{abf}}{%
-    Frequency (in timesteps) at which ABF data files are refreshed}
-  {positive integer}
-  {Colvars module restart frequency}
-  {The files containing the free energy gradient estimate and sampling histogram
-    (and the PMF in one-dimensional calculations) are written on disk at the given
-    time interval.}
-
 \item \keydef{historyFreq}{\texttt{abf}}{%
     Frequency (in timesteps) at which ABF history files are
   accumulated}
   {positive integer}
   {0}
   {If this number is non-zero, the free energy gradient estimate and sampling histogram
-    (and the PMF in one-dimensional calculations) are appended to files on disk at
+    (and the PMF in one-dimensional calculations) are written to files on disk at
     the given time interval. History file names use the same prefix as output files, with
-    ``\texttt{.hist}'' appended.}
+    ``\texttt{.hist}'' appended.
+  The number given must be a multiple of \refkey{outputFreq}{colvarbias|outputFreq}.}
 
 \item \key{inputPrefix}{\texttt{abf}}{%
     Filename prefix for reading ABF data}
@@ -4362,7 +4368,7 @@ The following specific parameters can be set in the ABF configuration block:
 \item \keydef{sharedFreq}{\texttt{abf}}{%
     Frequency (in timesteps) at which force samples are synchronized among the replicas}
   {positive integer}
-  {\texttt{outputFreq}}
+  {\refkey{outputFreq}{colvarbias|outputFreq}}
   {
   In the current implementation of shared ABF, each replica maintains a separate
   buffer of total force samples that determine the biasing force.
@@ -4754,6 +4760,7 @@ Its mandatory keywords are \refkey{colvars}{colvarbias|colvars}, the variables i
 \item \dupkey{name}{\texttt{metadynamics}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{colvars}{\texttt{metadynamics}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{outputEnergy}{\texttt{metadynamics}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{outputFreq}{\texttt{metadynamics}}{colvarbias|outputFreq}{biasing and analysis methods}
 \item \dupkey{writeTIPMF}{\texttt{metadynamics}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{writeTISamples}{\texttt{metadynamics}}{sec:colvarbias}{biasing and analysis methods}
 
@@ -4821,8 +4828,7 @@ The following two options allow to disable or control this behavior and to track
     Periodically write the PMF for visualization}{%
     boolean}{%
     \texttt{on}}{%
-    When \texttt{useGrids} and this option are \texttt{on}, the PMF is
-    written every \texttt{colvarsRestartFrequency} steps.}
+    When \texttt{useGrids} and this option are \texttt{on}, the PMF is written every \refkey{outputFreq}{colvarbias|outputFreq} steps.}
 
 \item %
   \keydef
@@ -4833,6 +4839,24 @@ The following two options allow to disable or control this behavior and to track
     \texttt{off}}{%
     When \texttt{writeFreeEnergyFile} and this option are \texttt{on}, the step number is included in the file name, thus generating a series of PMF files.
     Activating this option can be useful to follow more closely the convergence of the simulation, by comparing PMFs separated by short times.}
+
+\item %
+  \labelkey{metadynamics|writeHillsTrajectory}
+  \keydef
+    {writeHillsTrajectory}{%
+    \texttt{metadynamics}}{%
+    Write a log of new hills}{%
+    boolean}{%
+    \texttt{off}}{%
+    If this option is \texttt{on}, a file containing the Gaussian hills written by the \texttt{metadynamics} bias, with the name:\\
+    ``\outputName\texttt{.colvars.$<$name$>$.hills.traj}'',\\
+    which can be useful to post-process the time series of the Gassian hills.
+    Each line is written every \texttt{newHillFrequency}, regardless of the value of \refkey{outputFreq}{colvarbias|outputFreq}.
+    When \texttt{multipleReplicas} is \texttt{on}, its name is changed to:\\
+    ``\outputName\texttt{.colvars.$<$name$>$.$<$replicaID$>$.hills.traj}''.\\
+    The columns of this file are the centers of the hills, $\xi_{i}(t')$, followed by the half-widths, $\sigma_{\xi_{i}}$, and the weight, $W$.
+    \textbf{Note:} prior to version 2020-02-24, the full-width $2\sigma$ of the Gaussian was reported in lieu of $\sigma$.
+    }
 
 \end{itemize}
 
@@ -4873,6 +4897,20 @@ Default values are chosen to minimize such cost with no loss of accuracy.
     and widths) saved in the state file override those in the
     configuration file.  Enabling this option forces the grids to match
     those in the current configuration file.}
+
+\item %
+  \keydef
+    {keepHills}{%
+    \texttt{metadynamics}}{%
+    Write each individual hill to the state
+    file}{%
+    boolean}{%
+    \texttt{off}}{%
+    When \texttt{useGrids} and this option are \texttt{on}, all hills
+    are saved to the state file in their analytic form, alongside their
+    grids.  This makes it possible to later use exact analytic Gaussians
+    for \texttt{rebinGrids}.  To only keep track of the history of the
+    added hills, \texttt{writeHillsTrajectory} is preferable.}
 
 \end{itemize}
 
@@ -5125,43 +5163,6 @@ The following are the multiple-walkers related options:
     If \texttt{multipleReplicas} is \texttt{on}, enabling this option produces  an additional file \outputName\texttt{.partial.pmf}, which can be useful to monitor the contribution of each replica to the total PMF (which is written to the file \outputName\texttt{.pmf}).
     \textbf{Note:} the name of this file is chosen for consistency and convenience, \emph{but its content is not a PMF} and it is not expected to converge, even if the total PMF does.
 }
-
-\end{itemize}
-
-
-\cvsubsubsec{Compatibility and post-processing}{sec:colvarbias_meta_post}
-The following options may be useful only for applications that go beyond the calculation of a PMF by metadynamics:
-\begin{itemize}
-
-\item %
-  \keydef
-    {keepHills}{%
-    \texttt{metadynamics}}{%
-    Write each individual hill to the state
-    file}{%
-    boolean}{%
-    \texttt{off}}{%
-    When \texttt{useGrids} and this option are \texttt{on}, all hills
-    are saved to the state file in their analytic form, alongside their
-    grids.  This makes it possible to later use exact analytic Gaussians
-    for \texttt{rebinGrids}.  To only keep track of the history of the
-    added hills, \texttt{writeHillsTrajectory} is preferable.}
-
-\item %
-  \labelkey{metadynamics|writeHillsTrajectory}
-  \keydef
-    {writeHillsTrajectory}{%
-    \texttt{metadynamics}}{%
-    Write a log of new hills}{%
-    boolean}{%
-    \texttt{off}}{%
-    If this option is \texttt{on}, a logfile is written by the \texttt{metadynamics} bias, with the name:\\
-    ``\outputName\texttt{.colvars.$<$name$>$.hills.traj}'',\\ which can be useful to post-process the time series of the Gassian hills.
-    When \texttt{multipleReplicas} is \texttt{on}, its name is changed to:\\
-    ``\outputName\texttt{.colvars.$<$name$>$.$<$replicaID$>$.hills.traj}''.\\
-    The columns of this file are the centers of the hills, $\xi_{i}(t')$, followed by the half-widths, $\sigma_{\xi_{i}}$, and the weight, $W$.
-    \textbf{Note:} prior to version 2020-02-24, the full-width $2\sigma$ of the Gaussian was reported in lieu of $\sigma$.
-    }
 
 \end{itemize}
 
@@ -5701,15 +5702,7 @@ variables in the form of a N-dimensional histogram. A \texttt{histogram} block m
 \item \dupkey{colvars}{\texttt{histogram}}{sec:colvarbias}{biasing and analysis methods}
 %\item \dupkey{outputEnergy}{\texttt{histogram}}{sec:colvarbias}{biasing and analysis methods}
 
-\item %
-  \keydef{%
-    outputFreq}{%
-    \texttt{histogram}}{%
-    Frequency (in timesteps) at which the histogram files are refreshed}{%
-    positive integer}{%
-    \texttt{colvarsRestartFrequency}}{%
-    The histogram data are written to files at the given time interval.
-    A value of 0 disables the creation of these files (\textbf{note:} all data to continue a simulation are still included in the state file).}
+\item \dupkey{outputFreq}{\texttt{histogram}}{colvarbias|outputFreq}{biasing and analysis methods}
 
 \item %
   \keydef{%
@@ -5718,7 +5711,7 @@ variables in the form of a N-dimensional histogram. A \texttt{histogram} block m
     Write the histogram to a file}{%
     UNIX filename}{%
     \outputName\texttt{.$<$name$>$.dat}}{%
-    Name of the file containing histogram data (multicolumn format), which is written every \texttt{outputFreq} steps.
+    Name of the file containing histogram data (multicolumn format), which is written every \refkey{outputFreq}{colvarbias|outputFreq} steps.
     For the special case of 2 variables, Gnuplot may be used to visualize this file.
   }
 
@@ -5729,7 +5722,7 @@ variables in the form of a N-dimensional histogram. A \texttt{histogram} block m
     Write the histogram to a file}{%
     UNIX filename}{%
     \outputName\texttt{.$<$name$>$.dat}}{%
-    Name of the file containing histogram data (OpenDX format), which is written every \texttt{outputFreq} steps.
+    Name of the file containing histogram data (OpenDX format), which is written every \refkey{outputFreq}{colvarbias|outputFreq} steps.
     For the special case of 3 variables, VMD may be used to visualize this file.
 }
 
