@@ -568,21 +568,6 @@ public:
   // Returns error code
   virtual int set_frame(long int);
 
-  /// \brief Returns a reference to the given output channel;
-  /// if this is not open already, then open it
-  virtual std::ostream *output_stream(std::string const &output_name,
-                                      std::ios_base::openmode mode =
-                                      std::ios_base::out);
-
-  /// Returns a reference to output_name if it exists, NULL otherwise
-  virtual std::ostream *get_output_stream(std::string const &output_name);
-
-  /// \brief Flushes the given output channel
-  virtual int flush_output_stream(std::ostream *os);
-
-  /// \brief Closes the given output channel
-  virtual int close_output_stream(std::string const &output_name);
-
   /// \brief Rename the given file, before overwriting it
   virtual int backup_file(char const *filename);
 
@@ -734,6 +719,21 @@ public:
     return version_int;
   }
 
+  /// \brief Returns a reference to the given output channel;
+  /// if this is not open already, then open it
+  virtual std::ostream *output_stream(std::string const &output_name,
+                                      std::ios_base::openmode mode =
+                                      std::ios_base::out);
+
+  /// Returns a reference to output_name if it exists, NULL otherwise
+  virtual std::ostream *get_output_stream(std::string const &output_name);
+
+  /// \brief Flushes the given output channel
+  virtual int flush_output_stream(std::ostream *os);
+
+  /// \brief Closes the given output channel
+  virtual int close_output_stream(std::string const &output_name);
+
 protected:
 
   /// Collected error messages
@@ -747,6 +747,9 @@ protected:
 
   /// Integer representing the version string (allows comparisons)
   int version_int;
+
+  /// Raise when the output stream functions are used on threads other than 0
+  void smp_stream_error();
 
 };
 
