@@ -157,10 +157,15 @@ proc ::cv_dashboard::apply_config { cfg } {
     close $dump
   }
 
+  # Save viewpoints for all molecules, as they could be reset when applying config
+  set vp [get_viewpoints]
+
   set cvs_before [run_cv list]
   # Actually submit new config to the Colvars Module
   set res [run_cv config $cfg]
   set cvs_after [run_cv list]
+
+  set_viewpoints $vp
 
   # Extract config for individual colvars
   set cv_configs [extract_colvar_configs $cfg]
@@ -438,4 +443,31 @@ proc ::cv_dashboard::round {x n} {
   # which can be negative
   set e [expr {pow(10, $n - floor(log10(abs($x))) - 1)}]
   return [expr {round($x * $e) / double($e)}]
+}
+
+
+proc ::cv_dashboard::get_viewpoints {} {
+  set vp [dict create]
+  # get the current matrices
+  foreach mol [molinfo list] {
+    dict set vp $mol [list \
+      [molinfo $mol get rotate_matrix] \
+      [molinfo $mol get center_matrix] \
+      [molinfo $mol get scale_matrix]  \
+      [molinfo $mol get global_matrix]]
+  }
+  return $vp
+}
+
+
+proc ::cv_dashboard::set_viewpoints { vp } {
+  foreach mol [molinfo list] {
+    if [dict exists $vp $mol] {
+      lassign [dict get $vp $mol] a b c d
+      molinfo $mol set rotate_matrix   $a
+      molinfo $mol set center_matrix   $b
+      molinfo $mol set scale_matrix    $c
+      molinfo $mol set global_matrix   $d
+    }
+  }
 }
