@@ -25,8 +25,12 @@ colvarbias::colvarbias(char const *key)
   init_dependencies();
   rank = 1;
 
+  time_step_factor = 1;
+
   has_data = false;
   b_output_energy = false;
+  output_freq = cvm::restart_out_freq;
+
   reset();
   state_file_step = 0L;
   matching_state = false;
@@ -95,12 +99,16 @@ int colvarbias::init(std::string const &conf)
 
   output_prefix = cvm::output_prefix();
 
+  // Write energy to traj file?
   get_keyval(conf, "outputEnergy", b_output_energy, b_output_energy);
+
+  // How often to write full output files?
+  get_keyval(conf, "outputFreq", output_freq, output_freq);
 
   // Disabled by default in base class; default value can be overridden by derived class constructor
   get_keyval_feature(this, conf, "bypassExtendedLagrangian", f_cvb_bypass_ext_lagrangian, is_enabled(f_cvb_bypass_ext_lagrangian), parse_echo);
 
-  get_keyval(conf, "timeStepFactor", time_step_factor, 1);
+  get_keyval(conf, "timeStepFactor", time_step_factor, time_step_factor);
   if (time_step_factor < 1) {
     cvm::error("Error: timeStepFactor must be 1 or greater.\n");
     return COLVARS_ERROR;

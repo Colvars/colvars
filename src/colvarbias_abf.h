@@ -56,8 +56,6 @@ private:
   size_t  full_samples;
   /// Number of samples per bin before applying a scaled-down biasing force
   size_t  min_samples;
-  /// frequency for updating output files
-  int     output_freq;
   /// Write combined files with a history of all output data?
   bool    b_history_files;
   /// Write CZAR output file for stratified eABF (.zgrad)

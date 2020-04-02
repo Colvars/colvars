@@ -697,11 +697,6 @@ int colvarmodule::calc()
   }
 
   error_code |= calc_colvars();
-  // set biasing forces to zero before biases are calculated and summed over
-  for (std::vector<colvar *>::iterator cvi = colvars.begin();
-       cvi != colvars.end(); cvi++) {
-    (*cvi)->reset_bias_force();
-  }
   error_code |= calc_biases();
   error_code |= update_colvar_forces();
 
@@ -712,17 +707,45 @@ int colvarmodule::calc()
     error_code |= write_traj_files();
   }
 
-  // write restart files, if needed
+  // write restart files and similar data
   if (restart_out_freq && (cvm::step_relative() > 0) &&
       ((cvm::step_absolute() % restart_out_freq) == 0) ) {
+
     if (restart_out_name.size()) {
       // Write restart file, if different from main output
       error_code |= write_restart_file(restart_out_name);
     } else {
       error_code |= write_restart_file(output_prefix()+".colvars.state");
     }
-    write_output_files();
+
+    cvm::increase_depth();
+    for (std::vector<colvar *>::iterator cvi = colvars.begin();
+         cvi != colvars.end();
+         cvi++) {
+      // TODO remove this when corrFunc becomes a bias
+      error_code |= (*cvi)->write_output_files();
+    }
+    for (std::vector<colvarbias *>::iterator bi = biases.begin();
+         bi != biases.end();
+         bi++) {
+      error_code |= (*bi)->write_state_to_replicas();
+    }
+    cvm::decrease_depth();
   }
+
+  // Write output files for biases, at the specified frequency for each
+  cvm::increase_depth();
+  for (std::vector<colvarbias *>::iterator bi = biases.begin();
+       bi != biases.end();
+       bi++) {
+    if ((*bi)->output_freq > 0) {
+      if ((cvm::step_relative() > 0) &&
+          ((cvm::step_absolute() % (*bi)->output_freq) == 0) ) {
+        error_code |= (*bi)->write_output_files();
+      }
+    }
+  }
+  cvm::decrease_depth();
 
   error_code |= end_of_step();
 
@@ -828,6 +851,12 @@ int colvarmodule::calc_biases()
   // variables
   if (cvm::debug() && num_biases())
     cvm::log("Updating collective variable biases.\n");
+
+  // set biasing forces to zero before biases are calculated and summed over
+  for (std::vector<colvar *>::iterator cvi = colvars.begin();
+       cvi != colvars.end(); cvi++) {
+    (*cvi)->reset_bias_force();
+  }
 
   std::vector<colvarbias *>::iterator bi;
   int error_code = COLVARS_OK;
@@ -975,12 +1004,20 @@ int colvarmodule::write_restart_file(std::string const &out_name)
     return cvm::error("Error: in writing restart file.\n", FILE_ERROR);
   }
   proxy->close_output_stream(out_name);
+  if (cv_traj_os != NULL) {
+    // Take the opportunity to flush colvars.traj
+    proxy->flush_output_stream(cv_traj_os);
+  }
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
 }
 
 
 int colvarmodule::write_traj_files()
 {
+  if (cvm::debug()) {
+    cvm::log("colvarmodule::write_traj_files()\n");
+  }
+
   if (cv_traj_os == NULL) {
     if (open_traj_file(cv_traj_name) != COLVARS_OK) {
       return cvm::get_error();
@@ -1001,14 +1038,11 @@ int colvarmodule::write_traj_files()
     write_traj(*cv_traj_os);
   }
 
-  if (restart_out_freq && (cv_traj_os != NULL)) {
-    // flush the trajectory file if we are at the restart frequency
-    if ( (cvm::step_relative() > 0) &&
-         ((cvm::step_absolute() % restart_out_freq) == 0) ) {
-      cvm::log("Synchronizing (emptying the buffer of) trajectory file \""+
-               cv_traj_name+"\".\n");
-      proxy->flush_output_stream(cv_traj_os);
-    }
+  if (restart_out_freq && (cv_traj_os != NULL) &&
+      ((cvm::step_absolute() % restart_out_freq) == 0)) {
+    cvm::log("Synchronizing (emptying the buffer of) trajectory file \""+
+             cv_traj_name+"\".\n");
+    proxy->flush_output_stream(cv_traj_os);
   }
 
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
@@ -1395,15 +1429,6 @@ int colvarmodule::backup_file(char const *filename)
 int colvarmodule::write_output_files()
 {
   int error_code = COLVARS_OK;
-
-  cvm::increase_depth();
-  for (std::vector<colvar *>::iterator cvi = colvars.begin();
-       cvi != colvars.end();
-       cvi++) {
-    error_code |= (*cvi)->write_output_files();
-  }
-  cvm::decrease_depth();
-
   cvm::increase_depth();
   for (std::vector<colvarbias *>::iterator bi = biases.begin();
        bi != biases.end();
@@ -1412,15 +1437,8 @@ int colvarmodule::write_output_files()
     error_code |= (*bi)->write_state_to_replicas();
   }
   cvm::decrease_depth();
-
-  if (cv_traj_os != NULL) {
-    // do not close, there may be another run command
-    proxy->flush_output_stream(cv_traj_os);
-  }
-
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
 }
-
 
 
 int colvarmodule::read_traj(char const *traj_filename,
@@ -1538,12 +1556,10 @@ int colvarmodule::open_traj_file(std::string const &file_name)
 
   // (re)open trajectory file
   if (cv_traj_append) {
-    cvm::log("Appending to colvar trajectory file \""+file_name+
-             "\".\n");
+    cvm::log("Appending to trajectory file \""+file_name+"\".\n");
     cv_traj_os = (cvm::proxy)->output_stream(file_name, std::ios::app);
   } else {
-    cvm::log("Writing to colvar trajectory file \""+file_name+
-             "\".\n");
+    cvm::log("Opening trajectory file \""+file_name+"\".\n");
     proxy->backup_file(file_name.c_str());
     cv_traj_os = (cvm::proxy)->output_stream(file_name);
   }
@@ -1560,6 +1576,7 @@ int colvarmodule::open_traj_file(std::string const &file_name)
 int colvarmodule::close_traj_file()
 {
   if (cv_traj_os != NULL) {
+    cvm::log("Closing trajectory file \""+cv_traj_name+"\".\n");
     proxy->close_output_stream(cv_traj_name);
     cv_traj_os = NULL;
   }

@@ -172,6 +172,9 @@ public:
     return COLVARS_OK;
   }
 
+  /// Frequency for writing output files
+  size_t output_freq;
+
   /// Write any output files that this bias may have (e.g. PMF files)
   virtual int write_output_files()
   {

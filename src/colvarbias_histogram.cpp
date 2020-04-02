@@ -32,7 +32,6 @@ int colvarbias_histogram::init(std::string const &conf)
 
   get_keyval(conf, "outputFile", out_name, std::string(""));
   get_keyval(conf, "outputFileDX", out_name_dx, std::string(""));
-  get_keyval(conf, "outputFreq", output_freq, cvm::restart_out_freq);
 
   /// with VMD, this may not be an error
   // if ( output_freq == 0 ) {

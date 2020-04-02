@@ -71,8 +71,19 @@ int colvarbias_abf::init(std::string const &conf)
   // full_samples - min_samples >= 1 is guaranteed
 
   get_keyval(conf, "inputPrefix",  input_prefix, std::vector<std::string>());
-  get_keyval(conf, "outputFreq", output_freq, cvm::restart_out_freq);
+
   get_keyval(conf, "historyFreq", history_freq, 0);
+  if (history_freq != 0) {
+    if (output_freq == 0) {
+      cvm::error("Error: historyFreq must be a multiple of outputFreq.\n",
+                 INPUT_ERROR);
+    } else {
+      if ((history_freq % output_freq) != 0) {
+        cvm::error("Error: historyFreq must be a multiple of outputFreq.\n",
+                   INPUT_ERROR);
+      }
+    }
+  }
   b_history_files = (history_freq > 0);
 
   // shared ABF
@@ -446,17 +457,6 @@ int colvarbias_abf::update()
     output_prefix = cvm::output_prefix();
   } else {
     output_prefix = cvm::output_prefix() + "." + this->name;
-  }
-
-  if (output_freq && (cvm::step_absolute() % output_freq) == 0) {
-    if (cvm::debug()) cvm::log("ABF bias trying to write gradients and samples to disk");
-    write_gradients_samples(output_prefix);
-  }
-
-  if (b_history_files && (cvm::step_absolute() % history_freq) == 0) {
-    // file already exists iff cvm::step_relative() > 0
-    // otherwise, backup and replace
-    write_gradients_samples(output_prefix + ".hist", (cvm::step_relative() > 0));
   }
 
   if (shared_on && shared_last_step >= 0 && cvm::step_absolute() % shared_freq == 0) {
@@ -836,11 +836,31 @@ std::istream & colvarbias_abf::read_state_data(std::istream& is)
   return is;
 }
 
+
 int colvarbias_abf::write_output_files()
 {
+  if (cvm::debug()) {
+    cvm::log("ABF bias trying to write gradients and samples to disk");
+  }
+
   write_gradients_samples(output_prefix);
+
+  if (b_history_files) {
+    if ((cvm::step_absolute() % history_freq) == 0) {
+      // file already exists iff cvm::step_relative() > 0
+      // otherwise, backup and replace
+      write_gradients_samples(output_prefix + ".hist", (cvm::step_relative() > 0));
+    }
+  }
+
+  if (b_UI_estimator) {
+    eabf_UI.calc_pmf();
+    eabf_UI.write_files();
+  }
+
   return COLVARS_OK;
 }
+
 
 int colvarbias_abf::calc_energy(std::vector<colvarvalue> const *values)
 {
