@@ -163,10 +163,6 @@ int colvarbias_histogram::update()
     }
   }
 
-  if (output_freq && (cvm::step_absolute() % output_freq) == 0) {
-    write_output_files();
-  }
-
   error_code |= cvm::get_error();
   return error_code;
 }
