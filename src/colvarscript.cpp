@@ -190,38 +190,40 @@ std::string colvarscript::get_command_cmdline_syntax(colvarscript::Object_type t
     // Already handled, but silence the warning
     return std::string("");
   }
+
+  return std::string("");
 }
 
 
 std::string colvarscript::get_cmdline_help_summary(colvarscript::Object_type t)
 {
-  std::string result;
-  result += "List of commands:\n\n";
+  std::string output;
+  output += "List of commands:\n\n";
 
   for (size_t i = 0; i < cmd_help.size(); i++) {
     std::string const prefix = get_cmd_prefix(t);
     command const c = cmd_str_map[std::string(cmd_names[i])];
     if (std::string(cmd_names[i], prefix.size()) == prefix) {
-      result += get_command_cmdline_syntax(t, c)+std::string("\n");
+      output += get_command_cmdline_syntax(t, c)+std::string("\n");
     }
   }
   if (t == use_module) {
-    result += "\nFor detailed help on each command use:\n"
+    output += "\nFor detailed help on each command use:\n"
       "    cv help <command>\n";
-    result += "\nTo list all commands acting on collective variables use:\n"
+    output += "\nTo list all commands acting on collective variables use:\n"
       "    cv help colvar\n";
-    result += "\nTo list all commands acting on biases use:\n"
+    output += "\nTo list all commands acting on biases use:\n"
       "    cv help bias\n";
   }
   if (t == use_colvar) {
-    result += "\nFor detailed help on each command use:\n"
+    output += "\nFor detailed help on each command use:\n"
       "    cv colvar name help <command> (\"name\" does not need to exist)\n";
   }
   if (t == use_bias) {
-    result += "\nFor detailed help on each command use:\n"
+    output += "\nFor detailed help on each command use:\n"
       "    cv bias name help <command> (\"name\" does not need to exist)\n";
   }
-  return result;
+  return output;
 }
 
 

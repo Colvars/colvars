@@ -883,7 +883,7 @@ void colvarbias_meta::project_hills(colvarbias_meta::hill_iter  h_first,
 
   // TODO: improve it by looping over a small subgrid instead of the whole grid
 
-  std::vector<colvarvalue> colvar_values(num_variables());
+  std::vector<colvarvalue> new_colvar_values(num_variables());
   std::vector<cvm::real> colvar_forces_scalar(num_variables());
 
   std::vector<int> he_ix = he->new_index();
@@ -902,17 +902,17 @@ void colvarbias_meta::project_hills(colvarbias_meta::hill_iter  h_first,
           count++) {
       size_t i;
       for (i = 0; i < num_variables(); i++) {
-        colvar_values[i] = hills_energy->bin_to_value_scalar(he_ix[i], i);
+        new_colvar_values[i] = hills_energy->bin_to_value_scalar(he_ix[i], i);
       }
 
       // loop over the hills and increment the energy grid locally
       hills_energy_here = 0.0;
-      calc_hills(h_first, h_last, hills_energy_here, &colvar_values);
+      calc_hills(h_first, h_last, hills_energy_here, &new_colvar_values);
       he->acc_value(he_ix, hills_energy_here);
 
       for (i = 0; i < num_variables(); i++) {
         hills_forces_here[i].reset();
-        calc_hills_force(i, h_first, h_last, hills_forces_here, &colvar_values);
+        calc_hills_force(i, h_first, h_last, hills_forces_here, &new_colvar_values);
         colvar_forces_scalar[i] = hills_forces_here[i].real_value;
       }
       hg->acc_force(hg_ix, &(colvar_forces_scalar.front()));
@@ -935,16 +935,18 @@ void colvarbias_meta::project_hills(colvarbias_meta::hill_iter  h_first,
 
   } else {
 
+    // TODO delete this (never used)
+
     // simpler version, with just the energy
 
     for ( ; (he->index_ok(he_ix)); ) {
 
       for (size_t i = 0; i < num_variables(); i++) {
-        colvar_values[i] = hills_energy->bin_to_value_scalar(he_ix[i], i);
+        new_colvar_values[i] = hills_energy->bin_to_value_scalar(he_ix[i], i);
       }
 
       hills_energy_here = 0.0;
-      calc_hills(h_first, h_last, hills_energy_here, &colvar_values);
+      calc_hills(h_first, h_last, hills_energy_here, &new_colvar_values);
       he->acc_value(he_ix, hills_energy_here);
 
       he->incr(he_ix);
