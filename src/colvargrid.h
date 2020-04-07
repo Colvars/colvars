@@ -239,19 +239,21 @@ public:
   }
 
   /// \brief Constructor from a vector of colvars
+  /// \param add_extra_bin requests that non-periodic dimensions are extended
+  /// by 1 bin to accommodate the integral (PMF) of another gridded quantity (gradient)
   colvar_grid(std::vector<colvar *> const &colvars,
               T const &t = T(),
               size_t mult_i = 1,
-              bool margin = false)
+              bool add_extra_bin = false)
     : has_data(false)
   {
-    this->init_from_colvars(colvars, t, mult_i, margin);
+    this->init_from_colvars(colvars, t, mult_i, add_extra_bin);
   }
 
   int init_from_colvars(std::vector<colvar *> const &colvars,
                         T const &t = T(),
                         size_t mult_i = 1,
-                        bool margin = false)
+                        bool add_extra_bin = false)
   {
     if (cvm::debug()) {
       cvm::log("Reading grid configuration from collective variables.\n");
@@ -299,7 +301,7 @@ public:
         use_actual_value[i-1] = true;
       }
 
-      if (margin) {
+      if (add_extra_bin) {
         if (periodic[i]) {
           // Shift the grid by half the bin width (values at edges instead of center of bins)
           lower_boundaries.push_back(cv[i]->lower_boundary.real_value - 0.5 * widths[i]);
@@ -1208,7 +1210,7 @@ public:
   /// Constructor from a vector of colvars
   colvar_grid_count(std::vector<colvar *>  &colvars,
                     size_t const           &def_count = 0,
-                    bool                   margin = false);
+                    bool                   add_extra_bin = false);
 
   /// Increment the counter at given position
   inline void incr_count(std::vector<int> const &ix)
@@ -1360,7 +1362,7 @@ public:
 
   /// Constructor from a vector of colvars
   colvar_grid_scalar(std::vector<colvar *> &colvars,
-                     bool margin = 0);
+                     bool add_extra_bin = false);
 
   /// Accumulate the value
   inline void acc_value(std::vector<int> const &ix,
