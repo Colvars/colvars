@@ -712,7 +712,7 @@ public:
   /// \brief Return the value suitable for output purposes (so that it
   /// may be rescaled or manipulated without changing it permanently)
   virtual inline T value_output(std::vector<int> const &ix,
-                                size_t const &imult = 0)
+                                size_t const &imult = 0) const
   {
     return value(ix, imult);
   }
@@ -955,7 +955,7 @@ public:
   /// represented in memory
   /// \param buf_size Number of values per line
   std::ostream & write_raw(std::ostream &os,
-                           size_t const buf_size = 3)
+                           size_t const buf_size = 3) const
   {
     std::streamsize const w = os.width();
     std::streamsize const p = os.precision();
@@ -1004,7 +1004,7 @@ public:
 
   /// \brief Write the grid in a format which is both human readable
   /// and suitable for visualization e.g. with gnuplot
-  void write_multicol(std::ostream &os)
+  void write_multicol(std::ostream &os) const
   {
     std::streamsize const w = os.width();
     std::streamsize const p = os.precision();
@@ -1145,7 +1145,7 @@ public:
 
   /// \brief Write the grid data without labels, as they are
   /// represented in memory
-  std::ostream & write_opendx(std::ostream &os)
+  std::ostream & write_opendx(std::ostream &os) const
   {
     // write the header
     os << "object 1 class gridpositions counts";
@@ -1430,7 +1430,7 @@ public:
   /// \brief Return the value of the function at ix divided by its
   /// number of samples (if the count grid is defined)
   virtual cvm::real value_output(std::vector<int> const &ix,
-                                 size_t const &imult = 0)
+                                 size_t const &imult = 0) const
   {
     if (imult > 0) {
       cvm::error("Error: trying to access a component "
@@ -1574,7 +1574,7 @@ public:
   /// \brief Return the value of the function at ix divided by its
   /// number of samples (if the count grid is defined)
   virtual inline cvm::real value_output(std::vector<int> const &ix,
-                                        size_t const &imult = 0)
+                                        size_t const &imult = 0) const
   {
     if (samples)
       return (samples->value(ix) > 0) ?

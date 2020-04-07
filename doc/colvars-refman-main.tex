@@ -4302,8 +4302,8 @@ The following specific parameters can be set in the ABF configuration block:
   {If this number is non-zero, the free energy gradient estimate and sampling histogram
     (and the PMF in one-dimensional calculations) are written to files on disk at
     the given time interval. History file names use the same prefix as output files, with
-    ``\texttt{.hist}'' appended.
-  The number given must be a multiple of \refkey{outputFreq}{colvarbias|outputFreq}.}
+    ``\texttt{.hist}'' appended (\outputName\texttt{.hist.pmf}).
+  \texttt{historyFreq} must be a multiple of \refkey{outputFreq}{colvarbias|outputFreq}.}
 
 \item \key{inputPrefix}{\texttt{abf}}{%
     Filename prefix for reading ABF data}

@@ -20,6 +20,7 @@ while [ $# -ge 1 ]; do
     BINARY=$1
   elif [ "x$1" = 'x-g' ]; then
     gen_ref_output='yes'
+    echo "Generating reference output"
   elif [ "x$1" = 'x-h' ]; then
     echo "Usage: ./run_tests.sh [-h] [-g] [path_to_namd2] [testdir1 [testdir2 ...]]"  >& 2
     echo "    The -g option (re)generates reference outputs in the given directories" >& 2
@@ -187,14 +188,22 @@ for dir in ${DIRLIST} ; do
       grep 'NAMD' ${basename}.out | head -n 1 > namd-version.txt
       grep 'Initializing the collective variables module, version' ${basename}.out | head -n 1 >> namd-version.txt
       grep 'Using NAMD interface, version' ${basename}.out | head -n 1 >> namd-version.txt
-      cp ${basename}.colvars.state.stripped AutoDiff/
-      cp ${basename}.colvars.traj           AutoDiff/
-      cp ${basename}.colvars.out            AutoDiff/
-      if [ -f ${basename}.histogram1.dat ] ; then
-        cp -f ${basename}.histogram1.dat AutoDiff/
-      fi
-      if [ -f ${basename}.pmf ] ; then
-        cp -f ${basename}.pmf AutoDiff/
+      if [ -z "$(ls -A AutoDiff/)" ] ; then
+        # Fill an empty AutoDiff directory with default files
+        cp ${basename}.colvars.state.stripped AutoDiff/
+        cp ${basename}.colvars.traj           AutoDiff/
+        cp ${basename}.colvars.out            AutoDiff/
+        if [ -f ${basename}.histogram1.dat ] ; then
+          cp -f ${basename}.histogram1.dat AutoDiff/
+        fi
+        if [ -f ${basename}.pmf ] ; then
+          cp -f ${basename}.pmf AutoDiff/
+        fi
+      else
+        # Or replace the existing files with current versions
+        for file in AutoDiff/*; do
+          cp -f `basename ${file}` AutoDiff/
+        done
       fi
     fi
 
