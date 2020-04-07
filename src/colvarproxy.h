@@ -735,6 +735,9 @@ public:
   /// \brief Flushes the given output channel
   virtual int flush_output_stream(std::ostream *os);
 
+  /// \brief Flushes all output channels
+  virtual int flush_output_streams();
+
   /// \brief Closes the given output channel
   virtual int close_output_stream(std::string const &output_name);
 

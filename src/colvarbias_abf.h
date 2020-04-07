@@ -15,6 +15,7 @@
 #include <sstream>
 #include <iomanip>
 
+#include "colvarproxy.h"
 #include "colvarbias.h"
 #include "colvargrid.h"
 #include "colvar_UIestimator.h"
@@ -149,10 +150,45 @@ private:
   virtual int bin_count(int bin_index);
 
   /// Write human-readable FE gradients and sample count, and DX file in dim > 2
-  void write_gradients_samples(const std::string &prefix, bool append = false);
+  void write_gradients_samples(const std::string &prefix, bool close = true);
 
   /// Read human-readable FE gradients and sample count (if not using restart)
   void read_gradients_samples();
+
+
+  template <class T> int write_grid_to_file(T const *grid, std::string const &name, bool close) {
+    std::ostream *os = cvm::proxy->output_stream(name);
+    if (!os) {
+      return cvm::error("Error opening file " + name + " for writing.\n", COLVARS_ERROR | FILE_ERROR);
+    }
+    grid->write_multicol(*os);
+    if (close) {
+      cvm::proxy->close_output_stream(name);
+    } else {
+      // Insert empty line between frames in history files
+      *os << std::endl;
+      cvm::proxy->flush_output_stream(os);
+    }
+
+    // In dimension higher than 2, dx is easier to handle and visualize
+    if (num_variables() > 2) {
+      std::string  dx = name + ".dx";
+      std::ostream *dx_os = cvm::proxy->output_stream(dx);
+      if (!dx_os)  {
+        return cvm::error("Error opening file " + dx + " for writing.\n", COLVARS_ERROR | FILE_ERROR);
+      }
+      grid->write_opendx(*dx_os);
+      if (close) {
+        cvm::proxy->close_output_stream(dx);
+      } else {
+        // Insert empty line between frames in history files
+        *dx_os << std::endl;
+        dx_os->flush();
+      }
+    }
+    return COLVARS_OK;
+  }
+
 
   virtual std::istream& read_state_data(std::istream&);
   virtual std::ostream& write_state_data(std::ostream&);

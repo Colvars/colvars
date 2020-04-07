@@ -597,7 +597,20 @@ colvarproxy::colvarproxy()
 }
 
 
-colvarproxy::~colvarproxy() {}
+colvarproxy::~colvarproxy() {
+  if (smp_enabled() == COLVARS_OK && smp_thread_id() > 0) {
+    // Nothing to do on non-master threads
+    return;
+  }
+  std::list<std::string>::iterator    osni = output_stream_names.begin();
+  std::list<std::ostream *>::iterator osi  = output_files.begin();
+  for ( ; osi != output_files.end(); osi++, osni++) {
+    ((std::ofstream *) (*osi))->close();
+    delete *osi;
+  }
+  output_files.clear();
+  output_stream_names.clear();
+}
 
 
 int colvarproxy::reset()
@@ -732,6 +745,19 @@ int colvarproxy::flush_output_stream(std::ostream *os)
   }
   return cvm::error("Error: trying to flush an output file/channel "
                     "that wasn't open.\n", BUG_ERROR);
+}
+
+
+int colvarproxy::flush_output_streams()
+{
+  if (smp_enabled() == COLVARS_OK && smp_thread_id() > 0)
+    return COLVARS_OK;
+
+  std::list<std::ostream *>::iterator osi  = output_files.begin();
+  for ( ; osi != output_files.end(); osi++) {
+    ((std::ofstream *) (*osi))->flush();
+  }
+  return COLVARS_OK;
 }
 
 

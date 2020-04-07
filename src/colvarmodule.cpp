@@ -1160,12 +1160,8 @@ int colvarmodule::reset()
 
   reset_index_groups();
 
+  proxy->flush_output_streams();
   proxy->reset();
-
-  if (cv_traj_os != NULL) {
-    // Do not close traj file here, as we might not be done with it yet.
-    proxy->flush_output_stream(cv_traj_os);
-  }
 
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
 }
@@ -1433,7 +1429,10 @@ int colvarmodule::write_output_files()
   for (std::vector<colvarbias *>::iterator bi = biases.begin();
        bi != biases.end();
        bi++) {
-    error_code |= (*bi)->write_output_files();
+    // Only write output files if they have not already been written this time step
+    if ((*bi)->output_freq == 0 || (cvm::step_absolute() % (*bi)->output_freq) != 0) {
+      error_code |= (*bi)->write_output_files();
+    }
     error_code |= (*bi)->write_state_to_replicas();
   }
   cvm::decrease_depth();

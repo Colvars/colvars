@@ -8,7 +8,6 @@
 // Colvars repository at GitHub.
 
 #include "colvarmodule.h"
-#include "colvarproxy.h"
 #include "colvar.h"
 #include "colvarbias_abf.h"
 
@@ -574,79 +573,24 @@ int colvarbias_abf::replica_share() {
 }
 
 
-
-void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool append)
+void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool close)
 {
-  std::string  samples_out_name = prefix + ".count";
-  std::string  gradients_out_name = prefix + ".grad";
-  std::ios::openmode mode = (append ? std::ios::app : std::ios::out);
-
-  std::ostream *samples_os =
-    cvm::proxy->output_stream(samples_out_name, mode);
-  if (!samples_os) return;
-  samples->write_multicol(*samples_os);
-  cvm::proxy->close_output_stream(samples_out_name);
-
-  // In dimension higher than 2, dx is easier to handle and visualize
-  if (num_variables() > 2) {
-    std::string  samples_dx_out_name = prefix + ".count.dx";
-    std::ostream *samples_dx_os = cvm::proxy->output_stream(samples_dx_out_name, mode);
-    if (!samples_os) return;
-    samples->write_opendx(*samples_dx_os);
-    *samples_dx_os << std::endl;
-    cvm::proxy->close_output_stream(samples_dx_out_name);
-  }
-
-  std::ostream *gradients_os =
-    cvm::proxy->output_stream(gradients_out_name, mode);
-  if (!gradients_os) return;
-  gradients->write_multicol(*gradients_os);
-  cvm::proxy->close_output_stream(gradients_out_name);
+  write_grid_to_file<colvar_grid_count>(samples, prefix + ".count", close);
+  write_grid_to_file<colvar_grid_gradient>(gradients, prefix + ".grad", close);
 
   if (b_integrate) {
     // Do numerical integration (to high precision) and output a PMF
     cvm::real err;
     pmf->integrate(integrate_initial_iterations, integrate_initial_tol, err);
     pmf->set_zero_minimum();
-
-    std::string  pmf_out_name = prefix + ".pmf";
-    std::ostream *pmf_os = cvm::proxy->output_stream(pmf_out_name, mode);
-    if (!pmf_os) return;
-    pmf->write_multicol(*pmf_os);
-
-    // In dimension higher than 2, dx is easier to handle and visualize
-    if (num_variables() > 2) {
-      std::string  pmf_dx_out_name = prefix + ".pmf.dx";
-      std::ostream *pmf_dx_os = cvm::proxy->output_stream(pmf_dx_out_name, mode);
-      if (!pmf_dx_os) return;
-      pmf->write_opendx(*pmf_dx_os);
-      *pmf_dx_os << std::endl;
-      cvm::proxy->close_output_stream(pmf_dx_out_name);
-    }
-
-    *pmf_os << std::endl;
-    cvm::proxy->close_output_stream(pmf_out_name);
+    write_grid_to_file<colvar_grid_scalar>(pmf, prefix + ".pmf", close);
   }
 
   if (b_CZAR_estimator) {
     // Write eABF CZAR-related quantities
-
-    std::string  z_samples_out_name = prefix + ".zcount";
-
-    std::ostream *z_samples_os =
-      cvm::proxy->output_stream(z_samples_out_name, mode);
-    if (!z_samples_os) return;
-    z_samples->write_multicol(*z_samples_os);
-    cvm::proxy->close_output_stream(z_samples_out_name);
-
+    write_grid_to_file<colvar_grid_count>(z_samples, prefix + ".zcount", close);
     if (b_czar_window_file) {
-      std::string  z_gradients_out_name = prefix + ".zgrad";
-
-      std::ostream *z_gradients_os =
-        cvm::proxy->output_stream(z_gradients_out_name, mode);
-      if (!z_gradients_os) return;
-      z_gradients->write_multicol(*z_gradients_os);
-      cvm::proxy->close_output_stream(z_gradients_out_name);
+      write_grid_to_file<colvar_grid_gradient>(z_gradients, prefix + ".zgrad", close);
     }
 
     // Calculate CZAR estimator of gradients
@@ -657,14 +601,7 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool app
           - cvm::temperature() * cvm::boltzmann() * z_samples->log_gradient_finite_diff(ix, n), n);
       }
     }
-
-    std::string  czar_gradients_out_name = prefix + ".czar.grad";
-
-    std::ostream *czar_gradients_os =
-      cvm::proxy->output_stream(czar_gradients_out_name, mode);
-    if (!czar_gradients_os) return;
-    czar_gradients->write_multicol(*czar_gradients_os);
-    cvm::proxy->close_output_stream(czar_gradients_out_name);
+    write_grid_to_file<colvar_grid_gradient>(czar_gradients, prefix + ".czar.grad", close);
 
     if (b_integrate) {
       // Do numerical integration (to high precision) and output a PMF
@@ -672,24 +609,7 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool app
       czar_pmf->set_div();
       czar_pmf->integrate(integrate_initial_iterations, integrate_initial_tol, err);
       czar_pmf->set_zero_minimum();
-
-      std::string  czar_pmf_out_name = prefix + ".czar.pmf";
-      std::ostream *czar_pmf_os = cvm::proxy->output_stream(czar_pmf_out_name, mode);
-      if (!czar_pmf_os) return;
-      czar_pmf->write_multicol(*czar_pmf_os);
-
-      // In dimension higher than 2, dx is easier to handle and visualize
-      if (num_variables() > 2) {
-        std::string  czar_pmf_dx_out_name = prefix + ".czar.pmf.dx";
-        std::ostream *czar_pmf_dx_os = cvm::proxy->output_stream(czar_pmf_dx_out_name, mode);
-        if (!czar_pmf_dx_os) return;
-        czar_pmf->write_opendx(*czar_pmf_dx_os);
-        *czar_pmf_dx_os << std::endl;
-        cvm::proxy->close_output_stream(czar_pmf_dx_out_name);
-      }
-
-      *czar_pmf_os << std::endl;
-      cvm::proxy->close_output_stream(czar_pmf_out_name);
+      write_grid_to_file<colvar_grid_scalar>(czar_pmf, prefix + ".czar.pmf", close);
     }
   }
   return;
@@ -844,12 +764,9 @@ int colvarbias_abf::write_output_files()
   }
 
   write_gradients_samples(output_prefix);
-
   if (b_history_files) {
     if ((cvm::step_absolute() % history_freq) == 0) {
-      // file already exists iff cvm::step_relative() > 0
-      // otherwise, backup and replace
-      write_gradients_samples(output_prefix + ".hist", (cvm::step_relative() > 0));
+      write_gradients_samples(output_prefix + ".hist", false);
     }
   }
 
