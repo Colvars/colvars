@@ -1012,6 +1012,18 @@ int colvarmodule::write_restart_file(std::string const &out_name)
 }
 
 
+int colvarmodule::write_restart_string(std::string &output)
+{
+  cvm::log("Saving state to output buffer.\n");
+  std::ostringstream os;
+  if (!write_restart(os)) {
+    return cvm::error("Error: in writing restart to buffer.\n", FILE_ERROR);
+  }
+  output = os.str();
+  return COLVARS_OK;
+}
+
+
 int colvarmodule::write_traj_files()
 {
   if (cvm::debug()) {
@@ -1169,38 +1181,54 @@ int colvarmodule::reset()
 
 int colvarmodule::setup_input()
 {
-  // read the restart configuration, if available
   if (proxy->input_prefix().size()) {
-    // read the restart file
+    // Read a state file
     std::string restart_in_name(proxy->input_prefix()+
                                 std::string(".colvars.state"));
     std::ifstream input_is(restart_in_name.c_str());
     if (!input_is.good()) {
-      // try without the suffix
+      // Try without the suffix
       input_is.clear();
       restart_in_name = proxy->input_prefix();
       input_is.open(restart_in_name.c_str());
     }
 
+    // Now that the file has been opened, clear this for the next round
+    proxy->input_prefix().clear();
+
     if (!input_is.good()) {
-      cvm::error("Error: in opening input file \""+
-                 std::string(restart_in_name)+"\".\n",
-                 FILE_ERROR);
-      return COLVARS_ERROR;
+      return cvm::error("Error: in opening input state file \""+
+                        std::string(restart_in_name)+"\".\n",
+                        FILE_ERROR);
     } else {
       cvm::log(cvm::line_marker);
-      cvm::log("Restarting from file \""+restart_in_name+"\".\n");
+      cvm::log("Loading state from file \""+restart_in_name+"\".\n");
       read_restart(input_is);
-      if (cvm::get_error() != COLVARS_OK) {
-        return COLVARS_ERROR;
-      } else {
-        proxy->input_prefix().clear();
-      }
       cvm::log(cvm::line_marker);
+      return cvm::get_error();
     }
   }
 
-  return cvm::get_error();
+  if (proxy->input_buffer() != NULL) {
+    // Read a string buffer
+    char const *buffer = proxy->input_buffer();
+    size_t const buffer_size = strlen(proxy->input_buffer());
+    // Clear proxy pointer for the next round
+    proxy->input_buffer() = NULL;
+    if (buffer_size > 0) {
+      std::istringstream input_is;
+      // Replace the buffer of input_is; work around the lack of const in
+      // pubsetbuf's prototype (which also needs to support output streams)
+      input_is.rdbuf()->pubsetbuf(const_cast<char *>(buffer), buffer_size);
+      cvm::log(cvm::line_marker);
+      cvm::log("Loading state from input buffer.\n");
+      read_restart(input_is);
+      cvm::log(cvm::line_marker);
+      return cvm::get_error();
+    }
+  }
+
+  return COLVARS_OK;
 }
 
 

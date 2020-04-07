@@ -464,6 +464,9 @@ public:
   /// Backup a file before writing it
   static int backup_file(char const *filename);
 
+  /// Write the state into a string
+  int write_restart_string(std::string &output);
+
   /// Look up a bias by name; returns NULL if not found
   static colvarbias * bias_by_name(std::string const &name);
 

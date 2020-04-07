@@ -257,6 +257,19 @@ CVSCRIPT(cv_load,
          }
          )
 
+CVSCRIPT(cv_loadfromstring,
+         "Load state data from a string into all matching colvars and biases",
+         1, 1,
+         "buffer : string - String buffer containing the state information",
+         script->proxy()->input_buffer() = script->obj_to_str(objv[2]);
+         if (script->module()->setup_input() == COLVARS_OK) {
+           return COLVARS_OK;
+         } else {
+           script->add_error_msg("Error loading state string");
+           return COLVARSCRIPT_ERROR;
+         }
+         )
+
 CVSCRIPT(cv_molid,
          "Get or set the molecule ID on which Colvars is defined (VMD only)",
          0, 1,
@@ -323,6 +336,13 @@ CVSCRIPT(cv_save,
                                                             ".colvars.state");
          error_code |= script->module()->write_output_files();
          return error_code;
+         )
+
+CVSCRIPT(cv_savetostring,
+         "Write the Colvars state to a string and return it",
+         0, 0,
+         "",
+         return script->module()->write_restart_string(script->modify_str_result());
          )
 
 CVSCRIPT(cv_units,

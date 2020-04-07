@@ -620,6 +620,12 @@ public:
     return restart_frequency_engine;
   }
 
+  /// Buffer from which the input state information may be read
+  inline char const * & input_buffer()
+  {
+    return input_buffer_;
+  }
+
 protected:
 
   /// Prefix of the input state file to be read next
@@ -640,6 +646,8 @@ protected:
   /// \brief Identifiers for output_stream objects: by default, these are the names of the files
   std::list<std::string>    output_stream_names;
 
+  /// Buffer from which the input state information may be read
+  char const *input_buffer_;
 };
 
 

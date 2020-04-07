@@ -546,7 +546,7 @@ int colvarbias::read_state_prefix(std::string const &prefix)
     is.open(filename.c_str());
   }
   return read_state(is).good() ? COLVARS_OK :
-    cvm::error("Error: in opening input file \""+
+    cvm::error("Error: in reading state for \""+name+"\" from input file \""+
                std::string(filename)+"\".\n", FILE_ERROR);
 }
 
