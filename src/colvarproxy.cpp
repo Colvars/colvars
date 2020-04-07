@@ -509,7 +509,10 @@ int colvarproxy_script::run_colvar_gradient_callback(std::string const & /* name
 
 
 
-colvarproxy_io::colvarproxy_io() {}
+colvarproxy_io::colvarproxy_io()
+{
+  input_buffer_ = NULL;
+}
 
 
 colvarproxy_io::~colvarproxy_io() {}

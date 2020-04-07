@@ -53,8 +53,14 @@ public:
   /// Run a script command with space-separated positional arguments (objects)
   int run(int objc, unsigned char *const objv[]);
 
-  /// Get the string result (if given)
-  inline std::string const &str_result()
+  /// Get the string result of the current scripting call
+  inline std::string const &str_result() const
+  {
+    return result;
+  }
+
+  /// Modify the string result of the current scripting call
+  inline std::string &modify_str_result()
   {
     return result;
   }
