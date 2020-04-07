@@ -817,17 +817,24 @@ int colvarbias_abf::write_output_files()
 
 int colvarbias_abf::calc_energy(std::vector<colvarvalue> const *values)
 {
-  if (values) {
-    return cvm::error("colvarbias_abf::calc_energy() with an argument "
-                      "is currently not implemented.\n",
-                      COLVARS_NOT_IMPLEMENTED);
-  }
+  bias_energy = 0.0; // default value, overridden if a value can be calculated
 
-  if (num_variables() != 1) return 0.0;
+  if (num_variables() > 1 || values != NULL) {
+    if (pmf != NULL) {
+      std::vector<int> const curr_bin = values ?
+        pmf->get_colvars_index(*values) :
+        pmf->get_colvars_index();
+
+      if (pmf->index_ok(curr_bin)) {
+        bias_energy = pmf->value(curr_bin);
+      }
+    }
+    return COLVARS_OK;
+  }
 
   // Get the home bin.
   int home0 = gradients->current_bin_scalar(0);
-  if (home0 < 0) return 0.0;
+  if (home0 < 0) return COLVARS_OK;
   int gradient_len = (int)(gradients->number_of_points(0));
   int home = (home0 < gradient_len) ? home0 : (gradient_len-1);
 
@@ -859,5 +866,6 @@ int colvarbias_abf::calc_energy(std::vector<colvarvalue> const *values)
     sum += fact*gradients->value(ix)/count*gradients->widths[0]*frac;
 
   // The applied potential is the negative integral of force samples.
-  return -sum;
+  bias_energy = -sum;
+  return COLVARS_OK;
 }
