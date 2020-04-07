@@ -596,36 +596,40 @@ public:
     return rename_file(filename.c_str(), newfilename.c_str());
   }
 
-  /// \brief Prefix of the input state file
+  /// Prefix of the input state file to be read next
   inline std::string & input_prefix()
   {
     return input_prefix_str;
   }
 
-  /// \brief Prefix to be used for output restart files
-  inline std::string & restart_output_prefix()
-  {
-    return restart_output_prefix_str;
-  }
-
-  /// Default restart frequency (taken from the simulation engine)
-  inline int default_restart_frequency() const
-  {
-    return restart_frequency_engine;
-  }
-
-  /// \brief Prefix to be used for output files (final system
-  /// configuration)
+  /// Default prefix to be used for all output files (final configuration)
   inline std::string & output_prefix()
   {
     return output_prefix_str;
   }
 
+  /// Prefix of the restart (checkpoint) file to be written next
+  inline std::string & restart_output_prefix()
+  {
+    return restart_output_prefix_str;
+  }
+
+  /// Default restart frequency (as set by the simulation engine)
+  inline int default_restart_frequency() const
+  {
+    return restart_frequency_engine;
+  }
+
 protected:
 
-  /// \brief Prefix to be used for input files (restarts, not
-  /// configuration)
-  std::string input_prefix_str, output_prefix_str, restart_output_prefix_str;
+  /// Prefix of the input state file to be read next
+  std::string input_prefix_str;
+
+  /// Default prefix to be used for all output files (final configuration)
+  std::string output_prefix_str;
+
+  /// Prefix of the restart (checkpoint) file to be written next
+  std::string restart_output_prefix_str;
 
   /// How often the simulation engine will write its own restart
   int restart_frequency_engine;
