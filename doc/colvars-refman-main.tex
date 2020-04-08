@@ -5713,6 +5713,7 @@ variables in the form of a N-dimensional histogram. A \texttt{histogram} block m
     \outputName\texttt{.$<$name$>$.dat}}{%
     Name of the file containing histogram data (multicolumn format), which is written every \refkey{outputFreq}{colvarbias|outputFreq} steps.
     For the special case of 2 variables, Gnuplot may be used to visualize this file.
+    If \texttt{outputFile} is set to an empty string, the file is not written.
   }
 
 \item %
@@ -5724,6 +5725,8 @@ variables in the form of a N-dimensional histogram. A \texttt{histogram} block m
     \outputName\texttt{.$<$name$>$.dx}}{%
     Name of the file containing histogram data (OpenDX format), which is written every \refkey{outputFreq}{colvarbias|outputFreq} steps.
     For the special case of 3 variables, VMD may be used to visualize this file.
+    This file is written by default if the dimension is 3 or more.
+    If \texttt{outputFileDX} is set to an empty string, the file is not written.
 }
 
 

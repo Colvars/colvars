@@ -30,8 +30,10 @@ int colvarbias_histogram::init(std::string const &conf)
 
   size_t i;
 
-  get_keyval(conf, "outputFile", out_name, std::string(""));
-  get_keyval(conf, "outputFileDX", out_name_dx, std::string(""));
+  get_keyval(conf, "outputFile", out_name, std::string("<default>"));
+  // Write DX file by default only in dimension >= 3
+  std::string default_name_dx = this->num_variables() > 2 ? "<default>" : "";
+  get_keyval(conf, "outputFileDX", out_name_dx, default_name_dx);
 
   /// with VMD, this may not be an error
   // if ( output_freq == 0 ) {
@@ -122,7 +124,7 @@ int colvarbias_histogram::update()
   // assign a valid bin size
   bin.assign(num_variables(), 0);
 
-  if (out_name.size() == 0) {
+  if (out_name == "<default>") {
     // At the first timestep, we need to assign out_name since
     // output_prefix is unset during the constructor
     if (cvm::step_relative() == 0) {
@@ -131,7 +133,7 @@ int colvarbias_histogram::update()
     }
   }
 
-  if (out_name_dx.size() == 0) {
+  if (out_name_dx == "<default>") {
     if (cvm::step_relative() == 0) {
       out_name_dx = cvm::output_prefix() + "." + this->name + ".dx";
       cvm::log("Histogram " + this->name + " will be written to file \"" + out_name_dx + "\"");
