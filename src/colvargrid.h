@@ -822,6 +822,8 @@ public:
 
     std::vector<int> old_nx = nx;
     std::vector<colvarvalue> old_lb = lower_boundaries;
+    std::vector<colvarvalue> old_ub = upper_boundaries;
+    std::vector<cvm::real> old_w = widths;
 
     {
       size_t nd_in = 0;
@@ -860,12 +862,15 @@ public:
     if (! periodic.size()) periodic.assign(nd, false);
     if (! widths.size()) widths.assign(nd, 1.0);
 
+    cvm::real eps = 1.e-10;
+
     bool new_params = false;
     if (old_nx.size()) {
       for (size_t i = 0; i < nd; i++) {
-        if ( (old_nx[i] != nx[i]) ||
-             (cvm::sqrt(cv[i]->dist2(old_lb[i],
-                                     lower_boundaries[i])) > 1.0E-10) ) {
+        if (old_nx[i] != nx[i] ||
+            cvm::sqrt(cv[i]->dist2(old_lb[i], lower_boundaries[i])) > eps ||
+            cvm::sqrt(cv[i]->dist2(old_ub[i], upper_boundaries[i])) > eps ||
+            cvm::fabs(old_w[i] - widths[i]) > eps) {
           new_params = true;
         }
       }
