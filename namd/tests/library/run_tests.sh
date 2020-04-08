@@ -188,23 +188,20 @@ for dir in ${DIRLIST} ; do
       grep 'NAMD' ${basename}.out | head -n 1 > namd-version.txt
       grep 'Initializing the collective variables module, version' ${basename}.out | head -n 1 >> namd-version.txt
       grep 'Using NAMD interface, version' ${basename}.out | head -n 1 >> namd-version.txt
-      if [ -z "$(ls -A AutoDiff/)" ] ; then
-        # Fill an empty AutoDiff directory with default files
-        cp ${basename}.colvars.state.stripped AutoDiff/
-        cp ${basename}.colvars.traj           AutoDiff/
-        cp ${basename}.colvars.out            AutoDiff/
-        if [ -f ${basename}.histogram1.dat ] ; then
-          cp -f ${basename}.histogram1.dat AutoDiff/
-        fi
-        if [ -f ${basename}.pmf ] ; then
-          cp -f ${basename}.pmf AutoDiff/
-        fi
-      else
-        # Or replace the existing files with current versions
-        for file in AutoDiff/*; do
-          cp -f `basename ${file}` AutoDiff/
-        done
+      cp ${basename}.colvars.state.stripped AutoDiff/
+      cp ${basename}.colvars.traj           AutoDiff/
+      cp ${basename}.colvars.out            AutoDiff/
+      if [ -f ${basename}.histogram1.dat ] ; then
+        cp -f ${basename}.histogram1.dat AutoDiff/
       fi
+      if [ -f ${basename}.pmf ] ; then
+        cp -f ${basename}.pmf AutoDiff/
+      fi
+
+      # Update any additional files with current versions
+      for file in AutoDiff/*; do
+        cp -uf `basename ${file}` AutoDiff/
+      done
     fi
 
     # Old versions did not accurately update the prefix
