@@ -1,0 +1,8 @@
+histogram {
+    colvars    one
+    histogramGrid {
+        widths 0.2
+        lowerBoundaries 0.6
+        upperBoundaries 5.4
+    }
+}
