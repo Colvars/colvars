@@ -488,8 +488,7 @@ void colvarproxy_namd::calculate()
   // NAMD does not destruct GlobalMaster objects, so we must remember
   // to write all output files at the end of a run
   if (step == simparams->N) {
-    colvars->write_restart_file(cvm::output_prefix()+".colvars.state");
-    colvars->write_output_files();
+    post_run();
   }
 }
 

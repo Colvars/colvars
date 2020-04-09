@@ -597,10 +597,17 @@ colvarproxy::colvarproxy()
 }
 
 
-colvarproxy::~colvarproxy() {
+colvarproxy::~colvarproxy()
+{
+  close_files();
+}
+
+
+int colvarproxy::close_files()
+{
   if (smp_enabled() == COLVARS_OK && smp_thread_id() > 0) {
     // Nothing to do on non-master threads
-    return;
+    return COLVARS_OK;
   }
   std::list<std::string>::iterator    osni = output_stream_names.begin();
   std::list<std::ostream *>::iterator osi  = output_files.begin();
@@ -610,6 +617,7 @@ colvarproxy::~colvarproxy() {
   }
   output_files.clear();
   output_stream_names.clear();
+  return COLVARS_OK;
 }
 
 
@@ -645,6 +653,18 @@ int colvarproxy::update_input()
 int colvarproxy::update_output()
 {
   return COLVARS_OK;
+}
+
+
+int colvarproxy::post_run()
+{
+  int error_code = COLVARS_OK;
+  if (colvars->output_prefix().size()) {
+    error_code |= colvars->write_restart_file(cvm::output_prefix()+".colvars.state");
+    error_code |= colvars->write_output_files();
+  }
+  error_code |= flush_output_streams();
+  return error_code;
 }
 
 

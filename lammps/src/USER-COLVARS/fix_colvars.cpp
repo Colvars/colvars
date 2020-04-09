@@ -987,7 +987,7 @@ void FixColvars::restart(char *buf)
 void FixColvars::post_run()
 {
   if (me == 0) {
-    proxy->write_output_files();
+    proxy->post_run();
   }
 }
 

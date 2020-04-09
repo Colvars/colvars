@@ -275,13 +275,6 @@ void colvarproxy_lammps::serialize_status(std::string &rst)
   rst = os.str();
 }
 
-void colvarproxy_lammps::write_output_files()
-{
-  // TODO skip output if undefined
-  colvars->write_restart_file(cvm::output_prefix()+".colvars.state");
-  colvars->write_output_files();
-}
-
 // set status from string
 bool colvarproxy_lammps::deserialize_status(std::string &rst)
 {

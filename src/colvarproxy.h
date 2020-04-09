@@ -682,6 +682,9 @@ public:
   /// \brief Reset proxy state, e.g. requested atoms
   virtual int reset();
 
+  /// Close any open files to prevent data loss
+  int close_files();
+
   /// (Re)initialize required member data after construction
   virtual int setup();
 
@@ -713,6 +716,9 @@ public:
   {
     return b_simulation_running;
   }
+
+  /// Called at the end of a simulation segment (i.e. "run" command)
+  int post_run();
 
   /// Convert a version string "YYYY-MM-DD" into an integer
   int get_version_from_string(char const *version_string);

@@ -80,9 +80,6 @@ class colvarproxy_lammps : public colvarproxy {
   // set status from string
   bool deserialize_status(std::string &);
 
-  // Write files expected from Colvars (called by post_run())
-  void write_output_files();
-
   // read additional config from file
   int add_config_file(char const *config_filename);
 
