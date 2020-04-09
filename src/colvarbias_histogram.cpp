@@ -30,9 +30,9 @@ int colvarbias_histogram::init(std::string const &conf)
 
   size_t i;
 
-  get_keyval(conf, "outputFile", out_name, std::string("<default>"));
+  get_keyval(conf, "outputFile", out_name, "");
   // Write DX file by default only in dimension >= 3
-  std::string default_name_dx = this->num_variables() > 2 ? "<default>" : "";
+  std::string default_name_dx = this->num_variables() > 2 ? "" : "none";
   get_keyval(conf, "outputFileDX", out_name_dx, default_name_dx);
 
   /// with VMD, this may not be an error
@@ -124,7 +124,7 @@ int colvarbias_histogram::update()
   // assign a valid bin size
   bin.assign(num_variables(), 0);
 
-  if (out_name == "<default>") {
+  if (out_name.size() == 0) {
     // At the first timestep, we need to assign out_name since
     // output_prefix is unset during the constructor
     if (cvm::step_relative() == 0) {
@@ -133,7 +133,7 @@ int colvarbias_histogram::update()
     }
   }
 
-  if (out_name_dx == "<default>") {
+  if (out_name_dx.size() == 0) {
     if (cvm::step_relative() == 0) {
       out_name_dx = cvm::output_prefix() + "." + this->name + ".dx";
       cvm::log("Histogram " + this->name + " will be written to file \"" + out_name_dx + "\"");
@@ -176,7 +176,7 @@ int colvarbias_histogram::write_output_files()
     return COLVARS_OK;
   }
 
-  if (out_name.size()) {
+  if (out_name.size() && out_name != "none") {
     cvm::log("Writing the histogram file \""+out_name+"\".\n");
     cvm::backup_file(out_name.c_str());
     std::ostream *grid_os = cvm::proxy->output_stream(out_name);
@@ -188,7 +188,7 @@ int colvarbias_histogram::write_output_files()
     cvm::proxy->close_output_stream(out_name);
   }
 
-  if (out_name_dx.size()) {
+  if (out_name_dx.size() && out_name_dx != "none") {
     cvm::log("Writing the histogram file \""+out_name_dx+"\".\n");
     cvm::backup_file(out_name_dx.c_str());
     std::ostream *grid_os = cvm::proxy->output_stream(out_name_dx);
