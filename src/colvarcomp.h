@@ -1358,8 +1358,14 @@ protected:
   cvm::atom_group  *atoms;
 
   /// Reference coordinates (for RMSD calculation only)
+  /// Includes sets with symmetry permutations (n_permutations * n_atoms)
   std::vector<cvm::atom_pos>  ref_pos;
 
+  /// Number of permutations of symmetry-related atoms
+  size_t n_permutations;
+
+  /// Index of the permutation yielding the smallest RMSD (0 for identity)
+  size_t best_perm_index;
 public:
 
   /// Constructor
