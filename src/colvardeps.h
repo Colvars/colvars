@@ -227,6 +227,8 @@ public:
     f_cvb_active,
     /// \brief Bias is awake (active on its own accord) this timestep
     f_cvb_awake,
+    /// Accumulates data starting from step 0 of a simulation run
+    f_cvb_zero_step_data,
     /// \brief will apply forces
     f_cvb_apply_force,
     /// \brief force this bias to act on actual value for extended-Lagrangian coordinates

@@ -4025,6 +4025,20 @@ All biasing and analysis methods implemented recognize the following options:
     This option selects by name all the variables to which this bias or analysis will be applied.}
 
 \item %
+  \labelkey{colvarbias|zeroStepData}
+  \keydef
+    {zeroStepData}{%
+    colvar bias}{%
+    Accumulate data starting at step 0 of a simulation run}{%
+    boolean}{%
+    \texttt{off}}{%
+    This option is meaningful for biases that record data during a simulation, sh as ABF (\ref{sec:colvarbias_abf}), metadynamics (\ref{sec:colvarbias_meta}), histograms (\ref{sec:colvarbias_histogram}) and in general any bias that accumulate samples from thermodynamic integration (\ref{sec:colvarbias_ti}).
+    % TODO: unclear how to handle ALB at the moment
+    When this option is disabled (default) the bias's properties such as energy and forces will be computed, but data will only be recorded after the first coordinate update: this is generally the correct choice in simulation runs.
+    Optionally, this option may be turned on to support custom algorithms\cvnamdonly{; when updating the bias's internal data requires data from previous steps (for example, total atomic forces) turning on this flag will raise an error.}
+  }
+
+\item %
   \labelkey{colvarbias|outputEnergy}
   \keydef
     {outputEnergy}{%
@@ -4277,6 +4291,7 @@ The following specific parameters can be set in the ABF configuration block:
 
 \item \dupkey{name}{\texttt{abf}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{colvars}{\texttt{abf}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{zeroStepData}{\texttt{abf}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{outputEnergy}{\texttt{abf}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{outputFreq}{\texttt{abf}}{colvarbias|outputFreq}{biasing and analysis methods}
 
@@ -4785,6 +4800,7 @@ Its mandatory keywords are \refkey{colvars}{colvarbias|colvars}, the variables i
 
 \item \dupkey{name}{\texttt{metadynamics}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{colvars}{\texttt{metadynamics}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{zeroStepData}{\texttt{metadynamics}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{outputEnergy}{\texttt{metadynamics}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{outputFreq}{\texttt{metadynamics}}{colvarbias|outputFreq}{biasing and analysis methods}
 \item \dupkey{writeTIPMF}{\texttt{metadynamics}}{sec:colvarbias}{biasing and analysis methods}
@@ -5228,6 +5244,7 @@ A harmonic restraint is defined by a \texttt{harmonic~\{...\}} block, which may 
 
 \item \dupkey{name}{\texttt{harmonic}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{colvars}{\texttt{harmonic}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{zeroStepData}{\texttt{harmonic}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{outputEnergy}{\texttt{harmonic}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{writeTIPMF}{\texttt{harmonic}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{writeTISamples}{\texttt{harmonic}}{sec:colvarbias}{biasing and analysis methods}
@@ -5487,6 +5504,7 @@ The \texttt{harmonicWalls} bias implements the following options:
 \begin{itemize}
 \item \dupkey{name}{\texttt{harmonicWalls}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{colvars}{\texttt{harmonicWalls}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{zeroStepData}{\texttt{harmonicWalls}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{outputEnergy}{\texttt{harmonicWalls}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{writeTIPMF}{\texttt{harmonicWalls}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{writeTISamples}{\texttt{harmonicWalls}}{sec:colvarbias}{biasing and analysis methods}
@@ -5603,6 +5621,8 @@ using \cite{Pitera2012}.
 \item \dupkey{name}{\texttt{linear}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{colvars}{\texttt{linear}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{outputEnergy}{\texttt{linear}}{sec:colvarbias}{biasing and analysis methods}
+% No TI, no zeroStepData
+
 
 \item %
   \keydef
@@ -5730,7 +5750,8 @@ variables in the form of a N-dimensional histogram. A \texttt{histogram} block m
 
 \item \dupkey{name}{\texttt{histogram}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{colvars}{\texttt{histogram}}{sec:colvarbias}{biasing and analysis methods}
-%\item \dupkey{outputEnergy}{\texttt{histogram}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{zeroStepData}{\texttt{histogram}}{sec:colvarbias}{biasing and analysis methods}
+% \item \dupkey{outputEnergy}{\texttt{histogram}}{sec:colvarbias}{biasing and analysis methods}
 
 \item \dupkey{outputFreq}{\texttt{histogram}}{colvarbias|outputFreq}{biasing and analysis methods}
 
