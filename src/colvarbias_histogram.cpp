@@ -147,8 +147,10 @@ int colvarbias_histogram::update()
       bin[i] = grid->current_bin_scalar(i);
     }
 
-    if (grid->index_ok(bin)) {
-      grid->acc_value(bin, 1.0);
+    if ((cvm::step_relative() > 0) || is_enabled(f_cvb_zero_step_data)) {
+      if (grid->index_ok(bin)) {
+        grid->acc_value(bin, 1.0);
+      }
     }
   } else {
     // update indices for vector/array values
