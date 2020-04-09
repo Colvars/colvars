@@ -1,87 +1,99 @@
 colvars: ----------------------------------------------------------------------
 colvars: Please cite Fiorin et al, Mol Phys 2013:
-colvars:  http://dx.doi.org/10.1080/00268976.2013.813594
+colvars:  https://dx.doi.org/10.1080/00268976.2013.813594
 colvars: in any publication based on this calculation.
-colvars: SMP parallelism is available.
+colvars: SMP parallelism is enabled; if needed, use "smp off" to override this.
+colvars: This version was built with the C++11 standard or higher.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
-colvars: # indexFile = "" [default]
+colvars: # units = "" [default]
 colvars: # smp = on [default]
-colvars: # analysis = off [default]
 colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 0 [default]
-colvars: # colvarsTrajAppend = off [default]
 colvars: # scriptedColvarForces = off [default]
-colvars: # scriptingAfterBiases = on [default]
+colvars: # scriptingAfterBiases = off [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "d"
 colvars:   Initializing a new "distance" component.
+colvars:     # name = "" [default]
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
 colvars:     # scalable = on [default]
 colvars:       Initializing atom group "group1".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
-colvars:       # centerReference = off [default]
-colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Enabling scalable calculation for group "group1".
-colvars:       Atom group "group1" defined, 1 atoms initialized: total mass = 12.011, total charge = -0.1.
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group1" defined with 1 atoms requested: total mass = 12.011, total charge = -0.1.
 colvars:       Initializing atom group "group2".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
-colvars:       # centerReference = off [default]
-colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Enabling scalable calculation for group "group2".
-colvars:       Atom group "group2" defined, 1 atoms initialized: total mass = 12.011, total charge = 0.07.
-colvars:     # forceNoPBC = off [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group2" defined with 1 atoms requested: total mass = 12.011, total charge = 0.07.
 colvars:     # oneSiteSystemForce = off [default]
 colvars:     # oneSiteTotalForce = off [default]
 colvars:   All components initialized.
+colvars:   # timeStepFactor = 1 [default]
 colvars:   # width = 0.2
-colvars:   # lowerBoundary = 0
-colvars:   # lowerWallConstant = 0 [default]
+colvars:   # lowerBoundary = 0 [default]
 colvars:   # upperBoundary = 10
-colvars:   # upperWallConstant = 0 [default]
-colvars:   # hardLowerBoundary = on
+colvars:   # hardLowerBoundary = on [default]
 colvars:   # hardUpperBoundary = off [default]
 colvars:   # expandBoundaries = on
-colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
 colvars:   # outputTotalForce = off [default]
 colvars:   # outputAppliedForce = off [default]
 colvars:   # subtractAppliedForce = off [default]
+colvars:   # runAve = off [default]
+colvars:   # corrFunc = off [default]
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new "metadynamics" instance.
 colvars:   # name = "metadynamics1" [default]
 colvars:   # colvars = { d }
+colvars:   # zeroStepData = off [default]
 colvars:   # outputEnergy = off [default]
+colvars:   # outputFreq = 0 [default]
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # writeTISamples = off [default]
+colvars:   # writeTIPMF = off [default]
 colvars:   # hillWeight = 0.01
-colvars:   # newHillFrequency = 1000 [default]
-colvars:   # hillWidth = 1.25331 [default]
+colvars:   # newHillFrequency = 10
+colvars:   # gaussianSigmas =  [default]
+colvars:   # hillWidth = 1.25331
 colvars:   Half-widths of the Gaussian hills (sigma's):
 colvars:   d: 0.125331
 colvars:   # multipleReplicas = off [default]
 colvars:   # useGrids = on [default]
-colvars:   # gridsUpdateFrequency = 1000 [default]
+colvars:   # gridsUpdateFrequency = 10 [default]
 colvars:   # rebinGrids = off [default]
 colvars:   Metadynamics bias "metadynamics1": Will expand grids when the colvar "d" approaches its boundaries.
-colvars:   # keepHills = off [default]
 colvars:   # writeFreeEnergyFile = on [default]
+colvars:   # keepHills = off [default]
 colvars:   # keepFreeEnergyFiles = off [default]
 colvars:   # writeHillsTrajectory = off [default]
 colvars:   # wellTempered = off [default]
@@ -93,20 +105,18 @@ colvars: ----------------------------------------------------------------------
 colvars: Collective variables module (re)initialized.
 colvars: ----------------------------------------------------------------------
 colvars: Updating NAMD interface:
-colvars: updating atomic data (2 atoms).
+colvars: updating atomic data (0 atoms).
 colvars: updating group data (2 scalable groups, 2 atoms in total).
-colvars: Updating NAMD interface:
-colvars: updating atomic data (2 atoms).
-colvars: updating group data (2 scalable groups, 2 atoms in total).
-colvars: Re-initialized atom group d:0/0. 1 atoms: total mass = 12.011.
-colvars: Re-initialized atom group d:0/1. 1 atoms: total mass = 12.011.
+colvars: Re-initialized atom group for variable "d":0/0. 1 atoms: total mass = 12.011, total charge = -0.1.
+colvars: Re-initialized atom group for variable "d":0/1. 1 atoms: total mass = 12.011, total charge = 0.07.
 colvars: The final output state file will be "test.colvars.state".
-colvars: Writing to colvar trajectory file "test.colvars.traj".
+colvars: Opening trajectory file "test.colvars.traj".
+colvars: Redefining the Tcl "cv" command to the new script interface.
 colvars: Updating NAMD interface:
-colvars: updating atomic data (2 atoms).
+colvars: updating atomic data (0 atoms).
 colvars: updating group data (2 scalable groups, 2 atoms in total).
-colvars: Re-initialized atom group d:0/0. 1 atoms: total mass = 12.011.
-colvars: Re-initialized atom group d:0/1. 1 atoms: total mass = 12.011.
+colvars: Re-initialized atom group for variable "d":0/0. 1 atoms: total mass = 12.011, total charge = -0.1.
+colvars: Re-initialized atom group for variable "d":0/1. 1 atoms: total mass = 12.011, total charge = 0.07.
 colvars: The final output state file will be "test.colvars.state".
 colvars:   Metadynamics bias "metadynamics1": new upper boundary for colvar "d", at 15.2.
 colvars: Saving collective variables state to "test.colvars.state".

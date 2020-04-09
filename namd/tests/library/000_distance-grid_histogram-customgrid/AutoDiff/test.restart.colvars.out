@@ -105,11 +105,12 @@ colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new "histogram" instance.
 colvars:   # name = "histogram1" [default]
 colvars:   # colvars = { one }
+colvars:   # zeroStepData = off [default]
 colvars:   # outputEnergy = off [default]
 colvars:   # outputFreq = 10 [default]
 colvars:   # timeStepFactor = 1 [default]
 colvars:   # outputFile = "" [default]
-colvars:   # outputFileDX = "" [default]
+colvars:   # outputFileDX = "none" [default]
 colvars:   # gatherVectorColvars = off [default]
 colvars:   # lowerBoundaries = { 0.6 }
 colvars:   # upperBoundaries = { 5.4 }
@@ -141,14 +142,11 @@ colvars: Re-initialized atom group for variable "one":0/1. 4 atoms: total mass =
 colvars: The restart output state file will be "test.restart.tmp.colvars.state".
 colvars: The final output state file will be "test.restart.colvars.state".
 colvars:   Histogram histogram1 will be written to file "test.restart.histogram1.dat"
-colvars:   Histogram histogram1 will be written to file "test.restart.histogram1.dx"
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".
 colvars: Saving collective variables state to "test.restart.tmp.colvars.state".
 colvars:   Writing the histogram file "test.restart.histogram1.dat".
-colvars:   Writing the histogram file "test.restart.histogram1.dx".
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".
 colvars: Saving collective variables state to "test.restart.tmp.colvars.state".
 colvars:   Writing the histogram file "test.restart.histogram1.dat".
-colvars:   Writing the histogram file "test.restart.histogram1.dx".
 colvars: Saving collective variables state to "test.restart.colvars.state".

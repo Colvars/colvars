@@ -4,8 +4,6 @@ colvarsTrajFrequency    1
 colvar {
     name d
 
-    hardLowerBoundary yes
-    lowerBoundary 0
     upperBoundary 10
     width 0.2
     expandBoundaries yes
@@ -20,5 +18,6 @@ colvar {
 metadynamics {
     colvars    d
     hillWeight 0.01
+    newHillFrequency 10
     hillWidth      1.2533141373155001  # Old default
 }

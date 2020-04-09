@@ -100,6 +100,8 @@ colvars:   # extendedTimeConstant = 200
 colvars:   Computed fictitious mass: 100672 [E]/(U/fs)^2   (U: colvar unit)
 colvars:   # outputEnergy = off [default]
 colvars:   # extendedLangevinDamping = 0
+colvars:   # reflectingLowerBoundary = off [default]
+colvars:   # reflectingUpperBoundary = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = on
 colvars:   # outputTotalForce = off [default]
@@ -113,11 +115,13 @@ colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new "histogram" instance.
 colvars:   # name = "histogram1" [default]
 colvars:   # colvars = { one }
+colvars:   # zeroStepData = off [default]
 colvars:   # outputEnergy = off [default]
+colvars:   # outputFreq = 10 [default]
+colvars:   # bypassExtendedLagrangian = on
 colvars:   # timeStepFactor = 1 [default]
 colvars:   # outputFile = "" [default]
-colvars:   # outputFileDX = "" [default]
-colvars:   # outputFreq = 10 [default]
+colvars:   # outputFileDX = "none" [default]
 colvars:   # gatherVectorColvars = off [default]
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables biases initialized, 1 in total.
@@ -131,7 +135,8 @@ colvars: Re-initialized atom group for variable "one":0/0. 4 atoms: total mass =
 colvars: Re-initialized atom group for variable "one":0/1. 4 atoms: total mass = 54.028, total charge = -0.4.
 colvars: The restart output state file will be "test.tmp.colvars.state".
 colvars: The final output state file will be "test.colvars.state".
-colvars: Writing to colvar trajectory file "test.colvars.traj".
+colvars: Opening trajectory file "test.colvars.traj".
+colvars: Redefining the Tcl "cv" command to the new script interface.
 colvars: Updating NAMD interface:
 colvars: updating atomic data (0 atoms).
 colvars: updating group data (2 scalable groups, 8 atoms in total).
@@ -140,21 +145,11 @@ colvars: Re-initialized atom group for variable "one":0/1. 4 atoms: total mass =
 colvars: The restart output state file will be "test.tmp.colvars.state".
 colvars: The final output state file will be "test.colvars.state".
 colvars:   Histogram histogram1 will be written to file "test.histogram1.dat"
-colvars:   Histogram histogram1 will be written to file "test.histogram1.dx"
-colvars:   Writing the histogram file "test.histogram1.dat".
-colvars:   Writing the histogram file "test.histogram1.dx".
-colvars:   Writing the histogram file "test.histogram1.dat".
-colvars:   Writing the histogram file "test.histogram1.dx".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
 colvars: Saving collective variables state to "test.tmp.colvars.state".
 colvars:   Writing the histogram file "test.histogram1.dat".
-colvars:   Writing the histogram file "test.histogram1.dx".
-colvars:   Writing the histogram file "test.histogram1.dat".
-colvars:   Writing the histogram file "test.histogram1.dx".
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
 colvars: Saving collective variables state to "test.tmp.colvars.state".
 colvars:   Writing the histogram file "test.histogram1.dat".
-colvars:   Writing the histogram file "test.histogram1.dx".
 colvars: Saving collective variables state to "test.colvars.state".
-colvars:   Writing the histogram file "test.histogram1.dat".
-colvars:   Writing the histogram file "test.histogram1.dx".

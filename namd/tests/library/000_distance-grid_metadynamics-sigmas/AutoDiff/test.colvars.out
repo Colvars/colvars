@@ -105,17 +105,19 @@ colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new "metadynamics" instance.
 colvars:   # name = "metadynamics1" [default]
 colvars:   # colvars = { one }
+colvars:   # zeroStepData = off [default]
 colvars:   # outputEnergy = off [default]
+colvars:   # outputFreq = 10 [default]
 colvars:   # timeStepFactor = 1 [default]
 colvars:   # writeTISamples = off [default]
 colvars:   # writeTIPMF = off [default]
 colvars:   # hillWeight = 0.001
-colvars:   # newHillFrequency = 1000 [default]
+colvars:   # newHillFrequency = 10
 colvars:   # gaussianSigmas = { 0.313329 }
 colvars:   # hillWidth = 0 [default]
 colvars:   # multipleReplicas = off [default]
 colvars:   # useGrids = on [default]
-colvars:   # gridsUpdateFrequency = 1000 [default]
+colvars:   # gridsUpdateFrequency = 10 [default]
 colvars:   # rebinGrids = off [default]
 colvars:   # writeFreeEnergyFile = on [default]
 colvars:   # keepHills = off [default]
@@ -136,7 +138,8 @@ colvars: Re-initialized atom group for variable "one":0/0. 4 atoms: total mass =
 colvars: Re-initialized atom group for variable "one":0/1. 4 atoms: total mass = 54.028, total charge = -0.4.
 colvars: The restart output state file will be "test.tmp.colvars.state".
 colvars: The final output state file will be "test.colvars.state".
-colvars: Writing to colvar trajectory file "test.colvars.traj".
+colvars: Opening trajectory file "test.colvars.traj".
+colvars: Redefining the Tcl "cv" command to the new script interface.
 colvars: Updating NAMD interface:
 colvars: updating atomic data (0 atoms).
 colvars: updating group data (2 scalable groups, 8 atoms in total).
@@ -144,6 +147,7 @@ colvars: Re-initialized atom group for variable "one":0/0. 4 atoms: total mass =
 colvars: Re-initialized atom group for variable "one":0/1. 4 atoms: total mass = 54.028, total charge = -0.4.
 colvars: The restart output state file will be "test.tmp.colvars.state".
 colvars: The final output state file will be "test.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
 colvars: Saving collective variables state to "test.tmp.colvars.state".
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
