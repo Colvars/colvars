@@ -3,4 +3,5 @@ metadynamics {
     # gaussianSigmas 0.2 0.2
     hillWeight     0.01
     hillWidth 2.0
+    newHillFrequency 10
 }

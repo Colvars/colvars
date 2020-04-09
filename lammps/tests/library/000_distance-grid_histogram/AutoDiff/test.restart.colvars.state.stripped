@@ -14,7 +14,7 @@ histogram {
     name histogram1
   }
 grid
- 0 0 0 0 0 0 42 0
+ 0 0 0 0 0 0 40 0
  0 0 0 0 0 0 0 0
  0 0 0 0
 }

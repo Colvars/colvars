@@ -73,6 +73,8 @@ colvars:   # extendedTimeConstant = 100
 colvars:   Computed fictitious mass: 15100.8 [E]/(U/fs)^2   (U: colvar unit)
 colvars:   # outputEnergy = off [default]
 colvars:   # extendedLangevinDamping = 1 [default]
+colvars:   # reflectingLowerBoundary = off [default]
+colvars:   # reflectingUpperBoundary = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
 colvars:   # outputTotalForce = off [default]
@@ -111,6 +113,8 @@ colvars:   # extendedTimeConstant = 100
 colvars:   Computed fictitious mass: 15100.8 [E]/(U/fs)^2   (U: colvar unit)
 colvars:   # outputEnergy = off [default]
 colvars:   # extendedLangevinDamping = 1 [default]
+colvars:   # reflectingLowerBoundary = off [default]
+colvars:   # reflectingUpperBoundary = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
 colvars:   # outputTotalForce = off [default]
@@ -124,12 +128,14 @@ colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new "metadynamics" instance.
 colvars:   # name = "metadynamics1" [default]
 colvars:   # colvars = { one, two }
+colvars:   # zeroStepData = off [default]
 colvars:   # outputEnergy = off [default]
+colvars:   # outputFreq = 10 [default]
 colvars:   # timeStepFactor = 1 [default]
 colvars:   # writeTISamples = off [default]
 colvars:   # writeTIPMF = off [default]
 colvars:   # hillWeight = 0.01
-colvars:   # newHillFrequency = 1000 [default]
+colvars:   # newHillFrequency = 10
 colvars:   # gaussianSigmas =  [default]
 colvars:   # hillWidth = 2
 colvars:   Half-widths of the Gaussian hills (sigma's):
@@ -137,7 +143,7 @@ colvars:   one: 0.2
 colvars:   two: 0.2
 colvars:   # multipleReplicas = off [default]
 colvars:   # useGrids = on [default]
-colvars:   # gridsUpdateFrequency = 1000 [default]
+colvars:   # gridsUpdateFrequency = 10 [default]
 colvars:   # rebinGrids = off [default]
 colvars:   # writeFreeEnergyFile = on [default]
 colvars:   # keepHills = off [default]
@@ -300,13 +306,14 @@ colvars: Re-initialized atom group for variable "two":0/70. 1 atoms: total mass 
 colvars: Re-initialized atom group for variable "two":0/71. 1 atoms: total mass = 12.011, total charge = 0.55.
 colvars: ----------------------------------------------------------------------
 colvars: Restarting from file "test.colvars.state".
-colvars:   Restarting collective variable "one" from value: -1.07126
-colvars:   Restarting collective variable "two" from value: -2.08003
+colvars:   Restarting collective variable "one" from value: -1.07125
+colvars:   Restarting collective variable "two" from value: -2.08004
 colvars:   Restarting metadynamics bias "metadynamics1" from step number 20.
 colvars: ----------------------------------------------------------------------
 colvars: The restart output state file will be "test.restart.tmp.colvars.state".
 colvars: The final output state file will be "test.restart.colvars.state".
-colvars: Writing to colvar trajectory file "test.restart.colvars.traj".
+colvars: Opening trajectory file "test.restart.colvars.traj".
+colvars: Redefining the Tcl "cv" command to the new script interface.
 colvars: Updating NAMD interface:
 colvars: updating atomic data (30 atoms).
 colvars: updating group data (0 scalable groups, 0 atoms in total).
@@ -456,6 +463,7 @@ colvars: Re-initialized atom group for variable "two":0/70. 1 atoms: total mass 
 colvars: Re-initialized atom group for variable "two":0/71. 1 atoms: total mass = 12.011, total charge = 0.55.
 colvars: The restart output state file will be "test.restart.tmp.colvars.state".
 colvars: The final output state file will be "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".
 colvars: Saving collective variables state to "test.restart.tmp.colvars.state".
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".

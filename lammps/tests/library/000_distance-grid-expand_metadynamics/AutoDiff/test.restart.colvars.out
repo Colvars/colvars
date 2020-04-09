@@ -4,39 +4,40 @@ colvars: Please cite Fiorin et al, Mol Phys 2013:
 colvars:  https://dx.doi.org/10.1080/00268976.2013.813594
 colvars: in any publication based on this calculation.
 colvars: This version was built with the C++11 standard or higher.
-colvars: Using LAMMPS interface, version "2019-08-17".
+colvars: Using LAMMPS interface, version "2020-04-07".
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
+colvars: # units = "" [default]
 colvars: # indexFile = "index.ndx"
-colvars: The following index groups were read from the index file "index.ndx":
-colvars:   Protein (104 atoms).
-colvars:   Protein_noH (51 atoms).
-colvars:   Protein_Backbone (40 atoms).
-colvars:   Protein_C-alpha (10 atoms).
-colvars:   RMSD_atoms (10 atoms).
-colvars:   Protein_C-alpha_1_2 (2 atoms).
-colvars:   Protein_C-alpha_9_10 (2 atoms).
-colvars:   Protein_C-alpha_1 (1 atoms).
-colvars:   group1 (4 atoms).
-colvars:   Protein_C-alpha_2 (1 atoms).
-colvars:   group2 (4 atoms).
-colvars:   Protein_C-alpha_3 (1 atoms).
-colvars:   group3 (4 atoms).
-colvars:   Protein_C-alpha_4 (1 atoms).
-colvars:   group4 (4 atoms).
-colvars:   Protein_C-alpha_5 (1 atoms).
-colvars:   group5 (4 atoms).
-colvars:   Protein_C-alpha_6 (1 atoms).
-colvars:   group6 (4 atoms).
-colvars:   Protein_C-alpha_7 (1 atoms).
-colvars:   group7 (4 atoms).
-colvars:   Protein_C-alpha_8 (1 atoms).
-colvars:   group8 (4 atoms).
-colvars:   Protein_C-alpha_9 (1 atoms).
-colvars:   group9 (4 atoms).
-colvars:   Protein_C-alpha_10 (1 atoms).
-colvars:   group10 (4 atoms).
-colvars:   heavy_atoms (51 atoms).
+colvars: The following index groups are currently defined:
+colvars:   Protein (104 atoms)
+colvars:   Protein_noH (51 atoms)
+colvars:   Protein_Backbone (40 atoms)
+colvars:   Protein_C-alpha (10 atoms)
+colvars:   RMSD_atoms (10 atoms)
+colvars:   Protein_C-alpha_1_2 (2 atoms)
+colvars:   Protein_C-alpha_9_10 (2 atoms)
+colvars:   Protein_C-alpha_1 (1 atoms)
+colvars:   group1 (4 atoms)
+colvars:   Protein_C-alpha_2 (1 atoms)
+colvars:   group2 (4 atoms)
+colvars:   Protein_C-alpha_3 (1 atoms)
+colvars:   group3 (4 atoms)
+colvars:   Protein_C-alpha_4 (1 atoms)
+colvars:   group4 (4 atoms)
+colvars:   Protein_C-alpha_5 (1 atoms)
+colvars:   group5 (4 atoms)
+colvars:   Protein_C-alpha_6 (1 atoms)
+colvars:   group6 (4 atoms)
+colvars:   Protein_C-alpha_7 (1 atoms)
+colvars:   group7 (4 atoms)
+colvars:   Protein_C-alpha_8 (1 atoms)
+colvars:   group8 (4 atoms)
+colvars:   Protein_C-alpha_9 (1 atoms)
+colvars:   group9 (4 atoms)
+colvars:   Protein_C-alpha_10 (1 atoms)
+colvars:   group10 (4 atoms)
+colvars:   heavy_atoms (51 atoms)
 colvars: # smp = on [default]
 colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 10
@@ -103,13 +104,16 @@ colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new "metadynamics" instance.
 colvars:   # name = "metadynamics1" [default]
 colvars:   # colvars = { one }
+colvars:   # zeroStepData = off [default]
 colvars:   # outputEnergy = off [default]
+colvars:   # outputFreq = 10 [default]
 colvars:   # timeStepFactor = 1 [default]
 colvars:   # writeTISamples = off [default]
 colvars:   # writeTIPMF = off [default]
 colvars:   # hillWeight = 0.001
 colvars:   # newHillFrequency = 1000 [default]
-colvars:   # hillWidth = 1.25331 [default]
+colvars:   # gaussianSigmas =  [default]
+colvars:   # hillWidth = 1.25331
 colvars:   Half-widths of the Gaussian hills (sigma's):
 colvars:   one: 0.0626657
 colvars:   # multipleReplicas = off [default]
@@ -117,8 +121,8 @@ colvars:   # useGrids = on [default]
 colvars:   # gridsUpdateFrequency = 1000 [default]
 colvars:   # rebinGrids = off [default]
 colvars:   Metadynamics bias "metadynamics1": Will expand grids when the colvar "one" approaches its boundaries.
-colvars:   # keepHills = off [default]
 colvars:   # writeFreeEnergyFile = on [default]
+colvars:   # keepHills = off [default]
 colvars:   # keepFreeEnergyFiles = off [default]
 colvars:   # writeHillsTrajectory = off [default]
 colvars:   # wellTempered = off [default]
@@ -131,13 +135,15 @@ colvars: Collective variables module (re)initialized.
 colvars: ----------------------------------------------------------------------
 colvars: ----------------------------------------------------------------------
 colvars: Restarting from file "test.colvars.state".
-colvars:   Restarting collective variable "one" from value: 3.21932
+colvars:   Restarting collective variable "one" from value: 3.2193
+colvars:   Restarting metadynamics bias "metadynamics1" from step number 20.
 colvars: ----------------------------------------------------------------------
 colvars: The restart output state file will be "rest.colvars.state".
 colvars: The final output state file will be "test.restart.colvars.state".
-colvars: Writing to colvar trajectory file "test.restart.colvars.traj".
+colvars: Opening trajectory file "test.restart.colvars.traj".
 colvars: Re-initialized atom group for variable "one":0/0. 4 atoms: total mass = 54.028, total charge = -0.72.
 colvars: Re-initialized atom group for variable "one":0/1. 4 atoms: total mass = 54.028, total charge = -0.4.
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".
 colvars: Saving collective variables state to "rest.colvars.state".
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".
