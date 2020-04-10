@@ -1598,6 +1598,30 @@ with respect to $\{\mathbf{x}_{i}(t)\}$.
     with a non-zero value are read.
   }
 }
+
+\item %
+  \labelkey{colvar|rmsd|atomPermutation}
+  \key
+    {atomPermutation}{%
+    \texttt{rmsd}}{%
+    Alternate ordering of atoms for RMSD computation}{%
+    List of atom numbers}{%
+    If defined, this parameter defines a re-ordering (permutation) of the 1-based atom numbers that
+    can be used to compute the RMSD, typically due to molecular symmetry.
+    This parameter can be specified multiple times, each one defining a new permutation:
+    the returned RMSD value is the minimum over the set of permutations.
+    For example, if the atoms making up the group are 6, 7, 8, 9, and atoms 7, 8, and 9
+    are invariant by circular permutation (as the hydrogens in a CH3 group), a
+    symmetry-adapted RMSD would be obtained by adding:\\
+    \texttt{atomPermutation 6 8 9 7}\\
+    \texttt{atomPermutation 6 9 7 8}\\
+    Note that \textit{this does not affect the least-squares roto-translational fit},
+    which is done using the topology ordering of atoms, and the reference
+    positions in the order provided.
+    Therefore, this feature is mostly useful when using custom fitting parameters within the
+    atom group, such as \refkey{fittingGroup}{atom-group|fittingGroup}, or when fitting
+    is disabled altogether.
+  }
 \end{cvcoptions}
 This component returns a positive real number (in \AA).
 

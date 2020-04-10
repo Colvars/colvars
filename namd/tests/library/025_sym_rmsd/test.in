@@ -1,0 +1,88 @@
+colvarsTrajFrequency 1
+
+colvar {
+    name rmsd
+
+    rmsd {
+        atoms {
+            centerReference yes
+            rotateReference yes
+            fittingGroup {
+                atomNumbers 50 51 52 53 54 55 56 57 58
+            }
+            refPositionsFile ../Common/da.pdb
+            atomNumbers 6 7 8 9
+        }
+        refPositionsFile ../Common/da_flipped.pdb
+    }
+}
+
+colvar {
+    name rmsd_sym
+
+    rmsd {
+        atoms {
+            centerReference yes
+            rotateReference yes
+            fittingGroup {
+                atomNumbers 50 51 52 53 54 55 56 57 58
+            }
+            refPositionsFile ../Common/da.pdb
+            atomNumbers 6 7 8 9
+        }
+        refPositionsFile ../Common/da_flipped.pdb
+        atomPermutation 6 8 9 7
+        atomPermutation 6 9 7 8
+    }
+}
+
+colvar {
+    name rmsd_min
+
+    customFunction min(min(r1, r2), r3)
+    rmsd {
+        name r1
+        atoms {
+            centerReference yes
+            rotateReference yes
+            fittingGroup {
+                atomNumbers 50 51 52 53 54 55 56 57 58
+            }
+            refPositionsFile ../Common/da.pdb
+            atomNumbers 6 7 8 9
+        }
+        refPositionsFile ../Common/da.pdb
+    }
+    rmsd {
+        name r2
+        atoms {
+            centerReference yes
+            rotateReference yes
+            fittingGroup {
+                atomNumbers 50 51 52 53 54 55 56 57 58
+            }
+            refPositionsFile ../Common/da.pdb
+            atomNumbers 6 7 8 9
+        }
+        refPositionsFile ../Common/da_flipped.pdb
+    }
+    rmsd {
+        name r3
+        atoms {
+            centerReference yes
+            rotateReference yes
+            fittingGroup {
+                atomNumbers 50 51 52 53 54 55 56 57 58
+            }
+            refPositionsFile ../Common/da.pdb
+            atomNumbers 6 7 8 9
+        }
+        refPositionsFile ../Common/da_flipped2.pdb
+    }
+}
+
+harmonic {
+  colvars rmsd_sym
+  centers 0
+  forceConstant 100
+}
