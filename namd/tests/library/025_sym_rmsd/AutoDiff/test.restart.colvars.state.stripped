@@ -1,0 +1,27 @@
+configuration {
+  step           40
+  dt 1.000000e+00
+}
+
+colvar {
+  name rmsd
+  x  1.57261614568718e+00
+}
+
+colvar {
+  name rmsd_sym
+  x  7.26619298562136e-01
+}
+
+colvar {
+  name rmsd_min
+  x  7.26619298562136e-01
+}
+
+restraint {
+  configuration {
+    step 40
+    name harmonic1
+  }
+}
+
