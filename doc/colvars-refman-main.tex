@@ -4032,7 +4032,9 @@ All biasing and analysis methods implemented recognize the following options:
     Write the current bias energy to the trajectory file}{%
     boolean}{%
     \texttt{off}}{%
-    If this option is chosen and  \texttt{colvarsTrajFrequency} is not zero, the current value of the biasing energy will be written to the trajectory file during the simulation.}
+    If this option is chosen and \texttt{colvarsTrajFrequency} is not zero, the current value of the biasing energy will be written to the trajectory file during the simulation.
+    \cvnamdonly{The total energy of all Colvars biases is also reported by NAMD, as part of the MISC title.}
+}
 
 \item %
   \labelkey{colvarbias|outputFreq}
@@ -5203,21 +5205,23 @@ harmonic potentials are meant according to their textbook definition:
   \label{eq:colvarbias_harmonic}
   V(\xi) = \frac{1}{2} k \left(\frac{\xi - \xi_0}{w_{\xi}}\right)^2
 \end{equation}
-Note that this differs from harmonic bond and angle potentials in common
-force fields, where the factor of one half is typically omitted,
-resulting in a non-standard definition of the force constant.
+There are two noteworthy aspects of this expression:
+\begin{enumerate}
+\item Because the \emph{standard coefficient of $1/2$} of the harmonic potential is included, this expression differs from harmonic bond and angle potentials historically used in common force fields, where the factor was typically omitted resulting in a non-standard definition of the force constant.
+\item The variable $\xi$ is not only centered at $\xi_0$, but is also \emph{scaled by its characteristic length scale} $w_{\xi}$ (keyword \refkey{width}{colvar|width}).
+  The resulting dimensionless variable $z = (\xi - \xi_0)/w_{\xi}$ is typically easier to treat numerically: for example, when the forces typically experienced by $\xi$ are much smaller than $k/w_{\xi}$ and $k$ is chosen equal to $\kappa_{\mathrm{B}}T$ (thermal energy), the resulting probability distribution of $z$ is approximately a Gaussian with mean equal to 0 and standard deviation equal to 1.
 
-The formula above includes the characteristic length scale $w_{\xi}$ of the colvar $\xi$ (keyword \refkey{width}{colvar|width}) to allow the definition of a multi-dimensional restraint with a unified force constant:
+  This property can be used for setting the force constant in umbrella-sampling ensemble runs: if the restraint centers are chosen in increments of $w_{\xi}$, the resulting distributions of $\xi$ are most often optimally overlapped.
+  In regions where the underlying free-energy landscape induces highly skewed distributions of $\xi$, additional windows may be added as needed, with spacings finer than $w_{\xi}$.
+\end{enumerate}
+
+Beyond one dimension, the use of a scaled harmonic potential also allows a standard definition of a multi-dimensional restraint with a unified force constant:
 \begin{equation}
   \label{eq:colvarbias_harmonic_multi}
   V(\xi_{1}, \ldots, \xi_{M}) = \frac{1}{2} k \sum_{i=1}^{M} \left(\frac{\xi_{i} - \xi_0}{w_{\xi}}\right)^2
 \end{equation}
 
-If one-dimensional or homogeneous multi-dimensional restraints are defined, and there are no other uses for the parameter $w_{\xi}$, \texttt{width} \emph{can be left at its default value of $1$}.
-
-\cvnamdonly{The restraint energy is reported by NAMD under the MISC title.}
-
-A harmonic restraint is set up by a \texttt{harmonic~\{...\}} block, which may contain the following keywords:
+A harmonic restraint is defined by a \texttt{harmonic~\{...\}} block, which may contain the following keywords:
 \begin{itemize}
 
 \item \dupkey{name}{\texttt{harmonic}}{sec:colvarbias}{biasing and analysis methods}
