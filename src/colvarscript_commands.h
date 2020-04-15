@@ -117,7 +117,9 @@ CVSCRIPT(cv_configfile,
          "Read configuration from a file",
          1, 1,
          "conf_file : string - Path to configuration file",
-         if (script->module()->read_config_file(script->obj_to_str(objv[2])) == COLVARS_OK) {
+         char const *conf_file_name =
+           script->obj_to_str(script->get_module_cmd_arg(0, objc, objv));
+         if (script->module()->read_config_file(conf_file_name) == COLVARS_OK) {
            return COLVARS_OK;
          } else {
            script->add_error_msg("Error parsing configuration file");
@@ -247,8 +249,9 @@ CVSCRIPT(cv_load,
          "Load data from a state file into all matching colvars and biases",
          1, 1,
          "prefix : string - Path to existing state file or input prefix",
-         script->proxy()->input_prefix() =
-           cvm::state_file_prefix(script->obj_to_str(objv[2]));
+         char const *arg =
+           script->obj_to_str(script->get_module_cmd_arg(0, objc, objv));
+         script->proxy()->input_prefix() = cvm::state_file_prefix(arg);
          if (script->module()->setup_input() == COLVARS_OK) {
            return COLVARS_OK;
          } else {
@@ -261,7 +264,9 @@ CVSCRIPT(cv_loadfromstring,
          "Load state data from a string into all matching colvars and biases",
          1, 1,
          "buffer : string - String buffer containing the state information",
-         script->proxy()->input_buffer() = script->obj_to_str(objv[2]);
+         char const *arg =
+           script->obj_to_str(script->get_module_cmd_arg(0, objc, objv));
+         script->proxy()->input_buffer() = arg;
          if (script->module()->setup_input() == COLVARS_OK) {
            return COLVARS_OK;
          } else {
@@ -328,7 +333,7 @@ CVSCRIPT(cv_save,
          1, 1,
          "prefix : string - Output prefix with trailing \".colvars.state\" gets removed)",
          std::string const prefix =
-           cvm::state_file_prefix(script->obj_to_str(objv[2]));
+           cvm::state_file_prefix(script->obj_to_str(script->get_module_cmd_arg(0, objc, objv)));
          script->proxy()->output_prefix() = prefix;
          int error_code = COLVARS_OK;
          error_code |= script->module()->setup_output();
