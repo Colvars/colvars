@@ -1,4 +1,6 @@
-set output [open "cvscript-tcl.tex" "w"]
+if { [info exists output] == 0 } {
+    set output [open "cvscript-tcl.tex" "w"]
+}
 
 foreach prefix [list "cv" "colvar" "bias"] \
     introstr [list "\\cvsubsec\{Commands to manage the Colvars module\}\{sec:cvscript_tcl_cv\}" \
@@ -43,5 +45,6 @@ foreach prefix [list "cv" "colvar" "bias"] \
         }
         puts ${output} "\\end\{itemize\}"
     }
+
 close ${output}
 
