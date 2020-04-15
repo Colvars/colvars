@@ -18,9 +18,11 @@ Usage: ./run_tests.sh [-h] [-g] [path_to_namd2] [testdir1 [testdir2 ...]]
 
 ### File organization
 
-All tests matching `000_*` use the same NAMD input scripts `Common/test.namd` and `Common/test.restart.namd`.  Tests numbered sequentially starting from `001` use specific NAMD scripts.
+All tests matching `000_*` use the same NAMD input scripts `Common/test.namd` and `Common/test.restart.namd`; the corresponding Colvars configuration files are located from `../../../tests`.
 
-Any input files that are meant to be reused should be also located in `Common`.
+Tests numbered sequentially starting from `001` use specific NAMD scripts.
+
+Any input files that are meant to be reused in multiple tests should be located in `Common`.
 
 ### Known issues
 
