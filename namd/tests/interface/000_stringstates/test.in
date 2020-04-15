@@ -1,0 +1,31 @@
+colvarsTrajFrequency 1
+colvarsRestartFrequency 10
+indexFile index.ndx
+
+
+colvar {
+
+    name one
+
+    outputAppliedForce on
+
+    width 0.5
+    lowerBoundary -10.0
+    upperBoundary 10.0
+
+    distanceZ {
+        main {
+            indexGroup group3
+        }
+        ref {
+            indexGroup group4
+        }
+    }
+
+} 
+
+
+abf {
+    colvars one
+    fullSamples 1
+}
