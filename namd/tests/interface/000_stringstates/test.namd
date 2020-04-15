@@ -1,0 +1,26 @@
+# -*- tcl -*-
+
+# Note: see also test.restart.namd, test.legacy.namd, test.restart.legacy.namd
+
+source ../Common/common.namd
+source ../Common/measure_net_force_torque.tcl
+
+colvars                 on
+
+cv configfile test.in
+run ${numsteps}
+
+set state [cv savetostring]
+
+cv reset
+cv configfile test.in
+
+run ${numsteps}
+
+cv reset
+cv configfile test.in
+cv loadfromstring ${state}
+
+run ${numsteps}
+
+source ../Common/delete_tmp_files.tcl
