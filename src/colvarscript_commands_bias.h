@@ -110,6 +110,14 @@ CVSCRIPT(bias_load,
          return this_bias->read_state_prefix(prefix);
          )
 
+CVSCRIPT(bias_loadfromstring,
+         "Load state data into this bias from a string",
+         1, 1,
+         "buffer : string - String buffer containing the state information",
+         char const *buffer = script->obj_to_str(objv[2]);
+         return this_bias->read_state_string(buffer);
+         )
+
 CVSCRIPT(bias_save,
          "Save data from this bias into a file with the given prefix",
          1, 1,
@@ -117,6 +125,13 @@ CVSCRIPT(bias_save,
          std::string const prefix =
            cvm::state_file_prefix(script->obj_to_str(objv[2]));
          return this_bias->write_state_prefix(prefix);
+         )
+
+CVSCRIPT(bias_savetostring,
+         "Save data from this bias into a string and return it",
+         0, 0,
+         "",
+         return this_bias->write_state_string(script->modify_str_result());
          )
 
 CVSCRIPT(bias_set,

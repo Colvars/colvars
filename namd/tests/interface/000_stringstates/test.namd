@@ -19,7 +19,16 @@ run ${numsteps}
 
 cv reset
 cv configfile test.in
+# Restart the module from the old state (note the step change in the traj)
 cv loadfromstring ${state}
+
+run ${numsteps}
+
+# Now restart just the ABF bias
+set abf_state [cv bias abf1 savetostring]
+cv reset
+cv configfile test.in
+cv bias abf1 loadfromstring ${abf_state}
 
 run ${numsteps}
 

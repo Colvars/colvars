@@ -157,8 +157,14 @@ public:
   /// Write the bias state to a file with the given prefix
   int write_state_prefix(std::string const &prefix);
 
+  /// Write the bias state to a string
+  int write_state_string(std::string &output);
+
   /// Read the bias state from a file with this name or prefix
   int read_state_prefix(std::string const &prefix);
+
+  /// Read the bias state from this string buffer
+  int read_state_string(char const *buffer);
 
   /// Write a label to the trajectory file (comment line)
   virtual std::ostream & write_traj_label(std::ostream &os);
