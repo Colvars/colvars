@@ -242,6 +242,13 @@
 \texttt{\textbf{Parameters}}
 \\
 \texttt{prefix : string - Read from a file with this name or prefix}
+\item \texttt{cv bias name loadfromstring <buffer>}
+\\
+\texttt{Load state data into this bias from a string}
+\\
+\texttt{\textbf{Parameters}}
+\\
+\texttt{buffer : string - String buffer containing the state information}
 \item \texttt{cv bias name save <prefix>}
 \\
 \texttt{Save data from this bias into a file with the given prefix}
@@ -249,6 +256,9 @@
 \texttt{\textbf{Parameters}}
 \\
 \texttt{prefix : string - Prefix for the state file of this bias}
+\item \texttt{cv bias name savetostring}
+\\
+\texttt{Save data from this bias into a string and return it}
 \item \texttt{cv bias name set <feature> <value>}
 \\
 \texttt{Set the given feature of this bias to a new value}

@@ -79,7 +79,9 @@ cv bias name get <feature>
 cv bias name getconfig
 cv bias name help [command]
 cv bias name load <prefix>
+cv bias name loadfromstring <buffer>
 cv bias name save <prefix>
+cv bias name savetostring
 cv bias name set <feature> <value>
 cv bias name share
 cv bias name state
@@ -166,6 +168,17 @@ Parameters
 
 prefix : string - Read from a file with this name or prefix
 ======================================================================
+Help for script function "bias_loadfromstring":
+
+cv bias name loadfromstring <buffer>
+
+Load state data into this bias from a string
+
+Parameters
+----------
+
+buffer : string - String buffer containing the state information
+======================================================================
 Help for script function "bias_save":
 
 cv bias name save <prefix>
@@ -176,6 +189,12 @@ Parameters
 ----------
 
 prefix : string - Prefix for the state file of this bias
+======================================================================
+Help for script function "bias_savetostring":
+
+cv bias name savetostring
+
+Save data from this bias into a string and return it
 ======================================================================
 Help for script function "bias_set":
 

@@ -8,6 +8,7 @@
 // Colvars repository at GitHub.
 
 #include <fstream>
+#include <cstring>
 
 #include "colvarmodule.h"
 #include "colvarproxy.h"
@@ -535,6 +536,18 @@ int colvarbias::write_state_prefix(std::string const &prefix)
 }
 
 
+int colvarbias::write_state_string(std::string &output)
+{
+  std::ostringstream os;
+  if (!write_state(os)) {
+    return cvm::error("Error: in writing state of bias \""+name+
+                      "\" to buffer.\n", FILE_ERROR);
+  }
+  output = os.str();
+  return COLVARS_OK;
+}
+
+
 int colvarbias::read_state_prefix(std::string const &prefix)
 {
   std::string filename((prefix+std::string(".colvars.state")).c_str());
@@ -548,6 +561,29 @@ int colvarbias::read_state_prefix(std::string const &prefix)
   return read_state(is).good() ? COLVARS_OK :
     cvm::error("Error: in reading state for \""+name+"\" from input file \""+
                std::string(filename)+"\".\n", FILE_ERROR);
+}
+
+
+int colvarbias::read_state_string(char const *buffer)
+{
+  if (buffer != NULL) {
+    size_t const buffer_size = strlen(buffer);
+    if (cvm::debug()) {
+      cvm::log("colvarbias::read_state_string() with argument:\n");
+      cvm::log(buffer);
+    }
+
+    if (buffer_size > 0) {
+      std::istringstream is;
+      is.rdbuf()->pubsetbuf(const_cast<char *>(buffer), buffer_size);
+      return read_state(is).good() ? COLVARS_OK :
+        cvm::error("Error: in reading state for \""+name+"\" from buffer.\n",
+                   FILE_ERROR);
+    }
+    return COLVARS_OK;
+  }
+  return cvm::error("Error: NULL pointer for colvarbias::read_state_string()",
+                    BUG_ERROR);
 }
 
 
