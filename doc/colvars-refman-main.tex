@@ -4008,10 +4008,11 @@ All biasing and analysis methods implemented recognize the following options:
     Accumulate data starting at step 0 of a simulation run}{%
     boolean}{%
     \texttt{off}}{%
-    This option is meaningful for biases that record data during a simulation, sh as ABF (\ref{sec:colvarbias_abf}), metadynamics (\ref{sec:colvarbias_meta}), histograms (\ref{sec:colvarbias_histogram}) and in general any bias that accumulate samples from thermodynamic integration (\ref{sec:colvarbias_ti}).
+    This option is meaningful for biases that record and accumulate data during a simulation, such as ABF (\ref{sec:colvarbias_abf}), metadynamics (\ref{sec:colvarbias_meta}), histograms (\ref{sec:colvarbias_histogram}) and in general any bias that accumulates free-energy samples with thermodynamic integration, or TI (\ref{sec:colvarbias_ti}).
     % TODO: unclear how to handle ALB at the moment
-    When this option is disabled (default) the bias's properties such as energy and forces will be computed, but data will only be recorded after the first coordinate update: this is generally the correct choice in simulation runs.
-    Optionally, this option may be turned on to support custom algorithms\cvnamdonly{; when updating the bias's internal data requires data from previous steps (for example, total atomic forces) turning on this flag will raise an error.}
+    When this option is disabled (default), data will only be recorded into the bias after the first coordinate update: this is generally the correct choice in simulation runs.
+    Biasing energy and forces will always be computed for all active biases, regardless of this option.
+    \cvnamdonly{Note that in some cases the bias may require data from previous simulation steps: for example, TI requires total atomic forces (see \refkey{outputTotalForce}{colvar|outputTotalForce}) which are only available at the following step in NAMD; turning on this flag in those cases will raise an error.}
   }
 
 \item %
