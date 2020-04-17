@@ -24,9 +24,7 @@ colvar {
     }
 } 
 
-metadynamics {
-    colvars        one
-    hillWeight     0.001
-    hillWidth      1.2533141373155001  # Old default
-    newHillFrequency 10
+abf {
+    colvars one
+    fullSamples 10
 }

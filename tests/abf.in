@@ -1,3 +1,4 @@
 abf {
-    colvars        one
+    colvars one
+    fullSamples 10
 }

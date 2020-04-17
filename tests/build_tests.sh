@@ -33,11 +33,6 @@ create_test_dir() {
         dirname=${WORKDIR}/${dirname}
         return
     fi
-    
-    # # Add to an existing set of regression tests
-    # while ls $WORKDIR/ | grep -q `printf %03d $n_test`_ ; do
-    #     n_test=$((++n_test))
-    # done
 
     dirname=`printf %03d ${n_test}`_$1
     echo "$(${TPUT_BLUE}) * $dirname was just created now * $(${TPUT_CLEAR})"
@@ -147,6 +142,7 @@ for colvar in "distance-grid" ; do
         "harmonic-k-moving" \
         "histogram" \
         "histogram-customgrid" \
+        "abf" \
         "metadynamics" \
         "metadynamics-sigmas" \
         "metadynamics-ti" \
