@@ -111,14 +111,14 @@ colvars:   # timeStepFactor = 1 [default]
 colvars:   # writeTISamples = off [default]
 colvars:   # writeTIPMF = off [default]
 colvars:   # hillWeight = 0.001
-colvars:   # newHillFrequency = 1000 [default]
+colvars:   # newHillFrequency = 10
 colvars:   # gaussianSigmas =  [default]
 colvars:   # hillWidth = 1.25331
 colvars:   Half-widths of the Gaussian hills (sigma's):
 colvars:   one: 0.0626657
 colvars:   # multipleReplicas = off [default]
 colvars:   # useGrids = on [default]
-colvars:   # gridsUpdateFrequency = 1000 [default]
+colvars:   # gridsUpdateFrequency = 10 [default]
 colvars:   # rebinGrids = off [default]
 colvars:   Metadynamics bias "metadynamics1": Will expand grids when the colvar "one" approaches its boundaries.
 colvars:   # writeFreeEnergyFile = on [default]
@@ -135,7 +135,7 @@ colvars: Collective variables module (re)initialized.
 colvars: ----------------------------------------------------------------------
 colvars: ----------------------------------------------------------------------
 colvars: Restarting from file "test.colvars.state".
-colvars:   Restarting collective variable "one" from value: 3.2193
+colvars:   Restarting collective variable "one" from value: 3.21931
 colvars:   Restarting metadynamics bias "metadynamics1" from step number 20.
 colvars: ----------------------------------------------------------------------
 colvars: The restart output state file will be "rest.colvars.state".

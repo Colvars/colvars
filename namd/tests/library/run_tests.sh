@@ -197,6 +197,10 @@ for dir in ${DIRLIST} ; do
       if [ -f ${basename}.pmf ] ; then
         cp -f ${basename}.pmf AutoDiff/
       fi
+      if [ -f ${basename}.grad ] ; then
+        cp -f ${basename}.grad AutoDiff/
+        cp -f ${basename}.count AutoDiff/
+      fi
 
       # Update any additional files with current versions
       for file in AutoDiff/*; do
