@@ -1,0 +1,9 @@
+# Velocity autocorrelation function for variable "one"
+# Number of samples = 9 (one DoF is used for normalization)
+# step       corrfunc(step)       
+           0  1.00000000000000e+00
+           2  9.55520455115775e-01
+           4  6.72391609710237e-01
+           6  2.10482971815030e-01
+           8 -3.20643973449561e-01
+          10 -7.94620229037127e-01

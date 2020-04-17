@@ -1,0 +1,36 @@
+colvarsTrajFrequency 1
+colvarsRestartFrequency 10
+indexFile index.ndx
+
+colvar {
+
+    name one
+
+    outputAppliedForce on
+    outputVelocity on
+
+    # use a non-trivial width to test bias behavior
+    width 0.5
+    # The lower boundary is already defined at 0 for a distance function
+    # lowerBoundary 0.0
+    upperBoundary 10.0
+    
+    extendedLagrangian      on
+    extendedFluctuation     0.1
+    extendedTimeConstant    200.0
+    extendedTemp            500.0
+    extendedLangevinDamping 0.0 # suppress random friction term
+    
+    distance {
+        group1 {
+            indexGroup group1
+        }
+        group2 {
+            indexGroup group2
+        }
+    }
+} 
+
+histogram {
+    colvars    one
+}

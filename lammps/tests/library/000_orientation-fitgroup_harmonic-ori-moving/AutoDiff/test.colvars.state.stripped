@@ -1,0 +1,19 @@
+configuration {
+  step           20
+  dt 1.000000e+00
+}
+
+colvar {
+  name one
+  x (  9.99764401503006e-01 ,  1.37400494055666e-02 ,  1.19194763178587e-02 , -1.18439273037369e-02 )
+}
+
+restraint {
+  configuration {
+    step 20
+    name harmonic1
+    centers  (  0.00000000000000e+00 ,  0.00000000000000e+00 ,  1.00000000000000e+00 ,  0.00000000000000e+00 )
+    accumulatedWork  2.27812083013105e-03
+  }
+}
+
