@@ -1268,7 +1268,7 @@ int colvarproxy_namd::replica_index() {
 }
 
 
-int colvarproxy_namd::replica_num() {
+int colvarproxy_namd::num_replicas() {
   return CmiNumPartitions();
 }
 

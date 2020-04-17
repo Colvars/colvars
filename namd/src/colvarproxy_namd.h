@@ -168,7 +168,7 @@ public:
 
   virtual int replica_enabled();
   virtual int replica_index();
-  virtual int replica_num();
+  virtual int num_replicas();
   virtual void replica_comm_barrier();
   virtual int replica_comm_recv(char* msg_data, int buf_len, int src_rep);
   virtual int replica_comm_send(char* msg_data, int msg_len, int dest_rep);
