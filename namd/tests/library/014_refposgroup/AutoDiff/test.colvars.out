@@ -1,83 +1,99 @@
 colvars: ----------------------------------------------------------------------
 colvars: Please cite Fiorin et al, Mol Phys 2013:
-colvars:  http://dx.doi.org/10.1080/00268976.2013.813594
+colvars:  https://dx.doi.org/10.1080/00268976.2013.813594
 colvars: in any publication based on this calculation.
-colvars: SMP parallelism is available.
+colvars: SMP parallelism is enabled; if needed, use "smp off" to override this.
+colvars: This version was built with the C++11 standard or higher.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
-colvars: # indexFile = "" [default]
+colvars: # units = "" [default]
 colvars: # smp = on [default]
-colvars: # analysis = off [default]
 colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 0 [default]
-colvars: # colvarsTrajAppend = off [default]
 colvars: # scriptedColvarForces = off [default]
-colvars: # scriptingAfterBiases = on [default]
+colvars: # scriptingAfterBiases = off [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "r"
 colvars:   Initializing a new "rmsd" component.
+colvars:     # name = "" [default]
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
 colvars:     # scalable = on [default]
 colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = on
+colvars:       # rotateReference = on
+colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
-colvars:       # centerReference = on
-colvars:       # rotateReference = on
-colvars:       # enableFitGradients = on [default]
 colvars:       Within atom group "atoms":
-colvars:       Defining atom group "fittingGroup".
-colvars:         Initializing atom group "fittingGroup".
-colvars:         # indexGroup = "" [default]
-colvars:         # psfSegID =  [default]
-colvars:         # atomsFile = "" [default]
-colvars:         # dummyAtom = ( 0 , 0 , 0 ) [default]
-colvars:         # enableForces = on [default]
-colvars:         # centerReference = off [default]
-colvars:         # rotateReference = off [default]
-colvars:         # enableFitGradients = on [default]
-colvars:         Atom group "fittingGroup" defined, 5 atoms initialized: total mass = 60.055, total charge = 0.35.
+colvars:       Initializing atom group "fittingGroup".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "fittingGroup" defined with 5 atoms requested: total mass = 60.055, total charge = 0.35.
 colvars:       # refPositions =  [default]
 colvars:       # refPositionsFile = "../Common/310turn-ideal.xyz"
 colvars:       # refPositionsCol = "" [default]
+colvars:       Warning: beginning from 2019-11-26 the XYZ file reader assumes Angstrom units.
 colvars:       Warning: atom group "atoms" will be aligned to a fixed orientation given by the reference positions provided.  If the internal structure of the group changes too much (i.e. its RMSD is comparable to its radius of gyration), the optimal rotation and its gradients may become discontinuous.  If that happens, use fittingGroup (or a different definition for it if already defined) to align the coordinates.
-colvars:       Atom group "atoms" defined, 1 atoms initialized: total mass = 12.011, total charge = -0.1.
-colvars:     The option "refPositionsGroup" (alternative group for fitting) was enabled: Jacobian derivatives of the RMSD will not be calculated.
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 1 atoms requested: total mass = 12.011, total charge = -0.1.
+colvars:     The option "fittingGroup" (alternative group for fitting) was enabled: Jacobian derivatives of the RMSD will not be calculated.
 colvars:     # refPositions =  [default]
 colvars:     # refPositionsFile = "../Common/310turn-ideal.xyz"
 colvars:     # refPositionsCol = "" [default]
 colvars:     WARNING: explicit fitting parameters were provided for atom group "atoms".
 colvars:   All components initialized.
+colvars:   # timeStepFactor = 1 [default]
 colvars:   # width = 1 [default]
 colvars:   # lowerBoundary = 0 [default]
-colvars:   # lowerWallConstant = 0 [default]
 colvars:   # upperBoundary = 0 [default]
-colvars:   # upperWallConstant = 0 [default]
+colvars:   # hardLowerBoundary = on [default]
+colvars:   # hardUpperBoundary = off [default]
 colvars:   # expandBoundaries = off [default]
-colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
 colvars:   # outputTotalForce = off [default]
 colvars:   # outputAppliedForce = on
 colvars:   # subtractAppliedForce = off [default]
+colvars:   # runAve = off [default]
+colvars:   # corrFunc = off [default]
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new "harmonic" instance.
 colvars:   # name = "harmonic1" [default]
 colvars:   # colvars = { r }
+colvars:   # stepZeroData = off [default]
 colvars:   # outputEnergy = off [default]
+colvars:   # outputFreq = 0 [default]
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # writeTISamples = off [default]
+colvars:   # writeTIPMF = off [default]
 colvars:   # centers = { 0 }
 colvars:   # targetCenters = { 0 } [default]
+colvars:   # outputCenters = off [default]
 colvars:   # forceConstant = 0.1
-colvars:   # targetForceConstant = 0 [default]
+colvars:   # targetForceConstant = -1 [default]
+colvars:   The force constant for colvar "r" will be rescaled to 0.1 according to the specified width (1).
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables biases initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
@@ -86,16 +102,14 @@ colvars: ----------------------------------------------------------------------
 colvars: Updating NAMD interface:
 colvars: updating atomic data (6 atoms).
 colvars: updating group data (0 scalable groups, 0 atoms in total).
-colvars: Updating NAMD interface:
-colvars: updating atomic data (6 atoms).
-colvars: updating group data (0 scalable groups, 0 atoms in total).
-colvars: Re-initialized atom group r:0/0. 1 atoms: total mass = 12.011.
+colvars: Re-initialized atom group for variable "r":0/0. 1 atoms: total mass = 12.011, total charge = -0.1.
 colvars: The final output state file will be "test.colvars.state".
-colvars: Writing to colvar trajectory file "test.colvars.traj".
+colvars: Opening trajectory file "test.colvars.traj".
+colvars: Redefining the Tcl "cv" command to the new script interface.
 colvars: Updating NAMD interface:
 colvars: updating atomic data (6 atoms).
 colvars: updating group data (0 scalable groups, 0 atoms in total).
-colvars: Re-initialized atom group r:0/0. 1 atoms: total mass = 12.011.
+colvars: Re-initialized atom group for variable "r":0/0. 1 atoms: total mass = 12.011, total charge = -0.1.
 colvars: The final output state file will be "test.colvars.state".
 colvars:     Debugging gradients for cvc rmsd0001
 colvars:     Fit gradients:
@@ -134,11 +148,11 @@ colvars:     dx(interp) = -3.08422161520322e-08
 colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.91748e-08.
 colvars:     refPosGroup atom 1, component 1:
 colvars:     dx(actual) =  8.54018722407091e-09
-colvars:     dx(interp) =  8.54018799563609e-09
+colvars:     dx(interp) =  8.54018799563608e-09
 colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.03452e-08.
 colvars:     refPosGroup atom 1, component 2:
 colvars:     dx(actual) =  8.15125744679790e-10
-colvars:     dx(interp) =  8.15130086473763e-10
+colvars:     dx(interp) =  8.15130086473766e-10
 colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.32653e-06.
 colvars:     refPosGroup atom 2, component 0:
 colvars:     dx(actual) = -5.26084527052717e-08
@@ -150,7 +164,7 @@ colvars:     dx(interp) =  1.64047652855846e-08
 colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.00693e-07.
 colvars:     refPosGroup atom 2, component 2:
 colvars:     dx(actual) =  9.44798905777589e-09
-colvars:     dx(interp) =  9.44799082028362e-09
+colvars:     dx(interp) =  9.44799082028361e-09
 colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.86548e-07.
 colvars:     refPosGroup atom 3, component 0:
 colvars:     dx(actual) = -1.49833905283003e-08
@@ -174,9 +188,9 @@ colvars:     dx(interp) = -1.31249010745606e-08
 colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.45315e-07.
 colvars:     refPosGroup atom 4, component 2:
 colvars:     dx(actual) =  3.02938776286510e-08
-colvars:     dx(interp) =  3.02938806702504e-08
+colvars:     dx(interp) =  3.02938806702505e-08
 colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.00403e-07.
-colvars:     Gradient sum: ( 0.973323 , -0.185412 , -0.13515 )  Fit gradient sum: ( -0.973323 , 0.185412 , 0.13515 )  Total ( -2.22045e-16 , -8.32667e-17 , -1.11022e-16 )
+colvars:     Gradient sum: ( 0.973323 , -0.185412 , -0.13515 )  Fit gradient sum: ( -0.973323 , 0.185412 , 0.13515 )  Total ( -1.11022e-16 , -5.55112e-17 , -2.22045e-16 )
 colvars:     Debugging gradients for cvc rmsd0001
 colvars:     Fit gradients:
 colvars:     refPosGroup[0] = ( -0.234785 , 0.269301 , -0.173026 )
@@ -185,78 +199,78 @@ colvars:     refPosGroup[2] = ( 0.226415 , 0.0326117 , -0.510159 )
 colvars:     refPosGroup[3] = ( 0.135477 , -0.018324 , -0.117498 )
 colvars:     refPosGroup[4] = ( 0.21991 , -0.181069 , 0.219847 )
 colvars:     Atom 0, component 0:
-colvars:     dx(actual) =  9.73303144746751e-08
-colvars:     dx(interp) =  9.73303132367808e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.27185e-08
+colvars:     dx(actual) =  9.73303126983183e-08
+colvars:     dx(interp) =  9.73303132367810e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.53232e-09
 colvars:     Atom 0, component 1:
-colvars:     dx(actual) = -1.85527966323207e-08
-colvars:     dx(interp) = -1.85527964955751e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  7.37062e-09
+colvars:     dx(actual) = -1.85527984086775e-08
+colvars:     dx(interp) = -1.85527964955743e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.03117e-07
 colvars:     Atom 0, component 2:
-colvars:     dx(actual) = -1.35130999723287e-08
-colvars:     dx(interp) = -1.35130998451096e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.41451e-09
+colvars:     dx(actual) = -1.35130981959719e-08
+colvars:     dx(interp) = -1.35130998451093e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.22040e-07
 colvars:     refPosGroup atom 0, component 0:
-colvars:     dx(actual) = -1.32292132803968e-08
+colvars:     dx(actual) = -1.32292168331105e-08
 colvars:     dx(interp) = -1.32292128183689e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.49248e-08.
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.03475e-07.
 colvars:     refPosGroup atom 0, component 1:
 colvars:     dx(actual) =  5.64203972430732e-09
-colvars:     dx(interp) =  5.64204063250615e-09
+colvars:     dx(interp) =  5.64204063250535e-09
 colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.60970e-07.
 colvars:     refPosGroup atom 0, component 2:
-colvars:     dx(actual) = -3.70000865501652e-08
-colvars:     dx(interp) = -3.70000873263441e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.09778e-08.
+colvars:     dx(actual) = -3.70000936555925e-08
+colvars:     dx(interp) = -3.70000873263440e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.71060e-07.
 colvars:     refPosGroup atom 1, component 0:
-colvars:     dx(actual) = -3.08360945666664e-08
-colvars:     dx(interp) = -3.08360973694205e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.08920e-08.
+colvars:     dx(actual) = -3.08361016720937e-08
+colvars:     dx(interp) = -3.08360973694208e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.39534e-07.
 colvars:     refPosGroup atom 1, component 1:
 colvars:     dx(actual) =  8.53838066916524e-09
-colvars:     dx(interp) =  8.53838213116307e-09
+colvars:     dx(interp) =  8.53838213116278e-09
 colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.71227e-07.
 colvars:     refPosGroup atom 1, component 2:
-colvars:     dx(actual) =  8.15097322970360e-10
-colvars:     dx(interp) =  8.15096690566409e-10
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  7.75863e-07.
+colvars:     dx(actual) =  8.15095546613520e-10
+colvars:     dx(interp) =  8.15096690566021e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.40346e-06.
 colvars:     refPosGroup atom 2, component 0:
-colvars:     dx(actual) = -5.26068948403235e-08
-colvars:     dx(interp) = -5.26068952391451e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  7.58117e-09.
+colvars:     dx(actual) = -5.26069001693941e-08
+colvars:     dx(interp) = -5.26068952391452e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.37187e-08.
 colvars:     refPosGroup atom 2, component 1:
-colvars:     dx(actual) =  1.64057105678239e-08
-colvars:     dx(interp) =  1.64057103180791e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.52230e-08.
+colvars:     dx(actual) =  1.64057052387534e-08
+colvars:     dx(interp) =  1.64057103180785e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.09607e-07.
 colvars:     refPosGroup atom 2, component 2:
-colvars:     dx(actual) =  9.44767997168583e-09
-colvars:     dx(interp) =  9.44767866338265e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.38479e-07.
+colvars:     dx(actual) =  9.44767286625847e-09
+colvars:     dx(interp) =  9.44767866338230e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.13603e-07.
 colvars:     refPosGroup atom 3, component 0:
-colvars:     dx(actual) = -1.49873660149069e-08
-colvars:     dx(interp) = -1.49873663013447e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.91120e-08.
+colvars:     dx(actual) = -1.49873677912638e-08
+colvars:     dx(interp) = -1.49873663013446e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.94117e-08.
 colvars:     refPosGroup atom 3, component 1:
-colvars:     dx(actual) =  1.07674225091614e-09
-colvars:     dx(interp) =  1.07674116921781e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.00460e-06.
+colvars:     dx(actual) =  1.07673869820246e-09
+colvars:     dx(interp) =  1.07674116921777e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.29491e-06.
 colvars:     refPosGroup atom 3, component 2:
-colvars:     dx(actual) =  9.95860460761833e-09
-colvars:     dx(interp) =  9.95860073923362e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.88446e-07.
+colvars:     dx(actual) =  9.95859750219097e-09
+colvars:     dx(interp) =  9.95860073923379e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.25050e-07.
 colvars:     refPosGroup atom 4, component 0:
 colvars:     dx(actual) =  1.43292595566891e-08
 colvars:     dx(interp) =  1.43292584914984e-08
 colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  7.43368e-08.
 colvars:     refPosGroup atom 4, component 1:
-colvars:     dx(actual) = -1.31100783562488e-08
-colvars:     dx(interp) = -1.31100777553911e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.58317e-08.
+colvars:     dx(actual) = -1.31100801326056e-08
+colvars:     dx(interp) = -1.31100777553901e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.81327e-07.
 colvars:     refPosGroup atom 4, component 2:
-colvars:     dx(actual) =  3.02918117256468e-08
-colvars:     dx(interp) =  3.02918110782710e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.13713e-08.
-colvars:     Gradient sum: ( 0.973303 , -0.185528 , -0.135131 )  Fit gradient sum: ( -0.973303 , 0.185528 , 0.135131 )  Total ( 0 , -2.77556e-17 , -1.94289e-16 )
+colvars:     dx(actual) =  3.02918081729331e-08
+colvars:     dx(interp) =  3.02918110782712e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.59117e-08.
+colvars:     Gradient sum: ( 0.973303 , -0.185528 , -0.135131 )  Fit gradient sum: ( -0.973303 , 0.185528 , 0.135131 )  Total ( 1.11022e-16 , -1.11022e-16 , 2.77556e-17 )
 colvars:     Debugging gradients for cvc rmsd0001
 colvars:     Fit gradients:
 colvars:     refPosGroup[0] = ( -0.234756 , 0.269374 , -0.172978 )
@@ -265,78 +279,78 @@ colvars:     refPosGroup[2] = ( 0.226361 , 0.0325269 , -0.510246 )
 colvars:     refPosGroup[3] = ( 0.135438 , -0.0183481 , -0.117622 )
 colvars:     refPosGroup[4] = ( 0.219868 , -0.181157 , 0.219829 )
 colvars:     Atom 0, component 0:
-colvars:     dx(actual) =  9.73276854665528e-08
-colvars:     dx(interp) =  9.73276802228792e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.38765e-08
+colvars:     dx(actual) =  9.73276836901960e-08
+colvars:     dx(interp) =  9.73276802228799e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.56252e-08
 colvars:     Atom 0, component 1:
-colvars:     dx(actual) = -1.85664887908388e-08
-colvars:     dx(interp) = -1.85664932288551e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.39034e-07
+colvars:     dx(actual) = -1.85664941199093e-08
+colvars:     dx(interp) = -1.85664932288520e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.79928e-08
 colvars:     Atom 0, component 2:
-colvars:     dx(actual) = -1.35132474099464e-08
-colvars:     dx(interp) = -1.35132524440217e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.72529e-07
+colvars:     dx(actual) = -1.35132491863033e-08
+colvars:     dx(interp) = -1.35132524440206e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.41076e-07
 colvars:     refPosGroup atom 0, component 0:
-colvars:     dx(actual) = -1.32294317722881e-08
-colvars:     dx(interp) = -1.32294346864282e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.20277e-07.
+colvars:     dx(actual) = -1.32294353250018e-08
+colvars:     dx(interp) = -1.32294346864284e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.82691e-08.
 colvars:     refPosGroup atom 0, component 1:
 colvars:     dx(actual) =  5.62780222423953e-09
-colvars:     dx(interp) =  5.62780062873089e-09
+colvars:     dx(interp) =  5.62780062872761e-09
 colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.83505e-07.
 colvars:     refPosGroup atom 0, component 2:
-colvars:     dx(actual) = -3.70033710339612e-08
-colvars:     dx(interp) = -3.70033699498356e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.92980e-08.
+colvars:     dx(actual) = -3.70033692576044e-08
+colvars:     dx(interp) = -3.70033699498355e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.87072e-08.
 colvars:     refPosGroup atom 1, component 0:
-colvars:     dx(actual) = -3.08268361948194e-08
-colvars:     dx(interp) = -3.08268344289048e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.72850e-08.
+colvars:     dx(actual) = -3.08268290893920e-08
+colvars:     dx(interp) = -3.08268344289058e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.73210e-07.
 colvars:     refPosGroup atom 1, component 1:
-colvars:     dx(actual) =  8.53613535412023e-09
-colvars:     dx(interp) =  8.53613239285033e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.46910e-07.
+colvars:     dx(actual) =  8.53613180140655e-09
+colvars:     dx(interp) =  8.53613239284918e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.92870e-08.
 colvars:     refPosGroup atom 1, component 2:
-colvars:     dx(actual) =  8.18404899405323e-10
-colvars:     dx(interp) =  8.18402186832953e-10
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.31446e-06.
+colvars:     dx(actual) =  8.18408452119002e-10
+colvars:     dx(interp) =  8.18402186831449e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  7.65545e-06.
 colvars:     refPosGroup atom 2, component 0:
-colvars:     dx(actual) = -5.26106305187568e-08
-colvars:     dx(interp) = -5.26106337215771e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.08778e-08.
+colvars:     dx(actual) = -5.26106322951136e-08
+colvars:     dx(interp) = -5.26106337215773e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.71136e-08.
 colvars:     refPosGroup atom 2, component 1:
 colvars:     dx(actual) =  1.64127058610575e-08
-colvars:     dx(interp) =  1.64127071165044e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  7.64924e-08.
+colvars:     dx(interp) =  1.64127071165021e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  7.64922e-08.
 colvars:     refPosGroup atom 2, component 2:
-colvars:     dx(actual) =  9.44612210673768e-09
-colvars:     dx(interp) =  9.44611973806103e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.50757e-07.
+colvars:     dx(actual) =  9.44612565945135e-09
+colvars:     dx(interp) =  9.44611973805956e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.26859e-07.
 colvars:     refPosGroup atom 3, component 0:
-colvars:     dx(actual) = -1.49949670458227e-08
-colvars:     dx(interp) = -1.49949667603805e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.90359e-08.
+colvars:     dx(actual) = -1.49949652694659e-08
+colvars:     dx(interp) = -1.49949667603800e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.94276e-08.
 colvars:     refPosGroup atom 3, component 1:
-colvars:     dx(actual) =  1.08642339569087e-09
-colvars:     dx(interp) =  1.08642112294393e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.09195e-06.
+colvars:     dx(actual) =  1.08642161933403e-09
+colvars:     dx(interp) =  1.08642112294384e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.56904e-07.
 colvars:     refPosGroup atom 3, component 2:
-colvars:     dx(actual) =  9.95594362507290e-09
-colvars:     dx(interp) =  9.95594165715288e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.97663e-07.
+colvars:     dx(actual) =  9.95594184871607e-09
+colvars:     dx(interp) =  9.95594165715356e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.92410e-08.
 colvars:     refPosGroup atom 4, component 0:
-colvars:     dx(actual) =  1.43341907232752e-08
-colvars:     dx(interp) =  1.43341893744114e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.41011e-08.
+colvars:     dx(actual) =  1.43341960523458e-08
+colvars:     dx(interp) =  1.43341893744115e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.65874e-07.
 colvars:     refPosGroup atom 4, component 1:
-colvars:     dx(actual) = -1.30965673861283e-08
-colvars:     dx(interp) = -1.30965680321744e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.93294e-08.
+colvars:     dx(actual) = -1.30965638334146e-08
+colvars:     dx(interp) = -1.30965680321707e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.20600e-07.
 colvars:     refPosGroup atom 4, component 2:
 colvars:     dx(actual) =  3.02961637999033e-08
-colvars:     dx(interp) =  3.02961588118105e-08
+colvars:     dx(interp) =  3.02961588118116e-08
 colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.64644e-07.
-colvars:     Gradient sum: ( 0.973277 , -0.185665 , -0.135133 )  Fit gradient sum: ( -0.973277 , 0.185665 , 0.135133 )  Total ( -3.33067e-16 , 5.55112e-17 , 1.66533e-16 )
+colvars:     Gradient sum: ( 0.973277 , -0.185665 , -0.135133 )  Fit gradient sum: ( -0.973277 , 0.185665 , 0.135133 )  Total ( 0 , 2.77556e-16 , -5.55112e-17 )
 colvars:     Debugging gradients for cvc rmsd0001
 colvars:     Fit gradients:
 colvars:     refPosGroup[0] = ( -0.234717 , 0.269457 , -0.172922 )
@@ -345,78 +359,78 @@ colvars:     refPosGroup[2] = ( 0.226315 , 0.0324446 , -0.510333 )
 colvars:     refPosGroup[3] = ( 0.135409 , -0.0183733 , -0.117749 )
 colvars:     refPosGroup[4] = ( 0.219827 , -0.181251 , 0.219812 )
 colvars:     Atom 0, component 0:
-colvars:     dx(actual) =  9.73257670011662e-08
-colvars:     dx(interp) =  9.73257615875934e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.56232e-08
+colvars:     dx(actual) =  9.73257616720957e-08
+colvars:     dx(interp) =  9.73257615875951e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.68225e-10
 colvars:     Atom 0, component 1:
-colvars:     dx(actual) = -1.85792323748046e-08
-colvars:     dx(interp) = -1.85792356669149e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.77193e-07
+colvars:     dx(actual) = -1.85792341511615e-08
+colvars:     dx(interp) = -1.85792356669079e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.15828e-08
 colvars:     Atom 0, component 2:
-colvars:     dx(actual) = -1.35095561404341e-08
-colvars:     dx(interp) = -1.35095571144346e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  7.20971e-08
+colvars:     dx(actual) = -1.35095579167910e-08
+colvars:     dx(interp) = -1.35095571144321e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.93919e-08
 colvars:     refPosGroup atom 0, component 0:
 colvars:     dx(actual) = -1.32276785080876e-08
-colvars:     dx(interp) = -1.32276807821037e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.71913e-07.
+colvars:     dx(interp) = -1.32276807821042e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.71914e-07.
 colvars:     refPosGroup atom 0, component 1:
-colvars:     dx(actual) =  5.61136026533404e-09
-colvars:     dx(interp) =  5.61135643011958e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.83473e-07.
+colvars:     dx(actual) =  5.61136204169088e-09
+colvars:     dx(interp) =  5.61135643011219e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.00004e-06.
 colvars:     refPosGroup atom 0, component 2:
 colvars:     dx(actual) = -3.70074335620529e-08
-colvars:     dx(interp) = -3.70074373671764e-08
+colvars:     dx(interp) = -3.70074373671765e-08
 colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.02821e-07.
 colvars:     refPosGroup atom 1, component 0:
-colvars:     dx(actual) = -3.08169063600872e-08
-colvars:     dx(interp) = -3.08169108969122e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.47219e-07.
+colvars:     dx(actual) = -3.08169099128008e-08
+colvars:     dx(interp) = -3.08169108969144e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.19342e-08.
 colvars:     refPosGroup atom 1, component 1:
-colvars:     dx(actual) =  8.53347259521797e-09
-colvars:     dx(interp) =  8.53347204238087e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.47845e-08.
+colvars:     dx(actual) =  8.53347614793165e-09
+colvars:     dx(interp) =  8.53347204237836e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.81111e-07.
 colvars:     refPosGroup atom 1, component 2:
-colvars:     dx(actual) =  8.19886381009383e-10
-colvars:     dx(interp) =  8.19880913111777e-10
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.66909e-06.
+colvars:     dx(actual) =  8.19884604652543e-10
+colvars:     dx(interp) =  8.19880913108477e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.50252e-06.
 colvars:     refPosGroup atom 2, component 0:
-colvars:     dx(actual) = -5.26149683821586e-08
-colvars:     dx(interp) = -5.26149677696452e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.16414e-08.
+colvars:     dx(actual) = -5.26149719348723e-08
+colvars:     dx(interp) = -5.26149677696461e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  7.91643e-08.
 colvars:     refPosGroup atom 2, component 1:
-colvars:     dx(actual) =  1.64202322849860e-08
-colvars:     dx(interp) =  1.64202293878059e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.76440e-07.
+colvars:     dx(actual) =  1.64202287322723e-08
+colvars:     dx(interp) =  1.64202293878008e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.99220e-08.
 colvars:     refPosGroup atom 2, component 2:
-colvars:     dx(actual) =  9.44174338712855e-09
-colvars:     dx(interp) =  9.44173782372131e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.89235e-07.
+colvars:     dx(actual) =  9.44173628170120e-09
+colvars:     dx(interp) =  9.44173782371807e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.63319e-07.
 colvars:     refPosGroup atom 3, component 0:
-colvars:     dx(actual) = -1.50037173796136e-08
-colvars:     dx(interp) = -1.50037226274609e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.49770e-07.
+colvars:     dx(actual) = -1.50037209323273e-08
+colvars:     dx(interp) = -1.50037226274597e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.12981e-07.
 colvars:     refPosGroup atom 3, component 1:
-colvars:     dx(actual) =  1.09644560097877e-09
-colvars:     dx(interp) =  1.09643924723256e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.79486e-06.
+colvars:     dx(actual) =  1.09643849555141e-09
+colvars:     dx(interp) =  1.09643924723231e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.85566e-07.
 colvars:     refPosGroup atom 3, component 2:
-colvars:     dx(actual) =  9.95314763940769e-09
-colvars:     dx(interp) =  9.95314484336874e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.80920e-07.
+colvars:     dx(actual) =  9.95314053398033e-09
+colvars:     dx(interp) =  9.95314484337026e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.32968e-07.
 colvars:     refPosGroup atom 4, component 0:
-colvars:     dx(actual) =  1.43375249450628e-08
-colvars:     dx(interp) =  1.43375204885287e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.10830e-07.
+colvars:     dx(actual) =  1.43375178396354e-08
+colvars:     dx(interp) =  1.43375204885292e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.84753e-07.
 colvars:     refPosGroup atom 4, component 1:
-colvars:     dx(actual) = -1.30822570554301e-08
-colvars:     dx(interp) = -1.30822614406240e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.35202e-07.
+colvars:     dx(actual) = -1.30822588317869e-08
+colvars:     dx(interp) = -1.30822614406158e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.99417e-07.
 colvars:     refPosGroup atom 4, component 2:
-colvars:     dx(actual) =  3.03022318348667e-08
-colvars:     dx(interp) =  3.03022309014091e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.08049e-08.
-colvars:     Gradient sum: ( 0.973258 , -0.185792 , -0.135096 )  Fit gradient sum: ( -0.973258 , 0.185792 , 0.135096 )  Total ( 0 , 3.33067e-16 , 8.32667e-17 )
+colvars:     dx(actual) =  3.03022300585098e-08
+colvars:     dx(interp) =  3.03022309014118e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.78165e-08.
+colvars:     Gradient sum: ( 0.973258 , -0.185792 , -0.135096 )  Fit gradient sum: ( -0.973258 , 0.185792 , 0.135096 )  Total ( -2.22045e-16 , -2.77556e-17 , 0 )
 colvars:     Debugging gradients for cvc rmsd0001
 colvars:     Fit gradients:
 colvars:     refPosGroup[0] = ( -0.234673 , 0.269532 , -0.172868 )
@@ -425,78 +439,78 @@ colvars:     refPosGroup[2] = ( 0.226262 , 0.0323637 , -0.51041 )
 colvars:     refPosGroup[3] = ( 0.135374 , -0.018391 , -0.117873 )
 colvars:     refPosGroup[4] = ( 0.219786 , -0.181331 , 0.219787 )
 colvars:     Atom 0, component 0:
-colvars:     dx(actual) =  9.73239284718375e-08
-colvars:     dx(interp) =  9.73239256088847e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.94167e-08
+colvars:     dx(actual) =  9.73239266954806e-08
+colvars:     dx(interp) =  9.73239256088877e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.11647e-08
 colvars:     Atom 0, component 1:
-colvars:     dx(actual) = -1.85914750261418e-08
-colvars:     dx(interp) = -1.85914773241218e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.23604e-07
+colvars:     dx(actual) = -1.85914768024986e-08
+colvars:     dx(interp) = -1.85914773241096e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.80565e-08
 colvars:     Atom 0, component 2:
-colvars:     dx(actual) = -1.35059394779091e-08
-colvars:     dx(interp) = -1.35059422101140e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.02297e-07
+colvars:     dx(actual) = -1.35059448069796e-08
+colvars:     dx(interp) = -1.35059422101095e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.92276e-07
 colvars:     refPosGroup atom 0, component 0:
 colvars:     dx(actual) = -1.32269111219330e-08
-colvars:     dx(interp) = -1.32269116355813e-08
+colvars:     dx(interp) = -1.32269116355820e-08
 colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.88336e-08.
 colvars:     refPosGroup atom 0, component 1:
 colvars:     dx(actual) =  5.59468560368259e-09
-colvars:     dx(interp) =  5.59468663744716e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.84776e-07.
+colvars:     dx(interp) =  5.59468663743374e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.84774e-07.
 colvars:     refPosGroup atom 0, component 2:
 colvars:     dx(actual) = -3.70104338287547e-08
-colvars:     dx(interp) = -3.70104348510141e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.76208e-08.
+colvars:     dx(interp) = -3.70104348510151e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.76209e-08.
 colvars:     refPosGroup atom 1, component 0:
-colvars:     dx(actual) = -3.08070955412632e-08
-colvars:     dx(interp) = -3.08070979989577e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  7.97769e-08.
+colvars:     dx(actual) = -3.08071026466905e-08
+colvars:     dx(interp) = -3.08070979989616e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.50865e-07.
 colvars:     refPosGroup atom 1, component 1:
 colvars:     dx(actual) =  8.53082937624094e-09
-colvars:     dx(interp) =  8.53082896971603e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.76536e-08.
+colvars:     dx(interp) =  8.53082896971171e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.76541e-08.
 colvars:     refPosGroup atom 1, component 2:
-colvars:     dx(actual) =  8.21993140220911e-10
-colvars:     dx(interp) =  8.21992304901421e-10
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.01621e-06.
+colvars:     dx(actual) =  8.21989587507232e-10
+colvars:     dx(interp) =  8.21992304895594e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.30587e-06.
 colvars:     refPosGroup atom 2, component 0:
-colvars:     dx(actual) = -5.26181107574075e-08
-colvars:     dx(interp) = -5.26181139628702e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.09194e-08.
+colvars:     dx(actual) = -5.26181160864780e-08
+colvars:     dx(interp) = -5.26181139628722e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.03588e-08.
 colvars:     refPosGroup atom 2, component 1:
-colvars:     dx(actual) =  1.64276414693632e-08
-colvars:     dx(interp) =  1.64276457374588e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.59812e-07.
+colvars:     dx(actual) =  1.64276485747905e-08
+colvars:     dx(interp) =  1.64276457374503e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.72717e-07.
 colvars:     refPosGroup atom 2, component 2:
 colvars:     dx(actual) =  9.43767197725265e-09
-colvars:     dx(interp) =  9.43767316290746e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.25630e-07.
+colvars:     dx(interp) =  9.43767316290167e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.25629e-07.
 colvars:     refPosGroup atom 3, component 0:
 colvars:     dx(actual) = -1.50121302056050e-08
-colvars:     dx(interp) = -1.50121288821293e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.81604e-08.
+colvars:     dx(interp) = -1.50121288821272e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.81606e-08.
 colvars:     refPosGroup atom 3, component 1:
 colvars:     dx(actual) =  1.10627063065749e-09
-colvars:     dx(interp) =  1.10626880712068e-09
+colvars:     dx(interp) =  1.10626880712028e-09
 colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.64836e-06.
 colvars:     refPosGroup atom 3, component 2:
-colvars:     dx(actual) =  9.94974413970340e-09
-colvars:     dx(interp) =  9.94974605686034e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.92684e-07.
+colvars:     dx(actual) =  9.94974769241708e-09
+colvars:     dx(interp) =  9.94974605686308e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.64381e-07.
 colvars:     refPosGroup atom 4, component 0:
-colvars:     dx(actual) =  1.43403280361554e-08
-colvars:     dx(interp) =  1.43403268706538e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.12744e-08.
+colvars:     dx(actual) =  1.43403262597985e-08
+colvars:     dx(interp) =  1.43403268706553e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.25971e-08.
 colvars:     refPosGroup atom 4, component 1:
-colvars:     dx(actual) = -1.30679538301592e-08
-colvars:     dx(interp) = -1.30679528276208e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  7.67173e-08.
+colvars:     dx(actual) = -1.30679520538024e-08
+colvars:     dx(interp) = -1.30679528276064e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.92139e-08.
 colvars:     refPosGroup atom 4, component 2:
-colvars:     dx(actual) =  3.03069604967732e-08
-colvars:     dx(interp) =  3.03069655364589e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.66288e-07.
-colvars:     Gradient sum: ( 0.973239 , -0.185915 , -0.135059 )  Fit gradient sum: ( -0.973239 , 0.185915 , 0.135059 )  Total ( -1.11022e-16 , 1.66533e-16 , 3.33067e-16 )
+colvars:     dx(actual) =  3.03069658258437e-08
+colvars:     dx(interp) =  3.03069655364643e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.54828e-09.
+colvars:     Gradient sum: ( 0.973239 , -0.185915 , -0.135059 )  Fit gradient sum: ( -0.973239 , 0.185915 , 0.135059 )  Total ( -2.22045e-16 , 2.77556e-17 , -1.11022e-16 )
 colvars:     Debugging gradients for cvc rmsd0001
 colvars:     Fit gradients:
 colvars:     refPosGroup[0] = ( -0.234607 , 0.269564 , -0.172831 )
@@ -505,78 +519,78 @@ colvars:     refPosGroup[2] = ( 0.226214 , 0.0323242 , -0.510418 )
 colvars:     refPosGroup[3] = ( 0.13535 , -0.0184011 , -0.11797 )
 colvars:     refPosGroup[4] = ( 0.219727 , -0.181368 , 0.219712 )
 colvars:     Atom 0, component 0:
-colvars:     dx(actual) =  9.73222409328400e-08
-colvars:     dx(interp) =  9.73222391158662e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.86697e-08
+colvars:     dx(actual) =  9.73222373801264e-08
+colvars:     dx(interp) =  9.73222391158708e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.78350e-08
 colvars:     Atom 0, component 1:
-colvars:     dx(actual) = -1.86041066996268e-08
-colvars:     dx(interp) = -1.86041081091821e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  7.57658e-08
+colvars:     dx(actual) = -1.86041120286973e-08
+colvars:     dx(interp) = -1.86041081091634e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.10681e-07
 colvars:     Atom 0, component 2:
-colvars:     dx(actual) = -1.35007010015897e-08
-colvars:     dx(interp) = -1.35007012757127e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.03044e-08
+colvars:     dx(actual) = -1.35007045543034e-08
+colvars:     dx(interp) = -1.35007012757056e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.42846e-07
 colvars:     refPosGroup atom 0, component 0:
-colvars:     dx(actual) = -1.32278579201284e-08
-colvars:     dx(interp) = -1.32278620619712e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.13115e-07.
+colvars:     dx(actual) = -1.32278614728421e-08
+colvars:     dx(interp) = -1.32278620619718e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.45370e-08.
 colvars:     refPosGroup atom 0, component 1:
-colvars:     dx(actual) =  5.58072699163858e-09
-colvars:     dx(interp) =  5.58072846306756e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.63663e-07.
+colvars:     dx(actual) =  5.58072343892491e-09
+colvars:     dx(interp) =  5.58072846304627e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.00263e-07.
 colvars:     refPosGroup atom 0, component 2:
-colvars:     dx(actual) = -3.70086272738490e-08
-colvars:     dx(interp) = -3.70086255347138e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.69927e-08.
+colvars:     dx(actual) = -3.70086290502059e-08
+colvars:     dx(interp) = -3.70086255347168e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.49911e-08.
 colvars:     refPosGroup atom 1, component 0:
-colvars:     dx(actual) = -3.07984677760942e-08
-colvars:     dx(interp) = -3.07984711538636e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.09673e-07.
+colvars:     dx(actual) = -3.07984731051647e-08
+colvars:     dx(interp) = -3.07984711538700e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.33569e-08.
 colvars:     refPosGroup atom 1, component 1:
-colvars:     dx(actual) =  8.52902637404895e-09
-colvars:     dx(interp) =  8.52902381843241e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.99638e-07.
+colvars:     dx(actual) =  8.52902282133527e-09
+colvars:     dx(interp) =  8.52902381842601e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.16906e-07.
 colvars:     refPosGroup atom 1, component 2:
-colvars:     dx(actual) =  8.21522405658470e-10
-colvars:     dx(interp) =  8.21520935822324e-10
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.78916e-06.
+colvars:     dx(actual) =  8.21517076587952e-10
+colvars:     dx(interp) =  8.21520935813319e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.69768e-06.
 colvars:     refPosGroup atom 2, component 0:
-colvars:     dx(actual) = -5.26158618896488e-08
-colvars:     dx(interp) = -5.26158627578919e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.65015e-08.
+colvars:     dx(actual) = -5.26158636660057e-08
+colvars:     dx(interp) = -5.26158627578961e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.72592e-08.
 colvars:     refPosGroup atom 2, component 1:
-colvars:     dx(actual) =  1.64322635498593e-08
-colvars:     dx(interp) =  1.64322611396860e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.46673e-07.
+colvars:     dx(actual) =  1.64322564444319e-08
+colvars:     dx(interp) =  1.64322611396739e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.85733e-07.
 colvars:     refPosGroup atom 2, component 2:
-colvars:     dx(actual) =  9.43349576232322e-09
-colvars:     dx(interp) =  9.43349355323872e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.34175e-07.
+colvars:     dx(actual) =  9.43348865689586e-09
+colvars:     dx(interp) =  9.43349355322966e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.19037e-07.
 colvars:     refPosGroup atom 3, component 0:
-colvars:     dx(actual) = -1.50185872627162e-08
-colvars:     dx(interp) = -1.50185908462085e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.38604e-07.
+colvars:     dx(actual) = -1.50185890390730e-08
+colvars:     dx(interp) = -1.50185908462051e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.20326e-07.
 colvars:     refPosGroup atom 3, component 1:
-colvars:     dx(actual) =  1.11479891984345e-09
-colvars:     dx(interp) =  1.11479734212156e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.41525e-06.
+colvars:     dx(actual) =  1.11479359077293e-09
+colvars:     dx(interp) =  1.11479734212100e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.36506e-06.
 colvars:     refPosGroup atom 3, component 2:
-colvars:     dx(actual) =  9.94741533588694e-09
-colvars:     dx(interp) =  9.94741665463545e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.32572e-07.
+colvars:     dx(actual) =  9.94741355953010e-09
+colvars:     dx(interp) =  9.94741665463971e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.11147e-07.
 colvars:     refPosGroup atom 4, component 0:
-colvars:     dx(actual) =  1.43385463502455e-08
-colvars:     dx(interp) =  1.43385477040690e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.44185e-08.
+colvars:     dx(actual) =  1.43385516793160e-08
+colvars:     dx(interp) =  1.43385477040723e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.77242e-07.
 colvars:     refPosGroup atom 4, component 1:
-colvars:     dx(actual) = -1.30527002539793e-08
-colvars:     dx(interp) = -1.30527026541254e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.83881e-07.
+colvars:     dx(actual) = -1.30527020303361e-08
+colvars:     dx(interp) = -1.30527026541038e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.77884e-08.
 colvars:     refPosGroup atom 4, component 2:
 colvars:     dx(actual) =  3.03068983242838e-08
-colvars:     dx(interp) =  3.03068956667301e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.76881e-08.
-colvars:     Gradient sum: ( 0.973222 , -0.186041 , -0.135007 )  Fit gradient sum: ( -0.973222 , 0.186041 , 0.135007 )  Total ( 0 , 0 , 1.66533e-16 )
+colvars:     dx(interp) =  3.03068956667397e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.76878e-08.
+colvars:     Gradient sum: ( 0.973222 , -0.186041 , -0.135007 )  Fit gradient sum: ( -0.973222 , 0.186041 , 0.135007 )  Total ( -1.11022e-16 , -2.498e-16 , 0 )
 colvars:     Debugging gradients for cvc rmsd0001
 colvars:     Fit gradients:
 colvars:     refPosGroup[0] = ( -0.234537 , 0.269561 , -0.17281 )
@@ -586,77 +600,77 @@ colvars:     refPosGroup[3] = ( 0.135333 , -0.0184052 , -0.118036 )
 colvars:     refPosGroup[4] = ( 0.219671 , -0.181374 , 0.219622 )
 colvars:     Atom 0, component 0:
 colvars:     dx(actual) =  9.73203686527313e-08
-colvars:     dx(interp) =  9.73203678123245e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.63547e-09
+colvars:     dx(interp) =  9.73203678123310e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.63540e-09
 colvars:     Atom 0, component 1:
-colvars:     dx(actual) = -1.86178414907090e-08
-colvars:     dx(interp) = -1.86178417796983e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.55222e-08
+colvars:     dx(actual) = -1.86178361616385e-08
+colvars:     dx(interp) = -1.86178417796720e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.01755e-07
 colvars:     Atom 0, component 2:
-colvars:     dx(actual) = -1.34952582442338e-08
-colvars:     dx(interp) = -1.34952575499687e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.14451e-08
+colvars:     dx(actual) = -1.34952546915201e-08
+colvars:     dx(interp) = -1.34952575499581e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.11811e-07
 colvars:     refPosGroup atom 0, component 0:
-colvars:     dx(actual) = -1.32292541366041e-08
-colvars:     dx(interp) = -1.32292536343495e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.79655e-08.
+colvars:     dx(actual) = -1.32292505838905e-08
+colvars:     dx(interp) = -1.32292536343498e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.30584e-07.
 colvars:     refPosGroup atom 0, component 1:
-colvars:     dx(actual) =  5.56826940112387e-09
-colvars:     dx(interp) =  5.56826855498827e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.51957e-07.
+colvars:     dx(actual) =  5.56827473019439e-09
+colvars:     dx(interp) =  5.56826855495703e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.10900e-06.
 colvars:     refPosGroup atom 0, component 2:
 colvars:     dx(actual) = -3.70043196085135e-08
-colvars:     dx(interp) = -3.70043215859781e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.34388e-08.
+colvars:     dx(interp) = -3.70043215859847e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.34389e-08.
 colvars:     refPosGroup atom 1, component 0:
-colvars:     dx(actual) = -3.07916625530424e-08
-colvars:     dx(interp) = -3.07916615664714e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.20402e-08.
+colvars:     dx(actual) = -3.07916607766856e-08
+colvars:     dx(interp) = -3.07916615664810e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.56497e-08.
 colvars:     refPosGroup atom 1, component 1:
 colvars:     dx(actual) =  8.52869419531999e-09
-colvars:     dx(interp) =  8.52868892239167e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.18257e-07.
+colvars:     dx(interp) =  8.52868892238299e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.18258e-07.
 colvars:     refPosGroup atom 1, component 2:
-colvars:     dx(actual) =  8.19875722868346e-10
-colvars:     dx(interp) =  8.19875243541171e-10
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.84634e-07.
+colvars:     dx(actual) =  8.19877499225186e-10
+colvars:     dx(interp) =  8.19875243528287e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.75126e-06.
 colvars:     refPosGroup atom 2, component 0:
-colvars:     dx(actual) = -5.26105168319191e-08
-colvars:     dx(interp) = -5.26105171537892e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.11798e-09.
+colvars:     dx(actual) = -5.26105150555622e-08
+colvars:     dx(interp) = -5.26105171537971e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.98824e-08.
 colvars:     refPosGroup atom 2, component 1:
-colvars:     dx(actual) =  1.64365303589875e-08
-colvars:     dx(interp) =  1.64365310995941e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.50586e-08.
+colvars:     dx(actual) =  1.64365339117012e-08
+colvars:     dx(interp) =  1.64365310995784e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.71090e-07.
 colvars:     refPosGroup atom 2, component 2:
-colvars:     dx(actual) =  9.42872979692311e-09
-colvars:     dx(interp) =  9.42872689533882e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.07739e-07.
+colvars:     dx(actual) =  9.42872446785259e-09
+colvars:     dx(interp) =  9.42872689532576e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.57455e-07.
 colvars:     refPosGroup atom 3, component 0:
-colvars:     dx(actual) = -1.50229109152633e-08
-colvars:     dx(interp) = -1.50229113533381e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.91604e-08.
+colvars:     dx(actual) = -1.50229144679770e-08
+colvars:     dx(interp) = -1.50229113533332e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.07326e-07.
 colvars:     refPosGroup atom 3, component 1:
-colvars:     dx(actual) =  1.12222764414582e-09
-colvars:     dx(interp) =  1.12222777564436e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.17176e-07.
+colvars:     dx(actual) =  1.12222586778898e-09
+colvars:     dx(interp) =  1.12222777564367e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.70006e-06.
 colvars:     refPosGroup atom 3, component 2:
-colvars:     dx(actual) =  9.94566384804330e-09
-colvars:     dx(interp) =  9.94565963713938e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.23391e-07.
+colvars:     dx(actual) =  9.94566029532962e-09
+colvars:     dx(interp) =  9.94565963714564e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.61780e-08.
 colvars:     refPosGroup atom 4, component 0:
 colvars:     dx(actual) =  1.43339757840977e-08
-colvars:     dx(interp) =  1.43339758956236e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  7.78053e-09.
+colvars:     dx(interp) =  1.43339758956300e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  7.78098e-09.
 colvars:     refPosGroup atom 4, component 1:
 colvars:     dx(actual) = -1.30378747797977e-08
-colvars:     dx(interp) = -1.30378745729201e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.58674e-08.
+colvars:     dx(interp) = -1.30378745728902e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.58697e-08.
 colvars:     refPosGroup atom 4, component 2:
-colvars:     dx(actual) =  3.03053173666967e-08
-colvars:     dx(interp) =  3.03053173599273e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.23374e-10.
-colvars:     Gradient sum: ( 0.973204 , -0.186178 , -0.134953 )  Fit gradient sum: ( -0.973204 , 0.186178 , 0.134953 )  Total ( -2.22045e-16 , 2.77556e-17 , -4.16334e-16 )
+colvars:     dx(actual) =  3.03053191430536e-08
+colvars:     dx(interp) =  3.03053173599431e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.88382e-08.
+colvars:     Gradient sum: ( 0.973204 , -0.186178 , -0.134953 )  Fit gradient sum: ( -0.973204 , 0.186178 , 0.134953 )  Total ( 3.33067e-16 , -1.66533e-16 , -1.94289e-16 )
 colvars:     Debugging gradients for cvc rmsd0001
 colvars:     Fit gradients:
 colvars:     refPosGroup[0] = ( -0.234465 , 0.26953 , -0.172803 )
@@ -665,78 +679,78 @@ colvars:     refPosGroup[2] = ( 0.226135 , 0.0323065 , -0.510323 )
 colvars:     refPosGroup[3] = ( 0.135317 , -0.0184027 , -0.118081 )
 colvars:     refPosGroup[4] = ( 0.219613 , -0.181353 , 0.219515 )
 colvars:     Atom 0, component 0:
-colvars:     dx(actual) =  9.73181677466073e-08
-colvars:     dx(interp) =  9.73181671189904e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.44912e-09
+colvars:     dx(actual) =  9.73181659702504e-08
+colvars:     dx(interp) =  9.73181671189991e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.18041e-08
 colvars:     Atom 0, component 1:
 colvars:     dx(actual) = -1.86321660322619e-08
-colvars:     dx(interp) = -1.86321667717843e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.96906e-08
+colvars:     dx(interp) = -1.86321667717498e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.96888e-08
 colvars:     Atom 0, component 2:
-colvars:     dx(actual) = -1.34913591409713e-08
-colvars:     dx(interp) = -1.34913568624013e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.68891e-07
+colvars:     dx(actual) = -1.34913555882576e-08
+colvars:     dx(interp) = -1.34913568623864e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.44404e-08
 colvars:     refPosGroup atom 0, component 0:
-colvars:     dx(actual) = -1.32321495982524e-08
-colvars:     dx(interp) = -1.32321521854799e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.95526e-07.
+colvars:     dx(actual) = -1.32321513746092e-08
+colvars:     dx(interp) = -1.32321521854793e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.12803e-08.
 colvars:     refPosGroup atom 0, component 1:
 colvars:     dx(actual) =  5.56038948218429e-09
-colvars:     dx(interp) =  5.56038903222449e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.09224e-08.
+colvars:     dx(interp) =  5.56038903218138e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.09301e-08.
 colvars:     refPosGroup atom 0, component 2:
-colvars:     dx(actual) = -3.69973651714872e-08
-colvars:     dx(interp) = -3.69973665735400e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.78960e-08.
+colvars:     dx(actual) = -3.69973669478441e-08
+colvars:     dx(interp) = -3.69973665735528e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.01167e-08.
 colvars:     refPosGroup atom 1, component 0:
-colvars:     dx(actual) = -3.07862428883254e-08
-colvars:     dx(interp) = -3.07862418575148e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.34828e-08.
+colvars:     dx(actual) = -3.07862375592549e-08
+colvars:     dx(interp) = -3.07862418575286e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.39617e-07.
 colvars:     refPosGroup atom 1, component 1:
-colvars:     dx(actual) =  8.52950421403875e-09
-colvars:     dx(interp) =  8.52950262792965e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.85956e-07.
+colvars:     dx(actual) =  8.52950954310927e-09
+colvars:     dx(interp) =  8.52950262791877e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.10737e-07.
 colvars:     refPosGroup atom 1, component 2:
-colvars:     dx(actual) =  8.18324963347550e-10
-colvars:     dx(interp) =  8.18323711320512e-10
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.52999e-06.
+colvars:     dx(actual) =  8.18326739704389e-10
+colvars:     dx(interp) =  8.18323711303201e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.70072e-06.
 colvars:     refPosGroup atom 2, component 0:
-colvars:     dx(actual) = -5.26022745361843e-08
-colvars:     dx(interp) = -5.26022756908248e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.19504e-08.
+colvars:     dx(actual) = -5.26022727598274e-08
+colvars:     dx(interp) = -5.26022756908383e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.57202e-08.
 colvars:     refPosGroup atom 2, component 1:
-colvars:     dx(actual) =  1.64395252966187e-08
-colvars:     dx(interp) =  1.64395237187256e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.59817e-08.
+colvars:     dx(actual) =  1.64395324020461e-08
+colvars:     dx(interp) =  1.64395237187071e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.28199e-07.
 colvars:     refPosGroup atom 2, component 2:
-colvars:     dx(actual) =  9.42581657170649e-09
-colvars:     dx(interp) =  9.42581605592964e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.47196e-08.
+colvars:     dx(actual) =  9.42581479534965e-09
+colvars:     dx(interp) =  9.42581605591192e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.33735e-07.
 colvars:     refPosGroup atom 3, component 0:
-colvars:     dx(actual) = -1.50253125497102e-08
-colvars:     dx(interp) = -1.50253124431304e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  7.09335e-09.
+colvars:     dx(actual) = -1.50253089969965e-08
+colvars:     dx(interp) = -1.50253124431236e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.29355e-07.
 colvars:     refPosGroup atom 3, component 1:
-colvars:     dx(actual) =  1.12816067598942e-09
-colvars:     dx(interp) =  1.12815789618501e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.46401e-06.
+colvars:     dx(actual) =  1.12816245234626e-09
+colvars:     dx(interp) =  1.12815789618418e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.03857e-06.
 colvars:     refPosGroup atom 3, component 2:
-colvars:     dx(actual) =  9.94434579126846e-09
-colvars:     dx(interp) =  9.94434251382015e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.29579e-07.
+colvars:     dx(actual) =  9.94434401491162e-09
+colvars:     dx(interp) =  9.94434251382875e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.50948e-07.
 colvars:     refPosGroup atom 4, component 0:
 colvars:     dx(actual) =  1.43278189312923e-08
-colvars:     dx(interp) =  1.43278150579594e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.70337e-07.
+colvars:     dx(interp) =  1.43278150579706e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.70336e-07.
 colvars:     refPosGroup atom 4, component 1:
-colvars:     dx(actual) = -1.30254065311419e-08
-colvars:     dx(interp) = -1.30254065032804e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.13901e-09.
+colvars:     dx(actual) = -1.30254047547851e-08
+colvars:     dx(interp) = -1.30254065032417e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.34234e-07.
 colvars:     refPosGroup atom 4, component 2:
-colvars:     dx(actual) =  3.03002440915634e-08
-colvars:     dx(interp) =  3.03002411548710e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.69198e-08.
-colvars:     Gradient sum: ( 0.973182 , -0.186322 , -0.134914 )  Fit gradient sum: ( -0.973182 , 0.186322 , 0.134914 )  Total ( -3.33067e-16 , -5.55112e-17 , -2.22045e-16 )
+colvars:     dx(actual) =  3.03002405388497e-08
+colvars:     dx(interp) =  3.03002411548953e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.03314e-08.
+colvars:     Gradient sum: ( 0.973182 , -0.186322 , -0.134914 )  Fit gradient sum: ( -0.973182 , 0.186322 , 0.134914 )  Total ( -3.33067e-16 , 1.38778e-16 , -8.32667e-17 )
 colvars:     Debugging gradients for cvc rmsd0001
 colvars:     Fit gradients:
 colvars:     refPosGroup[0] = ( -0.2344 , 0.269471 , -0.172812 )
@@ -745,78 +759,78 @@ colvars:     refPosGroup[2] = ( 0.226115 , 0.0323348 , -0.510227 )
 colvars:     refPosGroup[3] = ( 0.135315 , -0.0183981 , -0.118087 )
 colvars:     refPosGroup[4] = ( 0.219563 , -0.181309 , 0.219407 )
 colvars:     Atom 0, component 0:
-colvars:     dx(actual) =  9.73155209749166e-08
-colvars:     dx(interp) =  9.73155180806724e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.97408e-08
+colvars:     dx(actual) =  9.73155156458461e-08
+colvars:     dx(interp) =  9.73155180806834e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.50200e-08
 colvars:     Atom 0, component 1:
-colvars:     dx(actual) = -1.86464141904708e-08
-colvars:     dx(interp) = -1.86464150433048e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.57372e-08
+colvars:     dx(actual) = -1.86464159668276e-08
+colvars:     dx(interp) = -1.86464150432615e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.95305e-08
 colvars:     Atom 0, component 2:
-colvars:     dx(actual) = -1.34907782722848e-08
-colvars:     dx(interp) = -1.34907800635525e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.32777e-07
+colvars:     dx(actual) = -1.34907800486417e-08
+colvars:     dx(interp) = -1.34907800635326e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.10379e-09
 colvars:     refPosGroup atom 0, component 0:
-colvars:     dx(actual) = -1.32356099413755e-08
-colvars:     dx(interp) = -1.32356119387821e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.50912e-07.
+colvars:     dx(actual) = -1.32356152704460e-08
+colvars:     dx(interp) = -1.32356119387801e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.51720e-07.
 colvars:     refPosGroup atom 0, component 1:
-colvars:     dx(actual) =  5.55776047406198e-09
-colvars:     dx(interp) =  5.55776415683952e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.62637e-07.
+colvars:     dx(actual) =  5.55776402677566e-09
+colvars:     dx(interp) =  5.55776415678251e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.33919e-08.
 colvars:     refPosGroup atom 0, component 2:
 colvars:     dx(actual) = -3.69885455597796e-08
-colvars:     dx(interp) = -3.69885421692026e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.16656e-08.
+colvars:     dx(interp) = -3.69885421692242e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.16650e-08.
 colvars:     refPosGroup atom 1, component 0:
-colvars:     dx(actual) = -3.07832426216237e-08
-colvars:     dx(interp) = -3.07832430368180e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.34877e-08.
+colvars:     dx(actual) = -3.07832497270510e-08
+colvars:     dx(interp) = -3.07832430368367e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.17333e-07.
 colvars:     refPosGroup atom 1, component 1:
-colvars:     dx(actual) =  8.53209058959692e-09
-colvars:     dx(interp) =  8.53209051318722e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.95557e-09.
+colvars:     dx(actual) =  8.53208881324008e-09
+colvars:     dx(interp) =  8.53209051317431e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.99240e-07.
 colvars:     refPosGroup atom 1, component 2:
 colvars:     dx(actual) =  8.16180900642394e-10
-colvars:     dx(interp) =  8.16182049073863e-10
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.40708e-06.
+colvars:     dx(interp) =  8.16182049051574e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.40705e-06.
 colvars:     refPosGroup atom 2, component 0:
-colvars:     dx(actual) = -5.25918082416865e-08
-colvars:     dx(interp) = -5.25918058758127e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.49856e-08.
+colvars:     dx(actual) = -5.25918135707570e-08
+colvars:     dx(interp) = -5.25918058758340e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.46314e-07.
 colvars:     refPosGroup atom 2, component 1:
 colvars:     dx(actual) =  1.64416995573902e-08
-colvars:     dx(interp) =  1.64416980631854e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.08790e-08.
+colvars:     dx(interp) =  1.64416980631653e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.08802e-08.
 colvars:     refPosGroup atom 2, component 2:
-colvars:     dx(actual) =  9.42484845722902e-09
-colvars:     dx(interp) =  9.42484522142932e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.43326e-07.
+colvars:     dx(actual) =  9.42484135180166e-09
+colvars:     dx(interp) =  9.42484522140630e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.10575e-07.
 colvars:     refPosGroup atom 3, component 0:
-colvars:     dx(actual) = -1.50250585306821e-08
-colvars:     dx(interp) = -1.50250574958788e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.88718e-08.
+colvars:     dx(actual) = -1.50250638597527e-08
+colvars:     dx(interp) = -1.50250574958698e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.23551e-07.
 colvars:     refPosGroup atom 3, component 1:
-colvars:     dx(actual) =  1.13178089122812e-09
-colvars:     dx(interp) =  1.13178194955640e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.35100e-07.
+colvars:     dx(actual) =  1.13177911487128e-09
+colvars:     dx(interp) =  1.13178194955547e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.50463e-06.
 colvars:     refPosGroup atom 3, component 2:
-colvars:     dx(actual) =  9.94482185490142e-09
-colvars:     dx(interp) =  9.94482275878451e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.08898e-08.
+colvars:     dx(actual) =  9.94482007854458e-09
+colvars:     dx(interp) =  9.94482275879586e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.69512e-07.
 colvars:     refPosGroup atom 4, component 0:
-colvars:     dx(actual) =  1.43202019131650e-08
-colvars:     dx(interp) =  1.43202002666191e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.14981e-07.
+colvars:     dx(actual) =  1.43201948077376e-08
+colvars:     dx(interp) =  1.43202002666371e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.81203e-07.
 colvars:     refPosGroup atom 4, component 1:
-colvars:     dx(actual) = -1.30169208745201e-08
-colvars:     dx(interp) = -1.30169196394637e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.48808e-08.
+colvars:     dx(actual) = -1.30169226508769e-08
+colvars:     dx(interp) = -1.30169196394161e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.31350e-07.
 colvars:     refPosGroup atom 4, component 2:
-colvars:     dx(actual) =  3.02934690665779e-08
-colvars:     dx(interp) =  3.02934722034674e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.03550e-07.
-colvars:     Gradient sum: ( 0.973155 , -0.186464 , -0.134908 )  Fit gradient sum: ( -0.973155 , 0.186464 , 0.134908 )  Total ( -3.33067e-16 , 1.38778e-16 , 5.55112e-17 )
+colvars:     dx(actual) =  3.02934708429348e-08
+colvars:     dx(interp) =  3.02934722035031e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.49129e-08.
+colvars:     Gradient sum: ( 0.973155 , -0.186464 , -0.134908 )  Fit gradient sum: ( -0.973155 , 0.186464 , 0.134908 )  Total ( 3.33067e-16 , 0 , -5.55112e-17 )
 colvars:     Debugging gradients for cvc rmsd0001
 colvars:     Fit gradients:
 colvars:     refPosGroup[0] = ( -0.234296 , 0.269417 , -0.172808 )
@@ -825,78 +839,78 @@ colvars:     refPosGroup[2] = ( 0.226055 , 0.0323414 , -0.510126 )
 colvars:     refPosGroup[3] = ( 0.135289 , -0.0183778 , -0.118132 )
 colvars:     refPosGroup[4] = ( 0.219494 , -0.181246 , 0.21926 )
 colvars:     Atom 0, component 0:
-colvars:     dx(actual) =  9.73121156988555e-08
-colvars:     dx(interp) =  9.73121161932047e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.08004e-09
+colvars:     dx(actual) =  9.73121174752123e-08
+colvars:     dx(interp) =  9.73121161932183e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.31740e-08
 colvars:     Atom 0, component 1:
-colvars:     dx(actual) = -1.86622504116940e-08
-colvars:     dx(interp) = -1.86622506640494e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.35222e-08
+colvars:     dx(actual) = -1.86622486353372e-08
+colvars:     dx(interp) = -1.86622506639973e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.08704e-07
 colvars:     Atom 0, component 2:
-colvars:     dx(actual) = -1.34934214912619e-08
-colvars:     dx(interp) = -1.34934221809153e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.11103e-08
+colvars:     dx(actual) = -1.34934232676187e-08
+colvars:     dx(interp) = -1.34934221808895e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.05377e-08
 colvars:     refPosGroup atom 0, component 0:
 colvars:     dx(actual) = -1.32422535159549e-08
-colvars:     dx(interp) = -1.32422526736221e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.36095e-08.
+colvars:     dx(interp) = -1.32422526736177e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.36098e-08.
 colvars:     refPosGroup atom 0, component 1:
-colvars:     dx(actual) =  5.55337109631182e-09
-colvars:     dx(interp) =  5.55337024457541e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.53373e-07.
+colvars:     dx(actual) =  5.55336931995498e-09
+colvars:     dx(interp) =  5.55337024450271e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.66484e-07.
 colvars:     refPosGroup atom 0, component 2:
-colvars:     dx(actual) = -3.69760808638375e-08
-colvars:     dx(interp) = -3.69760847313505e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.04595e-07.
+colvars:     dx(actual) = -3.69760897456217e-08
+colvars:     dx(interp) = -3.69760847313846e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.35608e-07.
 colvars:     refPosGroup atom 1, component 0:
-colvars:     dx(actual) = -3.07767411555915e-08
-colvars:     dx(interp) = -3.07767415222974e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.19150e-08.
+colvars:     dx(actual) = -3.07767447083052e-08
+colvars:     dx(interp) = -3.07767415223223e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.03519e-07.
 colvars:     refPosGroup atom 1, component 1:
-colvars:     dx(actual) =  8.53379944487642e-09
-colvars:     dx(interp) =  8.53379552463776e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.59378e-07.
+colvars:     dx(actual) =  8.53379233944906e-09
+colvars:     dx(interp) =  8.53379552462335e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.73243e-07.
 colvars:     refPosGroup atom 1, component 2:
-colvars:     dx(actual) =  8.17994560975421e-10
-colvars:     dx(interp) =  8.17993039822212e-10
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.85961e-06.
+colvars:     dx(actual) =  8.17991008261743e-10
+colvars:     dx(interp) =  8.17993039794562e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.48356e-06.
 colvars:     refPosGroup atom 2, component 0:
 colvars:     dx(actual) = -5.25781533866621e-08
-colvars:     dx(interp) = -5.25781510051123e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.52954e-08.
+colvars:     dx(interp) = -5.25781510051442e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.52948e-08.
 colvars:     refPosGroup atom 2, component 1:
-colvars:     dx(actual) =  1.64451474660154e-08
-colvars:     dx(interp) =  1.64451465632481e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.48957e-08.
+colvars:     dx(actual) =  1.64451456896586e-08
+colvars:     dx(interp) =  1.64451465632283e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.31202e-08.
 colvars:     refPosGroup atom 2, component 2:
-colvars:     dx(actual) =  9.42629085898261e-09
-colvars:     dx(interp) =  9.42628948605204e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.45649e-07.
+colvars:     dx(actual) =  9.42628552991209e-09
+colvars:     dx(interp) =  9.42628948602319e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.19689e-07.
 colvars:     refPosGroup atom 3, component 0:
-colvars:     dx(actual) = -1.50267513987501e-08
-colvars:     dx(interp) = -1.50267515866430e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.25039e-08.
+colvars:     dx(actual) = -1.50267567278206e-08
+colvars:     dx(interp) = -1.50267515866314e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.42136e-07.
 colvars:     refPosGroup atom 3, component 1:
-colvars:     dx(actual) =  1.13715081795362e-09
-colvars:     dx(interp) =  1.13714937112648e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.27233e-06.
+colvars:     dx(actual) =  1.13714904159679e-09
+colvars:     dx(interp) =  1.13714937112552e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.89785e-07.
 colvars:     refPosGroup atom 3, component 2:
-colvars:     dx(actual) =  9.94296733836109e-09
-colvars:     dx(interp) =  9.94296464167825e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.71215e-07.
+colvars:     dx(actual) =  9.94296200929057e-09
+colvars:     dx(interp) =  9.94296464169270e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.64750e-07.
 colvars:     refPosGroup atom 4, component 0:
-colvars:     dx(actual) =  1.43117784290325e-08
-colvars:     dx(interp) =  1.43117805944701e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.51305e-07.
+colvars:     dx(actual) =  1.43117819817462e-08
+colvars:     dx(interp) =  1.43117805944973e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.69306e-08.
 colvars:     refPosGroup atom 4, component 1:
-colvars:     dx(actual) = -1.30072059789654e-08
-colvars:     dx(interp) = -1.30072110395383e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.89059e-07.
+colvars:     dx(actual) = -1.30072130843928e-08
+colvars:     dx(interp) = -1.30072110394825e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.57214e-07.
 colvars:     refPosGroup atom 4, component 2:
-colvars:     dx(actual) =  3.02822602549213e-08
-colvars:     dx(interp) =  3.02822597447134e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.68484e-08.
-colvars:     Gradient sum: ( 0.973121 , -0.186623 , -0.134934 )  Fit gradient sum: ( -0.973121 , 0.186623 , 0.134934 )  Total ( -2.22045e-16 , 1.94289e-16 , -5.55112e-17 )
+colvars:     dx(actual) =  3.02822567022076e-08
+colvars:     dx(interp) =  3.02822597447637e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.00473e-07.
+colvars:     Gradient sum: ( 0.973121 , -0.186623 , -0.134934 )  Fit gradient sum: ( -0.973121 , 0.186623 , 0.134934 )  Total ( -1.11022e-16 , 1.11022e-16 , -3.88578e-16 )
 colvars:     Debugging gradients for cvc rmsd0001
 colvars:     Fit gradients:
 colvars:     refPosGroup[0] = ( -0.234174 , 0.269337 , -0.172813 )
@@ -906,77 +920,77 @@ colvars:     refPosGroup[3] = ( 0.135263 , -0.0183502 , -0.118166 )
 colvars:     refPosGroup[4] = ( 0.21941 , -0.181155 , 0.219077 )
 colvars:     Atom 0, component 0:
 colvars:     dx(actual) =  9.73080762634027e-08
-colvars:     dx(interp) =  9.73080759392826e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.33087e-09
+colvars:     dx(interp) =  9.73080759392986e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.33070e-09
 colvars:     Atom 0, component 1:
-colvars:     dx(actual) = -1.86776762944874e-08
-colvars:     dx(interp) = -1.86776761563073e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  7.39814e-09
+colvars:     dx(actual) = -1.86776745181305e-08
+colvars:     dx(interp) = -1.86776761562469e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.77045e-08
 colvars:     Atom 0, component 2:
-colvars:     dx(actual) = -1.35012125923595e-08
-colvars:     dx(interp) = -1.35012136637759e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  7.93571e-08
+colvars:     dx(actual) = -1.35012143687163e-08
+colvars:     dx(interp) = -1.35012136637435e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.22155e-08
 colvars:     refPosGroup atom 0, component 0:
-colvars:     dx(actual) = -1.32528636953566e-08
-colvars:     dx(interp) = -1.32528619456363e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.32026e-07.
+colvars:     dx(actual) = -1.32528654717134e-08
+colvars:     dx(interp) = -1.32528619456286e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.66062e-07.
 colvars:     refPosGroup atom 0, component 1:
 colvars:     dx(actual) =  5.55024293191764e-09
-colvars:     dx(interp) =  5.55024629396469e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.05748e-07.
+colvars:     dx(interp) =  5.55024629387488e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.05732e-07.
 colvars:     refPosGroup atom 0, component 2:
-colvars:     dx(actual) = -3.69594008731156e-08
-colvars:     dx(interp) = -3.69593977935783e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.33222e-08.
+colvars:     dx(actual) = -3.69593973204019e-08
+colvars:     dx(interp) = -3.69593977936285e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.28040e-08.
 colvars:     refPosGroup atom 1, component 0:
-colvars:     dx(actual) = -3.07704972613010e-08
-colvars:     dx(interp) = -3.07704988193086e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.06332e-08.
+colvars:     dx(actual) = -3.07704990376578e-08
+colvars:     dx(interp) = -3.07704988193406e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  7.09502e-09.
 colvars:     refPosGroup atom 1, component 1:
-colvars:     dx(actual) =  8.53549408930121e-09
-colvars:     dx(interp) =  8.53549862621058e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.31534e-07.
+colvars:     dx(actual) =  8.53549586565805e-09
+colvars:     dx(interp) =  8.53549862619539e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.23419e-07.
 colvars:     refPosGroup atom 1, component 2:
-colvars:     dx(actual) =  8.20776335785922e-10
-colvars:     dx(interp) =  8.20780197382111e-10
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.70481e-06.
+colvars:     dx(actual) =  8.20783441213280e-10
+colvars:     dx(interp) =  8.20780197348790e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.95216e-06.
 colvars:     refPosGroup atom 2, component 0:
-colvars:     dx(actual) = -5.25603898182680e-08
-colvars:     dx(interp) = -5.25603891096541e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.34819e-08.
+colvars:     dx(actual) = -5.25603880419112e-08
+colvars:     dx(interp) = -5.25603891096995e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.03155e-08.
 colvars:     refPosGroup atom 2, component 1:
-colvars:     dx(actual) =  1.64463838103757e-08
-colvars:     dx(interp) =  1.64463866462747e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.72433e-07.
+colvars:     dx(actual) =  1.64463820340188e-08
+colvars:     dx(interp) =  1.64463866462574e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.80441e-07.
 colvars:     refPosGroup atom 2, component 2:
 colvars:     dx(actual) =  9.43124334185086e-09
-colvars:     dx(interp) =  9.43124625861174e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.09266e-07.
+colvars:     dx(interp) =  9.43124625857664e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.09262e-07.
 colvars:     refPosGroup atom 3, component 0:
-colvars:     dx(actual) = -1.50269414689319e-08
-colvars:     dx(interp) = -1.50269372065880e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.83647e-07.
+colvars:     dx(actual) = -1.50269396925751e-08
+colvars:     dx(interp) = -1.50269372065734e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.65436e-07.
 colvars:     refPosGroup atom 3, component 1:
-colvars:     dx(actual) =  1.14190079614218e-09
-colvars:     dx(interp) =  1.14190518785337e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.84597e-06.
+colvars:     dx(actual) =  1.14190612521270e-09
+colvars:     dx(interp) =  1.14190518785238e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.20873e-07.
 colvars:     refPosGroup atom 3, component 2:
-colvars:     dx(actual) =  9.94215731964232e-09
-colvars:     dx(interp) =  9.94215964548409e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.33937e-07.
+colvars:     dx(actual) =  9.94215909599916e-09
+colvars:     dx(interp) =  9.94215964550207e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.52700e-08.
 colvars:     refPosGroup atom 4, component 0:
-colvars:     dx(actual) =  1.43026070986707e-08
-colvars:     dx(interp) =  1.43026111419044e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.82692e-07.
+colvars:     dx(actual) =  1.43026106513844e-08
+colvars:     dx(interp) =  1.43026111419434e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.42986e-08.
 colvars:     refPosGroup atom 4, component 1:
-colvars:     dx(actual) = -1.29963630968177e-08
-colvars:     dx(interp) = -1.29963605979959e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.92271e-07.
+colvars:     dx(actual) = -1.29963559913904e-08
+colvars:     dx(interp) = -1.29963605979331e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.54449e-07.
 colvars:     refPosGroup atom 4, component 2:
 colvars:     dx(actual) =  3.02664240336981e-08
-colvars:     dx(interp) =  3.02664253558762e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.36847e-08.
-colvars:     Gradient sum: ( 0.973081 , -0.186777 , -0.135012 )  Fit gradient sum: ( -0.973081 , 0.186777 , 0.135012 )  Total ( 1.11022e-16 , 1.38778e-16 , -2.498e-16 )
+colvars:     dx(interp) =  3.02664253559446e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.36869e-08.
+colvars:     Gradient sum: ( 0.973081 , -0.186777 , -0.135012 )  Fit gradient sum: ( -0.973081 , 0.186777 , 0.135012 )  Total ( 0 , 2.77556e-16 , -2.22045e-16 )
 colvars:     Debugging gradients for cvc rmsd0001
 colvars:     Fit gradients:
 colvars:     refPosGroup[0] = ( -0.234049 , 0.269251 , -0.172818 )
@@ -985,78 +999,78 @@ colvars:     refPosGroup[2] = ( 0.225926 , 0.0323908 , -0.509839 )
 colvars:     refPosGroup[3] = ( 0.135236 , -0.0183191 , -0.118196 )
 colvars:     refPosGroup[4] = ( 0.219335 , -0.181057 , 0.218898 )
 colvars:     Atom 0, component 0:
-colvars:     dx(actual) =  9.73042570961979e-08
-colvars:     dx(interp) =  9.73042520976733e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.13701e-08
+colvars:     dx(actual) =  9.73042517671274e-08
+colvars:     dx(interp) =  9.73042520976917e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.39722e-09
 colvars:     Atom 0, component 1:
 colvars:     dx(actual) = -1.86923259093419e-08
-colvars:     dx(interp) = -1.86923254317768e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.55487e-08
+colvars:     dx(interp) = -1.86923254317091e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.55523e-08
 colvars:     Atom 0, component 2:
 colvars:     dx(actual) = -1.35084938790442e-08
-colvars:     dx(interp) = -1.35084970912756e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.37793e-07
+colvars:     dx(interp) = -1.35084970912361e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.37791e-07
 colvars:     refPosGroup atom 0, component 0:
-colvars:     dx(actual) = -1.32624489168620e-08
-colvars:     dx(interp) = -1.32624504625521e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.16546e-07.
+colvars:     dx(actual) = -1.32624471405052e-08
+colvars:     dx(interp) = -1.32624504625399e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.50484e-07.
 colvars:     refPosGroup atom 0, component 1:
-colvars:     dx(actual) =  5.54771695249201e-09
-colvars:     dx(interp) =  5.54771226845104e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.44319e-07.
+colvars:     dx(actual) =  5.54771517613517e-09
+colvars:     dx(interp) =  5.54771226834333e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.24142e-07.
 colvars:     refPosGroup atom 0, component 2:
 colvars:     dx(actual) = -3.69424064672330e-08
-colvars:     dx(interp) = -3.69424097857327e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.98290e-08.
+colvars:     dx(interp) = -3.69424097858032e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.98309e-08.
 colvars:     refPosGroup atom 1, component 0:
-colvars:     dx(actual) = -3.07644913988270e-08
-colvars:     dx(interp) = -3.07644895154587e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.12189e-08.
+colvars:     dx(actual) = -3.07644896224701e-08
+colvars:     dx(interp) = -3.07644895154988e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.47710e-09.
 colvars:     refPosGroup atom 1, component 1:
-colvars:     dx(actual) =  8.53744808182455e-09
-colvars:     dx(interp) =  8.53744794266837e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.62995e-08.
+colvars:     dx(actual) =  8.53744630546771e-09
+colvars:     dx(interp) =  8.53744794265350e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.91765e-07.
 colvars:     refPosGroup atom 1, component 2:
-colvars:     dx(actual) =  8.23893842039070e-10
-colvars:     dx(interp) =  8.23894751246931e-10
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.10355e-06.
+colvars:     dx(actual) =  8.23895618395909e-10
+colvars:     dx(interp) =  8.23894751207838e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.05255e-06.
 colvars:     refPosGroup atom 2, component 0:
-colvars:     dx(actual) = -5.25424930231111e-08
-colvars:     dx(interp) = -5.25424926239520e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  7.59688e-09.
+colvars:     dx(actual) = -5.25424947994679e-08
+colvars:     dx(interp) = -5.25424926240138e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.14037e-08.
 colvars:     refPosGroup atom 2, component 1:
-colvars:     dx(actual) =  1.64481495090740e-08
-colvars:     dx(interp) =  1.64481466417187e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.74327e-07.
+colvars:     dx(actual) =  1.64481512854309e-08
+colvars:     dx(interp) =  1.64481466417069e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.82325e-07.
 colvars:     refPosGroup atom 2, component 2:
-colvars:     dx(actual) =  9.43529876451521e-09
-colvars:     dx(interp) =  9.43529750670490e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.33309e-07.
+colvars:     dx(actual) =  9.43529698815837e-09
+colvars:     dx(interp) =  9.43529750666334e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.49538e-08.
 colvars:     refPosGroup atom 3, component 0:
-colvars:     dx(actual) = -1.50270995646906e-08
-colvars:     dx(interp) = -1.50271000766225e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.40672e-08.
+colvars:     dx(actual) = -1.50270977883338e-08
+colvars:     dx(interp) = -1.50271000766045e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.52276e-07.
 colvars:     refPosGroup atom 3, component 1:
-colvars:     dx(actual) =  1.14616049984306e-09
-colvars:     dx(interp) =  1.14616428730025e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.30447e-06.
+colvars:     dx(actual) =  1.14616938162726e-09
+colvars:     dx(interp) =  1.14616428729916e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.44466e-06.
 colvars:     refPosGroup atom 3, component 2:
-colvars:     dx(actual) =  9.94071669424557e-09
-colvars:     dx(interp) =  9.94071820018305e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.51492e-07.
+colvars:     dx(actual) =  9.94072202331608e-09
+colvars:     dx(interp) =  9.94071820020491e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.84591e-07.
 colvars:     refPosGroup atom 4, component 0:
-colvars:     dx(actual) =  1.42922846890770e-08
-colvars:     dx(interp) =  1.42922805809120e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.87439e-07.
+colvars:     dx(actual) =  1.42922811363633e-08
+colvars:     dx(interp) =  1.42922805809654e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.88600e-08.
 colvars:     refPosGroup atom 4, component 1:
-colvars:     dx(actual) = -1.29871420284644e-08
-colvars:     dx(interp) = -1.29871457083615e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.83349e-07.
+colvars:     dx(actual) = -1.29871438048212e-08
+colvars:     dx(interp) = -1.29871457082937e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.46566e-07.
 colvars:     refPosGroup atom 4, component 2:
 colvars:     dx(actual) =  3.02509981509047e-08
-colvars:     dx(interp) =  3.02509964188734e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.72553e-08.
-colvars:     Gradient sum: ( 0.973043 , -0.186923 , -0.135085 )  Fit gradient sum: ( -0.973043 , 0.186923 , 0.135085 )  Total ( -2.22045e-16 , 1.94289e-16 , -1.66533e-16 )
+colvars:     dx(interp) =  3.02509964189633e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.72524e-08.
+colvars:     Gradient sum: ( 0.973043 , -0.186923 , -0.135085 )  Fit gradient sum: ( -0.973043 , 0.186923 , 0.135085 )  Total ( 1.11022e-16 , 2.22045e-16 , 2.77556e-16 )
 colvars:     Debugging gradients for cvc rmsd0001
 colvars:     Fit gradients:
 colvars:     refPosGroup[0] = ( -0.233924 , 0.269169 , -0.17282 )
@@ -1065,78 +1079,78 @@ colvars:     refPosGroup[2] = ( 0.225861 , 0.0324035 , -0.509705 )
 colvars:     refPosGroup[3] = ( 0.135208 , -0.0182913 , -0.11823 )
 colvars:     refPosGroup[4] = ( 0.219264 , -0.180967 , 0.218726 )
 colvars:     Atom 0, component 0:
-colvars:     dx(actual) =  9.73013722926908e-08
-colvars:     dx(interp) =  9.73013742634098e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.02538e-08
+colvars:     dx(actual) =  9.73013705163339e-08
+colvars:     dx(interp) =  9.73013742634303e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.85102e-08
 colvars:     Atom 0, component 1:
-colvars:     dx(actual) = -1.87041209187555e-08
-colvars:     dx(interp) = -1.87041218876617e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.18017e-08
+colvars:     dx(actual) = -1.87041226951123e-08
+colvars:     dx(interp) = -1.87041218875885e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.31736e-08
 colvars:     Atom 0, component 2:
-colvars:     dx(actual) = -1.35128974676491e-08
-colvars:     dx(interp) = -1.35128972046470e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.94630e-08
+colvars:     dx(actual) = -1.35129010203627e-08
+colvars:     dx(interp) = -1.35128972046003e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.82379e-07
 colvars:     refPosGroup atom 0, component 0:
-colvars:     dx(actual) = -1.32707373978747e-08
-colvars:     dx(interp) = -1.32707338180465e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.69754e-07.
+colvars:     dx(actual) = -1.32707356215178e-08
+colvars:     dx(interp) = -1.32707338180285e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.35900e-07.
 colvars:     refPosGroup atom 0, component 1:
 colvars:     dx(actual) =  5.54151746712250e-09
-colvars:     dx(interp) =  5.54151975199027e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.12318e-07.
+colvars:     dx(interp) =  5.54151975186441e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.12295e-07.
 colvars:     refPosGroup atom 0, component 2:
-colvars:     dx(actual) = -3.69265844568645e-08
-colvars:     dx(interp) = -3.69265837680701e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.86531e-08.
+colvars:     dx(actual) = -3.69265826805076e-08
+colvars:     dx(interp) = -3.69265837681650e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.94546e-08.
 colvars:     refPosGroup atom 1, component 0:
-colvars:     dx(actual) = -3.07585850123360e-08
-colvars:     dx(interp) = -3.07585788705620e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.99677e-07.
+colvars:     dx(actual) = -3.07585743541949e-08
+colvars:     dx(interp) = -3.07585788706113e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.46834e-07.
 colvars:     refPosGroup atom 1, component 1:
-colvars:     dx(actual) =  8.53808579392989e-09
-colvars:     dx(interp) =  8.53808936878258e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.18695e-07.
+colvars:     dx(actual) =  8.53809289935725e-09
+colvars:     dx(interp) =  8.53808936876944e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.13510e-07.
 colvars:     refPosGroup atom 1, component 2:
-colvars:     dx(actual) =  8.26103629947283e-10
-colvars:     dx(interp) =  8.26104904126822e-10
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.54240e-06.
+colvars:     dx(actual) =  8.26105406304123e-10
+colvars:     dx(interp) =  8.26104904082126e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.07939e-07.
 colvars:     refPosGroup atom 2, component 0:
-colvars:     dx(actual) = -5.25262695560968e-08
-colvars:     dx(interp) = -5.25262690872746e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.92548e-09.
+colvars:     dx(actual) = -5.25262713324537e-08
+colvars:     dx(interp) = -5.25262690873558e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.27424e-08.
 colvars:     refPosGroup atom 2, component 1:
-colvars:     dx(actual) =  1.64488991316603e-08
-colvars:     dx(interp) =  1.64489014094956e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.38480e-07.
+colvars:     dx(actual) =  1.64489026843739e-08
+colvars:     dx(interp) =  1.64489014094928e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  7.75055e-08.
 colvars:     refPosGroup atom 2, component 2:
-colvars:     dx(actual) =  9.43666655928155e-09
-colvars:     dx(interp) =  9.43666776864172e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.28155e-07.
+colvars:     dx(actual) =  9.43667011199523e-09
+colvars:     dx(interp) =  9.43666776859372e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.48329e-07.
 colvars:     refPosGroup atom 3, component 0:
-colvars:     dx(actual) = -1.50279202415504e-08
-colvars:     dx(interp) = -1.50279164684392e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.51073e-07.
+colvars:     dx(actual) = -1.50279149124799e-08
+colvars:     dx(interp) = -1.50279164684174e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.03536e-07.
 colvars:     refPosGroup atom 3, component 1:
-colvars:     dx(actual) =  1.15079679119390e-09
-colvars:     dx(interp) =  1.15079570362630e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.45056e-07.
+colvars:     dx(actual) =  1.15079323848022e-09
+colvars:     dx(interp) =  1.15079570362508e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.14213e-06.
 colvars:     refPosGroup atom 3, component 2:
-colvars:     dx(actual) =  9.93875381993803e-09
-colvars:     dx(interp) =  9.93875613876730e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.33312e-07.
+colvars:     dx(actual) =  9.93875737265171e-09
+colvars:     dx(interp) =  9.93875613879331e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.24146e-07.
 colvars:     refPosGroup atom 4, component 0:
-colvars:     dx(actual) =  1.42821203752419e-08
-colvars:     dx(interp) =  1.42821239809124e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.52460e-07.
+colvars:     dx(actual) =  1.42821239279556e-08
+colvars:     dx(interp) =  1.42821239809827e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.71283e-09.
 colvars:     refPosGroup atom 4, component 1:
-colvars:     dx(actual) = -1.29751818178647e-08
-colvars:     dx(interp) = -1.29751843462331e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.94862e-07.
+colvars:     dx(actual) = -1.29751871469352e-08
+colvars:     dx(interp) = -1.29751843461633e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.15856e-07.
 colvars:     refPosGroup atom 4, component 2:
-colvars:     dx(actual) =  3.02379508099193e-08
-colvars:     dx(interp) =  3.02379521611812e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.46876e-08.
-colvars:     Gradient sum: ( 0.973014 , -0.187041 , -0.135129 )  Fit gradient sum: ( -0.973014 , 0.187041 , 0.135129 )  Total ( -1.11022e-16 , 5.55112e-17 , -1.66533e-16 )
+colvars:     dx(actual) =  3.02379525862762e-08
+colvars:     dx(interp) =  3.02379521612961e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.40545e-08.
+colvars:     Gradient sum: ( 0.973014 , -0.187041 , -0.135129 )  Fit gradient sum: ( -0.973014 , 0.187041 , 0.135129 )  Total ( 0 , 8.32667e-17 , 1.11022e-16 )
 colvars:     Debugging gradients for cvc rmsd0001
 colvars:     Fit gradients:
 colvars:     refPosGroup[0] = ( -0.233783 , 0.269072 , -0.172824 )
@@ -1145,78 +1159,78 @@ colvars:     refPosGroup[2] = ( 0.225784 , 0.0324179 , -0.509551 )
 colvars:     refPosGroup[3] = ( 0.135175 , -0.0182579 , -0.118266 )
 colvars:     refPosGroup[4] = ( 0.219184 , -0.180859 , 0.21853 )
 colvars:     Atom 0, component 0:
-colvars:     dx(actual) =  9.72987344027842e-08
-colvars:     dx(interp) =  9.72987296633688e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.87099e-08
+colvars:     dx(actual) =  9.72987272973569e-08
+colvars:     dx(interp) =  9.72987296633910e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.43172e-08
 colvars:     Atom 0, component 1:
-colvars:     dx(actual) = -1.87151645292261e-08
-colvars:     dx(interp) = -1.87151698710740e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.85429e-07
+colvars:     dx(actual) = -1.87151716346534e-08
+colvars:     dx(interp) = -1.87151698709976e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.42367e-08
 colvars:     Atom 0, component 2:
-colvars:     dx(actual) = -1.35166402515097e-08
-colvars:     dx(interp) = -1.35166424304083e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.61201e-07
+colvars:     dx(actual) = -1.35166438042233e-08
+colvars:     dx(interp) = -1.35166424303545e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.01643e-07
 colvars:     refPosGroup atom 0, component 0:
-colvars:     dx(actual) = -1.32792514762059e-08
-colvars:     dx(interp) = -1.32792485610784e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.19525e-07.
+colvars:     dx(actual) = -1.32792461471354e-08
+colvars:     dx(interp) = -1.32792485610533e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.81781e-07.
 colvars:     refPosGroup atom 0, component 1:
-colvars:     dx(actual) =  5.53807488756775e-09
-colvars:     dx(interp) =  5.53807500443802e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.11031e-08.
+colvars:     dx(actual) =  5.53807133485407e-09
+colvars:     dx(interp) =  5.53807500429477e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.62585e-07.
 colvars:     refPosGroup atom 0, component 2:
-colvars:     dx(actual) = -3.69082275852861e-08
-colvars:     dx(interp) = -3.69082301057086e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.82889e-08.
+colvars:     dx(actual) = -3.69082293616430e-08
+colvars:     dx(interp) = -3.69082301058320e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.01632e-08.
 colvars:     refPosGroup atom 1, component 0:
-colvars:     dx(actual) = -3.07522132203530e-08
-colvars:     dx(interp) = -3.07522120579537e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.77989e-08.
+colvars:     dx(actual) = -3.07522114439962e-08
+colvars:     dx(interp) = -3.07522120580134e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.99666e-08.
 colvars:     refPosGroup atom 1, component 1:
 colvars:     dx(actual) =  8.53851744864187e-09
-colvars:     dx(interp) =  8.53851757306736e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.45723e-08.
+colvars:     dx(interp) =  8.53851757305771e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.45711e-08.
 colvars:     refPosGroup atom 1, component 2:
 colvars:     dx(actual) =  8.28652702011823e-10
-colvars:     dx(interp) =  8.28651094734883e-10
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.93963e-06.
+colvars:     dx(interp) =  8.28651094684908e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.93969e-06.
 colvars:     refPosGroup atom 2, component 0:
-colvars:     dx(actual) = -5.25080228186425e-08
-colvars:     dx(interp) = -5.25080262625914e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.55890e-08.
+colvars:     dx(actual) = -5.25080263713562e-08
+colvars:     dx(interp) = -5.25080262626950e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.06942e-09.
 colvars:     refPosGroup atom 2, component 1:
-colvars:     dx(actual) =  1.64482347742023e-08
-colvars:     dx(interp) =  1.64482285289296e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.79693e-07.
+colvars:     dx(actual) =  1.64482276687750e-08
+colvars:     dx(interp) =  1.64482285289396e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.22953e-08.
 colvars:     refPosGroup atom 2, component 2:
 colvars:     dx(actual) =  9.43820843701815e-09
-colvars:     dx(interp) =  9.43820741694576e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.08079e-07.
+colvars:     dx(interp) =  9.43820741689162e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.08085e-07.
 colvars:     refPosGroup atom 3, component 0:
-colvars:     dx(actual) = -1.50289043432394e-08
-colvars:     dx(interp) = -1.50289031994087e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  7.61087e-08.
+colvars:     dx(actual) = -1.50289007905258e-08
+colvars:     dx(interp) = -1.50289031993826e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.60282e-07.
 colvars:     refPosGroup atom 3, component 1:
-colvars:     dx(actual) =  1.15481313400778e-09
-colvars:     dx(interp) =  1.15481192715467e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.04506e-06.
+colvars:     dx(actual) =  1.15480780493726e-09
+colvars:     dx(interp) =  1.15481192715308e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.56961e-06.
 colvars:     refPosGroup atom 3, component 2:
 colvars:     dx(actual) =  9.93598980869592e-09
-colvars:     dx(interp) =  9.93598702115924e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.80549e-07.
+colvars:     dx(interp) =  9.93598702118969e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.80546e-07.
 colvars:     refPosGroup atom 4, component 0:
-colvars:     dx(actual) =  1.42696574556567e-08
-colvars:     dx(interp) =  1.42696604176635e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.07574e-07.
+colvars:     dx(actual) =  1.42696627847272e-08
+colvars:     dx(interp) =  1.42696604177533e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.65875e-07.
 colvars:     refPosGroup atom 4, component 1:
-colvars:     dx(actual) = -1.29644579516253e-08
-colvars:     dx(interp) = -1.29644631625157e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.01937e-07.
+colvars:     dx(actual) = -1.29644650570526e-08
+colvars:     dx(interp) = -1.29644631624476e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.46138e-07.
 colvars:     refPosGroup atom 4, component 2:
-colvars:     dx(actual) =  3.02220293235678e-08
-colvars:     dx(interp) =  3.02220270032771e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  7.67748e-08.
-colvars:     Gradient sum: ( 0.972987 , -0.187152 , -0.135166 )  Fit gradient sum: ( -0.972987 , 0.187152 , 0.135166 )  Total ( -1.11022e-16 , -5.55112e-17 , 0 )
+colvars:     dx(actual) =  3.02220222181404e-08
+colvars:     dx(interp) =  3.02220270034202e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.58338e-07.
+colvars:     Gradient sum: ( 0.972987 , -0.187152 , -0.135166 )  Fit gradient sum: ( -0.972987 , 0.187152 , 0.135166 )  Total ( -2.22045e-16 , 5.55112e-17 , -2.498e-16 )
 colvars:     Debugging gradients for cvc rmsd0001
 colvars:     Fit gradients:
 colvars:     refPosGroup[0] = ( -0.233652 , 0.268975 , -0.172829 )
@@ -1225,78 +1239,78 @@ colvars:     refPosGroup[2] = ( 0.225718 , 0.0324198 , -0.509413 )
 colvars:     refPosGroup[3] = ( 0.135147 , -0.0182263 , -0.118288 )
 colvars:     refPosGroup[4] = ( 0.21913 , -0.180755 , 0.218367 )
 colvars:     Atom 0, component 0:
-colvars:     dx(actual) =  9.72963238865532e-08
-colvars:     dx(interp) =  9.72963211630112e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.79922e-08
+colvars:     dx(actual) =  9.72963221101963e-08
+colvars:     dx(interp) =  9.72963211630343e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.73482e-09
 colvars:     Atom 0, component 1:
-colvars:     dx(actual) = -1.87250979166720e-08
-colvars:     dx(interp) = -1.87251018508512e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.10102e-07
+colvars:     dx(actual) = -1.87250996930288e-08
+colvars:     dx(interp) = -1.87251018507747e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.15233e-07
 colvars:     Atom 0, component 2:
 colvars:     dx(actual) = -1.35202213868979e-08
-colvars:     dx(interp) = -1.35202236970933e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.70870e-07
+colvars:     dx(interp) = -1.35202236970330e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.70865e-07
 colvars:     refPosGroup atom 0, component 0:
-colvars:     dx(actual) = -1.32848203548974e-08
-colvars:     dx(interp) = -1.32848260553606e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.29096e-07.
+colvars:     dx(actual) = -1.32848256839679e-08
+colvars:     dx(interp) = -1.32848260553267e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.79536e-08.
 colvars:     refPosGroup atom 0, component 1:
-colvars:     dx(actual) =  5.53572476746922e-09
-colvars:     dx(interp) =  5.53571877394500e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.08270e-06.
+colvars:     dx(actual) =  5.53572121475554e-09
+colvars:     dx(interp) =  5.53571877378613e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.40949e-07.
 colvars:     refPosGroup atom 0, component 2:
-colvars:     dx(actual) = -3.68913575243823e-08
-colvars:     dx(interp) = -3.68913604397637e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  7.90261e-08.
+colvars:     dx(actual) = -3.68913646298097e-08
+colvars:     dx(interp) = -3.68913604399194e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.13574e-07.
 colvars:     refPosGroup atom 1, component 0:
-colvars:     dx(actual) = -3.07470067184568e-08
-colvars:     dx(interp) = -3.07470135652411e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.22681e-07.
+colvars:     dx(actual) = -3.07470120475273e-08
+colvars:     dx(interp) = -3.07470135653119e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.93636e-08.
 colvars:     refPosGroup atom 1, component 1:
-colvars:     dx(actual) =  8.53970760772427e-09
-colvars:     dx(interp) =  8.53970370600348e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.56892e-07.
+colvars:     dx(actual) =  8.53970405501059e-09
+colvars:     dx(interp) =  8.53970370599939e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.08692e-08.
 colvars:     refPosGroup atom 1, component 2:
 colvars:     dx(actual) =  8.31423818681287e-10
-colvars:     dx(interp) =  8.31424273341968e-10
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.46846e-07.
+colvars:     dx(interp) =  8.31424273287319e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.46780e-07.
 colvars:     refPosGroup atom 2, component 0:
-colvars:     dx(actual) = -5.24915613198118e-08
-colvars:     dx(interp) = -5.24915645494907e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.15276e-08.
+colvars:     dx(actual) = -5.24915630961686e-08
+colvars:     dx(interp) = -5.24915645496191e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.76892e-08.
 colvars:     refPosGroup atom 2, component 1:
-colvars:     dx(actual) =  1.64490447929211e-08
-colvars:     dx(interp) =  1.64490443312409e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.80673e-08.
+colvars:     dx(actual) =  1.64490465692779e-08
+colvars:     dx(interp) =  1.64490443312681e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.36057e-07.
 colvars:     refPosGroup atom 2, component 2:
 colvars:     dx(actual) =  9.43796862884483e-09
-colvars:     dx(interp) =  9.43796707141685e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.65017e-07.
+colvars:     dx(interp) =  9.43796707135716e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.65024e-07.
 colvars:     refPosGroup atom 3, component 0:
-colvars:     dx(actual) = -1.50295544898427e-08
-colvars:     dx(interp) = -1.50295561409492e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.09857e-07.
+colvars:     dx(actual) = -1.50295562661995e-08
+colvars:     dx(interp) = -1.50295561409183e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.33566e-09.
 colvars:     refPosGroup atom 3, component 1:
-colvars:     dx(actual) =  1.15783649334844e-09
-colvars:     dx(interp) =  1.15783892166595e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.09729e-06.
+colvars:     dx(actual) =  1.15784359877580e-09
+colvars:     dx(interp) =  1.15783892166374e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.03950e-06.
 colvars:     refPosGroup atom 3, component 2:
-colvars:     dx(actual) =  9.93288473694065e-09
-colvars:     dx(interp) =  9.93288148103452e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.27791e-07.
+colvars:     dx(actual) =  9.93288296058381e-09
+colvars:     dx(interp) =  9.93288148106965e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.48951e-07.
 colvars:     refPosGroup atom 4, component 0:
-colvars:     dx(actual) =  1.42566367600239e-08
-colvars:     dx(interp) =  1.42566391480304e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.67501e-07.
+colvars:     dx(actual) =  1.42566420890944e-08
+colvars:     dx(interp) =  1.42566391481417e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.06286e-07.
 colvars:     refPosGroup atom 4, component 1:
-colvars:     dx(actual) = -1.29571997575795e-08
-colvars:     dx(interp) = -1.29572038820041e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.18311e-07.
+colvars:     dx(actual) = -1.29572050866500e-08
+colvars:     dx(interp) = -1.29572038819427e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.29759e-08.
 colvars:     refPosGroup atom 4, component 2:
-colvars:     dx(actual) =  3.02093141613113e-08
-colvars:     dx(interp) =  3.02093113110636e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.43500e-08.
-colvars:     Gradient sum: ( 0.972963 , -0.187251 , -0.135202 )  Fit gradient sum: ( -0.972963 , 0.187251 , 0.135202 )  Total ( 0 , -5.55112e-17 , -2.77556e-16 )
+colvars:     dx(actual) =  3.02093123849545e-08
+colvars:     dx(interp) =  3.02093113112382e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.55426e-08.
+colvars:     Gradient sum: ( 0.972963 , -0.187251 , -0.135202 )  Fit gradient sum: ( -0.972963 , 0.187251 , 0.135202 )  Total ( 0 , -2.77556e-17 , -5.55112e-17 )
 colvars:     Debugging gradients for cvc rmsd0001
 colvars:     Fit gradients:
 colvars:     refPosGroup[0] = ( -0.233501 , 0.268891 , -0.17282 )
@@ -1305,78 +1319,78 @@ colvars:     refPosGroup[2] = ( 0.22562 , 0.0323892 , -0.509295 )
 colvars:     refPosGroup[3] = ( 0.135096 , -0.0181821 , -0.118341 )
 colvars:     refPosGroup[4] = ( 0.219076 , -0.180644 , 0.218198 )
 colvars:     Atom 0, component 0:
-colvars:     dx(actual) =  9.72935989551615e-08
-colvars:     dx(interp) =  9.72935990996929e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.48552e-09
+colvars:     dx(actual) =  9.72936007315184e-08
+colvars:     dx(interp) =  9.72935990997161e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.67719e-08
 colvars:     Atom 0, component 1:
 colvars:     dx(actual) = -1.87360313930185e-08
-colvars:     dx(interp) = -1.87360323586213e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.15372e-08
+colvars:     dx(interp) = -1.87360323585487e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.15333e-08
 colvars:     Atom 0, component 2:
-colvars:     dx(actual) = -1.35246676080669e-08
-colvars:     dx(interp) = -1.35246687828176e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.68599e-08
+colvars:     dx(actual) = -1.35246640553532e-08
+colvars:     dx(interp) = -1.35246687827521e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.49539e-07
 colvars:     refPosGroup atom 0, component 0:
-colvars:     dx(actual) = -1.32906929906085e-08
-colvars:     dx(interp) = -1.32906941690601e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.86674e-08.
+colvars:     dx(actual) = -1.32906912142516e-08
+colvars:     dx(interp) = -1.32906941690159e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.22318e-07.
 colvars:     refPosGroup atom 0, component 1:
-colvars:     dx(actual) =  5.53266232827809e-09
-colvars:     dx(interp) =  5.53266086848861e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.63849e-07.
+colvars:     dx(actual) =  5.53265877556441e-09
+colvars:     dx(interp) =  5.53266086831706e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.78254e-07.
 colvars:     refPosGroup atom 0, component 2:
-colvars:     dx(actual) = -3.68735815214905e-08
-colvars:     dx(interp) = -3.68735842504687e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  7.40090e-08.
+colvars:     dx(actual) = -3.68735850742041e-08
+colvars:     dx(interp) = -3.68735842506599e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.23343e-08.
 colvars:     refPosGroup atom 1, component 0:
 colvars:     dx(actual) = -3.07392973297738e-08
-colvars:     dx(interp) = -3.07393005142045e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.03595e-07.
+colvars:     dx(interp) = -3.07393005142873e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.03597e-07.
 colvars:     refPosGroup atom 1, component 1:
-colvars:     dx(actual) =  8.54056558807770e-09
-colvars:     dx(interp) =  8.54056292238831e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.12121e-07.
+colvars:     dx(actual) =  8.54056203536402e-09
+colvars:     dx(interp) =  8.54056292239231e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.03861e-07.
 colvars:     refPosGroup atom 1, component 2:
-colvars:     dx(actual) =  8.37784952523180e-10
-colvars:     dx(interp) =  8.37782624176606e-10
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.77917e-06.
+colvars:     dx(actual) =  8.37779623452661e-10
+colvars:     dx(interp) =  8.37782624118295e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.58169e-06.
 colvars:     refPosGroup atom 2, component 0:
-colvars:     dx(actual) = -5.24746113228503e-08
-colvars:     dx(interp) = -5.24746090134264e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.40103e-08.
+colvars:     dx(actual) = -5.24746077701366e-08
+colvars:     dx(interp) = -5.24746090135818e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.36961e-08.
 colvars:     refPosGroup atom 2, component 1:
-colvars:     dx(actual) =  1.64524660561938e-08
-colvars:     dx(interp) =  1.64524625852047e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.10971e-07.
+colvars:     dx(actual) =  1.64524642798369e-08
+colvars:     dx(interp) =  1.64524625852538e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.02999e-07.
 colvars:     refPosGroup atom 2, component 2:
-colvars:     dx(actual) =  9.43822797694338e-09
-colvars:     dx(interp) =  9.43822725660973e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  7.63209e-08.
+colvars:     dx(actual) =  9.43822975330022e-09
+colvars:     dx(interp) =  9.43822725654555e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.64536e-07.
 colvars:     refPosGroup atom 3, component 0:
-colvars:     dx(actual) = -1.50321817216081e-08
-colvars:     dx(interp) = -1.50321797776690e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.29318e-07.
+colvars:     dx(actual) = -1.50321763925376e-08
+colvars:     dx(interp) = -1.50321797776326e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.25190e-07.
 colvars:     refPosGroup atom 3, component 1:
-colvars:     dx(actual) =  1.16197362842740e-09
-colvars:     dx(interp) =  1.16197047782192e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.71143e-06.
+colvars:     dx(actual) =  1.16196829935689e-09
+colvars:     dx(interp) =  1.16197047781872e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.87480e-06.
 colvars:     refPosGroup atom 3, component 2:
 colvars:     dx(actual) =  9.92693749424234e-09
-colvars:     dx(interp) =  9.92693637702140e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.12544e-07.
+colvars:     dx(interp) =  9.92693637706134e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.12540e-07.
 colvars:     refPosGroup atom 4, component 0:
 colvars:     dx(actual) =  1.42431844096791e-08
-colvars:     dx(interp) =  1.42431843746670e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.45816e-09.
+colvars:     dx(interp) =  1.42431843748016e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.44871e-09.
 colvars:     refPosGroup atom 4, component 1:
-colvars:     dx(actual) = -1.29516237734606e-08
-colvars:     dx(interp) = -1.29516244952822e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.57321e-08.
+colvars:     dx(actual) = -1.29516273261743e-08
+colvars:     dx(interp) = -1.29516244952331e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.18578e-07.
 colvars:     refPosGroup atom 4, component 2:
-colvars:     dx(actual) =  3.01953075876327e-08
-colvars:     dx(interp) =  3.01953067754785e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.68967e-08.
-colvars:     Gradient sum: ( 0.972936 , -0.18736 , -0.135247 )  Fit gradient sum: ( -0.972936 , 0.18736 , 0.135247 )  Total ( -1.11022e-16 , -5.55112e-17 , -2.22045e-16 )
+colvars:     dx(actual) =  3.01953040349190e-08
+colvars:     dx(interp) =  3.01953067756868e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.07680e-08.
+colvars:     Gradient sum: ( 0.972936 , -0.18736 , -0.135247 )  Fit gradient sum: ( -0.972936 , 0.18736 , 0.135247 )  Total ( -3.33067e-16 , 1.94289e-16 , 2.77556e-17 )
 colvars:     Debugging gradients for cvc rmsd0001
 colvars:     Fit gradients:
 colvars:     refPosGroup[0] = ( -0.233334 , 0.268839 , -0.172792 )
@@ -1386,77 +1400,77 @@ colvars:     refPosGroup[3] = ( 0.135013 , -0.0181251 , -0.118443 )
 colvars:     refPosGroup[4] = ( 0.219009 , -0.180537 , 0.218022 )
 colvars:     Atom 0, component 0:
 colvars:     dx(actual) =  9.72905631613230e-08
-colvars:     dx(interp) =  9.72905628723268e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.97044e-09
+colvars:     dx(interp) =  9.72905628723487e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.97022e-09
 colvars:     Atom 0, component 1:
 colvars:     dx(actual) = -1.87482402935757e-08
-colvars:     dx(interp) = -1.87482410495946e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.03248e-08
+colvars:     dx(interp) = -1.87482410495307e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.03214e-08
 colvars:     Atom 0, component 2:
 colvars:     dx(actual) = -1.35295916692257e-08
-colvars:     dx(interp) = -1.35295910334394e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.69923e-08
+colvars:     dx(interp) = -1.35295910333706e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.69974e-08
 colvars:     refPosGroup atom 0, component 0:
-colvars:     dx(actual) = -1.32982922451674e-08
-colvars:     dx(interp) = -1.32982975870662e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.01698e-07.
+colvars:     dx(actual) = -1.32982940215243e-08
+colvars:     dx(interp) = -1.32982975870102e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.68116e-07.
 colvars:     refPosGroup atom 0, component 1:
-colvars:     dx(actual) =  5.52796919350840e-09
-colvars:     dx(interp) =  5.52796395748566e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.47187e-07.
+colvars:     dx(actual) =  5.52796031172420e-09
+colvars:     dx(interp) =  5.52796395730563e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.59480e-07.
 colvars:     refPosGroup atom 0, component 2:
-colvars:     dx(actual) = -3.68559831542825e-08
-colvars:     dx(interp) = -3.68559886367259e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.48753e-07.
+colvars:     dx(actual) = -3.68559884833530e-08
+colvars:     dx(interp) = -3.68559886369556e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.16764e-09.
 colvars:     refPosGroup atom 1, component 0:
-colvars:     dx(actual) = -3.07280725309056e-08
-colvars:     dx(interp) = -3.07280785987840e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.97470e-07.
+colvars:     dx(actual) = -3.07280796363330e-08
+colvars:     dx(interp) = -3.07280785988794e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.37624e-08.
 colvars:     refPosGroup atom 1, component 1:
-colvars:     dx(actual) =  8.54029380548127e-09
-colvars:     dx(interp) =  8.54029141081541e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.80396e-07.
+colvars:     dx(actual) =  8.54029202912443e-09
+colvars:     dx(interp) =  8.54029141083031e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  7.23973e-08.
 colvars:     refPosGroup atom 1, component 2:
-colvars:     dx(actual) =  8.48279668730356e-10
-colvars:     dx(interp) =  8.48275187724742e-10
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.28246e-06.
+colvars:     dx(actual) =  8.48276116016677e-10
+colvars:     dx(interp) =  8.48275187664044e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.09440e-06.
 colvars:     refPosGroup atom 2, component 0:
-colvars:     dx(actual) = -5.24580734406754e-08
-colvars:     dx(interp) = -5.24580787169452e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.00581e-07.
+colvars:     dx(actual) = -5.24580787697460e-08
+colvars:     dx(interp) = -5.24580787171293e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.00302e-09.
 colvars:     refPosGroup atom 2, component 1:
-colvars:     dx(actual) =  1.64582036887850e-08
-colvars:     dx(interp) =  1.64581994896966e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.55136e-07.
+colvars:     dx(actual) =  1.64581983597145e-08
+colvars:     dx(interp) =  1.64581994897726e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.86623e-08.
 colvars:     refPosGroup atom 2, component 2:
-colvars:     dx(actual) =  9.44032763072755e-09
-colvars:     dx(interp) =  9.44032745465163e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.86515e-08.
+colvars:     dx(actual) =  9.44032407801387e-09
+colvars:     dx(interp) =  9.44032745458434e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.57675e-07.
 colvars:     refPosGroup atom 3, component 0:
-colvars:     dx(actual) = -1.50375978336115e-08
-colvars:     dx(interp) = -1.50376008459134e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.00318e-07.
+colvars:     dx(actual) = -1.50375996099683e-08
+colvars:     dx(interp) = -1.50376008458710e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.21875e-08.
 colvars:     refPosGroup atom 3, component 1:
-colvars:     dx(actual) =  1.16808784866862e-09
-colvars:     dx(interp) =  1.16807984582214e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.85124e-06.
+colvars:     dx(actual) =  1.16808074324126e-09
+colvars:     dx(interp) =  1.16807984581744e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  7.68289e-07.
 colvars:     refPosGroup atom 3, component 2:
-colvars:     dx(actual) =  9.91785498172248e-09
-colvars:     dx(interp) =  9.91784784831556e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  7.19249e-07.
+colvars:     dx(actual) =  9.91784787629513e-09
+colvars:     dx(interp) =  9.91784784836041e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.81661e-09.
 colvars:     refPosGroup atom 4, component 0:
-colvars:     dx(actual) =  1.42314924289622e-08
-colvars:     dx(interp) =  1.42314928763820e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.14387e-08.
+colvars:     dx(actual) =  1.42314906526053e-08
+colvars:     dx(interp) =  1.42314928765411e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.56269e-07.
 colvars:     refPosGroup atom 4, component 1:
-colvars:     dx(actual) = -1.29462911502287e-08
-colvars:     dx(interp) = -1.29462936542253e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.93414e-07.
+colvars:     dx(actual) = -1.29462947029424e-08
+colvars:     dx(interp) = -1.29462936541952e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.10075e-08.
 colvars:     refPosGroup atom 4, component 2:
-colvars:     dx(actual) =  3.01791320822531e-08
-colvars:     dx(interp) =  3.01791291794734e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.61850e-08.
-colvars:     Gradient sum: ( 0.972906 , -0.187482 , -0.135296 )  Fit gradient sum: ( -0.972906 , 0.187482 , 0.135296 )  Total ( 0 , -5.55112e-17 , -1.11022e-16 )
+colvars:     dx(actual) =  3.01791249768257e-08
+colvars:     dx(interp) =  3.01791291797173e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.39265e-07.
+colvars:     Gradient sum: ( 0.972906 , -0.187482 , -0.135296 )  Fit gradient sum: ( -0.972906 , 0.187482 , 0.135296 )  Total ( -3.33067e-16 , 1.66533e-16 , -5.55112e-17 )
 colvars:     Debugging gradients for cvc rmsd0001
 colvars:     Fit gradients:
 colvars:     refPosGroup[0] = ( -0.233163 , 0.26881 , -0.172755 )
@@ -1465,78 +1479,78 @@ colvars:     refPosGroup[2] = ( 0.225303 , 0.0322242 , -0.509163 )
 colvars:     refPosGroup[3] = ( 0.134898 , -0.0180518 , -0.118578 )
 colvars:     refPosGroup[4] = ( 0.218938 , -0.180422 , 0.217848 )
 colvars:     Atom 0, component 0:
-colvars:     dx(actual) =  9.72861098347266e-08
-colvars:     dx(interp) =  9.72861112911805e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.49708e-08
+colvars:     dx(actual) =  9.72861116110835e-08
+colvars:     dx(interp) =  9.72861112911997e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.28807e-09
 colvars:     Atom 0, component 1:
-colvars:     dx(actual) = -1.87654976002705e-08
-colvars:     dx(interp) = -1.87654968273227e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.11898e-08
+colvars:     dx(actual) = -1.87654993766273e-08
+colvars:     dx(interp) = -1.87654968272732e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.35853e-07
 colvars:     Atom 0, component 2:
-colvars:     dx(actual) = -1.35376776455587e-08
-colvars:     dx(interp) = -1.35376762652898e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.01958e-07
+colvars:     dx(actual) = -1.35376758692018e-08
+colvars:     dx(interp) = -1.35376762652200e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.92530e-08
 colvars:     refPosGroup atom 0, component 0:
-colvars:     dx(actual) = -1.33079591790874e-08
-colvars:     dx(interp) = -1.33079579182801e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.47408e-08.
+colvars:     dx(actual) = -1.33079627318011e-08
+colvars:     dx(interp) = -1.33079579182108e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.61708e-07.
 colvars:     refPosGroup atom 0, component 1:
-colvars:     dx(actual) =  5.52538637066391e-09
-colvars:     dx(interp) =  5.52538365291565e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.91866e-07.
+colvars:     dx(actual) =  5.52538281795023e-09
+colvars:     dx(interp) =  5.52538365273265e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.51081e-07.
 colvars:     refPosGroup atom 0, component 2:
-colvars:     dx(actual) = -3.68380757009845e-08
-colvars:     dx(interp) = -3.68380733079295e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.49615e-08.
+colvars:     dx(actual) = -3.68380721482708e-08
+colvars:     dx(interp) = -3.68380733081996e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.14872e-08.
 colvars:     refPosGroup atom 1, component 0:
-colvars:     dx(actual) = -3.07143679378896e-08
-colvars:     dx(interp) = -3.07143629146728e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.63546e-07.
+colvars:     dx(actual) = -3.07143626088191e-08
+colvars:     dx(interp) = -3.07143629147814e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.96154e-09.
 colvars:     refPosGroup atom 1, component 1:
-colvars:     dx(actual) =  8.54108073156112e-09
-colvars:     dx(interp) =  8.54108462784049e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.56181e-07.
+colvars:     dx(actual) =  8.54108606063164e-09
+colvars:     dx(interp) =  8.54108462786949e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.67749e-07.
 colvars:     refPosGroup atom 1, component 2:
-colvars:     dx(actual) =  8.63982663190654e-10
-colvars:     dx(interp) =  8.63984483747468e-10
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.10717e-06.
+colvars:     dx(actual) =  8.63986215904333e-10
+colvars:     dx(interp) =  8.63984483685953e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.00491e-06.
 colvars:     refPosGroup atom 2, component 0:
-colvars:     dx(actual) = -5.24407841595576e-08
-colvars:     dx(interp) = -5.24407785890768e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.06224e-07.
+colvars:     dx(actual) = -5.24407806068439e-08
+colvars:     dx(interp) = -5.24407785892903e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.84730e-08.
 colvars:     refPosGroup atom 2, component 1:
-colvars:     dx(actual) =  1.64684088588274e-08
-colvars:     dx(interp) =  1.64684126819439e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.32149e-07.
+colvars:     dx(actual) =  1.64684159642547e-08
+colvars:     dx(interp) =  1.64684126820519e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.99303e-07.
 colvars:     refPosGroup atom 2, component 2:
 colvars:     dx(actual) =  9.44599065633156e-09
-colvars:     dx(interp) =  9.44599150504408e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.98490e-08.
+colvars:     dx(interp) =  9.44599150497556e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.98417e-08.
 colvars:     refPosGroup atom 3, component 0:
-colvars:     dx(actual) = -1.50443266733191e-08
-colvars:     dx(interp) = -1.50443213074514e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.56671e-07.
+colvars:     dx(actual) = -1.50443195678918e-08
+colvars:     dx(interp) = -1.50443213074023e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.15626e-07.
 colvars:     refPosGroup atom 3, component 1:
-colvars:     dx(actual) =  1.17550946754363e-09
-colvars:     dx(interp) =  1.17551172996291e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.92463e-06.
+colvars:     dx(actual) =  1.17551302025731e-09
+colvars:     dx(interp) =  1.17551172995609e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.09765e-06.
 colvars:     refPosGroup atom 3, component 2:
-colvars:     dx(actual) =  9.90585213855866e-09
-colvars:     dx(interp) =  9.90585040554310e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.74949e-07.
+colvars:     dx(actual) =  9.90585391491550e-09
+colvars:     dx(interp) =  9.90585040559288e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.54268e-07.
 colvars:     refPosGroup atom 4, component 0:
-colvars:     dx(actual) =  1.42213067988450e-08
-colvars:     dx(interp) =  1.42213094383007e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.85599e-07.
+colvars:     dx(actual) =  1.42213085752019e-08
+colvars:     dx(interp) =  1.42213094384851e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.07035e-08.
 colvars:     refPosGroup atom 4, component 1:
-colvars:     dx(actual) = -1.29448967101098e-08
-colvars:     dx(interp) = -1.29448958653403e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.52589e-08.
+colvars:     dx(actual) = -1.29448949337529e-08
+colvars:     dx(interp) = -1.29448958653369e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  7.19654e-08.
 colvars:     refPosGroup atom 4, component 2:
 colvars:     dx(actual) =  3.01599225593918e-08
-colvars:     dx(interp) =  3.01599231788846e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.05403e-08.
-colvars:     Gradient sum: ( 0.972861 , -0.187655 , -0.135377 )  Fit gradient sum: ( -0.972861 , 0.187655 , 0.135377 )  Total ( 0 , 5.55112e-17 , -1.11022e-16 )
+colvars:     dx(interp) =  3.01599231791652e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.05496e-08.
+colvars:     Gradient sum: ( 0.972861 , -0.187655 , -0.135377 )  Fit gradient sum: ( -0.972861 , 0.187655 , 0.135377 )  Total ( -4.44089e-16 , -2.77556e-17 , -8.32667e-17 )
 colvars:     Debugging gradients for cvc rmsd0001
 colvars:     Fit gradients:
 colvars:     refPosGroup[0] = ( -0.233016 , 0.268793 , -0.172714 )
@@ -1545,78 +1559,78 @@ colvars:     refPosGroup[2] = ( 0.225131 , 0.0320936 , -0.509162 )
 colvars:     refPosGroup[3] = ( 0.13478 , -0.0179822 , -0.118705 )
 colvars:     refPosGroup[4] = ( 0.218904 , -0.180324 , 0.217732 )
 colvars:     Atom 0, component 0:
-colvars:     dx(actual) =  9.72811822208541e-08
-colvars:     dx(interp) =  9.72811822063764e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.48823e-10
+colvars:     dx(actual) =  9.72811839972110e-08
+colvars:     dx(interp) =  9.72811822063914e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.84087e-08
 colvars:     Atom 0, component 1:
-colvars:     dx(actual) = -1.87862259082294e-08
-colvars:     dx(interp) = -1.87862240145837e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.00800e-07
+colvars:     dx(actual) = -1.87862205791589e-08
+colvars:     dx(interp) = -1.87862240145549e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.82868e-07
 colvars:     Atom 0, component 2:
-colvars:     dx(actual) = -1.35443496418475e-08
-colvars:     dx(interp) = -1.35443484820671e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.56284e-08
+colvars:     dx(actual) = -1.35443478654906e-08
+colvars:     dx(interp) = -1.35443484819996e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.55178e-08
 colvars:     refPosGroup atom 0, component 0:
-colvars:     dx(actual) = -1.33121762502242e-08
-colvars:     dx(interp) = -1.33121752894989e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  7.21689e-08.
+colvars:     dx(actual) = -1.33121726975105e-08
+colvars:     dx(interp) = -1.33121752894148e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.94702e-07.
 colvars:     refPosGroup atom 0, component 1:
-colvars:     dx(actual) =  5.52796741715156e-09
-colvars:     dx(interp) =  5.52797054208282e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.65295e-07.
+colvars:     dx(actual) =  5.52796919350840e-09
+colvars:     dx(interp) =  5.52797054190359e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.43922e-07.
 colvars:     refPosGroup atom 0, component 2:
-colvars:     dx(actual) = -3.68237778047842e-08
-colvars:     dx(interp) = -3.68237786459473e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.28429e-08.
+colvars:     dx(actual) = -3.68237813574979e-08
+colvars:     dx(interp) = -3.68237786462595e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  7.36274e-08.
 colvars:     refPosGroup atom 1, component 0:
-colvars:     dx(actual) = -3.07013934275346e-08
-colvars:     dx(interp) = -3.07013933890373e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.25393e-09.
+colvars:     dx(actual) = -3.07013916511778e-08
+colvars:     dx(interp) = -3.07013933891593e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.66092e-08.
 colvars:     refPosGroup atom 1, component 1:
-colvars:     dx(actual) =  8.54437054442769e-09
-colvars:     dx(interp) =  8.54437233930772e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.10066e-07.
+colvars:     dx(actual) =  8.54437764985505e-09
+colvars:     dx(interp) =  8.54437233935429e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.21520e-07.
 colvars:     refPosGroup atom 1, component 2:
 colvars:     dx(actual) =  8.80977069073197e-10
-colvars:     dx(interp) =  8.80974516418255e-10
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.89753e-06.
+colvars:     dx(interp) =  8.80974516357787e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.89760e-06.
 colvars:     refPosGroup atom 2, component 0:
-colvars:     dx(actual) = -5.24269978541270e-08
-colvars:     dx(interp) = -5.24269988260623e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.85388e-08.
+colvars:     dx(actual) = -5.24269960777701e-08
+colvars:     dx(interp) = -5.24269988263055e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.24260e-08.
 colvars:     refPosGroup atom 2, component 1:
-colvars:     dx(actual) =  1.64836126970158e-08
-colvars:     dx(interp) =  1.64836152923890e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.57452e-07.
+colvars:     dx(actual) =  1.64836180260863e-08
+colvars:     dx(interp) =  1.64836152925342e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.65834e-07.
 colvars:     refPosGroup atom 2, component 2:
-colvars:     dx(actual) =  9.44961975335445e-09
-colvars:     dx(interp) =  9.44961894498525e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.55452e-08.
+colvars:     dx(actual) =  9.44961797699762e-09
+colvars:     dx(interp) =  9.44961894491784e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.02430e-07.
 colvars:     refPosGroup atom 3, component 0:
-colvars:     dx(actual) = -1.50513557173326e-08
-colvars:     dx(interp) = -1.50513524198929e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.19079e-07.
+colvars:     dx(actual) = -1.50513521646189e-08
+colvars:     dx(interp) = -1.50513524198364e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.69564e-08.
 colvars:     refPosGroup atom 3, component 1:
 colvars:     dx(actual) =  1.18215304212299e-09
-colvars:     dx(interp) =  1.18215354892949e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.28715e-07.
+colvars:     dx(interp) =  1.18215354891989e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.28707e-07.
 colvars:     refPosGroup atom 3, component 2:
-colvars:     dx(actual) =  9.89234827386554e-09
-colvars:     dx(interp) =  9.89235145483398e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.21558e-07.
+colvars:     dx(actual) =  9.89235360293605e-09
+colvars:     dx(interp) =  9.89235145488878e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.17142e-07.
 colvars:     refPosGroup atom 4, component 0:
-colvars:     dx(actual) =  1.42107392520074e-08
-colvars:     dx(interp) =  1.42107377181149e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.07939e-07.
+colvars:     dx(actual) =  1.42107428047211e-08
+colvars:     dx(interp) =  1.42107377183247e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.57926e-07.
 colvars:     refPosGroup atom 4, component 1:
-colvars:     dx(actual) = -1.29518902269865e-08
-colvars:     dx(interp) = -1.29518877081253e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.94478e-07.
+colvars:     dx(actual) = -1.29518866742728e-08
+colvars:     dx(interp) = -1.29518877081570e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  7.98250e-08.
 colvars:     refPosGroup atom 4, component 2:
-colvars:     dx(actual) =  3.01451823503385e-08
-colvars:     dx(interp) =  3.01451822117770e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.59647e-09.
-colvars:     Gradient sum: ( 0.972812 , -0.187862 , -0.135443 )  Fit gradient sum: ( -0.972812 , 0.187862 , 0.135443 )  Total ( -4.44089e-16 , -1.11022e-16 , 1.66533e-16 )
+colvars:     dx(actual) =  3.01451859030522e-08
+colvars:     dx(interp) =  3.01451822120947e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.22439e-07.
+colvars:     Gradient sum: ( 0.972812 , -0.187862 , -0.135443 )  Fit gradient sum: ( -0.972812 , 0.187862 , 0.135443 )  Total ( 0 , 8.32667e-17 , -2.77556e-17 )
 colvars:     Debugging gradients for cvc rmsd0001
 colvars:     Fit gradients:
 colvars:     refPosGroup[0] = ( -0.232895 , 0.268756 , -0.172689 )
@@ -1626,77 +1640,77 @@ colvars:     refPosGroup[3] = ( 0.13468 , -0.0179234 , -0.118796 )
 colvars:     refPosGroup[4] = ( 0.218885 , -0.180228 , 0.217636 )
 colvars:     Atom 0, component 0:
 colvars:     dx(actual) =  9.72755298533912e-08
-colvars:     dx(interp) =  9.72755300433577e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.95287e-09
+colvars:     dx(interp) =  9.72755300433665e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.95296e-09
 colvars:     Atom 0, component 1:
 colvars:     dx(actual) = -1.88098567832640e-08
-colvars:     dx(interp) = -1.88098562182561e-08
+colvars:     dx(interp) = -1.88098562182550e-08
 colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.00379e-08
 colvars:     Atom 0, component 2:
-colvars:     dx(actual) = -1.35521442956588e-08
-colvars:     dx(interp) = -1.35521424074697e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.39328e-07
+colvars:     dx(actual) = -1.35521425193019e-08
+colvars:     dx(interp) = -1.35521424074084e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.25652e-09
 colvars:     refPosGroup atom 0, component 0:
-colvars:     dx(actual) = -1.33145352521069e-08
-colvars:     dx(interp) = -1.33145349554424e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.22813e-08.
+colvars:     dx(actual) = -1.33145388048206e-08
+colvars:     dx(interp) = -1.33145349553423e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.89118e-07.
 colvars:     refPosGroup atom 0, component 1:
-colvars:     dx(actual) =  5.53619372567482e-09
-colvars:     dx(interp) =  5.53619602104882e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.14612e-07.
+colvars:     dx(actual) =  5.53619017296114e-09
+colvars:     dx(interp) =  5.53619602088123e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.05631e-06.
 colvars:     refPosGroup atom 0, component 2:
-colvars:     dx(actual) = -3.68101638059670e-08
-colvars:     dx(interp) = -3.68101602185402e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.74575e-08.
+colvars:     dx(actual) = -3.68101620296102e-08
+colvars:     dx(interp) = -3.68101602188950e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.91906e-08.
 colvars:     refPosGroup atom 1, component 0:
-colvars:     dx(actual) = -3.06911882574923e-08
-colvars:     dx(interp) = -3.06911850467996e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.04613e-07.
+colvars:     dx(actual) = -3.06911847047786e-08
+colvars:     dx(interp) = -3.06911850469353e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.11484e-08.
 colvars:     refPosGroup atom 1, component 1:
-colvars:     dx(actual) =  8.55011883515999e-09
-colvars:     dx(interp) =  8.55012139088884e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.98912e-07.
+colvars:     dx(actual) =  8.55012061151683e-09
+colvars:     dx(interp) =  8.55012139095666e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.11613e-08.
 colvars:     refPosGroup atom 1, component 2:
-colvars:     dx(actual) =  8.96111629344887e-10
-colvars:     dx(interp) =  8.96118864973644e-10
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.07447e-06.
+colvars:     dx(actual) =  8.96118734772244e-10
+colvars:     dx(interp) =  8.96118864916365e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.45231e-07.
 colvars:     refPosGroup atom 2, component 0:
-colvars:     dx(actual) = -5.24133678680982e-08
-colvars:     dx(interp) = -5.24133675050389e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.92685e-09.
+colvars:     dx(actual) = -5.24133714208119e-08
+colvars:     dx(interp) = -5.24133675053115e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  7.47042e-08.
 colvars:     refPosGroup atom 2, component 1:
-colvars:     dx(actual) =  1.64991558193606e-08
-colvars:     dx(interp) =  1.64991576724387e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.12314e-07.
+colvars:     dx(actual) =  1.64991522666469e-08
+colvars:     dx(interp) =  1.64991576726264e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.27652e-07.
 colvars:     refPosGroup atom 2, component 2:
-colvars:     dx(actual) =  9.45345135505704e-09
-colvars:     dx(interp) =  9.45345422364752e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.03444e-07.
+colvars:     dx(actual) =  9.45344957870020e-09
+colvars:     dx(interp) =  9.45345422358397e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.91343e-07.
 colvars:     refPosGroup atom 3, component 0:
-colvars:     dx(actual) = -1.50559529288330e-08
-colvars:     dx(interp) = -1.50559499577847e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.97334e-07.
+colvars:     dx(actual) = -1.50559547051898e-08
+colvars:     dx(interp) = -1.50559499577201e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.15322e-07.
 colvars:     refPosGroup atom 3, component 1:
-colvars:     dx(actual) =  1.18710730134808e-09
-colvars:     dx(interp) =  1.18711101842575e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.13121e-06.
+colvars:     dx(actual) =  1.18710907770492e-09
+colvars:     dx(interp) =  1.18711101841254e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.63482e-06.
 colvars:     refPosGroup atom 3, component 2:
-colvars:     dx(actual) =  9.88097959009338e-09
-colvars:     dx(interp) =  9.88098341951569e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.87555e-07.
+colvars:     dx(actual) =  9.88098136645021e-09
+colvars:     dx(interp) =  9.88098341957552e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.07786e-07.
 colvars:     refPosGroup atom 4, component 0:
-colvars:     dx(actual) =  1.41995020186414e-08
-colvars:     dx(interp) =  1.41995074217079e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.80511e-07.
+colvars:     dx(actual) =  1.41995091240688e-08
+colvars:     dx(interp) =  1.41995074219426e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.19872e-07.
 colvars:     refPosGroup atom 4, component 1:
-colvars:     dx(actual) = -1.29627313327774e-08
-colvars:     dx(interp) = -1.29627298845460e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.11723e-07.
+colvars:     dx(actual) = -1.29627295564205e-08
+colvars:     dx(interp) = -1.29627298846219e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.53188e-08.
 colvars:     refPosGroup atom 4, component 2:
-colvars:     dx(actual) =  3.01317424344916e-08
-colvars:     dx(interp) =  3.01317461178731e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.22243e-07.
-colvars:     Gradient sum: ( 0.972755 , -0.188099 , -0.135521 )  Fit gradient sum: ( -0.972755 , 0.188099 , 0.135521 )  Total ( 0 , -1.38778e-16 , -5.55112e-17 )
+colvars:     dx(actual) =  3.01317442108484e-08
+colvars:     dx(interp) =  3.01317461182275e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.33013e-08.
+colvars:     Gradient sum: ( 0.972755 , -0.188099 , -0.135521 )  Fit gradient sum: ( -0.972755 , 0.188099 , 0.135521 )  Total ( -1.11022e-16 , -8.32667e-17 , 2.77556e-16 )
 colvars:     Debugging gradients for cvc rmsd0001
 colvars:     Fit gradients:
 colvars:     refPosGroup[0] = ( -0.232767 , 0.268736 , -0.172656 )
@@ -1705,76 +1719,76 @@ colvars:     refPosGroup[2] = ( 0.224836 , 0.0318648 , -0.509148 )
 colvars:     refPosGroup[3] = ( 0.134577 , -0.017861 , -0.118901 )
 colvars:     refPosGroup[4] = ( 0.218864 , -0.180136 , 0.21754 )
 colvars:     Atom 0, component 0:
-colvars:     dx(actual) =  9.72697087320284e-08
-colvars:     dx(interp) =  9.72697044047345e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.44876e-08
+colvars:     dx(actual) =  9.72697016266011e-08
+colvars:     dx(interp) =  9.72697044047350e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.85611e-08
 colvars:     Atom 0, component 1:
-colvars:     dx(actual) = -1.88344113638550e-08
-colvars:     dx(interp) = -1.88344114389440e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.98680e-09
+colvars:     dx(actual) = -1.88344095874982e-08
+colvars:     dx(interp) = -1.88344114389782e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.83031e-08
 colvars:     Atom 0, component 2:
 colvars:     dx(actual) = -1.35598501316281e-08
-colvars:     dx(interp) = -1.35598506910709e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.12573e-08
+colvars:     dx(interp) = -1.35598506910201e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.12536e-08
 colvars:     refPosGroup atom 0, component 0:
-colvars:     dx(actual) = -1.33169564264790e-08
-colvars:     dx(interp) = -1.33169569566500e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.98117e-08.
+colvars:     dx(actual) = -1.33169599791927e-08
+colvars:     dx(interp) = -1.33169569565328e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.26978e-07.
 colvars:     refPosGroup atom 0, component 1:
-colvars:     dx(actual) =  5.54423706944362e-09
-colvars:     dx(interp) =  5.54423349161562e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.45324e-07.
+colvars:     dx(actual) =  5.54423351672995e-09
+colvars:     dx(interp) =  5.54423349146829e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.55638e-09.
 colvars:     refPosGroup atom 0, component 2:
-colvars:     dx(actual) = -3.67969423820114e-08
-colvars:     dx(interp) = -3.67969415707110e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.20480e-08.
+colvars:     dx(actual) = -3.67969441583682e-08
+colvars:     dx(interp) = -3.67969415711082e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  7.03118e-08.
 colvars:     refPosGroup atom 1, component 0:
-colvars:     dx(actual) = -3.06796561488909e-08
-colvars:     dx(interp) = -3.06796542495270e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  6.19096e-08.
+colvars:     dx(actual) = -3.06796579252477e-08
+colvars:     dx(interp) = -3.06796542496761e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.19805e-07.
 colvars:     refPosGroup atom 1, component 1:
-colvars:     dx(actual) =  8.55583515146918e-09
-colvars:     dx(interp) =  8.55583619595226e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.22078e-07.
+colvars:     dx(actual) =  8.55582804604182e-09
+colvars:     dx(interp) =  8.55583619604507e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.52567e-07.
 colvars:     refPosGroup atom 1, component 2:
-colvars:     dx(actual) =  9.12072195546898e-10
-colvars:     dx(interp) =  9.12071277187525e-10
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.00689e-06.
+colvars:     dx(actual) =  9.12068642833219e-10
+colvars:     dx(interp) =  9.12071277135838e-10
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.88827e-06.
 colvars:     refPosGroup atom 2, component 0:
-colvars:     dx(actual) = -5.23998977541851e-08
-colvars:     dx(interp) = -5.23999034979550e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.09614e-07.
+colvars:     dx(actual) = -5.23999084123261e-08
+colvars:     dx(interp) = -5.23999034982557e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.37801e-08.
 colvars:     refPosGroup atom 2, component 1:
-colvars:     dx(actual) =  1.65161768705957e-08
-colvars:     dx(interp) =  1.65161746157892e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.36521e-07.
+colvars:     dx(actual) =  1.65161679888115e-08
+colvars:     dx(interp) =  1.65161746160247e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.01256e-07.
 colvars:     refPosGroup atom 2, component 2:
-colvars:     dx(actual) =  9.45777856031782e-09
-colvars:     dx(interp) =  9.45777848162924e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  8.31998e-09.
+colvars:     dx(actual) =  9.45777500760414e-09
+colvars:     dx(interp) =  9.45777848157281e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.67314e-07.
 colvars:     refPosGroup atom 3, component 0:
-colvars:     dx(actual) = -1.50616532579306e-08
-colvars:     dx(interp) = -1.50616518664587e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  9.23851e-08.
+colvars:     dx(actual) = -1.50616550342875e-08
+colvars:     dx(interp) = -1.50616518663852e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.10329e-07.
 colvars:     refPosGroup atom 3, component 1:
-colvars:     dx(actual) =  1.19267262732592e-09
-colvars:     dx(interp) =  1.19267018001124e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  2.05196e-06.
+colvars:     dx(actual) =  1.19267085096908e-09
+colvars:     dx(interp) =  1.19267017999368e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.62582e-07.
 colvars:     refPosGroup atom 3, component 2:
-colvars:     dx(actual) =  9.86899628685478e-09
-colvars:     dx(interp) =  9.86899596494964e-09
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.26178e-08.
+colvars:     dx(actual) =  9.86899095778426e-09
+colvars:     dx(interp) =  9.86899596501446e-09
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  5.07370e-07.
 colvars:     refPosGroup atom 4, component 0:
-colvars:     dx(actual) =  1.41884637372414e-08
-colvars:     dx(interp) =  1.41884621658561e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.10751e-07.
+colvars:     dx(actual) =  1.41884619608845e-08
+colvars:     dx(interp) =  1.41884621661148e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.44646e-08.
 colvars:     refPosGroup atom 4, component 1:
-colvars:     dx(actual) = -1.29745050259089e-08
-colvars:     dx(interp) = -1.29745030444243e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.52721e-07.
+colvars:     dx(actual) = -1.29745085786226e-08
+colvars:     dx(interp) = -1.29745030445535e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  4.26534e-07.
 colvars:     refPosGroup atom 4, component 2:
-colvars:     dx(actual) =  3.01179454709199e-08
-colvars:     dx(interp) =  3.01179465380155e-08
-colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  3.54306e-08.
-colvars:     Gradient sum: ( 0.972697 , -0.188344 , -0.135599 )  Fit gradient sum: ( -0.972697 , 0.188344 , 0.135599 )  Total ( 1.11022e-16 , -5.55112e-17 , 1.94289e-16 )
+colvars:     dx(actual) =  3.01179419182063e-08
+colvars:     dx(interp) =  3.01179465384051e-08
+colvars:     |dx(actual) - dx(interp)|/|dx(actual)| =  1.53404e-07.
+colvars:     Gradient sum: ( 0.972697 , -0.188344 , -0.135599 )  Fit gradient sum: ( -0.972697 , 0.188344 , 0.135599 )  Total ( 0 , -8.32667e-17 , -3.05311e-16 )
 colvars: Saving collective variables state to "test.colvars.state".

@@ -204,6 +204,7 @@ colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new "abf" instance.
 colvars:   # name = "abf1" [default]
 colvars:   # colvars = { angle, dihedral }
+colvars:   # stepZeroData = off [default]
 colvars:   # outputEnergy = off [default]
 colvars:   # outputFreq = 5
 colvars:   # timeStepFactor = 1 [default]

@@ -1,26 +1,27 @@
 colvars: ----------------------------------------------------------------------
 colvars: Please cite Fiorin et al, Mol Phys 2013:
-colvars:  http://dx.doi.org/10.1080/00268976.2013.813594
+colvars:  https://dx.doi.org/10.1080/00268976.2013.813594
 colvars: in any publication based on this calculation.
-colvars: SMP parallelism is available.
+colvars: SMP parallelism is enabled; if needed, use "smp off" to override this.
+colvars: This version was built with the C++11 standard or higher.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
-colvars: # indexFile = "" [default]
+colvars: # units = "" [default]
 colvars: # smp = on [default]
-colvars: # analysis = off [default]
 colvars: # colvarsTrajFrequency = 10
-colvars: # colvarsRestartFrequency = 100 [default]
-colvars: # colvarsTrajAppend = off [default]
+colvars: # colvarsRestartFrequency = 10 [default]
 colvars: # scriptedColvarForces = off [default]
-colvars: # scriptingAfterBiases = on [default]
+colvars: # scriptingAfterBiases = off [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "c"
 colvars:   Initializing a new "distance" component.
+colvars:     # name = "x"
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
 colvars:     # scalable = on [default]
 colvars:       Initializing atom group "group1".
 colvars:       # name = "" [default]
@@ -34,7 +35,8 @@ colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Enabling scalable calculation for group "group1".
-colvars:       Atom group "group1" defined, 1 atoms initialized: total mass = 12.011, total charge = -0.1.
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group1" defined with 1 atoms requested: total mass = 12.011, total charge = -0.1.
 colvars:       Initializing atom group "group2".
 colvars:       # name = "" [default]
 colvars:       # centerReference = off [default]
@@ -47,15 +49,17 @@ colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Enabling scalable calculation for group "group2".
-colvars:       Atom group "group2" defined, 1 atoms initialized: total mass = 12.011, total charge = 0.07.
-colvars:     # forceNoPBC = off [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group2" defined with 1 atoms requested: total mass = 12.011, total charge = 0.07.
 colvars:     # oneSiteSystemForce = off [default]
 colvars:     # oneSiteTotalForce = off [default]
 colvars:   Initializing a new "distanceVec" component.
+colvars:     # name = "r"
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
 colvars:     # scalable = on [default]
 colvars:       Initializing atom group "group1".
 colvars:       # name = "" [default]
@@ -69,7 +73,8 @@ colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Enabling scalable calculation for group "group1".
-colvars:       Atom group "group1" defined, 1 atoms initialized: total mass = 12.011, total charge = 0.51.
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group1" defined with 1 atoms requested: total mass = 12.011, total charge = 0.51.
 colvars:       Initializing atom group "group2".
 colvars:       # name = "" [default]
 colvars:       # centerReference = off [default]
@@ -82,15 +87,52 @@ colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Enabling scalable calculation for group "group2".
-colvars:       Atom group "group2" defined, 1 atoms initialized: total mass = 12.011, total charge = 0.51.
-colvars:     # forceNoPBC = off [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group2" defined with 1 atoms requested: total mass = 12.011, total charge = 0.51.
 colvars:     # oneSiteSystemForce = off [default]
 colvars:     # oneSiteTotalForce = off [default]
 colvars:   All components initialized.
 colvars:   This colvar uses a custom function.
+colvars:   Warning: Variable r1 is absent from expression "x".
+colvars:   Warning: Variable r2 is absent from expression "x".
+colvars:   Warning: Variable r3 is absent from expression "x".
+colvars:   Warning: Variable r2 is absent from expression "cos(x) + r1 + r3".
+colvars:   Warning: Variable x is absent from derivative of "cos(x) + r1 + r3" wrt x.
+colvars:   Warning: Variable r1 is absent from derivative of "cos(x) + r1 + r3" wrt x.
+colvars:   Warning: Variable r2 is absent from derivative of "cos(x) + r1 + r3" wrt x.
+colvars:   Warning: Variable r3 is absent from derivative of "cos(x) + r1 + r3" wrt x.
+colvars:   Warning: Variable r1 is absent from derivative of "cos(x) + r1 + r3" wrt x.
+colvars:   Warning: Variable r2 is absent from derivative of "cos(x) + r1 + r3" wrt x.
+colvars:   Warning: Variable r3 is absent from derivative of "cos(x) + r1 + r3" wrt x.
+colvars:   Warning: Variable x is absent from derivative of "cos(x) + r1 + r3" wrt r1.
+colvars:   Warning: Variable r1 is absent from derivative of "cos(x) + r1 + r3" wrt r1.
+colvars:   Warning: Variable r2 is absent from derivative of "cos(x) + r1 + r3" wrt r1.
+colvars:   Warning: Variable r3 is absent from derivative of "cos(x) + r1 + r3" wrt r1.
+colvars:   Warning: Variable x is absent from derivative of "cos(x) + r1 + r3" wrt r1.
+colvars:   Warning: Variable r1 is absent from derivative of "cos(x) + r1 + r3" wrt r1.
+colvars:   Warning: Variable r2 is absent from derivative of "cos(x) + r1 + r3" wrt r1.
+colvars:   Warning: Variable r3 is absent from derivative of "cos(x) + r1 + r3" wrt r1.
+colvars:   Warning: Variable x is absent from derivative of "cos(x) + r1 + r3" wrt r2.
+colvars:   Warning: Variable r1 is absent from derivative of "cos(x) + r1 + r3" wrt r2.
+colvars:   Warning: Variable r2 is absent from derivative of "cos(x) + r1 + r3" wrt r2.
+colvars:   Warning: Variable r3 is absent from derivative of "cos(x) + r1 + r3" wrt r2.
+colvars:   Warning: Variable x is absent from derivative of "cos(x) + r1 + r3" wrt r2.
+colvars:   Warning: Variable r1 is absent from derivative of "cos(x) + r1 + r3" wrt r2.
+colvars:   Warning: Variable r2 is absent from derivative of "cos(x) + r1 + r3" wrt r2.
+colvars:   Warning: Variable r3 is absent from derivative of "cos(x) + r1 + r3" wrt r2.
+colvars:   Warning: Variable x is absent from derivative of "cos(x) + r1 + r3" wrt r3.
+colvars:   Warning: Variable r1 is absent from derivative of "cos(x) + r1 + r3" wrt r3.
+colvars:   Warning: Variable r2 is absent from derivative of "cos(x) + r1 + r3" wrt r3.
+colvars:   Warning: Variable r3 is absent from derivative of "cos(x) + r1 + r3" wrt r3.
+colvars:   Warning: Variable x is absent from derivative of "cos(x) + r1 + r3" wrt r3.
+colvars:   Warning: Variable r1 is absent from derivative of "cos(x) + r1 + r3" wrt r3.
+colvars:   Warning: Variable r2 is absent from derivative of "cos(x) + r1 + r3" wrt r3.
+colvars:   Warning: Variable r3 is absent from derivative of "cos(x) + r1 + r3" wrt r3.
 colvars:   Expecting colvar value of type n-dimensional vector of size 2.
 colvars:   # timeStepFactor = 1 [default]
 colvars:   # width = 1 [default]
+colvars:   # hardLowerBoundary = off [default]
+colvars:   # hardUpperBoundary = off [default]
 colvars:   # expandBoundaries = off [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
@@ -98,18 +140,26 @@ colvars:   # outputVelocity = off [default]
 colvars:   # outputTotalForce = off [default]
 colvars:   # outputAppliedForce = off [default]
 colvars:   # subtractAppliedForce = off [default]
+colvars:   # runAve = off [default]
+colvars:   # corrFunc = off [default]
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new "harmonic" instance.
 colvars:   # name = "harmonic1" [default]
 colvars:   # colvars = { c }
+colvars:   # stepZeroData = off [default]
 colvars:   # outputEnergy = off [default]
+colvars:   # outputFreq = 10 [default]
 colvars:   # timeStepFactor = 1 [default]
+colvars:   # writeTISamples = off [default]
+colvars:   # writeTIPMF = off [default]
 colvars:   # centers = { ( 20 , -5 ) }
 colvars:   # targetCenters = { ( 20 , -5 ) } [default]
+colvars:   # outputCenters = off [default]
 colvars:   # forceConstant = 100
-colvars:   # targetForceConstant = 0 [default]
+colvars:   # targetForceConstant = -1 [default]
+colvars:   The force constant for colvar "c" will be rescaled to 100 according to the specified width (1).
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables biases initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
@@ -118,23 +168,26 @@ colvars: ----------------------------------------------------------------------
 colvars: Updating NAMD interface:
 colvars: updating atomic data (0 atoms).
 colvars: updating group data (4 scalable groups, 4 atoms in total).
+colvars: Re-initialized atom group for variable "c":0/0. 1 atoms: total mass = 12.011, total charge = -0.1.
+colvars: Re-initialized atom group for variable "c":0/1. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "c":1/0. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "c":1/1. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: The restart output state file will be "test.tmp.colvars.state".
+colvars: The final output state file will be "test.colvars.state".
+colvars: Opening trajectory file "test.colvars.traj".
+colvars: Redefining the Tcl "cv" command to the new script interface.
 colvars: Updating NAMD interface:
 colvars: updating atomic data (0 atoms).
 colvars: updating group data (4 scalable groups, 4 atoms in total).
-colvars: Re-initialized atom group c:0/0. 1 atoms: total mass = 12.011.
-colvars: Re-initialized atom group c:0/1. 1 atoms: total mass = 12.011.
-colvars: Re-initialized atom group c:1/0. 1 atoms: total mass = 12.011.
-colvars: Re-initialized atom group c:1/1. 1 atoms: total mass = 12.011.
-colvars: The restart output state file will be "test.restart.colvars.state".
+colvars: Re-initialized atom group for variable "c":0/0. 1 atoms: total mass = 12.011, total charge = -0.1.
+colvars: Re-initialized atom group for variable "c":0/1. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "c":1/0. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "c":1/1. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: The restart output state file will be "test.tmp.colvars.state".
 colvars: The final output state file will be "test.colvars.state".
-colvars: Writing to colvar trajectory file "test.colvars.traj".
-colvars: Updating NAMD interface:
-colvars: updating atomic data (0 atoms).
-colvars: updating group data (4 scalable groups, 4 atoms in total).
-colvars: Re-initialized atom group c:0/0. 1 atoms: total mass = 12.011.
-colvars: Re-initialized atom group c:0/1. 1 atoms: total mass = 12.011.
-colvars: Re-initialized atom group c:1/0. 1 atoms: total mass = 12.011.
-colvars: Re-initialized atom group c:1/1. 1 atoms: total mass = 12.011.
-colvars: The restart output state file will be "test.restart.colvars.state".
-colvars: The final output state file will be "test.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.tmp.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.tmp.colvars.state".
 colvars: Saving collective variables state to "test.colvars.state".

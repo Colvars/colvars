@@ -108,7 +108,7 @@ colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new "metadynamics" instance.
 colvars:   # name = "metadynamics1" [default]
 colvars:   # colvars = { d }
-colvars:   # zeroStepData = off [default]
+colvars:   # stepZeroData = off [default]
 colvars:   # outputEnergy = off [default]
 colvars:   # outputFreq = 40000 [default]
 colvars:   # timeStepFactor = 1 [default]
@@ -149,7 +149,7 @@ colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new "harmonicwalls" instance.
 colvars:   # name = "dw"
 colvars:   # colvars = { d }
-colvars:   # zeroStepData = off [default]
+colvars:   # stepZeroData = off [default]
 colvars:   # outputEnergy = off [default]
 colvars:   # outputFreq = 40000 [default]
 colvars:   # timeStepFactor = 1
@@ -190,7 +190,7 @@ colvars: Re-initialized atom group for variable "d":0/1. 1 atoms: total mass = 1
 colvars: The restart output state file will be "testres.rep1r.colvars.state".
 colvars: The final output state file will be "testres.rep1.colvars.state".
 colvars:   Metadynamics bias "metadynamics1": accessing replica "rep2".
-colvars:   Metadynamics bias "metadynamics1": replica "rep2" has supplied a new state file, "/data/local/Fiorin/work/colvars/namd/tests/library/011_multiple_walker_mtd/test.rep2.colvars.metadynamics1.rep2.state".
-colvars:   Metadynamics bias "metadynamics1": reading the state of replica "rep2" from file "/data/local/Fiorin/work/colvars/namd/tests/library/011_multiple_walker_mtd/test.rep2.colvars.metadynamics1.rep2.state".
+colvars:   Metadynamics bias "metadynamics1": replica "rep2" has supplied a new state file, "/home/jhenin/Projects/colvars/namd/tests/library/011_multiple_walker_mtd/test.rep2.colvars.metadynamics1.rep2.state".
+colvars:   Metadynamics bias "metadynamics1": reading the state of replica "rep2" from file "/home/jhenin/Projects/colvars/namd/tests/library/011_multiple_walker_mtd/test.rep2.colvars.metadynamics1.rep2.state".
 colvars:   Restarting metadynamics bias "metadynamics1" from step number 100.
 colvars: Saving collective variables state to "testres.rep1.colvars.state".

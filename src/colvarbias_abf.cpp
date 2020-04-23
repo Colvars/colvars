@@ -31,7 +31,7 @@ colvarbias_abf::colvarbias_abf(char const *key)
   colvarproxy *proxy = cvm::main()->proxy;
   if (!proxy->total_forces_same_step()) {
     // Samples at step zero can not be collected
-    feature_states[f_cvb_zero_step_data].available = false;
+    feature_states[f_cvb_step_zero_data].available = false;
   }
 }
 
@@ -346,7 +346,7 @@ int colvarbias_abf::update()
     force_bin = bin;
   }
 
-  if (cvm::step_relative() > 0 || cvm::proxy->total_forces_same_step()) {
+  if (cvm::step_relative() > 0 || is_enabled(f_cvb_step_zero_data)) {
 
     if (update_bias) {
 //       if (b_adiabatic_reweighting) {
@@ -362,12 +362,10 @@ int colvarbias_abf::update()
           // and subtract previous ABF force if necessary
           update_system_force(i);
         }
-        if (cvm::step_relative() > 0 || is_enabled(f_cvb_zero_step_data)) {
           gradients->acc_force(force_bin, system_force);
           if ( b_integrate ) {
             pmf->update_div_neighbors(force_bin);
           }
-        }
       }
     }
 
@@ -381,9 +379,7 @@ int colvarbias_abf::update()
           // the function is just an accessor, so cheap to call again anyway
           update_system_force(i);
         }
-        if (cvm::step_relative() > 0 || is_enabled(f_cvb_zero_step_data)) {
-          z_gradients->acc_force(z_bin, system_force);
-        }
+        z_gradients->acc_force(z_bin, system_force);
       }
     }
 

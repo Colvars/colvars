@@ -1,10 +1,12 @@
 colvars: ----------------------------------------------------------------------
 colvars: Please cite Fiorin et al, Mol Phys 2013:
-colvars:  http://dx.doi.org/10.1080/00268976.2013.813594
+colvars:  https://dx.doi.org/10.1080/00268976.2013.813594
 colvars: in any publication based on this calculation.
-colvars: SMP parallelism is available.
+colvars: SMP parallelism is enabled; if needed, use "smp off" to override this.
+colvars: This version was built with the C++11 standard or higher.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "gpath.in":
+colvars: # units = "" [default]
 colvars: # smp = on [default]
 colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 500000 [default]
@@ -3164,6 +3166,8 @@ colvars:   # timeStepFactor = 1 [default]
 colvars:   # width = 1 [default]
 colvars:   # lowerBoundary = 0 [default]
 colvars:   # upperBoundary = 0 [default]
+colvars:   # hardLowerBoundary = off [default]
+colvars:   # hardUpperBoundary = off [default]
 colvars:   # expandBoundaries = off [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
@@ -6329,6 +6333,8 @@ colvars:   # timeStepFactor = 1 [default]
 colvars:   # width = 1 [default]
 colvars:   # lowerBoundary = 0 [default]
 colvars:   # upperBoundary = 0 [default]
+colvars:   # hardLowerBoundary = off [default]
+colvars:   # hardUpperBoundary = off [default]
 colvars:   # expandBoundaries = off [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
@@ -6429,7 +6435,8 @@ colvars: Re-initialized atom group for variable "gpath_z_distanceVec":0/38. 0 at
 colvars: Re-initialized atom group for variable "gpath_z_distanceVec":0/39. 1 atoms: total mass = 12.01, total charge = -0.149.
 colvars: The restart output state file will be "test.restart.colvars.state".
 colvars: The final output state file will be "test.colvars.state".
-colvars: Writing to colvar trajectory file "test.colvars.traj".
+colvars: Opening trajectory file "test.colvars.traj".
+colvars: Redefining the Tcl "cv" command to the new script interface.
 colvars: Updating NAMD interface:
 colvars: updating atomic data (0 atoms).
 colvars: updating group data (20 scalable groups, 20 atoms in total).
@@ -6515,4 +6522,5 @@ colvars: Re-initialized atom group for variable "gpath_z_distanceVec":0/38. 0 at
 colvars: Re-initialized atom group for variable "gpath_z_distanceVec":0/39. 1 atoms: total mass = 12.01, total charge = -0.149.
 colvars: The restart output state file will be "test.restart.colvars.state".
 colvars: The final output state file will be "test.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
 colvars: Saving collective variables state to "test.colvars.state".

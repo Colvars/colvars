@@ -4064,9 +4064,9 @@ All biasing and analysis methods implemented recognize the following options:
     If \texttt{bypassExtendedLagrangian} is enabled, the bias behaves as if there were no extended coordinates, and accesses the value of the underlying colvars, applying any biasing forces along the gradients of those variables.}
 
 \item %
-  \labelkey{colvarbias|zeroStepData}
+  \labelkey{colvarbias|stepZeroData}
   \keydef
-    {zeroStepData}{%
+    {stepZeroData}{%
     colvar bias}{%
     Accumulate data starting at step 0 of a simulation run}{%
     boolean}{%
@@ -4294,7 +4294,7 @@ The following specific parameters can be set in the ABF configuration block:
 \item \dupkey{colvars}{\texttt{abf}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{outputEnergy}{\texttt{abf}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{outputFreq}{\texttt{abf}}{colvarbias|outputFreq}{biasing and analysis methods}
-\item \dupkey{zeroStepData}{\texttt{abf}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{stepZeroData}{\texttt{abf}}{sec:colvarbias}{biasing and analysis methods}
 
 \item \keydef{fullSamples}{\texttt{abf}}{%
     Number of samples in a bin prior
@@ -4805,7 +4805,7 @@ Its mandatory keywords are \refkey{colvars}{colvarbias|colvars}, the variables i
 \item \dupkey{outputFreq}{\texttt{metadynamics}}{colvarbias|outputFreq}{biasing and analysis methods}
 \item \dupkey{writeTIPMF}{\texttt{metadynamics}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{writeTISamples}{\texttt{metadynamics}}{sec:colvarbias}{biasing and analysis methods}
-\item \dupkey{zeroStepData}{\texttt{metadynamics}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{stepZeroData}{\texttt{metadynamics}}{sec:colvarbias}{biasing and analysis methods}
 
 \item %
   \labelkey{metadynamics|hillWeight}
@@ -5248,7 +5248,7 @@ A harmonic restraint is defined by a \texttt{harmonic~\{...\}} block, which may 
 \item \dupkey{outputEnergy}{\texttt{harmonic}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{writeTIPMF}{\texttt{harmonic}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{writeTISamples}{\texttt{harmonic}}{sec:colvarbias}{biasing and analysis methods}
-\item \dupkey{zeroStepData}{\texttt{harmonic}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{stepZeroData}{\texttt{harmonic}}{sec:colvarbias}{biasing and analysis methods}
 
 \item %
   \labelkey{harmonic|forceConstant}
@@ -5508,7 +5508,7 @@ The \texttt{harmonicWalls} bias implements the following options:
 \item \dupkey{outputEnergy}{\texttt{harmonicWalls}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{writeTIPMF}{\texttt{harmonicWalls}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{writeTISamples}{\texttt{harmonicWalls}}{sec:colvarbias}{biasing and analysis methods}
-\item \dupkey{zeroStepData}{\texttt{harmonicWalls}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{stepZeroData}{\texttt{harmonicWalls}}{sec:colvarbias}{biasing and analysis methods}
 
 \item %
   \key
@@ -5622,7 +5622,7 @@ using \cite{Pitera2012}.
 \item \dupkey{name}{\texttt{linear}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{colvars}{\texttt{linear}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{outputEnergy}{\texttt{linear}}{sec:colvarbias}{biasing and analysis methods}
-% No TI, no zeroStepData
+% No TI, no stepZeroData
 
 
 \item %
@@ -5753,7 +5753,7 @@ variables in the form of a N-dimensional histogram. A \texttt{histogram} block m
 \item \dupkey{colvars}{\texttt{histogram}}{sec:colvarbias}{biasing and analysis methods}
 % \item \dupkey{outputEnergy}{\texttt{histogram}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{outputFreq}{\texttt{histogram}}{sec:colvarbias}{biasing and analysis methods}
-\item \dupkey{zeroStepData}{\texttt{histogram}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{stepZeroData}{\texttt{histogram}}{sec:colvarbias}{biasing and analysis methods}
 
 \item %
   \keydef{%

@@ -100,6 +100,8 @@ colvars:   # extendedTimeConstant = 200
 colvars:   Computed fictitious mass: 100672 [E]/(U/fs)^2   (U: colvar unit)
 colvars:   # outputEnergy = off [default]
 colvars:   # extendedLangevinDamping = 0
+colvars:   # reflectingLowerBoundary = off [default]
+colvars:   # reflectingUpperBoundary = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = on
 colvars:   # outputTotalForce = off [default]
@@ -113,7 +115,9 @@ colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new "harmonicwalls" instance.
 colvars:   # name = "harmonicwalls1" [default]
 colvars:   # colvars = { one }
+colvars:   # stepZeroData = off [default]
 colvars:   # outputEnergy = off [default]
+colvars:   # outputFreq = 10 [default]
 colvars:   # bypassExtendedLagrangian = off
 colvars:   # timeStepFactor = 1 [default]
 colvars:   # writeTISamples = off [default]
@@ -143,7 +147,7 @@ colvars:   Restarting harmonicwalls bias "harmonicwalls1" from step number 20.
 colvars: ----------------------------------------------------------------------
 colvars: The restart output state file will be "test.restart.tmp.colvars.state".
 colvars: The final output state file will be "test.restart.colvars.state".
-colvars: Writing to colvar trajectory file "test.restart.colvars.traj".
+colvars: Opening trajectory file "test.restart.colvars.traj".
 colvars: Redefining the Tcl "cv" command to the new script interface.
 colvars: Updating NAMD interface:
 colvars: updating atomic data (0 atoms).
@@ -152,6 +156,7 @@ colvars: Re-initialized atom group for variable "one":0/0. 4 atoms: total mass =
 colvars: Re-initialized atom group for variable "one":0/1. 4 atoms: total mass = 54.028, total charge = -0.4.
 colvars: The restart output state file will be "test.restart.tmp.colvars.state".
 colvars: The final output state file will be "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".
 colvars: Saving collective variables state to "test.restart.tmp.colvars.state".
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".

@@ -1,271 +1,420 @@
 colvars: ----------------------------------------------------------------------
 colvars: Please cite Fiorin et al, Mol Phys 2013:
-colvars:  http://dx.doi.org/10.1080/00268976.2013.813594
+colvars:  https://dx.doi.org/10.1080/00268976.2013.813594
 colvars: in any publication based on this calculation.
-colvars: SMP parallelism is available.
+colvars: SMP parallelism is enabled; if needed, use "smp off" to override this.
+colvars: This version was built with the C++11 standard or higher.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
-colvars: # indexFile = "" [default]
+colvars: # units = "" [default]
 colvars: # smp = on [default]
-colvars: # analysis = off [default]
 colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 0 [default]
-colvars: # colvarsTrajAppend = off [default]
 colvars: # scriptedColvarForces = off [default]
-colvars: # scriptingAfterBiases = on [default]
+colvars: # scriptingAfterBiases = off [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "rmsdA"
 colvars:   Initializing a new "rmsd" component.
+colvars:     # name = "" [default]
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
 colvars:     # scalable = on [default]
 colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
-colvars:       # centerReference = off [default]
-colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Atom group "atoms" defined, 8 atoms initialized: total mass = 43.069, total charge = -0.09.
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 8 atoms requested: total mass = 43.069, total charge = -0.09.
 colvars:     # refPositions =  [default]
 colvars:     # refPositionsFile = "../Common/da.xyz"
 colvars:     # refPositionsCol = "" [default]
+colvars:     Warning: beginning from 2019-11-26 the XYZ file reader assumes Angstrom units.
 colvars:     Enabling "centerReference" and "rotateReference", to minimize RMSD before calculating it as a variable: if this is not the desired behavior, disable them explicitly within the "atoms" block.
 colvars:     This is a standard minimum RMSD, derivatives of the optimal rotation will not be computed as they cancel out in the gradients.
 colvars:   All components initialized.
+colvars:   # timeStepFactor = 1 [default]
 colvars:   # width = 1
 colvars:   # lowerBoundary = 0
-colvars:   # lowerWallConstant = 100
-colvars:   # lowerWall = 0 [default]
 colvars:   # upperBoundary = 5
-colvars:   # upperWallConstant = 100
-colvars:   # upperWall = 5 [default]
+colvars:   Reading legacy options lowerWall and lowerWallConstant: consider using a harmonicWalls restraint (caution: force constant would then be scaled by width^2).
+colvars:   # lowerWall = 0
+colvars:   Reading legacy options upperWall and upperWallConstant: consider using a harmonicWalls restraint (caution: force constant would then be scaled by width^2).
+colvars:   # upperWall = 5
+colvars:   Generating a new harmonicWalls bias for compatibility purposes.
 colvars:   # hardLowerBoundary = off [default]
 colvars:   # hardUpperBoundary = off [default]
 colvars:   # expandBoundaries = off [default]
-colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
 colvars:   # outputTotalForce = on
 colvars:   # outputAppliedForce = off [default]
 colvars:   # subtractAppliedForce = off [default]
+colvars:   # runAve = off [default]
+colvars:   # corrFunc = off [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "rmsdB"
 colvars:   Initializing a new "rmsd" component.
+colvars:     # name = "" [default]
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
 colvars:     # scalable = on [default]
 colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = on
+colvars:       # rotateReference = on
+colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
-colvars:       # centerReference = on
-colvars:       # rotateReference = on
-colvars:       # enableFitGradients = on [default]
 colvars:       # refPositions =  [default]
 colvars:       # refPositionsFile = "../Common/pi-ideal.xyz"
 colvars:       # refPositionsCol = "" [default]
 colvars:       Warning: atom group "atoms" will be aligned to a fixed orientation given by the reference positions provided.  If the internal structure of the group changes too much (i.e. its RMSD is comparable to its radius of gyration), the optimal rotation and its gradients may become discontinuous.  If that happens, use fittingGroup (or a different definition for it if already defined) to align the coordinates.
-colvars:       Atom group "atoms" defined, 8 atoms initialized: total mass = 43.069, total charge = -0.09.
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 8 atoms requested: total mass = 43.069, total charge = -0.09.
 colvars:     # refPositions =  [default]
 colvars:     # refPositionsFile = "../Common/da.xyz"
 colvars:     # refPositionsCol = "" [default]
 colvars:     WARNING: explicit fitting parameters were provided for atom group "atoms".
 colvars:   All components initialized.
+colvars:   # timeStepFactor = 1 [default]
 colvars:   # width = 1
 colvars:   # lowerBoundary = 0
-colvars:   # lowerWallConstant = 100
-colvars:   # lowerWall = 0 [default]
 colvars:   # upperBoundary = 5
-colvars:   # upperWallConstant = 100
-colvars:   # upperWall = 5 [default]
+colvars:   Reading legacy options lowerWall and lowerWallConstant: consider using a harmonicWalls restraint (caution: force constant would then be scaled by width^2).
+colvars:   # lowerWall = 0
+colvars:   Reading legacy options upperWall and upperWallConstant: consider using a harmonicWalls restraint (caution: force constant would then be scaled by width^2).
+colvars:   # upperWall = 5
+colvars:   Generating a new harmonicWalls bias for compatibility purposes.
 colvars:   # hardLowerBoundary = off [default]
 colvars:   # hardUpperBoundary = off [default]
 colvars:   # expandBoundaries = off [default]
-colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
 colvars:   # outputTotalForce = on
 colvars:   # outputAppliedForce = off [default]
 colvars:   # subtractAppliedForce = off [default]
+colvars:   # runAve = off [default]
+colvars:   # corrFunc = off [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "rmsdC"
 colvars:   Initializing a new "rmsd" component.
+colvars:     # name = "" [default]
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
 colvars:     # scalable = on [default]
 colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = on
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
-colvars:       # centerReference = on
-colvars:       # rotateReference = off [default]
-colvars:       # enableFitGradients = on [default]
 colvars:       # refPositions =  [default]
 colvars:       # refPositionsFile = "../Common/da.xyz"
 colvars:       # refPositionsCol = "" [default]
-colvars:       Atom group "atoms" defined, 8 atoms initialized: total mass = 43.069, total charge = -0.09.
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 8 atoms requested: total mass = 43.069, total charge = -0.09.
 colvars:     # refPositions =  [default]
 colvars:     # refPositionsFile = "../Common/da.xyz"
 colvars:     # refPositionsCol = "" [default]
 colvars:     WARNING: explicit fitting parameters were provided for atom group "atoms".
 colvars:   All components initialized.
+colvars:   # timeStepFactor = 1 [default]
 colvars:   # width = 1
 colvars:   # lowerBoundary = 0
-colvars:   # lowerWallConstant = 100
-colvars:   # lowerWall = 0 [default]
 colvars:   # upperBoundary = 5
-colvars:   # upperWallConstant = 100
-colvars:   # upperWall = 5 [default]
+colvars:   Reading legacy options lowerWall and lowerWallConstant: consider using a harmonicWalls restraint (caution: force constant would then be scaled by width^2).
+colvars:   # lowerWall = 0
+colvars:   Reading legacy options upperWall and upperWallConstant: consider using a harmonicWalls restraint (caution: force constant would then be scaled by width^2).
+colvars:   # upperWall = 5
+colvars:   Generating a new harmonicWalls bias for compatibility purposes.
 colvars:   # hardLowerBoundary = off [default]
 colvars:   # hardUpperBoundary = off [default]
 colvars:   # expandBoundaries = off [default]
-colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
 colvars:   # outputTotalForce = on
 colvars:   # outputAppliedForce = off [default]
 colvars:   # subtractAppliedForce = off [default]
+colvars:   # runAve = off [default]
+colvars:   # corrFunc = off [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "rmsdD"
 colvars:   Initializing a new "rmsd" component.
+colvars:     # name = "" [default]
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
 colvars:     # scalable = on [default]
 colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = on
+colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
-colvars:       # centerReference = off [default]
-colvars:       # rotateReference = on
-colvars:       # enableFitGradients = on [default]
 colvars:       # refPositions =  [default]
 colvars:       # refPositionsFile = "../Common/da.xyz"
 colvars:       # refPositionsCol = "" [default]
 colvars:       Warning: atom group "atoms" will be aligned to a fixed orientation given by the reference positions provided.  If the internal structure of the group changes too much (i.e. its RMSD is comparable to its radius of gyration), the optimal rotation and its gradients may become discontinuous.  If that happens, use fittingGroup (or a different definition for it if already defined) to align the coordinates.
-colvars:       Atom group "atoms" defined, 8 atoms initialized: total mass = 43.069, total charge = -0.09.
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 8 atoms requested: total mass = 43.069, total charge = -0.09.
 colvars:     # refPositions =  [default]
 colvars:     # refPositionsFile = "../Common/da.xyz"
 colvars:     # refPositionsCol = "" [default]
 colvars:     WARNING: explicit fitting parameters were provided for atom group "atoms".
 colvars:   All components initialized.
+colvars:   # timeStepFactor = 1 [default]
 colvars:   # width = 1
 colvars:   # lowerBoundary = 0
-colvars:   # lowerWallConstant = 100
-colvars:   # lowerWall = 0 [default]
 colvars:   # upperBoundary = 5
-colvars:   # upperWallConstant = 100
-colvars:   # upperWall = 5 [default]
+colvars:   Reading legacy options lowerWall and lowerWallConstant: consider using a harmonicWalls restraint (caution: force constant would then be scaled by width^2).
+colvars:   # lowerWall = 0
+colvars:   Reading legacy options upperWall and upperWallConstant: consider using a harmonicWalls restraint (caution: force constant would then be scaled by width^2).
+colvars:   # upperWall = 5
+colvars:   Generating a new harmonicWalls bias for compatibility purposes.
 colvars:   # hardLowerBoundary = off [default]
 colvars:   # hardUpperBoundary = off [default]
 colvars:   # expandBoundaries = off [default]
-colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
 colvars:   # outputTotalForce = on
 colvars:   # outputAppliedForce = off [default]
 colvars:   # subtractAppliedForce = off [default]
+colvars:   # runAve = off [default]
+colvars:   # corrFunc = off [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "rmsdE"
 colvars:   Initializing a new "rmsd" component.
+colvars:     # name = "" [default]
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
 colvars:     # scalable = on [default]
 colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off
+colvars:       # rotateReference = off
+colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
-colvars:       # centerReference = off
-colvars:       # rotateReference = off
 colvars:       # enableFitGradients = on [default]
-colvars:       Atom group "atoms" defined, 8 atoms initialized: total mass = 43.069, total charge = -0.09.
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 8 atoms requested: total mass = 43.069, total charge = -0.09.
 colvars:     # refPositions =  [default]
 colvars:     # refPositionsFile = "../Common/da.xyz"
 colvars:     # refPositionsCol = "" [default]
 colvars:     WARNING: explicit fitting parameters were provided for atom group "atoms".
 colvars:   All components initialized.
+colvars:   # timeStepFactor = 1 [default]
 colvars:   # width = 1
 colvars:   # lowerBoundary = 0
-colvars:   # lowerWallConstant = 100
-colvars:   # lowerWall = 0 [default]
 colvars:   # upperBoundary = 5
-colvars:   # upperWallConstant = 100
-colvars:   # upperWall = 5 [default]
+colvars:   Reading legacy options lowerWall and lowerWallConstant: consider using a harmonicWalls restraint (caution: force constant would then be scaled by width^2).
+colvars:   # lowerWall = 0
+colvars:   Reading legacy options upperWall and upperWallConstant: consider using a harmonicWalls restraint (caution: force constant would then be scaled by width^2).
+colvars:   # upperWall = 5
+colvars:   Generating a new harmonicWalls bias for compatibility purposes.
 colvars:   # hardLowerBoundary = off [default]
 colvars:   # hardUpperBoundary = off [default]
 colvars:   # expandBoundaries = off [default]
-colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
 colvars:   # outputTotalForce = on
 colvars:   # outputAppliedForce = off [default]
 colvars:   # subtractAppliedForce = off [default]
+colvars:   # runAve = off [default]
+colvars:   # corrFunc = off [default]
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables initialized, 5 in total.
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new "harmonic" instance.
 colvars:   # name = "harmonic1" [default]
 colvars:   # colvars = { rmsdA, rmsdB, rmsdC, rmsdD, rmsdE }
+colvars:   # stepZeroData = off [default]
 colvars:   # outputEnergy = off [default]
+colvars:   # outputFreq = 0 [default]
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # writeTISamples = off [default]
+colvars:   # writeTIPMF = off [default]
 colvars:   # centers = { 0, 0, 0, 0, 0 }
 colvars:   # targetCenters = { 0, 0, 0, 0, 0 } [default]
+colvars:   # outputCenters = off [default]
 colvars:   # forceConstant = 1
-colvars:   # targetForceConstant = 0 [default]
+colvars:   # targetForceConstant = -1 [default]
+colvars:   The force constant for colvar "rmsdA" will be rescaled to 1 according to the specified width (1).
+colvars:   The force constant for colvar "rmsdB" will be rescaled to 1 according to the specified width (1).
+colvars:   The force constant for colvar "rmsdC" will be rescaled to 1 according to the specified width (1).
+colvars:   The force constant for colvar "rmsdD" will be rescaled to 1 according to the specified width (1).
+colvars:   The force constant for colvar "rmsdE" will be rescaled to 1 according to the specified width (1).
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables biases initialized, 1 in total.
+colvars: # units = "" [default]
+colvars: # smp = on [default]
+colvars: # colvarsTrajFrequency = 1 [default]
+colvars: # colvarsRestartFrequency = 0 [default]
+colvars: # scriptedColvarForces = off [default]
+colvars: # scriptingAfterBiases = off [default]
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables initialized, 5 in total.
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new "harmonicwalls" instance.
+colvars:   # name = "rmsdAw"
+colvars:   # colvars = { rmsdA }
+colvars:   # stepZeroData = off [default]
+colvars:   # outputEnergy = off [default]
+colvars:   # outputFreq = 0 [default]
+colvars:   # timeStepFactor = 1
+colvars:   # writeTISamples = off [default]
+colvars:   # writeTIPMF = off [default]
+colvars:   # forceConstant = 1 [default]
+colvars:   # targetForceConstant = -1 [default]
+colvars:   # lowerWalls = { 0 }
+colvars:   # upperWalls = { 5 }
+colvars:   # lowerWallConstant = 100
+colvars:   # upperWallConstant = 100
+colvars:   The lower wall force constant for colvar "rmsdA" will be rescaled to 100 according to the specified width (1).
+colvars:   The upper wall force constant for colvar "rmsdA" will be rescaled to 100 according to the specified width (1).
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new "harmonicwalls" instance.
+colvars:   # name = "rmsdBw"
+colvars:   # colvars = { rmsdB }
+colvars:   # stepZeroData = off [default]
+colvars:   # outputEnergy = off [default]
+colvars:   # outputFreq = 0 [default]
+colvars:   # timeStepFactor = 1
+colvars:   # writeTISamples = off [default]
+colvars:   # writeTIPMF = off [default]
+colvars:   # forceConstant = 1 [default]
+colvars:   # targetForceConstant = -1 [default]
+colvars:   # lowerWalls = { 0 }
+colvars:   # upperWalls = { 5 }
+colvars:   # lowerWallConstant = 100
+colvars:   # upperWallConstant = 100
+colvars:   The lower wall force constant for colvar "rmsdB" will be rescaled to 100 according to the specified width (1).
+colvars:   The upper wall force constant for colvar "rmsdB" will be rescaled to 100 according to the specified width (1).
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new "harmonicwalls" instance.
+colvars:   # name = "rmsdCw"
+colvars:   # colvars = { rmsdC }
+colvars:   # stepZeroData = off [default]
+colvars:   # outputEnergy = off [default]
+colvars:   # outputFreq = 0 [default]
+colvars:   # timeStepFactor = 1
+colvars:   # writeTISamples = off [default]
+colvars:   # writeTIPMF = off [default]
+colvars:   # forceConstant = 1 [default]
+colvars:   # targetForceConstant = -1 [default]
+colvars:   # lowerWalls = { 0 }
+colvars:   # upperWalls = { 5 }
+colvars:   # lowerWallConstant = 100
+colvars:   # upperWallConstant = 100
+colvars:   The lower wall force constant for colvar "rmsdC" will be rescaled to 100 according to the specified width (1).
+colvars:   The upper wall force constant for colvar "rmsdC" will be rescaled to 100 according to the specified width (1).
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new "harmonicwalls" instance.
+colvars:   # name = "rmsdDw"
+colvars:   # colvars = { rmsdD }
+colvars:   # stepZeroData = off [default]
+colvars:   # outputEnergy = off [default]
+colvars:   # outputFreq = 0 [default]
+colvars:   # timeStepFactor = 1
+colvars:   # writeTISamples = off [default]
+colvars:   # writeTIPMF = off [default]
+colvars:   # forceConstant = 1 [default]
+colvars:   # targetForceConstant = -1 [default]
+colvars:   # lowerWalls = { 0 }
+colvars:   # upperWalls = { 5 }
+colvars:   # lowerWallConstant = 100
+colvars:   # upperWallConstant = 100
+colvars:   The lower wall force constant for colvar "rmsdD" will be rescaled to 100 according to the specified width (1).
+colvars:   The upper wall force constant for colvar "rmsdD" will be rescaled to 100 according to the specified width (1).
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new "harmonicwalls" instance.
+colvars:   # name = "rmsdEw"
+colvars:   # colvars = { rmsdE }
+colvars:   # stepZeroData = off [default]
+colvars:   # outputEnergy = off [default]
+colvars:   # outputFreq = 0 [default]
+colvars:   # timeStepFactor = 1
+colvars:   # writeTISamples = off [default]
+colvars:   # writeTIPMF = off [default]
+colvars:   # forceConstant = 1 [default]
+colvars:   # targetForceConstant = -1 [default]
+colvars:   # lowerWalls = { 0 }
+colvars:   # upperWalls = { 5 }
+colvars:   # lowerWallConstant = 100
+colvars:   # upperWallConstant = 100
+colvars:   The lower wall force constant for colvar "rmsdE" will be rescaled to 100 according to the specified width (1).
+colvars:   The upper wall force constant for colvar "rmsdE" will be rescaled to 100 according to the specified width (1).
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables biases initialized, 6 in total.
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables module (re)initialized.
 colvars: ----------------------------------------------------------------------
 colvars: Updating NAMD interface:
 colvars: updating atomic data (8 atoms).
 colvars: updating group data (0 scalable groups, 0 atoms in total).
-colvars: Updating NAMD interface:
-colvars: updating atomic data (8 atoms).
-colvars: updating group data (0 scalable groups, 0 atoms in total).
-colvars: Re-initialized atom group rmsdA:0/0. 8 atoms: total mass = 43.069.
-colvars: Re-initialized atom group rmsdB:0/0. 8 atoms: total mass = 43.069.
-colvars: Re-initialized atom group rmsdC:0/0. 8 atoms: total mass = 43.069.
-colvars: Re-initialized atom group rmsdD:0/0. 8 atoms: total mass = 43.069.
-colvars: Re-initialized atom group rmsdE:0/0. 8 atoms: total mass = 43.069.
+colvars: Re-initialized atom group for variable "rmsdA":0/0. 8 atoms: total mass = 43.069, total charge = -0.09.
+colvars: Re-initialized atom group for variable "rmsdB":0/0. 8 atoms: total mass = 43.069, total charge = -0.09.
+colvars: Re-initialized atom group for variable "rmsdC":0/0. 8 atoms: total mass = 43.069, total charge = -0.09.
+colvars: Re-initialized atom group for variable "rmsdD":0/0. 8 atoms: total mass = 43.069, total charge = -0.09.
+colvars: Re-initialized atom group for variable "rmsdE":0/0. 8 atoms: total mass = 43.069, total charge = -0.09.
 colvars: The final output state file will be "test.colvars.state".
-colvars: Writing to colvar trajectory file "test.colvars.traj".
+colvars: Opening trajectory file "test.colvars.traj".
+colvars: Redefining the Tcl "cv" command to the new script interface.
 colvars: Updating NAMD interface:
 colvars: updating atomic data (8 atoms).
 colvars: updating group data (0 scalable groups, 0 atoms in total).
-colvars: Re-initialized atom group rmsdA:0/0. 8 atoms: total mass = 43.069.
-colvars: Re-initialized atom group rmsdB:0/0. 8 atoms: total mass = 43.069.
-colvars: Re-initialized atom group rmsdC:0/0. 8 atoms: total mass = 43.069.
-colvars: Re-initialized atom group rmsdD:0/0. 8 atoms: total mass = 43.069.
-colvars: Re-initialized atom group rmsdE:0/0. 8 atoms: total mass = 43.069.
+colvars: Re-initialized atom group for variable "rmsdA":0/0. 8 atoms: total mass = 43.069, total charge = -0.09.
+colvars: Re-initialized atom group for variable "rmsdB":0/0. 8 atoms: total mass = 43.069, total charge = -0.09.
+colvars: Re-initialized atom group for variable "rmsdC":0/0. 8 atoms: total mass = 43.069, total charge = -0.09.
+colvars: Re-initialized atom group for variable "rmsdD":0/0. 8 atoms: total mass = 43.069, total charge = -0.09.
+colvars: Re-initialized atom group for variable "rmsdE":0/0. 8 atoms: total mass = 43.069, total charge = -0.09.
 colvars: The final output state file will be "test.colvars.state".
 colvars: Saving collective variables state to "test.colvars.state".
