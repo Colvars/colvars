@@ -99,7 +99,7 @@ int colvarbias::init(std::string const &conf)
 
   output_prefix = cvm::output_prefix();
 
-  get_keyval_feature(this, conf, "zeroStepData", f_cvb_zero_step_data, is_enabled(f_cvb_zero_step_data));
+  get_keyval_feature(this, conf, "stepZeroData", f_cvb_step_zero_data, is_enabled(f_cvb_step_zero_data));
 
   // Write energy to traj file?
   get_keyval(conf, "outputEnergy", b_output_energy, b_output_energy);
@@ -137,7 +137,7 @@ int colvarbias::init_dependencies() {
     init_feature(f_cvb_awake, "awake", f_type_static);
     require_feature_self(f_cvb_awake, f_cvb_active);
 
-    init_feature(f_cvb_zero_step_data, "zero_step_data", f_type_user);
+    init_feature(f_cvb_step_zero_data, "step_zero_data", f_type_user);
 
     init_feature(f_cvb_apply_force, "apply_force", f_type_user);
     require_feature_children(f_cvb_apply_force, f_cv_gradient);
@@ -600,7 +600,7 @@ colvarbias_ti::colvarbias_ti(char const *key)
   provide(f_cvb_calc_ti_samples);
   if (!proxy->total_forces_same_step()) {
     // Samples at step zero can not be collected
-    feature_states[f_cvb_zero_step_data].available = false;
+    feature_states[f_cvb_step_zero_data].available = false;
   }
   ti_avg_forces = NULL;
   ti_count = NULL;
@@ -738,7 +738,7 @@ int colvarbias_ti::update_system_forces(std::vector<colvarvalue> const
              (*subtract_forces)[i] : previous_colvar_forces[i]);
         }
       }
-      if (cvm::step_relative() > 0 || is_enabled(f_cvb_zero_step_data)) {
+      if (cvm::step_relative() > 0 || is_enabled(f_cvb_step_zero_data)) {
         ti_avg_forces->acc_value(ti_bin, ti_system_forces);
       }
     }

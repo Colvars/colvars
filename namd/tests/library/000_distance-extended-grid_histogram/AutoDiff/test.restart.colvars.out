@@ -115,7 +115,7 @@ colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new "histogram" instance.
 colvars:   # name = "histogram1" [default]
 colvars:   # colvars = { one }
-colvars:   # zeroStepData = off [default]
+colvars:   # stepZeroData = off [default]
 colvars:   # outputEnergy = off [default]
 colvars:   # outputFreq = 10 [default]
 colvars:   # timeStepFactor = 1 [default]

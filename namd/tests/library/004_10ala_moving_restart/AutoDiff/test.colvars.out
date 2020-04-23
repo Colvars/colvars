@@ -1,133 +1,151 @@
 colvars: ----------------------------------------------------------------------
 colvars: Please cite Fiorin et al, Mol Phys 2013:
-colvars:  http://dx.doi.org/10.1080/00268976.2013.813594
+colvars:  https://dx.doi.org/10.1080/00268976.2013.813594
 colvars: in any publication based on this calculation.
-colvars: SMP parallelism is available.
+colvars: SMP parallelism is enabled; if needed, use "smp off" to override this.
+colvars: This version was built with the C++11 standard or higher.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
-colvars: # indexFile = "" [default]
+colvars: # units = "" [default]
 colvars: # smp = on [default]
-colvars: # analysis = off [default]
 colvars: # colvarsTrajFrequency = 2
 colvars: # colvarsRestartFrequency = 40000 [default]
-colvars: # colvarsTrajAppend = off [default]
 colvars: # scriptedColvarForces = off [default]
-colvars: # scriptingAfterBiases = on [default]
+colvars: # scriptingAfterBiases = off [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "d"
 colvars:   Initializing a new "dihedral" component.
+colvars:     # name = "" [default]
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
 colvars:     # scalable = on [default]
 colvars:       Initializing atom group "group1".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
-colvars:       # centerReference = off [default]
-colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Enabling scalable calculation for group "group1".
-colvars:       Atom group "group1" defined, 1 atoms initialized: total mass = 14.007, total charge = -0.62.
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group1" defined with 1 atoms requested: total mass = 14.007, total charge = -0.62.
 colvars:       Initializing atom group "group2".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
-colvars:       # centerReference = off [default]
-colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Enabling scalable calculation for group "group2".
-colvars:       Atom group "group2" defined, 1 atoms initialized: total mass = 12.011, total charge = -0.1.
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group2" defined with 1 atoms requested: total mass = 12.011, total charge = -0.1.
 colvars:       Initializing atom group "group3".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
-colvars:       # centerReference = off [default]
-colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Enabling scalable calculation for group "group3".
-colvars:       Atom group "group3" defined, 1 atoms initialized: total mass = 12.011, total charge = 0.51.
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group3" defined with 1 atoms requested: total mass = 12.011, total charge = 0.51.
 colvars:       Initializing atom group "group4".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
-colvars:       # centerReference = off [default]
-colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Enabling scalable calculation for group "group4".
-colvars:       Atom group "group4" defined, 1 atoms initialized: total mass = 14.007, total charge = -0.47.
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group4" defined with 1 atoms requested: total mass = 14.007, total charge = -0.47.
 colvars:     # oneSiteSystemForce = off [default]
 colvars:     # oneSiteTotalForce = off [default]
 colvars:   All components initialized.
+colvars:   # timeStepFactor = 1 [default]
 colvars:   # width = 1 [default]
 colvars:   # lowerBoundary = 0 [default]
-colvars:   # lowerWallConstant = 0 [default]
 colvars:   # upperBoundary = 0 [default]
-colvars:   # upperWallConstant = 0 [default]
+colvars:   # hardLowerBoundary = off [default]
+colvars:   # hardUpperBoundary = off [default]
 colvars:   # expandBoundaries = off [default]
-colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
 colvars:   # outputTotalForce = off [default]
 colvars:   # outputAppliedForce = on
 colvars:   # subtractAppliedForce = off [default]
+colvars:   # runAve = off [default]
+colvars:   # corrFunc = off [default]
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new "harmonic" instance.
 colvars:   # name = "harmonic1" [default]
 colvars:   # colvars = { d }
+colvars:   # stepZeroData = off [default]
 colvars:   # outputEnergy = off [default]
+colvars:   # outputFreq = 40000 [default]
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # writeTISamples = off [default]
+colvars:   # writeTIPMF = off [default]
 colvars:   # centers = { 135 }
 colvars:   # targetCenters = { 495 }
 colvars:   # targetNumSteps = 833
 colvars:   # targetNumStages = 36
-colvars:   # outputCenters = off [default]
 colvars:   # outputAccumulatedWork = off [default]
+colvars:   # outputCenters = off [default]
 colvars:   # forceConstant = 10
-colvars:   # targetForceConstant = 0 [default]
+colvars:   # targetForceConstant = -1 [default]
+colvars:   The force constant for colvar "d" will be rescaled to 10 according to the specified width (1).
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables biases initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables module (re)initialized.
 colvars: ----------------------------------------------------------------------
 colvars: Updating NAMD interface:
-colvars: updating atomic data (4 atoms).
+colvars: updating atomic data (0 atoms).
 colvars: updating group data (4 scalable groups, 4 atoms in total).
-colvars: Updating NAMD interface:
-colvars: updating atomic data (4 atoms).
-colvars: updating group data (4 scalable groups, 4 atoms in total).
-colvars: Re-initialized atom group d:0/0. 1 atoms: total mass = 14.007.
-colvars: Re-initialized atom group d:0/1. 1 atoms: total mass = 12.011.
-colvars: Re-initialized atom group d:0/2. 1 atoms: total mass = 12.011.
-colvars: Re-initialized atom group d:0/3. 1 atoms: total mass = 14.007.
+colvars: Re-initialized atom group for variable "d":0/0. 1 atoms: total mass = 14.007, total charge = -0.62.
+colvars: Re-initialized atom group for variable "d":0/1. 1 atoms: total mass = 12.011, total charge = -0.1.
+colvars: Re-initialized atom group for variable "d":0/2. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "d":0/3. 1 atoms: total mass = 14.007, total charge = -0.47.
 colvars: ----------------------------------------------------------------------
 colvars: Restarting from file "previous.colvars.state".
 colvars:   Restarting collective variable "d" from value: -137.21
-colvars:   # centers = { -135 }
-colvars:   # centers_raw = { 225 }
+colvars:   Restarting harmonic bias "harmonic1" from step number 8000.
 colvars: ----------------------------------------------------------------------
 colvars: The restart output state file will be "testr.colvars.state".
 colvars: The final output state file will be "test.colvars.state".
-colvars: Writing to colvar trajectory file "test.colvars.traj".
+colvars: Opening trajectory file "test.colvars.traj".
+colvars: Redefining the Tcl "cv" command to the new script interface.
 colvars: Updating NAMD interface:
-colvars: updating atomic data (4 atoms).
+colvars: updating atomic data (0 atoms).
 colvars: updating group data (4 scalable groups, 4 atoms in total).
-colvars: Re-initialized atom group d:0/0. 1 atoms: total mass = 14.007.
-colvars: Re-initialized atom group d:0/1. 1 atoms: total mass = 12.011.
-colvars: Re-initialized atom group d:0/2. 1 atoms: total mass = 12.011.
-colvars: Re-initialized atom group d:0/3. 1 atoms: total mass = 14.007.
+colvars: Re-initialized atom group for variable "d":0/0. 1 atoms: total mass = 14.007, total charge = -0.62.
+colvars: Re-initialized atom group for variable "d":0/1. 1 atoms: total mass = 12.011, total charge = -0.1.
+colvars: Re-initialized atom group for variable "d":0/2. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "d":0/3. 1 atoms: total mass = 14.007, total charge = -0.47.
 colvars: The restart output state file will be "testr.colvars.state".
 colvars: The final output state file will be "test.colvars.state".
 colvars: Saving collective variables state to "test.colvars.state".

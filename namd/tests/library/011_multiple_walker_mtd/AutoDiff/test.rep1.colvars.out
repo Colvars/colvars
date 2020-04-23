@@ -108,7 +108,7 @@ colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new "metadynamics" instance.
 colvars:   # name = "metadynamics1" [default]
 colvars:   # colvars = { d }
-colvars:   # zeroStepData = off [default]
+colvars:   # stepZeroData = off [default]
 colvars:   # outputEnergy = off [default]
 colvars:   # outputFreq = 40000 [default]
 colvars:   # timeStepFactor = 1 [default]
@@ -149,7 +149,7 @@ colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new "harmonicwalls" instance.
 colvars:   # name = "dw"
 colvars:   # colvars = { d }
-colvars:   # zeroStepData = off [default]
+colvars:   # stepZeroData = off [default]
 colvars:   # outputEnergy = off [default]
 colvars:   # outputFreq = 40000 [default]
 colvars:   # timeStepFactor = 1

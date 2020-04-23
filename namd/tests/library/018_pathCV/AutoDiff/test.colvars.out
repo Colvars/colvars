@@ -1,12 +1,15 @@
 colvars: ----------------------------------------------------------------------
 colvars: Please cite Fiorin et al, Mol Phys 2013:
-colvars:  http://dx.doi.org/10.1080/00268976.2013.813594
+colvars:  https://dx.doi.org/10.1080/00268976.2013.813594
 colvars: in any publication based on this calculation.
-colvars: SMP parallelism is available.
+colvars: SMP parallelism is enabled; if needed, use "smp off" to override this.
+colvars: This version was built with the C++11 standard or higher.
 colvars: The final output state file will be "test.colvars.state".
-colvars: Writing to colvar trajectory file "test.colvars.traj".
+colvars: Opening trajectory file "test.colvars.traj".
+colvars: Redefining the Tcl "cv" command to the new script interface.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration:
+colvars: # units = "" [default]
 colvars: # smp = on [default]
 colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 0 [default]
@@ -39,6 +42,7 @@ colvars:       Atom group "atoms" defined with 104 atoms requested: total mass =
 colvars:     # refPositions =  [default]
 colvars:     # refPositionsFile = "../Common/da.xyz"
 colvars:     # refPositionsCol = "" [default]
+colvars:     Warning: beginning from 2019-11-26 the XYZ file reader assumes Angstrom units.
 colvars:     Enabling "centerReference" and "rotateReference", to minimize RMSD before calculating it as a variable: if this is not the desired behavior, disable them explicitly within the "atoms" block.
 colvars:     This is a standard minimum RMSD, derivatives of the optimal rotation will not be computed as they cancel out in the gradients.
 colvars:   Initializing a new "rmsd" component.
@@ -79,14 +83,10 @@ colvars:   # timeStepFactor = 1 [default]
 colvars:   # width = 0.05
 colvars:   # lowerBoundary = -0.2
 colvars:   # upperBoundary = 1.2
-colvars:   Reading legacy options lowerWall and lowerWallConstant: consider using a harmonicWalls restraint
-colvars: (caution: force constant would then be scaled by width^2).
-colvars:   # lowerWall = -0.2 [default]
-colvars:   Warning: lowerWall will need to be defined explicitly in the next release.
-colvars:   Reading legacy options upperWall and upperWallConstant: consider using a harmonicWalls restraint
-colvars: (caution: force constant would then be scaled by width^2).
-colvars:   # upperWall = 1.2 [default]
-colvars:   Warning: upperWall will need to be defined explicitly in the next release.
+colvars:   Reading legacy options lowerWall and lowerWallConstant: consider using a harmonicWalls restraint (caution: force constant would then be scaled by width^2).
+colvars:   # lowerWall = -0.2
+colvars:   Reading legacy options upperWall and upperWallConstant: consider using a harmonicWalls restraint (caution: force constant would then be scaled by width^2).
+colvars:   # upperWall = 1.2
 colvars:   Generating a new harmonicWalls bias for compatibility purposes.
 colvars:   # hardLowerBoundary = off [default]
 colvars:   # hardUpperBoundary = off [default]
@@ -100,6 +100,8 @@ colvars:   # extendedTimeConstant = 200 [default]
 colvars:   Computed fictitious mass: 6.04034e+06 [E]/(U/fs)^2   (U: colvar unit)
 colvars:   # outputEnergy = off [default]
 colvars:   # extendedLangevinDamping = 1 [default]
+colvars:   # reflectingLowerBoundary = off [default]
+colvars:   # reflectingUpperBoundary = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
 colvars:   # outputTotalForce = off [default]
@@ -186,6 +188,8 @@ colvars:   # extendedTimeConstant = 200 [default]
 colvars:   Computed fictitious mass: 6.04034e+06 [E]/(U/fs)^2   (U: colvar unit)
 colvars:   # outputEnergy = off [default]
 colvars:   # extendedLangevinDamping = 1 [default]
+colvars:   # reflectingLowerBoundary = off [default]
+colvars:   # reflectingUpperBoundary = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
 colvars:   # outputTotalForce = off [default]
@@ -199,7 +203,9 @@ colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new "abf" instance.
 colvars:   # name = "abf1" [default]
 colvars:   # colvars = { s, z }
+colvars:   # stepZeroData = off [default]
 colvars:   # outputEnergy = off [default]
+colvars:   # outputFreq = 0 [default]
 colvars:   # timeStepFactor = 1 [default]
 colvars:   # applyBias = on [default]
 colvars:   # updateBias = on [default]
@@ -207,7 +213,6 @@ colvars:   # hideJacobian = off [default]
 colvars:   Jacobian (geometric) forces will be included in reported free energy gradients.
 colvars:   # fullSamples = 0
 colvars:   # inputPrefix =  [default]
-colvars:   # outputFreq = 0 [default]
 colvars:   # historyFreq = 0 [default]
 colvars:   # shared = off [default]
 colvars:   # maxForce =  [default]
@@ -222,6 +227,7 @@ colvars:   # UIestimator = off [default]
 colvars:   Finished ABF setup.
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables biases initialized, 1 in total.
+colvars: # units = "" [default]
 colvars: # smp = on [default]
 colvars: # colvarsTrajFrequency = 1 [default]
 colvars: # colvarsRestartFrequency = 0 [default]
@@ -233,7 +239,9 @@ colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new "harmonicwalls" instance.
 colvars:   # name = "sw"
 colvars:   # colvars = { s }
+colvars:   # stepZeroData = off [default]
 colvars:   # outputEnergy = off [default]
+colvars:   # outputFreq = 0 [default]
 colvars:   # timeStepFactor = 1
 colvars:   # writeTISamples = off [default]
 colvars:   # writeTIPMF = off [default]

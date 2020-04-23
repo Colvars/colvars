@@ -1,39 +1,42 @@
 colvars: ----------------------------------------------------------------------
 colvars: Please cite Fiorin et al, Mol Phys 2013:
-colvars:  http://dx.doi.org/10.1080/00268976.2013.813594
+colvars:  https://dx.doi.org/10.1080/00268976.2013.813594
 colvars: in any publication based on this calculation.
-colvars: SMP parallelism is available.
+colvars: SMP parallelism is enabled; if needed, use "smp off" to override this.
+colvars: This version was built with the C++11 standard or higher.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
-colvars: The following index groups were read from the index file "index.ndx":
-colvars:   Protein (104 atoms).
-colvars:   Protein_noH (51 atoms).
-colvars:   Protein_Backbone (40 atoms).
-colvars:   Protein_C-alpha (10 atoms).
-colvars:   RMSD_atoms (10 atoms).
-colvars:   Protein_C-alpha_1_2 (2 atoms).
-colvars:   Protein_C-alpha_9_10 (2 atoms).
-colvars:   Protein_C-alpha_1 (1 atoms).
-colvars:   group1 (4 atoms).
-colvars:   Protein_C-alpha_2 (1 atoms).
-colvars:   group2 (4 atoms).
-colvars:   Protein_C-alpha_3 (1 atoms).
-colvars:   group3 (4 atoms).
-colvars:   Protein_C-alpha_4 (1 atoms).
-colvars:   group4 (4 atoms).
-colvars:   Protein_C-alpha_5 (1 atoms).
-colvars:   group5 (4 atoms).
-colvars:   Protein_C-alpha_6 (1 atoms).
-colvars:   group6 (4 atoms).
-colvars:   Protein_C-alpha_7 (1 atoms).
-colvars:   group7 (4 atoms).
-colvars:   Protein_C-alpha_8 (1 atoms).
-colvars:   group8 (4 atoms).
-colvars:   Protein_C-alpha_9 (1 atoms).
-colvars:   group9 (4 atoms).
-colvars:   Protein_C-alpha_10 (1 atoms).
-colvars:   group10 (4 atoms).
-colvars:   heavy_atoms (51 atoms).
+colvars: # units = "" [default]
+colvars: # indexFile = "index.ndx"
+colvars: The following index groups are currently defined:
+colvars:   Protein (104 atoms)
+colvars:   Protein_noH (51 atoms)
+colvars:   Protein_Backbone (40 atoms)
+colvars:   Protein_C-alpha (10 atoms)
+colvars:   RMSD_atoms (10 atoms)
+colvars:   Protein_C-alpha_1_2 (2 atoms)
+colvars:   Protein_C-alpha_9_10 (2 atoms)
+colvars:   Protein_C-alpha_1 (1 atoms)
+colvars:   group1 (4 atoms)
+colvars:   Protein_C-alpha_2 (1 atoms)
+colvars:   group2 (4 atoms)
+colvars:   Protein_C-alpha_3 (1 atoms)
+colvars:   group3 (4 atoms)
+colvars:   Protein_C-alpha_4 (1 atoms)
+colvars:   group4 (4 atoms)
+colvars:   Protein_C-alpha_5 (1 atoms)
+colvars:   group5 (4 atoms)
+colvars:   Protein_C-alpha_6 (1 atoms)
+colvars:   group6 (4 atoms)
+colvars:   Protein_C-alpha_7 (1 atoms)
+colvars:   group7 (4 atoms)
+colvars:   Protein_C-alpha_8 (1 atoms)
+colvars:   group8 (4 atoms)
+colvars:   Protein_C-alpha_9 (1 atoms)
+colvars:   group9 (4 atoms)
+colvars:   Protein_C-alpha_10 (1 atoms)
+colvars:   group10 (4 atoms)
+colvars:   heavy_atoms (51 atoms)
 colvars: # smp = on [default]
 colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 10
@@ -43,6 +46,13 @@ colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "one"
 colvars:   Initializing a new "spinAngle" component.
+colvars:     # name = "" [default]
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 360 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
 colvars:       Initializing atom group "atoms".
 colvars:       # name = "" [default]
 colvars:       # centerReference = on
@@ -66,14 +76,15 @@ colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
-colvars:       Atom group "fittingGroup" defined, 51 atoms initialized: total mass = 674.397, total charge = -7.64.
+colvars:       Atom group "fittingGroup" defined with 51 atoms requested: total mass = 674.397, total charge = -7.64.
 colvars:       # refPositions =  [default]
 colvars:       # refPositionsFile = "heavy_atoms_refpos.xyz"
 colvars:       # refPositionsCol = "" [default]
+colvars:       Warning: beginning from 2019-11-26 the XYZ file reader assumes Angstrom units.
 colvars:       Warning: atom group "atoms" will be aligned to a fixed orientation given by the reference positions provided.  If the internal structure of the group changes too much (i.e. its RMSD is comparable to its radius of gyration), the optimal rotation and its gradients may become discontinuous.  If that happens, use fittingGroup (or a different definition for it if already defined) to align the coordinates.
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
-colvars:       Atom group "atoms" defined, 10 atoms initialized: total mass = 120.11, total charge = 0.53.
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 120.11, total charge = 0.53.
 colvars:     # refPositions =  [default]
 colvars:     # refPositionsFile = "rmsd_atoms_refpos.xyz"
 colvars:     # refPositionsCol = "" [default]
@@ -86,6 +97,8 @@ colvars:   # timeStepFactor = 1 [default]
 colvars:   # width = 0.5
 colvars:   # lowerBoundary = 0 [default]
 colvars:   # upperBoundary = 0 [default]
+colvars:   # hardLowerBoundary = off [default]
+colvars:   # hardUpperBoundary = off [default]
 colvars:   # expandBoundaries = off [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
@@ -101,7 +114,9 @@ colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new "harmonic" instance.
 colvars:   # name = "harmonic1" [default]
 colvars:   # colvars = { one }
+colvars:   # stepZeroData = off [default]
 colvars:   # outputEnergy = off [default]
+colvars:   # outputFreq = 10 [default]
 colvars:   # timeStepFactor = 1 [default]
 colvars:   # writeTISamples = off [default]
 colvars:   # writeTIPMF = off [default]
@@ -110,7 +125,7 @@ colvars:   # targetCenters = { 0.1 } [default]
 colvars:   # outputCenters = off [default]
 colvars:   # forceConstant = 0.001
 colvars:   # targetForceConstant = -1 [default]
-colvars:   The force constant for colvar "one" will be rescaled to 0.004 according to the specified width.
+colvars:   The force constant for colvar "one" will be rescaled to 0.004 according to the specified width (0.5).
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables biases initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
@@ -119,21 +134,23 @@ colvars: ----------------------------------------------------------------------
 colvars: Updating NAMD interface:
 colvars: updating atomic data (51 atoms).
 colvars: updating group data (0 scalable groups, 0 atoms in total).
-colvars: Re-initialized atom group one:0/0. 10 atoms: total mass = 120.11.
+colvars: Re-initialized atom group for variable "one":0/0. 10 atoms: total mass = 120.11, total charge = 0.53.
 colvars: ----------------------------------------------------------------------
 colvars: Restarting from file "test.colvars.state".
 colvars:   Restarting collective variable "one" from value: -1.56418
+colvars:   Restarting harmonic bias "harmonic1" from step number 20.
 colvars: ----------------------------------------------------------------------
 colvars: The restart output state file will be "test.restart.tmp.colvars.state".
 colvars: The final output state file will be "test.restart.colvars.state".
-colvars: Writing to colvar trajectory file "test.restart.colvars.traj".
+colvars: Opening trajectory file "test.restart.colvars.traj".
+colvars: Redefining the Tcl "cv" command to the new script interface.
 colvars: Updating NAMD interface:
 colvars: updating atomic data (51 atoms).
 colvars: updating group data (0 scalable groups, 0 atoms in total).
-colvars: Re-initialized atom group one:0/0. 10 atoms: total mass = 120.11.
+colvars: Re-initialized atom group for variable "one":0/0. 10 atoms: total mass = 120.11, total charge = 0.53.
 colvars: The restart output state file will be "test.restart.tmp.colvars.state".
 colvars: The final output state file will be "test.restart.colvars.state".
-colvars: Performing analysis.
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".
 colvars: Saving collective variables state to "test.restart.tmp.colvars.state".
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".
