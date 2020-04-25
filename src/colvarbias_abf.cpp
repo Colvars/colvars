@@ -596,20 +596,23 @@ template <class T> int colvarbias_abf::write_grid_to_file(T const *grid,
   }
 
   // In dimension higher than 2, dx is easier to handle and visualize
-  if (num_variables() > 2) {
+  // but we cannot write multiple frames in a dx file now
+  // (could be implemented as multiple dx files)
+  if (num_variables() > 2 && close) {
     std::string  dx = filename + ".dx";
     std::ostream *dx_os = cvm::proxy->output_stream(dx);
     if (!dx_os)  {
       return cvm::error("Error opening file " + dx + " for writing.\n", COLVARS_ERROR | FILE_ERROR);
     }
     grid->write_opendx(*dx_os);
-    if (close) {
+    // if (close) {
       cvm::proxy->close_output_stream(dx);
-    } else {
-      // Insert empty line between frames in history files
-      *dx_os << std::endl;
-      dx_os->flush();
-    }
+    // }
+    // else {
+    //   // TODO, decide convention for multiple datasets in dx file
+    //   *dx_os << std::endl;
+    //   dx_os->flush();
+    // }
   }
   return COLVARS_OK;
 }
