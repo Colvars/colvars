@@ -1499,6 +1499,12 @@ int ScriptTcl::Tcl_colvarfreq(ClientData clientData,
   return TCL_OK;
 }
 
+// Declaration of Colvars Tcl wrapper
+extern "C"
+int tcl_run_colvarscript_command(ClientData clientData,
+                                 Tcl_Interp *interp_in,
+                                 int objc, Tcl_Obj *const objv[]);
+
 int ScriptTcl::Tcl_colvars(ClientData clientData,
                            Tcl_Interp *interp,
                            int objc,
@@ -1506,26 +1512,7 @@ int ScriptTcl::Tcl_colvars(ClientData clientData,
 {
   ScriptTcl *script = (ScriptTcl *) clientData;
   script->initcheck();
-  colvarmodule *colvars = Node::Object()->colvars;
-  if ( ! colvars ) {
-    Tcl_SetResult(interp,(char*)"colvars module not active",TCL_VOLATILE);
-    return TCL_ERROR;
-  }
-  colvarscript *cvscript = colvars->proxy->script;
-  int retval = cvscript->run(objc, reinterpret_cast<unsigned char * const *>(objv));
-
-  bool const no_errors = (retval == COLVARSCRIPT_OK) &&
-    (cvm::get_error() == COLVARS_OK);
-
-  Tcl_Obj *obj = Tcl_NewStringObj(cvscript->result.c_str(),
-                                  cvscript->result.length());
-  Tcl_SetObjResult(interp, obj);
-
-  if (no_errors) {
-    return TCL_OK;
-  } else {
-    return TCL_ERROR;
-  }
+  return tcl_run_colvarscript_command(clientData, interp, objc, objv);
 }
 
 int ScriptTcl::Tcl_checkpoint(ClientData clientData,
