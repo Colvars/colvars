@@ -17,10 +17,9 @@ function error_syntax {
   echo '  --tcl-prefix <directory containing Tcl lib and include>'
   echo '      (defaults to ./tcl or ~/tcl)'
   echo '  --without-python (default)  --with-python (requires Tcl)'
-  echo '      (only Python 2.x is supported currently)'
-  echo '  --python-prefix <directory containing Python lib and include>'
-  echo '      (defaults to the output of python-config --prefix'
-  echo '       if available, or to /usr if not)'
+  echo '  --python-prefix <directory containing bin/python[23]-config>'
+  echo '      (tries python3-config, python-config, and python2-config'
+  echo '       in prefix/bin if specified, otherwise in regular path)'
   echo '  --with-fftw (default)  --without-fftw'
   echo '  --with-fftw3 (use fftw3 API, your fftw-prefix should match) '
   echo '  --fftw-prefix <directory containing FFTW lib and include>'
@@ -468,41 +467,44 @@ function error_exists {
     PYTHON_LDFLAGS=""
     PYTHON_INCFLAGS=""
 
-    if [ -z "$PYTHON_PREFIX" ]; then
+    PYTHON_CONFIG=""
 
-      echo 'Trying to autodetect Python installation:'
-      if [ -n "$(which python-config)" ]; then
-        # Use python-config
-        echo 'autodetected.'
-        PYTHON_PREFIX=$(python-config --prefix)
-        PYTHON_INCFLAGS=$(python-config --includes)
-        PYTHON_LDFLAGS=$(python-config --ldflags)
+    if [ -n "$PYTHON_PREFIX" ]; then
+      echo "Trying to detect Python installation in $PYTHON_PREFIX:"
+      if [ -n "$(which $PYTHON_PREFIX/bin/python3-config)" ]; then
+        PYTHON_CONFIG="$PYTHON_PREFIX/bin/python3-config"
+      elif [ -n "$(which $PYTHON_PREFIX/bin/python-config)" ]; then
+        PYTHON_CONFIG="$PYTHON_PREFIX/bin/python-config"
+      elif [ -n "$(which $PYTHON_PREFIX/bin/python2-config)" ]; then
+        PYTHON_CONFIG="$PYTHON_PREFIX/bin/python2-config"
+      fi
+    else
+      echo "Trying to detect Python installation:"
+      if [ -n "$(which python3-config)" ]; then
+        PYTHON_CONFIG="python3-config"
+      elif [ -n "$(which python-config)" ]; then
+        PYTHON_CONFIG="python-config"
+      elif [ -n "$(which python2-config)" ]; then
+        PYTHON_CONFIG="python2-config"
+      fi
+    fi
+
+    if [ -z "$PYTHON_CONFIG" ]; then
+      echo "Unable to detect Python installation; please edit Make.config file."
+    else
+      echo "Using $PYTHON_CONFIG to configure Python."
+      PYTHON_PREFIX=$($PYTHON_CONFIG --prefix)
+      PYTHON_INCFLAGS=$($PYTHON_CONFIG --includes)
+      PYTHON_LDFLAGS=$($PYTHON_CONFIG --ldflags)
         if ! echo "$PYTHON_LDFLAGS" | grep -q -- '-L'; then
-          echo 'python-config did not return a -L flag: using Anaconda?'
+        echo "$PYTHON_CONFIG did not return a -L flag: using Anaconda?"
           if [ -d "$PYTHON_PREFIX/lib" ]; then
             PYTHON_LDFLAGS="-L$PYTHON_PREFIX/lib $PYTHON_LDFLAGS"
           elif [ -d "$PYTHON_PREFIX/lib64" ]; then
             PYTHON_LDFLAGS="-L$PYTHON_PREFIX/lib64 $PYTHON_LDFLAGS"
           else
-            echo "Unable to detect local Python; please edit Make.config file."
-          fi
-        fi
-      else
-        PYTHON_PREFIX="/usr"
-      fi
+          echo "Unable to detect Python installation; please edit Make.config file."
     fi
-
-    if [ -z "$PYTHON_LDFLAGS" ]; then
-      # We only have prefix, fall back to old method for the rest
-      for python_include in $PYTHON_PREFIX/include/python2.[0-9]; do
-        python_lib=${python_include##*/}
-      done
-      if [ -n "${python_lib+set}" ]; then
-      echo "Using $python_lib with include files in $python_include"
-        PYTHON_INCFLAGS="-I$python_include"
-        PYTHON_LDFLAGS="-L$PYTHON_PREFIX/lib64 -l$python_lib -ldl -lutil"
-    else
-        echo "Unable to detect local Python; please edit Make.config file."
       fi
     fi
 
