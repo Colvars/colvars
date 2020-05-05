@@ -2319,6 +2319,11 @@ obj/ComputeGlobal.o: \
 	src/Settle.h \
 	src/ComputeGlobalMsgs.h \
 	inc/ComputeMgr.decl.h \
+	src/GridForceGrid.h \
+	src/SimParameters.h \
+	src/MGridforceParams.h \
+	src/strlib.h \
+	src/MStream.h \
 	src/PatchMgr.h \
 	src/Molecule.h \
 	src/parm.h \
@@ -2328,18 +2333,14 @@ obj/ComputeGlobal.o: \
 	src/UniqueSetRaw.h \
 	src/Hydrogen.h \
 	src/GromacsTopFile.h \
-	src/GridForceGrid.h \
-	src/SimParameters.h \
-	src/MGridforceParams.h \
-	src/strlib.h \
-	src/MStream.h \
 	plugins/include/molfile_plugin.h \
 	plugins/include/vmdplugin.h \
 	src/ReductionMgr.h \
 	src/ComputeMgr.h \
 	src/GlobalMaster.h \
 	src/GlobalMasterServer.h \
-	src/Debug.h
+	src/Debug.h \
+	src/GridForceGrid.inl
 	$(CXX) $(CXXFLAGS) $(COPTO)obj/ComputeGlobal.o $(COPTC) src/ComputeGlobal.C
 obj/ComputeGlobalMsgs.o: \
 	obj/.exists \
@@ -2599,13 +2600,12 @@ obj/ComputeMgr.o: \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
 	src/colvarproxy_namd.h \
 	src/colvarproxy_namd_version.h \
 	src/Random.h \
 	colvars/src/colvarvalue.h \
-	src/DataExchanger.h \
-	inc/DataExchanger.decl.h \
-	src/Pointer.h \
 	src/DeviceCUDA.h \
 	inc/ComputeMgr.def.h
 	$(CXX) $(CXXFLAGS) $(COPTO)obj/ComputeMgr.o $(COPTC) src/ComputeMgr.C
@@ -4437,6 +4437,10 @@ obj/GlobalMasterServer.o: \
 	src/GridForceGrid.h \
 	plugins/include/molfile_plugin.h \
 	plugins/include/vmdplugin.h \
+	src/PatchMap.h \
+	src/HomePatchList.h \
+	src/SortedArray.h \
+	src/ResizeArrayIter.h \
 	src/Debug.h
 	$(CXX) $(CXXFLAGS) $(COPTO)obj/GlobalMasterServer.o $(COPTC) src/GlobalMasterServer.C
 obj/GlobalMasterTest.o: \
@@ -4845,6 +4849,9 @@ obj/colvarproxy_namd.o: \
 	inc/NamdCentLB.decl.h \
 	inc/NamdHybridLB.decl.h \
 	inc/NamdDummyLB.decl.h \
+	src/DataExchanger.h \
+	inc/DataExchanger.decl.h \
+	src/Pointer.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvaratoms.h \
@@ -4852,7 +4859,10 @@ obj/colvarproxy_namd.o: \
 	colvars/src/colvarproxy.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
 	colvars/src/colvarparse.h \
+	colvars/src/colvarparams.h \
 	colvars/src/colvardeps.h \
 	colvars/src/colvarproxy.h \
 	src/colvarproxy_namd.h \
@@ -4860,12 +4870,12 @@ obj/colvarproxy_namd.o: \
 	src/GlobalMaster.h \
 	src/Random.h \
 	colvars/src/colvarvalue.h \
-	src/DataExchanger.h \
-	inc/DataExchanger.decl.h \
-	src/Pointer.h \
 	colvars/src/colvarscript.h \
 	colvars/src/colvarbias.h \
-	colvars/src/colvar.h
+	colvars/src/colvar.h \
+	colvars/src/colvarscript_commands.h \
+	colvars/src/colvarscript_commands_colvar.h \
+	colvars/src/colvarscript_commands_bias.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarproxy_namd.o $(COPTC) src/colvarproxy_namd.C
 obj/GridForceGrid.o: \
 	obj/.exists \
@@ -6623,8 +6633,14 @@ obj/ScriptTcl.o: \
 	colvars/src/colvarbias.h \
 	colvars/src/colvar.h \
 	colvars/src/colvarparse.h \
+	colvars/src/colvarparams.h \
 	colvars/src/colvardeps.h \
 	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvarscript_commands.h \
+	colvars/src/colvarscript_commands_colvar.h \
+	colvars/src/colvarscript_commands_bias.h \
 	src/DumpBench.h \
 	src/TclCommands.h \
 	src/DataExchanger.h \
@@ -7439,7 +7455,9 @@ obj/topo_mol_output.o: \
 	sb/src/hasharray.h \
 	sb/src/memarena.h \
 	sb/src/topo_defs_struct.h \
-	sb/src/pdb_file.h
+	sb/src/pdb_file.h \
+	sb/src/psfgen.h \
+	sb/src/stringhash.h
 	$(CC) $(SBCFLAGS) $(COPTO)obj/topo_mol_output.o $(COPTC) sb/src/topo_mol_output.c
 obj/topo_mol_pluginio.o: \
 	obj/.exists \

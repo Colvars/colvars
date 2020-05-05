@@ -247,6 +247,10 @@ static PyMethodDef namdPython_methods[] = {
   {NULL, NULL, 0, NULL}
 };
 
+static PyMethodDef namdPython_methods_empty[] = {
+  {NULL, NULL, 0, NULL}
+};
+
 #if PY_MAJOR_VERSION >= 3
 
 struct module_state {
@@ -283,10 +287,32 @@ static PyObject* PyInit_tcl(void) {
   PyObject *module;
   module = PyModule_Create(&moduledef);
   if (module == NULL) {
-    NAMD_bug("Failed to create Python module");
+    NAMD_bug("Failed to create Python tcl module");
   }
   return module;
 }
+
+static struct PyModuleDef namdmoduledef = {
+        PyModuleDef_HEAD_INIT,
+        "namd",
+        NULL,
+        sizeof(struct module_state),
+        namdPython_methods_empty,
+        NULL,
+        namdPython_traverse,
+        namdPython_clear,
+        NULL
+};
+
+static PyObject* PyInit_namd(void) {
+  PyObject *module;
+  module = PyModule_Create(&namdmoduledef);
+  if (module == NULL) {
+    NAMD_bug("Failed to create Python namd module");
+  }
+  return module;
+}
+
 
 #endif // Python 3
 
@@ -296,10 +322,12 @@ static void namd_python_initialize(void *interp) {
 
   #if PY_MAJOR_VERSION >= 3
     PyImport_AppendInittab("tcl", &PyInit_tcl);
+    PyImport_AppendInittab("namd", &PyInit_namd);
   Py_InitializeEx(0);  // do not initialize signal handlers
   #else
     Py_InitializeEx(0);  // do not initialize signal handlers
     Py_InitModule("tcl", namdPython_methods);
+    Py_InitModule("namd", namdPython_methods_empty);
   #endif
 
   const char * python_code = "\n"
@@ -307,29 +335,36 @@ static void namd_python_initialize(void *interp) {
 "import tcl\n"
 "sys.stdout = tcl\n"
 "\n"
-"class _namd_wrapper:\n"
-"  class _wrapped:\n"
+"class _namd_wrapper(object):\n"
+"  tcl = __import__('tcl')\n"
+"  class _wrapped(object):\n"
 "    def __init__(self,_name):\n"
 "      self.name = _name\n"
 "    def __call__(self,*args):\n"
-"      return tcl.call(self.name,*args)\n"
+"      return self.tcl.call(self.name,*args)\n"
 "  def __getattr__(self,name):\n"
-"    if tcl.call('info','commands',name) == name:\n"
+"    if self.tcl.call('info','commands',name) == name:\n"
 "      return self._wrapped(name)\n"
 "    else:\n"
-"      return tcl.call('param',name)\n"
+"      return self.tcl.call('param',name)\n"
 "  def __setattr__(self,name,val):\n"
-"    if tcl.call('info','commands',name) == name:\n"
+"    if self.tcl.call('info','commands',name) == name:\n"
 "      raise AttributeError\n"
-"    return tcl.call('param',name,val)\n"
+"    return self.tcl.call('param',name,val)\n"
 "  def __call__(self, **args):\n"
 "    for (name,val) in args.items():\n"
-"      tcl.call('param',name,val)\n"
+"      self.tcl.call('param',name,val)\n"
 "\n"
-"namd = _namd_wrapper()\n"
+"sys.modules[__name__] = _namd_wrapper()\n"
 "\n";
 
-  if ( TCL_OK != PyRun_SimpleString(python_code) ) {
+  PyObject* mainmod = PyImport_AddModule("__main__");
+  PyObject* globalDictionary = PyModule_GetDict(mainmod);
+  PyObject* namdmod = PyImport_AddModule("namd");
+  PyObject* localDictionary = PyModule_GetDict(namdmod);
+  PyObject* result = PyRun_String(python_code, Py_file_input, globalDictionary, localDictionary);
+
+  if ( 0 != PyRun_SimpleString("import tcl\nimport namd\n") ) {
     NAMD_bug("namd_python_initialize failed");
   }
 }
