@@ -8,8 +8,10 @@ colvar {
    width 0.1
 
    lowerBoundary 12
+   lowerWall 12
    lowerWallConstant 20.0
    upperBoundary 15
+   upperWall 15
    upperWallConstant 20.0
 
    outputValue

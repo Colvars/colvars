@@ -808,6 +808,11 @@ int colvarbias_abf::write_output_files()
     cvm::log("ABF bias trying to write gradients and samples to disk");
   }
 
+  if (shared_on && cvm::main()->proxy->replica_index() > 0) {
+    // No need to report the same data as replica 0, let it do the I/O job
+    return COLVARS_OK;
+  }
+
   write_gradients_samples(output_prefix);
   if (b_history_files) {
     if ((cvm::step_absolute() % history_freq) == 0) {

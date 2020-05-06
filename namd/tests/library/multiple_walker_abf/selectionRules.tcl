@@ -82,7 +82,7 @@ proc localCount {bin binNum sampleRad biasName} {
 	} else {
 	    set i $b
 	}
-	incr count [cv bias $biasName count $i]
+	incr count [cv bias $biasName bincount $i]
     }
     return $count
 }
