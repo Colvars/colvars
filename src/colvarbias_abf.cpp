@@ -575,6 +575,10 @@ int colvarbias_abf::replica_share() {
   last_samples->copy_grid(*samples);
   shared_last_step = cvm::step_absolute();
 
+  if (b_integrate) {
+    // Update divergence to account for newly shared gradients
+    pmf->set_div();
+  }
   return COLVARS_OK;
 }
 
