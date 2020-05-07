@@ -10,6 +10,11 @@
 #ifndef COLVARPROXY_NAMD_H
 #define COLVARPROXY_NAMD_H
 
+#ifndef NAMD_VERSION_NUMBER
+// Assume 2.14b1 for now until the NAMD macro is merged
+#define NAMD_VERSION_NUMBER 34471681
+#endif
+
 #include "colvarproxy_namd_version.h"
 
 #include "Vector.h"
@@ -208,9 +213,11 @@ public:
   void clear_atom_group(int index);
   int update_group_properties(int index);
 
+#if NAMD_VERSION_NUMBER >= 34471681
   int init_volmap(int volmap_id);
   int init_volmap(const char *volmap_name);
   void clear_volmap(int index);
+#endif
 
   std::ostream * output_stream(std::string const &output_name,
                                std::ios_base::openmode mode);
