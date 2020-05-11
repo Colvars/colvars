@@ -335,8 +335,13 @@ int colvarmodule::parse_global_params(std::string const &conf)
                     scripting_after_biases, scripting_after_biases);
 
   if (use_scripted_forces && !proxy->force_script_defined) {
-    return cvm::error("User script for scripted colvar forces not found.",
-                      INPUT_ERROR);
+    if (proxy->simulation_running()) {
+      return cvm::error("User script for scripted colvar forces not found.",
+                        INPUT_ERROR);
+    } else {
+      // Not necessary if we are not applying biases in a real simulation (eg. VMD)
+      cvm::log("Warning: User script for scripted colvar forces not found.");
+    }
   }
 
   return cvm::get_error();

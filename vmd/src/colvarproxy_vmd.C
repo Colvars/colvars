@@ -394,7 +394,12 @@ void colvarproxy_vmd::init_tcl_pointers()
 
 int colvarproxy_vmd::run_force_callback()
 {
-  return colvarproxy::tcl_run_force_callback();
+  if (force_script_defined) {
+    return colvarproxy::tcl_run_force_callback();
+  } else {
+    // Ignore if script is undefined in VMD
+    return COLVARS_OK;
+  }
 }
 
 int colvarproxy_vmd::run_colvar_callback(
