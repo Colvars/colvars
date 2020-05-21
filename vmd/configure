@@ -103,6 +103,7 @@ if ($ENV{VMDINSTALLLIBRARYDIR}) {
 # LIBOSPRAY    - built-in accelerated ray tracing for Intel CPUs
 # LIBTACHYON   - built-in raytracing via Tachyon (on CPUs)
 # LIBPNG       - PNG image output support
+# LINENOISE    - built-in minimalistic console line editing, w/ linenoise
 # ZLIB         - ZLIB compression library
 # NETCDF       - NetCDF file I/O library
 # NOSTATICPLUGINS - disable use of statically linked molfile plugins
@@ -286,6 +287,7 @@ foreach $term (@ARGV) {
     if ($term eq "LIBOSPRAY" )      { $config_libospray       = 1; next; }
     if ($term eq "LIBTACHYON")      { $config_libtachyon      = 1; next; }
     if ($term eq "LIBPNG")          { $config_libpng          = 1; next; }
+    if ($term eq "LINENOISE")       { $config_linenoise       = 1; next; }
     if ($term eq "ZLIB")            { $config_zlib            = 1; next; }
     if ($term eq "OPENHMD" )        { $config_openhmd         = 1; next; }
     if ($term eq "VRPN")            { $config_vrpn            = 1; next; }
@@ -359,6 +361,7 @@ if ($config_liboptix)        { $config_string .= " LIBOPTIX"        }
 if ($config_libospray)       { $config_string .= " LIBOSPRAY"       }
 if ($config_libtachyon)      { $config_string .= " LIBTACHYON"      }
 if ($config_libpng)          { $config_string .= " LIBPNG"          }
+if ($config_linenoise)       { $config_string .= " LINENOISE"       }
 if ($config_zlib)            { $config_string .= " ZLIB"            }
 if ($config_openhmd)         { $config_string .= " OPENHMD"         }
 if ($config_vrpn)            { $config_string .= " VRPN"            }
@@ -1200,6 +1203,20 @@ $libpng_libs        = "-lpng16";
 @libpng_cu          = ();
 @libpng_ccpp        = ();
 @libpng_h           = ();
+
+
+################ LINENOISE
+# OPTIONAL COMPONENT: linenoise line editing library
+# This may be commented out if not required.
+$linenoise_defines     = "-DVMDLINENOISE";
+$linenoise_dir         = "";
+$linenoise_include     = "";
+$linenoise_library     = "";
+$linenoise_libs        = "";
+@linenoise_cc          = ('linenoise.c');
+@linenoise_cu          = ();
+@linenoise_ccpp        = ();
+@linenoise_h           = ('linenoise.h');
 
 
 ################ ZLIB
@@ -3231,6 +3248,7 @@ $if_statements .= &create_config_option('libgelato');
 $if_statements .= &create_config_option('liboptix');
 $if_statements .= &create_config_option('libospray');
 $if_statements .= &create_config_option('libpng');
+$if_statements .= &create_config_option('linenoise');
 $if_statements .= &create_config_option('libtachyon');
 $if_statements .= &create_config_option('openhmd');
 $if_statements .= &create_config_option('vrpn');
