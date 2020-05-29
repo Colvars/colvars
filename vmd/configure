@@ -785,6 +785,7 @@ if ($config_tk) { $tcl_libs = "-ltk8.5 -lX11 " . $tcl_libs; }
 		     'TclTextInterp.C',
                      'TclVec.C',
 		     'TclGraphics.C', 
+		     'TclGraphLayout.C', 
 		     'TclSegmentation.C',
 		     'TclVolMap.C',
 		     'TclVoltool.C',
@@ -1055,11 +1056,9 @@ $nvpipe_libs        = "-lcuda"; # XXX need to eliminate via dlopen()/dlsym()
 #######################
 $nvtx_defines     = "-DVMDNVTX ";
 $nvtx_dir         = "";
-#$nvtx_include     = ""; # CUDA <= 9 have NVTX V2
-$nvtx_include     = "-I$cuda_dir/include/nvtx3 "; # CUDA >= 10 have NVTX V3
-$nvtx_library     = "";
-$nvtx_libs        = "-lnvToolsExt"; # CUDA <= 9 have NVTX V2
-#$nvtx_libs        = ""; # CUDA >= 10 have NVTX V3
+$nvtx_include     = ""; # CUDA >= 10 have NVTX V3
+$nvtx_library     = ""; # CUDA >= 10 have NVTX V3, no -lnvToolsExt
+$nvtx_libs        = ""; # CUDA >= 10 have NVTX V3, no -lnvToolsExt
 @nvtx_cc          = ();
 @nvtx_cu          = ();
 @nvtx_ccpp        = ();
@@ -1624,6 +1623,7 @@ $vmd_libs          = "$tcl_libs";
 		   'GeometryList.C', 
 		   'GeometryMol.C', 
 		   'GeometrySpring.C', 
+		   'GraphLayout.C', 
 		   'Hershey.C', 
 		   'HMDMgr.C', 
 		   'Inform.C', 

@@ -285,6 +285,9 @@ int Vmd_Init(Tcl_Interp *interp) {
         (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
 #endif
 
+  Tcl_CreateObjCommand(interp, "graphlayout", obj_graphlayout,
+                       (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
+
   Tcl_CreateObjCommand(interp,  "gettimestep", cmd_gettimestep,
                        (ClientData) app, (Tcl_CmdDeleteProc *) NULL);
 
