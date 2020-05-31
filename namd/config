@@ -44,6 +44,7 @@ function error_syntax {
   echo '  --cuda-prefix <directory containing CUDA bin, lib, and include>'
   echo '  --cuda-gencode arch=<arch>,code=<code> (may be repeated)'
   echo '  --cuda-dlink arch=<arch>,code=<code> (for cuFFT, may be repeated)'
+  echo '  --with-cuda-profiling (enables CUDA profiling with NVTX)'
   echo ''
   if [ -n "${PRINT_ARCH_LIST+set}" ]; then
     ARCH_PAT=''
@@ -138,6 +139,7 @@ function error_exists {
   use_fftw3=0
   use_mkl=0
   use_cuda=0
+  use_cuda_prof=0
   use_memopt=0
   use_mic=0
   use_spec=0
@@ -332,6 +334,10 @@ function error_exists {
           error_syntax
         fi
         CUDA_DLINK="$CUDA_DLINK -gencode $1"
+      ;;
+      --with-cuda-profiling)
+        shift
+        use_cuda_prof=1
       ;;
 
       --with-memopt)
@@ -725,6 +731,20 @@ function error_exists {
     elif [[ -d "$HOME/cuda/lib" && -d "$HOME/cuda/include" ]]; then
       echo "Using CUDA build found in $HOME/cuda"
       CUDA_PREFIX=$HOME/cuda
+    else
+      # try to set CUDA_PREFIX based on nvcc in user's path
+      path_to_nvcc=$(which nvcc)
+      if [ -x "${path_to_nvcc}" ]; then
+        cuda_bindir=${path_to_nvcc%/*}
+        cuda_dir=${cuda_bindir%/*} 
+        if [ -x "${cuda_dir}/bin/nvcc" ]; then
+          echo "Using CUDA based on path to nvcc"
+          echo "Found enclosing directory ${cuda_dir}"
+          CUDA_PREFIX=${cuda_dir}
+        fi
+      else
+        echo "Warning: CUDA installation not found"
+      fi
     fi
     if [ -n "$CUDA_PREFIX" ]; then
       cuda_ver=$(${CUDA_PREFIX}/bin/nvcc --version | grep release | cut -d " " -f5 | cut -d "," -f1)
@@ -733,15 +753,30 @@ function error_exists {
         echo "Warning: Did not find CUDA installation in $CUDA_PREFIX"
       else 
           echo "CUDA detected: version $cuda_ver"
-          cuda_major_ver=$(echo ${cuda_ver} | cut -d "." -f1)
-          while [ ${cuda_major_ver} -ge 7 ]; do
+        cuda_major_ver_found=$(echo ${cuda_ver} | cut -d "." -f1)
+        cuda_major_ver=${cuda_major_ver_found}
+        cuda_major_ver_min=8
+        while [ ${cuda_major_ver} -ge ${cuda_major_ver_min} ]; do
               if [ -f ".rootdir/arch/${NAMD_ARCH}.cuda${cuda_major_ver}" ]; then
                   echo "using ${NAMD_ARCH}.cuda${cuda_major_ver}"
-                  echo 'include .rootdir/arch/$(NAMD_ARCH).cuda'${cuda_major_ver} >> Make.config
+            # work around CUDA 9.0 code generation for MacOS
+            if [[ "${NAMD_ARCH}" == MacOS* && "${cuda_ver}" == "9.0" ]]; then
+              cuda_major_ver_using=$((cuda_major_ver-1))
+              echo "CUDA ${cuda_ver} does not fully support ${NAMD_ARCH}"
+              echo "Using code generation flags from previous major version ${cuda_major_ver_using} of CUDA"
+            else
+              cuda_major_ver_using=${cuda_major_ver}
+            fi
+            echo 'include .rootdir/arch/$(NAMD_ARCH).cuda'${cuda_major_ver_using} >> Make.config
                   break
               fi 
               cuda_major_ver=$((cuda_major_ver-1))
           done 
+        if [ ${cuda_major_ver} -lt ${cuda_major_ver_min} ]; then
+          echo "Warning: No CUDA build found for version ${cuda_ver}"
+        elif [ ${cuda_major_ver} -lt ${cuda_major_ver_found} ]; then
+          echo "Warning: CUDA build found is less than version ${cuda_ver}"
+        fi
       fi
       echo "CUDADIR = $CUDA_PREFIX" >> Make.config
     fi
@@ -753,18 +788,37 @@ function error_exists {
     fi
     if [ -n "$CUDART_SO_FULL" ]; then
       CUDART_SO_FULL="$CUDART_SO_FULL"
-      echo "CUDASODIR = ${CUDART_SO_FULL%/*}" >> Make.config
-      echo "LIBCUDARTSO = ${CUDART_SO_FULL##*/}" >> Make.config
+      cudasodir=${CUDART_SO_FULL%/*}
+      if [[ ! -d ${cudasodir} ]]; then
+        echo "Warning: Invalid directory for CUDA library ${cudasodir}"
+      fi
+      libcudartso=${CUDART_SO_FULL##*/}
+      if [[ ! -f ${cudasodir}/${libcudartso} ]]; then
+        echo "Warning: Did not find the cudart library"
+      fi
+      echo "CUDASODIR = ${cudasodir}" >> Make.config
+      if [[ "${NAMD_ARCH}" == Linux* || "${NAMD_ARCH}" == MacOS* ]]; then
+        # don't copy .so for platforms where we statically link cudart and cufft
+        echo "LIBCUDARTSO =" >> Make.config
+        echo "LIBCUFFTSO =" >> Make.config
+      else
+        echo "LIBCUDARTSO = ${libcudartso}" >> Make.config
       if [ -n "$CUFFT_SO_FULL" ]; then
         CUFFT_SO_FULL="$CUFFT_SO_FULL"
-        if [[ "${CUDART_SO_FULL%/*}" != "${CUFFT_SO_FULL%/*}" ]]; then
+          cufftsodir=${CUFFT_SO_FULL%/*}
+          if [[ "${cudasodir}" != "${cufftsodir}" ]]; then
           echo "Warning: Found $CUDART_SO_FULL and $CUFFT_SO_FULL in different directories"
         fi
-        echo "LIBCUFFTSO = ${CUFFT_SO_FULL##*/}" >> Make.config
+          libcufftso=${CUFFT_SO_FULL##*/}
+          if [[ ! -f ${cufftsodir}/${libcufftso} ]]; then
+            echo "Warning: Did not find the cufft library"
+          fi
+          echo "LIBCUFFTSO = ${libcufftso}" >> Make.config
       else
         echo "Warning: Found $CUDART_SO_FULL but no cufft"
       fi
     fi
+  fi
   fi
   if [[ $use_cuda -ne 0 && -n "$CUDA_GENCODE" ]]; then
     echo "CUDAGENCODE = $CUDA_GENCODE" >> Make.config
@@ -773,6 +827,15 @@ function error_exists {
     else
       echo "# runtime error if dlink architectures not available in libcufft_static" >> Make.config
       echo "CUDADLINKOPTS = $CUDA_GENCODE" >> Make.config
+    fi
+  fi
+
+  if (( $use_cuda && $use_cuda_prof )); then
+    if [ -f ".rootdir/arch/${NAMD_ARCH}.cudaprof" ]; then
+      echo "Enabling NVTX profiling for CUDA ${NAMD_ARCH}"
+      echo 'include .rootdir/arch/$(NAMD_ARCH).cudaprof' >> Make.config
+    else
+      echo "Warning: Cannot enable NVTX profiling for CUDA ${NAMD_ARCH}"
     fi
   fi
 
