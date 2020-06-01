@@ -607,6 +607,7 @@ public:
   class euler_psi;
   class euler_theta;
   class neuralNetwork;
+  class customColvar;
 
   // non-scalar components
   class distance_vec;

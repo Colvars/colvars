@@ -1613,13 +1613,37 @@ class colvar::linearCombination
 protected:
     /// Sub-colvar components
     std::vector<colvar::cvc*> cv;
-    /// If all sub-cvs use explicit gradients then we also use it
-    bool use_explicit_gradients;
 protected:
     cvm::real getPolynomialFactorOfCVGradient(size_t i_cv) const;
 public:
     linearCombination(std::string const &conf);
     virtual ~linearCombination();
+    virtual void calc_value();
+    virtual void calc_gradients();
+    virtual void apply_force(colvarvalue const &force);
+};
+
+
+/// custom expression of colvars
+class colvar::customColvar
+  : public colvar::linearCombination
+{
+protected:
+    bool use_custom_function;
+#ifdef LEPTON
+    /// Vector of evaluators for custom functions using Lepton
+    std::vector<Lepton::CompiledExpression *> value_evaluators;
+    /// Vector of evaluators for gradients of custom functions
+    std::vector<Lepton::CompiledExpression *> gradient_evaluators;
+    /// Vector of references to cvc values to be passed to Lepton evaluators
+    std::vector<double *> value_eval_var_refs;
+    std::vector<double *> grad_eval_var_refs;
+    /// Unused value that is written to when a variable simplifies out of a Lepton expression
+    double dev_null;
+#endif
+public:
+    customColvar(std::string const &conf);
+    virtual ~customColvar();
     virtual void calc_value();
     virtual void calc_gradients();
     virtual void apply_force(colvarvalue const &force);
