@@ -115,6 +115,12 @@ public:
                             std::string const     &atom_name,
                             std::string const     &segment_id);
 
+  virtual int init_volmap_by_id(int volmap_id);
+
+  virtual int check_volmap_by_id(int volmap_id);
+
+  virtual void clear_volmap(int index);
+
 protected:
 
   /// pointer to the VMD main object

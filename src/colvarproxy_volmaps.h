@@ -25,13 +25,30 @@ public:
   int add_volmap_slot(int volmap_id);
 
   /// Request and prepare this volumetric map for use by Colvars
-  virtual int init_volmap(int volmap_id);
+  /// \param volmap_id Numeric ID used by the MD engine
+  /// \returns Index of the map in the colvarproxy arrays
+  virtual int init_volmap_by_id(int volmap_id);
+
+  /// Request and prepare this volumetric map for use by Colvars 
+  /// \param volmap_name Name used by the MD engine
+  /// \returns Index of the map in the colvarproxy arrays
+  virtual int init_volmap_by_name(char const *volmap_name);
+
+  /// Check that the given volmap ID is valid (return COLVARS_OK if it is)
+  /// \param volmap_id Numeric ID used by the MD engine
+  /// \returns Error code
+  virtual int check_volmap_by_id(int volmap_id);
+
+  /// Check that the given volmap name is valid (return COLVARS_OK if it is)
+  /// \param volmap_name Name used by the MD engine
+  /// \returns Error code
+  virtual int check_volmap_by_name(char const *volmap_name);
 
   /// Request and prepare this volumetric map for use by Colvars
-  virtual int init_volmap(char const *volmap_name);
+  int init_volmap_by_name(std::string const &volmap_name);
 
-  /// Request and prepare this volumetric map for use by Colvars
-  int init_volmap(std::string const &volmap_name);
+  /// Check that the given volmap name is valid (return COLVARS_OK if it is)
+  int check_volmap_by_name(std::string const &volmap_name);
 
   /// \brief Used by the CVC destructors
   virtual void clear_volmap(int index);
@@ -53,7 +70,6 @@ public:
   {
     volmaps_new_colvar_forces[index] += new_force;
   }
-
 
 protected:
 

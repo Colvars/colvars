@@ -1237,7 +1237,7 @@ int colvarproxy_namd::set_unit_system(std::string const &units_in, bool /*check_
 
 #if NAMD_VERSION_NUMBER >= 34471681
 
-int colvarproxy_namd::init_volmap(int volmap_id)
+int colvarproxy_namd::init_volmap_by_id(int volmap_id)
 {
   for (size_t i = 0; i < volmaps_ids.size(); i++) {
     if (volmaps_ids[i] == volmap_id) {
@@ -1247,30 +1247,32 @@ int colvarproxy_namd::init_volmap(int volmap_id)
     }
   }
 
-  Molecule *mol = Node::Object()->molecule;
-
-  if ((volmap_id < 0) || (volmap_id >= mol->numGridforceGrids)) {
-    return cvm::error("Error: invalid numeric ID ("+cvm::to_str(volmap_id)+
-                      ") for map.\n", INPUT_ERROR);
+  int error_code = check_volmap_by_id(volmap_id);
+  int index = -1;
+  if (error_code == COLVARS_OK) {
+    index = add_volmap_slot(volmap_id);
+    modifyRequestedGridObjects().add(volmap_id);
   }
 
-  int const index = add_volmap_slot(volmap_id);
-  modifyRequestedGridObjects().add(volmap_id);
-
-  return index;
+  return (error_code == COLVARS_OK) ? index : -1;
 }
 
 
-int colvarproxy_namd::init_volmap(const char *volmap_name)
+int colvarproxy_namd::init_volmap_by_name(char const *volmap_name)
 {
   if (volmap_name == NULL) {
     return cvm::error("Error: no grid object name provided.", INPUT_ERROR);
   }
-  int volmap_id = simparams->mgridforcelist.index_for_key(volmap_name);
 
-  int error_code = init_volmap(volmap_id);
+  int error_code = COLVARS_OK;
 
+  error_code |= check_volmap_by_name(volmap_name);
+
+  int index = -1;
   if (error_code == COLVARS_OK) {
+
+    int volmap_id = simparams->mgridforcelist.index_for_key(volmap_name);
+
     // Check that the scale factor is correctly set to zero
     Molecule *mol = Node::Object()->molecule;
     GridforceGrid const *grid = mol->get_gridfrc_grid(volmap_id);
@@ -1281,14 +1283,51 @@ int colvarproxy_namd::init_volmap(const char *volmap_name)
                                "\" has non-zero scale factors.\n",
                                INPUT_ERROR);
     }
+
+    for (size_t i = 0; i < volmaps_ids.size(); i++) {
+      if (volmaps_ids[i] == volmap_id) {
+        // this map has already been requested
+        volmaps_ncopies[i] += 1;
+        return i;
+      }
+    }
+
+    index = add_volmap_slot(volmap_id);
+    modifyRequestedGridObjects().add(volmap_id);
   }
 
-  return error_code;
+  return (error_code == COLVARS_OK) ? index : -1;
+}
+
+
+int colvarproxy_namd::check_volmap_by_id(int volmap_id)
+{
+  Molecule *mol = Node::Object()->molecule;
+  if ((volmap_id < 0) || (volmap_id >= mol->numGridforceGrids)) {
+    return cvm::error("Error: invalid numeric ID ("+cvm::to_str(volmap_id)+
+                      ") for map.\n", INPUT_ERROR);
+  }
+  return COLVARS_OK;
+}
+
+
+int colvarproxy_namd::check_volmap_by_name(char const *volmap_name)
+{
+  if (volmap_name == NULL) {
+    return cvm::error("Error: no grid object name provided.", INPUT_ERROR);
+  }
+  int volmap_id = simparams->mgridforcelist.index_for_key(volmap_name);
+  if (volmap_id < 0) {
+    return cvm::error("Error: invalid map name \""+std::string(volmap_name)+
+                      "\".\n", INPUT_ERROR);
+  }
+  return COLVARS_OK;
 }
 
 
 void colvarproxy_namd::clear_volmap(int index)
 {
+  // TODO remove from GlobalMaster
   colvarproxy::clear_volmap(index);
 }
 

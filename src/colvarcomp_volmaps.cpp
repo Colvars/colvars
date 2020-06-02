@@ -19,6 +19,8 @@ colvar::map_total::map_total()
   : cvc(), volmap_index(-1)
 {
   function_type = "map_total";
+  map_id = -1;
+  volmap_index = -1;
   x.type(colvarvalue::type_scalar);
 }
 
@@ -27,6 +29,8 @@ colvar::map_total::map_total(std::string const &conf)
   : cvc(), volmap_index(-1)
 {
   function_type = "map_total";
+  map_id = -1;
+  volmap_index = -1;
   x.type(colvarvalue::type_scalar);
   map_total::init(conf);
 }
@@ -35,16 +39,31 @@ colvar::map_total::map_total(std::string const &conf)
 int colvar::map_total::init(std::string const &conf)
 {
   int error_code = cvc::init(conf);
+  colvarproxy *proxy = cvm::main()->proxy;
   get_keyval(conf, "mapName", map_name, map_name);
-  volmap_index = (cvm::proxy)->init_volmap(map_name);
+  get_keyval(conf, "mapID", map_id, map_id);
+
+  if ((map_name.size() > 0) && (map_id >= 0)) {
+    error_code |=
+      cvm::error("Error: mapName and mapID are mutually exclusive.\n");
+  }
+
+  if (map_name.size()) {
+    volmap_index = proxy->init_volmap_by_name(map_name);
+  }
+  if (map_id >= 0) {
+    volmap_index = proxy->init_volmap_by_id(map_id);
+  }
   error_code |= volmap_index > 0 ? COLVARS_OK : INPUT_ERROR;
+
   return error_code;
 }
 
 
 void colvar::map_total::calc_value()
 {
-  x.real_value = (cvm::proxy)->get_volmap_value(volmap_index);
+  colvarproxy const *proxy = cvm::main()->proxy;
+  x.real_value = proxy->get_volmap_value(volmap_index);
 }
 
 
@@ -56,5 +75,6 @@ void colvar::map_total::calc_gradients()
 
 void colvar::map_total::apply_force(colvarvalue const &force)
 {
-  (cvm::proxy)->apply_volmap_force(volmap_index, force.real_value);
+  colvarproxy *proxy = cvm::main()->proxy;
+  proxy->apply_volmap_force(volmap_index, force.real_value);
 }

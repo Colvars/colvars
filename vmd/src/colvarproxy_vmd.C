@@ -826,3 +826,39 @@ int colvarproxy_vmd::init_atom(cvm::residue_id const &resid,
   return index;
 }
 
+
+int colvarproxy_vmd::init_volmap_by_id(int volmap_id)
+{
+  for (size_t i = 0; i < volmaps_ids.size(); i++) {
+    if (volmaps_ids[i] == volmap_id) {
+      // this map has already been requested
+      volmaps_ncopies[i] += 1;
+      return i;
+    }
+  }
+
+  int index = -1;
+
+  int error_code = check_volmap_by_id(volmap_id);
+  if (error_code == COLVARS_OK) {
+    index = add_volmap_slot(volmap_id);
+  }
+
+  return index;
+}
+
+
+int colvarproxy_vmd::check_volmap_by_id(int volmap_id)
+{
+  if ((volmap_id < 0) || (volmap_id >= vmdmol->num_volume_data())) {
+    return cvm::error("Error: invalid numeric ID ("+cvm::to_str(volmap_id)+
+                      ") for map.\n", INPUT_ERROR);
+  }
+  return COLVARS_OK;
+}
+
+
+void colvarproxy_vmd::clear_volmap(int index)
+{
+  colvarproxy::clear_volmap(index);
+}
