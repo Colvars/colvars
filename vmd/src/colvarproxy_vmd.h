@@ -64,9 +64,7 @@ public:
 
   virtual int set_frame(long int f);
 
-#if defined(VMDTCL)
   virtual void init_tcl_pointers();
-#endif
 
   virtual char const *script_obj_to_str(unsigned char *obj);
 

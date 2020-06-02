@@ -383,14 +383,19 @@ int colvarproxy_vmd::set_frame(long int f)
 }
 
 
+void colvarproxy_vmd::init_tcl_pointers()
+{
+#ifdef VMDTCL
+  // Do nothing, already initialized in constructor
+#else
+  colvarproxy::init_tcl_pointers(); // Raise non-implemented error
+#endif
+}
+
+
 // Callback functions
 
 #ifdef VMDTCL
-
-void colvarproxy_vmd::init_tcl_pointers()
-{
-  // Do nothing, already initialized in constructor
-}
 
 int colvarproxy_vmd::run_force_callback()
 {
