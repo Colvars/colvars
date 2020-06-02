@@ -150,11 +150,13 @@ CVSCRIPT(cv_frame,
              return COLVARSCRIPT_ERROR;
            }
          } else {
-           // Failure of this function does not trigger an error, but
-           // returns nonzero, to let scripts detect available frames
            int const f = strtol(const_cast<char *>(arg), NULL, 10);
-           return script->proxy()->set_frame(f);
-         }
+           int error_code = script->proxy()->set_frame(f);
+           if (error_code == COLVARS_NO_SUCH_FRAME) {
+             script->add_error_msg("Invalid frame number: \""+std::string(arg)+
+                                   "\"\n");
+           }
+           return error_code;
          )
 
 CVSCRIPT(cv_getconfig,
