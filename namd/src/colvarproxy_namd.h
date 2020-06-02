@@ -214,9 +214,17 @@ public:
   int update_group_properties(int index);
 
 #if NAMD_VERSION_NUMBER >= 34471681
-  int init_volmap(int volmap_id);
-  int init_volmap(const char *volmap_name);
-  void clear_volmap(int index);
+
+  virtual int init_volmap_by_id(int volmap_id);
+
+  virtual int init_volmap_by_name(const char *volmap_name);
+
+  virtual int check_volmap_by_id(int volmap_id);
+
+  virtual int check_volmap_by_name(char const *volmap_name);
+
+  virtual void clear_volmap(int index);
+
 #endif
 
   std::ostream * output_stream(std::string const &output_name,

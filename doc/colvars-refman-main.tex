@@ -2736,7 +2736,18 @@ Because the volumetric map itself and the atoms affected by it are defined exter
     Specify the name of the volumetric map to use as a colvar}{%
     string}{%
     The value of this option specifies the label of the volumetric map to use for this collective variable component.
-    This label must identify a map already loaded in \MDENGINE{} via \texttt{mGridForcePotFile}, and its value of \texttt{mGridForceScale} needs to be set to (0, 0, 0), so that its collective force can be computed dynamically.
+    This label must identify a map already loaded in NAMD via \texttt{mGridForcePotFile}, and the corresponding value of \texttt{mGridForceScale} must be set to (0, 0, 0), so that its collective force is computed dynamically.
+  }
+
+\item %
+  \labelkey{colvar|mapTotal|mapID}
+  \key
+    {mapName}{%
+    \texttt{mapID}}{%
+    Specify the numeric index of the volumetric map to use as a colvar}{%
+    non-negative integer}{%
+    The value of this option specifies the numeric index of the volumetric map to use for this collective variable component.
+    It is mutually exclusive with \refkey{colvar|mapTotal|mapName}.
   }
 \end{cvcoptions}
 
