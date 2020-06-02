@@ -1243,7 +1243,7 @@ void colvarbias_meta::read_replica_files()
 
           // test whether this is the end of the file
           is.seekg(0, std::ios::end);
-          if (is.tellg() > (replicas[ir])->replica_hills_file_pos+1) {
+          if (is.tellg() > (replicas[ir])->replica_hills_file_pos + ((std::streampos) 1)) {
             (replicas[ir])->update_status++;
           } else {
             (replicas[ir])->update_status = 0;

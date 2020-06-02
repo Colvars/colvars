@@ -1360,7 +1360,7 @@ std::istream & colvarmodule::read_restart(std::istream &is)
 
 std::istream & colvarmodule::read_objects_state(std::istream &is)
 {
-  size_t pos = 0;
+  std::streampos pos = 0;
   std::string word;
 
   while (is.good()) {
@@ -1385,7 +1385,7 @@ std::istream & colvarmodule::read_objects_state(std::istream &is)
                        "collective variable \""+(*cvi)->name+"\".\n",
                        INPUT_ERROR);
           }
-          if (static_cast<size_t>(is.tellg()) > pos) break; // found it
+          if (is.tellg() > pos) break; // found it
         }
         cvm::decrease_depth();
 
@@ -1406,13 +1406,13 @@ std::istream & colvarmodule::read_objects_state(std::istream &is)
                        (*bi)->name+"\".\n",
                        INPUT_ERROR);
           }
-          if (static_cast<size_t>(is.tellg()) > pos) break; // found it
+          if (is.tellg() > pos) break; // found it
         }
         cvm::decrease_depth();
       }
     }
 
-    if (static_cast<size_t>(is.tellg()) == pos) {
+    if (is.tellg() == pos) {
       // This block has not been read by any object: discard it and move on
       // to the next one
       is >> colvarparse::read_block(word, NULL);
@@ -1800,7 +1800,7 @@ int cvm::read_index_file(char const *filename)
     std::vector<int> *new_index_group = new std::vector<int>();
 
     int atom_number = 1;
-    size_t pos = is.tellg();
+    std::streampos pos = is.tellg();
     while ( (is >> atom_number) && (atom_number > 0) ) {
       new_index_group->push_back(atom_number);
       pos = is.tellg();

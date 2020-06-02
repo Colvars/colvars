@@ -701,7 +701,7 @@ public:
     }
     if (scale_factor != 1.0)
       for (size_t i = 0; i < data.size(); i++) {
-        data[i] += scale_factor * other_grid.data[i];
+        data[i] += static_cast<T>(scale_factor * other_grid.data[i]);
       }
     else
       // skip multiplication if possible
