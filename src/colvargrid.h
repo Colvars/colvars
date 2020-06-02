@@ -935,7 +935,7 @@ public:
   /// \brief Read grid entry in restart file
   std::istream & read_restart(std::istream &is)
   {
-    size_t const start_pos = is.tellg();
+    std::streampos const start_pos = is.tellg();
     std::string key, conf;
     if ((is >> key) && (key == std::string("grid_parameters"))) {
       is.seekg(start_pos, std::ios::beg);
@@ -988,7 +988,7 @@ public:
   /// \brief Read data written by colvar_grid::write_raw()
   std::istream & read_raw(std::istream &is)
   {
-    size_t const start_pos = is.tellg();
+    std::streampos const start_pos = is.tellg();
 
     for (std::vector<int> ix = new_index(); index_ok(ix); incr(ix)) {
       for (size_t imult = 0; imult < mult; imult++) {

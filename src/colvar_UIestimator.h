@@ -116,7 +116,7 @@ namespace UIestimator {
             int i;
 
             for (i = 0; i < dimension; i++) {
-                temp[i] = round((round(y[i] / width[i] + EPSILON) - round(x[i] / width[i] + EPSILON)) + (y_size - 1) / 2 + EPSILON);
+                temp[i] = int(round((round(y[i] / width[i] + EPSILON) - round(x[i] / width[i] + EPSILON)) + (y_size - 1) / 2 + EPSILON));
             }
 
             int index = 0;

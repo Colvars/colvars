@@ -1514,7 +1514,7 @@ std::istream & colvarbias_meta::read_hill(std::istream &is)
 {
   if (!is) return is; // do nothing if failbit is set
 
-  size_t const start_pos = is.tellg();
+  std::streampos const start_pos = is.tellg();
   size_t i = 0;
 
   std::string data;

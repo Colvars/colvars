@@ -2123,7 +2123,7 @@ void colvar::wrap(colvarvalue &x_unwrapped) const
 
 std::istream & colvar::read_state(std::istream &is)
 {
-  size_t const start_pos = is.tellg();
+  std::streampos const start_pos = is.tellg();
 
   std::string conf;
   if ( !(is >> colvarparse::read_block("colvar", &conf)) ) {
@@ -2204,7 +2204,7 @@ std::istream & colvar::read_state(std::istream &is)
 
 std::istream & colvar::read_traj(std::istream &is)
 {
-  size_t const start_pos = is.tellg();
+  std::streampos const start_pos = is.tellg();
 
   if (is_enabled(f_cv_output_value)) {
 
