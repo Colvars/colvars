@@ -1327,7 +1327,7 @@ std::istream & colvarbias_meta::read_state_data(std::istream& is)
       hills_energy_gradients        = new colvar_grid_gradient(colvars);
     }
 
-    size_t const hills_energy_pos = is.tellg();
+    std::streampos const hills_energy_pos = is.tellg();
     std::string key;
     if (!(is >> key)) {
       if (hills_energy_backup != NULL) {
@@ -1366,7 +1366,7 @@ std::istream & colvarbias_meta::read_state_data(std::istream& is)
       }
     }
 
-    size_t const hills_energy_gradients_pos = is.tellg();
+    std::streampos const hills_energy_gradients_pos = is.tellg();
     if (!(is >> key)) {
       if (hills_energy_backup != NULL)  {
         delete hills_energy;

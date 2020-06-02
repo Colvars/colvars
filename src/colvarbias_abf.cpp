@@ -211,7 +211,7 @@ int colvarbias_abf::init(std::string const &conf)
       // Projected ABF
       get_keyval(conf, "pABFintegrateFreq", pabf_freq, 0);
       // Parameters for integrating initial (and final) gradient data
-      get_keyval(conf, "integrateInitMaxIterations", integrate_initial_iterations, 1e4);
+      get_keyval(conf, "integrateInitMaxIterations", integrate_initial_iterations, 10000);
       get_keyval(conf, "integrateInitTol", integrate_initial_tol, 1e-6);
       // for updating the integrated PMF on the fly
       get_keyval(conf, "integrateMaxIterations", integrate_iterations, 100);
