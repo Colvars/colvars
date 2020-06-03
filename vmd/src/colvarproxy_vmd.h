@@ -121,6 +121,17 @@ public:
 
   virtual void clear_volmap(int index);
 
+  virtual int compute_volmap(int volmap_id,
+                             cvm::atom_iter atom_begin,
+                             cvm::atom_iter atom_end,
+                             cvm::real *value,
+                             cvm::real *atom_field) const;
+
+  template<int use_atom_field> 
+  void compute_voldata(VolumetricData const *voldata,
+                       cvm::atom_iter atom_begin, cvm::atom_iter atom_end,
+                       cvm::real *value, cvm::real *atom_field) const;
+
 protected:
 
   /// pointer to the VMD main object

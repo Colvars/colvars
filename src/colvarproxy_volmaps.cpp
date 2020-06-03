@@ -95,3 +95,21 @@ void colvarproxy_volmaps::clear_volmap(int index)
     volmaps_ncopies[index] -= 1;
   }
 }
+
+
+int colvarproxy_volmaps::get_volmap_id_from_name(char const *volmap_name)
+{
+  // Raise error
+  colvarproxy_volmaps::check_volmap_by_name(volmap_name);
+  return -1;
+}
+
+
+int colvarproxy_volmaps::compute_volmap(int /* volmap_id */,
+                                        cvm::atom_iter /* atom_begin */,
+                                        cvm::atom_iter /* atom_end */,
+                                        cvm::real * /* value */,
+                                        cvm::real * /* atom_field */) const
+{
+  return COLVARS_NOT_IMPLEMENTED;
+}

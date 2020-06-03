@@ -11,10 +11,13 @@
 
 #include "common.h"
 #include "fstream_namd.h"
+#include "Debug.h"
 #include "BackEnd.h"
 #include "InfoStream.h"
 #include "Node.h"
 #include "Molecule.h"
+#include "GridForceGrid.h"
+#include "GridForceGrid.inl"
 #include "PDB.h"
 #include "PDBData.h"
 #include "ReductionMgr.h"
@@ -1332,6 +1335,79 @@ void colvarproxy_namd::clear_volmap(int index)
 }
 
 #endif
+
+
+int colvarproxy_namd::get_volmap_id_from_name(char const *volmap_name)
+{
+  int const volmap_id =
+    simparams->mgridforcelist.index_for_key(volmap_name);
+  if (volmap_id < 0) {
+    // Print error
+    check_volmap_by_name(volmap_name);
+  }
+  return volmap_id;
+}
+
+
+template<class T, int use_atom_field>
+void colvarproxy_namd::getGridForceGridValue(T const *g,
+                                             cvm::atom_iter atom_begin,
+                                             cvm::atom_iter atom_end,
+                                             cvm::real *value,
+                                             cvm::real *atom_field) const
+{
+  float V = 0.0f;
+  Vector dV(0.0);
+  int i = 0;
+  cvm::atom_iter ai = atom_begin;
+  for ( ; ai != atom_end; ai++, i++) {
+    if (g->compute_VdV(Position(ai->pos.x, ai->pos.y, ai->pos.z), V, dV)) {
+      // out-of-bounds atom
+      V = 0.0f;
+      dV = 0.0;
+      continue;
+    }
+    if (use_atom_field) {
+      *value += V * atom_field[i];
+    } else {
+      *value += V;
+    }
+    ai->grad += cvm::rvector(dV.x, dV.y, dV.z);
+  }
+}
+
+
+int colvarproxy_namd::compute_volmap(int volmap_id,
+                                     cvm::atom_iter atom_begin,
+                                     cvm::atom_iter atom_end,
+                                     cvm::real *value,
+                                     cvm::real *atom_field) const
+{
+  Molecule *mol = Node::Object()->molecule;
+  GridforceGrid *grid = mol->get_gridfrc_grid(volmap_id);
+  // Inheritance is not possible with GridForceGrid's design
+  if (grid->get_grid_type() == GridforceGrid::GridforceGridTypeFull) {
+    GridforceFullMainGrid *g = dynamic_cast<GridforceFullMainGrid *>(grid);
+    if (atom_field) {
+      getGridForceGridValue<GridforceFullMainGrid, 1>(g, atom_begin, atom_end,
+                                                      value, atom_field);
+    } else {
+      getGridForceGridValue<GridforceFullMainGrid, 0>(g, atom_begin, atom_end,
+                                                      value, atom_field);
+    }
+  } else if (grid->get_grid_type() == GridforceGrid::GridforceGridTypeLite) {
+    GridforceLiteGrid *g = dynamic_cast<GridforceLiteGrid *>(grid);
+    if (atom_field) {
+      getGridForceGridValue<GridforceLiteGrid, 1>(g, atom_begin, atom_end,
+                                                  value, atom_field);
+    } else {
+      getGridForceGridValue<GridforceLiteGrid, 0>(g, atom_begin, atom_end,
+                                                  value, atom_field);
+    }
+  }
+  return COLVARS_OK;
+}
+
 
 
 #if CMK_SMP && USE_CKLOOP // SMP only
