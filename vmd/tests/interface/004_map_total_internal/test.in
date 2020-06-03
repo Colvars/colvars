@@ -1,0 +1,43 @@
+colvarsTrajFrequency 1
+indexFile ../Common/da.ndx
+
+colvar {
+    name numatoms
+    width 2.0
+    mapTotal {
+        name numatoms
+        mapID 0
+        # Use internal selection
+        atoms {
+            indexGroup Protein
+        }
+    }
+}
+
+
+harmonic {
+    colvars numatoms
+    centers 50.0
+    forceConstant 0.2
+}
+
+
+colvar {
+    name numatoms_rot
+    width 2.0
+    mapTotal {
+        name numatoms_rot
+        mapID 0
+        atoms {
+            # Use internal selection with fitting group
+            indexGroup Protein
+            rotateReference yes
+            centerReference yes
+            fittingGroup {
+                atomNumbers  54 64 74 84 99 
+            }
+            # Reused from 014_refposgroup
+            refPositionsFile ../Common/310turn-ideal.xyz
+        }
+    }
+}

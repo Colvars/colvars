@@ -1,0 +1,18 @@
+# -*- tcl -*-
+mol new ../Common/da.psf type psf
+mol addfile ../Common/da.coor.pdb type pdb waitfor all
+mol addfile ../Common/da.density.dx type dx waitfor all
+
+cv molid top
+cv configfile test.in
+
+set out [open "test.colvars.traj" "w"]
+puts -nonewline ${out} [cv printframelabels]
+for { set frame 0 } { ${frame} < [molinfo top get numframes] } { incr frame } {
+    cv frame ${frame}
+    cv update
+    puts -nonewline ${out} [cv printframe]
+}
+close ${out}
+
+quit
