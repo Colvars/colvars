@@ -157,6 +157,8 @@ CVSCRIPT(cv_frame,
                                    "\"\n");
            }
            return error_code;
+         }
+         return COLVARS_OK;
          )
 
 CVSCRIPT(cv_getconfig,
