@@ -1,0 +1,27 @@
+configuration {
+  step           40
+  dt 1.000000e+00
+}
+
+colvar {
+  name numatoms
+  x  5.01673023067415e+01
+}
+
+colvar {
+  name numatoms_rot
+  x  1.96190860426341e+01
+}
+
+colvar {
+  name numatoms_ref
+  x  5.01673023067415e+01
+}
+
+restraint {
+  configuration {
+    step 40
+    name harmonic1
+  }
+}
+
