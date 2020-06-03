@@ -223,7 +223,22 @@ public:
 
   virtual int check_volmap_by_name(char const *volmap_name);
 
+  virtual int get_volmap_id_from_name(char const *volmap_name);
+
   virtual void clear_volmap(int index);
+
+  virtual int compute_volmap(int volmap_id,
+                             cvm::atom_iter atom_begin,
+                             cvm::atom_iter atom_end,
+                             cvm::real *value,
+                             cvm::real *atom_field) const;
+
+  template<class T, int use_atom_field>
+  void getGridForceGridValue(T const *grid,
+                             cvm::atom_iter atom_begin,
+                             cvm::atom_iter atom_end,
+                             cvm::real *value,
+                             cvm::real *atom_field) const;
 
 #endif
 

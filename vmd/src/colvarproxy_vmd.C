@@ -862,3 +862,51 @@ void colvarproxy_vmd::clear_volmap(int index)
 {
   colvarproxy::clear_volmap(index);
 }
+
+
+
+template<int use_atom_field> 
+void colvarproxy_vmd::compute_voldata(VolumetricData const *voldata,
+                                      cvm::atom_iter atom_begin,
+                                      cvm::atom_iter atom_end,
+                                      cvm::real *value,
+                                      cvm::real *atom_field) const
+{
+  int i = 0;
+  cvm::atom_iter ai = atom_begin;
+  for ( ; ai != atom_end; ai++, i++) {
+    float const x = internal_to_angstrom(ai->pos.x);
+    float const y = internal_to_angstrom(ai->pos.y);
+    float const z = internal_to_angstrom(ai->pos.z);
+    cvm::real const V =
+      static_cast<cvm::real>(voldata->voxel_value_interpolate_from_coord_safe(x, y, z));
+    if (use_atom_field) {
+      *value += V * atom_field[i];
+    } else {
+      *value += V;
+    }
+  }
+}
+
+
+int colvarproxy_vmd::compute_volmap(int volmap_id,
+                                    cvm::atom_iter atom_begin,
+                                    cvm::atom_iter atom_end,
+                                    cvm::real *value,
+                                    cvm::real *atom_field) const
+{
+  int error_code = COLVARS_OK;
+  VolumetricData const *voldata = vmdmol->get_volume_data(volmap_id);
+  if (voldata != NULL) {
+    if (atom_field) {
+      compute_voldata<1>(voldata, atom_begin, atom_end, value, atom_field);
+    } else {
+      compute_voldata<0>(voldata, atom_begin, atom_end, value, atom_field);
+    }
+  } else {
+    // Error message
+    error_code |=
+      const_cast<colvarproxy_vmd *>(this)->check_volmap_by_id(volmap_id);
+  }
+  return error_code;
+}

@@ -54,6 +54,9 @@ public:
   virtual void clear_volmap(int index);
 
   /// Get the numeric ID of the given volumetric map (for the MD program)
+  virtual int get_volmap_id_from_name(char const *volmap_name);
+
+  /// Get the numeric ID of the given volumetric map (for the MD program)
   inline int get_volmap_id(int index) const
   {
     return volmaps_ids[index];
@@ -70,6 +73,18 @@ public:
   {
     volmaps_new_colvar_forces[index] += new_force;
   }
+
+  /// Compute an atomic field (e.g. a colvar) weighted by a volumetric map
+  /// \param volmap_id Numeric index of the map (no need to request it)
+  /// \param atom_begin Iterator pointing to first atom
+  /// \param atom_end Iterator pointing past the last atom
+  /// \param value Pointer to location of total to increment
+  /// \param atom_field Array of atomic field values (if NULL, 1 is used)
+  virtual int compute_volmap(int volmap_id,
+                             cvm::atom_iter atom_begin,
+                             cvm::atom_iter atom_end,
+                             cvm::real *value,
+                             cvm::real *atom_field) const;
 
 protected:
 
