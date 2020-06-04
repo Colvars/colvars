@@ -33,8 +33,10 @@ class colvarproxy_vmd : public colvarproxy {
 
 public:
 
-  friend class cvm::atom;
-
+  /// Constructor
+  /// \param interl Pointer to Tcl interpreter
+  /// \param vmd Pointer to VMDApp object
+  /// \param molid Molecule ID (>= 0)
   colvarproxy_vmd(Tcl_Interp *interp, VMDApp *vmd, int molid);
 
   /// \brief Update mass, charge, etc
