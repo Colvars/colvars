@@ -100,7 +100,8 @@ if ($ENV{VMDINSTALLLIBRARYDIR}) {
 # TDCONNEXION  - 3DConnexion MacOS X driver for Spaceball 6DOF input devices
 # LIBGELATO    - built-in rendering via Gelato library   
 # LIBOPTIX     - built-in accelerated ray tracing for NVIDIA GPUs
-# LIBOSPRAY    - built-in accelerated ray tracing for Intel CPUs
+# LIBOSPRAY    - built-in accelerated ray tracing for Intel CPUs, v1.x API
+# LIBOSPRAY2   - built-in accelerated ray tracing for Intel CPUs, v2.x API
 # LIBTACHYON   - built-in raytracing via Tachyon (on CPUs)
 # LIBPNG       - PNG image output support
 # LINENOISE    - built-in minimalistic console line editing, w/ linenoise
@@ -285,6 +286,7 @@ foreach $term (@ARGV) {
     if ($term eq "LIBGELATO" )      { $config_libgelato       = 1; next; }
     if ($term eq "LIBOPTIX" )       { $config_liboptix        = 1; next; }
     if ($term eq "LIBOSPRAY" )      { $config_libospray       = 1; next; }
+    if ($term eq "LIBOSPRAY2" )     { $config_libospray2      = 1; next; }
     if ($term eq "LIBTACHYON")      { $config_libtachyon      = 1; next; }
     if ($term eq "LIBPNG")          { $config_libpng          = 1; next; }
     if ($term eq "LINENOISE")       { $config_linenoise       = 1; next; }
@@ -359,6 +361,7 @@ if ($config_tdconnexion)     { $config_string .= " TDCONNEXION"     }
 if ($config_libgelato)       { $config_string .= " LIBGELATO"       }
 if ($config_liboptix)        { $config_string .= " LIBOPTIX"        }
 if ($config_libospray)       { $config_string .= " LIBOSPRAY"       }
+if ($config_libospray2)      { $config_string .= " LIBOSPRAY2"      }
 if ($config_libtachyon)      { $config_string .= " LIBTACHYON"      }
 if ($config_libpng)          { $config_string .= " LIBPNG"          }
 if ($config_linenoise)       { $config_string .= " LINENOISE"       }
@@ -1130,7 +1133,11 @@ $liboptix_dir         = "/usr/local/encap/NVIDIA-OptiX-SDK-6.5.0-linux64";
 $liboptix_include     = "-I$liboptix_dir/include -I$cuda_dir/include";
 $liboptix_library     = "-L$liboptix_dir/lib64";
 $liboptix_libs        = "-loptixu -loptix";
+if ($config_arch eq "MACOSXX86" || $config_arch eq "MACOSXX86_64") {
+  @liboptix_cc          = ();  # XXX batch RT only at present
+} else {
 @liboptix_cc          = ('glwin.c');
+}
 @liboptix_cu          = ();
 @liboptix_ptx         = ('OptiXShaders.ptx',
                       );
@@ -1143,24 +1150,42 @@ $liboptix_libs        = "-loptixu -loptix";
 
 
 ################ LIBOSPRAY
-# OPTIONAL COMPONENT: Built-in Intel OSPRay rendering support 
+# OPTIONAL COMPONENT: Built-in Intel OSPRay 1.x rendering support 
 # This may be commented out if not required.
+if ($config_arch eq "MACOSXX86" || $config_arch eq "MACOSXX86_64") {
+  $libospray_defines     = "-DVMDLIBOSPRAY ";  # XXX batch RT only at present
+} else {
 if ($config_opengl) {
   $libospray_defines     = "-DVMDLIBOSPRAY -DVMDOSPRAY_INTERACTIVE_OPENGL";
 } else {
   $libospray_defines     = "-DVMDLIBOSPRAY ";
 }
+}
+
+if ($config_arch eq "MACOSXX86" || $config_arch eq "MACOSXX86_64") {
+  $libospray_dir         = "/Users/johns/vmd/lib/ospray-1.8.5.x86_64.macosx";
+  $libospray_include     = "-I$libospray_dir/include -I$libospray_dir/ospray/include ";
+  $libospray_library     = "-L$libospray_dir/lib ";
+  $libospray_libs        = "-lospray -lospray_common -lembree3.3 -ltbb -ltbbmalloc ";
+} else {
 # $libospray_dir         = "/usr/local/ospray-1.7.0.x86_64.linux";
 $libospray_dir         = "/usr/local/ospray-1.8.5.x86_64.linux";
 $libospray_include     = "-I$libospray_dir/include -I$libospray_dir/ospray/include ";
 $libospray_library     = "-L$libospray_dir/lib ";
 $libospray_libs        = "-lospray -lospray_common -lembree -ltbb -ltbbmalloc ";
+}
+
+
 # Both OptiX and OSPRay renderers use the Tachyon glwin code, 
 # so we have to make sure we don't build/link it twice
+if ($config_arch eq "MACOSXX86" || $config_arch eq "MACOSXX86_64") {
+  @libospray_cc          = ();  # XXX batch RT only at present
+} else {
 if ($config_liboptix) {
   @libospray_cc          = ();
 } else {
   @libospray_cc          = ('glwin.c');
+}
 }
 @libospray_cu          = ();
 @libospray_ptx         = ();
@@ -1169,6 +1194,48 @@ if ($config_liboptix) {
                          );
 @libospray_h           = ('OSPRayDisplayDevice.h',
                           'OSPRayRenderer.h',
+                         );
+
+
+################ LIBOSPRAY2
+# OPTIONAL COMPONENT: Built-in Intel OSPRay 2.x rendering support
+# This may be commented out if not required.
+if ($config_arch eq "MACOSXX86" || $config_arch eq "MACOSXX86_64") {
+  $libospray2_defines     = "-DVMDLIBOSPRAY ";  # XXX batch RT only at present
+} else {
+  if ($config_opengl) {
+    $libospray2_defines     = "-DVMDLIBOSPRAY2 -DVMDOSPRAY_INTERACTIVE_OPENGL";
+  } else {
+    $libospray2_defines     = "-DVMDLIBOSPRAY2 ";
+  }
+}
+
+if ($config_arch eq "MACOSXX86" || $config_arch eq "MACOSXX86_64") {
+  $libospray2_dir         = "/Users/johns/vmd/lib/ospray-1.8.5.x86_64.macosx";
+  $libospray2_include     = "-I$libospray2_dir/include -I$libospray2_dir/ospray/include ";
+  $libospray2_library     = "-L$libospray2_dir/lib ";
+  $libospray2_libs        = "-lospray -lospcommon -lembree3.3 -ltbb -ltbbmalloc ";
+} else {
+  $libospray2_dir         = "/usr/local/ospray-2.1.1.x86_64.linux";
+  $libospray2_include     = "-I$libospray2_dir/include -I$libospray2_dir/ospray/include ";
+  $libospray2_library     = "-L$libospray2_dir/lib ";
+  $libospray2_libs        = "-lospray -lospcommon -lembree3 -ltbb -ltbbmalloc ";
+}
+
+# Both OptiX and OSPRay renderers use the Tachyon glwin code,
+# so we have to make sure we don't build/link it twice
+if ($config_liboptix) {
+  @libospray2_cc          = ();
+} else {
+  @libospray2_cc          = ('glwin.c');
+}
+@libospray2_cu          = ();
+@libospray2_ptx         = ();
+@libospray2_ccpp        = ('OSPRay2DisplayDevice.C',
+                          'OSPRay2Renderer.C'
+                         );
+@libospray2_h           = ('OSPRay2DisplayDevice.h',
+                          'OSPRay2Renderer.h',
                          );
 
 
@@ -3247,6 +3314,7 @@ $if_statements .= &create_config_option('tdconnexion');
 $if_statements .= &create_config_option('libgelato');
 $if_statements .= &create_config_option('liboptix');
 $if_statements .= &create_config_option('libospray');
+$if_statements .= &create_config_option('libospray2');
 $if_statements .= &create_config_option('libpng');
 $if_statements .= &create_config_option('linenoise');
 $if_statements .= &create_config_option('libtachyon');
