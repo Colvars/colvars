@@ -79,6 +79,12 @@ public:
     return l * angstrom_value;
   }
 
+  /// \brief Convert a length from internal to Angstrom
+  inline cvm::real internal_to_angstrom(cvm::real l) const
+  {
+    return l / angstrom_value;
+  }
+
   // /// \brief Convert a length from back-end unit to internal
   // inline cvm::real back_end_to_internal_unit(cvm::real l) {
   //   if (angstrom_value == 0.) {
