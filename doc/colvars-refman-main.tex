@@ -913,7 +913,7 @@ The following components implement functions with a scalar value (i.e.{} a real 
   reference coordinates;
 \item \refkey{eigenvector}{colvar|eigenvector}: projection of the atomic coordinates on a
   vector;
-\cvnamdonly{\item \refkey{mapTotal}{colvar|mapTotal}: total value of a volumetric map;}
+\ifdefined\cvvmdornamd{\item \refkey{mapTotal}{colvar|mapTotal}: total value of a volumetric map;}\fi
 \item \refkey{orientationAngle}{colvar|orientationAngle}: angle of the best-fit rotation from
   a set of reference coordinates;
 \item \refkey{orientationProj}{colvar|orientationProj}: cosine of \refkey{orientationProj}{colvar|orientationProj};
@@ -2708,12 +2708,12 @@ All distances are calculated every \texttt{freq} timesteps to update the list of
 }
 
 
-\cvnamdonly{
+\ifdefined\cvvmdornamd{
 
 \cvsubsec{Volumetric map-based variables}{sec:cvc_volmaps}
 
 Volumetric maps of the Cartesian coordinates, typically defined as mesh grid along the three Cartesian axes, may be used to define collective variables.
-This feature is currently available in NAMD, implemented as an interface between Colvars and GridForces\cvnamdugonly{ (see section \ref{section:userdef})}.
+\cvnamdonly{This feature is currently available in NAMD, implemented as an interface between Colvars and GridForces\cvnamdugonly{ (see section \ref{section:userdef})}.}
 Please cite \cite{Fiorin2020} when using this implementation of collective variables based on volumetric maps.
 
 \cvsubsubsec{\texttt{mapTotal}: total value of a volumetric map}{sec:cvc_map_total}
@@ -2727,7 +2727,9 @@ Given a function of the Cartesian coordinates $\phi(\mathbf{x}) = \phi(x, y, z)$
 This formulation allows, for example, to ``count'' the number of atoms within a region of space by using a positive-valued function $\phi(\mathbf{x})$, such as for example the number of water molecules in a hydrophobic cavity \cite{Fiorin2020}.\\
 
 Because the volumetric map itself and the atoms affected by it are defined externally to Colvars, this component has a very limited number of keywords.
+
 \begin{cvcoptions}
+\cvnamdonly{
 \item %
   \labelkey{colvar|mapTotal|mapName}
   \key
@@ -2738,20 +2740,22 @@ Because the volumetric map itself and the atoms affected by it are defined exter
     The value of this option specifies the label of the volumetric map to use for this collective variable component.
     This label must identify a map already loaded in NAMD via \texttt{mGridForcePotFile}, and the corresponding value of \texttt{mGridForceScale} must be set to (0, 0, 0), so that its collective force is computed dynamically.
   }
+}
 
 \item %
   \labelkey{colvar|mapTotal|mapID}
   \key
-    {mapName}{%
-    \texttt{mapID}}{%
+    {mapID}{%
+    \texttt{mapTotal}}{%
     Specify the numeric index of the volumetric map to use as a colvar}{%
     non-negative integer}{%
     The value of this option specifies the numeric index of the volumetric map to use for this collective variable component.
-    It is mutually exclusive with \refkey{colvar|mapTotal|mapName}.
+    The map referred to must be already loaded before using this option.
+    \cvnamdonly{This option is mutually exclusive with \refkey{colvar|mapTotal|mapName}; if the latter is given, the numeric ID is obtained internally from \MDENGINE{}.}
   }
 \end{cvcoptions}
 
-
+\cvnamdonly{
 \noindent\textbf{Example: biasing the number of molecules inside a cavity using a volumetric map.}
 
 Firstly, a volumetric map that has a value of 1 inside the cavity and 0 outside should be prepared.
@@ -2785,6 +2789,7 @@ To do so, the map labeled ``Cavity'' needs to be referred to in the Colvars conf
 
 
 The variable ``\texttt{n\_waters}'' may then be used with any of the enhanced sampling methods available (\ref{sec:colvarbias}): new forces applied to it at each simulation step will be transmitted to the corresponding atoms within the same step.
+} % \cvnamdonly{}
 
 
 \cvsubsubsec{Multiple volumetric maps collective variables}{sec:cvc_multimap}
@@ -2799,6 +2804,8 @@ The ``Multi-Map'' progress variable \cite{Fiorin2020} uses a weight sum of these
     \xi(\mathbf{X}) = \sum_{k=1}^{K} \Phi_{k}(\mathbf{X}) = \sum_{k=1}^{K} k \sum_{i=1}^{N}\phi_{k}(\mathbf{x}_{i})
 \end{equation}
 where $K$ is the number of maps employed and each $\Phi_k$ is a \texttt{mapTotal} component.\\
+
+\cvnamdonly{
 
 \noindent\textbf{Example: transitions between macromolecular shapes using volumetric maps.}\\
 A series of map files, each representing a different shape, is loaded into NAMD:\\
@@ -2838,7 +2845,9 @@ The GridForces maps thus loaded are then used to define the Multi-Map collective
 The above example illustrates a use case where a weighted sum (i.e.{} a linear combination) is used to define a single variable from multiple components.
 Depending on the problem under study, non-linear functions may be more appropriate.
 These may be defined a custom functions if implemented\cvleptononly{ (see \ref{sec:colvar_custom_function})}\cvscriptonly{, or scripted functions (see \ref{sec:colvar_scripted})}.
-}
+} % \cvnamdonly{}
+
+}\fi % \ifdefined\cvvmdornamd{}
 
 
 \cvsubsec{Shared keywords for all components}{sec:cvc_common}
