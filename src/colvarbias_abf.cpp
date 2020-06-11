@@ -492,10 +492,10 @@ int colvarbias_abf::update()
     eabf_UI.update(cvm::step_absolute(), x, y);
   }
 
-  /// Add the bias energy for 1D ABF
-  bias_energy = calc_energy(NULL);
+  /// Compute the bias energy
+  int error_code = calc_energy(NULL);
 
-  return COLVARS_OK;
+  return error_code;
 }
 
 
@@ -838,6 +838,8 @@ int colvarbias_abf::calc_energy(std::vector<colvarvalue> const *values)
   bias_energy = 0.0; // default value, overridden if a value can be calculated
 
   if (num_variables() > 1 || values != NULL) {
+    // Use simple estimate: neglect effect of fullSamples,
+    // return value at center of bin
     if (pmf != NULL) {
       std::vector<int> const curr_bin = values ?
         pmf->get_colvars_index(*values) :
