@@ -160,6 +160,42 @@ class colvars_grid:
 
 
     def _append_data(self, filename):
+        '''Read data from given file, appending frames to the time series if already present'''
+        # Timing: this routine took 6 seconds to read a file vs. 21 seconds for the previous version
+        # that used np.loadtxt
+        grid_size = np.prod(self.nx)
+        rawdata = [[] for _ in range(self.nsets)]
+        with open(filename) as f:
+            for line in f:
+                if line[0] == '#' or len(line) < 3:
+                    continue
+                l = line.split()
+                # assume well-formed file for speed
+                # Do not read the first self.dim columns which contain x values
+                # Each data column goes into a flat list
+                for i in range(self.nsets):
+                    rawdata[i].append(float(l[self.dim + i]))
+
+        # Compute number of time frames from length of first dataset (data column in multicol file)
+        nf = len(rawdata[0]) / grid_size
+        assert nf == int(nf), f'Data size {len(rawdata)} is not a multiple of grid size {grid_size}'
+        nf = int(nf)
+        self.nframes += nf
+
+        self.data = [] # forget any previous references to non-final histdata
+
+        # Recast data into histdata : list of (dataset) list of (time frame) array
+        # data is a list of (dataset == latest time frame only) array
+        for i in range(self.nsets):
+            for t in range(nf):
+                # Add time frame t to dataset i, converting to numpy array
+                self.histdata[i].append(np.array(rawdata[i][grid_size*t:grid_size*(t+1)]))
+            # Current data is ref to last frame of each data series
+            self.data.append(self.histdata[i][-1])
+
+
+    def _append_data_loadtxt(self, filename):
+        '''An earlier version of _append_data using np.loadtxt - very slow for large datasets'''
         # Do not read the first self.dim columns which contain x values
         rawdata = np.loadtxt(filename, usecols=range(self.dim, self.dim + self.nsets), ndmin = 2)
 
