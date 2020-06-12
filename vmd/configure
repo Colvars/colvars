@@ -98,6 +98,7 @@ if ($ENV{VMDINSTALLLIBRARYDIR}) {
 # XINERAMA     - Support for Xinerama-optimized full-screen mode
 # XINPUT       - X-Windows XInput based Spaceball, Dial box, Button box
 # TDCONNEXION  - 3DConnexion MacOS X driver for Spaceball 6DOF input devices
+# LIBANARI     - built-in Khronos ANARI hw accelerated sci-vis rendering API
 # LIBGELATO    - built-in rendering via Gelato library   
 # LIBOPTIX     - built-in accelerated ray tracing for NVIDIA GPUs
 # LIBOSPRAY    - built-in accelerated ray tracing for Intel CPUs, v1.x API
@@ -283,6 +284,7 @@ foreach $term (@ARGV) {
       next;
     }
     if ($term eq "TDCONNEXION")     { $config_tdconnexion     = 1; next; }
+    if ($term eq "LIBANARI" )       { $config_libanari        = 1; next; }
     if ($term eq "LIBGELATO" )      { $config_libgelato       = 1; next; }
     if ($term eq "LIBOPTIX" )       { $config_liboptix        = 1; next; }
     if ($term eq "LIBOSPRAY" )      { $config_libospray       = 1; next; }
@@ -358,6 +360,7 @@ if ($config_libsball)        { $config_string .= " LIBSBALL"        }
 if ($config_xinerama)        { $config_string .= " XINERAMA"        }
 if ($config_xinput)          { $config_string .= " XINPUT"          }
 if ($config_tdconnexion)     { $config_string .= " TDCONNEXION"     }
+if ($config_libanari)        { $config_string .= " LIBANARI"        }
 if ($config_libgelato)       { $config_string .= " LIBGELATO"       }
 if ($config_liboptix)        { $config_string .= " LIBOPTIX"        }
 if ($config_libospray)       { $config_string .= " LIBOSPRAY"       }
@@ -427,7 +430,7 @@ $def_title="ON";
 $def_imageviewer="display %s";
 
 # program version number
-$progversion="1.9.4a42";
+$progversion="1.9.4a44";
 
 # text prompt string
 $promptstring="vmd > ";
@@ -1067,6 +1070,48 @@ $nvtx_libs        = ""; # CUDA >= 10 have NVTX V3, no -lnvToolsExt
 @nvtx_ccpp        = ();
 @nvtx_h           = ();
 @nvtx_extra       = ();
+
+
+################ LIBANARI
+# OPTIONAL COMPONENT: Khronos ANARI acclerated sci-vis rendering support
+# This may be commented out if not required.
+if ($config_arch eq "MACOSXX86" || $config_arch eq "MACOSXX86_64") {
+  $libanari_defines     = "-DVMDLIBANARI ";  # XXX batch RT only at present
+} else {
+  if ($config_opengl) {
+    $libanari_defines   = "-DVMDLIBANARI -DVMDANARI_INTERACTIVE_OPENGL";
+  } else {
+    $libanari_defines   = "-DVMDLIBANARI ";
+  }
+}
+
+if ($config_arch eq "MACOSXX86" || $config_arch eq "MACOSXX86_64") {
+  $libanari_dir         = "/Users/johns/vmd/lib/anari-0.0";
+  $libanari_include     = "-I$libanari_dir/include -I$libanari_dir/anari/include ";
+  $libanari_library     = "-L$libanari_dir/lib64 ";
+  $libanari_libs        = "-lanari ";
+} else {
+  $libanari_dir         = "/usr/local/anari-0.0";
+  $libanari_include     = "-I$libanari_dir/include -I$libanari_dir/anari/include ";
+  $libanari_library     = "-L$libanari_dir/lib ";
+  $libanari_libs        = "-lanari ";
+}
+
+# ANARI, OptiX, and OSPRay renderers use the Tachyon glwin code,
+# so we have to make sure we don't build/link it twice
+if ($config_liboptix) {
+  @libanari_cc          = ();
+} else {
+  @libanari_cc          = ('glwin.c');
+}
+@libanari_cu          = ();
+@libanari_ptx         = ();
+@libanari_ccpp        = ('ANARIDisplayDevice.C',
+                         'ANARIRenderer.C'
+                         );
+@libanari_h           = ('ANARIDisplayDevice.h',
+                         'ANARIRenderer.h',
+                         );
 
 
 ################ LIBGELATO
@@ -3311,6 +3356,7 @@ $if_statements .= &create_config_option('libsball');
 $if_statements .= &create_config_option('xinerama');
 $if_statements .= &create_config_option('xinput');
 $if_statements .= &create_config_option('tdconnexion');
+$if_statements .= &create_config_option('libanari');
 $if_statements .= &create_config_option('libgelato');
 $if_statements .= &create_config_option('liboptix');
 $if_statements .= &create_config_option('libospray');
