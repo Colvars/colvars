@@ -378,18 +378,6 @@ then
 
   echo ' done.'
 
-  # Check for changes in related VMD files
-  for src in ${source}/vmd/src/tcl_commands.C
-  do \
-    tgt=$(basename ${src})
-    checkfile "${src}" "${target}/src/${tgt}"
-  done
-  for src in ${source}/vmd/configure
-  do 
-    tgt=$(basename ${src})
-    checkfile "${src}" "${target}/${tgt}"
-  done
-
   exit 0
 fi
 
