@@ -1,0 +1,18 @@
+# -*- tcl -*-
+
+# Note: see also test.restart.namd, test.legacy.namd, test.restart.legacy.namd
+
+source ../Common/common.namd
+source ../Common/measure_net_force_torque.tcl
+
+colvars                 on
+colvarsConfig           test.in
+
+run ${numsteps}
+cv bias metadynamics1 save "mtd-0.colvars.state"
+run 0
+cv bias metadynamics1 save "mtd-1.colvars.state"
+run ${numsteps}
+cv bias metadynamics1 save "mtd-2.colvars.state"
+
+source ../Common/delete_tmp_files.tcl
