@@ -320,6 +320,17 @@ int colvarbias::update()
 }
 
 
+bool colvarbias::can_accumulate_data()
+{
+  colvarproxy *proxy = cvm::main()->proxy;
+  if (((cvm::step_relative() > 0) && !proxy->simulation_continuing()) ||
+      is_enabled(f_cvb_step_zero_data)) {
+    return true;
+  }
+  return false;
+}
+
+
 int colvarbias::calc_energy(std::vector<colvarvalue> const *)
 {
   bias_energy = 0.0;

@@ -57,6 +57,10 @@ public:
   /// Some implementations may use calc_energy() and calc_forces()
   virtual int update();
 
+  /// Returns true if the current step represent a valid increment, whose data
+  /// can be recorded (as opposed to e.g. a continuation step from a restart)
+  virtual bool can_accumulate_data();
+
   /// Compute the energy of the bias
   /// Uses the vector of colvar values provided if not NULL, and the values
   /// currently cached in the bias instance otherwise
