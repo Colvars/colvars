@@ -566,9 +566,8 @@ int colvarbias_meta::update_grid_params()
 int colvarbias_meta::update_bias()
 {
   // add a new hill if the required time interval has passed
-  if ((cvm::step_absolute() % new_hill_freq) == 0 &&
-      ((cvm::step_relative() > 0) || is_enabled(f_cvb_step_zero_data)) &&
-      is_enabled(f_cvb_history_dependent)) {
+  if (((cvm::step_absolute() % new_hill_freq) == 0) &&
+      can_accumulate_data() && is_enabled(f_cvb_history_dependent)) {
 
     if (cvm::debug()) {
       cvm::log("Metadynamics bias \""+this->name+"\""+
