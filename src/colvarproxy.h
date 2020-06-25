@@ -727,6 +727,14 @@ public:
     return b_simulation_running;
   }
 
+  /// Is the current step a repetition of a step just executed?
+  /// This is set to true when the step 0 of a new "run" command is being
+  /// executed, regardless of whether a state file has been loaded.
+  inline bool simulation_continuing() const
+  {
+    return b_simulation_continuing;
+  }
+
   /// Called at the end of a simulation segment (i.e. "run" command)
   int post_run();
 
@@ -764,6 +772,11 @@ protected:
 
   /// Whether a simulation is running (warn against irrecovarable errors)
   bool b_simulation_running;
+
+  /// Is the current step a repetition of a step just executed?
+  /// This is set to true when the step 0 of a new "run" command is being
+  /// executed, regardless of whether a state file has been loaded.
+  bool b_simulation_continuing;
 
   /// Whether the entire module should be deallocated by the host engine
   bool b_delete_requested;
