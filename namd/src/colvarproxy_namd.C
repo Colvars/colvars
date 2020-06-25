@@ -292,11 +292,15 @@ void colvarproxy_namd::calculate()
     // Use the time step number inherited from GlobalMaster
     if ( step - previous_NAMD_step == 1 ) {
       colvars->it++;
+      b_simulation_continuing = false;
+    } else {
+      // Cases covered by this condition:
+      // - run 0
+      // - beginning of a new run statement
+      // The internal counter is not incremented, and the objects are made
+      // aware of this via the following flag
+      b_simulation_continuing = true;
     }
-    // Other cases could mean:
-    // - run 0
-    // - beginning of a new run statement
-    // then the internal counter should not be incremented
   }
 
   previous_NAMD_step = step;

@@ -596,6 +596,7 @@ colvarproxy::colvarproxy()
 {
   colvars = NULL;
   b_simulation_running = true;
+  b_simulation_continuing = false;
   b_delete_requested = false;
 }
 

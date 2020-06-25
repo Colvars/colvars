@@ -207,12 +207,18 @@ double colvarproxy_lammps::compute()
     first_timestep = false;
   } else {
     // Use the time step number from LAMMPS Update object
-    if ( _lmp->update->ntimestep - previous_step == 1 )
+    if ( _lmp->update->ntimestep - previous_step == 1 ) {
       colvars->it++;
-    // Other cases could mean:
-    // - run 0
-    // - beginning of a new run statement
-    // then the internal counter should not be incremented
+      b_simulation_continuing = false;
+    } else {
+      // Cases covered by this condition:
+      // - run 0
+      // - beginning of a new run statement
+      // The internal counter is not incremented, and the objects are made
+      // aware of this via the following flag
+      b_simulation_continuing = true;
+    }
+
   }
   previous_step = _lmp->update->ntimestep;
 
