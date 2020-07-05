@@ -57,6 +57,7 @@ proc ::cv_dashboard::plot { { type timeline } } {
   # Get list of values for all frames
   for {set f 0} {$f< $nf} {incr f} {
     run_cv frame $f
+    run_cv update
     foreach c $cvs {
       set val [run_cv colvar $c update]
       foreach ni $names($c) vi $comps($c) {
