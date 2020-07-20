@@ -10,7 +10,18 @@
 #ifndef COLVARTYPES_H
 #define COLVARTYPES_H
 
+#ifdef CUDACVM
+#include <thrust/host_vector.h>
+#include <thrust/device_vector.h>
+#define VECTORTYPE thrust::device_vector
+#define NAMESPACE thrust
+#else
 #include <vector>
+#include <algorithm>
+#include <numeric>
+#define VECTORTYPE std::vector
+#define NAMESPACE std
+#endif
 
 #include "colvarmodule.h"
 
@@ -31,7 +42,7 @@ template <class T> class colvarmodule::vector1d
 {
 protected:
 
-  std::vector<T> data;
+  VECTORTYPE<T> data;
 
 public:
 
@@ -45,12 +56,9 @@ public:
   /// Constructor from C array
   inline vector1d(size_t const n, T const *t)
   {
-    data.resize(n);
-    reset();
-    size_t i;
-    for (i = 0; i < size(); i++) {
-      data[i] = t[i];
-    }
+    //data.resize(n);
+    //reset();
+    data = VECTORTYPE<T>(t,t+n);
   }
 
   /// Return a pointer to the data location
@@ -64,7 +72,7 @@ public:
   }
 
   /// Return a reference to the data
-  inline std::vector<T> &data_array()
+  inline VECTORTYPE<T> &data_array()
   {
     return data;
   }
@@ -77,7 +85,7 @@ public:
   /// Set all elements to zero
   inline void reset()
   {
-    data.assign(data.size(), T(0.0));
+    NAMESPACE::fill(data.begin(), data.end(), T(0.0));
   }
 
   inline size_t size() const
@@ -114,35 +122,41 @@ public:
   inline void operator += (vector1d<T> const &v)
   {
     check_sizes(*this, v);
-    size_t i;
-    for (i = 0; i < this->size(); i++) {
-      (*this)[i] += v[i];
-    }
+    NAMESPACE::transform(this->data.begin(), this->data.end(), v.data.begin(), this->data.begin(), NAMESPACE::plus<T>());
   }
 
   inline void operator -= (vector1d<T> const &v)
   {
     check_sizes(*this, v);
-    size_t i;
-    for (i = 0; i < this->size(); i++) {
-      (*this)[i] -= v[i];
-    }
+    NAMESPACE::transform(this->data.begin(), this->data.end(), v.data.begin(), this->data.begin(), NAMESPACE::minus<T>());
   }
 
   inline void operator *= (cvm::real a)
   {
-    size_t i;
-    for (i = 0; i < this->size(); i++) {
-      (*this)[i] *= a;
-    }
+    #ifdef CUDACVM
+    thrust::transform(this->data.begin(),
+                  this->data.end(), 
+                  thrust::make_constant_iterator(a),
+                  this->data.begin(),
+                  thrust::multiplies<cvm::real>());
+    #else
+    std::transform(this->data.begin(), this->data.end(), this->data.begin(),
+           std::bind1st(std::multiplies<cvm::real>(),a)); 
+    #endif
   }
 
   inline void operator /= (cvm::real a)
   {
-    size_t i;
-    for (i = 0; i < this->size(); i++) {
-      (*this)[i] /= a;
-    }
+    #ifdef CUDACVM
+    thrust::transform(this->data.begin(),
+                  this->data.end(), 
+                  thrust::make_constant_iterator(a),
+                  this->data.begin(),
+                  thrust::divides<cvm::real>());
+    #else
+    std::transform(this->data.begin(), this->data.end(), this->data.begin(),
+           std::bind1st(std::divides<cvm::real>(),a)); 
+    #endif
   }
 
   inline friend vector1d<T> operator + (vector1d<T> const &v1,
@@ -150,10 +164,7 @@ public:
   {
     check_sizes(v1.size(), v2.size());
     vector1d<T> result(v1.size());
-    size_t i;
-    for (i = 0; i < v1.size(); i++) {
-      result[i] = v1[i] + v2[i];
-    }
+    NAMESPACE::transform(v1.data.begin(), v1.data.end(), v2.data.begin(), result.data.begin(), NAMESPACE::plus<T>());
     return result;
   }
 
@@ -162,20 +173,23 @@ public:
   {
     check_sizes(v1.size(), v2.size());
     vector1d<T> result(v1.size());
-    size_t i;
-    for (i = 0; i < v1.size(); i++) {
-      result[i] = v1[i] - v2[i];
-    }
+    NAMESPACE::transform(v1.data.begin(), v1.data.end(), v2.data.begin(), result.data.begin(), NAMESPACE::minus<T>());
     return result;
   }
 
   inline friend vector1d<T> operator * (vector1d<T> const &v, cvm::real a)
   {
     vector1d<T> result(v.size());
-    size_t i;
-    for (i = 0; i < v.size(); i++) {
-      result[i] = v[i] * a;
-    }
+    #ifdef CUDACVM
+    thrust::transform(v.data.begin(),
+                  v.data.end(), 
+                  thrust::make_constant_iterator(a),
+                  result.data.begin(),
+                  thrust::multiplies<cvm::real>());
+    #else
+    std::transform(v.data.begin(), v.data.end(), result.data.begin(),
+           std::bind1st(std::multiplies<cvm::real>(),a)); 
+    #endif
     return result;
   }
 
@@ -187,10 +201,16 @@ public:
   inline friend vector1d<T> operator / (vector1d<T> const &v, cvm::real a)
   {
     vector1d<T> result(v.size());
-    size_t i;
-    for (i = 0; i < v.size(); i++) {
-      result[i] = v[i] / a;
-    }
+    #ifdef CUDACVM
+    thrust::transform(v.data.begin(),
+                  v.data.end(), 
+                  thrust::make_constant_iterator(a),
+                  result.data.begin(),
+                  thrust::divides<cvm::real>());
+    #else
+    std::transform(v.data.begin(), v.data.end(), result.data.begin(),
+           std::bind1st(std::divides<cvm::real>(),a)); 
+    #endif
     return result;
   }
 
@@ -199,21 +219,14 @@ public:
   {
     check_sizes(v1.size(), v2.size());
     T prod(0.0);
-    size_t i;
-    for (i = 0; i < v1.size(); i++) {
-      prod += v1[i] * v2[i];
-    }
+    prod = NAMESPACE::inner_product(v1.data.begin(), v1.data.end(), v2.data.end(), 0);
     return prod;
   }
 
   /// Squared norm
   inline cvm::real norm2() const
   {
-    cvm::real result = 0.0;
-    size_t i;
-    for (i = 0; i < this->size(); i++) {
-      result += (*this)[i] * (*this)[i];
-    }
+    cvm::real result = NAMESPACE::inner_product(this->data.begin(), this->data.end(), this->data.end(), 0);
     return result;
   }
 
@@ -224,11 +237,7 @@ public:
 
   inline cvm::real sum() const
   {
-    cvm::real result = 0.0;
-    size_t i;
-    for (i = 0; i < this->size(); i++) {
-      result += (*this)[i];
-    }
+    cvm::real result = NAMESPACE::accumulate(this->data.begin(), this->data.end(), 0);
     return result;
   }
 
@@ -239,24 +248,22 @@ public:
       cvm::error("Error: trying to slice a vector using incorrect boundaries.\n");
     }
     vector1d<T> result(i2 - i1);
-    size_t i;
-    for (i = 0; i < (i2 - i1); i++) {
-      result[i] = (*this)[i1+i];
-    }
+    NAMESPACE::copy(this->data.begin()+i1, this->data.begin()+i2, result.data.begin());
+    // size_t i;
+    // for (i = 0; i < (i2 - i1); i++) {
+    //   result[i] = (*this)[i1+i];
+    // }
     return result;
   }
 
   /// Assign a vector to a slice of this vector
   inline void sliceassign(size_t const i1, size_t const i2,
-                          vector1d<T> const &v)
+                          vector1d<T> v)
   {
     if ((i2 < i1) || (i2 >= this->size())) {
       cvm::error("Error: trying to slice a vector using incorrect boundaries.\n");
     }
-    size_t i;
-    for (i = 0; i < (i2 - i1); i++) {
-      (*this)[i1+i] = v[i];
-    }
+    NAMESPACE::copy(this->data.begin()+i1, this->data.begin()+i2, v.data.begin());
   }
 
   /// Formatted output
@@ -359,8 +366,8 @@ template <class T> class colvarmodule::matrix2d
 public:
 
   friend class row;
-  size_t outer_length;
-  size_t inner_length;
+  size_t outer_length; //Number of rows
+  size_t inner_length; //Number of columns
 
 protected:
 
@@ -387,14 +394,14 @@ protected:
         return cvm::error("Error: setting a matrix row from a vector of "
                           "incompatible size.\n", BUG_ERROR);
       }
-      for (size_t i = 0; i < length; i++) data[i] = v[i];
+      NAMESPACE::copy(v.data.begin(), v.data.begin(), data.begin());
       return COLVARS_OK;
     }
   };
 
-  std::vector<T> data;
-  std::vector<row> rows;
-  std::vector<T *> pointers;
+  VECTORTYPE<T> data;
+  VECTORTYPE<row> rows;
+  VECTORTYPE<T *> pointers;
 
 public:
 
@@ -406,11 +413,9 @@ public:
       if (data.size() > 0) {
         // copy previous data
         size_t i, j;
-        std::vector<T> new_data(ol * il);
+        VECTORTYPE<T> new_data(ol * il);
         for (i = 0; i < outer_length; i++) {
-          for (j = 0; j < inner_length; j++) {
-            new_data[il*i+j] = data[inner_length*i+j];
-          }
+          NAMESPACE::copy(data.begin()+inner_length*i, data.begin()+(inner_length*(i+1)), new_data.begin()+i*il);
         }
         data.resize(ol * il);
         // copy them back
@@ -450,7 +455,7 @@ public:
   /// Set all elements to zero
   inline void reset()
   {
-    data.assign(data.size(), T(0.0));
+    NAMESPACE::fill(data.begin(), data.end(), T(0.0));
   }
 
   inline size_t size() const
@@ -488,7 +493,7 @@ public:
   }
 
   /// Return a reference to the data
-  inline std::vector<T> &data_array()
+  inline VECTORTYPE<T> &data_array()
   {
     return data;
   }
@@ -540,35 +545,41 @@ public:
   inline void operator += (matrix2d<T> const &m)
   {
     check_sizes(*this, m);
-    size_t i;
-    for (i = 0; i < data.size(); i++) {
-      data[i] += m.data[i];
-    }
+    NAMESPACE::transform(this->data.begin(), this->data.end(), m.data.begin(), this->data.begin(), NAMESPACE::plus<T>());
   }
 
   inline void operator -= (matrix2d<T> const &m)
   {
     check_sizes(*this, m);
-    size_t i;
-    for (i = 0; i < data.size(); i++) {
-      data[i] -= m.data[i];
-    }
+    NAMESPACE::transform(this->data.begin(), this->data.end(), m.data.begin(), this->data.begin(), NAMESPACE::minus<T>());
   }
 
   inline void operator *= (cvm::real a)
   {
-    size_t i;
-    for (i = 0; i < data.size(); i++) {
-      data[i] *= a;
-    }
+    #ifdef CUDACVM
+    thrust::transform(this->data.begin(),
+                  this->data.end(), 
+                  thrust::make_constant_iterator(a),
+                  this->data.begin(),
+                  thrust::multiplies<cvm::real>());
+    #else
+    std::transform(this->data.begin(), this->data.end(), this->data.begin(),
+           std::bind1st(std::multiplies<cvm::real>(),a)); 
+    #endif
   }
 
   inline void operator /= (cvm::real a)
   {
-    size_t i;
-    for (i = 0; i < data.size(); i++) {
-      data[i] /= a;
-    }
+    #ifdef CUDACVM
+    thrust::transform(this->data.begin(),
+                  this->data.end(), 
+                  thrust::make_constant_iterator(1.0/a),
+                  this->data.begin(),
+                  thrust::multiplies<cvm::real>());
+    #else
+    std::transform(this->data.begin(), this->data.end(), this->data.begin(),
+           std::bind1st(std::multiplies<cvm::real>(),1.0/a)); 
+    #endif
   }
 
   inline friend matrix2d<T> operator + (matrix2d<T> const &m1,
@@ -576,10 +587,7 @@ public:
   {
     check_sizes(m1, m2);
     matrix2d<T> result(m1.outer_length, m1.inner_length);
-    size_t i;
-    for (i = 0; i < m1.data.size(); i++) {
-      result.data[i] = m1.data[i] + m2.data[i];
-    }
+    NAMESPACE::transform(m1.data.begin(), m1.data.end(), m2.data.begin(), result.data.begin(), NAMESPACE::plus<T>());
     return result;
   }
 
@@ -588,20 +596,23 @@ public:
   {
     check_sizes(m1, m2);
     matrix2d<T> result(m1.outer_length, m1.inner_length);
-    size_t i;
-    for (i = 0; i < m1.data.size(); i++) {
-      result.data[i] = m1.data[i] - m1.data[i];
-    }
+    NAMESPACE::transform(m1.data.begin(), m1.data.end(), m2.data.begin(), result.data.begin(), NAMESPACE::minus<T>());
     return result;
   }
 
   inline friend matrix2d<T> operator * (matrix2d<T> const &m, cvm::real a)
   {
     matrix2d<T> result(m.outer_length, m.inner_length);
-    size_t i;
-    for (i = 0; i < m.data.size(); i++) {
-      result.data[i] = m.data[i] * a;
-    }
+    #ifdef CUDACVM
+    thrust::transform(m.data.begin(),
+                  m.data.end(), 
+                  thrust::make_constant_iterator(a),
+                  result.data.begin(),
+                  thrust::multiplies<cvm::real>());
+    #else
+    std::transform(m.data.begin(), m.data.end(), result.data.begin(),
+           std::bind1st(std::multiplies<cvm::real>(),a)); 
+    #endif
     return result;
   }
 
@@ -613,10 +624,16 @@ public:
   inline friend matrix2d<T> operator / (matrix2d<T> const &m, cvm::real a)
   {
     matrix2d<T> result(m.outer_length, m.inner_length);
-    size_t i;
-    for (i = 0; i < m.data.size(); i++) {
-      result.data[i] = m.data[i] * a;
-    }
+    #ifdef CUDACVM
+    thrust::transform(m.data.begin(),
+                  m.data.end(), 
+                  thrust::make_constant_iterator(a),
+                  result.data.begin(),
+                  thrust::divides<cvm::real>());
+    #else
+    std::transform(m.data.begin(), m.data.end(), result.data.begin(),
+           std::bind1st(std::divides<cvm::real>(),a)); 
+    #endif
     return result;
   }
 
@@ -633,10 +650,12 @@ public:
                  ".\n");
     } else {
       size_t i, k;
-      for (i = 0; i < m.inner_length; i++) {
-        for (k = 0; k < m.outer_length; k++) {
-          result[i] += m[k][i] * v[k];
-        }
+      for (k = 0; k < m.outer_length; k++) {
+        vector1d<T> intermediate(m.inner_length,&(m[k][0]));
+        result += intermediate * v[k];
+        // for (i = 0; i < m.inner_length; i++) {
+        //   result[i] += m[k][i] * v[k];
+        // }
       }
     }
     return result;
@@ -697,7 +716,6 @@ public:
   }
 
 };
-
 
 /// vector of real numbers with three components
 class colvarmodule::rvector {
