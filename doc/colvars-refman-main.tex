@@ -2776,7 +2776,7 @@ A series of map files, each representing a different shape, is loaded into NAMD:
   \-~~mGridForceScale Shape\_\$k 0.0 0.0 0.0~~\# Do not use GridForces for this map\\
   \-\}\\
 }
-The GridForces maps thus loaded are then used to define the Multi-Map collective variable:\\
+The GridForces maps thus loaded are then used to define the Multi-Map collective variable, with coefficients $\xi_k = k$ \cite{Fiorin2020}:\\
 {\noindent\ttfamily
   \-\# Collect the definition of all components into one string\\
   \-set components "\\
