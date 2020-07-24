@@ -1811,6 +1811,7 @@ define the atom group, and returns a positive number, expressed in
 
 
 \cvsubsubsec{\texttt{dipoleMagnitude}: dipole magnitude of a group of atoms.}{sec:cvc_dipoleMagnitude}
+\labelkey{colvar|dipoleMagnitude}
 The \texttt{dipoleMagnitude~\{...\}} block defines the dipole magnitude of a group of atoms (norm of the dipole moment's vector), being \texttt{atoms} the group where dipole magnitude is calculated.
 It returns the magnitude in elementary charge $e$ times \cvnamdonly{\AA}\cvvmdonly{\AA}\cvlammpsonly{(length unit)}.
 
@@ -2729,7 +2730,7 @@ Both the map file and the atom selection file are then loaded via the \texttt{mG
   \-mGridForcePotFile Cavity cavity.dx~~~\# OpenDX map file\\
   \-mGridForceFile Cavity water-sel.pdb~~\# PDB file used for atom selection\\
   \-mGridForceCol Cavity O~~~~~~~~~~~~~~~\# Use the occupancy column of the PDB file\\
-  \-mGridForceChargeCol Cavity O~~~~~~~~~\# Use occ. again (default: electrostatic charge)\\
+  \-mGridForceChargeCol Cavity B~~~~~~~~~\# Use beta as ``charge'' (default: electric charge)\\
   \-mGridForceScale Cavity 0.0 0.0 0.0~~~\# Do not use GridForces for this map\\
 }
 
