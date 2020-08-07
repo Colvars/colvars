@@ -126,7 +126,8 @@ public:
                        cvm::atom_iter atom_begin,
                        cvm::atom_iter atom_end,
                        cvm::real *value,
-                       cvm::real *atom_field);
+                       cvm::real *atom_field,
+                       int *inside);
 
   /// Get value of alchemical lambda parameter from back-end (stub)
   int get_alch_lambda(cvm::real* lambda) {

@@ -1435,18 +1435,38 @@ void colvarproxy_namd::GridForceGridLoop(T const *g,
                                          cvm::atom_iter atom_begin,
                                          cvm::atom_iter atom_end,
                                          cvm::real *value,
-                                         cvm::real *atom_field)
+                                         cvm::real *atom_field,
+                                         int *inside)
 {
   float V = 0.0f;
   Vector dV(0.0);
-  int i = 0;
+  int i = 0, status = -1;
   cvm::atom_iter ai = atom_begin;
   for ( ; ai != atom_end; ai++, i++) {
+
+    if ((flags & volmap_flag_use_atomlist) &&
+        !(flags & volmap_flag_rebuild_atomlist)) {
+      if (inside[i] == 0) {
+        // Skip atom according to precomputed list
+        continue;
+      }
+    }
+
+    // TODO look into compute_V() to skip gradient computation
+
     if (g->compute_VdV(Position(ai->pos.x, ai->pos.y, ai->pos.z), V, dV)) {
       // out-of-bounds atom
+      if (flags & volmap_flag_rebuild_atomlist) {
+        inside[i] = 0;
+      }
       V = 0.0f;
       dV = 0.0;
     } else {
+
+      if (flags & volmap_flag_rebuild_atomlist) {
+        inside[i] = 1;
+      }
+
       if (flags & volmap_flag_use_atom_field) {
         *value += V * atom_field[i];
         if (flags & volmap_flag_gradients) {
@@ -1469,16 +1489,47 @@ void colvarproxy_namd::getGridForceGridValue(int flags,
                                              cvm::atom_iter atom_begin,
                                              cvm::atom_iter atom_end,
                                              cvm::real *value,
-                                             cvm::real *atom_field)
+                                             cvm::real *atom_field,
+                                             int *inside)
 {
-  if (flags & volmap_flag_use_atom_field) {
-    int const new_flags = volmap_flag_use_atom_field | volmap_flag_gradients;
-    GridForceGridLoop<T, new_flags>(g, atom_begin, atom_end,
-                                    value, atom_field);
+  if (atom_field) {
+
+    if (flags & volmap_flag_use_atomlist) {
+      if (flags & volmap_flag_rebuild_atomlist) {
+        int const new_flags = volmap_flag_use_atom_field |
+          volmap_flag_use_atomlist | volmap_flag_rebuild_atomlist;
+        GridForceGridLoop<T, new_flags>(g, atom_begin, atom_end,
+                                        value, atom_field, inside);
+      } else {
+        int const new_flags = volmap_flag_use_atom_field |
+          volmap_flag_use_atomlist;
+        GridForceGridLoop<T, new_flags>(g, atom_begin, atom_end,
+                                        value, atom_field, inside);
+      }
+    } else {
+      int const new_flags = volmap_flag_use_atom_field;
+      GridForceGridLoop<T, new_flags>(g, atom_begin, atom_end,
+                                      value, atom_field, inside);
+    }
+
   } else {
-    int const new_flags = volmap_flag_gradients;
-    GridForceGridLoop<T, new_flags>(g, atom_begin, atom_end,
-                                    value, atom_field);
+
+    if (flags & volmap_flag_use_atomlist) {
+      if (flags & volmap_flag_rebuild_atomlist) {
+        int const new_flags = volmap_flag_use_atomlist |
+          volmap_flag_rebuild_atomlist;
+        GridForceGridLoop<T, new_flags>(g, atom_begin, atom_end,
+                                        value, atom_field, inside);
+      } else {
+        int const new_flags = volmap_flag_use_atomlist;
+        GridForceGridLoop<T, new_flags>(g, atom_begin, atom_end,
+                                        value, atom_field, inside);
+      }
+    } else {
+      int const new_flags = volmap_flag_null;
+      GridForceGridLoop<T, new_flags>(g, atom_begin, atom_end,
+                                      value, atom_field, inside);
+    }
   }
 }
 
@@ -1488,7 +1539,8 @@ int colvarproxy_namd::compute_volmap(int flags,
                                      cvm::atom_iter atom_begin,
                                      cvm::atom_iter atom_end,
                                      cvm::real *value,
-                                     cvm::real *atom_field)
+                                     cvm::real *atom_field,
+                                     int *inside)
 {
   Molecule *mol = Node::Object()->molecule;
   GridforceGrid *grid = mol->get_gridfrc_grid(volmap_id);
@@ -1496,11 +1548,11 @@ int colvarproxy_namd::compute_volmap(int flags,
   if (grid->get_grid_type() == GridforceGrid::GridforceGridTypeFull) {
     GridforceFullMainGrid *g = dynamic_cast<GridforceFullMainGrid *>(grid);
     getGridForceGridValue<GridforceFullMainGrid>(flags, g, atom_begin, atom_end,
-                                                 value, atom_field);
+                                                 value, atom_field, inside);
   } else if (grid->get_grid_type() == GridforceGrid::GridforceGridTypeLite) {
     GridforceLiteGrid *g = dynamic_cast<GridforceLiteGrid *>(grid);
     getGridForceGridValue<GridforceLiteGrid>(flags, g, atom_begin, atom_end,
-                                             value, atom_field);
+                                             value, atom_field, inside);
   }
   return COLVARS_OK;
 }

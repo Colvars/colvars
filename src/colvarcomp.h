@@ -1571,6 +1571,9 @@ protected:
 
   /// Weights assigned to each atom (default: uniform weights)
   std::vector<cvm::real> atom_weights;
+
+  /// Flags recording whether the atoms are within the map or not
+  std::vector<int> atoms_inside;
 };
 
 

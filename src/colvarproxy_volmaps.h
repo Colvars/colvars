@@ -81,18 +81,22 @@ public:
   /// \param atom_end Iterator pointing past the last atom
   /// \param value Pointer to location of total to increment
   /// \param atom_field Array of atomic field values (if NULL, ones are used)
+  /// \param inside Array of flags (1 = inside map, 0 = outside)
   virtual int compute_volmap(int flags,
                              int volmap_id,
                              cvm::atom_iter atom_begin,
                              cvm::atom_iter atom_end,
                              cvm::real *value,
-                             cvm::real *atom_field);
+                             cvm::real *atom_field,
+                             int *inside);
 
   /// Flags controlling what computation is done on the map
   enum {
     volmap_flag_null = 0,
     volmap_flag_gradients = 1,
-    volmap_flag_use_atom_field = (1<<8)
+    volmap_flag_use_atom_field = (1<<8),
+    volmap_flag_use_atomlist = (1<<9),
+    volmap_flag_rebuild_atomlist = (1<<10)
   };
 
   /// Compute the root-mean-square of the applied forces
