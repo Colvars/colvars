@@ -808,7 +808,8 @@ void colvarproxy_vmd::compute_voldata(VolumetricData const *voldata,
                                       cvm::atom_iter atom_begin,
                                       cvm::atom_iter atom_end,
                                       cvm::real *value,
-                                      cvm::real *atom_field)
+                                      cvm::real *atom_field,
+                                      int * /* inside */)
 {
   int i = 0;
   float coord[3], voxcoord[3], grad[3];
@@ -872,7 +873,8 @@ int colvarproxy_vmd::compute_volmap(int flags,
                                     cvm::atom_iter atom_begin,
                                     cvm::atom_iter atom_end,
                                     cvm::real *value,
-                                    cvm::real *atom_field)
+                                    cvm::real *atom_field,
+                                    int * /* inside */)
 {
   int error_code = COLVARS_OK;
   VolumetricData const *voldata = vmdmol->get_volume_data(volmap_id);

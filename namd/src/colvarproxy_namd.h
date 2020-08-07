@@ -240,7 +240,8 @@ public:
                              cvm::atom_iter atom_begin,
                              cvm::atom_iter atom_end,
                              cvm::real *value,
-                             cvm::real *atom_field) override;
+                             cvm::real *atom_field,
+                             int *inside) override;
 
   /// Abstraction of the two types of NAMD volumetric maps
   template<class T>
@@ -249,7 +250,8 @@ public:
                              cvm::atom_iter atom_begin,
                              cvm::atom_iter atom_end,
                              cvm::real *value,
-                             cvm::real *atom_field);
+                             cvm::real *atom_field,
+                             int *inside);
 
   /// Implementation of inner loop; allows for atom list computation and use
   template<class T, int flags>
@@ -257,7 +259,8 @@ public:
                          cvm::atom_iter atom_begin,
                          cvm::atom_iter atom_end,
                          cvm::real *value,
-                         cvm::real *atom_field);
+                         cvm::real *atom_field,
+                         int *inside);
 
 #endif
 
