@@ -1463,16 +1463,36 @@ template<class T, int flags>
 void colvarproxy_namd::GridForceGridLoop(T const *g,
                                          cvm::atom_group* ag,
                                          cvm::real *value,
-                                         cvm::real *atom_field)
+                                         cvm::real *atom_field,
+                                         int *inside)
 {
   float V = 0.0f;
   Vector dV(0.0);
   for (size_t i = 0; i < ag->size(); ++i) {
+
+    if ((flags & volmap_flag_use_atomlist) &&
+        !(flags & volmap_flag_rebuild_atomlist)) {
+      if (inside[i] == 0) {
+        // Skip atom according to precomputed list
+        continue;
+      }
+    }
+
+    // TODO look into compute_V() to skip gradient computation
+
     if (g->compute_VdV(Position(ag->pos_x(i), ag->pos_y(i), ag->pos_z(i)), V, dV)) {
       // out-of-bounds atom
+      if (flags & volmap_flag_rebuild_atomlist) {
+        inside[i] = 0;
+      }
       V = 0.0f;
       dV = 0.0;
     } else {
+
+      if (flags & volmap_flag_rebuild_atomlist) {
+        inside[i] = 1;
+      }
+
       if (flags & volmap_flag_use_atom_field) {
         *value += V * atom_field[i];
         if (flags & volmap_flag_gradients) {
@@ -1499,22 +1519,53 @@ void colvarproxy_namd::getGridForceGridValue(int flags,
                                              T const *g,
                                              cvm::atom_group* ag,
                                              cvm::real *value,
-                                             cvm::real *atom_field)
+                                             cvm::real *atom_field,
+                                             int *inside)
 {
+  // The GridForceGrid function we're calling now computes them anyway
+  int const new_base_flags = volmap_flag_gradients;
   if (flags & volmap_flag_use_atom_field) {
-    int const new_flags = volmap_flag_use_atom_field | volmap_flag_gradients;
-    GridForceGridLoop<T, new_flags>(g, ag, value, atom_field);
+
+    if (flags & volmap_flag_use_atomlist) {
+      if (flags & volmap_flag_rebuild_atomlist) {
+        int const new_flags = new_base_flags | volmap_flag_use_atom_field |
+          volmap_flag_use_atomlist | volmap_flag_rebuild_atomlist;
+        GridForceGridLoop<T, new_flags>(g, ag, value, atom_field, inside);
+      } else {
+        int const new_flags = new_base_flags | volmap_flag_use_atom_field |
+          volmap_flag_use_atomlist;
+        GridForceGridLoop<T, new_flags>(g, ag, value, atom_field, inside);
+      }
+    } else {
+      int const new_flags = new_base_flags | volmap_flag_use_atom_field;
+      GridForceGridLoop<T, new_flags>(g, ag, value, atom_field, inside);
+    }
+
   } else {
-    int const new_flags = volmap_flag_gradients;
-    GridForceGridLoop<T, new_flags>(g, ag, value, atom_field);
+
+    if (flags & volmap_flag_use_atomlist) {
+      if (flags & volmap_flag_rebuild_atomlist) {
+        int const new_flags = new_base_flags | volmap_flag_use_atomlist |
+          volmap_flag_rebuild_atomlist;
+        GridForceGridLoop<T, new_flags>(g, ag, value, atom_field, inside);
+      } else {
+        int const new_flags = new_base_flags | volmap_flag_use_atomlist;
+        GridForceGridLoop<T, new_flags>(g, ag, value, atom_field, inside);
+      }
+    } else {
+      int const new_flags = new_base_flags;
+      GridForceGridLoop<T, new_flags>(g, ag, value, atom_field, inside);
+    }
   }
 }
+
 
 int colvarproxy_namd::compute_volmap(int flags,
                                      int index,
                                      cvm::atom_group* ag,
                                      cvm::real *value,
-                                     cvm::real *atom_field)
+                                     cvm::real *atom_field,
+                                     int *inside)
 {
   Molecule *mol = Node::Object()->molecule;
   // Pointer to NAMD_managed object if volmap_id >= 0, internal object otherwise
@@ -1524,12 +1575,10 @@ int colvarproxy_namd::compute_volmap(int flags,
   // Inheritance is not possible with GridForceGrid's design
   if (grid->get_grid_type() == GridforceGrid::GridforceGridTypeFull) {
     GridforceFullMainGrid *g = dynamic_cast<GridforceFullMainGrid *>(grid);
-    getGridForceGridValue<GridforceFullMainGrid>(flags, g, ag,
-                                                 value, atom_field);
+    getGridForceGridValue<GridforceFullMainGrid>(flags, g, ag, value, atom_field, inside);
   } else if (grid->get_grid_type() == GridforceGrid::GridforceGridTypeLite) {
     GridforceLiteGrid *g = dynamic_cast<GridforceLiteGrid *>(grid);
-    getGridForceGridValue<GridforceLiteGrid>(flags, g, ag,
-                                             value, atom_field);
+    getGridForceGridValue<GridforceLiteGrid>(flags, g, ag, value, atom_field, inside);
   }
   return COLVARS_OK;
 }
