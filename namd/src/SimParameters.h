@@ -1047,6 +1047,9 @@ public:
         int mic_deviceThreshold;
         int mic_singleKernel;
 
+	// AVX-512 Tiles optimizations
+	Bool useAVXTiles;
+
 public:
 
         SimParameters() : mgridforcelist(), parseopts(0) {};

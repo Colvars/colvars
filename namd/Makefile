@@ -105,6 +105,9 @@ default: all
 # Add new source files here.
 
 OBJS = \
+	$(DSTDIR)/AVXTiles.o \
+	$(DSTDIR)/AVXTilesKernel.o \
+	$(DSTDIR)/AVXTileLists.o \
 	$(DSTDIR)/ComputeMoa.o \
 	$(DSTDIR)/ComputeMsm.o \
 	$(DSTDIR)/ComputeMsmMsa.o \

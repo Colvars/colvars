@@ -1,3 +1,54 @@
+obj/AVXTiles.o: \
+	obj/.exists \
+	src/AVXTiles.C \
+	src/AVXTiles.h \
+	src/common.h \
+	src/NamdTypes.h \
+	src/Vector.h \
+	src/ResizeArray.h \
+	src/ResizeArrayRaw.h \
+	src/Molecule.h \
+	src/parm.h \
+	src/structures.h \
+	src/ConfigList.h \
+	src/UniqueSet.h \
+	src/UniqueSetRaw.h \
+	src/Hydrogen.h \
+	src/SortableResizeArray.h \
+	src/GromacsTopFile.h \
+	src/GridForceGrid.h \
+	src/Tensor.h \
+	src/SimParameters.h \
+	src/Lattice.h \
+	src/MGridforceParams.h \
+	src/strlib.h \
+	src/InfoStream.h \
+	src/MStream.h \
+	plugins/include/molfile_plugin.h \
+	plugins/include/vmdplugin.h \
+	src/Node.h \
+	src/main.h \
+	src/ProcessorPrivate.h \
+	src/BOCgroup.h \
+	inc/Node.decl.h
+	$(CXX) $(CXXFLAGS) $(COPTO)obj/AVXTiles.o $(COPTC) src/AVXTiles.C
+obj/AVXTilesKernel.o: \
+	obj/.exists \
+	src/AVXTilesKernel.C
+	$(CXX) $(CXXFLAGS) $(COPTO)obj/AVXTilesKernel.o $(COPTC) src/AVXTilesKernel.C
+obj/AVXTileLists.o: \
+	obj/.exists \
+	src/AVXTileLists.C \
+	src/AVXTileLists.h \
+	src/AVXTiles.h \
+	src/common.h \
+	src/NamdTypes.h \
+	src/Vector.h \
+	src/ResizeArray.h \
+	src/ResizeArrayRaw.h \
+	src/Lattice.h \
+	src/Tensor.h
+	$(CXX) $(CXXFLAGS) $(COPTO)obj/AVXTileLists.o $(COPTC) src/AVXTileLists.C
 obj/ComputeMoa.o: \
 	obj/.exists \
 	src/ComputeMoa.C \
@@ -36,6 +87,7 @@ obj/ComputeMoa.o: \
 	src/Box.h \
 	src/UniqueSortedArray.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/MigrateAtomsMsg.h \
 	src/Migration.h \
 	inc/PatchMgr.decl.h \
@@ -103,6 +155,7 @@ obj/ComputeMsm.o: \
 	src/Box.h \
 	src/UniqueSortedArray.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/MigrateAtomsMsg.h \
 	src/Migration.h \
 	inc/PatchMgr.decl.h \
@@ -169,6 +222,7 @@ obj/ComputeMsmSerial.o: \
 	src/Box.h \
 	src/UniqueSortedArray.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/MigrateAtomsMsg.h \
 	src/Migration.h \
 	inc/PatchMgr.decl.h \
@@ -235,6 +289,7 @@ obj/ComputeFmmSerial.o: \
 	src/Box.h \
 	src/UniqueSortedArray.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/MigrateAtomsMsg.h \
 	src/Migration.h \
 	inc/PatchMgr.decl.h \
@@ -584,6 +639,7 @@ obj/BackEnd.o: \
 	src/SortedArray.h \
 	src/SortableResizeArray.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/PatchMap.h \
 	src/HomePatchList.h \
 	src/ResizeArrayIter.h \
@@ -739,6 +795,7 @@ obj/CollectionMaster.o: \
 	src/Box.h \
 	src/UniqueSortedArray.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/MigrateAtomsMsg.h \
 	src/Migration.h \
 	inc/PatchMgr.decl.h \
@@ -802,6 +859,7 @@ obj/CollectionMgr.o: \
 	src/Box.h \
 	src/UniqueSortedArray.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/MigrateAtomsMsg.h \
 	src/Migration.h \
 	src/InfoStream.h \
@@ -884,6 +942,7 @@ obj/ComputeAngles.o: \
 	src/Lattice.h \
 	src/Tensor.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/PatchMap.h \
 	src/HomePatchList.h \
 	src/ResizeArrayIter.h \
@@ -952,6 +1011,7 @@ obj/ComputeAniso.o: \
 	src/Lattice.h \
 	src/Tensor.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/PatchMap.h \
 	src/HomePatchList.h \
 	src/ResizeArrayIter.h \
@@ -1037,6 +1097,7 @@ obj/ComputeBonds.o: \
 	src/UniqueSortedArray.h \
 	src/SortedArray.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/PatchMap.h \
 	src/HomePatchList.h \
 	src/ResizeArrayIter.h \
@@ -1117,6 +1178,7 @@ obj/ComputeBondedCUDA.o: \
 	src/Box.h \
 	src/UniqueSortedArray.h \
 	src/SortedArray.h \
+	src/AVXTiles.h \
 	src/PatchMap.h \
 	src/HomePatchList.h \
 	src/ResizeArrayIter.h \
@@ -1195,6 +1257,7 @@ obj/ComputeConsForce.o: \
 	src/Patch.h \
 	src/UniqueSortedArray.h \
 	src/SortedArray.h \
+	src/AVXTiles.h \
 	src/PatchMap.h \
 	src/HomePatchList.h \
 	src/ResizeArrayIter.h \
@@ -1239,6 +1302,7 @@ obj/ComputeCrossterms.o: \
 	src/Lattice.h \
 	src/Tensor.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/PatchMap.h \
 	src/HomePatchList.h \
 	src/ResizeArrayIter.h \
@@ -1341,6 +1405,7 @@ obj/ComputeCUDAMgr.o: \
 	src/Patch.h \
 	src/UniqueSortedArray.h \
 	src/SortedArray.h \
+	src/AVXTiles.h \
 	src/PatchMap.h \
 	src/HomePatchList.h \
 	src/ResizeArrayIter.h \
@@ -1394,7 +1459,8 @@ obj/ComputeCylindricalBC.o: \
 	src/Patch.h \
 	src/UniqueSortedArray.h \
 	src/SortedArray.h \
-	src/SortableResizeArray.h
+	src/SortableResizeArray.h \
+	src/AVXTiles.h
 	$(CXX) $(CXXFLAGS) $(COPTO)obj/ComputeCylindricalBC.o $(COPTC) src/ComputeCylindricalBC.C
 obj/ComputeDihedrals.o: \
 	obj/.exists \
@@ -1420,6 +1486,7 @@ obj/ComputeDihedrals.o: \
 	src/Lattice.h \
 	src/Tensor.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/PatchMap.h \
 	src/HomePatchList.h \
 	src/ResizeArrayIter.h \
@@ -1496,6 +1563,7 @@ obj/ComputeDPME.o: \
 	src/Box.h \
 	src/UniqueSortedArray.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/MigrateAtomsMsg.h \
 	src/Migration.h \
 	inc/PatchMgr.decl.h \
@@ -1587,6 +1655,7 @@ obj/ComputeDPMTA.o: \
 	src/Box.h \
 	src/UniqueSortedArray.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/MigrateAtomsMsg.h \
 	src/Migration.h \
 	inc/PatchMgr.decl.h \
@@ -1627,6 +1696,7 @@ obj/ComputeEField.o: \
 	src/UniqueSortedArray.h \
 	src/SortedArray.h \
 	src/SortableResizeArray.h \
+	src/AVXTiles.h \
 	src/PatchMap.h \
 	src/HomePatchList.h \
 	src/ResizeArrayIter.h \
@@ -1666,6 +1736,7 @@ obj/ComputeEwald.o: \
 	src/Box.h \
 	src/UniqueSortedArray.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/MigrateAtomsMsg.h \
 	src/Migration.h \
 	src/InfoStream.h \
@@ -1730,6 +1801,7 @@ obj/ComputeExt.o: \
 	src/Box.h \
 	src/UniqueSortedArray.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/MigrateAtomsMsg.h \
 	src/Migration.h \
 	inc/PatchMgr.decl.h \
@@ -1798,6 +1870,7 @@ obj/ComputeQM.o: \
 	src/Box.h \
 	src/UniqueSortedArray.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/MigrateAtomsMsg.h \
 	src/Migration.h \
 	inc/PatchMgr.decl.h \
@@ -1867,6 +1940,7 @@ obj/ComputeGBISser.o: \
 	src/Box.h \
 	src/UniqueSortedArray.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/MigrateAtomsMsg.h \
 	src/Migration.h \
 	inc/PatchMgr.decl.h \
@@ -1976,6 +2050,7 @@ obj/ComputeGromacsPair.o: \
 	src/UniqueSortedArray.h \
 	src/SortedArray.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/PatchMap.h \
 	src/HomePatchList.h \
 	src/ResizeArrayIter.h \
@@ -2058,6 +2133,7 @@ obj/ComputeLCPO.o: \
 	src/AtomMap.h \
 	src/Patch.h \
 	src/UniqueSortedArray.h \
+	src/AVXTiles.h \
 	src/ComputeMap.h \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
@@ -2097,6 +2173,7 @@ obj/ComputeFullDirect.o: \
 	src/Box.h \
 	src/UniqueSortedArray.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/MigrateAtomsMsg.h \
 	src/Migration.h \
 	inc/PatchMgr.decl.h \
@@ -2155,6 +2232,7 @@ obj/ComputeHomePatch.o: \
 	src/HomePatch.h \
 	src/Patch.h \
 	src/UniqueSortedArray.h \
+	src/AVXTiles.h \
 	src/MigrateAtomsMsg.h \
 	src/Migration.h \
 	inc/PatchMgr.decl.h \
@@ -2191,6 +2269,7 @@ obj/ComputeHomePatches.o: \
 	src/Box.h \
 	src/UniqueSortedArray.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/MigrateAtomsMsg.h \
 	src/Migration.h \
 	inc/PatchMgr.decl.h \
@@ -2238,6 +2317,7 @@ obj/ComputeImpropers.o: \
 	src/Lattice.h \
 	src/Tensor.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/PatchMap.h \
 	src/HomePatchList.h \
 	src/ResizeArrayIter.h \
@@ -2313,6 +2393,7 @@ obj/ComputeGlobal.o: \
 	src/Box.h \
 	src/UniqueSortedArray.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/MigrateAtomsMsg.h \
 	src/Migration.h \
 	inc/PatchMgr.decl.h \
@@ -2388,6 +2469,7 @@ obj/ComputeGridForce.o: \
 	src/UniqueSortedArray.h \
 	src/SortedArray.h \
 	src/SortableResizeArray.h \
+	src/AVXTiles.h \
 	src/PatchMap.h \
 	src/HomePatchList.h \
 	src/ResizeArrayIter.h \
@@ -2483,6 +2565,8 @@ obj/ComputeMgr.o: \
 	src/ComputePatch.h \
 	src/Box.h \
 	src/OwnerBox.h \
+	src/AVXTileLists.h \
+	src/AVXTiles.h \
 	src/ComputeNonbondedPair.h \
 	src/ComputePatchPair.h \
 	src/ComputeNonbondedCUDA.h \
@@ -2647,6 +2731,8 @@ obj/ComputeNonbondedSelf.o: \
 	src/MStream.h \
 	plugins/include/molfile_plugin.h \
 	plugins/include/vmdplugin.h \
+	src/AVXTileLists.h \
+	src/AVXTiles.h \
 	src/Patch.h \
 	src/UniqueSortedArray.h \
 	src/SortedArray.h \
@@ -2657,6 +2743,8 @@ obj/ComputeNonbondedSelf.o: \
 	inc/NamdDummyLB.decl.h \
 	src/Node.h \
 	inc/Node.decl.h \
+	src/Parameters.h \
+	src/LJTable.h \
 	src/Debug.h
 	$(CXX) $(CXXFLAGS) $(COPTO)obj/ComputeNonbondedSelf.o $(COPTC) src/ComputeNonbondedSelf.C
 obj/ComputeNonbondedPair.o: \
@@ -2697,6 +2785,8 @@ obj/ComputeNonbondedPair.o: \
 	src/MStream.h \
 	plugins/include/molfile_plugin.h \
 	plugins/include/vmdplugin.h \
+	src/AVXTileLists.h \
+	src/AVXTiles.h \
 	src/Patch.h \
 	src/UniqueSortedArray.h \
 	src/SortedArray.h \
@@ -2714,6 +2804,8 @@ obj/ComputeNonbondedPair.o: \
 	inc/ComputeMgr.decl.h \
 	src/Node.h \
 	inc/Node.decl.h \
+	src/Parameters.h \
+	src/LJTable.h \
 	src/Debug.h
 	$(CXX) $(CXXFLAGS) $(COPTO)obj/ComputeNonbondedPair.o $(COPTC) src/ComputeNonbondedPair.C
 obj/ComputeNonbondedUtil.o: \
@@ -3131,6 +3223,7 @@ obj/ComputeNonbondedCUDA.o: \
 	src/Box.h \
 	src/UniqueSortedArray.h \
 	src/SortedArray.h \
+	src/AVXTiles.h \
 	src/PatchMap.h \
 	src/HomePatchList.h \
 	src/ResizeArrayIter.h \
@@ -3197,6 +3290,7 @@ obj/ComputeNonbondedCUDAExcl.o: \
 	src/UniqueSortedArray.h \
 	src/SortedArray.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/PatchMap.h \
 	src/HomePatchList.h \
 	src/ResizeArrayIter.h \
@@ -3278,6 +3372,7 @@ obj/ComputeNonbondedMIC.o: \
 	src/Box.h \
 	src/UniqueSortedArray.h \
 	src/SortedArray.h \
+	src/AVXTiles.h \
 	src/PatchMap.h \
 	src/HomePatchList.h \
 	src/ResizeArrayIter.h \
@@ -3342,6 +3437,7 @@ obj/ComputePatch.o: \
 	src/AtomMap.h \
 	src/Patch.h \
 	src/UniqueSortedArray.h \
+	src/AVXTiles.h \
 	src/ComputeMap.h \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
@@ -3381,6 +3477,7 @@ obj/ComputePatchPair.o: \
 	src/AtomMap.h \
 	src/Patch.h \
 	src/UniqueSortedArray.h \
+	src/AVXTiles.h \
 	src/ComputeMap.h \
 	src/LdbCoordinator.h \
 	inc/LdbCoordinator.decl.h \
@@ -3429,6 +3526,7 @@ obj/ComputePme.o: \
 	src/HomePatch.h \
 	src/Patch.h \
 	src/UniqueSortedArray.h \
+	src/AVXTiles.h \
 	src/MigrateAtomsMsg.h \
 	src/Migration.h \
 	inc/PatchMgr.decl.h \
@@ -3524,6 +3622,7 @@ obj/ComputePmeCUDA.o: \
 	src/HomePatch.h \
 	src/Patch.h \
 	src/UniqueSortedArray.h \
+	src/AVXTiles.h \
 	src/MigrateAtomsMsg.h \
 	src/Migration.h \
 	inc/PatchMgr.decl.h \
@@ -3624,6 +3723,7 @@ obj/ComputeRestraints.o: \
 	src/Patch.h \
 	src/UniqueSortedArray.h \
 	src/SortedArray.h \
+	src/AVXTiles.h \
 	src/NamdOneTools.h \
 	src/PDB.h \
 	src/PDBData.h
@@ -3658,7 +3758,8 @@ obj/ComputeSphericalBC.o: \
 	src/Patch.h \
 	src/UniqueSortedArray.h \
 	src/SortedArray.h \
-	src/SortableResizeArray.h
+	src/SortableResizeArray.h \
+	src/AVXTiles.h
 	$(CXX) $(CXXFLAGS) $(COPTO)obj/ComputeSphericalBC.o $(COPTC) src/ComputeSphericalBC.C
 obj/ComputeStir.o: \
 	obj/.exists \
@@ -3692,6 +3793,7 @@ obj/ComputeStir.o: \
 	src/UniqueSortedArray.h \
 	src/SortedArray.h \
 	src/SortableResizeArray.h \
+	src/AVXTiles.h \
 	src/PatchMap.h \
 	src/HomePatchList.h \
 	src/ResizeArrayIter.h \
@@ -3737,6 +3839,7 @@ obj/ComputeTclBC.o: \
 	src/Lattice.h \
 	src/Tensor.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/PatchMap.h \
 	src/HomePatchList.h \
 	src/ResizeArrayIter.h \
@@ -3790,6 +3893,7 @@ obj/ComputeThole.o: \
 	src/Lattice.h \
 	src/Tensor.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/PatchMap.h \
 	src/HomePatchList.h \
 	src/ResizeArrayIter.h \
@@ -3897,6 +4001,7 @@ obj/Controller.o: \
 	src/Box.h \
 	src/UniqueSortedArray.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/MigrateAtomsMsg.h \
 	src/Migration.h \
 	inc/PatchMgr.decl.h \
@@ -3942,6 +4047,7 @@ obj/CudaComputeNonbonded.o: \
 	src/Lattice.h \
 	src/Tensor.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/PatchMap.h \
 	src/HomePatchList.h \
 	src/ResizeArrayIter.h \
@@ -4247,6 +4353,7 @@ obj/DumpBench.o: \
 	src/Box.h \
 	src/UniqueSortedArray.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/MigrateAtomsMsg.h \
 	src/Migration.h \
 	inc/PatchMgr.decl.h \
@@ -4739,6 +4846,7 @@ obj/GlobalMasterEasy.o: \
 	src/Box.h \
 	src/UniqueSortedArray.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/MigrateAtomsMsg.h \
 	src/Migration.h \
 	inc/PatchMgr.decl.h \
@@ -4788,6 +4896,7 @@ obj/GlobalMasterMisc.o: \
 	src/Lattice.h \
 	src/Tensor.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/PatchMap.h \
 	src/HomePatchList.h \
 	src/ResizeArrayIter.h \
@@ -4920,6 +5029,7 @@ obj/GridForceGrid.o: \
 	src/Patch.h \
 	src/UniqueSortedArray.h \
 	src/SortedArray.h \
+	src/AVXTiles.h \
 	src/PatchMap.h \
 	src/HomePatchList.h \
 	src/ResizeArrayIter.h \
@@ -4970,6 +5080,7 @@ obj/HomePatch.o: \
 	src/SortedArray.h \
 	src/SortableResizeArray.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/PatchMap.h \
 	src/HomePatchList.h \
 	src/ResizeArrayIter.h \
@@ -5099,6 +5210,7 @@ obj/LdbCoordinator.o: \
 	src/OwnerBox.h \
 	src/Box.h \
 	src/UniqueSortedArray.h \
+	src/AVXTiles.h \
 	src/MigrateAtomsMsg.h \
 	src/Migration.h \
 	inc/PatchMgr.decl.h \
@@ -5245,6 +5357,7 @@ obj/MigrateAtomsMsg.o: \
 	src/OwnerBox.h \
 	src/Box.h \
 	src/UniqueSortedArray.h \
+	src/AVXTiles.h \
 	src/main.h \
 	src/Settle.h \
 	src/packmsg.h
@@ -5299,6 +5412,7 @@ obj/Molecule.o: \
 	src/Patch.h \
 	src/UniqueSortedArray.h \
 	src/SortedArray.h \
+	src/AVXTiles.h \
 	src/PatchMap.h \
 	src/HomePatchList.h \
 	src/ResizeArrayIter.h \
@@ -5364,6 +5478,7 @@ obj/Molecule2.o: \
 	src/Patch.h \
 	src/UniqueSortedArray.h \
 	src/SortedArray.h \
+	src/AVXTiles.h \
 	src/PatchMap.h \
 	src/HomePatchList.h \
 	src/ResizeArrayIter.h \
@@ -5427,6 +5542,7 @@ obj/GoMolecule.o: \
 	src/Patch.h \
 	src/UniqueSortedArray.h \
 	src/SortedArray.h \
+	src/AVXTiles.h \
 	src/PatchMap.h \
 	src/HomePatchList.h \
 	src/ResizeArrayIter.h \
@@ -5491,6 +5607,7 @@ obj/MoleculeQM.o: \
 	src/Box.h \
 	src/UniqueSortedArray.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/PatchMap.h \
 	src/HomePatchList.h \
 	src/ResizeArrayIter.h \
@@ -5775,6 +5892,7 @@ obj/Node.o: \
 	src/SortedArray.h \
 	src/SortableResizeArray.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/PatchMap.h \
 	src/HomePatchList.h \
 	src/ResizeArrayIter.h \
@@ -6010,6 +6128,7 @@ obj/Patch.o: \
 	src/Lattice.h \
 	src/Tensor.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/PatchMap.h \
 	src/HomePatchList.h \
 	src/ResizeArrayIter.h \
@@ -6065,6 +6184,7 @@ obj/PatchMgr.o: \
 	src/Lattice.h \
 	src/Tensor.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/PatchMap.h \
 	src/HomePatchList.h \
 	src/ResizeArrayIter.h \
@@ -6139,6 +6259,7 @@ obj/PatchMap.o: \
 	src/Lattice.h \
 	src/Tensor.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/PatchMap.h \
 	src/HomePatchList.h \
 	src/ResizeArrayIter.h \
@@ -6208,6 +6329,7 @@ obj/PmeKSpace.o: \
 	src/SortedArray.h \
 	src/SortableResizeArray.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/PatchMap.h \
 	src/HomePatchList.h \
 	src/ResizeArrayIter.h \
@@ -6321,6 +6443,7 @@ obj/ProxyMgr.o: \
 	src/OwnerBox.h \
 	src/Box.h \
 	src/UniqueSortedArray.h \
+	src/AVXTiles.h \
 	src/ComputeMap.h \
 	src/HomePatch.h \
 	src/MigrateAtomsMsg.h \
@@ -6389,6 +6512,7 @@ obj/ProxyPatch.o: \
 	src/SortedArray.h \
 	src/SortableResizeArray.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	inc/ProxyMgr.decl.h \
 	src/ProxyMgr.h \
 	src/UniqueSet.h \
@@ -6401,6 +6525,12 @@ obj/ProxyPatch.o: \
 	src/HomePatchList.h \
 	src/ResizeArrayIter.h \
 	src/Priorities.h \
+	src/Node.h \
+	inc/Node.decl.h \
+	src/SimParameters.h \
+	src/MGridforceParams.h \
+	src/strlib.h \
+	src/MStream.h \
 	src/Debug.h
 	$(CXX) $(CXXFLAGS) $(COPTO)obj/ProxyPatch.o $(COPTC) src/ProxyPatch.C
 obj/Rebalancer.o: \
@@ -6466,6 +6596,7 @@ obj/RecBisection.o: \
 	src/Box.h \
 	src/UniqueSortedArray.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/PatchMgr.h \
 	src/HomePatch.h \
 	src/MigrateAtomsMsg.h \
@@ -6616,6 +6747,7 @@ obj/ScriptTcl.o: \
 	src/Box.h \
 	src/UniqueSortedArray.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/PatchMap.h \
 	src/HomePatchList.h \
 	src/ResizeArrayIter.h \
@@ -6681,6 +6813,7 @@ obj/Sequencer.o: \
 	src/UniqueSortedArray.h \
 	src/SortedArray.h \
 	src/SortableResizeArray.h \
+	src/AVXTiles.h \
 	src/PatchMap.h \
 	src/HomePatchList.h \
 	src/ResizeArrayIter.h \
@@ -6811,6 +6944,7 @@ obj/SimParameters.o: \
 	src/Patch.h \
 	src/UniqueSortedArray.h \
 	src/SortedArray.h \
+	src/AVXTiles.h \
 	src/PatchMap.h \
 	src/HomePatchList.h \
 	src/ResizeArrayIter.h \
@@ -6868,6 +7002,7 @@ obj/Sync.o: \
 	src/Lattice.h \
 	src/Tensor.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/PatchMap.h \
 	src/HomePatchList.h \
 	src/ResizeArrayIter.h \
@@ -6986,6 +7121,7 @@ obj/WorkDistrib.o: \
 	src/Box.h \
 	src/UniqueSortedArray.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/PatchMap.h \
 	src/HomePatchList.h \
 	src/ResizeArrayIter.h \
@@ -7137,6 +7273,7 @@ obj/DataExchanger.o: \
 	src/Box.h \
 	src/UniqueSortedArray.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/MigrateAtomsMsg.h \
 	src/Migration.h \
 	src/InfoStream.h \
@@ -7222,6 +7359,7 @@ obj/ParallelIOMgr.o: \
 	src/Box.h \
 	src/UniqueSortedArray.h \
 	src/PatchTypes.h \
+	src/AVXTiles.h \
 	src/MigrateAtomsMsg.h \
 	src/Migration.h \
 	inc/PatchMgr.decl.h \

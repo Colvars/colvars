@@ -90,6 +90,11 @@ extern "C" {
 extern __thread DeviceCUDA *deviceCUDA;
 #endif
 
+#ifdef NAMD_AVXTILES
+// For "+notiles" commandline option to disable "Tiles" algorithm (BackEnd.C)
+extern int avxTilesCommandLineDisable;
+#endif
+
 //#define DEBUGM
 #include "Debug.h"
 
@@ -994,6 +999,9 @@ void SimParameters::config_parser_fullelect(ParseOptions &opts) {
    opts.optional("FFTWUseWisdom", "FFTWWisdomFile", "File for FFTW wisdom",
 	FFTWWisdomFile);
 
+   opts.optionalB("main", "useAVXTiles",
+		  "Use \"Tiles\" mode for AVX-512 optimized calculations",
+		  &useAVXTiles, TRUE);
 }
 
 void SimParameters::config_parser_methods(ParseOptions &opts) {
@@ -4426,6 +4434,21 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
       }
     }
 #endif
+
+#ifdef NAMD_AVXTILES
+    if (avxTilesCommandLineDisable) useAVXTiles = FALSE;
+    if (useAVXTiles) {
+      if (alchOn || lesOn || tabulatedEnergies || drudeOn || goForcesOn ||
+	  pressureProfileOn || qmForcesOn) {
+	useAVXTiles = FALSE;
+	iout << iWARN << "Disabling AVX tiles optimizations due to "
+	     << "incompatible simulation params.\n";
+      }
+    }
+#else
+    useAVXTiles = FALSE;
+#endif
+    
 } // check_config()
 
 
@@ -6458,6 +6481,12 @@ if ( openatomOn )
      iout << iINFO << "BINARY COORDINATES     "
               << current->data << "\n";
    }
+
+#ifdef NAMD_AVXTILES
+   iout << iINFO << "MIXED PRECISION AVX-512 TILES OPTIMIZATIONS: ";
+   if (useAVXTiles) iout << "ENABLED\n";
+   else iout << "DISABLED\n";
+#endif
 
 #ifdef MEM_OPT_VERSION
    if (opts.defined("binrefcoords"))
