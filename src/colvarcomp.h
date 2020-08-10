@@ -348,6 +348,9 @@ protected:
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   std::array<cudaEvent_t, static_cast<int>(event_type::num_event_types)> events = {};
 #endif
+
+  /// Frequency at which the list of contributing atoms will be updated
+  size_t atom_list_freq = 0;
 };
 
 
