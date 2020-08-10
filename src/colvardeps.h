@@ -386,6 +386,8 @@ public:
     /// With PBCs, minimum-image convention will be used for distances
     /// (does not affect the periodicity of CVC values, e.g. angles)
     f_cvc_pbc_minimum_image,
+    /// The list of atoms contributing being processed may be updated
+    f_cvc_dynamic_atom_list,
     /// This CVC is a function of centers of mass
     f_cvc_com_based,
     /// This CVC can be computed in parallel

@@ -300,6 +300,9 @@ protected:
 
   /// \brief CVC-specific default colvar width (default: not provided)
   cvm::real width = 0.0;
+
+  /// Frequency at which the list of contributing atoms will be updated
+  size_t atom_list_freq = 0;
 };
 
 
