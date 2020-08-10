@@ -17,9 +17,9 @@
 colvar::map_total::map_total()
 {
   set_function_type("mapTotal");
+  provide(f_cvc_dynamic_atom_list);
   x.type(colvarvalue::type_scalar);
 }
-
 
 
 int colvar::map_total::init(std::string const &conf)
@@ -47,6 +47,11 @@ int colvar::map_total::init(std::string const &conf)
     }
     if (volmap_id >= 0) {
       error_code |= proxy->check_volmap_by_id(volmap_id);
+    }
+
+    get_keyval(conf, "atomListFrequency", atom_list_freq, atom_list_freq);
+    if (atom_list_freq > 0) {
+      enable(f_cvc_dynamic_atom_list);
     }
 
   } else {
@@ -87,9 +92,17 @@ int colvar::map_total::init(std::string const &conf)
 
 void colvar::map_total::calc_value()
 {
+
   colvarproxy *proxy = cvm::main()->proxy;
   int flags = is_enabled(f_cvc_gradient) ? colvarproxy::volmap_flag_gradients :
     colvarproxy::volmap_flag_null;
+
+  if (atom_list_freq > 0) {
+    flags |= colvarproxy::volmap_flag_use_atomlist;
+    if (cvm::step_relative() % atom_list_freq == 0) {
+      flags |= colvarproxy::volmap_flag_rebuild_atomlist;
+    }
+  }
 
   if (atoms) {
     // Compute the map inside Colvars

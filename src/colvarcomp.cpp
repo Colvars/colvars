@@ -274,6 +274,8 @@ int colvar::cvc::init_dependencies() {
     init_feature(f_cvc_one_site_total_force, "total_force_from_one_group", f_type_user);
     require_feature_self(f_cvc_one_site_total_force, f_cvc_com_based);
 
+    init_feature(f_cvc_dynamic_atom_list, "dynamic_atom_list", f_type_dynamic);
+
     init_feature(f_cvc_com_based, "function_of_centers_of_mass", f_type_static);
 
     init_feature(f_cvc_pbc_minimum_image, "use_minimum-image_with_PBCs", f_type_user);
@@ -332,6 +334,9 @@ int colvar::cvc::init_dependencies() {
 
   // Features that are implemented by default if their requirements are
   feature_states[f_cvc_one_site_total_force].available = true;
+
+  // By default the list of atoms contributing to the CVC is fixed
+  feature_states[f_cvc_dynamic_atom_list].available = false;
 
   // Features That are implemented only for certain simulation engine configurations
   feature_states[f_cvc_scalable_com].available = (cvm::proxy->scalable_group_coms() == COLVARS_OK);
