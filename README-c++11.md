@@ -14,12 +14,12 @@ Currently the following variable types are only available when the code is built
 
 Starting from 2019-06-02 `customFunction` also requires C++11, due to improvements in the Lepton library available from [the OpenMM repository](https://github.com/openmm/openmm).
 
-### Status of C++ support in MD engines (as of 2019-10-17)
+### Status of C++ support in MD engines (as of 2020-08-26)
 
-- _GROMACS_ already follows the C++11 standard in full.
+- *GROMACS* currently follows the C++11 standard (later versions will require C++17).
 
-- _LAMMPS_ is built by default with C++11, including most of the [precompiled builds](https://lammps.sandia.gov/download.html).  Version 3Mar2020 is the last version where C++11 can be (optionally) disabled: all later versions require C++11.  It is generally recommended to use the [CMake build recipe](https://lammps.sandia.gov/doc/Build_cmake.html).  Build recipes based on traditional `make` in `src/MAKE/MACHINES` may require manual edits.
+- *LAMMPS* is built by default with C++11, including most of the [precompiled builds](https://lammps.sandia.gov/download.html).  For versions after 3Mar2020, C++11 or later is a strict requirement.
 
-- _NAMD_ [precompiled builds](http://www.ks.uiuc.edu/Development/Download/download.cgi?PackageName=NAMD) will soon follow the C++11 standard but do not yet at the moment.  Build recipes for the Intel, Cray and IBM compilers in the `arch` folder are already set to require C++11.  Recipes based on `g++` should be adapted by replacing `-std=c++0x` with `-std=c++11`, to ensure that the `g++` version being used supports all needed features (in older GNU compilers, `0x` and `11` are not the same).
+- *NAMD* [precompiled builds](http://www.ks.uiuc.edu/Development/Download/download.cgi?PackageName=NAMD) and most of the build recipes contained in the `arch` folder follow the C++11 standard.
 
-- _VMD_ currently does not provide build recipes with C++11 support.  Enabling C++11-dependent features will most likely require a custom build with manual edits to the `configure` script.
+- *VMD* currently does not provide precompiled builds or build recipes with C++11 support.  Enabling C++11-dependent features requires a custom build with a modified the `configure` script.  [This repository](https://github.com/giacomofiorin/vmd-patches) contains, among others, an example patch for making such changes.
