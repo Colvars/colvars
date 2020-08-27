@@ -841,8 +841,18 @@ int colvarproxy_namd::init_atom(cvm::residue_id const &residue,
 
 int colvarproxy_namd::clear_atom(int index)
 {
-  return colvarproxy::clear_atom(index);
-  // TODO remove it from GlobalMaster arrays?
+  int error_code = colvarproxy::clear_atom(index);
+  if (error_code == COLVARS_OK) {
+    if (atoms_refcount[index] == 0) {
+      // Clear this atom entry from the requested atoms
+      int aid = atoms_ids[index];
+      int const aid_index_in_gm = modifyRequestedAtoms().find(aid);
+      if (aid_index_in_gm >= 0) {
+        modifyRequestedAtoms().del(aid_index_in_gm, 1);
+      }
+    }
+  }
+  return error_code;
 }
 
 
