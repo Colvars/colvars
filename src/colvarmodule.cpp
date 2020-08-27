@@ -1085,6 +1085,11 @@ int colvarmodule::calc_colvars()
     this->decrease_depth();
   }
 
+  // Update requested atoms for variables that support it (no-op otherwise)
+  for (cvi = variables()->begin(); cvi != variables()->end(); cvi++) {
+    error_code |= (*cvi)->update_requested_atoms();
+  }
+
   error_code |= this->get_error();
   return error_code;
 }
