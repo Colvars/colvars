@@ -26,6 +26,7 @@ colvarproxy_atoms::colvarproxy_atoms()
   atoms_max_applied_force_id_ = -1;
   modified_atom_list_ = false;
   updated_masses_ = updated_charges_ = false;
+  atom_list_freq_ = 0;
 }
 
 
@@ -123,6 +124,33 @@ size_t colvarproxy_atoms::get_num_active_atoms() const
     if (atoms_refcount[i] > 0) result++;
   }
   return result;
+}
+
+
+int colvarproxy_atoms::set_atom_list_frequency(int atom_list_freq)
+{
+  int const proxy_freq = atom_list_frequency();
+  if (proxy_freq > 0) {
+    std::string const error_msg("a frequency of " + cvm::to_str(atom_list_freq) +
+                                " steps was provided for atom list update; it should be a multiple of "
+                                "the frequency currently set in the interface (currently, " +
+                                cvm::to_str(proxy_freq) + " steps).\n");
+    if (atom_list_freq < proxy_freq) {
+      // Use the shortest number of steps among all variables
+      if ((proxy_freq % atom_list_freq) != 0) {
+        return cvm::error_static(error_msg, COLVARS_INPUT_ERROR);
+      } else {
+        atom_list_frequency() = atom_list_freq;
+      }
+    } else {
+      if ((atom_list_freq % proxy_freq) != 0) {
+        return cvm::error_static(error_msg, COLVARS_INPUT_ERROR);
+      }
+    }
+  } else {
+    atom_list_frequency() = atom_list_freq;
+  }
+  return COLVARS_OK;
 }
 
 
