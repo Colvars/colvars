@@ -61,11 +61,6 @@ int colvar::map_total::init(std::string const &conf)
           COLVARS_INPUT_ERROR);
     }
 
-    get_keyval(conf, "atomListFrequency", atom_list_freq, atom_list_freq);
-    if (atom_list_freq > 0) {
-      enable(f_cvc_dynamic_atom_list);
-    }
-
   } else {
 
     // Using selection from the MD engine

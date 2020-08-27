@@ -333,6 +333,9 @@ public:
   /// \brief Calculate the quantities associated to the colvar (but not to the CVCs)
   int calc_colvar_properties();
 
+  /// If the variable doesn't need all atoms at every step, update their list
+  int update_requested_atoms();
+
   /// Get the current applied force
   inline colvarvalue const applied_force() const
   {
