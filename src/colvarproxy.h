@@ -73,9 +73,8 @@ public:
                             std::string const     &atom_name,
                             std::string const     &segment_id);
 
-  /// \brief Used by the atom class destructor: rather than deleting the array slot
-  /// (costly) set the corresponding atoms_refcount to zero
-  virtual void clear_atom(int index);
+  /// Used by the atom class destructor: set atoms_refcount entry to zero
+  virtual int clear_atom(int index);
 
   /// Clear atomic data
   int reset();
