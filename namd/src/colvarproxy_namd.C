@@ -202,6 +202,10 @@ int colvarproxy_namd::update_atoms_map(AtomIDList::const_iterator begin,
     init_atoms_map();
   }
 
+  if (cvm::debug()) {
+    cvm::log("Updating atoms_map for "+cvm::to_str(begin - end)+" atoms.\n");
+  }
+
   for (AtomIDList::const_iterator a_i = begin; a_i != end; a_i++) {
 
     if (atoms_map[*a_i] >= 0) continue;
@@ -215,7 +219,7 @@ int colvarproxy_namd::update_atoms_map(AtomIDList::const_iterator begin,
 
     if (atoms_map[*a_i] < 0) {
       // this atom is probably managed by another GlobalMaster:
-      // add it here anyway to avoid having to test for array boundaries at each step
+      // add it here anyway so that Colvars can ensure it is requested
       int const index = add_atom_slot(*a_i);
       atoms_map[*a_i] = index;
       modifyRequestedAtoms().add(*a_i);
@@ -615,12 +619,47 @@ void colvarproxy_namd::calculate()
   #endif
   #endif
 
+  if (atom_list_frequency() > 0) {
+    if (((cvm::step_relative()+1) % atom_list_frequency()) == 0) {
+      // Before all-atom evaluation
+      update_requested_atoms();
+    }
+    if ((cvm::step_relative() % atom_list_frequency()) == 0) {
+      // After all-atom computation
+      update_requested_atoms();
+    }
+  }
+
   // NAMD does not destruct GlobalMaster objects, so we must remember
   // to write all output files at the end of a run
   if (step == simparams->N) {
     post_run();
   }
 }
+
+
+int colvarproxy_namd::update_requested_atoms()
+{
+  int error_code = COLVARS_OK;
+  if (cvm::debug()) {
+    cvm::log("Updating list of requested atoms from NAMD.\n");
+    cvm::log("Before: "+cvm::to_str(modifyRequestedAtoms().size())+
+             " elements.\n");
+  }
+  modifyRequestedAtoms().clear();
+  for (size_t i = 0; i < atoms_ids.size(); i++) {
+    if (atoms_refcount[i] > 0) {
+      modifyRequestedAtoms().add(atoms_ids[i]);
+    }
+  }
+  if (cvm::debug()) {
+    cvm::log("After: "+cvm::to_str(modifyRequestedAtoms().size())+
+             " elements.\n");
+  }
+
+  return COLVARS_OK;
+}
+
 
 void colvarproxy_namd::update_accelMD_info() {
   // This aMD factor is from previous step!
@@ -1471,6 +1510,7 @@ void colvarproxy_namd::GridForceGridLoop(T const *g,
       // out-of-bounds atom
       if (flags & volmap_flag_rebuild_atomlist) {
         inside[i] = 0;
+        decrease_refcount(ai->array_index());
       }
       V = 0.0f;
       dV = 0.0;

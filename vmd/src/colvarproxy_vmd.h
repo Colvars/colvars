@@ -119,8 +119,10 @@ public:
                              cvm::atom_iter atom_begin,
                              cvm::atom_iter atom_end,
                              cvm::real *value,
-                             cvm::real *atom_field);
+                             cvm::real *atom_field,
+                             int *inside);
 
+  /// Implements loops (does not support yet atom lists)
   template<int flags>
   void compute_voldata(VolumetricData const *voldata,
                        cvm::atom_iter atom_begin,

@@ -87,11 +87,15 @@ public:
   /// Allocate an atoms map with the same size as the NAMD topology
   void init_atoms_map();
 
-  // synchronize the local arrays with requested or forced atoms
+  /// Rebuild the list of requested atoms based on Colvars-internal refcounts
+  int update_requested_atoms();
+
+  /// Synchronize the local arrays with requested or forced atoms
   int update_atoms_map(AtomIDList::const_iterator begin,
                        AtomIDList::const_iterator end);
 
-  void calculate();
+  /// Overrides GlobalMaster::calculate()
+  void calculate() override;
 
   void log(std::string const &message) override;
   void error(std::string const &message) override;
