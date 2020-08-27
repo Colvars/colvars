@@ -61,9 +61,8 @@ public:
   /// Check whether it is possible to select atoms by residue number name
   virtual int check_atom_name_selections_available();
 
-  /// Select this atom for collective variables calculation, using name and
-  /// residue number.  Not all programs support this: leave this function as
-  /// is in those cases.
+  /// Prepare this atom using name and residue number (not all engines support
+  /// it, and this function does not necessarily need reimplementation.
   virtual int init_atom(cvm::residue_id const &residue,
                         std::string const     &atom_name,
                         std::string const     &segment_id);
