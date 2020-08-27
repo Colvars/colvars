@@ -566,11 +566,14 @@ void colvarproxy_namd::calculate()
     print_output_atomic_data();
   }
 
-  // communicate all forces to the MD integrator
+  // communicate all forces to NAMD
   for (size_t i = 0; i < atoms_ids.size(); i++) {
-    cvm::rvector const &f = atoms_new_colvar_forces[i];
-    modifyForcedAtoms().add(atoms_ids[i]);
-    modifyAppliedForces().add(Vector(f.x, f.y, f.z));
+    if (atoms_refcount[i] > 0) {
+      // Add a force only if the atom is currently used
+      cvm::rvector const &f = atoms_new_colvar_forces[i];
+      modifyForcedAtoms().add(atoms_ids[i]);
+      modifyAppliedForces().add(Vector(f.x, f.y, f.z));
+    }
   }
 
   if (atom_groups_new_colvar_forces.size() > 0) {
