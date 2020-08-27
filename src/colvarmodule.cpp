@@ -1419,6 +1419,11 @@ int colvarmodule::end_of_step()
     this->log("colvarmodule::end_of_step(), step = "+this->to_str(it)+".\n");
   }
 
+  // Update requested atoms for variables that support it (no-op otherwise)
+  for (auto cvi = variables()->begin(); cvi != variables()->end(); cvi++) {
+    (*cvi)->update_requested_atoms();
+  }
+
   for (std::vector<colvar *>::iterator cvi = variables_active()->begin();
        cvi != variables_active()->end();
        cvi++) {
