@@ -243,6 +243,15 @@ public:
     }
   }
 
+  /// Set frequency at which the list of contributing atoms will be updated
+  virtual int set_atom_list_frequency(int new_frequency);
+
+  /// If needed, update the requested list of atoms from this group
+  virtual int update_requested_atoms(cvm::atom_group *dyn_atoms);
+
+  /// If needed, update the requested list of atoms from all groups
+  virtual int update_all_requested_atoms();
+
 protected:
 
   /// Set the value of \link function_type \endlink and its dependencies
@@ -302,7 +311,7 @@ protected:
   cvm::real width = 0.0;
 
   /// Frequency at which the list of contributing atoms will be updated
-  size_t atom_list_freq = 0;
+  int atom_list_freq = 0;
 };
 
 
