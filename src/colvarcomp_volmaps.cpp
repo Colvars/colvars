@@ -49,11 +49,6 @@ int colvar::map_total::init(std::string const &conf)
       error_code |= proxy->check_volmap_by_id(volmap_id);
     }
 
-    get_keyval(conf, "atomListFrequency", atom_list_freq, atom_list_freq);
-    if (atom_list_freq > 0) {
-      enable(f_cvc_dynamic_atom_list);
-    }
-
   } else {
 
     // Using selection from the MD engine
@@ -118,6 +113,7 @@ void colvar::map_total::calc_value()
       w = atom_weights.data();
     }
 
+    // Note: this function also updates the list of requested atoms
     proxy->compute_volmap(flags, volmap_id, atoms->begin(), atoms->end(), &(x.real_value), w,
                           atoms_inside.data());
 

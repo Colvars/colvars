@@ -1739,6 +1739,17 @@ int colvar::collect_cvc_Jacobians()
 }
 
 
+int colvar::update_requested_atoms()
+{
+  int error_code = COLVARS_OK;
+  size_t i, cvc_count;
+  for (size_t i = 0; i < cvcs.size(); i++) {
+    error_code |= (cvcs[i])->update_all_requested_atoms();
+  }
+  return error_code;
+}
+
+
 int colvar::calc_colvar_properties()
 {
   if (is_enabled(f_cv_fdiff_velocity)) {

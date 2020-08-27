@@ -124,13 +124,73 @@ int colvar::cvc::init(std::string const &conf)
     enable(f_cvc_pbc_minimum_image);
   }
 
-  // Attempt scalable calculations when in parallel? (By default yes, if available)
-  get_keyval(conf, "scalable", b_try_scalable, b_try_scalable);
+  if (is_available(f_cvc_scalable)) {
+    // Attempt scalable calculations when in parallel? (By default yes)
+    get_keyval(conf, "scalable", b_try_scalable, b_try_scalable);
+  }
+
+  if (is_available(f_cvc_dynamic_atom_list)) {
+    get_keyval(conf, "atomListFrequency", atom_list_freq, atom_list_freq);
+    if (atom_list_freq > 0) {
+      enable(f_cvc_dynamic_atom_list);
+      // Set the parameter and enable its dependencies
+      error_code |= set_atom_list_frequency(atom_list_freq);
+    }
+  }
 
   if (cvm::debug())
     cvm::log("Done initializing cvc base object.\n");
 
   return error_code;
+}
+
+
+int colvar::cvc::set_atom_list_frequency(int new_frequency)
+{
+  atom_list_freq = new_frequency;
+  return cvm::main()->proxy->set_atom_list_frequency(atom_list_freq);
+}
+
+
+int colvar::cvc::update_requested_atoms(cvm::atom_group *dyn_atoms)
+{
+  int error_code = COLVARS_OK;
+  colvarproxy *proxy = cvm::main()->proxy;
+
+  if (atom_list_freq > 0) {
+
+    // Reenable all atoms for the next step
+    if (((cvm::step_absolute()+1) % atom_list_freq) == 0) {
+      for (cvm::atom_iter ai = dyn_atoms->begin();
+           ai != dyn_atoms->end(); ai++) {
+        proxy->increase_refcount(ai->array_index());
+      }
+    }
+
+    if (!is_enabled(f_cvc_dynamic_atom_list)) {
+      // If the CVC is not enabling/disabling atoms on its own, then disable
+      // them all for the next step
+      if (((cvm::step_absolute()) % atom_list_freq) == 0) {
+        for (cvm::atom_iter ai = dyn_atoms->begin();
+             ai != dyn_atoms->end(); ai++) {
+          proxy->decrease_refcount(ai->array_index());
+        }
+      }
+    }
+  }
+
+  return error_code;
+}
+
+
+int colvar::cvc::update_all_requested_atoms()
+{
+  int error_code = COLVARS_OK;
+  for (std::vector<cvm::atom_group *>::iterator agi = atom_groups.begin();
+       agi != atom_groups.end(); agi++) {
+    error_code |= update_requested_atoms(*agi);
+  }
+  return COLVARS_OK;
 }
 
 
