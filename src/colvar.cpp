@@ -74,12 +74,11 @@ int colvar::init(std::string const &conf)
   get_keyval(conf, "name", this->name,
              (std::string("colvar")+cvm::to_str(cvmodule->variables()->size())));
 
-  if ((cvmodule->colvar_by_name(this->name) != NULL) &&
+  if ((cvmodule->colvar_by_name(this->name) != nullptr) &&
       (cvmodule->colvar_by_name(this->name) != this)) {
-    cvmodule->error("Error: this colvar cannot have the same name, \""+this->name+
-                      "\", as another colvar.\n",
-               COLVARS_INPUT_ERROR);
-    return COLVARS_INPUT_ERROR;
+    error_code |= cvmodule->error("Error: this colvar cannot have the same name, \"" + this->name +
+                                      "\", as another colvar.\n",
+                                  COLVARS_INPUT_ERROR);
   }
 
   // Initialize dependency members
@@ -1877,6 +1876,16 @@ int colvar::collect_cvc_Jacobians()
     fj *= proxy->boltzmann() * proxy->target_temperature();
   }
 
+  return error_code;
+}
+
+
+int colvar::update_requested_atoms()
+{
+  int error_code = COLVARS_OK;
+  for (size_t i = 0; i < cvcs.size(); i++) {
+    error_code |= (cvcs[i])->update_all_requested_atoms();
+  }
   return error_code;
 }
 
