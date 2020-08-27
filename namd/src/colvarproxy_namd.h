@@ -193,7 +193,7 @@ public:
   int check_atom_id(cvm::residue_id const &residue,
                     std::string const     &atom_name,
                     std::string const     &segment_id) override;
-  void clear_atom(int index) override;
+  int clear_atom(int index) override;
 
   void update_atom_properties(int index);
 

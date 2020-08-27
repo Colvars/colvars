@@ -99,15 +99,20 @@ int colvarproxy_atoms::check_atom_id(cvm::residue_id const &residue,
 }
 
 
-void colvarproxy_atoms::clear_atom(int index)
+int colvarproxy_atoms::clear_atom(int index)
 {
-  if (((size_t) index) >= atoms_ids.size()) {
-    cvm::error("Error: trying to disable an atom that was not previously requested.\n",
-               COLVARS_INPUT_ERROR);
+  if (static_cast<size_t>(index) >= atoms_ids.size()) {
+    return cvm::error("Error: trying to unrequest an atom that was not "
+                      "previously requested.\n", COLVARS_BUG_ERROR);
+  }
+  if (index < 0) {
+    return cvm::error("Error: invalid argument to clear_atom().\n",
+                      COLVARS_BUG_ERROR);
   }
   if (atoms_refcount[index] > 0) {
     atoms_refcount[index] -= 1;
   }
+  return COLVARS_OK;
 }
 
 

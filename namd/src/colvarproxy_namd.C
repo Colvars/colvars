@@ -836,9 +836,9 @@ int colvarproxy_namd::init_atom(cvm::residue_id const &residue,
 }
 
 
-void colvarproxy_namd::clear_atom(int index)
+int colvarproxy_namd::clear_atom(int index)
 {
-  colvarproxy::clear_atom(index);
+  return colvarproxy::clear_atom(index);
   // TODO remove it from GlobalMaster arrays?
 }
 
