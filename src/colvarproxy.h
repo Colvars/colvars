@@ -100,6 +100,15 @@ public:
     atoms_refcount[index] += 1;
   }
 
+  /// Decrease the reference count of the given atom
+  /// \param index Internal index in the Colvars arrays
+  inline void decrease_refcount(int index)
+  {
+    if (atoms_refcount[index] > 0) {
+      atoms_refcount[index] -= 1;
+    }
+  }
+
   /// Get the charge of the given atom
   /// \param index Internal index in the Colvars arrays
   inline cvm::real get_atom_charge(int index) const
@@ -248,12 +257,17 @@ public:
     return updated_charges_;
   }
 
+  /// Request/unrequest atoms at this frequency
+  inline int & atom_list_frequency()
+  {
+    return atom_list_freq_;
+  }
+
 protected:
 
-  /// \brief Array of 0-based integers used to uniquely associate atoms
-  /// within the host program
+  /// Array of integers used to identify atoms in the engine
   std::vector<int>          atoms_ids;
-  /// \brief Keep track of how many times each atom is used by a separate colvar object
+  /// Keep track of how many times each atom is used by a separate colvar object
   std::vector<size_t>       atoms_refcount;
   /// \brief Masses of the atoms (allow redefinition during a run, as done e.g. in LAMMPS)
   std::vector<cvm::real>    atoms_masses;
@@ -280,6 +294,9 @@ protected:
 
   /// Whether the masses and charges have been updated from the host code
   bool updated_masses_, updated_charges_;
+
+  /// Request/unrequest atoms at this frequency
+  int atom_list_freq_;
 
   /// Used by all init_atom() functions: create a slot for an atom not
   /// requested yet; returns the index in the arrays
