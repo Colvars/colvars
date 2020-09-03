@@ -140,6 +140,21 @@ CVSCRIPT(colvar_gettotalforce,
          return COLVARS_OK;
          )
 
+CVSCRIPT(colvar_getvolmapids,
+         "Return the list of volumetric map indices used by this colvar",
+         0, 0,
+         "",
+         std::string result;
+         std::vector<int> const &ids = this_colvar->get_volmap_ids();
+         for (std::vector<int>::const_iterator li = ids.begin();
+              li != ids.end(); ++li) {
+           result += cvm::to_str(*li);
+           result += " ";
+         }
+         script->set_result_str(result);
+         return COLVARS_OK;
+         )
+
 CVSCRIPT(colvar_help,
          "Get a help summary or the help string of one colvar subcommand",
          0, 1,

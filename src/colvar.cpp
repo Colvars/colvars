@@ -1196,6 +1196,21 @@ std::vector<std::vector<int> > colvar::get_atom_lists()
 }
 
 
+std::vector<int> const &colvar::get_volmap_ids()
+{
+  volmap_ids_.resize(cvcs.size());
+  for (size_t i = 0; i < cvcs.size(); i++) {
+    if (cvcs[i]->param_exists("mapID") == COLVARS_OK) {
+      volmap_ids_[i] =
+        *(reinterpret_cast<int const *>(cvcs[i]->get_param_ptr("mapID")));
+    } else {
+      volmap_ids_[i] = -1;
+    }
+  }
+  return volmap_ids_;
+}
+
+
 colvar::~colvar()
 {
   // There is no need to call free_children_deps() here
