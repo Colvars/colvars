@@ -2,6 +2,8 @@
 # Main UI: the dashboard
 #################################################################
 
+# -*- tcl-indent-level: 2; -*-
+
 
 # Create main window
 proc ::cv_dashboard::createWindow {} {
@@ -78,6 +80,39 @@ proc ::cv_dashboard::createWindow {} {
   grid [ttk::button $w.show_atoms -text "Show atoms" -command {::cv_dashboard::show_atoms_selected} -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $w.hide_atoms -text "Hide atoms" -command {::cv_dashboard::hide_atoms_selected} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $w.hide_all_atoms -text "Hide all atoms" -command {::cv_dashboard::hide_all_atoms} -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+
+  incr gridrow
+  grid [ttk::separator $w.sep0 -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
+
+  # Volumetric map display
+  incr gridrow
+  grid [ttk::button $w.show_volmaps -text "Show volmaps" -command {::cv_dashboard::show_volmaps_selected} -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $w.hide_volmaps -text "Hide volmaps" -command {::cv_dashboard::hide_volmaps_selected} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $w.hide_all_volmaps -text "Hide all volmaps" -command {::cv_dashboard::hide_all_volmaps} -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+
+  incr gridrow
+  grid [label $w.volmap_material_text -text "Volmap material:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  ttk::combobox $w.volmap_material -justify left -state readonly
+  $w.volmap_material configure -values [material list]
+  grid $w.volmap_material -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  $w.volmap_material set "Opaque"
+
+  incr gridrow
+  grid [label $w.volmap_contour_text -text "Contour level:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [tk::entry $w.volmap_contour -textvariable ::cv_dashboard::volmap_contour] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  set ::cv_dashboard::volmap_contour 0.5
+  grid [label $w.volmap_contour_unit -text "(% of min-max range)"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+
+  incr gridrow
+  grid [ttk::checkbutton $w.volmap_periodic_x -text "+/-X images" -variable ::cv_dashboard::volmap_periodic_x] \
+    -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::checkbutton $w.volmap_periodic_y -text "+/-Y images" -variable ::cv_dashboard::volmap_periodic_y] \
+    -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::checkbutton $w.volmap_periodic_z -text "+/-Z images" -variable ::cv_dashboard::volmap_periodic_z] \
+    -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+  set ::cv_dashboard::volmap_periodic_x 0
+  set ::cv_dashboard::volmap_periodic_y 0
+  set ::cv_dashboard::volmap_periodic_z 0
 
   incr gridrow
   grid [ttk::separator $w.sep1 -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
@@ -536,6 +571,89 @@ proc ::cv_dashboard::hide_all_atoms {} {
     }
   }
   array unset ::cv_dashboard::atom_rep *
+}
+
+
+#################################################################
+# Display volmaps
+#################################################################
+
+
+# Display atoms in groups for selected colvars
+proc ::cv_dashboard::show_volmaps_selected {} {
+  show_volmaps [selected_colvars]
+}
+
+
+# Display volmaps used by selected colvars
+proc ::cv_dashboard::show_volmaps { colvars } {
+  set w .cv_dashboard_window
+  set color 0
+  foreach cv $colvars {
+    if { [info exists ::cv_dashboard::volmap_rep($cv)]} {
+      hide_volmaps $cv
+    }
+    set cv_volmaps [run_cv colvar $cv getvolmapids]
+    set repnames {}
+    foreach volid $cv_volmaps {
+      if { $volid >= 0 } {
+        set threshold [expr $::cv_dashboard::volmap_contour * [vecsum \
+          [voltool info minmax -mol $::cv_dashboard::mol -vol ${volid}]]]
+        mol color ColorID $color
+        mol representation Isosurface ${threshold} ${volid} 2 0 0 1
+        mol material [$w.volmap_material get]
+        mol addrep $::cv_dashboard::mol
+        set repid [expr [molinfo $::cv_dashboard::mol get numreps] - 1]
+        set periodic_string ""
+        if { $::cv_dashboard::volmap_periodic_x } {
+          set periodic_string ${periodic_string}"xX"
+        }
+        if { $::cv_dashboard::volmap_periodic_y } {
+          set periodic_string ${periodic_string}"yY"
+        }
+        if { $::cv_dashboard::volmap_periodic_z } {
+          set periodic_string ${periodic_string}"zZ"
+        }
+        if { [string length ${periodic_string}] > 0 } {
+            mol showperiodic $::cv_dashboard::mol $repid ${periodic_string}
+        }
+        set repname [mol repname $::cv_dashboard::mol $repid]
+        lappend repnames $repname
+        incr color
+      }
+    }
+    set ::cv_dashboard::volmap_rep($cv) $repnames
+  }
+}
+
+
+# Hide volmaps for selected colvars
+proc ::cv_dashboard::hide_volmaps_selected {} {
+  hide_volmaps [selected_colvars]
+}
+
+
+# Hide volmaps for colvars given as parameters
+proc ::cv_dashboard::hide_volmaps { colvars } {
+  foreach cv $colvars {
+    if { [info exists ::cv_dashboard::volmap_rep($cv)] } {
+      foreach r $::cv_dashboard::volmap_rep($cv) {
+        mol delrep [mol repindex $::cv_dashboard::mol $r] $::cv_dashboard::mol
+      }
+      unset ::cv_dashboard::volmap_rep($cv)
+    }
+  }
+}
+
+
+# Remove all volmap representations
+proc ::cv_dashboard::hide_all_volmaps {} {
+  foreach { cv repnames } [array get ::cv_dashboard::volmap_rep] {
+    foreach r $repnames {
+      mol delrep [mol repindex $::cv_dashboard::mol $r] $::cv_dashboard::mol
+    }
+  }
+  array unset ::cv_dashboard::volmap_rep *
 }
 
 

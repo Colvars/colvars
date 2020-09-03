@@ -1,0 +1,6 @@
+    mapTotal {
+        mapID 0
+        atoms {
+            atomNumbers 1 2 3
+        }
+    }

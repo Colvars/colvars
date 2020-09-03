@@ -1,0 +1,18 @@
+# -*- tcl -*-
+
+mol new ../Common/da.psf type psf
+mol addfile ../Common/da.coor.pdb type pdb waitfor all
+mol addfile ../Common/da.density.dx type dx waitfor all
+
+package forget cv_dashboard
+source ../../../cv_dashboard/cv_dashboard.tcl
+cv_dashboard
+cv configfile test.in
+set variables { "numatoms" "numatoms_rot" }
+::cv_dashboard::refresh_table
+::cv_dashboard::show_atoms $variables
+::cv_dashboard::show_volmaps $variables
+::cv_dashboard::hide_atoms $variables
+::cv_dashboard::hide_volmaps $variables
+::cv_dashboard::show_volmaps $variables
+# A syntax error pops up now: why?
