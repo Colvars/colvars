@@ -658,6 +658,9 @@ protected:
   static std::map<std::string, std::function<colvar::cvc* (const std::string& subcv_conf)>> global_cvc_map;
 #endif
 
+  /// Volmap numeric IDs, one for each CVC (-1 if not available)
+  std::vector<int> volmap_ids_;
+
 public:
 
   /// \brief Sorted array of (zero-based) IDs for all atoms involved
@@ -670,6 +673,10 @@ public:
 
   /// \brief Get vector of vectors of atom IDs for all atom groups
   virtual std::vector<std::vector<int> > get_atom_lists();
+
+  /// Volmap numeric IDs, one for each CVC (-1 if not available)
+  std::vector<int> const &get_volmap_ids();
+
 };
 
 

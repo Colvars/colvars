@@ -44,6 +44,7 @@ int colvar::map_total::init(std::string const &conf)
   colvarproxy *proxy = cvm::main()->proxy;
   get_keyval(conf, "mapName", volmap_name, volmap_name);
   get_keyval(conf, "mapID", volmap_id, volmap_id);
+  register_param("mapID", reinterpret_cast<void *>(&volmap_id));
 
   if ((volmap_name.size() > 0) && (volmap_id >= 0)) {
     error_code |=
