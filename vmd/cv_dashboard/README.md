@@ -43,8 +43,11 @@ The Dashboard will then be listed in the Extension/Analysis menu.
 
 ### Running directly from the Colvars source tree without installing
 
-Type in the VMD console:
+Type in the VMD console the following commands:
 ```
+package forget cv_dashboard
 source <path/to/cv_dashboard.tcl>
 cv_dashboard
 ```
+The first line removes the current version of the Dashboard from VMD's memory, and may be needed to avoid conflicts (note that this only applies to the current session, because no files are changed).
+The second line then loads the new version of the Dashboard in the VMD session, and the third line opens the Dashboard window.
