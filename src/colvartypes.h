@@ -12,6 +12,7 @@
 
 #include <vector>
 
+#include "jacobi_pd.h"
 #include "colvarmodule.h"
 
 #ifndef PI
@@ -270,7 +271,7 @@ public:
                                             cvm::vector1d<T> &v)
   {
     if (v.size() == 0) return is;
-    std::streampos const start_pos = is.tellg();
+    size_t const start_pos = is.tellg();
     char sep;
     if ( !(is >> sep) || !(sep == '(') ) {
       is.clear();
@@ -1390,19 +1391,20 @@ public:
 
   /// Default constructor
   inline rotation()
-    : b_debug_gradients(false)
+    : b_debug_gradients(false), ecalc(4)
   {}
 
   /// Constructor after a quaternion
   inline rotation(cvm::quaternion const &qi)
     : q(qi),
-      b_debug_gradients(false)
+      b_debug_gradients(false),
+      ecalc(4)
   {
   }
 
   /// Constructor after an axis of rotation and an angle (in radians)
   inline rotation(cvm::real angle, cvm::rvector const &axis)
-    : b_debug_gradients(false)
+    : b_debug_gradients(false), ecalc(4)
   {
     cvm::rvector const axis_n = axis.unit();
     cvm::real const sina = cvm::sin(angle/2.0);
@@ -1538,9 +1540,9 @@ protected:
   void compute_overlap_matrix();
 
   /// Diagonalize a given matrix m (used by calc_optimal_rotation())
-  static void diagonalize_matrix(cvm::matrix2d<cvm::real> &m,
-                                 cvm::vector1d<cvm::real> &eigval,
-                                 cvm::matrix2d<cvm::real> &eigvec);
+  MathEigen::Jacobi<cvm::real,
+                    cvm::vector1d<cvm::real> &,
+                    cvm::matrix2d<cvm::real> &> ecalc;
 };
 
 
