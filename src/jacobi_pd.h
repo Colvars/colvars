@@ -6,8 +6,8 @@
 /// @note     A version of this code is included with LAMMPS ("math_eigen.h").
 /// @license  CC0-1.0  (public domain)
 
-#ifndef _MATH_EIGEN_H
-#define _MATH_EIGEN_H
+#ifndef _JACOBI_PD_H
+#define _JACOBI_PD_H
 
 #include <algorithm>
 #include <cmath>
@@ -619,5 +619,5 @@ operator = (Jacobi<Scalar, Vector, Matrix, ConstMatrix> source) {
 } // namespace MathEigen
 
 
-#endif //#ifndef _MATH_EIGEN_H
+#endif //#ifndef _JACOBI_PD_H
 
