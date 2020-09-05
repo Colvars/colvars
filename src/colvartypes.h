@@ -271,7 +271,7 @@ public:
                                             cvm::vector1d<T> &v)
   {
     if (v.size() == 0) return is;
-    std::streampos start_pos = is.tellg();
+    std::streampos const start_pos = is.tellg();
     char sep;
     if ( !(is >> sep) || !(sep == '(') ) {
       is.clear();
