@@ -482,13 +482,15 @@ Setting this to \emph{no} will use the current local coordinates that are wrappe
 \label{sec:colvars_mdengine_parameters}
 
 To enable a Colvars-based calculation, just specify one or more Colvars configuration files with the \texttt{-colvars} command-line parameter to \texttt{gmx mdrun}:\\
-\noindent\texttt{gmx mdrun -s test.tpr -colvars variables.colvars.dat biases.colvars.dat}
+\noindent\texttt{gmx mdrun -s test.tpr -deffnm md -colvars variables.colvars.dat biases.colvars.dat}\\
 
-Restarting from a previous simulation is done using the \texttt{-colvars\_restart} parameter:\\
-\noindent\texttt{gmx mdrun -s test\_restart.tpr -cpi state.cpt -colvars config.colvars.dat
- -colvars\_restart md.colvars.state.dat}
+\noindent{}Restarting from a previous simulation is done using the \texttt{-colvars\_restart} parameter:\\
+\noindent\texttt{gmx mdrun -s test\_restart.tpr -deffnm md -cpi state.cpt -colvars config.colvars.dat
+ -colvars\_restart md.colvars.state.dat}\\
 
-Note that the standard extension of restart files ``\texttt{.colvars.state}'' has to be changed manually to end with  ``\texttt{.dat}'' to satisfy Gromacs requirements on filenames.
+\noindent{}Note that the standard extension of all files have to be changed manually to end with  ``\texttt{.dat}'' to satisfy Gromacs requirements on filenames.
+
+\noindent{}For the output files, the prefix of colvars output files will be the same as the Gromacs log file. Otherwise, the prefix will be \emph{output}.
 }
 
 
