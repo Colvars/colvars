@@ -171,7 +171,7 @@ private:
 public:
   // memory management: copy and move constructor, swap, and assignment operator
   Jacobi(const Jacobi<Scalar, Vector, Matrix, ConstMatrix>& source);
-  Jacobi(Jacobi<Scalar, Vector, Matrix, ConstMatrix>&& other);
+  //C++11//Jacobi(Jacobi<Scalar, Vector, Matrix, ConstMatrix>&& other);
   void swap(Jacobi<Scalar, Vector, Matrix, ConstMatrix> &other);
   Jacobi<Scalar, Vector, Matrix, ConstMatrix>& operator = (Jacobi<Scalar, Vector, Matrix, ConstMatrix> source);
 
@@ -204,7 +204,7 @@ void Dealloc2D(Entry ***paaX)       // pointer to a 2D C-style array
   if (paaX && *paaX) {
     delete [] (*paaX)[0];
     delete [] (*paaX);
-    *paaX = nullptr;
+    *paaX = NULL;
   }
 }
 
@@ -537,8 +537,8 @@ template<typename Scalar,typename Vector,typename Matrix,typename ConstMatrix>
 void Jacobi<Scalar, Vector, Matrix, ConstMatrix>::
 Init() {
   n = 0;
-  M = nullptr;
-  max_idx_row = nullptr;
+  M = NULL;
+  max_idx_row = NULL;
 }
 
 template<typename Scalar,typename Vector,typename Matrix,typename ConstMatrix>
@@ -599,13 +599,13 @@ swap(Jacobi<Scalar, Vector, Matrix, ConstMatrix> &other) {
   std::swap(M, other.M);
 }
 
-// Move constructor (C++11)
-template<typename Scalar,typename Vector,typename Matrix,typename ConstMatrix>
-Jacobi<Scalar, Vector, Matrix, ConstMatrix>::
-Jacobi(Jacobi<Scalar, Vector, Matrix, ConstMatrix>&& other) {
-  Init();
-  this->swap(other);
-}
+//C++11//// Move constructor (C++11)
+//C++11//template<typename Scalar,typename Vector,typename Matrix,typename ConstMatrix>
+//C++11//Jacobi<Scalar, Vector, Matrix, ConstMatrix>::
+//C++11//Jacobi(Jacobi<Scalar, Vector, Matrix, ConstMatrix>&& other) {
+//C++11//  Init();
+//C++11//  this->swap(other);
+//C++11//}
 
 // Using the "copy-swap" idiom for the assignment operator
 template<typename Scalar,typename Vector,typename Matrix,typename ConstMatrix>
