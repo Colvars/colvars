@@ -299,6 +299,9 @@ void colvarmodule::rotation::calc_optimal_rotation(
     cvm::log("S     = "+cvm::to_str(S_backup, cvm::cv_width, cvm::cv_prec)+"\n");
   }
 
+  S_eigval.resize(4);
+  S_eigvec.resize(4, 4);
+
   int ierror = ecalc.Diagonalize(S, S_eigval, S_eigvec);
   if (ierror) {
     cvm::error("Too many iterations in routine jacobi.\n"
