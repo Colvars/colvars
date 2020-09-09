@@ -12,7 +12,6 @@
 
 #include <vector>
 
-#include "jacobi_pd.h"
 #include "colvarmodule.h"
 
 #ifndef PI
@@ -1390,31 +1389,16 @@ public:
                              std::vector<atom_pos> const &pos2);
 
   /// Default constructor
-  inline rotation()
-    : b_debug_gradients(false), ecalc(4)
-  {}
+  rotation();
 
   /// Constructor after a quaternion
-  inline rotation(cvm::quaternion const &qi)
-    : q(qi),
-      b_debug_gradients(false),
-      ecalc(4)
-  {
-  }
+  rotation(cvm::quaternion const &qi);
 
   /// Constructor after an axis of rotation and an angle (in radians)
-  inline rotation(cvm::real angle, cvm::rvector const &axis)
-    : b_debug_gradients(false), ecalc(4)
-  {
-    cvm::rvector const axis_n = axis.unit();
-    cvm::real const sina = cvm::sin(angle/2.0);
-    q = cvm::quaternion(cvm::cos(angle/2.0),
-                        sina * axis_n.x, sina * axis_n.y, sina * axis_n.z);
-  }
+  rotation(cvm::real angle, cvm::rvector const &axis);
 
   /// Destructor
-  inline ~rotation()
-  {}
+  ~rotation();
 
   /// Return the rotated vector
   inline cvm::rvector rotate(cvm::rvector const &v) const
@@ -1433,7 +1417,6 @@ public:
   {
     return q.rotation_matrix();
   }
-
 
   /// \brief Return the spin angle (in degrees) with respect to the
   /// provided axis (which MUST be normalized)
@@ -1539,10 +1522,8 @@ protected:
   /// Compute the overlap matrix S (used by calc_optimal_rotation())
   void compute_overlap_matrix();
 
-  /// Diagonalize a given matrix m (used by calc_optimal_rotation())
-  MathEigen::Jacobi<cvm::real,
-                    cvm::vector1d<cvm::real> &,
-                    cvm::matrix2d<cvm::real> &> ecalc;
+  /// Pointer to instance of Jacobi solver
+  void *jacobi;
 };
 
 
