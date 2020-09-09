@@ -235,6 +235,51 @@ cvm::quaternion::position_derivative_inner(cvm::rvector const &pos,
 // Seok C, Dill KA.  Using quaternions to calculate RMSD.  J Comput
 // Chem. 25(15):1849-57 (2004) DOI: 10.1002/jcc.20110 PubMed: 15376254
 
+
+namespace {
+  inline void *new_Jacobi_solver(int size) {
+    return reinterpret_cast<void *>(new MathEigen::Jacobi<cvm::real,
+                                    cvm::vector1d<cvm::real> &,
+                                    cvm::matrix2d<cvm::real> &>(4));
+  }
+}
+
+
+colvarmodule::rotation::rotation()
+{
+  b_debug_gradients = false;
+  jacobi = new_Jacobi_solver(4);
+}
+
+
+colvarmodule::rotation::rotation(cvm::quaternion const &qi)
+  : q(qi)
+{
+  b_debug_gradients = false;
+  jacobi = new_Jacobi_solver(4);
+}
+
+
+colvarmodule::rotation::rotation(cvm::real angle, cvm::rvector const &axis)
+{
+  b_debug_gradients = false;
+  cvm::rvector const axis_n = axis.unit();
+  cvm::real const sina = cvm::sin(angle/2.0);
+  q = cvm::quaternion(cvm::cos(angle/2.0),
+                      sina * axis_n.x, sina * axis_n.y, sina * axis_n.z);
+  jacobi = new_Jacobi_solver(4);
+}
+
+
+colvarmodule::rotation::~rotation()
+{
+  delete reinterpret_cast<
+    MathEigen::Jacobi<cvm::real,
+                      cvm::vector1d<cvm::real> &,
+                      cvm::matrix2d<cvm::real> &> *>(jacobi);
+}
+
+
 void colvarmodule::rotation::build_correlation_matrix(
                                         std::vector<cvm::atom_pos> const &pos1,
                                         std::vector<cvm::atom_pos> const &pos2)
@@ -302,7 +347,14 @@ void colvarmodule::rotation::calc_optimal_rotation(
   S_eigval.resize(4);
   S_eigvec.resize(4, 4);
 
-  int ierror = ecalc.Diagonalize(S, S_eigval, S_eigvec);
+  MathEigen::Jacobi<cvm::real,
+                    cvm::vector1d<cvm::real> &,
+                    cvm::matrix2d<cvm::real> &> *ecalc =
+    reinterpret_cast<MathEigen::Jacobi<cvm::real,
+                                       cvm::vector1d<cvm::real> &,
+                                       cvm::matrix2d<cvm::real> &> *>(jacobi);
+
+  int ierror = ecalc->Diagonalize(S, S_eigval, S_eigvec);
   if (ierror) {
     cvm::error("Too many iterations in routine jacobi.\n"
                "This is usually the result of an ill-defined set of atoms for "
@@ -480,7 +532,7 @@ void colvarmodule::rotation::calc_optimal_rotation(
 
         //           cvm::log("S_new = "+cvm::to_str(cvm::to_str (S_new), cvm::cv_width, cvm::cv_prec)+"\n");
 
-        ecalc.Diagonalize(S_new, S_new_eigval, S_new_eigvec);
+        ecalc->Diagonalize(S_new, S_new_eigval, S_new_eigvec);
 
         cvm::real const &L0_new = S_new_eigval[0];
         cvm::quaternion const Q0_new(S_new_eigvec[0]);
