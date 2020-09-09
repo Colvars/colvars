@@ -166,7 +166,7 @@ private:
                 ) const;
 
   // memory management:
-  void Alloc(int n);
+  void Alloc(int N);
   void Init();
   void Dealloc();
 
@@ -565,8 +565,8 @@ SetSize(int n) {
 
 template<typename Scalar,typename Vector,typename Matrix,typename ConstMatrix>
 void Jacobi<Scalar, Vector, Matrix, ConstMatrix>::
-Alloc(int n) {
-  this->n = n;
+Alloc(int N) {
+  n = N;
   if (n > 0) {
     max_idx_row = new int[n];
     Alloc2D(n, n, &M);
