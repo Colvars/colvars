@@ -1,7 +1,9 @@
+// -*- c++ -*-
+
 /// @file     jacobi_pd.h
 /// @brief    Calculate the eigenvalues and eigevectors of a symmetric matrix
 ///           using the Jacobi eigenvalue algorithm.
-/// @author   Andrew Jewett
+/// @author   Andrew Jewett (https://github.com/jewettaj)
 /// @note     Benchmarks and tests: https://github.com/jewettaij/jacobi_pd
 /// @note     A version of this code is included with LAMMPS ("math_eigen.h").
 /// @license  CC0-1.0  (public domain)
@@ -171,7 +173,9 @@ private:
 public:
   // memory management: copy and move constructor, swap, and assignment operator
   Jacobi(const Jacobi<Scalar, Vector, Matrix, ConstMatrix>& source);
-  //C++11//Jacobi(Jacobi<Scalar, Vector, Matrix, ConstMatrix>&& other);
+#if (__cplusplus >= 201103L)
+  Jacobi(Jacobi<Scalar, Vector, Matrix, ConstMatrix>&& other);
+#endif
   void swap(Jacobi<Scalar, Vector, Matrix, ConstMatrix> &other);
   Jacobi<Scalar, Vector, Matrix, ConstMatrix>& operator = (Jacobi<Scalar, Vector, Matrix, ConstMatrix> source);
 
@@ -204,7 +208,11 @@ void Dealloc2D(Entry ***paaX)       // pointer to a 2D C-style array
   if (paaX && *paaX) {
     delete [] (*paaX)[0];
     delete [] (*paaX);
+#if (__cplusplus >= 201103L)
+    *paaX = nullptr;
+#else
     *paaX = NULL;
+#endif
   }
 }
 
@@ -229,7 +237,7 @@ Diagonalize(ConstMatrix mat,    // the matrix you wish to diagonalize (size n)
       for (int j = 0; j < n; j++)
         evec[i][j] = (i==j) ? 1.0 : 0.0; //Set evec equal to the identity matrix
 
-  for (int i = 0; i < n-1; i++)          //Initialize the "max_idx_row[]" array 
+  for (int i = 0; i < n-1; i++)          //Initialize the "max_idx_row[]" array
     max_idx_row[i] = MaxEntryRow(M, i);  //(which is needed by MaxEntry())
 
   // -- Iteration --
@@ -313,7 +321,7 @@ CalcRot(Scalar const *const *M,    // matrix
 /// where R the rotation in the i,j plane and ^T denotes the transpose.
 ///                 i         j
 ///       _                             _
-///      |  1                            | 
+///      |  1                            |
 ///      |    .                          |
 ///      |      .                        |
 ///      |        1                      |
@@ -338,7 +346,7 @@ CalcRot(Scalar const *const *M,    // matrix
 /// Note that a the rotation at location i,j will modify all of the matrix
 /// elements containing at least one index which is either i or j
 /// such as: M[w][i], M[i][w], M[w][j], M[j][w].
-/// Check and see whether these modified matrix elements exceed the 
+/// Check and see whether these modified matrix elements exceed the
 /// corresponding values in max_idx_row[] array for that row.
 /// If so, then update max_idx_row for that row.
 /// This is somewhat complicated by the fact that we must only consider
@@ -349,7 +357,7 @@ CalcRot(Scalar const *const *M,    // matrix
 /// @verbatim
 ///                 i         j
 ///       _                             _
-///      |  .       X         X          | 
+///      |  .       X         X          |
 ///      |    .     X         X          |
 ///      |      .   X         X          |
 ///      |        . X         X          |
@@ -537,8 +545,13 @@ template<typename Scalar,typename Vector,typename Matrix,typename ConstMatrix>
 void Jacobi<Scalar, Vector, Matrix, ConstMatrix>::
 Init() {
   n = 0;
+#if (__cplusplus >= 201103L)
+  M = nullptr;
+  max_idx_row = nullptr;
+#else
   M = NULL;
   max_idx_row = NULL;
+#endif
 }
 
 template<typename Scalar,typename Vector,typename Matrix,typename ConstMatrix>
@@ -599,13 +612,15 @@ swap(Jacobi<Scalar, Vector, Matrix, ConstMatrix> &other) {
   std::swap(M, other.M);
 }
 
-//C++11//// Move constructor (C++11)
-//C++11//template<typename Scalar,typename Vector,typename Matrix,typename ConstMatrix>
-//C++11//Jacobi<Scalar, Vector, Matrix, ConstMatrix>::
-//C++11//Jacobi(Jacobi<Scalar, Vector, Matrix, ConstMatrix>&& other) {
-//C++11//  Init();
-//C++11//  this->swap(other);
-//C++11//}
+#if (__cplusplus >= 201103L)
+// Move constructor (C++11)
+template<typename Scalar,typename Vector,typename Matrix,typename ConstMatrix>
+Jacobi<Scalar, Vector, Matrix, ConstMatrix>::
+Jacobi(Jacobi<Scalar, Vector, Matrix, ConstMatrix>&& other) {
+  Init();
+  this->swap(other);
+}
+#endif
 
 // Using the "copy-swap" idiom for the assignment operator
 template<typename Scalar,typename Vector,typename Matrix,typename ConstMatrix>
