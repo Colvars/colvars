@@ -49,6 +49,35 @@
   \end{mdframed}
 }
 
+\newcommand{\cvscriptexampleinputcv}[3]{%
+\def\cvscriptargsep{~}
+\begin{mdexampleinput}{\ifdefined\cvscriptpyapi\textbf{With the ``\texttt{\cvscriptcmd{}}'' command:}\\\fi}%
+\noindent\cvscriptcmd{}~#1~#2
+\end{mdexampleinput}\ifdefined\cvscriptpyapi{%
+\def\cvscriptargsep{,~}
+\begin{mdexampleinput}{\textbf{With the Python interface:}\\}%
+from colvars import Colvarscript\\
+cv = Colvarscript()\\
+cv.#1(#2)
+\end{mdexampleinput}}\fi
+}
+
+\newcommand{\cvscriptexampleinputcolvar}[3]{%
+\def\cvscriptargsep{~}
+\begin{mdexampleinput}{}
+\noindent\cvscriptcmd{}~colvar~#3~#1~#2
+\end{mdexampleinput}
+}
+
+\newcommand{\cvscriptexampleinputbias}[3]{%
+\def\cvscriptargsep{~}
+\begin{mdexampleinput}{}
+\noindent\cvscriptcmd{}~bias~#3~#1~#2
+\end{mdexampleinput}
+}
+
+
+
 % for code-specific macros
 \usepackage{comment}
 

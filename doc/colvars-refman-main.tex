@@ -8,24 +8,24 @@
 % Set flags depending on which engine this manual is compiled for
 
 \cvlammpsonly{
-\def\cvscriptapi{1} % Supports the scripting API
-\def\cvscriptcmdapi{1} % Supports command-line scripting (via fix_modify)
-\def\cvscriptpyapi{1} % Supports Python scripting
-\newcommand{\cvscriptcmd}{\texttt{fix\_modify Colvars}}
+% TODO code not merged yet, only doc
+\def\cvscriptapi{0} % Supports the scripting API
+\def\cvscriptcmdapi{0} % Supports command-line scripting (via fix_modify)
+\newcommand{\cvscriptcmd}{fix\_modify~Colvars}
 }
 
 \cvnamdonly{
 \def\cvvmdornamd{1}
 \def\cvscriptapi{1}
 \def\cvscriptcmdapi{1} % Supports command-line scripting (via cv Tcl command)
-\newcommand{\cvscriptcmd}{\texttt{cv}}
+\newcommand{\cvscriptcmd}{cv}
 }
 
 \cvvmdonly{
 \def\cvvmdornamd{1}
 \def\cvscriptapi{1}
 \def\cvscriptcmdapi{1}
-\newcommand{\cvscriptcmd}{\texttt{cv}}
+\newcommand{\cvscriptcmd}{cv}
 }
 
 
@@ -120,6 +120,7 @@ The configuration will contain two blocks, one defining the distance variable (s
 \cvvmdonly{Note that in VMD, no biasing forces are applied, but biases may be useful in the context of an analysis script, e.g. to collect histograms or to compute bias energies.}
 
 \begin{cvexampleinput}
+
 \cvlammpsonly{indexFile~index.ndx\\}colvar~\{\\
 \-~~name~dist\\
 \-~~distance~\{\\
@@ -419,10 +420,12 @@ Because these are static parameters, it is typically more convenient to use the 
 \cvsubsec{LAMMPS keywords}{sec:colvars_mdengine_parameters}
 
 To enable a Colvars-based calculation, the following line must be added to the LAMMPS configuration file:
-\begin{mdexampleinput}
-\-fix~\emph{ID}~all~colvars~\emph{configfile}~\emph{keyword~value~pairs ...}
+\begin{mdexampleinput}{}
+fix~Colvars~all~colvars~\emph{configfile}~[\emph{keyword value pairs ...}]
 \end{mdexampleinput}
-where \emph{ID} is a string that uniquely identifies this fix command inside a LAMMPS script, \emph{configfile} is the name of the configuration file for the Colvars module, followed by one or more of the following optional keywords with their corresponding arguments:
+where the fix ID is here set to the string ``\texttt{Colvars}'', because there can only be one instance of \texttt{fix colvars} in a LAMMPS run.
+The value of \emph{configfile} is the name of the configuration file for the Colvars module.
+Other optional keywords may follow:
 
 \begin{itemize}
 
@@ -499,208 +502,225 @@ Both file hold information to restart properly the simulation.\\
 }
 
 
-\cvscriptonly{
-\cvsubsec{Using the \texttt{cv} command to control the Colvars module}{sec:cv_scripting}
+\ifdefined\cvscriptapi{
+\cvsubsec{Using the scripting interface to control the Colvars module}{sec:cv_scripting}
 \cvvmdugonly{\index{Colvars!\texttt{cv} command}}
 
-At any moment after the first initialization of the Colvars module, several options can be read or modified by the Tcl command \texttt{cv}, with the following syntax:\\
-\noindent\texttt{cv~$<$subcommand$>$ [args ...]}\\
-\cvvmdonly{The \texttt{cv} command is used by the Dashboard graphical interface,(\ref{sec:dashboard}), but can be also used in scripts or interactively from the command-line terminal (for example, in remote terminal sessions) or in the Tk Console.}
-The most frequent uses of the \texttt{cv} command are discussed here.
-For a complete list of all sub-commands of \texttt{cv}, see section~\ref{sec:cvscript_tcl}.
+After the first initialization of the Colvars module\cvlammpsonly{ (in LAMMPS, this means after defining an instance of \texttt{fix colvars} and the first \texttt{run} command for any number of steps including 0)}, the internal state of Colvars objects may be queried or modified in a \MDENGINE{} script:
+\cvscriptexampleinputcv{$<$\emph{method}$>$}{arg1\cvscriptargsep{}arg2\cvscriptargsep{}...}
+\noindent{}where \texttt{$<$\emph{method}$>$} is the name of a specific procedure and \texttt{arg1}, \texttt{arg2}, \ldots are its required and/or optional arguments.
+
+\cvvmdonly{In VMD, the \texttt{\cvscriptcmd{}} command is used by the Dashboard graphical interface,(\ref{sec:dashboard}), but can be also used in scripts or interactively from the command-line terminal (for example, in remote terminal sessions) or in the Tk Console.}
+
+\ifdefined\cvscriptpyapi{To control Colvars from Python as shown this example, an object \texttt{cv} needs to be initialized to interact with the Colvars module.
+This is done via importing the Python module \texttt{colvars}, which is a pure Python script available from the following link:\\
+\noindent{}XXXXX\\ % TODO
+\noindent{}After the object \texttt{cv} is initialized, it can be used for all the following interactions with the Python scripting interface.
+There is no constraint on how it should be named as a Python variable, and it is only named here \texttt{cv} for simplicity.}\fi % \ifdefined\cvscriptpyapi{}
+
+The most frequent uses of the scripting interface are discussed and exemplified in this section.
+For the full reference documentation of all procedures supported by the Colvars scripting interface, see \ifdefined\cvvmdornamd{section~\ref{sec:cvscript_tcl} for the Tcl command reference}\fi\cvlammpsonly{section~\ref{sec:cvscript_fix_modify} for the options supported by the \texttt{fix\_modify} command}.
+
 
 \cvsubsubsec{Setting up the Colvars module}{sec:cv_command_init}
 
 \cvvmdonly{
-The first step to using Colvars in VMD is choosing which ``molecule'' (i.e.{} which system): because VMD can handle multiple ``molecules'', the Colvars module needs to remain attached to a specific VMD molecule.  For example:\\
-\noindent\texttt{cv molid top}\\
+The first step to using Colvars in VMD is choosing which ``molecule'' (i.e.{} which system): because VMD can handle multiple ``molecules'', the Colvars module needs to remain attached to a specific VMD molecule.  For example:
+\cvscriptexampleinputcv{molid}{"top"}
 \noindent{}will attach the Colvars module onto the molecule currently holding the ``top'' status (alternatively, you can refer to a molecule by its numeric ID in lieu of \texttt{top}).
 All following invocations of the \texttt{cv} command will continue operating on the same molecule, regardless of whether other molecules are loaded, or which one has the ``top'' status.
 The \texttt{cv molid} command without argument will return the molid currently associated with Colvars.
 }
 
 \cvnamdonly{
-  If the NAMD configuration parameter \texttt{colvars} is on, the \texttt{cv} command can be used anywhere in the NAMD script, and will be invoked as soon as NAMD begins processing Tcl commands.
+  If the NAMD configuration parameter \texttt{colvars} is on, the \texttt{\cvscriptcmd{}} Tcl command can be used anywhere in the NAMD script, and will be invoked as soon as NAMD begins processing Tcl commands.
 }
 
-To define collective variables and biases, configuration can be loaded using either:\\
-\noindent\texttt{cv configfile colvars-file.in}\\
-\noindent{}to load configuration from a file, or:\\
-\noindent\texttt{cv config "keyword \{ ... \}"}\\
-\noindent{}to load configuration as a string argument.
+To define new collective variables and/or biases for immediate use in the current session, configuration can be loaded from an external configuration file:
+\cvscriptexampleinputcv{configfile}{"colvars-file.in"}
+This can in principle be called at any time, if only flags internal to Colvars are being modified.
+In practice, when new atoms or any new atomic properties (e.g.{} total forces are being requested), initialization steps are required that are not carried out during a simulation.
+Therefore, it is good practice to change the Colvars configuration outside the scope between segments of the same simulation.
 
-The latter version is particularly useful to dynamically define the Colvars configuration.
+To load the configuration directly from a string the ``\texttt{config}'' method may be used:
+\cvscriptexampleinputcv{config}{"keyword \{ ... \}"}
+\noindent{}This method is particularly useful to dynamically define the Colvars configuration within a \MDENGINE{} script.
 \cvnamdonly{For example, when running an ensemble of umbrella sampling simulations in NAMD, it may be convenient to use an identical NAMD script, and let the queuing system assist in defining the window.
-  In this example, in a Slurm array job an environment variable is used to define the window's numeric index (starting at zero), and the umbrella restraint center (starting at 2 for the first window, and increasing in increments of 0.25 for all other windows):\\
-  {\noindent\ttfamily
-    cv configfile colvars-definition.in\\
-    set window \$env(SLURM\_ARRAY\_TASK\_ID)\\
-    cv config "harmonic \{\\
-    \-~~name us\_\$\{window\}\\
-    \-~~colvars xi\\
-    \-~~centers [expr 2.0 + 0.25 * \$\{window\}]\\
-    \-~~...\\
-    \}"\\
-    \\
-  }
-}
+  In this example, in a Slurm array job an environment variable is used to define the window's numeric index (starting at zero), and the umbrella restraint center (starting at 2 for the first window, and increasing in increments of 0.25 for all other windows):
+\begin{mdexampleinput}
+\-cv~configfile~colvar-definition.in\\
+\-set~window~\$env(SLURM\_ARRAY\_TASK\_ID)\\
+\-cv~config~"harmonic~\{\\
+\-~~name~us\_\$\{window\}\\
+\-~~colvars~xi\\
+\-~~centers~[expr~2.0~+~0.25~*~\$\{window\}]\\
+\-~~...\\
+\}"
+\end{mdexampleinput}
+} % \cvnamdonly{}
 
+
+\ifdefined\cvvmdornamd{
+% TODO In LAMMPS we can't do this just with fix_modify
 \cvsubsubsec{Using the Colvars version in scripts}{sec:cv_command_version}
 
 The vast majority of the syntax in Colvars is backward-compatible, adding keywords when new features are introduced.
 However, when using multiple versions simultaneously it may be useful to test within the script whether the version is recent enough to support the desired feature.
-\texttt{cv version} can be used to get the Colvars version for this use:\\
-{\noindent\ttfamily
-  if \{ [cv version] >= "2020-02-25" \} \{\\
-  \-~~cv config "(use a recent feature)"\\
-  \}\\
-}
+The ``\texttt{version}'' can be used to get the Colvars version for this use:
+\begin{mdexampleinput}{}
+\-if~\{~[cv~version]~>=~"2020-02-25"~\}~\{\\
+\-~~cv~config~"(use~a~recent~feature)"\\
+\-\}
+\end{mdexampleinput}
 
 \cvsubsubsec{Loading and saving the Colvars state and other information}{sec:cv_command_loadsave}
 
-After a configuration is fully defined, \texttt{cv load} may be used to load a state file from a previous simulation that contains e.g.{} data from history-dependent biases), to either continue that simulation or analyze its results:\\
-\noindent\texttt{cv load $<$oldjob$>$.colvars.state}\\
-\noindent{}or more simply using the prefix of the state file itself:\\
-\noindent\texttt{cv load $<$oldjob$>$}\\
-\cvnamdonly{\noindent{}The latter is much more convenient in combination with the NAMD \texttt{reinitatoms} command, for example:\\
-{\noindent\ttfamily
-  reinitatoms $<$oldjob$>$\\
-  cv load $<$oldjob$>$\\
-}
+After a configuration is fully defined, the ``\texttt{load}'' method may be used to load a state file from a previous simulation that contains e.g.{} data from history-dependent biases), to either continue that simulation or analyze its results:
+\cvscriptexampleinputcv{load}{"$<$oldjob$>$.colvars.state"}
+\noindent{}or more simply using the prefix of the state file itself:
+\cvscriptexampleinputcv{load}{"$<$oldjob$>$"}
+\cvlammpsonly{Note that the Colvars state is already loaded automatically as part of the LAMMPS restart file, when this is read via the LAMMPS \texttt{read\_restart} command; the ``\texttt{load}'' method allows to load a different state file after the fact.}
+\cvnamdonly{\noindent{}The latter version is particularly convenient in combination with the NAMD \texttt{reinitatoms} command, for example:\\
+\begin{mdexampleinput}
+\-reinitatoms~$<$oldjob$>$\\
+\-cv~load~$<$oldjob$>$
+\end{mdexampleinput}
 The step number contained by the loaded file will be used internally by Colvars to control time-dependent biases, unless \texttt{firstTimestep} is issued, in which case that value will be used.}
 
-\cvnamdonly{When the system's topology is changed during simulation via the \texttt{structure} command (e.g.{} in constant-pH simulations), it is generally best to reset and re-initalize the module from scratch before loading the corresponding snapshot:\\
-{\noindent\ttfamily
-  structure newsystem.psf\\
-  reinitatoms $<$snapshot$>$\\
-  cv reset\\
-  cv configfile ...\\
-  cv load $<$snapshot$>$\\
-}
+\cvnamdonly{When the system's topology is changed during simulation via the \texttt{structure} command (e.g.{} in constant-pH simulations), it is generally best to reset and re-initalize the module from scratch before loading the corresponding snapshot:
+\begin{mdexampleinput}
+\-structure~newsystem.psf\\
+\-reinitatoms~$<$snapshot$>$\\
+\-cv~reset\\
+\-cv~configfile~...\\
+\-cv~load~$<$snapshot$>$
+\end{mdexampleinput}
 }
 
-\texttt{cv save}, analogous to \texttt{cv load}, saves all restart information to a state file.
-This is normally not required during a simulation if \refkey{colvarsRestartFrequency}{Colvars-global|colvarsRestartFrequency} is defined (either directly or indirectly by the \MDENGINE{} restart frequency), but it is necessary in post-processing e.g.{} with VMD.
-Because not only a state file (used to continue simulations) but also other data files (used to analyze the trajectory) are written, it is generally clearer to use \texttt{cv save} with a prefix rather than a file name:\\
-\noindent\texttt{cv save $<$job$>$}
+The ``\texttt{save}'' method, analogous to ``\texttt{load}'', allows to save all restart information to a state file.
+This is normally not required during a simulation if \refkey{colvarsRestartFrequency}{Colvars-global|colvarsRestartFrequency} is defined (either directly or indirectly by the \MDENGINE{} restart frequency).
+Because not only a state file (used to continue simulations) but also other data files (used to analyze the trajectory) are written, it is generally recommended to call the \texttt{save} method using a prefix, rather than a complete file name:
+\cvscriptexampleinputcv{save}{"$<$job$>$"}
 
-See \ref{sec:cvscript_tcl_cv} for a complete list of scripting commands used to manage the Colvars module.
+ See \ref{sec:cvscript_tcl_cv} for a complete list of scripting commands used to manage the Colvars module.}\fi % End \ifdefined\cvvmdornamd
+
 
 \cvvmdonly{
 \cvsubsubsec{Analyzing a trajectory in VMD}{sec:cv_command_vmd_traj}
 
 One of the typical uses of Colvars in VMD is computing the values of one or more variables along an existing trajectory.
 A complete example input for this use case is shown here.
-\bigskip
-{\noindent\ttfamily\\
-\-{\bfseries\# Activate the module on the current VMD molecule}\\
-\-cv molid top\\
-\-{\bfseries\# Load a Colvars config file}\\
-\-cv configfile test.in\\
-\-set out [open "test.colvars.traj" "w"]\\
-\-{\bfseries\# Write the labels to the file}\\
-\-puts -nonewline \$\{out\} [cv printframelabels]\\
-\-for \{ set fr 0 \} \{ \$\{fr\} < [molinfo top get numframes] \} \{ incr fr \} \{\\
-\-~~{\bfseries\# Point Colvars to this trajectory frame}\\
-\-~~cv frame \$\{fr\}\\
-\-~~{\bfseries\# Recompute variables and biases (required in VMD)}\\
-\-~~cv update\\
-\-~~{\bfseries\# Print variables and biases to the file}\\
-\-~~puts -nonewline \$\{out\} [cv printframe]\\
+
+\begin{mdexampleinput}
+\-{\bfseries\#~Activate~the~module~on~the~current~VMD~molecule}\\
+\-cv~molid~top\\
+\-{\bfseries\#~Load~a~Colvars~config~file}\\
+\-cv~configfile~test.in\\
+\-set~out~[open~"test.colvars.traj"~"w"]\\
+\-{\bfseries\#~Write~the~labels~to~the~file}\\
+\-puts~-nonewline~\$\{out\}~[cv~printframelabels]\\
+\-for~\{~set~fr~0~\}~\{~\$\{fr\}~<~[molinfo~top~get~numframes]~\}~\{~incr~fr~\}~\{\\
+\-~~{\bfseries\#~Point~Colvars~to~this~trajectory~frame}\\
+\-~~cv~frame~\$\{fr\}\\
+\-~~{\bfseries\#~Recompute~variables~and~biases~(required~in~VMD)}\\
+\-~~cv~update\\
+\-~~{\bfseries\#~Print~variables~and~biases~to~the~file}\\
+\-~~puts~-nonewline~\$\{out\}~[cv~printframe]\\
 \-\}\\
-\-close \$\{out\}\\
-}
+\-close~\$\{out\}
+\end{mdexampleinput}
 }
 
 
 \cvsubsubsec{Managing collective variables}{sec:cv_command_colvar}
 
-After one or more collective variables are defined, they can be accessed via \texttt{cv colvar [args ...]}.
-For example, to recompute the collective variable \texttt{xi} the following command can be used:\\
-\noindent\texttt{cv colvar xi update}\\
+After one or more collective variables are defined, they can be accessed with the following syntax.
+\cvscriptexampleinputcolvar{$<$\emph{method}$>$}{arg1\cvscriptargsep{}arg2\cvscriptargsep{}...}{"$<$name$>$"}
+\noindent{}where ``\texttt{$<$name$>$}'' is the name of the variable.
+
+For example, to recompute the collective variable ``\texttt{xi}'' after a change in its parameters, the following command can be used:
+\cvscriptexampleinputcolvar{update}{}{"xi"}
 \noindent{}This ordinarily is not needed during a simulation run, where all variables are recomputed at every step (along with biasing forces acting on them).
-However, when analyzing an existing trajectory a call to \texttt{update} is generally required.
+However, when analyzing an existing trajectory, e.g.{} in VMD, a call to \texttt{update} is generally required.
 
-While in all typical cases all configuration of the variables is done with \texttt{cv config} or \texttt{cv configfile}, a limited set of changes can be enacted at runtime using \texttt{cv colvar $<$name$>$ modifycvcs [args ...]}.
-Each argument is a string passed to the function or functions that are used to compute the variable, and are called colvar components, or CVCs (\ref{sec:cvc_list}).
-For example, a variable \texttt{DeltaZ} made of a single \texttt{distanceZ} CVC can be made periodic with a period equal to the unit cell dimension along the Z-axis:\\
-\noindent\texttt{cv colvar DeltaZ modifycvcs "period \$Lz"}\\
-\cvnamdonly{\noindent{}where \texttt{\$Lz} is obtained outside Colvars.\\}
-\cvvmdonly{\noindent{}where \texttt{\$Lz} may be obtained for example as:\\
-\noindent\texttt{set Lz [molinfo top get c]}.\\}
-\noindent{}This option is currently limited to changing the values of \refkey{componentCoeff}{sec:cvc_superp} and \refkey{componentExp}{sec:cvc_superp} (e.g.{} to update the polynomial superposition parameters on the fly), of \refkey{period}{sec:cvc_periodic} and \refkey{wrapAround}{sec:cvc_periodic}, and of the \texttt{forceNoPBC} option for all components that support it.
+While in all typical cases all configuration of the variables is done with the ``\texttt{config}'' or ``\texttt{configfile}'' methods, a limited set of changes can be enacted at runtime using:
+\cvscriptexampleinputcolvar{modifycvcs}{arg1\cvscriptargsep{}arg2\cvscriptargsep{}...}{"$<$name$>$"}
+\noindent{}where each argument is a string passed to the function or functions that are used to compute the variable, and are called colvar components, or CVCs (\ref{sec:cvc_list}).
+For example, a variable ``\texttt{DeltaZ}'' made of a single ``\texttt{distanceZ}'' component can be made periodic with a period equal to the unit cell dimension along the $Z$-axis:
+\cvscriptexampleinputcolvar{modifycvcs}{"period \emph{Lz}"}{"DeltaZ"}
+% TODO fix this for fix_modify
+\noindent{}Please note that this option is currently limited to changing the values of the polynomial superposition parameters \refkey{componentCoeff}{sec:cvc_superp}, or of the \refkey{componentExp}{sec:cvc_superp} to update on the fly, of \refkey{period}{sec:cvc_periodic}, \refkey{wrapAround}{sec:cvc_periodic} or \refkey{forceNoPBC}{colvar|distance|forceNoPBC} options for components that support them.
 
-If the variable is computed using more than one CVC, it is possible to selectively turn some of them on or off:\\
-\noindent\texttt{cv colvar xi cvcflags $<$flags$>$}\\
-\noindent{}where \texttt{$<$flags$>$} is a list of 0/1 values, one per component.
-This is useful for example when Tcl script-based path collective variables in Cartesian coordinates (\ref{sec:apath_scripted}) are used, to minimize computational cost by disabling the computation of terms that are very close to zero.
+If the variable is computed using many components, it is possible to selectively turn some of them on or off:
+\cvscriptexampleinputcolvar{cvcflags}{$<$flags$>$}{"$<$name$>$"}
+\noindent{}where ``\texttt{$<$flags$>$}'' is a list of 0/1 values, one per component.
+\ifdefined\cvvmdornamd{This is useful for example when script-based path collective variables in Cartesian coordinates (\ref{sec:apath_scripted}) are used, to minimize computational cost by disabling the computation of terms that are very close to zero.}\fi
 
-\textbf{Important:} None of the changes enacted by \texttt{modifycvcs} or \texttt{cvcflags} will be saved to state files, and will be lost when restarting a simulation, deleting the corresponding collective variable, or resetting the module with \cvvmdonly{\texttt{cv delete} or} \texttt{cv reset}.
+\textbf{Important:} None of the changes enacted by the ``\texttt{modifycvcs}'' or ``\texttt{cvcflags}'' methods will be saved to state files, and will be lost when restarting a simulation, deleting the corresponding collective variable, or resetting the module with the \cvvmdonly{``\texttt{delete}'' or} ``\texttt{reset}'' method\cvvmdonly{s}.
 
 \cvsubsubsec{Applying and analyzing forces on collective variables}{sec:cv_command_colvar_force}
 
-As soon as a collective variable is up to date (during a MD run or after its \texttt{update} method has been called), forces can be applied to it, e.g.{} as part of a custom restraint implemented by \refkey{scriptedColvarForces}{Colvars-global|scriptedColvarForces}:\\
-\noindent\texttt{cv colvar xi addforce \$force}\\
-\noindent{}where \texttt{\$force} is a scalar or a vector (depending on the type of variable \texttt{xi}) and is defined by the user's function.
+As soon as a collective variable is up to date (during a MD run or after its ``\texttt{update}'' method has been called), forces can be applied to it, e.g.{} as part of a custom restraint implemented by \refkey{scriptedColvarForces}{Colvars-global|scriptedColvarForces}:
+\cvscriptexampleinputcolvar{addforce}{$<$force$>$}{"xi"}
+\noindent{}where ``\texttt{$<$force$>$}'' is a scalar or a vector (depending on the type of variable ``\texttt{xi}'') and is defined by the user's function.
 The force will be physically applied to the corresponding atoms during the simulation after Colvars communicates all forces to the rest of \MDENGINE{}.
 \cvvmdonly{(In VMD, these forces will never have an effect.)}
-Until then, the total force applied to \texttt{xi} from all biases can be retrieved by:\\
-\noindent\texttt{cv colvar xi getappliedforce}\\
+Until then, the total force applied to ``\texttt{xi}'' from all biases can be retrieved by:
+\cvscriptexampleinputcolvar{getappliedforce}{}{"xi"}
 \noindent{}(see also the use of the \refkey{outputAppliedForce}{colvar|outputAppliedForce} option).
 
-To obtain the total force projected on the variable \texttt{xi}:\\
-\noindent\texttt{cv colvar xi gettotalforce}\\
+To obtain the total force projected on the variable ``\texttt{xi}'':
+\cvscriptexampleinputcolvar{gettotalforce}{}{"xi"}
 \noindent{}Note that not all types of variable support this option, and the value of the total force may not be available immediately: see \refkey{outputTotalForce}{colvar|outputTotalForce} for more details.
 
-See \ref{sec:cvscript_tcl_colvar} for a complete list of scripting commands used to manage collective variables.
+\ifdefined\cvvmdornamd{See \ref{sec:cvscript_tcl_colvar} for a complete list of scripting commands used to manage collective variables.}\fi
 
 
 \cvsubsubsec{Managing collective variable biases}{sec:cv_command_bias}
 
 Because biases depend only upon data internal to the Colvars module (i.e.{} they do not need atomic coordinates from \MDENGINE{}), it is generally easy to create them or update their configuration at any time.
-For example, given the most current value of the variable \texttt{xi}, an already-defined restraint on it named \texttt{harmonic\_xi} can be updated as:\\
-\noindent\texttt{cv bias harmonic\_xi update}\\
-Again, this is not generally needed during a running simulation, when an automat
-ic update of each bias is already carried out.
+For example, given the most current value of the variable ``\texttt{xi}'', an already-defined harmonic restraint on it named ``\texttt{h\_xi}'' can be updated as:
+\cvscriptexampleinputbias{update}{}{"h\_xi"}
+\noindent{}During a running simulation this step is not needed, because an automatic update of each bias is already carried out.
 
-Calling \texttt{update} for a bias is most useful for just-defined biases or when changing their configuration.
-When \texttt{update} is called e.g.{} as part of the function invoked by \refkey{scriptedColvarForces}{Colvars-global|scriptedColvarForces}, it is executed before any biasing forces are applied to the variables, thus allowing to modify them.
-This use of \texttt{update} is often used e.g.{} in the definition of custom bias-exchange algorithms as part of the \MDENGINE{} script.
-Because a bias is a relatively light-weight object, the easiest way to change the configuration of an existing bias is deleting it and re-creating it:\\
-{\noindent\ttfamily\\
-\-{\bfseries\# Delete the restraint "harmonic\_xi"}\\
-\-cv bias harmonic\_xi delete\\
-\-{\bfseries\# Re-define it, but using an updated restraint center}\\
-\-cv config "harmonic \{\\
-\-~~name harmonic\_xi\\
-\-~~centers \$\{new\_center\}]\\
+\cvnamdonly{Another circumstance when ``\texttt{update}'' may be called e.g.{} as part of the function invoked by \refkey{scriptedColvarForces}{Colvars-global|scriptedColvarForces}, it is executed before any biasing forces are applied to the variables, thus allowing to modify them.
+This use of ``\texttt{update}'' is often used e.g.{} in the definition of custom bias-exchange algorithms as part of the \MDENGINE{} script.
+Because a restraint is a relatively light-weight object, the easiest way to change the configuration of an existing bias is deleting it and re-creating it:
+\begin{mdexampleinput}{}
+\-{\bfseries\#~Delete~the~restraint~"harmonic\_xi"}\\
+\-cv~bias~harmonic\_xi~delete\\
+\-{\bfseries\#~Re-define~it,~but~using~an~updated~restraint~center}\\
+\-cv~config~"harmonic~\{\\
+\-~~name~harmonic\_xi\\
+\-~~centers~\$\{new\_center\}]\\
 \-~~...\\
 \-\}"\\
-\-{\bfseries\# Now update it (based on the current value of "xi")}\\
-\-cv bias harmonic\_xi update\\
-}
+\-{\bfseries\#~Now~update~it~(based~on~the~current~value~of~"xi")}\\
+\-cv~bias~harmonic\_xi~update
+\end{mdexampleinput}
 It is also possible to make the change subject to a condition on the energy of the new bias:
-{\noindent\ttfamily\\
-  \-...\\
-  \-cv bias harmonic\_xi update\\
-  \-if \{ [cv bias harmonic\_xi energy] < \$\{E\_accept\} \} \{\\
-  \-~~~~...\\
-  \-\}\\
+\begin{mdexampleinput}{}
+\-...\\
+\-cv~bias~harmonic\_xi~update\\
+\-if~\{~[cv~bias~harmonic\_xi~energy]~<~\$\{E\_accept\}~\}~\{\\
+\-~~~~...\\
+\-\}
+\end{mdexampleinput}
 }
 
 \cvsubsubsec{Loading and saving the state of individual biases}{sec:cv_command_bias_loadsave}
 
 Some types of bias are history-dependent, and the magnitude of their forces depends not only on the values of their corresponding variables, but also on previous simulation history.
-It is thus useful to load information from a state file that contains information specifically for one bias only, for example:\\
-\noindent\texttt{cv bias metadynamics1 load old.colvars.state}\\
-\noindent{}or alternatively, using the prefix of the file instead of its full name:\\
-\noindent\texttt{cv bias metadynamics1 load old}\\
-A corresponding \texttt{save} function is also available:\\
-\noindent\texttt{cv bias metadynamics1 save new}\\
-This pair of functions is also used internally by Colvars to implement e.g.{} multiple-walker metadynamics (\ref{sec:colvarbias_meta_mr}), but they can be called from a scripted function to implement alternative coupling schemes.
+It is thus useful to load information from a state file that contains information specifically for one bias only, for example:
+\cvscriptexampleinputbias{load}{"old.colvars.state"}{"metadynamics1"}
+\noindent{}or alternatively, using the prefix of the file instead of its full name:
+\cvscriptexampleinputbias{load}{"old"}{"metadynamics1"}
+A corresponding ``\texttt{save}'' function is also available:
+\cvscriptexampleinputbias{save}{"new"}{"metadynamics1"}
+\noindent{}This pair of functions is also used internally by Colvars to implement e.g.{} multiple-walker metadynamics (\ref{sec:colvarbias_meta_mr}), but they can be called from a scripted function to implement alternative coupling schemes.
 
-See \ref{sec:cvscript_tcl_bias} for a complete list of scripting commands used to manage biases.
-} % End \cvscriptonly
+\ifdefined\cvvmdornamd{See \ref{sec:cvscript_tcl_bias} for a complete list of scripting commands used to manage biases.}\fi
+}\fi % End \ifdefined\cvscriptapi
 
 
 \cvsubsec{Configuration syntax used by the Colvars module}{sec:colvars_config_syntax}
@@ -1708,7 +1728,7 @@ with respect to $\{\mathbf{x}_{i}(t)\}$.
     \texttt{rmsd}}{%
     Reference coordinates}{%
     space-separated list of \texttt{(x, y, z)} triplets}{%
-    This option (mutually exclusive with \texttt{refPositionsFile}) sets the reference coordinates for RMSD calculation, and uses these to compute the roto-translational fit.  
+    This option (mutually exclusive with \texttt{refPositionsFile}) sets the reference coordinates for RMSD calculation, and uses these to compute the roto-translational fit.
     See the equivalent option \refkey{refPositions}{atom-group|refPositions} within the atom group definition for details on acceptable formats and other features.
     }
 
@@ -1719,7 +1739,7 @@ with respect to $\{\mathbf{x}_{i}(t)\}$.
     \texttt{rmsd}}{%
     Reference coordinates file}{%
     UNIX filename}{%
-    This option (mutually exclusive with \texttt{refPositions}) sets the reference coordinates for RMSD calculation, and uses these to compute the roto-translational fit.  
+    This option (mutually exclusive with \texttt{refPositions}) sets the reference coordinates for RMSD calculation, and uses these to compute the roto-translational fit.
     See the equivalent option \refkey{refPositionsFile}{atom-group|refPositionsFile} within the atom group definition for details on acceptable file formats and other features.
     }
 
@@ -2804,7 +2824,7 @@ colvar \{\\
 \end{cvexampleinput}
 
 
-\cvscriptonly{
+\ifdefined\cvvmdornamd{
 \cvsubsubsec{Path collective variables in Cartesian coordinates}{sec:apath_scripted}
 
 The path collective variables defined by Branduardi et al.~\cite{Branduardi2007}
@@ -2829,7 +2849,7 @@ an example is provided in file \texttt{examples/10\_pathCV.namd} of the Colvars 
 It implements an optimization procedure, whereby the distance to a given image is only calculated if its contribution
 to the sum is larger than a user-defined \texttt{tolerance} parameter.
 All distances are calculated every \texttt{freq} timesteps to update the list of nearby images.
-}
+}\fi
 
 
 \ifdefined\cvvmdornamd{
@@ -4230,6 +4250,7 @@ To gain an estimate of the computational cost of a large colvar, one can use a t
 A biasing or analysis method can be applied to existing collective variables by using the following configuration:
 
 \begin{cvexampleinput}
+
 \-$<$biastype$>$~\{\\
 \-~~name~$<$name$>$ \\
 \-~~colvars~$<$xi1$>$~$<$xi2$>$~...\\
