@@ -216,14 +216,6 @@ private:
                    int n_args_min, int n_args_max, char const *arghelp,
                    int (*fn)(void *, int, unsigned char * const *));
 
-  /// Execute a script command
-  inline int exec_command(command c,
-                          void *pobj,
-                          int objc, unsigned char * const *objv)
-  {
-    return (*(cmd_fns[c]))(pobj, objc, objv);
-  }
-
 public: // TODO this function will be removed soon
 
   /// Run subcommands on base colvardeps object (colvar, bias, ...)
