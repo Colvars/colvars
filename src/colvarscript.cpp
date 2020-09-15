@@ -57,9 +57,11 @@ int colvarscript::init_commands()
   }
 
   cmd_help.resize(colvarscript::cv_n_commands);
+  cmd_rethelp.resize(colvarscript::cv_n_commands);
   cmd_n_args_min.resize(colvarscript::cv_n_commands);
   cmd_n_args_max.resize(colvarscript::cv_n_commands);
   cmd_arghelp.resize(colvarscript::cv_n_commands);
+  cmd_full_help.resize(colvarscript::cv_n_commands);
   cmd_fns.resize(colvarscript::cv_n_commands);
 
   if (cmd_names) {
@@ -95,24 +97,60 @@ int colvarscript::init_command(colvarscript::command const &comm,
 {
   cmd_str_map[std::string(name)] = comm;
   cmd_names[comm] = name;
-  cmd_help[comm] = help;
+
+  // Initialize short help string and return-value help string (if present)
+  {
+    std::string const help_str(help);
+    std::istringstream is(help_str);
+    std::string line;
+    std::getline(is, line);
+    cmd_help[comm] = line;
+    cmd_rethelp[comm] = "";
+    while (std::getline(is, line)) {
+      cmd_rethelp[comm] += line + "\n";
+    }
+  }
+
+  // Initialize arguments' help strings
   cmd_n_args_min[comm] = n_args_min;
   cmd_n_args_max[comm] = n_args_max;
-  std::string const arghelp_str(arghelp);
-  std::istringstream is(arghelp_str);
-  std::string line;
-  for (int iarg = 0; iarg < n_args_max; iarg++) {
-    if (! std::getline(is, line)) {
-      return cvm::error("Error: could not initialize help string for scripting "
-                        "command \""+std::string(name)+"\".\n", BUG_ERROR);
+  {
+    std::string const arghelp_str(arghelp);
+    std::istringstream is(arghelp_str);
+    std::string line;
+    for (int iarg = 0; iarg < n_args_max; iarg++) {
+      if (! std::getline(is, line)) {
+        return cvm::error("Error: could not initialize help string for scripting "
+                          "command \""+std::string(name)+"\".\n", BUG_ERROR);
+      }
+      cmd_arghelp[comm].push_back(line);
     }
-    cmd_arghelp[comm].push_back(line);
   }
+
+  cmd_full_help[comm] = cmd_help[comm]+"\n";
+  if (cmd_n_args_min[comm] > 0) {
+    cmd_full_help[comm] += "\nParameters\n";
+    cmd_full_help[comm] += "----------\n\n";
+    size_t i;
+    for (i = 0; i < cmd_n_args_min[comm]; i++) {
+      cmd_full_help[comm] += cmd_arghelp[comm][i]+"\n";
+    }
+    for (i = cmd_n_args_min[comm]; i < cmd_n_args_max[comm]; i++) {
+      cmd_full_help[comm] += cmd_arghelp[comm][i]+" (optional)\n";
+    }
+  }
+  if (cmd_rethelp[comm].size() > 0) {
+    cmd_full_help[comm] += "\nReturns\n";
+    cmd_full_help[comm] += "-------\n\n";
+    cmd_full_help[comm] += cmd_rethelp[comm]+"\n";
+  }
+
   cmd_fns[comm] = fn;
   if (cvm::debug()) {
     cvm::log("Defined command \""+std::string(name)+"\", with help string:\n");
-    cvm::log(get_command_help(name));
+    cvm::log(get_command_full_help(name));
   }
+
   return COLVARS_OK;
 }
 
@@ -133,27 +171,76 @@ std::string colvarscript::get_cmd_prefix(colvarscript::Object_type t)
 }
 
 
-std::string colvarscript::get_command_help(char const *cmd)
+
+char const *colvarscript::get_command_help(char const *cmd)
 {
   if (cmd_str_map.count(cmd) > 0) {
     colvarscript::command const c = cmd_str_map[std::string(cmd)];
-    std::string new_result(cmd_help[c]+"\n");
-    if (cmd_n_args_max[c] == 0) return new_result;
-    new_result += "\nParameters\n";
-    new_result += "----------\n\n";
-    size_t i;
-    for (i = 0; i < cmd_n_args_min[c]; i++) {
-      new_result += cmd_arghelp[c][i]+"\n";
-    }
-    for (i = cmd_n_args_min[c]; i < cmd_n_args_max[c]; i++) {
-      new_result += cmd_arghelp[c][i]+" (optional)\n";
-    }
-    return new_result;
+    return cmd_help[c].c_str();
   }
-
   cvm::error("Error: command "+std::string(cmd)+
              " is not implemented.\n", INPUT_ERROR);
-  return std::string("");
+  return NULL;
+}
+
+
+char const *colvarscript::get_command_rethelp(char const *cmd)
+{
+  if (cmd_str_map.count(cmd) > 0) {
+    colvarscript::command const c = cmd_str_map[std::string(cmd)];
+    return cmd_rethelp[c].c_str();
+  }
+  cvm::error("Error: command "+std::string(cmd)+
+             " is not implemented.\n", INPUT_ERROR);
+  return NULL;
+}
+
+
+char const *colvarscript::get_command_arghelp(char const *cmd, int i)
+{
+  if (cmd_str_map.count(cmd) > 0) {
+    colvarscript::command const c = cmd_str_map[std::string(cmd)];
+    return cmd_arghelp[c][i].c_str();
+  }
+  cvm::error("Error: command "+std::string(cmd)+
+             " is not implemented.\n", INPUT_ERROR);
+  return NULL;
+}
+
+
+int colvarscript::get_command_n_args_min(char const *cmd)
+{
+  if (cmd_str_map.count(cmd) > 0) {
+    colvarscript::command const c = cmd_str_map[std::string(cmd)];
+    return cmd_n_args_min[c];
+  }
+  cvm::error("Error: command "+std::string(cmd)+
+             " is not implemented.\n", INPUT_ERROR);
+  return -1;
+}
+
+
+int colvarscript::get_command_n_args_max(char const *cmd)
+{
+  if (cmd_str_map.count(cmd) > 0) {
+    colvarscript::command const c = cmd_str_map[std::string(cmd)];
+    return cmd_n_args_max[c];
+  }
+  cvm::error("Error: command "+std::string(cmd)+
+             " is not implemented.\n", INPUT_ERROR);
+  return -1;
+}
+
+
+char const *colvarscript::get_command_full_help(char const *cmd)
+{
+  if (cmd_str_map.count(cmd) > 0) {
+    colvarscript::command const c = cmd_str_map[std::string(cmd)];
+    return cmd_full_help[c].c_str();
+  }
+  cvm::error("Error: command "+std::string(cmd)+
+             " is not implemented.\n", INPUT_ERROR);
+  return NULL;
 }
 
 
@@ -234,7 +321,7 @@ std::string colvarscript::get_command_cmdline_help(colvarscript::Object_type t,
   if (cmd_str_map.count(cmdkey) > 0) {
     command const c = cmd_str_map[cmdkey];
     return get_command_cmdline_syntax(t, c)+"\n\n"+
-      get_command_help(cmd_names[c]);
+      get_command_full_help(cmd_names[c]);
   }
   cvm::error("Error: could not find scripting command \""+cmd+"\".",
              INPUT_ERROR);
