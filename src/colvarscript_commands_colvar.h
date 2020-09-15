@@ -9,7 +9,8 @@
 
 
 CVSCRIPT(colvar_addforce,
-         "Apply the given force onto this colvar and return the same",
+         "Apply the given force onto this colvar and return the same\n"
+         "force : float or array - Applied force; matches colvar dimensionality",
          1, 1,
          "force : float or array - Applied force; must match colvar dimensionality",
          std::string const f_str(script->obj_to_str(script->get_colvar_cmd_arg(0, objc, objv)));
@@ -56,14 +57,16 @@ CVSCRIPT(colvar_delete,
          )
 
 CVSCRIPT(colvar_get,
-         "Get the value of the given feature for this colvar",
+         "Get the value of the given feature for this colvar\n"
+         "state : 1/0 - State of the given feature",
          1, 1,
          "feature : string - Name of the feature",
          return script->proc_features(this_colvar, objc, objv);
          )
 
 CVSCRIPT(colvar_getappliedforce,
-         "Return the total of the forces applied to this colvar",
+         "Return the total of the forces applied to this colvar\n"
+         "force : float - Applied force; matches the colvar dimensionality",
          0, 0,
          "",
          script->set_result_str((this_colvar->applied_force()).to_simple_string());
@@ -71,7 +74,8 @@ CVSCRIPT(colvar_getappliedforce,
          )
 
 CVSCRIPT(colvar_getatomgroups,
-         "Return the atom indices used by this colvar as a list of lists",
+         "Return the atom indices used by this colvar as a list of lists\n"
+         "groups : array of arrays of ints - Atom indices",
          0, 0,
          "",
          std::string result;
@@ -91,7 +95,8 @@ CVSCRIPT(colvar_getatomgroups,
          )
 
 CVSCRIPT(colvar_getatomids,
-         "Return the list of atom indices used by this colvar",
+         "Return the list of atom indices used by this colvar\n"
+         "indices : array of ints - Atom indices",
          0, 0,
          "",
          std::string result;
@@ -105,7 +110,8 @@ CVSCRIPT(colvar_getatomids,
          )
 
 CVSCRIPT(colvar_getconfig,
-         "Return the configuration string of this colvar",
+         "Return the configuration string of this colvar\n"
+         "conf : string - Current configuration string",
          0, 0,
          "",
          script->set_result_str(this_colvar->get_config());
@@ -113,7 +119,8 @@ CVSCRIPT(colvar_getconfig,
          )
 
 CVSCRIPT(colvar_getgradients,
-         "Return the atomic gradients of this colvar",
+         "Return the atomic gradients of this colvar\n"
+         "gradients : array of arrays of floats - Atomic gradients",
          0, 0,
          "",
          std::string result;
@@ -133,7 +140,8 @@ CVSCRIPT(colvar_getgradients,
          )
 
 CVSCRIPT(colvar_gettotalforce,
-         "Return the sum of internal and external forces to this colvar",
+         "Return the sum of internal and external forces to this colvar\n"
+         "force : float - Total force; matches the colvar dimensionality",
          0, 0,
          "",
          script->set_result_str((this_colvar->total_force()).to_simple_string());
@@ -156,7 +164,8 @@ CVSCRIPT(colvar_getvolmapids,
          )
 
 CVSCRIPT(colvar_help,
-         "Get a help summary or the help string of one colvar subcommand",
+         "Get a help summary or the help string of one colvar subcommand\n"
+         "help : string - Help string",
          0, 1,
          "command : string - Get the help string of this specific command",
          unsigned char *const cmdobj =
@@ -195,7 +204,8 @@ CVSCRIPT(colvar_modifycvcs,
          )
 
 CVSCRIPT(colvar_run_ave,
-         "Get the current running average of the value of this colvar",
+         "Get the current running average of the value of this colvar\n"
+         "value : float or array - Averaged value; matches the colvar dimensionality",
          0, 0,
          "",
          script->set_result_str(this_colvar->run_ave().to_simple_string());
@@ -211,7 +221,8 @@ CVSCRIPT(colvar_set,
          )
 
 CVSCRIPT(colvar_state,
-         "Print a string representation of the feature state of this colvar",
+         "Print a string representation of the feature state of this colvar\n"
+         "state : string - The feature state",
          0, 0,
          "",
          this_colvar->print_state();
@@ -219,7 +230,8 @@ CVSCRIPT(colvar_state,
          )
 
 CVSCRIPT(colvar_type,
-         "Get the type description of this colvar",
+         "Get the type description of this colvar\n"
+         "type : string - Type description",
          0, 0,
          "",
          script->set_result_str(this_colvar->value().type_desc(this_colvar->value().value_type));
@@ -227,7 +239,8 @@ CVSCRIPT(colvar_type,
          )
 
 CVSCRIPT(colvar_update,
-         "Recompute this colvar and return its up-to-date value",
+         "Recompute this colvar and return its up-to-date value\n"
+         "value : float or array - Current value; matches the colvar dimensionality",
          0, 0,
          "",
          this_colvar->calc();
@@ -237,7 +250,8 @@ CVSCRIPT(colvar_update,
          )
 
 CVSCRIPT(colvar_value,
-         "Get the current value of this colvar",
+         "Get the current value of this colvar\n"
+         "value : float or array - Current value; matches the colvar dimensionality",
          0, 0,
          "",
          script->set_result_str(this_colvar->value().to_simple_string());
@@ -245,7 +259,8 @@ CVSCRIPT(colvar_value,
          )
 
 CVSCRIPT(colvar_width,
-         "Get the width of this colvar",
+         "Get the width of this colvar\n"
+         "width : float - Value of the width",
          0, 0,
          "",
          script->set_result_str(cvm::to_str(this_colvar->width, 0,

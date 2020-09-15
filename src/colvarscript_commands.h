@@ -25,7 +25,8 @@
 
 // COMM = the id of the command (must be a member of colvarscript::command)
 
-// HELP = a one-line description (C string literal) for the command
+// HELP = short description (C string literal) for the command; the second line
+//        is optional, and documents the return value (if any)
 
 // N_ARGS_MIN = the lowest number of arguments allowed
 
@@ -67,6 +68,33 @@ extern "C" {
 
   /// Get the names of all commands (array of strings)
   char const ** cvscript_command_names();
+
+  /// Get the help summary of the given command
+  /// \param cmd Name of the command's function (e.g. "cv_units")
+  char const *cvscript_command_help(char const *cmd);
+
+  /// Get description of the return value of a command
+  /// \param cmd Name of the command's function (e.g. "cv_units")
+  char const *cvscript_command_rethelp(char const *cmd);
+
+  /// Get description of the arguments of a command (excluding prefix)
+  /// \param cmd Name of the command's function (e.g. "cv_units")
+  /// \param i Index of the argument; 0 is the first argument after the
+  /// prefix, e.g. "value" has an index of 0 in the array of arguments:
+  /// { "cv", "colvar", "xi", "value" }
+  char const *cvscript_command_arghelp(char const *cmd, int i);
+
+  /// Get the full help string of a command
+  /// \param cmd Name of the command's function (e.g. "cv_units")
+  char const *cvscript_command_full_help(char const *cmd);
+
+  /// Get number of required arguments (excluding prefix)
+  /// \param cmd Name of the command's function (e.g. "cv_units")
+  int cvscript_command_n_args_min(char const *cmd);
+
+  /// Get number of total arguments (excluding prefix)
+  /// \param cmd Name of the command's function (e.g. "cv_units")
+  int cvscript_command_n_args_max(char const *cmd);
 
 }
 
@@ -135,7 +163,8 @@ CVSCRIPT(cv_delete,
          )
 
 CVSCRIPT(cv_frame,
-         "Get or set current frame number (VMD only)",
+         "Get or set current frame number (VMD only)\n"
+         "frame : integer - Frame number",
          0, 1,
          "frame : integer - Frame number",
          char const *arg =
@@ -162,7 +191,8 @@ CVSCRIPT(cv_frame,
          )
 
 CVSCRIPT(cv_getconfig,
-         "Get the module's configuration string read so far",
+         "Get the module's configuration string read so far\n"
+         "conf : string - Current configuration string",
          0, 0,
          "",
          script->set_result_str(cvm::main()->get_config());
@@ -170,7 +200,8 @@ CVSCRIPT(cv_getconfig,
          )
 
 CVSCRIPT(cv_getenergy,
-         "Get the current Colvars energy",
+         "Get the current Colvars energy\n"
+         "E : float - Amount of energy (internal units)",
          0, 0,
          "",
          script->set_result_str(cvm::to_str(cvm::main()->total_bias_energy));
@@ -178,7 +209,8 @@ CVSCRIPT(cv_getenergy,
          )
 
 CVSCRIPT(cv_help,
-         "Get the help string of the Colvars scripting interface",
+         "Get the help string of the Colvars scripting interface\n"
+         "help : string - Help string",
          0, 1,
          "command : string - Get the help string of this specific command",
          unsigned char *const cmdobj =
@@ -205,7 +237,8 @@ CVSCRIPT(cv_help,
          )
 
 CVSCRIPT(cv_list,
-         "Return a list of all variables or biases",
+         "Return a list of all variables or biases\n"
+         "list : sequence of strings - List of elements",
          0, 1,
          "param : string - \"colvars\" or \"biases\"; default is \"colvars\"",
          std::string res;
@@ -235,7 +268,8 @@ CVSCRIPT(cv_list,
          )
 
 CVSCRIPT(cv_listcommands,
-         "Get the list of script functions, prefixed with \"cv_\", \"colvar_\" or \"bias_\"",
+         "Get the list of script functions, prefixed with \"cv_\", \"colvar_\" or \"bias_\"\n"
+         "list : sequence of strings - List of commands",
          0, 0,
          "",
          int const n_commands = cvscript_n_commands();
@@ -294,9 +328,10 @@ CVSCRIPT(cv_loadfromstring,
          )
 
 CVSCRIPT(cv_molid,
-         "Get or set the molecule ID on which Colvars is defined (VMD only)",
+         "Get or set the molecule ID on which Colvars is defined (VMD only)\n"
+         "molid : integer - Current molecule ID",
          0, 1,
-         "molid : integer - Molecule ID; -1 means undefined",
+         "molid : integer - New molecule ID; -1 means undefined",
          char const *arg =
            script->obj_to_str(script->get_module_cmd_arg(0, objc, objv));
          if (arg == NULL) {
@@ -311,7 +346,8 @@ CVSCRIPT(cv_molid,
          )
 
 CVSCRIPT(cv_printframe,
-         "Return the values that would be written to colvars.traj",
+         "Return the values that would be written to colvars.traj\n"
+         "values : string - The values\n",
          0, 0,
          "",
          std::ostringstream os;
@@ -321,7 +357,8 @@ CVSCRIPT(cv_printframe,
          )
 
 CVSCRIPT(cv_printframelabels,
-         "Return the labels that would be written to colvars.traj",
+         "Return the labels that would be written to colvars.traj\n"
+         "Labels : string - The labels",
          0, 0,
          "",
          std::ostringstream os;
@@ -362,14 +399,16 @@ CVSCRIPT(cv_save,
          )
 
 CVSCRIPT(cv_savetostring,
-         "Write the Colvars state to a string and return it",
+         "Write the Colvars state to a string and return it\n"
+         "state : string - The saved state",
          0, 0,
          "",
          return script->module()->write_restart_string(script->modify_str_result());
          )
 
 CVSCRIPT(cv_units,
-         "Get or set the current Colvars unit system",
+         "Get or set the current Colvars unit system\n"
+         "units : string - The current unit system",
          0, 1,
          "units : string - The new unit system",
          char const *argstr =
@@ -404,7 +443,8 @@ CVSCRIPT(cv_update,
          )
 
 CVSCRIPT(cv_version,
-         "Get the Colvars Module version number",
+         "Get the Colvars Module version number\n"
+         "version : string - Colvars version",
          0, 0,
          "",
          script->set_result_str(COLVARS_VERSION);

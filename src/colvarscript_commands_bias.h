@@ -9,7 +9,8 @@
 
 
 CVSCRIPT(bias_bin,
-         "Get the current grid bin index (1D ABF only for now)",
+         "Get the current grid bin index (1D ABF only for now)\n"
+         "bin : integer - Bin index",
          0, 0,
          "",
          script->set_result_str(cvm::to_str(this_bias->current_bin()));
@@ -17,7 +18,8 @@ CVSCRIPT(bias_bin,
          )
 
 CVSCRIPT(bias_bincount,
-         "Get the number of samples at the given grid bin (1D ABF only for now)",
+         "Get the number of samples at the given grid bin (1D ABF only for now)\n"
+         "samples : integer - Number of samples",
          0, 1,
          "index : integer - Grid index; defaults to current bin",
          int index = this_bias->current_bin();
@@ -35,7 +37,8 @@ CVSCRIPT(bias_bincount,
          )
 
 CVSCRIPT(bias_binnum,
-         "Get the total number of grid points of this bias (1D ABF only for now)",
+         "Get the total number of grid points of this bias (1D ABF only for now)\n"
+         "Bins : integer - Number of grid points",
          0, 0,
          "",
          int r = this_bias->bin_num();
@@ -57,7 +60,8 @@ CVSCRIPT(bias_delete,
          )
 
 CVSCRIPT(bias_energy,
-         "Get the current energy of this bias",
+         "Get the current energy of this bias\n"
+         "E : float - Energy value",
          0, 0,
          "",
          script->set_result_str(cvm::to_str(this_bias->get_energy()));
@@ -65,14 +69,16 @@ CVSCRIPT(bias_energy,
          )
 
 CVSCRIPT(bias_get,
-         "Get the value of the given feature for this bias",
+         "Get the value of the given feature for this bias\n"
+         "state : 1/0 - State of the given feature",
          1, 1,
          "feature : string - Name of the feature",
          return script->proc_features(this_bias, objc, objv);
          )
 
 CVSCRIPT(bias_getconfig,
-         "Return the configuration string of this bias",
+         "Return the configuration string of this bias\n"
+         "conf : string - Current configuration string",
          0, 0,
          "",
          script->set_result_str(this_bias->get_config());
@@ -80,7 +86,8 @@ CVSCRIPT(bias_getconfig,
          )
 
 CVSCRIPT(bias_help,
-         "Get a help summary or the help string of one bias subcommand",
+         "Get a help summary or the help string of one bias subcommand\n"
+         "help : string - Help string",
          0, 1,
          "command : string - Get the help string of this specific command",
          unsigned char *const cmdobj =
@@ -129,7 +136,8 @@ CVSCRIPT(bias_save,
          )
 
 CVSCRIPT(bias_savetostring,
-         "Save data from this bias into a string and return it",
+         "Save data from this bias into a string and return it\n"
+         "state : string - The bias state",
          0, 0,
          "",
          return this_bias->write_state_string(script->modify_str_result());
@@ -156,7 +164,8 @@ CVSCRIPT(bias_share,
          )
 
 CVSCRIPT(bias_state,
-         "Print a string representation of the feature state of this bias",
+         "Print a string representation of the feature state of this bias\n"
+         "state : string - String representation of the bias features",
          0, 0,
          "",
          this_bias->print_state();
@@ -164,7 +173,8 @@ CVSCRIPT(bias_state,
          )
 
 CVSCRIPT(bias_update,
-         "Recompute this bias and return its up-to-date energy",
+         "Recompute this bias and return its up-to-date energy\n"
+         "E : float - Energy value",
          0, 0,
          "",
          this_bias->update();

@@ -143,9 +143,32 @@ public:
     return cmd_names;
   }
 
+  /// Get one-line help summary for a command
+  /// \param cmd Name of the command's function (e.g. "cv_units")
+  char const *get_command_help(char const *cmd);
+
+  /// Get description of the return value of a command
+  /// \param cmd Name of the command's function (e.g. "cv_units")
+  char const *get_command_rethelp(char const *cmd);
+
+  /// Get description of the argument of a command (excluding prefix)
+  /// \param cmd Name of the command's function (e.g. "cv_units")
+  /// \param i Index of the argument; 0 is the first argument after the
+  /// prefix, e.g. "value" has an index of 0 in the array of arguments:
+  /// { "cv", "colvar", "xi", "value" }
+  char const *get_command_arghelp(char const *cmd, int i);
+
+  /// Get number of required arguments (excluding prefix)
+  /// \param cmd Name of the command's function (e.g. "cv_units")
+  int get_command_n_args_min(char const *cmd);
+
+  /// Get number of total arguments (excluding prefix)
+  /// \param cmd Name of the command's function (e.g. "cv_units")
+  int get_command_n_args_max(char const *cmd);
+
   /// Get help string for a command (does not specify how it is launched)
   /// \param cmd Name of the command's function (e.g. "cv_units")
-  std::string get_command_help(char const *cmd);
+  char const *get_command_full_help(char const *cmd);
 
   /// Get summary of command line syntax for all commands of a given context
   /// \param t One of use_module, use_colvar or use_bias
@@ -218,6 +241,9 @@ private: // TODO
   /// Help strings for each command
   std::vector<std::string> cmd_help;
 
+  /// Description of the return values of each command (may be empty)
+  std::vector<std::string> cmd_rethelp;
+
   /// Minimum number of arguments for each command
   std::vector<size_t> cmd_n_args_min;
 
@@ -226,6 +252,9 @@ private: // TODO
 
   /// Help strings for each command argument
   std::vector< std::vector<std::string> > cmd_arghelp;
+
+  /// Full help strings for each command
+  std::vector<std::string> cmd_full_help;
 
   /// Implementations of each command
   std::vector<int (*)(void *, int, unsigned char * const *)> cmd_fns;
@@ -306,12 +335,12 @@ int colvarscript::check_cmd_nargs(char const *cmd,
   int const shift = cmd_arg_shift<T>();
   if (objc < shift+n_args_min) {
     add_error_msg("Missing arguments for script function \""+std::string(cmd)+
-                  "\":\n"+get_command_help(cmd));
+                  "\":\n"+get_command_full_help(cmd));
     return COLVARSCRIPT_ERROR;
   }
   if (objc > shift+n_args_max) {
     add_error_msg("Too many arguments for script function \""+std::string(cmd)+
-                  "\":\n"+get_command_help(cmd));
+                  "\":\n"+get_command_full_help(cmd));
     return COLVARSCRIPT_ERROR;
   }
   return COLVARSCRIPT_OK;
