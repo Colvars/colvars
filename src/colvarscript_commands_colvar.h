@@ -182,7 +182,7 @@ CVSCRIPT(colvar_modifycvcs,
          "Modify configuration of individual components by passing string arguments",
          1, 1,
          "confs : sequence of strings - New configurations; empty strings are skipped",
-         std::vector<std::string> const confs(script->proxy()->script_obj_to_str_vector(script->get_colvar_cmd_arg(0, objc, objv)));
+         std::vector<std::string> const confs(script->obj_to_str_vector(script->get_colvar_cmd_arg(0, objc, objv)));
          cvm::increase_depth();
          int res = this_colvar->update_cvc_config(confs);
          cvm::decrease_depth();

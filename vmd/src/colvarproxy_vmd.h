@@ -68,10 +68,6 @@ public:
 
   virtual void init_tcl_pointers();
 
-  virtual char const *script_obj_to_str(unsigned char *obj);
-
-  virtual std::vector<std::string> script_obj_to_str_vector(unsigned char *obj);
-
   virtual void add_energy(cvm::real energy);
 
   virtual void request_total_force(bool yesno);

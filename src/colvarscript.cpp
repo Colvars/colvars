@@ -346,6 +346,60 @@ int colvarscript::run(int objc, unsigned char *const objv[])
 }
 
 
+char *colvarscript::obj_to_str(unsigned char *obj)
+{
+  char *strobj = reinterpret_cast<char *>(obj);
+  if (cvm::debug()) {
+    cvm::log("Using simple-cast script::obj_to_str(): result = \"" +
+             (strobj ? std::string(strobj) : std::string("(null)")) + "\"");
+  }
+  return strobj;
+}
+
+
+std::vector<std::string> colvarscript::obj_to_str_vector(unsigned char *obj)
+{
+  if (cvm::debug()) {
+    cvm::log("Using simple-cast colvarscript::obj_to_str_vector().\n");
+  }
+
+  std::vector<std::string> new_result;
+  std::string const str(reinterpret_cast<char *>(obj));
+
+  // TODO get rid of this once colvarscript can handle both fix_modify and Tcl?
+  // LAMMPS has a nicer function in the utils class
+
+  for (size_t i = 0; i < str.length(); i++) {
+    char const c = str[i];
+    if (c == '\"') {
+      i++;
+      if (i >= str.length()) {
+        cvm::error("Error: could not split the following string:\n"+
+                   str+"\n", INPUT_ERROR);
+        break;
+      }
+      new_result.push_back(std::string(""));
+      while (str[i] != '\"') {
+        new_result.back().append(1, str[i]);
+        if (i >= str.length()) {
+          cvm::error("Error: could not split the following string:\n"+
+                     str+"\n", INPUT_ERROR);
+          break;
+        } else {
+          i++;
+        }
+      }
+    }
+  }
+
+  if (cvm::debug()) {
+    cvm::log("result = "+cvm::to_str(new_result)+".\n");
+  }
+
+  return new_result;
+}
+
+
 int colvarscript::proc_features(colvardeps *obj,
                                 int objc, unsigned char *const objv[]) {
 
