@@ -259,8 +259,6 @@ public:
   int close_output_stream(std::string const &output_name);
   int backup_file(char const *filename);
 
-  char const *script_obj_to_str(unsigned char *obj);
-  std::vector<std::string> script_obj_to_str_vector(unsigned char *obj);
 };
 
 

@@ -426,44 +426,6 @@ int colvarproxy_vmd::run_colvar_gradient_callback(
 #endif
 
 
-char const *colvarproxy_vmd::script_obj_to_str(unsigned char *obj)
-{
-#ifdef VMDTCL // is TCL ever off?
-  return colvarproxy_tcl::tcl_get_str(obj);
-#else
-  // This is most likely not going to be executed
-  return colvarproxy::script_obj_to_str(obj);
-#endif
-}
-
-
-std::vector<std::string> colvarproxy_vmd::script_obj_to_str_vector(unsigned char *obj)
-{
-  if (cvm::debug()) {
-    cvm::log("Called colvarproxy_namd::script_obj_to_str_vector().\n");
-  }
-  std::vector<std::string> result;
-#ifdef VMDTCL
-  Tcl_Interp *interp = reinterpret_cast<Tcl_Interp *>(tcl_interp_);
-  Tcl_Obj *tcl_obj = reinterpret_cast<Tcl_Obj *>(obj);
-  Tcl_Obj **tcl_list_elems = NULL;
-  int count = 0;
-  if (Tcl_ListObjGetElements(interp, tcl_obj, &count, &tcl_list_elems) ==
-      TCL_OK) {
-    result.reserve(count);
-    for (int i = 0; i < count; i++) {
-      result.push_back(Tcl_GetString(tcl_list_elems[i]));
-    }
-  } else {
-    Tcl_SetResult(interp,
-                  const_cast<char *>("Cannot parse Tcl list."), TCL_STATIC);
-  }
-#endif
-  return result;
-}
-
-
-
 enum e_pdb_field {
   e_pdb_none,
   e_pdb_occ,

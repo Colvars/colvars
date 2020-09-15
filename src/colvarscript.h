@@ -137,12 +137,6 @@ public:
   template<colvarscript::Object_type T>
   int cmd_arg_shift();
 
-  /// Use scripting language to get the string representation of an object
-  inline char const *obj_to_str(unsigned char *const obj)
-  {
-    return (obj == NULL ? NULL : proxy_->script_obj_to_str(obj));
-  }
-
   /// Get names of all commands
   inline char const **get_command_names() const
   {
@@ -181,6 +175,12 @@ public:
   {
     return this->proxy_;
   }
+
+  /// Get the string representation of an object (by default, a simple cast)
+  char *obj_to_str(unsigned char *obj);
+
+  /// Get a list of strings from an object (does not work with a simple cast)
+  std::vector<std::string> obj_to_str_vector(unsigned char *obj);
 
 private:
 
