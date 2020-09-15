@@ -334,12 +334,14 @@ int colvarscript::check_cmd_nargs(char const *cmd,
 {
   int const shift = cmd_arg_shift<T>();
   if (objc < shift+n_args_min) {
-    add_error_msg("Missing arguments for script function \""+std::string(cmd)+
+    add_error_msg("Insufficient number of arguments ("+cvm::to_str(objc)+
+                  ") for script function \""+std::string(cmd)+
                   "\":\n"+get_command_full_help(cmd));
     return COLVARSCRIPT_ERROR;
   }
   if (objc > shift+n_args_max) {
-    add_error_msg("Too many arguments for script function \""+std::string(cmd)+
+    add_error_msg("Too many arguments ("+cvm::to_str(objc)+
+                  ") for script function \""+std::string(cmd)+
                   "\":\n"+get_command_full_help(cmd));
     return COLVARSCRIPT_ERROR;
   }
