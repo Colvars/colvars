@@ -696,8 +696,17 @@ int tcl_run_colvarscript_command(ClientData /* clientData */,
 
   cvm::clear_error();
 
-  int retval = script->run(objc,
-                           reinterpret_cast<unsigned char * const *>(objv));
+  unsigned char * arg_pointers_[100];
+  if (objc > 100) {
+    std::string const errstr = "Too many positional arguments ("+
+      cvm::to_str(objc)+") passed to the \"cv\" command.\n";
+    Tcl_SetResult(interp, const_cast<char *>(errstr.c_str()), TCL_VOLATILE);
+    return TCL_ERROR;
+  }
+  for (int i = 0; i < objc; i++) {
+    arg_pointers_[i] = reinterpret_cast<unsigned char *>(const_cast<char *>(proxy->tcl_get_str(objv[i])));
+  }
+  int retval = script->run(objc, arg_pointers_);
 
   std::string result = proxy->get_error_msgs() + script->result;
 
