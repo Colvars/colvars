@@ -215,7 +215,7 @@ for dir in ${DIRLIST} ; do
       RETVAL=$?
     else
       spiff -r 1e-${DIFF_PREC} $f $base > "$base.diff"
-      ETVAL=$?
+      RETVAL=$?
     fi
     if [ $RETVAL -ne 0 ]
     then
