@@ -124,6 +124,7 @@ then
   GMX_MINOR_VERSION=`get_gromacs_minor_version_cmake ${GMX_VERSION_INFO}`
 
   GMX_VERSION=${GMX_MAJOR_VERSION}.${GMX_MINOR_VERSION}
+  echo "Detected GROMACS version ${GMX_VERSION}."
 
   case ${GMX_VERSION} in
     '2018.3')
