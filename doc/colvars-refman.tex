@@ -23,6 +23,32 @@
 \definecolor{background-color}{gray}{0.84}
 \usepackage{transparent}
 
+% Example code blocks
+\usepackage{xcolor}
+\usepackage{mdframed}
+
+\definecolor{cvexample-border-color}{rgb}{0.5,0.0,0.5}
+\definecolor{cvexample-background-color}{rgb}{1.0,0.95,1.0}
+\newenvironment{cvexampleinput}{%
+  \begin{mdframed}[%
+      linecolor=cvexample-border-color,linewidth=2pt,%
+      backgroundcolor=cvexample-background-color]
+  \ifdefined\HCode\HCode{<pre>}\else\begin{ttfamily}\fi}{%
+  \ifdefined\HCode\HCode{</pre>}\else\end{ttfamily}\fi
+  \end{mdframed}
+}
+
+\definecolor{mdexample-border-color}{rgb}{1.0,0.6,0.1}
+\definecolor{mdexample-background-color}{rgb}{1.0,0.96,0.9}
+\newenvironment{mdexampleinput}{%
+  \begin{mdframed}[%
+      linecolor=mdexample-border-color,linewidth=2pt,%
+      backgroundcolor=mdexample-background-color]
+  \ifdefined\HCode\HCode{<pre>}\else\begin{ttfamily}\fi}{%
+  \ifdefined\HCode\HCode{</pre>}\else\end{ttfamily}\fi
+  \end{mdframed}
+}
+
 % for code-specific macros
 \usepackage{comment}
 

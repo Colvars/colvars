@@ -5,6 +5,30 @@
 % If you wish to distribute your changes, please submit them to the
 % Colvars repository at GitHub.
 
+% Set flags depending on which engine this manual is compiled for
+
+\cvlammpsonly{
+\def\cvscriptapi{1} % Supports the scripting API
+\def\cvscriptcmdapi{1} % Supports command-line scripting (via fix_modify)
+\def\cvscriptpyapi{1} % Supports Python scripting
+\newcommand{\cvscriptcmd}{\texttt{fix\_modify Colvars}}
+}
+
+\cvnamdonly{
+\def\cvvmdornamd{1}
+\def\cvscriptapi{1}
+\def\cvscriptcmdapi{1} % Supports command-line scripting (via cv Tcl command)
+\newcommand{\cvscriptcmd}{\texttt{cv}}
+}
+
+\cvvmdonly{
+\def\cvvmdornamd{1}
+\def\cvscriptapi{1}
+\def\cvscriptcmdapi{1}
+\newcommand{\cvscriptcmd}{\texttt{cv}}
+}
+
+
 \cvnamdugonly{
 \section{Collective Variable-based Calculations (Colvars)}
 \label{section:colvars}
@@ -92,9 +116,7 @@ In Colvars terms, this is done by applying a moving restraint to the distance be
 The configuration will contain two blocks, one defining the distance variable (see section \ref{sec:colvar} and \ref{sec:cvc_distance}), and the other the moving harmonic restraint (\ref{sec:colvarbias_harmonic}).
 \cvvmdonly{Note that in VMD, no biasing forces are applied, but biases may be useful in the context of an analysis script, e.g. to collect histograms or to compute bias energies.}
 
-\bigskip
-% verbatim can't appear within commands
-{\noindent\ttfamily
+\begin{cvexampleinput}
 \cvlammpsonly{indexFile index.ndx\\}colvar \{\\
 \-~~name dist\\
 \-~~distance \{\\
@@ -113,8 +135,8 @@ harmonic \{\\
 \-~~centers 4.0~~~~~~~~~\# initial distance\\
 \-~~targetCenters 15.0~~\# final distance\\
 \-~~targetNumSteps 500000\\
-\}\\
-}
+\}
+\end{cvexampleinput}
 
 Reading this input in plain English: the variable here named \emph{dist} consists in a distance function between the centers of two groups: the ligand (atoms 42 to 55) and the $\alpha$-carbon atoms of residues 15 to 30 in the protein \cvnamebasedonly{(segment name PR)}\cvlammpsonly{(selected from the index group ``\texttt{C-alpha\_15-30}'')}.
 To the ``\emph{dist}'' variable, we apply a \texttt{harmonic} potential of force constant 20~\cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{(energy unit)}/\cvnamdonly{\AA}\cvvmdonly{\AA}\cvlammpsonly{(length unit)}$^2$, initially centered around a value of 4~\cvnamdonly{\AA}\cvvmdonly{\AA}\cvlammpsonly{(length unit)}, which will increase to 15~\cvnamdonly{\AA}\cvvmdonly{\AA}\cvlammpsonly{(length unit)} over 500,000 simulation steps.
@@ -708,10 +730,8 @@ The values of ``$c$''\cvnamebasedonly{ and ``alpha''} are also recorded througho
   \label{fig:colvars_diagram}
 \end{figure}
 
-{%
-% verbatim can't appear within commands
-\noindent\ttfamily
-colvar \{\\
+\begin{cvexampleinput}
+\noindent{}colvar \{\\
 \-~~\# difference of two distances\\
 \-~~name d \\
 \-~~width 0.2  \# 0.2 \AA{} of estimated fluctuation width \\
@@ -734,28 +754,26 @@ colvar \{\\
 \-~~~~group1 \{ atomNumbersRange  1-10 \}\\
 \-~~~~group2 \{ atomNumbersRange 11-20 \}\\
 \-~~\}\\
-\}\\}
-\cvnamebasedonly{{%
-\noindent\ttfamily\\
+\}\\
+\cvnamebasedonly{%
 colvar \{\\
 \-~~name alpha\\
 \-~~alpha \{\\
 \-~~~~psfSegID PROT\\
 \-~~~~residueRange 1-10\\
 \-~~\}\\
-\}}}
-{%
-\noindent\ttfamily\\
+\}}
 \\
 harmonic \{\\
 \-~~colvars d c\\
 \-~~centers 3.0 4.0\\
 \-~~forceConstant 5.0\\
 \}\\
-
-\noindent histogram \{\\
+\\
+histogram \{\\
 \-~~colvars c\cvnamebasedonly{ alpha}\\
-\}\\}
+\}
+\end{cvexampleinput}
 
 %\cvlammpsonly{\textbf{Note:} \emph{currently, the $\alpha$-helical content colvar is unavailable in LAMMPS, as it requires a name-based topology; future releases will overcome this limitation.}}
 
@@ -814,16 +832,17 @@ All such files' names also begin with the prefix \outputName.
 
 A collective variable is defined by the keyword \texttt{colvar} followed by its configuration options contained within curly braces:
 
-{\bigskip\noindent\ttfamily
-colvar \{\\
+\begin{cvexampleinput}
+\-colvar \{\\
 \-~~name xi\\
 \-~~$<$other options$>$\\
 \-~~function\_name \{\\
 \-~~~~$<$parameters$>$\\
 \-~~~~$<$atom selection$>$\\
 \-~~\}\\
-\}\\
-}
+\}
+\end{cvexampleinput}
+
 
 \noindent{}There are multiple ways of defining a variable:
 \begin{itemize}
@@ -2404,10 +2423,8 @@ In the \texttt{gspath~\{...\}} and the \texttt{gzpath~\{...\}} block all vectors
 
 The usage of \texttt{gzpath} and \texttt{gspath} is illustrated below:
 
-\bigskip
-{%
-% verbatim can't appear within commands
-\noindent\ttfamily colvar \{\\
+\begin{cvexampleinput}
+colvar \{\\
 \-~~\# Progress along the path\\
 \-~~name gs\\
 \-~~\# The path is defined by 5 reference frames (from string-00.pdb to string-04.pdb)\\
@@ -2434,7 +2451,9 @@ The usage of \texttt{gzpath} and \texttt{gspath} is illustrated below:
 \-~~~~refPositionsFile4 string-03.pdb\\
 \-~~~~refPositionsFile5 string-04.pdb\\
 \-~~\}\\
-\}}
+\}
+\end{cvexampleinput}
+
 
 \cvsubsubsec{\texttt{linearCombination}: Helper CV to define a linear combination of other CVs}{sec:cvc_linearCombination}
 \labelkey{colvar|linearCombination}
@@ -2498,10 +2517,8 @@ In the \texttt{gspathCV~\{...\}} and the \texttt{gzpathCV~\{...\}} block all vec
 
 The usage of \texttt{gzpathCV} and \texttt{gspathCV} is illustrated below:
 
-\bigskip
-{%
-% verbatim can't appear within commands
-\noindent\ttfamily colvar \{\\
+\begin{cvexampleinput}
+\-colvar \{\\
 \-~~\# Progress along the path\\
 \-~~name gs\\
 \-~~\# Path defined by the CV space of two dihedral angles\\
@@ -2523,7 +2540,8 @@ The usage of \texttt{gzpathCV} and \texttt{gspathCV} is illustrated below:
 \-~~~~\}\\
 \-~~\}\\
 \}\\
-\noindent\ttfamily colvar \{\\
+\\
+\-colvar \{\\
 \-~~\# Distance from the path\\
 \-~~name gz\\
 \-~~gzpathCV \{\\
@@ -2543,7 +2561,8 @@ The usage of \texttt{gzpathCV} and \texttt{gspathCV} is illustrated below:
 \-~~~~~~group4 \{atomNumbers \{17\}\}\\
 \-~~~~\}\\
 \-~~\}\\
-\}}
+\}
+\end{cvexampleinput}
 
 
 \cvsubsec{Arithmetic path collective variables}{sec:cvc_apathCV}
@@ -2605,10 +2624,8 @@ This colvar component computes the $z$ variable. Options are the same as in \ref
 
 The usage of \texttt{azpathCV} and \texttt{aspathCV} is illustrated below:
 
-\bigskip
-{%
-% verbatim can't appear within commands
-\noindent\ttfamily colvar \{\\
+\begin{cvexampleinput}
+colvar \{\\
 \-~~\# Progress along the path\\
 \-~~name as\\
 \-~~\# Path defined by the CV space of two dihedral angles\\
@@ -2632,7 +2649,8 @@ The usage of \texttt{azpathCV} and \texttt{aspathCV} is illustrated below:
 \-~~~~\}\\
 \-~~\}\\
 \}\\
-\noindent\ttfamily colvar \{\\
+\\
+colvar \{\\
 \-~~\# Distance from the path\\
 \-~~name az\\
 \-~~azpathCV \{\\
@@ -2654,8 +2672,8 @@ The usage of \texttt{azpathCV} and \texttt{aspathCV} is illustrated below:
 \-~~~~~~group4 \{atomNumbers \{17\}\}\\
 \-~~~~\}\\
 \-~~\}\\
-\}}
-
+\}
+\end{cvexampleinput}
 
 
 \cvscriptonly{
@@ -2724,31 +2742,32 @@ Because the volumetric map itself and the atoms affected by it are defined exter
 Firstly, a volumetric map that has a value of 1 inside the cavity and 0 outside should be prepared.
 A reasonable starting point may be obtained, for example, with VMD: using an existing trajectory where the cavity is occupied by solvent and a spatial selection that identifies all the molecules within the cavity, \texttt{volmap occupancy -allframes -combine max} computes the occupancy map as a step function (values 1 or 0), and \texttt{volutil -smooth \ldots} makes it a continuous map, suitable for use as a MD simulation bias.
 A PDB file defining the selection (for example, where all water oxygens and ions have an occupancy of 1 and other atoms 0) is also prepared using VMD.
-Both the map file and the atom selection file are then loaded via the \texttt{mGridForcePotFile} and related NAMD commands:\\
+Both the map file and the atom selection file are then loaded via the \texttt{mGridForcePotFile} and related NAMD commands:
 
-{\noindent\ttfamily
+\begin{mdexampleinput}
   \-mGridForce yes\\
   \-mGridForcePotFile Cavity cavity.dx~~~\# OpenDX map file\\
   \-mGridForceFile Cavity water-sel.pdb~~\# PDB file used for atom selection\\
   \-mGridForceCol Cavity O~~~~~~~~~~~~~~~\# Use the occupancy column of the PDB file\\
   \-mGridForceChargeCol Cavity B~~~~~~~~~\# Use beta as ``charge'' (default: electric charge)\\
   \-mGridForceScale Cavity 0.0 0.0 0.0~~~\# Do not use GridForces for this map\\
-}
+\end{mdexampleinput}
 
 The value of \texttt{mGridForceScale} is particularly important, because it determines the GridForces force constant for the ``Cavity'' map.
 A non-zero value enables a conventional GridForces calculation, where the force constant remains fixed within each \texttt{run} command and the forces on the atoms depend only on their positions in space.
 However, setting \texttt{mGridForceScale} to zero signals to NAMD that the force acting through the volumetric map may be computed dynamically, as part of a collective-variable biasing scheme.
 To do so, the map labeled ``Cavity'' needs to be referred to in the Colvars configuration:\\
 
-{\noindent\ttfamily
+\begin{mdexampleinput}
   \-cv config "\\
   \-colvar \{\\
   \-\-~~name n\_waters\\
   \-\-~~mapTotal \{\\
   \-\-~~~~mapName Cavity  \# Same label as the GridForce map\\
   \-\-~~\}\\
-  \-\}"\\
-}
+  \-\}"
+\end{mdexampleinput}
+
 
 The variable ``\texttt{n\_waters}'' may then be used with any of the enhanced sampling methods available (\ref{sec:colvarbias}): new forces applied to it at each simulation step will be transmitted to the corresponding atoms within the same step.
 
@@ -2768,7 +2787,7 @@ where $K$ is the number of maps employed and each $\Phi_k$ is a \texttt{mapTotal
 
 \noindent\textbf{Example: transitions between macromolecular shapes using volumetric maps.}\\
 A series of map files, each representing a different shape, is loaded into NAMD:\\
-{\noindent\ttfamily
+\begin{mdexampleinput}
   \-mGridForce yes\\
   \-for \{ set k 1 \} \{ \$k <= \$K \} \{ incr k \} \{\\
   \-~~mGridForcePotFile Shape\_\$k map\_\$k.dx~~~\# Density map of the k-th state\\
@@ -2776,10 +2795,12 @@ A series of map files, each representing a different shape, is loaded into NAMD:
   \-~~mGridForceCol Shape\_\$k O~~~\# Use the occupancy column of the PDB file atoms.pdb\\
   \-~~mGridForceChargeCol Shape\_\$k B~~~\# Use beta as ``charge'' (default: electric charge)\\
   \-~~mGridForceScale Shape\_\$k 0.0 0.0 0.0~~\# Do not use GridForces for this map\\
-  \-\}\\
-}
+  \-\}
+\end{mdexampleinput}
+
+
 The GridForces maps thus loaded are then used to define the Multi-Map collective variable, with coefficients $\xi_k = k$ \cite{Fiorin2020}:\\
-{\noindent\ttfamily
+\begin{mdexampleinput}
   \-\# Collect the definition of all components into one string\\
   \-set components "\\
   \-for \{ set k 1 \} \{ \$k <= \$K \} \{ incr k \} \{\\
@@ -2795,8 +2816,9 @@ The GridForces maps thus loaded are then used to define the Multi-Map collective
   \-colvar \{\\
   \-\-~~name shapes\\
   \-\-~~\$\{components\}\\
-  \-\}"\\
-}
+  \-\}"
+\end{mdexampleinput}
+
 
 The above example illustrates a use case where a weighted sum (i.e.{} a linear combination) is used to define a single variable from multiple components.
 Depending on the problem under study, non-linear functions may be more appropriate.
@@ -3026,10 +3048,8 @@ the keyword \texttt{period}, and the optional keyword \texttt{wrapAround}, with 
 same meaning as in periodic components (see \ref{sec:cvc_periodic} for details).
 A vector variable may be defined by specifying the \texttt{customFunction} parameter several times: each expression defines one scalar element of the vector colvar, as in this example:
 
-\bigskip
-{%
-% verbatim can't appear within commands
-\noindent\ttfamily colvar \{\\
+\begin{cvexampleinput}
+\-colvar \{\\
 \-~~name custom\\
 \\
 \-~~\# A 2-dimensional vector function of a scalar x and a 3-vector r\\
@@ -3046,7 +3066,8 @@ A vector variable may be defined by specifying the \texttt{customFunction} param
 \-~~~~group1 \{ atomNumbers 10 11 12 \}\\
 \-~~~~group2 \{ atomNumbers  20 21 22 \}\\
 \-~~\}\\
-\}}
+\}
+\end{cvexampleinput}
 
 Numeric constants may be given in either decimal or exponential form (e.g. 3.12e-2).
 An expression may be followed by definitions for intermediate values that
@@ -3723,20 +3744,17 @@ However, atoms included by multiple keywords are only counted once.
 Below is an example configuration for an atom group called ``\texttt{atoms}''.
 \textbf{Note: }\emph{this is an unusually varied combination of selection keywords, demonstrating how they can be combined together: most simulations only use one of them.}\\
 
-{%
-% verbatim can't appear within commands
-\noindent\ttfamily atoms \{\\
+\begin{cvexampleinput}
+\-atoms \{\\
 \\
-\-~~\# add atoms 1 and 3 to this group (note: the first atom in the system is 1)\\
+\-~~\# add atoms 1 and 3 to this group (note: first atom in the system is 1)\\
 \-~~atomNumbers \{ \\
 \-~~~~1 3\\
 \-~~\}\\
 \\
 \-~~\# add atoms starting from 20 up to and including 50\\
 \-~~atomNumbersRange  20-50\\
-}
-\cvnamebasedonly{{%
-\noindent\ttfamily\\
+\cvnamebasedonly{%
 \-~~\# add all the atoms with occupancy 2 in the file atoms.pdb\\
 \-~~atomsFile             atoms.pdb\\
 \-~~atomsCol              O\\
@@ -3746,11 +3764,11 @@ Below is an example configuration for an atom group called ``\texttt{atoms}''.
 \-~~psfSegID              PR1 PR2\\
 \-~~atomNameResidueRange  CA 11-20\\
 \-~~atomNameResidueRange  CA 11-20\\
-}}
-{\noindent\ttfamily\\
+}
 \-~~\# add index group (requires a .ndx file to be provided globally)\\
 \-~~indexGroup Water\\
-\}\\}
+\}
+\end{cvexampleinput}
 
 
 The resulting selection includes atoms 1 and 3, those between 20 and 50,\cvnamebasedonly{ the $\mathrm{C}_{\alpha}$ atoms between residues 11 and 20 of the two segments \texttt{PR1} and \texttt{PR2},} and those in the index group called ``Water''.
@@ -3966,7 +3984,9 @@ Be careful when using these options in ABF simulations or when using total force
     Block \texttt{fittingGroup \{ ... \}}}{%
     This atom group itself}{%
     If either \texttt{centerReference} or \texttt{rotateReference} is defined, this keyword defines an alternate atom group to calculate the optimal roto-translation.
-    Use this option to define a continuous rotation if the structure of the group involved changes significantly (a typical symptom would be the message ``Warning: discontinuous rotation!'').
+    Use this option to define a continuous rotation if the structure of the group involved changes significantly (a typical symptom would be the message ``Warning: discontinuous rotation!'').}
+
+\end{itemize}
 
 \cvnamebasedonly{
     The following example illustrates the use of \texttt{fittingGroup} as part of a Distance to Bound Configuration (DBC)
@@ -3974,11 +3994,10 @@ Be careful when using these options in ABF simulations or when using total force
     The group called ``\texttt{atoms}'' describes coordinates of a ligand's atoms, expressed in a moving frame of
     reference tied to a binding site (here within a protein).
     An optimal roto-translation is calculated automatically by fitting the C$_{\alpha}$ trace of the rest of the protein onto the coordinates provided by a PDB file.
-    To define a DBC coordinate, this atom group would be used within an \refkey{rmsd}{sec:cvc_rmsd} function.}
+    To define a DBC coordinate, this atom group would be used within an \refkey{rmsd}{sec:cvc_rmsd} function.
 
-{%
-\noindent\ttfamily
-\# Example: defining a group "atoms" (the ligand) whose coordinates are expressed \\
+\begin{cvexampleinput}
+\-\# Example: defining a group "atoms" (the ligand) whose coordinates are expressed \\
 \# in a roto-translated frame of reference defined by a second group (the receptor)\\
 atoms \{\\
 \\
@@ -3994,9 +4013,9 @@ atoms \{\\
 \-~~~~atomNameResidueRange  CA 59-100\\
 \-~~\} \\
 \-~~refPositionsFile all.pdb  \# can be the entire system\\
-\}\\}
+\}
+\end{cvexampleinput}
 }
-\end{itemize}
 
 The following two options have default values appropriate for the vast majority of applications, and are only provided to support rare, special cases.
 \begin{itemize}
@@ -4110,15 +4129,15 @@ To gain an estimate of the computational cost of a large colvar, one can use a t
 
 A biasing or analysis method can be applied to existing collective variables by using the following configuration:
 
-{\bigskip\noindent\ttfamily
-$<$biastype$>$ \{\\
+\begin{cvexampleinput}
+\-$<$biastype$>$ \{\\
 \-~~name $<$name$>$ \\
 \-~~colvars $<$xi1$>$ $<$xi2$>$ ...\\
 \-~~$<$parameters$>$\\
-\}\\
-}
+\}
+\end{cvexampleinput}
 
-\noindent{} The keyword \texttt{$<$biastype$>$} indicates the method of choice.
+\noindent{}The keyword \texttt{$<$biastype$>$} indicates the method of choice.
 There can be multiple instances of the same method, e.g.{} using multiple \texttt{harmonic} blocks allows defining multiple restraints.
 
 All biasing and analysis methods implemented recognize the following options:
@@ -4865,8 +4884,7 @@ Unfortunately, processing explicit hills alongside the potential and force grids
 In general, it is a good idea to \emph{define a repulsive potential to avoid hills from coming too close to the grid's boundaries}, for example as a \texttt{harmonicWalls} restraint (see \ref{sec:colvarbias_harmonic_walls}).\\
 
 \noindent\textbf{Example:} Using harmonic walls to protect the grid's boundaries.
-{\noindent\ttfamily
-\\
+\begin{cvexampleinput}
 \-colvar \{\\
 \-\-~~name r\\
 \-\-~~distance \{ ... \}\\
@@ -4886,8 +4904,8 @@ In general, it is a good idea to \emph{define a repulsive potential to avoid hil
 \-\-~~colvars r\\
 \-\-~~upperWalls 13.0\\
 \-\-~~upperWallConstant 2.0\\
-\-\}\\
-}
+\-\}
+\end{cvexampleinput}
 
 In the colvar \texttt{r}, the \texttt{distance} function used has a \texttt{lowerBoundary} automatically set to 0~\AA{} by default, thus the keyword \texttt{lowerBoundary} itself is not mandatory and \texttt{hardLowerBoundary} is set to \texttt{yes} internally.
 However, \texttt{upperBoundary} does not have such a ``natural'' choice of value.
@@ -5164,8 +5182,7 @@ Instead, multiple probability distributions on different variables can be target
 \\
 
 \noindent\textbf{Example:} EBmetaD configuration for a single variable.
-{\noindent\ttfamily
-\\
+\begin{cvexampleinput}
 \-colvar \{\\
 \-\-~~name r \\
 \-\-~~distance \{\\
@@ -5184,8 +5201,8 @@ Instead, multiple probability distributions on different variables can be target
 \-\-~~ebMeta            on\\
 \-\-~~targetDistFile    targetdist1.dat\\
 \-\-~~ebMetaEquilSteps  500000\\
-\-\}\\
-}
+\-\}
+\end{cvexampleinput}
 
 \noindent{}where \texttt{targetdist1.dat} is a text file in ``multicolumn'' format (\ref{sec:colvar_multicolumn_grid}) with the same \texttt{width} as the variable \texttt{r} (0.1 in this case):\\
 \begin{tabular}{l l l l l l}
@@ -5257,7 +5274,7 @@ In between the times when this file is modified/replaced, new hills are also tem
 Both files are only used for communication, and may be deleted after the replica begins writing files with a new \outputName.\\
 
 \noindent\textbf{Example:} Multiple-walker metadynamics with file-based communication.\\
-{\noindent\ttfamily
+\begin{cvexampleinput}
 \-metadynamics \{\\
 \-\-~~name mymtd\\
 \-\-~~colvars x\\
@@ -5268,8 +5285,8 @@ Both files are only used for communication, and may be deleted after the replica
 \-\-~~multipleReplicas       on\\
 \-\-~~replicasRegistry       /shared-folder/mymtd-replicas.txt\\
 \-\-~~replicaUpdateFrequency 50000  \# Best if larger than newHillFrequency\\
-\-\}\\
-}
+\-\}
+\end{cvexampleinput}
 
 The following are the multiple-walkers related options:
 
@@ -5703,8 +5720,7 @@ The \texttt{harmonicWalls} bias implements the following options:
 \end{itemize}
 
 \noindent\textbf{Example 1:} harmonic walls for one variable with two different force constants.
-{\noindent\ttfamily
-\\
+\begin{cvexampleinput}
 \-harmonicWalls \{\\
 \-\-~~name  mywalls\\
 \-\-~~colvars    dist\\
@@ -5712,22 +5728,19 @@ The \texttt{harmonicWalls} bias implements the following options:
 \-\-~~upperWalls  38.0 \\
 \-\-~~lowerWallConstant  2.0 \\
 \-\-~~upperWallConstant 10.0 \\
-\-\}\\
-}
+\-\}
+\end{cvexampleinput}
 
 \noindent\textbf{Example 2:} harmonic walls for two variables with a single force constant.
-{\noindent\ttfamily
-\\
+\begin{cvexampleinput}
 \-harmonicWalls \{\\
 \-\-~~name  mywalls\\
 \-\-~~colvars       phi    psi\\
 \-\-~~lowerWalls -180.0    0.0\\
 \-\-~~upperWalls    0.0  180.0\\
 \-\-~~forceConstant 5.0 \\
-\-\}\\
-}
-
-
+\-\}
+\end{cvexampleinput}
 
 
 \cvsubsec{Linear restraints}{sec:colvarbias_linear}
