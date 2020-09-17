@@ -1,0 +1,3 @@
+Info: NAMD 2.11 for Linux-x86_64-multicore
+colvars: Initializing the collective variables module, version 2015-09-16.
+colvars: Using NAMD interface, version 2015-07-24.

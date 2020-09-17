@@ -1,0 +1,11 @@
+harmonic {
+    colvars        one
+    centers        0.1
+    forceConstant  0.001
+
+    targetForceconstant 0.0001
+    targetNumSteps 8
+    targetNumStages 4
+
+    outputEnergy   yes
+}

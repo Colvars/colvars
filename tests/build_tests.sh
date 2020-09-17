@@ -77,6 +77,7 @@ for colvar in "distance" ; do
         "harmonic-centers-moving-full" \
         "harmonic-centers-moving-stages" \
         "harmonic-k-moving" \
+        "harmonic-k-moving-stages" \
         "harmonicwalls-upper-fixed" \
         "harmonicwalls-both-fixed" \
         "harmonicwalls-k-moving" \
