@@ -5531,7 +5531,9 @@ The force constant of the harmonic restraint may also be changed to equilibrate 
     steps \emph{each}. This second mode may be used to compute the
     conformational free energy change associated with the restraint, within
     the FEP or TI formalisms. For convenience, the code provides an estimate
-    of the free energy derivative for use in TI. A more complete free energy
+    of the free energy derivative for use in TI, with the format:\\
+    {\ttfamily{}colvars:   Lambda= ***.** dA/dLambda= ***.**}\\
+     A more complete free energy
     calculation (particularly with regard to convergence analysis),
     while not handled by the Colvars module, can be performed by post-processing
     the colvars trajectory, if \texttt{colvarsTrajFrequency} is set to a
