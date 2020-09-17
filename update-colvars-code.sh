@@ -166,7 +166,7 @@ if [ ${code} = "LAMMPS" ]
 then
 
   # Update code-independent headers and sources
-  for src in ${source}/src/*.h ${source}/src/*.cpp
+  for src in ${source}/src/colvar*.h ${source}/src/colvar*.cpp
   do \
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/lib/colvars/${tgt}"
