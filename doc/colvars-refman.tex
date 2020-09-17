@@ -24,7 +24,7 @@
 \usepackage{transparent}
 
 % Example code blocks
-\usepackage{xcolor}
+\usepackage{xcolor} % Needed for HTML version
 \usepackage{mdframed}
 
 \definecolor{cvexample-border-color}{rgb}{0.5,0.0,0.5}
@@ -142,9 +142,56 @@
 \newcommand{\vx}{{\mbox{\boldmath{$x$}}}}
 \newcommand{\bm}[1]{{\mbox{\boldmath{$#1$}}}}
 
-\newcommand{\cvsec}[2]{\newpage\noindent\hypertarget{#2}{\section{#1}}\label{#2}\ifdefined\HCode\HCode{<selfref>}\ref{#2}\HCode{</selfref>}\fi}
-\newcommand{\cvsubsec}[2]{\noindent\hypertarget{#2}{\subsection{#1}}\label{#2}\ifdefined\HCode\HCode{<selfref>}\ref{#2}\HCode{</selfref>}\fi}
-\newcommand{\cvsubsubsec}[2]{\noindent\hypertarget{#2}{\subsubsection{#1}}\label{#2}\ifdefined\HCode\HCode{<selfref>}\ref{#2}\HCode{</selfref>}\fi}
+
+\newcommand{\cvsec}[2]{%
+  \newpage
+  \ifdefined\HCode
+  \HCode{<div class="heading">} % Use CSS, mdframed won't work for this
+  \else
+  \begin{mdframed}[backgroundcolor=background-color,linewidth=2pt]
+  \fi
+  \hypertarget{#2}{\section{#1}}
+  \ifdefined\HCode
+  \HCode{</div>}
+  \else
+  \end{mdframed}
+  \fi
+  \label{#2}
+  \ifdefined\HCode\HCode{<selfref>}\ref{#2}\HCode{</selfref>}\fi
+}
+
+\newcommand{\cvsubsec}[2]{%
+  \ifdefined\HCode
+  \HCode{<div class="heading">}
+  \else
+  \begin{mdframed}[backgroundcolor=background-color,linewidth=2pt]
+  \fi
+  \hypertarget{#2}{\subsection{#1}}
+  \ifdefined\HCode
+  \HCode{</div>}
+  \else
+  \end{mdframed}
+  \fi
+  \label{#2}
+  \ifdefined\HCode\HCode{<selfref>}\ref{#2}\HCode{</selfref>}\fi
+}
+
+\newcommand{\cvsubsubsec}[2]{%
+  \ifdefined\HCode
+  \HCode{<div class="heading">}
+  \else
+  \begin{mdframed}[backgroundcolor=background-color,linewidth=2pt]
+  \fi
+  \hypertarget{#2}{\subsubsection{#1}}
+  \ifdefined\HCode
+  \HCode{</div>}
+  \else
+  \end{mdframed}
+  \fi
+  \label{#2}
+  \ifdefined\HCode\HCode{<selfref>}\ref{#2}\HCode{</selfref>}\fi
+}
+
 \newcommand{\cvurl}[1]{\url{#1}}
 
 \input{colvars-refman-main}
