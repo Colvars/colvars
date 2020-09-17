@@ -10,10 +10,17 @@
 #include <cstdlib>
 #include <cstring>
 
-#include "jacobi_pd.h"
 #include "colvarmodule.h"
 #include "colvartypes.h"
 #include "colvarparse.h"
+
+#ifdef COLVARS_LAMMPS
+// Use open-source Jacobi implementation
+#include "jacobi_pd.h"
+#else
+// Fall back to NR routine
+#include "nr_jacobi.h"
+#endif
 
 
 bool      colvarmodule::rotation::monitor_crossings = false;
@@ -235,7 +242,7 @@ cvm::quaternion::position_derivative_inner(cvm::rvector const &pos,
 // Seok C, Dill KA.  Using quaternions to calculate RMSD.  J Comput
 // Chem. 25(15):1849-57 (2004) DOI: 10.1002/jcc.20110 PubMed: 15376254
 
-
+#ifdef COLVARS_LAMMPS
 namespace {
   inline void *new_Jacobi_solver(int size) {
     return reinterpret_cast<void *>(new MathEigen::Jacobi<cvm::real,
@@ -243,12 +250,17 @@ namespace {
                                     cvm::matrix2d<cvm::real> &>(4));
   }
 }
+#endif
 
 
 colvarmodule::rotation::rotation()
 {
   b_debug_gradients = false;
+#ifdef COLVARS_LAMMPS
   jacobi = new_Jacobi_solver(4);
+#else
+  jacobi = NULL;
+#endif
 }
 
 
@@ -256,7 +268,11 @@ colvarmodule::rotation::rotation(cvm::quaternion const &qi)
   : q(qi)
 {
   b_debug_gradients = false;
+#ifdef COLVARS_LAMMPS
   jacobi = new_Jacobi_solver(4);
+#else
+  jacobi = NULL;
+#endif
 }
 
 
@@ -267,16 +283,22 @@ colvarmodule::rotation::rotation(cvm::real angle, cvm::rvector const &axis)
   cvm::real const sina = cvm::sin(angle/2.0);
   q = cvm::quaternion(cvm::cos(angle/2.0),
                       sina * axis_n.x, sina * axis_n.y, sina * axis_n.z);
+#ifdef COLVARS_LAMMPS
   jacobi = new_Jacobi_solver(4);
+#else
+  jacobi = NULL;
+#endif
 }
 
 
 colvarmodule::rotation::~rotation()
 {
+#ifdef COLVARS_LAMMPS
   delete reinterpret_cast<
     MathEigen::Jacobi<cvm::real,
                       cvm::vector1d<cvm::real> &,
                       cvm::matrix2d<cvm::real> &> *>(jacobi);
+#endif
 }
 
 
@@ -323,6 +345,46 @@ void colvarmodule::rotation::compute_overlap_matrix()
 }
 
 
+namespace {
+
+void diagonalize_matrix(cvm::matrix2d<cvm::real> &m,
+                        cvm::vector1d<cvm::real> &eigval,
+                        cvm::matrix2d<cvm::real> &eigvec)
+{
+  eigval.resize(4);
+  eigval.reset();
+  eigvec.resize(4, 4);
+  eigvec.reset();
+
+  // diagonalize
+  int jac_nrot = 0;
+  if (NR_Jacobi::jacobi(m.c_array(), eigval.c_array(), eigvec.c_array(), &jac_nrot) !=
+      COLVARS_OK) {
+    cvm::error("Too many iterations in jacobi diagonalization.\n"
+               "This is usually the result of an ill-defined set of atoms for "
+               "rotational alignment (RMSD, rotateReference, etc).\n");
+  }
+  NR_Jacobi::eigsrt(eigval.c_array(), eigvec.c_array());
+  // jacobi saves eigenvectors by columns
+  NR_Jacobi::transpose(eigvec.c_array());
+
+  // normalize eigenvectors
+  for (size_t ie = 0; ie < 4; ie++) {
+    cvm::real norm2 = 0.0;
+    size_t i;
+    for (i = 0; i < 4; i++) {
+      norm2 += eigvec[ie][i] * eigvec[ie][i];
+    }
+    cvm::real const norm = cvm::sqrt(norm2);
+    for (i = 0; i < 4; i++) {
+      eigvec[ie][i] /= norm;
+    }
+  }
+}
+
+}
+
+
 // Calculate the rotation, plus its derivatives
 
 void colvarmodule::rotation::calc_optimal_rotation(
@@ -347,6 +409,7 @@ void colvarmodule::rotation::calc_optimal_rotation(
   S_eigval.resize(4);
   S_eigvec.resize(4, 4);
 
+#ifdef COLVARS_LAMMPS
   MathEigen::Jacobi<cvm::real,
                     cvm::vector1d<cvm::real> &,
                     cvm::matrix2d<cvm::real> &> *ecalc =
@@ -356,10 +419,14 @@ void colvarmodule::rotation::calc_optimal_rotation(
 
   int ierror = ecalc->Diagonalize(S, S_eigval, S_eigvec);
   if (ierror) {
-    cvm::error("Too many iterations in routine jacobi.\n"
+    cvm::error("Too many iterations in jacobi diagonalization.\n"
                "This is usually the result of an ill-defined set of atoms for "
                "rotational alignment (RMSD, rotateReference, etc).\n");
   }
+#else
+  diagonalize_matrix(S, S_eigval, S_eigvec);
+#endif
+
 
   // eigenvalues and eigenvectors
   cvm::real const L0 = S_eigval[0];
@@ -532,7 +599,11 @@ void colvarmodule::rotation::calc_optimal_rotation(
 
         //           cvm::log("S_new = "+cvm::to_str(cvm::to_str (S_new), cvm::cv_width, cvm::cv_prec)+"\n");
 
+#ifdef COLVARS_LAMMPS
         ecalc->Diagonalize(S_new, S_new_eigval, S_new_eigvec);
+#else
+        diagonalize_matrix(S_new, S_new_eigval, S_new_eigvec);
+#endif
 
         cvm::real const &L0_new = S_new_eigval[0];
         cvm::quaternion const Q0_new(S_new_eigvec[0]);
