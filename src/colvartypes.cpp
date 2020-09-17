@@ -16,7 +16,7 @@
 
 #ifdef COLVARS_LAMMPS
 // Use open-source Jacobi implementation
-#include "jacobi_pd.h"
+#include "math_eigen_impl.h"
 #else
 // Fall back to NR routine
 #include "nr_jacobi.h"
@@ -345,6 +345,7 @@ void colvarmodule::rotation::compute_overlap_matrix()
 }
 
 
+#ifndef COLVARS_LAMMPS
 namespace {
 
 void diagonalize_matrix(cvm::matrix2d<cvm::real> &m,
@@ -383,6 +384,7 @@ void diagonalize_matrix(cvm::matrix2d<cvm::real> &m,
 }
 
 }
+#endif
 
 
 // Calculate the rotation, plus its derivatives
