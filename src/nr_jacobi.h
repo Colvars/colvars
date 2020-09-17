@@ -1,5 +1,8 @@
 // -*- c++ -*-
 
+// TODO These functions will be removed in the near future and replaced wtih
+// LGPL-compatible functions
+
 namespace NR_Jacobi {
 
   /// Numerical recipes diagonalization
