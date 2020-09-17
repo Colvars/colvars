@@ -408,13 +408,12 @@ Because these are static parameters, it is typically more convenient to use the 
 
 
 \cvlammpsonly{
-\subsection{LAMMPS keywords}
-\label{sec:colvars_mdengine_parameters}
+\cvsubsec{LAMMPS keywords}{sec:colvars_mdengine_parameters}
 
-To enable a Colvars-based calculation, the following line must be added to the LAMMPS configuration file:\\
-\\
-\texttt{fix } \emph{ID } \texttt{all }  \texttt{colvars } \emph{configfile } \emph{keyword value pairs ...}\\
-\\
+To enable a Colvars-based calculation, the following line must be added to the LAMMPS configuration file:
+\begin{mdexampleinput}
+\-fix~\emph{ID}~all~colvars~\emph{configfile}~\emph{keyword~value~pairs ...}
+\end{mdexampleinput}
 where \emph{ID} is a string that uniquely identifies this fix command inside a LAMMPS script, \emph{configfile} is the name of the configuration file for the Colvars module, followed by one or more of the following optional keywords with their corresponding arguments:
 
 \begin{itemize}
