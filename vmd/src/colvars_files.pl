@@ -43,7 +43,8 @@ $colvars_defines = " -DVMDCOLVARS";
                     'colvarscript_commands_bias.C',
                     'colvarscript_commands_colvar.C',
                     'colvartypes.C',
-                    'colvarvalue.C');
+                    'colvarvalue.C',
+                    'nr_jacobi.C');
 @colvars_h    =    ('colvar_UIestimator.h',
                     'colvar_arithmeticpath.h',
                     'colvar_geometricpath.h',
@@ -71,4 +72,5 @@ $colvars_defines = " -DVMDCOLVARS";
                     'colvarscript_commands_colvar.h',
                     'colvars_version.h',
                     'colvartypes.h',
-                    'colvarvalue.h');
+                    'colvarvalue.h',
+                    'nr_jacobi.h');
