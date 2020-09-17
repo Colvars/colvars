@@ -144,6 +144,6 @@ $(COLVARS_OBJ_DIR)colvarscript_commands_colvar.o: \
  colvarscript_commands_colvar.h colvarscript_commands_bias.h
 $(COLVARS_OBJ_DIR)colvartypes.o: colvartypes.cpp colvarmodule.h \
  colvars_version.h colvartypes.h colvarparse.h colvarvalue.h \
- colvarparams.h
+ colvarparams.h ../../src/math_eigen.h
 $(COLVARS_OBJ_DIR)colvarvalue.o: colvarvalue.cpp colvarmodule.h \
  colvars_version.h colvarvalue.h colvartypes.h
