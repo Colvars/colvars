@@ -537,7 +537,8 @@ obj/colvartypes.o: \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarparse.h \
 	colvars/src/colvarvalue.h \
-	colvars/src/colvarparams.h
+	colvars/src/colvarparams.h \
+	colvars/src/nr_jacobi.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvartypes.o $(COPTC) colvars/src/colvartypes.cpp
 obj/colvarvalue.o: \
 	obj/.exists \
@@ -547,3 +548,11 @@ obj/colvarvalue.o: \
 	colvars/src/colvarvalue.h \
 	colvars/src/colvartypes.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarvalue.o $(COPTC) colvars/src/colvarvalue.cpp
+obj/nr_jacobi.o: \
+	obj/.exists \
+	colvars/src/nr_jacobi.cpp \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvars_version.h \
+	colvars/src/nr_jacobi.h
+	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/nr_jacobi.o $(COPTC) colvars/src/nr_jacobi.cpp

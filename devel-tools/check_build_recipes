@@ -5,7 +5,7 @@
 
 pushd $(git rev-parse --show-toplevel) 1> /dev/null
 retcode=0
-for f in src/*.cpp src/*.h ; do
+for f in src/colvar*.cpp src/colvar*.h ; do
     f=$(basename $f)
     extension=${f#*.}
     if [ ${extension} = 'cpp' ] ; then
