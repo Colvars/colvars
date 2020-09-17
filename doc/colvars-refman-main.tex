@@ -110,6 +110,9 @@ It is passed to the module using back-end-specific commands documented in sectio
 \cvvmdonly{Writing the configuration fora  collective variable in VMD is made much easier using the dashboard and its configuration editor (section~\ref{sec:dashboard}).
 However, note that the dashboard does not handle biases: if necessary, they should be managed separately using the scripting interface.}
 
+
+\paragraph*{Example: steering two atoms away from each other.}
+
 Now let us look at a complete, non-trivial configuration.
 Suppose that we want to run a steered MD experiment where a small molecule is pulled away from a protein binding site.
 In Colvars terms, this is done by applying a moving restraint to the distance between the two objects.
@@ -146,6 +149,63 @@ The atom selection keywords are detailed in section \ref{sec:colvar_atom_groups}
 If the selection is too complex to implement only via internal keywords, an external index file may be created following the NDX format used in GROMACS:\\
 \url{http://manual.gromacs.org/documentation/current/reference-manual/file-formats.html\#ndx}\\
 or by using the \texttt{group2ndx} LAMMPS command.}
+
+
+\paragraph*{Example: using multiple variables and multiple biasing/analysis methods together.}
+
+A more complex example configuration is included below, showing how a variable may be constructed by combining multiple existing functions, and how multiple variables or multiple biases may be used concurrently.
+The colvar indicated below as ``$d$'' is defined as the difference between two distances (see \ref{sec:cvc_distances}): the first distance ($d_{1}$) is taken between the center of mass of atoms 1 and 2 and that of atoms 3 to 5, the second ($d_{2}$) between atom 7 and the center of mass of atoms 8 to 10 (see \ref{sec:colvar_atom_groups}).
+The difference $d = d_{1} - d_{2}$ is obtained by multiplying the two by a coefficient $C = +1$ or $C = -1$, respectively (see \ref{sec:cvc_superp}).
+The colvar called ``$c$'' is the coordination number calculated between atoms 1 to 10 and atoms 11 to 20.  A harmonic restraint (see \ref{sec:colvarbias_harmonic}) is applied to both $d$ and $c$: to allow using the same force constant $K$, both $d$ and $c$ are scaled by their respective fluctuation widths $w_d$ and $w_c$.
+\cvnamebasedonly{A third colvar ``alpha'' is defined as the $\alpha$-helical content of residues 1 to 10 (see \ref{sec:cvc_alpha}).}
+The values of ``$c$''\cvnamebasedonly{ and ``alpha''} are also recorded throughout the simulation as a joint 2-dimensional histogram (see \ref{sec:colvarbias_histogram}).
+
+\begin{cvexampleinput}
+\noindent{}colvar \{\\
+\-~~\# difference of two distances\\
+\-~~name d \\
+\-~~width 0.2  \# 0.2 \AA{} of estimated fluctuation width \\
+\-~~distance \{\\
+\-~~~~componentCoeff  1.0\\
+\-~~~~group1 \{ atomNumbers 1 2 \}\\
+\-~~~~group2 \{ atomNumbers 3 4 5 \}\\
+\-~~\}\\
+\-~~distance \{\\
+\-~~~~componentCoeff -1.0\\
+\-~~~~group1 \{ atomNumbers 7 \}\\
+\-~~~~group2 \{ atomNumbers 8 9 10 \}\\
+\-~~\}\\
+\}\\
+\\
+colvar \{\\
+\-~~name c\\
+\-~~coordNum \{\\
+\-~~~~cutoff 6.0\\
+\-~~~~group1 \{ atomNumbersRange  1-10 \}\\
+\-~~~~group2 \{ atomNumbersRange 11-20 \}\\
+\-~~~~tolerance 1.0e-6\\
+\-~~~~pairListFrequency 1000\\
+\-~~\}\\
+\}\\
+\cvnamebasedonly{%
+colvar \{\\
+\-~~name alpha\\
+\-~~alpha \{\\
+\-~~~~psfSegID PROT\\
+\-~~~~residueRange 1-10\\
+\-~~\}\\
+\}}
+\\
+harmonic \{\\
+\-~~colvars d c\\
+\-~~centers 3.0 4.0\\
+\-~~forceConstant 5.0\\
+\}\\
+\\
+histogram \{\\
+\-~~colvars c\cvnamebasedonly{ alpha}\\
+\}
+\end{cvexampleinput}
 
 
 \cvvmdonly{
@@ -709,78 +769,6 @@ The following keywords are available in the global context of the Colvars config
     If this flag is enabled (default), SMP parallelism over threads will be used to compute variables and biases, provided that this is supported by the \MDENGINE{} build in use.}
     
 \end{itemize}
-
-
-To illustrate the flexibility of the Colvars module, a non-trivial setup is represented in Figure~\ref{fig:colvars_diagram}.
-The corresponding configuration is given below. The options within the \texttt{colvar} blocks are described in \ref{sec:colvar}, those within the \texttt{harmonic} and \texttt{histogram} blocks in \ref{sec:colvarbias}.
-\textbf{Note:} \emph{except }\texttt{colvar}\emph{, none of the keywords shown is mandatory}.\\
-
-\begin{figure}[!ht]
-  \centering
-\cvnamdugonly{\includegraphics[width=12cm]{figures/colvars_diagram}}
-\cvvmdugonly{\includegraphics[width=12cm]{pictures/colvars_diagram}}
-\cvrefmanonly{\ifdefined\HCode{\HCode{<img class="diagram" src="colvars_diagram.png" alt="Colvars diagram">}}\else\includegraphics[width=12cm]{colvars_diagram}\fi}
-  \caption[Graphical representation of a Colvars configuration.]{Graphical representation of a Colvars configuration\cvlammpsonly{ \textbf{(note:} \emph{currently, the $\alpha$-helical content colvar is unavailable in LAMMPS)}}.
-    The colvar called ``$d$'' is defined as the difference between two distances: the first distance ($d_{1}$) is taken between the center of mass of atoms 1 and 2 and that of atoms 3 to 5, the second ($d_{2}$) between atom 7 and the center of mass of atoms 8 to 10.
-The difference $d = d_{1} - d_{2}$ is obtained by multiplying the two by a coefficient $C = +1$ or $C = -1$, respectively.
-The colvar called ``$c$'' is the coordination number calculated between atoms 1 to 10 and atoms 11 to 20.  A harmonic restraint is applied to both $d$ and $c$: to allow using the same force constant $K$, both $d$ and $c$ are scaled by their respective fluctuation widths $w_d$ and $w_c$.
-\cvnamebasedonly{A third colvar ``alpha'' is defined as the $\alpha$-helical content of residues 1 to 10.}
-The values of ``$c$''\cvnamebasedonly{ and ``alpha''} are also recorded throughout the simulation as a joint 2-dimensional histogram.
-}
-  \label{fig:colvars_diagram}
-\end{figure}
-
-\begin{cvexampleinput}
-\noindent{}colvar \{\\
-\-~~\# difference of two distances\\
-\-~~name d \\
-\-~~width 0.2  \# 0.2 \AA{} of estimated fluctuation width \\
-\-~~distance \{\\
-\-~~~~componentCoeff  1.0\\
-\-~~~~group1 \{ atomNumbers 1 2 \}\\
-\-~~~~group2 \{ atomNumbers 3 4 5 \}\\
-\-~~\}\\
-\-~~distance \{\\
-\-~~~~componentCoeff -1.0\\
-\-~~~~group1 \{ atomNumbers 7 \}\\
-\-~~~~group2 \{ atomNumbers 8 9 10 \}\\
-\-~~\}\\
-\}\\
-\\
-colvar \{\\
-\-~~name c\\
-\-~~coordNum \{\\
-\-~~~~cutoff 6.0\\
-\-~~~~group1 \{ atomNumbersRange  1-10 \}\\
-\-~~~~group2 \{ atomNumbersRange 11-20 \}\\
-\-~~\}\\
-\}\\
-\cvnamebasedonly{%
-colvar \{\\
-\-~~name alpha\\
-\-~~alpha \{\\
-\-~~~~psfSegID PROT\\
-\-~~~~residueRange 1-10\\
-\-~~\}\\
-\}}
-\\
-harmonic \{\\
-\-~~colvars d c\\
-\-~~centers 3.0 4.0\\
-\-~~forceConstant 5.0\\
-\}\\
-\\
-histogram \{\\
-\-~~colvars c\cvnamebasedonly{ alpha}\\
-\}
-\end{cvexampleinput}
-
-%\cvlammpsonly{\textbf{Note:} \emph{currently, the $\alpha$-helical content colvar is unavailable in LAMMPS, as it requires a name-based topology; future releases will overcome this limitation.}}
-
-Section \ref{sec:colvar} explains how to define a colvar and its behavior, regardless of its specific functional form.
-To define colvars that are appropriate to a specific physical system, Section \ref{sec:colvar_atom_groups} documents how to select atoms, and section \ref{sec:colvar} lists all of the available functional forms, which we call ``colvar components''.
-Finally, section \ref{sec:colvarbias} lists the available methods and algorithms to perform biased simulations and multidimensional analysis of colvars.
-
 
 
 \cvsubsec{Input state file}{sec:colvars_input}
