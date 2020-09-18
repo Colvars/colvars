@@ -142,6 +142,14 @@
 \newcommand{\vx}{{\mbox{\boldmath{$x$}}}}
 \newcommand{\bm}[1]{{\mbox{\boldmath{$#1$}}}}
 
+\newenvironment{cvcoptions}{%
+  %% TODO Uncomment when all itemizations environment are redefined
+  %% \begin{mdframed}[linecolor=cvexample-border-color,linewidth=2pt]
+  \noindent\textbf{List of keywords} (see also \ref{sec:cvc_superp} for additional options):
+  \begin{itemize}}{%
+  \end{itemize}
+  %% \end{mdframed}
+  }
 
 \newcommand{\cvsec}[2]{%
   \newpage
