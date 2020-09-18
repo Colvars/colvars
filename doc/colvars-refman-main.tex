@@ -120,24 +120,24 @@ The configuration will contain two blocks, one defining the distance variable (s
 \cvvmdonly{Note that in VMD, no biasing forces are applied, but biases may be useful in the context of an analysis script, e.g. to collect histograms or to compute bias energies.}
 
 \begin{cvexampleinput}
-\cvlammpsonly{indexFile index.ndx\\}colvar \{\\
-\-~~name dist\\
-\-~~distance \{\\
-\-~~~~group1 \{ atomNumbersRange 42-55 \}\\
-\cvnamebasedonly{\-~~~~group2 \{\\
-\-~~~~~~psfSegID  PR\\
-\-~~~~~~atomNameResidueRange  CA 15-30\\
+\cvlammpsonly{indexFile~index.ndx\\}colvar~\{\\
+\-~~name~dist\\
+\-~~distance~\{\\
+\-~~~~group1~\{~atomNumbersRange~42-55~\}\\
+\-\cvnamebasedonly{~~~~group2~\{\\
+\-~~~~~~psfSegID~~PR\\
+\-~~~~~~atomNameResidueRange~~CA~15-30\\
 \-~~~~\}\\}
-\cvlammpsonly{\-~~~~group2 \{ indexGroup C-alpha\_15-30 \}\\}
+\-\cvlammpsonly{~~~~group2~\{~indexGroup~C-alpha\_15-30~\}\\}
 \-~~\}\\
-\}\\
-\\
-harmonic \{\\
-\-~~colvars dist\\
-\-~~forceConstant 20.0\\
-\-~~centers 4.0~~~~~~~~~\# initial distance\\
-\-~~targetCenters 15.0~~\# final distance\\
-\-~~targetNumSteps 500000\\
+\-\}\\
+\-\\
+\-harmonic~\{\\
+\-~~colvars~dist\\
+\-~~forceConstant~20.0\\
+\-~~centers~4.0~~~~~~~~~\#~initial~distance\\
+\-~~targetCenters~15.0~~\#~final~distance\\
+\-~~targetNumSteps~500000\\
 \}
 \end{cvexampleinput}
 
@@ -161,7 +161,7 @@ The colvar called ``$c$'' is the coordination number calculated between atoms 1 
 The values of ``$c$''\cvnamebasedonly{ and ``alpha''} are also recorded throughout the simulation as a joint 2-dimensional histogram (see \ref{sec:colvarbias_histogram}).
 
 \begin{cvexampleinput}
-\noindent{}colvar \{\\
+colvar \{\\
 \-~~\# difference of two distances\\
 \-~~name d \\
 \-~~width 0.2  \# 0.2 \AA{} of estimated fluctuation width \\
