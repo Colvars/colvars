@@ -654,7 +654,7 @@ int colvar::init_extended_Lagrangian(std::string const &conf)
       return INPUT_ERROR;
     }
     ext_force_k = cvm::boltzmann() * temp / (tolerance * tolerance);
-    cvm::log("Computed extended system force constant: " + cvm::to_str(ext_force_k) + " [E]/U^2");
+    cvm::log("Computed extended system force constant: " + cvm::to_str(ext_force_k) + " [E]/U^2\n");
 
     get_keyval(conf, "extendedTimeConstant", extended_period, 200.0);
     if (extended_period <= 0.0) {
@@ -662,7 +662,7 @@ int colvar::init_extended_Lagrangian(std::string const &conf)
     }
     ext_mass = (cvm::boltzmann() * temp * extended_period * extended_period)
       / (4.0 * PI * PI * tolerance * tolerance);
-    cvm::log("Computed fictitious mass: " + cvm::to_str(ext_mass) + " [E]/(U/fs)^2   (U: colvar unit)");
+    cvm::log("Computed fictitious mass: " + cvm::to_str(ext_mass) + " [E]/(U/fs)^2   (U: colvar unit)\n");
 
     {
       bool b_output_energy;
