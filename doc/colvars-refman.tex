@@ -127,11 +127,11 @@
   {\bf Default value: } #5 \\%
   {\bf Description: } #6
 }
-\newcommand{\labelkey}[1]{\hypertarget{#1}{}\label{#1}}
+\newcommand{\labelkey}[1]{\hypertarget{#1}{~}\label{#1}}
 \newcommand{\refkey}[2]{\hyperlink{#2}{\texttt{#1}}}
 \newcommand{\dupkey}[4]{%
   \index{#2!\texttt{#1}}
-  {\bf Keyword \large \tt #1:} see definition of \hyperlink{#3}{\texttt{#1}} in sec.~\ref{#3} (#4)%
+  {\bf Keyword \large \tt #1:} see definition of \hyperlink{#3}{\texttt{#1}} (#4)%
 }
 \newcommand{\simkey}[3]{%
   \index{#2!\texttt{#1}}
@@ -158,13 +158,12 @@
   \else
   \begin{mdframed}[backgroundcolor=background-color,linewidth=2pt]
   \fi
-  \hypertarget{#2}{\section{#1}}
+  \hypertarget{#2}{\section{#1}}\label{#2}
   \ifdefined\HCode
   \HCode{</div>}
   \else
   \end{mdframed}
   \fi
-  \label{#2}
   \ifdefined\HCode\HCode{<selfref>}\ref{#2}\HCode{</selfref>}\fi
 }
 
@@ -174,13 +173,12 @@
   \else
   \begin{mdframed}[backgroundcolor=background-color,linewidth=2pt]
   \fi
-  \hypertarget{#2}{\subsection{#1}}
+  \hypertarget{#2}{\subsection{#1}}\label{#2}
   \ifdefined\HCode
   \HCode{</div>}
   \else
   \end{mdframed}
   \fi
-  \label{#2}
   \ifdefined\HCode\HCode{<selfref>}\ref{#2}\HCode{</selfref>}\fi
 }
 
@@ -190,13 +188,12 @@
   \else
   \begin{mdframed}[backgroundcolor=background-color,linewidth=2pt]
   \fi
-  \hypertarget{#2}{\subsubsection{#1}}
+  \hypertarget{#2}{\subsubsection{#1}}\label{#2}
   \ifdefined\HCode
   \HCode{</div>}
   \else
   \end{mdframed}
   \fi
-  \label{#2}
   \ifdefined\HCode\HCode{<selfref>}\ref{#2}\HCode{</selfref>}\fi
 }
 
