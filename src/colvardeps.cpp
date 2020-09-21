@@ -243,7 +243,7 @@ int colvardeps::enable(int feature_id,
           enable(g, false, false); // Just for printing error output
         }
         cvm::decrease_depth();
-        cvm::log("-----------------------------------------");
+        cvm::log("-----------------------------------------\n");
         if (toplevel) {
           cvm::error("Error: Failed dependency in " + description + ".");
         }
@@ -430,7 +430,7 @@ void colvardeps::require_feature_alt(int f, int g, int h, int i, int j) {
 
 void colvardeps::print_state() {
   size_t i;
-  cvm::log("Features of \"" + description + "\" (refcount)");
+  cvm::log("Features of \"" + description + "\" (refcount)\n");
   for (i = 0; i < feature_states.size(); i++) {
     std::string onoff = is_enabled(i) ? "ON " : "   ";
     // Only display refcount if non-zero for less clutter

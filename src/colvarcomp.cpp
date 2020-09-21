@@ -51,7 +51,7 @@ int colvar::cvc::init(std::string const &conf)
   std::string const old_name(name);
 
   if (name.size() > 0) {
-    cvm::log("Updating configuration for component \""+name+"\"");
+    cvm::log("Updating configuration for component \""+name+"\"\n");
   }
 
   if (get_keyval(conf, "name", name, name)) {
@@ -112,7 +112,7 @@ int colvar::cvc::init_total_force_params(std::string const &conf)
   }
   if (get_keyval_feature(this, conf, "oneSiteTotalForce",
                          f_cvc_one_site_total_force, is_enabled(f_cvc_one_site_total_force))) {
-    cvm::log("Computing total force on group 1 only");
+    cvm::log("Computing total force on group 1 only\n");
   }
 
   if (! is_enabled(f_cvc_one_site_total_force)) {

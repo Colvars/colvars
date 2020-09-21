@@ -208,7 +208,7 @@ integrate_potential::integrate_potential(std::vector<colvar *> &colvars, colvar_
     // Compute inverse of Laplacian diagonal for Jacobi preconditioning
     // For now all code related to preconditioning is commented out
     // until a method better than Jacobi is implemented
-//     cvm::log("Preparing inverse diagonal for preconditioning...");
+//     cvm::log("Preparing inverse diagonal for preconditioning...\n");
 //     inv_lap_diag.resize(nt);
 //     std::vector<cvm::real> id(nt), lap_col(nt);
 //     for (int i = 0; i < nt; i++) {
@@ -219,7 +219,7 @@ integrate_potential::integrate_potential(std::vector<colvar *> &colvars, colvar_
 //       id[i] = 0.;
 //       inv_lap_diag[i] = 1. / lap_col[i];
 //     }
-//     cvm::log("Done.");
+//     cvm::log("Done.\n");
   }
 }
 
