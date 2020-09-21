@@ -48,6 +48,8 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
   force_script_defined = false;
   have_scripts = false;
 
+  angstrom_value = 0.1;
+
   // Get the thermostat temperature.
   // NOTE: Considers only the first temperature coupling group!
   thermostat_temperature = ir->opts.ref_t[0];
