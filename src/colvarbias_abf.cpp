@@ -475,7 +475,7 @@ int colvarbias_abf::update()
     last_gradients->copy_grid(*gradients);
     last_samples->copy_grid(*samples);
     shared_last_step = cvm::step_absolute();
-    cvm::log("Prepared sample and gradient buffers at step "+cvm::to_str(cvm::step_absolute())+".");
+    cvm::log("Prepared sample and gradient buffers at step "+cvm::to_str(cvm::step_absolute())+".\n");
   }
 
   // update UI estimator every step

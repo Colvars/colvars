@@ -967,7 +967,7 @@ void colvarbias_meta::project_hills(colvarbias_meta::hill_iter  h_first,
   }
 
   if (print_progress) {
-    cvm::log("100.00% done.");
+    cvm::log("100.00% done.\n");
   }
 
   if (! keep_hills) {

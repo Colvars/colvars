@@ -194,10 +194,10 @@ colvar::distance_z::distance_z(std::string const &conf)
   ref2 = parse_group(conf, "ref2", true);
 
   if ( ref2 ) {
-    cvm::log("Using axis joining the centers of mass of groups \"ref\" and \"ref2\"");
+    cvm::log("Using axis joining the centers of mass of groups \"ref\" and \"ref2\"\n");
     fixed_axis = false;
     if (key_lookup(conf, "axis"))
-      cvm::log("Warning: explicit axis definition will be ignored!");
+      cvm::log("Warning: explicit axis definition will be ignored!\n");
   } else {
     if (get_keyval(conf, "axis", axis, cvm::rvector(0.0, 0.0, 1.0))) {
       if (axis.norm2() == 0.0) {
@@ -808,7 +808,7 @@ colvar::gyration::gyration(std::string const &conf)
   atoms = parse_group(conf, "atoms");
 
   if (atoms->b_user_defined_fit) {
-    cvm::log("WARNING: explicit fitting parameters were provided for atom group \"atoms\".");
+    cvm::log("WARNING: explicit fitting parameters were provided for atom group \"atoms\".\n");
   } else {
     atoms->b_center = true;
     atoms->ref_pos.assign(1, cvm::atom_pos(0.0, 0.0, 0.0));
@@ -1025,7 +1025,7 @@ colvar::rmsd::rmsd(std::string const &conf)
   }
 
   if (atoms->b_user_defined_fit) {
-    cvm::log("WARNING: explicit fitting parameters were provided for atom group \"atoms\".");
+    cvm::log("WARNING: explicit fitting parameters were provided for atom group \"atoms\".\n");
   } else {
     // Default: fit everything
     cvm::log("Enabling \"centerReference\" and \"rotateReference\", to minimize RMSD before calculating it as a variable: "

@@ -96,7 +96,7 @@ int colvar::init(std::string const &conf)
     "", colvarparse::parse_silent)) {
 
     enable(f_cv_scripted);
-    cvm::log("This colvar uses scripted function \"" + scripted_function + "\".");
+    cvm::log("This colvar uses scripted function \"" + scripted_function + "\".\n");
 
     std::string type_str;
     get_keyval(conf, "scriptedFunctionType", type_str, "scalar");
@@ -134,7 +134,7 @@ int colvar::init(std::string const &conf)
     std::sort(cvcs.begin(), cvcs.end(), compare);
 
     if(cvcs.size() > 1) {
-      cvm::log("Sorted list of components for this scripted colvar:");
+      cvm::log("Sorted list of components for this scripted colvar:\n");
       for (i = 0; i < cvcs.size(); i++) {
         cvm::log(cvm::to_str(i+1) + " " + cvcs[i]->name);
       }
@@ -1954,7 +1954,7 @@ int colvar::update_cvc_flags()
 
 int colvar::update_cvc_config(std::vector<std::string> const &confs)
 {
-  cvm::log("Updating configuration for colvar \""+name+"\"");
+  cvm::log("Updating configuration for colvar \""+name+"\"\n");
 
   if (confs.size() != cvcs.size()) {
     return cvm::error("Error: Wrong number of CVC config strings.  "

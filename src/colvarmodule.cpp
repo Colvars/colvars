@@ -58,7 +58,7 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
   }
 
 #if (__cplusplus >= 201103L)
-  cvm::log("This version was built with the C++11 standard or higher.");
+  cvm::log("This version was built with the C++11 standard or higher.\n");
 #else
   cvm::log("This version was built without the C++11 standard: some features are disabled.\n"
     "Please see the following link for details:\n"
@@ -472,7 +472,7 @@ int colvarmodule::parse_biases(std::string const &conf)
   if (use_scripted_forces) {
     cvm::log(cvm::line_marker);
     cvm::increase_depth();
-    cvm::log("User forces script will be run at each bias update.");
+    cvm::log("User forces script will be run at each bias update.\n");
     cvm::decrease_depth();
   }
 
@@ -1931,7 +1931,7 @@ int cvm::load_coords_xyz(char const *filename,
 
   ++xyz_reader_use_count;
   if (xyz_reader_use_count < 2) {
-    cvm::log("Warning: beginning from 2019-11-26 the XYZ file reader assumes Angstrom units.");
+    cvm::log("Warning: beginning from 2019-11-26 the XYZ file reader assumes Angstrom units.\n");
   }
 
   // skip comment line
