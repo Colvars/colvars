@@ -1,16 +1,48 @@
-nsteps                   = 1000
-dt                       = 0.0005
-nstcalcenergy            = 1
-nstenergy                = 1
-nstxtcout                = 1
-cutoff-scheme            = verlet
-verlet-buffer-tolerance  = 1e-10
+;Run control
 integrator               = md-vv
-vdwtype                  = cut-off
-vdw-modifier             = force-switch
-rvdw-switch              = 0.8
-coulombtype              = PME
-fourierspacing           = 0.05
+;time step in picoseconds
+dt                       = 0.001
+;number of steps
+nsteps                   = 500
+;frequency to write coordinates to output trajectory file
+nstxout                  = 1
+nstvout                  = 1
+nstfout                  = 1
+;frequency to write energies to log file
+nstlog                   = 1
+;frequency to write energies to energy file
+nstenergy                = 1
+nstcalcenergy            = 1
+;frequency to write coordinates to xtc trajectory
+nstxout-compressed     = 1
 
-ld-seed                  = 12345
-gen-seed                 = 12345
+cutoff-scheme            = verlet
+
+
+; Periodic boundary conditions
+pbc                     = xyz       ; 3-D PBC
+
+; Bond parameters
+constraint_algorithm    = lincs
+constraints             = h-bonds
+
+
+
+;treatment of van der waals interactions
+vdwtype = cut-off
+vdw-modifier = Potential-switch
+rvdw = 1.2
+rvdw-switch = 1.0
+
+coulombtype              = PME
+rcoulomb                = 1.2
+pme_order               = 4         ; cubic interpolation
+fourierspacing          = 0.12      ; grid spacing for FFT
+
+;Temperature coupling
+tcoupl                   = no
+; pressure coupling
+pcoupl                   = No
+
+gen-vel                  = no
+
