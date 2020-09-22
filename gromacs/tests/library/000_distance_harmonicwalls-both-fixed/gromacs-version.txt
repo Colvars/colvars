@@ -1,3 +1,3 @@
- :-) GROMACS - gmx mdrun, 2020-dev-20190513-23e0e3e-dirty (double precision) (-:
-colvars: Initializing the collective variables module, version "2019-04-26".
-colvars: Using GROMACS interface, version "2019-05-06".
+        :-) GROMACS - gmx mdrun, 2020.3-MODIFIED (double precision) (-:
+colvars: Initializing the collective variables module, version "2019-12-05".
+colvars: This version was built with the C++11 standard or higher.colvars: Using GROMACS interface, version "2019-05-06".

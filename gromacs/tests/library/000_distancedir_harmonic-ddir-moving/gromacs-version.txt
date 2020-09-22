@@ -1,0 +1,1 @@
+        :-) GROMACS - gmx mdrun, 2020.3-MODIFIED (double precision) (-:

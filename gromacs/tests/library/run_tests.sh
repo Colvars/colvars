@@ -3,6 +3,7 @@
 
 # Script to launch the regression tests
 # It's best to have Gromacs compiled in double precsision
+# Reference files have been generated with Gromacs version 2020.3
 
 gen_ref_output=''
 TMPDIR=/tmp
@@ -151,12 +152,6 @@ for dir in ${DIRLIST} ; do
       output="${basename}.part0002"
     fi
 
-    if [ $RETVAL != 0 ]
-    then
-      echo ""
-      echo "Error: Cannot launch the test."
-      continue
-    fi
 
     # Output of Colvars module, minus the version numbers
     grep "^colvars:" ${basename}.out | grep -v 'Initializing the collective variables module' \
