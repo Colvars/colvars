@@ -1,0 +1,27 @@
+configuration {
+  step          500
+  dt 5.000000e-01
+}
+
+colvar {
+  name d_com
+  x  9.23817186332635e-01
+}
+
+colvar {
+  name d_atoms
+  x  1.12304342916830e+00
+}
+
+colvar {
+  name coords_OW_1984
+  x (  7.73861889142643e-01 ,  2.99946219481184e+00 ,  2.99453914390712e+00 )
+}
+
+restraint {
+  configuration {
+    step 500
+    name harmonic1
+  }
+}
+

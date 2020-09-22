@@ -1,4 +1,4 @@
-#units gromacs 
+#units gromacs
 
 colvar {
     name d_com
@@ -25,12 +25,17 @@ colvar {
 }
 
 colvar {
-    name xyz
+    name coords_OW_1984
+
     cartesian {
         atoms {
-            atomNumbers 673 1072 1801
+            atomNumbers 1984
         }
     }
 }
 
-
+harmonic {
+    colvars d_com
+    forceConstant 20000
+    centers 0.9
+}

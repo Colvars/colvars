@@ -4,6 +4,11 @@ This folder contains regression tests input and output files for Gromacs, testin
 The tests under `library` have been generetad to match at best the NAMD ones. The system and simulation parameters have been chosen to reflect NAMD ones (SHAKE algorithm, time step of 1ps, use of chosen velocities). PBC use is mandatory (unlike NAMD) due to the Verlet algorithm. See `library/Common/create_tpr.sh` for more information.
 
 Specific tests of the Colvars-Gromacs interface are located in `interface`. Here, simulations parameters are different to be able to test MPI parallelization.
+In this folder, the same input colvars file (`interface/Common/test.in`) is used in 3 different conditions : serial, t-MPI and full MPI (OpenMPI). Its meant to validate:
+
+   - the parallel part of the proxy
+   - the PBC conditions
+   - the coordinates written in the traj files (which should be unwrapped).
 
 ### Version tested
 
