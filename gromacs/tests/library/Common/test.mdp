@@ -1,6 +1,6 @@
 ;Run control
 integrator               = md
-:time step in picoseconds
+;time step in picoseconds
 dt                       = 0.001
 ;number of steps
 nsteps                   = 20

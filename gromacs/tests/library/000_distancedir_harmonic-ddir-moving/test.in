@@ -1,0 +1,35 @@
+colvarsTrajFrequency 1
+colvarsRestartFrequency 10
+indexFile index.ndx
+
+colvar {
+
+    name one
+
+    outputAppliedForce on
+
+    width 0.05
+
+    distanceDir {
+        group1 {
+            indexGroup group1
+        }
+        group2 {
+            indexGroup group2
+        }
+    }
+} 
+
+harmonic {
+    colvars        one
+    centers        (1.0, 0.0, 0.0)
+    forceConstant  0.004184
+
+    targetCenters  (-1.0, 0.0, 0.0)
+    targetNumSteps 10
+    lambda = -0.5
+
+    outputEnergy   yes
+    outputCenters  yes
+    outputAccumulatedWork yes
+}

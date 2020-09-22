@@ -1,38 +1,39 @@
 colvars: ----------------------------------------------------------------------
 colvars: Please cite Fiorin et al, Mol Phys 2013:
-colvars: SMP parallelism is available.
+colvars: SMP parallelism is enabled; if needed, use "smp off" to override this.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.dat":
+colvars: # units = "" [default]
 colvars: # indexFile = "index.ndx"
-colvars: The following index groups were read from the index file "index.ndx":
-colvars:   Protein (104 atoms).
-colvars:   Protein_noH (51 atoms).
-colvars:   Protein_Backbone (40 atoms).
-colvars:   Protein_C-alpha (10 atoms).
-colvars:   RMSD_atoms (10 atoms).
-colvars:   Protein_C-alpha_1_2 (2 atoms).
-colvars:   Protein_C-alpha_9_10 (2 atoms).
-colvars:   Protein_C-alpha_1 (1 atoms).
-colvars:   group1 (4 atoms).
-colvars:   Protein_C-alpha_2 (1 atoms).
-colvars:   group2 (4 atoms).
-colvars:   Protein_C-alpha_3 (1 atoms).
-colvars:   group3 (4 atoms).
-colvars:   Protein_C-alpha_4 (1 atoms).
-colvars:   group4 (4 atoms).
-colvars:   Protein_C-alpha_5 (1 atoms).
-colvars:   group5 (4 atoms).
-colvars:   Protein_C-alpha_6 (1 atoms).
-colvars:   group6 (4 atoms).
-colvars:   Protein_C-alpha_7 (1 atoms).
-colvars:   group7 (4 atoms).
-colvars:   Protein_C-alpha_8 (1 atoms).
-colvars:   group8 (4 atoms).
-colvars:   Protein_C-alpha_9 (1 atoms).
-colvars:   group9 (4 atoms).
-colvars:   Protein_C-alpha_10 (1 atoms).
-colvars:   group10 (4 atoms).
-colvars:   heavy_atoms (51 atoms).
+colvars: The following index groups are currently defined:
+colvars:   Protein (104 atoms)
+colvars:   Protein_noH (51 atoms)
+colvars:   Protein_Backbone (40 atoms)
+colvars:   Protein_C-alpha (10 atoms)
+colvars:   RMSD_atoms (10 atoms)
+colvars:   Protein_C-alpha_1_2 (2 atoms)
+colvars:   Protein_C-alpha_9_10 (2 atoms)
+colvars:   Protein_C-alpha_1 (1 atoms)
+colvars:   group1 (4 atoms)
+colvars:   Protein_C-alpha_2 (1 atoms)
+colvars:   group2 (4 atoms)
+colvars:   Protein_C-alpha_3 (1 atoms)
+colvars:   group3 (4 atoms)
+colvars:   Protein_C-alpha_4 (1 atoms)
+colvars:   group4 (4 atoms)
+colvars:   Protein_C-alpha_5 (1 atoms)
+colvars:   group5 (4 atoms)
+colvars:   Protein_C-alpha_6 (1 atoms)
+colvars:   group6 (4 atoms)
+colvars:   Protein_C-alpha_7 (1 atoms)
+colvars:   group7 (4 atoms)
+colvars:   Protein_C-alpha_8 (1 atoms)
+colvars:   group8 (4 atoms)
+colvars:   Protein_C-alpha_9 (1 atoms)
+colvars:   group9 (4 atoms)
+colvars:   Protein_C-alpha_10 (1 atoms)
+colvars:   group10 (4 atoms)
+colvars:   heavy_atoms (51 atoms)
 colvars: # smp = on [default]
 colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 10
@@ -114,7 +115,7 @@ colvars: Re-initialized atom group for variable "one":0/0. 4 atoms: total mass =
 colvars: Re-initialized atom group for variable "one":0/1. 4 atoms: total mass = 54.028, total charge = -0.4.
 colvars: ----------------------------------------------------------------------
 colvars: Restarting from file "test.colvars.state.dat".
-colvars:   Restarting collective variable "one" from value: ( -0.100014 , 0.0680094 , 0.298104 )
+colvars:   Restarting collective variable "one" from value: ( -0.100014 , 0.0680093 , 0.298104 )
 colvars: ----------------------------------------------------------------------
 colvars: The restart output state file will be "test.restart.part0002.restart.colvars.state".
 colvars: The final output state file will be "test.restart.part0002.colvars.state".
