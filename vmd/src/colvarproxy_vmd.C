@@ -874,10 +874,12 @@ void colvarproxy_vmd::compute_voldata(VolumetricData const *voldata,
 {
   int i = 0;
   cvm::atom_iter ai = atom_begin;
+  cvm::atom_pos const origin(0.0, 0.0, 0.0);
   for ( ; ai != atom_end; ai++, i++) {
-    float const x = internal_to_angstrom(ai->pos.x);
-    float const y = internal_to_angstrom(ai->pos.y);
-    float const z = internal_to_angstrom(ai->pos.z);
+    cvm::rvector const wrapped_pos = position_distance(origin, ai->pos);
+    float const x = internal_to_angstrom(wrapped_pos.x);
+    float const y = internal_to_angstrom(wrapped_pos.y);
+    float const z = internal_to_angstrom(wrapped_pos.z);
     cvm::real const V =
       static_cast<cvm::real>(voldata->voxel_value_interpolate_from_coord_safe(x, y, z));
     if (use_atom_field) {
