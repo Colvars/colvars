@@ -131,6 +131,8 @@ then
       ;;
     '2020.0')
       ;;
+    '2020.3')
+      ;;
     *)
     GMX_VERSION="master"
     if [ $force_update = 0 ] ; then
@@ -345,7 +347,7 @@ then
     checkfile "${src}" "${target}/src/${tgt}"
   done
   for src in ${source}/namd/Make* ${source}/namd/config
-  do 
+  do
     tgt=$(basename ${src})
     checkfile "${src}" "${target}/${tgt}"
     if [ $updated_file = 1 ] ; then
@@ -410,7 +412,7 @@ then
   for src in \
       ${source}/vmd/src/colvarproxy_vmd.h \
       ${source}/vmd/src/colvarproxy_vmd_version.h \
-      ${source}/vmd/src/colvarproxy_vmd.C  
+      ${source}/vmd/src/colvarproxy_vmd.C
   do \
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/src/${tgt}"
@@ -451,7 +453,7 @@ if [ ${code} = "GROMACS" ]
 then
   echo ""
   if [ -d ${target}/src/gromacs/colvars ]
-  then  
+  then
     echo "Your ${target} source tree seems to have already been patched."
     echo "Update with the last Colvars source."
   else
