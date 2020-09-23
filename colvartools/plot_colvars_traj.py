@@ -371,6 +371,8 @@ if (__name__ == '__main__'):
 
     else:
 
+        import matplotlib
+
         plot_filename = None
         if (args.plot_file):
             plot_filename = args.plot_file
