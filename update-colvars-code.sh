@@ -129,9 +129,8 @@ then
   case ${GMX_VERSION} in
     '2018.3')
       ;;
-    '2020.0')
-      ;;
-    '2020.3')
+    2020*)
+      GMX_VERSION='2020.X'
       ;;
     *)
     GMX_VERSION="master"
@@ -460,25 +459,29 @@ then
     mkdir ${target}/src/gromacs/colvars
   fi
 
-  # copy library files to the "colvars" folder
-  for src in ${source}/src/*.h ${source}/src/*.cpp
+  # copy library files and proxy files to the "colvars" folder
+  for src in ${source}/src/*.h ${source}/src/*.cpp ${source}/gromacs/gromacs-${GMX_VERSION}/*
   do \
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/src/gromacs/colvars/${tgt}" "${cpp_patch}"
   done
-
-  # Files related to Gromacs
-  dest_files=$(find "${source}/gromacs/gromacs-${GMX_VERSION}" -type f -printf '%P ')
-  for dest in ${dest_files}
-  do
-    condcopy "${source}/gromacs/gromacs-${GMX_VERSION}/${dest}" "${target}/${dest}"
-  done
-
-  echo ' done.'
   echo ""
-  echo "  *******************************************"
-  echo "    Please create your build with cmake now."
-  echo "  *******************************************"
+
+  # Apply patch for Gromacs files
+  patch --forward -s -p0 -d ${target} < ${source}/gromacs/gromacs-${GMX_VERSION}.patch
+  ret_val=$?
+  if [ $ret_val -ne 0 ]
+  then
+    echo " ************************************************************************* "
+    echo " Patch fails. It seems the Gromacs source files have been already patched. "
+    echo " ************************************************************************* "
+  else
+    echo ' done.'
+    echo ""
+    echo "  *******************************************"
+    echo "    Please create your build with cmake now."
+    echo "  *******************************************"
+  fi
 
   exit 0
 fi
