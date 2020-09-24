@@ -9,6 +9,8 @@ gen_ref_output=''
 TMPDIR=/tmp
 DIRLIST=''
 BINARY=gmx_d
+# Default binary name when the option -DGMX_BUILD_MDRUN_ONLY=on is set during cmake.
+# gmx_mpi_d should work too
 BINARY_MPI=mdrun_mpi_d
 
 
