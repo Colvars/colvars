@@ -1,6 +1,7 @@
 colvars: ----------------------------------------------------------------------
 colvars: Please cite Fiorin et al, Mol Phys 2013:
 colvars: SMP parallelism is enabled; if needed, use "smp off" to override this.
+colvars: This version was built with the C++11 standard or higher.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.dat":
 colvars: # units = "" [default]
@@ -100,17 +101,20 @@ colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new "metadynamics" instance.
 colvars:   # name = "metadynamics1" [default]
 colvars:   # colvars = { one }
+colvars:   # stepZeroData = off [default]
 colvars:   # outputEnergy = off [default]
+colvars:   # outputFreq = 10 [default]
 colvars:   # timeStepFactor = 1 [default]
 colvars:   # writeTISamples = off [default]
 colvars:   # writeTIPMF = off [default]
 colvars:   # hillWeight = 0.004184
-colvars:   # newHillFrequency = 1000 [default]
-colvars:   # hillWidth = 1.25331 [default]
+colvars:   # newHillFrequency = 10
+colvars:   # gaussianSigmas =  [default]
+colvars:   # hillWidth = 1.25331
 colvars:   Half-widths of the Gaussian hills (sigma's):
 colvars:   one: 0.0313329colvars:   # multipleReplicas = off [default]
 colvars:   # useGrids = on [default]
-colvars:   # gridsUpdateFrequency = 1000 [default]
+colvars:   # gridsUpdateFrequency = 10 [default]
 colvars:   # rebinGrids = off [default]
 colvars:   # writeFreeEnergyFile = on [default]
 colvars:   # keepHills = off [default]
@@ -127,13 +131,15 @@ colvars: ----------------------------------------------------------------------
 colvars: Re-initialized atom group for variable "one":0/0. 4 atoms: total mass = 54.028, total charge = -0.72.
 colvars: Re-initialized atom group for variable "one":0/1. 4 atoms: total mass = 54.028, total charge = -0.4.
 colvars: ----------------------------------------------------------------------
-colvars: Restarting from file "test.colvars.state.dat".
+colvars: Loading state from file "test.colvars.state.dat".
 colvars:   Restarting collective variable "one" from value: 0.321708
+colvars:   Restarting metadynamics bias "metadynamics1" from step number 20.
 colvars: ----------------------------------------------------------------------
 colvars: The restart output state file will be "test.restart.part0002.restart.colvars.state".
 colvars: The final output state file will be "test.restart.part0002.colvars.state".
-colvars: Writing to colvar trajectory file "test.restart.part0002.colvars.traj".
+colvars: Opening trajectory file "test.restart.part0002.colvars.traj".
 colvars: Initializing step number to 20.
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.part0002.colvars.traj".
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.part0002.colvars.traj".
 colvars: Saving collective variables state to "test.restart.part0002.restart.colvars.state".
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.part0002.colvars.traj".
