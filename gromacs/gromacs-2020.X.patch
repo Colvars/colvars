@@ -1,0 +1,158 @@
+diff -aur src/gromacs/CMakeLists.txt src_colvars/gromacs/CMakeLists.txt
+--- src/gromacs/CMakeLists.txt	2020-07-09 13:32:11.000000000 +0200
++++ src_colvars/gromacs/CMakeLists.txt	2020-09-24 09:39:57.365198287 +0200
+@@ -107,6 +107,7 @@
+ add_subdirectory(compat)
+ add_subdirectory(mimic)
+ add_subdirectory(modularsimulator)
++add_subdirectory(colvars)
+ if (NOT GMX_BUILD_MDRUN_ONLY)
+     add_subdirectory(gmxana)
+     add_subdirectory(gmxpreprocess)
+diff -aur src/gromacs/mdlib/energyoutput.cpp src_colvars/gromacs/mdlib/energyoutput.cpp
+--- src/gromacs/mdlib/energyoutput.cpp	2020-07-09 13:32:11.000000000 +0200
++++ src_colvars/gromacs/mdlib/energyoutput.cpp	2020-09-24 09:39:57.337197726 +0200
+@@ -238,7 +238,7 @@
+     bEner_[F_DISPCORR]   = (ir->eDispCorr != edispcNO);
+     bEner_[F_DISRESVIOL] = (gmx_mtop_ftype_count(mtop, F_DISRES) > 0);
+     bEner_[F_ORIRESDEV]  = (gmx_mtop_ftype_count(mtop, F_ORIRES) > 0);
+-    bEner_[F_COM_PULL]   = ((ir->bPull && pull_have_potential(pull_work)) || ir->bRot);
++    bEner_[F_COM_PULL]   = ((ir->bPull && pull_have_potential(pull_work)) || ir->bRot || ir->bColvars);
+ 
+     MdModulesEnergyOutputToDensityFittingRequestChecker mdModulesAddOutputToDensityFittingFieldRequest;
+     mdModulesNotifier.notifier_.notify(&mdModulesAddOutputToDensityFittingFieldRequest);
+diff -aur src/gromacs/mdlib/sim_util.cpp src_colvars/gromacs/mdlib/sim_util.cpp
+--- src/gromacs/mdlib/sim_util.cpp	2020-07-09 13:32:11.000000000 +0200
++++ src_colvars/gromacs/mdlib/sim_util.cpp	2020-09-24 09:39:57.333197646 +0200
+@@ -113,6 +113,7 @@
+ #include "gromacs/utility/smalloc.h"
+ #include "gromacs/utility/strconvert.h"
+ #include "gromacs/utility/sysinfo.h"
++#include "gromacs/colvars/colvarproxy_gromacs.h"
+ 
+ using gmx::AtomLocality;
+ using gmx::DomainLifetimeWorkload;
+@@ -553,6 +554,16 @@
+      */
+     if (stepWork.computeForces)
+     {
++
++        /* COLVARS */
++        /* Colvars Module needs some updated data - just PBC & step number - before calling its ForceProvider */
++        if (inputrec->bColvars)
++        {
++            t_pbc pbc;
++            set_pbc(&pbc, inputrec->ePBC, box);
++            inputrec->colvars_proxy->update_data(cr, step, pbc, box, didNeighborSearch);
++        }
++
+         gmx::ForceProviderInput  forceProviderInput(x, *mdatoms, t, box, *cr);
+         gmx::ForceProviderOutput forceProviderOutput(forceWithVirial, enerd);
+ 
+diff -aur src/gromacs/mdrun/legacymdrunoptions.h src_colvars/gromacs/mdrun/legacymdrunoptions.h
+--- src/gromacs/mdrun/legacymdrunoptions.h	2020-07-09 13:32:11.000000000 +0200
++++ src_colvars/gromacs/mdrun/legacymdrunoptions.h	2020-09-24 09:39:57.369198367 +0200
+@@ -121,7 +121,9 @@
+                                           { efTOP, "-mp", "membed", ffOPTRD },
+                                           { efNDX, "-mn", "membed", ffOPTRD },
+                                           { efXVG, "-if", "imdforces", ffOPTWR },
+-                                          { efXVG, "-swap", "swapions", ffOPTWR } } };
++                                          { efXVG, "-swap", "swapions", ffOPTWR },
++                                          { efDAT, "-colvars",  "colvars",   ffOPTRDMULT },     /* COLVARS */
++                                          { efDAT, "-colvars_restart", "colvars",  ffOPTRD },   /* COLVARS */}};
+ 
+     //! Print a warning if any force is larger than this (in kJ/mol nm).
+     real pforce = -1;
+diff -aur src/gromacs/mdrun/runner.cpp src_colvars/gromacs/mdrun/runner.cpp
+--- src/gromacs/mdrun/runner.cpp	2020-07-09 13:32:11.000000000 +0200
++++ src_colvars/gromacs/mdrun/runner.cpp	2020-09-24 09:39:57.373198448 +0200
+@@ -155,6 +155,7 @@
+ #include "gromacs/utility/programcontext.h"
+ #include "gromacs/utility/smalloc.h"
+ #include "gromacs/utility/stringutil.h"
++#include "gromacs/colvars/colvarproxy_gromacs.h"
+ 
+ #include "isimulator.h"
+ #include "replicaexchange.h"
+@@ -1520,6 +1521,44 @@
+                                MASTER(cr) ? globalState->x.rvec_array() : nullptr, filenames.size(),
+                                filenames.data(), oenv, mdrunOptions.imdOptions, startingBehavior);
+ 
++        /* COLVARS */
++        if (opt2bSet("-colvars",filenames.size(), filenames.data()))
++        {
++
++            gmx::ArrayRef<const std::string> filenames_colvars;
++            std::string filename_restart;
++            std::string prefix;
++
++            inputrec->bColvars = TRUE;
++
++            /* Retrieve filenames */
++            filenames_colvars = opt2fns("-colvars", filenames.size(), filenames.data());
++            if (opt2bSet("-colvars_restart",filenames.size(), filenames.data()))
++            {
++                filename_restart = opt2fn("-colvars_restart",filenames.size(), filenames.data());
++            }
++
++            /* Determine the prefix for the colvars output files, based on the logfile name. */
++            std::string logfile = ftp2fn(efLOG, filenames.size(), filenames.data());
++            /* 4 = ".log".length() */
++            if(logfile.length() > 4)
++            {
++                prefix = logfile.substr(0,logfile.length()-4);
++            }
++
++            inputrec->colvars_proxy =  new colvarproxy_gromacs();
++            inputrec->colvars_proxy->init(inputrec,inputrec->init_step,&mtop, prefix, filenames_colvars,filename_restart, cr, MASTER(cr) ? globalState->x.rvec_array() : nullptr);
++            fr->forceProviders->addForceProvider(inputrec->colvars_proxy);
++        }
++        else
++        {
++            inputrec->bColvars = FALSE;
++            if (opt2bSet("-colvars_restart",filenames.size(), filenames.data()))
++            {
++                gmx_fatal(FARGS, "-colvars_restart can only be used together with the -colvars option.");
++            }
++        }
++
+         if (DOMAINDECOMP(cr))
+         {
+             GMX_RELEASE_ASSERT(fr, "fr was NULL while cr->duty was DUTY_PP");
+@@ -1638,6 +1677,13 @@
+         free_membed(membed);
+     }
+ 
++    /* COLVARS */
++    if (inputrec->bColvars)
++    {
++        inputrec->colvars_proxy->finish(cr);
++        delete inputrec->colvars_proxy;
++    }
++
+     /* Does what it says */
+     print_date_and_time(fplog, cr->nodeid, "Finished mdrun", gmx_gettime());
+     walltime_accounting_destroy(walltime_accounting);
+diff -aur src/gromacs/mdtypes/inputrec.h src_colvars/gromacs/mdtypes/inputrec.h
+--- src/gromacs/mdtypes/inputrec.h	2020-07-09 13:32:11.000000000 +0200
++++ src_colvars/gromacs/mdtypes/inputrec.h	2020-09-24 09:39:57.381198608 +0200
+@@ -53,6 +53,8 @@
+ struct gmx_enfrotgrp;
+ struct pull_params_t;
+ 
++class colvarproxy_gromacs;
++
+ namespace gmx
+ {
+ class Awh;
+@@ -587,6 +589,10 @@
+ 
+     //! KVT for storing simulation parameters that are not part of the mdp file.
+     std::unique_ptr<gmx::KeyValueTreeObject> internalParameters;
++
++    /* COLVARS */
++    gmx_bool                bColvars;       /* Do we do colvars calculations ? */
++    colvarproxy_gromacs     *colvars_proxy; /* The object for the colvars calculations */
+ };
+ 
+ int ir_optimal_nstcalcenergy(const t_inputrec* ir);
