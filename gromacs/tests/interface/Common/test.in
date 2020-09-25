@@ -1,10 +1,11 @@
-#units gromacs
+units gromacs
+colvarsTrajFrequency 10
 
 colvar {
     name d_com
     distance {
         group1 {
-            atomNumbers 1072
+            atomNumbers 1072 1899
         }
         group2 {
             atomNumbers 673 1801
@@ -29,7 +30,7 @@ colvar {
 
     cartesian {
         atoms {
-            atomNumbers 1984
+            atomNumbers 1899 1984
         }
     }
 }

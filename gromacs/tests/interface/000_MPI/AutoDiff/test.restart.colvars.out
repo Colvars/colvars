@@ -1,12 +1,13 @@
 colvars: ----------------------------------------------------------------------
 colvars: Please cite Fiorin et al, Mol Phys 2013:
 colvars: SMP parallelism is enabled; if needed, use "smp off" to override this.
+colvars: This version was built with the C++11 standard or higher.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.dat":
-colvars: # units = "" [default]
+colvars: # units = "gromacs"
 colvars: # smp = on [default]
-colvars: # colvarsTrajFrequency = 100 [default]
-colvars: # colvarsRestartFrequency = 0 [default]
+colvars: # colvarsTrajFrequency = 10
+colvars: # colvarsRestartFrequency = 18446744072060726240 [default]
 colvars: # scriptedColvarForces = off [default]
 colvars: # scriptingAfterBiases = off [default]
 colvars: ----------------------------------------------------------------------
@@ -32,7 +33,7 @@ colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
-colvars:       Atom group "group1" defined with 1 atoms requested: total mass = 15.9994, total charge = -0.834.
+colvars:       Atom group "group1" defined with 2 atoms requested: total mass = 17.0074, total charge = -0.417.
 colvars:       Initializing atom group "group2".
 colvars:       # name = "" [default]
 colvars:       # centerReference = off [default]
@@ -53,6 +54,8 @@ colvars:   # timeStepFactor = 1 [default]
 colvars:   # width = 1 [default]
 colvars:   # lowerBoundary = 0 [default]
 colvars:   # upperBoundary = 0 [default]
+colvars:   # hardLowerBoundary = on [default]
+colvars:   # hardUpperBoundary = off [default]
 colvars:   # expandBoundaries = off [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
@@ -106,6 +109,8 @@ colvars:   # timeStepFactor = 1 [default]
 colvars:   # width = 1 [default]
 colvars:   # lowerBoundary = 0 [default]
 colvars:   # upperBoundary = 0 [default]
+colvars:   # hardLowerBoundary = on [default]
+colvars:   # hardUpperBoundary = off [default]
 colvars:   # expandBoundaries = off [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
@@ -138,13 +143,15 @@ colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
-colvars:       Atom group "atoms" defined with 1 atoms requested: total mass = 15.9994, total charge = -0.834.
+colvars:       Atom group "atoms" defined with 2 atoms requested: total mass = 17.0074, total charge = -0.417.
 colvars:     # useX = on [default]
 colvars:     # useY = on [default]
 colvars:     # useZ = on [default]
 colvars:   All components initialized.
 colvars:   # timeStepFactor = 1 [default]
 colvars:   # width = 1 [default]
+colvars:   # hardLowerBoundary = off [default]
+colvars:   # hardUpperBoundary = off [default]
 colvars:   # expandBoundaries = off [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
@@ -160,7 +167,9 @@ colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new "harmonic" instance.
 colvars:   # name = "harmonic1" [default]
 colvars:   # colvars = { d_com }
+colvars:   # stepZeroData = off [default]
 colvars:   # outputEnergy = off [default]
+colvars:   # outputFreq = 18446744072060726240 [default]
 colvars:   # timeStepFactor = 1 [default]
 colvars:   # writeTISamples = off [default]
 colvars:   # writeTIPMF = off [default]
@@ -175,20 +184,21 @@ colvars: Collective variables biases initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables module (re)initialized.
 colvars: ----------------------------------------------------------------------
-colvars: Re-initialized atom group for variable "d_com":0/0. 1 atoms: total mass = 15.9994, total charge = -0.834.
+colvars: Re-initialized atom group for variable "d_com":0/0. 2 atoms: total mass = 17.0074, total charge = -0.417.
 colvars: Re-initialized atom group for variable "d_com":0/1. 2 atoms: total mass = 31.9988, total charge = -1.668.
 colvars: Re-initialized atom group for variable "d_atoms":0/0. 1 atoms: total mass = 15.9994, total charge = -0.834.
 colvars: Re-initialized atom group for variable "d_atoms":0/1. 1 atoms: total mass = 15.9994, total charge = -0.834.
-colvars: Re-initialized atom group for variable "coords_OW_1984":0/0. 1 atoms: total mass = 15.9994, total charge = -0.834.
+colvars: Re-initialized atom group for variable "coords_OW_1984":0/0. 2 atoms: total mass = 17.0074, total charge = -0.417.
 colvars: ----------------------------------------------------------------------
-colvars: Restarting from file "test.colvars.state.dat".
-colvars:   Restarting collective variable "d_com" from value: 0.923817
-colvars:   Restarting collective variable "d_atoms" from value: 1.12304
-colvars:   Restarting collective variable "coords_OW_1984" from value: ( 0.773862 , 2.99946 , 2.99454 )
+colvars: Loading state from file "test.colvars.state.dat".
+colvars:   Restarting collective variable "d_com" from value: 0.936663
+colvars:   Restarting collective variable "d_atoms" from value: 1.18036
+colvars:   Restarting collective variable "coords_OW_1984" from value: ( 0.0452292 , 3.05298 , 0.403581 , 0.789554 , 3.03035 , 2.98184 )
+colvars:   Restarting harmonic bias "harmonic1" from step number 500.
 colvars: ----------------------------------------------------------------------
 colvars: The restart output state file will be "test.restart.part0002.restart.colvars.state".
 colvars: The final output state file will be "test.restart.part0002.colvars.state".
-colvars: Writing to colvar trajectory file "test.restart.part0002.colvars.traj".
+colvars: Opening trajectory file "test.restart.part0002.colvars.traj".
 colvars: Initializing step number to 500.
-colvars: Saving collective variables state to "test.restart.part0002.colvars.state".
-colvars: Resetting the Collective Variables module.
+colvars: Error: the calculated value of colvar "d_com":
+colvars: If this error message is unclear, try recompiling with -DCOLVARS_DEBUG.
