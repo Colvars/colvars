@@ -46,7 +46,7 @@ protected:
 
   // Node-local bookkepping data
   //! Total number of Colvars atoms
-  int        nat = 0;
+  int        n_colvars_atoms = 0;
   //! Part of the atoms that are local.
   int        nat_loc = 0;
   //! Global indices of the Colvars atoms.
@@ -55,8 +55,8 @@ protected:
   int       *ind_loc = nullptr;
   //! Allocation size for ind_loc.
   int        nalloc_loc = 0;
-  //! Positions for all Colvars atoms assembled on the master node.
-  rvec      *xa = nullptr;
+  //! Unwrapped positions for all Colvars atoms, communicated to all nodes.
+  rvec      *x_colvars_unwrapped = nullptr;
   //! Shifts for all Colvars atoms, to make molecule(s) whole.
   ivec      *xa_shifts = nullptr;
   //! Extra shifts since last DD step.
@@ -65,8 +65,8 @@ protected:
   rvec      *xa_old = nullptr;
   //! Position of each local atom in the collective array.
   int       *xa_ind = nullptr;
-  //! The forces on the colvars.
-  rvec           *f = nullptr;
+  //! Bias forces on all Colvars atoms
+  rvec      *f_colvars = nullptr;
 public:
   friend class cvm::atom;
   colvarproxy_gromacs();
@@ -90,6 +90,9 @@ public:
     */
   virtual void calculateForces(const gmx::ForceProviderInput &forceProviderInput,
                                 gmx::ForceProviderOutput      *forceProviderOutput);
+
+  // Compute virial tensor for position r and force f, and add to matrix vir
+  void add_virial_term(matrix vir, rvec const f, gmx::RVec const r);
 
   void add_energy (cvm::real energy);
   void finish(const t_commrec *cr);
