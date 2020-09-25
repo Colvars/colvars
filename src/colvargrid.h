@@ -199,6 +199,7 @@ public:
   {
     nd = nt = 0;
     mult = 1;
+    has_parent_data = false;
     this->setup();
   }
 
@@ -222,9 +223,9 @@ public:
                                          hard_lower_boundaries(g.hard_lower_boundaries),
                                          hard_upper_boundaries(g.hard_upper_boundaries),
                                          widths(g.widths),
+                                         has_parent_data(false),
                                          has_data(false)
-  {
-  }
+  {}
 
   /// \brief Constructor from explicit grid sizes \param nx_i Number
   /// of grid points along each dimension \param t Initial value for
@@ -233,7 +234,7 @@ public:
   colvar_grid(std::vector<int> const &nx_i,
               T const &t = T(),
               size_t mult_i = 1)
-    : has_data(false)
+    : has_parent_data(false), has_data(false)
   {
     this->setup(nx_i, t, mult_i);
   }
@@ -245,7 +246,7 @@ public:
               T const &t = T(),
               size_t mult_i = 1,
               bool add_extra_bin = false)
-    : has_data(false)
+    : has_parent_data(false), has_data(false)
   {
     this->init_from_colvars(colvars, t, mult_i, add_extra_bin);
   }

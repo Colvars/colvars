@@ -1944,6 +1944,7 @@ colvarbias_meta::hill::hill(cvm::step_number it_in,
     sigmas(cv_values.size()),
     replica(replica_in)
 {
+  hill_value = 0.0;
   for (size_t i = 0; i < cv_values.size(); i++) {
     centers[i].type(cv_values[i]);
     centers[i] = cv_values[i];
@@ -1967,7 +1968,9 @@ colvarbias_meta::hill::hill(colvarbias_meta::hill const &h)
     centers(h.centers),
     sigmas(h.sigmas),
     replica(h.replica)
-{}
+{
+  hill_value = 0.0;
+}
 
 
 colvarbias_meta::hill::~hill()

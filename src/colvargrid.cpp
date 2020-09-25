@@ -122,15 +122,21 @@ cvm::real colvar_grid_scalar::entropy() const
 
 
 colvar_grid_gradient::colvar_grid_gradient()
-  : colvar_grid<cvm::real>(), samples(NULL)
+  : colvar_grid<cvm::real>(),
+    samples(NULL),
+    weights(NULL)
 {}
 
 colvar_grid_gradient::colvar_grid_gradient(std::vector<int> const &nx_i)
-  : colvar_grid<cvm::real>(nx_i, 0.0, nx_i.size()), samples(NULL)
+  : colvar_grid<cvm::real>(nx_i, 0.0, nx_i.size()),
+    samples(NULL),
+    weights(NULL)
 {}
 
 colvar_grid_gradient::colvar_grid_gradient(std::vector<colvar *> &colvars)
-  : colvar_grid<cvm::real>(colvars, 0.0, colvars.size()), samples(NULL)
+  : colvar_grid<cvm::real>(colvars, 0.0, colvars.size()),
+    samples(NULL),
+    weights(NULL)
 {}
 
 void colvar_grid_gradient::write_1D_integral(std::ostream &os)

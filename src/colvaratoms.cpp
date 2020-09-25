@@ -37,6 +37,7 @@ cvm::atom::atom(int atom_number)
   }
   id = p->get_atom_id(index);
   update_mass();
+  update_charge();
   reset_data();
 }
 
@@ -53,6 +54,7 @@ cvm::atom::atom(cvm::residue_id const &residue,
   }
   id = p->get_atom_id(index);
   update_mass();
+  update_charge();
   reset_data();
 }
 
@@ -62,6 +64,7 @@ cvm::atom::atom(atom const &a)
 {
   id = (cvm::proxy)->get_atom_id(index);
   update_mass();
+  update_charge();
   reset_data();
 }
 

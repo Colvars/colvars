@@ -224,7 +224,7 @@ void colvarvalue::is_derivative()
 
 
 colvarvalue::colvarvalue(colvarvalue const &x)
-  : value_type(x.type())
+  : value_type(x.type()), real_value(0.0)
 {
   switch (x.type()) {
   case type_scalar:
@@ -252,6 +252,7 @@ colvarvalue::colvarvalue(colvarvalue const &x)
 
 
 colvarvalue::colvarvalue(cvm::vector1d<cvm::real> const &v, Type vti)
+  : real_value(0.0)
 {
   if ((vti != type_vector) && (v.size() != num_dimensions(vti))) {
     cvm::error("Error: trying to initialize a variable of type \""+type_desc(vti)+
