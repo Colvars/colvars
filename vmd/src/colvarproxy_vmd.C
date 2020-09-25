@@ -865,7 +865,7 @@ void colvarproxy_vmd::clear_volmap(int index)
 
 
 
-template<int use_atom_field> 
+template<int use_atom_field>
 void colvarproxy_vmd::compute_voldata(VolumetricData const *voldata,
                                       cvm::atom_iter atom_begin,
                                       cvm::atom_iter atom_end,
@@ -900,10 +900,10 @@ int colvarproxy_vmd::compute_volmap(int volmap_id,
   int error_code = COLVARS_OK;
   VolumetricData const *voldata = vmdmol->get_volume_data(volmap_id);
   if (voldata != NULL) {
-    if (atom_field) {
+    if (atom_field != NULL) {
       compute_voldata<1>(voldata, atom_begin, atom_end, value, atom_field);
     } else {
-      compute_voldata<0>(voldata, atom_begin, atom_end, value, atom_field);
+      compute_voldata<0>(voldata, atom_begin, atom_end, value, NULL);
     }
   } else {
     // Error message

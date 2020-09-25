@@ -1692,6 +1692,9 @@ protected:
 
   /// Group of atoms selected internally (optional)
   cvm::atom_group *atoms;
+
+  /// Weights assigned to each atom (default: uniform weights)
+  std::vector<cvm::real> atom_weights;
 };
 
 
