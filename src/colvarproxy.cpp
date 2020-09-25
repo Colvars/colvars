@@ -512,6 +512,7 @@ int colvarproxy_script::run_colvar_gradient_callback(std::string const & /* name
 colvarproxy_io::colvarproxy_io()
 {
   input_buffer_ = NULL;
+  restart_frequency_engine = 0;
 }
 
 
