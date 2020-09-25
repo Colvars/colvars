@@ -75,6 +75,22 @@ int colvar::map_total::init(std::string const &conf)
     error_code |= volmap_index > 0 ? COLVARS_OK : INPUT_ERROR;
   }
 
+  if (get_keyval(conf, "atomWeights", atom_weights, atom_weights)) {
+    if (atoms == NULL) {
+      error_code |= cvm::error("Error: weights can only be assigned when atoms "
+                               "are selected explicitly in Colvars.\n",
+                               INPUT_ERROR);
+    } else {
+      if (atoms->size() != atom_weights.size()) {
+        error_code |= cvm::error("Error: if defined, the number of weights ("+
+                                 cvm::to_str(atom_weights.size())+
+                                 ") must equal the number of atoms ("+
+                                 cvm::to_str(atoms->size())+
+                                 ").\n", INPUT_ERROR);
+      }
+    }
+  }
+
   if (volmap_name.size() > 0) {
     volmap_id = proxy->get_volmap_id_from_name(volmap_name.c_str());
   }
@@ -88,8 +104,9 @@ void colvar::map_total::calc_value()
   colvarproxy const *proxy = cvm::main()->proxy;
   if (atoms != NULL) {
     x.real_value = 0.0;
+    cvm::real *const w = atom_weights.size() > 0 ? &(atom_weights[0]) : NULL;
     proxy->compute_volmap(volmap_id, atoms->begin(), atoms->end(),
-                          &(x.real_value), NULL);
+                          &(x.real_value), w);
   } else {
     x.real_value = proxy->get_volmap_value(volmap_index);
   }

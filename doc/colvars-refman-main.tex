@@ -2713,7 +2713,7 @@ All distances are calculated every \texttt{freq} timesteps to update the list of
 \cvsubsec{Volumetric map-based variables}{sec:cvc_volmaps}
 
 Volumetric maps of the Cartesian coordinates, typically defined as mesh grid along the three Cartesian axes, may be used to define collective variables.
-\cvnamdonly{This feature is currently available in NAMD, implemented as an interface between Colvars and GridForces\cvnamdugonly{ (see section \ref{section:userdef})}.}
+\cvnamdonly{In NAMD this feature implemented as an interface between Colvars and \href{https://www.ks.uiuc.edu/Research/namd/2.14/ug/node43.html}{GridForces}.}
 Please cite \cite{Fiorin2020} when using this implementation of collective variables based on volumetric maps.
 
 \cvsubsubsec{\texttt{mapTotal}: total value of a volumetric map}{sec:cvc_map_total}
@@ -2722,8 +2722,9 @@ Please cite \cite{Fiorin2020} when using this implementation of collective varia
 Given a function of the Cartesian coordinates $\phi(\mathbf{x}) = \phi(x, y, z)$, a \texttt{mapTotal} collective variable component $\Phi(\mathbf{X})$ is defined as the sum of the values of the function $\phi(\mathbf{x})$ evaluated at the coordinates of each atom, $\mathbf{x}_{i}$:
 \begin{equation}
   \label{eq:cvc_map_total}
-  \Phi(\mathbf{X}) = \sum_{i=1}^{N}\phi(\mathbf{x}_{i})
+  \Phi(\mathbf{X}) = \sum_{i=1}^{N} w_i \phi(\mathbf{x}_{i})
 \end{equation}
+\noindent{}where $w_i$ are weights assigned to each variable (1 by default).
 This formulation allows, for example, to ``count'' the number of atoms within a region of space by using a positive-valued function $\phi(\mathbf{x})$, such as for example the number of water molecules in a hydrophobic cavity \cite{Fiorin2020}.\\
 
 Because the volumetric map itself and the atoms affected by it are defined externally to Colvars, this component has a very limited number of keywords.
@@ -2753,6 +2754,32 @@ Because the volumetric map itself and the atoms affected by it are defined exter
     The map referred to must be already loaded before using this option.
     \cvnamdonly{This option is mutually exclusive with \refkey{colvar|mapTotal|mapName}; if the latter is given, the numeric ID is obtained internally from \MDENGINE{}.}
   }
+
+\item %
+  \labelkey{colvar|mapTotal|atoms}
+  \key
+    {atoms}{%
+    \texttt{mapTotal}}{%
+    Atom group}{%
+    \texttt{atoms~\{...\}} block}{%
+    If defined, this option allows defining the set of atoms to be aligned onto the volumetric map following the syntax described in section \ref{sec:colvar_atom_groups}.
+    This also allows, for instance, to express the volumetric map in a rotated frame of reference (see \ref{sec:colvar_atom_groups_ref_frame}).
+    \cvvmdonly{In VMD, this definition is required, otherwise the \texttt{mapTotal} value is identically zero.}
+    \cvnamdonly{In NAMD, this keyword is optional; unless a frame of reference other than the laboratory is needed, it is computationally much more efficient to select atoms via \href{https://www.ks.uiuc.edu/Research/namd/2.14/ug/node43.html}{GridForces} keywords.}
+    }
+
+\item %
+  \labelkey{colvar|mapTotal|atomWeights}
+  \keydef
+    {atoms}{%
+    \texttt{mapTotal}}{%
+    Weights to assign to each atom}{%
+    list of space-separated decimals}{%
+    all weights equal to 1}{%
+    If defined, the value of this option assigns weights $w_i$ to the individual atoms in a \texttt{mapTotal} variable.
+    This option requires defining \texttt{atoms} explicitly, and the number of weights must match the number of atoms.
+    }
+
 \end{cvcoptions}
 
 \cvnamdonly{
