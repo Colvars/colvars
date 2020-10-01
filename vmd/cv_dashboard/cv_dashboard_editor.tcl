@@ -74,12 +74,12 @@ proc ::cv_dashboard::edit { {add false} } {
   labelframe  $w.editor.fl.templates -bd 2 -text "Templates" -padx 2 -pady 2
   set templates $w.editor.fl.templates
 
-  # One line per subdirectory
+  # One line per subdirectory
   foreach d { colvar component other } {
     set ::cv_dashboard::templates_$d [dict create]
 
     foreach f [lsort -dictionary [glob -nocomplain "${::cv_dashboard::template_dir}/$d/*.in"]] {
-      # Map pretty template name to file name
+      # Map pretty template name to file name
       dict set ::cv_dashboard::templates_$d [regsub -all {_} [file rootname [file tail $f]] " "] $f
     }
     tk::label $templates.template_label_$d -text "$d templates:"
@@ -159,7 +159,7 @@ proc ::cv_dashboard::edit { {add false} } {
   grid columnconfigure $helpers 1 -weight 1
   grid columnconfigure $helpers 2 -weight 0
 
-  # Layout of all frames
+  # Layout of all frames
   grid $docs -sticky ew
   grid $templates -sticky ew
   grid $helpers -sticky ew

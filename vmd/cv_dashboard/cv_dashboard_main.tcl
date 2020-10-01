@@ -37,7 +37,7 @@ proc ::cv_dashboard::createWindow {} {
   bind $w <Control-a> { .cv_dashboard_window.cvtable selection set $::cv_dashboard::cvs }
   bind $w <Control-n> ::cv_dashboard::add
 
-  event add <<keyb_enter>> <Return>   ;# Combine Return and keypad-Enter into a single virtual event
+  event add <<keyb_enter>> <Return>   ;# Combine Return and keypad-Enter into a single virtual event
   event add <<keyb_enter>> <KP_Enter>
 
   if { [info patchlevel] != "8.5.6" } {
@@ -499,7 +499,7 @@ proc ::cv_dashboard::show_atoms { colvars } {
   set ci 0
   foreach cv $colvars {
     if { [info exists ::cv_dashboard::atom_rep($cv)]} {
-      # Refreshing for this colvar: let's delete and re-create
+      # Refreshing for this colvar: let's delete and re-create
       hide_atoms $cv
     }
     incr ci
@@ -600,6 +600,7 @@ proc ::cv_dashboard::show_volmaps { colvars } {
         set threshold [expr $::cv_dashboard::volmap_contour * [vecsum \
           [voltool info minmax -mol $::cv_dashboard::mol -vol ${volid}]]]
         mol color ColorID $color
+        mol selection all  ;# Must provide some selection text
         mol representation Isosurface ${threshold} ${volid} 2 0 0 1
         mol material [$w.volmap_material get]
         mol addrep $::cv_dashboard::mol
@@ -687,7 +688,7 @@ proc ::cv_dashboard::update_shown_gradients {} {
       graphics $molid delete $obj
     }
 
-    # Forget variables that have been deleted (*after* deleting the graphics above)
+    # Forget variables that have been deleted (*after* deleting the graphics above)
     if { [lsearch $::cv_dashboard::cvs $cv] == -1 } {
       unset ::cv_dashboard::grad_objects($cv)
       continue
@@ -695,9 +696,9 @@ proc ::cv_dashboard::update_shown_gradients {} {
 
     set atomids [run_cv colvar $cv getatomids]
     if { [llength $atomids] == 0 } {
-      # Variable was reinitialized and lost its gradient feature
+      # Variable was reinitialized and lost its gradient feature
       if { [run_cv colvar $cv set collect_gradient 1] == -1 } { continue }
-      # If that didn't work then gradients are not supported
+      # If that didn't work then gradients are not supported
       if { [llength $atomids] == 0 } { continue }
       run_cv colvar $cv update
     }
@@ -709,7 +710,7 @@ proc ::cv_dashboard::update_shown_gradients {} {
     set coords [$sel get {x y z}]
     $sel delete
 
-    # Loop through colorids (only in this run of the proc though)
+    # Loop through colorids (only in this run of the proc though)
     graphics $molid color [expr $colorid % 32]
     incr colorid
 
@@ -720,7 +721,7 @@ proc ::cv_dashboard::update_shown_gradients {} {
     }
     if {$maxl2 < 1e-14} { continue } ;# Zero gradient, don't even try
 
-    # Get width if provided in colvar config
+    # Get width if provided in colvar config
     set width 1.
     regexp -nocase -lineanchor {^\s*width\s([\d\.e]*)} [get_config $cv] match width
 
