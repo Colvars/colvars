@@ -324,6 +324,22 @@ proc ::cv_dashboard::get_config { cv } {
 }
 
 
+# Checks whether cv is associated to a volmap
+proc ::cv_dashboard::is_volmap { cv } {
+  return [expr [run_cv colvar $cv getvolmapids] > -1]
+}
+
+
+# Checks whether cv is a unit quaternion (current value)
+proc ::cv_dashboard::is_unit_quaternion { cv } {
+  set EPSILON 1e-10
+  set v [run_cv colvar $cv value]
+  if {[llength $v] != 4} { return 0 }
+  set l [expr abs([veclength $v] - 1.0)]
+  return [expr $l < $EPSILON]
+}
+
+
 #################################################################
 # GUI-related utilities
 #################################################################

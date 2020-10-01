@@ -10,7 +10,7 @@ proc ::cv_dashboard::add {} {
 
 
 # Colvar config editor window
-proc ::cv_dashboard::edit { {add false} } {
+proc ::cv_dashboard::edit { {add false} {cvs ""} } {
   # If a non-default unit system is in use, recall it in the config string
   refresh_units
   if { $::cv_dashboard::units == "" } {
@@ -34,7 +34,10 @@ proc ::cv_dashboard::edit { {add false} } {
   colvar {\n  name d\n  distance {\n    group1 { atomNumbers 1 2 }\n    group2 { atomNumbers 3 4 }\n  }\n}\n"
     }
   } else {
-    set cvs [selected_colvars]
+    if {[llength $cvs] < 1} {
+      # if not provided, try selection
+      set cvs [selected_colvars]
+    }
     if {[llength $cvs] == 0} {
       # If no selection, edit all variables
       set cvs $::cv_dashboard::cvs
