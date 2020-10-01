@@ -33,6 +33,8 @@ proc ::cv_dashboard::createWindow {} {
   $w.cvtable column #0 -width 50 -stretch 1 -anchor w
   $w.cvtable column val -width 150 -stretch 1 -anchor w
 
+  bind $w.cvtable <Button-3>  {::cv_dashboard::cvContextMenu %x %y %X %Y}
+
   bind $w <Control-e> ::cv_dashboard::edit
   bind $w <Control-a> { .cv_dashboard_window.cvtable selection set $::cv_dashboard::cvs }
   bind $w <Control-n> ::cv_dashboard::add
@@ -178,6 +180,45 @@ proc ::cv_dashboard::createWindow {} {
   grid columnconfigure $w 2 -weight 1
 
   return $w
+}
+
+
+# Display context menu about specific colvar
+# Takes coordinates within widget and within window
+proc ::cv_dashboard::cvContextMenu { x y wX wY } {
+  set w .cv_dashboard_window
+  set menu $w.cvMenu
+
+  # Possibly use code below to access all selected colvars
+  # set cvs [selected_colvars]
+  # # Add any colvar under mouse cursor
+  # foreach cv [$w.cvtable identify item $x $y] {
+  #   if { [lsearch $cvs $cv] == -1 } {
+  #     lappend cvs $cv
+  #   }
+  # }
+
+  # Work only on colvar under mouse
+  set cv [$w.cvtable identify item $x $y]
+  if { [llength $cv] < 1 } {
+    return
+  }
+  if { [winfo exists $menu] } {
+    destroy $menu
+  }
+  menu $menu -tearoff 0
+
+  if { [is_volmap $cv] } {
+    $menu add command -label "Show volmap" -command [list ::cv_dashboard::show_volmaps $cv]
+    $menu add command -label "Hide volmap" -command [list ::cv_dashboard::hide_volmaps $cv]
+  }
+  if { [is_unit_quaternion $cv] } {
+    $menu add command -label "Show rotation" -command {puts "Rotation display is not implemented yet, sorry"}
+    $menu add command -label "Hide rotation" -command {puts "Rotation display is not implemented yet, sorry"}
+  }
+  $menu add command -label Edit -command [list ::cv_dashboard::edit false $cv]
+  $menu add command -label Delete -command [list ::cv_dashboard::del $cv]
+  tk_popup $menu $wX $wY
 }
 
 
@@ -444,8 +485,11 @@ proc ::cv_dashboard::save {} {
 
 
 # Delete currently selected colvars
-proc ::cv_dashboard::del {} {
-  foreach cv [selected_colvars] {
+proc ::cv_dashboard::del { {cvs "" } } {
+  if { [llength $cvs] < 1 } {
+    set cvs [selected_colvars]
+  }
+  foreach cv $cvs {
     # workaround bug in colvars pre-2018-07-02
     if {[string compare [run_cv version] "2018-07-02"] == -1} {
       foreach b [run_cv list biases] {
