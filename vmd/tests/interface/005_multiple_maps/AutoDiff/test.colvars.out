@@ -1,0 +1,211 @@
+colvars: ----------------------------------------------------------------------
+colvars: Initializing the collective variables module, version "2020-09-17".
+colvars: Please cite Fiorin et al, Mol Phys 2013:
+colvars:  https://dx.doi.org/10.1080/00268976.2013.813594
+colvars: in any publication based on this calculation.
+colvars: This version was built without the C++11 standard: some features are disabled.
+colvars: Please see the following link for details:
+colvars: https://colvars.github.io/README-c++11.html
+colvars: Using VMD interface, version "2020-04-07".
+colvars: Redefining the Tcl "cv" command to the new script interface.
+colvars: ----------------------------------------------------------------------
+colvars: Reading new configuration from file "test.in":
+colvars: # units = "" [default]
+colvars: # indexFile = "../Common/da.ndx"
+colvars: The following index groups are currently defined:
+colvars:   Protein (104 atoms)
+colvars:   Protein_noH (51 atoms)
+colvars:   Protein_Backbone (40 atoms)
+colvars:   Protein_C-alpha (10 atoms)
+colvars:   RMSD_atoms (10 atoms)
+colvars:   Protein_C-alpha_1_2 (2 atoms)
+colvars:   Protein_C-alpha_9_10 (2 atoms)
+colvars:   Protein_C-alpha_1 (1 atoms)
+colvars:   group1 (4 atoms)
+colvars:   Protein_C-alpha_2 (1 atoms)
+colvars:   group2 (4 atoms)
+colvars:   Protein_C-alpha_3 (1 atoms)
+colvars:   group3 (4 atoms)
+colvars:   Protein_C-alpha_4 (1 atoms)
+colvars:   group4 (4 atoms)
+colvars:   Protein_C-alpha_5 (1 atoms)
+colvars:   group5 (4 atoms)
+colvars:   Protein_C-alpha_6 (1 atoms)
+colvars:   group6 (4 atoms)
+colvars:   Protein_C-alpha_7 (1 atoms)
+colvars:   group7 (4 atoms)
+colvars:   Protein_C-alpha_8 (1 atoms)
+colvars:   group8 (4 atoms)
+colvars:   Protein_C-alpha_9 (1 atoms)
+colvars:   group9 (4 atoms)
+colvars:   Protein_C-alpha_10 (1 atoms)
+colvars:   group10 (4 atoms)
+colvars:   heavy_atoms (51 atoms)
+colvars: # smp = on [default]
+colvars: # colvarsTrajFrequency = 0 [default]
+colvars: # colvarsRestartFrequency = 0 [default]
+colvars: # scriptedColvarForces = off [default]
+colvars: # scriptingAfterBiases = off [default]
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = "multimap"
+colvars:   Initializing a new "mapTotal" component.
+colvars:     # name = "map1"
+colvars:     # componentCoeff = 1
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
+colvars:     # mapName = "" [default]
+colvars:     # mapID = 0
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "Protein"
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 104 atoms requested: total mass = 820.948, total charge = 6.70552e-08.
+colvars:     # atomWeights =  [default]
+colvars:   Initializing a new "mapTotal" component.
+colvars:     # name = "map2"
+colvars:     # componentCoeff = 2
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
+colvars:     # mapName = "" [default]
+colvars:     # mapID = 1
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "Protein"
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 104 atoms requested: total mass = 820.948, total charge = 6.70552e-08.
+colvars:     # atomWeights =  [default]
+colvars:   All components initialized.
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # width = 1 [default]
+colvars:   # lowerBoundary = 0 [default]
+colvars:   # upperBoundary = 0 [default]
+colvars:   # hardLowerBoundary = off [default]
+colvars:   # hardUpperBoundary = off [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = off [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputTotalForce = off [default]
+colvars:   # outputAppliedForce = off [default]
+colvars:   # subtractAppliedForce = off [default]
+colvars:   # runAve = off [default]
+colvars:   # corrFunc = off [default]
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = "map1"
+colvars:   Initializing a new "mapTotal" component.
+colvars:     # name = "map1"
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
+colvars:     # mapName = "" [default]
+colvars:     # mapID = 0
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "Protein"
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 104 atoms requested: total mass = 820.948, total charge = 6.70552e-08.
+colvars:     # atomWeights =  [default]
+colvars:   All components initialized.
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # width = 1 [default]
+colvars:   # lowerBoundary = 0 [default]
+colvars:   # upperBoundary = 0 [default]
+colvars:   # hardLowerBoundary = off [default]
+colvars:   # hardUpperBoundary = off [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = off [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputTotalForce = off [default]
+colvars:   # outputAppliedForce = off [default]
+colvars:   # subtractAppliedForce = off [default]
+colvars:   # runAve = off [default]
+colvars:   # corrFunc = off [default]
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = "map2"
+colvars:   Initializing a new "mapTotal" component.
+colvars:     # name = "map2"
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
+colvars:     # mapName = "" [default]
+colvars:     # mapID = 1
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "Protein"
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 104 atoms requested: total mass = 820.948, total charge = 6.70552e-08.
+colvars:     # atomWeights =  [default]
+colvars:   All components initialized.
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # width = 1 [default]
+colvars:   # lowerBoundary = 0 [default]
+colvars:   # upperBoundary = 0 [default]
+colvars:   # hardLowerBoundary = off [default]
+colvars:   # hardUpperBoundary = off [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = off [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputTotalForce = off [default]
+colvars:   # outputAppliedForce = off [default]
+colvars:   # subtractAppliedForce = off [default]
+colvars:   # runAve = off [default]
+colvars:   # corrFunc = off [default]
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables initialized, 3 in total.
+colvars: No collective variables biases were defined.
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables module (re)initialized.
+colvars: ----------------------------------------------------------------------
+colvars: Re-initialized atom group for variable "multimap":0/0. 104 atoms: total mass = 820.948, total charge = 6.70552e-08.
+colvars: Re-initialized atom group for variable "multimap":1/0. 104 atoms: total mass = 820.948, total charge = 6.70552e-08.
+colvars: Re-initialized atom group for variable "map1":0/0. 104 atoms: total mass = 820.948, total charge = 6.70552e-08.
+colvars: Re-initialized atom group for variable "map2":0/0. 104 atoms: total mass = 820.948, total charge = 6.70552e-08.

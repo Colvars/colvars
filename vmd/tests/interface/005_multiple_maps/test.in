@@ -1,0 +1,52 @@
+indexFile ../Common/da.ndx
+
+colvar {
+
+    name multimap
+
+    mapTotal {
+        name map1
+        mapID 0
+        componentCoeff 1.0
+        atoms {
+            indexGroup Protein
+        }
+    }
+
+    mapTotal {
+        name map2
+        mapID 1
+        componentCoeff 2.0
+        atoms {
+            indexGroup Protein
+        }
+    }
+}
+
+
+colvar {
+
+    name map1
+
+    mapTotal {
+        name map1
+        mapID 0
+        atoms {
+            indexGroup Protein
+        }
+    }
+}
+
+
+colvar {
+
+    name map2
+
+    mapTotal {
+        name map2
+        mapID 1
+        atoms {
+            indexGroup Protein
+        }
+    }
+}
