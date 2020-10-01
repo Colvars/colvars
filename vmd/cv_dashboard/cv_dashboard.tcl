@@ -170,7 +170,7 @@ proc ::cv_dashboard::apply_config { cfg } {
   # Extract config for individual colvars
   set cv_configs [extract_colvar_configs $cfg]
 
-  # Update atom visualizations for modified colvars
+  # Update atom visualizations for modified colvars
   foreach cv [dict keys $cv_configs] {
     if { [info exists ::cv_dashboard::atom_rep($cv)] } {
       show_atoms $cv
