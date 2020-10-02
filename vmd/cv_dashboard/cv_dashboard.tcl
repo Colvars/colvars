@@ -78,6 +78,8 @@ set script_dir [file dirname [info script]]
 source [file join $script_dir cv_dashboard_main.tcl]
 source [file join $script_dir cv_dashboard_editor.tcl]
 source [file join $script_dir cv_dashboard_plots.tcl]
+source [file join $script_dir cv_dashboard_display.tcl]
+source [file join $script_dir cv_dashboard_settings.tcl]
 
 
 proc cv_dashboard {} {
@@ -326,7 +328,9 @@ proc ::cv_dashboard::get_config { cv } {
 
 # Checks whether cv is associated to a volmap
 proc ::cv_dashboard::is_volmap { cv } {
-  return [expr [run_cv colvar $cv getvolmapids] > -1]
+  set id [run_cv colvar $cv getvolmapids]
+  if { [llength $id] > 1 } { return 1 }
+  return [expr [lindex $id 0] != -1]
 }
 
 
@@ -365,6 +369,8 @@ proc ::cv_dashboard::update_frame { name molid op } {
   display_marker $f
   # refresh displayed CV gradients
   update_shown_gradients
+  # refresh any displayed rotation operators
+  update_rotation_display
 }
 
 

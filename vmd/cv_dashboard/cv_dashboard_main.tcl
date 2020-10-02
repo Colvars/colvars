@@ -77,47 +77,14 @@ proc ::cv_dashboard::createWindow {} {
   user add key Home  { ::cv_dashboard::chg_frame start }
   user add key End   { ::cv_dashboard::chg_frame end }
 
+  incr gridrow
+  grid [ttk::separator $w.sep0 -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
+
   # Atom group display
   incr gridrow
   grid [ttk::button $w.show_atoms -text "Show atoms" -command {::cv_dashboard::show_atoms_selected} -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $w.hide_atoms -text "Hide atoms" -command {::cv_dashboard::hide_atoms_selected} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $w.hide_all_atoms -text "Hide all atoms" -command {::cv_dashboard::hide_all_atoms} -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
-
-  incr gridrow
-  grid [ttk::separator $w.sep0 -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
-
-  # Volumetric map display
-  incr gridrow
-  grid [ttk::button $w.show_volmaps -text "Show volmaps" -command {::cv_dashboard::show_volmaps_selected} -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::button $w.hide_volmaps -text "Hide volmaps" -command {::cv_dashboard::hide_volmaps_selected} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::button $w.hide_all_volmaps -text "Hide all volmaps" -command {::cv_dashboard::hide_all_volmaps} -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
-
-  incr gridrow
-  grid [label $w.volmap_material_text -text "Volmap material:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  ttk::combobox $w.volmap_material -justify left -state readonly
-  $w.volmap_material configure -values [material list]
-  grid $w.volmap_material -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  $w.volmap_material set "Opaque"
-
-  incr gridrow
-  grid [label $w.volmap_contour_text -text "Contour level:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  grid [tk::entry $w.volmap_contour -textvariable ::cv_dashboard::volmap_contour] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  set ::cv_dashboard::volmap_contour 0.5
-  grid [label $w.volmap_contour_unit -text "(% of min-max range)"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
-
-  incr gridrow
-  grid [ttk::checkbutton $w.volmap_periodic_x -text "+/-X images" -variable ::cv_dashboard::volmap_periodic_x] \
-    -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::checkbutton $w.volmap_periodic_y -text "+/-Y images" -variable ::cv_dashboard::volmap_periodic_y] \
-    -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::checkbutton $w.volmap_periodic_z -text "+/-Z images" -variable ::cv_dashboard::volmap_periodic_z] \
-    -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
-  set ::cv_dashboard::volmap_periodic_x 0
-  set ::cv_dashboard::volmap_periodic_y 0
-  set ::cv_dashboard::volmap_periodic_z 0
-
-  incr gridrow
-  grid [ttk::separator $w.sep1 -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
 
   # Gradient display
   incr gridrow
@@ -127,33 +94,7 @@ proc ::cv_dashboard::createWindow {} {
   grid [ttk::button $w.hide_all_gradients -text "Hide all grads" -command {::cv_dashboard::hide_all_gradients} -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
   incr gridrow
-  grid [ttk::radiobutton $w.grad_scale_choice_norm -text "Set max. vector norm" -value "norm" -variable ::cv_dashboard::grad_scale_choice \
-    -command ::cv_dashboard::update_shown_gradients -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  grid [tk::entry $w.grad_norm -textvariable ::cv_dashboard::grad_norm] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  grid [label $w.grad_norm_unit -text "Angstrom"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
-  bind $w.grad_norm <<keyb_enter>> "$w.grad_scale_choice_norm invoke; ::cv_dashboard::update_shown_gradients"
-
-  incr gridrow
-  grid [ttk::radiobutton $w.grad_scale_choice_scale -text "Set scaling factor" -value "scale" -variable ::cv_dashboard::grad_scale_choice \
-    -command ::cv_dashboard::update_shown_gradients -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  grid [tk::entry $w.grad_scale -textvariable ::cv_dashboard::grad_scale] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  grid [label $w.grad_scale_unit -text "A * L / (cv / width)"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
-  bind $w.grad_scale <<keyb_enter>> "$w.grad_scale_choice_scale invoke; ::cv_dashboard::update_shown_gradients"
-
-  $w.grad_scale_choice_norm invoke ;# Default to norm
-
-  incr gridrow
   grid [ttk::separator $w.sep2 -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
-
-
-  # Units
-  incr gridrow
-  grid [label $w.unitTxt -text "Units:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  ttk::combobox $w.units -justify left -state readonly
-  $w.units configure -values [array names ::cv_dashboard::text_to_units]
-  refresh_units
-  grid $w.units -row $gridrow -column 1 -columnspan 2 -pady 2 -padx 2 -sticky nsew
-  bind $w.units <<ComboboxSelected>> ::cv_dashboard::change_units
 
   # Molecule
   incr gridrow
@@ -174,6 +115,13 @@ proc ::cv_dashboard::createWindow {} {
   grid [ttk::checkbutton $w.trackFrame -text "Track VMD frame" -command ::cv_dashboard::change_track_frame -variable ::cv_dashboard::track_frame] \
     -row $gridrow -column 2  -pady 2 -padx 2 -sticky nsew
   change_track_frame ;# activate tracking if necessary
+
+  incr gridrow
+  grid [ttk::button $w.settingsBtn -text "Settings" -command [list wm deiconify $w.settings] -padding "2 0 2 0"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
+
+  # Create and hide Settings window to create all associated variables
+  createSettingsWindow
+  wm withdraw $w.settings
 
   grid columnconfigure $w 0 -weight 1
   grid columnconfigure $w 1 -weight 1
@@ -200,24 +148,29 @@ proc ::cv_dashboard::cvContextMenu { x y wX wY } {
 
   # Work only on colvar under mouse
   set cv [$w.cvtable identify item $x $y]
-  if { [llength $cv] < 1 } {
-    return
-  }
+
+  # reduce scalar components to their parent vector CV
+  set cv [lindex $cv 0]
+
   if { [winfo exists $menu] } {
     destroy $menu
   }
   menu $menu -tearoff 0
 
-  if { [is_volmap $cv] } {
-    $menu add command -label "Show volmap" -command [list ::cv_dashboard::show_volmaps $cv]
-    $menu add command -label "Hide volmap" -command [list ::cv_dashboard::hide_volmaps $cv]
+  if { [llength $cv] == 0 } {
+    $menu add command -label New -command ::cv_dashboard::add
+  } else {
+    if { [is_volmap $cv] } {
+      $menu add command -label "Show volmap" -command [list ::cv_dashboard::show_volmaps $cv]
+      $menu add command -label "Hide volmap" -command [list ::cv_dashboard::hide_volmaps $cv]
+    }
+    if { [is_unit_quaternion $cv] } {
+      $menu add command -label "Show rotation" -command [list ::cv_dashboard::start_rotation_display $cv]
+      $menu add command -label "Hide rotation" -command [list ::cv_dashboard::stop_rotation_display]
+    }
+    $menu add command -label Edit -command [list ::cv_dashboard::edit false $cv]
+    $menu add command -label Delete -command [list ::cv_dashboard::del $cv]
   }
-  if { [is_unit_quaternion $cv] } {
-    $menu add command -label "Show rotation" -command {puts "Rotation display is not implemented yet, sorry"}
-    $menu add command -label "Hide rotation" -command {puts "Rotation display is not implemented yet, sorry"}
-  }
-  $menu add command -label Edit -command [list ::cv_dashboard::edit false $cv]
-  $menu add command -label Delete -command [list ::cv_dashboard::del $cv]
   tk_popup $menu $wX $wY
 }
 
@@ -336,7 +289,7 @@ proc ::cv_dashboard::selected_colvars {} {
     set cvs {}
     set prev ""
     foreach i [$w.cvtable selection] {
-      # reduce salar components to their parent CV
+      # reduce scalar components to their parent vector CV
       set cv [lindex $i 0]
       # Skip series of duplicates
       if {$cv != $prev} {
@@ -369,52 +322,6 @@ proc ::cv_dashboard::selected_comps { cv } {
   }
   # Order of selected components is not guaranteed
   return [lsort $comps]
-}
-
-
-proc ::cv_dashboard::refresh_units {} {
-  set w .cv_dashboard_window
-  if [catch { set u [cv units] }] {
-    # This catches cases where the module cannot be created because no molecule is loaded
-    set u ""
-  }
-  set ::cv_dashboard::units $u
-  if { $u == "" } {
-    $w.units set $::cv_dashboard::units_to_text(real)
-  } else {
-    $w.units set $::cv_dashboard::units_to_text($u)
-  }
-}
-
-
-# Change units if possible
-proc ::cv_dashboard::change_units {} {
-  set w .cv_dashboard_window
-  set val [$w.units get]
-  if {![info exists ::cv_dashboard::text_to_units($val)]} {
-    puts "Bug error: trying to switch to unknown unit system $val"
-    return
-  }
-  set new $::cv_dashboard::text_to_units($val)
-  # Get up-to-date current setting
-  refresh_units
-  if {$new != $::cv_dashboard::units} {
-    if {[run_cv list] == {}} {
-      cv units $new
-    } else {
-      tk_messageBox -icon error -title "Colvars Dashboard Error"\
-        -message "Cannot change units while colvars are defined.
-You can either:
-1) delete all colvars, or
-2) edit their configuration (<Ctrl-a> <e>), checking all parameters \
-for consistency with desired units, and add the following line:
-units $new"
-      return
-    }
-  }
-  # Refresh Combo box
-  refresh_units
-  refresh_values
 }
 
 
@@ -646,7 +553,7 @@ proc ::cv_dashboard::show_volmaps { colvars } {
         mol color ColorID $color
         mol selection all  ;# Must provide some selection text
         mol representation Isosurface ${threshold} ${volid} 2 0 0 1
-        mol material [$w.volmap_material get]
+        mol material [$w.settings.volmap_material get]
         mol addrep $::cv_dashboard::mol
         set repid [expr [molinfo $::cv_dashboard::mol get numreps] - 1]
         set periodic_string ""
