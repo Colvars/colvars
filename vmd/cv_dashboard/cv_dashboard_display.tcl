@@ -80,6 +80,12 @@ proc ::cv_dashboard::update_rotation_display {} {
     graphics $molid delete $h
   }
 
+  # Forget variables that have been deleted (*after* deleting the graphics above)
+  if { [lsearch $::cv_dashboard::cvs $rot_cv] == -1 } {
+    unset rot_cv
+    return
+  }
+
   # CV was already updated by update_frame
   set value [cv colvar $rot_cv value]
   foreach {q0 q1 q2 q3} $value {}
