@@ -33,7 +33,8 @@ proc ::cv_dashboard::createWindow {} {
   $w.cvtable column #0 -width 50 -stretch 1 -anchor w
   $w.cvtable column val -width 150 -stretch 1 -anchor w
 
-  bind $w.cvtable <Button-3>  {::cv_dashboard::cvContextMenu %x %y %X %Y}
+  bind $w.cvtable <Button-3> {::cv_dashboard::cvContextMenu %x %y %X %Y}
+  bind $w.cvtable <Button-1> {::cv_dashboard::cvTableClicked %x %y}
 
   bind $w <Control-e> ::cv_dashboard::edit
   bind $w <Control-a> { .cv_dashboard_window.cvtable selection set $::cv_dashboard::cvs }
@@ -137,41 +138,61 @@ proc ::cv_dashboard::cvContextMenu { x y wX wY } {
   set w .cv_dashboard_window
   set menu $w.cvMenu
 
-  # Possibly use code below to access all selected colvars
-  # set cvs [selected_colvars]
-  # # Add any colvar under mouse cursor
-  # foreach cv [$w.cvtable identify item $x $y] {
-  #   if { [lsearch $cvs $cv] == -1 } {
-  #     lappend cvs $cv
-  #   }
-  # }
+  set cvs [selected_colvars]
+  # Add any colvar under mouse cursor
+  foreach cv [$w.cvtable identify item $x $y] {
+    if { [lsearch $cvs $cv] == -1 } {
+      # reduce scalar components to their parent vector CV
+      lappend cvs [lindex $cv 0]
+    }
+  }
 
-  # Work only on colvar under mouse
-  set cv [$w.cvtable identify item $x $y]
-
-  # reduce scalar components to their parent vector CV
-  set cv [lindex $cv 0]
+  set volmaps [list]
+  set rotations [list]
+  foreach cv $cvs {
+    if { [is_volmap $cv] } {
+      lappend volmaps $cv
+    }
+    if { [is_unit_quaternion $cv] } {
+      lappend rotations $cv
+    }
+  }
 
   if { [winfo exists $menu] } {
     destroy $menu
   }
   menu $menu -tearoff 0
 
-  if { [llength $cv] == 0 } {
+  if { [llength $cvs] == 0 } {
     $menu add command -label New -command ::cv_dashboard::add
   } else {
-    if { [is_volmap $cv] } {
-      $menu add command -label "Show volmap" -command [list ::cv_dashboard::show_volmaps $cv]
-      $menu add command -label "Hide volmap" -command [list ::cv_dashboard::hide_volmaps $cv]
+    if { [llength $volmaps] > 0 } {
+      $menu add command -label "Show volmap" -command [list ::cv_dashboard::show_volmaps $volmaps]
+      $menu add command -label "Hide volmap" -command [list ::cv_dashboard::hide_volmaps $volmaps]
     }
-    if { [is_unit_quaternion $cv] } {
-      $menu add command -label "Show rotation" -command [list ::cv_dashboard::start_rotation_display $cv]
+    if { [llength $rotations] > 0 } {
+      $menu add command -label "Show rotation" -command [list ::cv_dashboard::start_rotation_display $rotations]
       $menu add command -label "Hide rotation" -command [list ::cv_dashboard::stop_rotation_display]
     }
-    $menu add command -label Edit -command [list ::cv_dashboard::edit false $cv]
-    $menu add command -label Delete -command [list ::cv_dashboard::del $cv]
+    $menu add command -label Edit -command [list ::cv_dashboard::edit false $cvs]
+    $menu add command -label Delete -command [list ::cv_dashboard::del $cvs]
   }
   tk_popup $menu $wX $wY
+}
+
+
+# Takes coordinates within widget
+proc ::cv_dashboard::cvTableClicked { x y } {
+  set w .cv_dashboard_window
+  set menu $w.cvMenu
+
+  # colvar under mouse
+  set cv [$w.cvtable identify item $x $y]
+
+  # Deselect all if clicked on nothing
+  if { [llength $cv] == 0 } {
+    $w.cvtable selection set [list]
+  }
 }
 
 
@@ -192,13 +213,13 @@ G. Fiorin, M. L. Klein, and J. Hénin. Using collective variables to drive molec
 
 
 proc ::cv_dashboard::quit {} {
-    # remove the trace we put in place, so they don't accumulate
-    # if loaded multiple times
-    catch {
-      trace remove variable ::vmd_frame($::cv_dashboard::mol) write ::cv_dashboard::update_frame
-    }
-    wm withdraw .cv_dashboard_window
+  # remove the trace we put in place, so they don't accumulate
+  # if loaded multiple times
+  catch {
+    trace remove variable ::vmd_frame($::cv_dashboard::mol) write ::cv_dashboard::update_frame
   }
+  wm withdraw .cv_dashboard_window
+}
 
 
 # Refresh the table with a list of existing CVs and their values
@@ -375,6 +396,11 @@ proc ::cv_dashboard::save {} {
       set cfg ""
     } else {
       set cfg "units $::cv_dashboard::units\n\n"
+    }
+    set indexFiles [list]
+    catch { set indexFiles [cv listindexfiles] }
+    foreach ndx $indexFiles {
+      append cfg "indexFile $ndx\n"
     }
     foreach cv [run_cv list] {
         append cfg "colvar {[get_config $cv]}\n\n"

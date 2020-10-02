@@ -5,6 +5,7 @@ proc ::cv_dashboard::createSettingsWindow {} {
   set w .cv_dashboard_window
   set settings [toplevel $w.settings]
   wm title $settings "Colvars Dashboard Settings"
+  wm protocol $settings WM_DELETE_WINDOW [list wm withdraw $settings]
 
   # Units
   incr gridrow
