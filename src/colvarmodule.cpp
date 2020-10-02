@@ -1769,6 +1769,8 @@ int cvm::read_index_file(char const *filename)
     cvm::error("Error: in opening index file \""+
                std::string(filename)+"\".\n",
                FILE_ERROR);
+  } else {
+    index_file_names.push_back(std::string(filename));
   }
 
   while (is.good()) {
@@ -1861,6 +1863,7 @@ int colvarmodule::reset_index_groups()
   }
   index_group_names.clear();
   index_groups.clear();
+  index_file_names.clear();
   return COLVARS_OK;
 }
 

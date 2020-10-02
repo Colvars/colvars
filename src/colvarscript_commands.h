@@ -249,6 +249,20 @@ CVSCRIPT(cv_listcommands,
          return COLVARS_OK;
          )
 
+CVSCRIPT(cv_listindexfiles,
+         "Get a list of the index files loaded in this session",
+         0, 0,
+         "",
+         int const n_files = script->module()->index_file_names.size();
+         std::string result;
+         for (int i = 0; i < n_files; i++) {
+           if (i > 0) result.append(1, ' ');
+           result.append(script->module()->index_file_names[i]);
+         }
+         script->set_result_str(result);
+         return COLVARS_OK;
+         )
+
 CVSCRIPT(cv_load,
          "Load data from a state file into all matching colvars and biases",
          1, 1,

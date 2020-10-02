@@ -685,6 +685,9 @@ public:
   static rvector position_distance(atom_pos const &pos1,
                                    atom_pos const &pos2);
 
+  /// \brief Names of .ndx files that have been loaded
+  std::vector<std::string> index_file_names;
+
   /// \brief Names of groups from one or more Gromacs .ndx files
   std::vector<std::string> index_group_names;
 
