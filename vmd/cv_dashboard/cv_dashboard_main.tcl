@@ -118,17 +118,32 @@ proc ::cv_dashboard::createWindow {} {
   change_track_frame ;# activate tracking if necessary
 
   incr gridrow
-  grid [ttk::button $w.settingsBtn -text "Settings" -command [list wm deiconify $w.settings] -padding "2 0 2 0"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $w.settingsBtn -text "Show advanced settings" -command ::cv_dashboard::toggleSettings -padding "2 0 2 0"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
 
   # Create and hide Settings window to create all associated variables
   createSettingsWindow
-  wm withdraw $w.settings
 
   grid columnconfigure $w 0 -weight 1
   grid columnconfigure $w 1 -weight 1
   grid columnconfigure $w 2 -weight 1
 
   return $w
+}
+
+
+# Open or close the Settings panel
+proc ::cv_dashboard::toggleSettings {} {
+  set w .cv_dashboard_window
+
+  if { $::cv_dashboard::settings_shown } {
+    set ::cv_dashboard::settings_shown false
+    $w.settingsBtn configure -text "Show advanced settings"
+    grid remove $w.settings
+  } else {
+    set ::cv_dashboard::settings_shown true
+    $w.settingsBtn configure -text "Hide advanced settings"
+    grid $w.settings
+  }
 }
 
 

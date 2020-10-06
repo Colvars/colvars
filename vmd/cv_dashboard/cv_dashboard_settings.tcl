@@ -1,11 +1,16 @@
 
 
-proc ::cv_dashboard::createSettingsWindow {} {
+proc ::cv_dashboard::createSettingsWindow { } {
 
   set w .cv_dashboard_window
-  set settings [toplevel $w.settings]
-  wm title $settings "Colvars Dashboard Settings"
-  wm protocol $settings WM_DELETE_WINDOW [list wm withdraw $settings]
+  # set settings [toplevel $w.settings]
+  # wm title $settings "Colvars Dashboard Settings"
+  # wm protocol $settings WM_DELETE_WINDOW [list wm withdraw $settings]
+
+  set settings $w.settings
+  grid [frame $settings] -column 0 -columnspan 3 -sticky nsew
+
+  set gridrow 0
 
   # Units
   incr gridrow
@@ -73,6 +78,9 @@ proc ::cv_dashboard::createSettingsWindow {} {
   grid columnconfigure $settings 0 -weight 1
   grid columnconfigure $settings 1 -weight 1
   grid columnconfigure $settings 2 -weight 1
+
+  grid remove $settings
+  set ::cv_dashboard::settings_shown false
 }
 
 
