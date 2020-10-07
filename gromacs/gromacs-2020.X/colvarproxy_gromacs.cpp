@@ -22,7 +22,7 @@
 #include "gromacs/domdec/domdec_struct.h"
 #include "gromacs/gmxlib/network.h"
 #include "gromacs/domdec/ga2la.h"
-
+#include "gromacs/mdtypes/colvarshistory.h"
 #include "gromacs/topology/ifunc.h"
 #include "gromacs/topology/mtop_util.h"
 #include "gromacs/mdlib/broadcaststructs.h"
@@ -33,11 +33,13 @@ colvarproxy_gromacs::colvarproxy_gromacs() : colvarproxy() {}
 
 // Colvars Initialization
 void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
+                               ObservablesHistory* oh,
                                const std::string &prefix,
                                gmx::ArrayRef<const std::string> filenames_config,
                                const std::string &filename_restart,
                                const t_commrec *cr,
                                const rvec x[]) {
+
 
   // Initialize colvars.
   first_timestep = true;
@@ -159,16 +161,51 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
 
   // Prepare data
 
-  // Save the original (whole) set of positions such that later the
-  // molecule can always be made whole again
+  // Manage restart with .cpt
   if (MASTER(cr))
   {
-    for (int i = 0; i < n_colvars_atoms; i++)
-    {
-        int ii = ind[i];
-        copy_rvec(x[ii], xa_old[i]);
-    }
+      /* colvarsHistory is the struct holding the data saved in the cpt
+
+       If we dont start with from a .cpt, prepare the colvarsHistory struct for proper .cpt writing,
+       If we did start from .cpt, we copy over the last whole structures from .cpt,
+       In any case, for subsequent checkpoint writing, we set the pointers (xa_old_whole_p) in
+       the xa_old arrays, which contain the correct PBC representation of
+       colvars atoms at the last time step.
+      */
+
+      if (oh->colvarsHistory == nullptr)
+      {
+          oh->colvarsHistory = std::make_unique<colvarshistory_t>(colvarshistory_t{});
+      }
+      colvarshistory_t *colvarstate = oh->colvarsHistory.get();
+
+
+      snew(colvarstate->xa_old_whole_p, n_colvars_atoms);
+
+      /* We always need the last whole positions such that
+      * in the next time step we can make the colvars atoms whole again in PBC */
+      if (colvarstate->bFromCpt)
+      {
+          for (int i = 0; i < n_colvars_atoms; i++)
+            {
+                copy_rvec(colvarstate->xa_old_whole[i], xa_old[i]);
+            }
+      }
+      else
+      {
+          colvarstate->n_atoms = n_colvars_atoms;
+          for (int i = 0; i < n_colvars_atoms; i++)
+          {
+              int ii = ind[i];
+              copy_rvec(x[ii], xa_old[i]);
+          }
+      }
+
+      /* For subsequent checkpoint writing, set the pointers (xa_old_whole_p) to the xa_old_whole
+      * arrays that get updated at every NS step */
+      colvarstate->xa_old_whole_p = xa_old;
   }
+
 
   // Communicate initial coordinates and global indices to all processes
   if (PAR(cr))

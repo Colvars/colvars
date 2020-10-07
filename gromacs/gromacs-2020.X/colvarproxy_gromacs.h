@@ -11,6 +11,7 @@
 #include "gromacs/mdtypes/forceoutput.h"
 #include "gromacs/mdlib/groupcoord.h"
 #include "gromacs/mdtypes/iforceprovider.h"
+#include "gromacs/mdtypes/observableshistory.h"
 #include "gromacs/topology/atoms.h"
 #include "colvarproxy_gromacs_version.h"
 
@@ -73,7 +74,7 @@ public:
   ~colvarproxy_gromacs();
 
   // Initialize colvars.
-  void init(t_inputrec *gmx_inp, int64_t step, gmx_mtop_t *mtop,
+  void init(t_inputrec *gmx_inp, int64_t step, gmx_mtop_t *mtop, ObservablesHistory* oh,
             const std::string &prefix, gmx::ArrayRef<const std::string> filenames_config,
             const std::string &filename_restart, const t_commrec *cr,
             const rvec x[]);
