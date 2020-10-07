@@ -7,7 +7,7 @@ Specific tests of the Colvars-Gromacs interface are located in `interface`. Here
 In this folder, the same input colvars file (`interface/Common/test.in`) is used in 3 different conditions : serial, t-MPI and full MPI (OpenMPI). Its meant to validate:
 
    - the parallel part of the proxy
-   - the PBC conditions
+   - the PBC conditions (atom are forced to go through the box with a colvar bias)
    - the coordinates written in the traj files (which should be unwrapped).
 
 ### Version tested

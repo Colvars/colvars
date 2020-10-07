@@ -6,65 +6,10 @@ colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.dat":
 colvars: # units = "gromacs"
 colvars: # smp = on [default]
-colvars: # colvarsTrajFrequency = 10
-colvars: # colvarsRestartFrequency = 0 [default]
+colvars: # colvarsTrajFrequency = 1
+colvars: # colvarsRestartFrequency = 1 [default]
 colvars: # scriptedColvarForces = off [default]
 colvars: # scriptingAfterBiases = off [default]
-colvars: ----------------------------------------------------------------------
-colvars:   Initializing a new collective variable.
-colvars:   # name = "d_com"
-colvars:   Initializing a new "distance" component.
-colvars:     # name = "" [default]
-colvars:     # componentCoeff = 1 [default]
-colvars:     # componentExp = 1 [default]
-colvars:     # period = 0 [default]
-colvars:     # wrapAround = 0 [default]
-colvars:     # forceNoPBC = off [default]
-colvars:     # scalable = on [default]
-colvars:       Initializing atom group "group1".
-colvars:       # name = "" [default]
-colvars:       # centerReference = off [default]
-colvars:       # rotateReference = off [default]
-colvars:       # atomsOfGroup = "" [default]
-colvars:       # indexGroup = "" [default]
-colvars:       # psfSegID =  [default]
-colvars:       # atomsFile = "" [default]
-colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
-colvars:       # enableForces = on [default]
-colvars:       # enableFitGradients = on [default]
-colvars:       # printAtomIDs = off [default]
-colvars:       Atom group "group1" defined with 2 atoms requested: total mass = 17.0074, total charge = -0.417.
-colvars:       Initializing atom group "group2".
-colvars:       # name = "" [default]
-colvars:       # centerReference = off [default]
-colvars:       # rotateReference = off [default]
-colvars:       # atomsOfGroup = "" [default]
-colvars:       # indexGroup = "" [default]
-colvars:       # psfSegID =  [default]
-colvars:       # atomsFile = "" [default]
-colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
-colvars:       # enableForces = on [default]
-colvars:       # enableFitGradients = on [default]
-colvars:       # printAtomIDs = off [default]
-colvars:       Atom group "group2" defined with 2 atoms requested: total mass = 31.9988, total charge = -1.668.
-colvars:     # oneSiteSystemForce = off [default]
-colvars:     # oneSiteTotalForce = off [default]
-colvars:   All components initialized.
-colvars:   # timeStepFactor = 1 [default]
-colvars:   # width = 1 [default]
-colvars:   # lowerBoundary = 0 [default]
-colvars:   # upperBoundary = 0 [default]
-colvars:   # hardLowerBoundary = on [default]
-colvars:   # hardUpperBoundary = off [default]
-colvars:   # expandBoundaries = off [default]
-colvars:   # extendedLagrangian = off [default]
-colvars:   # outputValue = on [default]
-colvars:   # outputVelocity = off [default]
-colvars:   # outputTotalForce = off [default]
-colvars:   # outputAppliedForce = off [default]
-colvars:   # subtractAppliedForce = off [default]
-colvars:   # runAve = off [default]
-colvars:   # corrFunc = off [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "d_atoms"
@@ -122,7 +67,7 @@ colvars:   # runAve = off [default]
 colvars:   # corrFunc = off [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
-colvars:   # name = "coords_OW_1984"
+colvars:   # name = "coords_OW_337"
 colvars:   Initializing a new "cartesian" component.
 colvars:     # name = "" [default]
 colvars:     # componentCoeff = 1 [default]
@@ -143,7 +88,7 @@ colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
-colvars:       Atom group "atoms" defined with 2 atoms requested: total mass = 17.0074, total charge = -0.417.
+colvars:       Atom group "atoms" defined with 1 atoms requested: total mass = 15.9994, total charge = -0.834.
 colvars:     # useX = on [default]
 colvars:     # useY = on [default]
 colvars:     # useZ = on [default]
@@ -162,35 +107,134 @@ colvars:   # subtractAppliedForce = off [default]
 colvars:   # runAve = off [default]
 colvars:   # corrFunc = off [default]
 colvars: ----------------------------------------------------------------------
-colvars: Collective variables initialized, 3 in total.
+colvars: Collective variables initialized, 2 in total.
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new "harmonic" instance.
 colvars:   # name = "harmonic1" [default]
-colvars:   # colvars = { d_com }
+colvars:   # colvars = { d_atoms }
 colvars:   # stepZeroData = off [default]
 colvars:   # outputEnergy = off [default]
-colvars:   # outputFreq = 0 [default]
+colvars:   # outputFreq = 1 [default]
 colvars:   # timeStepFactor = 1 [default]
 colvars:   # writeTISamples = off [default]
 colvars:   # writeTIPMF = off [default]
-colvars:   # centers = { 0.9 }
-colvars:   # targetCenters = { 0.9 } [default]
+colvars:   # centers = { 0.6 }
+colvars:   # targetCenters = { 0.6 } [default]
 colvars:   # outputCenters = off [default]
 colvars:   # forceConstant = 20000
 colvars:   # targetForceConstant = -1 [default]
-colvars:   The force constant for colvar "d_com" will be rescaled to 20000 according to the specified width (1).
+colvars:   The force constant for colvar "d_atoms" will be rescaled to 20000 according to the specified width (1).
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables biases initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables module (re)initialized.
 colvars: ----------------------------------------------------------------------
-colvars: Re-initialized atom group for variable "d_com":0/0. 2 atoms: total mass = 17.0074, total charge = -0.417.
-colvars: Re-initialized atom group for variable "d_com":0/1. 2 atoms: total mass = 31.9988, total charge = -1.668.
 colvars: Re-initialized atom group for variable "d_atoms":0/0. 1 atoms: total mass = 15.9994, total charge = -0.834.
 colvars: Re-initialized atom group for variable "d_atoms":0/1. 1 atoms: total mass = 15.9994, total charge = -0.834.
-colvars: Re-initialized atom group for variable "coords_OW_1984":0/0. 2 atoms: total mass = 17.0074, total charge = -0.417.
+colvars: Re-initialized atom group for variable "coords_OW_337":0/0. 1 atoms: total mass = 15.9994, total charge = -0.834.
 colvars: The restart output state file will be "test.restart.colvars.state".
 colvars: The final output state file will be "test.colvars.state".
 colvars: Opening trajectory file "test.colvars.traj".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.restart.colvars.state".
 colvars: Saving collective variables state to "test.colvars.state".
 colvars: Resetting the Collective Variables module.

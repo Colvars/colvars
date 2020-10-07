@@ -1,42 +1,33 @@
 units gromacs
-colvarsTrajFrequency 10
+colvarsTrajFrequency 1
 
-colvar {
-    name d_com
-    distance {
-        group1 {
-            atomNumbers 1072 1899
-        }
-        group2 {
-            atomNumbers 673 1801
-        }
-    }
-}
+# Force atom OW 337 to move through the box
+# to create a PBC treatment to be tested.
 
 colvar {
     name d_atoms
     distance {
         group1 {
-            atomNumbers 1072
+            atomNumbers 337
         }
         group2 {
-            atomNumbers 673
+            atomNumbers 715
         }
     }
 }
 
 colvar {
-    name coords_OW_1984
+    name coords_OW_337
 
     cartesian {
         atoms {
-            atomNumbers 1899 1984
+            atomNumbers 337
         }
     }
 }
 
 harmonic {
-    colvars d_com
+    colvars d_atoms
     forceConstant 20000
-    centers 0.9
+    centers 0.6
 }

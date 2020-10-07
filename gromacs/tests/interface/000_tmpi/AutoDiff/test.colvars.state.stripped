@@ -1,26 +1,21 @@
 configuration {
-  step          500
-  dt 5.000000e-01
-}
-
-colvar {
-  name d_com
-  x  9.36662858232791e-01
+  step           50
+  dt 2.000000e+00
 }
 
 colvar {
   name d_atoms
-  x  1.18035944552410e+00
+  x  7.14210255536181e-01
 }
 
 colvar {
-  name coords_OW_1984
-  x (  4.52288233448828e-02 ,  3.05297817222203e+00 ,  4.03577993840012e-01 ,  7.89555290429651e-01 ,  3.03034508565177e+00 ,  2.98184327195828e+00 )
+  name coords_OW_337
+  x ( -2.98392671446992e-01 ,  2.22781559665395e+00 ,  2.83072495511646e+00 )
 }
 
 restraint {
   configuration {
-    step 500
+    step 50
     name harmonic1
   }
 }
