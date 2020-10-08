@@ -6,5 +6,5 @@
 gmx_d grompp -f system.mdp -c system.gro -p system.top -o test.tpr
 
 # Restart tpr
-gmx_d convert-tpr -s test.tpr -o test.restart.tpr -nsteps 750
+gmx_d convert-tpr -s test.tpr -o test.restart.tpr -nsteps 100
 
