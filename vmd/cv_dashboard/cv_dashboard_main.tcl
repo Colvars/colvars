@@ -97,6 +97,14 @@ proc ::cv_dashboard::createWindow {} {
   incr gridrow
   grid [ttk::separator $w.sep2 -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
 
+  # Toggle advanced representations
+
+  incr gridrow
+  grid [ttk::button $w.volmapBtn -text "Volmap menu" -command ::cv_dashboard::toggleVolmapMenu -padding "2 0 2 0"] -row $gridrow -column 0 -columnspan 1 -pady 2 -padx 2 -sticky nsew
+
+  incr gridrow
+  grid [ttk::separator $w.sep3 -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
+
   # Molecule
   incr gridrow
   grid [label $w.molTxt -text "Molecule:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
@@ -120,6 +128,9 @@ proc ::cv_dashboard::createWindow {} {
   incr gridrow
   grid [ttk::button $w.settingsBtn -text "Show advanced settings" -command ::cv_dashboard::toggleSettings -padding "2 0 2 0"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
 
+  # Create and hide volmap menu
+  createVolmapMenu
+
   # Create and hide Settings window to create all associated variables
   createSettingsWindow
 
@@ -128,6 +139,19 @@ proc ::cv_dashboard::createWindow {} {
   grid columnconfigure $w 2 -weight 1
 
   return $w
+}
+
+
+# Open or close the volmap sub-panel
+proc ::cv_dashboard::toggleVolmapMenu {} {
+  set w .cv_dashboard_window
+  if { $::cv_dashboard::volmap_menu_shown } {
+    set ::cv_dashboard::volmap_menu_shown false
+    grid remove $w.volmap_menu
+  } else {
+    set ::cv_dashboard::volmap_menu_shown true
+    grid $w.volmap_menu
+  }
 }
 
 
@@ -594,7 +618,7 @@ proc ::cv_dashboard::show_volmaps { colvars } {
         mol color ColorID $color
         mol selection all  ;# Must provide some selection text
         mol representation Isosurface ${threshold} ${volid} 2 0 0 1
-        mol material [$w.settings.volmap_material get]
+        mol material [$w.volmap_menu.volmap_material get]
         mol addrep $::cv_dashboard::mol
         set repid [expr [molinfo $::cv_dashboard::mol get numreps] - 1]
         set periodic_string ""
@@ -760,4 +784,55 @@ proc ::cv_dashboard::hide_all_gradients {} {
     run_cv colvar $cv set collect_gradient 0
   }
   array unset ::cv_dashboard::grad_objects *
+}
+
+
+proc ::cv_dashboard::createVolmapMenu { } {
+
+  set w .cv_dashboard_window
+
+  set menu $w.volmap_menu
+  grid [frame $menu] -column 0 -columnspan 3 -sticky nsew
+
+  set gridrow 0
+
+  # Volumetric map display settings
+  incr gridrow
+  grid [ttk::button $menu.show_volmaps -text "Show volmaps" -command {::cv_dashboard::show_volmaps_selected} -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $menu.hide_volmaps -text "Hide volmaps" -command {::cv_dashboard::hide_volmaps_selected} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $menu.hide_all_volmaps -text "Hide all volmaps" -command {::cv_dashboard::hide_all_volmaps} -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+
+  incr gridrow
+  grid [label $menu.volmap_material_text -text "Volmap material:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  ttk::combobox $menu.volmap_material -justify left -state readonly
+  $menu.volmap_material configure -values [material list]
+  grid $menu.volmap_material -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  $menu.volmap_material set "Opaque"
+
+  incr gridrow
+  grid [label $menu.volmap_contour_text -text "Contour level:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [tk::entry $menu.volmap_contour -textvariable ::cv_dashboard::volmap_contour] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  set ::cv_dashboard::volmap_contour 0.5
+  grid [label $menu.volmap_contour_unit -text "(% of min-max range)"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+
+  incr gridrow
+  grid [ttk::checkbutton $menu.volmap_periodic_x -text "+/-X images" -variable ::cv_dashboard::volmap_periodic_x] \
+    -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::checkbutton $menu.volmap_periodic_y -text "+/-Y images" -variable ::cv_dashboard::volmap_periodic_y] \
+    -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::checkbutton $menu.volmap_periodic_z -text "+/-Z images" -variable ::cv_dashboard::volmap_periodic_z] \
+    -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+  set ::cv_dashboard::volmap_periodic_x 0
+  set ::cv_dashboard::volmap_periodic_y 0
+  set ::cv_dashboard::volmap_periodic_z 0
+
+  incr gridrow
+  grid [ttk::separator $w.sepvolmap -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
+
+  grid columnconfigure $menu 0 -weight 1
+  grid columnconfigure $menu 1 -weight 1
+  grid columnconfigure $menu 2 -weight 1
+
+  grid remove $menu
+  set ::cv_dashboard::volmap_menu_shown false
 }

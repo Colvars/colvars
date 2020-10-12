@@ -41,40 +41,6 @@ proc ::cv_dashboard::createSettingsWindow { } {
 
   $settings.grad_scale_choice_norm invoke ;# Default to norm
 
-  incr gridrow
-  grid [ttk::separator $settings.sep2 -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
-
-
-  # Volumetric map display settings
-  incr gridrow
-  grid [ttk::button $settings.show_volmaps -text "Show volmaps" -command {::cv_dashboard::show_volmaps_selected} -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::button $settings.hide_volmaps -text "Hide volmaps" -command {::cv_dashboard::hide_volmaps_selected} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::button $settings.hide_all_volmaps -text "Hide all volmaps" -command {::cv_dashboard::hide_all_volmaps} -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
-
-  incr gridrow
-  grid [label $settings.volmap_material_text -text "Volmap material:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  ttk::combobox $settings.volmap_material -justify left -state readonly
-  $settings.volmap_material configure -values [material list]
-  grid $settings.volmap_material -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  $settings.volmap_material set "Opaque"
-
-  incr gridrow
-  grid [label $settings.volmap_contour_text -text "Contour level:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  grid [tk::entry $settings.volmap_contour -textvariable ::cv_dashboard::volmap_contour] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  set ::cv_dashboard::volmap_contour 0.5
-  grid [label $settings.volmap_contour_unit -text "(% of min-max range)"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
-
-  incr gridrow
-  grid [ttk::checkbutton $settings.volmap_periodic_x -text "+/-X images" -variable ::cv_dashboard::volmap_periodic_x] \
-    -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::checkbutton $settings.volmap_periodic_y -text "+/-Y images" -variable ::cv_dashboard::volmap_periodic_y] \
-    -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::checkbutton $settings.volmap_periodic_z -text "+/-Z images" -variable ::cv_dashboard::volmap_periodic_z] \
-    -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
-  set ::cv_dashboard::volmap_periodic_x 0
-  set ::cv_dashboard::volmap_periodic_y 0
-  set ::cv_dashboard::volmap_periodic_z 0
-
   grid columnconfigure $settings 0 -weight 1
   grid columnconfigure $settings 1 -weight 1
   grid columnconfigure $settings 2 -weight 1
