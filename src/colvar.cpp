@@ -1552,9 +1552,11 @@ int colvar::collect_cvc_total_forces()
       }
     }
 
-    if (!is_enabled(f_cv_hide_Jacobian)) {
+    if (!(is_enabled(f_cv_hide_Jacobian) && is_enabled(f_cv_subtract_applied_force))) {
       // add the Jacobian force to the total force, and don't apply any silent
       // correction internally: biases such as colvarbias_abf will handle it
+      // If f_cv_hide_Jacobian is enabled, a force of -fj is present in ft due to the
+      // Jacobian-compensating force
       ft += fj;
     }
   }
