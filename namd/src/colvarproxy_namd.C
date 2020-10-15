@@ -1349,12 +1349,12 @@ int colvarproxy_namd::get_volmap_id_from_name(char const *volmap_name)
 }
 
 
-template<class T, int use_atom_field>
-void colvarproxy_namd::getGridForceGridValue(T const *g,
-                                             cvm::atom_iter atom_begin,
-                                             cvm::atom_iter atom_end,
-                                             cvm::real *value,
-                                             cvm::real *atom_field) const
+template<class T, int flags>
+void colvarproxy_namd::GridForceGridLoop(T const *g,
+                                         cvm::atom_iter atom_begin,
+                                         cvm::atom_iter atom_end,
+                                         cvm::real *value,
+                                         cvm::real *atom_field)
 {
   float V = 0.0f;
   Vector dV(0.0);
@@ -1365,45 +1365,61 @@ void colvarproxy_namd::getGridForceGridValue(T const *g,
       // out-of-bounds atom
       V = 0.0f;
       dV = 0.0;
-      continue;
-    }
-    if (use_atom_field) {
-      *value += V * atom_field[i];
     } else {
-      *value += V;
+      if (flags & volmap_flag_use_atom_field) {
+        *value += V * atom_field[i];
+        if (flags & volmap_flag_gradients) {
+          ai->grad += atom_field[i] * cvm::rvector(dV.x, dV.y, dV.z);
+        }
+      } else {
+        *value += V;
+        if (flags & volmap_flag_gradients) {
+          ai->grad += cvm::rvector(dV.x, dV.y, dV.z);
+        }
+      }
     }
-    ai->grad += cvm::rvector(dV.x, dV.y, dV.z);
   }
 }
 
 
-int colvarproxy_namd::compute_volmap(int volmap_id,
+template<class T>
+void colvarproxy_namd::getGridForceGridValue(int flags,
+                                             T const *g,
+                                             cvm::atom_iter atom_begin,
+                                             cvm::atom_iter atom_end,
+                                             cvm::real *value,
+                                             cvm::real *atom_field)
+{
+  if (flags & volmap_flag_use_atom_field) {
+    int const new_flags = volmap_flag_use_atom_field | volmap_flag_gradients;
+    GridForceGridLoop<T, new_flags>(g, atom_begin, atom_end,
+                                    value, atom_field);
+  } else {
+    int const new_flags = volmap_flag_gradients;
+    GridForceGridLoop<T, new_flags>(g, atom_begin, atom_end,
+                                    value, atom_field);
+  }
+}
+
+
+int colvarproxy_namd::compute_volmap(int flags,
+                                     int volmap_id,
                                      cvm::atom_iter atom_begin,
                                      cvm::atom_iter atom_end,
                                      cvm::real *value,
-                                     cvm::real *atom_field) const
+                                     cvm::real *atom_field)
 {
   Molecule *mol = Node::Object()->molecule;
   GridforceGrid *grid = mol->get_gridfrc_grid(volmap_id);
   // Inheritance is not possible with GridForceGrid's design
   if (grid->get_grid_type() == GridforceGrid::GridforceGridTypeFull) {
     GridforceFullMainGrid *g = dynamic_cast<GridforceFullMainGrid *>(grid);
-    if (atom_field) {
-      getGridForceGridValue<GridforceFullMainGrid, 1>(g, atom_begin, atom_end,
-                                                      value, atom_field);
-    } else {
-      getGridForceGridValue<GridforceFullMainGrid, 0>(g, atom_begin, atom_end,
-                                                      value, atom_field);
-    }
+    getGridForceGridValue<GridforceFullMainGrid>(flags, g, atom_begin, atom_end,
+                                                 value, atom_field);
   } else if (grid->get_grid_type() == GridforceGrid::GridforceGridTypeLite) {
     GridforceLiteGrid *g = dynamic_cast<GridforceLiteGrid *>(grid);
-    if (atom_field) {
-      getGridForceGridValue<GridforceLiteGrid, 1>(g, atom_begin, atom_end,
-                                                  value, atom_field);
-    } else {
-      getGridForceGridValue<GridforceLiteGrid, 0>(g, atom_begin, atom_end,
-                                                  value, atom_field);
-    }
+    getGridForceGridValue<GridforceLiteGrid>(flags, g, atom_begin, atom_end,
+                                             value, atom_field);
   }
   return COLVARS_OK;
 }

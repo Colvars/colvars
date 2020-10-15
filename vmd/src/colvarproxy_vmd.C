@@ -864,13 +864,12 @@ void colvarproxy_vmd::clear_volmap(int index)
 }
 
 
-
-template<int use_atom_field>
+template<int flags>
 void colvarproxy_vmd::compute_voldata(VolumetricData const *voldata,
                                       cvm::atom_iter atom_begin,
                                       cvm::atom_iter atom_end,
                                       cvm::real *value,
-                                      cvm::real *atom_field) const
+                                      cvm::real *atom_field)
 {
   int i = 0;
   cvm::atom_iter ai = atom_begin;
@@ -882,7 +881,7 @@ void colvarproxy_vmd::compute_voldata(VolumetricData const *voldata,
     float const z = internal_to_angstrom(wrapped_pos.z);
     cvm::real const V =
       static_cast<cvm::real>(voldata->voxel_value_interpolate_from_coord_safe(x, y, z));
-    if (use_atom_field) {
+    if (flags & volmap_flag_use_atom_field) {
       *value += V * atom_field[i];
     } else {
       *value += V;
@@ -891,19 +890,24 @@ void colvarproxy_vmd::compute_voldata(VolumetricData const *voldata,
 }
 
 
-int colvarproxy_vmd::compute_volmap(int volmap_id,
+int colvarproxy_vmd::compute_volmap(int flags,
+                                    int volmap_id,
                                     cvm::atom_iter atom_begin,
                                     cvm::atom_iter atom_end,
                                     cvm::real *value,
-                                    cvm::real *atom_field) const
+                                    cvm::real *atom_field)
 {
   int error_code = COLVARS_OK;
   VolumetricData const *voldata = vmdmol->get_volume_data(volmap_id);
   if (voldata != NULL) {
-    if (atom_field != NULL) {
-      compute_voldata<1>(voldata, atom_begin, atom_end, value, atom_field);
+    if (flags & volmap_flag_use_atom_field) {
+      int const new_flags = volmap_flag_use_atom_field;
+      compute_voldata<new_flags>(voldata, atom_begin, atom_end,
+                                 value, atom_field);
     } else {
-      compute_voldata<0>(voldata, atom_begin, atom_end, value, NULL);
+      int const new_flags = volmap_flag_null;
+      compute_voldata<new_flags>(voldata, atom_begin, atom_end,
+                                 value, NULL);
     }
   } else {
     // Error message
