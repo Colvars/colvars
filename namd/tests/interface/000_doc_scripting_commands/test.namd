@@ -49,6 +49,7 @@ foreach cmd [lsort [cv listcommands]] {
     }
 }
 puts ${output} ======================================================================
+close ${output}
 
 set git_top_dir [exec git rev-parse --show-toplevel]
 set output [open ${git_top_dir}/doc/cvscript-tcl.tex "w"]
