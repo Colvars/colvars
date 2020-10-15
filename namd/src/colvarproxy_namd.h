@@ -227,18 +227,29 @@ public:
 
   virtual void clear_volmap(int index);
 
-  virtual int compute_volmap(int volmap_id,
+  virtual int compute_volmap(int flags,
+                             int volmap_id,
                              cvm::atom_iter atom_begin,
                              cvm::atom_iter atom_end,
                              cvm::real *value,
-                             cvm::real *atom_field) const;
+                             cvm::real *atom_field);
 
-  template<class T, int use_atom_field>
-  void getGridForceGridValue(T const *grid,
+  /// Abstraction of the two types of NAMD volumetric maps
+  template<class T>
+  void getGridForceGridValue(int flags,
+                             T const *grid,
                              cvm::atom_iter atom_begin,
                              cvm::atom_iter atom_end,
                              cvm::real *value,
-                             cvm::real *atom_field) const;
+                             cvm::real *atom_field);
+
+  /// Implementation of inner loop; allows for atom list computation and use
+  template<class T, int flags>
+  void GridForceGridLoop(T const *g,
+                         cvm::atom_iter atom_begin,
+                         cvm::atom_iter atom_end,
+                         cvm::real *value,
+                         cvm::real *atom_field);
 
 #endif
 

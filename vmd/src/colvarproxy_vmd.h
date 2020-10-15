@@ -121,16 +121,19 @@ public:
 
   virtual void clear_volmap(int index);
 
-  virtual int compute_volmap(int volmap_id,
+  virtual int compute_volmap(int flags,
+                             int volmap_id,
                              cvm::atom_iter atom_begin,
                              cvm::atom_iter atom_end,
                              cvm::real *value,
-                             cvm::real *atom_field) const;
+                             cvm::real *atom_field);
 
-  template<int use_atom_field> 
+  template<int flags>
   void compute_voldata(VolumetricData const *voldata,
-                       cvm::atom_iter atom_begin, cvm::atom_iter atom_end,
-                       cvm::real *value, cvm::real *atom_field) const;
+                       cvm::atom_iter atom_begin,
+                       cvm::atom_iter atom_end,
+                       cvm::real *value,
+                       cvm::real *atom_field);
 
 protected:
 
@@ -152,4 +155,3 @@ protected:
 
 
 #endif
-

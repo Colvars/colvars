@@ -29,7 +29,7 @@ public:
   /// \returns Index of the map in the colvarproxy arrays
   virtual int init_volmap_by_id(int volmap_id);
 
-  /// Request and prepare this volumetric map for use by Colvars 
+  /// Request and prepare this volumetric map for use by Colvars
   /// \param volmap_name Name used by the MD engine
   /// \returns Index of the map in the colvarproxy arrays
   virtual int init_volmap_by_name(char const *volmap_name);
@@ -74,17 +74,26 @@ public:
     volmaps_new_colvar_forces[index] += new_force;
   }
 
-  /// Compute an atomic field (e.g. a colvar) weighted by a volumetric map
+  /// Re-weigh an atomic field (e.g. a colvar) by the value of a volumetric map
+  /// \param flags Combination of flags
   /// \param volmap_id Numeric index of the map (no need to request it)
   /// \param atom_begin Iterator pointing to first atom
   /// \param atom_end Iterator pointing past the last atom
   /// \param value Pointer to location of total to increment
-  /// \param atom_field Array of atomic field values (if NULL, 1 is used)
-  virtual int compute_volmap(int volmap_id,
+  /// \param atom_field Array of atomic field values (if NULL, ones are used)
+  virtual int compute_volmap(int flags,
+                             int volmap_id,
                              cvm::atom_iter atom_begin,
                              cvm::atom_iter atom_end,
                              cvm::real *value,
-                             cvm::real *atom_field) const;
+                             cvm::real *atom_field);
+
+  /// Flags controlling what computation is done on the map
+  enum {
+    volmap_flag_null = 0,
+    volmap_flag_gradients = 1,
+    volmap_flag_use_atom_field = (1<<8)
+  };
 
 protected:
 

@@ -101,13 +101,23 @@ int colvar::map_total::init(std::string const &conf)
 
 void colvar::map_total::calc_value()
 {
-  colvarproxy const *proxy = cvm::main()->proxy;
+  colvarproxy *proxy = cvm::main()->proxy;
+  int flags = is_enabled(f_cvc_gradient) ? colvarproxy::volmap_flag_gradients :
+    colvarproxy::volmap_flag_gradients;
+
   if (atoms != NULL) {
+    // Compute the map inside Colvars
     x.real_value = 0.0;
-    cvm::real *const w = atom_weights.size() > 0 ? &(atom_weights[0]) : NULL;
-    proxy->compute_volmap(volmap_id, atoms->begin(), atoms->end(),
+
+    cvm::real *w = NULL;
+    if (atom_weights.size() > 0) {
+      flags |= colvarproxy::volmap_flag_use_atom_field;
+      w = &(atom_weights[0]);
+    }
+    proxy->compute_volmap(flags, volmap_id, atoms->begin(), atoms->end(),
                           &(x.real_value), w);
   } else {
+    // Get the externally computed value
     x.real_value = proxy->get_volmap_value(volmap_index);
   }
 }
