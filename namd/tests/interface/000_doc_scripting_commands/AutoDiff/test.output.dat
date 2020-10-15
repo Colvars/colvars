@@ -15,6 +15,7 @@ cv getenergy
 cv help [command]
 cv list [param]
 cv listcommands
+cv listindexfiles
 cv load <prefix>
 cv loadfromstring <buffer>
 cv molid [molid]
@@ -52,6 +53,7 @@ cv colvar name getatomids
 cv colvar name getconfig
 cv colvar name getgradients
 cv colvar name gettotalforce
+cv colvar name getvolmapids
 cv colvar name help [command]
 cv colvar name modifycvcs <confs>
 cv colvar name run_ave
@@ -301,6 +303,12 @@ cv colvar name gettotalforce
 
 Return the sum of internal and external forces to this colvar
 ======================================================================
+Help for script function "colvar_getvolmapids":
+
+cv colvar name getvolmapids
+
+Return the list of volumetric map indices used by this colvar
+======================================================================
 Help for script function "colvar_help":
 
 cv colvar name help [command]
@@ -460,6 +468,12 @@ Help for script function "cv_listcommands":
 cv listcommands
 
 Get the list of script functions, prefixed with "cv_", "colvar_" or "bias_"
+======================================================================
+Help for script function "cv_listindexfiles":
+
+cv listindexfiles
+
+Get a list of the index files loaded in this session
 ======================================================================
 Help for script function "cv_load":
 
