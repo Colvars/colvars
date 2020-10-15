@@ -1074,6 +1074,7 @@ int colvar::init_dependencies() {
 
     init_feature(f_cv_hide_Jacobian, "hide_Jacobian_force", f_type_user);
     require_feature_self(f_cv_hide_Jacobian, f_cv_Jacobian); // can only hide if calculated
+    exclude_feature_self(f_cv_hide_Jacobian, f_cv_extended_Lagrangian);
 
     init_feature(f_cv_extended_Lagrangian, "extended_Lagrangian", f_type_user);
     require_feature_self(f_cv_extended_Lagrangian, f_cv_scalar);
