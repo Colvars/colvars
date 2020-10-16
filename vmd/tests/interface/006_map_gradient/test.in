@@ -1,0 +1,11 @@
+colvar {
+    name numatoms
+    outputAppliedForce yes
+    mapTotal {
+        name numatoms
+        mapID 0
+        atoms {
+            atomNumbers 1
+        }
+    }
+}
