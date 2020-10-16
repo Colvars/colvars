@@ -1,0 +1,73 @@
+colvars: ----------------------------------------------------------------------
+colvars: Initializing the collective variables module, version "2020-09-25".
+colvars: Please cite Fiorin et al, Mol Phys 2013:
+colvars:  https://dx.doi.org/10.1080/00268976.2013.813594
+colvars: in any publication based on this calculation.
+colvars: This version was built without the C++11 standard: some features are disabled.
+colvars: Please see the following link for details:
+colvars: https://colvars.github.io/README-c++11.html
+colvars: Using VMD interface, version "2020-09-25".
+colvars: Redefining the Tcl "cv" command to the new script interface.
+colvars: ----------------------------------------------------------------------
+colvars: Reading new configuration from file "test.in":
+colvars: # units = "" [default]
+colvars: # smp = on [default]
+colvars: # colvarsTrajFrequency = 0 [default]
+colvars: # colvarsRestartFrequency = 0 [default]
+colvars: # scriptedColvarForces = off [default]
+colvars: # scriptingAfterBiases = off [default]
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = "numatoms"
+colvars:   Initializing a new "mapTotal" component.
+colvars:     # name = "numatoms"
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
+colvars:     # mapName = "" [default]
+colvars:     # mapID = 0
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 1 atoms requested: total mass = 12.011, total charge = 0.
+colvars:     # atomWeights =  [default]
+colvars:   All components initialized.
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # width = 1 [default]
+colvars:   # lowerBoundary = 0 [default]
+colvars:   # upperBoundary = 0 [default]
+colvars:   # hardLowerBoundary = off [default]
+colvars:   # hardUpperBoundary = off [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = off [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputTotalForce = off [default]
+colvars:   # outputAppliedForce = on
+colvars:   # subtractAppliedForce = off [default]
+colvars:   # runAve = off [default]
+colvars:   # corrFunc = off [default]
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables initialized, 1 in total.
+colvars: No collective variables biases were defined.
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables module (re)initialized.
+colvars: ----------------------------------------------------------------------
+colvars: Re-initialized atom group for variable "numatoms":0/0. 1 atoms: total mass = 12.011, total charge = 0.
+colvars: map colvar =  0.003427587
+colvars: interpvol0 =  0.003427587
+colvars:     theory =  0.003434487
+colvars: grad/theory = -0.000796801  0.000000000  0.000000000
+colvars: grad/colvar = -0.000792025  0.000000000  0.000000000

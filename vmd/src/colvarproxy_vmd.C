@@ -872,19 +872,57 @@ void colvarproxy_vmd::compute_voldata(VolumetricData const *voldata,
                                       cvm::real *atom_field)
 {
   int i = 0;
+  float coord[3], voxcoord[3], grad[3];
+  cvm::rvector dV(0.0);
   cvm::atom_iter ai = atom_begin;
   cvm::atom_pos const origin(0.0, 0.0, 0.0);
+
   for ( ; ai != atom_end; ai++, i++) {
+
+    // Wrap around the origin
     cvm::rvector const wrapped_pos = position_distance(origin, ai->pos);
-    float const x = internal_to_angstrom(wrapped_pos.x);
-    float const y = internal_to_angstrom(wrapped_pos.y);
-    float const z = internal_to_angstrom(wrapped_pos.z);
-    cvm::real const V =
-      static_cast<cvm::real>(voldata->voxel_value_interpolate_from_coord_safe(x, y, z));
+    coord[0] = internal_to_angstrom(wrapped_pos.x);
+    coord[1] = internal_to_angstrom(wrapped_pos.y);
+    coord[2] = internal_to_angstrom(wrapped_pos.z);
+
+    // Get the coordinates on the grid and check the boundaries
+    voldata->voxel_coord_from_cartesian_coord(coord, voxcoord, 0);
+    int const gx = static_cast<int>(voxcoord[0]);
+    int const gy = static_cast<int>(voxcoord[1]);
+    int const gz = static_cast<int>(voxcoord[2]);
+    int valid_coord = 1;
+    if ((gx < 0) || (gx >= voldata->xsize) ||
+        (gy < 0) || (gy >= voldata->ysize) ||
+        (gz < 0) || (gz >= voldata->zsize)) {
+      valid_coord = 0;
+    }
+
+    cvm::real const V = valid_coord ?
+      static_cast<cvm::real>(voldata->voxel_value_interpolate(voxcoord[0],
+                                                              voxcoord[1],
+                                                              voxcoord[2])) :
+      0.0;
+
+    if (flags & volmap_flag_gradients) {
+      if (valid_coord) {
+        voldata->voxel_gradient_interpolate(voxcoord, grad);
+        // Correct the sign of the gradient
+        dV = cvm::rvector(-1.0*grad[0], -1.0*grad[1], -1.0*grad[2]);
+      } else {
+        dV = cvm::rvector(0.0);
+      }
+    }
+
     if (flags & volmap_flag_use_atom_field) {
       *value += V * atom_field[i];
+      if (flags & volmap_flag_gradients) {
+        ai->grad += atom_field[i] * dV;
+      }
     } else {
       *value += V;
+      if (flags & volmap_flag_gradients) {
+        ai->grad += dV;
+      }
     }
   }
 }
@@ -900,14 +938,31 @@ int colvarproxy_vmd::compute_volmap(int flags,
   int error_code = COLVARS_OK;
   VolumetricData const *voldata = vmdmol->get_volume_data(volmap_id);
   if (voldata != NULL) {
-    if (flags & volmap_flag_use_atom_field) {
-      int const new_flags = volmap_flag_use_atom_field;
-      compute_voldata<new_flags>(voldata, atom_begin, atom_end,
-                                 value, atom_field);
+
+    if (flags & volmap_flag_gradients) {
+
+      if (flags & volmap_flag_use_atom_field) {
+        int const new_flags = volmap_flag_gradients |
+          volmap_flag_use_atom_field;
+        compute_voldata<new_flags>(voldata, atom_begin, atom_end,
+                                   value, atom_field);
+      } else {
+        int const new_flags = volmap_flag_gradients;
+        compute_voldata<new_flags>(voldata, atom_begin, atom_end,
+                                   value, NULL);
+      }
+
     } else {
-      int const new_flags = volmap_flag_null;
-      compute_voldata<new_flags>(voldata, atom_begin, atom_end,
-                                 value, NULL);
+
+      if (flags & volmap_flag_use_atom_field) {
+        int const new_flags = volmap_flag_use_atom_field;
+        compute_voldata<new_flags>(voldata, atom_begin, atom_end,
+                                   value, atom_field);
+      } else {
+        int const new_flags = volmap_flag_null;
+        compute_voldata<new_flags>(voldata, atom_begin, atom_end,
+                                   value, NULL);
+      }
     }
   } else {
     // Error message

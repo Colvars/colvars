@@ -1,0 +1,73 @@
+# -*- tcl -*-
+
+set sigma 2.5
+set res 0.2
+
+set f [open "zero.pdb" "w"]
+puts $f "ATOM      1  CA  ALA B   1       0.000   0.000   0.000  1.00  1.00      CA    
+END
+"
+close $f
+
+set f [open "oneatom.pdb" "w"]
+puts $f "ATOM      1  CA  ALA B   1       1.450   0.000   0.000  1.00  1.00      CA    
+END
+"
+close $f
+
+mol new zero.pdb
+set sel [atomselect top "(all)"]
+${sel} set radius [expr ${sigma} * 2.0]
+volmap \
+    density \
+    ${sel} \
+    -minmax { { -5.0 -5.0 -5.0} {  5.0  5.0  5.0} } \
+    -res ${res} \
+    -allframes \
+    -combine avg \
+    -checkpoint 0 \
+    -o gaussian-fine.density.dx
+${sel} delete
+mol delete top
+
+mol new oneatom.pdb waitfor all
+mol addfile gaussian-fine.density.dx type dx waitfor all
+
+set pi [expr acos(-1.0)]
+# set cellvol [voltool info -mol 1 -vol 0 cellvolume]
+# set nx [voltool info -mol 1 -vol 0 xsize]
+# set ny [voltool info -mol 1 -vol 0 ysize]
+# set nz [voltool info -mol 1 -vol 0 zsize]
+set norm [expr 1.0/(sqrt(8.0*${pi}*${pi}*${pi})*${sigma}*${sigma}*${sigma})]
+
+#set norm [lindex [voltool info -mol 1 -vol 0 minmax] 1]
+puts $norm
+
+set sel [atomselect top "(all)"]
+
+set xcoord [lindex [$sel get x] 0]
+
+cv molid top
+cv configfile test.in
+
+cv colvar numatoms set collect_gradient 1
+cv update
+
+puts ""
+puts [format "colvars: map colvar = %12.9f" [cv colvar numatoms value]]
+puts [format "colvars: interpvol0 = %12.9f" [${sel} get interpvol0]]
+set gaussian_value [expr ${norm}*exp(-0.5*(${xcoord}*${xcoord})/(${sigma}*${sigma}))]; list
+puts [format "colvars:     theory = %12.9f" ${gaussian_value}]
+puts ""
+
+puts [format "colvars: grad/theory = %12.9f %12.9f %12.9f" [expr ${gaussian_value} * (-${xcoord})/(${sigma}*${sigma})] 0.0 0.0]
+
+puts [format "colvars: grad/colvar = %12.9f %12.9f %12.9f" {*}[lindex [cv colvar numatoms getgradients] 0]]
+
+puts ""
+
+file delete -force gaussian-fine.density.dx
+file delete -force zero.pdb
+file delete -force oneatom.pdb
+
+quit
