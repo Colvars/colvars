@@ -511,6 +511,7 @@ proc ::cv_dashboard::show_atoms_selected {} {
 
 # Display atoms in groups for selected colvars
 proc ::cv_dashboard::show_atoms { colvars } {
+  set w .cv_dashboard_window
   set color 0
   set ci 0
   foreach cv $colvars {
@@ -538,9 +539,9 @@ proc ::cv_dashboard::show_atoms { colvars } {
         lappend macros $group
         atomselect macro $group "($::cv_dashboard::sel_text) and (index $list)"
         mol color ColorID $color
-        mol representation VDW 0.5 12.
+        mol representation VDW [$w.settings.atom_radius get] 12
         mol selection "$group"
-        mol material Opaque
+        mol material [$w.settings.material get]
         mol addrep $::cv_dashboard::mol
         set repid [expr [molinfo $::cv_dashboard::mol get numreps] - 1]
         lappend repnames [mol repname $::cv_dashboard::mol $repid]
@@ -618,7 +619,7 @@ proc ::cv_dashboard::show_volmaps { colvars } {
         mol color ColorID $color
         mol selection all  ;# Must provide some selection text
         mol representation Isosurface ${threshold} ${volid} 2 0 0 1
-        mol material [$w.volmap_menu.volmap_material get]
+        mol material [$w.settings.material get]
         mol addrep $::cv_dashboard::mol
         set repid [expr [molinfo $::cv_dashboard::mol get numreps] - 1]
         set periodic_string ""
@@ -695,6 +696,8 @@ proc ::cv_dashboard::show_gradients { list } {
 
 proc ::cv_dashboard::update_shown_gradients {} {
 
+  set w .cv_dashboard_window
+
   set colorid 3 ;# avoid very common or less visible colors blue, red, gray
   set molid $::cv_dashboard::mol
   foreach { cv objs } [array get ::cv_dashboard::grad_objects] {
@@ -726,6 +729,8 @@ proc ::cv_dashboard::update_shown_gradients {} {
     set coords [$sel get {x y z}]
     $sel delete
 
+    graphics $molid material [.cv_dashboard_window.settings.material get]
+
     # Loop through colorids (only in this run of the proc though)
     graphics $molid color [expr $colorid % 32]
     incr colorid
@@ -752,13 +757,20 @@ proc ::cv_dashboard::update_shown_gradients {} {
     }
 
     # Create new arrows
+    set radius [$w.settings.grad_radius get]
     set new_objs {}
     foreach start $coords g $grads {
       set vec [vecscale $fact $g]
+      set vec_len [veclength $vec]
       set end [vecadd $start $vec]
-      set middle [vecadd $start [vecscale 0.9 $vec]]
-      set cyl [graphics $molid cylinder $start $middle radius 0.1 resolution 12]
-      set cone [graphics $molid cone $middle $end radius 0.2 resolution 12]
+      if { ${vec_len} > [expr 6.0*${radius}] } {
+        set middle [vecadd $start \
+          [vecscale [expr (${vec_len} - 3.0*${radius})/${vec_len}] ${vec}]]
+      } else {
+        set middle [vecadd $start [vecscale 0.5 ${vec}]]
+      }
+      set cyl [graphics $molid cylinder $start $middle radius ${radius} resolution 12]
+      set cone [graphics $molid cone $middle $end radius [expr ${radius}*2.0] resolution 12]
       lappend new_objs $cyl $cone
     }
     set ::cv_dashboard::grad_objects($cv) $new_objs
@@ -801,33 +813,6 @@ proc ::cv_dashboard::createVolmapMenu { } {
   grid [ttk::button $menu.show_volmaps -text "Show volmaps" -command {::cv_dashboard::show_volmaps_selected} -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $menu.hide_volmaps -text "Hide volmaps" -command {::cv_dashboard::hide_volmaps_selected} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $menu.hide_all_volmaps -text "Hide all volmaps" -command {::cv_dashboard::hide_all_volmaps} -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
-
-  incr gridrow
-  grid [label $menu.volmap_material_text -text "Volmap material:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  ttk::combobox $menu.volmap_material -justify left -state readonly
-  $menu.volmap_material configure -values [material list]
-  grid $menu.volmap_material -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  $menu.volmap_material set "Opaque"
-
-  incr gridrow
-  grid [label $menu.volmap_contour_text -text "Contour level:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  grid [tk::entry $menu.volmap_contour -textvariable ::cv_dashboard::volmap_contour] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  set ::cv_dashboard::volmap_contour 0.5
-  grid [label $menu.volmap_contour_unit -text "(% of min-max range)"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
-
-  incr gridrow
-  grid [ttk::checkbutton $menu.volmap_periodic_x -text "+/-X images" -variable ::cv_dashboard::volmap_periodic_x] \
-    -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::checkbutton $menu.volmap_periodic_y -text "+/-Y images" -variable ::cv_dashboard::volmap_periodic_y] \
-    -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::checkbutton $menu.volmap_periodic_z -text "+/-Z images" -variable ::cv_dashboard::volmap_periodic_z] \
-    -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
-  set ::cv_dashboard::volmap_periodic_x 0
-  set ::cv_dashboard::volmap_periodic_y 0
-  set ::cv_dashboard::volmap_periodic_z 0
-
-  incr gridrow
-  grid [ttk::separator $w.sepvolmap -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
 
   grid columnconfigure $menu 0 -weight 1
   grid columnconfigure $menu 1 -weight 1
