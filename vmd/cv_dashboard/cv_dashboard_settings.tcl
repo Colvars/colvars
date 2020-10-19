@@ -21,8 +21,20 @@ proc ::cv_dashboard::createSettingsWindow { } {
   grid $settings.units -row $gridrow -column 1 -columnspan 2 -pady 2 -padx 2 -sticky nsew
   bind $settings.units <<ComboboxSelected>> ::cv_dashboard::change_units
 
+  # Graphics settings
+
   incr gridrow
   grid [ttk::separator $settings.sep1 -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
+
+  incr gridrow
+  grid [label $settings.graphics_text -text "Graphics settings"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
+
+  incr gridrow
+  grid [label $settings.material_text -text "Material:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  ttk::combobox $settings.material -justify left -state readonly
+  $settings.material configure -values [material list]
+  grid $settings.material -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  $settings.material set "Opaque"
 
   # Gradient display settings
   incr gridrow
