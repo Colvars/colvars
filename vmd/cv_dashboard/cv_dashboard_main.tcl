@@ -536,7 +536,7 @@ proc ::cv_dashboard::show_atoms { colvars } {
           set group "${sanitized_cvname}_group_${i}"
         }
         lappend macros $group
-        atomselect macro $group "index $list"
+        atomselect macro $group "($::cv_dashboard::sel_text) and (index $list)"
         mol color ColorID $color
         mol representation VDW 0.5 12.
         mol selection "$group"
@@ -722,7 +722,7 @@ proc ::cv_dashboard::update_shown_gradients {} {
     set grads [run_cv colvar $cv getgradients]
     if { [llength $grads] == 0 } { continue }
 
-    set sel [atomselect $molid "index $atomids"]
+    set sel [atomselect $molid "($::cv_dashboard::sel_text) and (index $atomids)"]
     set coords [$sel get {x y z}]
     $sel delete
 
