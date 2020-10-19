@@ -722,25 +722,32 @@ proc ::cv_dashboard::update_shown_gradients {} {
       run_cv colvar $cv update
     }
 
+    set maxl2 0.
     set grads [run_cv colvar $cv getgradients]
     if { [llength $grads] == 0 } { continue }
+    # Map gradients list to dictionary
+    for { set i 0 } { $i < [llength $grads] } { incr i } {
+      set g [lindex $grads $i]
+      set l2 [veclength2 $g]
+      if { $l2 > $maxl2 } { set maxl2 $l2 }
+      set gradients([lindex $atomids $i]) $g
+    }
+    unset grads
+
+    if { $maxl2 < 1e-14 } {
+      # Zero gradient, don't even try
+      unset gradients
+      continue
+    }
 
     set sel [atomselect $molid "($::cv_dashboard::sel_text) and (index $atomids)"]
     set coords [$sel get {x y z}]
-    $sel delete
 
     graphics $molid material [.cv_dashboard_window.settings.material get]
 
     # Loop through colorids (only in this run of the proc though)
     graphics $molid color [expr $colorid % 32]
     incr colorid
-
-    set maxl2 0.
-    foreach g $grads {
-      set l2 [veclength2 $g]
-      if { $l2 > $maxl2 } { set maxl2 $l2 }
-    }
-    if {$maxl2 < 1e-14} { continue } ;# Zero gradient, don't even try
 
     # Get width if provided in colvar config
     set width 1.
@@ -759,7 +766,8 @@ proc ::cv_dashboard::update_shown_gradients {} {
     # Create new arrows
     set radius [$w.settings.grad_radius get]
     set new_objs {}
-    foreach start $coords g $grads {
+    foreach start $coords id [$sel get index] {
+      set g $gradients($id)
       set vec [vecscale $fact $g]
       set vec_len [veclength $vec]
       set end [vecadd $start $vec]
@@ -774,6 +782,8 @@ proc ::cv_dashboard::update_shown_gradients {} {
       lappend new_objs $cyl $cone
     }
     set ::cv_dashboard::grad_objects($cv) $new_objs
+    unset gradients
+    $sel delete
   }
 }
 
