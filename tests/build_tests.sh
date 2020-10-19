@@ -146,6 +146,7 @@ for colvar in "distance-grid" ; do
         "abf" \
         "metadynamics" \
         "metadynamics-sigmas" \
+        "metadynamics-wt" \
         "metadynamics-ti" \
         ; do
         create_test_dir ${colvar}_${bias}
