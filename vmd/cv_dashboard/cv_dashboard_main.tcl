@@ -47,7 +47,6 @@ proc ::cv_dashboard::createWindow {} {
     $w.cvtable tag configure parity0 -background white
     $w.cvtable tag configure parity1 -background grey94
   }
-  refresh_table
 
   incr gridrow
   grid $w.cvtable -row $gridrow -column 0 -sticky news -columnspan 3
@@ -95,15 +94,11 @@ proc ::cv_dashboard::createWindow {} {
   grid [ttk::button $w.hide_all_gradients -text "Hide all grads" -command {::cv_dashboard::hide_all_gradients} -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
   incr gridrow
-  grid [ttk::separator $w.sep2 -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
+  grid [ttk::separator $w.sep1 -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
 
-  # Toggle advanced representations
-
+  # Create and hide volmap menu (shows itself as needed when refreshing the colvar table)
   incr gridrow
-  grid [ttk::button $w.volmapBtn -text "Volmap menu" -command ::cv_dashboard::toggleVolmapMenu -padding "2 0 2 0"] -row $gridrow -column 0 -columnspan 1 -pady 2 -padx 2 -sticky nsew
-
-  incr gridrow
-  grid [ttk::separator $w.sep3 -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
+  createVolmapMenu $gridrow
 
   # Molecule
   incr gridrow
@@ -128,15 +123,15 @@ proc ::cv_dashboard::createWindow {} {
   incr gridrow
   grid [ttk::button $w.settingsBtn -text "Show advanced settings" -command ::cv_dashboard::toggleSettings -padding "2 0 2 0"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
 
-  # Create and hide volmap menu
-  createVolmapMenu
-
   # Create and hide Settings window to create all associated variables
   createSettingsWindow
+  grid remove $w.volmap_menu
 
   grid columnconfigure $w 0 -weight 1
   grid columnconfigure $w 1 -weight 1
   grid columnconfigure $w 2 -weight 1
+
+  refresh_table
 
   return $w
 }
@@ -145,12 +140,19 @@ proc ::cv_dashboard::createWindow {} {
 # Open or close the volmap sub-panel
 proc ::cv_dashboard::toggleVolmapMenu {} {
   set w .cv_dashboard_window
-  if { $::cv_dashboard::volmap_menu_shown } {
-    set ::cv_dashboard::volmap_menu_shown false
-    grid remove $w.volmap_menu
-  } else {
-    set ::cv_dashboard::volmap_menu_shown true
+
+  set volmaps false
+  foreach cv $::cv_dashboard::cvs {
+    if { [is_volmap $cv] } {
+      set volmaps true
+      break
+    }
+  }
+
+  if { $volmaps } {
     grid $w.volmap_menu
+  } else {
+    grid remove $w.volmap_menu
   }
 }
 
@@ -276,6 +278,8 @@ proc ::cv_dashboard::refresh_table {} {
     set ::cv_dashboard::cvs {}
     return
   }
+
+  toggleVolmapMenu
 
   # Get fresh coordinates from VMD
   run_cv update
@@ -809,12 +813,12 @@ proc ::cv_dashboard::hide_all_gradients {} {
 }
 
 
-proc ::cv_dashboard::createVolmapMenu { } {
+proc ::cv_dashboard::createVolmapMenu { row } {
 
   set w .cv_dashboard_window
 
   set menu $w.volmap_menu
-  grid [frame $menu] -column 0 -columnspan 3 -sticky nsew
+  grid [frame $menu] -row $row -column 0 -columnspan 3 -sticky nsew
 
   set gridrow 0
 
@@ -824,10 +828,12 @@ proc ::cv_dashboard::createVolmapMenu { } {
   grid [ttk::button $menu.hide_volmaps -text "Hide volmaps" -command {::cv_dashboard::hide_volmaps_selected} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $menu.hide_all_volmaps -text "Hide all volmaps" -command {::cv_dashboard::hide_all_volmaps} -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
+  incr gridrow
+  grid [ttk::separator $menu.sep -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
+
   grid columnconfigure $menu 0 -weight 1
   grid columnconfigure $menu 1 -weight 1
   grid columnconfigure $menu 2 -weight 1
 
   grid remove $menu
-  set ::cv_dashboard::volmap_menu_shown false
 }
