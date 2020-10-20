@@ -70,4 +70,5 @@ file delete -force gaussian-fine.density.dx
 file delete -force zero.pdb
 file delete -force oneatom.pdb
 
-quit
+cv_dashboard
+#quit
