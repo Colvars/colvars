@@ -15,6 +15,16 @@ proc ::cv_dashboard::start_rotation_display { cv {color yellow} {position {0 0 0
 
   global rot_pos rot_col rot_handles rot_cv
 
+  if { [llength $cv] != 1 } {
+    tk_messageBox -icon error -title "Colvars Dashboard Error"\
+      -message "Select exactly 1 rotation colvar to enable rotation display.\n"
+    return
+  }
+
+  if { [info exists rot_cv] } {
+    stop_rotation_display
+  }
+
   set rot_pos $position
   set rot_col $color
   set rot_handles {}
