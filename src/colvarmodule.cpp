@@ -1928,8 +1928,8 @@ int cvm::load_coords_xyz(char const *filename,
   cvm::real x = 0.0, y = 0.0, z = 0.0;
 
   if ( ! (xyz_is >> natoms) ) {
-    cvm::error("Error: cannot parse XYZ file "
-               + std::string(filename) + ".\n", INPUT_ERROR);
+    return cvm::error("Error: cannot parse XYZ file "
+                      + std::string(filename) + ".\n", INPUT_ERROR);
   }
 
   ++xyz_reader_use_count;
@@ -1943,11 +1943,12 @@ int cvm::load_coords_xyz(char const *filename,
   xyz_is.width(255);
   std::vector<atom_pos>::iterator pos_i = pos->begin();
 
+  size_t xyz_natoms = 0;
   if (pos->size() != natoms) { // Use specified indices
     int next = 0; // indices are zero-based
     std::vector<int>::const_iterator index = atoms->sorted_ids().begin();
-    for ( ; pos_i != pos->end() ; pos_i++, index++) {
 
+    for ( ; pos_i != pos->end() ; pos_i++, index++) {
       while ( next < *index ) {
         cvm::getline(xyz_is, line);
         next++;
@@ -1958,17 +1959,29 @@ int cvm::load_coords_xyz(char const *filename,
       (*pos_i)[0] = proxy->angstrom_to_internal(x);
       (*pos_i)[1] = proxy->angstrom_to_internal(y);
       (*pos_i)[2] = proxy->angstrom_to_internal(z);
+      xyz_natoms++;
     }
+
   } else {          // Use all positions
+
     for ( ; pos_i != pos->end() ; pos_i++) {
       xyz_is >> symbol;
       xyz_is >> x >> y >> z;
       (*pos_i)[0] = proxy->angstrom_to_internal(x);
       (*pos_i)[1] = proxy->angstrom_to_internal(y);
       (*pos_i)[2] = proxy->angstrom_to_internal(z);
+      xyz_natoms++;
     }
   }
-  return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
+
+  if (xyz_natoms != pos->size()) {
+    return cvm::error("Error: The number of positions read from file \""+
+                      std::string(filename)+"\" does not match the number of "+
+                      "positions required: "+cvm::to_str(xyz_natoms)+" vs. "+
+                      cvm::to_str(pos->size())+".\n", INPUT_ERROR);
+  }
+
+  return COLVARS_OK;
 }
 
 
