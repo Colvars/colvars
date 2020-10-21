@@ -376,8 +376,10 @@ proc ::cv_dashboard::update_frame { name molid op } {
 
 # React to molecules being created or deleted
 proc ::cv_dashboard::update_mol_list { name molid op } {
+  set main .cv_dashboard_window.tabs.main
+
   # Update mol indices in combobox
-  .cv_dashboard_window.mol configure -values [molinfo list]
+  $main.mol configure -values [molinfo list]
 
   # Did we just lose the molecule Colvars was connected to?
   if { ($molid == $::cv_dashboard::mol) && ($::vmd_initialize_structure($molid) == 0) } {
@@ -391,7 +393,7 @@ proc ::cv_dashboard::update_mol_list { name molid op } {
   # Did we just add a molecule while we had none available? Default to that
   if { ($::cv_dashboard::mol == -1) && ($::vmd_initialize_structure($molid) == 1)} {
     set ::cv_dashboard::mol $molid
-    .cv_dashboard_window.mol set $molid
+    $main.mol set $molid
   }
 }
 

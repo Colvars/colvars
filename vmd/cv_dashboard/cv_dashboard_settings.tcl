@@ -3,23 +3,11 @@
 proc ::cv_dashboard::createSettingsWindow { } {
 
   set w .cv_dashboard_window
-  # set settings [toplevel $w.settings]
-  # wm title $settings "Colvars Dashboard Settings"
-  # wm protocol $settings WM_DELETE_WINDOW [list wm withdraw $settings]
 
-  set settings $w.settings
+  set settings $w.tabs.settings
   grid [frame $settings] -column 0 -columnspan 3 -sticky nsew
 
   set gridrow 0
-
-  # Units
-  incr gridrow
-  grid [label $settings.unitTxt -text "Units:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  ttk::combobox $settings.units -justify left -state readonly
-  $settings.units configure -values [array names ::cv_dashboard::text_to_units]
-  refresh_units
-  grid $settings.units -row $gridrow -column 1 -columnspan 2 -pady 2 -padx 2 -sticky nsew
-  bind $settings.units <<ComboboxSelected>> ::cv_dashboard::change_units
 
   # Graphics settings
 
@@ -112,24 +100,24 @@ proc ::cv_dashboard::createSettingsWindow { } {
 
 
 proc ::cv_dashboard::refresh_units {} {
-  set settings .cv_dashboard_window.settings
+  set main .cv_dashboard_window.tabs.main
   if [catch { set u [cv units] }] {
     # This catches cases where the module cannot be created because no molecule is loaded
     set u ""
   }
   set ::cv_dashboard::units $u
   if { $u == "" } {
-    $settings.units set $::cv_dashboard::units_to_text(real)
+    $main.units set $::cv_dashboard::units_to_text(real)
   } else {
-    $settings.units set $::cv_dashboard::units_to_text($u)
+    $main.units set $::cv_dashboard::units_to_text($u)
   }
 }
 
 
 # Change units if possible
 proc ::cv_dashboard::change_units {} {
-  set settings .cv_dashboard_window.settings
-  set val [$settings.units get]
+  set main .cv_dashboard_window.tabs.main
+  set val [$main.units get]
   if {![info exists ::cv_dashboard::text_to_units($val)]} {
     puts "Bug error: trying to switch to unknown unit system $val"
     return
