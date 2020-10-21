@@ -1927,9 +1927,11 @@ int cvm::load_coords_xyz(char const *filename,
   std::string line;
   cvm::real x = 0.0, y = 0.0, z = 0.0;
 
+  std::string const error_msg("Error: cannot parse XYZ file \""+
+                              std::string(filename)+"\".\n");
+
   if ( ! (xyz_is >> natoms) ) {
-    return cvm::error("Error: cannot parse XYZ file "
-                      + std::string(filename) + ".\n", INPUT_ERROR);
+    return cvm::error(error_msg, INPUT_ERROR);
   }
 
   ++xyz_reader_use_count;
@@ -1937,12 +1939,16 @@ int cvm::load_coords_xyz(char const *filename,
     cvm::log("Warning: beginning from 2019-11-26 the XYZ file reader assumes Angstrom units.\n");
   }
 
-  // skip comment line
-  cvm::getline(xyz_is, line);
-  cvm::getline(xyz_is, line);
-  xyz_is.width(255);
-  std::vector<atom_pos>::iterator pos_i = pos->begin();
+  if (xyz_is.good()) {
+    // skip comment line
+    cvm::getline(xyz_is, line);
+    cvm::getline(xyz_is, line);
+    xyz_is.width(255);
+  } else {
+    return cvm::error(error_msg, INPUT_ERROR);
+  }
 
+  std::vector<atom_pos>::iterator pos_i = pos->begin();
   size_t xyz_natoms = 0;
   if (pos->size() != natoms) { // Use specified indices
     int next = 0; // indices are zero-based
@@ -1953,24 +1959,32 @@ int cvm::load_coords_xyz(char const *filename,
         cvm::getline(xyz_is, line);
         next++;
       }
-      xyz_is >> symbol;
-      xyz_is >> x >> y >> z;
-      // XYZ files are assumed to be in Angstrom (as eg. VMD will)
-      (*pos_i)[0] = proxy->angstrom_to_internal(x);
-      (*pos_i)[1] = proxy->angstrom_to_internal(y);
-      (*pos_i)[2] = proxy->angstrom_to_internal(z);
-      xyz_natoms++;
+      if (xyz_is.good()) {
+        xyz_is >> symbol;
+        xyz_is >> x >> y >> z;
+        // XYZ files are assumed to be in Angstrom (as eg. VMD will)
+        (*pos_i)[0] = proxy->angstrom_to_internal(x);
+        (*pos_i)[1] = proxy->angstrom_to_internal(y);
+        (*pos_i)[2] = proxy->angstrom_to_internal(z);
+        xyz_natoms++;
+      } else {
+        return cvm::error(error_msg, INPUT_ERROR);
+      }
     }
 
   } else {          // Use all positions
 
     for ( ; pos_i != pos->end() ; pos_i++) {
-      xyz_is >> symbol;
-      xyz_is >> x >> y >> z;
-      (*pos_i)[0] = proxy->angstrom_to_internal(x);
-      (*pos_i)[1] = proxy->angstrom_to_internal(y);
-      (*pos_i)[2] = proxy->angstrom_to_internal(z);
-      xyz_natoms++;
+      if (xyz_is.good()) {
+        xyz_is >> symbol;
+        xyz_is >> x >> y >> z;
+        (*pos_i)[0] = proxy->angstrom_to_internal(x);
+        (*pos_i)[1] = proxy->angstrom_to_internal(y);
+        (*pos_i)[2] = proxy->angstrom_to_internal(z);
+        xyz_natoms++;
+      } else {
+        return cvm::error(error_msg, INPUT_ERROR);
+      }
     }
   }
 
