@@ -12,6 +12,7 @@ proc ::cv_dashboard::createWindow {} {
   wm title $w "Colvars dashboard"
   wm protocol $w WM_DELETE_WINDOW { ::cv_dashboard::quit }
 
+  # Top bars of buttons
   set gridrow 0
   grid [ttk::button $w.helpB -text "Online Help" -command {::cv_dashboard::invokeBrowser "http://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html#sec:dashboard"} -padding "2 0 2 0"] \
     -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
@@ -28,6 +29,7 @@ proc ::cv_dashboard::createWindow {} {
   grid [ttk::button $w.reset -text "Reset" -command ::cv_dashboard::reset -padding "2 0 2 0"] \
     -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
+  # Table of colvars
   ttk::treeview $w.cvtable -selectmode extended -show tree
   $w.cvtable configure -column val
   $w.cvtable column #0 -width 50 -stretch 1 -anchor w
@@ -50,25 +52,43 @@ proc ::cv_dashboard::createWindow {} {
 
   incr gridrow
   grid $w.cvtable -row $gridrow -column 0 -sticky news -columnspan 3
-  grid rowconfigure $w $gridrow -weight 1
+  # The colvar table expands and shrinks with the window height
+  grid rowconfigure $w $gridrow -weight 1 -minsize 20
+
+  # Tabs
+  incr gridrow
+  grid [ttk::notebook $w.tabs] -row $gridrow -column 0 -columnspan 3 -sticky news -padx 0
+  tk::frame $w.tabs.main
 
   # Editing
+  set gridrow 0  ;# New grid
+  set main .cv_dashboard_window.tabs.main
+
+  grid [label $main.actions_text -text "Colvar list actions"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
+
   incr gridrow
-  grid [ttk::button $w.edit -text "Edit \[Ctrl-e\]" -command ::cv_dashboard::edit -padding "2 0 2 0"] \
+
+  grid [ttk::button $main.edit -text "Edit \[Ctrl-e\]" -command ::cv_dashboard::edit -padding "2 0 2 0"] \
     -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::button $w.add -text "New \[Ctrl-n\]" -command ::cv_dashboard::add -padding "2 0 2 0"] \
+  grid [ttk::button $main.add -text "New \[Ctrl-n\]" -command ::cv_dashboard::add -padding "2 0 2 0"] \
     -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::button $w.del -text "Delete" -command ::cv_dashboard::del -padding "2 0 2 0"] \
+  grid [ttk::button $main.del -text "Delete" -command ::cv_dashboard::del -padding "2 0 2 0"] \
     -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+  incr gridrow
+  grid [ttk::button $main.refresh -text "Refresh list \[F5\]" -command ::cv_dashboard::refresh_table -padding "2 0 2 0"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
+
+  incr gridrow
+  grid [ttk::separator $main.sep_plots -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
+  incr gridrow
+  grid [label $main.viz_text -text "Plots and real-time visualizations"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
 
   # Plots
   incr gridrow
-  grid [ttk::button $w.plot -text "Timeline plot" -command ::cv_dashboard::plot -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::button $w.plot2cv -text "Pairwise plot" -command {::cv_dashboard::plot 2cv} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::button $w.refresh -text "Refresh \[F5\]" -command ::cv_dashboard::refresh_table -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $main.plot -text "Timeline plot" -command ::cv_dashboard::plot -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $main.plot2cv -text "Pairwise plot" -command {::cv_dashboard::plot 2cv} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
 
   user add key F5 ::cv_dashboard::refresh_table
-  bind $w <F5> ::cv_dashboard::refresh_table
+  bind $main <F5> ::cv_dashboard::refresh_table
 
   # Add trajectory animation bindings to Dashboard and VMD's OpenGL window
   traj_animation_bindings $w
@@ -77,55 +97,66 @@ proc ::cv_dashboard::createWindow {} {
   user add key Home  { ::cv_dashboard::chg_frame start }
   user add key End   { ::cv_dashboard::chg_frame end }
 
-  incr gridrow
-  grid [ttk::separator $w.sep0 -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
-
   # Atom group display
   incr gridrow
-  grid [ttk::button $w.show_atoms -text "Show atoms" -command {::cv_dashboard::show_atoms_selected} -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::button $w.hide_atoms -text "Hide atoms" -command {::cv_dashboard::hide_atoms_selected} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::button $w.hide_all_atoms -text "Hide all atoms" -command {::cv_dashboard::hide_all_atoms} -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $main.show_atoms -text "Show atoms" -command {::cv_dashboard::show_atoms_selected} -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $main.hide_atoms -text "Hide atoms" -command {::cv_dashboard::hide_atoms_selected} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $main.hide_all_atoms -text "Hide all atoms" -command {::cv_dashboard::hide_all_atoms} -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
   # Gradient display
   incr gridrow
-  grid [ttk::button $w.show_gradients -text "Show gradients" -command {::cv_dashboard::show_gradients [::cv_dashboard::selected_colvars]} \
+  grid [ttk::button $main.show_gradients -text "Show gradients" -command {::cv_dashboard::show_gradients [::cv_dashboard::selected_colvars]} \
     -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::button $w.hide_gradients -text "Hide gradients" -command {::cv_dashboard::hide_gradients} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::button $w.hide_all_gradients -text "Hide all grads" -command {::cv_dashboard::hide_all_gradients} -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $main.hide_gradients -text "Hide gradients" -command {::cv_dashboard::hide_gradients} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $main.hide_all_gradients -text "Hide all grads" -command {::cv_dashboard::hide_all_gradients} -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
-  incr gridrow
-  grid [ttk::separator $w.sep1 -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
-
-  # Create and hide volmap menu (shows itself as needed when refreshing the colvar table)
+  # Create and hide volmap menu (shows itself as needed when refreshing the colvar table, via toggleVolmapMenu)
   incr gridrow
   createVolmapMenu $gridrow
+  grid remove $main.volmap_menu
 
-  # Molecule
   incr gridrow
-  grid [label $w.molTxt -text "Molecule:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  ttk::combobox $w.mol -justify left -state readonly
-  $w.mol configure -values [molinfo list]
+  grid [ttk::separator $main.sep_options -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
+  incr gridrow
+  grid [label $main.options_text -text "General options"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
+
+  incr gridrow
+  grid [label $main.molTxt -text "Molecule:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  ttk::combobox $main.mol -justify left -state readonly
+  $main.mol configure -values [molinfo list]
   if { $::cv_dashboard::mol != -1 } {
-    $w.mol set $::cv_dashboard::mol
+    $main.mol set $::cv_dashboard::mol
   }
   trace add variable ::vmd_initialize_structure write ::cv_dashboard::update_mol_list
-  grid $w.mol -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  bind $w.mol <<ComboboxSelected>> ::cv_dashboard::change_mol
+  grid $main.mol -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  bind $main.mol <<ComboboxSelected>> ::cv_dashboard::change_mol
+
+  # Units
+  incr gridrow
+  grid [label $main.unitTxt -text "Units:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  ttk::combobox $main.units -justify left -state readonly
+  $main.units configure -values [array names ::cv_dashboard::text_to_units]
+  refresh_units
+  grid $main.units -row $gridrow -column 1 -columnspan 2 -pady 2 -padx 2 -sticky nsew
+  bind $main.units <<ComboboxSelected>> ::cv_dashboard::change_units
 
   # Frame display and track checkbox
   incr gridrow
-  grid [label $w.frameTxt -text "Frame:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  grid [label $w.frame -textvariable ::cv_dashboard::current_frame] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::checkbutton $w.trackFrame -text "Track VMD frame" -command ::cv_dashboard::change_track_frame -variable ::cv_dashboard::track_frame] \
+  grid [label $main.frameTxt -text "Frame:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [label $main.frame -textvariable ::cv_dashboard::current_frame] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::checkbutton $main.trackFrame -text "Track VMD frame" -command ::cv_dashboard::change_track_frame -variable ::cv_dashboard::track_frame] \
     -row $gridrow -column 2  -pady 2 -padx 2 -sticky nsew
   change_track_frame ;# activate tracking if necessary
 
-  incr gridrow
-  grid [ttk::button $w.settingsBtn -text "Show advanced settings" -command ::cv_dashboard::toggleSettings -padding "2 0 2 0"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
-
   # Create and hide Settings window to create all associated variables
   createSettingsWindow
-  grid remove $w.volmap_menu
+
+  $w.tabs add $w.tabs.main -text "Actions" -sticky news
+  $w.tabs add $w.tabs.settings -text "Settings" -sticky news
+
+  grid columnconfigure $main 0 -weight 1
+  grid columnconfigure $main 1 -weight 1
+  grid columnconfigure $main 2 -weight 1
 
   grid columnconfigure $w 0 -weight 1
   grid columnconfigure $w 1 -weight 1
@@ -139,7 +170,7 @@ proc ::cv_dashboard::createWindow {} {
 
 # Open or close the volmap sub-panel
 proc ::cv_dashboard::toggleVolmapMenu {} {
-  set w .cv_dashboard_window
+  set w .cv_dashboard_window.tabs.main
 
   set volmaps false
   foreach cv $::cv_dashboard::cvs {
@@ -153,22 +184,6 @@ proc ::cv_dashboard::toggleVolmapMenu {} {
     grid $w.volmap_menu
   } else {
     grid remove $w.volmap_menu
-  }
-}
-
-
-# Open or close the Settings panel
-proc ::cv_dashboard::toggleSettings {} {
-  set w .cv_dashboard_window
-
-  if { $::cv_dashboard::settings_shown } {
-    set ::cv_dashboard::settings_shown false
-    $w.settingsBtn configure -text "Show advanced settings"
-    grid remove $w.settings
-  } else {
-    set ::cv_dashboard::settings_shown true
-    $w.settingsBtn configure -text "Hide advanced settings"
-    grid $w.settings
   }
 }
 
@@ -543,9 +558,9 @@ proc ::cv_dashboard::show_atoms { colvars } {
         lappend macros $group
         atomselect macro $group "($::cv_dashboard::sel_text) and (index $list)"
         mol color ColorID $color
-        mol representation VDW [$w.settings.atom_radius get] 12
+        mol representation VDW [$w.tabs.settings.atom_radius get] 12
         mol selection "$group"
-        mol material [$w.settings.material get]
+        mol material [$w.tabs.settings.material get]
         mol addrep $::cv_dashboard::mol
         set repid [expr [molinfo $::cv_dashboard::mol get numreps] - 1]
         lappend repnames [mol repname $::cv_dashboard::mol $repid]
@@ -623,7 +638,7 @@ proc ::cv_dashboard::show_volmaps { colvars } {
         mol color ColorID $color
         mol selection all  ;# Must provide some selection text
         mol representation Isosurface ${threshold} ${volid} 2 0 0 1
-        mol material [$w.settings.material get]
+        mol material [$w.tabs.settings.material get]
         mol addrep $::cv_dashboard::mol
         set repid [expr [molinfo $::cv_dashboard::mol get numreps] - 1]
         set periodic_string ""
@@ -747,7 +762,7 @@ proc ::cv_dashboard::update_shown_gradients {} {
     set sel [atomselect $molid "($::cv_dashboard::sel_text) and (index $atomids)"]
     set coords [$sel get {x y z}]
 
-    graphics $molid material [.cv_dashboard_window.settings.material get]
+    graphics $molid material [.cv_dashboard_window.tabs.settings.material get]
 
     # Loop through colorids (only in this run of the proc though)
     graphics $molid color [expr $colorid % 32]
@@ -768,7 +783,7 @@ proc ::cv_dashboard::update_shown_gradients {} {
     }
 
     # Create new arrows
-    set radius [$w.settings.grad_radius get]
+    set radius [$w.tabs.settings.grad_radius get]
     set new_objs {}
     foreach start $coords id [$sel get index] {
       set g $gradients($id)
@@ -815,9 +830,8 @@ proc ::cv_dashboard::hide_all_gradients {} {
 
 proc ::cv_dashboard::createVolmapMenu { row } {
 
-  set w .cv_dashboard_window
-
-  set menu $w.volmap_menu
+  set main .cv_dashboard_window.tabs.main
+  set menu $main.volmap_menu
   grid [frame $menu] -row $row -column 0 -columnspan 3 -sticky nsew
 
   set gridrow 0
@@ -827,9 +841,6 @@ proc ::cv_dashboard::createVolmapMenu { row } {
   grid [ttk::button $menu.show_volmaps -text "Show volmaps" -command {::cv_dashboard::show_volmaps_selected} -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $menu.hide_volmaps -text "Hide volmaps" -command {::cv_dashboard::hide_volmaps_selected} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $menu.hide_all_volmaps -text "Hide all volmaps" -command {::cv_dashboard::hide_all_volmaps} -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
-
-  incr gridrow
-  grid [ttk::separator $menu.sep -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
 
   grid columnconfigure $menu 0 -weight 1
   grid columnconfigure $menu 1 -weight 1
