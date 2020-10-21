@@ -842,6 +842,45 @@ All such files' names also begin with the prefix \outputName.
 \cvnamdonly{Lastly, the total energy of all biases or restraints applied to the colvars appears under the NAMD standard output, under the MISC column.}
 
 
+\cvsubsec{File formats}{sec:colvars_file_formats}
+
+\cvsubsubsec{Configuration and state files.}{sec:colvars_text_format}
+
+Configuration files are text files that are generally read as input by \MDENGINE{}\cvscriptonly{, and may be optionally inlined in a \MDENGINE{} script (see \ref{sec:cv_command_init})}.
+Starting from versions 2017-02-01, changes in newline encodings are handled transparently, i.e.{} it is possible to typeset a configuration file in Windows (CR-LF newlines) and then use it with Linux or macOS (LF-only newlines).
+
+State files, although not written manually, follow otherwise the same format as configuration files.
+
+\cvsubsubsec{Index files.}{sec:colvars_ndx_format}
+
+For atom selections that cannot be specified only with Colvars keywords, external index files may be used following the \href{http://manual.gromacs.org/documentation/current/reference-manual/file-formats.html\#ndx}{NDX format} used in GROMACS.
+\cvlammpsonly{In LAMMPS, such files may also be produced via the \texttt{group2ndx} command.}
+
+
+\cvsubsubsec{XYZ coordinate files.}{sec:colvars_xyz_format}
+XYZ files are read by the Colvars module using an internal reader, and expect the following format.
+\begin{mdexampleinput}
+\-$N$\\
+\-Comment~line\\
+\-$E_{1}$~$x_{1}$~$y_{1}$~$z_{1}$\\
+\-\ldots\\
+\-$E_{N}$~$x_{N}$~$y_{N}$~$z_{N}$
+\end{mdexampleinput}
+\noindent{}where $N$ is the number of atomic coordinates in the file and $E_i$ is the chemical element of the $i$-th atom.
+Because $E_i$ is not used in Colvars, any string is acceptable.
+
+
+\cvnamebasedonly{
+\cvsubsubsec{PDB coordinate files.}{sec:colvars_pdb_format}
+PDB coordinate files are read by the Colvars module using existing functionality in \MDENGINE, and therefore follow the same format.
+The values of the atomic coordinates and other fields, such as occupancy or temperature factors, are then communicated to Colvars by \MDENGINE{}.
+
+PDB files may be used either as one of the available mechanisms to select atoms (see the \refkey{atomsFile}{atom-group|atomsFile} keyword), or more frequently to read reference coordinates for least-squares fit alignment (see the \refkey{atomsFile}{atom-group|refPositionsFile} keyword).
+}
+
+% TODO Move multicolumn format here?
+
+
 \cvsec{Defining collective variables}{sec:colvar}
 
 A collective variable is defined by the keyword \texttt{colvar} followed by its configuration options contained within curly braces:
@@ -1588,8 +1627,8 @@ with respect to $\{\mathbf{x}_{i}(t)\}$.
     \texttt{rmsd}}{%
     Reference coordinates}{%
     space-separated list of \texttt{(x, y, z)} triplets}{%
-    This option (mutually exclusive with \texttt{refPositionsFile}) sets the reference coordinates for RMSD calculation, and uses these to compute the roto-translational fit.
-    It is functionally equivalent to the option \refkey{refPositions}{atom-group|refPositions} in the atom group definition, which also supports more advanced fitting options.
+    This option (mutually exclusive with \texttt{refPositionsFile}) sets the reference coordinates for RMSD calculation, and uses these to compute the roto-translational fit.  
+    See the equivalent option \refkey{refPositions}{atom-group|refPositions} within the atom group definition for details on acceptable formats and other features.
     }
 
 \item %
@@ -1599,8 +1638,8 @@ with respect to $\{\mathbf{x}_{i}(t)\}$.
     \texttt{rmsd}}{%
     Reference coordinates file}{%
     UNIX filename}{%
-    This option (mutually exclusive with \texttt{refPositions}) sets the reference coordinates for RMSD calculation, and uses these to compute the roto-translational fit.
-    It is functionally equivalent to the option \refkey{refPositionsFile}{atom-group|refPositionsFile} in the atom group definition, which also supports more advanced fitting options.
+    This option (mutually exclusive with \texttt{refPositions}) sets the reference coordinates for RMSD calculation, and uses these to compute the roto-translational fit.  
+    See the equivalent option \refkey{refPositionsFile}{atom-group|refPositionsFile} within the atom group definition for details on acceptable file formats and other features.
     }
 
 \cvnamebasedonly{
@@ -3892,6 +3931,7 @@ The complete list of selection keywords available in \MDENGINE{} is:
     \texttt{atomNameResidueRange}, in order of their occurrence.
     This option is only necessary if a PSF topology file is used.}
 
+\labelkey{atom-group|atomsFile}
 \item %
   \key
     {atomsFile}{%
@@ -4003,7 +4043,8 @@ Be careful when using these options in ABF simulations or when using total force
     UNIX filename}{%
     \label{key:colvars:atom_group:refPositionsFile}
     This option provides a list of reference coordinates for \texttt{centerReference} and/or \texttt{rotateReference}, and is mutually exclusive with \texttt{refPositions}.
-    The acceptable file format is XYZ, which is read in double precision\cvnamebasedonly{, or PDB; \emph{the latter is discouraged if the precision of the reference coordinates is a concern}}.
+    The acceptable file format is XYZ (see \ref{sec:colvars_xyz_format}), which is read in double precision\cvnamebasedonly{, or PDB (see \ref{sec:colvars_pdb_format})
+; \emph{the latter is discouraged if the precision of the reference coordinates is a concern}}.
     Atomic positions are read differently depending on the following scenarios:
     \textbf{(i)} the file contains exactly as many records as the atoms in the group: all positions are read in sequence;
     \textbf{(ii)} (most common case) the file contains coordinates for the entire system: only the positions corresponding to the numeric indices of the atom group are read\cvnamebasedonly{;
