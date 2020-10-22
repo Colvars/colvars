@@ -25,6 +25,12 @@ get_colvarmodule_version() {
                       src/colvars_version.h src/colvarmodule.h
 }
 
+get_colvarproxy_gromacs_version() {
+    local commit=$1
+    get_colvars_macro "${commit}" COLVARPROXY_VERSION \
+                      gromacs/src/colvarproxy_gromacs_version.h
+}
+
 get_colvarproxy_lammps_version() {
     local commit=$1
     get_colvars_macro "${commit}" COLVARPROXY_VERSION \
@@ -146,6 +152,7 @@ update_version_string() {
 get_all_versions() {
     local commit="${1}"
     get_colvarmodule_version "${commit}"
+    get_colvarproxy_gromacs_version "${commit}"
     get_colvarproxy_lammps_version "${commit}"
     get_colvarproxy_namd_version "${commit}"
     get_colvarproxy_vmd_version "${commit}"
@@ -202,5 +209,9 @@ write_all_versions_branch() {
     write_version_branch get_colvarproxy_vmd_version \
                          COLVARPROXY_VERSION \
                          vmd/src/colvarproxy_vmd_version.h \
+                         ${branch}
+    write_version_branch get_colvarproxy_gromacs_version \
+                         COLVARPROXY_VERSION \
+                         gromacs/src/colvarproxy_gromacs_version.h \
                          ${branch}
 }
