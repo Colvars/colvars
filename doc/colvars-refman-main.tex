@@ -372,7 +372,7 @@ To avoid errors due to reading configuration files written in a different unit s
 \end{itemize}
 
 \cvnamdonly{
-\cvsubsec{NAMD parameters}{sec:colvars_mdengine_params}
+\cvsubsec{NAMD parameters}{sec:colvars_mdengine_parameters}
 
 To enable a Colvars-based calculation, the \texttt{colvars on} command must be added to the NAMD script.
 Two optional commands, \texttt{colvarsConfig} and \texttt{colvarsInput} can be used to define the module's configuration or continue a previous simulation.
@@ -481,9 +481,7 @@ Setting this to \emph{no} will use the current local coordinates that are wrappe
 
 
 \cvgromacsonly{
-\subsection{Running Colvars in Gromacs}
-\label{sec:colvars_mdengine_parameters}
-
+\cvsubsec{Running Colvars in Gromacs}{sec:colvars_mdengine_parameters}
 
 
 To enable a Colvars-based calculation, just specify one or more Colvars configuration files with the \texttt{-colvars} command-line parameter to \texttt{gmx mdrun}:\\
@@ -497,7 +495,6 @@ Both file hold information to restart properly the simulation.\\
 \noindent{}Note that the standard extension of all files have to be changed manually to end with  ``\texttt{.dat}'' to satisfy Gromacs requirements on filenames.
 
 \noindent{}For the output files, the prefix of colvars output files will use the \texttt{-defnnm} option of mdrun, or be the same as the Gromacs log file if the option is not set. Otherwise, the prefix will be \emph{output}.
-
 
 }
 
