@@ -98,7 +98,7 @@ Detailed explanations of the design of the Colvars module are provided in refere
 \paragraph*{Using the Colvars module in VMD}
 Within VMD, the Colvars module can be accessed in two ways:
 \begin{itemize}
- \item Using the Colvars Dashboard, an intuitive, but partial interface to the Colvars module, to easily define and analyze \textbf{collective variables, but not biases} (section~\ref{sec:dashboard}).
+ \item Using the Colvars Dashboard, an intuitive interface to the Colvars module, to easily define and analyze \textbf{collective variables, but not biases} (section~\ref{sec:dashboard}).
  \item Using the full-featured Tcl scripting interface as documented in section~\ref{sec:cv_scripting}; see in particular the example in section~\ref{sec:cv_command_vmd_traj}.
 \end{itemize}
 }
@@ -228,7 +228,7 @@ Here are the steps for a quick first tour of the Dashboard:
  \item click anywhere in the timeline plot to navigate in the trajectory.
 \end{enumerate}
 
-Now, clicking ``Edit'' in the Dashboard window, you can modify the collective variable to reflect interesting geometric properties of the system.
+Now, clicking ``Edit'' in the Dashboard window (or right-clikcing on a colvar in the list view), you can modify the collective variable to reflect interesting geometric properties of the system.
 The power of the collective variables approach lies in the variety of geometric functions (``components'') and their combinations.
 The editor window provides a number of helpers to make it easy and quick to define the most relevant variables.
 See section \ref{sec:dashboard_config_editor} for details.
@@ -239,15 +239,12 @@ The Dashboard window displays a table listing currently defined variables, and t
 By default the frame is updated to track VMD's currently displayed frame, but that can be changed by toggling the ``Track frame'' checkbox, e.g. to animate the trajectory without recomputing expensive variables.
 Vector-values variables can be expanded to list their scalar elements. This is necessary when individual scalar quantities have to be selected for plotting.
 Other operations act on variables as a whole and ignore specific selected scalar elements.
+Right-clicking in the table brings up a context menu with specific actions for the selected variables.
 
 Buttons above the table allow for general operations on the state of the Colvars module.
-Buttons below the table offer operations on selected variables.
+Below the table, the \textit{Actions} tab allows operations on selected variables, while the \textit{Settings} tab offers advanced settings for the various visualizations.
 
-If several molecules are loaded, the Dashboard only interacts with the molecule labeled "top" (T in VMD's main window).
-If the top molecule is changed, the Colvars module needs to be reset using the Reset button.
-This will remove all current definitions, so make sure to save the variables to a file beforehand.
-
-If variables are modified, added or deleted interactively or by an external script, hit ``Refresh'' or press F5 to update the displayed variables and values.
+If variables are modified, added or deleted by an external script, hit ``Refresh'' or press F5 to update the displayed variables and values.
 Starting the Dashboard also enables trajectory animation using the left/right arrow keys within VMD's graphical window.
 Atomic coordinates can be modified using VMD's ``Mouse/Move'' functions, and the Colvars module can then be updated by pressing F5 directly from the graphical window.
 
@@ -256,8 +253,9 @@ If some variables are already defined, it is recommended to edit the configurati
 them at once (eg. pressing Ctrl-a, then Ctrl-e), checking that all quantities are expressed in the desired set of units, and adding the
 \texttt{units} keyword to the general parameters, outside of \texttt{colvar \{\}} blocks (\ref{sec:units}).
 
-Another dropdown lets the user change which VMD molecule is associated with the Colvars module.
-Internally, this requires recording the configuration of currently defined colvars, deleting the current instance of the Colvars module,
+The Colvars Module interacts with one VMD Molecule at a time.
+At the bottom of the \textit{Actions} tab, a  dropdown lets the user change which VMD molecule is associated with the Colvars module.
+Internally, changing it means recording the configuration of currently defined colvars, deleting the current instance of the Colvars module,
 creating a new one linked to the target molecule, and applying the saved configuration.
 Beware of incompatible colvar definitions, such as atom groups listing atom IDs that exist in one molecule, but not the other.
 Auto-updating selections (see below) can be used to adapt the colvar definitions to a different system using VMD selection texts.
@@ -265,7 +263,7 @@ Auto-updating selections (see below) can be used to adapt the colvar definitions
 \cvsubsec{Loading / Saving configuration files}{sec:dashboard_load_save}
 
 This saves the configuration of all defined collective variables to a file.
-Neither biases, nor general parameters of the Colvars module are saved: editing them is beyond the scope of the Dashboard.
+Neither biases, nor general parameters of the Colvars module (except the units) are saved: editing them is beyond the scope of the Dashboard.
 We recommend keeping them in separate configuration files, and reading them separately in biased MD simulations.
 
 \cvsubsec{The configuration editor}{sec:dashboard_config_editor}
@@ -322,6 +320,15 @@ Vectors representing the gradient are rescaled as indicated by the radio buttons
 This use of \texttt{width} makes it easier to compare the gradients of collective variables that are not commensurate.
 The scaling factor has the unit $\AA * L / (cv / width)$, where $L$ is the current length unit, and $cv$ represents the natural unit of the collective variable.
 By default $width$ is unity, but $(cv / width)$ may be seen as dimensionless if $width$ is expressed in cv units.
+
+The Dashboard offers visualizations for specific types of variables:
+\begin{itemize}
+  \item Variables that represent rotation operations (as unit quaternions), such as those based on an \texttt{orientation} component, can be displayed by right-clicking on them in the colvar table.
+  This creates a representation of the rotation as an arrow representing its axis, and two arms separated by the angle of the rotation, between 0 and 180 degrees.
+  \item For variables that are computed based on volumetric maps, representations of the related maps can be created using the "Show volmap" button, or again through a specific entry in the context menu available via right-click.
+\end{itemize}
+Parameters for fine-tuning these visualizations can be set in the \textit{Settings} tab.
+
 
 } % cvvmdonly dashboard
 
