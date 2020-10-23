@@ -4526,10 +4526,14 @@ The following specific parameters can be set in the ABF configuration block:
     term describing the effect of geometric entropy on the distribution of the variable.
     This results, for example, in particle-particle potentials of mean force being flat
     at large separations.
-    Setting this parameter to \texttt{yes} causes the output data to follow that convention,
-    by removing this contribution from the output gradients while
-    applying internally the corresponding correction to ensure uniform sampling.
-    It is not allowed for colvars with multiple components.}
+    The Jacobian term is exactly represented in equation~(\ref{eq:gradient_vector}) by the second term
+    of the average, $ - k_B T \gradx \cdot \bm{v}_{i} $.
+    Enabling the \texttt{hideJacobian} option causes the output data to follow the traditional
+    potential of mean force convention,
+    by omitting this contribution from the measured free energy gradients.
+    To ensure uniform sampling despite the incomplete description of the free energy, an
+    additional biasing force that counteracts the Jacobian force is applied internally by the
+    colvar.}
 
 \item \keydef{historyFreq}{\texttt{abf}}{%
     Frequency (in timesteps) at which ABF history files are
