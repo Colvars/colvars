@@ -110,7 +110,12 @@ proc ::cv_dashboard::createWindow {} {
   grid [ttk::button $main.hide_gradients -text "Hide gradients" -command {::cv_dashboard::hide_gradients} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $main.hide_all_gradients -text "Hide all grads" -command {::cv_dashboard::hide_all_gradients} -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
-  # Create and hide volmap menu (shows itself as needed when refreshing the colvar table, via toggleVolmapMenu)
+  # Create and hide rotation menu (shows itself as needed when refreshing the colvar table)
+  incr gridrow
+  createRotationMenu $gridrow
+  grid remove $main.rotation_menu
+
+  # Create and hide volmap menu (shows itself as needed when refreshing the colvar table)
   incr gridrow
   createVolmapMenu $gridrow
   grid remove $main.volmap_menu
@@ -188,6 +193,26 @@ proc ::cv_dashboard::toggleVolmapMenu {} {
 }
 
 
+# Open or close the volmap sub-panel
+proc ::cv_dashboard::toggleRotationMenu {} {
+  set w .cv_dashboard_window.tabs.main
+
+  set rotations false
+  foreach cv $::cv_dashboard::cvs {
+    if { [is_unit_quaternion $cv] } {
+      set rotations true
+      break
+    }
+  }
+
+  if { $rotations } {
+    grid $w.rotation_menu
+  } else {
+    grid remove $w.rotation_menu
+  }
+}
+
+
 # Display context menu about specific colvar
 # Takes coordinates within widget and within window
 proc ::cv_dashboard::cvContextMenu { x y wX wY } {
@@ -195,12 +220,12 @@ proc ::cv_dashboard::cvContextMenu { x y wX wY } {
   set menu $w.cvMenu
 
   set cvs [selected_colvars]
+
   # Add any colvar under mouse cursor
-  foreach cv [$w.cvtable identify item $x $y] {
-    if { [lsearch $cvs $cv] == -1 } {
-      # reduce scalar components to their parent vector CV
-      lappend cvs [lindex $cv 0]
-    }
+  # reduce scalar components to their parent vector CV
+  set cv [lindex [$w.cvtable identify item $x $y] 0]
+  if { [llength $cv] == 1 && [lsearch $cvs $cv] == -1 } {
+    lappend cvs $cv
   }
 
   set volmaps [list]
@@ -294,8 +319,6 @@ proc ::cv_dashboard::refresh_table {} {
     return
   }
 
-  toggleVolmapMenu
-
   # Get fresh coordinates from VMD
   run_cv update
 
@@ -318,6 +341,9 @@ proc ::cv_dashboard::refresh_table {} {
       }
     }
   }
+
+  toggleRotationMenu
+  toggleVolmapMenu
 
   update_frame internal $::cv_dashboard::mol w
 }
@@ -841,6 +867,27 @@ proc ::cv_dashboard::createVolmapMenu { row } {
   grid [ttk::button $menu.show_volmaps -text "Show volmaps" -command {::cv_dashboard::show_volmaps_selected} -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $menu.hide_volmaps -text "Hide volmaps" -command {::cv_dashboard::hide_volmaps_selected} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $menu.hide_all_volmaps -text "Hide all volmaps" -command {::cv_dashboard::hide_all_volmaps} -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+
+  grid columnconfigure $menu 0 -weight 1
+  grid columnconfigure $menu 1 -weight 1
+  grid columnconfigure $menu 2 -weight 1
+
+  grid remove $menu
+}
+
+
+proc ::cv_dashboard::createRotationMenu { row } {
+
+  set main .cv_dashboard_window.tabs.main
+  set menu $main.rotation_menu
+  grid [frame $menu] -row $row -column 0 -columnspan 3 -sticky nsew
+
+  set gridrow 0
+
+  # Volumetric map display settings
+  incr gridrow
+  grid [ttk::button $menu.show_rotation -text "Show rotation" -command { ::cv_dashboard::start_rotation_display {} } -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $menu.hide_rotation -text "Hide rotation" -command { ::cv_dashboard::stop_rotation_display } -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
 
   grid columnconfigure $menu 0 -weight 1
   grid columnconfigure $menu 1 -weight 1

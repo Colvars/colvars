@@ -30,7 +30,7 @@ proc ::cv_dashboard::createSettingsWindow { } {
   set ::cv_dashboard::atom_radius 0.5
 
   incr gridrow
-  grid [label $settings.sel_text_label -text "Intersect sel:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [label $settings.sel_text_label -text "Intersect sel. text:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [tk::entry $settings.sel_text -textvariable ::cv_dashboard::sel_text] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   set ::cv_dashboard::sel_text "all"
 
@@ -64,6 +64,24 @@ proc ::cv_dashboard::createSettingsWindow { } {
   grid [label $settings.grad_radius_unit -text "Angstrom"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
   set ::cv_dashboard::grad_radius 0.1
 
+  # Rotation display settings
+
+  incr gridrow
+  grid [ttk::separator $settings.seprotations -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
+
+  incr gridrow
+  grid [label $settings.rot_text -text "Rotation display settings"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
+
+  incr gridrow
+  grid [label $settings.rot_scale_text -text "Rotation object scale:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [tk::entry $settings.rot_scale -textvariable ::cv_dashboard::rot_scale] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  set ::cv_dashboard::rot_scale 1.0
+
+  incr gridrow
+  grid [label $settings.rot_color_text -text "Rotation object color:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::combobox $settings.rot_color -justify left -state readonly] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  $settings.rot_color configure -values [colorinfo colors]
+  $settings.rot_color set "yellow"
 
   # Volmap-specific settings
 
