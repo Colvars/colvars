@@ -7,11 +7,45 @@
 #include <string>
 #include <iostream>
 #include <cmath>
+#include <memory>
 #include <map>
+
+#ifdef LEPTON
+#include "Lepton.h"
+#endif
 
 namespace neuralnetworkCV {
 /// mapping from a string to the activation function and its derivative
 extern std::map<std::string, std::pair<std::function<double(double)>, std::function<double(double)>>> activation_function_map;
+
+#ifdef LEPTON
+// allow to define a custom activation function
+class customActivationFunction {
+public:
+    /// empty constructor
+    customActivationFunction();
+    /// construct by an mathematical expression
+    customActivationFunction(const std::string& expression_string);
+    /// copy constructor
+    customActivationFunction(const customActivationFunction& source);
+    /// overload assignment operator
+    customActivationFunction& operator=(const customActivationFunction& source);
+    /// setter for the custom expression
+    void setExpression(const std::string& expression_string);
+    /// getter for the custom expression
+    std::string getExpression() const;
+    /// evaluate the value of an expression
+    double evaluate(double x) const;
+    /// evaluate the gradient of an expression
+    double derivative(double x) const;
+private:
+    std::string expression;
+    std::unique_ptr<Lepton::CompiledExpression> value_evaluator;
+    std::unique_ptr<Lepton::CompiledExpression> gradient_evaluator;
+    double* input_reference;
+    double* derivative_reference;
+};
+#endif
 
 class denseLayer {
 private:
@@ -19,6 +53,12 @@ private:
     size_t m_output_size;
     std::function<double(double)> m_activation_function;
     std::function<double(double)> m_activation_function_derivative;
+#ifdef LEPTON
+    bool m_use_custom_activation;
+    customActivationFunction m_custom_activation_function;
+#else
+    static const bool m_use_custom_activation = false;
+#endif
     /// weights[i][j] is the weight of the i-th output and the j-th input
     std::vector<std::vector<double>> m_weights;
     /// bias of each node
@@ -32,6 +72,13 @@ public:
      *  @param[in]  df              derivative of the activation function
      */
     denseLayer(const std::string& weights_file, const std::string& biases_file, const std::function<double(double)>& f, const std::function<double(double)>& df);
+#ifdef LEPTON
+    /*! @param[in]  weights_file                 filename of the weights file
+     *  @param[in]  biases_file                  filename of the biases file
+     *  @param[in]  custom_activation_expression the expression of the custom activation function 
+     */
+    denseLayer(const std::string& weights_file, const std::string& biases_file, const std::string& custom_activation_expression);
+#endif
     /// read data from file
     void readFromFile(const std::string& weights_file, const std::string& biases_file);
     /// setup activation function

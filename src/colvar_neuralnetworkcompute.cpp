@@ -10,9 +10,105 @@ std::map<std::string, std::pair<std::function<double(double)>, std::function<dou
     {"sigmoid", {[](double x){return 1.0 / (1.0 + std::exp(-x));}, [](double x){return std::exp(-x) / ((1.0 + std::exp(-x)) * (1.0 + std::exp(-x)));}}}
 };
 
+#ifdef LEPTON
+customActivationFunction::customActivationFunction():
+expression(), value_evaluator(nullptr), gradient_evaluator(nullptr),
+input_reference(nullptr), derivative_reference(nullptr) {}
+
+customActivationFunction::customActivationFunction(const std::string& expression_string):
+expression(), value_evaluator(nullptr), gradient_evaluator(nullptr),
+input_reference(nullptr), derivative_reference(nullptr) {
+    setExpression(expression_string);
+}
+
+customActivationFunction::customActivationFunction(const customActivationFunction& source):
+expression(), value_evaluator(nullptr), gradient_evaluator(nullptr),
+input_reference(nullptr), derivative_reference(nullptr) {
+    // check if the source object is initialized
+    if (source.value_evaluator != nullptr) {
+        this->setExpression(source.expression);
+    }
+}
+
+customActivationFunction& customActivationFunction::operator=(const customActivationFunction& source) {
+    if (source.value_evaluator != nullptr) {
+        this->setExpression(source.expression);
+    } else {
+        expression = std::string();
+        value_evaluator = nullptr;
+        gradient_evaluator = nullptr;
+        input_reference = nullptr;
+        derivative_reference = nullptr;
+    }
+    return *this;
+}
+
+void customActivationFunction::setExpression(const std::string& expression_string) {
+    expression = expression_string;
+    Lepton::ParsedExpression parsed_expression;
+    // the variable must be "x" for the input of an activation function
+    const std::string activation_input_variable{"x"};
+    // parse the expression
+    try {
+        parsed_expression = Lepton::Parser::parse(expression);
+    } catch (...) {
+        cvm::error("Error parsing or compiling expression \"" + expression + "\".\n", INPUT_ERROR);
+    }
+    // compile the expression
+    try {
+        value_evaluator = std::unique_ptr<Lepton::CompiledExpression>(new Lepton::CompiledExpression(parsed_expression.createCompiledExpression()));
+    } catch (...) {
+        cvm::error("Error compiling expression \"" + expression + "\".\n", INPUT_ERROR);
+    }
+    // create a compiled expression for the derivative
+    try {
+        gradient_evaluator = std::unique_ptr<Lepton::CompiledExpression>(new Lepton::CompiledExpression(parsed_expression.differentiate(activation_input_variable).createCompiledExpression()));
+    } catch (...) {
+        cvm::error("Error creating compiled expression for variable \"" + activation_input_variable + "\".\n", INPUT_ERROR);
+    }
+    // get the reference to the input variable in the compiled expression
+    try {
+        input_reference = &(value_evaluator->getVariableReference(activation_input_variable));
+    } catch (...) {
+        cvm::error("Error on getting the reference to variable \"" + activation_input_variable + "\" in the compiled expression.\n", INPUT_ERROR);
+    }
+    // get the reference to the input variable in the compiled derivative expression
+    try {
+        derivative_reference = &(gradient_evaluator->getVariableReference(activation_input_variable));
+    } catch (...) {
+        cvm::error("Error on getting the reference to variable \"" + activation_input_variable + "\" in the compiled derivative exprssion.\n", INPUT_ERROR);
+    }
+}
+
+std::string customActivationFunction::getExpression() const {
+    return expression;
+}
+
+double customActivationFunction::evaluate(double x) const {
+    *input_reference = x;
+    return value_evaluator->evaluate();
+}
+
+double customActivationFunction::derivative(double x) const {
+    *derivative_reference = x;
+    return gradient_evaluator->evaluate();
+}
+#endif
+
 denseLayer::denseLayer(const std::string& weights_file, const std::string& biases_file, const std::function<double(double)>& f, const std::function<double(double)>& df): m_activation_function(f), m_activation_function_derivative(df) {
+#ifdef LEPTON
+    m_use_custom_activation = false;
+#endif
     readFromFile(weights_file, biases_file);
 }
+
+#ifdef LEPTON
+denseLayer::denseLayer(const std::string& weights_file, const std::string& biases_file, const std::string& custom_activation_expression) {
+    m_use_custom_activation = true;
+    m_custom_activation_function = customActivationFunction(custom_activation_expression);
+    readFromFile(weights_file, biases_file);
+}
+#endif
 
 void denseLayer::readFromFile(const std::string& weights_file, const std::string& biases_file) {
     // parse weights file
@@ -56,7 +152,11 @@ std::vector<double> denseLayer::compute(const std::vector<double>& input) const 
             output[i] += input[j] * m_weights[i][j];
         }
         output[i] += m_biases[i];
-        output[i] = m_activation_function(output[i]);
+        if (m_use_custom_activation) {
+            output[i] = m_custom_activation_function.evaluate(output[i]);
+        } else {
+            output[i] = m_activation_function(output[i]);
+        }
     }
     return output;
 }
@@ -72,7 +172,11 @@ std::vector<double> denseLayer::computeTotalDerivative(const std::vector<double>
     }
     for (size_t j = 0; j < m_input_size; ++j) {
         for (size_t i = 0; i < m_output_size; ++i) {
-            output_grad[j] += m_weights[i][j] * m_activation_function_derivative(sum_with_bias[i]);
+            if (m_use_custom_activation) {
+                output_grad[j] += m_weights[i][j] * m_custom_activation_function.derivative(sum_with_bias[i]);
+            } else {
+                output_grad[j] += m_weights[i][j] * m_activation_function_derivative(sum_with_bias[i]);
+            }
         }
     }
     return output_grad;
@@ -84,8 +188,13 @@ double denseLayer::computeGradient(const std::vector<double>& input, const size_
         sum_with_bias += input[j_in] * m_weights[i][j_in];
     }
     sum_with_bias += m_biases[i];
-    const double grad_ij = m_activation_function_derivative(sum_with_bias) * m_weights[i][j];
-    return grad_ij;
+    if (m_use_custom_activation) {
+        const double grad_ij = m_custom_activation_function.derivative(sum_with_bias) * m_weights[i][j];
+        return grad_ij;
+    } else {
+        const double grad_ij = m_activation_function_derivative(sum_with_bias) * m_weights[i][j];
+        return grad_ij;
+    }
 }
 
 double denseLayer::computeNumericalGradient(const std::vector<double>& input, const size_t i, const size_t j, const double epsilon) const {
