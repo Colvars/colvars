@@ -3309,7 +3309,20 @@ where $f_{k}$ is the activation function of the $k$-th layer, $w_{(k,j),(k-1,i)}
 	\texttt{tanh}, \texttt{linear} or \texttt{sigmoid}}{%
 	Select the activation function for $i$-th layer. Available choices for activation function are \texttt{tanh}, \texttt{linear} and \texttt{sigmoid}.
 }
-	
+
+\item %
+\key
+{layer$i$\_custom\_activation}{%
+	\texttt{NeuralNetwork}}{%
+	An alternative custom expression as the activation function of layer $i$}{%
+	string}{%
+	Mathematical expression to define the activation function of layer $i$. The 
+	input value must be written as \texttt{x}. For example, the ELU activation 
+	function can be expressed as \texttt{select(step(x), alpha*(exp(x)-1), x)}. 
+	It should be noted that this option is mutually exclusive with the option 
+	\refkey{layer$i$\_activation}.
+}
+
 \end{cvcoptions}
 
 An example of configuration using \texttt{NeuralNetwork} is shown below:
