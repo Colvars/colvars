@@ -62,7 +62,7 @@ proc ::cv_dashboard::createSettingsWindow { } {
   grid [label $settings.grad_radius_text -text "Arrow radius:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [tk::entry $settings.grad_radius -textvariable ::cv_dashboard::grad_radius] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   grid [label $settings.grad_radius_unit -text "Angstrom"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
-  set ::cv_dashboard::grad_radius 0.1
+  set ::cv_dashboard::grad_radius 0.3
 
   # Rotation display settings
 
