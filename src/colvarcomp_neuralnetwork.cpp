@@ -5,6 +5,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <limits>
+#include <utility>
 
 #include "colvarmodule.h"
 #include "colvarvalue.h"
@@ -237,14 +238,23 @@ colvar::neuralNetwork::neuralNetwork(std::string const &conf): linearCombination
     // read activation function strings
     bool has_activation_functions = true;
     size_t num_activation_functions = 0;
-    std::vector<std::string> activation_functions;
+    // pair(is_custom_function, function_string)
+    std::vector<std::pair<bool, std::string>> activation_functions;
     while (has_activation_functions) {
         std::string lookup_key = std::string{"layer"} + cvm::to_str(num_activation_functions + 1) + std::string{"_activation"};
+        std::string lookup_key_custom = std::string{"layer"} + cvm::to_str(num_activation_functions + 1) + std::string{"_custom_activation"};
         if (key_lookup(conf, lookup_key.c_str())) {
+            // Ok, this is not a custom function
             std::string function_name;
             get_keyval(conf, lookup_key.c_str(), function_name, std::string(""));
-            activation_functions.push_back(function_name);
-            cvm::log(std::string{"Will read layer["} + cvm::to_str(num_activation_functions + 1) + std::string{"] biases from "} + function_name + '\n');
+            activation_functions.push_back(std::make_pair(false, function_name));
+            cvm::log(std::string{"The activation function for layer["} + cvm::to_str(num_activation_functions + 1) + std::string{"] is "} + function_name + '\n');
+            ++num_activation_functions;
+        } else if (key_lookup(conf, lookup_key_custom.c_str())) {
+            std::string function_expression;
+            get_keyval(conf, lookup_key_custom.c_str(), function_expression, std::string(""));
+            activation_functions.push_back(std::make_pair(true, function_expression));
+            cvm::log(std::string{"The custom activation function for layer["} + cvm::to_str(num_activation_functions + 1) + std::string{"] is "} + function_expression + '\n');
             ++num_activation_functions;
         } else {
             has_activation_functions = false;
@@ -255,10 +265,16 @@ colvar::neuralNetwork::neuralNetwork(std::string const &conf): linearCombination
         cvm::error("Error: the numbers of weights, biases and activation functions do not match.\n");
     }
     for (size_t i_layer = 0; i_layer < num_layers_weight; ++i_layer) {
-        // query the map of supported activation functions
-        const auto& f = activation_function_map[activation_functions[i_layer]].first;
-        const auto& df = activation_function_map[activation_functions[i_layer]].second;
-        denseLayer d(weight_files[i_layer], bias_files[i_layer], f, df);
+        denseLayer d;
+        if (activation_functions[i_layer].first) {
+            // use custom function as activation function
+            d = denseLayer(weight_files[i_layer], bias_files[i_layer], activation_functions[i_layer].second);
+        } else {
+            // query the map of supported activation functions
+            const auto& f = activation_function_map[activation_functions[i_layer].second].first;
+            const auto& df = activation_function_map[activation_functions[i_layer].second].second;
+            d = denseLayer(weight_files[i_layer], bias_files[i_layer], f, df);
+        }
         // add a new dense layer to network
         if (nn.addDenseLayer(d)) {
             // show information about the neural network
