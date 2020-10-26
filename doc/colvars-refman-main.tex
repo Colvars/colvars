@@ -878,7 +878,84 @@ The values of the atomic coordinates and other fields, such as occupancy or temp
 PDB files may be used either as one of the available mechanisms to select atoms (see the \refkey{atomsFile}{atom-group|atomsFile} keyword), or more frequently to read reference coordinates for least-squares fit alignment (see the \refkey{atomsFile}{atom-group|refPositionsFile} keyword).
 }
 
-% TODO Move multicolumn format here?
+
+\cvsubsubsec{Grid files: multicolumn text format}{sec:colvar_multicolumn_grid}
+
+Many simulation methods and analysis tools write files that contain functions of the collective variables tabulated on a grid (e.g.{} potentials of mean force or multidimentional histograms) for the purpose of analyzing results.
+Such files are produced by ABF (\ref{sec:colvarbias_abf}), metadynamics (\ref{sec:colvarbias_meta}), multidimensional histograms (\ref{sec:colvarbias_histogram}), as well as any restraint with optional thermodynamic integration support (\ref{sec:colvarbias_ti}).
+
+In some cases, these files may also be read as input of a new simulation.
+Suitable input files for this purpose are typically generated as output files of previous simulations, or directly by the user in the specific case of ensemble-biased metadynamics (\ref{sec:colvarbias_ebmeta}).
+This section explains the ``multicolumn'' format used by these files.
+For a multidimensional function $f(\xi_{1}$, $\xi_{2}$, \ldots $)$ the multicolumn grid format is defined as follows:\\
+
+\begin{tabular}{l l l l l l l}
+\# & $N_{\mathrm{cv}}$ & & & & \\
+\# & $\mathtt{min}(\xi_{1})$ & $\mathtt{width}(\xi_{1})$ & $\mathtt{npoints}({\xi_{1}})$ & $\mathtt{periodic}({\xi_{1}})$ \\
+\# & $\mathtt{min}(\xi_{2})$ & $\mathtt{width}(\xi_{2})$ & $\mathtt{npoints}({\xi_{2}})$ & $\mathtt{periodic}({\xi_{2}})$ \\
+\# & \ldots & \ldots & \ldots & \ldots \\
+\# & $\mathtt{min}(\xi_{N_{\mathrm{cv}}})$ & $\mathtt{width}(\xi_{N_{\mathrm{cv}}})$ & $\mathtt{npoints}({\xi_{N_{\mathrm{cv}}}})$ & $\mathtt{periodic}({\xi_{N_{\mathrm{cv}}}})$ & \\
+\\
+& $\xi^{1}_{1}$ & $\xi^{1}_{2}$ & \ldots & $\xi^{1}_{N_{\mathrm{cv}}}$ & f($\xi^{1}_{1}$, $\xi^{1}_{2}$, \ldots, $\xi^{1}_{N_{\mathrm{cv}}}$) & \\
+& $\xi^{1}_{1}$ & $\xi^{1}_{2}$ & \ldots & $\xi^{2}_{N_{\mathrm{cv}}}$ & f($\xi^{1}_{1}$, $\xi^{1}_{2}$, \ldots, $\xi^{2}_{N_{\mathrm{cv}}}$) \\
+& \ldots & \ldots & \ldots & \ldots & \ldots \\
+\\
+\end{tabular}
+
+\noindent{}Lines beginning with the character ``\texttt{\#}'' are the header of the file.
+$N_{\mathrm{cv}}$ is the number of collective variables sampled by the grid.
+For each variable $\xi_{i}$, $\mathtt{min}(\xi_{i})$ is the lowest value sampled by the grid (i.e.{} the left-most boundary of the grid along $\xi_{i}$), $\mathtt{width}(\xi_{i})$ is the width of each grid step along $\xi_{i}$, $\mathtt{npoints}(\xi_{i})$ is the number of points and $\mathtt{periodic}(\xi_{i})$ is a flag whose value is 1 or 0 depending on whether the grid is periodic along $\xi_{i}$.
+In most situations:
+\begin{itemize}
+\item $\mathtt{min}(\xi_{i})$ is given by the \refkey{lowerBoundary}{colvar|lowerBoundary} keyword of the variable $\xi_{i}$;
+\item $\mathtt{width}(\xi_{i})$ is given by the \refkey{width}{colvar|width} keyword;
+\item $\mathtt{npoints}(\xi_{i})$ is calculated from the two above numbers and the \refkey{upperBoundary}{colvar|upperBoundary} keyword;
+\item $\mathtt{periodic}(\xi_{i})$ is set to 1 if and only if $\xi_{i}$ is periodic and the grids' boundaries cover its period.
+\end{itemize}
+\textbf{Exception:} there is a slightly different header in PMF files computed by ABF (\ref{sec:colvarbias_abf}) or by other biases with an optional thermodynamic integration (TI) estimator (\ref{sec:colvarbias_ti}).
+In this case, free-energy gradients are accumulated on an \texttt{(npoints)}-long grid along each variable $\xi$: after these gradients are integrated, the resulting PMF is discretized on a grid with \texttt{(npoints+1)} points along $\xi$.
+Therefore, the edges of the PMF's grid extend $\mathtt{width}/2$ above and below the original boundaries (unless these are periodic).  The format of the file's header is otherwise unchanged.
+
+After the header, the rest of the file contains values of the tabulated function
+$f(\xi_{1}$, $\xi_{2}$, \ldots $\xi_{N_{\mathrm{cv}}})$, one for each line.
+The first $N_{\mathrm{cv}}$ columns contain values of $\xi_{1}$, $\xi_{2}$, \ldots $\xi_{N_{\mathrm{cv}}}$ and the last column contains the value of the function $f$.
+Points are sorted in ascending order with the fastest-changing values at the right (``C-style'' order).
+Each sweep of the right-most variable $\xi_{N_{\mathrm{cv}}}$ is terminated by an empty line.
+For two dimensional grid files, this allows quick visualization by programs such as GNUplot.
+\\
+
+\noindent\textbf{Example 1:} multicolumn text file for a one-dimensional histogram with \texttt{lowerBoundary} = 15, \texttt{upperBoundary} = 48 and \texttt{width} = 0.1.
+
+\begin{tabular}{l l l l l l}
+\\
+\# & \texttt{1} & & & & \\
+\# & \texttt{15} & \texttt{0.1} & \texttt{330} & \texttt{0} \\
+\\
+& \texttt{15.05} & \texttt{6.14012e-07} & & & \\
+& \texttt{15.15} & \texttt{7.47644e-07} & & & \\
+& \ldots & \ldots & & & \\
+& \texttt{47.85} & \texttt{1.65944e-06} & & & \\
+& \texttt{47.95} & \texttt{1.46712e-06} & & & \\
+\\
+\end{tabular}
+
+\noindent\textbf{Example 2:} multicolumn text file for a two-dimensional histogram of two dihedral angles (periodic interval with 6$^\circ$ bins):
+
+\begin{tabular}{l l l l l l}
+& & & & \\
+\# & \texttt{2} & & & & \\
+\# & \texttt{-180.0} & \texttt{6.0} & \texttt{30} & \texttt{1} \\
+\# & \texttt{-180.0} & \texttt{6.0} & \texttt{30} & \texttt{1} \\
+\\
+& \texttt{-177.0} & \texttt{-177.0} & \texttt{8.97117e-06} & & \\
+& \texttt{-177.0} & \texttt{-171.0} & \texttt{1.53525e-06} & & \\
+& \ldots & \ldots & \ldots & & \\
+& \texttt{-177.0} & \texttt{ 177.0} & \texttt{2.442956-06} & & \\
+\\
+& \texttt{-171.0} & \texttt{-177.0} & \texttt{2.04702e-05} & & \\
+& \ldots & \ldots & \ldots & & \\
+\end{tabular}
+
 
 
 \cvsec{Defining collective variables}{sec:colvar}
@@ -3372,83 +3449,6 @@ The parameters described below offer a way to specify these parameters only once
 
 \end{itemize}
 
-
-\cvsubsubsec{Grid files: multicolumn text format}{sec:colvar_multicolumn_grid}
-
-Many simulation methods and analysis tools write files that contain functions of the collective variables tabulated on a grid (e.g.{} potentials of mean force or multidimentional histograms) for the purpose of analyzing results.
-Such files are produced by ABF (\ref{sec:colvarbias_abf}), metadynamics (\ref{sec:colvarbias_meta}), multidimensional histograms (\ref{sec:colvarbias_histogram}), as well as any restraint with optional thermodynamic integration support (\ref{sec:colvarbias_ti}).
-
-In some cases, these files may also be read as input of a new simulation.
-Suitable input files for this purpose are typically generated as output files of previous simulations, or directly by the user in the specific case of ensemble-biased metadynamics (\ref{sec:colvarbias_ebmeta}).
-This section explains the ``multicolumn'' format used by these files.
-For a multidimensional function $f(\xi_{1}$, $\xi_{2}$, \ldots $)$ the multicolumn grid format is defined as follows:\\
-
-\begin{tabular}{l l l l l l l}
-\# & $N_{\mathrm{cv}}$ & & & & \\
-\# & $\mathtt{min}(\xi_{1})$ & $\mathtt{width}(\xi_{1})$ & $\mathtt{npoints}({\xi_{1}})$ & $\mathtt{periodic}({\xi_{1}})$ \\
-\# & $\mathtt{min}(\xi_{2})$ & $\mathtt{width}(\xi_{2})$ & $\mathtt{npoints}({\xi_{2}})$ & $\mathtt{periodic}({\xi_{2}})$ \\
-\# & \ldots & \ldots & \ldots & \ldots \\
-\# & $\mathtt{min}(\xi_{N_{\mathrm{cv}}})$ & $\mathtt{width}(\xi_{N_{\mathrm{cv}}})$ & $\mathtt{npoints}({\xi_{N_{\mathrm{cv}}}})$ & $\mathtt{periodic}({\xi_{N_{\mathrm{cv}}}})$ & \\
-\\
-& $\xi^{1}_{1}$ & $\xi^{1}_{2}$ & \ldots & $\xi^{1}_{N_{\mathrm{cv}}}$ & f($\xi^{1}_{1}$, $\xi^{1}_{2}$, \ldots, $\xi^{1}_{N_{\mathrm{cv}}}$) & \\
-& $\xi^{1}_{1}$ & $\xi^{1}_{2}$ & \ldots & $\xi^{2}_{N_{\mathrm{cv}}}$ & f($\xi^{1}_{1}$, $\xi^{1}_{2}$, \ldots, $\xi^{2}_{N_{\mathrm{cv}}}$) \\
-& \ldots & \ldots & \ldots & \ldots & \ldots \\
-\\
-\end{tabular}
-
-\noindent{}Lines beginning with the character ``\texttt{\#}'' are the header of the file.
-$N_{\mathrm{cv}}$ is the number of collective variables sampled by the grid.
-For each variable $\xi_{i}$, $\mathtt{min}(\xi_{i})$ is the lowest value sampled by the grid (i.e.{} the left-most boundary of the grid along $\xi_{i}$), $\mathtt{width}(\xi_{i})$ is the width of each grid step along $\xi_{i}$, $\mathtt{npoints}(\xi_{i})$ is the number of points and $\mathtt{periodic}(\xi_{i})$ is a flag whose value is 1 or 0 depending on whether the grid is periodic along $\xi_{i}$.
-In most situations:
-\begin{itemize}
-\item $\mathtt{min}(\xi_{i})$ is given by the \refkey{lowerBoundary}{colvar|lowerBoundary} keyword of the variable $\xi_{i}$;
-\item $\mathtt{width}(\xi_{i})$ is given by the \refkey{width}{colvar|width} keyword;
-\item $\mathtt{npoints}(\xi_{i})$ is calculated from the two above numbers and the \refkey{upperBoundary}{colvar|upperBoundary} keyword;
-\item $\mathtt{periodic}(\xi_{i})$ is set to 1 if and only if $\xi_{i}$ is periodic and the grids' boundaries cover its period.
-\end{itemize}
-\textbf{Exception:} there is a slightly different header in PMF files computed by ABF (\ref{sec:colvarbias_abf}) or by other biases with an optional thermodynamic integration (TI) estimator (\ref{sec:colvarbias_ti}).
-In this case, free-energy gradients are accumulated on an \texttt{(npoints)}-long grid along each variable $\xi$: after these gradients are integrated, the resulting PMF is discretized on a grid with \texttt{(npoints+1)} points along $\xi$.
-Therefore, the edges of the PMF's grid extend $\mathtt{width}/2$ above and below the original boundaries (unless these are periodic).  The format of the file's header is otherwise unchanged.
-
-After the header, the rest of the file contains values of the tabulated function
-$f(\xi_{1}$, $\xi_{2}$, \ldots $\xi_{N_{\mathrm{cv}}})$, one for each line.
-The first $N_{\mathrm{cv}}$ columns contain values of $\xi_{1}$, $\xi_{2}$, \ldots $\xi_{N_{\mathrm{cv}}}$ and the last column contains the value of the function $f$.
-Points are sorted in ascending order with the fastest-changing values at the right (``C-style'' order).
-Each sweep of the right-most variable $\xi_{N_{\mathrm{cv}}}$ is terminated by an empty line.
-For two dimensional grid files, this allows quick visualization by programs such as GNUplot.
-\\
-
-\noindent\textbf{Example 1:} multicolumn text file for a one-dimensional histogram with \texttt{lowerBoundary} = 15, \texttt{upperBoundary} = 48 and \texttt{width} = 0.1.
-
-\begin{tabular}{l l l l l l}
-\\
-\# & \texttt{1} & & & & \\
-\# & \texttt{15} & \texttt{0.1} & \texttt{330} & \texttt{0} \\
-\\
-& \texttt{15.05} & \texttt{6.14012e-07} & & & \\
-& \texttt{15.15} & \texttt{7.47644e-07} & & & \\
-& \ldots & \ldots & & & \\
-& \texttt{47.85} & \texttt{1.65944e-06} & & & \\
-& \texttt{47.95} & \texttt{1.46712e-06} & & & \\
-\\
-\end{tabular}
-
-\noindent\textbf{Example 2:} multicolumn text file for a two-dimensional histogram of two dihedral angles (periodic interval with 6$^\circ$ bins):
-
-\begin{tabular}{l l l l l l}
-& & & & \\
-\# & \texttt{2} & & & & \\
-\# & \texttt{-180.0} & \texttt{6.0} & \texttt{30} & \texttt{1} \\
-\# & \texttt{-180.0} & \texttt{6.0} & \texttt{30} & \texttt{1} \\
-\\
-& \texttt{-177.0} & \texttt{-177.0} & \texttt{8.97117e-06} & & \\
-& \texttt{-177.0} & \texttt{-171.0} & \texttt{1.53525e-06} & & \\
-& \ldots & \ldots & \ldots & & \\
-& \texttt{-177.0} & \texttt{ 177.0} & \texttt{2.442956-06} & & \\
-\\
-& \texttt{-171.0} & \texttt{-177.0} & \texttt{2.04702e-05} & & \\
-& \ldots & \ldots & \ldots & & \\
-\end{tabular}
 
 \cvsubsec{Trajectory output}{sec:colvar_traj_output}
 
