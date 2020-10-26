@@ -851,31 +851,35 @@ Starting from versions 2017-02-01, changes in newline encodings are handled tran
 
 State files, although not written manually, follow otherwise the same format as configuration files.
 
-\cvsubsubsec{Index files.}{sec:colvars_ndx_format}
+\cvsubsubsec{Index (NDX) files}{sec:colvars_ndx_format}
 
 For atom selections that cannot be specified only with Colvars keywords, external index files may be used following the \href{http://manual.gromacs.org/documentation/current/reference-manual/file-formats.html\#ndx}{NDX format} used in GROMACS.
 \cvlammpsonly{In LAMMPS, such files may also be produced via the \texttt{group2ndx} command.}
 
 
-\cvsubsubsec{XYZ coordinate files.}{sec:colvars_xyz_format}
-XYZ files are read by the Colvars module using an internal reader, and expect the following format.
-\begin{mdexampleinput}
-\-$N$\\
-\-Comment~line\\
-\-$E_{1}$~$x_{1}$~$y_{1}$~$z_{1}$\\
-\-\ldots\\
-\-$E_{N}$~$x_{N}$~$y_{N}$~$z_{N}$
-\end{mdexampleinput}
+\cvsubsubsec{XYZ coordinate files}{sec:colvars_xyz_format}
+XYZ coordinate files are text files, which are read by the Colvars module using an internal reader, and expect the following format:
+
+\noindent\begin{tabular}{r r r r}
+$N$\\
+\multicolumn{4}{l}{\texttt{Comment line}}\\
+$E_{1}$ & $x_{1}$ & $y_{1}$ & $z_{1}$\\
+$E_{2} $ & $x_{2}$ & $y_{2}$ & $z_{2}$\\
+\ldots\\
+$E_{N}$ & $x_{N}$ & $y_{N}$ & $z_{N}$ \\
+\end{tabular}
+
 \noindent{}where $N$ is the number of atomic coordinates in the file and $E_i$ is the chemical element of the $i$-th atom.
 Because $E_i$ is not used in Colvars, any string is acceptable.
 
+\cvvmdonly{Note that the coordinates read by Colvars internal parser are stored as double-precision floating point numbers (unlike VMD's reader, which uses single precision).}
 
 \cvnamebasedonly{
-\cvsubsubsec{PDB coordinate files.}{sec:colvars_pdb_format}
+\cvsubsubsec{PDB coordinate files}{sec:colvars_pdb_format}
 PDB coordinate files are read by the Colvars module using existing functionality in \MDENGINE, and therefore follow the same format.
 The values of the atomic coordinates and other fields, such as occupancy or temperature factors, are then communicated to Colvars by \MDENGINE{}.
 
-PDB files may be used either as one of the available mechanisms to select atoms (see the \refkey{atomsFile}{atom-group|atomsFile} keyword), or more frequently to read reference coordinates for least-squares fit alignment (see the \refkey{atomsFile}{atom-group|refPositionsFile} keyword).
+PDB files may be used either as one of the available mechanisms to select atoms (see the \refkey{atomsFile}{atom-group|atomsFile} keyword), or more frequently to read reference coordinates for least-squares fit alignment (see the \refkey{refPositionsFile}{atom-group|refPositionsFile} keyword).
 }
 
 
