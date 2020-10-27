@@ -9,8 +9,8 @@
 
 \cvlammpsonly{
 % TODO code not merged yet, only doc
-\def\cvscriptapi{0} % Supports the scripting API
-\def\cvscriptcmdapi{0} % Supports command-line scripting (via fix_modify)
+%\def\cvscriptapi{1} % Supports the scripting API
+%\def\cvscriptcmdapi{1} % Supports command-line scripting (via fix_modify)
 \newcommand{\cvscriptcmd}{fix\_modify~Colvars}
 }
 
@@ -146,10 +146,7 @@ Reading this input in plain English: the variable here named \emph{dist} consist
 To the ``\emph{dist}'' variable, we apply a \texttt{harmonic} potential of force constant 20~\energyunit/\lengthunit$^2$, initially centered around a value of 4~\lengthunit, which will increase to 15~\lengthunit{} over 500,000 simulation steps.
 
 The atom selection keywords are detailed in section \ref{sec:colvar_atom_groups}.
-\cvlammpsonly{% TODO update URL once they get HTTPS running
-If the selection is too complex to implement only via internal keywords, an external index file may be created following the NDX format used in GROMACS:\\
-\url{http://manual.gromacs.org/documentation/current/reference-manual/file-formats.html\#ndx}\\
-or by using the \texttt{group2ndx} LAMMPS command.}
+\cvlammpsonly{If the selection is too complex to implement only via internal keywords, an external index file may be created following the NDX format used in GROMACS (see \ref{sec:colvars_ndx_format}) or by using the \href{https://lammps.sandia.gov/doc/group2ndx.html}{group2ndx} LAMMPS command.}
 
 
 \paragraph*{Example: using multiple variables and multiple biasing/analysis methods together.}
@@ -796,7 +793,7 @@ The following keywords are available in the global context of the Colvars config
     extension) as produced by the \texttt{make\_ndx} tool of GROMACS.
     This keyword may be repeated to load multiple index files.
     A group with the same name may appear multiple times, as long as it contains the same indices in identical order each time: an error is raised otherwise.
-    \cvlammpsonly{In LAMMPS, the \texttt{group2ndx} command can be used to generate such file from existing groups.
+    \cvlammpsonly{In LAMMPS, the \href{https://lammps.sandia.gov/doc/group2ndx.html}{group2ndx} command can be used to generate such file from existing groups.
     Note that the Colvars module reads the indices of atoms from the index file: therefore, the LAMMPS groups do not need to remain active during the simulation, and could be deleted right after issuing \texttt{group2ndx}.
 }
     The names of index groups contained in this file can then be used to define
