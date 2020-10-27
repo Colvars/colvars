@@ -432,3 +432,35 @@ proc ::cv_dashboard::editor_help {} {
   help_window $w.editor "Help on colvars config editor" "Colvars Dashboard: the editor window" \
 {Help text}
 }
+
+
+proc ::cv_dashboard::write_index_group { ndxfile sel name } {
+    if { [catch [list tell "${ndxfile}"]] } {
+        # ${ndxfile} is the filename
+        set output [open "${ndxfile}" "a"]
+    } else {
+        # ${ndxfile} is the channel
+        set output ${ndxfile}
+    }
+
+    puts ${output} [format "\[ %s \]" ${name}]
+    set line_buf 0
+    set atom_count 0
+    foreach num [${sel} get serial] {
+        incr atom_count
+        puts -nonewline ${output} [format " %9d" ${num}]
+        set line_buf [expr ${line_buf} + 10]
+        if { ${line_buf} > 70 } {
+            set line_buf 0
+            puts -nonewline ${output} "\n"
+        }
+    }
+    if { ${line_buf} > 0 } {
+        puts -nonewline ${output} "\n"
+    }
+    puts -nonewline ${output} "\n"
+
+    if { "${output}" != "${ndxfile}" } {
+        close ${output}
+    }
+}
