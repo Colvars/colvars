@@ -139,6 +139,8 @@ cv.#1(#2)
 \end{titlepage}
 
 \newpage
+\label{sec:toc}%
+\ifdefined\HCode\HCode{<selfref>}\ref{sec:toc}\HCode{</selfref>}\fi%
 \tableofcontents
 \newpage
 
@@ -190,9 +192,16 @@ cv.#1(#2)
   %% \end{mdframed}
   }
 
+\newcommand{\pagetoplink}{\ifdefined\HCode
+  \begin{flushright}
+    \HCode{<a href="\#sec:toc" style="text-decoration: none; background-color: white;  color: gray;">(Go to Contents)</a><br>}
+  \end{flushright}
+  \fi}
+
 \newcommand{\cvsec}[2]{%
   \newpage
   \ifdefined\HCode
+  \pagetoplink
   \HCode{<div class="heading">} % Use CSS, mdframed won't work for this
   \else
   \begin{mdframed}[backgroundcolor=background-color,linewidth=2pt]
@@ -208,6 +217,7 @@ cv.#1(#2)
 
 \newcommand{\cvsubsec}[2]{%
   \ifdefined\HCode
+  \pagetoplink
   \HCode{<div class="heading">}
   \else
   \begin{mdframed}[backgroundcolor=background-color,linewidth=2pt]
@@ -223,6 +233,7 @@ cv.#1(#2)
 
 \newcommand{\cvsubsubsec}[2]{%
   \ifdefined\HCode
+  \pagetoplink
   \HCode{<div class="heading">}
   \else
   \begin{mdframed}[backgroundcolor=background-color,linewidth=2pt]
