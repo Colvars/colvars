@@ -18,6 +18,8 @@
 \usepackage{inconsolata}
 \usepackage{mathptmx}
 
+\usepackage{calc}
+
 \usepackage{graphicx}
 \usepackage{color}
 \definecolor{background-color}{gray}{0.84}
@@ -29,6 +31,8 @@
 
 \definecolor{cvexample-border-color}{rgb}{0.5,0.0,0.5}
 \definecolor{cvexample-background-color}{rgb}{1.0,0.95,1.0}
+\definecolor{cvkeyword-background-color}{rgb}{0.95,0.8,0.95}
+
 \newenvironment{cvexampleinput}{%
   \begin{mdframed}[%
       linecolor=cvexample-border-color,linewidth=2pt,%
@@ -142,29 +146,35 @@ cv.#1(#2)
 
 % use macros with context field to document keywords
 \newcommand{\key}[5]{%
-  \index{#2!\texttt{#1}}
-  {\bf Keyword \large \tt #1} $\langle\,$#3$\,\rangle$ \\%
+  \index{#2!\texttt{#1}}%
+  \colorbox{cvkeyword-background-color}{%
+    {\bf Keyword \large \tt #1}}~$\langle\,$#3$\,\rangle$\\%
   {\bf Context: } #2 \\%
   {\bf Acceptable values: } #4 \\%
   {\bf Description: } #5%
 }
+
 \newcommand{\keydef}[6]{%
-  \index{#2!\texttt{#1}}
-  {\bf Keyword \large \tt #1} $\langle\,$#3$\,\rangle$ \\%
+  \index{#2!\texttt{#1}}%
+  \colorbox{cvkeyword-background-color}{%
+    {\bf Keyword \large \tt #1}}~$\langle\,$#3$\,\rangle$\\%
   {\bf Context: } #2 \\%
   {\bf Acceptable values: } #4 \\%
   {\bf Default value: } #5 \\%
   {\bf Description: } #6
 }
+
 \newcommand{\labelkey}[1]{\hypertarget{#1}{~}\label{#1}}
 \newcommand{\refkey}[2]{\hyperlink{#2}{\texttt{#1}}}
 \newcommand{\dupkey}[4]{%
-  \index{#2!\texttt{#1}}
-  {\bf Keyword \large \tt #1:} see definition of \hyperlink{#3}{\texttt{#1}} (#4)%
+  \index{#2!\texttt{#1}}%
+  \colorbox{cvkeyword-background-color}{%
+    {\bf Keyword \large \tt #1:}}~see definition of \hyperlink{#3}{\texttt{#1}} (#4)%
 }
 \newcommand{\simkey}[3]{%
-  \index{#2!\texttt{#1}}
-  {\bf Keyword \large \tt #1:} analogous to \texttt{#3}%
+  \index{#2!\texttt{#1}}%
+  \colorbox{cvkeyword-background-color}{%
+    {\bf Keyword \large \tt #1:}}~analogous to \texttt{#3}%
 }
 
 \newcommand{\gradx}{\mbox{\boldmath$\nabla_{\!\!x}\,$}}
