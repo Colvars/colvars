@@ -318,20 +318,6 @@ then
     condcopy "${src}" "${target}/src/${tgt}"
   done
 
-  # Copy doc files
-  condcopy "${source}/doc/colvars-refman.bib" \
-           "${target}/ug/ug_colvars.bib"
-  condcopy "${source}/doc/colvars-refman-main.tex" \
-           "${target}/ug/ug_colvars.tex"
-  condcopy "${source}/doc/cvscript-tcl.tex" \
-           "${target}/ug/ug_colvars_tclref_namd.tex"
-  condcopy "${source}/namd/ug/ug_colvars_macros.tex" \
-           "${target}/ug/ug_colvars_macros.tex"
-  condcopy "${source}/doc/colvars_diagram.pdf" \
-           "${target}/ug/figures/colvars_diagram.pdf"
-  condcopy "${source}/doc/colvars_diagram.eps" \
-           "${target}/ug/figures/colvars_diagram.eps"
-
   echo ' done.'
 
   # Check for changes in related NAMD files
@@ -394,19 +380,6 @@ then
     tgt=$(basename ${src%.cpp})
     condcopy "${src}" "${target}/src/${tgt}.C"
   done
-
-  condcopy "${source}/doc/colvars-refman.bib" \
-           "${target}/doc/ug_colvars.bib"
-  condcopy "${source}/doc/colvars-refman-main.tex" \
-           "${target}/doc/ug_colvars.tex"
-  condcopy "${source}/doc/cvscript-tcl.tex" \
-           "${target}/doc/ug_colvars_tclref_vmd.tex"
-  condcopy "${source}/vmd/doc/ug_colvars_macros.tex" \
-           "${target}/doc/ug_colvars_macros.tex"
-  condcopy "${source}/doc/colvars_diagram.pdf" \
-           "${target}/doc/pictures/colvars_diagram.pdf"
-  condcopy "${source}/doc/colvars_diagram.eps" \
-           "${target}/doc/pictures/colvars_diagram.eps"
 
   # Update VMD interface files
   for src in \
