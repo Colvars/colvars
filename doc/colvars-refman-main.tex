@@ -2971,10 +2971,10 @@ The ``Multi-Map'' progress variable \cite{Fiorin2020} uses a weight sum of these
   \label{eq:cvc_multi_map}
     \xi(\mathbf{X}) = \sum_{k=1}^{K} \Phi_{k}(\mathbf{X}) = \sum_{k=1}^{K} k \sum_{i=1}^{N}\phi_{k}(\mathbf{x}_{i})
 \end{equation}
-where $K$ is the number of maps employed and each $\Phi_k$ is a \texttt{mapTotal} component.
+\noindent{}where $K$ is the number of maps employed and each $\Phi_k$ is a \texttt{mapTotal} component.
 
-For details on how to optimize numerical accuracy and parallel performance, as well as automating the creation of suitable input decks, see \href{https://colvars.github.io/multi-map/multi-map.html}{this page}.
-A generic example of Colvars configuration is also reported below.
+Here is a link to the \textbf{Multi-Map tutorial} page: \url{https://colvars.github.io/multi-map/multi-map.html}\\
+An example configuration for illustration purposes is also included below.
 
 \noindent\textbf{Example: transitions between macromolecular shapes using volumetric maps.}\\
 A series of map files, each representing a different shape, is loaded into NAMD:\\
