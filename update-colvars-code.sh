@@ -318,6 +318,10 @@ then
     condcopy "${src}" "${target}/src/${tgt}"
   done
 
+  # Update replacement text for the Colvars manual
+  condcopy "${source}/namd/ug/ug_colvars.tex" \
+           "${target}/ug/ug_colvars.tex"
+
   echo ' done.'
 
   # Check for changes in related NAMD files
@@ -380,6 +384,10 @@ then
     tgt=$(basename ${src%.cpp})
     condcopy "${src}" "${target}/src/${tgt}.C"
   done
+
+  # Update replacement text for the Colvars manual
+  condcopy "${source}/vmd/doc/ug_colvars.tex" \
+           "${target}/doc/ug_colvars.tex"
 
   # Update VMD interface files
   for src in \
