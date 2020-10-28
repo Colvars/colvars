@@ -2971,9 +2971,10 @@ The ``Multi-Map'' progress variable \cite{Fiorin2020} uses a weight sum of these
   \label{eq:cvc_multi_map}
     \xi(\mathbf{X}) = \sum_{k=1}^{K} \Phi_{k}(\mathbf{X}) = \sum_{k=1}^{K} k \sum_{i=1}^{N}\phi_{k}(\mathbf{x}_{i})
 \end{equation}
-where $K$ is the number of maps employed and each $\Phi_k$ is a \texttt{mapTotal} component.\\
+where $K$ is the number of maps employed and each $\Phi_k$ is a \texttt{mapTotal} component.
 
-\cvnamdonly{
+For details on how to optimize numerical accuracy and parallel performance, as well as automating the creation of suitable input decks, see \href{https://colvars.github.io/multi-map/multi-map.html}{this page}.
+A generic example of Colvars configuration is also reported below.
 
 \noindent\textbf{Example: transitions between macromolecular shapes using volumetric maps.}\\
 A series of map files, each representing a different shape, is loaded into NAMD:\\
@@ -2987,7 +2988,6 @@ A series of map files, each representing a different shape, is loaded into NAMD:
   \-~~mGridForceScale Shape\_\$k 0.0 0.0 0.0~~\# Do not use GridForces for this map\\
   \-\}
 \end{mdexampleinput}
-
 
 The GridForces maps thus loaded are then used to define the Multi-Map collective variable, with coefficients $\xi_k = k$ \cite{Fiorin2020}:\\
 \begin{mdexampleinput}
@@ -3009,11 +3009,9 @@ The GridForces maps thus loaded are then used to define the Multi-Map collective
   \-\}"
 \end{mdexampleinput}
 
-
 The above example illustrates a use case where a weighted sum (i.e.{} a linear combination) is used to define a single variable from multiple components.
 Depending on the problem under study, non-linear functions may be more appropriate.
 These may be defined a custom functions if implemented\cvleptononly{ (see \ref{sec:colvar_custom_function})}\cvscriptonly{, or scripted functions (see \ref{sec:colvar_scripted})}.
-} % \cvnamdonly{}
 
 }\fi % \ifdefined\cvvmdornamd{}
 
