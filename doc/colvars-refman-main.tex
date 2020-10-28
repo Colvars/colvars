@@ -96,7 +96,7 @@ Detailed explanations of the design of the Colvars module are provided in refere
 
 \cvvmdonly{
 \paragraph*{Using the Colvars module in VMD}
-Within VMD, the Colvars module can be accessed in two ways:
+Within VMD \cite{Humphrey1996}, the Colvars module can be accessed in two ways:
 \begin{itemize}
  \item Using the Colvars Dashboard, an intuitive interface to the Colvars module, to easily define and analyze \textbf{collective variables, but not biases} (section~\ref{sec:dashboard}).
  \item Using the full-featured Tcl scripting interface as documented in section~\ref{sec:cv_scripting}; see in particular the example in section~\ref{sec:cv_command_vmd_traj}.
@@ -332,7 +332,7 @@ Parameters for fine-tuning these visualizations can be set in the \textit{Settin
 
 \cvsec{Enabling and controlling the Colvars module in \MDENGINE{}}{sec:colvarmodule}
 
-Here, we document the syntax of the commands and parameters used to set up and use the Colvars module in \MDENGINE{}.
+Here, we document the syntax of the commands and parameters used to set up and use the Colvars module in \MDENGINE{}\cvgromacsonly{ \cite{Abraham2015}}\cvlammpsonly{ \cite{Plimpton1995}}\cvnamdonly{ \cite{Phillips2020}}.
 One of these parameters is the configuration file or the configuration text for the module itself, whose syntax is described in \ref{sec:colvars_config_syntax} and in the following sections.
 
 \cvsubsec{Units in the Colvars module}{sec:units}
