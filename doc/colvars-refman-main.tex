@@ -4092,14 +4092,16 @@ Be careful when using these options in ABF simulations or when using total force
 
 \item %
   \labelkey{atom-group|fittingGroup} %
-  \keydef
+  \keydef%
     {fittingGroup}{%
     atom group}{%
     Use an alternate set of atoms to define the roto-translation}{%
     Block \texttt{fittingGroup \{ ... \}}}{%
     This atom group itself}{%
     If either \texttt{centerReference} or \texttt{rotateReference} is defined, this keyword defines an alternate atom group to calculate the optimal roto-translation.
-    Use this option to define a continuous rotation if the structure of the group involved changes significantly (a typical symptom would be the message ``Warning: discontinuous rotation!'').}
+    Use this option to define a continuous rotation if the structure of the group involved changes significantly (a typical symptom would be the message ``Warning: discontinuous rotation!'').
+    \textbf{Performance considerations:} note that enabling this option will result in projecting each of the atomic gradients of the colvar (e.g.{} the RMSD) onto each the gradients of the roto-translation, which may be a computationally expensive operation: see the closely related \refkey{enableFitGradients}{atom-group|enableFitGradients} for details.%
+}
 
 \end{itemize}
 
@@ -4136,7 +4138,8 @@ The following two options have default values appropriate for the vast majority 
 \begin{itemize}
 
 \item %
-  \keydef
+  \labelkey{atom-group|enableFitGradients} %
+  \keydef%
     {enableFitGradients}{%
     atom group}{%
     Include the roto-translational contribution to colvar gradients}{%
@@ -4148,8 +4151,8 @@ The following two options have default values appropriate for the vast majority 
     $\partial\mathbf{x}^{\mathrm{C}}/\partial\mathbf{x}_{i}$ (translational gradients).
     By default, these terms are calculated and included in the total gradients;
     if this option is set to \texttt{off}, they are neglected.
-    In the case of a minimum RMSD component, this flag is automatically disabled
-    because the contributions of those derivatives to the gradients cancel out.
+    In the case of a minimum RMSD component, this flag is automatically disabled because the contributions of those derivatives to the gradients cancel out; other types of variable will require projecting each of the gradients of the variable onto each of the gradients of the roto-translation (i.e.{} a $O(N^2)$ loop).
+    When \refkey{fittingGroup}{atom-group|fittingGroup} is enabled, the computation is a $O(N\times{}M)$ loop for all variables, including RMSDs.
 }
 
 \item %
