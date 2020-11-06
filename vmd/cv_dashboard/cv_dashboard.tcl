@@ -399,7 +399,8 @@ proc ::cv_dashboard::update_mol_list { name molid op } {
 
 
 proc ::cv_dashboard::change_mol {} {
-  set newmolid [.cv_dashboard_window.mol get]
+  set main .cv_dashboard_window.tabs.main
+  set newmolid [$main.mol get]
 
   if { $newmolid != $::cv_dashboard::mol } {
     trace remove variable ::vmd_frame($::cv_dashboard::mol) write ::cv_dashboard::update_frame
