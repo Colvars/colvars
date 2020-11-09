@@ -510,12 +510,8 @@ int cvm::atom_group::parse(std::string const &group_conf)
 
     // whether these atoms will ever receive forces or not
     bool enable_forces = true;
-    // disableForces is deprecated
-    if (get_keyval(group_conf, "enableForces", enable_forces, true)) {
-      noforce = !enable_forces;
-    } else {
-      get_keyval(group_conf, "disableForces", noforce, false, colvarparse::parse_silent);
-    }
+    get_keyval(group_conf, "enableForces", enable_forces, true, colvarparse::parse_silent);
+    noforce = !enable_forces;
   }
 
   // Now that atoms are defined we can parse the detailed fitting options

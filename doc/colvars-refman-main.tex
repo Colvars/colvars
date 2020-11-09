@@ -4182,19 +4182,6 @@ The following two options have default values appropriate for the vast majority 
     When \refkey{fittingGroup}{atom-group|fittingGroup} is enabled, the computation is a $O(N\times{}M)$ loop for all variables, including RMSDs.
 }
 
-\item %
-  \keydef
-    {enableForces}{%
-    atom group}{%
-    Apply forces from this colvar to this group}{%
-    boolean}{%
-    \texttt{on}}{%
-    If this option is \texttt{off}, no forces are applied the atoms in the group.
-    Other forces are not affected (i.e. those
-    from the MD engine, from other colvars, and other external forces).
-    For dummy atoms, this option is \texttt{off} by default.
- }
-
 \end{itemize}
 
 
@@ -6338,6 +6325,10 @@ please be aware that \emph{several of these tutorials are not actively maintaine
   The legacy keywords \texttt{lowerWall} and \texttt{upperWall} of a \texttt{colvar} definition block do not have default values any longer, and need to be set explicitly, preferably as part of the \texttt{harmonicWalls} restraint.
   When using an ABF bias, it is recommended to set the two walls equal to \refkey{lowerBoundary}{colvar|lowerBoundary} and \refkey{upperBoundary}{colvar|upperBoundary}, respectively.
   When using a metadynamics bias, it is recommended to set the two walls strictly \emph{within} \refkey{lowerBoundary}{colvar|lowerBoundary} and \refkey{upperBoundary}{colvar|upperBoundary}; see \ref{sec:colvarbias_meta_boundaries} for details.
+
+\item \textbf{Colvars version 2020-11-09 or later.}\\
+  The legacy keyword \texttt{disableForces} for atom groups is now deprecated and will be discontinued in a future release.
+  Atom groups now have an automated way to save computation if forces are not used, and enabling this option otherwise would lead to incorrect behavior.
 
 \end{itemize}
 
