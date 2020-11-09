@@ -889,7 +889,15 @@ $E_{N}$ & $x_{N}$ & $y_{N}$ & $z_{N}$ \\
 \noindent{}where $N$ is the number of atomic coordinates in the file and $E_i$ is the chemical element of the $i$-th atom.
 Because $E_i$ is not used in Colvars, any string is acceptable.
 
-\cvvmdonly{Note that the coordinates read by Colvars internal parser are stored as double-precision floating point numbers (unlike VMD's reader, which uses single precision).}
+An XYZ file may contain either one of the following scenarios:
+\begin{enumerate}
+\item[\emph{(i)}] The file contains as many coordinates as the atoms that they are being read for: all coordinates will be read from the file following the same order as the atoms appear in the selection generated using the keywords listed in section \ref{sec:colvar_atom_groups}.
+  (Note that the order is guaranteed only if a single type of selection keyword is used one or more times, and not guaranteed when different types of selection keywords are used.)
+\item[\emph{(ii)}] The file contains more coordinates than needed, and it is assumed to contain coordinates for the entire system: only coordinates that match the numeric indices of the selected atoms are read, in order of increasing number.
+\end{enumerate}
+
+XYZ-file coordinates are read directly by Colvars and stored internally as double-precision floating point numbers\cvvmdonly{ (unlike VMD's reader, which uses single precision)}.
+
 
 \cvnamebasedonly{
 \cvsubsubsec{PDB coordinate files}{sec:colvars_pdb_format}
@@ -897,7 +905,27 @@ PDB coordinate files are read by the Colvars module using existing functionality
 The values of the atomic coordinates and other fields, such as occupancy or temperature factors, are then communicated to Colvars by \MDENGINE{}.
 
 PDB files may be used either as one of the available mechanisms to select atoms (see the \refkey{atomsFile}{atom-group|atomsFile} keyword), or more frequently to read reference coordinates for least-squares fit alignment (see the \refkey{refPositionsFile}{atom-group|refPositionsFile} keyword).
-}
+
+To select atoms via the \refkey{atomsFile}{atom-group|atomsFile} keyword, the option \refkey{atomsFile}{atom-group|atomsCol} is required, and atoms are selected based on either one of the following cases.
+\begin{enumerate}
+\item[\emph{(i)}] All atoms with a non-zero value of the corresponding column are selected.
+\item[\emph{(ii)}] If and only if \refkey{atomsFile}{atom-group|atomsColValue} is provided, only atoms with a value of \texttt{atomsCol} equaling \texttt{atomsColValue} are selected.
+  This can be useful to reuse the same PDB file for generating multiple selections.
+\end{enumerate}
+
+To read coordinates via the \refkey{refPositionsFile}{atom-group|refPositionsFile} keyword, there are four possible scenarios.
+\begin{enumerate}
+\item[\emph{(i)}] The file contains as many coordinates as the atoms that they are being read for: all coordinates will be read from the file following the same order as the atoms appear in the selection generated using the keywords listed in section \ref{sec:colvar_atom_groups}.
+  (Note that the order is guaranteed only if a single type of selection keyword is used one or more times, and not guaranteed when different types of selection keywords are used.)
+\item[\emph{(ii)}] The file contains more coordinates than needed, and it is assumed to contain coordinates for the entire system: only coordinates that match the numeric indices of the selected atoms are read, in order of increasing number.
+\item[\emph{(iii)}] If the corresponding \refkey{refPositionsCol}{atom-group|refPositionsCol} keyword is specified, only positions with a non-zero value of the column \texttt{refPositionsCol} are read.
+  This is particularly useful when all atoms were selected via \refkey{atomsFile}{atom-group|atomsFile} and \refkey{atomsCol}{atom-group|atomsCol}, which can then be the same as \texttt{refPositionsCol} for loading coordinates.
+\item[\emph{(iv)}] This is a special case of the previous point: if both \refkey{refPositionsCol}{atom-group|refPositionsCol} and \refkey{refPositionsColValue}{atom-group|refPositionsColValue} are specified, only atoms for which the \texttt{refPositionsCol} column as the value \texttt{refPositionsColValue} are read.
+\end{enumerate}
+
+Due to the fixed-precision PDB format, it is not recommended to use PDB files to read coordinates when precision is a concern, and the XYZ format (see \ref{sec:colvars_ndx_format}) is recommended instead.
+
+} % \cvnamebasedonly{}
 
 
 \cvsubsubsec{Grid files: multicolumn text format}{sec:colvar_multicolumn_grid}
@@ -3950,9 +3978,9 @@ The complete list of selection keywords available in \MDENGINE{} is:
     \texttt{atomNameResidueRange}, in order of their occurrence.
     This option is only necessary if a PSF topology file is used.}
 
-\labelkey{atom-group|atomsFile}
 \item %
-  \key
+  \labelkey{atom-group|atomsFile}%
+  \key%
     {atomsFile}{%
     atom group}{%
     PDB file name for atom selection}{%
@@ -3963,7 +3991,8 @@ The complete list of selection keywords available in \MDENGINE{} is:
     provided must match that in the system's topology}.}
 
 \item %
-  \key
+  \labelkey{atom-group|atomsCol}%
+  \key%
     {atomsCol}{%
     atom group}{%
     PDB column to use for atom selection flags}{%
@@ -3972,7 +4001,8 @@ The complete list of selection keywords available in \MDENGINE{} is:
   }
 
 \item %
-  \key
+  \labelkey{atom-group|atomsColValue}%
+  \key%
     {atomsColValue}{%
     atom group}{%
     Atom selection flag in the PDB column}{%
@@ -4043,7 +4073,7 @@ Be careful when using these options in ABF simulations or when using total force
 
 \item %
   \labelkey{atom-group|refPositions}
-  \key
+  \key%
     {refPositions}{%
     atom group}{%
     Reference positions for fitting (\AA)}{%
@@ -4055,26 +4085,22 @@ Be careful when using these options in ABF simulations or when using total force
 
 \item %
   \labelkey{atom-group|refPositionsFile}
-  \key
+  \key%
     {refPositionsFile}{%
     atom group}{%
     File containing the reference positions for fitting}{%
     UNIX filename}{%
     \label{key:colvars:atom_group:refPositionsFile}
     This option provides a list of reference coordinates for \texttt{centerReference} and/or \texttt{rotateReference}, and is mutually exclusive with \texttt{refPositions}.
-    The acceptable file format is XYZ (see \ref{sec:colvars_xyz_format}), which is read in double precision\cvnamebasedonly{, or PDB (see \ref{sec:colvars_pdb_format})
-; \emph{the latter is discouraged if the precision of the reference coordinates is a concern}}.
-    Atomic positions are read differently depending on the following scenarios:
-    \textbf{(i)} the file contains exactly as many records as the atoms in the group: all positions are read in sequence;
-    \textbf{(ii)} (most common case) the file contains coordinates for the entire system: only the positions corresponding to the numeric indices of the atom group are read\cvnamebasedonly{;
-      \textbf{(iii)} if the file is a PDB file and \texttt{refPositionsCol} is specified, positions are read according to the value of the column \texttt{refPositionsCol} (which may be the same as \texttt{atomsCol})}.
-    In each case, atoms are read from the file \emph{in order of increasing number}.
+    The acceptable file format is XYZ (see \ref{sec:colvars_xyz_format}), which is read in double precision.
+    \cvnamebasedonly{Alternatively, a PDB file may be read (see \ref{sec:colvars_pdb_format}) using \MDENGINE{}'s reader; however, due to the constraints of the PDB format \emph{PDB files are discouraged if the precision of the reference coordinates is a concern}}.
 }
 
 
 \cvnamebasedonly{
 \item %
-  \key
+  \labelkey{atom-group|refPositionsCol} %
+  \key%
     {refPositionsCol}{%
     atom group}{%
     PDB column containing atom flags}{%
@@ -4082,7 +4108,8 @@ Be careful when using these options in ABF simulations or when using total force
     Like \texttt{atomsCol} for \texttt{atomsFile}, indicates which column to use to identify the atoms in \texttt{refPositionsFile} (if this is a PDB file).}
 
 \item %
-  \key
+  \labelkey{atom-group|refPositionsColValue} %
+  \key%
     {refPositionsColValue}{%
     atom group}{%
     Atom selection flag in the PDB column}{%
