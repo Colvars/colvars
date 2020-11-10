@@ -9,16 +9,17 @@ The module itself implements a variety of functions and algorithms, including fr
 The easiest way to obtain pre-compiled versions of Colvars is via one of following:
 - the molecular simulation program [LAMMPS](https://lammps.sandia.gov/download.html);
 - the molecular simulation program [NAMD](https://www.ks.uiuc.edu/Research/namd/);
-- the molecular visualization program [VMD](https://www.ks.uiuc.edu/Research/vmd/).
+- the molecular visualization program [VMD](https://www.ks.uiuc.edu/Research/vmd/);
+- the molecular simulation program [GROMACS](http://www.gromacs.org/) through our [releases](#gromacs-colvars-releases).
 
 Please check [here](https://github.com/Colvars/colvars/releases) to see which version of Colvars is included with the round-number or "stable" versions of each code.
 
 ## Documentation
 
-The [Colvars webpage](https://colvars.github.io/) includes user documentation for the three codes, as well as a Doxygen-based [developer documentation](https://colvars.github.io/doxygen/html/).
+The [Colvars webpage](https://colvars.github.io/) includes user documentation for the four codes, as well as a Doxygen-based [developer documentation](https://colvars.github.io/doxygen/html/).
 
 The reference article is:
-G. Fiorin, M. L. Klein, and J. Hénin, Molecular Physics 111, 3345 (2013).  
+G. Fiorin, M. L. Klein, and J. Hénin, Molecular Physics 111, 3345 (2013).
 https://dx.doi.org/10.1080/00268976.2013.813594  \[[BibTex file](https://github.com/Colvars/colvars/blob/master/doc/ref_Fiorin_2013.bib?raw=true)\] \[[Endnote file](https://github.com/Colvars/colvars/blob/master/doc/ref_Fiorin_2013.ciw?raw=true)\]
 
 ## Example input
@@ -38,6 +39,11 @@ cv configfile <Colvars configuration file>
 ```
 fix Colvars all colvars configfile <Colvars configuration file>
 ```
+- In GROMACS:
+```
+gmx mdrun -s topol.tpr -deffnm topol -colvars <Colvars configuration file>
+```
+
 The contents of the configuration file are typically the same across all programs, for example:
 ```
 colvar { # Define a new variable
@@ -55,6 +61,7 @@ harmonic { # Define a harmonic potential, 1/2*K*(d-d0)^2/w_d^2
   forceConstant 10.0 # Force constant, "K"
 }
 ```
+
 
 Complete input decks for some of the most commonly used features are available in the `examples` repository:
 https://github.com/Colvars/examples
@@ -75,6 +82,7 @@ and run the provided `update-colvars-code.sh` script against the unpacked source
 ./update-colvars-code.sh /path/to/NAMD_X.YY_Source ; # updates NAMD
 ./update-colvars-code.sh /path/to/vmd-X.Y.Z        ; # updates VMD
 ./update-colvars-code.sh /path/to/vmd-plugins      ; # updates VMD plugins
+./update-colvars-code.sh /path/to/gromacs-XXX.X    ; # update GROMACS
 ```
 and recompile them.
 
@@ -85,9 +93,21 @@ The `update-colvars-code.sh` script and its supporting files are synchronized wi
 
 Earlier versions are not supported.
 
+For GROMACS, the versions supported are 2018.X and 2020.X.
+
+## Gromacs-Colvars releases
+
+Here a list of GROMACS archives with Colvars patch:
+
+ - [2018.8](https://github.com/Colvars/gromacs/releases/tag/v2018.8-colvars) with Colvars version 2020-10-22
+ - [2020.1](https://github.com/Colvars/gromacs/releases/tag/v2020.1-colvars) with Colvars version 2020-10-22
+ - [2020.2](https://github.com/Colvars/gromacs/releases/tag/v2020.2-colvars) with Colvars version 2020-10-22
+ - [2020.3](https://github.com/Colvars/gromacs/releases/tag/v2020.3-colvars) with Colvars version 2020-10-22
+ - [2020.4](https://github.com/Colvars/gromacs/releases/tag/v2020.4-colvars) with Colvars version 2020-10-22
+
 ## Which version is recommended?
 
-The `master` branch is to be considered the "*stable*" release at any given time; any bugfixes are released through `master` first.  The input syntax is near-completely *backward-compatible* and output files are *forward-compatible*.  Feel free to download Colvars and update NAMD, VMD or LAMMPS as needed.
+The `master` branch is to be considered the "*stable*" release at any given time; any bugfixes are released through `master` first.  The input syntax is near-completely *backward-compatible* and output files are *forward-compatible*.  Feel free to download Colvars and update NAMD, VMD, LAMMPS or GROMACS as needed.
 
 Other branches are dedicated to the development of specific features: please use them at your own discretion.
 
