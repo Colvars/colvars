@@ -442,7 +442,7 @@ then
   fi
 
   # copy library files and proxy files to the "colvars" folder
-  for src in ${source}/src/*.h ${source}/src/*.cpp ${source}/gromacs/gromacs-${GMX_VERSION}/*
+  for src in ${source}/src/*.h ${source}/src/*.cpp ${source}/gromacs/src/*.h ${source}/gromacs/gromacs-${GMX_VERSION}/*
   do \
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/src/gromacs/colvars/${tgt}" "${cpp_patch}"
