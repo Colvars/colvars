@@ -23,17 +23,8 @@ colvar::aspath::aspath(std::string const &conf): CartesianBasedPath(conf) {
     function_type = "aspath";
     cvm::log(std::string("Total number of frames: ") + cvm::to_str(total_reference_frames) + std::string("\n"));
     x.type(colvarvalue::type_scalar);
-    std::vector<cvm::real> rmsd_between_refs(total_reference_frames - 1, 0.0);
-    computeDistanceBetweenReferenceFrames(rmsd_between_refs);
-    cvm::real mean_square_displacements = 0.0;
-    for (size_t i_frame = 1; i_frame < total_reference_frames; ++i_frame) {
-        cvm::log(std::string("Distance between frame ") + cvm::to_str(i_frame) + " and " + cvm::to_str(i_frame + 1) + " is " + cvm::to_str(rmsd_between_refs[i_frame - 1]) + std::string("\n"));
-        mean_square_displacements += rmsd_between_refs[i_frame - 1] * rmsd_between_refs[i_frame - 1];
-    }
-    mean_square_displacements /= cvm::real(total_reference_frames - 1);
-    cvm::real suggested_lambda = 1.0 / mean_square_displacements;
     cvm::real p_lambda;
-    get_keyval(conf, "lambda", p_lambda, suggested_lambda);
+    get_keyval(conf, "lambda", p_lambda, -1.0);
     const size_t num_elements = atoms->size();
     std::vector<cvm::real> p_weights(num_elements, std::sqrt(1.0 / num_elements));
     ArithmeticPathCV::ArithmeticPathBase<cvm::atom_pos, cvm::real, ArithmeticPathCV::path_sz::S>::initialize(num_elements, total_reference_frames, p_lambda, reference_frames[0], p_weights);
@@ -49,6 +40,16 @@ void colvar::aspath::updateDistanceToReferenceFrames() {
 }
 
 void colvar::aspath::calc_value() {
+    if (lambda < 0) {
+        // this implies that the user may not set a valid lambda value
+        // so recompute it by the suggested value in Parrinello's paper
+        cvm::log("A non-positive value of lambda is detected, which implies that it may not set in the configuration.\n");
+        cvm::log("This component (aspath) will recompute a value for lambda following the suggestion in the origin paper.\n");
+        std::vector<cvm::real> rmsd_between_refs(total_reference_frames - 1, 0.0);
+        computeDistanceBetweenReferenceFrames(rmsd_between_refs);
+        reComputeLambda(rmsd_between_refs);
+        cvm::log("Ok, the value of lambda is updated to " + cvm::to_str(lambda));
+    }
     computeValue();
     x = s;
 }
@@ -73,17 +74,8 @@ colvar::azpath::azpath(std::string const &conf): CartesianBasedPath(conf) {
     function_type = "azpath";
     cvm::log(std::string("Total number of frames: ") + cvm::to_str(total_reference_frames) + std::string("\n"));
     x.type(colvarvalue::type_scalar);
-    std::vector<cvm::real> rmsd_between_refs(total_reference_frames - 1, 0.0);
-    computeDistanceBetweenReferenceFrames(rmsd_between_refs);
-    cvm::real mean_square_displacements = 0.0;
-    for (size_t i_frame = 1; i_frame < total_reference_frames; ++i_frame) {
-        cvm::log(std::string("Distance between frame ") + cvm::to_str(i_frame) + " and " + cvm::to_str(i_frame + 1) + " is " + cvm::to_str(rmsd_between_refs[i_frame - 1]) + std::string("\n"));
-        mean_square_displacements += rmsd_between_refs[i_frame - 1] * rmsd_between_refs[i_frame - 1];
-    }
-    mean_square_displacements /= cvm::real(total_reference_frames - 1);
-    cvm::real suggested_lambda = 1.0 / mean_square_displacements;
     cvm::real p_lambda;
-    get_keyval(conf, "lambda", p_lambda, suggested_lambda);
+    get_keyval(conf, "lambda", p_lambda, -1.0);
     const size_t num_elements = atoms->size();
     std::vector<cvm::real> p_weights(num_elements, std::sqrt(1.0 / num_elements));
     ArithmeticPathCV::ArithmeticPathBase<cvm::atom_pos, cvm::real, ArithmeticPathCV::path_sz::Z>::initialize(num_elements, total_reference_frames, p_lambda, reference_frames[0], p_weights);
@@ -99,6 +91,16 @@ void colvar::azpath::updateDistanceToReferenceFrames() {
 }
 
 void colvar::azpath::calc_value() {
+    if (lambda < 0) {
+        // this implies that the user may not set a valid lambda value
+        // so recompute it by the suggested value in Parrinello's paper
+        cvm::log("A non-positive value of lambda is detected, which implies that it may not set in the configuration.\n");
+        cvm::log("This component (azpath) will recompute a value for lambda following the suggestion in the origin paper.\n");
+        std::vector<cvm::real> rmsd_between_refs(total_reference_frames - 1, 0.0);
+        computeDistanceBetweenReferenceFrames(rmsd_between_refs);
+        reComputeLambda(rmsd_between_refs);
+        cvm::log("Ok, the value of lambda is updated to " + cvm::to_str(lambda));
+    }
     computeValue();
     x = z;
 }
