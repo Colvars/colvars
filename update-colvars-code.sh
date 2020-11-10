@@ -466,12 +466,12 @@ then
   fi
 
   # Update the proxy version if needed
-  shared_gmx_proxy_version=$(grep '^#define' gromacs/src/colvarproxy_gromacs_version.h | cut -d' ' -f 3)
+  shared_gmx_proxy_version=$(grep '^#define' "${source}/gromacs/src/colvarproxy_gromacs_version.h" | cut -d' ' -f 3)
 
   patch_gmx_proxy_version=$(grep '^#define' "${target}/src/gromacs/colvars/colvarproxy_gromacs_version.h" | cut -d' ' -f 3)
 
   if [ ${shared_gmx_proxy_version} \> ${patch_gmx_proxy_version} ] ; then
-    condcopy gromacs/src/colvarproxy_gromacs_version.h \
+    condcopy ${source}/gromacs/src/colvarproxy_gromacs_version.h \
       "${target}/src/gromacs/colvars/colvarproxy_gromacs_version.h"
   fi
 
