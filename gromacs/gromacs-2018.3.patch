@@ -21,6 +21,18 @@ diff -aur src/gromacs/fileio/checkpoint.cpp src_colvars/gromacs/fileio/checkpoin
  #include "gromacs/trajectory/trajectoryframe.h"
  #include "gromacs/utility/arrayref.h"
  #include "gromacs/utility/baseversion.h"
+@@ -99,7 +100,10 @@
+  * But old code can not read a new entry that is present in the file
+  * (but can read a new format when new entries are not present).
+  */
+-static const int cpt_version = 17;
++/*
++ * Add an increment for COLVARS support
++ */
++static const int cpt_version = 18;
+
+
+ const char *est_names[estNR] =
 @@ -886,7 +887,7 @@
                            int *natoms, int *ngtc, int *nnhpres, int *nhchainlength,
                            int *nlambda, int *flags_state,
@@ -34,7 +46,7 @@ diff -aur src/gromacs/fileio/checkpoint.cpp src_colvars/gromacs/fileio/checkpoin
      {
          *flags_awhh = 0;
      }
-+    if (*file_version >= 17)
++    if (*file_version >= 18)
 +    {
 +        do_cpt_int_err(xd, "colvars atoms", ecolvars, list);
 +    }
