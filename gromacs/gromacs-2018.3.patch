@@ -27,9 +27,9 @@ diff -aur src/gromacs/fileio/checkpoint.cpp src_colvars/gromacs/fileio/checkpoin
   */
 -static const int cpt_version = 17;
 +/*
-+ * Add an increment for COLVARS support
++ * Add a value of 1000 for Colvars support
 + */
-+static const int cpt_version = 18;
++static const int cpt_version = 17 + 1000;
 
 
  const char *est_names[estNR] =
@@ -46,7 +46,7 @@ diff -aur src/gromacs/fileio/checkpoint.cpp src_colvars/gromacs/fileio/checkpoin
      {
          *flags_awhh = 0;
      }
-+    if (*file_version >= 18)
++    if (*file_version >= 17 + 1000)
 +    {
 +        do_cpt_int_err(xd, "colvars atoms", ecolvars, list);
 +    }

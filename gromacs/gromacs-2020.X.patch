@@ -20,19 +20,22 @@ diff -aur src/gromacs/fileio/checkpoint.cpp src_colvars/gromacs/fileio/checkpoin
  #include "gromacs/trajectory/trajectoryframe.h"
  #include "gromacs/utility/arrayref.h"
  #include "gromacs/utility/baseversion.h"
-@@ -113,6 +114,7 @@
-     cptv_ComPrevStepAsPullGroupReference, /**< Allow using COM of previous step as pull group PBC reference */
-     cptv_PullAverage, /**< Added possibility to output average pull force and position */
-     cptv_MdModules,   /**< Added checkpointing for MdModules */
-+    cptv_Colvars,     /**< Added checkpointing for Colvars */
-     cptv_Count        /**< the total number of cptv versions */
- };
+@@ -131,7 +132,9 @@
+  * Backward compatibility for reading old run input files is maintained
+  * by checking this version number against that of the file and then using
+  * the correct code path. */
+-static const int cpt_version = cptv_Count - 1;
++/* COLVARS : add a value of 1000 for Colvars support and
++ * prevent regular GROMACS to read colvars .cpt files */
++static const int cpt_version = cptv_Count - 1 + 1000;
 
-@@ -1182,6 +1184,15 @@
+
+ const char* est_names[estNR] = { "FE-lambda",
+@@ -1182,6 +1185,15 @@
      {
          contents->flagsPullHistory = 0;
      }
-+    if (contents->file_version >= cptv_Colvars)
++    if (contents->file_version >= cptv_Count - 1 + 1000)
 +    {
 +        do_cpt_int_err(xd, "colvars atoms", &contents->ecolvars, list);
 +    }
