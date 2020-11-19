@@ -20,11 +20,22 @@ diff -aur src/gromacs/fileio/checkpoint.cpp src_colvars/gromacs/fileio/checkpoin
  #include "gromacs/trajectory/trajectoryframe.h"
  #include "gromacs/utility/arrayref.h"
  #include "gromacs/utility/baseversion.h"
-@@ -1182,6 +1183,15 @@
+@@ -131,7 +132,9 @@
+  * Backward compatibility for reading old run input files is maintained
+  * by checking this version number against that of the file and then using
+  * the correct code path. */
+-static const int cpt_version = cptv_Count - 1;
++/* COLVARS : add a value of 1000 for Colvars support and
++ * prevent regular GROMACS to read colvars .cpt files */
++static const int cpt_version = cptv_Count - 1 + 1000;
+
+
+ const char* est_names[estNR] = { "FE-lambda",
+@@ -1182,6 +1185,15 @@
      {
          contents->flagsPullHistory = 0;
      }
-+    if (contents->file_version >= 18)
++    if (contents->file_version >= cptv_Count - 1 + 1000)
 +    {
 +        do_cpt_int_err(xd, "colvars atoms", &contents->ecolvars, list);
 +    }
@@ -36,7 +47,7 @@ diff -aur src/gromacs/fileio/checkpoint.cpp src_colvars/gromacs/fileio/checkpoin
  }
 
  static int do_cpt_footer(XDR* xd, int file_version)
-@@ -1913,6 +1923,35 @@
+@@ -1913,6 +1924,35 @@
      return 0;
  }
 
@@ -72,7 +83,7 @@ diff -aur src/gromacs/fileio/checkpoint.cpp src_colvars/gromacs/fileio/checkpoin
  static int do_cpt_correlation_grid(XDR*                         xd,
                                     gmx_bool                     bRead,
                                     gmx_unused int               fflags,
-@@ -2334,6 +2373,10 @@
+@@ -2334,6 +2374,10 @@
      swaphistory_t* swaphist    = observablesHistory->swapHistory.get();
      int            eSwapCoords = (swaphist ? swaphist->eSwapCoords : eswapNO);
 
@@ -83,7 +94,7 @@ diff -aur src/gromacs/fileio/checkpoint.cpp src_colvars/gromacs/fileio/checkpoin
      CheckpointHeaderContents headerContents = { 0,
                                                  { 0 },
                                                  { 0 },
-@@ -2361,7 +2404,8 @@
+@@ -2361,7 +2405,8 @@
                                                  flags_dfh,
                                                  flags_awhh,
                                                  nED,
@@ -93,7 +104,7 @@ diff -aur src/gromacs/fileio/checkpoint.cpp src_colvars/gromacs/fileio/checkpoin
      std::strcpy(headerContents.version, gmx_version());
      std::strcpy(headerContents.fprog, gmx::getProgramContext().fullBinaryPath());
      std::strcpy(headerContents.ftime, timebuf.c_str());
-@@ -2381,6 +2425,7 @@
+@@ -2381,6 +2426,7 @@
          || (do_cpt_EDstate(gmx_fio_getxdr(fp), FALSE, nED, edsamhist, nullptr) < 0)
          || (do_cpt_awh(gmx_fio_getxdr(fp), FALSE, flags_awhh, state->awhHistory.get(), nullptr) < 0)
          || (do_cpt_swapstate(gmx_fio_getxdr(fp), FALSE, eSwapCoords, swaphist, nullptr) < 0)
@@ -101,7 +112,7 @@ diff -aur src/gromacs/fileio/checkpoint.cpp src_colvars/gromacs/fileio/checkpoin
          || (do_cpt_files(gmx_fio_getxdr(fp), FALSE, &outputfiles, nullptr, headerContents.file_version) < 0))
      {
          gmx_file("Cannot read/write checkpoint; corrupt file, or maybe you are out of disk space?");
-@@ -2799,6 +2844,17 @@
+@@ -2799,6 +2845,17 @@
          cp_error();
      }
 
@@ -119,7 +130,7 @@ diff -aur src/gromacs/fileio/checkpoint.cpp src_colvars/gromacs/fileio/checkpoin
      std::vector<gmx_file_position_t> outputfiles;
      ret = do_cpt_files(gmx_fio_getxdr(fp), TRUE, &outputfiles, nullptr, headerContents->file_version);
      if (ret)
-@@ -2954,6 +3010,13 @@
+@@ -2954,6 +3011,13 @@
          cp_error();
      }
 
@@ -133,7 +144,7 @@ diff -aur src/gromacs/fileio/checkpoint.cpp src_colvars/gromacs/fileio/checkpoin
      ret = do_cpt_files(gmx_fio_getxdr(fp), TRUE, outputfiles, nullptr, headerContents.file_version);
 
      if (ret)
-@@ -3063,6 +3126,12 @@
+@@ -3063,6 +3127,12 @@
      }
 
      if (ret == 0)
