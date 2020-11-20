@@ -372,7 +372,12 @@ proc ::cv_dashboard::refresh_values {} {
 # Format colvar values returned by cv for display in table
 proc ::cv_dashboard::format_value val {
   if {[llength $val] == 1} {
-    return [format "%.4g" $val]
+    if [catch { set str [format "%.4g" $val] }] {
+      # values could not be formatted, maybe it is "nan"? Show as is.
+      return $val
+    } else {
+      return $str
+    }
   } else {
     set s "("
     foreach v [lrange $val 0 end-1] {
