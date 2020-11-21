@@ -601,6 +601,9 @@ public:
   class gzpathCV;
   class aspathCV;
   class azpathCV;
+  class euler_phi;
+  class euler_psi;
+  class euler_theta;
 
   // non-scalar components
   class distance_vec;

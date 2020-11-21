@@ -1344,6 +1344,63 @@ public:
 };
 
 
+class colvar::euler_phi
+  : public colvar::orientation
+{
+public:
+  euler_phi(std::string const &conf);
+  euler_phi();
+  virtual int init(std::string const &conf);
+  virtual ~euler_phi() {}
+  virtual void calc_value();
+  virtual void calc_gradients();
+  virtual void apply_force(colvarvalue const &force);
+  virtual cvm::real dist2(colvarvalue const &x1,
+                          colvarvalue const &x2) const;
+  virtual colvarvalue dist2_lgrad(colvarvalue const &x1,
+                                  colvarvalue const &x2) const;
+  virtual colvarvalue dist2_rgrad(colvarvalue const &x1,
+                                  colvarvalue const &x2) const;
+  /// Redefined to handle the 2*PI periodicity
+  virtual void wrap(colvarvalue &x_unwrapped) const;
+};
+
+
+class colvar::euler_psi
+  : public colvar::orientation
+{
+public:
+  euler_psi(std::string const &conf);
+  euler_psi();
+  virtual int init(std::string const &conf);
+  virtual ~euler_psi() {}
+  virtual void calc_value();
+  virtual void calc_gradients();
+  virtual void apply_force(colvarvalue const &force);
+  virtual cvm::real dist2(colvarvalue const &x1,
+                          colvarvalue const &x2) const;
+  virtual colvarvalue dist2_lgrad(colvarvalue const &x1,
+                                  colvarvalue const &x2) const;
+  virtual colvarvalue dist2_rgrad(colvarvalue const &x1,
+                                  colvarvalue const &x2) const;
+  /// Redefined to handle the 2*PI periodicity
+  virtual void wrap(colvarvalue &x_unwrapped) const;
+};
+
+
+class colvar::euler_theta
+  : public colvar::orientation
+{
+public:
+  euler_theta(std::string const &conf);
+  euler_theta();
+  virtual int init(std::string const &conf);
+  virtual ~euler_theta() {}
+  virtual void calc_value();
+  virtual void calc_gradients();
+  virtual void apply_force(colvarvalue const &force);
+};
+
 
 /// \brief Colvar component: root mean square deviation (RMSD) of a
 /// group with respect to a set of reference coordinates; uses \link
