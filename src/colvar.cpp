@@ -770,7 +770,9 @@ template<typename def_class_name> int colvar::init_components_type(std::string c
       if ( (cvcp->function_type != std::string("distance_z")) &&
            (cvcp->function_type != std::string("dihedral")) &&
            (cvcp->function_type != std::string("polar_phi")) &&
-           (cvcp->function_type != std::string("spin_angle")) ) {
+           (cvcp->function_type != std::string("spin_angle")) &&
+           (cvcp->function_type != std::string("euler_phi")) &&
+           (cvcp->function_type != std::string("euler_psi"))) {
         cvm::error("Error: invalid use of period and/or "
                    "wrapAround in a \""+
                    std::string(def_config_key)+
@@ -867,6 +869,9 @@ int colvar::init_components(std::string const &conf)
   error_code |= init_components_type<gzpathCV>(conf, "geometrical path collective variables (z) for other CVs", "gzpathCV");
   error_code |= init_components_type<aspathCV>(conf, "arithmetic path collective variables (s) for other CVs", "aspathCV");
   error_code |= init_components_type<azpathCV>(conf, "arithmetic path collective variables (s) for other CVs", "azpathCV");
+  error_code |= init_components_type<euler_phi>(conf, "euler phi angle of the optimal orientation", "euler_phi");
+  error_code |= init_components_type<euler_psi>(conf, "euler psi angle of the optimal orientation", "euler_psi");
+  error_code |= init_components_type<euler_theta>(conf, "euler theta angle of the optimal orientation", "euler_theta");
 
   error_code |= init_components_type<map_total>(conf, "total value of atomic map", "mapTotal");
 
