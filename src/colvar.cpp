@@ -869,9 +869,9 @@ int colvar::init_components(std::string const &conf)
   error_code |= init_components_type<gzpathCV>(conf, "geometrical path collective variables (z) for other CVs", "gzpathCV");
   error_code |= init_components_type<aspathCV>(conf, "arithmetic path collective variables (s) for other CVs", "aspathCV");
   error_code |= init_components_type<azpathCV>(conf, "arithmetic path collective variables (s) for other CVs", "azpathCV");
-  error_code |= init_components_type<euler_phi>(conf, "euler phi angle of the optimal orientation", "euler_phi");
-  error_code |= init_components_type<euler_psi>(conf, "euler psi angle of the optimal orientation", "euler_psi");
-  error_code |= init_components_type<euler_theta>(conf, "euler theta angle of the optimal orientation", "euler_theta");
+  error_code |= init_components_type<euler_phi>(conf, "euler phi angle of the optimal orientation", "eulerPhi");
+  error_code |= init_components_type<euler_psi>(conf, "euler psi angle of the optimal orientation", "eulerPsi");
+  error_code |= init_components_type<euler_theta>(conf, "euler theta angle of the optimal orientation", "eulerTheta");
 
   error_code |= init_components_type<map_total>(conf, "total value of atomic map", "mapTotal");
 
