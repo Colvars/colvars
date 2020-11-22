@@ -50,7 +50,7 @@ int tcl_colvars(ClientData clientData, Tcl_Interp *interp,
 int tcl_colvars_vmd_init(Tcl_Interp *interp, int molid_input)
 {
   VMDApp *const vmd = colvars_vmd_ptr;
-  int molid = molid_input >= 0 ? molid_input : vmd->molecule_top();
+  int molid = molid_input == (-1 << 16) ? vmd->molecule_top() : molid_input;
   if (vmd->molecule_valid_id(molid)) {
     colvarproxy_vmd_ptr = new colvarproxy_vmd(interp, vmd, molid);
     return (cvm::get_error() == COLVARS_OK) ? TCL_OK : TCL_ERROR;

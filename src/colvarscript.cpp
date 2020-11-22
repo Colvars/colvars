@@ -519,7 +519,7 @@ int tcl_run_colvarscript_command(ClientData /* clientData */,
     if (objc >= 3) {
       // require a molid to create the module
       if (!strcmp(Tcl_GetString(objv[1]), "molid")) {
-        int molid = -1;
+        int molid = -1 << 16; // This value is used to indicate "top"
         if (strcmp(Tcl_GetString(objv[2]), "top")) {
           // If this is not "top", get the integer value
           Tcl_GetIntFromObj(my_interp, objv[2], &molid);
