@@ -496,6 +496,26 @@ int tcl_run_colvarscript_command(ClientData /* clientData */,
 
   if (!colvars) {
 #if defined(VMDTCL)
+
+    if (objc == 2) {
+      if (!strcmp(Tcl_GetString(objv[1]), "molid")) {
+        // return invalid molid
+        Tcl_SetResult(my_interp, (char *) "-1", TCL_STATIC);
+      }
+      if (!strcmp(Tcl_GetString(objv[1]), "delete") ||
+          !strcmp(Tcl_GetString(objv[1]), "reset")) {
+        // nothing to delete or reset
+        Tcl_SetResult(my_interp, NULL, TCL_STATIC);
+      }
+      if (!strcmp(Tcl_GetString(objv[1]), "help")) {
+        // print message
+        Tcl_SetResult(my_interp,
+                      (char *) "First, setup the Colvars module with: "
+                      "cv molid <id>|top", TCL_STATIC);
+      }
+      return TCL_OK;
+    }
+
     if (objc >= 3) {
       // require a molid to create the module
       if (!strcmp(Tcl_GetString(objv[1]), "molid")) {
@@ -506,13 +526,14 @@ int tcl_run_colvarscript_command(ClientData /* clientData */,
         }
         return tcl_colvars_vmd_init(my_interp, molid);
       } else {
-        // TODO allow calling cv help after this
-        Tcl_SetResult(my_interp, (char *) "Syntax error.", TCL_STATIC);
+        Tcl_SetResult(my_interp, (char *) "Syntax error.  First, setup the Colvars module with cv molid <id>|top", TCL_STATIC);
         return TCL_ERROR;
       }
     }
+
     Tcl_SetResult(my_interp, (char *) "First, setup the Colvars module with: "
-                  "cv molid <molecule id>", TCL_STATIC);
+                  "cv molid <id>|top", TCL_STATIC);
+
 #else
     Tcl_SetResult(my_interp,
                   const_cast<char *>("Error: Colvars module not yet initialized"),
