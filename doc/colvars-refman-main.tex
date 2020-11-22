@@ -2232,6 +2232,104 @@ The values of \texttt{tilt} are real numbers in the interval $[-1:1]$: the value
 \end{cvcoptions}
 
 
+\cvsubsubsec{\texttt{eulerPhi}: rotation angle along the X-axis from 
+references coordinates.}{sec:cvc_eulerPhi}
+\labelkey{colvar|eulerPhi}
+
+The complete rotation described by \texttt{orientation} can optionally be 
+decomposed into three sub-rotations: (i) $\phi$, the rotation angle from the 
+old X-axis to the new X-axis, (ii) $\theta$, the rotation angle from the old 
+Y-axis to the new Y-axis and (iii) $\psi$, the rotation angle from the old 
+Z-axis to the new Z-axis. This component accepts exactly the same options as 
+\texttt{orientation}, and measures the rotation angle from the old X-axis to 
+the new X-axis. This angle is expressed in degrees within the periodic range 
+$[-180^{\circ}:180^{\circ}]$.
+
+\begin{cvcoptions}
+\item %
+\dupkey{atoms}{\texttt{eulerPhi}}{colvar|rmsd|atoms}{\texttt{rmsd} 
+component}
+\item %
+\dupkey{refPositions}{\texttt{eulerPhi}}{colvar|rmsd|refPositions}{\texttt{rmsd}
+component}
+\item %
+\dupkey{refPositionsFile}{\texttt{eulerPhi}}{colvar|rmsd|refPositionsFile}{\texttt{rmsd}
+component}
+\cvnamebasedonly{
+\item %
+
+\dupkey{refPositionsCol}{\texttt{eulerPhi}}{colvar|rmsd|refPositionsCol}{\texttt{rmsd}
+component}
+\item %
+	
+\dupkey{refPositionsColValue}{\texttt{eulerPhi}}{colvar|rmsd|refPositionsColValue}{\texttt{rmsd}
+ component}
+}
+\end{cvcoptions}
+
+
+\cvsubsubsec{\texttt{eulerTheta}: rotation angle along the Y-axis from 
+references coordinates.}{sec:cvc_eulerTheta}
+\labelkey{colvar|eulerTheta}
+
+This component accepts exactly the same options as \texttt{orientation}, and 
+measures the rotation angle from the old Y-axis to the new Y-axis. This angle 
+is expressed in degrees within the range $[-90^{\circ}:90^{\circ}]$.
+
+\begin{cvcoptions}
+\item %
+\dupkey{atoms}{\texttt{eulerTheta}}{colvar|rmsd|atoms}{\texttt{rmsd} 
+	component}
+\item %
+\dupkey{refPositions}{\texttt{eulerTheta}}{colvar|rmsd|refPositions}{\texttt{rmsd}
+	component}
+\item %
+\dupkey{refPositionsFile}{\texttt{eulerTheta}}{colvar|rmsd|refPositionsFile}{\texttt{rmsd}
+	component}
+\cvnamebasedonly{
+\item %
+
+\dupkey{refPositionsCol}{\texttt{eulerTheta}}{colvar|rmsd|refPositionsCol}{\texttt{rmsd}
+	component}
+\item %
+
+\dupkey{refPositionsColValue}{\texttt{eulerTheta}}{colvar|rmsd|refPositionsColValue}{\texttt{rmsd}
+	component}
+}
+\end{cvcoptions}
+
+
+\cvsubsubsec{\texttt{eulerPsi}: rotation angle along the Y-axis from 
+references coordinates.}{sec:cvc_eulerPsi}
+\labelkey{colvar|eulerPsi}
+
+This component accepts exactly the same options as \texttt{orientation}, and 
+measures the rotation angle from the old Z-axis to the new Z-axis. This angle 
+is expressed in degrees within the periodic range $[-180^{\circ}:180^{\circ}]$.
+
+\begin{cvcoptions}
+\item %
+\dupkey{atoms}{\texttt{eulerPsi}}{colvar|rmsd|atoms}{\texttt{rmsd} 
+	component}
+\item %
+\dupkey{refPositions}{\texttt{eulerPsi}}{colvar|rmsd|refPositions}{\texttt{rmsd}
+	component}
+\item %
+\dupkey{refPositionsFile}{\texttt{eulerPsi}}{colvar|rmsd|refPositionsFile}{\texttt{rmsd}
+	component}
+\cvnamebasedonly{
+\item %
+
+\dupkey{refPositionsCol}{\texttt{eulerPsi}}{colvar|rmsd|refPositionsCol}{\texttt{rmsd}
+	component}
+\item %
+
+\dupkey{refPositionsColValue}{\texttt{eulerPsi}}{colvar|rmsd|refPositionsColValue}{\texttt{rmsd}
+	component}
+}
+\end{cvcoptions}
+
+
 \cvnamebasedonly{
 
 \cvsubsec{Protein structure descriptors}{sec:cvc_protein}
