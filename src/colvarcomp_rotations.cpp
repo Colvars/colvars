@@ -750,3 +750,27 @@ void colvar::euler_theta::apply_force(colvarvalue const &force)
     atoms->apply_colvar_force(fw);
   }
 }
+
+
+cvm::real colvar::euler_theta::dist2(colvarvalue const &x1,
+                                     colvarvalue const &x2) const
+{
+  // theta angle is not periodic
+  return cvc::dist2(x1, x2);
+}
+
+
+colvarvalue colvar::euler_theta::dist2_lgrad(colvarvalue const &x1,
+                                             colvarvalue const &x2) const
+{
+  // theta angle is not periodic
+  return cvc::dist2_lgrad(x1, x2);
+}
+
+
+colvarvalue colvar::euler_theta::dist2_rgrad(colvarvalue const &x1,
+                                             colvarvalue const &x2) const
+{
+  // theta angle is not periodic
+  return cvc::dist2_rgrad(x1, x2);
+}
