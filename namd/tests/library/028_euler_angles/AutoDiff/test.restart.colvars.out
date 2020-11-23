@@ -1,0 +1,287 @@
+colvars: ----------------------------------------------------------------------
+colvars: Please cite Fiorin et al, Mol Phys 2013:
+colvars:  https://dx.doi.org/10.1080/00268976.2013.813594
+colvars: in any publication based on this calculation.
+colvars: SMP parallelism is enabled; if needed, use "smp off" to override this.
+colvars: This version was built with the C++11 standard or higher.
+colvars: ----------------------------------------------------------------------
+colvars: Reading new configuration from file "colvars.in":
+colvars: # units = "" [default]
+colvars: # indexFile = "colvars.ndx"
+colvars: The following index groups are currently defined:
+colvars:   BFEE_Protein (454 atoms)
+colvars:   BFEE_Ligand (75 atoms)
+colvars: # smp = on [default]
+colvars: # colvarsTrajFrequency = 1
+colvars: # colvarsRestartFrequency = 5000 [default]
+colvars: # scriptedColvarForces = off [default]
+colvars: # scriptingAfterBiases = off [default]
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = "eulerTheta"
+colvars:   Initializing a new "eulerTheta" component.
+colvars:     # name = "" [default]
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = on
+colvars:       # rotateReference = on
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "BFEE_Ligand"
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       Within atom group "atoms":
+colvars:       Initializing atom group "fittingGroup".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "BFEE_Protein"
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "fittingGroup" defined with 454 atoms requested: total mass = 5981.67, total charge = -65.88.
+colvars:       # refPositions =  [default]
+colvars:       # refPositionsFile = "reference.xyz"
+colvars:       # refPositionsCol = "" [default]
+colvars:       Warning: beginning from 2019-11-26 the XYZ file reader assumes Angstrom units.
+colvars:       Warning: atom group "atoms" will be aligned to a fixed orientation given by the reference positions provided.  If the internal structure of the group changes too much (i.e. its RMSD is comparable to its radius of gyration), the optimal rotation and its gradients may become discontinuous.  If that happens, use fittingGroup (or a different definition for it if already defined) to align the coordinates.
+colvars:       # enableFitGradients = on
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 75 atoms requested: total mass = 980.605, total charge = -9.21.
+colvars:     # refPositions =  [default]
+colvars:     # refPositionsFile = "reference.xyz"
+colvars:     # refPositionsCol = "" [default]
+colvars:     Centering the reference coordinates: it is assumed that each atom is the closest periodic image to the center of geometry.
+colvars:     # closestToQuaternion = ( 1 , 0 , 0 , 0 ) [default]
+colvars:   All components initialized.
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # width = 1 [default]
+colvars:   # lowerBoundary = 0 [default]
+colvars:   # upperBoundary = 0 [default]
+colvars:   # hardLowerBoundary = off [default]
+colvars:   # hardUpperBoundary = off [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = off [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputTotalForce = off [default]
+colvars:   # outputAppliedForce = off [default]
+colvars:   # subtractAppliedForce = off [default]
+colvars:   # runAve = off [default]
+colvars:   # corrFunc = off [default]
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = "eulerPhi"
+colvars:   Initializing a new "eulerPhi" component.
+colvars:     # name = "" [default]
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 360 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = on
+colvars:       # rotateReference = on
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "BFEE_Ligand"
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       Within atom group "atoms":
+colvars:       Initializing atom group "fittingGroup".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "BFEE_Protein"
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "fittingGroup" defined with 454 atoms requested: total mass = 5981.67, total charge = -65.88.
+colvars:       # refPositions =  [default]
+colvars:       # refPositionsFile = "reference.xyz"
+colvars:       # refPositionsCol = "" [default]
+colvars:       Warning: atom group "atoms" will be aligned to a fixed orientation given by the reference positions provided.  If the internal structure of the group changes too much (i.e. its RMSD is comparable to its radius of gyration), the optimal rotation and its gradients may become discontinuous.  If that happens, use fittingGroup (or a different definition for it if already defined) to align the coordinates.
+colvars:       # enableFitGradients = on
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 75 atoms requested: total mass = 980.605, total charge = -9.21.
+colvars:     # refPositions =  [default]
+colvars:     # refPositionsFile = "reference.xyz"
+colvars:     # refPositionsCol = "" [default]
+colvars:     Centering the reference coordinates: it is assumed that each atom is the closest periodic image to the center of geometry.
+colvars:     # closestToQuaternion = ( 1 , 0 , 0 , 0 ) [default]
+colvars:   All components initialized.
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # width = 1 [default]
+colvars:   # lowerBoundary = 0 [default]
+colvars:   # upperBoundary = 0 [default]
+colvars:   # hardLowerBoundary = off [default]
+colvars:   # hardUpperBoundary = off [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = off [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputTotalForce = off [default]
+colvars:   # outputAppliedForce = off [default]
+colvars:   # subtractAppliedForce = off [default]
+colvars:   # runAve = off [default]
+colvars:   # corrFunc = off [default]
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = "eulerPsi"
+colvars:   Initializing a new "eulerPsi" component.
+colvars:     # name = "" [default]
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 360 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerReference = on
+colvars:       # rotateReference = on
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "BFEE_Ligand"
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       Within atom group "atoms":
+colvars:       Initializing atom group "fittingGroup".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "BFEE_Protein"
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "fittingGroup" defined with 454 atoms requested: total mass = 5981.67, total charge = -65.88.
+colvars:       # refPositions =  [default]
+colvars:       # refPositionsFile = "reference.xyz"
+colvars:       # refPositionsCol = "" [default]
+colvars:       Warning: atom group "atoms" will be aligned to a fixed orientation given by the reference positions provided.  If the internal structure of the group changes too much (i.e. its RMSD is comparable to its radius of gyration), the optimal rotation and its gradients may become discontinuous.  If that happens, use fittingGroup (or a different definition for it if already defined) to align the coordinates.
+colvars:       # enableFitGradients = on
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 75 atoms requested: total mass = 980.605, total charge = -9.21.
+colvars:     # refPositions =  [default]
+colvars:     # refPositionsFile = "reference.xyz"
+colvars:     # refPositionsCol = "" [default]
+colvars:     Centering the reference coordinates: it is assumed that each atom is the closest periodic image to the center of geometry.
+colvars:     # closestToQuaternion = ( 1 , 0 , 0 , 0 ) [default]
+colvars:   All components initialized.
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # width = 1 [default]
+colvars:   # lowerBoundary = 0 [default]
+colvars:   # upperBoundary = 0 [default]
+colvars:   # hardLowerBoundary = off [default]
+colvars:   # hardUpperBoundary = off [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = off [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputTotalForce = off [default]
+colvars:   # outputAppliedForce = off [default]
+colvars:   # subtractAppliedForce = off [default]
+colvars:   # runAve = off [default]
+colvars:   # corrFunc = off [default]
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables initialized, 3 in total.
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new "harmonic" instance.
+colvars:   # name = "harmonic1" [default]
+colvars:   # colvars = { eulerPsi }
+colvars:   # stepZeroData = off [default]
+colvars:   # outputEnergy = on
+colvars:   # outputFreq = 5000 [default]
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # writeTISamples = off [default]
+colvars:   # writeTIPMF = off [default]
+colvars:   # centers = { 0 }
+colvars:   # targetCenters = { 0 } [default]
+colvars:   # outputCenters = off [default]
+colvars:   # forceConstant = 0.1
+colvars:   # targetForceConstant = -1 [default]
+colvars:   The force constant for colvar "eulerPsi" will be rescaled to 0.1 according to the specified width (1).
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new "harmonic" instance.
+colvars:   # name = "harmonic2" [default]
+colvars:   # colvars = { eulerPhi }
+colvars:   # stepZeroData = off [default]
+colvars:   # outputEnergy = on
+colvars:   # outputFreq = 5000 [default]
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # writeTISamples = off [default]
+colvars:   # writeTIPMF = off [default]
+colvars:   # centers = { 0 }
+colvars:   # targetCenters = { 0 } [default]
+colvars:   # outputCenters = off [default]
+colvars:   # forceConstant = 0.1
+colvars:   # targetForceConstant = -1 [default]
+colvars:   The force constant for colvar "eulerPhi" will be rescaled to 0.1 according to the specified width (1).
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new "harmonic" instance.
+colvars:   # name = "harmonic3" [default]
+colvars:   # colvars = { eulerTheta }
+colvars:   # stepZeroData = off [default]
+colvars:   # outputEnergy = on
+colvars:   # outputFreq = 5000 [default]
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # writeTISamples = off [default]
+colvars:   # writeTIPMF = off [default]
+colvars:   # centers = { 0 }
+colvars:   # targetCenters = { 0 } [default]
+colvars:   # outputCenters = off [default]
+colvars:   # forceConstant = 0.1
+colvars:   # targetForceConstant = -1 [default]
+colvars:   The force constant for colvar "eulerTheta" will be rescaled to 0.1 according to the specified width (1).
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables biases initialized, 3 in total.
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables module (re)initialized.
+colvars: ----------------------------------------------------------------------
+colvars: Updating NAMD interface:
+colvars: updating atomic data (529 atoms).
+colvars: updating group data (0 scalable groups, 0 atoms in total).
+colvars: updating grid object data (0 grid objects in total).
+colvars: Re-initialized atom group for variable "eulerTheta":0/0. 75 atoms: total mass = 980.605, total charge = -9.21.
+colvars: Re-initialized atom group for variable "eulerPhi":0/0. 75 atoms: total mass = 980.605, total charge = -9.21.
+colvars: Re-initialized atom group for variable "eulerPsi":0/0. 75 atoms: total mass = 980.605, total charge = -9.21.
+colvars: ----------------------------------------------------------------------
+colvars: Loading state from file "test.colvars.state".
+colvars:   Restarting collective variable "eulerTheta" from value: -0.00880916
+colvars:   Restarting collective variable "eulerPhi" from value: -0.00809521
+colvars:   Restarting collective variable "eulerPsi" from value: -0.0204025
+colvars:   Restarting harmonic bias "harmonic1" from step number 20.
+colvars:   Restarting harmonic bias "harmonic2" from step number 20.
+colvars:   Restarting harmonic bias "harmonic3" from step number 20.
+colvars: ----------------------------------------------------------------------
+colvars: The restart output state file will be "test.restart.restart.colvars.state".
+colvars: The final output state file will be "test.restart.colvars.state".
+colvars: Opening trajectory file "test.restart.colvars.traj".
+colvars: Redefining the Tcl "cv" command to the new script interface.
+colvars: Updating NAMD interface:
+colvars: updating atomic data (529 atoms).
+colvars: updating group data (0 scalable groups, 0 atoms in total).
+colvars: updating grid object data (0 grid objects in total).
+colvars: Re-initialized atom group for variable "eulerTheta":0/0. 75 atoms: total mass = 980.605, total charge = -9.21.
+colvars: Re-initialized atom group for variable "eulerPhi":0/0. 75 atoms: total mass = 980.605, total charge = -9.21.
+colvars: Re-initialized atom group for variable "eulerPsi":0/0. 75 atoms: total mass = 980.605, total charge = -9.21.
+colvars: The restart output state file will be "test.restart.restart.colvars.state".
+colvars: The final output state file will be "test.restart.colvars.state".
+colvars: Saving collective variables state to "test.restart.colvars.state".
