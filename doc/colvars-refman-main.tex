@@ -2236,13 +2236,17 @@ The values of \texttt{tilt} are real numbers in the interval $[-1:1]$: the value
 references coordinates.}{sec:cvc_eulerPhi}
 \labelkey{colvar|eulerPhi}
 
-The complete rotation described by \texttt{orientation} can optionally be 
-decomposed into three sub-rotations: (i) $\phi$, the rotation angle from the 
-old X-axis to the new X-axis, (ii) $\theta$, the rotation angle from the old 
-Y-axis to the new Y-axis and (iii) $\psi$, the rotation angle from the old 
-Z-axis to the new Z-axis. This component accepts exactly the same options as 
-\texttt{orientation}, and measures the rotation angle from the old X-axis to 
-the new X-axis. This angle is expressed in degrees within the periodic range 
+Assuming the axes of the original frame are denoted as \textit{x, y, z} and the 
+axes of the rotated frame as \textit{X, Y, Z}, the line of nodes, \textit{N}, 
+can be defined as the intersection of the plane \textit{xy} and \textit{XY}. In 
+this case, the complete rotation described by \texttt{orientation} can 
+optionally be decomposed into three sub-rotations: (i) $\phi$, the rotation 
+angle from the \textit{x} axis to the \textit{N} axis, (ii) $\theta$, the 
+rotation angle from the \textit{z} axis to the \textit{Z} axis and (iii) 
+$\psi$, the rotation angle from the \textit{N} axis to the \textit{X} axis. 
+This component accepts exactly the same options as \texttt{orientation}, and 
+measures the rotation angle from \textit{x} axis to the \textit{N} axis. This 
+angle is expressed in degrees within the periodic range 
 $[-180^{\circ}:180^{\circ}]$.
 
 \begin{cvcoptions}
@@ -2273,8 +2277,13 @@ references coordinates.}{sec:cvc_eulerTheta}
 \labelkey{colvar|eulerTheta}
 
 This component accepts exactly the same options as \texttt{orientation}, and 
-measures the rotation angle from the old Y-axis to the new Y-axis. This angle 
-is expressed in degrees within the range $[-90^{\circ}:90^{\circ}]$.
+measures the rotation angle from the \textit{z} axis to the \textit{Z} axis. 
+This angle is expressed in degrees within the range $[-90^{\circ}:90^{\circ}]$.
+
+\textbf{Warning:} When this angle reaches $-90^{\circ}$ or $90^{\circ}$, the 
+definition of orientation by euler angles suffers from the gimbal lock issue. 
+You may need to apply a restraint to keep \texttt{eulerTheta} away from the 
+singularities.
 
 \begin{cvcoptions}
 \item %
@@ -2304,8 +2313,9 @@ references coordinates.}{sec:cvc_eulerPsi}
 \labelkey{colvar|eulerPsi}
 
 This component accepts exactly the same options as \texttt{orientation}, and 
-measures the rotation angle from the old Z-axis to the new Z-axis. This angle 
-is expressed in degrees within the periodic range $[-180^{\circ}:180^{\circ}]$.
+measures the rotation angle from the \textit{N} axis to the \textit{X} axis. 
+This angle is expressed in degrees within the periodic range 
+$[-180^{\circ}:180^{\circ}]$.
 
 \begin{cvcoptions}
 \item %
