@@ -25,7 +25,7 @@ public:
   //Box
   const real (*gmx_box)[3];
   //
-  const t_mdatoms *gmx_atoms;
+  t_atoms gmx_atoms;
 protected:
   cvm::real thermostat_temperature;
   cvm::real timestep;
@@ -74,7 +74,7 @@ public:
   ~colvarproxy_gromacs();
 
   // Initialize colvars.
-  void init(t_inputrec *gmx_inp, int64_t step, t_mdatoms *mdatoms, ObservablesHistory* oh,
+  void init(t_inputrec *gmx_inp, int64_t step, gmx_mtop_t *mtop, ObservablesHistory* oh,
             const std::string &prefix, gmx::ArrayRef<const std::string> filenames_config,
             const std::string &filename_restart, const t_commrec *cr,
             const rvec x[]);
@@ -86,7 +86,7 @@ public:
   //Home made method for computed colvars forces.
   //The pattern match the one of the IForceProvider method but we cant use it because the latter use const references which is in conflict
   //with the function `communicate_group_positions` (solved in 2020.X)
-  void calculateForces(t_commrec *cr,t_mdatoms *mdatoms, matrix box, double t, rvec *x_pointer , gmx::ForceWithVirial  *forceWithVirial);
+  void calculateForces(t_commrec *cr, matrix box, rvec *x_pointer , gmx::ForceWithVirial  *forceWithVirial);
 
   // Compute virial tensor for position r and force f, and add to matrix vir
   void add_virial_term(matrix vir, rvec const f, gmx::RVec const r);
