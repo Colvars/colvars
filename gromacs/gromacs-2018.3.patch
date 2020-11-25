@@ -266,7 +266,7 @@ diff -aur src/gromacs/mdlib/sim_util.cpp src_colvars/gromacs/mdlib/sim_util.cpp
 +        set_pbc(&pbc, inputrec->ePBC, box);
 +        inputrec->colvars_proxy->update_data(cr, step, pbc, box, bNS);
 +
-+        inputrec->colvars_proxy->calculateForces(cr, mdatoms, box, t, x, forceWithVirial);
++        inputrec->colvars_proxy->calculateForces(cr, box, x, forceWithVirial);
 +    }
 +
      if (inputrec->bPull && pull_have_potential(inputrec->pull_work))
@@ -396,7 +396,7 @@ diff -aur src/programs/mdrun/md.cpp src_colvars/programs/mdrun/md.cpp
 +        }
 +
 +        ir->colvars_proxy =  new colvarproxy_gromacs();
-+        ir->colvars_proxy->init(ir,ir->init_step,mdatoms, observablesHistory, prefix, filenames,filename_restart, cr, MASTER(cr) ? as_rvec_array(state->x.data()) : nullptr);
++        ir->colvars_proxy->init(ir,ir->init_step,top_global, observablesHistory, prefix, filenames,filename_restart, cr, MASTER(cr) ? as_rvec_array(state->x.data()) : nullptr);
 +    }
 +    else
 +    {

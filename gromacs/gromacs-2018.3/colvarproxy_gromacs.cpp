@@ -34,7 +34,7 @@
 colvarproxy_gromacs::colvarproxy_gromacs() : colvarproxy() {}
 
 // Colvars Initialization
-void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,t_mdatoms *mdatoms,
+void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
                                ObservablesHistory* oh,
                                const std::string &prefix,
                                gmx::ArrayRef<const std::string> filenames_config,
@@ -96,7 +96,7 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,t_mdatoms *mdatoms,
   // GROMACS timestep
   timestep = ir->delta_t;
   // Retrieve the topology of all atoms
-  gmx_atoms = mdatoms;
+  gmx_atoms = gmx_mtop_global_atoms(mtop);
 
   // Read configuration file and set up the proxy only on the master node.
   if (MASTER(cr))
@@ -431,9 +431,7 @@ void colvarproxy_gromacs::update_data(const t_commrec *cr, int64_t const step, t
 
 
 void colvarproxy_gromacs::calculateForces( t_commrec           *cr,
-                                           t_mdatoms           *mdatoms,
                                            matrix               box,
-                                           double               t,
                                            rvec                 *x_pointer,
                                            gmx::ForceWithVirial *forceWithVirial)
 {
@@ -550,7 +548,7 @@ int colvarproxy_gromacs::check_atom_id(int atom_number)
     log("Adding atom "+cvm::to_str(atom_number)+
         " for collective variables calculation.\n");
 
-  if ( (aid < 0) || (aid >= gmx_atoms->nr) ) {
+  if ( (aid < 0) || (aid >= gmx_atoms.nr) ) {
     cvm::error("Error: invalid atom number specified, "+
                cvm::to_str(atom_number)+"\n", INPUT_ERROR);
     return INPUT_ERROR;
@@ -588,7 +586,7 @@ void colvarproxy_gromacs::update_atom_properties(int index)
 {
 
   // update mass
-  double const mass = gmx_atoms->massT[atoms_ids[index]];
+  double const mass = gmx_atoms.atom[atoms_ids[index]].m;
   if (mass <= 0.001) {
     this->log("Warning: near-zero mass for atom "+
               cvm::to_str(atoms_ids[index]+1)+
@@ -596,5 +594,5 @@ void colvarproxy_gromacs::update_atom_properties(int index)
   }
   atoms_masses[index] = mass;
   // update charge
-  atoms_charges[index] = gmx_atoms->chargeA[atoms_ids[index]];
+  atoms_charges[index] = gmx_atoms.atom[atoms_ids[index]].q;
 }
