@@ -2232,18 +2232,28 @@ The values of \texttt{tilt} are real numbers in the interval $[-1:1]$: the value
 \end{cvcoptions}
 
 
-\cvsubsubsec{\texttt{eulerPhi}: Row angle from 
+\cvsubsubsec{\texttt{eulerPhi}: Roll angle from 
 references coordinates.}{sec:cvc_eulerPhi}
 \labelkey{colvar|eulerPhi}
 
 Assuming the axes of the original frame are denoted as \textit{x, y, z} and the 
 axes of the rotated frame as \textit{X, Y, Z}, the line of nodes, \textit{N}, 
 can be defined as the intersection of the plane \textit{xy} and \textit{XY}. In 
-this case, the complete rotation described by \texttt{orientation} can 
-optionally be decomposed into three Euler angles: (i) $\phi$, the rotation 
-angle from the \textit{x} axis to the \textit{N} axis, (ii) $\theta$, the 
-rotation angle from the \textit{z} axis to the \textit{Z} axis and (iii) 
-$\psi$, the rotation angle from the \textit{N} axis to the \textit{X} axis.
+this case, as illustrated in Figure \ref{fig:eulerangles}, the complete 
+rotation described by \texttt{orientation} can optionally be decomposed into 
+three Euler angles: (i) $\phi$, the rotation angle from the \textit{x} axis to 
+the \textit{N} axis, (ii) $\theta$, the rotation angle from the \textit{z} axis 
+to the \textit{Z} axis and (iii) $\psi$, the rotation angle from the \textit{N} 
+axis to the \textit{X} axis.
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.5\textwidth]{eulerangles}
+\end{center}
+\caption{\label{fig:eulerangles}Schematic representation of the euler angles. 
+The roll, pitch and yaw angles are shown as $\phi$, $\theta$ and $\psi$, 
+respectively.}
+\end{figure}
+
 Although the use of Euler angles to characterize three-dimensional spatial 
 rotation is more straightforward than Quaternions, one should pay attention to 
 the possible gimbal lock problem in practice. A typical application of Euler 
