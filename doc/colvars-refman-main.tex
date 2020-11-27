@@ -2054,6 +2054,32 @@ define the atom group, and returns a positive number, expressed in
 
 \cvsubsec{Rotations}{sec:cvc_rotations}
 
+The variables discussed in this section quantify the rotations of macromolecules (or other quasi-rigid objects) from a given set reference coordinates to the current coordinates.
+Such rotations are computed following the same method used for best-fit RMSDs (see \refkey{rmsd}{colvar|rmsd} and \refkey{fittinGroup}{atom-group|fittinGroup}).
+The underlying mathematical formalism is described in reference~\cite{Coutsias2004}, and the implementation in reference~\cite{Fiorin2013}.
+
+The first of the functions described is the \refkey{orientation}{colvar|orientation}, which describes the full rotation as a unit quaternion $\mathsf{q} = (q_0, q_1, q_2, q_3)$, i.e.{} 4 numbers with one constraint (3 degrees of freedom).
+The quaternion $\mathsf{q}$ is \emph{one of only two representations that are both complete and accurate}, the other being a $3\times{}3$ unit matrix with 3 independent parameters.
+Although $\mathsf{q}$ is used internally in the Colvars module for features such as the \refkey{rmsd}{colvar|rmsd} function and the \refkey{fittinGroup}{atom-group|fittinGroup} option, its direct use as a collective variable is more difficult, and mostly limited to fixed or moving restraints.
+
+The two functions \refkey{orientationAngle}{colvar|orientationAngle} and \refkey{orientationProj}{colvar|orientationProj}, with the latter being the cosine of the former, represent the amplitude of the full rotation described by $\mathsf{q}$, regardless of the direction of its axis.
+As one-dimensional scalar variables, both \refkey{orientationAngle}{colvar|orientationAngle} and \refkey{orientationProj}{colvar|orientationProj} are a much reduced simplification of the full rotation.
+However, they can be used in a variety of methods including both restraints and PMF computations.
+
+% TODO Adjust when the range of values of eulerTheta is defined
+A slightly more complete parametrization decomposition into the two parameters, \refkey{tilt}{colvar|tilt} and \refkey{spinAngle}{colvar|spinAngle}.
+These quantify the amplitudes of two independent sub-rotations away from a certain axis $\mathbf{e}$, and around the same axis $\mathbf{e}$, respectively.
+The axis $\mathbf{e}$ is chosen by the user, and is by default the Z axis:
+under that choice, \refkey{tilt}{colvar|tilt} is equivalent to the sine of the Euler ``pitch'' angle $\theta$, and \refkey{spinAngle}{colvar|spinAngle} to the sum of the other two angles, $(\phi + \psi)$.
+This parameterization is mathematically well defined for almost all rotations, including very small ones, such as those arising when the current coordinates are almost completely aligned with the reference ones.
+However, the presence of a mathematical singularity at $\theta = 90^\circ$ prevents using the \refkey{spinAngle}{colvar|spinAngle} function near those configurations.
+For these reasons, \refkey{tilt}{colvar|tilt} and \refkey{spinAngle}{colvar|spinAngle} are useful to characterize \emph{small rotations} via a reduced number of degrees of freedom (two instead of three).
+
+Lastly, the traditional Euler angles are also available as the functions \refkey{eulerPhi}{colvar|eulerPhi}, \refkey{eulerTheta}{colvar|eulerTheta} and \refkey{eulerPsi}{colvar|eulerPsi}.
+Altogether, these are sufficient to represent all three degrees of freedom of a full rotation.
+However, they also suffer from the potential ``gimbal lock'' problem, which emerges whenever $\theta \simeq \pm 90^\circ$, which includes also the case where the full rotation is small.
+Under such conditions, the angles $\phi$ and $\psi$ are both ill-defined and cannot be used as collective variables.
+For these reasons, it is highly recommmended that Euler angles are used only in simulations where their range of applicability is \emph{known ahead of time}, and excludes configurations where  $\theta \simeq \pm 90^\circ$ altogether.
 
 \cvsubsubsec{\texttt{orientation}: orientation from reference coordinates.}{sec:cvc_orientation}
 \labelkey{colvar|orientation}
@@ -2072,7 +2098,7 @@ can also be written as $\left(\cos(\theta/2), \,
 $\mathbf{u}$ the normalized axis of rotation; for example, a rotation
 of 90$^{\circ}$ around the $z$ axis is expressed as
 ``\texttt{(0.707, 0.0, 0.0, 0.707)}''.  The script
-\texttt{quaternion2rmatrix.tcl} provides Tcl functions for converting
+\href{https://raw.githubusercontent.com/Colvars/colvars/master/colvartools/quaternion2rmatrix.tcl}{\texttt{quaternion2rmatrix.tcl}} provides Tcl functions for converting
 to and from a $4\times{}4$ rotation matrix in a format suitable for
 usage in VMD.
 
