@@ -2074,7 +2074,10 @@ under that choice, \refkey{tilt}{colvar|tilt} is equivalent to the sine of the E
 This parameterization is mathematically well defined for almost all rotations, including small ones when the current coordinates are almost completely aligned with the reference ones.
 However, the presence of a mathematical singularity at $\theta = 90^\circ$ prevents using the \refkey{spinAngle}{colvar|spinAngle} function near those configurations.
 For these reasons, \refkey{tilt}{colvar|tilt} and \refkey{spinAngle}{colvar|spinAngle} are useful when the possible rotations are known to have approximately the same axis.
-In this use case, \refkey{spinAngle}{colvar|spinAngle} measures the angle of rotation around the chosen axis $\mathbf{e}$, whereas \refkey{tilt}{colvar|tilt} measures the dot product between $\matbhf{e}$ and the actual axis of the full rotation.
+In this use case, \refkey{spinAngle}{colvar|spinAngle} measures the angle of 
+rotation around the chosen axis $\mathbf{e}$, whereas 
+\refkey{tilt}{colvar|tilt} measures the dot product between $\mathbf{e}$ and 
+the actual axis of the full rotation.
 
 Lastly, the traditional Euler angles are also available as the functions \refkey{eulerPhi}{colvar|eulerPhi}, \refkey{eulerTheta}{colvar|eulerTheta} and \refkey{eulerPsi}{colvar|eulerPsi}.
 Altogether, these are sufficient to represent all three degrees of freedom of a full rotation.
@@ -2265,13 +2268,15 @@ references coordinates.}{sec:cvc_eulerPhi}
 
 Assuming the axes of the original frame are denoted as \textit{x, y, z} and the 
 axes of the rotated frame as \textit{X, Y, Z}, the line of nodes, \textit{N}, 
-can be defined as the intersection of the plane \textit{xy} and \textit{XY}. In 
-this case, as illustrated in the figure below, the complete 
+can be defined as the intersection of the plane \textit{xy} and \textit{XY}. 
+The axis perpendicular to \textit{N} and \textit{z} is defined as \textit{P}. 
+In this case, as illustrated in the figure below, the complete 
 rotation described by \texttt{orientation} can optionally be decomposed into 
 three Euler angles:
 \begin{itemize}
 \item[\emph{(i)}] the ``roll'' angle $\phi$, i.e.{} the rotation angle from the \textit{x} axis to the \textit{N} axis;
-\item[\emph{(ii)}] the ``pitch'' angle $\theta$, i.e.{} the rotation angle from the \textit{z} axis to the \textit{Z} axis, and
+\item[\emph{(ii)}] the ``pitch'' angle $\theta$, i.e.{} the rotation angle from 
+the \textit{P} axis to the \textit{Z} axis, and
 \item[\emph{(iii)}] the ``yaw'' angle $\psi$, i.e.{} the rotation angle from the \textit{N} axis to the \textit{X} axis.
 \end{itemize}
 
@@ -2282,7 +2287,6 @@ three Euler angles:
 \includegraphics[width=0.5\textwidth]{eulerangles.pdf}
 \fi
 \end{center}
-\noindent{}\rightline{\emph{(adapted from the \href{https://en.wikipedia.org/wiki/Euler\_angles}{Euler angles Wikipedia page} under the \href{https://creativecommons.org/licenses/by/3.0}{CC BY 3.0} license)}}
 
 Although Euler angles are more straightforward to use than quaternions, they are also potentially subject to the ``gimbal lock'' problem:\\
 \url{https://en.wikipedia.org/wiki/Gimbal_lock}\\
@@ -2322,7 +2326,7 @@ references coordinates.}{sec:cvc_eulerTheta}
 \labelkey{colvar|eulerTheta}
 
 This component accepts exactly the same options as \texttt{orientation}, and 
-measures the rotation angle from the \textit{z} axis to the \textit{Z} axis. 
+measures the rotation angle from the \textit{P} axis to the \textit{Z} axis. 
 This angle is expressed in degrees within the range $[-90^{\circ}:90^{\circ}]$.
 
 \textbf{Warning:} When this angle reaches $-90^{\circ}$ or $90^{\circ}$, the 
