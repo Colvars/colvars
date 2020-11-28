@@ -1,21 +1,21 @@
 configuration {
   step           40
-  dt 2.000000e+00
+  dt 1.000000e+00
 }
 
 colvar {
   name eulerTheta
-  x -5.79486101479237e-02
+  x  4.92888911241022e-01
 }
 
 colvar {
   name eulerPhi
-  x -8.88146282109568e-03
+  x -1.02434969074251e+01
 }
 
 colvar {
   name eulerPsi
-  x -4.61749095421766e-02
+  x -5.16556439137704e+00
 }
 
 restraint {
