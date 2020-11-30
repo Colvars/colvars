@@ -1,0 +1,32 @@
+colvar {
+    name eulerTheta
+    outputAppliedForce on
+    eulerTheta {
+        atoms {
+            indexGroup RMSD_atoms
+        }
+        refPositionsFile rmsd_atoms_refpos.xyz
+    }
+}
+
+colvar {
+    name eulerPhi
+    outputAppliedForce on
+    eulerPhi {
+        atoms {
+            indexGroup RMSD_atoms
+        }
+        refPositionsFile rmsd_atoms_refpos.xyz
+    }
+}
+
+colvar {
+    name eulerPsi
+    outputAppliedForce on
+    eulerPsi {
+        atoms {
+            indexGroup RMSD_atoms
+        }
+        refPositionsFile rmsd_atoms_refpos.xyz
+    }
+}
