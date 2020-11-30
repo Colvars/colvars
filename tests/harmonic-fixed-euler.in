@@ -1,0 +1,20 @@
+harmonic {
+    colvars      eulerPsi
+    forceConstant   0.1
+    centers  0
+    outputEnergy on
+}
+
+harmonic {
+    colvars      eulerPhi
+    forceConstant   0.1
+    centers  0
+    outputEnergy on
+}
+
+harmonic {
+    colvars      eulerTheta
+    forceConstant   0.1
+    centers  0
+    outputEnergy on
+}
