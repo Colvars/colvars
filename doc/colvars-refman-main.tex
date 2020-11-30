@@ -2066,18 +2066,14 @@ The two functions \refkey{orientationAngle}{colvar|orientationAngle} and \refkey
 As one-dimensional scalar variables, both \refkey{orientationAngle}{colvar|orientationAngle} and \refkey{orientationProj}{colvar|orientationProj} are a much reduced simplification of the full rotation.
 However, they can be used in a variety of methods including both restraints and PMF computations.
 
-% TODO Adjust when the range of values of eulerTheta is defined
 A slightly more complete parametrization decomposition into the two parameters, \refkey{tilt}{colvar|tilt} and \refkey{spinAngle}{colvar|spinAngle}.
 These quantify the amplitudes of two independent sub-rotations away from a certain axis $\mathbf{e}$, and around the same axis $\mathbf{e}$, respectively.
 The axis $\mathbf{e}$ is chosen by the user, and is by default the Z axis:
 under that choice, \refkey{tilt}{colvar|tilt} is equivalent to the sine of the Euler ``pitch'' angle $\theta$, and \refkey{spinAngle}{colvar|spinAngle} to the sum of the other two angles, $(\phi + \psi)$.
 This parameterization is mathematically well defined for almost all rotations, including small ones when the current coordinates are almost completely aligned with the reference ones.
 However, the presence of a mathematical singularity at $\theta = 90^\circ$ prevents using the \refkey{spinAngle}{colvar|spinAngle} function near those configurations.
-For these reasons, \refkey{tilt}{colvar|tilt} and \refkey{spinAngle}{colvar|spinAngle} are useful when the possible rotations are known to have approximately the same axis.
-In this use case, \refkey{spinAngle}{colvar|spinAngle} measures the angle of 
-rotation around the chosen axis $\mathbf{e}$, whereas 
-\refkey{tilt}{colvar|tilt} measures the dot product between $\mathbf{e}$ and 
-the actual axis of the full rotation.
+For these reasons, \refkey{tilt}{colvar|tilt} and \refkey{spinAngle}{colvar|spinAngle} are useful when the allowed rotations are known to have approximately the same axis, and differ only in the magnitude of the corresponding angle.
+In this use case, \refkey{spinAngle}{colvar|spinAngle} measures the angle of the sub-rotation around the chosen axis $\mathbf{e}$, whereas \refkey{tilt}{colvar|tilt} measures the dot product between $\mathbf{e}$ and the actual axis of the full rotation.
 
 Lastly, the traditional Euler angles are also available as the functions \refkey{eulerPhi}{colvar|eulerPhi}, \refkey{eulerTheta}{colvar|eulerTheta} and \refkey{eulerPsi}{colvar|eulerPsi}.
 Altogether, these are sufficient to represent all three degrees of freedom of a full rotation.
