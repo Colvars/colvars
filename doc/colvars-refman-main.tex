@@ -2054,24 +2054,24 @@ define the atom group, and returns a positive number, expressed in
 
 \cvsubsec{Rotations}{sec:cvc_rotations}
 
-The variables discussed in this section quantify the rotations of macromolecules (or other quasi-rigid objects) from a given set reference coordinates to the current coordinates.
-Such rotations are computed following the same method used for best-fit RMSDs (see \refkey{rmsd}{colvar|rmsd} and \refkey{fittinGroup}{atom-group|fittinGroup}).
+The variables discussed in this section quantify the rotations of macromolecules (or other quasi-rigid objects) from a given set of reference coordinates to the current coordinates.
+Such rotations are computed following the same method used for best-fit RMSDs (see \refkey{rmsd}{colvar|rmsd} and \refkey{fittingGroup}{atom-group|fittingGroup}).
 The underlying mathematical formalism is described in reference~\cite{Coutsias2004}, and the implementation in reference~\cite{Fiorin2013}.
 
 The first of the functions described is the \refkey{orientation}{colvar|orientation}, which describes the full rotation as a unit quaternion $\mathsf{q} = (q_0, q_1, q_2, q_3)$, i.e.{} 4 numbers with one constraint (3 degrees of freedom).
 The quaternion $\mathsf{q}$ is \emph{one of only two representations that are both complete and accurate}, the other being a $3\times{}3$ unit matrix with 3 independent parameters.
-Although $\mathsf{q}$ is used internally in the Colvars module for features such as the \refkey{rmsd}{colvar|rmsd} function and the \refkey{fittinGroup}{atom-group|fittinGroup} option, its direct use as a collective variable is more difficult, and mostly limited to fixed or moving restraints.
+Although $\mathsf{q}$ is used internally in the Colvars module for features such as the \refkey{rmsd}{colvar|rmsd} function and the \refkey{fittingGroup}{atom-group|fittingGroup} option, its direct use as a collective variable is more difficult, and mostly limited to fixed or moving restraints.
 
 The two functions \refkey{orientationAngle}{colvar|orientationAngle} and \refkey{orientationProj}{colvar|orientationProj}, with the latter being the cosine of the former, represent the amplitude of the full rotation described by $\mathsf{q}$, regardless of the direction of its axis.
 As one-dimensional scalar variables, both \refkey{orientationAngle}{colvar|orientationAngle} and \refkey{orientationProj}{colvar|orientationProj} are a much reduced simplification of the full rotation.
 However, they can be used in a variety of methods including both restraints and PMF computations.
 
-A slightly more complete parametrization decomposition into the two parameters, \refkey{tilt}{colvar|tilt} and \refkey{spinAngle}{colvar|spinAngle}.
+A slightly more complete parametrization is achieved by decomposing the full rotation into the two parameters, \refkey{tilt}{colvar|tilt} and \refkey{spinAngle}{colvar|spinAngle}.
 These quantify the amplitudes of two independent sub-rotations away from a certain axis $\mathbf{e}$, and around the same axis $\mathbf{e}$, respectively.
 The axis $\mathbf{e}$ is chosen by the user, and is by default the Z axis:
 under that choice, \refkey{tilt}{colvar|tilt} is equivalent to the sine of the Euler ``pitch'' angle $\theta$, and \refkey{spinAngle}{colvar|spinAngle} to the sum of the other two angles, $(\phi + \psi)$.
-This parameterization is mathematically well defined for almost all rotations, including small ones when the current coordinates are almost completely aligned with the reference ones.
-However, the presence of a mathematical singularity at $\theta = 90^\circ$ prevents using the \refkey{spinAngle}{colvar|spinAngle} function near those configurations.
+This parameterization is mathematically well defined for almost all full rotations, including small ones when the current coordinates are almost completely aligned with the reference ones.
+However, a mathematical singularity prevents using the \refkey{spinAngle}{colvar|spinAngle} function near configurations where the value of tilt \refkey{tilt}{colvar|tilt} is -1 (i.e.{} a -180$^\circ$ rotation around an axis orthogonal to $\mathbf{e}$).
 For these reasons, \refkey{tilt}{colvar|tilt} and \refkey{spinAngle}{colvar|spinAngle} are useful when the allowed rotations are known to have approximately the same axis, and differ only in the magnitude of the corresponding angle.
 In this use case, \refkey{spinAngle}{colvar|spinAngle} measures the angle of the sub-rotation around the chosen axis $\mathbf{e}$, whereas \refkey{tilt}{colvar|tilt} measures the dot product between $\mathbf{e}$ and the actual axis of the full rotation.
 
