@@ -88,11 +88,13 @@ proc cv_dashboard {} {
       -message "No molecule loaded. Please load a molecule and use the Reset button.\n"
   } else {
 
-    if [catch { cv version }] {
+    set cv_mol -1
+    catch { set cv_mol [cv molid] }
+    if { $cv_mol == -1 } {
       # if not already there, setup Colvars on top molecule
       ::cv_dashboard::run_cv molid [molinfo top]
     }
-    # Try to obtain actual molid, if that fails default to top
+    # Try to obtain actual molid, if that fails (older cv API) default to top
     if [catch { set ::cv_dashboard::mol [cv molid]} ] {
       set ::cv_dashboard::mol [molinfo top]
     }
