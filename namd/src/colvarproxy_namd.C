@@ -1329,8 +1329,6 @@ void colvarproxy_namd::clear_volmap(int index)
   colvarproxy::clear_volmap(index);
 }
 
-#endif
-
 
 int colvarproxy_namd::get_volmap_id_from_name(char const *volmap_name)
 {
@@ -1419,7 +1417,7 @@ int colvarproxy_namd::compute_volmap(int flags,
   return COLVARS_OK;
 }
 
-
+#endif
 
 #if CMK_SMP && USE_CKLOOP // SMP only
 
