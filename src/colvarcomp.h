@@ -495,7 +495,9 @@ public:
   polar_phi();
   virtual ~polar_phi() {}
 protected:
+  bool use_ref_groups;
   cvm::atom_group  *atoms;
+  cvm::atom_group  *ref;
   cvm::real r, theta, phi;
 public:
   virtual void calc_value();
@@ -525,7 +527,9 @@ public:
   polar_theta();
   virtual ~polar_theta() {}
 protected:
+  bool use_ref_groups;
   cvm::atom_group  *atoms;
+  cvm::atom_group  *ref;
   cvm::real r, theta, phi;
 public:
   virtual void calc_value();

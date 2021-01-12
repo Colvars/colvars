@@ -520,6 +520,12 @@ colvar::polar_theta::polar_theta(std::string const &conf)
   enable(f_cvc_com_based);
 
   atoms = parse_group(conf, "atoms");
+
+  // allow defining an additional group as the center of origin
+  ref = parse_group(conf, "ref", true);
+  if (ref) use_ref_groups = true;
+  else use_ref_groups = false;
+
   init_total_force_params(conf);
   x.type(colvarvalue::type_scalar);
 }
@@ -527,6 +533,7 @@ colvar::polar_theta::polar_theta(std::string const &conf)
 
 colvar::polar_theta::polar_theta()
 {
+  use_ref_groups = false;
   function_type = "polar_theta";
   x.type(colvarvalue::type_scalar);
 }
@@ -535,7 +542,10 @@ colvar::polar_theta::polar_theta()
 void colvar::polar_theta::calc_value()
 {
   cvm::rvector pos = atoms->center_of_mass();
-  r = atoms->center_of_mass().norm();
+  if (use_ref_groups) {
+    pos = pos - ref->center_of_mass();
+  }
+  r = pos.norm();
   // Internal values of theta and phi are radians
   theta = (r > 0.) ? cvm::acos(pos.z / r) : 0.;
   phi = cvm::atan2(pos.y, pos.x);
@@ -547,11 +557,18 @@ void colvar::polar_theta::calc_gradients()
 {
   if (r == 0.)
     atoms->set_weighted_gradient(cvm::rvector(0., 0., 0.));
-  else
+  else {
     atoms->set_weighted_gradient(cvm::rvector(
       (180.0/PI) *  cvm::cos(theta) * cvm::cos(phi) / r,
       (180.0/PI) *  cvm::cos(theta) * cvm::sin(phi) / r,
       (180.0/PI) * -cvm::sin(theta) / r));
+    if (use_ref_groups) {
+      ref-> set_weighted_gradient(cvm::rvector(
+      (180.0/PI) * -cvm::cos(theta) * cvm::cos(phi) / r,
+      (180.0/PI) * -cvm::cos(theta) * cvm::sin(phi) / r,
+      (180.0/PI) *  cvm::sin(theta) / r));
+    }
+  }
 }
 
 
@@ -559,6 +576,8 @@ void colvar::polar_theta::apply_force(colvarvalue const &force)
 {
   if (!atoms->noforce)
     atoms->apply_colvar_force(force.real_value);
+  if (!ref->noforce)
+    ref->apply_colvar_force(force.real_value);
 }
 
 
@@ -573,6 +592,12 @@ colvar::polar_phi::polar_phi(std::string const &conf)
   enable(f_cvc_com_based);
 
   atoms = parse_group(conf, "atoms");
+
+  // allow defining an additional group as the center of origin
+  ref = parse_group(conf, "ref", true);
+  if (ref) use_ref_groups = true;
+  else use_ref_groups = false;
+
   init_total_force_params(conf);
   x.type(colvarvalue::type_scalar);
 }
@@ -580,6 +605,7 @@ colvar::polar_phi::polar_phi(std::string const &conf)
 
 colvar::polar_phi::polar_phi()
 {
+  use_ref_groups = false;
   function_type = "polar_phi";
   period = 360.0;
   x.type(colvarvalue::type_scalar);
@@ -589,7 +615,10 @@ colvar::polar_phi::polar_phi()
 void colvar::polar_phi::calc_value()
 {
   cvm::rvector pos = atoms->center_of_mass();
-  r = atoms->center_of_mass().norm();
+  if (use_ref_groups) {
+    pos = pos - ref->center_of_mass();
+  }
+  r = pos.norm();
   // Internal values of theta and phi are radians
   theta = (r > 0.) ? cvm::acos(pos.z / r) : 0.;
   phi = cvm::atan2(pos.y, pos.x);
@@ -603,6 +632,12 @@ void colvar::polar_phi::calc_gradients()
     (180.0/PI) * -cvm::sin(phi) / (r*cvm::sin(theta)),
     (180.0/PI) *  cvm::cos(phi) / (r*cvm::sin(theta)),
     0.));
+  if (use_ref_groups) {
+    ref->set_weighted_gradient(cvm::rvector(
+      (180.0/PI) *  cvm::sin(phi) / (r*cvm::sin(theta)),
+      (180.0/PI) * -cvm::cos(phi) / (r*cvm::sin(theta)),
+      0.));
+  }
 }
 
 
@@ -610,6 +645,8 @@ void colvar::polar_phi::apply_force(colvarvalue const &force)
 {
   if (!atoms->noforce)
     atoms->apply_colvar_force(force.real_value);
+  if (!ref->noforce)
+    ref->apply_colvar_force(force.real_value);
 }
 
 
