@@ -375,6 +375,7 @@ public:
   enum features_atomgroup {
     f_ag_active,
     f_ag_center,
+    f_ag_center_origin,
     f_ag_rotate,
     f_ag_fitting_group,
     /// Perform a standard minimum msd fit for given atoms
