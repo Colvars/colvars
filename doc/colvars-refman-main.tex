@@ -2634,7 +2634,7 @@ $(x_1, y_1, z_1, \cdots, x_n, y_n, z_n)$.
     Group of atoms}{%
     Block \texttt{atoms \{...\}}}{%
     Defines the atoms whose coordinates make up the value of the component.
-    If \texttt{rotateReference} or \texttt{centerReference} are defined, coordinates
+    If \texttt{rotateReference}, \texttt{centerReference}, or \texttt{centerToOrigin} are defined, coordinates
     are evaluated within the moving frame of reference.}
 \end{cvcoptions}
 
@@ -4181,6 +4181,7 @@ The complete list of selection keywords available in \MDENGINE{} is:
 \cvsubsec{Moving frame of reference.}{sec:colvar_atom_groups_ref_frame}
 
 The following options define an automatic calculation of an optimal translation (\texttt{centerReference}) or optimal rotation (\texttt{rotateReference}), that superimposes the positions of this group to a provided set of reference coordinates.
+Alternately, \texttt{centerToOrigin} applies a translation to place the geometric center of the group at (0, 0, 0).
 This can allow, for example, to effectively remove from certain colvars the effects of molecular tumbling and of diffusion.
 Given the set of atomic positions $\mathbf{x}_{i}$, the colvar $\xi$ can be defined on a set of roto-translated positions $\mathbf{x}_{i}' = R(\mathbf{x}_{i} - \mathbf{x}^{\mathrm{C}}) + \mathbf{x}^{\mathrm{ref}}$.
 $\mathbf{x}^{\mathrm{C}}$ is the geometric center of the $\mathbf{x}_{i}$, $R$ is the optimal rotation matrix to the reference positions and $\mathbf{x}^{\mathrm{ref}}$ is the geometric center of the reference positions.
@@ -4212,6 +4213,19 @@ Be careful when using these options in ABF simulations or when using total force
     If this option is \texttt{on}, the center of geometry of the group will be aligned with that of the reference positions provided by \cvnamebasedonly{either} \texttt{refPositions} or \texttt{refPositionsFile}.
     Colvar components will only have access to the aligned positions.
 \textbf{Note}: unless otherwise specified, \texttt{rmsd} and \texttt{eigenvector} set this option to \texttt{on} \emph{by default}.
+}
+
+\item %
+  \keydef
+    {centerToOrigin}{%
+    atom group}{%
+    Implicitly remove translations for this group by keeping its center at the origin}{%
+    boolean}{%
+    \texttt{off}}{%
+    This option implies \texttt{centerReference}.
+    If this option is \texttt{on}, coordinates from the group will be translated so that the center of geometry of the group remains at (0, 0, 0), except if 
+    \texttt{fittingGroup} is enabled.
+    In that case, the translation applied is the translation that brings the center of geometry of the fitting group to (0, 0, 0).
 }
 
 \item %

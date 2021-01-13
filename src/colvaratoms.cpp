@@ -217,8 +217,6 @@ int cvm::atom_group::init()
   index = -1;
 
   b_dummy = false;
-  is_enabled(f_ag_center) = false;
-  is_enabled(f_ag_rotate) = false;
   b_user_defined_fit = false;
   fitting_group = NULL;
 
@@ -245,7 +243,6 @@ int cvm::atom_group::init_dependencies() {
     init_feature(f_ag_active, "active", f_type_dynamic);
     init_feature(f_ag_center, "translational_fit", f_type_user);
     init_feature(f_ag_center_origin, "translational_fit_to_origin", f_type_user);
-    require_feature_self(f_ag_center_origin, f_ag_center);
 
     init_feature(f_ag_rotate, "rotational_fit", f_type_user);
     init_feature(f_ag_fitting_group, "fitting_group", f_type_static);
@@ -278,6 +275,10 @@ int cvm::atom_group::init_dependencies() {
 
   // Features that are implemented (or not) by all atom groups
   feature_states[f_ag_active].available = true;
+  feature_states[f_ag_center].available = true;
+  feature_states[f_ag_center_origin].available = true;
+  feature_states[f_ag_rotate].available = true;
+
   // f_ag_scalable_com is provided by the CVC iff it is COM-based
   feature_states[f_ag_scalable_com].available = false;
   // TODO make f_ag_scalable depend on f_ag_scalable_com (or something else)
@@ -389,6 +390,9 @@ int cvm::atom_group::parse(std::string const &group_conf)
   // and we need to know about scalability before adding atoms
   bool b_defined_center = get_keyval_feature(this, group_conf, "centerToOrigin", f_ag_center_origin, false);
   b_defined_center |= get_keyval_feature(this, group_conf, "centerReference", f_ag_center, is_enabled(f_ag_center_origin));
+  if (is_enabled(f_ag_center_origin) && ! is_enabled(f_ag_center)) {
+    return cvm::error("centerReference may not be disabled if centerToOrigin is enabled.\n");
+  }
   bool b_defined_rotate = get_keyval_feature(this, group_conf, "rotateReference", f_ag_rotate, false);
   // is the user setting explicit options?
   b_user_defined_fit = b_defined_center || b_defined_rotate;
@@ -1033,7 +1037,7 @@ void cvm::atom_group::calc_apply_roto_translation()
     }
   }
 
-  if (is_enabled(f_ag_center)) {
+  if (is_enabled(f_ag_center) && !is_enabled(f_ag_center_origin)) {
     // align with the center of geometry of ref_pos
     apply_translation(ref_pos_cog);
     if (fitting_group) {
