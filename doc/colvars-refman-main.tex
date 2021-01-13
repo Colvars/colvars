@@ -1443,10 +1443,11 @@ boundaries can be defined by using any real number of choice.
 \cvsubsubsec{\texttt{polarTheta}: polar angle in spherical coordinates.}{sec:cvc_polarTheta}
 \labelkey{colvar|polarTheta}
 
-The \texttt{polarTheta~\{...\}} block defines the polar angle in
-spherical coordinates, for the center of mass of a group of atoms
-described by the block \texttt{atoms}.  It returns an angle
-(in degrees) within the interval $[0:180]$.
+The \texttt{polarTheta~\{...\}} block defines the polar angle $\theta$ in
+spherical coordinates, for the vector $\mathbf{r}$ connecting the center of
+mass of a group of atoms described by the block \texttt{ref} to that by
+the block \texttt{atoms}. $\theta$ is calculated as $\arccos(r_z)$.
+This component returns an angle (in degrees) within the interval $[0:180]$.
 To obtain spherical coordinates in a frame of reference tied to
 another group of atoms, use the \texttt{fittingGroup} (\ref{sec:colvar_atom_groups_ref_frame}) option
 within the \texttt{atoms} block.
@@ -1457,10 +1458,18 @@ An example is provided in file \texttt{examples/11\_polar\_angles.in} of the Col
   \labelkey{colvar|polarTheta|atoms}
   \key
     {atoms}{%
-    \texttt{polarPhi}}{%
+    \texttt{polarTheta}}{%
     Atom group}{%
     \texttt{atoms~\{...\}} block}{%
-    Defines the group of atoms for the COM of which the angle should be calculated.
+    Defines the group of atoms for the COM of which the terminal point of the vector $\mathbf{r}$ should be calculated.
+    }
+\item %
+  \key
+    {ref}{%
+    \texttt{polarTheta}}{%
+    Atom group}{%
+    \texttt{atoms~\{...\}} block}{%
+    Defines the group of atoms for the COM of which the initial point of the vector $\mathbf{r}$ should be calculated. This keyword is optional. If it is not defined, the initial point of $\mathbf{r}$ is $(0, 0, 0)$.
     }
 \end{cvcoptions}
 
@@ -1468,9 +1477,11 @@ An example is provided in file \texttt{examples/11\_polar\_angles.in} of the Col
 \cvsubsubsec{\texttt{polarPhi}: azimuthal angle in spherical coordinates.}{sec:cvc_polarPhi}
 \labelkey{colvar|polarPhi}
 
-The \texttt{polarPhi~\{...\}} block defines the azimuthal angle in
-spherical coordinates, for the center of mass of a group of atoms
-described by the block \texttt{atoms}. It returns an angle
+The \texttt{polarPhi~\{...\}} block defines the azimuthal angle $\phi$ in
+spherical coordinates, for the vector $\mathbf{r}$ connecting the center of
+mass of a group of atoms described by the block \texttt{ref} to that by
+the block \texttt{atoms}. $\phi$ is calculated as arctan2$(r_y,r_x)$.
+This component returns an angle
 (in degrees) within the interval $[-180:180]$.  The Colvars module
 calculates all the distances between two angles taking into account
 periodicity.  For instance, reference values for restraints or range
@@ -1489,7 +1500,15 @@ An example is provided in file \texttt{examples/11\_polar\_angles.in} of the Col
     \texttt{polarPhi}}{%
     Atom group}{%
     \texttt{atoms~\{...\}} block}{%
-    Defines the group of atoms for the COM of which the angle should be calculated.
+    Defines the group of atoms for the COM of which the terminal point of the vector $\mathbf{r}$ should be calculated.
+    }
+\item %
+  \key
+    {ref}{%
+    \texttt{polarPhi}}{%
+    Atom group}{%
+    \texttt{atoms~\{...\}} block}{%
+    Defines the group of atoms for the COM of which the initial point of the vector $\mathbf{r}$ should be calculated. This keyword is optional. If it is not defined, the initial point of $\mathbf{r}$ is $(0, 0, 0)$.
     }
 \end{cvcoptions}
 
