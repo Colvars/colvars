@@ -13,8 +13,8 @@ colvar {
     distanceVec {
         group1 {
             indexGroup group1
-            centerReference yes
-            rotateReference yes
+            centerToReference yes
+            rotateToReference yes
             enableFitGradients no # Not available because gradients are implicit
             fittingGroup {
                 indexGroup heavy_atoms
@@ -23,8 +23,8 @@ colvar {
         }
         group2 {
             indexGroup group2
-            centerReference yes
-            rotateReference yes
+            centerToReference yes
+            rotateToReference yes
             enableFitGradients no # Not available because gradients are implicit
             fittingGroup {
                 indexGroup heavy_atoms

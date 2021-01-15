@@ -13,8 +13,8 @@ colvar {
     tilt {
         atoms {
             indexGroup RMSD_atoms
-            centerReference yes
-            rotateReference yes
+            centerToReference yes
+            rotateToReference yes
             fittingGroup {
                 indexGroup heavy_atoms
             }

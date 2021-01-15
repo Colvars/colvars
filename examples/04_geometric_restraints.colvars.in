@@ -17,8 +17,8 @@ colvar {
       # group definition:
       atomNumbers 12 13 14 15 16 # explicit list of 1-based atom IDs
       
-      centerReference          # use relative coordinates
-      rotateReference          # (translated and rotated frame of reference)
+      centerToReference          # use relative coordinates
+      rotateToReference          # (translated and rotated frame of reference)
       fittingGroup {           # Define frame of reference based on separate atom group
         atomsFile     ref.pdb  # from separate file
         atomsCol      B

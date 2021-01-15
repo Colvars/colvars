@@ -13,8 +13,8 @@ colvar {
     spinAngle {
         atoms {
             indexGroup RMSD_atoms
-            centerReference yes
-            rotateReference yes
+            centerToReference yes
+            rotateToReference yes
             refPositionsGroup {
                 indexGroup heavy_atoms
             }

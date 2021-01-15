@@ -11,8 +11,8 @@ colvar {
       atomsCol   B           # based on column B
       atomsColValue 1        # atoms flagged with 1
 
-      rotateReference
-      centerReference
+      rotateToReference
+      centerToReference
       fittingGroup {
         atomsfile  ref.pdb
         atomsCol   B         # atoms with nonzero value in column B

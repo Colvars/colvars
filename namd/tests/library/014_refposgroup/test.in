@@ -11,8 +11,8 @@ colvar {
         debugGradients yes
         atoms {
             atomNumbers  4
-            rotateReference yes
-            centerReference yes
+            rotateToReference yes
+            centerToReference yes
             fittingGroup {
                 atomNumbers  54 64 74 84 99 
             }

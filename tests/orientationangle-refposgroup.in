@@ -9,8 +9,8 @@ colvar {
     orientationAngle {
         atoms {
             indexGroup RMSD_atoms
-            centerReference yes
-            rotateReference yes
+            centerToReference yes
+            rotateToReference yes
             enableFitGradients no # Not available because gradients are implicit
             refPositionsGroup {
                 indexGroup heavy_atoms

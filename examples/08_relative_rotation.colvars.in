@@ -17,7 +17,7 @@ colvar {
       atomsCol   B            # all atoms with nonzero B-factor
                               
 
-      rotateReference
+      rotateToReference
       fittingGroup {          # define the fitting group atoms
         atomsfile  atoms.pdb  
         atomsCol   O           # all atoms with nonzero occupancy

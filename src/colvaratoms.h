@@ -331,7 +331,7 @@ public:
   /// The rotation calculated automatically if f_ag_rotate is defined
   cvm::rotation rot;
 
-  /// \brief Indicates that the user has explicitly set centerReference or
+  /// \brief Indicates that the user has explicitly set centerToReference or
   /// rotateReference, and the corresponding reference:
   /// cvc's (eg rmsd, eigenvector) will not override the user's choice
   bool b_user_defined_fit;
