@@ -15,8 +15,8 @@ colvar {
             atomsCol B
             atomsColValue 1
 
-            centerReference yes
-            rotateReference yes
+            centerToReference yes
+            rotateToReference yes
             enableFitGradients no # Not available because gradients are implicit
             refPositionsFile ../Common/da-flags.pdb
             refPositionsCol B
@@ -27,8 +27,8 @@ colvar {
             atomsCol B
             atomsColValue 2
 
-            centerReference yes
-            rotateReference yes
+            centerToReference yes
+            rotateToReference yes
             enableFitGradients no # Not available because gradients are implicit
             refPositionsFile ../Common/da-flags.pdb
             refPositionsCol B
@@ -51,8 +51,8 @@ colvar {
             atomsCol B
             atomsColValue 1
 
-            centerReference yes
-            rotateReference yes
+            centerToReference yes
+            rotateToReference yes
             enableFitGradients no # Not available because gradients are implicit
             refPositionsFile ../Common/da-partial.pdb
         }
@@ -61,8 +61,8 @@ colvar {
             atomsCol B
             atomsColValue 2
 
-            centerReference yes
-            rotateReference yes
+            centerToReference yes
+            rotateToReference yes
             enableFitGradients no # Not available because gradients are implicit
             refPositionsFile ../Common/da-flags.pdb
             refPositionsCol B

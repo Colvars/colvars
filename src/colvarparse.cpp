@@ -125,6 +125,10 @@ void colvarparse::mark_key_set_user(std::string const &key_str,
     cvm::log("# "+key_str+" = "+cvm::to_str(value)+"\n",
              cvm::log_user_params());
   }
+  if (parse_mode & parse_deprecation_warning) {
+    cvm::log("Warning: keyword "+key_str+
+      " is deprecated. Check the documentation for the current equivalent.\n");
+  }
 }
 
 

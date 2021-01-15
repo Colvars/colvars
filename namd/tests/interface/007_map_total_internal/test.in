@@ -32,8 +32,8 @@ colvar {
         atoms {
             # Use internal selection with fitting group
             indexGroup Protein
-            rotateReference yes
-            centerReference yes
+            rotateToReference yes
+            centerToReference yes
             fittingGroup {
                 atomNumbers  54 64 74 84 99 
             }

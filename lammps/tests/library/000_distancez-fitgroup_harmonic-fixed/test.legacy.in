@@ -13,8 +13,8 @@ colvar {
     distanceZ {
         main {
             indexGroup group5
-            centerReference yes
-            rotateReference yes
+            centerToReference yes
+            rotateToReference yes
             refPositionsGroup {
                 indexGroup heavy_atoms
             }
@@ -22,8 +22,8 @@ colvar {
         }
         ref {
             indexGroup group1
-            centerReference yes
-            rotateReference yes
+            centerToReference yes
+            rotateToReference yes
             refPositionsGroup {
                 indexGroup heavy_atoms
             }
@@ -31,8 +31,8 @@ colvar {
         }
         ref2 {
             indexGroup group10
-            centerReference yes
-            rotateReference yes
+            centerToReference yes
+            rotateToReference yes
             refPositionsGroup {
                 indexGroup heavy_atoms
             }

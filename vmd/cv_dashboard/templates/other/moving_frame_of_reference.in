@@ -6,8 +6,8 @@
             ## Optionally, use GROMACS-style index groups
             # indexGroup @
 
-            centerReference yes
-            rotateReference yes
+            centerToReference yes
+            rotateToReference yes
 
             ## Atoms defining the moving frame of reference
             ## if fittingGroup is omitted, atoms defined above are fitted

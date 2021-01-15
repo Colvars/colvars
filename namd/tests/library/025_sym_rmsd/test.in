@@ -5,8 +5,8 @@ colvar {
 
     rmsd {
         atoms {
-            centerReference yes
-            rotateReference yes
+            centerToReference yes
+            rotateToReference yes
             fittingGroup {
                 atomNumbers 50 51 52 53 54 55 56 57 58
             }
@@ -22,8 +22,8 @@ colvar {
 
     rmsd {
         atoms {
-            centerReference yes
-            rotateReference yes
+            centerToReference yes
+            rotateToReference yes
             fittingGroup {
                 atomNumbers 50 51 52 53 54 55 56 57 58
             }
@@ -43,8 +43,8 @@ colvar {
     rmsd {
         name r1
         atoms {
-            centerReference yes
-            rotateReference yes
+            centerToReference yes
+            rotateToReference yes
             fittingGroup {
                 atomNumbers 50 51 52 53 54 55 56 57 58
             }
@@ -56,8 +56,8 @@ colvar {
     rmsd {
         name r2
         atoms {
-            centerReference yes
-            rotateReference yes
+            centerToReference yes
+            rotateToReference yes
             fittingGroup {
                 atomNumbers 50 51 52 53 54 55 56 57 58
             }
@@ -69,8 +69,8 @@ colvar {
     rmsd {
         name r3
         atoms {
-            centerReference yes
-            rotateReference yes
+            centerToReference yes
+            rotateToReference yes
             fittingGroup {
                 atomNumbers 50 51 52 53 54 55 56 57 58
             }

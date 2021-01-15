@@ -241,10 +241,9 @@ int cvm::atom_group::init_dependencies() {
     }
 
     init_feature(f_ag_active, "active", f_type_dynamic);
-    init_feature(f_ag_center, "translational_fit", f_type_user);
-    init_feature(f_ag_center_origin, "translational_fit_to_origin", f_type_user);
-
-    init_feature(f_ag_rotate, "rotational_fit", f_type_user);
+    init_feature(f_ag_center, "center_to_reference", f_type_user);
+    init_feature(f_ag_center_origin, "center_to_origin", f_type_user);
+    init_feature(f_ag_rotate, "rotate_to_origin", f_type_user);
     init_feature(f_ag_fitting_group, "fitting_group", f_type_static);
     init_feature(f_ag_explicit_gradient, "explicit_atom_gradient", f_type_dynamic);
     init_feature(f_ag_fit_gradients, "fit_gradients", f_type_user);
@@ -389,11 +388,17 @@ int cvm::atom_group::parse(std::string const &group_conf)
   // We need to know about fitting to decide whether the group is scalable
   // and we need to know about scalability before adding atoms
   bool b_defined_center = get_keyval_feature(this, group_conf, "centerToOrigin", f_ag_center_origin, false);
-  b_defined_center |= get_keyval_feature(this, group_conf, "centerReference", f_ag_center, is_enabled(f_ag_center_origin));
+  // Legacy alias
+  b_defined_center |= get_keyval_feature(this, group_conf, "centerReference", f_ag_center, is_enabled(f_ag_center_origin), parse_deprecated);
+  b_defined_center |= get_keyval_feature(this, group_conf, "centerToReference", f_ag_center, is_enabled(f_ag_center));
+
   if (is_enabled(f_ag_center_origin) && ! is_enabled(f_ag_center)) {
-    return cvm::error("centerReference may not be disabled if centerToOrigin is enabled.\n");
+    return cvm::error("centerToReference may not be disabled if centerToOrigin is enabled.\n");
   }
-  bool b_defined_rotate = get_keyval_feature(this, group_conf, "rotateReference", f_ag_rotate, false);
+  // Legacy alias
+  bool b_defined_rotate = get_keyval_feature(this, group_conf, "rotateReference", f_ag_rotate, false, parse_deprecated);
+  b_defined_rotate |= get_keyval_feature(this, group_conf, "rotateToReference", f_ag_rotate, is_enabled(f_ag_rotate));
+
   // is the user setting explicit options?
   b_user_defined_fit = b_defined_center || b_defined_rotate;
 
@@ -770,7 +775,7 @@ int cvm::atom_group::parse_fitting_options(std::string const &group_conf)
   if (is_enabled(f_ag_center) || is_enabled(f_ag_rotate)) {
 
     if (b_dummy)
-      cvm::error("Error: centerReference or rotateReference "
+      cvm::error("Error: centerToReference or rotateToReference "
                  "cannot be defined for a dummy atom.\n");
 
     bool b_ref_pos_group = false;

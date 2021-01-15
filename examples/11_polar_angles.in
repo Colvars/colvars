@@ -14,8 +14,8 @@ colvar {
       atomsCol   B
       atomsColValue 2
 
-      rotateReference
-      centerReference
+      rotateToReference
+      centerToReference
       fittingGroup {
         atomsfile  system.pdb   # Receptor has flag 1
         atomsCol   B
@@ -36,8 +36,8 @@ colvar {
       atomsCol   B
       atomsColValue 2
 
-      rotateReference
-      centerReference
+      rotateToReference
+      centerToReference
       fittingGroup {
         atomsfile  system.pdb   # Receptor has flag 1
         atomsCol   B

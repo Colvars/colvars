@@ -1745,7 +1745,7 @@ with respect to $\{\mathbf{x}_{i}(t)\}$.
     \texttt{atoms~\{...\}} block}{%
     Defines the group of atoms of which the RMSD should be calculated.
     Optimal fit options (such as \texttt{refPositions} and
-    \texttt{rotateReference}) should typically NOT be set within this
+    \texttt{rotateToReference}) should typically NOT be set within this
     block. Exceptions to this rule are the special cases discussed in
     the \emph{Advanced usage} paragraph below.
     }
@@ -1840,10 +1840,10 @@ atom group block. This allows for the following non-standard cases:
 
 \begin{enumerate}
 \item applying the optimal translation, but no rotation
-(\texttt{rotateReference off}), to bias or restrain the shape and
+(\texttt{rotateToReference off}), to bias or restrain the shape and
 orientation, but not the position of the atom group;
 \item applying the optimal rotation, but no translation
-(\texttt{centerReference off}), to bias or restrain the shape and
+(\texttt{centerToReference off}), to bias or restrain the shape and
 position, but not the orientation of the atom group;
 \item disabling the application of optimal roto-translations, which
 lets the RMSD component describe the deviation of atoms
@@ -2634,7 +2634,7 @@ $(x_1, y_1, z_1, \cdots, x_n, y_n, z_n)$.
     Group of atoms}{%
     Block \texttt{atoms \{...\}}}{%
     Defines the atoms whose coordinates make up the value of the component.
-    If \texttt{rotateReference}, \texttt{centerReference}, or \texttt{centerToOrigin} are defined, coordinates
+    If \texttt{rotateToReference}, \texttt{centerToReference}, or \texttt{centerToOrigin} are defined, coordinates
     are evaluated within the moving frame of reference.}
 \end{cvcoptions}
 
@@ -4180,32 +4180,32 @@ The complete list of selection keywords available in \MDENGINE{} is:
 
 \cvsubsec{Moving frame of reference.}{sec:colvar_atom_groups_ref_frame}
 
-The following options define an automatic calculation of an optimal translation (\texttt{centerReference}) or optimal rotation (\texttt{rotateReference}), that superimposes the positions of this group to a provided set of reference coordinates.
+The following options define an automatic calculation of an optimal translation (\texttt{centerToReference}) or optimal rotation (\texttt{rotateToReference}), that superimposes the positions of this group to a provided set of reference coordinates.
 Alternately, \texttt{centerToOrigin} applies a translation to place the geometric center of the group at (0, 0, 0).
 This can allow, for example, to effectively remove from certain colvars the effects of molecular tumbling and of diffusion.
 Given the set of atomic positions $\mathbf{x}_{i}$, the colvar $\xi$ can be defined on a set of roto-translated positions $\mathbf{x}_{i}' = R(\mathbf{x}_{i} - \mathbf{x}^{\mathrm{C}}) + \mathbf{x}^{\mathrm{ref}}$.
 $\mathbf{x}^{\mathrm{C}}$ is the geometric center of the $\mathbf{x}_{i}$, $R$ is the optimal rotation matrix to the reference positions and $\mathbf{x}^{\mathrm{ref}}$ is the geometric center of the reference positions.
 
 Components that are defined based on pairwise distances are naturally invariant under global roto-translations.
-Other components are instead affected by global rotations or translations: however, they can be made invariant if they are expressed in the frame of reference of a chosen group of atoms, using the \texttt{centerReference} and \texttt{rotateReference} options.
-Finally, a few components are defined by convention using a roto-translated frame (e.g. the minimal RMSD): for these components, \texttt{centerReference} and \texttt{rotateReference} are enabled by default.
+Other components are instead affected by global rotations or translations: however, they can be made invariant if they are expressed in the frame of reference of a chosen group of atoms, using the \texttt{centerToReference} and \texttt{rotateToReference} options.
+Finally, a few components are defined by convention using a roto-translated frame (e.g. the minimal RMSD): for these components, \texttt{centerToReference} and \texttt{rotateToReference} are enabled by default.
 In typical applications, the default settings result in the expected behavior.
 
 \paragraph*{Warning on rotating frames of reference and periodic boundary conditions.}
-\texttt{rotateReference} affects coordinates that depend on minimum-image distances in periodic boundary conditions (PBC).
+\texttt{rotateToReference} affects coordinates that depend on minimum-image distances in periodic boundary conditions (PBC).
 After rotation of the coordinates, the periodic cell vectors become irrelevant: the rotated system is effectively non-periodic.
 A safe way to handle this is to ensure that the relevant inter-group distance vectors remain smaller than the half-size of the periodic cell.
 If this is not desirable, one should avoid the rotating frame of reference, and apply orientational restraints to the reference group instead, in order to keep the orientation of the reference group consistent with the orientation of the periodic cell.
 
 \paragraph*{Warning on rotating frames of reference and ABF.}
-Note that \texttt{centerReference} and \texttt{rotateReference} may affect the Jacobian derivative of colvar components in a way that is not taken into account by default.
+Note that \texttt{centerToReference} and \texttt{rotateToReference} may affect the Jacobian derivative of colvar components in a way that is not taken into account by default.
 Be careful when using these options in ABF simulations or when using total force values.
 
 \begin{itemize}
 
 \item %
   \keydef
-    {centerReference}{%
+    {centerToReference}{%
     atom group}{%
     Implicitly remove translations for this group}{%
     boolean}{%
@@ -4222,7 +4222,7 @@ Be careful when using these options in ABF simulations or when using total force
     Implicitly remove translations for this group by keeping its center at the origin}{%
     boolean}{%
     \texttt{off}}{%
-    This option implies \texttt{centerReference}.
+    This option implies \texttt{centerToReference}.
     If this option is \texttt{on}, coordinates from the group will be translated so that the center of geometry of the group remains at (0, 0, 0), except if 
     \texttt{fittingGroup} is enabled.
     In that case, the translation applied is the translation that brings the center of geometry of the fitting group to (0, 0, 0).
@@ -4230,13 +4230,13 @@ Be careful when using these options in ABF simulations or when using total force
 
 \item %
   \keydef
-    {rotateReference}{%
+    {rotateToReference}{%
     atom group}{%
     Implicitly remove rotations for this group}{%
     boolean}{%
     \texttt{off}}{%
     If this option is \texttt{on}, the coordinates of this group will be optimally superimposed to the reference positions provided by \cvnamebasedonly{either} \texttt{refPositions} or \texttt{refPositionsFile}.
-    The rotation will be performed around the center of geometry if \texttt{centerReference} is \texttt{on}, or around the origin otherwise.
+    The rotation will be performed around the center of geometry if \texttt{centerToReference} is \texttt{on}, or around the origin otherwise.
     The algorithm used is the same employed by the \texttt{orientation} colvar component~\cite{Coutsias2004}.
     Forces applied to the atoms of this group will also be implicitly rotated back to the original frame.
     \textbf{Note}: unless otherwise specified, \texttt{rmsd} and \texttt{eigenvector} set this option to \texttt{on} \emph{by default}.
@@ -4250,8 +4250,8 @@ Be careful when using these options in ABF simulations or when using total force
     Reference positions for fitting (\AA)}{%
     space-separated list of \texttt{(x, y, z)} triplets}{%
     \label{key:colvars:atom_group:refPositions}
-    This option provides a list of reference coordinates for \texttt{centerReference} and/or \texttt{rotateReference}, and is mutually exclusive with \texttt{refPositionsFile}.
-    If only \texttt{centerReference} is \texttt{on}, the list may contain a single (x, y, z) triplet; if also \texttt{rotateReference} is \texttt{on}, the list should be as long as the atom group, and \emph{its order must match the order in which atoms were defined}.
+    This option provides a list of reference coordinates for \texttt{centerToReference} and/or \texttt{rotateToReference}, and is mutually exclusive with \texttt{refPositionsFile}.
+    If only \texttt{centerToReference} is \texttt{on}, the list may contain a single (x, y, z) triplet; if also \texttt{rotateToReference} is \texttt{on}, the list should be as long as the atom group, and \emph{its order must match the order in which atoms were defined}.
 }
 
 \item %
@@ -4262,7 +4262,7 @@ Be careful when using these options in ABF simulations or when using total force
     File containing the reference positions for fitting}{%
     UNIX filename}{%
     \label{key:colvars:atom_group:refPositionsFile}
-    This option provides a list of reference coordinates for \texttt{centerReference} and/or \texttt{rotateReference}, and is mutually exclusive with \texttt{refPositions}.
+    This option provides a list of reference coordinates for \texttt{centerToReference} and/or \texttt{rotateToReference}, and is mutually exclusive with \texttt{refPositions}.
     The acceptable file format is XYZ (see \ref{sec:colvars_xyz_format}), which is read in double precision.
     \cvnamebasedonly{Alternatively, a PDB file may be read (see \ref{sec:colvars_pdb_format}) using \MDENGINE{}'s reader; however, due to the constraints of the PDB format \emph{PDB files are discouraged if the precision of the reference coordinates is a concern}}.
 }
@@ -4296,7 +4296,7 @@ Be careful when using these options in ABF simulations or when using total force
     Use an alternate set of atoms to define the roto-translation}{%
     Block \texttt{fittingGroup \{ ... \}}}{%
     This atom group itself}{%
-    If either \texttt{centerReference} or \texttt{rotateReference} is defined, this keyword defines an alternate atom group to calculate the optimal roto-translation.
+    If either \texttt{centerToReference} or \texttt{rotateToReference} is defined, this keyword defines an alternate atom group to calculate the optimal roto-translation.
     Use this option to define a continuous rotation if the structure of the group involved changes significantly (a typical symptom would be the message ``Warning: discontinuous rotation!'').
     \textbf{Performance considerations:} note that enabling this option will result in projecting each of the atomic gradients of the colvar (e.g.{} the RMSD) onto each the gradients of the roto-translation, which may be a computationally expensive operation: see the closely related \refkey{enableFitGradients}{atom-group|enableFitGradients} for details.%
 }
@@ -4318,8 +4318,8 @@ atoms \{\\
 \\
 \-~~atomNumbers 1 2 3 4 5 6 7 \# atoms of the ligand (1-based)\\
 \\
-\-~~centerReference yes\\
-\-~~rotateReference yes\\
+\-~~centerToReference yes\\
+\-~~rotateToReference yes\\
 \-~~fittingGroup \{\\
 \-~~~~\# define the frame by fitting alpha carbon atoms\\
 \-~~~~\# in 2 protein segments close to the site\\
@@ -4343,7 +4343,7 @@ The following two options have default values appropriate for the vast majority 
     Include the roto-translational contribution to colvar gradients}{%
     boolean}{%
     \texttt{on}}{%
-    When either \texttt{centerReference} or \texttt{rotateReference} is on,
+    When either \texttt{centerToReference} or \texttt{rotateToReference} is on,
     the gradients of some colvars include terms proportional to
     $\partial{}R/\partial\mathbf{x}_{i}$ (rotational gradients) and
     $\partial\mathbf{x}^{\mathrm{C}}/\partial\mathbf{x}_{i}$ (translational gradients).

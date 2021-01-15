@@ -1028,7 +1028,7 @@ colvar::rmsd::rmsd(std::string const &conf)
     cvm::log("WARNING: explicit fitting parameters were provided for atom group \"atoms\".\n");
   } else {
     // Default: fit everything
-    cvm::log("Enabling \"centerReference\" and \"rotateReference\", to minimize RMSD before calculating it as a variable: "
+    cvm::log("Enabling \"centerToReference\" and \"rotateToReference\", to minimize RMSD before calculating it as a variable: "
               "if this is not the desired behavior, disable them explicitly within the \"atoms\" block.\n");
     atoms->enable(f_ag_center);
     atoms->enable(f_ag_rotate);
@@ -1284,7 +1284,7 @@ colvar::eigenvector::eigenvector(std::string const &conf)
     cvm::log("WARNING: explicit fitting parameters were provided for atom group \"atoms\".\n");
   } else {
     // default: fit everything
-    cvm::log("Enabling \"centerReference\" and \"rotateReference\", to minimize RMSD before calculating the vector projection: "
+    cvm::log("Enabling \"centerToReference\" and \"rotateToReference\", to minimize RMSD before calculating the vector projection: "
               "if this is not the desired behavior, disable them explicitly within the \"atoms\" block.\n");
     atoms->enable(f_ag_center);
     atoms->enable(f_ag_rotate);

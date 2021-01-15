@@ -26,8 +26,8 @@ colvar {
               atomNumbers 1 2 3 4
 
             # Moving frame of reference is defined below
-            centerReference yes
-            rotateReference yes
+            centerToReference yes
+            rotateToReference yes
             fittingGroup {
                 # Define binding site atoms used for fitting
                 atomNumbers 6 7 8 9
@@ -49,8 +49,8 @@ colvar {
             atomNumbers  1 2 3 4
 
             # Moving frame of reference is defined below
-            centerReference yes
-            rotateReference yes
+            centerToReference yes
+            rotateToReference yes
             fittingGroup {
                 # Define binding site atoms used for fitting
                 atomNumbers 6 7 8 9

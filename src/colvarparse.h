@@ -56,6 +56,8 @@ public:
     parse_echo = (1<<1),
     /// Print the default value of a keyword, if it is NOT given
     parse_echo_default = (1<<2),
+    /// Print a deprecation warning if the keyword is given
+    parse_deprecation_warning = (1<<3),
     /// Do not print the keyword
     parse_silent = 0,
     /// Raise error if the keyword is not provided
@@ -66,7 +68,9 @@ public:
     /// The call is being executed from a read_restart() function
     parse_restart = (1<<18),
     /// Alias for old default behavior (should be phased out)
-    parse_normal = (1<<2) | (1<<1) | (1<<17)
+    parse_normal = (1<<2) | (1<<1) | (1<<17),
+    /// Settings for a deprecated keyword
+    parse_deprecated = (1<<1) | (1<<3) | (1<<17)
   };
 
   /// \brief Check that all the keywords within "conf" are in the list

@@ -45,8 +45,8 @@ colvar {
     rmsd {
         atoms {
             atomNumbers { 1 2 3 4 5 6 7 8 }
-            rotateReference
-            centerReference
+            rotateToReference
+            centerToReference
             refpositionsfile ../Common/pi-ideal.xyz
         }
         refpositionsfile ../Common/da.xyz
@@ -73,7 +73,7 @@ colvar {
     rmsd {
         atoms {
             atomNumbers { 1 2 3 4 5 6 7 8 }
-            centerReference
+            centerToReference
             refpositionsfile ../Common/da.xyz
         }
         refpositionsfile ../Common/da.xyz
@@ -100,7 +100,7 @@ colvar {
     rmsd {
         atoms {
             atomNumbers { 1 2 3 4 5 6 7 8 }
-            rotateReference
+            rotateToReference
             refpositionsfile ../Common/da.xyz
         }
         refpositionsfile ../Common/da.xyz
@@ -127,8 +127,8 @@ colvar {
     rmsd {
         atoms {
             atomNumbers { 1 2 3 4 5 6 7 8 }
-            centerReference no
-            rotateReference no
+            centerToReference no
+            rotateToReference no
         }
         refpositionsfile ../Common/da.xyz
     }
