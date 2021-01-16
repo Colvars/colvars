@@ -208,17 +208,17 @@ public:
 					//  a force DCD file be updated
 	int xstFrequency;		//  How often (in timesteps) should
 					//  a XST trajectory file be updated
-	char auxFilename[128];		//  auxilary output filename
-	char dcdFilename[128];		//  DCD filename
-	char velDcdFilename[128];       //  Velocity DCD filename
-	char forceDcdFilename[128];     //  Force DCD filename
-	char xstFilename[128];		//  Extended system trajectory filename
-	char outputFilename[128];	//  Output file name.  This name will
+	char auxFilename[NAMD_FILENAME_BUFFER_SIZE];		//  auxilary output filename
+	char dcdFilename[NAMD_FILENAME_BUFFER_SIZE];		//  DCD filename
+	char velDcdFilename[NAMD_FILENAME_BUFFER_SIZE];       //  Velocity DCD filename
+	char forceDcdFilename[NAMD_FILENAME_BUFFER_SIZE];     //  Force DCD filename
+	char xstFilename[NAMD_FILENAME_BUFFER_SIZE];		//  Extended system trajectory filename
+	char outputFilename[NAMD_FILENAME_BUFFER_SIZE];	//  Output file name.  This name will
 					//  have .coor appended to it
 					//  for the coordinates and
 					//  .vel appended to
 					//  it for the velocities
-	char restartFilename[128];	//  Base name of the restart file
+	char restartFilename[NAMD_FILENAME_BUFFER_SIZE];	//  Base name of the restart file
 	int restartFrequency;		//  How often (in timesteps) shoud the
 					//  restart files be updated
         Bool restartSave;		//  unique filenames for restart files
@@ -298,8 +298,8 @@ public:
 	// Ported by JLai -- JE - Go
         Bool goGroPair;           //  FLAG FALSE->Explicit Gromacs pairs will be calculated
         Bool goForcesOn;          //  FLAG TRUE-> Go forces will be calculated
-        char goParameters[128];   //  File for Go parameters
-        char goCoordinates[128];  //  File for Go structure and atom chain types
+        char goParameters[NAMD_FILENAME_BUFFER_SIZE];   //  File for Go parameters
+        char goCoordinates[NAMD_FILENAME_BUFFER_SIZE];  //  File for Go structure and atom chain types
         //JLai 6.3.11
 	GoChoices  goMethod;      //  Integer for Go method -- 1) Matrix-Go, 3) Low-mem-Go
 	// End of port -- JL
@@ -319,30 +319,30 @@ public:
 
         //****** BEGIN moving drag changes
         Bool movDragOn;               //  Flag TRUE-> moving drag active
-        char movDragFile[128];        //  PDB file defining dragged atoms
+        char movDragFile[NAMD_FILENAME_BUFFER_SIZE];        //  PDB file defining dragged atoms
                                       //  by non-zero value in the column
 	BigReal movDragGlobVel;       //  global drag velocity (A/step)
-	char movDragVelFile[128];     //  PDB file; XYZ scale moving drag
+	char movDragVelFile[NAMD_FILENAME_BUFFER_SIZE];     //  PDB file; XYZ scale moving drag
                                       //  velocity for each atom
         //****** END moving drag changes
         //****** BEGIN rotating drag changes
         Bool rotDragOn;               //  Flag TRUE-> rotating drag active
-        char rotDragFile[128];        //  PDB file defining dragged atoms
+        char rotDragFile[NAMD_FILENAME_BUFFER_SIZE];        //  PDB file defining dragged atoms
                                       //  by non-zero value in the column
-	char rotDragAxisFile[128];    //  PDB file; XYZ define axes for atoms;
-	char rotDragPivotFile[128];   //  PDB file; XYZ define pivots for atoms
+	char rotDragAxisFile[NAMD_FILENAME_BUFFER_SIZE];    //  PDB file; XYZ define axes for atoms;
+	char rotDragPivotFile[NAMD_FILENAME_BUFFER_SIZE];   //  PDB file; XYZ define pivots for atoms
 	BigReal rotDragGlobVel;       //  global drag velocity (deg/step)
-	char rotDragVelFile[128];     //  PDB file; B or O scales angular
+	char rotDragVelFile[NAMD_FILENAME_BUFFER_SIZE];     //  PDB file; B or O scales angular
                                       //  velocity for each atom
         //****** END rotating drag changes
         //****** BEGIN "constant" torque changes
         Bool consTorqueOn;            //  Flag TRUE-> "constant" torque active
-        char consTorqueFile[128];     //  PDB file defining torqued atoms
+        char consTorqueFile[NAMD_FILENAME_BUFFER_SIZE];     //  PDB file defining torqued atoms
                                       //  by non-zero value in the column
-	char consTorqueAxisFile[128]; //  PDB file; XYZ define axes for atoms;
-	char consTorquePivotFile[128];//  PDB file; XYZ define pivots for atoms
+	char consTorqueAxisFile[NAMD_FILENAME_BUFFER_SIZE]; //  PDB file; XYZ define axes for atoms;
+	char consTorquePivotFile[NAMD_FILENAME_BUFFER_SIZE];//  PDB file; XYZ define pivots for atoms
 	BigReal consTorqueGlobVal;    //  global "torque" (Kcal/(mol*A^2))
-	char consTorqueValFile[128];  //  PDB file; B or O scales "torque"
+	char consTorqueValFile[NAMD_FILENAME_BUFFER_SIZE];  //  PDB file; B or O scales "torque"
                                       //  for each atom
         //****** END "constant" torque changes
 
@@ -352,14 +352,14 @@ public:
         zVector SMDDir;                  //  Direction of the movement
         BigReal SMDk; 			//  Elastic constant for SMD
 	BigReal SMDk2;			//  Transverse elastic constant for SMD
- 	char SMDFile[128];		//  File for SMD information
+ 	char SMDFile[NAMD_FILENAME_BUFFER_SIZE];		//  File for SMD information
         int SMDOutputFreq;              //  Output frequency for SMD constr.
         //****** END SMD constraints changes
 
   //****** BEGIN tabulated energy section
   Bool tabulatedEnergies;
   int tableNumTypes;
-  char tabulatedEnergiesFile[128];
+  char tabulatedEnergiesFile[NAMD_FILENAME_BUFFER_SIZE];
   char tableInterpType[128];
   Real tableSpacing;
   BigReal tableMaxDist;
@@ -368,7 +368,7 @@ public:
         // TMD
         Bool TMDOn, TMDDiffRMSD;
         BigReal TMDk;
-        char TMDFile[128], TMDFile2[128];
+        char TMDFile[NAMD_FILENAME_BUFFER_SIZE], TMDFile2[NAMD_FILENAME_BUFFER_SIZE];
         int TMDOutputFreq;
         int TMDFirstStep, TMDLastStep;
         BigReal TMDInitialRMSD, TMDFinalRMSD;
@@ -376,9 +376,9 @@ public:
         //Symmetry restraints
         Bool symmetryOn, symmetryScaleForces;
         BigReal symmetryk;
-        char symmetrykfile[128];
-        char symmetryFile[128];
-        char symmetryMatrixFile[128];
+        char symmetrykfile[NAMD_FILENAME_BUFFER_SIZE];
+        char symmetryFile[NAMD_FILENAME_BUFFER_SIZE];
+        char symmetryMatrixFile[NAMD_FILENAME_BUFFER_SIZE];
         int symmetryFirstStep, symmetryLastStep, symmetryFirstFullStep, symmetryLastFullStep;
 
 
@@ -406,7 +406,7 @@ public:
   BigReal alchTemp;         //  temperature for alchemical calculation
   int alchOutFreq;          //  freq. of alchemical output
   Bool alchEnsembleAvg;      //if do ensemble average for the net free energy difference
-  char alchOutFile[128];    //  alchemical output filename
+  char alchOutFile[NAMD_FILENAME_BUFFER_SIZE];    //  alchemical output filename
   int alchEquilSteps;       //  # of equil. steps in the window
   BigReal alchVdwShiftCoeff; //  r2 shift coeff used for generating
                             //  the alchemical altered vdW interactions
@@ -457,25 +457,25 @@ public:
   /**< enables scaling for bond and angle terms (default is off) */
 
         Bool extForcesOn;		//  Are ext command forces present?
-        char extForcesCommand[256];
-        char extCoordFilename[128];
-        char extForceFilename[128];
+        char extForcesCommand[NAMD_FILENAME_BUFFER_SIZE];
+        char extCoordFilename[NAMD_FILENAME_BUFFER_SIZE];
+        char extForceFilename[NAMD_FILENAME_BUFFER_SIZE];
 
 
         // Defines variables for QM/MM calculations
         Bool qmForcesOn;               //  Are QM/MM command forces present?
-        char qmParamPDB[128];
+        char qmParamPDB[NAMD_FILENAME_BUFFER_SIZE];
         Bool qmParamPDBDefined;
         Bool qmChrgFromPSF;
-        char qmExecPath[256];
+        char qmExecPath[NAMD_FILENAME_BUFFER_SIZE];
         char qmSoftware[128];
         char qmChrgModeS[16];
         int qmChrgMode;
         char qmColumn[16];
-        char qmBaseDir[256];
-        char qmSecProc[256];
+        char qmBaseDir[NAMD_FILENAME_BUFFER_SIZE];
+        char qmSecProc[NAMD_FILENAME_BUFFER_SIZE];
         Bool qmSecProcOn;
-        char qmPrepProc[256];
+        char qmPrepProc[NAMD_FILENAME_BUFFER_SIZE];
         Bool qmPrepProcOn;
         int qmFormat ;
         Bool qmReplaceAll ;
@@ -508,7 +508,7 @@ public:
         int qmLSSMode;
 
         Bool qmCSMD;
-        char qmCSMDFile[128];
+        char qmCSMDFile[NAMD_FILENAME_BUFFER_SIZE];
 
         int qmEnergyOutFreq ;
         int qmOutFreq ;
@@ -555,7 +555,7 @@ public:
 #endif
 	Bool tclBCOn;			//  Are Tcl boundary forces present
 	char *tclBCScript;		//  Script defining tclBC calcforces
-	char tclBCArgs[128];		//  Extra args for calcforces command
+	char tclBCArgs[NAMD_FILENAME_BUFFER_SIZE];		//  Extra args for calcforces command
 	Bool freeEnergyOn;		//  Doing free energy perturbation?
 	Bool miscForcesOn;		//  Using misc forces?
 	Bool colvarsOn;         //  Using the colvars module?
@@ -636,7 +636,7 @@ public:
 	BigReal accelMDGSigma0P;	//  upper limit of std of total potential
 	BigReal accelMDGSigma0D;	//  upper limit of std of dihedral potential
 	Bool accelMDGRestart;		//  Flag to set use restart file in Gaussian accelMD
-	char accelMDGRestartFile[128];	//  restart file name
+  char accelMDGRestartFile[NAMD_FILENAME_BUFFER_SIZE];  //  restart file name
 	Bool accelMDGresetVaftercmd;	//  Flag to reset potential after first accelMDGcMDSteps steps
 
         /* Begin Adaptive Temperature Sampling */
@@ -654,8 +654,8 @@ public:
         BigReal adaptTempCgamma;               //  Cgamma variable for adaptive bin averaging Cgamma = 0 is normal Averaging. 1 > Cgamma >= 0
         Bool adaptTempLangevin;                //  Couple to Langevin Thermostat
         Bool adaptTempRescale;                 //  Couple to Vel. Rescaling
-        char adaptTempInFile[128];             //  Restart information for adaptTemp to read
-        char adaptTempRestartFile[128];        //  File to write restart information
+        char adaptTempInFile[NAMD_FILENAME_BUFFER_SIZE];             //  Restart information for adaptTemp to read
+        char adaptTempRestartFile[NAMD_FILENAME_BUFFER_SIZE];        //  File to write restart information
         int  adaptTempRestartFreq;             //  Frequency of writing restart output
         Bool adaptTempRandom;                  //  Do we assign random temperatures when we step out of [Tmin,Tmax]?
         /* End Adaptive Temperature Sampling */
@@ -817,7 +817,7 @@ public:
 	Bool FFTWEstimate;
 	Bool FFTWPatient;
 	Bool FFTWUseWisdom;
-	char FFTWWisdomFile[128];
+	char FFTWWisdomFile[NAMD_FILENAME_BUFFER_SIZE];
 	char *FFTWWisdomString;
 
         #ifdef OPENATOM_VERSION
@@ -865,7 +865,7 @@ public:
 	BigReal eFieldPhase;		// Phase phi, cos(w*t-phi*PI/180)
 
 	Bool stirOn;                   // Should a stirring torque be applied
-	char stirFilename[128];	       // Stirring filename (atoms marked)
+	char stirFilename[NAMD_FILENAME_BUFFER_SIZE];	       // Stirring filename (atoms marked)
 	//do the below two even needed to be defined?
 	BigReal stirStartingTheta;     // Stir starting theta offset
 	BigReal stirVel;               // Stir angular velocity
@@ -878,7 +878,7 @@ public:
 	Bool extraBondsCosAnglesSetByUser; // did the user set this explicitly
 
 	Bool consForceOn;		//  Should constant force be applied
-  char consForceFile[128];
+  char consForceFile[NAMD_FILENAME_BUFFER_SIZE];
 	BigReal consForceScaling;
 
 	int outputEnergies;		//  Number of timesteps between energy
@@ -1034,7 +1034,7 @@ public:
     int numoutputprocs;
     int numoutputwrts;
 
-	char computeMapFilename[128];		//  store compute map
+	char computeMapFilename[NAMD_FILENAME_BUFFER_SIZE];		//  store compute map
         Bool storeComputeMap;
         Bool loadComputeMap;
 
