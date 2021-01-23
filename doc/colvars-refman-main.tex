@@ -2897,18 +2897,32 @@ The usage of \texttt{gzpathCV} and \texttt{gspathCV} is illustrated below:
 
 \cvsubsec{Arithmetic path collective variables}{sec:cvc_apathCV}
 
-The arithmetic path collective variable in CV space uses the same formula as the one proposed by Branduardi\cite{Branduardi2007} et al., except that it computes $s$ and $z$ in CV space instead of RMSDs in Cartesian space. Moreover, this implementation allows different coefficients for each CV components as described in \cite{Hovan2019}. Assuming a path is composed of $N$ reference frames and defined in an $M$-dimensional CV space, then the equations of $s$ and $z$ of the path are
+The arithmetic path collective variable in CV space uses a similar formula as 
+the one proposed by Branduardi\cite{Branduardi2007} et al., except that it 
+computes $s$ and $z$ in CV space instead of RMSDs in Cartesian space. Moreover, 
+this implementation allows different coefficients for each CV components as 
+described in \cite{Hovan2019}. Assuming a path is composed of $N$ reference 
+frames and defined in an $M$-dimensional CV space, then the equations of $s$ 
+and $z$ of the path are
 
 \begin{equation}
-s = \frac{\sum_{i=1}^{N} i \exp\left(-\lambda\sum_{j=1}^{M} c_j^2 \left(x_j-x_{i,j}\right)^2\right)}{\sum_{i=1}^{N} \exp\left(-\lambda\sum_{j=1}^{M} c_j^2 \left(x_j-x_{i,j}\right)^2\right)}
+s = \frac{1}{N-1}\frac{\sum_{i=0}^{N-1} i \exp\left(-\lambda\sum_{j=1}^{M} 
+c_j^2 \left(x_j-x_{i,j}\right)^2\right)}{\sum_{i=0}^{N-1} 
+\exp\left(-\lambda\sum_{j=1}^{M} c_j^2 \left(x_j-x_{i,j}\right)^2\right)}
 \label{eq:apath_s}
 \end{equation}
 
 \begin{equation}
-z = -\frac{1}{\lambda} \ln \left(\sum_{i=1}^{N} \exp\left(-\lambda\sum_{j=1}^{M} c_j^2 \left(x_j-x_{i,j}\right) \right)\right)
+z = -\frac{1}{\lambda} \ln \left(\sum_{i=0}^{N-1} 
+\exp\left(-\lambda\sum_{j=1}^{M} c_j^2 \left(x_j-x_{i,j}\right)^2 \right)\right)
 \label{eq:apath_z}
 \end{equation}
-where $c_j$ is the coefficient(weight) of the $j$-th CV, $x_{i,j}$ is the value of $j$-th CV of $i$-th reference frame and $x_{j}$ is the value of $j$-th CV of current frame. $\lambda$ is a parameter to smooth the variation of $s$ and $z$.
+where $c_j$ is the coefficient(weight) of the $j$-th CV, $x_{i,j}$ is the value 
+of $j$-th CV of $i$-th reference frame and $x_{j}$ is the value of $j$-th CV of 
+current frame. $\lambda$ is a parameter to smooth the variation of $s$ and $z$. 
+It should be noted that the index $i$ ranges from $0$ to $N-1$, and the 
+definition of $s$ is normalized by $1/(N-1)$. Consequently, the scope of $s$ is 
+$[0:1]$.
 
 \cvsubsubsec{\texttt{aspathCV}: progress along a path defined in CV space.}{sec:cvc_aspathCV}
 
