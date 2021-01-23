@@ -223,7 +223,7 @@ proc ::cv_dashboard::cvContextMenu { x y wX wY } {
 
   # Add any colvar under mouse cursor
   # reduce scalar components to their parent vector CV
-  set cv [lindex [$w.cvtable identify item $x $y] 0]
+  set cv [lindex [$w.cvtable identify row $x $y] 0]
   if { [llength $cv] == 1 && [lsearch $cvs $cv] == -1 } {
     lappend cvs $cv
   }
@@ -268,7 +268,7 @@ proc ::cv_dashboard::cvTableClicked { x y } {
   set menu $w.cvMenu
 
   # colvar under mouse
-  set cv [$w.cvtable identify item $x $y]
+  set cv [$w.cvtable identify row $x $y]
 
   # Deselect all if clicked on nothing
   if { [llength $cv] == 0 } {
