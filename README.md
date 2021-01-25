@@ -2,6 +2,8 @@
 
 A software module for molecular simulation and analysis that provides a high-performance implementation of sampling algorithms defined on a reduced space of continuously differentiable functions (aka collective variables).
 
+First released in 2008 as part of the standard distribution of [NAMD](https://www.ks.uiuc.edu/Research/namd/) version 2.7b1, Colvars has also been integrated in [LAMMPS](https://lammps.sandia.gov/download.html) and [VMD](https://www.ks.uiuc.edu/Research/vmd/).
+
 The module itself implements a variety of functions and algorithms, including free-energy estimators based on thermodynamic forces, non-equilibrium work and probability distributions.
 
 ## Obtaining and using
@@ -9,10 +11,11 @@ The module itself implements a variety of functions and algorithms, including fr
 The easiest way to obtain pre-compiled versions of Colvars is via one of following:
 - the molecular simulation program [LAMMPS](https://lammps.sandia.gov/download.html);
 - the molecular simulation program [NAMD](https://www.ks.uiuc.edu/Research/namd/);
-- the molecular visualization program [VMD](https://www.ks.uiuc.edu/Research/vmd/);
-- the molecular simulation program [GROMACS](http://www.gromacs.org/) through our [releases](#gromacs-colvars-releases).
+- the molecular visualization program [VMD](https://www.ks.uiuc.edu/Research/vmd/).
 
 Please check [here](https://github.com/Colvars/colvars/releases) to see which version of Colvars is included with the round-number or "stable" versions of each code.
+
+For the molecular simulation program [GROMACS](http://www.gromacs.org/), code may be compiled via our Colvars-patched [releases](#gromacs-colvars-releases).
 
 ## Documentation
 
