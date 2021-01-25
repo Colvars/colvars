@@ -86,26 +86,26 @@ and run the provided `update-colvars-code.sh` script against the unpacked source
 ```
 and recompile them.
 
-The `update-colvars-code.sh` script and its supporting files are synchronized with the latest version of each program:
+The `update-colvars-code.sh` script support patching the latest version of each program:
 - the [LAMMPS Github repository](https://github.com/lammps/lammps);
 - the [NAMD Git repository](https://www.ks.uiuc.edu/Research/namd/development.html);
 - the [CVS repositories of VMD and its plugins](https://www.ks.uiuc.edu/Research/vmd/doxygen/cvsget.html).
 
-Earlier versions are not supported.
+Earlier versions of these codes are not supported.
 
-For GROMACS, the versions supported are 2018.X and 2020.X.
+For GROMACS, pre-patched versions are provided below.
 
 ## Gromacs-Colvars releases
 
-Here a list of GROMACS archives with Colvars patch:
+The following links allow to download several versions of Gromacs containing the latest version of Colvars:
 
- - [2018.8](https://github.com/Colvars/gromacs/releases/tag/v2018.8-colvars) with Colvars version 2020-10-22
- - [2020.1](https://github.com/Colvars/gromacs/releases/tag/v2020.1-colvars) with Colvars version 2020-10-22
- - [2020.2](https://github.com/Colvars/gromacs/releases/tag/v2020.2-colvars) with Colvars version 2020-10-22
- - [2020.3](https://github.com/Colvars/gromacs/releases/tag/v2020.3-colvars) with Colvars version 2020-10-22
- - [2020.4](https://github.com/Colvars/gromacs/releases/tag/v2020.4-colvars) with Colvars version 2020-10-22
+ - **2020.5** in [Tar.gz](https://github.com/Colvars/gromacs/archive/v2020.5-colvars.tar.gz) and [Zip](https://github.com/Colvars/gromacs/archive/v2020.5-colvars.zip) formats
 
-## Which version is recommended?
+ - **2018.8** in [Tar.gz](https://github.com/Colvars/gromacs/archive/v2018.8-colvars.tar.gz) and [Zip](https://github.com/Colvars/gromacs/archive/v2018.8-colvars.zip) formats
+
+Gromacs-Colvars versions not listed above are not supported.  When using the [Gromacs forum](https://gromacs.bioexcel.eu/) to discuss usage of these versions, please specify "GROMACS modification: **Yes**"
+
+## Which version of Colvars is recommended?
 
 The `master` branch is to be considered the "*stable*" release at any given time; any bugfixes are released through `master` first.  The input syntax is near-completely *backward-compatible* and output files are *forward-compatible*.  Feel free to download Colvars and update NAMD, VMD, LAMMPS or GROMACS as needed.
 
