@@ -151,6 +151,12 @@ public:
   }
 
   /// Reimplemented to work around MS compiler issues
+  static inline real asin(real const &x)
+  {
+    return ::asin(static_cast<double>(x));
+  }
+
+  /// Reimplemented to work around MS compiler issues
   static inline real acos(real const &x)
   {
     return ::acos(static_cast<double>(x));
