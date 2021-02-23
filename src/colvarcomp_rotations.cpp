@@ -487,7 +487,7 @@ void colvar::euler_phi::calc_value()
   const cvm::real& q3 = rot.q.q3;
   const cvm::real tmp_y = 2 * (q0 * q1 + q2 * q3);
   const cvm::real tmp_x = 1 - 2 * (q1 * q1 + q2 * q2);
-  x.real_value = std::atan2(tmp_y, tmp_x) * (180.0/PI);
+  x.real_value = cvm::atan2(tmp_y, tmp_x) * (180.0/PI);
 }
 
 
@@ -606,7 +606,7 @@ void colvar::euler_psi::calc_value()
   const cvm::real& q3 = rot.q.q3;
   const cvm::real tmp_y = 2 * (q0 * q3 + q1 * q2);
   const cvm::real tmp_x = 1 - 2 * (q2 * q2 + q3 * q3);
-  x.real_value = std::atan2(tmp_y, tmp_x) * (180.0/PI);
+  x.real_value = cvm::atan2(tmp_y, tmp_x) * (180.0/PI);
 }
 
 
@@ -719,7 +719,7 @@ void colvar::euler_theta::calc_value()
   const cvm::real& q1 = rot.q.q1;
   const cvm::real& q2 = rot.q.q2;
   const cvm::real& q3 = rot.q.q3;
-  x.real_value = std::asin(2 * (q0 * q2 - q3 * q1)) * (180.0/PI);
+  x.real_value = cvm::asin(2 * (q0 * q2 - q3 * q1)) * (180.0/PI);
 }
 
 
@@ -729,7 +729,7 @@ void colvar::euler_theta::calc_gradients()
   const cvm::real& q1 = rot.q.q1;
   const cvm::real& q2 = rot.q.q2;
   const cvm::real& q3 = rot.q.q3;
-  const cvm::real denominator = std::sqrt(1 - (2 * q0 * q2 - 2 * q1 * q3) * (2 * q0 * q2 - 2 * q1 * q3));
+  const cvm::real denominator = cvm::sqrt(1 - (2 * q0 * q2 - 2 * q1 * q3) * (2 * q0 * q2 - 2 * q1 * q3));
   const cvm::real dxdq0 = (180.0/PI) * 2 * q2 / denominator;
   const cvm::real dxdq1 = (180.0/PI) * -2 * q3 / denominator;
   const cvm::real dxdq2 = (180.0/PI) * 2 * q0 / denominator;
