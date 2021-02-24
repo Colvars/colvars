@@ -13,7 +13,7 @@ CVSCRIPT(bias_bin,
          "bin : integer - Bin index",
          0, 0,
          "",
-         script->set_result_str(cvm::to_str(this_bias->current_bin()));
+         script->set_result_int(this_bias->current_bin());
          return COLVARS_OK;
          )
 
@@ -32,7 +32,7 @@ CVSCRIPT(bias_bincount,
              return COLVARSCRIPT_ERROR;
            }
          }
-         script->set_result_str(cvm::to_str(this_bias->bin_count(index)));
+         script->set_result_int(this_bias->bin_count(index));
          return COLVARS_OK;
          )
 
@@ -47,7 +47,7 @@ CVSCRIPT(bias_binnum,
                                  this_bias->name);
            return COLVARSCRIPT_ERROR;
          }
-         script->set_result_str(cvm::to_str(r));
+         script->set_result_int(r);
          return COLVARS_OK;
          )
 

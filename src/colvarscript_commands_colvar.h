@@ -99,13 +99,7 @@ CVSCRIPT(colvar_getatomids,
          "indices : array of ints - Atom indices",
          0, 0,
          "",
-         std::string result;
-         std::vector<int>::iterator li = this_colvar->atom_ids.begin();
-         for ( ; li != this_colvar->atom_ids.end(); ++li) {
-           result += cvm::to_str(*li);
-           result += " ";
-         }
-         script->set_result_str(result);
+         script->set_result_int_vec(this_colvar->atom_ids);
          return COLVARS_OK;
          )
 
@@ -152,14 +146,7 @@ CVSCRIPT(colvar_getvolmapids,
          "Return the list of volumetric map indices used by this colvar",
          0, 0,
          "",
-         std::string result;
-         std::vector<int> const &ids = this_colvar->get_volmap_ids();
-         for (std::vector<int>::const_iterator li = ids.begin();
-              li != ids.end(); ++li) {
-           result += cvm::to_str(*li);
-           result += " ";
-         }
-         script->set_result_str(result);
+         script->set_result_int_vec(this_colvar->get_volmap_ids());
          return COLVARS_OK;
          )
 

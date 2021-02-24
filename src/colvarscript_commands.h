@@ -172,7 +172,7 @@ CVSCRIPT(cv_frame,
          if (arg == NULL) {
            long int f = -1;
            if (script->proxy()->get_frame(f) == COLVARS_OK) {
-             script->set_result_str(cvm::to_str(f));
+             script->set_result_long_int(f);
              return COLVARS_OK;
            } else {
              script->add_error_msg("Frame number is not available");
@@ -337,7 +337,7 @@ CVSCRIPT(cv_molid,
          if (arg == NULL) {
            int molid = -1;
            script->proxy()->get_molid(molid);
-           script->set_result_str(cvm::to_str(molid));
+           script->set_result_int(molid);
            return COLVARS_OK;
          } else {
            script->add_error_msg("Error: To change the molecule ID in VMD, use cv delete first.");

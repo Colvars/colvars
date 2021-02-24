@@ -46,9 +46,8 @@ public:
   /// COLVARSCRIPT_ERROR
   int proxy_error;
 
-  /// If an error is returned by one of the methods, it should set this to the
-  /// error message
-  std::string result;
+  /// String representation of the result of a script call
+  std::string str_result_;
 
   /// Run a script command with space-separated positional arguments (objects)
   int run(int objc, unsigned char *const objv[]);
@@ -56,13 +55,13 @@ public:
   /// Get the string result of the current scripting call
   inline std::string const &str_result() const
   {
-    return result;
+    return str_result_;
   }
 
   /// Modify the string result of the current scripting call
   inline std::string &modify_str_result()
   {
-    return result;
+    return str_result_;
   }
 
   /// Set the return value to the given string
@@ -199,11 +198,31 @@ public:
     return this->proxy_;
   }
 
+  // Input functions - get the string reps of script argument objects
+
   /// Get the string representation of an object (by default, a simple cast)
   char *obj_to_str(unsigned char *obj);
 
   /// Get a list of strings from an object (does not work with a simple cast)
   std::vector<std::string> obj_to_str_vector(unsigned char *obj);
+
+
+  // Output functions - convert internal objects to representations suitable
+  // for use in the scripting language.  At the moment only conversion to C
+  // strings is supported, and obj is assumed to be a char * pointer.
+
+  /// Copy x into obj if not NULL, or into the script object's result otherwise
+  int set_result_int(int const &x, unsigned char *obj = NULL);
+
+  /// Copy x into obj if not NULL, or into the script object's result otherwise
+  int set_result_int_vec(std::vector<int> const &x, unsigned char *obj = NULL);
+
+  /// Copy x into obj if not NULL, or into the script object's result otherwise
+  int set_result_long_int(long int const &x, unsigned char *obj = NULL);
+
+  /// Copy x into obj if not NULL, or into the script object's result otherwise
+  int set_result_long_int_vec(std::vector<long int> const &x,
+                              unsigned char *obj = NULL);
 
 private:
 
@@ -261,6 +280,18 @@ private: // TODO
     }
     return NULL;
   }
+
+  /// Set obj equal to x, using its string representation
+  template <typename T>
+  int set_result_text(T const &x, unsigned char *obj);
+
+  /// Code reused by instances of set_result_text()
+  template <typename T>
+  int pack_vector_elements_text(std::vector<T> const &x, std::string &x_str);
+
+  /// Code reused by all instances of set_result_text()
+  int set_result_text_from_str(std::string const &x_str, unsigned char *obj);
+
 
 };
 
