@@ -24,7 +24,7 @@ CVSCRIPT(colvar_addforce,
            return COLVARSCRIPT_ERROR;
          }
          this_colvar->add_bias_force(force);
-         script->set_result_str(force.to_simple_string());
+         script->set_result_colvarvalue(force);
          return COLVARS_OK;
          )
 
@@ -69,7 +69,7 @@ CVSCRIPT(colvar_getappliedforce,
          "force : float - Applied force; matches the colvar dimensionality",
          0, 0,
          "",
-         script->set_result_str((this_colvar->applied_force()).to_simple_string());
+         script->set_result_colvarvalue(this_colvar->applied_force());
          return COLVARS_OK;
          )
 
@@ -126,7 +126,7 @@ CVSCRIPT(colvar_gettotalforce,
          "force : float - Total force; matches the colvar dimensionality",
          0, 0,
          "",
-         script->set_result_str((this_colvar->total_force()).to_simple_string());
+         script->set_result_colvarvalue(this_colvar->total_force());
          return COLVARS_OK;
          )
 
@@ -183,7 +183,7 @@ CVSCRIPT(colvar_run_ave,
          "value : float or array - Averaged value; matches the colvar dimensionality",
          0, 0,
          "",
-         script->set_result_str(this_colvar->run_ave().to_simple_string());
+         script->set_result_colvarvalue(this_colvar->run_ave());
          return COLVARS_OK;
          )
 
@@ -220,7 +220,7 @@ CVSCRIPT(colvar_update,
          "",
          this_colvar->calc();
          this_colvar->update_forces_energy();
-         script->set_result_str((this_colvar->value()).to_simple_string());
+         script->set_result_colvarvalue(this_colvar->value());
          return COLVARS_OK;
          )
 
@@ -229,7 +229,7 @@ CVSCRIPT(colvar_value,
          "value : float or array - Current value; matches the colvar dimensionality",
          0, 0,
          "",
-         script->set_result_str(this_colvar->value().to_simple_string());
+         script->set_result_colvarvalue(this_colvar->value());
          return COLVARS_OK;
          )
 
