@@ -297,7 +297,7 @@ public:
     return &atoms_total_forces;
   }
 
-  inline std::vector<cvm::rvector> *modify_atom_new_colvar_forces()
+  inline std::vector<cvm::rvector> *modify_atom_applied_forces()
   {
     return &atoms_new_colvar_forces;
   }
