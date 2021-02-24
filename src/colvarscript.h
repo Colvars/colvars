@@ -238,6 +238,13 @@ public:
   int set_result_rvector_vec(std::vector<cvm::rvector> const &x,
                              unsigned char *obj = NULL);
 
+  /// Copy x into obj if not NULL, or into the script object's result otherwise
+  int set_result_colvarvalue(colvarvalue const &x, unsigned char *obj = NULL);
+
+  /// Copy x into obj if not NULL, or into the script object's result otherwise
+  int set_result_colvarvalue_vec(std::vector<colvarvalue> const &x,
+                                 unsigned char *obj = NULL);
+
 private:
 
   /// Set up all script API functions
