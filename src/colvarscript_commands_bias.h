@@ -64,7 +64,7 @@ CVSCRIPT(bias_energy,
          "E : float - Energy value",
          0, 0,
          "",
-         script->set_result_str(cvm::to_str(this_bias->get_energy()));
+         script->set_result_real(this_bias->get_energy());
          return COLVARS_OK;
          )
 
@@ -178,6 +178,6 @@ CVSCRIPT(bias_update,
          0, 0,
          "",
          this_bias->update();
-         script->set_result_str(cvm::to_str(this_bias->get_energy()));
+         script->set_result_colvarvalue(this_bias->get_energy());
          return COLVARS_OK;
          )
