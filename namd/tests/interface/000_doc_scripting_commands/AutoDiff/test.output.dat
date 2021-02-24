@@ -10,6 +10,12 @@ cv config <conf>
 cv configfile <conf_file>
 cv delete
 cv frame [frame]
+cv getatomappliedforces
+cv getatomids
+cv getatomcharges
+cv getatommasses
+cv getatompositions
+cv getatomtotalforces
 cv getconfig
 cv getenergy
 cv help [command]
@@ -563,6 +569,78 @@ Returns
 -------
 
 frame : integer - Frame number
+
+======================================================================
+Help for script function "cv_getatomappliedforces":
+
+cv getatomappliedforces
+
+Return the list of forces applied by Colvars to atoms
+
+Returns
+-------
+
+forces : array of arrays of floats - Atomic forces
+
+======================================================================
+Help for script function "cv_getatomcharges":
+
+cv getatomcharges
+
+Return the list of charges of atoms used in Colvars
+
+Returns
+-------
+
+charges : array of floats - Atomic charges
+
+======================================================================
+Help for script function "cv_getatomids":
+
+cv getatomids
+
+Return the list of indices of atoms used in Colvars
+
+Returns
+-------
+
+indices : array of ints - Atomic indices
+
+======================================================================
+Help for script function "cv_getatommasses":
+
+cv getatommasses
+
+Return the list of masses of atoms used in Colvars
+
+Returns
+-------
+
+masses : array of floats - Atomic masses
+
+======================================================================
+Help for script function "cv_getatompositions":
+
+cv getatompositions
+
+Return the list of cached positions of atoms used in Colvars
+
+Returns
+-------
+
+positions : array of arrays of floats - Atomic positions
+
+======================================================================
+Help for script function "cv_getatomtotalforces":
+
+cv getatomtotalforces
+
+Return the list of cached total forces of atoms used in Colvars
+
+Returns
+-------
+
+forces : array of arrays of floats - Atomic total foces
 
 ======================================================================
 Help for script function "cv_getconfig":

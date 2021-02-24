@@ -190,6 +190,60 @@ CVSCRIPT(cv_frame,
          return COLVARS_OK;
          )
 
+CVSCRIPT(cv_getatomappliedforces,
+         "Get the list of forces applied by Colvars to atoms\n"
+         "forces : array of arrays of floats - Atomic forces",
+         0, 0,
+         "",
+         script->set_result_rvector_vec(*(script->proxy()->modify_atom_applied_forces()));
+         return COLVARS_OK;
+         )
+
+CVSCRIPT(cv_getatomids,
+         "Get the list of indices of atoms used in Colvars\n"
+         "indices : array of ints - Atomic indices",
+         0, 0,
+         "",
+         script->set_result_int_vec(*(script->proxy()->get_atom_ids()));
+         return COLVARS_OK;
+         )
+
+CVSCRIPT(cv_getatomcharges,
+         "Get the list of charges of atoms used in Colvars\n"
+         "charges : array of floats - Atomic charges",
+         0, 0,
+         "",
+         script->set_result_real_vec(*(script->proxy()->modify_atom_charges()));
+         return COLVARS_OK;
+         )
+
+CVSCRIPT(cv_getatommasses,
+         "Get the list of masses of atoms used in Colvars\n"
+         "masses : array of floats - Atomic masses",
+         0, 0,
+         "",
+         script->set_result_real_vec(*(script->proxy()->modify_atom_masses()));
+         return COLVARS_OK;
+         )
+
+CVSCRIPT(cv_getatompositions,
+         "Get the list of cached positions of atoms used in Colvars\n"
+         "positions : array of arrays of floats - Atomic positions",
+         0, 0,
+         "",
+         script->set_result_rvector_vec(*(script->proxy()->modify_atom_positions()));
+         return COLVARS_OK;
+         )
+
+CVSCRIPT(cv_getatomtotalforces,
+         "Get the list of cached total forces of atoms used in Colvars\n"
+         "forces : array of arrays of floats - Atomic total foces",
+         0, 0,
+         "",
+         script->set_result_rvector_vec(*(script->proxy()->modify_atom_positions()));
+         return COLVARS_OK;
+         )
+
 CVSCRIPT(cv_getconfig,
          "Get the module's configuration string read so far\n"
          "conf : string - Current configuration string",
