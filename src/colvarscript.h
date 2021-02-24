@@ -224,6 +224,20 @@ public:
   int set_result_long_int_vec(std::vector<long int> const &x,
                               unsigned char *obj = NULL);
 
+  /// Copy x into obj if not NULL, or into the script object's result otherwise
+  int set_result_real(cvm::real const &x, unsigned char *obj = NULL);
+
+  /// Copy x into obj if not NULL, or into the script object's result otherwise
+  int set_result_real_vec(std::vector<cvm::real> const &x,
+                          unsigned char *obj = NULL);
+
+  /// Copy x into obj if not NULL, or into the script object's result otherwise
+  int set_result_rvector(cvm::rvector const &x, unsigned char *obj = NULL);
+
+  /// Copy x into obj if not NULL, or into the script object's result otherwise
+  int set_result_rvector_vec(std::vector<cvm::rvector> const &x,
+                             unsigned char *obj = NULL);
+
 private:
 
   /// Set up all script API functions

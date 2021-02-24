@@ -117,19 +117,7 @@ CVSCRIPT(colvar_getgradients,
          "gradients : array of arrays of floats - Atomic gradients",
          0, 0,
          "",
-         std::string result;
-         std::vector<cvm::rvector>::iterator li =
-           this_colvar->atomic_gradients.begin();
-         for ( ; li != this_colvar->atomic_gradients.end(); ++li) {
-           result += "{";
-           int j;
-           for (j = 0; j < 3; ++j) {
-             result += cvm::to_str((*li)[j]);
-             result += " ";
-           }
-           result += "} ";
-         }
-         script->set_result_str(result);
+         script->set_result_rvector_vec(this_colvar->atomic_gradients);
          return COLVARS_OK;
          )
 

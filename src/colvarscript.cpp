@@ -796,6 +796,36 @@ int colvarscript::set_result_text(std::vector<long int> const &x,
 }
 
 
+template <>
+int colvarscript::set_result_text(cvm::real const &x, unsigned char *obj) {
+  std::string const x_str = cvm::to_str(x);
+  return set_result_text_from_str(x_str, obj);
+}
+
+template <>
+int colvarscript::set_result_text(std::vector<cvm::real> const &x,
+                                  unsigned char *obj) {
+  std::string x_str("");
+  pack_vector_elements_text<cvm::real>(x, x_str);
+  return set_result_text_from_str(x_str, obj);
+}
+
+
+// TODO these can be removed after the Tcl backend is ready (otherwise, the
+// default template syntax may break scripts or the Dashboard)
+
+template <>
+int colvarscript::set_result_text(std::vector<cvm::rvector> const &x,
+                                  unsigned char *obj) {
+  std::string x_str("");
+  for (size_t i = 0; i < x.size(); i++) {
+    if (i > 0) x_str.append(1, ' ');
+    x_str += "{ "+x[i].to_simple_string()+" }";
+  }
+  return set_result_text_from_str(x_str, obj);
+}
+
+
 // Member functions to set script results for each typexc
 
 int colvarscript::set_result_int(int const &x, unsigned char *obj) {
@@ -807,11 +837,32 @@ int colvarscript::set_result_int_vec(std::vector<int> const &x,
   return set_result_text< std::vector<int> >(x, obj);
 }
 
+
 int colvarscript::set_result_long_int(long int const &x, unsigned char *obj) {
   return set_result_text<long int>(x, obj);
 }
 
 int colvarscript::set_result_long_int_vec(std::vector<long int> const &x,
-                                     unsigned char *obj) {
+                                          unsigned char *obj) {
   return set_result_text< std::vector<long int> >(x, obj);
+}
+
+
+int colvarscript::set_result_real(cvm::real const &x, unsigned char *obj) {
+  return set_result_text<cvm::real>(x, obj);
+}
+
+int colvarscript::set_result_real_vec(std::vector<cvm::real> const &x,
+                                      unsigned char *obj) {
+  return set_result_text< std::vector<cvm::real> >(x, obj);
+}
+
+
+int colvarscript::set_result_rvector(cvm::rvector const &x, unsigned char *obj) {
+  return set_result_text<cvm::rvector>(x, obj);
+}
+
+int colvarscript::set_result_rvector_vec(std::vector<cvm::rvector> const &x,
+                                         unsigned char *obj) {
+  return set_result_text< std::vector<cvm::rvector> >(x, obj);
 }
