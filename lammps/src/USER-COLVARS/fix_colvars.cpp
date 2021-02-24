@@ -833,7 +833,7 @@ void FixColvars::post_force(int /*vflag*/)
 
   if (me == 0) {
 
-    std::vector<cvm::rvector> &fo = *(proxy->modify_atom_new_colvar_forces());
+    std::vector<cvm::rvector> &fo = *(proxy->modify_atom_applied_forces());
 
     double *fbuf = force_buf;
     for (int j=0; j < num_coords; ++j) {
