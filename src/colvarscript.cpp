@@ -331,7 +331,7 @@ std::string colvarscript::get_command_cmdline_help(colvarscript::Object_type t,
 
 int colvarscript::run(int objc, unsigned char *const objv[])
 {
-  result.clear();
+  clear_str_result();
 
   if (cvm::debug()) {
     cvm::log("Called script run with " + cvm::to_str(objc) + " args:");
@@ -569,9 +569,9 @@ int colvarscript::set_result_str(std::string const &s)
 {
   if (cvm::get_error() != COLVARS_OK) {
     // Avoid overwriting the error message
-    result += s;
+    modify_str_result() += s;
   } else {
-    result = s;
+    modify_str_result() = s;
   }
   return COLVARS_OK;
 }
@@ -579,17 +579,17 @@ int colvarscript::set_result_str(std::string const &s)
 
 void colvarscript::add_error_msg(std::string const &s)
 {
-  result += s;
+  modify_str_result() += s;
   // Ensure terminating newlines
   if (s[s.size()-1] != '\n') {
-    result += "\n";
+    modify_str_result() += "\n";
   }
 }
 
 
 int colvarscript::clear_str_result()
 {
-  result.clear();
+  modify_str_result().clear();
   return COLVARS_OK;
 }
 
@@ -708,7 +708,7 @@ int tcl_run_colvarscript_command(ClientData /* clientData */,
   }
   int retval = script->run(objc, arg_pointers_);
 
-  std::string result = proxy->get_error_msgs() + script->result;
+  std::string result = proxy->get_error_msgs() + script->str_result();
 
   Tcl_SetResult(interp, const_cast<char *>(result.c_str()),
                 TCL_VOLATILE);
@@ -729,3 +729,89 @@ int tcl_run_colvarscript_command(ClientData /* clientData */,
 }
 
 #endif // #if defined(COLVARS_TCL)
+
+
+
+
+int colvarscript::set_result_text_from_str(std::string const &x_str,
+                                           unsigned char *obj) {
+  if (obj) {
+    strcpy(reinterpret_cast<char *>(obj), x_str.c_str());
+  } else {
+    set_result_str(x_str);
+  }
+  return COLVARS_OK;
+}
+
+// Template to convert everything to string and use the above
+
+template <typename T>
+int colvarscript::set_result_text(T const &x, unsigned char *obj) {
+  std::string const x_str = x.to_simple_string();
+  return set_result_text_from_str(x_str, obj);
+}
+
+
+template <typename T>
+int colvarscript::pack_vector_elements_text(std::vector<T> const &x,
+                                            std::string &x_str) {
+  x_str.clear();
+  for (size_t i = 0; i < x.size(); ++i) {
+    if (i > 0) x_str.append(1, ' ');
+    x_str += cvm::to_str(x[i]);
+  }
+  return COLVARS_OK;
+}
+
+
+// Specializations for plain old data types that don't have a stringifier member
+
+template <>
+int colvarscript::set_result_text(int const &x, unsigned char *obj) {
+  std::string const x_str = cvm::to_str(x);
+  return set_result_text_from_str(x_str, obj);
+}
+
+template <>
+int colvarscript::set_result_text(std::vector<int> const &x,
+                                  unsigned char *obj) {
+  std::string x_str("");
+  pack_vector_elements_text<int>(x, x_str);
+  return set_result_text_from_str(x_str, obj);
+}
+
+
+template <>
+int colvarscript::set_result_text(long int const &x, unsigned char *obj) {
+  std::string const x_str = cvm::to_str(x);
+  return set_result_text_from_str(x_str, obj);
+}
+
+template <>
+int colvarscript::set_result_text(std::vector<long int> const &x,
+                                  unsigned char *obj) {
+  std::string x_str("");
+  pack_vector_elements_text<long int>(x, x_str);
+  return set_result_text_from_str(x_str, obj);
+}
+
+
+// Member functions to set script results for each typexc
+
+int colvarscript::set_result_int(int const &x, unsigned char *obj) {
+  return set_result_text<int>(x, obj);
+}
+
+int colvarscript::set_result_int_vec(std::vector<int> const &x,
+                                     unsigned char *obj) {
+  return set_result_text< std::vector<int> >(x, obj);
+}
+
+int colvarscript::set_result_long_int(long int const &x, unsigned char *obj) {
+  return set_result_text<long int>(x, obj);
+}
+
+int colvarscript::set_result_long_int_vec(std::vector<long int> const &x,
+                                     unsigned char *obj) {
+  return set_result_text< std::vector<long int> >(x, obj);
+}
