@@ -320,6 +320,12 @@ public:
     return atoms_max_applied_force_;
   }
 
+  /// Get the atom ID with the largest applied force
+  inline int max_atoms_applied_force_id() const
+  {
+    return atoms_max_applied_force_id_;
+  }
+
   /// Record whether masses have been updated
   inline bool updated_masses() const
   {

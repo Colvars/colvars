@@ -146,6 +146,7 @@ int colvarproxy_system::get_molid(int &)
 colvarproxy_atoms::colvarproxy_atoms()
 {
   atoms_rms_applied_force_ = atoms_max_applied_force_ = 0.0;
+  atoms_max_applied_force_id_ = -1;
   updated_masses_ = updated_charges_ = false;
 }
 
@@ -239,14 +240,25 @@ int colvarproxy_atoms::load_coords(char const * /* filename */,
 void colvarproxy_atoms::compute_rms_atoms_applied_force()
 {
   atoms_rms_applied_force_ =
-    compute_norm2_stats<cvm::rvector, 0>(atoms_new_colvar_forces);
+    compute_norm2_stats<cvm::rvector, 0, false>(atoms_new_colvar_forces);
 }
 
 
 void colvarproxy_atoms::compute_max_atoms_applied_force()
 {
-  atoms_max_applied_force_ =
-    compute_norm2_stats<cvm::rvector, 1>(atoms_new_colvar_forces);
+  size_t const n_atoms_ids = atoms_ids.size();
+  if ((n_atoms_ids > 0) && (n_atoms_ids == atoms_new_colvar_forces.size())) {
+    atoms_max_applied_force_ =
+      compute_norm2_stats<cvm::rvector, 1, true>(atoms_new_colvar_forces,
+                                                 &atoms_max_applied_force_id_);
+    if (atoms_max_applied_force_id_ >= 0) {
+      atoms_max_applied_force_id_ = atoms_ids[atoms_max_applied_force_id_];
+    }
+  } else {
+    atoms_max_applied_force_ =
+      compute_norm2_stats<cvm::rvector, 1, false>(atoms_new_colvar_forces);
+    atoms_max_applied_force_id_ = -1;
+  }
 }
 
 
@@ -320,14 +332,14 @@ void colvarproxy_atom_groups::clear_atom_group(int index)
 void colvarproxy_atom_groups::compute_rms_atom_groups_applied_force()
 {
   atom_groups_rms_applied_force_ =
-    compute_norm2_stats<cvm::rvector, 0>(atom_groups_new_colvar_forces);
+    compute_norm2_stats<cvm::rvector, 0, false>(atom_groups_new_colvar_forces);
 }
 
 
 void colvarproxy_atom_groups::compute_max_atom_groups_applied_force()
 {
   atom_groups_max_applied_force_ =
-    compute_norm2_stats<cvm::rvector, 1>(atom_groups_new_colvar_forces);
+    compute_norm2_stats<cvm::rvector, 1, false>(atom_groups_new_colvar_forces);
 }
 
 
