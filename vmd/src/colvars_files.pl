@@ -60,6 +60,7 @@ $colvars_defines = " -DVMDCOLVARS";
                     'colvargrid.h',
                     'colvar.h',
                     'colvarmodule.h',
+                    'colvarmodule_utils.h',
                     'colvarparams.h',
                     'colvarparse.h',
                     'colvarproxy.h',

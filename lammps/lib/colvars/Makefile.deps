@@ -285,7 +285,7 @@ $(COLVARS_OBJ_DIR)colvarproxy.o: colvarproxy.cpp colvarmodule.h \
  lepton/include/lepton/Exception.h \
  lepton/include/lepton/ParsedExpression.h lepton/include/lepton/Parser.h \
  colvarscript_commands.h colvarscript_commands_colvar.h \
- colvarscript_commands_bias.h colvaratoms.h
+ colvarscript_commands_bias.h colvaratoms.h colvarmodule_utils.h
 $(COLVARS_OBJ_DIR)colvarproxy_replicas.o: colvarproxy_replicas.cpp \
  colvarmodule.h colvars_version.h colvarproxy.h colvartypes.h \
  colvarvalue.h colvarproxy_tcl.h colvarproxy_volmaps.h
@@ -294,7 +294,8 @@ $(COLVARS_OBJ_DIR)colvarproxy_tcl.o: colvarproxy_tcl.cpp colvarmodule.h \
  colvarproxy_tcl.h colvarproxy_volmaps.h colvaratoms.h colvarparse.h \
  colvarparams.h colvardeps.h
 $(COLVARS_OBJ_DIR)colvarproxy_volmaps.o: colvarproxy_volmaps.cpp \
- colvarmodule.h colvars_version.h colvarproxy_volmaps.h
+ colvarmodule.h colvars_version.h colvarproxy_volmaps.h \
+ colvarmodule_utils.h
 $(COLVARS_OBJ_DIR)colvarscript.o: colvarscript.cpp colvarproxy.h \
  colvarmodule.h colvars_version.h colvartypes.h colvarvalue.h \
  colvarproxy_tcl.h colvarproxy_volmaps.h colvardeps.h colvarparse.h \
