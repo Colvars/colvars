@@ -268,7 +268,7 @@ public:
     return cvm::rvector(0.0);
   }
 
-  inline std::vector<int> *modify_atom_ids()
+  inline std::vector<int> const *get_atom_ids() const
   {
     return &atoms_ids;
   }
@@ -705,6 +705,9 @@ public:
 
   /// \brief Update data based from the results of a module update (e.g. send forces)
   virtual int update_output();
+
+  /// Carry out operations needed before next step is run
+  int end_of_step();
 
   /// Print a message to the main log
   virtual void log(std::string const &message) = 0;
