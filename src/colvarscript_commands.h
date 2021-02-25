@@ -195,7 +195,7 @@ CVSCRIPT(cv_getatomappliedforces,
          "forces : array of arrays of floats - Atomic forces",
          0, 0,
          "",
-         script->set_result_rvector_vec(*(script->proxy()->modify_atom_applied_forces()));
+         script->set_result_rvector_vec(*(script->proxy()->get_atom_applied_forces()));
          return COLVARS_OK;
          )
 
@@ -240,7 +240,7 @@ CVSCRIPT(cv_getatomcharges,
          "charges : array of floats - Atomic charges",
          0, 0,
          "",
-         script->set_result_real_vec(*(script->proxy()->modify_atom_charges()));
+         script->set_result_real_vec(*(script->proxy()->get_atom_charges()));
          return COLVARS_OK;
          )
 
@@ -249,7 +249,7 @@ CVSCRIPT(cv_getatommasses,
          "masses : array of floats - Atomic masses",
          0, 0,
          "",
-         script->set_result_real_vec(*(script->proxy()->modify_atom_masses()));
+         script->set_result_real_vec(*(script->proxy()->get_atom_masses()));
          return COLVARS_OK;
          )
 
@@ -258,7 +258,7 @@ CVSCRIPT(cv_getatompositions,
          "positions : array of arrays of floats - Atomic positions",
          0, 0,
          "",
-         script->set_result_rvector_vec(*(script->proxy()->modify_atom_positions()));
+         script->set_result_rvector_vec(*(script->proxy()->get_atom_positions()));
          return COLVARS_OK;
          )
 
@@ -267,7 +267,7 @@ CVSCRIPT(cv_getatomtotalforces,
          "forces : array of arrays of floats - Atomic total foces",
          0, 0,
          "",
-         script->set_result_rvector_vec(*(script->proxy()->modify_atom_positions()));
+         script->set_result_rvector_vec(*(script->proxy()->get_atom_positions()));
          return COLVARS_OK;
          )
 

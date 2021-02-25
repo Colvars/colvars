@@ -273,11 +273,21 @@ public:
     return &atoms_ids;
   }
 
+  inline std::vector<cvm::real> const *get_atom_masses() const
+  {
+    return &atoms_masses;
+  }
+
   inline std::vector<cvm::real> *modify_atom_masses()
   {
     // assume that we are requesting masses to change them
     updated_masses_ = true;
     return &atoms_masses;
+  }
+
+  inline std::vector<cvm::real> const *get_atom_charges()
+  {
+    return &atoms_charges;
   }
 
   inline std::vector<cvm::real> *modify_atom_charges()
@@ -287,14 +297,29 @@ public:
     return &atoms_charges;
   }
 
+  inline std::vector<cvm::rvector> const *get_atom_positions() const
+  {
+    return &atoms_positions;
+  }
+
   inline std::vector<cvm::rvector> *modify_atom_positions()
   {
     return &atoms_positions;
   }
 
+  inline std::vector<cvm::rvector> const *modify_atom_total_forces() const
+  {
+    return &atoms_total_forces;
+  }
+
   inline std::vector<cvm::rvector> *modify_atom_total_forces()
   {
     return &atoms_total_forces;
+  }
+
+  inline std::vector<cvm::rvector> const *get_atom_applied_forces() const
+  {
+    return &atoms_new_colvar_forces;
   }
 
   inline std::vector<cvm::rvector> *modify_atom_applied_forces()
