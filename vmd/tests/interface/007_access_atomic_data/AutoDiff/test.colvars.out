@@ -1,0 +1,113 @@
+colvars: ----------------------------------------------------------------------
+colvars: Initializing the collective variables module, version "2021-01-19".
+colvars: Please cite Fiorin et al, Mol Phys 2013:
+colvars:  https://dx.doi.org/10.1080/00268976.2013.813594
+colvars: in any publication based on this calculation.
+colvars: This version was built without the C++11 standard: some features are disabled.
+colvars: Please see the following link for details:
+colvars: https://colvars.github.io/README-c++11.html
+colvars: Using VMD interface, version "2020-10-22".
+colvars: Redefining the Tcl "cv" command to the new script interface.
+colvars: ----------------------------------------------------------------------
+colvars: Reading new configuration from file "test.in":
+colvars: # units = "" [default]
+colvars: # smp = on [default]
+colvars: # colvarsTrajFrequency = 1
+colvars: # colvarsRestartFrequency = 0
+colvars: # scriptedColvarForces = off [default]
+colvars: # scriptingAfterBiases = off [default]
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = "rmsd"
+colvars:   Initializing a new "rmsd" component.
+colvars:     # name = "" [default]
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID = { BH }
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 120.11, total charge = 0.53.
+colvars:     # refPositions =  [default]
+colvars:     # refPositionsFile = "../Common/da-rotated-Calpha.xyz"
+colvars:     # refPositionsCol = "" [default]
+colvars:     Warning: beginning from 2019-11-26 the XYZ file reader assumes Angstrom units.
+colvars:     Enabling "centerToReference" and "rotateToReference", to minimize RMSD before calculating it as a variable: if this is not the desired behavior, disable them explicitly within the "atoms" block.
+colvars:     This is a standard minimum RMSD, derivatives of the optimal rotation will not be computed as they cancel out in the gradients.
+colvars:   All components initialized.
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # width = 0.01
+colvars:   # lowerBoundary = 0 [default]
+colvars:   # upperBoundary = 0.1
+colvars:   # hardLowerBoundary = on [default]
+colvars:   # hardUpperBoundary = off [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = off [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputTotalForce = off [default]
+colvars:   # outputAppliedForce = on
+colvars:   # subtractAppliedForce = off [default]
+colvars:   # runAve = off [default]
+colvars:   # corrFunc = off [default]
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables initialized, 1 in total.
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new "harmonic" instance.
+colvars:   # name = "harmonic1" [default]
+colvars:   # colvars = { rmsd }
+colvars:   # stepZeroData = off [default]
+colvars:   # outputEnergy = on
+colvars:   # outputFreq = 0 [default]
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # writeTISamples = off [default]
+colvars:   # writeTIPMF = off [default]
+colvars:   # centers = { 0 }
+colvars:   # targetCenters = { 0.2 }
+colvars:   # targetNumSteps = 20
+colvars:   # targetNumStages = 0 [default]
+colvars:   # outputAccumulatedWork = on
+colvars:   # outputCenters = on
+colvars:   # forceConstant = 1 [default]
+colvars:   # targetForceConstant = -1 [default]
+colvars:   The force constant for colvar "rmsd" will be rescaled to 10000 according to the specified width (0.01).
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables biases initialized, 1 in total.
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables module (re)initialized.
+colvars: ----------------------------------------------------------------------
+colvars: Re-initialized atom group for variable "rmsd":0/0. 10 atoms: total mass = 120.11, total charge = 0.53.
+colvars: Atom IDs:
+colvars:   3 13 23 33 43 53 63 73 83 98
+colvars: Atom masses:
+colvars:   12.011 12.011 12.011 12.011 12.011 12.011 12.011 12.011 12.011 12.011
+colvars: Atom charges:
+colvars:   -0.1 0.07 0.07 0.07 0.07 0.07 0.07 0.07 0.07 0.07
+colvars: 
+colvars: Colvar's atomic gradients:
+colvars:   { -1.28478803354062e-01 3.36199833274528e-02 7.08473719465345e-02 } { -1.08225559288295e-01 1.49940230975935e-02 6.02729661384996e-05 } { -7.66060814719083e-02 -5.53803314833301e-02 2.42026172427016e-03 } { -2.46071925716959e-02 -3.60323396070867e-02 5.53026542550409e-02 } { -1.16652248092887e-02 3.51309719765031e-02 3.07224621232129e-02 } { 4.91065922003313e-03 1.73046315416593e-02 -4.17542125213569e-02 } { 4.34942811486279e-02 -4.15120004377934e-02 -2.31135021157530e-02 } { 8.99612691580958e-02 -9.38617712983383e-03 2.63802343972017e-02 } { 9.45852510114326e-02 4.40660170358094e-02 -2.65814400344915e-02 } { 1.16631400956873e-01 -2.80477832191629e-03 -9.42841027414459e-02 }
+colvars: Applied atomic forces:
+colvars:   { 2.98784077853502e-01 -7.81850037026011e-02 -1.64759214304436e-01 } { 2.51684115106685e-01 -3.48693733719068e-02 -1.40167888687121e-04 } { 1.78151390058310e-01 1.28789814673697e-01 -5.62844335853106e-03 } { 5.72252943610972e-02 8.37950625422542e-02 -1.28609172276518e-01 } { 2.71280814158279e-02 -8.16988856688697e-02 -7.14466688296962e-02 } { -1.14199910678418e-02 -4.02428123767689e-02 9.71015728587758e-02 } { -1.01148192119139e-01 9.65382961769945e-02 5.37516402342948e-02 } { -2.09209567230006e-01 2.18280385954293e-02 -6.13485944931006e-02 } { -2.19962875308797e-01 -1.02477793386957e-01 6.18165085709650e-02 } { -2.71232333069201e-01 6.52265652091908e-03 2.19262539488442e-01 }
+colvars: Comparison of the unit vectors (1st atom only):
+colvars:   -0.8535628238933343 0.22335799493045438 0.4706821770238216
+colvars:   0.853562823893334 -0.22335799493045436 -0.4706821770238218
+colvars: Total Colvars energy:
+colvars:   0.000270409
+colvars: RMS of applied atomic forces:
+colvars:   0.232555
+colvars: Largest applied atomic force:
+colvars:   0.350043
+colvars: Atom with largest applied atomic force:
+colvars:   3

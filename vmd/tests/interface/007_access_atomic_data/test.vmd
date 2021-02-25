@@ -1,0 +1,45 @@
+# -*- tcl -*-
+mol new ../Common/da.psf type psf
+mol addfile ../Common/da.pdb type pdb waitfor all
+
+cv molid top
+cv configfile test.in
+
+cv colvar rmsd set collect_gradient 1
+
+cv update
+
+puts "colvars: Atom IDs:"
+puts "colvars:   [cv getatomids]"
+puts "colvars: Atom masses:"
+puts "colvars:   [cv getatommasses]"
+puts "colvars: Atom charges:"
+puts "colvars:   [cv getatomcharges]"
+puts "colvars: "
+puts "colvars: Colvar's atomic gradients:"
+puts "colvars:   [cv colvar rmsd getgradients]"
+puts "colvars: Applied atomic forces:"
+puts "colvars:   [cv getatomappliedforces]"
+
+set grad [lindex [cv colvar rmsd getgradients] 0]; list
+set grad_length [veclength ${grad}]; list
+set grad_unit [vecscale [expr 1.0/${grad_length}] ${grad}]; list
+
+set force [lindex [cv getatomappliedforces] 0]; list
+set force_length [veclength ${force}]; list
+set force_unit [vecscale [expr 1.0/${force_length}] ${force}]; list
+
+puts "colvars: Comparison of the unit vectors (1st atom only):"
+puts "colvars:   ${grad_unit}"
+puts "colvars:   ${force_unit}"
+
+puts "colvars: Total Colvars energy:"
+puts "colvars:   [cv getenergy]"
+puts "colvars: RMS of applied atomic forces:"
+puts "colvars:   [cv getatomappliedforcesrms]"
+puts "colvars: Largest applied atomic force:"
+puts "colvars:   [cv getatomappliedforcesmax]"
+puts "colvars: Atom with largest applied atomic force:"
+puts "colvars:   [cv getatomappliedforcesmaxid]"
+
+quit
