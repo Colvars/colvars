@@ -1,0 +1,33 @@
+# adapted from NAMD's 3rd reg test
+
+colvarsTrajFrequency    1
+colvarsRestartFrequency 0
+
+
+colvar {
+    name rmsd
+
+#    outputSystemForce on
+    outputAppliedForce on
+    width 0.01
+
+    upperBoundary 0.1
+
+    rmsd {
+        atoms {
+            psfSegID BH
+            atomNameResidueRange CA 1-10
+        }
+        refpositionsfile ../Common/da-rotated-Calpha.xyz
+    }
+} 
+
+harmonic {
+    colvars        rmsd
+    centers        0.0
+    targetCenters  0.2
+    targetNumSteps 20
+    outputEnergy   yes
+    outputAccumulatedWork  yes
+    outputCenters  yes
+}
