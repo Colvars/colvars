@@ -29,8 +29,9 @@ inline cvm::real get_force_norm2(cvm::real const &x)
 }
 
 
-template <typename T, int flag>
-cvm::real compute_norm2_stats(std::vector<T> const &v)
+template <typename T, int flag, bool get_index>
+cvm::real compute_norm2_stats(std::vector<T> const &v,
+                              int *minmax_index = NULL)
 {
   cvm::real result = 0.0;
   if (flag == -1) {
@@ -39,8 +40,9 @@ cvm::real compute_norm2_stats(std::vector<T> const &v)
   }
 
   typename std::vector<T>::const_iterator xi = v.begin();
+  size_t i = 0;
 
-  for ( ; xi != v.end(); xi++) {
+  for ( ; xi != v.end(); xi++, i++) {
     cvm::real const norm2 = get_force_norm2<T>(*xi);
     if (flag == 0) {
       result += norm2;
@@ -48,11 +50,13 @@ cvm::real compute_norm2_stats(std::vector<T> const &v)
     if (flag == 1) {
       if (norm2 > result) {
         result = norm2;
+        if (get_index) *minmax_index = i;
       }
     }
     if (flag == -1) {
       if (norm2 < result) {
         result = norm2;
+        if (get_index) *minmax_index = i;
       }
     }
   }
