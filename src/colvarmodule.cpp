@@ -754,6 +754,9 @@ int colvarmodule::calc()
 
   error_code |= end_of_step();
 
+  // TODO move this to a base-class proxy method that calls this function
+  error_code |= proxy->end_of_step();
+
   return error_code;
 }
 

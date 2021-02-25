@@ -59,16 +59,16 @@ obj/colvarbias_abf.o: \
 	colvars/src/colvarbias_abf.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
-	colvars/src/colvarproxy.h \
-	colvars/src/colvartypes.h \
-	colvars/src/colvarvalue.h \
-	colvars/src/colvarproxy_tcl.h \
-	colvars/src/colvarproxy_volmaps.h \
 	colvars/src/colvar.h \
+	colvars/src/colvarvalue.h \
+	colvars/src/colvartypes.h \
 	colvars/src/colvarparse.h \
 	colvars/src/colvarparams.h \
 	colvars/src/colvardeps.h \
 	colvars/src/colvarbias_abf.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
 	colvars/src/colvarbias.h \
 	colvars/src/colvargrid.h \
 	colvars/src/colvar_UIestimator.h
@@ -414,14 +414,16 @@ obj/colvarproxy.o: \
 	colvars/src/colvarscript_commands.h \
 	colvars/src/colvarscript_commands_colvar.h \
 	colvars/src/colvarscript_commands_bias.h \
-	colvars/src/colvaratoms.h
+	colvars/src/colvaratoms.h \
+	colvars/src/colvarmodule_utils.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarproxy.o $(COPTC) colvars/src/colvarproxy.cpp
 obj/colvarproxy_volmaps.o: \
 	obj/.exists \
 	colvars/src/colvarproxy_volmaps.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
-	colvars/src/colvarproxy_volmaps.h
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvarmodule_utils.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarproxy_volmaps.o $(COPTC) colvars/src/colvarproxy_volmaps.cpp
 obj/colvarproxy_replicas.o: \
 	obj/.exists \

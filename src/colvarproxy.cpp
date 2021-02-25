@@ -24,6 +24,7 @@
 #include "colvarproxy.h"
 #include "colvarscript.h"
 #include "colvaratoms.h"
+#include "colvarmodule_utils.h"
 
 
 
@@ -144,6 +145,7 @@ int colvarproxy_system::get_molid(int &)
 
 colvarproxy_atoms::colvarproxy_atoms()
 {
+  atoms_rms_applied_force_ = atoms_max_applied_force_ = 0.0;
   updated_masses_ = updated_charges_ = false;
 }
 
@@ -234,8 +236,25 @@ int colvarproxy_atoms::load_coords(char const * /* filename */,
 }
 
 
+void colvarproxy_atoms::compute_rms_atoms_applied_force()
+{
+  atoms_rms_applied_force_ =
+    compute_norm2_stats<cvm::rvector, 0>(atoms_new_colvar_forces);
+}
 
-colvarproxy_atom_groups::colvarproxy_atom_groups() {}
+
+void colvarproxy_atoms::compute_max_atoms_applied_force()
+{
+  atoms_max_applied_force_ =
+    compute_norm2_stats<cvm::rvector, 1>(atoms_new_colvar_forces);
+}
+
+
+
+colvarproxy_atom_groups::colvarproxy_atom_groups()
+{
+  atom_groups_rms_applied_force_ = atom_groups_max_applied_force_ = 0.0;
+}
 
 
 colvarproxy_atom_groups::~colvarproxy_atom_groups()
@@ -295,6 +314,20 @@ void colvarproxy_atom_groups::clear_atom_group(int index)
   if (atom_groups_ncopies[index] > 0) {
     atom_groups_ncopies[index] -= 1;
   }
+}
+
+
+void colvarproxy_atom_groups::compute_rms_atom_groups_applied_force()
+{
+  atom_groups_rms_applied_force_ =
+    compute_norm2_stats<cvm::rvector, 0>(atom_groups_new_colvar_forces);
+}
+
+
+void colvarproxy_atom_groups::compute_max_atom_groups_applied_force()
+{
+  atom_groups_max_applied_force_ =
+    compute_norm2_stats<cvm::rvector, 1>(atom_groups_new_colvar_forces);
 }
 
 
@@ -645,6 +678,23 @@ int colvarproxy::update_input()
 
 int colvarproxy::update_output()
 {
+  return COLVARS_OK;
+}
+
+
+int colvarproxy::end_of_step()
+{
+  // Disable flags that Colvars doesn't need any more
+  updated_masses_ = updated_charges_ = false;
+
+  // Compute force statistics
+  compute_rms_atoms_applied_force();
+  compute_max_atoms_applied_force();
+  compute_rms_atom_groups_applied_force();
+  compute_max_atom_groups_applied_force();
+  compute_rms_volmaps_applied_force();
+  compute_max_volmaps_applied_force();
+
   return COLVARS_OK;
 }
 

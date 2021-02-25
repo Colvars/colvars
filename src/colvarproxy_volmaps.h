@@ -95,6 +95,12 @@ public:
     volmap_flag_use_atom_field = (1<<8)
   };
 
+  /// Compute the root-mean-square of the applied forces
+  void compute_rms_volmaps_applied_force();
+
+  /// Compute the maximum norm among all applied forces
+  void compute_max_volmaps_applied_force();
+
 protected:
 
   /// \brief Array of numeric IDs of volumetric maps
@@ -110,6 +116,12 @@ protected:
   /// \brief Forces applied from colvars, to be communicated to the MD
   /// integrator
   std::vector<cvm::real>    volmaps_new_colvar_forces;
+
+  /// Root-mean-square of the the applied forces
+  cvm::real volmaps_rms_applied_force_;
+
+  /// Maximum norm among all applied forces
+  cvm::real volmaps_max_applied_force_;
 };
 
 

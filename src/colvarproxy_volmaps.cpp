@@ -9,9 +9,13 @@
 
 #include "colvarmodule.h"
 #include "colvarproxy_volmaps.h"
+#include "colvarmodule_utils.h"
 
 
-colvarproxy_volmaps::colvarproxy_volmaps() {}
+colvarproxy_volmaps::colvarproxy_volmaps()
+{
+  volmaps_rms_applied_force_ = volmaps_max_applied_force_ = 0.0;
+}
 
 
 colvarproxy_volmaps::~colvarproxy_volmaps() {}
@@ -113,4 +117,18 @@ int colvarproxy_volmaps::compute_volmap(int /* flags */,
                                         cvm::real * /* atom_field */)
 {
   return COLVARS_NOT_IMPLEMENTED;
+}
+
+
+void colvarproxy_volmaps::compute_rms_volmaps_applied_force()
+{
+  volmaps_rms_applied_force_ =
+    compute_norm2_stats<cvm::real, 0>(volmaps_new_colvar_forces);
+}
+
+
+void colvarproxy_volmaps::compute_max_volmaps_applied_force()
+{
+  volmaps_max_applied_force_ =
+    compute_norm2_stats<cvm::real, 1>(volmaps_new_colvar_forces);
 }
