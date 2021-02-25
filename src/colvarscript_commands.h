@@ -199,6 +199,33 @@ CVSCRIPT(cv_getatomappliedforces,
          return COLVARS_OK;
          )
 
+CVSCRIPT(cv_getatomappliedforcesmax,
+         "Get the maximum norm of forces applied by Colvars to atoms\n"
+         "force : float - Maximum atomic force",
+         0, 0,
+         "",
+         script->set_result_real(script->proxy()->max_atoms_applied_force());
+         return COLVARS_OK;
+         )
+
+CVSCRIPT(cv_getatomappliedforcesmaxid,
+         "Get the atom ID with the largest applied force\n"
+         "id : int - ID of the atom with the maximum atomic force",
+         0, 0,
+         "",
+         script->set_result_int(script->proxy()->max_atoms_applied_force_id());
+         return COLVARS_OK;
+         )
+
+CVSCRIPT(cv_getatomappliedforcesrms,
+         "Get the root-mean-square norm of forces applied by Colvars to atoms\n"
+         "force : float - RMS atomic force",
+         0, 0,
+         "",
+         script->set_result_real(script->proxy()->rms_atoms_applied_force());
+         return COLVARS_OK;
+         )
+
 CVSCRIPT(cv_getatomids,
          "Get the list of indices of atoms used in Colvars\n"
          "indices : array of ints - Atomic indices",
