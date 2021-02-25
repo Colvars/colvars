@@ -362,6 +362,9 @@ protected:
   /// Maximum norm among all applied forces
   cvm::real atoms_max_applied_force_;
 
+  /// ID of the atom with the maximum norm among all applied forces
+  int atoms_max_applied_force_id_;
+
   /// Whether the masses and charges have been updated from the host code
   bool updated_masses_, updated_charges_;
 
