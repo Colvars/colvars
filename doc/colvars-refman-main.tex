@@ -603,14 +603,43 @@ This is normally not required during a simulation if \refkey{colvarsRestartFrequ
 Because not only a state file (used to continue simulations) but also other data files (used to analyze the trajectory) are written, it is generally recommended to call the \texttt{save} method using a prefix, rather than a complete file name:
 \cvscriptexampleinputcv{save}{"$<$job$>$"}
 
- See \ref{sec:cvscript_tcl_cv} for a complete list of scripting commands used to manage the Colvars module.}\fi % End \ifdefined\cvvmdornamd
+\cvsubsubsec{Accessing atomic data}{sec:cv_command_atomic_data}
 
+For computational efficiency the Colvars module keeps internal copies of the numeric IDs, masses, charges, positions, and optionally total forces of the atoms requested for a Colvars computation.
+At each simulation step, up-to-date versions of these properties are copied from central memory of \MDENGINE{} into the internal memory of the Colvars module.
+In a post-processing workflow or outside a simulation (e.g.{} when using VMD), this copy can be carried out as part of the \texttt{update} method:
+\cvscriptexampleinputcv{update}{~}
+\noindent{}which also performs the (re-)computation of all variables and biases defined in Colvars.
+
+For example, the current sequence of numeric IDs of the atoms processed by Colvars can be obtained as:
+\cvscriptexampleinputcv{getatomids}{~}
+\noindent{}and their current positions as:
+\cvscriptexampleinputcv{getatompositions}{~}
+\noindent{}This may prove useful to test the correctness of the coordinates passed to Colvars, particularly in regard to periodic boundary conditions (\ref{sec:colvar_atom_groups_wrapping}).
+There is currently no mechanism to modify the above fields via the scripting interface, but such capability will be added in the future.
+
+\cvnamdonly{A special case are collective variables that are based on \emph{centers of mass}, or \emph{volumetric maps} (see e.g.{} \refkey{mapTotal}{colvar|mapTotal}).
+  These are often computed by NAMD itself, and any atoms that are used only for such variables will not be included in the lists above.}
+
+While running a simulation, or when setting one up in VMD, it is possible to examine all the forces that were last applied by Colvars to the atoms, or are about to be applied:
+\cvscriptexampleinputcv{getatomappliedforces}{~}
+\noindent{}where the length and order of this sequence matches that provided by the \texttt{getatomids} method.
+A simpler way of testing the stability of a Colvars configuration before or during a simulation makes use of aggregated data, such as the energy:
+\cvscriptexampleinputcv{getenergy}{~}
+\noindent{}the root-mean-square of the Colvars applied forces:
+\cvscriptexampleinputcv{getatomappliedforcesrms}{~}
+\noindent{}or the maximum norm of the applied forces:
+\cvscriptexampleinputcv{getatomappliedforcesmax}{~}
+\noindent{}which can be matched to a specific atom via its numeric ID obtained as:
+\cvscriptexampleinputcv{getatomappliedforcesmaxid}{~}
+
+See \ref{sec:cvscript_tcl_cv} for a complete list of scripting commands used to manage atomic data and runtime parameters of he Colvars module.}\fi % End \ifdefined\cvvmdornamd
 
 \cvvmdonly{
 \cvsubsubsec{Analyzing a trajectory in VMD}{sec:cv_command_vmd_traj}
 
 One of the typical uses of Colvars in VMD is computing the values of one or more variables along an existing trajectory.
-A complete example input for this use case is shown here.
+A complete example input for this frequent use case is shown here.
 
 \begin{mdexampleinput}
 \-{\bfseries\#~Activate~the~module~on~the~current~VMD~molecule}\\
@@ -721,6 +750,8 @@ A corresponding ``\texttt{save}'' function is also available:
 \noindent{}This pair of functions is also used internally by Colvars to implement e.g.{} multiple-walker metadynamics (\ref{sec:colvarbias_meta_mr}), but they can be called from a scripted function to implement alternative coupling schemes.
 
 \ifdefined\cvvmdornamd{See \ref{sec:cvscript_tcl_bias} for a complete list of scripting commands used to manage biases.}\fi
+
+
 }\fi % End \ifdefined\cvscriptapi
 
 
