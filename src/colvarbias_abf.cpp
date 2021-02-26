@@ -136,10 +136,11 @@ int colvarbias_abf::init(std::string const &conf)
       colvars[i]->enable(f_cv_hide_Jacobian);
     }
 
-    // If any colvar is extended-system, we need to collect the extended
-    // system gradient
-    if (colvars[i]->is_enabled(f_cv_extended_Lagrangian))
+    // If any colvar is extended-system (restrained style, not external with constraint), we are running eABF
+    if (colvars[i]->is_enabled(f_cv_extended_Lagrangian)
+        && !colvars[i]->is_enabled(f_cv_external)) {
       b_extended = true;
+    }
 
     // Cannot mix and match coarse time steps with ABF because it gives
     // wrong total force averages - total force needs to be averaged over

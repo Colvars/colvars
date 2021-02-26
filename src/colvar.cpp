@@ -298,6 +298,11 @@ int colvar::init(std::string const &conf)
   error_code |= init_extended_Lagrangian(conf);
   error_code |= init_output_flags(conf);
 
+  // Detect if we have one component that is an alchemical lambda
+  if (is_enabled(f_cv_single_cvc) && cvcs[0]->function_type == "alch_lambda") {
+    enable(f_cv_external);
+  }
+
   // Now that the children are defined we can solve dependencies
   enable(f_cv_active);
 
@@ -636,7 +641,6 @@ int colvar::init_extended_Lagrangian(std::string const &conf)
     x_ext.type(colvarvalue::type_notset);
     v_ext.type(value());
     fr.type(value());
-
     const bool found = get_keyval(conf, "extendedTemp", temp, cvm::temperature());
     if (temp <= 0.0) {
       if (found)
@@ -1088,6 +1092,9 @@ int colvar::init_dependencies() {
 
     init_feature(f_cv_Langevin, "Langevin_dynamics", f_type_user);
     require_feature_self(f_cv_Langevin, f_cv_extended_Lagrangian);
+
+    init_feature(f_cv_external, "external", f_type_user);
+    require_feature_self(f_cv_external, f_cv_single_cvc);
 
     init_feature(f_cv_single_cvc, "single_component", f_type_static);
 
@@ -1718,6 +1725,7 @@ cvm::real colvar::update_forces_energy()
     // the instantaneous Jacobian force was not included in the reported total force;
     // instead, it is subtracted from the applied force (silent Jacobian correction)
     // This requires the Jacobian term for the *current* timestep
+    // Need to scale it for impulse MTS
     if (is_enabled(f_cv_hide_Jacobian))
       f -= fj * cvm::real(time_step_factor);
   }
@@ -1752,26 +1760,38 @@ cvm::real colvar::update_forces_energy()
       colvarvalue f_ext(fr.type()); // force acting on the extended variable
       f_ext.reset();
 
-      // the total force is applied to the fictitious mass, while the
-      // atoms only feel the harmonic force + wall force
-      // fr: bias force on extended variable (without harmonic spring), for output in trajectory
-      // f_ext: total force on extended variable (including harmonic spring)
-      // f: - initially, external biasing force
-      //    - after this code block, colvar force to be applied to atomic coordinates
-      //      ie. spring force (fb_actual will be added just below)
       fr    = f;
       // External force has been scaled for a 1-timestep impulse, scale it back because we will
       // integrate it with the colvar's own timestep factor
       f_ext = f / cvm::real(time_step_factor);
-      f_ext += (-0.5 * ext_force_k) * this->dist2_lgrad(x_ext, x);
-      f      = (-0.5 * ext_force_k) * this->dist2_rgrad(x_ext, x);
-      // Coupling force is a slow force, to be applied to atomic coords impulse-style
-      f *= cvm::real(time_step_factor);
+
+      colvarvalue f_system(fr.type()); // force exterted by the system on the extended DOF
+
+      if (is_enabled(f_cv_external)) {
+        // Add "alchemical" force from external variable
+        f_system = cvcs[0]->total_force();
+        // f is now irrelevant because we are not applying atomic forces in the simulation
+        // just driving the external variable lambda
+      } else {
+        // the total force is applied to the fictitious mass, while the
+        // atoms only feel the harmonic force + wall force
+        // fr: bias force on extended variable (without harmonic spring), for output in trajectory
+        // f_ext: total force on extended variable (including harmonic spring)
+        // f: - initially, external biasing force
+        //    - after this code block, colvar force to be applied to atomic coordinates
+        //      ie. spring force (fb_actual will be added just below)
+        f_system = (-0.5 * ext_force_k) * this->dist2_lgrad(x_ext, x);
+        f        = -1.0 * f_system;
+        // Coupling force is a slow force, to be applied to atomic coords impulse-style
+        // over a single MD timestep
+        f *= cvm::real(time_step_factor);
+      }
+      f_ext += f_system;
 
       if (is_enabled(f_cv_subtract_applied_force)) {
         // Report a "system" force without the biases on this colvar
-        // that is, just the spring force
-        ft_reported = (-0.5 * ext_force_k) * this->dist2_lgrad(x_ext, x);
+        // that is, just the spring force (or alchemical force)
+        ft_reported = f_system;
       } else {
         // The total force acting on the extended variable is f_ext
         // This will be used in the next timestep
@@ -1811,6 +1831,11 @@ cvm::real colvar::update_forces_energy()
 
       x_ext.apply_constraints();
       this->wrap(x_ext);
+      if (is_enabled(f_cv_external)) {
+        // Colvar value is constrained to the extended value
+        x = x_ext;
+        cvcs[0]->set_value(x_ext);
+      }
     } else {
       // If this is a postprocessing run (eg. in VMD), the extended DOF
       // is equal to the actual coordinate
@@ -2358,7 +2383,7 @@ std::ostream & colvar::write_traj_label(std::ostream & os)
     os << " "
        << cvm::wrap_string(this->name, this_cv_width);
 
-    if (is_enabled(f_cv_extended_Lagrangian)) {
+    if (is_enabled(f_cv_extended_Lagrangian) && !is_enabled(f_cv_external)) {
       // extended DOF
       os << " r_"
          << cvm::wrap_string(this->name, this_cv_width-2);
@@ -2370,7 +2395,7 @@ std::ostream & colvar::write_traj_label(std::ostream & os)
     os << " v_"
        << cvm::wrap_string(this->name, this_cv_width-2);
 
-    if (is_enabled(f_cv_extended_Lagrangian)) {
+    if (is_enabled(f_cv_extended_Lagrangian) && !is_enabled(f_cv_external)) {
       // extended DOF
       os << " vr_"
          << cvm::wrap_string(this->name, this_cv_width-3);
@@ -2403,7 +2428,7 @@ std::ostream & colvar::write_traj(std::ostream &os)
   os << " ";
   if (is_enabled(f_cv_output_value)) {
 
-    if (is_enabled(f_cv_extended_Lagrangian)) {
+    if (is_enabled(f_cv_extended_Lagrangian) && !is_enabled(f_cv_external)) {
       os << " "
          << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width)
          << x;
@@ -2416,7 +2441,7 @@ std::ostream & colvar::write_traj(std::ostream &os)
 
   if (is_enabled(f_cv_output_velocity)) {
 
-    if (is_enabled(f_cv_extended_Lagrangian)) {
+    if (is_enabled(f_cv_extended_Lagrangian) && !is_enabled(f_cv_external)) {
       os << " "
          << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width)
          << v_fdiff;

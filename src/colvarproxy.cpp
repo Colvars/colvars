@@ -196,9 +196,9 @@ int colvarproxy_system::set_alch_lambda(cvm::real* lambda)
 }
 
 
-int colvarproxy_system::get_dU_dLambda(cvm::real* force)
+int colvarproxy_system::get_dE_dLambda(cvm::real* force)
 {
-  return cvm::error("Error in get_dU_dLambda: alchemical lambda dynamics is not supported by this build.",
+  return cvm::error("Error in get_dE_dLambda: alchemical lambda dynamics is not supported by this build.",
     COLVARS_NOT_IMPLEMENTED);
 }
 

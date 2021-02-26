@@ -271,6 +271,12 @@ public:
   /// \brief Whether or not this CVC will be computed in parallel whenever possible
   bool b_try_scalable;
 
+  /// Forcibly set value of CVC - useful for driving an external coordinate,
+  /// eg. lambda dynamics
+  inline void set_value(colvarvalue const &new_value) {
+    x = new_value;
+  }
+
 protected:
 
   /// \brief Cached value
@@ -1478,7 +1484,6 @@ class colvar::alch_lambda
 {
 protected:
   // No atom groups needed
-  cvm::real dU_dLambda;
 public:
   alch_lambda(std::string const &conf);
   alch_lambda();
