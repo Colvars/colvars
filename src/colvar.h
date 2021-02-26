@@ -591,6 +591,7 @@ public:
   class alpha_dihedrals;
   class alpha_angles;
   class dihedPC;
+  class alch_lambda;
   class componentDisabled;
   class CartesianBasedPath;
   class gspath;

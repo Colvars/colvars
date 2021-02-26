@@ -9,6 +9,7 @@ COLVARSLIB = \
 	$(DSTDIR)/colvarbias_restraint.o \
 	$(DSTDIR)/colvarcomp.o \
 	$(DSTDIR)/colvarcomp_angles.o \
+	$(DSTDIR)/colvarcomp_alchlambda.o \
 	$(DSTDIR)/colvarcomp_apath.o \
 	$(DSTDIR)/colvarcomp_coordnums.o \
 	$(DSTDIR)/colvarcomp_distances.o \

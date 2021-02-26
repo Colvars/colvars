@@ -1471,6 +1471,29 @@ public:
 };
 
 
+// \brief Colvar component: alch_lambda
+// To communicate value with back-end in lambda-dynamics
+class colvar::alch_lambda
+  : public colvar::cvc
+{
+protected:
+  // No atom groups needed
+  cvm::real dU_dLambda;
+public:
+  alch_lambda(std::string const &conf);
+  alch_lambda();
+  virtual ~alch_lambda() {}
+  virtual void calc_value();
+  virtual void calc_gradients();
+  virtual void apply_force(colvarvalue const &force);
+  virtual cvm::real dist2(colvarvalue const &x1,
+                          colvarvalue const &x2) const;
+  virtual colvarvalue dist2_lgrad(colvarvalue const &x1,
+                                  colvarvalue const &x2) const;
+  virtual colvarvalue dist2_rgrad(colvarvalue const &x1,
+                                  colvarvalue const &x2) const;
+};
+
 
 class colvar::componentDisabled
   : public colvar::cvc
