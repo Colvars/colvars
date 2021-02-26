@@ -182,6 +182,26 @@ int colvarproxy_system::get_molid(int &)
 }
 
 
+void colvarproxy_system::get_alch_lambda(cvm::real* lambda)
+{
+  cvm::error("Error in get_alch_lambda: alchemical lambda dynamics is not supported by this build.",
+    COLVARS_NOT_IMPLEMENTED);
+}
+
+
+void colvarproxy_system::set_alch_lambda(cvm::real* lambda)
+{
+  cvm::error("Error in set_alch_lambda: alchemical lambda dynamics is not supported by this build.",
+    COLVARS_NOT_IMPLEMENTED);
+}
+
+
+void colvarproxy_system::get_dU_dLambda(cvm::real* force)
+{
+  cvm::error("Error in get_dU_dLambda: alchemical lambda dynamics is not supported by this build.",
+    COLVARS_NOT_IMPLEMENTED);
+}
+
 
 colvarproxy_atoms::colvarproxy_atoms()
 {

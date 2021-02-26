@@ -20,6 +20,7 @@ $colvars_defines = " -DVMDCOLVARS";
                     'colvarbias_restraint.C',
                     'colvar.C',
                     'colvarcomp.C',
+                    'colvarcomp_alchlambda.C',
                     'colvarcomp_angles.C',
                     'colvarcomp_apath.C',
                     'colvarcomp_coordnums.C',
