@@ -36,7 +36,7 @@ void colvar::alch_lambda::calc_value()
   // Special workflow:
   // at the beginning of the timestep we get a force instead of calculating the value
 
-  cvm::proxy->get_dU_dLambda(&dU_dLambda);
+  cvm::proxy->get_dE_dLambda(&ft.real_value);
   // TODO check that the force isn't overwritten later on
 }
 

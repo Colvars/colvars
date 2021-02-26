@@ -139,7 +139,7 @@ public:
   virtual int set_alch_lambda(cvm::real* lambda);
 
   /// Get energy derivative with respect to lambda (if available)
-  virtual int get_dU_dLambda(cvm::real* force);
+  virtual int get_dE_dLambda(cvm::real* force);
 
 protected:
 
