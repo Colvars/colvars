@@ -133,13 +133,13 @@ public:
   virtual int get_molid(int &molid);
 
   /// Get value of alchemical lambda parameter from back-end (if available)
-  virtual void get_alch_lambda(cvm::real* lambda);
+  virtual int get_alch_lambda(cvm::real* lambda);
 
   /// Set value of alchemical lambda parameter in back-end (if available)
-  virtual void set_alch_lambda(cvm::real* lambda);
+  virtual int set_alch_lambda(cvm::real* lambda);
 
   /// Get energy derivative with respect to lambda (if available)
-  virtual void get_dU_dLambda(cvm::real* force);
+  virtual int get_dU_dLambda(cvm::real* force);
 
 protected:
 
