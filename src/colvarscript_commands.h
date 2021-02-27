@@ -285,7 +285,7 @@ CVSCRIPT(cv_getenergy,
          "E : float - Amount of energy (internal units)",
          0, 0,
          "",
-         script->set_result_str(cvm::to_str(cvm::main()->total_bias_energy));
+         script->set_result_real(cvm::main()->total_bias_energy);
          return COLVARS_OK;
          )
 
