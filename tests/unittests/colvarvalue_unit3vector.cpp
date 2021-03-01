@@ -7,10 +7,10 @@
 extern "C" int main(int argc, char *argv[]) {
 
   colvarvalue x(colvarvalue::type_unit3vector);
-  x.rvector_value = cvm::rvector(1.0, 0.0, 0.0);
+  x.rvector_value = cvm::rvector(1.0, 0.1, 0.0);
   x.apply_constraints();
 
-  std::cout << "x               = " 
+  std::cout << "x               = "
             << cvm::to_str(x, cvm::cv_width, cvm::cv_prec) << std::endl;
 
   {
@@ -22,8 +22,8 @@ extern "C" int main(int argc, char *argv[]) {
     colvarvalue const ytox = 0.5*y.dist2_grad(x);
     std::cout << "y               = "
               << cvm::to_str(y, cvm::cv_width, cvm::cv_prec) << std::endl;
-  
-    std::cout << "x.dist2_grad(y) = " 
+
+    std::cout << "x.dist2_grad(y) = "
               << cvm::to_str(xtoy, cvm::cv_width, cvm::cv_prec) << std::endl;
     std::cout << "y.dist2_grad(x) = "
               << cvm::to_str(ytox, cvm::cv_width, cvm::cv_prec) << std::endl;
@@ -38,8 +38,8 @@ extern "C" int main(int argc, char *argv[]) {
     colvarvalue const ytox = 0.5*y.dist2_grad(x);
     std::cout << "y               = "
               << cvm::to_str(y, cvm::cv_width, cvm::cv_prec) << std::endl;
-  
-    std::cout << "x.dist2_grad(y) = " 
+
+    std::cout << "x.dist2_grad(y) = "
               << cvm::to_str(xtoy, cvm::cv_width, cvm::cv_prec) << std::endl;
     std::cout << "y.dist2_grad(x) = "
               << cvm::to_str(ytox, cvm::cv_width, cvm::cv_prec) << std::endl;
@@ -60,14 +60,14 @@ extern "C" int main(int argc, char *argv[]) {
 
     colvarvalue xminusy = x - y;
 
-    std::cout << "dist2_grad = " 
+    std::cout << "dist2_grad = "
               << cvm::to_str(xtoy, cvm::cv_width, cvm::cv_prec) << std::endl;
-    std::cout << "difference = " 
+    std::cout << "difference = "
               << cvm::to_str(xminusy, cvm::cv_width, cvm::cv_prec) << std::endl;
     for (size_t c = 0; c < 3; c++) {
       xtoy[c] /= xminusy[c];
     }
-    std::cout << "ratio      = " 
+    std::cout << "ratio      = "
               << cvm::to_str(xtoy, cvm::cv_width, cvm::cv_prec) << std::endl;
   }
 
