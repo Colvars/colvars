@@ -45,5 +45,10 @@ if(COLVARS_LEPTON)
   target_compile_options(lepton PRIVATE $<$<CXX_COMPILER_ID:Clang>:-Wno-tautological-undefined-compare -Wno-unknown-warning-option>)
 endif()
 
+option(BUILD_UNITTESTS "Build unit tests" OFF)
+if(BUILD_UNITTESTS)
+  add_subdirectory(${COLVARS_SOURCE_DIR}/tests/unittests ./unittests)
+endif()
+
 message(STATUS "NOTE: this CMake recipe is useful for compilation tests only.")
 message(STATUS "      To use the library, please follow instead the build recipes of the packages that include it.")
