@@ -1,0 +1,3 @@
+add_executable(colvarvalue_unit3vector colvarvalue_unit3vector.cpp)
+target_link_libraries(colvarvalue_unit3vector PRIVATE colvars)
+target_include_directories(colvarvalue_unit3vector PRIVATE ${COLVARS_SOURCE_DIR}/src)

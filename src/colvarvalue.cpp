@@ -580,16 +580,7 @@ colvarvalue colvarvalue::dist2_grad(colvarvalue const &x2) const
       cvm::rvector const &v1 = this->rvector_value;
       cvm::rvector const &v2 = x2.rvector_value;
       cvm::real const cos_t = v1 * v2;
-      cvm::real const sin_t = cvm::sqrt(1.0 - cos_t*cos_t);
-      return colvarvalue( 2.0 * sin_t *
-                          cvm::rvector((-1.0) * sin_t * v2.x +
-                                       cos_t/sin_t * (v1.x - cos_t*v2.x),
-                                       (-1.0) * sin_t * v2.y +
-                                       cos_t/sin_t * (v1.y - cos_t*v2.y),
-                                       (-1.0) * sin_t * v2.z +
-                                       cos_t/sin_t * (v1.z - cos_t*v2.z)
-                                       ),
-                          colvarvalue::type_unit3vectorderiv );
+      return colvarvalue(2.0 * (cos_t * v1 - v2), colvarvalue::type_unit3vectorderiv);
     }
   case colvarvalue::type_quaternion:
   case colvarvalue::type_quaternionderiv:
