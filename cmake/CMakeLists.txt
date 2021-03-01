@@ -7,8 +7,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 #set(CMAKE_VERBOSE_MAKEFILE on)
 
-option(COLVARS_LEPTON "Build and link the Lepton library" OFF)
-
 if(NOT DEFINED LEPTON_DIR)
   set(LEPTON_DIR ${COLVARS_SOURCE_DIR}/lepton)
 else()
@@ -16,9 +14,14 @@ else()
     message(FATAL_ERROR "Could not access ${LEPTON_DIR}")
   endif()
 endif()
+
 if(EXISTS ${LEPTON_DIR})
-  set(COLVARS_LEPTON ON)
+  set(COLVARS_LEPTON_DEFAULT ON)
+else()
+  set(COLVARS_LEPTON_DEFAULT OFF)
 endif()
+
+option(COLVARS_LEPTON "Build and link the Lepton library" ${COLVARS_LEPTON_DEFAULT})
 
 file(GLOB COLVARS_SOURCES ${COLVARS_SOURCE_DIR}/src/[^.]*.cpp)
 
@@ -41,11 +44,12 @@ target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:Clang>:-Wno-c++11-lon
 if(COLVARS_LEPTON)
   target_compile_options(colvars PRIVATE -DLEPTON)
   target_include_directories(colvars PRIVATE ${LEPTON_DIR}/include)
+  target_link_libraries(colvars lepton)
   # Silence warning
   target_compile_options(lepton PRIVATE $<$<CXX_COMPILER_ID:Clang>:-Wno-tautological-undefined-compare -Wno-unknown-warning-option>)
 endif()
 
-option(BUILD_UNITTESTS "Build unit tests" OFF)
+option(BUILD_UNITTESTS "Build unit tests" ON)
 if(BUILD_UNITTESTS)
   add_subdirectory(${COLVARS_SOURCE_DIR}/tests/unittests ./unittests)
 endif()
