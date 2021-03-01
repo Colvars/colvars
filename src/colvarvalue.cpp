@@ -580,7 +580,10 @@ colvarvalue colvarvalue::dist2_grad(colvarvalue const &x2) const
       cvm::rvector const &v1 = this->rvector_value;
       cvm::rvector const &v2 = x2.rvector_value;
       cvm::real const cos_t = v1 * v2;
-      cvm::real const sin_t = cvm::sqrt(1.0 - cos_t*cos_t);
+      cvm::real sin_t = cvm::sqrt(1.0 - cos_t*cos_t);
+      if (cos_t < 0.0) {
+        sin_t *= -1.0;
+      }
       return colvarvalue( 2.0 * sin_t *
                           cvm::rvector((-1.0) * sin_t * v2.x +
                                        cos_t/sin_t * (v1.x - cos_t*v2.x),
