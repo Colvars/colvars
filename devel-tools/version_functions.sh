@@ -167,6 +167,12 @@ update_all_versions() {
                           COLVARS_VERSION \
                           src/colvars_version.h \
                           ${branch}
+    update_version_string "GROMACS interface" \
+                          '^src/colvarproxy' \
+                          get_colvarproxy_gromacs_version \
+                          COLVARPROXY_VERSION \
+                          gromacs/src/colvarproxy_gromacs_version.h \
+                          ${branch}
     update_version_string "LAMMPS interface" \
                           '^lammps/src/USER-COLVARS/colvarproxy\|^lammps/src/USER-COLVARS/fix_colvars\|^src/colvarproxy' \
                           get_colvarproxy_lammps_version \
