@@ -267,7 +267,7 @@ CVSCRIPT(cv_getatomtotalforces,
          "forces : array of arrays of floats - Atomic total foces",
          0, 0,
          "",
-         script->set_result_rvector_vec(*(script->proxy()->get_atom_positions()));
+         script->set_result_rvector_vec(*(script->proxy()->get_atom_total_forces()));
          return COLVARS_OK;
          )
 
