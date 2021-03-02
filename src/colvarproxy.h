@@ -307,7 +307,7 @@ public:
     return &atoms_positions;
   }
 
-  inline std::vector<cvm::rvector> const *modify_atom_total_forces() const
+  inline std::vector<cvm::rvector> const *get_atom_total_forces() const
   {
     return &atoms_total_forces;
   }
