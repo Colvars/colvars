@@ -64,6 +64,25 @@ proc ::cv_dashboard::createWindow {} {
   set gridrow 0  ;# New grid
   set main .cv_dashboard_window.tabs.main
 
+  # Energy/Force display
+  set ::cv_dashboard::colvar_energy 0.0
+  grid [label $main.energyTxt -text "Energy:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [tk::entry $main.energy -textvariable ::cv_dashboard::colvar_energy] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  incr gridrow
+
+  set ::cv_dashboard::atom_forces_rms 0.0
+  set ::cv_dashboard::atom_forces_max 0.0
+  set ::cv_dashboard::atom_forces_max_id -1
+  grid [label $main.rmsForceTxt -text "RMS force:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [tk::entry $main.rmsForce -textvariable ::cv_dashboard::atom_forces_rms] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  grid [label $main.maxForceIDTxt -text "Max force atom:"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+  incr gridrow
+  grid [label $main.maxForceTxt -text "Max force:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [tk::entry $main.maxForce -textvariable ::cv_dashboard::atom_forces_max] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  grid [tk::entry $main.maxForceID -textvariable ::cv_dashboard::atom_forces_max_id] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+  incr gridrow
+
+
   grid [label $main.actions_text -text "Colvar list actions"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
 
   incr gridrow
@@ -344,6 +363,8 @@ proc ::cv_dashboard::refresh_table {} {
     }
   }
 
+  refresh_energy_forces
+
   toggleRotationMenu
   toggleVolmapMenu
 
@@ -367,6 +388,23 @@ proc ::cv_dashboard::refresh_values {} {
         $w.cvtable set $n val [format_value [lindex $val [expr $i-1]]]
       }
     }
+  }
+
+  refresh_energy_forces
+}
+
+
+proc ::cv_dashboard::refresh_energy_forces {} {
+  set ::cv_dashboard::colvar_energy [run_cv getenergy]
+
+  if { [string compare [run_cv version] "2021-03-02"] >= 0 } {
+    set ::cv_dashboard::atom_forces_rms [run_cv getatomappliedforcesrms]
+    set ::cv_dashboard::atom_forces_max [run_cv getatomappliedforcesmax]
+    set ::cv_dashboard::atom_forces_max_id [run_cv getatomappliedforcesmaxid]
+  } else {
+    set ::cv_dashboard::atom_forces_rms "n/a"
+    set ::cv_dashboard::atom_forces_max "n/a"
+    set ::cv_dashboard::atom_forces_max_id "n/a"
   }
 }
 
