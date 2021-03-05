@@ -471,10 +471,10 @@ proc ::cv_dashboard::load {} {
 # Save config string of whole Colvars module to file
 proc ::cv_dashboard::save {} {
   if { [info exists ::cv_dashboard::config_dir] } {
-    set path [tk_getSaveFile -confirmoverwrite false -filetypes {{"Colvars cfg" .in} {"Colvars cfg" .colvars} {"Gromacs Colvars cfg" .dat} {"All files" *}} \
+    set path [tk_getSaveFile -filetypes {{"Colvars cfg" .in} {"Colvars cfg" .colvars} {"Gromacs Colvars cfg" .dat} {"All files" *}} \
         -initialdir $::cv_dashboard::config_dir]
   } else {
-    set path [tk_getSaveFile -confirmoverwrite false -filetypes {{"Colvars cfg" .in} {"Colvars cfg" .colvars} {"Gromacs Colvars cfg" .dat} {"All files" *}} \
+    set path [tk_getSaveFile -filetypes {{"Colvars cfg" .in} {"Colvars cfg" .colvars} {"Gromacs Colvars cfg" .dat} {"All files" *}} \
         -initialdir [pwd]]
   }
 
