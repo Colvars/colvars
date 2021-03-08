@@ -101,9 +101,7 @@ public:
   inline void update_mass()
   {
     colvarproxy *p = cvm::proxy;
-    if (p->updated_masses()) {
-      mass = p->get_atom_mass(index);
-    }
+    mass = p->get_atom_mass(index);
   }
 
   /// Get the latest value of the charge

@@ -323,6 +323,9 @@ void cvm::atom_group::update_total_mass()
       total_mass += ai->mass;
     }
   }
+  if (total_mass < 1e-15) {
+    cvm::error("ERROR: " + description + " has zero total mass.\n");
+  }
 }
 
 
