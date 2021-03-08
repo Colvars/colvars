@@ -812,8 +812,10 @@ int colvarbias_abf::write_output_files()
     cvm::log("ABF bias trying to write gradients and samples to disk");
   }
 
-  if (shared_on && cvm::main()->proxy->replica_index() > 0) {
+  if (shared_on && cvm::main()->proxy->replica_index() > 0
+    && ! (b_CZAR_estimator || b_UI_estimator) ) {
     // No need to report the same data as replica 0, let it do the I/O job
+    // except if using an eABF FE estimator
     return COLVARS_OK;
   }
 
