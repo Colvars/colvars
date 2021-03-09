@@ -108,9 +108,7 @@ public:
   inline void update_charge()
   {
     colvarproxy *p = cvm::proxy;
-    if (p->updated_charges()) {
-      charge = p->get_atom_charge(index);
-    }
+    charge = p->get_atom_charge(index);
   }
 
   /// Get the current position
