@@ -759,10 +759,6 @@ bool colvarparse::key_lookup(std::string const &conf,
 
       // find the matching closing brace
 
-//       if (cvm::debug()) {
-//         cvm::log("Multi-line value, config is now \""+line+"\".\n");
-//       }
-
       int brace_count = 1;
 
       while (brace_count > 0) {
@@ -803,10 +799,6 @@ bool colvarparse::key_lookup(std::string const &conf,
           else
             line_end = nl;
           line.append(conf, line_begin, (line_end-line_begin));
-
-//           if (cvm::debug()) {
-//             cvm::log("Added a new line, config is now \""+line+"\".\n");
-//           }
         }
 
         if (brace_count < 0) {
@@ -822,7 +814,8 @@ bool colvarparse::key_lookup(std::string const &conf,
       data_end = line.find_last_of('}', line.size()) - 1;
       data_end = line.find_last_not_of(white_space,
                                        data_end) + 1;
-    }
+
+    } //  if (brace != std::string::npos)
 
     if (data != NULL) {
       data->append(line, data_begin, (data_end-data_begin));
@@ -834,6 +827,9 @@ bool colvarparse::key_lookup(std::string const &conf,
       if (data->size()) {
         data_begin_pos.push_back(conf.find(*data, pos+key.size()));
         data_end_pos.push_back(data_begin_pos.back()+data->size());
+      } else {
+        data_begin_pos.push_back(line_begin + data_begin);
+        data_end_pos.push_back(line_begin + data_begin);
       }
     }
   }
