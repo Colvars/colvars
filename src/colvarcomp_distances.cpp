@@ -1521,7 +1521,8 @@ colvar::cartesian::cartesian(std::string const &conf)
 
   x.type(colvarvalue::type_vector);
   disable(f_cvc_explicit_gradient);
-  x.vector1d_value.resize(atoms->size() * axes.size());
+  // Don't try to access atoms if creation of the atom group failed
+  if (atoms != NULL) x.vector1d_value.resize(atoms->size() * axes.size());
 }
 
 
