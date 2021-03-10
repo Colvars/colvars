@@ -643,10 +643,26 @@ const char * get_colvarscript_result()
 int tcl_colvars_vmd_init(Tcl_Interp *interp, int molid);
 #endif
 
-extern "C"
-int tcl_run_colvarscript_command(ClientData /* clientData */,
-                                 Tcl_Interp *my_interp,
-                                 int objc, Tcl_Obj *const objv[])
+#if !defined(VMDTCL) && !defined(NAMD_TCL)
+extern "C" {
+  int Colvars_Init(Tcl_Interp *interp) {
+    colvarproxy *proxy = new colvarproxy();
+    colvarmodule *colvars = new colvarmodule(proxy);
+    proxy->set_tcl_interp(reinterpret_cast<void *>(interp));
+    proxy->colvars = colvars;
+    proxy->script = new colvarscript(proxy);
+    Tcl_CreateObjCommand(interp, "cv", tcl_run_colvarscript_command,
+                         (ClientData *) NULL, (Tcl_CmdDeleteProc *) NULL);
+    Tcl_EvalEx(interp, "package provide colvars", -1, 0);
+    return TCL_OK;
+  }
+}
+#endif
+
+
+extern "C" int tcl_run_colvarscript_command(ClientData /* clientData */,
+                                            Tcl_Interp *my_interp,
+                                            int objc, Tcl_Obj *const objv[])
 {
   colvarmodule *colvars = cvm::main();
 
