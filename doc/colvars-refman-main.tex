@@ -773,9 +773,9 @@ The following formatting rules apply:
 
 \item The hash character ``\texttt{\#}'' indicates a \emph{comment}: all text in the same line following this character will be ignored.
 
-\item Outside of comments, \emph{only ASCII characters} are allowed for defining keywords, and the only white-space characters supported are spaces, tabs and newlines: a warning will be printed upon detection of non-ASCII characters in a configuration line, which include both characters that are visibly ``special'', as well as those with a very similar appearance to ASCII ones (for instance, \href{https://en.wikipedia.org/wiki/Non-breaking_space}{non-breaking spaces}); common ways to identify/remove non-ASCII characters are using the Emacs text editor, or using \texttt{LC_ALL=C vi}.
+\item Outside of comments, \emph{only ASCII characters} are allowed for defining keywords, and the only white-space characters supported are spaces, tabs and newlines: a warning will be printed upon detection of non-ASCII characters in a configuration line, which include both characters that are visibly ``special'', as well as those with a very similar appearance to ASCII ones (for instance, \href{https://en.wikipedia.org/wiki/Non-breaking_space}{non-breaking spaces}); common ways to identify/remove non-ASCII characters are using the Emacs text editor, or using \texttt{LC\_ALL=C vi}.
 
-\ifdefined\cvvmdornamd{
+\ifdefined\cvvmdornamd
 \item Tcl syntax is generally not available inside a Colvars configuration file/string, but it is possible to use Tcl variables or bracket expansion of commands when configuration is passed via the command \texttt{cv config "..."}; \cvnamdonly{for example, this is particularly useful when combined with NAMD's parameter introspection, e.g.{} \texttt{cv config "colvarsTrajFrequency [DCDFreq]"} allows synchronizing the output frequencies of NAMD and Colvars trajectory files.} \cvvmdonly{for example, it is possible to convert the atom selection \$\emph{sel} into an atom group (see \ref{sec:colvar_atom_groups_sel}) using \texttt{cv config "atomNumbers \{ [\$sel get serial] \}"}}.
 \fi
 
