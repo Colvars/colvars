@@ -321,6 +321,10 @@ public:
   /// from this position
   static int check_braces(std::string const &conf, size_t const start_pos);
 
+  /// \brief Check that a config string contains non-ASCII characters
+  /// \param conf The configuration string
+  static int check_ascii(std::string const &conf);
+
   /// \brief Split a string with a specified delimiter into a vector
   /// \param data The string to be splitted
   /// \param delim A delimiter

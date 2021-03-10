@@ -757,32 +757,27 @@ A corresponding ``\texttt{save}'' function is also available:
 
 \cvsubsec{Configuration syntax used by the Colvars module}{sec:colvars_config_syntax}
 
-\cvnamdonly{All the parameters defining variables and their biasing or analysis algorithms are read from the file specified by the configuration option \texttt{colvarsConfig}, or by the Tcl commands \texttt{cv config} and \texttt{cv configfile}.
-\emph{None of the keywords described in the remainder of this manual are recognized directly in the NAMD configuration file, unless as arguments of \texttt{cv config}.}}
-\cvvmdonly{The Colvars configuration is usually read using the commands \texttt{cv configfile} (with a filename as argument) or \texttt{cv config} (with the configuration as a string argument).}
-Each configuration line follows the format ``\texttt{keyword value}'', where the keyword and its value are separated by any white space.
-The following rules apply:
+Configuration for the Colvars module is passed using an external file\ifdefined\cvvmdornamd{, or inlined as a string in a \MDENGINE{} script using the Tcl command \texttt{cv config "..."}}\fi.
+Configuration lines follow the format ``\texttt{keyword value}'' or ``\texttt{keyword \{ ... \}}'', where the keyword and its value must be separated by one or more space characters.
+The following formatting rules apply:
 
 \begin{itemize}
 
-\item keywords are case-insensitive (\texttt{upperBoundary} is the same as \texttt{upperboundary} and \texttt{UPPERBOUNDARY}): their string values are however case-sensitive (e.g.~file names);
+\item \emph{Keywords are case-insensitive}; for example, \texttt{upperBoundary} is the same as \texttt{upperboundary} and \texttt{UPPERBOUNDARY}); note that their string values are however still case-sensitive (e.g.{} names of variables, file names).
 
-\item a long value, or a list of multiple values, can be distributed across multiple lines by using curly braces, ``\texttt{\{}'' and ``\texttt{\}}'': the opening brace ``\texttt{\{}'' must occur on the same line as the keyword, following a space character or other white space; the closing brace ``\texttt{\}}'' can be at any position after that; any keywords following the closing brace on the same line are not valid (they should appear instead on a different line);
+\item A long value, or a list of multiple values, can be distributed across multiple lines by using \emph{curly braces}, ``\texttt{\{}'' and ``\texttt{\}}'': the opening brace ``\texttt{\{}'' must occur on the same line as the keyword, following at least one space character; the closing brace ``\texttt{\}}'' may be at any position after that; any keywords following the closing brace on the same line are not valid (they should appear instead on a different line).
 
-\item many keywords are nested, and are only meaningful within a specific context: for every keyword documented in the following, the ``parent'' keyword that defines such context is also indicated\cvnamdugonly{ in parentheses};
+\item Many keywords are nested, and are only meaningful within the specific context of another keyword; for example, the keyword  \texttt{name} is available inside the block of the keyword \texttt{colvar \{...\}}, but not outside of it; for every keyword documented in the following, the \emph{``parent'' keyword} that defines such context is also indicated\cvnamdugonly{ in parentheses}.
 
-\cvnamdonly{%
-\item the `\texttt{=}' sign between a keyword and its value, deprecated in the NAMD main configuration file, is not allowed;
+\item If a keyword requiring a boolean value (\texttt{yes|on|true} or \texttt{no|off|false}) is provided without an explicit value, it defaults to `\texttt{yes|on|true}'; for example, `\texttt{outputAppliedForce}' may be used as shorthand for `\texttt{outputAppliedForce on}'.
 
-\item Tcl syntax is generally not available, but it is possible to use Tcl variables or bracket expansion of commands within a configuration string, when this is passed via the command \texttt{cv config \ldots}; this is particularly useful when combined with parameter introspection\cvnamdugonly{ (see \ref{section:tclscripting})}, e.g.{} \texttt{cv config "colvarsTrajFrequency [DCDFreq]"};
-}
+\item The hash character ``\texttt{\#}'' indicates a \emph{comment}: all text in the same line following this character will be ignored.
 
-\cvvmdonly{%
-\item Tcl syntax is generally not available, but it is possible to use Tcl variables or bracket expansion of commands within a configuration string, when this is passed via the command \texttt{cv config \ldots}: for example, it is possible to convert the atom selection \$\emph{sel} into an atom group (see \ref{sec:colvar_atom_groups_sel}) using \texttt{cv config "atomNumbers \{ [\$sel get serial] \}"};}
+\item Outside of comments, \emph{only ASCII characters} are allowed for defining keywords, and the only white-space characters supported are spaces, tabs and newlines: a warning will be printed upon detection of non-ASCII characters in a configuration line, which include both characters that are visibly ``special'', as well as those with a very similar appearance to ASCII ones (for instance, \href{https://en.wikipedia.org/wiki/Non-breaking_space}{non-breaking spaces}); common ways to identify/remove non-ASCII characters are using the Emacs text editor, or using \texttt{LC\_ALL=C vi}.
 
-\item if a keyword requiring a boolean value (\texttt{yes|on|true} or \texttt{no|off|false}) is provided without an explicit value, it defaults to `\texttt{yes|on|true}'; for example, `\texttt{outputAppliedForce}' may be used as shorthand for `\texttt{outputAppliedForce on}';
-
-\item the hash character \texttt{\#} indicates a comment: all text in the same line following this character will be ignored.
+\ifdefined\cvvmdornamd
+\item Tcl syntax is generally not available inside a Colvars configuration file/string, but it is possible to use Tcl variables or bracket expansion of commands when configuration is passed via the command \texttt{cv config "..."}; \cvnamdonly{for example, this is particularly useful when combined with NAMD's parameter introspection, e.g.{} \texttt{cv config "colvarsTrajFrequency [DCDFreq]"} allows synchronizing the output frequencies of NAMD and Colvars trajectory files.} \cvvmdonly{for example, it is possible to convert the atom selection \$\emph{sel} into an atom group (see \ref{sec:colvar_atom_groups_sel}) using \texttt{cv config "atomNumbers \{ [\$sel get serial] \}"}}.
+\fi
 
 \end{itemize}
 

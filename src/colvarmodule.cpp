@@ -186,6 +186,7 @@ std::istream & colvarmodule::getline(std::istream &is, std::string &line)
     size_t const sz = l.size();
     if (sz > 0) {
       if (l[sz-1] == '\r' ) {
+        // Replace Windows newlines with Unix newlines
         line = l.substr(0, sz-1);
       } else {
         line = l;
@@ -200,6 +201,7 @@ std::istream & colvarmodule::getline(std::istream &is, std::string &line)
 
 int colvarmodule::parse_config(std::string &conf)
 {
+  // Auto-generated additional configuration
   extra_conf.clear();
 
   // Check that the input has matching braces
@@ -207,6 +209,9 @@ int colvarmodule::parse_config(std::string &conf)
     return cvm::error("Error: unmatched curly braces in configuration.\n",
                       INPUT_ERROR);
   }
+
+  // Check that the input has only ASCII characters, and warn otherwise
+  colvarparse::check_ascii(conf);
 
   // Parse global options
   if (catch_input_errors(parse_global_params(conf))) {
