@@ -49,6 +49,15 @@ if(COLVARS_LEPTON)
   target_compile_options(lepton PRIVATE $<$<CXX_COMPILER_ID:Clang>:-Wno-tautological-undefined-compare -Wno-unknown-warning-option>)
 endif()
 
+option(COLVARS_TCL "Link against the Tcl library" OFF)
+
+if(COLVARS_TCL)
+  find_library(TCL_LIBRARY NAMES tcl PATHS HINTS "${TCL_DIR}" PATH_SUFFIXES lib lib64)
+  target_include_directories(colvars PRIVATE ${TCL_DIR}/include)
+  target_compile_options(colvars PRIVATE -DCOLVARS_TCL)
+  target_link_libraries(colvars tcl)
+endif()
+
 option(BUILD_UNITTESTS "Build unit tests" ON)
 if(BUILD_UNITTESTS)
   add_subdirectory(${COLVARS_SOURCE_DIR}/tests/unittests ./unittests)

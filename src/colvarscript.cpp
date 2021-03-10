@@ -13,6 +13,8 @@
 
 #if defined(NAMD_TCL) || defined(VMDTCL)
 #define COLVARS_TCL
+#endif
+#ifdef COLVARS_TCL
 #include <tcl.h>
 #endif
 
@@ -21,6 +23,19 @@
 #include "colvarscript.h"
 #include "colvarscript_commands.h"
 
+
+
+#ifdef COLVARS_TCL
+/// Run the script API via Tcl command-line interface
+/// \param clientData Not used
+/// \param my_interp Pointer to Tcl_Interp object (read from Colvars if NULL)
+/// \param objc Number of Tcl command parameters
+/// \param objv Array of command parameters
+/// \return Result of the script command
+extern "C" int tcl_run_colvarscript_command(ClientData clientData,
+                                            Tcl_Interp *interp_in,
+                                            int objc, Tcl_Obj *const objv[]);
+#endif
 
 
 colvarscript::colvarscript(colvarproxy *p)
