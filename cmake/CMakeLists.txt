@@ -31,11 +31,11 @@ if(COLVARS_LEPTON)
   endif()
   set(CMAKE_CXX_STANDARD 11)
   file(GLOB LEPTON_SOURCES ${LEPTON_DIR}/src/[^.]*.cpp)
-  add_library(lepton STATIC ${LEPTON_SOURCES})
+  add_library(lepton SHARED ${LEPTON_SOURCES})
   target_include_directories(lepton PRIVATE ${LEPTON_DIR}/include)
 endif()
 
-add_library(colvars STATIC ${COLVARS_SOURCES})
+add_library(colvars SHARED ${COLVARS_SOURCES})
 
 target_compile_options(colvars PRIVATE $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Intel>>:-Wall -pedantic>)
 target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:GNU>:-Wno-long-long>)
