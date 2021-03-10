@@ -59,7 +59,7 @@ public:
   std::string units;
 
   /// \brief Request to set the units used internally by Colvars
-  virtual int set_unit_system(std::string const &units, bool check_only) = 0;
+  virtual int set_unit_system(std::string const &units, bool check_only);
 
   /// \brief Value of 1 Angstrom in the internal (front-end) Colvars unit for atomic coordinates
   /// * defaults to 0. in the base class; derived proxy classes must set it
@@ -68,7 +68,7 @@ public:
   cvm::real angstrom_value;
 
   /// \brief Value of 1 Angstrom in the backend's unit for atomic coordinates
-  virtual cvm::real backend_angstrom_value() = 0;
+  virtual cvm::real backend_angstrom_value();
 
   /// \brief Value of 1 kcal/mol in the internal Colvars unit for energy
   cvm::real kcal_mol_value;
@@ -94,19 +94,19 @@ public:
   // }
 
   /// \brief Boltzmann constant in internal Colvars units
-  virtual cvm::real boltzmann() = 0;
+  virtual cvm::real boltzmann();
 
   /// \brief Target temperature of the simulation (K units)
-  virtual cvm::real temperature() = 0;
+  virtual cvm::real temperature();
 
   /// \brief Time step of the simulation (fs)
-  virtual cvm::real dt() = 0;
+  virtual cvm::real dt();
 
   /// \brief Pseudo-random number with Gaussian distribution
-  virtual cvm::real rand_gaussian(void) = 0;
+  virtual cvm::real rand_gaussian(void);
 
   /// Pass restraint energy value for current timestep to MD engine
-  virtual void add_energy(cvm::real energy) = 0;
+  virtual void add_energy(cvm::real energy);
 
   /// \brief Get the PBC-aware distance vector between two positions
   virtual cvm::rvector position_distance(cvm::atom_pos const &pos1,
@@ -173,11 +173,11 @@ public:
 
   /// Prepare this atom for collective variables calculation, selecting it by
   /// numeric index (1-based)
-  virtual int init_atom(int atom_number) = 0;
+  virtual int init_atom(int atom_number);
 
   /// Check that this atom number is valid, but do not initialize the
   /// corresponding atom yet
-  virtual int check_atom_id(int atom_number) = 0;
+  virtual int check_atom_id(int atom_number);
 
   /// Select this atom for collective variables calculation, using name and
   /// residue number.  Not all programs support this: leave this function as
@@ -824,10 +824,10 @@ public:
   int end_of_step();
 
   /// Print a message to the main log
-  virtual void log(std::string const &message) = 0;
+  virtual void log(std::string const &message);
 
   /// Print a message to the main log and/or let the host code know about it
-  virtual void error(std::string const &message) = 0;
+  virtual void error(std::string const &message);
 
   /// Record error message (used by VMD to collect them after a script call)
   void add_error_msg(std::string const &message);

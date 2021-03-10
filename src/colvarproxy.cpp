@@ -41,6 +41,46 @@ colvarproxy_system::colvarproxy_system()
 colvarproxy_system::~colvarproxy_system() {}
 
 
+int colvarproxy_system::set_unit_system(std::string const & /* units */,
+                                        bool /* check_only */)
+{
+  return COLVARS_NOT_IMPLEMENTED;
+}
+
+
+cvm::real colvarproxy_system::backend_angstrom_value()
+{
+  return 1.0;
+}
+
+
+cvm::real colvarproxy_system::boltzmann()
+{
+  return 0.001987191;
+}
+
+
+cvm::real colvarproxy_system::temperature()
+{
+  // TODO define, document and implement a user method to set the value of this
+  return 300.0;
+}
+
+
+cvm::real colvarproxy_system::dt()
+{
+  // TODO define, document and implement a user method to set the value of this
+  return 1.0;
+}
+
+
+cvm::real colvarproxy_system::rand_gaussian()
+{
+  // TODO define, document and implement a user method to set the value of this
+  return 0.0;
+}
+
+
 void colvarproxy_system::add_energy(cvm::real /* energy */) {}
 
 
@@ -180,6 +220,18 @@ int colvarproxy_atoms::add_atom_slot(int atom_id)
   atoms_total_forces.push_back(cvm::rvector(0.0, 0.0, 0.0));
   atoms_new_colvar_forces.push_back(cvm::rvector(0.0, 0.0, 0.0));
   return (atoms_ids.size() - 1);
+}
+
+
+int colvarproxy_atoms::init_atom(int /* atom_number */)
+{
+  return COLVARS_NOT_IMPLEMENTED;
+}
+
+
+int colvarproxy_atoms::check_atom_id(int /* atom_number */)
+{
+  return COLVARS_NOT_IMPLEMENTED;
 }
 
 
@@ -720,6 +772,19 @@ int colvarproxy::post_run()
   }
   error_code |= flush_output_streams();
   return error_code;
+}
+
+
+void colvarproxy::log(std::string const &message)
+{
+  fprintf(stdout, "colvars: %s", message.c_str());
+}
+
+
+void colvarproxy::error(std::string const &message)
+{
+  // TODO handle errors?
+  colvarproxy::log(message);
 }
 
 
