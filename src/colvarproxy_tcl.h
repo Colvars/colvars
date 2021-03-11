@@ -51,6 +51,12 @@ public:
     return tcl_interp_;
   }
 
+  /// Set the pointer to the Tcl interpreter
+  inline void set_tcl_interp(void *interp)
+  {
+    tcl_interp_ = interp;
+  }
+
 protected:
 
   /// Pointer to Tcl interpreter object

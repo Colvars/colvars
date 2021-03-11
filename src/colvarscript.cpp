@@ -13,6 +13,8 @@
 
 #if defined(NAMD_TCL) || defined(VMDTCL)
 #define COLVARS_TCL
+#endif
+#ifdef COLVARS_TCL
 #include <tcl.h>
 #endif
 
@@ -21,6 +23,19 @@
 #include "colvarscript.h"
 #include "colvarscript_commands.h"
 
+
+
+#ifdef COLVARS_TCL
+/// Run the script API via Tcl command-line interface
+/// \param clientData Not used
+/// \param my_interp Pointer to Tcl_Interp object (read from Colvars if NULL)
+/// \param objc Number of Tcl command parameters
+/// \param objv Array of command parameters
+/// \return Result of the script command
+extern "C" int tcl_run_colvarscript_command(ClientData clientData,
+                                            Tcl_Interp *interp_in,
+                                            int objc, Tcl_Obj *const objv[]);
+#endif
 
 
 colvarscript::colvarscript(colvarproxy *p)
@@ -628,10 +643,26 @@ const char * get_colvarscript_result()
 int tcl_colvars_vmd_init(Tcl_Interp *interp, int molid);
 #endif
 
-extern "C"
-int tcl_run_colvarscript_command(ClientData /* clientData */,
-                                 Tcl_Interp *my_interp,
-                                 int objc, Tcl_Obj *const objv[])
+#if !defined(VMDTCL) && !defined(NAMD_TCL)
+extern "C" {
+  int Colvars_Init(Tcl_Interp *interp) {
+    colvarproxy *proxy = new colvarproxy();
+    colvarmodule *colvars = new colvarmodule(proxy);
+    proxy->set_tcl_interp(reinterpret_cast<void *>(interp));
+    proxy->colvars = colvars;
+    proxy->script = new colvarscript(proxy);
+    Tcl_CreateObjCommand(interp, "cv", tcl_run_colvarscript_command,
+                         (ClientData *) NULL, (Tcl_CmdDeleteProc *) NULL);
+    Tcl_EvalEx(interp, "package provide colvars", -1, 0);
+    return TCL_OK;
+  }
+}
+#endif
+
+
+extern "C" int tcl_run_colvarscript_command(ClientData /* clientData */,
+                                            Tcl_Interp *my_interp,
+                                            int objc, Tcl_Obj *const objv[])
 {
   colvarmodule *colvars = cvm::main();
 

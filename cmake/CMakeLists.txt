@@ -31,11 +31,11 @@ if(COLVARS_LEPTON)
   endif()
   set(CMAKE_CXX_STANDARD 11)
   file(GLOB LEPTON_SOURCES ${LEPTON_DIR}/src/[^.]*.cpp)
-  add_library(lepton STATIC ${LEPTON_SOURCES})
+  add_library(lepton SHARED ${LEPTON_SOURCES})
   target_include_directories(lepton PRIVATE ${LEPTON_DIR}/include)
 endif()
 
-add_library(colvars STATIC ${COLVARS_SOURCES})
+add_library(colvars SHARED ${COLVARS_SOURCES})
 
 target_compile_options(colvars PRIVATE $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Intel>>:-Wall -pedantic>)
 target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:GNU>:-Wno-long-long>)
@@ -47,6 +47,15 @@ if(COLVARS_LEPTON)
   target_link_libraries(colvars lepton)
   # Silence warning
   target_compile_options(lepton PRIVATE $<$<CXX_COMPILER_ID:Clang>:-Wno-tautological-undefined-compare -Wno-unknown-warning-option>)
+endif()
+
+option(COLVARS_TCL "Link against the Tcl library" OFF)
+
+if(COLVARS_TCL)
+  find_library(TCL_LIBRARY NAMES tcl PATHS HINTS "${TCL_DIR}" PATH_SUFFIXES lib lib64)
+  target_include_directories(colvars PRIVATE ${TCL_DIR}/include)
+  target_compile_options(colvars PRIVATE -DCOLVARS_TCL)
+  target_link_libraries(colvars tcl)
 endif()
 
 option(BUILD_UNITTESTS "Build unit tests" ON)
