@@ -36,6 +36,15 @@ namespace {
 }
 
 
+// Copy of declaration from colvarscript.cpp (this alone doesn't warrant a
+// new header file)
+#ifdef COLVARS_TCL
+extern "C" int tcl_run_colvarscript_command(ClientData clientData,
+                                            Tcl_Interp *interp_in,
+                                            int objc, Tcl_Obj *const objv[]);
+#endif
+
+
 int tcl_colvars(ClientData clientData, Tcl_Interp *interp,
                 int objc, Tcl_Obj *const objv[])
 {
