@@ -260,7 +260,10 @@ public:
   /// Parse parameters for custom function with Lepton
   int init_custom_function(std::string const &conf);
 
-  /// Init defaults for grid options
+  /// Parse parameters for multiple-time stepping
+  int init_mts_parameters(std::string const &conf);
+
+  /// Parse parameters for grid definitions
   int init_grid_parameters(std::string const &conf);
 
   /// Consistency check for the grid paramaters

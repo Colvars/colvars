@@ -147,6 +147,12 @@ int colvar::cvc::init(std::string const &conf)
 
 int colvar::cvc::set_atom_list_frequency(int new_frequency)
 {
+  if (atom_list_freq > 0) {
+    if (atom_list_freq != new_frequency) {
+      return cvm::error("Error: inconsistent definitions for "
+                        "atomListFrequency.\n", COLVARS_INPUT_ERROR);
+    }
+  }
   atom_list_freq = new_frequency;
   return cvm::main()->proxy->set_atom_list_frequency(atom_list_freq);
 }
