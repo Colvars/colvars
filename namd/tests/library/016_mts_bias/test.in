@@ -7,7 +7,7 @@ colvar {
     name one
 
     outputAppliedForce on
-    timeStepFactor 0
+    timeStepFactor 4
 
     width 0.5
 
