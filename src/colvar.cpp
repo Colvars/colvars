@@ -307,22 +307,7 @@ int colvar::init(std::string const &conf)
 
   reset_bias_force();
 
-  get_keyval(conf, "timeStepFactor", time_step_factor, time_step_factor);
-  if (time_step_factor < 1) {
-    error_code |= cvmodule->error("Error: timeStepFactor must be 1 or greater.\n", COLVARS_INPUT_ERROR);
-  }
-  if (time_step_factor % cvmodule->proxy->time_step_factor() != 0) {
-    error_code |=
-        cvmodule->error("timeStepFactor for this variable (currently " + cvm::to_str(time_step_factor) +
-                       ") must be a multiple of the global Colvars timestep multiplier (" +
-                       cvm::to_str(cvmodule->proxy->time_step_factor()) + ").\n",
-                   COLVARS_INPUT_ERROR);
-  }
-  if (time_step_factor > 1) {
-    enable(f_cv_multiple_ts);
-  } else {
-    enable(f_cv_awake); // this colvar is always awake
-  }
+  error_code |= init_mts_parameters(conf);
 
   error_code |= init_grid_parameters(conf);
 
@@ -525,6 +510,35 @@ int colvar::init_custom_function(std::string const &conf)
 }
 
 #endif // #ifdef LEPTON
+
+
+int colvar::init_mts_parameters(std::string const &conf)
+{
+  int error_code = COLVARS_OK;
+  get_keyval(conf, "timeStepFactor", time_step_factor, time_step_factor);
+  if (time_step_factor < 1) {
+    error_code |= cvmodule->error("Error: timeStepFactor must be 1 or greater.\n", COLVARS_INPUT_ERROR);
+  }
+  if (time_step_factor % cvmodule->proxy->time_step_factor() != 0) {
+    error_code |=
+        cvmodule->error("timeStepFactor for this variable (currently " + cvm::to_str(time_step_factor) +
+                       ") must be a multiple of the global Colvars timestep multiplier (" +
+                       cvm::to_str(cvmodule->proxy->time_step_factor()) + ").\n",
+                   COLVARS_INPUT_ERROR);
+  }
+
+  if (time_step_factor > 1) {
+    enable(f_cv_multiple_ts);
+    for (size_t i = 0; i < cvcs.size(); i++) {
+      // Tell CVCs that atom lists will be refreshed only every time_step_factor steps
+      error_code |= (cvcs[i])->set_atom_list_frequency(time_step_factor);
+    }
+  } else {
+    enable(f_cv_awake); // Without MTS, this colvar is always awake
+  }
+
+  return error_code;
+}
 
 
 int colvar::init_grid_parameters(std::string const &conf)
