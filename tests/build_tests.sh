@@ -242,6 +242,7 @@ for colvar in \
     "inertia" \
     "inertiaz" \
     "rmsd" \
+    "rmsd-mts" \
     "rmsd_sym" \
     "eigenvector" \
     "eigenvector-difference" \
