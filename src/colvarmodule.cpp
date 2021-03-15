@@ -425,6 +425,7 @@ int colvarmodule::parse_colvars(std::string const &conf)
         cvm::log("Error while constructing colvar number " +
                  cvm::to_str(colvars.size()) + " : deleting.");
         delete colvars.back();  // the colvar destructor updates the colvars array
+        cvm::decrease_depth();
         return COLVARS_ERROR;
       }
       cvm::decrease_depth();
