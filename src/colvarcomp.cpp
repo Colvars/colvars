@@ -186,6 +186,12 @@ int colvar::cvc::init_gpu() {
 
 int colvar::cvc::set_atom_list_frequency(int new_frequency)
 {
+  if (atom_list_freq > 0) {
+    if (atom_list_freq != new_frequency) {
+      return cvmodule->error("Error: cannot redefine atomListFrequency once it is provided.\n",
+                             COLVARS_INPUT_ERROR);
+    }
+  }
   atom_list_freq = new_frequency;
   return cvm::main()->proxy->set_atom_list_frequency(atom_list_freq);
 }
