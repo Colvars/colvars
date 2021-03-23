@@ -2099,6 +2099,15 @@ bool colvar::periodic_boundaries() const
 cvm::real colvar::dist2(colvarvalue const &x1,
                          colvarvalue const &x2) const
 {
+  if ( is_enabled(f_cv_scripted) || is_enabled(f_cv_custom_function) ) {
+    if (is_enabled(f_cv_periodic) && is_enabled(f_cv_scalar)) {
+      cvm::real diff = x1.real_value - x2.real_value;
+      const double period_lower_boundary = (2.0 * wrap_center - period) / 2.0;
+      const double period_upper_boundary = (2.0 * wrap_center + period) / 2.0;
+      diff = (diff < period_lower_boundary ? diff + period : ( diff > period_upper_boundary ? diff - period : diff));
+      return diff * diff;
+    }
+  }
   if (is_enabled(f_cv_homogeneous)) {
     return (cvcs[0])->dist2(x1, x2);
   } else {
@@ -2109,6 +2118,15 @@ cvm::real colvar::dist2(colvarvalue const &x1,
 colvarvalue colvar::dist2_lgrad(colvarvalue const &x1,
                                  colvarvalue const &x2) const
 {
+  if ( is_enabled(f_cv_scripted) || is_enabled(f_cv_custom_function) ) {
+    if (is_enabled(f_cv_periodic) && is_enabled(f_cv_scalar)) {
+      cvm::real diff = x1.real_value - x2.real_value;
+      const double period_lower_boundary = (2.0 * wrap_center - period) / 2.0;
+      const double period_upper_boundary = (2.0 * wrap_center + period) / 2.0;
+      diff = (diff < period_lower_boundary ? diff + period : ( diff > period_upper_boundary ? diff - period : diff));
+      return 2.0 * diff;
+    }
+  }
   if (is_enabled(f_cv_homogeneous)) {
     return (cvcs[0])->dist2_lgrad(x1, x2);
   } else {
@@ -2119,6 +2137,15 @@ colvarvalue colvar::dist2_lgrad(colvarvalue const &x1,
 colvarvalue colvar::dist2_rgrad(colvarvalue const &x1,
                                  colvarvalue const &x2) const
 {
+  if ( is_enabled(f_cv_scripted) || is_enabled(f_cv_custom_function) ) {
+    if (is_enabled(f_cv_periodic) && is_enabled(f_cv_scalar)) {
+      cvm::real diff = x1.real_value - x2.real_value;
+      const double period_lower_boundary = (2.0 * wrap_center - period) / 2.0;
+      const double period_upper_boundary = (2.0 * wrap_center + period) / 2.0;
+      diff = (diff < period_lower_boundary ? diff + period : ( diff > period_upper_boundary ? diff - period : diff));
+      return (-2.0) * diff;
+    }
+  }
   if (is_enabled(f_cv_homogeneous)) {
     return (cvcs[0])->dist2_rgrad(x1, x2);
   } else {
