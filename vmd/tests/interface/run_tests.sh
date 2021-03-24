@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Run automated tests for VMD/colvars
+# Run automated tests for VMD/colvars
 # each test is defined by a directory with VMD input test.tcl
-# and output files (text only) to be matched in the ExpectedResults/ subdir
-# Returns 1 if any test failed, otherwise 0.
+# and output files (text only) to be matched in the ExpectedResults/ subdir
+# Returns 1 if any test failed, otherwise 0.
 
 # binary to be tested is specified as command-line argument (defaults to vmd)
 
@@ -47,7 +47,7 @@ do
     fi
   done
 
-  # run simulation(s)
+  # run simulation(s)
   for script in test*.vmd ; do
       $BINARY -dispdev none -e $script > ${script%.vmd}.out
       # collect output of colvars module, except the version number
@@ -55,7 +55,7 @@ do
       grep "^colvars:" ${script%.vmd}.out | grep -v 'Initializing the collective variables module' | grep -v 'Using VMD interface' > ${script%.vmd}.colvars.out
   done
   
-  # now check results
+  # now check results
   SUCCESS=1
   for f in AutoDiff/*
   do

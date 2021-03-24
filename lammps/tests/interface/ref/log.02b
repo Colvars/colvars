@@ -128,7 +128,7 @@ Step PotEng v_com1z v_com2z v_fcm1z v_fcm2z v_cveng
 colvars: Saving collective variables state to "02b.colvars.state".
 
 
-fix_modify f1 configfile harmonic.cfg # should work
+fix_modify f1 configfile harmonic.cfg # should work
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "harmonic.cfg":
 colvars: # smp = on [default]

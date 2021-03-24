@@ -5,6 +5,6 @@ fix f1 all colvars minimal.cfg unwrap yes output 02b
 
 run 0 post no
 
-fix_modify f1 configfile harmonic.cfg # should work
+fix_modify f1 configfile harmonic.cfg # should work
 
 run 0 post no

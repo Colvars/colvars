@@ -128,7 +128,7 @@ Step PotEng v_com1z v_com2z v_fcm1z v_fcm2z v_cveng
 colvars: Saving collective variables state to "02a.colvars.state".
 
 
-fix_modify f1 configfile minimal.cfg # redefining same colvar, should fail
+fix_modify f1 configfile minimal.cfg # redefining same colvar, should fail
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "minimal.cfg":
 colvars: # smp = on [default]
@@ -142,4 +142,4 @@ colvars:   # name = "one"
 colvars: Error: this colvar cannot have the same name, "one", as another colvar.
 ERROR on proc 0: Fatal error in the collective variables module.
  (../colvarproxy_lammps.cpp)
-Last command: fix_modify f1 configfile minimal.cfg # redefining same colvar, should fail
+Last command: fix_modify f1 configfile minimal.cfg # redefining same colvar, should fail

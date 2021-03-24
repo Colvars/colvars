@@ -5,6 +5,6 @@ fix f1 all colvars minimal.cfg unwrap yes output 02a
 
 run 0 post no
 
-fix_modify f1 configfile minimal.cfg # redefining same colvar, should fail
+fix_modify f1 configfile minimal.cfg # redefining same colvar, should fail
 
 run 0 post no

@@ -77,7 +77,7 @@ proc ::cv_dashboard::update_rotation_display {} {
     return
   }
 
-  # CV was already updated by update_frame
+  # CV was already updated by update_frame
   set value [cv colvar $::cv_dashboard::rot_cv value]
   foreach {q0 q1 q2 q3} $value {}
 

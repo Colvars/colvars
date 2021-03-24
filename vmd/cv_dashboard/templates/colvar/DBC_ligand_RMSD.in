@@ -6,14 +6,14 @@ colvar {
     name DBC
 
     rmsd {
-        # Reference coordinates (for ligand RMSD computation)
+        # Reference coordinates (for ligand RMSD computation)
         refpositionsfile reference.pdb # PDB or XYZ file
 
         atoms {
             # Define ligand atoms used for RMSD calculation
             atomNumbers 1 2 3 4
 
-            # Moving frame of reference is defined below
+            # Moving frame of reference is defined below
             centerToReference yes
             rotateToReference yes
             fittingGroup {

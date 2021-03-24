@@ -12,7 +12,7 @@ proc ::cv_dashboard::createWindow {} {
   wm title $w "Colvars dashboard"
   wm protocol $w WM_DELETE_WINDOW { ::cv_dashboard::quit }
 
-  # Top bars of buttons
+  # Top bars of buttons
   set gridrow 0
   grid [ttk::button $w.helpB -text "Online Help" -command {::cv_dashboard::invokeBrowser "http://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html#sec:dashboard"} -padding "2 0 2 0"] \
     -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
@@ -214,14 +214,14 @@ proc ::cv_dashboard::toggleRotationMenu {} {
 
 
 # Display context menu about specific colvar
-# Takes coordinates within widget and within window
+# Takes coordinates within widget and within window
 proc ::cv_dashboard::cvContextMenu { x y wX wY } {
   set w .cv_dashboard_window
   set menu $w.cvMenu
 
   set cvs [selected_colvars]
 
-  # Add any colvar under mouse cursor
+  # Add any colvar under mouse cursor
   # reduce scalar components to their parent vector CV
   set cv [lindex [$w.cvtable identify row $x $y] 0]
   if { [llength $cv] == 1 && [lsearch $cvs $cv] == -1 } {
@@ -262,7 +262,7 @@ proc ::cv_dashboard::cvContextMenu { x y wX wY } {
 }
 
 
-# Takes coordinates within widget
+# Takes coordinates within widget
 proc ::cv_dashboard::cvTableClicked { x y } {
   set w .cv_dashboard_window
   set menu $w.cvMenu
