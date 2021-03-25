@@ -150,20 +150,10 @@ for dir in ${DIRLIST} ; do
     basename=`basename ${script}`
     basename=${basename%.namd}
 
-    # Try running the test (use a subshell to avoid cluttering stdout)
+    # Run the test (use a subshell to avoid cluttering stdout)
     # Use --source to avoid letting NAMD change its working directory
     # Use multiple threads to test SMP code (TODO: move SMP tests to interface?)
-    if ! ( $BINARY +p ${NUM_THREADS} \
-                   --source $script > ${basename}.out || \
-             false ) > /dev/null 2>&1 ; then
-      # This test may be using syntax that changed between versions
-      if [ -f ${script%.namd}.legacy.namd ] ; then
-        # Try a legacy input
-        ( $BINARY +p ${NUM_THREADS} \
-                  --source ${script%.namd}.legacy.namd > ${basename}.out || \
-            false ) > /dev/null 2>&1
-      fi
-    fi
+    $BINARY +p ${NUM_THREADS} --source $script > ${basename}.out
 
     # Output of Colvars module, minus the version numbers
     grep "^colvars:" ${basename}.out | grep -v 'Initializing the collective variables module' \
