@@ -1,0 +1,21 @@
+colvarsTrajFrequency 10
+
+colvar {
+  name c
+  customFunction atan2(r3, r1) * 180 / 3.1415926
+  period  360
+  wrapAround 0.0
+  outputAppliedForce on
+  distanceDir {
+    name r
+    group1 { atomNumbers 61 }
+    group2 { atomNumbers 101 }
+  }
+}
+
+harmonic {
+  colvars c
+  centers -179.0
+  forceConstant 0.01
+  outputEnergy on
+}
