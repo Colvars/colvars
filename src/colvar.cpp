@@ -2102,8 +2102,8 @@ cvm::real colvar::dist2(colvarvalue const &x1,
   if ( is_enabled(f_cv_scripted) || is_enabled(f_cv_custom_function) ) {
     if (is_enabled(f_cv_periodic) && is_enabled(f_cv_scalar)) {
       cvm::real diff = x1.real_value - x2.real_value;
-      const double period_lower_boundary = (2.0 * wrap_center - period) / 2.0;
-      const double period_upper_boundary = (2.0 * wrap_center + period) / 2.0;
+      const cvm::real period_lower_boundary = (2.0 * wrap_center - period) / 2.0;
+      const cvm::real period_upper_boundary = (2.0 * wrap_center + period) / 2.0;
       diff = (diff < period_lower_boundary ? diff + period : ( diff > period_upper_boundary ? diff - period : diff));
       return diff * diff;
     }
@@ -2121,8 +2121,8 @@ colvarvalue colvar::dist2_lgrad(colvarvalue const &x1,
   if ( is_enabled(f_cv_scripted) || is_enabled(f_cv_custom_function) ) {
     if (is_enabled(f_cv_periodic) && is_enabled(f_cv_scalar)) {
       cvm::real diff = x1.real_value - x2.real_value;
-      const double period_lower_boundary = (2.0 * wrap_center - period) / 2.0;
-      const double period_upper_boundary = (2.0 * wrap_center + period) / 2.0;
+      const cvm::real period_lower_boundary = (2.0 * wrap_center - period) / 2.0;
+      const cvm::real period_upper_boundary = (2.0 * wrap_center + period) / 2.0;
       diff = (diff < period_lower_boundary ? diff + period : ( diff > period_upper_boundary ? diff - period : diff));
       return 2.0 * diff;
     }
@@ -2140,8 +2140,8 @@ colvarvalue colvar::dist2_rgrad(colvarvalue const &x1,
   if ( is_enabled(f_cv_scripted) || is_enabled(f_cv_custom_function) ) {
     if (is_enabled(f_cv_periodic) && is_enabled(f_cv_scalar)) {
       cvm::real diff = x1.real_value - x2.real_value;
-      const double period_lower_boundary = (2.0 * wrap_center - period) / 2.0;
-      const double period_upper_boundary = (2.0 * wrap_center + period) / 2.0;
+      const cvm::real period_lower_boundary = (2.0 * wrap_center - period) / 2.0;
+      const cvm::real period_upper_boundary = (2.0 * wrap_center + period) / 2.0;
       diff = (diff < period_lower_boundary ? diff + period : ( diff > period_upper_boundary ? diff - period : diff));
       return (-2.0) * diff;
     }
