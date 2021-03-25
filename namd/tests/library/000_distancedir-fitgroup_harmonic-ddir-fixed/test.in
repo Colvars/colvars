@@ -13,6 +13,8 @@ colvar {
     distanceDir {
         group1 {
             indexGroup group1
+            centerToReference yes
+            rotateToReference yes
             enableFitGradients no # Not available because gradients are implicit
             fittingGroup {
                 indexGroup heavy_atoms
