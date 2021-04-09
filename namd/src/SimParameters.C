@@ -83,7 +83,7 @@ extern "C" {
 //bool one_cuda_device_per_node();
 //#endif
 #include "DeviceCUDA.h"
-#ifdef NAMD_CUDA
+#if defined(NAMD_CUDA) || defined(NAMD_HIP)
 #ifdef WIN32
 #define __thread __declspec(thread)
 #endif
@@ -359,7 +359,7 @@ void SimParameters::scriptSet(const char *param, const char *value) {
     soluteScalingFactorVdw = soluteScalingFactor;
     // update LJTable for CPU
     ComputeNonbondedUtil::select();
-#ifdef NAMD_CUDA
+#if defined(NAMD_CUDA) || defined(NAMD_HIP)
     // update LJTable for GPU, needs CPU update first
     ComputeCUDAMgr::getComputeCUDAMgr()->update();
 #endif
@@ -373,7 +373,7 @@ void SimParameters::scriptSet(const char *param, const char *value) {
     }
     // update LJTable for CPU
     ComputeNonbondedUtil::select();
-#ifdef NAMD_CUDA
+#if defined(NAMD_CUDA) || defined(NAMD_HIP)
     // update LJTable for GPU, needs CPU update first
     ComputeCUDAMgr::getComputeCUDAMgr()->update();
 #endif
@@ -661,7 +661,7 @@ void SimParameters::config_parser_basic(ParseOptions &opts) {
        "Bin width of timer histogram collection in microseconds",
        &timerBinWidth, 1.0);
 #endif
-#if defined(NAMD_NVTX_ENABLED) || defined(NAMD_CMK_TRACE_ENABLED)
+#if defined(NAMD_NVTX_ENABLED) || defined(NAMD_CMK_TRACE_ENABLED) || defined(NAMD_ROCTX_ENABLED)
    // default NVTX or Projections profiling is up to the first 1000 patches
    opts.optional("main", "beginEventPatchID","Beginning patch ID for profiling",
        &beginEventPatchID, 0);
@@ -3247,7 +3247,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
 
    if ( dihedralOn ) globalOn = TRUE;
 
-#ifdef NAMD_CUDA
+#if defined(NAMD_CUDA) || defined(NAMD_HIP)
    if (loweAndersenOn) {
        NAMD_die("Lowe-Andersen dynamics not compatible with CUDA at this time");
    }
@@ -3555,7 +3555,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
        if (alchThermIntOn) {
          NAMD_die("alchWCA is not currently compatible with TI");
        }
-#ifdef NAMD_CUDA
+#if defined(NAMD_CUDA) || defined(NAMD_HIP)
        NAMD_die("alchWCA is not currently available with CUDA");
 #endif
      }
@@ -3882,7 +3882,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
      }
      PMEEwaldCoefficient = ewaldcof;
 
-#ifdef NAMD_CUDA
+#if defined(NAMD_CUDA) || defined(NAMD_HIP)
      bool one_device_per_node = deviceCUDA->one_device_per_node();  // only checks node 0
      if ( ! opts.defined("PMEOffload") ) {
        PMEOffload = ( (PMEInterpOrder > 4) && one_device_per_node );
@@ -4418,7 +4418,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
             NAMD_die("QM Conditional SMD is ON, but no CSMD configuration file was profided!");
     }
 
-#ifdef NAMD_CUDA
+#if defined(NAMD_CUDA) || defined(NAMD_HIP)
     // Disable various CUDA kernels if they do not fully support
     // or are otherwise incompatible with simulation options.
     if ( useCUDAdisable ) {
@@ -4536,7 +4536,7 @@ void SimParameters::print_config(ParseOptions &opts, ConfigList *config, char *&
    if ( noPatchesOnOne ) iout << iINFO << "REMOVING PATCHES FROM PROCESSOR 1\n";
    iout << endi;
 
-#if defined(NAMD_CUDA) || defined(NAMD_MIC)
+#if defined(NAMD_CUDA) || defined(NAMD_HIP) || defined(NAMD_MIC)
     maxSelfPart = maxPairPart = 1;
 #endif
 
@@ -4776,7 +4776,7 @@ if ( openatomOn )
    if ( (alchOn) && (!usePairlists)) {
      NAMD_die("Sorry, Alchemical simulations require pairlists to be enabled\n");
    }
-#ifdef NAMD_CUDA
+#if defined(NAMD_CUDA) || defined(NAMD_HIP)
    if ( ! usePairlists ) {
      usePairlists = 1;
      iout << iINFO << "CUDA ACCELERATION REQUIRES PAIRLISTS\n";

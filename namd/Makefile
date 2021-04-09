@@ -485,6 +485,7 @@ namd2:	$(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS)
 	$(COLVARSLIB) \
 	$(LEPTONOBJS) \
 	$(CHARMOPTS) \
+	$(CHARMLD) \
 	$(EXTRALINKLIBS) \
 	$(MATHLIBS) -o namd2
 
@@ -520,6 +521,7 @@ namd2.exe:  $(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS) $(TCLDLL)
 	$(COLVARSLIB) \
 	$(LEPTONOBJS) \
 	$(CHARMOPTS) \
+	$(CHARMLD) \
 	-o namd2
 
 charmd.exe:
@@ -596,6 +598,7 @@ tracecomputes: updatefiles $(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS)
 	$(COLVARSLIB) \
 	$(LEPTONOBJS) \
 	$(CHARMOPTS) \
+	$(CHARMLD) \
 	$(EXTRALINKLIBS) \
 	$(MATHLIBS) -o namd2.tc.prj
 
@@ -620,6 +623,7 @@ projections: $(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS)
 	$(COLVARSLIB) \
 	$(LEPTONOBJS) \
 	$(CHARMOPTS) \
+	$(CHARMLD) \
 	$(EXTRALINKLIBS) \
 	$(MATHLIBS) -o namd2.prj
 
@@ -644,6 +648,7 @@ summary: $(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS)
 	$(COLVARSLIB) \
 	$(LEPTONOBJS) \
 	$(CHARMOPTS) \
+	$(CHARMLD) \
 	$(EXTRALINKLIBS) \
 	$(MATHLIBS) -o namd2.sum
 

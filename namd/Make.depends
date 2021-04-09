@@ -34,7 +34,41 @@ obj/AVXTiles.o: \
 	$(CXX) $(CXXFLAGS) $(COPTO)obj/AVXTiles.o $(COPTC) src/AVXTiles.C
 obj/AVXTilesKernel.o: \
 	obj/.exists \
-	src/AVXTilesKernel.C
+	src/AVXTilesKernel.C \
+	src/AVXTileLists.h \
+	src/AVXTiles.h \
+	src/common.h \
+	src/NamdTypes.h \
+	src/Vector.h \
+	src/ResizeArray.h \
+	src/ResizeArrayRaw.h \
+	src/Lattice.h \
+	src/Tensor.h \
+	src/Node.h \
+	src/main.h \
+	src/ProcessorPrivate.h \
+	src/BOCgroup.h \
+	inc/Node.decl.h \
+	src/Molecule.h \
+	src/parm.h \
+	src/structures.h \
+	src/ConfigList.h \
+	src/UniqueSet.h \
+	src/UniqueSetRaw.h \
+	src/Hydrogen.h \
+	src/SortableResizeArray.h \
+	src/GromacsTopFile.h \
+	src/GridForceGrid.h \
+	src/SimParameters.h \
+	src/MGridforceParams.h \
+	src/strlib.h \
+	src/InfoStream.h \
+	src/MStream.h \
+	plugins/include/molfile_plugin.h \
+	plugins/include/vmdplugin.h \
+	src/AVXTilesKernel.h \
+	src/ComputeNonbondedUtil.h \
+	src/ReductionMgr.h
 	$(CXX) $(CXXFLAGS) $(COPTO)obj/AVXTilesKernel.o $(COPTC) src/AVXTilesKernel.C
 obj/AVXTileLists.o: \
 	obj/.exists \

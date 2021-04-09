@@ -105,7 +105,7 @@ public:
 //  MAKE SURE THAT THIS CLASS CAN BE BIT COPIED OR YOU WILL HAVE TO
 //  ADD SPECIAL CODE TO send_SimParameters() and receive_SimParameters()
 
-#if defined(NAMD_NVTX_ENABLED) || defined(NAMD_CMK_TRACE_ENABLED)
+#if defined(NAMD_NVTX_ENABLED) || defined(NAMD_CMK_TRACE_ENABLED) || defined(NAMD_ROCTX_ENABLED)
   int beginEventPatchID;
   int endEventPatchID;
   int beginEventStep;
