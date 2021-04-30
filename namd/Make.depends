@@ -1246,7 +1246,10 @@ obj/ComputeBondedCUDA.o: \
 	src/ComputeBondedCUDA.h \
 	src/CudaNonbondedTables.h \
 	src/ComputeBondedCUDAKernel.h \
-	src/TupleTypesCUDA.h
+	src/TupleTypesCUDA.h \
+	src/HipDefines.h \
+	src/NamdEventsProfiling.h \
+	src/NamdEventsProfiling.def
 	$(CXX) $(CXXFLAGS) $(COPTO)obj/ComputeBondedCUDA.o $(COPTC) src/ComputeBondedCUDA.C
 obj/ComputeConsForce.o: \
 	obj/.exists \
@@ -1425,6 +1428,7 @@ obj/ComputeCUDAMgr.o: \
 	plugins/include/vmdplugin.h \
 	src/CudaTileListKernel.h \
 	src/CudaComputeNonbondedKernel.h \
+	src/HipDefines.h \
 	src/CudaComputeGBISKernel.h \
 	src/ComputeMgr.h \
 	src/GlobalMaster.h \
@@ -2670,6 +2674,7 @@ obj/ComputeMgr.o: \
 	src/CudaComputeNonbonded.h \
 	src/CudaTileListKernel.h \
 	src/CudaComputeNonbondedKernel.h \
+	src/HipDefines.h \
 	src/CudaComputeGBISKernel.h \
 	src/ComputeBondedCUDA.h \
 	src/ComputeBondedCUDAKernel.h \
@@ -3208,6 +3213,7 @@ obj/ComputeNonbondedCUDA.o: \
 	obj/.exists \
 	src/ComputeNonbondedCUDA.C \
 	src/common.h \
+	src/HipDefines.h \
 	src/WorkDistrib.h \
 	src/main.h \
 	src/NamdTypes.h \
@@ -3660,7 +3666,9 @@ obj/ComputePmeCUDA.o: \
 	src/MigrateAtomsMsg.h \
 	src/Migration.h \
 	inc/PatchMgr.decl.h \
-	src/Settle.h
+	src/Settle.h \
+	src/NamdEventsProfiling.h \
+	src/NamdEventsProfiling.def
 	$(CXX) $(CXXFLAGS) $(COPTO)obj/ComputePmeCUDA.o $(COPTC) src/ComputePmeCUDA.C
 obj/ComputePmeCUDAMgr.o: \
 	obj/.exists \
@@ -3698,6 +3706,7 @@ obj/ComputePmeCUDAMgr.o: \
 	src/MathArray.h \
 	src/Array.h \
 	src/CudaPmeSolverUtilKernel.h \
+	src/HipDefines.h \
 	src/ComputePmeCUDAMgr.h \
 	src/PmeSolver.h \
 	src/ReductionMgr.h \
@@ -4119,6 +4128,7 @@ obj/CudaComputeNonbonded.o: \
 	src/CudaNonbondedTables.h \
 	src/CudaTileListKernel.h \
 	src/CudaComputeNonbondedKernel.h \
+	src/HipDefines.h \
 	src/CudaComputeGBISKernel.h \
 	src/ComputeMgr.h \
 	src/GlobalMaster.h \
@@ -4143,6 +4153,8 @@ obj/CudaComputeNonbonded.o: \
 	inc/ComputePmeCUDAMgr.decl.h \
 	inc/CudaPmeSolver.decl.h \
 	inc/PmeSolver.decl.h \
+	src/NamdEventsProfiling.h \
+	src/NamdEventsProfiling.def \
 	src/DeviceCUDA.h
 	$(CXX) $(CXXFLAGS) $(COPTO)obj/CudaComputeNonbonded.o $(COPTC) src/CudaComputeNonbonded.C
 obj/CudaNonbondedTables.o: \
@@ -4223,6 +4235,7 @@ obj/CudaPmeSolver.o: \
 	src/Array.h \
 	src/CudaUtils.h \
 	src/CudaPmeSolverUtilKernel.h \
+	src/HipDefines.h \
 	src/ComputePmeCUDAMgr.h \
 	src/PmeSolver.h \
 	src/PatchMap.h \
@@ -4288,7 +4301,8 @@ obj/CudaPmeSolverUtil.o: \
 	inc/CudaPmeSolver.decl.h \
 	src/CudaPmeSolverUtil.h \
 	src/CudaUtils.h \
-	src/CudaPmeSolverUtilKernel.h
+	src/CudaPmeSolverUtilKernel.h \
+	src/HipDefines.h
 	$(CXX) $(CXXFLAGS) $(COPTO)obj/CudaPmeSolverUtil.o $(COPTC) src/CudaPmeSolverUtil.C
 obj/CudaUtils.o: \
 	obj/.exists \
@@ -4948,6 +4962,7 @@ obj/colvarproxy_namd.o: \
 	src/colvarproxy_namd.C \
 	src/common.h \
 	src/fstream_namd.h \
+	src/Debug.h \
 	src/BackEnd.h \
 	src/InfoStream.h \
 	src/Node.h \
@@ -4977,6 +4992,7 @@ obj/colvarproxy_namd.o: \
 	src/MStream.h \
 	plugins/include/molfile_plugin.h \
 	plugins/include/vmdplugin.h \
+	src/GridForceGrid.inl \
 	src/PDB.h \
 	src/PDBData.h \
 	src/ReductionMgr.h \
@@ -6017,6 +6033,7 @@ obj/Node.o: \
 	src/ReductionMgr.h \
 	src/CudaTileListKernel.h \
 	src/CudaComputeNonbondedKernel.h \
+	src/HipDefines.h \
 	src/CudaComputeGBISKernel.h \
 	src/ComputeBondedCUDA.h \
 	src/ComputeBondedCUDAKernel.h \
@@ -6040,6 +6057,8 @@ obj/Node.o: \
 	inc/CollectionMgr.decl.h \
 	inc/ParallelIOMgr.decl.h \
 	src/Random.h \
+	src/NamdEventsProfiling.h \
+	src/NamdEventsProfiling.def \
 	src/DumpBench.h \
 	src/CollectionMgr.h \
 	src/CollectionMaster.h \
@@ -6964,6 +6983,7 @@ obj/SimParameters.o: \
 	src/CudaComputeNonbonded.h \
 	src/CudaTileListKernel.h \
 	src/CudaComputeNonbondedKernel.h \
+	src/HipDefines.h \
 	src/CudaComputeGBISKernel.h \
 	src/ComputeMgr.h \
 	src/GlobalMaster.h \
@@ -7016,7 +7036,8 @@ obj/SortAtoms.o: \
 	src/common.h \
 	src/Vector.h \
 	src/ResizeArray.h \
-	src/ResizeArrayRaw.h
+	src/ResizeArrayRaw.h \
+	src/CudaUtils.h
 	$(CXX) $(CXXFLAGS) $(COPTO)obj/SortAtoms.o $(COPTC) src/SortAtoms.C
 obj/Sync.o: \
 	obj/.exists \
@@ -7451,13 +7472,15 @@ obj/CudaComputeNonbondedKernel.o: \
 	src/CudaUtils.h \
 	src/CudaTileListKernel.h \
 	src/CudaNonbondedTables.h \
+	src/HipDefines.h \
 	src/DeviceCUDA.h
 	$(CUDACC) $(CUDACCOPTS) -Xptxas -v $(COPTO)obj/CudaComputeNonbondedKernel.o $(COPTC) `$(NATIVEPATH) src/`CudaComputeNonbondedKernel.cu
 obj/CudaPmeSolverUtilKernel.o: \
 	obj/.exists \
 	src/CudaPmeSolverUtilKernel.cu \
 	src/CudaUtils.h \
-	src/CudaPmeSolverUtilKernel.h
+	src/CudaPmeSolverUtilKernel.h \
+	src/HipDefines.h
 	$(CUDACC) $(CUDACCOPTS) -Xptxas -v $(COPTO)obj/CudaPmeSolverUtilKernel.o $(COPTC) `$(NATIVEPATH) src/`CudaPmeSolverUtilKernel.cu
 obj/CudaTileListKernel.o: \
 	obj/.exists \
