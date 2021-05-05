@@ -345,7 +345,7 @@ then
     tgt=$(basename ${src})
     checkfile "${src}" "${target}/src/${tgt}"
   done
-  for src in ${source}/namd/Make* ${source}/namd/config
+  for src in ${source}/namd/Makefile ${source}/namd/config
   do
     tgt=$(basename ${src})
     checkfile "${src}" "${target}/${tgt}"
