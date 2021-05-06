@@ -42,6 +42,8 @@ cvm::real compute_norm2_stats(std::vector<T> const &v,
   typename std::vector<T>::const_iterator xi = v.begin();
   size_t i = 0;
 
+  if (get_index) *minmax_index = -1; // Let's not assume minmax_index is initialized to -1
+
   for ( ; xi != v.end(); xi++, i++) {
     cvm::real const norm2 = get_force_norm2<T>(*xi);
     if (flag == 0) {

@@ -298,13 +298,16 @@ void colvarproxy_atoms::compute_rms_atoms_applied_force()
 
 void colvarproxy_atoms::compute_max_atoms_applied_force()
 {
+  int minmax_index = -1;
   size_t const n_atoms_ids = atoms_ids.size();
   if ((n_atoms_ids > 0) && (n_atoms_ids == atoms_new_colvar_forces.size())) {
     atoms_max_applied_force_ =
       compute_norm2_stats<cvm::rvector, 1, true>(atoms_new_colvar_forces,
-                                                 &atoms_max_applied_force_id_);
-    if (atoms_max_applied_force_id_ >= 0) {
-      atoms_max_applied_force_id_ = atoms_ids[atoms_max_applied_force_id_];
+                                                 &minmax_index);
+    if (minmax_index >= 0) {
+      atoms_max_applied_force_id_ = atoms_ids[minmax_index];
+    } else {
+      atoms_max_applied_force_id_ = -1;
     }
   } else {
     atoms_max_applied_force_ =
