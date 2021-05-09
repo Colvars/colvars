@@ -102,6 +102,12 @@ public:
     return nd;
   }
 
+  /// Return the numbers of points in all dimensions
+  inline std::vector<int> const &number_of_points_vec() const
+  {
+    return nx;
+  }
+
   /// Return the number of points in the i-th direction, if provided, or
   /// the total number
   inline size_t number_of_points(int const icv = -1) const
@@ -1067,8 +1073,8 @@ public:
     std::vector<int>      nx_read;
     std::vector<int>      bin;
 
-    if ( cv.size() != nd ) {
-      cvm::error("Cannot read grid file: missing reference to colvars.");
+    if ( cv.size() > 0 && cv.size() != nd ) {
+      cvm::error("Cannot read grid file: number of variables in file differs from number referenced by grid.\n");
       return is;
     }
 
@@ -1526,6 +1532,9 @@ public:
   /// Constructor from a vector of colvars
   colvar_grid_gradient(std::vector<colvar *>  &colvars);
 
+  /// Constructor from a multicol file
+  colvar_grid_gradient(std::string &filename);
+
   /// \brief Get a vector with the binned value(s) indexed by ix, normalized if applicable
   inline void vector_value(std::vector<int> const &ix, std::vector<cvm::real> &v) const
   {
@@ -1659,10 +1668,13 @@ class integrate_potential : public colvar_grid_scalar
   {}
 
   /// Constructor from a vector of colvars + gradient grid
-  integrate_potential (std::vector<colvar *> &colvars, colvar_grid_gradient * gradients);
+  integrate_potential(std::vector<colvar *> &colvars, colvar_grid_gradient * gradients);
+
+  /// Constructor from a gradient grid (for processing grid files without a Colvars config)
+  integrate_potential(colvar_grid_gradient * gradients);
 
   /// \brief Calculate potential from divergence (in 2D); return number of steps
-  int integrate (const int itmax, const cvm::real & tol, cvm::real & err);
+  int integrate(const int itmax, const cvm::real & tol, cvm::real & err);
 
   /// \brief Update matrix containing divergence and boundary conditions
   /// based on new gradient point value, in neighboring bins

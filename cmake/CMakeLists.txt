@@ -58,6 +58,11 @@ if(COLVARS_TCL)
   target_link_libraries(colvars tcl)
 endif()
 
+option(BUILD_TOOLS "Build standalone tools" ON)
+if(BUILD_TOOLS)
+  add_subdirectory(${COLVARS_SOURCE_DIR}/colvartools ./colvartools)
+endif()
+
 option(BUILD_UNITTESTS "Build unit tests" ON)
 if(BUILD_UNITTESTS)
   add_subdirectory(${COLVARS_SOURCE_DIR}/tests/unittests ./unittests)
