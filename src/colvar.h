@@ -192,7 +192,7 @@ protected:
   /// Amplitude of Gaussian white noise for Langevin extended dynamics
   cvm::real ext_sigma;
 
-  /// \brief Harmonic restraint force
+  /// \brief Applied force on extended DOF, for output (unscaled if using MTS)
   colvarvalue fr;
 
   /// \brief Jacobian force, when Jacobian_force is enabled

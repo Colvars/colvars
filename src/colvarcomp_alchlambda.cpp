@@ -37,7 +37,7 @@ void colvar::alch_lambda::calc_value()
   // at the beginning of the timestep we get a force instead of calculating the value
 
   cvm::proxy->get_dE_dLambda(&ft.real_value);
-  // TODO check that the force isn't overwritten later on
+  ft.real_value *= -1.0; // Energy derivative to force
 }
 
 

@@ -1759,6 +1759,12 @@ cvm::real colvar::update_forces_energy()
       colvarvalue f_ext(fr.type()); // force acting on the extended variable
       f_ext.reset();
 
+      if (is_enabled(f_cv_external)) {
+        // There are no forces on the "actual colvar" bc there is no gradient wrt atomic coordinates
+        // So we apply this to the extended DOF
+        f += fb_actual;
+      }
+
       fr    = f;
       // External force has been scaled for a 1-timestep impulse, scale it back because we will
       // integrate it with the colvar's own timestep factor
@@ -1842,9 +1848,11 @@ cvm::real colvar::update_forces_energy()
     }
   }
 
-  // Now adding the force on the actual colvar (for those biases that
-  // bypass the extended Lagrangian mass)
-  f += fb_actual;
+  if (!is_enabled(f_cv_external)) {
+    // Now adding the force on the actual colvar (for those biases that
+    // bypass the extended Lagrangian mass)
+    f += fb_actual;
+  }
 
   if (cvm::debug())
     cvm::log("Done updating colvar \""+this->name+"\".\n");
