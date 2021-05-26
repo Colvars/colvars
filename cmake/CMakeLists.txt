@@ -36,6 +36,8 @@ if(COLVARS_LEPTON)
 endif()
 
 add_library(colvars SHARED ${COLVARS_SOURCES})
+add_library(colvars_static STATIC ${COLVARS_SOURCES})
+set_property(TARGET colvars_static PROPERTY OUTPUT_NAME colvars)
 
 target_compile_options(colvars PRIVATE $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Intel>>:-Wall -pedantic>)
 target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:GNU>:-Wno-long-long>)
