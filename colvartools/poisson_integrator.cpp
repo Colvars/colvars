@@ -25,7 +25,7 @@ int main (int argc, char *argv[]) {
   potential.set_zero_minimum();
 
   std::cout << "Writing integrated potential to " + gradfile + ".int\n";
-  std::ofstream os(gradfile + ".int");
+  std::ofstream os(std::string(gradfile + ".int").c_str());
   potential.write_multicol(os);
   os.close();
 
