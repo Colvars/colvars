@@ -1710,6 +1710,7 @@ cvm::real colvar::update_forces_energy()
 
   // add the biases' force, which at this point should already have
   // been summed over each bias using this colvar
+  // fb is already multiplied by the relevant time step factor for each bias
   f += fb;
 
   if (is_enabled(f_cv_Jacobian)) {
@@ -1717,7 +1718,7 @@ cvm::real colvar::update_forces_energy()
     // instead, it is subtracted from the applied force (silent Jacobian correction)
     // This requires the Jacobian term for the *current* timestep
     if (is_enabled(f_cv_hide_Jacobian))
-      f -= fj;
+      f -= fj * cvm::real(time_step_factor);
   }
 
   // At this point f is the force f from external biases that will be applied to the
