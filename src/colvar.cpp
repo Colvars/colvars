@@ -886,6 +886,7 @@ int colvar::init_components(std::string const &conf)
   error_code |= init_components_type<euler_phi>(conf, "euler phi angle of the optimal orientation", "eulerPhi");
   error_code |= init_components_type<euler_psi>(conf, "euler psi angle of the optimal orientation", "eulerPsi");
   error_code |= init_components_type<euler_theta>(conf, "euler theta angle of the optimal orientation", "eulerTheta");
+  error_code |= init_components_type<customColvar>(conf, "CV with support of the lepton custom function", "customColvar");
   error_code |= init_components_type<neuralNetwork>(conf, "neural network CV for other CVs", "NeuralNetwork");
 
   error_code |= init_components_type<map_total>(conf, "total value of atomic map", "mapTotal");
