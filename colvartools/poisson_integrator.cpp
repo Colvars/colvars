@@ -8,7 +8,7 @@
 int main (int argc, char *argv[]) {
 
   if (argc < 2) {
-    std::cerr << "One argument needed: file name.\n";
+    std::cerr << "\n\nOne argument needed: gradient multicol file name.\n";
     return 1;
   }
 
@@ -17,18 +17,24 @@ int main (int argc, char *argv[]) {
 
   std::string gradfile (argv[1]);
   std::shared_ptr<colvar_grid_gradient> grad_ptr = std::make_shared<colvar_grid_gradient>(gradfile);
+  if (cvm::get_error()) { return -1; }
 
-  int itmax = 1000;
+  int itmax = 10000;
   cvm::real err;
-  cvm::real tol = 1e-6;
+  cvm::real tol = 1e-8;
 
   integrate_potential potential(grad_ptr);
   potential.set_div();
   potential.integrate(itmax, tol, err);
   potential.set_zero_minimum();
 
-  potential.write_multicol(std::string(gradfile + ".int"),
-                           "integrated potential");
+  if (potential.num_variables() < 3) {
+    std::cout << "\nWriting integrated potential in multicol format to " + gradfile + ".int\n";
+    potential.write_multicol(std::string(gradfile + ".int"), "integrated potential");
+  } else { // Write 3D grids to more convenient DX format
+    std::cout << "\nWriting integrated potential in OpenDX format to " + gradfile + ".int.dx\n";
+    potential.write_opendx(std::string(gradfile + ".int.dx"), "integrated potential");
+  }
 
   delete colvars;
   return 0;
