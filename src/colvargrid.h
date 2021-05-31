@@ -1262,6 +1262,9 @@ public:
   colvar_grid_scalar(std::vector<colvar *> &colvars,
                      bool add_extra_bin = false);
 
+  /// Constructor from a multicol file
+  colvar_grid_scalar(std::string const &filename);
+
   /// Accumulate the value
   inline void acc_value(std::vector<int> const &ix,
                         cvm::real const &new_value,
@@ -1573,7 +1576,7 @@ public:
   colvar_grid_gradient(std::vector<colvar *>  &colvars);
 
   /// Constructor from a multicol file
-  colvar_grid_gradient(std::string &filename);
+  colvar_grid_gradient(std::string const &filename);
 
   /// Constructor from a vector of colvars and a pointer to the count grid
   colvar_grid_gradient(std::vector<colvar *> &colvars, std::shared_ptr<colvar_grid_count> samples_in);
