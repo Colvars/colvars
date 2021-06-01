@@ -820,11 +820,15 @@ proc ::cv_dashboard::update_shown_gradients {} {
       set g $gradients($id)
       set vec [vecscale $fact $g]
       set vec_len [veclength $vec]
+      # Don't draw zero-length vectors
+      if { $vec_len < 1e-2 } { continue }
       set end [vecadd $start $vec]
       if { ${vec_len} > [expr 6.0*${radius}] } {
+        # Long arrow : cone length is 3 times radius
         set middle [vecadd $start \
           [vecscale [expr (${vec_len} - 3.0*${radius})/${vec_len}] ${vec}]]
       } else {
+        # Short arrow: cap cone length at 1/2 total length
         set middle [vecadd $start [vecscale 0.5 ${vec}]]
       }
       set cyl [graphics $molid cylinder $start $middle radius ${radius} resolution 12]
