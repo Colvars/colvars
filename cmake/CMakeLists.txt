@@ -91,5 +91,3 @@ if(BUILD_UNITTESTS)
   add_subdirectory(${COLVARS_SOURCE_DIR}/tests/unittests ./unittests)
 endif()
 
-message(STATUS "NOTE: this CMake recipe is useful for compilation tests only.")
-message(STATUS "      To use the library, please follow instead the build recipes of the packages that include it.")
