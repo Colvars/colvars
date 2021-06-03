@@ -30,7 +30,10 @@ print_tag_versions() {
 
 echo "## List of Colvars versions included in simulation/analysis packages"
 echo
-
+for package in LAMMPS NAMD VMD ; do
+    echo "[Versions included in ${package}](#versions-included-in-${package})"
+    echo
+done
 
 sort_versions(){
     sort -r

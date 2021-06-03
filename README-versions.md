@@ -1,5 +1,11 @@
 ## List of Colvars versions included in simulation/analysis packages
 
+[Versions included in LAMMPS](#versions-included-in-LAMMPS)
+
+[Versions included in NAMD](#versions-included-in-NAMD)
+
+[Versions included in VMD](#versions-included-in-VMD)
+
 ### Versions included in LAMMPS
 LAMMPS version | Colvars version
 -------------- | ---------------
