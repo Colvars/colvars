@@ -1,3 +1,4 @@
+.PHONY: all pdf clean clean-all
 
 PDF=colvars-refman-lammps.pdf colvars-refman-namd.pdf colvars-refman-vmd.pdf colvars-refman-gromacs.pdf
 BIBTEX=colvars-refman.bib
@@ -18,4 +19,7 @@ clean:
 
 clean-all: clean
 	rm -f $(PDF)
+
+version-list:
+	./print_engine_versions.sh > ../README-versions.md
 
