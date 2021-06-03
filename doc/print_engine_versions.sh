@@ -47,6 +47,9 @@ sort_lammps_versions(){
 
 for package in LAMMPS NAMD VMD ; do
     echo "### Versions included in ${package}"
+    if [ ${package} = NAMD ] ; then
+        echo "(Note: the Colvars version included in NAMD 2.12 is the same as the one included in 2.12b1 with only bugfixes applied: therefore, NAMD 2.12 does not correspond to a specific version of the Colvars source tree)"
+    fi
     echo "${package} version | Colvars version"
     echo "-------------- | ---------------"
     sort_command=sort_versions
