@@ -50,6 +50,7 @@ colvarbias_meta::colvarbias_meta(char const *key)
 
   dump_fes = true;
   keep_hills = false;
+  restart_keep_hills = false;
   dump_fes_save = false;
   dump_replica_fes = false;
 
@@ -1281,9 +1282,12 @@ int colvarbias_meta::set_state_params(std::string const &state_conf)
     return error_code;
   }
 
+  colvarparse::get_keyval(state_conf, "keepHills", restart_keep_hills, false,
+                          colvarparse::parse_restart);
+
   std::string check_replica = "";
   if (colvarparse::get_keyval(state_conf, "replicaID", check_replica,
-                              std::string(""), colvarparse::parse_silent) &&
+                              std::string(""), colvarparse::parse_restart) &&
       (check_replica != this->replica_id)) {
     return cvm::error("Error: in the state file , the "
                       "\"metadynamics\" block has a different replicaID ("+
@@ -1454,7 +1458,16 @@ std::istream & colvarbias_meta::read_state_data(std::istream& is)
     colvar_grid_gradient *new_hills_energy_gradients =
       new colvar_grid_gradient(colvars);
 
-    if (keep_hills && !hills.empty()) {
+    if ((!restart_keep_hills) && (cvm::main()->restart_version_number() < 20210604)) {
+      if (keep_hills) {
+        cvm::log("Warning: could not ensure that keepHills was enabled when "
+                 "this state file was written; because it is enabled now, "
+                 "it is assumed that it was also then, but please verify.\n");
+        restart_keep_hills = true;
+      }
+    }
+
+    if (restart_keep_hills && !hills.empty()) {
       // if there are hills, recompute the new grids from them
       cvm::log("Rebinning the energy and forces grids from "+
                cvm::to_str(hills.size())+" hills (this may take a while)...\n");
@@ -1699,8 +1712,12 @@ std::string const colvarbias_meta::hills_traj_file_name() const
 std::string const colvarbias_meta::get_state_params() const
 {
   std::ostringstream os;
-  if (this->comm != single_replica)
+  if (keep_hills) {
+    os << "keepHills on" << "\n";
+  }
+  if (this->comm != single_replica) {
     os << "replicaID " << this->replica_id << "\n";
+  }
   return (colvarbias::get_state_params() + os.str());
 }
 
