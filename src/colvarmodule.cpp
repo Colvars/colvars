@@ -34,6 +34,9 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
 
   xyz_reader_use_count = 0;
 
+  restart_version_str.clear();
+  restart_version_int = 0;
+
   if (proxy == NULL) {
     proxy = proxy_in; // Pointer to the proxy object
     parse = new colvarparse(); // Parsing object for global options
@@ -48,7 +51,7 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
 
   cvm::log(cvm::line_marker);
   cvm::log("Initializing the collective variables module, version "+
-           cvm::to_str(COLVARS_VERSION)+".\n");
+           version()+".\n");
   cvm::log("Please cite Fiorin et al, Mol Phys 2013:\n "
            "https://dx.doi.org/10.1080/00268976.2013.813594\n"
            "in any publication based on this calculation.\n");
@@ -1319,21 +1322,23 @@ std::istream & colvarmodule::read_restart(std::istream &is)
                         colvarparse::parse_restart);
       it = it_restart;
 
-      std::string restart_version;
-      int restart_version_int = 0;
+      restart_version_str.clear();
+      restart_version_int = 0;
       parse->get_keyval(restart_conf, "version",
-                        restart_version, std::string(""),
+                        restart_version_str, std::string(""),
                         colvarparse::parse_restart);
-      if (restart_version.size()) {
-        if (restart_version != std::string(COLVARS_VERSION)) {
-          cvm::log("This state file was generated with version "+
-                   restart_version+"\n");
-        }
+      if (restart_version_str.size()) {
+        // Initialize integer version number of this restart file
         restart_version_int =
-          proxy->get_version_from_string(restart_version.c_str());
+          proxy->get_version_from_string(restart_version_str.c_str());
       }
 
-      if (restart_version_int < 20160810) {
+      if (restart_version() != version()) {
+        cvm::log("This state file was generated with version "+
+                 restart_version()+"\n");
+      }
+
+      if (restart_version_number() < 20160810) {
         // check for total force change
         if (proxy->total_forces_enabled()) {
           warn_total_forces = true;

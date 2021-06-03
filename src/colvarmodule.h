@@ -81,6 +81,12 @@ private:
 
 public:
 
+  /// Get the version string (YYYY-MM-DD format)
+  std::string version() const
+  {
+    return std::string(COLVARS_VERSION);
+  }
+
   /// Get the version number (higher = more recent)
   int version_number() const
   {
@@ -767,7 +773,11 @@ protected:
   /// Write labels at the next iteration
   bool cv_traj_write_labels;
 
-private:
+  /// Version of the most recent state file read
+  std::string restart_version_str;
+
+  /// Integer version of the most recent state file read
+  int restart_version_int;
 
   /// Counter for the current depth in the object hierarchy (useg e.g. in output)
   size_t depth_s;
@@ -779,6 +789,18 @@ private:
   int xyz_reader_use_count;
 
 public:
+
+  /// Version of the most recent state file read
+  inline std::string restart_version() const
+  {
+    return restart_version_str;
+  }
+
+  /// Integer version of the most recent state file read
+  inline int restart_version_number() const
+  {
+    return restart_version_int;
+  }
 
   /// Get the current object depth in the hierarchy
   static size_t & depth();
