@@ -1454,7 +1454,7 @@ std::istream & colvarbias_meta::read_state_data(std::istream& is)
     colvar_grid_gradient *new_hills_energy_gradients =
       new colvar_grid_gradient(colvars);
 
-    if (!grids_from_restart_file || (keep_hills && !hills.empty())) {
+    if (keep_hills && !hills.empty()) {
       // if there are hills, recompute the new grids from them
       cvm::log("Rebinning the energy and forces grids from "+
                cvm::to_str(hills.size())+" hills (this may take a while)...\n");
