@@ -147,6 +147,9 @@ for dir in ${DIRLIST} ; do
       RETVAL=$?
       output=${basename}
     else
+      if [ -f test.restart.in ] ; then
+        ln -fs test.restart.in test.dat
+      fi
       $BINARY mdrun -s ${script} -deffnm ${basename} -noappend -cpi ${basename%.restart}.cpt -colvars test.dat -colvars_restart test.colvars.state.dat &> ${basename}.out
       RETVAL=$?
       output="${basename}.part0002"

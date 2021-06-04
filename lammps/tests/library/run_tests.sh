@@ -126,15 +126,15 @@ for dir in ${DIRLIST} ; do
     basename=`basename ${script}`
     basename=${basename%.lmp.in}
 
-    # Try running the test (use a subshell to avoid cluttering stdout)
-    if ! ( $BINARY -in $script -log ${basename}.out || false ) > /dev/null 2>&1 ; then
-      # # This test may be using syntax that changed between versions
-      # if [ -f ${script%.lmp.in}.legacy.lmp.in ] ; then
-      #   # Try a legacy input
-      #   ( $BINARY -in ${script%.lmp.in}.legacy.lmp.in > ${basename}.out || false ) > /dev/null 2>&1
-      # fi
-      true
+    colvars_config=test.in
+    if [ ${script} = ../common/test.restart.lmp.in ] ; then
+      if [ -f test.restart.in ] ; then
+        colvars_config=test.restart.in
+      fi
     fi
+
+    $BINARY -in $script -var colvars_config ${colvars_config} \
+        -log ${basename}.out > /dev/null
 
     # Output of Colvars module, minus the version numbers
     grep "^colvars:" ${basename}.out | grep -v 'Initializing the collective variables module' \

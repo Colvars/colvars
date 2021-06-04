@@ -12,7 +12,7 @@ read_data  ../common/da.lmp.data
 
 include ../common/fixes.lmp.in
 
-fix Colvars all colvars test.in output test
+fix Colvars all colvars ${colvars_config} output test
 
 include ../common/md.lmp.in
 

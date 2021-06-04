@@ -6,7 +6,7 @@ read_data  test.lmp.data
 
 include ../common/fixes.lmp.in
 
-fix Colvars all colvars test.in input test output test.restart
+fix Colvars all colvars ${colvars_config} input test output test.restart
 
 include ../common/md.lmp.in
 
