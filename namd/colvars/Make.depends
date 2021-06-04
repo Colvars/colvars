@@ -178,6 +178,25 @@ obj/colvarcomp_angles.o: \
 	colvars/src/colvar_arithmeticpath.h \
 	colvars/src/colvar_geometricpath.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_angles.o $(COPTC) colvars/src/colvarcomp_angles.cpp
+obj/colvarcomp_alchlambda.o: \
+	obj/.exists \
+	colvars/src/colvarcomp_alchlambda.cpp \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvarvalue.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvar.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarcomp.h \
+	colvars/src/colvaratoms.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvar_arithmeticpath.h \
+	colvars/src/colvar_geometricpath.h
+	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_alchlambda.o $(COPTC) colvars/src/colvarcomp_alchlambda.cpp
 obj/colvarcomp_apath.o: \
 	obj/.exists \
 	colvars/src/colvarcomp_apath.cpp \
