@@ -3,9 +3,8 @@ colvars: ----------------------------------------------------------------------
 colvars: Please cite Fiorin et al, Mol Phys 2013:
 colvars:  https://dx.doi.org/10.1080/00268976.2013.813594
 colvars: in any publication based on this calculation.
-colvars: SMP parallelism is enabled; if needed, use "smp off" to override this.
 colvars: This version was built with the C++11 standard or higher.
-colvars: Using LAMMPS interface, version "2019-12-04".
+colvars: Using LAMMPS interface, version "2021-03-02".
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
 colvars: # units = "" [default]
@@ -57,27 +56,27 @@ colvars:     # forceNoPBC = off [default]
 colvars:     # scalable = on [default]
 colvars:       Initializing atom group "group1".
 colvars:       # name = "" [default]
-colvars:       # centerReference = off [default]
-colvars:       # rotateReference = off [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
 colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "group1"
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
-colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
 colvars:       Atom group "group1" defined with 4 atoms requested.
 colvars:       Initializing atom group "group2".
 colvars:       # name = "" [default]
-colvars:       # centerReference = off [default]
-colvars:       # rotateReference = off [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
 colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "group2"
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
-colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
 colvars:       Atom group "group2" defined with 4 atoms requested.
@@ -105,12 +104,15 @@ colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new "metadynamics" instance.
 colvars:   # name = "metadynamics1" [default]
 colvars:   # colvars = { one }
+colvars:   # stepZeroData = off [default]
 colvars:   # outputEnergy = off [default]
+colvars:   # outputFreq = 10 [default]
 colvars:   # timeStepFactor = 1 [default]
 colvars:   # writeTISamples = off [default]
 colvars:   # writeTIPMF = off [default]
 colvars:   # hillWeight = 0.1
 colvars:   # newHillFrequency = 5
+colvars:   # gaussianSigmas =  [default]
 colvars:   # hillWidth = 2
 colvars:   Half-widths of the Gaussian hills (sigma's):
 colvars:   one: 0.5
@@ -134,9 +136,10 @@ colvars: Collective variables module (re)initialized.
 colvars: ----------------------------------------------------------------------
 colvars: The restart output state file will be "rest.colvars.state".
 colvars: The final output state file will be "test.colvars.state".
-colvars: Writing to colvar trajectory file "test.colvars.traj".
+colvars: Opening trajectory file "test.colvars.traj".
 colvars: Re-initialized atom group for variable "one":0/0. 4 atoms: total mass = 54.028, total charge = -0.72.
 colvars: Re-initialized atom group for variable "one":0/1. 4 atoms: total mass = 54.028, total charge = -0.4.
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
 colvars: Saving collective variables state to "rest.colvars.state".
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
