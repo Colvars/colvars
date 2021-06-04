@@ -9,9 +9,15 @@ set vel_bin_file "test.vel"
 source ../Common/common.namd
 source ../Common/measure_net_force_torque.tcl
 
-colvars                 on
-colvarsConfig           test.in
-colvarsInput            test.colvars.state
+colvars on
+
+if { [file exists test.restart.in] > 0 } {
+    cv configfile test.restart.in
+} else {
+    cv configfile test.in
+}
+
+cv load test.colvars.state
 
 if { [file exists test.restart.prerun.tcl] > 0 } {
     source test.restart.prerun.tcl
