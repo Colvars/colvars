@@ -1408,28 +1408,29 @@ std::istream & colvarbias_meta::read_state_data(std::istream& is)
     }
   }
 
+  // Save references to the end of the list of existing hills, so that it can
+  // be cleared if hills are read successfully state
   bool const existing_hills = !hills.empty();
   size_t const old_hills_size = hills.size();
   hill_iter old_hills_end = hills.end();
   hill_iter old_hills_off_grid_end = hills_off_grid.end();
 
-  // read the hills explicitly written (if there are any)
+  // Read any hills following the grid data (if any)
   while (read_hill(is)) {
-    if (cvm::debug())
+    if (cvm::debug()) {
       cvm::log("Read a previously saved hill under the "
                "metadynamics bias \""+
                this->name+"\", created at step "+
                cvm::to_str((hills.back()).it)+".\n");
+    }
   }
   is.clear();
   new_hills_begin = hills.end();
-  if (grids_from_restart_file) {
-    if (hills.size() > old_hills_size)
-      cvm::log("Read "+cvm::to_str(hills.size())+
-               " hills in addition to the grids.\n");
-  } else {
-    if (!hills.empty())
-      cvm::log("Read "+cvm::to_str(hills.size())+" hills.\n");
+  cvm::log("Read "+cvm::to_str(hills.size() - old_hills_size)+" hills.\n");
+
+  if (existing_hills) {
+    hills.erase(hills.begin(), old_hills_end);
+    hills_off_grid.erase(hills_off_grid.begin(), old_hills_off_grid_end);
   }
 
   if (rebin_grids) {
@@ -1491,11 +1492,6 @@ std::istream & colvarbias_meta::read_state_data(std::istream& is)
 
   if (cvm::debug())
     cvm::log("colvarbias_meta::read_restart() done\n");
-
-  if (existing_hills) {
-    hills.erase(hills.begin(), old_hills_end);
-    hills_off_grid.erase(hills_off_grid.begin(), old_hills_off_grid_end);
-  }
 
   has_data = true;
 
