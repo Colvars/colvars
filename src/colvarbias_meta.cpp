@@ -1285,6 +1285,19 @@ int colvarbias_meta::set_state_params(std::string const &state_conf)
   colvarparse::get_keyval(state_conf, "keepHills", restart_keep_hills, false,
                           colvarparse::parse_restart);
 
+  if ((!restart_keep_hills) && (cvm::main()->restart_version_number() < 20210604)) {
+    if (keep_hills) {
+      cvm::log("Warning: could not ensure that keepHills was enabled when "
+               "this state file was written; because it is enabled now, "
+               "it is assumed that it was also then, but please verify.\n");
+      restart_keep_hills = true;
+    }
+  } else {
+    if (restart_keep_hills) {
+      cvm::log("This state file/stream contains explicit hills.\n");
+    }
+  }
+
   std::string check_replica = "";
   if (colvarparse::get_keyval(state_conf, "replicaID", check_replica,
                               std::string(""), colvarparse::parse_restart) &&
@@ -1458,15 +1471,6 @@ std::istream & colvarbias_meta::read_state_data(std::istream& is)
     colvar_grid_gradient *new_hills_energy_gradients =
       new colvar_grid_gradient(colvars);
 
-    if ((!restart_keep_hills) && (cvm::main()->restart_version_number() < 20210604)) {
-      if (keep_hills) {
-        cvm::log("Warning: could not ensure that keepHills was enabled when "
-                 "this state file was written; because it is enabled now, "
-                 "it is assumed that it was also then, but please verify.\n");
-        restart_keep_hills = true;
-      }
-    }
-
     if (restart_keep_hills && !hills.empty()) {
       // if there are hills, recompute the new grids from them
       cvm::log("Rebinning the energy and forces grids from "+
@@ -1539,7 +1543,7 @@ std::istream & colvarbias_meta::read_hill(std::istream &is)
 
   cvm::step_number h_it = 0L;
   get_keyval(data, "step", h_it, h_it, parse_restart);
-  if (h_it <= state_file_step) {
+  if ((h_it <= state_file_step) && !restart_keep_hills) {
     if (cvm::debug())
       cvm::log("Skipping a hill older than the state file for metadynamics bias \""+
                this->name+"\""+
