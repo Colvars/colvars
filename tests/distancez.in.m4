@@ -10,8 +10,8 @@ colvar {
         `axis' (0.3, -0.4, 0.5)',`')
         main {
             indexGroup group5`'ifdef(`fitgroup',`
-            centerReference yes
-            rotateReference yes
+            centerToReference yes
+            rotateToReference yes
             fittingGroup {
                 indexGroup heavy_atoms
             }
@@ -19,8 +19,8 @@ colvar {
         }
         ref {
             indexGroup group1`'ifdef(`fitgroup',`
-            centerReference yes
-            rotateReference yes
+            centerToReference yes
+            rotateToReference yes
             fittingGroup {
                 indexGroup heavy_atoms
             }
@@ -28,8 +28,8 @@ colvar {
         }`'ifdef(`axis',`',`
         ref2 {
             indexGroup group10`'ifdef(`fitgroup',`
-            centerReference yes
-            rotateReference yes
+            centerToReference yes
+            rotateToReference yes
             fittingGroup {
                 indexGroup heavy_atoms
             }
