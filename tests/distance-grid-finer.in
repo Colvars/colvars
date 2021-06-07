@@ -4,12 +4,10 @@ colvar {
 
     outputAppliedForce on
 
-    width 0.1
-    # lowerBoundary 0.0 (default for distance)
-    upperBoundary 0.1
+    width 0.2
 
-    expandBoundaries yes
-    hardLowerBoundary yes
+    lowerBoundary 1.0
+    upperBoundary 12.0
 
     distance {
         group1 {

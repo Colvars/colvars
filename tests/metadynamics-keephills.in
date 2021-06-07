@@ -1,0 +1,8 @@
+metadynamics {
+    colvars        one
+    hillWidth      3.0
+    hillWeight     0.01
+    newHillFrequency 10
+    keepHills on
+    writeHillsTrajectory yes
+}

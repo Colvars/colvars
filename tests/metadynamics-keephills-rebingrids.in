@@ -1,0 +1,9 @@
+metadynamics {
+    colvars        one
+    gaussianSigmas 2.0
+    hillWeight     1.0e-14
+    newHillFrequency 10
+    keepHills on
+    rebinGrids yes
+    writeHillsTrajectory yes
+}
