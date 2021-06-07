@@ -935,36 +935,8 @@ void colvarbias_meta::project_hills(colvarbias_meta::hill_iter  h_first,
     }
 
   } else {
-
-    // TODO delete this (never used)
-
-    // simpler version, with just the energy
-
-    for ( ; (he->index_ok(he_ix)); ) {
-
-      for (size_t i = 0; i < num_variables(); i++) {
-        new_colvar_values[i] = hills_energy->bin_to_value_scalar(he_ix[i], i);
-      }
-
-      hills_energy_here = 0.0;
-      calc_hills(h_first, h_last, hills_energy_here, &new_colvar_values);
-      he->acc_value(he_ix, hills_energy_here);
-
-      he->incr(he_ix);
-
-      count++;
-      if ((count % print_frequency) == 0) {
-        if (print_progress) {
-          cvm::real const progress = cvm::real(count) / cvm::real(he->number_of_points());
-          std::ostringstream os;
-          os.setf(std::ios::fixed, std::ios::floatfield);
-          os << std::setw(6) << std::setprecision(2)
-             << 100.0 * progress
-             << "% done.";
-          cvm::log(os.str());
-        }
-      }
-    }
+    cvm::error("No grid object provided in metadynamics::project_hills()\n",
+               BUG_ERROR);
   }
 
   if (print_progress) {
@@ -1470,6 +1442,15 @@ std::istream & colvarbias_meta::read_state_data(std::istream& is)
       new colvar_grid_scalar(colvars);
     colvar_grid_gradient *new_hills_energy_gradients =
       new colvar_grid_gradient(colvars);
+
+    if (cvm::debug()) {
+      std::ostringstream tmp_os;
+      tmp_os << "hills_energy parameters:\n";
+      hills_energy->write_params(tmp_os);
+      tmp_os << "new_hills_energy parameters:\n";
+      new_hills_energy->write_params(tmp_os);
+      cvm::log(tmp_os.str());
+    }
 
     if (restart_keep_hills && !hills.empty()) {
       // if there are hills, recompute the new grids from them
