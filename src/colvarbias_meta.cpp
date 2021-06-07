@@ -903,7 +903,7 @@ void colvarbias_meta::project_hills(colvarbias_meta::hill_iter  h_first,
           count++) {
       size_t i;
       for (i = 0; i < num_variables(); i++) {
-        new_colvar_values[i] = hills_energy->bin_to_value_scalar(he_ix[i], i);
+        new_colvar_values[i] = he->bin_to_value_scalar(he_ix[i], i);
       }
 
       // loop over the hills and increment the energy grid locally
