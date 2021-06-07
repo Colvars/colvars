@@ -1507,6 +1507,15 @@ std::istream & colvarbias_meta::read_state_data(std::istream& is)
 }
 
 
+inline std::istream & reset_istream(std::istream &is, size_t start_pos)
+{
+  is.clear();
+  is.seekg(start_pos, std::ios::beg);
+  is.setstate(std::ios::failbit);
+  return is;
+}
+
+
 std::istream & colvarbias_meta::read_hill(std::istream &is)
 {
   if (!is) return is; // do nothing if failbit is set
@@ -1516,45 +1525,72 @@ std::istream & colvarbias_meta::read_hill(std::istream &is)
 
   std::string data;
   if ( !(is >> read_block("hill", &data)) ) {
-    is.clear();
-    is.seekg(start_pos, std::ios::beg);
-    is.setstate(std::ios::failbit);
-    return is;
+    return reset_istream(is, start_pos);
   }
+
+  std::istringstream data_is(data);
 
   cvm::step_number h_it = 0L;
-  get_keyval(data, "step", h_it, h_it, parse_restart);
-  if ((h_it <= state_file_step) && !restart_keep_hills) {
-    if (cvm::debug())
-      cvm::log("Skipping a hill older than the state file for metadynamics bias \""+
-               this->name+"\""+
-               ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+"\n");
-    return is;
-  }
-
   cvm::real h_weight;
-  get_keyval(data, "weight", h_weight, hill_weight, parse_restart);
-
   std::vector<colvarvalue> h_centers(num_variables());
   for (i = 0; i < num_variables(); i++) {
     h_centers[i].type(variables(i)->value());
   }
-  get_keyval(data, "centers", h_centers, h_centers, parse_restart);
-
   std::vector<cvm::real> h_sigmas(num_variables());
-  get_keyval(data, "widths", h_sigmas, h_sigmas, parse_restart);
-  for (i = 0; i < num_variables(); i++) {
-    // For backward compatibility, read the widths instead of the sigmas
-    h_sigmas[i] /= 2.0;
-  }
+  std::string h_replica;
 
-  std::string h_replica = "";
-  if (comm != single_replica) {
-    get_keyval(data, "replicaID", h_replica, replica_id, parse_restart);
-    if (h_replica != replica_id)
-      cvm::fatal_error("Error: trying to read a hill created by replica \""+h_replica+
-                       "\" for replica \""+replica_id+
-                       "\"; did you swap output files?\n");
+  std::string keyword;
+  while (data_is >> keyword) {
+
+    if (keyword == "step") {
+      if ( !(data_is >> h_it)) {
+        return reset_istream(is, start_pos);
+      }
+      if ((h_it <= state_file_step) && !restart_keep_hills) {
+        if (cvm::debug())
+          cvm::log("Skipping a hill older than the state file for metadynamics bias \""+
+                   this->name+"\""+
+                   ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+"\n");
+        return is;
+      }
+    }
+
+    if (keyword == "weight") {
+      if ( !(data_is >> h_weight)) {
+        return reset_istream(is, start_pos);
+      }
+    }
+
+    if (keyword == "centers") {
+      for (i = 0; i < num_variables(); i++) {
+        if ( !(data_is >> h_centers[i])) {
+          return reset_istream(is, start_pos);
+        }
+      }
+    }
+
+    if (keyword == "widths") {
+      for (i = 0; i < num_variables(); i++) {
+        if ( !(data_is >> h_sigmas[i])) {
+          return reset_istream(is, start_pos);
+        }
+        // For backward compatibility, read the widths instead of the sigmas
+        h_sigmas[i] /= 2.0;
+      }
+    }
+
+    if (comm != single_replica) {
+      if (keyword == "replicaID") {
+        if ( !(data_is >> h_replica)) {
+          return reset_istream(is, start_pos);
+        }
+        if (h_replica != replica_id) {
+          cvm::error("Error: trying to read a hill created by replica \""+
+                     h_replica+"\" for replica \""+replica_id+
+                     "\"; did you swap output files?\n", INPUT_ERROR);
+        }
+      }
+    }
   }
 
   hill_iter const hills_end = hills.end();
