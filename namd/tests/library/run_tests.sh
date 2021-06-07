@@ -114,7 +114,7 @@ for dir in ${DIRLIST} ; do
     continue
   else
 
-    if [ "x${gen_ref_output}" != 'xyes' ]; then
+   if [ "x${gen_ref_output}" != 'xyes' ]; then
 
       if ! { ls AutoDiff/ | grep -q test ; } then
         echo ""
@@ -141,19 +141,20 @@ for dir in ${DIRLIST} ; do
     SCRIPTS=`ls -1 *namd | grep -v legacy`
   else
     SCRIPTS="../Common/test.namd ../Common/test.restart.namd"
-    ln -fs ${SCRIPTS} ./
   fi
 
   # run simulation(s)
   for script in ${SCRIPTS} ; do
 
-    basename=`basename ${script}`
-    basename=${basename%.namd}
+    ln -fs ${script} ./
+
+    script=`basename ${script}`
+    basename=${script%.namd}
 
     # Run the test (use a subshell to avoid cluttering stdout)
     # Use --source to avoid letting NAMD change its working directory
     # Use multiple threads to test SMP code (TODO: move SMP tests to interface?)
-    $BINARY +p ${NUM_THREADS} --source $script > ${basename}.out
+    $BINARY +p ${NUM_THREADS} $script > ${basename}.out
 
     # Output of Colvars module, minus the version numbers
     grep "^colvars:" ${basename}.out | grep -v 'Initializing the collective variables module' \
@@ -175,6 +176,7 @@ for dir in ${DIRLIST} ; do
 
     # If this test is used to generate the reference output files, copy them
     if [ "x${gen_ref_output}" = 'xyes' ]; then
+      echo -n " (Copying reference files for ${script}) "
       grep 'NAMD' ${basename}.out | head -n 1 > namd-version.txt
       grep 'Initializing the collective variables module, version' ${basename}.out | head -n 1 >> namd-version.txt
       grep 'Using NAMD interface, version' ${basename}.out | head -n 1 >> namd-version.txt

@@ -8,12 +8,11 @@ colvar {
 
     outputAppliedForce on
 
-    width 0.1
-    # lowerBoundary 0.0 (default for distance)
-    upperBoundary 0.1
-
-    expandBoundaries yes
-    hardLowerBoundary yes
+    # use a non-trivial width to test bias behavior
+    width 0.5
+    # The lower boundary is already defined at 0 for a distance function
+    # lowerBoundary 0.0
+    upperBoundary 10.0
 
     distance {
         group1 {
@@ -27,7 +26,9 @@ colvar {
 
 metadynamics {
     colvars        one
-    hillWeight     0.001
-    hillWidth      1.2533141373155001  # Old default
+    hillWidth      3.0
+    hillWeight     0.01
     newHillFrequency 10
+    keepHills on
+    writeHillsTrajectory yes
 }

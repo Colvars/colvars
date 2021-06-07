@@ -8,12 +8,10 @@ colvar {
 
     outputAppliedForce on
 
-    width 0.1
-    # lowerBoundary 0.0 (default for distance)
-    upperBoundary 0.1
+    width 0.2
 
-    expandBoundaries yes
-    hardLowerBoundary yes
+    lowerBoundary 1.0
+    upperBoundary 12.0
 
     distance {
         group1 {
@@ -27,7 +25,10 @@ colvar {
 
 metadynamics {
     colvars        one
-    hillWeight     0.001
-    hillWidth      1.2533141373155001  # Old default
+    gaussianSigmas 2.0
+    hillWeight     1.0e-14
     newHillFrequency 10
+    keepHills on
+    rebinGrids yes
+    writeHillsTrajectory yes
 }
