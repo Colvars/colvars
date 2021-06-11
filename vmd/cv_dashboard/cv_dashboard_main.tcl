@@ -135,6 +135,8 @@ proc ::cv_dashboard::createWindow {} {
   trace add variable ::vmd_initialize_structure write ::cv_dashboard::update_mol_list
   grid $main.mol -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   bind $main.mol <<ComboboxSelected>> ::cv_dashboard::change_mol
+  grid [ttk::button $main.molTop -text "Switch to top" -command {::cv_dashboard::switch_to_top_mol} -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+
 
   # Units
   incr gridrow

@@ -427,6 +427,13 @@ proc ::cv_dashboard::change_mol {} {
 }
 
 
+proc ::cv_dashboard::switch_to_top_mol {} {
+  set main .cv_dashboard_window.tabs.main
+  $main.mol set [molinfo top]
+  change_mol
+}
+
+
 # Displays a non-blocking help window with the provided info
 proc ::cv_dashboard::help_window { parent wtitle title text } {
   set h [toplevel $parent.helpWindow]
