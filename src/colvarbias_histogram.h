@@ -53,9 +53,13 @@ public:
   virtual int update();
   virtual int write_output_files();
   void counts_to_pmf(std::vector<cvm::real>& counts) const;
-  std::vector<cvm::real> compute_cumulant_expansion_factor(const std::vector<cvm::real>& dV, const std::vector<cvm::real>& dV_square, const std::vector<cvm::real>& count, cvm::real beta) const;
-  virtual int write_exponential_reweighted_pmf(const std::string& output_name, bool append = false);
-  virtual int write_cumulant_expansion_pmf(const std::string& output_name, bool append = false);
+  std::vector<cvm::real> compute_cumulant_expansion_factor(
+    const std::vector<cvm::real>& dV, const std::vector<cvm::real>& dV_square,
+    const std::vector<cvm::real>& count, cvm::real beta) const;
+  virtual int write_exponential_reweighted_pmf(
+    const std::string& output_prefix, bool append = false);
+  virtual int write_cumulant_expansion_pmf(
+    const std::string& output_prefix, bool append = false);
   virtual int write_count(const std::string& output_name, bool append = false);
 protected:
   /// Current accelMD factor is the from previous frame
@@ -64,7 +68,7 @@ protected:
   size_t start_after_steps;
 
   /// Use cumulant expansion to second order?
-  bool use_cumulant_expansion;
+  bool b_use_cumulant_expansion;
   colvar_grid_scalar* grid_count;
   colvar_grid_scalar* grid_dV;
   colvar_grid_scalar* grid_dV_square;
@@ -72,6 +76,9 @@ protected:
   /// Number of timesteps between recording data in history files (if non-zero)
   size_t history_freq;
   bool b_history_files;
+
+  /// Write gradients of the PMF?
+  bool b_write_gradients;
 
   /// save and restore
   virtual std::istream & read_state_data(std::istream &is) override;
