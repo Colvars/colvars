@@ -362,7 +362,7 @@ int colvarbias_reweightaMD::write_output_files() {
     error_code |= write_count(out_count_name + ".hist", (cvm::step_relative() > 0));
   }
   if (b_use_cumulant_expansion) {
-    std::string out_name_cumulant_pmf = cvm::output_prefix() + "." + this->name + ".cumulant.pmf";
+    std::string out_name_cumulant_pmf = cvm::output_prefix() + "." + this->name + ".cumulant";
     error_code |= write_cumulant_expansion_pmf(out_name_cumulant_pmf);
     if (b_history_files && (cvm::step_absolute() % history_freq) == 0) {
       error_code |= write_cumulant_expansion_pmf(out_name_cumulant_pmf + ".hist", (cvm::step_relative() > 0));
