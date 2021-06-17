@@ -141,6 +141,14 @@ public:
   /// Get energy derivative with respect to lambda (if available)
   virtual int get_dE_dLambda(cvm::real* force);
 
+  /// Get weight factor from accelMD
+  virtual cvm::real get_accelMD_factor() const {
+    return 1.0;
+  }
+  virtual bool accelMD_enabled() const {
+    return false;
+  }
+
 protected:
 
   /// Whether the total forces have been requested
