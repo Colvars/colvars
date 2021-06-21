@@ -555,6 +555,7 @@ public:
   void raw_data_in(const std::vector<T>& in_data)
   {
     data = in_data;
+    has_data = true;
   }
   /// \brief Size of the data as they are represented in memory.
   size_t raw_data_num() const { return data.size(); }
