@@ -234,7 +234,7 @@ std::ostream & colvarbias_histogram::write_state_data(std::ostream& os)
 colvarbias_reweightaMD::colvarbias_reweightaMD(char const *key)
   : colvarbias_histogram(key), grid_count(NULL), grid_dV(NULL),
     grid_dV_square(NULL), pmf_grid_exp_avg(NULL), pmf_grid_cumulant(NULL),
-    grad_grid_exp_avg(NULL), grad_grid_cumulant(NULL)
+    grad_grid_exp_avg(NULL), grad_grid_cumulant(NULL), firsttime(true)
 {
 }
 
@@ -331,7 +331,9 @@ int colvarbias_reweightaMD::update() {
         bin[i] = grid->current_bin_scalar(i);
       }
 
-      if (grid->index_ok(previous_bin) && cvm::step_relative() > 0) {
+      if (grid->index_ok(previous_bin) && cvm::step_relative() > 0 &&
+          // skip the first-time sample since previous_bin is not available
+          !firsttime) {
         const cvm::real reweighting_factor = cvm::proxy->get_accelMD_factor();
         grid_count->acc_value(previous_bin, 1.0);
         grid->acc_value(previous_bin, reweighting_factor);
@@ -350,7 +352,9 @@ int colvarbias_reweightaMD::update() {
           bin[i] = grid->current_bin_scalar(i, iv);
         }
 
-        if (grid->index_ok(previous_bin) && cvm::step_relative() > 0) {
+      if (grid->index_ok(previous_bin) && cvm::step_relative() > 0 &&
+          // skip the first-time sample since previous_bin is not available
+          !firsttime) {
           const cvm::real reweighting_factor = cvm::proxy->get_accelMD_factor();
           grid_count->acc_value(previous_bin, 1.0);
           grid->acc_value(previous_bin, reweighting_factor);
@@ -363,6 +367,7 @@ int colvarbias_reweightaMD::update() {
         }
       }
     }
+    firsttime = false;
 
     if (output_freq && (cvm::step_absolute() % output_freq) == 0) {
       write_output_files();
