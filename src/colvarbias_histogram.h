@@ -94,6 +94,8 @@ private:
   colvar_grid_scalar  *pmf_grid_cumulant;
   colvar_grid_gradient *grad_grid_exp_avg;
   colvar_grid_gradient *grad_grid_cumulant;
+  /// a workaround for first-time running
+  bool firsttime;
 };
 
 #endif
