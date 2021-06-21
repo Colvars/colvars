@@ -324,11 +324,6 @@ int colvarbias_reweightaMD::update() {
       cvm::log("Histogram " + this->name + " will be written to file \"" + out_name + "\"");
     }
 
-    if (out_name_dx.size() == 0) {
-      out_name_dx = cvm::output_prefix() + "." + this->name + ".dx";
-      cvm::log("Histogram " + this->name + " will be written to file \"" + out_name_dx + "\"");
-    }
-
     if (colvar_array_size == 0) {
       // update indices for scalar values
       size_t i;
@@ -362,7 +357,7 @@ int colvarbias_reweightaMD::update() {
           if (b_use_cumulant_expansion) {
             const cvm::real dV = std::log(reweighting_factor) *
                                  cvm::temperature() * cvm::boltzmann();
-            grid_count->acc_value(previous_bin, 1.0);
+            grid_dV->acc_value(previous_bin, dV);
             grid_dV_square->acc_value(previous_bin, dV * dV);
           }
         }
@@ -422,6 +417,14 @@ int colvarbias_reweightaMD::write_exponential_reweighted_pmf(
                       " for writing.\n", FILE_ERROR);
   }
   pmf_grid_exp_avg->copy_grid(*grid);
+  // compute the average
+  for (size_t i = 0; i < pmf_grid_exp_avg->raw_data_num(); ++i) {
+    const double count = grid_count->value(i);
+    if (count > 0) {
+      const double tmp = pmf_grid_exp_avg->value(i);
+      pmf_grid_exp_avg->set_value(i, tmp / count);
+    }
+  }
   hist_to_pmf(pmf_grid_exp_avg, grid_count);
   pmf_grid_exp_avg->write_multicol(*pmf_grid_os);
   cvm::proxy->close_output_stream(output_pmf);
