@@ -36,7 +36,7 @@ void colvar::alch_lambda::calc_value()
   // Special workflow:
   // at the beginning of the timestep we get a force instead of calculating the value
 
-  cvm::proxy->get_dE_dLambda(&ft.real_value);
+  cvm::proxy->get_dE_dlambda(&ft.real_value);
   ft.real_value *= -1.0; // Energy derivative to force
 }
 
@@ -54,3 +54,43 @@ void colvar::alch_lambda::apply_force(colvarvalue const & /* force */)
 }
 
 simple_scalar_dist_functions(alch_lambda)
+
+
+
+colvar::alch_Flambda::alch_Flambda(std::string const &conf)
+  : cvc(conf)
+{
+  function_type = "alch_Flambda";
+
+  disable(f_cvc_explicit_gradient);
+  disable(f_cvc_gradient);
+
+  x.type(colvarvalue::type_scalar);
+}
+
+
+void colvar::alch_Flambda::calc_value()
+{
+  // Special workflow:
+  // at the beginning of the timestep we get a force instead of calculating the value
+
+  // Query initial value from back-end
+  cvm::proxy->get_dE_dlambda(&x.real_value);
+  x.real_value *= -1.0; // Energy derivative to force
+}
+
+
+void colvar::alch_Flambda::calc_gradients()
+{
+}
+
+
+void colvar::alch_Flambda::apply_force(colvarvalue const &force)
+{
+  // Convert force on Flambda to force on dE/dlambda
+  cvm::real f = -1.0 * force.real_value;
+  // Send scalar force to back-end, which will distribute it onto atoms
+  cvm::proxy->apply_force_dE_dlambda(&f);
+}
+
+simple_scalar_dist_functions(alch_Flambda)

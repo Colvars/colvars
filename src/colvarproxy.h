@@ -139,7 +139,10 @@ public:
   virtual int set_alch_lambda(cvm::real* lambda);
 
   /// Get energy derivative with respect to lambda (if available)
-  virtual int get_dE_dLambda(cvm::real* force);
+  virtual int get_dE_dlambda(cvm::real* dE_dlambda);
+
+  /// Apply a scalar force on dE_dlambda (back-end distributes it onto atoms)
+  virtual int apply_force_dE_dlambda(cvm::real* force);
 
   /// Get weight factor from accelMD
   virtual cvm::real get_accelMD_factor() const {
