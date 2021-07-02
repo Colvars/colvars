@@ -215,6 +215,7 @@ class Colvars_traj(object):
                     self._parse_line(line)
                 self._frame += 1
                 last_step = step
+            f.close()
 
 
 if (__name__ == '__main__'):
