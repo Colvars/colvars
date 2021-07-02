@@ -223,23 +223,16 @@ then
     condcopy "${src}" "${target}/lib/colvars/${tgt}"
   done
 
-  # Update LAMMPS interface files (package part)
-  if [ -f ${target}/src/random_park.h ]
-  then
-    # GitHub version, using old pseudo random number generators
-    for src in ${source}/lammps/src/USER-COLVARS/colvarproxy_lammps.cpp \
-               ${source}/lammps/src/USER-COLVARS/colvarproxy_lammps.h \
-               ${source}/lammps/src/USER-COLVARS/colvarproxy_lammps_version.h \
-               ${source}/lammps/src/USER-COLVARS/fix_colvars.cpp \
-               ${source}/lammps/src/USER-COLVARS/fix_colvars.h
-    do \
-      tgt=$(basename ${src})
-      condcopy "${src}" "${target}/src/USER-COLVARS/${tgt}"
-    done
-  else
-    echo "ERROR: Support for the new pRNG (old LAMMPS-ICMS branch) is currently disabled."
-    exit 2
-  fi
+  for src in \
+    ${source}/lammps/src/COLVARS/colvarproxy_lammps.cpp \
+    ${source}/lammps/src/COLVARS/colvarproxy_lammps.h \
+    ${source}/lammps/src/COLVARS/colvarproxy_lammps_version.h \
+    ${source}/lammps/src/COLVARS/fix_colvars.cpp \
+    ${source}/lammps/src/COLVARS/fix_colvars.h
+  do \
+    tgt=$(basename ${src})
+    condcopy "${src}" "${target}/src/COLVARS/${tgt}"
+  done
 
   downloaded_pdf=0
   # Copy PDF of the user manual
