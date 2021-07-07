@@ -6325,6 +6325,63 @@ The options supported inside this configuration block are:
   \simkey{widths}{\texttt{histogramGrid}}{lowerBoundaries}
 \end{itemize}
 
+\cvnamdonly{
+\cvsubsec{Reweighted free-energy landscapes from accelerated MD}{sec:reweighted_fel_from_aMD}
+
+The \texttt{reweightaMD} can be used to build reweighted free-energy landscapes of a set of collective variables on-the-fly from accelerated molecular dynamics (aMD)\cite{hamelberg2004} and Gaussian aMD (GaMD)\cite{Miao2015}. More specifically, it collects the boost potential, $\Delta V(\mathbf{X})$, and computes the corresponding free-energies:
+\begin{equation}\label{amd-reweighting}
+	A(\xi)=-\frac{1}{\beta}\ln\langle\exp\lbrace\beta\Delta V(\mathbf{X})\delta[\xi(\mathbf{X})-\xi]\rbrace\rangle.
+\end{equation}
+and if the distribution of $\Delta V(\mathbf{X})\delta[\xi(\mathbf{X})-\xi]$ is assumed to be near Gaussian, the equation above can be approximated by the cumulant expansion:
+\begin{equation}\label{cumulant-expansion}
+	A(\xi)=-C_1(\xi)-\frac{1}{2}\beta C_2(\xi),
+\end{equation}
+where $C_1(\xi)$ and $C_2(\xi)$ are the average and the variance of $\Delta V(\mathbf{X})\delta[\xi(\mathbf{X})-\xi]$, respectively. It should be noted that this implementation is initially intended for the combination of aMD/GaMD with other CV-based methods such as eABF\cite{Chen2021}, where the term associated with the biasing distribution $\tilde{\rho}(\xi)$, namely $-\frac{1}{\beta}\ln\tilde{\rho}(\xi)$, is included, so users are expected to add the output from Eq. (\ref{amd-reweighting}) or (\ref{cumulant-expansion}) with those from CZAR directly. Consequently, in Eq. (\ref{amd-reweighting}) and (\ref{cumulant-expansion}) the term $-\frac{1}{\beta}\ln\tilde{\rho}(\xi)$ is not included. Therefore, if users want to perform just aMD/GaMD simulations with this on-the-fly reweighting implementation, the term $-\frac{1}{\beta}\ln\tilde{\rho}(\xi)$ should be manually computed by post-processing.
+
+Currently, in all MD engines that Colvars supports, only NAMD implements aMD/GaMD, so this component is basically exclusive to NAMD.
+
+The list of options is as follows:
+\begin{itemize}
+	
+\item \dupkey{name}{\texttt{histogram}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{colvars}{\texttt{histogram}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{outputFreq}{\texttt{histogram}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{outputFile}{\texttt{histogram}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{historyFreq}{\texttt{abf}}{sec:colvarbias_abf}{biasing and analysis methods}
+
+\item %
+\keydef{%
+	CollectAfterSteps}{%
+	\texttt{reweightaMD}}{%
+	Collect the histogram after a specified number of simulation steps}{%
+	positive integer}{%
+	0}{%
+	Start to populate the histogram after a specified number of step. This feature is useful to skip the preparation steps in GaMD simulations.
+}
+
+\item %
+\keydef{%
+	CumulantExpansion}{%
+	\texttt{reweightaMD}}{%
+	Enable the cumulant expansion estimator}{%
+	boolean}{%
+	\texttt{yes}}{%
+	If this option is set to \texttt{yes}, the cumulant expansion in Eq. (\ref{cumulant-expansion}) will be used. The output file have a suffix of \texttt{.cumulant.*}.
+}
+
+\item %
+\keydef{%
+	WriteGradients}{%
+	\texttt{reweightaMD}}{%
+	Calculate the numerical gradients of Eq. (\ref{amd-reweighting}) and (\ref{cumulant-expansion})}{%
+	boolean}{%
+	\texttt{yes}}{%
+	If this option is set to \texttt{yes}, the numerical gradients Eq. (\ref{amd-reweighting}) and (\ref{cumulant-expansion}) with respect to $\xi$ are calculated. This option is generally used when $\xi$ is stratified into windows, and the corresponding free-energies are required to merge afterwards.
+}
+
+\end{itemize}
+}
+
 
 \cvsubsec{Probability distribution-restraints}{sec:colvarbias_restraint_histogram}
 
