@@ -1,0 +1,400 @@
+colvars: ----------------------------------------------------------------------
+colvars: Please cite Fiorin et al, Mol Phys 2013:
+colvars:  https://dx.doi.org/10.1080/00268976.2013.813594
+colvars: in any publication based on this calculation.
+colvars: SMP parallelism is enabled; if needed, use "smp off" to override this.
+colvars: This version was built with the C++11 standard or higher.
+colvars: ----------------------------------------------------------------------
+colvars: Reading new configuration from file "test.in":
+colvars: # units = "" [default]
+colvars: # smp = off
+colvars: SMP parallelism has been disabled.
+colvars: # colvarsTrajFrequency = 1
+colvars: # colvarsRestartFrequency = 10
+colvars: # scriptedColvarForces = off [default]
+colvars: # scriptingAfterBiases = off [default]
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = "end_to_end_distance"
+colvars:   Initializing a new "distance" component.
+colvars:     # name = "" [default]
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
+colvars:       Initializing atom group "group1".
+colvars:       # name = "" [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group1".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group1" defined with 1 atoms requested: total mass = 12.01, total charge = -0.01.
+colvars:       Initializing atom group "group2".
+colvars:       # name = "" [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group2".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group2" defined with 1 atoms requested: total mass = 12.01, total charge = -0.2493.
+colvars:     # oneSiteSystemForce = off [default]
+colvars:     # oneSiteTotalForce = off [default]
+colvars:   All components initialized.
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # width = 0.1
+colvars:   # lowerBoundary = 3
+colvars:   # upperBoundary = 22
+colvars:   Reading legacy options lowerWall and lowerWallConstant: consider using a harmonicWalls restraint (caution: force constant would then be scaled by width^2).
+colvars:   # lowerWall = 3
+colvars:   Reading legacy options upperWall and upperWallConstant: consider using a harmonicWalls restraint (caution: force constant would then be scaled by width^2).
+colvars:   # upperWall = 22
+colvars:   Generating a new harmonicWalls bias for compatibility purposes.
+colvars:   # hardLowerBoundary = off [default]
+colvars:   # hardUpperBoundary = off [default]
+colvars:   # expandBoundaries = on
+colvars:   # extendedLagrangian = on
+colvars:   Enabling the extended Lagrangian term for colvar "end_to_end_distance".
+colvars:   # extendedTemp = 300 [default]
+colvars:   # extendedFluctuation = 0.1
+colvars:   Computed extended system force constant: 59.6157 [E]/U^2
+colvars:   # extendedTimeConstant = 200
+colvars:   Computed fictitious mass: 60403.4 [E]/(U/fs)^2   (U: colvar unit)
+colvars:   # outputEnergy = off [default]
+colvars:   # extendedLangevinDamping = 2
+colvars:   # reflectingLowerBoundary = off [default]
+colvars:   # reflectingUpperBoundary = off [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputTotalForce = off [default]
+colvars:   # outputAppliedForce = off [default]
+colvars:   # subtractAppliedForce = on
+colvars:   # runAve = off [default]
+colvars:   # corrFunc = off [default]
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = "asp3n_gly70"
+colvars:   Initializing a new "distance" component.
+colvars:     # name = "" [default]
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
+colvars:       Initializing atom group "group1".
+colvars:       # name = "" [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group1".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group1" defined with 1 atoms requested: total mass = 14.01, total charge = -0.5163.
+colvars:       Initializing atom group "group2".
+colvars:       # name = "" [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group2".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group2" defined with 1 atoms requested: total mass = 16, total charge = -0.5679.
+colvars:     # oneSiteSystemForce = off [default]
+colvars:     # oneSiteTotalForce = off [default]
+colvars:   All components initialized.
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # width = 1 [default]
+colvars:   # lowerBoundary = 0 [default]
+colvars:   # upperBoundary = 0 [default]
+colvars:   # hardLowerBoundary = on [default]
+colvars:   # hardUpperBoundary = off [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = off [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputTotalForce = off [default]
+colvars:   # outputAppliedForce = off [default]
+colvars:   # subtractAppliedForce = off [default]
+colvars:   # runAve = off [default]
+colvars:   # corrFunc = off [default]
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = "asp3n_thr80"
+colvars:   Initializing a new "distance" component.
+colvars:     # name = "" [default]
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
+colvars:       Initializing atom group "group1".
+colvars:       # name = "" [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group1".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group1" defined with 1 atoms requested: total mass = 14.01, total charge = -0.5163.
+colvars:       Initializing atom group "group2".
+colvars:       # name = "" [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group2".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group2" defined with 1 atoms requested: total mass = 16, total charge = -0.5679.
+colvars:     # oneSiteSystemForce = off [default]
+colvars:     # oneSiteTotalForce = off [default]
+colvars:   All components initialized.
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # width = 1 [default]
+colvars:   # lowerBoundary = 0 [default]
+colvars:   # upperBoundary = 0 [default]
+colvars:   # hardLowerBoundary = on [default]
+colvars:   # hardUpperBoundary = off [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = off [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputTotalForce = off [default]
+colvars:   # outputAppliedForce = off [default]
+colvars:   # subtractAppliedForce = off [default]
+colvars:   # runAve = off [default]
+colvars:   # corrFunc = off [default]
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables initialized, 3 in total.
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new "abf" instance.
+colvars:   # name = "production_abf"
+colvars:   # colvars = { end_to_end_distance }
+colvars:   # stepZeroData = off [default]
+colvars:   # outputEnergy = off [default]
+colvars:   # outputFreq = 10 [default]
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # applyBias = on [default]
+colvars:   # updateBias = on [default]
+colvars:   # hideJacobian = off [default]
+colvars:   Jacobian (geometric) forces will be included in reported free energy gradients.
+colvars:   # fullSamples = 1000
+colvars:   # inputPrefix =  [default]
+colvars:   # historyFreq = 10
+colvars:   # shared = off [default]
+colvars:   # maxForce =  [default]
+colvars:   # CZARestimator = on
+colvars:   # integrate = on [default]
+colvars:   # UIestimator = off
+colvars:   Finished ABF setup.
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new "metadynamics" instance.
+colvars:   # name = "production_mtd"
+colvars:   # colvars = { end_to_end_distance }
+colvars:   # stepZeroData = off [default]
+colvars:   # outputEnergy = off [default]
+colvars:   # outputFreq = 10 [default]
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # writeTISamples = off [default]
+colvars:   # writeTIPMF = off [default]
+colvars:   # hillWeight = 0.1
+colvars:   # newHillFrequency = 1000
+colvars:   # gaussianSigmas =  [default]
+colvars:   # hillWidth = 5
+colvars:   Half-widths of the Gaussian hills (sigma's):
+colvars:   end_to_end_distance: 0.25
+colvars:   # multipleReplicas = off [default]
+colvars:   # useGrids = on [default]
+colvars:   # gridsUpdateFrequency = 1000 [default]
+colvars:   # rebinGrids = off [default]
+colvars:   Metadynamics bias "production_mtd": Will expand grids when the colvar "end_to_end_distance" approaches its boundaries.
+colvars:   # writeFreeEnergyFile = on [default]
+colvars:   # keepHills = off [default]
+colvars:   # keepFreeEnergyFiles = off
+colvars:   # writeHillsTrajectory = on
+colvars:   # wellTempered = on
+colvars:   # biasTemperature = 3000
+colvars:   Well-tempered metadynamics is used.
+colvars:   The bias temperature is 3000.
+colvars:   # ebMeta = off [default]
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new "reweightamd" instance.
+colvars:   # name = "production_amd"
+colvars:   # colvars = { end_to_end_distance }
+colvars:   # stepZeroData = off [default]
+colvars:   # outputEnergy = off [default]
+colvars:   # outputFreq = 10 [default]
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # outputFile = "" [default]
+colvars:   # outputFileDX = "none" [default]
+colvars:   # gatherVectorColvars = off [default]
+colvars:   # CollectAfterSteps = 0 [default]
+colvars:   # CumulantExpansion = on [default]
+colvars:   # WriteGradients = on [default]
+colvars:   # historyFreq = 10
+colvars: WARNING: there are 2 time-dependent biases with non-zero force parameters:
+colvars: { production_abf, production_mtd }
+colvars: Please ensure that their forces do not counteract each other.
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables biases initialized, 3 in total.
+colvars: # units = "" [default]
+colvars: # smp = off [default]
+colvars: # colvarsTrajFrequency = 1 [default]
+colvars: # colvarsRestartFrequency = 10 [default]
+colvars: # scriptedColvarForces = off [default]
+colvars: # scriptingAfterBiases = off [default]
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables initialized, 3 in total.
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new "harmonicwalls" instance.
+colvars:   # name = "end_to_end_distancew"
+colvars:   # colvars = { end_to_end_distance }
+colvars:   # stepZeroData = off [default]
+colvars:   # outputEnergy = off [default]
+colvars:   # outputFreq = 10 [default]
+colvars:   # timeStepFactor = 1
+colvars:   # writeTISamples = off [default]
+colvars:   # writeTIPMF = off [default]
+colvars:   # forceConstant = 1 [default]
+colvars:   # targetForceConstant = -1 [default]
+colvars:   # lowerWalls = { 3 }
+colvars:   # upperWalls = { 22 }
+colvars:   # lowerWallConstant = 0.1
+colvars:   # upperWallConstant = 0.1
+colvars:   The lower wall force constant for colvar "end_to_end_distance" will be rescaled to 10 according to the specified width (0.1).
+colvars:   The upper wall force constant for colvar "end_to_end_distance" will be rescaled to 10 according to the specified width (0.1).
+colvars: WARNING: there are 2 time-dependent biases with non-zero force parameters:
+colvars: { production_abf, production_mtd }
+colvars: Please ensure that their forces do not counteract each other.
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables biases initialized, 4 in total.
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables module (re)initialized.
+colvars: ----------------------------------------------------------------------
+colvars: Updating NAMD interface:
+colvars: Warning: enabling wrapAll can lead to inconsistent results for Colvars calculations: please disable wrapAll, as is the default option in NAMD.
+colvars: updating atomic data (0 atoms).
+colvars: updating group data (5 scalable groups, 5 atoms in total).
+colvars: updating grid object data (0 grid objects in total).
+colvars: Re-initialized atom group for variable "end_to_end_distance":0/0. 1 atoms: total mass = 12.01, total charge = -0.01.
+colvars: Re-initialized atom group for variable "end_to_end_distance":0/1. 1 atoms: total mass = 12.01, total charge = -0.2493.
+colvars: Re-initialized atom group for variable "asp3n_gly70":0/0. 1 atoms: total mass = 14.01, total charge = -0.5163.
+colvars: Re-initialized atom group for variable "asp3n_gly70":0/1. 1 atoms: total mass = 16, total charge = -0.5679.
+colvars: Re-initialized atom group for variable "asp3n_thr80":0/0. 1 atoms: total mass = 14.01, total charge = -0.5163.
+colvars: Re-initialized atom group for variable "asp3n_thr80":0/1. 1 atoms: total mass = 16, total charge = -0.5679.
+colvars: The restart output state file will be "test.colvars.state".
+colvars: The final output state file will be "test.colvars.state".
+colvars: Opening trajectory file "test.colvars.traj".
+colvars: Redefining the Tcl "cv" command to the new script interface.
+colvars: Initializing step number as firstTimestep.
+colvars: Updating NAMD interface:
+colvars: Warning: enabling wrapAll can lead to inconsistent results for Colvars calculations: please disable wrapAll, as is the default option in NAMD.
+colvars: updating atomic data (0 atoms).
+colvars: updating group data (5 scalable groups, 5 atoms in total).
+colvars: updating grid object data (0 grid objects in total).
+colvars: Re-initialized atom group for variable "end_to_end_distance":0/0. 1 atoms: total mass = 12.01, total charge = -0.01.
+colvars: Re-initialized atom group for variable "end_to_end_distance":0/1. 1 atoms: total mass = 12.01, total charge = -0.2493.
+colvars: Re-initialized atom group for variable "asp3n_gly70":0/0. 1 atoms: total mass = 14.01, total charge = -0.5163.
+colvars: Re-initialized atom group for variable "asp3n_gly70":0/1. 1 atoms: total mass = 16, total charge = -0.5679.
+colvars: Re-initialized atom group for variable "asp3n_thr80":0/0. 1 atoms: total mass = 14.01, total charge = -0.5163.
+colvars: Re-initialized atom group for variable "asp3n_thr80":0/1. 1 atoms: total mass = 16, total charge = -0.5679.
+colvars: The restart output state file will be "test.colvars.state".
+colvars: The final output state file will be "test.colvars.state".
+colvars:   Prepared sample and gradient buffers at step 500000000.
+colvars:   Histogram production_amd will be written to file "test.production_amd.dat"
+colvars:   Writing the histogram file "test.production_amd.dat".
+colvars:   Writing the accelerated MD PMF file "test.production_amd.reweight.pmf".
+colvars:   Writing the accelerated MD gradients file "test.production_amd.reweight.grad".
+colvars:   Writing the accelerated MD count file "test.production_amd.count".
+colvars:   Writing the accelerated MD PMF file "test.production_amd.reweight.hist.pmf".
+colvars:   Writing the accelerated MD gradients file "test.production_amd.reweight.hist.grad".
+colvars:   Writing the accelerated MD count file "test.production_amd.count.hist".
+colvars:   Writing the accelerated MD PMF file using cumulant expansion: "test.production_amd.cumulant.pmf".
+colvars:   Writing the accelerated MD gradients file "test.production_amd.cumulant.grad".
+colvars:   Writing the accelerated MD PMF file using cumulant expansion: "test.production_amd.cumulant.hist.pmf".
+colvars:   Writing the accelerated MD gradients file "test.production_amd.cumulant.hist.grad".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars:   Writing the histogram file "test.production_amd.dat".
+colvars:   Writing the accelerated MD PMF file "test.production_amd.reweight.pmf".
+colvars:   Writing the accelerated MD gradients file "test.production_amd.reweight.grad".
+colvars:   Writing the accelerated MD count file "test.production_amd.count".
+colvars:   Writing the accelerated MD PMF file "test.production_amd.reweight.hist.pmf".
+colvars:   Writing the accelerated MD gradients file "test.production_amd.reweight.hist.grad".
+colvars:   Writing the accelerated MD count file "test.production_amd.count.hist".
+colvars:   Writing the accelerated MD PMF file using cumulant expansion: "test.production_amd.cumulant.pmf".
+colvars:   Writing the accelerated MD gradients file "test.production_amd.cumulant.grad".
+colvars:   Writing the accelerated MD PMF file using cumulant expansion: "test.production_amd.cumulant.hist.pmf".
+colvars:   Writing the accelerated MD gradients file "test.production_amd.cumulant.hist.grad".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.colvars.state".
+colvars:   Writing the histogram file "test.production_amd.dat".
+colvars:   Writing the accelerated MD PMF file "test.production_amd.reweight.pmf".
+colvars:   Writing the accelerated MD gradients file "test.production_amd.reweight.grad".
+colvars:   Writing the accelerated MD count file "test.production_amd.count".
+colvars:   Writing the accelerated MD PMF file "test.production_amd.reweight.hist.pmf".
+colvars:   Writing the accelerated MD gradients file "test.production_amd.reweight.hist.grad".
+colvars:   Writing the accelerated MD count file "test.production_amd.count.hist".
+colvars:   Writing the accelerated MD PMF file using cumulant expansion: "test.production_amd.cumulant.pmf".
+colvars:   Writing the accelerated MD gradients file "test.production_amd.cumulant.grad".
+colvars:   Writing the accelerated MD PMF file using cumulant expansion: "test.production_amd.cumulant.hist.pmf".
+colvars:   Writing the accelerated MD gradients file "test.production_amd.cumulant.hist.grad".
+colvars:   Writing the histogram file "test.production_amd.dat".
+colvars:   Writing the accelerated MD PMF file "test.production_amd.reweight.pmf".
+colvars:   Writing the accelerated MD gradients file "test.production_amd.reweight.grad".
+colvars:   Writing the accelerated MD count file "test.production_amd.count".
+colvars:   Writing the accelerated MD PMF file "test.production_amd.reweight.hist.pmf".
+colvars:   Writing the accelerated MD gradients file "test.production_amd.reweight.hist.grad".
+colvars:   Writing the accelerated MD count file "test.production_amd.count.hist".
+colvars:   Writing the accelerated MD PMF file using cumulant expansion: "test.production_amd.cumulant.pmf".
+colvars:   Writing the accelerated MD gradients file "test.production_amd.cumulant.grad".
+colvars:   Writing the accelerated MD PMF file using cumulant expansion: "test.production_amd.cumulant.hist.pmf".
+colvars:   Writing the accelerated MD gradients file "test.production_amd.cumulant.hist.grad".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.colvars.state".
+colvars:   Writing the histogram file "test.production_amd.dat".
+colvars:   Writing the accelerated MD PMF file "test.production_amd.reweight.pmf".
+colvars:   Writing the accelerated MD gradients file "test.production_amd.reweight.grad".
+colvars:   Writing the accelerated MD count file "test.production_amd.count".
+colvars:   Writing the accelerated MD PMF file "test.production_amd.reweight.hist.pmf".
+colvars:   Writing the accelerated MD gradients file "test.production_amd.reweight.hist.grad".
+colvars:   Writing the accelerated MD count file "test.production_amd.count.hist".
+colvars:   Writing the accelerated MD PMF file using cumulant expansion: "test.production_amd.cumulant.pmf".
+colvars:   Writing the accelerated MD gradients file "test.production_amd.cumulant.grad".
+colvars:   Writing the accelerated MD PMF file using cumulant expansion: "test.production_amd.cumulant.hist.pmf".
+colvars:   Writing the accelerated MD gradients file "test.production_amd.cumulant.hist.grad".
+colvars: Saving collective variables state to "test.colvars.state".

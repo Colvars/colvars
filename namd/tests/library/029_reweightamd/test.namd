@@ -1,0 +1,104 @@
+# Chignolin
+seed 1
+
+# Variables
+set current         test
+set previous        chignolin
+
+# Use amber ff
+parmfile            chignolin.parm7
+#coordinates         chig.pdb
+coordinates         $previous.coor
+extendedSystem      $previous.xsc
+velocities          $previous.vel
+# temperature         300.0
+
+## SIMULATION PARAMETERS                                  
+# AMBER FF settings
+amber               on
+rigidBonds          all
+useSettle           on
+rigidTolerance      1.0e-8
+rigidIterations     100
+cutoff              9.0
+pairlistdist        11.0
+switching           off
+exclude             scaled1-4
+readexclusions      yes
+1-4scaling          0.83333333
+scnb                2.0
+zeromomentum        on
+ljcorrection        off
+watermodel          tip3
+
+# Integrator Parameters 
+timestep            1.0 
+nonbondedFreq       1 
+fullElectFrequency  1 
+stepspercycle       10
+splitpatch          hydrogen
+hgroupcutoff        2.8
+
+# Output
+outputenergies          1000
+outputPressure          1000
+outputtiming            5000
+restartfreq             10
+binaryoutput            no
+binaryrestart           yes
+outputname              $current
+restartname             $current
+DCDUnitCell             yes
+
+# CONSTANT-T
+
+langevin                on
+langevinTemp            300.0
+langevinDamping         10.0
+
+useGroupPressure yes ;# needed for rigidBonds 
+useFlexibleCell no 
+useConstantArea no
+
+# PME
+PME                 on 
+PMETolerance        1.0e-6 
+PMEInterpOrder      4
+FFTWUseWisdom       no
+PMEGridSpacing      1.0
+
+# PBC
+# cellBasisVector1 46.64900016784668 0 0
+# cellBasisVector2 0 45.4109992980957 0
+# cellBasisVector3 0 0 43.79400062561035
+# cellOrigin -0.058893270790576935 0.16000285744667053 0.009412217885255814
+
+# COM
+
+commotion               no
+wrapAll                 on
+# wrapWater               on
+
+
+# steps for GaMD conventional MD stage
+set GcMDSteps 3000000
+# steps for GaMD equilibration stage
+set GEquilSteps 3000000
+
+colvars                 on
+colvarsConfig           test.in
+
+#aMD settings
+accelMD                         on
+accelMDG                        on
+accelMDGcMDSteps                $GcMDSteps
+accelMDGcMDPrepSteps            900000
+accelMDGEquiPrepSteps           900000
+accelMDGEquiSteps               $GEquilSteps
+accelMDdihe                     on
+accelMDOutFreq                  10
+accelMDGSigma0D                 6.0
+accelMDGRestartFile             $previous.gamd
+
+firsttimestep 500000000
+run 20

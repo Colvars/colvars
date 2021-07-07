@@ -1,0 +1,73 @@
+colvarsTrajFrequency            1
+colvarsRestartFrequency         10
+smp off
+
+colvar {
+    name end_to_end_distance
+
+    lowerboundary 3.0
+    lowerWall 3.0
+    upperboundary 22.0
+    upperWall 22.0
+    lowerWallConstant 10.0
+    upperWallConstant 10.0
+    width 0.1
+    expandBoundaries on
+
+    extendedlagrangian on
+    extendedFluctuation 0.1
+    extendedTimeConstant 200
+    extendedLangevinDamping 2.0
+    subtractAppliedForce on
+
+    distance {
+        group1 {atomNumbers {5}}
+        group2 {atomNumbers {133}}
+    }
+}
+
+colvar {
+    name asp3n_gly70
+
+    distance {
+        group1 {atomNumbers {31}}
+        group2 {atomNumbers {92}}
+    }
+}
+
+colvar {
+    name asp3n_thr80
+
+    distance {
+        group1 {atomNumbers {31}}
+        group2 {atomNumbers {106}}
+    }
+}
+
+abf {
+    name production_abf
+    colvars end_to_end_distance
+    writeCZARwindowFile yes
+    UIestimator no
+    CZARestimator yes
+    fullSamples 1000
+    historyFreq 10
+}
+
+metadynamics {
+    name production_mtd
+    colvars end_to_end_distance
+    hillWeight 0.1
+    hillWidth 5.0
+    newHillFrequency 1000
+    wellTempered on
+    biasTemperature 3000
+    keepFreeEnergyFiles off
+    writeHillsTrajectory on
+}
+
+reweightamd {
+    name production_amd
+    colvars end_to_end_distance
+    historyFreq 10
+}
