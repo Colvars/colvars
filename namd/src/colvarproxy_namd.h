@@ -122,7 +122,7 @@ public:
     return simparams->dt;
   }
 
-  cvm::real get_accelMD_factor() const {
+  virtual cvm::real get_accelMD_factor() const {
     return amd_weight_factor;
   }
 
