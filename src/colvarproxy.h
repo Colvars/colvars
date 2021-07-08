@@ -143,6 +143,9 @@ public:
 
   /// Get weight factor from accelMD
   virtual cvm::real get_accelMD_factor() const {
+    cvm::error("Error: accessing the reweighting factor of accelerated MD  "
+               "is not yet implemented in the MD engine.\n",
+               COLVARS_NOT_IMPLEMENTED);
     return 1.0;
   }
   virtual bool accelMD_enabled() const {

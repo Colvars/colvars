@@ -336,63 +336,57 @@ colvars: Re-initialized atom group for variable "asp3n_thr80":0/1. 1 atoms: tota
 colvars: The restart output state file will be "test.colvars.state".
 colvars: The final output state file will be "test.colvars.state".
 colvars:   Prepared sample and gradient buffers at step 500000000.
-colvars:   Histogram production_amd will be written to file "test.production_amd.dat"
-colvars:   Writing the histogram file "test.production_amd.dat".
 colvars:   Writing the accelerated MD PMF file "test.production_amd.reweight.pmf".
 colvars:   Writing the accelerated MD gradients file "test.production_amd.reweight.grad".
 colvars:   Writing the accelerated MD count file "test.production_amd.count".
 colvars:   Writing the accelerated MD PMF file "test.production_amd.reweight.hist.pmf".
 colvars:   Writing the accelerated MD gradients file "test.production_amd.reweight.hist.grad".
-colvars:   Writing the accelerated MD count file "test.production_amd.count.hist".
+colvars:   Writing the accelerated MD count file "test.production_amd.hist.count".
 colvars:   Writing the accelerated MD PMF file using cumulant expansion: "test.production_amd.cumulant.pmf".
 colvars:   Writing the accelerated MD gradients file "test.production_amd.cumulant.grad".
 colvars:   Writing the accelerated MD PMF file using cumulant expansion: "test.production_amd.cumulant.hist.pmf".
 colvars:   Writing the accelerated MD gradients file "test.production_amd.cumulant.hist.grad".
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
-colvars:   Writing the histogram file "test.production_amd.dat".
 colvars:   Writing the accelerated MD PMF file "test.production_amd.reweight.pmf".
 colvars:   Writing the accelerated MD gradients file "test.production_amd.reweight.grad".
 colvars:   Writing the accelerated MD count file "test.production_amd.count".
 colvars:   Writing the accelerated MD PMF file "test.production_amd.reweight.hist.pmf".
 colvars:   Writing the accelerated MD gradients file "test.production_amd.reweight.hist.grad".
-colvars:   Writing the accelerated MD count file "test.production_amd.count.hist".
+colvars:   Writing the accelerated MD count file "test.production_amd.hist.count".
 colvars:   Writing the accelerated MD PMF file using cumulant expansion: "test.production_amd.cumulant.pmf".
 colvars:   Writing the accelerated MD gradients file "test.production_amd.cumulant.grad".
 colvars:   Writing the accelerated MD PMF file using cumulant expansion: "test.production_amd.cumulant.hist.pmf".
 colvars:   Writing the accelerated MD gradients file "test.production_amd.cumulant.hist.grad".
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
 colvars: Saving collective variables state to "test.colvars.state".
-colvars:   Writing the histogram file "test.production_amd.dat".
 colvars:   Writing the accelerated MD PMF file "test.production_amd.reweight.pmf".
 colvars:   Writing the accelerated MD gradients file "test.production_amd.reweight.grad".
 colvars:   Writing the accelerated MD count file "test.production_amd.count".
 colvars:   Writing the accelerated MD PMF file "test.production_amd.reweight.hist.pmf".
 colvars:   Writing the accelerated MD gradients file "test.production_amd.reweight.hist.grad".
-colvars:   Writing the accelerated MD count file "test.production_amd.count.hist".
+colvars:   Writing the accelerated MD count file "test.production_amd.hist.count".
 colvars:   Writing the accelerated MD PMF file using cumulant expansion: "test.production_amd.cumulant.pmf".
 colvars:   Writing the accelerated MD gradients file "test.production_amd.cumulant.grad".
 colvars:   Writing the accelerated MD PMF file using cumulant expansion: "test.production_amd.cumulant.hist.pmf".
 colvars:   Writing the accelerated MD gradients file "test.production_amd.cumulant.hist.grad".
-colvars:   Writing the histogram file "test.production_amd.dat".
 colvars:   Writing the accelerated MD PMF file "test.production_amd.reweight.pmf".
 colvars:   Writing the accelerated MD gradients file "test.production_amd.reweight.grad".
 colvars:   Writing the accelerated MD count file "test.production_amd.count".
 colvars:   Writing the accelerated MD PMF file "test.production_amd.reweight.hist.pmf".
 colvars:   Writing the accelerated MD gradients file "test.production_amd.reweight.hist.grad".
-colvars:   Writing the accelerated MD count file "test.production_amd.count.hist".
+colvars:   Writing the accelerated MD count file "test.production_amd.hist.count".
 colvars:   Writing the accelerated MD PMF file using cumulant expansion: "test.production_amd.cumulant.pmf".
 colvars:   Writing the accelerated MD gradients file "test.production_amd.cumulant.grad".
 colvars:   Writing the accelerated MD PMF file using cumulant expansion: "test.production_amd.cumulant.hist.pmf".
 colvars:   Writing the accelerated MD gradients file "test.production_amd.cumulant.hist.grad".
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
 colvars: Saving collective variables state to "test.colvars.state".
-colvars:   Writing the histogram file "test.production_amd.dat".
 colvars:   Writing the accelerated MD PMF file "test.production_amd.reweight.pmf".
 colvars:   Writing the accelerated MD gradients file "test.production_amd.reweight.grad".
 colvars:   Writing the accelerated MD count file "test.production_amd.count".
 colvars:   Writing the accelerated MD PMF file "test.production_amd.reweight.hist.pmf".
 colvars:   Writing the accelerated MD gradients file "test.production_amd.reweight.hist.grad".
-colvars:   Writing the accelerated MD count file "test.production_amd.count.hist".
+colvars:   Writing the accelerated MD count file "test.production_amd.hist.count".
 colvars:   Writing the accelerated MD PMF file using cumulant expansion: "test.production_amd.cumulant.pmf".
 colvars:   Writing the accelerated MD gradients file "test.production_amd.cumulant.grad".
 colvars:   Writing the accelerated MD PMF file using cumulant expansion: "test.production_amd.cumulant.hist.pmf".
