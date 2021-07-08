@@ -7,8 +7,8 @@ colvar {
 
     lowerboundary 3.0
     lowerWall 3.0
-    upperboundary 22.0
-    upperWall 22.0
+    upperboundary 14.0
+    upperWall 14.0
     lowerWallConstant 10.0
     upperWallConstant 10.0
     width 0.1
@@ -21,26 +21,8 @@ colvar {
     subtractAppliedForce on
 
     distance {
-        group1 {atomNumbers {5}}
-        group2 {atomNumbers {133}}
-    }
-}
-
-colvar {
-    name asp3n_gly70
-
-    distance {
-        group1 {atomNumbers {31}}
-        group2 {atomNumbers {92}}
-    }
-}
-
-colvar {
-    name asp3n_thr80
-
-    distance {
-        group1 {atomNumbers {31}}
-        group2 {atomNumbers {106}}
+        group1 {atomNumbers {2}}
+        group2 {atomNumbers {39}}
     }
 }
 
