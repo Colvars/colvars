@@ -6,12 +6,10 @@ set current         test
 set previous        chignolin
 
 # Use amber ff
-parmfile            chignolin.parm7
-#coordinates         chig.pdb
-coordinates         $previous.coor
-extendedSystem      $previous.xsc
-velocities          $previous.vel
-# temperature         300.0
+parmfile            ../Common/trialanine.parm7
+coordinates         ../Common/../Common/trialanine_initial.pdb
+# velocities          $previous.vel
+temperature         300.0
 
 ## SIMULATION PARAMETERS                                  
 # AMBER FF settings
@@ -59,13 +57,6 @@ langevinDamping         10.0
 useGroupPressure yes ;# needed for rigidBonds 
 useFlexibleCell no 
 useConstantArea no
-
-# PME
-PME                 on 
-PMETolerance        1.0e-6 
-PMEInterpOrder      4
-FFTWUseWisdom       no
-PMEGridSpacing      1.0
 
 # PBC
 # cellBasisVector1 46.64900016784668 0 0
