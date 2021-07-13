@@ -38,7 +38,9 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
                                gmx::ArrayRef<const std::string> filenames_config,
                                const std::string &filename_restart,
                                const t_commrec *cr,
-                               const rvec x[]) {
+                               const rvec x[],
+                               ivec *xshifts_colvars_state,
+                               int* n_colvars_atoms_state) {
 
 
   // Initialize colvars.
@@ -139,6 +141,10 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
     n_colvars_atoms = atoms_ids.size();
     // Copy their global indices
     ind = atoms_ids.data(); // This has to be updated if the vector is reallocated
+
+    //Initialize shifts from the global state
+    snew(xshifts_colvars_state, n_colvars_atoms);
+    *n_colvars_atoms_state = n_colvars_atoms;
   }
 
 
@@ -204,6 +210,9 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
       /* For subsequent checkpoint writing, set the pointers (xa_old_whole_p) to the xa_old_whole
       * arrays that get updated at every NS step */
       colvarstate->xa_old_whole_p = xa_old;
+
+      // Point the shifts array from the  global state to the local shifts array
+      xshifts_colvars_state = xa_shifts;
   }
 
 
@@ -490,6 +499,8 @@ void colvarproxy_gromacs::calculateForces(
     }
 
     forceProviderOutput->enerd_.term[F_COM_PULL] += bias_energy;
+
+
   } // master node
 
   //Broadcast the forces to all the nodes
