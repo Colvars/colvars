@@ -77,7 +77,7 @@ public:
   void init(t_inputrec *gmx_inp, int64_t step, gmx_mtop_t *mtop, ObservablesHistory* oh,
             const std::string &prefix, gmx::ArrayRef<const std::string> filenames_config,
             const std::string &filename_restart, const t_commrec *cr,
-            const rvec x[]);
+            const rvec x[], ivec *xshifts_colvars_state, int* n_colvars_atoms_state);
 
   void dd_make_local_atoms(const t_commrec *cr);
   // Called each step before evaluating the force provider

@@ -223,6 +223,55 @@ diff -aur src/gromacs/mdrun/legacymdrunoptions.h src_colvars/gromacs/mdrun/legac
 
      //! Print a warning if any force is larger than this (in kJ/mol nm).
      real pforce = -1;
+diff -aur src/gromacs/mdrun/replicaexchange.cpp src_colvars/gromacs/mdrun/replicaexchange.cpp
+--- src/gromacs/mdrun/replicaexchange.cpp	2021-03-04 15:49:48.000000000 +0100
++++ src_colvarsgromacs/mdrun/replicaexchange.cpp	2021-07-13 14:40:09.847790779 +0200
+@@ -589,6 +589,37 @@
+     }
+ }
+
++static void exchange_ivecs(const gmx_multisim_t gmx_unused* ms, int gmx_unused b, ivec* v, int n)
++{
++    ivec* buf;
++    int   i;
++
++    if (v)
++    {
++        snew(buf, n);
++#if GMX_MPI
++        /*
++           MPI_Sendrecv(v[0],  n*sizeof(ivec),MPI_BYTE,MSRANK(ms,b),0,
++           buf[0],n*sizeof(ivec),MPI_BYTE,MSRANK(ms,b),0,
++           ms->mpi_comm_masters,MPI_STATUS_IGNORE);
++         */
++        {
++            MPI_Request mpi_req;
++
++            MPI_Isend(v[0], n * sizeof(ivec), MPI_BYTE, MSRANK(ms, b), 0, ms->mpi_comm_masters, &mpi_req);
++            MPI_Recv(buf[0], n * sizeof(ivec), MPI_BYTE, MSRANK(ms, b), 0, ms->mpi_comm_masters,
++                     MPI_STATUS_IGNORE);
++            MPI_Wait(&mpi_req, MPI_STATUS_IGNORE);
++        }
++#endif
++        for (i = 0; i < n; i++)
++        {
++            copy_ivec(buf[i], v[i]);
++        }
++        sfree(buf);
++    }
++}
++
+ static void exchange_state(const gmx_multisim_t* ms, int b, t_state* state)
+ {
+     /* When t_state changes, this code should be updated. */
+@@ -611,6 +642,7 @@
+     exchange_doubles(ms, b, &state->baros_integral, 1);
+     exchange_rvecs(ms, b, state->x.rvec_array(), state->natoms);
+     exchange_rvecs(ms, b, state->v.rvec_array(), state->natoms);
++    exchange_ivecs(ms, b, state->xshifts_colvars, *(state->n_colvars_atoms));
+ }
+
+ static void copy_state_serial(const t_state* src, t_state* dest)
 diff -aur src/gromacs/mdrun/runner.cpp src_colvars/gromacs/mdrun/runner.cpp
 --- src/gromacs/mdrun/runner.cpp	2020-07-09 13:32:11.000000000 +0200
 +++ src_colvars/gromacs/mdrun/runner.cpp	2020-10-02 16:21:43.005325486 +0200
@@ -272,7 +321,7 @@ diff -aur src/gromacs/mdrun/runner.cpp src_colvars/gromacs/mdrun/runner.cpp
 +            }
 +
 +            inputrec->colvars_proxy =  new colvarproxy_gromacs();
-+            inputrec->colvars_proxy->init(inputrec,inputrec->init_step,&mtop, &observablesHistory, prefix, filenames_colvars,filename_restart, cr, MASTER(cr) ? globalState->x.rvec_array() : nullptr);
++            inputrec->colvars_proxy->init(inputrec,inputrec->init_step,&mtop, &observablesHistory, prefix, filenames_colvars,filename_restart, cr, MASTER(cr) ? globalState->x.rvec_array() : nullptr, MASTER(cr) ? globalState->xshifts_colvars : nullptr, MASTER(cr) ? globalState->n_colvars_atoms : nullptr);
 +            fr->forceProviders->addForceProvider(inputrec->colvars_proxy);
 +        }
 +        else
@@ -386,3 +435,16 @@ diff -aur src/gromacs/mdtypes/observableshistory.h src_colvars/gromacs/mdtypes/o
      ObservablesHistory();
 
      ~ObservablesHistory();
+diff -aur src/gromacs/mdtypes/state.h src_colvars/gromacs/mdtypes/state.h
+--- src/gromacs/mdtypes/state.h	2021-03-04 15:49:48.000000000 +0100
++++ src_colvars/gromacs/mdtypes/state.h	2021-07-13 14:38:39.665944605 +0200
+@@ -257,6 +257,9 @@
+     std::vector<int> cg_gl;           //!< The global cg number of the local cgs
+
+     std::vector<double> pull_com_prev_step; //!< The COM of the previous step of each pull group
++
++    int*      n_colvars_atoms; //pointer to the number of atoms
++    ivec*     xshifts_colvars; //shifts for colvars atoms
+ };
+
+ #ifndef DOXYGEN
