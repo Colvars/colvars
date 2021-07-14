@@ -1,0 +1,52 @@
+;Run control
+integrator               = md-vv
+;time step in picoseconds
+dt                       = 0.002
+;number of steps
+nsteps                   = 50
+;no trr
+nstxout                  = 0
+nstvout                  = 0
+nstfout                  = 0
+;frequency to write energies to log file
+nstlog                   = 1
+;frequency to write energies to energy file
+nstenergy                = 1
+nstcalcenergy            = 1
+;frequency to write coordinates to xtc trajectory
+nstxout-compressed     = 1
+
+cutoff-scheme            = verlet
+
+
+; Periodic boundary conditions
+pbc                     = xyz       ; 3-D PBC
+
+; Bond parameters
+constraint_algorithm    = lincs
+constraints             = h-bonds
+
+
+
+;treatment of van der waals interactions
+vdwtype = cut-off
+vdw-modifier = Potential-switch
+rvdw = 1.2
+rvdw-switch = 1.0
+
+coulombtype              = PME
+rcoulomb                = 1.2
+pme_order               = 4         ; cubic interpolation
+fourierspacing          = 0.12      ; grid spacing for FFT
+
+;Temperature coupling
+tcoupl                   = v-rescale
+tc-grps                  = System
+ref-t                    = 302
+tau-t                    = 1
+
+; pressure coupling
+pcoupl                   = No
+
+gen-vel                  = no
+
