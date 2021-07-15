@@ -321,7 +321,7 @@ diff -aur src/gromacs/mdrun/runner.cpp src_colvars/gromacs/mdrun/runner.cpp
 +            }
 +
 +            inputrec->colvars_proxy =  new colvarproxy_gromacs();
-+            inputrec->colvars_proxy->init(inputrec,inputrec->init_step,&mtop, &observablesHistory, prefix, filenames_colvars,filename_restart, cr, MASTER(cr) ? globalState->x.rvec_array() : nullptr, MASTER(cr) ? globalState->xshifts_colvars : nullptr, MASTER(cr) ? globalState->n_colvars_atoms : nullptr);
++            inputrec->colvars_proxy->init(inputrec,inputrec->init_step,&mtop, &observablesHistory, prefix, filenames_colvars,filename_restart, cr, MASTER(cr) ? globalState->x.rvec_array() : nullptr, MASTER(cr) ? &globalState->xshifts_colvars : nullptr, MASTER(cr) ? &globalState->n_colvars_atoms : nullptr);
 +            fr->forceProviders->addForceProvider(inputrec->colvars_proxy);
 +        }
 +        else
@@ -435,6 +435,19 @@ diff -aur src/gromacs/mdtypes/observableshistory.h src_colvars/gromacs/mdtypes/o
      ObservablesHistory();
 
      ~ObservablesHistory();
+diff -aur src/gromacs/mdtypes/state.cpp src_colvars/gromacs/mdtypes/state.cpp
+--- src/gromacs/mdtypes/mdtypes/state.cpp	2021-03-04 15:49:48.000000000 +0100
++++ src_colvars/gromacs/mdtypesstate.cpp	2021-07-15 12:22:33.369986144 +0200
+@@ -240,7 +240,8 @@
+     dfhist(nullptr),
+     awhHistory(nullptr),
+     ddp_count(0),
+-    ddp_count_cg_gl(0)
++    ddp_count_cg_gl(0),
++    xshifts_colvars(nullptr)
+
+ {
+     // It would be nicer to initialize these with {} or {{0}} in the
 diff -aur src/gromacs/mdtypes/state.h src_colvars/gromacs/mdtypes/state.h
 --- src/gromacs/mdtypes/state.h	2021-03-04 15:49:48.000000000 +0100
 +++ src_colvars/gromacs/mdtypes/state.h	2021-07-13 14:38:39.665944605 +0200
@@ -443,8 +456,8 @@ diff -aur src/gromacs/mdtypes/state.h src_colvars/gromacs/mdtypes/state.h
 
      std::vector<double> pull_com_prev_step; //!< The COM of the previous step of each pull group
 +
-+    int*      n_colvars_atoms; //pointer to the number of atoms
-+    ivec*     xshifts_colvars; //shifts for colvars atoms
++    int      n_colvars_atoms; //!< number of colvars atoms
++    ivec*    xshifts_colvars; //!< shifts for colvars atoms
  };
 
  #ifndef DOXYGEN
