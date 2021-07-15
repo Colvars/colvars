@@ -39,7 +39,7 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
                                const std::string &filename_restart,
                                const t_commrec *cr,
                                const rvec x[],
-                               ivec *xshifts_colvars_state,
+                               ivec **xshifts_colvars_state,
                                int* n_colvars_atoms_state) {
 
 
@@ -142,8 +142,8 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
     // Copy their global indices
     ind = atoms_ids.data(); // This has to be updated if the vector is reallocated
 
-    //Initialize shifts from the global state
-    snew(xshifts_colvars_state, n_colvars_atoms);
+    //Initialize shifts & number of colvars atoms from the global state
+    snew(*xshifts_colvars_state, n_colvars_atoms);
     *n_colvars_atoms_state = n_colvars_atoms;
   }
 
@@ -212,7 +212,7 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
       colvarstate->xa_old_whole_p = xa_old;
 
       // Point the shifts array from the  global state to the local shifts array
-      xshifts_colvars_state = xa_shifts;
+      *xshifts_colvars_state = xa_shifts;
   }
 
 
@@ -246,8 +246,9 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
     cvm::log ("atoms_new_colvar_forces = "+cvm::to_str (atoms_new_colvar_forces)+"\n");
     cvm::log (cvm::line_marker);
     log("done initializing the colvars proxy object.\n");
-  }
 
+
+  }
 
 } // End colvars initialization.
 
