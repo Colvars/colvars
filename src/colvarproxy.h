@@ -144,6 +144,12 @@ public:
   /// Apply a scalar force on dE_dlambda (back-end distributes it onto atoms)
   virtual int apply_force_dE_dlambda(cvm::real* force);
 
+  /// Get energy second derivative with respect to lambda (if available)
+  virtual int get_d2E_dlambda2(cvm::real* d2E_dlambda2);
+
+  /// Force to be applied onto alch. lambda, propagated from biasing forces on dE_dlambda
+  cvm::real indirect_lambda_biasing_force;
+
   /// Get weight factor from accelMD
   virtual cvm::real get_accelMD_factor() const {
     cvm::error("Error: accessing the reweighting factor of accelerated MD  "
