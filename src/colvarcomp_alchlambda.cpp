@@ -38,6 +38,10 @@ void colvar::alch_lambda::calc_value()
 
   cvm::proxy->get_dE_dlambda(&ft.real_value);
   ft.real_value *= -1.0; // Energy derivative to force
+
+  // Include any force due to bias on Flambda
+  ft.real_value += cvm::proxy->indirect_lambda_biasing_force;
+  cvm::proxy->indirect_lambda_biasing_force = 0.0;
 }
 
 
@@ -91,6 +95,13 @@ void colvar::alch_Flambda::apply_force(colvarvalue const &force)
   cvm::real f = -1.0 * force.real_value;
   // Send scalar force to back-end, which will distribute it onto atoms
   cvm::proxy->apply_force_dE_dlambda(&f);
+
+  // Propagate force on Flambda to lambda internally
+  cvm::real d2E_dlambda2;
+  cvm::proxy->get_d2E_dlambda2(&d2E_dlambda2);
+
+  // This accumulates a force, it needs to be zeroed when taken into account by lambda
+  cvm::proxy->indirect_lambda_biasing_force += d2E_dlambda2 * f;
 }
 
 simple_scalar_dist_functions(alch_Flambda)

@@ -34,6 +34,7 @@ colvarproxy_system::colvarproxy_system()
   kcal_mol_value = 0.0;
   boundaries_type = boundaries_unsupported;
   total_force_requested = false;
+  indirect_lambda_biasing_force = 0.0;
   reset_pbc_lattice();
 }
 
@@ -182,30 +183,37 @@ int colvarproxy_system::get_molid(int &)
 }
 
 
-int colvarproxy_system::get_alch_lambda(cvm::real* lambda)
+int colvarproxy_system::get_alch_lambda(cvm::real*)
 {
   return cvm::error("Error in get_alch_lambda: alchemical lambda dynamics is not supported by this build.",
     COLVARS_NOT_IMPLEMENTED);
 }
 
 
-int colvarproxy_system::set_alch_lambda(cvm::real* lambda)
+int colvarproxy_system::set_alch_lambda(cvm::real*)
 {
   return cvm::error("Error in set_alch_lambda: alchemical lambda dynamics is not supported by this build.",
     COLVARS_NOT_IMPLEMENTED);
 }
 
 
-int colvarproxy_system::get_dE_dlambda(cvm::real* dE_dlambda)
+int colvarproxy_system::get_dE_dlambda(cvm::real*)
 {
   return cvm::error("Error in get_dE_dlambda: alchemical lambda dynamics is not supported by this build.",
     COLVARS_NOT_IMPLEMENTED);
 }
 
 
-int colvarproxy_system::apply_force_dE_dlambda(cvm::real* force)
+int colvarproxy_system::apply_force_dE_dlambda(cvm::real*)
 {
-  return cvm::error("Error in apply_force_dE_dlambda: function is not supported by this build.",
+  return cvm::error("Error in apply_force_dE_dlambda: function is not implemented by this build.",
+    COLVARS_NOT_IMPLEMENTED);
+}
+
+
+int colvarproxy_system::get_d2E_dlambda2(cvm::real*)
+{
+  return cvm::error("Error in get_d2E_dlambda2: function is not implemented by this build.",
     COLVARS_NOT_IMPLEMENTED);
 }
 
