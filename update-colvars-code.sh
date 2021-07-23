@@ -141,8 +141,10 @@ then
     2020*)
       GMX_VERSION='2020.x'
       ;;
+    2021*)
+      GMX_VERSION='2021.x'
+      ;;
     *)
-    GMX_VERSION="master"
     if [ $force_update = 0 ] ; then
       echo " ******************************************************************************"
       echo "  ERROR: Support for GROMACS version ${GMX_VERSION} has not been tested."
