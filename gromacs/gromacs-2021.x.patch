@@ -1,0 +1,397 @@
+diff -aur src/gromacs/CMakeLists.txt src_colvars/gromacs/CMakeLists.txt
+--- src/gromacs/CMakeLists.txt	2021-05-05 15:57:05.000000000 +0200
++++ src_colvars/gromacs/CMakeLists.txt	2021-07-13 16:26:18.103064768 +0200
+@@ -108,6 +108,7 @@
+ add_subdirectory(compat)
+ add_subdirectory(mimic)
+ add_subdirectory(modularsimulator)
++add_subdirectory(colvars)
+ if (NOT GMX_BUILD_MDRUN_ONLY)
+     add_subdirectory(gmxana)
+     add_subdirectory(gmxpreprocess)
+diff -aur src/gromacs/fileio/checkpoint.cpp src_colvars/gromacs/fileio/checkpoint.cpp
+--- src/gromacs/fileio/checkpoint.cpp	2021-05-05 15:57:05.000000000 +0200
++++ src_colvars/gromacs/fileio/checkpoint.cpp	2021-07-22 11:26:13.998639031 +0200
+@@ -72,6 +72,7 @@
+ #include "gromacs/mdtypes/pullhistory.h"
+ #include "gromacs/mdtypes/state.h"
+ #include "gromacs/mdtypes/swaphistory.h"
++#include "gromacs/mdtypes/colvarshistory.h"
+ #include "gromacs/modularsimulator/modularsimulator.h"
+ #include "gromacs/trajectory/trajectoryframe.h"
+ #include "gromacs/utility/arrayref.h"
+@@ -177,7 +178,9 @@
+  * Backward compatibility for reading old run input files is maintained
+  * by checking this version number against that of the file and then using
+  * the correct code path. */
+-static const int cpt_version = cptv_Count - 1;
++/* COLVARS : add a value of 1000 for Colvars support and
++ * prevent regular GROMACS to read colvars .cpt files */
++static const int cpt_version = cptv_Count - 1 + 1000;
+
+
+ const char* est_names[estNR] = { "FE-lambda",
+@@ -1238,6 +1241,15 @@
+     {
+         contents->isModularSimulatorCheckpoint = false;
+     }
++    if (contents->file_version >= cptv_Count - 1 + 1000)
++    {
++        do_cpt_int_err(xd, "colvars atoms", &contents->ecolvars, list);
++    }
++    else
++    {
++        contents->ecolvars = 0;
++    }
++
+ }
+
+ static int do_cpt_footer(XDR* xd, int file_version)
+@@ -1964,6 +1976,35 @@
+     return 0;
+ }
+
++/* This function stores the last whole configuration of the colvars atoms in the .cpt file */
++static int do_cpt_colvars(XDR* xd, gmx_bool bRead, int ecolvars, colvarshistory_t* colvarsstate, FILE* list)
++{
++
++    if (ecolvars == 0)
++    {
++        return 0;
++    }
++
++    colvarsstate->bFromCpt = bRead;
++    colvarsstate->n_atoms  = ecolvars;
++
++    /* Write data */
++    char buf[STRLEN];
++    sprintf(buf, "Colvars atoms in reference structure : %d", ecolvars);
++    sprintf(buf, "Colvars xa_old");
++    if (bRead)
++    {
++        snew(colvarsstate->xa_old_whole, colvarsstate->n_atoms);
++        do_cpt_n_rvecs_err(xd, buf, colvarsstate->n_atoms, colvarsstate->xa_old_whole, list);
++    }
++    else
++    {
++        do_cpt_n_rvecs_err(xd, buf, colvarsstate->n_atoms, colvarsstate->xa_old_whole_p, list);
++    }
++
++    return 0;
++}
++
+ static int do_cpt_correlation_grid(XDR*                         xd,
+                                    gmx_bool                     bRead,
+                                    gmx_unused int               fflags,
+@@ -2330,6 +2371,7 @@
+         || (do_cpt_swapstate(gmx_fio_getxdr(fp), FALSE, headerContents.eSwapCoords,
+                              observablesHistory->swapHistory.get(), nullptr)
+             < 0)
++        || (do_cpt_colvars(gmx_fio_getxdr(fp), FALSE, headerContents.ecolvars, observablesHistory->colvarsHistory.get(), nullptr) < 0)
+         || (do_cpt_files(gmx_fio_getxdr(fp), FALSE, outputfiles, nullptr, headerContents.file_version) < 0))
+     {
+         gmx_file("Cannot read/write checkpoint; corrupt file, or maybe you are out of disk space?");
+@@ -2713,6 +2755,17 @@
+         cp_error();
+     }
+
++    if (headerContents->ecolvars != 0 && observablesHistory->colvarsHistory == nullptr)
++    {
++        observablesHistory->colvarsHistory = std::make_unique<colvarshistory_t>(colvarshistory_t{});
++    }
++    ret = do_cpt_colvars(gmx_fio_getxdr(fp), TRUE, headerContents->ecolvars,
++                           observablesHistory->colvarsHistory.get(), nullptr);
++    if (ret)
++    {
++        cp_error();
++    }
++
+     std::vector<gmx_file_position_t> outputfiles;
+     ret = do_cpt_files(gmx_fio_getxdr(fp), TRUE, &outputfiles, nullptr, headerContents->file_version);
+     if (ret)
+@@ -2879,6 +2932,13 @@
+         cp_error();
+     }
+
++    colvarshistory_t colvarshist = {};
++    ret = do_cpt_colvars(gmx_fio_getxdr(fp), TRUE, headerContents.ecolvars, &colvarshist, nullptr);
++    if (ret)
++    {
++        cp_error();
++    }
++
+     ret = do_cpt_files(gmx_fio_getxdr(fp), TRUE, outputfiles, nullptr, headerContents.file_version);
+
+     if (ret)
+@@ -3001,6 +3061,12 @@
+     }
+
+     if (ret == 0)
++    {
++        colvarshistory_t colvarshist = {};
++        ret = do_cpt_colvars(gmx_fio_getxdr(fp), TRUE, headerContents.ecolvars, &colvarshist, out);
++    }
++
++    if (ret == 0)
+     {
+         std::vector<gmx_file_position_t> outputfiles;
+         ret = do_cpt_files(gmx_fio_getxdr(fp), TRUE, &outputfiles, out, headerContents.file_version);
+diff -aur src/gromacs/fileio/checkpoint.h src_colvars/gromacs/fileio/checkpoint.h
+--- src/gromacs/fileio/checkpoint.h	2021-05-05 15:57:05.000000000 +0200
++++ src_colvars/gromacs/fileio/checkpoint.h	2021-07-13 16:29:57.959573901 +0200
+@@ -238,6 +238,8 @@
+     int nED;
+     //! Enum for coordinate swapping.
+     int eSwapCoords;
++    //! Colvars
++    int ecolvars;
+     //! Whether the checkpoint was written by modular simulator.
+     bool isModularSimulatorCheckpoint = false;
+ };
+diff -aur src/gromacs/mdlib/energyoutput.cpp src_colvars/gromacs/mdlib/energyoutput.cpp
+--- src/gromacs/mdlib/energyoutput.cpp	2021-05-05 15:57:05.000000000 +0200
++++ src_colvars/gromacs/mdlib/energyoutput.cpp	2021-07-13 16:28:51.806217010 +0200
+@@ -242,7 +242,7 @@
+     bEner_[F_DISPCORR]   = (ir->eDispCorr != edispcNO);
+     bEner_[F_DISRESVIOL] = (gmx_mtop_ftype_count(mtop, F_DISRES) > 0);
+     bEner_[F_ORIRESDEV]  = (gmx_mtop_ftype_count(mtop, F_ORIRES) > 0);
+-    bEner_[F_COM_PULL]   = ((ir->bPull && pull_have_potential(*pull_work)) || ir->bRot);
++    bEner_[F_COM_PULL]   = ((ir->bPull && pull_have_potential(*pull_work)) || ir->bRot || ir->bColvars);
+
+     MdModulesEnergyOutputToDensityFittingRequestChecker mdModulesAddOutputToDensityFittingFieldRequest;
+     mdModulesNotifier.simulationSetupNotifications_.notify(&mdModulesAddOutputToDensityFittingFieldRequest);
+diff -aur src/gromacs/mdlib/mdoutf.cpp src_colvars/gromacs/mdlib/mdoutf.cpp
+--- src/gromacs/mdlib/mdoutf.cpp	2021-05-05 15:57:05.000000000 +0200
++++ src_colvars/gromacs/mdlib/mdoutf.cpp	2021-07-22 12:02:37.663379390 +0200
+@@ -64,6 +64,7 @@
+ #include "gromacs/mdtypes/observableshistory.h"
+ #include "gromacs/mdtypes/state.h"
+ #include "gromacs/mdtypes/swaphistory.h"
++#include "gromacs/mdtypes/colvarshistory.h"
+ #include "gromacs/timing/wallcycle.h"
+ #include "gromacs/topology/topology.h"
+ #include "gromacs/utility/baseversion.h"
+@@ -357,6 +358,10 @@
+     swaphistory_t* swaphist    = observablesHistory->swapHistory.get();
+     int            eSwapCoords = (swaphist ? swaphist->eSwapCoords : eswapNO);
+
++    /* COLVARS */
++    colvarshistory_t* colvarshist = observablesHistory->colvarsHistory.get();
++    int               ecolvars    = (colvarshist ? colvarshist->n_atoms : 0);
++
+     CheckpointHeaderContents headerContents = { 0,
+                                                 { 0 },
+                                                 { 0 },
+@@ -385,6 +390,7 @@
+                                                 0,
+                                                 nED,
+                                                 eSwapCoords,
++                                                ecolvars,
+                                                 false };
+     std::strcpy(headerContents.version, gmx_version());
+     std::strcpy(headerContents.fprog, gmx::getProgramContext().fullBinaryPath());
+diff -aur src/gromacs/mdlib/sim_util.cpp src_colvars/gromacs/mdlib/sim_util.cpp
+--- src/gromacs/mdlib/sim_util.cpp	2021-05-05 15:57:05.000000000 +0200
++++ src_colvars/gromacs/mdlib/sim_util.cpp	2021-07-22 12:04:30.101685343 +0200
+@@ -122,6 +122,7 @@
+ #include "gromacs/utility/smalloc.h"
+ #include "gromacs/utility/strconvert.h"
+ #include "gromacs/utility/sysinfo.h"
++#include "gromacs/colvars/colvarproxy_gromacs.h"
+
+ #include "gpuforcereduction.h"
+
+@@ -616,6 +617,16 @@
+      */
+     if (stepWork.computeForces)
+     {
++
++        /* COLVARS */
++        /* Colvars Module needs some updated data - just PBC & step number - before calling its ForceProvider */
++        if (inputrec->bColvars)
++        {
++            t_pbc pbc;
++            set_pbc(&pbc, inputrec->pbcType, box);
++            inputrec->colvars_proxy->update_data(cr, step, pbc, box, didNeighborSearch);
++        }
++
+         gmx::ForceProviderInput  forceProviderInput(x, *mdatoms, t, box, *cr);
+         gmx::ForceProviderOutput forceProviderOutput(forceWithVirialMtsLevel0, enerd);
+
+diff -aur src/gromacs/mdrun/legacymdrunoptions.h src_colvars/gromacs/mdrun/legacymdrunoptions.h
+--- src/gromacs/mdrun/legacymdrunoptions.h	2021-05-05 15:57:05.000000000 +0200
++++ src_colvars/gromacs/mdrun/legacymdrunoptions.h	2021-07-13 16:26:18.107064850 +0200
+@@ -127,7 +127,9 @@
+                                           { efTOP, "-mp", "membed", ffOPTRD },
+                                           { efNDX, "-mn", "membed", ffOPTRD },
+                                           { efXVG, "-if", "imdforces", ffOPTWR },
+-                                          { efXVG, "-swap", "swapions", ffOPTWR } } };
++                                          { efXVG, "-swap", "swapions", ffOPTWR },
++                                          { efDAT, "-colvars",  "colvars",   ffOPTRDMULT },     /* COLVARS */
++                                          { efDAT, "-colvars_restart", "colvars",  ffOPTRD },   /* COLVARS */}};
+
+     //! Print a warning if any force is larger than this (in kJ/mol nm).
+     real pforce = -1;
+diff -aur src/gromacs/mdrun/runner.cpp src_colvars/gromacs/mdrun/runner.cpp
+--- src/gromacs/mdrun/runner.cpp	2021-05-05 15:57:05.000000000 +0200
++++ src_colvars/gromacs/mdrun/runner.cpp	2021-07-22 12:07:33.405444952 +0200
+@@ -125,6 +125,7 @@
+ #include "gromacs/mdtypes/mdatom.h"
+ #include "gromacs/mdtypes/mdrunoptions.h"
+ #include "gromacs/mdtypes/observableshistory.h"
++#include "gromacs/mdtypes/colvarshistory.h"
+ #include "gromacs/mdtypes/simulation_workload.h"
+ #include "gromacs/mdtypes/state.h"
+ #include "gromacs/mdtypes/state_propagator_data_gpu.h"
+@@ -166,6 +167,7 @@
+ #include "gromacs/utility/programcontext.h"
+ #include "gromacs/utility/smalloc.h"
+ #include "gromacs/utility/stringutil.h"
++#include "gromacs/colvars/colvarproxy_gromacs.h"
+
+ #include "isimulator.h"
+ #include "membedholder.h"
+@@ -1678,6 +1680,50 @@
+                                MASTER(cr) ? globalState->x.rvec_array() : nullptr, filenames.size(),
+                                filenames.data(), oenv, mdrunOptions.imdOptions, startingBehavior);
+
++        /* COLVARS */
++        if (opt2bSet("-colvars",filenames.size(), filenames.data()))
++        {
++
++            gmx::ArrayRef<const std::string> filenames_colvars;
++            std::string filename_restart;
++            std::string prefix;
++
++            inputrec->bColvars = TRUE;
++
++            /* Retrieve filenames */
++            filenames_colvars = opt2fns("-colvars", filenames.size(), filenames.data());
++            if (opt2bSet("-colvars_restart",filenames.size(), filenames.data()))
++            {
++                filename_restart = opt2fn("-colvars_restart",filenames.size(), filenames.data());
++            }
++
++            /* Determine the prefix for the colvars output files, based on the logfile name. */
++            std::string logfile = ftp2fn(efLOG, filenames.size(), filenames.data());
++            /* 4 = ".log".length() */
++            if(logfile.length() > 4)
++            {
++                prefix = logfile.substr(0,logfile.length()-4);
++            }
++
++            inputrec->colvars_proxy =  new colvarproxy_gromacs();
++            inputrec->colvars_proxy->init(inputrec.get(),inputrec->init_step,&mtop, &observablesHistory, prefix, filenames_colvars,filename_restart, cr, MASTER(cr) ? globalState->x.rvec_array() : nullptr);
++            fr->forceProviders->addForceProvider(inputrec->colvars_proxy);
++        }
++        else
++        {
++            inputrec->bColvars = FALSE;
++            if (opt2bSet("-colvars_restart",filenames.size(), filenames.data()))
++            {
++                gmx_fatal(FARGS, "-colvars_restart can only be used together with the -colvars option.");
++            }
++            if(observablesHistory.colvarsHistory) {
++                gmx_fatal(FARGS,
++                  "The checkpoint is from a run with colvars, "
++                  "but the current run did not specify the -colvars option. "
++                  "Either specify the -colvars option to mdrun, or do not use this checkpoint file.");
++            }
++        }
++
+         if (DOMAINDECOMP(cr))
+         {
+             GMX_RELEASE_ASSERT(fr, "fr was NULL while cr->duty was DUTY_PP");
+@@ -1826,6 +1872,13 @@
+     }
+     releaseDevice(deviceInfo);
+
++    /* COLVARS */
++    if (inputrec->bColvars)
++    {
++        inputrec->colvars_proxy->finish(cr);
++        delete inputrec->colvars_proxy;
++    }
++
+     /* Does what it says */
+     print_date_and_time(fplog, cr->nodeid, "Finished mdrun", gmx_gettime());
+     walltime_accounting_destroy(walltime_accounting);
+diff -aur src/gromacs/mdtypes/colvarshistory.h src_colvars/gromacs/mdtypes/colvarshistory.h
+--- src/gromacs/mdtypes/colvarshistory.h	1970-01-01 01:00:00.000000000 +0100
++++ src_colvars/gromacs/mdtypes/colvarshistory.h	2020-10-02 15:51:47.449214697 +0200
+@@ -0,0 +1,20 @@
++#ifndef GMX_MDLIB_COLVARSHISTORY_H
++#define GMX_MDLIB_COLVARSHISTORY_H
++
++#include "gromacs/math/vectypes.h"
++#include "gromacs/utility/basedefinitions.h"
++
++/* Helper structure to be able to make colvars group(s) whole
++ *
++ * To also make colvars group(s) whole, we save the last whole configuration
++ * of the atoms in the checkpoint file.
++ */
++typedef struct colvarshistory_t
++{
++    gmx_bool         bFromCpt;     // Did we start from a checkpoint file?
++    int              n_atoms; // Number of colvars atoms
++    rvec*            xa_old_whole; // Last known whole positions of the colvars atoms
++    rvec*            xa_old_whole_p; // Pointer to these positions
++} colvarshistory_t;
++
++#endif
+diff -aur src/gromacs/mdtypes/inputrec.h src_colvars/gromacs/mdtypes/inputrec.h
+--- src/gromacs/mdtypes/inputrec.h	2021-05-05 15:57:05.000000000 +0200
++++ src_colvars/gromacs/mdtypes/inputrec.h	2021-07-13 16:26:18.107064850 +0200
+@@ -55,6 +55,8 @@
+ struct gmx_enfrotgrp;
+ struct pull_params_t;
+
++class colvarproxy_gromacs;
++
+ namespace gmx
+ {
+ class Awh;
+@@ -570,6 +572,10 @@
+
+     //! KVT for storing simulation parameters that are not part of the mdp file.
+     std::unique_ptr<gmx::KeyValueTreeObject> internalParameters;
++
++    /* COLVARS */
++    gmx_bool                bColvars;       /* Do we do colvars calculations ? */
++    colvarproxy_gromacs     *colvars_proxy; /* The object for the colvars calculations */
+ };
+
+ int ir_optimal_nstcalcenergy(const t_inputrec* ir);
+diff -aur src/gromacs/mdtypes/observableshistory.cpp src_colvars/gromacs/mdtypes/observableshistory.cpp
+--- src/gromacs/mdtypes/observableshistory.cpp	2021-05-05 15:57:05.000000000 +0200
++++ src_colvars/gromacs/mdtypes/observableshistory.cpp	2021-07-13 16:26:18.107064850 +0200
+@@ -41,6 +41,7 @@
+ #include "gromacs/mdtypes/energyhistory.h"
+ #include "gromacs/mdtypes/pullhistory.h"
+ #include "gromacs/mdtypes/swaphistory.h"
++#include "gromacs/mdtypes/colvarshistory.h"
+
+ ObservablesHistory::ObservablesHistory()  = default;
+ ObservablesHistory::~ObservablesHistory() = default;
+diff -aur src/gromacs/mdtypes/observableshistory.h src_colvars/gromacs/mdtypes/observableshistory.h
+--- src/gromacs/mdtypes/observableshistory.h	2021-05-05 15:57:05.000000000 +0200
++++ src_colvars/gromacs/mdtypes/observableshistory.h	2021-07-13 16:26:18.111064932 +0200
+@@ -59,6 +59,7 @@
+ class PullHistory;
+ struct edsamhistory_t;
+ struct swaphistory_t;
++struct colvarshistory_t;
+
+ /*! \libinternal \brief Observables history, for writing/reading to/from checkpoint file
+  */
+@@ -76,6 +77,9 @@
+     //! Ion/water position swapping history
+     std::unique_ptr<swaphistory_t> swapHistory;
+
++    //! Colvars
++    std::unique_ptr<colvarshistory_t> colvarsHistory;
++
+     ObservablesHistory();
+
+     ~ObservablesHistory();
