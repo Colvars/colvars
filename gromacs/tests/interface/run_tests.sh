@@ -66,6 +66,10 @@ cleanup_files() {
     rm -f *.out *.out.diff # Delete output files regardless
     rm -f *.ndx *.xyz
     rm -f test.dat
+    if [ -f cleanup.sh ]
+    then
+      ./cleanup.sh
+    fi
   done
 }
 
@@ -148,8 +152,14 @@ for dir in ${DIRLIST} ; do
       options="-ntmpi 1 -ntomp 2"
     fi
 
+
+    if [ -f "run.sh" ]
+    then
+      echo "Run special script."
+      ./run.sh
+      output=${basename}
     # Try running the test serial
-    if [ "$restart" = "false" ]
+    elif [ "$restart" = "false" ]
     then
       $COMMAND -s ${script} -deffnm ${basename} -colvars test.dat ${options} &> ${basename}.out
       RETVAL=$?
@@ -192,6 +202,10 @@ for dir in ${DIRLIST} ; do
       fi
     fi
 
+    if [ -f "run.sh" ]
+    then
+      break
+    fi
 
   done
 

@@ -1,9 +1,6 @@
 units gromacs
 colvarsTrajFrequency 1
 
-# Force atom OW 337 to move through the box
-# to create a PBC treatment to be tested.
-
 colvar {
     name d_atoms
     distance {
@@ -13,6 +10,7 @@ colvar {
         group2 {
             atomNumbers 715
         }
+    forceNoPBC
     }
 }
 
@@ -24,10 +22,4 @@ colvar {
             atomNumbers 337
         }
     }
-}
-
-harmonic {
-    colvars d_atoms
-    forceConstant 20000
-    centers 0.6
 }
