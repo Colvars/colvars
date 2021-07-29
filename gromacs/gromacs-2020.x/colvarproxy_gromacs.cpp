@@ -39,8 +39,8 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
                                const std::string &filename_restart,
                                const t_commrec *cr,
                                const rvec x[],
-                               ivec **xshifts_colvars_state,
-                               int* n_colvars_atoms_state) {
+                               rvec **xa_old_whole_colvars_state_p,
+                               int *n_colvars_atoms_state_p) {
 
 
   // Initialize colvars.
@@ -141,10 +141,6 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
     n_colvars_atoms = atoms_ids.size();
     // Copy their global indices
     ind = atoms_ids.data(); // This has to be updated if the vector is reallocated
-
-    //Initialize shifts & number of colvars atoms from the global state
-    snew(*xshifts_colvars_state, n_colvars_atoms);
-    *n_colvars_atoms_state = n_colvars_atoms;
   }
 
 
@@ -159,11 +155,11 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
   }
 
   snew(x_colvars_unwrapped,         n_colvars_atoms);
-  snew(xa_ind,     n_colvars_atoms);
-  snew(xa_shifts,  n_colvars_atoms);
-  snew(xa_eshifts, n_colvars_atoms);
-  snew(xa_old,     n_colvars_atoms);
-  snew(f_colvars,  n_colvars_atoms);
+  snew(xa_ind,       n_colvars_atoms);
+  snew(xa_shifts,    n_colvars_atoms);
+  snew(xa_eshifts,   n_colvars_atoms);
+  snew(xa_old_whole, n_colvars_atoms);
+  snew(f_colvars,    n_colvars_atoms);
 
   // Prepare data
 
@@ -175,7 +171,7 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
        If we dont start with from a .cpt, prepare the colvarsHistory struct for proper .cpt writing,
        If we did start from .cpt, we copy over the last whole structures from .cpt,
        In any case, for subsequent checkpoint writing, we set the pointers (xa_old_whole_p) in
-       the xa_old arrays, which contain the correct PBC representation of
+       the xa_old_whole arrays, which contain the correct PBC representation of
        colvars atoms at the last time step.
       */
 
@@ -183,43 +179,42 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
       {
           oh->colvarsHistory = std::make_unique<colvarshistory_t>(colvarshistory_t{});
       }
-      colvarshistory_t *colvarstate = oh->colvarsHistory.get();
-
-
-      snew(colvarstate->xa_old_whole_p, n_colvars_atoms);
+      colvarshistory_t *colvarshist = oh->colvarsHistory.get();
 
       /* We always need the last whole positions such that
       * in the next time step we can make the colvars atoms whole again in PBC */
-      if (colvarstate->bFromCpt)
+      if (colvarshist->bFromCpt)
       {
           for (int i = 0; i < n_colvars_atoms; i++)
             {
-                copy_rvec(colvarstate->xa_old_whole[i], xa_old[i]);
+                copy_rvec(colvarshist->xa_old_whole[i], xa_old_whole[i]);
             }
       }
       else
       {
-          colvarstate->n_atoms = n_colvars_atoms;
+          colvarshist->n_atoms = n_colvars_atoms;
           for (int i = 0; i < n_colvars_atoms; i++)
           {
               int ii = ind[i];
-              copy_rvec(x[ii], xa_old[i]);
+              copy_rvec(x[ii], xa_old_whole[i]);
           }
       }
 
       /* For subsequent checkpoint writing, set the pointers (xa_old_whole_p) to the xa_old_whole
       * arrays that get updated at every NS step */
-      colvarstate->xa_old_whole_p = xa_old;
+      colvarshist->xa_old_whole_p = xa_old_whole;
 
+      //Initialize number of colvars atoms from the global state
+      *n_colvars_atoms_state_p = n_colvars_atoms;
       // Point the shifts array from the  global state to the local shifts array
-      *xshifts_colvars_state = xa_shifts;
+      *xa_old_whole_colvars_state_p = xa_old_whole;
   }
 
 
   // Communicate initial coordinates and global indices to all processes
   if (PAR(cr))
   {
-    nblock_bc(cr, n_colvars_atoms, xa_old);
+    nblock_bc(cr, n_colvars_atoms, xa_old_whole);
     snew_bc(cr, ind, n_colvars_atoms);
     nblock_bc(cr, n_colvars_atoms, ind);
   }
@@ -454,7 +449,8 @@ void colvarproxy_gromacs::calculateForces(
   // We could check if by chance all atoms are in one node, and skip communication
   communicate_group_positions(cr, x_colvars_unwrapped, xa_shifts, xa_eshifts,
                               gmx_bNS, x_pointer, n_colvars_atoms, nat_loc,
-                              ind_loc, xa_ind, xa_old, gmx_box);
+                              ind_loc, xa_ind, xa_old_whole, gmx_box);
+
 
   // Communicate_group_positions takes care of removing shifts (unwrapping)
   // in single node jobs, communicate_group_positions() is efficient and adds no overhead
