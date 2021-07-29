@@ -42,8 +42,9 @@ fourierspacing          = 0.12      ; grid spacing for FFT
 ;Temperature coupling
 tcoupl                   = v-rescale
 tc-grps                  = System
-ref-t                    = 300
+ref-t                    = 303
 tau-t                    = 1
+ld-seed                  = 4
 
 ; pressure coupling
 pcoupl                   = No

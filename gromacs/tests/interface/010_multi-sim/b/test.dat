@@ -1,0 +1,31 @@
+units gromacs
+colvarsTrajFrequency 1
+
+colvar {
+    name d_atoms
+    distance {
+        group1 {
+            atomNumbers 337
+        }
+        group2 {
+            atomNumbers 715
+        }
+    forceNoPBC
+    }
+}
+
+colvar {
+    name coords_OW_337
+
+    cartesian {
+        atoms {
+            atomNumbers 337
+        }
+    }
+}
+
+harmonic {
+    colvars d_atoms
+    forceConstant 2000
+    centers 2.5
+}

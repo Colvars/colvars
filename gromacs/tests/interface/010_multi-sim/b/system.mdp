@@ -44,6 +44,7 @@ tcoupl                   = v-rescale
 tc-grps                  = System
 ref-t                    = 301
 tau-t                    = 1
+ld-seed                  = 2
 
 ; pressure coupling
 pcoupl                   = No
