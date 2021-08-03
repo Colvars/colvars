@@ -1286,8 +1286,6 @@ int colvarbias_meta::set_state_params(std::string const &state_conf)
 
 std::istream & colvarbias_meta::read_state_data(std::istream& is)
 {
-  bool grids_from_restart_file = use_grids;
-
   if (use_grids) {
 
     if (expand_grids) {
@@ -1332,7 +1330,6 @@ std::istream & colvarbias_meta::read_state_data(std::istream& is)
                !(hills_energy->read_restart(is))) {
       is.clear();
       is.seekg(hills_energy_pos, std::ios::beg);
-      grids_from_restart_file = false;
       if (!rebin_grids) {
         if (hills_energy_backup == NULL)
           cvm::fatal_error("Error: couldn't read the free energy grid for metadynamics bias \""+
@@ -1370,7 +1367,6 @@ std::istream & colvarbias_meta::read_state_data(std::istream& is)
                !(hills_energy_gradients->read_restart(is))) {
       is.clear();
       is.seekg(hills_energy_gradients_pos, std::ios::beg);
-      grids_from_restart_file = false;
       if (!rebin_grids) {
         if (hills_energy_backup == NULL)
           cvm::fatal_error("Error: couldn't read the free energy gradients grid for metadynamics bias \""+
