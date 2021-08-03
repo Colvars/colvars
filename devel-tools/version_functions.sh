@@ -34,8 +34,8 @@ get_colvarproxy_gromacs_version() {
 get_colvarproxy_lammps_version() {
     local commit=$1
     get_colvars_macro "${commit}" COLVARPROXY_VERSION \
-                      lammps/src/USER-COLVARS/colvarproxy_lammps_version.h \
-                      lammps/src/USER-COLVARS/colvarproxy_lammps.h
+                      lammps/src/COLVARS/colvarproxy_lammps_version.h \
+                      lammps/src/COLVARS/colvarproxy_lammps.h
 }
 
 get_colvarproxy_namd_version() {
@@ -174,10 +174,10 @@ update_all_versions() {
                           gromacs/src/colvarproxy_gromacs_version.h \
                           ${branch}
     update_version_string "LAMMPS interface" \
-                          '^lammps/src/USER-COLVARS/colvarproxy\|^lammps/src/USER-COLVARS/fix_colvars\|^src/colvarproxy' \
+                          '^lammps/src/COLVARS/colvarproxy\|^lammps/src/COLVARS/fix_colvars\|^src/colvarproxy' \
                           get_colvarproxy_lammps_version \
                           COLVARPROXY_VERSION \
-                          lammps/src/USER-COLVARS/colvarproxy_lammps_version.h \
+                          lammps/src/COLVARS/colvarproxy_lammps_version.h \
                           ${branch}
     update_version_string "NAMD interface" \
                           '^namd/src/colvarproxy\|^src/colvarproxy' \
@@ -206,7 +206,7 @@ write_all_versions_branch() {
                          ${branch}
     write_version_branch get_colvarproxy_lammps_version \
                          COLVARPROXY_VERSION \
-                         lammps/src/USER-COLVARS/colvarproxy_lammps_version.h \
+                         lammps/src/COLVARS/colvarproxy_lammps_version.h \
                          ${branch}
     write_version_branch get_colvarproxy_namd_version \
                          COLVARPROXY_VERSION \

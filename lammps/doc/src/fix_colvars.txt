@@ -115,7 +115,7 @@ fix is "extensive".
 
 [Restrictions:]
 
-This fix is part of the USER-COLVARS package.  It is only enabled if
+This fix is part of the COLVARS package.  It is only enabled if
 LAMMPS was built with that package.  See the "Build
 package"_Build_package.html doc page for more info.
 
@@ -137,4 +137,4 @@ and tstat = NULL.
 :line
 
 :link(Fiorin)
-[(Fiorin)] Fiorin, Klein, Henin, Mol. Phys., DOI:10.1080/00268976.2013.813594
+[(Fiorin)] Fiorin, Klein, Henin, Mol. Phys. 111, 3345 (2013) https://doi.org/10.1080/00268976.2013.813594
