@@ -146,7 +146,9 @@ for dir in ${DIRLIST} ; do
   # run simulation(s)
   for script in ${SCRIPTS} ; do
 
-    ln -fs ${script} ./
+    if [ ! -f `basename ${script}` ] ; then
+      ln -fs ${script} ./
+    fi
 
     script=`basename ${script}`
     basename=${script%.namd}
