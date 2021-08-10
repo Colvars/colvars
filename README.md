@@ -119,6 +119,9 @@ Other branches are dedicated to the development of specific features: please use
 The specific version of Colvars is identified both in the code and in the documentation by the date of the most recent code revision (e.g. `2021-01-19`). 
 This date is printed to the standard output or log file as soon as Colvars is activated.
 
+A [table mapping software package release versions to Colvars versions is given here](https://github.com/Colvars/colvars/wiki/List-of-Colvars-versions-included-in-simulation-analysis-packages).
+
+
 If you are using a stable release of any of the codes mentioned above, feel free to use the version number of that code when asking questions.
 
 ## Feedback
