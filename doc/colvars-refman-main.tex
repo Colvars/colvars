@@ -579,7 +579,7 @@ For the output files, the prefix of Colvars output files will use the \texttt{-d
 \textbf{Note on PBC wrapping in Gromacs.} Internally, Gromacs handles only PBC-wrapped atom coordinates, which may break the calculation of some variables if their atom groups become split across PBCs.
 To prevent this, Colvars unwraps coordinates throughout the simulation, by assuming that each atom group is intact in the initial coordinates, and canceling any later jumps across the periodic box.
 This information is propagated across restarts, and communicated between replicas when Gromacs is used for replica-exchange simulations. Thus, Colvars is compatible with native replica-exchange in Gromacs.
-}
+} % \cvgromacsonly
 
 \cvtinkerhponly{
 \cvsubsec{Running Colvars in Tinker-HP}{sec:colvars_mdengine_parameters}
@@ -745,7 +745,7 @@ This is most easily done using the Dashboard (section~\ref{sec:dashboard}), but 
 \-\}\\
 \-close~\$\{out\}
 \end{mdexampleinput}
-}
+} % \cvvmdonly
 
 
 \cvsubsubsec{Managing collective variables}{sec:cv_command_colvar}
