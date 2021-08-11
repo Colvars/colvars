@@ -91,6 +91,12 @@ class colvarproxy_lammps : public colvarproxy {
     return my_timestep;
   };    // return _lmp->update->dt * _lmp->force->femtosecond; };
 
+  /// Convert a command-line argument to string
+  char const *script_obj_to_str(unsigned char *obj);
+
+  /// Convert a command-line argument to a vector of strings
+  std::vector<std::string> script_obj_to_str_vector(unsigned char *obj);
+
   void add_energy(cvm::real energy) override { bias_energy += energy; };
   void request_total_force(bool yesno) override { total_force_requested = yesno; };
 

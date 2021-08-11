@@ -35,6 +35,7 @@ colvarscript::colvarscript(colvarproxy *p, colvarmodule *m)
  : proxy_(p),
    colvars(m)
 {
+  cmdline_main_cmd_ = std::string("cv");
   cmd_names = NULL;
   init_commands();
 #ifdef COLVARS_TCL

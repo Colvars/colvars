@@ -503,7 +503,7 @@ int FixColvars::modify_param(int narg, char **arg)
     error_code |=
       script->run(narg+1, reinterpret_cast<unsigned char **>(script_args));
 
-    std::string const result = proxy->get_error_msgs() + script->result;
+    std::string const result = proxy->get_error_msgs() + script->str_result();
     if (result.size()) {
       std::istringstream is(result);
       std::string line;
