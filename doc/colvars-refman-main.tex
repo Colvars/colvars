@@ -5,18 +5,25 @@
 % If you wish to distribute your changes, please submit them to the
 % Colvars repository at GitHub.
 
-% Set flags depending on which engine this manual is compiled for
+
+% Set flags depending on which engine this manual is built for
+
+\cvgromacsonly{
+\def\cvsimulationengine{1} % This backend is a simulation engine
+}
 
 \cvlammpsonly{
-% TODO code not merged yet, only doc
-%\def\cvscriptapi{1} % Supports the scripting API
-%\def\cvscriptcmdapi{1} % Supports command-line scripting (via fix_modify)
+\def\cvsimulationengine{1}
+\def\cvscriptapi{1} % Supports the scripting API
+\def\cvscriptcmdapi{1} % Supports command-line scripting (via fix_modify)
 \newcommand{\cvscriptcmd}{fix\_modify~Colvars}
 }
 
 \cvnamdonly{
+\def\cvsimulationengine{1}
 \def\cvvmdornamd{1}
 \def\cvscriptapi{1}
+\def\cvscriptcallbacks{1} % Supports script callbacks (via Tcl)
 \def\cvscriptcmdapi{1} % Supports command-line scripting (via cv Tcl command)
 \newcommand{\cvscriptcmd}{cv}
 }
@@ -24,6 +31,7 @@
 \cvvmdonly{
 \def\cvvmdornamd{1}
 \def\cvscriptapi{1}
+\def\cvscriptcallbacks{1} % Supports script callbacks (via Tcl)
 \def\cvscriptcmdapi{1}
 \newcommand{\cvscriptcmd}{cv}
 }
@@ -581,6 +589,7 @@ To enable Colvars within a Tinker-HP run, just provide a Colvars configuration f
 
 
 \ifdefined\cvscriptapi{
+
 \cvsubsec{Using the scripting interface to control the Colvars module}{sec:cv_scripting}
 
 After the first initialization of the Colvars module\cvlammpsonly{ (in LAMMPS, this means after defining an instance of \texttt{fix colvars} and the first \texttt{run} command for any number of steps including 0)}, the internal state of Colvars objects may be queried or modified in a \MDENGINE{} script:
@@ -596,7 +605,7 @@ This is done via importing the Python module \texttt{colvars}, which is a pure P
 There is no constraint on how it should be named as a Python variable, and it is only named here \texttt{cv} for simplicity.}\fi % \ifdefined\cvscriptpyapi{}
 
 The most frequent uses of the scripting interface are discussed and exemplified in this section.
-For the full reference documentation of all procedures supported by the Colvars scripting interface, see \ifdefined\cvvmdornamd{section~\ref{sec:cvscript_tcl} for the Tcl command reference}\fi\cvlammpsonly{section~\ref{sec:cvscript_fix_modify} for the options supported by the \texttt{fix\_modify} command}.
+\ifdefined\cvscriptcmdapi{For a full list of commands/subcommands supported by the \ifdefined\cvvmdornamd{\texttt{cv} command}\fi\cvlammpsonly{\texttt{fix\_modify} command}, see section~\ref{sec:cvscript_cmdline}.}\fi
 
 
 \cvsubsubsec{Setting up the Colvars module}{sec:cv_command_init}
@@ -649,6 +658,7 @@ The ``\texttt{version}'' can be used to get the Colvars version for this use:
 \-~~cv~config~"(use~a~recent~feature)"\\
 \-\}
 \end{mdexampleinput}
+}\fi
 
 \cvsubsubsec{Loading and saving the Colvars state and other information}{sec:cv_command_loadsave}
 
@@ -672,7 +682,7 @@ The step number contained by the loaded file will be used internally by Colvars 
 \-cv~configfile~...\\
 \-cv~load~$<$snapshot$>$
 \end{mdexampleinput}
-}
+} % \cvnamdonly
 
 The ``\texttt{save}'' method, analogous to ``\texttt{load}'', allows to save all restart information to a state file.
 This is normally not required during a simulation if \refkey{colvarsRestartFrequency}{Colvars-global|colvarsRestartFrequency} is defined (either directly or indirectly by the \MDENGINE{} restart frequency).
@@ -709,7 +719,7 @@ A simpler way of testing the stability of a Colvars configuration before or duri
 \noindent{}which can be matched to a specific atom via its numeric ID obtained as:
 \cvscriptexampleinputcv{getatomappliedforcesmaxid}{~}
 
-See \ref{sec:cvscript_tcl_cv} for a complete list of scripting commands used to manage atomic data and runtime parameters of he Colvars module.}\fi % End \ifdefined\cvvmdornamd
+\ifdefined\cvscriptcmdapi{See \ref{sec:cvscript_cmdline_cv} for a complete list of scripting commands used to manage atomic data and runtime parameters of the Colvars module.}\fi
 
 \cvvmdonly{
 \cvsubsubsec{Analyzing a trajectory in VMD}{sec:cv_command_vmd_traj}
@@ -764,22 +774,28 @@ If the variable is computed using many components, it is possible to selectively
 
 \textbf{Important:} None of the changes enacted by the ``\texttt{modifycvcs}'' or ``\texttt{cvcflags}'' methods will be saved to state files, and will be lost when restarting a simulation, deleting the corresponding collective variable, or resetting the module with the \cvvmdonly{``\texttt{delete}'' or} ``\texttt{reset}'' method\cvvmdonly{s}.
 
+
 \cvsubsubsec{Applying and analyzing forces on collective variables}{sec:cv_command_colvar_force}
 
-As soon as a collective variable is up to date (during a MD run or after its ``\texttt{update}'' method has been called), forces can be applied to it, e.g.{} as part of a custom restraint implemented by \refkey{scriptedColvarForces}{Colvars-global|scriptedColvarForces}:
+As soon as a colvar ``\texttt{xi}'' and its associated biasing potentials are up to date (i.e.{} during a MD run, or after the respective ``\texttt{update}'' methods have been called), the force applied onto the colvar is known and may be accessed through the \texttt{getappliedforce} method:
+\cvscriptexampleinputcolvar{getappliedforce}{}{"xi"}
+\noindent{}See also the use of the \refkey{outputAppliedForce}{colvar|outputAppliedForce} option to have this force be saved to file during a simulation.
+
+Aside from the biasing methods already implemented within Colvars (\ref{sec:colvarbias}) this force may be incremented \emph{ad hoc}\ifdefined\cvscriptcallbacks{, for example as part of a custom restraint implemented by \refkey{scriptedColvarForces}{Colvars-global|scriptedColvarForces}}\fi:
 \cvscriptexampleinputcolvar{addforce}{$<$force$>$}{"xi"}
 \noindent{}where ``\texttt{$<$force$>$}'' is a scalar or a vector (depending on the type of variable ``\texttt{xi}'') and is defined by the user's function.
-The force will be physically applied to the corresponding atoms during the simulation after Colvars communicates all forces to the rest of \MDENGINE{}.
-\cvvmdonly{(In VMD, these forces will never have an effect.)}
-Until then, the total force applied to ``\texttt{xi}'' from all biases can be retrieved by:
-\cvscriptexampleinputcolvar{getappliedforce}{}{"xi"}
-\noindent{}(see also the use of the \refkey{outputAppliedForce}{colvar|outputAppliedForce} option).
+Afterwards, the \texttt{update} method \texttt{xi} should also be called (see \ref{sec:cv_command_colvar}), so that it will be accounted for and reported to file or via \texttt{getappliedforce}.
+\ifdefined\cvsimulationengine{If \texttt{addforce} is used during a simulation step, the force added by will also be communicated to the corresponding atoms as soon as Colvars communicates all forces to \MDENGINE{}.
+\cvlammpsonly{\emph{Note that in LAMMPS this is currently not possible, because \texttt{fix\_modify} is executed outside the \texttt{run} or \texttt{minimize} commands.}}
+}\fi % \ifdefined\cvsimulationengine
+\cvvmdonly{Note that in VMD, any forces applied via \texttt{addforce} do not have any effect on the movement of atoms: this feature is only available for compatibility.}
 
-To obtain the total force projected on the variable ``\texttt{xi}'':
+For certain types of variable, the force applied directly on a colvar may be combined with those acting \emph{indirectly} on it via the interatomic force field, making up the \emph{total force}.
+When the \refkey{outputTotalForce}{colvar|outputTotalForce} kewyord is enabled, or when a biasing method that makes explicit use of the total force is enabled,  the total force may be obtained as:
 \cvscriptexampleinputcolvar{gettotalforce}{}{"xi"}
-\noindent{}Note that not all types of variable support this option, and the value of the total force may not be available immediately: see \refkey{outputTotalForce}{colvar|outputTotalForce} for more details.
+\noindent{}Note that not all types of variable support total-force computation, and the value of the total force may not be available immediately within the same simulation step: see the documentation of \refkey{outputTotalForce}{colvar|outputTotalForce} for more details.
 
-\ifdefined\cvvmdornamd{See \ref{sec:cvscript_tcl_colvar} for a complete list of scripting commands used to manage collective variables.}\fi
+\ifdefined\cvscriptcmdapi{See \ref{sec:cvscript_cmdline_colvar} for a complete list of scripting commands used to manage collective variables.}\fi
 
 
 \cvsubsubsec{Managing collective variable biases}{sec:cv_command_bias}
@@ -798,7 +814,7 @@ Because a restraint is a relatively light-weight object, the easiest way to chan
 \-{\bfseries\#~Re-define~it,~but~using~an~updated~restraint~center}\\
 \-cv~config~"harmonic~\{\\
 \-~~name~harmonic\_xi\\
-\-~~centers~\$\{new\_center\}]\\
+\-~~centers~\$\{new\_center\}\\
 \-~~...\\
 \-\}"\\
 \-{\bfseries\#~Now~update~it~(based~on~the~current~value~of~"xi")}\\
@@ -812,7 +828,8 @@ It is also possible to make the change subject to a condition on the energy of t
 \-~~~~...\\
 \-\}
 \end{mdexampleinput}
-}
+} % \cvnamdonly
+ 
 
 \cvsubsubsec{Loading and saving the state of individual biases}{sec:cv_command_bias_loadsave}
 
@@ -825,8 +842,7 @@ A corresponding ``\texttt{save}'' function is also available:
 \cvscriptexampleinputbias{save}{"new"}{"metadynamics1"}
 \noindent{}This pair of functions is also used internally by Colvars to implement e.g.{} multiple-walker metadynamics (\ref{sec:colvarbias_meta_mr}), but they can be called from a scripted function to implement alternative coupling schemes.
 
-\ifdefined\cvvmdornamd{See \ref{sec:cvscript_tcl_bias} for a complete list of scripting commands used to manage biases.}\fi
-
+\ifdefined\cvscriptcmdapi{See \ref{sec:cvscript_cmdline_bias} for a complete list of scripting commands used to manage biases.}\fi
 
 }\fi % End \ifdefined\cvscriptapi
 
@@ -1196,10 +1212,10 @@ A collective variable is defined by the keyword \texttt{colvar} followed by its 
 \item A user-defined mathematical function of the existing components (see list in section~\ref{sec:cvc_list}), or of the atomic coordinates directly (see the \texttt{cartesian} keyword in \ref{sec:cvc_cartesian}).
 The function is defined through the keyword \refkey{customFunction}{colvar|customFunction} (see \ref{sec:colvar_custom_function} for details).
 }
-\cvscriptonly{
+\ifdefined\cvscriptcallbacks{
 \item A user-defined Tcl function of the existing components (see list in section~\ref{sec:cvc_list}), or of the atomic coordinates directly (see the \texttt{cartesian} keyword in \ref{sec:cvc_cartesian}).
 The function is provided by a separate Tcl script, and referenced through the keyword \refkey{scriptedFunction}{colvar|scriptedFunction} (see \ref{sec:colvar_scripted} for details).
-}
+}\fi
 \end{itemize}
 Choosing a component (function) is the only parameter strictly required to define a collective variable.
 It is also highly recommended to specify a name for the variable:
@@ -2851,7 +2867,7 @@ $(x_1, y_1, z_1, \cdots, x_n, y_n, z_n)$.
 \labelkey{colvar|distancePairs}
 
 The \texttt{distancePairs~\{...\}} block defines a $N_{\mathrm{1}}\times{}N_{\mathrm{2}}$-dimensional variable that includes all mutual distances between the atoms of two groups.
-This can be useful, for example, to develop a new variable defined over two groups, by using the \texttt{scriptedFunction} feature.
+\ifdefined\cvscriptcallbacks{This can be useful, for example, to develop a new variable defined over two groups, by using the \texttt{scriptedFunction} feature.}\fi
 
 \begin{cvcoptions}
 \item %
@@ -3571,7 +3587,7 @@ These may be defined a custom functions if implemented\cvleptononly{ (see \ref{s
 
 \cvsubsec{Shared keywords for all components}{sec:cvc_common}
 
-The following options can be used for any of the above colvar components in order to obtain a polynomial combination\cvscriptonly{ or any user-supplied function provided by \refkey{scriptedFunction}{sec:cvc_superp}}.
+The following options can be used for any of the above colvar components in order to obtain a polynomial combination\ifdefined\cvscriptcallbacks{ or any user-supplied function provided by \refkey{scriptedFunction}{sec:cvc_superp}}\fi.
 \begin{itemize}
 \item %
   \keydef
@@ -3581,9 +3597,9 @@ The following options can be used for any of the above colvar components in orde
     string}{%
     type of component + numeric id}{%
     The name is an unique case-sensitive string which allows the
-    Colvars module to identify this component. This is useful, for example,
-    when combining multiple components via a \texttt{scriptedFunction}.
-    \cvnamdonly{It also defines the variable name representing the component's value in a \refkey{customFunction}{colvar|customFunction} expression.}}
+    Colvars module to identify this component. 
+    \ifdefined\cvscriptcallbacks{This is useful, for example, when combining multiple components via a \texttt{scriptedFunction}.}\fi
+    \cvleptononly{It also defines the variable name representing the component's value in a \refkey{customFunction}{colvar|customFunction} expression.}}
 
 \item %
   \keydef
@@ -3770,7 +3786,7 @@ Although Lepton is generally available in most applications and builds where Col
   \keydef
     {customFunctionType}{%
     \texttt{colvar}}{%
-    Type of value returned by the scripted colvar}{%
+    Type of value returned by the custom function}{%
     string}{%
     \texttt{scalar}}{%
     With this flag, the user may specify whether the
@@ -3862,7 +3878,7 @@ select & $\mathrm{select}(x, y, z) = z$ if $x=0$, $y$ otherwise\\
 }
 
 
-\cvscriptonly{
+\ifdefined\cvscriptcallbacks{
 \cvsubsec{Scripted functions}{sec:colvar_scripted}
 When scripting is supported\cvnamdonly{ (default in NAMD)}\cvvmdonly{ (default in VMD)},
 a colvar may be defined as a scripted function of its components,
@@ -3931,7 +3947,7 @@ form of path-based collective variables as defined by Branduardi et al\cite{Bran
     set to \texttt{vector}. It defines the vector length of the colvar value
     returned by the function.}
 \end{itemize}
-} % \cvscriptonly
+}\fi % \ifdefined\cvscriptcallbacks
 
 
 
@@ -6825,7 +6841,7 @@ The accumulated histogram is written in the Colvars state file, allowing for its
     Treat vector variables as multiple observations of a scalar variable?}{%
     UNIX filename}{%
     \texttt{off}}{%
-    When this is set to \texttt{on}, the components of a multi-dimensional colvar (e.g.~one based on \texttt{cartesian}, \texttt{distancePairs}, or a vector of scalar numbers given by \texttt{scriptedFunction}) are treated as multiple observations of a scalar variable.
+    When this is set to \texttt{on}, the components of a multi-dimensional colvar (e.g.~one based on \texttt{cartesian}, \texttt{distancePairs}\ifdefined\cvscriptcallbacks{, or a vector of scalar numbers given by \texttt{scriptedFunction}}\fi) are treated as multiple observations of a scalar variable.
     This results in the histogram being accumulated multiple times for each simulation step\cvvmdonly{ or iteration of \texttt{cv update}}).
     When multiple vector variables are included in \texttt{histogram}, these must have the same length because their components are accumulated together.
     For example, if $\xi$, $\lambda$ and $\tau$ are three variables of dimensions 5, 5 and 1, respectively, for each iteration 5 triplets $(\xi_{i},\lambda_{i},\tau)$ ($i = 1, \ldots 5$) are accumulated into a 3-dimensional histogram.
@@ -7019,7 +7035,7 @@ The list of options is as follows:
 \end{itemize}
 
 
-\cvscriptonly{%
+\ifdefined\cvscriptcallbacks{
 \cvsubsec{Defining scripted biases}{sec:scripted_biases}
 
 Rather than using the biasing methods described above, it is possible to apply biases
@@ -7075,14 +7091,22 @@ The following options allow to fine-tune this schedule:
     to increase performance.}
 \end{itemize}
 
-}
+}\fi % \ifdefined\cvscriptcallbacks
 
 
-\cvscriptonly{
-\cvsec{Scripting interface (Tcl): list of commands}{sec:cvscript_tcl}
+\ifdefined\cvvmdornamd{
+\cvsec{Tcl command-line interface: list of commands}{sec:cvscript_cmdline}
 This section lists all the commands used in \MDENGINE{} to control the behavior of the Colvars module from within a run script.
 
 \input{cvscript-tcl.tex}
+}\fi
+
+
+\cvlammpsonly{
+\cvsec{\texttt{fix\_modify} command-line interface: list of commands}{sec:cvscript_cmdline}
+This section lists all the commands used in \MDENGINE{} to control the behavior of the Colvars module from within a run script using the \texttt{fix\_modify} command.
+
+\input{cvscript-fix-modify.tex}
 }
 
 
