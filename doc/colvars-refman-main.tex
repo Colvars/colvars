@@ -500,6 +500,10 @@ Altogether, the two files hold the required information to restart the simulatio
 It is also highly recommended to read checkpoint files that were written by the same major version of Gromacs (as is the case with unmodified Gromacs).
 
 For the output files, the prefix of Colvars output files will use the \texttt{-defnnm} option of mdrun, or be the same as the Gromacs log file if the option is not set.  Otherwise, the prefix will be \emph{output}.
+
+\textbf{Note on PBC wrapping in Gromacs.} Internally, Gromacs handles only PBC-wrapped atom coordinates, which may break the calculation of some variables if their atom groups become split across PBCs.
+To prevent this, Colvars unwraps coordinates throughout the simulation, by assuming that each atom group is intact in the initial coordinates, and canceling any later jumps across the periodic box.
+This information is propagated across restarts, and communicated between replicas when Gromacs is used for replica-exchange simulations. Thus, Colvars is compatible with native replica-exchange in Gromacs.
 }
 
 
