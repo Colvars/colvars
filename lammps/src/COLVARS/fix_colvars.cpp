@@ -496,7 +496,8 @@ int FixColvars::modify_param(int narg, char **arg)
 
     int error_code = COLVARSCRIPT_OK;
     colvarscript *script = proxy->script;
-    /* The first argument is "fix_modify ID", set in the constructor */
+    /* The first argument is "fix_modify ID", already set in the constructor */
+    script->set_cmdline_main_cmd(script_args[0]);
     for (int i = 0; i < narg; i++) {
       script_args[i+1] = arg[i];
     }
