@@ -45,6 +45,7 @@
 
 #include "colvarproxy_lammps.h"
 #include "colvarmodule.h"
+#include "colvarscript.h"
 
 
 /* struct for packed data communication of coordinates and forces. */
@@ -334,6 +335,11 @@ FixColvars::FixColvars(LAMMPS *lmp, int narg, char **arg) :
   proxy = nullptr;
   idmap = nullptr;
 
+  /* Set the first argument to the command used in the LAMMPS input */
+  script_args[0] = strdup("");
+  strcat(script_args[0], "fix_modify ");
+  strcat(script_args[0], id);
+
   /* storage required to communicate a single coordinate or force. */
   size_one = sizeof(struct commdata);
 }
@@ -475,31 +481,39 @@ void FixColvars::one_time_init()
 
 int FixColvars::modify_param(int narg, char **arg)
 {
-  if (strcmp(arg[0],"configfile") == 0) {
-    if (narg < 2) error->all(FLERR,"Illegal fix_modify command");
-    if (me == 0) {
-      if (! proxy)
-        error->one(FLERR,"Cannot use fix_modify before initialization");
-      return proxy->add_config_file(arg[1]) == COLVARS_OK ? 2 : 0;
+  if (me == 0) {
+
+    if (! proxy) {
+      error->one(FLERR,
+                 "Cannot use fix_modify for Colvars before initialization");
+      return 2;
     }
-    return 2;
-  } else if (strcmp(arg[0],"config") == 0) {
-    if (narg < 2) error->all(FLERR,"Illegal fix_modify command");
-    if (me == 0) {
-      if (! proxy)
-        error->one(FLERR,"Cannot use fix_modify before initialization");
-      std::string const conf(arg[1]);
-      return proxy->add_config_string(conf) == COLVARS_OK ? 2 : 0;
+
+    if (narg > 100) {
+      error->one(FLERR, "Too many arguments for fix_modify command");
+      return 2;
     }
-    return 2;
-  } else if (strcmp(arg[0],"load") == 0) {
-    if (narg < 2) error->all(FLERR,"Illegal fix_modify command");
-    if (me == 0) {
-      if (! proxy)
-        error->one(FLERR,"Cannot use fix_modify before initialization");
-      return proxy->read_state_file(arg[1]) == COLVARS_OK ? 2 : 0;
+
+    int error_code = COLVARSCRIPT_OK;
+    colvarscript *script = proxy->script;
+    /* The first argument is "fix_modify ID", set in the constructor */
+    for (int i = 0; i < narg; i++) {
+      script_args[i+1] = arg[i];
     }
-    return 2;
+    error_code |=
+      script->run(narg+1, reinterpret_cast<unsigned char **>(script_args));
+
+    std::string const result = proxy->get_error_msgs() + script->result;
+    if (result.size()) {
+      std::istringstream is(result);
+      std::string line;
+      while (std::getline(is, line)) {
+        if (lmp->screen) fprintf(lmp->screen, "%s\n", line.c_str());
+        if (lmp->logfile) fprintf(lmp->logfile, "%s\n", line.c_str());
+      }
+    }
+
+    return (error_code == COLVARSCRIPT_OK) ? narg : 0;
   }
   return 0;
 }

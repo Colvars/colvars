@@ -80,6 +80,9 @@ class FixColvars : public Fix {
   struct commdata *comm_buf;    // communication buffer
   double *force_buf;            // communication buffer
 
+  /// Arguments passed from fix_modify to the Colvars script interface
+  char *script_args[100];
+
   void *idmap;       // hash for mapping atom indices to consistent order.
   int *rev_idmap;    // list of the hash keys for reverse mapping.
 
