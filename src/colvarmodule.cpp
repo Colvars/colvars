@@ -66,7 +66,7 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
 #else
   cvm::log("This version was built without the C++11 standard: some features are disabled.\n"
     "Please see the following link for details:\n"
-    "https://colvars.github.io/README-c++11.html");
+    "https://colvars.github.io/README-c++11.html\n");
 #endif
 
   // set initial default values
