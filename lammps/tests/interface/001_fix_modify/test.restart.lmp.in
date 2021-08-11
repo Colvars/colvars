@@ -1,0 +1,77 @@
+# -*- lammps -*-
+
+include ../common/charmmff.lmp.in
+
+read_data  test.lmp.data
+
+include ../common/fixes.lmp.in
+
+fix Colvars all colvars test.in input test output test.restart
+
+run 0 post no
+
+fix_modify Colvars config """
+harmonic {
+    colvars        one
+    centers        0.1
+    forceConstant  0.001
+}
+"""
+
+echo screen
+
+log test.restart.script.1.out
+
+print ""
+print "Number of active atoms:"
+fix_modify Colvars getnumactiveatoms
+print "Active atom IDs:"
+fix_modify Colvars getatomids
+
+print "Updating the restraint, the updated energy is:"
+fix_modify Colvars bias harmonic1 update
+print "Energy of the restraint:"
+fix_modify Colvars bias harmonic1 energy
+print "Update the variable again, the returned value is:"
+fix_modify Colvars colvar one update
+print "Value of the variable:"
+fix_modify Colvars colvar one value
+print "Applied force on the variable:"
+fix_modify Colvars colvar one getappliedforce
+print "Increment applied force (note: will not be added to atoms outside a run):"
+fix_modify Colvars colvar one addforce 1.5
+print "Update the variable again:"
+fix_modify Colvars colvar one update
+print "Applied force again:"
+fix_modify Colvars colvar one getappliedforce
+
+
+log log.lammps
+
+include ../common/md.lmp.in
+
+log test.restart.script.2.out
+
+print "Number of active atoms:"
+fix_modify Colvars getnumactiveatoms
+print "Active atom IDs:"
+fix_modify Colvars getatomids
+
+print "Value of the variable:"
+fix_modify Colvars colvar one value
+print "Applied force on the variable:"
+fix_modify Colvars colvar one getappliedforce
+print "Energy of the restraint:"
+fix_modify Colvars bias harmonic1 energy
+
+print "Reset the module:"
+fix_modify Colvars reset
+
+log log.lammps
+
+write_data test.restart.lmp.data
+
+shell rm -f "index.ndx"
+shell rm -f "rmsd_atoms_refpos.xyz"
+shell rm -f "heavy_atoms_refpos.xyz"
+shell rm -f "rmsd_atoms_random.xyz"

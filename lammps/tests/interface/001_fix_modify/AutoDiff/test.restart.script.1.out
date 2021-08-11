@@ -1,0 +1,21 @@
+
+Number of active atoms:
+8
+Active atom IDs:
+1 4 10 11 12 14 20 21
+Updating the restraint, the updated energy is:
+1.94597640089952e-02
+Energy of the restraint:
+0.0194598
+Update the variable again, the returned value is:
+3.21927587822841e+00
+Value of the variable:
+3.21927587822841e+00
+Applied force on the variable:
+0.00000000000000e+00
+Increment applied force (note: will not be added to atoms outside a run):
+1.50000000000000e+00
+Update the variable again:
+3.21927587822841e+00
+Applied force again:
+1.50000000000000e+00
