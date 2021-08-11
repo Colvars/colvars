@@ -45,10 +45,11 @@
 
 \definecolor{mdexample-border-color}{rgb}{1.0,0.6,0.1}
 \definecolor{mdexample-background-color}{rgb}{1.0,0.96,0.9}
-\newenvironment{mdexampleinput}{%
+\newenvironment{mdexampleinput}[1]{%
   \begin{mdframed}[%
       linecolor=mdexample-border-color,linewidth=2pt,%
       backgroundcolor=mdexample-background-color]
+  \textbf{#1}
   \ifdefined\HCode\HCode{<pre>}\else\begin{ttfamily}\fi}{%
   \ifdefined\HCode\HCode{</pre>}\else\end{ttfamily}\fi
   \end{mdframed}
