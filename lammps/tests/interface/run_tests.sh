@@ -29,3 +29,5 @@ do \
         fi
     done
 done
+
+../library/run_tests.sh "$@"
