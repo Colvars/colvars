@@ -1,0 +1,47 @@
+# -*- lammps -*-
+
+include ../common/charmmff.lmp.in
+
+read_data  test.lmp.data
+
+include ../common/fixes.lmp.in
+
+fix Colvars all colvars test.in input test output test.restart
+
+run 0 post no
+
+fix_modify Colvars config """
+harmonic {
+    colvars        one
+    centers        0.1
+    forceConstant  0.001
+}
+"""
+
+log test.restart.script.out
+
+print "Update the restraint:"
+fix_modify Colvars bias harmonic1 update
+print "Print the energy of the restraint:"
+fix_modify Colvars bias harmonic1 energy
+print "Update the variable again:"
+fix_modify Colvars colvar one update
+print "Print the applied force:"
+fix_modify Colvars colvar one getappliedforce
+print "Increment applied force (note: won't be added to atoms outside a run):"
+fix_modify Colvars colvar one addforce 1.5
+print "Update the variable again:"
+fix_modify Colvars colvar one update
+print "Print the applied force again:"
+fix_modify Colvars colvar one getappliedforce
+
+log log.lammps
+
+include ../common/md.lmp.in
+
+write_data test.restart.lmp.data
+
+shell rm -f "index.ndx"
+shell rm -f "rmsd_atoms_refpos.xyz"
+shell rm -f "heavy_atoms_refpos.xyz"
+shell rm -f "rmsd_atoms_random.xyz"

@@ -1,0 +1,1 @@
+Reference files from ../library/000_distance_harmonic-fixed, patched to add the 0-step initialization before adding the bias

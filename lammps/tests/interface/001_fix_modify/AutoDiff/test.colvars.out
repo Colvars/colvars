@@ -1,0 +1,129 @@
+colvars: Creating proxy instance
+colvars: ----------------------------------------------------------------------
+colvars: Please cite Fiorin et al, Mol Phys 2013:
+colvars:  https://dx.doi.org/10.1080/00268976.2013.813594
+colvars: in any publication based on this calculation.
+colvars: This version was built with the C++11 standard or higher.
+colvars: Using LAMMPS interface, version "2019-08-17".
+colvars: ----------------------------------------------------------------------
+colvars: Reading new configuration from file "test.in":
+colvars: # indexFile = "index.ndx"
+colvars: The following index groups were read from the index file "index.ndx":
+colvars:   Protein (104 atoms).
+colvars:   Protein_noH (51 atoms).
+colvars:   Protein_Backbone (40 atoms).
+colvars:   Protein_C-alpha (10 atoms).
+colvars:   RMSD_atoms (10 atoms).
+colvars:   Protein_C-alpha_1_2 (2 atoms).
+colvars:   Protein_C-alpha_9_10 (2 atoms).
+colvars:   Protein_C-alpha_1 (1 atoms).
+colvars:   group1 (4 atoms).
+colvars:   Protein_C-alpha_2 (1 atoms).
+colvars:   group2 (4 atoms).
+colvars:   Protein_C-alpha_3 (1 atoms).
+colvars:   group3 (4 atoms).
+colvars:   Protein_C-alpha_4 (1 atoms).
+colvars:   group4 (4 atoms).
+colvars:   Protein_C-alpha_5 (1 atoms).
+colvars:   group5 (4 atoms).
+colvars:   Protein_C-alpha_6 (1 atoms).
+colvars:   group6 (4 atoms).
+colvars:   Protein_C-alpha_7 (1 atoms).
+colvars:   group7 (4 atoms).
+colvars:   Protein_C-alpha_8 (1 atoms).
+colvars:   group8 (4 atoms).
+colvars:   Protein_C-alpha_9 (1 atoms).
+colvars:   group9 (4 atoms).
+colvars:   Protein_C-alpha_10 (1 atoms).
+colvars:   group10 (4 atoms).
+colvars:   heavy_atoms (51 atoms).
+colvars: # smp = on [default]
+colvars: # colvarsTrajFrequency = 1
+colvars: # colvarsRestartFrequency = 10
+colvars: # scriptedColvarForces = off [default]
+colvars: # scriptingAfterBiases = off [default]
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = "one"
+colvars:   Initializing a new "distance" component.
+colvars:     # name = "" [default]
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
+colvars:       Initializing atom group "group1".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "group1"
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group1" defined with 4 atoms requested.
+colvars:       Initializing atom group "group2".
+colvars:       # name = "" [default]
+colvars:       # centerReference = off [default]
+colvars:       # rotateReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "group2"
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableForces = on [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group2" defined with 4 atoms requested.
+colvars:     # oneSiteSystemForce = off [default]
+colvars:     # oneSiteTotalForce = off [default]
+colvars:   All components initialized.
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # width = 0.5
+colvars:   # lowerBoundary = 0 [default]
+colvars:   # upperBoundary = 0 [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = off [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputTotalForce = off [default]
+colvars:   # outputAppliedForce = on
+colvars:   # subtractAppliedForce = off [default]
+colvars:   # runAve = off [default]
+colvars:   # corrFunc = off [default]
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables initialized, 1 in total.
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new "harmonic" instance.
+colvars:   # name = "harmonic1" [default]
+colvars:   # colvars = { one }
+colvars:   # outputEnergy = off [default]
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # writeTISamples = off [default]
+colvars:   # writeTIPMF = off [default]
+colvars:   # centers = { 0.1 }
+colvars:   # targetCenters = { 0.1 } [default]
+colvars:   # outputCenters = off [default]
+colvars:   # forceConstant = 0.001
+colvars:   # targetForceConstant = -1 [default]
+colvars:   The force constant for colvar "one" will be rescaled to 0.004 according to the specified width (0.5).
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables biases initialized, 1 in total.
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables module (re)initialized.
+colvars: ----------------------------------------------------------------------
+colvars: The restart output state file will be "rest.colvars.state".
+colvars: The final output state file will be "test.colvars.state".
+colvars: Writing to colvar trajectory file "test.colvars.traj".
+colvars: Re-initialized atom group for variable "one":0/0. 4 atoms: total mass = 54.028, total charge = -0.72.
+colvars: Re-initialized atom group for variable "one":0/1. 4 atoms: total mass = 54.028, total charge = -0.4.
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "rest.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "rest.colvars.state".
+colvars: Saving collective variables state to "test.colvars.state".
+colvars: Resetting the Collective Variables module.

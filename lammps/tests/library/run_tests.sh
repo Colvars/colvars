@@ -115,7 +115,7 @@ for dir in ${DIRLIST} ; do
   cleanup_files
 
   if ls | grep -q \.lmp.in ; then
-    SCRIPTS=`ls -1 *lmp.in | grep -v legacy`
+    SCRIPTS=`ls -1 *lmp.in`
   else
     SCRIPTS="../common/test.lmp.in ../common/test.restart.lmp.in"
   fi
@@ -189,7 +189,7 @@ for dir in ${DIRLIST} ; do
       sed 's/fs_/ft_/g' < ${base} > ${TMPDIR}/${base}
       mv -f ${TMPDIR}/${base} ${base}
     fi
-    spiff -r 1e-${DIFF_PREC} $f $base > "$base.diff"
+    ${SPIFF} -r 1e-${DIFF_PREC} $f $base > "$base.diff"
     RETVAL=$?
     if [ $RETVAL -ne 0 ]
     then

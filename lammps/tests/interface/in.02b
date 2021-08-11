@@ -2,9 +2,14 @@
 # Validated: 13 February 2019-IBPC
 include inc.minimal
 fix f1 all colvars minimal.cfg unwrap yes output 02b
+variable CV string "fix_modify f1"
 
 run 0 post no
 
-fix_modify f1 configfile harmonic.cfg # should work
+print "Colvars scripting commands:"
+${CV} help
+print ""
+
+${CV} configfile harmonic.cfg # should work
 
 run 0 post no

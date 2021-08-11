@@ -10,6 +10,7 @@
 
 
 #include "colvarproxy_lammps.h"
+#include "colvarscript.h"
 #include <mpi.h>
 #include <sys/stat.h>
 #include <cerrno>
@@ -21,6 +22,7 @@
 #include "lammps.h"
 #include "error.h"
 #include "output.h"
+#include "utils.h"
 #include "random_park.h"
 
 #include "colvarmodule.h"
@@ -127,6 +129,9 @@ void colvarproxy_lammps::init(const char *conf_file)
 
   // create the colvarmodule instance
   colvars = new colvarmodule(this);
+
+  // Create instance of scripting interface
+  script = new colvarscript(this);
 
   cvm::log("Using LAMMPS interface, version "+
            cvm::to_str(COLVARPROXY_VERSION)+".\n");
@@ -327,6 +332,24 @@ void colvarproxy_lammps::error(std::string const &message)
   _lmp->error->one(FLERR,
                    "Fatal error in the collective variables module.\n");
 }
+
+
+char const *colvarproxy_lammps::script_obj_to_str(unsigned char *obj)
+{
+  // For now we assume that all objects passed by FixColvars are strings
+  return reinterpret_cast<char *>(obj);
+}
+
+
+std::vector<std::string> colvarproxy_lammps::script_obj_to_str_vector(unsigned char *obj)
+{
+  if (cvm::debug()) {
+    cvm::log("Called colvarproxy_lammps::script_obj_to_str_vector().\n");
+  }
+  std::string const input(reinterpret_cast<char *>(obj));
+  return LAMMPS_NS::utils::split_words(input); // :-)))
+}
+
 
 
 int colvarproxy_lammps::set_unit_system(std::string const &units_in, bool /*check_only*/)

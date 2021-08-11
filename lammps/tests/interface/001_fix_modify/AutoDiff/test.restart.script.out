@@ -1,0 +1,31 @@
+
+print "Update the restraint:"
+Update the restraint:
+fix_modify Colvars bias harmonic1 update
+1.94597640089952e-02
+print "Print the energy of the restraint:"
+Print the energy of the restraint:
+fix_modify Colvars bias harmonic1 energy
+0.0194598
+print "Update the variable again:"
+Update the variable again:
+fix_modify Colvars colvar one update
+3.21927587822841e+00
+print "Print the applied force:"
+Print the applied force:
+fix_modify Colvars colvar one getappliedforce
+0.00000000000000e+00
+print "Increment applied force (note: won't be added to atoms outside a run):"
+Increment applied force (note: won't be added to atoms outside a run):
+fix_modify Colvars colvar one addforce 1.5
+1.50000000000000e+00
+print "Update the variable again:"
+Update the variable again:
+fix_modify Colvars colvar one update
+3.21927587822841e+00
+print "Print the applied force again:"
+Print the applied force again:
+fix_modify Colvars colvar one getappliedforce
+1.50000000000000e+00
+
+log log.lammps
