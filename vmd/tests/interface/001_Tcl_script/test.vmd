@@ -33,4 +33,4 @@ for { set frame 0 } { ${frame} < [molinfo top get numframes] } { incr frame } {
 }
 close ${out}
 
-quit
+#quit
