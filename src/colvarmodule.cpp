@@ -2317,6 +2317,15 @@ int colvarmodule::usage::cite_paper(std::string const &paper)
 std::string colvarmodule::usage::report(int flag)
 {
   std::string result;
+  if (flag == 0) {
+    // Text
+    result += "SUMMARY OF COLVARS FEATURES USED SO FAR AND THEIR CITATIONS:\n";
+  }
+  if (flag == 1) {
+    // LAMMPS log friendly (one-line summary, lowercase message)
+    result += "Colvars module (Fiorin2013, plus other works listed for specific features)\n\n";
+  }
+
   std::map<std::string, int>::iterator p_iter = paper_count_.begin();
   for ( ; p_iter != paper_count_.end(); p_iter++) {
     std::string const paper = p_iter->first;
@@ -2345,11 +2354,6 @@ std::string colvarmodule::usage::report(int flag)
         result += paper_bibtex_[paper] + "\n";
       }
     }
-  }
-
-  if (result.size() > 0) {
-    return "\n\nSUMMARY OF COLVARS FEATURES USED SO FAR AND THEIR CITATIONS:\n" +
-      result + "\n";
   }
 
   return result;
