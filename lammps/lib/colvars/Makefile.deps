@@ -58,6 +58,21 @@ $(COLVARS_OBJ_DIR)colvarbias_histogram.o: colvarbias_histogram.cpp \
  lepton/include/lepton/Exception.h \
  lepton/include/lepton/ParsedExpression.h lepton/include/lepton/Parser.h \
  colvarbias_histogram.h colvarbias.h colvargrid.h
+$(COLVARS_OBJ_DIR)colvarbias_histogram_reweight_amd.o: \
+ colvarbias_histogram_reweight_amd.cpp \
+ colvarbias_histogram_reweight_amd.h colvarbias_histogram.h colvarbias.h \
+ colvar.h colvarmodule.h colvars_version.h colvarvalue.h colvartypes.h \
+ colvarparse.h colvarparams.h colvardeps.h lepton/include/Lepton.h \
+ lepton/include/lepton/CompiledExpression.h \
+ lepton/include/lepton/ExpressionTreeNode.h \
+ lepton/include/lepton/windowsIncludes.h \
+ lepton/include/lepton/CustomFunction.h \
+ lepton/include/lepton/ExpressionProgram.h \
+ lepton/include/lepton/ExpressionTreeNode.h \
+ lepton/include/lepton/Operation.h lepton/include/lepton/CustomFunction.h \
+ lepton/include/lepton/Exception.h \
+ lepton/include/lepton/ParsedExpression.h lepton/include/lepton/Parser.h \
+ colvargrid.h colvarproxy.h colvarproxy_tcl.h colvarproxy_volmaps.h
 $(COLVARS_OBJ_DIR)colvarbias_meta.o: colvarbias_meta.cpp colvarmodule.h \
  colvars_version.h colvarproxy.h colvartypes.h colvarvalue.h \
  colvarproxy_tcl.h colvarproxy_volmaps.h colvar.h colvarparse.h \
@@ -87,9 +102,9 @@ $(COLVARS_OBJ_DIR)colvarbias_restraint.o: colvarbias_restraint.cpp \
  lepton/include/lepton/Exception.h \
  lepton/include/lepton/ParsedExpression.h lepton/include/lepton/Parser.h
 $(COLVARS_OBJ_DIR)colvarcomp_alchlambda.o: colvarcomp_alchlambda.cpp \
- colvarmodule.h colvars_version.h colvar.h colvarvalue.h colvartypes.h \
- colvarparse.h colvarparams.h colvardeps.h lepton/include/Lepton.h \
- lepton/include/lepton/CompiledExpression.h \
+ colvarmodule.h colvars_version.h colvarvalue.h colvartypes.h \
+ colvarparse.h colvarparams.h colvar.h colvardeps.h \
+ lepton/include/Lepton.h lepton/include/lepton/CompiledExpression.h \
  lepton/include/lepton/ExpressionTreeNode.h \
  lepton/include/lepton/windowsIncludes.h \
  lepton/include/lepton/CustomFunction.h \
@@ -275,7 +290,8 @@ $(COLVARS_OBJ_DIR)colvarmodule.o: colvarmodule.cpp colvarmodule.h \
  lepton/include/lepton/Exception.h \
  lepton/include/lepton/ParsedExpression.h lepton/include/lepton/Parser.h \
  colvarbias.h colvarbias_abf.h colvargrid.h colvar_UIestimator.h \
- colvarbias_alb.h colvarbias_histogram.h colvarbias_meta.h \
+ colvarbias_alb.h colvarbias_histogram.h \
+ colvarbias_histogram_reweight_amd.h colvarbias_meta.h \
  colvarbias_restraint.h colvarscript.h colvarscript_commands.h \
  colvarscript_commands_colvar.h colvarscript_commands_bias.h \
  colvaratoms.h colvarcomp.h colvar_arithmeticpath.h \
@@ -374,6 +390,6 @@ $(COLVARS_OBJ_DIR)colvarscript_commands_colvar.o: \
  colvarscript_commands_bias.h
 $(COLVARS_OBJ_DIR)colvartypes.o: colvartypes.cpp colvarmodule.h \
  colvars_version.h colvartypes.h colvarparse.h colvarvalue.h \
- colvarparams.h ../../src/math_eigen.h
+ colvarparams.h ../../src/math_eigen_impl.h
 $(COLVARS_OBJ_DIR)colvarvalue.o: colvarvalue.cpp colvarmodule.h \
  colvars_version.h colvarvalue.h colvartypes.h

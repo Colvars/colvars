@@ -28,6 +28,7 @@ COLVARS_SRCS = \
         colvarbias_alb.cpp \
         colvarbias.cpp \
         colvarbias_histogram.cpp \
+        colvarbias_histogram_reweight_amd.cpp \
         colvarbias_meta.cpp \
         colvarbias_restraint.cpp \
         colvarcomp_alchlambda.cpp \
