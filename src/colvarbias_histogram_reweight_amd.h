@@ -18,9 +18,15 @@ class colvarbias_reweightaMD : public colvarbias_histogram {
 public:
   colvarbias_reweightaMD(char const *key);
   virtual ~colvarbias_reweightaMD();
+#if (__cplusplus >= 201103L)
+  virtual int init(std::string const &conf) override;
+  virtual int update() override;
+  virtual int write_output_files() override;
+#else
   virtual int init(std::string const &conf);
   virtual int update();
   virtual int write_output_files();
+#endif
 
   /// @brief convert histogram to PMF by taking logarithm and multiplying
   ///        it with -1/beta
@@ -80,8 +86,13 @@ protected:
   bool b_write_gradients;
 
   /// save and restore
+#if (__cplusplus >= 201103L)
   virtual std::istream & read_state_data(std::istream &is) override;
   virtual std::ostream & write_state_data(std::ostream &os) override;
+#else
+  virtual std::istream & read_state_data(std::istream &is);
+  virtual std::ostream & write_state_data(std::ostream &os);
+#endif
 private:
   /// temporary grids for evaluating PMFs
   colvar_grid_scalar  *pmf_grid_exp_avg;
