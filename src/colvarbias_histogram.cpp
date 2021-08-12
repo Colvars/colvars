@@ -12,8 +12,6 @@
 #include "colvar.h"
 #include "colvarbias_histogram.h"
 
-#include <algorithm>
-#include <numeric>
 
 colvarbias_histogram::colvarbias_histogram(char const *key)
   : colvarbias(key),
