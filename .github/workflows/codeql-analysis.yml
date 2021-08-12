@@ -27,6 +27,9 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
+    - name: Test build recipes
+      run: bash devel-tools/check_build_recipes
+
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v1
       with:
