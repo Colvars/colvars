@@ -9,6 +9,8 @@
 
 #include <sstream>
 #include <cstring>
+#include <vector>
+#include <map>
 
 #include "colvarmodule.h"
 #include "colvarparse.h"
@@ -26,6 +28,44 @@
 #include "colvarcomp.h"
 
 
+
+/// Track usage of Colvars features
+class colvarmodule::usage {
+
+public:
+
+  /// Constructor
+  usage();
+
+  /// Increment usage count for the given feature; return error if not found
+  int cite_feature(std::string const &feature);
+
+  /// Increment usage count for the given paper; return error if not found
+  int cite_paper(std::string const &paper);
+
+  /// Generate a report for used features (0 = URL, 1 = BibTeX)
+  std::string report(int flag);
+
+protected:
+
+  /// Usage count for each feature
+  std::map<std::string, int> feature_count_;
+
+  /// Usage count for each cited paper
+  std::map<std::string, int> paper_count_;
+
+  /// URL for each paper
+  std::map<std::string, std::string> paper_url_;
+
+  /// BibTeX entry for each paper
+  std::map<std::string, std::string> paper_bibtex_;
+
+  /// Map code features to the relevant papers
+  std::map<std::string, std::string> feature_paper_map_;
+
+};
+
+
 colvarmodule::colvarmodule(colvarproxy *proxy_in)
 {
   depth_s = 0;
@@ -37,6 +77,9 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
 
   restart_version_str.clear();
   restart_version_int = 0;
+
+  usage_ = new usage();
+  usage_->cite_feature("Colvars module");
 
   if (proxy == NULL) {
     proxy = proxy_in; // Pointer to the proxy object
@@ -53,9 +96,9 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
   cvm::log(cvm::line_marker);
   cvm::log("Initializing the collective variables module, version "+
            version()+".\n");
-  cvm::log("Please cite Fiorin et al, Mol Phys 2013:\n "
-           "https://dx.doi.org/10.1080/00268976.2013.813594\n"
-           "in any publication based on this calculation.\n");
+  cvm::log("Please cite Fiorin et al, Mol Phys 2013:\n"
+           "  https://doi.org/10.1080/00268976.2013.813594\n"
+           "as well as all other papers listed below for individual features used.\n");
 
   if (proxy->smp_enabled() == COLVARS_OK) {
     cvm::log("SMP parallelism is enabled; if needed, use \"smp off\" to override this.\n");
@@ -66,7 +109,7 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
 #else
   cvm::log("This version was built without the C++11 standard: some features are disabled.\n"
     "Please see the following link for details:\n"
-    "https://colvars.github.io/README-c++11.html\n");
+    "  https://colvars.github.io/README-c++11.html\n");
 #endif
 
   // set initial default values
@@ -1162,6 +1205,8 @@ colvarmodule::~colvarmodule()
 
     delete parse;
     parse = NULL;
+    delete usage_;
+    usage_ = NULL;
     proxy = NULL;
   }
 }
@@ -2229,6 +2274,79 @@ std::string cvm::wrap_string(std::string const &s, size_t nchars)
              (s+std::string(nchars-s.size(), ' ')) :
              (std::string(s, 0, nchars)) );
   }
+}
+
+
+
+int colvarmodule::cite_feature(std::string const &feature)
+{
+  return usage_->cite_feature(feature);
+}
+
+colvarmodule::usage::usage()
+{
+#include "colvarmodule_refs.h"
+}
+
+int colvarmodule::usage::cite_feature(std::string const &feature)
+{
+  if (feature_count_.count(feature) > 0) {
+    feature_count_[feature] += 1;
+    return cite_paper(feature_paper_map_[feature]);
+  }
+  return cvm::error("Error: cannot cite unknown feature \""+feature+"\"\n",
+                    INPUT_ERROR);
+}
+
+int colvarmodule::usage::cite_paper(std::string const &paper)
+{
+  if (paper_count_.count(paper) > 0) {
+    paper_count_[paper] += 1;
+    return COLVARS_OK;
+  }
+  return cvm::error("Error: cannot cite unknown paper \""+paper+"\"\n",
+                    INPUT_ERROR);
+}
+
+std::string colvarmodule::usage::report(int flag)
+{
+  std::string result;
+  std::map<std::string, int>::iterator p_iter = paper_count_.begin();
+  for ( ; p_iter != paper_count_.end(); p_iter++) {
+    std::string const paper = p_iter->first;
+    int const count = p_iter->second;
+    if (count > 0) {
+      result += "\n";
+      std::map<std::string, std::string>::iterator f_iter =
+        feature_paper_map_.begin();
+      for ( ; f_iter != feature_paper_map_.end(); f_iter++) {
+        if ((f_iter->second == paper) &&
+            (feature_count_[f_iter->first] > 0)) {
+          if (flag == 0) {
+            // URL
+            result += "- " + f_iter->first + ":\n";
+          }
+          if (flag == 1) {
+            // BibTeX
+            result += "% " + f_iter->first + ":\n";
+          }
+        }
+      }
+      if (flag == 0) {
+        result += "  " + paper + " " + paper_url_[paper] + "\n";
+      }
+      if (flag == 1) {
+        result += paper_bibtex_[paper] + "\n";
+      }
+    }
+  }
+
+  if (result.size() > 0) {
+    return "\n\nSUMMARY OF COLVARS FEATURES USED SO FAR AND THEIR CITATIONS:\n" +
+      result + "\n";
+  }
+
+  return result;
 }
 
 
