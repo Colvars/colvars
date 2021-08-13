@@ -52,6 +52,7 @@ int colvarbias_reweightaMD::init(std::string const &conf) {
   if (cvm::proxy->accelMD_enabled() == false) {
     cvm::error("Error: accelerated MD in your MD engine is not enabled.\n", INPUT_ERROR);
   }
+  cvm::main()->cite_feature("reweightaMD colvar bias implementation (NAMD)");
   int baseclass_init_code = colvarbias_histogram::init(conf);
   get_keyval(conf, "CollectAfterSteps", start_after_steps, 0);
   get_keyval(conf, "CumulantExpansion", b_use_cumulant_expansion, true);
@@ -92,7 +93,7 @@ int colvarbias_reweightaMD::update() {
     if (cvm::step_relative() > 0) {
       previous_bin = bin;
     }
-    
+
     // assign a valid bin size
     bin.assign(num_variables(), 0);
 

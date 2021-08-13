@@ -717,6 +717,10 @@ int colvarbias_ti::init(std::string const &conf)
     }
   }
 
+  if (is_enabled(f_cvb_write_ti_pmf) || is_enabled(f_cvb_write_ti_samples)) {
+    cvm::main()->cite_feature("Internal-forces free energy estimator");
+  }
+
   return error_code;
 }
 

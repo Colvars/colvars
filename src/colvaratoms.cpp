@@ -407,11 +407,17 @@ int cvm::atom_group::parse(std::string const &group_conf)
   b_defined_center |= get_keyval_feature(this, group_conf, "centerToReference", f_ag_center, is_enabled(f_ag_center));
 
   if (is_enabled(f_ag_center_origin) && ! is_enabled(f_ag_center)) {
-    return cvm::error("centerToReference may not be disabled if centerToOrigin is enabled.\n");
+    return cvm::error("centerToReference may not be disabled if centerToOrigin"
+                      "is enabled.\n", INPUT_ERROR);
   }
   // Legacy alias
   bool b_defined_rotate = get_keyval_feature(this, group_conf, "rotateReference", f_ag_rotate, false, parse_deprecated);
   b_defined_rotate |= get_keyval_feature(this, group_conf, "rotateToReference", f_ag_rotate, is_enabled(f_ag_rotate));
+
+  if (is_enabled(f_ag_rotate) || is_enabled(f_ag_center) ||
+      is_enabled(f_ag_center_origin)) {
+    cvm::main()->cite_feature("Moving frame of reference");
+  }
 
   // is the user setting explicit options?
   b_user_defined_fit = b_defined_center || b_defined_rotate;

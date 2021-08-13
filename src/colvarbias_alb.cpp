@@ -37,6 +37,7 @@ colvarbias_alb::colvarbias_alb(char const *key)
 int colvarbias_alb::init(std::string const &conf)
 {
   colvarbias::init(conf);
+  cvm::main()->cite_feature("ALB colvar bias implementation");
 
   enable(f_cvb_scalar_variables);
 

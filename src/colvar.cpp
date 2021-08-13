@@ -97,6 +97,7 @@ int colvar::init(std::string const &conf)
 
     enable(f_cv_scripted);
     cvm::log("This colvar uses scripted function \"" + scripted_function + "\".\n");
+    cvm::main()->cite_feature("Scripted functions (Tcl)");
 
     std::string type_str;
     get_keyval(conf, "scriptedFunctionType", type_str, "scalar");
@@ -327,6 +328,8 @@ int colvar::init_custom_function(std::string const &conf)
   if (!key_lookup(conf, "customFunction", &expr_in, &pos)) {
     return COLVARS_OK;
   }
+
+  cvm::main()->cite_feature("Custom functions (Lepton)");
 
   enable(f_cv_custom_function);
   cvm::log("This colvar uses a custom function.\n");
@@ -769,6 +772,8 @@ template<typename def_class_name> int colvar::init_components_type(std::string c
                  MEMORY_ERROR);
       return MEMORY_ERROR;
     }
+
+    cvm::main()->cite_feature(std::string(def_config_key)+" colvar component");
 
     if ( (cvcp->period != 0.0) || (cvcp->wrap_center != 0.0) ) {
       if ( (cvcp->function_type != std::string("distance_z")) &&
