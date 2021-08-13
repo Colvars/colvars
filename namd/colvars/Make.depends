@@ -403,6 +403,7 @@ obj/colvarmodule.o: \
 	colvars/src/colvar_UIestimator.h \
 	colvars/src/colvarbias_alb.h \
 	colvars/src/colvarbias_histogram.h \
+	colvars/src/colvarbias_histogram_reweight_amd.h \
 	colvars/src/colvarbias_meta.h \
 	colvars/src/colvarbias_restraint.h \
 	colvars/src/colvarscript.h \
@@ -412,7 +413,8 @@ obj/colvarmodule.o: \
 	colvars/src/colvaratoms.h \
 	colvars/src/colvarcomp.h \
 	colvars/src/colvar_arithmeticpath.h \
-	colvars/src/colvar_geometricpath.h
+	colvars/src/colvar_geometricpath.h \
+	colvars/src/colvarmodule_refs.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarmodule.o $(COPTC) colvars/src/colvarmodule.cpp
 obj/colvarparams.o: \
 	obj/.exists \

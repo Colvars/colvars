@@ -61,7 +61,7 @@
     "  pages = {3345--3362},\n"
     "  publisher = {Taylor & Francis},\n"
     "  doi = {10.1080/00268976.2013.813594},\n"
-    "  URL = {https://doi.org/10.1080/00268976.2013.813594}\n"
+    "  url = {https://doi.org/10.1080/00268976.2013.813594}\n"
     "}\n";
 
   paper_count_[std::string("Fiorin2020")] = 0;
@@ -217,7 +217,7 @@
   paper_bibtex_[std::string("Phillips2020")] =
     "\n"
     "@article{Phillips2020,\n"
-    "  author = {Phillips, James C.{} and Hardy, David J.{} and Maia, Julio D. C.{} and Stone, John E.{} and Ribeiro, Jo\\~ao V.{} and Bernardi, Rafael C.{} and Buch, Ronak and Fiorin, Giacomo and H\\'enin, J\\'er\\^ome and Jiang, Wei and McGreevy, Ryan and Melo, Marcelo C. R.{} and Radak, Brian K.{} and Skeel, Robert D.{} and Singharoy, Abhishek and Wang, Yi and Roux, Beno\\^it and Aksimentiev, Aleksei and Luthey-Schulten, Zaida and Kal\\'e, Laxmikant V.{} and Schulten, Klaus and Chipot, Christophe and Tajkhorshid, Emad}, \n"
+    "  author = {Phillips, James C.{} and Hardy, David J.{} and Maia, Julio D. C.{} and Stone, John E.{} and Ribeiro, Jo\\~ao V.{} and Bernardi, Rafael C.{} and Buch, Ronak and Fiorin, Giacomo and H\\'enin, J\\'er\\^ome and Jiang, Wei and McGreevy, Ryan and Melo, Marcelo C. R.{} and Radak, Brian K.{} and Skeel, Robert D.{} and Singharoy, Abhishek and Wang, Yi and Roux, Beno\\^it and Aksimentiev, Aleksei and Luthey-Schulten, Zaida and Kal\\'e, Laxmikant V.{} and Schulten, Klaus and Chipot, Christophe and Tajkhorshid, Emad},\n"
     "  title = {Scalable molecular dynamics on {CPU} and {GPU} architectures with {NAMD}},\n"
     "  journal = {J. Chem. Phys.},\n"
     "  year = {2020},\n"
@@ -296,6 +296,7 @@
     "  url = {https://doi.org/10.1021/ct500320c}\n"
     "}\n";
 
+  paper_count_[std::string("n/a")] = 0;
   paper_url_[std::string("n/a")] = "";
   paper_bibtex_[std::string("n/a")] = "";
 
@@ -335,6 +336,9 @@
   feature_count_[std::string("distanceDir colvar component")] = 0;
   feature_paper_map_[std::string("distanceDir colvar component")] = "Fiorin2013";
 
+  feature_count_[std::string("distanceInv colvar component")] = 0;
+  feature_paper_map_[std::string("distanceInv colvar component")] = "Fiorin2013";
+
   feature_count_[std::string("angle colvar component")] = 0;
   feature_paper_map_[std::string("angle colvar component")] = "Fiorin2013";
 
@@ -344,8 +348,11 @@
   feature_count_[std::string("coordNum colvar component")] = 0;
   feature_paper_map_[std::string("coordNum colvar component")] = "Fiorin2013";
 
-  feature_count_[std::string("selfCoordNum colvar component (@jhenin should this be a different paper?)")] = 0;
-  feature_paper_map_[std::string("selfCoordNum colvar component (@jhenin should this be a different paper?)")] = "Fiorin2013";
+  feature_count_[std::string("selfCoordNum colvar component")] = 0;
+  feature_paper_map_[std::string("selfCoordNum colvar component")] = "Fiorin2013";
+
+  feature_count_[std::string("groupCoord colvar component")] = 0;
+  feature_paper_map_[std::string("groupCoord colvar component")] = "Fiorin2013";
 
   feature_count_[std::string("hBond colvar component")] = 0;
   feature_paper_map_[std::string("hBond colvar component")] = "Fiorin2013";
@@ -392,8 +399,8 @@
   feature_count_[std::string("cartesian colvar component")] = 0;
   feature_paper_map_[std::string("cartesian colvar component")] = "Fiorin2013";
 
-  feature_count_[std::string("linear and polynomial combination of colvar components")] = 0;
-  feature_paper_map_[std::string("linear and polynomial combination of colvar components")] = "Fiorin2013";
+  feature_count_[std::string("Linear and polynomial combination of colvar components")] = 0;
+  feature_paper_map_[std::string("Linear and polynomial combination of colvar components")] = "Fiorin2013";
 
   feature_count_[std::string("Metadynamics colvar bias implementation")] = 0;
   feature_paper_map_[std::string("Metadynamics colvar bias implementation")] = "Fiorin2013";
@@ -404,17 +411,26 @@
   feature_count_[std::string("Harmonic colvar bias implementation")] = 0;
   feature_paper_map_[std::string("Harmonic colvar bias implementation")] = "Fiorin2013";
 
+  feature_count_[std::string("harmonicWalls colvar bias implementation")] = 0;
+  feature_paper_map_[std::string("harmonicWalls colvar bias implementation")] = "Fiorin2013";
+
   feature_count_[std::string("Linear colvar bias implementation")] = 0;
   feature_paper_map_[std::string("Linear colvar bias implementation")] = "Fiorin2013";
 
-  feature_count_[std::string("histogram colvar bias implementation")] = 0;
-  feature_paper_map_[std::string("histogram colvar bias implementation")] = "Fiorin2013";
+  feature_count_[std::string("Histogram colvar bias implementation")] = 0;
+  feature_paper_map_[std::string("Histogram colvar bias implementation")] = "Fiorin2013";
 
-  feature_count_[std::string("mapTotal colvar component (volumetric-map and Multi-Map colvar components)")] = 0;
-  feature_paper_map_[std::string("mapTotal colvar component (volumetric-map and Multi-Map colvar components)")] = "Fiorin2020";
+  feature_count_[std::string("mapTotal colvar component")] = 0;
+  feature_paper_map_[std::string("mapTotal colvar component")] = "Fiorin2020";
 
-  feature_count_[std::string("eABF implementation (umbrella-integration version)")] = 0;
-  feature_paper_map_[std::string("eABF implementation (umbrella-integration version)")] = "Fu2016";
+  feature_count_[std::string("Volumetric map-based collective variables")] = 0;
+  feature_paper_map_[std::string("Volumetric map-based collective variables")] = "Fiorin2020";
+
+  feature_count_[std::string("Multi-Map collective variables")] = 0;
+  feature_paper_map_[std::string("Multi-Map collective variables")] = "Fiorin2020";
+
+  feature_count_[std::string("Umbrella-integration eABF estimator")] = 0;
+  feature_paper_map_[std::string("Umbrella-integration eABF estimator")] = "Fu2016";
 
   feature_count_[std::string("polarTheta colvar component")] = 0;
   feature_paper_map_[std::string("polarTheta colvar component")] = "Fu2017";
@@ -437,8 +453,8 @@
   feature_count_[std::string("dipoleMagnitude colvar component")] = 0;
   feature_paper_map_[std::string("dipoleMagnitude colvar component")] = "Garate2019";
 
-  feature_count_[std::string("ABF implementation (internal forces)")] = 0;
-  feature_paper_map_[std::string("ABF implementation (internal forces)")] = "Henin2010";
+  feature_count_[std::string("ABF colvar bias implementation")] = 0;
+  feature_paper_map_[std::string("ABF colvar bias implementation")] = "Henin2010";
 
   feature_count_[std::string("Internal-forces free energy estimator")] = 0;
   feature_paper_map_[std::string("Internal-forces free energy estimator")] = "Henin2010";
@@ -449,8 +465,8 @@
   feature_count_[std::string("eABF implementation")] = 0;
   feature_paper_map_[std::string("eABF implementation")] = "Lesage2017";
 
-  feature_count_[std::string("CZAR estimator")] = 0;
-  feature_paper_map_[std::string("CZAR estimator")] = "Lesage2017";
+  feature_count_[std::string("CZAR eABF estimator")] = 0;
+  feature_paper_map_[std::string("CZAR eABF estimator")] = "Lesage2017";
 
   feature_count_[std::string("Poisson integration of 2D/3D free energy surfaces")] = 0;
   feature_paper_map_[std::string("Poisson integration of 2D/3D free energy surfaces")] = "Henin2021";
@@ -476,8 +492,8 @@
   feature_count_[std::string("GridForces volumetric map implementation for NAMD")] = 0;
   feature_paper_map_[std::string("GridForces volumetric map implementation for NAMD")] = "Wells2007";
 
-  feature_count_[std::string("ALB colvar bias")] = 0;
-  feature_paper_map_[std::string("ALB colvar bias")] = "White2014";
+  feature_count_[std::string("ALB colvar bias implementation")] = 0;
+  feature_paper_map_[std::string("ALB colvar bias implementation")] = "White2014";
 
   feature_count_[std::string("Colvars-GROMACS interface")] = 0;
   feature_paper_map_[std::string("Colvars-GROMACS interface")] = "n/a";
@@ -509,8 +525,8 @@
   feature_count_[std::string("coordNum pairlist")] = 0;
   feature_paper_map_[std::string("coordNum pairlist")] = "n/a";
 
-  feature_count_[std::string("custom functions (Lepton)")] = 0;
-  feature_paper_map_[std::string("custom functions (Lepton)")] = "n/a";
+  feature_count_[std::string("Custom functions (Lepton)")] = 0;
+  feature_paper_map_[std::string("Custom functions (Lepton)")] = "n/a";
 
-  feature_count_[std::string("scripted functions (Tcl)")] = 0;
-  feature_paper_map_[std::string("scripted functions (Tcl)")] = "n/a";
+  feature_count_[std::string("Scripted functions (Tcl)")] = 0;
+  feature_paper_map_[std::string("Scripted functions (Tcl)")] = "n/a";
