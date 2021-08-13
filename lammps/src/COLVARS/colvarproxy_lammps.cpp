@@ -131,6 +131,9 @@ void colvarproxy_lammps::init(const char *conf_file)
   cvm::log("Using LAMMPS interface, version "+
            cvm::to_str(COLVARPROXY_VERSION)+".\n");
 
+  colvars->cite_feature("LAMMPS engine");
+  colvars->cite_feature("Colvars-LAMMPS interface");
+
   my_angstrom  = _lmp->force->angstrom;
   // Front-end unit is the same as back-end
   angstrom_value = my_angstrom;
