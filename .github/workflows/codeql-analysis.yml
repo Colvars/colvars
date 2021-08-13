@@ -35,14 +35,6 @@ jobs:
       with:
         languages: ${{ matrix.language }}
 
-    - name: Build with CMake (pre-C++11 code)
-      if: ${{ matrix.language == 'cpp' }}
-      shell: bash
-      run: |
-        cmake -E make_directory ${{github.workspace}}/build-legacy
-        cmake -DCMAKE_CXX_STANDARD=98 -S ${{github.workspace}}/cmake -B ${{github.workspace}}/build-legacy
-        cmake --build ${{github.workspace}}/build-legacy --parallel
-
     - name: Build with CMake
       if: ${{ matrix.language == 'cpp' }}
       shell: bash
@@ -53,3 +45,11 @@ jobs:
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
+
+    - name: Build with CMake (pre-C++11 code)
+      if: ${{ matrix.language == 'cpp' }}
+      shell: bash
+      run: |
+        cmake -E make_directory ${{github.workspace}}/build-legacy
+        cmake -DCMAKE_CXX_STANDARD=98 -S ${{github.workspace}}/cmake -B ${{github.workspace}}/build-legacy
+        cmake --build ${{github.workspace}}/build-legacy --parallel
