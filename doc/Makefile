@@ -1,4 +1,4 @@
-.PHONY: all pdf clean clean-all
+.PHONY: all pdf clean clean-all update-code-refs
 
 PDF=colvars-refman-lammps.pdf colvars-refman-namd.pdf colvars-refman-vmd.pdf colvars-refman-gromacs.pdf
 BIBTEX=colvars-refman.bib
@@ -23,3 +23,6 @@ clean-all: clean
 version-list:
 	./print_engine_versions.sh > ../README-versions.md
 
+
+update-code-refs:
+	python3 extract_code_refs.py > ../src/colvarmodule_refs.h
