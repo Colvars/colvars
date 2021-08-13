@@ -46,5 +46,13 @@ jobs:
         cmake $GITHUB_WORKSPACE/cmake
         cmake --build .
 
+    - name: Build with CMake (pre-C++11 code)
+      if: ${{ matrix.language == 'cpp' }}
+      shell: bash
+      working-directory: ${{github.workspace}}/build-legacy
+      run: |
+        cmake -DCMAKE_CXX_STANDARD=98 $GITHUB_WORKSPACE/cmake
+        cmake --build .
+
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
