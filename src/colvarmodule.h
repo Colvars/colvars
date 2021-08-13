@@ -188,13 +188,13 @@ public:
     return ::log(static_cast<double>(x));
   }
 
-
+  // Forward declarations
   class rvector;
   template <class T> class vector1d;
   template <class T> class matrix2d;
   class quaternion;
   class rotation;
-
+  class usage;
 
   /// Residue identifier
   typedef int residue_id;
@@ -336,10 +336,11 @@ public:
     return COLVARS_DEBUG;
   }
 
-  /// \brief How many objects are configured yet?
+  /// How many objects (variables and biases) are configured yet?
   size_t size() const;
 
-  /// \brief Constructor
+  /// Constructor
+  /// \param Pointer to instance of the proxy class (communicate with engine)
   colvarmodule(colvarproxy *proxy);
 
   /// Destructor
@@ -638,6 +639,9 @@ public:
   /// Request calculation of total force from MD engine
   static void request_total_force();
 
+  /// Track usage of the given Colvars feature
+  int cite_feature(std::string const &feature);
+
   /// Print a message to the main log
   /// \param message Message to print
   /// \param min_log_level Only print if cvm::log_level() >= min_log_level
@@ -787,6 +791,9 @@ protected:
 
   /// Track how many times the XYZ reader has been used
   int xyz_reader_use_count;
+
+  /// Track usage of Colvars features
+  usage *usage_;
 
 public:
 
