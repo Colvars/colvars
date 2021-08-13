@@ -1,3 +1,7 @@
+#!/usr/bin/env python
+
+from __future__ import print_function
+
 # Extract BibTeX entries
 
 import re
@@ -71,6 +75,7 @@ with open('colvars-code-refs.bib') as bib:
             url = ""
 
     print("""
+  paper_count_[std::string("n/a")] = 0;
   paper_url_[std::string("n/a")] = "";
   paper_bibtex_[std::string("n/a")] = "";""")
 

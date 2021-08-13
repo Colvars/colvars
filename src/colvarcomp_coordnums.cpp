@@ -162,6 +162,7 @@ colvar::coordnum::coordnum(std::string const &conf)
 
   get_keyval(conf, "tolerance", tolerance, 0.0);
   if (tolerance > 0) {
+    cvm::main()->cite_feature("coordNum pairlist");
     get_keyval(conf, "pairListFrequency", pairlist_freq, 100);
     if ( ! (pairlist_freq > 0) ) {
       cvm::error("Error: non-positive pairlistfrequency provided.\n",

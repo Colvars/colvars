@@ -68,8 +68,9 @@ int colvar::cvc::init(std::string const &conf)
     }
   }
 
-  if (get_keyval(conf, "componentCoeff", sup_coeff, sup_coeff) ||
-      get_keyval(conf, "componentExp", sup_np, sup_np)) {
+  get_keyval(conf, "componentCoeff", sup_coeff, sup_coeff);
+  get_keyval(conf, "componentExp", sup_np, sup_np);
+  if (sup_coeff != 1.0 || sup_np != 0) {
     cvm::main()->cite_feature("Linear and polynomial combination of colvar components");
   }
   // TODO these could be condensed into get_keyval()
