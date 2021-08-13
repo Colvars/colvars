@@ -726,6 +726,8 @@ int colvarbias_restraint_harmonic::init(std::string const &conf)
   colvarbias_restraint_centers_moving::init(conf);
   colvarbias_restraint_k_moving::init(conf);
 
+  cvm::main()->cite_feature("Harmonic colvar bias implementation");
+
   for (size_t i = 0; i < num_variables(); i++) {
     cvm::real const w = variables(i)->width;
     cvm::log("The force constant for colvar \""+variables(i)->name+
@@ -879,6 +881,8 @@ int colvarbias_restraint_harmonic_walls::init(std::string const &conf)
   colvarbias_restraint::init(conf);
   colvarbias_restraint_moving::init(conf);
   colvarbias_restraint_k_moving::init(conf);
+
+  cvm::main()->cite_feature("harmonicWalls colvar bias implementation");
 
   enable(f_cvb_scalar_variables);
 
@@ -1148,6 +1152,8 @@ int colvarbias_restraint_linear::init(std::string const &conf)
   colvarbias_restraint_centers_moving::init(conf);
   colvarbias_restraint_k_moving::init(conf);
 
+  cvm::main()->cite_feature("harmonicWalls colvar bias implementation");
+
   for (size_t i = 0; i < num_variables(); i++) {
     if (variables(i)->is_enabled(f_cv_periodic)) {
       cvm::error("Error: linear biases cannot be applied to periodic variables.\n",
@@ -1298,6 +1304,8 @@ int colvarbias_restraint_histogram::init(std::string const &conf)
 {
   colvarbias::init(conf);
   enable(f_cvb_apply_force);
+
+  cvm::main()->cite_feature("histogramRestraint colvar bias implementation");
 
   get_keyval(conf, "lowerBoundary", lower_boundary, lower_boundary);
   get_keyval(conf, "upperBoundary", upper_boundary, upper_boundary);
