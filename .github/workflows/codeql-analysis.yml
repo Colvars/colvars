@@ -35,24 +35,21 @@ jobs:
       with:
         languages: ${{ matrix.language }}
 
-    - name: Create build directory using CMake
-      run: cmake -E make_directory ${{github.workspace}}/build
+    - name: Build with CMake (pre-C++11 code)
+      if: ${{ matrix.language == 'cpp' }}
+      shell: bash
+      run: |
+        cmake -E make_directory ${{github.workspace}}/build-legacy
+        cmake -DCMAKE_CXX_STANDARD=98 -S ${{github.workspace}}/cmake -B ${{github.workspace}}/build-legacy
+        cmake --build ${{github.workspace}}/build-legacy --parallel
 
     - name: Build with CMake
       if: ${{ matrix.language == 'cpp' }}
       shell: bash
-      working-directory: ${{github.workspace}}/build
       run: |
-        cmake $GITHUB_WORKSPACE/cmake
-        cmake --build .
-
-    - name: Build with CMake (pre-C++11 code)
-      if: ${{ matrix.language == 'cpp' }}
-      shell: bash
-      working-directory: ${{github.workspace}}/build-legacy
-      run: |
-        cmake -DCMAKE_CXX_STANDARD=98 $GITHUB_WORKSPACE/cmake
-        cmake --build .
+        cmake -E make_directory ${{github.workspace}}/build
+        cmake $GITHUB_WORKSPACE/cmake -S ${{github.workspace}}/cmake -B ${{github.workspace}}/build
+        cmake --build ${{github.workspace}}/build --parallel
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
