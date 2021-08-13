@@ -77,6 +77,17 @@ cvm::atom::~atom()
 }
 
 
+cvm::atom & cvm::atom::operator = (cvm::atom const &a)
+{
+  index = a.index;
+  id = (cvm::proxy)->get_atom_id(index);
+  update_mass();
+  update_charge();
+  reset_data();
+  return *this;
+}
+
+
 
 cvm::atom_group::atom_group()
 {

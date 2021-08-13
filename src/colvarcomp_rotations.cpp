@@ -21,7 +21,7 @@ colvar::orientation::orientation(std::string const &conf)
   function_type = "orientation";
   disable(f_cvc_explicit_gradient);
   x.type(colvarvalue::type_quaternion);
-  init(conf);
+  colvar::orientation::init(conf);
 }
 
 

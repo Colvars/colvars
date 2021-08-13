@@ -39,7 +39,7 @@ colvar::cvc::cvc(std::string const &conf)
   wrap_center = 0.0;
   width = 0.0;
   init_dependencies();
-  init(conf);
+  colvar::cvc::init(conf);
 }
 
 

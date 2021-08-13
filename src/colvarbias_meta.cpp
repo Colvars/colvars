@@ -2003,6 +2003,21 @@ colvarbias_meta::hill::hill(colvarbias_meta::hill const &h)
 }
 
 
+colvarbias_meta::hill &
+colvarbias_meta::hill::operator = (colvarbias_meta::hill const &h)
+{
+  it = h.it;
+  hill_value = 0.0;
+  sW = 1.0;
+  W = h.W;
+  centers = h.centers;
+  sigmas = h.sigmas;
+  replica = h.replica;
+  hill_value = h.hill_value;
+  return *this;
+}
+
+
 colvarbias_meta::hill::~hill()
 {}
 

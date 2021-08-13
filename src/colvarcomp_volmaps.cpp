@@ -16,7 +16,7 @@
 
 
 colvar::map_total::map_total()
-  : cvc(), volmap_index(-1)
+  : cvc()
 {
   function_type = "map_total";
   volmap_id = -1;
@@ -27,7 +27,7 @@ colvar::map_total::map_total()
 
 
 colvar::map_total::map_total(std::string const &conf)
-  : cvc(), volmap_index(-1)
+  : cvc() // init() will take care of this
 {
   function_type = "map_total";
   volmap_id = -1;
