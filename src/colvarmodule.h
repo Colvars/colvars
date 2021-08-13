@@ -642,6 +642,9 @@ public:
   /// Track usage of the given Colvars feature
   int cite_feature(std::string const &feature);
 
+  /// Report usage of the Colvars features
+  std::string feature_report(int flag = 0);
+
   /// Print a message to the main log
   /// \param message Message to print
   /// \param min_log_level Only print if cvm::log_level() >= min_log_level

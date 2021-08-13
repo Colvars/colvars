@@ -265,6 +265,11 @@ int colvarproxy_namd::setup()
   }
 #endif
 
+  if (first_timestep) {
+    // Nag only once, there may be many run commands
+    log(colvars->feature_report(0));
+  }
+
   return COLVARS_OK;
 }
 

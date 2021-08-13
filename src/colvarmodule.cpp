@@ -2283,6 +2283,12 @@ int colvarmodule::cite_feature(std::string const &feature)
   return usage_->cite_feature(feature);
 }
 
+std::string colvarmodule::feature_report(int flag)
+{
+  return usage_->report(flag);
+}
+
+
 colvarmodule::usage::usage()
 {
 #include "colvarmodule_refs.h"
