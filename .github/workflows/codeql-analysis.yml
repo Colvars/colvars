@@ -1,5 +1,4 @@
-# CodeQL GitHub action
-name: "CodeQL"
+name: "Build tests and CodeQL analysis"
 
 on:
   push:
@@ -7,12 +6,12 @@ on:
   pull_request:
     # The branches below must be a subset of the branches above
     branches: [ master ]
-  schedule:
-    - cron: '40 14 * * 4'
+  # schedule:
+  #   - cron: '40 14 * * 4'
 
 jobs:
   analyze:
-    name: Analyze
+    name: Build tests and CodeQL analysis
     runs-on: ubuntu-latest
 
     strategy:
@@ -20,8 +19,6 @@ jobs:
       matrix:
         language: [ 'cpp' ] #, 'python' ]
         # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python' ]
-        # Learn more:
-        # https://docs.github.com/en/free-pro-team@latest/github/finding-security-vulnerabilities-and-errors-in-your-code/configuring-code-scanning#changing-the-languages-that-are-analyzed
 
     steps:
     - name: Checkout repository
@@ -35,21 +32,24 @@ jobs:
       with:
         languages: ${{ matrix.language }}
 
+    - name: Install depencies
+      run: sudo apt-get install tcl8.6-dev
+
     - name: Build with CMake
       if: ${{ matrix.language == 'cpp' }}
       shell: bash
       run: |
         cmake -E make_directory ${{github.workspace}}/build
-        cmake $GITHUB_WORKSPACE/cmake -S ${{github.workspace}}/cmake -B ${{github.workspace}}/build
+        cmake $GITHUB_WORKSPACE/cmake -D COLVARS_TCL=ON -S ${{github.workspace}}/cmake -B ${{github.workspace}}/build
         cmake --build ${{github.workspace}}/build --parallel
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
 
-    - name: Build with CMake (pre-C++11 code)
+    - name: Build with CMake (pre-C++11 code for VMD)
       if: ${{ matrix.language == 'cpp' }}
       shell: bash
       run: |
         cmake -E make_directory ${{github.workspace}}/build-legacy
-        cmake -DCMAKE_CXX_STANDARD=98 -S ${{github.workspace}}/cmake -B ${{github.workspace}}/build-legacy
+        cmake -DCMAKE_CXX_STANDARD=98 -D COLVARS_TCL=ON -S ${{github.workspace}}/cmake -B ${{github.workspace}}/build-legacy
         cmake --build ${{github.workspace}}/build-legacy --parallel
