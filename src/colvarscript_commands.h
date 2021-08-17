@@ -162,6 +162,14 @@ CVSCRIPT(cv_delete,
          return script->proxy()->request_deletion();
          )
 
+CVSCRIPT(cv_featurereport,
+         "Return a summary of Colvars features used so far and their citations\n"
+         "report : string - Feature report and citations",
+         0, 0,
+         "",
+         return script->set_result_str(script->module()->feature_report());
+         )
+
 CVSCRIPT(cv_frame,
          "Get or set current frame number (VMD only)\n"
          "frame : integer - Frame number",
