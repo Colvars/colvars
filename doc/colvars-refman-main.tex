@@ -3246,6 +3246,35 @@ colvar \{\\
 \}
 \end{cvexampleinput}
 
+
+\ifdefined\cvvmdornamd{
+\cvsubsubsec{Path collective variables in Cartesian coordinates}{sec:apath_scripted}
+
+The path collective variables defined by Branduardi et al.~\cite{Branduardi2007}
+are based on RMSDs in Cartesian coordinates.
+Noting $d_i$ the RMSD between the current set of Cartesian coordinates and those of image number $i$ of the path:
+
+\begin{equation}
+s = \frac{1}{N-1} \frac{\sum_{i=1}^{N} (i-1) \exp\left(-\lambda d_i^2\right)}
+{\sum_{i=1}^{N} \exp\left(-\lambda d_i^2\right)}
+\end{equation}
+
+\begin{equation}
+z = -\frac{1}{\lambda} \ln \left(\sum_{i=1}^{N} \exp(-\lambda d_i^2)\right)
+\end{equation}
+
+where $\lambda$ is the smoothing parameter.
+
+
+These coordinates are implemented as Tcl-scripted combinations of \texttt{rmsd} components.
+The implementation is available as file \texttt{colvartools/pathCV.tcl}, and
+an example is provided in file \texttt{examples/10\_pathCV.namd} of the Colvars public repository.
+It implements an optimization procedure, whereby the distance to a given image is only calculated if its contribution
+to the sum is larger than a user-defined \texttt{tolerance} parameter.
+All distances are calculated every \texttt{freq} timesteps to update the list of nearby images.
+}\fi
+
+
 \cvsubsec{Dense neural network in CV space}{sec:cvc_neuralNetwork}
 
 This colvar computes a non-linear combination of other scalar colvar components, and the non-linear transformation is defined by a dense neural network.
@@ -3273,55 +3302,72 @@ where $f_{k}$ is the activation function of the $k$-th layer, $w_{(k,j),(k-1,i)}
 \labelkey{colvar|NeuralNetwork}
 
 \begin{cvcoptions}
-	
-\item %
-\key
-{output\_component}{%
-	\texttt{NeuralNetwork}}{%
-	The $j$-th node of the output or the last layer.}{%
-	integer starting from 0}{%
-	specify the output node to be used as the value of this CV.
-}
 
 \item %
-\key
-{layer$i$\_WeightsFile}{%
-	\texttt{NeuralNetwork}}{%
-	The weights of layer $i$}{%
-	UNIX filename}{%
-	\texttt{layer1\_WeightsFile}, \texttt{layer2\_WeightsFile}, $\cdots$, \texttt{layer$i$\_WeightsFile} are used to specify the weights of the first, second, $\cdots$, $i$-th layers, respectively. The weights are stored in a plain text file, where the number at $k$-th row and $l$-th column represents the weight of $k$-th (output) node at $i$-th layer with respect to the $l$-th (input) node at $i-1$ layer.
-}
+  \labelkey{colvar|NeuralNetwork|output_component}
+  \key
+  {output\_component}%
+  {\texttt{NeuralNetwork}}%
+  {The $j$-th node of the output or the last layer}%
+  {integer starting from 0}%
+  {The value of this option specifies the output node to be used as
+   the value of this CV.}
 
 \item %
-\key
-{layer$i$\_BiasesFile}{%
-	\texttt{NeuralNetwork}}{%
-	The biases of layer $i$}{%
-	UNIX filename}{%
-	\texttt{layer1\_BiasesFile}, \texttt{layer2\_BiasesFile}, $\cdots$, \texttt{layer$i$\_BiasesFile} are used to specify the biases of the first, second, $\cdots$, $i$-th layers, respectively. The biases are stored in a plain text file with only one column, where the number at $k$-th row represents the bias of $k$-th (output) node at $i$-th layer.
-}
+  \labelkey{colvar|NeuralNetwork|layeri_WeightsFile}
+  \key
+  {layer$i$\_WeightsFile}%
+  {\texttt{NeuralNetwork}}%
+  {The weights from layer $i-1$ to layer $i$}%
+  {UNIX filename}%
+  {The letter $i$ in this option needs to be replaced with the indexing
+   number starting from 1, for example, \texttt{layer1\_WeightsFile} and
+   \texttt{layer2\_WeightsFile}. The value of this option specifies a
+   plain text file containing the weights from layer $i-1$ to layer $i$.
+   In the file, the number at $k$-th column and $l$-th row represents the
+   weight from node $k$ at layer $i-1$ to node $l$ at layer $i$.}
 
 \item %
-\key
-{layer$i$\_activation}{%
-	\texttt{NeuralNetwork}}{%
-	The activation function of layer $i$}{%
-	\texttt{tanh}, \texttt{linear} or \texttt{sigmoid}}{%
-	Select the activation function for $i$-th layer. Available choices for activation function are \texttt{tanh}, \texttt{linear} and \texttt{sigmoid}.
-}
+  \labelkey{colvar|NeuralNetwork|layeri_BiasesFile}
+  \key
+  {layer$i$\_BiasesFile}%
+  {\texttt{NeuralNetwork}}%
+  {The biases from layer $i-1$ to layer $i$}%
+  {UNIX filename}%
+  {The letter $i$ in this option needs to be replaced with the indexing
+   number starting from 1, for example, \texttt{layer1\_BiasesFile} and
+   \texttt{layer2\_BiasesFile}. The value of this option specifies a plain
+   text file containing the weights of layer $i$. The file should have
+   only one column, where the number at $l$-th row represents the bias of
+   node $l$ from layer $i-1$ to layer $i$.}
 
 \item %
-\key
-{layer$i$\_custom\_activation}{%
-	\texttt{NeuralNetwork}}{%
-	An alternative custom expression as the activation function of layer $i$}{%
-	string}{%
-	Mathematical expression to define the activation function of layer $i$. The 
-	input value must be written as \texttt{x}. For example, the ELU activation 
-	function can be expressed as \texttt{select(step(x), alpha*(exp(x)-1), x)}. 
-	It should be noted that this option is mutually exclusive with the option 
-	\refkey{layer$i$\_activation}.
-}
+  \labelkey{colvar|NeuralNetwork|layeri_activation}
+  \key
+  {layer$i$\_activation}%
+  {\texttt{NeuralNetwork}}%
+  {The activation function from layer $i-1$ to layer $i$}%
+  {\texttt{tanh}, \texttt{linear} or \texttt{sigmoid}}%
+  {The letter $i$ in this option needs to be replaced with the indexing
+   number starting from 1, for example, \texttt{layer1\_activation} and
+   \texttt{layer2\_activation}. The activation function from layer $i-1$
+   to layer $i$. Available choices for activation function are \texttt{tanh},
+   \texttt{linear} and \texttt{sigmoid}.}
+
+\item %
+  \labelkey{colvar|NeuralNetwork|layeri_custom_activation}
+  \key
+  {layer$i$\_custom\_activation}%
+  {\texttt{NeuralNetwork}}%
+  {An alternative custom expression as the activation function
+   from layer $i-1$ to layer $i$}%
+  {string}%
+  {Mathematical expression to define the activation function from layer $i-1$
+   to layer $i$. The input value must be written as \texttt{x}. For example,
+   the ELU activation function can be expressed as
+   \texttt{select(step(x), alpha*(exp(x)-1), x)}. It should be noted that this option
+   is mutually exclusive with the option
+   \refkey{colvar|NeuralNetwork|layeri\_activation}.}
 
 \end{cvcoptions}
 
@@ -3365,34 +3411,6 @@ An example of configuration using \texttt{NeuralNetwork} is shown below:
 \-~~~~\}\\
 \-~~\}\\
 \}}
-
-
-\ifdefined\cvvmdornamd{
-\cvsubsubsec{Path collective variables in Cartesian coordinates}{sec:apath_scripted}
-
-The path collective variables defined by Branduardi et al.~\cite{Branduardi2007}
-are based on RMSDs in Cartesian coordinates.
-Noting $d_i$ the RMSD between the current set of Cartesian coordinates and those of image number $i$ of the path:
-
-\begin{equation}
-s = \frac{1}{N-1} \frac{\sum_{i=1}^{N} (i-1) \exp\left(-\lambda d_i^2\right)}
-{\sum_{i=1}^{N} \exp\left(-\lambda d_i^2\right)}
-\end{equation}
-
-\begin{equation}
-z = -\frac{1}{\lambda} \ln \left(\sum_{i=1}^{N} \exp(-\lambda d_i^2)\right)
-\end{equation}
-
-where $\lambda$ is the smoothing parameter.
-
-
-These coordinates are implemented as Tcl-scripted combinations of \texttt{rmsd} components.
-The implementation is available as file \texttt{colvartools/pathCV.tcl}, and
-an example is provided in file \texttt{examples/10\_pathCV.namd} of the Colvars public repository.
-It implements an optimization procedure, whereby the distance to a given image is only calculated if its contribution
-to the sum is larger than a user-defined \texttt{tolerance} parameter.
-All distances are calculated every \texttt{freq} timesteps to update the list of nearby images.
-}\fi
 
 
 \ifdefined\cvvmdornamd{
