@@ -135,8 +135,11 @@ public:
   /// Get value of alchemical lambda parameter from back-end (if available)
   virtual int get_alch_lambda(cvm::real* lambda);
 
-  /// Set value of alchemical lambda parameter in back-end (if available)
-  virtual int set_alch_lambda(cvm::real* lambda);
+  /// Set value of alchemical lambda parameter to be sent to back-end at end of timestep
+  void set_alch_lambda(cvm::real lambda);
+
+  /// Send cached value of alchemical lambda parameter to back-end (if available)
+  virtual int send_alch_lambda();
 
   /// Get energy derivative with respect to lambda (if available)
   virtual int get_dE_dlambda(cvm::real* dE_dlambda);
@@ -162,6 +165,11 @@ public:
   }
 
 protected:
+  /// Next value of lambda to be sent to back-end
+  cvm::real cached_alch_lambda;
+
+  /// Whether lambda has been set and needs to be updated in backend
+  bool cached_alch_lambda_changed;
 
   /// Whether the total forces have been requested
   bool total_force_requested;

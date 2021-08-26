@@ -40,6 +40,8 @@ colvarproxy_system::colvarproxy_system()
   boundaries_type = boundaries_unsupported;
   total_force_requested = false;
   indirect_lambda_biasing_force = 0.0;
+  cached_alch_lambda_changed = false;
+  cached_alch_lambda = -1.0;
   reset_pbc_lattice();
 }
 
@@ -195,7 +197,14 @@ int colvarproxy_system::get_alch_lambda(cvm::real * /* lambda */)
 }
 
 
-int colvarproxy_system::set_alch_lambda(cvm::real * /* lambda */)
+void colvarproxy_system::set_alch_lambda(cvm::real lambda)
+{
+  cached_alch_lambda = lambda;
+  cached_alch_lambda_changed = true;
+}
+
+
+int colvarproxy_system::send_alch_lambda()
 {
   return cvm::error("Error in set_alch_lambda: alchemical lambda dynamics is not supported by this build.",
     COLVARS_NOT_IMPLEMENTED);
@@ -829,6 +838,10 @@ int colvarproxy::end_of_step()
   compute_rms_volmaps_applied_force();
   compute_max_volmaps_applied_force();
 
+  if (cached_alch_lambda_changed) {
+    send_alch_lambda();
+    cached_alch_lambda_changed = false;
+  }
   return COLVARS_OK;
 }
 
