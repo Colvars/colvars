@@ -52,9 +52,8 @@ void colvar::alch_lambda::calc_gradients()
 
 void colvar::alch_lambda::apply_force(colvarvalue const & /* force */)
 {
-  // Special workflow:
-  // at the end of the time step we send a new value
-  cvm::proxy->set_alch_lambda(&x.real_value);
+  // new value will be cached and sent at end of timestep
+  cvm::proxy->set_alch_lambda(x.real_value);
 }
 
 simple_scalar_dist_functions(alch_lambda)
