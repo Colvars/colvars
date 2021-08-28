@@ -46,16 +46,6 @@
 #include <memory>
 #include <vector>
 
-static const char colvars_pub[] =
-  "fix colvars command:\n\n"
-  "@Article{fiorin13,\n"
-  " author =  {G.~Fiorin and M.{\\,}L.~Klein and J.~H{\\'e}nin},\n"
-  " title =   {Using collective variables to drive molecular"
-  " dynamics simulations},\n"
-  " journal = {Mol.~Phys.},\n"
-  " year =    2013,\n"
-  " note =    {doi: 10.1080/00268976.2013.813594}\n"
-  "}\n\n";
 
 /* struct for packed data communication of coordinates and forces. */
 struct LAMMPS_NS::commdata {
@@ -356,8 +346,6 @@ FixColvars::FixColvars(LAMMPS *lmp, int narg, char **arg) :
 
   /* storage required to communicate a single coordinate or force. */
   size_one = sizeof(struct commdata);
-
-  if (lmp->citeme) lmp->citeme->add(colvars_pub);
 }
 
 /*********************************
@@ -988,6 +976,9 @@ void FixColvars::post_run()
 {
   if (me == 0) {
     proxy->post_run();
+    if (lmp->citeme) {
+      lmp->citeme->add(proxy->colvars->feature_report(1));
+    }
   }
 }
 

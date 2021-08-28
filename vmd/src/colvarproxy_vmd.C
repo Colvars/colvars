@@ -90,6 +90,9 @@ colvarproxy_vmd::colvarproxy_vmd(Tcl_Interp *interp, VMDApp *v, int molid)
   cvm::log("Using VMD interface, version "+
            cvm::to_str(COLVARPROXY_VERSION)+".\n");
 
+  colvars->cite_feature("VMD engine");
+  colvars->cite_feature("Colvars-VMD interface");
+
   colvars->cv_traj_freq = 0; // I/O will be handled explicitly
   colvars->restart_out_freq = 0;
   cvm::rotation::monitor_crossings = false; // Avoid unnecessary error messages

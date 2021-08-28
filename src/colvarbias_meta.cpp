@@ -71,6 +71,8 @@ int colvarbias_meta::init(std::string const &conf)
   error_code |= colvarbias::init(conf);
   error_code |= colvarbias_ti::init(conf);
 
+  cvm::main()->cite_feature("Metadynamics colvar bias implementation");
+
   enable(f_cvb_calc_pmf);
 
   get_keyval(conf, "hillWeight", hill_weight, 0.0);
@@ -117,10 +119,12 @@ int colvarbias_meta::init(std::string const &conf)
   {
     bool b_replicas = false;
     get_keyval(conf, "multipleReplicas", b_replicas, false);
-    if (b_replicas)
-      comm = multiple_replicas;
-    else
+    if (b_replicas) {
+      cvm::main()->cite_feature("Multiple-walker metadynamics colvar bias implementation");
+  comm = multiple_replicas;
+    } else {
       comm = single_replica;
+    }
   }
 
   get_keyval(conf, "useGrids", use_grids, use_grids);
@@ -266,6 +270,7 @@ int colvarbias_meta::init_ebmeta_params(std::string const &conf)
   target_dist = NULL;
   get_keyval(conf, "ebMeta", ebmeta, false);
   if(ebmeta){
+    cvm::main()->cite_feature("Ensemble-biased metadynamics (ebMetaD)");
     if (use_grids && expand_grids) {
       cvm::fatal_error("Error: expandBoundaries is not supported with "
                        "ebMeta please allocate wide enough boundaries for "

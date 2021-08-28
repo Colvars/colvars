@@ -129,6 +129,8 @@ colvarproxy_namd::colvarproxy_namd()
   colvars = new colvarmodule(this);
   cvm::log("Using NAMD interface, version "+
            cvm::to_str(COLVARPROXY_VERSION)+".\n");
+  colvars->cite_feature("NAMD engine");
+  colvars->cite_feature("Colvars-NAMD interface");
 
   errno = 0;
   if (config) {
@@ -262,6 +264,11 @@ int colvarproxy_namd::setup()
     volmaps_new_colvar_forces[imap] = 0.0;
   }
 #endif
+
+  if (first_timestep) {
+    // Nag only once, there may be many run commands
+    log(colvars->feature_report(0));
+  }
 
   return COLVARS_OK;
 }
@@ -1108,6 +1115,8 @@ int colvarproxy_namd::init_atom_group(std::vector<int> const &atoms_ids)
     cvm::log("Reguesting from NAMD a group of size "+cvm::to_str(atoms_ids.size())+
         " for collective variables calculation.\n");
 
+  colvars->cite_feature("Scalable center-of-mass computation (NAMD)");
+
   // Note: modifyRequestedGroups is supposed to be in sync with the colvarproxy arrays,
   // and to stay that way during a simulation
 
@@ -1233,6 +1242,7 @@ int colvarproxy_namd::init_volmap_by_id(int volmap_id)
   if (error_code == COLVARS_OK) {
     index = add_volmap_slot(volmap_id);
     modifyRequestedGridObjects().add(volmap_id);
+    colvars->cite_feature("GridForces volumetric map implementation for NAMD");
   }
 
   return (error_code == COLVARS_OK) ? index : -1;
@@ -1275,6 +1285,7 @@ int colvarproxy_namd::init_volmap_by_name(char const *volmap_name)
 
     index = add_volmap_slot(volmap_id);
     modifyRequestedGridObjects().add(volmap_id);
+    colvars->cite_feature("GridForces volumetric map implementation for NAMD");
   }
 
   return (error_code == COLVARS_OK) ? index : -1;

@@ -46,6 +46,8 @@ int colvar::map_total::init(std::string const &conf)
   get_keyval(conf, "mapID", volmap_id, volmap_id);
   register_param("mapID", reinterpret_cast<void *>(&volmap_id));
 
+  cvm::main()->cite_feature("Volumetric map-based collective variables");
+
   if ((volmap_name.size() > 0) && (volmap_id >= 0)) {
     error_code |=
       cvm::error("Error: mapName and mapID are mutually exclusive.\n");

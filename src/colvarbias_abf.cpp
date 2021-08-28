@@ -39,6 +39,7 @@ colvarbias_abf::colvarbias_abf(char const *key)
 int colvarbias_abf::init(std::string const &conf)
 {
   colvarbias::init(conf);
+  cvm::main()->cite_feature("ABF colvar bias implementation");
 
   colvarproxy *proxy = cvm::main()->proxy;
 
@@ -94,6 +95,7 @@ int colvarbias_abf::init(std::string const &conf)
   // shared ABF
   get_keyval(conf, "shared", shared_on, false);
   if (shared_on) {
+    cvm::main()->cite_feature("Multiple-walker ABF implementation");
     if ((proxy->replica_enabled() != COLVARS_OK) ||
         (proxy->num_replicas() <= 1)) {
       return cvm::error("Error: shared ABF requires more than one replica.",
@@ -156,6 +158,12 @@ int colvarbias_abf::init(std::string const &conf)
     // and make it just a warning if some parameter is set?
   }
 
+  if (b_extended) {
+    cvm::main()->cite_feature("eABF implementation");
+  } else {
+    cvm::main()->cite_feature("Internal-forces free energy estimator");
+  }
+
   if (get_keyval(conf, "maxForce", max_force)) {
     if (max_force.size() != num_variables()) {
       cvm::error("Error: Number of parameters to maxForce does not match number of colvars.");
@@ -204,6 +212,7 @@ int colvarbias_abf::init(std::string const &conf)
 
   get_keyval(conf, "integrate", b_integrate, num_variables() <= 3); // Integrate for output if d<=3
   if (b_integrate) {
+    cvm::main()->cite_feature("Poisson integration of 2D/3D free energy surfaces");
     // For now, we integrate on-the-fly iff the grid is < 3D
     if ( num_variables() > 3 ) {
       cvm::error("Error: cannot integrate free energy in dimension > 3.\n");
@@ -211,6 +220,7 @@ int colvarbias_abf::init(std::string const &conf)
     }
     pmf = new integrate_potential(colvars, gradients);
     if ( b_CZAR_estimator ) {
+      cvm::main()->cite_feature("CZAR eABF estimator");
       czar_pmf = new integrate_potential(colvars, czar_gradients);
     }
     // Parameters for integrating initial (and final) gradient data
@@ -243,20 +253,21 @@ int colvarbias_abf::init(std::string const &conf)
     get_keyval(conf, "UIestimator", b_UI_estimator, false);
 
     if (b_UI_estimator) {
-    std::vector<double> UI_lowerboundary;
-    std::vector<double> UI_upperboundary;
-    std::vector<double> UI_width;
-    std::vector<double> UI_krestr;
 
-    bool UI_restart = (input_prefix.size() > 0);
+      cvm::main()->cite_feature("Umbrella-integration eABF estimator");
+      std::vector<double> UI_lowerboundary;
+      std::vector<double> UI_upperboundary;
+      std::vector<double> UI_width;
+      std::vector<double> UI_krestr;
 
-    for (i = 0; i < num_variables(); i++)
-    {
-      UI_lowerboundary.push_back(colvars[i]->lower_boundary);
-      UI_upperboundary.push_back(colvars[i]->upper_boundary);
-      UI_width.push_back(colvars[i]->width);
-      UI_krestr.push_back(colvars[i]->force_constant());
-    }
+      bool UI_restart = (input_prefix.size() > 0);
+
+      for (i = 0; i < num_variables(); i++) {
+        UI_lowerboundary.push_back(colvars[i]->lower_boundary);
+        UI_upperboundary.push_back(colvars[i]->upper_boundary);
+        UI_width.push_back(colvars[i]->width);
+        UI_krestr.push_back(colvars[i]->force_constant());
+      }
       eabf_UI = UIestimator::UIestimator(UI_lowerboundary,
                                          UI_upperboundary,
                                          UI_width,
