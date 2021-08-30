@@ -91,7 +91,7 @@ colvarproxy_vmd::colvarproxy_vmd(Tcl_Interp *interp, VMDApp *v, int molid)
            cvm::to_str(COLVARPROXY_VERSION)+".\n");
 
   colvars->cite_feature("VMD engine");
-  colvars->cite_feature("Colvars-VMD interface");
+  colvars->cite_feature("Colvars-VMD interface (command line)");
 
   colvars->cv_traj_freq = 0; // I/O will be handled explicitly
   colvars->restart_out_freq = 0;

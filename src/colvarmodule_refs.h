@@ -184,15 +184,17 @@
     "}\n";
 
   paper_count_[std::string("Henin2021")] = 0;
-  paper_url_[std::string("Henin2021")] = "";
+  paper_url_[std::string("Henin2021")] = "https://arxiv.org/abs/2107.08511";
   paper_bibtex_[std::string("Henin2021")] =
     "\n"
-    "@article{Henin2021,\n"
+    "@misc{Henin2021,\n"
     "  author = {H\\'enin, J\\'er\\^ome},\n"
     "  title = {Fast and accurate multidimensional free energy integration},\n"
-    "  journal = {J. Chem. Theory Comput.},\n"
-    "  year = {2021},\n"
-    "  note = {in press}\n"
+    "  year={2021},\n"
+    "  eprint={2107.08511},\n"
+    "  archivePrefix={arXiv},\n"
+    "  primaryClass={physics.comp-ph}\n"
+    "  url = {https://arxiv.org/abs/2107.08511},\n"
     "}\n";
 
   paper_count_[std::string("Marinelli2015")] = 0;
