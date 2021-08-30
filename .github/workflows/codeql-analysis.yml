@@ -27,6 +27,16 @@ jobs:
     - name: Test build recipes
       run: bash devel-tools/check_build_recipes
 
+    - name: Convert BibTeX references to code
+      shell: bash
+      working-directory: doc
+      run: |
+        make update-code-refs
+        if [ -n "$(git status --porcelain ../src/colvarmodule_refs.h)" ] ; then
+            echo "Please update the code references in the doc folder" >& 2
+            exit 1
+        fi
+
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v1
       with:
