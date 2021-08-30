@@ -2300,18 +2300,17 @@ int colvarmodule::usage::cite_feature(std::string const &feature)
     feature_count_[feature] += 1;
     return cite_paper(feature_paper_map_[feature]);
   }
-  return cvm::error("Error: cannot cite unknown feature \""+feature+"\"\n",
-                    INPUT_ERROR);
+  cvm::log("Warning: cannot cite unknown feature \""+feature+"\"\n");
+  return COLVARS_OK;
 }
 
 int colvarmodule::usage::cite_paper(std::string const &paper)
 {
   if (paper_count_.count(paper) > 0) {
     paper_count_[paper] += 1;
-    return COLVARS_OK;
   }
-  return cvm::error("Error: cannot cite unknown paper \""+paper+"\"\n",
-                    INPUT_ERROR);
+  cvm::log("Warning: cannot cite unknown paper \""+paper+"\"\n");
+  return COLVARS_OK;
 }
 
 std::string colvarmodule::usage::report(int flag)
