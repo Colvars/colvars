@@ -64,25 +64,6 @@ proc ::cv_dashboard::createWindow {} {
   set gridrow 0  ;# New grid
   set main .cv_dashboard_window.tabs.main
 
-  # Energy/Force display
-  set ::cv_dashboard::colvar_energy 0.0
-  grid [label $main.energyTxt -text "Energy:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  grid [tk::entry $main.energy -textvariable ::cv_dashboard::colvar_energy] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  incr gridrow
-
-  set ::cv_dashboard::atom_forces_rms 0.0
-  set ::cv_dashboard::atom_forces_max 0.0
-  set ::cv_dashboard::atom_forces_max_id -1
-  grid [label $main.rmsForceTxt -text "RMS force:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  grid [tk::entry $main.rmsForce -textvariable ::cv_dashboard::atom_forces_rms] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  grid [label $main.maxForceIDTxt -text "Max force atom:"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
-  incr gridrow
-  grid [label $main.maxForceTxt -text "Max force:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  grid [tk::entry $main.maxForce -textvariable ::cv_dashboard::atom_forces_max] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  grid [tk::entry $main.maxForceID -textvariable ::cv_dashboard::atom_forces_max_id] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
-  incr gridrow
-
-
   grid [label $main.actions_text -text "Colvar list actions"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
 
   incr gridrow
@@ -177,8 +158,12 @@ proc ::cv_dashboard::createWindow {} {
   # Create and hide Settings window to create all associated variables
   createSettingsWindow
 
+  # Create energy/force statistics tab
+  createStatsTab
+
   $w.tabs add $w.tabs.main -text "Actions" -sticky news
   $w.tabs add $w.tabs.settings -text "Settings" -sticky news
+  $w.tabs add $w.tabs.stats -text "Stats" -sticky news
 
   grid columnconfigure $main 0 -weight 1
   grid columnconfigure $main 1 -weight 1
@@ -193,6 +178,38 @@ proc ::cv_dashboard::createWindow {} {
   return $w
 }
 
+
+proc ::cv_dashboard::createStatsTab {} {
+
+  set stats .cv_dashboard_window.tabs.stats
+  grid [frame $stats] -column 0 -columnspan 3 -sticky nsew
+
+  set gridrow 0
+
+  # Energy/Force display
+  set ::cv_dashboard::colvar_energy 0.0
+  grid [label $stats.energyTxt -text "Energy:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [tk::entry $stats.energy -textvariable ::cv_dashboard::colvar_energy] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  incr gridrow
+
+  set ::cv_dashboard::atom_forces_rms 0.0
+  set ::cv_dashboard::atom_forces_max 0.0
+  set ::cv_dashboard::atom_forces_max_id -1
+  grid [label $stats.rmsForceTxt -text "RMS force:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [tk::entry $stats.rmsForce -textvariable ::cv_dashboard::atom_forces_rms] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  grid [label $stats.maxForceIDTxt -text "Max force atom:"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+  incr gridrow
+  grid [label $stats.maxForceTxt -text "Max force:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [tk::entry $stats.maxForce -textvariable ::cv_dashboard::atom_forces_max] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  grid [tk::entry $stats.maxForceID -textvariable ::cv_dashboard::atom_forces_max_id] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+  incr gridrow
+
+  grid columnconfigure $stats 0 -weight 1
+  grid columnconfigure $stats 1 -weight 1
+  grid columnconfigure $stats 2 -weight 1
+
+  grid remove $stats
+}
 
 # Open or close the volmap sub-panel
 proc ::cv_dashboard::toggleVolmapMenu {} {
