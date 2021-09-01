@@ -9,7 +9,7 @@ on:
 
 jobs:
   analyze:
-    name: Build tests and CodeQL analysis
+    name: Build tests and perform code analysis
     runs-on: ubuntu-latest
 
     strategy:
@@ -46,26 +46,38 @@ jobs:
       with:
         languages: ${{ matrix.language }}
 
-    - name: Install build dependencies
+    - name: Install build dependencies for library
       run: |
         sudo apt-get install tcl8.6-dev ccache
-        git clone --single-branch --depth=1 https://github.com/openmm/openmm
+        # OpenMM contains the latest Lepton
+        git clone --single-branch --depth=1 https://github.com/openmm/openmm openmm-source
 
-    - name: Build with CMake
+    - name: Checkout NAMD
+      uses: actions/checkout@v2
+      with:
+        repository: 'Colvars/namd'
+        ssh-key: ${{ secrets.PULL_NAMD_SSH_KEY  }}
+        ref: 'master'
+        path: 'namd-source'
+
+    - name: Build Colvars library with CMake
       if: ${{ matrix.language == 'cpp' }}
       shell: bash
       run: |
         cmake -E make_directory ${{github.workspace}}/build
-        cmake -D CMAKE_CXX_COMPILER_LAUNCHER=ccache -D COLVARS_TCL=ON -D LEPTON_DIR=${{github.workspace}}/openmm/libraries/lepton -S ${{github.workspace}}/cmake -B ${{github.workspace}}/build
+        cmake -D CMAKE_CXX_COMPILER_LAUNCHER=ccache -D COLVARS_TCL=ON -D LEPTON_DIR=${{github.workspace}}/openmm-source/libraries/lepton -S ${{github.workspace}}/cmake -B ${{github.workspace}}/build
         cmake --build ${{github.workspace}}/build --parallel
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
 
-    - name: Build with CMake (pre-C++11 code for VMD)
+    - name: Build Colvars library with CMake (pre-C++11 code for VMD)
       if: ${{ matrix.language == 'cpp' }}
       shell: bash
       run: |
         cmake -E make_directory ${{github.workspace}}/build-legacy
         cmake -DCMAKE_CXX_STANDARD=98 -D CMAKE_CXX_COMPILER_LAUNCHER=ccache -D COLVARS_TCL=ON -S ${{github.workspace}}/cmake -B ${{github.workspace}}/build-legacy
         cmake --build ${{github.workspace}}/build-legacy --parallel
+
+    - name: Patch NAMD
+      run: ./update-colvars-code.sh namd-source
