@@ -13,7 +13,7 @@ The easiest way to obtain pre-compiled versions of Colvars is via one of followi
 - the molecular simulation program [NAMD](https://www.ks.uiuc.edu/Research/namd/);
 - the molecular visualization program [VMD](https://www.ks.uiuc.edu/Research/vmd/).
 
-Please check [here](https://github.com/Colvars/colvars/wiki/List-of-Colvars-versions-included-in-simulation-analysis-packages) to see which version of Colvars is included with the round-number or "stable" versions of each code.
+Please check [here](https://github.com/Colvars/colvars/wiki/List-of-Colvars-versions-included-in-simulation-and-analysis-packages) to see which version of Colvars is included with the round-number or "stable" versions of each code.
 
 For the molecular simulation program [GROMACS](http://www.gromacs.org/), code may be compiled via our Colvars-patched [releases](#gromacs-colvars-releases).
 
@@ -119,7 +119,7 @@ Other branches are dedicated to the development of specific features: please use
 The specific version of Colvars is identified both in the code and in the documentation by the date of the most recent code revision (e.g. `2021-01-19`). 
 This date is printed to the standard output or log file as soon as Colvars is activated.
 
-A [table mapping software package release versions to Colvars versions is given here](https://github.com/Colvars/colvars/wiki/List-of-Colvars-versions-included-in-simulation-analysis-packages).
+A table mapping software package release versions to Colvars versions is given [here](https://github.com/Colvars/colvars/wiki/List-of-Colvars-versions-included-in-simulation-and-analysis-packages).
 
 
 If you are using a stable release of any of the codes mentioned above, feel free to use the version number of that code when asking questions.
