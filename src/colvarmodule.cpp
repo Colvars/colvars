@@ -2308,6 +2308,7 @@ int colvarmodule::usage::cite_paper(std::string const &paper)
 {
   if (paper_count_.count(paper) > 0) {
     paper_count_[paper] += 1;
+    return COLVARS_OK;
   }
   cvm::log("Warning: cannot cite unknown paper \""+paper+"\"\n");
   return COLVARS_OK;
