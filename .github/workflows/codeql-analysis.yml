@@ -1,4 +1,4 @@
-name: "Build tests and code analysis"
+name: "Build tests and perform code analysis"
 
 on:
   push:
@@ -6,8 +6,6 @@ on:
   pull_request:
     # The branches below must be a subset of the branches above
     branches: [ master ]
-  # schedule:
-  #   - cron: '40 14 * * 4'
 
 jobs:
   analyze:
@@ -23,6 +21,12 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
+
+    - name: Configure Ccache
+      uses: actions/cache@v2
+      with:
+        path: ~/.ccache
+        key: ${{ runner.os }}-ccache
 
     - name: Test build recipes
       run: bash devel-tools/check_build_recipes
@@ -44,15 +48,15 @@ jobs:
 
     - name: Install build dependencies
       run: |
-        sudo apt-get install tcl8.6-dev
-        git clone --depth=1 https://github.com/openmm/openmm
+        sudo apt-get install tcl8.6-dev ccache
+        git clone --single-branch --depth=1 https://github.com/openmm/openmm
 
     - name: Build with CMake
       if: ${{ matrix.language == 'cpp' }}
       shell: bash
       run: |
         cmake -E make_directory ${{github.workspace}}/build
-        cmake $GITHUB_WORKSPACE/cmake -D COLVARS_TCL=ON -D LEPTON_DIR=${{github.workspace}}/openmm/libraries/lepton -S ${{github.workspace}}/cmake -B ${{github.workspace}}/build
+        cmake -D CMAKE_CXX_COMPILER_LAUNCHER=ccache -D COLVARS_TCL=ON -D LEPTON_DIR=${{github.workspace}}/openmm/libraries/lepton -S ${{github.workspace}}/cmake -B ${{github.workspace}}/build
         cmake --build ${{github.workspace}}/build --parallel
 
     - name: Perform CodeQL Analysis
@@ -63,5 +67,5 @@ jobs:
       shell: bash
       run: |
         cmake -E make_directory ${{github.workspace}}/build-legacy
-        cmake -DCMAKE_CXX_STANDARD=98 -D COLVARS_TCL=ON -S ${{github.workspace}}/cmake -B ${{github.workspace}}/build-legacy
+        cmake -DCMAKE_CXX_STANDARD=98 -D CMAKE_CXX_COMPILER_LAUNCHER=ccache -D COLVARS_TCL=ON -S ${{github.workspace}}/cmake -B ${{github.workspace}}/build-legacy
         cmake --build ${{github.workspace}}/build-legacy --parallel
