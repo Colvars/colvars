@@ -94,10 +94,8 @@ jobs:
       run: |
         # Singularity 3 hasn't made it to Ubuntu yet: TODO sort this out,
         # or convert existing containers to Docker
-        sudo apt-get -y install squashfs-tools
+        sudo apt-get -y install squashfs-tools containernetworking-plugins
         curl -O http://http.us.debian.org/debian/pool/main/s/singularity-container/singularity-container_3.5.2+ds1-1_amd64.deb
-        curl -O http://http.us.debian.org/debian/pool/main/g/golang-github-containernetworking-plugins/containernetworking-plugins_0.9.0-1+b6_amd64.deb
-        sudo dpkg -i containernetworking-plugins_0.9.0-1+b6_amd64.deb singularity-container_3.5.2+ds1-1_amd64.deb
         # Pull CentOS 7 container used to build backends
         # (contains OpenMPI, FFTW, Tcl/Tk, Charm++)
         singularity pull CentOS7-devel.sif library://giacomofiorin/default/colvars_development:centos7
