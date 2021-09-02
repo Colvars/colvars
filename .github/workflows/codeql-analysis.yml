@@ -48,7 +48,7 @@ jobs:
 
     - name: Install build dependencies for library
       run: |
-        sudo apt-get install tcl8.6-dev ccache singularity
+        sudo apt-get install tcl8.6-dev ccache singularity-container
         # Pull container to build backends
         # (contains OpenMPI, FFTW, Tcl/Tk, Charm++)
         singularity pull devel-tools/CentOS7-devel.sif library://giacomofiorin/default/colvars_development:centos7
