@@ -56,9 +56,17 @@ jobs:
       uses: actions/checkout@v2
       with:
         repository: 'Colvars/namd'
-        ssh-key: ${{ secrets.PULL_NAMD_SSH_KEY  }}
+        ssh-key: ${{ secrets.PULL_NAMD_KEY }}
         ref: 'master'
         path: 'namd-source'
+
+    - name: Checkout VMD
+      uses: actions/checkout@v2
+      with:
+        repository: 'Colvars/vmd'
+        ssh-key: ${{ secrets.PULL_VMD_KEY }}
+        ref: 'master'
+        path: 'vmd-source'
 
     - name: Build Colvars library with CMake
       if: ${{ matrix.language == 'cpp' }}
@@ -79,5 +87,8 @@ jobs:
         cmake -DCMAKE_CXX_STANDARD=98 -D CMAKE_CXX_COMPILER_LAUNCHER=ccache -D COLVARS_TCL=ON -S ${{github.workspace}}/cmake -B ${{github.workspace}}/build-legacy
         cmake --build ${{github.workspace}}/build-legacy --parallel
 
-    - name: Patch NAMD
+    - name: Update NAMD
       run: ./update-colvars-code.sh namd-source
+
+    - name: Update VMD
+      run: ./update-colvars-code.sh vmd-source
