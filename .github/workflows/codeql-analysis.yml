@@ -74,7 +74,7 @@ jobs:
       run: |
         cmake -E make_directory ${{github.workspace}}/build
         cmake -D CMAKE_CXX_COMPILER_LAUNCHER=ccache -D COLVARS_TCL=ON -D LEPTON_DIR=${{github.workspace}}/openmm-source/libraries/lepton -S ${{github.workspace}}/cmake -B ${{github.workspace}}/build
-        cmake --build ${{github.workspace}}/build --parallel
+        cmake --build ${{github.workspace}}/build --parallel 2
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
@@ -85,7 +85,7 @@ jobs:
       run: |
         cmake -E make_directory ${{github.workspace}}/build-legacy
         cmake -DCMAKE_CXX_STANDARD=98 -D CMAKE_CXX_COMPILER_LAUNCHER=ccache -D COLVARS_TCL=ON -S ${{github.workspace}}/cmake -B ${{github.workspace}}/build-legacy
-        cmake --build ${{github.workspace}}/build-legacy --parallel
+        cmake --build ${{github.workspace}}/build-legacy --parallel 2
 
     - name: Install build dependencies for backends
       working-directory: doc
