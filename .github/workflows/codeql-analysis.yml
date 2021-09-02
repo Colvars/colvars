@@ -56,6 +56,8 @@ jobs:
       uses: actions/checkout@v2
       with:
         repository: 'Colvars/namd'
+        # Per-repository secret (sharing a secret from the org with all
+        # repositories turned out to be too complex)
         ssh-key: ${{ secrets.PULL_NAMD_KEY }}
         ref: 'master'
         path: 'namd-source'
@@ -88,7 +90,7 @@ jobs:
         cmake --build ${{github.workspace}}/build-legacy --parallel 2
 
     - name: Install build dependencies for backends
-      working-directory: doc
+      working-directory: devel-tools
       run: |
         # Singularity 3 hasn't made it to Ubuntu yet: TODO sort this out,
         # or convert existing containers to Docker
