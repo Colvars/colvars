@@ -27,7 +27,9 @@ jobs:
         path: |
           ~/.ccache
           ~/ccache_CentOS7-devel
-        key: ${{ runner.os }}-ccache
+        key: ${{ matrix.os }}-build-${{ github.sha }}
+        restore-keys: |
+          ${{ matrix.os }}-build-
 
     - name: Test build recipes
       run: bash devel-tools/check_build_recipes
