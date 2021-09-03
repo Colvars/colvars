@@ -1,3 +1,7 @@
+if { [file exists ../build/libcolvars.so] > 0 } {
+    load ../build/libcolvars.so
+}
+
 if { [info exists output] == 0 } {
     set output [open "cvscript-tcl.tex" "w"]
 }
@@ -48,3 +52,4 @@ foreach prefix [list "cv" "colvar" "bias"] \
 
 close ${output}
 
+exit

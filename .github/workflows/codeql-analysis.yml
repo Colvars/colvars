@@ -31,7 +31,7 @@ jobs:
       run: |
         make update-code-refs
         if [ -n "$(git status --porcelain ../src/colvarmodule_refs.h)" ] ; then
-            echo "Please update the code references in the doc folder" >& 2
+            echo "Code citations out of date; please run make update-code-refs in the doc folder" >& 2
             exit 1
         fi
 
@@ -56,6 +56,16 @@ jobs:
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
+
+    - name: Upadte documentation of command-line inteface
+      shell: bash
+      working-directory: doc
+      run: |
+        make update-cvscript-cmdline-doc
+        if [ -n "$(git status --porcelain cvscript-tcl.tex)" ] ; then
+            echo "Command-line scripting doc out of date; please run make update-cvscript-cmdline-doc and commit changes" >& 2
+            exit 1
+        fi
 
     - name: Build Colvars library with CMake (pre-C++11 code for VMD)
       if: ${{ matrix.language == 'cpp' }}

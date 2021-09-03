@@ -1,4 +1,4 @@
-.PHONY: all pdf clean clean-all update-code-refs
+.PHONY: all pdf clean clean-all update-code-refs update-cvscript-cmdline-doc
 
 PDF=colvars-refman-lammps.pdf colvars-refman-namd.pdf colvars-refman-vmd.pdf colvars-refman-gromacs.pdf
 BIBTEX=colvars-refman.bib
@@ -26,3 +26,7 @@ version-list:
 
 update-code-refs:
 	python3 extract_code_refs.py > ../src/colvarmodule_refs.h
+
+
+update-cvscript-cmdline-doc:
+	tclsh gen_cvscript_doc.tcl
