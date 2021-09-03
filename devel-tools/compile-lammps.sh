@@ -1,6 +1,9 @@
 #!/bin/bash
 
 
+source $(dirname $0)/set-ccache.sh
+
+
 compile_lammps_target() {
 
     local CMAKE=cmake
@@ -10,7 +13,7 @@ compile_lammps_target() {
     if hash ${CMAKE} >& /dev/null ; then
         CMAKE_VERSION=$(${CMAKE} --version | head -1 | cut -d' ' -f3)
     else
-        echo "Error: no CMake found." >& 2 
+        echo "Error: no CMake found." >& 2
     fi
 
     local LAMMPS_SRC_DIR=""
@@ -64,10 +67,6 @@ compile_lammps_target() {
         LAMMPS_BUILD_DIR=$(mktemp -d /tmp/lammps-build-XXXXXX)
     fi
 
-    if hash ccache >& /dev/null ; then
-        LAMMPS_BUILD_OPTS+=(-DCMAKE_{C,CXX}_COMPILER_LAUNCHER=ccache)
-    fi
-    
     mkdir -p "${LAMMPS_BUILD_DIR}"
 
     local ret_code=0
@@ -99,7 +98,6 @@ compile_lammps_target() {
 
     return ${ret_code}
 }
-
 
 
 compile_lammps_target "${@}"
