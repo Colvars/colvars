@@ -1,0 +1,81 @@
+name: "Build backends with an updated Colvars module"
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ master ]
+
+jobs:
+  analyze:
+    name: Build tests and perform code analysis
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'cpp' ] #, 'python' ]
+        # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python' ]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Configure Ccache
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.ccache
+          ~/ccache_CentOS7-devel
+        key: ${{ runner.os }}-ccache
+
+    - name: Test build recipes
+      run: bash devel-tools/check_build_recipes
+
+    - name: Convert BibTeX references to code
+      shell: bash
+      working-directory: doc
+      run:  make update-code-refs
+
+    - name: Checkout NAMD
+      uses: actions/checkout@v2
+      with:
+        repository: 'Colvars/namd'
+        # Per-repository secret (sharing a secret from the org with all
+        # repositories turned out to be too complex)
+        ssh-key: ${{ secrets.PULL_NAMD_KEY }}
+        ref: 'master'
+        path: 'namd-source'
+
+    - name: Checkout VMD
+      uses: actions/checkout@v2
+      with:
+        repository: 'Colvars/vmd'
+        ssh-key: ${{ secrets.PULL_VMD_KEY }}
+        ref: 'master'
+        path: 'vmd-source'
+
+    - name: Install build dependencies for backends
+      shell: bash
+      working-directory: devel-tools
+      run: |
+        # Singularity 3 hasn't made it to Ubuntu yet: TODO sort this out,
+        # or convert existing containers to Docker
+        sudo apt-get -y install squashfs-tools containernetworking-plugins
+        curl -O http://http.us.debian.org/debian/pool/main/s/singularity-container/singularity-container_3.5.2+ds1-1_amd64.deb
+        sudo dpkg -i singularity-container_3.5.2+ds1-1_amd64.deb
+        # Pull CentOS 7 container used to build backends
+        # (contains OpenMPI, FFTW, Tcl/Tk, Charm++)
+        singularity pull CentOS7-devel.sif library://giacomofiorin/default/colvars_development:centos7
+
+    - name: Update and build NAMD
+      shell: bash
+      run: |
+        singularity exec devel-tools/CentOS7-devel.sif ./update-colvars-code.sh namd-source
+        CCACHE_DIR=~/ccache_CentOS7-devel \
+        singularity exec devel-tools/CentOS7-devel.sif \
+        bash devel-tools/compile-namd.sh namd-source
+
+    - name: Update VMD
+      run: singularity exec devel-tools/CentOS7-devel.sif ./update-colvars-code.sh vmd-source
