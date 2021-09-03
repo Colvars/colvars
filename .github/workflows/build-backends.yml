@@ -38,6 +38,13 @@ jobs:
       working-directory: doc
       run:  make update-code-refs
 
+    - name: Checkout LAMMPS
+      uses: actions/checkout@v2
+      with:
+        repository: 'lammps/lammps'
+        ref: 'master'
+        path: 'lammps-source'
+
     - name: Checkout NAMD
       uses: actions/checkout@v2
       with:
@@ -68,6 +75,14 @@ jobs:
         # Pull CentOS 7 container used to build backends
         # (contains OpenMPI, FFTW, Tcl/Tk, Charm++)
         singularity pull CentOS7-devel.sif library://giacomofiorin/default/colvars_development:centos7
+
+    - name: Update and build LAMMPS
+      shell: bash
+      run: |
+        singularity exec devel-tools/CentOS7-devel.sif ./update-colvars-code.sh lammps-source
+        CCACHE_DIR=~/ccache_CentOS7-devel \
+        singularity exec devel-tools/CentOS7-devel.sif \
+        bash devel-tools/compile-lammps.sh lammps-source
 
     - name: Update and build NAMD
       shell: bash
