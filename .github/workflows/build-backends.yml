@@ -8,15 +8,14 @@ on:
     branches: [ master ]
 
 jobs:
-  analyze:
-    name: Build tests and perform code analysis
+  backends:
+    name: Build backends
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
         language: [ 'cpp' ] #, 'python' ]
-        # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python' ]
 
     steps:
     - name: Checkout repository

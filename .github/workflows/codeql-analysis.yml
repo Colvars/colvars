@@ -9,7 +9,7 @@ on:
 
 jobs:
   analyze:
-    name: Build tests and perform code analysis
+    name: Build library, perform code analysis
     runs-on: ubuntu-latest
 
     strategy:
