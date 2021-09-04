@@ -1,20 +1,31 @@
 #!/bin/bash
 
-if hash spiff >& /dev/null ; then
-    hash -t spiff
-else
-    SPIFFDIR=$(mktemp -d --tmpdir=${TMPDIR:-/tmp} spiff-XXXXXX)
-    if [ ! -x ${SPIFFDIR}/spiff ] ; then
-        if git clone --quiet --depth 1 https://github.com/jhenin/spiff.git \
-            ${SPIFFDIR} ; then
-            pushd ${SPIFFDIR} > /dev/null && make > /dev/null
-            popd > /dev/null
+
+get_spiff() {
+    if hash spiff >& /dev/null ; then
+        hash -t spiff
+    else
+        local SPIFFDIR=""
+        if [ -d "${1}" ] ; then
+            SPIFFDIR="${1}"
+        else
+            SPIFFDIR=$(mktemp -d --tmpdir=${TMPDIR:-/tmp} spiff-XXXXXX)
+        fi
+        if [ ! -x "${SPIFFDIR}"/spiff ] ; then
+            if git clone --quiet --depth 1 https://github.com/jhenin/spiff.git \
+                "${SPIFFDIR}" ; then
+                pushd "${SPIFFDIR}" > /dev/null && make > /dev/null
+                popd > /dev/null
+            fi
+        fi
+        if [ -x "${SPIFFDIR}"/spiff ] ; then
+            echo "${SPIFFDIR}"/spiff
+            return 0
+        else
+            return 1
         fi
     fi
-    if [ -x ${SPIFFDIR}/spiff ] ; then
-        echo ${SPIFFDIR}/spiff
-        exit 0
-    else
-        exit 1
-    fi
-fi
+}
+
+
+get_spiff "${@}"
