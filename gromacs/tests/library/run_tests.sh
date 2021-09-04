@@ -35,7 +35,7 @@ TPUT_RED='true'
 TPUT_GREEN='true'
 TPUT_BLUE='true'
 TPUT_CLEAR='true'
-if which tput >& /dev/null ; then
+if hash tput >& /dev/null && [ -n "${TERM}" ] ; then
   TPUT_RED='tput setaf 1'
   TPUT_GREEN='tput setaf 2'
   TPUT_BLUE='tput setaf 4'
