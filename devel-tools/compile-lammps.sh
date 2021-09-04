@@ -74,7 +74,7 @@ compile_lammps_target() {
     ${CMAKE} \
         -DCMAKE_INSTALL_PREFIX="${LAMMPS_INSTALL_DIR}" \
         -DCMAKE_BUILD_TYPE=${LAMMPS_BUILD_TYPE:-Release} \
-        -DBUILD_SHARED_LIBS=on \
+        -DBUILD_SHARED_LIBS=off \
         -C "${LAMMPS_SRC_DIR}/cmake/presets/most.cmake" \
         -C "${LAMMPS_SRC_DIR}/cmake/presets/nolib.cmake" \
         ${LAMMPS_BUILD_OPTS[@]} \
