@@ -88,6 +88,13 @@ jobs:
         singularity exec devel-tools/CentOS7-devel.sif \
         bash devel-tools/compile-lammps.sh lammps-source
 
+    - name: Run regression tests for library code with LAMMPS
+      shell: bash
+      working-directory: lammps/tests/library
+      run: |
+        singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+        ./run_tests.sh ${{github.workspace}}/lammps-source/install/bin/lmp 000_*
+
     - name: Update and build NAMD
       shell: bash
       run: |
