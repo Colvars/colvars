@@ -14,7 +14,21 @@ else
   BINARY=$1
 fi
 
-DIFF=spiff
+TOPDIR=../../../ # $(git rev-parse --show-toplevel)
+if [ ! -d ${TOPDIR} ] ; then
+  echo "Error: cannot identify top project directory." >& 2
+  exit 1
+fi
+
+SPIFF=$(${TOPDIR}/devel-tools/get_spiff)
+if [ $? != 0 ] ; then
+    echo "Error: spiff is not available and could not be downloaded/built." >& 2
+    exit 1
+else
+    echo "Using spiff executable from $SPIFF"
+    hash -p ${SPIFF} spiff
+fi
+
 BASEDIR=$PWD
 ALL_SUCCESS=1
 TMP=/tmp
@@ -60,7 +74,7 @@ do
   for f in AutoDiff/*
   do
     base=`basename $f`
-    $DIFF $f $base > "$base.diff"
+    $SPIFF $f $base > "$base.diff"
     RETVAL=$?
     if [ $RETVAL -ne 0 ]
     then

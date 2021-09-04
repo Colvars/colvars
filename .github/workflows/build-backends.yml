@@ -118,3 +118,10 @@ jobs:
         CCACHE_DIR=~/ccache_CentOS7-devel \
         singularity exec devel-tools/CentOS7-devel.sif \
         bash devel-tools/compile-vmd.sh vmd-source
+
+    - name: Run regression tests for VMD interface code
+      shell: bash
+      working-directory: vmd/tests/interface
+      run: |
+        singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+        ./run_tests.sh ${{github.workspace}}/vmd-source/install/vmd
