@@ -65,6 +65,14 @@ jobs:
         ref: 'master'
         path: 'vmd-source'
 
+    - name: Checkout VMD plugins
+      uses: actions/checkout@v2
+      with:
+        repository: 'Colvars/vmd-plugins'
+        ssh-key: ${{ secrets.PULL_VMD_PLUGINS_KEY }}
+        ref: 'master'
+        path: 'vmd-plugins-source'
+
     - name: Install build dependencies for backends
       shell: bash
       working-directory: devel-tools
@@ -103,5 +111,10 @@ jobs:
         singularity exec devel-tools/CentOS7-devel.sif \
         bash devel-tools/compile-namd.sh namd-source
 
-    - name: Update VMD
-      run: singularity exec devel-tools/CentOS7-devel.sif ./update-colvars-code.sh vmd-source
+    - name: Update and build VMD
+      shell: bash
+      run: |
+        singularity exec devel-tools/CentOS7-devel.sif ./update-colvars-code.sh vmd-source
+        CCACHE_DIR=~/ccache_CentOS7-devel \
+        singularity exec devel-tools/CentOS7-devel.sif \
+        bash devel-tools/compile-vmd.sh vmd-source
