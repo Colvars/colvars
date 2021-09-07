@@ -5,10 +5,10 @@ configuration {
 
 colvar {
   name one
-  x  3.21130917292044e+00
-  v  1.00951348854977e-04
-  extended_x  3.20938126631322e+00
-  extended_v  1.00951348854977e-04
+  x  3.21130917331427e+00
+  v  1.00951355693882e-04
+  extended_x  3.20938126640048e+00
+  extended_v  1.00951355693882e-04
 }
 
 restraint {
