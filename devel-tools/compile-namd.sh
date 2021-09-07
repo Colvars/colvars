@@ -16,10 +16,6 @@ compile_namd_target() {
 
     local dirname="Linux-x86_64-g++.${label}"
 
-    if [ -e .git ] ; then
-        git checkout master .
-    fi
-
     if [ -d /opt/charm ] ; then
         rm -f charm
         ln -s /opt/charm charm
