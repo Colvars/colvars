@@ -921,6 +921,9 @@ protected:
   /// Integer representing the version string (allows comparisons)
   int version_int;
 
+  /// Track which features have been acknowledged during the last run
+  size_t features_hash;
+
   /// Raise when the output stream functions are used on threads other than 0
   void smp_stream_error();
 

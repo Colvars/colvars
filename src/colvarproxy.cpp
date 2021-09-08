@@ -707,6 +707,8 @@ colvarproxy::colvarproxy()
   b_simulation_running = true;
   b_simulation_continuing = false;
   b_delete_requested = false;
+  version_int = -1;
+  features_hash = 0;
 }
 
 

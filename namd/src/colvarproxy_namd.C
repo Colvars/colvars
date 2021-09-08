@@ -265,9 +265,12 @@ int colvarproxy_namd::setup()
   }
 #endif
 
-  if (first_timestep) {
+  size_t const new_features_hash =
+    std::hash<std::string>{}(colvars->feature_report(0));
+  if (new_features_hash != features_hash) {
     // Nag only once, there may be many run commands
     log(colvars->feature_report(0));
+    features_hash = new_features_hash;
   }
 
   return COLVARS_OK;
