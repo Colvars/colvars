@@ -25,7 +25,7 @@ harmonic {
     centers        (1.0, 0.0, 0.0)
     forceConstant  0.001
 
-    targetCenters  (-1.0, 0.0, 0.0)
+    targetCenters  (-0.707106781, 0.707106781, 0.0)
     targetNumSteps 10
 
     outputEnergy   yes
