@@ -269,7 +269,7 @@ int colvarproxy_namd::setup()
     std::hash<std::string>{}(colvars->feature_report(0));
   if (new_features_hash != features_hash) {
     // Nag only once, there may be many run commands
-    log(colvars->feature_report(0));
+    log(std::string("\n")+colvars->feature_report(0)+std::string("\n"));
     features_hash = new_features_hash;
   }
 
