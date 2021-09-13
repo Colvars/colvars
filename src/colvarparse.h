@@ -34,10 +34,10 @@ public:
   colvarparse(const std::string& conf);
 
   /// Set the object ready to parse a new configuration string
-  void init();
+  void clear();
 
   /// Set a new config string for this object
-  void init(std::string const &conf);
+  void set_string(std::string const &conf);
 
   /// Default destructor
   virtual ~colvarparse();

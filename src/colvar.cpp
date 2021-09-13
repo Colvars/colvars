@@ -55,7 +55,7 @@ namespace {
 int colvar::init(std::string const &conf)
 {
   cvm::log("Initializing a new collective variable.\n");
-  colvarparse::init(conf);
+  colvarparse::set_string(conf);
 
   int error_code = COLVARS_OK;
 
