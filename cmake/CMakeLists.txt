@@ -5,7 +5,9 @@ get_filename_component(COLVARS_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/.. ABSOLUT
 
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-#set(CMAKE_VERBOSE_MAKEFILE on)
+#set(CMAKE_VERBOSE_MAKEFILE ON)
+
+option(WARNINGS_ARE_ERRORS "Treats warnings as errors" OFF)
 
 if(NOT DEFINED LEPTON_DIR)
   set(LEPTON_DIR ${COLVARS_SOURCE_DIR}/lepton)
@@ -47,6 +49,11 @@ set_property(TARGET colvars_shared PROPERTY OUTPUT_NAME colvars)
 target_compile_options(colvars_obj PRIVATE $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Intel>>:-Wall -pedantic>)
 target_compile_options(colvars_obj PRIVATE $<$<CXX_COMPILER_ID:GNU>:-Wno-long-long>)
 target_compile_options(colvars_obj PRIVATE $<$<CXX_COMPILER_ID:Clang>:-Wno-c++11-long-long>)
+if(WARNINGS_ARE_ERRORS)
+  target_compile_options(colvars_obj PRIVATE $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Intel>>:-Werror>)
+  target_compile_options(colvars_obj PRIVATE $<$<CXX_COMPILER_ID:SunPro>:-xwe>)
+endif()
+
 
 if(COLVARS_LEPTON)
   target_compile_options(colvars_obj PRIVATE -DLEPTON)
