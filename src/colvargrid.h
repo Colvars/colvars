@@ -254,11 +254,10 @@ public:
               bool add_extra_bin = false)
     : has_parent_data(false), has_data(false)
   {
-    this->init_from_colvars(colvars, t, mult_i, add_extra_bin);
+    this->init_from_colvars(colvars, mult_i, add_extra_bin);
   }
 
   int init_from_colvars(std::vector<colvar *> const &colvars,
-                        T const &t = T(),
                         size_t mult_i = 1,
                         bool add_extra_bin = false)
   {
