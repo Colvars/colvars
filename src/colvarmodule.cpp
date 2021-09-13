@@ -628,7 +628,7 @@ int colvarmodule::catch_input_errors(int result)
   if (result != COLVARS_OK || get_error()) {
     set_error_bits(result);
     set_error_bits(INPUT_ERROR);
-    parse->init();
+    parse->clear();
     return get_error();
   }
   return COLVARS_OK;
@@ -1216,7 +1216,7 @@ int colvarmodule::reset()
 {
   cvm::log("Resetting the Collective Variables module.\n");
 
-  parse->init();
+  parse->clear();
 
   // Iterate backwards because we are deleting the elements as we go
   for (std::vector<colvarbias *>::reverse_iterator bi = biases.rbegin();

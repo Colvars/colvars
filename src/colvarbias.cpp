@@ -40,7 +40,7 @@ colvarbias::colvarbias(char const *key)
 
 int colvarbias::init(std::string const &conf)
 {
-  colvarparse::init(conf);
+  colvarparse::set_string(conf);
 
   size_t i = 0;
 
