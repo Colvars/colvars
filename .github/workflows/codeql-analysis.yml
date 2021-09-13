@@ -47,7 +47,6 @@ jobs:
         git clone --single-branch --depth=1 https://github.com/openmm/openmm openmm-source
 
     - name: Build Colvars library with CMake
-      if: ${{ matrix.language == 'cpp' }}
       shell: bash
       run: |
         cmake -E make_directory ${{github.workspace}}/build
@@ -68,8 +67,10 @@ jobs:
         fi
 
     - name: Build Colvars library with CMake (pre-C++11 code for VMD)
-      if: ${{ matrix.language == 'cpp' }}
       shell: bash
+      env:
+        # Disable CodeQL
+        LD_PRELOAD: ''
       run: |
         cmake -E make_directory ${{github.workspace}}/build-legacy
         cmake -D CMAKE_CXX_STANDARD=98 -D WARNINGS_ARE_ERRORS=ON -D CMAKE_VERBOSE_MAKEFILE=ON -D COLVARS_TCL=ON -S ${{github.workspace}}/cmake -B ${{github.workspace}}/build-legacy
@@ -100,6 +101,9 @@ jobs:
 
     - name: Build library with Sun compiler (Oracle Developer Studio)
       shell: bash
+      env:
+        # Disable CodeQL
+        LD_PRELOAD: ''
       run: |
         singularity exec container-images/OracleDeveloperStudio.sif \
         cmake3 -E make_directory ${{github.workspace}}/build-sunpro
