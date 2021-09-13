@@ -347,8 +347,6 @@ protected:
   cvm::atom_group  *group2;
   /// Vector distance, cached to be recycled
   cvm::rvector     dist_v;
-  /// Use absolute positions, ignoring PBCs when present
-  bool b_no_PBC;
 public:
   distance(std::string const &conf);
   distance();
@@ -432,8 +430,6 @@ protected:
   cvm::atom_group  *ref1;
   /// Optional, second ref atom group
   cvm::atom_group  *ref2;
-  /// Use absolute positions, ignoring PBCs when present
-  bool b_no_PBC;
   /// Vector on which the distance vector is projected
   cvm::rvector axis;
   /// Norm of the axis
@@ -560,8 +556,6 @@ protected:
   cvm::atom_group  *group2;
   /// Components of the distance vector orthogonal to the axis
   int exponent;
-  /// Use absolute positions, ignoring PBCs when present
-  bool b_no_PBC;
 public:
   distance_inv(std::string const &conf);
   virtual ~distance_inv() {}
@@ -588,8 +582,6 @@ protected:
   cvm::atom_group  *group1;
   /// Second atom group
   cvm::atom_group  *group2;
-  /// Use absolute positions, ignoring PBCs when present
-  bool b_no_PBC;
 public:
   distance_pairs(std::string const &conf);
   distance_pairs();
