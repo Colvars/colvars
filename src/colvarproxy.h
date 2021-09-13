@@ -875,6 +875,12 @@ public:
   /// Called at the end of a simulation segment (i.e. "run" command)
   int post_run();
 
+  /// Print a full list of all input atomic arrays for debug purposes
+  void print_input_atomic_data();
+
+  /// Print a full list of all applied forces for debug purposes
+  void print_output_atomic_data();
+
   /// Convert a version string "YYYY-MM-DD" into an integer
   int get_version_from_string(char const *version_string);
 

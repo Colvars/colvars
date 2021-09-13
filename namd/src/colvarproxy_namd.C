@@ -499,27 +499,7 @@ void colvarproxy_namd::calculate()
 #endif
 
   if (cvm::debug()) {
-    cvm::log("atoms_ids = "+cvm::to_str(atoms_ids)+"\n");
-    cvm::log("atoms_ncopies = "+cvm::to_str(atoms_ncopies)+"\n");
-    cvm::log("atoms_masses = "+cvm::to_str(atoms_masses)+"\n");
-    cvm::log("atoms_charges = "+cvm::to_str(atoms_charges)+"\n");
-    cvm::log("atoms_positions = "+cvm::to_str(atoms_positions)+"\n");
-    cvm::log("atoms_total_forces = "+cvm::to_str(atoms_total_forces)+"\n");
-    cvm::log(cvm::line_marker);
-
-    cvm::log("atom_groups_ids = "+cvm::to_str(atom_groups_ids)+"\n");
-    cvm::log("atom_groups_ncopies = "+cvm::to_str(atom_groups_ncopies)+"\n");
-    cvm::log("atom_groups_masses = "+cvm::to_str(atom_groups_masses)+"\n");
-    cvm::log("atom_groups_charges = "+cvm::to_str(atom_groups_charges)+"\n");
-    cvm::log("atom_groups_coms = "+cvm::to_str(atom_groups_coms)+"\n");
-    cvm::log("atom_groups_total_forces = "+cvm::to_str(atom_groups_total_forces)+"\n");
-    cvm::log(cvm::line_marker);
-
-#if NAMD_VERSION_NUMBER >= 34471681
-    cvm::log("volmaps_ids = "+cvm::to_str(volmaps_ids)+"\n");
-    cvm::log("volmaps_values = "+cvm::to_str(volmaps_values)+"\n");
-    cvm::log(cvm::line_marker);
-#endif
+    print_input_atomic_data();
   }
 
   // call the collective variable module
@@ -528,15 +508,7 @@ void colvarproxy_namd::calculate()
   }
 
   if (cvm::debug()) {
-    cvm::log(cvm::line_marker);
-    cvm::log("atoms_new_colvar_forces = "+cvm::to_str(atoms_new_colvar_forces)+"\n");
-    cvm::log(cvm::line_marker);
-    cvm::log("atom_groups_new_colvar_forces = "+cvm::to_str(atom_groups_new_colvar_forces)+"\n");
-    cvm::log(cvm::line_marker);
-#if NAMD_VERSION_NUMBER >= 34471681
-    cvm::log("volmaps_new_colvar_forces = "+cvm::to_str(volmaps_new_colvar_forces)+"\n");
-    cvm::log(cvm::line_marker);
-#endif
+    print_output_atomic_data();
   }
 
   // communicate all forces to the MD integrator
