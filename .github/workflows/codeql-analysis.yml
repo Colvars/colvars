@@ -51,13 +51,13 @@ jobs:
       shell: bash
       run: |
         cmake -E make_directory ${{github.workspace}}/build
-        cmake -D WARNINGS_ARE_ERRORS=ON -D CMAKE_VERBOSE_MAKEFILE=ON -D COLVARS_TCL=ON -D LEPTON_DIR=${{github.workspace}}/openmm-source/libraries/lepton -S ${{github.workspace}}/cmake -B ${{github.workspace}}/build
+        cmake -D CMAKE_CXX_STANDARD=11 -D WARNINGS_ARE_ERRORS=ON -D CMAKE_VERBOSE_MAKEFILE=ON -D COLVARS_TCL=ON -D LEPTON_DIR=${{github.workspace}}/openmm-source/libraries/lepton -S ${{github.workspace}}/cmake -B ${{github.workspace}}/build
         cmake --build ${{github.workspace}}/build --parallel $(nproc --all)
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
 
-    - name: Upadte documentation of command-line inteface
+    - name: Update documentation of command-line interface
       shell: bash
       working-directory: doc
       run: |
