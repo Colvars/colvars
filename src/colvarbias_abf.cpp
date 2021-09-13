@@ -453,13 +453,13 @@ int colvarbias_abf::update()
         // This is enforced naturally if using integrated PMF
         colvar_forces[0].real_value = fact * (grad[0] - gradients->average ());
       } else {
-        for (size_t i = 0; i < num_variables(); i++) {
+        for (i = 0; i < num_variables(); i++) {
           // subtracting the mean force (opposite of the FE gradient) means adding the gradient
           colvar_forces[i].real_value = fact * grad[i];
         }
       }
       if (cap_force) {
-        for (size_t i = 0; i < num_variables(); i++) {
+        for (i = 0; i < num_variables(); i++) {
           if ( colvar_forces[i].real_value * colvar_forces[i].real_value > max_force[i] * max_force[i] ) {
             colvar_forces[i].real_value = (colvar_forces[i].real_value > 0 ? max_force[i] : -1.0 * max_force[i]);
           }
@@ -495,7 +495,7 @@ int colvarbias_abf::update()
   {
     std::vector<double> x(num_variables(),0);
     std::vector<double> y(num_variables(),0);
-    for (size_t i = 0; i < num_variables(); i++)
+    for (i = 0; i < num_variables(); i++)
     {
       x[i] = colvars[i]->actual_value();
       y[i] = colvars[i]->value();
