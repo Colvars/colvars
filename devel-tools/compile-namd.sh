@@ -5,16 +5,25 @@ source $(dirname $0)/set-ccache.sh
 compile_namd_target() {
 
     local source_dir=""
-    if [ -f "${1}/src/NamdTypes.h" ] ; then
-        source_dir="${1}"
-        pushd "${source_dir}"
-        shift
-    fi
+    local dirname_prefix="Linux-x86_64-g++"
+
+    while [ $# -ge 1 ]; do
+        if [ -f "${1}/src/NamdTypes.h" ] ; then
+            source_dir="${1}"
+            pushd "${source_dir}"
+            shift
+        fi
+        if [ "${1}" = "debug" ] ; then
+            dirname_prefix="Linux-x86_64-g++-debug"
+            shift
+        fi
+    done
 
     local label="${1:-multicore}"
-    local ret_code
 
-    local dirname="Linux-x86_64-g++.${label}"
+    local dirname="${dirname_prefix}.${label}"
+
+    local ret_code
 
     if [ -d /opt/charm ] ; then
         rm -f charm
@@ -31,7 +40,7 @@ compile_namd_target() {
     fi
 
     if [ "${label}" = "debug" ] ; then
-        cat > arch/Linux-x86_64-g++.arch <<EOF
+        cat > arch/Linux-x86_64-g++-debug.arch <<EOF
 CHARMARCH = multicore-linux-x86_64
 
 CXX = g++ -m64 -std=c++0x
