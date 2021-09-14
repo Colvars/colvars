@@ -101,6 +101,12 @@ else
   fi
 fi
 
+
+source $(dirname $0)/devel-tools/version_functions.sh
+
+COLVARS_VERSION=$(get_colvarmodule_version)
+
+
 get_gromacs_major_version_cmake() {
   cat $1 | grep 'set(GMX_VERSION_MAJOR' | \
     sed -e 's/set(GMX_VERSION_MAJOR //' -e 's/)//'
@@ -144,6 +150,10 @@ then
     fi
     ;;
   esac
+
+  if grep -q 'set(GMX_VERSION_STRING_OF_FORK ""' ${GMX_VERSION_INFO} ; then
+    sed -i "s/set(GMX_VERSION_STRING_OF_FORK \"\"/set(GMX_VERSION_STRING_OF_FORK \"Colvars-${COLVARS_VERSION}\"/" ${GMX_VERSION_INFO}
+  fi
 
 fi
 echo -n "Updating ..."
