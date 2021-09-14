@@ -14,7 +14,7 @@ else
   BINARY=$1
 fi
 
-TOPDIR=../../../ # $(git rev-parse --show-toplevel)
+TOPDIR=$(git rev-parse --show-toplevel)
 if [ ! -d ${TOPDIR} ] ; then
   echo "Error: cannot identify top project directory." >& 2
   exit 1
