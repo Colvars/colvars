@@ -7,19 +7,21 @@ compile_namd_target() {
     local source_dir=""
     local dirname_prefix="Linux-x86_64-g++"
 
+    local label="multicore"
+
     while [ $# -ge 1 ]; do
         if [ -f "${1}/src/NamdTypes.h" ] ; then
             source_dir="${1}"
             pushd "${source_dir}"
             shift
-        fi
-        if [ "${1}" = "debug" ] ; then
+        elif [ "${1}" = "debug" ] ; then
             dirname_prefix="Linux-x86_64-g++-debug"
+            shift
+        else
+            label="${1}"
             shift
         fi
     done
-
-    local label="${1:-multicore}"
 
     local dirname="${dirname_prefix}.${label}"
 
@@ -39,8 +41,9 @@ compile_namd_target() {
         cmd+=(--charm-arch multicore-linux-x86_64)
     fi
 
-    if [ "${label}" = "debug" ] ; then
+    if [ "${dirname_prefix}" = "Linux-x86_64-g++-debug" ] ; then
         cat > arch/Linux-x86_64-g++-debug.arch <<EOF
+NAMD_ARCH = Linux-x86_64
 CHARMARCH = multicore-linux-x86_64
 
 CXX = g++ -m64 -std=c++0x
@@ -48,7 +51,6 @@ CXXOPTS = -O0 -g -DCOLVARS_DEBUG -DDEBUGM -DMIN_DEBUG_LEVEL=4
 CC = gcc -m64
 COPTS = \$(CXXOPTS)
 EOF
-        cmd+=(--charm-arch multicore-linux-x86_64)
     fi
 
     if [ "${label}" = "mpi" ] ; then
