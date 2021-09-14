@@ -9,12 +9,14 @@ get_spiff() {
         if [ -d "${1}" ] ; then
             SPIFFDIR="${1}"
         else
-            SPIFFDIR=$(mktemp -d --tmpdir=${TMPDIR:-/tmp} spiff-XXXXXX)
+            SPIFFDIR=$(dirname $0)/spiff
+        fi
+        if [ ! -d "${SPIFFDIR}" ] ; then
+            git clone --quiet --depth 1 https://github.com/jhenin/spiff.git "${SPIFFDIR}"
         fi
         if [ ! -x "${SPIFFDIR}"/spiff ] ; then
-            if git clone --quiet --depth 1 https://github.com/jhenin/spiff.git \
-                "${SPIFFDIR}" ; then
-                pushd "${SPIFFDIR}" > /dev/null && make > /dev/null
+            if pushd "${SPIFFDIR}" > /dev/null ; then
+                make > /dev/null
                 popd > /dev/null
             fi
         fi
