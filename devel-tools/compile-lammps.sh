@@ -64,13 +64,14 @@ compile_lammps_target() {
     LAMMPS_BUILD_OPTS+=("-DPKG_PYTHON=on")
 
     if [ -z "${LAMMPS_BUILD_DIR}" ] ; then
-        LAMMPS_BUILD_DIR=$(mktemp -d /tmp/lammps-build-XXXXXX)
+        LAMMPS_BUILD_DIR="${LAMMPS_SRC_DIR}/build"
     fi
 
     mkdir -p "${LAMMPS_BUILD_DIR}"
 
     local ret_code=0
 
+    # TODO restore shared libs build when messing with the Python interface
     ${CMAKE} \
         -DCMAKE_INSTALL_PREFIX="${LAMMPS_INSTALL_DIR}" \
         -DCMAKE_BUILD_TYPE=${LAMMPS_BUILD_TYPE:-Release} \
