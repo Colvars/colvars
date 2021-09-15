@@ -1,6 +1,9 @@
 #!/bin/bash
 
+source $(dirname $0)/load-recent-git.sh
+
 source $(dirname $0)/set-ccache.sh
+
 
 compile_namd_target() {
 

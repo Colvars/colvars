@@ -1,10 +1,12 @@
 #!/bin/bash
 
-# TODO most of the library paths are for RH-style Linux environments
+source $(dirname $0)/load-recent-git.sh
 
 source $(dirname $0)/set-ccache.sh
 
 detect_os() {
+
+    # TODO most of the paths are for RedHat-style Linux environments
 
     # if ! hash lsb_release ; then
     #     echo "Error: lsb_release is not installed." >&2
