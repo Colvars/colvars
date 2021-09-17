@@ -1217,7 +1217,6 @@ int colvarproxy_namd::init_volmap_by_id(int volmap_id)
   if (error_code == COLVARS_OK) {
     index = add_volmap_slot(volmap_id);
     modifyRequestedGridObjects().add(volmap_id);
-    colvars->cite_feature("GridForces volumetric map implementation for NAMD");
   }
 
   return (error_code == COLVARS_OK) ? index : -1;
@@ -1260,7 +1259,6 @@ int colvarproxy_namd::init_volmap_by_name(char const *volmap_name)
 
     index = add_volmap_slot(volmap_id);
     modifyRequestedGridObjects().add(volmap_id);
-    colvars->cite_feature("GridForces volumetric map implementation for NAMD");
   }
 
   return (error_code == COLVARS_OK) ? index : -1;
@@ -1274,6 +1272,7 @@ int colvarproxy_namd::check_volmap_by_id(int volmap_id)
     return cvm::error("Error: invalid numeric ID ("+cvm::to_str(volmap_id)+
                       ") for map.\n", INPUT_ERROR);
   }
+  colvars->cite_feature("GridForces volumetric map implementation for NAMD");
   return COLVARS_OK;
 }
 
@@ -1288,6 +1287,7 @@ int colvarproxy_namd::check_volmap_by_name(char const *volmap_name)
     return cvm::error("Error: invalid map name \""+std::string(volmap_name)+
                       "\".\n", INPUT_ERROR);
   }
+  colvars->cite_feature("GridForces volumetric map implementation for NAMD");
   return COLVARS_OK;
 }
 
