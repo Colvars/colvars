@@ -111,6 +111,20 @@ jobs:
         singularity exec devel-tools/CentOS7-devel.sif \
         bash devel-tools/compile-namd.sh namd-source
 
+    - name: Run regression tests for library code with NAMD
+      shell: bash
+      working-directory: namd/tests/library
+      run: |
+        singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+        ./run_tests.sh ${{github.workspace}}/namd-source/Linux-x86_64-g++.multicore/namd2
+
+    - name: Run regression tests for NAMD interface code
+      shell: bash
+      working-directory: namd/tests/interface
+      run: |
+        singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+        ./run_tests.sh ${{github.workspace}}/namd-source/Linux-x86_64-g++.multicore/namd2
+
     - name: Update and build VMD
       shell: bash
       run: |
