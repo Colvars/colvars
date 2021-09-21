@@ -35,7 +35,7 @@ while [ $# -ge 1 ]; do
   shift
 done
 
-TOPDIR=../../../ # $(git rev-parse --show-toplevel)
+TOPDIR=$(git rev-parse --show-toplevel)
 if [ ! -d ${TOPDIR} ] ; then
   echo "Error: cannot identify top project directory." >& 2
   exit 1
