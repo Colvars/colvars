@@ -193,7 +193,7 @@
     "  year={2021},\n"
     "  eprint={2107.08511},\n"
     "  archivePrefix={arXiv},\n"
-    "  primaryClass={physics.comp-ph}\n"
+    "  primaryClass={physics.comp-ph},\n"
     "  url = {https://arxiv.org/abs/2107.08511},\n"
     "}\n";
 
