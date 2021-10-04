@@ -1,5 +1,3 @@
-## List of Colvars versions included in simulation/analysis packages
-
 [Versions included in LAMMPS](#versions-included-in-LAMMPS)
 
 [Versions included in NAMD](#versions-included-in-NAMD)
@@ -9,6 +7,7 @@
 ### Versions included in LAMMPS
 LAMMPS version | Colvars version
 -------------- | ---------------
+stable_29Sep2021 | [2021-09-13](https://github.com/Colvars/colvars/releases/tag/lammps-stable_29Sep2021)
 stable_29Oct2020 | [2020-09-17](https://github.com/Colvars/colvars/releases/tag/lammps-stable_29Oct2020)
 stable_3Mar2020 | [2020-01-27](https://github.com/Colvars/colvars/releases/tag/lammps-stable_3Mar2020)
 stable_7Aug2019 | [2019-08-05](https://github.com/Colvars/colvars/releases/tag/lammps-stable_7Aug2019)
@@ -23,6 +22,8 @@ stable_5Nov2016 | [2016-10-21](https://github.com/Colvars/colvars/releases/tag/l
 stable_4Nov2016 | [2016-10-21](https://github.com/Colvars/colvars/releases/tag/lammps-stable_4Nov2016)
 
 ### Versions included in NAMD
+(Note: the Colvars version included in NAMD 2.12 is the same as the one included in 2.12b1 with only bugfixes applied: therefore, NAMD 2.12 does not correspond to a specific version of the Colvars source tree)
+
 NAMD version | Colvars version
 -------------- | ---------------
 2.14 | [2020-07-07](https://github.com/Colvars/colvars/releases/tag/namd-2.14)
