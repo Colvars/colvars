@@ -20,7 +20,7 @@
 colvar::alch_lambda::alch_lambda(std::string const &conf)
   : cvc(conf)
 {
-  function_type = "alch_lambda";
+  set_function_type("alchLambda");
 
   disable(f_cvc_explicit_gradient);
   disable(f_cvc_gradient);

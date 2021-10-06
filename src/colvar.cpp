@@ -300,7 +300,7 @@ int colvar::init(std::string const &conf)
   error_code |= init_output_flags(conf);
 
   // Detect if we have one component that is an alchemical lambda
-  if (is_enabled(f_cv_single_cvc) && cvcs[0]->function_type == "alch_lambda") {
+  if (is_enabled(f_cv_single_cvc) && cvcs[0]->function_type == "alchLambda") {
     enable(f_cv_external);
   }
 
@@ -759,7 +759,7 @@ template<typename def_class_name> int colvar::init_components_type(std::string c
     if (cvcp != NULL) {
       cvcs.push_back(cvcp);
       cvcp->check_keywords(def_conf, def_config_key);
-      cvcp->config_key = def_config_key;
+      cvcp->set_function_type(def_config_key);
       if (cvm::get_error()) {
         cvm::error("Error: in setting up component \""+
                    std::string(def_config_key)+"\".\n", INPUT_ERROR);
@@ -767,6 +767,7 @@ template<typename def_class_name> int colvar::init_components_type(std::string c
       }
       cvm::decrease_depth();
     } else {
+      cvm::decrease_depth();
       cvm::error("Error: in allocating component \""+
                    std::string(def_config_key)+"\".\n",
                  MEMORY_ERROR);

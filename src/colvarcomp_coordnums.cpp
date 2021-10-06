@@ -94,7 +94,7 @@ colvar::coordnum::coordnum(std::string const &conf)
   : cvc(conf), b_anisotropic(false), pairlist(NULL)
 
 {
-  function_type = "coordnum";
+  set_function_type("coordNum");
   x.type(colvarvalue::type_scalar);
 
   colvarproxy *proxy = cvm::main()->proxy;
@@ -305,7 +305,7 @@ colvar::h_bond::h_bond(std::string const &conf)
   if (cvm::debug())
     cvm::log("Initializing h_bond object.\n");
 
-  function_type = "h_bond";
+  set_function_type("hBond");
   x.type(colvarvalue::type_scalar);
   init_scalar_boundaries(0.0, 1.0);
 
@@ -350,7 +350,7 @@ colvar::h_bond::h_bond(cvm::atom const &acceptor,
                        cvm::real r0_i, int en_i, int ed_i)
   : r0(r0_i), en(en_i), ed(ed_i)
 {
-  function_type = "h_bond";
+  set_function_type("hBond");
   x.type(colvarvalue::type_scalar);
   init_scalar_boundaries(0.0, 1.0);
 
@@ -396,7 +396,7 @@ simple_scalar_dist_functions(h_bond)
 colvar::selfcoordnum::selfcoordnum(std::string const &conf)
   : cvc(conf), pairlist(NULL)
 {
-  function_type = "selfcoordnum";
+  set_function_type("selfCoordNum");
   x.type(colvarvalue::type_scalar);
 
   colvarproxy *proxy = cvm::main()->proxy;
@@ -540,7 +540,7 @@ simple_scalar_dist_functions(selfcoordnum)
 colvar::groupcoordnum::groupcoordnum(std::string const &conf)
   : distance(conf), b_anisotropic(false)
 {
-  function_type = "groupcoordnum";
+  set_function_type("groupCoord");
   x.type(colvarvalue::type_scalar);
   init_scalar_boundaries(0.0, 1.0);
 
