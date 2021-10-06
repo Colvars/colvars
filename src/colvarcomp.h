@@ -110,6 +110,9 @@ public:
   /// Calls the init() function of the class
   cvc(std::string const &conf);
 
+  /// Set the value of \link function_type \endlink and its dependencies
+  int set_function_type(std::string const &type);
+
   /// An init function should be defined for every class inheriting from cvc
   /// \param conf Contents of the configuration file pertaining to this \link
   /// cvc \endlink
@@ -278,6 +281,9 @@ public:
   }
 
 protected:
+
+  /// Record the type of this class as well as those it is derived from
+  std::vector<std::string> function_types;
 
   /// \brief Cached value
   colvarvalue x;

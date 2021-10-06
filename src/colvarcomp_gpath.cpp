@@ -131,7 +131,7 @@ void colvar::CartesianBasedPath::computeDistanceToReferenceFrames(std::vector<cv
 }
 
 colvar::gspath::gspath(std::string const &conf): CartesianBasedPath(conf) {
-    function_type = "gspath";
+    set_function_type("gspath");
     get_keyval(conf, "useSecondClosestFrame", use_second_closest_frame, true);
     if (use_second_closest_frame == true) {
         cvm::log(std::string("Geometric path s(σ) will use the second closest frame to compute s_(m-1)\n"));
@@ -272,7 +272,7 @@ void colvar::gspath::apply_force(colvarvalue const &force) {
 }
 
 colvar::gzpath::gzpath(std::string const &conf): CartesianBasedPath(conf) {
-    function_type = "gzpath";
+    set_function_type("gzpath");
     get_keyval(conf, "useSecondClosestFrame", use_second_closest_frame, true);
     if (use_second_closest_frame == true) {
         cvm::log(std::string("Geometric path z(σ) will use the second closest frame to compute s_(m-1)\n"));
@@ -629,7 +629,7 @@ colvar::CVBasedPath::~CVBasedPath() {
 }
 
 colvar::gspathCV::gspathCV(std::string const &conf): CVBasedPath(conf) {
-    function_type = "gspathCV";
+    set_function_type("gspathCV");
     cvm::log(std::string("Total number of frames: ") + cvm::to_str(total_reference_frames) + std::string("\n"));
     // Initialize variables for future calculation
     get_keyval(conf, "useSecondClosestFrame", use_second_closest_frame, true);
@@ -766,7 +766,7 @@ void colvar::gspathCV::apply_force(colvarvalue const &force) {
 }
 
 colvar::gzpathCV::gzpathCV(std::string const &conf): CVBasedPath(conf) {
-    function_type = "gzpathCV";
+    set_function_type("gzpathCV");
     cvm::log(std::string("Total number of frames: ") + cvm::to_str(total_reference_frames) + std::string("\n"));
     // Initialize variables for future calculation
     M = cvm::real(total_reference_frames - 1);

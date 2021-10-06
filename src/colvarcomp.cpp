@@ -43,6 +43,20 @@ colvar::cvc::cvc(std::string const &conf)
 }
 
 
+int colvar::cvc::set_function_type(std::string const &type)
+{
+  function_type = type;
+  if (function_types.size() == 0) {
+    function_types.push_back(function_type);
+  } else {
+    if (function_types.back() != function_type) {
+      function_types.push_back(function_type);
+    }
+  }
+  return COLVARS_OK;
+}
+
+
 int colvar::cvc::init(std::string const &conf)
 {
   if (cvm::debug())

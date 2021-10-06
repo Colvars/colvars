@@ -13,7 +13,7 @@
 #include "colvarcomp.h"
 
 colvar::aspathCV::aspathCV(std::string const &conf): CVBasedPath(conf) {
-    function_type = "aspathCV";
+    set_function_type("aspathCV");
     cvm::log(std::string("Total number of frames: ") + cvm::to_str(total_reference_frames) + std::string("\n"));
     std::vector<cvm::real> p_weights(cv.size(), 1.0);
     get_keyval(conf, "weights", p_weights, std::vector<cvm::real>(cv.size(), 1.0));
@@ -102,7 +102,7 @@ void colvar::aspathCV::apply_force(colvarvalue const &force) {
 colvar::aspathCV::~aspathCV() {}
 
 colvar::azpathCV::azpathCV(std::string const &conf): CVBasedPath(conf) {
-    function_type = "azpathCV";
+    set_function_type("azpathCV");
     cvm::log(std::string("Total number of frames: ") + cvm::to_str(total_reference_frames) + std::string("\n"));
     std::vector<cvm::real> p_weights(cv.size(), 1.0);
     get_keyval(conf, "weights", p_weights, std::vector<cvm::real>(cv.size(), 1.0));
