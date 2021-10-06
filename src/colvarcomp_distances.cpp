@@ -179,10 +179,11 @@ colvar::distance_z::distance_z(std::string const &conf)
 
   // TODO detect PBC from MD engine (in simple cases)
   // and then update period in real time
-  if (period != 0.0)
+  if (period != 0.0) {
     enable(f_cvc_periodic);
+  }
 
-  if ((wrap_center != 0.0) && (period == 0.0)) {
+  if ((wrap_center != 0.0) && !is_enabled(f_cvc_periodic)) {
     cvm::error("Error: wrapAround was defined in a distanceZ component,"
                 " but its period has not been set.\n");
     return;
