@@ -774,8 +774,6 @@ template<typename def_class_name> int colvar::init_components_type(std::string c
       return MEMORY_ERROR;
     }
 
-    cvm::main()->cite_feature(std::string(def_config_key)+" colvar component");
-
     if ( (cvcp->period != 0.0) || (cvcp->wrap_center != 0.0) ) {
       if (! cvcp->is_enabled(f_cvc_periodic)) {
         cvm::error("Error: invalid use of period and/or "
