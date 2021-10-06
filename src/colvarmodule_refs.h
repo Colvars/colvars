@@ -326,17 +326,17 @@
   feature_count_[std::string("distance colvar component")] = 0;
   feature_paper_map_[std::string("distance colvar component")] = "Fiorin2013";
 
-  feature_count_[std::string("distanceXY colvar component")] = 0;
-  feature_paper_map_[std::string("distanceXY colvar component")] = "Fiorin2013";
+  feature_count_[std::string("distanceXY colvar component (derived from distanceZ)")] = 0;
+  feature_paper_map_[std::string("distanceXY colvar component (derived from distanceZ)")] = "Fiorin2013";
 
   feature_count_[std::string("distanceZ colvar component")] = 0;
   feature_paper_map_[std::string("distanceZ colvar component")] = "Fiorin2013";
 
-  feature_count_[std::string("distanceVec colvar component")] = 0;
-  feature_paper_map_[std::string("distanceVec colvar component")] = "Fiorin2013";
+  feature_count_[std::string("distanceVec colvar component (derived from distance)")] = 0;
+  feature_paper_map_[std::string("distanceVec colvar component (derived from distance)")] = "Fiorin2013";
 
-  feature_count_[std::string("distanceDir colvar component")] = 0;
-  feature_paper_map_[std::string("distanceDir colvar component")] = "Fiorin2013";
+  feature_count_[std::string("distanceDir colvar component (derived from distance)")] = 0;
+  feature_paper_map_[std::string("distanceDir colvar component (derived from distance)")] = "Fiorin2013";
 
   feature_count_[std::string("distanceInv colvar component")] = 0;
   feature_paper_map_[std::string("distanceInv colvar component")] = "Fiorin2013";
@@ -353,8 +353,8 @@
   feature_count_[std::string("selfCoordNum colvar component")] = 0;
   feature_paper_map_[std::string("selfCoordNum colvar component")] = "Fiorin2013";
 
-  feature_count_[std::string("groupCoord colvar component")] = 0;
-  feature_paper_map_[std::string("groupCoord colvar component")] = "Fiorin2013";
+  feature_count_[std::string("groupCoord colvar component (derived from distance)")] = 0;
+  feature_paper_map_[std::string("groupCoord colvar component (derived from distance)")] = "Fiorin2013";
 
   feature_count_[std::string("hBond colvar component")] = 0;
   feature_paper_map_[std::string("hBond colvar component")] = "Fiorin2013";
@@ -368,11 +368,11 @@
   feature_count_[std::string("gyration colvar component")] = 0;
   feature_paper_map_[std::string("gyration colvar component")] = "Fiorin2013";
 
-  feature_count_[std::string("inertia colvar component")] = 0;
-  feature_paper_map_[std::string("inertia colvar component")] = "Fiorin2013";
+  feature_count_[std::string("inertia colvar component (derived from gyration)")] = 0;
+  feature_paper_map_[std::string("inertia colvar component (derived from gyration)")] = "Fiorin2013";
 
-  feature_count_[std::string("inertiaZ colvar component")] = 0;
-  feature_paper_map_[std::string("inertiaZ colvar component")] = "Fiorin2013";
+  feature_count_[std::string("inertiaZ colvar component (derived from inertia)")] = 0;
+  feature_paper_map_[std::string("inertiaZ colvar component (derived from inertia)")] = "Fiorin2013";
 
   feature_count_[std::string("orientation colvar component")] = 0;
   feature_paper_map_[std::string("orientation colvar component")] = "Fiorin2013";
@@ -383,17 +383,17 @@
   feature_count_[std::string("Optimal rotation via flexible fitting")] = 0;
   feature_paper_map_[std::string("Optimal rotation via flexible fitting")] = "Fiorin2013";
 
-  feature_count_[std::string("orientationAngle colvar component")] = 0;
-  feature_paper_map_[std::string("orientationAngle colvar component")] = "Fiorin2013";
+  feature_count_[std::string("orientationAngle colvar component (derived from orientation)")] = 0;
+  feature_paper_map_[std::string("orientationAngle colvar component (derived from orientation)")] = "Fiorin2013";
 
-  feature_count_[std::string("orientationProj colvar component")] = 0;
-  feature_paper_map_[std::string("orientationProj colvar component")] = "Fiorin2013";
+  feature_count_[std::string("orientationProj colvar component (derived from orientation)")] = 0;
+  feature_paper_map_[std::string("orientationProj colvar component (derived from orientation)")] = "Fiorin2013";
 
-  feature_count_[std::string("spinAngle colvar component")] = 0;
-  feature_paper_map_[std::string("spinAngle colvar component")] = "Fiorin2013";
+  feature_count_[std::string("spinAngle colvar component (derived from orientation)")] = 0;
+  feature_paper_map_[std::string("spinAngle colvar component (derived from orientation)")] = "Fiorin2013";
 
-  feature_count_[std::string("tilt colvar component")] = 0;
-  feature_paper_map_[std::string("tilt colvar component")] = "Fiorin2013";
+  feature_count_[std::string("tilt colvar component (derived from orientation)")] = 0;
+  feature_paper_map_[std::string("tilt colvar component (derived from orientation)")] = "Fiorin2013";
 
   feature_count_[std::string("alpha colvar component")] = 0;
   feature_paper_map_[std::string("alpha colvar component")] = "Fiorin2013";
@@ -443,14 +443,14 @@
   feature_count_[std::string("polarPhi colvar component")] = 0;
   feature_paper_map_[std::string("polarPhi colvar component")] = "Fu2017";
 
-  feature_count_[std::string("eulerPhi colvar component")] = 0;
-  feature_paper_map_[std::string("eulerPhi colvar component")] = "Fu2017";
+  feature_count_[std::string("eulerPhi colvar component (derived from orientation)")] = 0;
+  feature_paper_map_[std::string("eulerPhi colvar component (derived from orientation)")] = "Fu2017";
 
-  feature_count_[std::string("eulerTheta colvar component")] = 0;
-  feature_paper_map_[std::string("eulerTheta colvar component")] = "Fu2017";
+  feature_count_[std::string("eulerTheta colvar component (derived from orientation)")] = 0;
+  feature_paper_map_[std::string("eulerTheta colvar component (derived from orientation)")] = "Fu2017";
 
-  feature_count_[std::string("eulerPsi colvar component")] = 0;
-  feature_paper_map_[std::string("eulerPsi colvar component")] = "Fu2017";
+  feature_count_[std::string("eulerPsi colvar component (derived from orientation)")] = 0;
+  feature_paper_map_[std::string("eulerPsi colvar component (derived from orientation)")] = "Fu2017";
 
   feature_count_[std::string("dipoleAngle colvar component")] = 0;
   feature_paper_map_[std::string("dipoleAngle colvar component")] = "Garate2019";

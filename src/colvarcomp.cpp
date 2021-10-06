@@ -53,6 +53,11 @@ int colvar::cvc::set_function_type(std::string const &type)
       function_types.push_back(function_type);
     }
   }
+  for (size_t i = function_types.size()-1; i > 0; i--) {
+    cvm::main()->cite_feature(function_types[i]+" colvar component"+
+                              " (derived from "+function_types[i-1]+")");
+  }
+  cvm::main()->cite_feature(function_types[0]+" colvar component");
   return COLVARS_OK;
 }
 

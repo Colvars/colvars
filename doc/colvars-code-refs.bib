@@ -43,29 +43,29 @@
 % Colvars-LAMMPS interface
 % Colvars-VMD interface (command line)
 % distance colvar component
-% distanceXY colvar component
+% distanceXY colvar component (derived from distanceZ)
 % distanceZ colvar component
-% distanceVec colvar component
-% distanceDir colvar component
+% distanceVec colvar component (derived from distance)
+% distanceDir colvar component (derived from distance)
 % distanceInv colvar component
 % angle colvar component
 % dihedral colvar component
 % coordNum colvar component
 % selfCoordNum colvar component
-% groupCoord colvar component
+% groupCoord colvar component (derived from distance)
 % hBond colvar component
 % rmsd colvar component
 % eigenvector colvar component
 % gyration colvar component
-% inertia colvar component
-% inertiaZ colvar component
+% inertia colvar component (derived from gyration)
+% inertiaZ colvar component (derived from inertia)
 % orientation colvar component
 % Moving frame of reference
 % Optimal rotation via flexible fitting
-% orientationAngle colvar component
-% orientationProj colvar component
-% spinAngle colvar component
-% tilt colvar component
+% orientationAngle colvar component (derived from orientation)
+% orientationProj colvar component (derived from orientation)
+% spinAngle colvar component (derived from orientation)
+% tilt colvar component (derived from orientation)
 % alpha colvar component
 % dihedralPC colvar component
 % cartesian colvar component
@@ -122,9 +122,9 @@
 
 % polarTheta colvar component
 % polarPhi colvar component
-% eulerPhi colvar component
-% eulerTheta colvar component
-% eulerPsi colvar component
+% eulerPhi colvar component (derived from orientation)
+% eulerTheta colvar component (derived from orientation)
+% eulerPsi colvar component (derived from orientation)
 @article{Fu2017,
   author = {Fu, Haohao and Cai, Wensheng and H\'enin, J\'er\^ome and Roux, Beno\^it and Chipot, Christophe},
   title = {New Coarse Variables for the Accurate Determination of Standard Binding Free Energies},
