@@ -1388,6 +1388,9 @@ public:
   void calc_optimal_rotation(std::vector<atom_pos> const &pos1,
                              std::vector<atom_pos> const &pos2);
 
+  /// Initialize member data
+  int init();
+
   /// Default constructor
   rotation();
 

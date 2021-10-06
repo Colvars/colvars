@@ -380,6 +380,9 @@
   feature_count_[std::string("Moving frame of reference")] = 0;
   feature_paper_map_[std::string("Moving frame of reference")] = "Fiorin2013";
 
+  feature_count_[std::string("Optimal rotation via flexible fitting")] = 0;
+  feature_paper_map_[std::string("Optimal rotation via flexible fitting")] = "Fiorin2013";
+
   feature_count_[std::string("orientationAngle colvar component")] = 0;
   feature_paper_map_[std::string("orientationAngle colvar component")] = "Fiorin2013";
 
