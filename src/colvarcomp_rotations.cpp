@@ -166,7 +166,7 @@ colvar::orientation_angle::orientation_angle(std::string const &conf)
   set_function_type("orientationAngle");
   init_as_angle();
   enable(f_cvc_explicit_gradient);
-  init(conf);
+  orientation_angle::init(conf);
 }
 
 
@@ -223,7 +223,7 @@ colvar::orientation_proj::orientation_proj(std::string const &conf)
   enable(f_cvc_explicit_gradient);
   x.type(colvarvalue::type_scalar);
   init_scalar_boundaries(0.0, 1.0);
-  init(conf);
+  orientation_proj::init(conf);
 }
 
 
@@ -268,10 +268,10 @@ colvar::tilt::tilt(std::string const &conf)
   : orientation()
 {
   set_function_type("tilt");
-  enable(f_cvc_explicit_gradient);
   x.type(colvarvalue::type_scalar);
+  enable(f_cvc_explicit_gradient);
   init_scalar_boundaries(-1.0, 1.0);
-  init(conf);
+  tilt::init(conf);
 }
 
 
@@ -332,11 +332,10 @@ colvar::spin_angle::spin_angle(std::string const &conf)
   : orientation()
 {
   set_function_type("spinAngle");
-  period = 360.0;
+  init_as_periodic_angle();
   enable(f_cvc_periodic);
   enable(f_cvc_explicit_gradient);
-  x.type(colvarvalue::type_scalar);
-  init(conf);
+  spin_angle::init(conf);
 }
 
 
@@ -448,11 +447,9 @@ colvar::euler_phi::euler_phi(std::string const &conf)
   : orientation()
 {
   set_function_type("eulerPhi");
-  period = 360.0;
-  enable(f_cvc_periodic);
+  init_as_periodic_angle();
   enable(f_cvc_explicit_gradient);
-  x.type(colvarvalue::type_scalar);
-  init(conf);
+  euler_phi::init(conf);
 }
 
 
@@ -460,10 +457,8 @@ colvar::euler_phi::euler_phi()
   : orientation()
 {
   set_function_type("eulerPhi");
-  period = 360.0;
-  enable(f_cvc_periodic);
+  init_as_periodic_angle();
   enable(f_cvc_explicit_gradient);
-  x.type(colvarvalue::type_scalar);
 }
 
 
@@ -567,11 +562,9 @@ colvar::euler_psi::euler_psi(std::string const &conf)
   : orientation()
 {
   set_function_type("eulerPsi");
-  period = 360.0;
-  enable(f_cvc_periodic);
+  init_as_periodic_angle();
   enable(f_cvc_explicit_gradient);
-  x.type(colvarvalue::type_scalar);
-  init(conf);
+  euler_psi::init(conf);
 }
 
 
@@ -579,10 +572,8 @@ colvar::euler_psi::euler_psi()
   : orientation()
 {
   set_function_type("eulerPsi");
-  period = 360.0;
-  enable(f_cvc_periodic);
+  init_as_periodic_angle();
   enable(f_cvc_explicit_gradient);
-  x.type(colvarvalue::type_scalar);
 }
 
 
@@ -686,9 +677,9 @@ colvar::euler_theta::euler_theta(std::string const &conf)
   : orientation()
 {
   set_function_type("eulerTheta");
+  init_as_angle();
   enable(f_cvc_explicit_gradient);
-  x.type(colvarvalue::type_scalar);
-  init(conf);
+  euler_theta::init(conf);
 }
 
 
@@ -696,8 +687,8 @@ colvar::euler_theta::euler_theta()
   : orientation()
 {
   set_function_type("eulerTheta");
+  init_as_angle();
   enable(f_cvc_explicit_gradient);
-  x.type(colvarvalue::type_scalar);
 }
 
 

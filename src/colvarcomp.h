@@ -304,8 +304,11 @@ protected:
   /// \brief Set data types for a scalar distance (convenience function)
   void init_as_distance();
 
-  /// \brief Set data types for a bounded angle (convenience function)
+  /// \brief Set data types for a bounded angle (0° to 180°)
   void init_as_angle();
+
+  /// \brief Set data types for a periodic angle (-180° to 180°)
+  void init_as_periodic_angle();
 
   /// \brief Set two scalar boundaries (convenience function)
   void init_scalar_boundaries(cvm::real lb, cvm::real ub);

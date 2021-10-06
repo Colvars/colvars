@@ -777,12 +777,7 @@ template<typename def_class_name> int colvar::init_components_type(std::string c
     cvm::main()->cite_feature(std::string(def_config_key)+" colvar component");
 
     if ( (cvcp->period != 0.0) || (cvcp->wrap_center != 0.0) ) {
-      if ( (cvcp->function_type != std::string("distance_z")) &&
-           (cvcp->function_type != std::string("dihedral")) &&
-           (cvcp->function_type != std::string("polar_phi")) &&
-           (cvcp->function_type != std::string("spin_angle")) &&
-           (cvcp->function_type != std::string("euler_phi")) &&
-           (cvcp->function_type != std::string("euler_psi"))) {
+      if (! cvcp->is_enabled(f_cvc_periodic)) {
         cvm::error("Error: invalid use of period and/or "
                    "wrapAround in a \""+
                    std::string(def_config_key)+

@@ -333,7 +333,16 @@ void colvar::cvc::init_as_distance()
 void colvar::cvc::init_as_angle()
 {
   x.type(colvarvalue::type_scalar);
-  init_scalar_boundaries(0.0, 180);
+  init_scalar_boundaries(0.0, 180.0);
+}
+
+
+void colvar::cvc::init_as_periodic_angle()
+{
+  x.type(colvarvalue::type_scalar);
+  enable(f_cvc_periodic);
+  period = 360.0;
+  init_scalar_boundaries(-180.0, 180.0);
 }
 
 
