@@ -3,7 +3,7 @@ name: "Build library, perform basic tests and CodeQL analysis"
 on:
   push:
     branches: [ master ]
-  pull_request:
+  pull_request_target:
     # The branches below must be a subset of the branches above
     branches: [ master ]
 
@@ -16,11 +16,14 @@ jobs:
       fail-fast: false
       matrix:
         language: [ 'cpp' ] #, 'python' ]
-        # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python' ]
 
     steps:
+
     - name: Checkout repository
       uses: actions/checkout@v2
+      with:
+        repository: ${{github.event.pull_request.head.repo.full_name}}
+        ref: ${{github.event.pull_request.head.ref}}
 
     - name: Test build recipes
       run: bash devel-tools/check_build_recipes

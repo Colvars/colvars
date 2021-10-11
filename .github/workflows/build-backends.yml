@@ -3,7 +3,7 @@ name: "Build backends with an updated Colvars module"
 on:
   push:
     branches: [ master ]
-  pull_request:
+  pull_request_target:
     # The branches below must be a subset of the branches above
     branches: [ master ]
 
@@ -18,8 +18,12 @@ jobs:
         language: [ 'cpp' ] #, 'python' ]
 
     steps:
+
     - name: Checkout repository
       uses: actions/checkout@v2
+      with:
+        repository: ${{github.event.pull_request.head.repo.full_name}}
+        ref: ${{github.event.pull_request.head.ref}}
 
     - name: Configure Ccache
       uses: actions/cache@v2
