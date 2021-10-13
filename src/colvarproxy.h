@@ -713,7 +713,7 @@ public:
   }
 
   /// Remove the given file (on Windows only, rename to filename.old)
-  int remove_file(char const *filename);
+  virtual int remove_file(char const *filename);
 
   /// Remove the given file (on Windows only, rename to filename.old)
   inline int remove_file(std::string const &filename)
@@ -722,7 +722,7 @@ public:
   }
 
   /// Rename the given file
-  int rename_file(char const *filename, char const *newfilename);
+  virtual int rename_file(char const *filename, char const *newfilename);
 
   /// Rename the given file
   inline int rename_file(std::string const &filename,
