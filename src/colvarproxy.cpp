@@ -7,9 +7,14 @@
 // If you wish to distribute your changes, please submit them to the
 // Colvars repository at GitHub.
 
+// Using access() to check if a file exists (until we can assume C++14/17)
 #if !defined(WIN32) || defined(__CYGWIN__)
 #include <unistd.h>
 #endif
+#if defined(WIN32)
+#include <io.h>
+#endif
+
 #include <cerrno>
 
 #include <sstream>
@@ -639,10 +644,35 @@ int colvarproxy_io::set_frame(long int)
 }
 
 
-int colvarproxy_io::backup_file(char const * /* filename */)
+int colvarproxy_io::backup_file(char const *filename)
 {
-  // TODO implement this using rename_file()
-  return COLVARS_NOT_IMPLEMENTED;
+  // Simplified version of NAMD_file_exists()
+  int exit_code;
+  do {
+#if defined(WIN32) && !defined(__CYGWIN__)
+    // We could use _access_s here, but it is probably too new
+    exit_code = _access(filename, 00);
+#else
+    exit_code = access(filename, F_OK);
+#endif
+  } while ((exit_code != 0) && (errno == EINTR));
+  if (exit_code != 0) {
+    if (errno == ENOENT) {
+      // File does not exist
+      return COLVARS_OK;
+    } else {
+      return cvm::error("Unknown error while checking if file \""+
+                        std::string(filename)+"\" exists.\n", COLVARS_ERROR);
+    }
+  }
+
+  // The file exists, then rename it
+  if (std::string(filename).rfind(std::string(".colvars.state")) !=
+      std::string::npos) {
+    return rename_file(filename, (std::string(filename)+".old").c_str());
+  } else {
+    return rename_file(filename, (std::string(filename)+".BAK").c_str());
+  }
 }
 
 

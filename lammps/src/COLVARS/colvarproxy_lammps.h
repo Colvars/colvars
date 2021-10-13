@@ -103,8 +103,6 @@ class colvarproxy_lammps : public colvarproxy {
 
   cvm::rvector position_distance(cvm::atom_pos const &pos1, cvm::atom_pos const &pos2) const;
 
-  int backup_file(char const *filename);
-
   cvm::real rand_gaussian(void) { return _random->gaussian(); };
 
   int init_atom(int atom_number);

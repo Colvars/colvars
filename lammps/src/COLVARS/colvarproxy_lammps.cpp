@@ -27,35 +27,6 @@
 
 #define HASH_FAIL  -1
 
-////////////////////////////////////////////////////////////////////////
-// local helper functions
-
-// safely move filename to filename.extension
-static int my_backup_file(const char *filename, const char *extension)
-{
-  struct stat sbuf;
-  if (stat(filename, &sbuf) == 0) {
-    if (!extension) extension = ".BAK";
-    char *backup = new char[strlen(filename)+strlen(extension)+1];
-    strcpy(backup, filename);
-    strcat(backup, extension);
-#if defined(_WIN32) && !defined(__CYGWIN__)
-    remove(backup);
-#endif
-    if (rename(filename,backup)) {
-      char *sys_err_msg = strerror(errno);
-      if (!sys_err_msg)  sys_err_msg = (char *) "(unknown error)";
-      fprintf(stderr,"Error renaming file %s to %s: %s\n",
-              filename, backup, sys_err_msg);
-      delete [] backup;
-      return COLVARS_ERROR;
-    }
-    delete [] backup;
-  }
-  return COLVARS_OK;
-}
-
-////////////////////////////////////////////////////////////////////////
 
 colvarproxy_lammps::colvarproxy_lammps(LAMMPS_NS::LAMMPS *lmp,
                                        const char *inp_name,
@@ -339,17 +310,6 @@ int colvarproxy_lammps::set_unit_system(std::string const &units_in, bool /*chec
     return COLVARS_ERROR;
   }
   return COLVARS_OK;
-}
-
-
-int colvarproxy_lammps::backup_file(char const *filename)
-{
-  if (std::string(filename).rfind(std::string(".colvars.state"))
-      != std::string::npos) {
-    return my_backup_file(filename, ".old");
-  } else {
-    return my_backup_file(filename, ".BAK");
-  }
 }
 
 
