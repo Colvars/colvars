@@ -3015,7 +3015,15 @@ colvar \{\\
 \cvsubsubsec{\texttt{linearCombination}: Helper CV to define a linear combination of other CVs}{sec:cvc_linearCombination}
 \labelkey{colvar|linearCombination}
 
-This is a helper CV which can be defined as a linear combination of other CVs. It maybe useful when you want to define the \texttt{gspathCV~\{...\}} and the \texttt{gzpathCV~\{...\}} as  combinations of other CVs.
+This is a helper CV which can be defined as a linear combination of other CVs. It maybe useful when you want to define the \texttt{gspathCV~\{...\}} and the \texttt{gzpathCV~\{...\}} as combinations of other CVs.
+
+\cvleptononly{
+\cvsubsubsec{\texttt{customColvar}: Helper CV to define a mathematical expression as CV from other CVs}{sec:cvc_customColvar}
+\labelkey{colvar|customColvar}}
+
+\cvleptononly{
+This is a helper CV which can be defined as a mathematical expression (see \ref{sec:colvar_custom_function}) of other CVs. It maybe useful when you want to define the \texttt{gspathCV~\{...\}}, the \texttt{gzpathCV~\{...\}} and \texttt{NeuralNetwork~\{...\}} as combinations of other CVs.
+}
 
 \cvsubsubsec{\texttt{gspathCV}: progress along a path defined in CV space.}{sec:cvc_gspathCV}
 \labelkey{colvar|gspathCV}
