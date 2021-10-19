@@ -102,9 +102,11 @@ else
 fi
 
 
-source $(dirname $0)/devel-tools/version_functions.sh
-
-COLVARS_VERSION=$(get_colvarmodule_version)
+COLVARS_VERSION=$(grep define $(dirname $0)/src/colvars_version.h | cut -d' ' -f 3 | tr -d '"')
+if [ -z "${COLVARS_VERSION}" ] ; then
+  echo "Error reading Colvars version." >&2
+  exit 1
+fi
 
 
 get_gromacs_major_version_cmake() {
