@@ -326,7 +326,8 @@ Running Tcl/Tk [info patchlevel]
 
 Jérôme Hénin (henin@ibpc.fr) and the Colvars developers.
 
-G. Fiorin, M. L. Klein, and J. Hénin. Using collective variables to drive molecular dynamics simulations. Mol. Phys., 111(22-23):3345–3362, 2013
+J. Hénin, L. J. S. Lopes, and G. Fiorin. Human learning for molecular simulations: the Collective Variables Dashboard in VMD.
+http://arxiv.org/abs/2110.08758
 "
 }
 
