@@ -1921,7 +1921,7 @@ void colvar::communicate_forces()
     size_t r = 0; // index in the vector of variable references
     size_t e = 0; // index of the gradient evaluator
 
-    for (size_t i = 0; i < cvcs.size(); i++) {  // gradient with respect to cvc i
+    for (i = 0; i < cvcs.size(); i++) {  // gradient with respect to cvc i
       cvm::matrix2d<cvm::real> jacobian (x.size(), cvcs[i]->value().size());
       for (size_t j = 0; j < cvcs[i]->value().size(); j++) { // j-th element
         for (size_t c = 0; c < x.size(); c++) { // derivative of scalar element c of the colvarvalue
