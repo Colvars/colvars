@@ -48,6 +48,8 @@ function error_syntax {
   echo '      (necessary for HIP where hipCUB is installed locally)'
   echo '  --rocprim-prefix <directory containing rocPRIM headers>'
   echo '      (necessary on AMD-GPUs where rocPRIM is installed locally)'
+  echo '  --rocfft-prefix <directory containing rocFFT headers>'
+  echo '      (necessary on AMD-GPUs where rocFFT is installed locally)'
   echo '  --amdgpu-targets <comma separated list of explicit amdgpu-targets>'
   echo '  --cuda-prefix <directory containing CUDA bin, lib, and include>'
   echo '  --cuda-gencode arch=<arch>,code=<code> (may be repeated)'
@@ -381,6 +383,14 @@ function error_exists {
           error_syntax
         fi
         ROCPRIM_PREFIX=$1
+      ;;
+      --rocfft-prefix)
+        shift
+        if [ ! -d "$1" ]; then
+          echo "ERROR: No such directory $1"
+          error_syntax
+        fi
+        ROCFFT_PREFIX=$1
       ;;
       --rocm-prefix)
         shift
@@ -938,6 +948,24 @@ function error_exists {
         fi
     fi
     echo "ROCPRIM_DIR = $ROCPRIM_PREFIX" >> Make.config
+    if [ -z "$ROCFFT_PREFIX" ]; then
+        if [[ -d "${ROCM_PREFIX}/rocfft/include" ]]; then
+          echo "Using given rocm-prefix $ROCM_PREFIX to find rocFFT."
+          ROCFFT_PREFIX=${ROCM_PREFIX}/rocfft/include/
+        elif [[ -d "/opt/rocm/rocfft/include/" ]]; then
+          echo "Using system installation of rocFFT."
+          ROCFFT_PREFIX=/opt/rocm/rocfft/include/
+        elif [[ -d .rootdir/rocfft/include/ ]]; then
+          echo "Using rocFFT build found in main build directory."
+          ROCFFT_PREFIX=.rootdir/rocfft/include/
+        elif [[ -d "$HOME/rocfft/include/" ]]; then
+          echo "Using rocFFT build found in $HOME/rocfft"
+          ROCFFT_PREFIX=$HOME/rocfft/include/
+        else
+          echo "Warning: rocFFT not found!"
+        fi
+    fi
+    echo "ROCFFT_DIR = $ROCFFT_PREFIX" >> Make.config
     echo "AMDGPUTARGETS = $AMDGPUTARGETS" >> Make.config
     echo 'include .rootdir/arch/$(NAMD_ARCH).hip' >> Make.config
   fi
