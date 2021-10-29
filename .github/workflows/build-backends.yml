@@ -48,7 +48,7 @@ jobs:
       uses: actions/checkout@v2
       with:
         repository: 'lammps/lammps'
-        ref: 'master'
+        ref: 'develop'
         path: 'lammps-source'
 
     - name: Checkout NAMD
