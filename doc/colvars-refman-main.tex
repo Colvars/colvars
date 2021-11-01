@@ -897,15 +897,35 @@ All such files' names also begin with the prefix \outputName.
 
 \cvsubsubsec{Configuration and state files.}{sec:colvars_text_format}
 
-Configuration files are text files that are generally read as input by \MDENGINE{}\cvscriptonly{, and may be optionally inlined in a \MDENGINE{} script (see \ref{sec:cv_command_init})}.
-Starting from versions 2017-02-01, changes in newline encodings are handled transparently, i.e.{} it is possible to typeset a configuration file in Windows (CR-LF newlines) and then use it with Linux or macOS (LF-only newlines).
+\emph{Configuration files} are text files that are generally read as input by \MDENGINE{}\cvscriptonly{, and may be optionally inlined in a \MDENGINE{} script (see \ref{sec:cv_command_init})}.
+Starting from version 2017-02-01, changes in newline encodings are handled transparently, i.e.\ it is possible to typeset a configuration file in Windows (CR-LF newlines) and then use it with Linux or macOS (LF-only newlines).
 
-State files, although not written manually, follow otherwise the same format as configuration files.
+\emph{State files}, although not written manually, follow otherwise the same text format as configuration files.
+
 
 \cvsubsubsec{Index (NDX) files}{sec:colvars_ndx_format}
 
-For atom selections that cannot be specified only with Colvars keywords, external index files may be used following the \href{http://manual.gromacs.org/documentation/current/reference-manual/file-formats.html\#ndx}{NDX format} used in GROMACS.
-\cvlammpsonly{In LAMMPS, such files may also be produced via the \texttt{group2ndx} command.}
+For atom selections that cannot be specified only by using internal Colvars keywords, external \emph{index files} may also be used following the \href{http://manual.gromacs.org/documentation/current/reference-manual/file-formats.html\#ndx}{NDX format} used in GROMACS:
+\begin{datafileexample}
+\-[~group\_1\_name~]\\
+\-~~i1~~i2~~i3~~i4~~...\\
+\-~~...~~~~~~~~~~~~~...~~iN\\
+\-[~group\_2\_name~]\\
+\-~~...
+\end{datafileexample}
+\noindent{}where \emph{i1} through \emph{iN} are 1-based indices.  Each group name may not contain spaces or tabs: otherwise, a parsing error will be raised.
+
+Multiple index files may be provided to Colvars, each using the keyword \refkey{indexFile}{Colvars-global|indexFile}.  Two index files may contain groups with the same names, however these must also represent identical atom selections, i.e.\ the same sequence of indices including order.
+
+\cvgromasonly{\emph{Note that although GROMACS reads index files natively, \refkey{indexFile}{Colvars-global|indexFile} uses a Colvars internal function.  Thus, index files loaded into GROMACS and Colvars do not need to coincide, but it is recommended that they do for simplicity.}}
+
+Other than with GROMACS, an index group may also be generated from the VMD command-line interface, using the helper function \texttt{write\_index\_group} provided in the `colvartools`:
+\begin{mdexampleinput}
+\-source~colvartools/write\_index\_group.tcl\\
+\-set~sel~[atomselect~top~"resname~XXX~and~not~hydrogen"]\\
+\-write\_index\_group~indexfile.ndx~\${sel}~"Ligand"
+\end{mdexampleinput}
+\cvlammpsonly{In LAMMPS, NDX files may also be generated from internal groups via the \texttt{group2ndx} command.}
 
 
 \cvsubsubsec{XYZ coordinate files}{sec:colvars_xyz_format}
@@ -921,7 +941,7 @@ $E_{N}$ & $x_{N}$ & $y_{N}$ & $z_{N}$ \\
 \end{tabular}
 
 \noindent{}where $N$ is the number of atomic coordinates in the file and $E_i$ is the chemical element of the $i$-th atom.
-Because $E_i$ is not used in Colvars, any string is acceptable.
+Because $E_i$ is not used in Colvars, any string that does not contain tabs or spaces is acceptable.
 
 An XYZ file may contain either one of the following scenarios:
 \begin{enumerate}
