@@ -53,6 +53,17 @@
   \end{mdframed}
 }
 
+\definecolor{datafileexample-border-color}{rgb}{0.05,0.2,0.0}
+\definecolor{datafileexample-background-color}{rgb}{0.95,1.0,0.8}
+\newenvironment{datafileexample}{%
+  \begin{mdframed}[%
+      linecolor=datafileexample-border-color,linewidth=2pt,%
+      backgroundcolor=datafileexample-background-color]
+  \ifdefined\HCode\HCode{<pre>}\else\begin{ttfamily}\fi}{%
+  \ifdefined\HCode\HCode{</pre>}\else\end{ttfamily}\fi
+  \end{mdframed}
+}
+
 \newcommand{\cvscriptexampleinputcv}[2]{%
 \def\cvscriptargsep{~}
 \begin{mdexampleinput}{\ifdefined\cvscriptpyapi\textbf{With the ``\texttt{\cvscriptcmd{}}'' command:}\\\fi}%
