@@ -917,7 +917,7 @@ For atom selections that cannot be specified only by using internal Colvars keyw
 
 Multiple index files may be provided to Colvars, each using the keyword \refkey{indexFile}{Colvars-global|indexFile}.  Two index files may contain groups with the same names, however these must also represent identical atom selections, i.e.\ the same sequence of indices including order.
 
-\cvgromasonly{\emph{Note that although GROMACS reads index files natively, \refkey{indexFile}{Colvars-global|indexFile} uses a Colvars internal function.  Thus, index files loaded into GROMACS and Colvars do not need to coincide, but it is recommended that they do for simplicity.}}
+\cvgromacsonly{\emph{Note that although GROMACS reads index files natively, \refkey{indexFile}{Colvars-global|indexFile} uses a Colvars internal function.  Thus, index files loaded into GROMACS and Colvars do not need to coincide, but it is recommended that they do for simplicity.}}
 
 Other than with GROMACS, an index group may also be generated from the VMD command-line interface, using the helper function \texttt{write\_index\_group} provided in the `colvartools`:
 \begin{mdexampleinput}
