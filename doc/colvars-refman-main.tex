@@ -919,7 +919,7 @@ Multiple index files may be provided to Colvars, each using the keyword \refkey{
 
 \cvgromacsonly{\emph{Note that although GROMACS reads index files natively, \refkey{indexFile}{Colvars-global|indexFile} uses a Colvars internal function.  Thus, index files loaded into GROMACS and Colvars do not need to coincide, but it is recommended that they do for simplicity.}}
 
-Other than with GROMACS, an index group may also be generated from the VMD command-line interface, using the helper function \texttt{write\_index\_group} provided in the `colvartools`:
+Other than with GROMACS, an index group may also be generated from the VMD command-line interface, using the helper function \texttt{write\_index\_group} provided in the \texttt{colvartools} folder:
 \begin{mdexampleinput}
 \-source~colvartools/write\_index\_group.tcl\\
 \-set~sel~[atomselect~top~"resname~XXX~and~not~hydrogen"]\\
