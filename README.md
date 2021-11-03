@@ -100,7 +100,7 @@ The `update-colvars-code.sh` script support patching the latest development vers
 
 The following links allow to download several versions of Gromacs already patched to include the latest available version of Colvars:
 
- - **Gromacs version 2020.5-colvars** in [Tar.gz](https://github.com/Colvars/gromacs/archive/v2020.5-colvars.tar.gz) and [Zip](https://github.com/Colvars/gromacs/archive/v2020.5-colvars.zip) formats
+ - **Gromacs version 2020.6-colvars** in [Tar.gz](https://github.com/Colvars/gromacs/archive/v2020.6-colvars.tar.gz) and [Zip](https://github.com/Colvars/gromacs/archive/v2020.6-colvars.zip) formats
 
  - **Gromacs version 2018.8-colvars** in [Tar.gz](https://github.com/Colvars/gromacs/archive/v2018.8-colvars.tar.gz) and [Zip](https://github.com/Colvars/gromacs/archive/v2018.8-colvars.zip) formats
 
