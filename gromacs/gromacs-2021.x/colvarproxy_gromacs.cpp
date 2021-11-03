@@ -119,8 +119,13 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
         colvars->read_config_file(i->c_str());
     }
 
+
     colvars->setup();
     colvars->setup_input();
+
+    // Citation Reporter
+    cvm::log(std::string("\n")+colvars->feature_report(0)+std::string("\n"));
+
     colvars->setup_output();
 
     if (step != 0) {
@@ -128,6 +133,7 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
     }
 
     colvars->it = colvars->it_restart = step;
+
 
   } // end master
 
@@ -322,8 +328,11 @@ cvm::rvector colvarproxy_gromacs::position_distance (cvm::atom_pos const &pos1,
 
 void colvarproxy_gromacs::log (std::string const &message)
 {
-  // Gromacs prints messages on the stderr FILE.
-  fprintf(stderr, "colvars: %s", message.c_str());
+  std::istringstream is(message);
+  std::string line;
+  while (std::getline(is, line))
+    // Gromacs prints messages on the stderr FILE
+    fprintf(stderr, "colvars: %s\n", line.c_str());
 }
 
 void colvarproxy_gromacs::error (std::string const &message)
