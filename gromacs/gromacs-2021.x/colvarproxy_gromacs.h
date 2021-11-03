@@ -63,7 +63,7 @@ protected:
   //! Extra shifts since last DD step.
   ivec      *xa_eshifts = nullptr;
   //! Old positions for all Colvars atoms on master.
-  rvec      *xa_old = nullptr;
+  rvec      *xa_old_whole = nullptr;
   //! Position of each local atom in the collective array.
   int       *xa_ind = nullptr;
   //! Bias forces on all Colvars atoms
@@ -77,7 +77,7 @@ public:
   void init(t_inputrec *gmx_inp, int64_t step, gmx_mtop_t *mtop, ObservablesHistory* oh,
             const std::string &prefix, gmx::ArrayRef<const std::string> filenames_config,
             const std::string &filename_restart, const t_commrec *cr,
-            const rvec x[]);
+            const rvec x[], rvec **xa_old_whole_colvars_state_p, int *n_colvars_atoms_state_p);
 
   void dd_make_local_atoms(const t_commrec *cr);
   // Called each step before evaluating the force provider
