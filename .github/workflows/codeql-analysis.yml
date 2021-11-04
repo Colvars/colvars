@@ -1,116 +1,84 @@
-name: "Build library, perform basic tests and CodeQL analysis"
+name: "Build and CodeQL analysis"
 
-on:
-  push:
-    branches: [ master ]
-  pull_request_target:
-    # The branches below must be a subset of the branches above
-    branches: [ master ]
+on: [push, pull_request]
 
 jobs:
-  analyze:
-    name: Build library, perform code analysis
+
+  basic-checks:
+    name: Perform basic checks
     runs-on: ubuntu-latest
 
-    strategy:
-      fail-fast: false
-      matrix:
-        language: [ 'cpp' ] #, 'python' ]
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Test build recipes
+        run: bash devel-tools/check_build_recipes
+
+      - name: Convert BibTeX references to code
+        shell: bash
+        working-directory: doc
+        run: |
+          make update-code-refs
+          if [ -n "$(git status --porcelain ../src/colvarmodule_refs.h)" ] ; then
+              echo "Code citations out of date; please run make update-code-refs in the doc folder" >& 2
+              exit 1
+          fi
+
+
+  build:
+    name: Build Colvars & CodeQL Analysis
+    runs-on: ubuntu-latest
+    needs: basic-checks
 
     steps:
+      - uses: actions/checkout@v2
 
-    - name: Checkout repository
-      uses: actions/checkout@v2
-      with:
-        repository: ${{github.event.pull_request.head.repo.full_name}}
-        ref: ${{github.event.pull_request.head.ref}}
+      - name: Install build dependencies for library
+        run: |
+          sudo apt-get -y install tcl8.6-dev
+          # OpenMM contains the latest Lepton
+          git clone --single-branch --depth=1 https://github.com/openmm/openmm openmm-source
 
-    - name: Test build recipes
-      run: bash devel-tools/check_build_recipes
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v1
+        with:
+          languages: cpp
 
-    - name: Convert BibTeX references to code
-      shell: bash
-      working-directory: doc
-      run: |
-        make update-code-refs
-        if [ -n "$(git status --porcelain ../src/colvarmodule_refs.h)" ] ; then
-            echo "Code citations out of date; please run make update-code-refs in the doc folder" >& 2
-            exit 1
-        fi
+      - name: Build Colvars library with CMake
+        shell: bash
+        run: |
+          cmake -D CMAKE_CXX_STANDARD=11 -D WARNINGS_ARE_ERRORS=ON -D CMAKE_VERBOSE_MAKEFILE=ON -D COLVARS_TCL=ON -D LEPTON_DIR=${{github.workspace}}/openmm-source/libraries/lepton -S ${{github.workspace}}/cmake -B ${{github.workspace}}/build
+          cmake --build ${{github.workspace}}/build --parallel $(nproc --all)
 
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v1
-      with:
-        languages: ${{ matrix.language }}
+      - name: Update documentation of command-line interface
+        shell: bash
+        working-directory: doc
+        run: |
+          make update-cvscript-cmdline-doc
+          if [ -n "$(git status --porcelain cvscript-tcl.tex)" ] ; then
+              echo "Command-line scripting doc out of date; please run make update-cvscript-cmdline-doc and commit changes" >& 2
+              exit 1
+          fi
 
-    - name: Install build dependencies for library
-      run: |
-        sudo apt-get -y install tcl8.6-dev
-        # OpenMM contains the latest Lepton
-        git clone --single-branch --depth=1 https://github.com/openmm/openmm openmm-source
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v1
 
-    - name: Build Colvars library with CMake
-      shell: bash
-      run: |
-        cmake -E make_directory ${{github.workspace}}/build
-        cmake -D CMAKE_CXX_STANDARD=11 -D WARNINGS_ARE_ERRORS=ON -D CMAKE_VERBOSE_MAKEFILE=ON -D COLVARS_TCL=ON -D LEPTON_DIR=${{github.workspace}}/openmm-source/libraries/lepton -S ${{github.workspace}}/cmake -B ${{github.workspace}}/build
-        cmake --build ${{github.workspace}}/build --parallel $(nproc --all)
 
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v1
+  build-legacy:
+    name: Build Colvars with pre-C++11 code for VMD
+    runs-on: ubuntu-latest
+    needs: basic-checks
 
-    - name: Update documentation of command-line interface
-      shell: bash
-      working-directory: doc
-      run: |
-        make update-cvscript-cmdline-doc
-        if [ -n "$(git status --porcelain cvscript-tcl.tex)" ] ; then
-            echo "Command-line scripting doc out of date; please run make update-cvscript-cmdline-doc and commit changes" >& 2
-            exit 1
-        fi
+    steps:
+      - uses: actions/checkout@v2
 
-    - name: Build Colvars library with CMake (pre-C++11 code for VMD)
-      shell: bash
-      env:
-        # Disable CodeQL
-        LD_PRELOAD: ''
-      run: |
-        cmake -E make_directory ${{github.workspace}}/build-legacy
-        cmake -D CMAKE_CXX_STANDARD=98 -D WARNINGS_ARE_ERRORS=ON -D CMAKE_VERBOSE_MAKEFILE=ON -D COLVARS_TCL=ON -S ${{github.workspace}}/cmake -B ${{github.workspace}}/build-legacy
-        cmake --build ${{github.workspace}}/build-legacy --parallel $(nproc --all)
+      - name: Install tcl
+        run: sudo apt-get -y install tcl8.6-dev
 
-    # - name: Checkout container images repo
-    #   uses: actions/checkout@v2
-    #   with:
-    #     repository: 'Colvars/container-images'
-    #     # Per-repository secret (sharing a secret from the org with all
-    #     # repositories turned out to be too complex)
-    #     ssh-key: ${{ secrets.PULL_CONTAINERS_KEY }}
-    #     ref: 'master'
-    #     path: 'container-images'
-    #     lfs: true
+      - name: Build Colvars
+        shell: bash
+        run: |
+          cmake -D CMAKE_CXX_STANDARD=98 -D WARNINGS_ARE_ERRORS=ON -D CMAKE_VERBOSE_MAKEFILE=ON -D COLVARS_TCL=ON -S ${{github.workspace}}/cmake -B ${{github.workspace}}/build-legacy
+          cmake --build ${{github.workspace}}/build-legacy --parallel $(nproc --all)
 
-    # - name: Download container images via Git LFS
-    #   working-directory: 'container-images'
-    #   run: git lfs checkout
 
-    # - name: Install Singularity
-    #   shell: bash
-    #   run: |
-    #     # Singularity 3 hasn't made it to Ubuntu yet: TODO sort this out,
-    #     # or convert existing containers to Docker
-    #     sudo apt-get -y install squashfs-tools containernetworking-plugins
-    #     sudo dpkg -i container-images/singularity-container_3.5.2+ds1-1_amd64.deb
-
-    # - name: Build library with Sun compiler (Oracle Developer Studio)
-    #   shell: bash
-    #   env:
-    #     # Disable CodeQL
-    #     LD_PRELOAD: ''
-    #   run: |
-    #     singularity exec container-images/OracleDeveloperStudio.sif \
-    #     cmake3 -E make_directory ${{github.workspace}}/build-sunpro
-    #     singularity exec container-images/OracleDeveloperStudio.sif \
-    #     cmake3 -D CMAKE_CXX_STANDARD=11 -D WARNINGS_ARE_ERRORS=ON -D CMAKE_VERBOSE_MAKEFILE=ON -S ${{github.workspace}}/cmake -B ${{github.workspace}}/build-sunpro
-    #     singularity exec container-images/OracleDeveloperStudio.sif \
-    #     cmake3 --build ${{github.workspace}}/build-sunpro --parallel $(nproc --all)
