@@ -107,6 +107,9 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
 
     version_int = get_version_from_string(COLVARPROXY_VERSION);
 
+    colvars->cite_feature("GROMACS engine");
+    colvars->cite_feature("Colvars-GROMACS interface");
+
     if (cvm::debug()) {
       log("Initializing the colvars proxy object.\n");
     }
