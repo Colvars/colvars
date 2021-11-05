@@ -1,0 +1,88 @@
+name: "Test a backend with Colvars"
+
+on:
+  workflow_call:
+    inputs:
+      backend_name:
+        description: "Name of the backend"
+        required: true
+        type: string
+      backend_repo:
+        description: "Name of the backend repository"
+        required: true
+        type: string
+      backend_repo_ref:
+        description: "Name of the branch of the backend repository"
+        required: true
+        type: string
+      path_compile_script:
+        description: "Path of the compilation script of the backend"
+        required: true
+        type: string
+      test_directory:
+        description: "Path of the test directory"
+        required: true
+        type: string
+      rpath_exe:
+        description: "Relative path of the compiled executable"
+        required: true
+        type: string
+
+jobs:
+  test_backends:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Configure Ccache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.ccache
+            ~/ccache_CentOS7-devel
+          key: ${{ runner.os }}-build-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-build-
+            -build-
+
+      - name: Install build dependencies for backends
+        shell: bash
+        working-directory: devel-tools
+        run: |
+          # Singularity 3 hasn't made it to Ubuntu yet: TODO sort this out,
+          # or convert existing containers to Docker
+          sudo apt-get -y install squashfs-tools containernetworking-plugins
+          curl -O http://http.us.debian.org/debian/pool/main/s/singularity-container/singularity-container_3.5.2+ds1-1_amd64.deb
+          sudo dpkg -i singularity-container_3.5.2+ds1-1_amd64.deb
+          # Pull CentOS 7 container used to build backends
+          # (contains OpenMPI, FFTW, Tcl/Tk, Charm++)
+          singularity pull CentOS7-devel.sif library://giacomofiorin/default/colvars_development:centos7
+
+      - name : Get spiff
+        shell: bash
+        working-directory: devel-tools
+        run: sudo cp -f $(singularity exec CentOS7-devel.sif ./get_spiff) /usr/local/bin
+
+
+      - name: Checkout ${{ inputs.backend_name }}
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ inputs.backend_repo }}
+          ref: ${{ inputs.backend_repo_ref }}
+          path: '${{ inputs.backend_name }}-source'
+
+      - name: Update and build ${{ inputs.backend_name }}
+        shell: bash
+        run: |
+          singularity exec devel-tools/CentOS7-devel.sif ./update-colvars-code.sh ${{ inputs.backend_name }}-source
+          CCACHE_DIR=~/ccache_CentOS7-devel \
+          singularity exec devel-tools/CentOS7-devel.sif \
+          bash ${{ inputs.path_compile_script }} ${{ inputs.backend_name }}-source
+
+      - name: Run regression tests for library code with ${{ inputs.backend_name }}
+        shell: bash
+        working-directory: ${{ inputs.test_directory }}
+        run: |
+          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          ./run_tests.sh ${{github.workspace}}/${{ inputs.backend_name }}-source/${{ inputs.rpath_exe }} 000_*
