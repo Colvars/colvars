@@ -285,7 +285,7 @@ public:
     f_cv_extended_Lagrangian,
     /// \brief An extended variable that sets an external variable in the
     /// back-end (eg. an alchemical coupling parameter for lambda-dynamics)
-    /// Can have a single component
+    /// Can have only one component
     f_cv_external,
     /// \brief The extended system coordinate undergoes Langevin dynamics
     f_cv_Langevin,

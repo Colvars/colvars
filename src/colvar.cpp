@@ -296,13 +296,13 @@ int colvar::init(std::string const &conf)
   // TODO use here information from the CVCs' own natural boundaries
   error_code |= init_grid_parameters(conf);
 
-  error_code |= init_extended_Lagrangian(conf);
-  error_code |= init_output_flags(conf);
-
-  // Detect if we have one component that is an alchemical lambda
+  // Detect if we have a single component that is an alchemical lambda
   if (is_enabled(f_cv_single_cvc) && cvcs[0]->function_type == "alchLambda") {
     enable(f_cv_external);
   }
+
+  error_code |= init_extended_Lagrangian(conf);
+  error_code |= init_output_flags(conf);
 
   // Now that the children are defined we can solve dependencies
   enable(f_cv_active);
@@ -644,33 +644,42 @@ int colvar::init_extended_Lagrangian(std::string const &conf)
     x_ext.type(colvarvalue::type_notset);
     v_ext.type(value());
     fr.type(value());
-    const bool found = get_keyval(conf, "extendedTemp", temp, cvm::temperature());
-    if (temp <= 0.0) {
-      if (found)
-        cvm::error("Error: \"extendedTemp\" must be positive.\n", INPUT_ERROR);
-      else
-        cvm::error("Error: a positive temperature must be provided, either "
-                   "by enabling a thermostat, or through \"extendedTemp\".\n",
-                   INPUT_ERROR);
-      return INPUT_ERROR;
-    }
+    const bool temp_provided = get_keyval(conf, "extendedTemp", temp, cvm::temperature());
+    if (get_keyval(conf, "extendedMass", ext_mass)) {
+      // In the case of an "external" coordinate, there is no coupling potential:
+      // only the fictitious mass is meaningful
+        if (!is_enabled(f_cv_external)) {
+          get_keyval(conf, "extendedForceConstant", ext_force_k, colvarparse::parse_normal | colvarparse::parse_required);
+        }
+    } else {
+      // If the fictitious mass was not explicitly provided, define it indirectly
+      // through fluctuation and time constant
 
-    get_keyval(conf, "extendedFluctuation", tolerance);
-    if (tolerance <= 0.0) {
-      cvm::error("Error: \"extendedFluctuation\" must be positive.\n", INPUT_ERROR);
-      return INPUT_ERROR;
-    }
-    ext_force_k = cvm::boltzmann() * temp / (tolerance * tolerance);
-    cvm::log("Computed extended system force constant: " + cvm::to_str(ext_force_k) + " [E]/U^2\n");
+      if (temp <= 0.0) { // Then a finite temperature is required
+        if (temp_provided)
+          cvm::error("Error: \"extendedTemp\" must be positive.\n", INPUT_ERROR);
+        else
+          cvm::error("Error: a positive temperature must be provided, either "
+                    "by enabling a thermostat, or through \"extendedTemp\".\n",
+                    INPUT_ERROR);
+        return INPUT_ERROR;
+      }
+      get_keyval(conf, "extendedFluctuation", tolerance);
+      if (tolerance <= 0.0) {
+        cvm::error("Error: \"extendedFluctuation\" must be positive.\n", INPUT_ERROR);
+        return INPUT_ERROR;
+      }
+      ext_force_k = cvm::boltzmann() * temp / (tolerance * tolerance);
+      cvm::log("Computed extended system force constant: " + cvm::to_str(ext_force_k) + " [E]/U^2\n");
 
-    get_keyval(conf, "extendedTimeConstant", extended_period, 200.0);
-    if (extended_period <= 0.0) {
-      cvm::error("Error: \"extendedTimeConstant\" must be positive.\n", INPUT_ERROR);
+      get_keyval(conf, "extendedTimeConstant", extended_period, 200.0);
+      if (extended_period <= 0.0) {
+        cvm::error("Error: \"extendedTimeConstant\" must be positive.\n", INPUT_ERROR);
+      }
+      ext_mass = (cvm::boltzmann() * temp * extended_period * extended_period)
+        / (4.0 * PI * PI * tolerance * tolerance);
+      cvm::log("Computed fictitious mass: " + cvm::to_str(ext_mass) + " [E]/(U/fs)^2   (U: colvar unit)\n");
     }
-    ext_mass = (cvm::boltzmann() * temp * extended_period * extended_period)
-      / (4.0 * PI * PI * tolerance * tolerance);
-    cvm::log("Computed fictitious mass: " + cvm::to_str(ext_mass) + " [E]/(U/fs)^2   (U: colvar unit)\n");
-
     {
       bool b_output_energy;
       get_keyval(conf, "outputEnergy", b_output_energy, false);
