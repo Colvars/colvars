@@ -31,6 +31,7 @@ jobs:
         path: |
           ~/.ccache
           ~/ccache_CentOS7-devel
+          ~/ccache_CentOS7-devel_gcc10
         key: ${{ runner.os }}-build-${{ github.sha }}
         restore-keys: |
           ${{ runner.os }}-build-
@@ -43,6 +44,13 @@ jobs:
       shell: bash
       working-directory: doc
       run:  make update-code-refs
+
+    - name: Checkout GROMACS 2020
+      uses: actions/checkout@v2
+      with:
+        repository: 'gromacs/gromacs'
+        ref: 'release-2020'
+        path: 'gromacs-2020-source'
 
     - name: Checkout LAMMPS
       uses: actions/checkout@v2
@@ -91,6 +99,14 @@ jobs:
         singularity pull CentOS7-devel.sif library://giacomofiorin/default/colvars_development:centos7
         # Get spiff for numerical diffs
         sudo cp -f $(singularity exec CentOS7-devel.sif ./get_spiff) /usr/local/bin
+
+    - name: Update and build GROMACS 2020
+      shell: bash
+      run: |
+        singularity exec devel-tools/CentOS7-devel.sif ./update-colvars-code.sh gromacs-2020-source
+        CCACHE_DIR=~/ccache_CentOS7-devel_gcc10 \
+        singularity exec devel-tools/CentOS7-devel.sif \
+        bash devel-tools/compile-gromacs.sh gromacs-2020-source
 
     - name: Update and build LAMMPS
       shell: bash
