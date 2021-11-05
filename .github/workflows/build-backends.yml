@@ -4,35 +4,33 @@ on: [push, pull_request]
 
 
 jobs:
-  backends:
-    name: Build backends
-    runs-on: ubuntu-latest
+  lammps:
+    name: Test LAMMPS
+    uses: HubLot/colvars/.github/workflows/setup_dependencies.yml@v1
+    with:
+      backend_name: LAMMPS
+      backend_repo: lammps/lammps
+      backend_repo_ref: develop
+      path_compile_script: devel-tools/compile-lammps.sh
+      test_directory: lammps/tests/library
+      rpath_exe: install/bin/lmp
 
-    steps:
+    # steps:
+    #   - name: Update and build LAMMPS
+    #     shell: bash
+    #     run: |
+    #       singularity exec devel-tools/CentOS7-devel.sif ./update-colvars-code.sh lammps-source
+    #       CCACHE_DIR=~/ccache_CentOS7-devel \
+    #       singularity exec devel-tools/CentOS7-devel.sif \
+    #       bash devel-tools/compile-lammps.sh lammps-source
 
-    - name: Checkout repository
-      uses: actions/checkout@v2
-      with:
-        repository: ${{github.event.pull_request.head.repo.full_name}}
-        ref: ${{github.event.pull_request.head.ref}}
+      # - name: Run regression tests for library code with LAMMPS
+      #   shell: bash
+      #   working-directory: lammps/tests/library
+      #   run: |
+      #     singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+      #     ./run_tests.sh ${{github.workspace}}/lammps-source/install/bin/lmp 000_*
 
-    - name: Configure Ccache
-      uses: actions/cache@v2
-      with:
-        path: |
-          ~/.ccache
-          ~/ccache_CentOS7-devel
-        key: ${{ runner.os }}-build-${{ github.sha }}
-        restore-keys: |
-          ${{ runner.os }}-build-
-          -build-
-
-    - name: Checkout LAMMPS
-      uses: actions/checkout@v2
-      with:
-        repository: 'lammps/lammps'
-        ref: 'develop'
-        path: 'lammps-source'
 
     # - name: Checkout NAMD
     #   uses: actions/checkout@v2
@@ -60,35 +58,6 @@ jobs:
     #     ref: 'master'
     #     path: 'vmd-plugins-source'
 
-    - name: Install build dependencies for backends
-      shell: bash
-      working-directory: devel-tools
-      run: |
-        # Singularity 3 hasn't made it to Ubuntu yet: TODO sort this out,
-        # or convert existing containers to Docker
-        sudo apt-get -y install squashfs-tools containernetworking-plugins
-        curl -O http://http.us.debian.org/debian/pool/main/s/singularity-container/singularity-container_3.5.2+ds1-1_amd64.deb
-        sudo dpkg -i singularity-container_3.5.2+ds1-1_amd64.deb
-        # Pull CentOS 7 container used to build backends
-        # (contains OpenMPI, FFTW, Tcl/Tk, Charm++)
-        singularity pull CentOS7-devel.sif library://giacomofiorin/default/colvars_development:centos7
-        # Get spiff for numerical diffs
-        sudo cp -f $(singularity exec CentOS7-devel.sif ./get_spiff) /usr/local/bin
-
-    - name: Update and build LAMMPS
-      shell: bash
-      run: |
-        singularity exec devel-tools/CentOS7-devel.sif ./update-colvars-code.sh lammps-source
-        CCACHE_DIR=~/ccache_CentOS7-devel \
-        singularity exec devel-tools/CentOS7-devel.sif \
-        bash devel-tools/compile-lammps.sh lammps-source
-
-    - name: Run regression tests for library code with LAMMPS
-      shell: bash
-      working-directory: lammps/tests/library
-      run: |
-        singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
-        ./run_tests.sh ${{github.workspace}}/lammps-source/install/bin/lmp 000_*
 
     # - name: Update and build NAMD
     #   shell: bash
