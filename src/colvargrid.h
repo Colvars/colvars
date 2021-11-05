@@ -254,6 +254,7 @@ public:
               bool add_extra_bin = false)
     : has_parent_data(false), has_data(false)
   {
+    (void) t;
     this->init_from_colvars(colvars, mult_i, add_extra_bin);
   }
 
@@ -1253,6 +1254,7 @@ public:
                                   size_t const &imult = 0,
                                   bool add = false)
   {
+    (void) imult;
     if (add) {
       data[address(ix)] += t;
       if (this->has_parent_data) {
@@ -1389,6 +1391,7 @@ public:
                         cvm::real const &new_value,
                         size_t const &imult = 0)
   {
+    (void) imult;
     // only legal value of imult here is 0
     data[address(ix)] += new_value;
     if (samples)

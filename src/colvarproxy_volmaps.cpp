@@ -64,13 +64,13 @@ int colvarproxy_volmaps::check_volmap_by_name(const char * /* volmap_name */)
 }
 
 
-int colvarproxy_volmaps::init_volmap_by_name(char const *volmap_name)
+int colvarproxy_volmaps::init_volmap_by_name(char const * /* volmap_name */)
 {
   return -1;
 }
 
 
-int colvarproxy_volmaps::init_volmap_by_id(int volmap_id)
+int colvarproxy_volmaps::init_volmap_by_id(int /* volmap_id */)
 {
   return -1;
 }

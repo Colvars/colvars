@@ -46,7 +46,7 @@ void colvar::alch_lambda::calc_gradients()
 }
 
 
-void colvar::alch_lambda::apply_force(colvarvalue const &force)
+void colvar::alch_lambda::apply_force(colvarvalue const & /* force */)
 {
   // Special workflow:
   // at the end of the time step we send a new value

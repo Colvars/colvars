@@ -100,7 +100,7 @@ cvm::real colvarparams::get_param(std::string const &param_name)
 
 
 int colvarparams::set_param(std::string const &param_name,
-                            void const *new_value)
+                            void const * /* new_value */)
 {
   if (param_map.count(param_name) > 0) {
     return cvm::error("Error: parameter \""+param_name+"\" cannot be "

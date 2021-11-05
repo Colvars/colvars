@@ -46,6 +46,7 @@ char const *colvarproxy_tcl::tcl_get_str(void *obj)
 #if defined(COLVARS_TCL)
   return Tcl_GetString(reinterpret_cast<Tcl_Obj *>(obj));
 #else
+  (void) obj;
   return NULL;
 #endif
 }
@@ -104,6 +105,9 @@ int colvarproxy_tcl::tcl_run_colvar_callback(
 
 #else
 
+  (void) name;
+  (void) cvc_values;
+  (void) value;
   return COLVARS_NOT_IMPLEMENTED;
 
 #endif
@@ -156,6 +160,9 @@ int colvarproxy_tcl::tcl_run_colvar_gradient_callback(
 
 #else
 
+  (void) name;
+  (void) cvc_values;
+  (void) gradient;
   return COLVARS_NOT_IMPLEMENTED;
 
 #endif
