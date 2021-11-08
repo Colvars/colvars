@@ -222,7 +222,6 @@ int colvarbias_abf::init(std::string const &conf)
     }
     pmf = new integrate_potential(colvars, gradients);
     if ( b_CZAR_estimator ) {
-      cvm::main()->cite_feature("CZAR eABF estimator");
       czar_pmf = new integrate_potential(colvars, czar_gradients);
     }
     // Parameters for integrating initial (and final) gradient data
