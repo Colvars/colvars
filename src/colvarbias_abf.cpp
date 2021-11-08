@@ -196,6 +196,9 @@ int colvarbias_abf::init(std::string const &conf)
   // Data for eAB F z-based estimator
   if ( b_extended ) {
     get_keyval(conf, "CZARestimator", b_CZAR_estimator, true);
+    if ( b_CZAR_estimator ) {
+      cvm::main()->cite_feature("CZAR eABF estimator");
+    }
     // CZAR output files for stratified eABF
     get_keyval(conf, "writeCZARwindowFile", b_czar_window_file, false,
                colvarparse::parse_silent);
@@ -212,7 +215,6 @@ int colvarbias_abf::init(std::string const &conf)
 
   get_keyval(conf, "integrate", b_integrate, num_variables() <= 3); // Integrate for output if d<=3
   if (b_integrate) {
-    cvm::main()->cite_feature("Poisson integration of 2D/3D free energy surfaces");
     // For now, we integrate on-the-fly iff the grid is < 3D
     if ( num_variables() > 3 ) {
       cvm::error("Error: cannot integrate free energy in dimension > 3.\n");

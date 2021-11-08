@@ -271,6 +271,7 @@ integrate_potential::integrate_potential(std::vector<colvar *> &colvars, colvar_
   // hence PMF grid is wider than gradient grid if non-PBC
 
   if (nd > 1) {
+    cvm::main()->cite_feature("Poisson integration of 2D/3D free energy surfaces");
     divergence.resize(nt);
 
     // Compute inverse of Laplacian diagonal for Jacobi preconditioning
