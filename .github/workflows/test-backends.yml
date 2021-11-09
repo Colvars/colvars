@@ -6,7 +6,7 @@ on: [push, pull_request]
 jobs:
   lammps:
     name: Test LAMMPS
-    uses: HubLot/colvars/.github/workflows/setup_dependencies.yml@v1
+    uses: HubLot/colvars/.github/workflows/backend-template.yml@v1
     with:
       backend_name: LAMMPS
       backend_repo: lammps/lammps
@@ -14,22 +14,6 @@ jobs:
       path_compile_script: devel-tools/compile-lammps.sh
       test_directory: lammps/tests/library
       rpath_exe: install/bin/lmp
-
-    # steps:
-    #   - name: Update and build LAMMPS
-    #     shell: bash
-    #     run: |
-    #       singularity exec devel-tools/CentOS7-devel.sif ./update-colvars-code.sh lammps-source
-    #       CCACHE_DIR=~/ccache_CentOS7-devel \
-    #       singularity exec devel-tools/CentOS7-devel.sif \
-    #       bash devel-tools/compile-lammps.sh lammps-source
-
-      # - name: Run regression tests for library code with LAMMPS
-      #   shell: bash
-      #   working-directory: lammps/tests/library
-      #   run: |
-      #     singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
-      #     ./run_tests.sh ${{github.workspace}}/lammps-source/install/bin/lmp 000_*
 
 
     # - name: Checkout NAMD
