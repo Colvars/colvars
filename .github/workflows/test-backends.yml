@@ -1,0 +1,81 @@
+name: "Build backends with an updated Colvars module"
+
+on: [push, pull_request]
+
+
+jobs:
+  lammps:
+    name: Test LAMMPS
+    uses: HubLot/colvars/.github/workflows/backend-template.yml@v1
+    with:
+      backend_name: LAMMPS
+      backend_repo: lammps/lammps
+      backend_repo_ref: develop
+      path_compile_script: devel-tools/compile-lammps.sh
+      test_directory: lammps/tests/library
+      rpath_exe: install/bin/lmp
+
+
+    # - name: Checkout NAMD
+    #   uses: actions/checkout@v2
+    #   with:
+    #     repository: 'Colvars/namd'
+    #     # Per-repository secret (sharing a secret from the org with all
+    #     # repositories turned out to be too complex)
+    #     ssh-key: ${{ secrets.PULL_NAMD_KEY }}
+    #     ref: 'master'
+    #     path: 'namd-source'
+
+    # - name: Checkout VMD
+    #   uses: actions/checkout@v2
+    #   with:
+    #     repository: 'Colvars/vmd'
+    #     ssh-key: ${{ secrets.PULL_VMD_KEY }}
+    #     ref: 'master'
+    #     path: 'vmd-source'
+
+    # - name: Checkout VMD plugins
+    #   uses: actions/checkout@v2
+    #   with:
+    #     repository: 'Colvars/vmd-plugins'
+    #     ssh-key: ${{ secrets.PULL_VMD_PLUGINS_KEY }}
+    #     ref: 'master'
+    #     path: 'vmd-plugins-source'
+
+
+    # - name: Update and build NAMD
+    #   shell: bash
+    #   run: |
+    #     singularity exec devel-tools/CentOS7-devel.sif ./update-colvars-code.sh namd-source
+    #     CCACHE_DIR=~/ccache_CentOS7-devel \
+    #     singularity exec devel-tools/CentOS7-devel.sif \
+    #     bash devel-tools/compile-namd.sh namd-source
+
+    # - name: Run regression tests for library code with NAMD
+    #   shell: bash
+    #   working-directory: namd/tests/library
+    #   run: |
+    #     singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+    #     ./run_tests.sh ${{github.workspace}}/namd-source/Linux-x86_64-g++.multicore/namd2
+
+    # - name: Run regression tests for NAMD interface code
+    #   shell: bash
+    #   working-directory: namd/tests/interface
+    #   run: |
+    #     singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+    #     ./run_tests.sh ${{github.workspace}}/namd-source/Linux-x86_64-g++.multicore/namd2
+
+    # - name: Update and build VMD
+    #   shell: bash
+    #   run: |
+    #     singularity exec devel-tools/CentOS7-devel.sif ./update-colvars-code.sh vmd-source
+    #     CCACHE_DIR=~/ccache_CentOS7-devel \
+    #     singularity exec devel-tools/CentOS7-devel.sif \
+    #     bash devel-tools/compile-vmd.sh vmd-source
+
+    # - name: Run regression tests for VMD interface code
+    #   shell: bash
+    #   working-directory: vmd/tests/interface
+    #   run: |
+    #     singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+    #     ./run_tests.sh ${{github.workspace}}/vmd-source/install/vmd
