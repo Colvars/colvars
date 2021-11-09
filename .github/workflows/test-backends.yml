@@ -15,6 +15,16 @@ jobs:
       test_directory: lammps/tests/library
       rpath_exe: install/bin/lmp
 
+  namd:
+    name: Test NAMD
+    uses: HubLot/colvars/.github/workflows/backend-template.yml@v1
+    with:
+      backend_name: NAMD
+      backend_repo: Colvars/namd
+      backend_repo_ref: master
+      path_compile_script: devel-tools/compile-namd.sh
+      test_directory: namd/tests/library
+      rpath_exe: Linux-x86_64-g++.multicore/namd2
 
     # - name: Checkout NAMD
     #   uses: actions/checkout@v2
