@@ -1087,7 +1087,6 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
 
    opts.optional("alch", "unperturbedBondFile", "mini psf file with unperturbed bond info"
      " ", PARSE_STRING);
-
    opts.optional("alch", "alchOutFreq", "Frequency of alchemical energy"
      "output in timesteps", &alchOutFreq, 5);
    opts.range("alchoutfreq", NOT_NEGATIVE);
@@ -7159,6 +7158,9 @@ int SimParameters::setupIDWS() {
   * alchOutFreq > 0 but != outputEnergies, then the data going to stdout
   * are likely not useful since the comparison value is difficult to infer.
   */
+  if ( alchOutFreq % fullElectFrequency != 0 ) {
+    NAMD_die("For IDWS, alchOutFreq must be a multiple of fullElectFrequency.\n");
+  }
   alchIDWSFreq = fullElectFrequency > 0 ? fullElectFrequency : nonbondedFrequency;
   if ( !alchOutFreq && outputEnergies > alchIDWSFreq ) alchIDWSFreq = outputEnergies;
   if ( alchOutFreq > alchIDWSFreq ) alchIDWSFreq = alchOutFreq;
