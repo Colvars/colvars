@@ -38,20 +38,26 @@ extern "C" int tcl_run_colvarscript_command(ClientData clientData,
 #endif
 
 
-colvarscript::colvarscript(colvarproxy *p)
+colvarscript::colvarscript(colvarproxy *p, colvarmodule *m)
  : proxy_(p),
-   colvars(p->colvars),
+   colvars(m),
    proxy_error(0)
 {
   cmd_names = NULL;
   init_commands();
 #ifdef COLVARS_TCL
+  // must be called after constructing derived proxy class to allow for overloading
+  cvm::proxy->init_tcl_pointers();
   // TODO put this in backend functions so we don't have to delete
   Tcl_Interp *interp = reinterpret_cast<Tcl_Interp *>(proxy_->get_tcl_interp());
+  if (interp == NULL) {
+    cvm::error("Error: trying to construct colvarscript without a Tcl interpreter.\n");
+    return;
+  }
   Tcl_DeleteCommand(interp, "cv");
   Tcl_CreateObjCommand(interp, "cv", tcl_run_colvarscript_command,
                        (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
-  cvm::log("Redefining the Tcl \"cv\" command to the new script interface.");
+  cvm::log("Redefining the Tcl \"cv\" command to the new script interface.\n");
 #endif
 }
 
@@ -649,7 +655,6 @@ extern "C" {
     colvarmodule *colvars = new colvarmodule(proxy);
     proxy->set_tcl_interp(reinterpret_cast<void *>(interp));
     proxy->colvars = colvars;
-    proxy->script = new colvarscript(proxy);
     Tcl_CreateObjCommand(interp, "cv", tcl_run_colvarscript_command,
                          (ClientData *) NULL, (Tcl_CmdDeleteProc *) NULL);
     Tcl_EvalEx(interp, "package provide colvars", -1, 0);

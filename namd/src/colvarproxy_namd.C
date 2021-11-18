@@ -106,32 +106,14 @@ colvarproxy_namd::colvarproxy_namd()
           "the output restart file could be defined, exiting.\n");
   }
 
-
-#ifdef NAMD_TCL
-  have_scripts = true;
-
-  init_tcl_pointers();
-
-  // See is user-scripted forces are defined
-  if (Tcl_FindCommand(reinterpret_cast<Tcl_Interp *>(tcl_interp_),
-                      "calc_colvar_forces", NULL, 0) == NULL) {
-    force_script_defined = false;
-  } else {
-    force_script_defined = true;
-  }
-#else
-  force_script_defined = false;
-  have_scripts = false;
-#endif
-
-
   // initialize module: this object will be the communication proxy
   colvars = new colvarmodule(this);
+
   cvm::log("Using NAMD interface, version "+
            cvm::to_str(COLVARPROXY_VERSION)+".\n");
   colvars->cite_feature("NAMD engine");
   colvars->cite_feature("Colvars-NAMD interface");
-
+    // Construct instance of colvars scripting interface
   errno = 0;
   if (config) {
     colvars->read_config_file(config->data);
@@ -145,8 +127,18 @@ colvarproxy_namd::colvarproxy_namd()
   Node::Object()->colvars = colvars;
 
 #ifdef NAMD_TCL
-  // Construct instance of colvars scripting interface
-  script = new colvarscript(this);
+
+  have_scripts = true;
+  // See is user-scripted forces are defined
+  if (Tcl_FindCommand(reinterpret_cast<Tcl_Interp *>(tcl_interp_),
+                      "calc_colvar_forces", NULL, 0) == NULL) {
+    force_script_defined = false;
+  } else {
+    force_script_defined = true;
+  }
+#else
+  force_script_defined = false;
+  have_scripts = false;
 #endif
 
   if (simparams->firstTimestep != 0) {
@@ -564,6 +556,8 @@ void colvarproxy_namd::init_tcl_pointers()
 #ifdef NAMD_TCL
   // Store pointer to NAMD's Tcl interpreter
   tcl_interp_ = reinterpret_cast<void *>(Node::Object()->getScript()->interp);
+#else
+  colvarproxy::init_tcl_pointers(); // Create dedicated interpreter
 #endif
 }
 

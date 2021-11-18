@@ -86,6 +86,25 @@ colvarproxy_vmd::colvarproxy_vmd(Tcl_Interp *interp, VMDApp *v, int molid)
   // both fields are taken from data structures already available
   updated_masses_ = updated_charges_ = true;
 
+  // Do we have scripts?
+  // For now colvars depend on Tcl, but this may not always be the case
+  // in the future
+#if defined(VMDTCL)
+  have_scripts = true;
+  // Need to set this before constructing colvarmodule, which creates colvarscript object
+  tcl_interp_ = reinterpret_cast<void *>(interp);
+
+  // User-scripted forces are not really useful in VMD, but we accept them
+  // for compatibility with NAMD scripts
+  if (Tcl_FindCommand(interp, "calc_colvar_forces", NULL, 0) == NULL) {
+    force_script_defined = false;
+  } else {
+    force_script_defined = true;
+  }
+#else
+  have_scripts = false;
+#endif
+
   colvars = new colvarmodule(this);
   cvm::log("Using VMD interface, version "+
            cvm::to_str(COLVARPROXY_VERSION)+".\n");
@@ -104,28 +123,6 @@ colvarproxy_vmd::colvarproxy_vmd(Tcl_Interp *interp, VMDApp *v, int molid)
 
   colvars->setup_input();
   colvars->setup_output();
-
-  // Do we have scripts?
-  // For now colvars depend on Tcl, but this may not always be the case
-  // in the future
-#if defined(VMDTCL)
-  have_scripts = true;
-
-  tcl_interp_ = reinterpret_cast<void *>(interp);
-  // Need to set tcl_interp_ before constructing colvarscript
-  script = new colvarscript(this);
-  script->proxy_error = COLVARSCRIPT_OK;
-
-  // User-scripted forces are not really useful in VMD, but we accept them
-  // for compatibility with NAMD scripts
-  if (Tcl_FindCommand(interp, "calc_colvar_forces", NULL, 0) == NULL) {
-    force_script_defined = false;
-  } else {
-    force_script_defined = true;
-  }
-#else
-  have_scripts = false;
-#endif
 
   // set the same seed as in Measure.C
   vmd_srandom(38572111);
@@ -396,9 +393,9 @@ int colvarproxy_vmd::set_frame(long int f)
 void colvarproxy_vmd::init_tcl_pointers()
 {
 #ifdef VMDTCL
-  // Do nothing, already initialized in constructor
+  // Do nothing (when constructing colvarproxy), this will be set by colvarproxy_vmd constructor
 #else
-  colvarproxy::init_tcl_pointers(); // Raise non-implemented error
+  colvarproxy::init_tcl_pointers(); // Create dedicated interpreter
 #endif
 }
 

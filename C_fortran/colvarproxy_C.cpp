@@ -12,7 +12,6 @@ colvarproxy_C::colvarproxy_C()
     std::cerr << "This is the colvarproxy_C constructor at address " << this << std::endl;
     colvars = new colvarmodule(this);
     colvars->log("This is the Module speaking.");
-    script = new colvarscript(this);
 }
 
 colvarproxy_C::~colvarproxy_C()

@@ -38,7 +38,7 @@ public:
 
   friend class colvarproxy;
 
-  colvarscript(colvarproxy *p);
+  colvarscript(colvarproxy *p, colvarmodule *m);
 
   ~colvarscript();
 
