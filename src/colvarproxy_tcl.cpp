@@ -36,8 +36,18 @@ colvarproxy_tcl::~colvarproxy_tcl()
 
 void colvarproxy_tcl::init_tcl_pointers()
 {
-  cvm::error("Error: Tcl support is not available in this build.\n",
-             COLVARS_NOT_IMPLEMENTED);
+  // This is overloaded by NAMD and VMD proxies to use the local interpreters
+#if defined(COLVARS_TCL)
+  if (tcl_interp_ == NULL) {
+    // Allocate a dedicated Tcl interpreter for Colvars
+    std::cout << "colvars: Allocating Tcl interpreter." << std::endl;
+    tcl_interp_ = Tcl_CreateInterp();
+  } else {
+    std::cout << "colvars: Warning - init_tcl_pointers called twice?" << std::endl;
+  }
+#else
+  std::cerr << "Error: Tcl support is not available in this build.\n" << std::endl;
+#endif
 }
 
 
@@ -48,6 +58,42 @@ char const *colvarproxy_tcl::tcl_get_str(void *obj)
 #else
   (void) obj;
   return NULL;
+#endif
+}
+
+
+int colvarproxy_tcl::tcl_run_script(std::string script)
+{
+#if defined(COLVARS_TCL)
+  Tcl_Interp *const tcl_interp =
+    reinterpret_cast<Tcl_Interp *>(get_tcl_interp());
+  int err = Tcl_Eval(tcl_interp, script.c_str());
+  if (err != TCL_OK) {
+    cvm::log("Error while executing Tcl script:\n");
+    cvm::error(Tcl_GetStringResult(tcl_interp));
+    return COLVARS_ERROR;
+  }
+  return cvm::get_error();
+#else
+  return COLVARS_NOT_IMPLEMENTED;
+#endif
+}
+
+
+int colvarproxy_tcl::tcl_run_file(std::string fileName)
+{
+#if defined(COLVARS_TCL)
+  Tcl_Interp *const tcl_interp =
+    reinterpret_cast<Tcl_Interp *>(get_tcl_interp());
+  int err = Tcl_EvalFile(tcl_interp, fileName.c_str());
+  if (err != TCL_OK) {
+    cvm::log("Error while executing Tcl script file" + fileName + ":\n");
+    cvm::error(Tcl_GetStringResult(tcl_interp));
+    return COLVARS_ERROR;
+  }
+  return cvm::get_error();
+#else
+  return COLVARS_NOT_IMPLEMENTED;
 #endif
 }
 

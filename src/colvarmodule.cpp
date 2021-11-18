@@ -84,17 +84,17 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
   usage_ = new usage();
   usage_->cite_feature("Colvars module");
 
-  if (proxy == NULL) {
-    proxy = proxy_in; // Pointer to the proxy object
-    parse = new colvarparse(); // Parsing object for global options
-    version_int = proxy->get_version_from_string(COLVARS_VERSION);
-  } else {
+  if (proxy != NULL) {
     // TODO relax this error to handle multiple molecules in VMD
     // once the module is not static anymore
     cvm::error("Error: trying to allocate the collective "
                "variable module twice.\n", BUG_ERROR);
     return;
   }
+
+  proxy = proxy_in; // Pointer to the proxy object
+  parse = new colvarparse(); // Parsing object for global options
+  version_int = proxy->get_version_from_string(COLVARS_VERSION);
 
   cvm::log(cvm::line_marker);
   cvm::log("Initializing the collective variables module, version "+
@@ -134,8 +134,10 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
 
   // by default overwrite the existing trajectory file
   cv_traj_append = false;
-
   cv_traj_write_labels = true;
+
+  // Removes the need for proxy specializations to create this
+  proxy->script = new colvarscript(proxy, this);
 }
 
 
@@ -389,10 +391,18 @@ int colvarmodule::parse_global_params(std::string const &conf)
   parse->get_keyval(conf, "scriptingAfterBiases",
                     scripting_after_biases, scripting_after_biases);
 
+#if defined(COLVARS_TCL)
+  std::string source_Tcl_script;
+  if (parse->get_keyval(conf, "sourceTclFile", source_Tcl_script)) {
+    proxy->tcl_run_file(source_Tcl_script);
+  }
+#endif
+
   if (use_scripted_forces && !proxy->force_script_defined) {
     if (proxy->simulation_running()) {
-      return cvm::error("User script for scripted colvar forces not found.",
-                        INPUT_ERROR);
+      // TODO test here
+      // return cvm::error("User script for scripted colvar forces not found.",
+      //                   INPUT_ERROR);
     } else {
       // Not necessary if we are not applying biases in a real simulation (eg. VMD)
       cvm::log("Warning: User script for scripted colvar forces not found.");

@@ -25,10 +25,20 @@ public:
   virtual ~colvarproxy_tcl();
 
   /// Is Tcl available? (trigger initialization if needed)
-  int tcl_available();
+  inline bool tcl_available() {
+#if defined(COLVARS_TCL)
+    return true;
+#else
+    return false;
+#endif
+  }
 
   /// Get a string representation of the Tcl object pointed to by obj
   char const *tcl_get_str(void *obj);
+
+  int tcl_run_script(std::string script);
+
+  int tcl_run_file(std::string fileName);
 
   /// Tcl implementation of run_force_callback()
   int tcl_run_force_callback();
@@ -57,13 +67,13 @@ public:
     tcl_interp_ = interp;
   }
 
+  /// Set Tcl pointers
+  virtual void init_tcl_pointers();
+
 protected:
 
   /// Pointer to Tcl interpreter object
   void *tcl_interp_;
-
-  /// Set Tcl pointers
-  virtual void init_tcl_pointers();
 };
 
 

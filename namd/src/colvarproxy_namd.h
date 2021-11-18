@@ -59,9 +59,9 @@ protected:
   cvm::real amd_weight_factor;
   void update_accelMD_info();
 
-  void init_tcl_pointers();
-
 public:
+
+  virtual void init_tcl_pointers();
 
   friend class cvm::atom;
 

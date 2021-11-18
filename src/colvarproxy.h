@@ -807,7 +807,6 @@ protected:
 /// \brief Interface between the collective variables module and
 /// the simulation or analysis program (NAMD, VMD, LAMMPS...).
 /// This is the base class: each interfaced program is supported by a derived class.
-/// Only pure virtual functions ("= 0") must be reimplemented to ensure baseline functionality.
 class colvarproxy
   : public colvarproxy_system,
     public colvarproxy_atoms,

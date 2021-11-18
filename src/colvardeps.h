@@ -194,7 +194,7 @@ public:
 
   /// Enable a feature and recursively solve its dependencies.
   /// For accurate reference counting, do not add spurious calls to enable()
-  /// \param dry_run Recursively test if a feature is available, without enabling it
+  /// \param dry_run Recursively test whether a feature is available, without enabling it
   /// \param toplevel False if this is called as part of a chain of dependency resolution.
   /// This is used to diagnose failed dependencies by displaying the full stack:
   /// only the toplevel dependency will throw a fatal error.
@@ -289,7 +289,7 @@ public:
     f_cv_extended_Lagrangian,
     /// \brief An extended variable that sets an external variable in the
     /// back-end (eg. an alchemical coupling parameter for lambda-dynamics)
-    /// Can have only one component
+    /// Can have a single component
     f_cv_external,
     /// \brief The extended system coordinate undergoes Langevin dynamics
     f_cv_Langevin,
