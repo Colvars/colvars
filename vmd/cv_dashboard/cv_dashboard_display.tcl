@@ -17,9 +17,9 @@ proc ::cv_dashboard::start_rotation_display { cv } {
     set cv [selected_colvars]
   }
 
-  if { [llength $cv] > 1 } {
+  if { [llength $cv] != 1 || ![is_unit_quaternion [lindex $cv 0]] } {
     tk_messageBox -icon error -title "Colvars Dashboard Error"\
-      -message "Select exactly 1 rotation colvar to enable rotation display.\n"
+      -message "Select one rotation colvar to enable rotation display.\n"
     return
   }
 
