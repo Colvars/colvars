@@ -38,6 +38,7 @@ colvarbias_meta::colvarbias_meta(char const *key)
   new_hills_begin = hills.end();
   hills_traj_os = NULL;
 
+  hill_weight = 0.0;
   hill_width = 0.0;
 
   new_hill_freq = 1000;
@@ -75,7 +76,7 @@ int colvarbias_meta::init(std::string const &conf)
 
   enable(f_cvb_calc_pmf);
 
-  get_keyval(conf, "hillWeight", hill_weight, 0.0);
+  get_keyval(conf, "hillWeight", hill_weight, hill_weight);
   if (hill_weight > 0.0) {
     enable(f_cvb_apply_force);
   } else {
