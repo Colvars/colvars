@@ -3870,6 +3870,32 @@ coordinates and act directly on the actual colvars.
     where $\tau$ is the period and $\sigma$ is the typical fluctuation (see above).}
 
 \item %
+  \key
+    {extendedMass}{%
+    \texttt{colvar}}{%
+    Mass of the fictitious particle ([E]/(U/fs)$^2$ where U is the colvar unit)}{%
+    positive decimal}{%
+    Used alternately to \texttt{extendedFluctuation} and \texttt{extendedTimeConstant},
+    this parameter lets the user specify the fictitious
+    mass explicitly. Note that the dimension is not that of a usual mass, except if the
+    colvar has the dimension of a length. This is sufficient to specify an alchemical
+    extended variable, however, in the case of a geometric colvar, this must be combined with
+    \texttt{extendedForceConstant}.
+    }
+
+\item %
+  \key
+    {extendedForceConstant}{%
+    \texttt{colvar}}{%
+    Force constant for coupling the fictitious particle ([E]/U$^2$ where U is the colvar unit)}{%
+    positive decimal}{%
+    Used alternately to \texttt{extendedFluctuation} and \texttt{extendedTimeConstant},
+    this parameter lets the user specify the force constant used to couple the extended
+    degree of freedom to the (geometric) colvar.
+    This must be combined with \texttt{extendedMass}.
+    }
+
+\item %
   \keydef
     {extendedTemp}{%
     \texttt{colvar}}{%
