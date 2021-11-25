@@ -328,6 +328,67 @@ The Dashboard offers visualizations for specific types of variables:
 Parameters for fine-tuning these visualizations can be set in the \textit{Settings} tab.
 
 
+\cvsubsec{Plotting custom time-dependent quantities as colvars}{sec:dashboard_custom_vars}
+
+
+Sometimes, important time-dependent quantities are available for a trajectory, but must be computed by an external tool (e.g. energies from a simulation).
+These can be visualized alongside colvars by taking advantage of the scripted colvar feature.
+
+Such a custom variable can either be computed on the fly (by calling an external tool or a VMD feature) or pre-computed and cached.
+For example, we can use VMD to compute the protein solvent-accessible surface area (SASA) on the fly:
+
+\begin{cvexampleinput}
+\-set~sasa\_sel~[atomselect~top~"protein~and~noh"]\\
+\-\\
+\-proc~calc\_user\_colvar~\{~x~\}~\{\\
+\-~~\#~Follow~current~Colvars~frame\\
+\-~~\$::sasa\_sel~frame~[cv~frame]\\
+\-~~return~[measure~sasa~1~\$::sasa\_sel]\\
+\-\}
+\end{cvexampleinput}
+
+The Tcl script above should be entered into VMD's text console, or sourced from a file.
+Then we can define a colvar that will be calculated by the scripted procedure above, by entering the following configuration as a new colvar in the Dashboad Editor Window:
+
+\begin{cvexampleinput}
+\-colvar~\{\\
+\-~~~~name~user\\
+\-~~~~scriptedFunction~user\_colvar\\
+\-~~~~distance~\{\\
+\-~~~~~~~~\#~The~distance~component~is~just~a~placeholder\\
+\-~~~~~~~~group1~\{\\
+\-~~~~~~~~~~~~dummyatom~(0,~0,~0)\\
+\-~~~~~~~~\}\\
+\-~~~~~~~~group2~\{\\
+\-~~~~~~~~~~~~dummyatom~(0,~0,~0)\\
+\-~~~~~~~~\}\\
+\-~~~~\}\\
+\-\}
+\end{cvexampleinput}
+
+If the SASA computation is slow, it can be cached to make subsequent interaction responsive.
+To that effect, we source the following script to pre-compute the SASA for every frame and store it in VMD's User field for atom 0.
+\begin{cvexampleinput}
+\-set~atom0\_sel~[atomselect~top~"index~0"]\\
+\-\\
+\-for~\{set~f~0\}~\{\$f~<~[molinfo~top~get~numframes]\}~\{incr~f\}~\{\\
+\-~~\$::sasa\_sel~frame~\$f\\
+\-~~\$::atom0\_sel~frame~\$f\\
+\-~~\$::atom0\_sel~set~user~[measure~sasa~1~\$::sasa\_sel]\\
+\}
+\end{cvexampleinput}
+
+
+Then we use the following Tcl procedure to compute a custom variable that is simply equal to the User field for atom 0 for the current frame:
+\begin{cvexampleinput}
+\-\\
+\-proc~calc\_user\_colvar~\{~x~\}~\{\\
+\-~~\#~Follow~current~Colvars~frame\\
+\-~~\$::atom0\_sel~frame~[cv~frame]\\
+\-~~return~[\$::atom0\_sel~get~user]\\
+\-\}
+\end{cvexampleinput}
+This version results implementing extremely fast updates.
 } % cvvmdonly dashboard
 
 \cvsec{Enabling and controlling the Colvars module in \MDENGINE{}}{sec:colvarmodule}
