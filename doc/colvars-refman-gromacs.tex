@@ -6,7 +6,6 @@
 % Colvars repository at GitHub.
 
 
-\newcommand{\GROMACS}{}
 \newcommand{\MDENGINE}{Gromacs}
 \newcommand{\mdengine}{gromacs}
 
@@ -21,6 +20,7 @@
 \newcommand{\cvvmdonly}[1]{}
 \newcommand{\cvlammpsonly}[1]{}
 \newcommand{\cvgromacsonly}[1]{#1}
+\newcommand{\cvtinkerhponly}[1]{}
 
 \newcommand{\lengthunit}{nm}
 \newcommand{\energyunit}{kJ/mol}
@@ -34,5 +34,12 @@
 % content that applies only to programs that use atom names (i.e. not LAMMPS)
 \newcommand{\cvnamebasedonly}[1]{}
 
+% only in programs were the alchemical coordinate (alchLambda) is available
+\newcommand{\cvalchlambdaonly}[1]{}
+
+% File output prefixes
+\newcommand{\outputName}{\emph{output}}
+\newcommand{\restartName}{\emph{restart}}
+\newcommand{\inputName}{\emph{input}}
 
 \input{colvars-refman.tex}

@@ -356,16 +356,17 @@ To avoid errors due to reading configuration files written in a different unit s
   \cvlammpsonly{Supported values are the following LAMMPS unit styles:
   \textit{real} (\AA, kcal/mol), \textit{metal} (\AA, eV), and \textit{electron} (Bohr, Hartree).
   However only the unit system currently in use by LAMMPS is accepted:
-  other values will trigger an error.}
-  \cvnamdonly{In NAMD the only supported value is NAMD's native units: \textit{real} (\AA, kcal/mol).}
+  other values will trigger an error.}%
+  \cvnamdonly{In NAMD the only supported value is NAMD's native units: \textit{real} (\AA, kcal/mol).}%
   \cvvmdonly{Supported values are:  \textit{real} (\AA, kcal/mol), \textit{gromacs} (nm, kJ/mol), \textit{metal} (\AA, eV), and \textit{electron} (Bohr, Hartree).
   In VMD, the default system of units for Colvars is VMD's native units: \textit{real} (\AA, kcal/mol).
   However, the \texttt{units} keyword will switch to a different unit system than the
   current one if no colvars were defined before reading the current configuration.
   If colvars are already defined, \texttt{units} will refuse changing the unit system to avoid making the definition of those variables erroneous in the new system of units.
   If needed this precaution can be overridden using the \texttt{cv units} scripting command
-  (\ref{sec:cv_command_general}).}
-  \cvgromacsonly{In Gromacs the only supported value is Gromacs native units: \textit{gromacs} (nm, kJ/mol).}
+  (\ref{sec:cv_command_general}).}%
+  \cvgromacsonly{In Gromacs the only supported value is Gromacs native units: \textit{gromacs} (nm, kJ/mol).}%
+  \cvtinkerhponly{In Tinker-HP, the only supported value is Tinker-HP's native units: \textit{real} (\AA, kcal/mol).}
   }
 \end{itemize}
 
@@ -504,6 +505,12 @@ For the output files, the prefix of Colvars output files will use the \texttt{-d
 \textbf{Note on PBC wrapping in Gromacs.} Internally, Gromacs handles only PBC-wrapped atom coordinates, which may break the calculation of some variables if their atom groups become split across PBCs.
 To prevent this, Colvars unwraps coordinates throughout the simulation, by assuming that each atom group is intact in the initial coordinates, and canceling any later jumps across the periodic box.
 This information is propagated across restarts, and communicated between replicas when Gromacs is used for replica-exchange simulations. Thus, Colvars is compatible with native replica-exchange in Gromacs.
+}
+
+\cvtinkerhponly{
+\cvsubsec{Running Colvars in Tinker-HP}{sec:colvars_mdengine_parameters}
+
+To enable Colvars within a Tinker-HP run, just provide a Colvars configuration file with the same prefix as the \texttt{.key} file, and the extension \texttt{.colvars}.
 }
 
 
@@ -1150,6 +1157,10 @@ The following components implement functions with a scalar value (i.e.{} a real 
 \cvnamebasedonly{
 \item \refkey{alpha}{colvar|alpha}: $\alpha$-helix content of a protein segment.
 \item \refkey{dihedralPC}{colvar|dihedralPC}: projection of protein backbone dihedrals onto a dihedral principal component.
+}
+\cvalchlambdaonly{
+\item \refkey{alchLambda}{colvar|alchLambda}
+\item \refkey{alchFlambda}{colvar|alchFlambda}
 }
 \end{itemize}
 
@@ -2666,6 +2677,40 @@ and \texttt{psfSegID}) in addition to the following:
 
 } % end of \cvnamebasedonly
 
+\cvalchlambdaonly{
+
+\cvsubsec{Alchemical variables for lambda-dynamics}{sec:cvc_alch}
+
+\cvsubsubsec{\texttt{alchLambda}: alchemical lambda parameter.}{sec:cvc_alchlambda}
+\labelkey{colvar|alchLambda}
+
+The \texttt{alchLambda~\{\}} block defines a component returning the alchemical lambda parameter
+of the back-end simulation in \MDENGINE{}, provided that it is enabled using the appropriate options
+of \MDENGINE{}. This coordinate is obtained from the back-end at the beginning of a simulation, and
+synchronized from Colvars to \MDENGINE{} at every time step. This enables lambda-dynamics simulations.
+The \texttt{alchLambda} block itself takes no parameters, it should be left empty.
+In contrast, the \texttt{colvar} block containing it should define the relevant extended-system parameters
+to enable lambda dynamics, primarily \refkey{extendedMass}{colvar:extendedMass}:
+
+\begin{cvexampleinput}
+\-colvar~\{\\
+\-~~name~lambda\\
+\-~~extendedLagrangian~on\\
+\-~~extendedMass~400\\
+\-\\
+\-~~alchLambda~\{~\#~Keep~the~line~break\\
+\-~~\}\\
+\-\}
+\end{cvexampleinput}
+
+\cvsubsubsec{\texttt{alchFlambda}: Force on the alchemical lambda parameter.}{sec:cvc_alchFlambda}
+\labelkey{colvar|alchFlambda}
+
+The \texttt{alchFlambda~\{\}} block defines a component returning the force exterted on the alchemical
+lambda parameter of the back-end simulation in \MDENGINE{}, provided that it is enabled using the appropriate options
+of \MDENGINE{}. This coordinate is obtained from the back-end at each time step of a simulation.
+The \texttt{alchfLambda} block itself takes no parameters, it should be left empty.
+} % end of \cvalchlambdaonly
 
 \cvsubsec{Raw data: building blocks for custom functions}{sec:cvc_raw}
 
@@ -3869,31 +3914,19 @@ coordinates and act directly on the actual colvars.
     The fictitious mass is calculated internally as $k_B T (\tau/2 \pi \sigma)^2$,
     where $\tau$ is the period and $\sigma$ is the typical fluctuation (see above).}
 
+\cvalchlambdaonly{
 \item %
   \key
     {extendedMass}{%
     \texttt{colvar}}{%
-    Mass of the fictitious particle ([E]/(U/fs)$^2$ where U is the colvar unit)}{%
+    Fictitious mass of the alchemical particle ([E]$\times$fs$^2$)}{%
     positive decimal}{%
-    Used alternately to \texttt{extendedFluctuation} and \texttt{extendedTimeConstant},
-    this parameter lets the user specify the fictitious
-    mass explicitly. Note that the dimension is not that of a usual mass, except if the
-    colvar has the dimension of a length. This is sufficient to specify an alchemical
-    extended variable, however, in the case of a geometric colvar, this must be combined with
-    \texttt{extendedForceConstant}.
+    This parameter specifies the fictitious mass in the case of an alchemical
+    variable used in lambda-dynamics (\refkey{alchLambda}{colvar|alchLambda}).
+    Note that the dimension is not that of a usual mass. Its unit is the energy unit
+    (\ref{sec:units}) times fs$^2$.
     }
-
-\item %
-  \key
-    {extendedForceConstant}{%
-    \texttt{colvar}}{%
-    Force constant for coupling the fictitious particle ([E]/U$^2$ where U is the colvar unit)}{%
-    positive decimal}{%
-    Used alternately to \texttt{extendedFluctuation} and \texttt{extendedTimeConstant},
-    this parameter lets the user specify the force constant used to couple the extended
-    degree of freedom to the (geometric) colvar.
-    This must be combined with \texttt{extendedMass}.
-    }
+}
 
 \item %
   \keydef
