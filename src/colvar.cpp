@@ -508,8 +508,10 @@ int colvar::init_grid_parameters(std::string const &conf)
     return INPUT_ERROR;
   }
 
-  lower_boundary = 0.0;
-  upper_boundary = width; // Default to 1-wide grids
+  lower_boundary.type(value());
+  upper_boundary.type(value());
+  lower_boundary.real_value = 0.0;
+  upper_boundary.real_value = width; // Default to 1-wide grids
 
   if (is_enabled(f_cv_scalar)) {
 
@@ -1823,12 +1825,12 @@ cvm::real colvar::update_forces_energy()
       x_ext  += dt * v_ext;
 
       cvm::real delta = 0; // Length of overshoot past either reflecting boundary
-      if ((is_enabled(f_cv_reflecting_lower_boundary) && (delta = x_ext.real_value - lower_boundary) < 0) ||
-          (is_enabled(f_cv_reflecting_upper_boundary) && (delta = x_ext.real_value - upper_boundary) > 0)) {
+      if ((is_enabled(f_cv_reflecting_lower_boundary) && (delta = x_ext - lower_boundary) < 0) ||
+          (is_enabled(f_cv_reflecting_upper_boundary) && (delta = x_ext - upper_boundary) > 0)) {
         x_ext -= 2.0 * delta;
         v_ext *= -1.0;
-        if ((is_enabled(f_cv_reflecting_lower_boundary) && (delta = x_ext.real_value - lower_boundary) < 0) ||
-            (is_enabled(f_cv_reflecting_upper_boundary) && (delta = x_ext.real_value - upper_boundary) > 0)) {
+        if ((is_enabled(f_cv_reflecting_lower_boundary) && (delta = x_ext - lower_boundary) < 0) ||
+            (is_enabled(f_cv_reflecting_upper_boundary) && (delta = x_ext - upper_boundary) > 0)) {
           cvm::error("Error: extended coordinate value " + cvm::to_str(x_ext) + " is still outside boundaries after reflection.\n");
         }
       }
