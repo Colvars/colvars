@@ -1,0 +1,480 @@
+colvars: ----------------------------------------------------------------------
+colvars: Please cite Fiorin et al, Mol Phys 2013:
+colvars:   https://doi.org/10.1080/00268976.2013.813594
+colvars: as well as all other papers listed below for individual features used.
+colvars: SMP parallelism is enabled; if needed, use "smp off" to override this.
+colvars: This version was built with the C++11 standard or higher.
+colvars: The restart output state file will be "test.tmp.colvars.state".
+colvars: The final output state file will be "test.colvars.state".
+colvars: Opening trajectory file "test.colvars.traj".
+colvars: Redefining the Tcl "cv" command to the new script interface.
+colvars: ----------------------------------------------------------------------
+colvars: Reading new configuration from file "test.in":
+colvars: Looking for the keyword "logLevel" and its value.
+colvars: Keyword "logLevel" not found.
+colvars: Looking for the keyword "units" and its value.
+colvars: Keyword "units" not found.
+colvars: # units = "" [default]
+colvars: Looking for the keyword "indexFile" and its value.
+colvars: Keyword value = "index.ndx".
+colvars: # indexFile = "index.ndx"
+colvars: The following index groups are currently defined:
+colvars:   Protein (104 atoms)
+colvars:   Protein_noH (51 atoms)
+colvars:   Protein_Backbone (40 atoms)
+colvars:   Protein_C-alpha (10 atoms)
+colvars:   RMSD_atoms (10 atoms)
+colvars:   Protein_C-alpha_1_2 (2 atoms)
+colvars:   Protein_C-alpha_9_10 (2 atoms)
+colvars:   Protein_C-alpha_1 (1 atoms)
+colvars:   group1 (4 atoms)
+colvars:   Protein_C-alpha_2 (1 atoms)
+colvars:   group2 (4 atoms)
+colvars:   Protein_C-alpha_3 (1 atoms)
+colvars:   group3 (4 atoms)
+colvars:   Protein_C-alpha_4 (1 atoms)
+colvars:   group4 (4 atoms)
+colvars:   Protein_C-alpha_5 (1 atoms)
+colvars:   group5 (4 atoms)
+colvars:   Protein_C-alpha_6 (1 atoms)
+colvars:   group6 (4 atoms)
+colvars:   Protein_C-alpha_7 (1 atoms)
+colvars:   group7 (4 atoms)
+colvars:   Protein_C-alpha_8 (1 atoms)
+colvars:   group8 (4 atoms)
+colvars:   Protein_C-alpha_9 (1 atoms)
+colvars:   group9 (4 atoms)
+colvars:   Protein_C-alpha_10 (1 atoms)
+colvars:   group10 (4 atoms)
+colvars:   heavy_atoms (51 atoms)
+colvars: Looking for the keyword "indexFile" and its value.
+colvars: Keyword "indexFile" not found.
+colvars: Looking for the keyword "smp" and its value.
+colvars: Keyword "smp" not found.
+colvars: # smp = on [default]
+colvars: Looking for the keyword "analysis" and its value.
+colvars: Keyword "analysis" not found.
+colvars: Looking for the keyword "debugGradientsStepSize" and its value.
+colvars: Keyword "debugGradientsStepSize" not found.
+colvars: Looking for the keyword "monitorEigenvalueCrossing" and its value.
+colvars: Keyword "monitorEigenvalueCrossing" not found.
+colvars: Looking for the keyword "eigenvalueCrossingThreshold" and its value.
+colvars: Keyword "eigenvalueCrossingThreshold" not found.
+colvars: Looking for the keyword "colvarsTrajFrequency" and its value.
+colvars: Keyword value = "1".
+colvars: Looking for the keyword "colvarsTrajFrequency" and its value.
+colvars: Keyword "colvarsTrajFrequency" not found.
+colvars: # colvarsTrajFrequency = 1
+colvars: Looking for the keyword "colvarsRestartFrequency" and its value.
+colvars: Keyword value = "10".
+colvars: Looking for the keyword "colvarsRestartFrequency" and its value.
+colvars: Keyword "colvarsRestartFrequency" not found.
+colvars: # colvarsRestartFrequency = 10
+colvars: Looking for the keyword "colvarsTrajAppend" and its value.
+colvars: Keyword "colvarsTrajAppend" not found.
+colvars: Looking for the keyword "scriptedColvarForces" and its value.
+colvars: Keyword "scriptedColvarForces" not found.
+colvars: # scriptedColvarForces = off [default]
+colvars: Looking for the keyword "scriptingAfterBiases" and its value.
+colvars: Keyword "scriptingAfterBiases" not found.
+colvars: # scriptingAfterBiases = off [default]
+colvars: Looking for the keyword "colvar" and its value.
+colvars: Keyword value = "
+colvars:     name one
+colvars:     outputAppliedForce on
+colvars:     width 0.5
+colvars:     distance {
+colvars:         group1 {
+colvars:             indexGroup group1
+colvars:         }
+colvars:         group2 {
+colvars:             indexGroup group2
+colvars:         }
+colvars:     }
+colvars: ".
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   Looking for the keyword "name" and its value.
+colvars:   Keyword value = "one".
+colvars:   Looking for the keyword "name" and its value.
+colvars:   Keyword "name" not found.
+colvars:   # name = "one"
+colvars:   Looking for the keyword "distance" and its value.
+colvars:   Keyword value = "
+colvars:         group1 {
+colvars:             indexGroup group1
+colvars:         }
+colvars:         group2 {
+colvars:             indexGroup group2
+colvars:         }
+colvars: ".
+colvars:   Initializing a new "distance" component.
+colvars:     Looking for the keyword "name" and its value.
+colvars:     Keyword "name" not found.
+colvars:     # name = "" [default]
+colvars:     Looking for the keyword "componentCoeff" and its value.
+colvars:     Keyword "componentCoeff" not found.
+colvars:     # componentCoeff = 1 [default]
+colvars:     Looking for the keyword "componentExp" and its value.
+colvars:     Keyword "componentExp" not found.
+colvars:     # componentExp = 1 [default]
+colvars:     Looking for the keyword "period" and its value.
+colvars:     Keyword "period" not found.
+colvars:     # period = 0 [default]
+colvars:     Looking for the keyword "wrapAround" and its value.
+colvars:     Keyword "wrapAround" not found.
+colvars:     # wrapAround = 0 [default]
+colvars:     Looking for the keyword "debugGradients" and its value.
+colvars:     Keyword "debugGradients" not found.
+colvars:     Looking for the keyword "forceNoPBC" and its value.
+colvars:     Keyword "forceNoPBC" not found.
+colvars:     # forceNoPBC = off [default]
+colvars:     Looking for the keyword "scalable" and its value.
+colvars:     Keyword "scalable" not found.
+colvars:     # scalable = on [default]
+colvars:     Looking for the keyword "group1" and its value.
+colvars:     Keyword value = "
+colvars:             indexGroup group1
+colvars: ".
+colvars:       Initializing atom group "group1".
+colvars:       Looking for the keyword "name" and its value.
+colvars:       Keyword "name" not found.
+colvars:       # name = "" [default]
+colvars:       Looking for the keyword "centerToOrigin" and its value.
+colvars:       Keyword "centerToOrigin" not found.
+colvars:       # centerToOrigin = off [default]
+colvars:       Looking for the keyword "centerReference" and its value.
+colvars:       Keyword "centerReference" not found.
+colvars:       Looking for the keyword "centerToReference" and its value.
+colvars:       Keyword "centerToReference" not found.
+colvars:       # centerToReference = off [default]
+colvars:       Looking for the keyword "rotateReference" and its value.
+colvars:       Keyword "rotateReference" not found.
+colvars:       Looking for the keyword "rotateToReference" and its value.
+colvars:       Keyword "rotateToReference" not found.
+colvars:       # rotateToReference = off [default]
+colvars:       Looking for the keyword "atomsOfGroup" and its value.
+colvars:       Keyword "atomsOfGroup" not found.
+colvars:       # atomsOfGroup = "" [default]
+colvars:       Looking for the keyword "atomNumbers" and its value.
+colvars:       Keyword "atomNumbers" not found.
+colvars:       Looking for the keyword "indexGroup" and its value.
+colvars:       Keyword value = "group1".
+colvars:       Looking for the keyword "indexGroup" and its value.
+colvars:       Keyword "indexGroup" not found.
+colvars:       # indexGroup = "group1"
+colvars:       Looking for the keyword "atomNumbersRange" and its value.
+colvars:       Keyword "atomNumbersRange" not found.
+colvars:       Looking for the keyword "psfSegID" and its value.
+colvars:       Keyword "psfSegID" not found.
+colvars:       # psfSegID =  [default]
+colvars:       Looking for the keyword "atomNameResidueRange" and its value.
+colvars:       Keyword "atomNameResidueRange" not found.
+colvars:       Looking for the keyword "atomsFile" and its value.
+colvars:       Keyword "atomsFile" not found.
+colvars:       # atomsFile = "" [default]
+colvars:       Looking for the keyword "dummyAtom" and its value.
+colvars:       Keyword "dummyAtom" not found.
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       Looking for the keyword "enableForces" and its value.
+colvars:       Keyword "enableForces" not found.
+colvars:       Looking for the keyword "enableFitGradients" and its value.
+colvars:       Keyword "enableFitGradients" not found.
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group1".
+colvars:       Looking for the keyword "printAtomIDs" and its value.
+colvars:       Keyword "printAtomIDs" not found.
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group1" defined with 4 atoms requested: total mass = 54.028, total charge = -0.72.
+colvars:       Configuration string for "group1": "
+colvars: 
+colvars:             indexGroup group1
+colvars: ".
+colvars:     Looking for the keyword "group2" and its value.
+colvars:     Keyword value = "
+colvars:             indexGroup group2
+colvars: ".
+colvars:       Initializing atom group "group2".
+colvars:       Looking for the keyword "name" and its value.
+colvars:       Keyword "name" not found.
+colvars:       # name = "" [default]
+colvars:       Looking for the keyword "centerToOrigin" and its value.
+colvars:       Keyword "centerToOrigin" not found.
+colvars:       # centerToOrigin = off [default]
+colvars:       Looking for the keyword "centerReference" and its value.
+colvars:       Keyword "centerReference" not found.
+colvars:       Looking for the keyword "centerToReference" and its value.
+colvars:       Keyword "centerToReference" not found.
+colvars:       # centerToReference = off [default]
+colvars:       Looking for the keyword "rotateReference" and its value.
+colvars:       Keyword "rotateReference" not found.
+colvars:       Looking for the keyword "rotateToReference" and its value.
+colvars:       Keyword "rotateToReference" not found.
+colvars:       # rotateToReference = off [default]
+colvars:       Looking for the keyword "atomsOfGroup" and its value.
+colvars:       Keyword "atomsOfGroup" not found.
+colvars:       # atomsOfGroup = "" [default]
+colvars:       Looking for the keyword "atomNumbers" and its value.
+colvars:       Keyword "atomNumbers" not found.
+colvars:       Looking for the keyword "indexGroup" and its value.
+colvars:       Keyword value = "group2".
+colvars:       Looking for the keyword "indexGroup" and its value.
+colvars:       Keyword "indexGroup" not found.
+colvars:       # indexGroup = "group2"
+colvars:       Looking for the keyword "atomNumbersRange" and its value.
+colvars:       Keyword "atomNumbersRange" not found.
+colvars:       Looking for the keyword "psfSegID" and its value.
+colvars:       Keyword "psfSegID" not found.
+colvars:       # psfSegID =  [default]
+colvars:       Looking for the keyword "atomNameResidueRange" and its value.
+colvars:       Keyword "atomNameResidueRange" not found.
+colvars:       Looking for the keyword "atomsFile" and its value.
+colvars:       Keyword "atomsFile" not found.
+colvars:       # atomsFile = "" [default]
+colvars:       Looking for the keyword "dummyAtom" and its value.
+colvars:       Keyword "dummyAtom" not found.
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       Looking for the keyword "enableForces" and its value.
+colvars:       Keyword "enableForces" not found.
+colvars:       Looking for the keyword "enableFitGradients" and its value.
+colvars:       Keyword "enableFitGradients" not found.
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group2".
+colvars:       Looking for the keyword "printAtomIDs" and its value.
+colvars:       Keyword "printAtomIDs" not found.
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group2" defined with 4 atoms requested: total mass = 54.028, total charge = -0.4.
+colvars:       Configuration string for "group2": "
+colvars: 
+colvars:             indexGroup group2
+colvars: ".
+colvars:     Looking for the keyword "oneSiteSystemForce" and its value.
+colvars:     Keyword "oneSiteSystemForce" not found.
+colvars:     # oneSiteSystemForce = off [default]
+colvars:     Looking for the keyword "oneSiteTotalForce" and its value.
+colvars:     Keyword "oneSiteTotalForce" not found.
+colvars:     # oneSiteTotalForce = off [default]
+colvars:     Configuration string for "distance": "
+colvars: 
+colvars:         group1 {
+colvars:             indexGroup group1
+colvars:         }
+colvars:         group2 {
+colvars:             indexGroup group2
+colvars:         }
+colvars: ".
+colvars:   Looking for the keyword "distance" and its value.
+colvars:   Keyword "distance" not found.
+colvars:   Looking for the keyword "distanceVec" and its value.
+colvars:   Keyword "distanceVec" not found.
+colvars:   Looking for the keyword "cartesian" and its value.
+colvars:   Keyword "cartesian" not found.
+colvars:   Looking for the keyword "distanceDir" and its value.
+colvars:   Keyword "distanceDir" not found.
+colvars:   Looking for the keyword "distanceZ" and its value.
+colvars:   Keyword "distanceZ" not found.
+colvars:   Looking for the keyword "distanceXY" and its value.
+colvars:   Keyword "distanceXY" not found.
+colvars:   Looking for the keyword "polarTheta" and its value.
+colvars:   Keyword "polarTheta" not found.
+colvars:   Looking for the keyword "polarPhi" and its value.
+colvars:   Keyword "polarPhi" not found.
+colvars:   Looking for the keyword "distanceInv" and its value.
+colvars:   Keyword "distanceInv" not found.
+colvars:   Looking for the keyword "distancePairs" and its value.
+colvars:   Keyword "distancePairs" not found.
+colvars:   Looking for the keyword "dipoleMagnitude" and its value.
+colvars:   Keyword "dipoleMagnitude" not found.
+colvars:   Looking for the keyword "coordNum" and its value.
+colvars:   Keyword "coordNum" not found.
+colvars:   Looking for the keyword "selfCoordNum" and its value.
+colvars:   Keyword "selfCoordNum" not found.
+colvars:   Looking for the keyword "groupCoord" and its value.
+colvars:   Keyword "groupCoord" not found.
+colvars:   Looking for the keyword "angle" and its value.
+colvars:   Keyword "angle" not found.
+colvars:   Looking for the keyword "dipoleAngle" and its value.
+colvars:   Keyword "dipoleAngle" not found.
+colvars:   Looking for the keyword "dihedral" and its value.
+colvars:   Keyword "dihedral" not found.
+colvars:   Looking for the keyword "hBond" and its value.
+colvars:   Keyword "hBond" not found.
+colvars:   Looking for the keyword "alpha" and its value.
+colvars:   Keyword "alpha" not found.
+colvars:   Looking for the keyword "dihedralPC" and its value.
+colvars:   Keyword "dihedralPC" not found.
+colvars:   Looking for the keyword "orientation" and its value.
+colvars:   Keyword "orientation" not found.
+colvars:   Looking for the keyword "orientationAngle" and its value.
+colvars:   Keyword "orientationAngle" not found.
+colvars:   Looking for the keyword "orientationProj" and its value.
+colvars:   Keyword "orientationProj" not found.
+colvars:   Looking for the keyword "tilt" and its value.
+colvars:   Keyword "tilt" not found.
+colvars:   Looking for the keyword "spinAngle" and its value.
+colvars:   Keyword "spinAngle" not found.
+colvars:   Looking for the keyword "rmsd" and its value.
+colvars:   Keyword "rmsd" not found.
+colvars:   Looking for the keyword "gyration" and its value.
+colvars:   Keyword "gyration" not found.
+colvars:   Looking for the keyword "inertia" and its value.
+colvars:   Keyword "inertia" not found.
+colvars:   Looking for the keyword "inertiaZ" and its value.
+colvars:   Keyword "inertiaZ" not found.
+colvars:   Looking for the keyword "eigenvector" and its value.
+colvars:   Keyword "eigenvector" not found.
+colvars:   Looking for the keyword "alchLambda" and its value.
+colvars:   Keyword "alchLambda" not found.
+colvars:   Looking for the keyword "gspath" and its value.
+colvars:   Keyword "gspath" not found.
+colvars:   Looking for the keyword "gzpath" and its value.
+colvars:   Keyword "gzpath" not found.
+colvars:   Looking for the keyword "linearCombination" and its value.
+colvars:   Keyword "linearCombination" not found.
+colvars:   Looking for the keyword "gspathCV" and its value.
+colvars:   Keyword "gspathCV" not found.
+colvars:   Looking for the keyword "gzpathCV" and its value.
+colvars:   Keyword "gzpathCV" not found.
+colvars:   Looking for the keyword "aspathCV" and its value.
+colvars:   Keyword "aspathCV" not found.
+colvars:   Looking for the keyword "azpathCV" and its value.
+colvars:   Keyword "azpathCV" not found.
+colvars:   Looking for the keyword "eulerPhi" and its value.
+colvars:   Keyword "eulerPhi" not found.
+colvars:   Looking for the keyword "eulerPsi" and its value.
+colvars:   Keyword "eulerPsi" not found.
+colvars:   Looking for the keyword "eulerTheta" and its value.
+colvars:   Keyword "eulerTheta" not found.
+colvars:   Looking for the keyword "mapTotal" and its value.
+colvars:   Keyword "mapTotal" not found.
+colvars:   All components initialized.
+colvars:   Looking for the keyword "customFunction" and its value.
+colvars:   Keyword "customFunction" not found.
+colvars:   Looking for the keyword "scriptedFunction" and its value.
+colvars:   Keyword "scriptedFunction" not found.
+colvars:   Looking for the keyword "timeStepFactor" and its value.
+colvars:   Keyword "timeStepFactor" not found.
+colvars:   # timeStepFactor = 1 [default]
+colvars:   Looking for the keyword "width" and its value.
+colvars:   Keyword value = "0.5".
+colvars:   Looking for the keyword "width" and its value.
+colvars:   Keyword "width" not found.
+colvars:   # width = 0.5
+colvars:   Looking for the keyword "lowerBoundary" and its value.
+colvars:   Keyword "lowerBoundary" not found.
+colvars:   # lowerBoundary = 0 [default]
+colvars:   Looking for the keyword "upperBoundary" and its value.
+colvars:   Keyword "upperBoundary" not found.
+colvars:   # upperBoundary = 0 [default]
+colvars:   Looking for the keyword "lowerWallConstant" and its value.
+colvars:   Keyword "lowerWallConstant" not found.
+colvars:   Looking for the keyword "upperWallConstant" and its value.
+colvars:   Keyword "upperWallConstant" not found.
+colvars:   Looking for the keyword "hardLowerBoundary" and its value.
+colvars:   Keyword "hardLowerBoundary" not found.
+colvars:   # hardLowerBoundary = on [default]
+colvars:   Looking for the keyword "hardUpperBoundary" and its value.
+colvars:   Keyword "hardUpperBoundary" not found.
+colvars:   # hardUpperBoundary = off [default]
+colvars:   Looking for the keyword "expandBoundaries" and its value.
+colvars:   Keyword "expandBoundaries" not found.
+colvars:   # expandBoundaries = off [default]
+colvars:   Looking for the keyword "extendedLagrangian" and its value.
+colvars:   Keyword "extendedLagrangian" not found.
+colvars:   # extendedLagrangian = off [default]
+colvars:   Looking for the keyword "outputValue" and its value.
+colvars:   Keyword "outputValue" not found.
+colvars:   # outputValue = on [default]
+colvars:   Looking for the keyword "outputVelocity" and its value.
+colvars:   Keyword "outputVelocity" not found.
+colvars:   # outputVelocity = off [default]
+colvars:   Looking for the keyword "outputSystemForce" and its value.
+colvars:   Keyword "outputSystemForce" not found.
+colvars:   Looking for the keyword "outputTotalForce" and its value.
+colvars:   Keyword "outputTotalForce" not found.
+colvars:   # outputTotalForce = off [default]
+colvars:   Looking for the keyword "outputAppliedForce" and its value.
+colvars:   Keyword value = "on".
+colvars:   Looking for the keyword "outputAppliedForce" and its value.
+colvars:   Keyword "outputAppliedForce" not found.
+colvars:   # outputAppliedForce = on
+colvars:   Looking for the keyword "subtractAppliedForce" and its value.
+colvars:   Keyword "subtractAppliedForce" not found.
+colvars:   # subtractAppliedForce = off [default]
+colvars:   Looking for the keyword "runAve" and its value.
+colvars:   Keyword "runAve" not found.
+colvars:   # runAve = off [default]
+colvars:   Looking for the keyword "corrFunc" and its value.
+colvars:   Keyword "corrFunc" not found.
+colvars:   # corrFunc = off [default]
+colvars:   Configuration string for "colvar": "
+colvars: 
+colvars:     name one
+colvars:     outputAppliedForce on
+colvars:     width 0.5
+colvars:     distance {
+colvars:         group1 {
+colvars:             indexGroup group1
+colvars:         }
+colvars:         group2 {
+colvars:             indexGroup group2
+colvars:         }
+colvars:     }
+colvars: ".
+colvars: Looking for the keyword "colvar" and its value.
+colvars: Keyword "colvar" not found.
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables initialized, 1 in total.
+colvars: Looking for the keyword "abf" and its value.
+colvars: Keyword "abf" not found.
+colvars: Looking for the keyword "ALB" and its value.
+colvars: Keyword "ALB" not found.
+colvars: Looking for the keyword "harmonic" and its value.
+colvars: Keyword "harmonic" not found.
+colvars: Looking for the keyword "harmonicWalls" and its value.
+colvars: Keyword "harmonicWalls" not found.
+colvars: Looking for the keyword "histogram" and its value.
+colvars: Keyword value = "
+colvars:     colvars    one
+colvars:     histogramGrid {
+colvars:         widths 0.2
+colvars:         lowerBoundaries 0.6
+colvars:         upperBoundaries 5.4
+colvars:     }
+colvars: ".
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new "histogram" instance.
+colvars:   Looking for the keyword "name" and its value.
+colvars:   Keyword "name" not found.
+colvars:   # name = "histogram1" [default]
+colvars:   Looking for the keyword "colvars" and its value.
+colvars:   Keyword value = "one".
+colvars:   Looking for the keyword "colvars" and its value.
+colvars:   Keyword "colvars" not found.
+colvars:   # colvars = { one }
+colvars:   Looking for the keyword "stepZeroData" and its value.
+colvars:   Keyword "stepZeroData" not found.
+colvars:   # stepZeroData = off [default]
+colvars:   Looking for the keyword "outputEnergy" and its value.
+colvars:   Keyword "outputEnergy" not found.
+colvars:   # outputEnergy = off [default]
+colvars:   Looking for the keyword "outputFreq" and its value.
+colvars:   Keyword "outputFreq" not found.
+colvars:   # outputFreq = 10 [default]
+colvars:   Looking for the keyword "bypassExtendedLagrangian" and its value.
+colvars:   Keyword "bypassExtendedLagrangian" not found.
+colvars:   Looking for the keyword "timeStepFactor" and its value.
+colvars:   Keyword "timeStepFactor" not found.
+colvars:   # timeStepFactor = 1 [default]
+colvars:   Looking for the keyword "outputFile" and its value.
+colvars:   Keyword "outputFile" not found.
+colvars:   # outputFile = "" [default]
+colvars:   Looking for the keyword "outputFileDX" and its value.
+colvars:   Keyword "outputFileDX" not found.
+colvars:   # outputFileDX = "none" [default]
+colvars:   Looking for the keyword "gatherVectorColvars" and its value.
+colvars:   Keyword "gatherVectorColvars" not found.
+colvars:   # gatherVectorColvars = off [default]
+colvars:   Error: checking periodicity for collective variable "one" requires lower and upper boundaries to be defined.
+colvars:   Error: checking periodicity for collective variable "one" requires lower and upper boundaries to be defined.
+colvars: Error: providing an invalid number of grid points, 0.

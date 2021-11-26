@@ -91,6 +91,9 @@ for colvar in "distance" ; do
     done
 done
 
+create_test_dir "distance_histogram-customgrid"
+write_colvars_config "distance" "histogram-customgrid" ${dirname}/test.in
+
 create_test_dir "distancewalls"
 write_colvars_config "distance" "harmonicwalls-fixed" ${dirname}/test.in
 write_colvars_config "distancewalls" "" ${dirname}/test.legacy.in

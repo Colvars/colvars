@@ -329,8 +329,7 @@ void colvar::cvc::init_as_distance()
 {
   x.type(colvarvalue::type_scalar);
   enable(f_cvc_lower_boundary);
-  lower_boundary.type(colvarvalue::type_scalar);
-  lower_boundary.real_value = 0.0;
+  lower_boundary = 0.0;
   register_param("lowerBoundary", reinterpret_cast<void *>(&lower_boundary));
 }
 
@@ -354,11 +353,9 @@ void colvar::cvc::init_as_periodic_angle()
 void colvar::cvc::init_scalar_boundaries(cvm::real lb, cvm::real ub)
 {
   enable(f_cvc_lower_boundary);
-  lower_boundary.type(colvarvalue::type_scalar);
-  lower_boundary.real_value = lb;
+  lower_boundary = lb;
   enable(f_cvc_upper_boundary);
-  upper_boundary.type(colvarvalue::type_scalar);
-  upper_boundary.real_value = ub;
+  upper_boundary = ub;
   register_param("lowerBoundary", reinterpret_cast<void *>(&lower_boundary));
   register_param("upperBoundary", reinterpret_cast<void *>(&upper_boundary));
 }
