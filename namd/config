@@ -1,5 +1,5 @@
 #!/bin/bash
-CHARM_VERSION=6.10.2
+CHARM_VERSION=6.10.1
 
 function error_syntax {
   echo ''
@@ -17,9 +17,10 @@ function error_syntax {
   echo '  --tcl-prefix <directory containing Tcl lib and include>'
   echo '      (defaults to ./tcl or ~/tcl)'
   echo '  --without-python (default)  --with-python (requires Tcl)'
-  echo '  --python-prefix <directory containing bin/python[23]-config>'
-  echo '      (tries python3-config, python-config, and python2-config'
-  echo '       in prefix/bin if specified, otherwise in regular path)'
+  echo '      (only Python 2.x is supported currently)'
+  echo '  --python-prefix <directory containing Python lib and include>'
+  echo '      (defaults to the output of python-config --prefix'
+  echo '       if available, or to /usr if not)'
   echo '  --with-fftw (default)  --without-fftw'
   echo '  --with-fftw3 (use fftw3 API, your fftw-prefix should match) '
   echo '  --fftw-prefix <directory containing FFTW lib and include>'
@@ -36,26 +37,17 @@ function error_syntax {
   echo '  --with-debug  (sets all opts to -g)'
   echo '  --arch-suffix <suffix for NAMD platform printed at startup>'
   echo '  (the following are experimental features)'
+  echo '  --with-single-node-cuda'
+  echo '      (Enables experimental integration scheme for GPUs on a single-node)'
   echo '  --without-memopt (default)  --with-memopt'
   echo '  --without-cuda (default)  --with-cuda'
   echo '      (do NOT use CUDA-enabled Charm++, NAMD does not need it)'
   echo '  --without-mic (default)  --with-mic'
   echo '      (do NOT use MIC-enabled Charm++, NAMD does not need it)'
-  echo '  --without-hip (default)  --with-hip'
-  echo '  --rocm-prefix <directory where rocm is installed>'
-  echo '      (necessary for HIP when ROCm not in /opt/rocm)'
-  echo '  --hipcub-prefix <directory containing hipCUB headers>'
-  echo '      (necessary for HIP where hipCUB is installed locally)'
-  echo '  --rocprim-prefix <directory containing rocPRIM headers>'
-  echo '      (necessary on AMD-GPUs where rocPRIM is installed locally)'
-  echo '  --rocfft-prefix <directory containing rocFFT headers>'
-  echo '      (necessary on AMD-GPUs where rocFFT is installed locally)'
-  echo '  --amdgpu-targets <comma separated list of explicit amdgpu-targets>'
   echo '  --cuda-prefix <directory containing CUDA bin, lib, and include>'
   echo '  --cuda-gencode arch=<arch>,code=<code> (may be repeated)'
   echo '  --cuda-dlink arch=<arch>,code=<code> (for cuFFT, may be repeated)'
   echo '  --with-cuda-profiling (enables CUDA profiling with NVTX)'
-  echo '  --with-rocm-profiling (enables ROCm profiling with ROCtracer API)'
   echo ''
   if [ -n "${PRINT_ARCH_LIST+set}" ]; then
     ARCH_PAT=''
@@ -150,12 +142,11 @@ function error_exists {
   use_fftw3=0
   use_mkl=0
   use_cuda=0
-  use_hip=0
   use_cuda_prof=0
-  use_rocm_prof=0
   use_memopt=0
   use_mic=0
   use_spec=0
+  use_sn=0
 
   if (( $# < 1 )); then
     PRINT_ARCH_LIST=1
@@ -188,12 +179,6 @@ function error_exists {
   if (( $# < 1 )); then error_syntax; fi
   if [ "$1" == cuda ]; then
     use_cuda=1
-    shift
-  fi
-
-  if (( $# < 1 )); then error_syntax; fi
-  if [ "$1" == hip ]; then
-    use_hip=1
     shift
   fi
 
@@ -241,6 +226,7 @@ function error_exists {
   PYTHON_PREFIX=""
   CUDA_GENCODE=""
   CUDA_DLINK=""
+  CUDA_REQUIRE=""
 
   while (( $# > 0 )); do
     if [[ "$1" != --* ]]; then
@@ -323,6 +309,12 @@ function error_exists {
       --with-cuda)
         use_cuda=1
       ;;
+      
+      --with-single-node-cuda)
+        use_cuda=1
+        use_sn=1
+      ;;
+      
       --without-cuda)
         use_cuda=0
       ;;
@@ -355,56 +347,9 @@ function error_exists {
         CUDA_DLINK="$CUDA_DLINK -gencode $1"
       ;;
       --with-cuda-profiling)
+        shift
         use_cuda_prof=1
       ;;
-
-      --with-rocm-profiling)
-        use_rocm_prof=1
-      ;;
-
-      --with-hip)
-        use_hip=1
-      ;;
-      --without-hip)
-        use_hip=0
-      ;;
-      --hipcub-prefix)
-        shift
-        if [ ! -d "$1" ]; then
-          echo "ERROR: No such directory $1"
-          error_syntax
-        fi
-        HIPCUB_PREFIX=$1
-      ;;
-      --rocprim-prefix)
-        shift
-        if [ ! -d "$1" ]; then
-          echo "ERROR: No such directory $1"
-          error_syntax
-        fi
-        ROCPRIM_PREFIX=$1
-      ;;
-      --rocfft-prefix)
-        shift
-        if [ ! -d "$1" ]; then
-          echo "ERROR: No such directory $1"
-          error_syntax
-        fi
-        ROCFFT_PREFIX=$1
-      ;;
-      --rocm-prefix)
-        shift
-        if [ ! -d "$1" ]; then
-          echo "ERROR: No such directory $1"
-          error_syntax
-        fi
-        ROCM_PREFIX=$1
-      ;;
-      --amdgpu-targets)
-        shift
-        AMDGPUTARGETS=$1
-      ;;
-
 
       --with-memopt)
          use_memopt=1
@@ -483,7 +428,13 @@ function error_exists {
     echo "ERROR: Do not specify both FFTW and Intel MKL"
     error_syntax
   fi
-  if (( $use_cuda || $use_mic || $use_hip )); then
+  
+  if (( $use_sn && !$use_cuda)); then
+    echo "ERROR: single-node version should be used with CUDA"
+    error_syntax
+  fi
+  
+  if (( $use_cuda || $use_mic )); then
 
     if [ -n "$CHARM_ARCH" ]; then
        CHARM_ARCH_TEST=$CHARM_ARCH
@@ -538,44 +489,41 @@ function error_exists {
     PYTHON_LDFLAGS=""
     PYTHON_INCFLAGS=""
 
-    PYTHON_CONFIG=""
+    if [ -z "$PYTHON_PREFIX" ]; then
 
-    if [ -n "$PYTHON_PREFIX" ]; then
-      echo "Trying to detect Python installation in $PYTHON_PREFIX:"
-      if [ -n "$(which $PYTHON_PREFIX/bin/python3-config)" ]; then
-        PYTHON_CONFIG="$PYTHON_PREFIX/bin/python3-config"
-      elif [ -n "$(which $PYTHON_PREFIX/bin/python-config)" ]; then
-        PYTHON_CONFIG="$PYTHON_PREFIX/bin/python-config"
-      elif [ -n "$(which $PYTHON_PREFIX/bin/python2-config)" ]; then
-        PYTHON_CONFIG="$PYTHON_PREFIX/bin/python2-config"
-      fi
-    else
-      echo "Trying to detect Python installation:"
-      if [ -n "$(which python3-config)" ]; then
-        PYTHON_CONFIG="python3-config"
-      elif [ -n "$(which python-config)" ]; then
-        PYTHON_CONFIG="python-config"
-      elif [ -n "$(which python2-config)" ]; then
-        PYTHON_CONFIG="python2-config"
-      fi
-    fi
-
-    if [ -z "$PYTHON_CONFIG" ]; then
-      echo "Unable to detect Python installation; please edit Make.config file."
-    else
-      echo "Using $PYTHON_CONFIG to configure Python."
-      PYTHON_PREFIX=$($PYTHON_CONFIG --prefix)
-      PYTHON_INCFLAGS=$($PYTHON_CONFIG --includes)
-      PYTHON_LDFLAGS=$($PYTHON_CONFIG --ldflags)
+      echo 'Trying to autodetect Python installation:'
+      if [ -n "$(which python-config)" ]; then
+        # Use python-config
+        echo 'autodetected.'
+        PYTHON_PREFIX=$(python-config --prefix)
+        PYTHON_INCFLAGS=$(python-config --includes)
+        PYTHON_LDFLAGS=$(python-config --ldflags)
         if ! echo "$PYTHON_LDFLAGS" | grep -q -- '-L'; then
-        echo "$PYTHON_CONFIG did not return a -L flag: using Anaconda?"
+          echo 'python-config did not return a -L flag: using Anaconda?'
           if [ -d "$PYTHON_PREFIX/lib" ]; then
             PYTHON_LDFLAGS="-L$PYTHON_PREFIX/lib $PYTHON_LDFLAGS"
           elif [ -d "$PYTHON_PREFIX/lib64" ]; then
             PYTHON_LDFLAGS="-L$PYTHON_PREFIX/lib64 $PYTHON_LDFLAGS"
           else
-          echo "Unable to detect Python installation; please edit Make.config file."
+            echo "Unable to detect local Python; please edit Make.config file."
     fi
+      fi
+      else
+        PYTHON_PREFIX="/usr"
+      fi
+    fi
+
+    if [ -z "$PYTHON_LDFLAGS" ]; then
+      # We only have prefix, fall back to old method for the rest
+      for python_include in $PYTHON_PREFIX/include/python2.[0-9]; do
+        python_lib=${python_include##*/}
+      done
+      if [ -n "${python_lib+set}" ]; then
+        echo "Using $python_lib with include files in $python_include"
+        PYTHON_INCFLAGS="-I$python_include"
+        PYTHON_LDFLAGS="-L$PYTHON_PREFIX/lib64 -l$python_lib -ldl -lutil"
+      else
+        echo "Unable to detect local Python; please edit Make.config file."
       fi
     fi
 
@@ -703,11 +651,6 @@ function error_exists {
     [[ "$ARCH_SUFFIX_ARG" == *CUDA* ]] && SUF=""
     ARCH_SUFFIX=${ARCH_SUFFIX}${SUF}
   fi
-  if (( $use_hip )); then
-    SUF="-HIP"
-    [[ "$ARCH_SUFFIX_ARG" == *HIP* ]] && SUF=""
-    ARCH_SUFFIX=${ARCH_SUFFIX}${SUF}
-  fi
   if (( $use_mic )); then
     SUF="-MIC"
     [[ "$ARCH_SUFFIX_ARG" == *MIC* ]] && SUF=""
@@ -775,6 +718,7 @@ function error_exists {
       echo 'FFTDIR = $(HOME)/fftw' >> Make.config
     fi
   fi
+  
   if (( $use_cuda )); then
     echo 'include .rootdir/arch/$(NAMD_ARCH).cuda' >> Make.config
     CUDART_SO_PAT='lib64/libcudart.so.[1-9]*'
@@ -824,7 +768,11 @@ function error_exists {
           echo "CUDA detected: version $cuda_ver"
         cuda_major_ver_found=$(echo ${cuda_ver} | cut -d "." -f1)
         cuda_major_ver=${cuda_major_ver_found}
+        if (( $use_sn )); then
+          cuda_major_ver_min=9
+        else
         cuda_major_ver_min=8
+        fi
         while [ ${cuda_major_ver} -ge ${cuda_major_ver_min} ]; do
               if [ -f ".rootdir/arch/${NAMD_ARCH}.cuda${cuda_major_ver}" ]; then
                   echo "using ${NAMD_ARCH}.cuda${cuda_major_ver}"
@@ -898,77 +846,6 @@ function error_exists {
       echo "CUDADLINKOPTS = $CUDA_GENCODE" >> Make.config
     fi
   fi
-  if (( $use_hip && $use_cuda )); then
-    #Override the platform.
-    echo "export PLATFORM = nvcc" >> Make.config
-  fi
-  if (( $use_hip )); then
-     if [ -z "$ROCM_PREFIX" ]; then
-        if [[ -d "/opt/rocm/" ]]; then
-          echo "Using system installation of ROCm."
-          ROCM_PREFIX=/opt/rocm
-        else
-          echo "Warning: ROCm not found!"
-        fi
-    fi
-    echo "ROCM_DIR = $ROCM_PREFIX" >> Make.config
-    if [ -z "$HIPCUB_PREFIX" ]; then
-        if [[ -d "${ROCM_PREFIX}/hipcub/include" ]]; then
-          echo "Using given rocm-prefix $ROCM_PREFIX to find hipcub."
-          HIPCUB_PREFIX=${ROCM_PREFIX}/hipcub/include/
-        elif [[ -d "/opt/rocm/hipcub/include/" ]]; then
-          echo "Using system installation of hipCUB."
-          HIPCUB_PREFIX=/opt/rocm/hipcub/include/
-        elif [[ -d .rootdir/hipcub/include/ ]]; then
-          echo "Using hipCUB build found in main build directory."
-          HIPCUB_PREFIX=.rootdir/hipcub/include/
-        elif [[ -d "$HOME/hipcub/include/" ]]; then
-          echo "Using hipCUB build found in $HOME/hipcub"
-          HIPCUB_PREFIX=$HOME/hipcub/include/
-        else
-          echo "Warning: hipCUB not found!"
-        fi
-    fi
-    echo "HIPCUB_DIR = $HIPCUB_PREFIX" >> Make.config
-    if [ -z "$ROCPRIM_PREFIX" ]; then
-	if [[ -d "${ROCM_PREFIX}/rocprim/include" ]]; then
-          echo "Using given rocm-prefix $ROCM_PREFIX to find rocPRIM."
-          ROCPRIM_PREFIX=${ROCM_PREFIX}/rocprim/include/
-        elif [[ -d "/opt/rocm/rocprim/include/" ]]; then
-          echo "Using system installation of rocPRIM."
-          ROCPRIM_PREFIX=/opt/rocm/rocprim/include/
-        elif [[ -d .rootdir/rocprim/include/ ]]; then
-          echo "Using rocPRIM build found in main build directory."
-          ROCPRIM_PREFIX=.rootdir/rocprim/include/
-        elif [[ -d "$HOME/rocprim/include/" ]]; then
-          echo "Using rocPRIM build found in $HOME/rocprim"
-          ROCPRIM_PREFIX=$HOME/rocprim/include/
-        else
-          echo "Warning: rocPRIM not found!"
-        fi
-    fi
-    echo "ROCPRIM_DIR = $ROCPRIM_PREFIX" >> Make.config
-    if [ -z "$ROCFFT_PREFIX" ]; then
-        if [[ -d "${ROCM_PREFIX}/rocfft/include" ]]; then
-          echo "Using given rocm-prefix $ROCM_PREFIX to find rocFFT."
-          ROCFFT_PREFIX=${ROCM_PREFIX}/rocfft/include/
-        elif [[ -d "/opt/rocm/rocfft/include/" ]]; then
-          echo "Using system installation of rocFFT."
-          ROCFFT_PREFIX=/opt/rocm/rocfft/include/
-        elif [[ -d .rootdir/rocfft/include/ ]]; then
-          echo "Using rocFFT build found in main build directory."
-          ROCFFT_PREFIX=.rootdir/rocfft/include/
-        elif [[ -d "$HOME/rocfft/include/" ]]; then
-          echo "Using rocFFT build found in $HOME/rocfft"
-          ROCFFT_PREFIX=$HOME/rocfft/include/
-        else
-          echo "Warning: rocFFT not found!"
-        fi
-    fi
-    echo "ROCFFT_DIR = $ROCFFT_PREFIX" >> Make.config
-    echo "AMDGPUTARGETS = $AMDGPUTARGETS" >> Make.config
-    echo 'include .rootdir/arch/$(NAMD_ARCH).hip' >> Make.config
-  fi
 
   if (( $use_cuda && $use_cuda_prof )); then
     if [ -f ".rootdir/arch/${NAMD_ARCH}.cudaprof" ]; then
@@ -976,16 +853,6 @@ function error_exists {
       echo 'include .rootdir/arch/$(NAMD_ARCH).cudaprof' >> Make.config
     else
       echo "Warning: Cannot enable NVTX profiling for CUDA ${NAMD_ARCH}"
-    fi
-  fi
-
-  if (( $use_hip && $use_rocm_prof )); then
-    NAMD_ARCH=$(awk '/^NAMD_ARCH =/ {print $3}' .rootdir/arch/$ARCH.arch)
-    if [ -f ".rootdir/arch/${NAMD_ARCH}.rocmprof" ]; then
-      echo "Enabling ROCTX profiling for HIP ${NAMD_ARCH}"
-      echo 'include .rootdir/arch/$(NAMD_ARCH).rocmprof' >> Make.config
-    else
-      echo "Warning: Cannot enable ROCTX profiling for HIP ${NAMD_ARCH}"
     fi
   fi
 
@@ -1008,6 +875,7 @@ function error_exists {
     echo "COPTS = $CC_OPTS" >> Make.config
   fi
 
+
   if (( $use_debug )); then
     echo 'CXXOPTS = -g' >> Make.config
     echo 'CXXTHREADOPTS = -g' >> Make.config
@@ -1016,10 +884,14 @@ function error_exists {
     echo 'COPTS = -g' >> Make.config
   fi
 
+  if (( $use_sn )); then
+    echo "EXTRADEFINES += -DNODEGROUP_FORCE_REGISTER " >> Make.config
+    echo "CUDAFLAGS += -DNODEGROUP_FORCE_REGISTER" >> Make.config
+  fi
+
   echo "Linking Makefile"
   ln -s .rootdir/Makefile ./Makefile
   echo "Linking Make.depends"
-  #This is to workaround hipcc not compiling kernels when the file name ends in .cu
   ln -s .rootdir/Make.depends ./Make.depends
   echo "Linking src directory"
   ln -s .rootdir/src ./src

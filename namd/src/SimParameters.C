@@ -83,16 +83,11 @@ extern "C" {
 //bool one_cuda_device_per_node();
 //#endif
 #include "DeviceCUDA.h"
-#if defined(NAMD_CUDA) || defined(NAMD_HIP)
+#ifdef NAMD_CUDA
 #ifdef WIN32
 #define __thread __declspec(thread)
 #endif
 extern __thread DeviceCUDA *deviceCUDA;
-#endif
-
-#ifdef NAMD_AVXTILES
-// For "+notiles" commandline option to disable "Tiles" algorithm (BackEnd.C)
-extern int avxTilesCommandLineDisable;
 #endif
 
 //#define DEBUGM
@@ -243,6 +238,7 @@ void SimParameters::scriptSet(const char *param, const char *value) {
   SCRIPT_PARSE_FLOAT("drudeBondConst",drudeBondConst)
   SCRIPT_PARSE_FLOAT("drudeBondLen",drudeBondLen)
   SCRIPT_PARSE_STRING("outputname",outputFilename)
+  SCRIPT_PARSE_INT("computeEnergies", computeEnergies)
   SCRIPT_PARSE_INT("outputEnergies",outputEnergies)
   SCRIPT_PARSE_STRING("restartname",restartFilename)
   SCRIPT_PARSE_INT("DCDfreq",dcdFrequency)
@@ -269,6 +265,13 @@ void SimParameters::scriptSet(const char *param, const char *value) {
   SCRIPT_PARSE_STRING("accelMDGRestartFile",accelMDGRestartFile)
   SCRIPT_PARSE_VECTOR("stirAxis",stirAxis)
   SCRIPT_PARSE_VECTOR("stirPivot",stirPivot)
+
+#ifdef NODEGROUP_FORCE_REGISTER
+  if ( ! strncasecmp(param,"CUDASOAintegrate",MAX_SCRIPT_PARAM_SIZE) ) {
+    NAMD_die("Can't yet modify CUDASOAintegrate in a script!");
+    return;
+  }
+#endif
   if ( ! strncasecmp(param,"mgridforcescale",MAX_SCRIPT_PARAM_SIZE) ) {
     NAMD_die("Can't yet modify mgridforcescale in a script");
     return;
@@ -297,6 +300,14 @@ void SimParameters::scriptSet(const char *param, const char *value) {
     alchThermIntOn = alchOn && alchThermIntOnAtStartup;
     ComputeNonbondedUtil::select();
     if ( PMEOn ) ComputePmeUtil::select();
+#ifdef NAMD_CUDA
+#ifdef BONDED_CUDA
+    if (bondedCUDA > 0) {
+      ComputeCUDAMgr::getComputeCUDAMgr()->getComputeBondedCUDA()->updateHostCudaAlchFlags();
+      ComputeCUDAMgr::getComputeCUDAMgr()->getComputeBondedCUDA()->updateKernelCudaAlchFlags();
+    }
+#endif // BONDED_CUDA
+#endif // NAMD_CUDA
     return;
   }
   SCRIPT_PARSE_INT("alchEquilSteps",alchEquilSteps)
@@ -307,6 +318,14 @@ void SimParameters::scriptSet(const char *param, const char *value) {
       NAMD_die("Alchemical lambda values should be in the range [0.0, 1.0]\n");
     }
     ComputeNonbondedUtil::select();
+#ifdef NAMD_CUDA
+#ifdef BONDED_CUDA
+    if (bondedCUDA > 0) {
+      ComputeCUDAMgr::getComputeCUDAMgr()->getComputeBondedCUDA()->updateHostCudaAlchLambdas();
+      ComputeCUDAMgr::getComputeCUDAMgr()->getComputeBondedCUDA()->updateKernelCudaAlchLambdas();
+    }
+#endif // BONDED_CUDA
+#endif // NAMD_CUDA
     return;
   }
 
@@ -316,6 +335,14 @@ void SimParameters::scriptSet(const char *param, const char *value) {
       NAMD_die("Alchemical lambda values should be in the range [0.0, 1.0]\n");
     }
     ComputeNonbondedUtil::select();
+#ifdef NAMD_CUDA
+#ifdef BONDED_CUDA
+    if (bondedCUDA > 0) {
+      ComputeCUDAMgr::getComputeCUDAMgr()->getComputeBondedCUDA()->updateHostCudaAlchLambdas();
+      ComputeCUDAMgr::getComputeCUDAMgr()->getComputeBondedCUDA()->updateKernelCudaAlchLambdas();
+    }
+#endif // BONDED_CUDA
+#endif // NAMD_CUDA
     return;
   }
 
@@ -323,6 +350,14 @@ void SimParameters::scriptSet(const char *param, const char *value) {
     alchLambdaIDWS = atof(value);
     setupIDWS();
     ComputeNonbondedUtil::select();
+#ifdef NAMD_CUDA
+#ifdef BONDED_CUDA
+    if (bondedCUDA > 0) {
+      ComputeCUDAMgr::getComputeCUDAMgr()->getComputeBondedCUDA()->updateHostCudaAlchLambdas();
+      ComputeCUDAMgr::getComputeCUDAMgr()->getComputeBondedCUDA()->updateKernelCudaAlchLambdas();
+    }
+#endif // BONDED_CUDA
+#endif // NAMD_CUDA
     return;
   }
 
@@ -332,6 +367,14 @@ void SimParameters::scriptSet(const char *param, const char *value) {
       NAMD_die("alchLambdaIDWS and alchLambdaFreq are not compatible.\n");
     }
     ComputeNonbondedUtil::select();
+#ifdef NAMD_CUDA
+#ifdef BONDED_CUDA
+    if (bondedCUDA > 0) {
+      ComputeCUDAMgr::getComputeCUDAMgr()->getComputeBondedCUDA()->updateHostCudaAlchLambdas();
+      ComputeCUDAMgr::getComputeCUDAMgr()->getComputeBondedCUDA()->updateKernelCudaAlchLambdas();
+    }
+#endif // BONDED_CUDA
+#endif // NAMD_CUDA
     return;
   }
 //fepe
@@ -359,7 +402,7 @@ void SimParameters::scriptSet(const char *param, const char *value) {
     soluteScalingFactorVdw = soluteScalingFactor;
     // update LJTable for CPU
     ComputeNonbondedUtil::select();
-#if defined(NAMD_CUDA) || defined(NAMD_HIP)
+#ifdef NAMD_CUDA
     // update LJTable for GPU, needs CPU update first
     ComputeCUDAMgr::getComputeCUDAMgr()->update();
 #endif
@@ -373,7 +416,7 @@ void SimParameters::scriptSet(const char *param, const char *value) {
     }
     // update LJTable for CPU
     ComputeNonbondedUtil::select();
-#if defined(NAMD_CUDA) || defined(NAMD_HIP)
+#ifdef NAMD_CUDA
     // update LJTable for GPU, needs CPU update first
     ComputeCUDAMgr::getComputeCUDAMgr()->update();
 #endif
@@ -489,6 +532,10 @@ void SimParameters::config_parser_basic(ParseOptions &opts) {
      &scale14, 1.0);
    opts.range("1-4scaling", POSITIVE);
 
+   opts.optional("exclude", "oneFourScaling", "1-4 electrostatic scaling factor",
+     &scale14alt);
+   opts.range("oneFourScaling", POSITIVE);
+
    opts.optionalB("main", "switching",
      "Should a smoothing function be used?", &switchingActive, TRUE);
 
@@ -570,6 +617,10 @@ void SimParameters::config_parser_basic(ParseOptions &opts) {
      &outputEnergies, 1);
    opts.range("outputEnergies", POSITIVE);
 
+   opts.optional("main", "computeEnergies", "How often to evaluate energies in timesteps",
+     &computeEnergies);
+   opts.range("computeEnergies", POSITIVE);
+     
    opts.optional("main", "outputMomenta", "How often to print linear and angular momenta in timesteps",
      &outputMomenta, 0);
    opts.range("outputMomenta", NOT_NEGATIVE);
@@ -656,12 +707,20 @@ void SimParameters::config_parser_basic(ParseOptions &opts) {
 #endif
    opts.optional("main", "waterModel", "Water model to use", PARSE_STRING);
    opts.optionalB("main", "LJcorrection", "Apply analytical tail corrections for energy and virial", &LJcorrection, FALSE);
+   // SOA integration routine for higher performance
+   opts.optionalB("main", "SOAintegrate", "Use SOA integration routine",
+       &SOAintegrateOn, FALSE);
+   // CUDA SOA integration routine for higher performance
+   opts.optionalB("main", "CUDASOAintegrate", "Use CUDA SOA integration routine",
+       &CUDASOAintegrateOn, FALSE);
+   opts.optionalB("main", "nsPerDay", "Prints sampling rate in ns/day instead of days/ns",
+       &nsPerDayOn, FALSE);
 #ifdef TIMER_COLLECTION
    opts.optional("main", "TimerBinWidth",
        "Bin width of timer histogram collection in microseconds",
        &timerBinWidth, 1.0);
 #endif
-#if defined(NAMD_NVTX_ENABLED) || defined(NAMD_CMK_TRACE_ENABLED) || defined(NAMD_ROCTX_ENABLED)
+#if defined(NAMD_NVTX_ENABLED) || defined(NAMD_CMK_TRACE_ENABLED)
    // default NVTX or Projections profiling is up to the first 1000 patches
    opts.optional("main", "beginEventPatchID","Beginning patch ID for profiling",
        &beginEventPatchID, 0);
@@ -673,6 +732,10 @@ void SimParameters::config_parser_basic(ParseOptions &opts) {
    opts.optional("main", "endEventStep", "Ending time step for profiling",
        &endEventStep, 1000);
 #endif
+   opts.optionalB("main", "mshake", "Using MSHAKE for rigid bond constraints",
+       &mshakeOn, FALSE);
+   opts.optionalB("main", "lincs", "Using LINCS for rigid bond constrainsts", 
+       &lincsOn, FALSE);
 }
 
 void SimParameters::config_parser_fileio(ParseOptions &opts) {
@@ -999,9 +1062,6 @@ void SimParameters::config_parser_fullelect(ParseOptions &opts) {
    opts.optional("FFTWUseWisdom", "FFTWWisdomFile", "File for FFTW wisdom",
 	FFTWWisdomFile);
 
-   opts.optionalB("main", "useAVXTiles",
-		  "Use \"Tiles\" mode for AVX-512 optimized calculations",
-		  &useAVXTiles, TRUE);
 }
 
 void SimParameters::config_parser_methods(ParseOptions &opts) {
@@ -1087,6 +1147,7 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
 
    opts.optional("alch", "unperturbedBondFile", "mini psf file with unperturbed bond info"
      " ", PARSE_STRING);
+
    opts.optional("alch", "alchOutFreq", "Frequency of alchemical energy"
      "output in timesteps", &alchOutFreq, 5);
    opts.range("alchoutfreq", NOT_NEGATIVE);
@@ -1142,6 +1203,8 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
 
    opts.optionalB("alch", "alchEnsembleAvg", "Ensemble Average in use?",
      &alchEnsembleAvg, TRUE);
+     opts.optionalB("main", "alchPMECUDA","Special single-grid PME scheme for alch to be used?",
+       &alchPMECUDA, TRUE);
 //fepe
 
    opts.optionalB("main", "les", "Is locally enhanced sampling enabled?",
@@ -2301,12 +2364,6 @@ void SimParameters::config_parser_misc(ParseOptions &opts) {
                &minAtomsPerPatch, 40);
    opts.range("minAtomsPerPatch",NOT_NEGATIVE);
 
-   // Set number added to patch atom count during initial node assignment
-   opts.optional("main", "emptyPatchLoad",
-               "load generated by empty patch, in atoms",
-               &emptyPatchLoad, 40);
-   opts.range("emptyPatchLoad",POSITIVE);
-
    // Maximum exclusion flags per atom
    opts.optional("main", "maxExclusionFlags",
      "maximum number of exclusion flags per atom", &maxExclusionFlags, 256);
@@ -2500,6 +2557,14 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
    delete [] gWorkDir;
 #endif
 
+   // Overwrite scale14?
+   if (opts.defined("oneFourScaling")) {
+     // check if "1-4scaling" was also defined and bail if it did
+     if (config->find("1-4scaling")) {
+      NAMD_die("Multiple definitions of 1-4scaling using \"1-4scaling\" and \"oneFourScaling\".");
+     }
+     scale14 = scale14alt;
+   }
 
    // Don't try to specify coordinates with pluginIO
    if ( usePluginIO && opts.defined("coordinates") ) {
@@ -3192,6 +3257,24 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
    if ( margin == XXXBIGREAL ) {
      margin = defaultMargin;
    }
+
+   if (CUDASOAintegrateOn) {
+    iout << iINFO
+     << "Tuning parameters to improve CUDASOAintegrate performance\n"
+     << endi;
+      
+    // JM: Margin 8 might be a bit large for small systems (20k or such)
+    //     which might starve the GPU of work
+    //     Let's set it to 4 for now and later we can write a 
+    //     tuning scheme to optimize it on-the-fly
+    if (! config->find("margin")) {
+      margin = 4;
+      iout << iINFO
+        << "  Setting margin to " << margin << "\n"
+        << endi;
+    }
+   }
+
    if ( defaultMargin != 0.0 && margin == 0.0 ) {
      margin = defaultMargin;
      iout << iWARN << "ALWAYS USE NON-ZERO MARGIN WITH CONSTANT PRESSURE!\n";
@@ -3252,7 +3335,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
 
    if ( dihedralOn ) globalOn = TRUE;
 
-#if defined(NAMD_CUDA) || defined(NAMD_HIP)
+#ifdef NAMD_CUDA
    if (loweAndersenOn) {
        NAMD_die("Lowe-Andersen dynamics not compatible with CUDA at this time");
    }
@@ -3382,6 +3465,20 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
        NAMD_die("To specify Langevin dynamics parameters, use either langevinDamping and langevinHydrogen or langevinFile and langevinCol.  Do not combine them.");
      if ( opts.defined("langevinHydrogen") && langevinDamping == 0.0 )
        NAMD_die("langevinHydrogen requires langevinDamping to be set.");
+     // Assume Langevin gammas differ when parameters are read from file.
+     // Note that if Drude is on but drudeDamping is not defined,
+     // then drudeDamping will be set to langevinDamping.
+     langevinGammasDiffer = ( ! langevinHydrogen ) ||
+       opts.defined("langevinFile") ||
+       ( opts.defined("drudeDamping") && drudeDamping != langevinDamping );
+     if (langevinGammasDiffer) {
+       iout
+         << iWARN
+         << "The Langevin gamma parameters differ over the particles,\n"
+         << iWARN
+         << "requiring extra work per step to constrain rigid bonds.\n"
+         << endi;
+     }
    }
 
    // BEGIN LA
@@ -3504,6 +3601,10 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
    alchOnAtStartup = alchOn;
 
    if (alchOn) {
+#ifndef NAMD_CUDA
+     alchPMECUDA = false;
+     usePMECUDA  = false;
+#endif
      if (martiniSwitching) {
        iout << iWARN << "Martini switching disabled for alchemical "
          "interactions.\n" << endi;
@@ -3560,7 +3661,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
        if (alchThermIntOn) {
          NAMD_die("alchWCA is not currently compatible with TI");
        }
-#if defined(NAMD_CUDA) || defined(NAMD_HIP)
+#ifdef NAMD_CUDA
        NAMD_die("alchWCA is not currently available with CUDA");
 #endif
      }
@@ -3887,7 +3988,7 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
      }
      PMEEwaldCoefficient = ewaldcof;
 
-#if defined(NAMD_CUDA) || defined(NAMD_HIP)
+#ifdef NAMD_CUDA
      bool one_device_per_node = deviceCUDA->one_device_per_node();  // only checks node 0
      if ( ! opts.defined("PMEOffload") ) {
        PMEOffload = ( (PMEInterpOrder > 4) && one_device_per_node );
@@ -4423,7 +4524,118 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
             NAMD_die("QM Conditional SMD is ON, but no CSMD configuration file was profided!");
     }
 
-#if defined(NAMD_CUDA) || defined(NAMD_HIP)
+    // CUDASOAintegrate implies SOAintegrate
+    if (CUDASOAintegrateOn) {
+      nsPerDayOn = TRUE; // We want to measure sampling in ns/day here.
+      SOAintegrateOn = TRUE;
+    }
+
+    if (SOAintegrateOn) {
+      // Can we use SOA integration?
+
+      // We need to explicitly turn off lonepairs because now it defaults TRUE.
+      if (lonepairs) {
+        iout << iWARN
+          << "Disabling lonepair support due to incompatability with SOA.\n"
+          << endi;
+        lonepairs = false;
+      }
+
+      // Not compatible with the following options...
+      if (testOn || commOnly || statsOn ||
+          minimizeOn ||
+          maximumMove != 0 ||
+          pressureProfileOn ||
+          accelMDOn ||
+          adaptTempOn ||
+          mollyOn ||
+          berendsenPressureOn ||
+          multigratorOn ||
+          loweAndersenOn ||
+          langevin_useBAOAB ||
+          fixedAtomsOn ||
+          GBISOn ||
+          LCPOOn ||
+          zeroMomentum || zeroMomentumAlt ||
+          tclForcesOn ||
+          colvarsOn ||
+          (constraintsOn && ! CUDASOAintegrateOn) ||
+          tCoupleOn ||
+          rescaleFreq > 0 ||
+          reassignFreq > 0 ||
+          watmodel != WAT_TIP3 ||
+          lonepairs || 
+          drudeOn) {
+        char msg[1024];
+        sprintf(msg,
+            "%s integration is incompatible with the following options:\n"
+            "   minimization; pressure profiling; Berendsen pressure;\n"
+            "   multigrator; Lowe-Andersen; fixed atoms; GBIS; LCPO;\n"
+            "   zero momentum; TCL forces; Colvars;%s\n"
+            "   temperature coupling, rescaling, or reassignment;\n"
+            "   water models other than TIP3; lonepairs or Drude.\n"
+            "\n" 
+            "( Bribe us with coffee to get your feature GPU-Resident! :)",
+            (CUDASOAintegrateOn ? "CUDASOA" : "SOA"),
+            (CUDASOAintegrateOn ? "" : " position restraints;")
+            );
+        if (CUDASOAintegrateOn) {
+          NAMD_die(msg);
+        }
+        else {
+          iout << iWARN << msg << "\n" << endi;
+          iout << iWARN
+            << "Falling back on standard integration code path\n" << endi;
+        }
+        SOAintegrateOn = FALSE;
+      }
+      else {
+        iout << iINFO
+          << "Using SOA integration routine\n"
+          << endi;
+        if (CUDASOAintegrateOn) {
+#ifndef NODEGROUP_FORCE_REGISTER
+          NAMD_die("CUDASOAintegrate not supported on regular multicore builds");
+#endif
+          if (qmForcesOn) {
+            NAMD_die("CUDASOAintegrate does not support QM forces");
+          }
+          if (lesOn) {
+            NAMD_die("CUDASOAintegrate does not support "
+                "locally enhanced sampling");
+          }
+          // Check other funny values, such as Node count > 1 or ndevices > 1
+          if(CkNumNodes() > 1){
+            // safety check for multiple-node run
+            NAMD_die(
+              "CUDASOAintegrate is a shared-memory, single-process scheme.\n"
+              "You're probably not setting the '++ppn' flags accordingly or\n"
+              "the Charm++ build is not a multicore build and you're spawning\n"
+              "multiple processes, which is not cool."
+              );
+          }
+#ifdef NAMD_CUDA
+          else if (deviceCUDA->getNumDevice() > 1) {
+            // MGPU with CUDASOA is still not compatible with this
+            if(constraintsOn){
+              NAMD_die("Restraints (constraints on) are not compatible with multiple-GPU simulations on CUDASOAintegrate");
+            }
+
+            if(eFieldOn){
+              NAMD_die("EField is not compatible with multiple-GPU simulations on CUDASOAintegrate");
+            }
+          }
+#endif
+          else {
+            iout << iINFO
+              << "Using CUDA SOA integration routine\n"
+              << endi;
+          }
+        }
+      }
+    }
+
+#ifdef NAMD_CUDA
     // Disable various CUDA kernels if they do not fully support
     // or are otherwise incompatible with simulation options.
     if ( useCUDAdisable ) {
@@ -4437,23 +4649,12 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
         bondedCUDA &= ~(0x0004 | 0x0020);
         iout << iWARN << "Disabling CUDA kernels for dihedrals and crossterms due to incompatibility with accelerated MD options.\n";
       }
+      if ( alchOn && ! useCUDA2 ) {
+        useCUDA2 = TRUE;
+        iout << iWARN << "Enabling second generation CUDA kernels for alchemy, first generation not supported.\n";
     }
-#endif
-
-#ifdef NAMD_AVXTILES
-    if (avxTilesCommandLineDisable) useAVXTiles = FALSE;
-    if (useAVXTiles) {
-      if (alchOn || lesOn || tabulatedEnergies || drudeOn || goForcesOn ||
-	  pressureProfileOn || qmForcesOn) {
-	useAVXTiles = FALSE;
-	iout << iWARN << "Disabling AVX tiles optimizations due to "
-	     << "incompatible simulation params.\n";
       }
-    }
-#else
-    useAVXTiles = FALSE;
 #endif
-    
 } // check_config()
 
 
@@ -4537,11 +4738,16 @@ void SimParameters::print_config(ParseOptions &opts, ConfigList *config, char *&
           CkNumPes() > 64 || ( IMDon && CkNumPes() > 8 ) ) {
      noPatchesOnZero = TRUE;
    }
+   if ( (noPatchesOnZero || noPatchesOnOne) && CUDASOAintegrateOn ) {
+     noPatchesOnZero = FALSE;
+     noPatchesOnOne = FALSE;
+     iout << iWARN << "OVERRIDING NOPATCH SETTING. Not supported with CUDASOAintegrateOn\n";
+   }
    if ( noPatchesOnZero ) iout << iINFO << "REMOVING PATCHES FROM PROCESSOR 0\n";
    if ( noPatchesOnOne ) iout << iINFO << "REMOVING PATCHES FROM PROCESSOR 1\n";
    iout << endi;
 
-#if defined(NAMD_CUDA) || defined(NAMD_HIP) || defined(NAMD_MIC)
+#if defined(NAMD_CUDA) || defined(NAMD_MIC)
     maxSelfPart = maxPairPart = 1;
 #endif
 
@@ -4554,7 +4760,6 @@ void SimParameters::print_config(ParseOptions &opts, ConfigList *config, char *&
           << iINFO << "PAIR2 PARTITION ATOMS  " << numAtomsPair2 << "\n";
    }
    iout << iINFO << "MIN ATOMS PER PATCH    " << minAtomsPerPatch << "\n"
-        << iINFO << "EMPTY PATCH LOAD       " << emptyPatchLoad << " ATOMS\n"
         << endi;
 
    if (initialTemp < 0)
@@ -4782,7 +4987,7 @@ if ( openatomOn )
    if ( (alchOn) && (!usePairlists)) {
      NAMD_die("Sorry, Alchemical simulations require pairlists to be enabled\n");
    }
-#if defined(NAMD_CUDA) || defined(NAMD_HIP)
+#ifdef NAMD_CUDA
    if ( ! usePairlists ) {
      usePairlists = 1;
      iout << iINFO << "CUDA ACCELERATION REQUIRES PAIRLISTS\n";
@@ -4814,6 +5019,37 @@ if ( openatomOn )
       iout << iINFO << "ENERGY OUTPUT STEPS    "
          << outputEnergies << "\n";
       iout << endi;
+   }
+
+   if (!opts.defined("computeEnergies")) {
+       computeEnergies = outputEnergies;
+   }
+
+   if (computeEnergies != 1)
+   {
+     // in the CUDA version, energies are only evaluated at specified steps
+     // check if outputEnergies is a multiple of computeEnergies
+     if (outputEnergies % computeEnergies != 0) {
+       const std::string err_msg = std::string{"The period of outputting energies (outputEnergies = "}
+                                 + std::to_string(outputEnergies)
+                                 + std::string{") is not a multiple of the period of computing energies (computeEnergies = "}
+                                 + std::to_string(computeEnergies)
+                                 + std::string{").\n"};
+       NAMD_die(err_msg.c_str());
+     }
+     if (alchOn && (alchOutFreq % computeEnergies != 0)) {
+       // will use NAMD_gcd(alchOutFreq, computeEnergies) to determine the period of updating energies in Sequencer.C
+       const std::string err_msg = std::string{"The period of outputting energies relating to alchemical transformations (alchOutFreq = "}
+                                 + std::to_string(alchOutFreq)
+                                 + std::string{") is not a multiple of the period of computing energies (computeEnergies = "}
+                                 + std::to_string(computeEnergies)
+                                 + std::string{"). If alchOutFreq is smaller than outputEnergies and computeEnergies is not defined, a better solution is to set computeEnergies explicitly and keep it the same as alchOutFreq. The simulation will use the greatest common divisor of computeEnergies and alchOutFreq as the period of energy evaluation.\n"};
+       iout << iWARN << err_msg.c_str();
+     }
+     // Do we need to check other settings?
+     iout << iINFO << "ENERGY EVALUATION STEPS    "
+          << computeEnergies << "\n";
+     iout << endi;
    }
 
    if (mergeCrossterms) {
@@ -6315,9 +6551,9 @@ if ( openatomOn )
 	<< fullElectFrequency << "\n";
      iout << endi;
 
-     if ( ( outputEnergies % fullElectFrequency ) &&
-          ( fullElectFrequency % outputEnergies ) )
-	NAMD_die("Either outputEnergies must be a multiple of fullElectFrequency or vice versa.\n");
+     if ( ( computeEnergies % fullElectFrequency ) &&
+          ( fullElectFrequency % computeEnergies ) )
+	NAMD_die("Either computeEnergies must be a multiple of fullElectFrequency or vice versa.\n");
    }
 
   if (MTSAlgorithm == NAIVE)
@@ -6487,12 +6723,6 @@ if ( openatomOn )
      iout << iINFO << "BINARY COORDINATES     "
               << current->data << "\n";
    }
-
-#ifdef NAMD_AVXTILES
-   iout << iINFO << "MIXED PRECISION AVX-512 TILES OPTIMIZATIONS: ";
-   if (useAVXTiles) iout << "ENABLED\n";
-   else iout << "DISABLED\n";
-#endif
 
 #ifdef MEM_OPT_VERSION
    if (opts.defined("binrefcoords"))
@@ -7132,7 +7362,7 @@ void SimParameters::receive_SimParameters(MIStream *msg)
 
 
 //fepb IDWS
-BigReal SimParameters::getCurrentLambda2(const int step) {
+BigReal SimParameters::getCurrentLambda2(const int step) const {
   if ( alchLambdaIDWS >= 0. ) {
     const BigReal lambda2 = ( (step / alchIDWSFreq) % 2 == 1 ) ? alchLambda2 : alchLambdaIDWS;
     return lambda2;
@@ -7158,14 +7388,11 @@ int SimParameters::setupIDWS() {
   * alchOutFreq > 0 but != outputEnergies, then the data going to stdout
   * are likely not useful since the comparison value is difficult to infer.
   */
-  if ( alchOutFreq % fullElectFrequency != 0 ) {
-    NAMD_die("For IDWS, alchOutFreq must be a multiple of fullElectFrequency.\n");
-  }
   alchIDWSFreq = fullElectFrequency > 0 ? fullElectFrequency : nonbondedFrequency;
-  if ( !alchOutFreq && outputEnergies > alchIDWSFreq ) alchIDWSFreq = outputEnergies;
+  if ( !alchOutFreq && computeEnergies > alchIDWSFreq ) alchIDWSFreq = computeEnergies;
   if ( alchOutFreq > alchIDWSFreq ) alchIDWSFreq = alchOutFreq;
-  if ( alchOutFreq && alchOutFreq != outputEnergies) {
-    iout << iWARN << "alchOutFreq and outputEnergies do not match. IDWS ouput"
+  if ( alchOutFreq && alchOutFreq != computeEnergies) {
+    iout << iWARN << "alchOutFreq and computeEnergies do not match. IDWS ouput"
          << " to stdout may not be useful!\n" << endi;
   }
   return 1;
@@ -7173,7 +7400,7 @@ int SimParameters::setupIDWS() {
 //fepe IDWS
 
 //fepb BKR
-BigReal SimParameters::getCurrentLambda(const int step) {
+BigReal SimParameters::getCurrentLambda(const int step) const {
   /*Get lambda at the current step.
 
    If alchLambdaFreq = 0, return alchLambda. For positive values of
@@ -7209,13 +7436,13 @@ BigReal SimParameters::getCurrentLambda(const int step) {
   }
 }
 
-BigReal SimParameters::getLambdaDelta(void) {
+BigReal SimParameters::getLambdaDelta(void) const {
   // Increment by which Lambda changes.
   return ((alchLambda2 - alchLambda)*alchLambdaFreq
           / BigReal(N - firstTimestep - alchEquilSteps));
 }
 
-BigReal SimParameters::getElecLambda(const BigReal lambda) {
+BigReal SimParameters::getElecLambda(const BigReal lambda) const {
   // Convenience function for staggered lambda scaling
   return (lambda <= alchElecLambdaStart ? 0.
           : (lambda - alchElecLambdaStart) / (1. - alchElecLambdaStart));
@@ -7229,7 +7456,7 @@ BigReal SimParameters::getElecLambda(const BigReal lambda) {
  * function is always used and simply has its behavior modified. However,
  * the new repluslive scaling only ever gets used when alchWCAOn.
  */
-BigReal SimParameters::getVdwLambda(const BigReal lambda) {
+BigReal SimParameters::getVdwLambda(const BigReal lambda) const {
   // Convenience function for staggered lambda scaling
   if ( alchWCAOn ) {
     // Read this with the alias alchRepLambdaEnd --> alchAttLambdaStart.
@@ -7247,13 +7474,35 @@ BigReal SimParameters::getVdwLambda(const BigReal lambda) {
 }
 }
 
-BigReal SimParameters::getRepLambda(const BigReal lambda) {
+BigReal SimParameters::getRepLambda(const BigReal lambda) const {
   // Convenience function for staggered lambda scaling
   return (lambda >= alchRepLambdaEnd ? 1. : lambda / alchRepLambdaEnd);
 }
 
-BigReal SimParameters::getBondLambda(const BigReal lambda) {
+BigReal SimParameters::getBondLambda(const BigReal lambda) const {
   // Convenience function for staggered lambda scaling
   return (lambda >= alchBondLambdaEnd ? 1. : lambda / alchBondLambdaEnd);
+}
+
+size_t SimParameters::alchGetNumOfPMEGrids() const {
+  size_t num_max_grids = 1;
+  if (!alchOn) return num_max_grids;
+  if (alchFepOn && !alchThermIntOn) {
+    num_max_grids += 1;
+    if (alchDecouple) {
+      num_max_grids += 2;
+    }
+    if (alchElecLambdaStart > 0) {
+      num_max_grids += 1;
+    }
+  }
+  if (!alchFepOn && alchThermIntOn) {
+    num_max_grids += 2;
+    if (alchDecouple) {
+      num_max_grids += 2;
+    }
+  }
+  return num_max_grids;
+    
 }
 //fepe
