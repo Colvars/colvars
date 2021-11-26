@@ -1,0 +1,27 @@
+configuration {
+  step           40
+  dt 1.000000e+00
+}
+
+colvar {
+  name one
+  x  6.08972121817133e+01
+}
+
+histogram {
+  configuration {
+    step 40
+    name histogram1
+  }
+grid
+ 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0
+ 40 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0
+}
+
