@@ -1,5 +1,5 @@
 # pass version/platform information to compile
-NAMD_VERSION = 3.0alpha9
+NAMD_VERSION = 2.15alpha2
 
 # compiler flags (Win32 overrides)
 COPTI = -I
@@ -105,8 +105,9 @@ default: all
 # Add new source files here.
 
 OBJS = \
-        $(DSTDIR)/TestArray.o \
-	$(DSTDIR)/PatchData.o \
+	$(DSTDIR)/AVXTiles.o \
+	$(DSTDIR)/AVXTilesKernel.o \
+	$(DSTDIR)/AVXTileLists.o \
 	$(DSTDIR)/ComputeMoa.o \
 	$(DSTDIR)/ComputeMsm.o \
 	$(DSTDIR)/ComputeMsmMsa.o \
@@ -237,7 +238,6 @@ OBJS = \
 	$(DSTDIR)/InfoStream.o \
 	$(DSTDIR)/LdbCoordinator.o \
 	$(DSTDIR)/LJTable.o \
-	$(DSTDIR)/LincsSolver.o \
 	$(DSTDIR)/Measure.o \
 	$(DSTDIR)/MGridforceParams.o \
 	$(DSTDIR)/MStream.o \
@@ -273,8 +273,6 @@ OBJS = \
 	$(DSTDIR)/RefineTorusLB.o \
 	$(DSTDIR)/ScriptTcl.o \
 	$(DSTDIR)/Sequencer.o \
-	$(DSTDIR)/SequencerCUDA.o \
-	$(DSTDIR)/ComputeRestraintsCUDA.o \
 	$(DSTDIR)/Set.o \
 	$(DSTDIR)/Settle.o \
 	$(DSTDIR)/SimParameters.o \
@@ -296,8 +294,6 @@ OBJS = \
 # Add new modules here.
 
 CIFILES = 	\
-		$(INCDIR)/PatchData.decl.h \
-		$(INCDIR)/PatchData.def.h \
 		$(INCDIR)/ComputeMoaMgr.decl.h \
 		$(INCDIR)/ComputeMoaMgr.def.h \
 		$(INCDIR)/ComputeMsmMgr.decl.h \
@@ -373,17 +369,13 @@ PLUGINOBJS = \
 PLUGINLIB = $(PLUGINOBJS)
 
 CUDAOBJSRAW = \
-	$(DSTDIR)/SequencerCUDAKernel.o \
 	$(DSTDIR)/ComputeBondedCUDAKernel.o \
 	$(DSTDIR)/ComputeNonbondedCUDAKernel.o \
 	$(DSTDIR)/ComputePmeCUDAKernel.o \
-	$(DSTDIR)/ComputeRestraintsCUDAKernel.o \
 	$(DSTDIR)/CudaComputeGBISKernel.o \
 	$(DSTDIR)/CudaComputeNonbondedKernel.o \
 	$(DSTDIR)/CudaPmeSolverUtilKernel.o \
-	$(DSTDIR)/CudaTileListKernel.o \
-	$(DSTDIR)/DeviceCUDAkernel.o \
-	$(DSTDIR)/MShakeKernel.o
+	$(DSTDIR)/CudaTileListKernel.o
 
 CUDAOBJSRAWSTATIC = $(CUDAOBJSRAW) \
 	$(DSTDIR)/CudaPmeSolverUtilKernel_dlink.o
@@ -444,8 +436,8 @@ GXXFLAGS = $(CXXBASEFLAGS) -DNO_STRSTREAM_H
 CFLAGS = $(COPTI)$(SRCDIR) $(TCL) $(COPTS) $(RELEASE) $(EXTRADEFINES) $(TRACEOBJDEF)
 PLUGINGCCFLAGS = $(COPTI)$(PLUGINSRCDIR) $(COPTI)$(PLUGININCDIR) $(COPTD)STATIC_PLUGIN
 PLUGINCFLAGS = $(PLUGINGCCFLAGS) $(COPTS)
-SBCFLAGS = $(COPTI)$(SBSRCDIR) $(COPTI)$(PLUGININCDIR) $(COPTD)STATIC_PLUGIN -DPSFGEN_USEPLUGINS $(TCL) $(COPTS) $(RELEASE) $(EXTRADEFINES) $(TRACEOBJDEF)
-SBGCCFLAGS = $(COPTI)$(SBSRCDIR) $(COPTI)$(PLUGININCDIR) $(COPTD)STATIC_PLUGIN -DPSFGEN_USEPLUGINS $(TCL) $(RELEASE) $(EXTRADEFINES) $(TRACEOBJDEF)
+SBCFLAGS = $(COPTI)$(SBSRCDIR) $(COPTI)$(PLUGININCDIR) $(COPTD)STATIC_PLUGIN -DPSFGEN_USEPLUGINS -DNEWPSFGEN $(TCL) $(COPTS) $(RELEASE) $(EXTRADEFINES) $(TRACEOBJDEF)
+SBGCCFLAGS = $(COPTI)$(SBSRCDIR) $(COPTI)$(PLUGININCDIR) $(COPTD)STATIC_PLUGIN -DPSFGEN_USEPLUGINS -DNEWPSFGEN $(TCL) $(RELEASE) $(EXTRADEFINES) $(TRACEOBJDEF)
 COLVARSGXXFLAGS= $(GXXFLAGS)
 LEPTONGCCFLAGS= $(COPTI)$(LEPTONINCDIR)
 LEPTONCXXFLAGS=$(CXXBASEFLAGS) $(CXXOPTS) $(COPTI)$(LEPTONINCDIR) -DLEPTON_BUILDING_STATIC_LIBRARY
@@ -455,7 +447,7 @@ CIPPFLAGS = $(CUDAFLAGS) -DBONDED_CUDA
 
 # Add new executables here.
 
-BINARIES = namd3 namd2 psfgen sortreplicas flipdcd flipbinpdb charmrun
+BINARIES = namd2 psfgen sortreplicas flipdcd flipbinpdb charmrun
 
 NAMDUTILS = diffbinpdb dumpdcd loaddcd fixdcd
 
@@ -473,7 +465,7 @@ all:	$(BINARIES) $(LIBCUDARTSO) $(LIBCUFFTSO)
 
 utils:	$(NAMDUTILS)
 
-namd3:	$(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS)
+namd2:	$(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS)
 	$(MAKEBUILDINFO)
 	$(CHARMC) -verbose -ld++-option \
 	'$(COPTI)$(CHARMINC) $(COPTI)$(INCDIR) $(COPTI)$(SRCDIR) $(CXXOPTS)' \
@@ -493,12 +485,9 @@ namd3:	$(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS)
 	$(COLVARSLIB) \
 	$(LEPTONOBJS) \
 	$(CHARMOPTS) \
+	$(CHARMLD) \
 	$(EXTRALINKLIBS) \
-	$(MATHLIBS) -o namd3 
-
-# Workaround here to make gerrit stop complaining
-namd2:
-	ln -s namd3 namd2
+	$(MATHLIBS) -o namd2
 
 charmrun: $(CHARM)/bin/charmrun # XXX
 	$(COPY) $(CHARM)/bin/charmrun $@
@@ -509,11 +498,11 @@ $(LIBCUDARTSO):
 $(LIBCUFFTSO):
 	$(COPY) $(CUDASODIR)/$(LIBCUFFTSO) $@;
 
-WINDOWSBINARIES = namd3.exe psfgen.exe sortreplicas.exe
+WINDOWSBINARIES = namd2.exe psfgen.exe sortreplicas.exe
 
 winall: $(WINDOWSBINARIES) $(LIBCUDARTSO) $(LIBCUFFTSO)
 
-namd3.exe:  $(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS) $(TCLDLL)
+namd2.exe:  $(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS) $(TCLDLL)
 	$(MAKEBUILDINFO)
 	$(CHARMC) -verbose \
 	$(CHARM_MODULES) -language charm++ \
@@ -532,7 +521,8 @@ namd3.exe:  $(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS) $(TCLDLL)
 	$(COLVARSLIB) \
 	$(LEPTONOBJS) \
 	$(CHARMOPTS) \
-	-o namd3
+	$(CHARMLD) \
+	-o namd2
 
 charmd.exe:
 	$(COPY) $(CHARM)/bin/charmd.exe charmd.exe
@@ -608,8 +598,9 @@ tracecomputes: updatefiles $(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS)
 	$(COLVARSLIB) \
 	$(LEPTONOBJS) \
 	$(CHARMOPTS) \
+	$(CHARMLD) \
 	$(EXTRALINKLIBS) \
-	$(MATHLIBS) -o namd3.tc.prj
+	$(MATHLIBS) -o namd2.tc.prj
 
 projections: $(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS)
 	$(MAKEBUILDINFO)
@@ -632,8 +623,9 @@ projections: $(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS)
 	$(COLVARSLIB) \
 	$(LEPTONOBJS) \
 	$(CHARMOPTS) \
+	$(CHARMLD) \
 	$(EXTRALINKLIBS) \
-	$(MATHLIBS) -o namd3.prj
+	$(MATHLIBS) -o namd2.prj
 
 summary: $(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS)
 	$(MAKEBUILDINFO)
@@ -656,8 +648,9 @@ summary: $(MKINCDIR) $(MKDSTDIR) $(OBJS) $(LIBS)
 	$(COLVARSLIB) \
 	$(LEPTONOBJS) \
 	$(CHARMOPTS) \
+	$(CHARMLD) \
 	$(EXTRALINKLIBS) \
-	$(MATHLIBS) -o namd3.sum
+	$(MATHLIBS) -o namd2.sum
 
 $(DPMTADIR)/mpole/libmpole.a: $(DPMTADIR)/src/libdpmta2.a
 
@@ -804,7 +797,7 @@ RELEASE_DIR_NAME = NAMD_$(NAMD_VERSION)_$(NAMD_PLATFORM)
 
 DOC_FILES = README.txt announce.txt license.txt notes.txt
 
-RELEASE_FILES = $(LIBCUDARTSO) $(LIBCUFFTSO) flipdcd flipbinpdb sortreplicas psfgen charmrun namd3
+RELEASE_FILES = $(LIBCUDARTSO) $(LIBCUFFTSO) flipdcd flipbinpdb sortreplicas psfgen charmrun namd2
 
 WINDOWS_RELEASE_FILES = $(LIBCUDARTSO) $(LIBCUFFTSO) $(WINDOWSBINARIES) $(TCLDLL)
 
