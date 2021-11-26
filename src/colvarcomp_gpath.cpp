@@ -446,6 +446,9 @@ colvar::linearCombination::~linearCombination() {
     for (auto it = cv.begin(); it != cv.end(); ++it) {
         delete (*it);
     }
+    // the atom groups should be freed by the sub-CVCs,
+    // so we clear the container to avoid double-free.
+    atom_groups.clear();
 }
 
 void colvar::linearCombination::calc_value() {
