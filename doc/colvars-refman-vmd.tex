@@ -6,7 +6,6 @@
 % Colvars repository at GitHub.
 
 
-\newcommand{\VMD}{}
 \newcommand{\MDENGINE}{VMD}
 \newcommand{\mdengine}{vmd}
 
@@ -21,6 +20,7 @@
 \newcommand{\cvvmdonly}[1]{#1}
 \newcommand{\cvlammpsonly}[1]{}
 \newcommand{\cvgromacsonly}[1]{}
+\newcommand{\cvtinkerhponly}[1]{}
 
 \newcommand{\lengthunit}{\AA{}}
 \newcommand{\energyunit}{kcal/mol}
@@ -36,6 +36,9 @@
 
 % content that applies only to programs that use atom names (i.e. not LAMMPS)
 \newcommand{\cvnamebasedonly}[1]{#1}
+
+% only in programs were the alchemical coordinate (alchLambda) is available
+\newcommand{\cvalchlambdaonly}[1]{}
 
 % File output prefixes
 \newcommand{\outputName}{\emph{outputName}}

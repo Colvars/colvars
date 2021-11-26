@@ -1,6 +1,6 @@
 .PHONY: all pdf clean clean-all update-code-refs update-cvscript-cmdline-doc
 
-PDF=colvars-refman-lammps.pdf colvars-refman-namd.pdf colvars-refman-vmd.pdf colvars-refman-gromacs.pdf
+PDF=colvars-refman-lammps.pdf colvars-refman-namd.pdf colvars-refman-vmd.pdf colvars-refman-gromacs.pdf colvars-refman-tinkerhp.pdf
 BIBTEX=colvars-refman.bib
 
 all: pdf

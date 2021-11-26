@@ -647,16 +647,14 @@ int colvar::init_extended_Lagrangian(std::string const &conf)
     v_ext.type(value());
     fr.type(value());
     const bool temp_provided = get_keyval(conf, "extendedTemp", temp, cvm::temperature());
-    if (get_keyval(conf, "extendedMass", ext_mass)) {
+    if (is_enabled(f_cv_external)) {
       // In the case of an "external" coordinate, there is no coupling potential:
       // only the fictitious mass is meaningful
-        if (!is_enabled(f_cv_external)) {
-          get_keyval(conf, "extendedForceConstant", ext_force_k, colvarparse::parse_normal | colvarparse::parse_required);
-        }
+      get_keyval(conf, "extendedMass", ext_mass);
+      // Ensure that the computed restraint energy term is zero
+      ext_force_k = 0.0;
     } else {
-      // If the fictitious mass was not explicitly provided, define it indirectly
-      // through fluctuation and time constant
-
+      // Standard case of coupling to a geometric colvar
       if (temp <= 0.0) { // Then a finite temperature is required
         if (temp_provided)
           cvm::error("Error: \"extendedTemp\" must be positive.\n", INPUT_ERROR);
