@@ -311,12 +311,12 @@ public:
       if (add_extra_bin) {
         if (periodic[i]) {
           // Shift the grid by half the bin width (values at edges instead of center of bins)
-          lower_boundaries.push_back(cv[i]->lower_boundary.real_value - 0.5 * widths[i]);
-          upper_boundaries.push_back(cv[i]->upper_boundary.real_value - 0.5 * widths[i]);
+          lower_boundaries.push_back(cv[i]->lower_boundary - 0.5 * widths[i]);
+          upper_boundaries.push_back(cv[i]->upper_boundary - 0.5 * widths[i]);
         } else {
           // Make this grid larger by one bin width
-          lower_boundaries.push_back(cv[i]->lower_boundary.real_value - 0.5 * widths[i]);
-          upper_boundaries.push_back(cv[i]->upper_boundary.real_value + 0.5 * widths[i]);
+          lower_boundaries.push_back(cv[i]->lower_boundary - 0.5 * widths[i]);
+          upper_boundaries.push_back(cv[i]->upper_boundary + 0.5 * widths[i]);
         }
       } else {
         lower_boundaries.push_back(cv[i]->lower_boundary);
@@ -340,6 +340,9 @@ public:
     nt = 0;
 
     for (size_t i =  0; i < lower_boundaries.size(); i++) {
+      // Re-compute periodicity using current grid boundaries
+      periodic[i] = cv[i]->periodic_boundaries(lower_boundaries[i].real_value,
+                                               upper_boundaries[i].real_value);
 
       cvm::real nbins = ( upper_boundaries[i].real_value -
                           lower_boundaries[i].real_value ) / widths[i];

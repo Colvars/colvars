@@ -508,8 +508,8 @@ int colvar::init_grid_parameters(std::string const &conf)
     return INPUT_ERROR;
   }
 
-  lower_boundary.type(value());
-  upper_boundary.type(value());
+  lower_boundary = 0.0;
+  upper_boundary = width; // Default to 1-wide grids
 
   if (is_enabled(f_cv_scalar)) {
 
@@ -1823,12 +1823,12 @@ cvm::real colvar::update_forces_energy()
       x_ext  += dt * v_ext;
 
       cvm::real delta = 0; // Length of overshoot past either reflecting boundary
-      if ((is_enabled(f_cv_reflecting_lower_boundary) && (delta = x_ext - lower_boundary) < 0) ||
-          (is_enabled(f_cv_reflecting_upper_boundary) && (delta = x_ext - upper_boundary) > 0)) {
+      if ((is_enabled(f_cv_reflecting_lower_boundary) && (delta = x_ext.real_value - lower_boundary) < 0) ||
+          (is_enabled(f_cv_reflecting_upper_boundary) && (delta = x_ext.real_value - upper_boundary) > 0)) {
         x_ext -= 2.0 * delta;
         v_ext *= -1.0;
-        if ((is_enabled(f_cv_reflecting_lower_boundary) && (delta = x_ext - lower_boundary) < 0) ||
-            (is_enabled(f_cv_reflecting_upper_boundary) && (delta = x_ext - upper_boundary) > 0)) {
+        if ((is_enabled(f_cv_reflecting_lower_boundary) && (delta = x_ext.real_value - lower_boundary) < 0) ||
+            (is_enabled(f_cv_reflecting_upper_boundary) && (delta = x_ext.real_value - upper_boundary) > 0)) {
           cvm::error("Error: extended coordinate value " + cvm::to_str(x_ext) + " is still outside boundaries after reflection.\n");
         }
       }
@@ -2106,12 +2106,6 @@ int colvar::set_cvc_param(std::string const &param_name, void const *new_value)
 
 bool colvar::periodic_boundaries(colvarvalue const &lb, colvarvalue const &ub) const
 {
-  if ( (!is_enabled(f_cv_lower_boundary)) || (!is_enabled(f_cv_upper_boundary)) ) {
-    cvm::log("Error: checking periodicity for collective variable \""+this->name+"\" "
-                    "requires lower and upper boundaries to be defined.\n");
-    cvm::set_error_bits(INPUT_ERROR);
-  }
-
   if (period > 0.0) {
     if ( ((cvm::sqrt(this->dist2(lb, ub))) / this->width)
          < 1.0E-10 ) {
@@ -2125,8 +2119,8 @@ bool colvar::periodic_boundaries(colvarvalue const &lb, colvarvalue const &ub) c
 bool colvar::periodic_boundaries() const
 {
   if ( (!is_enabled(f_cv_lower_boundary)) || (!is_enabled(f_cv_upper_boundary)) ) {
-    cvm::log("Error: checking periodicity for collective variable \""+this->name+"\" "
-                    "requires lower and upper boundaries to be defined.\n");
+    // Return false if answer is unknown at this time
+    return false;
   }
 
   return periodic_boundaries(lower_boundary, upper_boundary);

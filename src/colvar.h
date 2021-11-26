@@ -234,10 +234,10 @@ public:
   bool expand_boundaries;
 
   /// \brief Location of the lower boundary
-  colvarvalue lower_boundary;
+  cvm::real lower_boundary;
 
   /// \brief Location of the upper boundary
-  colvarvalue upper_boundary;
+  cvm::real upper_boundary;
 
   /// \brief Is the interval defined by the two boundaries periodic?
   bool periodic_boundaries() const;
