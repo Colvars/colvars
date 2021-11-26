@@ -1137,8 +1137,7 @@ int colvar::init_dependencies() {
     require_feature_self(f_cv_reflecting_upper_boundary, f_cv_extended_Lagrangian);
 
     init_feature(f_cv_grid, "grid", f_type_dynamic);
-    require_feature_self(f_cv_grid, f_cv_lower_boundary);
-    require_feature_self(f_cv_grid, f_cv_upper_boundary);
+    require_feature_self(f_cv_grid, f_cv_scalar);
 
     init_feature(f_cv_runave, "running_average", f_type_user);
 
