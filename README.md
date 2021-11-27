@@ -108,7 +108,7 @@ The following links allow to download several versions of Gromacs already patche
 
 Gromacs-Colvars versions not listed above are not supported, but the same [patching procedure](#updating-to-the-latest-version) is generally portable across the same Gromacs release series (i.e. labeled with the same year).
 
-When using the [Gromacs forum](https://gromacs.bioexcel.eu/) to discuss usage of any Colvars-patched version of GROMACS, please specify "GROMACS modification: **Yes**" and add the `colvars` tag when posting your forum message.
+When using the [Gromacs forum](https://gromacs.bioexcel.eu/) to discuss usage of any Colvars-patched version of GROMACS, please specify "GROMACS modification: **Yes**" and use the [`colvars` tag](https://gromacs.bioexcel.eu/tag/colvars) when posting your forum message.
 
 ## Which version of Colvars is recommended?
 
