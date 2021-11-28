@@ -1,0 +1,47 @@
+name: "Build library with Sun compiler (Oracle Developer Studio)"
+
+on:
+  push:
+    branches: [ master ]
+  pull_request_target:
+    branches: [ master ]
+
+jobs:
+  analyze:
+    name: Build library with Sun compiler (Oracle Developer Studio)
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'cpp' ]
+
+    steps:
+
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        repository: ${{github.event.pull_request.head.repo.full_name}}
+        ref: ${{github.event.pull_request.head.ref}}
+
+    - name: Checkout Sun compiler (Oracle Developer Studio)
+      uses: actions/checkout@v2
+      with:
+        repository: 'Colvars/oracle'
+        ssh-key: ${{ secrets.PULL_ORACLE_DEVELOPER_STUDIO }}
+        ref: 'master'
+        path: ${{github.workspace}}/oracle
+
+    - name: Add Sun compiler to path
+      run: |
+        echo ${{github.workspace}}/oracle/developerstudio12.6/bin >> $GITHUB_PATH
+
+    - name: Build library with Sun compiler (Oracle Developer Studio)
+      shell: bash
+      env:
+        CC: cc
+        CXX: CC
+      run: |
+        cmake -E make_directory ${{github.workspace}}/build-sunpro
+        cmake -D CMAKE_CXX_STANDARD=11 -D WARNINGS_ARE_ERRORS=ON -D CMAKE_VERBOSE_MAKEFILE=ON -S ${{github.workspace}}/cmake -B ${{github.workspace}}/build-sunpro
+        cmake --build ${{github.workspace}}/build-sunpro --parallel $(nproc --all)

@@ -78,25 +78,3 @@ jobs:
         cmake -E make_directory ${{github.workspace}}/build-legacy
         cmake -D CMAKE_CXX_STANDARD=98 -D WARNINGS_ARE_ERRORS=ON -D CMAKE_VERBOSE_MAKEFILE=ON -D COLVARS_TCL=ON -S ${{github.workspace}}/cmake -B ${{github.workspace}}/build-legacy
         cmake --build ${{github.workspace}}/build-legacy --parallel $(nproc --all)
-
-    - name: Checkout Sun compiler (Oracle Developer Studio)
-      uses: actions/checkout@v2
-      with:
-        repository: 'Colvars/oracle'
-        ssh-key: ${{ secrets.PULL_ORACLE_DEVELOPER_STUDIO }}
-        ref: 'master'
-        path: ${{github.workspace}}/oracle
-
-    - name: Build library with Sun compiler (Oracle Developer Studio)
-      shell: bash
-      env:
-        # Disable CodeQL
-        LD_PRELOAD: ''
-        # Load Sun's compiler
-        PATH: ${{github.workspace}}/oracle/developerstudio12.6/bin:${{env.PATH}}
-        CC: cc
-        CXX: CC
-      run: |
-        cmake -E make_directory ${{github.workspace}}/build-sunpro
-        cmake -D CMAKE_CXX_STANDARD=11 -D WARNINGS_ARE_ERRORS=ON -D CMAKE_VERBOSE_MAKEFILE=ON -S ${{github.workspace}}/cmake -B ${{github.workspace}}/build-sunpro
-        cmake --build ${{github.workspace}}/build-sunpro --parallel $(nproc --all)
