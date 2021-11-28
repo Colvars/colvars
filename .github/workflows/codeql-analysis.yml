@@ -85,7 +85,7 @@ jobs:
         repository: 'Colvars/oracle'
         ssh-key: ${{ secrets.PULL_ORACLE_DEVELOPER_STUDIO }}
         ref: 'master'
-        path: '/tmp/oracle'
+        path: ${{github.workspace}}/oracle
 
     - name: Build library with Sun compiler (Oracle Developer Studio)
       shell: bash
@@ -93,7 +93,7 @@ jobs:
         # Disable CodeQL
         LD_PRELOAD: ''
         # Load Sun's compiler
-        PATH: "/tmp/oracle/developerstudio12.6/bin:${PATH}"
+        PATH: ${{github.workspace}}/oracle/developerstudio12.6/bin:${{env.PATH}}
         CC: cc
         CXX: CC
       run: |
