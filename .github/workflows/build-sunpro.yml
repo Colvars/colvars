@@ -32,16 +32,24 @@ jobs:
         ref: 'master'
         path: ${{github.workspace}}/oracle
 
-    - name: Add Sun compiler to path
+    - name: Install CentOS 7 container (needed by Sun compiler)
+      shell: bash
+      working-directory: devel-tools
       run: |
-        echo ${{github.workspace}}/oracle/developerstudio12.6/bin >> $GITHUB_PATH
+        sudo apt-get -y install squashfs-tools containernetworking-plugins
+        curl -O http://http.us.debian.org/debian/pool/main/s/singularity-container/singularity-container_3.5.2+ds1-1_amd64.deb
+        sudo dpkg -i singularity-container_3.5.2+ds1-1_amd64.deb
+        singularity pull CentOS7-devel.sif library://giacomofiorin/default/colvars_development:centos7
 
     - name: Build library with Sun compiler (Oracle Developer Studio)
       shell: bash
       env:
-        CC: cc
-        CXX: CC
+        CC: ${{github.workspace}}/oracle/developerstudio12.6/bin/cc
+        CXX: ${{github.workspace}}/oracle/developerstudio12.6/bin/CC
       run: |
-        cmake -E make_directory ${{github.workspace}}/build-sunpro
-        cmake -D CMAKE_CXX_STANDARD=11 -D WARNINGS_ARE_ERRORS=ON -D CMAKE_VERBOSE_MAKEFILE=ON -S ${{github.workspace}}/cmake -B ${{github.workspace}}/build-sunpro
-        cmake --build ${{github.workspace}}/build-sunpro --parallel $(nproc --all)
+        singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+        cmake3 -E make_directory ${{github.workspace}}/build-sunpro
+        singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+        cmake3 -D CMAKE_CXX_STANDARD=11 -D WARNINGS_ARE_ERRORS=ON -D CMAKE_VERBOSE_MAKEFILE=ON -S ${{github.workspace}}/cmake -B ${{github.workspace}}/build-sunpro
+        singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+        cmake3 --build ${{github.workspace}}/build-sunpro --parallel $(nproc --all)
