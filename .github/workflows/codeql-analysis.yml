@@ -79,38 +79,24 @@ jobs:
         cmake -D CMAKE_CXX_STANDARD=98 -D WARNINGS_ARE_ERRORS=ON -D CMAKE_VERBOSE_MAKEFILE=ON -D COLVARS_TCL=ON -S ${{github.workspace}}/cmake -B ${{github.workspace}}/build-legacy
         cmake --build ${{github.workspace}}/build-legacy --parallel $(nproc --all)
 
-    # - name: Checkout container images repo
-    #   uses: actions/checkout@v2
-    #   with:
-    #     repository: 'Colvars/container-images'
-    #     # Per-repository secret (sharing a secret from the org with all
-    #     # repositories turned out to be too complex)
-    #     ssh-key: ${{ secrets.PULL_CONTAINERS_KEY }}
-    #     ref: 'master'
-    #     path: 'container-images'
-    #     lfs: true
+    - name: Checkout Sun compiler (Oracle Developer Studio)
+      uses: actions/checkout@v2
+      with:
+        repository: 'Colvars/oracle'
+        ssh-key: ${{ secrets.PULL_ORACLE_DEVELOPER_STUDIO }}
+        ref: 'master'
+        path: '/tmp/oracle'
 
-    # - name: Download container images via Git LFS
-    #   working-directory: 'container-images'
-    #   run: git lfs checkout
-
-    # - name: Install Singularity
-    #   shell: bash
-    #   run: |
-    #     # Singularity 3 hasn't made it to Ubuntu yet: TODO sort this out,
-    #     # or convert existing containers to Docker
-    #     sudo apt-get -y install squashfs-tools containernetworking-plugins
-    #     sudo dpkg -i container-images/singularity-container_3.5.2+ds1-1_amd64.deb
-
-    # - name: Build library with Sun compiler (Oracle Developer Studio)
-    #   shell: bash
-    #   env:
-    #     # Disable CodeQL
-    #     LD_PRELOAD: ''
-    #   run: |
-    #     singularity exec container-images/OracleDeveloperStudio.sif \
-    #     cmake3 -E make_directory ${{github.workspace}}/build-sunpro
-    #     singularity exec container-images/OracleDeveloperStudio.sif \
-    #     cmake3 -D CMAKE_CXX_STANDARD=11 -D WARNINGS_ARE_ERRORS=ON -D CMAKE_VERBOSE_MAKEFILE=ON -S ${{github.workspace}}/cmake -B ${{github.workspace}}/build-sunpro
-    #     singularity exec container-images/OracleDeveloperStudio.sif \
-    #     cmake3 --build ${{github.workspace}}/build-sunpro --parallel $(nproc --all)
+    - name: Build library with Sun compiler (Oracle Developer Studio)
+      shell: bash
+      env:
+        # Disable CodeQL
+        LD_PRELOAD: ''
+        # Load Sun's compiler
+        PATH: "/tmp/oracle/developerstudio12.6/bin:${PATH}"
+        CC: cc
+        CXX: CC
+      run: |
+        cmake -E make_directory ${{github.workspace}}/build-sunpro
+        cmake -D CMAKE_CXX_STANDARD=11 -D WARNINGS_ARE_ERRORS=ON -D CMAKE_VERBOSE_MAKEFILE=ON -S ${{github.workspace}}/cmake -B ${{github.workspace}}/build-sunpro
+        cmake --build ${{github.workspace}}/build-sunpro --parallel $(nproc --all)
