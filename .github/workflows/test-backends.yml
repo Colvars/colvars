@@ -38,13 +38,15 @@ jobs:
       backend_name: VMD
       backend_repo: Colvars/vmd
       backend_repo_ref: master
+      vmd_plugins_repo: Colvars/vmd-plugins
       path_compile_script: devel-tools/compile-vmd.sh
-      test_lib_directory: vmd/tests/interface
+      test_interface_directory: vmd/tests/interface
       rpath_exe: install/vmd
     secrets:
       # Per-repository secret (sharing a secret from the org with all
       # repositories turned out to be too complex)
       private_key: ${{ secrets.PULL_VMD_KEY }}
+      private_key_vmd_plugins: ${{ secrets.PULL_VMD_PLUGINS_KEY }}
 
 
 
@@ -65,20 +67,6 @@ jobs:
     #     path: 'vmd-plugins-source'
 
 
-
-    # - name: Run regression tests for library code with NAMD
-    #   shell: bash
-    #   working-directory: namd/tests/library
-    #   run: |
-    #     singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
-    #     ./run_tests.sh ${{github.workspace}}/namd-source/Linux-x86_64-g++.multicore/namd2
-
-    # - name: Run regression tests for NAMD interface code
-    #   shell: bash
-    #   working-directory: namd/tests/interface
-    #   run: |
-    #     singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
-    #     ./run_tests.sh ${{github.workspace}}/namd-source/Linux-x86_64-g++.multicore/namd2
 
     # - name: Update and build VMD
     #   shell: bash

@@ -15,6 +15,10 @@ on:
         description: "Name of the branch of the backend repository"
         required: true
         type: string
+      vmd_plugins_repo:
+        description: "Name of the VMD plugins repository"
+        required: false
+        type: string
       path_compile_script:
         description: "Path of the compilation script of the backend"
         required: true
@@ -34,6 +38,9 @@ on:
     secrets:
       private_key:
          description: "secret key to access the private repository"
+         required: false
+      private_key_vmd_plugins:
+         description: "secret key to access the VMD plugins private repository"
          required: false
 
 jobs:
@@ -80,6 +87,15 @@ jobs:
           ref: ${{ inputs.backend_repo_ref }}
           path: '${{ inputs.backend_name }}-source'
           ssh-key: ${{ secrets.private_key }}
+
+      - name: Checkout VMD plugins
+        if: ${{ inputs.vmd_plugins_repo }}
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ inputs.vmd_plugins_repo }}
+          ref: master
+          path: 'vmd-plugins-source'
+          ssh-key: ${{ secrets.private_key_vmd_plugins }}
 
       - name: Update and build ${{ inputs.backend_name }}
         shell: bash
