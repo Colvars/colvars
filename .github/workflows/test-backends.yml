@@ -6,7 +6,7 @@ on: [push, pull_request]
 jobs:
   lammps:
     name: Test LAMMPS
-    uses: HubLot/colvars/.github/workflows/backend-template.yml@v1
+    uses: Colvars/colvars/.github/workflows/backend-template.yml@test_ci
     with:
       backend_name: LAMMPS
       backend_repo: lammps/lammps
@@ -17,7 +17,7 @@ jobs:
 
   namd:
     name: Test NAMD
-    uses: HubLot/colvars/.github/workflows/backend-template.yml@v1
+    uses: Colvars/colvars/.github/workflows/backend-template.yml@test_ci
     with:
       backend_name: NAMD
       backend_repo: Colvars/namd
@@ -25,6 +25,10 @@ jobs:
       path_compile_script: devel-tools/compile-namd.sh
       test_directory: namd/tests/library
       rpath_exe: Linux-x86_64-g++.multicore/namd2
+    secrets:
+      # Per-repository secret (sharing a secret from the org with all
+      # repositories turned out to be too complex)
+      private_key: ${{ secrets.PULL_NAMD_KEY }}
 
     # - name: Checkout NAMD
     #   uses: actions/checkout@v2

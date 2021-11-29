@@ -27,6 +27,10 @@ on:
         description: "Relative path of the compiled executable"
         required: true
         type: string
+    secrets:
+      private_key:
+         description: "secret key to access the private repository"
+         required: false
 
 jobs:
   test_backends:
@@ -71,6 +75,7 @@ jobs:
           repository: ${{ inputs.backend_repo }}
           ref: ${{ inputs.backend_repo_ref }}
           path: '${{ inputs.backend_name }}-source'
+          ssh-key: ${{ secrets.private_key }}
 
       - name: Update and build ${{ inputs.backend_name }}
         shell: bash
