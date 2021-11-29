@@ -38,7 +38,7 @@ colvar::colvar()
   expand_boundaries = false;
 
   description = "uninitialized colvar";
-  init_dependencies();
+  colvar::init_dependencies();
 }
 
 

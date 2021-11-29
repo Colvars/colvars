@@ -23,7 +23,7 @@ colvarbias::colvarbias(char const *key)
   state_keyword = bias_type;
 
   description = "uninitialized " + cvm::to_str(key) + " bias";
-  init_dependencies();
+  colvarbias::init_dependencies();
   rank = 1;
 
   time_step_factor = 1;
@@ -32,7 +32,7 @@ colvarbias::colvarbias(char const *key)
   b_output_energy = false;
   output_freq = cvm::restart_out_freq;
 
-  reset();
+  colvarbias::reset();
   state_file_step = 0L;
   matching_state = false;
 }

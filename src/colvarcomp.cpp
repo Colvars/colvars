@@ -25,7 +25,7 @@ colvar::cvc::cvc()
   period = 0.0;
   wrap_center = 0.0;
   width = 0.0;
-  init_dependencies();
+  cvc::init_dependencies();
 }
 
 

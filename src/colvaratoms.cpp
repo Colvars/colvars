@@ -224,7 +224,7 @@ int cvm::atom_group::init()
   // These may be overwritten by parse(), if a name is provided
 
   atoms.clear();
-  init_dependencies();
+  atom_group::init_dependencies();
   index = -1;
 
   b_dummy = false;
