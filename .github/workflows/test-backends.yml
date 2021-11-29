@@ -30,6 +30,21 @@ jobs:
       # repositories turned out to be too complex)
       private_key: ${{ secrets.PULL_NAMD_KEY }}
 
+  vmd:
+    name: Test VMD
+    uses: Colvars/colvars/.github/workflows/backend-template.yml@test_ci
+    with:
+      backend_name: VMD
+      backend_repo: Colvars/vmd
+      backend_repo_ref: master
+      path_compile_script: devel-tools/compile-vmd.sh
+      test_directory: vmd/tests/interface
+      rpath_exe: install/vmd
+    secrets:
+      # Per-repository secret (sharing a secret from the org with all
+      # repositories turned out to be too complex)
+      private_key: ${{ secrets.PULL_VMD_KEY }}
+
     # - name: Checkout NAMD
     #   uses: actions/checkout@v2
     #   with:
