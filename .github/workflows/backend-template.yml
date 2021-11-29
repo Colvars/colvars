@@ -19,9 +19,13 @@ on:
         description: "Path of the compilation script of the backend"
         required: true
         type: string
-      test_directory:
-        description: "Path of the test directory"
-        required: true
+      test_lib_directory:
+        description: "Path of the library test directory"
+        required: false
+        type: string
+      test_interface_directory:
+        description: "Path of the interface test directory"
+        required: false
         type: string
       rpath_exe:
         description: "Relative path of the compiled executable"
@@ -86,8 +90,17 @@ jobs:
           bash ${{ inputs.path_compile_script }} ${{ inputs.backend_name }}-source
 
       - name: Run regression tests for library code with ${{ inputs.backend_name }}
+        if: ${{ inputs.test_lib_directory }}
         shell: bash
-        working-directory: ${{ inputs.test_directory }}
+        working-directory: ${{ inputs.test_lib_directory }}
         run: |
           singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
           ./run_tests.sh ${{github.workspace}}/${{ inputs.backend_name }}-source/${{ inputs.rpath_exe }} 000_*
+
+      - name: Run regression tests for ${{ inputs.backend_name }} interface code
+        if: ${{ inputs.test_interface_directory }}
+        shell: bash
+        working-directory: ${{ inputs.test_interface_directory }}
+        run: |
+          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          ./run_tests.sh ${{github.workspace}}/${{ inputs.backend_name }}-source/${{ inputs.rpath_exe }}

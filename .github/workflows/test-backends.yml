@@ -12,7 +12,7 @@ jobs:
       backend_repo: lammps/lammps
       backend_repo_ref: develop
       path_compile_script: devel-tools/compile-lammps.sh
-      test_directory: lammps/tests/library
+      test_lib_directory: lammps/tests/library
       rpath_exe: install/bin/lmp
 
   namd:
@@ -23,7 +23,8 @@ jobs:
       backend_repo: Colvars/namd
       backend_repo_ref: master
       path_compile_script: devel-tools/compile-namd.sh
-      test_directory: namd/tests/library
+      test_lib_directory: namd/tests/library
+      test_interface_directory: namd/tests/interface
       rpath_exe: Linux-x86_64-g++.multicore/namd2
     secrets:
       # Per-repository secret (sharing a secret from the org with all
@@ -38,22 +39,14 @@ jobs:
       backend_repo: Colvars/vmd
       backend_repo_ref: master
       path_compile_script: devel-tools/compile-vmd.sh
-      test_directory: vmd/tests/interface
+      test_lib_directory: vmd/tests/interface
       rpath_exe: install/vmd
     secrets:
       # Per-repository secret (sharing a secret from the org with all
       # repositories turned out to be too complex)
       private_key: ${{ secrets.PULL_VMD_KEY }}
 
-    # - name: Checkout NAMD
-    #   uses: actions/checkout@v2
-    #   with:
-    #     repository: 'Colvars/namd'
-    #     # Per-repository secret (sharing a secret from the org with all
-    #     # repositories turned out to be too complex)
-    #     ssh-key: ${{ secrets.PULL_NAMD_KEY }}
-    #     ref: 'master'
-    #     path: 'namd-source'
+
 
     # - name: Checkout VMD
     #   uses: actions/checkout@v2
@@ -72,13 +65,6 @@ jobs:
     #     path: 'vmd-plugins-source'
 
 
-    # - name: Update and build NAMD
-    #   shell: bash
-    #   run: |
-    #     singularity exec devel-tools/CentOS7-devel.sif ./update-colvars-code.sh namd-source
-    #     CCACHE_DIR=~/ccache_CentOS7-devel \
-    #     singularity exec devel-tools/CentOS7-devel.sif \
-    #     bash devel-tools/compile-namd.sh namd-source
 
     # - name: Run regression tests for library code with NAMD
     #   shell: bash
