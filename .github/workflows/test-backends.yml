@@ -49,36 +49,14 @@ jobs:
       private_key_vmd_plugins: ${{ secrets.PULL_VMD_PLUGINS_KEY }}
 
 
+  gromacs-2020:
+      name: Test GROMACS 2020
+      uses: Colvars/colvars/.github/workflows/backend-template.yml@test_ci
+      with:
+        backend_name: GROMACS
+        backend_repo: gromacs/gromacs
+        backend_repo_ref: release-2020
+        path_compile_script: devel-tools/compile-gromacs.sh
+        test_lib_directory: gromacs/tests/library
+        rpath_exe: install/bin/gmx
 
-    # - name: Checkout VMD
-    #   uses: actions/checkout@v2
-    #   with:
-    #     repository: 'Colvars/vmd'
-    #     ssh-key: ${{ secrets.PULL_VMD_KEY }}
-    #     ref: 'master'
-    #     path: 'vmd-source'
-
-    # - name: Checkout VMD plugins
-    #   uses: actions/checkout@v2
-    #   with:
-    #     repository: 'Colvars/vmd-plugins'
-    #     ssh-key: ${{ secrets.PULL_VMD_PLUGINS_KEY }}
-    #     ref: 'master'
-    #     path: 'vmd-plugins-source'
-
-
-
-    # - name: Update and build VMD
-    #   shell: bash
-    #   run: |
-    #     singularity exec devel-tools/CentOS7-devel.sif ./update-colvars-code.sh vmd-source
-    #     CCACHE_DIR=~/ccache_CentOS7-devel \
-    #     singularity exec devel-tools/CentOS7-devel.sif \
-    #     bash devel-tools/compile-vmd.sh vmd-source
-
-    # - name: Run regression tests for VMD interface code
-    #   shell: bash
-    #   working-directory: vmd/tests/interface
-    #   run: |
-    #     singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
-    #     ./run_tests.sh ${{github.workspace}}/vmd-source/install/vmd
