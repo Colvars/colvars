@@ -2,6 +2,9 @@ name: "Build backends with an updated Colvars module"
 
 on: [push, pull_request_target]
 
+# The jobs call a template workflow `backend-template.yml` which performs
+# all the necessary steps to run the regression tests of the backend.
+# Variables need to be filled accordingly. See `backend-template.yml`
 
 jobs:
   lammps:
@@ -38,16 +41,16 @@ jobs:
       backend_name: VMD
       backend_repo: Colvars/vmd
       backend_repo_ref: master
+      # Special variable for VMD test case since it's the only one
+      # which needs to checkout 2 repos
       vmd_plugins_repo: Colvars/vmd-plugins
       path_compile_script: devel-tools/compile-vmd.sh
       test_interface_directory: vmd/tests/interface
       rpath_exe: install/vmd
     secrets:
-      # Per-repository secret (sharing a secret from the org with all
-      # repositories turned out to be too complex)
+      # Per-repository secret
       private_key: ${{ secrets.PULL_VMD_KEY }}
       private_key_vmd_plugins: ${{ secrets.PULL_VMD_PLUGINS_KEY }}
-
 
   gromacs-2020:
       name: Test GROMACS 2020
@@ -58,5 +61,6 @@ jobs:
         backend_repo_ref: release-2020
         path_compile_script: devel-tools/compile-gromacs.sh
         test_lib_directory: gromacs/tests/library
+        # Gromacs need to be complied in double precision to pass the tests
         rpath_exe: install/bin/gmx_d
 
