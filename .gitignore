@@ -3,6 +3,8 @@
 # Editor files
 *~
 .*.swp
+.vscode
+.code-workspace
 
 # Compiled code
 *.o
