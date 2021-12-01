@@ -1,7 +1,17 @@
+# Reusable workflow meant to be called keyword by another workflow with the `use`
+# It generalize the test procedure to be applied by a generic MD engine
+
+# This workflow:
+#  - checkout colvars code
+#  - checkout the MD engine
+#  - build the MD engine with Singularity
+#  - run the colvars regression tests written for the MD engine
+
 name: "Test a backend with Colvars"
 
 on:
   workflow_call:
+    # Variables needed by the template
     inputs:
       backend_name:
         description: "Name of the backend"
@@ -23,6 +33,8 @@ on:
         description: "Path of the compilation script of the backend"
         required: true
         type: string
+      # At least one of test_lib_directory or test_interface_directory need
+      # to be set to launch the regression tests.
       test_lib_directory:
         description: "Path of the library test directory"
         required: false
@@ -88,6 +100,7 @@ jobs:
           path: '${{ inputs.backend_name }}-source'
           ssh-key: ${{ secrets.private_key }}
 
+      # Only used for VMD test case
       - name: Checkout VMD plugins
         if: ${{ inputs.vmd_plugins_repo }}
         uses: actions/checkout@v2
@@ -104,6 +117,11 @@ jobs:
           CCACHE_DIR=~/ccache_CentOS7-devel \
           singularity exec devel-tools/CentOS7-devel.sif \
           bash ${{ inputs.path_compile_script }} ${{ inputs.backend_name }}-source
+
+
+      # 2 types of tests can be performed with the MD engine: library & interface
+      # It depends on the working directory
+      # Note to be run, test_lib_directory or test_interface_directory must be set by the caller workflow
 
       - name: Run regression tests for library code with ${{ inputs.backend_name }}
         if: ${{ inputs.test_lib_directory }}
