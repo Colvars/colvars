@@ -33,13 +33,13 @@ compile_gromacs_target() {
     local GMX_BUILD_TYPE=Release
     local GMX_INSTALL_DIR="${GMX_SRC_DIR}/install"
 
+    GMX_BUILD_OPTS+=("-DGMX_DOUBLE=ON")
+
     while [ $# -ge 1 ]; do
         if [ "${1,,}" = "debug" ]; then
             GMX_BUILD_TYPE=Debug
             GMX_BUILD_OPTS+=(-DCMAKE_BUILD_TYPE=Debug -DCMAKE_VERBOSE_MAKEFILE=yes)
             GMX_BUILD_OPTS+=(-DCOLVARS_DEBUG)
-        elif [ "${1,,}" = "double" ]; then
-            GMX_BUILD_OPTS+=("-DGMX_DOUBLE=ON")
         else
             GMX_INSTALL_DIR=${1}
         fi

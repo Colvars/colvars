@@ -58,5 +58,5 @@ jobs:
         backend_repo_ref: release-2020
         path_compile_script: devel-tools/compile-gromacs.sh
         test_lib_directory: gromacs/tests/library
-        rpath_exe: install/bin/gmx
+        rpath_exe: install/bin/gmx_d
 
