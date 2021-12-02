@@ -21,6 +21,8 @@ jobs:
   namd:
     name: Test NAMD
     uses: Colvars/colvars/.github/workflows/backend-template.yml@test_ci
+    # Prevent running this job on fork repos due to the secrets variable
+    if: ${{ github.repository_owner == 'Colvars' }}
     with:
       backend_name: NAMD
       backend_repo: Colvars/namd
@@ -37,6 +39,7 @@ jobs:
   vmd:
     name: Test VMD
     uses: Colvars/colvars/.github/workflows/backend-template.yml@test_ci
+    if: ${{ github.repository_owner == 'Colvars' }}
     with:
       backend_name: VMD
       backend_repo: Colvars/vmd
