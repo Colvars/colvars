@@ -68,8 +68,9 @@ jobs:
           path: |
             ~/.ccache
             ~/ccache_CentOS7-devel
-          key: ${{ runner.os }}-build-${{ github.sha }}
+          key: ${{ runner.os }}-build-${{ job.id }}-${{ github.sha }}
           restore-keys: |
+            ${{ runner.os }}-build-${{ job.id }}-
             ${{ runner.os }}-build-
             -build-
 
