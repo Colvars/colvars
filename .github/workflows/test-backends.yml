@@ -9,7 +9,7 @@ on: [push, pull_request_target]
 jobs:
   lammps:
     name: Test LAMMPS
-    uses: Colvars/colvars/.github/workflows/backend-template.yml@test_ci
+    uses: Colvars/colvars/.github/workflows/backend-template.yml@master
     with:
       backend_name: LAMMPS
       backend_repo: lammps/lammps
