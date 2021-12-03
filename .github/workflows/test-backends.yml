@@ -20,7 +20,7 @@ jobs:
 
   namd:
     name: Test NAMD
-    uses: Colvars/colvars/.github/workflows/backend-template.yml@test_ci
+    uses: Colvars/colvars/.github/workflows/backend-template.yml@master
     # Prevent running this job on fork repos due to the secrets variable
     if: ${{ github.repository_owner == 'Colvars' }}
     with:
@@ -38,7 +38,7 @@ jobs:
 
   vmd:
     name: Test VMD
-    uses: Colvars/colvars/.github/workflows/backend-template.yml@test_ci
+    uses: Colvars/colvars/.github/workflows/backend-template.yml@master
     if: ${{ github.repository_owner == 'Colvars' }}
     with:
       backend_name: VMD
@@ -57,7 +57,7 @@ jobs:
 
   gromacs-2020:
       name: Test GROMACS 2020
-      uses: Colvars/colvars/.github/workflows/backend-template.yml@test_ci
+      uses: Colvars/colvars/.github/workflows/backend-template.yml@master
       with:
         backend_name: GROMACS
         backend_repo: gromacs/gromacs
