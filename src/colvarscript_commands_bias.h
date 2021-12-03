@@ -172,6 +172,15 @@ CVSCRIPT(bias_state,
          return COLVARS_OK;
          )
 
+CVSCRIPT(bias_type,
+         "Print the type of this bias object\n"
+         "type : string - Type of this bias object (e.g. metadynamics)",
+         0, 0,
+         "",
+         script->set_result_str(this_bias->bias_type);
+         return COLVARS_OK;
+         )
+
 CVSCRIPT(bias_update,
          "Recompute this bias and return its up-to-date energy\n"
          "E : float - Energy value",
