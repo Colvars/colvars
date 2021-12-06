@@ -378,6 +378,9 @@ public:
   /// Parse and initialize collective variables
   int parse_colvars(std::string const &conf);
 
+  /// Run provided startup script
+  int run_script();
+
   /// Parse and initialize collective variable biases
   int parse_biases(std::string const &conf);
 
@@ -405,6 +408,11 @@ private:
   /// Test error condition and keyword parsing
   /// on error, delete new bias
   bool check_new_bias(std::string &conf, char const *key);
+
+#ifdef COLVARS_TCL
+  /// Initialization Tcl script, user-provided
+  std::string source_Tcl_script;
+#endif
 
 public:
 
