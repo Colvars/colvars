@@ -680,9 +680,6 @@ public:
   /// (does not need to be allocated in a new interface)
   colvarscript *script;
 
-  /// is a user force script defined?
-  bool force_script_defined;
-
   /// Do we have a scripting interface?
   bool have_scripts;
 

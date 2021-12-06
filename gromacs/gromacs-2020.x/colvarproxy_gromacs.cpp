@@ -43,7 +43,6 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
   restart_frequency_s = 0;
 
   // User-scripted forces are not available in GROMACS
-  force_script_defined = false;
   have_scripts = false;
 
   angstrom_value = 0.1;

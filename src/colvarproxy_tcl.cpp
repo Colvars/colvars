@@ -101,14 +101,18 @@ int colvarproxy_tcl::tcl_run_file(std::string fileName)
 int colvarproxy_tcl::tcl_run_force_callback()
 {
 #if defined(COLVARS_TCL)
-  Tcl_Interp *const tcl_interp =
-    reinterpret_cast<Tcl_Interp *>(get_tcl_interp());
+  Tcl_Interp *const interp = get_tcl_interp();
+  if (Tcl_FindCommand(interp, "calc_colvar_forces", NULL, 0) == NULL) {
+    cvm::error("Error: Colvars force procedure calc_colvar_forces is not defined.\n");
+    return COLVARS_ERROR;
+  }
+
   std::string cmd = std::string("calc_colvar_forces ")
     + cvm::to_str(cvm::step_absolute());
-  int err = Tcl_Eval(tcl_interp, cmd.c_str());
+  int err = Tcl_Eval(interp, cmd.c_str());
   if (err != TCL_OK) {
-    cvm::log(std::string("Error while executing calc_colvar_forces:\n"));
-    cvm::error(Tcl_GetStringResult(tcl_interp));
+    cvm::log("Error while executing calc_colvar_forces:\n");
+    cvm::error(Tcl_GetStringResult(interp));
     return COLVARS_ERROR;
   }
   return cvm::get_error();
@@ -125,20 +129,25 @@ int colvarproxy_tcl::tcl_run_colvar_callback(
 {
 #if defined(COLVARS_TCL)
 
-  Tcl_Interp *const tcl_interp =
-    reinterpret_cast<Tcl_Interp *>(get_tcl_interp());
+  Tcl_Interp *const interp = get_tcl_interp();
   size_t i;
+
   std::string cmd = std::string("calc_") + name;
+  if (Tcl_FindCommand(interp, cmd.c_str(), NULL, 0) == NULL) {
+    cvm::error("Error: scripted colvar procedure \"" + cmd + "\" is not defined.\n");
+    return COLVARS_ERROR;
+  }
+
   for (i = 0; i < cvc_values.size(); i++) {
     cmd += std::string(" {") + (*(cvc_values[i])).to_simple_string() +
       std::string("}");
   }
-  int err = Tcl_Eval(tcl_interp, cmd.c_str());
-  const char *result = Tcl_GetStringResult(tcl_interp);
+  int err = Tcl_Eval(interp, cmd.c_str());
+  const char *result = Tcl_GetStringResult(interp);
   if (err != TCL_OK) {
     return cvm::error(std::string("Error while executing ")
                       + cmd + std::string(":\n") +
-                      std::string(Tcl_GetStringResult(tcl_interp)),
+                      std::string(Tcl_GetStringResult(interp)),
                       COLVARS_ERROR);
   }
   std::istringstream is(result);
@@ -167,24 +176,29 @@ int colvarproxy_tcl::tcl_run_colvar_gradient_callback(
 {
 #if defined(COLVARS_TCL)
 
-  Tcl_Interp *const tcl_interp =
-    reinterpret_cast<Tcl_Interp *>(get_tcl_interp());
+  Tcl_Interp *const interp = get_tcl_interp();
   size_t i;
+
   std::string cmd = std::string("calc_") + name + "_gradient";
+  if (Tcl_FindCommand(interp, cmd.c_str(), NULL, 0) == NULL) {
+    cvm::error("Error: scripted colvar gradient procedure \"" + cmd + "\" is not defined.\n");
+    return COLVARS_ERROR;
+  }
+
   for (i = 0; i < cvc_values.size(); i++) {
     cmd += std::string(" {") + (*(cvc_values[i])).to_simple_string() +
       std::string("}");
   }
-  int err = Tcl_Eval(tcl_interp, cmd.c_str());
+  int err = Tcl_Eval(interp, cmd.c_str());
   if (err != TCL_OK) {
     return cvm::error(std::string("Error while executing ")
                       + cmd + std::string(":\n") +
-                      std::string(Tcl_GetStringResult(tcl_interp)),
+                      std::string(Tcl_GetStringResult(interp)),
                       COLVARS_ERROR);
   }
   Tcl_Obj **list;
   int n;
-  Tcl_ListObjGetElements(tcl_interp, Tcl_GetObjResult(tcl_interp),
+  Tcl_ListObjGetElements(interp, Tcl_GetObjResult(interp),
                          &n, &list);
   if (n != int(gradient.size())) {
     cvm::error("Error parsing list of gradient values from script: found "
