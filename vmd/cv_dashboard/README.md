@@ -1,53 +1,36 @@
 # How to use the Colvars Dashboard in VMD
 
-Note that some spiffy Dashboard features are only available in VMD compiled with
-the Colvars Module version 2019-03-21 or later.
+## Using the version included with VMD 1.9.4 alpha or later
 
-A more complete documentation can be found here:
+Open the graphical interface by clicking the `Extensions/Analysis/Colvars Dashboard` menu item,
+or by typing `cv_dashboard` in the VMD terminal.
+
+Complete documentation is available here:
 http://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html#sec:dashboard
 
-## With VMD 1.9.4 or later (when available)
+## Updating the Dashboard manually
 
-The plugin will be available under Extensions/Analysis.
+The plugin can be updated manually to access recent features that are not yet included in official
+releases of VMD.
 
-## Adding the Dashboard to an older version of VMD
+**Using VMD 1.9.3 (released in 2016) is not recommended**.
+as of 2021, VMD 1.9.4 "alpha" releases are the de facto current versions.
+Although the Dashboard can work in VMD 1.9.3, not all features are supported.
 
 First, download the Colvars tree from https://github.com/Colvars/colvars/archive/master.zip
+or clone the git repository.
+Navigate to the `vmd/cv_dashboard` subdirectory.
 
-Note that `Makefile` is used within the VMD plugin distribution, by VMD's own build script.
+### On a Unix-like system with GNU make
 
-Then there are two options:
+Edit the `DESTINATION` variable in Makefile.local with the path where VMD is installed,
+and run `make -f Makefile.local install`
+Then start the interface using `Extensions/Analysis/Colvars Dashboard`.
+`Makefile` is used within the VMD plugin distribution, by VMD's own build script; we will use
+`Makefile.local` instead.
 
-### Installing on top of an existing VMD installation
-
-Edit the PLUGINDIR variable in Makefile.local, and run
-`make -f Makefile.local install`
-
-To run it inside VMD, type in the VMD console:
-
-```
-package require cv_dashboard
-cv_dashboard
-```
-
-If you don't have a personal `.vmdrc` file, copy the default `.vmdrc` file from
-the directory where VMD is installed, into your home directory.
-Then add the following lines at the end:
-
-```
-package require cv_dashboard
-vmd_install_extension cv_dashboard cv_dashboard "Analysis/Colvars Dashboard"
-```
-
-The Dashboard will then be listed in the Extension/Analysis menu.
-
-### Running directly from the Colvars source tree without installing
-
-Type in the VMD console the following commands:
-```
-package forget cv_dashboard
-source <path/to/cv_dashboard.tcl>
-cv_dashboard
-```
-The first line removes the current version of the Dashboard from VMD's memory, and may be needed to avoid conflicts (note that this only applies to the current session, because no files are changed).
-The second line then loads the new version of the Dashboard in the VMD session, and the third line opens the Dashboard window.
+### On Windows or if GNU make is not available
+Find the path where VMD is installed
+(by default: `C:\Program Files\University of Illinois\VMD`)
+and replace the contents of `plugins/noarch/tcl/cv_dashboard1.x` with those of `vmd/cv_dashboard`
+from the Colvars tree.
