@@ -2,9 +2,6 @@ name: "Test backends"
 
 on: [push, pull_request_target]
 
-# Only run tests for pushes *or* PRs from outside the repo
-if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
-
 
 # The jobs call a template workflow `backend-template.yml` which performs
 # all the necessary steps to run the regression tests of the backend.
@@ -14,6 +11,7 @@ jobs:
   lammps:
     name: Test LAMMPS
     uses: Colvars/colvars/.github/workflows/backend-template.yml@master
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     with:
       backend_name: LAMMPS
       backend_repo: lammps/lammps
@@ -27,6 +25,7 @@ jobs:
     uses: Colvars/colvars/.github/workflows/backend-template.yml@master
     # Prevent running this job on fork repos due to the secrets variable
     if: ${{ github.repository_owner == 'Colvars' }}
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     with:
       backend_name: NAMD
       backend_repo: Colvars/namd
@@ -44,6 +43,7 @@ jobs:
     name: Test VMD
     uses: Colvars/colvars/.github/workflows/backend-template.yml@master
     if: ${{ github.repository_owner == 'Colvars' }}
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     with:
       backend_name: VMD
       backend_repo: Colvars/vmd
@@ -60,14 +60,15 @@ jobs:
       private_key_vmd_plugins: ${{ secrets.PULL_VMD_PLUGINS_KEY }}
 
   gromacs-2020:
-      name: Test GROMACS 2020
-      uses: Colvars/colvars/.github/workflows/backend-template.yml@master
-      with:
-        backend_name: GROMACS
-        backend_repo: gromacs/gromacs
-        backend_repo_ref: release-2020
-        path_compile_script: devel-tools/compile-gromacs.sh
-        test_lib_directory: gromacs/tests/library
-        # Gromacs need to be complied in double precision to pass the tests
-        rpath_exe: install/bin/gmx_d
+    name: Test GROMACS 2020
+    uses: Colvars/colvars/.github/workflows/backend-template.yml@master
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    with:
+      backend_name: GROMACS
+      backend_repo: gromacs/gromacs
+      backend_repo_ref: release-2020
+      path_compile_script: devel-tools/compile-gromacs.sh
+      test_lib_directory: gromacs/tests/library
+      # Gromacs need to be complied in double precision to pass the tests
+      rpath_exe: install/bin/gmx_d
 

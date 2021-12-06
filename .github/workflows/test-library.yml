@@ -2,15 +2,14 @@ name: "Test library"
 
 on: [push, pull_request_target]
 
-# Only run tests for pushes *or* PRs from outside the repo
-if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
-
 
 jobs:
 
   basic-checks:
+
     name: Perform basic checks
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
 
     steps:
       - uses: actions/checkout@v2
@@ -33,6 +32,7 @@ jobs:
     name: Build Colvars & CodeQL Analysis
     runs-on: ubuntu-latest
     needs: basic-checks
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
 
     steps:
       - uses: actions/checkout@v2
@@ -72,6 +72,7 @@ jobs:
     name: Build Colvars with pre-C++11 code for VMD
     runs-on: ubuntu-latest
     needs: basic-checks
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
 
     steps:
       - uses: actions/checkout@v2
@@ -92,6 +93,7 @@ jobs:
     needs: basic-checks
     # Prevent running this job on fork repos due to the secrets variable
     if: ${{ github.repository_owner == 'Colvars' }}
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
 
     strategy:
       fail-fast: false
