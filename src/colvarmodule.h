@@ -10,6 +10,10 @@
 #ifndef COLVARMODULE_H
 #define COLVARMODULE_H
 
+#if defined(NAMD_TCL) || defined(VMDTCL)
+#define COLVARS_TCL
+#endif
+
 #include <cmath>
 
 #include "colvars_version.h"

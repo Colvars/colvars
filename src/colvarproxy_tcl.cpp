@@ -9,23 +9,22 @@
 
 #include <sstream>
 
-#if defined(NAMD_TCL) || defined(VMDTCL)
-#define COLVARS_TCL
-#endif
-#ifdef COLVARS_TCL
-#include <tcl.h>
-#endif
-
 #include "colvarmodule.h"
 #include "colvarproxy.h"
 #include "colvarproxy_tcl.h"
 #include "colvaratoms.h"
 
+#ifdef COLVARS_TCL
+#include <tcl.h>
+#endif
+
 
 
 colvarproxy_tcl::colvarproxy_tcl()
 {
+#ifdef COLVARS_TCL
   tcl_interp_ = NULL;
+#endif
 }
 
 
@@ -41,12 +40,12 @@ void colvarproxy_tcl::init_tcl_pointers()
   if (tcl_interp_ == NULL) {
     // Allocate a dedicated Tcl interpreter for Colvars
     std::cout << "colvars: Allocating Tcl interpreter." << std::endl;
-    tcl_interp_ = Tcl_CreateInterp();
+    set_tcl_interp(Tcl_CreateInterp());
   } else {
-    std::cout << "colvars: Warning - init_tcl_pointers called twice?" << std::endl;
+    std::cerr << "Error: init_tcl_pointers called with non-NULL tcl_interp_" << std::endl;
   }
 #else
-  std::cerr << "Error: Tcl support is not available in this build.\n" << std::endl;
+  std::cerr << "Error: Tcl support is not available in this build." << std::endl;
 #endif
 }
 
@@ -65,12 +64,11 @@ char const *colvarproxy_tcl::tcl_get_str(void *obj)
 int colvarproxy_tcl::tcl_run_script(std::string script)
 {
 #if defined(COLVARS_TCL)
-  Tcl_Interp *const tcl_interp =
-    reinterpret_cast<Tcl_Interp *>(get_tcl_interp());
-  int err = Tcl_Eval(tcl_interp, script.c_str());
+  Tcl_Interp *const interp = get_tcl_interp();
+  int err = Tcl_Eval(interp, script.c_str());
   if (err != TCL_OK) {
     cvm::log("Error while executing Tcl script:\n");
-    cvm::error(Tcl_GetStringResult(tcl_interp));
+    cvm::error(Tcl_GetStringResult(interp));
     return COLVARS_ERROR;
   }
   return cvm::get_error();
@@ -83,12 +81,11 @@ int colvarproxy_tcl::tcl_run_script(std::string script)
 int colvarproxy_tcl::tcl_run_file(std::string fileName)
 {
 #if defined(COLVARS_TCL)
-  Tcl_Interp *const tcl_interp =
-    reinterpret_cast<Tcl_Interp *>(get_tcl_interp());
-  int err = Tcl_EvalFile(tcl_interp, fileName.c_str());
+  Tcl_Interp *const interp = get_tcl_interp();
+  int err = Tcl_EvalFile(interp, fileName.c_str());
   if (err != TCL_OK) {
     cvm::log("Error while executing Tcl script file" + fileName + ":\n");
-    cvm::error(Tcl_GetStringResult(tcl_interp));
+    cvm::error(Tcl_GetStringResult(interp));
     return COLVARS_ERROR;
   }
   return cvm::get_error();

@@ -10,6 +10,14 @@
 #ifndef COLVARPROXY_TCL_H
 #define COLVARPROXY_TCL_H
 
+#if defined(NAMD_TCL) || defined(VMDTCL)
+#define COLVARS_TCL
+#endif
+
+#ifdef COLVARS_TCL
+#include <tcl.h>
+#endif
+
 #include <vector>
 
 
@@ -55,26 +63,29 @@ public:
               std::vector<const colvarvalue *> const &cvcs,
               std::vector<cvm::matrix2d<cvm::real> > &gradient);
 
+#ifdef COLVARS_TCL
   /// Get a pointer to the Tcl interpreter
-  inline void *get_tcl_interp()
+  inline Tcl_Interp *get_tcl_interp()
   {
     return tcl_interp_;
   }
 
   /// Set the pointer to the Tcl interpreter
-  inline void set_tcl_interp(void *interp)
+  inline void set_tcl_interp(Tcl_Interp *interp)
   {
     tcl_interp_ = interp;
   }
+#endif
 
   /// Set Tcl pointers
   virtual void init_tcl_pointers();
 
 protected:
 
+#ifdef COLVARS_TCL
   /// Pointer to Tcl interpreter object
-  void *tcl_interp_;
+  Tcl_Interp *tcl_interp_;
+#endif
 };
-
 
 #endif
