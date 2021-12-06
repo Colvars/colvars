@@ -546,7 +546,7 @@ void colvarproxy_namd::init_tcl_pointers()
 {
 #ifdef NAMD_TCL
   // Store pointer to NAMD's Tcl interpreter
-  tcl_interp_ = reinterpret_cast<void *>(Node::Object()->getScript()->interp);
+  set_tcl_interp(Node::Object()->getScript()->interp);
 #else
   colvarproxy::init_tcl_pointers(); // Create dedicated interpreter
 #endif

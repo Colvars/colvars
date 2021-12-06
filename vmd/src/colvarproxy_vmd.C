@@ -92,15 +92,7 @@ colvarproxy_vmd::colvarproxy_vmd(Tcl_Interp *interp, VMDApp *v, int molid)
 #if defined(VMDTCL)
   have_scripts = true;
   // Need to set this before constructing colvarmodule, which creates colvarscript object
-  tcl_interp_ = reinterpret_cast<void *>(interp);
-
-  // User-scripted forces are not really useful in VMD, but we accept them
-  // for compatibility with NAMD scripts
-  if (Tcl_FindCommand(interp, "calc_colvar_forces", NULL, 0) == NULL) {
-    force_script_defined = false;
-  } else {
-    force_script_defined = true;
-  }
+  set_tcl_interp(interp);
 #else
   have_scripts = false;
 #endif
@@ -406,12 +398,7 @@ void colvarproxy_vmd::init_tcl_pointers()
 
 int colvarproxy_vmd::run_force_callback()
 {
-  if (force_script_defined) {
-    return colvarproxy::tcl_run_force_callback();
-  } else {
-    // Ignore if script is undefined in VMD
-    return COLVARS_OK;
-  }
+  return colvarproxy::tcl_run_force_callback();
 }
 
 int colvarproxy_vmd::run_colvar_callback(

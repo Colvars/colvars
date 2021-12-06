@@ -47,9 +47,9 @@ colvarscript::colvarscript(colvarproxy *p, colvarmodule *m)
   init_commands();
 #ifdef COLVARS_TCL
   // must be called after constructing derived proxy class to allow for overloading
-  cvm::proxy->init_tcl_pointers();
+  proxy()->init_tcl_pointers();
   // TODO put this in backend functions so we don't have to delete
-  Tcl_Interp *interp = reinterpret_cast<Tcl_Interp *>(proxy_->get_tcl_interp());
+  Tcl_Interp *const interp = proxy()->get_tcl_interp();
   if (interp == NULL) {
     cvm::error("Error: trying to construct colvarscript without a Tcl interpreter.\n");
     return;
@@ -649,11 +649,12 @@ int tcl_colvars_vmd_init(Tcl_Interp *interp, int molid);
 #endif
 
 #if !defined(VMDTCL) && !defined(NAMD_TCL)
+// Initialize Colvars when loaded as a shared library into Tcl interpreter
 extern "C" {
   int Colvars_Init(Tcl_Interp *interp) {
     colvarproxy *proxy = new colvarproxy();
     colvarmodule *colvars = new colvarmodule(proxy);
-    proxy->set_tcl_interp(reinterpret_cast<void *>(interp));
+    proxy->set_tcl_interp(interp);
     proxy->colvars = colvars;
     Tcl_CreateObjCommand(interp, "cv", tcl_run_colvarscript_command,
                          (ClientData *) NULL, (Tcl_CmdDeleteProc *) NULL);
@@ -719,8 +720,7 @@ extern "C" int tcl_run_colvarscript_command(ClientData /* clientData */,
   }
 
   colvarproxy *proxy = colvars->proxy;
-  Tcl_Interp *interp = my_interp ? my_interp :
-    reinterpret_cast<Tcl_Interp *>(proxy->get_tcl_interp());
+  Tcl_Interp *interp = my_interp ? my_interp : proxy->get_tcl_interp();
   colvarscript *script = colvarscript_obj();
   if (!script) {
     char const *errstr = "Called tcl_run_colvarscript_command "
