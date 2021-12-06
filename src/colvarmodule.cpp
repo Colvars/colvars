@@ -302,6 +302,10 @@ int colvarmodule::parse_config(std::string &conf)
   // Update any necessary proxy data
   proxy->setup();
 
+  if (run_script() != COLVARS_OK) {
+    return get_error();
+  }
+
   return get_error();
 }
 
@@ -392,24 +396,24 @@ int colvarmodule::parse_global_params(std::string const &conf)
                     scripting_after_biases, scripting_after_biases);
 
 #if defined(COLVARS_TCL)
-  std::string source_Tcl_script;
-  if (parse->get_keyval(conf, "sourceTclFile", source_Tcl_script)) {
-    proxy->tcl_run_file(source_Tcl_script);
-  }
+  parse->get_keyval(conf, "sourceTclFile", source_Tcl_script);
 #endif
 
-  if (use_scripted_forces && !proxy->force_script_defined) {
-    if (proxy->simulation_running()) {
-      // TODO test here
-      // return cvm::error("User script for scripted colvar forces not found.",
-      //                   INPUT_ERROR);
-    } else {
-      // Not necessary if we are not applying biases in a real simulation (eg. VMD)
-      cvm::log("Warning: User script for scripted colvar forces not found.");
-    }
-  }
-
   return cvm::get_error();
+}
+
+
+int colvarmodule::run_script() {
+
+  int result = COLVARS_OK;
+
+#if defined(COLVARS_TCL)
+    if (source_Tcl_script.size() > 0) {
+      result = proxy->tcl_run_file(source_Tcl_script);
+    }
+#endif
+
+  return result;
 }
 
 
