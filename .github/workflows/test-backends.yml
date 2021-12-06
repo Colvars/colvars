@@ -24,8 +24,7 @@ jobs:
     name: Test NAMD
     uses: Colvars/colvars/.github/workflows/backend-template.yml@master
     # Prevent running this job on fork repos due to the secrets variable
-    if: ${{ github.repository_owner == 'Colvars' }}
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    if: ${{ github.repository_owner == 'Colvars' }} && ${{ github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository }}
     with:
       backend_name: NAMD
       backend_repo: Colvars/namd
@@ -42,8 +41,7 @@ jobs:
   vmd:
     name: Test VMD
     uses: Colvars/colvars/.github/workflows/backend-template.yml@master
-    if: ${{ github.repository_owner == 'Colvars' }}
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    if: ${{ github.repository_owner == 'Colvars' }} && ${{ github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository }}
     with:
       backend_name: VMD
       backend_repo: Colvars/vmd
