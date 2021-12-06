@@ -1,4 +1,4 @@
-name: "Test library"
+name: "Library"
 
 on: [push, pull_request_target]
 
@@ -7,7 +7,7 @@ jobs:
 
   basic-checks:
 
-    name: Perform basic checks
+    name: Basic checks
     runs-on: ubuntu-latest
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
 
@@ -69,7 +69,7 @@ jobs:
 
 
   build-legacy:
-    name: Build Colvars with pre-C++11 code for VMD
+    name: Legacy build (pre-C++11 code for VMD)
     runs-on: ubuntu-latest
     needs: basic-checks
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
@@ -88,7 +88,7 @@ jobs:
 
 
   build-sunpro:
-    name: Build colvars with Sun compiler
+    name: Sun compiler
     runs-on: ubuntu-latest
     needs: basic-checks
     # Prevent running this job on fork repos due to the secrets variable

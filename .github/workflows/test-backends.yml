@@ -9,7 +9,7 @@ on: [push, pull_request_target]
 
 jobs:
   lammps:
-    name: Test LAMMPS
+    name: LAMMPS
     uses: Colvars/colvars/.github/workflows/backend-template.yml@master
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     with:
@@ -21,7 +21,7 @@ jobs:
       rpath_exe: install/bin/lmp
 
   namd:
-    name: Test NAMD
+    name: NAMD
     uses: Colvars/colvars/.github/workflows/backend-template.yml@master
     # Prevent running this job on fork repos due to the secrets variable
     if: ${{ github.repository_owner == 'Colvars' }} && ${{ github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository }}
@@ -39,7 +39,7 @@ jobs:
       private_key: ${{ secrets.PULL_NAMD_KEY }}
 
   vmd:
-    name: Test VMD
+    name: VMD
     uses: Colvars/colvars/.github/workflows/backend-template.yml@master
     if: ${{ github.repository_owner == 'Colvars' }} && ${{ github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository }}
     with:
@@ -58,7 +58,7 @@ jobs:
       private_key_vmd_plugins: ${{ secrets.PULL_VMD_PLUGINS_KEY }}
 
   gromacs-2020:
-    name: Test GROMACS 2020
+    name: GROMACS 2020
     uses: Colvars/colvars/.github/workflows/backend-template.yml@master
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     with:
