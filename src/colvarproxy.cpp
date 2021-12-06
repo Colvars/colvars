@@ -615,7 +615,6 @@ int colvarproxy_smp::smp_unlock()
 colvarproxy_script::colvarproxy_script()
 {
   script = NULL;
-  force_script_defined = false;
   have_scripts = false;
 }
 

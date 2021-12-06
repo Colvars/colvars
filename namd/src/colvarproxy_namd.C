@@ -127,17 +127,8 @@ colvarproxy_namd::colvarproxy_namd()
   Node::Object()->colvars = colvars;
 
 #ifdef NAMD_TCL
-
   have_scripts = true;
-  // See is user-scripted forces are defined
-  if (Tcl_FindCommand(reinterpret_cast<Tcl_Interp *>(tcl_interp_),
-                      "calc_colvar_forces", NULL, 0) == NULL) {
-    force_script_defined = false;
-  } else {
-    force_script_defined = true;
-  }
 #else
-  force_script_defined = false;
   have_scripts = false;
 #endif
 
