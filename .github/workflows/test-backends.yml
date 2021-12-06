@@ -1,6 +1,10 @@
-name: "Build backends with an updated Colvars module"
+name: "Test backends"
 
 on: [push, pull_request_target]
+
+# Only run tests for pushes *or* PRs from outside the repo
+if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+
 
 # The jobs call a template workflow `backend-template.yml` which performs
 # all the necessary steps to run the regression tests of the backend.

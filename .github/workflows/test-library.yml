@@ -1,6 +1,10 @@
-name: "Build and CodeQL analysis"
+name: "Test library"
 
 on: [push, pull_request_target]
+
+# Only run tests for pushes *or* PRs from outside the repo
+if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+
 
 jobs:
 
