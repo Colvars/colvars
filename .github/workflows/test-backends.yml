@@ -62,7 +62,7 @@ jobs:
     uses: Colvars/colvars/.github/workflows/backend-template.yml@master
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     with:
-      backend_name: GROMACS
+      backend_name: GROMACS-2020
       backend_repo: gromacs/gromacs
       backend_repo_ref: release-2020
       path_compile_script: devel-tools/compile-gromacs.sh

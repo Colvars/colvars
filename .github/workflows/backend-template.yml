@@ -68,9 +68,9 @@ jobs:
           path: |
             ~/.ccache
             ~/ccache_CentOS7-devel
-          key: ${{ runner.os }}-build-${{ job.id }}-${{ github.sha }}
+          key: ${{ runner.os }}-build-${{ inputs.backend_name }}-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-build-${{ job.id }}-
+            ${{ runner.os }}-build-${{ inputs.backend_name }}-
             ${{ runner.os }}-build-
             -build-
 
