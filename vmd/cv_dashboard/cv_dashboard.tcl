@@ -174,12 +174,6 @@ proc ::cv_dashboard::apply_config { cfg } {
   # Extract config for individual colvars and biases
   lassign [extract_configs $cfg] cv_configs bias_configs
 
-  # DEBUG output
-  puts "######### bias configs ###############"
-  puts $bias_configs
-  puts "######### bias configs ###############"
-
-
   # Update atom visualizations for modified colvars
   foreach cv [dict keys $cv_configs] {
     if { [info exists ::cv_dashboard::atom_rep($cv)] } {
