@@ -171,8 +171,14 @@ proc ::cv_dashboard::apply_config { cfg } {
 
   set_viewpoints $vp
 
-  # Extract config for individual colvars
-  set cv_configs [extract_colvar_configs $cfg]
+  # Extract config for individual colvars and biases
+  lassign [extract_configs $cfg] cv_configs bias_configs
+
+  # DEBUG output
+  puts "######### bias configs ###############"
+  puts $bias_configs
+  puts "######### bias configs ###############"
+
 
   # Update atom visualizations for modified colvars
   foreach cv [dict keys $cv_configs] {
@@ -204,24 +210,38 @@ proc ::cv_dashboard::apply_config { cfg } {
   return $res
 }
 
-
 # Parse config string to extract colvar blocks
 # Return dictionary of colvar names -> config strings
 # Needs to fail gracefully upon unmatched braces
-proc ::cv_dashboard::extract_colvar_configs { cfg_in } {
+proc ::cv_dashboard::extract_configs { cfg_in } {
+
+  # Prepare parsing of bias configs
+  # Only works with Colvars after 2021-12-07
+  # introducing "cv bias name type"
+  if { ![catch {cv bias name help type}] } {
+    set bias_types [list]
+    set biases [cv list biases]
+    foreach cvb $biases {
+      lappend bias_types [cv bias $cvb type]
+    }
+    set bias_types [lsort -unique $bias_types]
+  }
+
   set lines [split $cfg_in "\n"]
-  set in_cv 0
+  set in_block 0
   set brace_depth 0
-  set map [dict create]
+  set cv_map [dict create]
+  set bias_map [dict create]
   set name ""
+  set keyword ""
   foreach line $lines {
-    if { $in_cv == 0 } {
-      # In main body, just look for colvar definition
-      if { [regexp -nocase {^\s*colvar\s+\{\s*(.*)} $line match firstline] } {
-        set in_cv 1
-        set cv_line 1
+    if { $in_block == 0 } {
+      # In main body, just look for block definition
+      if { [regexp -nocase {^\s*(\S+)\s+\{\s*(.*)} $line match keyword firstline] } {
+        set in_block 1
+        set block_line 1
         set brace_depth 1
-        set cv_cfg "\n"
+        set block_cfg "\n"
         # The first line may follow the opening brace immediately
         if { [string length $firstline] } {
           set line "    ${firstline}"
@@ -230,11 +250,11 @@ proc ::cv_dashboard::extract_colvar_configs { cfg_in } {
           continue
         }
       } else {
-        # Don't parse non-colvar data
+        # Not a {} block; should go to general Colvars module config?
         continue
       }
     }
-    # Now we're parsing a line of colvar config, try to get name
+    # Now we're parsing a line of block (colvar/bias) config, try to get name
     # non-word characters are spaces and {}# (do not use Tcl's restrictive \w)
     if { $brace_depth == 1 } {
       regexp -nocase {^\s*name\s+([^\s{}#]+)} $line match name
@@ -253,16 +273,23 @@ proc ::cv_dashboard::extract_colvar_configs { cfg_in } {
             # probably mismatched braces
             # give up on parsing the rest but try to return any variable already parsed
             puts "Warning: mismatched braces in configuration line:\n${line}"
-            return $map
+            return $cv_map
           }
           if { $brace_depth == 0 } {
-            # End of colvar block
+            # End of block
             if { [string length $cur_line] > 0 } {
-              append cv_cfg $cur_line "\n"
+              append block_cfg $cur_line "\n"
             }
-            dict set map $name $cv_cfg
-            set in_cv 0
+            if {$keyword == "colvar"} {
+              dict set cv_map $name $block_cfg
+            } else {
+              # TODO treat bias blocks (and others?)
+              set key [list $keyword $name]
+              dict set bias_map $key $block_cfg 
+            }
+            set in_block 0
             set name ""
+            set keyword ""
           }
         }
       }
@@ -270,14 +297,14 @@ proc ::cv_dashboard::extract_colvar_configs { cfg_in } {
       append cur_line $c
     }
 
-    if { $in_cv } {
-      if { $cv_line >= 1 } {
-        append cv_cfg $line "\n"
+    if { $in_block } {
+      if { $block_line >= 1 } {
+        append block_cfg $line "\n"
       }
-      incr cv_line
+      incr block_line
     }
   }
-  return $map
+  return [list $cv_map $bias_map]
 }
 
 

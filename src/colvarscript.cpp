@@ -338,9 +338,8 @@ std::string colvarscript::get_command_cmdline_help(colvarscript::Object_type t,
     return get_command_cmdline_syntax(t, c)+"\n\n"+
       get_command_full_help(cmd_names[c]);
   }
-  cvm::error("Error: could not find scripting command \""+cmd+"\".",
-             INPUT_ERROR);
-  return std::string("");
+  cvm::set_error_bits(INPUT_ERROR);
+  return std::string("Could not find scripting command \""+cmd+"\".");
 }
 
 

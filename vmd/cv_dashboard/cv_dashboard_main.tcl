@@ -859,7 +859,7 @@ proc ::cv_dashboard::update_shown_gradients {} {
 
     # Get width if provided in colvar config
     set width 1.
-    regexp -nocase -lineanchor {^\s*width\s*([\d\.e]*)} [get_config $cv] match width
+    regexp -nocase -lineanchor {^\s*width\s+([\d\.e]*)} [get_config $cv] match width
 
     if { $::cv_dashboard::grad_scale_choice == "scale" } {
       set fact [expr {$::cv_dashboard::grad_scale / $width}]

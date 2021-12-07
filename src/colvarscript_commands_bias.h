@@ -99,7 +99,7 @@ CVSCRIPT(bias_help,
            if (cmdstr.size()) {
              script->set_result_str(script->get_command_cmdline_help(colvarscript::use_bias,
                                                                      cmdstr));
-             return COLVARS_OK;
+             return cvm::get_error();
            } else {
              return COLVARSCRIPT_ERROR;
            }
