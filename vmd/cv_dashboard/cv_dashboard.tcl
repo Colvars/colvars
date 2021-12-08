@@ -23,7 +23,7 @@
 # TODO maybe:
 # - index group builder
 
-package provide cv_dashboard 1.3
+package provide cv_dashboard 1.4
 
 namespace eval ::cv_dashboard {
   # General UI state
@@ -34,9 +34,11 @@ namespace eval ::cv_dashboard {
   # State variables for config editor
   variable being_edited
   variable backup_cfg
-  variable filetype "atomsFile"
-  variable colvar_configs  ;# dictionary mapping names to cfg strings
-  set colvar_configs [dict create]
+  variable filetype        "atomsFile"
+  variable colvar_configs  [dict create] ;# dictionary mapping names to cfg strings
+  variable bias_configs    [dict create]
+  variable global_config   [dict create]
+  variable global_comments ""
 
   # Handle to keep track of interactive plot
   variable plothandle
@@ -153,9 +155,7 @@ proc ::cv_dashboard::apply_config { cfg } {
   # Skip if we don't have write permission in working directory
   if ![catch {set dump [open "_dashboard_saved_config.colvars" w]}] {
     puts $dump "# Current configuration of Colvars Module\n"
-    foreach c [run_cv list] {
-        puts $dump "colvar {[get_config $c]}\n"
-    }
+    puts $dump [get_whole_config]
     puts $dump "\n# New config string to be applied\n"
     puts $dump $cfg
     close $dump
@@ -165,17 +165,20 @@ proc ::cv_dashboard::apply_config { cfg } {
   set vp [get_viewpoints]
 
   set cvs_before [run_cv list]
+  set biases_before [run_cv list biases]
   # Actually submit new config to the Colvars Module
   set res [run_cv config $cfg]
   set cvs_after [run_cv list]
+  set biases_after [run_cv list biases]
 
   set_viewpoints $vp
 
   # Extract config for individual colvars and biases
-  lassign [extract_configs $cfg] cv_configs bias_configs main_config comments
-  puts "MAIN\n$main_config"
-  puts "BIASES\n$bias_configs"
-  puts "COMMENTS\n$comments"
+  lassign [extract_configs $cfg] cv_configs bias_configs global_config comments
+
+  append ::cv_dashboard::global_comments "\n${comments}"
+
+  set ::cv_dashboard::global_config [dict merge $::cv_dashboard::global_config $global_config]
 
   # Update atom visualizations for modified colvars
   foreach cv [dict keys $cv_configs] {
@@ -184,7 +187,7 @@ proc ::cv_dashboard::apply_config { cfg } {
     }
   }
 
-  # Completely update the map of colvar configs
+  # Update the map of colvar configs
   set new_map [dict create]
   dict for { name cfg } $cv_configs {
     # Only record config for cvs that actually appeared just now
@@ -200,8 +203,28 @@ proc ::cv_dashboard::apply_config { cfg } {
       }
     }
   }
-  # Overwrite old map
+  # Overwrite old covlar map
   set ::cv_dashboard::colvar_configs $new_map
+
+  # Update the map of bias configs
+  set new_bias_map [dict create]
+  dict for { name cfg } $bias_configs {
+    # Only record config for cvs that actually appeared just now
+    if { ([lsearch $biases_after $name] > -1) && ([lsearch $biases_before $name] == -1) } {
+      dict set new_bias_map $name $cfg
+    }
+  }
+  # Look for missing biases in the old map
+  foreach bias $biases_after {
+    if { ! [dict exists $new_bias_map $bias]} {
+      catch {
+        dict set new_bias_map $bias [dict get $::cv_dashboard::bias_configs $bias]
+      }
+    }
+  }
+  # Overwrite old bias map
+  set ::cv_dashboard::bias_configs $new_bias_map
+
   refresh_table
   refresh_units
   return $res
@@ -229,7 +252,7 @@ proc ::cv_dashboard::extract_configs { cfg_in } {
   set brace_depth 0
   set cv_map [dict create]        ;# cv name -> config (with comments)
   set bias_map [dict create]      ;# bias name -> config (with comments)
-  set main_cfg_map [dict create]  ;# keyword -> rest of the line (value + comments)
+  set global_cfg_map [dict create]  ;# keyword -> rest of the line (value + comments)
   set comment_lines ""            ;# lines with only comments
   set name ""
   set keyword ""
@@ -246,7 +269,7 @@ proc ::cv_dashboard::extract_configs { cfg_in } {
         set block_cfg "\n"
         # The first line may follow the opening brace immediately
         if { [string length $firstline] } {
-          set line "    ${firstline}"
+          set line "${indent}${firstline}"
         } else {
           # Nothing more to parse from this line
           continue
@@ -257,7 +280,7 @@ proc ::cv_dashboard::extract_configs { cfg_in } {
           append comment_lines "${line}\n"
         } elseif { [regexp -nocase {^\s*(\S+)\s+(.*)} $line match keyword value] } {
           # or it goes to general Colvars module config
-          dict set main_cfg_map $keyword $value
+          dict set global_cfg_map $keyword $value
         }
         continue
       }
@@ -325,7 +348,6 @@ proc ::cv_dashboard::extract_configs { cfg_in } {
   set new_bias_map [dict create]
   # Done parsing, now find out missing bias names
   foreach key [dict keys $bias_map] {
-    puts "key $key has name $name"
     lassign $key keyword index name
     if { $name == "" } {
       # find generated bias name
@@ -333,12 +355,11 @@ proc ::cv_dashboard::extract_configs { cfg_in } {
       set auto_names [regexp -all -inline -nocase "$keyword\\d+" $biases]
       set id [expr {[llength $auto_names] -1 - $anonymous_bias_count($keyword) + $index}]
       set name [lindex $auto_names $id]
-      puts "key $key gave name $name"
     }
     # New dict uses just name as key
     dict set new_bias_map $name [dict get $bias_map $key]
   }
-  return [list $cv_map $new_bias_map $main_cfg_map $comment_lines]
+  return [list $cv_map $new_bias_map $global_cfg_map $comment_lines]
 }
 
 
@@ -380,7 +401,7 @@ Keeping atom numbers from existing configuration."
 
 # Looks for config in saved map
 # if not found, queries the colvar itself (get stripped cfg)
-proc ::cv_dashboard::get_config { cv } {
+proc ::cv_dashboard::get_cv_config { cv } {
   if { [dict exists $::cv_dashboard::colvar_configs $cv] } {
     return [dict get $::cv_dashboard::colvar_configs $cv]
   } else {
@@ -388,6 +409,48 @@ proc ::cv_dashboard::get_config { cv } {
   }
 }
 
+# Looks for config in saved map
+# if not found, queries the bias itself (get stripped cfg)
+proc ::cv_dashboard::get_bias_keyword_config { bias } {
+  if { [dict exists $::cv_dashboard::bias_configs $bias] } {
+    set cfg [dict get $::cv_dashboard::bias_configs $bias]
+  } else {
+    set cfg [run_cv bias $bias getconfig]
+  }
+  return [list [run_cv bias $bias type] $cfg]
+}
+
+# Returns reconstructed config file for colvars, biases, the module, + comments
+proc ::cv_dashboard::get_whole_config { } {
+
+  set cfg $::cv_dashboard::global_comments
+  append cfg "\n"
+
+  # Add units iff specified
+  if {$::cv_dashboard::units != ""} {
+    append cfg "units $::cv_dashboard::units\n\n"
+  }
+
+  set indexFiles [list]
+  catch { set indexFiles [cv listindexfiles] }
+  foreach ndx $indexFiles {
+    append cfg "indexFile $ndx\n"
+  }
+
+  dict for {key value} $::cv_dashboard::global_config {
+    append cfg "$key $value\n"
+  }
+
+  foreach cv [run_cv list] {
+    append cfg "colvar {[get_cv_config $cv]}\n\n"
+  }
+
+  foreach bias [run_cv list biases] {
+    lassign [get_bias_keyword_config $bias] keyword  config
+    append cfg "$keyword {$config}\n\n"
+  }
+  return $cfg
+}
 
 # Checks whether cv is associated to a volmap
 proc ::cv_dashboard::is_volmap { cv } {
@@ -472,15 +535,9 @@ proc ::cv_dashboard::change_mol {} {
     ::cv_dashboard::hide_all_gradients
 
     set ::cv_dashboard::mol $newmolid
+
     # Remember config
-    if {$::cv_dashboard::units == ""} {
-      set cfg ""
-    } else {
-      set cfg "units $::cv_dashboard::units\n\n"
-    }
-    foreach cv [run_cv list] {
-        append cfg "colvar {[get_config $cv]}\n\n"
-    }
+    set cfg [get_whole_config]
     reset
     apply_config $cfg
     change_track_frame ;# activate tracking of new molecule if requested
