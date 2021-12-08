@@ -172,7 +172,10 @@ proc ::cv_dashboard::apply_config { cfg } {
   set_viewpoints $vp
 
   # Extract config for individual colvars and biases
-  lassign [extract_configs $cfg] cv_configs bias_configs
+  lassign [extract_configs $cfg] cv_configs bias_configs main_config comments
+  puts "MAIN\n$main_config"
+  puts "BIASES\n$bias_configs"
+  puts "COMMENTS\n$comments"
 
   # Update atom visualizations for modified colvars
   foreach cv [dict keys $cv_configs] {
@@ -216,7 +219,7 @@ proc ::cv_dashboard::extract_configs { cfg_in } {
     set bias_types [list]
     set biases [cv list biases]
     foreach cvb $biases {
-      lappend bias_types [cv bias $cvb type]
+      lappend bias_types [string tolower [cv bias $cvb type]]
     }
     set bias_types [lsort -unique $bias_types]
   }
@@ -224,14 +227,19 @@ proc ::cv_dashboard::extract_configs { cfg_in } {
   set lines [split $cfg_in "\n"]
   set in_block 0
   set brace_depth 0
-  set cv_map [dict create]
-  set bias_map [dict create]
+  set cv_map [dict create]        ;# cv name -> config (with comments)
+  set bias_map [dict create]      ;# bias name -> config (with comments)
+  set main_cfg_map [dict create]  ;# keyword -> rest of the line (value + comments)
+  set comment_lines ""            ;# lines with only comments
   set name ""
   set keyword ""
+  array set anonymous_bias_count [list]
+
   foreach line $lines {
     if { $in_block == 0 } {
-      # In main body, just look for block definition
+      # In main body, look for block definition
       if { [regexp -nocase {^\s*(\S+)\s+\{\s*(.*)} $line match keyword firstline] } {
+        set keyword [string tolower $keyword]
         set in_block 1
         set block_line 1
         set brace_depth 1
@@ -244,7 +252,13 @@ proc ::cv_dashboard::extract_configs { cfg_in } {
           continue
         }
       } else {
-        # Not a {} block; should go to general Colvars module config?
+        # Not a block; it's either a comment line...
+        if {[regexp -nocase {^\s*\#(.*)} $line match keyword value] } {
+          append comment_lines "${line}\n"
+        } elseif { [regexp -nocase {^\s*(\S+)\s+(.*)} $line match keyword value] } {
+          # or it goes to general Colvars module config
+          dict set main_cfg_map $keyword $value
+        }
         continue
       }
     }
@@ -277,9 +291,18 @@ proc ::cv_dashboard::extract_configs { cfg_in } {
             if {$keyword == "colvar"} {
               dict set cv_map $name $block_cfg
             } else {
-              # TODO treat bias blocks (and others?)
-              set key [list $keyword $name]
-              dict set bias_map $key $block_cfg 
+              if { [lsearch $bias_types $keyword] > -1 } {
+                # Bias names are unique, but not always available from the config
+                if { $name == "" } {
+                  incr anonymous_bias_count($keyword)
+                }
+                dict set bias_map [list $keyword $anonymous_bias_count($keyword) $name] $block_cfg
+              } else {
+                # What to make of unrecognized block keyword?
+                puts "Warning: unrecognized block keyword in input: $keyword"
+                puts "with configuration block:"
+                puts "---------\n$block_cfg\n---------\n"
+              }
             }
             set in_block 0
             set name ""
@@ -298,7 +321,24 @@ proc ::cv_dashboard::extract_configs { cfg_in } {
       incr block_line
     }
   }
-  return [list $cv_map $bias_map]
+  
+  set new_bias_map [dict create]
+  # Done parsing, now find out missing bias names
+  foreach key [dict keys $bias_map] {
+    puts "key $key has name $name"
+    lassign $key keyword index name
+    if { $name == "" } {
+      # find generated bias name
+      # the last n biases with names "keyword$i" are the ones we want
+      set auto_names [regexp -all -inline -nocase "$keyword\\d+" $biases]
+      set id [expr {[llength $auto_names] -1 - $anonymous_bias_count($keyword) + $index}]
+      set name [lindex $auto_names $id]
+      puts "key $key gave name $name"
+    }
+    # New dict uses just name as key
+    dict set new_bias_map $name [dict get $bias_map $key]
+  }
+  return [list $cv_map $new_bias_map $main_cfg_map $comment_lines]
 }
 
 
