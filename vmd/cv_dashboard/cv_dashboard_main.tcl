@@ -24,7 +24,7 @@ proc ::cv_dashboard::createWindow {} {
   incr gridrow
   grid [ttk::button $w.load -text "Load" -command ::cv_dashboard::load -padding "2 0 2 0"] \
     -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::button $w.save -text "Save colvars" -command ::cv_dashboard::save -padding "2 0 2 0"] \
+  grid [ttk::button $w.save -text "Save" -command ::cv_dashboard::save -padding "2 0 2 0"] \
     -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $w.reset -text "Reset" -command ::cv_dashboard::reset -padding "2 0 2 0"] \
     -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
@@ -153,16 +153,19 @@ proc ::cv_dashboard::createWindow {} {
   grid [label $main.frame -textvariable ::cv_dashboard::current_frame] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   grid [ttk::checkbutton $main.trackFrame -text "Track VMD frame" -command ::cv_dashboard::change_track_frame -variable ::cv_dashboard::track_frame] \
     -row $gridrow -column 2  -pady 2 -padx 2 -sticky nsew
-  change_track_frame ;# activate tracking if necessary
 
   # Create and hide Settings window to create all associated variables
   createSettingsWindow
+
+  # Create and hide Biases tab
+  createBiasesTab
 
   # Create energy/force statistics tab
   createStatsTab
 
   $w.tabs add $w.tabs.main -text "Actions" -sticky news
   $w.tabs add $w.tabs.settings -text "Settings" -sticky news
+  $w.tabs add $w.tabs.biases -text "Biases" -sticky news
   $w.tabs add $w.tabs.stats -text "Stats" -sticky news
 
   grid columnconfigure $main 0 -weight 1
@@ -174,8 +177,71 @@ proc ::cv_dashboard::createWindow {} {
   grid columnconfigure $w 2 -weight 1
 
   refresh_table
+  change_track_frame ;# activate tracking if necessary
 
   return $w
+}
+
+proc ::cv_dashboard::createBiasesTab {} {
+
+  set biases .cv_dashboard_window.tabs.biases
+  grid [frame $biases] -column 0 -columnspan 3 -sticky nsew
+
+  set gridrow 0
+
+  # Table of biases
+  ttk::treeview $biases.bias_table -selectmode extended -show tree
+  $biases.bias_table configure -column val
+  $biases.bias_table column #0 -width 50 -stretch 1 -anchor w
+  $biases.bias_table column val -width 150 -stretch 1 -anchor w
+
+ # bind $biases.bias_table <Button-3> {::cv_dashboard::cvContextMenu %x %y %X %Y}
+ # bind $biases.bias_table <Button-1> {::cv_dashboard::bias_tableClicked %x %y}
+
+  # bind $biases <Control-e> ::cv_dashboard::edit
+  bind $biases <Control-a> { .cv_dashboard_window.bias_table selection set $::cv_dashboard::biases }
+  # bind $biases <Control-n> ::cv_dashboard::add
+
+  event add <<keyb_enter>> <Return>   ;# Combine Return and keypad-Enter into a single virtual event
+  event add <<keyb_enter>> <KP_Enter>
+
+  if { [info patchlevel] != "8.5.6" } {
+    $biases.bias_table tag configure parity0 -background white
+    $biases.bias_table tag configure parity1 -background grey94
+  }
+
+  incr gridrow
+  grid $biases.bias_table -row $gridrow -column 0 -sticky news -columnspan 3
+  #grid rowconfigure $biases $gridrow -weight 1 -minsize 20
+
+  incr gridrow
+  grid [label $biases.actions_text -text "Bias list actions"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
+
+  incr gridrow
+  grid [ttk::button $biases.edit -text "Edit \[Ctrl-e\]" -command ::cv_dashboard::edit -padding "2 0 2 0"] \
+    -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $biases.add -text "New \[Ctrl-n\]" -command ::cv_dashboard::add -padding "2 0 2 0"] \
+    -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $biases.del -text "Delete" -command ::cv_dashboard::del -padding "2 0 2 0"] \
+    -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+  incr gridrow
+  grid [ttk::button $biases.refresh -text "Refresh list \[F5\]" -command ::cv_dashboard::refresh_table -padding "2 0 2 0"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
+
+  incr gridrow
+  grid [ttk::separator $biases.sep_plots -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
+  incr gridrow
+  grid [label $biases.viz_text -text "Plots and real-time visualizations"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
+
+  # Plots
+  incr gridrow
+  grid [ttk::button $biases.plot -text "Timeline plot" -command ::cv_dashboard::plot -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $biases.plot2cv -text "Pairwise plot" -command {::cv_dashboard::plot 2cv} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+
+  grid columnconfigure $biases 0 -weight 1
+  grid columnconfigure $biases 1 -weight 1
+  grid columnconfigure $biases 2 -weight 1
+
+  grid remove $biases
 }
 
 
@@ -382,6 +448,7 @@ proc ::cv_dashboard::refresh_table {} {
   }
 
   refresh_energy_forces
+  refresh_bias_table
 
   toggleRotationMenu
   toggleVolmapMenu
@@ -408,7 +475,36 @@ proc ::cv_dashboard::refresh_values {} {
     }
   }
 
+  # TODO refresh only if tab is open and upon opening the tab
+  set biases .cv_dashboard_window.tabs.biases
+  foreach bias [$biases.bias_table children {}] {
+    set val [run_cv bias $bias update]
+    $biases.bias_table set $bias val [format_value $val]
+  }
+
   refresh_energy_forces
+}
+
+
+# Refresh the table with a list of existing biases
+proc ::cv_dashboard::refresh_bias_table {} {
+
+  set biases .cv_dashboard_window.tabs.biases
+
+  foreach i [$biases.bias_table children {}] {
+    $biases.bias_table delete $i
+  }
+  set ::cv_dashboard::biases [cv list biases]
+
+  set parity 1
+  foreach bias $::cv_dashboard::biases {
+    # tag odd and even rows for alternating background colors
+    set parity [expr 1-$parity]
+    $biases.bias_table insert {} end -id $bias -text $bias -tag parity$parity
+
+    set val [run_cv bias $bias update]
+    $biases.bias_table set $bias val [format_value $val]
+  }
 }
 
 
