@@ -529,36 +529,19 @@ proc ::cv_dashboard::load {} {
 # Save config string of whole Colvars module to file
 proc ::cv_dashboard::save {} {
   if { [info exists ::cv_dashboard::config_dir] } {
-    set path [tk_getSaveFile -filetypes {{"Colvars cfg" .in} {"Colvars cfg" .colvars} {"Gromacs Colvars cfg" .dat} {"All files" *}} \
-        -initialdir $::cv_dashboard::config_dir]
+    set initialdir $::cv_dashboard::config_dir
   } else {
-    set path [tk_getSaveFile -filetypes {{"Colvars cfg" .in} {"Colvars cfg" .colvars} {"Gromacs Colvars cfg" .dat} {"All files" *}} \
-        -initialdir [pwd]]
+    set initialdir [pwd]
   }
+  set path [tk_getSaveFile -filetypes {{"Colvars cfg" .in} {"Colvars cfg" .colvars} {"Gromacs Colvars cfg" .dat} {"All files" *}} \
+        -initialdir $initialdir]
 
-  if [string compare $path ""] {
+  if [string compare $path ""] { ;# Empty if the dialog is closed without confirmation
     # Save directory for next invocation of this dialog
     set ::cv_dashboard::config_dir [file dirname $path]
-    if {$::cv_dashboard::units == ""} {
-      set cfg ""
-    } else {
-      set cfg "units $::cv_dashboard::units\n\n"
-    }
-    set indexFiles [list]
-    catch { set indexFiles [cv listindexfiles] }
-    foreach ndx $indexFiles {
-      append cfg "indexFile $ndx\n"
-    }
-    foreach cv [run_cv list] {
-        append cfg "colvar {[get_config $cv]}\n\n"
-    }
-    if [file exists $path] {
-      set answer [tk_messageBox -icon warning -type okcancel -title "Warning: file overwrite"\
-        -message "Saving to [file tail $path] will overwrite it.\n\nOnly definitions of collective variables - not biases - will be saved!\n\nProceed?"]
-      if { $answer == "cancel" } { return }
-    }
+
     set o [open $path w]
-    puts $o $cfg
+    puts $o [get_whole_config]
     close $o
   }
 }
@@ -601,6 +584,9 @@ proc ::cv_dashboard::reset {} {
     run_cv molid $molid
   }
   set ::cv_dashboard::colvar_configs [dict create]
+  set ::cv_dashboard::bias_configs [dict create]
+  set ::cv_dashboard::global_config [dict create]
+  set ::cv_dashboard::global_comments ""
   refresh_table
   refresh_units
 }
@@ -859,7 +845,7 @@ proc ::cv_dashboard::update_shown_gradients {} {
 
     # Get width if provided in colvar config
     set width 1.
-    regexp -nocase -lineanchor {^\s*width\s+([\d\.e]*)} [get_config $cv] match width
+    regexp -nocase -line {^\s*width\s+([\d\.e]*)} [get_cv_config $cv] match width
 
     if { $::cv_dashboard::grad_scale_choice == "scale" } {
       set fact [expr {$::cv_dashboard::grad_scale / $width}]
