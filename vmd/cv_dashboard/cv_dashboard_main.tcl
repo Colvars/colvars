@@ -30,10 +30,13 @@ proc ::cv_dashboard::createWindow {} {
     -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
   # Table of colvars
-  ttk::treeview $w.cvtable -selectmode extended -show tree
+  ttk::treeview $w.cvtable -selectmode extended -show {headings tree}
   $w.cvtable configure -column val
   $w.cvtable column #0 -width 50 -stretch 1 -anchor w
   $w.cvtable column val -width 150 -stretch 1 -anchor w
+
+  $w.cvtable heading #0 -text "colvar name"
+  $w.cvtable heading val -text "value"
 
   bind $w.cvtable <Button-3> {::cv_dashboard::cvContextMenu %x %y %X %Y}
   bind $w.cvtable <Button-1> {::cv_dashboard::cvTableClicked %x %y}
@@ -51,7 +54,7 @@ proc ::cv_dashboard::createWindow {} {
   }
 
   incr gridrow
-  grid $w.cvtable -row $gridrow -column 0 -sticky news -columnspan 3
+  grid $w.cvtable -row $gridrow -column 0 -sticky news -columnspan 3 -pady 10
   # The colvar table expands and shrinks with the window height
   grid rowconfigure $w $gridrow -weight 1 -minsize 20
 
@@ -190,10 +193,15 @@ proc ::cv_dashboard::createBiasesTab {} {
   set gridrow 0
 
   # Table of biases
-  ttk::treeview $biases.bias_table -selectmode extended -show tree
-  $biases.bias_table configure -column val
-  $biases.bias_table column #0 -width 50 -stretch 1 -anchor w
-  $biases.bias_table column val -width 150 -stretch 1 -anchor w
+  ttk::treeview $biases.bias_table -selectmode extended -show {headings tree}
+  $biases.bias_table configure -columns { val colvars }
+  $biases.bias_table column #0 -width 40 -stretch 1 -anchor w
+  $biases.bias_table column val -width 20 -stretch 1 -anchor w
+  $biases.bias_table column colvars -width 60 -stretch 1 -anchor w
+
+  $biases.bias_table heading #0 -text "bias name"
+  $biases.bias_table heading val -text "energy"
+  $biases.bias_table heading colvars -text "colvars"
 
  # bind $biases.bias_table <Button-3> {::cv_dashboard::cvContextMenu %x %y %X %Y}
  # bind $biases.bias_table <Button-1> {::cv_dashboard::bias_tableClicked %x %y}
@@ -487,6 +495,10 @@ proc ::cv_dashboard::refresh_bias_table {} {
 
     set val [run_cv bias $bias update]
     $biases.bias_table set $bias val [format_value $val]
+    set cfg [run_cv bias $bias getconfig]
+    set cvs ""
+    regexp -line -nocase {^\s*colvars\s+(.*)} $cfg match cvs
+    $biases.bias_table set $bias colvars $cvs
   }
 }
 
