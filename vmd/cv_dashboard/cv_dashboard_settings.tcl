@@ -144,19 +144,15 @@ proc ::cv_dashboard::change_units {} {
   # Get up-to-date current setting
   refresh_units
   if {$new != $::cv_dashboard::units} {
-    if {[run_cv list] == {}} {
-      cv units $new
-    } else {
-      tk_messageBox -icon error -title "Colvars Dashboard Error"\
-        -message "Cannot change units while colvars are defined.
-You can either:
-1) delete all colvars, or
-2) edit their configuration (<Ctrl-a> <e>), checking all parameters \
-for consistency with desired units, and add the following line:
-units $new"
-      return
+    if {[run_cv list] != {}} {
+      tk_messageBox -icon error -title "Colvars Dashboard Warning"\
+        -message "Warning: Changing units while colvars are defined.
+Make sure the configuration of all variables is compatible with the new unit system. In particular, \
+check any parameters with the dimension of a length or a force constant."
     }
   }
+  cv units $new
+
   # Refresh Combo box
   refresh_units
   refresh_values
