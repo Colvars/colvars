@@ -38,9 +38,9 @@ proc ::cv_dashboard::createWindow {} {
   bind $w.cvtable <Button-3> {::cv_dashboard::cvContextMenu %x %y %X %Y}
   bind $w.cvtable <Button-1> {::cv_dashboard::cvTableClicked %x %y}
 
-  bind $w <Control-e> ::cv_dashboard::edit
-  bind $w <Control-a> { .cv_dashboard_window.cvtable selection set $::cv_dashboard::cvs }
-  bind $w <Control-n> ::cv_dashboard::add
+  bind $w.cvtable <Control-e> ::cv_dashboard::edit
+  bind $w.cvtable <Control-a> { .cv_dashboard_window.cvtable selection set $::cv_dashboard::cvs }
+  bind $w.cvtable <Control-n> ::cv_dashboard::add
 
   event add <<keyb_enter>> <Return>   ;# Combine Return and keypad-Enter into a single virtual event
   event add <<keyb_enter>> <KP_Enter>
@@ -199,7 +199,7 @@ proc ::cv_dashboard::createBiasesTab {} {
  # bind $biases.bias_table <Button-1> {::cv_dashboard::bias_tableClicked %x %y}
 
   # bind $biases <Control-e> ::cv_dashboard::edit
-  bind $biases <Control-a> { .cv_dashboard_window.bias_table selection set $::cv_dashboard::biases }
+  bind $biases <Control-a> { .cv_dashboard_window.tabs.biases.bias_table selection set $::cv_dashboard::biases }
   # bind $biases <Control-n> ::cv_dashboard::add
 
   event add <<keyb_enter>> <Return>   ;# Combine Return and keypad-Enter into a single virtual event
@@ -215,27 +215,10 @@ proc ::cv_dashboard::createBiasesTab {} {
   #grid rowconfigure $biases $gridrow -weight 1 -minsize 20
 
   incr gridrow
-  grid [label $biases.actions_text -text "Bias list actions"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
 
-  incr gridrow
-  grid [ttk::button $biases.edit -text "Edit \[Ctrl-e\]" -command ::cv_dashboard::edit -padding "2 0 2 0"] \
-    -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::button $biases.add -text "New \[Ctrl-n\]" -command ::cv_dashboard::add -padding "2 0 2 0"] \
-    -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::button $biases.del -text "Delete" -command ::cv_dashboard::del -padding "2 0 2 0"] \
+  grid [ttk::button $biases.refresh -text "Refresh list \[F5\]" -command ::cv_dashboard::refresh_bias_table -padding "2 0 2 0"] -row $gridrow -column 0 -columnspan 2 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $biases.del -text "Delete" -command ::cv_dashboard::del_bias -padding "2 0 2 0"] \
     -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
-  incr gridrow
-  grid [ttk::button $biases.refresh -text "Refresh list \[F5\]" -command ::cv_dashboard::refresh_table -padding "2 0 2 0"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
-
-  incr gridrow
-  grid [ttk::separator $biases.sep_plots -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
-  incr gridrow
-  grid [label $biases.viz_text -text "Plots and real-time visualizations"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
-
-  # Plots
-  incr gridrow
-  grid [ttk::button $biases.plot -text "Timeline plot" -command ::cv_dashboard::plot -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::button $biases.plot2cv -text "Pairwise plot" -command {::cv_dashboard::plot 2cv} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
 
   grid columnconfigure $biases 0 -weight 1
   grid columnconfigure $biases 1 -weight 1
@@ -685,6 +668,28 @@ proc ::cv_dashboard::reset {} {
   set ::cv_dashboard::global_comments ""
   refresh_table
   refresh_units
+}
+
+
+# Return list of selected biases in the table
+proc ::cv_dashboard::selected_biases {} {
+
+  set biases .cv_dashboard_window.tabs.biases
+
+  return [$biases.bias_table selection]
+}
+
+
+# Delete currently selected biases
+proc ::cv_dashboard::del_bias { {biases "" } } {
+  if { [llength $biases] < 1 } {
+    set biases [selected_biases]
+  }
+
+  foreach bias $biases {
+    run_cv bias $bias delete
+  }
+  refresh_bias_table
 }
 
 
