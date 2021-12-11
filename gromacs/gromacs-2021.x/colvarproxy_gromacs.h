@@ -35,7 +35,6 @@ protected:
   std::string config_file;
   size_t restart_frequency_s;
   int previous_gmx_step;
-  bool total_force_requested;
   double bias_energy;
 
   bool gmx_bNS; // Is this a neighbor-search step? Eventually will become unnecessary
@@ -109,8 +108,6 @@ public:
   size_t restart_frequency();
   std::string restart_output_prefix();
   std::string output_prefix();
-  // **************** ACCESS ATOMIC DATA ****************
-  void request_total_force (bool yesno);
   // **************** PERIODIC BOUNDARY CONDITIONS ****************
   cvm::rvector position_distance (cvm::atom_pos const &pos1,
                                   cvm::atom_pos const &pos2) const;

@@ -45,7 +45,6 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
 
   // Initialize colvars.
   first_timestep = true;
-  total_force_requested = false;
   restart_frequency_s = 0;
 
   // User-scripted forces are not available in GROMACS
@@ -237,7 +236,6 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
     cvm::log ("atoms_ids = "+cvm::to_str (atoms_ids)+"\n");
     cvm::log ("atoms_ncopies = "+cvm::to_str (atoms_ncopies)+"\n");
     cvm::log ("positions = "+cvm::to_str (atoms_positions)+"\n");
-    cvm::log ("total_forces = "+cvm::to_str (atoms_total_forces)+"\n");
     cvm::log ("atoms_new_colvar_forces = "+cvm::to_str (atoms_new_colvar_forces)+"\n");
     cvm::log (cvm::line_marker);
     log("done initializing the colvars proxy object.\n");
@@ -290,11 +288,6 @@ cvm::real colvarproxy_gromacs::dt() { return 1000.0*timestep; }
 cvm::real colvarproxy_gromacs::rand_gaussian()
 {
   return  normal_distribution(rng);
-}
-
-void colvarproxy_gromacs::request_total_force (bool yesno)
-{
-  total_force_requested = yesno;
 }
 
 size_t colvarproxy_gromacs::restart_frequency()
@@ -459,10 +452,6 @@ void colvarproxy_gromacs::calculateForces(
   {
     // On non-master nodes, jump directly to applying the forces
 
-    // backup applied forces if necessary to calculate total forces (if available in future version of Gromacs)
-    //if (total_force_requested)
-    //  previous_atoms_new_colvar_forces = atoms_new_colvar_forces;
-
     // Zero the forces on the atoms, so that they can be accumulated by the colvars.
     for (size_t i = 0; i < atoms_new_colvar_forces.size(); i++) {
       atoms_new_colvar_forces[i].x = atoms_new_colvar_forces[i].y = atoms_new_colvar_forces[i].z = 0.0;
@@ -472,14 +461,6 @@ void colvarproxy_gromacs::calculateForces(
     for (size_t i = 0; i < atoms_ids.size(); i++) {
       atoms_positions[i] = cvm::rvector(x_colvars_unwrapped[i][0], x_colvars_unwrapped[i][1], x_colvars_unwrapped[i][2]);
     }
-
-    // // Get total forces if required (if available in future version of Gromacs)
-    // if (total_force_requested && cvm::step_relative() > 0) {
-    //   for (size_t i = 0; i < atoms_ids.size(); i++) {
-    //     size_t aid = atoms_ids[i];
-    //     atoms_total_forces[i] = cvm::rvector(f[aid][0], f[aid][1], f[aid][2]);
-    //   }
-    // }
 
     bias_energy = 0.0;
     // Call the collective variable module to fill atoms_new_colvar_forces
