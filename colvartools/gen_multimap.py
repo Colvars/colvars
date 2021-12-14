@@ -257,22 +257,22 @@ def get_cell_dimensions(args):
     return cell
 
 
-def create_grid_object(cell, args):
+def create_grid_object(cell, npoints):
     """
     Create a new 3D map using gridData
+
+    Parameters
+    ----------
+    cell : array_like
+        Array with 3 dimensions
+
+    npoints : array_like
+        Number of points along each of the three dimensions
     """
-    # Set up 3D map
     cell_origin = -0.5*cell
-    cell_dx = np.zeros(shape=(3))
-    cell_n = np.zeros(shape=(3), dtype=int)
-    if not args.grid_npoints is None:
-        cell_dx = np.divide(cell, np.array(args.grid_npoints))
-        cell_n = np.array(args.grid_npoints, dtype=int)
-    else:
-        raise Exception("Undefined number of grid points.")
-
+    cell_dx = np.divide(cell, np.array(npoints))
+    cell_n = np.array(npoints, dtype=int)
     cell_origin += 0.5*cell_dx
-
     map_obj = gridData.Grid(np.ones(shape=cell_n, dtype=float),
                             origin=cell_origin,
                             delta=cell_dx)
@@ -688,7 +688,7 @@ def namd_ori_restraint_def(pdb_file, name='ori', force_constant=5.0):
 
 # Define an orientation restraint on requested atoms
 # WARNING: unlike the center of mass, this computation is not parallelized,
-# and reducing the size of the selection (e.g. only C-alpha atoms for 
+# and reducing the size of the selection (e.g. only C-alpha atoms for
 # proteins) is highly recommended to maintain reasonable parallel performance.
 cv config \"
 colvar {
@@ -1123,8 +1123,13 @@ def check_prep_args(args):
         del mask_threshold, max_amplitude
 
 
-    args.n_deformations = max(len(args.input_map_files),
-                              len(args.deformation_amplitudes))
+    if args.system_dim == '3d':
+        args.n_deformations = len(args.input_map_files)
+    if args.system_dim == '2d':
+        args.n_deformations = len(args.deformation_amplitudes) // args.n_inputs
+        args.deformation_amplitudes = \
+            np.array(args.deformation_amplitudes).reshape((args.n_inputs,
+                                                           args.n_deformations))
 
     if args.multimap_coefficients is None:
         args.multimap_coefficients = np.arange(1.0, args.n_deformations+1)
@@ -1147,7 +1152,7 @@ def generate_maps_from_profiles(args):
     # TODO forbid triclinic cells
 
     # Object to hold the undeformed map for each input
-    map_input = create_grid_object(cell_sizes, args)
+    map_input = create_grid_object(cell_sizes, args.grid_npoints)
     print("Unit cell dimensions = ", format_array(cell_sizes))
     print("Grid sizes (# points) = ", map_input.grid.shape)
     # Define cell_dx in a consistent manner, because the shape of Grid.delta
@@ -1165,8 +1170,13 @@ def generate_maps_from_profiles(args):
     maps = {}
 
     # Loop over all input maps (e.g. upper and lower leaflet)
-    for z_profile, z_profile_com, input_label in \
-        zip(z_profiles, z_profiles_coms, args.input_labels):
+    for i_input, z_profile, z_profile_com, input_label in \
+        zip(range(args.n_inputs), z_profiles, z_profiles_coms,
+            args.input_labels):
+
+        deformation_amplitudes = args.deformation_amplitudes[i_input,:]
+
+        print("Amplitudes", deformation_amplitudes)
 
         maps[input_label] = []
 
@@ -1175,10 +1185,10 @@ def generate_maps_from_profiles(args):
 
         init_map_from_profile(z_profile=z_profile['p'], grid=map_input.grid)
 
-        for i, amplitude in enumerate(args.deformation_amplitudes):
+        for i, amplitude in enumerate(deformation_amplitudes):
 
             # Object to hold the deformed map
-            map_output = create_grid_object(cell_sizes, args)
+            map_output = create_grid_object(cell_sizes, args.grid_npoints)
 
             print("  Deformation amplitude =", format_array(amplitude))
             amplitude_bins = np.divide(amplitude, cell_dx[2][2])
@@ -1348,7 +1358,7 @@ cv molid top
         vmd_script_file.write(singles_def)
 
 
-def generate_multimap(args):
+def gen_multimap(args):
     """
     Process cmdline arguments, generate/load the maps, write input scripts
     """
@@ -1499,4 +1509,4 @@ def generate_multimap(args):
 if __name__ == '__main__':
     args = parse_cmdline_args()
     check_prep_args(args)
-    generate_multimap(args)
+    gen_multimap(args)
