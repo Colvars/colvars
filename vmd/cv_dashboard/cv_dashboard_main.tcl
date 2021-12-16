@@ -203,12 +203,7 @@ proc ::cv_dashboard::createBiasesTab {} {
   $biases.bias_table heading val -text "energy"
   $biases.bias_table heading colvars -text "colvars"
 
- # bind $biases.bias_table <Button-3> {::cv_dashboard::cvContextMenu %x %y %X %Y}
- # bind $biases.bias_table <Button-1> {::cv_dashboard::bias_tableClicked %x %y}
-
-  # bind $biases <Control-e> ::cv_dashboard::edit
   bind $biases <Control-a> { .cv_dashboard_window.tabs.biases.bias_table selection set $::cv_dashboard::biases }
-  # bind $biases <Control-n> ::cv_dashboard::add
 
   event add <<keyb_enter>> <Return>   ;# Combine Return and keypad-Enter into a single virtual event
   event add <<keyb_enter>> <KP_Enter>
