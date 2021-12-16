@@ -219,7 +219,9 @@ proc ::cv_dashboard::createBiasesTab {} {
   #grid rowconfigure $biases $gridrow -weight 1 -minsize 20
 
   incr gridrow
+  grid [label $biases.actions_text -text "Bias list actions"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
 
+  incr gridrow
   grid [ttk::button $biases.plot -text "Energy timeline" -command ::cv_dashboard::plot_bias_energy -padding "2 0 2 0"] \
     -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $biases.refresh -text "Refresh list \[F5\]" -command ::cv_dashboard::refresh_bias_table -padding "2 0 2 0"] \
@@ -598,10 +600,10 @@ proc ::cv_dashboard::change_track_frame {} {
 # Load config from file
 proc ::cv_dashboard::load {} {
   if { [info exists ::cv_dashboard::config_dir] } {
-    set path [tk_getOpenFile -filetypes {{"Colvars cfg" .in} {"Colvars cfg" .colvars} {"Gromacs Colvars cfg" .dat} {"All files" *}} \
+    set path [tk_getOpenFile -filetypes {{"Colvars cfg" .colvars} {"Colvars cfg" .in} {"Gromacs Colvars cfg" .dat} {"All files" *}} \
         -initialdir $::cv_dashboard::config_dir]
   } else {
-    set path [tk_getOpenFile -filetypes {{"Colvars cfg" .in} {"Colvars cfg" .colvars} {"Gromacs Colvars cfg" .dat} {"All files" *}} \
+    set path [tk_getOpenFile -filetypes {{"Colvars cfg" .colvars} {"Colvars cfg" .in} {"Gromacs Colvars cfg" .dat} {"All files" *}} \
         -initialdir [pwd]]
   }
   if [string compare $path ""] {
@@ -622,7 +624,7 @@ proc ::cv_dashboard::save {} {
   } else {
     set initialdir [pwd]
   }
-  set path [tk_getSaveFile -filetypes {{"Colvars cfg" .in} {"Colvars cfg" .colvars} {"Gromacs Colvars cfg" .dat} {"All files" *}} \
+  set path [tk_getSaveFile -filetypes {{"Colvars cfg" .colvars} {"Colvars cfg" .in} {"Gromacs Colvars cfg" .dat} {"All files" *}} \
         -initialdir $initialdir]
 
   if [string compare $path ""] { ;# Empty if the dialog is closed without confirmation

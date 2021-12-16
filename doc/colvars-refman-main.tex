@@ -246,10 +246,8 @@ If variables are modified, added or deleted by an external script, hit ``Refresh
 Starting the Dashboard also enables trajectory animation using the left/right arrow keys within VMD's graphical window.
 Atomic coordinates can be modified using VMD's ``Mouse/Move'' functions, and the Colvars module can then be updated by pressing F5 directly from the graphical window.
 
-A dropdown list allows for changing the current unit system if no variables are defined.
-If some variables are already defined, it is recommended to edit the configuration for all of
-them at once (eg. pressing Ctrl-a, then Ctrl-e), checking that all quantities are expressed in the desired set of units, and adding the
-\texttt{units} keyword to the general parameters, outside of \texttt{colvar \{\}} blocks (\ref{sec:units}).
+A dropdown list allows for changing the current unit system if no variables are defined (see section~\ref{sec:units}).
+When changing units, it is strongly recommended to check the configuration for all colvars to ensure that all quantities are expressed in the desired set of units.
 
 The Colvars Module interacts with one VMD Molecule at a time.
 At the bottom of the \textit{Actions} tab, a  dropdown lets the user change which VMD molecule is associated with the Colvars module.
@@ -260,9 +258,9 @@ Auto-updating selections (see below) can be used to adapt the colvar definitions
 
 \cvsubsec{Loading / Saving configuration files}{sec:dashboard_load_save}
 
-This saves the configuration of all defined collective variables to a file.
-Neither biases, nor general parameters of the Colvars module (except the units) are saved: editing them is beyond the scope of the Dashboard.
-We recommend keeping them in separate configuration files, and reading them separately in biased MD simulations.
+This saves the current configuration of the colvars Module to a file.
+This includes comments found in the input, general parameters of the Colvars Module, the collective variables themselves, and collective variable biases.
+The resulting configuration file can be read by Colvars, either back in VMD, or within a supported MD engine.
 
 \cvsubsec{The configuration editor}{sec:dashboard_config_editor}
 
@@ -327,6 +325,19 @@ The Dashboard offers visualizations for specific types of variables:
 \end{itemize}
 Parameters for fine-tuning these visualizations can be set in the \textit{Settings} tab.
 
+
+\cvsubsec{Monitoring colvar biases in the Dashboard}{sec:dashboard_biases}
+
+The main Dashboard window features a "Biases" tab that contains a list of currently defined biases, their current energy, and the colvars that they depend upon.
+A button enables creating a Timeline plot with the energies of currently selected biases, similar to the colvar Timeline plot.
+Only one plot can be active at a time.
+
+Note that the energy of history-dependent biases such as ABF or metadynamics may not be meaningfully computed in VMD.
+Nevertheless, the bias list can be used to check the presence of specific biases in a given configuration.
+Hitting the Save button will save the configuration of any bias listed in this tab, except the harmonic wall biases that are created automatically from a colvar for which the lower or upper wall options are specified.
+
+The Dashboard does not currently include a bias configuration editor, as there is less opportunity for interactive refinement of biases than colvars.
+Therefore, bias configurations should be created separately in a text editor.
 
 \cvsubsec{Plotting custom time-dependent quantities as colvars}{sec:dashboard_custom_vars}
 
@@ -711,7 +722,7 @@ See \ref{sec:cvscript_tcl_cv} for a complete list of scripting commands used to 
 \cvsubsubsec{Analyzing a trajectory in VMD}{sec:cv_command_vmd_traj}
 
 One of the typical uses of Colvars in VMD is computing the values of one or more variables along an existing trajectory.
-A complete example input for this frequent use case is shown here.
+This is most easily done using the Dashboard (section~\ref{sec:dashboard}), but can also be done by a script, as in the example below:
 
 \begin{mdexampleinput}
 \-{\bfseries\#~Activate~the~module~on~the~current~VMD~molecule}\\
