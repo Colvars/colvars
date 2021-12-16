@@ -153,6 +153,9 @@ check any parameters with the dimension of a length or a force constant."
   }
   cv units $new
 
+  # Remember in global config
+  dict set ::cv_dashboard::global_config units $new
+
   # Refresh Combo box
   refresh_units
   refresh_values

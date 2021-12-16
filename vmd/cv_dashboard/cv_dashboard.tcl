@@ -358,7 +358,7 @@ proc ::cv_dashboard::extract_configs { cfg_in } {
       set name [lindex $auto_names $id]
     }
     # New dict has name as key and "keyword { cfg } " as value
-    dict set new_bias_map $name [list $key [dict get $bias_map $key]]
+    dict set new_bias_map $name [list $keyword [dict get $bias_map $key]]
   }
   return [list $cv_map $new_bias_map $global_cfg_map $comment_lines]
 }
@@ -433,11 +433,6 @@ proc ::cv_dashboard::get_whole_config { } {
   set cfg $::cv_dashboard::global_comments
   append cfg "\n"
 
-  # Add units iff specified
-  if {$::cv_dashboard::units != ""} {
-    append cfg "units $::cv_dashboard::units\n\n"
-  }
-
   set indexFiles [list]
   catch { set indexFiles [cv listindexfiles] }
   foreach ndx $indexFiles {
@@ -448,12 +443,22 @@ proc ::cv_dashboard::get_whole_config { } {
     append cfg "$key $value\n"
   }
 
+  append cfg "\n"
+
   foreach cv [run_cv list] {
     append cfg "colvar {[get_cv_config $cv]}\n\n"
   }
 
   foreach bias [run_cv list biases] {
-    lassign [get_bias_keyword_config $bias] keyword  config
+    lassign [get_bias_keyword_config $bias] keyword config
+
+    if { $keyword == "harmonicwalls" } {
+      regexp -line -nocase {^\s*colvars\s+(.*)} $config match cvs
+      if { $bias == "${cvs}w" } {
+        puts "Ignoring bias $bias from cv $cvs"
+        continue
+      }
+    }
     append cfg "$keyword {$config}\n\n"
   }
   return $cfg
