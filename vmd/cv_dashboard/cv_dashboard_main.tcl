@@ -225,7 +225,7 @@ proc ::cv_dashboard::createBiasesTab {} {
   incr gridrow
 
   grid [ttk::button $biases.refresh -text "Refresh list \[F5\]" -command ::cv_dashboard::refresh_bias_table -padding "2 0 2 0"] -row $gridrow -column 0 -columnspan 2 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::button $biases.del -text "Delete" -command ::cv_dashboard::del_bias -padding "2 0 2 0"] \
+  grid [ttk::button $biases.del -text "Delete bias" -command ::cv_dashboard::del_bias -padding "2 0 2 0"] \
     -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
   grid columnconfigure $biases 0 -weight 1
@@ -504,7 +504,7 @@ proc ::cv_dashboard::refresh_bias_table {} {
 
 
 proc ::cv_dashboard::refresh_energy_forces {} {
-  set ::cv_dashboard::colvar_energy [run_cv getenergy]
+  set ::cv_dashboard::colvar_energy [catch {cv getenergy}]
 
   if { [string compare [run_cv version] "2021-03-02"] >= 0 } {
     set ::cv_dashboard::atom_forces_rms [run_cv getatomappliedforcesrms]
@@ -817,7 +817,7 @@ proc ::cv_dashboard::show_volmaps { colvars } {
     if { [info exists ::cv_dashboard::volmap_rep($cv)]} {
       hide_volmaps $cv
     }
-    set cv_volmaps [run_cv colvar $cv getvolmapids]
+    set cv_volmaps [catch {cv colvar $cv getvolmapids}]
     set repnames {}
     foreach volid $cv_volmaps {
       if { $volid >= 0 } {

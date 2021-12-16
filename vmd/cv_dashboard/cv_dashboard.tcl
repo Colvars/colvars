@@ -235,16 +235,17 @@ proc ::cv_dashboard::apply_config { cfg } {
 # Needs to fail gracefully upon unmatched braces
 proc ::cv_dashboard::extract_configs { cfg_in } {
 
-  # Prepare parsing of bias configs
-  # Only works with Colvars after 2021-12-07
-  # introducing "cv bias name type"
+  set biases [cv list biases]
+  # "cv bias name type" after 2021-12-07
   if { ![catch {cv bias name help type}] } {
     set bias_types [list]
-    set biases [cv list biases]
     foreach cvb $biases {
       lappend bias_types [string tolower [cv bias $cvb type]]
     }
     set bias_types [lsort -unique $bias_types]
+  } else {
+    # if not available, use hard-coded list
+    set bias_types [list abf alb harmonic harmonicwalls histogram histogramrestraint linear metadynamics reweightamd]
   }
 
   set lines [split $cfg_in "\n"]
@@ -344,7 +345,7 @@ proc ::cv_dashboard::extract_configs { cfg_in } {
       incr block_line
     }
   }
-  
+
   set new_bias_map [dict create]
   # Done parsing, now find out missing bias names
   foreach key [dict keys $bias_map] {
@@ -356,8 +357,8 @@ proc ::cv_dashboard::extract_configs { cfg_in } {
       set id [expr {[llength $auto_names] -1 - $anonymous_bias_count($keyword) + $index}]
       set name [lindex $auto_names $id]
     }
-    # New dict uses just name as key
-    dict set new_bias_map $name [dict get $bias_map $key]
+    # New dict has name as key and "keyword { cfg } " as value
+    dict set new_bias_map $name [list $key [dict get $bias_map $key]]
   }
   return [list $cv_map $new_bias_map $global_cfg_map $comment_lines]
 }
@@ -412,12 +413,18 @@ proc ::cv_dashboard::get_cv_config { cv } {
 # Looks for config in saved map
 # if not found, queries the bias itself (get stripped cfg)
 proc ::cv_dashboard::get_bias_keyword_config { bias } {
+  # First try: look up in table of configs
   if { [dict exists $::cv_dashboard::bias_configs $bias] } {
-    set cfg [dict get $::cv_dashboard::bias_configs $bias]
-  } else {
+    set key_cfg [dict get $::cv_dashboard::bias_configs $bias]
+    # Cfg already includes bias keyword
+    return $key_cfg
+  # Second chance: query type and config via script interface
+  } elseif { ![catch {cv bias name help type}] } {
     set cfg [run_cv bias $bias getconfig]
+    return [list [run_cv bias $bias type] $cfg]
+  } else {
+    puts "Warning: could not find configuration for bias $bias.\n"
   }
-  return [list [run_cv bias $bias type] $cfg]
 }
 
 # Returns reconstructed config file for colvars, biases, the module, + comments
@@ -454,7 +461,7 @@ proc ::cv_dashboard::get_whole_config { } {
 
 # Checks whether cv is associated to a volmap
 proc ::cv_dashboard::is_volmap { cv } {
-  set id [run_cv colvar $cv getvolmapids]
+  set id [catch {cv colvar $cv getvolmapids}]
   if { [llength $id] > 1 } { return 1 }
   return [expr [lindex $id 0] != -1]
 }
