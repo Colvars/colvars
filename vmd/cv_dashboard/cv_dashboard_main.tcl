@@ -39,7 +39,7 @@ proc ::cv_dashboard::createWindow {} {
   $w.cvtable heading val -text "value"
 
   bind $w.cvtable <Button-3> {::cv_dashboard::cvContextMenu %x %y %X %Y}
-  bind $w.cvtable <Button-1> {::cv_dashboard::cvTableClicked %x %y}
+  bind $w.cvtable <Button-1> {::cv_dashboard::tableClicked cvtable %x %y}
 
   bind $w.cvtable <Control-e> ::cv_dashboard::edit
   bind $w.cvtable <Control-a> { .cv_dashboard_window.cvtable selection set $::cv_dashboard::cvs }
@@ -204,6 +204,7 @@ proc ::cv_dashboard::createBiasesTab {} {
   $biases.bias_table heading colvars -text "colvars"
 
   bind $biases <Control-a> { .cv_dashboard_window.tabs.biases.bias_table selection set $::cv_dashboard::biases }
+  bind $biases.bias_table <Button-1> {::cv_dashboard::tableClicked tabs.biases.bias_table %x %y}
 
   event add <<keyb_enter>> <Return>   ;# Combine Return and keypad-Enter into a single virtual event
   event add <<keyb_enter>> <KP_Enter>
@@ -219,7 +220,10 @@ proc ::cv_dashboard::createBiasesTab {} {
 
   incr gridrow
 
-  grid [ttk::button $biases.refresh -text "Refresh list \[F5\]" -command ::cv_dashboard::refresh_bias_table -padding "2 0 2 0"] -row $gridrow -column 0 -columnspan 2 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $biases.plot -text "Energy timeline" -command ::cv_dashboard::plot_bias_energy -padding "2 0 2 0"] \
+    -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $biases.refresh -text "Refresh list \[F5\]" -command ::cv_dashboard::refresh_bias_table -padding "2 0 2 0"] \
+    -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $biases.del -text "Delete bias" -command ::cv_dashboard::del_bias -padding "2 0 2 0"] \
     -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
@@ -353,16 +357,15 @@ proc ::cv_dashboard::cvContextMenu { x y wX wY } {
 
 
 # Takes coordinates within widget
-proc ::cv_dashboard::cvTableClicked { x y } {
-  set w .cv_dashboard_window
-  set menu $w.cvMenu
+proc ::cv_dashboard::tableClicked { table x y } {
+  set t .cv_dashboard_window.$table
 
-  # colvar under mouse
-  set cv [$w.cvtable identify row $x $y]
+  # colvar / bias under mouse
+  set item [$t identify row $x $y]
 
   # Deselect all if clicked on nothing
-  if { [llength $cv] == 0 } {
-    $w.cvtable selection set [list]
+  if { [llength $item] == 0 } {
+    $t selection set [list]
   }
 }
 

@@ -102,6 +102,69 @@ proc ::cv_dashboard::plot { { type timeline } } {
   update_frame internal $::cv_dashboard::mol w
 }
 
+# Create plot window for energy of biases
+proc ::cv_dashboard::plot_bias_energy { } {
+  variable ::cv_dashboard::plothandle
+  set ::cv_dashboard::plottype timeline
+
+  # Remove existing plot, if any
+  if { [info exists plothandle] } {
+    catch {$plothandle quit}
+    unset plothandle
+  }
+
+  set biases [selected_biases]
+  if { [llength $biases] == 0 } {
+    # If no selection, plot all variables
+    set biases [run_cv list biases]
+    if { [llength $biases] == 0 } {
+      return
+    }
+  }
+
+  foreach b $biases {
+    set y($b) [list]
+  }
+
+  set nf [molinfo $::cv_dashboard::mol get numframes]
+  # Get list of values for all frames
+  for {set f 0} {$f< $nf} {incr f} {
+    run_cv frame $f
+    run_cv update
+    foreach b $biases {
+      set val [run_cv bias $b update]
+      # Catch NaN energies
+      if { $val != $val } { set val 0.0 }
+      lappend y($b) $val
+    }
+  }
+
+  set plothandle [multiplot \
+    -title {Bias energy trajectory   [click, keyb arrows (+ Shift/Ctrl) to navigate & zoom, v/h to fit vert/horizontally]} \
+    -xlabel "Frame" -ylabel "Value" -nostats]
+  set x {}
+  for {set f 0} {$f < $nf} {incr f} { lappend x $f }
+  foreach n $biases {
+    $plothandle add $x $y($n) -legend $n
+  }
+
+  $plothandle replot
+  # bind mouse and keyboard events to callbacks
+  set plot_ns [namespace qualifiers $::cv_dashboard::plothandle]
+
+  traj_animation_bindings [set ${plot_ns}::w]
+  bind [set ${plot_ns}::w] <Button-1>       { ::cv_dashboard::plot_clicked %x %y }
+  bind [set ${plot_ns}::w] <Up>             { ::cv_dashboard::zoom 0.25 }
+  bind [set ${plot_ns}::w] <Down>           { ::cv_dashboard::zoom 4 }
+  bind [set ${plot_ns}::w] <Shift-Up>       { ::cv_dashboard::zoom 0.0625 }
+  bind [set ${plot_ns}::w] <Shift-Down>     { ::cv_dashboard::zoom 16 }
+  bind [set ${plot_ns}::w] <v>              { ::cv_dashboard::fit_vertically }
+  bind [set ${plot_ns}::w] <h>              { ::cv_dashboard::fit_horizontally }
+
+
+  # Update frame to display frame marker in new plot
+  update_frame internal $::cv_dashboard::mol w
+}
 
 
 # Callback for click inside plot window, at coords x y
