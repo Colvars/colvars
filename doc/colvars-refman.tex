@@ -134,9 +134,32 @@ cv.#1(#2)
 
         \noindent\textsf{\bfseries\Huge COLLECTIVE VARIABLES MODULE\\}
 
-        \noindent\textsf{\bfseries\Huge Reference manual for \MDENGINE{} }
+        \noindent\textsf{\bfseries\Huge Reference manual for \MDENGINE{}\\}
 
-        \noindent\textsf{\\Code version: \cvversion\\}
+        \noindent\textsf{Code version: \cvversion\\}
+
+        \noindent\textsf{Updated versions of this manual:
+          \ifdefined\HCode
+          [\href{https://colvars.github.io/colvars-refman-gromacs/colvars-refman-gromacs.html}{GROMACS}]
+          \else
+          [\href{https://colvars.github.io/pdf/colvars-refman-gromacs.pdf}{GROMACS}]
+          \fi
+          \ifdefined\HCode
+          [\href{https://colvars.github.io/colvars-refman-lammps/colvars-refman-lammps.html}{LAMMPS}]
+          \else
+          [\href{https://colvars.github.io/pdf/colvars-refman-lammps.pdf}{LAMMPS}]
+          \fi
+          \ifdefined\HCode
+          [\href{https://colvars.github.io/colvars-refman-namd/colvars-refman-namd.html}{NAMD}]
+          \else
+          [\href{https://colvars.github.io/pdf/colvars-refman-namd.pdf}{NAMD}]
+          \fi
+          \ifdefined\HCode
+          [\href{https://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html}{VMD}]
+          \else
+          [\href{https://colvars.github.io/pdf/colvars-refman-vmd.pdf}{VMD}]
+          \fi
+        }
 
       \end{minipage}}
 %  \noindent\rule{\textwidth}{2pt}
