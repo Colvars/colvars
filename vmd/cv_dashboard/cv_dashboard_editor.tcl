@@ -86,7 +86,7 @@ proc ::cv_dashboard::edit { {add false} {cvs ""} } {
       dict set ::cv_dashboard::templates_$d [regsub -all {_} [file rootname [file tail $f]] " "] $f
     }
     tk::label $templates.template_label_$d -text "$d templates:"
-    ttk::combobox $templates.pick_template_$d -justify left -state readonly
+    ttk::combobox $templates.pick_template_$d -justify left -state readonly -exportselection no
     $templates.pick_template_$d configure -values [dict keys [set ::cv_dashboard::templates_$d]]
     bind $templates.pick_template_$d <<keyb_enter>> \
       "::cv_dashboard::insert_template $templates.pick_template_$d [list [set ::cv_dashboard::templates_$d]]"
@@ -123,7 +123,7 @@ proc ::cv_dashboard::edit { {add false} {cvs ""} } {
 
   ############# Atoms from representation ################################
   tk::label $helpers.rep_label -text "Atoms from representation:"
-  ttk::combobox $helpers.reps -justify left -state readonly
+  ttk::combobox $helpers.reps -justify left -state readonly -exportselection no
   ttk::button $helpers.refresh_reps -text "Refresh list" -command ::cv_dashboard::refresh_reps
   bind $helpers.reps <<ComboboxSelected>> "::cv_dashboard::atoms_from_sel reps"
 
@@ -138,7 +138,7 @@ proc ::cv_dashboard::edit { {add false} {cvs ""} } {
   ############# Atoms from atom, bond, angle, dihedral labels ####################
   ttk::button $helpers.labeled_atoms -text "Insert labeled atoms" -command {::cv_dashboard::insert_labels Atoms}
   ttk::button $helpers.labeled_var -text "Insert labeled..." -command {::cv_dashboard::insert_labels combo}
-  ttk::combobox $helpers.labels -justify left -state readonly
+  ttk::combobox $helpers.labels -justify left -state readonly -exportselection no
   $helpers.labels configure -values [list Bonds Angles Dihedrals]
   $helpers.labels set Bonds
 
@@ -221,17 +221,18 @@ proc ::cv_dashboard::tab_pressed { {shift false} } {
       $t insert insert $indent
       return -code break
     } else {
+      # Shift-tab without selection will unindent current line
       # Select line of cursor
       set s [list "insert linestart" "insert lineend"]
     }
   } else {
-    # Extend selection to whole lines
+    # Extend selection to whole lines to (un)indent
     set s [list "sel.first linestart" "sel.last lineend"]
   }
 
   set current_sel [$t get {*}$s]
   if { $shift } {
-    regsub -all -lineanchor "^${indent}" $current_sel "" new_sel
+    regsub -all -lineanchor "^${indent}" $current_sel {} new_sel
   } else {
     regsub -all -lineanchor "^" $current_sel $indent new_sel
   }
