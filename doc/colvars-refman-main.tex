@@ -332,8 +332,9 @@ The main Dashboard window features a "Biases" tab that contains a list of curren
 A button enables creating a Timeline plot with the energies of currently selected biases, similar to the colvar Timeline plot.
 Only one plot can be active at a time.
 
-Note that the energy of history-dependent biases such as ABF or metadynamics may not be meaningfully computed in VMD.
-Nevertheless, the bias list can be used to check the presence of specific biases in a given configuration.
+Note that the energy of history-dependent biases such as ABF or metadynamics may not be updated in VMD.
+However, values of the bias energy from a previous simulation can be displayed if a state file has been loaded with \texttt{cv load} (section~\ref{sec:cv_scripting}), or in the case of ABF, if \refkey{inputPrefix}{abf|inputPrefix} was specified.
+In any case, the bias list can be used to check the presence of specific biases in a given configuration.
 Hitting the Save button will save the configuration of any bias listed in this tab, except the harmonic wall biases that are created automatically from a colvar for which the lower or upper wall options are specified.
 
 The Dashboard does not currently include a bias configuration editor, as there is less opportunity for interactive refinement of biases than colvars.
@@ -436,7 +437,7 @@ To avoid errors due to reading configuration files written in a different unit s
   current one if no colvars were defined before reading the current configuration.
   If colvars are already defined, \texttt{units} will refuse changing the unit system to avoid making the definition of those variables erroneous in the new system of units.
   If needed this precaution can be overridden using the \texttt{cv units} scripting command
-  (\ref{sec:cv_command_general}).}%
+  (\ref{sec:cv_scripting}).}%
   \cvgromacsonly{In Gromacs the only supported value is Gromacs native units: \textit{gromacs} (nm, kJ/mol).}%
   \cvtinkerhponly{In Tinker-HP, the only supported value is Tinker-HP's native units: \textit{real} (\AA, kcal/mol).}
   }
@@ -4990,7 +4991,9 @@ The following specific parameters can be set in the ABF configuration block:
     ``\texttt{.hist}'' appended (\outputName\texttt{.hist.pmf}).
   \texttt{historyFreq} must be a multiple of \refkey{outputFreq}{colvarbias|outputFreq}.}
 
-\item \key{inputPrefix}{\texttt{abf}}{%
+\item %
+  \labelkey{abf|inputPrefix}
+  \key{inputPrefix}{\texttt{abf}}{%
     Filename prefix for reading ABF data}
   {list of strings}
   {If this parameter is set, for each item in the list, ABF tries to read

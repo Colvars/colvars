@@ -73,7 +73,7 @@ proc ::cv_dashboard::createWindow {} {
 
   grid [ttk::button $main.edit -text "Edit \[Ctrl-e\]" -command ::cv_dashboard::edit -padding "2 0 2 0"] \
     -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::button $main.add -text "New \[Ctrl-n\]" -command ::cv_dashboard::add -padding "2 0 2 0"] \
+  grid [ttk::button $main.add -text "New colvar \[Ctrl-n\]" -command ::cv_dashboard::add -padding "2 0 2 0"] \
     -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $main.del -text "Delete" -command ::cv_dashboard::del -padding "2 0 2 0"] \
     -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
@@ -169,7 +169,7 @@ proc ::cv_dashboard::createWindow {} {
   $w.tabs add $w.tabs.main -text "Actions" -sticky news
   $w.tabs add $w.tabs.settings -text "Settings" -sticky news
   $w.tabs add $w.tabs.biases -text "Biases" -sticky news
-  $w.tabs add $w.tabs.stats -text "Stats" -sticky news
+  $w.tabs add $w.tabs.stats -text "Force/energy stats" -sticky news
 
   grid columnconfigure $main 0 -weight 1
   grid columnconfigure $main 1 -weight 1
