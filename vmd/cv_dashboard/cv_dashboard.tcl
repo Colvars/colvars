@@ -433,14 +433,18 @@ proc ::cv_dashboard::get_whole_config { } {
   set cfg $::cv_dashboard::global_comments
   append cfg "\n"
 
+  dict for {key value} $::cv_dashboard::global_config {
+    # Exclude index files, written separately below
+    # Eack keyword is kept only once
+    if { [string tolower $key] != "indexfile" } {
+      append cfg "$key $value\n"
+    }
+  }
+
   set indexFiles [list]
   catch { set indexFiles [cv listindexfiles] }
   foreach ndx $indexFiles {
     append cfg "indexFile $ndx\n"
-  }
-
-  dict for {key value} $::cv_dashboard::global_config {
-    append cfg "$key $value\n"
   }
 
   append cfg "\n"
