@@ -41,9 +41,9 @@ proc ::cv_dashboard::createWindow {} {
   bind $w.cvtable <Button-3> {::cv_dashboard::cvContextMenu %x %y %X %Y}
   bind $w.cvtable <Button-1> {::cv_dashboard::tableClicked cvtable %x %y}
 
-  bind $w.cvtable <Control-e> ::cv_dashboard::edit
+  bind $w.cvtable <Control-e> ::cv_dashboard::edit_cv
   bind $w.cvtable <Control-a> { .cv_dashboard_window.cvtable selection set $::cv_dashboard::cvs }
-  bind $w.cvtable <Control-n> ::cv_dashboard::add
+  bind $w.cvtable <Control-n> ::cv_dashboard::add_cv
 
   event add <<keyb_enter>> <Return>   ;# Combine Return and keypad-Enter into a single virtual event
   event add <<keyb_enter>> <KP_Enter>
@@ -71,11 +71,11 @@ proc ::cv_dashboard::createWindow {} {
 
   incr gridrow
 
-  grid [ttk::button $main.edit -text "Edit \[Ctrl-e\]" -command ::cv_dashboard::edit -padding "2 0 2 0"] \
+  grid [ttk::button $main.edit -text "Edit \[Ctrl-e\]" -command ::cv_dashboard::edit_cv -padding "2 0 2 0"] \
     -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::button $main.add -text "New colvar \[Ctrl-n\]" -command ::cv_dashboard::add -padding "2 0 2 0"] \
+  grid [ttk::button $main.add -text "New \[Ctrl-n\]" -command ::cv_dashboard::add_cv -padding "2 0 2 0"] \
     -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::button $main.del -text "Delete" -command ::cv_dashboard::del -padding "2 0 2 0"] \
+  grid [ttk::button $main.del -text "Delete" -command ::cv_dashboard::del_cv -padding "2 0 2 0"] \
     -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
   incr gridrow
   grid [ttk::button $main.refresh -text "Refresh list \[F5\]" -command ::cv_dashboard::refresh_table -padding "2 0 2 0"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
@@ -222,12 +222,19 @@ proc ::cv_dashboard::createBiasesTab {} {
   grid [label $biases.actions_text -text "Bias list actions"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
 
   incr gridrow
+  grid [ttk::button $biases.edit -text "Edit bias" -command ::cv_dashboard::edit_bias -padding "2 0 2 0"] \
+    -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $biases.add -text "New bias" -command ::cv_dashboard::add_bias -padding "2 0 2 0"] \
+    -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $biases.del -text "Delete bias" -command ::cv_dashboard::del_bias -padding "2 0 2 0"] \
+    -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+
+  incr gridrow
   grid [ttk::button $biases.plot -text "Energy timeline" -command ::cv_dashboard::plot_bias_energy -padding "2 0 2 0"] \
     -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $biases.refresh -text "Refresh list \[F5\]" -command ::cv_dashboard::refresh_bias_table -padding "2 0 2 0"] \
     -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::button $biases.del -text "Delete bias" -command ::cv_dashboard::del_bias -padding "2 0 2 0"] \
-    -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+
 
   grid columnconfigure $biases 0 -weight 1
   grid columnconfigure $biases 1 -weight 1
@@ -341,7 +348,7 @@ proc ::cv_dashboard::cvContextMenu { x y wX wY } {
   menu $menu -tearoff 0
 
   if { [llength $cvs] == 0 } {
-    $menu add command -label New -command ::cv_dashboard::add
+    $menu add command -label New -command ::cv_dashboard::add_cv
   } else {
     if { [llength $volmaps] > 0 } {
       $menu add command -label "Show volmap" -command [list ::cv_dashboard::show_volmaps $volmaps]
@@ -351,8 +358,8 @@ proc ::cv_dashboard::cvContextMenu { x y wX wY } {
       $menu add command -label "Show rotation" -command [list ::cv_dashboard::start_rotation_display $rotations]
       $menu add command -label "Hide rotation" -command [list ::cv_dashboard::stop_rotation_display]
     }
-    $menu add command -label Edit -command [list ::cv_dashboard::edit false $cvs]
-    $menu add command -label Delete -command [list ::cv_dashboard::del $cvs]
+    $menu add command -label Edit -command [list ::cv_dashboard::edit_cv false $cvs]
+    $menu add command -label Delete -command [list ::cv_dashboard::del_cv $cvs]
   }
   tk_popup $menu $wX $wY
 }
@@ -639,7 +646,7 @@ proc ::cv_dashboard::save {} {
 
 
 # Delete currently selected colvars
-proc ::cv_dashboard::del { {cvs "" } } {
+proc ::cv_dashboard::del_cv { {cvs "" } } {
   if { [llength $cvs] < 1 } {
     set cvs [selected_colvars]
   }

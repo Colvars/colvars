@@ -257,6 +257,9 @@ proc ::cv_dashboard::extract_configs { cfg_in } {
     # if not available, use hard-coded list
     set bias_types [list abf alb harmonic harmonicwalls histogram histogramrestraint linear metadynamics reweightamd]
   }
+  foreach t $bias_types {
+    set anonymous_bias_count($t) 0
+  }
 
   set lines [split $cfg_in "\n"]
   set in_block 0
@@ -267,7 +270,6 @@ proc ::cv_dashboard::extract_configs { cfg_in } {
   set comment_lines ""            ;# lines with only comments
   set name ""
   set keyword ""
-  array set anonymous_bias_count [list]
 
   foreach line $lines {
     if { $in_block == 0 } {

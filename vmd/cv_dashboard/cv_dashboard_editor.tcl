@@ -1,16 +1,16 @@
 #################################################################
-# Editor window
+# Editor window: CVs
 #################################################################
 
 
 # Edit new colvar config
-proc ::cv_dashboard::add {} {
-  edit true
+proc ::cv_dashboard::add_cv {} {
+  edit_cv true
 }
 
 
 # Colvar config editor window
-proc ::cv_dashboard::edit { {add false} {cvs ""} } {
+proc ::cv_dashboard::edit_cv { {add false} {cvs ""} } {
   # If a non-default unit system is in use, recall it in the config string
   refresh_units
   if { $::cv_dashboard::units == "" } {
@@ -179,18 +179,18 @@ proc ::cv_dashboard::edit { {add false} {cvs ""} } {
   grid $w.editor.fr.vsb -row 0 -column 3 -sticky nsew
 
   # Ctrl-s anywhere in the window saves/applies
-  bind $w.editor <Control-s> ::cv_dashboard::edit_apply
+  bind $w.editor <Control-s> {::cv_dashboard::edit_apply colvar}
   # Custom bindings for the text widget
   bind $w.editor.fr.text <Control-a> "$w.editor.fr.text tag add sel 1.0 end-1c; break"
-  bind $w.editor.fr.text <Tab> ::cv_dashboard::tab_pressed
+  bind $w.editor.fr.text <Tab> "::cv_dashboard::tab_pressed $w.editor.fr.text"
   # Bind several possible mappings for Shift-Tab
   # ISO_Left_Tab is undefined on some platforms and will fail
-  catch { bind $w.editor.fr.text <ISO_Left_Tab> { ::cv_dashboard::tab_pressed true } }
-  bind $w.editor.fr.text <Shift-Tab> { ::cv_dashboard::tab_pressed true }
+  catch { bind $w.editor.fr.text <ISO_Left_Tab> "::cv_dashboard::tab_pressed $w.editor.fr.text true" }
+  bind $w.editor.fr.text <Shift-Tab> "::cv_dashboard::tab_pressed $w.editor.fr.text true"
 
   set gridrow 1
-  ttk::button $w.editor.fr.apply -text "Apply \[Ctrl-s\]" -command ::cv_dashboard::edit_apply -padding "2 0 2 0"
-  ttk::button $w.editor.fr.cancel -text "Cancel" -command ::cv_dashboard::edit_cancel -padding "2 0 2 0"
+  ttk::button $w.editor.fr.apply -text "Apply \[Ctrl-s\]" -command {::cv_dashboard::edit_apply colvar} -padding "2 0 2 0"
+  ttk::button $w.editor.fr.cancel -text "Cancel" -command {::cv_dashboard::edit_cancel colvar} -padding "2 0 2 0"
   ttk::button $w.editor.fr.clear -text "Clear" -command "$w.editor.fr.text delete 1.0 end" -padding "2 0 2 0"
 
   grid $w.editor.fr.apply -row $gridrow -column 0 -sticky e -pady 2 -padx 2
@@ -207,10 +207,16 @@ proc ::cv_dashboard::edit { {add false} {cvs ""} } {
 }
 
 
-# Process tab presses to indent/unindent text
+#################################################################
+# Helper functions for editor
+#################################################################
 
-proc ::cv_dashboard::tab_pressed { {shift false} } {
-  set t .cv_dashboard_window.editor.fr.text
+
+# Process tab presses to indent/unindent text
+# t is the text widget
+# shift is true if Shift key is pressed
+
+proc ::cv_dashboard::tab_pressed { t {shift false} } {
   set s [$t tag ranges sel]
   set indent $::cv_dashboard::indent
 
@@ -292,7 +298,7 @@ proc ::cv_dashboard::atoms_from_sel { source } {
   # set auto to "" if not requested
   set auto " auto-updating"
   # Insert magic comment line followed by atomNumbers line
-  editor_replace \
+  editor_replace $w.editor.fr.text \
 "${indent3}# \"auto-updating\" keyword updates atom IDs when applying cfg or changing molecule
 ${indent3}#$auto selection: \"$seltext\"
 ${indent3}atomNumbers $serials\n"
@@ -300,9 +306,7 @@ ${indent3}atomNumbers $serials\n"
 
 
 # Replace selection in editor with given string
-proc ::cv_dashboard::editor_replace { text } {
-  set t .cv_dashboard_window.editor.fr.text
-
+proc ::cv_dashboard::editor_replace { t text } {
   if {[$t tag ranges sel] != ""} {
     $t delete sel.first sel.last
   }
@@ -329,7 +333,7 @@ proc ::cv_dashboard::insert_labels {obj} {
       lappend serials [expr [lindex $a 1] + 1] ;# going from VMD 0-based to 1-based atomNumbers
     }
     if {[llength $serials] > 0} {
-      editor_replace "${indent2}# Atom labels\n${indent2}atomNumbers $serials\n"
+      editor_replace $w.editor.fr.text "${indent2}# Atom labels\n${indent2}atomNumbers $serials\n"
     }
   } else {
     set n(Bonds) 2
@@ -348,7 +352,7 @@ proc ::cv_dashboard::insert_labels {obj} {
         append cfg "${indent2}group[expr $i+1] \{\n${indent2}${indent}atomNumbers $serial\n${indent2}\}\n"
       }
       append cfg "${indent}\}\n"
-      editor_replace $cfg
+      editor_replace $w.editor.fr.text $cfg
     }
   }
 }
@@ -356,9 +360,10 @@ proc ::cv_dashboard::insert_labels {obj} {
 
 # Insert contents of template file
 proc ::cv_dashboard::insert_template { source map } {
+  set w .cv_dashboard_window
   set path [dict get $map [$source get]]
   set in [open $path r]
-  editor_replace [read $in]
+  editor_replace $w.editor.fr.text [read $in]
   close $in
 }
 
@@ -380,7 +385,7 @@ proc ::cv_dashboard::insert_filename {} {
     # Save directory for next invocation of this dialog
     set ::cv_dashboard::atomfile_dir [file dirname $path]
     set coltype [string range $filetype 0 end-4]
-    editor_replace "${indent2}$filetype $path
+    editor_replace $w.editor.fr.text "${indent2}$filetype $path
 ${indent2}# ${coltype}Col O
 ${indent2}# ${coltype}ColValue 1\n"
   }
@@ -388,32 +393,50 @@ ${indent2}# ${coltype}ColValue 1\n"
 
 
 # Submit current config text from editor to cvm
-proc ::cv_dashboard::edit_apply {} {
+proc ::cv_dashboard::edit_apply { type } {
+  # type: colvar or bias
   set w .cv_dashboard_window
-  foreach c $::cv_dashboard::being_edited {
-    run_cv colvar $c delete
+  if { $type == "colvar" } {
+    set window $w.editor
+    set text $w.editor.fr.text
+  } elseif { $type == "bias" } {
+    set window $w.bias_editor
+    set text $w.bias_editor.fr.text
+  } else {
+    puts "Error: called edit_apply $type"
+    return
   }
-  set cfg [$w.editor.fr.text get 1.0 end-1c]
+  foreach i $::cv_dashboard::being_edited {
+    run_cv $type $i delete
+  }
+  set cfg [$text get 1.0 end-1c]
   set res [apply_config $cfg]
   if { [string compare $res ""] } {
     # error: restore backed up cfg
-    # For extra graceful behavior, we could apply only the config of those colvars
-    # that are not there - excluding those that were successfully redefined
-    # for that, backup_cfg could be a name -> config map as used by apply_config
+    foreach i $::cv_dashboard::being_edited {
+      # Delete again any object that might have been successfully recreated
+      catch {cv $type $i delete}
+    }
     apply_config $::cv_dashboard::backup_cfg
     # Do not destroy editor window (give user a chance to fix input)
     return
   }
   set ::cv_dashboard::being_edited {}
-  destroy $w.editor
+  destroy $window
 }
 
 
 # Close editor without applying
-proc ::cv_dashboard::edit_cancel {} {
+proc ::cv_dashboard::edit_cancel { $type } {
+
   set w .cv_dashboard_window
   set ::cv_dashboard::being_edited {}
-  destroy $w.editor
+
+  if { $type == "colvar" } {
+    destroy $w.editor
+  } elseif { $type == "bias" } {
+    destroy $w.bias_editor
+  }
 }
 
 
@@ -432,4 +455,120 @@ proc ::cv_dashboard::editor_help {} {
   set w .cv_dashboard_window
   help_window $w.editor "Help on colvars config editor" "Colvars Dashboard: the editor window" \
 {Help text}
+}
+
+
+
+#################################################################
+# Editor window: Biases
+#################################################################
+
+
+# Edit new bias config
+proc ::cv_dashboard::add_bias {} {
+  edit_bias true
+}
+
+
+# Bias config editor window
+proc ::cv_dashboard::edit_bias { {add false} {biases ""} } {
+
+  if $add {
+    # do not remove existing biases
+    set biases {}
+    set ::cv_dashboard::backup_cfg ""
+
+    if { [llength $::cv_dashboard::cvs] > 0 } {
+      set cv [lindex $::cv_dashboard::cvs 0]
+      set center [run_cv colvar $cv value]
+    } else {
+      set cv "<colvar name>"
+      set center "<center value>"
+    }
+    set indent ${::cv_dashboard::indent}
+
+    # Provide simple template
+    set cfg "# You can edit or replace the example bias configuration below.\n\
+${indent}harmonic {\n${indent}colvars $cv\n${indent}forceConstant 10.0\n${indent}centers $centers\n}\n"
+
+  } else {
+    if {[llength $biases] < 1} {
+      # if not provided, try selection
+      set biases [selected_biases]
+    }
+    if {[llength $biases] == 0} {
+      # If no selection, edit all variables
+      set biases $::cv_dashboard::biases
+    }
+    foreach bias $biases {
+      lassign [get_bias_keyword_config $bias] keyword config
+      # Skip if bias config was not found
+      if { $keyword == {} } { continue }
+      append cfg "$keyword {$config}\n\n"
+    }
+    set ::cv_dashboard::backup_cfg $cfg
+  }
+  set w .cv_dashboard_window
+
+  catch { destroy $w.bias_editor }
+  set bias_editor [toplevel $w.bias_editor]
+  wm title $bias_editor "Bias config editor"
+
+  # Left frame: utility buttons - TODO possibly, low priority
+  # frame $w.bias_editor.fl
+  # set gridrow 0
+
+  # labelframe  $w.bias_editor.fl.docs -bd 2 -text "Online documentation" -padx 2 -pady 2
+  # set docs $w.bias_editor.fl.docs
+  # ttk::button $docs.onlinedoc1 -text "Collective variables" -padding "4 2 4 2"\
+  #   -command [list ::cv_dashboard::invokeBrowser "http://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html#sec:colvar"]
+  # ttk::button $docs.onlinedoc3 -text "Basis functions (components)" -padding "4 2 4 2"\
+  #   -command [list ::cv_dashboard::invokeBrowser "http://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html#sec:cvc_list"]
+  # ttk::button $docs.onlinedoc2 -text "Atom groups" -padding "4 2 4 2"\
+  #   -command [list ::cv_dashboard::invokeBrowser "http://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html#sec:colvar_atom_groups"]
+
+  # grid $docs.onlinedoc1 -row $gridrow -column 0 -pady 5 -padx 2 -sticky nsew
+  # grid $docs.onlinedoc2 -row $gridrow -column 1 -pady 5 -padx 2 -sticky nsew
+  # grid $docs.onlinedoc3 -row $gridrow -column 2 -pady 5 -padx 2 -sticky nsew
+  # grid columnconfigure $docs 0 -weight 1
+  # grid columnconfigure $docs 1 -weight 1
+  # grid columnconfigure $docs 2 -weight 1
+
+ 
+  # Right frame: text widget w scrollbar and Apply/Cancel buttons
+  frame $w.bias_editor.fr
+  tk::text $w.bias_editor.fr.text -undo 1 -yscrollcommand [list $w.bias_editor.fr.vsb set] -background white -font "Helvetica -14"
+  ttk::scrollbar $w.bias_editor.fr.vsb -orient vertical -command [list $w.bias_editor.fr.text yview]
+  $w.bias_editor.fr.text insert 1.0 $cfg
+  set ::cv_dashboard::being_edited $biases
+  grid $w.bias_editor.fr.text -row 0 -columnspan 3 -sticky nsew
+  grid $w.bias_editor.fr.vsb -row 0 -column 3 -sticky nsew
+
+  # Ctrl-s anywhere in the window saves/applies
+  bind $w.bias_editor <Control-s> {::cv_dashboard::edit_apply bias}
+  # Custom bindings for the text widget
+  bind $w.bias_editor.fr.text <Control-a> "$w.bias_editor.fr.text tag add sel 1.0 end-1c; break"
+  bind $w.bias_editor.fr.text <Tab> "::cv_dashboard::tab_pressed $w.bias_editor.fr.text"
+  # Bind several possible mappings for Shift-Tab
+  # ISO_Left_Tab is undefined on some platforms and will fail
+  catch { bind $w.bias_editor.fr.text <ISO_Left_Tab> "::cv_dashboard::tab_pressed $w.bias_editor.fr.text true" }
+  bind $w.bias_editor.fr.text <Shift-Tab> "::cv_dashboard::tab_pressed $w.bias_editor.fr.text true"
+
+  set gridrow 1
+  ttk::button $w.bias_editor.fr.apply -text "Apply \[Ctrl-s\]" -command {::cv_dashboard::edit_apply bias} -padding "2 0 2 0"
+  ttk::button $w.bias_editor.fr.cancel -text "Cancel" -command {::cv_dashboard::edit_cancel bias} -padding "2 0 2 0"
+  ttk::button $w.bias_editor.fr.clear -text "Clear" -command "$w.bias_editor.fr.text delete 1.0 end" -padding "2 0 2 0"
+
+  grid $w.bias_editor.fr.apply -row $gridrow -column 0 -sticky e -pady 2 -padx 2
+  grid $w.bias_editor.fr.cancel -row $gridrow -column 1 -sticky w -pady 2 -padx 2
+  grid $w.bias_editor.fr.clear -row $gridrow -column 2 -sticky w -pady 2 -padx 2
+
+  grid columnconfigure $w.bias_editor.fr 0 -weight 1
+  grid columnconfigure $w.bias_editor.fr 1 -weight 1
+  grid columnconfigure $w.bias_editor.fr 2 -weight 1
+  grid rowconfigure $w.bias_editor.fr 0 -weight 1
+
+  # No left frame for now
+  # pack $w.bias_editor.fl -fill both -side left
+  pack $w.bias_editor.fr -fill both -expand yes -padx 2 -pady 2
 }
