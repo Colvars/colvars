@@ -1399,6 +1399,8 @@ std::istream & colvarbias_meta::read_state_data(std::istream& is)
                this->name+"\""+
                ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+"\n");
 
+    cvm::log("  read biasing energy and forces from grids.\n");
+
     if (hills_energy_backup != NULL) {
       // now that we have successfully updated the grids, delete the
       // backup copies
@@ -1428,7 +1430,8 @@ std::istream & colvarbias_meta::read_state_data(std::istream& is)
   }
   is.clear();
   new_hills_begin = hills.end();
-  cvm::log("Read "+cvm::to_str(hills.size() - old_hills_size)+" hills.\n");
+  cvm::log("  read "+cvm::to_str(hills.size() - old_hills_size)+
+           " additional explicit hills.\n");
 
   if (existing_hills) {
     hills.erase(hills.begin(), old_hills_end);
