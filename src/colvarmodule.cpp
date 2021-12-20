@@ -75,6 +75,9 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
 
   xyz_reader_use_count = 0;
 
+  num_biases_types_used_ =
+    reinterpret_cast<void *>(new std::map<std::string, int>());
+
   restart_version_str.clear();
   restart_version_int = 0;
 
@@ -465,13 +468,28 @@ template <class bias_type>
 int colvarmodule::parse_biases_type(std::string const &conf,
                                     char const *keyword)
 {
+  // Allow camel case when calling, but use only lower case for parsing
+  std::string const &type_keyword = colvarparse::to_lower_cppstr(keyword);
+
+  // Check how many times this bias keyword was used, set default name
+  // accordingly
+  std::map<std::string, int> *num_biases_types_used =
+    reinterpret_cast<std::map<std::string, int> *>(num_biases_types_used_);
+  if (num_biases_types_used->count(type_keyword) == 0) {
+    (*num_biases_types_used)[type_keyword] = 0;
+  }
+
   std::string bias_conf = "";
   size_t conf_saved_pos = 0;
   while (parse->key_lookup(conf, keyword, &bias_conf, &conf_saved_pos)) {
     if (bias_conf.size()) {
       cvm::log(cvm::line_marker);
       cvm::increase_depth();
-      biases.push_back(new bias_type(keyword));
+      int &bias_count = (*num_biases_types_used)[type_keyword];
+      biases.push_back(new bias_type(type_keyword.c_str()));
+      biases.back()->rank = bias_count;
+      biases.back()->name = type_keyword+cvm::to_str(bias_count);
+      bias_count += 1;
       biases.back()->init(bias_conf);
       if (cvm::check_new_bias(bias_conf, keyword) != COLVARS_OK) {
         return COLVARS_ERROR;
@@ -1203,10 +1221,17 @@ colvarmodule::~colvarmodule()
     colvar::cvc::delete_features();
     atom_group::delete_features();
 
+    delete
+      reinterpret_cast<std::map<std::string, int> *>(num_biases_types_used_);
+    num_biases_types_used_ = NULL;
+
     delete parse;
     parse = NULL;
+
     delete usage_;
     usage_ = NULL;
+
+    // The proxy object will be deallocated last (if at all)
     proxy = NULL;
   }
 }
@@ -1226,6 +1251,9 @@ int colvarmodule::reset()
   }
   biases.clear();
   biases_active_.clear();
+
+  // Reset counters tracking usage of each bias type
+  reinterpret_cast<std::map<std::string, int> *>(num_biases_types_used_)->clear();
 
   // Iterate backwards because we are deleting the elements as we go
   for (std::vector<colvar *>::reverse_iterator cvi = colvars.rbegin();
