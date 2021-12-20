@@ -237,7 +237,7 @@ proc ::cv_dashboard::extract_configs { cfg_in } {
 
   set biases [cv list biases]
   # "cv bias name type" after 2021-12-07
-  if { ![catch {cv bias name help type}] } {
+  if { [string compare [run_cv version] "2021-12-20"] >= 0 } {
     set bias_types [list]
     foreach cvb $biases {
       lappend bias_types [string tolower [cv bias $cvb type]]
@@ -419,7 +419,7 @@ proc ::cv_dashboard::get_bias_keyword_config { bias } {
     # Cfg already includes bias keyword
     return $key_cfg
   # Second chance: query type and config via script interface
-  } elseif { ![catch {cv bias name help type}] } {
+  } elseif { [string compare [run_cv version] "2021-12-20"] >= 0 } {
     set cfg [run_cv bias $bias getconfig]
     return [list [run_cv bias $bias type] $cfg]
   } else {
