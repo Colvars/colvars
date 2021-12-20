@@ -127,6 +127,16 @@ proc ::cv_dashboard::run_cv args  {
       }
     }
   }
+
+  # Don't try to update if no frames are loaded
+  if { $args == "update" } {
+    set nf [molinfo $::cv_dashboard::mol get numframes]
+    if { $nf <= 0 } {
+      puts "No frames loaded, cannot update Colvars"
+      return
+    }
+  }
+
   if [catch { cv {*}$args } res] {
     set short_cmd [string range $args 0 200]
     set short_message [string range $res 0 200]
@@ -203,7 +213,7 @@ proc ::cv_dashboard::apply_config { cfg } {
       }
     }
   }
-  # Overwrite old covlar map
+  # Overwrite old colvar map
   set ::cv_dashboard::colvar_configs $new_map
 
   # Update the map of bias configs
