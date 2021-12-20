@@ -466,6 +466,9 @@ proc ::cv_dashboard::get_whole_config { } {
   foreach bias [run_cv list biases] {
     lassign [get_bias_keyword_config $bias] keyword config
 
+    # Skip if bias config was not found
+    if { $keyword == {} } { continue }
+
     if { $keyword == "harmonicwalls" } {
       regexp -line -nocase {^\s*colvars\s+(.*)} $config match cvs
       if { $bias == "${cvs}w" } {
