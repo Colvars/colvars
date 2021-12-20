@@ -1,7 +1,7 @@
 .SILENT:
 
 VMFILES := $(wildcard *.tcl) templates
-VMVERSION = 1.3
+VMVERSION = 1.4
 DIR = $(PLUGINDIR)/noarch/tcl/cv_dashboard$(VMVERSION)
 
 bins:
