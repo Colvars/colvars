@@ -322,6 +322,9 @@ public:
 
 private:
 
+  /// Pointer to a map counting how many biases of each type were used
+  void *num_biases_types_used_;
+
   /// Array of active collective variable biases
   std::vector<colvarbias *> biases_active_;
 

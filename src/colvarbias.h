@@ -29,7 +29,7 @@ public:
   /// Keyword used in state files (== bias_type most of the time)
   std::string state_keyword;
 
-  /// If there is more than one bias of this type, record its rank
+  /// Track how many times a bias of this type was defined
   int rank;
 
   /// Add a new collective variable to this bias

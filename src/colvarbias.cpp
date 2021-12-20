@@ -19,12 +19,13 @@
 
 colvarbias::colvarbias(char const *key)
 {
-  bias_type = to_lower_cppstr(key);
+  bias_type = colvarparse::to_lower_cppstr(key);
   state_keyword = bias_type;
 
-  description = "uninitialized " + cvm::to_str(key) + " bias";
+  rank = -1;
+  description = "uninitialized " + bias_type + " bias";
+
   colvarbias::init_dependencies();
-  rank = 1;
 
   time_step_factor = 1;
 
@@ -44,26 +45,23 @@ int colvarbias::init(std::string const &conf)
 
   size_t i = 0;
 
-  if (name.size() == 0) {
-
-    // first initialization
+  if (num_variables() == 0) {
+    // First initialization
 
     cvm::log("Initializing a new \""+bias_type+"\" instance.\n");
-    rank = cvm::main()->num_biases_type(bias_type);
-    get_keyval(conf, "name", name, bias_type+cvm::to_str(rank));
 
-    {
-      colvarbias *bias_with_name = cvm::bias_by_name(this->name);
-      if (bias_with_name != NULL) {
-        if ((bias_with_name->rank != this->rank) ||
-            (bias_with_name->bias_type != this->bias_type)) {
-          cvm::error("Error: this bias cannot have the same name, \""+this->name+
-                     "\", as another bias.\n", INPUT_ERROR);
-          return INPUT_ERROR;
-        }
+    // Only allow setting a non-default name on first init
+    get_keyval(conf, "name", name, name);
+
+    colvarbias *bias_with_name = cvm::bias_by_name(this->name);
+    if (bias_with_name != NULL) {
+      if ((bias_with_name->rank != this->rank) ||
+          (bias_with_name->bias_type != this->bias_type)) {
+        cvm::error("Error: this bias cannot have the same name, \""+this->name+
+                   "\", as another bias.\n", INPUT_ERROR);
+        return INPUT_ERROR;
       }
     }
-
     description = "bias " + name;
 
     {
@@ -91,7 +89,6 @@ int colvarbias::init(std::string const &conf)
   }
 
   colvar_values.resize(num_variables());
-
   for (i = 0; i < num_variables(); i++) {
     colvar_values[i].type(colvars[i]->value().type());
     colvar_forces[i].type(colvar_values[i].type());
