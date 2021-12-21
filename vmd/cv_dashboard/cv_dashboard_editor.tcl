@@ -427,7 +427,7 @@ proc ::cv_dashboard::edit_apply { type } {
 
 
 # Close editor without applying
-proc ::cv_dashboard::edit_cancel { $type } {
+proc ::cv_dashboard::edit_cancel { type } {
 
   set w .cv_dashboard_window
   set ::cv_dashboard::being_edited {}
@@ -473,24 +473,32 @@ proc ::cv_dashboard::add_bias {} {
 # Bias config editor window
 proc ::cv_dashboard::edit_bias { {add false} {biases ""} } {
 
+  if { [llength $::cv_dashboard::cvs] == 0 } {
+    tk_messageBox -icon error -title "Colvars Dashboard Error"\
+    -message "Cannot create a bias when no collective variables are defined.\n"
+    return
+  }
+
   if $add {
     # do not remove existing biases
     set biases {}
     set ::cv_dashboard::backup_cfg ""
 
-    if { [llength $::cv_dashboard::cvs] > 0 } {
-      set cv [lindex $::cv_dashboard::cvs 0]
-      set center [run_cv colvar $cv value]
+    set cvs [selected_colvars]
+    if { [llength $cvs] > 0 } {
+      # Use any selected colvars
+      set centers ""
+      foreach cv $cvs { append centers " [format_value [run_cv colvar $cv value]]" }
     } else {
-      set cv "<colvar name>"
-      set center "<center value>"
+      # Or the first colvar if none is selected
+      set cvs [lindex $::cv_dashboard::cvs 0]
+      set centers " [format_value [run_cv colvar $cvs value]]"
     }
     set indent ${::cv_dashboard::indent}
 
     # Provide simple template
     set cfg "# You can edit or replace the example bias configuration below.\n\
-${indent}harmonic {\n${indent}colvars $cv\n${indent}forceConstant 10.0\n${indent}centers $centers\n}\n"
-
+harmonic {\n${indent}colvars $cvs\n${indent}forceConstant 10.0\n${indent}centers$centers\n}"
   } else {
     if {[llength $biases] < 1} {
       # if not provided, try selection
@@ -500,6 +508,7 @@ ${indent}harmonic {\n${indent}colvars $cv\n${indent}forceConstant 10.0\n${indent
       # If no selection, edit all variables
       set biases $::cv_dashboard::biases
     }
+    set cfg ""
     foreach bias $biases {
       lassign [get_bias_keyword_config $bias] keyword config
       # Skip if bias config was not found

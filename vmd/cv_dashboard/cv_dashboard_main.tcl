@@ -203,7 +203,7 @@ proc ::cv_dashboard::createBiasesTab {} {
   $biases.bias_table heading val -text "energy"
   $biases.bias_table heading colvars -text "colvars"
 
-  bind $biases <Control-a> { .cv_dashboard_window.tabs.biases.bias_table selection set $::cv_dashboard::biases }
+  bind $biases.bias_table <Control-a> { .cv_dashboard_window.tabs.biases.bias_table selection set $::cv_dashboard::biases }
   bind $biases.bias_table <Button-1> {::cv_dashboard::tableClicked tabs.biases.bias_table %x %y}
 
   event add <<keyb_enter>> <Return>   ;# Combine Return and keypad-Enter into a single virtual event
@@ -992,7 +992,7 @@ proc ::cv_dashboard::update_shown_gradients {} {
         set middle [vecadd $start \
           [vecscale [expr (${vec_len} - 3.0*${radius})/${vec_len}] ${vec}]]
       } else {
-        # Short arrow: cap cone length at 1/2 total length
+        # Short arrow: cap cone length at 1/2 total length
         set middle [vecadd $start [vecscale 0.5 ${vec}]]
       }
       set cyl [graphics $molid cylinder $start $middle radius ${radius} resolution 12]
@@ -1018,7 +1018,6 @@ proc ::cv_dashboard::hide_gradients {} {
 
 
 proc ::cv_dashboard::hide_all_gradients {} {
-
   foreach { cv objs } [array get ::cv_dashboard::grad_objects] {
     foreach obj $objs { graphics $::cv_dashboard::mol delete $obj }
     run_cv colvar $cv set collect_gradient 0
@@ -1028,7 +1027,6 @@ proc ::cv_dashboard::hide_all_gradients {} {
 
 
 proc ::cv_dashboard::createVolmapMenu { row } {
-
   set main .cv_dashboard_window.tabs.main
   set menu $main.volmap_menu
   grid [frame $menu] -row $row -column 0 -columnspan 3 -sticky nsew
