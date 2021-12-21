@@ -1163,14 +1163,14 @@ Occasionally, if the Colvars configuration is changed mid-run certain quantities
 \-~~~~~~~10100~~~~1.36437184346326e+01~~9.99574091957314e-01~~3.37726286543895e+02
 \end{datafileexample}
 
-Analyzing the above file with standard tools is possible, but laborious.  A \href{https://github.com/Colvars/colvars/blob/master/colvartools/plot_colvars_traj.py?raw=true}{convenience script} for this and related purposes.  It may be used either as a command-line tool or as a Python module:
+Analyzing the above file with standard tools is possible, but laborious: a \href{https://github.com/Colvars/colvars/blob/master/colvartools/plot_colvars_traj.py?raw=true}{convenience script} is provided for this and related purposes.  It may be used either as a command-line tool or as a Python module:
 \begin{mdexampleinput}
-\->>>~from~plot\_colvars\_traj~import~Colvars\_traj\\
-\->>>~traj~=~Colvars\_traj('test.colvars.traj')\\
-\->>>~print(traj['A'].steps,~traj['A'].values)\\
-\->>>~[~~~~0~~~100~~...~~10000~10100]~[14.246745~14.228256~...~13.813692~13.643718]\\
-\->>>~print(traj['B'].steps,~traj['B'].values)\\
-\->>>~[10000~10100]~[0.999574~~0.9995741]
+\->{}>{}>~from~plot\_colvars\_traj~import~Colvars\_traj\\
+\->{}>{}>~traj~=~Colvars\_traj('test.colvars.traj')\\
+\->{}>{}>~print(traj['A'].steps,~traj['A'].values)\\
+\-[~~~~0~~~100~~...~~10000~10100]~[14.246745~14.228256~...~13.813692~13.643718]\\
+\->{}>{}>~print(traj['B'].steps,~traj['B'].values)\\
+\-[10000~10100]~[0.999574~~0.9995741]
 \end{mdexampleinput}
 
 
