@@ -232,7 +232,7 @@ proc ::cv_dashboard::createBiasesTab {} {
   incr gridrow
   grid [ttk::button $biases.plot -text "Energy timeline" -command ::cv_dashboard::plot_bias_energy -padding "2 0 2 0"] \
     -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::button $biases.refresh -text "Refresh list \[F5\]" -command ::cv_dashboard::refresh_bias_table -padding "2 0 2 0"] \
+  grid [ttk::button $biases.refresh -text "Refresh list" -command ::cv_dashboard::refresh_bias_table -padding "2 0 2 0"] \
     -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
 
 
