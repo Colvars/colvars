@@ -487,8 +487,8 @@ int colvarmodule::parse_biases_type(std::string const &conf,
       cvm::increase_depth();
       int &bias_count = (*num_biases_types_used)[type_keyword];
       biases.push_back(new bias_type(type_keyword.c_str()));
-      biases.back()->rank = bias_count;
-      biases.back()->name = type_keyword+cvm::to_str(bias_count);
+      biases.back()->rank = bias_count + 1;
+      biases.back()->name = type_keyword+cvm::to_str(biases.back()->rank);
       bias_count += 1;
       biases.back()->init(bias_conf);
       if (cvm::check_new_bias(bias_conf, keyword) != COLVARS_OK) {
