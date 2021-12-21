@@ -118,6 +118,8 @@ class Colvars_traj(object):
         self._end['step'] = -1
         self._count = 0
         self._frame = 0
+        if type(filenames) == str:
+            filenames = [filenames]
         if filenames:
             self.read_files(filenames=filenames, first=first, last=last,
                             every=every)
