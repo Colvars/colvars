@@ -962,7 +962,9 @@ During a simulation with collective variables defined, the following three outpu
 \item If the parameter \refkey{colvarsRestartFrequency}{Colvars-global|colvarsRestartFrequency} is larger than zero, a \emph{restart file} is written every that many steps: this file is fully equivalent to the final state file.
   The name of this file is \restartName\texttt{.colvars.state}.
 
-\item If the parameter \refkey{colvarsTrajFrequency}{Colvars-global|colvarsTrajFrequency} is greater than 0 (default: 100), a \emph{trajectory file} is written during the simulation: its name is \outputName\texttt{.colvars.traj}; unlike the state file, it is not needed to restart a simulation, but can be used later for post-processing and analysis.
+\item If the parameter \refkey{colvarsTrajFrequency}{Colvars-global|colvarsTrajFrequency} is greater than 0 (default value: 100 steps), a \emph{trajectory file}, named \outputName\texttt{.colvars.traj}, is written during the simulation.  Unlike the state file, this file is not needed to restart a simulation, but can be used for post-processing and analysis.  The format of this file is described in sec.~\ref{sec:colvars_traj_format}.
+
+\item Additionally, certain features, when enabled, can emit output files with a specific purpose: for example, potentials of mean force can be written to file to be analyzed or plotted.  These files are described in the respective sections, but as a general rule they all use names beginning with the \outputName prefix.
 
 \end{itemize}
 
@@ -1139,6 +1141,37 @@ For two dimensional grid files, this allows quick visualization by programs such
 & \ldots & \ldots & \ldots & & \\
 \end{tabular}
 
+
+\cvsubsubsec{Output trajectory files}{sec:colvars_traj_format}
+
+The Colvars trajectory file (with a suffix \texttt{.colvars.traj}) is a plain text file (scientific notation with 14-digit precision) whose columns represent quantities such as colvar values, applied forces, or individual restraints' energies.  Under most scenarios, plotting or analyzing this file is straightforward: for example, the following contains a variable ``$A$'' and the energy of a restraint ``${rA}$'':
+\begin{datafileexample}
+\-\#~~~~~~~step~~~A~~~~~~~~~~~~~~~~~~~~~E\_rA\\
+\-~~~~~~~~~~~0~~~~1.42467449615693e+01~~6.30982865292123e+02\\
+\-~~~~~~~~~100~~~~1.42282559728026e+01~~6.20640585041317e+02\\
+\-\ldots
+\end{datafileexample}
+
+Occasionally, if the Colvars configuration is changed mid-run certain quantities may be added or removed, changing the column layout.  Labels in comment lines can assist in such cases: for example, consider the trajectory above with the addition of a second variable, ``$B$'', after 10,000 steps:
+\begin{datafileexample}
+\-\#~~~~~~~step~~~A~~~~~~~~~~~~~~~~~~~~~E\_rA\\
+\-~~~~~~~~~~~0~~~~1.42467449615693e+01~~6.30982865292123e+02\\
+\-~~~~~~~~~100~~~~1.42282559728026e+01~~6.20640585041317e+02\\
+\-\ldots\\
+\-\#~~~~~~~step~~~A~~~~~~~~~~~~~~~~~~~~~B~~~~~~~~~~~~~~~~~~~~~E\_rA~~~~~~~~~~~~~~\\
+\-~~~~~~~10000~~~~1.38136915830229e+01~~9.99574098859265e-01~~4.11184644791030e+02\\
+\-~~~~~~~10100~~~~1.36437184346326e+01~~9.99574091957314e-01~~3.37726286543895e+02
+\end{datafileexample}
+
+Analyzing the above file with standard tools is possible, but laborious.  A \href{https://github.com/Colvars/colvars/blob/master/colvartools/plot_colvars_traj.py?raw=true}{convenience script} for this and related purposes.  It may be used either as a command-line tool or as a Python module:
+\begin{mdexampleinput}
+\->>>~from~plot\_colvars\_traj~import~Colvars\_traj\\
+\->>>~traj~=~Colvars\_traj('test.colvars.traj')\\
+\->>>~print(traj['A'].steps,~traj['A'].values)\\
+\->>>~[~~~~0~~~100~~...~~10000~10100]~[14.246745~14.228256~...~13.813692~13.643718]\\
+\->>>~print(traj['B'].steps,~traj['B'].values)\\
+\->>>~[10000~10100]~[0.999574~~0.9995741]
+\end{mdexampleinput}
 
 
 \cvsec{Defining collective variables}{sec:colvar}
@@ -4651,9 +4684,9 @@ All biasing and analysis methods implemented recognize the following options:
     Identifier for the bias}{%
     string}{%
     \texttt{$<$type of bias$><$bias index$>$}}{%
-    This string is used to identify the bias or analysis method in the output, and to name some output files.
-    \textbf{Tip:} because the default name depends on the order of definition, but the outcome of the simulation does not, it may be convenient to assign consistent names for certain biases; for example, you may want to name a moving harmonic restraint \texttt{smd}, so that it can always be identified regardless of the presence of other restraints.
-    }
+    This string identifies the bias or analysis method in the output, and to name some output files.
+    \textbf{Tip:} although a unique name is assigned automatically, \emph{you are strongly encouraged to give a name to a bias that you may want to analyze later}.  For example, processing a trajectory file (sec.~\ref{sec:colvars_traj_format}) containing a harmonic restraint is much simpler with a clearly identifiable name, like ``\texttt{smd}'' for a moving harmonic restraint or ``\texttt{us}'' for a static one.
+  }
 
 \item %
   \labelkey{colvarbias|colvars}
