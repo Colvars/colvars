@@ -41,6 +41,7 @@ colvarbias::colvarbias(char const *key)
 
 int colvarbias::init(std::string const &conf)
 {
+  name = bias_type + cvm::to_str(rank);
   colvarparse::set_string(conf);
 
   size_t i = 0;
