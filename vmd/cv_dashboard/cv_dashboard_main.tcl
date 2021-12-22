@@ -254,19 +254,23 @@ proc ::cv_dashboard::createStatsTab {} {
   # Energy/Force display
   set ::cv_dashboard::colvar_energy 0.0
   grid [label $stats.energyTxt -text "Energy:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  grid [tk::entry $stats.energy -textvariable ::cv_dashboard::colvar_energy] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  grid [tk::entry $stats.energy -textvariable ::cv_dashboard::colvar_energy -state readonly] \
+    -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   incr gridrow
 
   set ::cv_dashboard::atom_forces_rms 0.0
   set ::cv_dashboard::atom_forces_max 0.0
   set ::cv_dashboard::atom_forces_max_id -1
   grid [label $stats.rmsForceTxt -text "RMS force:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  grid [tk::entry $stats.rmsForce -textvariable ::cv_dashboard::atom_forces_rms] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  grid [tk::entry $stats.rmsForce -textvariable ::cv_dashboard::atom_forces_rms -state readonly] \
+    -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   grid [label $stats.maxForceIDTxt -text "Max force atom:"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
   incr gridrow
   grid [label $stats.maxForceTxt -text "Max force:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  grid [tk::entry $stats.maxForce -textvariable ::cv_dashboard::atom_forces_max] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  grid [tk::entry $stats.maxForceID -textvariable ::cv_dashboard::atom_forces_max_id] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+  grid [tk::entry $stats.maxForce -textvariable ::cv_dashboard::atom_forces_max -state readonly] \
+    -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  grid [tk::entry $stats.maxForceID -textvariable ::cv_dashboard::atom_forces_max_id -state readonly] \
+    -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
   incr gridrow
 
   grid columnconfigure $stats 0 -weight 1
@@ -511,7 +515,7 @@ proc ::cv_dashboard::refresh_bias_table {} {
 
 
 proc ::cv_dashboard::refresh_energy_forces {} {
-  set ::cv_dashboard::colvar_energy [catch {cv getenergy}]
+  catch {set ::cv_dashboard::colvar_energy [cv getenergy]}
 
   if { [string compare [run_cv version] "2021-03-02"] >= 0 } {
     set ::cv_dashboard::atom_forces_rms [run_cv getatomappliedforcesrms]
