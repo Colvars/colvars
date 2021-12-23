@@ -111,12 +111,11 @@ jobs:
           path: ${{github.workspace}}/oracle
 
       - name: Get small downloadable packages
-        working-directory: devel-tools
         uses: actions/checkout@v2
         with:
           repository: 'Colvars/build-tools-packages'
           ref: 'master'
-          path: 'packages'
+          path: 'devel-tools/packages'
 
       - name: Install Singularity
         shell: bash
