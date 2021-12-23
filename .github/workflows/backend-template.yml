@@ -68,30 +68,40 @@ jobs:
           path: |
             ~/.ccache
             ~/ccache_CentOS7-devel
+            ~/packages
           key: ${{ runner.os }}-build-${{ inputs.backend_name }}-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-build-${{ inputs.backend_name }}-
             ${{ runner.os }}-build-
             -build-
 
-      - name: Install build dependencies for backends
+      - name: Create folder for downloaded packages
         shell: bash
-        working-directory: devel-tools
+        run: mkdir -p ~/packages
+
+      - name: Get Singularity
+        shell: bash
+        working-directory: ~/packages
         run: |
           # Singularity 3 hasn't made it to Ubuntu yet: TODO sort this out,
           # or convert existing containers to Docker
           sudo apt-get -y install squashfs-tools containernetworking-plugins
-          curl -O http://http.us.debian.org/debian/pool/main/s/singularity-container/singularity-container_3.5.2+ds1-1_amd64.deb
+          # Cache the download to reduce errors from failed downloads
+          if [ ! -f singularity-container_3.5.2+ds1-1_amd64.deb ] ; then curl -O http://http.us.debian.org/debian/pool/main/s/singularity-container/singularity-container_3.5.2+ds1-1_amd64.deb ; fi
           sudo dpkg -i singularity-container_3.5.2+ds1-1_amd64.deb
+
+      - name: Get container image of backends' dependencies
+        shell: bash
+        working-directory: devel-tools
+        run: |
           # Pull CentOS 7 container used to build backends
-          # (contains OpenMPI, FFTW, Tcl/Tk, Charm++)
+          # (contains build tools, OpenMPI, FFTW, Tcl/Tk and Charm++)
           singularity pull CentOS7-devel.sif library://giacomofiorin/default/colvars_development:centos7
 
       - name : Get spiff
         shell: bash
         working-directory: devel-tools
         run: sudo cp -f $(singularity exec CentOS7-devel.sif ./get_spiff) /usr/local/bin
-
 
       - name: Checkout ${{ inputs.backend_name }}
         uses: actions/checkout@v2
