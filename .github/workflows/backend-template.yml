@@ -87,8 +87,8 @@ jobs:
           # or convert existing containers to Docker
           sudo apt-get -y install squashfs-tools containernetworking-plugins
           # Cache the download to reduce errors from failed downloads
-          if [ ! -f singularity-container_3.5.2+ds1-1_amd64.deb ] ; then curl -O http://http.us.debian.org/debian/pool/main/s/singularity-container/singularity-container_3.5.2+ds1-1_amd64.deb ; fi
-          sudo dpkg -i singularity-container_3.5.2+ds1-1_amd64.deb
+          if [ ! -f singularity-container_3.5.2+ds2-1_amd64.deb ] ; then curl -O http://http.us.debian.org/debian/pool/main/s/singularity-container/singularity-container_3.5.2+ds2-1_amd64.deb ; fi
+          sudo dpkg -i singularity-container_3.5.2+ds2-1_amd64.deb
 
       - name: Get container image of backends' dependencies
         shell: bash
