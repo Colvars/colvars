@@ -219,7 +219,7 @@ proc ::cv_dashboard::apply_config { cfg } {
   # Update the map of bias configs
   set new_bias_map [dict create]
   dict for { name cfg } $bias_configs {
-    # Only record config for cvs that actually appeared just now
+    # Only record config for biases that actually appeared just now
     if { ([lsearch $biases_after $name] > -1) && ([lsearch $biases_before $name] == -1) } {
       dict set new_bias_map $name $cfg
     }
@@ -289,7 +289,7 @@ proc ::cv_dashboard::extract_configs { cfg_in } {
         }
       } else {
         # Not a block; it's either a comment line...
-        if {[regexp -nocase {^\s*\#(.*)} $line match keyword value] } {
+        if {[regexp -nocase {^\s*\#} $line] } {
           append comment_lines "${line}\n"
         } elseif { [regexp -nocase {^\s*(\S+)\s+(.*)} $line match keyword value] } {
           # or it goes to general Colvars module config
@@ -474,7 +474,6 @@ proc ::cv_dashboard::get_whole_config { } {
     if { $keyword == "harmonicwalls" } {
       regexp -line -nocase {^\s*colvars\s+(.*)} $config match cvs
       if { $bias == "${cvs}w" } {
-        puts "Ignoring bias $bias from cv $cvs"
         continue
       }
     }

@@ -406,8 +406,10 @@ proc ::cv_dashboard::edit_apply { type } {
     puts "Error: called edit_apply $type"
     return
   }
+  set biases_before [run_cv list biases]
+  set bias_cfg_before $::cv_dashboard::bias_configs
   foreach i $::cv_dashboard::being_edited {
-    run_cv $type $i delete
+    catch {cv $type $i delete}
   }
   set cfg [$text get 1.0 end-1c]
   set res [apply_config $cfg]
@@ -418,11 +420,43 @@ proc ::cv_dashboard::edit_apply { type } {
       catch {cv $type $i delete}
     }
     apply_config $::cv_dashboard::backup_cfg
+    # The bias names being edited might have changed here
     # Do not destroy editor window (give user a chance to fix input)
+    if { $type == "colvar" } {
+      restore_biases $biases_before $bias_cfg_before
+    }
     return
+  }
+  if { $type == "colvar" } {
+    restore_biases $biases_before $bias_cfg_before
   }
   set ::cv_dashboard::being_edited {}
   destroy $window
+}
+
+
+# Restore biases that were deleted after editing colvars
+proc ::cv_dashboard::restore_biases { biases_before bias_cfg_before } {
+
+  set indent $::cv_dashboard::indent
+
+  # Detect biases that were deleted
+  set biases_now [run_cv list biases]
+  foreach b $biases_before {
+    if {[lsearch $biases_now $b] == -1 && [dict exists $bias_cfg_before $b] } {
+      set key_cfg [dict get $bias_cfg_before $b]
+      lassign $key_cfg keyword config
+
+      # Enforce bias name if not specified, to avoid re-numbering
+      if { [regexp -line -nocase {^\s*name\s+[^\s{}#]+} $config] } {
+        set name_cfg ""
+      } else {
+        set name_cfg "${indent}name $b\n"
+      }
+
+      apply_config "$keyword {${name_cfg}$config}"
+    }
+  }
 }
 
 
