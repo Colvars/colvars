@@ -557,35 +557,23 @@ harmonic {\n${indent}colvars $cvs\n${indent}forceConstant 10.0\n${indent}centers
   set bias_editor [toplevel $w.bias_editor]
   wm title $bias_editor "Bias config editor"
 
-  # Left frame: utility buttons - TODO possibly, low priority
-  # frame $w.bias_editor.fl
-  # set gridrow 0
+  set gridrow 0
 
-  # labelframe  $w.bias_editor.fl.docs -bd 2 -text "Online documentation" -padx 2 -pady 2
-  # set docs $w.bias_editor.fl.docs
-  # ttk::button $docs.onlinedoc1 -text "Collective variables" -padding "4 2 4 2"\
-  #   -command [list ::cv_dashboard::invokeBrowser "http://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html#sec:colvar"]
-  # ttk::button $docs.onlinedoc3 -text "Basis functions (components)" -padding "4 2 4 2"\
-  #   -command [list ::cv_dashboard::invokeBrowser "http://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html#sec:cvc_list"]
-  # ttk::button $docs.onlinedoc2 -text "Atom groups" -padding "4 2 4 2"\
-  #   -command [list ::cv_dashboard::invokeBrowser "http://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html#sec:colvar_atom_groups"]
-
-  # grid $docs.onlinedoc1 -row $gridrow -column 0 -pady 5 -padx 2 -sticky nsew
-  # grid $docs.onlinedoc2 -row $gridrow -column 1 -pady 5 -padx 2 -sticky nsew
-  # grid $docs.onlinedoc3 -row $gridrow -column 2 -pady 5 -padx 2 -sticky nsew
-  # grid columnconfigure $docs 0 -weight 1
-  # grid columnconfigure $docs 1 -weight 1
-  # grid columnconfigure $docs 2 -weight 1
-
- 
   # Right frame: text widget w scrollbar and Apply/Cancel buttons
   frame $w.bias_editor.fr
+
+  # Help link
+  ttk::button $w.bias_editor.fr.onlinedoc1 -text "Manual: collective variable biases" -padding "4 2 4 2"\
+    -command [list ::cv_dashboard::invokeBrowser "http://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html#sec:colvarbias"]
+  grid $w.bias_editor.fr.onlinedoc1 -row $gridrow -columnspan 3 -pady 5 -padx 2 -sticky nsew
+
   tk::text $w.bias_editor.fr.text -undo 1 -yscrollcommand [list $w.bias_editor.fr.vsb set] -background white -font "Helvetica -14"
   ttk::scrollbar $w.bias_editor.fr.vsb -orient vertical -command [list $w.bias_editor.fr.text yview]
   $w.bias_editor.fr.text insert 1.0 $cfg
   set ::cv_dashboard::being_edited $biases
-  grid $w.bias_editor.fr.text -row 0 -columnspan 3 -sticky nsew
-  grid $w.bias_editor.fr.vsb -row 0 -column 3 -sticky nsew
+  incr gridrow
+  grid $w.bias_editor.fr.text -row $gridrow -columnspan 3 -sticky nsew
+  grid $w.bias_editor.fr.vsb -row $gridrow -column 3 -sticky nsew
 
   # Ctrl-s anywhere in the window saves/applies
   bind $w.bias_editor <Control-s> {::cv_dashboard::edit_apply bias}
@@ -597,7 +585,7 @@ harmonic {\n${indent}colvars $cvs\n${indent}forceConstant 10.0\n${indent}centers
   catch { bind $w.bias_editor.fr.text <ISO_Left_Tab> "::cv_dashboard::tab_pressed $w.bias_editor.fr.text true" }
   bind $w.bias_editor.fr.text <Shift-Tab> "::cv_dashboard::tab_pressed $w.bias_editor.fr.text true"
 
-  set gridrow 1
+  incr gridrow
   ttk::button $w.bias_editor.fr.apply -text "Apply \[Ctrl-s\]" -command {::cv_dashboard::edit_apply bias} -padding "2 0 2 0"
   ttk::button $w.bias_editor.fr.cancel -text "Cancel" -command {::cv_dashboard::edit_cancel bias} -padding "2 0 2 0"
   ttk::button $w.bias_editor.fr.clear -text "Clear" -command "$w.bias_editor.fr.text delete 1.0 end" -padding "2 0 2 0"
