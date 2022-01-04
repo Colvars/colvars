@@ -161,16 +161,6 @@ proc ::cv_dashboard::apply_config { cfg } {
 
   set cfg [substitute_atomselects $cfg]
 
-  # Dump config for debugging possible crashes
-  # Skip if we don't have write permission in working directory
-  if ![catch {set dump [open "_dashboard_saved_config.colvars" w]}] {
-    puts $dump "# Current configuration of Colvars Module\n"
-    puts $dump [get_whole_config]
-    puts $dump "\n# New config string to be applied\n"
-    puts $dump $cfg
-    close $dump
-  }
-
   # Save viewpoints for all molecules, as they could be reset when applying config
   set vp [get_viewpoints]
 
@@ -244,6 +234,8 @@ proc ::cv_dashboard::apply_config { cfg } {
 # Return dictionary of colvar names -> config strings
 # Needs to fail gracefully upon unmatched braces
 proc ::cv_dashboard::extract_configs { cfg_in } {
+
+  set indent $::cv_dashboard::indent
 
   set biases [cv list biases]
   # "cv bias name type" after 2021-12-07

@@ -11,14 +11,6 @@ proc ::cv_dashboard::add_cv {} {
 
 # Colvar config editor window
 proc ::cv_dashboard::edit_cv { {add false} {cvs ""} } {
-  # If a non-default unit system is in use, recall it in the config string
-  refresh_units
-  if { $::cv_dashboard::units == "" } {
-    set cfg ""
-  } else {
-    set cfg "units $::cv_dashboard::units\n\n"
-  }
-
   if $add {
     # do not remove existing vars
     set cvs {}
@@ -408,6 +400,13 @@ proc ::cv_dashboard::edit_apply { type } {
   }
   set biases_before [run_cv list biases]
   set bias_cfg_before $::cv_dashboard::bias_configs
+  # Also save missing bias configs (not created through Dashboard)
+  foreach b $biases_before {
+    if { ![dict exists $bias_cfg_before $b] } {
+      dict set bias_cfg_before $b [get_bias_keyword_config $b]
+    }
+  }
+
   foreach i $::cv_dashboard::being_edited {
     catch {cv $type $i delete}
   }
