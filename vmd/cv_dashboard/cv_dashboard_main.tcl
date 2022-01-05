@@ -163,13 +163,10 @@ proc ::cv_dashboard::createWindow {} {
   # Create and hide Biases tab
   createBiasesTab
 
-  # Create energy/force statistics tab
-  createStatsTab
-
   $w.tabs add $w.tabs.main -text "Actions" -sticky news
-  $w.tabs add $w.tabs.settings -text "Settings" -sticky news
   $w.tabs add $w.tabs.biases -text "Biases" -sticky news
-  $w.tabs add $w.tabs.stats -text "Force/energy stats" -sticky news
+  $w.tabs add $w.tabs.settings -text "Settings" -sticky news
+  # $w.tabs add $w.tabs.stats -text "Force/energy stats" -sticky news
 
   grid columnconfigure $main 0 -weight 1
   grid columnconfigure $main 1 -weight 1
@@ -235,6 +232,8 @@ proc ::cv_dashboard::createBiasesTab {} {
   grid [ttk::button $biases.refresh -text "Refresh list" -command ::cv_dashboard::refresh_bias_table -padding "2 0 2 0"] \
     -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
 
+  # Stats "tab" is now included in biases tab, aooending to current grid
+  createStatsTab $gridrow
 
   grid columnconfigure $biases 0 -weight 1
   grid columnconfigure $biases 1 -weight 1
@@ -244,40 +243,36 @@ proc ::cv_dashboard::createBiasesTab {} {
 }
 
 
-proc ::cv_dashboard::createStatsTab {} {
+proc ::cv_dashboard::createStatsTab { gridrow } {
 
-  set stats .cv_dashboard_window.tabs.stats
-  grid [frame $stats] -column 0 -columnspan 3 -sticky nsew
+  # Merge stats tab with biases tab
+  set stats .cv_dashboard_window.tabs.biases
 
-  set gridrow 0
+  incr gridrow
+  grid [label $stats.stats_title -text "Energy and force statistics"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
 
+  incr gridrow
   # Energy/Force display
   set ::cv_dashboard::colvar_energy 0.0
   grid [label $stats.energyTxt -text "Energy:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [tk::entry $stats.energy -textvariable ::cv_dashboard::colvar_energy -state readonly] \
     -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  incr gridrow
 
+  incr gridrow
   set ::cv_dashboard::atom_forces_rms 0.0
   set ::cv_dashboard::atom_forces_max 0.0
   set ::cv_dashboard::atom_forces_max_id -1
   grid [label $stats.rmsForceTxt -text "RMS force:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [tk::entry $stats.rmsForce -textvariable ::cv_dashboard::atom_forces_rms -state readonly] \
     -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  grid [label $stats.maxForceIDTxt -text "Max force atom:"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+  grid [label $stats.maxForceIDTxt -text "Max force atom index:"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+
   incr gridrow
   grid [label $stats.maxForceTxt -text "Max force:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [tk::entry $stats.maxForce -textvariable ::cv_dashboard::atom_forces_max -state readonly] \
     -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   grid [tk::entry $stats.maxForceID -textvariable ::cv_dashboard::atom_forces_max_id -state readonly] \
     -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
-  incr gridrow
-
-  grid columnconfigure $stats 0 -weight 1
-  grid columnconfigure $stats 1 -weight 1
-  grid columnconfigure $stats 2 -weight 1
-
-  grid remove $stats
 }
 
 # Open or close the volmap sub-panel
