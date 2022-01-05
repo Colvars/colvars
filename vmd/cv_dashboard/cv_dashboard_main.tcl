@@ -828,7 +828,7 @@ proc ::cv_dashboard::show_volmaps { colvars } {
     if { [info exists ::cv_dashboard::volmap_rep($cv)]} {
       hide_volmaps $cv
     }
-    set cv_volmaps [catch {cv colvar $cv getvolmapids}]
+    catch {set cv_volmaps [cv colvar $cv getvolmapids]}
     set repnames {}
     foreach volid $cv_volmaps {
       if { $volid >= 0 } {

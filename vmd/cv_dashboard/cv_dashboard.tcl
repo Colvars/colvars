@@ -476,7 +476,7 @@ proc ::cv_dashboard::get_whole_config { } {
 
 # Checks whether cv is associated to a volmap
 proc ::cv_dashboard::is_volmap { cv } {
-  set id [catch {cv colvar $cv getvolmapids}]
+  catch {set id [cv colvar $cv getvolmapids]}
   if { [llength $id] > 1 } { return 1 }
   return [expr [lindex $id 0] != -1]
 }
