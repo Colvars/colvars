@@ -113,7 +113,6 @@ proc ::cv_dashboard::createSettingsWindow { } {
   grid columnconfigure $settings 2 -weight 1
 
   grid remove $settings
-  set ::cv_dashboard::settings_shown false
 }
 
 

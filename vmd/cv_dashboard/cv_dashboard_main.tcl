@@ -30,7 +30,7 @@ proc ::cv_dashboard::createWindow {} {
     -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
   # Table of colvars
-  ttk::treeview $w.cvtable -selectmode extended -show {headings tree}
+  ttk::treeview $w.cvtable -selectmode extended -show {headings tree} -height 5
   $w.cvtable configure -column val
   $w.cvtable column #0 -width 50 -stretch 1 -anchor w
   $w.cvtable column val -width 150 -stretch 1 -anchor w
@@ -61,12 +61,16 @@ proc ::cv_dashboard::createWindow {} {
   # Tabs
   incr gridrow
   grid [ttk::notebook $w.tabs] -row $gridrow -column 0 -columnspan 3 -sticky news -padx 0
+  grid rowconfigure $w $gridrow -weight 1 -minsize 20
   tk::frame $w.tabs.main
 
   # Editing
   set gridrow 0  ;# New grid
   set main .cv_dashboard_window.tabs.main
 
+  grid [ttk::separator $main.sep1 -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
+
+  incr gridrow
   grid [label $main.actions_text -text "Colvar list actions"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
 
   incr gridrow
@@ -116,12 +120,10 @@ proc ::cv_dashboard::createWindow {} {
   # Create and hide rotation menu (shows itself as needed when refreshing the colvar table)
   incr gridrow
   createRotationMenu $gridrow
-  grid remove $main.rotation_menu
 
   # Create and hide volmap menu (shows itself as needed when refreshing the colvar table)
   incr gridrow
   createVolmapMenu $gridrow
-  grid remove $main.volmap_menu
 
   incr gridrow
   grid [ttk::separator $main.sep_options -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
@@ -185,12 +187,12 @@ proc ::cv_dashboard::createWindow {} {
 proc ::cv_dashboard::createBiasesTab {} {
 
   set biases .cv_dashboard_window.tabs.biases
-  grid [frame $biases] -column 0 -columnspan 3 -sticky nsew
 
   set gridrow 0
+  grid [frame $biases] -row $gridrow -column 0 -columnspan 3 -sticky nsew
 
   # Table of biases
-  ttk::treeview $biases.bias_table -selectmode extended -show {headings tree}
+  ttk::treeview $biases.bias_table -selectmode extended -show {headings tree} -height 3
   $biases.bias_table configure -columns { val colvars }
   $biases.bias_table column #0 -width 40 -stretch 1 -anchor w
   $biases.bias_table column val -width 20 -stretch 1 -anchor w
@@ -213,7 +215,10 @@ proc ::cv_dashboard::createBiasesTab {} {
 
   incr gridrow
   grid $biases.bias_table -row $gridrow -column 0 -sticky news -columnspan 3
-  #grid rowconfigure $biases $gridrow -weight 1 -minsize 20
+  grid rowconfigure $biases $gridrow -weight 1 -minsize 20
+
+  incr gridrow
+  grid [ttk::separator $biases.sep1 -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
 
   incr gridrow
   grid [label $biases.actions_text -text "Bias list actions"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
@@ -249,12 +254,15 @@ proc ::cv_dashboard::createStatsTab { gridrow } {
   set stats .cv_dashboard_window.tabs.biases
 
   incr gridrow
+  grid [ttk::separator $stats.sep_stats -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
+
+  incr gridrow
   grid [label $stats.stats_title -text "Energy and force statistics"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
 
   incr gridrow
   # Energy/Force display
   set ::cv_dashboard::colvar_energy 0.0
-  grid [label $stats.energyTxt -text "Energy:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [label $stats.energyTxt -text "Total energy:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [tk::entry $stats.energy -textvariable ::cv_dashboard::colvar_energy -state readonly] \
     -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
 
@@ -288,9 +296,9 @@ proc ::cv_dashboard::toggleVolmapMenu {} {
   }
 
   if { $volmaps } {
-    grid $w.volmap_menu
+    grid $w.show_volmaps $w.hide_volmaps $w.hide_all_volmaps
   } else {
-    grid remove $w.volmap_menu
+    grid remove $w.show_volmaps $w.hide_volmaps $w.hide_all_volmaps
   }
 }
 
@@ -308,9 +316,9 @@ proc ::cv_dashboard::toggleRotationMenu {} {
   }
 
   if { $rotations } {
-    grid $w.rotation_menu
+    grid $w.show_rotation $w.hide_rotation
   } else {
-    grid remove $w.rotation_menu
+    grid remove $w.show_rotation $w.hide_rotation
   }
 }
 
@@ -1026,41 +1034,25 @@ proc ::cv_dashboard::hide_all_gradients {} {
 
 
 proc ::cv_dashboard::createVolmapMenu { row } {
-  set main .cv_dashboard_window.tabs.main
-  set menu $main.volmap_menu
-  grid [frame $menu] -row $row -column 0 -columnspan 3 -sticky nsew
-
-  set gridrow 0
+  set menu .cv_dashboard_window.tabs.main
+  set gridrow $row
 
   # Volumetric map display settings
-  incr gridrow
   grid [ttk::button $menu.show_volmaps -text "Show volmaps" -command {::cv_dashboard::show_volmaps_selected} -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $menu.hide_volmaps -text "Hide volmaps" -command {::cv_dashboard::hide_volmaps_selected} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $menu.hide_all_volmaps -text "Hide all volmaps" -command {::cv_dashboard::hide_all_volmaps} -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
-  grid columnconfigure $menu 0 -weight 1
-  grid columnconfigure $menu 1 -weight 1
-  grid columnconfigure $menu 2 -weight 1
-
-  grid remove $menu
+  grid remove $menu.show_volmaps $menu.hide_volmaps $menu.hide_all_volmaps
 }
 
 
 proc ::cv_dashboard::createRotationMenu { row } {
 
-  set main .cv_dashboard_window.tabs.main
-  set menu $main.rotation_menu
-  grid [frame $menu] -row $row -column 0 -columnspan 3 -sticky nsew
+  set menu .cv_dashboard_window.tabs.main
 
-  set gridrow 0
-
-  incr gridrow
+  set gridrow $row
   grid [ttk::button $menu.show_rotation -text "Show rotation" -command { ::cv_dashboard::start_rotation_display {} } -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $menu.hide_rotation -text "Hide rotation" -command { ::cv_dashboard::stop_rotation_display } -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
 
-  grid columnconfigure $menu 0 -weight 1
-  grid columnconfigure $menu 1 -weight 1
-  grid columnconfigure $menu 2 -weight 1
-
-  grid remove $menu
+  grid remove $menu.show_rotation $menu.hide_rotation
 }
