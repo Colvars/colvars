@@ -30,7 +30,7 @@ proc ::cv_dashboard::createWindow {} {
     -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
   # Table of colvars
-  ttk::treeview $w.cvtable -selectmode extended -show {headings tree} -height 5
+  ttk::treeview $w.cvtable -selectmode extended -show {headings tree} -height 8
   $w.cvtable configure -column val
   $w.cvtable column #0 -width 50 -stretch 1 -anchor w
   $w.cvtable column val -width 150 -stretch 1 -anchor w
