@@ -254,9 +254,10 @@ int colvarproxy_vmd::update_input()
   }
   error_code |= update_atomic_properties();
 
+  size_t i;
   // We're not applying any forces but they can be tracked through [cv getatomappliedforces]
   // Clear before updating Module
-  for (size_t i = 0; i < atoms_new_colvar_forces.size(); i++) {
+  for (i = 0; i < atoms_new_colvar_forces.size(); i++) {
     atoms_new_colvar_forces[i].reset();
   }
 
@@ -268,7 +269,7 @@ int colvarproxy_vmd::update_input()
 
   // copy positions in the internal arrays
   float *vmdpos = (vmdmol->get_frame(vmdmol_frame))->pos;
-  for (size_t i = 0; i < atoms_positions.size(); i++) {
+  for (i = 0; i < atoms_positions.size(); i++) {
     atoms_positions[i] = cvm::atom_pos(angstrom_to_internal(vmdpos[atoms_ids[i]*3+0]),
                                        angstrom_to_internal(vmdpos[atoms_ids[i]*3+1]),
                                        angstrom_to_internal(vmdpos[atoms_ids[i]*3+2]));
