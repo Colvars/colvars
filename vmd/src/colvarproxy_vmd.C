@@ -254,6 +254,12 @@ int colvarproxy_vmd::update_input()
   }
   error_code |= update_atomic_properties();
 
+  // We're not applying any forces but they can be tracked through [cv getatomappliedforces]
+  // Clear before updating Module
+  for (size_t i = 0; i < atoms_new_colvar_forces.size(); i++) {
+    atoms_new_colvar_forces[i].reset();
+  }
+
   // Do we still have a valid frame?
   if (error_code || vmdmol->get_frame(vmdmol_frame) == NULL) {
     error_code |= COLVARS_NO_SUCH_FRAME;
