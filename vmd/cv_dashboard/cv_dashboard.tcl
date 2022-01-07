@@ -515,8 +515,9 @@ proc ::cv_dashboard::update_frame { name molid op } {
   refresh_values
   # refresh the frame marker in the plot
   display_marker $f
-  # refresh displayed CV gradients
+  # refresh displayed CV gradients and bias forces
   update_shown_gradients
+  update_shown_forces
   # refresh any displayed rotation operators
   update_rotation_display
 }

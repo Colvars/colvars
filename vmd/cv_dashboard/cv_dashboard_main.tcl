@@ -237,6 +237,13 @@ proc ::cv_dashboard::createBiasesTab {} {
   grid [ttk::button $biases.refresh -text "Refresh list" -command ::cv_dashboard::refresh_bias_table -padding "2 0 2 0"] \
     -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
 
+  # Force display
+  incr gridrow
+  grid [ttk::button $biases.show_forces -text "Show forces" -command {::cv_dashboard::show_forces [::cv_dashboard::selected_biases]} \
+    -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $biases.hide_forces -text "Hide forces" -command {::cv_dashboard::hide_forces} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $biases.hide_all_forces -text "Hide all forces" -command {::cv_dashboard::hide_all_forces} -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+
   # Stats "tab" is now included in biases tab, aooending to current grid
   createStatsTab $gridrow
 
@@ -929,7 +936,7 @@ proc ::cv_dashboard::update_shown_gradients {} {
     }
 
     # Forget variables that have been deleted (*after* deleting the graphics above)
-    if { [lsearch $::cv_dashboard::cvs $cv] == -1 } {
+    if { [lsearch [run_cv list] $cv] == -1 } {
       unset ::cv_dashboard::grad_objects($cv)
       continue
     }
@@ -938,9 +945,10 @@ proc ::cv_dashboard::update_shown_gradients {} {
     if { [llength $atomids] == 0 } {
       # Variable was reinitialized and lost its gradient feature
       if { [run_cv colvar $cv set collect_gradient 1] == -1 } { continue }
+      run_cv colvar $cv update
+      set atomids [run_cv colvar $cv getatomids]
       # If that didn't work then gradients are not supported
       if { [llength $atomids] == 0 } { continue }
-      run_cv colvar $cv update
     }
 
     set maxl2 0.
@@ -1030,6 +1038,144 @@ proc ::cv_dashboard::hide_all_gradients {} {
     run_cv colvar $cv set collect_gradient 0
   }
   array unset ::cv_dashboard::grad_objects *
+}
+
+
+#################################################################
+# Show Bias forces
+#################################################################
+
+
+proc ::cv_dashboard::show_forces { list } {
+
+  foreach bias $list {
+    if { ![info exists ::cv_dashboard::force_objects($bias)] } {
+      # Associate empty list of objects to cv to request its update
+      set ::cv_dashboard::force_objects($bias) {}
+    }
+  }
+  update_shown_forces
+}
+
+
+proc ::cv_dashboard::update_shown_forces {} {
+
+  set w .cv_dashboard_window
+
+  set colorid 3 ;# avoid very common or less visible colors blue, red, gray
+  set molid $::cv_dashboard::mol
+  foreach { bias objs } [array get ::cv_dashboard::force_objects] {
+
+    # Delete out-of-date graphical objects (arrows)
+    foreach obj $objs {
+      graphics $molid delete $obj
+    }
+
+    # Forget biases that have been deleted (*after* deleting the graphics above)
+    if { [lsearch [run_cv list biases] $bias] == -1 } {
+      unset ::cv_dashboard::force_objects($bias)
+      continue
+    }
+
+    set atomids [run_cv getatomids]
+
+    set maxl2 0.
+
+    # Obtaining forces from each particular biases requires a dedicated Module update
+    # enabling forces only from the chosen bias
+    foreach b [run_cv list biases] {
+      if { $b == $bias } {
+        cv bias $b set apply_force 1
+      } else {
+        cv bias $b set apply_force 0
+      }
+    }
+    # Complete module update is necessary to get atomic bias forces
+    run_cv update
+    set force_list [run_cv getatomappliedforces]
+
+    if { [llength $force_list] == 0 } { continue }
+    # Map gradients list to dictionary
+    for { set i 0 } { $i < [llength $force_list] } { incr i } {
+      set g [lindex $force_list $i]
+      set l2 [veclength2 $g]
+      if { $l2 > $maxl2 } { set maxl2 $l2 }
+      set forces([lindex $atomids $i]) $g
+    }
+    unset force_list
+
+    if { $maxl2 < 1e-14 } {
+      # Zero gradient, don't even try
+      unset forces
+      continue
+    }
+
+    set sel [atomselect $molid "($::cv_dashboard::sel_text) and (index $atomids)"]
+    set coords [$sel get {x y z}]
+
+    graphics $molid material [.cv_dashboard_window.tabs.settings.material get]
+
+    # Loop through colorids (only in this run of the proc though)
+    graphics $molid color [expr $colorid % 32]
+    incr colorid
+
+    # Get width if provided in colvar config
+    set width 1.
+
+    if { $::cv_dashboard::grad_scale_choice == "scale" } {
+      set fact [expr {$::cv_dashboard::grad_scale / $width}]
+      set grad_norm [expr {sqrt($maxl2) * $fact}]
+      set ::cv_dashboard::grad_norm [round $grad_norm 5]
+    } else {
+      set fact [expr {$::cv_dashboard::grad_norm / sqrt($maxl2)}]
+      set grad_scale [expr {$fact * $width}]
+      set ::cv_dashboard::grad_scale [round $grad_scale 5]
+    }
+
+    # Create new arrows
+    set radius [$w.tabs.settings.grad_radius get]
+    set new_objs {}
+    foreach start $coords id [$sel get index] {
+      set g $forces($id)
+      set vec [vecscale $fact $g]
+      set vec_len [veclength $vec]
+      # Don't draw zero-length vectors
+      if { $vec_len < 1e-2 } { continue }
+      set end [vecadd $start $vec]
+      if { ${vec_len} > [expr 6.0*${radius}] } {
+        # Long arrow : cone length is 3 times radius
+        set middle [vecadd $start \
+          [vecscale [expr (${vec_len} - 3.0*${radius})/${vec_len}] ${vec}]]
+      } else {
+        # Short arrow: cap cone length at 1/2 total length
+        set middle [vecadd $start [vecscale 0.5 ${vec}]]
+      }
+      set cyl [graphics $molid cylinder $start $middle radius ${radius} resolution 12]
+      set cone [graphics $molid cone $middle $end radius [expr ${radius}*2.0] resolution 12]
+      lappend new_objs $cyl $cone
+    }
+    set ::cv_dashboard::force_objects($bias) $new_objs
+    unset forces
+    $sel delete
+  }
+}
+
+proc ::cv_dashboard::hide_forces {} {
+  foreach b [selected_biases] {
+    if [info exists ::cv_dashboard::force_objects($b)] {
+      set objs $::cv_dashboard::force_objects($b)
+      foreach obj $objs { graphics $::cv_dashboard::mol delete $obj }
+      unset ::cv_dashboard::force_objects($b)
+    }
+  }
+}
+
+
+proc ::cv_dashboard::hide_all_forces {} {
+  foreach { b objs } [array get ::cv_dashboard::force_objects] {
+    foreach obj $objs { graphics $::cv_dashboard::mol delete $obj }
+  }
+  array unset ::cv_dashboard::force_objects *
 }
 
 
