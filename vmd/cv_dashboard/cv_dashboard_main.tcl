@@ -237,14 +237,15 @@ proc ::cv_dashboard::createBiasesTab {} {
   grid [ttk::button $biases.refresh -text "Refresh list" -command ::cv_dashboard::refresh_bias_table -padding "2 0 2 0"] \
     -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
 
-  # Force display
-  incr gridrow
-  grid [ttk::button $biases.show_forces -text "Show forces" -command {::cv_dashboard::show_forces [::cv_dashboard::selected_biases]} \
-    -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::button $biases.hide_forces -text "Hide forces" -command {::cv_dashboard::hide_forces} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::button $biases.hide_all_forces -text "Hide all forces" -command {::cv_dashboard::hide_all_forces} -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
-
-  # Stats "tab" is now included in biases tab, aooending to current grid
+  if { [string compare [run_cv version] "2021-12-20"] >= 0 } {
+    # Force display
+    incr gridrow
+    grid [ttk::button $biases.show_forces -text "Show bias forces" -command {::cv_dashboard::show_forces [::cv_dashboard::selected_biases]} \
+      -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+    grid [ttk::button $biases.hide_forces -text "Hide bias forces" -command {::cv_dashboard::hide_forces} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+    grid [ttk::button $biases.hide_all_forces -text "Hide all forces" -command {::cv_dashboard::hide_all_forces} -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+  }
+  # Stats "tab" is now included in biases tab, appending to current grid
   createStatsTab $gridrow
 
   grid columnconfigure $biases 0 -weight 1
@@ -666,7 +667,7 @@ proc ::cv_dashboard::del_cv { {cvs "" } } {
   }
   foreach cv $cvs {
     # workaround bug in colvars pre-2018-07-02
-    if {[string compare [run_cv version] "2018-07-02"] == -1} {
+    if {[string compare [run_cv version] "2018-07-02"] < 0} {
       foreach b [run_cv list biases] {
         if [string match *colvars*$c* [run_cv bias $b getconfig]] {
           puts "Bug workaround: deleting bias $b"
@@ -926,7 +927,7 @@ proc ::cv_dashboard::update_shown_gradients {} {
 
   set w .cv_dashboard_window
 
-  set colorid 3 ;# avoid very common or less visible colors blue, red, gray
+  set colorid 0
   set molid $::cv_dashboard::mol
   foreach { cv objs } [array get ::cv_dashboard::grad_objects] {
 
@@ -975,7 +976,8 @@ proc ::cv_dashboard::update_shown_gradients {} {
     graphics $molid material [.cv_dashboard_window.tabs.settings.material get]
 
     # Loop through colorids (only in this run of the proc though)
-    graphics $molid color [expr $colorid % 32]
+    # avoid colors 0-2
+    graphics $molid color [expr $colorid % 29 + 3]
     incr colorid
 
     # Get width if provided in colvar config
@@ -1062,7 +1064,7 @@ proc ::cv_dashboard::update_shown_forces {} {
 
   set w .cv_dashboard_window
 
-  set colorid 3 ;# avoid very common or less visible colors blue, red, gray
+  set colorid 0
   set molid $::cv_dashboard::mol
   foreach { bias objs } [array get ::cv_dashboard::force_objects] {
 
@@ -1116,7 +1118,9 @@ proc ::cv_dashboard::update_shown_forces {} {
     graphics $molid material [.cv_dashboard_window.tabs.settings.material get]
 
     # Loop through colorids (only in this run of the proc though)
-    graphics $molid color [expr $colorid % 32]
+    # but don't re-use colors used for gradient display
+    # avoid colors 0-2
+    graphics $molid color [expr $colorid  + [llength ::cv_dashboard::force_objects] % 29 + 3]
     incr colorid
 
     # Get width if provided in colvar config

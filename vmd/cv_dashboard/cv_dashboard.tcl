@@ -85,6 +85,14 @@ source [file join $script_dir cv_dashboard_settings.tcl]
 
 
 proc cv_dashboard {} {
+
+  if { [vmdinfo versionmsg] == "VMD for LINUXAMD64, version 1.9.3 (November 30, 2016)" } {
+    tk_messageBox -icon error -title "Colvars Dashboard Error"\
+      -message "VMD 1.9.3 (released 2016) ships with an unmaintained version of the Colvars Module.\n
+Please upgrade to VMD 1.9.4 alpha or later."
+    return
+  }
+
   if {[molinfo num] == 0 } {
     tk_messageBox -icon error -title "Colvars Dashboard Error"\
       -message "No molecule loaded. Please load a molecule and use the Reset button.\n"

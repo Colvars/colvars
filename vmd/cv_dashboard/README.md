@@ -15,7 +15,6 @@ releases of VMD.
 
 **Using VMD 1.9.3 (released in 2016) is not recommended**.
 as of 2021, VMD 1.9.4 "alpha" releases are the de facto current versions.
-Although the Dashboard can work in VMD 1.9.3, not all features are supported.
 
 First, download the Colvars tree from https://github.com/Colvars/colvars/archive/master.zip
 or clone the git repository.
