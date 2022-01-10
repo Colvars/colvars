@@ -565,6 +565,7 @@ proc ::cv_dashboard::change_mol {} {
     # Remove all graphical objects which would be orphaned
     ::cv_dashboard::hide_all_atoms
     ::cv_dashboard::hide_all_gradients
+    ::cv_dashboard::hide_all_forces
 
     set ::cv_dashboard::mol $newmolid
 
