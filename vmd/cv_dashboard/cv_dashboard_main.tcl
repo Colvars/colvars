@@ -689,6 +689,7 @@ proc ::cv_dashboard::reset {} {
     # remove all graphical objects which would be orphaned
     ::cv_dashboard::hide_all_atoms
     ::cv_dashboard::hide_all_gradients
+    ::cv_dashboard::hide_all_forces
   }
 
   # Run cv delete silently to be less verbose if module was already deleted
@@ -925,9 +926,7 @@ proc ::cv_dashboard::show_gradients { list } {
 
 proc ::cv_dashboard::update_shown_gradients {} {
 
-  set w .cv_dashboard_window
-
-  set colorid 0
+  set id 0
   set molid $::cv_dashboard::mol
   foreach { cv objs } [array get ::cv_dashboard::grad_objects] {
 
@@ -952,75 +951,20 @@ proc ::cv_dashboard::update_shown_gradients {} {
       if { [llength $atomids] == 0 } { continue }
     }
 
-    set maxl2 0.
     set grads [run_cv colvar $cv getgradients]
-    if { [llength $grads] == 0 } { continue }
-    # Map gradients list to dictionary
-    for { set i 0 } { $i < [llength $grads] } { incr i } {
-      set g [lindex $grads $i]
-      set l2 [veclength2 $g]
-      if { $l2 > $maxl2 } { set maxl2 $l2 }
-      set gradients([lindex $atomids $i]) $g
-    }
-    unset grads
-
-    if { $maxl2 < 1e-14 } {
-      # Zero gradient, don't even try
-      unset gradients
-      continue
-    }
-
-    set sel [atomselect $molid "($::cv_dashboard::sel_text) and (index $atomids)"]
-    set coords [$sel get {x y z}]
-
-    graphics $molid material [.cv_dashboard_window.tabs.settings.material get]
-
-    # Loop through colorids (only in this run of the proc though)
-    # avoid colors 0-2
-    graphics $molid color [expr $colorid % 29 + 3]
-    incr colorid
-
     # Get width if provided in colvar config
     set width 1.
     regexp -nocase -line {^\s*width\s+([\d\.e]*)} [get_cv_config $cv] match width
 
-    if { $::cv_dashboard::grad_scale_choice == "scale" } {
-      set fact [expr {$::cv_dashboard::grad_scale / $width}]
-      set grad_norm [expr {sqrt($maxl2) * $fact}]
-      set ::cv_dashboard::grad_norm [round $grad_norm 5]
-    } else {
-      set fact [expr {$::cv_dashboard::grad_norm / sqrt($maxl2)}]
-      set grad_scale [expr {$fact * $width}]
-      set ::cv_dashboard::grad_scale [round $grad_scale 5]
-    }
+    set new_objs [draw_vectors $atomids $grads $id $width]
+    incr id
 
-    # Create new arrows
-    set radius [$w.tabs.settings.grad_radius get]
-    set new_objs {}
-    foreach start $coords id [$sel get index] {
-      set g $gradients($id)
-      set vec [vecscale $fact $g]
-      set vec_len [veclength $vec]
-      # Don't draw zero-length vectors
-      if { $vec_len < 1e-2 } { continue }
-      set end [vecadd $start $vec]
-      if { ${vec_len} > [expr 6.0*${radius}] } {
-        # Long arrow : cone length is 3 times radius
-        set middle [vecadd $start \
-          [vecscale [expr (${vec_len} - 3.0*${radius})/${vec_len}] ${vec}]]
-      } else {
-        # Short arrow: cap cone length at 1/2 total length
-        set middle [vecadd $start [vecscale 0.5 ${vec}]]
-      }
-      set cyl [graphics $molid cylinder $start $middle radius ${radius} resolution 12]
-      set cone [graphics $molid cone $middle $end radius [expr ${radius}*2.0] resolution 12]
-      lappend new_objs $cyl $cone
+    if { [llength $new_objs] > 0 } {
+      set ::cv_dashboard::grad_objects($cv) $new_objs
     }
-    set ::cv_dashboard::grad_objects($cv) $new_objs
-    unset gradients
-    $sel delete
   }
 }
+
 
 proc ::cv_dashboard::hide_gradients {} {
   foreach cv [selected_colvars] {
@@ -1062,10 +1006,11 @@ proc ::cv_dashboard::show_forces { list } {
 
 proc ::cv_dashboard::update_shown_forces {} {
 
-  set w .cv_dashboard_window
-
-  set colorid 0
+  # Start IDs for force objects after those of gradient objects
+  set id [array size ::cv_dashboard::grad_objects]
   set molid $::cv_dashboard::mol
+  set atomids [run_cv getatomids]
+
   foreach { bias objs } [array get ::cv_dashboard::force_objects] {
 
     # Delete out-of-date graphical objects (arrows)
@@ -1078,10 +1023,6 @@ proc ::cv_dashboard::update_shown_forces {} {
       unset ::cv_dashboard::force_objects($bias)
       continue
     }
-
-    set atomids [run_cv getatomids]
-
-    set maxl2 0.
 
     # Obtaining forces from each particular biases requires a dedicated Module update
     # enabling forces only from the chosen bias
@@ -1096,71 +1037,12 @@ proc ::cv_dashboard::update_shown_forces {} {
     run_cv update
     set force_list [run_cv getatomappliedforces]
 
-    if { [llength $force_list] == 0 } { continue }
-    # Map gradients list to dictionary
-    for { set i 0 } { $i < [llength $force_list] } { incr i } {
-      set g [lindex $force_list $i]
-      set l2 [veclength2 $g]
-      if { $l2 > $maxl2 } { set maxl2 $l2 }
-      set forces([lindex $atomids $i]) $g
+    set new_objs [draw_vectors $atomids $force_list $id]
+    incr id
+
+    if { [llength $new_objs] > 0 } {
+      set ::cv_dashboard::force_objects($bias) $new_objs
     }
-    unset force_list
-
-    if { $maxl2 < 1e-14 } {
-      # Zero gradient, don't even try
-      unset forces
-      continue
-    }
-
-    set sel [atomselect $molid "($::cv_dashboard::sel_text) and (index $atomids)"]
-    set coords [$sel get {x y z}]
-
-    graphics $molid material [.cv_dashboard_window.tabs.settings.material get]
-
-    # Loop through colorids (only in this run of the proc though)
-    # but don't re-use colors used for gradient display
-    # avoid colors 0-2
-    graphics $molid color [expr $colorid  + [llength ::cv_dashboard::force_objects] % 29 + 3]
-    incr colorid
-
-    # Get width if provided in colvar config
-    set width 1.
-
-    if { $::cv_dashboard::grad_scale_choice == "scale" } {
-      set fact [expr {$::cv_dashboard::grad_scale / $width}]
-      set grad_norm [expr {sqrt($maxl2) * $fact}]
-      set ::cv_dashboard::grad_norm [round $grad_norm 5]
-    } else {
-      set fact [expr {$::cv_dashboard::grad_norm / sqrt($maxl2)}]
-      set grad_scale [expr {$fact * $width}]
-      set ::cv_dashboard::grad_scale [round $grad_scale 5]
-    }
-
-    # Create new arrows
-    set radius [$w.tabs.settings.grad_radius get]
-    set new_objs {}
-    foreach start $coords id [$sel get index] {
-      set g $forces($id)
-      set vec [vecscale $fact $g]
-      set vec_len [veclength $vec]
-      # Don't draw zero-length vectors
-      if { $vec_len < 1e-2 } { continue }
-      set end [vecadd $start $vec]
-      if { ${vec_len} > [expr 6.0*${radius}] } {
-        # Long arrow : cone length is 3 times radius
-        set middle [vecadd $start \
-          [vecscale [expr (${vec_len} - 3.0*${radius})/${vec_len}] ${vec}]]
-      } else {
-        # Short arrow: cap cone length at 1/2 total length
-        set middle [vecadd $start [vecscale 0.5 ${vec}]]
-      }
-      set cyl [graphics $molid cylinder $start $middle radius ${radius} resolution 12]
-      set cone [graphics $molid cone $middle $end radius [expr ${radius}*2.0] resolution 12]
-      lappend new_objs $cyl $cone
-    }
-    set ::cv_dashboard::force_objects($bias) $new_objs
-    unset forces
-    $sel delete
   }
 }
 
@@ -1180,6 +1062,82 @@ proc ::cv_dashboard::hide_all_forces {} {
     foreach obj $objs { graphics $::cv_dashboard::mol delete $obj }
   }
   array unset ::cv_dashboard::force_objects *
+}
+
+
+#################################################################
+# Draw vectors as arrows, used by gradient and force displays
+#################################################################
+
+
+proc ::cv_dashboard::draw_vectors { atomids vector_list obj_id { width 1.} } {
+  set molid $::cv_dashboard::mol
+  set w .cv_dashboard_window
+
+  if { [llength $vector_list] == 0 } { return }
+
+  if  { [llength $vector_list] != [llength $atomids] } {
+    puts "Error: mismatched list lengths in ::cv_dashboard::draw_vectors"
+    puts $vector_list
+    puts $atomids
+    return
+  }
+
+  # Map gradients list to dictionary
+  set maxl2 0.
+  foreach vec $vector_list aid $atomids {
+    set l2 [veclength2 $vec]
+    if { $l2 > $maxl2 } { set maxl2 $l2 }
+    set vectors($aid) $vec
+  }
+
+  if { $maxl2 < 1e-14 } {
+    # Zero vectors, don't even try
+    return
+  }
+
+  set sel [atomselect $molid "($::cv_dashboard::sel_text) and (index $atomids)"]
+  set coords [$sel get {x y z}]
+  $sel delete
+
+  graphics $molid material [.cv_dashboard_window.tabs.settings.material get]
+
+  # Skip colors used by other gradient or force objects
+  # avoid colors 0-2
+  graphics $molid color [expr $obj_id % 29 + 3 ]
+
+  if { $::cv_dashboard::grad_scale_choice == "scale" } {
+    set fact [expr {$::cv_dashboard::grad_scale / $width}]
+    set grad_norm [expr {sqrt($maxl2) * $fact}]
+    set ::cv_dashboard::grad_norm [round $grad_norm 5]
+  } else {
+    set fact [expr {$::cv_dashboard::grad_norm / sqrt($maxl2)}]
+    set grad_scale [expr {$fact * $width}]
+    set ::cv_dashboard::grad_scale [round $grad_scale 5]
+  }
+
+  # Create new arrows
+  set radius [$w.tabs.settings.grad_radius get]
+  set new_objs {}
+  foreach start $coords id $atomids {
+    set vec [vecscale $fact $vectors($id)]
+    set vec_len [veclength $vec]
+    # Don't draw zero-length vectors
+    if { $vec_len < 1e-2 } { continue }
+    set end [vecadd $start $vec]
+    if { ${vec_len} > [expr 6.0*${radius}] } {
+      # Long arrow : cone length is 3 times radius
+      set middle [vecadd $start \
+        [vecscale [expr (${vec_len} - 3.0*${radius})/${vec_len}] ${vec}]]
+    } else {
+      # Short arrow: cap cone length at 1/2 total length
+      set middle [vecadd $start [vecscale 0.5 ${vec}]]
+    }
+    set cyl [graphics $molid cylinder $start $middle radius ${radius} resolution 12]
+    set cone [graphics $molid cone $middle $end radius [expr ${radius}*2.0] resolution 12]
+    lappend new_objs $cyl $cone
+  }
+  return $new_objs
 }
 
 

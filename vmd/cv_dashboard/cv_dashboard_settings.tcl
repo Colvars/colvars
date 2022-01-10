@@ -40,10 +40,10 @@ proc ::cv_dashboard::createSettingsWindow { } {
   grid [ttk::separator $settings.sepgradients -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
 
   incr gridrow
-  grid [label $settings.gradients_text -text "Gradients settings"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
+  grid [label $settings.gradients_text -text "Gradients / Forces settings"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
 
   incr gridrow
-  grid [ttk::radiobutton $settings.grad_scale_choice_norm -text "Max. gradient norm" -value "norm" -variable ::cv_dashboard::grad_scale_choice \
+  grid [ttk::radiobutton $settings.grad_scale_choice_norm -text "Max. arrow length" -value "norm" -variable ::cv_dashboard::grad_scale_choice \
     -command {::cv_dashboard::update_shown_gradients; ::cv_dashboard::update_shown_forces} -padding "2 0 2 0"] \
     -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [tk::entry $settings.grad_norm -textvariable ::cv_dashboard::grad_norm] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
@@ -51,11 +51,11 @@ proc ::cv_dashboard::createSettingsWindow { } {
   bind $settings.grad_norm <<keyb_enter>> "$settings.grad_scale_choice_norm invoke; ::cv_dashboard::update_shown_gradients"
 
   incr gridrow
-  grid [ttk::radiobutton $settings.grad_scale_choice_scale -text "Grad. scaling factor" -value "scale" -variable ::cv_dashboard::grad_scale_choice \
+  grid [ttk::radiobutton $settings.grad_scale_choice_scale -text "Scaling factor" -value "scale" -variable ::cv_dashboard::grad_scale_choice \
     -command {::cv_dashboard::update_shown_gradients; ::cv_dashboard::update_shown_forces} -padding "2 0 2 0"] \
     -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [tk::entry $settings.grad_scale -textvariable ::cv_dashboard::grad_scale] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  grid [label $settings.grad_scale_unit -text "A * L / (cv / width)"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+  grid [label $settings.grad_scale_unit -text "gradient: A*L/(cv/width)"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
   bind $settings.grad_scale <<keyb_enter>> "$settings.grad_scale_choice_scale invoke; ::cv_dashboard::update_shown_gradients"
 
   $settings.grad_scale_choice_norm invoke ;# Default to norm
