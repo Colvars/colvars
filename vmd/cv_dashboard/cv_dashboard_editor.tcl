@@ -11,6 +11,8 @@ proc ::cv_dashboard::add_cv {} {
 
 # Colvar config editor window
 proc ::cv_dashboard::edit_cv { {add false} {cvs ""} } {
+
+  set indent $::cv_dashboard::indent
   if $add {
     # do not remove existing vars
     set cvs {}
@@ -22,8 +24,8 @@ proc ::cv_dashboard::edit_cv { {add false} {cvs ""} } {
       close $in
     } else {
       # Provide simple template
-      set cfg "# You can edit or replace the example colvar config below.\n\
-  colvar {\n  name d\n  distance {\n    group1 { atomNumbers 1 2 }\n    group2 { atomNumbers 3 4 }\n  }\n}\n"
+      set cfg "colvar {\n${indent}name d\n${indent}distance {\n${indent}${indent}group1 { atomNumbers 1 2 }
+${indent}${indent}group2 { atomNumbers 3 4 }\n${indent}}\n}\n"
     }
   } else {
     if {[llength $cvs] < 1} {
@@ -498,13 +500,13 @@ proc ::cv_dashboard::editor_help {} {
 
 
 # Edit new bias config
-proc ::cv_dashboard::add_bias {} {
-  edit_bias true
+proc ::cv_dashboard::add_bias { {cvs ""} } {
+  edit_bias true "" $cvs
 }
 
 
 # Bias config editor window
-proc ::cv_dashboard::edit_bias { {add false} {biases ""} } {
+proc ::cv_dashboard::edit_bias { {add false} {biases ""} {cvs ""} } {
 
   if { [llength $::cv_dashboard::cvs] == 0 } {
     tk_messageBox -icon error -title "Colvars Dashboard Error"\
@@ -517,7 +519,9 @@ proc ::cv_dashboard::edit_bias { {add false} {biases ""} } {
     set biases {}
     set ::cv_dashboard::backup_cfg ""
 
-    set cvs [selected_colvars]
+    if { [llength $cvs] == 0 } {
+      set cvs [selected_colvars]
+    }
     if { [llength $cvs] > 0 } {
       # Use any selected colvars
       set centers ""
@@ -530,8 +534,7 @@ proc ::cv_dashboard::edit_bias { {add false} {biases ""} } {
     set indent ${::cv_dashboard::indent}
 
     # Provide simple template
-    set cfg "# You can edit or replace the example bias configuration below.\n\
-harmonic {\n${indent}colvars $cvs\n${indent}forceConstant 10.0\n${indent}centers$centers\n}"
+    set cfg "harmonic {\n${indent}colvars $cvs\n${indent}forceConstant 10.0\n${indent}centers$centers\n}"
   } else {
     if {[llength $biases] < 1} {
       # if not provided, try selection
@@ -601,4 +604,137 @@ harmonic {\n${indent}colvars $cvs\n${indent}forceConstant 10.0\n${indent}centers
   # No left frame for now
   # pack $w.bias_editor.fl -fill both -side left
   pack $w.bias_editor.fr -fill both -expand yes -padx 2 -pady 2
+}
+
+
+# Automatic colvars creation
+
+proc ::cv_dashboard::cvs_from_labels {} {
+  set molid $::cv_dashboard::mol
+  set indent $::cv_dashboard::indent
+  set indent2 "${indent}${indent}"
+
+  set n(Bonds) 2
+  set n(Angles) 3
+  set n(Dihedrals) 4
+  set cvc(Bonds) distance
+  set cvc(Angles) angle
+  set cvc(Dihedrals) dihedral
+  foreach obj { "Bonds" "Angles" "Dihedrals" } {
+    foreach l [label list $obj] {
+      # Skip hidden labels
+      if { [lindex $l 2] == "hide" } { continue }
+      set ok true
+
+      # Look for first available name
+      set id 1
+      set name "auto_$cvc($obj)${id}"
+      set cvs [run_cv list]
+      while { [lsearch $cvs $name] > -1 } {
+        incr id
+        set name "auto_$cvc($obj)${id}"
+      }
+      set cfg "colvar \{\n${indent}name $name\n${indent}$cvc($obj) \{\n"
+      for {set i 0} { $i < $n($obj) } {incr i} {
+        set a [lindex $l $i]
+        set m [lindex $a 0]
+        if { $m != $molid } {
+          # Label references atom outside of current molecule, skip
+          set ok false
+          break
+        }
+        set serial [expr [lindex $a 1] + 1]
+        append cfg "${indent2}group[expr $i+1] \{\n${indent2}${indent}atomNumbers $serial\n${indent2}\}\n"
+      }
+      if { $ok } {
+        append cfg "$indent\}\n\}"
+        puts $cfg
+        apply_config $cfg
+      }
+    }
+  }
+}
+
+
+proc ::cv_dashboard::protein_cvs {} {
+
+  set molid $::cv_dashboard::mol
+  set indent $::cv_dashboard::indent
+
+  # alpha carbon RMSD from first frame
+  # Write XYZ file for just alpha carbons
+  set alpha [atomselect $molid alpha]
+  if { [$alpha num] > 0 } {
+    $alpha frame 0
+    set ref [open "cv_dashboard_protein_rmsd_ref.xyz" w]
+    puts $ref "[$alpha num]"
+    puts $ref "Created by Colvars Dashboard: alpha carbons in frame 0 of molecule [molinfo $molid get name]"
+    foreach coords [$alpha get {x y z}] {
+      lassign $coords x y z
+      puts $ref "CA  $x  $y  $z"
+    }
+    close $ref
+
+    set cfg "colvar {
+${indent}# alpha carbon RMSD with respect to frame 0 of molecule [molinfo $molid get name]
+${indent}name auto_prot_rmsd
+${indent}rmsd {
+${indent}${indent}atoms {
+${indent}${indent}${indent}atomNumbers [$alpha get serial]
+${indent}${indent}}
+${indent}${indent}refPositionsFile cv_dashboard_protein_rmsd_ref.xyz
+${indent}}
+}"
+    apply_config $cfg
+
+    set cfg "colvar {
+${indent}# alpha carbon radius of gyration
+${indent}name auto_prot_rgyr
+${indent}gyration {
+${indent}${indent}atoms {
+${indent}${indent}${indent}atomNumbers [$alpha get serial]
+${indent}${indent}}
+${indent}}
+}"
+    apply_config $cfg
+
+    set cfg "colvar {
+${indent}# orientation quaternion of protein with respect to first frame
+${indent}name auto_prot_orientation
+${indent}orientation {
+${indent}${indent}atoms {
+${indent}${indent}${indent}atomNumbers [$alpha get serial]
+${indent}${indent}}
+${indent}${indent}refPositionsFile cv_dashboard_protein_rmsd_ref.xyz
+${indent}}
+}"
+    apply_config $cfg
+
+    set cfg "colvar {
+${indent}# orientation angle of protein with respect to first frame
+${indent}name auto_prot_orientation_angle
+${indent}orientationAngle {
+${indent}${indent}atoms {
+${indent}${indent}${indent}atomNumbers [$alpha get serial]
+${indent}${indent}}
+${indent}${indent}refPositionsFile cv_dashboard_protein_rmsd_ref.xyz
+${indent}}
+}"
+    apply_config $cfg
+  }
+  $alpha delete
+  set prot [atomselect $molid protein]
+  if { [$prot num] > 0 } {
+    set cfg "colvar {
+${indent}# magnitude of protein dipole (if charges are defined)
+${indent}name auto_prot_dipole_magnitude
+${indent}dipoleMagnitude {
+${indent}${indent}atoms {
+${indent}${indent}${indent}atomNumbers [$prot get serial]
+${indent}${indent}}
+${indent}}
+}"
+    apply_config $cfg
+  }
+  $prot delete
 }

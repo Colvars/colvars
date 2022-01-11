@@ -84,12 +84,11 @@ proc ::cv_dashboard::createWindow {} {
   incr gridrow
   grid [ttk::button $main.refresh -text "Refresh list \[F5\]" -command ::cv_dashboard::refresh_table -padding "2 0 2 0"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
 
+  # Plots
   incr gridrow
   grid [ttk::separator $main.sep_plots -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
   incr gridrow
   grid [label $main.viz_text -text "Plots and real-time visualizations"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
-
-  # Plots
   incr gridrow
   grid [ttk::button $main.plot -text "Timeline plot" -command ::cv_dashboard::plot -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $main.plot2cv -text "Pairwise plot" -command {::cv_dashboard::plot 2cv} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
@@ -125,6 +124,16 @@ proc ::cv_dashboard::createWindow {} {
   incr gridrow
   createVolmapMenu $gridrow
 
+  # Wizards
+  incr gridrow
+  grid [ttk::separator $main.sep_auto -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
+  incr gridrow
+  grid [label $main.auto_text -text "Automatic colvars"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
+  incr gridrow
+  grid [ttk::button $main.cvfromprotein -text "Protein auto-colvars" -command ::cv_dashboard::protein_cvs -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $main.cvfromlabels -text "Colvars from VMD labels" -command ::cv_dashboard::cvs_from_labels -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+
+  # General options
   incr gridrow
   grid [ttk::separator $main.sep_options -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
   incr gridrow
@@ -204,6 +213,7 @@ proc ::cv_dashboard::createBiasesTab {} {
 
   bind $biases.bias_table <Control-a> { .cv_dashboard_window.tabs.biases.bias_table selection set $::cv_dashboard::biases }
   bind $biases.bias_table <Button-1> {::cv_dashboard::tableClicked tabs.biases.bias_table %x %y}
+  bind $biases.bias_table <Button-3> {::cv_dashboard::biasContextMenu %x %y %X %Y}
 
   event add <<keyb_enter>> <Return>   ;# Combine Return and keypad-Enter into a single virtual event
   event add <<keyb_enter>> <KP_Enter>
@@ -253,6 +263,35 @@ proc ::cv_dashboard::createBiasesTab {} {
   grid columnconfigure $biases 2 -weight 1
 
   grid remove $biases
+}
+
+
+# Display context menu about specific bias
+# Takes coordinates within widget and within window
+proc ::cv_dashboard::biasContextMenu { x y wX wY } {
+  set w .cv_dashboard_window.tabs.biases
+  set menu $w.biasMenu
+
+  set biases [selected_biases]
+
+  # Add any bias under mouse cursor
+  set b [$w.bias_table identify row $x $y]
+  if { [llength $b] == 1 && [lsearch $biases $b] == -1 } {
+    lappend biases $b
+  }
+
+  if { [winfo exists $menu] } {
+    destroy $menu
+  }
+  menu $menu -tearoff 0
+
+  if { [llength $biases] == 0 } {
+    $menu add command -label New -command ::cv_dashboard::add_bias
+  } else {
+    $menu add command -label Edit -command [list ::cv_dashboard::edit_bias false $biases]
+    $menu add command -label Delete -command [list ::cv_dashboard::del_bias $biases]
+  }
+  tk_popup $menu $wX $wY
 }
 
 
@@ -375,6 +414,7 @@ proc ::cv_dashboard::cvContextMenu { x y wX wY } {
     }
     $menu add command -label Edit -command [list ::cv_dashboard::edit_cv false $cvs]
     $menu add command -label Delete -command [list ::cv_dashboard::del_cv $cvs]
+    $menu add command -label "Add harmonic bias" -command [list ::cv_dashboard::add_bias $cvs]
   }
   tk_popup $menu $wX $wY
 }
@@ -1044,6 +1084,11 @@ proc ::cv_dashboard::update_shown_forces {} {
       set ::cv_dashboard::force_objects($bias) $new_objs
     }
   }
+  # Restore all forces and update Module
+  foreach b [run_cv list biases] {
+    cv bias $b set apply_force 1
+  }
+  run_cv update
 }
 
 proc ::cv_dashboard::hide_forces {} {
