@@ -1144,6 +1144,8 @@ proc ::cv_dashboard::draw_vectors { atomids vector_list obj_id { width 1.} } {
   set atomids [lsort -integer $atomids]
   set sel [atomselect $molid "($::cv_dashboard::sel_text) and (index $atomids)"]
   set coords [$sel get {x y z}]
+  # Filter list of atom ids
+  set atomids [$sel list]
   $sel delete
 
   graphics $molid material [.cv_dashboard_window.tabs.settings.material get]
