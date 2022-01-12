@@ -1135,12 +1135,13 @@ proc ::cv_dashboard::draw_vectors { atomids vector_list obj_id { width 1.} } {
     if { $l2 > $maxl2 } { set maxl2 $l2 }
     set vectors($aid) $vec
   }
-
   if { $maxl2 < 1e-14 } {
     # Zero vectors, don't even try
     return
   }
 
+  # Now we can safely sort atom IDs
+  set atomids [lsort -integer $atomids]
   set sel [atomselect $molid "($::cv_dashboard::sel_text) and (index $atomids)"]
   set coords [$sel get {x y z}]
   $sel delete
