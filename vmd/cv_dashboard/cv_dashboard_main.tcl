@@ -38,8 +38,9 @@ proc ::cv_dashboard::createWindow {} {
   $w.cvtable heading #0 -text "colvar name"
   $w.cvtable heading val -text "value"
 
-  bind $w.cvtable <Button-3> {::cv_dashboard::cvContextMenu %x %y %X %Y}
   bind $w.cvtable <Button-1> {::cv_dashboard::tableClicked cvtable %x %y}
+  bind $w.cvtable <Button-3> {::cv_dashboard::cvContextMenu %x %y %X %Y}
+  bind $w.cvtable <Control-Button-1> {::cv_dashboard::cvContextMenu %x %y %X %Y}
 
   bind $w.cvtable <Control-e> ::cv_dashboard::edit_cv
   bind $w.cvtable <Control-a> { .cv_dashboard_window.cvtable selection set $::cv_dashboard::cvs }
@@ -211,9 +212,13 @@ proc ::cv_dashboard::createBiasesTab {} {
   $biases.bias_table heading val -text "energy"
   $biases.bias_table heading colvars -text "colvars"
 
+  bind $biases.bias_table <Control-e> ::cv_dashboard::edit_bias
+  bind $biases.bias_table <Control-n> ::cv_dashboard::add_bias
   bind $biases.bias_table <Control-a> { .cv_dashboard_window.tabs.biases.bias_table selection set $::cv_dashboard::biases }
   bind $biases.bias_table <Button-1> {::cv_dashboard::tableClicked tabs.biases.bias_table %x %y}
   bind $biases.bias_table <Button-3> {::cv_dashboard::biasContextMenu %x %y %X %Y}
+  bind $biases.bias_table <Control-Button-1> {::cv_dashboard::biasContextMenu %x %y %X %Y}
+
 
   event add <<keyb_enter>> <Return>   ;# Combine Return and keypad-Enter into a single virtual event
   event add <<keyb_enter>> <KP_Enter>
@@ -234,9 +239,9 @@ proc ::cv_dashboard::createBiasesTab {} {
   grid [label $biases.actions_text -text "Bias list actions"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
 
   incr gridrow
-  grid [ttk::button $biases.edit -text "Edit bias" -command ::cv_dashboard::edit_bias -padding "2 0 2 0"] \
+  grid [ttk::button $biases.edit -text "Edit bias \[Ctrl-e\]" -command ::cv_dashboard::edit_bias -padding "2 0 2 0"] \
     -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::button $biases.add -text "New bias" -command ::cv_dashboard::add_bias -padding "2 0 2 0"] \
+  grid [ttk::button $biases.add -text "New bias \[Ctrl-n\]" -command ::cv_dashboard::add_bias -padding "2 0 2 0"] \
     -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $biases.del -text "Delete bias" -command ::cv_dashboard::del_bias -padding "2 0 2 0"] \
     -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew

@@ -212,6 +212,7 @@ histogram \{\\
 The Colvars Dashboard is a graphical interface for interactive visualization and refinement of collective variables aided by molecular structures and trajectories.
 It is accessible in VMD's Main Menu under ``Extensions/Analysis/Colvars Dashboard''.
 Throughout the interface, keyboard shortcuts for common operations are indicated in square brackets.
+Context menus in the colvar and bias tables can be accessed using either right click or Control-click.
 
 \cvsubsec{A mini-tutorial}{sec:dashboard_tutorial}
 
@@ -225,6 +226,8 @@ Here are the steps for a quick first tour of the Dashboard:
  \item click ``Timeline plot'';
  \item click anywhere in the timeline plot to navigate in the trajectory.
 \end{enumerate}
+
+Alternately, use the Automatic colvars features in the Actions tab.
 
 Now, clicking ``Edit'' in the Dashboard window (or right-clikcing on a colvar in the list view), you can modify the collective variable to reflect interesting geometric properties of the system.
 The power of the collective variables approach lies in the variety of geometric functions (``components'') and their combinations.
@@ -261,6 +264,19 @@ Auto-updating selections (see below) can be used to adapt the colvar definitions
 This saves the current configuration of the colvars Module to a file.
 This includes comments found in the input, general parameters of the Colvars Module, the collective variables themselves, and collective variable biases.
 The resulting configuration file can be read by Colvars, either back in VMD, or within a supported MD engine.
+
+
+\cvsubsec{Automatic colvar generators}{sec:dashboard_auto_colvars}
+
+The Actions tab offers two buttons to generate sets of colvars from the current VMD session:
+\begin{itemize}
+  \item "protein auto-colvars" creates variables describing classic quantities used to describe protein structures;
+  \item "colvars from VMD labels" creates variables based on visible labels (Bonds, Angles, Dihedrals) for the current molecule
+  (see Molecule selector in the same tab). Such labels can be created by setting the label mode with the key 2, 3, or 4, and picking atoms with the mouse.
+\end{itemize}
+
+These automatically generated colvars can be used as-is, or customized using the configuration editor (Edit in the context menu, or in the Actions tab).
+
 
 \cvsubsec{The configuration editor}{sec:dashboard_config_editor}
 
@@ -310,9 +326,10 @@ Clicking a circle jumps to the corresponding frame.
 Each atom group is shown in a different color.
 ``Show gradient'' is available for scalar variables only.
 It creates a graphical representation of the atomic gradients of the selected variables, visualizing how the value of the collective variable would vary in response to a change in atomic coordinates.
-Vectors representing the gradient are rescaled as indicated by the radio buttons \emph{Set max. vector norm} and \emph{Set scaling factor}.
-\emph{Set max. vector norm} rescales gradients so that the largest vector component of each colvar's gradient is represented by an arrow of the specified length, in \AA.
-\emph{Set scaling factor} rescales gradients by the specified factor, divided by the colvar's \texttt{width} parameter (1 by default, see~\ref{sec:colvar_grid_params}).
+The graphical representation of the gradients is controlled by parameters in the Settings tab.
+Vectors representing the gradient are rescaled as indicated by the radio buttons \emph{Max. vector norm} and \emph{Scaling factor}.
+\emph{Max. vector norm} rescales gradients so that the largest vector component of each colvar's gradient is represented by an arrow of the specified length, in \AA.
+\emph{Scaling factor} rescales gradients by the specified factor, divided by the colvar's \texttt{width} parameter (1 by default, see~\ref{sec:colvar_grid_params}).
 This use of \texttt{width} makes it easier to compare the gradients of collective variables that are not commensurate.
 The scaling factor has the unit $\AA * L / (cv / width)$, where $L$ is the current length unit, and $cv$ represents the natural unit of the collective variable.
 By default $width$ is unity, but $(cv / width)$ may be seen as dimensionless if $width$ is expressed in cv units.
@@ -329,16 +346,18 @@ Parameters for fine-tuning these visualizations can be set in the \textit{Settin
 \cvsubsec{Monitoring colvar biases in the Dashboard}{sec:dashboard_biases}
 
 The main Dashboard window features a "Biases" tab that contains a list of currently defined biases, their current energy, and the colvars that they depend upon.
+A new harmonic bias acting on a given set of colvars can be created by selecting the colvars and opening the context menu in the colvar table (right click or control-click).
 A button enables creating a Timeline plot with the energies of currently selected biases, similar to the colvar Timeline plot.
 Only one plot can be active at a time.
+Another button creates a visualization of the biasing forces computed by the selected biases, similar to the gradient display for colvars.
+The graphical representation of forces is controlled by the same parameters as the gradients, shown in the Settings tab.
+The difference is the scaling factor unit, which is \AA{}ngstr\"om per Colvars force unit (that is, \AA{}ngstr\"om times Colvars length unit per Colvars energy unit).
 
 Note that the energy of history-dependent biases such as ABF or metadynamics may not be updated in VMD.
 However, values of the bias energy from a previous simulation can be displayed if a state file has been loaded with \texttt{cv load} (section~\ref{sec:cv_scripting}), or in the case of ABF, if \refkey{inputPrefix}{abf|inputPrefix} was specified.
-In any case, the bias list can be used to check the presence of specific biases in a given configuration.
+
 Hitting the Save button will save the configuration of any bias listed in this tab, except the harmonic wall biases that are created automatically from a colvar for which the lower or upper wall options are specified.
 
-The Dashboard does not currently include a bias configuration editor, as there is less opportunity for interactive refinement of biases than colvars.
-Therefore, bias configurations should be created separately in a text editor.
 
 \cvsubsec{Plotting custom time-dependent quantities as colvars}{sec:dashboard_custom_vars}
 
