@@ -1,0 +1,61 @@
+# Trialanine
+seed 1
+
+# Variables
+set outName	        test
+
+# Use amber ff
+parmfile            trialanine.parm7
+coordinates         trialanine.pdb
+temperature         300.0
+
+## SIMULATION PARAMETERS                                  
+# AMBER FF settings
+amber               on
+rigidBonds          water
+useSettle           on
+rigidTolerance      1.0e-8
+rigidIterations     100
+cutoff              9.0
+pairlistdist        11.0
+switching           off
+exclude             scaled1-4
+readexclusions      yes
+1-4scaling          0.83333333
+scnb                2.0
+zeromomentum        on
+ljcorrection        off
+watermodel          tip3
+
+# Integrator Parameters 
+timestep            0.5 
+nonbondedFreq       1 
+fullElectFrequency  1 
+stepspercycle       10
+splitpatch          hydrogen
+hgroupcutoff        2.8
+
+# Output
+outputenergies          1000
+outputtiming            1000
+restartfreq             100000
+binaryoutput            no
+binaryrestart           yes
+outputname              $outName
+restartname             $outName
+
+# CONSTANT-T
+
+langevin                on
+langevinTemp            300.0
+langevinDamping         10.0
+
+# COM
+
+commotion               no
+
+colvars                 on
+colvarsConfig           test.in
+#colvarsInput            $inputName.colvars.state
+
+numSteps                20
