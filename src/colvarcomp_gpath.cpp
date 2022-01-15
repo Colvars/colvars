@@ -423,7 +423,9 @@ colvar::linearCombination::linearCombination(std::string const &conf): cvc(conf)
     x.reset();
     use_explicit_gradients = true;
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
-        if (!cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
+        if (!cv[i_cv]->is_enabled(f_cvc_explicit_gradient) ||
+             cv[i_cv]->is_enabled(f_cvc_scalable_com) ||
+             cv[i_cv]->is_enabled(f_cvc_scalable)) {
             use_explicit_gradients = false;
         }
     }
@@ -568,7 +570,9 @@ colvar::CVBasedPath::CVBasedPath(std::string const &conf): cvc(conf) {
     x.type(colvarvalue::type_scalar);
     use_explicit_gradients = true;
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
-        if (!cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
+        if (!cv[i_cv]->is_enabled(f_cvc_explicit_gradient) ||
+             cv[i_cv]->is_enabled(f_cvc_scalable_com) ||
+             cv[i_cv]->is_enabled(f_cvc_scalable)) {
             use_explicit_gradients = false;
         }
     }
@@ -652,16 +656,6 @@ colvar::gspathCV::gspathCV(std::string const &conf): CVBasedPath(conf) {
     }
     GeometricPathCV::GeometricPathBase<colvarvalue, cvm::real, GeometricPathCV::path_sz::S>::initialize(cv.size(), ref_cv[0], total_reference_frames, use_second_closest_frame, use_third_closest_frame);
     x.type(colvarvalue::type_scalar);
-    use_explicit_gradients = true;
-    for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
-        if (!cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
-            use_explicit_gradients = false;
-        }
-    }
-    if (!use_explicit_gradients) {
-        cvm::log("Geometric path s(σ) will use implicit gradients.\n");
-        disable(f_cvc_explicit_gradient);
-    }
 }
 
 colvar::gspathCV::~gspathCV() {}
@@ -796,16 +790,6 @@ colvar::gzpathCV::gzpathCV(std::string const &conf): CVBasedPath(conf) {
     }
     GeometricPathCV::GeometricPathBase<colvarvalue, cvm::real, GeometricPathCV::path_sz::Z>::initialize(cv.size(), ref_cv[0], total_reference_frames, use_second_closest_frame, use_third_closest_frame, b_use_z_square);
     x.type(colvarvalue::type_scalar);
-    use_explicit_gradients = true;
-    for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
-        if (!cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
-            use_explicit_gradients = false;
-        }
-    }
-    if (!use_explicit_gradients) {
-        cvm::log("Geometric path z(σ) will use implicit gradients.\n");
-        disable(f_cvc_explicit_gradient);
-    }
 }
 
 colvar::gzpathCV::~gzpathCV() {
