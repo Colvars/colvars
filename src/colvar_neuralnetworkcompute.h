@@ -84,17 +84,11 @@ public:
     /// setup activation function
     void setActivationFunction(const std::function<double(double)>& f, const std::function<double(double)>& df);
     /// compute the value of this layer
-    std::vector<double> compute(const std::vector<double>& input) const;
-    /// compute the total derivative of this layer wrt input
-    std::vector<double> computeTotalDerivative(const std::vector<double>& input) const;
+    void compute(const std::vector<double>& input, std::vector<double>& output) const;
     /// compute the gradient of i-th output wrt j-th input
     double computeGradient(const std::vector<double>& input, const size_t i, const size_t j) const;
-    /// compute the numerical gradient of i-th output wrt j-th input
-    double computeNumericalGradient(const std::vector<double>& input, const size_t i, const size_t j, const double epsilon = 0.0001) const;
     /// output[i][j] is the gradient of i-th output wrt j-th input
-    std::vector<std::vector<double>> computeGradient(const std::vector<double>& input) const;
-    /// dump info
-    std::ostream& showInfo(std::ostream& os = std::cout);
+    void computeGradient(const std::vector<double>& input, std::vector<std::vector<double>>& output_grad) const;
     /// get the input size
     size_t getInputSize() const {
         return m_input_size;
@@ -131,17 +125,10 @@ public:
     // for faster computation
     const std::vector<double>& input() const {return m_input;}
     std::vector<double>& input() {return m_input;}
+    /// compute the values and the gradients of all output nodes
     void compute();
     double getOutput(const size_t i) const {return m_layers_output.back()[i];}
     double getGradient(const size_t i, const size_t j) const {return m_chained_grad[i][j];}
-    /// compute the values of all output nodes
-    std::vector<double> compute(const std::vector<double>& input) const;
-    /// compute the value of a specified output node
-    double compute(const std::vector<double>& input, size_t i) const;
-    /// compute the gradient of i-th output wrt j-th input
-    double computeGradient(const std::vector<double>& input, const size_t i, const size_t j) const;
-    /// compute the numerical gradient of i-th output wrt j-th input
-    double computeNumericalGradient(const std::vector<double>& input, const size_t i, const size_t j, const double epsilon = 0.0001) const;
     /// get a specified layer
     const denseLayer& getLayer(const size_t i) const {return m_dense_layers[i];}
     /// get the number of layers
