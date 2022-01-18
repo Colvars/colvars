@@ -666,15 +666,34 @@ proc ::cv_dashboard::protein_cvs {} {
   set alpha [atomselect $molid alpha]
   if { [$alpha num] > 0 } {
     $alpha frame 0
-    set ref [open "cv_dashboard_protein_rmsd_ref.xyz" w]
-    puts $ref "[$alpha num]"
-    puts $ref "Created by Colvars Dashboard: alpha carbons in frame 0 of molecule [molinfo $molid get name]"
-    foreach coords [$alpha get {x y z}] {
-      lassign $coords x y z
-      puts $ref "CA  $x  $y  $z"
-    }
-    close $ref
+    set refFile ""
+    set refFileName "cv_dashboard_protein_rmsd_ref.xyz"
+    set refFilePath ""
 
+    # Try to write to current directory first
+    if [catch {set refFile [open $refFileName w]}] {
+      # If not find the first existing environment variable in a list of possible temp dirs
+      foreach var { TMP TEMP TMPDIR HOME } {
+        if {[info exists ::env($var)]} {
+          set refFilePath $::env($var)
+          if {![catch {set refFile [open "$refFilePath/$refFileName" w]}]} {
+            break
+          }
+        }
+      }
+    }
+    if { $refFilePath != "" } {
+      set refFileName "$refFilePath/$refFileName"
+    }
+    if { $refFile != "" } {
+      puts $refFile "[$alpha num]"
+      puts $refFile "Created by Colvars Dashboard: alpha carbons in frame 0 of molecule [molinfo $molid get name]"
+      foreach coords [$alpha get {x y z}] {
+        lassign $coords x y z
+        puts $refFile [format "CA  %8.3f %8.3f %8.3f" $x $y $z]
+      }
+      close $refFile
+    }
     set cfg "colvar {
 ${indent}# alpha carbon RMSD with respect to frame 0 of molecule [molinfo $molid get name]
 ${indent}name auto_prot_rmsd
@@ -682,10 +701,11 @@ ${indent}rmsd {
 ${indent}${indent}atoms {
 ${indent}${indent}${indent}atomNumbers [$alpha get serial]
 ${indent}${indent}}
-${indent}${indent}refPositionsFile cv_dashboard_protein_rmsd_ref.xyz
+${indent}${indent}refPositionsFile $refFileName
 ${indent}}
 }"
     apply_config $cfg
+
 
     set cfg "colvar {
 ${indent}# alpha carbon radius of gyration
@@ -705,7 +725,7 @@ ${indent}orientation {
 ${indent}${indent}atoms {
 ${indent}${indent}${indent}atomNumbers [$alpha get serial]
 ${indent}${indent}}
-${indent}${indent}refPositionsFile cv_dashboard_protein_rmsd_ref.xyz
+${indent}${indent}refPositionsFile $refFileName
 ${indent}}
 }"
     apply_config $cfg
@@ -717,7 +737,7 @@ ${indent}orientationAngle {
 ${indent}${indent}atoms {
 ${indent}${indent}${indent}atomNumbers [$alpha get serial]
 ${indent}${indent}}
-${indent}${indent}refPositionsFile cv_dashboard_protein_rmsd_ref.xyz
+${indent}${indent}refPositionsFile $refFileName
 ${indent}}
 }"
     apply_config $cfg
