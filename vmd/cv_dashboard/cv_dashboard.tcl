@@ -564,6 +564,9 @@ proc ::cv_dashboard::change_mol {} {
     trace remove variable ::vmd_frame($::cv_dashboard::mol) write ::cv_dashboard::update_frame
     # Remove all graphical objects which would be orphaned
     ::cv_dashboard::hide_all_atoms
+    # Backup shown grads/forces
+    set grad_objects [array get ::cv_dashboard::grad_objects]
+    set force_objects [array get ::cv_dashboard::force_objects]
     ::cv_dashboard::hide_all_gradients
     ::cv_dashboard::hide_all_forces
 
@@ -571,9 +574,14 @@ proc ::cv_dashboard::change_mol {} {
 
     # Remember config
     set cfg [get_whole_config]
+
     reset
     apply_config $cfg
+    # Attempt to restore grads/forces
+    array set ::cv_dashboard::grad_objects $grad_objects
+    array set ::cv_dashboard::force_objects $force_objects
     change_track_frame ;# activate tracking of new molecule if requested
+    refresh_table
   }
 }
 

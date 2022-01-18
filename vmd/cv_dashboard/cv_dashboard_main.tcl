@@ -1178,16 +1178,16 @@ proc ::cv_dashboard::draw_vectors { atomids vector_list obj_id { width 1.} } {
     # Don't draw zero-length vectors
     if { $vec_len < 1e-2 } { continue }
     set end [vecadd $start $vec]
-    if { ${vec_len} > [expr 6.0*${radius}] } {
+    if { $vec_len > [expr 6.0*$radius] } {
       # Long arrow : cone length is 3 times radius
       set middle [vecadd $start \
-        [vecscale [expr (${vec_len} - 3.0*${radius})/${vec_len}] ${vec}]]
+        [vecscale [expr ($vec_len - 3.0*$radius)/$vec_len] $vec]]
     } else {
       # Short arrow: cap cone length at 1/2 total length
-      set middle [vecadd $start [vecscale 0.5 ${vec}]]
+      set middle [vecadd $start [vecscale 0.5 $vec]]
     }
-    set cyl [graphics $molid cylinder $start $middle radius ${radius} resolution 12]
-    set cone [graphics $molid cone $middle $end radius [expr ${radius}*2.0] resolution 12]
+    set cyl [graphics $molid cylinder $start $middle radius $radius resolution 12]
+    set cone [graphics $molid cone $middle $end radius [expr $radius*2.0] resolution 12]
     lappend new_objs $cyl $cone
   }
   return $new_objs
