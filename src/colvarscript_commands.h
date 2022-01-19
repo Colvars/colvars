@@ -542,7 +542,7 @@ CVSCRIPT(cv_update,
 
 CVSCRIPT(cv_version,
          "Get the Colvars Module version number\n"
-         "version : string - Colvars version",
+         "version : integer - Colvars version",
          0, 0,
          "",
          script->set_result_str(COLVARS_VERSION);
