@@ -673,7 +673,7 @@ proc ::cv_dashboard::protein_cvs {} {
     # Try to write to current directory first
     if [catch {set refFile [open $refFileName w]}] {
       # If not find the first existing environment variable in a list of possible temp dirs
-      foreach var { TMP TEMP TMPDIR HOME } {
+      foreach var { TMPDIR TMP TEMP HOME } {
         if {[info exists ::env($var)]} {
           set refFilePath $::env($var)
           if {![catch {set refFile [open "$refFilePath/$refFileName" w]}]} {

@@ -1145,11 +1145,9 @@ proc ::cv_dashboard::draw_vectors { atomids vector_list obj_id { width 1.} } {
     return
   }
 
-  # Now we can safely sort atom IDs
-  set atomids [lsort -integer $atomids]
   set sel [atomselect $molid "($::cv_dashboard::sel_text) and (index $atomids)"]
   set coords [$sel get {x y z}]
-  # Filter list of atom ids
+  # Filtered and sorted list of atom ids
   set atomids [$sel list]
   $sel delete
 
