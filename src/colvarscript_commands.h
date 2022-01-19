@@ -325,6 +325,15 @@ CVSCRIPT(cv_help,
          }
          )
 
+CVSCRIPT(cv_languageversion,
+         "Get the C++ language version number\n"
+         "version : string - C++ language version",
+         0, 0,
+         "",
+         script->set_result_int(__cplusplus);
+         return COLVARS_OK;
+         )
+
 CVSCRIPT(cv_list,
          "Return a list of all variables or biases\n"
          "list : sequence of strings - List of elements",
