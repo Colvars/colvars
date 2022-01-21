@@ -256,12 +256,14 @@ colvar::neuralNetwork::neuralNetwork(std::string const &conf): linearCombination
             activation_functions.push_back(std::make_pair(false, function_name));
             cvm::log(std::string{"The activation function for layer["} + cvm::to_str(num_activation_functions + 1) + std::string{"] is "} + function_name + '\n');
             ++num_activation_functions;
+#ifdef LEPTON
         } else if (key_lookup(conf, lookup_key_custom.c_str())) {
             std::string function_expression;
             get_keyval(conf, lookup_key_custom.c_str(), function_expression, std::string(""));
             activation_functions.push_back(std::make_pair(true, function_expression));
             cvm::log(std::string{"The custom activation function for layer["} + cvm::to_str(num_activation_functions + 1) + std::string{"] is "} + function_expression + '\n');
             ++num_activation_functions;
+#endif
         } else {
             has_activation_functions = false;
         }
@@ -272,15 +274,19 @@ colvar::neuralNetwork::neuralNetwork(std::string const &conf): linearCombination
     }
     for (size_t i_layer = 0; i_layer < num_layers_weight; ++i_layer) {
         denseLayer d;
+#ifdef LEPTON
         if (activation_functions[i_layer].first) {
             // use custom function as activation function
             d = denseLayer(weight_files[i_layer], bias_files[i_layer], activation_functions[i_layer].second);
         } else {
+#endif
             // query the map of supported activation functions
             const auto& f = activation_function_map[activation_functions[i_layer].second].first;
             const auto& df = activation_function_map[activation_functions[i_layer].second].second;
             d = denseLayer(weight_files[i_layer], bias_files[i_layer], f, df);
+#ifdef LEPTON
         }
+#endif
         // add a new dense layer to network
         if (nn.addDenseLayer(d)) {
             // show information about the neural network
