@@ -251,19 +251,20 @@ void neuralNetworkCompute::compute() {
     if (m_dense_layers.empty()) {
         return;
     }
+    size_t i_layer;
     m_dense_layers[0].compute(m_input, m_layers_output[0]);
-    for (size_t i_layer = 1; i_layer < m_dense_layers.size(); ++i_layer) {
+    for (i_layer = 1; i_layer < m_dense_layers.size(); ++i_layer) {
         m_dense_layers[i_layer].compute(m_layers_output[i_layer - 1], m_layers_output[i_layer]);
     }
     // gradients of each layer
     m_dense_layers[0].computeGradient(m_input, m_grads_tmp[0]);
-    for (size_t i_layer = 1; i_layer < m_dense_layers.size(); ++i_layer) {
+    for (i_layer = 1; i_layer < m_dense_layers.size(); ++i_layer) {
         m_dense_layers[i_layer].computeGradient(m_layers_output[i_layer - 1], m_grads_tmp[i_layer]);
     }
     // chain rule
     if (m_dense_layers.size() > 1) {
         m_chained_grad = multiply_matrix(m_grads_tmp[1], m_grads_tmp[0]);
-        for (size_t i_layer = 2; i_layer < m_dense_layers.size(); ++i_layer) {
+        for (i_layer = 2; i_layer < m_dense_layers.size(); ++i_layer) {
             m_chained_grad = multiply_matrix(m_grads_tmp[i_layer], m_chained_grad);
         }
     } else {
