@@ -152,11 +152,15 @@ void denseLayer::compute(const std::vector<double>& input, std::vector<double>& 
             output[i] += input[j] * m_weights[i][j];
         }
         output[i] += m_biases[i];
+#ifdef LEPTON
         if (m_use_custom_activation) {
             output[i] = m_custom_activation_function.evaluate(output[i]);
         } else {
+#endif
             output[i] = m_activation_function(output[i]);
+#ifdef LEPTON
         }
+#endif
     }
 }
 
@@ -166,13 +170,17 @@ double denseLayer::computeGradient(const std::vector<double>& input, const size_
         sum_with_bias += input[j_in] * m_weights[i][j_in];
     }
     sum_with_bias += m_biases[i];
+#ifdef LEPTON
     if (m_use_custom_activation) {
         const double grad_ij = m_custom_activation_function.derivative(sum_with_bias) * m_weights[i][j];
         return grad_ij;
     } else {
+#endif
         const double grad_ij = m_activation_function_derivative(sum_with_bias) * m_weights[i][j];
         return grad_ij;
+#ifdef LEPTON
     }
+#endif
 }
 
 void denseLayer::computeGradient(const std::vector<double>& input, std::vector<std::vector<double>>& output_grad) const {
