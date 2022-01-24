@@ -167,6 +167,7 @@ cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
       if (is_available(f_cvc_scalable_com)
           && is_enabled(f_cvc_com_based)
           && !is_enabled(f_cvc_debug_gradient)) {
+        disable(f_cvc_explicit_gradient);
         enable(f_cvc_scalable_com);
         enable(f_cvc_scalable);
         // The CVC makes the feature available;
@@ -254,9 +255,13 @@ int colvar::cvc::init_dependencies() {
 
     init_feature(f_cvc_scalable, "scalable_calculation", f_type_static);
     require_feature_self(f_cvc_scalable, f_cvc_scalable_com);
+    // CVC cannot compute atom-level gradients on rank 0 if colvar computation is distributed
+    exclude_feature_self(f_cvc_scalable, f_cvc_explicit_gradient);
 
     init_feature(f_cvc_scalable_com, "scalable_calculation_of_centers_of_mass", f_type_static);
     require_feature_self(f_cvc_scalable_com, f_cvc_com_based);
+    // CVC cannot compute atom-level gradients if computed on atom group COM
+    exclude_feature_self(f_cvc_scalable_com, f_cvc_explicit_gradient);
 
 
     // TODO only enable this when f_ag_scalable can be turned on for a pre-initialized group
