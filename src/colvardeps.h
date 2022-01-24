@@ -353,7 +353,7 @@ public:
     f_cvc_upper_boundary,
     /// CVC calculates atom gradients
     f_cvc_gradient,
-    /// CVC calculates and stores explicit atom gradients
+    /// CVC calculates and stores explicit atom gradients on rank 0
     f_cvc_explicit_gradient,
     /// CVC calculates and stores inverse atom gradients (used for total force)
     f_cvc_inv_gradient,

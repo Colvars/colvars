@@ -423,9 +423,7 @@ colvar::linearCombination::linearCombination(std::string const &conf): cvc(conf)
     x.reset();
     use_explicit_gradients = true;
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
-        if (!cv[i_cv]->is_enabled(f_cvc_explicit_gradient) ||
-             cv[i_cv]->is_enabled(f_cvc_scalable_com) ||
-             cv[i_cv]->is_enabled(f_cvc_scalable)) {
+        if (!cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
             use_explicit_gradients = false;
         }
     }
@@ -470,9 +468,7 @@ void colvar::linearCombination::calc_value() {
 void colvar::linearCombination::calc_gradients() {
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
         cv[i_cv]->calc_gradients();
-        if ( cv[i_cv]->is_enabled(f_cvc_explicit_gradient) &&
-            !cv[i_cv]->is_enabled(f_cvc_scalable) &&
-            !cv[i_cv]->is_enabled(f_cvc_scalable_com)) {
+        if (cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
             cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);
             for (size_t j_elem = 0; j_elem < cv[i_cv]->value().size(); ++j_elem) {
                 for (size_t k_ag = 0 ; k_ag < cv[i_cv]->atom_groups.size(); ++k_ag) {
@@ -489,10 +485,7 @@ void colvar::linearCombination::apply_force(colvarvalue const &force) {
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
         // If this CV us explicit gradients, then atomic gradients is already calculated
         // We can apply the force to atom groups directly
-        if ( cv[i_cv]->is_enabled(f_cvc_explicit_gradient) &&
-            !cv[i_cv]->is_enabled(f_cvc_scalable) &&
-            !cv[i_cv]->is_enabled(f_cvc_scalable_com)
-        ) {
+        if (cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
             for (size_t k_ag = 0 ; k_ag < cv[i_cv]->atom_groups.size(); ++k_ag) {
                 (cv[i_cv]->atom_groups)[k_ag]->apply_colvar_force(force.real_value);
             }
@@ -570,9 +563,7 @@ colvar::CVBasedPath::CVBasedPath(std::string const &conf): cvc(conf) {
     x.type(colvarvalue::type_scalar);
     use_explicit_gradients = true;
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
-        if (!cv[i_cv]->is_enabled(f_cvc_explicit_gradient) ||
-             cv[i_cv]->is_enabled(f_cvc_scalable_com) ||
-             cv[i_cv]->is_enabled(f_cvc_scalable)) {
+        if (!cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
             use_explicit_gradients = false;
         }
     }
@@ -707,9 +698,7 @@ void colvar::gspathCV::calc_gradients() {
         // No matter whether the i-th cv uses implicit gradient, compute it first.
         cv[i_cv]->calc_gradients();
         // If the gradient is not implicit, then add the gradients to its atom groups
-        if ( cv[i_cv]->is_enabled(f_cvc_explicit_gradient) &&
-            !cv[i_cv]->is_enabled(f_cvc_scalable) &&
-            !cv[i_cv]->is_enabled(f_cvc_scalable_com)) {
+        if (cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
             // Temporary variables storing gradients
             colvarvalue tmp_cv_grad_v1(cv[i_cv]->value());
             colvarvalue tmp_cv_grad_v2(cv[i_cv]->value());
@@ -738,10 +727,7 @@ void colvar::gspathCV::apply_force(colvarvalue const &force) {
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
         // If this CV us explicit gradients, then atomic gradients is already calculated
         // We can apply the force to atom groups directly
-        if ( cv[i_cv]->is_enabled(f_cvc_explicit_gradient) &&
-            !cv[i_cv]->is_enabled(f_cvc_scalable) &&
-            !cv[i_cv]->is_enabled(f_cvc_scalable_com)
-        ) {
+        if (cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
             for (size_t k_ag = 0 ; k_ag < cv[i_cv]->atom_groups.size(); ++k_ag) {
                 (cv[i_cv]->atom_groups)[k_ag]->apply_colvar_force(force.real_value);
             }
@@ -844,9 +830,7 @@ void colvar::gzpathCV::calc_gradients() {
         // No matter whether the i-th cv uses implicit gradient, compute it first.
         cv[i_cv]->calc_gradients();
         // If the gradient is not implicit, then add the gradients to its atom groups
-        if ( cv[i_cv]->is_enabled(f_cvc_explicit_gradient) &&
-            !cv[i_cv]->is_enabled(f_cvc_scalable) &&
-            !cv[i_cv]->is_enabled(f_cvc_scalable_com)) {
+        if (cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
             // Temporary variables storing gradients
             colvarvalue tmp_cv_grad_v1 = -1.0 * dzdv1[i_cv];
             colvarvalue tmp_cv_grad_v2 =  1.0 * dzdv2[i_cv];
@@ -871,14 +855,11 @@ void colvar::gzpathCV::apply_force(colvarvalue const &force) {
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
         // If this CV us explicit gradients, then atomic gradients is already calculated
         // We can apply the force to atom groups directly
-        if ( cv[i_cv]->is_enabled(f_cvc_explicit_gradient) &&
-            !cv[i_cv]->is_enabled(f_cvc_scalable) &&
-            !cv[i_cv]->is_enabled(f_cvc_scalable_com)) {
+        if (cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
             for (size_t k_ag = 0 ; k_ag < cv[i_cv]->atom_groups.size(); ++k_ag) {
                 (cv[i_cv]->atom_groups)[k_ag]->apply_colvar_force(force.real_value);
             }
-        }
-        else {
+        } else {
             colvarvalue tmp_cv_grad_v1 = -1.0 * dzdv1[i_cv];
             colvarvalue tmp_cv_grad_v2 =  1.0 * dzdv2[i_cv];
             // Temporary variables storing gradients

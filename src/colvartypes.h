@@ -1294,8 +1294,7 @@ public:
 
     if (cos_omega > 0.0) {
       return 2.0*omega*grad1;
-    }
-    else {
+    } else {
       return -2.0*(PI-omega)*grad1;
     }
   }
