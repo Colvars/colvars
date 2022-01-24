@@ -5,7 +5,7 @@
 # Used in this tutorial: https://colvars.github.io/multi-map/multi-map.html
 
 # Download link: https://github.com/Colvars/colvars/blob/master/colvartools/gen_multimap.py?raw=true
-# Last updated: 2020-10-28
+# Last updated: 2022-01-42
 # Contact: giacomo.fiorin@gmail.com
 
 
@@ -1092,7 +1092,8 @@ def check_prep_args(args):
               "the deformation amplitudes.  "
               "The mean is automatically subtracted.")
         args.deformation_map = np.loadtxt(args.deformation_map, dtype=np.float)
-        args.deformation_map_mask = np.ones(shape=args.deformation_map.shape)
+        if args.deformation_map_mask is None:
+            args.deformation_map_mask = np.ones(shape=args.deformation_map.shape)
         print("Subtracting the mean Z-coordinate of the map; before =",
               args.deformation_map.mean())
         args.deformation_map -= args.deformation_map.mean()
@@ -1115,7 +1116,7 @@ def check_prep_args(args):
         print("Masking the deformation map based on its magnitude")
         max_amplitude = np.abs(args.deformation_map).max()
         mask_threshold = args.mask_by_amplitude*max_amplitude
-        args.deformation_map_mask *= \
+        args.deformation_map_mask = \
             get_mask_from_deformation(deformation_map=args.deformation_map,
                                       threshold=mask_threshold,
                                       tolerance=0.2*mask_threshold)
