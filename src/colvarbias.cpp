@@ -36,6 +36,8 @@ colvarbias::colvarbias(char const *key)
   colvarbias::reset();
   state_file_step = 0L;
   matching_state = false;
+  b_scaled_biasing_force = false;
+  biasing_force_scaling_factors = NULL;
 }
 
 
@@ -113,6 +115,22 @@ int colvarbias::init(std::string const &conf)
   if (time_step_factor < 1) {
     cvm::error("Error: timeStepFactor must be 1 or greater.\n");
     return COLVARS_ERROR;
+  }
+
+  // Use the scaling factors from a grid?
+  get_keyval(conf, "scaledBiasingForce", b_scaled_biasing_force, b_scaled_biasing_force);
+  if (b_scaled_biasing_force) {
+    cvm::log("scaledBiasingForce is set to on");
+    std::string biasing_force_scaling_factors_in_filename;
+    get_keyval(conf, "scaledBiasingForceFactorsGrid", biasing_force_scaling_factors_in_filename, std::string());
+    std::ifstream is;
+    cvm::log("Reading scaling factors for the forces of bias " + name + " from " + biasing_force_scaling_factors_in_filename);
+    is.open(biasing_force_scaling_factors_in_filename.c_str());
+    if (!is.is_open()) cvm::error("Error opening the grid file " + biasing_force_scaling_factors_in_filename + " for reading");
+    biasing_force_scaling_factors = new colvar_grid_scalar(colvars);
+    biasing_force_scaling_factors->read_multicol(is, true);
+    biasing_force_scaling_factors_bin.assign(num_variables(), 0);
+    is.close();
   }
 
   // Now that children are defined, we can solve dependencies
@@ -251,6 +269,12 @@ int colvarbias::clear()
     }
   }
 
+  if (biasing_force_scaling_factors != NULL) {
+    delete biasing_force_scaling_factors;
+    biasing_force_scaling_factors = NULL;
+    biasing_force_scaling_factors_bin.clear();
+  }
+
   cv->config_changed();
 
   return COLVARS_OK;
@@ -350,7 +374,16 @@ void colvarbias::communicate_forces()
   if (! is_enabled(f_cvb_apply_force)) {
     return;
   }
+  cvm::real biasing_force_factor = 1.0;
   size_t i = 0;
+  if (b_scaled_biasing_force) {
+    for (i = 0; i < num_variables(); i++) {
+      biasing_force_scaling_factors_bin[i] = biasing_force_scaling_factors->current_bin_scalar(i);
+    }
+    if (biasing_force_scaling_factors->index_ok(biasing_force_scaling_factors_bin)) {
+      biasing_force_factor *= biasing_force_scaling_factors->value(biasing_force_scaling_factors_bin);
+    }
+  }
   for (i = 0; i < num_variables(); i++) {
     if (cvm::debug()) {
       cvm::log("Communicating a force to colvar \""+
@@ -362,9 +395,9 @@ void colvarbias::communicate_forces()
     // which is why rescaling has to happen now: the colvar is not
     // aware of this bias' time_step_factor
     if (is_enabled(f_cvb_bypass_ext_lagrangian)) {
-      variables(i)->add_bias_force_actual_value(cvm::real(time_step_factor) * colvar_forces[i]);
+      variables(i)->add_bias_force_actual_value(cvm::real(time_step_factor) * colvar_forces[i] * biasing_force_factor);
     } else {
-      variables(i)->add_bias_force(cvm::real(time_step_factor) * colvar_forces[i]);
+      variables(i)->add_bias_force(cvm::real(time_step_factor) * colvar_forces[i] * biasing_force_factor);
     }
     previous_colvar_forces[i] = colvar_forces[i];
   }
