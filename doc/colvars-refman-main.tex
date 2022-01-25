@@ -3355,12 +3355,13 @@ where $f_{k}$ is the activation function of the $k$-th layer, $w_{(k,j),(k-1,i)}
   {layer$i$\_activation}%
   {\texttt{NeuralNetwork}}%
   {The activation function from layer $i-1$ to layer $i$}%
-  {\texttt{tanh}, \texttt{linear} or \texttt{sigmoid}}%
+  {\texttt{tanh}, \texttt{sigmoid}, \texttt{linear}, \texttt{relu}, \texttt{lrelu100}, \texttt{elu} }%
   {The letter $i$ in this option needs to be replaced with the indexing
    number starting from 1, for example, \texttt{layer1\_activation} and
    \texttt{layer2\_activation}. The activation function from layer $i-1$
-   to layer $i$. Available choices for activation function are \texttt{tanh},
-   \texttt{linear} and \texttt{sigmoid}.}
+   to layer $i$. Available choices are \texttt{tanh},
+  \texttt{sigmoid}, \texttt{linear} (identity), \texttt{relu}, \texttt{lrelu100}
+  (a leaky rely with coefficients $10^{-2}$ and 1), and \texttt{elu} (with coefficient 1).}
 
 \item %
   \labelkey{colvar|NeuralNetwork|layeri_custom_activation}
