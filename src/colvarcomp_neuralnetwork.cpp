@@ -304,7 +304,8 @@ colvar::neuralNetwork::neuralNetwork(std::string const &conf): linearCombination
     nn.input().resize(cv.size());
 }
 
-colvar::neuralNetwork::~neuralNetwork() {}
+colvar::neuralNetwork::~neuralNetwork() {
+}
 
 void colvar::neuralNetwork::calc_value() {
     x.reset();
