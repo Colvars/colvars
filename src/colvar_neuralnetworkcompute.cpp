@@ -10,7 +10,7 @@ std::map<std::string, std::pair<std::function<double(double)>, std::function<dou
     {"sigmoid",  {[](double x){return 1.0 / (1.0 + std::exp(-x));},
                   [](double x){return std::exp(-x) / ((1.0 + std::exp(-x)) * (1.0 + std::exp(-x)));}}},
     {"linear",   {[](double x){return x;},
-                  [](double x){return 1.0;}}},
+                  [](double /*x*/){return 1.0;}}},
     {"relu",     {[](double x){return x < 0. ? 0. : x;},
                   [](double x){return x < 0. ? 0. : 1.;}}},
     {"lrelu100", {[](double x){return x < 0. ? 0.01 * x : x;},
