@@ -14,6 +14,7 @@
 #include "colvarparse.h"
 #include "colvardeps.h"
 
+class colvar_grid_scalar;
 
 /// \brief Collective variable bias, base class
 class colvarbias
@@ -256,6 +257,13 @@ protected:
   /// Flag used to tell if the state string being read is for this bias
   bool matching_state;
 
+  /// \brief Whether this bias scales the biasing forces by a specified grid
+  bool                     b_scaled_biasing_force;
+
+  /// \brief The biasing forces will be scaled by the factor in this grid
+  /// if b_bias_force_scaled is true
+  colvar_grid_scalar*      biasing_force_scaling_factors;
+  std::vector<int>         biasing_force_scaling_factors_bin;
 };
 
 
