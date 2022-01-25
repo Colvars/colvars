@@ -115,7 +115,9 @@ colvar::CartesianBasedPath::~CartesianBasedPath() {
             (*it_comp_atoms) = nullptr;
         }
     }
+    // Avoid double-freeing due to CVC-in-CVC construct
     atom_groups.clear();
+    remove_all_children();
 }
 
 void colvar::CartesianBasedPath::computeDistanceToReferenceFrames(std::vector<cvm::real>& result) {
@@ -446,9 +448,9 @@ colvar::linearCombination::~linearCombination() {
     for (auto it = cv.begin(); it != cv.end(); ++it) {
         delete (*it);
     }
-    // the atom groups should be freed by the sub-CVCs,
-    // so we clear the container to avoid double-free.
+    // Avoid double-freeing due to CVC-in-CVC construct
     atom_groups.clear();
+    remove_all_children();
 }
 
 void colvar::linearCombination::calc_value() {
@@ -623,7 +625,9 @@ colvar::CVBasedPath::~CVBasedPath() {
     for (auto it = cv.begin(); it != cv.end(); ++it) {
         delete (*it);
     }
+    // Avoid double-freeing due to CVC-in-CVC construct
     atom_groups.clear();
+    remove_all_children();
 }
 
 colvar::gspathCV::gspathCV(std::string const &conf): CVBasedPath(conf) {
